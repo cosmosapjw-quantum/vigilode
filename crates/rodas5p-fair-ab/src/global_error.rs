@@ -4,10 +4,10 @@ use rand::{Rng, SeedableRng};
 use rand_pcg::Pcg64Mcg;
 use rodas5p_core::{CoreError, LinearSolverConfig, WorkCounters, safe_l2, sha256_hex};
 use rodas5p_integrators::{
-    BdfConfig, BdfOrder, IntegrationMethod, NewtonConfig, OdeProblem, ParallelExecution,
-    RadauConfig, RadauIiaStages, integrate_bdf_fixed, integrate_fixed, integrate_radau_fixed,
-    manufactured_mass_nonlinear_problem, manufactured_vector_problem, prothero_robinson_problem,
-    scalar_linear_problem,
+    BdfConfig, BdfOrder, IntegrationMethod, NewtonConfig, OdeProblem, OutputSchedule,
+    ParallelExecution, RadauConfig, RadauIiaStages, integrate_bdf_fixed_observed,
+    integrate_fixed_observed, integrate_radau_fixed_observed, manufactured_mass_nonlinear_problem,
+    manufactured_vector_problem, prothero_robinson_problem, scalar_linear_problem,
 };
 use serde::{Deserialize, Serialize};
 
@@ -383,6 +383,8 @@ pub enum ParetoCostMetric {
     NonlinearIterations,
     LinearIterations,
     AcceptedSteps,
+    InternalSteps,
+    OutputClippedSteps,
     StoredStateBytes,
 }
 
@@ -407,7 +409,11 @@ impl IntegratorRunStatus {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct IntegratorWorkReport {
     pub counters: WorkCounters,
-    /// Deterministic bytes retained in the returned time/state trajectory; not peak RSS.
+    /// Accepted internal integration steps, independent of retained output count.
+    pub internal_steps: u64,
+    /// Accepted steps shortened solely to land on a requested common-output time.
+    pub output_clipped_steps: u64,
+    /// Deterministic bytes retained in the returned requested-output trajectory; not peak RSS.
     pub stored_state_bytes: u64,
 }
 
@@ -534,6 +540,8 @@ impl IntegratorRunRecord {
             ParetoCostMetric::NonlinearIterations => Some(counters.nonlinear_iterations as f64),
             ParetoCostMetric::LinearIterations => Some(counters.linear_iterations as f64),
             ParetoCostMetric::AcceptedSteps => Some(counters.accepted_steps as f64),
+            ParetoCostMetric::InternalSteps => Some(self.work.internal_steps as f64),
+            ParetoCostMetric::OutputClippedSteps => Some(self.work.output_clipped_steps as f64),
             ParetoCostMetric::StoredStateBytes => Some(self.work.stored_state_bytes as f64),
         }
     }
@@ -604,6 +612,23 @@ pub struct GlobalErrorExecution {
     pub timing_campaign_wall_seconds: Option<f64>,
 }
 
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct OutputPolicyMetadata {
+    pub save_internal_steps: bool,
+    pub dense_output_used: bool,
+    pub landing: String,
+}
+
+impl OutputPolicyMetadata {
+    fn requested_step_clipping() -> Self {
+        Self {
+            save_internal_steps: false,
+            dense_output_used: false,
+            landing: "step-clipping".into(),
+        }
+    }
+}
+
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct GlobalErrorParetoReport {
     pub schema: String,
@@ -611,6 +636,7 @@ pub struct GlobalErrorParetoReport {
     pub execution: GlobalErrorExecution,
     pub timing_authoritative: bool,
     pub timing_protocol: TimingProtocol,
+    pub output_policy: OutputPolicyMetadata,
     pub references: Vec<ReferenceSolutionProvenance>,
     pub runs: Vec<IntegratorRunRecord>,
     pub fronts: Vec<GlobalErrorParetoFront>,
@@ -670,6 +696,8 @@ struct Trajectory {
     times: Vec<f64>,
     states: Vec<Vec<f64>>,
     counters: WorkCounters,
+    internal_steps: u64,
+    output_clipped_steps: u64,
 }
 
 fn analytic_reference_problem(
@@ -760,10 +788,11 @@ fn execute_candidate(spec: &FixedRunSpec) -> Result<Trajectory, CoreError> {
     let t_span = spec.reference.t_span;
     let y0 = &spec.reference.y0;
     let h = spec.step_size;
-    match spec.candidate {
+    let output = OutputSchedule::new(spec.reference.reference.output_grid.times.clone())?;
+    let result = match spec.candidate {
         FixedAnchorCandidate::SequentialRodas5p => {
             let config = LinearSolverConfig::default();
-            let result = integrate_fixed(
+            integrate_fixed_observed(
                 problem,
                 t_span,
                 y0,
@@ -773,12 +802,8 @@ fn execute_candidate(spec: &FixedRunSpec) -> Result<Trajectory, CoreError> {
                 None,
                 1.0e-12,
                 1.0e-10,
-            )?;
-            Ok(Trajectory {
-                times: result.t,
-                states: result.y,
-                counters: result.counters,
-            })
+                &output,
+            )?
         }
         FixedAnchorCandidate::Bdf1 | FixedAnchorCandidate::Bdf2 => {
             let order = if matches!(spec.candidate, FixedAnchorCandidate::Bdf1) {
@@ -786,7 +811,7 @@ fn execute_candidate(spec: &FixedRunSpec) -> Result<Trajectory, CoreError> {
             } else {
                 BdfOrder::Two
             };
-            let result = integrate_bdf_fixed(
+            integrate_bdf_fixed_observed(
                 problem,
                 t_span,
                 y0,
@@ -795,12 +820,8 @@ fn execute_candidate(spec: &FixedRunSpec) -> Result<Trajectory, CoreError> {
                     order,
                     newton: NewtonConfig::default(),
                 },
-            )?;
-            Ok(Trajectory {
-                times: result.t,
-                states: result.y,
-                counters: result.counters,
-            })
+                &output,
+            )?
         }
         FixedAnchorCandidate::RadauIia1 | FixedAnchorCandidate::RadauIia3 => {
             let stages = if matches!(spec.candidate, FixedAnchorCandidate::RadauIia1) {
@@ -808,7 +829,7 @@ fn execute_candidate(spec: &FixedRunSpec) -> Result<Trajectory, CoreError> {
             } else {
                 RadauIiaStages::Three
             };
-            let result = integrate_radau_fixed(
+            integrate_radau_fixed_observed(
                 problem,
                 t_span,
                 y0,
@@ -817,14 +838,17 @@ fn execute_candidate(spec: &FixedRunSpec) -> Result<Trajectory, CoreError> {
                     stages,
                     ..RadauConfig::default()
                 },
-            )?;
-            Ok(Trajectory {
-                times: result.t,
-                states: result.y,
-                counters: result.counters,
-            })
+                &output,
+            )?
         }
-    }
+    };
+    Ok(Trajectory {
+        times: result.t,
+        states: result.y,
+        counters: result.counters,
+        internal_steps: result.internal_steps as u64,
+        output_clipped_steps: result.output_clipped_steps as u64,
+    })
 }
 
 fn stored_state_bytes(trajectory: &Trajectory) -> u64 {
@@ -861,6 +885,8 @@ fn run_scientific_spec(spec: &FixedRunSpec) -> IntegratorRunRecord {
                 errors: Some(errors),
                 work: IntegratorWorkReport {
                     counters: trajectory.counters,
+                    internal_steps: trajectory.internal_steps,
+                    output_clipped_steps: trajectory.output_clipped_steps,
                     stored_state_bytes: stored_state_bytes(&trajectory),
                 },
                 timing: IntegratorTimingReport::unavailable(false),
@@ -881,6 +907,8 @@ fn run_scientific_spec(spec: &FixedRunSpec) -> IntegratorRunRecord {
                 errors: None,
                 work: IntegratorWorkReport {
                     counters: trajectory.counters,
+                    internal_steps: trajectory.internal_steps,
+                    output_clipped_steps: trajectory.output_clipped_steps,
                     stored_state_bytes: stored_state_bytes(&trajectory),
                 },
                 timing: IntegratorTimingReport::unavailable(false),
@@ -898,6 +926,8 @@ fn run_scientific_spec(spec: &FixedRunSpec) -> IntegratorRunRecord {
             errors: None,
             work: IntegratorWorkReport {
                 counters: WorkCounters::default(),
+                internal_steps: 0,
+                output_clipped_steps: 0,
                 stored_state_bytes: 0,
             },
             timing: IntegratorTimingReport::unavailable(false),
@@ -919,7 +949,7 @@ fn error_metrics() -> [GlobalErrorMetric; 7] {
     ]
 }
 
-fn cost_metrics() -> [ParetoCostMetric; 9] {
+fn cost_metrics() -> [ParetoCostMetric; 11] {
     [
         ParetoCostMetric::WallSeconds,
         ParetoCostMetric::RhsEvaluations,
@@ -929,6 +959,8 @@ fn cost_metrics() -> [ParetoCostMetric; 9] {
         ParetoCostMetric::NonlinearIterations,
         ParetoCostMetric::LinearIterations,
         ParetoCostMetric::AcceptedSteps,
+        ParetoCostMetric::InternalSteps,
+        ParetoCostMetric::OutputClippedSteps,
         ParetoCostMetric::StoredStateBytes,
     ]
 }
@@ -1040,6 +1072,7 @@ struct ScientificRun<'a> {
 
 fn scientific_checksum(
     profile: GlobalErrorParetoProfile,
+    output_policy: &OutputPolicyMetadata,
     references: &[ReferenceSolutionProvenance],
     runs: &[IntegratorRunRecord],
     fronts: &[GlobalErrorParetoFront],
@@ -1070,6 +1103,7 @@ fn scientific_checksum(
         .collect::<Vec<_>>();
     Ok(sha256_hex(&serde_json::to_vec(&(
         profile,
+        output_policy,
         references,
         scientific_runs,
         scientific_fronts,
@@ -1184,6 +1218,7 @@ pub fn run_global_error_pareto_screen(
 ) -> FairResult<GlobalErrorParetoReport> {
     let execution = ParallelExecution::rayon(threads)?;
     let protocol = profile.timing_protocol();
+    let output_policy = OutputPolicyMetadata::requested_step_clipping();
     let corpus = fixed_anchor_corpus(profile)?;
     let references = corpus
         .iter()
@@ -1230,10 +1265,17 @@ pub fn run_global_error_pareto_screen(
     let fronts = build_fronts(&runs);
     let targets = default_targets()?;
     let attainments = build_attainments(&runs, &targets);
-    let scientific_checksum =
-        scientific_checksum(profile, &references, &runs, &fronts, &targets, &attainments)?;
+    let scientific_checksum = scientific_checksum(
+        profile,
+        &output_policy,
+        &references,
+        &runs,
+        &fronts,
+        &targets,
+        &attainments,
+    )?;
     Ok(GlobalErrorParetoReport {
-        schema: "rodas5p-global-error-pareto-v1".into(),
+        schema: "rodas5p-global-error-pareto-v2".into(),
         profile,
         execution: GlobalErrorExecution {
             threads: execution.threads(),
@@ -1243,6 +1285,7 @@ pub fn run_global_error_pareto_screen(
         },
         timing_authoritative: threads == 1,
         timing_protocol: protocol,
+        output_policy,
         references,
         runs,
         fronts,

@@ -107,3 +107,29 @@ fn fixed_anchor_screen_is_thread_deterministic_and_exposes_all_five_candidates()
     assert!(!one.targets.is_empty());
     assert!(!one.attainments.is_empty());
 }
+
+#[test]
+fn pareto_screen_stores_only_common_outputs_and_reports_step_clipping_protocol() {
+    let report = run_global_error_pareto_screen(GlobalErrorParetoProfile::Smoke, 1).unwrap();
+    assert!(!report.output_policy.save_internal_steps);
+    assert!(!report.output_policy.dense_output_used);
+    assert_eq!(report.output_policy.landing, "step-clipping");
+
+    let mut grouped = std::collections::BTreeMap::<(String, u64), Vec<_>>::new();
+    for row in &report.runs {
+        grouped
+            .entry((row.problem_id.clone(), row.step_size.to_bits()))
+            .or_default()
+            .push(row);
+        assert_eq!(row.work.internal_steps, row.work.counters.accepted_steps);
+    }
+    for rows in grouped.values() {
+        let bytes: std::collections::BTreeSet<_> =
+            rows.iter().map(|row| row.work.stored_state_bytes).collect();
+        assert_eq!(
+            bytes.len(),
+            1,
+            "all candidates must retain the same output-grid storage"
+        );
+    }
+}

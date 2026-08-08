@@ -380,7 +380,10 @@ fn global_error_pareto_command_emits_deterministic_method_independent_report() {
 
     let one: serde_json::Value = serde_json::from_slice(&fs::read(&serial).unwrap()).unwrap();
     let four: serde_json::Value = serde_json::from_slice(&fs::read(&parallel).unwrap()).unwrap();
-    assert_eq!(one["schema"], "rodas5p-global-error-pareto-v1");
+    assert_eq!(one["schema"], "rodas5p-global-error-pareto-v2");
+    assert_eq!(one["output_policy"]["save_internal_steps"], false);
+    assert_eq!(one["output_policy"]["dense_output_used"], false);
+    assert_eq!(one["output_policy"]["landing"], "step-clipping");
     assert_eq!(one["profile"], "smoke");
     assert_eq!(one["execution"]["threads"], 1);
     assert_eq!(four["execution"]["threads"], 4);
