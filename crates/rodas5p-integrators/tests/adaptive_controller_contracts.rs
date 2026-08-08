@@ -44,8 +44,10 @@ fn integral_controller_uses_estimator_order_and_rejection_cap() {
 
 #[test]
 fn pi_controller_updates_only_after_acceptance() {
-    let mut config = AdaptiveStepConfig::default();
-    config.controller = ControllerKind::Pi;
+    let config = AdaptiveStepConfig {
+        controller: ControllerKind::Pi,
+        ..AdaptiveStepConfig::default()
+    };
     let mut state = AdaptiveControllerState::default();
     assert_eq!(state.previous_accepted_error(), None);
     state.record_rejection(4.0).unwrap();

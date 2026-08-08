@@ -195,13 +195,7 @@ fn adaptive_bdf2_uses_startup_order_then_variable_step_order() {
     .unwrap();
     assert!(result.observed.success);
     assert_eq!(result.diagnostics.estimator_orders.first(), Some(&2));
-    assert!(
-        result
-            .diagnostics
-            .estimator_orders
-            .iter()
-            .any(|order| *order == 3)
-    );
+    assert!(result.diagnostics.estimator_orders.contains(&3));
     assert!(
         result
             .diagnostics
