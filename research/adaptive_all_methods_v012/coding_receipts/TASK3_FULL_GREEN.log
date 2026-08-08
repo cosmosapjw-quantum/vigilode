@@ -1,0 +1,34 @@
+   Compiling rodas5p-integrators v0.1.0 (/mnt/data/rodas5p-adaptive-all-main/.worktrees/adaptive-all-methods-v0.12/crates/rodas5p-integrators)
+    Finished `measurement` profile [optimized] target(s) in 0.45s
+     Running tests/adaptive_bdf_contracts.rs (/mnt/data/rodas5p-adaptive-all-target/measurement/deps/adaptive_bdf_contracts-d55b90940e290415)
+
+running 4 tests
+test fixed_bdf_step_remains_identical_to_variable_kernel_at_ratio_one ... ok
+test nonuniform_bdf2_coefficients_recover_constant_step_formula ... ok
+test nonuniform_bdf2_predictor_uses_the_actual_step_ratio ... ok
+test variable_bdf2_is_exact_for_a_quadratic_on_unequal_steps ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/native_implicit_contracts.rs (/mnt/data/rodas5p-adaptive-all-target/measurement/deps/native_implicit_contracts-f59e7480933e7ed5)
+
+running 8 tests
+test bdf1_matches_the_exact_scalar_amplification_factor ... ok
+test bdf2_uses_bdf1_startup_then_is_second_order ... ok
+test bdf_mass_matrix_path_is_accurate_and_failure_is_transactional ... ok
+test dense_newton_accepts_an_exact_linear_correction_without_a_redundant_second_factorization ... ok
+test dense_newton_solves_scalar_root_and_counts_every_operation ... ok
+test radau_iia1_matches_bdf1_and_radau_iia3_is_fifth_order ... ok
+test radau_iia3_matches_stability_function_and_mass_matrix_reference ... ok
+test radau_iia3_tableau_is_exactly_consistent_and_stiffly_accurate ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/output_observer_contracts.rs (/mnt/data/rodas5p-adaptive-all-target/measurement/deps/output_observer_contracts-fdb5dba492a9697b)
+
+running 3 tests
+test adaptive_observer_keeps_only_requested_outputs_across_retries_and_clips ... ok
+test all_fixed_anchor_families_land_on_the_same_requested_grid ... ok
+test requested_output_schedule_removes_internal_step_storage_without_changing_states ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s

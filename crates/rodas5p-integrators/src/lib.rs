@@ -27,8 +27,9 @@ pub use adaptive::{
     AdaptiveStepConfig, ControllerKind, StepDoublingEstimate, step_doubling_wrms_error,
 };
 pub use bdf::{
-    BdfConfig, BdfHistory, BdfIntegrationResult, BdfOrder, BdfStepReport, bdf_step,
-    integrate_bdf_fixed, integrate_bdf_fixed_observed,
+    BdfConfig, BdfHistory, BdfIntegrationResult, BdfOrder, BdfStepReport, VariableBdf2Coefficients,
+    bdf_step, bdf_step_variable, integrate_bdf_fixed, integrate_bdf_fixed_observed,
+    variable_bdf2_coefficients, variable_bdf2_predictor,
 };
 pub use block::{
     BlockMethod, BlockPreconditioner, BlockSolveReport, NonlinearRemainderSnapshot,

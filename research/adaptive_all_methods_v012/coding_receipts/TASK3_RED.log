@@ -1,0 +1,32 @@
+   Compiling rodas5p-integrators v0.1.0 (/mnt/data/rodas5p-adaptive-all-main/.worktrees/adaptive-all-methods-v0.12/crates/rodas5p-integrators)
+error[E0432]: unresolved imports `rodas5p_integrators::bdf_step_variable`, `rodas5p_integrators::variable_bdf2_coefficients`, `rodas5p_integrators::variable_bdf2_predictor`
+ --> crates/rodas5p-integrators/tests/adaptive_bdf_contracts.rs:5:60
+  |
+5 |     BdfConfig, BdfHistory, BdfOrder, OdeProblem, bdf_step, bdf_step_variable,
+  |                                                            ^^^^^^^^^^^^^^^^^ no `bdf_step_variable` in the root
+6 |     variable_bdf2_coefficients, variable_bdf2_predictor,
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^ no `variable_bdf2_predictor` in the root
+  |     |
+  |     no `variable_bdf2_coefficients` in the root
+
+error[E0689]: can't call method `abs` on ambiguous numeric type `{float}`
+  --> crates/rodas5p-integrators/tests/adaptive_bdf_contracts.rs:35:43
+   |
+35 |     assert!((2.0 * coefficients.a0 - 3.0).abs() < 1.0e-15);
+   |                                           ^^^
+
+error[E0689]: can't call method `abs` on ambiguous numeric type `{float}`
+  --> crates/rodas5p-integrators/tests/adaptive_bdf_contracts.rs:36:43
+   |
+36 |     assert!((2.0 * coefficients.a1 + 4.0).abs() < 1.0e-15);
+   |                                           ^^^
+
+error[E0689]: can't call method `abs` on ambiguous numeric type `{float}`
+  --> crates/rodas5p-integrators/tests/adaptive_bdf_contracts.rs:37:43
+   |
+37 |     assert!((2.0 * coefficients.a2 - 1.0).abs() < 1.0e-15);
+   |                                           ^^^
+
+Some errors have detailed explanations: E0432, E0689.
+For more information about an error, try `rustc --explain E0432`.
+error: could not compile `rodas5p-integrators` (test "adaptive_bdf_contracts") due to 4 previous errors

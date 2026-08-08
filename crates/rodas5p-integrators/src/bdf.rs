@@ -83,6 +83,7 @@ pub struct BdfStepReport {
     pub requested_order: BdfOrder,
     pub applied_order: BdfOrder,
     pub used_startup: bool,
+    pub step_ratio: Option<f64>,
     pub newton: NewtonReport,
 }
 
@@ -93,6 +94,77 @@ pub struct BdfIntegrationResult {
     pub applied_orders: Vec<BdfOrder>,
     pub startup_steps: usize,
     pub counters: WorkCounters,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct VariableBdf2Coefficients {
+    pub step_ratio: f64,
+    pub a0: f64,
+    pub a1: f64,
+    pub a2: f64,
+}
+
+pub fn variable_bdf2_coefficients(
+    current_step: f64,
+    previous_step: f64,
+) -> CoreResult<VariableBdf2Coefficients> {
+    if !(current_step > 0.0
+        && previous_step > 0.0
+        && current_step.is_finite()
+        && previous_step.is_finite())
+    {
+        return Err(CoreError::InvalidInput(
+            "BDF2 step sizes must be finite and positive".into(),
+        ));
+    }
+    let step_ratio = current_step / previous_step;
+    if !step_ratio.is_finite() || step_ratio <= 0.0 {
+        return Err(CoreError::NonFinite("BDF2 step ratio is non-finite".into()));
+    }
+    let denominator = 1.0 + step_ratio;
+    Ok(VariableBdf2Coefficients {
+        step_ratio,
+        a0: (1.0 + 2.0 * step_ratio) / denominator,
+        a1: -(1.0 + step_ratio),
+        a2: step_ratio * step_ratio / denominator,
+    })
+}
+
+pub fn variable_bdf2_predictor(
+    current: &[f64],
+    previous: &[f64],
+    step_ratio: f64,
+) -> CoreResult<Vec<f64>> {
+    if current.len() != previous.len() || current.is_empty() {
+        return Err(CoreError::Dimension(
+            "BDF2 predictor state shape mismatch".into(),
+        ));
+    }
+    if !(step_ratio > 0.0 && step_ratio.is_finite()) {
+        return Err(CoreError::InvalidInput(
+            "BDF2 predictor step ratio must be finite and positive".into(),
+        ));
+    }
+    if !current
+        .iter()
+        .chain(previous)
+        .all(|value| value.is_finite())
+    {
+        return Err(CoreError::NonFinite(
+            "BDF2 predictor state contains NaN/Inf".into(),
+        ));
+    }
+    Ok(current
+        .iter()
+        .zip(previous)
+        .map(|(now, old)| (1.0 + step_ratio) * now - step_ratio * old)
+        .collect())
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum BdfStepMode {
+    Fixed,
+    Variable,
 }
 
 fn same_step(previous: f64, current: f64) -> bool {
@@ -118,6 +190,50 @@ pub fn bdf_step(
     history: &mut BdfHistory,
     counters: &mut WorkCounters,
 ) -> CoreResult<BdfStepReport> {
+    bdf_step_impl(
+        problem,
+        t,
+        y,
+        h,
+        config,
+        history,
+        counters,
+        BdfStepMode::Fixed,
+    )
+}
+
+pub fn bdf_step_variable(
+    problem: &OdeProblem,
+    t: f64,
+    y: &[f64],
+    h: f64,
+    config: &BdfConfig,
+    history: &mut BdfHistory,
+    counters: &mut WorkCounters,
+) -> CoreResult<BdfStepReport> {
+    bdf_step_impl(
+        problem,
+        t,
+        y,
+        h,
+        config,
+        history,
+        counters,
+        BdfStepMode::Variable,
+    )
+}
+
+#[allow(clippy::too_many_arguments)]
+fn bdf_step_impl(
+    problem: &OdeProblem,
+    t: f64,
+    y: &[f64],
+    h: f64,
+    config: &BdfConfig,
+    history: &mut BdfHistory,
+    counters: &mut WorkCounters,
+    mode: BdfStepMode,
+) -> CoreResult<BdfStepReport> {
     if y.len() != problem.dimension {
         return Err(CoreError::Dimension("BDF state shape mismatch".into()));
     }
@@ -128,21 +244,29 @@ pub fn bdf_step(
     }
     let previous = history.previous_state.as_ref().filter(|state| {
         state.len() == y.len()
-            && history
-                .previous_step
-                .is_some_and(|previous_h| same_step(previous_h, h))
+            && history.previous_step.is_some_and(|previous_h| match mode {
+                BdfStepMode::Fixed => same_step(previous_h, h),
+                BdfStepMode::Variable => previous_h > 0.0 && previous_h.is_finite(),
+            })
     });
     let (applied_order, used_startup) = match config.order {
         BdfOrder::One => (BdfOrder::One, false),
         BdfOrder::Two if previous.is_some() => (BdfOrder::Two, false),
         BdfOrder::Two => (BdfOrder::One, true),
     };
+    let variable_coefficients = if applied_order == BdfOrder::Two && mode == BdfStepMode::Variable {
+        Some(variable_bdf2_coefficients(
+            h,
+            history.previous_step.expect("BDF2 history validated"),
+        )?)
+    } else {
+        None
+    };
     let predictor = match (applied_order, previous) {
-        (BdfOrder::Two, Some(previous_state)) => y
-            .iter()
-            .zip(previous_state.iter())
-            .map(|(current, old)| 2.0 * current - old)
-            .collect(),
+        (BdfOrder::Two, Some(previous_state)) => {
+            let ratio = variable_coefficients.map_or(1.0, |coefficients| coefficients.step_ratio);
+            variable_bdf2_predictor(y, previous_state, ratio)?
+        }
         _ => y.to_vec(),
     };
     let mass = problem.mass_or_identity();
@@ -156,28 +280,25 @@ pub fn bdf_step(
         counters,
         |candidate, local_counters| {
             let rhs = problem.eval_rhs(t_new, candidate, local_counters)?;
-            let combination: Vec<f64> = match applied_order {
-                BdfOrder::One => candidate
-                    .iter()
-                    .zip(y.iter())
-                    .map(|(next, current)| next - current)
-                    .collect(),
+            let (mass_next, mass_current, mass_previous, rhs_scale) = match applied_order {
+                BdfOrder::One => (1.0, -1.0, 0.0, h),
+                BdfOrder::Two if mode == BdfStepMode::Fixed => (3.0, -4.0, 1.0, 2.0 * h),
                 BdfOrder::Two => {
-                    let old = previous_state.as_ref().expect("BDF2 history validated");
-                    candidate
-                        .iter()
-                        .zip(y.iter())
-                        .zip(old.iter())
-                        .map(|((next, current), previous)| 3.0 * next - 4.0 * current + previous)
-                        .collect()
+                    let coefficients = variable_coefficients.expect("BDF2 coefficients validated");
+                    (coefficients.a0, coefficients.a1, coefficients.a2, h)
                 }
             };
+            let combination: Vec<f64> = candidate
+                .iter()
+                .zip(y.iter())
+                .enumerate()
+                .map(|(index, (next, current))| {
+                    let old = previous_state.as_ref().map_or(0.0, |state| state[index]);
+                    mass_next * next + mass_current * current + mass_previous * old
+                })
+                .collect();
             let mut residual = mass.matvec(&combination)?;
             local_counters.mass_matvecs += 1;
-            let rhs_scale = match applied_order {
-                BdfOrder::One => h,
-                BdfOrder::Two => 2.0 * h,
-            };
             for (value, forcing) in residual.iter_mut().zip(rhs) {
                 *value -= rhs_scale * forcing;
             }
@@ -187,7 +308,13 @@ pub fn bdf_step(
             let jacobian = problem.dense_jacobian(t_new, candidate, local_counters)?;
             match applied_order {
                 BdfOrder::One => scaled_mass_jacobian(&mass, &jacobian, 1.0, -h),
-                BdfOrder::Two => scaled_mass_jacobian(&mass, &jacobian, 3.0, -2.0 * h),
+                BdfOrder::Two if mode == BdfStepMode::Fixed => {
+                    scaled_mass_jacobian(&mass, &jacobian, 3.0, -2.0 * h)
+                }
+                BdfOrder::Two => {
+                    let coefficients = variable_coefficients.expect("BDF2 coefficients validated");
+                    scaled_mass_jacobian(&mass, &jacobian, coefficients.a0, -h)
+                }
             }
         },
     )?;
@@ -200,6 +327,7 @@ pub fn bdf_step(
         requested_order: config.order,
         applied_order,
         used_startup,
+        step_ratio: variable_coefficients.map(|coefficients| coefficients.step_ratio),
         newton,
     })
 }
