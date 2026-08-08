@@ -1,0 +1,45 @@
+   Compiling rodas5p-fair-ab v0.1.0 (/mnt/data/rodas5p-v09-repo/source/.worktrees/unified-global-error-pareto-v0.10/crates/rodas5p-fair-ab)
+error[E0277]: the trait bound `f64: std::cmp::Eq` is not satisfied
+   --> crates/rodas5p-fair-ab/src/global_error.rs:593:5
+    |
+588 | #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+    |                                   -- in this derive macro expansion
+...
+593 |     pub minimum_sample_seconds: f64,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `std::cmp::Eq` is not implemented for `f64`
+    |
+    = help: the following other types implement trait `std::cmp::Eq`:
+              i128
+              i16
+              i32
+              i64
+              i8
+              isize
+              u128
+              u16
+            and 4 others
+note: required by a bound in `AssertParamIsEq`
+   --> /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/cmp.rs:371:0
+
+error[E0061]: this function takes 3 arguments but 2 arguments were supplied
+    --> crates/rodas5p-fair-ab/src/global_error.rs:1177:13
+     |
+1177 | ...   IntegratorTimingReport::from_samples(vec![row_started.elapsed().as_secs_f64()], false)
+     |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^-------------------------------------------------- argument #3 of type `usize` is missing
+     |
+note: associated function defined here
+    --> crates/rodas5p-fair-ab/src/global_error.rs:436:8
+     |
+ 436 |     fn from_samples(
+     |        ^^^^^^^^^^^^
+...
+ 439 |         batch_iterations: usize,
+     |         -----------------------
+help: provide the argument
+     |
+1177 |             IntegratorTimingReport::from_samples(vec![row_started.elapsed().as_secs_f64()], false, /* usize */)
+     |                                                                                                  +++++++++++++
+
+Some errors have detailed explanations: E0061, E0277.
+For more information about an error, try `rustc --explain E0061`.
+error: could not compile `rodas5p-fair-ab` (lib) due to 2 previous errors

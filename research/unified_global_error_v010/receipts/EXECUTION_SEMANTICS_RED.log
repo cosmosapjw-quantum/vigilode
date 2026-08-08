@@ -1,0 +1,35 @@
+   Compiling rodas5p-fair-ab v0.1.0 (/mnt/data/rodas5p-v09-repo/source/.worktrees/unified-global-error-pareto-v0.10/crates/rodas5p-fair-ab)
+error[E0609]: no field `scientific_suite_wall_seconds` on type `rodas5p_fair_ab::global_error::GlobalErrorExecution`
+  --> crates/rodas5p-fair-ab/tests/global_error_contracts.rs:97:27
+   |
+97 |     assert!(one.execution.scientific_suite_wall_seconds > 0.0);
+   |                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ unknown field
+   |
+   = note: available fields are: `threads`, `backend`, `aggregate_wall_seconds`
+
+error[E0609]: no field `scientific_suite_wall_seconds` on type `rodas5p_fair_ab::global_error::GlobalErrorExecution`
+  --> crates/rodas5p-fair-ab/tests/global_error_contracts.rs:98:28
+   |
+98 |     assert!(four.execution.scientific_suite_wall_seconds > 0.0);
+   |                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ unknown field
+   |
+   = note: available fields are: `threads`, `backend`, `aggregate_wall_seconds`
+
+error[E0609]: no field `timing_campaign_wall_seconds` on type `rodas5p_fair_ab::global_error::GlobalErrorExecution`
+  --> crates/rodas5p-fair-ab/tests/global_error_contracts.rs:99:27
+   |
+99 |     assert!(one.execution.timing_campaign_wall_seconds.is_some());
+   |                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ unknown field
+   |
+   = note: available fields are: `threads`, `backend`, `aggregate_wall_seconds`
+
+error[E0609]: no field `timing_campaign_wall_seconds` on type `rodas5p_fair_ab::global_error::GlobalErrorExecution`
+   --> crates/rodas5p-fair-ab/tests/global_error_contracts.rs:100:28
+    |
+100 |     assert!(four.execution.timing_campaign_wall_seconds.is_none());
+    |                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ unknown field
+    |
+    = note: available fields are: `threads`, `backend`, `aggregate_wall_seconds`
+
+For more information about this error, try `rustc --explain E0609`.
+error: could not compile `rodas5p-fair-ab` (test "global_error_contracts") due to 4 previous errors

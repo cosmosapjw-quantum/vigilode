@@ -1,0 +1,46 @@
+    Finished `release` profile [optimized] target(s) in 0.07s
+     Running tests/cli_contracts.rs (/mnt/data/rodas5p-v09-repo/source/target/release/deps/cli_contracts-99c5c23f6557224f)
+
+running 1 test
+test global_error_pareto_command_emits_deterministic_method_independent_report ... error: unrecognized subcommand 'global-error-pareto'
+
+Usage: rodas5p <COMMAND>
+
+For more information, try '--help'.
+FAILED
+
+failures:
+
+---- global_error_pareto_command_emits_deterministic_method_independent_report stdout ----
+
+thread 'global_error_pareto_command_emits_deterministic_method_independent_report' (34677) panicked at crates/rodas5p-cli/tests/cli_contracts.rs:378:9:
+assertion failed: status.success()
+stack backtrace:
+   0:     0x5584e788ddcd - <std::sys::backtrace::BacktraceLock::print::DisplayBacktrace as core::fmt::Display>::fmt::hdadc7c28d26d7ce3
+   1:     0x5584e787202a - core::fmt::write::h469843d235cc4241
+   2:     0x5584e788d1f5 - std::io::Write::write_fmt::h86cdd20e46f95ef0
+   3:     0x5584e788ccdb - std::panicking::default_hook::{{closure}}::hd9d92b9a46805102
+   4:     0x5584e788c99a - std::panicking::default_hook::hedb2be0819bbe276
+   5:     0x5584e788c433 - std::panicking::panic_with_hook::h0fc23abecf35c6bd
+   6:     0x5584e78b5548 - std::panicking::panic_handler::{{closure}}::ha111c1a3ccf85d19
+   7:     0x5584e78b54c9 - std::sys::backtrace::__rust_end_short_backtrace::h41d63216e1ba5fa4
+   8:     0x5584e78b54bc - __rustc[16f1505adc47261a]::rust_begin_unwind
+   9:     0x5584e7872f7b - core::panicking::panic_fmt::hc13412975f563dde
+  10:     0x5584e7872f41 - core::panicking::panic::h8bbbe005ba322b34
+  11:     0x5584e786dbe2 - core::ops::function::FnOnce::call_once::hd5331b125bb7bd74
+  12:     0x5584e78cdf9b - test::__rust_begin_short_backtrace::h253a2097187731c8
+  13:     0x5584e78c9aac - test::run_test::{{closure}}::h1a5d6d0603e1925c
+  14:     0x5584e78c922c - std::sys::backtrace::__rust_begin_short_backtrace::hb67b3f617d02f8cc
+  15:     0x5584e78e5b5c - core::ops::function::FnOnce::call_once{{vtable.shim}}::h920ca148ba3af64d
+  16:     0x5584e78bd968 - std::sys::thread::unix::Thread::new::thread_start::h96f969bf98c6e59d
+  17:     0x7fe4532e6b7b - <unknown>
+  18:     0x7fe4533647f8 - <unknown>
+  19:                0x0 - <unknown>
+
+
+failures:
+    global_error_pareto_command_emits_deterministic_method_independent_report
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 6 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p rodas5p-cli --test cli_contracts`

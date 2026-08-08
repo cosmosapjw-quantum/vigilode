@@ -1,0 +1,36 @@
+   Compiling rodas5p-fair-ab v0.1.0 (/mnt/data/rodas5p-v09-repo/source/.worktrees/unified-global-error-pareto-v0.10/crates/rodas5p-fair-ab)
+    Finished `release` profile [optimized] target(s) in 17.89s
+     Running unittests src/lib.rs (target/release/deps/rodas5p_fair_ab-e8d733eb43f487b9)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/fair_ab_contracts.rs (target/release/deps/fair_ab_contracts-cd1a36fb5fab51a9)
+
+running 6 tests
+test comparison_randomizes_order_but_keeps_paired_trace_identity ... ok
+test deterministic_trace_roundtrip_preserves_every_identity ... ok
+test every_rust_solver_consumes_the_same_immutable_trace_and_certifies_residuals ... ok
+test external_certificate_and_hard_budget_cover_diagnostic_work ... ok
+test recycle_lifetimes_have_distinct_and_auditable_reset_semantics ... ok
+test recycle_reset_preserves_solver_workspace_but_clears_algorithmic_state ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests/global_error_contracts.rs (target/release/deps/global_error_contracts-2e2d0edd06b5bfdd)
+
+running 4 tests
+test common_grid_rejects_missing_output_times_instead_of_interpolating ... ok
+test exact_and_known_perturbed_trajectories_have_expected_external_errors ... ok
+test fixed_anchor_screen_is_thread_deterministic_and_exposes_all_five_candidates ... ok
+test pareto_and_target_selection_preserve_failures_and_choose_true_nondominated_points ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+   Doc-tests rodas5p_fair_ab
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

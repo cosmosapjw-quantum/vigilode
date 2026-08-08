@@ -1,0 +1,11 @@
+   Compiling rodas5p-fair-ab v0.1.0 (/mnt/data/rodas5p-v09-repo/source/.worktrees/unified-global-error-pareto-v0.10/crates/rodas5p-fair-ab)
+error[E0609]: no field `batch_iterations` on type `IntegratorTimingReport`
+  --> crates/rodas5p-fair-ab/tests/global_error_contracts.rs:94:25
+   |
+94 |     assert!(bdf2.timing.batch_iterations >= 1);
+   |                         ^^^^^^^^^^^^^^^^ unknown field
+   |
+   = note: available fields are: `authoritative`, `wall_samples_seconds`, `wall_median_seconds`, `wall_q25_seconds`, `wall_q75_seconds`
+
+For more information about this error, try `rustc --explain E0609`.
+error: could not compile `rodas5p-fair-ab` (test "global_error_contracts") due to 1 previous error

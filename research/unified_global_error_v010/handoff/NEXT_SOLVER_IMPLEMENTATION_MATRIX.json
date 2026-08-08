@@ -1,0 +1,47 @@
+{
+  "schema": "rodas5p-next-solver-matrix-v1",
+  "required_authority_blockers": [
+    "common-output observer",
+    "save-internal-steps false",
+    "adaptive step clipping",
+    "reference uncertainty schema"
+  ],
+  "sequence": [
+    {
+      "family": "variable-order-bdf",
+      "branch": "unified-adaptive-output-v0.11",
+      "priority": 1,
+      "requirements": ["orders 1-5", "variable step", "LTE/PI controller", "history rollback"]
+    },
+    {
+      "family": "adaptive-radau-iia3",
+      "priority": 2,
+      "requirements": ["external estimator", "PI controller", "Newton variants"]
+    },
+    {
+      "family": "parallel-sdc",
+      "priority": 3,
+      "requirements": ["collocation reference", "stationary/nonstationary sweep", "node concurrency"]
+    },
+    {
+      "family": "peer-w",
+      "priority": 4,
+      "requirements": ["startup", "variable-step zero stability", "parallel stage solves"]
+    },
+    {
+      "family": "rosenbrock-krylov-borok",
+      "priority": 5,
+      "requirements": ["method-level order conditions", "Krylov/JT-v ledger", "breakdown handling"]
+    },
+    {
+      "family": "exponential-leja",
+      "priority": 6,
+      "requirements": ["semilinear split", "phi-action accuracy", "spectral/nonnormal guard"]
+    },
+    {
+      "family": "certified-homotopy",
+      "priority": 7,
+      "requirements": ["nonlinear output certificate", "order-preserving policy", "transactional fallback"]
+    }
+  ]
+}

@@ -1,0 +1,78 @@
+   Compiling syn v3.0.3
+   Compiling thiserror-impl v2.0.19
+   Compiling serde_derive v1.0.229
+   Compiling thiserror v2.0.19
+   Compiling serde v1.0.229
+   Compiling rodas5p-core v0.1.0 (/mnt/data/rodas5p-v09-repo/source/.worktrees/unified-global-error-pareto-v0.10/crates/rodas5p-core)
+   Compiling rodas5p-krylov v0.1.0 (/mnt/data/rodas5p-v09-repo/source/.worktrees/unified-global-error-pareto-v0.10/crates/rodas5p-krylov)
+   Compiling rodas5p-integrators v0.1.0 (/mnt/data/rodas5p-v09-repo/source/.worktrees/unified-global-error-pareto-v0.10/crates/rodas5p-integrators)
+   Compiling rodas5p-fair-ab v0.1.0 (/mnt/data/rodas5p-v09-repo/source/.worktrees/unified-global-error-pareto-v0.10/crates/rodas5p-fair-ab)
+error[E0432]: unresolved imports `global_error::GlobalErrorMetrics`, `global_error::GlobalErrorParetoFront`, `global_error::GlobalErrorTarget`, `global_error::IntegratorRunRecord`, `global_error::IntegratorRunStatus`, `global_error::ReferenceSolutionProvenance`, `global_error::ReferenceSourceKind`, `global_error::ReferenceTrajectory`, `global_error::TargetAttainment`
+  --> crates/rodas5p-fair-ab/src/lib.rs:32:5
+   |
+32 |     GlobalErrorMetrics, GlobalErrorParetoFront, GlobalErrorParetoProfile, GlobalErrorParetoR...
+   |     ^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^ no `GlobalErrorParetoFront` in `global_error`
+   |     |
+   |     no `GlobalErrorMetrics` in `global_error`
+33 |     GlobalErrorTarget, IntegratorRunRecord, IntegratorRunStatus, IntegratorWorkReport,
+   |     ^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^ no `IntegratorRunStatus` in `global_error`
+   |     |                  |
+   |     |                  no `IntegratorRunRecord` in `global_error`
+   |     no `GlobalErrorTarget` in `global_error`
+34 |     ParetoCostMetric, ParetoObservation, ReferenceSolutionProvenance, ReferenceSourceKind,
+   |                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^ no `ReferenceSourceKind` in `global_error`
+   |                                          |
+   |                                          no `ReferenceSolutionProvenance` in `global_error`
+35 |     ReferenceTrajectory, TargetAttainment, compute_global_error_metrics,
+   |     ^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^ no `TargetAttainment` in `global_error`
+   |     |
+   |     no `ReferenceTrajectory` in `global_error`
+   |
+help: a similar name exists in the module
+   |
+32 -     GlobalErrorMetrics, GlobalErrorParetoFront, GlobalErrorParetoProfile, GlobalErrorParetoReport,
+32 +     GlobalErrorMetric, GlobalErrorParetoFront, GlobalErrorParetoProfile, GlobalErrorParetoReport,
+   |
+help: a similar name exists in the module
+   |
+32 -     GlobalErrorMetrics, GlobalErrorParetoFront, GlobalErrorParetoProfile, GlobalErrorParetoReport,
+32 +     GlobalErrorMetrics, GlobalErrorParetoReport, GlobalErrorParetoProfile, GlobalErrorParetoReport,
+   |
+help: a similar name exists in the module
+   |
+33 -     GlobalErrorTarget, IntegratorRunRecord, IntegratorRunStatus, IntegratorWorkReport,
+33 +     GlobalErrorReport, IntegratorRunRecord, IntegratorRunStatus, IntegratorWorkReport,
+   |
+help: a similar name exists in the module
+   |
+33 -     GlobalErrorTarget, IntegratorRunRecord, IntegratorRunStatus, IntegratorWorkReport,
+33 +     GlobalErrorTarget, IntegratorWorkReport, IntegratorRunStatus, IntegratorWorkReport,
+   |
+
+error[E0603]: enum `FixedAnchorCandidate` is private
+   --> crates/rodas5p-fair-ab/src/lib.rs:31:43
+    |
+ 31 | ...ernalErrorScale, FixedAnchorCandidate, GlobalErrorMetric,
+    |                     ^^^^^^^^^^^^^^^^^^^^ private enum
+    |
+note: the enum `FixedAnchorCandidate` is defined here
+   --> crates/rodas5p-fair-ab/src/global_error.rs:438:1
+    |
+438 | enum FixedAnchorCandidate {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0308]: mismatched types
+   --> crates/rodas5p-fair-ab/src/global_error.rs:553:13
+    |
+553 | ...et (mass, mass_y0) = manufactured_mass_nonlinear_problem(20.0, 1.0, 0.2, 0.0)?;
+    |       ^^^^^^^^^^^^^^^   --------------------------------------------------------- this expression has type `(OdeProblem, Vec<f64>, DenseMatrix, DenseMatrix)`
+    |       |
+    |       expected a tuple with 4 elements, found one with 2 elements
+    |
+    = note: expected tuple `(OdeProblem, Vec<f64>, DenseMatrix, DenseMatrix)`
+               found tuple `(_, _)`
+
+Some errors have detailed explanations: E0308, E0432, E0603.
+For more information about an error, try `rustc --explain E0308`.
+error: could not compile `rodas5p-fair-ab` (lib) due to 3 previous errors
+warning: build failed, waiting for other jobs to finish...

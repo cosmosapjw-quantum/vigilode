@@ -1,0 +1,116 @@
+    Checking cfg-if v1.0.4
+    Checking libm v0.2.16
+    Checking bytemuck v1.25.2
+    Checking bitflags v2.13.1
+    Checking reborrow v0.5.5
+    Checking pulp-wasm-simd-flag v0.1.1
+    Checking libc v0.2.189
+    Checking raw-cpuid v11.6.0
+    Checking num-traits v0.2.19
+    Checking num-complex v0.4.6
+    Checking dyn-stack v0.13.2
+    Checking pulp v0.22.3
+    Checking once_cell v1.21.4
+    Checking nano-gemm-core v0.2.1
+    Checking typenum v1.20.1
+    Checking generic-array v0.14.7
+    Checking serde_core v1.0.229
+    Checking memchr v2.8.3
+    Checking crypto-common v0.1.7
+    Checking block-buffer v0.10.4
+    Checking nano-gemm-f32 v0.2.1
+    Checking nano-gemm-f64 v0.2.1
+    Checking gemm-common v0.19.0
+    Checking gemm-f64 v0.19.0
+    Checking gemm-c64 v0.19.0
+    Checking gemm-c32 v0.19.0
+    Checking gemm-f32 v0.19.0
+    Checking qd v0.8.0
+    Checking nano-gemm-c32 v0.2.1
+    Checking nano-gemm-c64 v0.2.1
+    Checking getrandom v0.3.4
+    Checking num_cpus v1.17.0
+    Checking equator v0.2.2
+    Checking crossbeam-utils v0.8.22
+    Checking itoa v1.0.18
+    Checking generativity v1.2.1
+    Checking faer-traits v0.24.0
+    Checking crossbeam-epoch v0.9.20
+    Checking private-gemm-x86 v0.1.20
+    Checking rand_core v0.9.5
+    Checking gemm v0.19.0
+    Checking digest v0.10.7
+    Checking equator v0.6.0
+    Checking zmij v1.0.23
+    Checking zerocopy v0.8.56
+    Checking cpufeatures v0.2.17
+    Checking sha2 v0.10.9
+    Checking serde_json v1.0.151
+    Checking crossbeam-deque v0.8.7
+    Checking serde v1.0.229
+    Checking thiserror v2.0.19
+    Checking nano-gemm v0.2.2
+    Checking hex v0.4.3
+    Checking faer v0.24.4
+    Checking rayon-core v1.13.0
+    Checking ppv-lite86 v0.2.21
+    Checking rand_chacha v0.9.0
+    Checking either v1.17.0
+    Checking rayon v1.12.0
+    Checking rand v0.9.5
+    Checking csv-core v0.1.13
+    Checking ryu v1.0.23
+    Checking csv v1.4.0
+    Checking rand_distr v0.5.1
+    Checking rand_pcg v0.9.0
+    Checking rodas5p-core v0.1.0 (/mnt/data/rodas5p-v09-repo/source/.worktrees/unified-global-error-pareto-v0.10/crates/rodas5p-core)
+    Checking rodas5p-krylov v0.1.0 (/mnt/data/rodas5p-v09-repo/source/.worktrees/unified-global-error-pareto-v0.10/crates/rodas5p-krylov)
+    Checking rodas5p-integrators v0.1.0 (/mnt/data/rodas5p-v09-repo/source/.worktrees/unified-global-error-pareto-v0.10/crates/rodas5p-integrators)
+    Checking rodas5p-fair-ab v0.1.0 (/mnt/data/rodas5p-v09-repo/source/.worktrees/unified-global-error-pareto-v0.10/crates/rodas5p-fair-ab)
+error: this boolean expression can be simplified
+  --> crates/rodas5p-fair-ab/src/global_error.rs:82:12
+   |
+82 |           if absolute.is_empty()
+   |  ____________^
+83 | |             || !absolute
+84 | |                 .iter()
+85 | |                 .all(|value| value.is_finite() && *value > 0.0)
+86 | |             || !(relative.is_finite() && relative >= 0.0)
+87 | |             || !(reference_uncertainty_wrms.is_finite() && reference_uncertainty_wrms >= 0.0)
+   | |_____________________________________________________________________________________________^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#nonminimal_bool
+   = note: `-D clippy::nonminimal-bool` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::nonminimal_bool)]`
+help: try
+   |
+82 ~         if !(!absolute.is_empty() && absolute
+83 +                 .iter()
+84 +                 .all(|value| value.is_finite() && *value > 0.0) && relative.is_finite() && relative >= 0.0 && reference_uncertainty_wrms.is_finite() && reference_uncertainty_wrms >= 0.0)
+   |
+
+error: the following explicit lifetimes could be elided: 'a
+   --> crates/rodas5p-fair-ab/src/global_error.rs:314:37
+    |
+314 | pub fn select_cheapest_below_target<'a>(
+    |                                     ^^
+315 |     points: &'a [ParetoObservation],
+    |              ^^
+316 |     target: f64,
+317 | ) -> Option<&'a str> {
+    |              ^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#needless_lifetimes
+    = note: `-D clippy::needless-lifetimes` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::needless_lifetimes)]`
+help: elide the lifetimes
+    |
+314 ~ pub fn select_cheapest_below_target(
+315 ~     points: &[ParetoObservation],
+316 |     target: f64,
+317 ~ ) -> Option<&str> {
+    |
+
+error: could not compile `rodas5p-fair-ab` (lib) due to 2 previous errors
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `rodas5p-fair-ab` (lib test) due to 2 previous errors

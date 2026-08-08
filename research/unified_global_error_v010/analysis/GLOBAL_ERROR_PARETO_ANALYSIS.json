@@ -1,0 +1,652 @@
+{
+  "counts": {
+    "attainments": 144,
+    "fronts": 252,
+    "references": 4,
+    "runs": 70,
+    "status_counts": {
+      "success": 70
+    },
+    "targets": 4
+  },
+  "decision": {
+    "authority_layer": "promote",
+    "reasons": [
+      "all five anchors completed with exact analytic references and zero failures",
+      "one-thread rerun and four-thread scientific checksums are identical",
+      "wall samples use calibrated batching and randomized repeated order",
+      "current corpus is a small dense authority-validation corpus, not a production ranking suite",
+      "adaptive complete-integrator candidates are not yet included"
+    ],
+    "solver_ranking": "hold"
+  },
+  "execution": {
+    "batch_iterations_max": 542,
+    "batch_iterations_min": 4,
+    "rerun_wall_ratio_max": 1.1356689864634884,
+    "rerun_wall_ratio_median": 1.0062327655636185,
+    "rerun_wall_ratio_min": 0.8818800758916227,
+    "rerun_wall_ratio_q25": 0.9767723017954729,
+    "rerun_wall_ratio_q75": 1.0223159336278131,
+    "t1_scientific_suite_wall_seconds": 0.005845779,
+    "t1_timing_campaign_wall_seconds": 0.740318454,
+    "t1_timing_protocol": {
+      "maximum_batch_iterations": 10000,
+      "minimum_sample_seconds": 0.002,
+      "repetitions": 5,
+      "seed": 20260808,
+      "warmups": 1
+    },
+    "t4_scientific_suite_wall_seconds": 0.002144324,
+    "t4_scientific_throughput_speedup": 2.7261640498357522
+  },
+  "front_participation": {
+    "accepted-steps": {
+      "radau-iia3-fixed": 14,
+      "sequential-rodas5p-direct": 84
+    },
+    "direct-factorizations": {
+      "radau-iia3-fixed": 14,
+      "sequential-rodas5p-direct": 94
+    },
+    "jacobian-builds": {
+      "radau-iia3-fixed": 14,
+      "sequential-rodas5p-direct": 94
+    },
+    "jvp-vectors": {
+      "radau-iia3-fixed": 28,
+      "sequential-rodas5p-direct": 21
+    },
+    "linear-iterations": {
+      "radau-iia3-fixed": 14,
+      "sequential-rodas5p-direct": 14
+    },
+    "nonlinear-iterations": {
+      "radau-iia3-fixed": 14,
+      "sequential-rodas5p-direct": 28
+    },
+    "rhs-evaluations": {
+      "bdf2-fixed": 56,
+      "radau-iia3-fixed": 21,
+      "sequential-rodas5p-direct": 94
+    },
+    "stored-state-bytes": {
+      "radau-iia3-fixed": 14,
+      "sequential-rodas5p-direct": 84
+    },
+    "wall-seconds": {
+      "bdf1-fixed": 14,
+      "bdf2-fixed": 70,
+      "radau-iia3-fixed": 98,
+      "sequential-rodas5p-direct": 21
+    }
+  },
+  "front_size": {
+    "max": 8,
+    "median": 3.0,
+    "min": 1
+  },
+  "observed_orders": [
+    {
+      "candidate_id": "bdf1-fixed",
+      "pairs": [
+        {
+          "error_coarse": 0.00013936940247225027,
+          "error_fine": 7.230651819836731e-05,
+          "h_coarse": 0.04,
+          "h_fine": 0.02,
+          "observed_order": 0.9467162504436201,
+          "roundoff_floor_concern": false
+        },
+        {
+          "error_coarse": 7.230651819836731e-05,
+          "error_fine": 3.6840833556095465e-05,
+          "h_coarse": 0.02,
+          "h_fine": 0.01,
+          "observed_order": 0.9728200032866189,
+          "roundoff_floor_concern": false
+        }
+      ],
+      "problem_id": "PR-l-20-m1"
+    },
+    {
+      "candidate_id": "bdf2-fixed",
+      "pairs": [
+        {
+          "error_coarse": 2.6193604342944488e-05,
+          "error_fine": 6.4918826983562106e-06,
+          "h_coarse": 0.04,
+          "h_fine": 0.02,
+          "observed_order": 2.0125057566399374,
+          "roundoff_floor_concern": false
+        },
+        {
+          "error_coarse": 6.4918826983562106e-06,
+          "error_fine": 1.618099922856553e-06,
+          "h_coarse": 0.02,
+          "h_fine": 0.01,
+          "observed_order": 2.0043362305440238,
+          "roundoff_floor_concern": false
+        }
+      ],
+      "problem_id": "PR-l-20-m1"
+    },
+    {
+      "candidate_id": "radau-iia1-fixed",
+      "pairs": [
+        {
+          "error_coarse": 0.00013936940247225027,
+          "error_fine": 7.230651819836731e-05,
+          "h_coarse": 0.04,
+          "h_fine": 0.02,
+          "observed_order": 0.9467162504436201,
+          "roundoff_floor_concern": false
+        },
+        {
+          "error_coarse": 7.230651819836731e-05,
+          "error_fine": 3.6840833556095465e-05,
+          "h_coarse": 0.02,
+          "h_fine": 0.01,
+          "observed_order": 0.9728200032866189,
+          "roundoff_floor_concern": false
+        }
+      ],
+      "problem_id": "PR-l-20-m1"
+    },
+    {
+      "candidate_id": "radau-iia3-fixed",
+      "pairs": [
+        {
+          "error_coarse": 6.624728543513925e-11,
+          "error_fine": 2.175037927543144e-12,
+          "h_coarse": 0.04,
+          "h_fine": 0.02,
+          "observed_order": 4.92874887605199,
+          "roundoff_floor_concern": false
+        },
+        {
+          "error_coarse": 2.175037927543144e-12,
+          "error_fine": 6.86395384974503e-14,
+          "h_coarse": 0.02,
+          "h_fine": 0.01,
+          "observed_order": 4.985856895348978,
+          "roundoff_floor_concern": true
+        }
+      ],
+      "problem_id": "PR-l-20-m1"
+    },
+    {
+      "candidate_id": "sequential-rodas5p-direct",
+      "pairs": [
+        {
+          "error_coarse": 2.7961105653062646e-11,
+          "error_fine": 8.358869152402804e-13,
+          "h_coarse": 0.04,
+          "h_fine": 0.02,
+          "observed_order": 5.063969822033468,
+          "roundoff_floor_concern": false
+        },
+        {
+          "error_coarse": 8.358869152402804e-13,
+          "error_fine": 2.4619195571062846e-14,
+          "h_coarse": 0.02,
+          "h_fine": 0.01,
+          "observed_order": 5.085452249568206,
+          "roundoff_floor_concern": true
+        }
+      ],
+      "problem_id": "PR-l-20-m1"
+    },
+    {
+      "candidate_id": "bdf1-fixed",
+      "pairs": [
+        {
+          "error_coarse": 0.00034324895875521036,
+          "error_fine": 0.0001732910233446525,
+          "h_coarse": 0.02,
+          "h_fine": 0.01,
+          "observed_order": 0.9860584206383437,
+          "roundoff_floor_concern": false
+        },
+        {
+          "error_coarse": 0.0001732910233446525,
+          "error_fine": 8.708205149294675e-05,
+          "h_coarse": 0.01,
+          "h_fine": 0.005,
+          "observed_order": 0.9927496230487143,
+          "roundoff_floor_concern": false
+        },
+        {
+          "error_coarse": 8.708205149294675e-05,
+          "error_fine": 4.365294145160884e-05,
+          "h_coarse": 0.005,
+          "h_fine": 0.0025,
+          "observed_order": 0.9962965253984813,
+          "roundoff_floor_concern": false
+        }
+      ],
+      "problem_id": "manufactured-mass-s20-m1-eta0.2"
+    },
+    {
+      "candidate_id": "bdf2-fixed",
+      "pairs": [
+        {
+          "error_coarse": 0.00012174740120081627,
+          "error_fine": 3.236404275045775e-05,
+          "h_coarse": 0.02,
+          "h_fine": 0.01,
+          "observed_order": 1.9114272389024611,
+          "roundoff_floor_concern": false
+        },
+        {
+          "error_coarse": 3.236404275045775e-05,
+          "error_fine": 8.575388773650829e-06,
+          "h_coarse": 0.01,
+          "h_fine": 0.005,
+          "observed_order": 1.9161178492260764,
+          "roundoff_floor_concern": false
+        },
+        {
+          "error_coarse": 8.575388773650829e-06,
+          "error_fine": 2.155963065513728e-06,
+          "h_coarse": 0.005,
+          "h_fine": 0.0025,
+          "observed_order": 1.991869615724779,
+          "roundoff_floor_concern": false
+        }
+      ],
+      "problem_id": "manufactured-mass-s20-m1-eta0.2"
+    },
+    {
+      "candidate_id": "radau-iia1-fixed",
+      "pairs": [
+        {
+          "error_coarse": 0.0003432489587552372,
+          "error_fine": 0.0001732910233446525,
+          "h_coarse": 0.02,
+          "h_fine": 0.01,
+          "observed_order": 0.9860584206384563,
+          "roundoff_floor_concern": false
+        },
+        {
+          "error_coarse": 0.0001732910233446525,
+          "error_fine": 8.708205149294675e-05,
+          "h_coarse": 0.01,
+          "h_fine": 0.005,
+          "observed_order": 0.9927496230487143,
+          "roundoff_floor_concern": false
+        },
+        {
+          "error_coarse": 8.708205149294675e-05,
+          "error_fine": 4.365294145165969e-05,
+          "h_coarse": 0.005,
+          "h_fine": 0.0025,
+          "observed_order": 0.9962965253968008,
+          "roundoff_floor_concern": false
+        }
+      ],
+      "problem_id": "manufactured-mass-s20-m1-eta0.2"
+    },
+    {
+      "candidate_id": "radau-iia3-fixed",
+      "pairs": [
+        {
+          "error_coarse": 1.815169883539592e-12,
+          "error_fine": 5.743977311857424e-14,
+          "h_coarse": 0.02,
+          "h_fine": 0.01,
+          "observed_order": 4.981910716896923,
+          "roundoff_floor_concern": true
+        },
+        {
+          "error_coarse": 5.743977311857424e-14,
+          "error_fine": 1.866033584759964e-15,
+          "h_coarse": 0.01,
+          "h_fine": 0.005,
+          "observed_order": 4.944003193595074,
+          "roundoff_floor_concern": true
+        },
+        {
+          "error_coarse": 1.866033584759964e-15,
+          "error_fine": 1.6653345369377348e-16,
+          "h_coarse": 0.005,
+          "h_fine": 0.0025,
+          "observed_order": 3.4860910279301187,
+          "roundoff_floor_concern": true
+        }
+      ],
+      "problem_id": "manufactured-mass-s20-m1-eta0.2"
+    },
+    {
+      "candidate_id": "sequential-rodas5p-direct",
+      "pairs": [
+        {
+          "error_coarse": 6.327398315998498e-13,
+          "error_fine": 1.8429785809719357e-14,
+          "h_coarse": 0.02,
+          "h_fine": 0.01,
+          "observed_order": 5.101501208563969,
+          "roundoff_floor_concern": true
+        },
+        {
+          "error_coarse": 1.8429785809719357e-14,
+          "error_fine": 4.335559509131368e-16,
+          "h_coarse": 0.01,
+          "h_fine": 0.005,
+          "observed_order": 5.409677306913793,
+          "roundoff_floor_concern": true
+        },
+        {
+          "error_coarse": 4.335559509131368e-16,
+          "error_fine": 2.482534153247273e-16,
+          "h_coarse": 0.005,
+          "h_fine": 0.0025,
+          "observed_order": 0.8044046213377621,
+          "roundoff_floor_concern": true
+        }
+      ],
+      "problem_id": "manufactured-mass-s20-m1-eta0.2"
+    },
+    {
+      "candidate_id": "bdf1-fixed",
+      "pairs": [
+        {
+          "error_coarse": 0.0007648443259172249,
+          "error_fine": 0.0003700637631473984,
+          "h_coarse": 0.04,
+          "h_fine": 0.02,
+          "observed_order": 1.0473922628921446,
+          "roundoff_floor_concern": false
+        },
+        {
+          "error_coarse": 0.0003700637631473984,
+          "error_fine": 0.00018212955942429744,
+          "h_coarse": 0.02,
+          "h_fine": 0.01,
+          "observed_order": 1.0228087839280906,
+          "roundoff_floor_concern": false
+        },
+        {
+          "error_coarse": 0.00018212955942429744,
+          "error_fine": 9.03634637655774e-05,
+          "h_coarse": 0.01,
+          "h_fine": 0.005,
+          "observed_order": 1.0111536115693203,
+          "roundoff_floor_concern": false
+        }
+      ],
+      "problem_id": "mv-n4-s20-m1-eta0.2"
+    },
+    {
+      "candidate_id": "bdf2-fixed",
+      "pairs": [
+        {
+          "error_coarse": 0.00017512608174922182,
+          "error_fine": 4.210147297154926e-05,
+          "h_coarse": 0.04,
+          "h_fine": 0.02,
+          "observed_order": 2.0564513484344715,
+          "roundoff_floor_concern": false
+        },
+        {
+          "error_coarse": 4.210147297154926e-05,
+          "error_fine": 1.0358174914072025e-05,
+          "h_coarse": 0.02,
+          "h_fine": 0.01,
+          "observed_order": 2.0231008826644494,
+          "roundoff_floor_concern": false
+        },
+        {
+          "error_coarse": 1.0358174914072025e-05,
+          "error_fine": 2.5718210047157607e-06,
+          "h_coarse": 0.01,
+          "h_fine": 0.005,
+          "observed_order": 2.0099076843242414,
+          "roundoff_floor_concern": false
+        }
+      ],
+      "problem_id": "mv-n4-s20-m1-eta0.2"
+    },
+    {
+      "candidate_id": "radau-iia1-fixed",
+      "pairs": [
+        {
+          "error_coarse": 0.0007648443259172272,
+          "error_fine": 0.0003700637631473995,
+          "h_coarse": 0.04,
+          "h_fine": 0.02,
+          "observed_order": 1.0473922628921446,
+          "roundoff_floor_concern": false
+        },
+        {
+          "error_coarse": 0.0003700637631473995,
+          "error_fine": 0.00018212955942429633,
+          "h_coarse": 0.02,
+          "h_fine": 0.01,
+          "observed_order": 1.0228087839281037,
+          "roundoff_floor_concern": false
+        },
+        {
+          "error_coarse": 0.00018212955942429633,
+          "error_fine": 9.03634637657364e-05,
+          "h_coarse": 0.01,
+          "h_fine": 0.005,
+          "observed_order": 1.011153611566773,
+          "roundoff_floor_concern": false
+        }
+      ],
+      "problem_id": "mv-n4-s20-m1-eta0.2"
+    },
+    {
+      "candidate_id": "radau-iia3-fixed",
+      "pairs": [
+        {
+          "error_coarse": 5.92872642745213e-12,
+          "error_fine": 1.8714514200555246e-13,
+          "h_coarse": 0.04,
+          "h_fine": 0.02,
+          "observed_order": 4.9854927234419435,
+          "roundoff_floor_concern": false
+        },
+        {
+          "error_coarse": 1.8714514200555246e-13,
+          "error_fine": 5.887618766030138e-15,
+          "h_coarse": 0.02,
+          "h_fine": 0.01,
+          "observed_order": 4.990329531092981,
+          "roundoff_floor_concern": true
+        },
+        {
+          "error_coarse": 5.887618766030138e-15,
+          "error_fine": 2.355138688025663e-16,
+          "h_coarse": 0.01,
+          "h_fine": 0.005,
+          "observed_order": 4.64380033327294,
+          "roundoff_floor_concern": true
+        }
+      ],
+      "problem_id": "mv-n4-s20-m1-eta0.2"
+    },
+    {
+      "candidate_id": "sequential-rodas5p-direct",
+      "pairs": [
+        {
+          "error_coarse": 2.654302477302304e-12,
+          "error_fine": 7.997839790595135e-14,
+          "h_coarse": 0.04,
+          "h_fine": 0.02,
+          "observed_order": 5.052578593599316,
+          "roundoff_floor_concern": true
+        },
+        {
+          "error_coarse": 7.997839790595135e-14,
+          "error_fine": 2.0354509319474694e-15,
+          "h_coarse": 0.02,
+          "h_fine": 0.01,
+          "observed_order": 5.29619003361013,
+          "roundoff_floor_concern": true
+        },
+        {
+          "error_coarse": 2.0354509319474694e-15,
+          "error_fine": 8.537095754439795e-16,
+          "h_coarse": 0.01,
+          "h_fine": 0.005,
+          "observed_order": 1.2535311771031141,
+          "roundoff_floor_concern": true
+        }
+      ],
+      "problem_id": "mv-n4-s20-m1-eta0.2"
+    },
+    {
+      "candidate_id": "bdf1-fixed",
+      "pairs": [
+        {
+          "error_coarse": 0.010263150998113812,
+          "error_fine": 0.005244122790159511,
+          "h_coarse": 0.04,
+          "h_fine": 0.02,
+          "observed_order": 0.9687003644542901,
+          "roundoff_floor_concern": false
+        },
+        {
+          "error_coarse": 0.005244122790159511,
+          "error_fine": 0.0026512870724182402,
+          "h_coarse": 0.02,
+          "h_fine": 0.01,
+          "observed_order": 0.9840085775773088,
+          "roundoff_floor_concern": false
+        }
+      ],
+      "problem_id": "scalar-linear--2"
+    },
+    {
+      "candidate_id": "bdf2-fixed",
+      "pairs": [
+        {
+          "error_coarse": 0.003458648914707596,
+          "error_fine": 0.0009624571236745982,
+          "h_coarse": 0.04,
+          "h_fine": 0.02,
+          "observed_order": 1.8454143971871364,
+          "roundoff_floor_concern": false
+        },
+        {
+          "error_coarse": 0.0009624571236745982,
+          "error_fine": 0.0002670213940675348,
+          "h_coarse": 0.02,
+          "h_fine": 0.01,
+          "observed_order": 1.8497669348065104,
+          "roundoff_floor_concern": false
+        }
+      ],
+      "problem_id": "scalar-linear--2"
+    },
+    {
+      "candidate_id": "radau-iia1-fixed",
+      "pairs": [
+        {
+          "error_coarse": 0.010263150998113812,
+          "error_fine": 0.005244122790159511,
+          "h_coarse": 0.04,
+          "h_fine": 0.02,
+          "observed_order": 0.9687003644542901,
+          "roundoff_floor_concern": false
+        },
+        {
+          "error_coarse": 0.005244122790159511,
+          "error_fine": 0.0026512870724182402,
+          "h_coarse": 0.02,
+          "h_fine": 0.01,
+          "observed_order": 0.9840085775773088,
+          "roundoff_floor_concern": false
+        }
+      ],
+      "problem_id": "scalar-linear--2"
+    },
+    {
+      "candidate_id": "radau-iia3-fixed",
+      "pairs": [
+        {
+          "error_coarse": 1.2040102248533913e-10,
+          "error_fine": 3.787636870811184e-12,
+          "h_coarse": 0.04,
+          "h_fine": 0.02,
+          "observed_order": 4.990405810721192,
+          "roundoff_floor_concern": false
+        },
+        {
+          "error_coarse": 3.787636870811184e-12,
+          "error_fine": 1.184607967275042e-13,
+          "h_coarse": 0.02,
+          "h_fine": 0.01,
+          "observed_order": 4.998816423574259,
+          "roundoff_floor_concern": false
+        }
+      ],
+      "problem_id": "scalar-linear--2"
+    },
+    {
+      "candidate_id": "sequential-rodas5p-direct",
+      "pairs": [
+        {
+          "error_coarse": 6.45261621912141e-13,
+          "error_fine": 9.880984919163893e-15,
+          "h_coarse": 0.04,
+          "h_fine": 0.02,
+          "observed_order": 6.029085556666444,
+          "roundoff_floor_concern": true
+        },
+        {
+          "error_coarse": 9.880984919163893e-15,
+          "error_fine": 6.661338147750939e-16,
+          "h_coarse": 0.02,
+          "h_fine": 0.01,
+          "observed_order": 3.8907709302452416,
+          "roundoff_floor_concern": true
+        }
+      ],
+      "problem_id": "scalar-linear--2"
+    }
+  ],
+  "schema": "rodas5p-global-error-pareto-analysis-v1",
+  "source_checksums": {
+    "scientific_identity": true,
+    "t1": "72cb6ba257685f2bd73f16976717a98eefeab6d0821851e29fa335147c8f706e",
+    "t1_rerun": "72cb6ba257685f2bd73f16976717a98eefeab6d0821851e29fa335147c8f706e",
+    "t4": "72cb6ba257685f2bd73f16976717a98eefeab6d0821851e29fa335147c8f706e"
+  },
+  "target_attainment": {
+    "accepted-steps": {
+      "sequential-rodas5p-direct": 16
+    },
+    "direct-factorizations": {
+      "sequential-rodas5p-direct": 16
+    },
+    "jacobian-builds": {
+      "sequential-rodas5p-direct": 16
+    },
+    "jvp-vectors": {
+      "radau-iia3-fixed": 16
+    },
+    "linear-iterations": {
+      "radau-iia3-fixed": 8,
+      "sequential-rodas5p-direct": 8
+    },
+    "nonlinear-iterations": {
+      "sequential-rodas5p-direct": 16
+    },
+    "rhs-evaluations": {
+      "bdf2-fixed": 7,
+      "radau-iia3-fixed": 3,
+      "sequential-rodas5p-direct": 6
+    },
+    "stored-state-bytes": {
+      "sequential-rodas5p-direct": 16
+    },
+    "wall-seconds": {
+      "bdf1-fixed": 1,
+      "bdf2-fixed": 6,
+      "radau-iia3-fixed": 9
+    }
+  }
+}

@@ -1,0 +1,30 @@
+   Compiling syn v3.0.3
+   Compiling thiserror-impl v2.0.19
+   Compiling serde_derive v1.0.229
+   Compiling thiserror v2.0.19
+   Compiling serde v1.0.229
+   Compiling rodas5p-core v0.1.0 (/mnt/data/rodas5p-v09-repo/source/.worktrees/unified-global-error-pareto-v0.10/crates/rodas5p-core)
+   Compiling rodas5p-krylov v0.1.0 (/mnt/data/rodas5p-v09-repo/source/.worktrees/unified-global-error-pareto-v0.10/crates/rodas5p-krylov)
+   Compiling rodas5p-integrators v0.1.0 (/mnt/data/rodas5p-v09-repo/source/.worktrees/unified-global-error-pareto-v0.10/crates/rodas5p-integrators)
+   Compiling rodas5p-fair-ab v0.1.0 (/mnt/data/rodas5p-v09-repo/source/.worktrees/unified-global-error-pareto-v0.10/crates/rodas5p-fair-ab)
+error[E0432]: unresolved imports `rodas5p_fair_ab::CommonOutputGrid`, `rodas5p_fair_ab::ExternalErrorScale`, `rodas5p_fair_ab::GlobalErrorMetric`, `rodas5p_fair_ab::GlobalErrorParetoProfile`, `rodas5p_fair_ab::ParetoObservation`, `rodas5p_fair_ab::compute_global_error_metrics`, `rodas5p_fair_ab::nondominated_observation_ids`, `rodas5p_fair_ab::run_global_error_pareto_screen`, `rodas5p_fair_ab::select_cheapest_below_target`
+ --> crates/rodas5p-fair-ab/tests/global_error_contracts.rs:2:5
+  |
+2 |     CommonOutputGrid, ExternalErrorScale, GlobalErrorMetric, GlobalErrorParetoProfile,
+  |     ^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^ no `GlobalErrorParetoProfile` in the root
+  |     |                 |                   |
+  |     |                 |                   no `GlobalErrorMetric` in the root
+  |     |                 no `ExternalErrorScale` in the root
+  |     no `CommonOutputGrid` in the root
+3 |     ParetoObservation, compute_global_error_metrics, nondominated_observation_ids,
+  |     ^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ no `nondominated_observation_ids` in the root
+  |     |                  |
+  |     |                  no `compute_global_error_metrics` in the root
+  |     no `ParetoObservation` in the root
+4 |     run_global_error_pareto_screen, select_cheapest_below_target,
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ no `select_cheapest_below_target` in the root
+  |     |
+  |     no `run_global_error_pareto_screen` in the root
+
+For more information about this error, try `rustc --explain E0432`.
+error: could not compile `rodas5p-fair-ab` (test "global_error_contracts") due to 1 previous error
