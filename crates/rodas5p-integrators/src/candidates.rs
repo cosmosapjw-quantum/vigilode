@@ -1,6 +1,8 @@
 use rodas5p_core::{CoreError, CoreResult, LinearMethod};
 use serde::Serialize;
 
+use crate::{BdfOrder, RadauIiaStages};
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum CandidateFamily {
@@ -73,6 +75,12 @@ pub enum CandidateExecution {
         predictor: HomotopyPredictorVariant,
         corrections_per_point: usize,
     },
+    Bdf {
+        order: BdfOrder,
+    },
+    RadauIrk {
+        stages: RadauIiaStages,
+    },
     Deferred,
 }
 
@@ -99,6 +107,22 @@ impl CandidateSpec {
 
     pub fn execution(&self) -> &CandidateExecution {
         &self.execution
+    }
+
+    pub fn is_rodas_stage_candidate(&self) -> bool {
+        matches!(
+            self.execution,
+            CandidateExecution::Sequential { .. }
+                | CandidateExecution::Sabr { .. }
+                | CandidateExecution::Homotopy { .. }
+        )
+    }
+
+    pub fn is_native_complete_integrator(&self) -> bool {
+        matches!(
+            self.execution,
+            CandidateExecution::Bdf { .. } | CandidateExecution::RadauIrk { .. }
+        )
     }
 
     fn sequential(linear_method: LinearMethod, recycle_lifetime: CandidateRecycleLifetime) -> Self {
@@ -186,6 +210,32 @@ impl CandidateSpec {
         })
     }
 
+    fn bdf(order: BdfOrder) -> Self {
+        let id = match order {
+            BdfOrder::One => "bdf1-fixed",
+            BdfOrder::Two => "bdf2-fixed",
+        };
+        Self {
+            id: id.to_string(),
+            family: CandidateFamily::Bdf,
+            status: CandidateStatus::Executable,
+            execution: CandidateExecution::Bdf { order },
+        }
+    }
+
+    fn radau(stages: RadauIiaStages) -> Self {
+        let id = match stages {
+            RadauIiaStages::One => "radau-iia1-fixed",
+            RadauIiaStages::Three => "radau-iia3-fixed",
+        };
+        Self {
+            id: id.to_string(),
+            family: CandidateFamily::RadauIrk,
+            status: CandidateStatus::Executable,
+            execution: CandidateExecution::RadauIrk { stages },
+        }
+    }
+
     fn deferred(family: CandidateFamily, id: &str, reason: &'static str) -> Self {
         Self {
             id: id.to_string(),
@@ -263,8 +313,20 @@ impl CandidateCatalog {
         const DEFERRED_REASON: &str =
             "Rust implementation has not yet satisfied the unified step and work-ledger contract";
         entries.extend([
-            CandidateSpec::deferred(CandidateFamily::Bdf, "bdf", DEFERRED_REASON),
-            CandidateSpec::deferred(CandidateFamily::RadauIrk, "radau-irk", DEFERRED_REASON),
+            CandidateSpec::bdf(BdfOrder::One),
+            CandidateSpec::bdf(BdfOrder::Two),
+            CandidateSpec::radau(RadauIiaStages::One),
+            CandidateSpec::radau(RadauIiaStages::Three),
+            CandidateSpec::deferred(
+                CandidateFamily::Bdf,
+                "bdf-variable-order",
+                "variable-order BDF has not yet satisfied history, estimator, and controller gates",
+            ),
+            CandidateSpec::deferred(
+                CandidateFamily::RadauIrk,
+                "radau-adaptive",
+                "adaptive Radau has not yet satisfied estimator and controller gates",
+            ),
             CandidateSpec::deferred(CandidateFamily::PeerW, "peer-w", DEFERRED_REASON),
             CandidateSpec::deferred(
                 CandidateFamily::ParallelSdc,

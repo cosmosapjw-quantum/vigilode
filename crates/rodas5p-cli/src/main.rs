@@ -13,9 +13,10 @@ use rodas5p_fair_ab::{
 };
 use rodas5p_integrators::{
     CandidateCatalog, CandidateFamily, CandidateStatus, HomotopyExperimentProfile,
-    UnifiedNonlinearScreen, UnifiedScientificGateReport, UnifiedScreenProfile,
-    run_homotopy_design_check, run_homotopy_experiment_screen, run_homotopy_order_policy_screen,
-    run_unified_nonlinear_screen, run_unified_scientific_gates,
+    NativeIntegratorGateReport, UnifiedNonlinearScreen, UnifiedScientificGateReport,
+    UnifiedScreenProfile, run_homotopy_design_check, run_homotopy_experiment_screen,
+    run_homotopy_order_policy_screen, run_native_integrator_gates, run_unified_nonlinear_screen,
+    run_unified_scientific_gates,
 };
 use serde::Serialize;
 use serde_json::json;
@@ -56,6 +57,11 @@ enum Command {
         profile: CliHomotopyProfile,
         #[arg(long, default_value_t = 1)]
         threads: usize,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Run deterministic fixed-step BDF and Radau scientific anchor gates.
+    NativeIntegratorGates {
         #[arg(long)]
         output: PathBuf,
     },
@@ -209,6 +215,7 @@ struct UnifiedCandidateDocument {
     nonlinear: UnifiedNonlinearScreen,
     nonlinear_assessments: Vec<UnifiedNonlinearCandidateAssessment>,
     scientific_gates: UnifiedScientificGateReport,
+    native_integrator_gates: NativeIntegratorGateReport,
     joint_assessments: Vec<UnifiedJointCandidateAssessment>,
 }
 
@@ -471,7 +478,10 @@ fn assess_nonlinear_candidates(
     catalog
         .entries()
         .iter()
-        .filter(|candidate| !matches!(candidate.status(), CandidateStatus::Deferred { .. }))
+        .filter(|candidate| {
+            !matches!(candidate.status(), CandidateStatus::Deferred { .. })
+                && candidate.is_rodas_stage_candidate()
+        })
         .map(|candidate| {
             let rows: Vec<_> = nonlinear
                 .rows
@@ -558,6 +568,7 @@ fn assess_nonlinear_candidates(
 fn build_joint_assessments(
     catalog: &CandidateCatalog,
     gates: &UnifiedScientificGateReport,
+    native: &NativeIntegratorGateReport,
     linear: &[UnifiedLinearCandidateAssessment],
     nonlinear: &[UnifiedNonlinearCandidateAssessment],
 ) -> Vec<UnifiedJointCandidateAssessment> {
@@ -574,6 +585,52 @@ fn build_joint_assessments(
                     tier_l_verdict: None,
                     tier_n_verdict: None,
                     blockers: vec!["Rust implementation is deferred".into()],
+                };
+            }
+            if candidate.is_native_complete_integrator() {
+                let row = native
+                    .rows
+                    .iter()
+                    .find(|row| row.candidate_id == candidate.id());
+                let scientific_eligible = row.is_some_and(|row| {
+                    row.order_pass && row.stiff_pass && row.mass_pass && row.failures == 0
+                });
+                let mut blockers = Vec::new();
+                match row {
+                    Some(row) => {
+                        if !row.order_pass {
+                            blockers.push("native complete-integrator order gate failed".into());
+                        }
+                        if !row.stiff_pass {
+                            blockers.push("native complete-integrator stiff gate failed".into());
+                        }
+                        if !row.mass_pass {
+                            blockers.push(
+                                "native complete-integrator nonlinear mass-matrix gate failed"
+                                    .into(),
+                            );
+                        }
+                        if row.failures > 0 {
+                            blockers.push(format!(
+                                "{} native complete-integrator gate failures",
+                                row.failures
+                            ));
+                        }
+                    }
+                    None => blockers.push("native complete-integrator gate result missing".into()),
+                }
+                blockers.push(
+                    "complete-integrator global-error versus total-cost performance assessment required"
+                        .into(),
+                );
+                return UnifiedJointCandidateAssessment {
+                    candidate_id: candidate.id().to_string(),
+                    family: candidate.family(),
+                    verdict: UnifiedJointVerdict::Hold,
+                    scientific_eligible,
+                    tier_l_verdict: None,
+                    tier_n_verdict: None,
+                    blockers,
                 };
             }
             let gate = gates
@@ -742,12 +799,14 @@ fn run_unified_candidate_document(
     }
     let mut nonlinear = run_unified_nonlinear_screen(profile.into(), threads)?;
     let scientific_gates = run_unified_scientific_gates(profile.into(), threads, &nonlinear)?;
+    let native_integrator_gates = run_native_integrator_gates()?;
     let linear_assessments = assess_linear_candidates(&linear_suites);
     let catalog = CandidateCatalog::research_default()?;
     let nonlinear_assessments = assess_nonlinear_candidates(&catalog, &nonlinear);
     let joint_assessments = build_joint_assessments(
         &catalog,
         &scientific_gates,
+        &native_integrator_gates,
         &linear_assessments,
         &nonlinear_assessments,
     );
@@ -782,6 +841,7 @@ fn run_unified_candidate_document(
         "nonlinear_rows": scientific_rows,
         "nonlinear_summary": nonlinear.summary,
         "scientific_gates": gate_scientific,
+        "native_integrator_gates": &native_integrator_gates,
     }))?;
     let scientific_checksum = sha256_hex(&checksum_payload);
     let linear_failures: usize = linear_suites.iter().map(|suite| suite.failures).sum();
@@ -796,7 +856,7 @@ fn run_unified_candidate_document(
         .rows
         .sort_by(|left, right| left.sort_key().cmp(&right.sort_key()));
     Ok(UnifiedCandidateDocument {
-        schema: "rodas5p-unified-candidate-screen-v3",
+        schema: "rodas5p-unified-candidate-screen-v4",
         status,
         profile: match profile {
             CliHomotopyProfile::Smoke => "smoke",
@@ -810,6 +870,7 @@ fn run_unified_candidate_document(
         nonlinear,
         nonlinear_assessments,
         scientific_gates,
+        native_integrator_gates,
         joint_assessments,
     })
 }
@@ -845,6 +906,10 @@ fn main() -> Result<()> {
                 &output,
                 &run_homotopy_order_policy_screen(profile.into(), threads)?,
             )?;
+        }
+        Command::NativeIntegratorGates { output } => {
+            let report: NativeIntegratorGateReport = run_native_integrator_gates()?;
+            write_json(&output, &report)?;
         }
         Command::UnifiedCandidateScreen {
             profile,

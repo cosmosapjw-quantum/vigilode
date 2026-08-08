@@ -291,6 +291,11 @@ fn integrate_candidate_fixed(
                 state = report.step.y_new;
                 time = report.step.t_new;
             }
+            CandidateExecution::Bdf { .. } | CandidateExecution::RadauIrk { .. } => {
+                return Err(CoreError::InvalidInput(
+                    "complete-integrator candidate must use the native integrator gate".into(),
+                ));
+            }
             CandidateExecution::Deferred => {
                 return Err(CoreError::InvalidInput(
                     "deferred candidate cannot be integrated".into(),
@@ -656,7 +661,11 @@ pub fn run_unified_scientific_gates(
         ));
     }
     let catalog = CandidateCatalog::research_default()?;
-    let executable: Vec<CandidateSpec> = catalog.executable().cloned().collect();
+    let executable: Vec<CandidateSpec> = catalog
+        .executable()
+        .filter(|candidate| candidate.is_rodas_stage_candidate())
+        .cloned()
+        .collect();
     let execution = ParallelExecution::rayon(threads)?;
     let start = Instant::now();
     let order_nested = execution.map_ordered(&executable, |candidate| {
@@ -704,6 +713,34 @@ pub fn run_unified_scientific_gates(
                 },
                 nonlinear,
             ));
+            continue;
+        }
+        if candidate.is_native_complete_integrator() {
+            candidates.push(CandidateGateReport {
+                candidate_id: candidate.id().to_string(),
+                family: candidate.family(),
+                status: candidate.status(),
+                verdict: CandidateGateVerdict::Hold,
+                qualification_observed_order: None,
+                finest_observed_order: None,
+                order_pass: false,
+                order_all_fast: false,
+                stiff_decay_pass: false,
+                stiff_fast_pass: false,
+                one_step_rows: 0,
+                one_step_rejections: 0,
+                one_step_failures: 0,
+                c3_false_accepts: 0,
+                c3_reference_fallbacks: 0,
+                nonnormal_pass: false,
+                maximum_oracle_output_wrms: None,
+                median_batch_depth: None,
+                median_batch_vectors: None,
+                measurable_advantage: false,
+                blockers: vec![
+                    "complete-integrator candidate is evaluated by the native integrator gate, not the RODAS-stage gate".into(),
+                ],
+            });
             continue;
         }
         let candidate_orders: Vec<_> = order_rows

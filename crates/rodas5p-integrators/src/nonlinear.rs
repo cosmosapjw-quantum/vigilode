@@ -1,5 +1,5 @@
 use rodas5p_core::{
-    CoreError, CoreResult, DenseMatrix, LuFactorization, WorkCounters, error_scale, wrms,
+    CoreError, CoreResult, DenseMatrix, LuFactorization, WorkCounters, error_scale, safe_l2, wrms,
 };
 
 #[derive(Clone, Debug)]
@@ -185,7 +185,9 @@ where
         residual_wrms = trial_norm;
         last_damping = damping;
         counters.nonlinear_iterations += 1;
-        if residual_wrms <= 1.0 && correction_wrms <= 1.0 {
+        let roundoff_residual =
+            safe_l2(&r) <= 64.0 * f64::EPSILON * (1.0 + safe_l2(reference) + safe_l2(&x));
+        if residual_wrms <= 1.0 && (correction_wrms <= 1.0 || roundoff_residual) {
             return Ok(NewtonReport {
                 x,
                 converged: true,

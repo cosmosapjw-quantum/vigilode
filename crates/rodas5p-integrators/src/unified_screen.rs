@@ -464,6 +464,7 @@ fn nonlinear_candidates(profile: UnifiedScreenProfile) -> CoreResult<Vec<Candida
                         && matches!(predictor, crate::HomotopyPredictorVariant::Euler)
                         && [0, 1].contains(corrections_per_point))
             }
+            CandidateExecution::Bdf { .. } | CandidateExecution::RadauIrk { .. } => false,
             CandidateExecution::Deferred => false,
         })
         .cloned()
@@ -634,6 +635,11 @@ fn execute_candidate(
                 batch_vectors: path.work.w_solve_vectors,
                 compute_seconds: start.elapsed().as_secs_f64(),
             })
+        }
+        CandidateExecution::Bdf { .. } | CandidateExecution::RadauIrk { .. } => {
+            Err(CoreError::InvalidInput(
+                "complete-integrator candidate must use the native integrator gate".into(),
+            ))
         }
         CandidateExecution::Deferred => Err(CoreError::InvalidInput(
             "deferred candidate cannot be executed".into(),

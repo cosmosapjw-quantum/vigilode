@@ -282,7 +282,7 @@ fn unified_candidate_screen_combines_linear_and_nonlinear_tiers() {
         .unwrap();
     assert!(status.success());
     let report: serde_json::Value = serde_json::from_slice(&fs::read(&output).unwrap()).unwrap();
-    assert_eq!(report["schema"], "rodas5p-unified-candidate-screen-v3");
+    assert_eq!(report["schema"], "rodas5p-unified-candidate-screen-v4");
     assert_eq!(report["profile"], "smoke");
     assert!(!report["linear_suites"].as_array().unwrap().is_empty());
     assert!(!report["nonlinear"]["rows"].as_array().unwrap().is_empty());
@@ -299,5 +299,59 @@ fn unified_candidate_screen_combines_linear_and_nonlinear_tiers() {
             .is_empty()
     );
     assert!(!report["catalog"]["entries"].as_array().unwrap().is_empty());
+    assert_eq!(
+        report["native_integrator_gates"]["rows"]
+            .as_array()
+            .unwrap()
+            .len(),
+        4
+    );
+    let bdf2 = report["joint_assessments"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|row| row["candidate_id"] == "bdf2-fixed")
+        .unwrap();
+    assert_eq!(bdf2["scientific_eligible"], true);
+    assert_eq!(bdf2["verdict"], "hold");
+    assert!(
+        bdf2["blockers"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|value| value.as_str().unwrap().contains("performance assessment"))
+    );
     let _ = fs::remove_file(output);
+}
+
+#[test]
+fn native_integrator_gates_command_emits_deterministic_bdf_and_radau_rows() {
+    let binary = env!("CARGO_BIN_EXE_rodas5p");
+    let first = temp_path("native-integrator-gates-first.json");
+    let second = temp_path("native-integrator-gates-second.json");
+
+    for output in [&first, &second] {
+        let status = Command::new(binary)
+            .args(["native-integrator-gates", "--output"])
+            .arg(output)
+            .status()
+            .unwrap();
+        assert!(status.success());
+    }
+
+    let first_bytes = fs::read(&first).unwrap();
+    let second_bytes = fs::read(&second).unwrap();
+    assert_eq!(first_bytes, second_bytes);
+    let report: serde_json::Value = serde_json::from_slice(&first_bytes).unwrap();
+    assert_eq!(report["schema"], "rodas5p-native-integrator-gates-v1");
+    assert_eq!(report["rows"].as_array().unwrap().len(), 4);
+    for row in report["rows"].as_array().unwrap() {
+        assert_eq!(row["order_pass"], true);
+        assert_eq!(row["stiff_pass"], true);
+        assert_eq!(row["mass_pass"], true);
+        assert_eq!(row["failures"], 0);
+    }
+
+    let _ = fs::remove_file(first);
+    let _ = fs::remove_file(second);
 }

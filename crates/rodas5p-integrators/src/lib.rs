@@ -1,5 +1,6 @@
 #![forbid(unsafe_code)]
 
+mod bdf;
 mod block;
 mod candidates;
 mod certification;
@@ -8,15 +9,21 @@ mod homotopy_experiments;
 mod homotopy_order_policy;
 mod homotopy_policy;
 mod integrate;
+mod native_gates;
 mod nonlinear;
 mod parallel;
 mod problem;
 mod problems;
+mod radau;
 mod sabr;
 mod sequential;
 mod unified_gates;
 mod unified_screen;
 
+pub use bdf::{
+    BdfConfig, BdfHistory, BdfIntegrationResult, BdfOrder, BdfStepReport, bdf_step,
+    integrate_bdf_fixed,
+};
 pub use block::{
     BlockMethod, BlockPreconditioner, BlockSolveReport, NonlinearRemainderSnapshot,
     StructuredBlockSystem, flatten, unflatten,
@@ -48,12 +55,19 @@ pub use homotopy_order_policy::{
 };
 pub use homotopy_policy::{OutputBudgetDecision, OutputBudgetPolicy};
 pub use integrate::{IntegrationMethod, IntegrationResult, integrate_adaptive, integrate_fixed};
+pub use native_gates::{
+    NativeIntegratorGateReport, NativeIntegratorGateRow, run_native_integrator_gates,
+};
 pub use nonlinear::{NewtonConfig, NewtonReport, solve_dense_newton};
 pub use parallel::ParallelExecution;
 pub use problem::OdeProblem;
 pub use problems::{
     constant_affine_mass_problem, manufactured_mass_nonlinear_problem, manufactured_vector_problem,
     prothero_robinson_problem, scalar_linear_problem,
+};
+pub use radau::{
+    RadauConfig, RadauIiaStages, RadauIntegrationResult, RadauStepReport, integrate_radau_fixed,
+    radau_iia3_tableau, radau_step,
 };
 pub use sabr::{PredictorKind, SabrConfig, StageHistory, sabr_step};
 pub use sequential::{
