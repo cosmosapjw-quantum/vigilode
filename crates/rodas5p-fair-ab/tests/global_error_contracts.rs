@@ -94,6 +94,10 @@ fn fixed_anchor_screen_is_thread_deterministic_and_exposes_all_five_candidates()
     assert!(bdf2.timing.batch_iterations >= 1);
     assert!(bdf2.timing.wall_q25_seconds <= bdf2.timing.wall_median_seconds);
     assert!(bdf2.timing.wall_median_seconds <= bdf2.timing.wall_q75_seconds);
+    assert!(one.execution.scientific_suite_wall_seconds > 0.0);
+    assert!(four.execution.scientific_suite_wall_seconds > 0.0);
+    assert!(one.execution.timing_campaign_wall_seconds.is_some());
+    assert!(four.execution.timing_campaign_wall_seconds.is_none());
     assert!(one.references.iter().all(|reference| {
         reference.source_kind == rodas5p_fair_ab::ReferenceSourceKind::AnalyticExact
     }));

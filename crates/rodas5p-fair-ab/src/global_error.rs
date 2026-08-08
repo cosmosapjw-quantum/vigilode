@@ -598,7 +598,10 @@ pub struct TimingProtocol {
 pub struct GlobalErrorExecution {
     pub threads: usize,
     pub backend: String,
-    pub aggregate_wall_seconds: f64,
+    /// One pass over every scientific case/control task; comparable across thread counts.
+    pub scientific_suite_wall_seconds: f64,
+    /// Full randomized repeated timing campaign; present only for the authoritative T1 run.
+    pub timing_campaign_wall_seconds: Option<f64>,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -1205,9 +1208,11 @@ pub fn run_global_error_pareto_screen(
         }
     }
 
-    let (mut runs, aggregate_wall_seconds) = if threads == 1 {
+    let (mut runs, scientific_suite_wall_seconds, timing_campaign_wall_seconds) = if threads == 1 {
+        let scientific_started = Instant::now();
         let mut rows = specs.iter().map(run_scientific_spec).collect::<Vec<_>>();
-        let (timing, failures, elapsed) = authoritative_timing(&specs, &protocol);
+        let scientific_elapsed = scientific_started.elapsed().as_secs_f64();
+        let (timing, failures, timing_elapsed) = authoritative_timing(&specs, &protocol);
         for row in &mut rows {
             if let Some(message) = failures.get(&row.record_id) {
                 row.status = IntegratorRunStatus::TimingFailure;
@@ -1221,9 +1226,10 @@ pub fn run_global_error_pareto_screen(
                 row.timing = IntegratorTimingReport::unavailable(true);
             }
         }
-        (rows, elapsed)
+        (rows, scientific_elapsed, Some(timing_elapsed))
     } else {
-        parallel_scientific_runs(&specs, &execution)?
+        let (rows, scientific_elapsed) = parallel_scientific_runs(&specs, &execution)?;
+        (rows, scientific_elapsed, None)
     };
 
     runs.sort_by(|left, right| left.record_id.cmp(&right.record_id));
@@ -1238,7 +1244,8 @@ pub fn run_global_error_pareto_screen(
         execution: GlobalErrorExecution {
             threads: execution.threads(),
             backend: execution.backend().into(),
-            aggregate_wall_seconds,
+            scientific_suite_wall_seconds,
+            timing_campaign_wall_seconds,
         },
         timing_authoritative: threads == 1,
         timing_protocol: protocol,
