@@ -39,3 +39,11 @@ panic = "abort"
 [profile.bench]
 inherits = "release"
 debug = true
+
+# Reproducible optimized profile for research timing in constrained CI/sandbox
+# environments where fat-LTO linking is not operationally viable. All solver
+# candidates are compiled into the same binary with these identical flags.
+[profile.measurement]
+inherits = "release"
+lto = false
+codegen-units = 16
