@@ -1,0 +1,44 @@
+# RESEARCH_STATE
+
+PROJECT: {{PROJECT_NAME}}
+VERSION: 0.1
+CURRENT_PHASE: intake
+LAST_UPDATED: {{DATE}}
+
+## Primary question
+
+PRIMARY_RQ:
+
+## Subquestions
+
+- 
+
+## Scope
+
+IN_SCOPE:
+
+OUT_OF_SCOPE:
+
+## Hypothesis status
+
+ACTIVE_HYPOTHESES:
+
+PROMOTED:
+
+ON_HOLD:
+
+REJECTED:
+
+## Blockers
+
+KEY_BLOCKERS:
+
+MISSING_EVIDENCE:
+
+## Gate
+
+CURRENT_COMPLETION_BAR:
+
+NEXT_GATE:
+
+NEXT_MINIMAL_ACTION:
