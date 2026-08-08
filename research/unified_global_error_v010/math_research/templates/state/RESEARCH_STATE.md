@@ -11,7 +11,7 @@ PRIMARY_RQ:
 
 ## Subquestions
 
-- 
+-
 
 ## Scope
 
