@@ -1114,13 +1114,8 @@ fn authoritative_timing(
         }
         if let Some(seconds) = calibration_seconds {
             let seconds = seconds.max(f64::MIN_POSITIVE);
-            let iterations = (protocol.minimum_sample_seconds / seconds)
-                .ceil()
-                .max(1.0) as usize;
-            batch_iterations.insert(
-                id,
-                iterations.min(protocol.maximum_batch_iterations),
-            );
+            let iterations = (protocol.minimum_sample_seconds / seconds).ceil().max(1.0) as usize;
+            batch_iterations.insert(id, iterations.min(protocol.maximum_batch_iterations));
         }
     }
 
@@ -1161,11 +1156,7 @@ fn authoritative_timing(
                 .map(|report| (id, report))
         })
         .collect();
-    (
-        reports,
-        failures,
-        total_started.elapsed().as_secs_f64(),
-    )
+    (reports, failures, total_started.elapsed().as_secs_f64())
 }
 
 fn parallel_scientific_runs(
@@ -1176,9 +1167,12 @@ fn parallel_scientific_runs(
     let rows = execution.map_ordered(specs, |spec| {
         let row_started = Instant::now();
         let mut row = run_scientific_spec(spec);
-        row.timing =
-            IntegratorTimingReport::from_samples(vec![row_started.elapsed().as_secs_f64()], false, 1)
-                .map_err(|error| CoreError::InvalidInput(error.to_string()))?;
+        row.timing = IntegratorTimingReport::from_samples(
+            vec![row_started.elapsed().as_secs_f64()],
+            false,
+            1,
+        )
+        .map_err(|error| CoreError::InvalidInput(error.to_string()))?;
         Ok(row)
     })?;
     Ok((rows, started.elapsed().as_secs_f64()))
