@@ -4,6 +4,7 @@ mod adapters;
 mod budget;
 mod contracts;
 mod error;
+mod global_error;
 mod runner;
 mod scenarios;
 mod session;
@@ -25,3 +26,14 @@ pub use scenarios::{
 pub use session::{RecycleSessionManager, SolverSession, StateTransition};
 
 pub(crate) use contracts::relative_solution_error;
+
+pub use global_error::{
+    CommonOutputGrid, ExternalErrorScale, FixedAnchorCandidate, GlobalErrorMetric,
+    GlobalErrorMetrics, GlobalErrorParetoFront, GlobalErrorParetoProfile, GlobalErrorParetoReport,
+    GlobalErrorReport, GlobalErrorRunRow, GlobalErrorTarget, GlobalRunStatus, IntegratorRunRecord,
+    IntegratorRunStatus, IntegratorTimingReport, IntegratorWorkReport, ParetoCostMetric,
+    ParetoFront, ParetoObservation, ParetoObservationStatus, ReferenceSolutionProvenance,
+    ReferenceSourceKind, ReferenceTrajectory, TargetAttainment, TimingProtocol,
+    compute_global_error_metrics, nondominated_observation_ids, run_global_error_pareto_screen,
+    select_cheapest_below_target,
+};
