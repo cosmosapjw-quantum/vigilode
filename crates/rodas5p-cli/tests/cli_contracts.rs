@@ -355,3 +355,39 @@ fn native_integrator_gates_command_emits_deterministic_bdf_and_radau_rows() {
     let _ = fs::remove_file(first);
     let _ = fs::remove_file(second);
 }
+
+#[test]
+fn global_error_pareto_command_emits_deterministic_method_independent_report() {
+    let binary = env!("CARGO_BIN_EXE_rodas5p");
+    let serial = temp_path("global-error-pareto-t1.json");
+    let parallel = temp_path("global-error-pareto-t4.json");
+
+    for (threads, output) in [("1", &serial), ("4", &parallel)] {
+        let status = Command::new(binary)
+            .args([
+                "global-error-pareto",
+                "--profile",
+                "smoke",
+                "--threads",
+                threads,
+                "--output",
+            ])
+            .arg(output)
+            .status()
+            .unwrap();
+        assert!(status.success());
+    }
+
+    let one: serde_json::Value = serde_json::from_slice(&fs::read(&serial).unwrap()).unwrap();
+    let four: serde_json::Value = serde_json::from_slice(&fs::read(&parallel).unwrap()).unwrap();
+    assert_eq!(one["schema"], "rodas5p-global-error-pareto-v1");
+    assert_eq!(one["profile"], "smoke");
+    assert_eq!(one["execution"]["threads"], 1);
+    assert_eq!(four["execution"]["threads"], 4);
+    assert_eq!(one["scientific_checksum"], four["scientific_checksum"]);
+    assert!(!one["runs"].as_array().unwrap().is_empty());
+    assert!(!one["fronts"].as_array().unwrap().is_empty());
+
+    let _ = fs::remove_file(serial);
+    let _ = fs::remove_file(parallel);
+}

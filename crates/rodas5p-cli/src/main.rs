@@ -7,9 +7,9 @@ use anyhow::{Context, Result};
 use clap::{Parser, Subcommand, ValueEnum};
 use rodas5p_core::{load_rodas5p_coefficients, sha256_hex};
 use rodas5p_fair_ab::{
-    BenchmarkCell, BenchmarkPlan, FairSolveConfig, PreconditionerKind, RecycleLifetime,
-    SequenceConfig, SequenceKind, SolverKind, TraceDocument, generate_trace, run_comparison,
-    summarize_comparison,
+    BenchmarkCell, BenchmarkPlan, FairSolveConfig, GlobalErrorParetoProfile, PreconditionerKind,
+    RecycleLifetime, SequenceConfig, SequenceKind, SolverKind, TraceDocument, generate_trace,
+    run_comparison, run_global_error_pareto_screen, summarize_comparison,
 };
 use rodas5p_integrators::{
     CandidateCatalog, CandidateFamily, CandidateStatus, HomotopyExperimentProfile,
@@ -62,6 +62,15 @@ enum Command {
     },
     /// Run deterministic fixed-step BDF and Radau scientific anchor gates.
     NativeIntegratorGates {
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Compare fixed-step complete-integrator anchors at common external global error.
+    GlobalErrorPareto {
+        #[arg(long, value_enum, default_value_t = CliHomotopyProfile::Smoke)]
+        profile: CliHomotopyProfile,
+        #[arg(long, default_value_t = 1)]
+        threads: usize,
         #[arg(long)]
         output: PathBuf,
     },
@@ -140,6 +149,15 @@ impl From<CliHomotopyProfile> for HomotopyExperimentProfile {
 }
 
 impl From<CliHomotopyProfile> for UnifiedScreenProfile {
+    fn from(value: CliHomotopyProfile) -> Self {
+        match value {
+            CliHomotopyProfile::Smoke => Self::Smoke,
+            CliHomotopyProfile::Canonical => Self::Canonical,
+        }
+    }
+}
+
+impl From<CliHomotopyProfile> for GlobalErrorParetoProfile {
     fn from(value: CliHomotopyProfile) -> Self {
         match value {
             CliHomotopyProfile::Smoke => Self::Smoke,
@@ -910,6 +928,16 @@ fn main() -> Result<()> {
         Command::NativeIntegratorGates { output } => {
             let report: NativeIntegratorGateReport = run_native_integrator_gates()?;
             write_json(&output, &report)?;
+        }
+        Command::GlobalErrorPareto {
+            profile,
+            threads,
+            output,
+        } => {
+            write_json(
+                &output,
+                &run_global_error_pareto_screen(profile.into(), threads)?,
+            )?;
         }
         Command::UnifiedCandidateScreen {
             profile,
