@@ -1,0 +1,102 @@
+{
+  "schema": "rodas5p-next-solver-matrix-v1",
+  "comparison_authority": "match external global error, then compare total work/wall/memory; retain method-specific internal tolerances",
+  "candidates": [
+    {
+      "family": "bdf-variable-order",
+      "priority": 1,
+      "required": [
+        "variable-step coefficients orders 1-5",
+        "Nordsieck/history",
+        "step/order controller",
+        "rejection rollback",
+        "Jacobian/preconditioner lagging"
+      ],
+      "kill_gates": [
+        "variable-step stability failure",
+        "order regression",
+        "history corruption"
+      ]
+    },
+    {
+      "family": "radau-adaptive",
+      "priority": 2,
+      "required": [
+        "error estimator policy",
+        "adaptive controller",
+        "simplified/full Newton comparison",
+        "stage transform/preconditioner"
+      ],
+      "kill_gates": [
+        "order/stiff-decay regression",
+        "estimator unreliability"
+      ]
+    },
+    {
+      "family": "parallel-sdc",
+      "priority": 3,
+      "required": [
+        "collocation nodes",
+        "diagonal/nonstationary sweeper",
+        "sweep work ledger"
+      ],
+      "kill_gates": [
+        "iteration count erases parallel gain",
+        "stiff instability"
+      ]
+    },
+    {
+      "family": "peer-w",
+      "priority": 4,
+      "required": [
+        "startup",
+        "variable-step zero-stability",
+        "embedded estimator"
+      ],
+      "kill_gates": [
+        "step-ratio instability",
+        "history overhead"
+      ]
+    },
+    {
+      "family": "rosenbrock-krylov",
+      "priority": 5,
+      "required": [
+        "ROK order conditions",
+        "shared Krylov basis",
+        "adaptive subspace"
+      ],
+      "kill_gates": [
+        "projection/order regression",
+        "basis overhead"
+      ]
+    },
+    {
+      "family": "borok",
+      "priority": 6,
+      "required": [
+        "biorthogonal recurrence",
+        "transpose/JT policy",
+        "breakdown safeguards"
+      ],
+      "kill_gates": [
+        "biorthogonality loss",
+        "JT cost dominance"
+      ]
+    },
+    {
+      "family": "exponential-leja",
+      "priority": 7,
+      "required": [
+        "semilinear split",
+        "phi-action",
+        "Leja scaling/error control"
+      ],
+      "kill_gates": [
+        "spectrum estimation cost",
+        "nonnormal failure",
+        "inapplicable mass/DAE form"
+      ]
+    }
+  ]
+}

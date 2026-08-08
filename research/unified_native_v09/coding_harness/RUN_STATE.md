@@ -2,18 +2,16 @@
 
 DATE: 2026-08-08
 
-CURRENT_LAYER: design
+CURRENT_LAYER: closeout
 
-TASK: Implement native fixed-step BDF1/BDF2 and Radau IIA1/3 anchors after closing the math research loop.
+TASK: Native fixed-step BDF1/BDF2 and Radau IIA1/3 anchors after sequential math and coding research loops.
 
-CURRENT_HYPOTHESIS: A common dense Newton and work ledger can express both multistep and fully implicit stage methods without weakening existing RODAS5P semantics.
+CURRENT_HYPOTHESIS: Complete-integrator methods require their own scientific gate and an external global-error/total-cost comparison authority; they must not be ranked inside the RODAS stage-equation screen.
 
-REPRODUCTION_OR_ACCEPTANCE: baseline release suite passes; new anchors meet exact definitions, order/stiff/mass tests, and registry/gate contracts.
+REPRODUCTION_OR_ACCEPTANCE: 82 release tests pass; four native anchors pass order/stiff/mass gates; repeated native JSON is byte-identical; unified 1/4-thread scientific checksum matches.
 
-LIKELY_EDIT_LOCATIONS: `rodas5p-core/src/work.rs`; `rodas5p-integrators/src/{nonlinear,bdf,radau,native_gates,candidates,integrate,lib}.rs`; integration tests.
+BLOCKERS: production variable-step/adaptive implementations and matched-global-error Pareto harness remain deferred.
 
-BLOCKERS: no common nonlinear counter fields; no dense Jacobian extraction from JVP; no multistep history type; deferred candidate execution variants.
+LAST_VALIDATION: full release workspace tests exit 0; affected strict Clippy and release build pass.
 
-LAST_VALIDATION: baseline background release test exited 0.
-
-NEXT_MINIMAL_ACTION: write failing tests for common dense Newton counters and failure rollback.
+NEXT_MINIMAL_ACTION: implement method-independent global-error target and total-cost report before adding variable-order BDF.
