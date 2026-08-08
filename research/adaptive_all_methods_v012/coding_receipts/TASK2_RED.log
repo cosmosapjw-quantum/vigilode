@@ -1,0 +1,23 @@
+warning: method `record` is never used
+   --> crates/rodas5p-integrators/src/adaptive.rs:290:19
+    |
+289 | impl AdaptiveRunDiagnostics {
+    | --------------------------- method in this implementation
+290 |     pub(crate) fn record(
+    |                   ^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rodas5p-integrators` (lib) generated 1 warning
+   Compiling rodas5p-integrators v0.1.0 (/mnt/data/rodas5p-adaptive-all-main/.worktrees/adaptive-all-methods-v0.12/crates/rodas5p-integrators)
+error[E0432]: unresolved import `rodas5p_integrators::integrate_adaptive_observed_with_config`
+ --> crates/rodas5p-integrators/tests/adaptive_rodas_contracts.rs:4:34
+  |
+4 |     integrate_adaptive_observed, integrate_adaptive_observed_with_config,
+  |                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |                                  |
+  |                                  no `integrate_adaptive_observed_with_config` in the root
+  |                                  help: a similar name exists in the module: `integrate_adaptive_observed`
+
+For more information about this error, try `rustc --explain E0432`.
+error: could not compile `rodas5p-integrators` (test "adaptive_rodas_contracts") due to 1 previous error
