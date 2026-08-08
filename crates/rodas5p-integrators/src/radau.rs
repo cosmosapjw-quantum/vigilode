@@ -3,8 +3,9 @@ use serde::Serialize;
 
 use crate::output::OutputCollector;
 use crate::{
-    NewtonConfig, NewtonReport, ObservedIntegrationResult, OdeProblem, OutputSchedule,
-    solve_dense_newton,
+    AdaptiveControllerState, AdaptiveObservedIntegrationResult, AdaptiveRunDiagnostics,
+    AdaptiveStepConfig, NewtonConfig, NewtonReport, ObservedIntegrationResult, OdeProblem,
+    OutputSchedule, solve_dense_newton, step_doubling_wrms_error,
 };
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
@@ -290,5 +291,145 @@ pub fn integrate_radau_fixed_observed(
         counters,
         internal_steps,
         output_clipped_steps,
+    })
+}
+
+pub fn integrate_radau_adaptive_observed(
+    problem: &OdeProblem,
+    t_span: (f64, f64),
+    y0: &[f64],
+    config: &RadauConfig,
+    adaptive: &AdaptiveStepConfig,
+    output: &OutputSchedule,
+) -> CoreResult<AdaptiveObservedIntegrationResult> {
+    adaptive.validate()?;
+    let (mut t, tf) = t_span;
+    if y0.len() != problem.dimension || tf < t {
+        return Err(CoreError::InvalidInput(
+            "invalid adaptive Radau integration input".into(),
+        ));
+    }
+    let mut state = y0.to_vec();
+    let mut counters = WorkCounters::default();
+    let mut controller = AdaptiveControllerState::default();
+    let mut collector = OutputCollector::new(output, t_span, y0)?;
+    let mut diagnostics = AdaptiveRunDiagnostics::default();
+    let mut h = adaptive.initial_step.min(tf - t);
+    let mut internal_steps = 0_usize;
+    let method_order = config.stages.order();
+    let estimator_id = match config.stages {
+        RadauIiaStages::One => "radau-iia1-step-doubling",
+        RadauIiaStages::Three => "radau-iia3-step-doubling",
+    };
+
+    while t < tf && diagnostics.attempts < adaptive.max_attempts {
+        h = h.min(adaptive.max_step).min(tf - t);
+        if h < adaptive.min_step || 0.5 * h <= f64::MIN_POSITIVE {
+            break;
+        }
+        let (trial_h, clipped) = collector.limit_step(t, h, tf)?;
+        let trial = (|| {
+            let coarse = radau_step(problem, t, &state, trial_h, config, &mut counters)?;
+            let half = 0.5 * trial_h;
+            let fine_first = radau_step(problem, t, &state, half, config, &mut counters)?;
+            let fine_second = radau_step(
+                problem,
+                t + half,
+                &fine_first.y_new,
+                half,
+                config,
+                &mut counters,
+            )?;
+            Ok::<_, CoreError>((coarse, fine_second))
+        })();
+
+        let (coarse, fine_second) = match trial {
+            Ok(value) => value,
+            Err(
+                CoreError::NonFinite(_) | CoreError::LinearSolve(_) | CoreError::NonlinearSolve(_),
+            ) => {
+                counters.rejected_steps += 1;
+                diagnostics.record(
+                    trial_h,
+                    f64::INFINITY,
+                    method_order + 1,
+                    "radau-step-doubling-failed",
+                    false,
+                );
+                h = trial_h * adaptive.min_factor;
+                continue;
+            }
+            Err(error) => return Err(error),
+        };
+        let estimate = step_doubling_wrms_error(
+            &state,
+            &coarse.y_new,
+            &fine_second.y_new,
+            adaptive.atol,
+            adaptive.rtol,
+            method_order,
+        )?;
+        let accepted =
+            estimate.error_norm <= 1.0 && fine_second.y_new.iter().all(|value| value.is_finite());
+        diagnostics.record(
+            trial_h,
+            estimate.error_norm,
+            estimate.estimator_order,
+            estimator_id,
+            accepted,
+        );
+        if accepted {
+            t += trial_h;
+            state = fine_second.y_new;
+            collector.accept(t, &state, clipped)?;
+            counters.accepted_steps += 2;
+            internal_steps += 2;
+            controller.record_acceptance(estimate.error_norm)?;
+            h = trial_h
+                * controller.propose_factor(
+                    adaptive,
+                    estimate.error_norm,
+                    estimate.estimator_order,
+                    true,
+                )?;
+        } else {
+            counters.rejected_steps += 1;
+            controller.record_rejection(estimate.error_norm)?;
+            h = trial_h
+                * controller.propose_factor(
+                    adaptive,
+                    estimate.error_norm.max(1.0e-16),
+                    estimate.estimator_order,
+                    false,
+                )?;
+        }
+    }
+
+    let success = t >= tf - 10.0 * f64::EPSILON * tf.abs().max(1.0);
+    let observed = if success {
+        let (times, states, output_clipped_steps) = collector.finish()?;
+        ObservedIntegrationResult {
+            t: times,
+            y: states,
+            success: true,
+            message: "success".into(),
+            counters,
+            internal_steps,
+            output_clipped_steps,
+        }
+    } else {
+        ObservedIntegrationResult {
+            t: Vec::new(),
+            y: Vec::new(),
+            success: false,
+            message: "maximum step count or minimum step reached".into(),
+            counters,
+            internal_steps,
+            output_clipped_steps: 0,
+        }
+    };
+    Ok(AdaptiveObservedIntegrationResult {
+        observed,
+        diagnostics,
     })
 }

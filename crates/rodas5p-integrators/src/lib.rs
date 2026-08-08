@@ -77,8 +77,9 @@ pub use problems::{
     prothero_robinson_problem, scalar_linear_problem,
 };
 pub use radau::{
-    RadauConfig, RadauIiaStages, RadauIntegrationResult, RadauStepReport, integrate_radau_fixed,
-    integrate_radau_fixed_observed, radau_iia3_tableau, radau_step,
+    RadauConfig, RadauIiaStages, RadauIntegrationResult, RadauStepReport,
+    integrate_radau_adaptive_observed, integrate_radau_fixed, integrate_radau_fixed_observed,
+    radau_iia3_tableau, radau_step,
 };
 pub use sabr::{PredictorKind, SabrConfig, StageHistory, sabr_step};
 pub use sequential::{
