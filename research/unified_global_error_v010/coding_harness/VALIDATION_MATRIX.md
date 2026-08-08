@@ -18,9 +18,9 @@
 | numerical trend | fixed anchors | numerical | expected order before floor | PASS | observed-order CSV |
 | code regression | fair-ab suite | software | pass | PASS | validation log |
 | CLI contract | `global-error-pareto` | software | JSON + checksum identity | PASS | CLI test |
-| research harness | workspace validator | operational | pass | PENDING_FINAL | final validation |
-| coding harness | harness validator | operational | pass | PENDING_FINAL | final validation |
-| clean source rebuild | clean archive | reproducibility | pass | PENDING_FINAL | final validation |
+| research harness | workspace validator | operational | pass | PASS | exact-HEAD validation |
+| coding harness | harness validator | operational | pass | PASS | exact-HEAD validation |
+| clean source rebuild | clean archive | reproducibility | pass | PASS | delivery clean-archive receipt |
 | independent review | base-to-head review | review | no critical issue | PASS | `reviews/INDEPENDENT_DIFF_REVIEW.md` |
 | production solver ranking | larger/adaptive corpus | scientific | completed | NOT_RUN | transferred to v0.11 |
 

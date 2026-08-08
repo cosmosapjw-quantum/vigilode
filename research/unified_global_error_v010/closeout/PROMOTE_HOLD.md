@@ -26,3 +26,10 @@
 3. larger stiff/nonnormal/sparse corpus;
 4. non-analytic reference hierarchy;
 5. adaptive BDF and Radau implementations.
+
+## Final closeout boundary
+
+This cycle validates the comparison authority, not a production solver ranking. The canonical fixed-step corpus is retained as a deterministic mechanics test. Production work-precision conclusions require the successor branch to eliminate every-step storage bias, admit adaptive trajectories on a common output contract, enlarge the stiff/nonnormal/sparse corpus, and establish a reference uncertainty hierarchy.
+
+Frozen tag: `unified-global-error-v0.10.0-alpha1`
+Successor branch: `unified-adaptive-output-v0.11`
