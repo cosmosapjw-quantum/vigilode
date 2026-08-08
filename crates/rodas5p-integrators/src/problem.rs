@@ -144,6 +144,53 @@ impl OdeProblem {
             .collect())
     }
 
+    pub fn mass_or_identity(&self) -> DenseMatrix {
+        self.mass_matrix
+            .clone()
+            .unwrap_or_else(|| DenseMatrix::identity(self.dimension))
+    }
+
+    pub fn dense_jacobian(
+        &self,
+        t: f64,
+        y: &[f64],
+        counters: &mut WorkCounters,
+    ) -> CoreResult<DenseMatrix> {
+        if y.len() != self.dimension {
+            return Err(CoreError::Dimension("Jacobian state shape mismatch".into()));
+        }
+        if let Some(jacobian) = &self.jacobian {
+            counters.jacobian_builds += 1;
+            let matrix = jacobian(t, y)?;
+            if matrix.nrows() != self.dimension || matrix.ncols() != self.dimension {
+                return Err(CoreError::Dimension(
+                    "Jacobian output shape mismatch".into(),
+                ));
+            }
+            return Ok(matrix);
+        }
+        let jvp = self.jvp.as_ref().expect("validated JVP");
+        let mut matrix = DenseMatrix::zeros(self.dimension, self.dimension);
+        let mut basis = vec![0.0; self.dimension];
+        let mut column = vec![0.0; self.dimension];
+        for j in 0..self.dimension {
+            basis.fill(0.0);
+            basis[j] = 1.0;
+            column.fill(0.0);
+            jvp(t, y, &basis, &mut column)?;
+            counters.jvp_calls += 1;
+            counters.jvp_vectors += 1;
+            if !column.iter().all(|value| value.is_finite()) {
+                return Err(CoreError::NonFinite("JVP produced NaN/Inf".into()));
+            }
+            for i in 0..self.dimension {
+                matrix[(i, j)] = column[i];
+            }
+        }
+        counters.jacobian_builds += 1;
+        Ok(matrix)
+    }
+
     pub fn linearize(
         &self,
         t: f64,

@@ -8,6 +8,7 @@ mod homotopy_experiments;
 mod homotopy_order_policy;
 mod homotopy_policy;
 mod integrate;
+mod nonlinear;
 mod parallel;
 mod problem;
 mod problems;
@@ -47,6 +48,7 @@ pub use homotopy_order_policy::{
 };
 pub use homotopy_policy::{OutputBudgetDecision, OutputBudgetPolicy};
 pub use integrate::{IntegrationMethod, IntegrationResult, integrate_adaptive, integrate_fixed};
+pub use nonlinear::{NewtonConfig, NewtonReport, solve_dense_newton};
 pub use parallel::ParallelExecution;
 pub use problem::OdeProblem;
 pub use problems::{

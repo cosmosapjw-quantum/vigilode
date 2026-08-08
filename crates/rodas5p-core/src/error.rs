@@ -10,6 +10,8 @@ pub enum CoreError {
     NonFinite(String),
     #[error("linear solve failed: {0}")]
     LinearSolve(String),
+    #[error("nonlinear solve failed: {0}")]
+    NonlinearSolve(String),
     #[error("coefficient snapshot error: {0}")]
     Coefficients(String),
 }
