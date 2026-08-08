@@ -64,6 +64,7 @@ pub use homotopy_policy::{OutputBudgetDecision, OutputBudgetPolicy};
 pub use integrate::{
     IntegrationMethod, IntegrationResult, integrate_adaptive, integrate_adaptive_observed,
     integrate_adaptive_observed_with_config, integrate_fixed, integrate_fixed_observed,
+    integrate_homotopy_adaptive_observed,
 };
 pub use native_gates::{
     NativeIntegratorGateReport, NativeIntegratorGateRow, run_native_integrator_gates,

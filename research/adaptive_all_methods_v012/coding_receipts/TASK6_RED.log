@@ -1,0 +1,12 @@
+   Compiling rodas5p-integrators v0.1.0 (/mnt/data/rodas5p-adaptive-all-main/.worktrees/adaptive-all-methods-v0.12/crates/rodas5p-integrators)
+error[E0432]: unresolved import `rodas5p_integrators::integrate_homotopy_adaptive_observed`
+ --> crates/rodas5p-integrators/tests/adaptive_homotopy_contracts.rs:4:21
+  |
+4 | ...putSchedule, integrate_homotopy_adaptive_observed, scalar_linear_problem,
+  |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |                 |
+  |                 no `integrate_homotopy_adaptive_observed` in the root
+  |                 help: a similar name exists in the module: `integrate_bdf_adaptive_observed`
+
+For more information about this error, try `rustc --explain E0432`.
+error: could not compile `rodas5p-integrators` (test "adaptive_homotopy_contracts") due to 1 previous error

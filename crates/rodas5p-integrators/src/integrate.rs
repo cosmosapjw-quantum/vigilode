@@ -1,8 +1,9 @@
 use crate::output::OutputCollector;
 use crate::{
     AdaptiveControllerState, AdaptiveObservedIntegrationResult, AdaptiveRunDiagnostics,
-    AdaptiveStepConfig, KrylovState, ObservedIntegrationResult, OdeProblem, OutputSchedule,
-    SabrConfig, StageHistory, StepResult, sabr_step, sequential_step,
+    AdaptiveStepConfig, HomotopyStepConfig, KrylovState, ObservedIntegrationResult, OdeProblem,
+    OutputSchedule, SabrConfig, StageHistory, StepResult, homotopy_step, sabr_step,
+    sequential_step,
 };
 use rodas5p_core::{CoreError, CoreResult, LinearSolverConfig, WorkCounters};
 
@@ -455,6 +456,125 @@ pub fn integrate_adaptive_observed_with_config(
         }
     }
     diagnostics.fallback_steps = counters.fallback_steps as usize;
+    let success = t >= tf - 10.0 * f64::EPSILON * tf.abs().max(1.0);
+    let observed = if success {
+        let (times, states, output_clipped_steps) = collector.finish()?;
+        ObservedIntegrationResult {
+            t: times,
+            y: states,
+            success: true,
+            message: "success".into(),
+            counters,
+            internal_steps,
+            output_clipped_steps,
+        }
+    } else {
+        ObservedIntegrationResult {
+            t: Vec::new(),
+            y: Vec::new(),
+            success: false,
+            message: "maximum step count or minimum step reached".into(),
+            counters,
+            internal_steps,
+            output_clipped_steps: 0,
+        }
+    };
+    Ok(AdaptiveObservedIntegrationResult {
+        observed,
+        diagnostics,
+    })
+}
+
+#[allow(clippy::too_many_arguments)]
+pub fn integrate_homotopy_adaptive_observed(
+    problem: &OdeProblem,
+    t_span: (f64, f64),
+    y0: &[f64],
+    homotopy_config: &HomotopyStepConfig,
+    fallback_config: Option<&LinearSolverConfig>,
+    adaptive: &AdaptiveStepConfig,
+    output: &OutputSchedule,
+) -> CoreResult<AdaptiveObservedIntegrationResult> {
+    adaptive.validate()?;
+    let (mut t, tf) = t_span;
+    if y0.len() != problem.dimension || tf < t {
+        return Err(CoreError::InvalidInput(
+            "invalid adaptive Homotopy integration input".into(),
+        ));
+    }
+    let mut y = y0.to_vec();
+    let mut h = adaptive.initial_step.min(tf - t);
+    let mut controller = AdaptiveControllerState::default();
+    let mut counters = WorkCounters::default();
+    let mut recycle = fallback_config.and_then(|config| KrylovState::for_method(config.method));
+    let mut collector = OutputCollector::new(output, t_span, y0)?;
+    let mut diagnostics = AdaptiveRunDiagnostics::default();
+    let mut internal_steps = 0_usize;
+
+    while t < tf && diagnostics.attempts < adaptive.max_attempts {
+        h = h.min(adaptive.max_step).min(tf - t);
+        if h < adaptive.min_step {
+            break;
+        }
+        let (trial_h, clipped) = collector.limit_step(t, h, tf)?;
+        let recycle_snapshot = recycle.clone();
+        let trial = homotopy_step(
+            problem,
+            t,
+            &y,
+            trial_h,
+            homotopy_config,
+            fallback_config,
+            recycle.as_mut(),
+            adaptive.atol,
+            adaptive.rtol,
+            false,
+            &mut counters,
+        );
+        let report = match trial {
+            Ok(report) => report,
+            Err(CoreError::NonFinite(_) | CoreError::LinearSolve(_)) => {
+                recycle = recycle_snapshot;
+                counters.rejected_steps += 1;
+                diagnostics.record(trial_h, f64::INFINITY, 5, "homotopy-step-failed", false);
+                h = trial_h * adaptive.min_factor;
+                continue;
+            }
+            Err(error) => return Err(error),
+        };
+        if !report.fast_accepted {
+            diagnostics.fallback_steps += 1;
+        }
+        let error = effective(&report.step);
+        let accepted = report.step.accepted
+            && error <= 1.0
+            && report.step.y_new.iter().all(|value| value.is_finite());
+        diagnostics.record(
+            trial_h,
+            error,
+            5,
+            "homotopy-native-rodas-endpoint",
+            accepted,
+        );
+        if accepted {
+            t = report.step.t_new;
+            y = report.step.y_new;
+            collector.accept(t, &y, clipped)?;
+            internal_steps += 1;
+            controller.record_acceptance(error)?;
+            h = trial_h * controller.propose_factor(adaptive, error, 5, true)?;
+        } else {
+            recycle = recycle_snapshot;
+            h = trial_h
+                * if error.is_finite() {
+                    controller.record_rejection(error)?;
+                    controller.propose_factor(adaptive, error.max(1.0e-16), 5, false)?
+                } else {
+                    adaptive.min_factor
+                };
+        }
+    }
+
     let success = t >= tf - 10.0 * f64::EPSILON * tf.abs().max(1.0);
     let observed = if success {
         let (times, states, output_clipped_steps) = collector.finish()?;
