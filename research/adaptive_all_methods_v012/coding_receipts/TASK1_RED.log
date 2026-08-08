@@ -1,0 +1,13 @@
+   Compiling rodas5p-integrators v0.1.0 (/mnt/data/rodas5p-adaptive-all-main/.worktrees/adaptive-all-methods-v0.12/crates/rodas5p-integrators)
+error[E0432]: unresolved imports `rodas5p_integrators::AdaptiveControllerState`, `rodas5p_integrators::AdaptiveStepConfig`, `rodas5p_integrators::ControllerKind`, `rodas5p_integrators::step_doubling_wrms_error`
+ --> crates/rodas5p-integrators/tests/adaptive_controller_contracts.rs:2:5
+  |
+2 |     AdaptiveControllerState, AdaptiveStepConfig, ControllerKind, step_doubling_wrms_error,
+  |     ^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^ no `step_doubling_wrms_error` in the root
+  |     |                        |                   |
+  |     |                        |                   no `ControllerKind` in the root
+  |     |                        no `AdaptiveStepConfig` in the root
+  |     no `AdaptiveControllerState` in the root
+
+For more information about this error, try `rustc --explain E0432`.
+error: could not compile `rodas5p-integrators` (test "adaptive_controller_contracts") due to 1 previous error

@@ -1,5 +1,6 @@
 #![forbid(unsafe_code)]
 
+mod adaptive;
 mod bdf;
 mod block;
 mod candidates;
@@ -21,6 +22,10 @@ mod sequential;
 mod unified_gates;
 mod unified_screen;
 
+pub use adaptive::{
+    AdaptiveControllerState, AdaptiveObservedIntegrationResult, AdaptiveRunDiagnostics,
+    AdaptiveStepConfig, ControllerKind, StepDoublingEstimate, step_doubling_wrms_error,
+};
 pub use bdf::{
     BdfConfig, BdfHistory, BdfIntegrationResult, BdfOrder, BdfStepReport, bdf_step,
     integrate_bdf_fixed, integrate_bdf_fixed_observed,
