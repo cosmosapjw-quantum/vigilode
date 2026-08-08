@@ -1,0 +1,102 @@
+{
+  "schema": "rodas5p-adaptive-next-cycle-v1",
+  "baseline_branch": "adaptive-all-methods-v0.12",
+  "first_blocker": "high-order adaptive screen is requested-output clipping limited",
+  "families": [
+    {
+      "family": "bdf-variable-order",
+      "adaptive_axes": [
+        "step_size",
+        "order",
+        "nonlinear_tolerance",
+        "jacobian_lag"
+      ],
+      "required": [
+        "orders 1-5",
+        "Nordsieck history",
+        "stability-limit detection"
+      ]
+    },
+    {
+      "family": "radau-adaptive-native",
+      "adaptive_axes": [
+        "step_size",
+        "nonlinear_tolerance",
+        "jacobian_lag"
+      ],
+      "required": [
+        "native estimator",
+        "predictive controller",
+        "full/simplified Newton"
+      ]
+    },
+    {
+      "family": "parallel-sdc",
+      "adaptive_axes": [
+        "step_size",
+        "sweep_count",
+        "node_solver_tolerance"
+      ],
+      "required": [
+        "generic local estimator",
+        "parallel sweeper",
+        "stiff gate"
+      ]
+    },
+    {
+      "family": "peer-w",
+      "adaptive_axes": [
+        "step_size",
+        "step_ratio",
+        "order"
+      ],
+      "required": [
+        "startup",
+        "variable-step zero-stability",
+        "embedded estimator"
+      ]
+    },
+    {
+      "family": "rosenbrock-krylov",
+      "adaptive_axes": [
+        "step_size",
+        "krylov_dimension"
+      ],
+      "required": [
+        "ROK order conditions",
+        "projection-error evidence"
+      ]
+    },
+    {
+      "family": "borok",
+      "adaptive_axes": [
+        "step_size",
+        "biorthogonal_dimension"
+      ],
+      "required": [
+        "breakdown safeguards",
+        "JT cost ledger"
+      ]
+    },
+    {
+      "family": "exponential-leja",
+      "adaptive_axes": [
+        "step_size",
+        "scaling",
+        "polynomial_degree"
+      ],
+      "required": [
+        "phi-action error estimator",
+        "nonnormal screen"
+      ]
+    }
+  ],
+  "promotion_gates": [
+    "false_success=0",
+    "expected_order",
+    "stiff/nonnormal validity",
+    "matched_global_error",
+    "repeated_wall_timing",
+    "transactional_recovery"
+  ]
+}

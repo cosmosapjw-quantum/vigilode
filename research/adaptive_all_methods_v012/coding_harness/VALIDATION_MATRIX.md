@@ -3,11 +3,12 @@
 | Gate | Status | Evidence |
 |---|---|---|
 | Baseline full tests | PASS | `coding_receipts/BASELINE_FULL_TEST.log` |
-| Common controller | NOT_TESTED | pending |
-| Fixed-step regression | NOT_TESTED | pending |
-| Variable-step BDF2 algebra | NOT_TESTED | pending |
-| Adaptive family order | NOT_TESTED | pending |
-| Stiff/nonnormal/mass | NOT_TESTED | pending |
-| T1/T4 determinism | NOT_TESTED | pending |
-| Exact-HEAD fmt/clippy/test/build | NOT_TESTED | pending |
-| Independent diff review | NOT_TESTED | pending |
+| Common controller | PASS | `TASK1_*` receipts |
+| Fixed-step regression | PASS | `TASK2_FULL_GREEN.log` |
+| Variable-step BDF2 algebra | PASS | `TASK3_*` receipts |
+| Adaptive BDF/Radau order and rejection | PASS | `TASK4_*`, `TASK5_*` |
+| Adaptive Homotopy fallback | PASS | `TASK6_*` |
+| Unified adaptive screen | PASS | `TASK7_*`, canonical results |
+| T1/T4 determinism | PASS | identical checksum in canonical JSON |
+| Exact-HEAD fmt/clippy/test/build | PENDING_FINAL | final validation receipt |
+| Independent diff review | PASS_WITH_HOLD | `coding_phases/PHASE09_INDEPENDENT_DIFF_REVIEW.md` |
