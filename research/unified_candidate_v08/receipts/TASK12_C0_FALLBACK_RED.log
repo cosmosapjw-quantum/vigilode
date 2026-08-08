@@ -1,0 +1,40 @@
+   Compiling faer v0.24.4
+   Compiling rodas5p-core v0.1.0 (/mnt/data/rodas5p-unified/repo/.worktrees/unified-candidate-harness-v0.8/crates/rodas5p-core)
+   Compiling rodas5p-krylov v0.1.0 (/mnt/data/rodas5p-unified/repo/.worktrees/unified-candidate-harness-v0.8/crates/rodas5p-krylov)
+   Compiling rodas5p-integrators v0.1.0 (/mnt/data/rodas5p-unified/repo/.worktrees/unified-candidate-harness-v0.8/crates/rodas5p-integrators)
+   Compiling rodas5p-krylov v0.1.0 (/mnt/data/rodas5p-unified/repo/.worktrees/unified-candidate-harness-v0.8/crates/rodas5p-krylov)
+   Compiling rodas5p-integrators v0.1.0 (/mnt/data/rodas5p-unified/repo/.worktrees/unified-candidate-harness-v0.8/crates/rodas5p-integrators)
+error[E0432]: unresolved import `rodas5p_integrators::ReferenceCertificateSource`
+   --> crates/rodas5p-integrators/tests/unified_candidate_contracts.rs:170:26
+    |
+170 | ...CandidateFamily, ReferenceCertificateSource, UnifiedCandidateOutcome,
+    |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^ no `ReferenceCertificateSource` in the root
+
+error[E0560]: struct `UnifiedCandidateRow` has no field named `reference_certificate_source`
+   --> crates/rodas5p-integrators/tests/unified_candidate_contracts.rs:180:9
+    |
+180 |         reference_certificate_source: ReferenceCertificateSource::C0Pro...
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `UnifiedCandidateRow` does not have this field
+    |
+    = note: all struct fields are already assigned
+
+error[E0560]: struct `UnifiedCandidateRow` has no field named `reference_fallback_used`
+   --> crates/rodas5p-integrators/tests/unified_candidate_contracts.rs:181:9
+    |
+181 |         reference_fallback_used: true,
+    |         ^^^^^^^^^^^^^^^^^^^^^^^ `UnifiedCandidateRow` does not have this field
+    |
+    = note: all struct fields are already assigned
+
+error[E0560]: struct `UnifiedCandidateRow` has no field named `certificate_failure`
+   --> crates/rodas5p-integrators/tests/unified_candidate_contracts.rs:182:9
+    |
+182 |         certificate_failure: None,
+    |         ^^^^^^^^^^^^^^^^^^^ `UnifiedCandidateRow` does not have this field
+    |
+    = note: all struct fields are already assigned
+
+Some errors have detailed explanations: E0432, E0560.
+For more information about an error, try `rustc --explain E0432`.
+error: could not compile `rodas5p-integrators` (test "unified_candidate_contracts") due to 4 previous errors
+warning: build failed, waiting for other jobs to finish...

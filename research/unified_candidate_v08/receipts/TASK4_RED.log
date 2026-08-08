@@ -1,0 +1,18 @@
+   Compiling rodas5p-integrators v0.1.0 (/mnt/data/rodas5p-unified/repo/.worktrees/unified-candidate-harness-v0.8/crates/rodas5p-integrators)
+error[E0432]: unresolved imports `rodas5p_integrators::UnifiedScreenProfile`, `rodas5p_integrators::run_unified_nonlinear_screen`
+   --> crates/rodas5p-integrators/tests/unified_candidate_contracts.rs:163:26
+    |
+163 | ...amily, UnifiedScreenProfile, run_unified_nonlinear_screen,
+    |           ^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ no `run_unified_nonlinear_screen` in the root
+    |           |
+    |           no `UnifiedScreenProfile` in the root
+
+error[E0282]: type annotations needed
+   --> crates/rodas5p-integrators/tests/unified_candidate_contracts.rs:172:9
+    |
+172 |         row.validate().unwrap();
+    |         ^^^ cannot infer type
+
+Some errors have detailed explanations: E0282, E0432.
+For more information about an error, try `rustc --explain E0282`.
+error: could not compile `rodas5p-integrators` (test "unified_candidate_contracts") due to 2 previous errors

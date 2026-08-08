@@ -1,0 +1,43 @@
+   Compiling rodas5p-integrators v0.1.0 (/mnt/data/rodas5p-homotopy-loop2-repo/.worktrees/homotopy-coding-loop2-v0.4/crates/rodas5p-integrators)
+    Finished `release` profile [optimized] target(s) in 15.14s
+     Running tests/homotopy_research_contracts.rs (target/release/deps/homotopy_research_contracts-01d9b06ff6a0a712)
+
+running 1 test
+test original_output_certificate_rejects_invalid_vectors_and_scales ... FAILED
+
+failures:
+
+---- original_output_certificate_rejects_invalid_vectors_and_scales stdout ----
+
+thread 'original_output_certificate_rejects_invalid_vectors_and_scales' (11661) panicked at crates/rodas5p-integrators/tests/homotopy_research_contracts.rs:221:5:
+assertion failed: oracle.certify_target(&finite_perturbation,
+        &[f64::from_bits(1), f64::from_bits(1)]).is_err()
+stack backtrace:
+   0:     0x55d7de00118d - <std::sys::backtrace::BacktraceLock::print::DisplayBacktrace as core::fmt::Display>::fmt::hdadc7c28d26d7ce3
+   1:     0x55d7ddf7575a - core::fmt::write::h469843d235cc4241
+   2:     0x55d7de0005b5 - std::io::Write::write_fmt::h86cdd20e46f95ef0
+   3:     0x55d7de00009b - std::panicking::default_hook::{{closure}}::hd9d92b9a46805102
+   4:     0x55d7ddfffd5a - std::panicking::default_hook::hedb2be0819bbe276
+   5:     0x55d7ddfff7f3 - std::panicking::panic_with_hook::h0fc23abecf35c6bd
+   6:     0x55d7de028918 - std::panicking::panic_handler::{{closure}}::ha111c1a3ccf85d19
+   7:     0x55d7de028899 - std::sys::backtrace::__rust_end_short_backtrace::h41d63216e1ba5fa4
+   8:     0x55d7de02888c - __rustc[16f1505adc47261a]::rust_begin_unwind
+   9:     0x55d7ddf766ab - core::panicking::panic_fmt::hc13412975f563dde
+  10:     0x55d7ddf76671 - core::panicking::panic::h8bbbe005ba322b34
+  11:     0x55d7ddf73ae3 - core::ops::function::FnOnce::call_once::he9fd66a9485e8bac
+  12:     0x55d7de040fcb - test::__rust_begin_short_backtrace::h253a2097187731c8
+  13:     0x55d7de03d260 - test::run_test::{{closure}}::h1a5d6d0603e1925c
+  14:     0x55d7de03c91c - std::sys::backtrace::__rust_begin_short_backtrace::hb67b3f617d02f8cc
+  15:     0x55d7de058b8c - core::ops::function::FnOnce::call_once{{vtable.shim}}::h920ca148ba3af64d
+  16:     0x55d7de030af8 - std::sys::thread::unix::Thread::new::thread_start::h96f969bf98c6e59d
+  17:     0x7f7de4356b7b - <unknown>
+  18:     0x7f7de43d47f8 - <unknown>
+  19:                0x0 - <unknown>
+
+
+failures:
+    original_output_certificate_rejects_invalid_vectors_and_scales
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 5 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p rodas5p-integrators --test homotopy_research_contracts`

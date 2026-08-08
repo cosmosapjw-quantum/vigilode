@@ -1,0 +1,100 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.06s
+     Running tests/unified_candidate_contracts.rs (target/debug/deps/unified_candidate_contracts-e06adfb76c7bd3d1)
+
+running 1 test
+
+thread 'catalog_exposes_all_current_and_deferred_candidate_families' (23644) panicked at crates/rodas5p-integrators/tests/unified_candidate_contracts.rs:44:5:
+assertion failed: ids.contains("sequential-lgmres-stage")
+stack backtrace:
+   0:     0x560d9253b542 - std::backtrace_rs::backtrace::libunwind::trace::h650f3484750cac6f
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/../../backtrace/src/backtrace/libunwind.rs:117:9
+   1:     0x560d9253b542 - std::backtrace_rs::backtrace::trace_unsynchronized::hee951f78e969ac04
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/../../backtrace/src/backtrace/mod.rs:66:14
+   2:     0x560d9253b542 - std::sys::backtrace::_print_fmt::hb210b023f6e87be7
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/sys/backtrace.rs:74:9
+   3:     0x560d9253b542 - <std::sys::backtrace::BacktraceLock::print::DisplayBacktrace as core::fmt::Display>::fmt::hdadc7c28d26d7ce3
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/sys/backtrace.rs:44:26
+   4:     0x560d9254c86a - core::fmt::rt::Argument::fmt::hca43ba1468fa0a13
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/fmt/rt.rs:152:76
+   5:     0x560d9254c86a - core::fmt::write::h469843d235cc4241
+   6:     0x560d92509716 - std::io::default_write_fmt::h2cd531246bd479c8
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/io/mod.rs:639:11
+   7:     0x560d92509716 - std::io::Write::write_fmt::h384251ddb7f1467c
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/io/mod.rs:1994:13
+   8:     0x560d9251a539 - std::sys::backtrace::BacktraceLock::print::hb91bd19c9b07a6b2
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/sys/backtrace.rs:47:9
+   9:     0x560d9251a539 - std::panicking::default_hook::{{closure}}::hd9d92b9a46805102
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/panicking.rs:292:27
+  10:     0x560d9251a399 - std::panicking::default_hook::hedb2be0819bbe276
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/panicking.rs:319:9
+  11:     0x560d9251a82b - std::panicking::panic_with_hook::h0fc23abecf35c6bd
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/panicking.rs:825:13
+  12:     0x560d9251a62a - std::panicking::panic_handler::{{closure}}::ha111c1a3ccf85d19
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/panicking.rs:691:13
+  13:     0x560d92515809 - std::sys::backtrace::__rust_end_short_backtrace::h41d63216e1ba5fa4
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/sys/backtrace.rs:182:18
+  14:     0x560d924fdc6d - __rustc[16f1505adc47261a]::rust_begin_unwind
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/panicking.rs:689:5
+  15:     0x560d9255569c - core::panicking::panic_fmt::hc13412975f563dde
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/panicking.rs:80:14
+  16:     0x560d92555662 - core::panicking::panic::h8bbbe005ba322b34
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/panicking.rs:150:5
+  17:     0x560d90b2bf70 - unified_candidate_contracts::catalog_exposes_all_current_and_deferred_candidate_families::h0aaf2528efc4ccb9
+                               at /mnt/data/rodas5p-unified/repo/.worktrees/unified-candidate-harness-v0.8/crates/rodas5p-integrators/tests/unified_candidate_contracts.rs:44:5
+  18:     0x560d90b2fde7 - unified_candidate_contracts::catalog_exposes_all_current_and_deferred_candidate_families::{{closure}}::h085f5361e42f629e
+                               at /mnt/data/rodas5p-unified/repo/.worktrees/unified-candidate-harness-v0.8/crates/rodas5p-integrators/tests/unified_candidate_contracts.rs:6:65
+  19:     0x560d90b42846 - core::ops::function::FnOnce::call_once::h5d3bb5a2e0a51a53
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/ops/function.rs:250:5
+  20:     0x560d90b64d0b - core::ops::function::FnOnce::call_once::hcedf29067db45234
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/ops/function.rs:250:5
+  21:     0x560d90b64d0b - test::__rust_begin_short_backtrace::h253a2097187731c8
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/test/src/lib.rs:663:18
+  22:     0x560d90b786da - test::run_test_in_process::{{closure}}::h9f29dfec2aca52f7
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/test/src/lib.rs:686:74
+  23:     0x560d90b786da - <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once::hd73326fdd719e811
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/panic/unwind_safe.rs:274:9
+  24:     0x560d90b786da - std::panicking::catch_unwind::do_call::h4acd66bf04832c2e
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/panicking.rs:581:40
+  25:     0x560d90b786da - std::panicking::catch_unwind::h145e182474d2aec9
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/panicking.rs:544:19
+  26:     0x560d90b786da - std::panic::catch_unwind::h13b3eeaad06e07e2
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/panic.rs:359:14
+  27:     0x560d90b786da - test::run_test_in_process::h8630a98bbeca471b
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/test/src/lib.rs:686:27
+  28:     0x560d90b786da - test::run_test::{{closure}}::h1a5d6d0603e1925c
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/test/src/lib.rs:607:43
+  29:     0x560d90b52af4 - test::run_test::{{closure}}::h179c37d8042186f7
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/test/src/lib.rs:637:41
+  30:     0x560d90b52af4 - std::sys::backtrace::__rust_begin_short_backtrace::hb67b3f617d02f8cc
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/sys/backtrace.rs:166:18
+  31:     0x560d90b56492 - std::thread::lifecycle::spawn_unchecked::{{closure}}::{{closure}}::h97f549af76bb89d9
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/thread/lifecycle.rs:91:13
+  32:     0x560d90b56492 - <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once::h572411d6447c3318
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/panic/unwind_safe.rs:274:9
+  33:     0x560d90b56492 - std::panicking::catch_unwind::do_call::h561e21b3bae62d2d
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/panicking.rs:581:40
+  34:     0x560d90b56492 - std::panicking::catch_unwind::hb9c2999cbf1df339
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/panicking.rs:544:19
+  35:     0x560d90b56492 - std::panic::catch_unwind::h831cfbf01bfc7230
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/panic.rs:359:14
+  36:     0x560d90b56492 - std::thread::lifecycle::spawn_unchecked::{{closure}}::hd4fd692d2bb5f73a
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/thread/lifecycle.rs:89:26
+  37:     0x560d90b56492 - core::ops::function::FnOnce::call_once{{vtable.shim}}::h920ca148ba3af64d
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/ops/function.rs:250:5
+  38:     0x560d9251092f - <alloc::boxed::Box<F,A> as core::ops::function::FnOnce<Args>>::call_once::hf477931d93d2e366
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/alloc/src/boxed.rs:2206:9
+  39:     0x560d9251092f - std::sys::thread::unix::Thread::new::thread_start::h96f969bf98c6e59d
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/sys/thread/unix.rs:130:17
+  40:     0x7f12019a7b7b - <unknown>
+  41:     0x7f1201a257f8 - <unknown>
+  42:                0x0 - <unknown>
+test catalog_exposes_all_current_and_deferred_candidate_families ... FAILED
+
+failures:
+
+failures:
+    catalog_exposes_all_current_and_deferred_candidate_families
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 9 filtered out; finished in 0.03s
+
+error: test failed, to rerun pass `-p rodas5p-integrators --test unified_candidate_contracts`

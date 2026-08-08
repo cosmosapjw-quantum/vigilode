@@ -1,0 +1,49 @@
+   Compiling rodas5p-integrators v0.1.0 (/mnt/data/rodas5p-homotopy-loop2-repo/.worktrees/homotopy-coding-loop2-v0.4/crates/rodas5p-integrators)
+   Compiling rodas5p-fair-ab v0.1.0 (/mnt/data/rodas5p-homotopy-loop2-repo/.worktrees/homotopy-coding-loop2-v0.4/crates/rodas5p-fair-ab)
+   Compiling rodas5p-cli v0.1.0 (/mnt/data/rodas5p-homotopy-loop2-repo/.worktrees/homotopy-coding-loop2-v0.4/crates/rodas5p-cli)
+    Finished `release` profile [optimized] target(s) in 33.55s
+     Running tests/cli_contracts.rs (target/release/deps/cli_contracts-f4b0adf7d53b706c)
+
+running 1 test
+error: unrecognized subcommand 'homotopy-design-check'
+
+Usage: rodas5p <COMMAND>
+
+For more information, try '--help'.
+test homotopy_design_check_is_deterministic_and_exposes_required_screens ... FAILED
+
+failures:
+
+---- homotopy_design_check_is_deterministic_and_exposes_required_screens stdout ----
+
+thread 'homotopy_design_check_is_deterministic_and_exposes_required_screens' (9706) panicked at crates/rodas5p-cli/tests/cli_contracts.rs:94:9:
+assertion failed: status.success()
+stack backtrace:
+   0:     0x55d19032a19d - <std::sys::backtrace::BacktraceLock::print::DisplayBacktrace as core::fmt::Display>::fmt::hdadc7c28d26d7ce3
+   1:     0x55d19030e49a - core::fmt::write::h469843d235cc4241
+   2:     0x55d1903295c5 - std::io::Write::write_fmt::h86cdd20e46f95ef0
+   3:     0x55d1903290ab - std::panicking::default_hook::{{closure}}::hd9d92b9a46805102
+   4:     0x55d190328d6a - std::panicking::default_hook::hedb2be0819bbe276
+   5:     0x55d190328803 - std::panicking::panic_with_hook::h0fc23abecf35c6bd
+   6:     0x55d190351918 - std::panicking::panic_handler::{{closure}}::ha111c1a3ccf85d19
+   7:     0x55d190351899 - std::sys::backtrace::__rust_end_short_backtrace::h41d63216e1ba5fa4
+   8:     0x55d19035188c - __rustc[16f1505adc47261a]::rust_begin_unwind
+   9:     0x55d19030f3eb - core::panicking::panic_fmt::hc13412975f563dde
+  10:     0x55d19030f3b1 - core::panicking::panic::h8bbbe005ba322b34
+  11:     0x55d19030a5d6 - core::ops::function::FnOnce::call_once::hbb8efae8b41da85e
+  12:     0x55d19036a36b - test::__rust_begin_short_backtrace::h253a2097187731c8
+  13:     0x55d190365e7c - test::run_test::{{closure}}::h1a5d6d0603e1925c
+  14:     0x55d1903655fc - std::sys::backtrace::__rust_begin_short_backtrace::hb67b3f617d02f8cc
+  15:     0x55d190381f2c - core::ops::function::FnOnce::call_once{{vtable.shim}}::h920ca148ba3af64d
+  16:     0x55d190359d38 - std::sys::thread::unix::Thread::new::thread_start::h96f969bf98c6e59d
+  17:     0x7f08f4fb6b7b - <unknown>
+  18:     0x7f08f50347f8 - <unknown>
+  19:                0x0 - <unknown>
+
+
+failures:
+    homotopy_design_check_is_deterministic_and_exposes_required_screens
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1 filtered out; finished in 0.01s
+
+error: test failed, to rerun pass `-p rodas5p-cli --test cli_contracts`

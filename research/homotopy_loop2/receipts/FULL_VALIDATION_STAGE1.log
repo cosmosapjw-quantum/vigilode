@@ -1,0 +1,295 @@
+=== HEAD ===
+db13d42657ccc1fee07774ffb26d49dfd4214813
+## homotopy-coding-loop2-v0.4
+=== fmt ===
+=== clippy ===
+    Checking cfg-if v1.0.4
+    Checking libm v0.2.16
+    Checking bytemuck v1.25.2
+    Checking bitflags v2.13.1
+    Checking reborrow v0.5.5
+    Checking pulp-wasm-simd-flag v0.1.1
+    Checking raw-cpuid v11.6.0
+    Checking libc v0.2.189
+    Checking dyn-stack v0.13.2
+    Checking once_cell v1.21.4
+    Checking nano-gemm-core v0.2.1
+    Checking typenum v1.20.1
+    Checking num-traits v0.2.19
+    Checking serde_core v1.0.229
+    Checking generic-array v0.14.7
+    Checking num-complex v0.4.6
+    Checking memchr v2.8.3
+    Checking pulp v0.22.3
+    Checking nano-gemm-c32 v0.2.1
+    Checking nano-gemm-c64 v0.2.1
+    Checking block-buffer v0.10.4
+    Checking crypto-common v0.1.7
+    Checking num_cpus v1.17.0
+    Checking nano-gemm-f64 v0.2.1
+    Checking gemm-common v0.19.0
+    Checking gemm-c32 v0.19.0
+    Checking gemm-f64 v0.19.0
+    Checking gemm-c64 v0.19.0
+    Checking gemm-f32 v0.19.0
+    Checking qd v0.8.0
+    Checking nano-gemm-f32 v0.2.1
+    Checking equator v0.2.2
+    Checking itoa v1.0.18
+    Checking generativity v1.2.1
+    Checking faer-traits v0.24.0
+    Checking gemm v0.19.0
+    Checking private-gemm-x86 v0.1.20
+    Checking digest v0.10.7
+    Checking equator v0.6.0
+    Checking zmij v1.0.23
+    Checking cpufeatures v0.2.17
+    Checking sha2 v0.10.9
+    Checking serde_json v1.0.151
+    Checking serde v1.0.229
+    Checking thiserror v2.0.19
+    Checking hex v0.4.3
+    Checking getrandom v0.3.4
+    Checking rand_core v0.9.5
+    Checking zerocopy v0.8.56
+    Checking nano-gemm v0.2.2
+    Checking faer v0.24.4
+    Checking ppv-lite86 v0.2.21
+    Checking rand_chacha v0.9.0
+    Checking rand v0.9.5
+    Checking csv-core v0.1.13
+    Checking ryu v1.0.23
+    Checking utf8parse v0.2.2
+    Checking anstyle-parse v1.0.0
+    Checking csv v1.4.0
+    Checking rand_distr v0.5.1
+    Checking rand_pcg v0.9.0
+    Checking anstyle v1.0.14
+    Checking anstyle-query v1.1.5
+    Checking colorchoice v1.0.5
+    Checking is_terminal_polyfill v1.70.2
+    Checking anstream v1.0.0
+    Checking strsim v0.11.1
+    Checking clap_lex v1.1.0
+    Checking clap_builder v4.6.6
+    Checking clap v4.6.6
+    Checking anyhow v1.0.104
+    Checking rodas5p-core v0.1.0 (/mnt/data/rodas5p-homotopy-loop2-repo/.worktrees/homotopy-coding-loop2-v0.4/crates/rodas5p-core)
+    Checking rodas5p-krylov v0.1.0 (/mnt/data/rodas5p-homotopy-loop2-repo/.worktrees/homotopy-coding-loop2-v0.4/crates/rodas5p-krylov)
+    Checking rodas5p-integrators v0.1.0 (/mnt/data/rodas5p-homotopy-loop2-repo/.worktrees/homotopy-coding-loop2-v0.4/crates/rodas5p-integrators)
+    Checking rodas5p-fair-ab v0.1.0 (/mnt/data/rodas5p-homotopy-loop2-repo/.worktrees/homotopy-coding-loop2-v0.4/crates/rodas5p-fair-ab)
+    Checking rodas5p-cli v0.1.0 (/mnt/data/rodas5p-homotopy-loop2-repo/.worktrees/homotopy-coding-loop2-v0.4/crates/rodas5p-cli)
+    Finished `release` profile [optimized] target(s) in 1m 22s
+=== tests ===
+   Compiling rodas5p-cli v0.1.0 (/mnt/data/rodas5p-homotopy-loop2-repo/.worktrees/homotopy-coding-loop2-v0.4/crates/rodas5p-cli)
+   Compiling rodas5p-fair-ab v0.1.0 (/mnt/data/rodas5p-homotopy-loop2-repo/.worktrees/homotopy-coding-loop2-v0.4/crates/rodas5p-fair-ab)
+   Compiling rodas5p-integrators v0.1.0 (/mnt/data/rodas5p-homotopy-loop2-repo/.worktrees/homotopy-coding-loop2-v0.4/crates/rodas5p-integrators)
+    Finished `release` profile [optimized] target(s) in 45.29s
+     Running unittests src/main.rs (target/release/deps/rodas5p-a08490db5dbf6d2d)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/bin/allocation_audit.rs (target/release/deps/rodas5p_allocation_audit-ee6e6c667a47f7ec)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/allocation_cli_contracts.rs (target/release/deps/allocation_cli_contracts-390ed4e6d95258a0)
+
+running 1 test
+test allocation_audit_reports_end_to_end_solver_allocations_and_work ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests/cli_contracts.rs (target/release/deps/cli_contracts-f4b0adf7d53b706c)
+
+running 2 tests
+test homotopy_design_check_is_deterministic_and_exposes_required_screens ... ok
+test validate_trace_and_benchmark_commands_emit_machine_readable_artifacts ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+     Running unittests src/lib.rs (target/release/deps/rodas5p_core-0017f9bf3edfd21b)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/allocation_contracts.rs (target/release/deps/allocation_contracts-553e1b66246c6827)
+
+running 1 test
+test shifted_operator_apply_is_allocation_free_after_construction ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/core_contracts.rs (target/release/deps/core_contracts-db4d22dd4ebd0ce6)
+
+running 5 tests
+test coefficient_transform_preserves_rodas5p_structure ... ok
+test dense_matrix_matvec_is_row_major_and_exact_for_small_case ... ok
+test direct_solve_agrees_with_known_solution ... ok
+test safe_l2_handles_extreme_scale ... ok
+test wrms_matches_definition ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/release/deps/rodas5p_fair_ab-d3a2f595b9ecf80d)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/fair_ab_contracts.rs (target/release/deps/fair_ab_contracts-681c96aab95a588d)
+
+running 6 tests
+test comparison_randomizes_order_but_keeps_paired_trace_identity ... ok
+test deterministic_trace_roundtrip_preserves_every_identity ... ok
+test every_rust_solver_consumes_the_same_immutable_trace_and_certifies_residuals ... ok
+test external_certificate_and_hard_budget_cover_diagnostic_work ... ok
+test recycle_lifetimes_have_distinct_and_auditable_reset_semantics ... ok
+test recycle_reset_preserves_solver_workspace_but_clears_algorithmic_state ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+
+     Running unittests src/lib.rs (target/release/deps/rodas5p_integrators-34d9f8fcd43772b1)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/homotopy_research_contracts.rs (target/release/deps/homotopy_research_contracts-d8f412a09361b37b)
+
+running 6 tests
+test affine_partial_coupling_endpoints_and_flrh_limit_hold ... ok
+test full_nilpotent_inverse_matches_direct_path_solve_for_noncommuting_mass_and_jacobian ... ok
+test low_depth_truncation_exposes_unpropagated_stage_chain ... ok
+test original_output_certificate_matches_an_exact_affine_target_correction ... ok
+test original_output_certificate_rejects_invalid_vectors_and_scales ... ok
+test partial_coupling_parameters_and_oracle_shapes_are_validated ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/integrator_contracts.rs (target/release/deps/integrator_contracts-835da5fa2514884e)
+
+running 5 tests
+test adaptive_solver_rejects_overflowing_trial_and_recovers ... ok
+test fixed_step_sequential_rodas5p_is_fifth_order ... ok
+test rust_krylov_stage_solvers_match_the_same_direct_rodas5p_oracle ... ok
+test sabr_affine_fast_path_and_transactional_fallback_are_both_exercised ... ok
+test scalar_linear_step_matches_exact_solution ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running unittests src/lib.rs (target/release/deps/rodas5p_krylov-165198e900a542f9)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/krylov_contracts.rs (target/release/deps/krylov_contracts-16bb3a6c2a05a8eb)
+
+running 5 tests
+test gcrodr_cross_operator_refresh_remains_scale_invariant ... ok
+test gcrodr_preserves_bu_equals_c_and_refreshes_changed_operator ... ok
+test gmres_uses_the_same_jacobi_preconditioner_contract ... ok
+test lgmres_commits_state_only_after_a_certified_solve ... ok
+test restarted_gmres_matches_direct_solution_and_certifies_true_residual ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/workspace_contracts.rs (target/release/deps/workspace_contracts-1b4dca15611397ec)
+
+running 2 tests
+test reusable_workspaces_preserve_all_three_solver_contracts ... ok
+test warmed_gmres_workspace_reduces_heap_allocations_without_changing_operator_work ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests rodas5p_core
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests rodas5p_fair_ab
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests rodas5p_integrators
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests rodas5p_krylov
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+=== build ===
+    Finished `release` profile [optimized] target(s) in 0.20s
+=== CLI deterministic ===
+cc6cb1c963e75415f5b35ba879d83b081a08fd7103e0f2cc27c234e63ec7743a  /mnt/data/loop2-final-check-a.json
+cc6cb1c963e75415f5b35ba879d83b081a08fd7103e0f2cc27c234e63ec7743a  /mnt/data/loop2-final-check-b.json
+=== protected diff ===
+crates/rodas5p-cli/src/main.rs
+crates/rodas5p-cli/tests/cli_contracts.rs
+crates/rodas5p-integrators/src/homotopy.rs
+crates/rodas5p-integrators/src/lib.rs
+crates/rodas5p-integrators/tests/homotopy_research_contracts.rs
+docs/superpowers/plans/2026-08-07-homotopy-coding-loop2.md
+docs/superpowers/specs/2026-08-07-homotopy-coding-loop2-design.md
+research/homotopy_loop2/harness/.agents/skills/independent-diff-review/SKILL.md
+research/homotopy_loop2/harness/.agents/skills/numerical-validation/SKILL.md
+research/homotopy_loop2/harness/.agents/skills/reproducibility-closeout/SKILL.md
+research/homotopy_loop2/harness/.agents/skills/research-code-task/SKILL.md
+research/homotopy_loop2/harness/.agents/skills/scientific-validation/SKILL.md
+research/homotopy_loop2/harness/.gitignore
+research/homotopy_loop2/harness/AGENTS.md
+research/homotopy_loop2/harness/CHANGELOG.md
+research/homotopy_loop2/harness/DECISION_LOG.md
+research/homotopy_loop2/harness/FAILURE_LOG.md
+research/homotopy_loop2/harness/LICENSE
+research/homotopy_loop2/harness/Makefile
+research/homotopy_loop2/harness/PLANS.md
+research/homotopy_loop2/harness/README.md
+research/homotopy_loop2/harness/RUN_STATE.md
+research/homotopy_loop2/harness/SCIENTIFIC_CONTRACT.md
+research/homotopy_loop2/harness/START_HERE.md
+research/homotopy_loop2/harness/VALIDATION_MATRIX.md
+research/homotopy_loop2/harness/VERSION
+research/homotopy_loop2/harness/docs/CODEX_SETUP.md
+research/homotopy_loop2/harness/docs/CUSTOMIZATION.md
+research/homotopy_loop2/harness/docs/EVAL_HARNESS.md
+research/homotopy_loop2/harness/docs/MODEL_ROUTING.md
+research/homotopy_loop2/harness/docs/PARALLELIZATION_AND_WORKTREES.md
+research/homotopy_loop2/harness/docs/RESEARCH_BASIS.md
+research/homotopy_loop2/harness/docs/SKILL_PROMOTION.md
+research/homotopy_loop2/harness/docs/WORKFLOW.md
+research/homotopy_loop2/harness/manifest.json
+research/homotopy_loop2/harness/prompts/00_ultralight.md
+research/homotopy_loop2/harness/prompts/01_deep_once.md
+research/homotopy_loop2/harness/prompts/handoff/codex_to_work.md
+research/homotopy_loop2/harness/prompts/handoff/work_to_codex.md
+research/homotopy_loop2/harness/prompts/phases/00_task_contract.md
+research/homotopy_loop2/harness/prompts/phases/01_reproduction_acceptance.md
+research/homotopy_loop2/harness/prompts/phases/02_repository_localization.md
+research/homotopy_loop2/harness/prompts/phases/03_bounded_solution_design.md
+research/homotopy_loop2/harness/prompts/phases/04_execution_plan.md
+research/homotopy_loop2/harness/prompts/phases/05_implementation.md
+research/homotopy_loop2/harness/prompts/phases/06_software_validation.md
+research/homotopy_loop2/harness/prompts/phases/07_scientific_validation.md
+research/homotopy_loop2/harness/prompts/phases/08_numerical_reproducibility.md
+research/homotopy_loop2/harness/prompts/phases/09_independent_diff_review.md
+research/homotopy_loop2/harness/prompts/phases/10_promote_revert_closeout.md
+research/homotopy_loop2/harness/prompts/review/pr_review.md
+research/homotopy_loop2/harness/tools/init_harness.py
+research/homotopy_loop2/harness/tools/validate_harness.py
+=== diff check ===
+VALIDATION_STAGE1=PASS

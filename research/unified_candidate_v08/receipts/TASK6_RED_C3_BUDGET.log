@@ -1,0 +1,68 @@
+   Compiling rodas5p-integrators v0.1.0 (/mnt/data/rodas5p-unified/repo/.worktrees/unified-candidate-harness-v0.8/crates/rodas5p-integrators)
+error[E0560]: struct `UnifiedCandidateRow` has no field named `output_budget`
+   --> crates/rodas5p-integrators/tests/unified_candidate_contracts.rs:146:9
+    |
+146 |         output_budget: 0.1,
+    |         ^^^^^^^^^^^^^ `UnifiedCandidateRow` does not have this field
+    |
+    = note: all struct fields are already assigned
+
+error[E0560]: struct `UnifiedCandidateRow` has no field named `c3_output_budget_pass`
+   --> crates/rodas5p-integrators/tests/unified_candidate_contracts.rs:147:9
+    |
+147 |         c3_output_budget_pass: Some(true),
+    |         ^^^^^^^^^^^^^^^^^^^^^ `UnifiedCandidateRow` does not have this field
+    |
+    = note: all struct fields are already assigned
+
+error[E0560]: struct `UnifiedCandidateRow` has no field named `oracle_output_budget_pass`
+   --> crates/rodas5p-integrators/tests/unified_candidate_contracts.rs:148:9
+    |
+148 |         oracle_output_budget_pass: Some(true),
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^ `UnifiedCandidateRow` does not have this field
+    |
+    = note: all struct fields are already assigned
+
+error[E0560]: struct `UnifiedCandidateRow` has no field named `c3_false_accept`
+   --> crates/rodas5p-integrators/tests/unified_candidate_contracts.rs:149:9
+    |
+149 |         c3_false_accept: false,
+    |         ^^^^^^^^^^^^^^^ `UnifiedCandidateRow` does not have this field
+    |
+    = note: all struct fields are already assigned
+
+error[E0609]: no field `output_budget` on type `UnifiedNonlinearScreen`
+   --> crates/rodas5p-integrators/tests/unified_candidate_contracts.rs:215:23
+    |
+215 |     assert_eq!(report.output_budget, 0.1);
+    |                       ^^^^^^^^^^^^^ unknown field
+    |
+    = note: available fields are: `schema`, `status`, `profile`, `threads`, `atol` ... and 6 others
+
+error[E0609]: no field `c3_output_budget_pass` on type `&UnifiedCandidateRow`
+   --> crates/rodas5p-integrators/tests/unified_candidate_contracts.rs:218:16
+    |
+218 |         if row.c3_output_budget_pass == Some(true) {
+    |                ^^^^^^^^^^^^^^^^^^^^^ unknown field
+    |
+    = note: available fields are: `candidate_id`, `family`, `case_id`, `outcome`, `scientifically_certified` ... and 20 others
+
+error[E0609]: no field `c3_output_budget_pass` on type `&UnifiedCandidateRow`
+   --> crates/rodas5p-integrators/tests/unified_candidate_contracts.rs:224:16
+    |
+224 |         if row.c3_output_budget_pass == Some(false) {
+    |                ^^^^^^^^^^^^^^^^^^^^^ unknown field
+    |
+    = note: available fields are: `candidate_id`, `family`, `case_id`, `outcome`, `scientifically_certified` ... and 20 others
+
+error[E0609]: no field `c3_false_accept` on type `&UnifiedCandidateRow`
+   --> crates/rodas5p-integrators/tests/unified_candidate_contracts.rs:227:22
+    |
+227 |         assert!(!row.c3_false_accept, "{}", row.candidate_id);
+    |                      ^^^^^^^^^^^^^^^ unknown field
+    |
+    = note: available fields are: `candidate_id`, `family`, `case_id`, `outcome`, `scientifically_certified` ... and 20 others
+
+Some errors have detailed explanations: E0560, E0609.
+For more information about an error, try `rustc --explain E0560`.
+error: could not compile `rodas5p-integrators` (test "unified_candidate_contracts") due to 8 previous errors

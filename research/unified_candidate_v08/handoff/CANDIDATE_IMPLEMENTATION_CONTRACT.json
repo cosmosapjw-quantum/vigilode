@@ -1,0 +1,35 @@
+{
+  "schema": "rodas5p-candidate-implementation-contract-v1",
+  "frozen_parent_cycle": "unified-candidate-v0.8",
+  "required_interfaces": [
+    "stable candidate identifier",
+    "candidate family and capability claims",
+    "one-step output and embedded/local error record",
+    "complete work counters",
+    "candidate, certificate, fallback, and total timing",
+    "deterministic sort key and checksum projection",
+    "explicit rejection/failure/restart semantics"
+  ],
+  "common_scientific_gates": {
+    "oracle_false_acceptances": 0,
+    "global_order_floor_for_fifth_order_claim": 4.5,
+    "stiff_gate": "method-claim appropriate and no regression against its protected oracle",
+    "nonnormal_mass_gate": true,
+    "thread_scientific_identity": true
+  },
+  "common_performance_gate": {
+    "median_wall_speedup_minimum": 1.15,
+    "fallback_inclusive": true,
+    "serialization_excluded": true,
+    "scalar_work_and_batch_depth_reported_separately": true
+  },
+  "deferred_families": [
+    "bdf",
+    "radau-irk",
+    "peer-w",
+    "parallel-sdc",
+    "rosenbrock-krylov",
+    "borok",
+    "exponential-leja"
+  ]
+}

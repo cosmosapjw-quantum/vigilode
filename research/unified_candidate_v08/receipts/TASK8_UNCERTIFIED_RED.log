@@ -1,0 +1,19 @@
+   Compiling rodas5p-integrators v0.1.0 (/mnt/data/rodas5p-unified/repo/.worktrees/unified-candidate-harness-v0.8/crates/rodas5p-integrators)
+error[E0560]: struct `UnifiedCandidateRow` has no field named `refined_root_termination`
+   --> crates/rodas5p-integrators/tests/unified_candidate_contracts.rs:144:9
+    |
+144 |         refined_root_termination: Some("iteration budget exhausted".int...
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^ `UnifiedCandidateRow` does not have this field
+    |
+    = note: all struct fields are already assigned
+
+error[E0560]: struct `UnifiedCandidateRow` has no field named `refined_root_termination`
+   --> crates/rodas5p-integrators/tests/unified_candidate_contracts.rs:185:9
+    |
+185 |         refined_root_termination: Some("residual and correction toleran...
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^ `UnifiedCandidateRow` does not have this field
+    |
+    = note: all struct fields are already assigned
+
+For more information about this error, try `rustc --explain E0560`.
+error: could not compile `rodas5p-integrators` (test "unified_candidate_contracts") due to 2 previous errors

@@ -1,0 +1,359 @@
+{
+  "absolute_winner_gate_counts": {
+    "fifth_order_pass": 12,
+    "low_depth_nonempty": 3,
+    "promote": 0,
+    "rows": 15,
+    "stiff_regression_pass": 7
+  },
+  "canonical_profile": "canonical",
+  "conclusions": [
+    "Only the three absolute-budget policies have zero false accepts on both calibration and holdout replay.",
+    "Embedded-relative, step-power, and mixed family winners exhibit holdout false accepts, concentrated in manufactured-mass and Prothero-Robinson cases.",
+    "No homotopy trajectory gate is promoted: low-depth absolute paths lose fifth order or stiff robustness, while fifth-order/stiff-safe q=7 or corrected paths are not low depth.",
+    "Rayon produces byte-identical scientific fields across one and four threads, but end-to-end canonical speedup is modest because source generation and 108 MiB JSON materialization remain serial-dominant."
+  ],
+  "family_winners": [
+    {
+      "calibration": {
+        "accepts": 1865,
+        "evaluable_rows": 4176,
+        "failures": 0,
+        "fallback_fraction": 0.5534003831417624,
+        "false_accepts": 0,
+        "low_depth_accepts": 205,
+        "median_w_solve_batches_accepted": 21.0,
+        "median_w_solve_vectors_accepted": 168.0,
+        "policy_family": "absolute",
+        "policy_id": "absolute-e1.000000e-1",
+        "rows": 4176,
+        "split": "calibration"
+      },
+      "holdout": {
+        "accepts": 1645,
+        "evaluable_rows": 4032,
+        "failures": 0,
+        "fallback_fraction": 0.5920138888888888,
+        "false_accepts": 0,
+        "low_depth_accepts": 196,
+        "median_w_solve_batches_accepted": 21.0,
+        "median_w_solve_vectors_accepted": 168.0,
+        "policy_family": "absolute",
+        "policy_id": "absolute-e1.000000e-1",
+        "rows": 4032,
+        "split": "holdout"
+      },
+      "policy_family": "absolute",
+      "policy_id": "absolute-e1.000000e-1"
+    },
+    {
+      "calibration": {
+        "accepts": 658,
+        "evaluable_rows": 4176,
+        "failures": 0,
+        "fallback_fraction": 0.8424329501915708,
+        "false_accepts": 19,
+        "low_depth_accepts": 0,
+        "median_w_solve_batches_accepted": 32.0,
+        "median_w_solve_vectors_accepted": 256.0,
+        "policy_family": "embedded-relative",
+        "policy_id": "embedded-relative-eta2.000000e-1",
+        "rows": 4176,
+        "split": "calibration"
+      },
+      "holdout": {
+        "accepts": 710,
+        "evaluable_rows": 4032,
+        "failures": 0,
+        "fallback_fraction": 0.8239087301587301,
+        "false_accepts": 85,
+        "low_depth_accepts": 4,
+        "median_w_solve_batches_accepted": 32.0,
+        "median_w_solve_vectors_accepted": 256.0,
+        "policy_family": "embedded-relative",
+        "policy_id": "embedded-relative-eta2.000000e-1",
+        "rows": 4032,
+        "split": "holdout"
+      },
+      "policy_family": "embedded-relative",
+      "policy_id": "embedded-relative-eta2.000000e-1"
+    },
+    {
+      "calibration": {
+        "accepts": 461,
+        "evaluable_rows": 4176,
+        "failures": 0,
+        "fallback_fraction": 0.8896072796934866,
+        "false_accepts": 31,
+        "low_depth_accepts": 0,
+        "median_w_solve_batches_accepted": 40.0,
+        "median_w_solve_vectors_accepted": 320.0,
+        "policy_family": "step-power",
+        "policy_id": "step-power-e1.000000e-2-href4.000000e-2-p6",
+        "rows": 4176,
+        "split": "calibration"
+      },
+      "holdout": {
+        "accepts": 425,
+        "evaluable_rows": 4032,
+        "failures": 0,
+        "fallback_fraction": 0.894593253968254,
+        "false_accepts": 59,
+        "low_depth_accepts": 0,
+        "median_w_solve_batches_accepted": 40.0,
+        "median_w_solve_vectors_accepted": 320.0,
+        "policy_family": "step-power",
+        "policy_id": "step-power-e1.000000e-2-href4.000000e-2-p6",
+        "rows": 4032,
+        "split": "holdout"
+      },
+      "policy_family": "step-power",
+      "policy_id": "step-power-e1.000000e-2-href4.000000e-2-p6"
+    },
+    {
+      "calibration": {
+        "accepts": 402,
+        "evaluable_rows": 4176,
+        "failures": 0,
+        "fallback_fraction": 0.9037356321839081,
+        "false_accepts": 6,
+        "low_depth_accepts": 0,
+        "median_w_solve_batches_accepted": 40.0,
+        "median_w_solve_vectors_accepted": 320.0,
+        "policy_family": "mixed",
+        "policy_id": "mixed-eta1.000000e-1-e1.000000e-2-href4.000000e-2-p6",
+        "rows": 4176,
+        "split": "calibration"
+      },
+      "holdout": {
+        "accepts": 327,
+        "evaluable_rows": 4032,
+        "failures": 0,
+        "fallback_fraction": 0.9188988095238095,
+        "false_accepts": 53,
+        "low_depth_accepts": 0,
+        "median_w_solve_batches_accepted": 40.0,
+        "median_w_solve_vectors_accepted": 320.0,
+        "policy_family": "mixed",
+        "policy_id": "mixed-eta1.000000e-1-e1.000000e-2-href4.000000e-2-p6",
+        "rows": 4032,
+        "split": "holdout"
+      },
+      "policy_family": "mixed",
+      "policy_id": "mixed-eta1.000000e-1-e1.000000e-2-href4.000000e-2-p6"
+    }
+  ],
+  "homotopy_promoted_gate_count": 0,
+  "method_specific_false_accepts": {
+    "absolute": {
+      "homotopy-theta0-q0-r2-ab2-c0": 0,
+      "homotopy-theta0-q1-r2-ab2-c0": 0,
+      "homotopy-theta0-q2-r2-ab2-c0": 0,
+      "homotopy-theta1-q2-r2-ab2-c1": 0,
+      "homotopy-theta1-q7-r2-ab2-c1": 0
+    },
+    "embedded-relative": {
+      "homotopy-theta0-q0-r2-ab2-c0": 0,
+      "homotopy-theta0-q1-r2-ab2-c0": 0,
+      "homotopy-theta0-q2-r2-ab2-c0": 0,
+      "homotopy-theta1-q2-r2-ab2-c1": 2,
+      "homotopy-theta1-q7-r2-ab2-c1": 2
+    },
+    "mixed": {
+      "homotopy-theta0-q0-r2-ab2-c0": 0,
+      "homotopy-theta0-q1-r2-ab2-c0": 0,
+      "homotopy-theta0-q2-r2-ab2-c0": 0,
+      "homotopy-theta1-q2-r2-ab2-c1": 2,
+      "homotopy-theta1-q7-r2-ab2-c1": 2
+    },
+    "step-power": {
+      "homotopy-theta0-q0-r2-ab2-c0": 0,
+      "homotopy-theta0-q1-r2-ab2-c0": 0,
+      "homotopy-theta0-q2-r2-ab2-c0": 0,
+      "homotopy-theta1-q2-r2-ab2-c1": 2,
+      "homotopy-theta1-q7-r2-ab2-c1": 2
+    }
+  },
+  "policy_grid_size": 19,
+  "replay_rows": 155952,
+  "safe_both_splits": [
+    {
+      "calibration_accepts": 1865,
+      "calibration_low_depth_accepts": 205,
+      "holdout_accepts": 1645,
+      "holdout_fallback_fraction": 0.5920138888888888,
+      "holdout_low_depth_accepts": 196,
+      "policy_family": "absolute",
+      "policy_id": "absolute-e1.000000e-1"
+    },
+    {
+      "calibration_accepts": 1679,
+      "calibration_low_depth_accepts": 181,
+      "holdout_accepts": 1418,
+      "holdout_fallback_fraction": 0.6483134920634921,
+      "holdout_low_depth_accepts": 129,
+      "policy_family": "absolute",
+      "policy_id": "absolute-e1.000000e-2"
+    },
+    {
+      "calibration_accepts": 1753,
+      "calibration_low_depth_accepts": 191,
+      "holdout_accepts": 1530,
+      "holdout_fallback_fraction": 0.6205357142857143,
+      "holdout_low_depth_accepts": 167,
+      "policy_family": "absolute",
+      "policy_id": "absolute-e3.000000e-2"
+    }
+  ],
+  "schema": "rodas5p-homotopy-order-policy-analysis-v1",
+  "scientific_fields_equal_threads_1_4": true,
+  "source_summary": {
+    "candidates": 8208,
+    "cases": 57,
+    "controls": 114,
+    "failures": 0,
+    "fallbacks": 4698,
+    "false_accepts": 0,
+    "fast_accepts": 3510,
+    "q_summary": [
+      {
+        "failures": 0,
+        "fallbacks": 1679,
+        "false_accepts": 0,
+        "fast_accepts": 373,
+        "median_oracle_output_wrms": 365.42268558667513,
+        "q": 0,
+        "rows": 2052
+      },
+      {
+        "failures": 0,
+        "fallbacks": 1267,
+        "false_accepts": 0,
+        "fast_accepts": 785,
+        "median_oracle_output_wrms": 2.782540903591733,
+        "q": 1,
+        "rows": 2052
+      },
+      {
+        "failures": 0,
+        "fallbacks": 1194,
+        "false_accepts": 0,
+        "fast_accepts": 858,
+        "median_oracle_output_wrms": 1.9796566411300236,
+        "q": 2,
+        "rows": 2052
+      },
+      {
+        "failures": 0,
+        "fallbacks": 558,
+        "false_accepts": 0,
+        "fast_accepts": 1494,
+        "median_oracle_output_wrms": 3.384458141011944e-10,
+        "q": 7,
+        "rows": 2052
+      }
+    ]
+  },
+  "thread_scaling": {
+    "median_seconds": {
+      "1": 2.8157376320000367,
+      "2": 2.806766696000068,
+      "4": 2.6175568059998113
+    },
+    "parallel_efficiency": {
+      "2": 0.5015980907876585,
+      "4": 0.26892803487072053
+    },
+    "speedup": {
+      "2": 1.003196181575317,
+      "4": 1.0757121394828821
+    },
+    "values_seconds": {
+      "1": [
+        2.8157376320000367,
+        2.773932743000387,
+        2.9471289590001106,
+        2.9421440500000244,
+        2.7908439259999795
+      ],
+      "2": [
+        2.806715546000305,
+        2.806766696000068,
+        2.920032977000119,
+        2.6854235969999536,
+        2.935580365000078
+      ],
+      "4": [
+        2.6175568059998113,
+        2.569558897999741,
+        2.6888621919997604,
+        2.599257374999979,
+        2.6300338109999757
+      ]
+    }
+  },
+  "trajectory_gates": 63,
+  "trajectory_rows": 252,
+  "winner_false_accept_details": [
+    {
+      "by_case_family": {},
+      "by_q": {},
+      "holdout_false_accepts": 0,
+      "oracle_to_certificate_ratio_max": null,
+      "oracle_to_certificate_ratio_median": null,
+      "policy_family": "absolute",
+      "policy_id": "absolute-e1.000000e-1"
+    },
+    {
+      "by_case_family": {
+        "manufactured-mass": 66,
+        "manufactured-vector": 9,
+        "prothero-robinson": 10
+      },
+      "by_q": {
+        "1": 16,
+        "2": 12,
+        "7": 57
+      },
+      "holdout_false_accepts": 85,
+      "oracle_to_certificate_ratio_max": 502.5005076400796,
+      "oracle_to_certificate_ratio_median": 32.055528879267285,
+      "policy_family": "embedded-relative",
+      "policy_id": "embedded-relative-eta2.000000e-1"
+    },
+    {
+      "by_case_family": {
+        "manufactured-mass": 45,
+        "prothero-robinson": 13,
+        "scalar-linear": 1
+      },
+      "by_q": {
+        "1": 4,
+        "2": 12,
+        "7": 43
+      },
+      "holdout_false_accepts": 59,
+      "oracle_to_certificate_ratio_max": 502.5005076400796,
+      "oracle_to_certificate_ratio_median": 64.5494435205143,
+      "policy_family": "step-power",
+      "policy_id": "step-power-e1.000000e-2-href4.000000e-2-p6"
+    },
+    {
+      "by_case_family": {
+        "manufactured-mass": 43,
+        "prothero-robinson": 9,
+        "scalar-linear": 1
+      },
+      "by_q": {
+        "1": 6,
+        "2": 12,
+        "7": 35
+      },
+      "holdout_false_accepts": 53,
+      "oracle_to_certificate_ratio_max": 502.5005076400796,
+      "oracle_to_certificate_ratio_median": 66.27887749773511,
+      "policy_family": "mixed",
+      "policy_id": "mixed-eta1.000000e-1-e1.000000e-2-href4.000000e-2-p6"
+    }
+  ]
+}

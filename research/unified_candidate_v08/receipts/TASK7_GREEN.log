@@ -1,0 +1,12 @@
+Command:
+  cargo fmt --all -- --check
+  cargo clippy -p rodas5p-cli --all-targets --release --offline --locked -- -D warnings
+  cargo test -p rodas5p-cli --test cli_contracts unified_candidate_screen_combines_linear_and_nonlinear_tiers --offline --locked -- --nocapture
+
+Results:
+  fmt: PASS
+  release clippy: PASS
+  focused CLI contract: 1 passed, 0 failed
+
+Note:
+  A full release CLI test link was started but exceeded the container command window while building the fat-LTO test binary. It was not treated as a test failure. The focused debug-profile contract completed successfully; full exact-HEAD release validation remains a final-gate task.

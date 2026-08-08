@@ -1,0 +1,33 @@
+   Compiling rodas5p-krylov v0.1.0 (/mnt/data/rodas5p-unified/repo/.worktrees/unified-candidate-harness-v0.8/crates/rodas5p-krylov)
+   Compiling rodas5p-cli v0.1.0 (/mnt/data/rodas5p-unified/repo/.worktrees/unified-candidate-harness-v0.8/crates/rodas5p-cli)
+   Compiling rodas5p-integrators v0.1.0 (/mnt/data/rodas5p-unified/repo/.worktrees/unified-candidate-harness-v0.8/crates/rodas5p-integrators)
+   Compiling rodas5p-fair-ab v0.1.0 (/mnt/data/rodas5p-unified/repo/.worktrees/unified-candidate-harness-v0.8/crates/rodas5p-fair-ab)
+error[E0425]: cannot find function `nonlinear_performance_verdict` in this scope
+   --> crates/rodas5p-cli/src/main.rs:818:35
+    |
+818 |         let (verdict, blockers) = nonlinear_performance_verdict(
+    |                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0282]: type annotations needed
+   --> crates/rodas5p-cli/src/main.rs:829:17
+    |
+829 |         assert!(blockers.iter().any(|blocker| {
+    |                 ^^^^^^^^ cannot infer type
+
+error[E0282]: type annotations needed
+   --> crates/rodas5p-cli/src/main.rs:829:38
+    |
+829 | ...   assert!(blockers.iter().any(|blocker| {
+    |                                    ^^^^^^^
+830 | ...       blocker.contains("median nonlinear candidate wall speedup bel...
+    |           ------- type must be known at this point
+    |
+help: consider giving this closure parameter an explicit type
+    |
+829 |         assert!(blockers.iter().any(|blocker: /* Type */| {
+    |                                             ++++++++++++
+
+Some errors have detailed explanations: E0282, E0425.
+For more information about an error, try `rustc --explain E0282`.
+error: could not compile `rodas5p-cli` (bin "rodas5p" test) due to 3 previous errors
+warning: build failed, waiting for other jobs to finish...

@@ -1,0 +1,32 @@
+   Compiling rodas5p-integrators v0.1.0 (/mnt/data/rodas5p-homotopy-v06-main/.worktrees/order-policy-rayon/crates/rodas5p-integrators)
+error[E0432]: unresolved import `rodas5p_integrators::ParallelExecution`
+  --> crates/rodas5p-integrators/tests/homotopy_policy_contracts.rs:48:9
+   |
+48 |     use rodas5p_integrators::ParallelExecution;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ no `ParallelExecution` in the root
+
+error[E0282]: type annotations needed
+  --> crates/rodas5p-integrators/tests/homotopy_policy_contracts.rs:54:31
+   |
+54 |         .map_ordered(&items, |value| Ok(value.wrapping_mul(*value)))
+   |                               ^^^^^     ----- type must be known at this point
+   |
+help: consider giving this closure parameter an explicit type
+   |
+54 |         .map_ordered(&items, |value: /* Type */| Ok(value.wrapping_mul(*value)))
+   |                                    ++++++++++++
+
+error[E0282]: type annotations needed
+  --> crates/rodas5p-integrators/tests/homotopy_policy_contracts.rs:57:31
+   |
+57 |         .map_ordered(&items, |value| Ok(value.wrapping_mul(*value)))
+   |                               ^^^^^     ----- type must be known at this point
+   |
+help: consider giving this closure parameter an explicit type
+   |
+57 |         .map_ordered(&items, |value: /* Type */| Ok(value.wrapping_mul(*value)))
+   |                                    ++++++++++++
+
+Some errors have detailed explanations: E0282, E0432.
+For more information about an error, try `rustc --explain E0282`.
+error: could not compile `rodas5p-integrators` (test "homotopy_policy_contracts") due to 3 previous errors

@@ -1,0 +1,42 @@
+   Compiling rodas5p-integrators v0.1.0 (/mnt/data/rodas5p-homotopy-loop2-repo/.worktrees/homotopy-coding-loop2-v0.4/crates/rodas5p-integrators)
+error[E0599]: no method named `certify_target` found for struct `AffinePartialCouplingOracle` in the current scope
+   --> crates/rodas5p-integrators/tests/homotopy_research_contracts.rs:180:30
+    |
+180 |     let certificate = oracle.certify_target(&perturbed, &scale).unwrap();
+    |                              ^^^^^^^^^^^^^^ method not found in `AffinePartialCouplingOracle`
+
+error[E0599]: no method named `certify_target` found for struct `AffinePartialCouplingOracle` in the current scope
+   --> crates/rodas5p-integrators/tests/homotopy_research_contracts.rs:195:36
+    |
+195 | ...certificate = oracle.certify_target(&endpoint, &scale).unwrap();
+    |                         ^^^^^^^^^^^^^^ method not found in `AffinePartialCouplingOracle`
+
+error[E0599]: no method named `certify_target` found for struct `AffinePartialCouplingOracle` in the current scope
+   --> crates/rodas5p-integrators/tests/homotopy_research_contracts.rs:208:14
+    |
+207 | /         oracle
+208 | |             .certify_target(&endpoint[..endpoint.len() - 1], &[1.0, 1...
+    | |             -^^^^^^^^^^^^^^ method not found in `AffinePartialCouplingOracle`
+    | |_____________|
+    |
+
+error[E0599]: no method named `certify_target` found for struct `AffinePartialCouplingOracle` in the current scope
+   --> crates/rodas5p-integrators/tests/homotopy_research_contracts.rs:211:20
+    |
+211 |     assert!(oracle.certify_target(&endpoint, &[1.0]).is_err());
+    |                    ^^^^^^^^^^^^^^ method not found in `AffinePartialCouplingOracle`
+
+error[E0599]: no method named `certify_target` found for struct `AffinePartialCouplingOracle` in the current scope
+   --> crates/rodas5p-integrators/tests/homotopy_research_contracts.rs:212:20
+    |
+212 |     assert!(oracle.certify_target(&endpoint, &[1.0, 0.0]).is_err());
+    |                    ^^^^^^^^^^^^^^ method not found in `AffinePartialCouplingOracle`
+
+error[E0599]: no method named `certify_target` found for struct `AffinePartialCouplingOracle` in the current scope
+   --> crates/rodas5p-integrators/tests/homotopy_research_contracts.rs:215:20
+    |
+215 |     assert!(oracle.certify_target(&nonfinite, &[1.0, 1.0]).is_err());
+    |                    ^^^^^^^^^^^^^^ method not found in `AffinePartialCouplingOracle`
+
+For more information about this error, try `rustc --explain E0599`.
+error: could not compile `rodas5p-integrators` (test "homotopy_research_contracts") due to 6 previous errors

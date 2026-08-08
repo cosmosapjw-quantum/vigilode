@@ -1,0 +1,6 @@
+Release binary: target/release/rodas5p
+Manual std::simd or architecture intrinsics added by this cycle: no
+Stable numerical backend: faer 0.24.4 / pulp runtime kernels
+Observed disassembly: AVX-512 zmm instructions are present in the binary.
+Dynamic dependencies: libgcc_s, libm, libc only; no BLAS/LAPACK/OpenBLAS/MKL shared library.
+Interpretation: confirms vectorized code is present, not that a specific experiment hotspot used it.

@@ -1,0 +1,209 @@
+{
+  "benchmark_code_head": "d34dee5f55106bfda9f7a4c6667dbdce531b8622",
+  "claims": {
+    "hold": [
+      "default GCRO-DR backend",
+      "unconditional cross-step recycling",
+      "production performance claims",
+      "sparse/MPI/GPU claims",
+      "homotopy implementation"
+    ],
+    "promote": [
+      "Rust parity implementation as research baseline",
+      "common Rust kernels and release binary",
+      "external true-residual certification",
+      "immutable trace SHA identities"
+    ]
+  },
+  "core": {
+    "aggregates": {
+      "gcrodr/off": {
+        "cells": 12,
+        "failures": 0,
+        "maximum_relative_solution_error": 3.503698786139455e-08,
+        "operator_ratio_to_gmres_max": 1.06315445026178,
+        "operator_ratio_to_gmres_median": 1.0179914809126256,
+        "operator_ratio_to_gmres_min": 1.0041530703055472,
+        "wall_ratio_to_gmres_max": 1.816597132744116,
+        "wall_ratio_to_gmres_median": 1.4946053980282503,
+        "wall_ratio_to_gmres_min": 1.2427821704186262
+      },
+      "gcrodr/persistent": {
+        "cells": 12,
+        "failures": 0,
+        "maximum_relative_solution_error": 2.966673826627355e-08,
+        "operator_ratio_to_gmres_max": 1.2007031936712569,
+        "operator_ratio_to_gmres_median": 1.0952496096772744,
+        "operator_ratio_to_gmres_min": 0.886166253101737,
+        "wall_ratio_to_gmres_max": 1.709248526397252,
+        "wall_ratio_to_gmres_median": 1.5654038123555627,
+        "wall_ratio_to_gmres_min": 1.4347877209085027
+      },
+      "gcrodr/stage": {
+        "cells": 12,
+        "failures": 0,
+        "maximum_relative_solution_error": 3.567393651021768e-08,
+        "operator_ratio_to_gmres_max": 1.1848813360679753,
+        "operator_ratio_to_gmres_median": 1.0543865599128326,
+        "operator_ratio_to_gmres_min": 0.9010545905707196,
+        "wall_ratio_to_gmres_max": 1.6418717127512052,
+        "wall_ratio_to_gmres_median": 1.5797440788516885,
+        "wall_ratio_to_gmres_min": 1.419446031008814
+      },
+      "gmres/off": {
+        "cells": 12,
+        "failures": 0,
+        "maximum_relative_solution_error": 3.3890530521941806e-08,
+        "operator_ratio_to_gmres_max": 1.0,
+        "operator_ratio_to_gmres_median": 1.0,
+        "operator_ratio_to_gmres_min": 1.0,
+        "wall_ratio_to_gmres_max": 1.0,
+        "wall_ratio_to_gmres_median": 1.0,
+        "wall_ratio_to_gmres_min": 1.0
+      },
+      "lgmres/off": {
+        "cells": 12,
+        "failures": 0,
+        "maximum_relative_solution_error": 3.0249154777880335e-08,
+        "operator_ratio_to_gmres_max": 1.0463096960926195,
+        "operator_ratio_to_gmres_median": 1.021100601053231,
+        "operator_ratio_to_gmres_min": 0.9774547611984574,
+        "wall_ratio_to_gmres_max": 1.0366946654132398,
+        "wall_ratio_to_gmres_median": 0.9698161352854049,
+        "wall_ratio_to_gmres_min": 0.887742903089357
+      },
+      "lgmres/persistent": {
+        "cells": 12,
+        "failures": 0,
+        "maximum_relative_solution_error": 3.5741223999387735e-08,
+        "operator_ratio_to_gmres_max": 1.1462696335078535,
+        "operator_ratio_to_gmres_median": 1.1194917519512684,
+        "operator_ratio_to_gmres_min": 1.0836547018688816,
+        "wall_ratio_to_gmres_max": 1.4256374315058855,
+        "wall_ratio_to_gmres_median": 1.2429803610223125,
+        "wall_ratio_to_gmres_min": 1.1688340631906686
+      },
+      "lgmres/stage": {
+        "cells": 12,
+        "failures": 0,
+        "maximum_relative_solution_error": 2.9354884346310952e-08,
+        "operator_ratio_to_gmres_max": 1.1410340314136125,
+        "operator_ratio_to_gmres_median": 1.0943220977117387,
+        "operator_ratio_to_gmres_min": 1.059185467330794,
+        "wall_ratio_to_gmres_max": 1.426117051797643,
+        "wall_ratio_to_gmres_median": 1.2310602972753013,
+        "wall_ratio_to_gmres_min": 1.1395432987730294
+      }
+    },
+    "cells": 12,
+    "dimensions": [
+      64,
+      128,
+      256
+    ],
+    "failures": 0,
+    "fastest_counts": {
+      "gmres/off": 3,
+      "lgmres/off": 9
+    },
+    "gcrodr_persistent_vs_off_by_dimension": {
+      "128": {
+        "persistent_operator_over_off_median": 1.0865887969755517,
+        "persistent_wall_over_off_median": 1.1161218281384135
+      },
+      "256": {
+        "persistent_operator_over_off_median": 1.1272017031770802,
+        "persistent_wall_over_off_median": 1.1531933933428018
+      },
+      "64": {
+        "persistent_operator_over_off_median": 0.8749047823076705,
+        "persistent_wall_over_off_median": 0.886484519542157
+      }
+    },
+    "solver_cells": 84,
+    "trace_kinds": [
+      "fixed",
+      "slow-drift",
+      "abrupt",
+      "rotating"
+    ]
+  },
+  "faer": "0.24.4, default-features=false, features=[std,linalg,sparse-linalg]",
+  "jacobi": {
+    "aggregates": {
+      "gcrodr/off": {
+        "failures": 0,
+        "operator_ratio_to_gmres_median": 1.0,
+        "wall_ratio_to_gmres_median": 1.5774458466277244
+      },
+      "gcrodr/persistent": {
+        "failures": 0,
+        "operator_ratio_to_gmres_median": 0.8135593220338984,
+        "wall_ratio_to_gmres_median": 1.4049400636209368
+      },
+      "gcrodr/stage": {
+        "failures": 0,
+        "operator_ratio_to_gmres_median": 0.817470664928292,
+        "wall_ratio_to_gmres_median": 1.417663089680699
+      },
+      "gmres/off": {
+        "failures": 0,
+        "operator_ratio_to_gmres_median": 1.0,
+        "wall_ratio_to_gmres_median": 1.0
+      },
+      "lgmres/off": {
+        "failures": 0,
+        "operator_ratio_to_gmres_median": 0.7913950456323338,
+        "wall_ratio_to_gmres_median": 0.6655686090235174
+      },
+      "lgmres/persistent": {
+        "failures": 0,
+        "operator_ratio_to_gmres_median": 0.8070404172099088,
+        "wall_ratio_to_gmres_median": 0.9217891583126596
+      },
+      "lgmres/stage": {
+        "failures": 0,
+        "operator_ratio_to_gmres_median": 0.7913950456323338,
+        "wall_ratio_to_gmres_median": 0.7809676588504911
+      }
+    },
+    "cells": 8,
+    "dimensions": [
+      64,
+      128
+    ],
+    "failures": 0
+  },
+  "schema": "rodas5p-rust-parity-summary-v1",
+  "strict_environment": {
+    "cpu_affinity": "CPU 0",
+    "release_profile": "opt-level=3,lto=fat,codegen-units=1,panic=abort",
+    "threads": 1
+  },
+  "toolchain": "rustc 1.94.1 (e408947bf 2026-03-25)",
+  "trace_ids": {
+    "n128:abrupt": "003fe57706571e0231bfc10bcb1ec07e05d39e3c70d7dc747fe2fb8c63c0fc88",
+    "n128:fixed": "a0236d8a1b0a45cf587d5a90d7c26e1ef3c2b1ee1c3538d03c58a28739b706da",
+    "n128:rotating": "69c5b27702b2cb8ac7908db9f476cd96aab3b53ea63b57aa7ed76a100dfdd905",
+    "n128:slow-drift": "f30304683fd429e19cd84802111c21c75d0be5724440d12de66a5e11be8fc87f",
+    "n256:abrupt": "9fb7f9fa7f5b5cf6bcacd3550bf6c9d4f9446dbcb3196dbfdc68a42fae1d2c1b",
+    "n256:fixed": "c6efd3b4f46e03468f9f29953310fe1b64bcc3aa295802f6daae92c9ce430514",
+    "n256:rotating": "6a16bef9451a1f7e2a8db8af8e3eb9bb12316ebc04060894df8f140d838e2069",
+    "n256:slow-drift": "92169bc5d19d6ce180b296cc6cf1beb1b41d832f7a6ea5fbb940712d13cba876",
+    "n64:abrupt": "bfff1b415f703c48f71271e0e70ebfca6c6d78e2477e328d38d5a572af48829b",
+    "n64:fixed": "5ced04905d25218005531048d2db10e8c1b128d331dbbc7bda0efd7891ff8838",
+    "n64:rotating": "0c34c4186f19ad7e7edd8e750d73d48f7c9fd9c34fc4d626834e808085cbdda0",
+    "n64:slow-drift": "2cc0e55b3cffcc8cbb1c817bd32e549969dd15434d5198defeda15035b5f0597"
+  },
+  "zero_guess": {
+    "dimension": 128,
+    "operator_ratio_median": 1.0162982365658104,
+    "trace_kinds": [
+      "fixed",
+      "rotating"
+    ],
+    "wall_ratio_max": 1.084069001283765,
+    "wall_ratio_median": 0.999744825462535,
+    "wall_ratio_min": 0.9399075134361877
+  }
+}

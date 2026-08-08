@@ -1,0 +1,14 @@
+
+===== cargo fmt --all -- --check =====
+EXIT=0
+
+===== cargo clippy --workspace --all-targets --offline --locked -- -D warnings =====
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.06s
+EXIT=0
+
+===== cargo test --workspace --release --offline --locked -- --test-threads=1 =====
+   Compiling rodas5p-core v0.1.0 (/mnt/data/rodas5p-rs-recovered/.worktrees/rust-adaptive/crates/rodas5p-core)
+   Compiling rodas5p-krylov v0.1.0 (/mnt/data/rodas5p-rs-recovered/.worktrees/rust-adaptive/crates/rodas5p-krylov)
+   Compiling rodas5p-integrators v0.1.0 (/mnt/data/rodas5p-rs-recovered/.worktrees/rust-adaptive/crates/rodas5p-integrators)
+   Compiling rodas5p-fair-ab v0.1.0 (/mnt/data/rodas5p-rs-recovered/.worktrees/rust-adaptive/crates/rodas5p-fair-ab)
+   Compiling rodas5p-cli v0.1.0 (/mnt/data/rodas5p-rs-recovered/.worktrees/rust-adaptive/crates/rodas5p-cli)

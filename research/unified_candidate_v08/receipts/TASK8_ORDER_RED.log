@@ -1,0 +1,39 @@
+   Compiling rodas5p-integrators v0.1.0 (/mnt/data/rodas5p-unified/repo/.worktrees/unified-candidate-harness-v0.8/crates/rodas5p-integrators)
+error[E0560]: struct `unified_gates::CandidateOrderGateRow` has no field named `roundoff_l2_floor`
+   --> crates/rodas5p-integrators/src/unified_gates.rs:729:13
+    |
+729 |             roundoff_l2_floor: Some(floor),
+    |             ^^^^^^^^^^^^^^^^^ `unified_gates::CandidateOrderGateRow` does not have this field
+    |
+    = note: all struct fields are already assigned
+
+error[E0560]: struct `unified_gates::CandidateOrderGateRow` has no field named `above_roundoff_floor`
+   --> crates/rodas5p-integrators/src/unified_gates.rs:730:13
+    |
+730 |             above_roundoff_floor: Some(error > floor),
+    |             ^^^^^^^^^^^^^^^^^^^^ `unified_gates::CandidateOrderGateRow` does not have this field
+    |
+    = note: all struct fields are already assigned
+
+error[E0425]: cannot find function `qualification_observed_order` in this scope
+   --> crates/rodas5p-integrators/src/unified_gates.rs:747:20
+    |
+747 |         assert_eq!(qualification_observed_order(&rows), Some(4.94));
+    |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `finest_observed_order` in this scope
+   --> crates/rodas5p-integrators/src/unified_gates.rs:748:20
+    |
+748 |         assert_eq!(finest_observed_order(&rows), Some(3.18));
+    |                    ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `qualification_observed_order` in this scope
+   --> crates/rodas5p-integrators/src/unified_gates.rs:758:20
+    |
+758 |         assert_eq!(qualification_observed_order(&rows), Some(1.5));
+    |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+Some errors have detailed explanations: E0425, E0560.
+For more information about an error, try `rustc --explain E0425`.
+error: could not compile `rodas5p-integrators` (lib test) due to 5 previous errors
+warning: build failed, waiting for other jobs to finish...

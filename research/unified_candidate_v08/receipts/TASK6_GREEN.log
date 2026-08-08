@@ -1,0 +1,36 @@
+Focused verification:
+
+1. Common C3 output budget
+   cargo test -p rodas5p-integrators --test unified_candidate_contracts \
+     unified_screen_applies_the_same_c3_output_budget --offline --locked
+   PASS
+
+2. Already-converged refined root
+   cargo test -p rodas5p-integrators --test unified_candidate_contracts \
+     refined_root_certificate_accepts_an_already_converged --offline --locked
+   PASS
+
+3. Global fifth-order/stiff gate discrimination
+   cargo test -p rodas5p-integrators --test unified_candidate_contracts \
+     unified_scientific_gates_distinguish_protected_fifth_order_from_low_order_fast_path \
+     --offline --locked
+   PASS
+
+4. One-/four-thread scientific identity
+   cargo test -p rodas5p-integrators --test unified_candidate_contracts \
+     unified_scientific_gates_are_thread_deterministic --offline --locked
+   PASS
+
+5. CLI compact integrated screen
+   cargo test -p rodas5p-cli --test cli_contracts \
+     unified_candidate_screen_combines_linear_and_nonlinear_tiers --offline --locked
+   PASS
+
+6. Strict clippy for Krylov, integrators, CLI
+   cargo clippy -p rodas5p-krylov -p rodas5p-integrators -p rodas5p-cli \
+     --all-targets --offline --locked -- -D warnings
+   PASS
+
+A monolithic all-integrator-test invocation exceeded the container command window during
+an existing long-running order-policy test.  It did not report a failing assertion.  Full
+release workspace validation remains mandatory at exact-HEAD closeout.

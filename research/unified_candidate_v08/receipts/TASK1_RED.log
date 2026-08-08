@@ -1,0 +1,74 @@
+   Compiling num-traits v0.2.19
+   Compiling syn v3.0.3
+   Compiling serde_core v1.0.229
+   Compiling num-complex v0.4.6
+   Compiling pulp v0.22.3
+   Compiling nano-gemm-c32 v0.2.1
+   Compiling nano-gemm-c64 v0.2.1
+   Compiling serde_derive v1.0.229
+   Compiling gemm-common v0.19.0
+   Compiling gemm-c64 v0.19.0
+   Compiling gemm-f32 v0.19.0
+   Compiling gemm-c32 v0.19.0
+   Compiling gemm-f64 v0.19.0
+   Compiling qd v0.8.0
+   Compiling faer-traits v0.24.0
+   Compiling gemm v0.19.0
+   Compiling nano-gemm v0.2.2
+   Compiling thiserror-impl v2.0.19
+   Compiling faer v0.24.4
+   Compiling serde v1.0.229
+   Compiling serde_json v1.0.151
+   Compiling thiserror v2.0.19
+   Compiling rodas5p-core v0.1.0 (/mnt/data/rodas5p-unified/repo/.worktrees/unified-candidate-harness-v0.8/crates/rodas5p-core)
+   Compiling rodas5p-krylov v0.1.0 (/mnt/data/rodas5p-unified/repo/.worktrees/unified-candidate-harness-v0.8/crates/rodas5p-krylov)
+   Compiling rodas5p-integrators v0.1.0 (/mnt/data/rodas5p-unified/repo/.worktrees/unified-candidate-harness-v0.8/crates/rodas5p-integrators)
+error[E0432]: unresolved imports `rodas5p_integrators::CandidateCatalog`, `rodas5p_integrators::CandidateFamily`, `rodas5p_integrators::CandidateStatus`
+ --> crates/rodas5p-integrators/tests/unified_candidate_contracts.rs:3:27
+  |
+3 | ...tors::{CandidateCatalog, CandidateFamily, CandidateStatus};
+  |           ^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^ no `CandidateStatus` in the root
+  |           |                 |
+  |           |                 no `CandidateFamily` in the root
+  |           no `CandidateCatalog` in the root
+
+error[E0282]: type annotations needed
+ --> crates/rodas5p-integrators/tests/unified_candidate_contracts.rs:8:58
+  |
+8 | ...s().iter().map(|c| c.id().to_string()).collect();
+  |                    ^  - type must be known at this point
+  |
+help: consider giving this closure parameter an explicit type
+  |
+8 |     let ids: BTreeSet<_> = catalog.entries().iter().map(|c: /* Type */| c.id().to_string()).collect();
+  |                                                           ++++++++++++
+
+error[E0282]: type annotations needed
+  --> crates/rodas5p-integrators/tests/unified_candidate_contracts.rs:16:47
+   |
+16 | ...   assert!(catalog.entries().iter().any(|c| {
+   |                                             ^
+17 | ...       c.family() == family && matches!(c.status(), CandidateStatus::...
+   |           - type must be known at this point
+   |
+help: consider giving this closure parameter an explicit type
+   |
+16 |         assert!(catalog.entries().iter().any(|c: /* Type */| {
+   |                                                ++++++++++++
+
+error[E0282]: type annotations needed
+  --> crates/rodas5p-integrators/tests/unified_candidate_contracts.rs:30:47
+   |
+30 | ...   assert!(catalog.entries().iter().any(|c| {
+   |                                             ^
+31 | ...       c.family() == family && matches!(c.status(), CandidateStatus::...
+   |           - type must be known at this point
+   |
+help: consider giving this closure parameter an explicit type
+   |
+30 |         assert!(catalog.entries().iter().any(|c: /* Type */| {
+   |                                                ++++++++++++
+
+Some errors have detailed explanations: E0282, E0432.
+For more information about an error, try `rustc --explain E0282`.
+error: could not compile `rodas5p-integrators` (test "unified_candidate_contracts") due to 4 previous errors

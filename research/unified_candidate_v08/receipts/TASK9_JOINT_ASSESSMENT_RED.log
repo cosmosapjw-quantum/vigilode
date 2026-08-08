@@ -1,0 +1,55 @@
+   Compiling rodas5p-integrators v0.1.0 (/mnt/data/rodas5p-unified/repo/.worktrees/unified-candidate-harness-v0.8/crates/rodas5p-integrators)
+   Compiling rodas5p-fair-ab v0.1.0 (/mnt/data/rodas5p-unified/repo/.worktrees/unified-candidate-harness-v0.8/crates/rodas5p-fair-ab)
+   Compiling rodas5p-cli v0.1.0 (/mnt/data/rodas5p-unified/repo/.worktrees/unified-candidate-harness-v0.8/crates/rodas5p-cli)
+error[E0425]: cannot find function `linear_candidate_id` in this scope
+   --> crates/rodas5p-cli/src/main.rs:547:25
+    |
+547 |             .map(|cell| linear_candidate_id(cell.solver, cell.lifetime))
+    |                         ^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `assess_linear_candidates` in this scope
+   --> crates/rodas5p-cli/src/main.rs:556:24
+    |
+556 |         let promoted = assess_linear_candidates(&[suite(0.8)]);
+    |                        ^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0433]: failed to resolve: use of undeclared type `UnifiedJointVerdict`
+   --> crates/rodas5p-cli/src/main.rs:561:33
+    |
+561 |         assert_eq!(row.verdict, UnifiedJointVerdict::Promote);
+    |                                 ^^^^^^^^^^^^^^^^^^^ use of undeclared type `UnifiedJointVerdict`
+
+error[E0425]: cannot find function `assess_linear_candidates` in this scope
+   --> crates/rodas5p-cli/src/main.rs:563:20
+    |
+563 |         let held = assess_linear_candidates(&[suite(0.9)]);
+    |                    ^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0433]: failed to resolve: use of undeclared type `UnifiedJointVerdict`
+   --> crates/rodas5p-cli/src/main.rs:568:33
+    |
+568 |         assert_eq!(row.verdict, UnifiedJointVerdict::Hold);
+    |                                 ^^^^^^^^^^^^^^^^^^^ use of undeclared type `UnifiedJointVerdict`
+
+error[E0425]: cannot find function `unified_document_status` in this scope
+   --> crates/rodas5p-cli/src/main.rs:573:20
+    |
+573 | ...   assert_eq!(unified_document_status(0, 0, 4), "complete-with-uncer...
+    |                  ^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `unified_document_status` in this scope
+   --> crates/rodas5p-cli/src/main.rs:574:20
+    |
+574 |         assert_eq!(unified_document_status(0, 0, 0), "complete");
+    |                    ^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `unified_document_status` in this scope
+   --> crates/rodas5p-cli/src/main.rs:575:20
+    |
+575 | ...   assert_eq!(unified_document_status(1, 0, 0), "complete-with-failu...
+    |                  ^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+Some errors have detailed explanations: E0425, E0433.
+For more information about an error, try `rustc --explain E0425`.
+error: could not compile `rodas5p-cli` (bin "rodas5p" test) due to 8 previous errors
+warning: build failed, waiting for other jobs to finish...

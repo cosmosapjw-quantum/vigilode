@@ -1,0 +1,154 @@
+{
+  "schema": "rodas5p-unified-candidate-cycle-v0.8-summary-v1",
+  "source_commit": "20bdda908326521f5993169263bcbf6a1e6d3a98",
+  "canonical_t1_sha256": "2d9d006ed9e0bf1ec4cdf67a7a1a0eae8b522580af6f4641212093f21c506b62",
+  "canonical_t4_sha256": "9df1353abbf1d997a0ed7e3718dab0039d234a3d838fc62ebe15484dbed6cbb2",
+  "scientific_checksum": "06054fc562d578a240c41de29445aaf8c66a2aa427cc879a10f3905f94d9e42c",
+  "thread_scientific_identity": true,
+  "catalog_entries": 163,
+  "catalog_by_family": {
+    "sequential": 8,
+    "sabr": 4,
+    "homotopy": 144,
+    "bdf": 1,
+    "radau-irk": 1,
+    "peer-w": 1,
+    "parallel-sdc": 1,
+    "rosenbrock-krylov": 1,
+    "borok": 1,
+    "exponential-leja": 1
+  },
+  "nonlinear_summary": {
+    "cases": 6,
+    "rows": 936,
+    "completed": 349,
+    "completed_with_fallback": 0,
+    "rejected": 587,
+    "uncertified": 0,
+    "reference_fallbacks": 4,
+    "failures": 0,
+    "first_correction_false_accepts": 0
+  },
+  "scientific_gate_verdicts": {
+    "deferred": 7,
+    "hold": 132,
+    "promote": 23,
+    "reference": 1
+  },
+  "joint_verdicts": {
+    "reference": 2,
+    "hold": 154,
+    "deferred": 7
+  },
+  "joint_verdicts_by_family": {
+    "bdf": {
+      "deferred": 1
+    },
+    "borok": {
+      "deferred": 1
+    },
+    "exponential-leja": {
+      "deferred": 1
+    },
+    "homotopy": {
+      "hold": 144
+    },
+    "parallel-sdc": {
+      "deferred": 1
+    },
+    "peer-w": {
+      "deferred": 1
+    },
+    "radau-irk": {
+      "deferred": 1
+    },
+    "rosenbrock-krylov": {
+      "deferred": 1
+    },
+    "sabr": {
+      "hold": 4
+    },
+    "sequential": {
+      "reference": 2,
+      "hold": 6
+    }
+  },
+  "joint_promotions": [],
+  "scoped_references": [
+    "sequential-direct-off",
+    "sequential-gmres-off"
+  ],
+  "c0_reference_fallback_candidates": [
+    "homotopy-theta0.000-q2-r2-ab2-c1",
+    "homotopy-theta0.000-q2-r4-ab2-c0",
+    "homotopy-theta0.500-q0-r2-ab2-c1",
+    "homotopy-theta0.500-q1-r4-euler-c1"
+  ],
+  "tier_l_best_nonreference": {
+    "candidate_id": "sequential-lgmres-off",
+    "solver": "lgmres",
+    "lifetime": "off",
+    "suites": 4,
+    "failures": 0,
+    "maximum_relative_solution_error": 2.0032956704625547e-08,
+    "median_wall_ratio_to_gmres_off": 0.9429960096696541,
+    "median_operator_ratio_to_gmres_off": 1.0677973014207014,
+    "median_wall_speedup": 1.0604498743852746,
+    "required_wall_speedup": 1.15,
+    "verdict": "hold",
+    "blockers": [
+      "median Tier-L wall speedup below 1.15x",
+      "median Tier-L operator work exceeds GMRES/OFF"
+    ]
+  },
+  "tier_n_best_nonreference": {
+    "candidate_id": "sequential-gcrodr-persistent",
+    "family": "sequential",
+    "cases": 6,
+    "failures": 0,
+    "median_compute_ratio_to_direct": 1.1879725240191479,
+    "median_rhs_evaluation_ratio_to_direct": 1.0,
+    "median_jvp_vector_ratio_to_direct": 1.0,
+    "median_batch_depth_ratio_to_direct": 1.0,
+    "median_batch_vector_ratio_to_direct": 1.0,
+    "median_wall_speedup": 0.8417703101556597,
+    "required_wall_speedup": 1.15,
+    "verdict": "hold",
+    "blockers": [
+      "median nonlinear candidate wall speedup below 1.15x"
+    ]
+  },
+  "rayon_threads": [
+    {
+      "threads": 1,
+      "elapsed_seconds": 4.17,
+      "maxrss_kib": 45236,
+      "scientific_checksum": "06054fc562d578a240c41de29445aaf8c66a2aa427cc879a10f3905f94d9e42c",
+      "speedup": 1.0,
+      "parallel_efficiency": 1.0
+    },
+    {
+      "threads": 4,
+      "elapsed_seconds": 3.11,
+      "maxrss_kib": 49008,
+      "scientific_checksum": "06054fc562d578a240c41de29445aaf8c66a2aa427cc879a10f3905f94d9e42c",
+      "speedup": 1.3408360128617363,
+      "parallel_efficiency": 0.33520900321543406
+    }
+  ],
+  "promotion_rule": {
+    "wall_speedup_minimum": 1.15,
+    "zero_false_acceptance": true,
+    "global_order_floor": 4.5,
+    "thread_scientific_identity": true
+  },
+  "deferred_candidates": [
+    "bdf",
+    "radau-irk",
+    "peer-w",
+    "parallel-sdc",
+    "rosenbrock-krylov",
+    "borok",
+    "exponential-leja"
+  ]
+}

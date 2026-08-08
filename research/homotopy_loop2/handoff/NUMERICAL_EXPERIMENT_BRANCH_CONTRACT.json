@@ -1,0 +1,31 @@
+{
+  "schema": "rodas5p-homotopy-numerical-experiment-handoff-v1",
+  "recommended_branch": "homotopy-numerical-experiments-v0.5",
+  "frozen_baseline_tag": "rust-pre-homotopy-v0.2.0-alpha1",
+  "reference_cli_schema": "rodas5p-homotopy-design-check-v1",
+  "fast_depth_candidates": [0, 1, 2],
+  "exact_reference_depth": 7,
+  "theta_calibration_grid": [0.0, 0.25, 0.5, 0.75, 1.0],
+  "mandatory_controls": [
+    "sequential-rodas5p",
+    "sabr5p",
+    "homotopy-q0",
+    "homotopy-q1",
+    "homotopy-q2",
+    "homotopy-q7",
+    "homotopy-with-sequential-fallback"
+  ],
+  "promotion": {
+    "false_accepts": 0,
+    "global_order": 5,
+    "median_wall_speedup_min": 1.15,
+    "median_rounds_max": 4
+  },
+  "prohibited_initial_features": [
+    "anderson-acceleration",
+    "chebyshev-path-collocation",
+    "pade-path-predictor",
+    "bdf-radau-ranking",
+    "gcrodr-retuning"
+  ]
+}

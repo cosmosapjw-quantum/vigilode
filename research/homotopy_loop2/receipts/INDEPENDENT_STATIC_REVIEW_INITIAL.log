@@ -1,0 +1,25 @@
+HEAD=adeff4a91c6c21994cf3db08f4a480ce315eb488
+BASE=d208e7b0c45a6f67cc1fddecc5e694d675850277
+=== protected implementation changes outside allowed files ===
+NONE
+=== dependency and coefficient changes ===
+=== forbidden production constructs ===
+=== public parameter field bypass ===
+NONE
+=== certificate finite guard ===
+150:        if !weights.iter().all(|value| value.is_finite())
+151:            || !rhs_rows.iter().flatten().all(|value| value.is_finite())
+233:        if !vector.iter().all(|value| value.is_finite()) {
+289:        if total.iter().all(|value| value.is_finite()) {
+377:        .all(|value| value.is_finite())
+382:                "target certificate contains NaN/Inf".into(),
+=== diff whitespace ===
+research/homotopy_loop2/receipts/BASELINE_RELEASE_TEST.log:116: new blank line at EOF.
+research/homotopy_loop2/receipts/REVIEW_NONFINITE_CERTIFICATE_GREEN.log:9: new blank line at EOF.
+research/homotopy_loop2/receipts/REVIEW_PARAMETER_BYPASS_GREEN.log:9: new blank line at EOF.
+research/homotopy_loop2/receipts/TASK2-GREEN.log:10: new blank line at EOF.
+research/homotopy_loop2/receipts/TASK3-GREEN.log:12: new blank line at EOF.
+research/homotopy_loop2/receipts/TASK4-GREEN.log:14: new blank line at EOF.
+research/homotopy_loop2/receipts/TASK5-GREEN.log:11: new blank line at EOF.
+research/homotopy_loop2/validation/SOFTWARE_VALIDATION.md:3: trailing whitespace.
++Date: 2026-08-07

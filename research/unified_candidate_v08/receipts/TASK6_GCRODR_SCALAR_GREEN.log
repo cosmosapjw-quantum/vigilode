@@ -1,0 +1,11 @@
+Commands:
+  cargo test -p rodas5p-krylov --test krylov_contracts gcrodr_handles_one_dimensional --offline --locked -- --nocapture
+  cargo test -p rodas5p-krylov --tests --offline --locked -- --test-threads=1
+
+Results:
+  focused scalar regression: 1 passed, 0 failed
+  krylov tests: 8 passed, 0 failed
+
+Fix:
+  0x0 and 1x1 generalized eigenproblems are handled analytically before invoking faer's
+  general QZ implementation.  Dimensions >=2 retain the previous backend path.

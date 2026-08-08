@@ -1,0 +1,102 @@
+   Compiling num-traits v0.2.19
+   Compiling bytemuck v1.25.2
+   Compiling bitflags v2.13.1
+   Compiling cfg-if v1.0.4
+   Compiling libm v0.2.16
+   Compiling raw-cpuid v11.6.0
+   Compiling reborrow v0.5.5
+   Compiling pulp-wasm-simd-flag v0.1.1
+   Compiling dyn-stack v0.13.2
+   Compiling once_cell v1.21.4
+   Compiling nano-gemm-core v0.2.1
+   Compiling typenum v1.20.1
+   Compiling num-complex v0.4.6
+   Compiling syn v3.0.3
+   Compiling serde_core v1.0.229
+   Compiling generic-array v0.14.7
+   Compiling libc v0.2.189
+   Compiling pulp v0.22.3
+   Compiling num_cpus v1.17.0
+   Compiling crypto-common v0.1.7
+   Compiling block-buffer v0.10.4
+   Compiling equator v0.2.2
+   Compiling nano-gemm-f32 v0.2.1
+   Compiling nano-gemm-c64 v0.2.1
+   Compiling nano-gemm-c32 v0.2.1
+   Compiling gemm-common v0.19.0
+   Compiling gemm-f64 v0.19.0
+   Compiling gemm-c32 v0.19.0
+   Compiling gemm-c64 v0.19.0
+   Compiling gemm-f32 v0.19.0
+   Compiling qd v0.8.0
+   Compiling nano-gemm-f64 v0.2.1
+   Compiling crossbeam-utils v0.8.22
+   Compiling generativity v1.2.1
+   Compiling equator v0.6.0
+   Compiling faer-traits v0.24.0
+   Compiling crossbeam-epoch v0.9.20
+   Compiling private-gemm-x86 v0.1.20
+   Compiling gemm v0.19.0
+   Compiling serde_derive v1.0.229
+   Compiling thiserror-impl v2.0.19
+   Compiling digest v0.10.7
+   Compiling zmij v1.0.23
+   Compiling memchr v2.8.3
+   Compiling itoa v1.0.18
+   Compiling cpufeatures v0.2.17
+   Compiling sha2 v0.10.9
+   Compiling serde v1.0.229
+   Compiling nano-gemm v0.2.2
+   Compiling serde_json v1.0.151
+   Compiling faer v0.24.4
+   Compiling thiserror v2.0.19
+   Compiling crossbeam-deque v0.8.7
+   Compiling hex v0.4.3
+   Compiling rayon-core v1.13.0
+   Compiling either v1.17.0
+   Compiling rayon v1.12.0
+   Compiling rodas5p-core v0.1.0 (/mnt/data/rodas5p-homotopy-v06-main/.worktrees/order-policy-rayon/crates/rodas5p-core)
+   Compiling rodas5p-krylov v0.1.0 (/mnt/data/rodas5p-homotopy-v06-main/.worktrees/order-policy-rayon/crates/rodas5p-krylov)
+   Compiling rodas5p-integrators v0.1.0 (/mnt/data/rodas5p-homotopy-v06-main/.worktrees/order-policy-rayon/crates/rodas5p-integrators)
+    Finished `release` profile [optimized] target(s) in 1m 11s
+     Running tests/homotopy_policy_contracts.rs (target/release/deps/homotopy_policy_contracts-9f4e70997eb97e93)
+
+running 1 test
+
+thread 'trajectory_gate_false_accepts_are_scoped_to_the_matching_path_configuration' (15329) panicked at crates/rodas5p-integrators/tests/homotopy_policy_contracts.rs:156:9:
+assertion `left == right` failed: gate=homotopy-theta0-q0-r2-ab2-c0 policy=Some("embedded-relative-eta2.000000e-1")
+  left: 85
+ right: 0
+stack backtrace:
+   0:     0x5559a18aeb7d - <std::sys::backtrace::BacktraceLock::print::DisplayBacktrace as core::fmt::Display>::fmt::hdadc7c28d26d7ce3
+   1:     0x5559a16e14aa - core::fmt::write::h469843d235cc4241
+   2:     0x5559a18ad515 - std::io::Write::write_fmt::h384251ddb7f1467c
+   3:     0x5559a18ada8b - std::panicking::default_hook::{{closure}}::hd9d92b9a46805102
+   4:     0x5559a18ad709 - std::panicking::default_hook::hedb2be0819bbe276
+   5:     0x5559a18ad1a6 - std::panicking::panic_with_hook::h0fc23abecf35c6bd
+   6:     0x5559a18d62d7 - std::panicking::panic_handler::{{closure}}::ha111c1a3ccf85d19
+   7:     0x5559a18d6289 - std::sys::backtrace::__rust_end_short_backtrace::h41d63216e1ba5fa4
+   8:     0x5559a18d627c - __rustc[16f1505adc47261a]::rust_begin_unwind
+   9:     0x5559a16e23fb - core::panicking::panic_fmt::hc13412975f563dde
+  10:     0x5559a16e671e - core::panicking::assert_failed_inner::h62773639d865b1c9
+  11:     0x5559a16e9ad4 - core::panicking::assert_failed::h5aaf927447edad9e
+  12:     0x5559a16d8b0a - core::ops::function::FnOnce::call_once::hbdf95791627cd384
+  13:     0x5559a18f0ddb - test::__rust_begin_short_backtrace::h253a2097187731c8
+  14:     0x5559a18ed070 - test::run_test::{{closure}}::h1a5d6d0603e1925c
+  15:     0x5559a18ec72c - std::sys::backtrace::__rust_begin_short_backtrace::hb67b3f617d02f8cc
+  16:     0x5559a190661c - core::ops::function::FnOnce::call_once{{vtable.shim}}::h920ca148ba3af64d
+  17:     0x5559a18de798 - std::sys::thread::unix::Thread::new::thread_start::h96f969bf98c6e59d
+  18:     0x7f8fe80f4b7b - <unknown>
+  19:     0x7f8fe81727f8 - <unknown>
+  20:                0x0 - <unknown>
+test trajectory_gate_false_accepts_are_scoped_to_the_matching_path_configuration ... FAILED
+
+failures:
+
+failures:
+    trajectory_gate_false_accepts_are_scoped_to_the_matching_path_configuration
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 6 filtered out; finished in 2.83s
+
+error: test failed, to rerun pass `-p rodas5p-integrators --test homotopy_policy_contracts`
+[3JTERM environment variable not set.

@@ -1,0 +1,27 @@
+   Compiling rodas5p-integrators v0.1.0 (/mnt/data/rodas5p-homotopy-v06-main/.worktrees/order-policy-rayon/crates/rodas5p-integrators)
+error[E0609]: no field `trajectory_rows` on type `HomotopyOrderPolicyReport`
+   --> crates/rodas5p-integrators/tests/homotopy_policy_contracts.rs:101:21
+    |
+101 |     assert!(!report.trajectory_rows.is_empty());
+    |                     ^^^^^^^^^^^^^^^ unknown field
+    |
+    = note: available fields are: `schema`, `status`, `profile`, `execution`, `source_summary` ... and 4 others
+
+error[E0609]: no field `trajectory_rows` on type `HomotopyOrderPolicyReport`
+   --> crates/rodas5p-integrators/tests/homotopy_policy_contracts.rs:103:10
+    |
+103 |         .trajectory_rows
+    |          ^^^^^^^^^^^^^^^ unknown field
+    |
+    = note: available fields are: `schema`, `status`, `profile`, `execution`, `source_summary` ... and 4 others
+
+error[E0609]: no field `trajectory_gates` on type `HomotopyOrderPolicyReport`
+   --> crates/rodas5p-integrators/tests/homotopy_policy_contracts.rs:113:10
+    |
+113 |         .trajectory_gates
+    |          ^^^^^^^^^^^^^^^^ unknown field
+    |
+    = note: available fields are: `schema`, `status`, `profile`, `execution`, `source_summary` ... and 4 others
+
+For more information about this error, try `rustc --explain E0609`.
+error: could not compile `rodas5p-integrators` (test "homotopy_policy_contracts") due to 3 previous errors

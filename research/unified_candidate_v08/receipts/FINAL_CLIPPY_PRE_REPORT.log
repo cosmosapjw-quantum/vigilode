@@ -1,0 +1,46 @@
+    Checking rodas5p-krylov v0.1.0 (/mnt/data/rodas5p-unified/repo/.worktrees/unified-candidate-harness-v0.8/crates/rodas5p-krylov)
+    Checking rodas5p-integrators v0.1.0 (/mnt/data/rodas5p-unified/repo/.worktrees/unified-candidate-harness-v0.8/crates/rodas5p-integrators)
+error: this `if` has identical blocks
+   --> crates/rodas5p-integrators/src/unified_screen.rs:765:51
+    |
+765 |                   let outcome = if !result.accepted {
+    |  ___________________________________________________^
+766 | |                     UnifiedCandidateOutcome::Rejected
+767 | |                 } else if c3_output_budget_pass == Some(false) {
+    | |_________________^
+    |
+note: same as this
+   --> crates/rodas5p-integrators/src/unified_screen.rs:767:64
+    |
+767 |   ...   } else if c3_output_budget_pass == Some(false) {
+    |  ______________________________________________________^
+768 | | ...       UnifiedCandidateOutcome::Rejected
+769 | | ...   } else if reference_fallback_used && oracle_output_budget_pass ...
+    | |_______^
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#if_same_then_else
+    = note: `-D clippy::if-same-then-else` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::if_same_then_else)]`
+
+error: this `if` has identical blocks
+   --> crates/rodas5p-integrators/src/unified_screen.rs:767:64
+    |
+767 |   ...   } else if c3_output_budget_pass == Some(false) {
+    |  ______________________________________________________^
+768 | | ...       UnifiedCandidateOutcome::Rejected
+769 | | ...   } else if reference_fallback_used && oracle_output_budget_pass ...
+    | |_______^
+    |
+note: same as this
+   --> crates/rodas5p-integrators/src/unified_screen.rs:769:95
+    |
+769 |                   } else if reference_fallback_used && oracle_output_budget_pass == Some(false) {
+    |  _______________________________________________________________________________________________^
+770 | |                     UnifiedCandidateOutcome::Rejected
+771 | |                 } else if result.used_fallback {
+    | |_________________^
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#if_same_then_else
+
+error: could not compile `rodas5p-integrators` (lib) due to 2 previous errors
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `rodas5p-integrators` (lib) due to 2 previous errors
+error: could not compile `rodas5p-integrators` (lib test) due to 2 previous errors

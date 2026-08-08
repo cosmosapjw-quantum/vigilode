@@ -1,0 +1,9 @@
+Command: cargo test -p rodas5p-integrators --test unified_candidate_contracts --offline --locked
+Result: 5 passed, 0 failed.
+
+Command: cargo clippy -p rodas5p-integrators --all-targets --release --offline --locked -- -D warnings
+Result: PASS.
+
+The smoke screen executes protected sequential/direct, all four SABR block variants, and a
+representative homotopy subset against one protected direct oracle. A local Rayon pool produces
+scientifically identical rows at one and four threads after timing fields are removed.

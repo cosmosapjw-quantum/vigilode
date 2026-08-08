@@ -1,0 +1,44 @@
+   Compiling rodas5p-integrators v0.1.0 (/mnt/data/rodas5p-homotopy-loop2-repo/.worktrees/homotopy-coding-loop2-v0.4/crates/rodas5p-integrators)
+error[E0599]: no method named `truncated_inverse_apply` found for struct `AffinePartialCouplingOracle` in the current scope
+   --> crates/rodas5p-integrators/tests/homotopy_research_contracts.rs:109:10
+    |
+108 |       let nilpotent = oracle
+    |  _____________________-
+109 | |         .truncated_inverse_apply(parameters, oracle.stages() - 1, &rhs)
+    | |         -^^^^^^^^^^^^^^^^^^^^^^^ method not found in `AffinePartialCouplingOracle`
+    | |_________|
+    |
+
+error[E0599]: no method named `truncated_inverse_apply` found for struct `AffinePartialCouplingOracle` in the current scope
+   --> crates/rodas5p-integrators/tests/homotopy_research_contracts.rs:114:14
+    |
+113 | /         oracle
+114 | |             .truncated_inverse_apply(parameters, oracle.stages(), &rhs)
+    | |             -^^^^^^^^^^^^^^^^^^^^^^^ method not found in `AffinePartialCouplingOracle`
+    | |_____________|
+    |
+
+error[E0599]: no method named `truncated_inverse_apply` found for struct `AffinePartialCouplingOracle` in the current scope
+   --> crates/rodas5p-integrators/tests/homotopy_research_contracts.rs:141:21
+    |
+141 |     let q0 = oracle.truncated_inverse_apply(parameters, 0, &rhs).unwrap();
+    |                     ^^^^^^^^^^^^^^^^^^^^^^^ method not found in `AffinePartialCouplingOracle`
+
+error[E0599]: no method named `truncated_inverse_apply` found for struct `AffinePartialCouplingOracle` in the current scope
+   --> crates/rodas5p-integrators/tests/homotopy_research_contracts.rs:142:21
+    |
+142 |     let q1 = oracle.truncated_inverse_apply(parameters, 1, &rhs).unwrap();
+    |                     ^^^^^^^^^^^^^^^^^^^^^^^ method not found in `AffinePartialCouplingOracle`
+
+error[E0599]: no method named `truncated_inverse_apply` found for struct `AffinePartialCouplingOracle` in the current scope
+   --> crates/rodas5p-integrators/tests/homotopy_research_contracts.rs:144:10
+    |
+143 |       let exact = oracle
+    |  _________________-
+144 | |         .truncated_inverse_apply(parameters, stages - 1, &rhs)
+    | |         -^^^^^^^^^^^^^^^^^^^^^^^ method not found in `AffinePartialCouplingOracle`
+    | |_________|
+    |
+
+For more information about this error, try `rustc --explain E0599`.
+error: could not compile `rodas5p-integrators` (test "homotopy_research_contracts") due to 5 previous errors

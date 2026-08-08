@@ -1,0 +1,268 @@
+{
+  "allocation_audit_scope": "exact benchmark code head; full trace run including result materialization; diagnostic custom allocator binary",
+  "allocation_cell_medians": {
+    "gcrodr/off": {
+      "allocated_bytes": 46563264.0,
+      "allocations": 160771.0,
+      "operator_total": 3419.0,
+      "wall_seconds": 0.085135134
+    },
+    "gcrodr/persistent": {
+      "allocated_bytes": 52930456.0,
+      "allocations": 183686.5,
+      "operator_total": 3715.0,
+      "wall_seconds": 0.09548033950000001
+    },
+    "gcrodr/stage": {
+      "allocated_bytes": 51014242.0,
+      "allocations": 176103.0,
+      "operator_total": 3585.0,
+      "wall_seconds": 0.09139898099999999
+    },
+    "gmres/off": {
+      "allocated_bytes": 23623808.0,
+      "allocations": 35033.0,
+      "operator_total": 3392.0,
+      "wall_seconds": 0.055081073499999994
+    },
+    "lgmres/off": {
+      "allocated_bytes": 21817648.0,
+      "allocations": 39684.0,
+      "operator_total": 3439.0,
+      "wall_seconds": 0.0550813105
+    },
+    "lgmres/persistent": {
+      "allocated_bytes": 32982760.0,
+      "allocations": 51355.0,
+      "operator_total": 3752.0,
+      "wall_seconds": 0.07077350900000001
+    },
+    "lgmres/stage": {
+      "allocated_bytes": 31310322.0,
+      "allocations": 49181.0,
+      "operator_total": 3639.0,
+      "wall_seconds": 0.06758483700000001
+    }
+  },
+  "baseline_failures": 0,
+  "baseline_head": "cbb29dfb32ef4a358f5e77f4320190534543fa36",
+  "benchmark_code_head": "2d3fcaffa688e2cb99d7e79d9f59536fae4dae06",
+  "by_dimension_pair_ratio_medians": {
+    "n128:gcrodr/off": 0.9911609141763953,
+    "n128:gcrodr/persistent": 1.004242312371613,
+    "n128:gcrodr/stage": 1.0123755447857725,
+    "n128:gmres/off": 0.992502179297853,
+    "n128:lgmres/off": 0.9822527067676734,
+    "n128:lgmres/persistent": 0.9658670027271669,
+    "n128:lgmres/stage": 0.9743074387724255,
+    "n256:gcrodr/off": 1.0017752655684438,
+    "n256:gcrodr/persistent": 1.0055613069439258,
+    "n256:gcrodr/stage": 1.0124074439987683,
+    "n256:gmres/off": 0.9954520298722975,
+    "n256:lgmres/off": 0.9925961069911455,
+    "n256:lgmres/persistent": 1.0002980934839723,
+    "n256:lgmres/stage": 1.0075297942453165,
+    "n64:gcrodr/off": 1.002554373372933,
+    "n64:gcrodr/persistent": 1.0073321091717458,
+    "n64:gcrodr/stage": 1.0167902877194037,
+    "n64:gmres/off": 0.9803510029073066,
+    "n64:lgmres/off": 0.9933538234373804,
+    "n64:lgmres/persistent": 0.985345293488497,
+    "n64:lgmres/stage": 0.9805509736147257
+  },
+  "by_trace_kind_pair_ratio_medians": {
+    "abrupt:gcrodr/off": 1.0008763101351446,
+    "abrupt:gcrodr/persistent": 1.0125418252250136,
+    "abrupt:gcrodr/stage": 1.016304349626118,
+    "abrupt:gmres/off": 0.9962504835030577,
+    "abrupt:lgmres/off": 0.9833496676588896,
+    "abrupt:lgmres/persistent": 0.9724355343848348,
+    "abrupt:lgmres/stage": 1.0039082174190697,
+    "fixed:gcrodr/off": 0.9936504871583838,
+    "fixed:gcrodr/persistent": 1.0035012595597756,
+    "fixed:gcrodr/stage": 1.0085105383714186,
+    "fixed:gmres/off": 0.992729694274204,
+    "fixed:lgmres/off": 0.9751395068577631,
+    "fixed:lgmres/persistent": 0.9757393970873556,
+    "fixed:lgmres/stage": 1.001512504926326,
+    "rotating:gcrodr/off": 0.9929316939075332,
+    "rotating:gcrodr/persistent": 1.0055548300219181,
+    "rotating:gcrodr/stage": 1.0191107951452323,
+    "rotating:gmres/off": 0.9780493886636261,
+    "rotating:lgmres/off": 1.0060738966776095,
+    "rotating:lgmres/persistent": 0.9901819794215178,
+    "rotating:lgmres/stage": 0.9798536780619342,
+    "slow-drift:gcrodr/off": 1.0074328952227039,
+    "slow-drift:gcrodr/persistent": 1.0055677838659334,
+    "slow-drift:gcrodr/stage": 1.0366705890248795,
+    "slow-drift:gmres/off": 0.9848391758216769,
+    "slow-drift:lgmres/off": 0.9951267224209799,
+    "slow-drift:lgmres/persistent": 0.9839752660241385,
+    "slow-drift:lgmres/stage": 0.9926742340728049
+  },
+  "current_failures": 0,
+  "decision": {
+    "allocation_free_shifted_operator": "PROMOTE",
+    "default_solver_or_recycling_policy_change": "HOLD",
+    "fair_ab_session_workspace_reuse": "PROMOTE",
+    "gcrodr_performance_promotion": "HOLD",
+    "reusable_krylov_workspaces": "PROMOTE_AS_INFRASTRUCTURE"
+  },
+  "dimensions": [
+    64,
+    128,
+    256
+  ],
+  "exact_rerun_note": "An initial exact-head attempt was killed by the container execution wrapper during a transient stall. The stalled n=128 abrupt baseline case was reproduced separately in 1.03 s, then the complete 72-invocation suite was rerun with a 120 s per-invocation guard and all invocations succeeded. No partial output from the interrupted attempt is used.",
+  "individual_pair_ratio_statistics": {
+    "gcrodr/off": {
+      "count": 36,
+      "maximum": 1.117367172627655,
+      "median": 0.9981214527771709,
+      "minimum": 0.6210890862433162,
+      "q25": 0.9832818650347067,
+      "q75": 1.0108991753722678
+    },
+    "gcrodr/persistent": {
+      "count": 36,
+      "maximum": 1.198823689054609,
+      "median": 1.0055613069439258,
+      "minimum": 0.8678622338917661,
+      "q25": 0.9937319779792003,
+      "q75": 1.0189714001037293
+    },
+    "gcrodr/stage": {
+      "count": 36,
+      "maximum": 1.343444744404272,
+      "median": 1.015090574407767,
+      "minimum": 0.8843298571800392,
+      "q25": 0.9932670411526244,
+      "q75": 1.038298413072142
+    },
+    "gmres/off": {
+      "count": 36,
+      "maximum": 1.2442755227095084,
+      "median": 0.9917872299916287,
+      "minimum": 0.9408518088499022,
+      "q25": 0.9729710745700522,
+      "q75": 0.9984827345323781
+    },
+    "lgmres/off": {
+      "count": 36,
+      "maximum": 1.1718755077965524,
+      "median": 0.9907208769616018,
+      "minimum": 0.6906064448244352,
+      "q25": 0.9707665948954047,
+      "q75": 1.0079206812241488
+    },
+    "lgmres/persistent": {
+      "count": 36,
+      "maximum": 1.513220360139228,
+      "median": 0.9836011827868325,
+      "minimum": 0.6934997850588038,
+      "q25": 0.9669611564470508,
+      "q75": 1.0057247769889257
+    },
+    "lgmres/stage": {
+      "count": 36,
+      "maximum": 1.1412534290887344,
+      "median": 0.9928691061492083,
+      "minimum": 0.8283221553316069,
+      "q25": 0.9668848790761958,
+      "q75": 1.0151518354351274
+    }
+  },
+  "largest_baseline_cell": {
+    "baseline_failures": 0,
+    "baseline_max_error": 2.7788985704951492e-08,
+    "baseline_operator_total": 4098.0,
+    "baseline_wall_seconds": 0.306725776,
+    "current_failures": 0,
+    "current_max_error": 2.7788985704951505e-08,
+    "current_operator_total": 4098.0,
+    "current_over_baseline_wall": 0.9608074705791925,
+    "current_wall_seconds": 0.294704417,
+    "dimension": 256,
+    "error_delta": 1.3234889800848443e-23,
+    "kind": "slow-drift",
+    "lifetime": "persistent",
+    "operator_delta": 0.0,
+    "repetition": 0,
+    "solver": "gcrodr"
+  },
+  "maximum_absolute_solution_error_delta": 5.293955920339377e-23,
+  "operator_deltas": [
+    0.0
+  ],
+  "paired_repetitions": 3,
+  "paired_rows": 252,
+  "raw_archive": {
+    "path": "RODAS5P_Rust_R10A_Raw_v0.2.0-alpha1.tar.zst",
+    "sha256": "2650b170a7c06b20c5e5b77f47c216128ef2a52b113d94bbc20cb981386b00fc"
+  },
+  "scenario_median_time_ratio_statistics": {
+    "gcrodr/off": {
+      "count": 12,
+      "maximum": 1.0231794653123385,
+      "median": 0.9972850961870892,
+      "minimum": 0.9586631942717074,
+      "q25": 0.9897367504186392,
+      "q75": 1.0034778605459198
+    },
+    "gcrodr/persistent": {
+      "count": 12,
+      "maximum": 1.0451226678471306,
+      "median": 1.006486169593495,
+      "minimum": 0.988007588018282,
+      "q25": 0.9963300567187712,
+      "q75": 1.0190562474265838
+    },
+    "gcrodr/stage": {
+      "count": 12,
+      "maximum": 1.0968176666174392,
+      "median": 1.0175360527962747,
+      "minimum": 0.9903659859773221,
+      "q25": 1.0067017383169754,
+      "q75": 1.028039623946461
+    },
+    "gmres/off": {
+      "count": 12,
+      "maximum": 1.0346630204488592,
+      "median": 0.9917872299916287,
+      "minimum": 0.9633472390613815,
+      "q25": 0.9843394815781907,
+      "q75": 0.9984827345323781
+    },
+    "lgmres/off": {
+      "count": 12,
+      "maximum": 1.0753070987738387,
+      "median": 0.9888901437054987,
+      "minimum": 0.964167851349048,
+      "q25": 0.976084858059369,
+      "q75": 1.0011725147304689
+    },
+    "lgmres/persistent": {
+      "count": 12,
+      "maximum": 1.1091953064585536,
+      "median": 0.9761208428161428,
+      "minimum": 0.9538850839229833,
+      "q25": 0.9696255248961725,
+      "q75": 0.9908430617046916
+    },
+    "lgmres/stage": {
+      "count": 12,
+      "maximum": 1.0729782002866777,
+      "median": 0.9935304181682396,
+      "minimum": 0.8961943982423871,
+      "q25": 0.966762920228658,
+      "q75": 1.0025729813717754
+    }
+  },
+  "schema": "rodas5p-r10a-kernel-audit-summary-v3",
+  "trace_kinds": [
+    "fixed",
+    "slow-drift",
+    "abrupt",
+    "rotating"
+  ]
+}

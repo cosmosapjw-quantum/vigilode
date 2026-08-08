@@ -1,0 +1,215 @@
+{
+  "base_sha": "ce1cc51034186958da3e27f641f29aae777ceaf1",
+  "branch": "homotopy-numerical-experiments-v0.5",
+  "canonical_sha256": "a665562e3088950e3a7d64e985f220708cac6cad7356f096baf378e4ee27026e",
+  "counts": {
+    "candidates": 8208,
+    "cases": 57,
+    "controls": 114,
+    "failures": 0,
+    "fallbacks": 4698,
+    "false_accepts": 0,
+    "fast_accepts": 3510,
+    "q_summary": [
+      {
+        "failures": 0,
+        "fallbacks": 1679,
+        "false_accepts": 0,
+        "fast_accepts": 373,
+        "median_oracle_output_wrms": 365.42268558667513,
+        "q": 0,
+        "rows": 2052
+      },
+      {
+        "failures": 0,
+        "fallbacks": 1267,
+        "false_accepts": 0,
+        "fast_accepts": 785,
+        "median_oracle_output_wrms": 2.782540903591733,
+        "q": 1,
+        "rows": 2052
+      },
+      {
+        "failures": 0,
+        "fallbacks": 1194,
+        "false_accepts": 0,
+        "fast_accepts": 858,
+        "median_oracle_output_wrms": 1.9796566411300236,
+        "q": 2,
+        "rows": 2052
+      },
+      {
+        "failures": 0,
+        "fallbacks": 558,
+        "false_accepts": 0,
+        "fast_accepts": 1494,
+        "median_oracle_output_wrms": 3.384458141011944e-10,
+        "q": 7,
+        "rows": 2052
+      }
+    ]
+  },
+  "decisions": {
+    "adaptive_or_lte_scaled_budget": "NEXT_RESEARCH_REQUIRED",
+    "exact_nonlinear_certificate": "PROMOTE_AS_ONE_STEP_REFERENCE_ORACLE",
+    "fixed_schedule_fast_path": "HOLD_NO_EQUAL_WORK_ADVANTAGE",
+    "low_depth_fixed_budget": "HOLD_GLOBAL_ORDER_FAILURE",
+    "production_speedup_claim": "PROHIBITED",
+    "q7_path": "PROMOTE_AS_CORRECTNESS_ORACLE_ONLY",
+    "theta1_q2_c1": "HOLD_ACCURATE_BUT_WORK_HEAVY"
+  },
+  "equal_work": {
+    "direct_solve_call_caveat": "direct_solve_calls counts one solve_rows batch as one call, whereas sequential RODAS records eight per-stage calls. It is a call-depth proxy, not scalar solve work.",
+    "dominates_sabr_in_rhs_and_jvp": 0,
+    "dominates_sabr_in_rhs_jvp_and_direct_solves": 0,
+    "dominates_sequential_in_rhs_and_jvp": 0,
+    "dominates_sequential_in_rhs_jvp_and_direct_solves": 0,
+    "fast_rows": 3510,
+    "interpretation": "No fast-accepted candidate dominated either control even in the two scalar-work counters RHS evaluations and JVP vectors. Batch critical depth is therefore not yet an end-to-end work advantage.",
+    "low_depth_dominates_sabr_in_all_three_metrics": 0,
+    "median_low_depth_common_w_vector_ratio_to_sequential": 5.0
+  },
+  "low_depth": {
+    "cases": 16,
+    "definition": "fast_accepted and w_solve_batches < 8",
+    "family_case_counts": {
+      "affine-mass": 1,
+      "manufactured-mass": 4,
+      "manufactured-vector": 8,
+      "prothero-robinson": 2,
+      "scalar-linear": 1
+    },
+    "median_nonlinear_snapshots": 5.0,
+    "median_w_solve_batches": 5.0,
+    "median_w_solve_vectors": 40.0,
+    "rows": 401
+  },
+  "next_cycle": "ORDER_AWARE_OUTPUT_CERTIFICATE_POLICY",
+  "order_screen": {
+    "decision": "q=7 and theta=1,q=2,c=1 reproduce the protected fifth-order trend before roundoff, but are substantially more expensive.  The low-depth c=0 paths do not robustly preserve fifth order under the fixed 0.1 local output budget.",
+    "findings": [
+      {
+        "all_fast_orders": [
+          1.0950485484189745,
+          1.450453262815176
+        ],
+        "all_fast_rows": 3,
+        "fallbacks": 5,
+        "finest_error_l2": 1.6711498909709636e-08,
+        "median_all_fast_order": 1.2727509056170754,
+        "median_order": 1.0950485484189745,
+        "method": "homotopy-theta0-q0-r2-ab2-c0",
+        "orders": [
+          -13.40620061642595,
+          1.0950485484189745,
+          1.450453262815176
+        ],
+        "rows": 4
+      },
+      {
+        "all_fast_orders": [
+          4.196516531182889
+        ],
+        "all_fast_rows": 2,
+        "fallbacks": 8,
+        "finest_error_l2": 1.4140735546303678e-09,
+        "median_all_fast_order": 4.196516531182889,
+        "median_order": 3.0020000820809725,
+        "method": "homotopy-theta0-q1-r2-ab2-c0",
+        "orders": [
+          -14.49630334977556,
+          3.0020000820809725,
+          4.196516531182889
+        ],
+        "rows": 4
+      },
+      {
+        "all_fast_orders": [
+          4.981606002405911,
+          0.6953123988595752
+        ],
+        "all_fast_rows": 3,
+        "fallbacks": 5,
+        "finest_error_l2": 3.707227512223563e-09,
+        "median_all_fast_order": 2.838459200632743,
+        "median_order": 0.6953123988595752,
+        "method": "homotopy-theta0-q2-r2-ab2-c0",
+        "orders": [
+          -14.36518862820947,
+          4.981606002405911,
+          0.6953123988595752
+        ],
+        "rows": 4
+      },
+      {
+        "all_fast_orders": [
+          4.962745977608786,
+          4.846534467207326,
+          3.283814552893333
+        ],
+        "all_fast_rows": 4,
+        "fallbacks": 0,
+        "finest_error_l2": 8.989818423714095e-16,
+        "median_all_fast_order": 4.846534467207326,
+        "median_order": 4.846534467207326,
+        "method": "homotopy-theta1-q2-r2-ab2-c1",
+        "orders": [
+          4.962745977608786,
+          4.846534467207326,
+          3.283814552893333
+        ],
+        "rows": 4
+      },
+      {
+        "all_fast_orders": [
+          5.067230088266634,
+          4.936392282194447,
+          3.228133704210492
+        ],
+        "all_fast_rows": 4,
+        "fallbacks": 0,
+        "finest_error_l2": 9.342544893102174e-16,
+        "median_all_fast_order": 4.936392282194447,
+        "median_order": 4.936392282194447,
+        "method": "homotopy-theta1-q7-r2-ab2-c1",
+        "orders": [
+          5.067230088266634,
+          4.936392282194447,
+          3.228133704210492
+        ],
+        "rows": 4
+      },
+      {
+        "all_fast_orders": [
+          5.067083757765052,
+          4.937923901815913,
+          3.1751161446498952
+        ],
+        "all_fast_rows": 0,
+        "fallbacks": 0,
+        "finest_error_l2": 9.682927476627697e-16,
+        "median_all_fast_order": 4.937923901815913,
+        "median_order": 4.937923901815913,
+        "method": "sequential-direct",
+        "orders": [
+          5.067083757765052,
+          4.937923901815913,
+          3.1751161446498952
+        ],
+        "rows": 4
+      }
+    ],
+    "problem": "manufactured-vector-n6-s80-m10-eta0, T=0.2"
+  },
+  "overall_disposition": "REFERENCE_LAYER_PROMOTE_LOW_DEPTH_METHOD_HOLD",
+  "safety": {
+    "certificate_to_oracle_ratio_max": 121.81143311329363,
+    "certificate_to_oracle_ratio_median": 0.9999999588376247,
+    "certificate_to_oracle_ratio_min": 0.0019900477408398135,
+    "false_accepts": 0,
+    "false_rejects_against_one_step_sequential_oracle": 0,
+    "max_oracle_output_wrms_among_fast_accepts": 0.09999101609468791,
+    "scope_warning": "The one-step certificate had no false accepts at the fixed 0.1 budget, but the global order screen shows that this fixed budget does not preserve fifth-order convergence for low-depth paths."
+  },
+  "schema": "rodas5p-homotopy-numerical-cycle1-closeout-v1"
+}

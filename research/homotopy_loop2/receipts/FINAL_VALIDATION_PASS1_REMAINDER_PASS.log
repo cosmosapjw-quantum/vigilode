@@ -1,0 +1,25 @@
+VALIDATION_HEAD=934b49fc57656310ecc3aa39f241ee1e7eaee999
+=== cargo build ===
+    Finished `release` profile [optimized] target(s) in 0.17s
+=== deterministic CLI ===
+cc6cb1c963e75415f5b35ba879d83b081a08fd7103e0f2cc27c234e63ec7743a  /mnt/data/loop2-pass1-check-a.json
+cc6cb1c963e75415f5b35ba879d83b081a08fd7103e0f2cc27c234e63ec7743a  /mnt/data/loop2-pass1-check-b.json
+CLI_SCHEMA_CHECK=PASS
+=== harness validation ===
+Coding harness validation passed.
+=== protected diff check ===
+CHANGED_FILES= 92
+PROTECTED_OUTSIDE_ALLOWED= []
+=== dynamic dependencies ===
+	linux-vdso.so.1 (0x00007f45a642d000)
+	libgcc_s.so.1 => /lib/x86_64-linux-gnu/libgcc_s.so.1 (0x00007f45a63e8000)
+	libm.so.6 => /lib/x86_64-linux-gnu/libm.so.6 (0x00007f45a62f8000)
+	libc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007f45a5c0c000)
+	/lib64/ld-linux-x86-64.so.2 (0x00007f45a642f000)
+DYNAMIC_DEPENDENCY_AUDIT=PASS
+=== source guard ===
+SOURCE_GUARD=PASS
+=== git fsck ===
+=== clean tree ===
+GIT_CLEAN=PASS
+LOOP2_FINAL_VALIDATION_PASS1_REMAINDER=PASS
