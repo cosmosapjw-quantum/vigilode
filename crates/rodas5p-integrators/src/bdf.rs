@@ -1,7 +1,11 @@
 use rodas5p_core::{CoreError, CoreResult, DenseMatrix, WorkCounters};
 use serde::Serialize;
 
-use crate::{NewtonConfig, NewtonReport, OdeProblem, solve_dense_newton};
+use crate::output::OutputCollector;
+use crate::{
+    NewtonConfig, NewtonReport, ObservedIntegrationResult, OdeProblem, OutputSchedule,
+    solve_dense_newton,
+};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "kebab-case")]
@@ -247,5 +251,53 @@ pub fn integrate_bdf_fixed(
         applied_orders,
         startup_steps,
         counters,
+    })
+}
+
+pub fn integrate_bdf_fixed_observed(
+    problem: &OdeProblem,
+    t_span: (f64, f64),
+    y0: &[f64],
+    h: f64,
+    config: &BdfConfig,
+    output: &OutputSchedule,
+) -> CoreResult<ObservedIntegrationResult> {
+    let (mut t, tf) = t_span;
+    if y0.len() != problem.dimension || !(h > 0.0 && h.is_finite()) || tf < t {
+        return Err(CoreError::InvalidInput(
+            "invalid fixed-step BDF integration input".into(),
+        ));
+    }
+    let mut state = y0.to_vec();
+    let mut history = BdfHistory::default();
+    let mut counters = WorkCounters::default();
+    let mut collector = OutputCollector::new(output, t_span, y0)?;
+    let mut internal_steps = 0_usize;
+    while t < tf - 10.0 * f64::EPSILON * tf.abs().max(1.0) {
+        let (step, clipped) = collector.limit_step(t, h, tf)?;
+        let report = bdf_step(
+            problem,
+            t,
+            &state,
+            step,
+            config,
+            &mut history,
+            &mut counters,
+        )?;
+        t = report.t_new;
+        state = report.y_new;
+        collector.accept(t, &state, clipped)?;
+        counters.accepted_steps += 1;
+        internal_steps += 1;
+    }
+    let (times, states, output_clipped_steps) = collector.finish()?;
+    Ok(ObservedIntegrationResult {
+        t: times,
+        y: states,
+        success: true,
+        message: "success".into(),
+        counters,
+        internal_steps,
+        output_clipped_steps,
     })
 }
