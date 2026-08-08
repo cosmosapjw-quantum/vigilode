@@ -18,6 +18,8 @@ const SMOKE_WARMUPS: usize = 1;
 const SMOKE_REPETITIONS: usize = 3;
 const CANONICAL_WARMUPS: usize = 1;
 const CANONICAL_REPETITIONS: usize = 5;
+const MIN_TIMING_SAMPLE_SECONDS: f64 = 2.0e-3;
+const MAX_TIMING_BATCH_ITERATIONS: usize = 10_000;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct CommonOutputGrid {
@@ -356,11 +358,15 @@ impl GlobalErrorParetoProfile {
                 warmups: SMOKE_WARMUPS,
                 repetitions: SMOKE_REPETITIONS,
                 seed: TIMING_SEED,
+                minimum_sample_seconds: MIN_TIMING_SAMPLE_SECONDS,
+                maximum_batch_iterations: MAX_TIMING_BATCH_ITERATIONS,
             },
             Self::Canonical => TimingProtocol {
                 warmups: CANONICAL_WARMUPS,
                 repetitions: CANONICAL_REPETITIONS,
                 seed: TIMING_SEED,
+                minimum_sample_seconds: MIN_TIMING_SAMPLE_SECONDS,
+                maximum_batch_iterations: MAX_TIMING_BATCH_ITERATIONS,
             },
         }
     }
@@ -408,6 +414,7 @@ pub struct IntegratorWorkReport {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct IntegratorTimingReport {
     pub authoritative: bool,
+    pub batch_iterations: usize,
     pub wall_samples_seconds: Vec<f64>,
     pub wall_median_seconds: Option<f64>,
     pub wall_q25_seconds: Option<f64>,
@@ -418,6 +425,7 @@ impl IntegratorTimingReport {
     fn unavailable(authoritative: bool) -> Self {
         Self {
             authoritative,
+            batch_iterations: 0,
             wall_samples_seconds: Vec::new(),
             wall_median_seconds: None,
             wall_q25_seconds: None,
@@ -425,8 +433,13 @@ impl IntegratorTimingReport {
         }
     }
 
-    fn from_samples(mut samples: Vec<f64>, authoritative: bool) -> FairResult<Self> {
-        if samples.is_empty()
+    fn from_samples(
+        mut samples: Vec<f64>,
+        authoritative: bool,
+        batch_iterations: usize,
+    ) -> FairResult<Self> {
+        if batch_iterations == 0
+            || samples.is_empty()
             || !samples
                 .iter()
                 .all(|sample| sample.is_finite() && *sample >= 0.0)
@@ -441,6 +454,7 @@ impl IntegratorTimingReport {
         let q75 = quantile_sorted(&samples, 0.75);
         Ok(Self {
             authoritative,
+            batch_iterations,
             wall_samples_seconds: samples,
             wall_median_seconds: Some(median),
             wall_q25_seconds: Some(q25),
@@ -571,11 +585,13 @@ pub struct TargetAttainment {
     pub cost: Option<f64>,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct TimingProtocol {
     pub warmups: usize,
     pub repetitions: usize,
     pub seed: u64,
+    pub minimum_sample_seconds: f64,
+    pub maximum_batch_iterations: usize,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -1077,39 +1093,76 @@ fn authoritative_timing(
     f64,
 ) {
     let total_started = Instant::now();
-    for _ in 0..protocol.warmups {
-        for spec in specs {
-            let _ = execute_candidate(spec);
+    let mut batch_iterations = BTreeMap::<String, usize>::new();
+    let mut failures = BTreeMap::<String, String>::new();
+
+    for spec in specs {
+        let id = record_id(spec);
+        let mut calibration_seconds = None;
+        for _ in 0..protocol.warmups.max(1) {
+            let started = Instant::now();
+            match execute_candidate(spec) {
+                Ok(_) => calibration_seconds = Some(started.elapsed().as_secs_f64()),
+                Err(error) => {
+                    failures.insert(id.clone(), error.to_string());
+                    break;
+                }
+            }
+        }
+        if let Some(seconds) = calibration_seconds {
+            let seconds = seconds.max(f64::MIN_POSITIVE);
+            let iterations = (protocol.minimum_sample_seconds / seconds)
+                .ceil()
+                .max(1.0) as usize;
+            batch_iterations.insert(
+                id,
+                iterations.min(protocol.maximum_batch_iterations),
+            );
         }
     }
+
     let mut samples = BTreeMap::<String, Vec<f64>>::new();
-    let mut failures = BTreeMap::<String, String>::new();
     let mut rng = Pcg64Mcg::seed_from_u64(protocol.seed);
     for _ in 0..protocol.repetitions {
         for index in shuffled_indices(specs.len(), &mut rng) {
             let spec = &specs[index];
             let id = record_id(spec);
+            if failures.contains_key(&id) {
+                continue;
+            }
+            let iterations = *batch_iterations.get(&id).unwrap_or(&1);
             let started = Instant::now();
-            match execute_candidate(spec) {
-                Ok(_) => samples
+            let mut failure = None;
+            for _ in 0..iterations {
+                if let Err(error) = execute_candidate(spec) {
+                    failure = Some(error.to_string());
+                    break;
+                }
+            }
+            if let Some(message) = failure {
+                failures.insert(id, message);
+            } else {
+                samples
                     .entry(id)
                     .or_default()
-                    .push(started.elapsed().as_secs_f64()),
-                Err(error) => {
-                    failures.insert(id, error.to_string());
-                }
+                    .push(started.elapsed().as_secs_f64() / iterations as f64);
             }
         }
     }
     let reports = samples
         .into_iter()
         .filter_map(|(id, values)| {
-            IntegratorTimingReport::from_samples(values, true)
+            let iterations = *batch_iterations.get(&id).unwrap_or(&1);
+            IntegratorTimingReport::from_samples(values, true, iterations)
                 .ok()
                 .map(|report| (id, report))
         })
         .collect();
-    (reports, failures, total_started.elapsed().as_secs_f64())
+    (
+        reports,
+        failures,
+        total_started.elapsed().as_secs_f64(),
+    )
 }
 
 fn parallel_scientific_runs(
@@ -1121,7 +1174,7 @@ fn parallel_scientific_runs(
         let row_started = Instant::now();
         let mut row = run_scientific_spec(spec);
         row.timing =
-            IntegratorTimingReport::from_samples(vec![row_started.elapsed().as_secs_f64()], false)
+            IntegratorTimingReport::from_samples(vec![row_started.elapsed().as_secs_f64()], false, 1)
                 .map_err(|error| CoreError::InvalidInput(error.to_string()))?;
         Ok(row)
     })?;

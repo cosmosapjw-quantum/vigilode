@@ -90,4 +90,13 @@ fn fixed_anchor_screen_is_thread_deterministic_and_exposes_all_five_candidates()
         .unwrap();
     assert!(bdf2.work.counters.accepted_steps > 0);
     assert!(bdf2.work.counters.nonlinear_solves > 0);
+    assert_eq!(bdf2.timing.wall_samples_seconds.len(), one.timing_protocol.repetitions);
+    assert!(bdf2.timing.batch_iterations >= 1);
+    assert!(bdf2.timing.wall_q25_seconds <= bdf2.timing.wall_median_seconds);
+    assert!(bdf2.timing.wall_median_seconds <= bdf2.timing.wall_q75_seconds);
+    assert!(one.references.iter().all(|reference| {
+        reference.source_kind == rodas5p_fair_ab::ReferenceSourceKind::AnalyticExact
+    }));
+    assert!(!one.targets.is_empty());
+    assert!(!one.attainments.is_empty());
 }
