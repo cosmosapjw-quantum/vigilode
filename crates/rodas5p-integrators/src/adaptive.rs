@@ -91,10 +91,7 @@ impl AdaptiveStepConfig {
                 "adaptive safety factor must lie in (0, 1]".into(),
             ));
         }
-        if !(self.min_factor > 0.0
-            && self.min_factor <= 1.0
-            && self.min_factor.is_finite())
-        {
+        if !(self.min_factor > 0.0 && self.min_factor <= 1.0 && self.min_factor.is_finite()) {
             return Err(CoreError::InvalidInput(
                 "adaptive minimum factor must lie in (0, 1]".into(),
             ));
@@ -112,8 +109,7 @@ impl AdaptiveStepConfig {
             && self.reject_max_factor.is_finite())
         {
             return Err(CoreError::InvalidInput(
-                "adaptive rejection factor cap must lie between the minimum factor and one"
-                    .into(),
+                "adaptive rejection factor cap must lie between the minimum factor and one".into(),
             ));
         }
         Ok(())

@@ -59,15 +59,7 @@ fn pi_controller_updates_only_after_acceptance() {
 
 #[test]
 fn step_doubling_returns_fine_path_wrms_error() {
-    let estimate = step_doubling_wrms_error(
-        &[0.0],
-        &[0.8],
-        &[1.0],
-        1.0,
-        0.0,
-        1,
-    )
-    .unwrap();
+    let estimate = step_doubling_wrms_error(&[0.0], &[0.8], &[1.0], 1.0, 0.0, 1).unwrap();
     assert_eq!(estimate.method_order, 1);
     assert_eq!(estimate.estimator_order, 2);
     assert!((estimate.error_vector[0] - 0.2).abs() < 1.0e-14);
