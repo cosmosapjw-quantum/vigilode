@@ -28,8 +28,8 @@ pub use adaptive::{
 };
 pub use bdf::{
     BdfConfig, BdfHistory, BdfIntegrationResult, BdfOrder, BdfStepReport, VariableBdf2Coefficients,
-    bdf_step, bdf_step_variable, integrate_bdf_fixed, integrate_bdf_fixed_observed,
-    variable_bdf2_coefficients, variable_bdf2_predictor,
+    bdf_step, bdf_step_variable, integrate_bdf_adaptive_observed, integrate_bdf_fixed,
+    integrate_bdf_fixed_observed, variable_bdf2_coefficients, variable_bdf2_predictor,
 };
 pub use block::{
     BlockMethod, BlockPreconditioner, BlockSolveReport, NonlinearRemainderSnapshot,
