@@ -7,4 +7,4 @@
 5. Adaptive Radau IIA1/3 — Complete (reference lane)
 6. Adaptive Homotopy — Complete (q=7 reference lane)
 7. Unified adaptive screen — Complete
-8. Validation/review/closeout — In final exact-HEAD gate
+8. Validation/review/closeout — Complete

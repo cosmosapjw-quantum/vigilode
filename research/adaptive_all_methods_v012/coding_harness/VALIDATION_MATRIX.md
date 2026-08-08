@@ -10,5 +10,5 @@
 | Adaptive Homotopy fallback | PASS | `TASK6_*` |
 | Unified adaptive screen | PASS | `TASK7_*`, canonical results |
 | T1/T4 determinism | PASS | identical checksum in canonical JSON |
-| Exact-HEAD fmt/clippy/test/build | PENDING_FINAL | final validation receipt |
+| Exact-HEAD fmt/clippy/test/build | PASS | `coding_receipts/PRE_FINAL_EXACT_HEAD_VALIDATION.log`; final external receipt |
 | Independent diff review | PASS_WITH_HOLD | `coding_phases/PHASE09_INDEPENDENT_DIFF_REVIEW.md` |
