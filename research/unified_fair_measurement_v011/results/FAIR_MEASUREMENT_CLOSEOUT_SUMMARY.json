@@ -1,0 +1,118 @@
+{
+  "decision": "CLOSED",
+  "descriptive_fixed_anchor_results": {
+    "pareto_front_memberships_by_candidate": {
+      "bdf1-fixed": 21,
+      "bdf2-fixed": 126,
+      "radau-iia3-fixed": 259,
+      "sequential-rodas5p-direct": 562
+    },
+    "ranking_claim": "Descriptive only; not a production/adaptive solver ranking.",
+    "target_attainment_wins_by_candidate": {
+      "bdf1-fixed": 2,
+      "bdf2-fixed": 12,
+      "radau-iia3-fixed": 52,
+      "sequential-rodas5p-direct": 110
+    }
+  },
+  "failures": 0,
+  "fairness_gates": {
+    "cpu_affinity_pinned_for_closeout_campaigns": true,
+    "failures_preserved": true,
+    "internal_step_storage_disabled": true,
+    "one_four_thread_scientific_identity": true,
+    "randomized_repeated_timing": true,
+    "same_ivp_and_reference": true,
+    "same_optimized_binary_per_campaign": true,
+    "same_pure_rust_backend": true,
+    "same_requested_output_grid": true,
+    "same_step_clipping_landing_policy": true,
+    "vector_work_ledger_preserved": true
+  },
+  "final_source_parent": "f2e9b1e8883bc49c124ce5ab421c92fb58516b74",
+  "measurement_profile": {
+    "codegen_units": 16,
+    "lto": false,
+    "name": "measurement",
+    "opt_level": 3,
+    "rationale": "Fat-LTO linking was not operationally viable in the bounded execution environment; every candidate uses the same optimized binary."
+  },
+  "not_closed": [
+    "production adaptive BDF/Radau ranking",
+    "dense-output interpolation validation",
+    "nonanalytic reference consensus/uncertainty hierarchy",
+    "large sparse, MPI, GPU, or singular-mass DAE ranking",
+    "unimplemented SDC, Peer/W, ROK, BOROK, and Leja candidates"
+  ],
+  "output_policy": {
+    "dense_output_used": false,
+    "landing": "step-clipping",
+    "save_internal_steps": false
+  },
+  "report_schema": "rodas5p-global-error-pareto-v2",
+  "runs": 70,
+  "schema": "rodas5p-fair-measurement-closeout-v1",
+  "scientific_checksum": "2d296812e32e63e14a48b75a051537f71cf9580b64044b69e34fce96a2e9b6cc",
+  "scope": "fixed-step dense anchor comparison authority",
+  "storage_bias_removal": {
+    "bytes_saved_max": 1400,
+    "bytes_saved_median": 148.0,
+    "bytes_saved_min": 0,
+    "equal_bytes_within_each_problem_output_grid": true,
+    "median_ratio_by_candidate": {
+      "bdf1-fixed": 0.5454545454545454,
+      "bdf2-fixed": 0.5454545454545454,
+      "radau-iia1-fixed": 0.5454545454545454,
+      "radau-iia3-fixed": 0.5454545454545454,
+      "sequential-rodas5p-direct": 0.5454545454545454
+    },
+    "new_over_old_ratio_max": 1.0,
+    "new_over_old_ratio_median": 0.5454545454545454,
+    "new_over_old_ratio_min": 0.14634146341463414,
+    "new_storage_sets_by_problem_grid": {
+      "PR-l-20-m1|217ee19a48b66afdbff13d5aa61f022cf1fcfc7e83d766266dc3bebbeb4cdb24": [
+        96
+      ],
+      "manufactured-mass-s20-m1-eta0.2|ee827eaaeaccd2cad9fc5ee4cd1d64dde883ef17376c7dfaed19de0099e2202c": [
+        120
+      ],
+      "mv-n4-s20-m1-eta0.2|217ee19a48b66afdbff13d5aa61f022cf1fcfc7e83d766266dc3bebbeb4cdb24": [
+        240
+      ],
+      "scalar-linear--2|217ee19a48b66afdbff13d5aa61f022cf1fcfc7e83d766266dc3bebbeb4cdb24": [
+        96
+      ]
+    }
+  },
+  "termination_statement": "The fixed-step fair-measurement authority is complete; future adaptive/native solver work is a separate research phase.",
+  "timing_reproducibility": {
+    "all_campaign_checksums_identical": true,
+    "case_level_throughput_speedup_t1_over_t4": 1.5729064195728746,
+    "record_wall_median_cv_max": 0.12433148304664929,
+    "record_wall_median_cv_median": 0.046301223489710136,
+    "record_wall_median_cv_q75": 0.05972508724025777,
+    "t1_campaigns_seconds": [
+      0.009216209,
+      0.0072065,
+      0.006939742,
+      0.007335916,
+      0.007526851
+    ],
+    "t1_median_seconds": 0.007335916,
+    "t4_campaigns_seconds": [
+      0.004439788,
+      0.00475105,
+      0.004663924
+    ],
+    "t4_median_seconds": 0.004663924
+  },
+  "v010_v011_invariance": {
+    "identity_mismatches": 0,
+    "interpretation": "Differences are roundoff-scale; work paths and statuses are identical.",
+    "max_abs_l2_error_metric_delta": 2.7277171407019685e-16,
+    "max_abs_wrms_error_metric_delta": 1.920125214383006e-07,
+    "max_rel_l2_delta_when_old_error_gt_1e-10": 1.0125955984515875e-10,
+    "status_mismatches": 0,
+    "work_counter_mismatches": 0
+  }
+}
