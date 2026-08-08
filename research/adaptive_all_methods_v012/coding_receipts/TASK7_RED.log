@@ -1,0 +1,25 @@
+   Compiling serde v1.0.229
+   Compiling rodas5p-core v0.1.0 (/mnt/data/rodas5p-adaptive-all-main/.worktrees/adaptive-all-methods-v0.12/crates/rodas5p-core)
+   Compiling rodas5p-krylov v0.1.0 (/mnt/data/rodas5p-adaptive-all-main/.worktrees/adaptive-all-methods-v0.12/crates/rodas5p-krylov)
+   Compiling rodas5p-integrators v0.1.0 (/mnt/data/rodas5p-adaptive-all-main/.worktrees/adaptive-all-methods-v0.12/crates/rodas5p-integrators)
+   Compiling rodas5p-fair-ab v0.1.0 (/mnt/data/rodas5p-adaptive-all-main/.worktrees/adaptive-all-methods-v0.12/crates/rodas5p-fair-ab)
+error[E0432]: unresolved import `rodas5p_fair_ab::run_adaptive_global_error_screen`
+ --> crates/rodas5p-fair-ab/tests/adaptive_global_error_contracts.rs:3:49
+  |
+3 | ...ParetoProfile, run_adaptive_global_error_screen};
+  |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ no `run_adaptive_global_error_screen` in the root
+
+error[E0282]: type annotations needed
+  --> crates/rodas5p-fair-ab/tests/adaptive_global_error_contracts.rs:54:15
+   |
+54 |         .map(|value| value.to_bits())
+   |               ^^^^^  ----- type must be known at this point
+   |
+help: consider giving this closure parameter an explicit type
+   |
+54 |         .map(|value: /* Type */| value.to_bits())
+   |                    ++++++++++++
+
+Some errors have detailed explanations: E0282, E0432.
+For more information about an error, try `rustc --explain E0282`.
+error: could not compile `rodas5p-fair-ab` (test "adaptive_global_error_contracts") due to 2 previous errors

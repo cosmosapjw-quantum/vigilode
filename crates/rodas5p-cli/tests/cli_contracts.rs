@@ -394,3 +394,31 @@ fn global_error_pareto_command_emits_deterministic_method_independent_report() {
     let _ = fs::remove_file(serial);
     let _ = fs::remove_file(parallel);
 }
+
+#[test]
+fn adaptive_global_error_command_emits_current_family_report() {
+    let binary = env!("CARGO_BIN_EXE_rodas5p");
+    let output = temp_path("adaptive-global-error.json");
+    let status = Command::new(binary)
+        .args([
+            "adaptive-global-error",
+            "--profile",
+            "smoke",
+            "--threads",
+            "2",
+            "--output",
+        ])
+        .arg(&output)
+        .status()
+        .unwrap();
+    assert!(status.success());
+    let report: serde_json::Value = serde_json::from_slice(&fs::read(&output).unwrap()).unwrap();
+    assert_eq!(report["schema"], "rodas5p-adaptive-global-error-v1");
+    assert_eq!(report["execution"]["threads"], 2);
+    assert_eq!(report["candidates"].as_array().unwrap().len(), 10);
+    assert_eq!(report["problems"].as_array().unwrap().len(), 2);
+    assert_eq!(report["tolerance_ladder"].as_array().unwrap().len(), 2);
+    assert_eq!(report["runs"].as_array().unwrap().len(), 40);
+    assert_eq!(report["scientific_checksum"].as_str().unwrap().len(), 64);
+    let _ = fs::remove_file(output);
+}

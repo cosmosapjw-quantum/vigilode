@@ -1,6 +1,7 @@
 #![forbid(unsafe_code)]
 
 mod adapters;
+mod adaptive_global_error;
 mod budget;
 mod contracts;
 mod error;
@@ -10,6 +11,11 @@ mod scenarios;
 mod session;
 
 pub use adapters::solve_case;
+pub use adaptive_global_error::{
+    AdaptiveCandidateDescriptor, AdaptiveCandidateFamily, AdaptiveGlobalErrorReport,
+    AdaptiveProblemDescriptor, AdaptiveRunRow, AdaptiveScreenExecution,
+    run_adaptive_global_error_screen,
+};
 pub use budget::{BUDGET_EXHAUSTED_MARKER, BudgetedOperator, StableDenseOperator};
 pub use contracts::{
     FairSolveConfig, FairSolveResult, LinearSystemCase, PreconditionerKind, RecycleLifetime,

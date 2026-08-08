@@ -1,0 +1,49 @@
+   Compiling rodas5p-fair-ab v0.1.0 (/mnt/data/rodas5p-adaptive-all-main/.worktrees/adaptive-all-methods-v0.12/crates/rodas5p-fair-ab)
+   Compiling rodas5p-cli v0.1.0 (/mnt/data/rodas5p-adaptive-all-main/.worktrees/adaptive-all-methods-v0.12/crates/rodas5p-cli)
+    Finished `measurement` profile [optimized] target(s) in 5.93s
+     Running tests/cli_contracts.rs (/mnt/data/rodas5p-adaptive-all-target/measurement/deps/cli_contracts-00a60686f8b6c512)
+
+running 1 test
+test adaptive_global_error_command_emits_current_family_report ... error: unrecognized subcommand 'adaptive-global-error'
+
+Usage: rodas5p <COMMAND>
+
+For more information, try '--help'.
+FAILED
+
+failures:
+
+---- adaptive_global_error_command_emits_current_family_report stdout ----
+
+thread 'adaptive_global_error_command_emits_current_family_report' (20679) panicked at crates/rodas5p-cli/tests/cli_contracts.rs:414:5:
+assertion failed: status.success()
+stack backtrace:
+   0:     0x5567c2f0c262 - <std::sys::backtrace::BacktraceLock::print::DisplayBacktrace as core::fmt::Display>::fmt::hdadc7c28d26d7ce3
+   1:     0x5567c2f1cdaa - core::fmt::write::h469843d235cc4241
+   2:     0x5567c2edacb6 - std::io::Write::write_fmt::h86cdd20e46f95ef0
+   3:     0x5567c2eeb6c9 - std::panicking::default_hook::{{closure}}::hd9d92b9a46805102
+   4:     0x5567c2eeb561 - std::panicking::default_hook::hedb2be0819bbe276
+   5:     0x5567c2eaf02e - test::test_main_with_exit_callback::{{closure}}::h816111d0ddcced19
+   6:     0x5567c2eeb942 - std::panicking::panic_with_hook::h0fc23abecf35c6bd
+   7:     0x5567c2eeb7ba - std::panicking::panic_handler::{{closure}}::ha111c1a3ccf85d19
+   8:     0x5567c2ee6b39 - std::sys::backtrace::__rust_end_short_backtrace::h41d63216e1ba5fa4
+   9:     0x5567c2ecf17d - __rustc[16f1505adc47261a]::rust_begin_unwind
+  10:     0x5567c2f243ac - core::panicking::panic_fmt::hc13412975f563dde
+  11:     0x5567c2f24372 - core::panicking::panic::h8bbbe005ba322b34
+  12:     0x5567c2e7eef8 - core::ops::function::FnOnce::call_once::h983638fee097fa52
+  13:     0x5567c2eaee2b - test::__rust_begin_short_backtrace::h253a2097187731c8
+  14:     0x5567c2ec27fa - test::run_test::{{closure}}::h1a5d6d0603e1925c
+  15:     0x5567c2e9cc14 - std::sys::backtrace::__rust_begin_short_backtrace::hb67b3f617d02f8cc
+  16:     0x5567c2ea05b2 - core::ops::function::FnOnce::call_once{{vtable.shim}}::h920ca148ba3af64d
+  17:     0x5567c2ee1c3f - std::sys::thread::unix::Thread::new::thread_start::h96f969bf98c6e59d
+  18:     0x7fab49748b7b - <unknown>
+  19:     0x7fab497c67f8 - <unknown>
+  20:                0x0 - <unknown>
+
+
+failures:
+    adaptive_global_error_command_emits_current_family_report
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 7 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p rodas5p-cli --test cli_contracts`
