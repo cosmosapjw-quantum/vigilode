@@ -8,6 +8,28 @@ static NEXT_TOKEN: AtomicU64 = AtomicU64::new(1);
 pub trait LinearOperator: Send + Sync {
     fn dimension(&self) -> usize;
     fn apply(&self, x: &[f64], y: &mut [f64]) -> CoreResult<()>;
+
+    /// Apply one operator to several independent right-hand-side rows.
+    ///
+    /// The default implementation is deliberately serial and allocation-free with respect to the
+    /// caller-provided output storage.  Backends that own a bounded thread pool or a genuine
+    /// block kernel may override this method without changing Krylov solver semantics.
+    fn apply_rows(&self, inputs: &[Vec<f64>], outputs: &mut [Vec<f64>]) -> CoreResult<()> {
+        let n = self.dimension();
+        if inputs.len() != outputs.len()
+            || inputs.iter().any(|row| row.len() != n)
+            || outputs.iter().any(|row| row.len() != n)
+        {
+            return Err(CoreError::Dimension(
+                "linear-operator row batch shape mismatch".into(),
+            ));
+        }
+        for (input, output) in inputs.iter().zip(outputs) {
+            self.apply(input, output)?;
+        }
+        Ok(())
+    }
+
     fn explicit(&self) -> Option<&DenseMatrix> {
         None
     }

@@ -66,6 +66,39 @@ impl ParallelExecution {
         }
     }
 
+    /// Apply an operation to matching input/output slots without allocating an intermediate
+    /// result vector. The output order is identical to the input order.
+    pub fn try_for_each_ordered_mut<T, U, F>(
+        &self,
+        inputs: &[T],
+        outputs: &mut [U],
+        operation: F,
+    ) -> CoreResult<()>
+    where
+        T: Sync,
+        U: Send,
+        F: Fn(&T, &mut U) -> CoreResult<()> + Send + Sync,
+    {
+        if inputs.len() != outputs.len() {
+            return Err(CoreError::Dimension(
+                "parallel input/output batch length mismatch".into(),
+            ));
+        }
+        if let Some(pool) = &self.pool {
+            pool.install(|| {
+                inputs
+                    .par_iter()
+                    .zip(outputs.par_iter_mut())
+                    .try_for_each(|(input, output)| operation(input, output))
+            })
+        } else {
+            inputs
+                .iter()
+                .zip(outputs.iter_mut())
+                .try_for_each(|(input, output)| operation(input, output))
+        }
+    }
+
     /// Apply one shared operator to independent method-stage rows.
     ///
     /// A multi-thread local Rayon pool gives genuine parallelism across stages while preserving

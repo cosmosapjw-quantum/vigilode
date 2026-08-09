@@ -158,3 +158,31 @@ fn trajectory_gate_false_accepts_are_scoped_to_the_matching_path_configuration()
         );
     }
 }
+
+#[test]
+fn parallel_execution_mutates_outputs_in_order_without_intermediate_results() {
+    use rodas5p_core::CoreResult;
+    use rodas5p_integrators::ParallelExecution;
+
+    let inputs = vec![1_u64, 2, 3, 4, 5, 6, 7, 8];
+    let mut outputs = vec![0_u64; inputs.len()];
+    ParallelExecution::rayon(4)
+        .unwrap()
+        .try_for_each_ordered_mut(&inputs, &mut outputs, |input, output| {
+            *output = input.wrapping_mul(*input);
+            Ok(())
+        })
+        .unwrap();
+    assert_eq!(outputs, vec![1, 4, 9, 16, 25, 36, 49, 64]);
+
+    let mut too_short = vec![0_u64; 2];
+    let result: CoreResult<()> = ParallelExecution::sequential().try_for_each_ordered_mut(
+        &inputs,
+        &mut too_short,
+        |input, output| {
+            *output = *input;
+            Ok(())
+        },
+    );
+    assert!(result.is_err());
+}

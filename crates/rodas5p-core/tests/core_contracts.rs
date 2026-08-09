@@ -40,3 +40,32 @@ fn direct_solve_agrees_with_known_solution() {
     assert!((x[0] - 1.9).abs() < 1.0e-14);
     assert!((x[1] - 1.4).abs() < 1.0e-14);
 }
+
+#[test]
+fn linear_operator_default_row_application_preserves_order() {
+    use rodas5p_core::{ClosureOperator, LinearOperator};
+
+    let op = ClosureOperator::new(3, |x, y| {
+        y[0] = 2.0 * x[0];
+        y[1] = -x[1];
+        y[2] = x[0] + x[2];
+        Ok(())
+    });
+    let inputs = vec![vec![1.0, 2.0, 3.0], vec![4.0, -5.0, 6.0]];
+    let mut outputs = vec![vec![0.0; 3]; 2];
+    op.apply_rows(&inputs, &mut outputs).unwrap();
+    assert_eq!(outputs, vec![vec![2.0, -2.0, 4.0], vec![8.0, 5.0, 10.0]]);
+}
+
+#[test]
+fn linear_operator_row_application_rejects_ragged_shapes() {
+    use rodas5p_core::{ClosureOperator, LinearOperator};
+
+    let op = ClosureOperator::new(2, |x, y| {
+        y.copy_from_slice(x);
+        Ok(())
+    });
+    let inputs = vec![vec![1.0, 2.0], vec![3.0]];
+    let mut outputs = vec![vec![0.0; 2]; 2];
+    assert!(op.apply_rows(&inputs, &mut outputs).is_err());
+}
