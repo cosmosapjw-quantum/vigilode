@@ -1,0 +1,27 @@
+{
+  "schema": "rodas5p-rhs-telemetry-state-v1",
+  "dag_node": "actual-rhs-telemetry",
+  "status": "validated-with-dispatch-hold",
+  "base_tag": "vectorized-jf-common-w-v0.14.0-alpha1",
+  "working_branch": "vectorized-jf-homotopy-dispatch-v0.15",
+  "cases": 9,
+  "rows": 1215,
+  "failed_paths": 2,
+  "behavior_comparisons": 162,
+  "behavior_mismatches": 0,
+  "scientific_checksum": "0d0933596500b58c52d01bac7d58b3cd95141e566afb8243a195ece1179ae6c5",
+  "completed": [
+    "read-only observer",
+    "actual SABR/homotopy telemetry",
+    "directional rank",
+    "semantic drift",
+    "failure preservation",
+    "advisory recommendation"
+  ],
+  "blocked": [
+    "active dispatcher",
+    "cheap online telemetry",
+    "integrated same-error speedup"
+  ],
+  "next": "vectorized-jf-transactional-dispatch-v0.16"
+}

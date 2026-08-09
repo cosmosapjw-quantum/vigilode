@@ -1,0 +1,35 @@
+{
+  "schema": "rodas5p-transactional-dispatch-contract-v1",
+  "base": "vectorized-jf-rhs-telemetry-v0.15.0-alpha1",
+  "target_branch": "vectorized-jf-transactional-dispatch-v0.16",
+  "protected_fallback": "independent-rayon-gmres",
+  "stages": 8,
+  "dispatcher_stages": [
+    "cheap-telemetry",
+    "shadow",
+    "transactional-active",
+    "integrated-scientific-gate"
+  ],
+  "mandatory_guards": [
+    "two-consecutive-semantic-batch hysteresis",
+    "true-unpreconditioned-residual certificate",
+    "same-step independent retry",
+    "failed speculative work retained",
+    "no state commit before certified success",
+    "path-level nonfinite bypass"
+  ],
+  "promotion_gates": {
+    "explicit_jacobian_builds": 0,
+    "fast_path_newton_iterations": 0,
+    "false_convergence": 0,
+    "minimum_global_order": 4.8,
+    "maximum_median_rounds": 4,
+    "maximum_p95_rounds": 6,
+    "maximum_fallback_fraction": 0.1,
+    "minimum_holdout_same_error_speedup": 1.15
+  },
+  "deferred": [
+    "BGMRES-DR unless actual dispatch failures justify it",
+    "BDF/Radau optimization"
+  ]
+}

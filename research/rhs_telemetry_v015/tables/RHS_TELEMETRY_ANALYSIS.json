@@ -1,0 +1,214 @@
+{
+  "backend_counts": {
+    "block-gmres": 437,
+    "independent-rayon-gmres": 541,
+    "seeded-shared-gmres": 237
+  },
+  "backend_fractions": {
+    "block-gmres": 0.3596707818930041,
+    "independent-rayon-gmres": 0.44526748971193414,
+    "seeded-shared-gmres": 0.19506172839506172
+  },
+  "backend_recommendations_advisory": true,
+  "behavior_comparisons": 162,
+  "behavior_mismatches": 0,
+  "cases": 9,
+  "dispatcher_active": false,
+  "energy_rank_99_equals_one_fraction": 0.5349794238683128,
+  "failed_paths": 2,
+  "failure_rows": [
+    {
+      "case_id": "mv-n32-s1e6-m1e3-eta0.9",
+      "error": "non-finite numerical value: homotopy telemetry case=mv-n32-s1e6-m1e3-eta0.9 theta=1 q=2 predictor=AdamsBashforth2: non-finite numerical value: batched RHS produced NaN/Inf",
+      "method": "homotopy",
+      "predictor": "AdamsBashforth2",
+      "q": 2,
+      "rows_preserved": 12,
+      "theta": 1.0
+    },
+    {
+      "case_id": "mv-n32-s1e6-m1e3-eta0.9",
+      "error": "non-finite numerical value: homotopy telemetry case=mv-n32-s1e6-m1e3-eta0.9 theta=1 q=2 predictor=Euler: non-finite numerical value: batched RHS produced NaN/Inf",
+      "method": "homotopy",
+      "predictor": "Euler",
+      "q": 2,
+      "rows_preserved": 12,
+      "theta": 1.0
+    }
+  ],
+  "non_high_risk_backend_counts": {
+    "block-gmres": 437,
+    "independent-rayon-gmres": 136,
+    "seeded-shared-gmres": 237
+  },
+  "non_high_risk_backend_fractions": {
+    "block-gmres": 0.5395061728395062,
+    "independent-rayon-gmres": 0.16790123456790124,
+    "seeded-shared-gmres": 0.29259259259259257
+  },
+  "non_high_risk_rows": 810,
+  "primary_findings": [
+    "After unit-column normalization, actual common-W batches are frequently low directional rank, but a large high-risk subset still requires the protected independent-Rayon backend.",
+    "Seed sharing is confined to strongly collinear rank-one batches after a conservative median-cosine guard.",
+    "Directional numerical-rank decisions remain threshold-sensitive, so dispatch must use hysteresis, transactional fallback, and a true-residual certificate.",
+    "Two severe q=2 theta=1 homotopy paths diverged before dispatch; a linear backend cannot cure this path-level failure."
+  ],
+  "rank_threshold_sensitivity": [
+    {
+      "changed_fraction_from_1e_8": 0.22633744855967078,
+      "changed_from_1e_8": 275,
+      "rank_0_count": 0,
+      "rank_1_count": 249,
+      "rank_2_count": 399,
+      "rank_3_count": 235,
+      "rank_4_count": 120,
+      "rank_5_count": 59,
+      "rank_6_count": 56,
+      "rank_7_count": 92,
+      "rank_8_count": 5,
+      "rank_tolerance": 1e-06,
+      "rows": 1215
+    },
+    {
+      "changed_fraction_from_1e_8": 0.0,
+      "changed_from_1e_8": 0,
+      "rank_0_count": 0,
+      "rank_1_count": 243,
+      "rank_2_count": 369,
+      "rank_3_count": 181,
+      "rank_4_count": 108,
+      "rank_5_count": 96,
+      "rank_6_count": 75,
+      "rank_7_count": 126,
+      "rank_8_count": 17,
+      "rank_tolerance": 1e-08,
+      "rows": 1215
+    },
+    {
+      "changed_fraction_from_1e_8": 0.2872427983539095,
+      "changed_from_1e_8": 349,
+      "rank_0_count": 0,
+      "rank_1_count": 223,
+      "rank_2_count": 339,
+      "rank_3_count": 140,
+      "rank_4_count": 73,
+      "rank_5_count": 84,
+      "rank_6_count": 130,
+      "rank_7_count": 175,
+      "rank_8_count": 51,
+      "rank_tolerance": 1e-10,
+      "rows": 1215
+    },
+    {
+      "changed_fraction_from_1e_8": 0.388477366255144,
+      "changed_from_1e_8": 472,
+      "rank_0_count": 0,
+      "rank_1_count": 201,
+      "rank_2_count": 309,
+      "rank_3_count": 139,
+      "rank_4_count": 92,
+      "rank_5_count": 24,
+      "rank_6_count": 117,
+      "rank_7_count": 265,
+      "rank_8_count": 68,
+      "rank_tolerance": 1e-12,
+      "rows": 1215
+    }
+  ],
+  "rank_transitions": {
+    "1->1": 239,
+    "2->2": 362,
+    "3->1": 4,
+    "3->2": 5,
+    "3->3": 150,
+    "4->2": 1,
+    "4->3": 21,
+    "4->4": 76,
+    "5->2": 1,
+    "5->3": 10,
+    "5->4": 28,
+    "5->5": 66,
+    "6->4": 2,
+    "6->5": 26,
+    "6->6": 46,
+    "7->4": 2,
+    "7->5": 4,
+    "7->6": 27,
+    "7->7": 115,
+    "8->6": 2,
+    "8->7": 11,
+    "8->8": 17
+  },
+  "raw_directional_rank_distribution": {
+    "1": 239,
+    "2": 362,
+    "3": 159,
+    "4": 98,
+    "5": 105,
+    "6": 74,
+    "7": 148,
+    "8": 30
+  },
+  "reference_explicit_jacobian_builds": 171,
+  "reference_factorization_builds": 189,
+  "rows": 1215,
+  "schema": "rodas5p-homotopy-rhs-telemetry-analysis-v1",
+  "source_schema": "rodas5p-homotopy-rhs-telemetry-v1",
+  "source_scientific_checksum": "0d0933596500b58c52d01bac7d58b3cd95141e566afb8243a195ece1179ae6c5",
+  "subspace_drift": [
+    {
+      "group": "seeded-shared-gmres",
+      "maximum_degrees": 1.4787793334710982e-06,
+      "median_degrees": 0.0,
+      "p90_degrees": 0.0,
+      "rows": 96
+    },
+    {
+      "group": "block-gmres",
+      "maximum_degrees": 90.0,
+      "median_degrees": 8.537736462515939e-07,
+      "p90_degrees": 66.23579344383873,
+      "rows": 210
+    },
+    {
+      "group": "independent-rayon-gmres",
+      "maximum_degrees": 90.0,
+      "median_degrees": 47.86708687487052,
+      "p90_degrees": 90.0,
+      "rows": 306
+    },
+    {
+      "group": "homotopy-q0",
+      "maximum_degrees": 90.0,
+      "median_degrees": 2.133092331746578,
+      "p90_degrees": 90.0,
+      "rows": 108
+    },
+    {
+      "group": "homotopy-q1",
+      "maximum_degrees": 90.0,
+      "median_degrees": 0.05361323577249685,
+      "p90_degrees": 90.0,
+      "rows": 198
+    },
+    {
+      "group": "homotopy-q2",
+      "maximum_degrees": 90.0,
+      "median_degrees": 0.0007538586153786157,
+      "p90_degrees": 90.0,
+      "rows": 288
+    }
+  ],
+  "transformed_directional_rank_distribution": {
+    "1": 243,
+    "2": 369,
+    "3": 181,
+    "4": 108,
+    "5": 96,
+    "6": 75,
+    "7": 126,
+    "8": 17
+  },
+  "transformed_directional_stable_rank_median": 1.0093965912916139,
+  "verdict": "telemetry gate passed; activation of the dispatcher remains on hold"
+}

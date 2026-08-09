@@ -1,0 +1,2 @@
+Initial observer-refactor compile check failed as expected with Rust E0597/E0499: repeated long mutable borrows of `Option<&mut dyn HomotopyBatchObserver>` across multiple path calls.
+Root cause: passing the mutable observer option by value and reborrowing it with `as_deref_mut()` gave the inner reference lifetime for the entire function call chain.
