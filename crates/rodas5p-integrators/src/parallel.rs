@@ -1,5 +1,5 @@
 use rayon::{ThreadPool, ThreadPoolBuilder, prelude::*};
-use rodas5p_core::{CoreError, CoreResult};
+use rodas5p_core::{CoreError, CoreResult, LinearOperator};
 
 /// Bounded execution context for independent scientific jobs.
 ///
@@ -64,5 +64,34 @@ impl ParallelExecution {
         } else {
             items.iter().map(operation).collect()
         }
+    }
+
+    /// Apply one shared operator to independent method-stage rows.
+    ///
+    /// A multi-thread local Rayon pool gives genuine parallelism across stages while preserving
+    /// deterministic input order.  This is intentionally separate from case-level scheduling.
+    pub fn apply_operator_rows(
+        &self,
+        operator: &dyn LinearOperator,
+        rows: &[Vec<f64>],
+    ) -> CoreResult<Vec<Vec<f64>>> {
+        let n = operator.dimension();
+        if rows.iter().any(|row| row.len() != n) {
+            return Err(CoreError::Dimension(
+                "stage operator row shape mismatch".into(),
+            ));
+        }
+        let indices: Vec<usize> = (0..rows.len()).collect();
+        self.map_ordered(&indices, |&index| {
+            let mut out = vec![0.0; n];
+            operator.apply(&rows[index], &mut out)?;
+            if out.iter().all(|value| value.is_finite()) {
+                Ok(out)
+            } else {
+                Err(CoreError::NonFinite(
+                    "stage operator batch produced NaN/Inf".into(),
+                ))
+            }
+        })
     }
 }

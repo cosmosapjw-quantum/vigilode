@@ -19,6 +19,7 @@ mod problems;
 mod radau;
 mod sabr;
 mod sequential;
+mod stage_batch;
 mod unified_gates;
 mod unified_screen;
 
@@ -86,6 +87,10 @@ pub use sabr::{PredictorKind, SabrConfig, StageHistory, sabr_step};
 pub use sequential::{
     KrylovState, StageSolveData, StepCertificate, StepContext, StepResult, build_step_context,
     finish_step, sequential_stages, sequential_step,
+};
+pub use stage_batch::{
+    StageBatchFeasibilityCase, StageBatchFeasibilityProfile, StageBatchFeasibilityReport,
+    StageBatchFeasibilityRow, run_stage_batch_feasibility,
 };
 pub use unified_gates::{
     CandidateGateReport, CandidateGateVerdict, CandidateOrderGateRow, CandidateStiffGateRow,

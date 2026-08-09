@@ -14,10 +14,10 @@ use rodas5p_fair_ab::{
 };
 use rodas5p_integrators::{
     CandidateCatalog, CandidateFamily, CandidateStatus, HomotopyExperimentProfile,
-    NativeIntegratorGateReport, UnifiedNonlinearScreen, UnifiedScientificGateReport,
-    UnifiedScreenProfile, run_homotopy_design_check, run_homotopy_experiment_screen,
-    run_homotopy_order_policy_screen, run_native_integrator_gates, run_unified_nonlinear_screen,
-    run_unified_scientific_gates,
+    NativeIntegratorGateReport, StageBatchFeasibilityProfile, UnifiedNonlinearScreen,
+    UnifiedScientificGateReport, UnifiedScreenProfile, run_homotopy_design_check,
+    run_homotopy_experiment_screen, run_homotopy_order_policy_screen, run_native_integrator_gates,
+    run_stage_batch_feasibility, run_unified_nonlinear_screen, run_unified_scientific_gates,
 };
 use serde::Serialize;
 use serde_json::json;
@@ -58,6 +58,13 @@ enum Command {
         profile: CliHomotopyProfile,
         #[arg(long, default_value_t = 1)]
         threads: usize,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Measure genuine within-step stage batching for RHS, JVP and common-W solves.
+    StageBatchFeasibility {
+        #[arg(long, value_enum, default_value_t = CliStageBatchProfile::Canonical)]
+        profile: CliStageBatchProfile,
         #[arg(long)]
         output: PathBuf,
     },
@@ -172,6 +179,21 @@ impl From<CliHomotopyProfile> for GlobalErrorParetoProfile {
         match value {
             CliHomotopyProfile::Smoke => Self::Smoke,
             CliHomotopyProfile::Canonical => Self::Canonical,
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, ValueEnum)]
+enum CliStageBatchProfile {
+    Smoke,
+    Canonical,
+}
+
+impl From<CliStageBatchProfile> for StageBatchFeasibilityProfile {
+    fn from(value: CliStageBatchProfile) -> Self {
+        match value {
+            CliStageBatchProfile::Smoke => Self::Smoke,
+            CliStageBatchProfile::Canonical => Self::Canonical,
         }
     }
 }
@@ -934,6 +956,10 @@ fn main() -> Result<()> {
                 &output,
                 &run_homotopy_order_policy_screen(profile.into(), threads)?,
             )?;
+        }
+        Command::StageBatchFeasibility { profile, output } => {
+            let report = run_stage_batch_feasibility(profile.into())?;
+            write_json(&output, &report)?;
         }
         Command::NativeIntegratorGates { output } => {
             let report: NativeIntegratorGateReport = run_native_integrator_gates()?;

@@ -422,3 +422,54 @@ fn adaptive_global_error_command_emits_current_family_report() {
     assert_eq!(report["scientific_checksum"].as_str().unwrap().len(), 64);
     let _ = fs::remove_file(output);
 }
+
+#[test]
+fn stage_batch_feasibility_cli_emits_deterministic_within_step_report() {
+    let binary = env!("CARGO_BIN_EXE_rodas5p");
+    let first = temp_path("stage-batch-feasibility-first.json");
+    let second = temp_path("stage-batch-feasibility-second.json");
+
+    for output in [&first, &second] {
+        let status = Command::new(binary)
+            .args(["stage-batch-feasibility", "--profile", "smoke", "--output"])
+            .arg(output)
+            .status()
+            .unwrap();
+        assert!(status.success());
+    }
+
+    let first_value: serde_json::Value =
+        serde_json::from_slice(&fs::read(&first).unwrap()).unwrap();
+    let second_value: serde_json::Value =
+        serde_json::from_slice(&fs::read(&second).unwrap()).unwrap();
+    assert_eq!(
+        first_value["scientific_checksum"],
+        second_value["scientific_checksum"]
+    );
+    assert_eq!(first_value["schema"], "rodas5p-stage-batch-feasibility-v1");
+    assert!(first_value["stage_parallelism_observed"].as_bool().unwrap());
+    assert!(first_value["observed_max_parallel_tasks"].as_u64().unwrap() >= 2);
+    assert!(
+        first_value["rhs_and_jvp_paths_matrix_free"]
+            .as_bool()
+            .unwrap()
+    );
+    assert!(
+        first_value["common_w_dense_reference_setup_used"]
+            .as_bool()
+            .unwrap()
+    );
+    assert!(
+        !first_value["strict_jacobian_free_common_w_demonstrated"]
+            .as_bool()
+            .unwrap()
+    );
+    assert!(!first_value["explicit_simd_demonstrated"].as_bool().unwrap());
+    assert_eq!(first_value["cases"].as_array().unwrap().len(), 2);
+    assert!(first_value["rows"].as_array().unwrap().iter().any(|row| {
+        row["kernel"] == "combined-round" && row["backend"] == "rayon-stage-4+multi-rhs"
+    }));
+
+    let _ = fs::remove_file(first);
+    let _ = fs::remove_file(second);
+}

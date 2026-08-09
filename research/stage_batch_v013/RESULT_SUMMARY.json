@@ -1,0 +1,31 @@
+{
+  "schema": "rodas5p-stage-batch-closeout-v1",
+  "date": "2026-08-09",
+  "base": "adaptive-all-methods-v0.12.0-alpha1",
+  "branch": "vectorized-jf-stage-batch-v0.13-reset",
+  "scope": "within-step stage batching feasibility",
+  "campaigns": 3,
+  "cases_per_campaign": 18,
+  "rows_per_campaign": 234,
+  "scientific_checksum": "be5a3015bb0fc2085659ac87ce91518822b8b1312cd9effd05bd7b9fa8c9523b",
+  "observed_max_parallel_tasks": 4,
+  "all_numerical_differences_zero": true,
+  "median_speedups": {
+    "rhs_nonserial_all": 0.3959936722011641,
+    "jvp_rayon": 0.1137688758649597,
+    "common_w_multi_rhs": 3.478775581751546,
+    "combined_nonserial_all": 1.677689588645256,
+    "combined_component_major_multi_rhs": 2.4732007289943763,
+    "combined_rayon_2_multi_rhs": 0.9313555787515084,
+    "combined_rayon_4_multi_rhs": 0.46083614498948133
+  },
+  "honesty": {
+    "rhs_and_jvp_paths_matrix_free": true,
+    "common_w_dense_reference_setup_used": true,
+    "strict_jacobian_free_common_w_demonstrated": false,
+    "explicit_simd_demonstrated": false,
+    "integrated_solver_speedup_demonstrated": false
+  },
+  "verdict": "conditional-promote-feasibility-infrastructure",
+  "next_branch": "vectorized-jf-common-w-v0.14"
+}

@@ -1,5 +1,7 @@
 use std::sync::Arc;
 
+use crate::parallel::ParallelExecution;
+
 use rodas5p_core::{
     ClosureOperator, CoreError, CoreResult, DenseMatrix, DenseOperator, LinearOperator,
     WorkCounters,
@@ -70,19 +72,52 @@ impl OdeProblem {
         })
     }
 
-    pub fn eval_rhs(&self, t: f64, y: &[f64], counters: &mut WorkCounters) -> CoreResult<Vec<f64>> {
+    fn eval_rhs_uncounted(&self, t: f64, y: &[f64]) -> CoreResult<Vec<f64>> {
         if y.len() != self.dimension {
             return Err(CoreError::Dimension("RHS state shape mismatch".into()));
         }
         let mut out = vec![0.0; self.dimension];
         (self.rhs)(t, y, &mut out)?;
-        counters.rhs_calls += 1;
-        counters.rhs_evaluations += 1;
         if out.iter().all(|v| v.is_finite()) {
             Ok(out)
         } else {
             Err(CoreError::NonFinite("RHS produced NaN/Inf".into()))
         }
+    }
+
+    pub fn eval_rhs(&self, t: f64, y: &[f64], counters: &mut WorkCounters) -> CoreResult<Vec<f64>> {
+        let out = self.eval_rhs_uncounted(t, y)?;
+        counters.rhs_calls += 1;
+        counters.rhs_evaluations += 1;
+        Ok(out)
+    }
+
+    /// Evaluate independent method-stage RHS rows through a bounded execution context.
+    ///
+    /// This path calls the scalar physics kernel once per stage.  With a local Rayon pool those
+    /// calls run concurrently, so the implementation measures real within-step stage parallelism
+    /// rather than case-level throughput or a serial function with a batched signature.
+    pub fn eval_rhs_stage_rows(
+        &self,
+        times: &[f64],
+        states: &[Vec<f64>],
+        execution: &ParallelExecution,
+        counters: &mut WorkCounters,
+    ) -> CoreResult<Vec<Vec<f64>>> {
+        if times.len() != states.len() || states.iter().any(|s| s.len() != self.dimension) {
+            return Err(CoreError::Dimension(
+                "stage RHS batch shape mismatch".into(),
+            ));
+        }
+        let indices: Vec<usize> = (0..states.len()).collect();
+        // Count the entire scheduled batch before execution so an early error cannot erase work
+        // requested from the numerical method. This is the same vector-work convention used by
+        // the provided batch callback.
+        counters.rhs_batch_calls += 1;
+        counters.rhs_evaluations += states.len() as u64;
+        execution.map_ordered(&indices, |&index| {
+            self.eval_rhs_uncounted(times[index], &states[index])
+        })
     }
 
     pub fn eval_rhs_batch(
