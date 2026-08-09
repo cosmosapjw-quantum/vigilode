@@ -1,25 +1,14 @@
-=== ENVIRONMENT ===
+STAGE_BATCH_FINAL_VALIDATION
+DATE_UTC=2026-08-09T11:21:39Z
+FEATURE_HEAD=7448dbab1040224127dfb7df295594e259d4eb47
+BRANCH=vectorized-jf-stage-batch-v0.13
 rustc 1.94.1 (e408947bf 2026-03-25)
 cargo 1.94.1 (29ea6fb6a 2026-03-24)
-Linux e50ecb24cb28 6.18.35 #1 SMP Mon Jul 27 18:07:50 UTC 2026 x86_64 GNU/Linux
-=== GIT BEFORE ===
-## vectorized-jf-stage-batch-v0.13-reset
- M crates/rodas5p-cli/src/main.rs
- M crates/rodas5p-cli/tests/cli_contracts.rs
- M crates/rodas5p-integrators/src/lib.rs
- M crates/rodas5p-integrators/src/parallel.rs
- M crates/rodas5p-integrators/src/problem.rs
-?? crates/rodas5p-integrators/src/stage_batch.rs
-?? crates/rodas5p-integrators/tests/stage_batch_contracts.rs
-?? research/stage_batch_v013/
 === FORMAT ===
 === CLIPPY ===
     Finished `measurement` profile [optimized] target(s) in 0.10s
-=== TEST ===
-   Compiling rodas5p-integrators v0.1.0 (/mnt/data/rodas5p-vectorized-jf/crates/rodas5p-integrators)
-   Compiling rodas5p-fair-ab v0.1.0 (/mnt/data/rodas5p-vectorized-jf/crates/rodas5p-fair-ab)
-   Compiling rodas5p-cli v0.1.0 (/mnt/data/rodas5p-vectorized-jf/crates/rodas5p-cli)
-    Finished `measurement` profile [optimized] target(s) in 10.60s
+=== TESTS ===
+    Finished `measurement` profile [optimized] target(s) in 0.10s
      Running unittests src/main.rs (target/measurement/deps/rodas5p-bc26d583ee7ac4b9)
 
 running 4 tests
@@ -56,7 +45,7 @@ test stage_batch_feasibility_cli_emits_deterministic_within_step_report ... ok
 test unified_candidate_screen_combines_linear_and_nonlinear_tiers ... ok
 test validate_trace_and_benchmark_commands_emit_machine_readable_artifacts ... ok
 
-test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.60s
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.61s
 
      Running unittests src/lib.rs (target/measurement/deps/rodas5p_core-41cd05e7794f7a25)
 
@@ -117,7 +106,7 @@ test fixed_anchor_screen_is_thread_deterministic_and_exposes_all_five_candidates
 test pareto_and_target_selection_preserve_failures_and_choose_true_nondominated_points ... ok
 test pareto_screen_stores_only_common_outputs_and_reports_step_clipping_protocol ... ok
 
-test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.38s
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.37s
 
      Running unittests src/lib.rs (target/measurement/deps/rodas5p_integrators-6251817e94df4c92)
 
@@ -126,7 +115,7 @@ test unified_gates::qualification_tests::iterative_sequential_order_rows_survive
 test unified_gates::qualification_tests::qualification_order_ignores_a_roundoff_contaminated_finest_pair ... ok
 test unified_gates::qualification_tests::qualification_order_keeps_the_finest_pair_when_it_is_above_roundoff ... ok
 
-test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
 
      Running tests/adaptive_bdf_contracts.rs (target/measurement/deps/adaptive_bdf_contracts-9ad09d964ffb0cd8)
 
@@ -339,5 +328,12 @@ test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
 CLI_SMOKE_PASS d64ce94f91f5271f085c90c3ac0b0b4ca088a152413476188e8355d398b108b1
 === RESULTS CONTRACT ===
 RESULTS_CONTRACT_PASS be5a3015bb0fc2085659ac87ce91518822b8b1312cd9effd05bd7b9fa8c9523b
-=== DIFF ===
+=== DYNAMIC LINK AUDIT ===
+	linux-vdso.so.1 (0x00007f0ce8b84000)
+	libgcc_s.so.1 => /lib/x86_64-linux-gnu/libgcc_s.so.1 (0x00007f0ce8b3e000)
+	libm.so.6 => /lib/x86_64-linux-gnu/libm.so.6 (0x00007f0ce8a4e000)
+	libc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007f0ce820c000)
+	/lib64/ld-linux-x86-64.so.2 (0x00007f0ce8b86000)
+EXTERNAL_BLAS_LAPACK=ABSENT
+=== GIT ===
 FINAL_VALIDATION=PASS
