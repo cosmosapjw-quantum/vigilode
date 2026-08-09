@@ -473,3 +473,32 @@ fn stage_batch_feasibility_cli_emits_deterministic_within_step_report() {
     let _ = fs::remove_file(first);
     let _ = fs::remove_file(second);
 }
+
+#[test]
+fn matrix_free_common_w_cli_emits_strict_jf_report() {
+    let binary = env!("CARGO_BIN_EXE_rodas5p");
+    let output = temp_path("matrix-free-common-w.json");
+    let status = Command::new(binary)
+        .args([
+            "matrix-free-common-w-gate",
+            "--profile",
+            "smoke",
+            "--output",
+        ])
+        .arg(&output)
+        .status()
+        .unwrap();
+    assert!(status.success());
+
+    let report: serde_json::Value = serde_json::from_slice(&fs::read(&output).unwrap()).unwrap();
+    assert_eq!(report["schema"], "rodas5p-matrix-free-common-w-gate-v1");
+    assert!(report["strict_jacobian_free"].as_bool().unwrap());
+    assert_eq!(report["explicit_jacobian_builds"], 0);
+    assert_eq!(report["factorization_builds"], 0);
+    assert_eq!(report["scientific_checksum"].as_str().unwrap().len(), 64);
+    assert!(report["rows"].as_array().unwrap().iter().any(|row| {
+        row["solver"] == "block-gmres" && row["block_operator_calls"].as_u64().unwrap() > 0
+    }));
+
+    let _ = fs::remove_file(output);
+}

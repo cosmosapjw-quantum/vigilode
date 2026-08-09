@@ -5,6 +5,7 @@ mod bdf;
 mod block;
 mod candidates;
 mod certification;
+mod common_w_gate;
 mod homotopy;
 mod homotopy_experiments;
 mod homotopy_order_policy;
@@ -43,6 +44,10 @@ pub use candidates::{
 pub use certification::{
     CorrectionDiagnostic, RefinedRootCertificate, RefinedRootConfig, certify_second_correction,
     refine_target_root,
+};
+pub use common_w_gate::{
+    MatrixFreeCommonWCase, MatrixFreeCommonWProfile, MatrixFreeCommonWReport, MatrixFreeCommonWRow,
+    run_matrix_free_common_w_gate,
 };
 pub use homotopy::{
     AffineOutputCertificate, AffinePartialCouplingOracle, HomotopyDesignCheckReport,

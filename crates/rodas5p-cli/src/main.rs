@@ -14,10 +14,11 @@ use rodas5p_fair_ab::{
 };
 use rodas5p_integrators::{
     CandidateCatalog, CandidateFamily, CandidateStatus, HomotopyExperimentProfile,
-    NativeIntegratorGateReport, StageBatchFeasibilityProfile, UnifiedNonlinearScreen,
-    UnifiedScientificGateReport, UnifiedScreenProfile, run_homotopy_design_check,
-    run_homotopy_experiment_screen, run_homotopy_order_policy_screen, run_native_integrator_gates,
-    run_stage_batch_feasibility, run_unified_nonlinear_screen, run_unified_scientific_gates,
+    MatrixFreeCommonWProfile, NativeIntegratorGateReport, StageBatchFeasibilityProfile,
+    UnifiedNonlinearScreen, UnifiedScientificGateReport, UnifiedScreenProfile,
+    run_homotopy_design_check, run_homotopy_experiment_screen, run_homotopy_order_policy_screen,
+    run_matrix_free_common_w_gate, run_native_integrator_gates, run_stage_batch_feasibility,
+    run_unified_nonlinear_screen, run_unified_scientific_gates,
 };
 use serde::Serialize;
 use serde_json::json;
@@ -64,6 +65,13 @@ enum Command {
     /// Measure genuine within-step stage batching for RHS, JVP and common-W solves.
     StageBatchFeasibility {
         #[arg(long, value_enum, default_value_t = CliStageBatchProfile::Canonical)]
+        profile: CliStageBatchProfile,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Compare strict matrix-free common-W multiple-RHS Krylov solvers.
+    MatrixFreeCommonWGate {
+        #[arg(long, value_enum, default_value_t = CliStageBatchProfile::Smoke)]
         profile: CliStageBatchProfile,
         #[arg(long)]
         output: PathBuf,
@@ -190,6 +198,15 @@ enum CliStageBatchProfile {
 }
 
 impl From<CliStageBatchProfile> for StageBatchFeasibilityProfile {
+    fn from(value: CliStageBatchProfile) -> Self {
+        match value {
+            CliStageBatchProfile::Smoke => Self::Smoke,
+            CliStageBatchProfile::Canonical => Self::Canonical,
+        }
+    }
+}
+
+impl From<CliStageBatchProfile> for MatrixFreeCommonWProfile {
     fn from(value: CliStageBatchProfile) -> Self {
         match value {
             CliStageBatchProfile::Smoke => Self::Smoke,
@@ -960,6 +977,9 @@ fn main() -> Result<()> {
         Command::StageBatchFeasibility { profile, output } => {
             let report = run_stage_batch_feasibility(profile.into())?;
             write_json(&output, &report)?;
+        }
+        Command::MatrixFreeCommonWGate { profile, output } => {
+            write_json(&output, &run_matrix_free_common_w_gate(profile.into())?)?;
         }
         Command::NativeIntegratorGates { output } => {
             let report: NativeIntegratorGateReport = run_native_integrator_gates()?;
