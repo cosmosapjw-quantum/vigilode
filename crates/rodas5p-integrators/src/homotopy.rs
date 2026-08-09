@@ -314,6 +314,19 @@ pub struct HomotopyStepReport {
     pub fallback_reason: Option<String>,
 }
 
+pub(crate) struct HomotopyBatchEvent<'a> {
+    pub phase: &'a str,
+    pub round: usize,
+    pub propagation_level: usize,
+    pub iteration: Option<usize>,
+    pub raw: &'a [Vec<f64>],
+    pub transformed: &'a [Vec<f64>],
+}
+
+pub(crate) trait HomotopyBatchObserver {
+    fn observe(&mut self, event: HomotopyBatchEvent<'_>) -> CoreResult<()>;
+}
+
 struct PathEvaluation {
     homotopy_residual: Vec<Vec<f64>>,
     target_residual_norm: f64,
@@ -339,6 +352,7 @@ fn solve_common_w_rows(
     Ok(solved)
 }
 
+#[allow(clippy::too_many_arguments)]
 fn truncated_partial_inverse_rows(
     block: &StructuredBlockSystem<'_, '_>,
     factor: &LuFactorization,
@@ -347,6 +361,10 @@ fn truncated_partial_inverse_rows(
     rhs: &[Vec<f64>],
     counters: &mut WorkCounters,
     work: &mut HomotopyWorkLedger,
+    observer: &mut Option<&mut dyn HomotopyBatchObserver>,
+    phase: &str,
+    round: usize,
+    iteration: Option<usize>,
 ) -> CoreResult<Vec<Vec<f64>>> {
     if !eta.is_finite() {
         return Err(CoreError::NonFinite(
@@ -360,11 +378,21 @@ fn truncated_partial_inverse_rows(
         )));
     }
     let mut term = solve_common_w_rows(factor, rhs, block.n, counters, work)?;
+    if let Some(observer) = observer.as_deref_mut() {
+        observer.observe(HomotopyBatchEvent {
+            phase,
+            round,
+            propagation_level: 0,
+            iteration,
+            raw: rhs,
+            transformed: &term,
+        })?;
+    }
     let mut total = term.clone();
     if eta == 0.0 {
         return Ok(total);
     }
-    for _ in 0..q {
+    for level in 1..=q {
         let mut coupled = block.coupling_apply(&term, counters)?;
         work.coupling_actions += 1;
         for row in &mut coupled {
@@ -373,6 +401,16 @@ fn truncated_partial_inverse_rows(
             }
         }
         term = solve_common_w_rows(factor, &coupled, block.n, counters, work)?;
+        if let Some(observer) = observer.as_deref_mut() {
+            observer.observe(HomotopyBatchEvent {
+                phase,
+                round,
+                propagation_level: level,
+                iteration,
+                raw: &coupled,
+                transformed: &term,
+            })?;
+        }
         for (sum_row, term_row) in total.iter_mut().zip(&term) {
             for (sum, value) in sum_row.iter_mut().zip(term_row) {
                 *sum += value;
@@ -468,10 +506,11 @@ fn add_scaled_rows(
     }
 }
 
-pub fn run_fixed_homotopy_path(
+fn run_fixed_homotopy_path_internal(
     block: &StructuredBlockSystem<'_, '_>,
     config: &HomotopyPathConfig,
     counters: &mut WorkCounters,
+    observer: &mut Option<&mut dyn HomotopyBatchObserver>,
 ) -> CoreResult<HomotopyPathReport> {
     if block.s != 8 {
         return Err(CoreError::InvalidInput(format!(
@@ -498,6 +537,10 @@ pub fn run_fixed_homotopy_path(
         &block.rhs_base(),
         counters,
         &mut work,
+        observer,
+        "path-start",
+        0,
+        None,
     )?;
     let mut current =
         evaluate_partial_path(block, &stages, config.theta, 0.0, counters, &mut work)?;
@@ -524,6 +567,10 @@ pub fn run_fixed_homotopy_path(
             &current.tangent_rhs,
             counters,
             &mut work,
+            observer,
+            "tangent",
+            round,
+            None,
         )?;
         let predictor_increment = match (config.predictor, previous_tangent.as_deref()) {
             (HomotopyPredictor::AdamsBashforth2, Some(previous)) => add_scaled_rows(
@@ -546,7 +593,7 @@ pub fn run_fixed_homotopy_path(
         let next_lambda = (round + 1) as f64 * delta_lambda;
         let next_eta = config.theta + next_lambda * (1.0 - config.theta);
 
-        for _ in 0..config.corrections_per_point {
+        for correction_index in 0..config.corrections_per_point {
             let evaluation = evaluate_partial_path(
                 block,
                 &candidate,
@@ -563,6 +610,10 @@ pub fn run_fixed_homotopy_path(
                 &evaluation.homotopy_residual,
                 counters,
                 &mut work,
+                observer,
+                "correction",
+                round + 1,
+                Some(correction_index + 1),
             )?;
             candidate = add_scaled_rows(&candidate, -1.0, &correction, 0.0, None)?;
             work.correction_rounds += 1;
@@ -596,6 +647,25 @@ pub fn run_fixed_homotopy_path(
         points,
         work,
     })
+}
+
+pub fn run_fixed_homotopy_path(
+    block: &StructuredBlockSystem<'_, '_>,
+    config: &HomotopyPathConfig,
+    counters: &mut WorkCounters,
+) -> CoreResult<HomotopyPathReport> {
+    let mut observer = None;
+    run_fixed_homotopy_path_internal(block, config, counters, &mut observer)
+}
+
+pub(crate) fn run_fixed_homotopy_path_observed(
+    block: &StructuredBlockSystem<'_, '_>,
+    config: &HomotopyPathConfig,
+    counters: &mut WorkCounters,
+    observer: &mut dyn HomotopyBatchObserver,
+) -> CoreResult<HomotopyPathReport> {
+    let mut observer = Some(observer);
+    run_fixed_homotopy_path_internal(block, config, counters, &mut observer)
 }
 
 #[allow(clippy::too_many_arguments)]

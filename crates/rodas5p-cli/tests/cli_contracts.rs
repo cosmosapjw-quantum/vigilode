@@ -502,3 +502,38 @@ fn matrix_free_common_w_cli_emits_strict_jf_report() {
 
     let _ = fs::remove_file(output);
 }
+
+#[test]
+fn homotopy_rhs_telemetry_cli_is_deterministic_and_read_only() {
+    let binary = env!("CARGO_BIN_EXE_rodas5p");
+    let first = temp_path("homotopy-rhs-telemetry-first.json");
+    let second = temp_path("homotopy-rhs-telemetry-second.json");
+
+    for output in [&first, &second] {
+        let status = Command::new(binary)
+            .args(["homotopy-rhs-telemetry", "--profile", "smoke", "--output"])
+            .arg(output)
+            .status()
+            .unwrap();
+        assert!(status.success());
+    }
+
+    let first_bytes = fs::read(&first).unwrap();
+    assert_eq!(first_bytes, fs::read(&second).unwrap());
+    let report: serde_json::Value = serde_json::from_slice(&first_bytes).unwrap();
+    assert_eq!(report["schema"], "rodas5p-homotopy-rhs-telemetry-v1");
+    assert_eq!(report["profile"], "smoke");
+    assert_eq!(report["solver_behavior_changed"], false);
+    assert_eq!(report["explicit_jacobian_builds_in_dispatch"], 0);
+    assert!(!report["rows"].as_array().unwrap().is_empty());
+    assert!(
+        report["rows"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .all(|row| row["rhs_count"] == 8)
+    );
+
+    let _ = fs::remove_file(first);
+    let _ = fs::remove_file(second);
+}

@@ -14,9 +14,10 @@ use rodas5p_fair_ab::{
 };
 use rodas5p_integrators::{
     CandidateCatalog, CandidateFamily, CandidateStatus, HomotopyExperimentProfile,
-    MatrixFreeCommonWProfile, NativeIntegratorGateReport, StageBatchFeasibilityProfile,
-    UnifiedNonlinearScreen, UnifiedScientificGateReport, UnifiedScreenProfile,
-    run_homotopy_design_check, run_homotopy_experiment_screen, run_homotopy_order_policy_screen,
+    HomotopyRhsTelemetryProfile, MatrixFreeCommonWProfile, NativeIntegratorGateReport,
+    StageBatchFeasibilityProfile, UnifiedNonlinearScreen, UnifiedScientificGateReport,
+    UnifiedScreenProfile, run_homotopy_design_check, run_homotopy_experiment_screen,
+    run_homotopy_order_policy_screen, run_homotopy_rhs_telemetry_screen,
     run_matrix_free_common_w_gate, run_native_integrator_gates, run_stage_batch_feasibility,
     run_unified_nonlinear_screen, run_unified_scientific_gates,
 };
@@ -65,6 +66,13 @@ enum Command {
     /// Measure genuine within-step stage batching for RHS, JVP and common-W solves.
     StageBatchFeasibility {
         #[arg(long, value_enum, default_value_t = CliStageBatchProfile::Canonical)]
+        profile: CliStageBatchProfile,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Record read-only numerical-rank and subspace telemetry for actual SABR/homotopy RHS batches.
+    HomotopyRhsTelemetry {
+        #[arg(long, value_enum, default_value_t = CliStageBatchProfile::Smoke)]
         profile: CliStageBatchProfile,
         #[arg(long)]
         output: PathBuf,
@@ -198,6 +206,15 @@ enum CliStageBatchProfile {
 }
 
 impl From<CliStageBatchProfile> for StageBatchFeasibilityProfile {
+    fn from(value: CliStageBatchProfile) -> Self {
+        match value {
+            CliStageBatchProfile::Smoke => Self::Smoke,
+            CliStageBatchProfile::Canonical => Self::Canonical,
+        }
+    }
+}
+
+impl From<CliStageBatchProfile> for HomotopyRhsTelemetryProfile {
     fn from(value: CliStageBatchProfile) -> Self {
         match value {
             CliStageBatchProfile::Smoke => Self::Smoke,
@@ -977,6 +994,9 @@ fn main() -> Result<()> {
         Command::StageBatchFeasibility { profile, output } => {
             let report = run_stage_batch_feasibility(profile.into())?;
             write_json(&output, &report)?;
+        }
+        Command::HomotopyRhsTelemetry { profile, output } => {
+            write_json(&output, &run_homotopy_rhs_telemetry_screen(profile.into())?)?;
         }
         Command::MatrixFreeCommonWGate { profile, output } => {
             write_json(&output, &run_matrix_free_common_w_gate(profile.into())?)?;

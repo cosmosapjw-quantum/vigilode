@@ -18,6 +18,7 @@ mod parallel;
 mod problem;
 mod problems;
 mod radau;
+mod rhs_telemetry;
 mod sabr;
 mod sequential;
 mod stage_batch;
@@ -87,6 +88,13 @@ pub use radau::{
     RadauConfig, RadauIiaStages, RadauIntegrationResult, RadauStepReport,
     integrate_radau_adaptive_observed, integrate_radau_fixed, integrate_radau_fixed_observed,
     radau_iia3_tableau, radau_step,
+};
+pub use rhs_telemetry::{
+    BackendRecommendationSummary, CommonWBackendChoice, HomotopyRhsTelemetryCase,
+    HomotopyRhsTelemetryProfile, HomotopyRhsTelemetryReport, RhsBatchAnalysis,
+    RhsBatchTelemetryRow, RhsSubspaceComparison, RhsTelemetryFailure, RhsTelemetryRisk,
+    analyze_rhs_batch, analyze_rhs_directions, compare_rhs_subspaces, recommend_common_w_backend,
+    run_homotopy_rhs_telemetry_screen,
 };
 pub use sabr::{PredictorKind, SabrConfig, StageHistory, sabr_step};
 pub use sequential::{
