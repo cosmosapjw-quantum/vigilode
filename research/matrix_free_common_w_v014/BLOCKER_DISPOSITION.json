@@ -1,0 +1,51 @@
+{
+  "closed": [
+    {
+      "blocker": "explicit-J-free common-W action missing",
+      "evidence": "all candidate paths report zero explicit Jacobian and factorization builds",
+      "id": "CW-001"
+    },
+    {
+      "blocker": "no within-step multiple-RHS matrix-free comparison",
+      "evidence": "432-case four-solver canonical matrix",
+      "id": "CW-002"
+    },
+    {
+      "blocker": "hidden diagnostic/failure work",
+      "evidence": "separate Krylov/diagnostic/block/preconditioner/orthogonalization counters; failed work retained",
+      "id": "CW-003"
+    },
+    {
+      "blocker": "no true residual parity",
+      "evidence": "same unpreconditioned true-residual contract for all solvers",
+      "id": "CW-004"
+    }
+  ],
+  "narrowed": [
+    {
+      "blocker": "block Krylov robustness",
+      "id": "CW-005",
+      "state": "36 failures localized to large/high-rank/stiff/nonnormal regimes"
+    },
+    {
+      "blocker": "seeded shared usefulness",
+      "id": "CW-006",
+      "state": "strong rank-one specialization; no broad gain at rank >=2"
+    }
+  ],
+  "open": [
+    {
+      "blocker": "actual q=0/1/2 homotopy RHS numerical-rank distribution unknown",
+      "id": "CW-007"
+    },
+    {
+      "blocker": "transactional backend dispatch and block fallback not integrated",
+      "id": "CW-008"
+    },
+    {
+      "blocker": "fifth order, stiff decay, oscillatory phase and same-error wall speedup untested after integration",
+      "id": "CW-009"
+    }
+  ],
+  "schema": "rodas5p-matrix-free-common-w-blockers-v1"
+}

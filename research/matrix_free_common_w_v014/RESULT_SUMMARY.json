@@ -1,0 +1,49 @@
+{
+  "base_commit": "1a1f4f566b8851ac07183aa2232caab1efc024d4",
+  "base_tag": "vectorized-jf-stage-batch-v0.13.0-alpha1",
+  "canonical": {
+    "cases": 432,
+    "explicit_jacobian_builds": 0,
+    "factorization_builds": 0,
+    "failed_rows": 36,
+    "rows": 1728,
+    "strict_jacobian_free": true,
+    "successful_rows": 1692
+  },
+  "canonical_scientific_checksum": "098384ae7c2ee20a1ac68d30646bb378ec64807e0ebc332638d16fa88d780bdf",
+  "date": "2026-08-09",
+  "dynamic_external_blas_lapack": "absent",
+  "feature_commits": [
+    "00da535",
+    "6fe58f2",
+    "cd47534"
+  ],
+  "hold": [
+    "block GMRES as universal default",
+    "synthetic-rank-only dispatch",
+    "integrated q=0/1/2 homotopy speedup",
+    "production preconditioner claim",
+    "sparse GPU DAE generalization"
+  ],
+  "measurement_build": "pass",
+  "planned_successor_branch": "vectorized-jf-homotopy-dispatch-v0.15",
+  "planned_tag": "vectorized-jf-common-w-v0.14.0-alpha1",
+  "promote": [
+    "strict matrix-free common-W operator",
+    "batched operator and work accounting",
+    "independent Rayon GMRES fallback",
+    "block GMRES research backend",
+    "seeded rank-one research backend"
+  ],
+  "recommended_next_step": "measure actual homotopy/SABR stage-RHS numerical rank and install transactional seeded/block/independent dispatch with protected fallback",
+  "schema": "rodas5p-matrix-free-common-w-closeout-v1",
+  "scientific_rerun_identity": "pass",
+  "strict_clippy": "pass",
+  "tests_passed": 128,
+  "verdict": {
+    "block_gmres_production_default": "HOLD",
+    "integrated_homotopy_speedup": "NOT_YET_TESTED",
+    "seeded_shared_general_default": "HOLD",
+    "strict_matrix_free_common_w_gate": "PASS"
+  }
+}
