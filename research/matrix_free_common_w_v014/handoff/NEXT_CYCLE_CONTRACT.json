@@ -1,0 +1,39 @@
+{
+  "schema": "rodas5p-homotopy-dispatch-contract-v1",
+  "base_gate": "matrix-free-common-w-v0.14",
+  "required_fast_path": {
+    "explicit_jacobian_builds": 0,
+    "newton_iterations": 0,
+    "allowed_operator_access": ["mass-vector", "jvp", "batched-jvp"],
+    "true_residual_required": true
+  },
+  "telemetry": [
+    "raw_rhs_singular_values",
+    "preconditioned_rhs_singular_values",
+    "effective_rank",
+    "pairwise_cosines",
+    "round_principal_angles",
+    "residual_spread",
+    "stiffness_proxy",
+    "nonnormality_proxy"
+  ],
+  "backends": [
+    "seeded-shared-gmres",
+    "block-gmres",
+    "independent-gmres-rayon"
+  ],
+  "fallback": {
+    "from": "block-gmres",
+    "to": "independent-gmres-rayon",
+    "transactional": true,
+    "retain_failed_work": true
+  },
+  "promotion_gates": {
+    "global_order_min": 4.8,
+    "median_rounds_max": 4,
+    "p95_rounds_max": 6,
+    "fallback_rate_max": 0.1,
+    "holdout_wall_speedup_min": 1.15,
+    "false_acceptance_max": 0
+  }
+}
