@@ -163,3 +163,29 @@ fn scheduled_path_preserves_partial_points_and_work_on_numerical_failure() {
     assert!(report.work.w_solve_vectors > 0);
     assert!(counters.rhs_evaluations > 0);
 }
+
+#[test]
+fn path_controller_smoke_report_is_deterministic_and_preserves_controls() {
+    let first = rodas5p_integrators::run_path_controller_screen(
+        rodas5p_integrators::PathControllerProfile::Smoke,
+    )
+    .unwrap();
+    let second = rodas5p_integrators::run_path_controller_screen(
+        rodas5p_integrators::PathControllerProfile::Smoke,
+    )
+    .unwrap();
+    assert_eq!(first, second);
+    assert_eq!(first.schema, "rodas5p-path-controller-screen-v1");
+    assert_eq!(first.profile, "smoke");
+    assert!(!first.cases.is_empty());
+    assert!(!first.controls.is_empty());
+    assert!(!first.rows.is_empty());
+    assert!(first.rows.iter().any(|row| row.schedule_id == "fixed-q2"));
+    assert!(
+        first
+            .rows
+            .iter()
+            .any(|row| row.schedule_id == "escalate-q012")
+    );
+    assert!(first.controls.iter().all(|row| row.completed));
+}

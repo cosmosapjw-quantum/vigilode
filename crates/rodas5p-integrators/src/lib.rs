@@ -15,6 +15,7 @@ mod native_gates;
 mod nonlinear;
 mod output;
 mod parallel;
+mod path_controller;
 mod problem;
 mod problems;
 mod radau;
@@ -81,6 +82,11 @@ pub use native_gates::{
 pub use nonlinear::{NewtonConfig, NewtonReport, solve_dense_newton};
 pub use output::{ObservedIntegrationResult, OutputSchedule};
 pub use parallel::ParallelExecution;
+pub use path_controller::{
+    PathControllerCase, PathControllerControlRow, PathControllerProfile, PathControllerReport,
+    PathControllerRow, PathControllerScheduleSummary, PathControllerSummary,
+    run_path_controller_screen,
+};
 pub use problem::OdeProblem;
 pub use problems::{
     constant_affine_mass_problem, manufactured_mass_nonlinear_problem, manufactured_vector_problem,
