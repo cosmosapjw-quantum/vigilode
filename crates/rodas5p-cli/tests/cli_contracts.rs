@@ -537,3 +537,33 @@ fn homotopy_rhs_telemetry_cli_is_deterministic_and_read_only() {
     let _ = fs::remove_file(first);
     let _ = fs::remove_file(second);
 }
+
+#[test]
+fn homotopy_path_controller_cli_is_deterministic_and_emits_schedule_telemetry() {
+    let binary = env!("CARGO_BIN_EXE_rodas5p");
+    let first = temp_path("homotopy-path-controller-first.json");
+    let second = temp_path("homotopy-path-controller-second.json");
+
+    for output in [&first, &second] {
+        let status = Command::new(binary)
+            .args(["homotopy-path-controller", "--profile", "smoke", "--output"])
+            .arg(output)
+            .status()
+            .unwrap();
+        assert!(status.success());
+    }
+
+    let first_bytes = fs::read(&first).unwrap();
+    let second_bytes = fs::read(&second).unwrap();
+    assert_eq!(first_bytes, second_bytes);
+    let report: serde_json::Value = serde_json::from_slice(&first_bytes).unwrap();
+    assert_eq!(report["schema"], "rodas5p-path-controller-screen-v1");
+    assert_eq!(report["profile"], "smoke");
+    assert!(report["summary"]["rows"].as_u64().unwrap() > 0);
+    assert!(report["rows"].as_array().unwrap().iter().any(|row| {
+        row["schedule_id"] == "escalate-q012" && row["points"].as_array().unwrap().len() >= 2
+    }));
+
+    let _ = fs::remove_file(first);
+    let _ = fs::remove_file(second);
+}

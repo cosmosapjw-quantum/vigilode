@@ -15,11 +15,12 @@ use rodas5p_fair_ab::{
 use rodas5p_integrators::{
     CandidateCatalog, CandidateFamily, CandidateStatus, HomotopyExperimentProfile,
     HomotopyRhsTelemetryProfile, MatrixFreeCommonWProfile, NativeIntegratorGateReport,
-    StageBatchFeasibilityProfile, UnifiedNonlinearScreen, UnifiedScientificGateReport,
-    UnifiedScreenProfile, run_homotopy_design_check, run_homotopy_experiment_screen,
-    run_homotopy_order_policy_screen, run_homotopy_rhs_telemetry_screen,
-    run_matrix_free_common_w_gate, run_native_integrator_gates, run_stage_batch_feasibility,
-    run_unified_nonlinear_screen, run_unified_scientific_gates,
+    PathControllerProfile, StageBatchFeasibilityProfile, UnifiedNonlinearScreen,
+    UnifiedScientificGateReport, UnifiedScreenProfile, run_homotopy_design_check,
+    run_homotopy_experiment_screen, run_homotopy_order_policy_screen,
+    run_homotopy_rhs_telemetry_screen, run_matrix_free_common_w_gate, run_native_integrator_gates,
+    run_path_controller_screen, run_stage_batch_feasibility, run_unified_nonlinear_screen,
+    run_unified_scientific_gates,
 };
 use serde::Serialize;
 use serde_json::json;
@@ -81,6 +82,13 @@ enum Command {
     MatrixFreeCommonWGate {
         #[arg(long, value_enum, default_value_t = CliStageBatchProfile::Smoke)]
         profile: CliStageBatchProfile,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Compare bounded nonstationary homotopy schedules and path-rejection telemetry.
+    HomotopyPathController {
+        #[arg(long, value_enum, default_value_t = CliHomotopyProfile::Canonical)]
+        profile: CliHomotopyProfile,
         #[arg(long)]
         output: PathBuf,
     },
@@ -173,6 +181,15 @@ enum CliHomotopyProfile {
 }
 
 impl From<CliHomotopyProfile> for HomotopyExperimentProfile {
+    fn from(value: CliHomotopyProfile) -> Self {
+        match value {
+            CliHomotopyProfile::Smoke => Self::Smoke,
+            CliHomotopyProfile::Canonical => Self::Canonical,
+        }
+    }
+}
+
+impl From<CliHomotopyProfile> for PathControllerProfile {
     fn from(value: CliHomotopyProfile) -> Self {
         match value {
             CliHomotopyProfile::Smoke => Self::Smoke,
@@ -1000,6 +1017,9 @@ fn main() -> Result<()> {
         }
         Command::MatrixFreeCommonWGate { profile, output } => {
             write_json(&output, &run_matrix_free_common_w_gate(profile.into())?)?;
+        }
+        Command::HomotopyPathController { profile, output } => {
+            write_json(&output, &run_path_controller_screen(profile.into())?)?;
         }
         Command::NativeIntegratorGates { output } => {
             let report: NativeIntegratorGateReport = run_native_integrator_gates()?;
