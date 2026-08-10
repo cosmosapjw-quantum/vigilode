@@ -185,7 +185,29 @@ fn path_controller_smoke_report_is_deterministic_and_preserves_controls() {
         first
             .rows
             .iter()
+            .any(|row| row.schedule_id == "fixed-q1-final-correction")
+    );
+    assert!(
+        first
+            .rows
+            .iter()
             .any(|row| row.schedule_id == "escalate-q012")
     );
     assert!(first.controls.iter().all(|row| row.completed));
+}
+
+#[test]
+fn path_controller_separates_algebraic_path_success_from_timestep_acceptance() {
+    let report = rodas5p_integrators::run_path_controller_screen(
+        rodas5p_integrators::PathControllerProfile::Smoke,
+    )
+    .unwrap();
+    let q7 = report
+        .rows
+        .iter()
+        .find(|row| row.case_id == "complex-dahlquist-s120-w180" && row.schedule_id == "fixed-q7")
+        .unwrap();
+    assert!(q7.algebraic_accepted);
+    assert!(!q7.full_step_accepted);
+    assert!(!q7.false_accept);
 }

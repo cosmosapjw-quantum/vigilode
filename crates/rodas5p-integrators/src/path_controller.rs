@@ -16,6 +16,7 @@ use crate::{
 
 const SCREEN_ATOL: f64 = 1.0e-7;
 const SCREEN_RTOL: f64 = 1.0e-6;
+const ALGEBRAIC_OUTPUT_WRMS_BUDGET: f64 = 0.1;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "kebab-case")]
@@ -66,6 +67,9 @@ pub struct PathControllerRow {
     pub schedule_id: String,
     pub schedule: HomotopyScheduleConfig,
     pub completed: bool,
+    pub algebraic_accepted: bool,
+    pub embedded_step_accepted: bool,
+    pub full_step_accepted: bool,
     pub accepted_by_original_certificate: bool,
     pub false_accept: bool,
     pub failure: Option<String>,
@@ -121,6 +125,7 @@ pub struct PathControllerReport {
     pub profile: &'static str,
     pub atol: f64,
     pub rtol: f64,
+    pub output_wrms_budget: f64,
     pub cases: Vec<PathControllerCase>,
     pub controls: Vec<PathControllerControlRow>,
     pub rows: Vec<PathControllerRow>,
@@ -149,6 +154,41 @@ fn round(
     HomotopyRoundSpec::new(lambda_end, theta, q, damping, corrections)
 }
 
+fn one_round_schedule(
+    id: &'static str,
+    theta: f64,
+    q: usize,
+    damping: f64,
+    corrections: usize,
+) -> CoreResult<NamedSchedule> {
+    Ok(NamedSchedule {
+        id,
+        config: HomotopyScheduleConfig::new(
+            vec![round(1.0, theta, q, damping, corrections)?],
+            HomotopyPredictor::Euler,
+        )?,
+    })
+}
+
+fn two_round_schedule(
+    id: &'static str,
+    theta: [f64; 2],
+    q: [usize; 2],
+    damping: [f64; 2],
+    corrections: [usize; 2],
+) -> CoreResult<NamedSchedule> {
+    Ok(NamedSchedule {
+        id,
+        config: HomotopyScheduleConfig::new(
+            vec![
+                round(0.5, theta[0], q[0], damping[0], corrections[0])?,
+                round(1.0, theta[1], q[1], damping[1], corrections[1])?,
+            ],
+            HomotopyPredictor::AdamsBashforth2,
+        )?,
+    })
+}
+
 fn three_round_schedule(
     id: &'static str,
     theta: [f64; 3],
@@ -171,6 +211,23 @@ fn three_round_schedule(
 
 fn schedules(profile: PathControllerProfile) -> CoreResult<Vec<NamedSchedule>> {
     let mut out = vec![
+        one_round_schedule("direct-decoupled-q1-c2", 0.0, 1, 1.0, 2)?,
+        one_round_schedule("direct-decoupled-q2-c1", 0.0, 2, 1.0, 1)?,
+        one_round_schedule("direct-decoupled-q2-c2", 0.0, 2, 1.0, 2)?,
+        two_round_schedule(
+            "two-round-decoupled-q1-c2",
+            [0.0; 2],
+            [1; 2],
+            [1.0; 2],
+            [0, 2],
+        )?,
+        two_round_schedule(
+            "two-round-decoupled-q2-c1",
+            [0.0; 2],
+            [2; 2],
+            [1.0; 2],
+            [0, 1],
+        )?,
         three_round_schedule("fixed-q0", [1.0; 3], [0; 3], [1.0; 3], [0; 3])?,
         three_round_schedule("fixed-q1", [1.0; 3], [1; 3], [1.0; 3], [0; 3])?,
         three_round_schedule("fixed-q2", [1.0; 3], [2; 3], [1.0; 3], [0; 3])?,
@@ -193,12 +250,66 @@ fn schedules(profile: PathControllerProfile) -> CoreResult<Vec<NamedSchedule>> {
             [0.75, 0.85, 1.0],
             [0, 0, 1],
         )?,
+        three_round_schedule(
+            "fixed-q1-final-correction",
+            [1.0; 3],
+            [1; 3],
+            [1.0; 3],
+            [0, 0, 1],
+        )?,
+        three_round_schedule(
+            "front-loaded-q211-final-correction",
+            [1.0; 3],
+            [2, 1, 1],
+            [1.0; 3],
+            [0, 0, 1],
+        )?,
+        three_round_schedule(
+            "decoupled-q0-final-correction",
+            [0.0; 3],
+            [0; 3],
+            [1.0; 3],
+            [0, 0, 1],
+        )?,
+        three_round_schedule(
+            "decoupled-q1-final-correction",
+            [0.0; 3],
+            [1; 3],
+            [1.0; 3],
+            [0, 0, 1],
+        )?,
+        three_round_schedule(
+            "decoupled-q2-final-correction",
+            [0.0; 3],
+            [2; 3],
+            [1.0; 3],
+            [0, 0, 1],
+        )?,
+        three_round_schedule(
+            "decoupled-q1-final-two-corrections",
+            [0.0; 3],
+            [1; 3],
+            [1.0; 3],
+            [0, 0, 2],
+        )?,
+        three_round_schedule(
+            "decoupled-q2-final-two-corrections",
+            [0.0; 3],
+            [2; 3],
+            [1.0; 3],
+            [0, 0, 2],
+        )?,
     ];
     if profile == PathControllerProfile::Smoke {
         out.retain(|schedule| {
             matches!(
                 schedule.id,
-                "fixed-q2" | "fixed-q7" | "escalate-q012" | "theta-ramp-q211"
+                "direct-decoupled-q2-c1"
+                    | "fixed-q2"
+                    | "fixed-q7"
+                    | "fixed-q1-final-correction"
+                    | "escalate-q012"
+                    | "theta-ramp-q211"
             )
         });
     }
@@ -483,10 +594,17 @@ fn run_schedule(
         .zip(candidate_output.as_deref())
         .map(|(reference, candidate)| output_wrms(&case.y0, reference, candidate))
         .transpose()?;
-    let accepted = certificate
+    let algebraic_accepted = certificate
+        .as_ref()
+        .is_some_and(|value| value.output_wrms <= ALGEBRAIC_OUTPUT_WRMS_BUDGET);
+    let embedded_step_accepted = certificate
+        .as_ref()
+        .is_some_and(|value| value.embedded_error <= 1.0);
+    let full_step_accepted = certificate
         .as_ref()
         .is_some_and(|value| value.combined_error <= 1.0);
-    let false_accept = accepted && oracle_output_wrms.is_some_and(|value| value > 1.0);
+    let false_accept = algebraic_accepted
+        && oracle_output_wrms.is_some_and(|value| value > ALGEBRAIC_OUTPUT_WRMS_BUDGET);
     let failure = report.failure.clone().or_else(|| {
         if report.completed && certificate.is_none() {
             Some("original RODAS target certificate failed".into())
@@ -501,7 +619,10 @@ fn run_schedule(
         schedule_id: schedule.id.into(),
         schedule: schedule.config.clone(),
         completed: report.completed,
-        accepted_by_original_certificate: accepted,
+        algebraic_accepted,
+        embedded_step_accepted,
+        full_step_accepted,
+        accepted_by_original_certificate: algebraic_accepted,
         false_accept,
         failure,
         last_lambda: report.last_lambda,
@@ -547,10 +668,7 @@ fn summarize(schedule_id: &str, rows: &[PathControllerRow]) -> PathControllerSch
         rows: selected.len(),
         nonhostile_rows: selected.iter().filter(|row| !row.hostile).count(),
         completed: selected.iter().filter(|row| row.completed).count(),
-        accepted: selected
-            .iter()
-            .filter(|row| row.accepted_by_original_certificate)
-            .count(),
+        accepted: selected.iter().filter(|row| row.algebraic_accepted).count(),
         false_accepts: selected.iter().filter(|row| row.false_accept).count(),
         failures: selected.iter().filter(|row| row.failure.is_some()).count(),
         nonhostile_failures: selected
@@ -622,6 +740,7 @@ pub fn run_path_controller_screen(
         profile: profile.as_str(),
         atol: SCREEN_ATOL,
         rtol: SCREEN_RTOL,
+        output_wrms_budget: ALGEBRAIC_OUTPUT_WRMS_BUDGET,
         cases: runtime_cases
             .iter()
             .map(|case| case.descriptor.clone())
@@ -633,10 +752,7 @@ pub fn run_path_controller_screen(
             controls: runtime_cases.len(),
             rows: rows.len(),
             completed: rows.iter().filter(|row| row.completed).count(),
-            accepted: rows
-                .iter()
-                .filter(|row| row.accepted_by_original_certificate)
-                .count(),
+            accepted: rows.iter().filter(|row| row.algebraic_accepted).count(),
             false_accepts,
             failures,
             nonhostile_failures,
