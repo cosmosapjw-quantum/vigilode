@@ -1,0 +1,35 @@
+{
+  "schema": "rodas5p-vectorized-jf-endpoint-controller-contract-v1",
+  "branch": "vectorized-jf-endpoint-correction-v0.18",
+  "primary_candidates": [
+    "direct-decoupled-q1-c2",
+    "direct-decoupled-q2-c2",
+    "q1-c2-plus-q2-endpoint-escalation"
+  ],
+  "frozen_comparators": [
+    "sequential-jf-rodas5p",
+    "sabr5p",
+    "homotopy-q7-reference",
+    "adaptive-bdf2-frozen",
+    "adaptive-radau-iia3-frozen"
+  ],
+  "mandatory_fast_path_constraints": {
+    "explicit_jacobian_builds": 0,
+    "direct_factorizations": 0,
+    "newton_iterations": 0
+  },
+  "promotion_gates": {
+    "false_convergence": 0,
+    "nonhostile_fast_fraction_min": 0.9,
+    "fallback_fraction_max": 0.1,
+    "median_common_w_batch_depth_max": 8,
+    "global_order_min": 4.8,
+    "same_error_speedup_min": 1.15
+  },
+  "forbidden": [
+    "BDF optimization",
+    "Radau optimization",
+    "BGMRES-DR tuning before actual integrated failure evidence",
+    "production claim from direct-LU reference timing"
+  ]
+}
