@@ -55,8 +55,9 @@ pub use homotopy::{
     HomotopyPathConfig, HomotopyPathPoint, HomotopyPathReport, HomotopyPredictor,
     HomotopyRoundSpec, HomotopyScheduleConfig, HomotopyStepConfig, HomotopyStepReport,
     HomotopyWorkLedger, NonlinearOutputCertificate, NonnormalConditionRow,
-    PartialCouplingParameters, PowerNormRow, TruncationScreenRow, certify_nonlinear_target,
-    homotopy_step, run_fixed_homotopy_path, run_homotopy_design_check,
+    PartialCouplingParameters, PowerNormRow, ScheduledHomotopyPathReport,
+    ScheduledHomotopyRoundPoint, TruncationScreenRow, certify_nonlinear_target, homotopy_step,
+    run_fixed_homotopy_path, run_homotopy_design_check, run_scheduled_homotopy_path,
 };
 pub use homotopy_experiments::{
     HomotopyCandidateRow, HomotopyControlRow, HomotopyExperimentCase, HomotopyExperimentProfile,

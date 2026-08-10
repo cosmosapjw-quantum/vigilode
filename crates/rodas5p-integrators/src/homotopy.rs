@@ -366,6 +366,38 @@ impl HomotopyScheduleConfig {
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize)]
+pub struct ScheduledHomotopyRoundPoint {
+    pub round: usize,
+    pub lambda_start: f64,
+    pub lambda_end: f64,
+    pub theta: f64,
+    pub eta_start: f64,
+    pub eta_end: f64,
+    pub q: usize,
+    pub damping: f64,
+    pub corrections: usize,
+    pub homotopy_residual_before: f64,
+    pub homotopy_residual_after: f64,
+    pub homotopy_residual_ratio: f64,
+    pub target_residual_before: f64,
+    pub target_residual_after: f64,
+    pub target_residual_ratio: f64,
+    pub predictor_step_norm: f64,
+    pub ab2_history_used: bool,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize)]
+pub struct ScheduledHomotopyPathReport {
+    pub schedule: HomotopyScheduleConfig,
+    pub stages: Vec<Vec<f64>>,
+    pub points: Vec<ScheduledHomotopyRoundPoint>,
+    pub work: HomotopyWorkLedger,
+    pub completed: bool,
+    pub failure: Option<String>,
+    pub last_lambda: f64,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct HomotopyStepConfig {
     path: HomotopyPathConfig,
     output_policy: OutputBudgetPolicy,
@@ -777,6 +809,322 @@ fn run_fixed_homotopy_path_internal(
         stages,
         points,
         work,
+    })
+}
+
+fn scheduled_failure_report(
+    schedule: &HomotopyScheduleConfig,
+    stages: Vec<Vec<f64>>,
+    points: Vec<ScheduledHomotopyRoundPoint>,
+    work: HomotopyWorkLedger,
+    last_lambda: f64,
+    error: &CoreError,
+) -> ScheduledHomotopyPathReport {
+    ScheduledHomotopyPathReport {
+        schedule: schedule.clone(),
+        stages,
+        points,
+        work,
+        completed: false,
+        failure: Some(error.to_string()),
+        last_lambda,
+    }
+}
+
+/// Execute a bounded nonstationary partial-coupling schedule.
+///
+/// This is a correctness/reference engine: it deliberately uses one explicit common-`W`
+/// factorization so the nonlinear path-controller behavior can be isolated from the linear
+/// backend.  A changing `theta` is a nonstationary sweep and is not advertised as one smooth
+/// classical continuation curve.
+pub fn run_scheduled_homotopy_path(
+    block: &StructuredBlockSystem<'_, '_>,
+    schedule: &HomotopyScheduleConfig,
+    counters: &mut WorkCounters,
+) -> CoreResult<ScheduledHomotopyPathReport> {
+    if block.s != 8 {
+        return Err(CoreError::InvalidInput(format!(
+            "scheduled homotopy path currently requires the 8-stage RODAS5P system, got {}",
+            block.s
+        )));
+    }
+    let shifted = block.context.shifted.explicit().ok_or_else(|| {
+        CoreError::LinearSolve("scheduled homotopy reference needs explicit common W".into())
+    })?;
+    counters.direct_factorizations += 1;
+    let factor = match LuFactorization::new(shifted) {
+        Ok(factor) => factor,
+        Err(error) => {
+            return Ok(scheduled_failure_report(
+                schedule,
+                vec![vec![0.0; block.n]; block.s],
+                Vec::new(),
+                HomotopyWorkLedger {
+                    path_rounds: schedule.rounds.len(),
+                    w_factorizations: 1,
+                    ..HomotopyWorkLedger::default()
+                },
+                0.0,
+                &error,
+            ));
+        }
+    };
+    let mut work = HomotopyWorkLedger {
+        path_rounds: schedule.rounds.len(),
+        w_factorizations: 1,
+        ..HomotopyWorkLedger::default()
+    };
+    let mut observer: Option<&mut dyn HomotopyBatchObserver> = None;
+    let first = &schedule.rounds[0];
+    let mut stages = match truncated_partial_inverse_rows(
+        block,
+        &factor,
+        first.theta,
+        first.q,
+        &block.rhs_base(),
+        counters,
+        &mut work,
+        &mut observer,
+        "scheduled-path-start",
+        0,
+        None,
+    ) {
+        Ok(stages) => stages,
+        Err(error) => {
+            return Ok(scheduled_failure_report(
+                schedule,
+                vec![vec![0.0; block.n]; block.s],
+                Vec::new(),
+                work,
+                0.0,
+                &error,
+            ));
+        }
+    };
+    let mut current =
+        match evaluate_partial_path(block, &stages, first.theta, 0.0, counters, &mut work) {
+            Ok(evaluation) => evaluation,
+            Err(error) => {
+                return Ok(scheduled_failure_report(
+                    schedule,
+                    stages,
+                    Vec::new(),
+                    work,
+                    0.0,
+                    &error,
+                ));
+            }
+        };
+    let initial_homotopy = safe_l2(&flatten(&current.homotopy_residual));
+    let mut points = vec![ScheduledHomotopyRoundPoint {
+        round: 0,
+        lambda_start: 0.0,
+        lambda_end: 0.0,
+        theta: first.theta,
+        eta_start: first.theta,
+        eta_end: first.theta,
+        q: first.q,
+        damping: 1.0,
+        corrections: 0,
+        homotopy_residual_before: initial_homotopy,
+        homotopy_residual_after: initial_homotopy,
+        homotopy_residual_ratio: 1.0,
+        target_residual_before: current.target_residual_norm,
+        target_residual_after: current.target_residual_norm,
+        target_residual_ratio: 1.0,
+        predictor_step_norm: 0.0,
+        ab2_history_used: false,
+    }];
+
+    let mut lambda = 0.0;
+    let mut previous_tangent: Option<Vec<Vec<f64>>> = None;
+    let mut previous_signature: Option<(u64, usize)> = None;
+    let mut active_theta = first.theta;
+
+    for (round_index, round) in schedule.rounds.iter().enumerate() {
+        if round.theta.to_bits() != active_theta.to_bits() {
+            current = match evaluate_partial_path(
+                block,
+                &stages,
+                round.theta,
+                lambda,
+                counters,
+                &mut work,
+            ) {
+                Ok(evaluation) => evaluation,
+                Err(error) => {
+                    return Ok(scheduled_failure_report(
+                        schedule, stages, points, work, lambda, &error,
+                    ));
+                }
+            };
+            active_theta = round.theta;
+        }
+        let homotopy_before = safe_l2(&flatten(&current.homotopy_residual));
+        let target_before = current.target_residual_norm;
+        let eta_start = round.theta + lambda * (1.0 - round.theta);
+        let eta_end = round.theta + round.lambda_end * (1.0 - round.theta);
+        let tangent = match truncated_partial_inverse_rows(
+            block,
+            &factor,
+            eta_start,
+            round.q,
+            &current.tangent_rhs,
+            counters,
+            &mut work,
+            &mut observer,
+            "scheduled-tangent",
+            round_index,
+            None,
+        ) {
+            Ok(tangent) => tangent,
+            Err(error) => {
+                return Ok(scheduled_failure_report(
+                    schedule, stages, points, work, lambda, &error,
+                ));
+            }
+        };
+        let signature = (round.theta.to_bits(), round.q);
+        let ab2_history_used = schedule.predictor == HomotopyPredictor::AdamsBashforth2
+            && previous_signature == Some(signature)
+            && previous_tangent.is_some();
+        let delta_lambda = round.lambda_end - lambda;
+        let predictor_increment = if ab2_history_used {
+            add_scaled_rows(
+                &vec![vec![0.0; block.n]; block.s],
+                1.5 * delta_lambda,
+                &tangent,
+                -0.5 * delta_lambda,
+                previous_tangent.as_deref(),
+            )
+        } else {
+            add_scaled_rows(
+                &vec![vec![0.0; block.n]; block.s],
+                delta_lambda,
+                &tangent,
+                0.0,
+                None,
+            )
+        };
+        let mut predictor_increment = match predictor_increment {
+            Ok(increment) => increment,
+            Err(error) => {
+                return Ok(scheduled_failure_report(
+                    schedule, stages, points, work, lambda, &error,
+                ));
+            }
+        };
+        for value in predictor_increment.iter_mut().flatten() {
+            *value *= round.damping;
+        }
+        let predictor_step_norm = safe_l2(&flatten(&predictor_increment));
+        let mut candidate = match add_scaled_rows(&stages, 1.0, &predictor_increment, 0.0, None) {
+            Ok(candidate) => candidate,
+            Err(error) => {
+                return Ok(scheduled_failure_report(
+                    schedule, stages, points, work, lambda, &error,
+                ));
+            }
+        };
+
+        for correction_index in 0..round.corrections {
+            let evaluation = match evaluate_partial_path(
+                block,
+                &candidate,
+                round.theta,
+                round.lambda_end,
+                counters,
+                &mut work,
+            ) {
+                Ok(evaluation) => evaluation,
+                Err(error) => {
+                    return Ok(scheduled_failure_report(
+                        schedule, candidate, points, work, lambda, &error,
+                    ));
+                }
+            };
+            let correction = match truncated_partial_inverse_rows(
+                block,
+                &factor,
+                eta_end,
+                round.q,
+                &evaluation.homotopy_residual,
+                counters,
+                &mut work,
+                &mut observer,
+                "scheduled-correction",
+                round_index + 1,
+                Some(correction_index + 1),
+            ) {
+                Ok(correction) => correction,
+                Err(error) => {
+                    return Ok(scheduled_failure_report(
+                        schedule, candidate, points, work, lambda, &error,
+                    ));
+                }
+            };
+            candidate = match add_scaled_rows(&candidate, -1.0, &correction, 0.0, None) {
+                Ok(updated) => updated,
+                Err(error) => {
+                    return Ok(scheduled_failure_report(
+                        schedule, candidate, points, work, lambda, &error,
+                    ));
+                }
+            };
+            work.correction_rounds += 1;
+        }
+
+        let next = match evaluate_partial_path(
+            block,
+            &candidate,
+            round.theta,
+            round.lambda_end,
+            counters,
+            &mut work,
+        ) {
+            Ok(evaluation) => evaluation,
+            Err(error) => {
+                return Ok(scheduled_failure_report(
+                    schedule, candidate, points, work, lambda, &error,
+                ));
+            }
+        };
+        let homotopy_after = safe_l2(&flatten(&next.homotopy_residual));
+        let target_after = next.target_residual_norm;
+        points.push(ScheduledHomotopyRoundPoint {
+            round: round_index + 1,
+            lambda_start: lambda,
+            lambda_end: round.lambda_end,
+            theta: round.theta,
+            eta_start,
+            eta_end,
+            q: round.q,
+            damping: round.damping,
+            corrections: round.corrections,
+            homotopy_residual_before: homotopy_before,
+            homotopy_residual_after: homotopy_after,
+            homotopy_residual_ratio: homotopy_after / homotopy_before.max(f64::MIN_POSITIVE),
+            target_residual_before: target_before,
+            target_residual_after: target_after,
+            target_residual_ratio: target_after / target_before.max(f64::MIN_POSITIVE),
+            predictor_step_norm,
+            ab2_history_used,
+        });
+        previous_tangent = Some(tangent);
+        previous_signature = Some(signature);
+        stages = candidate;
+        current = next;
+        lambda = round.lambda_end;
+    }
+
+    Ok(ScheduledHomotopyPathReport {
+        schedule: schedule.clone(),
+        stages,
+        points,
+        work,
+        completed: true,
+        failure: None,
+        last_lambda: lambda,
     })
 }
 
