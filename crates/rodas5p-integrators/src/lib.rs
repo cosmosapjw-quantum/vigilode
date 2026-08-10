@@ -53,9 +53,10 @@ pub use common_w_gate::{
 pub use homotopy::{
     AffineOutputCertificate, AffinePartialCouplingOracle, HomotopyDesignCheckReport,
     HomotopyPathConfig, HomotopyPathPoint, HomotopyPathReport, HomotopyPredictor,
-    HomotopyStepConfig, HomotopyStepReport, HomotopyWorkLedger, NonlinearOutputCertificate,
-    NonnormalConditionRow, PartialCouplingParameters, PowerNormRow, TruncationScreenRow,
-    certify_nonlinear_target, homotopy_step, run_fixed_homotopy_path, run_homotopy_design_check,
+    HomotopyRoundSpec, HomotopyScheduleConfig, HomotopyStepConfig, HomotopyStepReport,
+    HomotopyWorkLedger, NonlinearOutputCertificate, NonnormalConditionRow,
+    PartialCouplingParameters, PowerNormRow, TruncationScreenRow, certify_nonlinear_target,
+    homotopy_step, run_fixed_homotopy_path, run_homotopy_design_check,
 };
 pub use homotopy_experiments::{
     HomotopyCandidateRow, HomotopyControlRow, HomotopyExperimentCase, HomotopyExperimentProfile,

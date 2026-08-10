@@ -234,6 +234,137 @@ impl HomotopyPathConfig {
     }
 }
 
+/// One bounded nonstationary homotopy round.
+///
+/// `lambda_end`, `theta`, and `damping` are dimensionless.  Changing `theta` between
+/// rounds is interpreted as a nonstationary preconditioned sweep, not as one smooth
+/// classical homotopy curve.
+#[derive(Clone, Debug, PartialEq, Serialize)]
+pub struct HomotopyRoundSpec {
+    lambda_end: f64,
+    theta: f64,
+    q: usize,
+    damping: f64,
+    corrections: usize,
+}
+
+impl HomotopyRoundSpec {
+    pub fn new(
+        lambda_end: f64,
+        theta: f64,
+        q: usize,
+        damping: f64,
+        corrections: usize,
+    ) -> CoreResult<Self> {
+        if ![lambda_end, theta, damping]
+            .iter()
+            .all(|value| value.is_finite())
+        {
+            return Err(CoreError::NonFinite(
+                "homotopy round parameters contain NaN/Inf".into(),
+            ));
+        }
+        if !(lambda_end > 0.0 && lambda_end <= 1.0) {
+            return Err(CoreError::InvalidInput(
+                "homotopy round lambda endpoint must lie in (0, 1]".into(),
+            ));
+        }
+        if !(0.0..=1.0).contains(&theta) {
+            return Err(CoreError::InvalidInput(
+                "homotopy round theta must lie in [0, 1]".into(),
+            ));
+        }
+        if q >= 8 {
+            return Err(CoreError::InvalidInput(
+                "homotopy round truncation depth q must lie in 0..8".into(),
+            ));
+        }
+        if !(damping > 0.0 && damping <= 1.0) {
+            return Err(CoreError::InvalidInput(
+                "homotopy round damping must lie in (0, 1]".into(),
+            ));
+        }
+        if corrections > 2 {
+            return Err(CoreError::InvalidInput(
+                "homotopy round corrections must not exceed two".into(),
+            ));
+        }
+        Ok(Self {
+            lambda_end,
+            theta,
+            q,
+            damping,
+            corrections,
+        })
+    }
+
+    pub fn lambda_end(&self) -> f64 {
+        self.lambda_end
+    }
+
+    pub fn theta(&self) -> f64 {
+        self.theta
+    }
+
+    pub fn q(&self) -> usize {
+        self.q
+    }
+
+    pub fn damping(&self) -> f64 {
+        self.damping
+    }
+
+    pub fn corrections(&self) -> usize {
+        self.corrections
+    }
+}
+
+/// A validated bounded nonstationary schedule ending at the original RODAS target.
+#[derive(Clone, Debug, PartialEq, Serialize)]
+pub struct HomotopyScheduleConfig {
+    rounds: Vec<HomotopyRoundSpec>,
+    predictor: HomotopyPredictor,
+}
+
+impl HomotopyScheduleConfig {
+    pub fn new(rounds: Vec<HomotopyRoundSpec>, predictor: HomotopyPredictor) -> CoreResult<Self> {
+        if rounds.is_empty() {
+            return Err(CoreError::InvalidInput(
+                "homotopy schedule needs at least one round".into(),
+            ));
+        }
+        if rounds.len() > 4 {
+            return Err(CoreError::InvalidInput(
+                "homotopy research schedule must not exceed four rounds".into(),
+            ));
+        }
+        let mut previous = 0.0;
+        for round in &rounds {
+            if round.lambda_end <= previous {
+                return Err(CoreError::InvalidInput(
+                    "homotopy schedule lambda endpoints must be strictly increasing".into(),
+                ));
+            }
+            previous = round.lambda_end;
+        }
+        let endpoint_tolerance = 64.0 * f64::EPSILON;
+        if (previous - 1.0).abs() > endpoint_tolerance {
+            return Err(CoreError::InvalidInput(
+                "homotopy schedule must end at lambda=1".into(),
+            ));
+        }
+        Ok(Self { rounds, predictor })
+    }
+
+    pub fn rounds(&self) -> &[HomotopyRoundSpec] {
+        &self.rounds
+    }
+
+    pub fn predictor(&self) -> HomotopyPredictor {
+        self.predictor
+    }
+}
+
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct HomotopyStepConfig {
     path: HomotopyPathConfig,
