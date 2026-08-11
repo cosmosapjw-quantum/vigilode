@@ -548,9 +548,12 @@ fn run_concurrency_probe() -> CoreResult<usize> {
 fn scientific_checksum(
     cases: &[StageBatchFeasibilityCase],
     rows: &[StageBatchFeasibilityRow],
-    observed_max_parallel_tasks: usize,
+    stage_parallelism_observed: bool,
 ) -> String {
-    let mut signature = format!("parallel={observed_max_parallel_tasks}\n");
+    // The exact maximum number of simultaneously observed tasks is scheduler-dependent.  It is a
+    // diagnostic, not a scientific field.  Hash only the stable contract that genuine within-step
+    // concurrency was observed, while retaining the exact maximum in the report itself.
+    let mut signature = format!("parallel-observed={stage_parallelism_observed}\n");
     for case in cases {
         signature.push_str(&format!(
             "case|{}|{}|{}|{}|{}\n",
@@ -824,7 +827,7 @@ pub fn run_stage_batch_feasibility(
     } else {
         "stage-concurrency-not-observed"
     };
-    let scientific_checksum = scientific_checksum(&descriptors, &rows, observed_max_parallel_tasks);
+    let scientific_checksum = scientific_checksum(&descriptors, &rows, stage_parallelism_observed);
     Ok(StageBatchFeasibilityReport {
         schema: "rodas5p-stage-batch-feasibility-v1",
         profile,
