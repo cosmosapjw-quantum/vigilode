@@ -6,6 +6,7 @@ mod block;
 mod candidates;
 mod certification;
 mod common_w_gate;
+mod g1_transactional_gate;
 mod homotopy;
 mod homotopy_experiments;
 mod homotopy_order_policy;
@@ -23,6 +24,7 @@ mod rhs_telemetry;
 mod sabr;
 mod sequential;
 mod stage_batch;
+mod transactional_q1_q2;
 mod unified_gates;
 mod unified_screen;
 
@@ -51,6 +53,10 @@ pub use common_w_gate::{
     MatrixFreeCommonWCase, MatrixFreeCommonWProfile, MatrixFreeCommonWReport, MatrixFreeCommonWRow,
     run_matrix_free_common_w_gate,
 };
+pub use g1_transactional_gate::{
+    G1TransactionalCase, G1TransactionalGateProfile, G1TransactionalGateReport,
+    G1TransactionalGateSummary, G1TransactionalRow, run_g1_transactional_gate,
+};
 pub use homotopy::{
     AffineOutputCertificate, AffinePartialCouplingOracle, HomotopyDesignCheckReport,
     HomotopyPathConfig, HomotopyPathPoint, HomotopyPathReport, HomotopyPredictor,
@@ -72,9 +78,11 @@ pub use homotopy_order_policy::{
 };
 pub use homotopy_policy::{OutputBudgetDecision, OutputBudgetPolicy};
 pub use integrate::{
-    IntegrationMethod, IntegrationResult, integrate_adaptive, integrate_adaptive_observed,
-    integrate_adaptive_observed_with_config, integrate_fixed, integrate_fixed_observed,
-    integrate_homotopy_adaptive_observed,
+    IntegrationMethod, IntegrationResult, TransactionalQ1Q2AdaptiveResult, integrate_adaptive,
+    integrate_adaptive_observed, integrate_adaptive_observed_with_config, integrate_fixed,
+    integrate_fixed_observed, integrate_homotopy_adaptive_observed,
+    integrate_sequential_matrix_free_adaptive_observed,
+    integrate_transactional_q1_q2_adaptive_observed,
 };
 pub use native_gates::{
     NativeIntegratorGateReport, NativeIntegratorGateRow, run_native_integrator_gates,
@@ -89,8 +97,10 @@ pub use path_controller::{
 };
 pub use problem::OdeProblem;
 pub use problems::{
-    constant_affine_mass_problem, manufactured_mass_nonlinear_problem, manufactured_vector_problem,
-    prothero_robinson_problem, scalar_linear_problem,
+    complex_dahlquist_problem, constant_affine_mass_problem, manufactured_mass_nonlinear_problem,
+    manufactured_vector_problem, oscillatory_prothero_robinson_problem, prothero_robinson_problem,
+    robertson_problem, scalar_linear_problem, semilinear_advection_diffusion_problem,
+    stiff_van_der_pol_problem,
 };
 pub use radau::{
     RadauConfig, RadauIiaStages, RadauIntegrationResult, RadauStepReport,
@@ -107,11 +117,16 @@ pub use rhs_telemetry::{
 pub use sabr::{PredictorKind, SabrConfig, StageHistory, sabr_step};
 pub use sequential::{
     KrylovState, StageSolveData, StepCertificate, StepContext, StepResult, build_step_context,
-    finish_step, sequential_stages, sequential_step,
+    build_step_context_matrix_free, finish_step, sequential_matrix_free_step, sequential_stages,
+    sequential_step,
 };
 pub use stage_batch::{
     StageBatchFeasibilityCase, StageBatchFeasibilityProfile, StageBatchFeasibilityReport,
     StageBatchFeasibilityRow, run_stage_batch_feasibility,
+};
+pub use transactional_q1_q2::{
+    OperationalGateReport, TransactionalQ1Q2Config, TransactionalQ1Q2Lane,
+    TransactionalQ1Q2RunDiagnostics, TransactionalQ1Q2StepReport, transactional_q1_q2_step,
 };
 pub use unified_gates::{
     CandidateGateReport, CandidateGateVerdict, CandidateOrderGateRow, CandidateStiffGateRow,

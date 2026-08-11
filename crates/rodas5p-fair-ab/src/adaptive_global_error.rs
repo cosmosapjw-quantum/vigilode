@@ -5,10 +5,13 @@ use rodas5p_integrators::{
     AdaptiveObservedIntegrationResult, AdaptiveRunDiagnostics, AdaptiveStepConfig, BdfConfig,
     BdfOrder, HomotopyPathConfig, HomotopyPredictor, HomotopyStepConfig, IntegrationMethod,
     OdeProblem, OutputSchedule, ParallelExecution, RadauConfig, RadauIiaStages, SabrConfig,
+    TransactionalQ1Q2Config, TransactionalQ1Q2RunDiagnostics, complex_dahlquist_problem,
     integrate_adaptive_observed_with_config, integrate_bdf_adaptive_observed,
     integrate_homotopy_adaptive_observed, integrate_radau_adaptive_observed,
-    manufactured_mass_nonlinear_problem, manufactured_vector_problem, prothero_robinson_problem,
-    scalar_linear_problem,
+    integrate_sequential_matrix_free_adaptive_observed,
+    integrate_transactional_q1_q2_adaptive_observed, manufactured_mass_nonlinear_problem,
+    manufactured_vector_problem, oscillatory_prothero_robinson_problem, prothero_robinson_problem,
+    scalar_linear_problem, semilinear_advection_diffusion_problem,
 };
 use serde::Serialize;
 
@@ -25,6 +28,7 @@ pub enum AdaptiveCandidateFamily {
     SequentialRodas5p,
     Sabr5p,
     HomotopyRodas5p,
+    TransactionalRodas5p,
     Bdf,
     RadauIia,
 }
@@ -58,6 +62,7 @@ pub struct AdaptiveRunRow {
     pub errors: Option<GlobalErrorMetrics>,
     pub work: IntegratorWorkReport,
     pub diagnostics: AdaptiveRunDiagnostics,
+    pub transactional: Option<TransactionalQ1Q2RunDiagnostics>,
     pub wall_seconds: f64,
     pub reference_checksum: String,
     pub output_grid_id: String,
@@ -85,8 +90,11 @@ pub struct AdaptiveGlobalErrorReport {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum AdaptiveCandidate {
     Sequential(LinearMethod),
+    ProtectedSequentialJf,
     Sabr,
     Homotopy,
+    Transactional1,
+    Transactional4,
     Bdf1,
     Bdf2,
     Radau1,
@@ -94,6 +102,11 @@ enum AdaptiveCandidate {
 }
 
 impl AdaptiveCandidate {
+    // Keep the established all-methods authority byte-compatible in candidate scope.
+    // G1-specific matrix-free and transactional candidates are exercised only through
+    // `run_g1_adaptive_global_error_screen`; injecting nested internal-thread candidates
+    // into this legacy catalog would change the frozen comparator campaign and can also
+    // perturb deferred GCRO-DR scratch lifetimes.
     const ALL: [Self; 10] = [
         Self::Sequential(LinearMethod::Direct),
         Self::Sequential(LinearMethod::Gmres),
@@ -115,6 +128,12 @@ impl AdaptiveCandidate {
                 linear_solver: Some(linear_method_id(method).into()),
                 estimator: "rodas5p-embedded-plus-algebraic".into(),
             },
+            Self::ProtectedSequentialJf => AdaptiveCandidateDescriptor {
+                candidate_id: "protected-sequential-jf-rodas5p-gmres-adaptive".into(),
+                family: AdaptiveCandidateFamily::SequentialRodas5p,
+                linear_solver: Some("strict-matrix-free-gmres".into()),
+                estimator: "rodas5p-embedded".into(),
+            },
             Self::Sabr => AdaptiveCandidateDescriptor {
                 candidate_id: "sabr5p-adaptive".into(),
                 family: AdaptiveCandidateFamily::Sabr5p,
@@ -127,6 +146,15 @@ impl AdaptiveCandidate {
                 linear_solver: Some("direct-fallback".into()),
                 estimator: "homotopy-native-rodas-endpoint".into(),
             },
+            Self::Transactional1 | Self::Transactional4 => {
+                let threads = if self == Self::Transactional1 { 1 } else { 4 };
+                AdaptiveCandidateDescriptor {
+                    candidate_id: format!("transactional-q1-q2-rodas5p-t{threads}-adaptive"),
+                    family: AdaptiveCandidateFamily::TransactionalRodas5p,
+                    linear_solver: Some(format!("matrix-free-common-w-gmres-t{threads}")),
+                    estimator: "rodas5p-embedded-plus-operational-q1-q2-certificate".into(),
+                }
+            }
             Self::Bdf1 => AdaptiveCandidateDescriptor {
                 candidate_id: "bdf1-adaptive-reference".into(),
                 family: AdaptiveCandidateFamily::Bdf,
@@ -253,6 +281,46 @@ fn adaptive_corpus(profile: GlobalErrorParetoProfile) -> FairResult<Vec<Adaptive
     Ok(corpus)
 }
 
+fn g1_adaptive_corpus(
+    profile: GlobalErrorParetoProfile,
+) -> FairResult<Vec<AdaptiveReferenceProblem>> {
+    let mut corpus = adaptive_corpus(profile)?;
+    if profile == GlobalErrorParetoProfile::Canonical {
+        let (complex, complex_y0) = complex_dahlquist_problem(16, 120.0, 180.0, 0.0)?;
+        corpus.push(analytic_reference_problem(
+            complex,
+            complex_y0,
+            (0.0, 0.02),
+            0.02,
+        )?);
+        let (oscillatory_pr, oscillatory_pr_y0) =
+            oscillatory_prothero_robinson_problem(-10_000.0, 1_000.0, 140.0, 0.0)?;
+        corpus.push(analytic_reference_problem(
+            oscillatory_pr,
+            oscillatory_pr_y0,
+            (0.0, 0.02),
+            0.02,
+        )?);
+        let (large_vector, large_vector_y0) =
+            manufactured_vector_problem(32, 1_000.0, 100.0, 0.5, 0.0)?;
+        corpus.push(analytic_reference_problem(
+            large_vector,
+            large_vector_y0,
+            (0.0, 0.02),
+            0.02,
+        )?);
+        let (advection, advection_y0) =
+            semilinear_advection_diffusion_problem(32, 0.01, 5.0, -1.0, 10.0, 0.0)?;
+        corpus.push(analytic_reference_problem(
+            advection,
+            advection_y0,
+            (0.0, 0.02),
+            0.02,
+        )?);
+    }
+    Ok(corpus)
+}
+
 fn tolerance_ladder(profile: GlobalErrorParetoProfile) -> Vec<f64> {
     match profile {
         GlobalErrorParetoProfile::Smoke => vec![1.0e-4, 1.0e-6],
@@ -279,13 +347,16 @@ fn linear_config(method: LinearMethod) -> LinearSolverConfig {
     }
 }
 
-fn execute_candidate(
-    spec: &AdaptiveRunSpec,
-) -> Result<AdaptiveObservedIntegrationResult, CoreError> {
+struct CandidateExecution {
+    result: AdaptiveObservedIntegrationResult,
+    transactional: Option<TransactionalQ1Q2RunDiagnostics>,
+}
+
+fn execute_candidate(spec: &AdaptiveRunSpec) -> Result<CandidateExecution, CoreError> {
     let reference = &spec.reference;
     let output = OutputSchedule::new(reference.reference.output_grid.times.clone())?;
     let adaptive = adaptive_config(reference, spec.rtol);
-    match spec.candidate {
+    let result = match spec.candidate {
         AdaptiveCandidate::Sequential(method) => integrate_adaptive_observed_with_config(
             &reference.problem,
             reference.t_span,
@@ -295,7 +366,26 @@ fn execute_candidate(
             None,
             &adaptive,
             &output,
-        ),
+        )
+        .map(|result| CandidateExecution {
+            result,
+            transactional: None,
+        }),
+        AdaptiveCandidate::ProtectedSequentialJf => {
+            let matrix_free_problem = reference.problem.jvp_only_clone()?;
+            integrate_sequential_matrix_free_adaptive_observed(
+                &matrix_free_problem,
+                reference.t_span,
+                &reference.y0,
+                &linear_config(LinearMethod::Gmres),
+                &adaptive,
+                &output,
+            )
+            .map(|result| CandidateExecution {
+                result,
+                transactional: None,
+            })
+        }
         AdaptiveCandidate::Sabr => integrate_adaptive_observed_with_config(
             &reference.problem,
             reference.t_span,
@@ -305,7 +395,11 @@ fn execute_candidate(
             Some(SabrConfig::default()),
             &adaptive,
             &output,
-        ),
+        )
+        .map(|result| CandidateExecution {
+            result,
+            transactional: None,
+        }),
         AdaptiveCandidate::Homotopy => {
             let path = HomotopyPathConfig::new(1.0, 7, 2, HomotopyPredictor::AdamsBashforth2, 1)?;
             let homotopy = HomotopyStepConfig::new(path, 0.1)?;
@@ -318,6 +412,37 @@ fn execute_candidate(
                 &adaptive,
                 &output,
             )
+            .map(|result| CandidateExecution {
+                result,
+                transactional: None,
+            })
+        }
+        AdaptiveCandidate::Transactional1 | AdaptiveCandidate::Transactional4 => {
+            let matrix_free_problem = reference.problem.jvp_only_clone()?;
+            let threads = if spec.candidate == AdaptiveCandidate::Transactional1 {
+                1
+            } else {
+                4
+            };
+            let step_config = TransactionalQ1Q2Config {
+                threads,
+                ..TransactionalQ1Q2Config::default()
+            };
+            integrate_transactional_q1_q2_adaptive_observed(
+                &matrix_free_problem,
+                reference.t_span,
+                &reference.y0,
+                &step_config,
+                &adaptive,
+                &output,
+            )
+            .map(|transactional| CandidateExecution {
+                result: AdaptiveObservedIntegrationResult {
+                    observed: transactional.observed,
+                    diagnostics: transactional.diagnostics,
+                },
+                transactional: Some(transactional.transactional),
+            })
         }
         AdaptiveCandidate::Bdf1 | AdaptiveCandidate::Bdf2 => {
             let order = if spec.candidate == AdaptiveCandidate::Bdf1 {
@@ -336,6 +461,10 @@ fn execute_candidate(
                 &adaptive,
                 &output,
             )
+            .map(|result| CandidateExecution {
+                result,
+                transactional: None,
+            })
         }
         AdaptiveCandidate::Radau1 | AdaptiveCandidate::Radau3 => {
             let stages = if spec.candidate == AdaptiveCandidate::Radau1 {
@@ -354,8 +483,13 @@ fn execute_candidate(
                 &adaptive,
                 &output,
             )
+            .map(|result| CandidateExecution {
+                result,
+                transactional: None,
+            })
         }
-    }
+    }?;
+    Ok(result)
 }
 
 fn retained_state_bytes(times: &[f64], states: &[Vec<f64>]) -> u64 {
@@ -396,6 +530,7 @@ fn failed_row(
             stored_state_bytes: 0,
         },
         diagnostics,
+        transactional: None,
         wall_seconds,
         reference_checksum: spec.reference.reference.provenance.state_checksum.clone(),
         output_grid_id: spec.reference.reference.output_grid.grid_id.clone(),
@@ -418,14 +553,16 @@ fn run_spec(spec: &AdaptiveRunSpec) -> AdaptiveRunRow {
         }
     };
     let wall_seconds = started.elapsed().as_secs_f64();
-    let observed = result.observed;
+    let transactional = result.transactional;
+    let observed = result.result.observed;
+    let diagnostics = result.result.diagnostics;
     if !observed.success {
         return failed_row(
             spec,
             IntegratorRunStatus::SolverFailure,
             observed.message,
             wall_seconds,
-            result.diagnostics,
+            diagnostics,
             observed.counters,
         );
     }
@@ -443,7 +580,7 @@ fn run_spec(spec: &AdaptiveRunSpec) -> AdaptiveRunRow {
                 IntegratorRunStatus::MissingOutput,
                 error.to_string(),
                 wall_seconds,
-                result.diagnostics,
+                diagnostics,
                 observed.counters,
             );
         }
@@ -463,7 +600,8 @@ fn run_spec(spec: &AdaptiveRunSpec) -> AdaptiveRunRow {
             output_clipped_steps: observed.output_clipped_steps as u64,
             stored_state_bytes: retained_state_bytes(&observed.t, &observed.y),
         },
-        diagnostics: result.diagnostics,
+        diagnostics,
+        transactional,
         wall_seconds,
         reference_checksum: spec.reference.reference.provenance.state_checksum.clone(),
         output_grid_id: spec.reference.reference.output_grid.grid_id.clone(),
@@ -482,6 +620,7 @@ struct ScientificAdaptiveRow<'a> {
     errors: &'a Option<GlobalErrorMetrics>,
     work: &'a IntegratorWorkReport,
     diagnostics: &'a AdaptiveRunDiagnostics,
+    transactional: &'a Option<TransactionalQ1Q2RunDiagnostics>,
     reference_checksum: &'a str,
     output_grid_id: &'a str,
 }
@@ -506,6 +645,7 @@ fn scientific_checksum(
             errors: &row.errors,
             work: &row.work,
             diagnostics: &row.diagnostics,
+            transactional: &row.transactional,
             reference_checksum: &row.reference_checksum,
             output_grid_id: &row.output_grid_id,
         })
@@ -563,6 +703,73 @@ pub fn run_adaptive_global_error_screen(
     let checksum = scientific_checksum(profile, &candidates, &problems, &tolerances, &runs)?;
     Ok(AdaptiveGlobalErrorReport {
         schema: "rodas5p-adaptive-global-error-v1".into(),
+        profile,
+        execution: AdaptiveScreenExecution {
+            threads: execution.threads(),
+            backend: execution.backend().into(),
+            scientific_suite_wall_seconds,
+        },
+        candidates,
+        problems,
+        tolerance_ladder: tolerances,
+        runs,
+        scientific_checksum: checksum,
+    })
+}
+
+/// G1-specific complete-integrator screen.
+///
+/// This deliberately excludes unrelated mutable solver arms (LGMRES/GCRO-DR, direct RODAS,
+/// SABR and q=7 homotopy) so a failure in a deferred comparator cannot mask the transactional
+/// q1->q2 decision.  BDF2 and Radau IIA3 remain byte-frozen context comparators.
+pub fn run_g1_adaptive_global_error_screen(
+    profile: GlobalErrorParetoProfile,
+    threads: usize,
+) -> FairResult<AdaptiveGlobalErrorReport> {
+    let execution = ParallelExecution::rayon(threads)?;
+    let corpus = g1_adaptive_corpus(profile)?;
+    let tolerances = tolerance_ladder(profile);
+    let selected = [
+        AdaptiveCandidate::ProtectedSequentialJf,
+        AdaptiveCandidate::Transactional1,
+        AdaptiveCandidate::Transactional4,
+        AdaptiveCandidate::Bdf2,
+        AdaptiveCandidate::Radau3,
+    ];
+    let candidates = selected
+        .iter()
+        .copied()
+        .map(AdaptiveCandidate::descriptor)
+        .collect::<Vec<_>>();
+    let problems = corpus
+        .iter()
+        .map(|reference| AdaptiveProblemDescriptor {
+            problem_id: reference.problem.name.clone(),
+            dimension: reference.problem.dimension,
+            t_span: reference.t_span,
+            output_grid_id: reference.reference.output_grid.grid_id.clone(),
+            reference_checksum: reference.reference.provenance.state_checksum.clone(),
+        })
+        .collect::<Vec<_>>();
+    let mut specs = Vec::new();
+    for reference in corpus {
+        for &rtol in &tolerances {
+            for &candidate in &selected {
+                specs.push(AdaptiveRunSpec {
+                    reference: reference.clone(),
+                    candidate,
+                    rtol,
+                });
+            }
+        }
+    }
+    let started = Instant::now();
+    let mut runs = execution.map_ordered(&specs, |spec| Ok(run_spec(spec)))?;
+    let scientific_suite_wall_seconds = started.elapsed().as_secs_f64();
+    runs.sort_by(|left, right| left.record_id.cmp(&right.record_id));
+    let checksum = scientific_checksum(profile, &candidates, &problems, &tolerances, &runs)?;
+    Ok(AdaptiveGlobalErrorReport {
+        schema: "generic-q1-q2-adaptive-global-error-v1".into(),
         profile,
         execution: AdaptiveScreenExecution {
             threads: execution.threads(),

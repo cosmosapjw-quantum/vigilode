@@ -244,6 +244,58 @@ impl OdeProblem {
         })))
     }
 
+    /// Build a strictly matrix-free linearization operator.
+    ///
+    /// Unlike [`OdeProblem::linearize`], this entry point never falls back to an explicit
+    /// Jacobian callback.  It is the load-bearing contract for the generic vectorized/JF fast
+    /// path: callers either supplied a genuine JVP implementation or the request fails closed
+    /// before a speculative timestep starts.
+    pub fn linearize_matrix_free(&self, t: f64, y: &[f64]) -> CoreResult<Arc<dyn LinearOperator>> {
+        if y.len() != self.dimension {
+            return Err(CoreError::Dimension(
+                "matrix-free linearization state shape mismatch".into(),
+            ));
+        }
+        let jvp = self.jvp.clone().ok_or_else(|| {
+            CoreError::InvalidInput(
+                "strict matrix-free integration requires a user-supplied JVP".into(),
+            )
+        })?;
+        let state = y.to_vec();
+        let n = self.dimension;
+        Ok(Arc::new(ClosureOperator::new(n, move |v, out| {
+            jvp(t, &state, v, out)
+        })))
+    }
+
+    pub fn supports_matrix_free_jvp(&self) -> bool {
+        self.jvp.is_some()
+    }
+
+    /// Return a clone whose linearization is exposed only through the configured JVP.
+    ///
+    /// This is the strict matrix-free research lane: even when an explicit Jacobian callback is
+    /// available for offline certification, the returned problem cannot materialize it through
+    /// [`OdeProblem::linearize`].
+    pub fn jvp_only_clone(&self) -> CoreResult<Self> {
+        if self.jvp.is_none() {
+            return Err(CoreError::InvalidInput(
+                "strict matrix-free clone requires a JVP callback".into(),
+            ));
+        }
+        let mut cloned = self.clone();
+        cloned.jacobian = None;
+        Ok(cloned)
+    }
+
+    pub fn has_explicit_jacobian(&self) -> bool {
+        self.jacobian.is_some()
+    }
+
+    pub fn has_jvp(&self) -> bool {
+        self.jvp.is_some()
+    }
+
     pub fn exact(&self, t: f64) -> Option<Vec<f64>> {
         self.exact_solution.as_ref().map(|f| f(t))
     }

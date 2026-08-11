@@ -567,3 +567,55 @@ fn homotopy_path_controller_cli_is_deterministic_and_emits_schedule_telemetry() 
     let _ = fs::remove_file(first);
     let _ = fs::remove_file(second);
 }
+
+#[test]
+fn generic_q1_q2_adaptive_cli_emits_bounded_decision_report() {
+    let binary = env!("CARGO_BIN_EXE_rodas5p");
+    let output = temp_path("generic-q1q2-adaptive.json");
+    let status = Command::new(binary)
+        .args([
+            "generic-q1q2-adaptive",
+            "--profile",
+            "smoke",
+            "--threads",
+            "1",
+            "--output",
+        ])
+        .arg(&output)
+        .status()
+        .unwrap();
+    assert!(status.success());
+    let report: serde_json::Value = serde_json::from_slice(&fs::read(&output).unwrap()).unwrap();
+    assert_eq!(report["schema"], "generic-q1-q2-adaptive-global-error-v1");
+    assert_eq!(report["candidates"].as_array().unwrap().len(), 5);
+    assert_eq!(report["runs"].as_array().unwrap().len(), 20);
+    let _ = fs::remove_file(output);
+}
+
+#[test]
+fn generic_q1_q2_gate_is_deterministic_and_strictly_matrix_free() {
+    let binary = env!("CARGO_BIN_EXE_rodas5p");
+    let first = temp_path("generic-q1-q2-first.json");
+    let second = temp_path("generic-q1-q2-second.json");
+
+    for output in [&first, &second] {
+        let status = Command::new(binary)
+            .args(["generic-q1-q2-gate", "--profile", "smoke", "--output"])
+            .arg(output)
+            .status()
+            .unwrap();
+        assert!(status.success());
+    }
+
+    let first_bytes = fs::read(&first).unwrap();
+    assert_eq!(first_bytes, fs::read(&second).unwrap());
+    let report: serde_json::Value = serde_json::from_slice(&first_bytes).unwrap();
+    assert_eq!(report["schema"], "generic-q1-q2-transactional-gate-v1");
+    assert_eq!(report["summary"]["explicit_jacobian_builds"], 0);
+    assert_eq!(report["summary"]["direct_factorizations"], 0);
+    assert_eq!(report["summary"]["fast_path_newton_iterations"], 0);
+    assert_eq!(report["summary"]["false_accepts"], 0);
+
+    let _ = fs::remove_file(first);
+    let _ = fs::remove_file(second);
+}

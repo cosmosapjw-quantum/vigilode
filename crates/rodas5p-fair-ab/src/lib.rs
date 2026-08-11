@@ -14,7 +14,7 @@ pub use adapters::solve_case;
 pub use adaptive_global_error::{
     AdaptiveCandidateDescriptor, AdaptiveCandidateFamily, AdaptiveGlobalErrorReport,
     AdaptiveProblemDescriptor, AdaptiveRunRow, AdaptiveScreenExecution,
-    run_adaptive_global_error_screen,
+    run_adaptive_global_error_screen, run_g1_adaptive_global_error_screen,
 };
 pub use budget::{BUDGET_EXHAUSTED_MARKER, BudgetedOperator, StableDenseOperator};
 pub use contracts::{

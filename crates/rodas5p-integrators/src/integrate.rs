@@ -2,8 +2,9 @@ use crate::output::OutputCollector;
 use crate::{
     AdaptiveControllerState, AdaptiveObservedIntegrationResult, AdaptiveRunDiagnostics,
     AdaptiveStepConfig, HomotopyStepConfig, KrylovState, ObservedIntegrationResult, OdeProblem,
-    OutputSchedule, SabrConfig, StageHistory, StepResult, homotopy_step, sabr_step,
-    sequential_step,
+    OutputSchedule, SabrConfig, StageHistory, StepResult, TransactionalQ1Q2Config,
+    TransactionalQ1Q2RunDiagnostics, homotopy_step, sabr_step, sequential_matrix_free_step,
+    sequential_step, transactional_q1_q2_step,
 };
 use rodas5p_core::{CoreError, CoreResult, LinearSolverConfig, WorkCounters};
 
@@ -601,5 +602,251 @@ pub fn integrate_homotopy_adaptive_observed(
     Ok(AdaptiveObservedIntegrationResult {
         observed,
         diagnostics,
+    })
+}
+
+#[allow(clippy::too_many_arguments)]
+pub fn integrate_sequential_matrix_free_adaptive_observed(
+    problem: &OdeProblem,
+    t_span: (f64, f64),
+    y0: &[f64],
+    linear_config: &LinearSolverConfig,
+    adaptive: &AdaptiveStepConfig,
+    output: &OutputSchedule,
+) -> CoreResult<AdaptiveObservedIntegrationResult> {
+    adaptive.validate()?;
+    let (mut t, tf) = t_span;
+    if y0.len() != problem.dimension || tf < t {
+        return Err(CoreError::InvalidInput(
+            "invalid protected matrix-free RODAS5P integration input".into(),
+        ));
+    }
+    let mut y = y0.to_vec();
+    let mut h = adaptive.initial_step.min(tf - t);
+    let mut controller = AdaptiveControllerState::default();
+    let mut counters = WorkCounters::default();
+    let mut recycle = KrylovState::for_method(linear_config.method);
+    let mut collector = OutputCollector::new(output, t_span, y0)?;
+    let mut diagnostics = AdaptiveRunDiagnostics::default();
+    let mut internal_steps = 0_usize;
+
+    while t < tf && diagnostics.attempts < adaptive.max_attempts {
+        h = h.min(adaptive.max_step).min(tf - t);
+        if h < adaptive.min_step {
+            break;
+        }
+        let (trial_h, clipped) = collector.limit_step(t, h, tf)?;
+        let recycle_snapshot = recycle.clone();
+        let trial = sequential_matrix_free_step(
+            problem,
+            t,
+            &y,
+            trial_h,
+            linear_config,
+            recycle.as_mut(),
+            adaptive.atol,
+            adaptive.rtol,
+            false,
+            &mut counters,
+        );
+        let report = match trial {
+            Ok(report) => report,
+            Err(CoreError::NonFinite(_) | CoreError::LinearSolve(_)) => {
+                recycle = recycle_snapshot;
+                counters.rejected_steps += 1;
+                diagnostics.record(
+                    trial_h,
+                    f64::INFINITY,
+                    5,
+                    "protected-matrix-free-rodas5p-step-failed",
+                    false,
+                );
+                h = trial_h * adaptive.min_factor;
+                continue;
+            }
+            Err(error) => return Err(error),
+        };
+        let error = report.error_norm;
+        let accepted =
+            report.accepted && error <= 1.0 && report.y_new.iter().all(|value| value.is_finite());
+        diagnostics.record(
+            trial_h,
+            error,
+            5,
+            "protected-matrix-free-rodas5p-embedded",
+            accepted,
+        );
+        if accepted {
+            t = report.t_new;
+            y = report.y_new;
+            collector.accept(t, &y, clipped)?;
+            internal_steps += 1;
+            controller.record_acceptance(error)?;
+            h = trial_h * controller.propose_factor(adaptive, error, 5, true)?;
+        } else {
+            recycle = recycle_snapshot;
+            h = trial_h
+                * if error.is_finite() {
+                    controller.record_rejection(error)?;
+                    controller.propose_factor(adaptive, error.max(1.0e-16), 5, false)?
+                } else {
+                    adaptive.min_factor
+                };
+        }
+    }
+
+    let success = t >= tf - 10.0 * f64::EPSILON * tf.abs().max(1.0);
+    let observed = if success {
+        let (times, states, output_clipped_steps) = collector.finish()?;
+        ObservedIntegrationResult {
+            t: times,
+            y: states,
+            success: true,
+            message: "success".into(),
+            counters,
+            internal_steps,
+            output_clipped_steps,
+        }
+    } else {
+        ObservedIntegrationResult {
+            t: Vec::new(),
+            y: Vec::new(),
+            success: false,
+            message: "maximum step count or minimum step reached".into(),
+            counters,
+            internal_steps,
+            output_clipped_steps: 0,
+        }
+    };
+    Ok(AdaptiveObservedIntegrationResult {
+        observed,
+        diagnostics,
+    })
+}
+
+#[derive(Clone, Debug)]
+pub struct TransactionalQ1Q2AdaptiveResult {
+    pub observed: ObservedIntegrationResult,
+    pub diagnostics: AdaptiveRunDiagnostics,
+    pub transactional: TransactionalQ1Q2RunDiagnostics,
+}
+
+#[allow(clippy::too_many_arguments)]
+pub fn integrate_transactional_q1_q2_adaptive_observed(
+    problem: &OdeProblem,
+    t_span: (f64, f64),
+    y0: &[f64],
+    step_config: &TransactionalQ1Q2Config,
+    adaptive: &AdaptiveStepConfig,
+    output: &OutputSchedule,
+) -> CoreResult<TransactionalQ1Q2AdaptiveResult> {
+    adaptive.validate()?;
+    step_config.validate()?;
+    let (mut t, tf) = t_span;
+    if y0.len() != problem.dimension || tf < t {
+        return Err(CoreError::InvalidInput(
+            "invalid adaptive transactional q1/q2 integration input".into(),
+        ));
+    }
+    let mut y = y0.to_vec();
+    let mut h = adaptive.initial_step.min(tf - t);
+    let mut controller = AdaptiveControllerState::default();
+    let mut counters = WorkCounters::default();
+    let mut collector = OutputCollector::new(output, t_span, y0)?;
+    let mut diagnostics = AdaptiveRunDiagnostics::default();
+    let mut transactional = TransactionalQ1Q2RunDiagnostics::default();
+    let mut internal_steps = 0_usize;
+
+    while t < tf && diagnostics.attempts < adaptive.max_attempts {
+        h = h.min(adaptive.max_step).min(tf - t);
+        if h < adaptive.min_step {
+            break;
+        }
+        let (trial_h, clipped) = collector.limit_step(t, h, tf)?;
+        let trial = transactional_q1_q2_step(
+            problem,
+            t,
+            &y,
+            trial_h,
+            step_config,
+            adaptive.atol,
+            adaptive.rtol,
+            false,
+            &mut counters,
+        );
+        let report = match trial {
+            Ok(report) => report,
+            Err(CoreError::NonFinite(_) | CoreError::LinearSolve(_)) => {
+                counters.rejected_steps += 1;
+                diagnostics.record(
+                    trial_h,
+                    f64::INFINITY,
+                    5,
+                    "transactional-q1-q2-step-failed",
+                    false,
+                );
+                h = trial_h * adaptive.min_factor;
+                continue;
+            }
+            Err(error) => return Err(error),
+        };
+        let error = effective(&report.step);
+        let accepted = report.step.accepted
+            && error <= 1.0
+            && report.step.y_new.iter().all(|value| value.is_finite());
+        diagnostics.record(
+            trial_h,
+            error,
+            5,
+            "rodas5p-embedded-plus-transactional-algebraic",
+            accepted,
+        );
+        transactional.record(&report, accepted);
+        if accepted {
+            t = report.step.t_new;
+            y = report.step.y_new;
+            collector.accept(t, &y, clipped)?;
+            internal_steps += 1;
+            controller.record_acceptance(error)?;
+            h = trial_h * controller.propose_factor(adaptive, error, 5, true)?;
+        } else {
+            h = trial_h
+                * if error.is_finite() {
+                    controller.record_rejection(error)?;
+                    controller.propose_factor(adaptive, error.max(1.0e-16), 5, false)?
+                } else {
+                    adaptive.min_factor
+                };
+        }
+    }
+
+    diagnostics.fallback_steps = transactional.accepted_sequential_fallback_steps;
+    let success = t >= tf - 10.0 * f64::EPSILON * tf.abs().max(1.0);
+    let observed = if success {
+        let (times, states, output_clipped_steps) = collector.finish()?;
+        ObservedIntegrationResult {
+            t: times,
+            y: states,
+            success: true,
+            message: "success".into(),
+            counters,
+            internal_steps,
+            output_clipped_steps,
+        }
+    } else {
+        ObservedIntegrationResult {
+            t: Vec::new(),
+            y: Vec::new(),
+            success: false,
+            message: "maximum step count or minimum step reached".into(),
+            counters,
+            internal_steps,
+            output_clipped_steps: 0,
+        }
+    };
+    Ok(TransactionalQ1Q2AdaptiveResult {
+        observed,
+        diagnostics,
+        transactional,
     })
 }

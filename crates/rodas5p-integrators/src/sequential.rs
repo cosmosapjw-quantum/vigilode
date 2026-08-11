@@ -148,6 +148,55 @@ pub fn build_step_context<'a>(
     })
 }
 
+/// Build the RODAS5P step context without materializing an explicit Jacobian.
+///
+/// The RHS and time-derivative accounting is identical to [`build_step_context`], but the frozen
+/// linearization is required to come from a user-provided JVP.  Consequently the shifted operator
+/// exposes no explicit matrix and any direct-factorization request fails closed.
+pub fn build_step_context_matrix_free<'a>(
+    problem: &'a OdeProblem,
+    t: f64,
+    y: &[f64],
+    h: f64,
+    counters: &mut WorkCounters,
+) -> CoreResult<StepContext<'a>> {
+    if !h.is_finite() || h == 0.0 {
+        return Err(CoreError::InvalidInput(
+            "step size must be finite and nonzero".into(),
+        ));
+    }
+    if y.len() != problem.dimension || !y.iter().all(|value| value.is_finite()) {
+        return Err(CoreError::InvalidInput("invalid initial state".into()));
+    }
+    if !problem.supports_matrix_free_jvp() {
+        return Err(CoreError::InvalidInput(
+            "strict matrix-free integration requires a user-supplied JVP".into(),
+        ));
+    }
+    let coeffs = load_rodas5p_coefficients()?;
+    let f0 = problem.eval_rhs(t, y, counters)?;
+    let ft0 = problem.eval_partial_t(t, y, counters)?;
+    let jacobian = problem.linearize_matrix_free(t, y)?;
+    let shifted = ShiftedOperator::new(
+        problem.mass_matrix.clone(),
+        jacobian.clone(),
+        h,
+        coeffs.gamma,
+    )?;
+    debug_assert!(shifted.explicit().is_none());
+    Ok(StepContext {
+        problem,
+        t,
+        y: y.to_vec(),
+        h,
+        coeffs,
+        f0,
+        ft0,
+        jacobian,
+        shifted,
+    })
+}
+
 fn row_combination(weights: &[f64], rows: &[Vec<f64>], n: usize) -> Vec<f64> {
     let mut out = vec![0.0; n];
     for (&a, row) in weights.iter().zip(rows) {
@@ -455,6 +504,74 @@ pub fn sequential_step(
         Ok(r)
     })();
     if result.as_ref().map_or(true, |r| !r.accepted)
+        && let (Some(target), Some(saved)) = (recycle, snapshot)
+    {
+        *target = saved;
+    }
+    result
+}
+/// Execute one protected sequential RODAS5P step through a strict matrix-free JVP operator.
+///
+/// This path is the load-bearing comparator for the generic vectorized/JF branch.  It never
+/// materializes an explicit Jacobian or shifted matrix, and it counts every shifted-operator
+/// application as one JVP (and one mass matvec when a mass matrix is present).
+#[allow(clippy::too_many_arguments)]
+pub fn sequential_matrix_free_step(
+    problem: &OdeProblem,
+    t: f64,
+    y: &[f64],
+    h: f64,
+    config: &LinearSolverConfig,
+    mut recycle: Option<&mut KrylovState>,
+    atol: f64,
+    rtol: f64,
+    force_accept: bool,
+    counters: &mut WorkCounters,
+) -> CoreResult<StepResult> {
+    if config.method == LinearMethod::Direct || config.preconditioner == PreconditionerKind::Direct
+    {
+        return Err(CoreError::InvalidInput(
+            "strict matrix-free sequential RODAS5P forbids direct factorization".into(),
+        ));
+    }
+    let before = *counters;
+    let snapshot = recycle.as_deref().cloned();
+    let result = (|| {
+        let context = build_step_context_matrix_free(problem, t, y, h, counters)?;
+        let operator_before = *counters;
+        let data = sequential_stages(&context, config, recycle.as_deref_mut(), counters)?;
+        let delta = counters.delta(operator_before);
+        let shifted_applications = delta
+            .linear_matvecs
+            .saturating_add(delta.diagnostic_matvecs);
+        counters.jvp_calls = counters.jvp_calls.saturating_add(shifted_applications);
+        counters.jvp_vectors = counters.jvp_vectors.saturating_add(shifted_applications);
+        if context.problem.mass_matrix.is_some() {
+            counters.mass_matvecs = counters.mass_matvecs.saturating_add(shifted_applications);
+        }
+        let mut report = finish_step(
+            &context,
+            data.stages,
+            atol,
+            rtol,
+            format!("RODAS5P-protected-sequential-JF-{:?}", config.method),
+            if force_accept { Some(true) } else { None },
+            false,
+            None,
+            before,
+            counters,
+        )?;
+        if report.accepted {
+            counters.accepted_steps += 1;
+        } else {
+            counters.rejected_steps += 1;
+        }
+        report.counters = counters.delta(before);
+        debug_assert_eq!(report.counters.jacobian_builds, 0);
+        debug_assert_eq!(report.counters.direct_factorizations, 0);
+        Ok(report)
+    })();
+    if result.as_ref().map_or(true, |report| !report.accepted)
         && let (Some(target), Some(saved)) = (recycle, snapshot)
     {
         *target = saved;

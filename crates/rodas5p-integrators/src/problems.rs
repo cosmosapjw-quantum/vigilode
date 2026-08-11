@@ -11,6 +11,10 @@ pub fn scalar_linear_problem(lambda: f64, y0: f64) -> (OdeProblem, Vec<f64>) {
         Ok(states.iter().map(|y| vec![lambda * y[0]]).collect())
     });
     let jac = Arc::new(move |_t: f64, _y: &[f64]| DenseMatrix::new(1, 1, vec![lambda]));
+    let jvp = Arc::new(move |_t: f64, _y: &[f64], v: &[f64], out: &mut [f64]| {
+        out[0] = lambda * v[0];
+        Ok(())
+    });
     let exact = Arc::new(move |t: f64| vec![y0 * (lambda * t).exp()]);
     (
         OdeProblem::new(
@@ -19,7 +23,7 @@ pub fn scalar_linear_problem(lambda: f64, y0: f64) -> (OdeProblem, Vec<f64>) {
             rhs,
             Some(batch),
             Some(jac),
-            None,
+            Some(jvp),
             None,
             true,
             None,
@@ -50,6 +54,11 @@ pub fn prothero_robinson_problem(lambda: f64, mu: f64, t0: f64) -> (OdeProblem, 
         let d = y[0] - t.sin();
         DenseMatrix::new(1, 1, vec![lambda + 2.0 * mu * d])
     });
+    let jvp = Arc::new(move |t: f64, y: &[f64], v: &[f64], out: &mut [f64]| {
+        let d = y[0] - t.sin();
+        out[0] = (lambda + 2.0 * mu * d) * v[0];
+        Ok(())
+    });
     let ft = Arc::new(move |t: f64, y: &[f64], out: &mut [f64]| {
         let d = y[0] - t.sin();
         out[0] = -lambda * t.cos() - t.sin() - 2.0 * mu * d * t.cos();
@@ -63,7 +72,7 @@ pub fn prothero_robinson_problem(lambda: f64, mu: f64, t0: f64) -> (OdeProblem, 
             rhs,
             Some(batch),
             Some(jac),
-            None,
+            Some(jvp),
             Some(ft),
             false,
             None,
@@ -185,6 +194,19 @@ pub fn manufactured_vector_problem(
             Ok(j)
         })
     };
+    let jvp = {
+        let exact = exact_arc.clone();
+        let a = amat.clone();
+        Arc::new(move |t: f64, y: &[f64], v: &[f64], out: &mut [f64]| {
+            let ph = exact(t);
+            a.matvec_into(v, out)?;
+            for i in 0..n {
+                let d = y[i] - ph[i];
+                out[i] += 3.0 * nonlinearity * d * d * v[i];
+            }
+            Ok(())
+        })
+    };
     let ft = {
         let exact = exact_arc.clone();
         let d1 = d1_arc.clone();
@@ -210,7 +232,7 @@ pub fn manufactured_vector_problem(
             rhs,
             Some(batch),
             Some(jac),
-            None,
+            Some(jvp),
             Some(ft),
             false,
             None,
@@ -256,6 +278,9 @@ pub fn constant_affine_mass_problem() -> (OdeProblem, Vec<f64>, DenseMatrix, Den
     });
     let jac_j = j.clone();
     let jac = Arc::new(move |_t: f64, _y: &[f64]| Ok(jac_j.clone()));
+    let jvp_j = j.clone();
+    let jvp =
+        Arc::new(move |_t: f64, _y: &[f64], v: &[f64], out: &mut [f64]| jvp_j.matvec_into(v, out));
     let ft = Arc::new(move |t: f64, _y: &[f64], out: &mut [f64]| {
         out[0] = r1[0] + 2.0 * t * r2[0];
         out[1] = r1[1] + 2.0 * t * r2[1];
@@ -267,7 +292,7 @@ pub fn constant_affine_mass_problem() -> (OdeProblem, Vec<f64>, DenseMatrix, Den
         rhs,
         Some(batch),
         Some(jac),
-        None,
+        Some(jvp),
         Some(ft),
         false,
         Some(m.clone()),
@@ -364,6 +389,16 @@ pub fn manufactured_mass_nonlinear_problem(
         }
         Ok(out)
     });
+    let jvp_linear = linear.clone();
+    let jvp = Arc::new(move |t: f64, y: &[f64], v: &[f64], out: &mut [f64]| {
+        let phi = exact_value(t);
+        jvp_linear.matvec_into(v, out)?;
+        for component in 0..2 {
+            let defect = y[component] - phi[component];
+            out[component] += 3.0 * nonlinearity * defect * defect * v[component];
+        }
+        Ok(())
+    });
 
     let ft_mass = mass.clone();
     let ft_linear = linear.clone();
@@ -389,11 +424,382 @@ pub fn manufactured_mass_nonlinear_problem(
         rhs,
         Some(batch),
         Some(jacobian),
-        None,
+        Some(jvp),
         Some(partial_t),
         false,
         Some(mass.clone()),
         Some(exact),
     )?;
     Ok((problem, y0, mass, linear))
+}
+pub fn complex_dahlquist_problem(
+    blocks: usize,
+    damping: f64,
+    frequency: f64,
+    t0: f64,
+) -> CoreResult<(OdeProblem, Vec<f64>)> {
+    if blocks == 0
+        || !damping.is_finite()
+        || damping < 0.0
+        || !frequency.is_finite()
+        || !t0.is_finite()
+    {
+        return Err(rodas5p_core::CoreError::InvalidInput(
+            "invalid complex Dahlquist parameters".into(),
+        ));
+    }
+    let n = 2 * blocks;
+    let mut matrix = DenseMatrix::zeros(n, n);
+    for block in 0..blocks {
+        let i = 2 * block;
+        matrix[(i, i)] = -damping;
+        matrix[(i, i + 1)] = -frequency;
+        matrix[(i + 1, i)] = frequency;
+        matrix[(i + 1, i + 1)] = -damping;
+    }
+    let matrix = Arc::new(matrix);
+    let exact: Arc<dyn Fn(f64) -> Vec<f64> + Send + Sync> = Arc::new(move |t: f64| {
+        let decay = (-damping * t).exp();
+        let mut out = vec![0.0; n];
+        for block in 0..blocks {
+            let phase = 0.17 * block as f64 + frequency * t;
+            out[2 * block] = decay * phase.cos();
+            out[2 * block + 1] = decay * phase.sin();
+        }
+        out
+    });
+    let rhs_matrix = matrix.clone();
+    let rhs = Arc::new(move |_t: f64, y: &[f64], out: &mut [f64]| rhs_matrix.matvec_into(y, out));
+    let batch_matrix = matrix.clone();
+    let batch = Arc::new(move |_times: &[f64], states: &[Vec<f64>]| {
+        states
+            .iter()
+            .map(|state| batch_matrix.matvec(state))
+            .collect()
+    });
+    let jacobian_matrix = matrix.clone();
+    let jacobian = Arc::new(move |_t: f64, _y: &[f64]| Ok((*jacobian_matrix).clone()));
+    let jvp_matrix = matrix.clone();
+    let jvp = Arc::new(move |_t: f64, _y: &[f64], v: &[f64], out: &mut [f64]| {
+        jvp_matrix.matvec_into(v, out)
+    });
+    let y0 = exact(t0);
+    Ok((
+        OdeProblem::new(
+            format!("complex-dahlquist-b{blocks}-s{damping}-w{frequency}"),
+            n,
+            rhs,
+            Some(batch),
+            Some(jacobian),
+            Some(jvp),
+            None,
+            true,
+            None,
+            Some(exact),
+        )?,
+        y0,
+    ))
+}
+
+pub fn oscillatory_prothero_robinson_problem(
+    lambda: f64,
+    mu: f64,
+    omega: f64,
+    t0: f64,
+) -> CoreResult<(OdeProblem, Vec<f64>)> {
+    if ![lambda, mu, omega, t0]
+        .iter()
+        .all(|value| value.is_finite())
+        || omega <= 0.0
+    {
+        return Err(rodas5p_core::CoreError::InvalidInput(
+            "invalid oscillatory Prothero-Robinson parameters".into(),
+        ));
+    }
+    let g = move |t: f64| (omega * t).sin();
+    let gp = move |t: f64| omega * (omega * t).cos();
+    let rhs = Arc::new(move |t: f64, y: &[f64], out: &mut [f64]| {
+        let defect = y[0] - g(t);
+        out[0] = lambda * defect + gp(t) + mu * defect * defect;
+        Ok(())
+    });
+    let batch = Arc::new(move |times: &[f64], states: &[Vec<f64>]| {
+        Ok(times
+            .iter()
+            .zip(states)
+            .map(|(&t, y)| {
+                let defect = y[0] - g(t);
+                vec![lambda * defect + gp(t) + mu * defect * defect]
+            })
+            .collect())
+    });
+    let jacobian = Arc::new(move |t: f64, y: &[f64]| {
+        let defect = y[0] - g(t);
+        DenseMatrix::new(1, 1, vec![lambda + 2.0 * mu * defect])
+    });
+    let jvp = Arc::new(move |t: f64, y: &[f64], v: &[f64], out: &mut [f64]| {
+        let defect = y[0] - g(t);
+        out[0] = (lambda + 2.0 * mu * defect) * v[0];
+        Ok(())
+    });
+    let partial_t = Arc::new(move |t: f64, y: &[f64], out: &mut [f64]| {
+        let gt = g(t);
+        let gpt = gp(t);
+        let defect = y[0] - gt;
+        out[0] = -lambda * gpt - omega * omega * gt - 2.0 * mu * defect * gpt;
+        Ok(())
+    });
+    let exact: Arc<dyn Fn(f64) -> Vec<f64> + Send + Sync> = Arc::new(move |t: f64| vec![g(t)]);
+    let y0 = exact(t0);
+    Ok((
+        OdeProblem::new(
+            format!("oscillatory-pr-l{lambda}-m{mu}-w{omega}"),
+            1,
+            rhs,
+            Some(batch),
+            Some(jacobian),
+            Some(jvp),
+            Some(partial_t),
+            false,
+            None,
+            Some(exact),
+        )?,
+        y0,
+    ))
+}
+
+pub fn stiff_van_der_pol_problem(mu: f64) -> CoreResult<(OdeProblem, Vec<f64>)> {
+    if !(mu.is_finite() && mu > 0.0) {
+        return Err(rodas5p_core::CoreError::InvalidInput(
+            "van der Pol stiffness must be finite and positive".into(),
+        ));
+    }
+    let rhs = Arc::new(move |_t: f64, y: &[f64], out: &mut [f64]| {
+        out[0] = y[1];
+        out[1] = mu * (1.0 - y[0] * y[0]) * y[1] - y[0];
+        Ok(())
+    });
+    let batch = Arc::new(move |_times: &[f64], states: &[Vec<f64>]| {
+        Ok(states
+            .iter()
+            .map(|y| vec![y[1], mu * (1.0 - y[0] * y[0]) * y[1] - y[0]])
+            .collect())
+    });
+    let jacobian = Arc::new(move |_t: f64, y: &[f64]| {
+        DenseMatrix::new(
+            2,
+            2,
+            vec![
+                0.0,
+                1.0,
+                -2.0 * mu * y[0] * y[1] - 1.0,
+                mu * (1.0 - y[0] * y[0]),
+            ],
+        )
+    });
+    let jvp = Arc::new(move |_t: f64, y: &[f64], v: &[f64], out: &mut [f64]| {
+        out[0] = v[1];
+        out[1] = (-2.0 * mu * y[0] * y[1] - 1.0) * v[0] + mu * (1.0 - y[0] * y[0]) * v[1];
+        Ok(())
+    });
+    Ok((
+        OdeProblem::new(
+            format!("stiff-van-der-pol-mu{mu}"),
+            2,
+            rhs,
+            Some(batch),
+            Some(jacobian),
+            Some(jvp),
+            None,
+            true,
+            None,
+            None,
+        )?,
+        vec![2.0, 0.0],
+    ))
+}
+
+pub fn robertson_problem() -> CoreResult<(OdeProblem, Vec<f64>)> {
+    let rhs = Arc::new(|_t: f64, y: &[f64], out: &mut [f64]| {
+        out[0] = -0.04 * y[0] + 1.0e4 * y[1] * y[2];
+        out[1] = 0.04 * y[0] - 1.0e4 * y[1] * y[2] - 3.0e7 * y[1] * y[1];
+        out[2] = 3.0e7 * y[1] * y[1];
+        Ok(())
+    });
+    let batch = Arc::new(|_times: &[f64], states: &[Vec<f64>]| {
+        Ok(states
+            .iter()
+            .map(|y| {
+                vec![
+                    -0.04 * y[0] + 1.0e4 * y[1] * y[2],
+                    0.04 * y[0] - 1.0e4 * y[1] * y[2] - 3.0e7 * y[1] * y[1],
+                    3.0e7 * y[1] * y[1],
+                ]
+            })
+            .collect())
+    });
+    let jacobian = Arc::new(|_t: f64, y: &[f64]| {
+        DenseMatrix::new(
+            3,
+            3,
+            vec![
+                -0.04,
+                1.0e4 * y[2],
+                1.0e4 * y[1],
+                0.04,
+                -1.0e4 * y[2] - 6.0e7 * y[1],
+                -1.0e4 * y[1],
+                0.0,
+                6.0e7 * y[1],
+                0.0,
+            ],
+        )
+    });
+    let jvp = Arc::new(|_t: f64, y: &[f64], v: &[f64], out: &mut [f64]| {
+        out[0] = -0.04 * v[0] + 1.0e4 * y[2] * v[1] + 1.0e4 * y[1] * v[2];
+        out[1] = 0.04 * v[0] + (-1.0e4 * y[2] - 6.0e7 * y[1]) * v[1] - 1.0e4 * y[1] * v[2];
+        out[2] = 6.0e7 * y[1] * v[1];
+        Ok(())
+    });
+    Ok((
+        OdeProblem::new(
+            "robertson",
+            3,
+            rhs,
+            Some(batch),
+            Some(jacobian),
+            Some(jvp),
+            None,
+            true,
+            None,
+            None,
+        )?,
+        vec![1.0, 0.0, 0.0],
+    ))
+}
+
+pub fn semilinear_advection_diffusion_problem(
+    n: usize,
+    diffusion: f64,
+    advection: f64,
+    reaction: f64,
+    nonlinearity: f64,
+    t0: f64,
+) -> CoreResult<(OdeProblem, Vec<f64>)> {
+    if n < 2
+        || ![diffusion, advection, reaction, nonlinearity, t0]
+            .iter()
+            .all(|value| value.is_finite())
+        || diffusion < 0.0
+    {
+        return Err(rodas5p_core::CoreError::InvalidInput(
+            "invalid semilinear advection-diffusion parameters".into(),
+        ));
+    }
+    let dx = 1.0 / (n + 1) as f64;
+    let mut operator = DenseMatrix::zeros(n, n);
+    for i in 0..n {
+        operator[(i, i)] = -2.0 * diffusion / (dx * dx) + reaction - advection / dx;
+        if i > 0 {
+            operator[(i, i - 1)] = diffusion / (dx * dx) + advection / dx;
+        }
+        if i + 1 < n {
+            operator[(i, i + 1)] = diffusion / (dx * dx);
+        }
+    }
+    let shape = (1..=n)
+        .map(|index| (std::f64::consts::PI * index as f64 * dx).sin())
+        .collect::<Vec<_>>();
+    let exact: Arc<dyn Fn(f64) -> Vec<f64> + Send + Sync> = {
+        let shape = shape.clone();
+        Arc::new(move |t: f64| shape.iter().map(|value| (-t).exp() * value).collect())
+    };
+    let derivative: Arc<dyn Fn(f64) -> Vec<f64> + Send + Sync> = {
+        let exact = exact.clone();
+        Arc::new(move |t: f64| exact(t).into_iter().map(|value| -value).collect())
+    };
+    let operator = Arc::new(operator);
+    let rhs_operator = operator.clone();
+    let rhs_exact = exact.clone();
+    let rhs_derivative = derivative.clone();
+    let rhs = Arc::new(move |t: f64, y: &[f64], out: &mut [f64]| {
+        let phi = rhs_exact(t);
+        let dphi = rhs_derivative(t);
+        let defect = y.iter().zip(&phi).map(|(a, b)| a - b).collect::<Vec<_>>();
+        rhs_operator.matvec_into(&defect, out)?;
+        for i in 0..n {
+            out[i] += dphi[i] + nonlinearity * defect[i].powi(3);
+        }
+        Ok(())
+    });
+    let batch_operator = operator.clone();
+    let batch_exact = exact.clone();
+    let batch_derivative = derivative.clone();
+    let batch = Arc::new(move |times: &[f64], states: &[Vec<f64>]| {
+        times
+            .iter()
+            .zip(states)
+            .map(|(&t, y)| {
+                let phi = batch_exact(t);
+                let dphi = batch_derivative(t);
+                let defect = y.iter().zip(&phi).map(|(a, b)| a - b).collect::<Vec<_>>();
+                let mut out = batch_operator.matvec(&defect)?;
+                for i in 0..n {
+                    out[i] += dphi[i] + nonlinearity * defect[i].powi(3);
+                }
+                Ok(out)
+            })
+            .collect()
+    });
+    let jac_operator = operator.clone();
+    let jac_exact = exact.clone();
+    let jacobian = Arc::new(move |t: f64, y: &[f64]| {
+        let phi = jac_exact(t);
+        let mut jac = (*jac_operator).clone();
+        for i in 0..n {
+            let defect = y[i] - phi[i];
+            jac[(i, i)] += 3.0 * nonlinearity * defect * defect;
+        }
+        Ok(jac)
+    });
+    let jvp_operator = operator.clone();
+    let jvp_exact = exact.clone();
+    let jvp = Arc::new(move |t: f64, y: &[f64], v: &[f64], out: &mut [f64]| {
+        let phi = jvp_exact(t);
+        jvp_operator.matvec_into(v, out)?;
+        for i in 0..n {
+            let defect = y[i] - phi[i];
+            out[i] += 3.0 * nonlinearity * defect * defect * v[i];
+        }
+        Ok(())
+    });
+    let ft_operator = operator.clone();
+    let ft_exact = exact.clone();
+    let partial_t = Arc::new(move |t: f64, y: &[f64], out: &mut [f64]| {
+        let phi = ft_exact(t);
+        let dphi = phi.iter().map(|value| -value).collect::<Vec<_>>();
+        let ddphi = phi.clone();
+        ft_operator.matvec_into(&dphi, out)?;
+        for i in 0..n {
+            let defect = y[i] - phi[i];
+            out[i] = -out[i] + ddphi[i] - 3.0 * nonlinearity * defect * defect * dphi[i];
+        }
+        Ok(())
+    });
+    let y0 = exact(t0);
+    Ok((
+        OdeProblem::new(
+            format!("advection-diffusion-n{n}-d{diffusion}-a{advection}-r{reaction}"),
+            n,
+            rhs,
+            Some(batch),
+            Some(jacobian),
+            Some(jvp),
+            Some(partial_t),
+            false,
+            None,
+            Some(exact),
+        )?,
+        y0,
+    ))
 }

@@ -490,10 +490,11 @@ pub(crate) trait HomotopyBatchObserver {
     fn observe(&mut self, event: HomotopyBatchEvent<'_>) -> CoreResult<()>;
 }
 
-struct PathEvaluation {
-    homotopy_residual: Vec<Vec<f64>>,
-    target_residual_norm: f64,
-    tangent_rhs: Vec<Vec<f64>>,
+pub(crate) struct PathEvaluation {
+    pub(crate) homotopy_residual: Vec<Vec<f64>>,
+    pub(crate) target_residual_norm: f64,
+    pub(crate) target_rhs_norm: f64,
+    pub(crate) tangent_rhs: Vec<Vec<f64>>,
 }
 
 fn solve_common_w_rows(
@@ -589,7 +590,7 @@ fn truncated_partial_inverse_rows(
     }
 }
 
-fn evaluate_partial_path(
+pub(crate) fn evaluate_partial_path(
     block: &StructuredBlockSystem<'_, '_>,
     stages: &[Vec<f64>],
     theta: f64,
@@ -612,6 +613,7 @@ fn evaluate_partial_path(
     }
 
     let target_applied = block.apply(stages, counters)?;
+    let target_rhs_norm = safe_l2(&flatten(&snapshot.rhs));
     let target_residual: Vec<Vec<f64>> = target_applied
         .iter()
         .zip(&snapshot.rhs)
@@ -630,11 +632,12 @@ fn evaluate_partial_path(
     Ok(PathEvaluation {
         homotopy_residual,
         target_residual_norm: safe_l2(&flatten(&target_residual)),
+        target_rhs_norm,
         tangent_rhs,
     })
 }
 
-fn add_scaled_rows(
+pub(crate) fn add_scaled_rows(
     base: &[Vec<f64>],
     first_scale: f64,
     first: &[Vec<f64>],

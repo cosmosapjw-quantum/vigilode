@@ -79,3 +79,27 @@ fn adaptive_screen_is_scientifically_identical_in_one_and_four_threads() {
         assert_eq!(left.diagnostics, right.diagnostics);
     }
 }
+
+#[test]
+fn g1_adaptive_screen_is_limited_to_the_transactional_decision_set() {
+    let report =
+        rodas5p_fair_ab::run_g1_adaptive_global_error_screen(GlobalErrorParetoProfile::Smoke, 1)
+            .unwrap();
+    let ids = report
+        .candidates
+        .iter()
+        .map(|candidate| candidate.candidate_id.as_str())
+        .collect::<BTreeSet<_>>();
+    assert_eq!(
+        ids,
+        BTreeSet::from([
+            "protected-sequential-jf-rodas5p-gmres-adaptive",
+            "transactional-q1-q2-rodas5p-t1-adaptive",
+            "transactional-q1-q2-rodas5p-t4-adaptive",
+            "bdf2-adaptive-reference",
+            "radau-iia3-adaptive-reference",
+        ])
+    );
+    assert_eq!(report.schema, "generic-q1-q2-adaptive-global-error-v1");
+    assert_eq!(report.runs.len(), 5 * 2 * 2);
+}

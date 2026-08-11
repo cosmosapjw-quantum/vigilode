@@ -9,18 +9,18 @@ use rodas5p_core::{load_rodas5p_coefficients, sha256_hex};
 use rodas5p_fair_ab::{
     BenchmarkCell, BenchmarkPlan, FairSolveConfig, GlobalErrorParetoProfile, PreconditionerKind,
     RecycleLifetime, SequenceConfig, SequenceKind, SolverKind, TraceDocument, generate_trace,
-    run_adaptive_global_error_screen, run_comparison, run_global_error_pareto_screen,
-    summarize_comparison,
+    run_adaptive_global_error_screen, run_comparison, run_g1_adaptive_global_error_screen,
+    run_global_error_pareto_screen, summarize_comparison,
 };
 use rodas5p_integrators::{
-    CandidateCatalog, CandidateFamily, CandidateStatus, HomotopyExperimentProfile,
-    HomotopyRhsTelemetryProfile, MatrixFreeCommonWProfile, NativeIntegratorGateReport,
-    PathControllerProfile, StageBatchFeasibilityProfile, UnifiedNonlinearScreen,
-    UnifiedScientificGateReport, UnifiedScreenProfile, run_homotopy_design_check,
-    run_homotopy_experiment_screen, run_homotopy_order_policy_screen,
-    run_homotopy_rhs_telemetry_screen, run_matrix_free_common_w_gate, run_native_integrator_gates,
-    run_path_controller_screen, run_stage_batch_feasibility, run_unified_nonlinear_screen,
-    run_unified_scientific_gates,
+    CandidateCatalog, CandidateFamily, CandidateStatus, G1TransactionalGateProfile,
+    HomotopyExperimentProfile, HomotopyRhsTelemetryProfile, MatrixFreeCommonWProfile,
+    NativeIntegratorGateReport, PathControllerProfile, StageBatchFeasibilityProfile,
+    UnifiedNonlinearScreen, UnifiedScientificGateReport, UnifiedScreenProfile,
+    run_g1_transactional_gate, run_homotopy_design_check, run_homotopy_experiment_screen,
+    run_homotopy_order_policy_screen, run_homotopy_rhs_telemetry_screen,
+    run_matrix_free_common_w_gate, run_native_integrator_gates, run_path_controller_screen,
+    run_stage_batch_feasibility, run_unified_nonlinear_screen, run_unified_scientific_gates,
 };
 use serde::Serialize;
 use serde_json::json;
@@ -89,6 +89,23 @@ enum Command {
     HomotopyPathController {
         #[arg(long, value_enum, default_value_t = CliHomotopyProfile::Canonical)]
         profile: CliHomotopyProfile,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Run the generic eight-family transactional q1-to-q2 calibration gate.
+    #[command(name = "generic-q1-q2-gate")]
+    GenericQ1Q2Gate {
+        #[arg(long, value_enum, default_value_t = CliHomotopyProfile::Canonical)]
+        profile: CliHomotopyProfile,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Compare the G1 transactional candidate against protected JF RODAS and frozen comparators.
+    GenericQ1Q2Adaptive {
+        #[arg(long, value_enum, default_value_t = CliHomotopyProfile::Canonical)]
+        profile: CliHomotopyProfile,
+        #[arg(long, default_value_t = 1)]
+        threads: usize,
         #[arg(long)]
         output: PathBuf,
     },
@@ -190,6 +207,15 @@ impl From<CliHomotopyProfile> for HomotopyExperimentProfile {
 }
 
 impl From<CliHomotopyProfile> for PathControllerProfile {
+    fn from(value: CliHomotopyProfile) -> Self {
+        match value {
+            CliHomotopyProfile::Smoke => Self::Smoke,
+            CliHomotopyProfile::Canonical => Self::Canonical,
+        }
+    }
+}
+
+impl From<CliHomotopyProfile> for G1TransactionalGateProfile {
     fn from(value: CliHomotopyProfile) -> Self {
         match value {
             CliHomotopyProfile::Smoke => Self::Smoke,
@@ -1020,6 +1046,19 @@ fn main() -> Result<()> {
         }
         Command::HomotopyPathController { profile, output } => {
             write_json(&output, &run_path_controller_screen(profile.into())?)?;
+        }
+        Command::GenericQ1Q2Gate { profile, output } => {
+            write_json(&output, &run_g1_transactional_gate(profile.into())?)?;
+        }
+        Command::GenericQ1Q2Adaptive {
+            profile,
+            threads,
+            output,
+        } => {
+            write_json(
+                &output,
+                &run_g1_adaptive_global_error_screen(profile.into(), threads)?,
+            )?;
         }
         Command::NativeIntegratorGates { output } => {
             let report: NativeIntegratorGateReport = run_native_integrator_gates()?;

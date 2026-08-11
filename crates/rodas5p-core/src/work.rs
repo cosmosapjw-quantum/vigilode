@@ -44,6 +44,56 @@ pub struct WorkCounters {
 }
 
 impl WorkCounters {
+    /// Saturating component-wise accumulation for independently measured work ledgers.
+    ///
+    /// This is used when bounded parallel stage/RHS jobs keep local counters and merge them
+    /// only after every job has completed.  Saturation preserves the existing failure-safe
+    /// accounting semantics instead of wrapping on pathological runs.
+    pub fn accumulate(&mut self, other: Self) {
+        macro_rules! add_fields { ($($f:ident),* $(,)?) => { $(self.$f = self.$f.saturating_add(other.$f);)* } }
+        add_fields!(
+            rhs_calls,
+            rhs_batch_calls,
+            rhs_evaluations,
+            ft_calls,
+            jacobian_builds,
+            jvp_calls,
+            jvp_vectors,
+            mass_matvecs,
+            nonlinear_solves,
+            nonlinear_iterations,
+            nonlinear_residual_evaluations,
+            nonlinear_jacobian_evaluations,
+            nonlinear_failures,
+            linear_solves,
+            linear_iterations,
+            linear_matvecs,
+            preconditioner_apps,
+            direct_factorizations,
+            direct_solve_calls,
+            recycle_projection_calls,
+            recycle_same_operator_uses,
+            recycle_cross_operator_refreshes,
+            recycle_refresh_matvecs,
+            recycle_updates,
+            recycle_vectors_selected,
+            recycle_dropped_vectors,
+            harmonic_ritz_solves,
+            orthogonalization_inner_products,
+            orthogonalization_vector_updates,
+            diagnostic_matvecs,
+            block_linear_solves,
+            block_linear_iterations,
+            block_matvecs,
+            block_preconditioner_apps,
+            fast_attempts,
+            fast_accepts,
+            fallback_steps,
+            accepted_steps,
+            rejected_steps,
+        );
+    }
+
     pub fn delta(self, before: Self) -> Self {
         macro_rules! sub_fields { ($($f:ident),* $(,)?) => { Self { $($f: self.$f.saturating_sub(before.$f),)* } }; }
         sub_fields!(
