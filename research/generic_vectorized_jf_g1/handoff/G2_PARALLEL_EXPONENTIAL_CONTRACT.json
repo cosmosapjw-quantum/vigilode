@@ -1,0 +1,64 @@
+{
+  "schema": "generic-parallel-exponential-rosenbrock-contract-v2",
+  "branch": "generic-parallel-exponential-v1.2",
+  "base": "generic-q1-q2-transactional-v1.1 closeout",
+  "objective": "Preserve RODAS-like accepted-step economy while replacing the eight-stage sequential critical path by parallel phi-function actions, with no explicit Jacobian and no Newton iteration in the primary path.",
+  "scientific_rationale": [
+    "G1 retained step economy but failed critical-depth, fallback, and wall-time gates.",
+    "Order-five parallel exponential Rosenbrock methods have published stage structures whose parallel critical cost is comparable to a three-stage method.",
+    "Adaptive EPIRK methods are specifically designed to exploit adaptive Krylov phi-function evaluation."
+  ],
+  "first_bounded_node": [
+    "lock exact coefficients and stiff order conditions for one order-five parallel exponential Rosenbrock candidate",
+    "implement small-dense high-precision phi-action oracle",
+    "implement counted matrix-free adaptive Krylov phi-action",
+    "validate EXPRB2 and EXPRB43 reference methods before the parallel order-five candidate",
+    "run only generic calibration/holdout; do not execute physical clients"
+  ],
+  "mandatory_constraints": {
+    "explicit_jacobian_builds": 0,
+    "newton_iterations_primary": 0,
+    "all_rhs_jvp_phi_work_counted": true,
+    "transactional_rejection": true,
+    "bdf_radau_frozen": true,
+    "physical_clients_executed": false
+  },
+  "generic_corpus": [
+    "complex_dahlquist",
+    "oscillatory_prothero_robinson",
+    "stiff_van_der_pol",
+    "robertson",
+    "nonlinear_nonnormal_block",
+    "diffusion_reaction",
+    "advection_diffusion_reaction",
+    "constant_noncommuting_mass",
+    "semilinear_pde_holdout"
+  ],
+  "comparators": [
+    "protected_sequential_jf_rodas5p",
+    "held_transactional_q1_q2",
+    "frozen_adaptive_bdf2",
+    "frozen_adaptive_radau_iia3"
+  ],
+  "promotion_gates": {
+    "observed_order_min": 4.8,
+    "false_convergence": 0,
+    "step_ratio_to_protected_rodas_max": 1.2,
+    "same_error_speedup_min": 1.15,
+    "explicit_jacobian_builds": 0,
+    "newton_iterations_primary": 0
+  },
+  "kill_rules": [
+    "phi-action error or work cannot be certified independently of the integrator error",
+    "parallel critical path is not shorter than the protected RODAS path",
+    "same-error holdout speedup remains below 1.15 after correctness is closed",
+    "success relies on BDF/Radau changes or physical-client retuning"
+  ],
+  "forbidden": [
+    "BDF or Radau source changes",
+    "physical-client parameter tuning",
+    "claiming phi-action call count as wall speedup",
+    "using the held q1-q2 lane as a hidden success fallback without counting work",
+    "large framework expansion before phi-action and order checks pass"
+  ]
+}

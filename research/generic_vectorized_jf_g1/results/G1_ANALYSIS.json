@@ -1,0 +1,375 @@
+{
+  "schema": "generic-q1-q2-g1-analysis-v2",
+  "scientific_checksum": "f772819f2bb151547115769d06bc766358e589a51cdd528338b8865be22e3e5a",
+  "campaigns": 5,
+  "campaign_checksums_identical": true,
+  "outer_t4_campaigns": 3,
+  "outer_t4_checksum_identical": true,
+  "one_step": {
+    "cases": 8,
+    "completed": 8,
+    "fast_accepted": 7,
+    "q1_fast": 3,
+    "q2_escalated": 4,
+    "sequential_fallback": 1,
+    "false_accepts": 0,
+    "explicit_jacobian_builds": 0,
+    "direct_factorizations": 0,
+    "fast_path_newton_iterations": 0,
+    "median_critical_path_depth": 8.0,
+    "p95_critical_path_depth": 13.199999999999996,
+    "fast_fraction": 0.875,
+    "fallback_fraction": 0.125
+  },
+  "adaptive": {
+    "problems": 8,
+    "runs": 120,
+    "candidate_summary": [
+      {
+        "candidate_id": "protected-sequential-jf-rodas5p-gmres-adaptive",
+        "runs": 24,
+        "failures": 0,
+        "same_rtol_speedup_median": 1.0,
+        "same_rtol_speedup_min": 1.0,
+        "same_rtol_speedup_max": 1.0,
+        "step_ratio_median": 1.0,
+        "same_error_attainments": 24,
+        "same_error_targets": 24,
+        "same_error_speedup_median": 1.0,
+        "same_error_step_ratio_median": 1.0
+      },
+      {
+        "candidate_id": "transactional-q1-q2-rodas5p-t1-adaptive",
+        "runs": 24,
+        "failures": 0,
+        "same_rtol_speedup_median": 0.212418111955835,
+        "same_rtol_speedup_min": 0.1672640062586593,
+        "same_rtol_speedup_max": 0.4848985337981451,
+        "step_ratio_median": 1.0,
+        "same_error_attainments": 23,
+        "same_error_targets": 24,
+        "same_error_speedup_median": 0.22576018457817434,
+        "same_error_step_ratio_median": 1.0
+      },
+      {
+        "candidate_id": "transactional-q1-q2-rodas5p-t4-adaptive",
+        "runs": 24,
+        "failures": 0,
+        "same_rtol_speedup_median": 0.12859869591423645,
+        "same_rtol_speedup_min": 0.08931768500722327,
+        "same_rtol_speedup_max": 0.2097056452295853,
+        "step_ratio_median": 1.0,
+        "same_error_attainments": 23,
+        "same_error_targets": 24,
+        "same_error_speedup_median": 0.12282980244812404,
+        "same_error_step_ratio_median": 1.0
+      },
+      {
+        "candidate_id": "bdf2-adaptive-reference",
+        "runs": 24,
+        "failures": 0,
+        "same_rtol_speedup_median": 1.8846513023598228,
+        "same_rtol_speedup_min": 0.1508586027962081,
+        "same_rtol_speedup_max": 20.784890441094223,
+        "step_ratio_median": 7.8,
+        "same_error_attainments": 1,
+        "same_error_targets": 24,
+        "same_error_speedup_median": 0.42533244477003584,
+        "same_error_step_ratio_median": 38.5
+      },
+      {
+        "candidate_id": "radau-iia3-adaptive-reference",
+        "runs": 24,
+        "failures": 0,
+        "same_rtol_speedup_median": 2.679520929969815,
+        "same_rtol_speedup_min": 0.3966725195219512,
+        "same_rtol_speedup_max": 9.409115640134143,
+        "step_ratio_median": 2.0,
+        "same_error_attainments": 18,
+        "same_error_targets": 24,
+        "same_error_speedup_median": 2.3712313599869868,
+        "same_error_step_ratio_median": 2.0
+      }
+    ],
+    "transactional": {
+      "transactional-q1-q2-rodas5p-t1-adaptive": {
+        "accepted_steps": 201,
+        "q1_fast": 0,
+        "q2_escalated": 100,
+        "fallback": 101,
+        "fast_fraction": 0.4975124378109453,
+        "strict_sub8_fraction": 0.0,
+        "fallback_fraction": 0.5024875621890548,
+        "median_critical_path_depth": 16,
+        "p95_critical_path_depth": 16.0,
+        "median_w_solve_batches": 8,
+        "explicit_jacobian_builds": 0,
+        "direct_factorizations": 0,
+        "nonlinear_iterations": 0,
+        "by_problem": {
+          "PR-l-20-m1": {
+            "accepted_steps": 15,
+            "q1_fast": 0,
+            "q2_escalated": 0,
+            "fallback": 15,
+            "fast_fraction": 0.0,
+            "fallback_fraction": 1.0,
+            "median_critical_path_depth": 16,
+            "p95_critical_path_depth": 16.0
+          },
+          "advection-diffusion-n32-d0.01-a5-r-1": {
+            "accepted_steps": 3,
+            "q1_fast": 0,
+            "q2_escalated": 0,
+            "fallback": 3,
+            "fast_fraction": 0.0,
+            "fallback_fraction": 1.0,
+            "median_critical_path_depth": 16,
+            "p95_critical_path_depth": 16.0
+          },
+          "complex-dahlquist-b16-s120-w180": {
+            "accepted_steps": 60,
+            "q1_fast": 0,
+            "q2_escalated": 60,
+            "fallback": 0,
+            "fast_fraction": 1.0,
+            "fallback_fraction": 0.0,
+            "median_critical_path_depth": 8.0,
+            "p95_critical_path_depth": 8.0
+          },
+          "manufactured-mass-s20-m1-eta0.2": {
+            "accepted_steps": 12,
+            "q1_fast": 0,
+            "q2_escalated": 12,
+            "fallback": 0,
+            "fast_fraction": 1.0,
+            "fallback_fraction": 0.0,
+            "median_critical_path_depth": 8.0,
+            "p95_critical_path_depth": 8.0
+          },
+          "mv-n32-s1000-m100-eta0.5": {
+            "accepted_steps": 15,
+            "q1_fast": 0,
+            "q2_escalated": 0,
+            "fallback": 15,
+            "fast_fraction": 0.0,
+            "fallback_fraction": 1.0,
+            "median_critical_path_depth": 16,
+            "p95_critical_path_depth": 16.0
+          },
+          "mv-n4-s20-m1-eta0.2": {
+            "accepted_steps": 15,
+            "q1_fast": 0,
+            "q2_escalated": 12,
+            "fallback": 3,
+            "fast_fraction": 0.8,
+            "fallback_fraction": 0.2,
+            "median_critical_path_depth": 8,
+            "p95_critical_path_depth": 16.0
+          },
+          "oscillatory-pr-l-10000-m1000-w140": {
+            "accepted_steps": 66,
+            "q1_fast": 0,
+            "q2_escalated": 1,
+            "fallback": 65,
+            "fast_fraction": 0.015151515151515152,
+            "fallback_fraction": 0.9848484848484849,
+            "median_critical_path_depth": 16.0,
+            "p95_critical_path_depth": 16.0
+          },
+          "scalar-linear--2": {
+            "accepted_steps": 15,
+            "q1_fast": 0,
+            "q2_escalated": 15,
+            "fallback": 0,
+            "fast_fraction": 1.0,
+            "fallback_fraction": 0.0,
+            "median_critical_path_depth": 8,
+            "p95_critical_path_depth": 8.0
+          }
+        }
+      },
+      "transactional-q1-q2-rodas5p-t4-adaptive": {
+        "accepted_steps": 201,
+        "q1_fast": 0,
+        "q2_escalated": 100,
+        "fallback": 101,
+        "fast_fraction": 0.4975124378109453,
+        "strict_sub8_fraction": 0.0,
+        "fallback_fraction": 0.5024875621890548,
+        "median_critical_path_depth": 16,
+        "p95_critical_path_depth": 16.0,
+        "median_w_solve_batches": 8,
+        "explicit_jacobian_builds": 0,
+        "direct_factorizations": 0,
+        "nonlinear_iterations": 0,
+        "by_problem": {
+          "PR-l-20-m1": {
+            "accepted_steps": 15,
+            "q1_fast": 0,
+            "q2_escalated": 0,
+            "fallback": 15,
+            "fast_fraction": 0.0,
+            "fallback_fraction": 1.0,
+            "median_critical_path_depth": 16,
+            "p95_critical_path_depth": 16.0
+          },
+          "advection-diffusion-n32-d0.01-a5-r-1": {
+            "accepted_steps": 3,
+            "q1_fast": 0,
+            "q2_escalated": 0,
+            "fallback": 3,
+            "fast_fraction": 0.0,
+            "fallback_fraction": 1.0,
+            "median_critical_path_depth": 16,
+            "p95_critical_path_depth": 16.0
+          },
+          "complex-dahlquist-b16-s120-w180": {
+            "accepted_steps": 60,
+            "q1_fast": 0,
+            "q2_escalated": 60,
+            "fallback": 0,
+            "fast_fraction": 1.0,
+            "fallback_fraction": 0.0,
+            "median_critical_path_depth": 8.0,
+            "p95_critical_path_depth": 8.0
+          },
+          "manufactured-mass-s20-m1-eta0.2": {
+            "accepted_steps": 12,
+            "q1_fast": 0,
+            "q2_escalated": 12,
+            "fallback": 0,
+            "fast_fraction": 1.0,
+            "fallback_fraction": 0.0,
+            "median_critical_path_depth": 8.0,
+            "p95_critical_path_depth": 8.0
+          },
+          "mv-n32-s1000-m100-eta0.5": {
+            "accepted_steps": 15,
+            "q1_fast": 0,
+            "q2_escalated": 0,
+            "fallback": 15,
+            "fast_fraction": 0.0,
+            "fallback_fraction": 1.0,
+            "median_critical_path_depth": 16,
+            "p95_critical_path_depth": 16.0
+          },
+          "mv-n4-s20-m1-eta0.2": {
+            "accepted_steps": 15,
+            "q1_fast": 0,
+            "q2_escalated": 12,
+            "fallback": 3,
+            "fast_fraction": 0.8,
+            "fallback_fraction": 0.2,
+            "median_critical_path_depth": 8,
+            "p95_critical_path_depth": 16.0
+          },
+          "oscillatory-pr-l-10000-m1000-w140": {
+            "accepted_steps": 66,
+            "q1_fast": 0,
+            "q2_escalated": 1,
+            "fallback": 65,
+            "fast_fraction": 0.015151515151515152,
+            "fallback_fraction": 0.9848484848484849,
+            "median_critical_path_depth": 16.0,
+            "p95_critical_path_depth": 16.0
+          },
+          "scalar-linear--2": {
+            "accepted_steps": 15,
+            "q1_fast": 0,
+            "q2_escalated": 15,
+            "fallback": 0,
+            "fast_fraction": 1.0,
+            "fallback_fraction": 0.0,
+            "median_critical_path_depth": 8,
+            "p95_critical_path_depth": 8.0
+          }
+        }
+      }
+    }
+  },
+  "order_gate": {
+    "status": "not-promoted-after-earlier-kill",
+    "note": "The candidate already fails fast-fraction, fallback, critical-depth, and same-error speed gates. The adaptive path mixes q2 and protected fallback; no independent all-fast fifth-order theorem or promotion claim is made."
+  },
+  "paired_same_control": {
+    "transactional-q1-q2-rodas5p-t1-adaptive": {
+      "candidate_over_baseline_wall_median": 4.707779282662716,
+      "baseline_over_candidate_wall_speedup_median": 0.21241437628197404,
+      "rhs_ratio_median": 5.125,
+      "jvp_ratio_median": 8.534053156146179,
+      "step_ratio_median": 1.0,
+      "error_ratio_median": 1.0
+    },
+    "transactional-q1-q2-rodas5p-t4-adaptive": {
+      "candidate_over_baseline_wall_median": 7.776322850922874,
+      "baseline_over_candidate_wall_speedup_median": 0.1285954839029507,
+      "rhs_ratio_median": 5.125,
+      "jvp_ratio_median": 8.534053156146179,
+      "step_ratio_median": 1.0,
+      "error_ratio_median": 1.0
+    }
+  },
+  "timing_campaign": {
+    "t1_campaigns": 5,
+    "t4_campaigns": 3,
+    "t1_suite_median_seconds": 1.348569428,
+    "t4_suite_median_seconds": 0.643747519,
+    "case_level_throughput_speedup": 2.0948732044744394
+  },
+  "frozen_comparators": {
+    "bdf2": "context comparator only; source frozen by G0 regression test",
+    "radau_iia3": "context comparator only; source frozen by G0 regression test",
+    "sabr_q7_context": {
+      "campaigns": 5,
+      "scientific_checksum": "ef30299aa3488251d258a71601dcb8de7112508e0d9e7af6f33f8d815a4d8c12",
+      "scope": "legacy four-problem context only; not part of the bounded G1 decision set",
+      "rows": [
+        {
+          "candidate_id": "sabr5p-adaptive",
+          "runs": 12,
+          "failures": 0,
+          "same_rtol_speedup_median": 0.49332423255246827,
+          "same_rtol_step_ratio_median": 1.0,
+          "same_error_attainments": 6,
+          "same_error_targets": 12,
+          "same_error_speedup_median": 0.8280663185856921,
+          "same_error_step_ratio_median": 1.0
+        },
+        {
+          "candidate_id": "homotopy-rodas5p-q7-adaptive",
+          "runs": 12,
+          "failures": 0,
+          "same_rtol_speedup_median": 0.4491654857957473,
+          "same_rtol_step_ratio_median": 1.0,
+          "same_error_attainments": 9,
+          "same_error_targets": 12,
+          "same_error_speedup_median": 0.4204372623574145,
+          "same_error_step_ratio_median": 1.0
+        }
+      ]
+    }
+  },
+  "promotion_gates": {
+    "false_convergence_max": 0,
+    "fast_fraction_min": 0.9,
+    "fallback_fraction_max": 0.1,
+    "median_batch_depth_max": 8,
+    "p95_batch_depth_target": 6,
+    "global_order_min": 4.8,
+    "same_error_speedup_min": 1.15,
+    "step_ratio_max": 1.2
+  },
+  "decision": "HOLD_Q1_Q2_AND_OPEN_PARALLEL_EXPONENTIAL_SIBLING",
+  "kill_reasons": [
+    "one-step P95 critical path exceeds target 6",
+    "one-step fallback fraction above 0.10",
+    "one-step fast fraction below 0.90",
+    "transactional-q1-q2-rodas5p-t1-adaptive adaptive fallback above 0.10",
+    "transactional-q1-q2-rodas5p-t1-adaptive adaptive fast fraction below 0.90",
+    "transactional-q1-q2-rodas5p-t1-adaptive same-error speedup below 1.15x",
+    "transactional-q1-q2-rodas5p-t4-adaptive adaptive fallback above 0.10",
+    "transactional-q1-q2-rodas5p-t4-adaptive adaptive fast fraction below 0.90",
+    "transactional-q1-q2-rodas5p-t4-adaptive same-error speedup below 1.15x"
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "schema": "generic-vectorized-jf-dag-status-v2",
+  "current": {
+    "id": "G1_TRANSACTIONAL_Q1_Q2_ENDPOINT_ENGINE",
+    "status": "COMPLETE_HOLD"
+  },
+  "completed": [
+    {
+      "id": "G0_SCOPE_RESET",
+      "status": "COMPLETE"
+    },
+    {
+      "id": "G1_TRANSACTIONAL_Q1_Q2_ENDPOINT_ENGINE",
+      "status": "COMPLETE_HOLD"
+    }
+  ],
+  "opened": [
+    {
+      "id": "G2_PARALLEL_FIFTH_ORDER_EXPONENTIAL_ROSENBROCK_EPIRK",
+      "status": "OPEN"
+    }
+  ],
+  "blocked": [],
+  "decision": "HOLD_Q1_Q2_AND_OPEN_PARALLEL_EXPONENTIAL_SIBLING",
+  "reason": "The transactional implementation is correct and strict matrix-free, but it fails fast-fraction, fallback, critical-depth, and same-error speed gates."
+}
