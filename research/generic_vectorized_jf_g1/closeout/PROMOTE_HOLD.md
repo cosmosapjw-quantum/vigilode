@@ -27,8 +27,8 @@ adaptive fast fraction       0.4975 < 0.90
 adaptive fallback            0.5025 > 0.10
 adaptive q1 accepts          0
 median / P95 depth           16 / 16
-same-error speedup t1        0.233 < 1.15
-same-error speedup t4        0.076 < 1.15
+same-error speedup t1        0.226 < 1.15
+same-error speedup t4        0.123 < 1.15
 ```
 
 ```text

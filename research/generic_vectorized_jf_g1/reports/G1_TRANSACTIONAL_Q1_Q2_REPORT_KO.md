@@ -9,7 +9,7 @@ Canonical closeout:
 one-step: q1 3 / q2 4 / fallback 1, fast 0.875, fallback 0.125
 adaptive: q1 0 / q2 100 / fallback 101, fast 0.4975, fallback 0.5025
 median/P95 depth: 16 / 16
-same-error speedup: t1 0.233, t4 0.076
+same-error speedup: t1 0.226, t4 0.123
 explicit-J / direct factorization / fast Newton: 0 / 0 / 0
 verdict: HOLD q1→q2 as generic primary solver
 ```
