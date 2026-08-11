@@ -55,3 +55,10 @@ NEXT DAG NODE         = PARALLEL FIFTH-ORDER EXPONENTIAL ROSENBROCK / EPIRK
 ```
 
 No material code defect was found that would plausibly reverse the negative G1 performance result.
+
+## Post-review validation finding
+
+Full exact-head validation exposed one pre-existing harness defect: the stage-batch scientific hash included
+the scheduler-dependent exact maximum concurrency. The hash now records only whether real concurrency was
+observed, while the exact maximum remains a diagnostic field. This is a reporting determinism fix, not a
+numerical-method change. The failed validation log is preserved in `receipts/`.

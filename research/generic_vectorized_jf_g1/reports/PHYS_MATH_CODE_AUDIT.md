@@ -56,3 +56,11 @@ Added tests cover explicit-J fail-closed, q1 depth 6, q2 depth 8, fallback depth
 adaptive rollback, generic problem/JVP contracts, work-counter accumulation, eight-family coverage,
 CLI determinism, and frozen comparator scope. This is enough to close G1 semantics and apply the declared
 finite kill rule; it is not a proof over arbitrary ODEs.
+
+## Final-validation repair — scheduler-dependent diagnostic hash
+
+첫 tagged-head 전체 검증은 기존 `stage_batch_feasibility` report의 scientific checksum이
+`observed_max_parallel_tasks`의 정확한 값(2–4)에 의존해 실패했다. 이 값은 OS/Rayon scheduler가
+결정하는 진단량이며 scientific result가 아니다. Exact maximum은 report에 보존하되 checksum에는
+`stage_parallelism_observed: bool`만 포함하도록 최소 수정했다. 기존 반복-determinism tests가 이
+regression을 직접 검증하며, stage physics/timing row와 G1 scientific checksum은 변경되지 않았다.
