@@ -1,0 +1,44 @@
+{
+  "schema": "generic-vectorized-jf-dag-v1",
+  "date": "2026-08-11",
+  "active_branch": "generic-vectorized-jf-v1",
+  "primary_objective": {
+    "accepted_step_economy": "candidate_steps <= 1.2 * protected_rodas_steps on generic holdout",
+    "critical_depth": "median < 8 preferred; <= 8 required",
+    "explicit_jacobian_builds_fast_path": 0,
+    "newton_iterations_fast_path": 0,
+    "same_error_speedup_min": 1.15
+  },
+  "completed_nodes": [
+    "rust_same_kernel_baseline",
+    "fixed_step_fair_measurement_authority",
+    "adaptive_reference_contract",
+    "within_step_stage_batch_feasibility",
+    "strict_matrix_free_common_w_gate",
+    "actual_rhs_rank_drift_telemetry",
+    "bounded_low_q_path_controller_screen",
+    "G0_SCOPE_RESET"
+  ],
+  "current_node": {
+    "id": "G0_SCOPE_RESET",
+    "status": "COMPLETE"
+  },
+  "next_node": {
+    "id": "G1_TRANSACTIONAL_Q1_Q2_ENDPOINT_ENGINE",
+    "status": "OPEN"
+  },
+  "frozen_comparators": [
+    "adaptive_bdf2_reference",
+    "adaptive_radau_iia3_reference",
+    "sabr5p",
+    "homotopy_q7_correctness_oracle"
+  ],
+  "forbidden_core_drift": [
+    "BDF production optimization",
+    "Radau production optimization",
+    "physical-client source binding",
+    "accepted physical history mutation",
+    "client-driven threshold retuning",
+    "case-level Rayon throughput reported as solver-internal speedup"
+  ]
+}

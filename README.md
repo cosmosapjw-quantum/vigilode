@@ -1,6 +1,6 @@
-# rodas5p-rs
+# generic-vectorized-jf / rodas5p-rs
 
-Rust parity reconstruction of the pre-homotopy RODAS5P numerical-method research stack.
+Rust research workspace for a generic stiff ODE solver that combines RODAS5P-level step economy, within-step stage batching, strict matrix-free common-operator algebra, and Newton-free low-depth causal/homotopy correction.
 
 ## Workspace
 
@@ -10,7 +10,7 @@ Rust parity reconstruction of the pre-homotopy RODAS5P numerical-method research
 - `rodas5p-fair-ab`: immutable traces, solver adapters, hard budgets, certification, recycle lifetimes.
 - `rodas5p-cli`: `validate`, `trace`, and `benchmark` commands.
 
-Homotopy and continuation algorithms are intentionally excluded from this checkpoint.
+The active branch includes bounded homotopy/causal-propagation research paths. Physical-project bindings are intentionally excluded from the generic production source and may only be used later as read-only holdout clients.
 
 ## Locked toolchain
 
@@ -71,10 +71,11 @@ abstraction, initial guess, residual certificate, and operator-action budget.
 
 ## Current disposition
 
-- **PROMOTE:** Rust workspace and R10-A allocation/workspace changes as the pre-homotopy baseline.
-- **HOLD:** unconditional recycling and GCRO-DR as a default performance backend.
-- **DEFER:** `(m,k)` tuning, adaptive recycling, nonlinear trace expansion and BDF/Radau ranking.
-- **NEXT ACTIVE BRANCH:** homotopy-based acceleration of the lower-triangular nonlinear stage-coupling system.
+- **G0 COMPLETE:** scope/provenance reset from `vectorized-jf-path-controller-v0.17.0-alpha1`.
+- **PRIMARY OBJECTIVE:** fewer accepted steps, shorter within-step critical depth, explicit-J-free and Newton-free fast path, and same-error wall speedup.
+- **FROZEN COMPARATORS:** adaptive BDF2 and Radau IIA3 reference sources; no production tuning in this DAG.
+- **NEXT NODE:** transactional q1/c2 → retained-endpoint q2 correction → protected sequential JF fallback.
+- **CLIENT RULE:** RABBIT/rec_bianchi/rei_bianchi are final read-only holdouts, not prerequisites or core-development targets.
 
-See `research/closeout/PRE_HOMOTOPY_BASELINE_CLOSEOUT_KO.md` and
-`research/HOMOTOPY_BRANCH_HANDOFF_KO.md`.
+See `research/generic_vectorized_jf_v1/00_SCOPE_LOCK_KO.md` and
+`research/generic_vectorized_jf_v1/handoff/G1_TRANSACTIONAL_Q1_Q2_CONTRACT.json`.

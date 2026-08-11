@@ -1,0 +1,55 @@
+{
+  "schema": "generic-q1-q2-transactional-engine-contract-v1",
+  "branch": "generic-q1-q2-transactional-v1.1",
+  "base_branch": "generic-vectorized-jf-v1",
+  "primary_candidate": "q1-c2-retained-endpoint-plus-q2-one-correction",
+  "algorithm": [
+    "run q=1 with two endpoint corrections",
+    "if operational gate passes, commit candidate step",
+    "otherwise retain endpoint/state/work and add one q=2 causal correction",
+    "if the second gate fails or becomes nonfinite, run protected sequential matrix-free RODAS5P",
+    "commit only a certified successful result"
+  ],
+  "mandatory_fast_path_constraints": {
+    "explicit_jacobian_builds": 0,
+    "direct_factorizations": 0,
+    "newton_iterations": 0,
+    "all_rhs_jvp_common_w_work_counted": true,
+    "speculative_failure_work_retained": true
+  },
+  "generic_calibration_corpus": [
+    "complex_dahlquist",
+    "oscillatory_prothero_robinson",
+    "stiff_van_der_pol",
+    "robertson",
+    "nonlinear_nonnormal_block",
+    "diffusion_reaction",
+    "advection_diffusion_reaction",
+    "constant_noncommuting_mass"
+  ],
+  "promotion_gates": {
+    "false_convergence": 0,
+    "nonhostile_fast_fraction_min": 0.9,
+    "protected_fallback_fraction_max": 0.1,
+    "median_common_w_batch_depth_max": 8,
+    "p95_common_w_batch_depth_target": 6,
+    "global_order_min": 4.8,
+    "same_error_speedup_min": 1.15,
+    "step_ratio_to_protected_rodas_max": 1.2
+  },
+  "frozen_comparators": [
+    "protected_sequential_jf_rodas5p",
+    "adaptive_bdf2_reference",
+    "adaptive_radau_iia3_reference",
+    "sabr5p",
+    "homotopy_q7_reference"
+  ],
+  "forbidden": [
+    "BDF or Radau source modification",
+    "physical client execution",
+    "BGMRES-DR tuning before integrated failure evidence",
+    "production claim from direct-LU or offline-certificate timing",
+    "discarding q1 endpoint work before q2 escalation"
+  ],
+  "kill_rule": "If fast_fraction < 0.9, or median batch depth >= 8 and same-error speedup < 1.15, HOLD this lane and open the parallel fifth-order exponential Rosenbrock/EPIRK sibling branch."
+}

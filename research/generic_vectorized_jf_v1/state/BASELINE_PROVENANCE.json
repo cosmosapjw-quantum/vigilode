@@ -1,0 +1,29 @@
+{
+  "schema": "generic-vectorized-jf-baseline-provenance-v1",
+  "date": "2026-08-11",
+  "base_tag": "vectorized-jf-path-controller-v0.17.0-alpha1",
+  "base_commit": "71608a0b160a410dccbe0bf54827e748d01d79fc",
+  "base_tree": "571acb30b087d9a38182626106398594afd7cc11",
+  "toolchain": {
+    "rust": "1.94.1",
+    "faer": "0.24.4",
+    "cargo_offline_locked": true
+  },
+  "frozen_comparator_hashes": {
+    "crates/rodas5p-integrators/src/bdf.rs": "68c681b58686e706ab6890d3be68bb1ca4a9398517e0e755a5c64b2cef746a04",
+    "crates/rodas5p-integrators/src/radau.rs": "edec0453a5338fc8357a7c026aff894869641b486a3aa3df858353a315bb441b"
+  },
+  "required_generic_modules": {
+    "crates/rodas5p-integrators/src/path_controller.rs": "223a788547b772751006f4c616e35cca83840fa5c4b1c508b170c3126f7b951b",
+    "crates/rodas5p-integrators/src/stage_batch.rs": "bd5cf8d6268ae856af48cdb7194eea97d7be70d7ca2ca2e29110678f3822da05",
+    "crates/rodas5p-integrators/src/common_w_gate.rs": "c87bf5270a04d303c96eb32b6118d6ffdbe8aa88d6e89f161b1c257c9a3a30e7",
+    "crates/rodas5p-fair-ab/src/global_error.rs": "6102a19583e1e1178067f21d13dc440729cab523e63ae2a22bc5ae9bce3c0522",
+    "crates/rodas5p-fair-ab/src/adaptive_global_error.rs": "3a7479cc850faffc9dff1b1e0983fc5ccdf25983119c44dc7f3d2039bc4e0eb5"
+  },
+  "claim_boundary": "G0 is a scope/provenance reset only; it adds no numerical method and makes no speedup claim.",
+  "build_lock_hashes": {
+    ".cargo/config.toml": "feeaa6efee462ecc27c567f80e2bda338c4fddbd55bc705986dec7ae40606d4e",
+    "Cargo.lock": "b6ed82be4e09045fbda4ba8b1a8782daef8840220baf88935d36a7046433afb4",
+    "rust-toolchain.toml": "f53198ae4fdecfd87da36fe431c771b54c51e975d01c0e99f653bc14d5d48211"
+  }
+}
