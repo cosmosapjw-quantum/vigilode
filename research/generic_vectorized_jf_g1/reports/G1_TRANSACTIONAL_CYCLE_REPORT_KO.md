@@ -151,6 +151,19 @@ BDF2의 4.2% coverage와 Radau의 75% coverage를 숨기지 않는다. Radau의 
 corpus에서의 explicit-J/full-Newton comparator 결과이고 본 프로젝트의 JF/Newton-free 구조 조건을
 만족하지 않는다.
 
+## Frozen SABR/q7 comparator context
+
+G1 bounded decision set과 분리된 legacy four-problem corpus에서 SABR5P와 q=7 correctness lane을
+5회 반복했다. 이 결과는 후보 activation이 아니라 frozen context다.
+
+| Candidate | Same-error coverage | Median speedup vs protected JF RODAS | Median step ratio |
+|---|---:|---:|---:|
+| SABR5P adaptive | 6/12 | 0.828 | 1.0 |
+| Homotopy q=7 adaptive | 9/12 | 0.420 | 1.0 |
+
+둘 다 step count는 유지하지만 protected JF RODAS보다 느렸고, q=7은 correctness-heavy lane이라는
+기존 판정을 바꾸지 않는다. 이 context는 G1 fast/fallback 결정을 가리거나 평균내지 않는다.
+
 ## 6. Order와 certificate 해석
 
 Mild PR의 roundoff 전 bounded test에서 fallback-capable path는 관측 order 약 5.90을 보였다.
