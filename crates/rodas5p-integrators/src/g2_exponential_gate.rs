@@ -17,6 +17,31 @@ pub enum G2ExponentialGateProfile {
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct PhiCoefficientTerm {
+    pub phi_index: usize,
+    pub coefficient: f64,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct Pexprb54s4WeightSet {
+    pub b2: Vec<PhiCoefficientTerm>,
+    pub b3: Vec<PhiCoefficientTerm>,
+    pub b4: Vec<PhiCoefficientTerm>,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct Pexprb54s4CoefficientRecord {
+    pub c2: f64,
+    pub c3: f64,
+    pub c4: f64,
+    pub a32_phi3_at_c3_z: f64,
+    pub a42_phi3_at_c4_z: f64,
+    pub a43: f64,
+    pub main: Pexprb54s4WeightSet,
+    pub embedded: Pexprb54s4WeightSet,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct ExponentialCoefficientAuthority {
     pub method: String,
     pub publication: String,
@@ -25,7 +50,7 @@ pub struct ExponentialCoefficientAuthority {
     pub embedded_order: usize,
     pub stages: usize,
     pub logical_critical_depth: usize,
-    pub coefficients: serde_json::Value,
+    pub coefficients: Pexprb54s4CoefficientRecord,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -146,24 +171,39 @@ fn coefficient_authority() -> ExponentialCoefficientAuthority {
         embedded_order: 4,
         stages: 4,
         logical_critical_depth: 3,
-        coefficients: serde_json::json!({
-            "c2": t.c2,
-            "c3": t.c3,
-            "c4": t.c4,
-            "a32": {"phi3_at_c3_z": t.a32_phi3},
-            "a42": {"phi3_at_c4_z": t.a42_phi3},
-            "a43": t.a43,
-            "main": {
-                "b2": [],
-                "b3": [[3, t.b3_phi3], [4, t.b3_phi4]],
-                "b4": [[3, t.b4_phi3], [4, t.b4_phi4]]
+        coefficients: Pexprb54s4CoefficientRecord {
+            c2: t.c2,
+            c3: t.c3,
+            c4: t.c4,
+            a32_phi3_at_c3_z: t.a32_phi3,
+            a42_phi3_at_c4_z: t.a42_phi3,
+            a43: t.a43,
+            main: Pexprb54s4WeightSet {
+                b2: Vec::new(),
+                b3: vec![
+                    PhiCoefficientTerm { phi_index: 3, coefficient: t.b3_phi3 },
+                    PhiCoefficientTerm { phi_index: 4, coefficient: t.b3_phi4 },
+                ],
+                b4: vec![
+                    PhiCoefficientTerm { phi_index: 3, coefficient: t.b4_phi3 },
+                    PhiCoefficientTerm { phi_index: 4, coefficient: t.b4_phi4 },
+                ],
             },
-            "embedded": {
-                "b2": [[3, t.embedded_b2_phi3], [4, t.embedded_b2_phi4]],
-                "b3": [[3, t.embedded_b3_phi3], [4, t.embedded_b3_phi4]],
-                "b4": [[4, t.embedded_b4_phi4]]
-            }
-        }),
+            embedded: Pexprb54s4WeightSet {
+                b2: vec![
+                    PhiCoefficientTerm { phi_index: 3, coefficient: t.embedded_b2_phi3 },
+                    PhiCoefficientTerm { phi_index: 4, coefficient: t.embedded_b2_phi4 },
+                ],
+                b3: vec![
+                    PhiCoefficientTerm { phi_index: 3, coefficient: t.embedded_b3_phi3 },
+                    PhiCoefficientTerm { phi_index: 4, coefficient: t.embedded_b3_phi4 },
+                ],
+                b4: vec![PhiCoefficientTerm {
+                    phi_index: 4,
+                    coefficient: t.embedded_b4_phi4,
+                }],
+            },
+        },
     }
 }
 
@@ -310,7 +350,7 @@ fn square_problem() -> CoreResult<OdeProblem> {
 fn krylov_config(n: usize) -> ExponentialKrylovConfig {
     ExponentialKrylovConfig {
         minimum_dimension: 1,
-        maximum_dimension: n.max(1).min(24),
+        maximum_dimension: n.clamp(1, 24),
         dimension_increment: 1,
         relative_tolerance: 1.0e-13,
         absolute_tolerance: 1.0e-15,

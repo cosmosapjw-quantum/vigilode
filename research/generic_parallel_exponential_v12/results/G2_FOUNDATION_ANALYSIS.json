@@ -1,0 +1,90 @@
+{
+  "canonical_sha256": "1fae032421ea3f04b7fcf1e5d2ae8af9cf31842d3368755dbd6a6f500ae60184",
+  "classification": {
+    "adaptive_krylov_kiops": "NOT_IMPLEMENTED",
+    "coefficient_and_order_authority": "PROMOTE",
+    "dense_phi_oracle": "PROMOTE_REFERENCE_ONLY",
+    "exprb2_exprb43": "PROMOTE_CORRECTNESS_FOUNDATION",
+    "full_arnoldi_phi_action": "PROMOTE_RESEARCH_REFERENCE",
+    "mass_matrix_support": "NOT_IMPLEMENTED",
+    "nonautonomous_augmented_state": "NOT_IMPLEMENTED",
+    "performance_promotion": "HOLD",
+    "pexprb54s4": "PROMOTE_CORRECTNESS_FOUNDATION"
+  },
+  "high_precision": {
+    "coefficient_pass": true,
+    "comparisons": 120,
+    "dense_phi_pass": true,
+    "krylov_phi_pass": true,
+    "maximum_exact_coefficient_condition_residual": 1.4287342391028437e-101,
+    "maximum_rust_dense_phi_absolute_error": 2.9526372625242674e-16,
+    "maximum_rust_krylov_phi_absolute_error": 3.0392422424123546e-16,
+    "mpmath_decimal_digits": 100,
+    "overall_pass": true,
+    "schema": "generic-g2-independent-high-precision-v1"
+  },
+  "independent_sha256": "7bc4069f6980a350cad9656870ab83ebb4a7cd778c99681990b3228a668df328",
+  "maximum_oscillatory_amplitude_error_by_method": {
+    "exprb2": 2.7755575615628914e-16,
+    "exprb43": 2.220446049250313e-16,
+    "pexprb54s4": 2.220446049250313e-16
+  },
+  "maximum_oscillatory_phase_error_by_method": {
+    "exprb2": 1.5314274795707798e-15,
+    "exprb43": 1.5314274795707798e-15,
+    "pexprb54s4": 1.5314274795707798e-15
+  },
+  "maximum_stiff_linear_error_by_method": {
+    "exprb2": 1.3988810110276972e-14,
+    "exprb43": 1.3988810110276972e-14,
+    "pexprb54s4": 1.3988810110276972e-14
+  },
+  "method_summary": {
+    "exprb2": {
+      "finest_error": 7.659747069732603e-06,
+      "finest_observed_order": 1.9893450612712025,
+      "jvp_vectors_per_step_at_coarsest_h": 1.0,
+      "minimum_observed_order": 1.955971042573806,
+      "phi_actions_per_step_at_coarsest_h": 1.0
+    },
+    "exprb43": {
+      "finest_error": 3.7381431283733946e-11,
+      "finest_observed_order": 3.981455144220204,
+      "jvp_vectors_per_step_at_coarsest_h": 11.0,
+      "minimum_observed_order": 3.9248606117176617,
+      "phi_actions_per_step_at_coarsest_h": 9.0
+    },
+    "pexprb54s4": {
+      "finest_error": 9.279244039817058e-13,
+      "finest_observed_order": 4.982842104415865,
+      "jvp_vectors_per_step_at_coarsest_h": 18.0,
+      "minimum_observed_order": 4.928770428239681,
+      "phi_actions_per_step_at_coarsest_h": 15.0
+    }
+  },
+  "next_node": "generic-parallel-exp-adaptive-v1.3",
+  "schema": "generic-g2-exponential-foundation-analysis-v1",
+  "summary": {
+    "coefficient_gate_pass": true,
+    "coefficient_rows": 6,
+    "direct_factorizations": 0,
+    "explicit_jacobian_builds": 0,
+    "false_convergence": 0,
+    "g2_foundation_pass": true,
+    "maximum_order_condition_residual": 2.220446049250313e-16,
+    "maximum_phi_relative_error": 6.5693111217791135e-16,
+    "maximum_stiff_linear_error": 1.3988810110276972e-14,
+    "nonlinear_iterations": 0,
+    "observed_exprb2_order": 1.955971042573806,
+    "observed_exprb43_order": 3.9248606117176617,
+    "observed_pexprb54s4_order": 4.928770428239681,
+    "order_gate_pass": true,
+    "order_rows": 12,
+    "oscillatory_rows": 9,
+    "performance_promotion_authorized": false,
+    "phi_oracle_gate_pass": true,
+    "phi_oracle_rows": 40,
+    "stiff_linear_rows": 12,
+    "structural_jf_newton_free_gate_pass": true
+  }
+}

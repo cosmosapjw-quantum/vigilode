@@ -41,8 +41,10 @@ impl ExponentialKrylovConfig {
                 "invalid exponential Krylov dimension contract".into(),
             ));
         }
-        if !(self.relative_tolerance >= 0.0 && self.relative_tolerance.is_finite())
-            || !(self.absolute_tolerance >= 0.0 && self.absolute_tolerance.is_finite())
+        if !(self.relative_tolerance >= 0.0
+            && self.relative_tolerance.is_finite()
+            && self.absolute_tolerance >= 0.0
+            && self.absolute_tolerance.is_finite())
         {
             return Err(CoreError::InvalidInput(
                 "invalid exponential Krylov tolerance".into(),
@@ -521,16 +523,50 @@ pub fn pexprb54s4_step(
     let f0 = problem.eval_rhs(t, y, &mut counters)?;
     let operator = problem.linearize_matrix_free(t, y)?;
 
-    let phi_c2 = require_action(krylov_phi_action(
-        operator.clone(),
-        tableau.c2 * h,
-        1,
-        &f0,
-        config,
-        &mut counters,
-    )?)?;
-    let u2 = base_stage(y, h, tableau.c2, &phi_c2.value);
-    let d2 = nonlinear_remainder(problem, operator.as_ref(), t, y, &f0, &u2, &mut counters)?;
+    // Dependency level 1: the U2 path and the endpoint base action are independent.
+    // Running both inside the same local execution context makes the published three-level
+    // dependency graph an actual code-path property rather than metadata only.
+    let level_one_ids = [0_usize, 1_usize];
+    let level_one = execution.map_ordered(&level_one_ids, |task_id| {
+        let mut local = WorkCounters::default();
+        if *task_id == 0 {
+            let phi_c2 = require_action(krylov_phi_action(
+                operator.clone(),
+                tableau.c2 * h,
+                1,
+                &f0,
+                config,
+                &mut local,
+            )?)?;
+            let u2 = base_stage(y, h, tableau.c2, &phi_c2.value);
+            let d2 = nonlinear_remainder(problem, operator.as_ref(), t, y, &f0, &u2, &mut local)?;
+            Ok((Some(d2), Some(phi_c2), None, local))
+        } else {
+            let phi_full = require_action(krylov_phi_action(
+                operator.clone(),
+                h,
+                1,
+                &f0,
+                config,
+                &mut local,
+            )?)?;
+            Ok((None, None, Some(phi_full), local))
+        }
+    })?;
+    for result in &level_one {
+        counters.accumulate(result.3);
+    }
+    let d2 = level_one[0]
+        .0
+        .clone()
+        .ok_or_else(|| CoreError::InvalidInput("pexprb54s4 level-one U2 result missing".into()))?;
+    let phi_c2 = level_one[0]
+        .1
+        .clone()
+        .ok_or_else(|| CoreError::InvalidInput("pexprb54s4 level-one c2 action missing".into()))?;
+    let phi_full = level_one[1].2.clone().ok_or_else(|| {
+        CoreError::InvalidInput("pexprb54s4 level-one endpoint action missing".into())
+    })?;
 
     let stage_ids = [3_usize, 4_usize];
     let stage_results = execution.map_ordered(&stage_ids, |stage_id| {
@@ -608,14 +644,6 @@ pub fn pexprb54s4_step(
         counters.accumulate(result.2);
         phi_reports.extend(result.1.clone());
     }
-    let phi_full = require_action(krylov_phi_action(
-        operator,
-        h,
-        1,
-        &f0,
-        config,
-        &mut counters,
-    )?)?;
     phi_reports.push(phi_full.clone());
     let mut y_new = base_stage(y, h, 1.0, &phi_full.value);
     axpy(h, &endpoint_results[0].0, &mut y_new);

@@ -11,65 +11,61 @@
     "stages": 4,
     "logical_critical_depth": 3,
     "coefficients": {
-      "a32": {
-        "phi3_at_c3_z": 4.0
-      },
-      "a42": {
-        "phi3_at_c4_z": 23.328
-      },
-      "a43": 0.0,
       "c2": 0.25,
       "c3": 0.5,
       "c4": 0.9,
-      "embedded": {
-        "b2": [
-          [
-            3,
-            64.0
-          ],
-          [
-            4,
-            -60.0
-          ]
-        ],
-        "b3": [
-          [
-            3,
-            -8.0
-          ],
-          [
-            4,
-            -35.625
-          ]
-        ],
-        "b4": [
-          [
-            4,
-            15.625
-          ]
-        ]
-      },
+      "a32_phi3_at_c3_z": 4.0,
+      "a42_phi3_at_c4_z": 23.328,
+      "a43": 0.0,
       "main": {
         "b2": [],
         "b3": [
-          [
-            3,
-            18.0
-          ],
-          [
-            4,
-            -60.0
-          ]
+          {
+            "phi_index": 3,
+            "coefficient": 18.0
+          },
+          {
+            "phi_index": 4,
+            "coefficient": -60.0
+          }
         ],
         "b4": [
-          [
-            3,
-            -3.0864197530864197
-          ],
-          [
-            4,
-            18.51851851851852
-          ]
+          {
+            "phi_index": 3,
+            "coefficient": -3.0864197530864197
+          },
+          {
+            "phi_index": 4,
+            "coefficient": 18.51851851851852
+          }
+        ]
+      },
+      "embedded": {
+        "b2": [
+          {
+            "phi_index": 3,
+            "coefficient": 64.0
+          },
+          {
+            "phi_index": 4,
+            "coefficient": -60.0
+          }
+        ],
+        "b3": [
+          {
+            "phi_index": 3,
+            "coefficient": -8.0
+          },
+          {
+            "phi_index": 4,
+            "coefficient": -35.625
+          }
+        ],
+        "b4": [
+          {
+            "phi_index": 4,
+            "coefficient": 15.625
+          }
         ]
       }
     }
@@ -79,7 +75,7 @@
       "z": -5.0,
       "main_condition_1": 0.0,
       "main_condition_2": 2.7755575615628914e-17,
-      "weakened_main_condition_3_at_zero": -1.3877787807814457e-16,
+      "weakened_main_condition_3_at_zero": -1.6653345369377348e-16,
       "psi3_stage_3": 0.0,
       "psi3_stage_4": -1.3877787807814457e-17,
       "embedded_condition_1": 5.551115123125783e-17,
@@ -89,7 +85,7 @@
       "z": -1.0,
       "main_condition_1": 0.0,
       "main_condition_2": 2.7755575615628914e-17,
-      "weakened_main_condition_3_at_zero": -1.3877787807814457e-16,
+      "weakened_main_condition_3_at_zero": -1.6653345369377348e-16,
       "psi3_stage_3": 0.0,
       "psi3_stage_4": -1.3877787807814457e-17,
       "embedded_condition_1": -5.551115123125783e-17,
@@ -99,7 +95,7 @@
       "z": -0.1,
       "main_condition_1": 5.551115123125783e-17,
       "main_condition_2": 5.551115123125783e-17,
-      "weakened_main_condition_3_at_zero": -1.3877787807814457e-16,
+      "weakened_main_condition_3_at_zero": -1.6653345369377348e-16,
       "psi3_stage_3": 0.0,
       "psi3_stage_4": -1.3877787807814457e-17,
       "embedded_condition_1": 1.6653345369377348e-16,
@@ -109,7 +105,7 @@
       "z": 0.0,
       "main_condition_1": 0.0,
       "main_condition_2": 2.7755575615628914e-17,
-      "weakened_main_condition_3_at_zero": -1.3877787807814457e-16,
+      "weakened_main_condition_3_at_zero": -1.6653345369377348e-16,
       "psi3_stage_3": 0.0,
       "psi3_stage_4": -1.3877787807814457e-17,
       "embedded_condition_1": 1.1102230246251565e-16,
@@ -119,7 +115,7 @@
       "z": 0.5,
       "main_condition_1": 0.0,
       "main_condition_2": 5.551115123125783e-17,
-      "weakened_main_condition_3_at_zero": -1.3877787807814457e-16,
+      "weakened_main_condition_3_at_zero": -1.6653345369377348e-16,
       "psi3_stage_3": 0.0,
       "psi3_stage_4": 0.0,
       "embedded_condition_1": 1.1102230246251565e-16,
@@ -129,7 +125,7 @@
       "z": 2.0,
       "main_condition_1": 1.1102230246251565e-16,
       "main_condition_2": 1.1102230246251565e-16,
-      "weakened_main_condition_3_at_zero": -1.3877787807814457e-16,
+      "weakened_main_condition_3_at_zero": -1.6653345369377348e-16,
       "psi3_stage_3": 0.0,
       "psi3_stage_4": -2.7755575615628914e-17,
       "embedded_condition_1": 2.220446049250313e-16,

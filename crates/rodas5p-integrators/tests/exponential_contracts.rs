@@ -156,3 +156,57 @@ fn parallel_order_five_method_has_three_level_logical_critical_path() {
     assert!(report.y_embedded.is_some());
     assert!(report.error_estimate.is_some());
 }
+
+#[test]
+fn parallel_order_five_method_executes_dependency_levels_concurrently() {
+    use std::sync::atomic::{AtomicUsize, Ordering};
+    use std::thread;
+    use std::time::Duration;
+
+    let active = Arc::new(AtomicUsize::new(0));
+    let maximum = Arc::new(AtomicUsize::new(0));
+    let jvp_active = active.clone();
+    let jvp_maximum = maximum.clone();
+    let problem = OdeProblem::new(
+        "scalar-linear-concurrency",
+        1,
+        Arc::new(|_, y: &[f64], out: &mut [f64]| {
+            out[0] = -2.0 * y[0];
+            Ok(())
+        }),
+        None,
+        None,
+        Some(Arc::new(move |_, _: &[f64], v: &[f64], out: &mut [f64]| {
+            let now = jvp_active.fetch_add(1, Ordering::SeqCst) + 1;
+            jvp_maximum.fetch_max(now, Ordering::SeqCst);
+            thread::sleep(Duration::from_millis(4));
+            out[0] = -2.0 * v[0];
+            jvp_active.fetch_sub(1, Ordering::SeqCst);
+            Ok(())
+        })),
+        None,
+        true,
+        None,
+        Some(Arc::new(|t| vec![(-2.0 * t).exp()])),
+    )
+    .expect("concurrency problem");
+    let execution = ParallelExecution::rayon(2).expect("execution");
+    let report = pexprb54s4_step(
+        &problem,
+        0.0,
+        &[1.0],
+        0.01,
+        ExponentialKrylovConfig {
+            minimum_dimension: 1,
+            maximum_dimension: 1,
+            dimension_increment: 1,
+            relative_tolerance: 1.0e-13,
+            absolute_tolerance: 1.0e-15,
+            reorthogonalize: true,
+        },
+        &execution,
+    )
+    .expect("parallel pexprb54s4");
+    assert_eq!(report.logical_critical_depth, 3);
+    assert!(maximum.load(Ordering::SeqCst) >= 2);
+}
