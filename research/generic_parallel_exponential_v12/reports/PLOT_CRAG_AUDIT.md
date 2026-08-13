@@ -31,7 +31,7 @@ Narrowed claim: roundoff-level small-matrix accuracy, not production residual ce
 - Augmented check: actual JVP cost will grow with state dimension and RHS expense.
 - Generation: fused linear-combination φ actions are the load-bearing next optimization.
 
-Surviving claim: parallel structure exists.  
+Surviving claim: parallel structure exists.
 Rejected claim: depth 3 already implies speedup over RODAS5P.
 
 ## Plot 4 — stiff linear decay

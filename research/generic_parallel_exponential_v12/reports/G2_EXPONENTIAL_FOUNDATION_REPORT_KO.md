@@ -1,7 +1,7 @@
 # G2 Parallel Exponential Rosenbrock Foundation Report
 
-Date: 2026-08-13  
-Base: `generic-q1-q2-transactional-v1.1.0-alpha1`  
+Date: 2026-08-13
+Base: `generic-q1-q2-transactional-v1.1.0-alpha1`
 Feature commit: `fd9f3f64fa87e5a6463f1b846381be191860fb61`
 
 ## 1. 연구 질문과 범위
