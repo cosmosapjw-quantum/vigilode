@@ -8,6 +8,7 @@ mod certification;
 mod common_w_gate;
 mod exponential;
 mod g1_transactional_gate;
+mod g2_exponential_gate;
 mod homotopy;
 mod homotopy_experiments;
 mod homotopy_order_policy;
@@ -61,6 +62,11 @@ pub use exponential::{
 pub use g1_transactional_gate::{
     G1TransactionalCase, G1TransactionalGateProfile, G1TransactionalGateReport,
     G1TransactionalGateSummary, G1TransactionalRow, run_g1_transactional_gate,
+};
+pub use g2_exponential_gate::{
+    ExponentialCoefficientAuthority, ExponentialOrderConditionRow, ExponentialOrderRow,
+    G2ExponentialGateProfile, G2ExponentialGateReport, G2ExponentialGateSummary,
+    OscillatoryExponentialRow, PhiOracleRow, StiffLinearExponentialRow, run_g2_exponential_gate,
 };
 pub use homotopy::{
     AffineOutputCertificate, AffinePartialCouplingOracle, HomotopyDesignCheckReport,

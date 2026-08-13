@@ -14,13 +14,14 @@ use rodas5p_fair_ab::{
 };
 use rodas5p_integrators::{
     CandidateCatalog, CandidateFamily, CandidateStatus, G1TransactionalGateProfile,
-    HomotopyExperimentProfile, HomotopyRhsTelemetryProfile, MatrixFreeCommonWProfile,
-    NativeIntegratorGateReport, PathControllerProfile, StageBatchFeasibilityProfile,
-    UnifiedNonlinearScreen, UnifiedScientificGateReport, UnifiedScreenProfile,
-    run_g1_transactional_gate, run_homotopy_design_check, run_homotopy_experiment_screen,
-    run_homotopy_order_policy_screen, run_homotopy_rhs_telemetry_screen,
-    run_matrix_free_common_w_gate, run_native_integrator_gates, run_path_controller_screen,
-    run_stage_batch_feasibility, run_unified_nonlinear_screen, run_unified_scientific_gates,
+    G2ExponentialGateProfile, HomotopyExperimentProfile, HomotopyRhsTelemetryProfile,
+    MatrixFreeCommonWProfile, NativeIntegratorGateReport, PathControllerProfile,
+    StageBatchFeasibilityProfile, UnifiedNonlinearScreen, UnifiedScientificGateReport,
+    UnifiedScreenProfile, run_g1_transactional_gate, run_g2_exponential_gate,
+    run_homotopy_design_check, run_homotopy_experiment_screen, run_homotopy_order_policy_screen,
+    run_homotopy_rhs_telemetry_screen, run_matrix_free_common_w_gate, run_native_integrator_gates,
+    run_path_controller_screen, run_stage_batch_feasibility, run_unified_nonlinear_screen,
+    run_unified_scientific_gates,
 };
 use serde::Serialize;
 use serde_json::json;
@@ -106,6 +107,13 @@ enum Command {
         profile: CliHomotopyProfile,
         #[arg(long, default_value_t = 1)]
         threads: usize,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Lock pexprb54s4 coefficients and validate matrix-free phi-action/order foundations.
+    GenericParallelExponentialGate {
+        #[arg(long, value_enum, default_value_t = CliHomotopyProfile::Canonical)]
+        profile: CliHomotopyProfile,
         #[arg(long)]
         output: PathBuf,
     },
@@ -216,6 +224,15 @@ impl From<CliHomotopyProfile> for PathControllerProfile {
 }
 
 impl From<CliHomotopyProfile> for G1TransactionalGateProfile {
+    fn from(value: CliHomotopyProfile) -> Self {
+        match value {
+            CliHomotopyProfile::Smoke => Self::Smoke,
+            CliHomotopyProfile::Canonical => Self::Canonical,
+        }
+    }
+}
+
+impl From<CliHomotopyProfile> for G2ExponentialGateProfile {
     fn from(value: CliHomotopyProfile) -> Self {
         match value {
             CliHomotopyProfile::Smoke => Self::Smoke,
@@ -1059,6 +1076,9 @@ fn main() -> Result<()> {
                 &output,
                 &run_g1_adaptive_global_error_screen(profile.into(), threads)?,
             )?;
+        }
+        Command::GenericParallelExponentialGate { profile, output } => {
+            write_json(&output, &run_g2_exponential_gate(profile.into())?)?;
         }
         Command::NativeIntegratorGates { output } => {
             let report: NativeIntegratorGateReport = run_native_integrator_gates()?;

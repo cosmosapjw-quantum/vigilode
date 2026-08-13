@@ -1,0 +1,1318 @@
+{
+  "schema": "generic-g2-exponential-foundation-v1",
+  "profile": "canonical",
+  "scope": "autonomous regular ODEs with identity mass; counted full-Arnoldi matrix-free phi-action reference",
+  "coefficient_authority": {
+    "method": "pexprb54s4",
+    "publication": "V. T. Luan and A. Ostermann, Parallel exponential Rosenbrock methods, Computers & Mathematics with Applications 71 (2016) 1137-1150",
+    "doi": "10.1016/j.camwa.2016.01.020",
+    "order": 5,
+    "embedded_order": 4,
+    "stages": 4,
+    "logical_critical_depth": 3,
+    "coefficients": {
+      "a32": {
+        "phi3_at_c3_z": 4.0
+      },
+      "a42": {
+        "phi3_at_c4_z": 23.328
+      },
+      "a43": 0.0,
+      "c2": 0.25,
+      "c3": 0.5,
+      "c4": 0.9,
+      "embedded": {
+        "b2": [
+          [
+            3,
+            64.0
+          ],
+          [
+            4,
+            -60.0
+          ]
+        ],
+        "b3": [
+          [
+            3,
+            -8.0
+          ],
+          [
+            4,
+            -35.625
+          ]
+        ],
+        "b4": [
+          [
+            4,
+            15.625
+          ]
+        ]
+      },
+      "main": {
+        "b2": [],
+        "b3": [
+          [
+            3,
+            18.0
+          ],
+          [
+            4,
+            -60.0
+          ]
+        ],
+        "b4": [
+          [
+            3,
+            -3.0864197530864197
+          ],
+          [
+            4,
+            18.51851851851852
+          ]
+        ]
+      }
+    }
+  },
+  "order_conditions": [
+    {
+      "z": -5.0,
+      "main_condition_1": 0.0,
+      "main_condition_2": 2.7755575615628914e-17,
+      "weakened_main_condition_3_at_zero": -1.3877787807814457e-16,
+      "psi3_stage_3": 0.0,
+      "psi3_stage_4": -1.3877787807814457e-17,
+      "embedded_condition_1": 5.551115123125783e-17,
+      "embedded_condition_2": 4.163336342344337e-17
+    },
+    {
+      "z": -1.0,
+      "main_condition_1": 0.0,
+      "main_condition_2": 2.7755575615628914e-17,
+      "weakened_main_condition_3_at_zero": -1.3877787807814457e-16,
+      "psi3_stage_3": 0.0,
+      "psi3_stage_4": -1.3877787807814457e-17,
+      "embedded_condition_1": -5.551115123125783e-17,
+      "embedded_condition_2": 5.551115123125783e-17
+    },
+    {
+      "z": -0.1,
+      "main_condition_1": 5.551115123125783e-17,
+      "main_condition_2": 5.551115123125783e-17,
+      "weakened_main_condition_3_at_zero": -1.3877787807814457e-16,
+      "psi3_stage_3": 0.0,
+      "psi3_stage_4": -1.3877787807814457e-17,
+      "embedded_condition_1": 1.6653345369377348e-16,
+      "embedded_condition_2": 1.1102230246251565e-16
+    },
+    {
+      "z": 0.0,
+      "main_condition_1": 0.0,
+      "main_condition_2": 2.7755575615628914e-17,
+      "weakened_main_condition_3_at_zero": -1.3877787807814457e-16,
+      "psi3_stage_3": 0.0,
+      "psi3_stage_4": -1.3877787807814457e-17,
+      "embedded_condition_1": 1.1102230246251565e-16,
+      "embedded_condition_2": 8.326672684688674e-17
+    },
+    {
+      "z": 0.5,
+      "main_condition_1": 0.0,
+      "main_condition_2": 5.551115123125783e-17,
+      "weakened_main_condition_3_at_zero": -1.3877787807814457e-16,
+      "psi3_stage_3": 0.0,
+      "psi3_stage_4": 0.0,
+      "embedded_condition_1": 1.1102230246251565e-16,
+      "embedded_condition_2": 1.1102230246251565e-16
+    },
+    {
+      "z": 2.0,
+      "main_condition_1": 1.1102230246251565e-16,
+      "main_condition_2": 1.1102230246251565e-16,
+      "weakened_main_condition_3_at_zero": -1.3877787807814457e-16,
+      "psi3_stage_3": 0.0,
+      "psi3_stage_4": -2.7755575615628914e-17,
+      "embedded_condition_1": 2.220446049250313e-16,
+      "embedded_condition_2": 1.1102230246251565e-16
+    }
+  ],
+  "phi_oracle": [
+    {
+      "case_id": "nonnormal-upper-chain",
+      "phi_index": 1,
+      "scale": 0.05,
+      "relative_error": 1.113502887509921e-16,
+      "dense_value": [
+        0.851401151956515,
+        -0.15543616977219948,
+        0.3339062217414971,
+        -0.6181499136831761
+      ],
+      "krylov_value": [
+        0.851401151956515,
+        -0.15543616977219948,
+        0.33390622174149703,
+        -0.6181499136831762
+      ],
+      "krylov_dimension": 4,
+      "converged": true,
+      "jvp_vectors": 4,
+      "projected_exponentials": 4
+    },
+    {
+      "case_id": "nonnormal-upper-chain",
+      "phi_index": 2,
+      "scale": 0.05,
+      "relative_error": 1.6137572384824679e-16,
+      "dense_value": [
+        0.44848810307039083,
+        -0.09119205568971785,
+        0.19201775291681458,
+        -0.3296252157920591
+      ],
+      "krylov_value": [
+        0.4484881030703908,
+        -0.09119205568971779,
+        0.19201775291681453,
+        -0.3296252157920591
+      ],
+      "krylov_dimension": 4,
+      "converged": true,
+      "jvp_vectors": 4,
+      "projected_exponentials": 4
+    },
+    {
+      "case_id": "nonnormal-upper-chain",
+      "phi_index": 3,
+      "scale": 0.05,
+      "relative_error": 6.756730549436641e-17,
+      "dense_value": [
+        0.15347806567549002,
+        -0.032855951276841176,
+        0.06843188264922798,
+        -0.11343696051985189
+      ],
+      "krylov_value": [
+        0.15347806567549002,
+        -0.032855951276841176,
+        0.06843188264922796,
+        -0.11343696051985189
+      ],
+      "krylov_dimension": 4,
+      "converged": true,
+      "jvp_vectors": 4,
+      "projected_exponentials": 4
+    },
+    {
+      "case_id": "nonnormal-upper-chain",
+      "phi_index": 4,
+      "scale": 0.05,
+      "relative_error": 2.3869978395487374e-16,
+      "dense_value": [
+        0.03898616761360668,
+        -0.008605147719437264,
+        0.017797631639983706,
+        -0.028907598700370116
+      ],
+      "krylov_value": [
+        0.038986167613606675,
+        -0.00860514771943726,
+        0.0177976316399837,
+        -0.02890759870037011
+      ],
+      "krylov_dimension": 4,
+      "converged": true,
+      "jvp_vectors": 4,
+      "projected_exponentials": 4
+    },
+    {
+      "case_id": "nonnormal-upper-chain",
+      "phi_index": 5,
+      "scale": 0.05,
+      "relative_error": 4.1820959346927563e-16,
+      "dense_value": [
+        0.007881365659694878,
+        -0.0017753940953405822,
+        0.0036540020532206292,
+        -0.005856003249074646
+      ],
+      "krylov_value": [
+        0.007881365659694875,
+        -0.001775394095340581,
+        0.0036540020532206275,
+        -0.005856003249074644
+      ],
+      "krylov_dimension": 4,
+      "converged": true,
+      "jvp_vectors": 4,
+      "projected_exponentials": 4
+    },
+    {
+      "case_id": "nonnormal-upper-chain",
+      "phi_index": 1,
+      "scale": 0.2,
+      "relative_error": 1.9631470709950345e-16,
+      "dense_value": [
+        0.5802929859237994,
+        -0.06749738907013512,
+        0.09208594011605023,
+        -0.3741110071900052
+      ],
+      "krylov_value": [
+        0.5802929859237995,
+        -0.0674973890701352,
+        0.09208594011605019,
+        -0.3741110071900052
+      ],
+      "krylov_dimension": 4,
+      "converged": true,
+      "jvp_vectors": 4,
+      "projected_exponentials": 4
+    },
+    {
+      "case_id": "nonnormal-upper-chain",
+      "phi_index": 2,
+      "scale": 0.2,
+      "relative_error": 3.411505686802937e-16,
+      "dense_value": [
+        0.3443666198716523,
+        -0.04708774637784251,
+        0.08999808234032411,
+        -0.23493062050624663
+      ],
+      "krylov_value": [
+        0.3443666198716522,
+        -0.047087746377842486,
+        0.08999808234032407,
+        -0.23493062050624655
+      ],
+      "krylov_dimension": 4,
+      "converged": true,
+      "jvp_vectors": 4,
+      "projected_exponentials": 4
+    },
+    {
+      "case_id": "nonnormal-upper-chain",
+      "phi_index": 3,
+      "scale": 0.2,
+      "relative_error": 4.059489676270535e-16,
+      "dense_value": [
+        0.12501688601795208,
+        -0.019135308818997155,
+        0.039249916456686344,
+        -0.08754336218359578
+      ],
+      "krylov_value": [
+        0.12501688601795213,
+        -0.019135308818997145,
+        0.039249916456686317,
+        -0.08754336218359576
+      ],
+      "krylov_dimension": 4,
+      "converged": true,
+      "jvp_vectors": 4,
+      "projected_exponentials": 4
+    },
+    {
+      "case_id": "nonnormal-upper-chain",
+      "phi_index": 4,
+      "scale": 0.2,
+      "relative_error": 3.755209168833921e-16,
+      "dense_value": [
+        0.032929221537613546,
+        -0.005450349444438047,
+        0.011422098938817023,
+        -0.023410398635252606
+      ],
+      "krylov_value": [
+        0.03292922153761356,
+        -0.005450349444438054,
+        0.011422098938817023,
+        -0.023410398635252603
+      ],
+      "krylov_dimension": 4,
+      "converged": true,
+      "jvp_vectors": 4,
+      "projected_exponentials": 4
+    },
+    {
+      "case_id": "nonnormal-upper-chain",
+      "phi_index": 5,
+      "scale": 0.2,
+      "relative_error": 4.516451013214051e-16,
+      "dense_value": [
+        0.006824399994022624,
+        -0.0011956532093940328,
+        0.002522523836396975,
+        -0.004899750852967111
+      ],
+      "krylov_value": [
+        0.006824399994022627,
+        -0.0011956532093940345,
+        0.0025225238363969747,
+        -0.00489975085296711
+      ],
+      "krylov_dimension": 4,
+      "converged": true,
+      "jvp_vectors": 4,
+      "projected_exponentials": 4
+    },
+    {
+      "case_id": "nonnormal-upper-chain",
+      "phi_index": 1,
+      "scale": 0.7,
+      "relative_error": 4.850956724290784e-17,
+      "dense_value": [
+        0.20230964971153273,
+        -0.06192673054649005,
+        -0.009647756346929425,
+        -0.13343332182368528
+      ],
+      "krylov_value": [
+        0.20230964971153273,
+        -0.06192673054649005,
+        -0.009647756346929437,
+        -0.13343332182368528
+      ],
+      "krylov_dimension": 4,
+      "converged": true,
+      "jvp_vectors": 4,
+      "projected_exponentials": 4
+    },
+    {
+      "case_id": "nonnormal-upper-chain",
+      "phi_index": 2,
+      "scale": 0.7,
+      "relative_error": 1.7874217628678463e-16,
+      "dense_value": [
+        0.17425418703906048,
+        -0.033535838509241994,
+        0.009637295451978271,
+        -0.11010119253148473
+      ],
+      "krylov_value": [
+        0.17425418703906048,
+        -0.03353583850924203,
+        0.009637295451978257,
+        -0.11010119253148473
+      ],
+      "krylov_dimension": 4,
+      "converged": true,
+      "jvp_vectors": 4,
+      "projected_exponentials": 4
+    },
+    {
+      "case_id": "nonnormal-upper-chain",
+      "phi_index": 3,
+      "scale": 0.7,
+      "relative_error": 2.0040369470652078e-16,
+      "dense_value": [
+        0.07410811321012643,
+        -0.011851324415267279,
+        0.008507877336048032,
+        -0.047303358476520556
+      ],
+      "krylov_value": [
+        0.07410811321012643,
+        -0.011851324415267294,
+        0.008507877336048027,
+        -0.04730335847652056
+      ],
+      "krylov_dimension": 4,
+      "converged": true,
+      "jvp_vectors": 4,
+      "projected_exponentials": 4
+    },
+    {
+      "case_id": "nonnormal-upper-chain",
+      "phi_index": 4,
+      "scale": 0.7,
+      "relative_error": 3.608779927573773e-16,
+      "dense_value": [
+        0.021392970550735812,
+        -0.0031577065230294324,
+        0.0033781581336072945,
+        -0.01387440027204989
+      ],
+      "krylov_value": [
+        0.021392970550735805,
+        -0.003157706523029434,
+        0.0033781581336072915,
+        -0.013874400272049885
+      ],
+      "krylov_dimension": 4,
+      "converged": true,
+      "jvp_vectors": 4,
+      "projected_exponentials": 4
+    },
+    {
+      "case_id": "nonnormal-upper-chain",
+      "phi_index": 5,
+      "scale": 0.7,
+      "relative_error": 8.635372443852313e-17,
+      "dense_value": [
+        0.004712299941742612,
+        -0.0006751154142556588,
+        0.0009027500824007061,
+        -0.0031027856657053735
+      ],
+      "krylov_value": [
+        0.004712299941742612,
+        -0.000675115414255659,
+        0.000902750082400706,
+        -0.003102785665705373
+      ],
+      "krylov_dimension": 4,
+      "converged": true,
+      "jvp_vectors": 4,
+      "projected_exponentials": 4
+    },
+    {
+      "case_id": "nonnormal-upper-chain",
+      "phi_index": 1,
+      "scale": 1.5,
+      "relative_error": 4.559544479916633e-16,
+      "dense_value": [
+        0.07881736801343577,
+        -0.034616185969431876,
+        -0.005944194956070694,
+        -0.06249961598672788
+      ],
+      "krylov_value": [
+        0.07881736801343575,
+        -0.034616185969431834,
+        -0.005944194956070693,
+        -0.06249961598672786
+      ],
+      "krylov_dimension": 4,
+      "converged": true,
+      "jvp_vectors": 4,
+      "projected_exponentials": 4
+    },
+    {
+      "case_id": "nonnormal-upper-chain",
+      "phi_index": 2,
+      "scale": 1.5,
+      "relative_error": 5.032361530141388e-16,
+      "dense_value": [
+        0.08281281189430602,
+        -0.025007211898272364,
+        -0.0009220088622745909,
+        -0.05729169866777263
+      ],
+      "krylov_value": [
+        0.08281281189430598,
+        -0.025007211898272375,
+        -0.0009220088622746122,
+        -0.05729169866777261
+      ],
+      "krylov_dimension": 4,
+      "converged": true,
+      "jvp_vectors": 4,
+      "projected_exponentials": 4
+    },
+    {
+      "case_id": "nonnormal-upper-chain",
+      "phi_index": 3,
+      "scale": 1.5,
+      "relative_error": 5.190689879592581e-16,
+      "dense_value": [
+        0.040095713038337207,
+        -0.009705778359847043,
+        0.0012038840822003983,
+        -0.026475691777685592
+      ],
+      "krylov_value": [
+        0.04009571303833719,
+        -0.009705778359847046,
+        0.0012038840822003864,
+        -0.026475691777685575
+      ],
+      "krylov_dimension": 4,
+      "converged": true,
+      "jvp_vectors": 4,
+      "projected_exponentials": 4
+    },
+    {
+      "case_id": "nonnormal-upper-chain",
+      "phi_index": 4,
+      "scale": 1.5,
+      "relative_error": 3.588027866517547e-16,
+      "dense_value": [
+        0.012658407999791028,
+        -0.0026360744691580527,
+        0.0007844017223235369,
+        -0.008210359018526191
+      ],
+      "krylov_value": [
+        0.012658407999791026,
+        -0.0026360744691580488,
+        0.0007844017223235369,
+        -0.008210359018526188
+      ],
+      "krylov_dimension": 4,
+      "converged": true,
+      "jvp_vectors": 4,
+      "projected_exponentials": 4
+    },
+    {
+      "case_id": "nonnormal-upper-chain",
+      "phi_index": 5,
+      "scale": 1.5,
+      "relative_error": 4.243114711114225e-16,
+      "dense_value": [
+        0.0029768538093426717,
+        -0.0005568212580671304,
+        0.00026373341665756575,
+        -0.0019199700817894817
+      ],
+      "krylov_value": [
+        0.0029768538093426712,
+        -0.0005568212580671294,
+        0.00026373341665756564,
+        -0.0019199700817894806
+      ],
+      "krylov_dimension": 4,
+      "converged": true,
+      "jvp_vectors": 4,
+      "projected_exponentials": 4
+    },
+    {
+      "case_id": "oscillatory-damped-block",
+      "phi_index": 1,
+      "scale": 0.05,
+      "relative_error": 2.3548725777309133e-16,
+      "dense_value": [
+        0.8099871344658006,
+        0.4827117550326
+      ],
+      "krylov_value": [
+        0.8099871344658004,
+        0.4827117550326
+      ],
+      "krylov_dimension": 2,
+      "converged": true,
+      "jvp_vectors": 2,
+      "projected_exponentials": 2
+    },
+    {
+      "case_id": "oscillatory-damped-block",
+      "phi_index": 2,
+      "scale": 0.05,
+      "relative_error": 2.285488955862612e-16,
+      "dense_value": [
+        0.4395528963390586,
+        0.20679988513890082
+      ],
+      "krylov_value": [
+        0.4395528963390585,
+        0.20679988513890082
+      ],
+      "krylov_dimension": 2,
+      "converged": true,
+      "jvp_vectors": 2,
+      "projected_exponentials": 2
+    },
+    {
+      "case_id": "oscillatory-damped-block",
+      "phi_index": 3,
+      "scale": 0.05,
+      "relative_error": 3.773845958204694e-16,
+      "dense_value": [
+        0.15201829184962537,
+        0.0627405998058293
+      ],
+      "krylov_value": [
+        0.15201829184962531,
+        0.06274059980582927
+      ],
+      "krylov_dimension": 2,
+      "converged": true,
+      "jvp_vectors": 2,
+      "projected_exponentials": 2
+    },
+    {
+      "case_id": "oscillatory-damped-block",
+      "phi_index": 4,
+      "scale": 0.05,
+      "relative_error": 3.5716454427996986e-16,
+      "dense_value": [
+        0.0388016107347811,
+        0.014713555344706843
+      ],
+      "krylov_value": [
+        0.03880161073478108,
+        0.014713555344706837
+      ],
+      "krylov_dimension": 2,
+      "converged": true,
+      "jvp_vectors": 2,
+      "projected_exponentials": 2
+    },
+    {
+      "case_id": "oscillatory-damped-block",
+      "phi_index": 5,
+      "scale": 0.05,
+      "relative_error": 6.5693111217791135e-16,
+      "dense_value": [
+        0.007863768880018135,
+        0.0028091509998047284
+      ],
+      "krylov_value": [
+        0.00786376888001813,
+        0.0028091509998047267
+      ],
+      "krylov_dimension": 2,
+      "converged": true,
+      "jvp_vectors": 2,
+      "projected_exponentials": 2
+    },
+    {
+      "case_id": "oscillatory-damped-block",
+      "phi_index": 1,
+      "scale": 0.2,
+      "relative_error": 4.585229889377006e-17,
+      "dense_value": [
+        0.15445918884981313,
+        0.5852876047798514
+      ],
+      "krylov_value": [
+        0.1544591888498131,
+        0.5852876047798514
+      ],
+      "krylov_dimension": 2,
+      "converged": true,
+      "jvp_vectors": 2,
+      "projected_exponentials": 2
+    },
+    {
+      "case_id": "oscillatory-damped-block",
+      "phi_index": 2,
+      "scale": 0.2,
+      "relative_error": 1.6879690063369598e-16,
+      "dense_value": [
+        0.21438149316368554,
+        0.2987132980216563
+      ],
+      "krylov_value": [
+        0.21438149316368552,
+        0.29871329802165625
+      ],
+      "krylov_dimension": 2,
+      "converged": true,
+      "jvp_vectors": 2,
+      "projected_exponentials": 2
+    },
+    {
+      "case_id": "oscillatory-damped-block",
+      "phi_index": 3,
+      "scale": 0.2,
+      "relative_error": 5.134923180867657e-16,
+      "dense_value": [
+        0.09612467636499408,
+        0.09497654209054911
+      ],
+      "krylov_value": [
+        0.09612467636499403,
+        0.09497654209054907
+      ],
+      "krylov_dimension": 2,
+      "converged": true,
+      "jvp_vectors": 2,
+      "projected_exponentials": 2
+    },
+    {
+      "case_id": "oscillatory-damped-block",
+      "phi_index": 4,
+      "scale": 0.2,
+      "relative_error": 5.49110715341305e-16,
+      "dense_value": [
+        0.0278217149016865,
+        0.022437067233608603
+      ],
+      "krylov_value": [
+        0.027821714901686487,
+        0.02243706723360859
+      ],
+      "krylov_dimension": 2,
+      "converged": true,
+      "jvp_vectors": 2,
+      "projected_exponentials": 2
+    },
+    {
+      "case_id": "oscillatory-damped-block",
+      "phi_index": 5,
+      "scale": 0.2,
+      "relative_error": 2.616855487261605e-16,
+      "dense_value": [
+        0.006071230787524299,
+        0.004250922205193982
+      ],
+      "krylov_value": [
+        0.006071230787524298,
+        0.004250922205193984
+      ],
+      "krylov_dimension": 2,
+      "converged": true,
+      "jvp_vectors": 2,
+      "projected_exponentials": 2
+    },
+    {
+      "case_id": "oscillatory-damped-block",
+      "phi_index": 1,
+      "scale": 0.7,
+      "relative_error": 3.28365117222954e-16,
+      "dense_value": [
+        0.012458467842070158,
+        0.126617884978027
+      ],
+      "krylov_value": [
+        0.012458467842070189,
+        0.12661788497802703
+      ],
+      "krylov_dimension": 2,
+      "converged": true,
+      "jvp_vectors": 2,
+      "projected_exponentials": 2
+    },
+    {
+      "case_id": "oscillatory-damped-block",
+      "phi_index": 2,
+      "scale": 0.7,
+      "relative_error": 2.1766414536729878e-16,
+      "dense_value": [
+        0.013837901178432428,
+        0.11410499281943112
+      ],
+      "krylov_value": [
+        0.013837901178432449,
+        0.11410499281943114
+      ],
+      "krylov_dimension": 2,
+      "converged": true,
+      "jvp_vectors": 2,
+      "projected_exponentials": 2
+    },
+    {
+      "case_id": "oscillatory-damped-block",
+      "phi_index": 3,
+      "scale": 0.7,
+      "relative_error": 9.266274036926732e-17,
+      "dense_value": [
+        0.012397256865526389,
+        0.05477712611951928
+      ],
+      "krylov_value": [
+        0.012397256865526384,
+        0.05477712611951928
+      ],
+      "krylov_dimension": 2,
+      "converged": true,
+      "jvp_vectors": 2,
+      "projected_exponentials": 2
+    },
+    {
+      "case_id": "oscillatory-damped-block",
+      "phi_index": 4,
+      "scale": 0.7,
+      "relative_error": 3.4978662633755925e-16,
+      "dense_value": [
+        0.005790231025561643,
+        0.016917848172316754
+      ],
+      "krylov_value": [
+        0.005790231025561648,
+        0.01691784817231675
+      ],
+      "krylov_dimension": 2,
+      "converged": true,
+      "jvp_vectors": 2,
+      "projected_exponentials": 2
+    },
+    {
+      "case_id": "oscillatory-damped-block",
+      "phi_index": 5,
+      "scale": 0.7,
+      "relative_error": 5.569955585819334e-16,
+      "dense_value": [
+        0.001733365872932923,
+        0.0038376627747554585
+      ],
+      "krylov_value": [
+        0.001733365872932925,
+        0.003837662774755457
+      ],
+      "krylov_dimension": 2,
+      "converged": true,
+      "jvp_vectors": 2,
+      "projected_exponentials": 2
+    },
+    {
+      "case_id": "oscillatory-damped-block",
+      "phi_index": 1,
+      "scale": 1.5,
+      "relative_error": 1.3368227989967392e-16,
+      "dense_value": [
+        -0.00046348415136948434,
+        0.05514803022077622
+      ],
+      "krylov_value": [
+        -0.0004634841513694917,
+        0.05514803022077622
+      ],
+      "krylov_dimension": 2,
+      "converged": true,
+      "jvp_vectors": 2,
+      "projected_exponentials": 2
+    },
+    {
+      "case_id": "oscillatory-damped-block",
+      "phi_index": 2,
+      "scale": 1.5,
+      "relative_error": 1.6578331355532232e-16,
+      "dense_value": [
+        0.002889615752084631,
+        0.054858900737054864
+      ],
+      "krylov_value": [
+        0.002889615752084622,
+        0.054858900737054864
+      ],
+      "krylov_dimension": 2,
+      "converged": true,
+      "jvp_vectors": 2,
+      "projected_exponentials": 2
+    },
+    {
+      "case_id": "oscillatory-damped-block",
+      "phi_index": 3,
+      "scale": 1.5,
+      "relative_error": 4.6231230423227405e-16,
+      "dense_value": [
+        0.0028306664992958797,
+        0.02690957694450464
+      ],
+      "krylov_value": [
+        0.002830666499295873,
+        0.02690957694450463
+      ],
+      "krylov_dimension": 2,
+      "converged": true,
+      "jvp_vectors": 2,
+      "projected_exponentials": 2
+    },
+    {
+      "case_id": "oscillatory-damped-block",
+      "phi_index": 4,
+      "scale": 1.5,
+      "relative_error": 9.783027743790164e-17,
+      "dense_value": [
+        0.00137003452651925,
+        0.008759491377668554
+      ],
+      "krylov_value": [
+        0.0013700345265192492,
+        0.008759491377668554
+      ],
+      "krylov_dimension": 2,
+      "converged": true,
+      "jvp_vectors": 2,
+      "projected_exponentials": 2
+    },
+    {
+      "case_id": "oscillatory-damped-block",
+      "phi_index": 5,
+      "scale": 1.5,
+      "relative_error": 2.010658187017809e-16,
+      "dense_value": [
+        0.0004401036729954897,
+        0.0021286758673148697
+      ],
+      "krylov_value": [
+        0.00044010367299548964,
+        0.00212867586731487
+      ],
+      "krylov_dimension": 2,
+      "converged": true,
+      "jvp_vectors": 2,
+      "projected_exponentials": 2
+    }
+  ],
+  "order_screen": [
+    {
+      "method": "exprb2",
+      "h": 0.05,
+      "endpoint_error": 0.0004649882878002831,
+      "observed_order_to_next": 1.955971042573806,
+      "rhs_evaluations": 5,
+      "jvp_vectors": 5,
+      "phi_actions": 5,
+      "explicit_jacobian_builds": 0,
+      "direct_factorizations": 0,
+      "nonlinear_iterations": 0
+    },
+    {
+      "method": "exprb2",
+      "h": 0.025,
+      "endpoint_error": 0.00011984945389831303,
+      "observed_order_to_next": 1.9784377096476864,
+      "rhs_evaluations": 10,
+      "jvp_vectors": 10,
+      "phi_actions": 10,
+      "explicit_jacobian_builds": 0,
+      "direct_factorizations": 0,
+      "nonlinear_iterations": 0
+    },
+    {
+      "method": "exprb2",
+      "h": 0.0125,
+      "endpoint_error": 0.00003041353939114977,
+      "observed_order_to_next": 1.9893450612712025,
+      "rhs_evaluations": 20,
+      "jvp_vectors": 20,
+      "phi_actions": 20,
+      "explicit_jacobian_builds": 0,
+      "direct_factorizations": 0,
+      "nonlinear_iterations": 0
+    },
+    {
+      "method": "exprb2",
+      "h": 0.00625,
+      "endpoint_error": 7.659747069732603e-6,
+      "observed_order_to_next": null,
+      "rhs_evaluations": 40,
+      "jvp_vectors": 40,
+      "phi_actions": 40,
+      "explicit_jacobian_builds": 0,
+      "direct_factorizations": 0,
+      "nonlinear_iterations": 0
+    },
+    {
+      "method": "exprb43",
+      "h": 0.05,
+      "endpoint_error": 1.3983062752132014e-7,
+      "observed_order_to_next": 3.9248606117176617,
+      "rhs_evaluations": 15,
+      "jvp_vectors": 55,
+      "phi_actions": 45,
+      "explicit_jacobian_builds": 0,
+      "direct_factorizations": 0,
+      "nonlinear_iterations": 0
+    },
+    {
+      "method": "exprb43",
+      "h": 0.025,
+      "endpoint_error": 9.206647888504449e-9,
+      "observed_order_to_next": 3.962755207799493,
+      "rhs_evaluations": 30,
+      "jvp_vectors": 110,
+      "phi_actions": 90,
+      "explicit_jacobian_builds": 0,
+      "direct_factorizations": 0,
+      "nonlinear_iterations": 0
+    },
+    {
+      "method": "exprb43",
+      "h": 0.0125,
+      "endpoint_error": 5.904638999965073e-10,
+      "observed_order_to_next": 3.981455144220204,
+      "rhs_evaluations": 60,
+      "jvp_vectors": 220,
+      "phi_actions": 180,
+      "explicit_jacobian_builds": 0,
+      "direct_factorizations": 0,
+      "nonlinear_iterations": 0
+    },
+    {
+      "method": "exprb43",
+      "h": 0.00625,
+      "endpoint_error": 3.7381431283733946e-11,
+      "observed_order_to_next": null,
+      "rhs_evaluations": 120,
+      "jvp_vectors": 440,
+      "phi_actions": 360,
+      "explicit_jacobian_builds": 0,
+      "direct_factorizations": 0,
+      "nonlinear_iterations": 0
+    },
+    {
+      "method": "pexprb54s4",
+      "h": 0.05,
+      "endpoint_error": 2.7924119683220283e-8,
+      "observed_order_to_next": 4.928770428239681,
+      "rhs_evaluations": 20,
+      "jvp_vectors": 90,
+      "phi_actions": 75,
+      "explicit_jacobian_builds": 0,
+      "direct_factorizations": 0,
+      "nonlinear_iterations": 0
+    },
+    {
+      "method": "pexprb54s4",
+      "h": 0.025,
+      "endpoint_error": 9.167939740706288e-10,
+      "observed_order_to_next": 4.965532464927302,
+      "rhs_evaluations": 40,
+      "jvp_vectors": 180,
+      "phi_actions": 150,
+      "explicit_jacobian_builds": 0,
+      "direct_factorizations": 0,
+      "nonlinear_iterations": 0
+    },
+    {
+      "method": "pexprb54s4",
+      "h": 0.0125,
+      "endpoint_error": 2.934252840702811e-11,
+      "observed_order_to_next": 4.982842104415865,
+      "rhs_evaluations": 80,
+      "jvp_vectors": 360,
+      "phi_actions": 300,
+      "explicit_jacobian_builds": 0,
+      "direct_factorizations": 0,
+      "nonlinear_iterations": 0
+    },
+    {
+      "method": "pexprb54s4",
+      "h": 0.00625,
+      "endpoint_error": 9.279244039817058e-13,
+      "observed_order_to_next": null,
+      "rhs_evaluations": 160,
+      "jvp_vectors": 720,
+      "phi_actions": 600,
+      "explicit_jacobian_builds": 0,
+      "direct_factorizations": 0,
+      "nonlinear_iterations": 0
+    }
+  ],
+  "stiff_linear_screen": [
+    {
+      "method": "exprb2",
+      "z": -1.0,
+      "numerical": 0.36787944117144233,
+      "exact": 0.36787944117144233,
+      "absolute_error": 0.0,
+      "explicit_jacobian_builds": 0,
+      "nonlinear_iterations": 0
+    },
+    {
+      "method": "exprb2",
+      "z": -20.0,
+      "numerical": 2.061154025234657e-9,
+      "exact": 2.061153622438558e-9,
+      "absolute_error": 4.027960993133771e-16,
+      "explicit_jacobian_builds": 0,
+      "nonlinear_iterations": 0
+    },
+    {
+      "method": "exprb2",
+      "z": -100.0,
+      "numerical": 3.552713678800501e-15,
+      "exact": 3.720075976020836e-44,
+      "absolute_error": 3.552713678800501e-15,
+      "explicit_jacobian_builds": 0,
+      "nonlinear_iterations": 0
+    },
+    {
+      "method": "exprb2",
+      "z": -500.0,
+      "numerical": 1.3988810110276972e-14,
+      "exact": 7.124576406741286e-218,
+      "absolute_error": 1.3988810110276972e-14,
+      "explicit_jacobian_builds": 0,
+      "nonlinear_iterations": 0
+    },
+    {
+      "method": "exprb43",
+      "z": -1.0,
+      "numerical": 0.36787944117144233,
+      "exact": 0.36787944117144233,
+      "absolute_error": 0.0,
+      "explicit_jacobian_builds": 0,
+      "nonlinear_iterations": 0
+    },
+    {
+      "method": "exprb43",
+      "z": -20.0,
+      "numerical": 2.061154025234657e-9,
+      "exact": 2.061153622438558e-9,
+      "absolute_error": 4.027960993133771e-16,
+      "explicit_jacobian_builds": 0,
+      "nonlinear_iterations": 0
+    },
+    {
+      "method": "exprb43",
+      "z": -100.0,
+      "numerical": 3.552713678800501e-15,
+      "exact": 3.720075976020836e-44,
+      "absolute_error": 3.552713678800501e-15,
+      "explicit_jacobian_builds": 0,
+      "nonlinear_iterations": 0
+    },
+    {
+      "method": "exprb43",
+      "z": -500.0,
+      "numerical": 1.3988810110276972e-14,
+      "exact": 7.124576406741286e-218,
+      "absolute_error": 1.3988810110276972e-14,
+      "explicit_jacobian_builds": 0,
+      "nonlinear_iterations": 0
+    },
+    {
+      "method": "pexprb54s4",
+      "z": -1.0,
+      "numerical": 0.36787944117144233,
+      "exact": 0.36787944117144233,
+      "absolute_error": 0.0,
+      "explicit_jacobian_builds": 0,
+      "nonlinear_iterations": 0
+    },
+    {
+      "method": "pexprb54s4",
+      "z": -20.0,
+      "numerical": 2.061154025234657e-9,
+      "exact": 2.061153622438558e-9,
+      "absolute_error": 4.027960993133771e-16,
+      "explicit_jacobian_builds": 0,
+      "nonlinear_iterations": 0
+    },
+    {
+      "method": "pexprb54s4",
+      "z": -100.0,
+      "numerical": 3.552713678800501e-15,
+      "exact": 3.720075976020836e-44,
+      "absolute_error": 3.552713678800501e-15,
+      "explicit_jacobian_builds": 0,
+      "nonlinear_iterations": 0
+    },
+    {
+      "method": "pexprb54s4",
+      "z": -500.0,
+      "numerical": 1.3988810110276972e-14,
+      "exact": 7.124576406741286e-218,
+      "absolute_error": 1.3988810110276972e-14,
+      "explicit_jacobian_builds": 0,
+      "nonlinear_iterations": 0
+    }
+  ],
+  "oscillatory_screen": [
+    {
+      "method": "exprb2",
+      "h": 0.09999999999999999,
+      "endpoint_error": 4.75098925995612e-16,
+      "amplitude_error": 2.7755575615628914e-16,
+      "phase_error_radians": 1.5314274795707798e-15,
+      "accepted_steps": 3,
+      "rhs_evaluations": 3,
+      "jvp_vectors": 6
+    },
+    {
+      "method": "exprb2",
+      "h": 0.049999999999999996,
+      "endpoint_error": 3.608224830031759e-16,
+      "amplitude_error": 1.6653345369377348e-16,
+      "phase_error_radians": 6.432490598706546e-16,
+      "accepted_steps": 6,
+      "rhs_evaluations": 6,
+      "jvp_vectors": 12
+    },
+    {
+      "method": "exprb2",
+      "h": 0.024999999999999998,
+      "endpoint_error": 1.942890293094024e-16,
+      "amplitude_error": 5.551115123125783e-17,
+      "phase_error_radians": 2.4492935982947064e-16,
+      "accepted_steps": 12,
+      "rhs_evaluations": 12,
+      "jvp_vectors": 24
+    },
+    {
+      "method": "exprb43",
+      "h": 0.09999999999999999,
+      "endpoint_error": 6.106226635438361e-16,
+      "amplitude_error": 2.220446049250313e-16,
+      "phase_error_radians": 1.5314274795707798e-15,
+      "accepted_steps": 3,
+      "rhs_evaluations": 9,
+      "jvp_vectors": 52
+    },
+    {
+      "method": "exprb43",
+      "h": 0.049999999999999996,
+      "endpoint_error": 5.389157964038493e-16,
+      "amplitude_error": 1.1102230246251565e-16,
+      "phase_error_radians": 1.5314274795707798e-15,
+      "accepted_steps": 6,
+      "rhs_evaluations": 18,
+      "jvp_vectors": 108
+    },
+    {
+      "method": "exprb43",
+      "h": 0.024999999999999998,
+      "endpoint_error": 1.942890293094024e-16,
+      "amplitude_error": 5.551115123125783e-17,
+      "phase_error_radians": 2.4492935982947064e-16,
+      "accepted_steps": 12,
+      "rhs_evaluations": 36,
+      "jvp_vectors": 240
+    },
+    {
+      "method": "pexprb54s4",
+      "h": 0.09999999999999999,
+      "endpoint_error": 5.828670879282072e-16,
+      "amplitude_error": 2.220446049250313e-16,
+      "phase_error_radians": 1.5314274795707798e-15,
+      "accepted_steps": 3,
+      "rhs_evaluations": 12,
+      "jvp_vectors": 91
+    },
+    {
+      "method": "pexprb54s4",
+      "h": 0.049999999999999996,
+      "endpoint_error": 4.440892098500626e-16,
+      "amplitude_error": 2.220446049250313e-16,
+      "phase_error_radians": 1.5314274795707798e-15,
+      "accepted_steps": 6,
+      "rhs_evaluations": 24,
+      "jvp_vectors": 192
+    },
+    {
+      "method": "pexprb54s4",
+      "h": 0.024999999999999998,
+      "endpoint_error": 1.942890293094024e-16,
+      "amplitude_error": 5.551115123125783e-17,
+      "phase_error_radians": 2.4492935982947064e-16,
+      "accepted_steps": 12,
+      "rhs_evaluations": 48,
+      "jvp_vectors": 382
+    }
+  ],
+  "summary": {
+    "coefficient_rows": 6,
+    "phi_oracle_rows": 40,
+    "order_rows": 12,
+    "oscillatory_rows": 9,
+    "stiff_linear_rows": 12,
+    "maximum_stiff_linear_error": 1.3988810110276972e-14,
+    "maximum_order_condition_residual": 2.220446049250313e-16,
+    "maximum_phi_relative_error": 6.5693111217791135e-16,
+    "observed_exprb2_order": 1.955971042573806,
+    "observed_exprb43_order": 3.9248606117176617,
+    "observed_pexprb54s4_order": 4.928770428239681,
+    "explicit_jacobian_builds": 0,
+    "direct_factorizations": 0,
+    "nonlinear_iterations": 0,
+    "false_convergence": 0,
+    "coefficient_gate_pass": true,
+    "phi_oracle_gate_pass": true,
+    "order_gate_pass": true,
+    "structural_jf_newton_free_gate_pass": true,
+    "g2_foundation_pass": true,
+    "performance_promotion_authorized": false
+  },
+  "limitations": [
+    "The matrix-free phi engine is a full-Arnoldi correctness reference, not KIOPS: incomplete orthogonalization, adaptive substepping, restart and fused phi combinations are not implemented.",
+    "Nonautonomous augmentation and nonsingular mass-matrix exponential treatment are not implemented in this bounded node.",
+    "The declared pexprb54s4 critical depth of three is a dependency-graph property; separate unfused phi actions currently dominate work, so no wall-time promotion is authorized.",
+    "BDF2 and Radau IIA3 remain byte-frozen comparators and physical clients are excluded from this gate."
+  ]
+}
