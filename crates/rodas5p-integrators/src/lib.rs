@@ -56,10 +56,12 @@ pub use common_w_gate::{
     run_matrix_free_common_w_gate,
 };
 pub use exponential::{
-    ExponentialKrylovConfig, ExponentialStepReport, FusedOrthogonalization,
-    FusedPhiActionReport, FusedPhiKrylovConfig, FusedPhiSubstepReport, FusedPhiTerm,
-    Pexprb54s4Tableau, PhiActionReport, exprb2_step, exprb43_step, fused_phi_action,
-    fused_phi_linear_combination, krylov_phi_action, pexprb54s4_step, pexprb54s4_tableau,
+    ExponentialKrylovConfig, ExponentialStepReport, FusedExponentialStepReport,
+    FusedOrthogonalization, FusedPhiActionReport, FusedPhiKrylovConfig,
+    FusedPhiSubstepReport, FusedPhiTerm, Pexprb54s4Tableau, PhiActionReport,
+    exprb2_fused_step, exprb2_step, exprb43_fused_step, exprb43_step, fused_phi_action,
+    fused_phi_linear_combination, krylov_phi_action, pexprb54s4_fused_step,
+    pexprb54s4_step, pexprb54s4_tableau,
 };
 pub use g1_transactional_gate::{
     G1TransactionalCase, G1TransactionalGateProfile, G1TransactionalGateReport,

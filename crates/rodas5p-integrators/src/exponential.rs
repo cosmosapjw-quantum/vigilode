@@ -177,6 +177,18 @@ pub struct ExponentialStepReport {
     pub work: WorkCounters,
 }
 
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct FusedExponentialStepReport {
+    pub method: String,
+    pub y_new: Vec<f64>,
+    pub y_embedded: Option<Vec<f64>>,
+    pub error_estimate: Option<Vec<f64>>,
+    pub logical_critical_depth: usize,
+    pub fused_phi_reports: Vec<FusedPhiActionReport>,
+    pub work: WorkCounters,
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Pexprb54s4Tableau {
     pub c2: f64,
@@ -1094,5 +1106,225 @@ pub fn pexprb54s4_step(
         logical_critical_depth: 3,
         phi_reports,
         work: counters,
+    })
+}
+
+
+fn require_fused(report: FusedPhiActionReport) -> CoreResult<FusedPhiActionReport> {
+    if report.converged {
+        Ok(report)
+    } else {
+        Err(CoreError::LinearSolve(format!(
+            "fused phi action failed after {} substeps at dimension {} (estimate {})",
+            report.substeps, report.maximum_krylov_dimension, report.error_estimate
+        )))
+    }
+}
+
+fn add_scaled_state(y: &[f64], h: f64, action: &[f64]) -> Vec<f64> {
+    y.iter().zip(action).map(|(state, delta)| state + h * delta).collect()
+}
+
+pub fn exprb2_fused_step(
+    problem: &OdeProblem,
+    t: f64,
+    y: &[f64],
+    h: f64,
+    config: FusedPhiKrylovConfig,
+) -> CoreResult<FusedExponentialStepReport> {
+    validate_problem(problem, y)?;
+    let mut work = WorkCounters::default();
+    let f0 = problem.eval_rhs(t, y, &mut work)?;
+    let operator = problem.linearize_matrix_free(t, y)?;
+    let action = require_fused(fused_phi_linear_combination(
+        operator,
+        h,
+        &[FusedPhiTerm { coefficient: 1.0, phi_index: 1, vector: &f0 }],
+        config,
+        &mut work,
+    )?)?;
+    Ok(FusedExponentialStepReport {
+        method: "exprb2-fused".into(),
+        y_new: add_scaled_state(y, h, &action.value),
+        y_embedded: None,
+        error_estimate: None,
+        logical_critical_depth: 1,
+        fused_phi_reports: vec![action],
+        work,
+    })
+}
+
+pub fn exprb43_fused_step(
+    problem: &OdeProblem,
+    t: f64,
+    y: &[f64],
+    h: f64,
+    config: FusedPhiKrylovConfig,
+    execution: &ParallelExecution,
+) -> CoreResult<FusedExponentialStepReport> {
+    validate_problem(problem, y)?;
+    let mut work = WorkCounters::default();
+    let f0 = problem.eval_rhs(t, y, &mut work)?;
+    let operator = problem.linearize_matrix_free(t, y)?;
+
+    let u2_action = require_fused(fused_phi_linear_combination(
+        operator.clone(),
+        0.5 * h,
+        &[FusedPhiTerm { coefficient: 0.5, phi_index: 1, vector: &f0 }],
+        config,
+        &mut work,
+    )?)?;
+    let u2 = add_scaled_state(y, h, &u2_action.value);
+    let d2 = nonlinear_remainder(problem, operator.as_ref(), t, y, &f0, &u2, &mut work)?;
+
+    let u3_action = require_fused(fused_phi_linear_combination(
+        operator.clone(),
+        h,
+        &[
+            FusedPhiTerm { coefficient: 1.0, phi_index: 1, vector: &f0 },
+            FusedPhiTerm { coefficient: 1.0, phi_index: 1, vector: &d2 },
+        ],
+        config,
+        &mut work,
+    )?)?;
+    let u3 = add_scaled_state(y, h, &u3_action.value);
+    let d3 = nonlinear_remainder(problem, operator.as_ref(), t, y, &f0, &u3, &mut work)?;
+
+    let endpoint_ids = [0usize, 1usize];
+    let endpoints = execution.map_ordered(&endpoint_ids, |id| {
+        let mut local = WorkCounters::default();
+        let terms = if *id == 0 {
+            vec![
+                FusedPhiTerm { coefficient: 1.0, phi_index: 1, vector: &f0 },
+                FusedPhiTerm { coefficient: 16.0, phi_index: 3, vector: &d2 },
+                FusedPhiTerm { coefficient: -48.0, phi_index: 4, vector: &d2 },
+                FusedPhiTerm { coefficient: -2.0, phi_index: 3, vector: &d3 },
+                FusedPhiTerm { coefficient: 12.0, phi_index: 4, vector: &d3 },
+            ]
+        } else {
+            vec![
+                FusedPhiTerm { coefficient: 1.0, phi_index: 1, vector: &f0 },
+                FusedPhiTerm { coefficient: 16.0, phi_index: 3, vector: &d2 },
+                FusedPhiTerm { coefficient: -2.0, phi_index: 3, vector: &d3 },
+            ]
+        };
+        let action = require_fused(fused_phi_linear_combination(
+            operator.clone(), h, &terms, config, &mut local,
+        )?)?;
+        Ok((action, local))
+    })?;
+    for (_, local) in &endpoints { work.accumulate(*local); }
+    let y_new = add_scaled_state(y, h, &endpoints[0].0.value);
+    let y_embedded = add_scaled_state(y, h, &endpoints[1].0.value);
+    let error_estimate = y_new.iter().zip(&y_embedded).map(|(a,b)| a-b).collect();
+    Ok(FusedExponentialStepReport {
+        method: "exprb43-fused".into(),
+        y_new,
+        y_embedded: Some(y_embedded),
+        error_estimate: Some(error_estimate),
+        logical_critical_depth: 3,
+        fused_phi_reports: vec![u2_action, u3_action, endpoints[0].0.clone(), endpoints[1].0.clone()],
+        work,
+    })
+}
+
+pub fn pexprb54s4_fused_step(
+    problem: &OdeProblem,
+    t: f64,
+    y: &[f64],
+    h: f64,
+    config: FusedPhiKrylovConfig,
+    execution: &ParallelExecution,
+) -> CoreResult<FusedExponentialStepReport> {
+    validate_problem(problem, y)?;
+    let tableau = pexprb54s4_tableau();
+    let mut work = WorkCounters::default();
+    let f0 = problem.eval_rhs(t, y, &mut work)?;
+    let operator = problem.linearize_matrix_free(t, y)?;
+
+    // Dependency level 1: U2.
+    let u2_action = require_fused(fused_phi_linear_combination(
+        operator.clone(),
+        tableau.c2 * h,
+        &[FusedPhiTerm { coefficient: tableau.c2, phi_index: 1, vector: &f0 }],
+        config,
+        &mut work,
+    )?)?;
+    let u2 = add_scaled_state(y, h, &u2_action.value);
+    let d2 = nonlinear_remainder(problem, operator.as_ref(), t, y, &f0, &u2, &mut work)?;
+
+    // Dependency level 2: U3 and U4 are independent once D2 is known.
+    let stage_ids = [3usize, 4usize];
+    let stages = execution.map_ordered(&stage_ids, |id| {
+        let mut local = WorkCounters::default();
+        let (c, a) = if *id == 3 {
+            (tableau.c3, tableau.a32_phi3)
+        } else {
+            (tableau.c4, tableau.a42_phi3)
+        };
+        let action = require_fused(fused_phi_linear_combination(
+            operator.clone(),
+            c * h,
+            &[
+                FusedPhiTerm { coefficient: c, phi_index: 1, vector: &f0 },
+                FusedPhiTerm { coefficient: a, phi_index: 3, vector: &d2 },
+            ],
+            config,
+            &mut local,
+        )?)?;
+        let stage = add_scaled_state(y, h, &action.value);
+        let remainder = nonlinear_remainder(problem, operator.as_ref(), t, y, &f0, &stage, &mut local)?;
+        Ok((action, remainder, local))
+    })?;
+    for (_, _, local) in &stages { work.accumulate(*local); }
+    let d3 = stages[0].1.clone();
+    let d4 = stages[1].1.clone();
+
+    // Dependency level 3: main and embedded endpoints are independent.
+    let endpoint_ids = [0usize, 1usize];
+    let endpoints = execution.map_ordered(&endpoint_ids, |id| {
+        let mut local = WorkCounters::default();
+        let terms = if *id == 0 {
+            vec![
+                FusedPhiTerm { coefficient: 1.0, phi_index: 1, vector: &f0 },
+                FusedPhiTerm { coefficient: tableau.b3_phi3, phi_index: 3, vector: &d3 },
+                FusedPhiTerm { coefficient: tableau.b3_phi4, phi_index: 4, vector: &d3 },
+                FusedPhiTerm { coefficient: tableau.b4_phi3, phi_index: 3, vector: &d4 },
+                FusedPhiTerm { coefficient: tableau.b4_phi4, phi_index: 4, vector: &d4 },
+            ]
+        } else {
+            vec![
+                FusedPhiTerm { coefficient: 1.0, phi_index: 1, vector: &f0 },
+                FusedPhiTerm { coefficient: tableau.embedded_b2_phi3, phi_index: 3, vector: &d2 },
+                FusedPhiTerm { coefficient: tableau.embedded_b2_phi4, phi_index: 4, vector: &d2 },
+                FusedPhiTerm { coefficient: tableau.embedded_b3_phi3, phi_index: 3, vector: &d3 },
+                FusedPhiTerm { coefficient: tableau.embedded_b3_phi4, phi_index: 4, vector: &d3 },
+                FusedPhiTerm { coefficient: tableau.embedded_b4_phi3, phi_index: 3, vector: &d4 },
+                FusedPhiTerm { coefficient: tableau.embedded_b4_phi4, phi_index: 4, vector: &d4 },
+            ]
+        };
+        let action = require_fused(fused_phi_linear_combination(
+            operator.clone(), h, &terms, config, &mut local,
+        )?)?;
+        Ok((action, local))
+    })?;
+    for (_, local) in &endpoints { work.accumulate(*local); }
+    let y_new = add_scaled_state(y, h, &endpoints[0].0.value);
+    let y_embedded = add_scaled_state(y, h, &endpoints[1].0.value);
+    let error_estimate = y_new.iter().zip(&y_embedded).map(|(a,b)| a-b).collect();
+    Ok(FusedExponentialStepReport {
+        method: "pexprb54s4-fused".into(),
+        y_new,
+        y_embedded: Some(y_embedded),
+        error_estimate: Some(error_estimate),
+        logical_critical_depth: 3,
+        fused_phi_reports: vec![
+            u2_action,
+            stages[0].0.clone(),
+            stages[1].0.clone(),
+            endpoints[0].0.clone(),
+            endpoints[1].0.clone(),
+        ],
+        work,
     })
 }
