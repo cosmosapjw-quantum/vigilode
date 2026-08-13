@@ -1,0 +1,126 @@
+{
+  "auto_summary": {
+    "aggregate_sum_cost_speedup_vs_rodas": 2.250416299360418,
+    "cells": 12,
+    "covered_cells": 12,
+    "maximum_cell_speedup_vs_rodas": 9.071855852364921,
+    "median_cell_speedup_vs_rodas": 4.188225036932987,
+    "median_second_best_margin": 2.6271675426705436,
+    "minimum_cell_speedup_vs_rodas": 1.0,
+    "switch_opportunity_cells": 11,
+    "winner_counts": {
+      "frozen-radau-iia3": 8,
+      "pexprb54s4-fused-full-mgs-t1": 3,
+      "protected-jf-rodas5p": 1
+    }
+  },
+  "best_full_feature": {
+    "feature": "dimension",
+    "full_accuracy": 1.0,
+    "full_rows": 12,
+    "full_selections": {
+      "exp": 6,
+      "rodas": 6
+    },
+    "full_unsafe_exp_selections": 0,
+    "polarity": "ge",
+    "threshold": 4.5,
+    "training_accuracy": 1.0,
+    "training_unsafe_exp_selections": 0
+  },
+  "best_lopo_feature": {
+    "feature": "dimension",
+    "folds": [
+      {
+        "holdout_problem": "advection-diffusion",
+        "rule": {
+          "feature": "dimension",
+          "polarity": "ge",
+          "threshold": 4.5,
+          "training_accuracy": 1.0,
+          "training_unsafe_exp_selections": 0
+        },
+        "test": {
+          "accuracy": 1.0,
+          "rows": 3,
+          "selections": {
+            "exp": 3
+          },
+          "unsafe_exp_selections": 0
+        }
+      },
+      {
+        "holdout_problem": "complex-dahlquist",
+        "rule": {
+          "feature": "dimension",
+          "polarity": "ge",
+          "threshold": 8.5,
+          "training_accuracy": 1.0,
+          "training_unsafe_exp_selections": 0
+        },
+        "test": {
+          "accuracy": 0.0,
+          "rows": 3,
+          "selections": {
+            "rodas": 3
+          },
+          "unsafe_exp_selections": 0
+        }
+      },
+      {
+        "holdout_problem": "oscillatory-pr",
+        "rule": {
+          "feature": "dimension",
+          "polarity": "ge",
+          "threshold": 4.5,
+          "training_accuracy": 1.0,
+          "training_unsafe_exp_selections": 0
+        },
+        "test": {
+          "accuracy": 1.0,
+          "rows": 3,
+          "selections": {
+            "rodas": 3
+          },
+          "unsafe_exp_selections": 0
+        }
+      },
+      {
+        "holdout_problem": "quadratic",
+        "rule": {
+          "feature": "dimension",
+          "polarity": "ge",
+          "threshold": 4.5,
+          "training_accuracy": 1.0,
+          "training_unsafe_exp_selections": 0
+        },
+        "test": {
+          "accuracy": 1.0,
+          "rows": 3,
+          "selections": {
+            "rodas": 3
+          },
+          "unsafe_exp_selections": 0
+        }
+      }
+    ],
+    "mean_holdout_accuracy": 0.75,
+    "total_unsafe_exp_selections": 0
+  },
+  "scientific_sha256": "067686e59515338ecb5fc41abb11bc7d4b69a9a9119845bca1e45a25d0de7d6c",
+  "status": "pass-read-only-oracle-map",
+  "strict_summary": {
+    "aggregate_sum_cost_speedup_vs_rodas": 1.534002498910359,
+    "cells": 12,
+    "covered_cells": 12,
+    "maximum_cell_speedup_vs_rodas": 7.598366065129827,
+    "median_cell_speedup_vs_rodas": 1.2597228227476505,
+    "median_second_best_margin": 2.0295438889253568,
+    "minimum_cell_speedup_vs_rodas": 1.0,
+    "switch_opportunity_cells": 6,
+    "winner_counts": {
+      "pexprb54s4-fused-full-mgs-t1": 6,
+      "protected-jf-rodas5p": 6
+    }
+  }
+}

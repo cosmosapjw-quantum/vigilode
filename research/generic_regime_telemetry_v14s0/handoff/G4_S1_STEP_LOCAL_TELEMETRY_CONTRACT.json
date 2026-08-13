@@ -1,0 +1,57 @@
+{
+  "schema": "g4-s1-step-local-shadow-contract-v1",
+  "node": "G4-S1",
+  "purpose": "Measure accepted-step-local regime features, counterfactual method cost, and switching overhead without changing the committed numerical solution.",
+  "frozen_inputs": {
+    "pexprb54s4_coefficients": true,
+    "g3_full_mgs_policy": true,
+    "protected_jf_rodas5p": true,
+    "held_q1_q2": true,
+    "bdf_source": true,
+    "radau_source": true,
+    "fair_measurement_authority": true
+  },
+  "required_zero_extra_work_features": [
+    "embedded error",
+    "accepted/rejected state",
+    "phi residual/error",
+    "Krylov dimension and restarts",
+    "JVP and orthogonalization work",
+    "RODAS linear-iteration health",
+    "measured batch-payoff EWMA"
+  ],
+  "sampled_features": {
+    "nonlinear_defect": "eta_nl = ||F(y+u)-F(y)-A u||_WRMS / (||F(y+u)-F(y)||_WRMS + eps)",
+    "fresh_jvp_quality": "compare J_epsilon v and J_(epsilon/2) v",
+    "homotopy_probe": "one bounded residual-contraction/curvature probe only"
+  },
+  "sampling_events": [
+    "method-entry",
+    "two-consecutive-rejections",
+    "cooldown-expiration",
+    "Krylov-stagnation or sharp work-drift"
+  ],
+  "overhead_gates": {
+    "median_fraction_of_total_wall_max": 0.03,
+    "p95_fraction_of_total_wall_max": 0.05
+  },
+  "execution_mode": "shadow-only",
+  "commit_authority": "current protected method only",
+  "calibration_holdout_rule": "thresholds chosen on calibration corpus and frozen before sealed holdout",
+  "activation_prerequisites": {
+    "unsafe_selection_count": 0,
+    "median_oracle_regret_max": 1.15,
+    "detector_overhead_gate_pass": true,
+    "thrashing_detected": false,
+    "switch_setup_cost_accounted": true,
+    "scientific_identity_t1_t4": true
+  },
+  "forbidden": [
+    "active switching",
+    "physical client use",
+    "problem-id feature",
+    "dimension-only selector",
+    "BDF/Radau optimization",
+    "post-holdout threshold retuning"
+  ]
+}
