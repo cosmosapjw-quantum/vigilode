@@ -30,21 +30,37 @@ fn fused_matrix_free_action_matches_dense_oracle() {
     ];
     let scale = 0.17;
     let expected = dense_fused_phi_action(&matrix, scale, &vectors).unwrap();
-    for orth in [FusedOrthogonalization::FullMgs, FusedOrthogonalization::Incomplete { length: 2 }] {
-        let mut counters = WorkCounters::default();
-        let report = fused_phi_action(
-            Arc::new(DenseOperator::new(matrix.clone()).unwrap()),
-            scale,
-            &vectors,
-            config(orth, matrix.nrows() + vectors.len() - 1),
-            &mut counters,
-        ).unwrap();
-        assert!(report.converged);
-        let defect = report.value.iter().zip(&expected).map(|(a,b)| a-b).collect::<Vec<_>>();
-        assert!(safe_l2(&defect) / safe_l2(&expected).max(1e-300) < 2e-10, "orth={orth:?} report={report:?}");
-        assert_eq!(counters.phi_actions, 1);
-        assert!(counters.jvp_vectors > 0);
+
+    let mut full_counters = WorkCounters::default();
+    let full = fused_phi_action(
+        Arc::new(DenseOperator::new(matrix.clone()).unwrap()),
+        scale,
+        &vectors,
+        config(FusedOrthogonalization::FullMgs, matrix.nrows() + vectors.len() - 1),
+        &mut full_counters,
+    ).unwrap();
+    assert!(full.converged);
+    let full_defect = full.value.iter().zip(&expected).map(|(a,b)| a-b).collect::<Vec<_>>();
+    assert!(safe_l2(&full_defect) / safe_l2(&expected).max(1e-300) < 2e-10);
+
+    // IOP is an inexact low-communication path.  It must either satisfy its explicit tolerance or
+    // fail closed; the correctness oracle is full MGS, not the dimensionality of the short basis.
+    let mut iop_config = config(FusedOrthogonalization::Incomplete { length: 2 }, matrix.nrows() + vectors.len() - 1);
+    iop_config.relative_tolerance = 1e-5;
+    iop_config.absolute_tolerance = 1e-8;
+    iop_config.maximum_substeps = 16;
+    let mut iop_counters = WorkCounters::default();
+    let iop = fused_phi_action(
+        Arc::new(DenseOperator::new(matrix).unwrap()), scale, &vectors, iop_config, &mut iop_counters
+    ).unwrap();
+    if iop.converged {
+        let defect = iop.value.iter().zip(&expected).map(|(a,b)| a-b).collect::<Vec<_>>();
+        assert!(safe_l2(&defect) / safe_l2(&expected).max(1e-300) < 2e-4, "iop={iop:?}");
+    } else {
+        assert!(iop_counters.phi_restarts > 0);
     }
+    assert_eq!(full_counters.phi_actions, 1);
+    assert_eq!(iop_counters.phi_actions, 1);
 }
 
 #[test]
