@@ -1,7 +1,8 @@
 use std::sync::Arc;
 
 use rodas5p_core::{
-    CoreError, CoreResult, DenseMatrix, LinearOperator, WorkCounters, dense_phi_action, safe_l2,
+    ClosureOperator, CoreError, CoreResult, DenseMatrix, LinearOperator, WorkCounters,
+    dense_phi_action, safe_l2,
 };
 use serde::{Deserialize, Serialize};
 
@@ -58,6 +59,99 @@ impl ExponentialKrylovConfig {
             ..self
         })
     }
+}
+
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum FusedOrthogonalization {
+    FullMgs,
+    Incomplete { length: usize },
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+pub struct FusedPhiKrylovConfig {
+    pub minimum_dimension: usize,
+    pub maximum_dimension: usize,
+    pub dimension_increment: usize,
+    pub relative_tolerance: f64,
+    pub absolute_tolerance: f64,
+    pub orthogonalization: FusedOrthogonalization,
+    pub maximum_substeps: usize,
+}
+
+impl Default for FusedPhiKrylovConfig {
+    fn default() -> Self {
+        Self {
+            minimum_dimension: 4,
+            maximum_dimension: 24,
+            dimension_increment: 2,
+            relative_tolerance: 1.0e-10,
+            absolute_tolerance: 1.0e-13,
+            orthogonalization: FusedOrthogonalization::FullMgs,
+            maximum_substeps: 16,
+        }
+    }
+}
+
+impl FusedPhiKrylovConfig {
+    fn validate(self, dimension: usize) -> CoreResult<Self> {
+        if self.minimum_dimension == 0
+            || self.maximum_dimension < self.minimum_dimension
+            || self.dimension_increment == 0
+            || self.maximum_substeps == 0
+        {
+            return Err(CoreError::InvalidInput(
+                "invalid fused phi Krylov dimension/substep contract".into(),
+            ));
+        }
+        if !(self.relative_tolerance >= 0.0
+            && self.relative_tolerance.is_finite()
+            && self.absolute_tolerance >= 0.0
+            && self.absolute_tolerance.is_finite())
+        {
+            return Err(CoreError::InvalidInput(
+                "invalid fused phi Krylov tolerance".into(),
+            ));
+        }
+        if matches!(self.orthogonalization, FusedOrthogonalization::Incomplete { length: 0 }) {
+            return Err(CoreError::InvalidInput(
+                "incomplete orthogonalization length must be positive".into(),
+            ));
+        }
+        let maximum_dimension = self.maximum_dimension.min(dimension.max(1));
+        let minimum_dimension = self.minimum_dimension.min(maximum_dimension);
+        Ok(Self { minimum_dimension, maximum_dimension, ..self })
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct FusedPhiSubstepReport {
+    pub substep_index: usize,
+    pub krylov_dimension: usize,
+    pub converged: bool,
+    pub happy_breakdown: bool,
+    pub error_estimate: f64,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct FusedPhiActionReport {
+    pub scale: f64,
+    pub highest_phi_index: usize,
+    pub substeps: usize,
+    pub converged: bool,
+    pub maximum_krylov_dimension: usize,
+    pub error_estimate: f64,
+    pub action_norm: f64,
+    pub value: Vec<f64>,
+    pub substep_reports: Vec<FusedPhiSubstepReport>,
+}
+
+#[derive(Clone, Copy, Debug)]
+pub struct FusedPhiTerm<'a> {
+    pub coefficient: f64,
+    pub phi_index: usize,
+    pub vector: &'a [f64],
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -304,6 +398,347 @@ pub fn krylov_phi_action(
         action_norm: safe_l2(&latest),
         value: latest,
     })
+}
+
+
+fn projected_exponential_action(
+    basis: &[Vec<f64>],
+    hessenberg: &[Vec<f64>],
+    beta: f64,
+    dimension: usize,
+    scale: f64,
+    counters: &mut WorkCounters,
+) -> CoreResult<Vec<f64>> {
+    projected_action(basis, hessenberg, beta, dimension, scale, 0, counters)
+}
+
+fn fused_orthogonalize(
+    basis: &[Vec<f64>],
+    column: usize,
+    work: &mut [f64],
+    hessenberg: &mut [Vec<f64>],
+    mode: FusedOrthogonalization,
+    counters: &mut WorkCounters,
+) {
+    let end = column + 1;
+    let start = match mode {
+        FusedOrthogonalization::FullMgs => 0,
+        FusedOrthogonalization::Incomplete { length } => end.saturating_sub(length),
+    };
+    let passes = usize::from(matches!(mode, FusedOrthogonalization::FullMgs)) + 1;
+    for _ in 0..passes {
+        for row in start..end {
+            let coefficient = dot(&basis[row], work);
+            hessenberg[row][column] += coefficient;
+            axpy(-coefficient, &basis[row], work);
+            counters.orthogonalization_inner_products += 1;
+            counters.orthogonalization_vector_updates += 1;
+        }
+    }
+}
+
+fn krylov_exponential_once(
+    operator: Arc<dyn LinearOperator>,
+    scale: f64,
+    vector: &[f64],
+    config: FusedPhiKrylovConfig,
+    counters: &mut WorkCounters,
+) -> CoreResult<(Vec<f64>, FusedPhiSubstepReport)> {
+    let dimension = operator.dimension();
+    if vector.len() != dimension {
+        return Err(CoreError::Dimension(
+            "fused Krylov exponential vector shape mismatch".into(),
+        ));
+    }
+    let config = config.validate(dimension)?;
+    let beta = safe_l2(vector);
+    if beta == 0.0 {
+        return Ok((
+            vec![0.0; dimension],
+            FusedPhiSubstepReport {
+                substep_index: 0,
+                krylov_dimension: 0,
+                converged: true,
+                happy_breakdown: true,
+                error_estimate: 0.0,
+            },
+        ));
+    }
+
+    let maximum = config.maximum_dimension;
+    let mut basis = Vec::with_capacity(maximum + 1);
+    basis.push(vector.iter().map(|value| value / beta).collect::<Vec<_>>());
+    let mut hessenberg = vec![vec![0.0; maximum]; maximum + 1];
+    let mut previous: Option<Vec<f64>> = None;
+    let mut latest = vector.to_vec();
+    let mut latest_error = f64::INFINITY;
+    let mut latest_dimension = 0;
+    let mut latest_breakdown = false;
+    let breakdown_tolerance = 64.0 * f64::EPSILON.sqrt();
+
+    for column in 0..maximum {
+        let mut work = vec![0.0; dimension];
+        operator.apply(&basis[column], &mut work)?;
+        counters.jvp_calls += 1;
+        counters.jvp_vectors += 1;
+        counters.phi_krylov_vectors += 1;
+        fused_orthogonalize(
+            &basis,
+            column,
+            &mut work,
+            &mut hessenberg,
+            config.orthogonalization,
+            counters,
+        );
+        let next_norm = safe_l2(&work);
+        hessenberg[column + 1][column] = next_norm;
+        let column_scale = hessenberg
+            .iter()
+            .take(column + 1)
+            .map(|row| row[column].abs())
+            .fold(1.0, f64::max);
+        let happy_breakdown = next_norm <= breakdown_tolerance * column_scale;
+        if !happy_breakdown && column + 1 < maximum {
+            basis.push(work.iter().map(|value| value / next_norm).collect());
+        }
+
+        let krylov_dimension = column + 1;
+        // A true invariant-subspace breakdown is a valid checkpoint even before the requested
+        // minimum dimension; otherwise zero or affine combinations can burn the entire budget.
+        let checkpoint = happy_breakdown
+            || krylov_dimension == maximum
+            || (krylov_dimension >= config.minimum_dimension
+                && (krylov_dimension - config.minimum_dimension) % config.dimension_increment == 0);
+        if checkpoint {
+            let current = projected_exponential_action(
+                &basis,
+                &hessenberg,
+                beta,
+                krylov_dimension,
+                scale,
+                counters,
+            )?;
+            latest_error = previous.as_ref().map_or(f64::INFINITY, |prior| {
+                let difference = current
+                    .iter()
+                    .zip(prior)
+                    .map(|(a, b)| a - b)
+                    .collect::<Vec<_>>();
+                safe_l2(&difference)
+            });
+            latest_dimension = krylov_dimension;
+            latest_breakdown = happy_breakdown;
+            latest = current.clone();
+            let threshold = config.absolute_tolerance
+                + config.relative_tolerance * safe_l2(&current).max(beta);
+            if happy_breakdown || krylov_dimension == dimension || latest_error <= threshold {
+                return Ok((
+                    current,
+                    FusedPhiSubstepReport {
+                        substep_index: 0,
+                        krylov_dimension,
+                        converged: true,
+                        happy_breakdown,
+                        error_estimate: if latest_error.is_finite() { latest_error } else { 0.0 },
+                    },
+                ));
+            }
+            previous = Some(current);
+        }
+        if happy_breakdown {
+            break;
+        }
+    }
+    Ok((
+        latest,
+        FusedPhiSubstepReport {
+            substep_index: 0,
+            krylov_dimension: latest_dimension,
+            converged: false,
+            happy_breakdown: latest_breakdown,
+            error_estimate: latest_error,
+        },
+    ))
+}
+
+fn augmented_fused_operator(
+    operator: Arc<dyn LinearOperator>,
+    vectors: &[Vec<f64>],
+) -> CoreResult<(Arc<dyn LinearOperator>, Vec<f64>, usize)> {
+    if vectors.is_empty() {
+        return Err(CoreError::InvalidInput(
+            "fused phi action requires at least b0".into(),
+        ));
+    }
+    let n = operator.dimension();
+    if vectors.iter().any(|vector| vector.len() != n) {
+        return Err(CoreError::Dimension(
+            "fused phi action vector shape mismatch".into(),
+        ));
+    }
+    let p = vectors.len() - 1;
+    if p == 0 {
+        return Ok((operator, vectors[0].clone(), n));
+    }
+    let owned = vectors.to_vec();
+    let augmented_dimension = n + p;
+    let augmented = Arc::new(ClosureOperator::new(augmented_dimension, move |input, output| {
+        if input.len() != augmented_dimension || output.len() != augmented_dimension {
+            return Err(CoreError::Dimension(
+                "augmented fused operator shape mismatch".into(),
+            ));
+        }
+        operator.apply(&input[..n], &mut output[..n])?;
+        for column in 0..p {
+            let coefficient = input[n + column];
+            if coefficient != 0.0 {
+                axpy(coefficient, &owned[p - column], &mut output[..n]);
+            }
+        }
+        for row in 0..p {
+            output[n + row] = if row + 1 < p { input[n + row + 1] } else { 0.0 };
+        }
+        Ok(())
+    })) as Arc<dyn LinearOperator>;
+    let mut start = vec![0.0; augmented_dimension];
+    start[..n].copy_from_slice(&vectors[0]);
+    start[augmented_dimension - 1] = 1.0;
+    Ok((augmented, start, n))
+}
+
+/// One augmented matrix-free Krylov process for a linear combination of phi functions.
+///
+/// The `vectors` input follows the scaled convention
+/// `b0 + scale*phi1(scale*A)b1 + ... + scale^p*phi_p(scale*A)bp`.
+pub fn fused_phi_action(
+    operator: Arc<dyn LinearOperator>,
+    scale: f64,
+    vectors: &[Vec<f64>],
+    config: FusedPhiKrylovConfig,
+    counters: &mut WorkCounters,
+) -> CoreResult<FusedPhiActionReport> {
+    if !scale.is_finite()
+        || vectors.is_empty()
+        || !vectors.iter().flat_map(|v| v.iter()).all(|value| value.is_finite())
+    {
+        return Err(CoreError::InvalidInput(
+            "invalid fused phi-action input".into(),
+        ));
+    }
+    counters.phi_actions += 1;
+    let n = operator.dimension();
+    if vectors.iter().any(|vector| vector.len() != n) {
+        return Err(CoreError::Dimension(
+            "fused phi-action vector shape mismatch".into(),
+        ));
+    }
+    if vectors.iter().all(|vector| safe_l2(vector) == 0.0) {
+        return Ok(FusedPhiActionReport {
+            scale,
+            highest_phi_index: vectors.len() - 1,
+            substeps: 0,
+            converged: true,
+            maximum_krylov_dimension: 0,
+            error_estimate: 0.0,
+            action_norm: 0.0,
+            value: vec![0.0; n],
+            substep_reports: Vec::new(),
+        });
+    }
+    let (augmented, initial, physical_dimension) = augmented_fused_operator(operator, vectors)?;
+    let config = config.validate(augmented.dimension())?;
+    let mut substeps = 1usize;
+    loop {
+        let delta = scale / substeps as f64;
+        let mut state = initial.clone();
+        let mut reports = Vec::with_capacity(substeps);
+        let mut total_error = 0.0;
+        let mut maximum_dimension = 0;
+        let mut completed = true;
+        for index in 0..substeps {
+            let (next, mut report) = krylov_exponential_once(
+                augmented.clone(),
+                delta,
+                &state,
+                config,
+                counters,
+            )?;
+            report.substep_index = index;
+            maximum_dimension = maximum_dimension.max(report.krylov_dimension);
+            if report.error_estimate.is_finite() {
+                total_error += report.error_estimate;
+            }
+            completed &= report.converged;
+            reports.push(report);
+            state = next;
+            if !completed {
+                break;
+            }
+        }
+        if completed {
+            let value = state[..physical_dimension].to_vec();
+            return Ok(FusedPhiActionReport {
+                scale,
+                highest_phi_index: vectors.len() - 1,
+                substeps,
+                converged: true,
+                maximum_krylov_dimension: maximum_dimension,
+                error_estimate: total_error,
+                action_norm: safe_l2(&value),
+                value,
+                substep_reports: reports,
+            });
+        }
+        if substeps >= config.maximum_substeps {
+            let value = state[..physical_dimension].to_vec();
+            return Ok(FusedPhiActionReport {
+                scale,
+                highest_phi_index: vectors.len() - 1,
+                substeps,
+                converged: false,
+                maximum_krylov_dimension: maximum_dimension,
+                error_estimate: total_error,
+                action_norm: safe_l2(&value),
+                value,
+                substep_reports: reports,
+            });
+        }
+        counters.phi_restarts += 1;
+        substeps = (substeps * 2).min(config.maximum_substeps);
+    }
+}
+
+/// Fused unscaled combination `sum coefficient*phi_k(scale*A)vector`.
+pub fn fused_phi_linear_combination(
+    operator: Arc<dyn LinearOperator>,
+    scale: f64,
+    terms: &[FusedPhiTerm<'_>],
+    config: FusedPhiKrylovConfig,
+    counters: &mut WorkCounters,
+) -> CoreResult<FusedPhiActionReport> {
+    if scale == 0.0 {
+        return Err(CoreError::InvalidInput(
+            "fused unscaled phi combination requires nonzero scale".into(),
+        ));
+    }
+    let n = operator.dimension();
+    let highest = terms.iter().map(|term| term.phi_index).max().unwrap_or(0);
+    let mut vectors = vec![vec![0.0; n]; highest + 1];
+    for term in terms {
+        if term.vector.len() != n || !term.coefficient.is_finite() {
+            return Err(CoreError::Dimension(
+                "fused phi combination term shape mismatch".into(),
+            ));
+        }
+        let divisor = scale.powi(term.phi_index as i32);
+        if divisor == 0.0 || !divisor.is_finite() {
+            return Err(CoreError::NonFinite(
+                "fused phi combination scale power is invalid".into(),
+            ));
+        }
+        axpy(term.coefficient / divisor, term.vector, &mut vectors[term.phi_index]);
+    }
+    fused_phi_action(operator, scale, &vectors, config, counters)
 }
 
 fn validate_problem(problem: &OdeProblem, y: &[f64]) -> CoreResult<()> {
