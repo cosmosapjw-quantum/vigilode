@@ -1,0 +1,52 @@
+   Compiling rodas5p-core v0.1.0 (/mnt/data/g3_recovery/repo/crates/rodas5p-core)
+    Finished `measurement` profile [optimized] target(s) in 0.59s
+     Running unittests src/lib.rs (target/measurement/deps/rodas5p_core-c3653a9dac7c955d)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/allocation_contracts.rs (target/measurement/deps/allocation_contracts-cc355c188639ddaa)
+
+running 1 test
+test shifted_operator_apply_is_allocation_free_after_construction ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/core_contracts.rs (target/measurement/deps/core_contracts-e133243ba61a982f)
+
+running 7 tests
+test coefficient_transform_preserves_rodas5p_structure ... ok
+test dense_matrix_matvec_is_row_major_and_exact_for_small_case ... ok
+test direct_solve_agrees_with_known_solution ... ok
+test linear_operator_default_row_application_preserves_order ... ok
+test linear_operator_row_application_rejects_ragged_shapes ... ok
+test safe_l2_handles_extreme_scale ... ok
+test wrms_matches_definition ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/fused_phi_contracts.rs (target/measurement/deps/fused_phi_contracts-2f282c6ae27a9d16)
+
+running 2 tests
+test fused_dense_action_handles_only_b0 ... ok
+test fused_dense_action_matches_separate_phi_actions ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/matrix_function_contracts.rs (target/measurement/deps/matrix_function_contracts-33e4744b41c883e3)
+
+running 3 tests
+test dense_phi_action_matches_scalar_values ... ok
+test dense_phi_action_satisfies_matrix_recurrence ... ok
+test pade13_matches_scalar_exponential_across_stiff_scales ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/work_counter_contracts.rs (target/measurement/deps/work_counter_contracts-8fac2a1669d8151c)
+
+running 1 test
+test work_counters_accumulate_componentwise_and_saturate ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

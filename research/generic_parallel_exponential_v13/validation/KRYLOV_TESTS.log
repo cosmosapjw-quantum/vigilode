@@ -1,0 +1,40 @@
+   Compiling rodas5p-krylov v0.1.0 (/mnt/data/g3_recovery/repo/crates/rodas5p-krylov)
+    Finished `measurement` profile [optimized] target(s) in 0.51s
+     Running unittests src/lib.rs (target/measurement/deps/rodas5p_krylov-97833a125bfa9358)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/block_gmres_contracts.rs (target/measurement/deps/block_gmres_contracts-ea5eda1fe4368b47)
+
+running 6 tests
+test block_gmres_deflates_linearly_dependent_rhs ... ok
+test block_gmres_does_not_false_converge_on_small_nonzero_rhs ... ok
+test block_gmres_rejects_ragged_rhs_without_counting_a_solve ... ok
+test block_gmres_solves_multiple_rhs_through_block_operator_calls ... ok
+test exhausted_block_gmres_retains_attempted_work_counters ... ok
+test seeded_shared_basis_refines_all_rhs_to_the_same_true_residual_contract ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/krylov_contracts.rs (target/measurement/deps/krylov_contracts-fe2e72a4d4589bff)
+
+running 6 tests
+test gcrodr_cross_operator_refresh_remains_scale_invariant ... ok
+test gcrodr_handles_one_dimensional_recycle_updates_without_panicking ... ok
+test gcrodr_preserves_bu_equals_c_and_refreshes_changed_operator ... ok
+test gmres_uses_the_same_jacobi_preconditioner_contract ... ok
+test lgmres_commits_state_only_after_a_certified_solve ... ok
+test restarted_gmres_matches_direct_solution_and_certifies_true_residual ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/workspace_contracts.rs (target/measurement/deps/workspace_contracts-d00bfd0ea34a5126)
+
+running 2 tests
+test reusable_workspaces_preserve_all_three_solver_contracts ... ok
+test warmed_gmres_workspace_reduces_heap_allocations_without_changing_operator_work ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

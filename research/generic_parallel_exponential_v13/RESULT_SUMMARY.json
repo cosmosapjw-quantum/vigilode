@@ -1,0 +1,87 @@
+{
+  "base_tag": "generic-parallel-exponential-foundation-v1.2.0-alpha1",
+  "bdf_radau_modified": false,
+  "branch": "generic-parallel-exp-adaptive-v1.3",
+  "canonical_campaigns": 7,
+  "classification": {
+    "full_mgs_pexprb54s4": "PROMOTE_TO_EXPANDED_SEALED_HOLDOUT",
+    "fused_phi_infrastructure": "PROMOTE",
+    "generic_accelerated_solver": "HOLD",
+    "incomplete_orthogonalization": "HOLD_RESEARCH_ONLY"
+  },
+  "date": "2026-08-13",
+  "explicit_jacobian_builds": 0,
+  "next_node": "G4_EPIRK_K_W_AND_EXPANDED_SEALED_HOLDOUT",
+  "performance_promotion_authorized": false,
+  "physical_clients_executed": false,
+  "primary": {
+    "maximum_same_error_speedup": 7.598366065129827,
+    "maximum_step_ratio": 8.333333333333334,
+    "maximum_wall_cv": 0.8547591147456178,
+    "median_jvp_ratio": 0.379746835443038,
+    "median_relative_iqr": 0.05045269443140656,
+    "median_same_error_speedup": 1.5194456454953007,
+    "median_step_ratio": 1.1,
+    "median_wall_cv": 0.07779980163221731,
+    "minimum_same_error_speedup": 0.07842484030666196,
+    "relative_iqr_q75": 0.08147865604414832,
+    "runs": 12,
+    "successful_runs": 12,
+    "target_coverage": 11,
+    "total_targets": 12,
+    "wall_cv_q75": 0.6003926833321186
+  },
+  "primary_candidate": "pexprb54s4-fused-full-mgs-t1",
+  "primary_newton_iterations": 0,
+  "promotion_gates": {
+    "explicit_jacobian_builds": {
+      "observed": 0,
+      "pass": true,
+      "required": 0
+    },
+    "false_convergence": {
+      "observed": 0,
+      "pass": true,
+      "required": 0
+    },
+    "median_same_error_speedup": {
+      "observed": 1.5194456454953007,
+      "pass": true,
+      "required_min": 1.15
+    },
+    "median_step_ratio": {
+      "observed": 1.1,
+      "pass": true,
+      "required_max": 1.2
+    },
+    "observed_order_minimum": {
+      "observed": 4.928770428239681,
+      "pass": true,
+      "required": 4.8
+    },
+    "primary_newton_iterations": {
+      "observed": 0,
+      "pass": true,
+      "required": 0
+    },
+    "sealed_expanded_holdout": {
+      "observed": false,
+      "pass": false,
+      "required": true
+    },
+    "target_coverage": {
+      "observed": 11,
+      "pass": false,
+      "required": 12
+    },
+    "within_step_t4_speedup": {
+      "observed": 0.5251320387985952,
+      "pass": false,
+      "required_min": 1.0
+    }
+  },
+  "schema": "generic-parallel-exponential-g3-delivery-summary-v1",
+  "scientific_checksum": "a921e2ce3cf6f2fe752b916bc965c44ba1131aece81054ae3d4eb4ee470a804a",
+  "tests_failed": 0,
+  "tests_passed": 180
+}

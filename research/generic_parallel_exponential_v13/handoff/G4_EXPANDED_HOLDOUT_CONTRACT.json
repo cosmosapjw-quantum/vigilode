@@ -1,0 +1,45 @@
+{
+  "schema": "generic-parallel-exponential-g4-contract-v1",
+  "node": "G4_EPIRK_K_W_AND_EXPANDED_SEALED_HOLDOUT",
+  "frozen_g3_primary": "pexprb54s4-fused-full-mgs-t1",
+  "must_freeze_before_output": [
+    "method coefficients",
+    "full-MGS phi configuration",
+    "time controller parameters",
+    "phi tolerance allocation",
+    "same-error matching rule",
+    "problem parameters and seeds"
+  ],
+  "expanded_holdout_families": [
+    "Robertson",
+    "HIRES",
+    "stiff van der Pol",
+    "rotating nonnormal",
+    "nonautonomous stiff forcing",
+    "large semilinear diffusion/advection"
+  ],
+  "dimensions": [128, 512, 2048],
+  "new_method_families": [
+    "EPIRK-K4 correctness lane",
+    "EPIRK-W3 correctness lane",
+    "cost-aware pexprb54s4 controller candidate"
+  ],
+  "promotion_gates": {
+    "target_coverage": 1.0,
+    "minimum_order_slack": 0.2,
+    "explicit_jacobian_builds": 0,
+    "primary_newton_iterations": 0,
+    "false_convergence": 0,
+    "median_step_ratio_max": 1.2,
+    "median_same_error_speedup_min": 1.15,
+    "scientific_thread_identity": true,
+    "bounded_memory": true
+  },
+  "forbidden": [
+    "retune frozen G3 policy on holdout output",
+    "modify BDF/Radau comparators",
+    "execute physical clients before generic holdout closes",
+    "enable T4 by default without crossover evidence",
+    "label arbitrary approximate Jacobian pexprb54s4 as EPIRK-W"
+  ]
+}
