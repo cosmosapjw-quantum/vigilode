@@ -6,6 +6,7 @@ mod block;
 mod candidates;
 mod certification;
 mod common_w_gate;
+mod exponential;
 mod g1_transactional_gate;
 mod homotopy;
 mod homotopy_experiments;
@@ -52,6 +53,10 @@ pub use certification::{
 pub use common_w_gate::{
     MatrixFreeCommonWCase, MatrixFreeCommonWProfile, MatrixFreeCommonWReport, MatrixFreeCommonWRow,
     run_matrix_free_common_w_gate,
+};
+pub use exponential::{
+    ExponentialKrylovConfig, ExponentialStepReport, Pexprb54s4Tableau, PhiActionReport,
+    exprb2_step, exprb43_step, krylov_phi_action, pexprb54s4_step, pexprb54s4_tableau,
 };
 pub use g1_transactional_gate::{
     G1TransactionalCase, G1TransactionalGateProfile, G1TransactionalGateReport,
