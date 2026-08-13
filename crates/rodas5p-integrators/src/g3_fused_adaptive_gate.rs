@@ -181,7 +181,7 @@ fn run_exponential(
         }
     };
     let phi=phi_config(rtol,orth,problem.dimension+4);
-    let execution=match ParallelExecution::new(threads) { Ok(x)=>x,Err(e)=>return failed_row(&runtime.id,"pexprb54s4-fused",rtol,0.01*rtol,e.to_string()) };
+    let execution=match if threads == 1 { Ok(ParallelExecution::sequential()) } else { ParallelExecution::rayon(threads) } { Ok(x)=>x,Err(e)=>return failed_row(&runtime.id,"pexprb54s4-fused",rtol,0.01*rtol,e.to_string()) };
     let start=Instant::now();
     let result=integrate_pexprb54s4_fused_adaptive_observed(&problem,runtime.t_span,&y0,&adaptive,&output,phi,&execution);
     let wall=start.elapsed().as_secs_f64();
@@ -212,24 +212,80 @@ fn run_comparator(runtime:&RuntimeProblem,rtol:f64,candidate:&str)->G3AdaptiveRo
     let adaptive=adaptive_config(rtol,span);
     let output=OutputSchedule::new(vec![runtime.t_span.0,runtime.t_span.1]).expect("valid output");
     let start=Instant::now();
-    let result:CoreResult<(crate::ObservedIntegrationResult,usize,usize)>=match candidate {
-        "protected-jf-rodas5p"=>{
-            let problem=runtime.problem.jvp_only_clone()?;
-            let linear=LinearSolverConfig{method:LinearMethod::Gmres,rtol:1e-10,atol:1e-12,restart:32,maxiter:256,..LinearSolverConfig::default()};
-            integrate_sequential_matrix_free_adaptive_observed(&problem,runtime.t_span,&runtime.y0,&linear,&adaptive,&output)
-                .map(|run|(run.observed,run.diagnostics.accepted_macro_steps,run.diagnostics.rejected_macro_steps))
-        },
-        "held-g1-q1-q2"=>{
-            let problem=runtime.problem.jvp_only_clone()?;
-            integrate_transactional_q1_q2_adaptive_observed(&problem,runtime.t_span,&runtime.y0,&TransactionalQ1Q2Config::default(),&adaptive,&output)
-                .map(|run|(run.observed,run.diagnostics.accepted_macro_steps,run.diagnostics.rejected_macro_steps))
-        },
-        "frozen-bdf2"=>integrate_bdf_adaptive_observed(&runtime.problem,runtime.t_span,&runtime.y0,&BdfConfig::default(),&adaptive,&output)
-            .map(|run|(run.observed,run.diagnostics.accepted_macro_steps,run.diagnostics.rejected_macro_steps)),
-        "frozen-radau-iia3"=>integrate_radau_adaptive_observed(&runtime.problem,runtime.t_span,&runtime.y0,&RadauConfig::default(),&adaptive,&output)
-            .map(|run|(run.observed,run.diagnostics.accepted_macro_steps,run.diagnostics.rejected_macro_steps)),
-        _=>Err(CoreError::InvalidInput("unknown G3 comparator".into())),
-    };
+    let result: CoreResult<(crate::ObservedIntegrationResult, usize, usize)> = (|| {
+        match candidate {
+            "protected-jf-rodas5p" => {
+                let problem = runtime.problem.jvp_only_clone()?;
+                let linear = LinearSolverConfig {
+                    method: LinearMethod::Gmres,
+                    rtol: 1e-10,
+                    atol: 1e-12,
+                    restart: 32,
+                    maxiter: 256,
+                    ..LinearSolverConfig::default()
+                };
+                integrate_sequential_matrix_free_adaptive_observed(
+                    &problem, runtime.t_span, &runtime.y0, &linear, &adaptive, &output,
+                )
+                .map(|run| {
+                    (
+                        run.observed,
+                        run.diagnostics.accepted_macro_steps,
+                        run.diagnostics.rejected_macro_steps,
+                    )
+                })
+            }
+            "held-g1-q1-q2" => {
+                let problem = runtime.problem.jvp_only_clone()?;
+                integrate_transactional_q1_q2_adaptive_observed(
+                    &problem,
+                    runtime.t_span,
+                    &runtime.y0,
+                    &TransactionalQ1Q2Config::default(),
+                    &adaptive,
+                    &output,
+                )
+                .map(|run| {
+                    (
+                        run.observed,
+                        run.diagnostics.accepted_macro_steps,
+                        run.diagnostics.rejected_macro_steps,
+                    )
+                })
+            }
+            "frozen-bdf2" => integrate_bdf_adaptive_observed(
+                &runtime.problem,
+                runtime.t_span,
+                &runtime.y0,
+                &BdfConfig::default(),
+                &adaptive,
+                &output,
+            )
+            .map(|run| {
+                (
+                    run.observed,
+                    run.diagnostics.accepted_macro_steps,
+                    run.diagnostics.rejected_macro_steps,
+                )
+            }),
+            "frozen-radau-iia3" => integrate_radau_adaptive_observed(
+                &runtime.problem,
+                runtime.t_span,
+                &runtime.y0,
+                &RadauConfig::default(),
+                &adaptive,
+                &output,
+            )
+            .map(|run| {
+                (
+                    run.observed,
+                    run.diagnostics.accepted_macro_steps,
+                    run.diagnostics.rejected_macro_steps,
+                )
+            }),
+            _ => Err(CoreError::InvalidInput("unknown G3 comparator".into())),
+        }
+    })();
     let wall=start.elapsed().as_secs_f64();
     match result {
         Ok((observed,accepted,rejected))=>G3AdaptiveRow{
