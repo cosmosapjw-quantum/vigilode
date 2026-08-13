@@ -3,8 +3,8 @@ use serde::{Deserialize, Serialize};
 
 use crate::output::OutputCollector;
 use crate::{
-    AdaptiveControllerState, AdaptiveStepConfig, FusedPhiKrylovConfig, OdeProblem,
-    ObservedIntegrationResult, OutputSchedule, ParallelExecution, pexprb54s4_fused_step,
+    AdaptiveControllerState, AdaptiveStepConfig, FusedPhiKrylovConfig, ObservedIntegrationResult,
+    OdeProblem, OutputSchedule, ParallelExecution, pexprb54s4_fused_step,
 };
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
@@ -27,14 +27,15 @@ pub struct AdaptiveFusedExponentialResult {
     pub diagnostics: AdaptiveFusedExponentialDiagnostics,
 }
 
-fn phi_error_proxy(
-    reports: &[crate::FusedPhiActionReport],
-    h: f64,
-    scale: &[f64],
-) -> f64 {
+fn phi_error_proxy(reports: &[crate::FusedPhiActionReport], h: f64, scale: &[f64]) -> f64 {
     let estimate = reports
         .iter()
-        .filter_map(|report| report.error_estimate.is_finite().then_some(report.error_estimate))
+        .filter_map(|report| {
+            report
+                .error_estimate
+                .is_finite()
+                .then_some(report.error_estimate)
+        })
         .sum::<f64>();
     h.abs() * estimate / safe_l2(scale).max(f64::MIN_POSITIVE)
 }
@@ -121,8 +122,7 @@ pub fn integrate_pexprb54s4_fused_adaptive_observed(
             diagnostics.accepted_step_sizes.push(trial_h);
             counters.accepted_steps += 1;
             controller.record_acceptance(total_error)?;
-            h = trial_h
-                * controller.propose_factor(adaptive, total_error.max(1.0e-16), 5, true)?;
+            h = trial_h * controller.propose_factor(adaptive, total_error.max(1.0e-16), 5, true)?;
         } else {
             diagnostics.rejected_steps += 1;
             diagnostics.rejected_step_sizes.push(trial_h);
@@ -137,7 +137,11 @@ pub fn integrate_pexprb54s4_fused_adaptive_observed(
         }
     }
     let success = t >= tf - tolerance;
-    let (times, states, output_clipped_steps) = collector.finish()?;
+    let (times, states, output_clipped_steps) = if success {
+        collector.finish()?
+    } else {
+        collector.finish_partial()
+    };
     Ok(AdaptiveFusedExponentialResult {
         observed: ObservedIntegrationResult {
             t: times,

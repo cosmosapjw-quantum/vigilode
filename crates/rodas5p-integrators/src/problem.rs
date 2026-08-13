@@ -311,13 +311,17 @@ impl OdeProblem {
             CoreError::InvalidInput("time augmentation requires a JVP callback".into())
         })?;
         let partial_t = self.partial_t.clone().ok_or_else(|| {
-            CoreError::InvalidInput("time augmentation requires an explicit partial_t callback".into())
+            CoreError::InvalidInput(
+                "time augmentation requires an explicit partial_t callback".into(),
+            )
         })?;
         let rhs = self.rhs.clone();
         let n = self.dimension;
         let augmented_rhs: RhsFn = Arc::new(move |_, state, out| {
             if state.len() != n + 1 || out.len() != n + 1 {
-                return Err(CoreError::Dimension("time-augmented RHS shape mismatch".into()));
+                return Err(CoreError::Dimension(
+                    "time-augmented RHS shape mismatch".into(),
+                ));
             }
             rhs(state[n], &state[..n], &mut out[..n])?;
             out[n] = 1.0;
@@ -325,7 +329,9 @@ impl OdeProblem {
         });
         let augmented_jvp: JvpFn = Arc::new(move |_, state, direction, out| {
             if state.len() != n + 1 || direction.len() != n + 1 || out.len() != n + 1 {
-                return Err(CoreError::Dimension("time-augmented JVP shape mismatch".into()));
+                return Err(CoreError::Dimension(
+                    "time-augmented JVP shape mismatch".into(),
+                ));
             }
             jvp(state[n], &state[..n], &direction[..n], &mut out[..n])?;
             if direction[n] != 0.0 {

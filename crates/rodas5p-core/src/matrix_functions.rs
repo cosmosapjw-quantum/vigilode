@@ -172,7 +172,6 @@ pub fn dense_phi_action(
     }
 }
 
-
 /// Compute a fused linear combination
 ///
 /// `exp(scale*A)b_0 + sum_{k=1}^p scale^k phi_k(scale*A)b_k`

@@ -61,7 +61,6 @@ impl ExponentialKrylovConfig {
     }
 }
 
-
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum FusedOrthogonalization {
@@ -114,14 +113,21 @@ impl FusedPhiKrylovConfig {
                 "invalid fused phi Krylov tolerance".into(),
             ));
         }
-        if matches!(self.orthogonalization, FusedOrthogonalization::Incomplete { length: 0 }) {
+        if matches!(
+            self.orthogonalization,
+            FusedOrthogonalization::Incomplete { length: 0 }
+        ) {
             return Err(CoreError::InvalidInput(
                 "incomplete orthogonalization length must be positive".into(),
             ));
         }
         let maximum_dimension = self.maximum_dimension.min(dimension.max(1));
         let minimum_dimension = self.minimum_dimension.min(maximum_dimension);
-        Ok(Self { minimum_dimension, maximum_dimension, ..self })
+        Ok(Self {
+            minimum_dimension,
+            maximum_dimension,
+            ..self
+        })
     }
 }
 
@@ -131,7 +137,11 @@ pub struct FusedPhiSubstepReport {
     pub krylov_dimension: usize,
     pub converged: bool,
     pub happy_breakdown: bool,
+    /// KIOPS/Saad first-term estimate
+    /// `|tau h_{m+1,m} e_m^T phi_1(tau H_m) beta e_1|`.
     pub error_estimate: f64,
+    /// Nested-dimension difference retained only as an independent diagnostic.
+    pub nested_difference_estimate: f64,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -141,7 +151,10 @@ pub struct FusedPhiActionReport {
     pub substeps: usize,
     pub converged: bool,
     pub maximum_krylov_dimension: usize,
+    /// Sum of the per-substep residual-based estimates.
     pub error_estimate: f64,
+    /// Sum of finite nested-dimension differences; diagnostic only.
+    pub nested_difference_estimate: f64,
     pub action_norm: f64,
     pub value: Vec<f64>,
     pub substep_reports: Vec<FusedPhiSubstepReport>,
@@ -176,7 +189,6 @@ pub struct ExponentialStepReport {
     pub phi_reports: Vec<PhiActionReport>,
     pub work: WorkCounters,
 }
-
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct FusedExponentialStepReport {
@@ -412,16 +424,43 @@ pub fn krylov_phi_action(
     })
 }
 
-
-fn projected_exponential_action(
+fn projected_exponential_action_with_residual_estimate(
     basis: &[Vec<f64>],
     hessenberg: &[Vec<f64>],
     beta: f64,
     dimension: usize,
     scale: f64,
     counters: &mut WorkCounters,
-) -> CoreResult<Vec<f64>> {
-    projected_action(basis, hessenberg, beta, dimension, scale, 0, counters)
+) -> CoreResult<(Vec<f64>, f64)> {
+    let mut h = DenseMatrix::zeros(dimension, dimension);
+    for i in 0..dimension {
+        for j in 0..dimension {
+            h[(i, j)] = hessenberg[i][j];
+        }
+    }
+    let mut reduced_input = vec![0.0; dimension];
+    reduced_input[0] = beta;
+
+    let reduced_exp = dense_phi_action(&h, scale, 0, &reduced_input)?;
+    counters.phi_projected_exponentials += 1;
+    counters.phi_dense_oracle_calls += 1;
+    let mut out = vec![0.0; basis[0].len()];
+    for (coefficient, vector) in reduced_exp.iter().zip(&basis[..dimension]) {
+        axpy(*coefficient, vector, &mut out);
+    }
+
+    // First term of the Arnoldi error expansion used by KIOPS/phipm:
+    // |tau h_{m+1,m} e_m^T phi_1(tau H_m) beta e_1|.
+    // Unlike a nested-dimension difference this is available at the first checkpoint and is tied
+    // directly to the Arnoldi projection residual.  It remains an estimator, not a rigorous upper
+    // bound for arbitrary nonnormal operators.
+    let reduced_phi1 = dense_phi_action(&h, scale, 1, &reduced_input)?;
+    counters.phi_projected_exponentials += 1;
+    counters.phi_dense_oracle_calls += 1;
+    let h_next = hessenberg[dimension][dimension - 1].abs();
+    let residual_error_estimate =
+        (scale.abs() * h_next * reduced_phi1[dimension - 1].abs()).max(0.0);
+    Ok((out, residual_error_estimate))
 }
 
 fn fused_orthogonalize(
@@ -473,6 +512,7 @@ fn krylov_exponential_once(
                 converged: true,
                 happy_breakdown: true,
                 error_estimate: 0.0,
+                nested_difference_estimate: 0.0,
             },
         ));
     }
@@ -483,7 +523,8 @@ fn krylov_exponential_once(
     let mut hessenberg = vec![vec![0.0; maximum]; maximum + 1];
     let mut previous: Option<Vec<f64>> = None;
     let mut latest = vector.to_vec();
-    let mut latest_error = f64::INFINITY;
+    let mut latest_residual_error = f64::INFINITY;
+    let mut latest_nested_difference = f64::INFINITY;
     let mut latest_dimension = 0;
     let mut latest_breakdown = false;
     let breakdown_tolerance = 64.0 * f64::EPSILON.sqrt();
@@ -522,15 +563,16 @@ fn krylov_exponential_once(
             || (krylov_dimension >= config.minimum_dimension
                 && (krylov_dimension - config.minimum_dimension) % config.dimension_increment == 0);
         if checkpoint {
-            let current = projected_exponential_action(
-                &basis,
-                &hessenberg,
-                beta,
-                krylov_dimension,
-                scale,
-                counters,
-            )?;
-            latest_error = previous.as_ref().map_or(f64::INFINITY, |prior| {
+            let (current, residual_error_estimate) =
+                projected_exponential_action_with_residual_estimate(
+                    &basis,
+                    &hessenberg,
+                    beta,
+                    krylov_dimension,
+                    scale,
+                    counters,
+                )?;
+            let nested_difference_estimate = previous.as_ref().map_or(f64::INFINITY, |prior| {
                 let difference = current
                     .iter()
                     .zip(prior)
@@ -538,14 +580,16 @@ fn krylov_exponential_once(
                     .collect::<Vec<_>>();
                 safe_l2(&difference)
             });
+            latest_residual_error = residual_error_estimate;
+            latest_nested_difference = nested_difference_estimate;
             latest_dimension = krylov_dimension;
             latest_breakdown = happy_breakdown;
             latest = current.clone();
-            let threshold = config.absolute_tolerance
-                + config.relative_tolerance * safe_l2(&current).max(beta);
+            let threshold =
+                config.absolute_tolerance + config.relative_tolerance * safe_l2(&current).max(beta);
             let full_space_exact = krylov_dimension == dimension
                 && matches!(config.orthogonalization, FusedOrthogonalization::FullMgs);
-            if happy_breakdown || full_space_exact || latest_error <= threshold {
+            if happy_breakdown || full_space_exact || residual_error_estimate <= threshold {
                 return Ok((
                     current,
                     FusedPhiSubstepReport {
@@ -555,11 +599,10 @@ fn krylov_exponential_once(
                         happy_breakdown,
                         error_estimate: if happy_breakdown || full_space_exact {
                             0.0
-                        } else if latest_error.is_finite() {
-                            latest_error
                         } else {
-                            0.0
+                            residual_error_estimate
                         },
+                        nested_difference_estimate,
                     },
                 ));
             }
@@ -576,7 +619,8 @@ fn krylov_exponential_once(
             krylov_dimension: latest_dimension,
             converged: false,
             happy_breakdown: latest_breakdown,
-            error_estimate: latest_error,
+            error_estimate: latest_residual_error,
+            nested_difference_estimate: latest_nested_difference,
         },
     ))
 }
@@ -602,24 +646,27 @@ fn augmented_fused_operator(
     }
     let owned = vectors.to_vec();
     let augmented_dimension = n + p;
-    let augmented = Arc::new(ClosureOperator::new(augmented_dimension, move |input, output| {
-        if input.len() != augmented_dimension || output.len() != augmented_dimension {
-            return Err(CoreError::Dimension(
-                "augmented fused operator shape mismatch".into(),
-            ));
-        }
-        operator.apply(&input[..n], &mut output[..n])?;
-        for column in 0..p {
-            let coefficient = input[n + column];
-            if coefficient != 0.0 {
-                axpy(coefficient, &owned[p - column], &mut output[..n]);
+    let augmented = Arc::new(ClosureOperator::new(
+        augmented_dimension,
+        move |input, output| {
+            if input.len() != augmented_dimension || output.len() != augmented_dimension {
+                return Err(CoreError::Dimension(
+                    "augmented fused operator shape mismatch".into(),
+                ));
             }
-        }
-        for row in 0..p {
-            output[n + row] = if row + 1 < p { input[n + row + 1] } else { 0.0 };
-        }
-        Ok(())
-    })) as Arc<dyn LinearOperator>;
+            operator.apply(&input[..n], &mut output[..n])?;
+            for column in 0..p {
+                let coefficient = input[n + column];
+                if coefficient != 0.0 {
+                    axpy(coefficient, &owned[p - column], &mut output[..n]);
+                }
+            }
+            for row in 0..p {
+                output[n + row] = if row + 1 < p { input[n + row + 1] } else { 0.0 };
+            }
+            Ok(())
+        },
+    )) as Arc<dyn LinearOperator>;
     let mut start = vec![0.0; augmented_dimension];
     start[..n].copy_from_slice(&vectors[0]);
     start[augmented_dimension - 1] = 1.0;
@@ -639,7 +686,10 @@ pub fn fused_phi_action(
 ) -> CoreResult<FusedPhiActionReport> {
     if !scale.is_finite()
         || vectors.is_empty()
-        || !vectors.iter().flat_map(|v| v.iter()).all(|value| value.is_finite())
+        || !vectors
+            .iter()
+            .flat_map(|v| v.iter())
+            .all(|value| value.is_finite())
     {
         return Err(CoreError::InvalidInput(
             "invalid fused phi-action input".into(),
@@ -660,6 +710,7 @@ pub fn fused_phi_action(
             converged: true,
             maximum_krylov_dimension: 0,
             error_estimate: 0.0,
+            nested_difference_estimate: 0.0,
             action_norm: 0.0,
             value: vec![0.0; n],
             substep_reports: Vec::new(),
@@ -673,20 +724,19 @@ pub fn fused_phi_action(
         let mut state = initial.clone();
         let mut reports = Vec::with_capacity(substeps);
         let mut total_error = 0.0;
+        let mut total_nested_difference = 0.0;
         let mut maximum_dimension = 0;
         let mut completed = true;
         for index in 0..substeps {
-            let (next, mut report) = krylov_exponential_once(
-                augmented.clone(),
-                delta,
-                &state,
-                config,
-                counters,
-            )?;
+            let (next, mut report) =
+                krylov_exponential_once(augmented.clone(), delta, &state, config, counters)?;
             report.substep_index = index;
             maximum_dimension = maximum_dimension.max(report.krylov_dimension);
             if report.error_estimate.is_finite() {
                 total_error += report.error_estimate;
+            }
+            if report.nested_difference_estimate.is_finite() {
+                total_nested_difference += report.nested_difference_estimate;
             }
             completed &= report.converged;
             reports.push(report);
@@ -704,6 +754,7 @@ pub fn fused_phi_action(
                 converged: true,
                 maximum_krylov_dimension: maximum_dimension,
                 error_estimate: total_error,
+                nested_difference_estimate: total_nested_difference,
                 action_norm: safe_l2(&value),
                 value,
                 substep_reports: reports,
@@ -718,6 +769,7 @@ pub fn fused_phi_action(
                 converged: false,
                 maximum_krylov_dimension: maximum_dimension,
                 error_estimate: total_error,
+                nested_difference_estimate: total_nested_difference,
                 action_norm: safe_l2(&value),
                 value,
                 substep_reports: reports,
@@ -756,7 +808,11 @@ pub fn fused_phi_linear_combination(
                 "fused phi combination scale power is invalid".into(),
             ));
         }
-        axpy(term.coefficient / divisor, term.vector, &mut vectors[term.phi_index]);
+        axpy(
+            term.coefficient / divisor,
+            term.vector,
+            &mut vectors[term.phi_index],
+        );
     }
     fused_phi_action(operator, scale, &vectors, config, counters)
 }
@@ -1117,7 +1173,6 @@ pub fn pexprb54s4_step(
     })
 }
 
-
 fn require_fused(report: FusedPhiActionReport) -> CoreResult<FusedPhiActionReport> {
     if report.converged {
         Ok(report)
@@ -1130,7 +1185,10 @@ fn require_fused(report: FusedPhiActionReport) -> CoreResult<FusedPhiActionRepor
 }
 
 fn add_scaled_state(y: &[f64], h: f64, action: &[f64]) -> Vec<f64> {
-    y.iter().zip(action).map(|(state, delta)| state + h * delta).collect()
+    y.iter()
+        .zip(action)
+        .map(|(state, delta)| state + h * delta)
+        .collect()
 }
 
 pub fn exprb2_fused_step(
@@ -1147,7 +1205,11 @@ pub fn exprb2_fused_step(
     let action = require_fused(fused_phi_linear_combination(
         operator,
         h,
-        &[FusedPhiTerm { coefficient: 1.0, phi_index: 1, vector: &f0 }],
+        &[FusedPhiTerm {
+            coefficient: 1.0,
+            phi_index: 1,
+            vector: &f0,
+        }],
         config,
         &mut work,
     )?)?;
@@ -1178,7 +1240,11 @@ pub fn exprb43_fused_step(
     let u2_action = require_fused(fused_phi_linear_combination(
         operator.clone(),
         0.5 * h,
-        &[FusedPhiTerm { coefficient: 0.5, phi_index: 1, vector: &f0 }],
+        &[FusedPhiTerm {
+            coefficient: 0.5,
+            phi_index: 1,
+            vector: &f0,
+        }],
         config,
         &mut work,
     )?)?;
@@ -1189,8 +1255,16 @@ pub fn exprb43_fused_step(
         operator.clone(),
         h,
         &[
-            FusedPhiTerm { coefficient: 1.0, phi_index: 1, vector: &f0 },
-            FusedPhiTerm { coefficient: 1.0, phi_index: 1, vector: &d2 },
+            FusedPhiTerm {
+                coefficient: 1.0,
+                phi_index: 1,
+                vector: &f0,
+            },
+            FusedPhiTerm {
+                coefficient: 1.0,
+                phi_index: 1,
+                vector: &d2,
+            },
         ],
         config,
         &mut work,
@@ -1203,35 +1277,78 @@ pub fn exprb43_fused_step(
         let mut local = WorkCounters::default();
         let terms = if *id == 0 {
             vec![
-                FusedPhiTerm { coefficient: 1.0, phi_index: 1, vector: &f0 },
-                FusedPhiTerm { coefficient: 16.0, phi_index: 3, vector: &d2 },
-                FusedPhiTerm { coefficient: -48.0, phi_index: 4, vector: &d2 },
-                FusedPhiTerm { coefficient: -2.0, phi_index: 3, vector: &d3 },
-                FusedPhiTerm { coefficient: 12.0, phi_index: 4, vector: &d3 },
+                FusedPhiTerm {
+                    coefficient: 1.0,
+                    phi_index: 1,
+                    vector: &f0,
+                },
+                FusedPhiTerm {
+                    coefficient: 16.0,
+                    phi_index: 3,
+                    vector: &d2,
+                },
+                FusedPhiTerm {
+                    coefficient: -48.0,
+                    phi_index: 4,
+                    vector: &d2,
+                },
+                FusedPhiTerm {
+                    coefficient: -2.0,
+                    phi_index: 3,
+                    vector: &d3,
+                },
+                FusedPhiTerm {
+                    coefficient: 12.0,
+                    phi_index: 4,
+                    vector: &d3,
+                },
             ]
         } else {
             vec![
-                FusedPhiTerm { coefficient: 1.0, phi_index: 1, vector: &f0 },
-                FusedPhiTerm { coefficient: 16.0, phi_index: 3, vector: &d2 },
-                FusedPhiTerm { coefficient: -2.0, phi_index: 3, vector: &d3 },
+                FusedPhiTerm {
+                    coefficient: 1.0,
+                    phi_index: 1,
+                    vector: &f0,
+                },
+                FusedPhiTerm {
+                    coefficient: 16.0,
+                    phi_index: 3,
+                    vector: &d2,
+                },
+                FusedPhiTerm {
+                    coefficient: -2.0,
+                    phi_index: 3,
+                    vector: &d3,
+                },
             ]
         };
         let action = require_fused(fused_phi_linear_combination(
-            operator.clone(), h, &terms, config, &mut local,
+            operator.clone(),
+            h,
+            &terms,
+            config,
+            &mut local,
         )?)?;
         Ok((action, local))
     })?;
-    for (_, local) in &endpoints { work.accumulate(*local); }
+    for (_, local) in &endpoints {
+        work.accumulate(*local);
+    }
     let y_new = add_scaled_state(y, h, &endpoints[0].0.value);
     let y_embedded = add_scaled_state(y, h, &endpoints[1].0.value);
-    let error_estimate = y_new.iter().zip(&y_embedded).map(|(a,b)| a-b).collect();
+    let error_estimate = y_new.iter().zip(&y_embedded).map(|(a, b)| a - b).collect();
     Ok(FusedExponentialStepReport {
         method: "exprb43-fused".into(),
         y_new,
         y_embedded: Some(y_embedded),
         error_estimate: Some(error_estimate),
         logical_critical_depth: 3,
-        fused_phi_reports: vec![u2_action, u3_action, endpoints[0].0.clone(), endpoints[1].0.clone()],
+        fused_phi_reports: vec![
+            u2_action,
+            u3_action,
+            endpoints[0].0.clone(),
+            endpoints[1].0.clone(),
+        ],
         work,
     })
 }
@@ -1254,7 +1371,11 @@ pub fn pexprb54s4_fused_step(
     let u2_action = require_fused(fused_phi_linear_combination(
         operator.clone(),
         tableau.c2 * h,
-        &[FusedPhiTerm { coefficient: tableau.c2, phi_index: 1, vector: &f0 }],
+        &[FusedPhiTerm {
+            coefficient: tableau.c2,
+            phi_index: 1,
+            vector: &f0,
+        }],
         config,
         &mut work,
     )?)?;
@@ -1274,17 +1395,28 @@ pub fn pexprb54s4_fused_step(
             operator.clone(),
             c * h,
             &[
-                FusedPhiTerm { coefficient: c, phi_index: 1, vector: &f0 },
-                FusedPhiTerm { coefficient: a, phi_index: 3, vector: &d2 },
+                FusedPhiTerm {
+                    coefficient: c,
+                    phi_index: 1,
+                    vector: &f0,
+                },
+                FusedPhiTerm {
+                    coefficient: a,
+                    phi_index: 3,
+                    vector: &d2,
+                },
             ],
             config,
             &mut local,
         )?)?;
         let stage = add_scaled_state(y, h, &action.value);
-        let remainder = nonlinear_remainder(problem, operator.as_ref(), t, y, &f0, &stage, &mut local)?;
+        let remainder =
+            nonlinear_remainder(problem, operator.as_ref(), t, y, &f0, &stage, &mut local)?;
         Ok((action, remainder, local))
     })?;
-    for (_, _, local) in &stages { work.accumulate(*local); }
+    for (_, _, local) in &stages {
+        work.accumulate(*local);
+    }
     let d3 = stages[0].1.clone();
     let d4 = stages[1].1.clone();
 
@@ -1294,32 +1426,86 @@ pub fn pexprb54s4_fused_step(
         let mut local = WorkCounters::default();
         let terms = if *id == 0 {
             vec![
-                FusedPhiTerm { coefficient: 1.0, phi_index: 1, vector: &f0 },
-                FusedPhiTerm { coefficient: tableau.b3_phi3, phi_index: 3, vector: &d3 },
-                FusedPhiTerm { coefficient: tableau.b3_phi4, phi_index: 4, vector: &d3 },
-                FusedPhiTerm { coefficient: tableau.b4_phi3, phi_index: 3, vector: &d4 },
-                FusedPhiTerm { coefficient: tableau.b4_phi4, phi_index: 4, vector: &d4 },
+                FusedPhiTerm {
+                    coefficient: 1.0,
+                    phi_index: 1,
+                    vector: &f0,
+                },
+                FusedPhiTerm {
+                    coefficient: tableau.b3_phi3,
+                    phi_index: 3,
+                    vector: &d3,
+                },
+                FusedPhiTerm {
+                    coefficient: tableau.b3_phi4,
+                    phi_index: 4,
+                    vector: &d3,
+                },
+                FusedPhiTerm {
+                    coefficient: tableau.b4_phi3,
+                    phi_index: 3,
+                    vector: &d4,
+                },
+                FusedPhiTerm {
+                    coefficient: tableau.b4_phi4,
+                    phi_index: 4,
+                    vector: &d4,
+                },
             ]
         } else {
             vec![
-                FusedPhiTerm { coefficient: 1.0, phi_index: 1, vector: &f0 },
-                FusedPhiTerm { coefficient: tableau.embedded_b2_phi3, phi_index: 3, vector: &d2 },
-                FusedPhiTerm { coefficient: tableau.embedded_b2_phi4, phi_index: 4, vector: &d2 },
-                FusedPhiTerm { coefficient: tableau.embedded_b3_phi3, phi_index: 3, vector: &d3 },
-                FusedPhiTerm { coefficient: tableau.embedded_b3_phi4, phi_index: 4, vector: &d3 },
-                FusedPhiTerm { coefficient: tableau.embedded_b4_phi3, phi_index: 3, vector: &d4 },
-                FusedPhiTerm { coefficient: tableau.embedded_b4_phi4, phi_index: 4, vector: &d4 },
+                FusedPhiTerm {
+                    coefficient: 1.0,
+                    phi_index: 1,
+                    vector: &f0,
+                },
+                FusedPhiTerm {
+                    coefficient: tableau.embedded_b2_phi3,
+                    phi_index: 3,
+                    vector: &d2,
+                },
+                FusedPhiTerm {
+                    coefficient: tableau.embedded_b2_phi4,
+                    phi_index: 4,
+                    vector: &d2,
+                },
+                FusedPhiTerm {
+                    coefficient: tableau.embedded_b3_phi3,
+                    phi_index: 3,
+                    vector: &d3,
+                },
+                FusedPhiTerm {
+                    coefficient: tableau.embedded_b3_phi4,
+                    phi_index: 4,
+                    vector: &d3,
+                },
+                FusedPhiTerm {
+                    coefficient: tableau.embedded_b4_phi3,
+                    phi_index: 3,
+                    vector: &d4,
+                },
+                FusedPhiTerm {
+                    coefficient: tableau.embedded_b4_phi4,
+                    phi_index: 4,
+                    vector: &d4,
+                },
             ]
         };
         let action = require_fused(fused_phi_linear_combination(
-            operator.clone(), h, &terms, config, &mut local,
+            operator.clone(),
+            h,
+            &terms,
+            config,
+            &mut local,
         )?)?;
         Ok((action, local))
     })?;
-    for (_, local) in &endpoints { work.accumulate(*local); }
+    for (_, local) in &endpoints {
+        work.accumulate(*local);
+    }
     let y_new = add_scaled_state(y, h, &endpoints[0].0.value);
     let y_embedded = add_scaled_state(y, h, &endpoints[1].0.value);
-    let error_estimate = y_new.iter().zip(&y_embedded).map(|(a,b)| a-b).collect();
+    let error_estimate = y_new.iter().zip(&y_embedded).map(|(a, b)| a - b).collect();
     Ok(FusedExponentialStepReport {
         method: "pexprb54s4-fused".into(),
         y_new,

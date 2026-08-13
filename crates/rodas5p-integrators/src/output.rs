@@ -179,4 +179,15 @@ impl OutputCollector {
         }
         Ok((self.times, self.states, self.clipped_steps))
     }
+
+    /// Return the outputs accumulated so far without pretending that the
+    /// requested schedule was completed.
+    ///
+    /// Adaptive research lanes use this on an explicit failure path so the
+    /// attempted RHS/JVP/Krylov work and the last committed output remain
+    /// auditable.  Successful integrations must continue to use [`finish`],
+    /// which enforces complete coverage of the requested schedule.
+    pub(crate) fn finish_partial(self) -> (Vec<f64>, Vec<Vec<f64>>, usize) {
+        (self.times, self.states, self.clipped_steps)
+    }
 }
