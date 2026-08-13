@@ -145,17 +145,21 @@ fn build_problems(profile: G3FusedAdaptiveProfile) -> CoreResult<Vec<RuntimeProb
 fn adaptive_config(rtol:f64, span:f64)->AdaptiveStepConfig {
     AdaptiveStepConfig {
         atol:0.01*rtol, rtol, initial_step:(span/4.0).max(1e-6), min_step:1e-13,
-        max_step:span, max_attempts:50_000, safety:0.9, min_factor:0.2, max_factor:4.0,
+        max_step:span, max_attempts:10_000, safety:0.9, min_factor:0.2, max_factor:4.0,
         reject_max_factor:0.8, controller:ControllerKind::Pi,
     }
 }
 
 fn phi_config(rtol:f64, orth:FusedOrthogonalization, dimension:usize)->FusedPhiKrylovConfig {
+    let incomplete = matches!(orth, FusedOrthogonalization::Incomplete { .. });
     FusedPhiKrylovConfig {
-        minimum_dimension:2.min(dimension.max(1)), maximum_dimension:dimension.clamp(2,32),
-        dimension_increment:2, relative_tolerance:(0.03*rtol).max(1e-12),
-        absolute_tolerance:(3e-4*rtol).max(1e-14), orthogonalization:orth,
-        maximum_substeps:16,
+        minimum_dimension:2.min(dimension.max(1)),
+        maximum_dimension:dimension.clamp(2, if incomplete { 24 } else { 32 }),
+        dimension_increment:2,
+        relative_tolerance:(0.03*rtol).max(1e-12),
+        absolute_tolerance:(3e-4*rtol).max(1e-14),
+        orthogonalization:orth,
+        maximum_substeps:if incomplete { 4 } else { 16 },
     }
 }
 
