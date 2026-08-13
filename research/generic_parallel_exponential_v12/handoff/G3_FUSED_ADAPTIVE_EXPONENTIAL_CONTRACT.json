@@ -1,0 +1,34 @@
+{
+  "schema": "generic-g3-fused-adaptive-exponential-contract-v1",
+  "branch": "generic-parallel-exp-adaptive-v1.3",
+  "primary_candidate": "pexprb54s4 with fused KIOPS-style phi actions",
+  "required": [
+    "fused augmented linear-combination phi action",
+    "adaptive Krylov dimension and substepping/restart",
+    "nonautonomous augmented-state support",
+    "embedded adaptive timestep with transactional rejection",
+    "separate time/phi/JVP error budgets",
+    "fresh JVP quality gate",
+    "same-error generic holdout comparison"
+  ],
+  "frozen_comparators": [
+    "protected sequential JF RODAS5P",
+    "G1 transactional q1-to-q2 plugin",
+    "adaptive BDF2",
+    "adaptive Radau IIA3"
+  ],
+  "gates": {
+    "observed_order_min": 4.8,
+    "explicit_jacobian_builds": 0,
+    "primary_newton_iterations": 0,
+    "step_ratio_to_rodas_max": 1.2,
+    "same_error_median_speedup_min": 1.15,
+    "false_convergence": 0
+  },
+  "forbidden": [
+    "BDF or Radau source modification",
+    "physical-client calibration",
+    "KIOPS naming without residual/restart implementation",
+    "performance claims from logical depth alone"
+  ]
+}
