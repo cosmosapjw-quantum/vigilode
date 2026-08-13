@@ -171,3 +171,70 @@ pub fn dense_phi_action(
         ))
     }
 }
+
+
+/// Compute a fused linear combination
+///
+/// `exp(scale*A)b_0 + sum_{k=1}^p scale^k phi_k(scale*A)b_k`
+///
+/// with one augmented dense matrix exponential.  The coefficient ordering follows the
+/// KIOPS/augmented-exponential convention `B=[b_p,...,b_1]`, while the lower Jordan chain is
+/// seeded with its final basis vector.  This routine is the small projected-space oracle for the
+/// matrix-free fused Krylov path; it is not used on the large physical state directly.
+pub fn dense_fused_phi_action(
+    matrix: &DenseMatrix,
+    scale: f64,
+    vectors: &[Vec<f64>],
+) -> CoreResult<Vec<f64>> {
+    if matrix.nrows() != matrix.ncols() || vectors.is_empty() {
+        return Err(CoreError::Dimension(
+            "dense fused phi-action requires a square matrix and at least b0".into(),
+        ));
+    }
+    let n = matrix.nrows();
+    if vectors.iter().any(|vector| vector.len() != n) {
+        return Err(CoreError::Dimension(
+            "dense fused phi-action vector shape mismatch".into(),
+        ));
+    }
+    if !scale.is_finite()
+        || !vectors
+            .iter()
+            .flat_map(|vector| vector.iter())
+            .all(|value| value.is_finite())
+    {
+        return Err(CoreError::NonFinite(
+            "dense fused phi-action input contains NaN/Inf".into(),
+        ));
+    }
+    let p = vectors.len() - 1;
+    if p == 0 {
+        return matrix_exp_pade13(&matrix.scale(scale))?.matvec(&vectors[0]);
+    }
+
+    let mut augmented = DenseMatrix::zeros(n + p, n + p);
+    for i in 0..n {
+        for j in 0..n {
+            augmented[(i, j)] = matrix[(i, j)];
+        }
+        for column in 0..p {
+            // B = [b_p, b_{p-1}, ..., b_1].
+            augmented[(i, n + column)] = vectors[p - column][i];
+        }
+    }
+    for j in 0..p.saturating_sub(1) {
+        augmented[(n + j, n + j + 1)] = 1.0;
+    }
+    let mut start = vec![0.0; n + p];
+    start[..n].copy_from_slice(&vectors[0]);
+    start[n + p - 1] = 1.0;
+    let value = matrix_exp_pade13(&augmented.scale(scale))?.matvec(&start)?;
+    let out = value[..n].to_vec();
+    if out.iter().all(|value| value.is_finite()) {
+        Ok(out)
+    } else {
+        Err(CoreError::NonFinite(
+            "dense fused phi-action produced NaN/Inf".into(),
+        ))
+    }
+}
