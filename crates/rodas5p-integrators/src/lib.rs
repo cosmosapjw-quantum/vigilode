@@ -1,6 +1,7 @@
 #![forbid(unsafe_code)]
 
 mod adaptive;
+mod adaptive_exponential;
 mod bdf;
 mod block;
 mod candidates;
@@ -33,6 +34,10 @@ mod unified_screen;
 pub use adaptive::{
     AdaptiveControllerState, AdaptiveObservedIntegrationResult, AdaptiveRunDiagnostics,
     AdaptiveStepConfig, ControllerKind, StepDoublingEstimate, step_doubling_wrms_error,
+};
+pub use adaptive_exponential::{
+    AdaptiveFusedExponentialDiagnostics, AdaptiveFusedExponentialResult,
+    integrate_pexprb54s4_fused_adaptive_observed,
 };
 pub use bdf::{
     BdfConfig, BdfHistory, BdfIntegrationResult, BdfOrder, BdfStepReport, VariableBdf2Coefficients,

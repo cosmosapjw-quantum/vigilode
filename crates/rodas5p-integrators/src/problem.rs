@@ -296,6 +296,69 @@ impl OdeProblem {
         self.jvp.is_some()
     }
 
+    /// Convert a nonautonomous identity-mass problem into the autonomous augmented system
+    /// `(y, tau)' = (F(tau, y), 1)` without forming an explicit Jacobian.
+    ///
+    /// The augmented JVP is `(J_y v_y + F_t v_tau, 0)`. A declared `partial_t` callback is
+    /// mandatory: hidden finite differences would violate the strict work and JVP-quality contract.
+    pub fn time_augmented_clone(&self) -> CoreResult<Self> {
+        if self.mass_matrix.is_some() {
+            return Err(CoreError::InvalidInput(
+                "time augmentation currently supports identity mass only".into(),
+            ));
+        }
+        let jvp = self.jvp.clone().ok_or_else(|| {
+            CoreError::InvalidInput("time augmentation requires a JVP callback".into())
+        })?;
+        let partial_t = self.partial_t.clone().ok_or_else(|| {
+            CoreError::InvalidInput("time augmentation requires an explicit partial_t callback".into())
+        })?;
+        let rhs = self.rhs.clone();
+        let n = self.dimension;
+        let augmented_rhs: RhsFn = Arc::new(move |_, state, out| {
+            if state.len() != n + 1 || out.len() != n + 1 {
+                return Err(CoreError::Dimension("time-augmented RHS shape mismatch".into()));
+            }
+            rhs(state[n], &state[..n], &mut out[..n])?;
+            out[n] = 1.0;
+            Ok(())
+        });
+        let augmented_jvp: JvpFn = Arc::new(move |_, state, direction, out| {
+            if state.len() != n + 1 || direction.len() != n + 1 || out.len() != n + 1 {
+                return Err(CoreError::Dimension("time-augmented JVP shape mismatch".into()));
+            }
+            jvp(state[n], &state[..n], &direction[..n], &mut out[..n])?;
+            if direction[n] != 0.0 {
+                let mut ft = vec![0.0; n];
+                partial_t(state[n], &state[..n], &mut ft)?;
+                for (value, source) in out[..n].iter_mut().zip(ft) {
+                    *value += direction[n] * source;
+                }
+            }
+            out[n] = 0.0;
+            Ok(())
+        });
+        let exact = self.exact_solution.clone().map(|solution| {
+            Arc::new(move |time| {
+                let mut state = solution(time);
+                state.push(time);
+                state
+            }) as ExactFn
+        });
+        Self::new(
+            format!("{}-time-augmented", self.name),
+            n + 1,
+            augmented_rhs,
+            None,
+            None,
+            Some(augmented_jvp),
+            None,
+            true,
+            None,
+            exact,
+        )
+    }
+
     pub fn exact(&self, t: f64) -> Option<Vec<f64>> {
         self.exact_solution.as_ref().map(|f| f(t))
     }
