@@ -553,7 +553,13 @@ fn krylov_exponential_once(
                         krylov_dimension,
                         converged: true,
                         happy_breakdown,
-                        error_estimate: if latest_error.is_finite() { latest_error } else { 0.0 },
+                        error_estimate: if happy_breakdown || full_space_exact {
+                            0.0
+                        } else if latest_error.is_finite() {
+                            latest_error
+                        } else {
+                            0.0
+                        },
                     },
                 ));
             }
