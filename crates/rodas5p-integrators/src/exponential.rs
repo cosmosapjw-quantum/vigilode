@@ -543,7 +543,9 @@ fn krylov_exponential_once(
             latest = current.clone();
             let threshold = config.absolute_tolerance
                 + config.relative_tolerance * safe_l2(&current).max(beta);
-            if happy_breakdown || krylov_dimension == dimension || latest_error <= threshold {
+            let full_space_exact = krylov_dimension == dimension
+                && matches!(config.orthogonalization, FusedOrthogonalization::FullMgs);
+            if happy_breakdown || full_space_exact || latest_error <= threshold {
                 return Ok((
                     current,
                     FusedPhiSubstepReport {
