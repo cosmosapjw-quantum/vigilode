@@ -856,7 +856,7 @@ fn predict_krylov_dimension(
         .into_iter()
         .fold(0.0_f64, f64::max)
         .clamp(1.0e-3, 0.999);
-    if observed >= 0.999 || !last.is_finite() || !(target > 0.0) {
+    if observed >= 0.999 || !last.is_finite() || !target.is_finite() || target <= 0.0 {
         return (maximum, observed);
     }
     let remaining = ((target / last).ln() / observed.ln()).ceil().max(0.0) as usize;

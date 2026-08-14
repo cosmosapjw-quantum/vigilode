@@ -1,0 +1,48 @@
+{
+  "schema": "g4-s5-expanded-prefix-interval-selector-contract-v1",
+  "branch": "generic-prefix-interval-shadow-v1.9",
+  "purpose": "replace the failed short-prefix point cost predictor with conservative cost-ratio intervals on expanded sealed telemetry",
+  "frozen_methods": [
+    "protected sequential matrix-free RODAS5P",
+    "fused full-MGS pexprb54s4"
+  ],
+  "frozen_prefix_kernels": [
+    "FusedPhiPrefixSession",
+    "GmresPrefixSession"
+  ],
+  "rules": {
+    "active_switching": false,
+    "posthoc_prefix_length_tuning": false,
+    "posthoc_19pct_gate_change": false,
+    "continuous_full_dual_shadow": false,
+    "failed_prefix_work_retained": true,
+    "BDF_Radau": "byte-frozen comparators",
+    "physical_clients": "not executed"
+  },
+  "required_corpus": [
+    "Robertson",
+    "HIRES",
+    "stiff van der Pol",
+    "rotating nonnormal system",
+    "nonautonomous stiff forcing",
+    "semilinear diffusion/advection at N=128,512,2048"
+  ],
+  "required_outputs": [
+    "method-specific lower/upper cost-ratio interval",
+    "interval coverage on sealed holdout",
+    "abstention rate",
+    "unsafe recommendation count",
+    "amortized prefix overhead",
+    "trajectory-level regret"
+  ],
+  "gates": {
+    "unsafe_recommendations": 0,
+    "cost_ratio_interval_holdout_coverage_min": 0.95,
+    "holdout_median_regret_max": 1.15,
+    "holdout_p95_regret_max": 1.5,
+    "prefix_overhead_median_max": 0.03,
+    "prefix_overhead_p95_max": 0.05,
+    "active_switching": false
+  },
+  "kill_rule": "if conservative intervals are too wide to beat the static protected RODAS default without violating regret/overhead gates, do not activate switching; retain a static portfolio or simplify the candidate set"
+}

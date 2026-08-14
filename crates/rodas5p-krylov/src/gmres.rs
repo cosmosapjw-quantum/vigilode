@@ -326,7 +326,7 @@ fn geometric_iteration_prediction(
         .drain(..)
         .fold(0.0_f64, f64::max)
         .clamp(1.0e-3, 0.999);
-    if observed >= 0.999 || !last.is_finite() || !(target > 0.0) {
+    if observed >= 0.999 || !last.is_finite() || !target.is_finite() || target <= 0.0 {
         return (maximum, observed);
     }
     let remaining = (target / last).ln() / observed.ln();
@@ -506,8 +506,8 @@ impl GmresPrefixSession {
         )?;
         let mut h_column = vec![0.0; column + 1];
         two_pass_mgs_into(&mut work, &self.basis[..=column], &mut h_column, counters)?;
-        for row in 0..=column {
-            self.hessenberg[(row, column)] = h_column[row];
+        for (row, &value) in h_column.iter().enumerate() {
+            self.hessenberg[(row, column)] = value;
         }
         let next_norm = safe_l2(&work);
         self.hessenberg[(column + 1, column)] = next_norm;

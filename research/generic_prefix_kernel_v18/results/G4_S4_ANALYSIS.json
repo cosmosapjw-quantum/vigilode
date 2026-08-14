@@ -1,0 +1,84 @@
+{
+  "active_switching_authorized": false,
+  "closeout": {
+    "active_switching": "HOLD",
+    "actual_reusable_prefix_kernels": "PROMOTE",
+    "exact_prefix_resume_parity": "PROMOTE",
+    "next_blocker": "cost-ratio uncertainty must be represented as a conservative interval on expanded sealed telemetry; post-hoc point-predictor tuning is forbidden",
+    "one_vector_prefix_predictor": "REJECT_NEGATIVE_CONTROL",
+    "two_vector_prefix_cost_predictor": "HOLD"
+  },
+  "cost_ratio_prediction": {
+    "calibration_p95_higher": 0.2571742857946885,
+    "campaign_p95_range": [
+      0.2179215818424578,
+      0.39984697736164065
+    ],
+    "campaigns_passing": 0,
+    "combined_median": 0.13069193879592067,
+    "combined_p95_higher": 0.28877880868269856,
+    "gate_max": 0.19,
+    "holdout_p95_higher": 0.28877880868269856,
+    "pass": false
+  },
+  "coverage": {
+    "calibration_rows": 3,
+    "completed_fraction": 1.0,
+    "holdout_rows": 6,
+    "rows": 18,
+    "selected_rows": 9
+  },
+  "gates": {
+    "active_switching": false,
+    "completed_holdout_fraction_one": true,
+    "reuse_parity": true,
+    "scientific_identity": true,
+    "selected_prefix_cost": true,
+    "selected_prefix_prediction": false
+  },
+  "inputs": {
+    "campaign_count": 7,
+    "campaigns": [
+      "G4S4_CANONICAL_CORRECTED_1.json",
+      "G4S4_CANONICAL_CORRECTED_2.json",
+      "G4S4_CANONICAL_CORRECTED_3.json",
+      "G4S4_CANONICAL_CORRECTED_4.json",
+      "G4S4_CANONICAL_CORRECTED_5.json",
+      "G4S4_CANONICAL_CORRECTED_6.json",
+      "G4S4_CANONICAL_CORRECTED_7.json"
+    ],
+    "invalidated_attempt": "/mnt/data/g4s4_work/G4S4_CANONICAL_1.json",
+    "scientific_identity": true,
+    "scientific_sha256": "e4d80a2fcb04b5952f2e63ad7ca6eda4c4694197d8b27a4350c48e72222b3604",
+    "timing_instrument": "auto-batched median per operation"
+  },
+  "negative_control_prefix_dimension": 1,
+  "observed_structure": {
+    "dominant_failed_case": "N=512, stiffness=1000, nonnormality=0.9, oscillation=50",
+    "exponential_dimension_prediction": "conservative overshoot; projected-exponential and orthogonalization costs make wall-ratio extrapolation nonlinear",
+    "gmres_iteration_prediction": "usually exact or within two iterations in this corpus"
+  },
+  "prefix_cost": {
+    "exponential_median_inflation": 0.42223384402422576,
+    "exponential_p95_higher": 0.6559145242430154,
+    "gate_max": 1.9,
+    "gmres_median_inflation": 0.5950800767552117,
+    "gmres_p95_higher": 0.7514517001720906,
+    "pass": true
+  },
+  "resume_economics": {
+    "exponential_total_over_cold_median": 1.0016177263694224,
+    "exponential_total_over_cold_p95_higher": 1.0741209801657727,
+    "gmres_total_over_cold_median": 1.0011745057842838,
+    "gmres_total_over_cold_p95_higher": 1.0197110076315117
+  },
+  "reuse_parity": {
+    "gate_max": 1e-12,
+    "maximum_exponential_relative_defect": 0.0,
+    "maximum_gmres_relative_defect": 0.0,
+    "pass": true
+  },
+  "schema": "g4-s4-actual-prefix-kernel-analysis-v1",
+  "selected_prefix_dimension": 2,
+  "status": "complete-hold-predictor"
+}

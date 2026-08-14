@@ -1,9 +1,33 @@
-# G4-S4 Actual Prefix Kernel Gate
+# G4-S4 Actual Reusable Prefix Kernel — Read First
 
-이 node는 G4-S3의 retrospective prefix-cost model을 실제 Rust Arnoldi/GMRES prefix로 교체한다.
+이번 node는 G4-S3의 retrospective prefix model을 실제 Rust Krylov state로 교체했다.
 
-- E-K: fused-phi augmented Arnoldi prefix를 만든 뒤 같은 basis/Hessenberg를 계속 확장한다.
-- R-JF: restart-free GMRES prefix를 만든 뒤 같은 basis/least-squares state를 계속 확장한다.
-- prefix 1은 negative control, prefix 2는 n=32 calibration에서 선택했다.
-- canonical holdout은 n=128,512에서 threshold를 변경하지 않고 평가한다.
-- active switching은 이 node에서 금지한다.
+## 완료
+
+- E-K fused-phi Arnoldi prefix basis/Hessenberg 재사용
+- R-JF GMRES prefix basis/directions/Hessenberg/least-squares state 재사용
+- cold path와 prefix-resume path의 output relative defect 정확히 0
+- selected two-vector prefix cost gate 통과
+- seven CPU-pinned corrected campaign의 scientific identity 통과
+
+## 실패
+
+Two-vector prefix의 E-K/R-JF wall-cost ratio point prediction은 sealed 19% gate를 통과하지 못했다.
+
+```text
+calibration P95-higher  0.257
+holdout P95-higher      0.289
+campaign P95 range      0.218–0.400
+campaigns passing       0/7
+```
+
+## 판정
+
+```text
+actual reusable prefix kernels  PROMOTE
+exact prefix-resume parity      PROMOTE
+two-vector point predictor      HOLD
+active switching                HOLD
+```
+
+다음 node는 point predictor를 post-hoc tuning하지 않고, expanded sealed telemetry에서 conservative cost-ratio interval과 abstention policy를 검증한다.
