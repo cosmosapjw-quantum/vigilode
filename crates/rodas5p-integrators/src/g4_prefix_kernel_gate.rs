@@ -224,6 +224,41 @@ fn vector_relative_defect(a: &[f64], b: &[f64]) -> f64 {
     safe_l2(&difference) / safe_l2(a).max(1.0e-300)
 }
 
+fn benchmark_operation<F>(
+    repeats: usize,
+    minimum_sample_seconds: f64,
+    mut operation: F,
+) -> CoreResult<f64>
+where
+    F: FnMut() -> CoreResult<()>,
+{
+    // Prefix kernels are microsecond-scale on the calibration dimensions.  A fixed
+    // number of one-shot timings is dominated by clock and scheduler noise, so each
+    // sample is automatically batched to a minimum wall duration.  The reported time
+    // is always per operation, and the warm-up/calibration executions are excluded.
+    operation()?;
+    let mut batch = 1usize;
+    loop {
+        let start = Instant::now();
+        for _ in 0..batch {
+            operation()?;
+        }
+        if start.elapsed().as_secs_f64() >= minimum_sample_seconds || batch >= (1 << 20) {
+            break;
+        }
+        batch = batch.saturating_mul(2);
+    }
+    let mut samples = Vec::with_capacity(repeats);
+    for _ in 0..repeats {
+        let start = Instant::now();
+        for _ in 0..batch {
+            operation()?;
+        }
+        samples.push(start.elapsed().as_secs_f64() / batch as f64);
+    }
+    median(samples).ok_or_else(|| CoreError::InvalidInput("empty timing sample".into()))
+}
+
 struct ExponentialMeasurement {
     cold_wall: f64,
     prefix_wall: f64,
@@ -249,65 +284,86 @@ fn measure_exponential(
         orthogonalization: FusedOrthogonalization::FullMgs,
         maximum_substeps: 1,
     };
-    let mut cold_times = Vec::with_capacity(repeats);
-    let mut prefix_times = Vec::with_capacity(repeats);
-    let mut resume_times = Vec::with_capacity(repeats);
-    let mut final_cold = None;
-    let mut final_resumed = None;
-    let mut final_prediction = None;
-    let mut final_work = WorkCounters::default();
-    for _ in 0..repeats {
-        let mut cold_work = WorkCounters::default();
-        let start = Instant::now();
-        let cold = fused_phi_action_incremental(
+    let minimum_sample_seconds = if repeats >= 7 { 0.01 } else { 0.002 };
+    let cold_wall = benchmark_operation(repeats, minimum_sample_seconds, || {
+        let mut counters = WorkCounters::default();
+        let report = fused_phi_action_incremental(
             generator(case),
             case.scale,
             &vectors,
             config,
-            &mut cold_work,
+            &mut counters,
         )?;
-        cold_times.push(start.elapsed().as_secs_f64());
-        if !cold.converged {
+        if !report.converged {
             return Err(CoreError::LinearSolve(
                 "cold fused-phi incremental path did not converge".into(),
             ));
         }
-
-        let mut reused_work = WorkCounters::default();
-        let start = Instant::now();
+        Ok(())
+    })?;
+    let prefix_wall = benchmark_operation(repeats, minimum_sample_seconds, || {
+        let mut counters = WorkCounters::default();
+        let _session = FusedPhiPrefixSession::begin(
+            generator(case),
+            case.scale,
+            &vectors,
+            config,
+            prefix_dimension,
+            &mut counters,
+        )?;
+        Ok(())
+    })?;
+    let total_reused_wall = benchmark_operation(repeats, minimum_sample_seconds, || {
+        let mut counters = WorkCounters::default();
         let session = FusedPhiPrefixSession::begin(
             generator(case),
             case.scale,
             &vectors,
             config,
             prefix_dimension,
-            &mut reused_work,
+            &mut counters,
         )?;
-        let prefix_wall = start.elapsed().as_secs_f64();
-        let prediction = session.prediction();
-        let start = Instant::now();
-        let resumed = session.finish(&mut reused_work)?;
-        let resume_wall = start.elapsed().as_secs_f64();
-        if !resumed.converged {
+        let report = session.finish(&mut counters)?;
+        if !report.converged {
             return Err(CoreError::LinearSolve(
                 "resumed fused-phi prefix path did not converge".into(),
             ));
         }
-        prefix_times.push(prefix_wall);
-        resume_times.push(resume_wall);
-        final_cold = Some(cold);
-        final_resumed = Some(resumed);
-        final_prediction = Some(prediction);
-        final_work = reused_work;
+        Ok(())
+    })?;
+
+    let mut cold_work = WorkCounters::default();
+    let cold = fused_phi_action_incremental(
+        generator(case),
+        case.scale,
+        &vectors,
+        config,
+        &mut cold_work,
+    )?;
+    let mut reused_work = WorkCounters::default();
+    let session = FusedPhiPrefixSession::begin(
+        generator(case),
+        case.scale,
+        &vectors,
+        config,
+        prefix_dimension,
+        &mut reused_work,
+    )?;
+    let prediction = session.prediction();
+    let resumed = session.finish(&mut reused_work)?;
+    if !cold.converged || !resumed.converged {
+        return Err(CoreError::LinearSolve(
+            "fused-phi timing authority did not converge".into(),
+        ));
     }
     Ok(ExponentialMeasurement {
-        cold_wall: median(cold_times).expect("non-empty"),
-        prefix_wall: median(prefix_times).expect("non-empty"),
-        resume_wall: median(resume_times).expect("non-empty"),
-        cold: final_cold.expect("measurement"),
-        resumed: final_resumed.expect("measurement"),
-        prediction: final_prediction.expect("measurement"),
-        work: final_work,
+        cold_wall,
+        prefix_wall,
+        resume_wall: (total_reused_wall - prefix_wall).max(0.0),
+        cold,
+        resumed,
+        prediction,
+        work: reused_work,
     })
 }
 
@@ -335,24 +391,31 @@ fn measure_gmres(
         atol: 1.0e-13,
     };
     let pc = IdentityPreconditioner::new(case.dimension);
-    let mut cold_times = Vec::with_capacity(repeats);
-    let mut prefix_times = Vec::with_capacity(repeats);
-    let mut resume_times = Vec::with_capacity(repeats);
-    let mut final_cold = None;
-    let mut final_resumed = None;
-    let mut final_prediction = None;
-    let mut final_work = WorkCounters::default();
-    for _ in 0..repeats {
+    let minimum_sample_seconds = if repeats >= 7 { 0.01 } else { 0.002 };
+    let cold_wall = benchmark_operation(repeats, minimum_sample_seconds, || {
         let operator = shifted(case);
-        let mut cold_work = WorkCounters::default();
-        let start = Instant::now();
-        let cold =
-            solve_gmres_incremental(operator.as_ref(), &pc, &rhs, None, &config, &mut cold_work)?;
-        cold_times.push(start.elapsed().as_secs_f64());
-
+        let mut counters = WorkCounters::default();
+        let _ =
+            solve_gmres_incremental(operator.as_ref(), &pc, &rhs, None, &config, &mut counters)?;
+        Ok(())
+    })?;
+    let prefix_wall = benchmark_operation(repeats, minimum_sample_seconds, || {
         let operator = shifted(case);
-        let mut reused_work = WorkCounters::default();
-        let start = Instant::now();
+        let mut counters = WorkCounters::default();
+        let _session = GmresPrefixSession::begin(
+            operator.as_ref(),
+            &pc,
+            &rhs,
+            None,
+            &config,
+            prefix_iterations,
+            &mut counters,
+        )?;
+        Ok(())
+    })?;
+    let total_reused_wall = benchmark_operation(repeats, minimum_sample_seconds, || {
+        let operator = shifted(case);
+        let mut counters = WorkCounters::default();
         let session = GmresPrefixSession::begin(
             operator.as_ref(),
             &pc,
@@ -360,31 +423,38 @@ fn measure_gmres(
             None,
             &config,
             prefix_iterations,
-            &mut reused_work,
+            &mut counters,
         )?;
-        let prefix_wall = start.elapsed().as_secs_f64();
-        let prediction = session.prediction();
-        let start = Instant::now();
-        let resumed = session.finish(operator.as_ref(), &pc, &mut reused_work)?;
-        let resume_wall = start.elapsed().as_secs_f64();
-        prefix_times.push(prefix_wall);
-        resume_times.push(resume_wall);
-        final_cold = Some(cold);
-        final_resumed = Some(resumed);
-        final_prediction = Some(prediction);
-        final_work = reused_work;
-    }
-    let cold = final_cold.expect("measurement");
-    let resumed = final_resumed.expect("measurement");
+        let _ = session.finish(operator.as_ref(), &pc, &mut counters)?;
+        Ok(())
+    })?;
+
+    let operator = shifted(case);
+    let mut cold_work = WorkCounters::default();
+    let cold =
+        solve_gmres_incremental(operator.as_ref(), &pc, &rhs, None, &config, &mut cold_work)?;
+    let operator = shifted(case);
+    let mut reused_work = WorkCounters::default();
+    let session = GmresPrefixSession::begin(
+        operator.as_ref(),
+        &pc,
+        &rhs,
+        None,
+        &config,
+        prefix_iterations,
+        &mut reused_work,
+    )?;
+    let prediction = session.prediction();
+    let resumed = session.finish(operator.as_ref(), &pc, &mut reused_work)?;
     Ok(GmresMeasurement {
-        cold_wall: median(cold_times).expect("non-empty"),
-        prefix_wall: median(prefix_times).expect("non-empty"),
-        resume_wall: median(resume_times).expect("non-empty"),
+        cold_wall,
+        prefix_wall,
+        resume_wall: (total_reused_wall - prefix_wall).max(0.0),
         cold_x: cold.x,
         resumed_x: resumed.x,
         resumed_iterations: resumed.iterations as usize,
-        prediction: final_prediction.expect("measurement"),
-        work: final_work,
+        prediction,
+        work: reused_work,
     })
 }
 

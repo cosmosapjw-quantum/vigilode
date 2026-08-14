@@ -1,0 +1,24 @@
+{
+  "schema": "g4-s4-canonical-protocol-amendment-v1",
+  "sealed_before_corrected_canonical_campaign": true,
+  "reason": "The first canonical timing attempt used seven one-shot microsecond-scale measurements. The resulting cost-ratio gate was scheduler/clock-noise dominated and is excluded from scientific evidence.",
+  "invalidated_attempt": "/mnt/data/g4s4_work/G4S4_CANONICAL_1.json",
+  "instrument_change_only": {
+    "automatic_batching": true,
+    "minimum_sample_seconds_canonical": 0.01,
+    "minimum_sample_seconds_smoke": 0.002,
+    "reported_time": "median wall per operation after batching",
+    "warmup_and_batch_calibration_excluded": true
+  },
+  "unchanged_scientific_contract": {
+    "selected_prefix_dimension": 2,
+    "negative_control_prefix_dimension": 1,
+    "reuse_relative_defect_max": 1e-12,
+    "selected_prefix_cost_ratio_prediction_p95_max": 0.19,
+    "selected_exponential_prefix_cost_inflation_p95_max": 1.9,
+    "selected_gmres_prefix_cost_inflation_p95_max": 1.9,
+    "active_switching_authorized": false
+  },
+  "test_policy": "Unit tests assert deterministic software contracts and exact reuse parity, not noisy empirical performance thresholds. Canonical analysis owns timing gates.",
+  "claim_ceiling": "actual reusable-prefix kernel feasibility only; no active switching or full-integrator speedup claim"
+}

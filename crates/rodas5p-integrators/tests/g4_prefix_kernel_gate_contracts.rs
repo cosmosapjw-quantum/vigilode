@@ -8,7 +8,6 @@ fn smoke_prefix_kernel_gate_is_read_only_and_reuses_bases_exactly() {
     assert!(report.summary.completed > 0);
     assert!(report.summary.reuse_parity_gate_pass);
     assert_eq!(report.summary.selected_prefix_dimension, 2);
-    assert!(report.summary.selected_prediction_gate_pass);
     assert!(report.summary.selected_prefix_cost_gate_pass);
     assert!(
         report
