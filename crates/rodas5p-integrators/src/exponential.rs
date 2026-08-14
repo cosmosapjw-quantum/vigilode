@@ -817,6 +817,304 @@ pub fn fused_phi_linear_combination(
     fused_phi_action(operator, scale, &vectors, config, counters)
 }
 
+/// Advisory cost prediction from an actually computed fused-phi Arnoldi prefix.
+///
+/// Delayed Krylov convergence is possible for nonnormal operators, so this prediction never
+/// replaces the residual-based completion certificate.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct FusedPhiPrefixPrediction {
+    pub prefix_dimension: usize,
+    pub predicted_total_dimension: usize,
+    pub residual_error_estimate: f64,
+    pub target_error: f64,
+    pub observed_contraction: f64,
+}
+
+fn predict_krylov_dimension(
+    history: &[f64],
+    target: f64,
+    current: usize,
+    maximum: usize,
+) -> (usize, f64) {
+    let last = history.last().copied().unwrap_or(f64::INFINITY);
+    if last <= target {
+        return (current, 0.0);
+    }
+    let ratios = history
+        .windows(2)
+        .rev()
+        .take(2)
+        .filter_map(|pair| {
+            let ratio = pair[1] / pair[0];
+            (pair[0] > 0.0 && ratio.is_finite() && ratio > 0.0).then_some(ratio)
+        })
+        .collect::<Vec<_>>();
+    if ratios.is_empty() {
+        return (maximum, 1.0);
+    }
+    let observed = ratios
+        .into_iter()
+        .fold(0.0_f64, f64::max)
+        .clamp(1.0e-3, 0.999);
+    if observed >= 0.999 || !last.is_finite() || !(target > 0.0) {
+        return (maximum, observed);
+    }
+    let remaining = ((target / last).ln() / observed.ln()).ceil().max(0.0) as usize;
+    (current.saturating_add(remaining).min(maximum), observed)
+}
+
+/// Full-MGS fused-phi Krylov session whose first Arnoldi vectors can be retained and extended.
+///
+/// G4-S4 intentionally restricts this research kernel to one Krylov substep and full MGS.  The
+/// existing adaptive-substep/IOP implementation remains the production research candidate until
+/// prefix reuse passes its own cost and parity gates.
+pub struct FusedPhiPrefixSession {
+    operator: Arc<dyn LinearOperator>,
+    scale: f64,
+    highest_phi_index: usize,
+    physical_dimension: usize,
+    config: FusedPhiKrylovConfig,
+    beta: f64,
+    basis: Vec<Vec<f64>>,
+    hessenberg: Vec<Vec<f64>>,
+    current_dimension: usize,
+    residual_history: Vec<f64>,
+    latest_value_augmented: Vec<f64>,
+    latest_residual_error: f64,
+    latest_nested_difference: f64,
+    previous_projected: Option<Vec<f64>>,
+    converged: bool,
+    happy_breakdown: bool,
+}
+
+impl FusedPhiPrefixSession {
+    pub fn begin(
+        operator: Arc<dyn LinearOperator>,
+        scale: f64,
+        vectors: &[Vec<f64>],
+        config: FusedPhiKrylovConfig,
+        prefix_dimension: usize,
+        counters: &mut WorkCounters,
+    ) -> CoreResult<Self> {
+        if !scale.is_finite()
+            || vectors.is_empty()
+            || !vectors
+                .iter()
+                .flat_map(|vector| vector.iter())
+                .all(|value| value.is_finite())
+        {
+            return Err(CoreError::InvalidInput(
+                "invalid fused-phi prefix input".into(),
+            ));
+        }
+        if !matches!(config.orthogonalization, FusedOrthogonalization::FullMgs)
+            || config.maximum_substeps != 1
+        {
+            return Err(CoreError::InvalidInput(
+                "G4-S4 fused-phi prefix requires full MGS and exactly one substep".into(),
+            ));
+        }
+        let n = operator.dimension();
+        if vectors.iter().any(|vector| vector.len() != n) {
+            return Err(CoreError::Dimension(
+                "fused-phi prefix vector shape mismatch".into(),
+            ));
+        }
+        counters.phi_actions += 1;
+        if vectors.iter().all(|vector| safe_l2(vector) == 0.0) {
+            return Ok(Self {
+                operator,
+                scale,
+                highest_phi_index: vectors.len() - 1,
+                physical_dimension: n,
+                config,
+                beta: 0.0,
+                basis: Vec::new(),
+                hessenberg: Vec::new(),
+                current_dimension: 0,
+                residual_history: vec![0.0],
+                latest_value_augmented: vec![0.0; n],
+                latest_residual_error: 0.0,
+                latest_nested_difference: 0.0,
+                previous_projected: None,
+                converged: true,
+                happy_breakdown: true,
+            });
+        }
+        let highest_phi_index = vectors.len() - 1;
+        let (augmented, initial, physical_dimension) = augmented_fused_operator(operator, vectors)?;
+        let config = config.validate(augmented.dimension())?;
+        let beta = safe_l2(&initial);
+        if !(beta > f64::MIN_POSITIVE && beta.is_finite()) {
+            return Err(CoreError::LinearSolve(
+                "fused-phi prefix initial-vector breakdown".into(),
+            ));
+        }
+        let maximum = config.maximum_dimension;
+        let mut session = Self {
+            operator: augmented,
+            scale,
+            highest_phi_index,
+            physical_dimension,
+            config,
+            beta,
+            basis: vec![initial.iter().map(|value| value / beta).collect()],
+            hessenberg: vec![vec![0.0; maximum]; maximum + 1],
+            current_dimension: 0,
+            residual_history: Vec::new(),
+            latest_value_augmented: initial,
+            latest_residual_error: f64::INFINITY,
+            latest_nested_difference: f64::INFINITY,
+            previous_projected: None,
+            converged: false,
+            happy_breakdown: false,
+        };
+        for _ in 0..prefix_dimension.min(maximum) {
+            if session.converged || session.happy_breakdown {
+                break;
+            }
+            session.extend_one(counters)?;
+        }
+        Ok(session)
+    }
+
+    fn extend_one(&mut self, counters: &mut WorkCounters) -> CoreResult<()> {
+        let column = self.current_dimension;
+        let maximum = self.config.maximum_dimension;
+        if column >= maximum {
+            return Ok(());
+        }
+        if column >= self.basis.len() {
+            return Err(CoreError::LinearSolve(
+                "fused-phi prefix basis exhausted before continuation".into(),
+            ));
+        }
+        let augmented_dimension = self.operator.dimension();
+        let mut work = vec![0.0; augmented_dimension];
+        self.operator.apply(&self.basis[column], &mut work)?;
+        counters.jvp_calls += 1;
+        counters.jvp_vectors += 1;
+        counters.phi_krylov_vectors += 1;
+        fused_orthogonalize(
+            &self.basis,
+            column,
+            &mut work,
+            &mut self.hessenberg,
+            FusedOrthogonalization::FullMgs,
+            counters,
+        );
+        let next_norm = safe_l2(&work);
+        self.hessenberg[column + 1][column] = next_norm;
+        let column_scale = self
+            .hessenberg
+            .iter()
+            .take(column + 1)
+            .map(|row| row[column].abs())
+            .fold(1.0, f64::max);
+        let breakdown_tolerance = 64.0 * f64::EPSILON.sqrt();
+        self.happy_breakdown = next_norm <= breakdown_tolerance * column_scale;
+        if !self.happy_breakdown && column + 1 < maximum {
+            self.basis
+                .push(work.iter().map(|value| value / next_norm).collect());
+        }
+        self.current_dimension += 1;
+        let (current, residual_error) = projected_exponential_action_with_residual_estimate(
+            &self.basis,
+            &self.hessenberg,
+            self.beta,
+            self.current_dimension,
+            self.scale,
+            counters,
+        )?;
+        let nested = self
+            .previous_projected
+            .as_ref()
+            .map_or(f64::INFINITY, |previous| {
+                let difference = current
+                    .iter()
+                    .zip(previous)
+                    .map(|(a, b)| a - b)
+                    .collect::<Vec<_>>();
+                safe_l2(&difference)
+            });
+        self.latest_value_augmented = current.clone();
+        self.latest_residual_error = residual_error;
+        self.latest_nested_difference = nested;
+        self.previous_projected = Some(current);
+        self.residual_history.push(residual_error);
+        let threshold = self.config.absolute_tolerance
+            + self.config.relative_tolerance * safe_l2(&self.latest_value_augmented).max(self.beta);
+        let full_space = self.current_dimension == augmented_dimension;
+        self.converged = self.happy_breakdown || full_space || residual_error <= threshold;
+        Ok(())
+    }
+
+    pub fn prediction(&self) -> FusedPhiPrefixPrediction {
+        let target = self.config.absolute_tolerance
+            + self.config.relative_tolerance * safe_l2(&self.latest_value_augmented).max(self.beta);
+        let (predicted, contraction) = predict_krylov_dimension(
+            &self.residual_history,
+            target,
+            self.current_dimension,
+            self.config.maximum_dimension,
+        );
+        FusedPhiPrefixPrediction {
+            prefix_dimension: self.current_dimension,
+            predicted_total_dimension: predicted,
+            residual_error_estimate: self.latest_residual_error,
+            target_error: target,
+            observed_contraction: contraction,
+        }
+    }
+
+    pub fn finish(mut self, counters: &mut WorkCounters) -> CoreResult<FusedPhiActionReport> {
+        while !self.converged && self.current_dimension < self.config.maximum_dimension {
+            self.extend_one(counters)?;
+            if self.happy_breakdown && !self.converged {
+                break;
+            }
+        }
+        let physical = self.latest_value_augmented[..self.physical_dimension].to_vec();
+        Ok(FusedPhiActionReport {
+            scale: self.scale,
+            highest_phi_index: self.highest_phi_index,
+            substeps: usize::from(self.current_dimension > 0),
+            converged: self.converged,
+            maximum_krylov_dimension: self.current_dimension,
+            error_estimate: if self.converged && self.happy_breakdown {
+                0.0
+            } else {
+                self.latest_residual_error
+            },
+            nested_difference_estimate: self.latest_nested_difference,
+            action_norm: safe_l2(&physical),
+            value: physical,
+            substep_reports: if self.current_dimension == 0 {
+                Vec::new()
+            } else {
+                vec![FusedPhiSubstepReport {
+                    substep_index: 0,
+                    krylov_dimension: self.current_dimension,
+                    converged: self.converged,
+                    happy_breakdown: self.happy_breakdown,
+                    error_estimate: self.latest_residual_error,
+                    nested_difference_estimate: self.latest_nested_difference,
+                }]
+            },
+        })
+    }
+}
+
+pub fn fused_phi_action_incremental(
+    operator: Arc<dyn LinearOperator>,
+    scale: f64,
+    vectors: &[Vec<f64>],
+    config: FusedPhiKrylovConfig,
+    counters: &mut WorkCounters,
+) -> CoreResult<FusedPhiActionReport> {
+    FusedPhiPrefixSession::begin(operator, scale, vectors, config, 0, counters)?.finish(counters)
+}
+
 fn validate_problem(problem: &OdeProblem, y: &[f64]) -> CoreResult<()> {
     if y.len() != problem.dimension {
         return Err(CoreError::Dimension(

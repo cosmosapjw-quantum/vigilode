@@ -14,15 +14,15 @@ use rodas5p_fair_ab::{
 };
 use rodas5p_integrators::{
     CandidateCatalog, CandidateFamily, CandidateStatus, G1TransactionalGateProfile,
-    G2ExponentialGateProfile, G3FusedAdaptiveProfile, HomotopyExperimentProfile,
-    HomotopyRhsTelemetryProfile, MatrixFreeCommonWProfile, NativeIntegratorGateReport,
-    PathControllerProfile, StageBatchFeasibilityProfile, UnifiedNonlinearScreen,
-    UnifiedScientificGateReport, UnifiedScreenProfile, run_g1_transactional_gate,
-    run_g2_exponential_gate, run_g3_fused_adaptive_gate, run_homotopy_design_check,
-    run_homotopy_experiment_screen, run_homotopy_order_policy_screen,
-    run_homotopy_rhs_telemetry_screen, run_matrix_free_common_w_gate, run_native_integrator_gates,
-    run_path_controller_screen, run_stage_batch_feasibility, run_unified_nonlinear_screen,
-    run_unified_scientific_gates,
+    G2ExponentialGateProfile, G3FusedAdaptiveProfile, G4PrefixKernelProfile,
+    HomotopyExperimentProfile, HomotopyRhsTelemetryProfile, MatrixFreeCommonWProfile,
+    NativeIntegratorGateReport, PathControllerProfile, StageBatchFeasibilityProfile,
+    UnifiedNonlinearScreen, UnifiedScientificGateReport, UnifiedScreenProfile,
+    run_g1_transactional_gate, run_g2_exponential_gate, run_g3_fused_adaptive_gate,
+    run_g4_prefix_kernel_gate, run_homotopy_design_check, run_homotopy_experiment_screen,
+    run_homotopy_order_policy_screen, run_homotopy_rhs_telemetry_screen,
+    run_matrix_free_common_w_gate, run_native_integrator_gates, run_path_controller_screen,
+    run_stage_batch_feasibility, run_unified_nonlinear_screen, run_unified_scientific_gates,
 };
 use serde::Serialize;
 use serde_json::json;
@@ -120,6 +120,13 @@ enum Command {
     },
     /// Run the fused-phi adaptive parallel exponential G3 gate.
     GenericParallelExponentialAdaptive {
+        #[arg(long, value_enum, default_value_t = CliHomotopyProfile::Canonical)]
+        profile: CliHomotopyProfile,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Run actual reusable Arnoldi/GMRES prefix kernels without active method switching.
+    GenericPrefixKernelGate {
         #[arg(long, value_enum, default_value_t = CliHomotopyProfile::Canonical)]
         profile: CliHomotopyProfile,
         #[arg(long)]
@@ -1094,6 +1101,13 @@ fn main() -> Result<()> {
                 CliHomotopyProfile::Canonical => G3FusedAdaptiveProfile::Canonical,
             };
             write_json(&output, &run_g3_fused_adaptive_gate(profile)?)?;
+        }
+        Command::GenericPrefixKernelGate { profile, output } => {
+            let profile = match profile {
+                CliHomotopyProfile::Smoke => G4PrefixKernelProfile::Smoke,
+                CliHomotopyProfile::Canonical => G4PrefixKernelProfile::Canonical,
+            };
+            write_json(&output, &run_g4_prefix_kernel_gate(profile)?)?;
         }
         Command::NativeIntegratorGates { output } => {
             let report: NativeIntegratorGateReport = run_native_integrator_gates()?;

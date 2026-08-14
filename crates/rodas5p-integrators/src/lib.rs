@@ -11,6 +11,7 @@ mod exponential;
 mod g1_transactional_gate;
 mod g2_exponential_gate;
 mod g3_fused_adaptive_gate;
+mod g4_prefix_kernel_gate;
 mod homotopy;
 mod homotopy_experiments;
 mod homotopy_order_policy;
@@ -63,10 +64,11 @@ pub use common_w_gate::{
 };
 pub use exponential::{
     ExponentialKrylovConfig, ExponentialStepReport, FusedExponentialStepReport,
-    FusedOrthogonalization, FusedPhiActionReport, FusedPhiKrylovConfig, FusedPhiSubstepReport,
-    FusedPhiTerm, Pexprb54s4Tableau, PhiActionReport, exprb2_fused_step, exprb2_step,
-    exprb43_fused_step, exprb43_step, fused_phi_action, fused_phi_linear_combination,
-    krylov_phi_action, pexprb54s4_fused_step, pexprb54s4_step, pexprb54s4_tableau,
+    FusedOrthogonalization, FusedPhiActionReport, FusedPhiKrylovConfig, FusedPhiPrefixPrediction,
+    FusedPhiPrefixSession, FusedPhiSubstepReport, FusedPhiTerm, Pexprb54s4Tableau, PhiActionReport,
+    exprb2_fused_step, exprb2_step, exprb43_fused_step, exprb43_step, fused_phi_action,
+    fused_phi_action_incremental, fused_phi_linear_combination, krylov_phi_action,
+    pexprb54s4_fused_step, pexprb54s4_step, pexprb54s4_tableau,
 };
 pub use g1_transactional_gate::{
     G1TransactionalCase, G1TransactionalGateProfile, G1TransactionalGateReport,
@@ -80,6 +82,10 @@ pub use g2_exponential_gate::{
 pub use g3_fused_adaptive_gate::{
     G3AdaptiveRow, G3FreshJvpRow, G3FusedAdaptiveProfile, G3FusedAdaptiveReport,
     G3FusedAdaptiveSummary, G3PhiFusionRow, run_g3_fused_adaptive_gate,
+};
+pub use g4_prefix_kernel_gate::{
+    G4PrefixKernelProfile, G4PrefixKernelReport, G4PrefixKernelRow, G4PrefixKernelSummary,
+    run_g4_prefix_kernel_gate,
 };
 pub use homotopy::{
     AffineOutputCertificate, AffinePartialCouplingOracle, HomotopyDesignCheckReport,

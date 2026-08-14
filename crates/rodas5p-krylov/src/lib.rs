@@ -14,6 +14,9 @@ pub use block_gmres::{
     solve_seeded_gmres,
 };
 pub use gcrodr::{GcrodrConfig, GcrodrState, solve_gcrodr, solve_gcrodr_with_workspace};
-pub use gmres::{GmresConfig, solve_gmres, solve_gmres_with_workspace};
+pub use gmres::{
+    GmresConfig, GmresPrefixPrediction, GmresPrefixSession, solve_gmres, solve_gmres_incremental,
+    solve_gmres_with_workspace,
+};
 pub use lgmres::{LgmresConfig, LgmresState, solve_lgmres, solve_lgmres_with_workspace};
 pub use workspace::{GcrodrWorkspace, GmresWorkspace, LgmresWorkspace};
