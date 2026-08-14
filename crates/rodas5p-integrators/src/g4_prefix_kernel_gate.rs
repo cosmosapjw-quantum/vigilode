@@ -169,10 +169,9 @@ fn generator(case: PrefixCase) -> Arc<dyn LinearOperator> {
 fn shifted(case: PrefixCase) -> Arc<dyn LinearOperator> {
     let h_gamma = 0.19 * case.scale;
     Arc::new(ClosureOperator::new(case.dimension, move |x, y| {
-        let mut jx = vec![0.0; case.dimension];
-        apply_generator(case, x, &mut jx);
+        apply_generator(case, x, y);
         for i in 0..case.dimension {
-            y[i] = x[i] - h_gamma * jx[i];
+            y[i] = x[i] - h_gamma * y[i];
         }
         Ok(())
     }))
