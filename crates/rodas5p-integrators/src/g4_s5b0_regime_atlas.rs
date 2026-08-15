@@ -86,13 +86,15 @@ pub struct G4S5B0Report {
     pub limitations: Vec<String>,
 }
 
+type TransitionMetric = Arc<dyn Fn(f64, &[f64]) -> f64 + Send + Sync>;
+
 struct AtlasProblem {
     family: &'static str,
     id: String,
     problem: OdeProblem,
     y0: Vec<f64>,
     t_span: (f64, f64),
-    transition: Arc<dyn Fn(f64, &[f64]) -> f64 + Send + Sync>,
+    transition: TransitionMetric,
 }
 
 fn smooth_ramp(t: f64, center: f64, width: f64) -> (f64, f64) {

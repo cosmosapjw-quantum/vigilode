@@ -1,0 +1,43 @@
+{
+  "active_switching": "HOLD",
+  "base_commit": "76749ab0e91d5017b5bd2f5f0d5c810523c6d423",
+  "branch": "generic-regime-atlas-v2.0",
+  "completed_nodes": [
+    "G0_SCOPE_RESET",
+    "G1_TRANSACTIONAL_Q1_Q2_COMPLETE_HOLD",
+    "G2_EXPONENTIAL_FOUNDATION",
+    "G3_FUSED_ADAPTIVE_EXPONENTIAL",
+    "G4_S0_REGIME_ORACLE",
+    "G4_S1_STEP_LOCAL_SHADOW",
+    "G4_S2_MINIMAL_DETECTOR",
+    "G4_S3_PREFIX_FEASIBILITY",
+    "G4_S4_ACTUAL_PREFIX_KERNEL",
+    "G4_S5A_INTERVAL_PREFLIGHT",
+    "G4_S5B0_EXPANDED_PAIRED_REGIME_ATLAS"
+  ],
+  "current_node": {
+    "id": "G4_S5B0_EXPANDED_PAIRED_REGIME_ATLAS",
+    "status": "COMPLETE_READ_ONLY"
+  },
+  "date": "2026-08-15",
+  "forbidden_drift": [
+    "BDF/Radau optimization",
+    "physical-client threshold tuning",
+    "routine homotopy probe",
+    "active switching before shadow gate"
+  ],
+  "frozen_comparators": [
+    "BDF2 reference",
+    "Radau IIA3 reference"
+  ],
+  "next_node": {
+    "id": "G4_S5B1_ASYMMETRIC_TRANSACTIONAL_SHADOW",
+    "status": "OPEN"
+  },
+  "schema": "g4-s5b0-dag-status-v1",
+  "sealed_future_holdout": {
+    "dimension": 2048,
+    "status": "UNOPENED"
+  },
+  "selector_research_continues": true
+}
