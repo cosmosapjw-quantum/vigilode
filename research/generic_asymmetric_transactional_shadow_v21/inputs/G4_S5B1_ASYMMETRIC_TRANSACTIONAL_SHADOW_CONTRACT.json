@@ -1,0 +1,45 @@
+{
+  "schema": "g4-s5b1-asymmetric-transactional-shadow-contract-v1",
+  "branch": "generic-asymmetric-transactional-shadow-v2.1",
+  "purpose": "test a residence-aware E-K attempt and protected R-JF fallback policy on the combined difficult and expanded generic corpora without active commit switching",
+  "frozen_methods": [
+    "protected sequential matrix-free RODAS5P",
+    "fused full-MGS pexprb54s4"
+  ],
+  "required_inputs": [
+    "G4-S1 quadratic, oscillatory-PR, blend and advection-diffusion accepted-step telemetry",
+    "G4-S5B0 twelve-trajectory expanded regime atlas",
+    "actual E-K prefix and full-step timings",
+    "actual R-JF step timings"
+  ],
+  "candidate_policies": [
+    "R-JF-default with event-triggered E-K trial and reusable prefix",
+    "E-K-first transactional trial with immediate R-JF fallback and cooldown",
+    "static protected R-JF control"
+  ],
+  "state_machine_constraints": {
+    "active_solution_switching": false,
+    "shadow_replay_only": true,
+    "minimum_residence_for_entry": 6,
+    "economic_margin": 1.05,
+    "failed_trial_work_retained": true,
+    "e_k_rejection_forces_r_jf": true,
+    "cooldown_after_e_k_rejection": "calibration-only bounded grid, then frozen",
+    "routine_dual_prefix": false,
+    "proper_homotopy": "deferred unless both E-K and R-JF fail"
+  },
+  "gates": {
+    "unsafe_recommendations": 0,
+    "holdout_median_regret_max": 1.15,
+    "holdout_p95_regret_max": 1.5,
+    "trial_overhead_median_max": 0.03,
+    "trial_overhead_p95_max": 0.05,
+    "fallback_work_included": true,
+    "active_switching": false
+  },
+  "sealed_future_holdout": {
+    "dimension": 2048,
+    "policy_threshold_changes_after_viewing": "forbidden"
+  },
+  "kill_rule": "If neither asymmetric policy beats static protected R-JF after full trial/fallback cost, stop switching research and retain R-JF as static default."
+}

@@ -1,0 +1,51 @@
+{
+  "schema": "g4-s5b2-startup-economic-admission-contract-v1",
+  "branch": "generic-startup-prefix-admission-v2.2",
+  "purpose": "distinguish E-admissible/R-cheaper startup states from E-cheaper startup states using actual reusable Krylov prefixes without periodic method review",
+  "frozen_methods": [
+    "protected sequential matrix-free RODAS5P",
+    "fused full-MGS pexprb54s4"
+  ],
+  "startup_state_machine": [
+    "flow/JVP safety rejection -> protected R-JF",
+    "safety pass -> one bounded E Arnoldi and R GMRES prefix bake-off",
+    "conservative E cost advantage >= 15% -> E-K profile",
+    "otherwise abstain to protected R-JF",
+    "no periodic economic review",
+    "E-K local inadmissibility -> immediate protected R-JF fallback"
+  ],
+  "fixed_rules": {
+    "active_solution_switching": false,
+    "shadow_replay_only": true,
+    "failed_trial_work_retained": true,
+    "minimum_economic_advantage": 1.15,
+    "periodic_review": false,
+    "proper_homotopy": "deferred unless both primary methods are pathological",
+    "BDF_Radau": "byte-frozen comparators"
+  },
+  "calibration": [
+    "G4-S1 complex Dahlquist, quadratic, linear-to-nonlinear blend",
+    "G4-S5B0 N=128 transition atlas"
+  ],
+  "holdout": [
+    "G4-S1 advection-diffusion, oscillatory PR, nonlinear-to-linear blend",
+    "G4-S5B0 N=512 transition atlas"
+  ],
+  "gates": {
+    "unsafe": 0,
+    "calibration_median_regret_max": 1.15,
+    "calibration_p95_regret_max": 1.5,
+    "holdout_median_regret_max": 1.15,
+    "holdout_p95_regret_max": 1.5,
+    "startup_prefix_overhead_median_max": 0.03,
+    "startup_prefix_overhead_p95_max": 0.05,
+    "campaigns_passing": "7/7",
+    "active_switching": false
+  },
+  "kill_rule": "If actual startup prefixes cannot route quadratic-like states to R-JF without losing E-friendly states, stop automatic switching research; expose robust-R-JF and fast-E-K user profiles and retain R-JF as the generic default.",
+  "after_pass_only": [
+    "forced-switch fifth-order recovery and controller-state transfer",
+    "N=2048 sealed generic holdout",
+    "final read-only physical-client holdout"
+  ]
+}
