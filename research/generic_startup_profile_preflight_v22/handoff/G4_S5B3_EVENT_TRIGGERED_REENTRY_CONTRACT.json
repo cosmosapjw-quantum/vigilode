@@ -1,0 +1,55 @@
+{
+  "after_pass_only": [
+    "actual Rust controller-state transfer",
+    "forced-switch fifth-order recovery",
+    "N=2048 sealed holdout"
+  ],
+  "branch": "generic-event-triggered-reentry-shadow-v2.3",
+  "fixed_initial_values": {
+    "active_solution_switching": false,
+    "cooldown_grid_calibration_only": [
+      1,
+      2,
+      3,
+      4,
+      6
+    ],
+    "economic_margin": 1.15,
+    "short_horizon_amortization_steps": 6
+  },
+  "frozen_methods": [
+    "protected sequential matrix-free RODAS5P",
+    "fused full-MGS pexprb54s4"
+  ],
+  "kill_rule": "If event-triggered reentry cannot pass regret and overhead gates in all seven campaigns, stop automatic switching research and expose robust-R-JF default plus fast-E-K opt-in profiles.",
+  "purpose": "evaluate a dynamic shadow policy after the startup-only contract failed its nonrealizable oracle upper bound",
+  "required_gates": {
+    "active_switching": false,
+    "calibration_median_regret_max": 1.15,
+    "calibration_p95_regret_max": 1.5,
+    "campaigns_passing": "7/7",
+    "discarded_prefix_overhead_median_max": 0.03,
+    "discarded_prefix_overhead_p95_max": 0.05,
+    "holdout_median_regret_max": 1.15,
+    "holdout_p95_regret_max": 1.5,
+    "unsafe": 0
+  },
+  "required_negative_controls": [
+    "static R-JF",
+    "startup-only fixed profile",
+    "E-first safety fallback"
+  ],
+  "required_replay_corpora": [
+    "G4-S1 hard corpus",
+    "G4-S5B0 transition atlas"
+  ],
+  "required_state_machine": [
+    "short-horizon estimate below amortization minimum -> protected R-JF with no startup prefix",
+    "long-horizon startup -> at most one one-sided E prefix, never routine dual-prefix",
+    "E local inadmissibility -> immediate protected R-JF fallback with failed work retained",
+    "R-JF active -> E prefix only after free-telemetry change point, safety pass, cooldown expiry and residence-economics gate",
+    "selected E prefix is reused; discarded prefix work retained",
+    "uncertain economics -> remain on current/protected R-JF"
+  ],
+  "schema": "g4-s5b3-event-triggered-reentry-shadow-contract-v1"
+}

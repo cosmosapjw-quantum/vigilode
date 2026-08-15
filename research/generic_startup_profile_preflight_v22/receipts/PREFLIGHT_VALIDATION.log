@@ -1,0 +1,28 @@
+G4-S5B2 PREFLIGHT VALIDATION
+
+analysis_sha256=2d5730093a796571b29ecac0397a9f9d40c0ff30a970f569bb082f0d93f7f353
+analysis_rerun_byte_identical=true
+python_tests=4 passed, 0 failed
+rust_all_targets_release_tests=188 passed, 0 failed
+rust_doc_tests=1 passed, 0 failed
+cargo_fmt=PASS
+strict_clippy_measurement=PASS
+scope_lock=PASS
+BDF_Radau_hashes=unchanged
+physical_client_leakage=0
+candidate_source_modified=false
+active_switching=false
+
+NOTE: first foreground release-test attempts exceeded the execution wrapper while compiling dependencies. The same exact command completed with exit 0 in the retained long-running process; the final log is copied into delivery validation.
+
+test_candidate_source_unmodified (test_g4_s5b2_preflight.PreflightTests.test_candidate_source_unmodified) ... ok
+test_no_prefix_implementation_authorized (test_g4_s5b2_preflight.PreflightTests.test_no_prefix_implementation_authorized) ... ok
+test_reentry_upper_bound_locates_next_architecture (test_g4_s5b2_preflight.PreflightTests.test_reentry_upper_bound_locates_next_architecture) ... ok
+test_startup_only_oracle_fails (test_g4_s5b2_preflight.PreflightTests.test_startup_only_oracle_fails) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.000s
+
+OK
+
+FINAL_VALIDATION=PASS

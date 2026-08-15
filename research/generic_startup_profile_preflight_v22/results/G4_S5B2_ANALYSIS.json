@@ -1,0 +1,144 @@
+{
+  "active_switching": false,
+  "candidate_source_modified": false,
+  "closeout": {
+    "actual_dual_prefix_bakeoff": "NOT_IMPLEMENTED_BECAUSE_ORACLE_UPPER_BOUND_FAILED",
+    "automatic_switching_research": "CONTINUE_ONLY_WITH_EVENT_TRIGGERED_REENTRY_AND_SHORT_HORIZON_ADMISSION",
+    "reusable_prefix_kernel": "PRESERVE",
+    "startup_only_architecture": "REJECT"
+  },
+  "contract_under_test": "one-time-startup-economic-profile-without-periodic-review",
+  "first_step_oracle": {
+    "calibration": {
+      "aggregate_speedup_vs_static_r": 1.739380026134499,
+      "maximum_regret": 2.6166744653486136,
+      "median_regret": 1.4065582535225973,
+      "median_startup_overhead": 0.00772997449390722,
+      "p95_regret": 2.5405142624912567,
+      "p95_startup_overhead": 0.15030417296910425,
+      "profiles": {
+        "E": 3,
+        "R": 9
+      },
+      "trajectories": 12
+    },
+    "holdout": {
+      "aggregate_speedup_vs_static_r": 1.9778915270314965,
+      "maximum_regret": 2.9841819656647495,
+      "median_regret": 1.385519153578769,
+      "median_startup_overhead": 0.014581681039218398,
+      "p95_regret": 2.8947218975010647,
+      "p95_startup_overhead": 1.3508426842341623,
+      "profiles": {
+        "E": 9,
+        "R": 3
+      },
+      "trajectories": 12
+    }
+  },
+  "gates": {
+    "active_switching_authorized": false,
+    "actual_prefix_implementation_authorized": false,
+    "startup_only_profile_calibration_median_regret_le_1_15": false,
+    "startup_only_profile_calibration_p95_regret_le_1_5": false,
+    "startup_only_profile_holdout_median_regret_le_1_15": false,
+    "startup_only_profile_holdout_p95_regret_le_1_5": false,
+    "startup_only_profile_prefix_overhead_gate": false
+  },
+  "optimistic_reentry_upper_bound": {
+    "calibration": {
+      "aggregate_speedup_vs_static_r": 3.0158062550686755,
+      "maximum_regret": 1.1951583623188364,
+      "median_regret": 1.0514422421283958,
+      "median_startup_overhead": 0.0,
+      "p95_regret": 1.169656283223651,
+      "p95_startup_overhead": 0.15030417296910423,
+      "profiles": {
+        "E": 10,
+        "R": 2
+      },
+      "trajectories": 12
+    },
+    "holdout": {
+      "aggregate_speedup_vs_static_r": 2.9668541420279264,
+      "maximum_regret": 1.1266682044464336,
+      "median_regret": 1.0049349532952845,
+      "median_startup_overhead": 0.0,
+      "p95_regret": 1.1084145890460422,
+      "p95_startup_overhead": 0.05182283030332667,
+      "profiles": {
+        "E": 10,
+        "R": 2
+      },
+      "trajectories": 12
+    },
+    "interpretation": "regret gates pass, but startup-prefix P95 overhead remains above gate because short R-profile trajectories cannot amortize a dual/one-sided economic probe",
+    "selected_cooldown": 1
+  },
+  "perfect_trajectory_profile_oracle_dual_prefix": {
+    "calibration": {
+      "aggregate_speedup_vs_static_r": 1.879896639824316,
+      "maximum_regret": 2.4782013692443283,
+      "median_regret": 1.1543818265463526,
+      "median_startup_overhead": 0.013654489893383632,
+      "p95_regret": 2.233669177203871,
+      "p95_startup_overhead": 0.15030417296910425,
+      "profiles": {
+        "E": 10,
+        "R": 2
+      },
+      "trajectories": 12
+    },
+    "holdout": {
+      "aggregate_speedup_vs_static_r": 2.0327155564089927,
+      "maximum_regret": 2.9841819656647495,
+      "median_regret": 1.3222116541916922,
+      "median_startup_overhead": 0.014581681039218398,
+      "p95_regret": 2.8947218975010647,
+      "p95_startup_overhead": 1.3508426842341623,
+      "profiles": {
+        "E": 10,
+        "R": 2
+      },
+      "trajectories": 12
+    }
+  },
+  "perfect_trajectory_profile_oracle_one_sided": {
+    "calibration": {
+      "aggregate_speedup_vs_static_r": 1.88952757668988,
+      "maximum_regret": 2.4698280236631778,
+      "median_regret": 1.1311981182780024,
+      "median_startup_overhead": 0.0,
+      "p95_regret": 2.2295963028298464,
+      "p95_startup_overhead": 0.15030417296910425,
+      "profiles": {
+        "E": 10,
+        "R": 2
+      },
+      "trajectories": 12
+    },
+    "holdout": {
+      "aggregate_speedup_vs_static_r": 2.043286896841814,
+      "maximum_regret": 2.8113753328939564,
+      "median_regret": 1.0088699223082869,
+      "median_startup_overhead": 0.0,
+      "p95_regret": 2.510221819979664,
+      "p95_startup_overhead": 0.05182283030332667,
+      "profiles": {
+        "E": 10,
+        "R": 2
+      },
+      "trajectories": 12
+    }
+  },
+  "schema": "g4-s5b2-startup-profile-preflight-v1",
+  "scientific_sha256": "eb39aa6dd7053d65b78831cbfd85eaec87ad44d29fa0fbcf825f0551b21717f8",
+  "short_trajectory_prefix_geometry": {
+    "long_median_overhead": 0.010353030766502035,
+    "long_rows": 18,
+    "median_overhead": 0.15438182654635266,
+    "p95_overhead": 1.6963004741053922,
+    "rows_steps_le_6": 6
+  },
+  "status": "complete-blocked-before-prefix-implementation"
+}
