@@ -14,15 +14,16 @@ use rodas5p_fair_ab::{
 };
 use rodas5p_integrators::{
     CandidateCatalog, CandidateFamily, CandidateStatus, G1TransactionalGateProfile,
-    G2ExponentialGateProfile, G3FusedAdaptiveProfile, G4PrefixKernelProfile,
+    G2ExponentialGateProfile, G3FusedAdaptiveProfile, G4PrefixKernelProfile, G4S5B0Profile,
     HomotopyExperimentProfile, HomotopyRhsTelemetryProfile, MatrixFreeCommonWProfile,
     NativeIntegratorGateReport, PathControllerProfile, StageBatchFeasibilityProfile,
     UnifiedNonlinearScreen, UnifiedScientificGateReport, UnifiedScreenProfile,
     run_g1_transactional_gate, run_g2_exponential_gate, run_g3_fused_adaptive_gate,
-    run_g4_prefix_kernel_gate, run_homotopy_design_check, run_homotopy_experiment_screen,
-    run_homotopy_order_policy_screen, run_homotopy_rhs_telemetry_screen,
-    run_matrix_free_common_w_gate, run_native_integrator_gates, run_path_controller_screen,
-    run_stage_batch_feasibility, run_unified_nonlinear_screen, run_unified_scientific_gates,
+    run_g4_prefix_kernel_gate, run_g4_s5b0_regime_atlas, run_homotopy_design_check,
+    run_homotopy_experiment_screen, run_homotopy_order_policy_screen,
+    run_homotopy_rhs_telemetry_screen, run_matrix_free_common_w_gate, run_native_integrator_gates,
+    run_path_controller_screen, run_stage_batch_feasibility, run_unified_nonlinear_screen,
+    run_unified_scientific_gates,
 };
 use serde::Serialize;
 use serde_json::json;
@@ -128,6 +129,13 @@ enum Command {
     /// Run actual reusable Arnoldi/GMRES prefix kernels without active method switching.
     GenericPrefixKernelGate {
         #[arg(long, value_enum, default_value_t = CliHomotopyProfile::Canonical)]
+        profile: CliHomotopyProfile,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Build the expanded paired regime atlas without active method switching.
+    GenericRegimeAtlas {
+        #[arg(long, value_enum, default_value_t = CliHomotopyProfile::Smoke)]
         profile: CliHomotopyProfile,
         #[arg(long)]
         output: PathBuf,
@@ -1108,6 +1116,13 @@ fn main() -> Result<()> {
                 CliHomotopyProfile::Canonical => G4PrefixKernelProfile::Canonical,
             };
             write_json(&output, &run_g4_prefix_kernel_gate(profile)?)?;
+        }
+        Command::GenericRegimeAtlas { profile, output } => {
+            let profile = match profile {
+                CliHomotopyProfile::Smoke => G4S5B0Profile::Smoke,
+                CliHomotopyProfile::Canonical => G4S5B0Profile::Canonical,
+            };
+            write_json(&output, &run_g4_s5b0_regime_atlas(profile)?)?;
         }
         Command::NativeIntegratorGates { output } => {
             let report: NativeIntegratorGateReport = run_native_integrator_gates()?;

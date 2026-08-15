@@ -12,6 +12,7 @@ mod g1_transactional_gate;
 mod g2_exponential_gate;
 mod g3_fused_adaptive_gate;
 mod g4_prefix_kernel_gate;
+mod g4_s5b0_regime_atlas;
 mod homotopy;
 mod homotopy_experiments;
 mod homotopy_order_policy;
@@ -86,6 +87,9 @@ pub use g3_fused_adaptive_gate::{
 pub use g4_prefix_kernel_gate::{
     G4PrefixKernelProfile, G4PrefixKernelReport, G4PrefixKernelRow, G4PrefixKernelSummary,
     run_g4_prefix_kernel_gate,
+};
+pub use g4_s5b0_regime_atlas::{
+    G4S5B0Profile, G4S5B0Report, G4S5B0StepRow, G4S5B0TrajectorySummary, run_g4_s5b0_regime_atlas,
 };
 pub use homotopy::{
     AffineOutputCertificate, AffinePartialCouplingOracle, HomotopyDesignCheckReport,
