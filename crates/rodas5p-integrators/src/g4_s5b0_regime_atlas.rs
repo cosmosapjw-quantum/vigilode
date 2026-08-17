@@ -125,6 +125,39 @@ pub struct G4S5B0TrajectorySummary {
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct G4S5B0RjfAttemptRow {
+    pub trajectory_id: String,
+    pub family: String,
+    pub dimension: usize,
+    pub rtol: f64,
+    pub attempt_index: usize,
+    pub accepted_steps_before: usize,
+    pub t_start: f64,
+    pub h: f64,
+    pub error_norm: Option<f64>,
+    pub accepted: bool,
+    pub recoverable_failure: bool,
+    pub failure: Option<String>,
+    pub wall_seconds: f64,
+    pub rhs_evaluations: u64,
+    pub jvp_vectors: u64,
+    pub linear_matvecs: u64,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct G4S5B0AttemptTraceReport {
+    pub schema: &'static str,
+    pub status: &'static str,
+    pub profile: &'static str,
+    pub switching_active: bool,
+    pub committed_method: &'static str,
+    pub attempt_rows: Vec<G4S5B0RjfAttemptRow>,
+    pub accepted_rows: Vec<G4S5B0StepRow>,
+    pub trajectories: Vec<G4S5B0TrajectorySummary>,
+    pub limitations: Vec<String>,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct G4S5B0Report {
     pub schema: &'static str,
     pub status: &'static str,
@@ -1156,4 +1189,240 @@ pub fn run_g4_s5b0_rjf_only_family(
     family: G4S5B0Family,
 ) -> CoreResult<G4S5B0Report> {
     run_g4_s5b0_rjf_only_filtered(profile, Some(family))
+}
+
+fn run_rjf_attempt_trace_trajectory(
+    problem: AtlasProblem,
+    profile: G4S5B0Profile,
+) -> (
+    Vec<G4S5B0RjfAttemptRow>,
+    Vec<G4S5B0StepRow>,
+    G4S5B0TrajectorySummary,
+) {
+    let adaptive = adaptive_config(profile, problem.t_span.1 - problem.t_span.0);
+    let linear = linear_config();
+    let mut controller = AdaptiveControllerState::default();
+    let mut t = problem.t_span.0;
+    let tf = problem.t_span.1;
+    let mut y = problem.y0.clone();
+    let mut h = adaptive.initial_step.min(tf - t);
+    let tolerance = 10.0 * f64::EPSILON * tf.abs().max(1.0);
+    let mut attempts = 0usize;
+    let mut accepted = 0usize;
+    let mut rejected = 0usize;
+    let mut attempt_rows = Vec::new();
+    let mut accepted_rows = Vec::new();
+    let mut total_jacobian_builds = 0u64;
+    let mut total_factorizations = 0u64;
+    let mut failure = None;
+
+    while t < tf - tolerance && attempts < adaptive.max_attempts {
+        h = h.min(adaptive.max_step).min(tf - t);
+        if h < adaptive.min_step {
+            failure = Some("minimum step reached".into());
+            break;
+        }
+        let attempt_index = attempts;
+        attempts += 1;
+        let accepted_steps_before = accepted;
+        let t_start = t;
+        let h_trial = h;
+        let mut step_counters = WorkCounters::default();
+        let start = Instant::now();
+        let trial = sequential_matrix_free_step(
+            &problem.problem,
+            t,
+            &y,
+            h,
+            &linear,
+            None,
+            adaptive.atol,
+            adaptive.rtol,
+            false,
+            &mut step_counters,
+        );
+        let wall = start.elapsed().as_secs_f64();
+        total_jacobian_builds += step_counters.jacobian_builds;
+        total_factorizations += step_counters.direct_factorizations;
+
+        let report = match trial {
+            Ok(report) => report,
+            Err(error @ (CoreError::NonFinite(_) | CoreError::LinearSolve(_))) => {
+                attempt_rows.push(G4S5B0RjfAttemptRow {
+                    trajectory_id: problem.id.clone(),
+                    family: problem.family.into(),
+                    dimension: problem.problem.dimension,
+                    rtol: adaptive.rtol,
+                    attempt_index,
+                    accepted_steps_before,
+                    t_start,
+                    h: h_trial,
+                    error_norm: None,
+                    accepted: false,
+                    recoverable_failure: true,
+                    failure: Some(error.to_string()),
+                    wall_seconds: wall,
+                    rhs_evaluations: step_counters.rhs_evaluations,
+                    jvp_vectors: step_counters.jvp_vectors,
+                    linear_matvecs: step_counters.linear_matvecs,
+                });
+                rejected += 1;
+                h *= adaptive.min_factor;
+                continue;
+            }
+            Err(error) => {
+                attempt_rows.push(G4S5B0RjfAttemptRow {
+                    trajectory_id: problem.id.clone(),
+                    family: problem.family.into(),
+                    dimension: problem.problem.dimension,
+                    rtol: adaptive.rtol,
+                    attempt_index,
+                    accepted_steps_before,
+                    t_start,
+                    h: h_trial,
+                    error_norm: None,
+                    accepted: false,
+                    recoverable_failure: false,
+                    failure: Some(error.to_string()),
+                    wall_seconds: wall,
+                    rhs_evaluations: step_counters.rhs_evaluations,
+                    jvp_vectors: step_counters.jvp_vectors,
+                    linear_matvecs: step_counters.linear_matvecs,
+                });
+                failure = Some(error.to_string());
+                break;
+            }
+        };
+        let error = report.error_norm;
+        let step_accepted = report.accepted
+            && error.is_finite()
+            && error <= 1.0
+            && report.y_new.iter().all(|value| value.is_finite());
+        attempt_rows.push(G4S5B0RjfAttemptRow {
+            trajectory_id: problem.id.clone(),
+            family: problem.family.into(),
+            dimension: problem.problem.dimension,
+            rtol: adaptive.rtol,
+            attempt_index,
+            accepted_steps_before,
+            t_start,
+            h: h_trial,
+            error_norm: Some(error),
+            accepted: step_accepted,
+            recoverable_failure: false,
+            failure: None,
+            wall_seconds: wall,
+            rhs_evaluations: step_counters.rhs_evaluations,
+            jvp_vectors: step_counters.jvp_vectors,
+            linear_matvecs: step_counters.linear_matvecs,
+        });
+        if !step_accepted {
+            rejected += 1;
+            let _ = controller.record_rejection(error.max(1.0e-16));
+            h *= controller
+                .propose_factor(&adaptive, error.max(1.0e-16), 5, false)
+                .unwrap_or(adaptive.min_factor);
+            continue;
+        }
+
+        accepted_rows.push(G4S5B0StepRow {
+            trajectory_id: problem.id.clone(),
+            family: problem.family.into(),
+            dimension: problem.problem.dimension,
+            rtol: adaptive.rtol,
+            step_index: accepted,
+            t_start: t,
+            h,
+            transition_level: (problem.transition)(t, &y),
+            rodas_embedded_error: error,
+            rodas_wall_seconds: wall,
+            rodas_rhs_evaluations: step_counters.rhs_evaluations,
+            rodas_jvp_vectors: step_counters.jvp_vectors,
+            rodas_linear_matvecs: step_counters.linear_matvecs,
+            exponential_completed: false,
+            exponential_total_error: None,
+            exponential_locally_admissible: false,
+            exponential_wall_seconds: None,
+            exponential_prefix_wall_seconds: None,
+            exponential_rhs_evaluations: None,
+            exponential_jvp_vectors: None,
+            exponential_maximum_krylov_dimension: None,
+            exponential_phi_substeps: None,
+            exponential_failure: None,
+        });
+        t = report.t_new;
+        y = report.y_new;
+        accepted += 1;
+        let _ = controller.record_acceptance(error);
+        h *= controller
+            .propose_factor(&adaptive, error.max(1.0e-16), 5, true)
+            .unwrap_or(1.0);
+    }
+
+    let success = t >= tf - tolerance;
+    if !success && failure.is_none() {
+        failure = Some("maximum attempts reached".into());
+    }
+    let summary = G4S5B0TrajectorySummary {
+        trajectory_id: problem.id,
+        family: problem.family.into(),
+        dimension: problem.problem.dimension,
+        rtol: adaptive.rtol,
+        success,
+        failure,
+        attempts,
+        accepted_steps: accepted,
+        rejected_steps: rejected,
+        endpoint_time: t,
+        explicit_jacobian_builds: total_jacobian_builds,
+        direct_factorizations: total_factorizations,
+        newton_iterations: 0,
+    };
+    (attempt_rows, accepted_rows, summary)
+}
+
+fn run_g4_s5b0_rjf_attempt_trace_filtered(
+    profile: G4S5B0Profile,
+    family: Option<G4S5B0Family>,
+) -> CoreResult<G4S5B0AttemptTraceReport> {
+    let mut attempt_rows = Vec::new();
+    let mut accepted_rows = Vec::new();
+    let mut trajectories = Vec::new();
+    for problem in build_problems(profile)? {
+        if family.is_some_and(|selected| problem.family != selected.as_str()) {
+            continue;
+        }
+        let (mut local_attempts, mut local_accepted, summary) =
+            run_rjf_attempt_trace_trajectory(problem, profile);
+        attempt_rows.append(&mut local_attempts);
+        accepted_rows.append(&mut local_accepted);
+        trajectories.push(summary);
+    }
+    Ok(G4S5B0AttemptTraceReport {
+        schema: "g4-s5b0-rjf-attempt-trace-v1",
+        status: "read-only-rjf-attempt-trace",
+        profile: profile.as_str(),
+        switching_active: false,
+        committed_method: "protected-sequential-matrix-free-rodas5p",
+        attempt_rows,
+        accepted_rows,
+        trajectories,
+        limitations: vec![
+            "No E-K or prefix work is performed by this attempt-level trace.".into(),
+            "Wall timings are diagnostic only; policy cost authority remains separately controlled.".into(),
+        ],
+    })
+}
+
+pub fn run_g4_s5b0_rjf_attempt_trace(
+    profile: G4S5B0Profile,
+) -> CoreResult<G4S5B0AttemptTraceReport> {
+    run_g4_s5b0_rjf_attempt_trace_filtered(profile, None)
+}
+
+pub fn run_g4_s5b0_rjf_attempt_trace_family(
+    profile: G4S5B0Profile,
+    family: G4S5B0Family,
+) -> CoreResult<G4S5B0AttemptTraceReport> {
+    run_g4_s5b0_rjf_attempt_trace_filtered(profile, Some(family))
 }

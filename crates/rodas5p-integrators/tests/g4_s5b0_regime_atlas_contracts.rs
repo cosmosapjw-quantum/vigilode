@@ -1,5 +1,6 @@
 use rodas5p_integrators::{
-    G4S5B0Family, G4S5B0Profile, run_g4_s5b0_regime_atlas, run_g4_s5b0_rjf_only,
+    G4S5B0Family, G4S5B0Profile, run_g4_s5b0_regime_atlas, run_g4_s5b0_rjf_attempt_trace_family,
+    run_g4_s5b0_rjf_only, run_g4_s5b0_rjf_only_family,
 };
 
 #[test]
@@ -92,4 +93,73 @@ fn family_shard_registry_matches_the_six_atlas_families() {
             "semilinear-advection-diffusion-ramped",
         ]
     );
+}
+
+#[test]
+fn attempt_trace_smoke_reconstructs_committed_rjf_rows_and_retains_trials() {
+    let report =
+        run_g4_s5b0_rjf_attempt_trace_family(G4S5B0Profile::Smoke, G4S5B0Family::RobertsonRamped)
+            .unwrap();
+    assert_eq!(report.schema, "g4-s5b0-rjf-attempt-trace-v1");
+    assert!(!report.switching_active);
+    assert_eq!(report.trajectories.len(), 1);
+    assert_eq!(
+        report.attempt_rows.len(),
+        report
+            .trajectories
+            .iter()
+            .map(|row| row.attempts)
+            .sum::<usize>()
+    );
+    assert_eq!(
+        report.accepted_rows.len(),
+        report
+            .trajectories
+            .iter()
+            .map(|row| row.accepted_steps)
+            .sum::<usize>()
+    );
+    assert_eq!(
+        report
+            .attempt_rows
+            .iter()
+            .filter(|row| row.accepted)
+            .count(),
+        report.accepted_rows.len()
+    );
+    assert!(report.attempt_rows.iter().all(|row| {
+        row.rhs_evaluations > 0
+            && row.jvp_vectors > 0
+            && row.linear_matvecs > 0
+            && row.wall_seconds >= 0.0
+    }));
+
+    let baseline =
+        run_g4_s5b0_rjf_only_family(G4S5B0Profile::Smoke, G4S5B0Family::RobertsonRamped).unwrap();
+    assert_eq!(report.accepted_rows.len(), baseline.rows.len());
+    for (attempt_row, baseline_row) in report.accepted_rows.iter().zip(&baseline.rows) {
+        assert_eq!(attempt_row.trajectory_id, baseline_row.trajectory_id);
+        assert_eq!(attempt_row.step_index, baseline_row.step_index);
+        assert_eq!(
+            attempt_row.t_start.to_bits(),
+            baseline_row.t_start.to_bits()
+        );
+        assert_eq!(attempt_row.h.to_bits(), baseline_row.h.to_bits());
+        assert_eq!(
+            attempt_row.rodas_embedded_error.to_bits(),
+            baseline_row.rodas_embedded_error.to_bits()
+        );
+        assert_eq!(
+            attempt_row.rodas_rhs_evaluations,
+            baseline_row.rodas_rhs_evaluations
+        );
+        assert_eq!(
+            attempt_row.rodas_jvp_vectors,
+            baseline_row.rodas_jvp_vectors
+        );
+        assert_eq!(
+            attempt_row.rodas_linear_matvecs,
+            baseline_row.rodas_linear_matvecs
+        );
+    }
 }
