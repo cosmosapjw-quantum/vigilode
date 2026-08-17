@@ -1,0 +1,80 @@
+{
+  "schema": "gvjf-policy-redesign-v28-staged-level2-result-v1",
+  "contract_sha256": "ebafa4c2d85670cff10236c401062c8530ab630a421a2eeb144d20aab5be3ded",
+  "implementation_head_before_output": "3d9068f58fdd53482c1ee1d58277df658888152d",
+  "solver_shards": 12,
+  "events": 56,
+  "events_n128": 26,
+  "events_n512": 30,
+  "prefix_failures": 0,
+  "full_e_continuations": 0,
+  "active_switching": false,
+  "n2048_executed": false,
+  "rjf_exact_parity_all": true,
+  "event_and_level1_exact_parity_all": true,
+  "unsafe_events_historical_labels": [
+    {
+      "dimension": 128,
+      "family": "hires-ramped",
+      "decision_step": 4,
+      "target_step": 5,
+      "rho2": 2.2712232503780303,
+      "rho3": 10.679997219615766,
+      "rho4": 45.7130993125537,
+      "rho4_over_rho3": 4.2802538589236,
+      "max_rho34_over_rho2": 20.127083194021132,
+      "exponential_total_error": 1.1351437421450346
+    },
+    {
+      "dimension": 512,
+      "family": "hires-ramped",
+      "decision_step": 4,
+      "target_step": 5,
+      "rho2": 2.27122325058707,
+      "rho3": 10.679997266819184,
+      "rho4": 45.713101930990554,
+      "rho4_over_rho3": 4.2802540851778,
+      "max_rho34_over_rho2": 20.12708434504382,
+      "exponential_total_error": 1.1351271745458875
+    }
+  ],
+  "strict_separating_descriptive_features": [
+    "rho4_over_rho3",
+    "max_rho34_over_rho2"
+  ],
+  "dimension_summary": [
+    {
+      "dimension": 128,
+      "events": 26,
+      "unsafe_events": 1,
+      "prefix_failures": 0,
+      "level2_incremental_jvp_median": 14.0,
+      "level2_incremental_jvp_p95": 14.0,
+      "level2_incremental_jvp_max": 24,
+      "level2_cumulative_jvp_median": 19.0,
+      "level2_cumulative_jvp_p95": 21.0,
+      "level2_cumulative_jvp_max": 33,
+      "cumulative_over_target_r_jvp_median": 0.1440677966101695,
+      "cumulative_over_target_r_jvp_p95": 0.2383720930232558,
+      "cumulative_over_full_e_jvp_median": 0.6129032258064516,
+      "cumulative_over_full_e_jvp_p95": 0.68
+    },
+    {
+      "dimension": 512,
+      "events": 30,
+      "unsafe_events": 1,
+      "prefix_failures": 0,
+      "level2_incremental_jvp_median": 14.0,
+      "level2_incremental_jvp_p95": 22.799999999999955,
+      "level2_incremental_jvp_max": 48,
+      "level2_cumulative_jvp_median": 19.0,
+      "level2_cumulative_jvp_p95": 29.799999999999955,
+      "level2_cumulative_jvp_max": 61,
+      "cumulative_over_target_r_jvp_median": 0.1440677966101695,
+      "cumulative_over_target_r_jvp_p95": 0.2441860465116279,
+      "cumulative_over_full_e_jvp_median": 0.6129032258064516,
+      "cumulative_over_full_e_jvp_p95": 0.68
+    }
+  ],
+  "primary_verdict": "level2 adds real safety-discriminating information: stage-amplification ratios strictly separate the replicated HIRES inadmissible structural event from all observed safe events, while raw rho3/rho4 levels do not; this is descriptive evidence only and no final threshold is selected"
+}
