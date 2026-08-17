@@ -1,0 +1,92 @@
+{
+  "schema": "gvjf-p1-00-tolerance-scaled-early-defect-contract-v1",
+  "status": "sealed-before-output",
+  "parent_commit": "d68653753e67a992f297f91e48e22330bec5954d",
+  "parent_tree": "e2de6e6e361cf308ee9dac666964f52158dc9344",
+  "branch": "generic-tolerance-scaled-early-defect-v2.4",
+  "authority": {
+    "controller_scale_function": "error_scale(y0,y1,[atol],rtol) = atol + rtol*max(abs(y0_i),abs(y1_i))",
+    "controller_endpoint_second_state": "y_new",
+    "early_diagnostic_second_state": "U2",
+    "reason_for_U2": "U2 exists at dependency level 1; y_new is unavailable without completing the step and would defeat early admission semantics"
+  },
+  "definition": {
+    "stage_fraction": 0.25,
+    "physical_component_prefix": "i=1..m; exclude trailing time-augmentation clock component",
+    "scale_i": "s_i = atol + rtol*max(abs(y_n_i),abs(U2_i))",
+    "rho_c2_wrms": "sqrt((1/m)*sum_i((abs(h)*D2_i/s_i)^2))",
+    "raw_control": "eta_c2 = abs(h)*||D2||_2/||U2-y_n||_2 remains recorded unchanged",
+    "interpretation": "admission diagnostic only; not a local-error theorem and not an estimator of final embedded error"
+  },
+  "dimension_and_units": {
+    "D2": "state/time",
+    "abs_h_times_D2": "state",
+    "scale_i": "state",
+    "rho_c2_wrms": "dimensionless componentwise when atol has each component's state units",
+    "caveat": "scalar atol assumes compatible state-component units or an already nondimensionalized state; arbitrary heterogeneous-unit vectors require vector atol support before generic promotion"
+  },
+  "implementation_boundary": {
+    "reuse_only": ["y_n", "U2", "D2", "h", "adaptive.atol", "adaptive.rtol"],
+    "added_expensive_work_required_zero": {
+      "rhs_calls": 0,
+      "jvp_calls": 0,
+      "jvp_vectors": 0,
+      "phi_actions": 0,
+      "partial_t_calls": 0,
+      "jacobian_builds": 0,
+      "newton_iterations": 0
+    },
+    "diagnostic_work_to_count_separately": [
+      "component scale evaluations",
+      "one WRMS accumulation over m physical components",
+      "one square root for the WRMS scalar"
+    ],
+    "canonical_work_counters_must_not_change": true
+  },
+  "predeclared_views": {
+    "all_attempt": "all adaptive E-K attempts",
+    "entry_window": "attempt_index in {0,1} within each trajectory",
+    "entry_window_is_runtime_event_detector": false
+  },
+  "frozen_corpus": {
+    "problems": ["quadratic", "complex-dahlquist", "oscillatory-pr", "advection-diffusion"],
+    "rtols": [0.0001, 0.000001, 0.00000001],
+    "atol_rule": "atol = 0.01*rtol",
+    "orthogonalization": "full-mgs",
+    "threads": 1,
+    "requested_output": "endpoints-only"
+  },
+  "kill_tests": [
+    "quadratic tolerance triplet must no longer have an exact rho_c2_wrms collision and score ordering must move monotonically with the adaptive error norm on that predeclared triplet",
+    "any numerical state/output/attempt-sequence/controller-history/existing-work-counter change stops the node",
+    "any added RHS/JVP/phi/Jacobian/Newton work stops the node",
+    "any unscorable canonical attempt stops the node",
+    "if a predeclared view is no better than all-admit under its complete threshold sweep, reject that use of the score rather than tuning around it"
+  ],
+  "analysis_rules": {
+    "threshold_selection": false,
+    "threshold_recommendation": false,
+    "raw_eta_retained_as_control": true,
+    "required": [
+      "complete attempt rows",
+      "exact collision audit",
+      "all-attempt complete threshold sweep and Pareto frontier",
+      "entry-window complete threshold sweep and Pareto frontier",
+      "pooled/per-problem/per-tolerance distributions",
+      "leave-one-problem-out concentration audit",
+      "paired wall and Gamma overhead",
+      "PHYS-MATH audit",
+      "PHYS-MATH-CODE audit",
+      "plot-based adversarial audit"
+    ]
+  },
+  "forbidden": [
+    "early abort",
+    "active method switching",
+    "event-reentry state machine",
+    "controller/cache transfer",
+    "physical-client tuning",
+    "selected admission threshold",
+    "polyalgorithm speedup claim"
+  ]
+}
