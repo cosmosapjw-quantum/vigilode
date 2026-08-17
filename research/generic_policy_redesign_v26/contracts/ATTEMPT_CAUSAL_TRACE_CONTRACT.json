@@ -1,0 +1,57 @@
+{
+  "schema": "gvjf-policy-redesign-v26-attempt-causal-trace-contract-v1",
+  "status": "pre-output-frozen",
+  "parent_commit": "1edaba6e1187d0bcb4a15c11699a6fa6af99a990",
+  "objective": "Measure the causal gap between accepted-grid event replay and the first controller-proposed next R-JF attempt, retaining accepted and rejected trial work.",
+  "committed_method": "protected-sequential-matrix-free-rodas5p",
+  "new_e_k_work": false,
+  "new_prefix_work": false,
+  "active_switching": false,
+  "profiles": [
+    {"dimension": 128, "role": "development replay"},
+    {"dimension": 512, "role": "cross-dimension development replay"}
+  ],
+  "sealed_dimensions_not_opened": [2048],
+  "attempt_row_required_fields": [
+    "trajectory_id", "family", "dimension", "rtol", "attempt_index",
+    "accepted_steps_before", "t_start", "h", "outcome", "error_norm",
+    "rhs_evaluations", "jvp_vectors", "linear_matvecs", "wall_seconds"
+  ],
+  "frozen_event_policies": [
+    {
+      "name": "v25-frozen",
+      "feature": "two-step-error-drop",
+      "threshold": 0.012790399606947056,
+      "persistence_k": 1,
+      "prefix_budget_delta": 0.03
+    },
+    {
+      "name": "safety-first-development-diagnostic",
+      "feature": "two-step-error-drop",
+      "threshold": 0.012790399606947056,
+      "persistence_k": 3,
+      "prefix_budget_delta": 0.02,
+      "authority": "diagnostic-only; selected from N=128+512 development evidence and not authorized for N=2048"
+    }
+  ],
+  "causal_mapping": {
+    "event_observation": "after accepted R-JF step j completes",
+    "runtime_target": "the first subsequent R-JF attempt from the new committed state, before knowing whether that attempt will be accepted",
+    "accepted_grid_target": "eventually accepted row j+1",
+    "primary_diagnostic": "count and characterize events for which runtime_target is rejected before accepted_grid_target is reached"
+  },
+  "hard_gates": {
+    "accepted_rjf_rows_exactly_reconstruct_v25_rjf_only_rows": true,
+    "attempt_count_equals_accepted_plus_rejected": true,
+    "all_rejected_attempt_work_retained": true,
+    "explicit_jacobian_builds": 0,
+    "newton_iterations": 0,
+    "e_k_evaluations": 0
+  },
+  "stop_conditions": [
+    "any committed R-JF accepted trajectory drift",
+    "any E-K or prefix evaluation",
+    "any N=2048 solver execution",
+    "any policy threshold retuning"
+  ]
+}
