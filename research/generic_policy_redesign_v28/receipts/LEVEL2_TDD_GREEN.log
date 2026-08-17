@@ -1,0 +1,22 @@
+   Compiling rodas5p-integrators v0.1.0 (/mnt/data/GVJF_V28_WORK_20260817/repo/crates/rodas5p-integrators)
+warning: fields `problem` and `t` are never read
+   --> crates/rodas5p-integrators/src/exponential.rs:311:5
+    |
+310 | pub struct Pexprb54s4Level2Prefix {
+    |            ---------------------- fields in this struct
+311 |     problem: OdeProblem,
+    |     ^^^^^^^
+312 |     t: f64,
+    |     ^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rodas5p-integrators` (lib) generated 1 warning
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 8.17s
+     Running tests/pexprb_level2_prefix_contracts.rs (target/debug/deps/pexprb_level2_prefix_contracts-29fd6d29d80c4269)
+
+running 1 test
+test level2_prefix_is_resumable_without_repeating_level1_or_level2_work ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+

@@ -280,11 +280,50 @@ pub struct Pexprb54s4Level1Prefix {
     operator: Arc<dyn LinearOperator>,
     d2: Vec<f64>,
     u2_action: FusedPhiActionReport,
+    telemetry_mode: EarlyFlowDefectTelemetryMode,
+    tolerance_scale: Option<EarlyFlowDefectToleranceScale>,
     report: Pexprb54s4Level1PrefixReport,
 }
 
 impl Pexprb54s4Level1Prefix {
     pub fn report(&self) -> &Pexprb54s4Level1PrefixReport {
+        &self.report
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct Pexprb54s4Level2PrefixReport {
+    pub method: String,
+    pub t: f64,
+    pub h: f64,
+    pub logical_critical_depth: usize,
+    pub level1_report: Pexprb54s4Level1PrefixReport,
+    pub level2_fused_phi_reports: Vec<FusedPhiActionReport>,
+    pub level2_incremental_work: WorkCounters,
+    pub cumulative_work: WorkCounters,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub stage3_flow_defect: Option<EarlyFlowDefectTelemetry>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub stage4_flow_defect: Option<EarlyFlowDefectTelemetry>,
+}
+
+pub struct Pexprb54s4Level2Prefix {
+    y: Vec<f64>,
+    h: f64,
+    config: FusedPhiKrylovConfig,
+    f0: Vec<f64>,
+    operator: Arc<dyn LinearOperator>,
+    d2: Vec<f64>,
+    d3: Vec<f64>,
+    d4: Vec<f64>,
+    u2_action: FusedPhiActionReport,
+    u3_action: FusedPhiActionReport,
+    u4_action: FusedPhiActionReport,
+    report: Pexprb54s4Level2PrefixReport,
+}
+
+impl Pexprb54s4Level2Prefix {
+    pub fn report(&self) -> &Pexprb54s4Level2PrefixReport {
         &self.report
     }
 }
@@ -1982,6 +2021,8 @@ fn pexprb54s4_level1_prefix_with_telemetry_config(
         operator,
         d2,
         u2_action,
+        telemetry_mode,
+        tolerance_scale,
         report,
     })
 }
@@ -2010,10 +2051,10 @@ pub fn pexprb54s4_level1_prefix_with_tolerance_scaled_telemetry(
     )
 }
 
-pub fn pexprb54s4_fused_step_resume_level1(
+pub fn pexprb54s4_level2_prefix_resume_level1(
     prefix: Pexprb54s4Level1Prefix,
     execution: &ParallelExecution,
-) -> CoreResult<FusedExponentialStepReport> {
+) -> CoreResult<Pexprb54s4Level2Prefix> {
     let Pexprb54s4Level1Prefix {
         problem,
         t,
@@ -2024,10 +2065,11 @@ pub fn pexprb54s4_fused_step_resume_level1(
         operator,
         d2,
         u2_action,
-        report,
+        telemetry_mode,
+        tolerance_scale,
+        report: level1_report,
     } = prefix;
     let tableau = pexprb54s4_tableau();
-    let mut work = report.work;
 
     // Dependency level 2: U3 and U4 are independent once D2 is known.
     let stage_ids = [3usize, 4usize];
@@ -2059,13 +2101,88 @@ pub fn pexprb54s4_fused_step_resume_level1(
         let stage = add_scaled_state(&y, h, &action.value);
         let remainder =
             nonlinear_remainder(&problem, operator.as_ref(), t, &y, &f0, &stage, &mut local)?;
-        Ok((action, remainder, local))
+        Ok((action, stage, remainder, local))
     })?;
-    for (_, _, local) in &stages {
-        work.accumulate(*local);
+
+    let mut level2_incremental_work = WorkCounters::default();
+    for (_, _, _, local) in &stages {
+        level2_incremental_work.accumulate(*local);
     }
-    let d3 = stages[0].1.clone();
-    let d4 = stages[1].1.clone();
+    let mut cumulative_work = level1_report.work;
+    cumulative_work.accumulate(level2_incremental_work);
+
+    let d3 = stages[0].2.clone();
+    let d4 = stages[1].2.clone();
+    let stage3_flow_defect = early_flow_defect_telemetry(
+        telemetry_mode,
+        tableau.c3,
+        h,
+        &y,
+        &stages[0].1,
+        &d3,
+        tolerance_scale,
+    )?;
+    let stage4_flow_defect = early_flow_defect_telemetry(
+        telemetry_mode,
+        tableau.c4,
+        h,
+        &y,
+        &stages[1].1,
+        &d4,
+        tolerance_scale,
+    )?;
+
+    let u3_action = stages[0].0.clone();
+    let u4_action = stages[1].0.clone();
+    let report = Pexprb54s4Level2PrefixReport {
+        method: "pexprb54s4-fused-level2".into(),
+        t,
+        h,
+        logical_critical_depth: 2,
+        level1_report,
+        level2_fused_phi_reports: vec![u3_action.clone(), u4_action.clone()],
+        level2_incremental_work,
+        cumulative_work,
+        stage3_flow_defect,
+        stage4_flow_defect,
+    };
+
+    Ok(Pexprb54s4Level2Prefix {
+        y,
+        h,
+        config,
+        f0,
+        operator,
+        d2,
+        d3,
+        d4,
+        u2_action,
+        u3_action,
+        u4_action,
+        report,
+    })
+}
+
+pub fn pexprb54s4_fused_step_resume_level2(
+    prefix: Pexprb54s4Level2Prefix,
+    execution: &ParallelExecution,
+) -> CoreResult<FusedExponentialStepReport> {
+    let Pexprb54s4Level2Prefix {
+        y,
+        h,
+        config,
+        f0,
+        operator,
+        d2,
+        d3,
+        d4,
+        u2_action,
+        u3_action,
+        u4_action,
+        report,
+    } = prefix;
+    let tableau = pexprb54s4_tableau();
+    let mut work = report.cumulative_work;
 
     // Dependency level 3: main and embedded endpoints are independent.
     let endpoint_ids = [0usize, 1usize];
@@ -2161,14 +2278,22 @@ pub fn pexprb54s4_fused_step_resume_level1(
         logical_critical_depth: 3,
         fused_phi_reports: vec![
             u2_action,
-            stages[0].0.clone(),
-            stages[1].0.clone(),
+            u3_action,
+            u4_action,
             endpoints[0].0.clone(),
             endpoints[1].0.clone(),
         ],
         work,
-        early_flow_defect: report.early_flow_defect,
+        early_flow_defect: report.level1_report.early_flow_defect,
     })
+}
+
+pub fn pexprb54s4_fused_step_resume_level1(
+    prefix: Pexprb54s4Level1Prefix,
+    execution: &ParallelExecution,
+) -> CoreResult<FusedExponentialStepReport> {
+    let level2 = pexprb54s4_level2_prefix_resume_level1(prefix, execution)?;
+    pexprb54s4_fused_step_resume_level2(level2, execution)
 }
 
 #[allow(clippy::too_many_arguments)]
