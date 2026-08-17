@@ -43,3 +43,13 @@ fn smoke_atlas_contains_all_transition_families() {
         assert!(families.contains(required));
     }
 }
+
+#[test]
+fn split_profiles_freeze_dimension_and_canonical_tolerances() {
+    assert_eq!(G4S5B0Profile::Calibration128.dimensions(), &[128]);
+    assert_eq!(G4S5B0Profile::Holdout512.dimensions(), &[512]);
+    assert_eq!(G4S5B0Profile::Calibration128.as_str(), "calibration-128");
+    assert_eq!(G4S5B0Profile::Holdout512.as_str(), "holdout-512");
+    assert!(G4S5B0Profile::Calibration128.uses_canonical_tolerances());
+    assert!(G4S5B0Profile::Holdout512.uses_canonical_tolerances());
+}

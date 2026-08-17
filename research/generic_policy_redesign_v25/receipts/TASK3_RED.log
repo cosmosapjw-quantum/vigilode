@@ -1,0 +1,16 @@
+   Compiling rodas5p-integrators v0.1.0 (/mnt/data/GVJF_KEYSTONE_POLICY_LOOP_20260817/repo/crates/rodas5p-integrators)
+error[E0432]: unresolved imports `rodas5p_integrators::CausalRjfStep`, `rodas5p_integrators::PersistenceLatch`, `rodas5p_integrators::PointFeature`, `rodas5p_integrators::PrefixBudget`, `rodas5p_integrators::ProbeAction`, `rodas5p_integrators::causal_feature_value`
+ --> crates/rodas5p-integrators/tests/policy_redesign_v25_contracts.rs:2:5
+  |
+2 |     CausalRjfStep, PersistenceLatch, PointFeature, PrefixBudget, ProbeAction,
+  |     ^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^  ^^^^^^^^^^^^  ^^^^^^^^^^^ no `ProbeAction` in the root
+  |     |              |                 |             |
+  |     |              |                 |             no `PrefixBudget` in the root
+  |     |              |                 no `PointFeature` in the root
+  |     |              no `PersistenceLatch` in the root
+  |     no `CausalRjfStep` in the root
+3 |     causal_feature_value,
+  |     ^^^^^^^^^^^^^^^^^^^^ no `causal_feature_value` in the root
+
+For more information about this error, try `rustc --explain E0432`.
+error: could not compile `rodas5p-integrators` (test "policy_redesign_v25_contracts") due to 1 previous error

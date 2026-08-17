@@ -1,0 +1,39 @@
+   Compiling rodas5p-integrators v0.1.0 (/mnt/data/GVJF_KEYSTONE_POLICY_LOOP_20260817/repo/crates/rodas5p-integrators)
+error[E0599]: no variant or associated item named `Calibration128` found for enum `G4S5B0Profile` in the current scope
+  --> crates/rodas5p-integrators/tests/g4_s5b0_regime_atlas_contracts.rs:49:31
+   |
+49 |     assert_eq!(G4S5B0Profile::Calibration128.dimensions(), &[128]);
+   |                               ^^^^^^^^^^^^^^ variant or associated item not found in `G4S5B0Profile`
+
+error[E0599]: no variant or associated item named `Holdout512` found for enum `G4S5B0Profile` in the current scope
+  --> crates/rodas5p-integrators/tests/g4_s5b0_regime_atlas_contracts.rs:50:31
+   |
+50 |     assert_eq!(G4S5B0Profile::Holdout512.dimensions(), &[512]);
+   |                               ^^^^^^^^^^ variant or associated item not found in `G4S5B0Profile`
+
+error[E0599]: no variant or associated item named `Calibration128` found for enum `G4S5B0Profile` in the current scope
+  --> crates/rodas5p-integrators/tests/g4_s5b0_regime_atlas_contracts.rs:51:31
+   |
+51 |     assert_eq!(G4S5B0Profile::Calibration128.as_str(), "calibration-128");
+   |                               ^^^^^^^^^^^^^^ variant or associated item not found in `G4S5B0Profile`
+
+error[E0599]: no variant or associated item named `Holdout512` found for enum `G4S5B0Profile` in the current scope
+  --> crates/rodas5p-integrators/tests/g4_s5b0_regime_atlas_contracts.rs:52:31
+   |
+52 |     assert_eq!(G4S5B0Profile::Holdout512.as_str(), "holdout-512");
+   |                               ^^^^^^^^^^ variant or associated item not found in `G4S5B0Profile`
+
+error[E0599]: no variant or associated item named `Calibration128` found for enum `G4S5B0Profile` in the current scope
+  --> crates/rodas5p-integrators/tests/g4_s5b0_regime_atlas_contracts.rs:53:28
+   |
+53 |     assert!(G4S5B0Profile::Calibration128.uses_canonical_tolerances());
+   |                            ^^^^^^^^^^^^^^ variant or associated item not found in `G4S5B0Profile`
+
+error[E0599]: no variant or associated item named `Holdout512` found for enum `G4S5B0Profile` in the current scope
+  --> crates/rodas5p-integrators/tests/g4_s5b0_regime_atlas_contracts.rs:54:28
+   |
+54 |     assert!(G4S5B0Profile::Holdout512.uses_canonical_tolerances());
+   |                            ^^^^^^^^^^ variant or associated item not found in `G4S5B0Profile`
+
+For more information about this error, try `rustc --explain E0599`.
+error: could not compile `rodas5p-integrators` (test "g4_s5b0_regime_atlas_contracts") due to 6 previous errors

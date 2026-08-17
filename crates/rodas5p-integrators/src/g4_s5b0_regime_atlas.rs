@@ -17,6 +17,8 @@ use crate::{
 pub enum G4S5B0Profile {
     Smoke,
     Canonical,
+    Calibration128,
+    Holdout512,
 }
 
 impl G4S5B0Profile {
@@ -24,7 +26,22 @@ impl G4S5B0Profile {
         match self {
             Self::Smoke => "smoke",
             Self::Canonical => "canonical",
+            Self::Calibration128 => "calibration-128",
+            Self::Holdout512 => "holdout-512",
         }
+    }
+
+    pub fn dimensions(self) -> &'static [usize] {
+        match self {
+            Self::Smoke => &[32],
+            Self::Canonical => &[128, 512],
+            Self::Calibration128 => &[128],
+            Self::Holdout512 => &[512],
+        }
+    }
+
+    pub fn uses_canonical_tolerances(self) -> bool {
+        !matches!(self, Self::Smoke)
     }
 }
 
@@ -643,12 +660,8 @@ fn semilinear_transition_problem(n: usize) -> CoreResult<AtlasProblem> {
 }
 
 fn build_problems(profile: G4S5B0Profile) -> CoreResult<Vec<AtlasProblem>> {
-    let dimensions: &[usize] = match profile {
-        G4S5B0Profile::Smoke => &[32],
-        G4S5B0Profile::Canonical => &[128, 512],
-    };
     let mut problems = Vec::new();
-    for &n in dimensions {
+    for &n in profile.dimensions() {
         problems.push(robertson_transition_problem(n)?);
         problems.push(hires_transition_problem(n)?);
         problems.push(vdp_transition_problem(n)?);
@@ -661,13 +674,15 @@ fn build_problems(profile: G4S5B0Profile) -> CoreResult<Vec<AtlasProblem>> {
 
 fn adaptive_config(profile: G4S5B0Profile, span: f64) -> AdaptiveStepConfig {
     AdaptiveStepConfig {
-        atol: match profile {
-            G4S5B0Profile::Smoke => 1.0e-6,
-            G4S5B0Profile::Canonical => 1.0e-7,
+        atol: if profile.uses_canonical_tolerances() {
+            1.0e-7
+        } else {
+            1.0e-6
         },
-        rtol: match profile {
-            G4S5B0Profile::Smoke => 1.0e-4,
-            G4S5B0Profile::Canonical => 1.0e-5,
+        rtol: if profile.uses_canonical_tolerances() {
+            1.0e-5
+        } else {
+            1.0e-4
         },
         initial_step: (span / 20.0).max(1.0e-8),
         min_step: 1.0e-12,
@@ -849,9 +864,10 @@ fn run_exponential_shadow(
             y,
             h,
             config,
-            match profile {
-                G4S5B0Profile::Smoke => 0.0002,
-                G4S5B0Profile::Canonical => 0.001,
+            if profile.uses_canonical_tolerances() {
+                0.001
+            } else {
+                0.0002
             },
         )?;
         Ok(ExponentialShadow {

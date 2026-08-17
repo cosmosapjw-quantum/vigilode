@@ -24,6 +24,7 @@ mod nonlinear;
 mod output;
 mod parallel;
 mod path_controller;
+mod policy_redesign_v25;
 mod problem;
 mod problems;
 mod radau;
@@ -181,4 +182,8 @@ pub use unified_screen::{
     ReferenceCertificateSource, UnifiedCandidateOutcome, UnifiedCandidateRow,
     UnifiedCaseDescriptor, UnifiedNonlinearScreen, UnifiedNonlinearSummary, UnifiedScreenProfile,
     run_unified_nonlinear_screen,
+};
+
+pub use policy_redesign_v25::{
+    CausalRjfStep, PersistenceLatch, PointFeature, PrefixBudget, ProbeAction, causal_feature_value,
 };

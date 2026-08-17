@@ -141,6 +141,13 @@ enum Command {
         #[arg(long)]
         output: PathBuf,
     },
+    /// Run one split-dimension regime-atlas campaign for policy-redesign calibration or holdout.
+    GenericPolicyRedesignAtlas {
+        #[arg(long, value_enum)]
+        profile: CliPolicyRedesignProfile,
+        #[arg(long)]
+        output: PathBuf,
+    },
     /// Measure threshold-free early-defect attempt geometry and read-only overhead.
     GenericEarlyDefectAttemptGeometry {
         #[arg(long, value_enum, default_value_t = CliHomotopyProfile::Canonical)]
@@ -235,6 +242,12 @@ enum Command {
         #[arg(long)]
         zero_guess: bool,
     },
+}
+
+#[derive(Clone, Copy, Debug, ValueEnum)]
+enum CliPolicyRedesignProfile {
+    Calibration,
+    Holdout,
 }
 
 #[derive(Clone, Copy, Debug, ValueEnum)]
@@ -1136,6 +1149,13 @@ fn main() -> Result<()> {
             let profile = match profile {
                 CliHomotopyProfile::Smoke => G4S5B0Profile::Smoke,
                 CliHomotopyProfile::Canonical => G4S5B0Profile::Canonical,
+            };
+            write_json(&output, &run_g4_s5b0_regime_atlas(profile)?)?;
+        }
+        Command::GenericPolicyRedesignAtlas { profile, output } => {
+            let profile = match profile {
+                CliPolicyRedesignProfile::Calibration => G4S5B0Profile::Calibration128,
+                CliPolicyRedesignProfile::Holdout => G4S5B0Profile::Holdout512,
             };
             write_json(&output, &run_g4_s5b0_regime_atlas(profile)?)?;
         }

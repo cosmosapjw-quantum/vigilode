@@ -748,3 +748,20 @@ fn tolerance_scaled_early_defect_cli_is_threshold_free_and_machine_readable() {
 
     let _ = fs::remove_file(output);
 }
+
+#[test]
+fn generic_policy_redesign_atlas_command_is_registered() {
+    let binary = env!("CARGO_BIN_EXE_rodas5p");
+    let output = std::process::Command::new(binary)
+        .args(["generic-policy-redesign-atlas", "--help"])
+        .output()
+        .expect("run policy redesign help");
+    assert!(
+        output.status.success(),
+        "stderr: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(stdout.contains("calibration"));
+    assert!(stdout.contains("holdout"));
+}
