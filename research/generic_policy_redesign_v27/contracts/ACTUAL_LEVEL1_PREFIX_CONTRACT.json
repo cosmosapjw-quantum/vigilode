@@ -1,0 +1,69 @@
+{
+  "schema": "gvjf-policy-redesign-v27-actual-level1-prefix-contract-v1",
+  "parent_commit": "b7ed8110df1c42ac026d3dbf614a8d4e81bf02d9",
+  "objective": "Measure the actual pexprb54s4 dependency-level-1 U2/D2 prefix on the first runtime proposal after an R-JF event, without full E continuation or active switching.",
+  "policies": {
+    "frozen_k1_comparator": {
+      "authority": "exact v2.5 frozen budget-filtered decision steps",
+      "promotion_candidate": false
+    },
+    "k3_development_candidate": {
+      "feature": "two_step_error_drop",
+      "threshold": 0.012790399606947056,
+      "k": 3,
+      "authority": "development-only; selected after N=128/N=512 attempt-causality analysis",
+      "promotion_candidate": false
+    },
+    "k2": {
+      "status": "rejected-as-primary",
+      "reason": "two N=512 semilinear events target rejected/failed first next proposals"
+    }
+  },
+  "prefix_definition": {
+    "method": "pexprb54s4-fused",
+    "stage_fraction_c2": 0.25,
+    "steps": [
+      "evaluate f0 at the proposed base state",
+      "form matrix-free JVP linearization",
+      "compute c2*phi1(c2*h*J)*f0",
+      "form U2",
+      "evaluate D2 = F(U2)-F0-J(U2-y)",
+      "compute raw and tolerance-scaled early-flow-defect telemetry"
+    ],
+    "must_not_compute": ["U3", "U4", "main endpoint", "embedded endpoint"]
+  },
+  "resumability": {
+    "required": true,
+    "rule": "A full pexprb54s4 step resumed from a retained level-1 prefix must reproduce the ordinary full-step numerical outputs, fused-phi reports, telemetry, and total WorkCounters exactly; level-1 work must not be repeated."
+  },
+  "runtime_causality": {
+    "event_time": "after an accepted committed R-JF step",
+    "probe_target": "the first subsequently proposed R-JF trial (t,y,h_trial), whether that R trial later accepts or rejects",
+    "accepted_grid_substitution_forbidden": true
+  },
+  "campaign_scope": {
+    "dimensions": [128, 512],
+    "families": 6,
+    "full_e_continuations": 0,
+    "active_switching": false,
+    "n2048": "sealed"
+  },
+  "hard_gates": [
+    "R-JF committed trajectory and all R attempt rows exactly match v2.6",
+    "explicit Jacobian builds remain zero",
+    "Newton iterations remain zero",
+    "full E continuation count is zero",
+    "level-1 report contains exactly the U2 fused action and D2-derived telemetry",
+    "resumed full-step exact parity test passes",
+    "all prefix work is retained as speculative work",
+    "debug wall time is not promotion authority",
+    "historical G4-S4 prefix timing is never substituted for the actual U2/D2 prefix"
+  ],
+  "stop_conditions": [
+    "prefix factoring changes ordinary pexprb54s4 numerical outputs or work counters",
+    "R-JF committed or attempt trace drifts",
+    "full E level 2/3 work appears in the research campaign",
+    "N=2048 is executed",
+    "thresholds are retuned from N=512 output"
+  ]
+}
