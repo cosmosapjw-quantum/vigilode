@@ -807,3 +807,29 @@ fn generic_policy_redesign_level2_prefix_command_is_registered() {
     assert!(stdout.contains("--policy"));
     assert!(stdout.contains("--output"));
 }
+
+#[test]
+fn stage_growth_safety_audit_cli_emits_explicit_budget_and_audit_fields() {
+    let binary = env!("CARGO_BIN_EXE_rodas5p");
+    let output = temp_path("stage-growth-safety-audit.json");
+    let status = Command::new(binary)
+        .args([
+            "generic-stage-growth-safety-audit",
+            "--profile",
+            "calibration96",
+            "--family",
+            "robertson",
+            "--output",
+        ])
+        .arg(&output)
+        .status()
+        .unwrap();
+    assert!(status.success());
+    let report: serde_json::Value = serde_json::from_slice(&fs::read(&output).unwrap()).unwrap();
+    assert_eq!(report["schema"], "g4-s5b0-stage-growth-safety-audit-v1");
+    assert_eq!(report["profile"], "stage-growth-calibration-96");
+    assert_eq!(report["switching_active"], false);
+    assert_eq!(report["runtime_full_e_continuations"], 0);
+    assert_eq!(report["budget_breaches"], 0);
+    let _ = fs::remove_file(output);
+}

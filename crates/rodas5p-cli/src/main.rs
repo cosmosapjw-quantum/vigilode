@@ -22,7 +22,8 @@ use rodas5p_integrators::{
     run_g2_exponential_gate, run_g3_fused_adaptive_gate, run_g4_prefix_kernel_gate,
     run_g4_s5b0_actual_level1_prefix_family, run_g4_s5b0_actual_level2_prefix_family,
     run_g4_s5b0_regime_atlas, run_g4_s5b0_rjf_attempt_trace, run_g4_s5b0_rjf_attempt_trace_family,
-    run_g4_s5b0_rjf_only, run_g4_s5b0_rjf_only_family, run_g4_s5b3_attempt_geometry,
+    run_g4_s5b0_rjf_only, run_g4_s5b0_rjf_only_family,
+    run_g4_s5b0_stage_growth_safety_audit_family, run_g4_s5b3_attempt_geometry,
     run_homotopy_design_check, run_homotopy_experiment_screen, run_homotopy_order_policy_screen,
     run_homotopy_rhs_telemetry_screen, run_matrix_free_common_w_gate, run_native_integrator_gates,
     run_p1_00_tolerance_scaled_early_defect, run_path_controller_screen,
@@ -183,6 +184,15 @@ enum Command {
         #[arg(long)]
         output: PathBuf,
     },
+    /// Calibrate the v2.9 normalized stage-growth witness on explicit fresh profiles.
+    GenericStageGrowthSafetyAudit {
+        #[arg(long, value_enum)]
+        profile: CliStageGrowthSafetyProfile,
+        #[arg(long, value_enum)]
+        family: CliPolicyRedesignFamily,
+        #[arg(long)]
+        output: PathBuf,
+    },
     /// Measure threshold-free early-defect attempt geometry and read-only overhead.
     GenericEarlyDefectAttemptGeometry {
         #[arg(long, value_enum, default_value_t = CliHomotopyProfile::Canonical)]
@@ -321,6 +331,23 @@ impl From<CliPolicyRedesignPrefixPolicy> for G4S5B0PrefixProbePolicy {
 enum CliPolicyRedesignProfile {
     Calibration,
     Holdout,
+}
+
+#[derive(Clone, Copy, Debug, ValueEnum)]
+enum CliStageGrowthSafetyProfile {
+    Calibration96,
+    Calibration256,
+    Holdout384,
+}
+
+impl From<CliStageGrowthSafetyProfile> for G4S5B0Profile {
+    fn from(value: CliStageGrowthSafetyProfile) -> Self {
+        match value {
+            CliStageGrowthSafetyProfile::Calibration96 => Self::StageGrowthCalibration96,
+            CliStageGrowthSafetyProfile::Calibration256 => Self::StageGrowthCalibration256,
+            CliStageGrowthSafetyProfile::Holdout384 => Self::StageGrowthHoldout384,
+        }
+    }
 }
 
 #[derive(Clone, Copy, Debug, ValueEnum)]
@@ -1281,6 +1308,15 @@ fn main() -> Result<()> {
             };
             let report =
                 run_g4_s5b0_actual_level2_prefix_family(profile, family.into(), policy.into())?;
+            write_json(&output, &report)?;
+        }
+        Command::GenericStageGrowthSafetyAudit {
+            profile,
+            family,
+            output,
+        } => {
+            let report =
+                run_g4_s5b0_stage_growth_safety_audit_family(profile.into(), family.into())?;
             write_json(&output, &report)?;
         }
         Command::GenericEarlyDefectAttemptGeometry { profile, output } => {

@@ -58,6 +58,31 @@ fn split_profiles_freeze_dimension_and_canonical_tolerances() {
 }
 
 #[test]
+fn v29_stage_growth_profiles_are_fresh_and_freeze_tolerances() {
+    assert_eq!(G4S5B0Profile::StageGrowthCalibration96.dimensions(), &[96]);
+    assert_eq!(
+        G4S5B0Profile::StageGrowthCalibration256.dimensions(),
+        &[256]
+    );
+    assert_eq!(G4S5B0Profile::StageGrowthHoldout384.dimensions(), &[384]);
+    assert_eq!(
+        G4S5B0Profile::StageGrowthCalibration96.tolerances(),
+        (3.0e-8, 3.0e-6)
+    );
+    assert_eq!(
+        G4S5B0Profile::StageGrowthCalibration256.tolerances(),
+        (3.0e-7, 3.0e-5)
+    );
+    assert_eq!(
+        G4S5B0Profile::StageGrowthHoldout384.tolerances(),
+        (7.0e-8, 7.0e-6)
+    );
+    assert!(!G4S5B0Profile::StageGrowthCalibration96.uses_canonical_tolerances());
+    assert!(!G4S5B0Profile::StageGrowthCalibration256.uses_canonical_tolerances());
+    assert!(!G4S5B0Profile::StageGrowthHoldout384.uses_canonical_tolerances());
+}
+
+#[test]
 fn rjf_only_smoke_skips_every_exponential_shadow() {
     let report = run_g4_s5b0_rjf_only(G4S5B0Profile::Smoke).unwrap();
     assert_eq!(report.schema, "g4-s5b0-rjf-only-regime-replay-v1");
@@ -325,4 +350,74 @@ fn actual_level2_prefix_runner_is_read_only_and_exposes_later_stage_defects() {
         assert_eq!(report.cumulative_work.jacobian_builds, 0);
         assert_eq!(report.cumulative_work.direct_factorizations, 0);
     }
+}
+
+#[test]
+fn v29_stage_growth_safety_audit_is_read_only_budgeted_and_explicit() {
+    use rodas5p_integrators::run_g4_s5b0_stage_growth_safety_audit_family;
+
+    let audited = run_g4_s5b0_stage_growth_safety_audit_family(
+        G4S5B0Profile::StageGrowthCalibration96,
+        G4S5B0Family::RobertsonRamped,
+    )
+    .unwrap();
+    let baseline = run_g4_s5b0_rjf_attempt_trace_family(
+        G4S5B0Profile::StageGrowthCalibration96,
+        G4S5B0Family::RobertsonRamped,
+    )
+    .unwrap();
+
+    assert_eq!(audited.schema, "g4-s5b0-stage-growth-safety-audit-v1");
+    assert!(!audited.switching_active);
+    assert_eq!(audited.runtime_full_e_continuations, 0);
+    assert_eq!(audited.attempt_rows.len(), baseline.attempt_rows.len());
+    for (left, right) in audited.attempt_rows.iter().zip(&baseline.attempt_rows) {
+        assert_eq!(left.trajectory_id, right.trajectory_id);
+        assert_eq!(left.attempt_index, right.attempt_index);
+        assert_eq!(left.accepted_steps_before, right.accepted_steps_before);
+        assert_eq!(left.t_start.to_bits(), right.t_start.to_bits());
+        assert_eq!(left.h.to_bits(), right.h.to_bits());
+        assert_eq!(
+            left.error_norm.map(f64::to_bits),
+            right.error_norm.map(f64::to_bits)
+        );
+        assert_eq!(left.accepted, right.accepted);
+        assert_eq!(left.recoverable_failure, right.recoverable_failure);
+        assert_eq!(left.failure, right.failure);
+        assert_eq!(left.rhs_evaluations, right.rhs_evaluations);
+        assert_eq!(left.jvp_vectors, right.jvp_vectors);
+        assert_eq!(left.linear_matvecs, right.linear_matvecs);
+    }
+    assert_eq!(audited.accepted_rows.len(), baseline.accepted_rows.len());
+    for (left, right) in audited.accepted_rows.iter().zip(&baseline.accepted_rows) {
+        assert_eq!(left.trajectory_id, right.trajectory_id);
+        assert_eq!(left.step_index, right.step_index);
+        assert_eq!(left.t_start.to_bits(), right.t_start.to_bits());
+        assert_eq!(left.h.to_bits(), right.h.to_bits());
+        assert_eq!(
+            left.rodas_embedded_error.to_bits(),
+            right.rodas_embedded_error.to_bits()
+        );
+        assert_eq!(left.rodas_rhs_evaluations, right.rodas_rhs_evaluations);
+        assert_eq!(left.rodas_jvp_vectors, right.rodas_jvp_vectors);
+        assert_eq!(left.rodas_linear_matvecs, right.rodas_linear_matvecs);
+    }
+    assert_eq!(audited.trajectories, baseline.trajectories);
+    assert_eq!(audited.budget_breaches, 0);
+    assert!(audited.rows.iter().all(|row| !row.runtime_full_e_continued));
+    assert!(audited.rows.iter().all(|row| {
+        !row.budget_admitted
+            || (row.prefix_succeeded
+                && row.actual_prefix_jvp_vectors.unwrap_or(u64::MAX) <= 80
+                && row.normalized_stage_growth_a34.is_some()
+                && row.audit_full_e_completed)
+    }));
+    assert_eq!(
+        audited.audit_full_e_continuations,
+        audited
+            .rows
+            .iter()
+            .filter(|row| row.audit_full_e_completed)
+            .count()
+    );
 }
