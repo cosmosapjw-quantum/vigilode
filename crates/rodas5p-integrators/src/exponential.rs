@@ -199,6 +199,45 @@ pub struct FusedExponentialStepReport {
     pub logical_critical_depth: usize,
     pub fused_phi_reports: Vec<FusedPhiActionReport>,
     pub work: WorkCounters,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub early_flow_defect: Option<EarlyFlowDefectTelemetry>,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum EarlyFlowDefectTelemetryMode {
+    Disabled,
+    ReadOnly { norm_component_count: usize },
+}
+
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct EarlyFlowDefectDiagnosticWork {
+    pub conceptual_vector_differences: u64,
+    pub l2_norm_evaluations: u64,
+    pub scalar_normalizations: u64,
+    pub added_rhs_calls: u64,
+    pub added_jvp_calls: u64,
+    pub added_jvp_vectors: u64,
+    pub added_phi_actions: u64,
+    pub added_partial_t_calls: u64,
+    pub added_jacobian_builds: u64,
+    pub added_newton_iterations: u64,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct EarlyFlowDefectTelemetry {
+    pub stage_fraction: f64,
+    pub state_dimension: usize,
+    pub norm_component_count: usize,
+    pub excluded_trailing_components: usize,
+    pub abs_h: f64,
+    pub stage_increment_l2: f64,
+    pub nonlinear_remainder_l2: f64,
+    pub normalized_defect: Option<f64>,
+    pub zero_increment: bool,
+    pub degenerate_nonzero_remainder: bool,
+    pub nonfinite_normalization: bool,
+    pub native_partial_t_sampled: bool,
+    pub diagnostic_work: EarlyFlowDefectDiagnosticWork,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
@@ -1203,6 +1242,68 @@ fn base_stage(y: &[f64], h: f64, c: f64, phi1: &[f64]) -> Vec<f64> {
         .collect()
 }
 
+fn early_flow_defect_telemetry(
+    mode: EarlyFlowDefectTelemetryMode,
+    stage_fraction: f64,
+    h: f64,
+    y: &[f64],
+    stage: &[f64],
+    nonlinear_remainder: &[f64],
+) -> CoreResult<Option<EarlyFlowDefectTelemetry>> {
+    let EarlyFlowDefectTelemetryMode::ReadOnly {
+        norm_component_count,
+    } = mode
+    else {
+        return Ok(None);
+    };
+    if y.len() != stage.len() || y.len() != nonlinear_remainder.len() {
+        return Err(CoreError::Dimension(
+            "early-flow-defect telemetry shape mismatch".into(),
+        ));
+    }
+    if norm_component_count == 0 || norm_component_count > y.len() {
+        return Err(CoreError::InvalidInput(format!(
+            "early-flow-defect norm component count {norm_component_count} is outside 1..={}",
+            y.len()
+        )));
+    }
+    let increment = stage[..norm_component_count]
+        .iter()
+        .zip(&y[..norm_component_count])
+        .map(|(stage_value, base_value)| stage_value - base_value)
+        .collect::<Vec<_>>();
+    let stage_increment_l2 = safe_l2(&increment);
+    let nonlinear_remainder_l2 = safe_l2(&nonlinear_remainder[..norm_component_count]);
+    let zero_increment = stage_increment_l2 == 0.0;
+    let degenerate_nonzero_remainder = zero_increment && nonlinear_remainder_l2 != 0.0;
+    let (normalized_defect, scalar_normalizations, nonfinite_normalization) = if zero_increment {
+        ((!degenerate_nonzero_remainder).then_some(0.0), 0, false)
+    } else {
+        let value = h.abs() * nonlinear_remainder_l2 / stage_increment_l2;
+        (value.is_finite().then_some(value), 1, !value.is_finite())
+    };
+    Ok(Some(EarlyFlowDefectTelemetry {
+        stage_fraction,
+        state_dimension: y.len(),
+        norm_component_count,
+        excluded_trailing_components: y.len() - norm_component_count,
+        abs_h: h.abs(),
+        stage_increment_l2,
+        nonlinear_remainder_l2,
+        normalized_defect,
+        zero_increment,
+        degenerate_nonzero_remainder,
+        nonfinite_normalization,
+        native_partial_t_sampled: false,
+        diagnostic_work: EarlyFlowDefectDiagnosticWork {
+            conceptual_vector_differences: 1,
+            l2_norm_evaluations: 2,
+            scalar_normalizations,
+            ..EarlyFlowDefectDiagnosticWork::default()
+        },
+    }))
+}
+
 pub fn exprb2_step(
     problem: &OdeProblem,
     t: f64,
@@ -1519,6 +1620,7 @@ pub fn exprb2_fused_step(
         logical_critical_depth: 1,
         fused_phi_reports: vec![action],
         work,
+        early_flow_defect: None,
     })
 }
 
@@ -1648,6 +1750,7 @@ pub fn exprb43_fused_step(
             endpoints[1].0.clone(),
         ],
         work,
+        early_flow_defect: None,
     })
 }
 
@@ -1659,7 +1762,38 @@ pub fn pexprb54s4_fused_step(
     config: FusedPhiKrylovConfig,
     execution: &ParallelExecution,
 ) -> CoreResult<FusedExponentialStepReport> {
+    pexprb54s4_fused_step_with_telemetry_mode(
+        problem,
+        t,
+        y,
+        h,
+        config,
+        execution,
+        EarlyFlowDefectTelemetryMode::Disabled,
+    )
+}
+
+#[allow(clippy::too_many_arguments)]
+pub fn pexprb54s4_fused_step_with_telemetry_mode(
+    problem: &OdeProblem,
+    t: f64,
+    y: &[f64],
+    h: f64,
+    config: FusedPhiKrylovConfig,
+    execution: &ParallelExecution,
+    telemetry_mode: EarlyFlowDefectTelemetryMode,
+) -> CoreResult<FusedExponentialStepReport> {
     validate_problem(problem, y)?;
+    if let EarlyFlowDefectTelemetryMode::ReadOnly {
+        norm_component_count,
+    } = telemetry_mode
+        && (norm_component_count == 0 || norm_component_count > y.len())
+    {
+        return Err(CoreError::InvalidInput(format!(
+            "early-flow-defect norm component count {norm_component_count} is outside 1..={}",
+            y.len()
+        )));
+    }
     let tableau = pexprb54s4_tableau();
     let mut work = WorkCounters::default();
     let f0 = problem.eval_rhs(t, y, &mut work)?;
@@ -1679,6 +1813,8 @@ pub fn pexprb54s4_fused_step(
     )?)?;
     let u2 = add_scaled_state(y, h, &u2_action.value);
     let d2 = nonlinear_remainder(problem, operator.as_ref(), t, y, &f0, &u2, &mut work)?;
+    let early_flow_defect =
+        early_flow_defect_telemetry(telemetry_mode, tableau.c2, h, y, &u2, &d2)?;
 
     // Dependency level 2: U3 and U4 are independent once D2 is known.
     let stage_ids = [3usize, 4usize];
@@ -1818,5 +1954,6 @@ pub fn pexprb54s4_fused_step(
             endpoints[1].0.clone(),
         ],
         work,
+        early_flow_defect,
     })
 }

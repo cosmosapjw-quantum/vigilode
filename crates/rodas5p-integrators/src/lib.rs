@@ -39,8 +39,10 @@ pub use adaptive::{
     AdaptiveStepConfig, ControllerKind, StepDoublingEstimate, step_doubling_wrms_error,
 };
 pub use adaptive_exponential::{
+    AdaptiveEarlyFlowDefectAttempt, AdaptiveEarlyFlowDefectOutcome,
     AdaptiveFusedExponentialDiagnostics, AdaptiveFusedExponentialResult,
     integrate_pexprb54s4_fused_adaptive_observed,
+    integrate_pexprb54s4_fused_adaptive_observed_with_telemetry_mode,
 };
 pub use bdf::{
     BdfConfig, BdfHistory, BdfIntegrationResult, BdfOrder, BdfStepReport, VariableBdf2Coefficients,
@@ -64,12 +66,14 @@ pub use common_w_gate::{
     run_matrix_free_common_w_gate,
 };
 pub use exponential::{
+    EarlyFlowDefectDiagnosticWork, EarlyFlowDefectTelemetry, EarlyFlowDefectTelemetryMode,
     ExponentialKrylovConfig, ExponentialStepReport, FusedExponentialStepReport,
     FusedOrthogonalization, FusedPhiActionReport, FusedPhiKrylovConfig, FusedPhiPrefixPrediction,
     FusedPhiPrefixSession, FusedPhiSubstepReport, FusedPhiTerm, Pexprb54s4Tableau, PhiActionReport,
     exprb2_fused_step, exprb2_step, exprb43_fused_step, exprb43_step, fused_phi_action,
     fused_phi_action_incremental, fused_phi_linear_combination, krylov_phi_action,
-    pexprb54s4_fused_step, pexprb54s4_step, pexprb54s4_tableau,
+    pexprb54s4_fused_step, pexprb54s4_fused_step_with_telemetry_mode, pexprb54s4_step,
+    pexprb54s4_tableau,
 };
 pub use g1_transactional_gate::{
     G1TransactionalCase, G1TransactionalGateProfile, G1TransactionalGateReport,

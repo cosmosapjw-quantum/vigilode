@@ -619,3 +619,58 @@ fn generic_q1_q2_gate_is_deterministic_and_strictly_matrix_free() {
     let _ = fs::remove_file(first);
     let _ = fs::remove_file(second);
 }
+
+#[test]
+fn early_flow_defect_fields_are_backward_compatible_and_legacy_rows_fail_closed() {
+    use rodas5p_core::WorkCounters;
+    use rodas5p_integrators::{
+        AdaptiveEarlyFlowDefectAttempt, AdaptiveEarlyFlowDefectOutcome,
+        AdaptiveFusedExponentialDiagnostics, FusedExponentialStepReport,
+    };
+
+    let report = FusedExponentialStepReport {
+        method: "legacy-fused-step".into(),
+        y_new: vec![1.0],
+        y_embedded: Some(vec![1.0]),
+        error_estimate: Some(vec![0.0]),
+        logical_critical_depth: 3,
+        fused_phi_reports: Vec::new(),
+        work: WorkCounters::default(),
+        early_flow_defect: None,
+    };
+    let legacy_step_json = serde_json::to_value(&report).unwrap();
+    assert!(legacy_step_json.get("early_flow_defect").is_none());
+    let legacy_step: FusedExponentialStepReport = serde_json::from_value(legacy_step_json).unwrap();
+    assert!(legacy_step.early_flow_defect.is_none());
+
+    let legacy_diagnostics_json = serde_json::json!({
+        "attempts": 1,
+        "accepted_steps": 1,
+        "rejected_steps": 0,
+        "accepted_step_sizes": [0.01],
+        "rejected_step_sizes": [],
+        "time_error_norms": [0.0],
+        "phi_error_norms": [0.0],
+        "total_error_norms": [0.0],
+        "maximum_krylov_dimensions": [1],
+        "phi_substeps": [1]
+    });
+    let legacy_diagnostics: AdaptiveFusedExponentialDiagnostics =
+        serde_json::from_value(legacy_diagnostics_json).unwrap();
+    assert!(legacy_diagnostics.early_flow_defect_attempts.is_empty());
+
+    let legacy_attempt_json = serde_json::json!({
+        "t": 0.0,
+        "step_size": 0.01,
+        "output_clipped": false
+    });
+    let legacy_attempt: AdaptiveEarlyFlowDefectAttempt =
+        serde_json::from_value(legacy_attempt_json).unwrap();
+    assert_eq!(
+        legacy_attempt.outcome,
+        AdaptiveEarlyFlowDefectOutcome::LegacyUnclassified
+    );
+    assert!(legacy_attempt.telemetry.is_none());
+    assert!(legacy_attempt.trial_work.is_none());
+    assert!(legacy_attempt.failure.is_none());
+}

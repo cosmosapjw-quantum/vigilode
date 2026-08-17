@@ -3,9 +3,47 @@ use serde::{Deserialize, Serialize};
 
 use crate::output::OutputCollector;
 use crate::{
-    AdaptiveControllerState, AdaptiveStepConfig, FusedPhiKrylovConfig, ObservedIntegrationResult,
-    OdeProblem, OutputSchedule, ParallelExecution, pexprb54s4_fused_step,
+    AdaptiveControllerState, AdaptiveStepConfig, EarlyFlowDefectTelemetry,
+    EarlyFlowDefectTelemetryMode, FusedPhiKrylovConfig, ObservedIntegrationResult, OdeProblem,
+    OutputSchedule, ParallelExecution, pexprb54s4_fused_step_with_telemetry_mode,
 };
+
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum AdaptiveEarlyFlowDefectOutcome {
+    #[default]
+    LegacyUnclassified,
+    Accepted,
+    RejectedErrorControl,
+    TrialFailureUnscorable,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct AdaptiveEarlyFlowDefectAttempt {
+    pub t: f64,
+    pub step_size: f64,
+    pub output_clipped: bool,
+    #[serde(default)]
+    pub outcome: AdaptiveEarlyFlowDefectOutcome,
+    #[serde(default)]
+    pub telemetry: Option<EarlyFlowDefectTelemetry>,
+    #[serde(default)]
+    pub time_error_norm: Option<f64>,
+    #[serde(default)]
+    pub phi_error_norm: Option<f64>,
+    #[serde(default)]
+    pub total_error_norm: Option<f64>,
+    #[serde(default)]
+    pub candidate_state_finite: Option<bool>,
+    #[serde(default)]
+    pub maximum_krylov_dimension: Option<usize>,
+    #[serde(default)]
+    pub phi_substeps: Option<usize>,
+    #[serde(default)]
+    pub trial_work: Option<WorkCounters>,
+    #[serde(default)]
+    pub failure: Option<String>,
+}
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct AdaptiveFusedExponentialDiagnostics {
@@ -19,6 +57,8 @@ pub struct AdaptiveFusedExponentialDiagnostics {
     pub total_error_norms: Vec<f64>,
     pub maximum_krylov_dimensions: Vec<usize>,
     pub phi_substeps: Vec<usize>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub early_flow_defect_attempts: Vec<AdaptiveEarlyFlowDefectAttempt>,
 }
 
 #[derive(Clone, Debug)]
@@ -50,6 +90,29 @@ pub fn integrate_pexprb54s4_fused_adaptive_observed(
     phi_config: FusedPhiKrylovConfig,
     execution: &ParallelExecution,
 ) -> CoreResult<AdaptiveFusedExponentialResult> {
+    integrate_pexprb54s4_fused_adaptive_observed_with_telemetry_mode(
+        problem,
+        t_span,
+        y0,
+        adaptive,
+        output,
+        phi_config,
+        execution,
+        EarlyFlowDefectTelemetryMode::Disabled,
+    )
+}
+
+#[allow(clippy::too_many_arguments)]
+pub fn integrate_pexprb54s4_fused_adaptive_observed_with_telemetry_mode(
+    problem: &OdeProblem,
+    t_span: (f64, f64),
+    y0: &[f64],
+    adaptive: &AdaptiveStepConfig,
+    output: &OutputSchedule,
+    phi_config: FusedPhiKrylovConfig,
+    execution: &ParallelExecution,
+    telemetry_mode: EarlyFlowDefectTelemetryMode,
+) -> CoreResult<AdaptiveFusedExponentialResult> {
     adaptive.validate()?;
     if y0.len() != problem.dimension || t_span.1 < t_span.0 {
         return Err(CoreError::Dimension(
@@ -72,10 +135,40 @@ pub fn integrate_pexprb54s4_fused_adaptive_observed(
         }
         let (trial_h, clipped) = collector.limit_step(t, h, tf)?;
         diagnostics.attempts += 1;
-        let trial = pexprb54s4_fused_step(problem, t, &y, trial_h, phi_config, execution);
+        let trial = pexprb54s4_fused_step_with_telemetry_mode(
+            problem,
+            t,
+            &y,
+            trial_h,
+            phi_config,
+            execution,
+            telemetry_mode,
+        );
         let report = match trial {
             Ok(report) => report,
-            Err(CoreError::NonFinite(_) | CoreError::LinearSolve(_)) => {
+            Err(error @ (CoreError::NonFinite(_) | CoreError::LinearSolve(_))) => {
+                if matches!(
+                    telemetry_mode,
+                    EarlyFlowDefectTelemetryMode::ReadOnly { .. }
+                ) {
+                    diagnostics
+                        .early_flow_defect_attempts
+                        .push(AdaptiveEarlyFlowDefectAttempt {
+                            t,
+                            step_size: trial_h,
+                            output_clipped: clipped,
+                            outcome: AdaptiveEarlyFlowDefectOutcome::TrialFailureUnscorable,
+                            telemetry: None,
+                            time_error_norm: None,
+                            phi_error_norm: None,
+                            total_error_norm: None,
+                            candidate_state_finite: None,
+                            maximum_krylov_dimension: None,
+                            phi_substeps: None,
+                            trial_work: None,
+                            failure: Some(error.to_string()),
+                        });
+                }
                 diagnostics.rejected_steps += 1;
                 diagnostics.rejected_step_sizes.push(trial_h);
                 diagnostics.time_error_norms.push(f64::INFINITY);
@@ -111,9 +204,34 @@ pub fn integrate_pexprb54s4_fused_adaptive_observed(
         diagnostics.total_error_norms.push(total_error);
         diagnostics.maximum_krylov_dimensions.push(max_dimension);
         diagnostics.phi_substeps.push(substeps);
-        let accepted = total_error.is_finite()
-            && total_error <= 1.0
-            && report.y_new.iter().all(|value| value.is_finite());
+        let candidate_state_finite = report.y_new.iter().all(|value| value.is_finite());
+        let accepted = total_error.is_finite() && total_error <= 1.0 && candidate_state_finite;
+        if matches!(
+            telemetry_mode,
+            EarlyFlowDefectTelemetryMode::ReadOnly { .. }
+        ) {
+            diagnostics
+                .early_flow_defect_attempts
+                .push(AdaptiveEarlyFlowDefectAttempt {
+                    t,
+                    step_size: trial_h,
+                    output_clipped: clipped,
+                    outcome: if accepted {
+                        AdaptiveEarlyFlowDefectOutcome::Accepted
+                    } else {
+                        AdaptiveEarlyFlowDefectOutcome::RejectedErrorControl
+                    },
+                    telemetry: report.early_flow_defect.clone(),
+                    time_error_norm: Some(time_error),
+                    phi_error_norm: Some(phi_error),
+                    total_error_norm: Some(total_error),
+                    candidate_state_finite: Some(candidate_state_finite),
+                    maximum_krylov_dimension: Some(max_dimension),
+                    phi_substeps: Some(substeps),
+                    trial_work: Some(report.work),
+                    failure: None,
+                });
+        }
         if accepted {
             t += trial_h;
             y = report.y_new;
