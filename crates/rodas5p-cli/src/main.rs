@@ -20,9 +20,9 @@ use rodas5p_integrators::{
     StageBatchFeasibilityProfile, UnifiedNonlinearScreen, UnifiedScientificGateReport,
     UnifiedScreenProfile, run_g1_transactional_gate, run_g2_exponential_gate,
     run_g3_fused_adaptive_gate, run_g4_prefix_kernel_gate, run_g4_s5b0_regime_atlas,
-    run_g4_s5b3_attempt_geometry, run_homotopy_design_check, run_homotopy_experiment_screen,
-    run_homotopy_order_policy_screen, run_homotopy_rhs_telemetry_screen,
-    run_matrix_free_common_w_gate, run_native_integrator_gates,
+    run_g4_s5b0_rjf_only, run_g4_s5b3_attempt_geometry, run_homotopy_design_check,
+    run_homotopy_experiment_screen, run_homotopy_order_policy_screen,
+    run_homotopy_rhs_telemetry_screen, run_matrix_free_common_w_gate, run_native_integrator_gates,
     run_p1_00_tolerance_scaled_early_defect, run_path_controller_screen,
     run_stage_batch_feasibility, run_unified_nonlinear_screen, run_unified_scientific_gates,
 };
@@ -141,7 +141,7 @@ enum Command {
         #[arg(long)]
         output: PathBuf,
     },
-    /// Run one split-dimension regime-atlas campaign for policy-redesign calibration or holdout.
+    /// Run one split-dimension R-JF-only regime replay for policy-redesign calibration or regression.
     GenericPolicyRedesignAtlas {
         #[arg(long, value_enum)]
         profile: CliPolicyRedesignProfile,
@@ -1157,7 +1157,7 @@ fn main() -> Result<()> {
                 CliPolicyRedesignProfile::Calibration => G4S5B0Profile::Calibration128,
                 CliPolicyRedesignProfile::Holdout => G4S5B0Profile::Holdout512,
             };
-            write_json(&output, &run_g4_s5b0_regime_atlas(profile)?)?;
+            write_json(&output, &run_g4_s5b0_rjf_only(profile)?)?;
         }
         Command::GenericEarlyDefectAttemptGeometry { profile, output } => {
             let profile = match profile {

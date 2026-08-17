@@ -898,6 +898,7 @@ fn run_exponential_shadow(
 fn run_trajectory(
     problem: AtlasProblem,
     profile: G4S5B0Profile,
+    include_exponential_shadow: bool,
 ) -> (Vec<G4S5B0StepRow>, G4S5B0TrajectorySummary) {
     let adaptive = adaptive_config(profile, problem.t_span.1 - problem.t_span.0);
     let linear = linear_config();
@@ -965,15 +966,29 @@ fn run_trajectory(
             continue;
         }
 
-        let shadow = run_exponential_shadow(
-            &problem.problem,
-            t,
-            &y,
-            h,
-            adaptive.atol,
-            adaptive.rtol,
-            profile,
-        );
+        let shadow = if include_exponential_shadow {
+            run_exponential_shadow(
+                &problem.problem,
+                t,
+                &y,
+                h,
+                adaptive.atol,
+                adaptive.rtol,
+                profile,
+            )
+        } else {
+            ExponentialShadow {
+                completed: false,
+                total_error: None,
+                admissible: false,
+                wall: None,
+                prefix_wall: None,
+                work: None,
+                max_dimension: None,
+                substeps: None,
+                failure: None,
+            }
+        };
         let transition_level = (problem.transition)(t, &y);
         let exp_work = shadow.work.unwrap_or_default();
         rows.push(G4S5B0StepRow {
@@ -1037,7 +1052,7 @@ pub fn run_g4_s5b0_regime_atlas(profile: G4S5B0Profile) -> CoreResult<G4S5B0Repo
     let mut rows = Vec::new();
     let mut trajectories = Vec::new();
     for problem in build_problems(profile)? {
-        let (mut local_rows, summary) = run_trajectory(problem, profile);
+        let (mut local_rows, summary) = run_trajectory(problem, profile, true);
         rows.append(&mut local_rows);
         trajectories.push(summary);
     }
@@ -1060,6 +1075,35 @@ pub fn run_g4_s5b0_regime_atlas(profile: G4S5B0Profile) -> CoreResult<G4S5B0Repo
             "One-shot full-step wall times require repeated campaigns and median aggregation before residence labels are authoritative.".into(),
             "N=2048 remains sealed for the later selector holdout.".into(),
             "No active method switching or physical-client execution occurs in this node.".into(),
+        ],
+    })
+}
+
+pub fn run_g4_s5b0_rjf_only(profile: G4S5B0Profile) -> CoreResult<G4S5B0Report> {
+    let mut rows = Vec::new();
+    let mut trajectories = Vec::new();
+    for problem in build_problems(profile)? {
+        let (mut local_rows, summary) = run_trajectory(problem, profile, false);
+        rows.append(&mut local_rows);
+        trajectories.push(summary);
+    }
+    let status = if trajectories.iter().all(|row| row.success) {
+        "complete"
+    } else {
+        "complete-with-failures"
+    };
+    Ok(G4S5B0Report {
+        schema: "g4-s5b0-rjf-only-regime-replay-v1",
+        status,
+        profile: profile.as_str(),
+        switching_active: false,
+        committed_method: "protected-sequential-matrix-free-rodas5p",
+        rows,
+        trajectories,
+        limitations: vec![
+            "This runner executes only the committed protected R-JF trajectory; all E-K fields are intentionally empty.".into(),
+            "E-K labels and optimized timing may be joined only from separately provenance-checked durable audit data after exact R-JF numerical parity checks.".into(),
+            "No active method switching or E-K prefix/full-step work occurs in this runner.".into(),
         ],
     })
 }
