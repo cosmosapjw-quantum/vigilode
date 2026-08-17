@@ -8,8 +8,10 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     AdaptiveControllerState, AdaptiveStepConfig, ControllerKind, FusedOrthogonalization,
-    FusedPhiKrylovConfig, FusedPhiPrefixSession, OdeProblem, ParallelExecution,
-    pexprb54s4_fused_step, pexprb54s4_tableau, sequential_matrix_free_step,
+    FusedPhiKrylovConfig, FusedPhiPrefixSession, OdeProblem, ParallelExecution, PersistenceLatch,
+    Pexprb54s4Level1PrefixReport, pexprb54s4_fused_step,
+    pexprb54s4_level1_prefix_with_tolerance_scaled_telemetry, pexprb54s4_tableau,
+    sequential_matrix_free_step,
 };
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -153,6 +155,61 @@ pub struct G4S5B0AttemptTraceReport {
     pub committed_method: &'static str,
     pub attempt_rows: Vec<G4S5B0RjfAttemptRow>,
     pub accepted_rows: Vec<G4S5B0StepRow>,
+    pub trajectories: Vec<G4S5B0TrajectorySummary>,
+    pub limitations: Vec<String>,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum G4S5B0PrefixProbePolicy {
+    FrozenK1Comparator,
+    K3Development,
+}
+
+impl G4S5B0PrefixProbePolicy {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::FrozenK1Comparator => "frozen-k1-comparator",
+            Self::K3Development => "k3-development",
+        }
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct G4S5B0ActualLevel1PrefixRow {
+    pub trajectory_id: String,
+    pub family: String,
+    pub dimension: usize,
+    pub rtol: f64,
+    pub policy: String,
+    pub decision_accepted_step: usize,
+    pub feature_value: Option<f64>,
+    pub target_attempt_index: usize,
+    pub target_accepted_steps_before: usize,
+    pub t_start: f64,
+    pub h: f64,
+    pub target_r_attempt_accepted: bool,
+    pub target_r_error_norm: Option<f64>,
+    pub target_r_recoverable_failure: bool,
+    pub prefix_wall_seconds: f64,
+    pub prefix_succeeded: bool,
+    pub prefix_failure: Option<String>,
+    pub prefix_report: Option<Pexprb54s4Level1PrefixReport>,
+    pub full_e_continued: bool,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct G4S5B0ActualLevel1PrefixReport {
+    pub schema: &'static str,
+    pub status: &'static str,
+    pub profile: &'static str,
+    pub policy: &'static str,
+    pub switching_active: bool,
+    pub committed_method: &'static str,
+    pub full_e_continuations: usize,
+    pub attempt_rows: Vec<G4S5B0RjfAttemptRow>,
+    pub accepted_rows: Vec<G4S5B0StepRow>,
+    pub prefix_rows: Vec<G4S5B0ActualLevel1PrefixRow>,
     pub trajectories: Vec<G4S5B0TrajectorySummary>,
     pub limitations: Vec<String>,
 }
@@ -1191,6 +1248,72 @@ pub fn run_g4_s5b0_rjf_only_family(
     run_g4_s5b0_rjf_only_filtered(profile, Some(family))
 }
 
+const V25_ERROR_DROP_THRESHOLD: f64 = 0.012790399606947056;
+
+fn frozen_k1_decision(family: &str, dimension: usize, step: usize) -> bool {
+    let steps: &[usize] = match (dimension, family) {
+        (128, "hires-ramped") => &[8, 13],
+        (128, "nonautonomous-stiff-forcing") => &[
+            7, 10, 12, 14, 17, 32, 46, 59, 77, 88, 94, 98, 104, 110, 116, 121, 139, 159, 170,
+        ],
+        (128, "robertson-ramped") => &[5, 14, 17, 21],
+        (128, "rotating-nonnormal") => &[6, 20, 29, 34, 43, 68, 95],
+        (128, "semilinear-advection-diffusion-ramped") => &[9, 15],
+        (128, "van-der-pol-ramped") => &[11, 14, 24, 62],
+        (512, "hires-ramped") => &[8, 13],
+        (512, "nonautonomous-stiff-forcing") => &[
+            7, 10, 12, 14, 17, 33, 46, 59, 77, 88, 93, 98, 104, 110, 115, 121, 139, 159, 170,
+        ],
+        (512, "robertson-ramped") => &[5, 14, 17, 21],
+        (512, "rotating-nonnormal") => &[6, 20, 29, 34, 43, 69, 95],
+        (512, "semilinear-advection-diffusion-ramped") => &[8, 20, 27, 34],
+        (512, "van-der-pol-ramped") => &[11, 14, 24, 62],
+        _ => &[],
+    };
+    steps.contains(&step)
+}
+
+struct PrefixPolicyState {
+    policy: G4S5B0PrefixProbePolicy,
+    log_errors: Vec<f64>,
+    k3_latch: PersistenceLatch,
+}
+
+impl PrefixPolicyState {
+    fn new(policy: G4S5B0PrefixProbePolicy) -> CoreResult<Self> {
+        Ok(Self {
+            policy,
+            log_errors: Vec::new(),
+            k3_latch: PersistenceLatch::new(3)?,
+        })
+    }
+
+    fn observe_accepted(
+        &mut self,
+        family: &str,
+        dimension: usize,
+        step_index: usize,
+        error: f64,
+    ) -> Option<Option<f64>> {
+        let log_error = error.max(1.0e-300).log10();
+        let feature = if self.log_errors.len() >= 2 {
+            Some(-(log_error - self.log_errors[self.log_errors.len() - 2]))
+        } else {
+            None
+        };
+        let fire = match self.policy {
+            G4S5B0PrefixProbePolicy::FrozenK1Comparator => {
+                frozen_k1_decision(family, dimension, step_index)
+            }
+            G4S5B0PrefixProbePolicy::K3Development => self.k3_latch.update(
+                feature.is_some_and(|value| value.is_finite() && value >= V25_ERROR_DROP_THRESHOLD),
+            ),
+        };
+        self.log_errors.push(log_error);
+        fire.then_some(feature)
+    }
+}
+
 fn run_rjf_attempt_trace_trajectory(
     problem: AtlasProblem,
     profile: G4S5B0Profile,
@@ -1425,4 +1548,357 @@ pub fn run_g4_s5b0_rjf_attempt_trace_family(
     family: G4S5B0Family,
 ) -> CoreResult<G4S5B0AttemptTraceReport> {
     run_g4_s5b0_rjf_attempt_trace_filtered(profile, Some(family))
+}
+
+fn finalize_actual_prefix_row(
+    rows: &mut Vec<G4S5B0ActualLevel1PrefixRow>,
+    row: Option<G4S5B0ActualLevel1PrefixRow>,
+    accepted: bool,
+    error_norm: Option<f64>,
+    recoverable_failure: bool,
+) {
+    if let Some(mut row) = row {
+        row.target_r_attempt_accepted = accepted;
+        row.target_r_error_norm = error_norm;
+        row.target_r_recoverable_failure = recoverable_failure;
+        rows.push(row);
+    }
+}
+
+fn run_rjf_actual_level1_prefix_trajectory(
+    problem: AtlasProblem,
+    profile: G4S5B0Profile,
+    policy: G4S5B0PrefixProbePolicy,
+) -> (
+    Vec<G4S5B0RjfAttemptRow>,
+    Vec<G4S5B0StepRow>,
+    Vec<G4S5B0ActualLevel1PrefixRow>,
+    G4S5B0TrajectorySummary,
+) {
+    let adaptive = adaptive_config(profile, problem.t_span.1 - problem.t_span.0);
+    let linear = linear_config();
+    let mut controller = AdaptiveControllerState::default();
+    let mut policy_state =
+        PrefixPolicyState::new(policy).expect("sealed persistence policy is valid");
+    let mut pending_probe: Option<(usize, Option<f64>)> = None;
+    let mut t = problem.t_span.0;
+    let tf = problem.t_span.1;
+    let mut y = problem.y0.clone();
+    let mut h = adaptive.initial_step.min(tf - t);
+    let tolerance = 10.0 * f64::EPSILON * tf.abs().max(1.0);
+    let mut attempts = 0usize;
+    let mut accepted = 0usize;
+    let mut rejected = 0usize;
+    let mut attempt_rows = Vec::new();
+    let mut accepted_rows = Vec::new();
+    let mut prefix_rows = Vec::new();
+    let mut total_jacobian_builds = 0u64;
+    let mut total_factorizations = 0u64;
+    let mut failure = None;
+
+    while t < tf - tolerance && attempts < adaptive.max_attempts {
+        h = h.min(adaptive.max_step).min(tf - t);
+        if h < adaptive.min_step {
+            failure = Some("minimum step reached".into());
+            break;
+        }
+        let attempt_index = attempts;
+        attempts += 1;
+        let accepted_steps_before = accepted;
+        let t_start = t;
+        let h_trial = h;
+
+        // An event observed after the preceding accepted R-JF step acts on this
+        // first controller proposal, before we know whether this R trial accepts.
+        let mut actual_prefix_row = pending_probe.take().map(|(decision_step, feature_value)| {
+            let start = Instant::now();
+            let prefix_result = (|| -> CoreResult<Pexprb54s4Level1PrefixReport> {
+                let (shadow_problem, state) = shadow_problem_state(&problem.problem, t, &y)?;
+                let config = phi_config(adaptive.rtol, shadow_problem.dimension + 4);
+                let physical_n = problem.problem.dimension;
+                let prefix = pexprb54s4_level1_prefix_with_tolerance_scaled_telemetry(
+                    &shadow_problem,
+                    t,
+                    &state,
+                    h_trial,
+                    config,
+                    physical_n,
+                    adaptive.atol,
+                    adaptive.rtol,
+                )?;
+                Ok(prefix.report().clone())
+            })();
+            let prefix_wall_seconds = start.elapsed().as_secs_f64();
+            let (prefix_succeeded, prefix_failure, prefix_report) = match prefix_result {
+                Ok(report) => (true, None, Some(report)),
+                Err(error) => (false, Some(error.to_string()), None),
+            };
+            G4S5B0ActualLevel1PrefixRow {
+                trajectory_id: problem.id.clone(),
+                family: problem.family.into(),
+                dimension: problem.problem.dimension,
+                rtol: adaptive.rtol,
+                policy: policy.as_str().into(),
+                decision_accepted_step: decision_step,
+                feature_value,
+                target_attempt_index: attempt_index,
+                target_accepted_steps_before: accepted_steps_before,
+                t_start,
+                h: h_trial,
+                target_r_attempt_accepted: false,
+                target_r_error_norm: None,
+                target_r_recoverable_failure: false,
+                prefix_wall_seconds,
+                prefix_succeeded,
+                prefix_failure,
+                prefix_report,
+                full_e_continued: false,
+            }
+        });
+
+        let mut step_counters = WorkCounters::default();
+        let start = Instant::now();
+        let trial = sequential_matrix_free_step(
+            &problem.problem,
+            t,
+            &y,
+            h,
+            &linear,
+            None,
+            adaptive.atol,
+            adaptive.rtol,
+            false,
+            &mut step_counters,
+        );
+        let wall = start.elapsed().as_secs_f64();
+        total_jacobian_builds += step_counters.jacobian_builds;
+        total_factorizations += step_counters.direct_factorizations;
+
+        let report = match trial {
+            Ok(report) => report,
+            Err(error @ (CoreError::NonFinite(_) | CoreError::LinearSolve(_))) => {
+                attempt_rows.push(G4S5B0RjfAttemptRow {
+                    trajectory_id: problem.id.clone(),
+                    family: problem.family.into(),
+                    dimension: problem.problem.dimension,
+                    rtol: adaptive.rtol,
+                    attempt_index,
+                    accepted_steps_before,
+                    t_start,
+                    h: h_trial,
+                    error_norm: None,
+                    accepted: false,
+                    recoverable_failure: true,
+                    failure: Some(error.to_string()),
+                    wall_seconds: wall,
+                    rhs_evaluations: step_counters.rhs_evaluations,
+                    jvp_vectors: step_counters.jvp_vectors,
+                    linear_matvecs: step_counters.linear_matvecs,
+                });
+                finalize_actual_prefix_row(
+                    &mut prefix_rows,
+                    actual_prefix_row.take(),
+                    false,
+                    None,
+                    true,
+                );
+                rejected += 1;
+                h *= adaptive.min_factor;
+                continue;
+            }
+            Err(error) => {
+                attempt_rows.push(G4S5B0RjfAttemptRow {
+                    trajectory_id: problem.id.clone(),
+                    family: problem.family.into(),
+                    dimension: problem.problem.dimension,
+                    rtol: adaptive.rtol,
+                    attempt_index,
+                    accepted_steps_before,
+                    t_start,
+                    h: h_trial,
+                    error_norm: None,
+                    accepted: false,
+                    recoverable_failure: false,
+                    failure: Some(error.to_string()),
+                    wall_seconds: wall,
+                    rhs_evaluations: step_counters.rhs_evaluations,
+                    jvp_vectors: step_counters.jvp_vectors,
+                    linear_matvecs: step_counters.linear_matvecs,
+                });
+                finalize_actual_prefix_row(
+                    &mut prefix_rows,
+                    actual_prefix_row.take(),
+                    false,
+                    None,
+                    false,
+                );
+                failure = Some(error.to_string());
+                break;
+            }
+        };
+        let error = report.error_norm;
+        let step_accepted = report.accepted
+            && error.is_finite()
+            && error <= 1.0
+            && report.y_new.iter().all(|value| value.is_finite());
+        attempt_rows.push(G4S5B0RjfAttemptRow {
+            trajectory_id: problem.id.clone(),
+            family: problem.family.into(),
+            dimension: problem.problem.dimension,
+            rtol: adaptive.rtol,
+            attempt_index,
+            accepted_steps_before,
+            t_start,
+            h: h_trial,
+            error_norm: Some(error),
+            accepted: step_accepted,
+            recoverable_failure: false,
+            failure: None,
+            wall_seconds: wall,
+            rhs_evaluations: step_counters.rhs_evaluations,
+            jvp_vectors: step_counters.jvp_vectors,
+            linear_matvecs: step_counters.linear_matvecs,
+        });
+        finalize_actual_prefix_row(
+            &mut prefix_rows,
+            actual_prefix_row.take(),
+            step_accepted,
+            Some(error),
+            false,
+        );
+        if !step_accepted {
+            rejected += 1;
+            let _ = controller.record_rejection(error.max(1.0e-16));
+            h *= controller
+                .propose_factor(&adaptive, error.max(1.0e-16), 5, false)
+                .unwrap_or(adaptive.min_factor);
+            continue;
+        }
+
+        accepted_rows.push(G4S5B0StepRow {
+            trajectory_id: problem.id.clone(),
+            family: problem.family.into(),
+            dimension: problem.problem.dimension,
+            rtol: adaptive.rtol,
+            step_index: accepted,
+            t_start: t,
+            h,
+            transition_level: (problem.transition)(t, &y),
+            rodas_embedded_error: error,
+            rodas_wall_seconds: wall,
+            rodas_rhs_evaluations: step_counters.rhs_evaluations,
+            rodas_jvp_vectors: step_counters.jvp_vectors,
+            rodas_linear_matvecs: step_counters.linear_matvecs,
+            exponential_completed: false,
+            exponential_total_error: None,
+            exponential_locally_admissible: false,
+            exponential_wall_seconds: None,
+            exponential_prefix_wall_seconds: None,
+            exponential_rhs_evaluations: None,
+            exponential_jvp_vectors: None,
+            exponential_maximum_krylov_dimension: None,
+            exponential_phi_substeps: None,
+            exponential_failure: None,
+        });
+
+        let decision_step = accepted;
+        let event_feature = policy_state.observe_accepted(
+            problem.family,
+            problem.problem.dimension,
+            decision_step,
+            error,
+        );
+        t = report.t_new;
+        y = report.y_new;
+        accepted += 1;
+        let _ = controller.record_acceptance(error);
+        h *= controller
+            .propose_factor(&adaptive, error.max(1.0e-16), 5, true)
+            .unwrap_or(1.0);
+        if let Some(feature_value) = event_feature {
+            pending_probe = Some((decision_step, feature_value));
+        }
+    }
+
+    let success = t >= tf - tolerance;
+    if !success && failure.is_none() {
+        failure = Some("maximum attempts reached".into());
+    }
+    let summary = G4S5B0TrajectorySummary {
+        trajectory_id: problem.id,
+        family: problem.family.into(),
+        dimension: problem.problem.dimension,
+        rtol: adaptive.rtol,
+        success,
+        failure,
+        attempts,
+        accepted_steps: accepted,
+        rejected_steps: rejected,
+        endpoint_time: t,
+        explicit_jacobian_builds: total_jacobian_builds,
+        direct_factorizations: total_factorizations,
+        newton_iterations: 0,
+    };
+    (attempt_rows, accepted_rows, prefix_rows, summary)
+}
+
+fn run_g4_s5b0_actual_level1_prefix_filtered(
+    profile: G4S5B0Profile,
+    family: Option<G4S5B0Family>,
+    policy: G4S5B0PrefixProbePolicy,
+) -> CoreResult<G4S5B0ActualLevel1PrefixReport> {
+    if matches!(profile, G4S5B0Profile::Canonical) {
+        return Err(CoreError::InvalidInput(
+            "v2.7 prefix research requires an explicit single-dimension profile".into(),
+        ));
+    }
+    let mut attempt_rows = Vec::new();
+    let mut accepted_rows = Vec::new();
+    let mut prefix_rows = Vec::new();
+    let mut trajectories = Vec::new();
+    for problem in build_problems(profile)? {
+        if family.is_some_and(|selected| problem.family != selected.as_str()) {
+            continue;
+        }
+        let (mut local_attempts, mut local_accepted, mut local_prefix, summary) =
+            run_rjf_actual_level1_prefix_trajectory(problem, profile, policy);
+        attempt_rows.append(&mut local_attempts);
+        accepted_rows.append(&mut local_accepted);
+        prefix_rows.append(&mut local_prefix);
+        trajectories.push(summary);
+    }
+    let status = if trajectories.iter().all(|row| row.success)
+        && prefix_rows.iter().all(|row| row.prefix_succeeded)
+    {
+        "complete"
+    } else {
+        "complete-with-failures"
+    };
+    Ok(G4S5B0ActualLevel1PrefixReport {
+        schema: "g4-s5b0-actual-pexprb-level1-prefix-v1",
+        status,
+        profile: profile.as_str(),
+        policy: policy.as_str(),
+        switching_active: false,
+        committed_method: "protected-sequential-matrix-free-rodas5p",
+        full_e_continuations: 0,
+        attempt_rows,
+        accepted_rows,
+        prefix_rows,
+        trajectories,
+        limitations: vec![
+            "Only the actual pexprb54s4 U2/D2 dependency-level-1 prefix is evaluated at event targets; U3/U4 and endpoints are never computed.".into(),
+            "The committed trajectory remains protected R-JF and prefix failures cannot modify its controller or state.".into(),
+            "Debug wall timings are diagnostic only and are not promotion authority.".into(),
+            "N=2048 remains sealed in this node.".into(),
+        ],
+    })
+}
+
+pub fn run_g4_s5b0_actual_level1_prefix_family(
+    profile: G4S5B0Profile,
+    family: G4S5B0Family,
+    policy: G4S5B0PrefixProbePolicy,
+) -> CoreResult<G4S5B0ActualLevel1PrefixReport> {
+    run_g4_s5b0_actual_level1_prefix_filtered(profile, Some(family), policy)
 }

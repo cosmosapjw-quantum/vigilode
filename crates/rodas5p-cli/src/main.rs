@@ -15,11 +15,12 @@ use rodas5p_fair_ab::{
 use rodas5p_integrators::{
     CandidateCatalog, CandidateFamily, CandidateStatus, G1TransactionalGateProfile,
     G2ExponentialGateProfile, G3FusedAdaptiveProfile, G4PrefixKernelProfile, G4S5B0Family,
-    G4S5B0Profile, G4S5B3Profile, HomotopyExperimentProfile, HomotopyRhsTelemetryProfile,
-    MatrixFreeCommonWProfile, NativeIntegratorGateReport, PathControllerProfile,
-    StageBatchFeasibilityProfile, UnifiedNonlinearScreen, UnifiedScientificGateReport,
-    UnifiedScreenProfile, run_g1_transactional_gate, run_g2_exponential_gate,
-    run_g3_fused_adaptive_gate, run_g4_prefix_kernel_gate, run_g4_s5b0_regime_atlas,
+    G4S5B0PrefixProbePolicy, G4S5B0Profile, G4S5B3Profile, HomotopyExperimentProfile,
+    HomotopyRhsTelemetryProfile, MatrixFreeCommonWProfile, NativeIntegratorGateReport,
+    PathControllerProfile, StageBatchFeasibilityProfile, UnifiedNonlinearScreen,
+    UnifiedScientificGateReport, UnifiedScreenProfile, run_g1_transactional_gate,
+    run_g2_exponential_gate, run_g3_fused_adaptive_gate, run_g4_prefix_kernel_gate,
+    run_g4_s5b0_actual_level1_prefix_family, run_g4_s5b0_regime_atlas,
     run_g4_s5b0_rjf_attempt_trace, run_g4_s5b0_rjf_attempt_trace_family, run_g4_s5b0_rjf_only,
     run_g4_s5b0_rjf_only_family, run_g4_s5b3_attempt_geometry, run_homotopy_design_check,
     run_homotopy_experiment_screen, run_homotopy_order_policy_screen,
@@ -160,6 +161,17 @@ enum Command {
         #[arg(long)]
         output: PathBuf,
     },
+    /// Measure the actual pexprb54s4 U2/D2 level-one prefix on causal first-next proposals.
+    GenericPolicyRedesignActualPrefix {
+        #[arg(long, value_enum)]
+        profile: CliPolicyRedesignProfile,
+        #[arg(long, value_enum)]
+        family: CliPolicyRedesignFamily,
+        #[arg(long, value_enum)]
+        policy: CliPolicyRedesignPrefixPolicy,
+        #[arg(long)]
+        output: PathBuf,
+    },
     /// Measure threshold-free early-defect attempt geometry and read-only overhead.
     GenericEarlyDefectAttemptGeometry {
         #[arg(long, value_enum, default_value_t = CliHomotopyProfile::Canonical)]
@@ -275,6 +287,21 @@ impl From<CliPolicyRedesignFamily> for G4S5B0Family {
             CliPolicyRedesignFamily::RotatingNonnormal => Self::RotatingNonnormal,
             CliPolicyRedesignFamily::NonautonomousForcing => Self::NonautonomousStiffForcing,
             CliPolicyRedesignFamily::Semilinear => Self::SemilinearAdvectionDiffusionRamped,
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, ValueEnum)]
+enum CliPolicyRedesignPrefixPolicy {
+    FrozenK1,
+    K3,
+}
+
+impl From<CliPolicyRedesignPrefixPolicy> for G4S5B0PrefixProbePolicy {
+    fn from(value: CliPolicyRedesignPrefixPolicy) -> Self {
+        match value {
+            CliPolicyRedesignPrefixPolicy::FrozenK1 => Self::FrozenK1Comparator,
+            CliPolicyRedesignPrefixPolicy::K3 => Self::K3Development,
         }
     }
 }
@@ -1215,6 +1242,20 @@ fn main() -> Result<()> {
                 Some(family) => run_g4_s5b0_rjf_attempt_trace_family(profile, family.into())?,
                 None => run_g4_s5b0_rjf_attempt_trace(profile)?,
             };
+            write_json(&output, &report)?;
+        }
+        Command::GenericPolicyRedesignActualPrefix {
+            profile,
+            family,
+            policy,
+            output,
+        } => {
+            let profile = match profile {
+                CliPolicyRedesignProfile::Calibration => G4S5B0Profile::Calibration128,
+                CliPolicyRedesignProfile::Holdout => G4S5B0Profile::Holdout512,
+            };
+            let report =
+                run_g4_s5b0_actual_level1_prefix_family(profile, family.into(), policy.into())?;
             write_json(&output, &report)?;
         }
         Command::GenericEarlyDefectAttemptGeometry { profile, output } => {

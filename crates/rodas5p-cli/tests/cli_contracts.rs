@@ -779,3 +779,17 @@ fn generic_policy_redesign_attempt_trace_command_is_registered() {
     assert!(stdout.contains("--family"));
     assert!(stdout.contains("--output"));
 }
+
+#[test]
+fn generic_policy_redesign_actual_prefix_command_is_registered() {
+    let output = std::process::Command::new(env!("CARGO_BIN_EXE_rodas5p"))
+        .args(["generic-policy-redesign-actual-prefix", "--help"])
+        .output()
+        .unwrap();
+    assert!(output.status.success());
+    let stdout = String::from_utf8(output.stdout).unwrap();
+    assert!(stdout.contains("--profile"));
+    assert!(stdout.contains("--family"));
+    assert!(stdout.contains("--policy"));
+    assert!(stdout.contains("--output"));
+}

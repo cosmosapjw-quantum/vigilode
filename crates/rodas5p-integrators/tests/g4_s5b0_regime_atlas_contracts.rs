@@ -163,3 +163,77 @@ fn attempt_trace_smoke_reconstructs_committed_rjf_rows_and_retains_trials() {
         );
     }
 }
+
+#[test]
+fn actual_level1_prefix_runner_is_read_only_and_targets_first_runtime_proposals() {
+    use rodas5p_integrators::{G4S5B0PrefixProbePolicy, run_g4_s5b0_actual_level1_prefix_family};
+
+    let probed = run_g4_s5b0_actual_level1_prefix_family(
+        G4S5B0Profile::Calibration128,
+        G4S5B0Family::RobertsonRamped,
+        G4S5B0PrefixProbePolicy::FrozenK1Comparator,
+    )
+    .unwrap();
+    let baseline = run_g4_s5b0_rjf_attempt_trace_family(
+        G4S5B0Profile::Calibration128,
+        G4S5B0Family::RobertsonRamped,
+    )
+    .unwrap();
+
+    assert!(!probed.switching_active);
+    assert_eq!(probed.full_e_continuations, 0);
+    assert_eq!(probed.attempt_rows.len(), baseline.attempt_rows.len());
+    for (left, right) in probed.attempt_rows.iter().zip(&baseline.attempt_rows) {
+        assert_eq!(left.trajectory_id, right.trajectory_id);
+        assert_eq!(left.attempt_index, right.attempt_index);
+        assert_eq!(left.accepted_steps_before, right.accepted_steps_before);
+        assert_eq!(left.t_start.to_bits(), right.t_start.to_bits());
+        assert_eq!(left.h.to_bits(), right.h.to_bits());
+        assert_eq!(
+            left.error_norm.map(f64::to_bits),
+            right.error_norm.map(f64::to_bits)
+        );
+        assert_eq!(left.accepted, right.accepted);
+        assert_eq!(left.recoverable_failure, right.recoverable_failure);
+        assert_eq!(left.failure, right.failure);
+        assert_eq!(left.rhs_evaluations, right.rhs_evaluations);
+        assert_eq!(left.jvp_vectors, right.jvp_vectors);
+        assert_eq!(left.linear_matvecs, right.linear_matvecs);
+    }
+    assert_eq!(probed.accepted_rows.len(), baseline.accepted_rows.len());
+    for (left, right) in probed.accepted_rows.iter().zip(&baseline.accepted_rows) {
+        assert_eq!(left.trajectory_id, right.trajectory_id);
+        assert_eq!(left.step_index, right.step_index);
+        assert_eq!(left.t_start.to_bits(), right.t_start.to_bits());
+        assert_eq!(left.h.to_bits(), right.h.to_bits());
+        assert_eq!(
+            left.rodas_embedded_error.to_bits(),
+            right.rodas_embedded_error.to_bits()
+        );
+        assert_eq!(left.rodas_rhs_evaluations, right.rodas_rhs_evaluations);
+        assert_eq!(left.rodas_jvp_vectors, right.rodas_jvp_vectors);
+        assert_eq!(left.rodas_linear_matvecs, right.rodas_linear_matvecs);
+    }
+    assert_eq!(probed.trajectories, baseline.trajectories);
+    assert_eq!(probed.prefix_rows.len(), 4);
+
+    for row in &probed.prefix_rows {
+        assert_eq!(row.policy, "frozen-k1-comparator");
+        assert!(
+            row.prefix_succeeded,
+            "prefix failure: {:?}",
+            row.prefix_failure
+        );
+        let prefix_report = row.prefix_report.as_ref().unwrap();
+        assert_eq!(prefix_report.method, "pexprb54s4-fused-level1");
+        assert_eq!(prefix_report.logical_critical_depth, 1);
+        assert_eq!(prefix_report.fused_phi_reports.len(), 1);
+        let telemetry = prefix_report.early_flow_defect.as_ref().unwrap();
+        assert!(telemetry.tolerance_scaled_defect_wrms.is_some());
+        assert_eq!(telemetry.norm_component_count, 128);
+        assert!(!row.full_e_continued);
+        assert!(row.prefix_wall_seconds >= 0.0);
+        assert_eq!(prefix_report.work.jacobian_builds, 0);
+        assert_eq!(prefix_report.work.direct_factorizations, 0);
+    }
+}
