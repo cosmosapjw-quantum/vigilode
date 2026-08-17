@@ -252,6 +252,43 @@ pub struct EarlyFlowDefectTelemetry {
     pub diagnostic_work: EarlyFlowDefectDiagnosticWork,
 }
 
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct Pexprb54s4Level1PrefixReport {
+    pub method: String,
+    pub t: f64,
+    pub h: f64,
+    pub logical_critical_depth: usize,
+    pub fused_phi_reports: Vec<FusedPhiActionReport>,
+    pub work: WorkCounters,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub early_flow_defect: Option<EarlyFlowDefectTelemetry>,
+}
+
+/// Retained pexprb54s4 dependency-level-1 state.
+///
+/// The public report is serializable for research telemetry.  The numerical
+/// base state, matrix-free operator, F0, and D2 remain private so callers can
+/// only continue through the checked resume function rather than reconstructing
+/// a partial method state by hand.
+pub struct Pexprb54s4Level1Prefix {
+    problem: OdeProblem,
+    t: f64,
+    y: Vec<f64>,
+    h: f64,
+    config: FusedPhiKrylovConfig,
+    f0: Vec<f64>,
+    operator: Arc<dyn LinearOperator>,
+    d2: Vec<f64>,
+    u2_action: FusedPhiActionReport,
+    report: Pexprb54s4Level1PrefixReport,
+}
+
+impl Pexprb54s4Level1Prefix {
+    pub fn report(&self) -> &Pexprb54s4Level1PrefixReport {
+        &self.report
+    }
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Pexprb54s4Tableau {
     pub c2: f64,
@@ -1882,16 +1919,15 @@ pub fn pexprb54s4_fused_step_with_tolerance_scaled_telemetry(
 }
 
 #[allow(clippy::too_many_arguments)]
-fn pexprb54s4_fused_step_with_telemetry_config(
+fn pexprb54s4_level1_prefix_with_telemetry_config(
     problem: &OdeProblem,
     t: f64,
     y: &[f64],
     h: f64,
     config: FusedPhiKrylovConfig,
-    execution: &ParallelExecution,
     telemetry_mode: EarlyFlowDefectTelemetryMode,
     tolerance_scale: Option<EarlyFlowDefectToleranceScale>,
-) -> CoreResult<FusedExponentialStepReport> {
+) -> CoreResult<Pexprb54s4Level1Prefix> {
     validate_problem(problem, y)?;
     if let EarlyFlowDefectTelemetryMode::ReadOnly {
         norm_component_count,
@@ -1903,12 +1939,13 @@ fn pexprb54s4_fused_step_with_telemetry_config(
             y.len()
         )));
     }
+
     let tableau = pexprb54s4_tableau();
     let mut work = WorkCounters::default();
     let f0 = problem.eval_rhs(t, y, &mut work)?;
     let operator = problem.linearize_matrix_free(t, y)?;
 
-    // Dependency level 1: U2.
+    // Dependency level 1: U2 and D2 only.  No U3/U4 or endpoint work is allowed here.
     let u2_action = require_fused(fused_phi_linear_combination(
         operator.clone(),
         tableau.c2 * h,
@@ -1924,6 +1961,73 @@ fn pexprb54s4_fused_step_with_telemetry_config(
     let d2 = nonlinear_remainder(problem, operator.as_ref(), t, y, &f0, &u2, &mut work)?;
     let early_flow_defect =
         early_flow_defect_telemetry(telemetry_mode, tableau.c2, h, y, &u2, &d2, tolerance_scale)?;
+
+    let report = Pexprb54s4Level1PrefixReport {
+        method: "pexprb54s4-fused-level1".into(),
+        t,
+        h,
+        logical_critical_depth: 1,
+        fused_phi_reports: vec![u2_action.clone()],
+        work,
+        early_flow_defect,
+    };
+
+    Ok(Pexprb54s4Level1Prefix {
+        problem: problem.clone(),
+        t,
+        y: y.to_vec(),
+        h,
+        config,
+        f0,
+        operator,
+        d2,
+        u2_action,
+        report,
+    })
+}
+
+#[allow(clippy::too_many_arguments)]
+pub fn pexprb54s4_level1_prefix_with_tolerance_scaled_telemetry(
+    problem: &OdeProblem,
+    t: f64,
+    y: &[f64],
+    h: f64,
+    config: FusedPhiKrylovConfig,
+    norm_component_count: usize,
+    atol: f64,
+    rtol: f64,
+) -> CoreResult<Pexprb54s4Level1Prefix> {
+    pexprb54s4_level1_prefix_with_telemetry_config(
+        problem,
+        t,
+        y,
+        h,
+        config,
+        EarlyFlowDefectTelemetryMode::ReadOnly {
+            norm_component_count,
+        },
+        Some(EarlyFlowDefectToleranceScale { atol, rtol }),
+    )
+}
+
+pub fn pexprb54s4_fused_step_resume_level1(
+    prefix: Pexprb54s4Level1Prefix,
+    execution: &ParallelExecution,
+) -> CoreResult<FusedExponentialStepReport> {
+    let Pexprb54s4Level1Prefix {
+        problem,
+        t,
+        y,
+        h,
+        config,
+        f0,
+        operator,
+        d2,
+        u2_action,
+        report,
+    } = prefix;
+    let tableau = pexprb54s4_tableau();
+    let mut work = report.work;
 
     // Dependency level 2: U3 and U4 are independent once D2 is known.
     let stage_ids = [3usize, 4usize];
@@ -1952,9 +2056,9 @@ fn pexprb54s4_fused_step_with_telemetry_config(
             config,
             &mut local,
         )?)?;
-        let stage = add_scaled_state(y, h, &action.value);
+        let stage = add_scaled_state(&y, h, &action.value);
         let remainder =
-            nonlinear_remainder(problem, operator.as_ref(), t, y, &f0, &stage, &mut local)?;
+            nonlinear_remainder(&problem, operator.as_ref(), t, &y, &f0, &stage, &mut local)?;
         Ok((action, remainder, local))
     })?;
     for (_, _, local) in &stages {
@@ -2046,8 +2150,8 @@ fn pexprb54s4_fused_step_with_telemetry_config(
     for (_, local) in &endpoints {
         work.accumulate(*local);
     }
-    let y_new = add_scaled_state(y, h, &endpoints[0].0.value);
-    let y_embedded = add_scaled_state(y, h, &endpoints[1].0.value);
+    let y_new = add_scaled_state(&y, h, &endpoints[0].0.value);
+    let y_embedded = add_scaled_state(&y, h, &endpoints[1].0.value);
     let error_estimate = y_new.iter().zip(&y_embedded).map(|(a, b)| a - b).collect();
     Ok(FusedExponentialStepReport {
         method: "pexprb54s4-fused".into(),
@@ -2063,6 +2167,29 @@ fn pexprb54s4_fused_step_with_telemetry_config(
             endpoints[1].0.clone(),
         ],
         work,
-        early_flow_defect,
+        early_flow_defect: report.early_flow_defect,
     })
+}
+
+#[allow(clippy::too_many_arguments)]
+fn pexprb54s4_fused_step_with_telemetry_config(
+    problem: &OdeProblem,
+    t: f64,
+    y: &[f64],
+    h: f64,
+    config: FusedPhiKrylovConfig,
+    execution: &ParallelExecution,
+    telemetry_mode: EarlyFlowDefectTelemetryMode,
+    tolerance_scale: Option<EarlyFlowDefectToleranceScale>,
+) -> CoreResult<FusedExponentialStepReport> {
+    let prefix = pexprb54s4_level1_prefix_with_telemetry_config(
+        problem,
+        t,
+        y,
+        h,
+        config,
+        telemetry_mode,
+        tolerance_scale,
+    )?;
+    pexprb54s4_fused_step_resume_level1(prefix, execution)
 }
