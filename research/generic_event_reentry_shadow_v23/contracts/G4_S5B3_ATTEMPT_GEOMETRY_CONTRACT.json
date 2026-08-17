@@ -1,0 +1,61 @@
+{
+  "schema": "g4-s5b3-attempt-geometry-contract-v2",
+  "status": "SEALED_BEFORE_NUMERICAL_OUTPUT",
+  "active_switching": false,
+  "threshold_selection": false,
+  "campaign_role": "development calibration and mechanism falsification only",
+  "attempt_alignment": {
+    "outcomes": [
+      "accepted",
+      "rejected-error-control",
+      "trial-failure-unscorable",
+      "legacy-unclassified"
+    ],
+    "report_returning_attempts": "retain complete step WorkCounters and all error/Krylov diagnostics",
+    "CoreResult_failure": "do not infer phase, eta, or partial work; retain explicit null coverage hole",
+    "complete_work_gate": "zero unscorable failures and exact per-trial/aggregate work equality"
+  },
+  "canonical_corpus": {
+    "source": "frozen G3 problem/config builders",
+    "problems": ["quadratic", "complex-dahlquist", "oscillatory-pr", "advection-diffusion"],
+    "relative_tolerances": [0.0001, 0.000001, 0.00000001],
+    "orthogonalization": "full-mgs",
+    "threads": 1,
+    "requested_output": "endpoints only",
+    "trajectories": 12
+  },
+  "geometry": {
+    "hypothetical_admit": "finite eta_c2 <= tau",
+    "false_reject": "actual accepted outcome with eta_c2 > tau",
+    "false_accept": "actual rejected-error-control outcome with finite eta_c2 <= tau",
+    "threshold_domain": "all distinct finite eta values plus boundary sentinels",
+    "selected_threshold": null,
+    "required_views": ["pooled", "per-problem", "per-tolerance", "accept/reject empirical CDF", "ROC-like false-count curve"]
+  },
+  "paired_overhead": {
+    "modes": ["disabled", "read-only"],
+    "warmup_pairs": 1,
+    "measured_pairs": 7,
+    "order": "alternating disabled-first/read-only-first",
+    "batch_calibration": {
+      "algorithm": "double complete-suite repetitions in disabled mode until minimum wall target or hard cap",
+      "minimum_wall_seconds": 0.25,
+      "initial_repetitions": 1,
+      "maximum_repetitions": 1024,
+      "freeze_repetition_count_before_measured_pairs": true,
+      "calibration_work_retained_separately": true
+    },
+    "identity_required_for_every_suite": true,
+    "cost_authority": "Gamma = total wall seconds / total proposed physical interval",
+    "proposed_interval": "sum(abs(trial_step_size)) over all attempts, including rejected attempts",
+    "report": ["raw wall ratio", "Gamma ratio", "median", "P95", "MAD", "pair order"]
+  },
+  "hard_fail": [
+    "any numerical identity mismatch",
+    "any existing WorkCounters mismatch",
+    "any added expensive diagnostic work",
+    "any unscorable failure in canonical corpus",
+    "any incomplete per-trial work coverage",
+    "any threshold selection or active switching"
+  ]
+}

@@ -1,0 +1,68 @@
+{
+  "schema": "g4-s5b3-early-flow-defect-telemetry-contract-v2",
+  "status": "SEALED_BEFORE_NUMERICAL_OUTPUT",
+  "branch": "generic-event-triggered-reentry-shadow-v2.3",
+  "canonical_base": {
+    "head": "eb104f8d86a9331f2bec3b3189a1923bf07f2b30",
+    "tree": "a418ffc9f5cc10f7e9e84f30d51a2077c65a4e59",
+    "tag": "generic-startup-profile-preflight-v2.2.0-alpha1"
+  },
+  "authority_path": {
+    "function": "pexprb54s4_fused_step",
+    "stage_fraction": 0.25,
+    "reused_quantities": ["U2", "d2", "existing autonomous JVP linearization"],
+    "forbidden_recomputation": ["RHS", "JVP", "phi action", "partial_t", "Jacobian", "Newton"]
+  },
+  "definition": {
+    "increment": "delta_u2 = U2[0:m] - y[0:m]",
+    "remainder": "d_c2 = d2[0:m]",
+    "normalized_defect": "eta_c2 = abs(h) * l2(d_c2) / l2(delta_u2)",
+    "component_contract": "1 <= m <= state_dimension; time-augmented callers must set m to the original physical state dimension so the trailing clock coordinate is excluded",
+    "zero_increment_zero_remainder": "eta_c2 = 0",
+    "zero_increment_nonzero_remainder": "eta_c2 = null and the row is degenerate/unscorable for finite-threshold admission",
+    "interpretation": "read-only admission diagnostic; not a local-error bound or theorem"
+  },
+  "time_dependence": {
+    "direct_path": "autonomous only",
+    "nonautonomous_path": "existing time augmentation",
+    "partial_t_handling": "encoded in augmented JVP; no separate sample or correction norm",
+    "native_partial_t_calls_added": 0
+  },
+  "diagnostic_work_ledger": {
+    "conceptual_vector_differences": 1,
+    "l2_norms": 2,
+    "scalar_normalizations_max": 1,
+    "added_rhs_calls": 0,
+    "added_jvp_calls": 0,
+    "added_jvp_vectors": 0,
+    "added_phi_actions": 0,
+    "added_partial_t_calls": 0,
+    "added_jacobian_builds": 0,
+    "added_newton_iterations": 0,
+    "existing_work_counters_must_be_identical": true
+  },
+  "default_api_policy": {
+    "existing_step_api": "telemetry disabled",
+    "existing_adaptive_api": "telemetry disabled",
+    "research_mode": "explicit read-only opt-in",
+    "reason": "preserve canonical default numerical and performance behavior"
+  },
+  "identity_gates": [
+    "bitwise y_new equality",
+    "bitwise embedded-state equality",
+    "bitwise error-estimate equality",
+    "identical phi reports",
+    "identical existing WorkCounters",
+    "identical requested outputs",
+    "identical accepted/rejected step sequence",
+    "identical controller-derived step sizes"
+  ],
+  "forbidden": [
+    "active method switching",
+    "early abort",
+    "fallback policy change",
+    "controller/cache transfer",
+    "threshold selection",
+    "physical-client tuning"
+  ]
+}
