@@ -6,6 +6,7 @@ use crate::{
     AdaptiveControllerState, AdaptiveStepConfig, EarlyFlowDefectTelemetry,
     EarlyFlowDefectTelemetryMode, FusedPhiKrylovConfig, ObservedIntegrationResult, OdeProblem,
     OutputSchedule, ParallelExecution, pexprb54s4_fused_step_with_telemetry_mode,
+    pexprb54s4_fused_step_with_tolerance_scaled_telemetry,
 };
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
@@ -67,6 +68,18 @@ pub struct AdaptiveFusedExponentialResult {
     pub diagnostics: AdaptiveFusedExponentialDiagnostics,
 }
 
+#[derive(Clone, Copy, Debug)]
+enum AdaptiveEarlyFlowTelemetryRequest {
+    Legacy(EarlyFlowDefectTelemetryMode),
+    ToleranceScaled { norm_component_count: usize },
+}
+
+impl AdaptiveEarlyFlowTelemetryRequest {
+    fn enabled(self) -> bool {
+        !matches!(self, Self::Legacy(EarlyFlowDefectTelemetryMode::Disabled))
+    }
+}
+
 fn phi_error_proxy(reports: &[crate::FusedPhiActionReport], h: f64, scale: &[f64]) -> f64 {
     let estimate = reports
         .iter()
@@ -113,6 +126,54 @@ pub fn integrate_pexprb54s4_fused_adaptive_observed_with_telemetry_mode(
     execution: &ParallelExecution,
     telemetry_mode: EarlyFlowDefectTelemetryMode,
 ) -> CoreResult<AdaptiveFusedExponentialResult> {
+    integrate_pexprb54s4_fused_adaptive_observed_with_telemetry_request(
+        problem,
+        t_span,
+        y0,
+        adaptive,
+        output,
+        phi_config,
+        execution,
+        AdaptiveEarlyFlowTelemetryRequest::Legacy(telemetry_mode),
+    )
+}
+
+#[allow(clippy::too_many_arguments)]
+pub fn integrate_pexprb54s4_fused_adaptive_observed_with_tolerance_scaled_telemetry(
+    problem: &OdeProblem,
+    t_span: (f64, f64),
+    y0: &[f64],
+    adaptive: &AdaptiveStepConfig,
+    output: &OutputSchedule,
+    phi_config: FusedPhiKrylovConfig,
+    execution: &ParallelExecution,
+    norm_component_count: usize,
+) -> CoreResult<AdaptiveFusedExponentialResult> {
+    integrate_pexprb54s4_fused_adaptive_observed_with_telemetry_request(
+        problem,
+        t_span,
+        y0,
+        adaptive,
+        output,
+        phi_config,
+        execution,
+        AdaptiveEarlyFlowTelemetryRequest::ToleranceScaled {
+            norm_component_count,
+        },
+    )
+}
+
+#[allow(clippy::too_many_arguments)]
+fn integrate_pexprb54s4_fused_adaptive_observed_with_telemetry_request(
+    problem: &OdeProblem,
+    t_span: (f64, f64),
+    y0: &[f64],
+    adaptive: &AdaptiveStepConfig,
+    output: &OutputSchedule,
+    phi_config: FusedPhiKrylovConfig,
+    execution: &ParallelExecution,
+    telemetry_request: AdaptiveEarlyFlowTelemetryRequest,
+) -> CoreResult<AdaptiveFusedExponentialResult> {
     adaptive.validate()?;
     if y0.len() != problem.dimension || t_span.1 < t_span.0 {
         return Err(CoreError::Dimension(
@@ -135,22 +196,36 @@ pub fn integrate_pexprb54s4_fused_adaptive_observed_with_telemetry_mode(
         }
         let (trial_h, clipped) = collector.limit_step(t, h, tf)?;
         diagnostics.attempts += 1;
-        let trial = pexprb54s4_fused_step_with_telemetry_mode(
-            problem,
-            t,
-            &y,
-            trial_h,
-            phi_config,
-            execution,
-            telemetry_mode,
-        );
+        let trial = match telemetry_request {
+            AdaptiveEarlyFlowTelemetryRequest::Legacy(telemetry_mode) => {
+                pexprb54s4_fused_step_with_telemetry_mode(
+                    problem,
+                    t,
+                    &y,
+                    trial_h,
+                    phi_config,
+                    execution,
+                    telemetry_mode,
+                )
+            }
+            AdaptiveEarlyFlowTelemetryRequest::ToleranceScaled {
+                norm_component_count,
+            } => pexprb54s4_fused_step_with_tolerance_scaled_telemetry(
+                problem,
+                t,
+                &y,
+                trial_h,
+                phi_config,
+                execution,
+                norm_component_count,
+                adaptive.atol,
+                adaptive.rtol,
+            ),
+        };
         let report = match trial {
             Ok(report) => report,
             Err(error @ (CoreError::NonFinite(_) | CoreError::LinearSolve(_))) => {
-                if matches!(
-                    telemetry_mode,
-                    EarlyFlowDefectTelemetryMode::ReadOnly { .. }
-                ) {
+                if telemetry_request.enabled() {
                     diagnostics
                         .early_flow_defect_attempts
                         .push(AdaptiveEarlyFlowDefectAttempt {
@@ -206,10 +281,7 @@ pub fn integrate_pexprb54s4_fused_adaptive_observed_with_telemetry_mode(
         diagnostics.phi_substeps.push(substeps);
         let candidate_state_finite = report.y_new.iter().all(|value| value.is_finite());
         let accepted = total_error.is_finite() && total_error <= 1.0 && candidate_state_finite;
-        if matches!(
-            telemetry_mode,
-            EarlyFlowDefectTelemetryMode::ReadOnly { .. }
-        ) {
+        if telemetry_request.enabled() {
             diagnostics
                 .early_flow_defect_attempts
                 .push(AdaptiveEarlyFlowDefectAttempt {

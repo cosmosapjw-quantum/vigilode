@@ -9,6 +9,7 @@ use crate::{
     EarlyFlowDefectDiagnosticWork, EarlyFlowDefectTelemetryMode, FusedOrthogonalization,
     FusedPhiKrylovConfig, G3FusedAdaptiveProfile, OdeProblem, OutputSchedule, ParallelExecution,
     integrate_pexprb54s4_fused_adaptive_observed_with_telemetry_mode,
+    integrate_pexprb54s4_fused_adaptive_observed_with_tolerance_scaled_telemetry,
 };
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -71,6 +72,12 @@ pub struct G4S5B3AttemptRow {
     pub output_clipped: bool,
     pub outcome: AdaptiveEarlyFlowDefectOutcome,
     pub eta_c2: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub rho_c2_wrms: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub tolerance_scale_atol: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub tolerance_scale_rtol: Option<f64>,
     pub stage_fraction: Option<f64>,
     pub state_dimension: Option<usize>,
     pub norm_component_count: Option<usize>,
@@ -235,6 +242,23 @@ struct SuiteExecution {
     trajectories: Vec<TrajectoryExecution>,
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum SuiteTelemetryMode {
+    Disabled,
+    RawReadOnly,
+    ToleranceScaledReadOnly,
+}
+
+impl SuiteTelemetryMode {
+    fn label(self) -> &'static str {
+        match self {
+            Self::Disabled => "disabled",
+            Self::RawReadOnly => "read-only",
+            Self::ToleranceScaledReadOnly => "tolerance-scaled-read-only",
+        }
+    }
+}
+
 fn prepare_cases(profile: G4S5B3Profile) -> CoreResult<Vec<PreparedCase>> {
     let runtimes = build_problems(profile.g3_profile())?;
     let mut cases = Vec::new();
@@ -275,30 +299,50 @@ fn prepare_case(runtime: &RuntimeProblem, rtol: f64) -> CoreResult<PreparedCase>
     })
 }
 
-fn execute_suite(
-    cases: &[PreparedCase],
-    mode: EarlyFlowDefectTelemetryMode,
-) -> CoreResult<SuiteExecution> {
+fn execute_suite(cases: &[PreparedCase], mode: SuiteTelemetryMode) -> CoreResult<SuiteExecution> {
     let execution = ParallelExecution::sequential();
     let mut trajectories = Vec::with_capacity(cases.len());
     for (case_index, case) in cases.iter().enumerate() {
-        let result = integrate_pexprb54s4_fused_adaptive_observed_with_telemetry_mode(
-            &case.problem,
-            case.t_span,
-            &case.y0,
-            &case.adaptive,
-            &case.output,
-            case.phi,
-            &execution,
-            match mode {
-                EarlyFlowDefectTelemetryMode::Disabled => EarlyFlowDefectTelemetryMode::Disabled,
-                EarlyFlowDefectTelemetryMode::ReadOnly { .. } => {
+        let result = match mode {
+            SuiteTelemetryMode::Disabled => {
+                integrate_pexprb54s4_fused_adaptive_observed_with_telemetry_mode(
+                    &case.problem,
+                    case.t_span,
+                    &case.y0,
+                    &case.adaptive,
+                    &case.output,
+                    case.phi,
+                    &execution,
+                    EarlyFlowDefectTelemetryMode::Disabled,
+                )?
+            }
+            SuiteTelemetryMode::RawReadOnly => {
+                integrate_pexprb54s4_fused_adaptive_observed_with_telemetry_mode(
+                    &case.problem,
+                    case.t_span,
+                    &case.y0,
+                    &case.adaptive,
+                    &case.output,
+                    case.phi,
+                    &execution,
                     EarlyFlowDefectTelemetryMode::ReadOnly {
                         norm_component_count: case.physical_dimension,
-                    }
-                }
-            },
-        )?;
+                    },
+                )?
+            }
+            SuiteTelemetryMode::ToleranceScaledReadOnly => {
+                integrate_pexprb54s4_fused_adaptive_observed_with_tolerance_scaled_telemetry(
+                    &case.problem,
+                    case.t_span,
+                    &case.y0,
+                    &case.adaptive,
+                    &case.output,
+                    case.phi,
+                    &execution,
+                    case.physical_dimension,
+                )?
+            }
+        };
         trajectories.push(TrajectoryExecution { case_index, result });
     }
     Ok(SuiteExecution { trajectories })
@@ -355,6 +399,12 @@ fn sum_diagnostic_work(
         out.scalar_normalizations = out
             .scalar_normalizations
             .saturating_add(work.scalar_normalizations);
+        out.component_scale_evaluations = out
+            .component_scale_evaluations
+            .saturating_add(work.component_scale_evaluations);
+        out.wrms_norm_evaluations = out
+            .wrms_norm_evaluations
+            .saturating_add(work.wrms_norm_evaluations);
         out.added_rhs_calls = out.added_rhs_calls.saturating_add(work.added_rhs_calls);
         out.added_jvp_calls = out.added_jvp_calls.saturating_add(work.added_jvp_calls);
         out.added_jvp_vectors = out.added_jvp_vectors.saturating_add(work.added_jvp_vectors);
@@ -582,6 +632,9 @@ fn flatten_attempts(cases: &[PreparedCase], read_only: &SuiteExecution) -> Vec<G
                 output_clipped: attempt.output_clipped,
                 outcome: attempt.outcome,
                 eta_c2: telemetry.and_then(|value| value.normalized_defect),
+                rho_c2_wrms: telemetry.and_then(|value| value.tolerance_scaled_defect_wrms),
+                tolerance_scale_atol: telemetry.and_then(|value| value.tolerance_scale_atol),
+                tolerance_scale_rtol: telemetry.and_then(|value| value.tolerance_scale_rtol),
                 stage_fraction: telemetry.map(|value| value.stage_fraction),
                 state_dimension: telemetry.map(|value| value.state_dimension),
                 norm_component_count: telemetry.map(|value| value.norm_component_count),
@@ -748,8 +801,7 @@ fn suite_interval_sum(suite: &SuiteExecution) -> f64 {
 
 fn timed_arm(
     cases: &[PreparedCase],
-    mode: EarlyFlowDefectTelemetryMode,
-    mode_name: &str,
+    mode: SuiteTelemetryMode,
     repetitions: usize,
     reference: &SuiteExecution,
 ) -> CoreResult<G4S5B3OverheadArm> {
@@ -769,7 +821,7 @@ fn timed_arm(
         f64::INFINITY
     };
     Ok(G4S5B3OverheadArm {
-        mode: mode_name.into(),
+        mode: mode.label().into(),
         repetitions,
         wall_seconds,
         proposed_interval,
@@ -785,39 +837,22 @@ fn overhead_pair(
     disabled_first: bool,
     disabled_reference: &SuiteExecution,
     read_only_reference: &SuiteExecution,
+    read_only_mode: SuiteTelemetryMode,
 ) -> CoreResult<G4S5B3OverheadPair> {
     let (disabled, read_only, order) = if disabled_first {
         let disabled = timed_arm(
             cases,
-            EarlyFlowDefectTelemetryMode::Disabled,
-            "disabled",
+            SuiteTelemetryMode::Disabled,
             repetitions,
             disabled_reference,
         )?;
-        let read_only = timed_arm(
-            cases,
-            EarlyFlowDefectTelemetryMode::ReadOnly {
-                norm_component_count: 1,
-            },
-            "read-only",
-            repetitions,
-            read_only_reference,
-        )?;
+        let read_only = timed_arm(cases, read_only_mode, repetitions, read_only_reference)?;
         (disabled, read_only, "disabled-first")
     } else {
-        let read_only = timed_arm(
-            cases,
-            EarlyFlowDefectTelemetryMode::ReadOnly {
-                norm_component_count: 1,
-            },
-            "read-only",
-            repetitions,
-            read_only_reference,
-        )?;
+        let read_only = timed_arm(cases, read_only_mode, repetitions, read_only_reference)?;
         let disabled = timed_arm(
             cases,
-            EarlyFlowDefectTelemetryMode::Disabled,
-            "disabled",
+            SuiteTelemetryMode::Disabled,
             repetitions,
             disabled_reference,
         )?;
@@ -846,6 +881,7 @@ fn run_overhead(
     cases: &[PreparedCase],
     disabled_reference: &SuiteExecution,
     read_only_reference: &SuiteExecution,
+    read_only_mode: SuiteTelemetryMode,
 ) -> CoreResult<G4S5B3OverheadReport> {
     let protocol = profile.overhead_protocol();
     let mut repetitions = 1_usize;
@@ -853,8 +889,7 @@ fn run_overhead(
     loop {
         let arm = timed_arm(
             cases,
-            EarlyFlowDefectTelemetryMode::Disabled,
-            "disabled",
+            SuiteTelemetryMode::Disabled,
             repetitions,
             disabled_reference,
         )?;
@@ -883,6 +918,7 @@ fn run_overhead(
             pair_index % 2 == 0,
             disabled_reference,
             read_only_reference,
+            read_only_mode,
         )?);
     }
     let mut measured_rows = Vec::new();
@@ -894,6 +930,7 @@ fn run_overhead(
             pair_index % 2 == 0,
             disabled_reference,
             read_only_reference,
+            read_only_mode,
         )?);
     }
     let all_suite_identities_passed = calibration_rows
@@ -922,13 +959,8 @@ pub fn run_g4_s5b3_attempt_geometry(
     profile: G4S5B3Profile,
 ) -> CoreResult<G4S5B3AttemptGeometryReport> {
     let cases = prepare_cases(profile)?;
-    let disabled = execute_suite(&cases, EarlyFlowDefectTelemetryMode::Disabled)?;
-    let read_only = execute_suite(
-        &cases,
-        EarlyFlowDefectTelemetryMode::ReadOnly {
-            norm_component_count: 1,
-        },
-    )?;
+    let disabled = execute_suite(&cases, SuiteTelemetryMode::Disabled)?;
+    let read_only = execute_suite(&cases, SuiteTelemetryMode::RawReadOnly)?;
     if disabled.trajectories.len() != cases.len() || read_only.trajectories.len() != cases.len() {
         return Err(CoreError::InvalidInput(
             "attempt-geometry suite trajectory count mismatch".into(),
@@ -954,7 +986,13 @@ pub fn run_g4_s5b3_attempt_geometry(
     let hard_gates = hard_gate_summary(profile, &trajectories);
     let attempts = flatten_attempts(&cases, &read_only);
     let overhead = if hard_gates.passed {
-        Some(run_overhead(profile, &cases, &disabled, &read_only)?)
+        Some(run_overhead(
+            profile,
+            &cases,
+            &disabled,
+            &read_only,
+            SuiteTelemetryMode::RawReadOnly,
+        )?)
     } else {
         None
     };
@@ -990,6 +1028,89 @@ pub fn run_g4_s5b3_attempt_geometry(
             "this node does not choose or recommend a threshold".into(),
             "this node does not implement active switching or early abort".into(),
             "canonical corpus is small/medium dense and not a large sparse holdout".into(),
+        ],
+    })
+}
+
+pub fn run_p1_00_tolerance_scaled_early_defect(
+    profile: G4S5B3Profile,
+) -> CoreResult<G4S5B3AttemptGeometryReport> {
+    let cases = prepare_cases(profile)?;
+    let disabled = execute_suite(&cases, SuiteTelemetryMode::Disabled)?;
+    let read_only = execute_suite(&cases, SuiteTelemetryMode::ToleranceScaledReadOnly)?;
+    if disabled.trajectories.len() != cases.len() || read_only.trajectories.len() != cases.len() {
+        return Err(CoreError::InvalidInput(
+            "tolerance-scaled early-defect suite trajectory count mismatch".into(),
+        ));
+    }
+    let trajectories = cases
+        .iter()
+        .zip(&disabled.trajectories)
+        .zip(&read_only.trajectories)
+        .map(|((case, disabled), read_only)| {
+            if disabled.case_index != read_only.case_index {
+                return Err(CoreError::InvalidInput(
+                    "tolerance-scaled early-defect suite case order mismatch".into(),
+                ));
+            }
+            Ok(compare_trajectory(
+                case,
+                &disabled.result,
+                &read_only.result,
+            ))
+        })
+        .collect::<CoreResult<Vec<_>>>()?;
+    let hard_gates = hard_gate_summary(profile, &trajectories);
+    let attempts = flatten_attempts(&cases, &read_only);
+    let scaled_coverage = attempts.iter().all(|row| {
+        row.rho_c2_wrms.is_some_and(f64::is_finite)
+            && row.tolerance_scale_atol == Some(row.atol)
+            && row.tolerance_scale_rtol == Some(row.rtol)
+    });
+    let overhead = if hard_gates.passed && scaled_coverage {
+        Some(run_overhead(
+            profile,
+            &cases,
+            &disabled,
+            &read_only,
+            SuiteTelemetryMode::ToleranceScaledReadOnly,
+        )?)
+    } else {
+        None
+    };
+    let overhead_pass = overhead
+        .as_ref()
+        .is_some_and(|report| report.all_suite_identities_passed);
+    let status = if hard_gates.passed && scaled_coverage && overhead_pass {
+        "pass"
+    } else if hard_gates.passed && scaled_coverage {
+        "hold-overhead-identity"
+    } else {
+        "blocked-hard-gate"
+    };
+    Ok(G4S5B3AttemptGeometryReport {
+        schema: "p1-00-tolerance-scaled-early-defect-raw-v1",
+        status,
+        profile: profile.as_str(),
+        contract_path: "research/generic_tolerance_scaled_early_defect_v24/contracts/P1_00_TOLERANCE_SCALED_EARLY_DEFECT_CONTRACT.json",
+        active_switching: false,
+        early_abort: false,
+        threshold_selected: false,
+        selected_threshold: None,
+        orthogonalization: "full-mgs",
+        threads: 1,
+        requested_output: "endpoints-only",
+        attempts,
+        trajectories,
+        hard_gates,
+        overhead,
+        limitations: vec![
+            "rho_c2_wrms is an admission diagnostic, not a local-error theorem".into(),
+            "the early scale uses U2 rather than the final candidate y_new".into(),
+            "scalar atol assumes compatible component units or nondimensionalized state".into(),
+            "this node does not choose or recommend a threshold".into(),
+            "entry-window analysis is descriptive and is not a runtime event detector".into(),
+            "this node does not implement active switching or early abort".into(),
         ],
     })
 }

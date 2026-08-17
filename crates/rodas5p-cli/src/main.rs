@@ -22,7 +22,8 @@ use rodas5p_integrators::{
     run_g3_fused_adaptive_gate, run_g4_prefix_kernel_gate, run_g4_s5b0_regime_atlas,
     run_g4_s5b3_attempt_geometry, run_homotopy_design_check, run_homotopy_experiment_screen,
     run_homotopy_order_policy_screen, run_homotopy_rhs_telemetry_screen,
-    run_matrix_free_common_w_gate, run_native_integrator_gates, run_path_controller_screen,
+    run_matrix_free_common_w_gate, run_native_integrator_gates,
+    run_p1_00_tolerance_scaled_early_defect, run_path_controller_screen,
     run_stage_batch_feasibility, run_unified_nonlinear_screen, run_unified_scientific_gates,
 };
 use serde::Serialize;
@@ -142,6 +143,13 @@ enum Command {
     },
     /// Measure threshold-free early-defect attempt geometry and read-only overhead.
     GenericEarlyDefectAttemptGeometry {
+        #[arg(long, value_enum, default_value_t = CliHomotopyProfile::Canonical)]
+        profile: CliHomotopyProfile,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Measure tolerance-scaled early-defect geometry without selecting a threshold.
+    GenericToleranceScaledEarlyDefect {
         #[arg(long, value_enum, default_value_t = CliHomotopyProfile::Canonical)]
         profile: CliHomotopyProfile,
         #[arg(long)]
@@ -1137,6 +1145,13 @@ fn main() -> Result<()> {
                 CliHomotopyProfile::Canonical => G4S5B3Profile::Canonical,
             };
             write_json(&output, &run_g4_s5b3_attempt_geometry(profile)?)?;
+        }
+        Command::GenericToleranceScaledEarlyDefect { profile, output } => {
+            let profile = match profile {
+                CliHomotopyProfile::Smoke => G4S5B3Profile::Smoke,
+                CliHomotopyProfile::Canonical => G4S5B3Profile::Canonical,
+            };
+            write_json(&output, &run_p1_00_tolerance_scaled_early_defect(profile)?)?;
         }
         Command::NativeIntegratorGates { output } => {
             let report: NativeIntegratorGateReport = run_native_integrator_gates()?;

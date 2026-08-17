@@ -44,6 +44,7 @@ pub use adaptive_exponential::{
     AdaptiveFusedExponentialDiagnostics, AdaptiveFusedExponentialResult,
     integrate_pexprb54s4_fused_adaptive_observed,
     integrate_pexprb54s4_fused_adaptive_observed_with_telemetry_mode,
+    integrate_pexprb54s4_fused_adaptive_observed_with_tolerance_scaled_telemetry,
 };
 pub use bdf::{
     BdfConfig, BdfHistory, BdfIntegrationResult, BdfOrder, BdfStepReport, VariableBdf2Coefficients,
@@ -73,8 +74,8 @@ pub use exponential::{
     FusedPhiPrefixSession, FusedPhiSubstepReport, FusedPhiTerm, Pexprb54s4Tableau, PhiActionReport,
     exprb2_fused_step, exprb2_step, exprb43_fused_step, exprb43_step, fused_phi_action,
     fused_phi_action_incremental, fused_phi_linear_combination, krylov_phi_action,
-    pexprb54s4_fused_step, pexprb54s4_fused_step_with_telemetry_mode, pexprb54s4_step,
-    pexprb54s4_tableau,
+    pexprb54s4_fused_step, pexprb54s4_fused_step_with_telemetry_mode,
+    pexprb54s4_fused_step_with_tolerance_scaled_telemetry, pexprb54s4_step, pexprb54s4_tableau,
 };
 pub use g1_transactional_gate::{
     G1TransactionalCase, G1TransactionalGateProfile, G1TransactionalGateReport,
@@ -99,7 +100,7 @@ pub use g4_s5b0_regime_atlas::{
 pub use g4_s5b3_attempt_geometry::{
     G4S5B3AttemptGeometryReport, G4S5B3AttemptRow, G4S5B3CalibrationRow, G4S5B3HardGateSummary,
     G4S5B3OverheadArm, G4S5B3OverheadPair, G4S5B3OverheadReport, G4S5B3Profile,
-    G4S5B3TrajectorySummary, run_g4_s5b3_attempt_geometry,
+    G4S5B3TrajectorySummary, run_g4_s5b3_attempt_geometry, run_p1_00_tolerance_scaled_early_defect,
 };
 pub use homotopy::{
     AffineOutputCertificate, AffinePartialCouplingOracle, HomotopyDesignCheckReport,

@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use rodas5p_core::{
     ClosureOperator, CoreError, CoreResult, DenseMatrix, LinearOperator, WorkCounters,
-    dense_phi_action, safe_l2,
+    dense_phi_action, error_scale, safe_l2, wrms,
 };
 use serde::{Deserialize, Serialize};
 
@@ -214,6 +214,10 @@ pub struct EarlyFlowDefectDiagnosticWork {
     pub conceptual_vector_differences: u64,
     pub l2_norm_evaluations: u64,
     pub scalar_normalizations: u64,
+    #[serde(default)]
+    pub component_scale_evaluations: u64,
+    #[serde(default)]
+    pub wrms_norm_evaluations: u64,
     pub added_rhs_calls: u64,
     pub added_jvp_calls: u64,
     pub added_jvp_vectors: u64,
@@ -233,6 +237,14 @@ pub struct EarlyFlowDefectTelemetry {
     pub stage_increment_l2: f64,
     pub nonlinear_remainder_l2: f64,
     pub normalized_defect: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub tolerance_scaled_defect_wrms: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub tolerance_scale_atol: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub tolerance_scale_rtol: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub tolerance_scaled_nonfinite: Option<bool>,
     pub zero_increment: bool,
     pub degenerate_nonzero_remainder: bool,
     pub nonfinite_normalization: bool,
@@ -1242,6 +1254,12 @@ fn base_stage(y: &[f64], h: f64, c: f64, phi1: &[f64]) -> Vec<f64> {
         .collect()
 }
 
+#[derive(Clone, Copy, Debug)]
+struct EarlyFlowDefectToleranceScale {
+    atol: f64,
+    rtol: f64,
+}
+
 fn early_flow_defect_telemetry(
     mode: EarlyFlowDefectTelemetryMode,
     stage_fraction: f64,
@@ -1249,6 +1267,7 @@ fn early_flow_defect_telemetry(
     y: &[f64],
     stage: &[f64],
     nonlinear_remainder: &[f64],
+    tolerance_scale: Option<EarlyFlowDefectToleranceScale>,
 ) -> CoreResult<Option<EarlyFlowDefectTelemetry>> {
     let EarlyFlowDefectTelemetryMode::ReadOnly {
         norm_component_count,
@@ -1282,6 +1301,41 @@ fn early_flow_defect_telemetry(
         let value = h.abs() * nonlinear_remainder_l2 / stage_increment_l2;
         (value.is_finite().then_some(value), 1, !value.is_finite())
     };
+    let (
+        tolerance_scaled_defect_wrms,
+        tolerance_scale_atol,
+        tolerance_scale_rtol,
+        tolerance_scaled_nonfinite,
+        component_scale_evaluations,
+        wrms_norm_evaluations,
+    ) = if let Some(scale_contract) = tolerance_scale {
+        if !(scale_contract.atol >= 0.0 && scale_contract.atol.is_finite()) {
+            return Err(CoreError::InvalidInput(
+                "early-flow-defect atol must be finite and nonnegative".into(),
+            ));
+        }
+        let scales = error_scale(
+            &y[..norm_component_count],
+            &stage[..norm_component_count],
+            &[scale_contract.atol],
+            scale_contract.rtol,
+        )?;
+        let scaled_remainder = nonlinear_remainder[..norm_component_count]
+            .iter()
+            .map(|value| h.abs() * value)
+            .collect::<Vec<_>>();
+        let value = wrms(&scaled_remainder, &scales)?;
+        (
+            value.is_finite().then_some(value),
+            Some(scale_contract.atol),
+            Some(scale_contract.rtol),
+            Some(!value.is_finite()),
+            norm_component_count as u64,
+            1,
+        )
+    } else {
+        (None, None, None, None, 0, 0)
+    };
     Ok(Some(EarlyFlowDefectTelemetry {
         stage_fraction,
         state_dimension: y.len(),
@@ -1291,6 +1345,10 @@ fn early_flow_defect_telemetry(
         stage_increment_l2,
         nonlinear_remainder_l2,
         normalized_defect,
+        tolerance_scaled_defect_wrms,
+        tolerance_scale_atol,
+        tolerance_scale_rtol,
+        tolerance_scaled_nonfinite,
         zero_increment,
         degenerate_nonzero_remainder,
         nonfinite_normalization,
@@ -1299,6 +1357,8 @@ fn early_flow_defect_telemetry(
             conceptual_vector_differences: 1,
             l2_norm_evaluations: 2,
             scalar_normalizations,
+            component_scale_evaluations,
+            wrms_norm_evaluations,
             ..EarlyFlowDefectDiagnosticWork::default()
         },
     }))
@@ -1783,6 +1843,55 @@ pub fn pexprb54s4_fused_step_with_telemetry_mode(
     execution: &ParallelExecution,
     telemetry_mode: EarlyFlowDefectTelemetryMode,
 ) -> CoreResult<FusedExponentialStepReport> {
+    pexprb54s4_fused_step_with_telemetry_config(
+        problem,
+        t,
+        y,
+        h,
+        config,
+        execution,
+        telemetry_mode,
+        None,
+    )
+}
+
+#[allow(clippy::too_many_arguments)]
+pub fn pexprb54s4_fused_step_with_tolerance_scaled_telemetry(
+    problem: &OdeProblem,
+    t: f64,
+    y: &[f64],
+    h: f64,
+    config: FusedPhiKrylovConfig,
+    execution: &ParallelExecution,
+    norm_component_count: usize,
+    atol: f64,
+    rtol: f64,
+) -> CoreResult<FusedExponentialStepReport> {
+    pexprb54s4_fused_step_with_telemetry_config(
+        problem,
+        t,
+        y,
+        h,
+        config,
+        execution,
+        EarlyFlowDefectTelemetryMode::ReadOnly {
+            norm_component_count,
+        },
+        Some(EarlyFlowDefectToleranceScale { atol, rtol }),
+    )
+}
+
+#[allow(clippy::too_many_arguments)]
+fn pexprb54s4_fused_step_with_telemetry_config(
+    problem: &OdeProblem,
+    t: f64,
+    y: &[f64],
+    h: f64,
+    config: FusedPhiKrylovConfig,
+    execution: &ParallelExecution,
+    telemetry_mode: EarlyFlowDefectTelemetryMode,
+    tolerance_scale: Option<EarlyFlowDefectToleranceScale>,
+) -> CoreResult<FusedExponentialStepReport> {
     validate_problem(problem, y)?;
     if let EarlyFlowDefectTelemetryMode::ReadOnly {
         norm_component_count,
@@ -1814,7 +1923,7 @@ pub fn pexprb54s4_fused_step_with_telemetry_mode(
     let u2 = add_scaled_state(y, h, &u2_action.value);
     let d2 = nonlinear_remainder(problem, operator.as_ref(), t, y, &f0, &u2, &mut work)?;
     let early_flow_defect =
-        early_flow_defect_telemetry(telemetry_mode, tableau.c2, h, y, &u2, &d2)?;
+        early_flow_defect_telemetry(telemetry_mode, tableau.c2, h, y, &u2, &d2, tolerance_scale)?;
 
     // Dependency level 2: U3 and U4 are independent once D2 is known.
     let stage_ids = [3usize, 4usize];

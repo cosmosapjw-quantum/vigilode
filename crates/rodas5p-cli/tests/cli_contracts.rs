@@ -707,3 +707,44 @@ fn early_defect_attempt_geometry_cli_is_threshold_free_and_machine_readable() {
 
     let _ = fs::remove_file(output);
 }
+
+#[test]
+fn tolerance_scaled_early_defect_cli_is_threshold_free_and_machine_readable() {
+    let binary = env!("CARGO_BIN_EXE_rodas5p");
+    let output = temp_path("tolerance-scaled-early-defect.json");
+
+    let status = Command::new(binary)
+        .args([
+            "generic-tolerance-scaled-early-defect",
+            "--profile",
+            "smoke",
+            "--output",
+        ])
+        .arg(&output)
+        .status()
+        .unwrap();
+    assert!(status.success());
+
+    let report: serde_json::Value = serde_json::from_slice(&fs::read(&output).unwrap()).unwrap();
+    assert_eq!(
+        report["schema"],
+        "p1-00-tolerance-scaled-early-defect-raw-v1"
+    );
+    assert_eq!(report["status"], "pass");
+    assert_eq!(report["profile"], "smoke");
+    assert_eq!(report["active_switching"], false);
+    assert_eq!(report["early_abort"], false);
+    assert_eq!(report["threshold_selected"], false);
+    assert!(report["selected_threshold"].is_null());
+    assert_eq!(report["hard_gates"]["expected_trajectories"], 3);
+    assert_eq!(report["hard_gates"]["observed_trajectories"], 3);
+    assert_eq!(report["hard_gates"]["passed"], true);
+    assert_eq!(report["overhead"]["measured_pairs"], 1);
+
+    let attempts = report["attempts"].as_array().unwrap();
+    assert!(!attempts.is_empty());
+    assert!(attempts.iter().all(|row| row["eta_c2"].is_number()));
+    assert!(attempts.iter().all(|row| row["rho_c2_wrms"].is_number()));
+
+    let _ = fs::remove_file(output);
+}
