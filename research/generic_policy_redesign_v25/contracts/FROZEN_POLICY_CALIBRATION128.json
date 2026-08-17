@@ -1,0 +1,29 @@
+{
+  "schema": "gvjf-policy-redesign-v25-frozen-calibration-policy-v1",
+  "selection_source": "N=128 R-JF-only exact replay + historical optimized G4-S5B0 audit join",
+  "parent_calibration_commit": "e6672e0f07fc0f9ff4da937cf9592e1004fc9127",
+  "feature": "error_curvature",
+  "quantile": 0.5,
+  "threshold": 0.012790399606947056,
+  "persistence_k": 1,
+  "prefix_budget_delta": 0.03,
+  "prefix_bound_ratio": 0.140666326358537,
+  "causal_alignment": "R row j -> E prefix/audit row j+1",
+  "e_k_continuation_authorized": false,
+  "active_switching": false,
+  "calibration_metrics": {
+    "probe_count": 38,
+    "probe_precision": 0.8157894736842105,
+    "detected_r_to_e_segments": 9,
+    "r_to_e_segment_count": 15,
+    "segment_recall_diagnostic": 0.6,
+    "opportunity_retention": 0.8645129709768513,
+    "aggregate_prefix_overhead": 0.001115185762100836,
+    "prefix_bound_violations": 0,
+    "pathwise_budget_violations": 0
+  },
+  "contract_sha256": "888da13da23b79ef9e66e06f676e9f53a28c53d584dbeea74394679248d91ef2",
+  "historical_optimized_atlas_sha256": "233e35e2fc0b685d3b7208b0fec8c7f973c4e10b4a4da207abf4f9f098bd8875",
+  "raw_canonical_parity_campaign_sha256": "ecde538667d2cded94726154ecf82bbac19b7a21698257f84a76e99cbf252647",
+  "n512_policy_mutation_forbidden": true
+}

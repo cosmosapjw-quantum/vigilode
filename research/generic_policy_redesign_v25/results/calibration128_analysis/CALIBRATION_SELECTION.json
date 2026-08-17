@@ -1,0 +1,72 @@
+{
+  "schema": "gvjf-policy-redesign-v25-calibration128-selection-v1",
+  "contract_sha256": "888da13da23b79ef9e66e06f676e9f53a28c53d584dbeea74394679248d91ef2",
+  "rjf_parity": {
+    "raw_campaign_sha256": "ecde538667d2cded94726154ecf82bbac19b7a21698257f84a76e99cbf252647",
+    "rows": 413,
+    "fields": {
+      "t_start": true,
+      "h": true,
+      "transition_level": true,
+      "rodas_embedded_error": true,
+      "rodas_rhs_evaluations": true,
+      "rodas_jvp_vectors": true,
+      "rodas_linear_matvecs": true
+    },
+    "exact": true
+  },
+  "rjf_rows": 413,
+  "rjf_trajectories": 6,
+  "historical_optimized_atlas_sha256": "233e35e2fc0b685d3b7208b0fec8c7f973c4e10b4a4da207abf4f9f098bd8875",
+  "timing_authority": "historical optimized G4-S5B0 medians only",
+  "debug_wall_used_for_selection": false,
+  "causal_alignment": "R row j -> E prefix/audit row j+1",
+  "prefix_bound_ratio": 0.140666326358537,
+  "thresholds": {
+    "jvp_pressure": {
+      "0.5": 4.317118216504039,
+      "0.65": 4.415844418282085,
+      "0.8": 4.647309431340066,
+      "0.9": 4.8045961109081725
+    },
+    "step_contraction": {
+      "0.5": 2.183042123650719,
+      "0.65": 2.2721962524415544,
+      "0.8": 2.5754274240339408,
+      "0.9": 2.7327141036020475
+    },
+    "error_curvature": {
+      "0.5": 0.012790399606947056,
+      "0.65": 0.04810280510672472,
+      "0.8": 0.11651119899930278,
+      "0.9": 0.29475058634453327
+    }
+  },
+  "candidate_count": 108,
+  "valid_candidate_count": 108,
+  "strong_r_to_e_segment_count": 15,
+  "selected_policy": {
+    "feature": "error_curvature",
+    "quantile": 0.5,
+    "threshold": 0.012790399606947056,
+    "k": 1,
+    "delta": 0.03,
+    "probe_count": 38,
+    "probe_precision": 0.8157894736842105,
+    "detected_r_to_e_segments": 9,
+    "r_to_e_segment_count": 15,
+    "segment_recall_diagnostic": 0.6,
+    "opportunity_total": 0.23853797100000002,
+    "opportunity_captured": 0.20621917,
+    "opportunity_retention": 0.8645129709768513,
+    "actual_prefix_wall_total": 0.0010464930781249999,
+    "aggregate_prefix_overhead": 0.001115185762100836,
+    "prefix_bound_violations": 0,
+    "pathwise_budget_violations": 0,
+    "valid": true,
+    "candidate_key": "error_curvature|q=0.50|k=1|delta=0.03"
+  },
+  "e_k_continuations": 0,
+  "active_switching": false,
+  "n512_status": "not yet evaluated in this coding loop; cross-dimension regression only"
+}
