@@ -4,7 +4,7 @@
 
 **Goal:** Test whether R-JF-only sequential confirmation plus a hard speculative-prefix budget can recover regime-transition information without reintroducing P1-01 unsafe full continuation or tail-overhead failure.
 
-**Architecture:** Protected R-JF remains the only committed trajectory. A new research-only screening layer consumes only already-committed R-JF telemetry to form point evidence and persistence/CUSUM candidates. E-K prefix/full-step data are computed only as shadow audit labels; runtime policy in this node never commits or continues E-K. Calibration (N=128) and sealed holdout (N=512) are separate CLI runs.
+**Architecture:** Protected R-JF remains the only committed trajectory. A new research-only screening layer consumes only already-committed R-JF telemetry to form point evidence and persistence/CUSUM candidates. E-K prefix/full-step data are computed only as shadow audit labels; runtime policy in this node never commits or continues E-K. Calibration replay (N=128) and cross-dimension regression (N=512) are separate R-JF-only CLI runs; N=512 is not called sealed because it was already inspected in the preceding math loop.
 
 **Tech Stack:** Rust 1.94.1, existing matrix-free RODAS5P/pexprb54s4 research kernels, serde/CLI, Python analysis.
 
@@ -17,7 +17,7 @@
 - Audit oracle may use E-K shadow labels, but policy decisions may not.
 - Runtime speculative ledger counts only selected prefix probes; full E shadow is audit-only and excluded from proposed runtime overhead.
 - Candidate family is frozen before calibration output.
-- Calibration N=128; holdout N=512; no holdout-driven retuning.
+- Calibration N=128; N=512 is cross-dimension regression only; no N=512-driven retuning.
 - Same external R-JF trajectory and complete work accounting.
 
 ---
@@ -45,12 +45,12 @@
 - [ ] Verify CLI schema and no active switching.
 - [ ] Commit implementation before canonical calibration output.
 
-### Task 5: Run calibration and seal one policy
+### Task 5: Run R-only calibration replay and seal one policy
 - [ ] Run N=128 campaign only.
 - [ ] Analyze predeclared candidate grid; select by frozen lexicographic criteria.
 - [ ] Commit selected policy and calibration raw SHA before holdout.
 
-### Task 6: Run sealed holdout, dual audit, and CRAG
+### Task 6: Run N=512 cross-dimension regression, dual audit, and CRAG
 - [ ] Run N=512 exactly with frozen policy.
 - [ ] Verify R-JF identity, pathwise prefix budget, event recall/precision, opportunity retention, and no policy E continuation.
 - [ ] Generate plots and adversarial mutations.

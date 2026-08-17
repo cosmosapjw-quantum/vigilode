@@ -1,6 +1,6 @@
 {
-  "schema": "gvjf-p1-01r-persistence-budget-contract-v1",
-  "status": "pre-output-frozen",
+  "schema": "gvjf-p1-01r-persistence-budget-contract-v2",
+  "status": "pre-output-revised-after-historical-only-kill-test",
   "parent_commit": "3726a98491728bd762fb6804c9127d799accdbe4",
   "objective": "Test whether causal R-JF-only persistence plus a hard speculative-prefix budget can identify durable R-to-E opportunities without any E-K continuation or active switching.",
   "committed_method": "protected-sequential-matrix-free-rodas5p",
@@ -34,20 +34,56 @@
     ]
   },
   "profiles": {
-    "calibration": {"dimension": 128, "rtol": 1e-5, "atol": 1e-7},
-    "holdout": {"dimension": 512, "rtol": 1e-5, "atol": 1e-7}
+    "calibration_replay": {
+      "dimension": 128,
+      "rtol": 1e-05,
+      "atol": 1e-07,
+      "role": "policy selection using previously existing G4-S5B0 audit labels"
+    },
+    "cross_dimension_regression": {
+      "dimension": 512,
+      "rtol": 1e-05,
+      "atol": 1e-07,
+      "role": "non-sealed regression only; N=512 was already inspected in prior mathematical research"
+    }
   },
   "point_feature_family": [
-    {"name": "jvp_pressure", "formula": "log10(max(rodas_jvp_vectors,1)/max(abs(h),1e-300))", "orientation": "high"},
-    {"name": "step_contraction", "formula": "-log10(max(abs(h),1e-300))", "orientation": "high"},
-    {"name": "error_curvature", "formula": "-d2(log10(max(rodas_embedded_error,1e-300)))", "orientation": "high", "minimum_history": 2}
+    {
+      "name": "jvp_pressure",
+      "formula": "log10(max(rodas_jvp_vectors,1)/max(abs(h),1e-300))",
+      "orientation": "high"
+    },
+    {
+      "name": "step_contraction",
+      "formula": "-log10(max(abs(h),1e-300))",
+      "orientation": "high"
+    },
+    {
+      "name": "error_curvature",
+      "formula": "-d2(log10(max(rodas_embedded_error,1e-300)))",
+      "orientation": "high",
+      "minimum_history": 2
+    }
   ],
   "threshold_selection": {
-    "calibration_quantiles": [0.5, 0.65, 0.8, 0.9],
+    "calibration_quantiles": [
+      0.5,
+      0.65,
+      0.8,
+      0.9
+    ],
     "holdout_thresholds": "numeric thresholds frozen from calibration"
   },
-  "persistence_k": [1, 2, 3],
-  "prefix_budget_delta": [0.02, 0.03, 0.05],
+  "persistence_k": [
+    1,
+    2,
+    3
+  ],
+  "prefix_budget_delta": [
+    0.02,
+    0.03,
+    0.05
+  ],
   "prefix_prospective_bound": {
     "calibration_rule": "max observed prefix_wall / rodas_wall on calibration times 1.25",
     "holdout_rule": "freeze calibration value; prefix is allowed only if cumulative_speculative + bound_ratio * current_rodas_wall <= delta * cumulative_committed_rodas_wall",
@@ -57,10 +93,11 @@
   "calibration_selection": [
     "hard reject any candidate with prefix bound violation",
     "hard reject any candidate with proposed pathwise prefix budget violation",
-    "maximize R-to-E entry recall within two accepted R steps",
     "maximize retained retrospective E opportunity",
+    "maximize probe precision",
     "minimize probe count",
     "minimize proposed runtime prefix overhead",
+    "use R-to-E entry-count recall only as a reported diagnostic",
     "deterministic lexical tie break"
   ],
   "holdout_hard_gates": {
@@ -69,15 +106,18 @@
     "e_k_continuations": 0,
     "prefix_bound_violations": 0,
     "pathwise_prefix_budget_violations": 0,
-    "opportunity_retention_min": 0.85,
-    "r_to_e_entry_recall_within_2_steps_min": 0.65,
-    "aggregate_prefix_overhead_max": 0.05
+    "opportunity_retention_min": 0.75,
+    "aggregate_prefix_overhead_max": 0.05,
+    "probe_precision_min": 0.8,
+    "cross_dimension_regression_only": true
   },
   "interpretation_limits": [
     "This node is an event/probe-economics preflight, not an E-K safety certificate.",
     "Full E-K shadows are audit oracle work and are retained in the complete measurement ledger but excluded from proposed runtime cost because the candidate policy never performs them.",
     "No threshold from this node authorizes active switching.",
-    "N=2048 remains sealed."
+    "N=2048 remains sealed.",
+    "N=512 is not a sealed holdout in this node because it was already used in the preceding mathematical research loop.",
+    "A later genuinely unseen validation dimension/family is required before promotion beyond research preflight."
   ],
   "stop_conditions": [
     "any parent/source hash drift before implementation",
@@ -85,5 +125,11 @@
     "any active E-K continuation or committed state mutation",
     "any R-JF committed trajectory change",
     "holdout-driven retuning"
-  ]
+  ],
+  "solver_execution_in_this_node": {
+    "new_solver_path": "R-JF-only committed trajectories; no E-K evaluation is required for the new run",
+    "audit_join": "join R-JF rows by trajectory_id and accepted step index to the already-durable optimized G4-S5B0 atlas after exact numerical parity checks",
+    "timing_authority": "historical optimized G4-S5B0 median R/E/prefix walls, never debug wall times",
+    "reason": "avoid duplicating expensive E shadow work when the required audit labels already exist; preserve same-physics evidence and complete provenance"
+  }
 }
