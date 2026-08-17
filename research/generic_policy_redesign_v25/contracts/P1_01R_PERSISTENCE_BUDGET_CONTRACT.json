@@ -1,6 +1,6 @@
 {
-  "schema": "gvjf-p1-01r-persistence-budget-contract-v2",
-  "status": "pre-output-revised-after-historical-only-kill-test",
+  "schema": "gvjf-p1-01r-persistence-budget-contract-v3",
+  "status": "pre-policy-selection-causality-amendment-after-rjf-only-parity",
   "parent_commit": "3726a98491728bd762fb6804c9127d799accdbe4",
   "objective": "Test whether causal R-JF-only persistence plus a hard speculative-prefix budget can identify durable R-to-E opportunities without any E-K continuation or active switching.",
   "committed_method": "protected-sequential-matrix-free-rodas5p",
@@ -85,8 +85,9 @@
     0.05
   ],
   "prefix_prospective_bound": {
-    "calibration_rule": "max observed prefix_wall / rodas_wall on calibration times 1.25",
-    "holdout_rule": "freeze calibration value; prefix is allowed only if cumulative_speculative + bound_ratio * current_rodas_wall <= delta * cumulative_committed_rodas_wall",
+    "calibration_rule": "1.25 * max over calibration of prefix_wall[j+1] / rodas_wall[j], with trajectory boundaries excluded",
+    "holdout_rule": "freeze the calibration ratio; after committing R row j, allow a next-state prefix only if cumulative_speculative + bound_ratio * rodas_wall[j] <= delta * cumulative_committed_r_jf_wall",
+    "realized_audit_cost": "prefix_wall[j+1] from the historical optimized atlas, read only after the probe decision",
     "bound_violation": "hard fail"
   },
   "candidate_count": 108,
@@ -131,5 +132,17 @@
     "audit_join": "join R-JF rows by trajectory_id and accepted step index to the already-durable optimized G4-S5B0 atlas after exact numerical parity checks",
     "timing_authority": "historical optimized G4-S5B0 median R/E/prefix walls, never debug wall times",
     "reason": "avoid duplicating expensive E shadow work when the required audit labels already exist; preserve same-physics evidence and complete provenance"
+  },
+  "causal_indexing": {
+    "feature_observation": "accepted R-JF row j becomes observable only after completing that step",
+    "probe_launch": "a trigger fired from row j may launch an E-K prefix only at the next committed state, corresponding to audit row j+1",
+    "forbidden": "same-row E-K prefix/admissibility/winner labels may not score a decision based on row-j R-JF telemetry",
+    "terminal_row": "no probe is launched if there is no row j+1 in the trajectory"
+  },
+  "amendment_provenance": {
+    "new_rjf_solver_output_exists": true,
+    "policy_thresholds_selected_before_amendment": false,
+    "e_k_audit_labels_joined_before_amendment": false,
+    "reason": "prevent one-step look-ahead leakage in event-to-prefix alignment"
   }
 }
