@@ -14,14 +14,14 @@ use rodas5p_fair_ab::{
 };
 use rodas5p_integrators::{
     CandidateCatalog, CandidateFamily, CandidateStatus, G1TransactionalGateProfile,
-    G2ExponentialGateProfile, G3FusedAdaptiveProfile, G4PrefixKernelProfile, G4S5B0Profile,
-    G4S5B3Profile, HomotopyExperimentProfile, HomotopyRhsTelemetryProfile,
+    G2ExponentialGateProfile, G3FusedAdaptiveProfile, G4PrefixKernelProfile, G4S5B0Family,
+    G4S5B0Profile, G4S5B3Profile, HomotopyExperimentProfile, HomotopyRhsTelemetryProfile,
     MatrixFreeCommonWProfile, NativeIntegratorGateReport, PathControllerProfile,
     StageBatchFeasibilityProfile, UnifiedNonlinearScreen, UnifiedScientificGateReport,
     UnifiedScreenProfile, run_g1_transactional_gate, run_g2_exponential_gate,
     run_g3_fused_adaptive_gate, run_g4_prefix_kernel_gate, run_g4_s5b0_regime_atlas,
-    run_g4_s5b0_rjf_only, run_g4_s5b3_attempt_geometry, run_homotopy_design_check,
-    run_homotopy_experiment_screen, run_homotopy_order_policy_screen,
+    run_g4_s5b0_rjf_only, run_g4_s5b0_rjf_only_family, run_g4_s5b3_attempt_geometry,
+    run_homotopy_design_check, run_homotopy_experiment_screen, run_homotopy_order_policy_screen,
     run_homotopy_rhs_telemetry_screen, run_matrix_free_common_w_gate, run_native_integrator_gates,
     run_p1_00_tolerance_scaled_early_defect, run_path_controller_screen,
     run_stage_batch_feasibility, run_unified_nonlinear_screen, run_unified_scientific_gates,
@@ -145,6 +145,8 @@ enum Command {
     GenericPolicyRedesignAtlas {
         #[arg(long, value_enum)]
         profile: CliPolicyRedesignProfile,
+        #[arg(long, value_enum)]
+        family: Option<CliPolicyRedesignFamily>,
         #[arg(long)]
         output: PathBuf,
     },
@@ -242,6 +244,29 @@ enum Command {
         #[arg(long)]
         zero_guess: bool,
     },
+}
+
+#[derive(Clone, Copy, Debug, ValueEnum)]
+enum CliPolicyRedesignFamily {
+    Robertson,
+    Hires,
+    VanDerPol,
+    RotatingNonnormal,
+    NonautonomousForcing,
+    Semilinear,
+}
+
+impl From<CliPolicyRedesignFamily> for G4S5B0Family {
+    fn from(value: CliPolicyRedesignFamily) -> Self {
+        match value {
+            CliPolicyRedesignFamily::Robertson => Self::RobertsonRamped,
+            CliPolicyRedesignFamily::Hires => Self::HiresRamped,
+            CliPolicyRedesignFamily::VanDerPol => Self::VanDerPolRamped,
+            CliPolicyRedesignFamily::RotatingNonnormal => Self::RotatingNonnormal,
+            CliPolicyRedesignFamily::NonautonomousForcing => Self::NonautonomousStiffForcing,
+            CliPolicyRedesignFamily::Semilinear => Self::SemilinearAdvectionDiffusionRamped,
+        }
+    }
 }
 
 #[derive(Clone, Copy, Debug, ValueEnum)]
@@ -1152,12 +1177,20 @@ fn main() -> Result<()> {
             };
             write_json(&output, &run_g4_s5b0_regime_atlas(profile)?)?;
         }
-        Command::GenericPolicyRedesignAtlas { profile, output } => {
+        Command::GenericPolicyRedesignAtlas {
+            profile,
+            family,
+            output,
+        } => {
             let profile = match profile {
                 CliPolicyRedesignProfile::Calibration => G4S5B0Profile::Calibration128,
                 CliPolicyRedesignProfile::Holdout => G4S5B0Profile::Holdout512,
             };
-            write_json(&output, &run_g4_s5b0_rjf_only(profile)?)?;
+            let report = match family {
+                Some(family) => run_g4_s5b0_rjf_only_family(profile, family.into())?,
+                None => run_g4_s5b0_rjf_only(profile)?,
+            };
+            write_json(&output, &report)?;
         }
         Command::GenericEarlyDefectAttemptGeometry { profile, output } => {
             let profile = match profile {

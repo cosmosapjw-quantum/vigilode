@@ -1,4 +1,6 @@
-use rodas5p_integrators::{G4S5B0Profile, run_g4_s5b0_regime_atlas, run_g4_s5b0_rjf_only};
+use rodas5p_integrators::{
+    G4S5B0Family, G4S5B0Profile, run_g4_s5b0_regime_atlas, run_g4_s5b0_rjf_only,
+};
 
 #[test]
 fn smoke_atlas_is_read_only_and_matrix_free() {
@@ -74,4 +76,20 @@ fn rjf_only_smoke_skips_every_exponential_shadow() {
             && row.direct_factorizations == 0
             && row.newton_iterations == 0
     }));
+}
+
+#[test]
+fn family_shard_registry_matches_the_six_atlas_families() {
+    let names = G4S5B0Family::ALL.map(G4S5B0Family::as_str);
+    assert_eq!(
+        names,
+        [
+            "robertson-ramped",
+            "hires-ramped",
+            "van-der-pol-ramped",
+            "rotating-nonnormal",
+            "nonautonomous-stiff-forcing",
+            "semilinear-advection-diffusion-ramped",
+        ]
+    );
 }

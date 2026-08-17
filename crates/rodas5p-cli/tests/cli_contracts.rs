@@ -764,4 +764,5 @@ fn generic_policy_redesign_atlas_command_is_registered() {
     let stdout = String::from_utf8_lossy(&output.stdout);
     assert!(stdout.contains("calibration"));
     assert!(stdout.contains("holdout"));
+    assert!(stdout.contains("--family"));
 }

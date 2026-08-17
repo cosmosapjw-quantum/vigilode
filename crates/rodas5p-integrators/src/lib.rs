@@ -96,8 +96,8 @@ pub use g4_prefix_kernel_gate::{
     run_g4_prefix_kernel_gate,
 };
 pub use g4_s5b0_regime_atlas::{
-    G4S5B0Profile, G4S5B0Report, G4S5B0StepRow, G4S5B0TrajectorySummary, run_g4_s5b0_regime_atlas,
-    run_g4_s5b0_rjf_only,
+    G4S5B0Family, G4S5B0Profile, G4S5B0Report, G4S5B0StepRow, G4S5B0TrajectorySummary,
+    run_g4_s5b0_regime_atlas, run_g4_s5b0_rjf_only, run_g4_s5b0_rjf_only_family,
 };
 pub use g4_s5b3_attempt_geometry::{
     G4S5B3AttemptGeometryReport, G4S5B3AttemptRow, G4S5B3CalibrationRow, G4S5B3HardGateSummary,

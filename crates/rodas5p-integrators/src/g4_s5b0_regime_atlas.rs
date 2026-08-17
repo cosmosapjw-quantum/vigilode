@@ -21,6 +21,39 @@ pub enum G4S5B0Profile {
     Holdout512,
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum G4S5B0Family {
+    RobertsonRamped,
+    HiresRamped,
+    VanDerPolRamped,
+    RotatingNonnormal,
+    NonautonomousStiffForcing,
+    SemilinearAdvectionDiffusionRamped,
+}
+
+impl G4S5B0Family {
+    pub const ALL: [Self; 6] = [
+        Self::RobertsonRamped,
+        Self::HiresRamped,
+        Self::VanDerPolRamped,
+        Self::RotatingNonnormal,
+        Self::NonautonomousStiffForcing,
+        Self::SemilinearAdvectionDiffusionRamped,
+    ];
+
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::RobertsonRamped => "robertson-ramped",
+            Self::HiresRamped => "hires-ramped",
+            Self::VanDerPolRamped => "van-der-pol-ramped",
+            Self::RotatingNonnormal => "rotating-nonnormal",
+            Self::NonautonomousStiffForcing => "nonautonomous-stiff-forcing",
+            Self::SemilinearAdvectionDiffusionRamped => "semilinear-advection-diffusion-ramped",
+        }
+    }
+}
+
 impl G4S5B0Profile {
     pub fn as_str(self) -> &'static str {
         match self {
@@ -1079,10 +1112,16 @@ pub fn run_g4_s5b0_regime_atlas(profile: G4S5B0Profile) -> CoreResult<G4S5B0Repo
     })
 }
 
-pub fn run_g4_s5b0_rjf_only(profile: G4S5B0Profile) -> CoreResult<G4S5B0Report> {
+fn run_g4_s5b0_rjf_only_filtered(
+    profile: G4S5B0Profile,
+    family: Option<G4S5B0Family>,
+) -> CoreResult<G4S5B0Report> {
     let mut rows = Vec::new();
     let mut trajectories = Vec::new();
     for problem in build_problems(profile)? {
+        if family.is_some_and(|selected| problem.family != selected.as_str()) {
+            continue;
+        }
         let (mut local_rows, summary) = run_trajectory(problem, profile, false);
         rows.append(&mut local_rows);
         trajectories.push(summary);
@@ -1106,4 +1145,15 @@ pub fn run_g4_s5b0_rjf_only(profile: G4S5B0Profile) -> CoreResult<G4S5B0Report> 
             "No active method switching or E-K prefix/full-step work occurs in this runner.".into(),
         ],
     })
+}
+
+pub fn run_g4_s5b0_rjf_only(profile: G4S5B0Profile) -> CoreResult<G4S5B0Report> {
+    run_g4_s5b0_rjf_only_filtered(profile, None)
+}
+
+pub fn run_g4_s5b0_rjf_only_family(
+    profile: G4S5B0Profile,
+    family: G4S5B0Family,
+) -> CoreResult<G4S5B0Report> {
+    run_g4_s5b0_rjf_only_filtered(profile, Some(family))
 }
