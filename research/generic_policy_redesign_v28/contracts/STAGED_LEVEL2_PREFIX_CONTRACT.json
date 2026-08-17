@@ -1,0 +1,83 @@
+{
+  "schema": "gvjf-policy-redesign-v28-staged-level2-prefix-contract-v1",
+  "parent_commit": "4ebd98e4bc478134281093d068ca9d1b92b8c07f",
+  "objective": "Extend the retained actual pexprb54s4 level-1 prefix through dependency level 2 (U3/D3 and U4/D4) as a read-only safety-research probe, without computing either endpoint or activating switching.",
+  "method_authority": {
+    "method": "pexprb54s4-fused",
+    "c2": 0.25,
+    "c3": 0.5,
+    "c4": 0.9,
+    "a32_phi3": 4.0,
+    "a42_phi3": 23.328,
+    "a43": 0.0,
+    "dependency_structure": [
+      "level1: U2 and D2",
+      "level2: U3/D3 and U4/D4, independent once D2 is known",
+      "level3: main and embedded endpoints; forbidden in the v2.8 campaign"
+    ]
+  },
+  "level2_definition": {
+    "u3": "y + h*[c3*phi1(c3*h*J)*F0 + a32*phi3(c3*h*J)*D2]",
+    "d3": "F(U3)-F0-J(U3-y)",
+    "u4": "y + h*[c4*phi1(c4*h*J)*F0 + a42*phi3(c4*h*J)*D2]",
+    "d4": "F(U4)-F0-J(U4-y)",
+    "telemetry": [
+      "raw eta3 = |h|*||D3||2/||U3-y||2",
+      "raw eta4 = |h|*||D4||2/||U4-y||2",
+      "rho3 WRMS using atol + rtol*max(|y|,|U3|)",
+      "rho4 WRMS using atol + rtol*max(|y|,|U4|)"
+    ]
+  },
+  "resumability": {
+    "required": true,
+    "rule": "level1 -> level2 -> full-step resume must reproduce ordinary pexprb54s4 final state, embedded state, error estimate, fused-phi reports, level1 telemetry, and total WorkCounters exactly; no level1 or level2 work may be repeated."
+  },
+  "incremental_work": {
+    "required": true,
+    "level2_report_must_separate": [
+      "level1 cumulative work",
+      "level2 incremental work",
+      "level2 cumulative work"
+    ],
+    "counted_categories": ["RHS", "JVP calls/vectors", "phi actions", "Krylov vectors", "projected exponentials", "orthogonalization"]
+  },
+  "runtime_causality": {
+    "policy": "k3-development only for the main campaign; frozen k1 remains a negative comparator artifact and is not retuned",
+    "probe_target": "first subsequently proposed R-JF trial after the causal k3 event",
+    "rjf_committed": true,
+    "controller_cache_mutation_by_prefix": false
+  },
+  "campaign_scope": {
+    "dimensions": [128, 512],
+    "families": 6,
+    "full_e_continuations": 0,
+    "active_switching": false,
+    "n2048": "sealed",
+    "final_safety_threshold_selection": "forbidden"
+  },
+  "kill_questions": [
+    "Do rho3/rho4 or their predeclared descriptive combinations separate the repeated HIRES inadmissible event from admissible HIRES neighbors better than rho2?",
+    "What incremental vector/RHS/phi work is paid from level1 to level2?",
+    "Does any family acquire a level2 prefix failure or new group-local pathology?",
+    "Does level1->level2->resume retain exact one-shot numerical/work parity?"
+  ],
+  "predeclared_descriptive_features": [
+    "rho2", "rho3", "rho4", "max(rho3,rho4)", "rho4/rho3", "max(rho3,rho4)/rho2"
+  ],
+  "hard_gates": [
+    "R-JF committed trajectory and R attempt trace remain unchanged",
+    "explicit Jacobian builds remain zero",
+    "Newton iterations remain zero",
+    "full E continuation count is zero in campaign",
+    "N=2048 is not executed",
+    "all level2 speculative work is retained",
+    "no final safety threshold is selected from v2.8 outputs"
+  ],
+  "stop_conditions": [
+    "level2 factoring changes ordinary pexprb54s4 output or work counters",
+    "R-JF committed/attempt trace drifts",
+    "endpoint work appears in the v2.8 research campaign",
+    "N=2048 executes",
+    "a final safety threshold is tuned from the same campaign"
+  ]
+}
