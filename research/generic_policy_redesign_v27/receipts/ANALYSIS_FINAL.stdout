@@ -1,0 +1,94 @@
+{
+  "schema": "gvjf-policy-redesign-v27-actual-prefix-result-v1",
+  "contract_sha256": "78e3901f5d9d2275a993950a6ae0b45559f38b919b005966115b2d384277342d",
+  "new_solver_shards": 14,
+  "k3_full_family_shards": 12,
+  "frozen_k1_counterexample_shards": 2,
+  "full_e_continuations": 0,
+  "active_switching": false,
+  "n2048_executed": false,
+  "all_k3_prefixes_succeeded": true,
+  "all_k3_first_r_targets_accepted": true,
+  "rjf_exact_parity_all_12_k3_shards": true,
+  "dimension_summary": [
+    {
+      "dimension": 128,
+      "k3_events": 26,
+      "prefix_successes": 26,
+      "rejected_first_targets": 0,
+      "historical_e_strong_fraction": 0.9615384615384616,
+      "historical_e_admissible_fraction": 0.9615384615384616,
+      "rho_median": 28.82819999846183,
+      "rho_min": 0.27569112833500203,
+      "rho_max": 356.67526348420597,
+      "prefix_jvp_median": 5.0,
+      "prefix_jvp_p95": 7.0,
+      "prefix_jvp_max": 9.0,
+      "prefix_over_target_r_jvp_median": 0.0423728813559322,
+      "prefix_over_target_r_jvp_p95": 0.07558139534883722,
+      "prefix_over_full_e_jvp_median": 0.1724137931034483,
+      "prefix_over_full_e_jvp_p95": 0.21739130434782608,
+      "trajectory_aggregate_prefix_over_r_jvp": 0.0022102936532996525,
+      "trajectory_aggregate_prefix_over_r_rhs": 0.015081206496519721,
+      "debug_trajectory_aggregate_prefix_over_r_wall": 0.0006216674157838561
+    },
+    {
+      "dimension": 512,
+      "k3_events": 30,
+      "prefix_successes": 30,
+      "rejected_first_targets": 0,
+      "historical_e_strong_fraction": 0.9666666666666667,
+      "historical_e_admissible_fraction": 0.9666666666666667,
+      "rho_median": 28.82314772903272,
+      "rho_min": 0.13055539455774745,
+      "rho_max": 356.21043301274915,
+      "prefix_jvp_median": 5.0,
+      "prefix_jvp_p95": 7.0,
+      "prefix_jvp_max": 13.0,
+      "prefix_over_target_r_jvp_median": 0.0423728813559322,
+      "prefix_over_target_r_jvp_p95": 0.08139534883720931,
+      "prefix_over_full_e_jvp_median": 0.2,
+      "prefix_over_full_e_jvp_p95": 0.21739130434782608,
+      "trajectory_aggregate_prefix_over_r_jvp": 0.0018775304705364072,
+      "trajectory_aggregate_prefix_over_r_rhs": 0.016877637130801686,
+      "debug_trajectory_aggregate_prefix_over_r_wall": 0.000557872965690548
+    }
+  ],
+  "historical_k3_inadmissible_events": [
+    {
+      "dimension": 128,
+      "family": "hires-ramped",
+      "decision_step": 4,
+      "target_step": 5,
+      "rho": 2.2712232503780303,
+      "exponential_total_error": 1.1351437421450346
+    },
+    {
+      "dimension": 512,
+      "family": "hires-ramped",
+      "decision_step": 4,
+      "target_step": 5,
+      "rho": 2.27122325058707,
+      "exponential_total_error": 1.1351271745458875
+    }
+  ],
+  "frozen_k1_rejected_proposal_counterexamples": [
+    {
+      "dimension": 128,
+      "family": "nonautonomous-stiff-forcing",
+      "decision_step": 10,
+      "h": 0.010883336599682315,
+      "rho": 203.884895196628,
+      "target_r_error_norm": 1.3363658779930803
+    },
+    {
+      "dimension": 512,
+      "family": "nonautonomous-stiff-forcing",
+      "decision_step": 10,
+      "h": 0.010870768157056005,
+      "rho": 207.15553823271364,
+      "target_r_error_norm": 1.3669925046557379
+    }
+  ],
+  "primary_verdict": "actual level-1 prefix mechanism survives; k3 fixes rejected-next causality but does not by itself certify full-E admissibility; proceed to staged level-2 safety research, not active switching"
+}

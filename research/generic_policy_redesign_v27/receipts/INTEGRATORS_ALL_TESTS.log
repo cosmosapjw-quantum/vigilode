@@ -1,0 +1,70 @@
+   Compiling rodas5p-integrators v0.1.0 (/mnt/data/GVJF_KEYSTONE_POLICY_LOOP_20260817/repo/crates/rodas5p-integrators)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 8.72s
+     Running unittests src/lib.rs (target/debug/deps/rodas5p_integrators-f697748c20defb68)
+
+running 4 tests
+test unified_gates::qualification_tests::qualification_order_ignores_a_roundoff_contaminated_finest_pair ... ok
+test unified_gates::qualification_tests::qualification_order_keeps_the_finest_pair_when_it_is_above_roundoff ... ok
+test common_w_gate::tests::smoke_matrix_free_solutions_match_offline_materialized_direct_oracle ... ok
+test unified_gates::qualification_tests::iterative_sequential_order_rows_survive_roundoff_level_refinement ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.52s
+
+     Running tests/adaptive_bdf_contracts.rs (target/debug/deps/adaptive_bdf_contracts-189bc363b550e026)
+
+running 6 tests
+test nonuniform_bdf2_coefficients_recover_constant_step_formula ... ok
+test nonuniform_bdf2_predictor_uses_the_actual_step_ratio ... ok
+test fixed_bdf_step_remains_identical_to_variable_kernel_at_ratio_one ... ok
+test variable_bdf2_is_exact_for_a_quadratic_on_unequal_steps ... ok
+test adaptive_bdf2_uses_startup_order_then_variable_step_order ... ok
+test adaptive_bdf1_is_transactional_and_responds_to_tolerance ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.55s
+
+     Running tests/adaptive_controller_contracts.rs (target/debug/deps/adaptive_controller_contracts-f86da2df69a7b703)
+
+running 4 tests
+test adaptive_config_rejects_inconsistent_bounds ... ok
+test integral_controller_uses_estimator_order_and_rejection_cap ... ok
+test pi_controller_updates_only_after_acceptance ... ok
+test step_doubling_returns_fine_path_wrms_error ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/adaptive_fused_exponential_contracts.rs (target/debug/deps/adaptive_fused_exponential_contracts-c5362da08563446e)
+
+running 3 tests
+test nonautonomous_time_augmentation_has_exact_rhs_and_jvp ... ok
+test incomplete_adaptive_run_preserves_attempted_work_and_partial_output ... ok
+test adaptive_fused_parallel_exponential_responds_to_tolerance ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+
+     Running tests/adaptive_homotopy_contracts.rs (target/debug/deps/adaptive_homotopy_contracts-da97f36e46e1d80a)
+
+running 2 tests
+test adaptive_homotopy_accepts_an_affine_fast_path_on_the_requested_grid ... ok
+test adaptive_homotopy_fallback_is_transactional_across_rejections ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests/adaptive_radau_contracts.rs (target/debug/deps/adaptive_radau_contracts-80a480f71ecddce3)
+
+running 2 tests
+test adaptive_radau3_uses_sixth_order_step_doubling_estimator ... ok
+test adaptive_radau1_is_transactional_and_responds_to_tolerance ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.66s
+
+     Running tests/adaptive_rodas_contracts.rs (target/debug/deps/adaptive_rodas_contracts-511bbde1cbeec6c7)
+
+running 2 tests
+test sequential_legacy_wrapper_matches_common_controller_report ... ok
+test sabr_legacy_wrapper_matches_common_controller_report_after_rejections ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.13s
+
+     Running tests/common_w_gate_contracts.rs (target/debug/deps/common_w_gate_contracts-8a259bd1016f6bea)
+
+running 2 tests
