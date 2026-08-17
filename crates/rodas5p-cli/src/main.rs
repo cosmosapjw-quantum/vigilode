@@ -20,10 +20,10 @@ use rodas5p_integrators::{
     PathControllerProfile, StageBatchFeasibilityProfile, UnifiedNonlinearScreen,
     UnifiedScientificGateReport, UnifiedScreenProfile, run_g1_transactional_gate,
     run_g2_exponential_gate, run_g3_fused_adaptive_gate, run_g4_prefix_kernel_gate,
-    run_g4_s5b0_actual_level1_prefix_family, run_g4_s5b0_regime_atlas,
-    run_g4_s5b0_rjf_attempt_trace, run_g4_s5b0_rjf_attempt_trace_family, run_g4_s5b0_rjf_only,
-    run_g4_s5b0_rjf_only_family, run_g4_s5b3_attempt_geometry, run_homotopy_design_check,
-    run_homotopy_experiment_screen, run_homotopy_order_policy_screen,
+    run_g4_s5b0_actual_level1_prefix_family, run_g4_s5b0_actual_level2_prefix_family,
+    run_g4_s5b0_regime_atlas, run_g4_s5b0_rjf_attempt_trace, run_g4_s5b0_rjf_attempt_trace_family,
+    run_g4_s5b0_rjf_only, run_g4_s5b0_rjf_only_family, run_g4_s5b3_attempt_geometry,
+    run_homotopy_design_check, run_homotopy_experiment_screen, run_homotopy_order_policy_screen,
     run_homotopy_rhs_telemetry_screen, run_matrix_free_common_w_gate, run_native_integrator_gates,
     run_p1_00_tolerance_scaled_early_defect, run_path_controller_screen,
     run_stage_batch_feasibility, run_unified_nonlinear_screen, run_unified_scientific_gates,
@@ -163,6 +163,17 @@ enum Command {
     },
     /// Measure the actual pexprb54s4 U2/D2 level-one prefix on causal first-next proposals.
     GenericPolicyRedesignActualPrefix {
+        #[arg(long, value_enum)]
+        profile: CliPolicyRedesignProfile,
+        #[arg(long, value_enum)]
+        family: CliPolicyRedesignFamily,
+        #[arg(long, value_enum)]
+        policy: CliPolicyRedesignPrefixPolicy,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Measure actual pexprb54s4 dependency levels one and two without endpoint completion.
+    GenericPolicyRedesignLevel2Prefix {
         #[arg(long, value_enum)]
         profile: CliPolicyRedesignProfile,
         #[arg(long, value_enum)]
@@ -1256,6 +1267,20 @@ fn main() -> Result<()> {
             };
             let report =
                 run_g4_s5b0_actual_level1_prefix_family(profile, family.into(), policy.into())?;
+            write_json(&output, &report)?;
+        }
+        Command::GenericPolicyRedesignLevel2Prefix {
+            profile,
+            family,
+            policy,
+            output,
+        } => {
+            let profile = match profile {
+                CliPolicyRedesignProfile::Calibration => G4S5B0Profile::Calibration128,
+                CliPolicyRedesignProfile::Holdout => G4S5B0Profile::Holdout512,
+            };
+            let report =
+                run_g4_s5b0_actual_level2_prefix_family(profile, family.into(), policy.into())?;
             write_json(&output, &report)?;
         }
         Command::GenericEarlyDefectAttemptGeometry { profile, output } => {
