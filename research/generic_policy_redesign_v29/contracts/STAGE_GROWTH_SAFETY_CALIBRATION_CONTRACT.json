@@ -1,0 +1,79 @@
+{
+  "schema": "gvjf-policy-redesign-v29-stage-growth-safety-calibration-contract-v1",
+  "parent_head": "9e1da52afd27ddf80b6dad213489a32703e4ea26",
+  "feature_discovery_excluded_from_threshold_selection": {
+    "v28_dimensions": [128, 512],
+    "v28_rtol": 1e-5,
+    "rule": "v2.8 may justify the feature form A34 but no v2.8 value may determine the v2.9 numerical threshold"
+  },
+  "feature": {
+    "name": "normalized_stage_growth_A34",
+    "formula": "A34=(rho4/rho3)/((0.9/0.5)^2)=(rho4/rho3)/3.24",
+    "admission_orientation": "smaller_is_safer",
+    "requirements": ["rho3 finite and >0", "rho4 finite and >=0"]
+  },
+  "fixed_upstream_event": {
+    "policy": "k3-development",
+    "retuning": false,
+    "authority_inputs": "R-JF committed accepted-step history only"
+  },
+  "fresh_corpus": {
+    "threshold_calibration": [
+      {"profile": "stage-growth-calibration-96", "dimension": 96, "atol": 3e-8, "rtol": 3e-6},
+      {"profile": "stage-growth-calibration-256", "dimension": 256, "atol": 3e-7, "rtol": 3e-5}
+    ],
+    "sealed_safety_holdout": {"profile": "stage-growth-holdout-384", "dimension": 384, "atol": 7e-8, "rtol": 7e-6},
+    "families": [
+      "robertson-ramped",
+      "hires-ramped",
+      "van-der-pol-ramped",
+      "rotating-nonnormal",
+      "nonautonomous-stiff-forcing",
+      "semilinear-advection-diffusion-ramped"
+    ],
+    "n2048": "sealed"
+  },
+  "speculative_budget": {
+    "metric": "JVP vectors",
+    "runtime_prefix_reserve_per_event": 80,
+    "maximum_runtime_prefix_fraction_of_prior_committed_rjf_jvp": 0.25,
+    "precondition": "before buying level1+2 require speculative_jvp_so_far + 80 <= 0.25 * committed_rjf_jvp_before_target",
+    "postcondition": "actual cumulative level1+2 JVP for the event must be <=80; otherwise hard fail",
+    "audit_full_e_work": "explicitly separate from runtime speculative budget and never used to mutate R-JF state/controller"
+  },
+  "audit_label": {
+    "unsafe": "full-E audit total_error is nonfinite or >1",
+    "full_e_endpoint_role": "offline calibration/holdout label only",
+    "runtime_full_e_continuations": 0,
+    "active_switching": false
+  },
+  "threshold_selection": {
+    "candidate_family": "tau in unique finite calibration A34 values plus all-abstain sentinel",
+    "recommendation": "budget-admitted and finite A34 <= tau",
+    "hard_filters": [
+      "zero unsafe recommendations pooled",
+      "zero unsafe recommendations in every family x dimension group",
+      "Bonferroni zero-failure one-sided 95% upper unsafe-rate bound <=0.15 using M searched thresholds",
+      "recommended calibration events >=12"
+    ],
+    "selection": "among surviving candidates choose the one with largest recommended-event count; ties choose the smaller tau",
+    "predeclared_shrink": "freeze tau_final=0.95*tau_selected and recompute all hard filters; if any filter fails choose all-abstain",
+    "holdout_retuning": false
+  },
+  "holdout_hard_gates": [
+    "zero unsafe recommendations",
+    "zero prefix budget breaches",
+    "R-JF committed trace unchanged by audit shadows",
+    "explicit Jacobian builds=0",
+    "Newton iterations=0",
+    "groupwise family x dimension results reported before pooled results"
+  ],
+  "forbidden": [
+    "active switching",
+    "forced-switch order study",
+    "N=2048 execution",
+    "eta4/eta3 as authority feature",
+    "v2.8 gap used to choose tau",
+    "economics inferred from safety"
+  ]
+}
