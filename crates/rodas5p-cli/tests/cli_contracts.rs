@@ -674,3 +674,36 @@ fn early_flow_defect_fields_are_backward_compatible_and_legacy_rows_fail_closed(
     assert!(legacy_attempt.trial_work.is_none());
     assert!(legacy_attempt.failure.is_none());
 }
+
+#[test]
+fn early_defect_attempt_geometry_cli_is_threshold_free_and_machine_readable() {
+    let binary = env!("CARGO_BIN_EXE_rodas5p");
+    let output = temp_path("early-defect-attempt-geometry.json");
+
+    let status = Command::new(binary)
+        .args([
+            "generic-early-defect-attempt-geometry",
+            "--profile",
+            "smoke",
+            "--output",
+        ])
+        .arg(&output)
+        .status()
+        .unwrap();
+    assert!(status.success());
+
+    let report: serde_json::Value = serde_json::from_slice(&fs::read(&output).unwrap()).unwrap();
+    assert_eq!(report["schema"], "g4-s5b3-attempt-geometry-raw-v1");
+    assert_eq!(report["status"], "pass");
+    assert_eq!(report["profile"], "smoke");
+    assert_eq!(report["active_switching"], false);
+    assert_eq!(report["early_abort"], false);
+    assert_eq!(report["threshold_selected"], false);
+    assert!(report["selected_threshold"].is_null());
+    assert_eq!(report["hard_gates"]["expected_trajectories"], 3);
+    assert_eq!(report["hard_gates"]["observed_trajectories"], 3);
+    assert_eq!(report["hard_gates"]["passed"], true);
+    assert_eq!(report["overhead"]["measured_pairs"], 1);
+
+    let _ = fs::remove_file(output);
+}

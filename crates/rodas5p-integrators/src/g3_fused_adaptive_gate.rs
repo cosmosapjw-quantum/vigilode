@@ -116,11 +116,11 @@ pub struct G3FusedAdaptiveReport {
     pub summary: G3FusedAdaptiveSummary,
 }
 
-struct RuntimeProblem {
-    id: String,
-    problem: OdeProblem,
-    y0: Vec<f64>,
-    t_span: (f64, f64),
+pub(crate) struct RuntimeProblem {
+    pub(crate) id: String,
+    pub(crate) problem: OdeProblem,
+    pub(crate) y0: Vec<f64>,
+    pub(crate) t_span: (f64, f64),
 }
 
 fn quadratic_problem() -> CoreResult<RuntimeProblem> {
@@ -150,7 +150,7 @@ fn quadratic_problem() -> CoreResult<RuntimeProblem> {
     })
 }
 
-fn build_problems(profile: G3FusedAdaptiveProfile) -> CoreResult<Vec<RuntimeProblem>> {
+pub(crate) fn build_problems(profile: G3FusedAdaptiveProfile) -> CoreResult<Vec<RuntimeProblem>> {
     let mut out = vec![quadratic_problem()?];
     let (complex, y0) = complex_dahlquist_problem(4, 5.0, 20.0, 0.0)?;
     out.push(RuntimeProblem {
@@ -178,7 +178,7 @@ fn build_problems(profile: G3FusedAdaptiveProfile) -> CoreResult<Vec<RuntimeProb
     Ok(out)
 }
 
-fn adaptive_config(rtol: f64, span: f64) -> AdaptiveStepConfig {
+pub(crate) fn adaptive_config(rtol: f64, span: f64) -> AdaptiveStepConfig {
     AdaptiveStepConfig {
         atol: 0.01 * rtol,
         rtol,
@@ -194,7 +194,11 @@ fn adaptive_config(rtol: f64, span: f64) -> AdaptiveStepConfig {
     }
 }
 
-fn phi_config(rtol: f64, orth: FusedOrthogonalization, dimension: usize) -> FusedPhiKrylovConfig {
+pub(crate) fn phi_config(
+    rtol: f64,
+    orth: FusedOrthogonalization,
+    dimension: usize,
+) -> FusedPhiKrylovConfig {
     let incomplete = matches!(orth, FusedOrthogonalization::Incomplete { .. });
     FusedPhiKrylovConfig {
         minimum_dimension: 2.min(dimension.max(1)),

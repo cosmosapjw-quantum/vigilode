@@ -1,0 +1,212 @@
+{
+  "claims": {
+    "active_polyalgorithm": "NOT_AUTHORIZED",
+    "event_conditioned_use": "OPEN_NOT_TESTED_UNDER_SEALED_PROTOCOL",
+    "numerical_and_work_neutrality": "PASS",
+    "raw_eta_blanket_global_admission": "REJECTED",
+    "telemetry_mechanism": "PASS",
+    "threshold_free_geometry": "PASS"
+  },
+  "concentration": {
+    "problem": {
+      "counts": {
+        "advection-diffusion": 10,
+        "complex-dahlquist": 9,
+        "oscillatory-pr": 208,
+        "quadratic": 21
+      },
+      "largest_share": 0.8387096774193549
+    },
+    "tolerance": {
+      "counts": {
+        "0.0001": 32,
+        "1e-06": 62,
+        "1e-08": 154
+      },
+      "largest_share": 0.6209677419354839
+    }
+  },
+  "corpus": {
+    "accepted": 241,
+    "attempts": 248,
+    "degenerate_nonzero_remainder": 0,
+    "finite_eta": 248,
+    "finite_eta_fraction": 1.0,
+    "nonfinite_normalization": 0,
+    "null_eta": 0,
+    "rejected_error_control": 7,
+    "trajectories": 12,
+    "zero_eta": 0
+  },
+  "exact_cross_outcome_eta_collisions": [
+    {
+      "eta_c2": 0.0009919814843468982,
+      "rows": [
+        {
+          "attempt_index": 0,
+          "outcome": "accepted",
+          "problem_id": "quadratic",
+          "rtol": 0.0001,
+          "step_size": 0.0625,
+          "total_error_norm": 0.00310203741509944,
+          "trajectory_id": "quadratic|rtol=1e-4"
+        },
+        {
+          "attempt_index": 0,
+          "outcome": "accepted",
+          "problem_id": "quadratic",
+          "rtol": 1e-06,
+          "step_size": 0.0625,
+          "total_error_norm": 0.2341414529282812,
+          "trajectory_id": "quadratic|rtol=1e-6"
+        },
+        {
+          "attempt_index": 0,
+          "outcome": "rejected-error-control",
+          "problem_id": "quadratic",
+          "rtol": 1e-08,
+          "step_size": 0.0625,
+          "total_error_norm": 23.41414529282812,
+          "trajectory_id": "quadratic|rtol=1e-8"
+        }
+      ]
+    }
+  ],
+  "frozen_hashes": {
+    "bdf": "68c681b58686e706ab6890d3be68bb1ca4a9398517e0e755a5c64b2cef746a04",
+    "cargo_config": "feeaa6efee462ecc27c567f80e2bda338c4fddbd55bc705986dec7ae40606d4e",
+    "cargo_lock": "b6ed82be4e09045fbda4ba8b1a8782daef8840220baf88935d36a7046433afb4",
+    "radau": "edec0453a5338fc8357a7c026aff894869641b486a3aa3df858353a315bb441b",
+    "rust_toolchain": "f53198ae4fdecfd87da36fe431c771b54c51e975d01c0e99f653bc14d5d48211"
+  },
+  "hard_gates": {
+    "accepted_rejected_sequences_identical": true,
+    "all_trajectories_successful": true,
+    "complete_attempt_coverage": true,
+    "controller_histories_bitwise_identical": true,
+    "diagnostic_expensive_work_zero": true,
+    "existing_work_counters_identical": true,
+    "expected_trajectories": 12,
+    "no_legacy_unclassified_attempts": true,
+    "no_unscorable_attempts": true,
+    "observed_trajectories": 12,
+    "passed": true,
+    "per_trial_work_complete": true,
+    "per_trial_work_matches_aggregate": true,
+    "requested_outputs_bitwise_identical": true
+  },
+  "next_node": "tolerance-aware early-defect telemetry preflight; no threshold and no active switching",
+  "paired_overhead": {
+    "all_identity_pass": true,
+    "gamma_ratio_mad": 0.011736224795571348,
+    "gamma_ratio_median": 0.9973326021532906,
+    "gamma_ratio_p95": 1.0189231056929817,
+    "order_stratified_wall_ratio_median": {
+      "disabled-first": 0.9939241191513275,
+      "read-only-first": 1.009068826948862
+    },
+    "orders": [
+      "disabled-first",
+      "read-only-first",
+      "disabled-first",
+      "read-only-first",
+      "disabled-first",
+      "read-only-first",
+      "disabled-first"
+    ],
+    "pairs": 7,
+    "repetitions_per_arm": 16,
+    "wall_ratio_mad": 0.011736224795571348,
+    "wall_ratio_median": 0.9973326021532906,
+    "wall_ratio_p95": 1.0189231056929817
+  },
+  "pooled_geometry": {
+    "accepted": {
+      "finite_eta_rows": 241,
+      "maximum": 8.755236244625511,
+      "median": 0.006195893917012726,
+      "minimum": 2.565382198442076e-16,
+      "p05": 9.50587586623846e-05,
+      "p95": 0.2683796677541704,
+      "rows": 241
+    },
+    "ks_gap": 0.4463544754001186,
+    "rank_auc_larger_eta_predicts_reject": 0.7231772377000593,
+    "rejected-error-control": {
+      "finite_eta_rows": 7,
+      "maximum": 0.6434236737017848,
+      "median": 0.03251274416430973,
+      "minimum": 0.0009919814843468982,
+      "p05": 0.0034439157208684228,
+      "p95": 0.6434236737017848,
+      "rows": 7
+    }
+  },
+  "prior_scientific_digest": "eb39aa6dd7053d65b78831cbfd85eaec87ad44d29fa0fbcf825f0551b21717f8",
+  "schema": "gvjf-g4-s5b3-result-summary-v1",
+  "scope": {
+    "active_switching": false,
+    "early_abort": false,
+    "production_tableau_controller_krylov_modified": false,
+    "selected_threshold": null,
+    "threshold_selected": false
+  },
+  "source_revision": {
+    "branch": "generic-early-defect-attempt-geometry-v2.3",
+    "commit_role": "the Git commit containing this file",
+    "parent_commit": "18947c878b53398e8400f7748167b17248b93ae5",
+    "parent_tree": "46973a7dc3f962c6d3ab86d058106ac35b2fb720"
+  },
+  "status": "complete-negative-for-raw-global-threshold",
+  "threshold_tradeoff": {
+    "all_admit_baseline": {
+      "false_accept": 7,
+      "false_reject": 0,
+      "total_misclassified": 7
+    },
+    "best_zero_false_accept": {
+      "accepted_retained": 40,
+      "accepted_retained_fraction": 0.16597510373443983,
+      "false_accept": 0,
+      "false_reject": 201,
+      "tau": 0.0009501603618146313
+    },
+    "minimum_total_misclassification": {
+      "count": 7,
+      "only_all_admit_achieves_minimum": true,
+      "rows": 2
+    },
+    "pareto_points": [
+      {
+        "false_accept": 0,
+        "false_reject": 201,
+        "hypothetically_admitted": 40,
+        "tau": 0.0009501603618146313
+      },
+      {
+        "false_accept": 1,
+        "false_reject": 99,
+        "hypothetically_admitted": 143,
+        "tau": 0.008937870905021423
+      },
+      {
+        "false_accept": 3,
+        "false_reject": 51,
+        "hypothetically_admitted": 193,
+        "tau": 0.03229122244037649
+      },
+      {
+        "false_accept": 4,
+        "false_reject": 6,
+        "hypothetically_admitted": 239,
+        "tau": 0.6120599516114062
+      },
+      {
+        "false_accept": 7,
+        "false_reject": 0,
+        "hypothetically_admitted": 248,
+        "tau": 8.755236244625511
+      }
+    ]
+  }
+}
