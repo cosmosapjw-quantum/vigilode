@@ -9,10 +9,13 @@ use serde::{Deserialize, Serialize};
 use crate::{
     AdaptiveControllerState, AdaptiveStepConfig, ControllerKind, FusedOrthogonalization,
     FusedPhiKrylovConfig, FusedPhiPrefixSession, OdeProblem, ParallelExecution, PersistenceLatch,
-    Pexprb54s4Level1PrefixReport, Pexprb54s4Level2PrefixReport, Pexprb54s4QuadraticRemainderDrift,
+    Pexprb54s4BudgetedLevel2PrefixOutcome, Pexprb54s4Level1PrefixReport, Pexprb54s4Level2Prefix,
+    Pexprb54s4Level2PrefixReport, Pexprb54s4QuadraticRemainderDrift,
     Pexprb54s4RemainderVectorGeometry, pexprb54s4_fused_step, pexprb54s4_fused_step_resume_level2,
     pexprb54s4_level1_prefix_with_tolerance_scaled_telemetry,
-    pexprb54s4_level2_prefix_resume_level1, pexprb54s4_tableau, sequential_matrix_free_step,
+    pexprb54s4_level2_prefix_resume_level1,
+    pexprb54s4_level2_prefix_with_tolerance_scaled_telemetry_jvp_budget, pexprb54s4_tableau,
+    sequential_matrix_free_step,
 };
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -297,11 +300,15 @@ pub struct G4S5B0StageGrowthSafetyRow {
     pub committed_rjf_jvp_before_target: u64,
     pub speculative_jvp_before_target: u64,
     pub budget_reserve_jvp: u64,
+    pub budget_cap_jvp: u64,
     pub budget_fraction: f64,
     pub budget_admitted: bool,
+    pub budget_exhausted: bool,
     pub prefix_succeeded: bool,
     pub prefix_failure: Option<String>,
     pub actual_prefix_jvp_vectors: Option<u64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub prefix_work: Option<WorkCounters>,
     pub normalized_stage_growth_a34: Option<f64>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub rho2: Option<f64>,
@@ -350,6 +357,7 @@ pub struct G4S5B0StageGrowthSafetyReport {
     pub runtime_full_e_continuations: usize,
     pub audit_full_e_continuations: usize,
     pub budget_breaches: usize,
+    pub budget_exhaustions: usize,
     pub attempt_rows: Vec<G4S5B0RjfAttemptRow>,
     pub accepted_rows: Vec<G4S5B0StepRow>,
     pub rows: Vec<G4S5B0StageGrowthSafetyRow>,
@@ -2398,6 +2406,17 @@ pub fn run_g4_s5b0_actual_level2_prefix_family(
 
 const V29_PREFIX_RESERVE_JVP: u64 = 80;
 const V29_PREFIX_BUDGET_FRACTION: f64 = 0.25;
+
+pub fn enforced_prefix_jvp_cap(committed_rjf_jvp: u64, speculative_jvp: u64) -> u64 {
+    let cumulative_limit = committed_rjf_jvp / 4;
+    V29_PREFIX_RESERVE_JVP.min(cumulative_limit.saturating_sub(speculative_jvp))
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum StageGrowthBudgetMode {
+    Predictive,
+    Enforced,
+}
 const V29_STAGE_GROWTH_BASELINE: f64 = 3.24;
 
 fn stage_trajectory_shape_features(rho2: f64, rho3: f64, rho4: f64) -> Option<(f64, f64, f64)> {
@@ -2423,6 +2442,7 @@ fn stage_trajectory_shape_features(rho2: f64, rho3: f64, rho4: f64) -> Option<(f
 #[derive(Clone, Debug)]
 struct StageGrowthAuditSample {
     prefix_jvp: u64,
+    prefix_work: WorkCounters,
     a34: Option<f64>,
     rho2: Option<f64>,
     rho3: Option<f64>,
@@ -2434,9 +2454,81 @@ struct StageGrowthAuditSample {
     audit_work: WorkCounters,
 }
 
+enum StageGrowthPrefixResolution {
+    Complete(Box<StageGrowthAuditSample>),
+    BudgetExhausted {
+        used_jvp: u64,
+        work: Box<WorkCounters>,
+    },
+}
+
+fn finish_stage_growth_audit(
+    level2: Pexprb54s4Level2Prefix,
+    y: &[f64],
+    physical_n: usize,
+    adaptive: &AdaptiveStepConfig,
+    h_trial: f64,
+) -> CoreResult<StageGrowthAuditSample> {
+    let prefix_report = level2.report().clone();
+    let prefix_jvp = prefix_report.cumulative_work.jvp_vectors;
+    let rho2 = prefix_report
+        .level1_report
+        .early_flow_defect
+        .as_ref()
+        .and_then(|entry| entry.tolerance_scaled_defect_wrms);
+    let rho3 = prefix_report
+        .stage3_flow_defect
+        .as_ref()
+        .and_then(|entry| entry.tolerance_scaled_defect_wrms);
+    let rho4 = prefix_report
+        .stage4_flow_defect
+        .as_ref()
+        .and_then(|entry| entry.tolerance_scaled_defect_wrms);
+    let shape = match (rho2, rho3, rho4) {
+        (Some(r2), Some(r3), Some(r4)) => stage_trajectory_shape_features(r2, r3, r4),
+        _ => None,
+    };
+    let a34 = match (rho3, rho4) {
+        (Some(r3), Some(r4)) if r3.is_finite() && r3 > 0.0 && r4.is_finite() && r4 >= 0.0 => {
+            Some((r4 / r3) / V29_STAGE_GROWTH_BASELINE)
+        }
+        _ => None,
+    };
+    let full = pexprb54s4_fused_step_resume_level2(level2, &ParallelExecution::sequential())?;
+    let physical_y_new = &full.y_new[..physical_n];
+    let error_vector = full
+        .error_estimate
+        .as_ref()
+        .ok_or_else(|| CoreError::InvalidInput("pexprb54s4 omitted embedded error".into()))?;
+    let scale = error_scale(y, physical_y_new, &[adaptive.atol], adaptive.rtol)?;
+    let time_error = wrms(&error_vector[..physical_n], &scale)?;
+    let phi_error = h_trial.abs()
+        * full
+            .fused_phi_reports
+            .iter()
+            .map(|entry| entry.error_estimate)
+            .filter(|value| value.is_finite())
+            .sum::<f64>()
+        / safe_l2(&scale).max(f64::MIN_POSITIVE);
+    Ok(StageGrowthAuditSample {
+        prefix_jvp,
+        prefix_work: prefix_report.cumulative_work,
+        a34,
+        rho2,
+        rho3,
+        rho4,
+        shape,
+        vector_geometry: prefix_report.remainder_vector_geometry,
+        quadratic_drift: prefix_report.quadratic_remainder_drift,
+        total_error: time_error.max(phi_error),
+        audit_work: full.work,
+    })
+}
+
 fn run_rjf_stage_growth_safety_trajectory(
     problem: AtlasProblem,
     profile: G4S5B0Profile,
+    budget_mode: StageGrowthBudgetMode,
 ) -> (
     Vec<G4S5B0RjfAttemptRow>,
     Vec<G4S5B0StepRow>,
@@ -2479,8 +2571,17 @@ fn run_rjf_stage_growth_safety_trajectory(
         let h_trial = h;
 
         let mut safety_row = pending_probe.take().map(|(decision_step, feature_value)| {
-            let reserve_ok = (speculative_jvp + V29_PREFIX_RESERVE_JVP) as f64
-                <= V29_PREFIX_BUDGET_FRACTION * committed_rjf_jvp as f64;
+            let budget_cap_jvp = match budget_mode {
+                StageGrowthBudgetMode::Predictive => {
+                    let reserve_ok = (speculative_jvp + V29_PREFIX_RESERVE_JVP) as f64
+                        <= V29_PREFIX_BUDGET_FRACTION * committed_rjf_jvp as f64;
+                    if reserve_ok { V29_PREFIX_RESERVE_JVP } else { 0 }
+                }
+                StageGrowthBudgetMode::Enforced => {
+                    enforced_prefix_jvp_cap(committed_rjf_jvp, speculative_jvp)
+                }
+            };
+            let reserve_ok = budget_cap_jvp > 0;
             let mut row = G4S5B0StageGrowthSafetyRow {
                 trajectory_id: problem.id.clone(),
                 family: problem.family.into(),
@@ -2497,11 +2598,14 @@ fn run_rjf_stage_growth_safety_trajectory(
                 committed_rjf_jvp_before_target: committed_rjf_jvp,
                 speculative_jvp_before_target: speculative_jvp,
                 budget_reserve_jvp: V29_PREFIX_RESERVE_JVP,
+                budget_cap_jvp,
                 budget_fraction: V29_PREFIX_BUDGET_FRACTION,
                 budget_admitted: reserve_ok,
+                budget_exhausted: false,
                 prefix_succeeded: false,
                 prefix_failure: None,
                 actual_prefix_jvp_vectors: None,
+                prefix_work: None,
                 normalized_stage_growth_a34: None,
                 rho2: None,
                 rho3: None,
@@ -2527,88 +2631,74 @@ fn run_rjf_stage_growth_safety_trajectory(
             };
 
             if reserve_ok {
-                let prefix_and_audit = (|| -> CoreResult<StageGrowthAuditSample> {
+                let prefix_resolution = (|| -> CoreResult<StageGrowthPrefixResolution> {
                     let (shadow_problem, state) = shadow_problem_state(&problem.problem, t, &y)?;
                     let config = phi_config(adaptive.rtol, shadow_problem.dimension + 4);
                     let physical_n = problem.problem.dimension;
-                    let level1 = pexprb54s4_level1_prefix_with_tolerance_scaled_telemetry(
-                        &shadow_problem,
-                        t,
-                        &state,
-                        h_trial,
-                        config,
-                        physical_n,
-                        adaptive.atol,
-                        adaptive.rtol,
-                    )?;
-                    let level2 = pexprb54s4_level2_prefix_resume_level1(
-                        level1,
-                        &ParallelExecution::sequential(),
-                    )?;
-                    let prefix_report = level2.report().clone();
-                    let prefix_jvp = prefix_report.cumulative_work.jvp_vectors;
-                    let rho2 = prefix_report
-                        .level1_report
-                        .early_flow_defect
-                        .as_ref()
-                        .and_then(|entry| entry.tolerance_scaled_defect_wrms);
-                    let rho3 = prefix_report
-                        .stage3_flow_defect
-                        .as_ref()
-                        .and_then(|entry| entry.tolerance_scaled_defect_wrms);
-                    let rho4 = prefix_report
-                        .stage4_flow_defect
-                        .as_ref()
-                        .and_then(|entry| entry.tolerance_scaled_defect_wrms);
-                    let shape = match (rho2, rho3, rho4) {
-                        (Some(r2), Some(r3), Some(r4)) => {
-                            stage_trajectory_shape_features(r2, r3, r4)
+                    match budget_mode {
+                        StageGrowthBudgetMode::Predictive => {
+                            let level1 = pexprb54s4_level1_prefix_with_tolerance_scaled_telemetry(
+                                &shadow_problem,
+                                t,
+                                &state,
+                                h_trial,
+                                config,
+                                physical_n,
+                                adaptive.atol,
+                                adaptive.rtol,
+                            )?;
+                            let level2 = pexprb54s4_level2_prefix_resume_level1(
+                                level1,
+                                &ParallelExecution::sequential(),
+                            )?;
+                            Ok(StageGrowthPrefixResolution::Complete(Box::new(
+                                finish_stage_growth_audit(
+                                    level2,
+                                    &y,
+                                    physical_n,
+                                    &adaptive,
+                                    h_trial,
+                                )?,
+                            )))
                         }
-                        _ => None,
-                    };
-                    let a34 = match (rho3, rho4) {
-                        (Some(r3), Some(r4))
-                            if r3.is_finite() && r3 > 0.0 && r4.is_finite() && r4 >= 0.0 =>
-                        {
-                            Some((r4 / r3) / V29_STAGE_GROWTH_BASELINE)
+                        StageGrowthBudgetMode::Enforced => {
+                            match pexprb54s4_level2_prefix_with_tolerance_scaled_telemetry_jvp_budget(
+                                &shadow_problem,
+                                t,
+                                &state,
+                                h_trial,
+                                config,
+                                physical_n,
+                                adaptive.atol,
+                                adaptive.rtol,
+                                budget_cap_jvp,
+                            )? {
+                                Pexprb54s4BudgetedLevel2PrefixOutcome::Complete(level2) => {
+                                    Ok(StageGrowthPrefixResolution::Complete(Box::new(
+                                        finish_stage_growth_audit(
+                                            *level2,
+                                            &y,
+                                            physical_n,
+                                            &adaptive,
+                                            h_trial,
+                                        )?,
+                                    )))
+                                }
+                                Pexprb54s4BudgetedLevel2PrefixOutcome::BudgetExhausted(report) => {
+                                    Ok(StageGrowthPrefixResolution::BudgetExhausted {
+                                        used_jvp: report.used_jvp_vectors,
+                                        work: Box::new(report.work),
+                                    })
+                                }
+                            }
                         }
-                        _ => None,
-                    };
-                    let full = pexprb54s4_fused_step_resume_level2(
-                        level2,
-                        &ParallelExecution::sequential(),
-                    )?;
-                    let physical_y_new = &full.y_new[..physical_n];
-                    let error_vector = full.error_estimate.as_ref().ok_or_else(|| {
-                        CoreError::InvalidInput("pexprb54s4 omitted embedded error".into())
-                    })?;
-                    let scale = error_scale(&y, physical_y_new, &[adaptive.atol], adaptive.rtol)?;
-                    let time_error = wrms(&error_vector[..physical_n], &scale)?;
-                    let phi_error = h_trial.abs()
-                        * full
-                            .fused_phi_reports
-                            .iter()
-                            .map(|entry| entry.error_estimate)
-                            .filter(|value| value.is_finite())
-                            .sum::<f64>()
-                        / safe_l2(&scale).max(f64::MIN_POSITIVE);
-                    Ok(StageGrowthAuditSample {
-                        prefix_jvp,
-                        a34,
-                        rho2,
-                        rho3,
-                        rho4,
-                        shape,
-                        vector_geometry: prefix_report.remainder_vector_geometry.clone(),
-                        quadratic_drift: prefix_report.quadratic_remainder_drift.clone(),
-                        total_error: time_error.max(phi_error),
-                        audit_work: full.work,
-                    })
+                    }
                 })();
-                match prefix_and_audit {
-                    Ok(sample) => {
+                match prefix_resolution {
+                    Ok(StageGrowthPrefixResolution::Complete(sample)) => {
                         row.prefix_succeeded = true;
                         row.actual_prefix_jvp_vectors = Some(sample.prefix_jvp);
+                        row.prefix_work = Some(sample.prefix_work);
                         row.normalized_stage_growth_a34 = sample.a34;
                         row.rho2 = sample.rho2;
                         row.rho3 = sample.rho3;
@@ -2630,15 +2720,30 @@ fn run_rjf_stage_growth_safety_trajectory(
                             row.quadratic_drift_zeta34 = drift.zeta34;
                             row.quadratic_drift_relative = drift.relative_drift;
                         }
-                        row.budget_breached = sample.prefix_jvp > V29_PREFIX_RESERVE_JVP
-                            || (speculative_jvp + sample.prefix_jvp) as f64
-                                > V29_PREFIX_BUDGET_FRACTION * committed_rjf_jvp as f64;
+                        row.budget_breached = match budget_mode {
+                            StageGrowthBudgetMode::Predictive => {
+                                sample.prefix_jvp > V29_PREFIX_RESERVE_JVP
+                                    || (speculative_jvp + sample.prefix_jvp) as f64
+                                        > V29_PREFIX_BUDGET_FRACTION * committed_rjf_jvp as f64
+                            }
+                            StageGrowthBudgetMode::Enforced => {
+                                sample.prefix_jvp > budget_cap_jvp
+                            }
+                        };
                         speculative_jvp += sample.prefix_jvp;
                         row.audit_full_e_completed = true;
                         row.audit_full_e_total_error = Some(sample.total_error);
                         row.audit_full_e_locally_admissible =
                             sample.total_error.is_finite() && sample.total_error <= 1.0;
                         row.audit_full_e_work = Some(sample.audit_work);
+                    }
+                    Ok(StageGrowthPrefixResolution::BudgetExhausted { used_jvp, work }) => {
+                        row.budget_exhausted = true;
+                        row.prefix_failure = Some("budget-exhausted".into());
+                        row.actual_prefix_jvp_vectors = Some(used_jvp);
+                        row.prefix_work = Some(*work);
+                        row.budget_breached = used_jvp > budget_cap_jvp;
+                        speculative_jvp += used_jvp;
                     }
                     Err(error) => {
                         row.prefix_failure = Some(error.to_string());
@@ -2823,7 +2928,11 @@ pub fn run_g4_s5b0_stage_growth_safety_audit_family(
             continue;
         }
         let (mut attempts, mut accepted, mut local_rows, summary) =
-            run_rjf_stage_growth_safety_trajectory(problem, profile);
+            run_rjf_stage_growth_safety_trajectory(
+                problem,
+                profile,
+                StageGrowthBudgetMode::Predictive,
+            );
         attempt_rows.append(&mut attempts);
         accepted_rows.append(&mut accepted);
         rows.append(&mut local_rows);
@@ -2851,6 +2960,7 @@ pub fn run_g4_s5b0_stage_growth_safety_audit_family(
         runtime_full_e_continuations: 0,
         audit_full_e_continuations,
         budget_breaches,
+        budget_exhaustions: rows.iter().filter(|row| row.budget_exhausted).count(),
         attempt_rows,
         accepted_rows,
         rows,
@@ -2860,6 +2970,72 @@ pub fn run_g4_s5b0_stage_growth_safety_audit_family(
             "Level1+2 prefix work is purchased only under the predeclared JVP token reserve; budget-denied events abstain to R-JF.".into(),
             "Full E-K endpoint work is explicit offline audit labeling only and never mutates the R-JF state or controller.".into(),
             "The runtime policy performs zero full-E continuations and no active switching.".into(),
+            "N=2048 remains sealed.".into(),
+        ],
+    })
+}
+
+pub fn run_g4_s5b0_enforced_prefix_budget_family(
+    profile: G4S5B0Profile,
+    family: G4S5B0Family,
+) -> CoreResult<G4S5B0StageGrowthSafetyReport> {
+    if matches!(profile, G4S5B0Profile::Canonical) {
+        return Err(CoreError::InvalidInput(
+            "v3.5 enforced prefix budget requires an explicit single-dimension profile".into(),
+        ));
+    }
+    let mut attempt_rows = Vec::new();
+    let mut accepted_rows = Vec::new();
+    let mut rows = Vec::new();
+    let mut trajectories = Vec::new();
+    for problem in build_problems(profile)? {
+        if problem.family != family.as_str() {
+            continue;
+        }
+        let (mut attempts, mut accepted, mut local_rows, summary) =
+            run_rjf_stage_growth_safety_trajectory(
+                problem,
+                profile,
+                StageGrowthBudgetMode::Enforced,
+            );
+        attempt_rows.append(&mut attempts);
+        accepted_rows.append(&mut accepted);
+        rows.append(&mut local_rows);
+        trajectories.push(summary);
+    }
+    let budget_breaches = rows.iter().filter(|row| row.budget_breached).count();
+    let budget_exhaustions = rows.iter().filter(|row| row.budget_exhausted).count();
+    let audit_full_e_continuations = rows.iter().filter(|row| row.audit_full_e_completed).count();
+    let status = if trajectories.iter().all(|row| row.success)
+        && budget_breaches == 0
+        && rows
+            .iter()
+            .filter(|row| row.budget_admitted)
+            .all(|row| row.prefix_succeeded || row.budget_exhausted)
+    {
+        "complete"
+    } else {
+        "complete-with-failures"
+    };
+    Ok(G4S5B0StageGrowthSafetyReport {
+        schema: "g4-s5b0-enforced-prefix-budget-v1",
+        status,
+        profile: profile.as_str(),
+        switching_active: false,
+        committed_method: "protected-sequential-matrix-free-rodas5p",
+        runtime_full_e_continuations: 0,
+        audit_full_e_continuations,
+        budget_breaches,
+        budget_exhaustions,
+        attempt_rows,
+        accepted_rows,
+        rows,
+        trajectories,
+        limitations: vec![
+            "The k=3 event gate and zeta34 threshold are frozen upstream; v3.5 changes only speculative-prefix budget semantics.".into(),
+            "Each event uses B_k=min(80,floor(0.25*committed_R_JVP-speculative_JVP)); the prefix guard refuses JVP B_k+1 before operator application.".into(),
+            "Budget exhaustion is a charged read-only abstention: no completed zeta34 witness and no full-E endpoint audit are emitted for that event.".into(),
+            "The committed R-JF trajectory/controller remains authoritative; runtime full-E continuation and active switching are zero.".into(),
             "N=2048 remains sealed.".into(),
         ],
     })

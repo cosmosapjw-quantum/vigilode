@@ -1,4 +1,7 @@
-use std::sync::Arc;
+use std::sync::{
+    Arc,
+    atomic::{AtomicU64, Ordering},
+};
 
 use rodas5p_core::{
     ClosureOperator, CoreError, CoreResult, DenseMatrix, LinearOperator, WorkCounters,
@@ -527,6 +530,109 @@ impl Pexprb54s4Level2Prefix {
     pub fn report(&self) -> &Pexprb54s4Level2PrefixReport {
         &self.report
     }
+}
+
+const PEXPRB_PREFIX_JVP_BUDGET_EXHAUSTED: &str =
+    "pexprb54s4 speculative prefix JVP budget exhausted";
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct Pexprb54s4BudgetExhaustedPrefixReport {
+    pub jvp_cap: u64,
+    pub used_jvp_vectors: u64,
+    pub work: WorkCounters,
+}
+
+pub enum Pexprb54s4BudgetedLevel2PrefixOutcome {
+    Complete(Box<Pexprb54s4Level2Prefix>),
+    BudgetExhausted(Box<Pexprb54s4BudgetExhaustedPrefixReport>),
+}
+
+#[derive(Debug)]
+struct Pexprb54s4JvpBudget {
+    limit: u64,
+    used: AtomicU64,
+}
+
+impl Pexprb54s4JvpBudget {
+    fn new(limit: u64) -> Self {
+        Self {
+            limit,
+            used: AtomicU64::new(0),
+        }
+    }
+
+    fn used(&self) -> u64 {
+        self.used.load(Ordering::Relaxed)
+    }
+
+    fn reserve(&self) -> CoreResult<()> {
+        let mut current = self.used.load(Ordering::Relaxed);
+        loop {
+            if current >= self.limit {
+                return Err(CoreError::LinearSolve(
+                    PEXPRB_PREFIX_JVP_BUDGET_EXHAUSTED.into(),
+                ));
+            }
+            match self.used.compare_exchange_weak(
+                current,
+                current + 1,
+                Ordering::Relaxed,
+                Ordering::Relaxed,
+            ) {
+                Ok(_) => return Ok(()),
+                Err(next) => current = next,
+            }
+        }
+    }
+}
+
+struct Pexprb54s4BudgetedOperator {
+    inner: Arc<dyn LinearOperator>,
+    budget: Arc<Pexprb54s4JvpBudget>,
+}
+
+impl Pexprb54s4BudgetedOperator {
+    fn new(inner: Arc<dyn LinearOperator>, budget: Arc<Pexprb54s4JvpBudget>) -> Self {
+        Self { inner, budget }
+    }
+}
+
+impl LinearOperator for Pexprb54s4BudgetedOperator {
+    fn dimension(&self) -> usize {
+        self.inner.dimension()
+    }
+
+    fn apply(&self, x: &[f64], y: &mut [f64]) -> CoreResult<()> {
+        self.budget.reserve()?;
+        self.inner.apply(x, y)
+    }
+
+    fn explicit(&self) -> Option<&DenseMatrix> {
+        self.inner.explicit()
+    }
+
+    fn token(&self) -> u64 {
+        self.inner.token()
+    }
+}
+
+fn is_pexprb_prefix_budget_exhaustion(error: &CoreError) -> bool {
+    matches!(error, CoreError::LinearSolve(message) if message.contains(PEXPRB_PREFIX_JVP_BUDGET_EXHAUSTED))
+}
+
+fn budget_exhausted_outcome(
+    cap: u64,
+    budget: &Pexprb54s4JvpBudget,
+    work: WorkCounters,
+) -> Pexprb54s4BudgetedLevel2PrefixOutcome {
+    debug_assert_eq!(budget.used(), work.jvp_vectors);
+    Pexprb54s4BudgetedLevel2PrefixOutcome::BudgetExhausted(Box::new(
+        Pexprb54s4BudgetExhaustedPrefixReport {
+            jvp_cap: cap,
+            used_jvp_vectors: budget.used(),
+            work,
+        },
+    ))
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
@@ -2250,6 +2356,221 @@ pub fn pexprb54s4_level1_prefix_with_tolerance_scaled_telemetry(
         },
         Some(EarlyFlowDefectToleranceScale { atol, rtol }),
     )
+}
+
+#[allow(clippy::too_many_arguments)]
+pub fn pexprb54s4_level2_prefix_with_tolerance_scaled_telemetry_jvp_budget(
+    problem: &OdeProblem,
+    t: f64,
+    y: &[f64],
+    h: f64,
+    config: FusedPhiKrylovConfig,
+    norm_component_count: usize,
+    atol: f64,
+    rtol: f64,
+    jvp_cap: u64,
+) -> CoreResult<Pexprb54s4BudgetedLevel2PrefixOutcome> {
+    validate_problem(problem, y)?;
+    if norm_component_count == 0 || norm_component_count > y.len() {
+        return Err(CoreError::InvalidInput(format!(
+            "early-flow-defect norm component count {norm_component_count} is outside 1..={}",
+            y.len()
+        )));
+    }
+
+    let telemetry_mode = EarlyFlowDefectTelemetryMode::ReadOnly {
+        norm_component_count,
+    };
+    let tolerance_scale = Some(EarlyFlowDefectToleranceScale { atol, rtol });
+    let tableau = pexprb54s4_tableau();
+    let mut level1_work = WorkCounters::default();
+    let f0 = problem.eval_rhs(t, y, &mut level1_work)?;
+    let inner_operator = problem.linearize_matrix_free(t, y)?;
+    let budget = Arc::new(Pexprb54s4JvpBudget::new(jvp_cap));
+    let guarded_operator = Arc::new(Pexprb54s4BudgetedOperator::new(
+        inner_operator.clone(),
+        Arc::clone(&budget),
+    )) as Arc<dyn LinearOperator>;
+
+    let u2_action = match fused_phi_linear_combination(
+        guarded_operator.clone(),
+        tableau.c2 * h,
+        &[FusedPhiTerm {
+            coefficient: tableau.c2,
+            phi_index: 1,
+            vector: &f0,
+        }],
+        config,
+        &mut level1_work,
+    ) {
+        Err(error) if is_pexprb_prefix_budget_exhaustion(&error) => {
+            return Ok(budget_exhausted_outcome(jvp_cap, &budget, level1_work));
+        }
+        Err(error) => return Err(error),
+        Ok(report) => require_fused(report)?,
+    };
+    let u2 = add_scaled_state(y, h, &u2_action.value);
+    let d2 = match nonlinear_remainder(
+        problem,
+        guarded_operator.as_ref(),
+        t,
+        y,
+        &f0,
+        &u2,
+        &mut level1_work,
+    ) {
+        Err(error) if is_pexprb_prefix_budget_exhaustion(&error) => {
+            return Ok(budget_exhausted_outcome(jvp_cap, &budget, level1_work));
+        }
+        Err(error) => return Err(error),
+        Ok(remainder) => remainder,
+    };
+    let early_flow_defect =
+        early_flow_defect_telemetry(telemetry_mode, tableau.c2, h, y, &u2, &d2, tolerance_scale)?;
+    let level1_report = Pexprb54s4Level1PrefixReport {
+        method: "pexprb54s4-fused-level1".into(),
+        t,
+        h,
+        logical_critical_depth: 1,
+        fused_phi_reports: vec![u2_action.clone()],
+        work: level1_work,
+        early_flow_defect,
+    };
+
+    let mut stages = Vec::with_capacity(2);
+    let mut level2_incremental_work = WorkCounters::default();
+    for id in [3usize, 4usize] {
+        let mut local = WorkCounters::default();
+        let (c, a) = if id == 3 {
+            (tableau.c3, tableau.a32_phi3)
+        } else {
+            (tableau.c4, tableau.a42_phi3)
+        };
+        let action = match fused_phi_linear_combination(
+            guarded_operator.clone(),
+            c * h,
+            &[
+                FusedPhiTerm {
+                    coefficient: c,
+                    phi_index: 1,
+                    vector: &f0,
+                },
+                FusedPhiTerm {
+                    coefficient: a,
+                    phi_index: 3,
+                    vector: &d2,
+                },
+            ],
+            config,
+            &mut local,
+        ) {
+            Err(error) if is_pexprb_prefix_budget_exhaustion(&error) => {
+                level2_incremental_work.accumulate(local);
+                let mut spent = level1_report.work;
+                spent.accumulate(level2_incremental_work);
+                return Ok(budget_exhausted_outcome(jvp_cap, &budget, spent));
+            }
+            Err(error) => return Err(error),
+            Ok(report) => require_fused(report)?,
+        };
+        let stage = add_scaled_state(y, h, &action.value);
+        let remainder = match nonlinear_remainder(
+            problem,
+            guarded_operator.as_ref(),
+            t,
+            y,
+            &f0,
+            &stage,
+            &mut local,
+        ) {
+            Err(error) if is_pexprb_prefix_budget_exhaustion(&error) => {
+                level2_incremental_work.accumulate(local);
+                let mut spent = level1_report.work;
+                spent.accumulate(level2_incremental_work);
+                return Ok(budget_exhausted_outcome(jvp_cap, &budget, spent));
+            }
+            Err(error) => return Err(error),
+            Ok(remainder) => remainder,
+        };
+        level2_incremental_work.accumulate(local);
+        stages.push((action, stage, remainder));
+    }
+
+    let mut cumulative_work = level1_report.work;
+    cumulative_work.accumulate(level2_incremental_work);
+    debug_assert_eq!(budget.used(), cumulative_work.jvp_vectors);
+
+    let d3 = stages[0].2.clone();
+    let d4 = stages[1].2.clone();
+    let stage3_flow_defect = early_flow_defect_telemetry(
+        telemetry_mode,
+        tableau.c3,
+        h,
+        y,
+        &stages[0].1,
+        &d3,
+        tolerance_scale,
+    )?;
+    let stage4_flow_defect = early_flow_defect_telemetry(
+        telemetry_mode,
+        tableau.c4,
+        h,
+        y,
+        &stages[1].1,
+        &d4,
+        tolerance_scale,
+    )?;
+    let remainder_vector_geometry = Some(pexprb54s4_remainder_vector_geometry(
+        &d2,
+        &d3,
+        &d4,
+        norm_component_count,
+    )?);
+    let quadratic_remainder_drift = Some(pexprb54s4_quadratic_remainder_drift(
+        y,
+        &u2,
+        &stages[0].1,
+        &stages[1].1,
+        &d2,
+        &d3,
+        &d4,
+        h,
+        norm_component_count,
+        atol,
+        rtol,
+    )?);
+    let u3_action = stages[0].0.clone();
+    let u4_action = stages[1].0.clone();
+    let report = Pexprb54s4Level2PrefixReport {
+        method: "pexprb54s4-fused-level2".into(),
+        t,
+        h,
+        logical_critical_depth: 2,
+        level1_report,
+        level2_fused_phi_reports: vec![u3_action.clone(), u4_action.clone()],
+        level2_incremental_work,
+        cumulative_work,
+        stage3_flow_defect,
+        stage4_flow_defect,
+        remainder_vector_geometry,
+        quadratic_remainder_drift,
+    };
+    Ok(Pexprb54s4BudgetedLevel2PrefixOutcome::Complete(Box::new(
+        Pexprb54s4Level2Prefix {
+            y: y.to_vec(),
+            h,
+            config,
+            f0,
+            operator: inner_operator,
+            d2,
+            d3,
+            d4,
+            u2_action,
+            u3_action,
+            u4_action,
+            report,
+        },
+    )))
 }
 
 pub fn pexprb54s4_level2_prefix_resume_level1(

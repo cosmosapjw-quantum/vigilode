@@ -811,6 +811,49 @@ fn generic_policy_redesign_level2_prefix_command_is_registered() {
 }
 
 #[test]
+fn enforced_prefix_budget_cli_is_registered() {
+    let output = std::process::Command::new(env!("CARGO_BIN_EXE_rodas5p"))
+        .args(["generic-enforced-prefix-budget", "--help"])
+        .output()
+        .unwrap();
+    assert!(output.status.success());
+    let stdout = String::from_utf8(output.stdout).unwrap();
+    assert!(stdout.contains("--profile"));
+    assert!(stdout.contains("--family"));
+    assert!(stdout.contains("--output"));
+    assert!(stdout.contains("calibration96"));
+    assert!(stdout.contains("calibration192"));
+    assert!(stdout.contains("calibration256"));
+    assert!(stdout.contains("holdout384"));
+}
+
+#[test]
+fn enforced_prefix_budget_cli_emits_transactional_fields() {
+    let binary = env!("CARGO_BIN_EXE_rodas5p");
+    let output = temp_path("enforced-prefix-budget.json");
+    let status = Command::new(binary)
+        .args([
+            "generic-enforced-prefix-budget",
+            "--profile",
+            "calibration96",
+            "--family",
+            "robertson",
+            "--output",
+        ])
+        .arg(&output)
+        .status()
+        .unwrap();
+    assert!(status.success());
+    let report: serde_json::Value = serde_json::from_slice(&fs::read(&output).unwrap()).unwrap();
+    assert_eq!(report["schema"], "g4-s5b0-enforced-prefix-budget-v1");
+    assert_eq!(report["switching_active"], false);
+    assert_eq!(report["runtime_full_e_continuations"], 0);
+    assert_eq!(report["budget_breaches"], 0);
+    assert!(report.get("budget_exhaustions").is_some());
+    let _ = fs::remove_file(output);
+}
+
+#[test]
 fn stage_growth_safety_cli_exposes_independent_calibration192_profile() {
     let output = std::process::Command::new(env!("CARGO_BIN_EXE_rodas5p"))
         .args(["generic-stage-growth-safety-audit", "--help"])
