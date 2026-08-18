@@ -1,0 +1,58 @@
+{
+  "schema": "gvjf-stage-trajectory-geometry-discovery-contract-v1",
+  "status": "RECONSTRUCTED_PRE_OUTPUT_CONTRACT",
+  "parent": {
+    "branch": "generic-stage-growth-safety-calibration-v2.9",
+    "head": "e9ba56c45b79bea26f590e44324305320d9fea7d",
+    "tree": "c0eb9c5a2dda9d5c7d9196c24e02d2e36e103875"
+  },
+  "objective": "Determine whether low-complexity shape information across rho2,rho3,rho4 contains safety information that the rejected scalar A34 rule discarded.",
+  "stage_fractions": {"c2": 0.25, "c3": 0.5, "c4": 0.9},
+  "predeclared_features": {
+    "rho2": "tolerance-scaled nonlinear defect at c2=1/4",
+    "rho3": "tolerance-scaled nonlinear defect at c3=1/2",
+    "rho4": "tolerance-scaled nonlinear defect at c4=9/10",
+    "s23": "log(rho3/rho2)/log(c3/c2)",
+    "s34": "log(rho4/rho3)/log(c4/c3)",
+    "kappa234": "s34-s23"
+  },
+  "feature_validity": [
+    "rho2,rho3,rho4 must all be finite and strictly positive for log-slope/curvature features",
+    "invalid shape features remain null rather than imputed"
+  ],
+  "audit_covariates_not_authority": [
+    "target R-JF error norm", "h", "family", "dimension", "prefix work"
+  ],
+  "data_roles": {
+    "discovery_replay": [
+      {"dimension": 96, "atol": 3e-8, "rtol": 3e-6},
+      {"dimension": 256, "atol": 3e-7, "rtol": 3e-5}
+    ],
+    "future_independent_calibration_predeclared": {"dimension": 192, "atol": 1.5e-7, "rtol": 1.5e-5},
+    "sealed_final_safety_holdout": {"dimension": 384, "atol": 7e-8, "rtol": 7e-6},
+    "sealed_scaling_holdout": {"dimension": 2048}
+  },
+  "discovery_rules": [
+    "Do not choose a numerical safety threshold on N=96/256 discovery replay.",
+    "Do not use a family whitelist/blacklist as a safety rule.",
+    "Candidate survivors must be low-complexity dimensionless witnesses derived from the predeclared feature family.",
+    "Report leave-one-family-out and 96<->256 cross-dimension ranking/separation checks.",
+    "High-capacity classifiers are forbidden."
+  ],
+  "kill_questions": [
+    "Does kappa234 materially rank the five v2.9 unsafe events?",
+    "Does any signal survive leave-one-family-out rather than encode one family identity?",
+    "Does the direction/ranking survive N=96 to N=256 and N=256 to N=96?",
+    "Does richer telemetry add zero RHS/JVP/phi/Jacobian/Newton work relative to the existing v2.9 audit path?"
+  ],
+  "forbidden": [
+    "N=192 execution during feature discovery",
+    "N=384 execution",
+    "N=2048 execution",
+    "active switching",
+    "runtime E-K activation",
+    "forced-switch order tests",
+    "post-hoc numeric threshold selection on discovery data"
+  ],
+  "promotion": "Only a low-complexity witness form that survives discovery robustness checks may open the separately predeclared N=192 calibration node."
+}
