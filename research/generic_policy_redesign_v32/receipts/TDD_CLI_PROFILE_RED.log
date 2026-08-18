@@ -1,0 +1,196 @@
+   Compiling proc-macro2 v1.0.107
+   Compiling quote v1.0.47
+   Compiling version_check v0.9.5
+   Compiling unicode-ident v1.0.24
+   Compiling autocfg v1.5.1
+   Compiling libm v0.2.16
+   Compiling cfg-if v1.0.4
+   Compiling bytemuck v1.25.2
+   Compiling num-traits v0.2.19
+   Compiling nano-gemm-codegen v0.2.1
+   Compiling paste v1.0.15
+   Compiling bitflags v2.13.1
+   Compiling raw-cpuid v11.6.0
+   Compiling pulp v0.22.3
+   Compiling libc v0.2.189
+   Compiling reborrow v0.5.5
+   Compiling pulp-wasm-simd-flag v0.1.1
+   Compiling dyn-stack-macros v0.1.3
+   Compiling num-complex v0.4.6
+   Compiling dyn-stack v0.13.2
+   Compiling once_cell v1.21.4
+   Compiling seq-macro v0.3.6
+   Compiling syn v1.0.109
+   Compiling syn v3.0.3
+   Compiling generic-array v0.14.7
+   Compiling nano-gemm-core v0.2.1
+   Compiling typenum v1.20.1
+   Compiling nano-gemm-f64 v0.2.1
+   Compiling nano-gemm-c64 v0.2.1
+   Compiling nano-gemm-f32 v0.2.1
+   Compiling nano-gemm-c32 v0.2.1
+   Compiling syn v2.0.119
+   Compiling gemm-common v0.19.0
+   Compiling defer v0.2.1
+   Compiling crossbeam-utils v0.8.22
+   Compiling interpol v0.2.1
+   Compiling crossbeam-epoch v0.9.20
+   Compiling memchr v2.8.3
+   Compiling zmij v1.0.23
+   Compiling private-gemm-x86 v0.1.20
+   Compiling equator-macro v0.2.1
+   Compiling equator v0.2.2
+   Compiling getrandom v0.3.4
+   Compiling gemm-f64 v0.19.0
+   Compiling gemm-c32 v0.19.0
+   Compiling gemm-f32 v0.19.0
+   Compiling gemm-c64 v0.19.0
+   Compiling qd v0.8.0
+   Compiling block-buffer v0.10.4
+   Compiling crypto-common v0.1.7
+   Compiling num_cpus v1.17.0
+   Compiling thiserror v2.0.19
+   Compiling equator-macro v0.6.0
+   Compiling itoa v1.0.18
+   Compiling serde_json v1.0.151
+   Compiling generativity v1.2.1
+   Compiling crossbeam-deque v0.8.7
+   Compiling serde v1.0.229
+   Compiling faer-traits v0.24.0
+   Compiling equator v0.6.0
+   Compiling digest v0.10.7
+   Compiling gemm v0.19.0
+   Compiling nano-gemm v0.2.2
+   Compiling rand_core v0.9.5
+   Compiling thiserror-impl v2.0.19
+   Compiling serde_derive v1.0.229
+   Compiling rayon-core v1.13.0
+   Compiling cpufeatures v0.2.17
+   Compiling sha2 v0.10.9
+   Compiling faer v0.24.4
+   Compiling hex v0.4.3
+   Compiling rand_chacha v0.9.0
+   Compiling either v1.17.0
+   Compiling rayon v1.12.0
+   Compiling rand v0.9.5
+   Compiling csv-core v0.1.13
+   Compiling clap_derive v4.6.4
+   Compiling rand_distr v0.5.1
+   Compiling csv v1.4.0
+   Compiling rand_pcg v0.9.0
+   Compiling clap v4.6.6
+   Compiling faer v0.24.4
+   Compiling rodas5p-core v0.1.0 (/mnt/data/GVJF_V32_WORK_20260818/repo/crates/rodas5p-core)
+   Compiling rodas5p-krylov v0.1.0 (/mnt/data/GVJF_V32_WORK_20260818/repo/crates/rodas5p-krylov)
+   Compiling rodas5p-integrators v0.1.0 (/mnt/data/GVJF_V32_WORK_20260818/repo/crates/rodas5p-integrators)
+   Compiling rodas5p-fair-ab v0.1.0 (/mnt/data/GVJF_V32_WORK_20260818/repo/crates/rodas5p-fair-ab)
+   Compiling rodas5p-cli v0.1.0 (/mnt/data/GVJF_V32_WORK_20260818/repo/crates/rodas5p-cli)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 21.61s
+     Running tests/cli_contracts.rs (target/debug/deps/cli_contracts-4023c0244c1fbfc9)
+
+running 1 test
+test generic_policy_redesign_level2_prefix_command_is_registered ... FAILED
+
+failures:
+
+---- generic_policy_redesign_level2_prefix_command_is_registered stdout ----
+
+thread 'generic_policy_redesign_level2_prefix_command_is_registered' (45169) panicked at crates/rodas5p-cli/tests/cli_contracts.rs:809:5:
+assertion failed: stdout.contains("discovery96")
+stack backtrace:
+   0:     0x55de94322132 - std::backtrace_rs::backtrace::libunwind::trace::h650f3484750cac6f
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/../../backtrace/src/backtrace/libunwind.rs:117:9
+   1:     0x55de94322132 - std::backtrace_rs::backtrace::trace_unsynchronized::hee951f78e969ac04
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/../../backtrace/src/backtrace/mod.rs:66:14
+   2:     0x55de94322132 - std::sys::backtrace::_print_fmt::hb210b023f6e87be7
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/sys/backtrace.rs:74:9
+   3:     0x55de94322132 - <std::sys::backtrace::BacktraceLock::print::DisplayBacktrace as core::fmt::Display>::fmt::hdadc7c28d26d7ce3
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/sys/backtrace.rs:44:26
+   4:     0x55de94332e2a - core::fmt::rt::Argument::fmt::hca43ba1468fa0a13
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/fmt/rt.rs:152:76
+   5:     0x55de94332e2a - core::fmt::write::h469843d235cc4241
+   6:     0x55de942f0b86 - std::io::default_write_fmt::hd7a1b719f1eee29b
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/io/mod.rs:639:11
+   7:     0x55de942f0b86 - std::io::Write::write_fmt::h86cdd20e46f95ef0
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/io/mod.rs:1994:13
+   8:     0x55de94301599 - std::sys::backtrace::BacktraceLock::print::hb91bd19c9b07a6b2
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/sys/backtrace.rs:47:9
+   9:     0x55de94301599 - std::panicking::default_hook::{{closure}}::hd9d92b9a46805102
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/panicking.rs:292:27
+  10:     0x55de94301431 - std::panicking::default_hook::hedb2be0819bbe276
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/panicking.rs:316:9
+  11:     0x55de942c4efe - <alloc::boxed::Box<F,A> as core::ops::function::Fn<Args>>::call::he80a7da40294963b
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/alloc/src/boxed.rs:2220:9
+  12:     0x55de942c4efe - test::test_main_with_exit_callback::{{closure}}::h816111d0ddcced19
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/test/src/lib.rs:145:21
+  13:     0x55de94301812 - <alloc::boxed::Box<F,A> as core::ops::function::Fn<Args>>::call::h575effa6ce691fba
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/alloc/src/boxed.rs:2220:9
+  14:     0x55de94301812 - std::panicking::panic_with_hook::h0fc23abecf35c6bd
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/panicking.rs:833:13
+  15:     0x55de9430168a - std::panicking::panic_handler::{{closure}}::ha111c1a3ccf85d19
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/panicking.rs:691:13
+  16:     0x55de942fca09 - std::sys::backtrace::__rust_end_short_backtrace::h41d63216e1ba5fa4
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/sys/backtrace.rs:182:18
+  17:     0x55de942e504d - __rustc[16f1505adc47261a]::rust_begin_unwind
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/panicking.rs:689:5
+  18:     0x55de9433a5bc - core::panicking::panic_fmt::hc13412975f563dde
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/panicking.rs:80:14
+  19:     0x55de9433a582 - core::panicking::panic::h8bbbe005ba322b34
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/panicking.rs:150:5
+  20:     0x55de942185a0 - cli_contracts::generic_policy_redesign_level2_prefix_command_is_registered::h2cc0e3a6eb509b80
+                               at /mnt/data/GVJF_V32_WORK_20260818/repo/crates/rodas5p-cli/tests/cli_contracts.rs:809:5
+  21:     0x55de94251e17 - cli_contracts::generic_policy_redesign_level2_prefix_command_is_registered::{{closure}}::h71ef86ea9fc79fd4
+                               at /mnt/data/GVJF_V32_WORK_20260818/repo/crates/rodas5p-cli/tests/cli_contracts.rs:798:65
+  22:     0x55de9422a676 - core::ops::function::FnOnce::call_once::ha8b2a307efe882ec
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/ops/function.rs:250:5
+  23:     0x55de942c4cfb - core::ops::function::FnOnce::call_once::hcedf29067db45234
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/ops/function.rs:250:5
+  24:     0x55de942c4cfb - test::__rust_begin_short_backtrace::h253a2097187731c8
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/test/src/lib.rs:663:18
+  25:     0x55de942d86ca - test::run_test_in_process::{{closure}}::h9f29dfec2aca52f7
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/test/src/lib.rs:686:74
+  26:     0x55de942d86ca - <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once::hd73326fdd719e811
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/panic/unwind_safe.rs:274:9
+  27:     0x55de942d86ca - std::panicking::catch_unwind::do_call::h4acd66bf04832c2e
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/panicking.rs:581:40
+  28:     0x55de942d86ca - std::panicking::catch_unwind::h145e182474d2aec9
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/panicking.rs:544:19
+  29:     0x55de942d86ca - std::panic::catch_unwind::h13b3eeaad06e07e2
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/panic.rs:359:14
+  30:     0x55de942d86ca - test::run_test_in_process::h8630a98bbeca471b
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/test/src/lib.rs:686:27
+  31:     0x55de942d86ca - test::run_test::{{closure}}::h1a5d6d0603e1925c
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/test/src/lib.rs:607:43
+  32:     0x55de942b2ae4 - test::run_test::{{closure}}::h179c37d8042186f7
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/test/src/lib.rs:637:41
+  33:     0x55de942b2ae4 - std::sys::backtrace::__rust_begin_short_backtrace::hb67b3f617d02f8cc
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/sys/backtrace.rs:166:18
+  34:     0x55de942b6482 - std::thread::lifecycle::spawn_unchecked::{{closure}}::{{closure}}::h97f549af76bb89d9
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/thread/lifecycle.rs:91:13
+  35:     0x55de942b6482 - <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once::h572411d6447c3318
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/panic/unwind_safe.rs:274:9
+  36:     0x55de942b6482 - std::panicking::catch_unwind::do_call::h561e21b3bae62d2d
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/panicking.rs:581:40
+  37:     0x55de942b6482 - std::panicking::catch_unwind::hb9c2999cbf1df339
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/panicking.rs:544:19
+  38:     0x55de942b6482 - std::panic::catch_unwind::h831cfbf01bfc7230
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/panic.rs:359:14
+  39:     0x55de942b6482 - std::thread::lifecycle::spawn_unchecked::{{closure}}::hd4fd692d2bb5f73a
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/thread/lifecycle.rs:89:26
+  40:     0x55de942b6482 - core::ops::function::FnOnce::call_once{{vtable.shim}}::h920ca148ba3af64d
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/ops/function.rs:250:5
+  41:     0x55de942f7b0f - <alloc::boxed::Box<F,A> as core::ops::function::FnOnce<Args>>::call_once::hf477931d93d2e366
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/alloc/src/boxed.rs:2206:9
+  42:     0x55de942f7b0f - std::sys::thread::unix::Thread::new::thread_start::h96f969bf98c6e59d
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/sys/thread/unix.rs:130:17
+  43:     0x7ff6a86c5b7b - <unknown>
+  44:     0x7ff6a87437f8 - <unknown>
+  45:                0x0 - <unknown>
+
+
+failures:
+    generic_policy_redesign_level2_prefix_command_is_registered
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 21 filtered out; finished in 0.10s
+
+error: test failed, to rerun pass `-p rodas5p-cli --test cli_contracts`

@@ -176,7 +176,7 @@ enum Command {
     /// Measure actual pexprb54s4 dependency levels one and two without endpoint completion.
     GenericPolicyRedesignLevel2Prefix {
         #[arg(long, value_enum)]
-        profile: CliPolicyRedesignProfile,
+        profile: CliLevel2PrefixProfile,
         #[arg(long, value_enum)]
         family: CliPolicyRedesignFamily,
         #[arg(long, value_enum)]
@@ -331,6 +331,25 @@ impl From<CliPolicyRedesignPrefixPolicy> for G4S5B0PrefixProbePolicy {
 enum CliPolicyRedesignProfile {
     Calibration,
     Holdout,
+}
+
+#[derive(Clone, Copy, Debug, ValueEnum)]
+enum CliLevel2PrefixProfile {
+    Calibration,
+    Holdout,
+    Discovery96,
+    Discovery256,
+}
+
+impl From<CliLevel2PrefixProfile> for G4S5B0Profile {
+    fn from(value: CliLevel2PrefixProfile) -> Self {
+        match value {
+            CliLevel2PrefixProfile::Calibration => Self::Calibration128,
+            CliLevel2PrefixProfile::Holdout => Self::Holdout512,
+            CliLevel2PrefixProfile::Discovery96 => Self::StageGrowthCalibration96,
+            CliLevel2PrefixProfile::Discovery256 => Self::StageGrowthCalibration256,
+        }
+    }
 }
 
 #[derive(Clone, Copy, Debug, ValueEnum)]
@@ -1302,12 +1321,11 @@ fn main() -> Result<()> {
             policy,
             output,
         } => {
-            let profile = match profile {
-                CliPolicyRedesignProfile::Calibration => G4S5B0Profile::Calibration128,
-                CliPolicyRedesignProfile::Holdout => G4S5B0Profile::Holdout512,
-            };
-            let report =
-                run_g4_s5b0_actual_level2_prefix_family(profile, family.into(), policy.into())?;
+            let report = run_g4_s5b0_actual_level2_prefix_family(
+                profile.into(),
+                family.into(),
+                policy.into(),
+            )?;
             write_json(&output, &report)?;
         }
         Command::GenericStageGrowthSafetyAudit {

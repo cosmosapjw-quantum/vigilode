@@ -806,6 +806,8 @@ fn generic_policy_redesign_level2_prefix_command_is_registered() {
     assert!(stdout.contains("--family"));
     assert!(stdout.contains("--policy"));
     assert!(stdout.contains("--output"));
+    assert!(stdout.contains("discovery96"));
+    assert!(stdout.contains("discovery256"));
 }
 
 #[test]
