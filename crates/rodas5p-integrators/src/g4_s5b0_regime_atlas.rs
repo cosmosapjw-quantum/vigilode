@@ -23,6 +23,7 @@ pub enum G4S5B0Profile {
     Calibration128,
     Holdout512,
     StageGrowthCalibration96,
+    StageGrowthCalibration192,
     StageGrowthCalibration256,
     StageGrowthHoldout384,
 }
@@ -68,6 +69,7 @@ impl G4S5B0Profile {
             Self::Calibration128 => "calibration-128",
             Self::Holdout512 => "holdout-512",
             Self::StageGrowthCalibration96 => "stage-growth-calibration-96",
+            Self::StageGrowthCalibration192 => "stage-growth-calibration-192",
             Self::StageGrowthCalibration256 => "stage-growth-calibration-256",
             Self::StageGrowthHoldout384 => "stage-growth-holdout-384",
         }
@@ -80,6 +82,7 @@ impl G4S5B0Profile {
             Self::Calibration128 => &[128],
             Self::Holdout512 => &[512],
             Self::StageGrowthCalibration96 => &[96],
+            Self::StageGrowthCalibration192 => &[192],
             Self::StageGrowthCalibration256 => &[256],
             Self::StageGrowthHoldout384 => &[384],
         }
@@ -97,6 +100,7 @@ impl G4S5B0Profile {
             Self::Smoke => (1.0e-6, 1.0e-4),
             Self::Canonical | Self::Calibration128 | Self::Holdout512 => (1.0e-7, 1.0e-5),
             Self::StageGrowthCalibration96 => (3.0e-8, 3.0e-6),
+            Self::StageGrowthCalibration192 => (1.5e-7, 1.5e-5),
             Self::StageGrowthCalibration256 => (3.0e-7, 3.0e-5),
             Self::StageGrowthHoldout384 => (7.0e-8, 7.0e-6),
         }

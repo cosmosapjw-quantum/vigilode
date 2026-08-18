@@ -811,6 +811,17 @@ fn generic_policy_redesign_level2_prefix_command_is_registered() {
 }
 
 #[test]
+fn stage_growth_safety_cli_exposes_independent_calibration192_profile() {
+    let output = std::process::Command::new(env!("CARGO_BIN_EXE_rodas5p"))
+        .args(["generic-stage-growth-safety-audit", "--help"])
+        .output()
+        .unwrap();
+    assert!(output.status.success());
+    let stdout = String::from_utf8(output.stdout).unwrap();
+    assert!(stdout.contains("calibration192"));
+}
+
+#[test]
 fn stage_growth_safety_audit_cli_emits_explicit_budget_and_audit_fields() {
     let binary = env!("CARGO_BIN_EXE_rodas5p");
     let output = temp_path("stage-growth-safety-audit.json");

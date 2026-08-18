@@ -1,0 +1,15 @@
+   Compiling rodas5p-integrators v0.1.0 (/mnt/data/GVJF_V32_WORK_20260818/repo/crates/rodas5p-integrators)
+error[E0599]: no variant or associated item named `StageGrowthCalibration192` found for enum `G4S5B0Profile` in the current scope
+ --> crates/rodas5p-integrators/tests/v33_zeta34_calibration_contracts.rs:5:34
+  |
+5 |     let profile = G4S5B0Profile::StageGrowthCalibration192;
+  |                                  ^^^^^^^^^^^^^^^^^^^^^^^^^ variant or associated item not found in `G4S5B0Profile`
+  |
+help: there is a variant with a similar name
+  |
+5 -     let profile = G4S5B0Profile::StageGrowthCalibration192;
+5 +     let profile = G4S5B0Profile::StageGrowthCalibration96;
+  |
+
+For more information about this error, try `rustc --explain E0599`.
+error: could not compile `rodas5p-integrators` (test "v33_zeta34_calibration_contracts") due to 1 previous error

@@ -355,6 +355,7 @@ impl From<CliLevel2PrefixProfile> for G4S5B0Profile {
 #[derive(Clone, Copy, Debug, ValueEnum)]
 enum CliStageGrowthSafetyProfile {
     Calibration96,
+    Calibration192,
     Calibration256,
     Holdout384,
 }
@@ -363,6 +364,7 @@ impl From<CliStageGrowthSafetyProfile> for G4S5B0Profile {
     fn from(value: CliStageGrowthSafetyProfile) -> Self {
         match value {
             CliStageGrowthSafetyProfile::Calibration96 => Self::StageGrowthCalibration96,
+            CliStageGrowthSafetyProfile::Calibration192 => Self::StageGrowthCalibration192,
             CliStageGrowthSafetyProfile::Calibration256 => Self::StageGrowthCalibration256,
             CliStageGrowthSafetyProfile::Holdout384 => Self::StageGrowthHoldout384,
         }
