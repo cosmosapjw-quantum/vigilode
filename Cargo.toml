@@ -1,0 +1,46 @@
+[workspace]
+resolver = "2"
+members = [
+  "crates/rodas5p-core",
+  "crates/rodas5p-krylov",
+  "crates/rodas5p-integrators",
+  "crates/rodas5p-fair-ab",
+  "crates/rodas5p-cli",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.94.1"
+license = "MIT"
+authors = ["RODAS5P Rust parity research"]
+
+[workspace.dependencies]
+anyhow = "1.0.104"
+clap = { version = "4.6.6", features = ["derive"] }
+csv = "1.4.0"
+faer = { version = "0.24.4", default-features = false, features = ["std", "linalg", "sparse-linalg"] }
+hex = "0.4.3"
+rand = "0.9.5"
+rand_distr = "0.5.1"
+rand_pcg = "0.9.0"
+rayon = "1.12.0"
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = { version = "1.0.151", features = ["float_roundtrip"] }
+sha2 = "0.10.9"
+thiserror = "2.0.19"
+
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+
+[profile.bench]
+inherits = "release"
+debug = true
+
+[profile.measurement]
+inherits = "release"
+lto = false
+codegen-units = 16

@@ -1,0 +1,1 @@
+The immutable Python reference is the conversation artifact `RODAS5P_Fair_AB_Checkpoint_v0.3.0-alpha1.zip`. The Rust port copies only the coefficient snapshot and compact golden fixtures needed for parity tests. The source artifact SHA-256 is recorded during closeout.
