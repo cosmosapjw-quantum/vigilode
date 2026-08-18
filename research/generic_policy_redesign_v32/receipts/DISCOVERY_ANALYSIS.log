@@ -1,0 +1,95 @@
+{
+  "schema": "gvjf-v32-quadratic-remainder-drift-discovery-analysis-v1",
+  "events": 48,
+  "unsafe_events": 5,
+  "all_rjf_parity_exact": true,
+  "all_event_keys_and_stage_authority_match": true,
+  "all_drift_features_finite": true,
+  "authority_witnesses": [
+    "zeta34",
+    "relative_drift"
+  ],
+  "selected_survivor": "zeta34",
+  "survivor_count": 1,
+  "threshold_selected": false,
+  "N192_executed": false,
+  "N384_executed": false,
+  "N2048_executed": false,
+  "active_switching": false,
+  "runtime_full_e_activation": false,
+  "robustness": [
+    {
+      "feature": "zeta34",
+      "pooled_auc": 0.7674418604651163,
+      "min_dimension_auc": 0.7105263157894737,
+      "max_dimension_auc": 1.0,
+      "dimension96_orientation": "higher-is-unsafe",
+      "dimension256_orientation": "higher-is-unsafe",
+      "dimension_orientation_agrees": true,
+      "min_leave_one_family_out_auc": 0.6875,
+      "median_leave_one_family_out_auc": 0.7598055372445617,
+      "pooled_average_precision": 0.24385706914344685,
+      "passes_predeclared_gate": true
+    },
+    {
+      "feature": "zeta23",
+      "pooled_auc": 0.7627906976744185,
+      "min_dimension_auc": 0.7105263157894738,
+      "max_dimension_auc": 1.0,
+      "dimension96_orientation": "higher-is-unsafe",
+      "dimension256_orientation": "higher-is-unsafe",
+      "dimension_orientation_agrees": true,
+      "min_leave_one_family_out_auc": 0.6875,
+      "median_leave_one_family_out_auc": 0.750609756097561,
+      "pooled_average_precision": 0.24134199134199133,
+      "passes_predeclared_gate": false
+    },
+    {
+      "feature": "remainder_chi34",
+      "pooled_auc": 0.6093023255813954,
+      "min_dimension_auc": 0.75,
+      "max_dimension_auc": 0.9166666666666666,
+      "dimension96_orientation": "lower-is-unsafe",
+      "dimension256_orientation": "higher-is-unsafe",
+      "dimension_orientation_agrees": false,
+      "min_leave_one_family_out_auc": 0.5405405405405406,
+      "median_leave_one_family_out_auc": 0.6111280487804878,
+      "pooled_average_precision": 0.3894346757421063,
+      "passes_predeclared_gate": false
+    },
+    {
+      "feature": "stage_log_curvature_kappa234",
+      "pooled_auc": 0.6651162790697676,
+      "min_dimension_auc": 0.6842105263157895,
+      "max_dimension_auc": 0.7916666666666666,
+      "dimension96_orientation": "higher-is-unsafe",
+      "dimension256_orientation": "higher-is-unsafe",
+      "dimension_orientation_agrees": true,
+      "min_leave_one_family_out_auc": 0.5333333333333334,
+      "median_leave_one_family_out_auc": 0.6641463414634146,
+      "pooled_average_precision": 0.36303030303030304,
+      "passes_predeclared_gate": false
+    },
+    {
+      "feature": "relative_drift",
+      "pooled_auc": 0.5767441860465116,
+      "min_dimension_auc": 0.5394736842105263,
+      "max_dimension_auc": 0.9166666666666666,
+      "dimension96_orientation": "higher-is-unsafe",
+      "dimension256_orientation": "higher-is-unsafe",
+      "dimension_orientation_agrees": true,
+      "min_leave_one_family_out_auc": 0.5333333333333333,
+      "median_leave_one_family_out_auc": 0.5690548780487805,
+      "pooled_average_precision": 0.273632538569425,
+      "passes_predeclared_gate": false
+    }
+  ]
+}
+
+ROBUSTNESS
+                     feature  pooled_auc  min_dimension_auc  max_dimension_auc dimension96_orientation dimension256_orientation  dimension_orientation_agrees  min_leave_one_family_out_auc  median_leave_one_family_out_auc  pooled_average_precision  passes_predeclared_gate
+                      zeta34    0.767442           0.710526           1.000000        higher-is-unsafe         higher-is-unsafe                          True                      0.687500                         0.759806                  0.243857                     True
+                      zeta23    0.762791           0.710526           1.000000        higher-is-unsafe         higher-is-unsafe                          True                      0.687500                         0.750610                  0.241342                    False
+             remainder_chi34    0.609302           0.750000           0.916667         lower-is-unsafe         higher-is-unsafe                         False                      0.540541                         0.611128                  0.389435                    False
+stage_log_curvature_kappa234    0.665116           0.684211           0.791667        higher-is-unsafe         higher-is-unsafe                          True                      0.533333                         0.664146                  0.363030                    False
+              relative_drift    0.576744           0.539474           0.916667        higher-is-unsafe         higher-is-unsafe                          True                      0.533333                         0.569055                  0.273633                    False
