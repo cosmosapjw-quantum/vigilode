@@ -9,8 +9,8 @@ use serde::{Deserialize, Serialize};
 use crate::{
     AdaptiveControllerState, AdaptiveStepConfig, ControllerKind, FusedOrthogonalization,
     FusedPhiKrylovConfig, FusedPhiPrefixSession, OdeProblem, ParallelExecution, PersistenceLatch,
-    Pexprb54s4Level1PrefixReport, Pexprb54s4Level2PrefixReport, Pexprb54s4RemainderVectorGeometry,
-    pexprb54s4_fused_step, pexprb54s4_fused_step_resume_level2,
+    Pexprb54s4Level1PrefixReport, Pexprb54s4Level2PrefixReport, Pexprb54s4QuadraticRemainderDrift,
+    Pexprb54s4RemainderVectorGeometry, pexprb54s4_fused_step, pexprb54s4_fused_step_resume_level2,
     pexprb54s4_level1_prefix_with_tolerance_scaled_telemetry,
     pexprb54s4_level2_prefix_resume_level1, pexprb54s4_tableau, sequential_matrix_free_step,
 };
@@ -321,6 +321,12 @@ pub struct G4S5B0StageGrowthSafetyRow {
     pub remainder_q34_perp: Option<f64>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub remainder_delta_chi: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub quadratic_drift_zeta23: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub quadratic_drift_zeta34: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub quadratic_drift_relative: Option<f64>,
     pub budget_breached: bool,
     pub audit_full_e_completed: bool,
     pub audit_full_e_total_error: Option<f64>,
@@ -2419,6 +2425,7 @@ struct StageGrowthAuditSample {
     rho4: Option<f64>,
     shape: Option<(f64, f64, f64)>,
     vector_geometry: Option<Pexprb54s4RemainderVectorGeometry>,
+    quadratic_drift: Option<Pexprb54s4QuadraticRemainderDrift>,
     total_error: f64,
     audit_work: WorkCounters,
 }
@@ -2503,6 +2510,9 @@ fn run_rjf_stage_growth_safety_trajectory(
                 remainder_chi24: None,
                 remainder_q34_perp: None,
                 remainder_delta_chi: None,
+                quadratic_drift_zeta23: None,
+                quadratic_drift_zeta34: None,
+                quadratic_drift_relative: None,
                 budget_breached: false,
                 audit_full_e_completed: false,
                 audit_full_e_total_error: None,
@@ -2586,6 +2596,7 @@ fn run_rjf_stage_growth_safety_trajectory(
                         rho4,
                         shape,
                         vector_geometry: prefix_report.remainder_vector_geometry.clone(),
+                        quadratic_drift: prefix_report.quadratic_remainder_drift.clone(),
                         total_error: time_error.max(phi_error),
                         audit_work: full.work,
                     })
@@ -2609,6 +2620,11 @@ fn run_rjf_stage_growth_safety_trajectory(
                             row.remainder_chi24 = geometry.chi24;
                             row.remainder_q34_perp = geometry.q34_perp;
                             row.remainder_delta_chi = geometry.delta_chi;
+                        }
+                        if let Some(drift) = sample.quadratic_drift {
+                            row.quadratic_drift_zeta23 = drift.zeta23;
+                            row.quadratic_drift_zeta34 = drift.zeta34;
+                            row.quadratic_drift_relative = drift.relative_drift;
                         }
                         row.budget_breached = sample.prefix_jvp > V29_PREFIX_RESERVE_JVP
                             || (speculative_jvp + sample.prefix_jvp) as f64

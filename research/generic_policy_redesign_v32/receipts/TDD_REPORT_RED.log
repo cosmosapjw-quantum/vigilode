@@ -1,0 +1,11 @@
+   Compiling rodas5p-integrators v0.1.0 (/mnt/data/GVJF_V32_WORK_20260818/repo/crates/rodas5p-integrators)
+error[E0609]: no field `quadratic_remainder_drift` on type `&Pexprb54s4Level2PrefixReport`
+   --> crates/rodas5p-integrators/tests/quadratic_remainder_drift_contracts.rs:183:24
+    |
+183 |     let drift = report.quadratic_remainder_drift.as_ref().unwrap();
+    |                        ^^^^^^^^^^^^^^^^^^^^^^^^^ unknown field
+    |
+    = note: available fields are: `method`, `t`, `h`, `logical_critical_depth`, `level1_report` ... and 6 others
+
+For more information about this error, try `rustc --explain E0609`.
+error: could not compile `rodas5p-integrators` (test "quadratic_remainder_drift_contracts") due to 1 previous error

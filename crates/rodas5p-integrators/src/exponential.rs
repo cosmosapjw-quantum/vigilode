@@ -357,6 +357,138 @@ pub fn pexprb54s4_remainder_vector_geometry(
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct Pexprb54s4QuadraticRemainderDrift {
+    pub state_dimension: usize,
+    pub norm_component_count: usize,
+    pub excluded_trailing_components: usize,
+    pub zeta23: Option<f64>,
+    pub zeta34: Option<f64>,
+    pub relative_drift: Option<f64>,
+}
+
+#[allow(clippy::too_many_arguments)]
+fn pairwise_quadratic_drift_zeta(
+    y: &[f64],
+    ui: &[f64],
+    uj: &[f64],
+    di: &[f64],
+    dj: &[f64],
+    ci: f64,
+    cj: f64,
+    h: f64,
+    norm_component_count: usize,
+    atol: f64,
+    rtol: f64,
+) -> Option<f64> {
+    let mut scaled_square_sum = 0.0;
+    for k in 0..norm_component_count {
+        let values = [y[k], ui[k], uj[k], di[k], dj[k]];
+        if values.iter().any(|value| !value.is_finite()) {
+            return None;
+        }
+        let scale = atol + rtol * y[k].abs().max(ui[k].abs()).max(uj[k].abs());
+        if !(scale > 0.0 && scale.is_finite()) {
+            return None;
+        }
+        let drift = dj[k] / (cj * cj) - di[k] / (ci * ci);
+        let scaled = drift / scale;
+        if !scaled.is_finite() {
+            return None;
+        }
+        scaled_square_sum += scaled * scaled;
+        if !scaled_square_sum.is_finite() {
+            return None;
+        }
+    }
+    let wrms = (scaled_square_sum / norm_component_count as f64).sqrt();
+    let zeta = h.abs() * wrms;
+    zeta.is_finite().then_some(zeta)
+}
+
+#[allow(clippy::too_many_arguments)]
+pub fn pexprb54s4_quadratic_remainder_drift(
+    y: &[f64],
+    u2: &[f64],
+    u3: &[f64],
+    u4: &[f64],
+    d2: &[f64],
+    d3: &[f64],
+    d4: &[f64],
+    h: f64,
+    norm_component_count: usize,
+    atol: f64,
+    rtol: f64,
+) -> CoreResult<Pexprb54s4QuadraticRemainderDrift> {
+    let n = y.len();
+    if [u2.len(), u3.len(), u4.len(), d2.len(), d3.len(), d4.len()]
+        .iter()
+        .any(|&len| len != n)
+    {
+        return Err(CoreError::Dimension(
+            "pexprb54s4 quadratic-remainder drift shape mismatch".into(),
+        ));
+    }
+    if norm_component_count == 0 || norm_component_count > n {
+        return Err(CoreError::Dimension(
+            "invalid pexprb54s4 quadratic-remainder drift component contract".into(),
+        ));
+    }
+    if !(h.is_finite() && atol > 0.0 && atol.is_finite() && rtol >= 0.0 && rtol.is_finite()) {
+        return Err(CoreError::InvalidInput(
+            "invalid pexprb54s4 quadratic-remainder drift scale contract".into(),
+        ));
+    }
+
+    let tableau = pexprb54s4_tableau();
+    let zeta23 = pairwise_quadratic_drift_zeta(
+        y,
+        u2,
+        u3,
+        d2,
+        d3,
+        tableau.c2,
+        tableau.c3,
+        h,
+        norm_component_count,
+        atol,
+        rtol,
+    );
+    let zeta34 = pairwise_quadratic_drift_zeta(
+        y,
+        u3,
+        u4,
+        d3,
+        d4,
+        tableau.c3,
+        tableau.c4,
+        h,
+        norm_component_count,
+        atol,
+        rtol,
+    );
+    let relative_drift = zeta23.zip(zeta34).and_then(|(earlier, later)| {
+        let sum = earlier + later;
+        if !sum.is_finite() {
+            None
+        } else if sum == 0.0 {
+            Some(0.0)
+        } else {
+            let value = (later - earlier) / sum;
+            value.is_finite().then(|| value.clamp(-1.0, 1.0))
+        }
+    });
+
+    Ok(Pexprb54s4QuadraticRemainderDrift {
+        state_dimension: n,
+        norm_component_count,
+        excluded_trailing_components: n - norm_component_count,
+        zeta23,
+        zeta34,
+        relative_drift,
+    })
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Pexprb54s4Level2PrefixReport {
     pub method: String,
     pub t: f64,
@@ -372,6 +504,8 @@ pub struct Pexprb54s4Level2PrefixReport {
     pub stage4_flow_defect: Option<EarlyFlowDefectTelemetry>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub remainder_vector_geometry: Option<Pexprb54s4RemainderVectorGeometry>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub quadratic_remainder_drift: Option<Pexprb54s4QuadraticRemainderDrift>,
 }
 
 pub struct Pexprb54s4Level2Prefix {
@@ -2210,6 +2344,30 @@ pub fn pexprb54s4_level2_prefix_resume_level1(
             norm_component_count,
         )?),
     };
+    let quadratic_remainder_drift = match (telemetry_mode, tolerance_scale) {
+        (
+            EarlyFlowDefectTelemetryMode::ReadOnly {
+                norm_component_count,
+            },
+            Some(scale),
+        ) => {
+            let u2 = add_scaled_state(&y, h, &u2_action.value);
+            Some(pexprb54s4_quadratic_remainder_drift(
+                &y,
+                &u2,
+                &stages[0].1,
+                &stages[1].1,
+                &d2,
+                &d3,
+                &d4,
+                h,
+                norm_component_count,
+                scale.atol,
+                scale.rtol,
+            )?)
+        }
+        _ => None,
+    };
 
     let u3_action = stages[0].0.clone();
     let u4_action = stages[1].0.clone();
@@ -2225,6 +2383,7 @@ pub fn pexprb54s4_level2_prefix_resume_level1(
         stage3_flow_defect,
         stage4_flow_defect,
         remainder_vector_geometry,
+        quadratic_remainder_drift,
     };
 
     Ok(Pexprb54s4Level2Prefix {

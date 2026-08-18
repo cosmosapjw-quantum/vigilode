@@ -1,0 +1,33 @@
+    Checking faer v0.24.4
+    Checking rodas5p-core v0.1.0 (/mnt/data/GVJF_V32_WORK_20260818/repo/crates/rodas5p-core)
+    Checking rodas5p-krylov v0.1.0 (/mnt/data/GVJF_V32_WORK_20260818/repo/crates/rodas5p-krylov)
+    Checking rodas5p-integrators v0.1.0 (/mnt/data/GVJF_V32_WORK_20260818/repo/crates/rodas5p-integrators)
+error: this function has too many arguments (11/7)
+   --> crates/rodas5p-integrators/src/exponential.rs:369:1
+    |
+369 | / fn pairwise_quadratic_drift_zeta(
+370 | |     y: &[f64],
+371 | |     ui: &[f64],
+372 | |     uj: &[f64],
+...   |
+380 | |     rtol: f64,
+381 | | ) -> Option<f64> {
+    | |________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#too_many_arguments
+    = note: `-D clippy::too-many-arguments` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::too_many_arguments)]`
+
+error: this boolean expression can be simplified
+   --> crates/rodas5p-integrators/src/exponential.rs:435:8
+    |
+435 |     if !h.is_finite() || !(atol > 0.0 && atol.is_finite()) || !(rtol >=...
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: try: `!(h.is_finite() && atol > 0.0 && atol.is_finite())`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#nonminimal_bool
+    = note: `-D clippy::nonminimal-bool` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::nonminimal_bool)]`
+
+error: could not compile `rodas5p-integrators` (lib) due to 2 previous errors
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `rodas5p-integrators` (lib test) due to 2 previous errors

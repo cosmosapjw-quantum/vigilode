@@ -1,0 +1,14 @@
+    Checking rodas5p-integrators v0.1.0 (/mnt/data/GVJF_V32_WORK_20260818/repo/crates/rodas5p-integrators)
+error: this boolean expression can be simplified
+   --> crates/rodas5p-integrators/src/exponential.rs:436:8
+    |
+436 | ...if !(h.is_finite() && atol > 0.0 && atol.is_finite()) || !(rtol >= 0.0 && rtol.is_finite()) {
+    |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: try: `!(h.is_finite() && atol > 0.0 && atol.is_finite() && rtol >= 0.0 && rtol.is_finite())`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#nonminimal_bool
+    = note: `-D clippy::nonminimal-bool` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::nonminimal_bool)]`
+
+error: could not compile `rodas5p-integrators` (lib) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `rodas5p-integrators` (lib test) due to 1 previous error

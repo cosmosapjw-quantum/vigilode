@@ -432,5 +432,9 @@ fn v29_stage_growth_safety_audit_is_read_only_budgeted_and_explicit() {
         assert!(row.remainder_chi24.unwrap().abs() <= 1.0);
         assert!((0.0..=1.0).contains(&row.remainder_q34_perp.unwrap()));
         assert!(row.remainder_delta_chi.unwrap().abs() <= 2.0);
+        assert!(row.quadratic_drift_zeta23.is_some());
+        assert!(row.quadratic_drift_zeta34.is_some());
+        assert!(row.quadratic_drift_relative.is_some());
+        assert!((-1.0..=1.0).contains(&row.quadratic_drift_relative.unwrap()));
     }
 }
