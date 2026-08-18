@@ -298,6 +298,18 @@ pub struct G4S5B0StageGrowthSafetyRow {
     pub prefix_failure: Option<String>,
     pub actual_prefix_jvp_vectors: Option<u64>,
     pub normalized_stage_growth_a34: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub rho2: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub rho3: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub rho4: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub stage_log_slope_s23: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub stage_log_slope_s34: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub stage_log_curvature_kappa234: Option<f64>,
     pub budget_breached: bool,
     pub audit_full_e_completed: bool,
     pub audit_full_e_total_error: Option<f64>,
@@ -2367,6 +2379,38 @@ const V29_PREFIX_RESERVE_JVP: u64 = 80;
 const V29_PREFIX_BUDGET_FRACTION: f64 = 0.25;
 const V29_STAGE_GROWTH_BASELINE: f64 = 3.24;
 
+fn stage_trajectory_shape_features(rho2: f64, rho3: f64, rho4: f64) -> Option<(f64, f64, f64)> {
+    if !rho2.is_finite()
+        || !rho3.is_finite()
+        || !rho4.is_finite()
+        || rho2 <= 0.0
+        || rho3 <= 0.0
+        || rho4 <= 0.0
+    {
+        return None;
+    }
+    let s23 = (rho3 / rho2).ln() / (0.5_f64 / 0.25_f64).ln();
+    let s34 = (rho4 / rho3).ln() / (0.9_f64 / 0.5_f64).ln();
+    let kappa234 = s34 - s23;
+    if s23.is_finite() && s34.is_finite() && kappa234.is_finite() {
+        Some((s23, s34, kappa234))
+    } else {
+        None
+    }
+}
+
+#[derive(Clone, Debug)]
+struct StageGrowthAuditSample {
+    prefix_jvp: u64,
+    a34: Option<f64>,
+    rho2: Option<f64>,
+    rho3: Option<f64>,
+    rho4: Option<f64>,
+    shape: Option<(f64, f64, f64)>,
+    total_error: f64,
+    audit_work: WorkCounters,
+}
+
 fn run_rjf_stage_growth_safety_trajectory(
     problem: AtlasProblem,
     profile: G4S5B0Profile,
@@ -2436,6 +2480,12 @@ fn run_rjf_stage_growth_safety_trajectory(
                 prefix_failure: None,
                 actual_prefix_jvp_vectors: None,
                 normalized_stage_growth_a34: None,
+                rho2: None,
+                rho3: None,
+                rho4: None,
+                stage_log_slope_s23: None,
+                stage_log_slope_s34: None,
+                stage_log_curvature_kappa234: None,
                 budget_breached: false,
                 audit_full_e_completed: false,
                 audit_full_e_total_error: None,
@@ -2446,7 +2496,7 @@ fn run_rjf_stage_growth_safety_trajectory(
             };
 
             if reserve_ok {
-                let prefix_and_audit = (|| -> CoreResult<(u64, Option<f64>, f64, WorkCounters)> {
+                let prefix_and_audit = (|| -> CoreResult<StageGrowthAuditSample> {
                     let (shadow_problem, state) = shadow_problem_state(&problem.problem, t, &y)?;
                     let config = phi_config(adaptive.rtol, shadow_problem.dimension + 4);
                     let physical_n = problem.problem.dimension;
@@ -2466,6 +2516,11 @@ fn run_rjf_stage_growth_safety_trajectory(
                     )?;
                     let prefix_report = level2.report().clone();
                     let prefix_jvp = prefix_report.cumulative_work.jvp_vectors;
+                    let rho2 = prefix_report
+                        .level1_report
+                        .early_flow_defect
+                        .as_ref()
+                        .and_then(|entry| entry.tolerance_scaled_defect_wrms);
                     let rho3 = prefix_report
                         .stage3_flow_defect
                         .as_ref()
@@ -2474,6 +2529,12 @@ fn run_rjf_stage_growth_safety_trajectory(
                         .stage4_flow_defect
                         .as_ref()
                         .and_then(|entry| entry.tolerance_scaled_defect_wrms);
+                    let shape = match (rho2, rho3, rho4) {
+                        (Some(r2), Some(r3), Some(r4)) => {
+                            stage_trajectory_shape_features(r2, r3, r4)
+                        }
+                        _ => None,
+                    };
                     let a34 = match (rho3, rho4) {
                         (Some(r3), Some(r4))
                             if r3.is_finite() && r3 > 0.0 && r4.is_finite() && r4 >= 0.0 =>
@@ -2500,22 +2561,39 @@ fn run_rjf_stage_growth_safety_trajectory(
                             .filter(|value| value.is_finite())
                             .sum::<f64>()
                         / safe_l2(&scale).max(f64::MIN_POSITIVE);
-                    Ok((prefix_jvp, a34, time_error.max(phi_error), full.work))
+                    Ok(StageGrowthAuditSample {
+                        prefix_jvp,
+                        a34,
+                        rho2,
+                        rho3,
+                        rho4,
+                        shape,
+                        total_error: time_error.max(phi_error),
+                        audit_work: full.work,
+                    })
                 })();
                 match prefix_and_audit {
-                    Ok((prefix_jvp, a34, total_error, audit_work)) => {
+                    Ok(sample) => {
                         row.prefix_succeeded = true;
-                        row.actual_prefix_jvp_vectors = Some(prefix_jvp);
-                        row.normalized_stage_growth_a34 = a34;
-                        row.budget_breached = prefix_jvp > V29_PREFIX_RESERVE_JVP
-                            || (speculative_jvp + prefix_jvp) as f64
+                        row.actual_prefix_jvp_vectors = Some(sample.prefix_jvp);
+                        row.normalized_stage_growth_a34 = sample.a34;
+                        row.rho2 = sample.rho2;
+                        row.rho3 = sample.rho3;
+                        row.rho4 = sample.rho4;
+                        if let Some((s23, s34, kappa234)) = sample.shape {
+                            row.stage_log_slope_s23 = Some(s23);
+                            row.stage_log_slope_s34 = Some(s34);
+                            row.stage_log_curvature_kappa234 = Some(kappa234);
+                        }
+                        row.budget_breached = sample.prefix_jvp > V29_PREFIX_RESERVE_JVP
+                            || (speculative_jvp + sample.prefix_jvp) as f64
                                 > V29_PREFIX_BUDGET_FRACTION * committed_rjf_jvp as f64;
-                        speculative_jvp += prefix_jvp;
+                        speculative_jvp += sample.prefix_jvp;
                         row.audit_full_e_completed = true;
-                        row.audit_full_e_total_error = Some(total_error);
+                        row.audit_full_e_total_error = Some(sample.total_error);
                         row.audit_full_e_locally_admissible =
-                            total_error.is_finite() && total_error <= 1.0;
-                        row.audit_full_e_work = Some(audit_work);
+                            sample.total_error.is_finite() && sample.total_error <= 1.0;
+                        row.audit_full_e_work = Some(sample.audit_work);
                     }
                     Err(error) => {
                         row.prefix_failure = Some(error.to_string());
@@ -2740,4 +2818,21 @@ pub fn run_g4_s5b0_stage_growth_safety_audit_family(
             "N=2048 remains sealed.".into(),
         ],
     })
+}
+
+#[cfg(test)]
+mod stage_trajectory_geometry_tests {
+    use super::stage_trajectory_shape_features;
+
+    #[test]
+    fn stage_trajectory_shape_matches_power_law_and_rejects_nonpositive_inputs() {
+        let (s23, s34, kappa) = stage_trajectory_shape_features(1.0, 4.0, 12.96)
+            .expect("positive finite power-law samples should be scoreable");
+        assert!((s23 - 2.0).abs() < 1.0e-12);
+        assert!((s34 - 2.0).abs() < 1.0e-12);
+        assert!(kappa.abs() < 1.0e-12);
+
+        assert!(stage_trajectory_shape_features(0.0, 1.0, 2.0).is_none());
+        assert!(stage_trajectory_shape_features(1.0, f64::NAN, 2.0).is_none());
+    }
 }
