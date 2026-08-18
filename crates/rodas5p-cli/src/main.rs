@@ -367,6 +367,7 @@ enum CliStageGrowthSafetyProfile {
     Calibration96,
     Calibration192,
     Calibration256,
+    Holdout320,
     Holdout384,
 }
 
@@ -376,6 +377,7 @@ impl From<CliStageGrowthSafetyProfile> for G4S5B0Profile {
             CliStageGrowthSafetyProfile::Calibration96 => Self::StageGrowthCalibration96,
             CliStageGrowthSafetyProfile::Calibration192 => Self::StageGrowthCalibration192,
             CliStageGrowthSafetyProfile::Calibration256 => Self::StageGrowthCalibration256,
+            CliStageGrowthSafetyProfile::Holdout320 => Self::EnforcedBudgetHoldout320,
             CliStageGrowthSafetyProfile::Holdout384 => Self::StageGrowthHoldout384,
         }
     }

@@ -71,3 +71,11 @@ fn enforced_budget_runner_is_read_only_and_never_records_a_breach() {
                     && !row.audit_full_e_completed))
     }));
 }
+
+#[test]
+fn fresh_enforced_budget_holdout320_profile_is_frozen_before_output() {
+    let profile = rodas5p_integrators::G4S5B0Profile::EnforcedBudgetHoldout320;
+    assert_eq!(profile.as_str(), "enforced-budget-holdout-320");
+    assert_eq!(profile.dimensions(), &[320]);
+    assert_eq!(profile.tolerances(), (1.0e-7, 1.0e-5));
+}

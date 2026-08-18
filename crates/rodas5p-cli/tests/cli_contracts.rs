@@ -825,6 +825,7 @@ fn enforced_prefix_budget_cli_is_registered() {
     assert!(stdout.contains("calibration192"));
     assert!(stdout.contains("calibration256"));
     assert!(stdout.contains("holdout384"));
+    assert!(stdout.contains("holdout320"));
 }
 
 #[test]
