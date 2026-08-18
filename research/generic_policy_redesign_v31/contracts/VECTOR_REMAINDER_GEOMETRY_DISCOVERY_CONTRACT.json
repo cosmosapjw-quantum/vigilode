@@ -1,0 +1,49 @@
+{
+  "schema": "gvjf-vector-remainder-geometry-discovery-contract-v1",
+  "node": "v3.1",
+  "parent_head": "3678c82313d1aabcd8720b6e369a8da7584bd957",
+  "objective": "Determine whether low-complexity directional geometry among already-computed pexprb54s4 nonlinear remainders D2,D3,D4 carries family-robust safety information beyond scalar stage-shape features.",
+  "data_roles": {
+    "N96_rtol3e-6_atol3e-8": "already-consumed discovery replay",
+    "N256_rtol3e-5_atol3e-7": "already-consumed discovery replay",
+    "N192": "sealed independent calibration; forbidden unless a vector witness survives discovery",
+    "N384": "sealed final safety holdout",
+    "N2048": "sealed scaling holdout"
+  },
+  "physical_component_rule": "Use exactly the same physical-component prefix norm_component_count used by the tolerance-scaled early-flow-defect telemetry; exclude any trailing time-augmentation clock component.",
+  "predeclared_features": {
+    "chi23": "dot(D2,D3)/(norm(D2)*norm(D3))",
+    "chi34": "dot(D3,D4)/(norm(D3)*norm(D4))",
+    "chi24": "dot(D2,D4)/(norm(D2)*norm(D4))",
+    "q34_perp": "sqrt(max(0,1-chi34^2))",
+    "delta_chi": "chi34-chi23"
+  },
+  "feature_domain": "If any required norm is zero/nonfinite or a dot product is nonfinite, the affected directional feature is null. Finite cosine values are clamped only to [-1,1] to remove floating roundoff outside the mathematical range.",
+  "numerical_work_contract": {
+    "added_rhs": 0,
+    "added_jvp": 0,
+    "added_jvp_vectors": 0,
+    "added_phi_actions": 0,
+    "added_jacobian_builds": 0,
+    "added_newton_iterations": 0,
+    "allowed_diagnostic_work": "physical-prefix dot products, L2 norms, scalar arithmetic only"
+  },
+  "discovery_robustness_gate": {
+    "no_threshold_selection": true,
+    "no_learned_classifier": true,
+    "no_family_identifier": true,
+    "single_feature_metrics": ["orientation-free ROC AUC", "average precision"],
+    "required_checks": ["pooled", "N96", "N256", "leave-one-family-out"],
+    "survivor_rule": "At most one predeclared vector witness may advance. It must materially improve on the v3.0 scalar kappa234 baseline and must not collapse toward chance under either dimension or leave-one-family-out checks. Numeric thresholds remain forbidden on discovery data."
+  },
+  "forbidden": [
+    "N192 execution before a witness survives discovery",
+    "N384 execution",
+    "N2048 execution",
+    "active switching",
+    "runtime E-K activation",
+    "threshold fitting on N96/N256",
+    "high-capacity classifiers",
+    "family-specific allow/deny lists"
+  ]
+}
