@@ -420,4 +420,17 @@ fn v29_stage_growth_safety_audit_is_read_only_budgeted_and_explicit() {
             .filter(|row| row.audit_full_e_completed)
             .count()
     );
+    let geometry_rows: Vec<_> = audited
+        .rows
+        .iter()
+        .filter(|row| row.prefix_succeeded && row.remainder_chi34.is_some())
+        .collect();
+    assert!(!geometry_rows.is_empty());
+    for row in geometry_rows {
+        assert!(row.remainder_chi23.unwrap().abs() <= 1.0);
+        assert!(row.remainder_chi34.unwrap().abs() <= 1.0);
+        assert!(row.remainder_chi24.unwrap().abs() <= 1.0);
+        assert!((0.0..=1.0).contains(&row.remainder_q34_perp.unwrap()));
+        assert!(row.remainder_delta_chi.unwrap().abs() <= 2.0);
+    }
 }

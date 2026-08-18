@@ -1,0 +1,51 @@
+   Compiling rodas5p-integrators v0.1.0 (/mnt/data/GVJF_V31_WORK_20260818/repo/crates/rodas5p-integrators)
+error[E0609]: no field `remainder_chi34` on type `&&G4S5B0StageGrowthSafetyRow`
+   --> crates/rodas5p-integrators/tests/g4_s5b0_regime_atlas_contracts.rs:426:51
+    |
+426 | ...x_succeeded && row.remainder_chi34.is_some())
+    |                       ^^^^^^^^^^^^^^^ unknown field
+    |
+    = note: available fields are: `trajectory_id`, `family`, `dimension`, `rtol`, `decision_accepted_step` ... and 29 others
+
+error[E0609]: no field `remainder_chi23` on type `&G4S5B0StageGrowthSafetyRow`
+   --> crates/rodas5p-integrators/tests/g4_s5b0_regime_atlas_contracts.rs:430:21
+    |
+430 |         assert!(row.remainder_chi23.unwrap().abs() <= 1.0);
+    |                     ^^^^^^^^^^^^^^^ unknown field
+    |
+    = note: available fields are: `trajectory_id`, `family`, `dimension`, `rtol`, `decision_accepted_step` ... and 29 others
+
+error[E0609]: no field `remainder_chi34` on type `&G4S5B0StageGrowthSafetyRow`
+   --> crates/rodas5p-integrators/tests/g4_s5b0_regime_atlas_contracts.rs:431:21
+    |
+431 |         assert!(row.remainder_chi34.unwrap().abs() <= 1.0);
+    |                     ^^^^^^^^^^^^^^^ unknown field
+    |
+    = note: available fields are: `trajectory_id`, `family`, `dimension`, `rtol`, `decision_accepted_step` ... and 29 others
+
+error[E0609]: no field `remainder_chi24` on type `&G4S5B0StageGrowthSafetyRow`
+   --> crates/rodas5p-integrators/tests/g4_s5b0_regime_atlas_contracts.rs:432:21
+    |
+432 |         assert!(row.remainder_chi24.unwrap().abs() <= 1.0);
+    |                     ^^^^^^^^^^^^^^^ unknown field
+    |
+    = note: available fields are: `trajectory_id`, `family`, `dimension`, `rtol`, `decision_accepted_step` ... and 29 others
+
+error[E0609]: no field `remainder_q34_perp` on type `&G4S5B0StageGrowthSafetyRow`
+   --> crates/rodas5p-integrators/tests/g4_s5b0_regime_atlas_contracts.rs:433:43
+    |
+433 |         assert!((0.0..=1.0).contains(&row.remainder_q34_perp.unwrap()));
+    |                                           ^^^^^^^^^^^^^^^^^^ unknown field
+    |
+    = note: available fields are: `trajectory_id`, `family`, `dimension`, `rtol`, `decision_accepted_step` ... and 29 others
+
+error[E0609]: no field `remainder_delta_chi` on type `&G4S5B0StageGrowthSafetyRow`
+   --> crates/rodas5p-integrators/tests/g4_s5b0_regime_atlas_contracts.rs:434:21
+    |
+434 |         assert!(row.remainder_delta_chi.unwrap().abs() <= 2.0);
+    |                     ^^^^^^^^^^^^^^^^^^^ unknown field
+    |
+    = note: available fields are: `trajectory_id`, `family`, `dimension`, `rtol`, `decision_accepted_step` ... and 29 others
+
+For more information about this error, try `rustc --explain E0609`.
+error: could not compile `rodas5p-integrators` (test "g4_s5b0_regime_atlas_contracts") due to 6 previous errors

@@ -292,6 +292,71 @@ impl Pexprb54s4Level1Prefix {
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct Pexprb54s4RemainderVectorGeometry {
+    pub state_dimension: usize,
+    pub norm_component_count: usize,
+    pub excluded_trailing_components: usize,
+    pub chi23: Option<f64>,
+    pub chi34: Option<f64>,
+    pub chi24: Option<f64>,
+    pub q34_perp: Option<f64>,
+    pub delta_chi: Option<f64>,
+}
+
+fn normalized_direction_cosine(a: &[f64], b: &[f64]) -> Option<f64> {
+    let norm_a = safe_l2(a);
+    let norm_b = safe_l2(b);
+    if !(norm_a > 0.0 && norm_a.is_finite() && norm_b > 0.0 && norm_b.is_finite()) {
+        return None;
+    }
+    let cosine = a
+        .iter()
+        .zip(b)
+        .map(|(&x, &y)| (x / norm_a) * (y / norm_b))
+        .sum::<f64>();
+    cosine.is_finite().then(|| cosine.clamp(-1.0, 1.0))
+}
+
+pub fn pexprb54s4_remainder_vector_geometry(
+    d2: &[f64],
+    d3: &[f64],
+    d4: &[f64],
+    norm_component_count: usize,
+) -> CoreResult<Pexprb54s4RemainderVectorGeometry> {
+    if d2.len() != d3.len() || d2.len() != d4.len() {
+        return Err(CoreError::Dimension(
+            "pexprb54s4 remainder-vector shape mismatch".into(),
+        ));
+    }
+    if norm_component_count == 0 || norm_component_count > d2.len() {
+        return Err(CoreError::Dimension(
+            "invalid pexprb54s4 remainder-vector component contract".into(),
+        ));
+    }
+
+    let state_dimension = d2.len();
+    let d2 = &d2[..norm_component_count];
+    let d3 = &d3[..norm_component_count];
+    let d4 = &d4[..norm_component_count];
+    let chi23 = normalized_direction_cosine(d2, d3);
+    let chi34 = normalized_direction_cosine(d3, d4);
+    let chi24 = normalized_direction_cosine(d2, d4);
+    let q34_perp = chi34.map(|chi| (1.0 - chi * chi).max(0.0).sqrt());
+    let delta_chi = chi34.zip(chi23).map(|(later, earlier)| later - earlier);
+
+    Ok(Pexprb54s4RemainderVectorGeometry {
+        state_dimension,
+        norm_component_count,
+        excluded_trailing_components: state_dimension - norm_component_count,
+        chi23,
+        chi34,
+        chi24,
+        q34_perp,
+        delta_chi,
+    })
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Pexprb54s4Level2PrefixReport {
     pub method: String,
     pub t: f64,
@@ -305,6 +370,8 @@ pub struct Pexprb54s4Level2PrefixReport {
     pub stage3_flow_defect: Option<EarlyFlowDefectTelemetry>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub stage4_flow_defect: Option<EarlyFlowDefectTelemetry>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub remainder_vector_geometry: Option<Pexprb54s4RemainderVectorGeometry>,
 }
 
 pub struct Pexprb54s4Level2Prefix {
@@ -2132,6 +2199,18 @@ pub fn pexprb54s4_level2_prefix_resume_level1(
         tolerance_scale,
     )?;
 
+    let remainder_vector_geometry = match telemetry_mode {
+        EarlyFlowDefectTelemetryMode::Disabled => None,
+        EarlyFlowDefectTelemetryMode::ReadOnly {
+            norm_component_count,
+        } => Some(pexprb54s4_remainder_vector_geometry(
+            &d2,
+            &d3,
+            &d4,
+            norm_component_count,
+        )?),
+    };
+
     let u3_action = stages[0].0.clone();
     let u4_action = stages[1].0.clone();
     let report = Pexprb54s4Level2PrefixReport {
@@ -2145,6 +2224,7 @@ pub fn pexprb54s4_level2_prefix_resume_level1(
         cumulative_work,
         stage3_flow_defect,
         stage4_flow_defect,
+        remainder_vector_geometry,
     };
 
     Ok(Pexprb54s4Level2Prefix {

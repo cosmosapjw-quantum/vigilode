@@ -9,8 +9,9 @@ use serde::{Deserialize, Serialize};
 use crate::{
     AdaptiveControllerState, AdaptiveStepConfig, ControllerKind, FusedOrthogonalization,
     FusedPhiKrylovConfig, FusedPhiPrefixSession, OdeProblem, ParallelExecution, PersistenceLatch,
-    Pexprb54s4Level1PrefixReport, Pexprb54s4Level2PrefixReport, pexprb54s4_fused_step,
-    pexprb54s4_fused_step_resume_level2, pexprb54s4_level1_prefix_with_tolerance_scaled_telemetry,
+    Pexprb54s4Level1PrefixReport, Pexprb54s4Level2PrefixReport, Pexprb54s4RemainderVectorGeometry,
+    pexprb54s4_fused_step, pexprb54s4_fused_step_resume_level2,
+    pexprb54s4_level1_prefix_with_tolerance_scaled_telemetry,
     pexprb54s4_level2_prefix_resume_level1, pexprb54s4_tableau, sequential_matrix_free_step,
 };
 
@@ -310,6 +311,16 @@ pub struct G4S5B0StageGrowthSafetyRow {
     pub stage_log_slope_s34: Option<f64>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub stage_log_curvature_kappa234: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub remainder_chi23: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub remainder_chi34: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub remainder_chi24: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub remainder_q34_perp: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub remainder_delta_chi: Option<f64>,
     pub budget_breached: bool,
     pub audit_full_e_completed: bool,
     pub audit_full_e_total_error: Option<f64>,
@@ -2407,6 +2418,7 @@ struct StageGrowthAuditSample {
     rho3: Option<f64>,
     rho4: Option<f64>,
     shape: Option<(f64, f64, f64)>,
+    vector_geometry: Option<Pexprb54s4RemainderVectorGeometry>,
     total_error: f64,
     audit_work: WorkCounters,
 }
@@ -2486,6 +2498,11 @@ fn run_rjf_stage_growth_safety_trajectory(
                 stage_log_slope_s23: None,
                 stage_log_slope_s34: None,
                 stage_log_curvature_kappa234: None,
+                remainder_chi23: None,
+                remainder_chi34: None,
+                remainder_chi24: None,
+                remainder_q34_perp: None,
+                remainder_delta_chi: None,
                 budget_breached: false,
                 audit_full_e_completed: false,
                 audit_full_e_total_error: None,
@@ -2568,6 +2585,7 @@ fn run_rjf_stage_growth_safety_trajectory(
                         rho3,
                         rho4,
                         shape,
+                        vector_geometry: prefix_report.remainder_vector_geometry.clone(),
                         total_error: time_error.max(phi_error),
                         audit_work: full.work,
                     })
@@ -2584,6 +2602,13 @@ fn run_rjf_stage_growth_safety_trajectory(
                             row.stage_log_slope_s23 = Some(s23);
                             row.stage_log_slope_s34 = Some(s34);
                             row.stage_log_curvature_kappa234 = Some(kappa234);
+                        }
+                        if let Some(geometry) = sample.vector_geometry {
+                            row.remainder_chi23 = geometry.chi23;
+                            row.remainder_chi34 = geometry.chi34;
+                            row.remainder_chi24 = geometry.chi24;
+                            row.remainder_q34_perp = geometry.q34_perp;
+                            row.remainder_delta_chi = geometry.delta_chi;
                         }
                         row.budget_breached = sample.prefix_jvp > V29_PREFIX_RESERVE_JVP
                             || (speculative_jvp + sample.prefix_jvp) as f64
