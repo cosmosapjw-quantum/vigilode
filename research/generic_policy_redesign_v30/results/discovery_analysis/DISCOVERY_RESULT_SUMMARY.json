@@ -1,0 +1,83 @@
+{
+  "schema": "gvjf-v30-stage-trajectory-discovery-analysis-v1",
+  "events": 48,
+  "unsafe_events": 5,
+  "all_nonwall_numerical_parity_exact": true,
+  "all_runtime_full_e_continuations_zero": true,
+  "all_budget_breaches_zero": true,
+  "kappa_pooled_orientation_free_auc": 0.6651162790697674,
+  "kappa_cross_dimension": [
+    {
+      "feature": "stage_log_curvature_kappa234",
+      "dimension": 96,
+      "n": 25,
+      "unsafe_n": 1,
+      "signed_auc": 0.7916666666666666,
+      "orientation_free_auc": 0.7916666666666666
+    },
+    {
+      "feature": "stage_log_curvature_kappa234",
+      "dimension": 256,
+      "n": 23,
+      "unsafe_n": 4,
+      "signed_auc": 0.6842105263157895,
+      "orientation_free_auc": 0.6842105263157895
+    }
+  ],
+  "kappa_leave_one_family_out_min_orientation_free_auc": 0.5333333333333333,
+  "kappa_leave_one_family_out": [
+    {
+      "feature": "stage_log_curvature_kappa234",
+      "held_out_family": "hires-ramped",
+      "n": 43,
+      "unsafe_n": 3,
+      "signed_auc": 0.7583333333333333,
+      "orientation_free_auc": 0.7583333333333333
+    },
+    {
+      "feature": "stage_log_curvature_kappa234",
+      "held_out_family": "nonautonomous-stiff-forcing",
+      "n": 28,
+      "unsafe_n": 3,
+      "signed_auc": 0.5333333333333333,
+      "orientation_free_auc": 0.5333333333333333
+    },
+    {
+      "feature": "stage_log_curvature_kappa234",
+      "held_out_family": "robertson-ramped",
+      "n": 45,
+      "unsafe_n": 5,
+      "signed_auc": 0.66,
+      "orientation_free_auc": 0.66
+    },
+    {
+      "feature": "stage_log_curvature_kappa234",
+      "held_out_family": "rotating-nonnormal",
+      "n": 37,
+      "unsafe_n": 5,
+      "signed_auc": 0.6375,
+      "orientation_free_auc": 0.6375
+    },
+    {
+      "feature": "stage_log_curvature_kappa234",
+      "held_out_family": "semilinear-advection-diffusion-ramped",
+      "n": 46,
+      "unsafe_n": 5,
+      "signed_auc": 0.6682926829268293,
+      "orientation_free_auc": 0.6682926829268293
+    },
+    {
+      "feature": "stage_log_curvature_kappa234",
+      "held_out_family": "van-der-pol-ramped",
+      "n": 41,
+      "unsafe_n": 4,
+      "signed_auc": 0.7094594594594594,
+      "orientation_free_auc": 0.7094594594594594
+    }
+  ],
+  "discovery_threshold_selected": false,
+  "N192_executed": false,
+  "N384_executed": false,
+  "N2048_executed": false,
+  "active_switching": false
+}
