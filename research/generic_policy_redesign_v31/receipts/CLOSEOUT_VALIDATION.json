@@ -1,0 +1,146 @@
+{
+  "schema": "gvjf-v31-closeout-validation-v1",
+  "branch": "generic-vector-remainder-geometry-v3.1",
+  "implementation_head": "c6c668d1acea7c5b8dce9271606b561494b3493d",
+  "solver_shards": {
+    "count": 12,
+    "all_complete": true,
+    "items": [
+      {
+        "path": "research/generic_policy_redesign_v31/results/discovery96_shards/hires.json",
+        "status": "complete",
+        "profile": "stage-growth-calibration-96",
+        "rows": 2,
+        "sha256": "38e41dcba5d55f4405da5439805612359cf914b6be39406426577cfbb1711511"
+      },
+      {
+        "path": "research/generic_policy_redesign_v31/results/discovery96_shards/nonautonomous-forcing.json",
+        "status": "complete",
+        "profile": "stage-growth-calibration-96",
+        "rows": 10,
+        "sha256": "fedea6f31aeb5f75a803c53eaa628f3147d405c527c72251e4050e9298bcafc6"
+      },
+      {
+        "path": "research/generic_policy_redesign_v31/results/discovery96_shards/robertson.json",
+        "status": "complete",
+        "profile": "stage-growth-calibration-96",
+        "rows": 2,
+        "sha256": "e41a2fe52df731f46254dc0ce4ac1e01d895b8106e8ed0216faf675686886512"
+      },
+      {
+        "path": "research/generic_policy_redesign_v31/results/discovery96_shards/rotating-nonnormal.json",
+        "status": "complete",
+        "profile": "stage-growth-calibration-96",
+        "rows": 6,
+        "sha256": "05bc349e66c8a3c4f5943a1ecc6e11c56acd8d5d5fdaf727aae0032fa2679065"
+      },
+      {
+        "path": "research/generic_policy_redesign_v31/results/discovery96_shards/semilinear.json",
+        "status": "complete",
+        "profile": "stage-growth-calibration-96",
+        "rows": 1,
+        "sha256": "0058fd61fb03817bf29182cca9d884d1d85b9279090885be6a6071dfce5257bb"
+      },
+      {
+        "path": "research/generic_policy_redesign_v31/results/discovery96_shards/van-der-pol.json",
+        "status": "complete",
+        "profile": "stage-growth-calibration-96",
+        "rows": 4,
+        "sha256": "ae1a0552588963230a0d6d89658572616046af30057d21b0c0d0d2e844eec8cb"
+      },
+      {
+        "path": "research/generic_policy_redesign_v31/results/discovery256_shards/hires.json",
+        "status": "complete",
+        "profile": "stage-growth-calibration-256",
+        "rows": 3,
+        "sha256": "fa372a622cc5b816b69689cbd5649997e82b9a8a08141db99c5788a45634c9c0"
+      },
+      {
+        "path": "research/generic_policy_redesign_v31/results/discovery256_shards/nonautonomous-forcing.json",
+        "status": "complete",
+        "profile": "stage-growth-calibration-256",
+        "rows": 10,
+        "sha256": "e98b21e344497aea4944563f9fe5c83bddbbe1c4e6b68c1d44fb03065e9931ab"
+      },
+      {
+        "path": "research/generic_policy_redesign_v31/results/discovery256_shards/robertson.json",
+        "status": "complete",
+        "profile": "stage-growth-calibration-256",
+        "rows": 1,
+        "sha256": "b812fbcad26771fd6111e1938dcfdc4b0bcabe2a58365b1271ac33148fb66d9c"
+      },
+      {
+        "path": "research/generic_policy_redesign_v31/results/discovery256_shards/rotating-nonnormal.json",
+        "status": "complete",
+        "profile": "stage-growth-calibration-256",
+        "rows": 5,
+        "sha256": "3ea90d29eecb3370c9b83b3c36f08c2a9e3dbffef44029a820fc66fe636f53d4"
+      },
+      {
+        "path": "research/generic_policy_redesign_v31/results/discovery256_shards/semilinear.json",
+        "status": "complete",
+        "profile": "stage-growth-calibration-256",
+        "rows": 1,
+        "sha256": "b18d2683b540655857743891cedc2e002a6f5c8a96ca4dd1d02312587b2adc3e"
+      },
+      {
+        "path": "research/generic_policy_redesign_v31/results/discovery256_shards/van-der-pol.json",
+        "status": "complete",
+        "profile": "stage-growth-calibration-256",
+        "rows": 3,
+        "sha256": "9f8a4537991eea623a7ec414898d06033fb65a24488e2153743f3394fd7008e7"
+      }
+    ]
+  },
+  "scientific_result": {
+    "schema": "gvjf-v31-vector-remainder-geometry-closeout-v1",
+    "verdict": "NEGATIVE_DISCOVERY_NO_VECTOR_DIRECTION_SURVIVOR",
+    "events": 48,
+    "unsafe_events": 5,
+    "numerical_nonwall_parity_exact": true,
+    "best_vector_feature": {
+      "feature": "remainder_chi34",
+      "pooled_auc": 0.6093023255813954,
+      "min_dimension_auc": 0.75,
+      "max_dimension_auc": 0.9166666666666666,
+      "min_leave_one_family_out_auc": 0.5405405405405406,
+      "median_leave_one_family_out_auc": 0.6111280487804878,
+      "pooled_average_precision": 0.3894346757421063
+    },
+    "baseline_kappa": {
+      "feature": "stage_log_curvature_kappa234",
+      "pooled_auc": 0.6651162790697676,
+      "min_dimension_auc": 0.6842105263157895,
+      "max_dimension_auc": 0.7916666666666666,
+      "min_leave_one_family_out_auc": 0.5333333333333334,
+      "median_leave_one_family_out_auc": 0.6641463414634146,
+      "pooled_average_precision": 0.36303030303030304
+    },
+    "strict_survivor": false,
+    "threshold_selected": false,
+    "N192_executed": false,
+    "N384_executed": false,
+    "N2048_executed": false,
+    "active_switching": false,
+    "runtime_full_e_continuations": 0,
+    "next_node": "v3.2 tolerance-weighted quadratic-remainder drift discovery"
+  },
+  "focused_validation": "PASS",
+  "clippy_integrators_cli_deny_warnings": "PASS",
+  "doc_compile_fail": "PASS",
+  "analysis_replay_byte_identical": "PASS",
+  "full_workspace_all_targets": {
+    "status": "OUTPUT_COMPLETE_NO_RC",
+    "reason": "outer execution shell timed out/detached before writing an exit-code receipt",
+    "observed_failed_test_result_blocks": 0,
+    "observed_ok_test_result_blocks": 61,
+    "log_ends_with_workspace_contracts_ok": true,
+    "formal_pass_claimed": false
+  },
+  "sealed_not_executed": {
+    "N192": true,
+    "N384": true,
+    "N2048": true,
+    "active_switching": true
+  }
+}
