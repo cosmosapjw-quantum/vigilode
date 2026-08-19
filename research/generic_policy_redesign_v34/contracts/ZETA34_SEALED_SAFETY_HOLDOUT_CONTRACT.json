@@ -1,0 +1,35 @@
+{
+  "schema": "gvjf-zeta34-sealed-safety-holdout-contract-v1",
+  "node": "v3.4",
+  "parent_head": "f2351cb99ac09682a0f11b4f7cec338b0626c748",
+  "objective": "Evaluate the frozen v3.3 zeta34 abstention threshold on the previously sealed N384 safety holdout with no retuning.",
+  "frozen_policy": {
+    "feature": "zeta34",
+    "direction": "recommend-if-zeta34-lte-tau",
+    "tau": 13.39706618860016,
+    "authority_commit": "f2351cb99ac09682a0f11b4f7cec338b0626c748"
+  },
+  "holdout_profile": {"dimension": 384, "atol": 7e-8, "rtol": 7e-6, "profile": "stage-growth-holdout-384"},
+  "upstream_policy": {"event_policy": "k3-development", "budget_reserve_jvp": 80, "budget_fraction": 0.25, "retuning_forbidden": true},
+  "eligible_event": "budget_admitted && prefix_succeeded && audit_full_e_completed && finite(zeta34)",
+  "recommendation": "eligible && zeta34 <= 13.39706618860016",
+  "hard_gates": {
+    "unsafe_recommendations": 0,
+    "minimum_recommendations": 6,
+    "minimum_distinct_recommended_families": 3,
+    "maximum_single_family_fraction": 0.50,
+    "budget_breaches": 0,
+    "runtime_full_e_continuations": 0,
+    "active_switching": false
+  },
+  "interpretation": "This is a sealed empirical safety holdout, not a formal exchangeability-based coverage theorem.",
+  "forbidden": [
+    "threshold retuning",
+    "feature changes",
+    "family-specific thresholds",
+    "N2048 execution",
+    "active switching",
+    "runtime E-K activation"
+  ],
+  "promotion": "Only if every hard gate passes may a subsequent node study frozen-policy full-E shadow economics/order recovery. Otherwise the policy is rejected without retuning."
+}

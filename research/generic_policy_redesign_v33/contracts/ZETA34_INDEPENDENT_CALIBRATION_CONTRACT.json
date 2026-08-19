@@ -1,0 +1,60 @@
+{
+  "schema": "gvjf-zeta34-independent-calibration-contract-v1",
+  "node": "v3.3",
+  "parent_head": "93c3478f3e56ada9c1d9dad43eb55fbf260336e7",
+  "objective": "Calibrate a one-sided abstention threshold for the single preselected v3.2 survivor zeta34 on a previously sealed independent profile, without reopening feature discovery.",
+  "feature": {
+    "name": "zeta34",
+    "definition_authority": "v3.2 quadratic-remainder drift contract",
+    "direction": "higher-is-unsafe",
+    "recommendation_rule": "recommend E audit admissibility only if zeta34 <= tau; otherwise abstain to R-JF",
+    "other_features_forbidden": true
+  },
+  "data_firewall": {
+    "N96_N256": "discovery only; forbidden for v3.3 threshold selection",
+    "N192": {"role": "independent calibration", "dimension": 192, "atol": 1.5e-7, "rtol": 1.5e-5, "authority": "v3.0 predeclaration"},
+    "N384": {"role": "sealed final safety holdout", "dimension": 384, "atol": 7e-8, "rtol": 7e-6},
+    "N2048": "sealed scaling holdout"
+  },
+  "upstream_policy": {
+    "event_policy": "k3-development",
+    "budget_reserve_jvp": 80,
+    "budget_fraction": 0.25,
+    "retuning_forbidden": true
+  },
+  "eligible_event": "budget_admitted && prefix_succeeded && audit_full_e_completed && finite(zeta34)",
+  "candidate_thresholds": "all-abstain plus every distinct finite calibration zeta34 value; recommend iff zeta34 <= tau",
+  "calibration_pass": {
+    "requires_at_least_one_observed_unsafe_event": true,
+    "unsafe_recommendations": 0,
+    "minimum_recommendations_after_margin": 6,
+    "minimum_distinct_recommended_families": 3,
+    "maximum_single_family_fraction": 0.50,
+    "family_specific_thresholds": false
+  },
+  "selection": {
+    "primary": "among zero-unsafe candidates, choose maximum recommendation count subject to the family/coverage gates",
+    "tie_break": "smaller tau",
+    "safety_margin": "replace selected tau by the immediately preceding distinct finite zeta34 value; then re-evaluate every calibration gate; if no predecessor or any gate fails, all-abstain",
+    "no_probability_claim": "This deterministic calibration is not claimed to have finite-sample statistical coverage; the separately sealed N384 holdout is the empirical promotion authority."
+  },
+  "runtime_contract": {
+    "committed_method": "R-JF",
+    "audit_full_e_endpoint": "allowed only to label calibration events",
+    "runtime_full_e_continuations": 0,
+    "active_switching": false,
+    "explicit_jacobian_builds": 0,
+    "newton_iterations": 0
+  },
+  "holdout_rule": "If and only if v3.3 yields a nontrivial frozen threshold, commit the threshold, raw N192 input hashes, selection scan, and source state before N384 is opened in a separate node. If v3.3 yields all-abstain, N384 remains sealed.",
+  "forbidden": [
+    "N384 execution before a nontrivial v3.3 policy is committed",
+    "N2048 execution",
+    "active switching",
+    "runtime E-K activation",
+    "using N96/N256 to choose tau",
+    "changing zeta34 feature form",
+    "family-specific rules",
+    "learned classifiers"
+  ]
+}

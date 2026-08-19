@@ -1,0 +1,66 @@
+{
+  "schema": "gvjf-quadratic-remainder-drift-discovery-contract-v1",
+  "node": "v3.2",
+  "parent_head": "eaae0e07c0da8992e7d8217e3c3691dbff512651",
+  "objective": "Determine whether tolerance-weighted drift after cancelling the common leading c_i^2 quadratic nonlinear-remainder term carries family-robust safety information beyond v3.0/v3.1 scalar-shape and vector-direction features.",
+  "method_constants": {
+    "c2": 0.25,
+    "c3": 0.5,
+    "c4": 0.9
+  },
+  "data_roles": {
+    "N96_rtol3e-6_atol3e-8": "already-consumed discovery replay",
+    "N256_rtol3e-5_atol3e-7": "already-consumed discovery replay",
+    "N192": "sealed independent calibration; forbidden unless one predeclared drift witness survives discovery",
+    "N384": "sealed final safety holdout",
+    "N2048": "sealed scaling holdout"
+  },
+  "quadratic_cancellation": {
+    "Z23": "D3/c3^2 - D2/c2^2",
+    "Z34": "D4/c4^2 - D3/c3^2",
+    "motivation": "For F in C^3 and U_i-y=c_i h F_n+O(h^2), D_i=(1/2)c_i^2 h^2 F''[F_n,F_n]+O(h^3), so Z23 and Z34 are O(h^3)."
+  },
+  "pairwise_tolerance_scale": "s_k^{ij}=atol+rtol*max(abs(y_n,k),abs(U_i,k),abs(U_j,k)) on the same physical-component prefix used by existing early-flow telemetry; trailing time-augmentation clock components are excluded.",
+  "diagnostics": {
+    "zeta23": "abs(h)*sqrt(mean_k((Z23_k/s_k^{23})^2)); stored as a diagnostic component, not an authority witness",
+    "zeta34": "abs(h)*sqrt(mean_k((Z34_k/s_k^{34})^2)); PREDECLARED WITNESS 1",
+    "relative_drift": "(zeta34-zeta23)/(zeta34+zeta23); PREDECLARED WITNESS 2, with exact 0 when both zetas are zero"
+  },
+  "feature_domain": "atol must be finite and positive; rtol must be finite and nonnegative. If any required physical component or scale is nonfinite, or a scale is nonpositive, the affected zeta/relative drift is null. Finite relative_drift is clamped only to [-1,1] for floating roundoff.",
+  "coordinate_scope": "The scalar-atol solver contract guarantees permutation invariance and invariance under common state scaling when atol is scaled by the same common factor. Arbitrary independent component rescaling is not claimed.",
+  "numerical_work_contract": {
+    "added_rhs": 0,
+    "added_jvp": 0,
+    "added_jvp_vectors": 0,
+    "added_phi_actions": 0,
+    "added_jacobian_builds": 0,
+    "added_newton_iterations": 0,
+    "allowed_diagnostic_work": "existing D2/D3/D4 and U2/U3/U4 vector arithmetic, pairwise tolerance scales, WRMS-like reductions, scalar arithmetic only"
+  },
+  "discovery_robustness_gate": {
+    "no_threshold_selection": true,
+    "no_learned_classifier": true,
+    "no_family_identifier": true,
+    "authority_witnesses": ["zeta34", "relative_drift"],
+    "control_diagnostics": ["zeta23", "stage_log_curvature_kappa234", "remainder_chi34"],
+    "required_checks": ["pooled", "N96", "N256", "leave-one-family-out"],
+    "survivor_numeric_requirements": {
+      "pooled_orientation_free_auc_min": 0.70,
+      "minimum_dimension_orientation_free_auc_min": 0.70,
+      "minimum_leave_one_family_out_orientation_free_auc_min": 0.60,
+      "dimension_orientation_must_agree": true
+    },
+    "survivor_rule": "At most one of the two predeclared authority witnesses may advance. It must satisfy every numeric requirement. Numeric decision thresholds remain forbidden on N96/N256 discovery data."
+  },
+  "forbidden": [
+    "N192 execution before a witness survives discovery",
+    "N384 execution",
+    "N2048 execution",
+    "active switching",
+    "runtime E-K activation",
+    "threshold fitting on N96/N256",
+    "family-specific rules",
+    "high-capacity classifiers",
+    "adding RHS/JVP/phi work to obtain the drift feature"
+  ]
+}
