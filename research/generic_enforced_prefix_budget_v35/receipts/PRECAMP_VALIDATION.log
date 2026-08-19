@@ -1,0 +1,188 @@
+=== CLI transactional output ===
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.08s
+     Running tests/cli_contracts.rs (target/debug/deps/cli_contracts-4023c0244c1fbfc9)
+
+running 1 test
+test enforced_prefix_budget_cli_emits_transactional_fields ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 24 filtered out; finished in 0.92s
+
+=== enforced prefix contracts ===
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.06s
+     Running tests/enforced_prefix_budget_contracts.rs (target/debug/deps/enforced_prefix_budget_contracts-94a7d803009270f5)
+
+running 3 tests
+test zero_budget_executes_no_jvp_and_reports_zero_spent_jvp_work ... ok
+test budget_guard_refuses_the_cap_plus_one_jvp_before_operator_call ... ok
+test generous_budget_reproduces_unbudgeted_level2_report_exactly ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/enforced_prefix_budget_runner_contracts.rs (target/debug/deps/enforced_prefix_budget_runner_contracts-4753196217ab0845)
+
+running 2 tests
+test remaining_budget_is_the_frozen_absolute_and_cumulative_minimum ... ok
+test enforced_budget_runner_is_read_only_and_never_records_a_breach ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.73s
+
+=== level2 resume ===
+   Compiling rodas5p-integrators v0.1.0 (/mnt/data/GVJF_V35_WORK_20260819/repo/crates/rodas5p-integrators)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.46s
+     Running tests/pexprb_level2_prefix_contracts.rs (target/debug/deps/pexprb_level2_prefix_contracts-29fd6d29d80c4269)
+
+running 1 test
+test level2_prefix_is_resumable_without_repeating_level1_or_level2_work ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+=== early defect ===
+   Compiling rodas5p-integrators v0.1.0 (/mnt/data/GVJF_V35_WORK_20260819/repo/crates/rodas5p-integrators)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.45s
+     Running tests/early_flow_defect_contracts.rs (target/debug/deps/early_flow_defect_contracts-5619c50d17e03def)
+
+running 4 tests
+test failed_trial_is_explicitly_unscorable_without_inferred_work_or_eta ... ok
+test step_read_only_telemetry_is_bitwise_and_work_counter_neutral ... ok
+test telemetry_respects_linear_zero_and_time_augmented_limits ... ok
+test adaptive_read_only_mode_preserves_outputs_controller_and_existing_work ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+
+=== scaled early defect ===
+   Compiling rodas5p-integrators v0.1.0 (/mnt/data/GVJF_V35_WORK_20260819/repo/crates/rodas5p-integrators)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.48s
+     Running tests/tolerance_scaled_early_defect_contracts.rs (target/debug/deps/tolerance_scaled_early_defect_contracts-27b444e37ada5022)
+
+running 3 tests
+test tolerance_scaled_score_matches_sealed_stage_wrms_formula_and_is_numerically_neutral ... ok
+test tolerance_scaled_score_breaks_the_raw_cross_tolerance_degeneracy_directionally ... ok
+test adaptive_tolerance_scaled_telemetry_preserves_controller_outputs_and_existing_work ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+
+=== fmt ===
+=== clippy ===
+    Checking cfg-if v1.0.4
+    Checking bytemuck v1.25.2
+    Checking libm v0.2.16
+    Checking bitflags v2.13.1
+    Checking reborrow v0.5.5
+    Checking pulp-wasm-simd-flag v0.1.1
+    Checking libc v0.2.189
+    Checking raw-cpuid v11.6.0
+    Checking dyn-stack v0.13.2
+    Checking once_cell v1.21.4
+    Checking nano-gemm-core v0.2.1
+    Checking typenum v1.20.1
+    Checking num-traits v0.2.19
+    Checking serde_core v1.0.229
+    Checking generic-array v0.14.7
+    Checking num-complex v0.4.6
+    Checking memchr v2.8.3
+    Checking pulp v0.22.3
+    Checking block-buffer v0.10.4
+    Checking crypto-common v0.1.7
+    Checking nano-gemm-c64 v0.2.1
+    Checking nano-gemm-c32 v0.2.1
+    Checking nano-gemm-f64 v0.2.1
+    Checking gemm-common v0.19.0
+    Checking gemm-c32 v0.19.0
+    Checking gemm-f64 v0.19.0
+    Checking gemm-f32 v0.19.0
+    Checking gemm-c64 v0.19.0
+    Checking qd v0.8.0
+    Checking nano-gemm-f32 v0.2.1
+    Checking equator v0.2.2
+    Checking crossbeam-utils v0.8.22
+    Checking num_cpus v1.17.0
+    Checking generativity v1.2.1
+    Checking itoa v1.0.18
+    Checking equator v0.6.0
+    Checking faer-traits v0.24.0
+    Checking private-gemm-x86 v0.1.20
+    Checking crossbeam-epoch v0.9.20
+    Checking gemm v0.19.0
+    Checking zmij v1.0.23
+    Checking digest v0.10.7
+    Checking cpufeatures v0.2.17
+    Checking serde_json v1.0.151
+    Checking sha2 v0.10.9
+    Checking thiserror v2.0.19
+    Checking serde v1.0.229
+    Checking crossbeam-deque v0.8.7
+    Checking hex v0.4.3
+    Checking rayon-core v1.13.0
+    Checking either v1.17.0
+    Checking getrandom v0.3.4
+    Checking rand_core v0.9.5
+    Checking rayon v1.12.0
+    Checking zerocopy v0.8.56
+    Checking utf8parse v0.2.2
+    Checking anstyle-parse v1.0.0
+    Checking anstyle-query v1.1.5
+    Checking colorchoice v1.0.5
+    Checking is_terminal_polyfill v1.70.2
+    Checking anstyle v1.0.14
+    Checking anstream v1.0.0
+    Checking csv-core v0.1.13
+    Checking ryu v1.0.23
+    Checking strsim v0.11.1
+    Checking clap_lex v1.1.0
+    Checking clap_builder v4.6.6
+    Checking csv v1.4.0
+    Checking rand_pcg v0.9.0
+    Checking anyhow v1.0.104
+    Checking clap v4.6.6
+    Checking nano-gemm v0.2.2
+    Checking faer v0.24.4
+    Checking ppv-lite86 v0.2.21
+    Checking rand_chacha v0.9.0
+    Checking rand v0.9.5
+    Checking rand_distr v0.5.1
+=== clippy resume ===
+    Checking faer v0.24.4
+    Checking rodas5p-core v0.1.0 (/mnt/data/GVJF_V35_WORK_20260819/repo/crates/rodas5p-core)
+    Checking rodas5p-krylov v0.1.0 (/mnt/data/GVJF_V35_WORK_20260819/repo/crates/rodas5p-krylov)
+    Checking rodas5p-integrators v0.1.0 (/mnt/data/GVJF_V35_WORK_20260819/repo/crates/rodas5p-integrators)
+error: large size difference between variants
+   --> crates/rodas5p-integrators/src/exponential.rs:545:1
+    |
+545 | / pub enum Pexprb54s4BudgetedLevel2PrefixOutcome {
+546 | |     Complete(Pexprb54s4Level2Prefix),
+    | |     -------------------------------- the largest variant contains at least 2592 bytes
+547 | |     BudgetExhausted(Pexprb54s4BudgetExhaustedPrefixReport),
+    | |     ------------------------------------------------------ the second-largest variant contains at least 368 bytes
+548 | | }
+    | |_^ the entire enum is at least 2592 bytes
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#large_enum_variant
+    = note: `-D clippy::large-enum-variant` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::large_enum_variant)]`
+help: consider boxing the large fields or introducing indirection in some other way to reduce the total size of the enum
+    |
+546 -     Complete(Pexprb54s4Level2Prefix),
+546 +     Complete(Box<Pexprb54s4Level2Prefix>),
+    |
+
+error: large size difference between variants
+    --> crates/rodas5p-integrators/src/g4_s5b0_regime_atlas.rs:2457:1
+     |
+2457 | / enum StageGrowthPrefixResolution {
+2458 | |     Complete(StageGrowthAuditSample),
+     | |     -------------------------------- the largest variant contains at least 992 bytes
+2459 | |     BudgetExhausted { used_jvp: u64, work: WorkCounters },
+     | |     ----------------------------------------------------- the second-largest variant contains at least 360 bytes
+2460 | | }
+     | |_^ the entire enum is at least 992 bytes
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#large_enum_variant
+help: consider boxing the large fields or introducing indirection in some other way to reduce the total size of the enum
+     |
+2458 -     Complete(StageGrowthAuditSample),
+2458 +     Complete(Box<StageGrowthAuditSample>),
+     |
+
+error: could not compile `rodas5p-integrators` (lib test) due to 2 previous errors
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `rodas5p-integrators` (lib) due to 2 previous errors

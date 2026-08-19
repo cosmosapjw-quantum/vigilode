@@ -1,0 +1,39 @@
+{
+  "schema": "gvjf-v31-vector-remainder-geometry-discovery-analysis-v1",
+  "events": 48,
+  "unsafe_events": 5,
+  "all_shards_parity_exact": true,
+  "baseline_kappa": {
+    "feature": "stage_log_curvature_kappa234",
+    "pooled_auc": 0.6651162790697676,
+    "min_dimension_auc": 0.6842105263157895,
+    "max_dimension_auc": 0.7916666666666666,
+    "min_leave_one_family_out_auc": 0.5333333333333334,
+    "median_leave_one_family_out_auc": 0.6641463414634146,
+    "pooled_average_precision": 0.36303030303030304
+  },
+  "best_vector_feature": {
+    "feature": "remainder_chi34",
+    "pooled_auc": 0.6093023255813954,
+    "min_dimension_auc": 0.75,
+    "max_dimension_auc": 0.9166666666666666,
+    "min_leave_one_family_out_auc": 0.5405405405405406,
+    "median_leave_one_family_out_auc": 0.6111280487804878,
+    "pooled_average_precision": 0.3894346757421063
+  },
+  "strict_survivor": false,
+  "threshold_selected": false,
+  "N192_executed": false,
+  "N384_executed": false,
+  "N2048_executed": false,
+  "active_switching": false
+}
+
+Robustness ranking:
+                     feature  pooled_auc  min_dimension_auc  max_dimension_auc  min_leave_one_family_out_auc  median_leave_one_family_out_auc  pooled_average_precision
+             remainder_chi34    0.609302           0.750000           0.916667                      0.540541                         0.611128                  0.389435
+          remainder_q34_perp    0.609302           0.750000           0.916667                      0.540541                         0.611128                  0.389435
+             remainder_chi24    0.600000           0.730263           0.916667                      0.540541                         0.605000                  0.263980
+stage_log_curvature_kappa234    0.665116           0.684211           0.791667                      0.533333                         0.664146                  0.363030
+             remainder_chi23    0.590698           0.723684           0.916667                      0.527027                         0.595122                  0.243980
+         remainder_delta_chi    0.576744           0.697368           0.958333                      0.506757                         0.591250                  0.225584
