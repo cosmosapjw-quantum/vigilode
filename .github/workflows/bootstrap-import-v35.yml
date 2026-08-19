@@ -1,0 +1,34 @@
+name: Bootstrap durable v3.5 source
+
+on:
+  push:
+    branches:
+      - bootstrap/import-v3.5-source-patch
+    paths:
+      - bootstrap/v3.5-source.patch
+
+permissions:
+  contents: write
+
+jobs:
+  import-source:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Verify patch digest
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo 'df33ea6965c73a3028f4b8f3d1ca9e362da2c3aef42a8d3ee1cf332003f3f03a  bootstrap/v3.5-source.patch' | sha256sum -c -
+      - name: Apply durable source snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          git apply --index --binary bootstrap/v3.5-source.patch
+          git rm bootstrap/v3.5-source.patch .github/workflows/bootstrap-import-v35.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'bootstrap: import durable v3.5 solver source'
+          git push origin HEAD:bootstrap/import-v3.5-source-patch
