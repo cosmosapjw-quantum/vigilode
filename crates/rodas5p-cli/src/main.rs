@@ -21,7 +21,8 @@ use rodas5p_integrators::{
     UnifiedScientificGateReport, UnifiedScreenProfile, run_g1_transactional_gate,
     run_g2_exponential_gate, run_g3_fused_adaptive_gate, run_g4_prefix_kernel_gate,
     run_g4_s5b0_actual_level1_prefix_family, run_g4_s5b0_actual_level2_prefix_family,
-    run_g4_s5b0_enforced_prefix_budget_family, run_g4_s5b0_regime_atlas,
+    run_g4_s5b0_enforced_prefix_budget_family, run_g4_s5b0_frozen_full_e_shadow_economics,
+    run_g4_s5b0_frozen_full_e_shadow_family, run_g4_s5b0_regime_atlas,
     run_g4_s5b0_rjf_attempt_trace, run_g4_s5b0_rjf_attempt_trace_family, run_g4_s5b0_rjf_only,
     run_g4_s5b0_rjf_only_family, run_g4_s5b0_stage_growth_safety_audit_family,
     run_g4_s5b3_attempt_geometry, run_homotopy_design_check, run_homotopy_experiment_screen,
@@ -200,6 +201,22 @@ enum Command {
         profile: CliStageGrowthSafetyProfile,
         #[arg(long, value_enum)]
         family: CliPolicyRedesignFamily,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Resume retained level-2 prefixes into the frozen read-only v3.6 full-E shadow.
+    GenericFrozenFullEShadow {
+        #[arg(long, value_enum)]
+        profile: CliStageGrowthSafetyProfile,
+        #[arg(long, value_enum)]
+        family: CliPolicyRedesignFamily,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Measure all-six-family optimized paired wall economics for the v3.6 shadow.
+    GenericFrozenFullEShadowEconomics {
+        #[arg(long, value_enum)]
+        profile: CliStageGrowthSafetyProfile,
         #[arg(long)]
         output: PathBuf,
     },
@@ -1357,6 +1374,18 @@ fn main() -> Result<()> {
             output,
         } => {
             let report = run_g4_s5b0_enforced_prefix_budget_family(profile.into(), family.into())?;
+            write_json(&output, &report)?;
+        }
+        Command::GenericFrozenFullEShadow {
+            profile,
+            family,
+            output,
+        } => {
+            let report = run_g4_s5b0_frozen_full_e_shadow_family(profile.into(), family.into())?;
+            write_json(&output, &report)?;
+        }
+        Command::GenericFrozenFullEShadowEconomics { profile, output } => {
+            let report = run_g4_s5b0_frozen_full_e_shadow_economics(profile.into())?;
             write_json(&output, &report)?;
         }
         Command::GenericEarlyDefectAttemptGeometry { profile, output } => {

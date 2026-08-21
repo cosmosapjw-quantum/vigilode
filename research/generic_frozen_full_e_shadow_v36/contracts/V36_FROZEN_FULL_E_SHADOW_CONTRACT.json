@@ -12,19 +12,24 @@
   "active_switching": false,
   "N2048_executed": false,
   "prefix_recomputation_allowed": false,
+  "prefix_cap_breach_behavior": "fail-closed-no-continuation",
   "ledger_semantics": {
     "prefix_budget_ledger": "prefix-jvp-only",
     "total_speculative_ledger": "prefix-plus-continuation-jvp",
     "continuation_feedback_into_later_prefix_caps": false
   },
   "continuation_work_charged": true,
+  "failed_operator_invocation_counter_semantics": "completed-operations-only",
   "continuation_failure_is_hard_failure": true,
   "unsafe_recommendations_allowed": 0,
   "rjf_trace_must_be_exact": true,
   "rjf_parity_excludes": ["attempt_wall_seconds", "accepted_step_wall_seconds"],
   "paired_wall_protocol": {
     "build_profile": "measurement",
+    "build_profile_attestation": "compiled-target-profile-directory",
+    "raw_cargo_profile_recorded_separately": true,
     "suite_scope": "all-six-families",
+    "timed_execution_seam": "raw-suite-both-arms",
     "calibration_arm": "rjf-only",
     "minimum_calibration_wall_seconds": 0.25,
     "maximum_repetitions": 1024,
@@ -33,6 +38,11 @@
     "order": "alternating-rjf-first-shadow-first",
     "gamma_denominator": "sum-absolute-proposed-attempt-h"
   },
+  "realized_cumulative_jvp_ratios": [
+    "prefix-over-committed-rjf",
+    "continuation-over-committed-rjf",
+    "total-speculative-over-committed-rjf"
+  ],
   "consumed_economics_profiles": [96, 192, 256, 320, 384],
   "fresh_shadow_holdout_frozen": false
 }

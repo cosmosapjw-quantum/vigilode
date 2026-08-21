@@ -153,4 +153,67 @@ impl WorkCounters {
             rejected_steps,
         )
     }
+
+    /// Exact component-wise subtraction for ledgers that must prove monotonicity.
+    ///
+    /// Unlike [`Self::delta`], this rejects any component whose cumulative value
+    /// is smaller than the claimed prefix instead of hiding the violation through
+    /// saturation.
+    pub fn checked_delta(self, before: Self) -> Option<Self> {
+        macro_rules! checked_sub_fields {
+            ($($f:ident),* $(,)?) => {{
+                if $(self.$f < before.$f)||* {
+                    None
+                } else {
+                    Some(Self { $($f: self.$f - before.$f,)* })
+                }
+            }};
+        }
+        checked_sub_fields!(
+            rhs_calls,
+            rhs_batch_calls,
+            rhs_evaluations,
+            ft_calls,
+            jacobian_builds,
+            jvp_calls,
+            jvp_vectors,
+            mass_matvecs,
+            nonlinear_solves,
+            nonlinear_iterations,
+            nonlinear_residual_evaluations,
+            nonlinear_jacobian_evaluations,
+            nonlinear_failures,
+            linear_solves,
+            linear_iterations,
+            linear_matvecs,
+            preconditioner_apps,
+            direct_factorizations,
+            direct_solve_calls,
+            recycle_projection_calls,
+            recycle_same_operator_uses,
+            recycle_cross_operator_refreshes,
+            recycle_refresh_matvecs,
+            recycle_updates,
+            recycle_vectors_selected,
+            recycle_dropped_vectors,
+            harmonic_ritz_solves,
+            orthogonalization_inner_products,
+            orthogonalization_vector_updates,
+            diagnostic_matvecs,
+            phi_actions,
+            phi_krylov_vectors,
+            phi_projected_exponentials,
+            phi_restarts,
+            phi_dense_oracle_calls,
+            block_linear_solves,
+            block_linear_iterations,
+            block_matvecs,
+            block_preconditioner_apps,
+            fast_attempts,
+            fast_accepts,
+            fallback_steps,
+            accepted_steps,
+            rejected_steps,
+        )
+    }
 }
