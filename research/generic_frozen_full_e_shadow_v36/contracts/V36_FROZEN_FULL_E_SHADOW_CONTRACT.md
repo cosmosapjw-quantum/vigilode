@@ -31,10 +31,26 @@ For every recommendation:
 - `prefix_work` is the retained level-1+2 cumulative work;
 - `full_e_work` is the cumulative pexprb54s4 work after endpoint completion;
 - `continuation_work = full_e_work.delta(prefix_work)`;
-- `speculative_jvp_after = speculative_jvp_before + prefix_jvp + continuation_jvp`;
+- `total_speculative_jvp_after = total_speculative_jvp_before + prefix_jvp + continuation_jvp`;
 - all failed/discarded work remains charged.
 
 Continuation work is not subject to a new post-hoc cap in v3.6; this node measures whether a separate continuation transaction is needed.
+
+Two ledgers are intentionally distinct.  The frozen v3.5 prefix budget keeps
+its original prefix-only state
+
+`S_prefix_after = S_prefix_before + prefix_jvp`,
+
+and only `S_prefix` enters
+`B_k=min(80,(R_k/4).saturating_sub(S_prefix_k))`.  The new
+`S_total` ledger additionally charges continuation work for economics and
+auditability, but does not feed back into later prefix admission in this node.
+This preserves the already-frozen recommendation chain instead of silently
+changing the v3.5 policy after observing continuation costs.
+
+An endpoint continuation failure is a hard shadow failure.  Every completed
+counter before the error remains in `full_e_work`/`continuation_work`; the row
+is neither discarded nor treated as an admissible recommendation.
 
 ## Safety and economics gates
 
@@ -56,3 +72,29 @@ Economics are descriptive in this node. Authority outputs include:
 - same proposed physical interval cost ratio `Gamma_E/Gamma_R` for locally admissible recommendations.
 
 No active-polyalgorithm speedup claim is authorized.
+
+R-JF parity excludes nondeterministic wall-clock fields only.  Every available
+deterministic attempt, accepted-step, trajectory, and work field must match
+bitwise.  State/controller/output parity may be claimed only if the
+implementation emits and matches explicit deterministic digests; trace parity
+alone is not promoted to a stronger state claim.
+
+## Frozen paired-wall protocol
+
+Runtime economics use the existing repository canonical timing convention:
+
+- optimized `measurement` build only;
+- one whole-profile suite contains all six frozen families at the selected
+  dimension/tolerance profile;
+- calibrate repetitions on the R-JF-only arm by doubling from one until at
+  least 0.25 wall seconds or 1024 repetitions;
+- one alternating-order warm-up pair;
+- seven measured pairs, alternating R-first and shadow-first;
+- preserve every pair rather than selecting a favorable repetition;
+- `Gamma = wall_seconds / sum(abs(proposed_attempt_h))`; exact R-JF trace
+  parity makes the denominators identical between arms.
+
+The consumed N=96/192/256/320/384 profiles may establish implementation and
+descriptive economics only.  They are not fresh safety evidence.  Any new
+shadow holdout must receive a separate committed profile/coverage contract
+before its first solver output.  N=2048 remains sealed.
