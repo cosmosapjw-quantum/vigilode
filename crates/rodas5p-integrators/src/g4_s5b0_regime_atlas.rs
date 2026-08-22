@@ -3740,6 +3740,12 @@ fn run_rjf_frozen_full_e_shadow_trajectory(
                                         .saturating_add(ledger.continuation_work.jvp_vectors);
                                     row.shadow_full_e_failure = Some(error.to_string());
                                 }
+                                Ok(Pexprb54s4Level2ContinuationOutcome::BudgetExhausted { .. }) => {
+                                    row.shadow_full_e_failure = Some(
+                                        "unbounded v3.6 continuation unexpectedly exhausted a budget"
+                                            .into(),
+                                    );
+                                }
                                 Err(error) => {
                                     row.shadow_full_e_failure = Some(error.to_string());
                                 }

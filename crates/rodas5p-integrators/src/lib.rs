@@ -82,6 +82,7 @@ pub use exponential::{
     fused_phi_action, fused_phi_action_incremental, fused_phi_linear_combination,
     krylov_phi_action, pexprb54s4_fused_step, pexprb54s4_fused_step_resume_level1,
     pexprb54s4_fused_step_resume_level2, pexprb54s4_fused_step_resume_level2_accounted,
+    pexprb54s4_fused_step_resume_level2_accounted_jvp_budget,
     pexprb54s4_fused_step_with_telemetry_mode,
     pexprb54s4_fused_step_with_tolerance_scaled_telemetry,
     pexprb54s4_level1_prefix_with_tolerance_scaled_telemetry,

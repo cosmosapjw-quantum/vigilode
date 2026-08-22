@@ -534,7 +534,6 @@ impl Pexprb54s4Level2Prefix {
 
 const PEXPRB_PREFIX_JVP_BUDGET_EXHAUSTED: &str =
     "pexprb54s4 speculative prefix JVP budget exhausted";
-#[cfg(test)]
 const PEXPRB_CONTINUATION_JVP_BUDGET_EXHAUSTED: &str =
     "pexprb54s4 retained level-2 continuation JVP budget exhausted";
 
@@ -588,6 +587,11 @@ pub enum Pexprb54s4Level2ContinuationOutcome {
         report: Box<FusedExponentialStepReport>,
         ledger: Box<Pexprb54s4Level2ContinuationLedger>,
     },
+    BudgetExhausted {
+        jvp_cap: u64,
+        used_jvp_vectors: u64,
+        ledger: Box<Pexprb54s4Level2ContinuationLedger>,
+    },
     Failed {
         error: CoreError,
         ledger: Box<Pexprb54s4Level2ContinuationLedger>,
@@ -606,7 +610,6 @@ impl Pexprb54s4JvpBudget {
         Self::with_exhaustion_message(limit, PEXPRB_PREFIX_JVP_BUDGET_EXHAUSTED)
     }
 
-    #[cfg(test)]
     fn new_continuation(limit: u64) -> Self {
         Self::with_exhaustion_message(limit, PEXPRB_CONTINUATION_JVP_BUDGET_EXHAUSTED)
     }
@@ -707,7 +710,6 @@ fn is_pexprb_prefix_budget_exhaustion(error: &CoreError) -> bool {
     matches!(error, CoreError::LinearSolve(message) if message.contains(PEXPRB_PREFIX_JVP_BUDGET_EXHAUSTED))
 }
 
-#[cfg(test)]
 fn is_pexprb_continuation_budget_exhaustion(error: &CoreError) -> bool {
     matches!(error, CoreError::LinearSolve(message) if message.contains(PEXPRB_CONTINUATION_JVP_BUDGET_EXHAUSTED))
 }
@@ -3022,6 +3024,32 @@ pub fn pexprb54s4_fused_step_resume_level2_accounted(
     prefix: Pexprb54s4Level2Prefix,
     execution: &ParallelExecution,
 ) -> CoreResult<Pexprb54s4Level2ContinuationOutcome> {
+    pexprb54s4_fused_step_resume_level2_accounted_impl(prefix, execution, None)
+}
+
+/// Consume a retained level-2 prefix exactly once under an event-local continuation JVP cap.
+///
+/// The bounded authority path is deliberately sequential in v3.7. This keeps one prospective
+/// counter authoritative for both endpoint actions; parallel shared-budget execution remains
+/// deferred until it has a separate deterministic contract.
+pub fn pexprb54s4_fused_step_resume_level2_accounted_jvp_budget(
+    prefix: Pexprb54s4Level2Prefix,
+    execution: &ParallelExecution,
+    jvp_cap: u64,
+) -> CoreResult<Pexprb54s4Level2ContinuationOutcome> {
+    if execution.threads() != 1 {
+        return Err(CoreError::InvalidInput(
+            "bounded retained level-2 continuation requires sequential execution".into(),
+        ));
+    }
+    pexprb54s4_fused_step_resume_level2_accounted_impl(prefix, execution, Some(jvp_cap))
+}
+
+fn pexprb54s4_fused_step_resume_level2_accounted_impl(
+    prefix: Pexprb54s4Level2Prefix,
+    execution: &ParallelExecution,
+    jvp_cap: Option<u64>,
+) -> CoreResult<Pexprb54s4Level2ContinuationOutcome> {
     let Pexprb54s4Level2Prefix {
         y,
         h,
@@ -3038,6 +3066,15 @@ pub fn pexprb54s4_fused_step_resume_level2_accounted(
     } = prefix;
     let tableau = pexprb54s4_tableau();
     let prefix_work = report.cumulative_work;
+    let continuation_budget =
+        jvp_cap.map(|cap| Arc::new(Pexprb54s4JvpBudget::new_continuation(cap)));
+    let continuation_operator: Arc<dyn LinearOperator> = match &continuation_budget {
+        Some(budget) => Arc::new(Pexprb54s4BudgetedOperator::new(
+            operator,
+            Arc::clone(budget),
+        )),
+        None => operator,
+    };
 
     // Dependency level 3: main and embedded endpoints are independent.
     //
@@ -3048,19 +3085,29 @@ pub fn pexprb54s4_fused_step_resume_level2_accounted(
     let endpoints = execution.map_ordered(&endpoint_ids, |id| {
         let mut local = WorkCounters::default();
         let terms = pexprb54s4_level2_endpoint_terms(*id, tableau, &f0, &d2, &d3, &d4);
-        let action = fused_phi_linear_combination(operator.clone(), h, &terms, config, &mut local)
-            .and_then(require_fused);
+        let action = fused_phi_linear_combination(
+            Arc::clone(&continuation_operator),
+            h,
+            &terms,
+            config,
+            &mut local,
+        )
+        .and_then(require_fused);
         Ok((action, local))
     })?;
 
     let mut continuation_work = WorkCounters::default();
     let mut endpoint_actions = Vec::with_capacity(2);
-    let mut first_error = None;
+    let mut first_hard_error = None;
+    let mut budget_exhausted = false;
     for (action, local) in endpoints {
         continuation_work.accumulate(local);
         match action {
             Ok(action) => endpoint_actions.push(action),
-            Err(error) if first_error.is_none() => first_error = Some(error),
+            Err(error) if is_pexprb_continuation_budget_exhaustion(&error) => {
+                budget_exhausted = true;
+            }
+            Err(error) if first_hard_error.is_none() => first_hard_error = Some(error),
             Err(_) => {}
         }
     }
@@ -3072,9 +3119,26 @@ pub fn pexprb54s4_fused_step_resume_level2_accounted(
         continuation_work,
         cumulative_work,
     };
-    if let Some(error) = first_error {
+    if let Some(error) = first_hard_error {
         return Ok(Pexprb54s4Level2ContinuationOutcome::Failed {
             error,
+            ledger: Box::new(ledger),
+        });
+    }
+    if budget_exhausted {
+        let budget = continuation_budget.ok_or_else(|| {
+            CoreError::LinearSolve(
+                "unbounded retained level-2 continuation reported budget exhaustion".into(),
+            )
+        })?;
+        if budget.used() != continuation_work.jvp_vectors {
+            return Err(CoreError::LinearSolve(
+                "retained level-2 continuation budget/work ledger mismatch".into(),
+            ));
+        }
+        return Ok(Pexprb54s4Level2ContinuationOutcome::BudgetExhausted {
+            jvp_cap: jvp_cap.expect("budget exhaustion requires a configured cap"),
+            used_jvp_vectors: budget.used(),
             ledger: Box::new(ledger),
         });
     }

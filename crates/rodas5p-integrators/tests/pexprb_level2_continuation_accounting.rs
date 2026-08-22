@@ -150,6 +150,9 @@ fn accounted_success_matches_the_compatibility_wrapper_and_round_trips_work() {
         Pexprb54s4Level2ContinuationOutcome::Failed { error, .. } => {
             panic!("unexpected accounted continuation failure: {error}")
         }
+        Pexprb54s4Level2ContinuationOutcome::BudgetExhausted { .. } => {
+            panic!("unbounded accounted continuation exhausted a budget")
+        }
     }
 }
 
@@ -181,6 +184,9 @@ fn accounted_resume_never_recomputes_the_retained_prefix_rhs() {
         }
         Pexprb54s4Level2ContinuationOutcome::Failed { error, .. } => {
             panic!("retained-prefix continuation unexpectedly failed: {error}")
+        }
+        Pexprb54s4Level2ContinuationOutcome::BudgetExhausted { .. } => {
+            panic!("unbounded retained-prefix continuation exhausted a budget")
         }
     }
 }
@@ -217,6 +223,9 @@ fn accounted_failure_charges_all_completed_work_across_endpoint_actions() {
         }
         Pexprb54s4Level2ContinuationOutcome::Complete { .. } => {
             panic!("deterministic endpoint failure unexpectedly completed")
+        }
+        Pexprb54s4Level2ContinuationOutcome::BudgetExhausted { .. } => {
+            panic!("unbounded deterministic endpoint failure exhausted a budget")
         }
     }
 }
