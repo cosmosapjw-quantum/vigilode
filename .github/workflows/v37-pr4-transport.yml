@@ -1,0 +1,89 @@
+name: Publish verified v3.7 continuation branch
+
+on:
+  push:
+    branches:
+      - transport/v37-continuation-pr4-20260822
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    if: github.repository == 'cosmosapjw-quantum/vigilode'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out transport branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Reconstruct and publish exact verified tree
+        shell: bash
+        env:
+          BASE_SHA: e493d21f9a9c89cae995b44e0847db4b4292f421
+          EXPECTED_TREE: 4a82e7b9196c383fdd9a9cae5ba566035ea420e0
+          FEATURE_BRANCH: research/v37-continuation-transaction-implementation
+          B64_SHA256: 97a23f4a2576ddb1f252b27ed0ccbcfb1cd290c4ad88b2073a8c6119bd9a8983
+          GZIP_SHA256: a5c08518a1e8dce216a247f14877838305c5adfe7f389b6222d804534f059586
+          PATCH_SHA256: ba9495575cbf8bc996f4fb1573eec45e106cb34db1749c5c8d3280557b9b47ad
+          VERIFIED_LOCAL_HEAD: 4384eab8397b20903377705a99b4db6e8370e2bd
+          VERIFIED_BUNDLE_SHA256: 24c27dd62c090482b2ae584373f2f8dc7f493b31f82df85921ce29558f177217
+        run: |
+          set -euo pipefail
+
+          cat .transport/v37-patch/part-*.b64 > /tmp/v37.patch.gz.b64
+          printf '%s  %s\n' "$B64_SHA256" /tmp/v37.patch.gz.b64 | sha256sum -c -
+          base64 --decode /tmp/v37.patch.gz.b64 > /tmp/v37.patch.gz
+          printf '%s  %s\n' "$GZIP_SHA256" /tmp/v37.patch.gz | sha256sum -c -
+          gzip --decompress --stdout /tmp/v37.patch.gz > /tmp/v37.patch
+          printf '%s  %s\n' "$PATCH_SHA256" /tmp/v37.patch | sha256sum -c -
+
+          git fetch origin main
+          actual_base="$(git rev-parse origin/main)"
+          if [[ "$actual_base" != "$BASE_SHA" ]]; then
+            echo "main moved: expected $BASE_SHA, found $actual_base" >&2
+            exit 1
+          fi
+
+          if git ls-remote --exit-code --heads origin "refs/heads/$FEATURE_BRANCH" >/tmp/existing-feature-ref; then
+            echo "feature branch already exists; refusing overwrite" >&2
+            cat /tmp/existing-feature-ref >&2
+            exit 1
+          fi
+
+          git checkout --detach "$BASE_SHA"
+          git switch --create "$FEATURE_BRANCH"
+          git apply --index /tmp/v37.patch
+
+          actual_tree="$(git write-tree)"
+          if [[ "$actual_tree" != "$EXPECTED_TREE" ]]; then
+            echo "tree mismatch: expected $EXPECTED_TREE, found $actual_tree" >&2
+            exit 1
+          fi
+
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit \
+            -m 'feat: implement bounded v3.7 continuation transaction' \
+            -m "Published from verified local head $VERIFIED_LOCAL_HEAD with exact tree $EXPECTED_TREE. The durable local bundle (SHA-256 $VERIFIED_BUNDLE_SHA256) preserves the eight-commit development history; this remote publication is one transparent transport commit because direct Git transport was unavailable in the originating runtime."
+
+          committed_tree="$(git rev-parse 'HEAD^{tree}')"
+          if [[ "$committed_tree" != "$EXPECTED_TREE" ]]; then
+            echo "committed tree mismatch: expected $EXPECTED_TREE, found $committed_tree" >&2
+            exit 1
+          fi
+
+          git push origin "HEAD:refs/heads/$FEATURE_BRANCH"
+          git fetch origin "refs/heads/$FEATURE_BRANCH:refs/remotes/origin/$FEATURE_BRANCH"
+
+          remote_tree="$(git rev-parse "refs/remotes/origin/$FEATURE_BRANCH^{tree}")"
+          if [[ "$remote_tree" != "$EXPECTED_TREE" ]]; then
+            echo "remote tree mismatch: expected $EXPECTED_TREE, found $remote_tree" >&2
+            exit 1
+          fi
+
+          echo "REMOTE_FEATURE_HEAD=$(git rev-parse "refs/remotes/origin/$FEATURE_BRANCH")"
+          echo "REMOTE_FEATURE_TREE=$remote_tree"
