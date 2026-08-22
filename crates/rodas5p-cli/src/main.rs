@@ -15,16 +15,17 @@ use rodas5p_fair_ab::{
 use rodas5p_integrators::{
     CandidateCatalog, CandidateFamily, CandidateStatus, G1TransactionalGateProfile,
     G2ExponentialGateProfile, G3FusedAdaptiveProfile, G4PrefixKernelProfile, G4S5B0Family,
-    G4S5B0PrefixProbePolicy, G4S5B0Profile, G4S5B3Profile, HomotopyExperimentProfile,
-    HomotopyRhsTelemetryProfile, MatrixFreeCommonWProfile, NativeIntegratorGateReport,
-    PathControllerProfile, StageBatchFeasibilityProfile, UnifiedNonlinearScreen,
-    UnifiedScientificGateReport, UnifiedScreenProfile, run_g1_transactional_gate,
-    run_g2_exponential_gate, run_g3_fused_adaptive_gate, run_g4_prefix_kernel_gate,
-    run_g4_s5b0_actual_level1_prefix_family, run_g4_s5b0_actual_level2_prefix_family,
-    run_g4_s5b0_enforced_prefix_budget_family, run_g4_s5b0_frozen_full_e_shadow_economics,
-    run_g4_s5b0_frozen_full_e_shadow_family, run_g4_s5b0_regime_atlas,
-    run_g4_s5b0_rjf_attempt_trace, run_g4_s5b0_rjf_attempt_trace_family, run_g4_s5b0_rjf_only,
-    run_g4_s5b0_rjf_only_family, run_g4_s5b0_stage_growth_safety_audit_family,
+    G4S5B0PrefixProbePolicy, G4S5B0Profile, G4S5B0V37ContinuationTransactionReport, G4S5B3Profile,
+    HomotopyExperimentProfile, HomotopyRhsTelemetryProfile, MatrixFreeCommonWProfile,
+    NativeIntegratorGateReport, PathControllerProfile, StageBatchFeasibilityProfile,
+    UnifiedNonlinearScreen, UnifiedScientificGateReport, UnifiedScreenProfile,
+    run_g1_transactional_gate, run_g2_exponential_gate, run_g3_fused_adaptive_gate,
+    run_g4_prefix_kernel_gate, run_g4_s5b0_actual_level1_prefix_family,
+    run_g4_s5b0_actual_level2_prefix_family, run_g4_s5b0_enforced_prefix_budget_family,
+    run_g4_s5b0_frozen_full_e_shadow_economics, run_g4_s5b0_frozen_full_e_shadow_family,
+    run_g4_s5b0_regime_atlas, run_g4_s5b0_rjf_attempt_trace, run_g4_s5b0_rjf_attempt_trace_family,
+    run_g4_s5b0_rjf_only, run_g4_s5b0_rjf_only_family,
+    run_g4_s5b0_stage_growth_safety_audit_family, run_g4_s5b0_v37_continuation_transaction_family,
     run_g4_s5b3_attempt_geometry, run_homotopy_design_check, run_homotopy_experiment_screen,
     run_homotopy_order_policy_screen, run_homotopy_rhs_telemetry_screen,
     run_matrix_free_common_w_gate, run_native_integrator_gates,
@@ -206,6 +207,15 @@ enum Command {
     },
     /// Resume retained level-2 prefixes into the frozen read-only v3.6 full-E shadow.
     GenericFrozenFullEShadow {
+        #[arg(long, value_enum)]
+        profile: CliStageGrowthSafetyProfile,
+        #[arg(long, value_enum)]
+        family: CliPolicyRedesignFamily,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Resume frozen recommendations under the event-local v3.7 continuation transaction.
+    GenericV37ContinuationTransaction {
         #[arg(long, value_enum)]
         profile: CliStageGrowthSafetyProfile,
         #[arg(long, value_enum)]
@@ -629,6 +639,18 @@ fn write_json<T: Serialize>(path: &Path, value: &T) -> Result<()> {
     }
     let bytes = serde_json::to_vec_pretty(value)?;
     fs::write(path, bytes).with_context(|| format!("writing {}", path.display()))
+}
+
+fn write_v37_continuation_transaction_report(
+    path: &Path,
+    report: &G4S5B0V37ContinuationTransactionReport,
+) -> Result<()> {
+    if !report.hard_gates.passed {
+        anyhow::bail!(
+            "v3.7 continuation transaction hard gates failed; refusing partial authority output"
+        );
+    }
+    write_json(path, report)
 }
 
 fn strict_cells() -> Vec<BenchmarkCell> {
@@ -1384,6 +1406,15 @@ fn main() -> Result<()> {
             let report = run_g4_s5b0_frozen_full_e_shadow_family(profile.into(), family.into())?;
             write_json(&output, &report)?;
         }
+        Command::GenericV37ContinuationTransaction {
+            profile,
+            family,
+            output,
+        } => {
+            let report =
+                run_g4_s5b0_v37_continuation_transaction_family(profile.into(), family.into())?;
+            write_v37_continuation_transaction_report(&output, &report)?;
+        }
         Command::GenericFrozenFullEShadowEconomics { profile, output } => {
             let report = run_g4_s5b0_frozen_full_e_shadow_economics(profile.into())?;
             write_json(&output, &report)?;
@@ -1604,6 +1635,26 @@ mod unified_assessment_tests {
                 blocker.contains("median nonlinear candidate wall speedup below")
             })
         );
+    }
+
+    #[test]
+    fn v37_failed_hard_gate_refuses_to_create_authority_output() {
+        let mut report = run_g4_s5b0_v37_continuation_transaction_family(
+            G4S5B0Profile::StageGrowthCalibration96,
+            G4S5B0Family::RobertsonRamped,
+        )
+        .unwrap();
+        report.hard_gates.passed = false;
+        let mut output = std::env::temp_dir();
+        output.push(format!(
+            "rodas5p-v37-fail-closed-{}.json",
+            std::process::id()
+        ));
+        let _ = std::fs::remove_file(&output);
+
+        let error = write_v37_continuation_transaction_report(&output, &report).unwrap_err();
+        assert!(error.to_string().contains("hard gates failed"));
+        assert!(!output.exists());
     }
 
     #[test]

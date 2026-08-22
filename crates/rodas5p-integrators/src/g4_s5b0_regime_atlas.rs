@@ -14,6 +14,7 @@ use crate::{
     Pexprb54s4Level2PrefixReport, Pexprb54s4QuadraticRemainderDrift,
     Pexprb54s4RemainderVectorGeometry, pexprb54s4_fused_step, pexprb54s4_fused_step_resume_level2,
     pexprb54s4_fused_step_resume_level2_accounted,
+    pexprb54s4_fused_step_resume_level2_accounted_jvp_budget,
     pexprb54s4_level1_prefix_with_tolerance_scaled_telemetry,
     pexprb54s4_level2_prefix_resume_level1,
     pexprb54s4_level2_prefix_with_tolerance_scaled_telemetry_jvp_budget,
@@ -508,6 +509,136 @@ pub struct G4S5B0FrozenFullEShadowReport {
     pub attempt_rows: Vec<G4S5B0RjfAttemptRow>,
     pub accepted_rows: Vec<G4S5B0StepRow>,
     pub rows: Vec<G4S5B0FrozenFullEShadowRow>,
+    pub trajectories: Vec<G4S5B0TrajectorySummary>,
+    pub limitations: Vec<String>,
+}
+
+/// Frozen v3.7 event-local continuation budget. This is distinct from the prefix cap even though
+/// both currently equal 80 JVP vectors.
+pub const V37_CONTINUATION_JVP_CAP: u64 = 80;
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct G4S5B0V37ContinuationTransactionHardGates {
+    pub all_rjf_trajectories_successful: bool,
+    pub rjf_trace_exact_excluding_wall: bool,
+    pub zero_prefix_budget_breaches: bool,
+    pub prefix_transactions_resolved: bool,
+    pub continuation_transactions_resolved: bool,
+    pub zero_continuation_budget_breaches: bool,
+    pub zero_continuation_numerical_failures: bool,
+    pub zero_unsafe_recommendations: bool,
+    pub exhausted_rows_emit_no_endpoint_or_labels: bool,
+    pub work_ledgers_exact: bool,
+    pub realized_work_ratios_finite: bool,
+    pub resume_cardinality_exact: bool,
+    pub shadow_implicit_expensive_work_zero: bool,
+    pub active_switching_false: bool,
+    pub passed: bool,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct G4S5B0V37ContinuationTransactionRow {
+    pub trajectory_id: String,
+    pub family: String,
+    pub dimension: usize,
+    pub rtol: f64,
+    pub decision_accepted_step: usize,
+    pub feature_value: Option<f64>,
+    pub target_attempt_index: usize,
+    pub target_accepted_steps_before: usize,
+    pub t_start: f64,
+    pub h: f64,
+    pub target_r_attempt_accepted: bool,
+    pub target_r_error_norm: Option<f64>,
+    pub target_r_recoverable_failure: bool,
+    pub committed_rjf_jvp_before_target: u64,
+    pub prefix_speculative_jvp_before_target: u64,
+    pub prefix_speculative_jvp_after_target: u64,
+    pub total_speculative_jvp_before_target: u64,
+    pub total_speculative_jvp_after_target: u64,
+    pub budget_reserve_jvp: u64,
+    pub budget_cap_jvp: u64,
+    pub budget_fraction: f64,
+    pub budget_admitted: bool,
+    pub budget_exhausted: bool,
+    pub budget_breached: bool,
+    pub prefix_succeeded: bool,
+    pub prefix_failure: Option<String>,
+    pub actual_prefix_jvp_vectors: Option<u64>,
+    pub prefix_work: Option<WorkCounters>,
+    pub normalized_stage_growth_a34: Option<f64>,
+    pub rho2: Option<f64>,
+    pub rho3: Option<f64>,
+    pub rho4: Option<f64>,
+    pub stage_log_slope_s23: Option<f64>,
+    pub stage_log_slope_s34: Option<f64>,
+    pub stage_log_curvature_kappa234: Option<f64>,
+    pub remainder_chi23: Option<f64>,
+    pub remainder_chi34: Option<f64>,
+    pub remainder_chi24: Option<f64>,
+    pub remainder_q34_perp: Option<f64>,
+    pub remainder_delta_chi: Option<f64>,
+    pub quadratic_drift_zeta23: Option<f64>,
+    pub quadratic_drift_zeta34: Option<f64>,
+    pub quadratic_drift_relative: Option<f64>,
+    pub frozen_zeta34_tau: f64,
+    pub recommended: bool,
+    pub retained_level2_resumed: bool,
+    pub continuation_jvp_cap: u64,
+    pub continuation_outcome: String,
+    pub continuation_budget_exhausted: bool,
+    pub continuation_used_jvp_vectors: Option<u64>,
+    pub shadow_prefix_wall_seconds: f64,
+    pub shadow_continuation_wall_seconds: Option<f64>,
+    pub shadow_total_wall_seconds: f64,
+    pub shadow_full_e_completed: bool,
+    pub shadow_full_e_total_error: Option<f64>,
+    pub shadow_full_e_locally_admissible: Option<bool>,
+    pub shadow_full_e_failure: Option<String>,
+    pub continuation_work: Option<WorkCounters>,
+    pub shadow_full_e_work: Option<WorkCounters>,
+    pub work_roundtrip_exact: bool,
+    pub target_rjf_wall_seconds: Option<f64>,
+    pub target_rjf_jvp_vectors: Option<u64>,
+    pub prefix_over_target_rjf_jvp: Option<f64>,
+    pub continuation_over_target_rjf_jvp: Option<f64>,
+    pub full_e_over_target_rjf_jvp: Option<f64>,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct G4S5B0V37ContinuationTransactionReport {
+    pub schema: &'static str,
+    pub status: &'static str,
+    pub profile: &'static str,
+    pub switching_active: bool,
+    pub committed_method: &'static str,
+    pub shadow_method: &'static str,
+    pub persistence_k: usize,
+    pub absolute_prefix_jvp_cap: u64,
+    pub absolute_continuation_jvp_cap: u64,
+    pub frozen_cumulative_prefix_budget_fraction: f64,
+    pub frozen_zeta34_tau: f64,
+    pub recommendations: usize,
+    pub retained_level2_resumptions: usize,
+    pub shadow_full_e_completions: usize,
+    pub continuation_budget_exhaustions: usize,
+    pub shadow_full_e_failures: usize,
+    pub unsafe_recommendations: usize,
+    pub prefix_budget_breaches: usize,
+    pub prefix_budget_exhaustions: usize,
+    pub continuation_budget_breaches: usize,
+    pub prefix_speculative_work: WorkCounters,
+    pub continuation_work: WorkCounters,
+    pub total_speculative_work: WorkCounters,
+    pub committed_rjf_jvp_vectors: u64,
+    pub realized_prefix_over_committed_rjf_jvp: f64,
+    pub realized_continuation_over_committed_rjf_jvp: f64,
+    pub realized_total_speculative_over_committed_rjf_jvp: f64,
+    pub rjf_parity: G4S5B0RjfParitySummary,
+    pub hard_gates: G4S5B0V37ContinuationTransactionHardGates,
+    pub attempt_rows: Vec<G4S5B0RjfAttemptRow>,
+    pub accepted_rows: Vec<G4S5B0StepRow>,
+    pub rows: Vec<G4S5B0V37ContinuationTransactionRow>,
     pub trajectories: Vec<G4S5B0TrajectorySummary>,
     pub limitations: Vec<String>,
 }
@@ -3572,13 +3703,116 @@ fn new_frozen_shadow_row(
     }
 }
 
+#[derive(Clone, Copy)]
+enum FrozenShadowContinuationMode {
+    UnboundedV36,
+    BoundedV37 { jvp_cap: u64 },
+}
+
+impl FrozenShadowContinuationMode {
+    fn jvp_cap(self) -> Option<u64> {
+        match self {
+            Self::UnboundedV36 => None,
+            Self::BoundedV37 { jvp_cap } => Some(jvp_cap),
+        }
+    }
+}
+
+struct FrozenFullEShadowRuntimeRow {
+    row: G4S5B0FrozenFullEShadowRow,
+    continuation_jvp_cap: Option<u64>,
+    continuation_outcome: &'static str,
+    continuation_budget_exhausted: bool,
+    continuation_used_jvp_vectors: Option<u64>,
+}
+
+impl FrozenFullEShadowRuntimeRow {
+    fn into_v37(self) -> CoreResult<G4S5B0V37ContinuationTransactionRow> {
+        let continuation_jvp_cap = self.continuation_jvp_cap.ok_or_else(|| {
+            CoreError::InvalidInput("v3.7 row missing continuation JVP cap".into())
+        })?;
+        let row = self.row;
+        let shadow_full_e_locally_admissible = row
+            .shadow_full_e_completed
+            .then_some(row.shadow_full_e_locally_admissible);
+        Ok(G4S5B0V37ContinuationTransactionRow {
+            trajectory_id: row.trajectory_id,
+            family: row.family,
+            dimension: row.dimension,
+            rtol: row.rtol,
+            decision_accepted_step: row.decision_accepted_step,
+            feature_value: row.feature_value,
+            target_attempt_index: row.target_attempt_index,
+            target_accepted_steps_before: row.target_accepted_steps_before,
+            t_start: row.t_start,
+            h: row.h,
+            target_r_attempt_accepted: row.target_r_attempt_accepted,
+            target_r_error_norm: row.target_r_error_norm,
+            target_r_recoverable_failure: row.target_r_recoverable_failure,
+            committed_rjf_jvp_before_target: row.committed_rjf_jvp_before_target,
+            prefix_speculative_jvp_before_target: row.prefix_speculative_jvp_before_target,
+            prefix_speculative_jvp_after_target: row.prefix_speculative_jvp_after_target,
+            total_speculative_jvp_before_target: row.total_speculative_jvp_before_target,
+            total_speculative_jvp_after_target: row.total_speculative_jvp_after_target,
+            budget_reserve_jvp: row.budget_reserve_jvp,
+            budget_cap_jvp: row.budget_cap_jvp,
+            budget_fraction: row.budget_fraction,
+            budget_admitted: row.budget_admitted,
+            budget_exhausted: row.budget_exhausted,
+            budget_breached: row.budget_breached,
+            prefix_succeeded: row.prefix_succeeded,
+            prefix_failure: row.prefix_failure,
+            actual_prefix_jvp_vectors: row.actual_prefix_jvp_vectors,
+            prefix_work: row.prefix_work,
+            normalized_stage_growth_a34: row.normalized_stage_growth_a34,
+            rho2: row.rho2,
+            rho3: row.rho3,
+            rho4: row.rho4,
+            stage_log_slope_s23: row.stage_log_slope_s23,
+            stage_log_slope_s34: row.stage_log_slope_s34,
+            stage_log_curvature_kappa234: row.stage_log_curvature_kappa234,
+            remainder_chi23: row.remainder_chi23,
+            remainder_chi34: row.remainder_chi34,
+            remainder_chi24: row.remainder_chi24,
+            remainder_q34_perp: row.remainder_q34_perp,
+            remainder_delta_chi: row.remainder_delta_chi,
+            quadratic_drift_zeta23: row.quadratic_drift_zeta23,
+            quadratic_drift_zeta34: row.quadratic_drift_zeta34,
+            quadratic_drift_relative: row.quadratic_drift_relative,
+            frozen_zeta34_tau: row.frozen_zeta34_tau,
+            recommended: row.recommended,
+            retained_level2_resumed: row.retained_level2_resumed,
+            continuation_jvp_cap,
+            continuation_outcome: self.continuation_outcome.into(),
+            continuation_budget_exhausted: self.continuation_budget_exhausted,
+            continuation_used_jvp_vectors: self.continuation_used_jvp_vectors,
+            shadow_prefix_wall_seconds: row.shadow_prefix_wall_seconds,
+            shadow_continuation_wall_seconds: row.shadow_continuation_wall_seconds,
+            shadow_total_wall_seconds: row.shadow_total_wall_seconds,
+            shadow_full_e_completed: row.shadow_full_e_completed,
+            shadow_full_e_total_error: row.shadow_full_e_total_error,
+            shadow_full_e_locally_admissible,
+            shadow_full_e_failure: row.shadow_full_e_failure,
+            continuation_work: row.continuation_work,
+            shadow_full_e_work: row.shadow_full_e_work,
+            work_roundtrip_exact: row.work_roundtrip_exact,
+            target_rjf_wall_seconds: row.target_rjf_wall_seconds,
+            target_rjf_jvp_vectors: row.target_rjf_jvp_vectors,
+            prefix_over_target_rjf_jvp: row.prefix_over_target_rjf_jvp,
+            continuation_over_target_rjf_jvp: row.continuation_over_target_rjf_jvp,
+            full_e_over_target_rjf_jvp: row.full_e_over_target_rjf_jvp,
+        })
+    }
+}
+
 fn run_rjf_frozen_full_e_shadow_trajectory(
     problem: AtlasProblem,
     profile: G4S5B0Profile,
+    continuation_mode: FrozenShadowContinuationMode,
 ) -> (
     Vec<G4S5B0RjfAttemptRow>,
     Vec<G4S5B0StepRow>,
-    Vec<G4S5B0FrozenFullEShadowRow>,
+    Vec<FrozenFullEShadowRuntimeRow>,
     G4S5B0TrajectorySummary,
 ) {
     let adaptive = adaptive_config(profile, problem.t_span.1 - problem.t_span.0);
@@ -3633,6 +3867,9 @@ fn run_rjf_frozen_full_e_shadow_trajectory(
                 total_speculative_jvp,
                 budget_cap_jvp,
             );
+            let mut continuation_outcome_label = "not-recommended";
+            let mut continuation_budget_exhausted = false;
+            let mut continuation_used_jvp_vectors = None;
 
             if budget_cap_jvp > 0 {
                 let prefix_start = Instant::now();
@@ -3676,11 +3913,21 @@ fn run_rjf_frozen_full_e_shadow_trajectory(
                         if row.recommended {
                             row.retained_level2_resumed = true;
                             let continuation_start = Instant::now();
-                            let continuation_outcome =
-                                pexprb54s4_fused_step_resume_level2_accounted(
-                                    *level2,
-                                    &ParallelExecution::sequential(),
-                                );
+                            let continuation_outcome = match continuation_mode {
+                                FrozenShadowContinuationMode::UnboundedV36 => {
+                                    pexprb54s4_fused_step_resume_level2_accounted(
+                                        *level2,
+                                        &ParallelExecution::sequential(),
+                                    )
+                                }
+                                FrozenShadowContinuationMode::BoundedV37 { jvp_cap } => {
+                                    pexprb54s4_fused_step_resume_level2_accounted_jvp_budget(
+                                        *level2,
+                                        &ParallelExecution::sequential(),
+                                        jvp_cap,
+                                    )
+                                }
+                            };
                             let continuation_wall = continuation_start.elapsed().as_secs_f64();
                             row.shadow_continuation_wall_seconds = Some(continuation_wall);
                             match continuation_outcome {
@@ -3688,6 +3935,9 @@ fn run_rjf_frozen_full_e_shadow_trajectory(
                                     report,
                                     ledger,
                                 }) => {
+                                    continuation_outcome_label = "complete";
+                                    continuation_used_jvp_vectors =
+                                        Some(ledger.continuation_work.jvp_vectors);
                                     row.continuation_work = Some(ledger.continuation_work);
                                     row.shadow_full_e_work = Some(ledger.cumulative_work);
                                     row.work_roundtrip_exact = ledger.prefix_work == prefix_work
@@ -3714,13 +3964,53 @@ fn run_rjf_frozen_full_e_shadow_trajectory(
                                                     total_error.is_finite() && total_error <= 1.0;
                                             }
                                             Err(error) => {
+                                                continuation_outcome_label = "failed";
                                                 row.shadow_full_e_failure = Some(error.to_string());
                                             }
                                         }
                                     } else {
+                                        continuation_outcome_label = "failed";
                                         row.shadow_full_e_failure = Some(
                                             "retained level-2 continuation work ledger mismatch"
                                                 .into(),
+                                        );
+                                    }
+                                }
+                                Ok(Pexprb54s4Level2ContinuationOutcome::BudgetExhausted {
+                                    jvp_cap,
+                                    used_jvp_vectors,
+                                    ledger,
+                                }) => {
+                                    continuation_outcome_label = "budget-exhausted";
+                                    continuation_budget_exhausted = true;
+                                    continuation_used_jvp_vectors = Some(used_jvp_vectors);
+                                    row.continuation_work = Some(ledger.continuation_work);
+                                    row.shadow_full_e_work = Some(ledger.cumulative_work);
+                                    row.work_roundtrip_exact = ledger.prefix_work == prefix_work
+                                        && used_jvp_vectors == ledger.continuation_work.jvp_vectors
+                                        && continuation_mode.jvp_cap() == Some(jvp_cap)
+                                        && exact_continuation_roundtrip(
+                                            ledger.prefix_work,
+                                            ledger.continuation_work,
+                                            ledger.cumulative_work,
+                                        );
+                                    total_speculative_jvp = total_speculative_jvp
+                                        .saturating_add(ledger.continuation_work.jvp_vectors);
+                                    if matches!(
+                                        continuation_mode,
+                                        FrozenShadowContinuationMode::UnboundedV36
+                                    ) {
+                                        continuation_outcome_label = "failed";
+                                        continuation_budget_exhausted = false;
+                                        row.shadow_full_e_failure = Some(
+                                            "unbounded v3.6 continuation unexpectedly exhausted a budget"
+                                                .into(),
+                                        );
+                                    } else if !row.work_roundtrip_exact {
+                                        continuation_outcome_label = "failed";
+                                        continuation_budget_exhausted = false;
+                                        row.shadow_full_e_failure = Some(
+                                            "bounded continuation work ledger mismatch".into(),
                                         );
                                     }
                                 }
@@ -3728,6 +4018,9 @@ fn run_rjf_frozen_full_e_shadow_trajectory(
                                     error,
                                     ledger,
                                 }) => {
+                                    continuation_outcome_label = "failed";
+                                    continuation_used_jvp_vectors =
+                                        Some(ledger.continuation_work.jvp_vectors);
                                     row.continuation_work = Some(ledger.continuation_work);
                                     row.shadow_full_e_work = Some(ledger.cumulative_work);
                                     row.work_roundtrip_exact = ledger.prefix_work == prefix_work
@@ -3741,6 +4034,7 @@ fn run_rjf_frozen_full_e_shadow_trajectory(
                                     row.shadow_full_e_failure = Some(error.to_string());
                                 }
                                 Err(error) => {
+                                    continuation_outcome_label = "failed";
                                     row.shadow_full_e_failure = Some(error.to_string());
                                 }
                             }
@@ -3776,7 +4070,13 @@ fn run_rjf_frozen_full_e_shadow_trajectory(
             row.total_speculative_jvp_after_target = total_speculative_jvp;
             row.shadow_total_wall_seconds = row.shadow_prefix_wall_seconds
                 + row.shadow_continuation_wall_seconds.unwrap_or(0.0);
-            row
+            FrozenFullEShadowRuntimeRow {
+                row,
+                continuation_jvp_cap: continuation_mode.jvp_cap(),
+                continuation_outcome: continuation_outcome_label,
+                continuation_budget_exhausted,
+                continuation_used_jvp_vectors,
+            }
         });
 
         let mut step_counters = WorkCounters::default();
@@ -3819,16 +4119,16 @@ fn run_rjf_frozen_full_e_shadow_trajectory(
                     jvp_vectors: step_counters.jvp_vectors,
                     linear_matvecs: step_counters.linear_matvecs,
                 });
-                if let Some(mut row) = shadow_row.take() {
+                if let Some(mut runtime_row) = shadow_row.take() {
                     finalize_frozen_shadow_target(
-                        &mut row,
+                        &mut runtime_row.row,
                         false,
                         None,
                         true,
                         wall,
                         step_counters.jvp_vectors,
                     );
-                    shadow_rows.push(row);
+                    shadow_rows.push(runtime_row);
                 }
                 rejected += 1;
                 h *= adaptive.min_factor;
@@ -3853,16 +4153,16 @@ fn run_rjf_frozen_full_e_shadow_trajectory(
                     jvp_vectors: step_counters.jvp_vectors,
                     linear_matvecs: step_counters.linear_matvecs,
                 });
-                if let Some(mut row) = shadow_row.take() {
+                if let Some(mut runtime_row) = shadow_row.take() {
                     finalize_frozen_shadow_target(
-                        &mut row,
+                        &mut runtime_row.row,
                         false,
                         None,
                         false,
                         wall,
                         step_counters.jvp_vectors,
                     );
-                    shadow_rows.push(row);
+                    shadow_rows.push(runtime_row);
                 }
                 failure = Some(error.to_string());
                 break;
@@ -3891,16 +4191,16 @@ fn run_rjf_frozen_full_e_shadow_trajectory(
             jvp_vectors: step_counters.jvp_vectors,
             linear_matvecs: step_counters.linear_matvecs,
         });
-        if let Some(mut row) = shadow_row.take() {
+        if let Some(mut runtime_row) = shadow_row.take() {
             finalize_frozen_shadow_target(
-                &mut row,
+                &mut runtime_row.row,
                 step_accepted,
                 Some(error),
                 false,
                 wall,
                 step_counters.jvp_vectors,
             );
-            shadow_rows.push(row);
+            shadow_rows.push(runtime_row);
         }
         if !step_accepted {
             rejected += 1;
@@ -4003,11 +4303,17 @@ fn execute_frozen_full_e_shadow_filtered(
         if family.is_some_and(|selected| problem.family != selected.as_str()) {
             continue;
         }
-        let (mut attempts, mut accepted, mut rows, summary) =
-            run_rjf_frozen_full_e_shadow_trajectory(problem, profile);
+        let (mut attempts, mut accepted, runtime_rows, summary) =
+            run_rjf_frozen_full_e_shadow_trajectory(
+                problem,
+                profile,
+                FrozenShadowContinuationMode::UnboundedV36,
+            );
         execution.attempt_rows.append(&mut attempts);
         execution.accepted_rows.append(&mut accepted);
-        execution.rows.append(&mut rows);
+        execution
+            .rows
+            .extend(runtime_rows.into_iter().map(|runtime| runtime.row));
         execution.trajectories.push(summary);
     }
     Ok(execution)
@@ -4202,6 +4508,352 @@ pub fn run_g4_s5b0_frozen_full_e_shadow(
     profile: G4S5B0Profile,
 ) -> CoreResult<G4S5B0FrozenFullEShadowReport> {
     run_g4_s5b0_frozen_full_e_shadow_filtered(profile, None)
+}
+
+struct V37ContinuationTransactionExecution {
+    attempt_rows: Vec<G4S5B0RjfAttemptRow>,
+    accepted_rows: Vec<G4S5B0StepRow>,
+    rows: Vec<G4S5B0V37ContinuationTransactionRow>,
+    trajectories: Vec<G4S5B0TrajectorySummary>,
+}
+
+fn execute_v37_continuation_transaction_filtered(
+    profile: G4S5B0Profile,
+    family: Option<G4S5B0Family>,
+    continuation_jvp_cap: u64,
+) -> CoreResult<V37ContinuationTransactionExecution> {
+    if !v36_profile_is_consumed(profile) {
+        return Err(CoreError::InvalidInput(
+            "v3.7 continuation transaction is restricted to the consumed N=96/192/256/320/384 profiles"
+                .into(),
+        ));
+    }
+    let mut execution = V37ContinuationTransactionExecution {
+        attempt_rows: Vec::new(),
+        accepted_rows: Vec::new(),
+        rows: Vec::new(),
+        trajectories: Vec::new(),
+    };
+    for problem in build_problems(profile)? {
+        if family.is_some_and(|selected| problem.family != selected.as_str()) {
+            continue;
+        }
+        let (mut attempts, mut accepted, runtime_rows, summary) =
+            run_rjf_frozen_full_e_shadow_trajectory(
+                problem,
+                profile,
+                FrozenShadowContinuationMode::BoundedV37 {
+                    jvp_cap: continuation_jvp_cap,
+                },
+            );
+        execution.attempt_rows.append(&mut attempts);
+        execution.accepted_rows.append(&mut accepted);
+        for runtime in runtime_rows {
+            execution.rows.push(runtime.into_v37()?);
+        }
+        execution.trajectories.push(summary);
+    }
+    Ok(execution)
+}
+
+fn v37_continuation_outcome_semantics_exact(row: &G4S5B0V37ContinuationTransactionRow) -> bool {
+    let charged_work_exact = row
+        .continuation_work
+        .zip(row.continuation_used_jvp_vectors)
+        .is_some_and(|(work, used)| used == work.jvp_vectors && used <= row.continuation_jvp_cap);
+
+    match row.continuation_outcome.as_str() {
+        "not-recommended" => {
+            !row.recommended
+                && !row.retained_level2_resumed
+                && !row.continuation_budget_exhausted
+                && row.continuation_used_jvp_vectors.is_none()
+                && row.continuation_work.is_none()
+                && row.shadow_full_e_work.is_none()
+                && !row.shadow_full_e_completed
+                && row.shadow_full_e_total_error.is_none()
+                && row.shadow_full_e_locally_admissible.is_none()
+                && row.shadow_full_e_failure.is_none()
+        }
+        "complete" => {
+            row.recommended
+                && row.retained_level2_resumed
+                && !row.continuation_budget_exhausted
+                && charged_work_exact
+                && row.shadow_full_e_work.is_some()
+                && row.work_roundtrip_exact
+                && row.shadow_full_e_completed
+                && row.shadow_full_e_total_error.is_some()
+                && row.shadow_full_e_locally_admissible.is_some()
+                && row.shadow_full_e_failure.is_none()
+        }
+        "budget-exhausted" => {
+            row.recommended
+                && row.retained_level2_resumed
+                && row.continuation_budget_exhausted
+                && charged_work_exact
+                && row.shadow_full_e_work.is_some()
+                && row.work_roundtrip_exact
+                && !row.shadow_full_e_completed
+                && row.shadow_full_e_total_error.is_none()
+                && row.shadow_full_e_locally_admissible.is_none()
+                && row.shadow_full_e_failure.is_none()
+        }
+        "failed" => {
+            row.recommended
+                && row.retained_level2_resumed
+                && !row.continuation_budget_exhausted
+                && charged_work_exact
+                && row.shadow_full_e_work.is_some()
+                && row.work_roundtrip_exact
+                && !row.shadow_full_e_completed
+                && row.shadow_full_e_total_error.is_none()
+                && row.shadow_full_e_locally_admissible.is_none()
+                && row.shadow_full_e_failure.is_some()
+        }
+        _ => false,
+    }
+}
+
+fn run_g4_s5b0_v37_continuation_transaction_filtered(
+    profile: G4S5B0Profile,
+    family: Option<G4S5B0Family>,
+    continuation_jvp_cap: u64,
+) -> CoreResult<G4S5B0V37ContinuationTransactionReport> {
+    let V37ContinuationTransactionExecution {
+        attempt_rows,
+        accepted_rows,
+        rows,
+        trajectories,
+    } = execute_v37_continuation_transaction_filtered(profile, family, continuation_jvp_cap)?;
+    let reference = run_g4_s5b0_rjf_attempt_trace_filtered(profile, family)?;
+    let rjf_parity = rjf_parity(&attempt_rows, &accepted_rows, &trajectories, &reference);
+
+    let recommendations = rows.iter().filter(|row| row.recommended).count();
+    let retained_level2_resumptions = rows
+        .iter()
+        .filter(|row| row.retained_level2_resumed)
+        .count();
+    let shadow_full_e_completions = rows
+        .iter()
+        .filter(|row| row.continuation_outcome == "complete" && row.shadow_full_e_completed)
+        .count();
+    let continuation_budget_exhaustions = rows
+        .iter()
+        .filter(|row| {
+            row.continuation_outcome == "budget-exhausted" && row.continuation_budget_exhausted
+        })
+        .count();
+    let shadow_full_e_failures = rows
+        .iter()
+        .filter(|row| row.continuation_outcome == "failed")
+        .count();
+    let unsafe_recommendations = rows
+        .iter()
+        .filter(|row| {
+            row.recommended
+                && row.shadow_full_e_completed
+                && row.shadow_full_e_locally_admissible == Some(false)
+        })
+        .count();
+    let prefix_budget_breaches = rows.iter().filter(|row| row.budget_breached).count();
+    let prefix_budget_exhaustions = rows.iter().filter(|row| row.budget_exhausted).count();
+    let continuation_budget_breaches = rows
+        .iter()
+        .filter(|row| {
+            row.continuation_jvp_cap != continuation_jvp_cap
+                || row
+                    .continuation_used_jvp_vectors
+                    .is_some_and(|used| used > row.continuation_jvp_cap)
+                || row
+                    .continuation_work
+                    .is_some_and(|work| work.jvp_vectors > row.continuation_jvp_cap)
+        })
+        .count();
+
+    let mut prefix_speculative_work = WorkCounters::default();
+    let mut continuation_work = WorkCounters::default();
+    for row in &rows {
+        if let Some(work) = row.prefix_work {
+            prefix_speculative_work.accumulate(work);
+        }
+        if let Some(work) = row.continuation_work {
+            continuation_work.accumulate(work);
+        }
+    }
+    let mut total_speculative_work = prefix_speculative_work;
+    total_speculative_work.accumulate(continuation_work);
+    let committed_rjf_jvp_vectors = attempt_rows.iter().map(|row| row.jvp_vectors).sum::<u64>();
+    let committed_rjf_denominator = committed_rjf_jvp_vectors as f64;
+    let realized_prefix_over_committed_rjf_jvp =
+        prefix_speculative_work.jvp_vectors as f64 / committed_rjf_denominator;
+    let realized_continuation_over_committed_rjf_jvp =
+        continuation_work.jvp_vectors as f64 / committed_rjf_denominator;
+    let realized_total_speculative_over_committed_rjf_jvp =
+        total_speculative_work.jvp_vectors as f64 / committed_rjf_denominator;
+    let realized_work_ratios_finite = committed_rjf_jvp_vectors > 0
+        && realized_prefix_over_committed_rjf_jvp.is_finite()
+        && realized_continuation_over_committed_rjf_jvp.is_finite()
+        && realized_total_speculative_over_committed_rjf_jvp.is_finite();
+
+    let prefix_transactions_resolved = rows
+        .iter()
+        .all(|row| !row.budget_admitted || row.prefix_succeeded || row.budget_exhausted);
+    let continuation_transactions_resolved = recommendations
+        == shadow_full_e_completions + continuation_budget_exhaustions + shadow_full_e_failures
+        && rows.iter().all(v37_continuation_outcome_semantics_exact);
+    let exhausted_rows_emit_no_endpoint_or_labels = rows.iter().all(|row| {
+        !row.continuation_budget_exhausted
+            || (!row.shadow_full_e_completed
+                && row.shadow_full_e_total_error.is_none()
+                && row.shadow_full_e_locally_admissible.is_none()
+                && row.shadow_full_e_failure.is_none())
+    });
+    let row_ledgers_exact = rows.iter().all(|row| {
+        let prefix_jvp = row.prefix_work.map_or(0, |work| work.jvp_vectors);
+        let continuation_jvp = row.continuation_work.map_or(0, |work| work.jvp_vectors);
+        let prefix_state_exact = row.prefix_speculative_jvp_after_target
+            == row
+                .prefix_speculative_jvp_before_target
+                .saturating_add(prefix_jvp);
+        let total_state_exact = row.total_speculative_jvp_after_target
+            == row
+                .total_speculative_jvp_before_target
+                .saturating_add(prefix_jvp)
+                .saturating_add(continuation_jvp);
+        let prefix_cap_exact = row.budget_cap_jvp
+            == enforced_prefix_jvp_cap(
+                row.committed_rjf_jvp_before_target,
+                row.prefix_speculative_jvp_before_target,
+            );
+        let continuation_cap_exact = row.continuation_jvp_cap == continuation_jvp_cap;
+        let endpoint_ledger_exact = if row.recommended {
+            row.work_roundtrip_exact
+                && row.continuation_work.is_some()
+                && row.shadow_full_e_work.is_some()
+                && row.continuation_used_jvp_vectors == Some(continuation_jvp)
+        } else {
+            !row.retained_level2_resumed
+                && row.continuation_work.is_none()
+                && row.shadow_full_e_work.is_none()
+        };
+        prefix_state_exact
+            && total_state_exact
+            && prefix_cap_exact
+            && continuation_cap_exact
+            && endpoint_ledger_exact
+    });
+    let resume_cardinality_exact = recommendations == retained_level2_resumptions
+        && rows
+            .iter()
+            .all(|row| row.recommended == row.retained_level2_resumed);
+    let shadow_implicit_expensive_work_zero = rows.iter().all(|row| {
+        row.prefix_work
+            .is_none_or(frozen_shadow_expensive_work_zero)
+            && row
+                .continuation_work
+                .is_none_or(frozen_shadow_expensive_work_zero)
+            && row
+                .shadow_full_e_work
+                .is_none_or(frozen_shadow_expensive_work_zero)
+    });
+    let all_rjf_trajectories_successful = trajectories.iter().all(|row| row.success);
+    let mut hard_gates = G4S5B0V37ContinuationTransactionHardGates {
+        all_rjf_trajectories_successful,
+        rjf_trace_exact_excluding_wall: rjf_parity.passed,
+        zero_prefix_budget_breaches: prefix_budget_breaches == 0,
+        prefix_transactions_resolved,
+        continuation_transactions_resolved,
+        zero_continuation_budget_breaches: continuation_budget_breaches == 0,
+        zero_continuation_numerical_failures: shadow_full_e_failures == 0,
+        zero_unsafe_recommendations: unsafe_recommendations == 0,
+        exhausted_rows_emit_no_endpoint_or_labels,
+        work_ledgers_exact: row_ledgers_exact,
+        realized_work_ratios_finite,
+        resume_cardinality_exact,
+        shadow_implicit_expensive_work_zero,
+        active_switching_false: true,
+        passed: false,
+    };
+    hard_gates.passed = hard_gates.all_rjf_trajectories_successful
+        && hard_gates.rjf_trace_exact_excluding_wall
+        && hard_gates.zero_prefix_budget_breaches
+        && hard_gates.prefix_transactions_resolved
+        && hard_gates.continuation_transactions_resolved
+        && hard_gates.zero_continuation_budget_breaches
+        && hard_gates.zero_continuation_numerical_failures
+        && hard_gates.zero_unsafe_recommendations
+        && hard_gates.exhausted_rows_emit_no_endpoint_or_labels
+        && hard_gates.work_ledgers_exact
+        && hard_gates.realized_work_ratios_finite
+        && hard_gates.resume_cardinality_exact
+        && hard_gates.shadow_implicit_expensive_work_zero
+        && hard_gates.active_switching_false;
+    let status = if hard_gates.passed {
+        "complete"
+    } else {
+        "complete-with-failures"
+    };
+
+    Ok(G4S5B0V37ContinuationTransactionReport {
+        schema: "g4-s5b0-v37-continuation-transaction-v1",
+        status,
+        profile: profile.as_str(),
+        switching_active: false,
+        committed_method: "protected-sequential-matrix-free-rodas5p",
+        shadow_method: "pexprb54s4-fused-bounded-resume-retained-level2",
+        persistence_k: 3,
+        absolute_prefix_jvp_cap: V29_PREFIX_RESERVE_JVP,
+        absolute_continuation_jvp_cap: continuation_jvp_cap,
+        frozen_cumulative_prefix_budget_fraction: V29_PREFIX_BUDGET_FRACTION,
+        frozen_zeta34_tau: V36_FROZEN_ZETA34_TAU,
+        recommendations,
+        retained_level2_resumptions,
+        shadow_full_e_completions,
+        continuation_budget_exhaustions,
+        shadow_full_e_failures,
+        unsafe_recommendations,
+        prefix_budget_breaches,
+        prefix_budget_exhaustions,
+        continuation_budget_breaches,
+        prefix_speculative_work,
+        continuation_work,
+        total_speculative_work,
+        committed_rjf_jvp_vectors,
+        realized_prefix_over_committed_rjf_jvp,
+        realized_continuation_over_committed_rjf_jvp,
+        realized_total_speculative_over_committed_rjf_jvp,
+        rjf_parity,
+        hard_gates,
+        attempt_rows,
+        accepted_rows,
+        rows,
+        trajectories,
+        limitations: vec![
+            "The protected R-JF trajectory remains the sole committed authority; bounded E is read-only shadow evidence.".into(),
+            "The frozen k=3, prefix B_abs=80, delta=0.25, zeta34 threshold, and event-local continuation cap 80 are consumed without retuning.".into(),
+            "Continuation budget exhaustion is a charged policy abstention and emits no endpoint, error norm, admissibility label, or numerical-failure label.".into(),
+            "Only S_prefix controls later prefix admission; S_total records prefix plus continuation work without policy feedback.".into(),
+            "These consumed profiles are an implementation-regression replay, not fresh safety or timing evidence; switching and N=2048 remain sealed.".into(),
+        ],
+    })
+}
+
+pub fn run_g4_s5b0_v37_continuation_transaction_family(
+    profile: G4S5B0Profile,
+    family: G4S5B0Family,
+) -> CoreResult<G4S5B0V37ContinuationTransactionReport> {
+    run_g4_s5b0_v37_continuation_transaction_filtered(
+        profile,
+        Some(family),
+        V37_CONTINUATION_JVP_CAP,
+    )
+}
+
+pub fn run_g4_s5b0_v37_continuation_transaction(
+    profile: G4S5B0Profile,
+) -> CoreResult<G4S5B0V37ContinuationTransactionReport> {
+    run_g4_s5b0_v37_continuation_transaction_filtered(profile, None, V37_CONTINUATION_JVP_CAP)
 }
 
 #[derive(Clone, Copy)]
@@ -4566,10 +5218,11 @@ pub fn run_g4_s5b0_frozen_full_e_shadow_economics(
 #[cfg(test)]
 mod stage_trajectory_geometry_tests {
     use super::{
-        G4S5B0Profile, ShadowWallProtocol, frozen_shadow_row_exact_excluding_wall,
+        G4S5B0Family, G4S5B0Profile, ShadowWallProtocol, frozen_shadow_row_exact_excluding_wall,
         next_calibration_repetitions, pair_runs_rjf_first, production_shadow_wall_protocol,
-        run_g4_s5b0_frozen_full_e_shadow, run_g4_s5b0_rjf_attempt_trace, run_shadow_wall_protocol,
-        stage_trajectory_shape_features,
+        run_g4_s5b0_frozen_full_e_shadow, run_g4_s5b0_rjf_attempt_trace,
+        run_g4_s5b0_v37_continuation_transaction_filtered, run_shadow_wall_protocol,
+        stage_trajectory_shape_features, v37_continuation_outcome_semantics_exact,
     };
 
     #[test]
@@ -4600,6 +5253,75 @@ mod stage_trajectory_geometry_tests {
         assert_eq!(next_calibration_repetitions(1, 1024), 2);
         assert_eq!(next_calibration_repetitions(512, 1024), 1024);
         assert_eq!(next_calibration_repetitions(1024, 1024), 1024);
+    }
+
+    #[test]
+    fn v37_outcome_semantics_reject_crossed_labels_flags_and_endpoint_evidence() {
+        let complete_report = run_g4_s5b0_v37_continuation_transaction_filtered(
+            G4S5B0Profile::StageGrowthCalibration96,
+            Some(G4S5B0Family::RobertsonRamped),
+            80,
+        )
+        .unwrap();
+        assert!(
+            complete_report
+                .rows
+                .iter()
+                .all(v37_continuation_outcome_semantics_exact)
+        );
+
+        let mut crossed_complete = complete_report
+            .rows
+            .iter()
+            .find(|row| row.recommended)
+            .unwrap()
+            .clone();
+        crossed_complete.continuation_budget_exhausted = true;
+        assert!(!v37_continuation_outcome_semantics_exact(&crossed_complete));
+
+        let zero_cap_report = run_g4_s5b0_v37_continuation_transaction_filtered(
+            G4S5B0Profile::StageGrowthCalibration96,
+            Some(G4S5B0Family::RobertsonRamped),
+            0,
+        )
+        .unwrap();
+        let mut exhausted = zero_cap_report
+            .rows
+            .iter()
+            .find(|row| row.continuation_budget_exhausted)
+            .unwrap()
+            .clone();
+        assert!(v37_continuation_outcome_semantics_exact(&exhausted));
+        exhausted.shadow_full_e_total_error = Some(0.0);
+        assert!(!v37_continuation_outcome_semantics_exact(&exhausted));
+    }
+
+    #[test]
+    fn v37_zero_cap_runner_emits_charged_exhaustions_without_endpoint_labels() {
+        let report = run_g4_s5b0_v37_continuation_transaction_filtered(
+            G4S5B0Profile::StageGrowthCalibration96,
+            Some(G4S5B0Family::RobertsonRamped),
+            0,
+        )
+        .unwrap();
+
+        assert_eq!(report.recommendations, 2);
+        assert_eq!(report.retained_level2_resumptions, 2);
+        assert_eq!(report.shadow_full_e_completions, 0);
+        assert_eq!(report.continuation_budget_exhaustions, 2);
+        assert_eq!(report.shadow_full_e_failures, 0);
+        assert_eq!(report.absolute_continuation_jvp_cap, 0);
+        assert!(report.hard_gates.passed);
+        for row in report.rows.iter().filter(|row| row.recommended) {
+            assert_eq!(row.continuation_outcome, "budget-exhausted");
+            assert!(row.continuation_budget_exhausted);
+            assert_eq!(row.continuation_used_jvp_vectors, Some(0));
+            assert_eq!(row.continuation_work.unwrap().jvp_vectors, 0);
+            assert!(!row.shadow_full_e_completed);
+            assert!(row.shadow_full_e_total_error.is_none());
+            assert!(row.shadow_full_e_locally_admissible.is_none());
+            assert!(row.shadow_full_e_failure.is_none());
+        }
     }
 
     #[test]
