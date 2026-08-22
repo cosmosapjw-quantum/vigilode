@@ -1,16 +1,20 @@
 name: Publish verified v3.7 continuation branch
 
 on:
-  push:
+  pull_request:
     branches:
-      - transport/v37-continuation-pr4-20260822
+      - main
+    types:
+      - opened
+      - synchronize
+      - reopened
 
 permissions:
   contents: write
 
 jobs:
   publish:
-    if: github.repository == 'cosmosapjw-quantum/vigilode'
+    if: github.repository == 'cosmosapjw-quantum/vigilode' && github.head_ref == 'transport/v37-continuation-pr4-20260822'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
