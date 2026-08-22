@@ -57,19 +57,24 @@ from v3.6 after a capped continuation abstention.
 
 ## Durable runtime evidence
 
-The 30 successful shard JSON files are committed as a deterministic,
-content-addressed archive rather than as 30 loose files:
+The repository commits the replay generator, fail-closed verifier, and a
+verification JSON that independently seals all 30 successful shard paths and
+SHA-256 values. To avoid duplicating raw campaign payload in the source tree,
+the lossless deterministic shard archive is retained as an external closeout
+artifact:
 
-- `results/V37_CONTINUATION_RUNTIME_30_SHARDS.tar.gz`;
+- external artifact: `VIGILODE_V37_CONTINUATION_RUNTIME_30_SHARDS_20260822.tar.gz`;
 - archive SHA-256: `e61e3a546475fb83d0d08c5d9081a17fa8ffe722e3a53c0d3bc379e8e7e303b9`;
-- every member path and SHA-256 remains independently sealed in
+- every member path and SHA-256 is independently sealed in
   `V37_CONTINUATION_REPLAY_VERIFICATION.json`;
 - `scripts/runtime_archive.py verify` rejects missing, extra, non-regular,
   unsafe, or hash-mismatched members;
-- unpacking the archive and rerunning the replay verifier reproduces the
-  committed verification JSON byte-exactly.
+- regenerating the shards from the committed runner reproduces the committed
+  verification JSON byte-exactly.
 
-This packaging changes no runtime evidence and does not aggregate away any row.
+The external archive changes no runtime evidence and does not aggregate away
+any row. It is convenience/custody evidence, not an undeclared input required
+for the committed replay result.
 
 ## Compatibility evidence
 
