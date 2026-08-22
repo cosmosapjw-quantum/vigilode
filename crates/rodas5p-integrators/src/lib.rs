@@ -117,13 +117,16 @@ pub use g4_s5b0_regime_atlas::{
     G4S5B0Profile, G4S5B0Report, G4S5B0RjfAttemptRow, G4S5B0RjfParitySummary, G4S5B0ShadowWallArm,
     G4S5B0ShadowWallCalibrationRow, G4S5B0ShadowWallPair, G4S5B0ShadowWallReport,
     G4S5B0StageGrowthSafetyReport, G4S5B0StageGrowthSafetyRow, G4S5B0StepRow,
-    G4S5B0TrajectorySummary, V36_FROZEN_ZETA34_TAU, enforced_prefix_jvp_cap,
+    G4S5B0TrajectorySummary, G4S5B0V37ContinuationTransactionHardGates,
+    G4S5B0V37ContinuationTransactionReport, G4S5B0V37ContinuationTransactionRow,
+    V36_FROZEN_ZETA34_TAU, V37_CONTINUATION_JVP_CAP, enforced_prefix_jvp_cap,
     frozen_full_e_shadow_recommended, run_g4_s5b0_actual_level1_prefix_family,
     run_g4_s5b0_actual_level2_prefix_family, run_g4_s5b0_enforced_prefix_budget_family,
     run_g4_s5b0_frozen_full_e_shadow, run_g4_s5b0_frozen_full_e_shadow_economics,
     run_g4_s5b0_frozen_full_e_shadow_family, run_g4_s5b0_regime_atlas,
     run_g4_s5b0_rjf_attempt_trace, run_g4_s5b0_rjf_attempt_trace_family, run_g4_s5b0_rjf_only,
     run_g4_s5b0_rjf_only_family, run_g4_s5b0_stage_growth_safety_audit_family,
+    run_g4_s5b0_v37_continuation_transaction, run_g4_s5b0_v37_continuation_transaction_family,
 };
 pub use g4_s5b3_attempt_geometry::{
     G4S5B3AttemptGeometryReport, G4S5B3AttemptRow, G4S5B3CalibrationRow, G4S5B3HardGateSummary,
