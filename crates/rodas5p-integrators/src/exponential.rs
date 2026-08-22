@@ -534,6 +534,9 @@ impl Pexprb54s4Level2Prefix {
 
 const PEXPRB_PREFIX_JVP_BUDGET_EXHAUSTED: &str =
     "pexprb54s4 speculative prefix JVP budget exhausted";
+#[cfg(test)]
+const PEXPRB_CONTINUATION_JVP_BUDGET_EXHAUSTED: &str =
+    "pexprb54s4 retained level-2 continuation JVP budget exhausted";
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Pexprb54s4BudgetExhaustedPrefixReport {
@@ -595,13 +598,24 @@ pub enum Pexprb54s4Level2ContinuationOutcome {
 struct Pexprb54s4JvpBudget {
     limit: u64,
     used: AtomicU64,
+    exhaustion_message: &'static str,
 }
 
 impl Pexprb54s4JvpBudget {
     fn new(limit: u64) -> Self {
+        Self::with_exhaustion_message(limit, PEXPRB_PREFIX_JVP_BUDGET_EXHAUSTED)
+    }
+
+    #[cfg(test)]
+    fn new_continuation(limit: u64) -> Self {
+        Self::with_exhaustion_message(limit, PEXPRB_CONTINUATION_JVP_BUDGET_EXHAUSTED)
+    }
+
+    fn with_exhaustion_message(limit: u64, exhaustion_message: &'static str) -> Self {
         Self {
             limit,
             used: AtomicU64::new(0),
+            exhaustion_message,
         }
     }
 
@@ -609,22 +623,34 @@ impl Pexprb54s4JvpBudget {
         self.used.load(Ordering::Relaxed)
     }
 
+    fn exhausted(&self) -> CoreError {
+        CoreError::LinearSolve(self.exhaustion_message.into())
+    }
+
     fn reserve(&self) -> CoreResult<()> {
+        self.reserve_many(1)
+    }
+
+    fn reserve_many(&self, requested: u64) -> CoreResult<()> {
+        if requested == 0 {
+            return Ok(());
+        }
         let mut current = self.used.load(Ordering::Relaxed);
         loop {
-            if current >= self.limit {
-                return Err(CoreError::LinearSolve(
-                    PEXPRB_PREFIX_JVP_BUDGET_EXHAUSTED.into(),
-                ));
+            let Some(next) = current.checked_add(requested) else {
+                return Err(self.exhausted());
+            };
+            if next > self.limit {
+                return Err(self.exhausted());
             }
             match self.used.compare_exchange_weak(
                 current,
-                current + 1,
+                next,
                 Ordering::Relaxed,
                 Ordering::Relaxed,
             ) {
                 Ok(_) => return Ok(()),
-                Err(next) => current = next,
+                Err(observed) => current = observed,
             }
         }
     }
@@ -651,6 +677,23 @@ impl LinearOperator for Pexprb54s4BudgetedOperator {
         self.inner.apply(x, y)
     }
 
+    fn apply_rows(&self, inputs: &[Vec<f64>], outputs: &mut [Vec<f64>]) -> CoreResult<()> {
+        let dimension = self.dimension();
+        if inputs.len() != outputs.len()
+            || inputs.iter().any(|row| row.len() != dimension)
+            || outputs.iter().any(|row| row.len() != dimension)
+        {
+            return Err(CoreError::Dimension(
+                "linear-operator row batch shape mismatch".into(),
+            ));
+        }
+        let requested = u64::try_from(inputs.len()).map_err(|_| {
+            CoreError::InvalidInput("JVP row batch length exceeds u64 accounting".into())
+        })?;
+        self.budget.reserve_many(requested)?;
+        self.inner.apply_rows(inputs, outputs)
+    }
+
     fn explicit(&self) -> Option<&DenseMatrix> {
         self.inner.explicit()
     }
@@ -662,6 +705,11 @@ impl LinearOperator for Pexprb54s4BudgetedOperator {
 
 fn is_pexprb_prefix_budget_exhaustion(error: &CoreError) -> bool {
     matches!(error, CoreError::LinearSolve(message) if message.contains(PEXPRB_PREFIX_JVP_BUDGET_EXHAUSTED))
+}
+
+#[cfg(test)]
+fn is_pexprb_continuation_budget_exhaustion(error: &CoreError) -> bool {
+    matches!(error, CoreError::LinearSolve(message) if message.contains(PEXPRB_CONTINUATION_JVP_BUDGET_EXHAUSTED))
 }
 
 fn budget_exhausted_outcome(
@@ -3132,4 +3180,106 @@ fn pexprb54s4_fused_step_with_telemetry_config(
         tolerance_scale,
     )?;
     pexprb54s4_fused_step_resume_level1(prefix, execution)
+}
+
+#[cfg(test)]
+mod continuation_budget_guard_tests {
+    use super::*;
+    use std::sync::atomic::{AtomicU64, Ordering};
+
+    struct CountingOperator {
+        calls: Arc<AtomicU64>,
+    }
+
+    impl CountingOperator {
+        fn new(calls: Arc<AtomicU64>) -> Self {
+            Self { calls }
+        }
+    }
+
+    impl LinearOperator for CountingOperator {
+        fn dimension(&self) -> usize {
+            1
+        }
+
+        fn apply(&self, x: &[f64], y: &mut [f64]) -> CoreResult<()> {
+            if x.len() != 1 || y.len() != 1 {
+                return Err(CoreError::Dimension(
+                    "counting operator shape mismatch".into(),
+                ));
+            }
+            self.calls.fetch_add(1, Ordering::Relaxed);
+            y[0] = x[0];
+            Ok(())
+        }
+
+        fn token(&self) -> u64 {
+            0xC017
+        }
+    }
+
+    fn continuation_guard(
+        cap: u64,
+        calls: Arc<AtomicU64>,
+    ) -> (Pexprb54s4BudgetedOperator, Arc<Pexprb54s4JvpBudget>) {
+        let budget = Arc::new(Pexprb54s4JvpBudget::new_continuation(cap));
+        let inner = Arc::new(CountingOperator::new(calls)) as Arc<dyn LinearOperator>;
+        (
+            Pexprb54s4BudgetedOperator::new(inner, Arc::clone(&budget)),
+            budget,
+        )
+    }
+
+    #[test]
+    fn continuation_cap_admits_exactly_eighty_scalars_and_denies_jvp_81_before_call() {
+        let calls = Arc::new(AtomicU64::new(0));
+        let (guarded, budget) = continuation_guard(80, Arc::clone(&calls));
+        let mut output = [0.0];
+        for _ in 0..80 {
+            guarded.apply(&[1.0], &mut output).unwrap();
+        }
+        let error = guarded.apply(&[1.0], &mut output).unwrap_err();
+        assert!(is_pexprb_continuation_budget_exhaustion(&error));
+        assert_eq!(budget.used(), 80);
+        assert_eq!(calls.load(Ordering::Relaxed), 80);
+    }
+
+    #[test]
+    fn zero_continuation_budget_invokes_no_underlying_jvp() {
+        let calls = Arc::new(AtomicU64::new(0));
+        let (guarded, budget) = continuation_guard(0, Arc::clone(&calls));
+        let error = guarded.apply(&[1.0], &mut [0.0]).unwrap_err();
+        assert!(is_pexprb_continuation_budget_exhaustion(&error));
+        assert_eq!(budget.used(), 0);
+        assert_eq!(calls.load(Ordering::Relaxed), 0);
+    }
+
+    #[test]
+    fn over_cap_row_batch_is_denied_atomically_without_partial_execution() {
+        let calls = Arc::new(AtomicU64::new(0));
+        let (guarded, budget) = continuation_guard(4, Arc::clone(&calls));
+        let mut output = [0.0];
+        for _ in 0..3 {
+            guarded.apply(&[1.0], &mut output).unwrap();
+        }
+        let inputs = vec![vec![1.0], vec![2.0]];
+        let mut outputs = vec![vec![0.0], vec![0.0]];
+        let error = guarded.apply_rows(&inputs, &mut outputs).unwrap_err();
+        assert!(is_pexprb_continuation_budget_exhaustion(&error));
+        assert_eq!(budget.used(), 3);
+        assert_eq!(calls.load(Ordering::Relaxed), 3);
+        assert_eq!(outputs, vec![vec![0.0], vec![0.0]]);
+    }
+
+    #[test]
+    fn invalid_row_shape_is_rejected_before_budget_reservation() {
+        let calls = Arc::new(AtomicU64::new(0));
+        let (guarded, budget) = continuation_guard(4, Arc::clone(&calls));
+        let inputs = vec![vec![1.0, 2.0]];
+        let mut outputs = vec![vec![0.0]];
+        let error = guarded.apply_rows(&inputs, &mut outputs).unwrap_err();
+        assert!(matches!(error, CoreError::Dimension(_)));
+        assert_eq!(budget.used(), 0);
+        assert_eq!(calls.load(Ordering::Relaxed), 0);
+    }
 }
