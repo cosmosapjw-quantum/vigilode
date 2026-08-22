@@ -55,6 +55,22 @@ Only `S_prefix` remains prefix-admission authority. `S_total` records the
 bounded prefix-plus-continuation economics and therefore intentionally diverges
 from v3.6 after a capped continuation abstention.
 
+## Durable runtime evidence
+
+The 30 successful shard JSON files are committed as a deterministic,
+content-addressed archive rather than as 30 loose files:
+
+- `results/V37_CONTINUATION_RUNTIME_30_SHARDS.tar.gz`;
+- archive SHA-256: `e61e3a546475fb83d0d08c5d9081a17fa8ffe722e3a53c0d3bc379e8e7e303b9`;
+- every member path and SHA-256 remains independently sealed in
+  `V37_CONTINUATION_REPLAY_VERIFICATION.json`;
+- `scripts/runtime_archive.py verify` rejects missing, extra, non-regular,
+  unsafe, or hash-mismatched members;
+- unpacking the archive and rerunning the replay verifier reproduces the
+  committed verification JSON byte-exactly.
+
+This packaging changes no runtime evidence and does not aggregate away any row.
+
 ## Compatibility evidence
 
 - v3.6 schemas and APIs remain separate and unchanged;

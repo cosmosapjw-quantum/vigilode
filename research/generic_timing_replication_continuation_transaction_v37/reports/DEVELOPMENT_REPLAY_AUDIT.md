@@ -19,4 +19,7 @@ passed.
    is retained in the external closeout evidence archive.
 
 Neither failure was a solver, budget, endpoint, or R-JF parity failure. The
-final replay passed all frozen-policy and bounded-continuation gates.
+final replay passed all frozen-policy and bounded-continuation gates. Its 30
+successful raw shards are preserved losslessly in the committed deterministic
+runtime archive, with each member hash still listed separately in the final
+verification JSON.

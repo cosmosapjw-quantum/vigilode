@@ -24,7 +24,8 @@
 
 ## Replay verification
 
-- verifier unit tests: 6/6 pass;
+- replay-verifier unit tests: 6/6 pass;
+- deterministic runtime-archive unit tests: 3/3 pass;
 - runtime reports: 30/30;
 - prefix-policy rows exact v3.6→v3.7: 127/127;
 - recommendation decisions exact v3.6→v3.7: 64/64;
@@ -34,6 +35,24 @@
 - unsafe recommendations: 0;
 - prefix/continuation budget breaches: 0;
 - replay-verification JSON reproduction: byte-exact.
+
+## Runtime archive verification
+
+- successful runtime shards: 30/30 members retained;
+- archive SHA-256: `e61e3a546475fb83d0d08c5d9081a17fa8ffe722e3a53c0d3bc379e8e7e303b9`;
+- deterministic repack: byte-exact;
+- fail-closed archive verification: pass;
+- verified unpack followed by replay verification: byte-exact to the committed
+  `V37_CONTINUATION_REPLAY_VERIFICATION.json`.
+
+Reproduction command:
+
+```bash
+python research/generic_timing_replication_continuation_transaction_v37/scripts/runtime_archive.py \
+  verify \
+  --archive research/generic_timing_replication_continuation_transaction_v37/results/V37_CONTINUATION_RUNTIME_30_SHARDS.tar.gz \
+  --verification research/generic_timing_replication_continuation_transaction_v37/results/V37_CONTINUATION_REPLAY_VERIFICATION.json
+```
 
 ## v3.6 non-regression
 
@@ -60,5 +79,6 @@ coverage.
 - sealed contract JSON: `66f082aeec8c70e0ef23926d2c6f7057fb40fe280c45fd02c200be8778a6e659`;
 - measurement binary used for the final replay: `a1cdb1ac8e02e49b9869fe769438ac26e67042d7daf96fc9496a0947c177d618`;
 - replay-verification JSON: `2406c16bdb379992672371432a1fb7681683dd40b8402aa7983a2c67240eb657`;
+- successful runtime archive: `e61e3a546475fb83d0d08c5d9081a17fa8ffe722e3a53c0d3bc379e8e7e303b9`;
 - retained exact second failed-replay archive in the external closeout evidence:
   `878f07d53332a7031c8fa708a875159c412c8827d576101b0312fc03dafbd95c`.
