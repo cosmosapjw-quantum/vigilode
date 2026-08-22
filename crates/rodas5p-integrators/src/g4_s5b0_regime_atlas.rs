@@ -4556,6 +4556,65 @@ fn execute_v37_continuation_transaction_filtered(
     Ok(execution)
 }
 
+fn v37_continuation_outcome_semantics_exact(row: &G4S5B0V37ContinuationTransactionRow) -> bool {
+    let charged_work_exact = row
+        .continuation_work
+        .zip(row.continuation_used_jvp_vectors)
+        .is_some_and(|(work, used)| used == work.jvp_vectors && used <= row.continuation_jvp_cap);
+
+    match row.continuation_outcome.as_str() {
+        "not-recommended" => {
+            !row.recommended
+                && !row.retained_level2_resumed
+                && !row.continuation_budget_exhausted
+                && row.continuation_used_jvp_vectors.is_none()
+                && row.continuation_work.is_none()
+                && row.shadow_full_e_work.is_none()
+                && !row.shadow_full_e_completed
+                && row.shadow_full_e_total_error.is_none()
+                && row.shadow_full_e_locally_admissible.is_none()
+                && row.shadow_full_e_failure.is_none()
+        }
+        "complete" => {
+            row.recommended
+                && row.retained_level2_resumed
+                && !row.continuation_budget_exhausted
+                && charged_work_exact
+                && row.shadow_full_e_work.is_some()
+                && row.work_roundtrip_exact
+                && row.shadow_full_e_completed
+                && row.shadow_full_e_total_error.is_some()
+                && row.shadow_full_e_locally_admissible.is_some()
+                && row.shadow_full_e_failure.is_none()
+        }
+        "budget-exhausted" => {
+            row.recommended
+                && row.retained_level2_resumed
+                && row.continuation_budget_exhausted
+                && charged_work_exact
+                && row.shadow_full_e_work.is_some()
+                && row.work_roundtrip_exact
+                && !row.shadow_full_e_completed
+                && row.shadow_full_e_total_error.is_none()
+                && row.shadow_full_e_locally_admissible.is_none()
+                && row.shadow_full_e_failure.is_none()
+        }
+        "failed" => {
+            row.recommended
+                && row.retained_level2_resumed
+                && !row.continuation_budget_exhausted
+                && charged_work_exact
+                && row.shadow_full_e_work.is_some()
+                && row.work_roundtrip_exact
+                && !row.shadow_full_e_completed
+                && row.shadow_full_e_total_error.is_none()
+                && row.shadow_full_e_locally_admissible.is_none()
+                && row.shadow_full_e_failure.is_some()
+        }
+        _ => false,
+    }
+}
+
 fn run_g4_s5b0_v37_continuation_transaction_filtered(
     profile: G4S5B0Profile,
     family: Option<G4S5B0Family>,
@@ -4640,22 +4699,9 @@ fn run_g4_s5b0_v37_continuation_transaction_filtered(
     let prefix_transactions_resolved = rows
         .iter()
         .all(|row| !row.budget_admitted || row.prefix_succeeded || row.budget_exhausted);
-    let continuation_transactions_resolved = rows.iter().all(|row| {
-        if row.recommended {
-            row.retained_level2_resumed
-                && matches!(
-                    row.continuation_outcome.as_str(),
-                    "complete" | "budget-exhausted" | "failed"
-                )
-        } else {
-            !row.retained_level2_resumed
-                && row.continuation_outcome == "not-recommended"
-                && !row.continuation_budget_exhausted
-                && row.continuation_used_jvp_vectors.is_none()
-                && row.continuation_work.is_none()
-                && row.shadow_full_e_work.is_none()
-        }
-    });
+    let continuation_transactions_resolved = recommendations
+        == shadow_full_e_completions + continuation_budget_exhaustions + shadow_full_e_failures
+        && rows.iter().all(v37_continuation_outcome_semantics_exact);
     let exhausted_rows_emit_no_endpoint_or_labels = rows.iter().all(|row| {
         !row.continuation_budget_exhausted
             || (!row.shadow_full_e_completed
@@ -5176,7 +5222,7 @@ mod stage_trajectory_geometry_tests {
         next_calibration_repetitions, pair_runs_rjf_first, production_shadow_wall_protocol,
         run_g4_s5b0_frozen_full_e_shadow, run_g4_s5b0_rjf_attempt_trace,
         run_g4_s5b0_v37_continuation_transaction_filtered, run_shadow_wall_protocol,
-        stage_trajectory_shape_features,
+        stage_trajectory_shape_features, v37_continuation_outcome_semantics_exact,
     };
 
     #[test]
@@ -5207,6 +5253,47 @@ mod stage_trajectory_geometry_tests {
         assert_eq!(next_calibration_repetitions(1, 1024), 2);
         assert_eq!(next_calibration_repetitions(512, 1024), 1024);
         assert_eq!(next_calibration_repetitions(1024, 1024), 1024);
+    }
+
+    #[test]
+    fn v37_outcome_semantics_reject_crossed_labels_flags_and_endpoint_evidence() {
+        let complete_report = run_g4_s5b0_v37_continuation_transaction_filtered(
+            G4S5B0Profile::StageGrowthCalibration96,
+            Some(G4S5B0Family::RobertsonRamped),
+            80,
+        )
+        .unwrap();
+        assert!(
+            complete_report
+                .rows
+                .iter()
+                .all(v37_continuation_outcome_semantics_exact)
+        );
+
+        let mut crossed_complete = complete_report
+            .rows
+            .iter()
+            .find(|row| row.recommended)
+            .unwrap()
+            .clone();
+        crossed_complete.continuation_budget_exhausted = true;
+        assert!(!v37_continuation_outcome_semantics_exact(&crossed_complete));
+
+        let zero_cap_report = run_g4_s5b0_v37_continuation_transaction_filtered(
+            G4S5B0Profile::StageGrowthCalibration96,
+            Some(G4S5B0Family::RobertsonRamped),
+            0,
+        )
+        .unwrap();
+        let mut exhausted = zero_cap_report
+            .rows
+            .iter()
+            .find(|row| row.continuation_budget_exhausted)
+            .unwrap()
+            .clone();
+        assert!(v37_continuation_outcome_semantics_exact(&exhausted));
+        exhausted.shadow_full_e_total_error = Some(0.0);
+        assert!(!v37_continuation_outcome_semantics_exact(&exhausted));
     }
 
     #[test]
