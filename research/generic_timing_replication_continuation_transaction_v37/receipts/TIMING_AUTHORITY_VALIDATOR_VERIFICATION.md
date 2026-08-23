@@ -10,6 +10,8 @@
 - canonical remote parent tree: `0a98b761c917670318e2213b81fe77f3fbe08d0c`
 - scientific implementation baseline: `4384eab8397b20903377705a99b4db6e8370e2bd`
 - scientific implementation tree: `4a82e7b9196c383fdd9a9cae5ba566035ea420e0`
+- local PM-3 implementation commit: `68b1c2a39831d81700f732b304816a88679c1454`
+- local PM-3 implementation tree: `b127ac8028f0fc5dfab276ae8a9a75d34a16a48b`
 
 PR #7 and PR #8 changed design/plan documents only. The local executable source
 used for this verification is the exact merged v3.7 scientific implementation
