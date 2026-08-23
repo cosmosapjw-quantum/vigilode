@@ -27,8 +27,9 @@ from typing import Any, Iterable, Mapping, Sequence
 
 SCHEMA = "vigilode-v37-timing-replication-continuation-transaction-contract-v1"
 ATTESTATION_SCHEMA = "vigilode-v37-timing-host-attestation-v1"
-CAMPAIGN_DECISION_SCHEMA = "vigilode-v37-timing-campaign-decision-v1"
-ATTEMPT_SUMMARY_SCHEMA = "vigilode-v37-timing-attempt-summary-v1"
+CAMPAIGN_DECISION_SCHEMA = "vigilode-v37-timing-campaign-decision-v2"
+ATTEMPT_SUMMARY_SCHEMA = "vigilode-v37-timing-attempt-summary-v2"
+AUTHORITY_EVIDENCE_SCHEMA = "vigilode-v37-timing-authority-evidence-v1"
 RETROSPECTIVE_SCHEMA = "vigilode-v37-v36-retrospective-timing-quality-v1"
 PASS_VERDICT = "PASS_HOST_QUALIFIED_DESCRIPTIVE_TIMING"
 FAIL_VERDICT = "NON_AUTHORITY_HOST_QUALITY_FAIL"
@@ -101,6 +102,25 @@ def sha256_tree(root: Path | str) -> str:
         file_hash = bytes.fromhex(sha256_path(path))
         digest.update(file_hash)
     return digest.hexdigest()
+
+
+def _canonical_json_bytes(obj: Any) -> bytes:
+    return json.dumps(
+        obj,
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=False,
+        allow_nan=False,
+    ).encode("utf-8")
+
+
+def _canonical_json_sha256(obj: Any) -> str:
+    return hashlib.sha256(_canonical_json_bytes(obj)).hexdigest()
+
+
+def _canonical_float(value: Any) -> float:
+    number = float(value)
+    return 0.0 if number == 0.0 else number
 
 
 def load_json(path: Path | str) -> Any:
@@ -466,24 +486,99 @@ def _attestation_structural_validation(contract: Mapping[str, Any], attestation:
     require(set(timing["host_fingerprint_fields"]) <= set(host), "host fingerprint fields missing")
     require(isinstance(host.get("kernel"), str) and host["kernel"], "kernel fingerprint missing")
     require(isinstance(host.get("cpu_model"), str) and host["cpu_model"], "CPU model fingerprint missing")
-    require(isinstance(host.get("logical_cpu_count"), int) and host["logical_cpu_count"] > 0, "logical CPU count invalid")
+    require(
+        isinstance(host.get("logical_cpu_count"), int)
+        and not isinstance(host["logical_cpu_count"], bool)
+        and host["logical_cpu_count"] > 0,
+        "logical CPU count invalid",
+    )
+    physical_cores = host.get("physical_core_count")
+    require(
+        physical_cores is None
+        or (
+            isinstance(physical_cores, int)
+            and not isinstance(physical_cores, bool)
+            and physical_cores > 0
+        ),
+        "physical core count invalid",
+    )
+    numa_nodes = host.get("numa_node_count")
+    require(
+        numa_nodes is None
+        or (
+            isinstance(numa_nodes, int)
+            and not isinstance(numa_nodes, bool)
+            and numa_nodes > 0
+        ),
+        "NUMA node count invalid",
+    )
+    require(
+        host.get("microcode") is None
+        or (isinstance(host["microcode"], str) and bool(host["microcode"])),
+        "microcode fingerprint invalid",
+    )
+    for field in ("frequency_governor", "boost_or_turbo_state"):
+        require(
+            host.get(field) is None
+            or (isinstance(host[field], str) and bool(host[field])),
+            f"host fingerprint field invalid: {field}",
+        )
     affinity = attestation.get("cpu_affinity")
-    require(isinstance(affinity, list) and affinity and all(isinstance(cpu, int) and cpu >= 0 for cpu in affinity), "CPU affinity invalid")
+    require(
+        isinstance(affinity, list)
+        and affinity
+        and all(
+            isinstance(cpu, int) and not isinstance(cpu, bool) and cpu >= 0
+            for cpu in affinity
+        )
+        and affinity == sorted(set(affinity)),
+        "CPU affinity invalid",
+    )
     env = attestation.get("thread_environment")
     require(isinstance(env, dict), "thread environment missing")
     require(set(env) == set(timing["thread_environment_fields"]), "thread environment field set mismatch")
     require(all(value is None or isinstance(value, str) for value in env.values()), "thread environment values invalid")
     _exact_keys(preflight, ["probe_seconds", "cpu_before", "cpu_after", "cpu_idle_fraction", "cpu_steal_fraction", "swap_before", "swap_after", "swap_delta", "thermal_before", "thermal_after", "thermal_delta"], "preflight")
-    require(preflight.get("probe_seconds") == timing["preflight_probe_seconds"], "preflight duration mismatch")
-    before = tuple(preflight.get("cpu_before", []))
-    after = tuple(preflight.get("cpu_after", []))
+    require(
+        isinstance(preflight.get("probe_seconds"), int)
+        and not isinstance(preflight["probe_seconds"], bool)
+        and preflight["probe_seconds"] == timing["preflight_probe_seconds"],
+        "preflight duration mismatch",
+    )
+    for name in ("cpu_before", "cpu_after"):
+        values = preflight.get(name)
+        require(
+            isinstance(values, list)
+            and len(values) == 8
+            and all(
+                isinstance(value, int)
+                and not isinstance(value, bool)
+                and value >= 0
+                for value in values
+            ),
+            f"{name} must contain the sealed eight nonnegative integer fields",
+        )
+    before = tuple(preflight["cpu_before"])
+    after = tuple(preflight["cpu_after"])
     computed_idle, computed_steal = cpu_idle_steal_fractions(before, after)
     stated_idle = _finite_number(preflight.get("cpu_idle_fraction"), "cpu_idle_fraction")
     stated_steal = _finite_number(preflight.get("cpu_steal_fraction"), "cpu_steal_fraction")
     require(math.isclose(stated_idle, computed_idle, rel_tol=0.0, abs_tol=1e-15), "cpu idle fraction mismatch")
     require(math.isclose(stated_steal, computed_steal, rel_tol=0.0, abs_tol=1e-15), "cpu steal fraction mismatch")
     for name in ("swap_before", "swap_after", "swap_delta", "thermal_before", "thermal_after", "thermal_delta"):
-        require(isinstance(preflight.get(name), dict), f"{name} must be an object")
+        counters = preflight.get(name)
+        require(isinstance(counters, dict), f"{name} must be an object")
+        require(
+            all(
+                isinstance(key, str)
+                and bool(key)
+                and isinstance(value, int)
+                and not isinstance(value, bool)
+                and value >= 0
+                for key, value in counters.items()
+            ),
+            f"{name} counters must be nonnegative integers",
+        )
     require(set(preflight["swap_before"]) == {"pswpin", "pswpout"}, "swap before fields mismatch")
     require(set(preflight["swap_after"]) == {"pswpin", "pswpout"}, "swap after fields mismatch")
     require(set(preflight["swap_delta"]) == {"pswpin", "pswpout"}, "swap delta fields mismatch")
@@ -519,10 +614,22 @@ def _attestation_quality_failures(contract: Mapping[str, Any], attestation: Mapp
     return failures
 
 
-def _validate_arm(arm: Mapping[str, Any], *, mode: str, families: int, where: str) -> dict[str, Any]:
+def _validate_arm(
+    arm: Mapping[str, Any],
+    *,
+    mode: str,
+    families: int,
+    repetitions: int,
+    where: str,
+) -> dict[str, Any]:
     require(isinstance(arm, dict), f"{where} arm must be an object")
     require(arm.get("mode") == mode, f"{where} mode mismatch")
-    require(isinstance(arm.get("repetitions"), int) and arm["repetitions"] > 0, f"{where} repetitions invalid")
+    require(
+        isinstance(arm.get("repetitions"), int)
+        and not isinstance(arm["repetitions"], bool)
+        and arm["repetitions"] == repetitions,
+        f"{where} repetition count mismatch",
+    )
     wall = _finite_number(arm.get("wall_seconds"), f"{where} wall_seconds", positive=True)
     interval = _finite_number(arm.get("proposed_interval"), f"{where} proposed_interval", positive=True)
     gamma = _finite_number(arm.get("gamma_seconds_per_interval"), f"{where} gamma", positive=True)
@@ -532,13 +639,31 @@ def _validate_arm(arm: Mapping[str, Any], *, mode: str, families: int, where: st
     return {"wall_seconds": wall, "proposed_interval": interval, "gamma_seconds_per_interval": gamma}
 
 
-def _validate_pair(row: Mapping[str, Any], index: int, timing: Mapping[str, Any], where: str) -> dict[str, Any]:
+def _validate_pair(
+    row: Mapping[str, Any],
+    index: int,
+    timing: Mapping[str, Any],
+    repetitions: int,
+    where: str,
+) -> dict[str, Any]:
     require(isinstance(row, dict), f"{where} pair row must be an object")
     require(row.get("pair_index") == index, f"{where} pair index mismatch")
     expected_order = "rjf-first" if index % 2 == 0 else "shadow-first"
     require(row.get("order") == expected_order, f"{where} order mismatch")
-    rjf = _validate_arm(row.get("rjf_only"), mode="rjf-only", families=timing["families_per_profile"], where=f"{where}.rjf")
-    shadow = _validate_arm(row.get("frozen_full_e_shadow"), mode="frozen-full-e-shadow", families=timing["families_per_profile"], where=f"{where}.shadow")
+    rjf = _validate_arm(
+        row.get("rjf_only"),
+        mode="rjf-only",
+        families=timing["families_per_profile"],
+        repetitions=repetitions,
+        where=f"{where}.rjf",
+    )
+    shadow = _validate_arm(
+        row.get("frozen_full_e_shadow"),
+        mode="frozen-full-e-shadow",
+        families=timing["families_per_profile"],
+        repetitions=repetitions,
+        where=f"{where}.shadow",
+    )
     pair_failures: list[dict[str, Any]] = []
     if rjf["proposed_interval"] != shadow["proposed_interval"]:
         pair_failures.append(
@@ -630,6 +755,7 @@ def _validate_retained_pair_rows(
     timing: Mapping[str, Any],
     dim: int,
     kind: str,
+    repetitions: int,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     retained: list[dict[str, Any]] = []
     indices: list[int] = []
@@ -645,6 +771,7 @@ def _validate_retained_pair_rows(
                 row,
                 declared_index,
                 timing,
+                repetitions,
                 f"profile-{dim}.{kind}.retained-{position}",
             )
         )
@@ -673,7 +800,8 @@ def _validate_retained_pair_rows(
     return retained, failures
 
 
-def _load_profile_file(path: Path, dim: int, timing: Mapping[str, Any]) -> dict[str, Any]:
+def _load_profile_file(path: Path, dim: int, contract: Mapping[str, Any]) -> dict[str, Any]:
+    timing = contract["timing_replication"]
     data = load_json(path)
     require(isinstance(data, dict), f"profile {dim} root must be an object")
     require(data.get("schema") == "g4-s5b0-frozen-full-e-shadow-economics-v1", f"profile {dim} schema mismatch")
@@ -682,15 +810,28 @@ def _load_profile_file(path: Path, dim: int, timing: Mapping[str, Any]) -> dict[
     require(data.get("switching_active") is False, f"profile {dim} switching must be false")
     require(data.get("committed_method") == "protected-sequential-matrix-free-rodas5p", f"profile {dim} committed method mismatch")
     require(data.get("shadow_method") == "pexprb54s4-fused-resume-retained-level2", f"profile {dim} shadow method mismatch")
+    require(
+        data.get("frozen_zeta34_tau") == contract["frozen_policy"]["zeta34_tau"],
+        f"profile {dim} frozen zeta34 tau mismatch",
+    )
     require(data.get("all_six_families_present") is True, f"profile {dim} family coverage mismatch")
     paired = data.get("paired_wall")
     require(isinstance(paired, dict), f"profile {dim} paired_wall missing")
     require(paired.get("required_build_profile") == "measurement", f"profile {dim} required build profile mismatch")
     require(paired.get("measurement_build_verified") is True, f"profile {dim} measurement build unverified")
     require(paired.get("compiled_profile_directory") == "measurement", f"profile {dim} compiled directory mismatch")
+    require(paired.get("compiled_cargo_profile") == "release", f"profile {dim} raw Cargo profile mismatch")
     require(paired.get("suite_scope") == "all-six-families", f"profile {dim} suite scope mismatch")
+    require(paired.get("calibration_arm") == "rjf-only", f"profile {dim} calibration arm mismatch")
     require(paired.get("gamma_denominator") == "sum-absolute-proposed-attempt-h", f"profile {dim} Gamma denominator mismatch")
     require(paired.get("all_suite_identities_passed") is True, f"profile {dim} suite identity failed")
+    frozen_repetitions = paired.get("frozen_repetitions")
+    require(
+        isinstance(frozen_repetitions, int)
+        and not isinstance(frozen_repetitions, bool)
+        and frozen_repetitions > 0,
+        f"profile {dim} frozen repetition count invalid",
+    )
     warmups = paired.get("warmup_rows")
     measured = paired.get("measured_rows")
     require(isinstance(warmups, list), f"profile {dim} warmup rows must be a list")
@@ -698,6 +839,14 @@ def _load_profile_file(path: Path, dim: int, timing: Mapping[str, Any]) -> dict[
     failures: list[dict[str, Any]] = []
     declared_warmups = paired.get("warmup_pairs")
     declared_measured = paired.get("measured_pairs")
+    require(
+        isinstance(declared_warmups, int) and not isinstance(declared_warmups, bool),
+        f"profile {dim} declared warmup pair count must be an integer",
+    )
+    require(
+        isinstance(declared_measured, int) and not isinstance(declared_measured, bool),
+        f"profile {dim} declared measured pair count must be an integer",
+    )
     if declared_warmups != timing["warmup_pairs_per_profile"] or len(warmups) != timing["warmup_pairs_per_profile"]:
         failures.append(
             {
@@ -726,6 +875,7 @@ def _load_profile_file(path: Path, dim: int, timing: Mapping[str, Any]) -> dict[
         timing=timing,
         dim=dim,
         kind="warmup",
+        repetitions=frozen_repetitions,
     )
     measured_rows, measured_index_failures = _validate_retained_pair_rows(
         measured,
@@ -733,6 +883,7 @@ def _load_profile_file(path: Path, dim: int, timing: Mapping[str, Any]) -> dict[
         timing=timing,
         dim=dim,
         kind="measured",
+        repetitions=frozen_repetitions,
     )
     failures.extend(warmup_index_failures)
     failures.extend(measured_index_failures)
@@ -764,22 +915,167 @@ def _comparison_identity(attestation: Mapping[str, Any]) -> dict[str, Any]:
     }
 
 
+def _validate_exact_campaign_layout(root: Path) -> tuple[Path, Path]:
+    expected_root = {"ATTESTATION.json", "profiles"}
+    root_entries = {path.name: path for path in root.iterdir()}
+    require(
+        set(root_entries) == expected_root,
+        f"campaign root entry set mismatch: expected={sorted(expected_root)} actual={sorted(root_entries)}",
+    )
+    attestation_path = root_entries["ATTESTATION.json"]
+    profiles_root = root_entries["profiles"]
+    require(
+        attestation_path.is_file() and not attestation_path.is_symlink(),
+        "ATTESTATION.json must be a regular file",
+    )
+    require(
+        profiles_root.is_dir() and not profiles_root.is_symlink(),
+        "profiles must be a regular directory",
+    )
+    expected_profiles = set(PROFILE_FILES.values())
+    profile_entries = {path.name: path for path in profiles_root.iterdir()}
+    require(
+        set(profile_entries) == expected_profiles,
+        f"profile entry set mismatch: expected={sorted(expected_profiles)} actual={sorted(profile_entries)}",
+    )
+    for name, path in profile_entries.items():
+        require(path.is_file() and not path.is_symlink(), f"profile entry must be a regular file: {name}")
+    return attestation_path, profiles_root
+
+
+def _preflight_authority_evidence(preflight: Mapping[str, Any]) -> dict[str, Any]:
+    cpu_before = tuple(int(value) for value in preflight["cpu_before"])
+    cpu_after = tuple(int(value) for value in preflight["cpu_after"])
+    idle, steal = cpu_idle_steal_fractions(cpu_before, cpu_after)
+    swap_before = {key: int(value) for key, value in preflight["swap_before"].items()}
+    swap_after = {key: int(value) for key, value in preflight["swap_after"].items()}
+    thermal_before = {
+        key: int(value) for key, value in preflight["thermal_before"].items()
+    }
+    thermal_after = {
+        key: int(value) for key, value in preflight["thermal_after"].items()
+    }
+    return {
+        "probe_seconds": int(preflight["probe_seconds"]),
+        "cpu_before": list(cpu_before),
+        "cpu_after": list(cpu_after),
+        "cpu_idle_fraction": _canonical_float(idle),
+        "cpu_steal_fraction": _canonical_float(steal),
+        "swap_before": swap_before,
+        "swap_after": swap_after,
+        "swap_delta": _counter_delta(swap_before, swap_after, "swap"),
+        "thermal_before": thermal_before,
+        "thermal_after": thermal_after,
+        "thermal_delta": _counter_delta(thermal_before, thermal_after, "thermal"),
+    }
+
+
+def _attestation_authority_evidence(
+    contract: Mapping[str, Any], attestation: Mapping[str, Any]
+) -> dict[str, Any]:
+    timing = contract["timing_replication"]
+    return {
+        "schema": attestation["schema"],
+        "git": {
+            "head": attestation["git"]["head"],
+            "tree": attestation["git"]["tree"],
+            "clean": attestation["git"]["clean"],
+        },
+        "rust": {
+            "rustc_vv": attestation["rust"]["rustc_vv"],
+            "cargo_version": attestation["rust"]["cargo_version"],
+        },
+        "contract_sha256": attestation["contract_sha256"],
+        "binary_sha256": attestation["binary_sha256"],
+        "measurement_profile": attestation["measurement_profile"],
+        "host": {
+            field: attestation["host"].get(field)
+            for field in timing["host_fingerprint_fields"]
+        },
+        "cpu_affinity": list(attestation["cpu_affinity"]),
+        "thread_environment": {
+            field: attestation["thread_environment"].get(field)
+            for field in timing["thread_environment_fields"]
+        },
+        "preflight": _preflight_authority_evidence(attestation["preflight"]),
+    }
+
+
+def _arm_authority_evidence(arm: Mapping[str, Any]) -> dict[str, Any]:
+    return {
+        "mode": arm["mode"],
+        "repetitions": int(arm["repetitions"]),
+        "wall_seconds": _canonical_float(arm["wall_seconds"]),
+        "proposed_interval": _canonical_float(arm["proposed_interval"]),
+        "family_count": int(arm["family_count"]),
+        "all_suite_identities_passed": bool(arm["all_suite_identities_passed"]),
+    }
+
+
+def _pair_authority_evidence(parsed_row: Mapping[str, Any]) -> dict[str, Any]:
+    raw = parsed_row["raw"]
+    return {
+        "pair_index": int(raw["pair_index"]),
+        "order": raw["order"],
+        "rjf_only": _arm_authority_evidence(raw["rjf_only"]),
+        "frozen_full_e_shadow": _arm_authority_evidence(raw["frozen_full_e_shadow"]),
+    }
+
+
+def _sorted_pair_authority_evidence(
+    rows: Sequence[Mapping[str, Any]],
+) -> list[dict[str, Any]]:
+    evidence = [_pair_authority_evidence(row) for row in rows]
+    return sorted(
+        evidence,
+        key=lambda item: (
+            item["pair_index"],
+            json.dumps(
+                item,
+                sort_keys=True,
+                separators=(",", ":"),
+                ensure_ascii=False,
+                allow_nan=False,
+            ),
+        ),
+    )
+
+
+def _campaign_authority_evidence_sha256(
+    contract: Mapping[str, Any],
+    attestation: Mapping[str, Any],
+    profiles: Sequence[Mapping[str, Any]],
+) -> str:
+    payload = {
+        "schema": AUTHORITY_EVIDENCE_SCHEMA,
+        "attestation": _attestation_authority_evidence(contract, attestation),
+        "profiles": [
+            {
+                "dimension": profile["dimension"],
+                "profile_label": PROFILE_LABELS[profile["dimension"]],
+                "warmup_rows": _sorted_pair_authority_evidence(
+                    profile["warmup_rows"]
+                ),
+                "measured_rows": _sorted_pair_authority_evidence(
+                    profile["measured_rows"]
+                ),
+            }
+            for profile in profiles
+        ],
+    }
+    return _canonical_json_sha256(payload)
+
+
 def validate_campaign(contract: Mapping[str, Any], campaign_root: Path | str) -> dict[str, Any]:
     _validate_contract_exact(contract)
     require("_authority" in contract, "contract authority metadata missing; use load_contract")
     root = Path(campaign_root).resolve()
     require(root.is_dir(), f"campaign directory missing: {root}")
-    attestation_path = root / "ATTESTATION.json"
-    profiles_root = root / "profiles"
-    require(attestation_path.is_file(), "ATTESTATION.json missing")
-    require(profiles_root.is_dir(), "profiles directory missing")
-    actual_files = {path.name for path in profiles_root.iterdir() if path.is_file()}
-    expected_files = set(PROFILE_FILES.values())
-    require(actual_files == expected_files, f"profile file set mismatch: expected={sorted(expected_files)} actual={sorted(actual_files)}")
+    attestation_path, profiles_root = _validate_exact_campaign_layout(root)
     attestation = load_json(attestation_path)
     require(isinstance(attestation, dict), "attestation root must be an object")
     _attestation_structural_validation(contract, attestation)
-    profiles = [_load_profile_file(profiles_root / PROFILE_FILES[dim], dim, contract["timing_replication"]) for dim in contract["timing_replication"]["profiles"]]
+    profiles = [_load_profile_file(profiles_root / PROFILE_FILES[dim], dim, contract) for dim in contract["timing_replication"]["profiles"]]
     failures = _attestation_quality_failures(contract, attestation)
     for profile in profiles:
         failures.extend(profile["quality_failures"])
@@ -788,6 +1084,9 @@ def validate_campaign(contract: Mapping[str, Any], campaign_root: Path | str) ->
         "schema": CAMPAIGN_DECISION_SCHEMA,
         "campaign_path": str(root),
         "campaign_sha256": sha256_tree(root),
+        "authority_evidence_sha256": _campaign_authority_evidence_sha256(
+            contract, attestation, profiles
+        ),
         "attestation_path": str(attestation_path),
         "attestation_sha256": sha256_path(attestation_path),
         "comparison_identity": _comparison_identity(attestation),
@@ -825,235 +1124,28 @@ def _identity_failure_names(reference: Mapping[str, Any], current: Mapping[str, 
     return [name for name, key in comparisons if reference.get(key) != current.get(key)]
 
 
-def _validated_failure_names(failures: Any, stated_names: Any, where: str) -> list[str]:
-    require(isinstance(failures, list), f"{where} quality_failures must be a list")
-    derived: list[str] = []
-    for index, failure in enumerate(failures):
-        require(isinstance(failure, Mapping), f"{where} quality failure {index} must be an object")
-        name = failure.get("name")
-        require(isinstance(name, str) and name, f"{where} quality failure {index} name missing")
-        derived.append(name)
-    require(
-        isinstance(stated_names, list) and all(isinstance(name, str) and name for name in stated_names),
-        f"{where} quality_failure_names must be a string list",
-    )
-    normalized = sorted(set(derived))
-    require(stated_names == normalized, f"{where} quality failure names do not match retained failures")
-    return normalized
-
-
-def _validate_comparison_identity_structure(
-    contract: Mapping[str, Any], identity: Any, where: str
-) -> Mapping[str, Any]:
-    require(isinstance(identity, Mapping), f"{where} comparison identity missing")
-    required = [
-        "git",
-        "rust",
-        "contract_sha256",
-        "binary_sha256",
-        "host",
-        "cpu_affinity",
-        "thread_environment",
-    ]
-    _exact_keys(identity, required, f"{where} comparison identity", allow_extra=False)
-    git = identity["git"]
-    rust = identity["rust"]
-    host = identity["host"]
-    require(isinstance(git, Mapping), f"{where} Git identity malformed")
-    require(isinstance(rust, Mapping), f"{where} Rust identity malformed")
-    require(isinstance(host, Mapping), f"{where} host identity malformed")
-    _validate_hash(git.get("head"), f"{where} Git HEAD", GIT_SHA_RE)
-    _validate_hash(git.get("tree"), f"{where} Git tree", GIT_SHA_RE)
-    require(isinstance(git.get("clean"), bool), f"{where} Git clean flag must be boolean")
-    require(isinstance(rust.get("rustc_vv"), str) and rust["rustc_vv"].strip(), f"{where} rustc identity missing")
-    require(isinstance(rust.get("cargo_version"), str) and rust["cargo_version"].strip(), f"{where} cargo identity missing")
-    _validate_hash(identity.get("contract_sha256"), f"{where} contract SHA-256", SHA256_RE)
-    _validate_hash(identity.get("binary_sha256"), f"{where} binary SHA-256", SHA256_RE)
-    timing = contract["timing_replication"]
-    require(set(timing["host_fingerprint_fields"]) <= set(host), f"{where} host fingerprint fields missing")
-    require(isinstance(host.get("kernel"), str) and host["kernel"], f"{where} kernel fingerprint missing")
-    require(isinstance(host.get("cpu_model"), str) and host["cpu_model"], f"{where} CPU fingerprint missing")
-    require(
-        isinstance(host.get("logical_cpu_count"), int) and not isinstance(host["logical_cpu_count"], bool) and host["logical_cpu_count"] > 0,
-        f"{where} logical CPU count invalid",
-    )
-    affinity = identity["cpu_affinity"]
-    require(
-        isinstance(affinity, list)
-        and affinity
-        and all(isinstance(cpu, int) and not isinstance(cpu, bool) and cpu >= 0 for cpu in affinity)
-        and affinity == sorted(set(affinity)),
-        f"{where} CPU affinity invalid",
-    )
-    environment = identity["thread_environment"]
-    require(isinstance(environment, Mapping), f"{where} thread environment missing")
-    require(
-        set(environment) == set(timing["thread_environment_fields"]),
-        f"{where} thread environment field set mismatch",
-    )
-    require(
-        all(value is None or isinstance(value, str) for value in environment.values()),
-        f"{where} thread environment values invalid",
-    )
-    return identity
-
-
-def _validate_profile_decision_for_summary(
-    profile: Any, expected_dim: int, where: str
-) -> tuple[int, int, list[str]]:
-    require(isinstance(profile, Mapping), f"{where} profile must be an object")
-    required = [
-        "dimension",
-        "path",
-        "sha256",
-        "warmup_rows",
-        "measured_rows",
-        "metrics",
-        "quality_failures",
-        "quality_failure_names",
-    ]
-    _exact_keys(profile, required, where)
-    require(profile.get("dimension") == expected_dim, f"{where} dimension mismatch")
-    require(isinstance(profile.get("path"), str) and profile["path"], f"{where} path missing")
-    _validate_hash(profile.get("sha256"), f"{where} SHA-256", SHA256_RE)
-    warmups = profile["warmup_rows"]
-    measured = profile["measured_rows"]
-    require(isinstance(warmups, list), f"{where} warmup rows must be a list")
-    require(isinstance(measured, list), f"{where} measured rows must be a list")
-    for kind, rows in (("warmup", warmups), ("measured", measured)):
-        for position, row in enumerate(rows):
-            require(isinstance(row, Mapping), f"{where} {kind} row {position} must be an object")
-            pair_index = row.get("pair_index")
-            require(
-                isinstance(pair_index, int) and not isinstance(pair_index, bool),
-                f"{where} {kind} row {position} pair index invalid",
-            )
-    metrics = profile["metrics"]
-    require(isinstance(metrics, Mapping), f"{where} metrics must be an object")
-    metric_names = {
-        "rjf_arm_wall_span",
-        "shadow_arm_wall_span",
-        "order_median_absolute_gap",
-        "median_shadow_over_rjf",
-    }
-    require(set(metrics) == metric_names, f"{where} metric field set mismatch")
-    for name, value in metrics.items():
-        if value is not None:
-            _finite_number(value, f"{where} metric {name}")
-    names = _validated_failure_names(
-        profile["quality_failures"], profile["quality_failure_names"], where
-    )
-    return len(warmups), len(measured), names
-
-
 def _validate_campaign_decision_for_summary(
     contract: Mapping[str, Any], raw: Any, attempt_index: int
 ) -> dict[str, Any]:
     where = f"attempt {attempt_index}"
     require(isinstance(raw, Mapping), f"{where} result must be an object")
-    required = [
-        "schema",
-        "campaign_path",
-        "campaign_sha256",
-        "attestation_path",
-        "attestation_sha256",
-        "comparison_identity",
-        "profiles",
-        "retained_profile_count",
-        "retained_warmup_pair_count",
-        "retained_measured_pair_count",
-        "quality_failures",
-        "quality_failure_names",
-        "verdict",
-        "timing_authority",
-        "speedup_claim_authorized",
-        "active_switching_authorized",
-        "individual_pair_exclusion_used",
-        "individual_profile_exclusion_used",
-        "ratio_direction_used_for_quality",
-    ]
-    _exact_keys(raw, required, where)
-    require(raw.get("schema") == CAMPAIGN_DECISION_SCHEMA, f"{where} schema mismatch")
-    campaign_path = raw["campaign_path"]
+    campaign_path = raw.get("campaign_path")
     require(isinstance(campaign_path, str) and campaign_path, f"{where} campaign path missing")
-    campaign_sha256 = _validate_hash(raw["campaign_sha256"], f"{where} campaign SHA-256", SHA256_RE)
-    require(isinstance(raw["attestation_path"], str) and raw["attestation_path"], f"{where} attestation path missing")
-    _validate_hash(raw["attestation_sha256"], f"{where} attestation SHA-256", SHA256_RE)
-    identity = _validate_comparison_identity_structure(contract, raw["comparison_identity"], where)
-
-    profiles = raw["profiles"]
-    require(isinstance(profiles, list), f"{where} profiles must be a list")
-    expected_dims = list(contract["timing_replication"]["profiles"])
-    require(len(profiles) == len(expected_dims), f"{where} profile count mismatch")
-    warmup_count = 0
-    measured_count = 0
-    profile_failure_names: set[str] = set()
-    for position, (profile, expected_dim) in enumerate(zip(profiles, expected_dims)):
-        warmups, measured, names = _validate_profile_decision_for_summary(
-            profile, expected_dim, f"{where} profile {position}"
-        )
-        warmup_count += warmups
-        measured_count += measured
-        profile_failure_names.update(names)
-
-    require(raw["retained_profile_count"] == len(profiles), f"{where} retained profile count mismatch")
-    require(raw["retained_warmup_pair_count"] == warmup_count, f"{where} retained warmup count mismatch")
-    require(raw["retained_measured_pair_count"] == measured_count, f"{where} retained measured count mismatch")
-    failure_names = _validated_failure_names(raw["quality_failures"], raw["quality_failure_names"], where)
-    require(profile_failure_names <= set(failure_names), f"{where} omits retained profile failures")
-
-    verdict = raw["verdict"]
-    require(verdict in {PASS_VERDICT, FAIL_VERDICT}, f"{where} verdict invalid")
-    require(isinstance(raw["timing_authority"], bool), f"{where} timing authority flag invalid")
-    expected_authority = verdict == PASS_VERDICT and not failure_names
-    require(raw["timing_authority"] == expected_authority, f"{where} verdict/authority inconsistency")
-    for flag in (
-        "speedup_claim_authorized",
-        "active_switching_authorized",
-        "individual_pair_exclusion_used",
-        "individual_profile_exclusion_used",
-        "ratio_direction_used_for_quality",
-    ):
-        require(raw[flag] is False, f"{where} forbidden flag enabled: {flag}")
-
-    if verdict == PASS_VERDICT:
-        timing = contract["timing_replication"]
-        require(not failure_names, f"{where} passing decision retains failures")
-        require(len(profiles) == len(expected_dims), f"{where} passing profile count mismatch")
-        require(
-            warmup_count == len(expected_dims) * timing["warmup_pairs_per_profile"],
-            f"{where} passing warmup count mismatch",
-        )
-        require(
-            measured_count == len(expected_dims) * timing["measured_pairs_per_profile_per_campaign"],
-            f"{where} passing measured count mismatch",
-        )
-        for position, profile in enumerate(profiles):
-            require(not profile["quality_failure_names"], f"{where} passing profile {position} retains failures")
-            require(
-                [row["pair_index"] for row in profile["warmup_rows"]]
-                == list(range(timing["warmup_pairs_per_profile"])),
-                f"{where} passing profile {position} warmup index set mismatch",
-            )
-            require(
-                [row["pair_index"] for row in profile["measured_rows"]]
-                == list(range(timing["measured_pairs_per_profile_per_campaign"])),
-                f"{where} passing profile {position} measured index set mismatch",
-            )
-            require(
-                all(value is not None for value in profile["metrics"].values()),
-                f"{where} passing profile {position} has unavailable metrics",
-            )
-    else:
-        require(bool(failure_names), f"{where} failing decision has no named failure")
-
+    canonical = validate_campaign(contract, campaign_path)
+    require(
+        _canonical_json_bytes(dict(raw)) == _canonical_json_bytes(canonical),
+        f"{where} decision does not exactly match revalidated campaign evidence",
+    )
     return {
-        "raw": raw,
-        "campaign_path": campaign_path,
-        "normalized_campaign_path": str(Path(campaign_path).expanduser().resolve(strict=False)),
-        "campaign_sha256": campaign_sha256,
-        "identity": identity,
-        "quality_failure_names": failure_names,
+        "raw": canonical,
+        "campaign_path": canonical["campaign_path"],
+        "normalized_campaign_path": str(
+            Path(canonical["campaign_path"]).expanduser().resolve(strict=False)
+        ),
+        "campaign_sha256": canonical["campaign_sha256"],
+        "authority_evidence_sha256": canonical["authority_evidence_sha256"],
+        "identity": canonical["comparison_identity"],
+        "quality_failure_names": list(canonical["quality_failure_names"]),
     }
 
 
@@ -1068,6 +1160,7 @@ def summarize_attempts(contract: Mapping[str, Any], attempt_results: Sequence[Ma
     reference_identity: Mapping[str, Any] | None = None
     seen_campaign_paths: set[str] = set()
     seen_campaign_hashes: set[str] = set()
+    seen_authority_evidence_hashes: set[str] = set()
     passing = 0
     for index, raw in enumerate(attempt_results, start=1):
         validated = _validate_campaign_decision_for_summary(contract, raw, index)
@@ -1077,10 +1170,15 @@ def summarize_attempts(contract: Mapping[str, Any], attempt_results: Sequence[Ma
         )
         require(
             validated["campaign_sha256"] not in seen_campaign_hashes,
-            f"attempt {index} duplicates a retained campaign SHA-256",
+            f"attempt {index} duplicates a retained campaign tree SHA-256",
+        )
+        require(
+            validated["authority_evidence_sha256"] not in seen_authority_evidence_hashes,
+            f"attempt {index} duplicates retained timing authority evidence",
         )
         seen_campaign_paths.add(validated["normalized_campaign_path"])
         seen_campaign_hashes.add(validated["campaign_sha256"])
+        seen_authority_evidence_hashes.add(validated["authority_evidence_sha256"])
         identity = validated["identity"]
         token = _identity_token(identity)
         if reference_token is None:
@@ -1093,7 +1191,7 @@ def summarize_attempts(contract: Mapping[str, Any], attempt_results: Sequence[Ma
             require(reference_identity is not None, "reference identity missing")
             effective_failures.extend(_identity_failure_names(reference_identity, identity))
         effective_failures = sorted(set(effective_failures))
-        effective_pass = raw["verdict"] == PASS_VERDICT and not effective_failures
+        effective_pass = validated["raw"]["verdict"] == PASS_VERDICT and not effective_failures
         if effective_pass:
             passing += 1
         retained.append(
@@ -1101,7 +1199,8 @@ def summarize_attempts(contract: Mapping[str, Any], attempt_results: Sequence[Ma
                 "attempt_index": index,
                 "campaign_path": validated["campaign_path"],
                 "campaign_sha256": validated["campaign_sha256"],
-                "original_verdict": raw["verdict"],
+                "authority_evidence_sha256": validated["authority_evidence_sha256"],
+                "original_verdict": validated["raw"]["verdict"],
                 "effective_verdict": PASS_VERDICT if effective_pass else FAIL_VERDICT,
                 "effective_quality_failures": effective_failures,
                 "comparison_identity_sha256": token,
@@ -1136,7 +1235,7 @@ def generate_v36_retrospective_diagnostic(contract: Mapping[str, Any], economics
     timing = contract["timing_replication"]
     for dim in timing["profiles"]:
         path = root / PROFILE_FILES[dim]
-        profile = _load_profile_file(path, dim, timing)
+        profile = _load_profile_file(path, dim, contract)
         profiles.append(
             {
                 "dimension": dim,

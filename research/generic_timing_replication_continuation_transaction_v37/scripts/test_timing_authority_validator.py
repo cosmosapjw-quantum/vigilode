@@ -355,6 +355,84 @@ class CampaignLayoutTests(unittest.TestCase):
             with self.assertRaises(ValidationError):
                 validate_campaign(load_contract(CONTRACT), root)
 
+    def test_arm_repetition_must_match_frozen_profile_repetitions(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            write_campaign(root)
+            path = root / "profiles" / "calibration96.json"
+            data = json.loads(path.read_text())
+            data["paired_wall"]["frozen_repetitions"] = 2
+            path.write_text(json.dumps(data), encoding="utf-8")
+            with self.assertRaises(ValidationError):
+                validate_campaign(load_contract(CONTRACT), root)
+
+    def test_measurement_protocol_metadata_is_exact(self):
+        mutations = {
+            "compiled Cargo profile": lambda paired: paired.__setitem__(
+                "compiled_cargo_profile", "debug"
+            ),
+            "calibration arm": lambda paired: paired.__setitem__(
+                "calibration_arm", "frozen-full-e-shadow"
+            ),
+        }
+        for label, mutate in mutations.items():
+            with self.subTest(label=label), tempfile.TemporaryDirectory() as td:
+                root = Path(td)
+                write_campaign(root)
+                path = root / "profiles" / "calibration96.json"
+                data = json.loads(path.read_text())
+                mutate(data["paired_wall"])
+                path.write_text(json.dumps(data), encoding="utf-8")
+                with self.assertRaises(ValidationError):
+                    validate_campaign(load_contract(CONTRACT), root)
+
+    def test_boolean_arm_repetition_count_rejects(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            write_campaign(root)
+            path = root / "profiles" / "calibration96.json"
+            data = json.loads(path.read_text())
+            data["paired_wall"]["measured_rows"][0]["rjf_only"]["repetitions"] = True
+            path.write_text(json.dumps(data), encoding="utf-8")
+            with self.assertRaises(ValidationError):
+                validate_campaign(load_contract(CONTRACT), root)
+
+    def test_declared_pair_counts_require_exact_integer_types(self):
+        mutations = {
+            "warmup bool": lambda paired: paired.__setitem__("warmup_pairs", True),
+            "measured float": lambda paired: paired.__setitem__("measured_pairs", 7.0),
+        }
+        for label, mutate in mutations.items():
+            with self.subTest(label=label), tempfile.TemporaryDirectory() as td:
+                root = Path(td)
+                write_campaign(root)
+                path = root / "profiles" / "calibration96.json"
+                data = json.loads(path.read_text())
+                mutate(data["paired_wall"])
+                path.write_text(json.dumps(data), encoding="utf-8")
+                with self.assertRaises(ValidationError):
+                    validate_campaign(load_contract(CONTRACT), root)
+
+    def test_extra_root_file_rejects_campaign_layout(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            write_campaign(root)
+            (root / "unrelated-note.txt").write_text("not authority evidence\n", encoding="utf-8")
+            with self.assertRaises(ValidationError):
+                validate_campaign(load_contract(CONTRACT), root)
+
+
+    def test_frozen_zeta34_tau_mismatch_rejects(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            write_campaign(root)
+            path = root / "profiles" / "calibration96.json"
+            data = json.loads(path.read_text())
+            data["frozen_zeta34_tau"] = 13.0
+            path.write_text(json.dumps(data), encoding="utf-8")
+            with self.assertRaises(ValidationError):
+                validate_campaign(load_contract(CONTRACT), root)
+
 
 class HostQualityTests(unittest.TestCase):
     def test_ratio_direction_does_not_change_quality_verdict(self):
@@ -479,140 +557,335 @@ class HostQualityTests(unittest.TestCase):
 
 
 class AttemptSummaryTests(unittest.TestCase):
-    def _attempt(self, passed: bool, index: int, *, identity_tag: str = "same") -> dict:
-        att = make_attestation(sha256_path(CONTRACT), identity_tag)
-        att["git"]["head"] = ("1" if identity_tag == "same" else "3") * 40
-        profiles = [
-            {
-                "dimension": dim,
-                "path": PROFILE_NAMES[dim],
-                "sha256": f"{dim:064x}",
-                "warmup_rows": [{"pair_index": 0}],
-                "measured_rows": [{"pair_index": pair_index} for pair_index in range(7)],
-                "metrics": {
-                    "rjf_arm_wall_span": 1.0,
-                    "shadow_arm_wall_span": 1.0,
-                    "order_median_absolute_gap": 0.0,
-                    "median_shadow_over_rjf": 1.0,
-                },
-                "quality_failures": [],
-                "quality_failure_names": [],
-            }
-            for dim in PROFILE_NAMES
-        ]
-        quality_failures = [] if passed else [{"name": "cpu-idle", "actual": 0.5, "threshold": ">=0.9"}]
-        return {
-            "schema": "vigilode-v37-timing-campaign-decision-v1",
-            "campaign_path": f"attempt-{index:02d}",
-            "campaign_sha256": f"{index:064x}",
-            "attestation_path": f"attempt-{index:02d}/ATTESTATION.json",
-            "attestation_sha256": f"{index + 1000:064x}",
-            "verdict": "PASS_HOST_QUALIFIED_DESCRIPTIVE_TIMING" if passed else "NON_AUTHORITY_HOST_QUALITY_FAIL",
-            "quality_failures": quality_failures,
-            "quality_failure_names": [] if passed else ["cpu-idle"],
-            "comparison_identity": {
-                "git": att["git"],
-                "rust": att["rust"],
-                "contract_sha256": att["contract_sha256"],
-                "binary_sha256": att["binary_sha256"],
-                "host": att["host"],
-                "cpu_affinity": att["cpu_affinity"],
-                "thread_environment": att["thread_environment"],
-            },
-            "profiles": profiles,
-            "retained_profile_count": 5,
-            "retained_warmup_pair_count": 5,
-            "retained_measured_pair_count": 35,
-            "timing_authority": passed,
-            "speedup_claim_authorized": False,
-            "active_switching_authorized": False,
-            "individual_pair_exclusion_used": False,
-            "individual_profile_exclusion_used": False,
-            "ratio_direction_used_for_quality": False,
-        }
+    def _decision(
+        self,
+        base: Path,
+        index: int,
+        *,
+        passed: bool = True,
+        identity_mutator=None,
+    ) -> dict:
+        root = base / f"attempt-{index:02d}"
+        write_campaign(root)
+
+        profile_path = root / "profiles" / "calibration96.json"
+        profile = json.loads(profile_path.read_text())
+        row = profile["paired_wall"]["measured_rows"][0]
+        scale = 1.0 + 0.001 * index
+        for arm_name in ("rjf_only", "frozen_full_e_shadow"):
+            row[arm_name]["wall_seconds"] *= scale
+            row[arm_name]["gamma_seconds_per_interval"] *= scale
+        profile_path.write_text(json.dumps(profile), encoding="utf-8")
+
+        attestation_path = root / "ATTESTATION.json"
+        attestation = json.loads(attestation_path.read_text())
+        if not passed:
+            attestation["preflight"]["cpu_before"] = [100, 0, 10, 800, 0, 0, 0, 0]
+            attestation["preflight"]["cpu_after"] = [140, 0, 20, 850, 0, 0, 0, 0]
+            attestation["preflight"]["cpu_idle_fraction"] = 0.5
+            attestation["preflight"]["cpu_steal_fraction"] = 0.0
+        if identity_mutator is not None:
+            identity_mutator(attestation)
+        attestation_path.write_text(json.dumps(attestation), encoding="utf-8")
+        return validate_campaign(load_contract(CONTRACT), root)
 
     def test_three_passes_within_four_attempts_promotes_descriptive_timing(self):
-        result = summarize_attempts(
-            load_contract(CONTRACT),
-            [self._attempt(True, 1), self._attempt(False, 2), self._attempt(True, 3), self._attempt(True, 4)],
-        )
+        with tempfile.TemporaryDirectory() as td:
+            base = Path(td)
+            attempts = [
+                self._decision(base, 1, passed=True),
+                self._decision(base, 2, passed=False),
+                self._decision(base, 3, passed=True),
+                self._decision(base, 4, passed=True),
+            ]
+            result = summarize_attempts(load_contract(CONTRACT), attempts)
         self.assertEqual(result["verdict"], "PASS_HOST_QUALIFIED_DESCRIPTIVE_TIMING")
         self.assertEqual(result["passing_campaign_count"], 3)
         self.assertFalse(result["speedup_claim_authorized"])
 
     def test_three_distinct_validated_campaign_decisions_promote(self):
         with tempfile.TemporaryDirectory() as td:
-            decisions = []
-            for index in range(3):
-                root = Path(td) / f"attempt-{index + 1:02d}"
-                write_campaign(root)
-                path = root / "profiles" / "calibration96.json"
-                data = json.loads(path.read_text())
-                row = data["paired_wall"]["measured_rows"][0]
-                scale = 1.0 + 0.001 * (index + 1)
-                for arm_name in ("rjf_only", "frozen_full_e_shadow"):
-                    arm = row[arm_name]
-                    arm["wall_seconds"] *= scale
-                    arm["gamma_seconds_per_interval"] *= scale
-                path.write_text(json.dumps(data), encoding="utf-8")
-                decisions.append(validate_campaign(load_contract(CONTRACT), root))
+            base = Path(td)
+            decisions = [self._decision(base, index + 1) for index in range(3)]
+            self.assertEqual(
+                len({decision["authority_evidence_sha256"] for decision in decisions}),
+                3,
+            )
             result = summarize_attempts(load_contract(CONTRACT), decisions)
         self.assertEqual(result["verdict"], "PASS_HOST_QUALIFIED_DESCRIPTIVE_TIMING")
         self.assertEqual(result["passing_campaign_count"], 3)
 
     def test_two_passes_in_five_is_host_unsuitable(self):
-        attempts = [self._attempt(i in {1, 3}, i) for i in range(1, 6)]
-        result = summarize_attempts(load_contract(CONTRACT), attempts)
+        with tempfile.TemporaryDirectory() as td:
+            base = Path(td)
+            attempts = [
+                self._decision(base, index, passed=index in {1, 3})
+                for index in range(1, 6)
+            ]
+            result = summarize_attempts(load_contract(CONTRACT), attempts)
         self.assertEqual(result["verdict"], "HOST_UNSUITABLE_NO_TIMING_PROMOTION")
 
     def test_six_attempts_is_invalid(self):
-        with self.assertRaises(ValidationError):
-            summarize_attempts(load_contract(CONTRACT), [self._attempt(True, i) for i in range(1, 7)])
+        with tempfile.TemporaryDirectory() as td:
+            base = Path(td)
+            attempts = [self._decision(base, index) for index in range(1, 7)]
+            with self.assertRaises(ValidationError):
+                summarize_attempts(load_contract(CONTRACT), attempts)
 
     def test_duplicate_campaign_cannot_count_as_three_passes(self):
-        attempt = self._attempt(True, 1)
-        with self.assertRaises(ValidationError):
-            summarize_attempts(load_contract(CONTRACT), [attempt, copy.deepcopy(attempt), copy.deepcopy(attempt)])
+        with tempfile.TemporaryDirectory() as td:
+            attempt = self._decision(Path(td), 1)
+            with self.assertRaises(ValidationError):
+                summarize_attempts(
+                    load_contract(CONTRACT),
+                    [attempt, copy.deepcopy(attempt), copy.deepcopy(attempt)],
+                )
 
     def test_minimal_fabricated_pass_objects_are_rejected(self):
-        valid = self._attempt(True, 1)
-        fabricated = [
-            {
-                "schema": valid["schema"],
-                "campaign_path": f"fabricated-{index}",
-                "campaign_sha256": f"{index + 2000:064x}",
-                "verdict": valid["verdict"],
-                "quality_failure_names": [],
-                "comparison_identity": copy.deepcopy(valid["comparison_identity"]),
-            }
-            for index in range(3)
-        ]
-        with self.assertRaises(ValidationError):
-            summarize_attempts(load_contract(CONTRACT), fabricated)
+        with tempfile.TemporaryDirectory() as td:
+            valid = self._decision(Path(td), 1)
+            fabricated = [
+                {
+                    "schema": valid["schema"],
+                    "campaign_path": valid["campaign_path"],
+                    "campaign_sha256": f"{index + 2000:064x}",
+                    "verdict": valid["verdict"],
+                    "quality_failure_names": [],
+                    "comparison_identity": copy.deepcopy(valid["comparison_identity"]),
+                }
+                for index in range(3)
+            ]
+            with self.assertRaises(ValidationError):
+                summarize_attempts(load_contract(CONTRACT), fabricated)
+
+    def test_complete_shaped_fabricated_rows_are_rejected(self):
+        with tempfile.TemporaryDirectory() as td:
+            base = Path(td)
+            decisions = [self._decision(base, index + 1) for index in range(3)]
+            for decision in decisions:
+                for profile in decision["profiles"]:
+                    profile["warmup_rows"] = [{"pair_index": 0}]
+                    profile["measured_rows"] = [
+                        {"pair_index": pair_index} for pair_index in range(7)
+                    ]
+            with self.assertRaises(ValidationError):
+                summarize_attempts(load_contract(CONTRACT), decisions)
+
+    def test_decision_scalar_types_must_exactly_match_revalidation(self):
+        mutations = {
+            "authority integer": lambda decision: decision.__setitem__("timing_authority", 1),
+            "forbidden flag integer": lambda decision: decision.__setitem__(
+                "speedup_claim_authorized", 0
+            ),
+        }
+        for label, mutate in mutations.items():
+            with self.subTest(label=label), tempfile.TemporaryDirectory() as td:
+                decision = self._decision(Path(td), 1)
+                mutate(decision)
+                with self.assertRaises(ValidationError):
+                    summarize_attempts(load_contract(CONTRACT), [decision])
+
+    def test_non_authority_profile_notes_cannot_create_distinct_campaigns(self):
+        with tempfile.TemporaryDirectory() as td:
+            base = Path(td) / "base"
+            write_campaign(base)
+            decisions = []
+            for index in range(3):
+                root = Path(td) / f"copy-{index + 1:02d}"
+                shutil.copytree(base, root)
+                path = root / "profiles" / "calibration96.json"
+                data = json.loads(path.read_text())
+                data["non_authority_note"] = f"copy-{index + 1}"
+                path.write_text(json.dumps(data), encoding="utf-8")
+                decisions.append(validate_campaign(load_contract(CONTRACT), root))
+            self.assertEqual(len({item["campaign_sha256"] for item in decisions}), 3)
+            self.assertEqual(
+                len({item["authority_evidence_sha256"] for item in decisions}), 1
+            )
+            with self.assertRaises(ValidationError):
+                summarize_attempts(load_contract(CONTRACT), decisions)
+
+
+    def test_reordered_pair_rows_cannot_create_distinct_campaigns(self):
+        with tempfile.TemporaryDirectory() as td:
+            base = Path(td) / "base"
+            write_campaign(base)
+            decisions = []
+            permutations = [
+                [0, 1, 2, 3, 4, 5, 6],
+                [6, 5, 4, 3, 2, 1, 0],
+                [3, 4, 5, 6, 0, 1, 2],
+            ]
+            for index, permutation in enumerate(permutations, start=1):
+                root = Path(td) / f"copy-{index:02d}"
+                shutil.copytree(base, root)
+                path = root / "profiles" / "calibration96.json"
+                data = json.loads(path.read_text())
+                rows = data["paired_wall"]["measured_rows"]
+                data["paired_wall"]["measured_rows"] = [
+                    rows[position] for position in permutation
+                ]
+                path.write_text(json.dumps(data), encoding="utf-8")
+                decisions.append(validate_campaign(load_contract(CONTRACT), root))
+            self.assertEqual(len({item["campaign_sha256"] for item in decisions}), 3)
+            self.assertEqual(
+                len({item["authority_evidence_sha256"] for item in decisions}), 1
+            )
+            with self.assertRaises(ValidationError):
+                summarize_attempts(load_contract(CONTRACT), decisions)
+
+    def test_numeric_json_spelling_cannot_create_distinct_campaigns(self):
+        with tempfile.TemporaryDirectory() as td:
+            base = Path(td) / "base"
+            write_campaign(base)
+            decisions = []
+            for index in range(3):
+                root = Path(td) / f"copy-{index + 1:02d}"
+                shutil.copytree(base, root)
+                if index > 0:
+                    path = root / "profiles" / "calibration96.json"
+                    data = json.loads(path.read_text())
+                    kind = "measured_rows" if index == 1 else "warmup_rows"
+                    row = data["paired_wall"][kind][0]
+                    for arm_name in ("rjf_only", "frozen_full_e_shadow"):
+                        row[arm_name]["wall_seconds"] = int(
+                            row[arm_name]["wall_seconds"]
+                        )
+                        row[arm_name]["proposed_interval"] = int(
+                            row[arm_name]["proposed_interval"]
+                        )
+                    row["wall_ratio_shadow_over_rjf"] = int(
+                        row["wall_ratio_shadow_over_rjf"]
+                    )
+                    row["gamma_ratio_shadow_over_rjf"] = int(
+                        row["gamma_ratio_shadow_over_rjf"]
+                    )
+                    path.write_text(json.dumps(data), encoding="utf-8")
+                decisions.append(validate_campaign(load_contract(CONTRACT), root))
+            self.assertEqual(len({item["campaign_sha256"] for item in decisions}), 3)
+            self.assertEqual(
+                len({item["authority_evidence_sha256"] for item in decisions}), 1
+            )
+            with self.assertRaises(ValidationError):
+                summarize_attempts(load_contract(CONTRACT), decisions)
+
+
+    def test_redundant_derived_fields_cannot_create_distinct_campaigns(self):
+        with tempfile.TemporaryDirectory() as td:
+            base = Path(td) / "base"
+            write_campaign(base)
+            decisions = []
+            for index in range(3):
+                root = Path(td) / f"copy-{index + 1:02d}"
+                shutil.copytree(base, root)
+                if index == 1:
+                    path = root / "profiles" / "calibration96.json"
+                    data = json.loads(path.read_text())
+                    row = data["paired_wall"]["measured_rows"][0]
+                    row["rjf_only"]["gamma_seconds_per_interval"] = math.nextafter(
+                        row["rjf_only"]["gamma_seconds_per_interval"], math.inf
+                    )
+                    row["frozen_full_e_shadow"]["gamma_seconds_per_interval"] = math.nextafter(
+                        row["frozen_full_e_shadow"]["gamma_seconds_per_interval"], math.inf
+                    )
+                    row["wall_ratio_shadow_over_rjf"] = math.nextafter(
+                        row["wall_ratio_shadow_over_rjf"], math.inf
+                    )
+                    row["gamma_ratio_shadow_over_rjf"] = math.nextafter(
+                        row["gamma_ratio_shadow_over_rjf"], math.inf
+                    )
+                    path.write_text(json.dumps(data), encoding="utf-8")
+                elif index == 2:
+                    path = root / "ATTESTATION.json"
+                    data = json.loads(path.read_text())
+                    data["preflight"]["cpu_idle_fraction"] = math.nextafter(
+                        data["preflight"]["cpu_idle_fraction"], math.inf
+                    )
+                    data["preflight"]["cpu_steal_fraction"] = math.nextafter(
+                        data["preflight"]["cpu_steal_fraction"], math.inf
+                    )
+                    path.write_text(json.dumps(data), encoding="utf-8")
+                decisions.append(validate_campaign(load_contract(CONTRACT), root))
+            self.assertEqual(len({item["campaign_sha256"] for item in decisions}), 3)
+            self.assertEqual(
+                len({item["authority_evidence_sha256"] for item in decisions}), 1
+            )
+            with self.assertRaises(ValidationError):
+                summarize_attempts(load_contract(CONTRACT), decisions)
+
+    def test_preflight_numeric_spelling_fails_closed(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            write_campaign(root)
+            path = root / "ATTESTATION.json"
+            data = json.loads(path.read_text())
+            data["preflight"]["probe_seconds"] = 10.0
+            data["preflight"]["swap_before"]["pswpin"] = 0.0
+            path.write_text(json.dumps(data), encoding="utf-8")
+            with self.assertRaises(ValidationError):
+                validate_campaign(load_contract(CONTRACT), root)
+
+    def test_host_numeric_spelling_fails_closed(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            write_campaign(root)
+            path = root / "ATTESTATION.json"
+            data = json.loads(path.read_text())
+            data["host"]["physical_core_count"] = 12.0
+            data["host"]["numa_node_count"] = 1.0
+            path.write_text(json.dumps(data), encoding="utf-8")
+            with self.assertRaises(ValidationError):
+                validate_campaign(load_contract(CONTRACT), root)
 
     def test_identity_mismatch_cannot_count_as_passing(self):
-        attempts = [self._attempt(True, 1), self._attempt(True, 2), self._attempt(True, 3, identity_tag="other")]
-        result = summarize_attempts(load_contract(CONTRACT), attempts)
+        with tempfile.TemporaryDirectory() as td:
+            base = Path(td)
+            attempts = [
+                self._decision(base, 1),
+                self._decision(base, 2),
+                self._decision(
+                    base,
+                    3,
+                    identity_mutator=lambda att: att["git"].__setitem__(
+                        "head", "3" * 40
+                    ),
+                ),
+            ]
+            result = summarize_attempts(load_contract(CONTRACT), attempts)
         self.assertEqual(result["passing_campaign_count"], 2)
         self.assertIn("git-identity", result["attempts"][2]["effective_quality_failures"])
 
     def test_each_cross_campaign_identity_dimension_is_named(self):
-        baseline = self._attempt(True, 1)
         mutations = {
-            "git-identity": lambda ident: ident["git"].__setitem__("tree", "4" * 40),
-            "rust-toolchain": lambda ident: ident["rust"].__setitem__("cargo_version", "cargo other"),
-            "contract-hash": lambda ident: ident.__setitem__("contract_sha256", "c" * 64),
-            "measurement-binary": lambda ident: ident.__setitem__("binary_sha256", "d" * 64),
-            "host-fingerprint": lambda ident: ident["host"].__setitem__("kernel", "other kernel"),
-            "cpu-affinity": lambda ident: ident.__setitem__("cpu_affinity", [0]),
-            "thread-environment": lambda ident: ident["thread_environment"].__setitem__("OMP_NUM_THREADS", "2"),
+            "git-identity": lambda att: att["git"].__setitem__("tree", "4" * 40),
+            "rust-toolchain": lambda att: att["rust"].__setitem__(
+                "cargo_version", "cargo other"
+            ),
+            "contract-hash": lambda att: att.__setitem__(
+                "contract_sha256", "c" * 64
+            ),
+            "measurement-binary": lambda att: att.__setitem__(
+                "binary_sha256", "d" * 64
+            ),
+            "host-fingerprint": lambda att: att["host"].__setitem__(
+                "kernel", "other kernel"
+            ),
+            "cpu-affinity": lambda att: att.__setitem__("cpu_affinity", [0]),
+            "thread-environment": lambda att: att["thread_environment"].__setitem__(
+                "OMP_NUM_THREADS", "2"
+            ),
         }
         for expected, mutate in mutations.items():
-            with self.subTest(expected=expected):
-                changed = copy.deepcopy(self._attempt(True, 2))
-                mutate(changed["comparison_identity"])
-                result = summarize_attempts(load_contract(CONTRACT), [baseline, changed])
-                self.assertIn(expected, result["attempts"][1]["effective_quality_failures"])
+            with self.subTest(expected=expected), tempfile.TemporaryDirectory() as td:
+                base = Path(td)
+                baseline = self._decision(base, 1)
+                changed = self._decision(base, 2, identity_mutator=mutate)
+                result = summarize_attempts(
+                    load_contract(CONTRACT), [baseline, changed]
+                )
+                self.assertIn(
+                    expected, result["attempts"][1]["effective_quality_failures"]
+                )
 
 
 class AtomicOutputTests(unittest.TestCase):
@@ -702,6 +975,75 @@ class AtomicOutputTests(unittest.TestCase):
             self.assertEqual(result["verdict"], "NON_AUTHORITY_HOST_QUALITY_FAIL")
             self.assertEqual(result["retained_measured_pair_count"], 34)
             self.assertIn("profile-pair-index-set", result["quality_failure_names"])
+
+
+    def test_cli_summarize_revalidates_complete_campaign_evidence(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            decision_paths = []
+            for index in range(1, 4):
+                campaign = root / f"attempt-{index:02d}"
+                write_campaign(campaign)
+                profile_path = campaign / "profiles" / "calibration96.json"
+                profile = json.loads(profile_path.read_text())
+                row = profile["paired_wall"]["measured_rows"][0]
+                scale = 1.0 + 0.001 * index
+                for arm_name in ("rjf_only", "frozen_full_e_shadow"):
+                    row[arm_name]["wall_seconds"] *= scale
+                    row[arm_name]["gamma_seconds_per_interval"] *= scale
+                profile_path.write_text(json.dumps(profile), encoding="utf-8")
+                decision = validate_campaign(load_contract(CONTRACT), campaign)
+                decision_path = root / f"decision-{index:02d}.json"
+                decision_path.write_text(json.dumps(decision), encoding="utf-8")
+                decision_paths.append(decision_path)
+            output = root / "summary.json"
+            command = [
+                sys.executable,
+                str(SCRIPT_DIR / "timing_authority_validator.py"),
+                "summarize",
+                "--contract",
+                str(CONTRACT),
+            ]
+            for decision_path in decision_paths:
+                command.extend(["--attempt-result", str(decision_path)])
+            command.extend(["--output", str(output)])
+            proc = subprocess.run(command, text=True, capture_output=True, check=False)
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            summary = json.loads(output.read_text())
+            self.assertEqual(summary["verdict"], "PASS_HOST_QUALIFIED_DESCRIPTIVE_TIMING")
+            self.assertEqual(summary["passing_campaign_count"], 3)
+            self.assertTrue(
+                all("authority_evidence_sha256" in item for item in summary["attempts"])
+            )
+
+    def test_cli_summarize_rejects_tampered_complete_decision_without_output(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            campaign = root / "attempt-01"
+            write_campaign(campaign)
+            decision = validate_campaign(load_contract(CONTRACT), campaign)
+            decision["profiles"][0]["measured_rows"][0] = {"pair_index": 0}
+            decision_path = root / "tampered-decision.json"
+            decision_path.write_text(json.dumps(decision), encoding="utf-8")
+            output = root / "summary.json"
+            proc = subprocess.run(
+                [
+                    sys.executable,
+                    str(SCRIPT_DIR / "timing_authority_validator.py"),
+                    "summarize",
+                    "--contract",
+                    str(CONTRACT),
+                    "--attempt-result",
+                    str(decision_path),
+                    "--output",
+                    str(output),
+                ],
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            self.assertEqual(proc.returncode, 1, proc.stderr)
+            self.assertFalse(output.exists())
 
 
 class RetrospectiveDiagnosticTests(unittest.TestCase):
