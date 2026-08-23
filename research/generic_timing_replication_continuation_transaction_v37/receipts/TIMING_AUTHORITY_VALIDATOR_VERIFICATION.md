@@ -12,6 +12,8 @@
 - scientific implementation tree: `4a82e7b9196c383fdd9a9cae5ba566035ea420e0`
 - local PM-3 implementation commit: `68b1c2a39831d81700f732b304816a88679c1454`
 - local PM-3 implementation tree: `b127ac8028f0fc5dfab276ae8a9a75d34a16a48b`
+- local independent-audit commit: `72c923c89db8b740bcc1d60a86c9a181e262ef52`
+- local independent-audit tree: `219c00da82b68a8e93dcd1e6607e8e70e3e243ec`
 
 PR #7 and PR #8 changed design/plan documents only. The local executable source
 used for this verification is the exact merged v3.7 scientific implementation
@@ -100,3 +102,4 @@ release-wide completeness.
 | `scripts/run_timing_authority_validator_selftest.sh` | 1615 | `cc665aaf74aea83667b8854b65bf54154dad55690ecd07863d5989e78b4854ab` |
 | `results/V36_RETROSPECTIVE_TIMING_QUALITY_DIAGNOSTIC.json` | 4752 | `5cc28824b56b57432ff647b6de1601dcdae7776dafe27614ecadddaa2f34bab7` |
 | `reports/TIMING_AUTHORITY_VALIDATOR_RESULT.md` | 2309 | `8c2c0b8014f1ac482ba40f85438aba087376238a094d6da421be79eef8136b68` |
+| `reports/TIMING_AUTHORITY_VALIDATOR_PHYS_MATH_CODE_AUDIT.md` | 4098 | `4dc7d9884605fb9888a26833dcdd6a18f33907dced2529cbf0447ef162ba942d` |
