@@ -106,7 +106,17 @@ git commit -m "test: establish v3.7 timing authority validator core"
 
 - [ ] **Step 1: Write failing mocked capture tests**
 
-Assert a stable `vigilode-v37-timing-host-attestation-v1` object containing Git HEAD/tree/clean, Rust/Cargo text, binary and contract SHA-256, measurement profile, host fields, affinity, all seven thread variables including unset values, CPU before/after, idle/steal, swap, and thermal maps.
+Assert a stable `vigilode-v37-timing-host-attestation-v1` object containing Git HEAD/tree/clean, Rust/Cargo text, binary and contract SHA-256, measurement profile, host fields, affinity, CPU before/after, idle/steal, swap, thermal maps, and the exact seven thread variables below including explicit `null` for unset values:
+
+```text
+RAYON_NUM_THREADS
+OMP_NUM_THREADS
+OPENBLAS_NUM_THREADS
+MKL_NUM_THREADS
+BLIS_NUM_THREADS
+VECLIB_MAXIMUM_THREADS
+NUMEXPR_NUM_THREADS
+```
 
 - [ ] **Step 2: Verify RED**
 
@@ -185,7 +195,7 @@ For every arm and pair validate mode, repetition count, six-family identity, fin
 
 ```bash
 python -m unittest test_timing_authority_validator.CampaignLayoutTests -v
-python -m unittest ../../../generic_frozen_full_e_shadow_v36/scripts/test_analyze_shadow_economics.py -v
+python ../../generic_frozen_full_e_shadow_v36/scripts/test_analyze_shadow_economics.py
 git add research/generic_timing_replication_continuation_transaction_v37/scripts
 git commit -m "feat: validate complete timing campaign layout"
 ```
@@ -199,6 +209,10 @@ git commit -m "feat: validate complete timing campaign layout"
 Test each sealed threshold and a mutation where the wall ratio changes from 0.6 to 1.4 while every quality field stays fixed; quality verdict must be identical. Inflate one N=384 R-JF wall by 2x and assert whole-campaign failure with all 35 pairs retained.
 
 - [ ] **Step 2: Verify RED**
+
+```bash
+python -m unittest test_timing_authority_validator.HostQualityTests -v
+```
 
 - [ ] **Step 3: Implement named failures**
 
@@ -312,7 +326,7 @@ git commit -m "docs: seal v3.7 timing validator result"
 source /mnt/data/rust_1_94_1_env.sh
 cd research/generic_timing_replication_continuation_transaction_v37/scripts
 python -m unittest test_timing_authority_validator -v
-cd ../../../../
+cd ../../../
 python research/generic_frozen_full_e_shadow_v36/scripts/test_analyze_shadow_economics.py
 cargo fmt --all -- --check
 ```
