@@ -10,6 +10,7 @@ retrospective diagnostic for the consumed v3.6 timing evidence.
 from __future__ import annotations
 
 import argparse
+from collections import Counter
 import hashlib
 import json
 import math
@@ -565,7 +566,14 @@ def _validate_pair(row: Mapping[str, Any], index: int, timing: Mapping[str, Any]
     }
 
 
-def _profile_metrics(rows: Sequence[Mapping[str, Any]]) -> dict[str, float]:
+def _profile_metrics(rows: Sequence[Mapping[str, Any]]) -> dict[str, float | None]:
+    if not rows:
+        return {
+            "rjf_arm_wall_span": None,
+            "shadow_arm_wall_span": None,
+            "order_median_absolute_gap": None,
+            "median_shadow_over_rjf": None,
+        }
     rjf = [float(row["rjf_wall_seconds"]) for row in rows]
     shadow = [float(row["shadow_wall_seconds"]) for row in rows]
     ratios = [float(row["wall_ratio_shadow_over_rjf"]) for row in rows]
@@ -574,20 +582,95 @@ def _profile_metrics(rows: Sequence[Mapping[str, Any]]) -> dict[str, float]:
     return {
         "rjf_arm_wall_span": max(rjf) / min(rjf),
         "shadow_arm_wall_span": max(shadow) / min(shadow),
-        "order_median_absolute_gap": abs(statistics.median(rjf_first) - statistics.median(shadow_first)),
+        "order_median_absolute_gap": (
+            abs(statistics.median(rjf_first) - statistics.median(shadow_first))
+            if rjf_first and shadow_first
+            else None
+        ),
         "median_shadow_over_rjf": statistics.median(ratios),
     }
 
 
-def _profile_quality_failures(timing: Mapping[str, Any], dim: int, metrics: Mapping[str, float]) -> list[dict[str, Any]]:
+def _profile_quality_failures(
+    timing: Mapping[str, Any], dim: int, metrics: Mapping[str, float | None]
+) -> list[dict[str, Any]]:
     failures: list[dict[str, Any]] = []
-    if metrics["rjf_arm_wall_span"] > timing["maximum_rjf_arm_wall_span"]:
+    unavailable = sorted(name for name, value in metrics.items() if value is None)
+    if unavailable:
+        failures.append(
+            {
+                "name": "profile-metric-unavailable",
+                "dimension": dim,
+                "metrics": unavailable,
+                "reason": "insufficient-retained-pairs",
+            }
+        )
+    if (
+        metrics["rjf_arm_wall_span"] is not None
+        and metrics["rjf_arm_wall_span"] > timing["maximum_rjf_arm_wall_span"]
+    ):
         failures.append({"name": "rjf-arm-span", "dimension": dim, "actual": metrics["rjf_arm_wall_span"], "threshold": timing["maximum_rjf_arm_wall_span"]})
-    if metrics["shadow_arm_wall_span"] > timing["maximum_shadow_arm_wall_span"]:
+    if (
+        metrics["shadow_arm_wall_span"] is not None
+        and metrics["shadow_arm_wall_span"] > timing["maximum_shadow_arm_wall_span"]
+    ):
         failures.append({"name": "shadow-arm-span", "dimension": dim, "actual": metrics["shadow_arm_wall_span"], "threshold": timing["maximum_shadow_arm_wall_span"]})
-    if metrics["order_median_absolute_gap"] > timing["maximum_order_median_absolute_gap"]:
+    if (
+        metrics["order_median_absolute_gap"] is not None
+        and metrics["order_median_absolute_gap"] > timing["maximum_order_median_absolute_gap"]
+    ):
         failures.append({"name": "order-median-gap", "dimension": dim, "actual": metrics["order_median_absolute_gap"], "threshold": timing["maximum_order_median_absolute_gap"]})
     return failures
+
+
+def _validate_retained_pair_rows(
+    rows: Sequence[Mapping[str, Any]],
+    *,
+    required_count: int,
+    timing: Mapping[str, Any],
+    dim: int,
+    kind: str,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    retained: list[dict[str, Any]] = []
+    indices: list[int] = []
+    for position, row in enumerate(rows):
+        require(isinstance(row, Mapping), f"profile-{dim}.{kind}.retained-{position} row must be an object")
+        declared_index = row.get("pair_index")
+        require(
+            isinstance(declared_index, int) and not isinstance(declared_index, bool),
+            f"profile-{dim}.{kind}.retained-{position} pair index must be an integer",
+        )
+        retained.append(
+            _validate_pair(
+                row,
+                declared_index,
+                timing,
+                f"profile-{dim}.{kind}.retained-{position}",
+            )
+        )
+        indices.append(declared_index)
+
+    counts = Counter(indices)
+    expected = set(range(required_count))
+    actual = set(indices)
+    missing = sorted(expected - actual)
+    unexpected = sorted(actual - expected)
+    duplicates = sorted(index for index, count in counts.items() if count > 1)
+    failures: list[dict[str, Any]] = []
+    if missing or unexpected or duplicates:
+        failures.append(
+            {
+                "name": "profile-pair-index-set",
+                "dimension": dim,
+                "kind": kind,
+                "missing": missing,
+                "unexpected": unexpected,
+                "duplicates": duplicates,
+                "retained_indices": indices,
+                "required_indices": list(range(required_count)),
+            }
+        )
+    return retained, failures
 
 
 def _load_profile_file(path: Path, dim: int, timing: Mapping[str, Any]) -> dict[str, Any]:
@@ -637,20 +720,26 @@ def _load_profile_file(path: Path, dim: int, timing: Mapping[str, Any]) -> dict[
                 "required": timing["measured_pairs_per_profile_per_campaign"],
             }
         )
-    warmup_rows = [_validate_pair(row, index, timing, f"profile-{dim}.warmup-{index}") for index, row in enumerate(warmups)]
-    measured_rows = [_validate_pair(row, index, timing, f"profile-{dim}.measured-{index}") for index, row in enumerate(measured)]
+    warmup_rows, warmup_index_failures = _validate_retained_pair_rows(
+        warmups,
+        required_count=timing["warmup_pairs_per_profile"],
+        timing=timing,
+        dim=dim,
+        kind="warmup",
+    )
+    measured_rows, measured_index_failures = _validate_retained_pair_rows(
+        measured,
+        required_count=timing["measured_pairs_per_profile_per_campaign"],
+        timing=timing,
+        dim=dim,
+        kind="measured",
+    )
+    failures.extend(warmup_index_failures)
+    failures.extend(measured_index_failures)
     for row in warmup_rows + measured_rows:
         failures.extend(row["quality_failures"])
-    if measured_rows:
-        metrics = _profile_metrics(measured_rows)
-        failures.extend(_profile_quality_failures(timing, dim, metrics))
-    else:
-        metrics = {
-            "rjf_arm_wall_span": math.nan,
-            "shadow_arm_wall_span": math.nan,
-            "order_median_absolute_gap": math.nan,
-            "median_shadow_over_rjf": math.nan,
-        }
+    metrics = _profile_metrics(measured_rows)
+    failures.extend(_profile_quality_failures(timing, dim, metrics))
     return {
         "dimension": dim,
         "path": str(path),
@@ -736,38 +825,283 @@ def _identity_failure_names(reference: Mapping[str, Any], current: Mapping[str, 
     return [name for name, key in comparisons if reference.get(key) != current.get(key)]
 
 
+def _validated_failure_names(failures: Any, stated_names: Any, where: str) -> list[str]:
+    require(isinstance(failures, list), f"{where} quality_failures must be a list")
+    derived: list[str] = []
+    for index, failure in enumerate(failures):
+        require(isinstance(failure, Mapping), f"{where} quality failure {index} must be an object")
+        name = failure.get("name")
+        require(isinstance(name, str) and name, f"{where} quality failure {index} name missing")
+        derived.append(name)
+    require(
+        isinstance(stated_names, list) and all(isinstance(name, str) and name for name in stated_names),
+        f"{where} quality_failure_names must be a string list",
+    )
+    normalized = sorted(set(derived))
+    require(stated_names == normalized, f"{where} quality failure names do not match retained failures")
+    return normalized
+
+
+def _validate_comparison_identity_structure(
+    contract: Mapping[str, Any], identity: Any, where: str
+) -> Mapping[str, Any]:
+    require(isinstance(identity, Mapping), f"{where} comparison identity missing")
+    required = [
+        "git",
+        "rust",
+        "contract_sha256",
+        "binary_sha256",
+        "host",
+        "cpu_affinity",
+        "thread_environment",
+    ]
+    _exact_keys(identity, required, f"{where} comparison identity", allow_extra=False)
+    git = identity["git"]
+    rust = identity["rust"]
+    host = identity["host"]
+    require(isinstance(git, Mapping), f"{where} Git identity malformed")
+    require(isinstance(rust, Mapping), f"{where} Rust identity malformed")
+    require(isinstance(host, Mapping), f"{where} host identity malformed")
+    _validate_hash(git.get("head"), f"{where} Git HEAD", GIT_SHA_RE)
+    _validate_hash(git.get("tree"), f"{where} Git tree", GIT_SHA_RE)
+    require(isinstance(git.get("clean"), bool), f"{where} Git clean flag must be boolean")
+    require(isinstance(rust.get("rustc_vv"), str) and rust["rustc_vv"].strip(), f"{where} rustc identity missing")
+    require(isinstance(rust.get("cargo_version"), str) and rust["cargo_version"].strip(), f"{where} cargo identity missing")
+    _validate_hash(identity.get("contract_sha256"), f"{where} contract SHA-256", SHA256_RE)
+    _validate_hash(identity.get("binary_sha256"), f"{where} binary SHA-256", SHA256_RE)
+    timing = contract["timing_replication"]
+    require(set(timing["host_fingerprint_fields"]) <= set(host), f"{where} host fingerprint fields missing")
+    require(isinstance(host.get("kernel"), str) and host["kernel"], f"{where} kernel fingerprint missing")
+    require(isinstance(host.get("cpu_model"), str) and host["cpu_model"], f"{where} CPU fingerprint missing")
+    require(
+        isinstance(host.get("logical_cpu_count"), int) and not isinstance(host["logical_cpu_count"], bool) and host["logical_cpu_count"] > 0,
+        f"{where} logical CPU count invalid",
+    )
+    affinity = identity["cpu_affinity"]
+    require(
+        isinstance(affinity, list)
+        and affinity
+        and all(isinstance(cpu, int) and not isinstance(cpu, bool) and cpu >= 0 for cpu in affinity)
+        and affinity == sorted(set(affinity)),
+        f"{where} CPU affinity invalid",
+    )
+    environment = identity["thread_environment"]
+    require(isinstance(environment, Mapping), f"{where} thread environment missing")
+    require(
+        set(environment) == set(timing["thread_environment_fields"]),
+        f"{where} thread environment field set mismatch",
+    )
+    require(
+        all(value is None or isinstance(value, str) for value in environment.values()),
+        f"{where} thread environment values invalid",
+    )
+    return identity
+
+
+def _validate_profile_decision_for_summary(
+    profile: Any, expected_dim: int, where: str
+) -> tuple[int, int, list[str]]:
+    require(isinstance(profile, Mapping), f"{where} profile must be an object")
+    required = [
+        "dimension",
+        "path",
+        "sha256",
+        "warmup_rows",
+        "measured_rows",
+        "metrics",
+        "quality_failures",
+        "quality_failure_names",
+    ]
+    _exact_keys(profile, required, where)
+    require(profile.get("dimension") == expected_dim, f"{where} dimension mismatch")
+    require(isinstance(profile.get("path"), str) and profile["path"], f"{where} path missing")
+    _validate_hash(profile.get("sha256"), f"{where} SHA-256", SHA256_RE)
+    warmups = profile["warmup_rows"]
+    measured = profile["measured_rows"]
+    require(isinstance(warmups, list), f"{where} warmup rows must be a list")
+    require(isinstance(measured, list), f"{where} measured rows must be a list")
+    for kind, rows in (("warmup", warmups), ("measured", measured)):
+        for position, row in enumerate(rows):
+            require(isinstance(row, Mapping), f"{where} {kind} row {position} must be an object")
+            pair_index = row.get("pair_index")
+            require(
+                isinstance(pair_index, int) and not isinstance(pair_index, bool),
+                f"{where} {kind} row {position} pair index invalid",
+            )
+    metrics = profile["metrics"]
+    require(isinstance(metrics, Mapping), f"{where} metrics must be an object")
+    metric_names = {
+        "rjf_arm_wall_span",
+        "shadow_arm_wall_span",
+        "order_median_absolute_gap",
+        "median_shadow_over_rjf",
+    }
+    require(set(metrics) == metric_names, f"{where} metric field set mismatch")
+    for name, value in metrics.items():
+        if value is not None:
+            _finite_number(value, f"{where} metric {name}")
+    names = _validated_failure_names(
+        profile["quality_failures"], profile["quality_failure_names"], where
+    )
+    return len(warmups), len(measured), names
+
+
+def _validate_campaign_decision_for_summary(
+    contract: Mapping[str, Any], raw: Any, attempt_index: int
+) -> dict[str, Any]:
+    where = f"attempt {attempt_index}"
+    require(isinstance(raw, Mapping), f"{where} result must be an object")
+    required = [
+        "schema",
+        "campaign_path",
+        "campaign_sha256",
+        "attestation_path",
+        "attestation_sha256",
+        "comparison_identity",
+        "profiles",
+        "retained_profile_count",
+        "retained_warmup_pair_count",
+        "retained_measured_pair_count",
+        "quality_failures",
+        "quality_failure_names",
+        "verdict",
+        "timing_authority",
+        "speedup_claim_authorized",
+        "active_switching_authorized",
+        "individual_pair_exclusion_used",
+        "individual_profile_exclusion_used",
+        "ratio_direction_used_for_quality",
+    ]
+    _exact_keys(raw, required, where)
+    require(raw.get("schema") == CAMPAIGN_DECISION_SCHEMA, f"{where} schema mismatch")
+    campaign_path = raw["campaign_path"]
+    require(isinstance(campaign_path, str) and campaign_path, f"{where} campaign path missing")
+    campaign_sha256 = _validate_hash(raw["campaign_sha256"], f"{where} campaign SHA-256", SHA256_RE)
+    require(isinstance(raw["attestation_path"], str) and raw["attestation_path"], f"{where} attestation path missing")
+    _validate_hash(raw["attestation_sha256"], f"{where} attestation SHA-256", SHA256_RE)
+    identity = _validate_comparison_identity_structure(contract, raw["comparison_identity"], where)
+
+    profiles = raw["profiles"]
+    require(isinstance(profiles, list), f"{where} profiles must be a list")
+    expected_dims = list(contract["timing_replication"]["profiles"])
+    require(len(profiles) == len(expected_dims), f"{where} profile count mismatch")
+    warmup_count = 0
+    measured_count = 0
+    profile_failure_names: set[str] = set()
+    for position, (profile, expected_dim) in enumerate(zip(profiles, expected_dims)):
+        warmups, measured, names = _validate_profile_decision_for_summary(
+            profile, expected_dim, f"{where} profile {position}"
+        )
+        warmup_count += warmups
+        measured_count += measured
+        profile_failure_names.update(names)
+
+    require(raw["retained_profile_count"] == len(profiles), f"{where} retained profile count mismatch")
+    require(raw["retained_warmup_pair_count"] == warmup_count, f"{where} retained warmup count mismatch")
+    require(raw["retained_measured_pair_count"] == measured_count, f"{where} retained measured count mismatch")
+    failure_names = _validated_failure_names(raw["quality_failures"], raw["quality_failure_names"], where)
+    require(profile_failure_names <= set(failure_names), f"{where} omits retained profile failures")
+
+    verdict = raw["verdict"]
+    require(verdict in {PASS_VERDICT, FAIL_VERDICT}, f"{where} verdict invalid")
+    require(isinstance(raw["timing_authority"], bool), f"{where} timing authority flag invalid")
+    expected_authority = verdict == PASS_VERDICT and not failure_names
+    require(raw["timing_authority"] == expected_authority, f"{where} verdict/authority inconsistency")
+    for flag in (
+        "speedup_claim_authorized",
+        "active_switching_authorized",
+        "individual_pair_exclusion_used",
+        "individual_profile_exclusion_used",
+        "ratio_direction_used_for_quality",
+    ):
+        require(raw[flag] is False, f"{where} forbidden flag enabled: {flag}")
+
+    if verdict == PASS_VERDICT:
+        timing = contract["timing_replication"]
+        require(not failure_names, f"{where} passing decision retains failures")
+        require(len(profiles) == len(expected_dims), f"{where} passing profile count mismatch")
+        require(
+            warmup_count == len(expected_dims) * timing["warmup_pairs_per_profile"],
+            f"{where} passing warmup count mismatch",
+        )
+        require(
+            measured_count == len(expected_dims) * timing["measured_pairs_per_profile_per_campaign"],
+            f"{where} passing measured count mismatch",
+        )
+        for position, profile in enumerate(profiles):
+            require(not profile["quality_failure_names"], f"{where} passing profile {position} retains failures")
+            require(
+                [row["pair_index"] for row in profile["warmup_rows"]]
+                == list(range(timing["warmup_pairs_per_profile"])),
+                f"{where} passing profile {position} warmup index set mismatch",
+            )
+            require(
+                [row["pair_index"] for row in profile["measured_rows"]]
+                == list(range(timing["measured_pairs_per_profile_per_campaign"])),
+                f"{where} passing profile {position} measured index set mismatch",
+            )
+            require(
+                all(value is not None for value in profile["metrics"].values()),
+                f"{where} passing profile {position} has unavailable metrics",
+            )
+    else:
+        require(bool(failure_names), f"{where} failing decision has no named failure")
+
+    return {
+        "raw": raw,
+        "campaign_path": campaign_path,
+        "normalized_campaign_path": str(Path(campaign_path).expanduser().resolve(strict=False)),
+        "campaign_sha256": campaign_sha256,
+        "identity": identity,
+        "quality_failure_names": failure_names,
+    }
+
+
 def summarize_attempts(contract: Mapping[str, Any], attempt_results: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
     _validate_contract_exact(contract)
+    require("_authority" in contract, "contract authority metadata missing; use load_contract")
     timing = contract["timing_replication"]
     require(isinstance(attempt_results, Sequence) and not isinstance(attempt_results, (str, bytes)), "attempt results must be a sequence")
     require(1 <= len(attempt_results) <= timing["maximum_campaign_attempts"], "attempt count outside sealed range")
     retained: list[dict[str, Any]] = []
     reference_token: str | None = None
     reference_identity: Mapping[str, Any] | None = None
+    seen_campaign_paths: set[str] = set()
+    seen_campaign_hashes: set[str] = set()
     passing = 0
     for index, raw in enumerate(attempt_results, start=1):
-        require(isinstance(raw, Mapping), f"attempt {index} result must be an object")
-        require(raw.get("schema") == CAMPAIGN_DECISION_SCHEMA, f"attempt {index} schema mismatch")
-        identity = raw.get("comparison_identity")
-        require(isinstance(identity, Mapping), f"attempt {index} comparison identity missing")
+        validated = _validate_campaign_decision_for_summary(contract, raw, index)
+        require(
+            validated["normalized_campaign_path"] not in seen_campaign_paths,
+            f"attempt {index} duplicates a retained campaign path",
+        )
+        require(
+            validated["campaign_sha256"] not in seen_campaign_hashes,
+            f"attempt {index} duplicates a retained campaign SHA-256",
+        )
+        seen_campaign_paths.add(validated["normalized_campaign_path"])
+        seen_campaign_hashes.add(validated["campaign_sha256"])
+        identity = validated["identity"]
         token = _identity_token(identity)
         if reference_token is None:
             reference_token = token
             reference_identity = identity
-        effective_failures = list(raw.get("quality_failure_names", []))
+        effective_failures = list(validated["quality_failure_names"])
+        if identity["contract_sha256"] != contract["_authority"]["sha256"]:
+            effective_failures.append("contract-hash")
         if token != reference_token:
             require(reference_identity is not None, "reference identity missing")
             effective_failures.extend(_identity_failure_names(reference_identity, identity))
         effective_failures = sorted(set(effective_failures))
-        effective_pass = raw.get("verdict") == PASS_VERDICT and not effective_failures
+        effective_pass = raw["verdict"] == PASS_VERDICT and not effective_failures
         if effective_pass:
             passing += 1
         retained.append(
             {
                 "attempt_index": index,
-                "campaign_path": raw.get("campaign_path"),
-                "campaign_sha256": raw.get("campaign_sha256"),
-                "original_verdict": raw.get("verdict"),
+                "campaign_path": validated["campaign_path"],
+                "campaign_sha256": validated["campaign_sha256"],
+                "original_verdict": raw["verdict"],
                 "effective_verdict": PASS_VERDICT if effective_pass else FAIL_VERDICT,
                 "effective_quality_failures": effective_failures,
                 "comparison_identity_sha256": token,
@@ -806,7 +1140,7 @@ def generate_v36_retrospective_diagnostic(contract: Mapping[str, Any], economics
         profiles.append(
             {
                 "dimension": dim,
-                "path": str(path),
+                "path": PROFILE_FILES[dim],
                 "sha256": profile["sha256"],
                 "measured_pair_count": len(profile["measured_rows"]),
                 "metrics": profile["metrics"],

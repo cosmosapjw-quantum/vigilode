@@ -2,13 +2,13 @@
 
 ## Verdict
 
-`VALIDATOR_IMPLEMENTED_LOCALLY_PENDING_REMOTE_REVIEW`
+`VALIDATOR_CORRECTED_PENDING_REMOTE_REVIEW`
 
 The validator implements the sealed v3.7 timing-authority contract without
 creating any new paired-wall campaign. It validates complete five-profile
-campaign directories, preserves all warm-up and measured rows, rejects only at
-the whole-campaign level, and keeps timing quality independent of whether the
-shadow/R-JF ratio is favorable.
+campaign directories, preserves every structurally readable retained row even
+when an attempt is interrupted, rejects only at the whole-campaign level, and
+keeps timing quality independent of whether the shadow/R-JF ratio is favorable.
 
 ## Implemented authority surface
 
@@ -17,12 +17,18 @@ shadow/R-JF ratio is favorable.
 - Git/toolchain/binary/contract/host/affinity/thread attestation;
 - swap and exposed thermal-throttle preflight deltas;
 - exact five-profile file set, one warm-up and seven measured pairs per profile;
+- retained missing/duplicate/unexpected pair-index accounting for interrupted
+  attempts, with unavailable metrics represented by JSON `null` rather than
+  exceptions or non-finite values;
 - exact paired proposed interval and `Gamma = wall / interval` validation;
 - R-JF/shadow arm-span and order-sensitivity checks;
 - cross-campaign Git, Rust, binary, host, affinity, and thread identity checks;
-- three passing campaigns within at most five retained attempts;
+- three **distinct**, structurally complete passing campaign decisions within
+  at most five retained attempts;
+- duplicate campaign paths/hashes and incomplete fabricated PASS-shaped
+  decisions rejected before promotion;
 - atomic JSON output;
-- deterministic v3.6 retrospective diagnostic.
+- checkout-path-independent deterministic v3.6 retrospective diagnostic.
 
 ## Retrospective v3.6 diagnostic
 

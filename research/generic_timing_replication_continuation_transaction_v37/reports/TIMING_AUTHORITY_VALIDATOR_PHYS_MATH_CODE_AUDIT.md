@@ -2,7 +2,7 @@
 
 ## Review verdict
 
-`PASS_IMPLEMENTATION_REVIEW_READY`
+`PASS_CORRECTIVE_REVIEW_READY`
 
 This is the single independent checklist review for PM-3. It reviews the
 validator implementation and its retained retrospective evidence; it does not
@@ -31,6 +31,8 @@ promote any timing or speedup claim.
   are never inferred from historical v3.6 files.
 - Historical host fields remain `NOT_RECORDED`.
 - Three passing campaigns are required within at most five retained attempts.
+- The three passing campaigns must be distinct by both normalized campaign path
+  and complete campaign-tree SHA-256.
 - No result authorizes speedup or active switching.
 
 ### Counterexamples exercised
@@ -43,6 +45,11 @@ promote any timing or speedup claim.
 - R-JF and shadow arm-span spikes;
 - order-dependent median split;
 - each cross-campaign identity dimension independently changed.
+- repeated copies of one passing campaign;
+- incomplete fabricated PASS-shaped decision objects;
+- missing-middle, zero-row, one-row, duplicate-index, and unexpected-index
+  interrupted profile layouts;
+- identical v3.6 inputs copied under two different checkout roots.
 
 No PHYS-MATH P0/P1 finding remains.
 
@@ -55,13 +62,13 @@ No PHYS-MATH P0/P1 finding remains.
 | sealed thresholds | `load_contract` | exact-value tests |
 | CPU fractions | `parse_proc_stat_cpu`, `cpu_idle_steal_fractions` | arithmetic and negative-delta tests |
 | immutable attestation | `capture_attestation` | mocked capture schema test |
-| all-pair retention | `_load_profile_file`, `validate_campaign` | 35/35 pass; 34 retained on one missing row |
+| all-pair retention | `_validate_retained_pair_rows`, `_load_profile_file`, `validate_campaign` | missing-middle/tail and duplicate/unexpected index cases retained as named whole-campaign failures |
 | exact paired interval | `_validate_pair` | retained mismatch test |
 | whole-campaign gates | `_profile_quality_failures`, `_attestation_quality_failures` | threshold mutation tests |
 | same identity across attempts | `_identity_failure_names`, `summarize_attempts` | seven named mismatch tests |
-| three within five | `summarize_attempts` | 3/4, 2/5, and 6-attempt tests |
+| three distinct within five | `_validate_campaign_decision_for_summary`, `summarize_attempts` | genuine 3-campaign pass; duplicate and fabricated PASS rejection; 3/4, 2/5, and 6-attempt tests |
 | atomic output | `atomic_write_json` | replacement and no-partial-output tests |
-| v3.6 diagnostic | `generate_v36_retrospective_diagnostic` | deterministic 35-pair test |
+| v3.6 diagnostic | `generate_v36_retrospective_diagnostic` | deterministic 35-pair test plus byte-equivalent results under different checkout roots |
 
 ### Reality and noninterference
 
@@ -72,6 +79,16 @@ No PHYS-MATH P0/P1 finding remains.
   present.
 - Real timing attempt directories are prohibited by the selftest.
 - Only PM-3 research scripts, report, result, and receipt are changed.
+
+### PR #10 corrective review closure
+
+The first remote review found three load-bearing defects: duplicate campaign
+promotion, exception/NaN behavior for interrupted pair layouts, and transient
+absolute paths in the committed retrospective artifact. The bounded correction
+adds fail-closed decision-shape and distinctness validation, retains readable
+interrupted rows with named index-set failures and nullable unavailable metrics,
+and emits stable relative profile identifiers. The new adversarial tests were
+observed failing before the implementation changes and pass afterward.
 
 ### Ranked residual risks
 

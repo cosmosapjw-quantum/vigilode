@@ -4,6 +4,7 @@ import copy
 import json
 import math
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -252,6 +253,85 @@ class CampaignLayoutTests(unittest.TestCase):
             self.assertEqual(result["retained_measured_pair_count"], 34)
             self.assertIn("profile-pair-cardinality", result["quality_failure_names"])
 
+    def test_missing_middle_pair_is_retained_as_named_whole_campaign_failure(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            write_campaign(root)
+            path = root / "profiles" / "holdout320.json"
+            data = json.loads(path.read_text())
+            del data["paired_wall"]["measured_rows"][3]
+            path.write_text(json.dumps(data), encoding="utf-8")
+            result = validate_campaign(load_contract(CONTRACT), root)
+        self.assertEqual(result["verdict"], "NON_AUTHORITY_HOST_QUALITY_FAIL")
+        self.assertEqual(result["retained_measured_pair_count"], 34)
+        self.assertIn("profile-pair-cardinality", result["quality_failure_names"])
+        self.assertIn("profile-pair-index-set", result["quality_failure_names"])
+        json.dumps(result, allow_nan=False)
+
+    def test_one_measured_row_uses_serializable_unavailable_order_metric(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            write_campaign(root)
+            path = root / "profiles" / "holdout320.json"
+            data = json.loads(path.read_text())
+            data["paired_wall"]["measured_rows"] = data["paired_wall"]["measured_rows"][:1]
+            path.write_text(json.dumps(data), encoding="utf-8")
+            result = validate_campaign(load_contract(CONTRACT), root)
+        profile = next(item for item in result["profiles"] if item["dimension"] == 320)
+        self.assertEqual(result["verdict"], "NON_AUTHORITY_HOST_QUALITY_FAIL")
+        self.assertEqual(result["retained_measured_pair_count"], 29)
+        self.assertIsNone(profile["metrics"]["order_median_absolute_gap"])
+        self.assertIn("profile-metric-unavailable", profile["quality_failure_names"])
+        json.dumps(result, allow_nan=False)
+
+    def test_zero_measured_rows_use_null_metrics_and_serialize(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            write_campaign(root)
+            path = root / "profiles" / "holdout320.json"
+            data = json.loads(path.read_text())
+            data["paired_wall"]["measured_rows"] = []
+            path.write_text(json.dumps(data), encoding="utf-8")
+            result = validate_campaign(load_contract(CONTRACT), root)
+        profile = next(item for item in result["profiles"] if item["dimension"] == 320)
+        self.assertEqual(result["verdict"], "NON_AUTHORITY_HOST_QUALITY_FAIL")
+        self.assertEqual(result["retained_measured_pair_count"], 28)
+        self.assertTrue(all(value is None for value in profile["metrics"].values()))
+        self.assertIn("profile-metric-unavailable", profile["quality_failure_names"])
+        json.dumps(result, allow_nan=False)
+
+    def test_duplicate_pair_index_is_retained_as_named_failure(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            write_campaign(root)
+            path = root / "profiles" / "holdout320.json"
+            data = json.loads(path.read_text())
+            data["paired_wall"]["measured_rows"][-1] = copy.deepcopy(
+                data["paired_wall"]["measured_rows"][-2]
+            )
+            path.write_text(json.dumps(data), encoding="utf-8")
+            result = validate_campaign(load_contract(CONTRACT), root)
+        self.assertEqual(result["verdict"], "NON_AUTHORITY_HOST_QUALITY_FAIL")
+        self.assertEqual(result["retained_measured_pair_count"], 35)
+        self.assertIn("profile-pair-index-set", result["quality_failure_names"])
+        json.dumps(result, allow_nan=False)
+
+    def test_unexpected_pair_index_is_retained_as_named_failure(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            write_campaign(root)
+            path = root / "profiles" / "holdout320.json"
+            data = json.loads(path.read_text())
+            row = data["paired_wall"]["measured_rows"][-1]
+            row["pair_index"] = 7
+            row["order"] = "shadow-first"
+            path.write_text(json.dumps(data), encoding="utf-8")
+            result = validate_campaign(load_contract(CONTRACT), root)
+        self.assertEqual(result["verdict"], "NON_AUTHORITY_HOST_QUALITY_FAIL")
+        self.assertEqual(result["retained_measured_pair_count"], 35)
+        self.assertIn("profile-pair-index-set", result["quality_failure_names"])
+        json.dumps(result, allow_nan=False)
+
     def test_proposed_interval_mismatch_is_retained_quality_failure(self):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
@@ -400,13 +480,35 @@ class HostQualityTests(unittest.TestCase):
 
 class AttemptSummaryTests(unittest.TestCase):
     def _attempt(self, passed: bool, index: int, *, identity_tag: str = "same") -> dict:
-        att = make_attestation("a" * 64, identity_tag)
+        att = make_attestation(sha256_path(CONTRACT), identity_tag)
         att["git"]["head"] = ("1" if identity_tag == "same" else "3") * 40
+        profiles = [
+            {
+                "dimension": dim,
+                "path": PROFILE_NAMES[dim],
+                "sha256": f"{dim:064x}",
+                "warmup_rows": [{"pair_index": 0}],
+                "measured_rows": [{"pair_index": pair_index} for pair_index in range(7)],
+                "metrics": {
+                    "rjf_arm_wall_span": 1.0,
+                    "shadow_arm_wall_span": 1.0,
+                    "order_median_absolute_gap": 0.0,
+                    "median_shadow_over_rjf": 1.0,
+                },
+                "quality_failures": [],
+                "quality_failure_names": [],
+            }
+            for dim in PROFILE_NAMES
+        ]
+        quality_failures = [] if passed else [{"name": "cpu-idle", "actual": 0.5, "threshold": ">=0.9"}]
         return {
             "schema": "vigilode-v37-timing-campaign-decision-v1",
             "campaign_path": f"attempt-{index:02d}",
             "campaign_sha256": f"{index:064x}",
+            "attestation_path": f"attempt-{index:02d}/ATTESTATION.json",
+            "attestation_sha256": f"{index + 1000:064x}",
             "verdict": "PASS_HOST_QUALIFIED_DESCRIPTIVE_TIMING" if passed else "NON_AUTHORITY_HOST_QUALITY_FAIL",
+            "quality_failures": quality_failures,
             "quality_failure_names": [] if passed else ["cpu-idle"],
             "comparison_identity": {
                 "git": att["git"],
@@ -417,6 +519,16 @@ class AttemptSummaryTests(unittest.TestCase):
                 "cpu_affinity": att["cpu_affinity"],
                 "thread_environment": att["thread_environment"],
             },
+            "profiles": profiles,
+            "retained_profile_count": 5,
+            "retained_warmup_pair_count": 5,
+            "retained_measured_pair_count": 35,
+            "timing_authority": passed,
+            "speedup_claim_authorized": False,
+            "active_switching_authorized": False,
+            "individual_pair_exclusion_used": False,
+            "individual_profile_exclusion_used": False,
+            "ratio_direction_used_for_quality": False,
         }
 
     def test_three_passes_within_four_attempts_promotes_descriptive_timing(self):
@@ -428,6 +540,26 @@ class AttemptSummaryTests(unittest.TestCase):
         self.assertEqual(result["passing_campaign_count"], 3)
         self.assertFalse(result["speedup_claim_authorized"])
 
+    def test_three_distinct_validated_campaign_decisions_promote(self):
+        with tempfile.TemporaryDirectory() as td:
+            decisions = []
+            for index in range(3):
+                root = Path(td) / f"attempt-{index + 1:02d}"
+                write_campaign(root)
+                path = root / "profiles" / "calibration96.json"
+                data = json.loads(path.read_text())
+                row = data["paired_wall"]["measured_rows"][0]
+                scale = 1.0 + 0.001 * (index + 1)
+                for arm_name in ("rjf_only", "frozen_full_e_shadow"):
+                    arm = row[arm_name]
+                    arm["wall_seconds"] *= scale
+                    arm["gamma_seconds_per_interval"] *= scale
+                path.write_text(json.dumps(data), encoding="utf-8")
+                decisions.append(validate_campaign(load_contract(CONTRACT), root))
+            result = summarize_attempts(load_contract(CONTRACT), decisions)
+        self.assertEqual(result["verdict"], "PASS_HOST_QUALIFIED_DESCRIPTIVE_TIMING")
+        self.assertEqual(result["passing_campaign_count"], 3)
+
     def test_two_passes_in_five_is_host_unsuitable(self):
         attempts = [self._attempt(i in {1, 3}, i) for i in range(1, 6)]
         result = summarize_attempts(load_contract(CONTRACT), attempts)
@@ -436,6 +568,27 @@ class AttemptSummaryTests(unittest.TestCase):
     def test_six_attempts_is_invalid(self):
         with self.assertRaises(ValidationError):
             summarize_attempts(load_contract(CONTRACT), [self._attempt(True, i) for i in range(1, 7)])
+
+    def test_duplicate_campaign_cannot_count_as_three_passes(self):
+        attempt = self._attempt(True, 1)
+        with self.assertRaises(ValidationError):
+            summarize_attempts(load_contract(CONTRACT), [attempt, copy.deepcopy(attempt), copy.deepcopy(attempt)])
+
+    def test_minimal_fabricated_pass_objects_are_rejected(self):
+        valid = self._attempt(True, 1)
+        fabricated = [
+            {
+                "schema": valid["schema"],
+                "campaign_path": f"fabricated-{index}",
+                "campaign_sha256": f"{index + 2000:064x}",
+                "verdict": valid["verdict"],
+                "quality_failure_names": [],
+                "comparison_identity": copy.deepcopy(valid["comparison_identity"]),
+            }
+            for index in range(3)
+        ]
+        with self.assertRaises(ValidationError):
+            summarize_attempts(load_contract(CONTRACT), fabricated)
 
     def test_identity_mismatch_cannot_count_as_passing(self):
         attempts = [self._attempt(True, 1), self._attempt(True, 2), self._attempt(True, 3, identity_tag="other")]
@@ -518,6 +671,38 @@ class AtomicOutputTests(unittest.TestCase):
             self.assertEqual(proc.returncode, 0, proc.stderr)
             self.assertTrue(output.exists())
 
+    def test_cli_interrupted_campaign_emits_non_authority_json(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            campaign = root / "attempt-01"
+            write_campaign(campaign)
+            path = campaign / "profiles" / "holdout320.json"
+            data = json.loads(path.read_text())
+            del data["paired_wall"]["measured_rows"][3]
+            path.write_text(json.dumps(data), encoding="utf-8")
+            output = root / "decision.json"
+            proc = subprocess.run(
+                [
+                    sys.executable,
+                    str(SCRIPT_DIR / "timing_authority_validator.py"),
+                    "validate-campaign",
+                    "--contract",
+                    str(CONTRACT),
+                    "--campaign-root",
+                    str(campaign),
+                    "--output",
+                    str(output),
+                ],
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            result = json.loads(output.read_text())
+            self.assertEqual(result["verdict"], "NON_AUTHORITY_HOST_QUALITY_FAIL")
+            self.assertEqual(result["retained_measured_pair_count"], 34)
+            self.assertIn("profile-pair-index-set", result["quality_failure_names"])
+
 
 class RetrospectiveDiagnosticTests(unittest.TestCase):
     def test_v36_diagnostic_retains_all_pairs_and_does_not_rewrite_history(self):
@@ -530,6 +715,19 @@ class RetrospectiveDiagnosticTests(unittest.TestCase):
         self.assertIn("rjf-arm-span", n384["quality_failure_names"])
         self.assertIn("shadow-arm-span", n384["quality_failure_names"])
         self.assertEqual(result["historical_host_counters"]["status"], "NOT_RECORDED")
+
+    def test_v36_diagnostic_is_checkout_path_independent(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            first = root / "checkout-a" / "economics"
+            second = root / "checkout-b" / "economics"
+            shutil.copytree(V36_ECONOMICS, first)
+            shutil.copytree(V36_ECONOMICS, second)
+            a = generate_v36_retrospective_diagnostic(load_contract(CONTRACT), first)
+            b = generate_v36_retrospective_diagnostic(load_contract(CONTRACT), second)
+        self.assertEqual(a, b)
+        self.assertTrue(all(Path(profile["path"]).name == profile["path"] for profile in a["profiles"]))
+        json.dumps(a, allow_nan=False, sort_keys=True)
 
 
 if __name__ == "__main__":
