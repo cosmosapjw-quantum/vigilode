@@ -12,7 +12,8 @@
 
 ## Global Constraints
 
-- Canonical scientific parent is `main@db51a9537a3f4898149cb463711eab0925387388`, tree `4a82e7b9196c383fdd9a9cae5ba566035ea420e0`.
+- Scientific implementation baseline is `main@db51a9537a3f4898149cb463711eab0925387388`, tree `4a82e7b9196c383fdd9a9cae5ba566035ea420e0`.
+- Integrated design parent is `main@c9df85a7f7c1fe2cf296b4d00da8799ac04e10f8`, tree `ad8bf3fbba710b3d5e7c4260e8a9b5b05268fc79`.
 - R-JF remains the sole committed trajectory; E remains read-only shadow evidence.
 - Preserve `k=3`, prefix cap 80 JVP vectors, cumulative prefix fraction 0.25, `tau_zeta=13.39706618860016`, and continuation cap 80 JVP vectors.
 - Preserve 64 frozen recommendations, 62 bounded completions, two charged continuation-cap exhaustions, zero numerical continuation failures, zero unsafe recommendations, and zero budget breaches on consumed replay unless a candidate is explicitly numerical and its changed outcome is separately audited.
@@ -97,7 +98,7 @@ Promotion boundary:
 ## Jira / Confluence Control Model
 
 - Jira PM owns execution status and task dependency.
-- Confluence page `VigilODE v3.8-D Control Plane` owns current DAG, claim boundary, and links.
+- Confluence page `VigilODE v3.8-D Performance Tournament — Canonical DAG and Claim Boundaries` owns current DAG, claim boundary, and links.
 - GitHub owns source bytes, design, plans, commits, and review diffs.
 - Durable local bundles own failed/held candidate custody when no remote PR is opened.
 - Rovo retrieval keys are `VigilODE`, `PM`, `v3.8-D`, `Timing Authority Validator`, `High-Entropy Performance Tournament`, `K1`, `K2`, `K3`, `C1`, `C2`, and `C4`.
