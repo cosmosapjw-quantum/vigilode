@@ -35,6 +35,7 @@ mod stage_batch;
 mod transactional_q1_q2;
 mod unified_gates;
 mod unified_screen;
+mod v38d_performance_tournament;
 
 pub use adaptive::{
     AdaptiveControllerState, AdaptiveObservedIntegrationResult, AdaptiveRunDiagnostics,
@@ -212,6 +213,12 @@ pub use unified_screen::{
     ReferenceCertificateSource, UnifiedCandidateOutcome, UnifiedCandidateRow,
     UnifiedCaseDescriptor, UnifiedNonlinearScreen, UnifiedNonlinearSummary, UnifiedScreenProfile,
     run_unified_nonlinear_screen,
+};
+
+pub use v38d_performance_tournament::{
+    V38D_EXPLORATORY_PROBE_SCHEMA, V38D_EXPLORATORY_PROBE_STATUS, V38D_MEASURED_REPETITIONS,
+    V38D_WARMUP_REPETITIONS, V38dCandidateId, V38dProbeCaseId, V38dProbeReport, V38dProbeSample,
+    run_v38d_probe,
 };
 
 pub use policy_redesign_v25::{
