@@ -19,10 +19,14 @@ handoff/pm4-task1-publication-recovery-20260824
 Read in order:
 
 ```text
+handoff/pm4-task1-publication-recovery-20260824/AGENTS.md
 handoff/pm4-task1-publication-recovery-20260824/README.md
+handoff/pm4-task1-publication-recovery-20260824/CURRENT_STATE.json
 handoff/pm4-task1-publication-recovery-20260824/AUDIT_COMPILED_EXEC_PLAN.yaml
 handoff/pm4-task1-publication-recovery-20260824/P0_P1_THREAT_CATALOG.yaml
+handoff/pm4-task1-publication-recovery-20260824/INVARIANT_TEST_MATRIX.yaml
 handoff/pm4-task1-publication-recovery-20260824/EVIDENCE_CHAIN.md
+handoff/pm4-task1-publication-recovery-20260824/acceptance/README.md
 ```
 
 Treat `AUDIT_COMPILED_EXEC_PLAN.yaml` as the execution contract.
@@ -58,9 +62,11 @@ R4 input archive
 Task-1 patch SHA-256
 705646496b3594adb4f655829dfe2756aca57ce061fef0cae3b080399104f7a3
 
-actual observed vendor directories
+R4-observed immediate directories
 308
 ```
+
+The value 308 is failure evidence, not a required package count. Determine Cargo package directories using Cargo directory-source semantics: inspect one immediate level, ignore dot-prefixed directories, and treat only directories containing `Cargo.toml` as package candidates. Every such candidate must contain a parseable `.cargo-checksum.json`. Manifestless and dot-prefixed directories must not alter `package_directory_count`.
 
 ## Forbidden operations
 
@@ -90,17 +96,21 @@ Required deterministic JSON fields:
 ```text
 schema = vigilode-cargo-directory-source-validation-v1
 vendor_dir = canonical absolute path
-package_directory_count = observed integer
-checksum_record_count = observed integer
+immediate_directory_count = observed integer
+package_directory_count = non-hidden immediate directories containing Cargo.toml
+checksum_record_count = checksum records among package directories
+ignored_hidden_directory_count = observed integer
+ignored_manifestless_directory_count = observed integer
 required_packages_present = sorted list
 missing_checksum_packages = sorted list
 exact_package_count_enforced = false
 ```
 
 5. Write tests before the fix and preserve RED/GREEN logs. Required cases:
-   - structurally valid 262-directory source: PASS;
-   - structurally valid 308-directory source: PASS;
-   - one package directory missing `.cargo-checksum.json`: FAIL;
+   - structurally valid 262 package directories, each with `Cargo.toml` and `.cargo-checksum.json`: PASS;
+   - structurally valid 308 package directories: PASS;
+   - dot-prefixed and manifestless incidental directories do not alter package count: PASS;
+   - one manifest-bearing package directory missing `.cargo-checksum.json`: FAIL;
    - missing `faer-0.24.4`: FAIL;
    - repeated validation emits identical JSON: PASS.
 6. Modify `publish_pm4_task1.sh` minimally:
@@ -111,7 +121,7 @@ exact_package_count_enforced = false
    - run `cargo metadata --frozen --format-version 1 > "$WORK/cargo-metadata.json"` before tests and before push;
    - hash `cargo-metadata.json`;
    - retain all existing archive/hash, exact M/A/A/D surface, focused tests, all-target compile, Clippy, rustfmt, clean-tree, and ref-drift gates;
-   - put observed vendor counts and metadata hash into the receipt dynamically;
+   - put observed directory/package/checksum counts and metadata hash into the receipt dynamically;
    - use only ordinary non-force push.
 7. Update R5 `README.md`, `STATE.json`, `MANIFEST.json`, and `SHA256SUMS` honestly. `STATE.json` must contain:
 
