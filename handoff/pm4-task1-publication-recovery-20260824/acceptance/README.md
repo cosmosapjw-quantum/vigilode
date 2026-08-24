@@ -14,6 +14,32 @@ PM4_TASK1_SCHEMA_BOUNDARY.patch
 TASK1_FILE_SHA256SUMS
 ```
 
+## Archive authority gate
+
+Before any RED/GREEN or R5 implementation work, run:
+
+```bash
+python3 \
+  handoff/pm4-task1-publication-recovery-20260824/acceptance/test_archive_authority_contract.py \
+  --archive ~/vigilode/VIGILODE_PM4_TASK1_SCHEMA_BOUNDARY_KIT_R4_20260824.tar.gz \
+  --sidecar ~/vigilode/VIGILODE_PM4_TASK1_SCHEMA_BOUNDARY_KIT_R4_20260824.tar.gz.sha256
+```
+
+Required identity:
+
+```text
+outer SHA-256
+6689544ee9b115fe4cb5c8ba14c179a17ee6615cb454555b0bb2f0ad1826b333
+
+Task-1 patch SHA-256
+705646496b3594adb4f655829dfe2756aca57ce061fef0cae3b080399104f7a3
+
+R4 publication script SHA-256
+63c4ae3ca493a6b4ffe03db50a1b1e23850dacf5dcd0f502f594464cbd67ddb7
+```
+
+The earlier `b33af0b8352aa0b3ccdcc83834cb4696fce787d0733a7e5ce9286e646994a095` declaration is withdrawn and must not be accepted as an alternative. The test also extracts the archive and runs internal `SHA256SUMS`.
+
 ## Vendor helper API and CLI
 
 Python API:
@@ -67,11 +93,12 @@ Before R5 exists:
 
 ```bash
 PM4_R5_DIR=/nonexistent \
-python3 -m unittest \
-  handoff.pm4-task1-publication-recovery-20260824.acceptance.test_vendor_validator_contract -v
+python3 -m unittest discover \
+  -s handoff/pm4-task1-publication-recovery-20260824/acceptance \
+  -p 'test_vendor_validator_contract.py' -v
 ```
 
-After R5 exists, from a checkout of this handoff branch:
+After R5 exists:
 
 ```bash
 PM4_R5_DIR=/absolute/path/to/R5 \
@@ -84,4 +111,4 @@ python3 \
   --r5-dir /absolute/path/to/R5
 ```
 
-The implementation is not acceptable merely because the helper tests pass. The complete isolated transaction must also pass `cargo metadata --frozen --format-version 1`, Task-1 tests, all-target compilation, Clippy, rustfmt, exact diff checks, and remote ref-drift gates before push.
+The implementation is not acceptable merely because helper tests pass. The complete isolated transaction must also pass `cargo metadata --frozen --format-version 1`, Task-1 tests, all-target compilation, Clippy, rustfmt, exact diff checks, and remote ref-drift gates before push.
