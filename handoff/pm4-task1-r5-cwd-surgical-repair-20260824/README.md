@@ -3,7 +3,8 @@
 This clean branch supersedes PR #12 and the corrupted archive transport in PR #13. It contains:
 
 1. a RED-test commit encoding the CWD-independent archive-authority contract;
-2. one package commit containing the exact verified handoff archive as checksum-addressed base64 parts.
+2. one package commit containing the exact verified handoff archive as checksum-addressed base64 parts;
+3. one transport-verification commit fixing the retrieval command and publishing the exact Git-blob manifest.
 
 ## Production boundary
 
@@ -36,8 +37,7 @@ git worktree add --detach \
   ../vigilode-pm4-cwd-surgical-handoff \
   origin/handoff/pm4-task1-r5-cwd-surgical-repair-final-20260824
 
-cd ../vigilode-pm4-cwd-surgical-handoff/
-handoff/pm4-task1-r5-cwd-surgical-repair-20260824
+cd ../vigilode-pm4-cwd-surgical-handoff/handoff/pm4-task1-r5-cwd-surgical-repair-20260824
 
 ./RECONSTRUCT_AND_VERIFY.sh
 
@@ -52,6 +52,8 @@ AGENTS.md
 AUDIT_COMPILED_EXEC_PLAN.yaml
 IMPLEMENTER_PROMPT.md
 ```
+
+`TRANSPORT_BLOB_MANIFEST.tsv` records the exact byte size and Git blob SHA for every part used in the committed tree.
 
 ## Repair invariant
 
