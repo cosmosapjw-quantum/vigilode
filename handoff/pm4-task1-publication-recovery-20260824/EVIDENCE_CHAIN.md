@@ -59,6 +59,33 @@ Root cause: a rehearsal-specific inventory count (`262`) was promoted into a uni
 
 Remote mutation: none.
 
+## First Codex run — archive-authority contradiction
+
+The first Codex run correctly stopped before implementation because the original handoff declared:
+
+```text
+b33af0b8352aa0b3ccdcc83834cb4696fce787d0733a7e5ce9286e646994a095
+```
+
+while the authenticated host archive and its local sidecar both identified:
+
+```text
+6689544ee9b115fe4cb5c8ba14c179a17ee6615cb454555b0bb2f0ad1826b333
+```
+
+Codex did not guess across the boundary. Remote refs remained unchanged.
+
+The conflict is now resolved mechanically, not by preference. The archive at `668954...b333`:
+
+- matches its local `.sha256` sidecar;
+- extracts successfully;
+- passes every member in internal `SHA256SUMS`;
+- contains the sealed Task-1 patch SHA-256 `705646496b3594adb4f655829dfe2756aca57ce061fef0cae3b080399104f7a3`;
+- contains the R4 publication script SHA-256 `63c4ae3ca493a6b4ffe03db50a1b1e23850dacf5dcd0f502f594464cbd67ddb7`;
+- carries the expected main/feature identities in R4 state.
+
+Therefore `668954...b333` is the sole accepted outer archive identity for this recovery. The old `b33af0...a095` declaration is withdrawn metadata and must never be accepted as an alternative. This rule is encoded in `ARCHIVE_AUTHORITY_CORRECTION.json` and `acceptance/test_archive_authority_contract.py`.
+
 ## Current remote authority before Codex execution
 
 ```text
@@ -67,13 +94,15 @@ feature b2d5ec41cb147e01aadbc9c42928da8abfa75c58
 PR #11  OPEN / DRAFT / UNMERGED / ZERO FILE DIFF
 ```
 
-## Permanent harness lesson
+## Permanent harness lessons
 
-Do not patch only the literal `262`. Encode the failure class permanently:
-
-- valid 262 and 308 fixtures pass;
-- missing checksum and missing required crate fixtures fail;
-- Cargo `--frozen` metadata is mandatory before push;
-- observed inventory is evidence, not identity;
-- receipts report actual counts and metadata digest;
-- no remote mutation follows partial verification.
+- Immutable authority declarations must be checked against the actual host bytes and sidecar before any execution contract is issued.
+- Do not offer multiple archive hashes and ask the implementation agent to choose.
+- Do not patch only the literal `262`; encode the whole failure class.
+- Valid 262 and 308 fixtures pass.
+- Hidden and manifestless directories are not Cargo package candidates.
+- Missing checksum and missing required crate fixtures fail.
+- Cargo `--frozen` metadata is mandatory before push.
+- Observed inventory is evidence, not identity.
+- Receipts report actual archive hash, vendor counts, and metadata digest.
+- No remote mutation follows partial verification.
