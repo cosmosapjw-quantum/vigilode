@@ -1,8 +1,13 @@
 schema: audit-compiled-pr/v1
 pr_id: PM4-T1-R5-VENDOR-CLOSURE
-base_sha: "140f6b5c078c3d8fcd5b6c52310c063ee233dc12"
-feature_sha: "b2d5ec41cb147e01aadbc9c42928da8abfa75c58"
 risk_class: high
+archive_authority:
+  canonical_filename: VIGILODE_PM4_TASK1_SCHEMA_BOUNDARY_KIT_R4_20260824.tar.gz
+  canonical_outer_sha256: 6689544ee9b115fe4cb5c8ba14c179a17ee6615cb454555b0bb2f0ad1826b333
+  withdrawn_prior_declared_sha256: b33af0b8352aa0b3ccdcc83834cb4696fce787d0733a7e5ce9286e646994a095
+  correction_record: ARCHIVE_AUTHORITY_CORRECTION.json
+  policy: exact canonical hash required; no alternative-hash guessing
+repository: cosmosapjw-quantum/vigilode
 
 objective:
   statement: >-
@@ -10,15 +15,43 @@ objective:
     publication transaction, create a verified R5 kit, publish the unchanged
     Task-1 source patch to draft PR #11, and stop before merge or PM-4 Task 2.
   observable_success: >-
-    PR #11 receives one ordinary non-force fast-forward Task-1 implementation
-    commit with the exact four-file M/A/A/D surface; all required checks pass
-    against the actual 308-directory vendor; PR #11 remains draft/open/unmerged.
+    PR #11 has one new ordinary fast-forward Task-1 implementation commit,
+    exactly the sealed four-file M/A/A/D surface, all required local checks pass
+    against the actual 308-directory vendor, and the PR remains draft/open/unmerged.
+
+remote_authority:
+  canonical_main: 140f6b5c078c3d8fcd5b6c52310c063ee233dc12
+  canonical_main_tree: 77b8b9648b7acb4acddc2fd315b19e4257cf0fa5
+  feature_branch: research/v38d-exploratory-benchmark-substrate
+  expected_feature_head: b2d5ec41cb147e01aadbc9c42928da8abfa75c58
+  pull_request: 11
+  required_pr_state: [open, draft, unmerged]
+
+inputs:
+  r4_script: inputs/publish_pm4_task1_r4.sh
+  r4_state: inputs/R4_STATE.json
+  task1_patch: inputs/PM4_TASK1_SCHEMA_BOUNDARY.patch
+  task1_patch_sha256: 705646496b3594adb4f655829dfe2756aca57ce061fef0cae3b080399104f7a3
+  task1_file_hashes: inputs/TASK1_FILE_SHA256SUMS
+  actual_vendor_dir: /home/cosmosapjw/Dropbox/rust/bundles/rust-offline-rodas5p-rs-20260806/vendor
+  observed_vendor_directories: 308
 
 scope:
-  allowed_inputs:
-    - ~/vigilode/VIGILODE_PM4_TASK1_SCHEMA_BOUNDARY_KIT_R4_20260824.tar.gz
-    - /home/cosmosapjw/Dropbox/rust/bundles/rust-offline-rodas5p-rs-20260806/vendor
-  allowed_remote_surface:
+  allowed_paths_in_r5_kit:
+    - publish_pm4_task1.sh
+    - validate_vendor_source.py
+    - test_validate_vendor_source.py
+    - README.md
+    - STATE.json
+    - MANIFEST.json
+    - SHA256SUMS
+    - TRANSACTION_REHEARSAL.log
+    - PM4_TASK1_SCHEMA_BOUNDARY.patch
+    - TASK1_FILE_SHA256SUMS
+    - TDD_RED.log
+    - TDD_GREEN.log
+    - FRESH_LOCAL_VERIFICATION.log
+  allowed_remote_task1_surface:
     - crates/rodas5p-integrators/src/lib.rs
     - crates/rodas5p-integrators/src/v38d_performance_tournament.rs
     - crates/rodas5p-integrators/tests/v38d_performance_probe_contracts.rs
@@ -29,145 +62,260 @@ scope:
     - Cargo.toml
     - crates/rodas5p-core/**
     - crates/rodas5p-cli/**
+    - research/generic_timing_replication_continuation_transaction_v37/**
   forbidden_changes:
-    - Do not change the Task-1 patch SHA-256 705646496b3594adb4f655829dfe2756aca57ce061fef0cae3b080399104f7a3.
-    - Do not change dependency versions, source replacement, or lockfile contents.
-    - Do not force-push, merge, mutate main, run wall timing, rank candidates, or start Task 2.
-    - Do not report success after partial verification.
+    - Change any byte of the sealed Task-1 patch or its three final Rust file hashes.
+    - Change dependency versions, source replacement, or lockfile contents.
+    - Force-push, merge, retarget PR #11, mutate main, or delete provenance branches.
+    - Run real wall timing, rank candidates, begin Task 2, or authorize speedup claims.
+    - Convert a failed or partial run into a success receipt.
 
 preconditions:
+  - id: PRE-00
+    command: sha256sum VIGILODE_PM4_TASK1_SCHEMA_BOUNDARY_KIT_R4_20260824.tar.gz
+    expect: 6689544ee9b115fe4cb5c8ba14c179a17ee6615cb454555b0bb2f0ad1826b333
+  - id: PRE-00B
+    command: sha256sum -c VIGILODE_PM4_TASK1_SCHEMA_BOUNDARY_KIT_R4_20260824.tar.gz.sha256
+    expect: exit=0
+  - id: PRE-00C
+    command: extract archive; run internal sha256sum -c SHA256SUMS; hash patch and R4 script
+    expect: internal_all_OK,patch=705646496b3594adb4f655829dfe2756aca57ce061fef0cae3b080399104f7a3,script=63c4ae3ca493a6b4ffe03db50a1b1e23850dacf5dcd0f502f594464cbd67ddb7
   - id: PRE-01
     command: git ls-remote https://github.com/cosmosapjw-quantum/vigilode.git refs/heads/main
-    expect: 140f6b5c078c3d8fcd5b6c52310c063ee233dc12
+    expect: stdout_sha=140f6b5c078c3d8fcd5b6c52310c063ee233dc12
   - id: PRE-02
     command: git ls-remote https://github.com/cosmosapjw-quantum/vigilode.git refs/heads/research/v38d-exploratory-benchmark-substrate
-    expect: b2d5ec41cb147e01aadbc9c42928da8abfa75c58
+    expect: stdout_sha=b2d5ec41cb147e01aadbc9c42928da8abfa75c58
   - id: PRE-03
     command: test -d /home/cosmosapjw/Dropbox/rust/bundles/rust-offline-rodas5p-rs-20260806/vendor/faer-0.24.4
     expect: exit=0
   - id: PRE-04
+    command: sha256sum inputs/PM4_TASK1_SCHEMA_BOUNDARY.patch
+    expect: 705646496b3594adb4f655829dfe2756aca57ce061fef0cae3b080399104f7a3
+  - id: PRE-05
     command: rustc --version && cargo --version
     expect: rustc=1.94.1,cargo=1.94.1
 
 invariants:
+  - id: INV-00
+    severity_if_violated: P0
+    statement: The exact authenticated-host R4 archive is bound before any implementation work; the withdrawn b33 hash is never accepted as an alternative.
+    mechanical_check:
+      command: python3 acceptance/test_archive_authority_contract.py --archive "$R4_ARCHIVE" --sidecar "$R4_SIDECAR"
+      expect: canonical_outer_sha256=6689544ee9b115fe4cb5c8ba14c179a17ee6615cb454555b0bb2f0ad1826b333,internal_all_OK=true
   - id: INV-01
     severity_if_violated: P1
     statement: No exact global vendor-directory count is a correctness gate.
-    mechanical_check: accept structurally valid 262 and 308 fixtures.
+    mechanical_check:
+      command: python3 acceptance/test_publication_script_contract.py --r5-dir "$R5_DIR"
+      expect: test_no_exact_vendor_count_gate=PASS
   - id: INV-02
     severity_if_violated: P1
-    statement: Every accepted immediate crate directory has .cargo-checksum.json.
-    mechanical_check: missing-checksum fixture must fail.
+    statement: Every non-hidden immediate directory containing Cargo.toml has a parseable .cargo-checksum.json; hidden and manifestless directories are ignored.
+    mechanical_check:
+      command: python3 -m unittest acceptance.test_vendor_validator_contract -v
+      expect: missing_checksum_case=REJECTED,incidental_directory_case=IGNORED
   - id: INV-03
     severity_if_violated: P1
-    statement: The observed dependency faer-0.24.4 is present.
-    mechanical_check: missing-faer fixture must fail.
+    statement: Both 262-package and 308-package structurally valid sources are accepted, independent of incidental hidden or manifestless directories.
+    mechanical_check:
+      command: python3 -m unittest acceptance.test_vendor_validator_contract -v
+      expect: 262_case=PASS,308_case=PASS
   - id: INV-04
     severity_if_violated: P0
-    statement: Cargo proves configured offline locked dependency closure before push.
-    mechanical_check: cargo metadata --frozen --format-version 1 must pass.
+    statement: Cargo itself proves the configured offline locked dependency closure before push.
+    mechanical_check:
+      command: cargo metadata --frozen --format-version 1 > "$WORK/cargo-metadata.json"
+      expect: exit=0,nonempty_json=true
   - id: INV-05
     severity_if_violated: P0
-    statement: The temporary sibling symlink resolves exactly to the provided persistent vendor.
-    mechanical_check: compare readlink -f results before Cargo.
+    statement: The source replacement path used by Cargo is the exact isolated sibling symlink required by checked-in config.
+    mechanical_check:
+      command: test "$(readlink -f "$WORK/rust-offline-rodas5p-rs-20260806/vendor")" = "$(readlink -f "$VENDOR_DIR")"
+      expect: exit=0
   - id: INV-06
     severity_if_violated: P0
-    statement: Task-1 patch and final Rust bytes remain unchanged.
-    mechanical_check: patch SHA-256 plus TASK1_FILE_SHA256SUMS all OK.
+    statement: The sealed Task-1 source patch and final Rust bytes are unchanged.
+    mechanical_check:
+      command: sha256sum -c TASK1_FILE_SHA256SUMS
+      expect: all=OK
   - id: INV-07
     severity_if_violated: P0
-    statement: Staged and final PR surface is exactly M/A/A/D on four declared paths.
-    mechanical_check: exact git diff --cached and origin/main...HEAD name-status.
+    statement: The staged and final PR surface is exactly M/A/A/D on the four declared paths.
+    mechanical_check:
+      command: git diff --cached --name-status && git diff --name-status origin/main...HEAD
+      expect: exact_declared_surface
   - id: INV-08
     severity_if_violated: P0
-    statement: No remote mutation precedes metadata, tests, compile, Clippy, rustfmt, diff, and ref-drift gates.
-    mechanical_check: static ordering test plus logs.
+    statement: No remote mutation occurs before metadata, tests, compile, Clippy, rustfmt, diff, and ref-drift gates pass.
+    mechanical_check:
+      command: python3 acceptance/test_publication_script_contract.py --r5-dir "$R5_DIR"
+      expect: push_ordering=PASS
   - id: INV-09
     severity_if_violated: P0
-    statement: Only ordinary non-force fast-forward to the feature branch is allowed.
-    mechanical_check: no force token; exact ref recheck immediately before push.
+    statement: The only allowed remote update is an ordinary non-force fast-forward to the feature branch.
+    mechanical_check:
+      command: git push --porcelain origin HEAD:refs/heads/research/v38d-exploratory-benchmark-substrate
+      expect: fast_forward=true,force=false
   - id: INV-10
     severity_if_violated: P1
-    statement: Receipt records observed counts and Cargo metadata identity dynamically, never literal 262.
-    mechanical_check: receipt schema and source-contract test.
+    statement: The receipt records observed counts and Cargo metadata identity dynamically, never the stale literal 262.
+    mechanical_check:
+      command: python3 acceptance/test_publication_script_contract.py --r5-dir "$R5_DIR"
+      expect: dynamic_receipt=PASS
 
 failure_modes:
+  - id: FM-00
+    severity: P0
+    trigger: The handoff binds an outer archive hash different from the authenticated local archive/sidecar, leaving Codex to choose between immutable authorities.
+    required_detection:
+      test: acceptance.test_archive_authority_contract.ArchiveAuthorityContractTests
   - id: FM-01
     severity: P1
-    trigger: valid 308-directory vendor rejected by exact 262 gate
-    required_detection: test_308_valid_packages_are_accepted
+    trigger: A valid vendor has 308 directories but the script requires exactly 262.
+    required_detection:
+      test: acceptance.test_vendor_validator_contract.VendorValidatorContractTests.test_308_valid_packages_are_accepted
   - id: FM-02
     severity: P1
-    trigger: count gate removed without Cargo-resolved closure
-    required_detection: frozen cargo metadata must precede push
+    trigger: Package-count gate is deleted without replacing it with Cargo-resolved closure.
+    required_detection:
+      test: acceptance.test_publication_script_contract.PublicationScriptContractTests.test_frozen_cargo_metadata_precedes_push
   - id: FM-03
     severity: P1
-    trigger: missing .cargo-checksum.json
-    required_detection: named negative test
+    trigger: Vendor contains a manifest-bearing non-hidden package directory missing .cargo-checksum.json.
+    required_detection:
+      test: acceptance.test_vendor_validator_contract.VendorValidatorContractTests.test_missing_checksum_is_rejected
   - id: FM-04
     severity: P1
-    trigger: missing faer-0.24.4
-    required_detection: named negative test
+    trigger: The observed dependency faer-0.24.4 is absent.
+    required_detection:
+      test: acceptance.test_vendor_validator_contract.VendorValidatorContractTests.test_missing_required_crate_is_rejected
   - id: FM-05
     severity: P0
-    trigger: Cargo accesses network or changes Cargo.lock
-    required_detection: --frozen plus clean-tree gate
+    trigger: Cargo uses network access or changes Cargo.lock during validation.
+    required_detection:
+      assertion: cargo metadata must use --frozen and git status must remain clean
   - id: FM-06
     severity: P0
-    trigger: main or feature ref drifts before push
-    required_detection: immediate pre-push ls-remote equality
+    trigger: Feature or main ref drifts after local validation but before push.
+    required_detection:
+      assertion: exact git ls-remote recheck immediately before push
   - id: FM-07
     severity: P0
-    trigger: source patch or repository surface drifts
-    required_detection: exact hashes and name-status
+    trigger: R5 changes the Task-1 patch or extra repository files.
+    required_detection:
+      assertion: patch SHA, final file SHA, staged status, and final PR surface all exact
   - id: FM-08
     severity: P1
-    trigger: receipt claims stale 262 or omits metadata hash
-    required_detection: receipt contract test
+    trigger: Receipt claims 262 packages or success after a partial run.
+    required_detection:
+      test: acceptance.test_publication_script_contract.PublicationScriptContractTests.test_receipt_uses_dynamic_vendor_evidence
   - id: FM-09
     severity: P0
-    trigger: force push, merge, wall timing, candidate ranking, or Task 2
-    required_detection: forbidden-token scan and remote-state check
+    trigger: Script force-pushes, merges, or runs wall timing.
+    required_detection:
+      assertion: forbidden-token and remote-state checks
 
 implementation:
   ordered_steps:
-    - Reproduce R4 failure against the actual 308-directory vendor and preserve RED log.
-    - Extract R4 into a new R5 work directory; keep the original archive immutable.
-    - Add validate_vendor_source.py and tests for 262-pass, 308-pass, missing-checksum-fail, missing-faer-fail, deterministic JSON.
-    - Modify publish_pm4_task1.sh minimally: remove exact count; call helper; verify sibling symlink; run cargo metadata --frozen --format-version 1; retain all existing gates; use dynamic receipt fields.
-    - Update README, STATE, MANIFEST, SHA256SUMS to R5; declare exact_vendor_package_count_enforced=false and source_patch_unchanged=true.
-    - Run acceptance tests, focused tests, all-target compile, Clippy, rustfmt, diff checks.
-    - Rehearse complete transaction against isolated clone and local bare remote using the actual vendor.
-    - Deterministically package R5, extract fresh, verify hashes and shell syntax, rerun acceptance.
-    - Run R5 against GitHub; preserve workdir; stop on any failure.
-    - Independently verify remote head/tree, exact four-file diff and hashes, PR open/draft/unmerged, main unchanged, zero wall campaigns.
-    - Produce evidence bundle and stop before merge or Task 2.
+    - id: STEP-01
+      action: Reproduce the exact R4 failure against the actual 308-directory vendor and preserve stdout/stderr.
+      files: [inputs/publish_pm4_task1_r4.sh]
+      must_preserve: [INV-06, INV-09]
+    - id: STEP-02
+      action: Run the provided acceptance tests before implementation and record RED failures caused by the missing R5 helper/directory.
+      files: [acceptance/test_vendor_validator_contract.py, acceptance/test_publication_script_contract.py]
+      must_preserve: [INV-01, INV-03]
+    - id: STEP-03
+      action: Create validate_vendor_source.py with the exact CLI and JSON contract documented in acceptance/README.md, using Cargo directory-source package classification (non-hidden immediate directories with Cargo.toml).
+      files: [validate_vendor_source.py, test_validate_vendor_source.py]
+      must_preserve: [INV-01, INV-02, INV-03]
+      required_tests: [valid_262, valid_308, incidental_hidden_and_manifestless_ignored, missing_checksum_rejected, missing_required_package_rejected, deterministic_output]
+    - id: STEP-04
+      action: Modify the R4 publication script minimally to call the helper, remove exact-count enforcement, create the sibling symlink, run frozen Cargo metadata, and use dynamic receipt fields.
+      files: [publish_pm4_task1.sh]
+      must_preserve: [INV-04, INV-05, INV-08, INV-09, INV-10]
+    - id: STEP-05
+      action: Update README, STATE, MANIFEST, and SHA256SUMS to identify R5 and supersede R4 without changing the Task-1 patch.
+      files: [README.md, STATE.json, MANIFEST.json, SHA256SUMS]
+      must_preserve: [INV-06]
+    - id: STEP-06
+      action: Run unit and static acceptance tests until GREEN; do not weaken tests to fit the implementation.
+      files: [acceptance/**]
+      must_preserve: [INV-01, INV-10]
+    - id: STEP-07
+      action: Rehearse the complete transaction against an isolated clone plus local bare remote using the actual vendor and Rust 1.94.1.
+      files: [TRANSACTION_REHEARSAL.log]
+      must_preserve: [INV-04, INV-05, INV-07, INV-08, INV-09]
+    - id: STEP-08
+      action: Deterministically package R5, verify all internal hashes, extract it fresh, and rerun acceptance and shell syntax checks.
+      files: [MANIFEST.json, SHA256SUMS]
+      must_preserve: [INV-06]
+    - id: STEP-09
+      action: Run R5 on the authenticated host with the actual vendor path; preserve workdir and stop on any failure.
+      files: [PUBLICATION_RECEIPT.json]
+      must_preserve: [INV-04, INV-08, INV-09]
+    - id: STEP-10
+      action: Independently verify remote head, topology, exact four-file diff, final bytes, PR draft/open/unmerged state, and zero wall campaigns.
+      files: [REMOTE_VERIFICATION.json, REMOTE_VERIFICATION.log]
+      must_preserve: [INV-06, INV-07, INV-09]
+    - id: STEP-11
+      action: Produce a fresh-review packet and stop; do not merge or start Task 2.
+      files: [FRESH_REVIEW_PACKET.md]
+      must_preserve: [INV-09]
 
 verification:
-  required_commands:
-    - python3 -m unittest test_validate_vendor_source.py -v
-    - cargo metadata --frozen --format-version 1
-    - cargo test -p rodas5p-integrators --test v38d_performance_probe_contracts --offline --locked
-    - cargo test -p rodas5p-integrators --all-targets --no-run --offline --locked
-    - TERM=dumb cargo clippy -p rodas5p-integrators --all-targets --offline --locked -- -D warnings
-    - cargo fmt --all -- --check
-    - git diff --check
-    - git status --porcelain
+  targeted:
+    - command: python3 -m unittest test_validate_vendor_source.py -v
+      expect: all_pass
+    - command: python3 -m unittest acceptance.test_vendor_validator_contract -v
+      expect: all_pass
+    - command: python3 acceptance/test_publication_script_contract.py --r5-dir "$R5_DIR"
+      expect: all_pass
+  dependency_closure:
+    - command: cargo metadata --frozen --format-version 1 > "$WORK/cargo-metadata.json"
+      expect: exit=0
+  task1_regression:
+    - command: cargo test -p rodas5p-integrators --test v38d_performance_probe_contracts --offline --locked
+      expect: 5_passed
+    - command: cargo test -p rodas5p-integrators --all-targets --no-run --offline --locked
+      expect: exit=0
+    - command: TERM=dumb cargo clippy -p rodas5p-integrators --all-targets --offline --locked -- -D warnings
+      expect: exit=0
+    - command: cargo fmt --all -- --check
+      expect: exit=0
+  negative:
+    - command: run helper on 308 valid package dirs
+      expect: exit=0
+    - command: run helper with one checksum removed
+      expect: nonzero
+    - command: run helper without faer-0.24.4
+      expect: nonzero
+  repository:
+    - command: git diff --check && git status --porcelain
+      expect: clean_after_commit
+    - command: git diff --name-status origin/main...HEAD
+      expect: exact_four_file_surface
 
 completion_evidence:
   required:
-    - canonical_main_sha
-    - previous_and_published_feature_sha
+    - r4_archive_sha256
+    - r4_archive_authority_check
+    - base_sha
+    - previous_feature_sha
+    - published_feature_sha
     - published_tree_sha
-    - exact_name_status
-    - task1_patch_and_final_file_hashes
+    - git_status_porcelain
+    - staged_and_final_name_status
+    - task1_patch_sha256
+    - final_task1_file_sha256_results
     - vendor_validation_json
     - cargo_metadata_json_sha256
-    - all command logs and exit codes
+    - all_command_logs_and_exit_codes
     - publication_receipt
     - remote_verification_receipt
     - unresolved_blockers
-    - explicit no-merge/no-wall/no-Task2 statement
+    - statement_that_merge_task2_and_wall_timing_were_not_performed
 
 agent_policy:
   ask_user_questions: false
@@ -175,12 +323,21 @@ agent_policy:
   unresolved_spec_action: BLOCKED_BY_UNRESOLVED_SPEC
   changing_tests_to_fit_implementation: forbidden
   suppressing_failures: forbidden
+  editing_expected_scientific_outputs: forbidden
   force_push: forbidden
   merge: forbidden
 
 review_gate:
   fresh_context_required: true
   reviewer_must_not_fix_on_first_pass: true
+  reviewer_input:
+    - canonical_main_sha
+    - previous_and_final_feature_sha
+    - final_diff
+    - this_contract
+    - all_verification_logs
+    - R5_archive_and_manifest_hashes
+    - remote_verification_receipt
   pass_condition:
     P0: 0
     P1: 0
