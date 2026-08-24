@@ -16,4 +16,9 @@ python3 -m unittest discover \
   -p 'test_load_bearing_command_contract.py' \
   -v
 
+python3 -m unittest discover \
+  -s "$SCRIPT_DIR" \
+  -p 'test_launcher_delivery_contract.py' \
+  -v
+
 printf '%s\n' "PASS: CWD-independent PM-4 control-plane preflight at $HANDOFF_ROOT"
