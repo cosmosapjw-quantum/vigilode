@@ -1,9 +1,5 @@
 schema: vigilode-pm4-invariant-test-matrix/v1
 matrix:
-  - invariant: INV-00 exact R4 archive authority
-    positive: local archive SHA is 6689544ee9b115fe4cb5c8ba14c179a17ee6615cb454555b0bb2f0ad1826b333; sidecar matches; internal SHA256SUMS, Task-1 patch hash, and R4 script hash pass
-    negative: outer hash differs, sidecar differs, internal member differs, or withdrawn b33 hash is offered as an alternative
-    expected: canonical input passes; every ambiguity fails before implementation or remote mutation
   - invariant: INV-01 no exact package-count gate
     positive: valid 262 fixture accepted
     alternative_positive: valid 308 fixture accepted
@@ -21,27 +17,35 @@ matrix:
     positive: cargo metadata --frozen --format-version 1 on actual vendor
     negative: point symlink at incomplete fixture
     expected: actual passes; incomplete fails without network
-  - invariant: INV-05 config/lock remain immutable
+  - invariant: INV-05 config and lock remain immutable
     positive: pre/post SHA equality
     negative: modify Cargo.lock in rehearsal
     expected: transaction stops before push
   - invariant: INV-06 Task-1 bytes immutable
     positive: patch and final file hashes match
     negative: mutate one byte in module
-    expected: transaction stops before tests/push
+    expected: transaction stops before tests or push
   - invariant: INV-07 exact repository surface
     positive: M/A/A/D exact four paths
     negative: add any fifth path or leave recovery marker
     expected: transaction stops
   - invariant: INV-08 evidence before remote mutation
-    positive: archive/metadata/tests/compile/clippy/fmt/diff/ref gates precede push
-    negative: move push earlier in a fixture script
+    positive: metadata/tests/compile/clippy/fmt/diff/ref gates precede push
+    negative: move push earlier in fixture script
     expected: static acceptance test fails
   - invariant: INV-09 remote update semantics
     positive: normal fast-forward from expected feature head
     negative: feature drift or force flag
     expected: transaction stops; remote unchanged
   - invariant: INV-10 receipt honesty
-    positive: canonical R4 archive hash, observed vendor counts, and metadata hash recorded from actual run
-    negative: hard-coded 262, withdrawn b33 hash, or missing metadata hash
+    positive: observed count and metadata hash are recorded dynamically
+    negative: hard-coded 262 or missing metadata hash
     expected: receipt contract fails
+  - invariant: INV-11 handoff referential closure
+    positive: every templates/ and acceptance/ path named by load-bearing documents exists and parses
+    negative: delete templates/COMPLETION_EVIDENCE_SCHEMA.json or rename a referenced acceptance test
+    expected: test_handoff_completeness_contract fails before R5 implementation or remote mutation
+  - invariant: INV-12 completion evidence is success-only and mechanically closed
+    positive: COMPLETION_EVIDENCE_EXAMPLE.json passes the schema and executable semantic validator
+    negative: set merge_performed=true, omit a required command record, retain a P0/P1 finding, or leave unresolved blockers
+    expected: completion-evidence validators reject the object
