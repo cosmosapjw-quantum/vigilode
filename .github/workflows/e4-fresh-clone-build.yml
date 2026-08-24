@@ -1,0 +1,83 @@
+name: E4 fresh-clone build reproducibility
+
+on:
+  pull_request:
+    paths:
+      - ".cargo/**"
+      - ".github/workflows/e4-fresh-clone-build.yml"
+      - ".gitignore"
+      - "Cargo.lock"
+      - "Cargo.toml"
+      - "README.md"
+      - "crates/**"
+      - "rust-toolchain.toml"
+      - "tools/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  fresh-clone-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Install the pinned Rust toolchain
+        run: |
+          rustup toolchain install 1.94.1 --profile minimal --component rustfmt,clippy
+          rustup override set 1.94.1
+
+      - name: Verify the E4 build-mode contracts
+        run: python3 tools/test_e4_build_modes.py -v
+
+      - name: Resolve the default fresh-clone graph
+        run: cargo metadata --locked --format-version 1 > "$RUNNER_TEMP/default-metadata.json"
+
+      - name: Compile the default fresh-clone workspace
+        run: cargo test --workspace --all-targets --no-run --locked
+
+      - name: Run the touched default-mode contract
+        run: cargo test -p rodas5p-integrators --test v38d_performance_probe_contracts --locked
+
+      - name: Lint the touched integrator crate in default mode
+        run: cargo clippy -p rodas5p-integrators --all-targets --locked -- -D warnings
+
+      - name: Build an independent Cargo vendor directory
+        run: cargo vendor --locked "$RUNNER_TEMP/vendor" > "$RUNNER_TEMP/cargo-vendor-config.toml"
+
+      - name: Resolve the air-gapped dependency graph
+        run: |
+          ./tools/cargo-offline.sh \
+            --vendor-dir "$RUNNER_TEMP/vendor" \
+            metadata --frozen --format-version 1 \
+            > "$RUNNER_TEMP/offline-metadata.json"
+
+      - name: Compare online and offline dependency graphs
+        run: |
+          python3 tools/compare-cargo-metadata.py \
+            "$RUNNER_TEMP/default-metadata.json" \
+            "$RUNNER_TEMP/offline-metadata.json"
+
+      - name: Compile the workspace in explicit offline mode
+        run: |
+          ./tools/cargo-offline.sh \
+            --vendor-dir "$RUNNER_TEMP/vendor" \
+            test --workspace --all-targets --no-run --frozen
+
+      - name: Run the touched offline-mode contract
+        run: |
+          ./tools/cargo-offline.sh \
+            --vendor-dir "$RUNNER_TEMP/vendor" \
+            test -p rodas5p-integrators \
+              --test v38d_performance_probe_contracts \
+              --frozen
+
+      - name: Check formatting and tracked-source stability
+        run: |
+          cargo fmt --all -- --check
+          git diff --check
+          test -z "$(git status --porcelain --untracked-files=no)"
