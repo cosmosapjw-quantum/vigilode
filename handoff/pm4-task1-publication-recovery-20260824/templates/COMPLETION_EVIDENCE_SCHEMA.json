@@ -1,25 +1,209 @@
 {
-  "all_integrator_targets_compile": "PASS",
-  "canonical_main": "40-hex",
-  "cargo_metadata_json_sha256": "64-hex",
-  "clippy": "PASS",
-  "exact_pr_surface": "PASS",
-  "focused_tests": "PASS",
-  "merge_performed": false,
-  "observed_vendor_checksum_records": 308,
-  "observed_vendor_package_directories": 308,
-  "pr_state_after": "OPEN_DRAFT_UNMERGED",
-  "previous_feature_head": "40-hex",
-  "published_feature_head": "40-hex",
-  "published_tree": "40-hex",
-  "r4_archive_authority_check": "PASS",
-  "r4_archive_sha256": "6689544ee9b115fe4cb5c8ba14c179a17ee6615cb454555b0bb2f0ad1826b333",
-  "real_wall_campaign_created": false,
-  "remote_update": "NORMAL_NON_FORCE_FAST_FORWARD",
-  "rustfmt": "PASS",
-  "schema": "vigilode-pm4-task1-r5-completion-evidence-v1",
-  "task1_patch_sha256": "64-hex",
-  "task2_started": false,
-  "unresolved_blockers": [],
-  "vendor_validation_json_sha256": "64-hex"
+  "$id": "urn:vigilode:pm4:task1:r5:completion-evidence:v1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "all_command_logs_and_exit_codes": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "command": {"minLength": 1, "type": "string"},
+          "command_id": {"type": "string"},
+          "exit_code": {"const": 0},
+          "log_path": {"minLength": 1, "type": "string"},
+          "log_sha256": {"pattern": "^[0-9a-f]{64}$", "type": "string"}
+        },
+        "required": ["command_id", "command", "exit_code", "log_path", "log_sha256"],
+        "type": "object"
+      },
+      "minItems": 18,
+      "type": "array"
+    },
+    "base_sha": {"const": "140f6b5c078c3d8fcd5b6c52310c063ee233dc12"},
+    "cargo_metadata_json_sha256": {"pattern": "^[0-9a-f]{64}$", "type": "string"},
+    "final_task1_file_sha256_results": {
+      "additionalProperties": false,
+      "properties": {
+        "crates/rodas5p-integrators/src/lib.rs": {"pattern": "^[0-9a-f]{64}$", "type": "string"},
+        "crates/rodas5p-integrators/src/v38d_performance_tournament.rs": {"pattern": "^[0-9a-f]{64}$", "type": "string"},
+        "crates/rodas5p-integrators/tests/v38d_performance_probe_contracts.rs": {"pattern": "^[0-9a-f]{64}$", "type": "string"}
+      },
+      "required": [
+        "crates/rodas5p-integrators/src/lib.rs",
+        "crates/rodas5p-integrators/src/v38d_performance_tournament.rs",
+        "crates/rodas5p-integrators/tests/v38d_performance_probe_contracts.rs"
+      ],
+      "type": "object"
+    },
+    "git_status_porcelain": {"const": ""},
+    "p0_p1_ledger": {
+      "additionalProperties": false,
+      "properties": {
+        "P0": {"items": {"type": "string"}, "maxItems": 0, "type": "array"},
+        "P1": {"items": {"type": "string"}, "maxItems": 0, "type": "array"},
+        "P2": {"items": {"type": "string"}, "type": "array"},
+        "P3": {"items": {"type": "string"}, "type": "array"}
+      },
+      "required": ["P0", "P1", "P2", "P3"],
+      "type": "object"
+    },
+    "previous_feature_sha": {"const": "b2d5ec41cb147e01aadbc9c42928da8abfa75c58"},
+    "publication_receipt": {
+      "additionalProperties": false,
+      "properties": {
+        "branch": {"const": "research/v38d-exploratory-benchmark-substrate"},
+        "candidate_ranking_performed": {"const": false},
+        "merge_performed": {"const": false},
+        "pr_state_after": {"const": "OPEN_DRAFT_UNMERGED"},
+        "previous_feature_head": {"const": "b2d5ec41cb147e01aadbc9c42928da8abfa75c58"},
+        "published_feature_head": {"pattern": "^[0-9a-f]{40}$", "type": "string"},
+        "published_tree": {"pattern": "^[0-9a-f]{40}$", "type": "string"},
+        "push_performed": {"const": true},
+        "real_wall_campaign_created": {"const": false},
+        "remote_update": {"const": "NORMAL_NON_FORCE_FAST_FORWARD"},
+        "task2_started": {"const": false}
+      },
+      "required": [
+        "branch", "previous_feature_head", "published_feature_head", "published_tree",
+        "remote_update", "push_performed", "merge_performed",
+        "real_wall_campaign_created", "candidate_ranking_performed", "task2_started",
+        "pr_state_after"
+      ],
+      "type": "object"
+    },
+    "published_feature_sha": {"pattern": "^[0-9a-f]{40}$", "type": "string"},
+    "published_tree_sha": {"pattern": "^[0-9a-f]{40}$", "type": "string"},
+    "r4_archive_authority_check": {
+      "additionalProperties": false,
+      "properties": {
+        "internal_manifest_verified": {"const": true},
+        "passed": {"const": true},
+        "r4_publication_script_sha256": {"const": "63c4ae3ca493a6b4ffe03db50a1b1e23850dacf5dcd0f502f594464cbd67ddb7"},
+        "sidecar_verified": {"const": true},
+        "task1_patch_sha256": {"const": "705646496b3594adb4f655829dfe2756aca57ce061fef0cae3b080399104f7a3"},
+        "withdrawn_hash_rejected": {"const": true}
+      },
+      "required": [
+        "passed", "sidecar_verified", "internal_manifest_verified",
+        "withdrawn_hash_rejected", "task1_patch_sha256",
+        "r4_publication_script_sha256"
+      ],
+      "type": "object"
+    },
+    "r4_archive_sha256": {"const": "6689544ee9b115fe4cb5c8ba14c179a17ee6615cb454555b0bb2f0ad1826b333"},
+    "r5_artifact": {
+      "additionalProperties": false,
+      "properties": {
+        "archive_path": {"minLength": 1, "type": "string"},
+        "archive_sha256": {"pattern": "^[0-9a-f]{64}$", "type": "string"},
+        "deterministic_repack_byte_identical": {"const": true},
+        "internal_manifest_sha256": {"pattern": "^[0-9a-f]{64}$", "type": "string"}
+      },
+      "required": ["archive_path", "archive_sha256", "internal_manifest_sha256", "deterministic_repack_byte_identical"],
+      "type": "object"
+    },
+    "remote_verification_receipt": {
+      "additionalProperties": false,
+      "properties": {
+        "exact_four_file_surface": {"const": true},
+        "fast_forward_verified": {"const": true},
+        "feature_sha": {"pattern": "^[0-9a-f]{40}$", "type": "string"},
+        "feature_tree": {"pattern": "^[0-9a-f]{40}$", "type": "string"},
+        "main_sha": {"const": "140f6b5c078c3d8fcd5b6c52310c063ee233dc12"},
+        "main_unchanged": {"const": true},
+        "pr_draft": {"const": true},
+        "pr_merged": {"const": false},
+        "pr_open": {"const": true},
+        "recovery_marker_absent": {"const": true},
+        "zero_wall_campaigns": {"const": true}
+      },
+      "required": [
+        "main_sha", "main_unchanged", "feature_sha", "feature_tree",
+        "fast_forward_verified", "exact_four_file_surface", "pr_open", "pr_draft",
+        "pr_merged", "recovery_marker_absent", "zero_wall_campaigns"
+      ],
+      "type": "object"
+    },
+    "repository": {"const": "cosmosapjw-quantum/vigilode"},
+    "schema": {"const": "vigilode-pm4-task1-r5-completion-evidence-v1"},
+    "staged_and_final_name_status": {
+      "additionalProperties": false,
+      "properties": {
+        "final": {
+          "items": false,
+          "maxItems": 4,
+          "minItems": 4,
+          "prefixItems": [
+            {"additionalProperties": false, "properties": {"path": {"const": "crates/rodas5p-integrators/src/lib.rs"}, "status": {"const": "M"}}, "required": ["status", "path"], "type": "object"},
+            {"additionalProperties": false, "properties": {"path": {"const": "crates/rodas5p-integrators/src/v38d_performance_tournament.rs"}, "status": {"const": "A"}}, "required": ["status", "path"], "type": "object"},
+            {"additionalProperties": false, "properties": {"path": {"const": "crates/rodas5p-integrators/tests/v38d_performance_probe_contracts.rs"}, "status": {"const": "A"}}, "required": ["status", "path"], "type": "object"},
+            {"additionalProperties": false, "properties": {"path": {"const": "research/generic_v38d_high_entropy_performance_tournament/RECOVERY_START.md"}, "status": {"const": "D"}}, "required": ["status", "path"], "type": "object"}
+          ],
+          "type": "array"
+        },
+        "staged": {
+          "items": false,
+          "maxItems": 4,
+          "minItems": 4,
+          "prefixItems": [
+            {"additionalProperties": false, "properties": {"path": {"const": "crates/rodas5p-integrators/src/lib.rs"}, "status": {"const": "M"}}, "required": ["status", "path"], "type": "object"},
+            {"additionalProperties": false, "properties": {"path": {"const": "crates/rodas5p-integrators/src/v38d_performance_tournament.rs"}, "status": {"const": "A"}}, "required": ["status", "path"], "type": "object"},
+            {"additionalProperties": false, "properties": {"path": {"const": "crates/rodas5p-integrators/tests/v38d_performance_probe_contracts.rs"}, "status": {"const": "A"}}, "required": ["status", "path"], "type": "object"},
+            {"additionalProperties": false, "properties": {"path": {"const": "research/generic_v38d_high_entropy_performance_tournament/RECOVERY_START.md"}, "status": {"const": "D"}}, "required": ["status", "path"], "type": "object"}
+          ],
+          "type": "array"
+        }
+      },
+      "required": ["staged", "final"],
+      "type": "object"
+    },
+    "statement_that_merge_task2_and_wall_timing_were_not_performed": {
+      "additionalProperties": false,
+      "properties": {
+        "candidate_ranking_performed": {"const": false},
+        "merge_performed": {"const": false},
+        "task2_started": {"const": false},
+        "wall_timing_performed": {"const": false}
+      },
+      "required": ["merge_performed", "wall_timing_performed", "candidate_ranking_performed", "task2_started"],
+      "type": "object"
+    },
+    "target_pull_request": {"const": 11},
+    "task1_patch_sha256": {"const": "705646496b3594adb4f655829dfe2756aca57ce061fef0cae3b080399104f7a3"},
+    "unresolved_blockers": {"items": {"type": "string"}, "maxItems": 0, "type": "array"},
+    "vendor_validation_json": {
+      "additionalProperties": false,
+      "properties": {
+        "checksum_record_count": {"minimum": 1, "type": "integer"},
+        "exact_package_count_enforced": {"const": false},
+        "ignored_hidden_directory_count": {"minimum": 0, "type": "integer"},
+        "ignored_manifestless_directory_count": {"minimum": 0, "type": "integer"},
+        "immediate_directory_count": {"minimum": 0, "type": "integer"},
+        "missing_checksum_packages": {"items": {"type": "string"}, "maxItems": 0, "type": "array"},
+        "package_directory_count": {"minimum": 1, "type": "integer"},
+        "required_packages_present": {"contains": {"const": "faer-0.24.4"}, "items": {"type": "string"}, "minContains": 1, "type": "array", "uniqueItems": true},
+        "schema": {"const": "vigilode-cargo-directory-source-validation-v1"},
+        "vendor_dir": {"minLength": 1, "type": "string"}
+      },
+      "required": [
+        "schema", "vendor_dir", "immediate_directory_count", "package_directory_count",
+        "checksum_record_count", "ignored_hidden_directory_count",
+        "ignored_manifestless_directory_count", "required_packages_present",
+        "missing_checksum_packages", "exact_package_count_enforced"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "schema", "repository", "target_pull_request", "r4_archive_sha256", "base_sha",
+    "previous_feature_sha", "published_feature_sha", "published_tree_sha",
+    "git_status_porcelain", "r4_archive_authority_check", "task1_patch_sha256",
+    "staged_and_final_name_status", "final_task1_file_sha256_results",
+    "vendor_validation_json", "cargo_metadata_json_sha256",
+    "all_command_logs_and_exit_codes", "r5_artifact", "publication_receipt",
+    "remote_verification_receipt", "p0_p1_ledger", "unresolved_blockers",
+    "statement_that_merge_task2_and_wall_timing_were_not_performed"
+  ],
+  "title": "VigilODE PM-4 Task-1 R5 completion evidence",
+  "type": "object"
 }
