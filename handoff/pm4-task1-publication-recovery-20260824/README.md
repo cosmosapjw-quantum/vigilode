@@ -2,27 +2,38 @@
 
 This branch contains the machine-checkable handoff for repairing the R4 Cargo-vendor gate and publishing the already-sealed PM-4 Task-1 source patch to draft PR #11.
 
-## Decode the package
+## Read order
+
+Fetch the branch without merging it:
 
 ```bash
 git fetch origin handoff/pm4-task1-publication-recovery-20260824
-git show origin/handoff/pm4-task1-publication-recovery-20260824:handoff/pm4-task1-publication-recovery-20260824/VIGILODE_PM4_CODEX_HANDOFF_20260824.zip.b64 \
-  | base64 -d > VIGILODE_PM4_CODEX_HANDOFF_20260824.zip
-
-git show origin/handoff/pm4-task1-publication-recovery-20260824:handoff/pm4-task1-publication-recovery-20260824/VIGILODE_PM4_CODEX_HANDOFF_20260824.zip.sha256 \
-  > VIGILODE_PM4_CODEX_HANDOFF_20260824.zip.sha256
-
-sha256sum -c VIGILODE_PM4_CODEX_HANDOFF_20260824.zip.sha256
-unzip VIGILODE_PM4_CODEX_HANDOFF_20260824.zip
 ```
 
-Then read:
+Then read these files directly from the branch, or check it out in a separate worktree:
 
 ```text
-VIGILODE_PM4_CODEX_HANDOFF_20260824/AGENTS.md
-VIGILODE_PM4_CODEX_HANDOFF_20260824/README_FIRST.md
-VIGILODE_PM4_CODEX_HANDOFF_20260824/AUDIT_COMPILED_EXEC_PLAN.yaml
-VIGILODE_PM4_CODEX_HANDOFF_20260824/IMPLEMENTER_PROMPT.md
+handoff/pm4-task1-publication-recovery-20260824/README.md
+handoff/pm4-task1-publication-recovery-20260824/AUDIT_COMPILED_EXEC_PLAN.yaml
+handoff/pm4-task1-publication-recovery-20260824/P0_P1_THREAT_CATALOG.yaml
+handoff/pm4-task1-publication-recovery-20260824/INVARIANT_TEST_MATRIX.yaml
+handoff/pm4-task1-publication-recovery-20260824/EVIDENCE_CHAIN.md
+handoff/pm4-task1-publication-recovery-20260824/acceptance/test_vendor_validator_contract.py
+handoff/pm4-task1-publication-recovery-20260824/acceptance/test_publication_script_contract.py
+handoff/pm4-task1-publication-recovery-20260824/IMPLEMENTER_PROMPT.md
+handoff/pm4-task1-publication-recovery-20260824/FRESH_REVIEW_PROMPT.md
+```
+
+The failing R4 input archive is already expected on the local host at:
+
+```text
+~/vigilode/VIGILODE_PM4_TASK1_SCHEMA_BOUNDARY_KIT_R4_20260824.tar.gz
+```
+
+The actual Cargo directory source is:
+
+```text
+/home/cosmosapjw/Dropbox/rust/bundles/rust-offline-rodas5p-rs-20260806/vendor
 ```
 
 ## Boundaries
@@ -32,5 +43,4 @@ VIGILODE_PM4_CODEX_HANDOFF_20260824/IMPLEMENTER_PROMPT.md
 - expected feature head before Task-1 publication: `b2d5ec41cb147e01aadbc9c42928da8abfa75c58`
 - no force push, merge, wall timing, candidate ranking, or PM-4 Task 2
 - the Task-1 source patch is immutable
-
-This handoff branch is documentation/transport only. Do not merge it into `main` as part of the Task-1 publication transaction.
+- this handoff branch is documentation/transport only and must not be merged as part of Task-1 publication
