@@ -8,6 +8,8 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 WORKFLOW = ROOT / ".github" / "workflows" / "e4-fresh-clone-build.yml"
+README = ROOT / "README.md"
+WRAPPER = ROOT / "tools" / "cargo-offline.sh"
 COMPARATOR = ROOT / "tools" / "compare-cargo-metadata.py"
 
 
@@ -76,6 +78,31 @@ class WorkflowWrapperInvocationTests(unittest.TestCase):
         self.assertTrue(
             all(call.startswith("bash ./tools/cargo-offline.sh") for call in calls),
             calls,
+        )
+
+    def test_readme_offline_examples_use_explicit_bash_interpreter(self) -> None:
+        text = README.read_text(encoding="utf-8")
+        calls = [
+            line.strip()
+            for line in text.splitlines()
+            if "tools/cargo-offline.sh" in line and not line.strip().startswith("`")
+        ]
+        self.assertEqual(calls.count("bash ./tools/cargo-offline.sh \\"), 2, calls)
+        self.assertFalse(
+            any(call.startswith("./tools/cargo-offline.sh") for call in calls),
+            calls,
+        )
+
+    def test_wrapper_usage_advertises_explicit_bash_interpreter(self) -> None:
+        text = WRAPPER.read_text(encoding="utf-8")
+        self.assertIn(
+            "bash ./tools/cargo-offline.sh [--vendor-dir PATH] "
+            "CARGO_SUBCOMMAND [ARGS...]",
+            text,
+        )
+        self.assertNotIn(
+            "\n  tools/cargo-offline.sh [--vendor-dir PATH]",
+            text,
         )
 
 
