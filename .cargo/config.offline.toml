@@ -1,0 +1,15 @@
+# Opt-in Cargo configuration for air-gapped development.
+#
+# The wrapper at `tools/cargo-offline.sh` resolves a caller-supplied vendor
+# directory to an absolute path and injects an equivalent untracked override.
+# Keeping this template in Git documents the intended source replacement
+# without making every fresh clone depend on a repository-external sibling.
+
+[source.crates-io]
+replace-with = "vendored-sources"
+
+[source.vendored-sources]
+directory = "vendor"
+
+[net]
+offline = true
