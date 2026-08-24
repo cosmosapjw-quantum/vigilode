@@ -32,7 +32,9 @@ jobs:
           rustup override set 1.94.1
 
       - name: Verify the E4 build-mode contracts
-        run: python3 tools/test_e4_build_modes.py -v
+        run: |
+          python3 tools/test_e4_build_modes.py -v
+          python3 tools/test_e4_workflow_invocation.py -v
 
       - name: Resolve the default fresh-clone graph
         run: cargo metadata --locked --format-version 1 > "$RUNNER_TEMP/default-metadata.json"
@@ -51,7 +53,7 @@ jobs:
 
       - name: Resolve the air-gapped dependency graph
         run: |
-          ./tools/cargo-offline.sh \
+          bash ./tools/cargo-offline.sh \
             --vendor-dir "$RUNNER_TEMP/vendor" \
             metadata --frozen --format-version 1 \
             > "$RUNNER_TEMP/offline-metadata.json"
@@ -64,13 +66,13 @@ jobs:
 
       - name: Compile the workspace in explicit offline mode
         run: |
-          ./tools/cargo-offline.sh \
+          bash ./tools/cargo-offline.sh \
             --vendor-dir "$RUNNER_TEMP/vendor" \
             test --workspace --all-targets --no-run --frozen
 
       - name: Run the touched offline-mode contract
         run: |
-          ./tools/cargo-offline.sh \
+          bash ./tools/cargo-offline.sh \
             --vendor-dir "$RUNNER_TEMP/vendor" \
             test -p rodas5p-integrators \
               --test v38d_performance_probe_contracts \
