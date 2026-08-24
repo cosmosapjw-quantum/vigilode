@@ -37,10 +37,10 @@ For air-gapped or deliberately offline development, create a standard Cargo vend
 
 ```bash
 cargo vendor --locked /absolute/path/to/vendor
-./tools/cargo-offline.sh \
+bash ./tools/cargo-offline.sh \
   --vendor-dir /absolute/path/to/vendor \
   metadata --frozen --format-version 1
-./tools/cargo-offline.sh \
+bash ./tools/cargo-offline.sh \
   --vendor-dir /absolute/path/to/vendor \
   test --workspace --all-targets --no-run --frozen
 ```
