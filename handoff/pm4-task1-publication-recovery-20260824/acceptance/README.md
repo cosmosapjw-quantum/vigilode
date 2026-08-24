@@ -1,6 +1,6 @@
-# R5 acceptance contract
+# Acceptance contract for the R5 repair
 
-Codex must create an R5 working directory containing at least:
+Codex must create an R5 directory containing at least:
 
 ```text
 publish_pm4_task1.sh
@@ -14,31 +14,31 @@ PM4_TASK1_SCHEMA_BOUNDARY.patch
 TASK1_FILE_SHA256SUMS
 ```
 
-## Archive authority gate
+## Mandatory handoff referential-closure gate
 
-Before any RED/GREEN or R5 implementation work, run:
+Before any R5 implementation, run:
 
 ```bash
-python3 \
-  handoff/pm4-task1-publication-recovery-20260824/acceptance/test_archive_authority_contract.py \
-  --archive ~/vigilode/VIGILODE_PM4_TASK1_SCHEMA_BOUNDARY_KIT_R4_20260824.tar.gz \
-  --sidecar ~/vigilode/VIGILODE_PM4_TASK1_SCHEMA_BOUNDARY_KIT_R4_20260824.tar.gz.sha256
+python3 -m unittest acceptance.test_handoff_completeness_contract -v
+python3 -m unittest acceptance.test_completion_evidence_contract -v
+python3 acceptance/test_completion_evidence_schema_contract.py \
+  --schema templates/COMPLETION_EVIDENCE_SCHEMA.json \
+  --instance templates/COMPLETION_EVIDENCE_EXAMPLE.json
 ```
 
-Required identity:
+These checks reject missing repository-local `templates/` or `acceptance/` references, reject schema-named files that are not actual JSON Schema Draft 2020-12 documents, validate the positive completion example, and prove that forbidden merge, missing command evidence, retained P0/P1 findings, or unresolved blockers cannot be reported as success.
 
-```text
-outer SHA-256
-6689544ee9b115fe4cb5c8ba14c179a17ee6615cb454555b0bb2f0ad1826b333
+## Archive authority contract
 
-Task-1 patch SHA-256
-705646496b3594adb4f655829dfe2756aca57ce061fef0cae3b080399104f7a3
+Run:
 
-R4 publication script SHA-256
-63c4ae3ca493a6b4ffe03db50a1b1e23850dacf5dcd0f502f594464cbd67ddb7
+```bash
+python3 acceptance/test_archive_authority_contract.py \
+  --archive PATH/VIGILODE_PM4_TASK1_SCHEMA_BOUNDARY_KIT_R4_20260824.tar.gz \
+  --sidecar PATH/VIGILODE_PM4_TASK1_SCHEMA_BOUNDARY_KIT_R4_20260824.tar.gz.sha256
 ```
 
-The earlier `b33af0b8352aa0b3ccdcc83834cb4696fce787d0733a7e5ce9286e646994a095` declaration is withdrawn and must not be accepted as an alternative. The test also extracts the archive and runs internal `SHA256SUMS`.
+It must bind the sole canonical outer SHA-256 `6689544ee9b115fe4cb5c8ba14c179a17ee6615cb454555b0bb2f0ad1826b333`, verify the sidecar, internal `SHA256SUMS`, sealed Task-1 patch, and R4 script, and reject the withdrawn `b33af0...` declaration.
 
 ## Vendor helper API and CLI
 
@@ -60,55 +60,56 @@ python3 validate_vendor_source.py \
   --json-out VENDOR_VALIDATION.json
 ```
 
-## Cargo directory-source semantics required by this contract
+## Required Cargo directory-source classification
 
-At one immediate directory level:
+At one immediate level:
 
 - ignore dot-prefixed directories;
-- only a directory containing `Cargo.toml` is a package candidate;
-- every package candidate must contain a parseable `.cargo-checksum.json`;
-- manifestless directories are ignored as non-packages;
+- only directories containing `Cargo.toml` are package candidates;
+- every package candidate must contain parseable `.cargo-checksum.json`;
+- manifestless directories are ignored;
 - no exact global package count is enforced;
-- explicitly required package-directory names must be present;
-- Cargo `--frozen` metadata remains the dependency-closure authority.
+- required package-directory names must be present;
+- `cargo metadata --frozen --format-version 1` is the dependency-closure authority.
 
-Required deterministic JSON fields:
+Required deterministic JSON fields are defined by `templates/VENDOR_VALIDATION_SCHEMA.json`.
 
-```text
-schema = vigilode-cargo-directory-source-validation-v1
-vendor_dir
-immediate_directory_count
-package_directory_count
-checksum_record_count
-ignored_hidden_directory_count
-ignored_manifestless_directory_count
-required_packages_present
-missing_checksum_packages
-exact_package_count_enforced = false
-```
+Required helper tests:
 
-## RED/GREEN commands
+- valid 262 package candidates: PASS;
+- valid 308 package candidates: PASS;
+- hidden and manifestless incidental directories ignored: PASS;
+- manifest-bearing package missing checksum: FAIL;
+- missing `faer-0.24.4`: FAIL;
+- deterministic JSON: PASS.
 
-Before R5 exists:
+RED before implementation:
 
 ```bash
-PM4_R5_DIR=/nonexistent \
-python3 -m unittest discover \
-  -s handoff/pm4-task1-publication-recovery-20260824/acceptance \
-  -p 'test_vendor_validator_contract.py' -v
+python3 -m unittest acceptance.test_vendor_validator_contract -v
 ```
 
-After R5 exists:
+GREEN after creating R5:
 
 ```bash
 PM4_R5_DIR=/absolute/path/to/R5 \
-python3 -m unittest discover \
-  -s handoff/pm4-task1-publication-recovery-20260824/acceptance \
-  -p 'test_vendor_validator_contract.py' -v
+python3 -m unittest acceptance.test_vendor_validator_contract -v
 
-python3 \
-  handoff/pm4-task1-publication-recovery-20260824/acceptance/test_publication_script_contract.py \
+python3 acceptance/test_publication_script_contract.py \
   --r5-dir /absolute/path/to/R5
 ```
 
-The implementation is not acceptable merely because helper tests pass. The complete isolated transaction must also pass `cargo metadata --frozen --format-version 1`, Task-1 tests, all-target compilation, Clippy, rustfmt, exact diff checks, and remote ref-drift gates before push.
+## Completion evidence
+
+After successful publication, write `COMPLETION_EVIDENCE.json` conforming to `templates/COMPLETION_EVIDENCE_SCHEMA.json` and run:
+
+```bash
+python3 acceptance/test_completion_evidence_schema_contract.py \
+  --schema templates/COMPLETION_EVIDENCE_SCHEMA.json \
+  --instance COMPLETION_EVIDENCE.json
+
+python3 acceptance/validate_completion_evidence.py \
+  --evidence COMPLETION_EVIDENCE.json
+```
+
+A blocked or partial run must not emit a success evidence object.
