@@ -121,8 +121,8 @@ def make_vendor_package(vendor: Path) -> None:
 class LoadBearingInvocationTests(unittest.TestCase):
     def test_load_bearing_corpus_never_directly_executes_wrapper(self) -> None:
         files = [README, WORKFLOW, WRAPPER]
-        files.extend(sorted(PLAN_ROOT.glob("*.md")))
-        files.extend(sorted(SPEC_ROOT.glob("*.md")))
+        files.extend(sorted(PLAN_ROOT.rglob("*.md")))
+        files.extend(sorted(SPEC_ROOT.rglob("*.md")))
         violations: list[str] = []
         for path in files:
             text = path.read_text(encoding="utf-8")
