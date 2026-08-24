@@ -4,7 +4,7 @@ p0:
   - id: P0-ARCHIVE-AUTHORITY-CONFLICT
     statement: Handoff and authenticated local sidecar bind different immutable R4 archive hashes.
     detection: exact outer SHA-256 plus sidecar match plus internal SHA256SUMS and sealed patch/script hashes
-    permanent_guard: require 6689544ee9b115fe4cb5c8ba14c179a17ee6615cb454555b0bb2f0ad1826b333; treat b33af0b8352aa0b3ccdcc83834cb4696fce787d0733a7e5ce9286e646994a095 as withdrawn metadata, never an alternative
+    permanent_guard: require 6689544ee9b115fe4cb5c8ba14c179a17ee6615cb454555b0bb2f0ad1826b333; reject withdrawn b33af0 metadata
   - id: P0-REMOTE-STALE-REF
     statement: Push occurs after main or feature ref drift, publishing onto an unreviewed lineage.
     detection: exact preflight and immediate pre-push git-ls-remote equality gates
@@ -12,19 +12,19 @@ p0:
   - id: P0-SOURCE-BYTE-DRIFT
     statement: The Task-1 patch or final Rust bytes change while transport work is being fixed.
     detection: sealed patch SHA-256, exact three-file SHA-256, exact four-path M/A/A/D diff
-    permanent_guard: immutable input copy plus post-apply and post-commit hash checks
+    permanent_guard: immutable input plus post-apply and post-commit hash checks
   - id: P0-PARTIAL-SUCCESS-PUSH
     statement: A dependency or test failure is ignored and the branch is pushed anyway.
-    detection: set -euo pipefail, explicit exit-code ledger, push-order static contract
+    detection: set -euo pipefail, exit-code ledger, push-order contract
     permanent_guard: push after metadata, tests, compile, Clippy, rustfmt, diff, and ref recheck only
   - id: P0-FORCE-MERGE-WALL
     statement: Force push, merge, real wall timing, candidate ranking, or Task 2 occurs in this recovery.
-    detection: source scan plus final GitHub state and filesystem-attempt inventory
-    permanent_guard: explicit forbidden operations and fresh merge approval requirement
+    detection: source scan plus final GitHub state and attempt inventory
+    permanent_guard: explicit bans and fresh merge approval tied to final head
   - id: P0-DEPENDENCY-CONTRACT-MUTATION
     statement: Cargo.toml, Cargo.lock, or .cargo/config.toml is changed to make the vendor pass.
-    detection: exact forbidden-path diff check and lockfile hash check
-    permanent_guard: use the checked-in source replacement unchanged
+    detection: forbidden-path diff and lockfile/config hashes
+    permanent_guard: use checked-in source replacement unchanged
 
 p1:
   - id: P1-HARDCODED-VENDOR-COUNT
@@ -43,16 +43,25 @@ p1:
   - id: P1-MISSING-CHECKSUM
     statement: A manifest-bearing package directory lacks .cargo-checksum.json.
     detection: helper rejects and identifies every missing package
-    permanent_guard: one parseable checksum record required per package candidate
+    permanent_guard: one parseable checksum record per package candidate
   - id: P1-REHEARSAL-PRODUCTION-ENV-DRIFT
     statement: Rehearsal uses a vendor different from the actual production host vendor.
-    detection: evidence records canonical vendor path, observed structural counts, and metadata digest
+    detection: canonical vendor path, observed counts, and metadata digest in evidence
     permanent_guard: final rehearsal and publication use the same canonical vendor path
   - id: P1-STALE-RECEIPT
     statement: Receipt still claims literal 262 or omits Cargo metadata proof.
-    detection: receipt schema test and comparison with vendor-validation JSON
+    detection: receipt schema and semantic validator
     permanent_guard: dynamic fields copied from helper output and metadata hash
   - id: P1-UNTESTED-EDGE
     statement: The fix only tests the observed case and regresses malformed or incidental-directory sources.
     detection: 262-pass, 308-pass, incidental-dir-ignore, missing-checksum-fail, missing-faer-fail, deterministic-output tests
     permanent_guard: retain acceptance tests in the handoff/evidence package
+  - id: P1-MISSING-REFERENCED-CONTRACT
+    statement: A load-bearing handoff prompt names a repo-local schema, template, or acceptance test that is absent.
+    reproducer: IMPLEMENTER_PROMPT.md referenced templates/COMPLETION_EVIDENCE_SCHEMA.json while the pushed handoff omitted it.
+    detection: scan load-bearing documents for templates/ and acceptance/ references and require every path to exist and parse
+    permanent_guard: acceptance/test_handoff_completeness_contract.py must pass before implementation or remote mutation
+  - id: P1-SCHEMA-NAME-WITHOUT-SCHEMA
+    statement: A file named *_SCHEMA.json is only an example instance and cannot mechanically define required evidence.
+    detection: require Draft 2020-12 $schema, object type, required/properties, and positive/negative validator tests
+    permanent_guard: real JSON schemas plus examples and acceptance/test_completion_evidence_contract.py
