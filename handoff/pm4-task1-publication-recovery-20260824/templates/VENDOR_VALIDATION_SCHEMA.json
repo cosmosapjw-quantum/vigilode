@@ -1,14 +1,31 @@
 {
-  "checksum_record_count": 308,
-  "exact_package_count_enforced": false,
-  "ignored_hidden_directory_count": 0,
-  "ignored_manifestless_directory_count": 0,
-  "immediate_directory_count": 308,
-  "missing_checksum_packages": [],
-  "package_directory_count": 308,
-  "required_packages_present": [
-    "faer-0.24.4"
+  "$id": "urn:vigilode:pm4:vendor-validation:v1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "checksum_record_count": {"minimum": 1, "type": "integer"},
+    "exact_package_count_enforced": {"const": false},
+    "ignored_hidden_directory_count": {"minimum": 0, "type": "integer"},
+    "ignored_manifestless_directory_count": {"minimum": 0, "type": "integer"},
+    "immediate_directory_count": {"minimum": 0, "type": "integer"},
+    "missing_checksum_packages": {"items": {"type": "string"}, "maxItems": 0, "type": "array"},
+    "package_directory_count": {"minimum": 1, "type": "integer"},
+    "required_packages_present": {
+      "contains": {"const": "faer-0.24.4"},
+      "items": {"type": "string"},
+      "minContains": 1,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "schema": {"const": "vigilode-cargo-directory-source-validation-v1"},
+    "vendor_dir": {"minLength": 1, "type": "string"}
+  },
+  "required": [
+    "schema", "vendor_dir", "immediate_directory_count", "package_directory_count",
+    "checksum_record_count", "ignored_hidden_directory_count",
+    "ignored_manifestless_directory_count", "required_packages_present",
+    "missing_checksum_packages", "exact_package_count_enforced"
   ],
-  "schema": "vigilode-cargo-directory-source-validation-v1",
-  "vendor_dir": "/absolute/canonical/path"
+  "title": "VigilODE Cargo directory-source validation evidence",
+  "type": "object"
 }
