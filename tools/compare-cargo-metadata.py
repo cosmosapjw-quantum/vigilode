@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 from pathlib import Path
 from typing import Any
 
@@ -31,9 +32,50 @@ def stable_sort_key(value: Any) -> str:
     )
 
 
+def canonical_path_package_id(
+    package: dict[str, Any], workspace_root: Any
+) -> Any:
+    """Normalize checkout-local package identity while preserving layout semantics."""
+    raw_id = package.get("id")
+    if package.get("source") is not None:
+        return raw_id
+
+    manifest_path = package.get("manifest_path")
+    if not isinstance(manifest_path, str) or not isinstance(workspace_root, str):
+        return raw_id
+
+    manifest_dir = Path(manifest_path).parent
+    relative_dir = Path(os.path.relpath(manifest_dir, Path(workspace_root))).as_posix()
+    identity = {
+        "kind": "workspace-path",
+        "path": relative_dir,
+        "name": package.get("name"),
+        "version": package.get("version"),
+    }
+    return "workspace-path:" + stable_sort_key(identity)
+
+
 def canonicalize(value: dict[str, Any]) -> dict[str, Any]:
+    raw_packages = value.get("packages", [])
+    workspace_root = value.get("workspace_root")
+    id_map: dict[str, Any] = {}
+    for package in raw_packages:
+        raw_id = package.get("id")
+        if not isinstance(raw_id, str):
+            continue
+        canonical_id = canonical_path_package_id(package, workspace_root)
+        previous = id_map.get(raw_id)
+        if previous is not None and previous != canonical_id:
+            raise MetadataMismatch(f"ambiguous Cargo package identity: {raw_id}")
+        id_map[raw_id] = canonical_id
+
+    def normalize_id(raw_id: Any) -> Any:
+        if isinstance(raw_id, str):
+            return id_map.get(raw_id, raw_id)
+        return raw_id
+
     packages: list[dict[str, Any]] = []
-    for package in value.get("packages", []):
+    for package in raw_packages:
         dependency_records = [
             (
                 dependency.get("name"),
@@ -50,7 +92,7 @@ def canonicalize(value: dict[str, Any]) -> dict[str, Any]:
         ]
         packages.append(
             {
-                "id": package.get("id"),
+                "id": normalize_id(package.get("id")),
                 "name": package.get("name"),
                 "version": package.get("version"),
                 "source": package.get("source"),
@@ -64,7 +106,7 @@ def canonicalize(value: dict[str, Any]) -> dict[str, Any]:
                 },
             }
         )
-    packages.sort(key=lambda package: str(package["id"]))
+    packages.sort(key=stable_sort_key)
 
     resolve = value.get("resolve") or {}
     nodes: list[dict[str, Any]] = []
@@ -81,27 +123,43 @@ def canonicalize(value: dict[str, Any]) -> dict[str, Any]:
             dependency_edges.append(
                 (
                     dependency.get("name"),
-                    dependency.get("pkg"),
+                    normalize_id(dependency.get("pkg")),
                     tuple(sorted(dep_kinds, key=stable_sort_key)),
                 )
             )
         nodes.append(
             {
-                "id": node.get("id"),
-                "dependencies": tuple(sorted(node.get("dependencies", []))),
+                "id": normalize_id(node.get("id")),
+                "dependencies": tuple(
+                    sorted(
+                        (normalize_id(item) for item in node.get("dependencies", [])),
+                        key=stable_sort_key,
+                    )
+                ),
                 "features": tuple(sorted(node.get("features", []))),
                 "deps": tuple(sorted(dependency_edges, key=stable_sort_key)),
             }
         )
-    nodes.sort(key=lambda node: str(node["id"]))
+    nodes.sort(key=stable_sort_key)
 
     return {
         "packages": packages,
-        "workspace_members": tuple(sorted(value.get("workspace_members", []))),
-        "workspace_default_members": tuple(
-            sorted(value.get("workspace_default_members", []))
+        "workspace_members": tuple(
+            sorted(
+                (normalize_id(item) for item in value.get("workspace_members", [])),
+                key=stable_sort_key,
+            )
         ),
-        "resolve_root": resolve.get("root"),
+        "workspace_default_members": tuple(
+            sorted(
+                (
+                    normalize_id(item)
+                    for item in value.get("workspace_default_members", [])
+                ),
+                key=stable_sort_key,
+            )
+        ),
+        "resolve_root": normalize_id(resolve.get("root")),
         "resolve_nodes": nodes,
         "version": value.get("version"),
     }

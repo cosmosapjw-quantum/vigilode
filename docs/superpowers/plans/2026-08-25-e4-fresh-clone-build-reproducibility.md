@@ -203,10 +203,10 @@ Run the structural validator against the discovered local Cargo vendor and recor
 - [ ] **Step 2: Run offline frozen closure**
 
 ```bash
-./tools/cargo-offline.sh --vendor-dir "$VENDOR_DIR" metadata --frozen --format-version 1
-./tools/cargo-offline.sh --vendor-dir "$VENDOR_DIR" test --workspace --all-targets --no-run --frozen
-./tools/cargo-offline.sh --vendor-dir "$VENDOR_DIR" test -p rodas5p-integrators --test v38d_performance_probe_contracts --frozen
-./tools/cargo-offline.sh --vendor-dir "$VENDOR_DIR" clippy -p rodas5p-integrators --all-targets --frozen -- -D warnings
+bash ./tools/cargo-offline.sh --vendor-dir "$VENDOR_DIR" metadata --frozen --format-version 1
+bash ./tools/cargo-offline.sh --vendor-dir "$VENDOR_DIR" test --workspace --all-targets --no-run --frozen
+bash ./tools/cargo-offline.sh --vendor-dir "$VENDOR_DIR" test -p rodas5p-integrators --test v38d_performance_probe_contracts --frozen
+bash ./tools/cargo-offline.sh --vendor-dir "$VENDOR_DIR" clippy -p rodas5p-integrators --all-targets --frozen -- -D warnings
 ```
 
 Expected: metadata/build/test/Clippy pass; focused test reports exactly 5 tests.

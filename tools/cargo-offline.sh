@@ -57,6 +57,14 @@ fi
 
 VENDOR_DIR="$(cd -- "$VENDOR_DIR" && pwd -P)"
 python3 "$VALIDATOR" "$VENDOR_DIR" >/dev/null
+VENDOR_TOML_LITERAL="$(
+  python3 - "$VENDOR_DIR" <<'PY'
+import json
+import sys
+
+print(json.dumps(sys.argv[1], ensure_ascii=False))
+PY
+)"
 
 if command -v cargo >/dev/null 2>&1; then
   CARGO_BIN="$(command -v cargo)"
@@ -77,7 +85,7 @@ cat > "$TMP_CARGO_HOME/config.toml" <<EOF
 replace-with = "vigilode-vendored-sources"
 
 [source.vigilode-vendored-sources]
-directory = "${VENDOR_DIR}"
+directory = ${VENDOR_TOML_LITERAL}
 
 [net]
 offline = true
