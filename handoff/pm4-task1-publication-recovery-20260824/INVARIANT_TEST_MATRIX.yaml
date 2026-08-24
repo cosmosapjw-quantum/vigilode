@@ -1,43 +1,47 @@
 schema: vigilode-pm4-invariant-test-matrix/v1
 matrix:
-  - invariant: no exact package-count gate
+  - invariant: INV-00 exact R4 archive authority
+    positive: local archive SHA is 6689544ee9b115fe4cb5c8ba14c179a17ee6615cb454555b0bb2f0ad1826b333; sidecar matches; internal SHA256SUMS, Task-1 patch hash, and R4 script hash pass
+    negative: outer hash differs, sidecar differs, internal member differs, or withdrawn b33 hash is offered as an alternative
+    expected: canonical input passes; every ambiguity fails before implementation or remote mutation
+  - invariant: INV-01 no exact package-count gate
     positive: valid 262 fixture accepted
     alternative_positive: valid 308 fixture accepted
     negative: publication script contains literal expected package count
     expected: positives pass; source-contract negative fails
-  - invariant: directory metadata complete
+  - invariant: INV-02 directory metadata complete
     positive: every immediate package dir has .cargo-checksum.json
     negative: remove one checksum record
     expected: helper rejects with named missing package
-  - invariant: required observed dependency present
+  - invariant: INV-03 required observed dependency present
     positive: faer-0.24.4 exists
     negative: omit faer-0.24.4
     expected: helper rejects before Cargo
-  - invariant: Cargo proves closure
+  - invariant: INV-04 Cargo proves closure
     positive: cargo metadata --frozen --format-version 1 on actual vendor
-    negative: point sibling symlink at incomplete fixture
+    negative: point symlink at incomplete fixture
     expected: actual passes; incomplete fails without network
-  - invariant: config and lock remain immutable
-    positive: pre/post hashes equal
+  - invariant: INV-05 config/lock remain immutable
+    positive: pre/post SHA equality
     negative: modify Cargo.lock in rehearsal
     expected: transaction stops before push
-  - invariant: Task-1 bytes immutable
+  - invariant: INV-06 Task-1 bytes immutable
     positive: patch and final file hashes match
-    negative: mutate one module byte
+    negative: mutate one byte in module
+    expected: transaction stops before tests/push
+  - invariant: INV-07 exact repository surface
+    positive: M/A/A/D exact four paths
+    negative: add any fifth path or leave recovery marker
     expected: transaction stops
-  - invariant: exact repository surface
-    positive: M/A/A/D on four declared paths
-    negative: add fifth path or retain recovery marker
-    expected: transaction stops
-  - invariant: evidence precedes remote mutation
-    positive: metadata/tests/compile/Clippy/fmt/diff/ref gates precede push
-    negative: move push earlier in fixture script
+  - invariant: INV-08 evidence before remote mutation
+    positive: archive/metadata/tests/compile/clippy/fmt/diff/ref gates precede push
+    negative: move push earlier in a fixture script
     expected: static acceptance test fails
-  - invariant: remote update semantics
+  - invariant: INV-09 remote update semantics
     positive: normal fast-forward from expected feature head
     negative: feature drift or force flag
     expected: transaction stops; remote unchanged
-  - invariant: receipt honesty
-    positive: observed count and metadata hash are dynamic
-    negative: literal 262 or missing metadata hash
+  - invariant: INV-10 receipt honesty
+    positive: canonical R4 archive hash, observed vendor counts, and metadata hash recorded from actual run
+    negative: hard-coded 262, withdrawn b33 hash, or missing metadata hash
     expected: receipt contract fails
