@@ -29,16 +29,18 @@ fn authority_probe_schema_is_explicitly_non_authority_and_retains_samples() {
     )
     .expect("schema-only report");
 
-    assert_eq!(report.schema, V38D_EXPLORATORY_PROBE_SCHEMA);
-    assert_eq!(report.status, V38D_EXPLORATORY_PROBE_STATUS);
-    assert_eq!(report.warmups.len(), V38D_WARMUP_REPETITIONS);
-    assert_eq!(report.measured.len(), V38D_MEASURED_REPETITIONS);
-    assert!(!report.timing_authority);
-    assert!(!report.speedup_claim_authorized);
-    assert!(!report.active_switching_authorized);
-    assert!(!report.policy_retuning_authorized);
-    assert!(!report.release_claim_authorized);
-    assert!(!report.n2048_authorized);
+    assert_eq!(report.schema(), V38D_EXPLORATORY_PROBE_SCHEMA);
+    assert_eq!(report.status(), V38D_EXPLORATORY_PROBE_STATUS);
+    assert_eq!(report.case_id(), V38dProbeCaseId::StiffDiagonal96);
+    assert_eq!(report.candidate_id(), V38dCandidateId::FullMgsAuthority);
+    assert_eq!(report.warmups().len(), V38D_WARMUP_REPETITIONS);
+    assert_eq!(report.measured().len(), V38D_MEASURED_REPETITIONS);
+    assert!(!report.timing_authority());
+    assert!(!report.speedup_claim_authorized());
+    assert!(!report.active_switching_authorized());
+    assert!(!report.policy_retuning_authorized());
+    assert!(!report.release_claim_authorized());
+    assert!(!report.n2048_authorized());
 }
 
 #[test]

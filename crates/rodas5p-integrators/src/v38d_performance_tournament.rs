@@ -67,20 +67,20 @@ pub struct V38dProbeSample {
     pub converged: bool,
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct V38dProbeReport {
-    pub schema: String,
-    pub status: String,
-    pub case_id: V38dProbeCaseId,
-    pub candidate_id: V38dCandidateId,
-    pub warmups: Vec<V38dProbeSample>,
-    pub measured: Vec<V38dProbeSample>,
-    pub timing_authority: bool,
-    pub speedup_claim_authorized: bool,
-    pub active_switching_authorized: bool,
-    pub policy_retuning_authorized: bool,
-    pub release_claim_authorized: bool,
-    pub n2048_authorized: bool,
+    schema: String,
+    status: String,
+    case_id: V38dProbeCaseId,
+    candidate_id: V38dCandidateId,
+    warmups: Vec<V38dProbeSample>,
+    measured: Vec<V38dProbeSample>,
+    timing_authority: bool,
+    speedup_claim_authorized: bool,
+    active_switching_authorized: bool,
+    policy_retuning_authorized: bool,
+    release_claim_authorized: bool,
+    n2048_authorized: bool,
 }
 
 impl V38dProbeReport {
@@ -107,6 +107,54 @@ impl V38dProbeReport {
             release_claim_authorized: false,
             n2048_authorized: false,
         })
+    }
+
+    pub fn schema(&self) -> &str {
+        &self.schema
+    }
+
+    pub fn status(&self) -> &str {
+        &self.status
+    }
+
+    pub const fn case_id(&self) -> V38dProbeCaseId {
+        self.case_id
+    }
+
+    pub const fn candidate_id(&self) -> V38dCandidateId {
+        self.candidate_id
+    }
+
+    pub fn warmups(&self) -> &[V38dProbeSample] {
+        &self.warmups
+    }
+
+    pub fn measured(&self) -> &[V38dProbeSample] {
+        &self.measured
+    }
+
+    pub const fn timing_authority(&self) -> bool {
+        self.timing_authority
+    }
+
+    pub const fn speedup_claim_authorized(&self) -> bool {
+        self.speedup_claim_authorized
+    }
+
+    pub const fn active_switching_authorized(&self) -> bool {
+        self.active_switching_authorized
+    }
+
+    pub const fn policy_retuning_authorized(&self) -> bool {
+        self.policy_retuning_authorized
+    }
+
+    pub const fn release_claim_authorized(&self) -> bool {
+        self.release_claim_authorized
+    }
+
+    pub const fn n2048_authorized(&self) -> bool {
+        self.n2048_authorized
     }
 }
 
