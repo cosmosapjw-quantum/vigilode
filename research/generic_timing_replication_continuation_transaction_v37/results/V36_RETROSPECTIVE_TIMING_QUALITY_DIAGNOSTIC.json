@@ -1,0 +1,141 @@
+{
+  "active_switching_authorized": false,
+  "all_pairs_retained": true,
+  "analysis_role": "CONTRACT_DIAGNOSTIC_ONLY_NOT_NEW_TIMING_AUTHORITY",
+  "historical_host_counters": {
+    "cpu_idle_fraction": null,
+    "cpu_steal_fraction": null,
+    "status": "NOT_RECORDED",
+    "swap_delta": null,
+    "thermal_delta": null
+  },
+  "historical_verdict": "PASS_DESCRIPTIVE_ECONOMICS",
+  "historical_verdict_rewritten": false,
+  "individual_pair_exclusion_used": false,
+  "individual_profile_exclusion_used": false,
+  "profiles": [
+    {
+      "dimension": 96,
+      "measured_pair_count": 7,
+      "metrics": {
+        "median_shadow_over_rjf": 0.9701681524140752,
+        "order_median_absolute_gap": 0.01723585945219397,
+        "rjf_arm_wall_span": 1.1505453328385318,
+        "shadow_arm_wall_span": 1.062650616902504
+      },
+      "path": "calibration96.json",
+      "quality_failure_names": [],
+      "quality_failures": [],
+      "sha256": "34f5b729d7c18a570f25e225e2b08b0e054c956dd5e339dbb3a4d82aea19226a"
+    },
+    {
+      "dimension": 192,
+      "measured_pair_count": 7,
+      "metrics": {
+        "median_shadow_over_rjf": 1.0210133354342796,
+        "order_median_absolute_gap": 0.00767272364085958,
+        "rjf_arm_wall_span": 1.0778558929225157,
+        "shadow_arm_wall_span": 1.032762894544691
+      },
+      "path": "calibration192.json",
+      "quality_failure_names": [],
+      "quality_failures": [],
+      "sha256": "c8a9d3eb68030654e47227bd04ea2733481c9d6426045ab4f704a32fb49f07de"
+    },
+    {
+      "dimension": 256,
+      "measured_pair_count": 7,
+      "metrics": {
+        "median_shadow_over_rjf": 1.0245478174919398,
+        "order_median_absolute_gap": 0.026534082560793593,
+        "rjf_arm_wall_span": 1.2733883512758373,
+        "shadow_arm_wall_span": 1.0528527371153935
+      },
+      "path": "calibration256.json",
+      "quality_failure_names": [],
+      "quality_failures": [],
+      "sha256": "f6a5d46c18f940d00e8dfa7ff909f769eec66ea20982003e8c2c3bb59556fd3e"
+    },
+    {
+      "dimension": 320,
+      "measured_pair_count": 7,
+      "metrics": {
+        "median_shadow_over_rjf": 1.0286786571313378,
+        "order_median_absolute_gap": 0.009008117420042927,
+        "rjf_arm_wall_span": 1.0728021084076589,
+        "shadow_arm_wall_span": 1.0722452138250813
+      },
+      "path": "holdout320.json",
+      "quality_failure_names": [],
+      "quality_failures": [],
+      "sha256": "680c268d8ae028a54ba8361451bb5280a19b0835c73a2252a16784d957482b0a"
+    },
+    {
+      "dimension": 384,
+      "measured_pair_count": 7,
+      "metrics": {
+        "median_shadow_over_rjf": 1.0346595869700237,
+        "order_median_absolute_gap": 0.6857626375408328,
+        "rjf_arm_wall_span": 13.82492944330828,
+        "shadow_arm_wall_span": 59.214273363533934
+      },
+      "path": "holdout384.json",
+      "quality_failure_names": [
+        "order-median-gap",
+        "rjf-arm-span",
+        "shadow-arm-span"
+      ],
+      "quality_failures": [
+        {
+          "actual": 13.82492944330828,
+          "dimension": 384,
+          "name": "rjf-arm-span",
+          "threshold": 1.5
+        },
+        {
+          "actual": 59.214273363533934,
+          "dimension": 384,
+          "name": "shadow-arm-span",
+          "threshold": 1.5
+        },
+        {
+          "actual": 0.6857626375408328,
+          "dimension": 384,
+          "name": "order-median-gap",
+          "threshold": 0.1
+        }
+      ],
+      "sha256": "125e57695717085e83d2e3f489f418fd5adc057a97ad8fea87c9c160bbbef9d7"
+    }
+  ],
+  "quality_failure_names": [
+    "order-median-gap",
+    "rjf-arm-span",
+    "shadow-arm-span"
+  ],
+  "quality_failures": [
+    {
+      "actual": 13.82492944330828,
+      "dimension": 384,
+      "name": "rjf-arm-span",
+      "threshold": 1.5
+    },
+    {
+      "actual": 59.214273363533934,
+      "dimension": 384,
+      "name": "shadow-arm-span",
+      "threshold": 1.5
+    },
+    {
+      "actual": 0.6857626375408328,
+      "dimension": 384,
+      "name": "order-median-gap",
+      "threshold": 0.1
+    }
+  ],
+  "retained_measured_pair_count": 35,
+  "retained_profile_count": 5,
+  "retrospective_verdict": "WHOLE_V36_CAMPAIGN_NON_AUTHORITY_DUE_TO_N384_HOST_QUALITY_FAILURE",
+  "schema": "vigilode-v37-v36-retrospective-timing-quality-v1",
+  "speedup_claim_authorized": false
+}
