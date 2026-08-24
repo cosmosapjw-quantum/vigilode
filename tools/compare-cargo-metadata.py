@@ -21,9 +21,33 @@ def load(path: Path) -> dict[str, Any]:
     return value
 
 
+def stable_sort_key(value: Any) -> str:
+    """Return a deterministic total-order key without changing metadata values."""
+    return json.dumps(
+        value,
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=False,
+    )
+
+
 def canonicalize(value: dict[str, Any]) -> dict[str, Any]:
     packages: list[dict[str, Any]] = []
     for package in value.get("packages", []):
+        dependency_records = [
+            (
+                dependency.get("name"),
+                dependency.get("source"),
+                dependency.get("req"),
+                dependency.get("kind"),
+                dependency.get("optional"),
+                dependency.get("uses_default_features"),
+                tuple(sorted(dependency.get("features", []))),
+                dependency.get("target"),
+                dependency.get("rename"),
+            )
+            for dependency in package.get("dependencies", [])
+        ]
         packages.append(
             {
                 "id": package.get("id"),
@@ -31,18 +55,8 @@ def canonicalize(value: dict[str, Any]) -> dict[str, Any]:
                 "version": package.get("version"),
                 "source": package.get("source"),
                 "dependencies": sorted(
-                    (
-                        dependency.get("name"),
-                        dependency.get("source"),
-                        dependency.get("req"),
-                        dependency.get("kind"),
-                        dependency.get("optional"),
-                        dependency.get("uses_default_features"),
-                        tuple(sorted(dependency.get("features", []))),
-                        dependency.get("target"),
-                        dependency.get("rename"),
-                    )
-                    for dependency in package.get("dependencies", [])
+                    dependency_records,
+                    key=stable_sort_key,
                 ),
                 "features": {
                     key: tuple(sorted(items))
@@ -55,29 +69,28 @@ def canonicalize(value: dict[str, Any]) -> dict[str, Any]:
     resolve = value.get("resolve") or {}
     nodes: list[dict[str, Any]] = []
     for node in resolve.get("nodes", []):
+        dependency_edges = []
+        for dependency in node.get("deps", []):
+            dep_kinds = [
+                (
+                    kind.get("kind"),
+                    kind.get("target"),
+                )
+                for kind in dependency.get("dep_kinds", [])
+            ]
+            dependency_edges.append(
+                (
+                    dependency.get("name"),
+                    dependency.get("pkg"),
+                    tuple(sorted(dep_kinds, key=stable_sort_key)),
+                )
+            )
         nodes.append(
             {
                 "id": node.get("id"),
                 "dependencies": tuple(sorted(node.get("dependencies", []))),
                 "features": tuple(sorted(node.get("features", []))),
-                "deps": tuple(
-                    sorted(
-                        (
-                            dependency.get("name"),
-                            dependency.get("pkg"),
-                            tuple(
-                                sorted(
-                                    (
-                                        kind.get("kind"),
-                                        kind.get("target"),
-                                    )
-                                    for kind in dependency.get("dep_kinds", [])
-                                )
-                            ),
-                        )
-                        for dependency in node.get("deps", [])
-                    )
-                ),
+                "deps": tuple(sorted(dependency_edges, key=stable_sort_key)),
             }
         )
     nodes.sort(key=lambda node: str(node["id"]))
