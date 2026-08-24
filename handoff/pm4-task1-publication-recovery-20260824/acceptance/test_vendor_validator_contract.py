@@ -31,6 +31,11 @@ def make_vendor(root: Path, count: int, *, include_faer: bool = True) -> Path:
     for name in names:
         crate = vendor / name
         crate.mkdir()
+        package_name = name.rsplit("-", 1)[0].replace("-", "_")
+        (crate / "Cargo.toml").write_text(
+            f'[package]\nname = "{package_name}"\nversion = "1.0.0"\nedition = "2024"\n',
+            encoding="utf-8",
+        )
         (crate / ".cargo-checksum.json").write_text(
             json.dumps({"files": {}, "package": "0"}, sort_keys=True) + "\n",
             encoding="utf-8",
@@ -63,6 +68,15 @@ class VendorValidatorContractTests(unittest.TestCase):
             result = self.validate(make_vendor(Path(tmp), 308))
             self.assertEqual(result["package_directory_count"], 308)
             self.assertEqual(result["checksum_record_count"], 308)
+
+    def test_hidden_and_manifestless_directories_are_not_packages(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            vendor = make_vendor(Path(tmp), 8)
+            (vendor / ".hidden-cache").mkdir()
+            (vendor / "manifestless-not-a-package").mkdir()
+            result = self.validate(vendor)
+            self.assertEqual(result["package_directory_count"], 8)
+            self.assertEqual(result["checksum_record_count"], 8)
 
     def test_missing_checksum_is_rejected(self):
         with tempfile.TemporaryDirectory() as tmp:
