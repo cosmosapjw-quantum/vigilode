@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "schema",
+    "canonical_main",
+    "previous_feature",
+    "final_feature",
+    "final_tree",
+    "patch_blob_oid",
+    "exact_name_status",
+    "cargo_metadata",
+    "focused_tests",
+    "all_targets_compile",
+    "clippy",
+    "rustfmt",
+    "remote_update",
+    "pr_state",
+    "identity_classifications",
+    "unresolved_blockers"
+  ],
+  "properties": {
+    "schema": {"const": "vigilode-pm4-task1-content-equivalent-completion-v1"},
+    "canonical_main": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "previous_feature": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "final_feature": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "final_tree": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "patch_blob_oid": {"type": "string", "pattern": "^[0-9a-f]{40,64}$"},
+    "exact_name_status": {"const": "PASS"},
+    "cargo_metadata": {"const": "PASS"},
+    "focused_tests": {"const": "PASS"},
+    "all_targets_compile": {"const": "PASS"},
+    "clippy": {"const": "PASS"},
+    "rustfmt": {"const": "PASS"},
+    "remote_update": {"const": "NORMAL_NON_FORCE_FAST_FORWARD"},
+    "pr_state": {"const": "OPEN_DRAFT_UNMERGED"},
+    "identity_classifications": {"type": "array"},
+    "unresolved_blockers": {"type": "array", "maxItems": 0}
+  }
+}

@@ -1,0 +1,182 @@
+schema: audit-compiled-pr/v1
+pr_id: PM4-TASK1-FINAL-CONTENT-EQUIVALENT-PUBLICATION
+base_sha: "140f6b5c078c3d8fcd5b6c52310c063ee233dc12"
+risk_class: high
+
+objective:
+  statement: >-
+    Run the PM-4 Task-1 schema-boundary implementation locally from a clean
+    worktree, verify source/scientific contracts, publish one ordinary
+    fast-forward to PR #11, and stop so scientific work can resume.
+  observable_success: >-
+    PR #11 receives exactly the four declared M/A/A/D paths; main is unchanged;
+    the focused and relevant Rust gates pass; no archive checksum is used as a
+    blocker; PR #11 remains open, draft, and unmerged.
+
+scope:
+  allowed_paths:
+    - crates/rodas5p-integrators/src/lib.rs
+    - crates/rodas5p-integrators/src/v38d_performance_tournament.rs
+    - crates/rodas5p-integrators/tests/v38d_performance_probe_contracts.rs
+    - research/generic_v38d_high_entropy_performance_tournament/RECOVERY_START.md
+  forbidden_paths:
+    - Cargo.toml
+    - Cargo.lock
+    - .cargo/**
+    - crates/rodas5p-core/**
+    - crates/rodas5p-krylov/**
+  forbidden_changes:
+    - Do not change tolerances, solver equations, expected scientific outputs, or policy thresholds.
+    - Do not modify the tracked Task-1 patch to fit the environment.
+    - Do not add evidence files to PR #11's Git diff.
+
+preconditions:
+  - id: PRE-GIT-MAIN
+    command: git ls-remote origin refs/heads/main
+    expect: 140f6b5c078c3d8fcd5b6c52310c063ee233dc12
+  - id: PRE-GIT-FEATURE
+    command: git ls-remote origin refs/heads/research/v38d-exploratory-benchmark-substrate
+    expect: b2d5ec41cb147e01aadbc9c42928da8abfa75c58
+  - id: PRE-PR
+    command: gh pr view 11 --json state,isDraft,mergedAt,headRefOid,baseRefOid
+    expect: OPEN,DRAFT,UNMERGED and exact refs
+  - id: PRE-HANDOFF
+    command: bash acceptance/run_preflight.sh
+    expect: exit=0
+
+invariants:
+  - id: INV-ID-01
+    severity_if_violated: P0
+    statement: Git commit/tree/blob identity is primary for tracked source.
+    mechanical_check:
+      command: python3 acceptance/test_identity_policy_contract.py
+      expect: PASS
+  - id: INV-ID-02
+    severity_if_violated: P2
+    statement: Outer packaging SHA mismatch alone cannot block this task.
+    mechanical_check:
+      command: python3 acceptance/test_identity_policy_contract.py
+      expect: PASS
+  - id: INV-PAYLOAD
+    severity_if_violated: P0
+    statement: The Git-tracked patch touches exactly the three declared Rust paths and preserves non-authority status.
+    mechanical_check:
+      command: python3 acceptance/test_payload_contract.py
+      expect: PASS
+  - id: INV-SURFACE
+    severity_if_violated: P0
+    statement: The final PR diff is exactly M/A/A/D on the four allowed paths.
+    mechanical_check:
+      command: git diff --name-status origin/main...HEAD
+      expect: exact four-line surface
+  - id: INV-CARGO
+    severity_if_violated: P1
+    statement: Cargo resolves the locked graph without network or tracked configuration mutation.
+    mechanical_check:
+      command: cargo metadata --frozen --format-version 1
+      expect: exit=0
+  - id: INV-SCIENCE
+    severity_if_violated: P0
+    statement: Task 1 defines schema only, keeps every authority flag false, and fabricates no benchmark result.
+    mechanical_check:
+      command: cargo test -p rodas5p-integrators --test v38d_performance_probe_contracts --offline --locked
+      expect: 5 passed
+  - id: INV-PUSH
+    severity_if_violated: P0
+    statement: The remote feature update is one ordinary non-force fast-forward after all gates.
+    mechanical_check:
+      command: ref recheck plus git push origin HEAD:refs/heads/research/v38d-exploratory-benchmark-substrate
+      expect: normal fast-forward
+
+failure_modes:
+  - id: FM-HASH-CLASSIFICATION
+    severity: P1
+    trigger: A packaging or numerical hash mismatch is treated as source/scientific corruption without classification.
+    required_detection:
+      test: acceptance/test_identity_policy_contract.py
+  - id: FM-STALE-PROVENANCE
+    severity: P1
+    trigger: Expected identity points to a predecessor or differently normalized artifact.
+    required_detection:
+      test: Git ref/blob/diff comparison and explicit evidence classification
+  - id: FM-WORKTREE-FILTER
+    severity: P1
+    trigger: Materialized bytes differ because of EOL/filter/LFS/generator behavior and would enter the commit.
+    required_detection:
+      test: git diff, check-attr, ls-files --eol
+  - id: FM-PARTIAL-SUCCESS
+    severity: P0
+    trigger: Push or success report occurs after only some required gates.
+    required_detection:
+      test: evidence command ledger and immediate pre-push ref check
+
+implementation:
+  ordered_steps:
+    - Read the policy and run handoff acceptance tests.
+    - Inspect actual repository, refs, attributes, Cargo config, Rust toolchain, and vendor availability.
+    - Create a clean isolated worktree from the exact feature head.
+    - Apply the tracked patch and delete the recovery marker.
+    - Verify exact diff surface and source semantics.
+    - Resolve offline Cargo flexibly without modifying tracked config or enforcing a package count.
+    - Run frozen metadata, focused tests, all-target no-run, Clippy, rustfmt, and diff checks.
+    - Commit exactly one implementation commit.
+    - Recheck remote refs and push one normal fast-forward.
+    - Verify remote topology, exact diff, PR state, and no wall campaign.
+    - Produce a local evidence bundle and stop before merge or Task 2.
+
+verification:
+  targeted:
+    - command: cargo test -p rodas5p-integrators --test v38d_performance_probe_contracts --offline --locked
+      expect: 5 passed
+  regression:
+    - command: cargo test -p rodas5p-integrators --all-targets --no-run --offline --locked
+      expect: exit=0
+  static:
+    - command: TERM=dumb cargo clippy -p rodas5p-integrators --all-targets --offline --locked -- -D warnings
+      expect: exit=0
+    - command: cargo fmt --all -- --check
+      expect: exit=0
+    - command: git diff --check
+      expect: exit=0
+
+completion_evidence:
+  required:
+    - git_base_sha
+    - git_previous_feature_sha
+    - git_final_feature_sha
+    - git_final_tree_sha
+    - git_status_porcelain
+    - exact_name_status
+    - patch_blob_oid
+    - cargo_metadata_log
+    - targeted_test_log
+    - all_target_compile_log
+    - clippy_log
+    - rustfmt_log
+    - remote_verification
+    - identity_mismatch_classification
+    - unresolved_blockers
+
+agent_policy:
+  ask_user_questions: false
+  guessing_across_scientific_boundary: forbidden
+  environment_path_substitution: allowed_when_mechanically_verified
+  packaging_sha_mismatch_as_blocker: forbidden
+  changing_tests_to_fit_implementation: forbidden
+  suppressing_failures: forbidden
+  force_push: forbidden
+  merge: forbidden
+  task2: forbidden
+
+review_gate:
+  fresh_context_required: true
+  reviewer_input:
+    - base_sha
+    - final_sha
+    - git_diff
+    - this_contract
+    - verification_logs
+    - completion_evidence
+  pass_condition:
+    P0: 0
+    P1: 0

@@ -1,0 +1,45 @@
+schema: vigilode-pm4-task1-invariant-test-matrix/v1
+matrix:
+  - invariant: Git source authority
+    positive:
+      - exact main and feature refs
+      - tracked payload blob exists
+      - patch applies cleanly
+    negative:
+      - ref divergence
+      - extra changed path
+      - patch payload modification
+  - invariant: content-equivalent transport
+    positive:
+      - direct Git-tracked patch; no archive required
+      - packaging SHA mismatch classified as soft
+    negative:
+      - packaging mismatch treated as P0/P1 without content failure
+  - invariant: schema-only scientific boundary
+    positive:
+      - five stable probe IDs
+      - one candidate ID
+      - one warmup and seven measured repetitions
+      - all authority flags false
+      - runner returns not implemented
+    negative:
+      - wrong count accepted
+      - benchmark result fabricated
+      - any authority flag true
+  - invariant: dependency closure
+    positive:
+      - cargo metadata --frozen passes
+      - no tracked Cargo/config/lockfile diff
+    negative:
+      - package-count magic number
+      - network dependency resolution
+      - dependency update
+  - invariant: publication topology
+    positive:
+      - normal feature fast-forward
+      - main unchanged
+      - PR open/draft/unmerged
+    negative:
+      - force push
+      - merge
+      - push after remote drift

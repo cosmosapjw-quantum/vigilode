@@ -1,0 +1,37 @@
+{
+  "schema": "vigilode-identity-policy/v1",
+  "classes": {
+    "git_source_authority": {
+      "default_gate": "HARD",
+      "primary_evidence": ["commit_sha", "tree_sha", "blob_oid", "git_diff"]
+    },
+    "immutable_external_input": {
+      "default_gate": "HARD",
+      "primary_evidence": ["sha256", "size", "provenance_pointer"]
+    },
+    "deterministic_generated_evidence": {
+      "default_gate": "CONDITIONAL_HARD",
+      "hard_only_when": "byte_identical_reproducibility_is_an_explicit_claim"
+    },
+    "numerical_generated_output": {
+      "default_gate": "NUMERICAL",
+      "primary_evidence": ["units", "invariants", "residuals", "tolerances", "limit_tests"],
+      "byte_hash_default_authority": false
+    },
+    "packaging_transport": {
+      "default_gate": "SOFT",
+      "primary_evidence": ["content_inventory", "inner_git_objects", "required_files", "safe_extraction"],
+      "outer_sha_mismatch_alone_blocks": false
+    },
+    "working_tree_materialization": {
+      "default_gate": "DIAGNOSTIC",
+      "investigate": ["eol", "attributes", "filters", "lfs", "generator_rewrite", "formatter_rewrite"]
+    }
+  },
+  "task1_policy": {
+    "uses_outer_archive": false,
+    "tracked_patch_is_primary_payload": true,
+    "packaging_sha_mismatch_is_blocker": false,
+    "required_final_verdict": "PASS_GIT_AND_CONTENT_EQUIVALENT"
+  }
+}

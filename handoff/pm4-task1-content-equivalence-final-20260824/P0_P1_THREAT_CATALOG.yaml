@@ -1,0 +1,38 @@
+schema: vigilode-pm4-task1-threat-catalog/v1
+
+p0:
+  - id: P0-WRONG-SOURCE
+    trigger: wrong main/feature lineage, changed payload, or unexplained extra Git path
+    guard: exact Git refs, patch path parser, final M/A/A/D diff
+  - id: P0-SILENT-SCIENCE-CHANGE
+    trigger: authority flag enabled, fake benchmark output, tolerance/policy/equation change
+    guard: focused contract tests and forbidden-path scan
+  - id: P0-HISTORY-MUTATION
+    trigger: force push, main mutation, merge, or push after ref drift
+    guard: immediate ref recheck and ordinary fast-forward only
+  - id: P0-PARTIAL-COMPLETION
+    trigger: success claimed despite failed/omitted required gate
+    guard: command evidence ledger and fresh-context review
+
+p1:
+  - id: P1-IDENTITY-CONFLATION
+    trigger: package SHA, working-tree bytes, generated output, and Git source treated as one identity class
+    guard: IDENTITY_POLICY.json and acceptance test
+  - id: P1-STALE-PROVENANCE
+    trigger: expected hash/ref points to predecessor or normalized variant
+    guard: compare Git ancestry, blob OIDs, content, and stated generation role
+  - id: P1-OFFLINE-CARGO-CLOSURE
+    trigger: local vendor/config path cannot resolve the locked graph
+    guard: discover path, bridge without tracked mutation, run cargo metadata --frozen
+  - id: P1-MATERIALIZATION-DRIFT
+    trigger: EOL/filter/LFS/generator rewrite would alter committed or built source
+    guard: git diff, check-attr, and ls-files --eol
+  - id: P1-MISSING-REVIEW-EVIDENCE
+    trigger: implementer self-report substitutes for independent diff/log review
+    guard: separate FRESH_REVIEW_PROMPT.md
+
+not_findings_by_default:
+  - outer tar/zip/wheel SHA mismatch after verified content equivalence
+  - gzip/tar metadata difference
+  - signed-zero or float textual spelling difference with invariant/tolerance parity
+  - different local absolute paths with the same Git/content authority
