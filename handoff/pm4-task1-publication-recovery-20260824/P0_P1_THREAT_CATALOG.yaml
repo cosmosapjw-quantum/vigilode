@@ -1,0 +1,50 @@
+schema: vigilode-pm4-p0-p1-threat-catalog/v1
+
+p0:
+  - id: P0-REMOTE-STALE-REF
+    statement: Push occurs after main or feature ref drift, publishing onto an unreviewed lineage.
+    detection: exact preflight and immediate pre-push git-ls-remote equality gates
+    permanent_guard: fail closed before push; never force
+  - id: P0-SOURCE-BYTE-DRIFT
+    statement: The Task-1 patch or final Rust bytes change while transport work is being fixed.
+    detection: sealed patch SHA-256, exact three-file SHA-256, exact four-path M/A/A/D diff
+    permanent_guard: immutable R4 input plus post-apply and post-commit hash checks
+  - id: P0-PARTIAL-SUCCESS-PUSH
+    statement: Dependency or test failure is ignored and the branch is pushed anyway.
+    detection: set -euo pipefail, complete exit-code ledger, push after all gates only
+    permanent_guard: metadata/tests/compile/Clippy/rustfmt/diff/ref checks precede push
+  - id: P0-FORCE-MERGE-WALL
+    statement: Force push, merge, real wall timing, candidate ranking, or Task 2 occurs during recovery.
+    detection: source scan plus final GitHub state and attempt inventory
+    permanent_guard: explicit bans and fresh merge approval tied to final head
+  - id: P0-DEPENDENCY-CONTRACT-MUTATION
+    statement: Cargo.toml, Cargo.lock, or .cargo/config.toml is changed to make the vendor pass.
+    detection: forbidden-path diff and pre/post hashes
+    permanent_guard: use checked-in source replacement unchanged
+
+p1:
+  - id: P1-HARDCODED-VENDOR-COUNT
+    statement: A valid directory source is rejected because a rehearsal-specific count is treated as identity.
+    reproducer: actual host vendor has 308 immediate directories while R4 requires 262
+    detection: valid 262 and valid 308 fixtures both pass
+    permanent_guard: no exact global count gate; counts are evidence only
+  - id: P1-RELAXED-WITHOUT-CARGO-PROOF
+    statement: Exact count is removed but incomplete dependencies are accepted.
+    detection: mandatory cargo metadata --frozen --format-version 1 before push
+    permanent_guard: Cargo is the dependency-closure authority
+  - id: P1-MISSING-CHECKSUM
+    statement: A crate directory lacks .cargo-checksum.json.
+    detection: negative fixture names the missing package
+    permanent_guard: one checksum record per accepted immediate crate directory
+  - id: P1-REHEARSAL-PRODUCTION-ENV-DRIFT
+    statement: Rehearsal uses a different 262-package vendor from the actual 308-package host vendor.
+    detection: canonical vendor path, observed counts, and Cargo metadata digest in evidence
+    permanent_guard: final rehearsal and publication use the same canonical vendor path
+  - id: P1-STALE-RECEIPT
+    statement: Receipt still claims 262 or omits Cargo metadata proof.
+    detection: receipt contract and comparison to vendor-validation JSON
+    permanent_guard: dynamic fields copied from helper output
+  - id: P1-UNTESTED-EDGE
+    statement: Fix only covers the observed 308 case and regresses malformed sources.
+    detection: 262-pass, 308-pass, missing-checksum-fail, missing-faer-fail, deterministic-output tests
+    permanent_guard: retain tests in R5 and evidence bundle
