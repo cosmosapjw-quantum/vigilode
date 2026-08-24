@@ -12,6 +12,8 @@ on:
       - "crates/**"
       - "rust-toolchain.toml"
       - "tools/**"
+      - "docs/superpowers/plans/**"
+      - "docs/superpowers/specs/**"
   workflow_dispatch:
 
 permissions:
@@ -35,6 +37,7 @@ jobs:
         run: |
           python3 tools/test_e4_build_modes.py -v
           python3 tools/test_e4_workflow_invocation.py -v
+          python3 tools/test_e4_final_review_regressions.py -v
 
       - name: Resolve the default fresh-clone graph
         run: cargo metadata --locked --format-version 1 > "$RUNNER_TEMP/default-metadata.json"
