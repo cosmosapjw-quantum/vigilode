@@ -25,26 +25,30 @@ p0:
 p1:
   - id: P1-HARDCODED-VENDOR-COUNT
     statement: A valid directory source is rejected because a rehearsal-specific count is treated as identity.
-    reproducer: actual host vendor has 308 immediate directories while R4 requires 262
-    detection: valid 262 and valid 308 fixtures both pass
+    reproducer: R4 observed 308 immediate directories while requiring exactly 262
+    detection: valid 262-package and 308-package fixtures both pass
     permanent_guard: no exact global count gate; counts are evidence only
+  - id: P1-CARGO-DIRECTORY-MISCLASSIFICATION
+    statement: Hidden or manifestless incidental directories are incorrectly counted as Cargo packages or forced to carry checksum metadata.
+    detection: dot-prefixed and manifestless directories do not change package_directory_count
+    permanent_guard: only non-hidden immediate directories containing Cargo.toml are package candidates
   - id: P1-RELAXED-WITHOUT-CARGO-PROOF
     statement: Exact count is removed but incomplete dependencies are accepted.
     detection: mandatory cargo metadata --frozen --format-version 1 before push
     permanent_guard: Cargo is the dependency-closure authority
   - id: P1-MISSING-CHECKSUM
-    statement: A crate directory lacks .cargo-checksum.json.
+    statement: A manifest-bearing package directory lacks .cargo-checksum.json.
     detection: negative fixture names the missing package
-    permanent_guard: one checksum record per accepted immediate crate directory
+    permanent_guard: one parseable checksum record per package candidate
   - id: P1-REHEARSAL-PRODUCTION-ENV-DRIFT
-    statement: Rehearsal uses a different 262-package vendor from the actual 308-package host vendor.
-    detection: canonical vendor path, observed counts, and Cargo metadata digest in evidence
+    statement: Rehearsal uses a different vendor from the actual production-host vendor.
+    detection: canonical vendor path, observed structural counts, and Cargo metadata digest in evidence
     permanent_guard: final rehearsal and publication use the same canonical vendor path
   - id: P1-STALE-RECEIPT
-    statement: Receipt still claims 262 or omits Cargo metadata proof.
+    statement: Receipt still claims literal 262 or omits Cargo metadata proof.
     detection: receipt contract and comparison to vendor-validation JSON
     permanent_guard: dynamic fields copied from helper output
   - id: P1-UNTESTED-EDGE
-    statement: Fix only covers the observed 308 case and regresses malformed sources.
-    detection: 262-pass, 308-pass, missing-checksum-fail, missing-faer-fail, deterministic-output tests
+    statement: Fix only covers the observed 308-directory case and regresses malformed or incidental-directory cases.
+    detection: 262-pass, 308-pass, incidental-dir-ignore, missing-checksum-fail, missing-faer-fail, deterministic-output tests
     permanent_guard: retain tests in R5 and evidence bundle
