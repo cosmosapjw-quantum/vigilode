@@ -1,54 +1,70 @@
-# VigilODE
+# VigilODE A1 Inner-Tolerance Parity Handoff
 
-**Causal, Budgeted Jacobian-Free Polyalgorithms for Stiff and Oscillatory ODEs**
+This branch repairs a missing durable handoff ref. It is intentionally separate from both `main` and the A1 implementation branch.
 
-VigilODE is a research platform for generic stiff and oscillatory ordinary differential equations. The project studies evidence-gated polyalgorithm design that combines a protected matrix-free Rosenbrock path with guarded exponential-Rosenbrock candidates while preserving complete speculative-work accounting.
+## Live state captured at publication
 
-## Current research scope
+```text
+main
+4e3a75e5b2843dc1e135dcadba72edb1d09be94c
 
-The current program focuses on:
+tree
+c6d4e20b54f84e6894b1954fc61681b881350b85
 
-- matrix-free, Jacobian-free stiff integration;
-- explicit-Jacobian-free and Newton-free fast-path candidates;
-- resumable Krylov / exponential-Rosenbrock stage prefixes;
-- causal regime telemetry and event-conditioned method admission;
-- tolerance-aware nonlinear-flow diagnostics;
-- transactional speculative-work budgets;
-- same-error, same-output, failure-preserving performance comparisons.
+implementation branch
+research/a1-inner-tolerance-parity
 
-Active method switching is treated as a research target rather than a completed production capability. Safety, fifth-order recovery after real switches, controller/cache transfer, and full same-error economics remain explicit validation gates.
+implementation head
+67ec3ad77d0a88f3ff9c096b309d3a12da72b600
 
-## Development policy
+implementation tree
+4d5070a35cbc546efc1dd350feeb4a45e08c7e01
 
-Scientific claims are evidence-gated. Research branches retain failed, speculative, fallback, and diagnostic work in their ledgers. Comparator implementations are not silently tuned to improve headline results, and holdout problems are not used to retune core policy thresholds.
-
-## Build reproducibility
-
-A normal fresh clone uses Cargo's default crates.io configuration:
-
-```bash
-cargo metadata --locked --format-version 1
-cargo test --workspace --all-targets --no-run --locked
+existing PR
+#18, open, draft, unmerged
 ```
 
-No repository-external sibling directory is required by default. Network access is needed only when the pinned registry artifacts are not already present in the local Cargo cache.
+The feature branch already contains the A1 candidate and has exact-head GitHub Actions evidence. Therefore this handoff directs Codex to **audit first**, not to recreate the implementation. A source change is permitted only for a demonstrated A1-only defect.
 
-For air-gapped or deliberately offline development, create a standard Cargo vendor directory and opt in explicitly:
+## Quick start
+
+From a local clone:
 
 ```bash
-cargo vendor --locked /absolute/path/to/vendor
-bash ./tools/cargo-offline.sh \
-  --vendor-dir /absolute/path/to/vendor \
-  metadata --frozen --format-version 1
-bash ./tools/cargo-offline.sh \
-  --vendor-dir /absolute/path/to/vendor \
-  test --workspace --all-targets --no-run --frozen
+git fetch origin \
+  main \
+  research/a1-inner-tolerance-parity \
+  handoff/a1-inner-tolerance-parity-20260825
+
+git worktree add --detach ../vigilode-a1-handoff \
+  origin/handoff/a1-inner-tolerance-parity-20260825
+
+git worktree add -B research/a1-inner-tolerance-parity \
+  ../vigilode-a1-implementation \
+  origin/research/a1-inner-tolerance-parity
+
+python ../vigilode-a1-handoff/acceptance/test_handoff_contract.py \
+  --repo ../vigilode-a1-implementation \
+  --handoff ../vigilode-a1-handoff
 ```
 
-`tools/cargo-offline.sh` accepts either `--vendor-dir PATH` or the `VIGILODE_CARGO_VENDOR_DIR` environment variable. The vendor directory must be a standard Cargo directory source created by `cargo vendor`; the wrapper validates its structure, uses an isolated temporary Cargo home with an absolute vendor path, and leaves `Cargo.toml`, `Cargo.lock`, and tracked Cargo configuration unchanged.
+Read `AGENTS.md` before doing anything else.
 
-The repository keeps `vendor/` untracked. `.cargo/config.offline.toml` is a documented template for users who prefer a repository-local `vendor/` directory and an explicit manual Cargo configuration.
+## Intended result
 
-## License
+The normal no-repair outcome is:
 
-MIT
+```text
+A1_REVIEW_READY
+base = 4e3a75e5b2843dc1e135dcadba72edb1d09be94c
+head = 67ec3ad77d0a88f3ff9c096b309d3a12da72b600
+PR = #18 draft/unmerged
+A1 contract = PASS
+G4/S5B0 regressions = PASS
+fresh-clone online/offline = PASS
+A2/A3 = NOT PERFORMED
+wall-time ranking = NOT PERFORMED
+merge/tag/release = NOT PERFORMED
+```
+
+This handoff must not be merged.

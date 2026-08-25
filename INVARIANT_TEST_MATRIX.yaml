@@ -1,0 +1,150 @@
+schema: vigilode-a1-invariant-test-matrix-v1
+rust_toolchain: "1.94.1"
+
+invariants:
+  - id: I-IDENTITY
+    claim: local worktree is bound to the pinned base and implementation head before mutation
+    commands:
+      - "git rev-parse HEAD"
+      - "git merge-base HEAD 4e3a75e5b2843dc1e135dcadba72edb1d09be94c"
+      - "git rev-list --left-right --count 4e3a75e5b2843dc1e135dcadba72edb1d09be94c...HEAD"
+    expected:
+      head: 67ec3ad77d0a88f3ff9c096b309d3a12da72b600
+      merge_base: 4e3a75e5b2843dc1e135dcadba72edb1d09be94c
+      ahead_behind: "0 8"
+
+  - id: I-HANDOFF-ACCEPTANCE
+    claim: handoff closure, state binding, expected diff, and source discovery all pass
+    command: >-
+      python /path/to/handoff/acceptance/test_handoff_contract.py
+      --repo /path/to/implementation --handoff /path/to/handoff
+    expected: "PASS: vigilode A1 handoff contract"
+
+  - id: I-CALLSITE-INVENTORY
+    claim: one shared policy is wired into every protected G4/S5B0 linear lane
+    command: >-
+      python /path/to/handoff/tools/discover_a1_tolerance_sites.py
+      --repo /path/to/implementation
+    expected:
+      audit_pass: true
+      linear_config_adaptive_rtol_calls: 6
+      fixed_legacy_linear_literals_in_atlas: 0
+
+  - id: I-METADATA
+    claim: locked dependency graph resolves without mutation
+    command: "cargo metadata --locked --format-version 1 > /tmp/vigilode-a1-metadata.json"
+    expected_exit: 0
+
+  - id: I-A1-CONTRACT
+    claim: authority preservation, shared parity, floors, invalid domain, structure, and wiring are executable
+    command: >-
+      cargo test -p rodas5p-integrators
+      --test a1_inner_tolerance_parity_contracts --locked
+    expected:
+      passed: 5
+      failed: 0
+
+  - id: I-G4-S5B0-BEHAVIOR
+    claim: affected read-only matrix-free atlas behavior remains intact
+    command: >-
+      cargo test -p rodas5p-integrators
+      --test g4_s5b0_regime_atlas_contracts --locked
+    expected:
+      passed: 10
+      failed: 0
+
+  - id: I-V38D-SCHEMA
+    claim: the v3.8-D performance-probe schema contract remains exactly intact; no performance ranking is inferred
+    command: >-
+      cargo test -p rodas5p-integrators
+      --test v38d_performance_probe_contracts --locked
+    expected:
+      passed: 5
+      failed: 0
+
+  - id: I-INTEGRATOR-TARGETS
+    claim: every integrator target compiles
+    command: >-
+      cargo test -p rodas5p-integrators --all-targets --no-run --locked
+    expected_exit: 0
+
+  - id: I-KRYLOV-UNCHANGED
+    claim: the Krylov crate remains behaviorally green even though A1 must not modify it
+    command: "cargo test -p rodas5p-krylov --all-targets --locked"
+    expected_exit: 0
+
+  - id: I-WORKSPACE-COMPILE
+    claim: workspace target graph compiles without running unrelated long suites
+    command: "cargo test --workspace --all-targets --no-run --locked"
+    expected_exit: 0
+
+  - id: I-CLIPPY
+    claim: affected crates remain warning-free
+    command: >-
+      cargo clippy -p rodas5p-krylov -p rodas5p-integrators
+      --all-targets --locked -- -D warnings
+    expected_exit: 0
+
+  - id: I-FORMAT
+    claim: source is rustfmt-stable
+    command: "cargo fmt --all -- --check"
+    expected_exit: 0
+
+  - id: I-DIFF-CHECK
+    claim: no whitespace error or generated tracked-source mutation exists
+    commands:
+      - "git diff --check"
+      - "test -z \"$(git status --porcelain --untracked-files=no)\""
+    expected_exit: 0
+
+  - id: I-DIFF-SURFACE
+    claim: the candidate changes only the approved A1 surface
+    command: >-
+      git diff --name-only
+      4e3a75e5b2843dc1e135dcadba72edb1d09be94c...HEAD
+    expected_paths:
+      - .github/workflows/a1-inner-tolerance-parity.yml
+      - crates/rodas5p-integrators/src/g4_s5b0_inner_tolerance.rs
+      - crates/rodas5p-integrators/src/g4_s5b0_regime_atlas.rs
+      - crates/rodas5p-integrators/src/lib.rs
+      - crates/rodas5p-integrators/tests/a1_inner_tolerance_parity_contracts.rs
+
+  - id: I-FORBIDDEN-PATHS
+    claim: dependency, CLI, fair-AB, fixture, Krylov algorithm, and benchmark authority surfaces are untouched
+    forbidden_globs:
+      - Cargo.toml
+      - Cargo.lock
+      - .cargo/**
+      - crates/rodas5p-krylov/**
+      - crates/rodas5p-cli/**
+      - crates/rodas5p-fair-ab/**
+      - fixtures/**
+      - research/**
+    expected_matches: 0
+
+  - id: I-EXACT-HEAD-ACTIONS
+    claim: both A1 and E4 workflows are green on the exact final head
+    observed_at_intake:
+      - name: A1 inner-tolerance parity
+        run_id: 32793247176
+        head_sha: 67ec3ad77d0a88f3ff9c096b309d3a12da72b600
+        conclusion: success
+      - name: E4 fresh-clone build reproducibility
+        run_id: 32793247153
+        head_sha: 67ec3ad77d0a88f3ff9c096b309d3a12da72b600
+        conclusion: success
+    final_rule: workflow head_sha must equal the exact final implementation head
+
+claim_boundary:
+  allowed:
+    - same-policy inner-tolerance parity for audited G4/S5B0 protected paths
+    - preservation of the pre-A1 phi law
+    - successful executable verification on an exact commit
+  forbidden:
+    - wall-time ordering
+    - speedup
+    - improved GMRES convergence
+    - reduced QR cost
+    - active switching
+    - scientific tournament conclusion
+    - merge readiness beyond A1-only code review

@@ -1,0 +1,77 @@
+{
+  "schema": "vigilode-a1-inner-tolerance-handoff-state-v1",
+  "captured_utc_date": "2026-08-25",
+  "repository": "cosmosapjw-quantum/vigilode",
+  "canonical_main": {
+    "branch": "main",
+    "commit": "4e3a75e5b2843dc1e135dcadba72edb1d09be94c",
+    "tree": "c6d4e20b54f84e6894b1954fc61681b881350b85"
+  },
+  "implementation": {
+    "branch": "research/a1-inner-tolerance-parity",
+    "head": "67ec3ad77d0a88f3ff9c096b309d3a12da72b600",
+    "tree": "4d5070a35cbc546efc1dd350feeb4a45e08c7e01",
+    "parent": "80f66069c6fba278ceef86cc204065dbcfa57afb",
+    "ahead_of_main_by_commits": 8,
+    "expected_changed_paths": [
+      ".github/workflows/a1-inner-tolerance-parity.yml",
+      "crates/rodas5p-integrators/src/g4_s5b0_inner_tolerance.rs",
+      "crates/rodas5p-integrators/src/g4_s5b0_regime_atlas.rs",
+      "crates/rodas5p-integrators/src/lib.rs",
+      "crates/rodas5p-integrators/tests/a1_inner_tolerance_parity_contracts.rs"
+    ]
+  },
+  "handoff": {
+    "branch": "handoff/a1-inner-tolerance-parity-20260825",
+    "parent_commit": "4e3a75e5b2843dc1e135dcadba72edb1d09be94c",
+    "merge_forbidden": true,
+    "read_only": true
+  },
+  "pull_request": {
+    "number": 18,
+    "url": "https://github.com/cosmosapjw-quantum/vigilode/pull/18",
+    "state": "open",
+    "draft": true,
+    "merged": false,
+    "base": "main",
+    "base_sha": "4e3a75e5b2843dc1e135dcadba72edb1d09be94c",
+    "head": "research/a1-inner-tolerance-parity",
+    "head_sha": "67ec3ad77d0a88f3ff9c096b309d3a12da72b600"
+  },
+  "observed_exact_head_workflows": [
+    {
+      "name": "A1 inner-tolerance parity",
+      "run_id": 32793247176,
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "E4 fresh-clone build reproducibility",
+      "run_id": 32793247153,
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "authority_law": {
+    "relative_fraction": 0.03,
+    "absolute_fraction": 0.0003,
+    "relative_floor": 1e-12,
+    "absolute_floor": 1e-14,
+    "formula": {
+      "relative": "max(3.0e-2 * outer_rtol, 1.0e-12)",
+      "absolute": "max(3.0e-4 * outer_rtol, 1.0e-14)"
+    },
+    "origin": "pre-A1 G4/S5B0 exponential phi_config law",
+    "rounding_rule": "preserve the exact multiplication expression; do not compare to independently rounded decimal literals"
+  },
+  "scope": {
+    "a1_only": true,
+    "a2_performed": false,
+    "a3_performed": false,
+    "wall_time_ranking_authorized": false,
+    "active_switching_authorized": false,
+    "merge_authorized": false,
+    "tag_authorized": false,
+    "release_authorized": false
+  }
+}

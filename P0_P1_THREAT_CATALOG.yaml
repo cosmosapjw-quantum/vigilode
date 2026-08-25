@@ -1,0 +1,103 @@
+schema: vigilode-a1-threat-catalog-v1
+
+P0:
+  - id: P0-HANDOFF-MISSING
+    threat: required durable handoff ref is absent
+    detection: origin has no exact branch handoff/a1-inner-tolerance-parity-20260825
+    response: stop without mutation; publish and verify the exact handoff ref
+    current_status: resolved-by-this-handoff-publication
+
+  - id: P0-REMOTE-DRIFT
+    threat: main, feature, tree, ancestry, or PR identity differs from CURRENT_STATE.json
+    detection: live fetch disagrees with any pinned identity before mutation
+    response: BLOCKED_BY_REMOTE_DRIFT; report both identities; no silent rebase or force push
+
+  - id: P0-AUTHORITY-AMBIGUITY
+    threat: more than one incompatible production outer-to-inner law is supported
+    detection: production call paths or executable tests designate competing formulae
+    response: BLOCKED_BY_UNRESOLVED_SPEC; list every formula, call path, and test; do not choose by convenience
+
+  - id: P0-INDEPENDENT-LINEAR-POLICY
+    threat: protected GMRES retains a fixed or separately derived tolerance law
+    detection: atlas contains fixed rtol 1.0e-10, atol 1.0e-12, or a no-argument linear_config
+    response: test-first minimal A1 repair or block
+
+  - id: P0-PARTIAL-WIRING
+    threat: only nominal paths use the shared policy while retry/fallback/matrix-free/alternate paths remain independent
+    detection: callsite inventory does not account for every linear_config and phi_config consumer
+    response: block review readiness until all production paths are classified and routed
+
+  - id: P0-A2-A3-CONTAMINATION
+    threat: A1 diff includes GMRES early exit, incremental Givens, QR replacement, or residual-accounting changes
+    detection: changes under rodas5p-krylov or relevant convergence algorithms
+    response: remove from A1; preserve as a separate future PR only after explicit approval
+
+  - id: P0-SCIENTIFIC-SURFACE-DRIFT
+    threat: solver equations, outer tolerances, controller thresholds, fixtures, or expected outputs change
+    detection: forbidden path or semantic diff outside the A1 five-file surface
+    response: block and revert unrelated change
+
+  - id: P0-DUPLICATE-PR
+    threat: a second A1 PR is opened while PR #18 exists
+    detection: another open PR from the same implementation purpose
+    response: close duplicate without merge; use PR #18 only
+
+  - id: P0-UNAUTHORIZED-PUBLICATION
+    threat: merge, tag, release, timing ranking, speedup, or active-switching claim occurs
+    detection: Git/PR/release metadata or docs make such a claim
+    response: stop and restore the explicit A1-only claim boundary
+
+P1:
+  - id: P1-FLOAT-ROUNDING-ORACLE
+    threat: test compares the policy to an independently rounded 3e-7 or 3e-9 literal
+    detection: bitwise equality to decimal literals differs by one ULP from 3.0e-2*rtol or 3.0e-4*rtol
+    response: preserve and test the exact pre-A1 multiplication expression
+
+  - id: P1-INVALID-DOMAIN-LATE
+    threat: NaN, infinity, zero, or negative outer tolerance reaches solver work
+    detection: policy construction does not fail before configuration or operator evaluation
+    response: checked constructor and tests for NaN, positive/negative infinity, zero, and negative values
+
+  - id: P1-FLOOR-ASYMMETRY
+    threat: linear and phi paths apply different floors
+    detection: bitwise mismatch at outer_rtol 1.0e-20
+    response: store one relative and one absolute value in the shared policy
+
+  - id: P1-STRUCTURAL-SETTING-DRIFT
+    threat: parity patch changes GMRES method/restart/maxiter or phi dimension/substep/orthogonalization settings
+    detection: A1 structural test or diff audit fails
+    response: restore pre-A1 structural values; tolerance fields only may change on the linear side
+
+  - id: P1-SOURCE-GUARD-WITHOUT-RUNTIME-EVIDENCE
+    threat: textual source counting is treated as the only proof of path coverage
+    detection: no executable behavioral regression accompanies the source guard
+    response: require both source inventory and G4/S5B0 behavioral contracts
+
+  - id: P1-STALE-PR-BODY
+    threat: PR body describes only the RED state after GREEN candidate exists
+    detection: current body says implementation is not yet present or omits exact-head evidence
+    response: update body with verified final state without changing claim scope
+
+  - id: P1-WORKFLOW-NOT-HEAD-BOUND
+    threat: green workflow evidence belongs to an older commit
+    detection: workflow head_sha differs from exact final implementation head
+    response: rerun or wait for exact-head workflows before review readiness
+
+  - id: P1-POSTHOC-PROCESS-INFLATION
+    threat: retrospective design artifacts are added to make completed work look prospectively governed
+    detection: new process-only files appear in the implementation diff after code completion
+    response: keep execution authority in the read-only handoff branch; do not inflate PR #18
+
+P2:
+  - id: P2-COMMENT-OVERCLAIM
+    threat: comments imply global solver-wide parity beyond G4/S5B0 protected paths
+    response: narrow wording to the audited G4/S5B0 scope
+
+  - id: P2-UNSIGNED-FEATURE-COMMITS
+    threat: feature commits are unsigned
+    response: record as provenance metadata; do not rewrite history solely to sign them
+
+P3:
+  - id: P3-STYLE
+    threat: formatting or naming inconsistency
+    response: cargo fmt and minimal naming cleanup only after all behavioral gates are green

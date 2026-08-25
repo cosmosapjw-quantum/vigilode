@@ -1,0 +1,146 @@
+schema: vigilode-a1-audit-compiled-exec-plan-v1
+objective: >-
+  Establish whether the existing A1 candidate on PR #18 faithfully factors the
+  pre-A1 phi-Krylov outer-to-inner tolerance law into one shared policy consumed
+  by both protected RODAS5P/GMRES and exponential phi-Krylov paths, without
+  changing any other solver or performance semantics.
+
+state_binding:
+  repository: cosmosapjw-quantum/vigilode
+  base_branch: main
+  base_commit: 4e3a75e5b2843dc1e135dcadba72edb1d09be94c
+  base_tree: c6d4e20b54f84e6894b1954fc61681b881350b85
+  implementation_branch: research/a1-inner-tolerance-parity
+  intake_head: 67ec3ad77d0a88f3ff9c096b309d3a12da72b600
+  intake_tree: 4d5070a35cbc546efc1dd350feeb4a45e08c7e01
+  existing_pr: 18
+  handoff_branch: handoff/a1-inner-tolerance-parity-20260825
+
+execution_mode:
+  default: audit-existing-candidate
+  mutation_policy: evidence-backed-minimal-repair-only
+  duplicate_pr_forbidden: true
+  handoff_merge_forbidden: true
+  force_push_forbidden: true
+
+phases:
+  - id: A1-00
+    name: live-identity-intake
+    actions:
+      - fetch origin main, implementation branch, handoff branch, and PR #18 metadata
+      - verify main, implementation head, trees, ancestry, PR base/head, draft state, and unmerged state
+      - create a detached read-only worktree for the handoff branch
+      - run acceptance/test_handoff_contract.py before any mutation
+    pass:
+      - all pinned identities match CURRENT_STATE.json
+      - implementation branch is eight commits ahead and zero behind canonical main
+      - PR #18 is open, draft, and unmerged
+    fail_state: BLOCKED_BY_REMOTE_DRIFT
+
+  - id: A1-01
+    name: authority-and-callsite-reconstruction
+    actions:
+      - run tools/discover_a1_tolerance_sites.py against the implementation worktree
+      - inspect the pre-A1 atlas diff at the canonical base
+      - identify the old phi_config law and every protected linear_config consumer
+      - classify nominal, retry, fallback, matrix-free, alternate, test-only, and dead-code paths
+    pass:
+      - exactly one production authority law is supported
+      - authority law is relative=max(3.0e-2*outer_rtol,1.0e-12) and absolute=max(3.0e-4*outer_rtol,1.0e-14)
+      - no independent fixed 1.0e-10/1.0e-12 protected linear policy survives in the atlas
+      - every production linear_config call receives adaptive.rtol
+    fail_state: BLOCKED_BY_UNRESOLVED_SPEC
+
+  - id: A1-02
+    name: existing-implementation-audit
+    actions:
+      - inspect g4_s5b0_inner_tolerance.rs, g4_s5b0_regime_atlas.rs, lib.rs, A1 tests, and A1 workflow
+      - verify checked rejection of nonfinite and nonpositive outer tolerance
+      - verify shared relative and absolute floors
+      - verify exact old-law arithmetic preservation, including floating-point rounding behavior
+      - verify linear and phi structural settings are unchanged
+      - verify the diff contains only the five expected paths
+    pass:
+      - immutable checked policy exists and is exported once
+      - both configuration builders consume the same stored values
+      - no A2/A3 or unrelated behavior is present
+      - no Cargo, fixture, CLI, fair-AB, equation, or timing change is present
+    repair_rule: >-
+      If and only if a concrete A1 contract violation is demonstrated, add the
+      smallest test-first repair commit on the implementation branch. Do not
+      broaden the diff or rewrite history.
+
+  - id: A1-03
+    name: executable-verification
+    actions:
+      - execute every command in INVARIANT_TEST_MATRIX.yaml
+      - record exact command, exit status, test counts, warnings, and HEAD
+      - verify GitHub Actions A1 and E4 exact-head runs or trigger fresh read-only reruns when permitted
+    pass:
+      - all local mandatory gates pass
+      - A1 contract reports five passing tests
+      - G4/S5B0 behavioral contract reports ten passing tests
+      - v3.8-D performance probe schema suite remains five passing tests
+      - online/default and explicit offline fresh-clone paths remain green
+      - fmt, clippy -D warnings, diff check, and tracked-source stability pass
+    fail_state: BLOCKED_BY_VERIFICATION_FAILURE
+
+  - id: A1-04
+    name: forbidden-diff-and-claim-audit
+    actions:
+      - compare canonical base to exact final head
+      - prove no A2/A3 implementation, timing protocol change, benchmark retuning, dependency change, or scientific fixture change
+      - prove no wall-time ranking, speedup, active switching, merge, tag, or release claim was made
+      - inspect PR #18 body for stale RED-only wording and update evidence text only when needed
+    pass:
+      - A1-only claim boundary is explicit and accurate
+      - PR #18 remains draft and unmerged
+
+  - id: A1-05
+    name: fresh-context-review
+    actions:
+      - hand FRESH_REVIEW_PROMPT.md to a new read-only reviewer context
+      - require independent reinspection of authority, callsite coverage, diff, tests, and claim boundary
+    pass:
+      - reviewer returns APPROVE_A1_ONLY with P0=0 and P1=0
+    fail_state: BLOCKED_BY_FRESH_REVIEW
+
+terminal_outputs:
+  no_repair:
+    state: A1_REVIEW_READY
+    required_fields:
+      - base_commit
+      - exact_head
+      - exact_tree
+      - PR number and draft/unmerged state
+      - authority-law evidence
+      - callsite matrix
+      - local verification ledger
+      - GitHub Actions ledger
+      - forbidden-diff ledger
+      - explicit A2/A3 and claim prohibitions
+  repaired:
+    state: A1_REPAIRED_REVIEW_READY
+    additional_fields:
+      - original failing evidence
+      - minimal repair commit
+      - post-repair exact head and tree
+  blocked:
+    required_fields:
+      - stable blocker code
+      - exact evidence
+      - mutation ledger proving no unauthorized write
+
+forbidden_scope:
+  - A2 inner GMRES convergence
+  - A3 incremental Givens or QR replacement
+  - controller refactor
+  - timing or warmup protocol
+  - benchmark ranking or speedup claim
+  - PM-4 Task 2 synthetic operator
+  - active switching
+  - Cargo dependency or lockfile change
+  - scientific fixture or expected-output change
+  - merge
+  - tag
+  - release
