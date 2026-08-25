@@ -14,6 +14,7 @@ mod g3_fused_adaptive_gate;
 mod g4_prefix_kernel_gate;
 mod g4_s5b0_inner_tolerance;
 mod g4_s5b0_regime_atlas;
+mod g4_s5b0_trace_authority;
 mod g4_s5b3_attempt_geometry;
 mod homotopy;
 mod homotopy_experiments;
@@ -111,7 +112,11 @@ pub use g4_prefix_kernel_gate::{
     G4PrefixKernelProfile, G4PrefixKernelReport, G4PrefixKernelRow, G4PrefixKernelSummary,
     run_g4_prefix_kernel_gate,
 };
-pub use g4_s5b0_inner_tolerance::G4S5B0InnerTolerancePolicy;
+pub use g4_s5b0_inner_tolerance::{
+    G4_S5B0_COMMITTED_LINEAR_TOLERANCE_ARM, G4S5B0InnerToleranceLane,
+    G4S5B0InnerTolerancePolicy, G4S5B0LinearToleranceArm,
+    committed_g4_s5b0_linear_tolerance_arm,
+};
 pub use g4_s5b0_regime_atlas::{
     G4S5B0ActualLevel1PrefixReport, G4S5B0ActualLevel1PrefixRow, G4S5B0ActualLevel2PrefixReport,
     G4S5B0ActualLevel2PrefixRow, G4S5B0AttemptTraceReport, G4S5B0Family,
@@ -130,6 +135,10 @@ pub use g4_s5b0_regime_atlas::{
     run_g4_s5b0_rjf_attempt_trace, run_g4_s5b0_rjf_attempt_trace_family, run_g4_s5b0_rjf_only,
     run_g4_s5b0_rjf_only_family, run_g4_s5b0_stage_growth_safety_audit_family,
     run_g4_s5b0_v37_continuation_transaction, run_g4_s5b0_v37_continuation_transaction_family,
+};
+pub use g4_s5b0_trace_authority::{
+    g4_s5b0_rjf_trace_digest,
+    run_g4_s5b0_rjf_attempt_trace_family_with_linear_tolerance_arm,
 };
 pub use g4_s5b3_attempt_geometry::{
     G4S5B3AttemptGeometryReport, G4S5B3AttemptRow, G4S5B3CalibrationRow, G4S5B3HardGateSummary,
