@@ -14,12 +14,21 @@ fn assert_shared_tolerances(profile: G4S5B0Profile) {
 
 #[test]
 fn canonical_holdout_derives_both_inner_solvers_from_one_outer_contract() {
-    let policy = G4S5B0InnerTolerancePolicy::try_from_outer_rtol(1.0e-5).unwrap();
+    let outer_rtol = 1.0e-5;
+    let policy = G4S5B0InnerTolerancePolicy::try_from_outer_rtol(outer_rtol).unwrap();
     let linear = policy.linear_config();
     let phi = policy.phi_config(516);
 
-    assert_eq!(policy.relative_tolerance().to_bits(), 3.0e-7_f64.to_bits());
-    assert_eq!(policy.absolute_tolerance().to_bits(), 3.0e-9_f64.to_bits());
+    // Preserve the exact arithmetic of the pre-A1 phi policy rather than
+    // comparing against independently rounded decimal literals.
+    assert_eq!(
+        policy.relative_tolerance().to_bits(),
+        (3.0e-2 * outer_rtol).to_bits()
+    );
+    assert_eq!(
+        policy.absolute_tolerance().to_bits(),
+        (3.0e-4 * outer_rtol).to_bits()
+    );
     assert_eq!(linear.rtol.to_bits(), phi.relative_tolerance.to_bits());
     assert_eq!(linear.atol.to_bits(), phi.absolute_tolerance.to_bits());
 }
