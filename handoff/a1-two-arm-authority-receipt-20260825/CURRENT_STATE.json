@@ -1,0 +1,66 @@
+{
+  "schema": "vigilode-a1-two-arm-handoff-state-v1",
+  "repository": "cosmosapjw-quantum/vigilode",
+  "canonical_main": {
+    "branch": "main",
+    "commit": "4e3a75e5b2843dc1e135dcadba72edb1d09be94c",
+    "tree": "c6d4e20b54f84e6894b1954fc61681b881350b85"
+  },
+  "implementation": {
+    "branch": "research/a1-inner-tolerance-parity",
+    "pull_request": 18,
+    "head": "7952bf96bfd9fb604e87bce41bd9b918cc9b93f4",
+    "tree": "dd32d7bebe50419c510f2e779b43ed6a26f29242",
+    "state": "OPEN_DRAFT_UNMERGED_MERGEABLE",
+    "changed_paths": [
+      ".github/workflows/a1-inner-tolerance-parity.yml",
+      "crates/rodas5p-integrators/src/g4_s5b0_inner_tolerance.rs",
+      "crates/rodas5p-integrators/src/g4_s5b0_regime_atlas.rs",
+      "crates/rodas5p-integrators/src/g4_s5b0_trace_authority.rs",
+      "crates/rodas5p-integrators/src/lib.rs",
+      "crates/rodas5p-integrators/tests/a1_committed_trace_regression.rs",
+      "crates/rodas5p-integrators/tests/a1_inner_tolerance_parity_contracts.rs",
+      "docs/superpowers/plans/2026-08-25-a1-inner-tolerance-audit-repair.md",
+      "docs/superpowers/specs/2026-08-25-a1-inner-tolerance-audit-repair-design.md",
+      "research/a1_inner_tolerance_audit_20260825/CLAIM_SCOPE_AND_INVALIDATION.md"
+    ]
+  },
+  "compile_trace_closure": {
+    "a1_workflow": {
+      "run": 32876594151,
+      "conclusion": "SUCCESS"
+    },
+    "e4_workflow": {
+      "run": 32876594326,
+      "conclusion": "SUCCESS"
+    },
+    "committed_trace_fixture": {
+      "profile": "smoke",
+      "family": "hires-ramped",
+      "arm": "legacy-fixed",
+      "sha256": "04cd9202b25df52357045754c8f10ffcb93d35f234ecace6a0c947ca306049de"
+    }
+  },
+  "numerical_authority": {
+    "committed_arm": "legacy-fixed",
+    "candidate_arm": "outer-scaled-numeric-parity",
+    "frozen_zeta34_tau": 13.39706618860016,
+    "threshold_retuning_authorized": false,
+    "persistence_retuning_authorized": false,
+    "prefix_budget_retuning_authorized": false,
+    "continuation_budget_retuning_authorized": false
+  },
+  "current_node": "A1-TWO-ARM-AUTHORITY-RECEIPT",
+  "not_started": [
+    "A2 inner GMRES convergence",
+    "A3 incremental Givens / QR replacement",
+    "G1/G3 tolerance scope expansion",
+    "PM-4 Task 2 synthetic operator",
+    "wall-time ranking",
+    "active switching",
+    "tag",
+    "release"
+  ],
+  "merge_authorized": false,
+  "handoff_branch_must_not_be_merged": true
+}

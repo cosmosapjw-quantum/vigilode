@@ -1,0 +1,77 @@
+schema: vigilode-a1-invariant-test-matrix/v1
+
+matrix:
+  - invariant: committed arm remains legacy-fixed before final decision
+    severity: P0
+    positive: ordinary committed path reports legacy-fixed
+    negative: candidate cannot be selected through ordinary runtime API
+  - invariant: exactly 12 unique cells
+    severity: P0
+    positive: two arms times six families accepted
+    negative: missing, duplicate, unknown, or extra key rejected
+  - invariant: exact profile and frozen tau
+    severity: P0
+    positive: every cell is EnforcedBudgetHoldout320 and tau bits agree
+    negative: wrong profile or mismatched tau rejected
+  - invariant: aggregate is derived from atomic evidence
+    severity: P0
+    positive: counts, sets, margins, safety, and verdict recompute exactly
+    negative: tampered summary totals do not influence output
+  - invariant: Hires positive control is explicit
+    severity: P0
+    positive: both arms report unsafe completed full-E event and recommendation status
+    negative: absent or ambiguous positive-control state rejected
+  - invariant: no governed retuning
+    severity: P0
+    positive: tau, persistence, prefix budget, continuation budget unchanged
+    negative: any governed-value diff fails the authority gate
+  - invariant: deterministic receipt identity
+    severity: P1
+    positive: permutation of input files yields identical aggregate
+    negative: wall-time and archive-metadata mutations do not change verdict or scientific digest
+  - invariant: source and artifact binding
+    severity: P1
+    positive: cells, aggregate, workflow artifact, and committed receipt identify one head/tree/toolchain
+    negative: one-cell or source-identity mismatch rejected
+  - invariant: historical evidence remains immutable
+    severity: P0
+    positive: new receipt links legacy artifacts by identity and applicability
+    negative: edits under historical result paths fail forbidden-diff audit
+
+required_cell_fields:
+  - schema
+  - source_commit
+  - source_tree
+  - rust_version
+  - profile
+  - family
+  - arm
+  - outer_rtol
+  - linear_rtol
+  - linear_atol
+  - phi_relative_tolerance
+  - phi_absolute_tolerance
+  - attempts
+  - accepted_steps
+  - rejected_steps
+  - rhs_evaluations
+  - jvp_vectors
+  - linear_matvecs
+  - trace_digest
+  - event_rows
+  - recommendation_rows
+  - hard_gates
+  - limitations
+
+required_aggregate_fields:
+  - complete_cell_keys
+  - per_arm_totals
+  - event_key_sets
+  - zeta34_values_and_signed_margins
+  - recommendation_key_sets
+  - unsafe_recommendation_keys
+  - audit_unsafe_event_keys
+  - hires_positive_control
+  - predeclared_decision
+  - artifact_manifest
+  - source_identity
