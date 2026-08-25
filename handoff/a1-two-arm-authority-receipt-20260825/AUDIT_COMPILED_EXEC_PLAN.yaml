@@ -1,4 +1,4 @@
-schema: audit-compiled-pr/v1
+schema: audit-compiled-pr/v2
 pr_id: VIGILODE-PR18-A1-TWO-ARM-RECEIPT
 risk_class: high
 base_sha: 4e3a75e5b2843dc1e135dcadba72edb1d09be94c
@@ -8,7 +8,7 @@ pull_request: 18
 
 objective:
   statement: Produce a deterministic 12-cell EnforcedBudgetHoldout320 receipt for two tolerance arms and six families.
-  observable_success: Commit atomic evidence, aggregate receipt, predeclared verdict, full A1/E4 GREEN, and fresh review.
+  observable_success: Freeze a scientific execution head, validate the complete artifact matrix, commit a later receipt and decision, obtain external A1/E4/receipt closure, and pass fresh review.
 
 scope:
   allowed_paths:
@@ -38,9 +38,10 @@ scope:
   forbidden_changes:
     - Do not retune tau, persistence, prefix budget, or continuation budget.
     - Do not change GMRES restart, maxiter, convergence, Arnoldi, QR, Givens, or counters.
-    - Do not change the committed arm before the complete decision receipt.
+    - Do not change the committed arm in this receipt node.
     - Do not rewrite historical receipts or expected outputs.
     - Do not use wall time for the authority classification.
+    - Do not embed a receipt commit's own identity or later verification run IDs inside the tracked receipt.
 
 invariants:
   - id: INV-01
@@ -61,12 +62,15 @@ invariants:
   - id: INV-06
     severity_if_violated: P1
     statement: Serialization and ordering are deterministic and wall fields do not affect the verdict.
+  - id: INV-07
+    severity_if_violated: P1
+    statement: The committed receipt binds the frozen scientific execution head and execution workflow, while receipt-commit and post-receipt verification identities remain external.
 
 failure_modes:
   - id: FM-01
     severity: P0
-    trigger: Candidate becomes production default before decision.
-    required_detection: committed_arm_remains_legacy_before_decision
+    trigger: Candidate becomes production default before a separately approved activation node.
+    required_detection: committed_arm_remains_legacy_before_activation
   - id: FM-02
     severity: P0
     trigger: Missing, duplicate, or extra cell is accepted.
@@ -81,8 +85,12 @@ failure_modes:
     required_detection: aggregate_recomputes_safety_and_discrimination
   - id: FM-05
     severity: P1
-    trigger: Artifact and committed receipt identify different source or cells.
-    required_detection: receipt_binds_exact_artifact_manifest
+    trigger: Artifact and committed receipt identify different scientific execution sources or cells.
+    required_detection: receipt_binds_exact_execution_artifact_manifest
+  - id: FM-06
+    severity: P1
+    trigger: A tracked receipt is required to contain its own commit/tree or a workflow run that can exist only after that commit.
+    required_detection: provenance_contract_is_cycle_free
 
 implementation:
   ordered_steps:
@@ -90,10 +98,11 @@ implementation:
     - Add explicit receipt-only arm injection while preserving the ordinary committed path.
     - Add deterministic atomic cell schema and CLI contracts.
     - Add standard-library aggregation with adversarial negative tests.
-    - Add and execute the 12-cell GitHub Actions workflow.
-    - Independently inspect artifacts and apply the predeclared verdict.
-    - Commit JSON and Markdown receipts without rewriting history.
-    - Run full A1 and E4 closure, refresh PR body, fresh-review, and stop draft/unmerged.
+    - Commit and push a scientific execution head without final receipt files.
+    - Execute the 12-cell workflow on the frozen execution head and independently validate artifacts.
+    - Commit JSON and Markdown receipts plus the predeclared decision as a later descendant.
+    - Run A1, E4, and receipt-validation on the receipt commit; retain those late-bound run IDs externally.
+    - Fresh-review and stop draft/unmerged without activating the candidate.
 
 verification:
   targeted:
@@ -118,6 +127,7 @@ agent_policy:
   changing_tests_to_fit_implementation: forbidden
   suppressing_failures: forbidden
   packaging_sha_as_scientific_gate: forbidden
+  self_referential_git_provenance: forbidden
 
 review_gate:
   fresh_context_required: true

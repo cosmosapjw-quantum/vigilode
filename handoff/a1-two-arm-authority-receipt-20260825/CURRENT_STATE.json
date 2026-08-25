@@ -1,5 +1,5 @@
 {
-  "schema": "vigilode-a1-two-arm-handoff-state-v1",
+  "schema": "vigilode-a1-two-arm-handoff-state-v2",
   "repository": "cosmosapjw-quantum/vigilode",
   "canonical_main": {
     "branch": "main",
@@ -50,8 +50,19 @@
     "prefix_budget_retuning_authorized": false,
     "continuation_budget_retuning_authorized": false
   },
+  "provenance_model": {
+    "schema": "vigilode-cycle-free-two-phase-provenance-v1",
+    "scientific_execution_identity": "frozen head/tree and tested merge tree that generate the twelve cells",
+    "receipt_commit_identity": "later descendant; externally observed and forbidden from self-embedding",
+    "external_verification_identity": "post-receipt run IDs stored outside the committed receipt",
+    "activation_identity": "separate approval-gated node",
+    "self_referential_receipt_binding_forbidden": true,
+    "late_bound_verification_must_remain_external": true
+  },
   "current_node": "A1-TWO-ARM-AUTHORITY-RECEIPT",
+  "current_control_plane_disposition": "CYCLE_FREE_PROVENANCE_REPAIR_APPLIED",
   "not_started": [
+    "candidate-arm activation commit",
     "A2 inner GMRES convergence",
     "A3 incremental Givens / QR replacement",
     "G1/G3 tolerance scope expansion",

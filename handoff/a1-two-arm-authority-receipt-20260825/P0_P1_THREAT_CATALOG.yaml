@@ -1,8 +1,8 @@
-schema: vigilode-a1-threat-catalog/v1
+schema: vigilode-a1-threat-catalog/v2
 
 p0:
   - id: P0-01
-    threat: outer-scaled arm becomes the ordinary committed runtime arm before a complete decision receipt
+    threat: outer-scaled arm becomes the ordinary committed runtime arm before a separately approved activation node
     guard: committed-arm constant and ordinary runtime tests remain legacy-fixed
   - id: P0-02
     threat: tau, persistence, prefix budget, or continuation budget is retuned to make the candidate pass
@@ -23,8 +23,8 @@ p0:
     threat: candidate verdict is changed by wall time, packaging metadata, or archive SHA
     guard: decision uses only deterministic scientific and work fields
   - id: P0-08
-    threat: artifact and committed receipt bind different source identities or atomic cells
-    guard: exact head/tree/toolchain and per-cell content manifest comparison
+    threat: artifact and committed receipt bind different scientific execution identities or atomic cells
+    guard: exact execution head/tree/toolchain and per-cell content manifest comparison
 
 p1:
   - id: P1-01
@@ -40,8 +40,14 @@ p1:
     threat: workflow passes while aggregate negative cases are untested
     guard: missing/duplicate/extra/tampered/mismatched-tau adversarial tests
   - id: P1-05
-    threat: PR body or Atlassian mirror claims completion before exact-head receipt closure
-    guard: refresh only after final artifacts and full A1/E4 GREEN
+    threat: PR body or Atlassian mirror claims completion before receipt-commit closure and fresh review
+    guard: refresh only after externally recorded A1/E4/receipt-validation GREEN
+  - id: P1-06
+    threat: committed receipt is required to embed its own commit/tree or a post-receipt workflow run, creating an infinite provenance loop
+    guard: freeze scientific execution identity in the receipt and keep receipt-commit plus later verification identities external
+  - id: P1-07
+    threat: load-bearing scientific code changes after the execution workflow but old artifacts are retained
+    guard: source-diff gate invalidates artifacts and requires a new scientific execution head
 
 accepted_deferred:
   - semantic forward-error versus residual/backward-error contract
@@ -49,3 +55,4 @@ accepted_deferred:
   - A2 inner-cycle convergence
   - A3 incremental Givens and repeated-QR removal
   - timing protocol and ranking authority
+  - candidate-arm activation

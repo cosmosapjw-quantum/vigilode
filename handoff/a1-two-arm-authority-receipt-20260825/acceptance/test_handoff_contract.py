@@ -51,6 +51,13 @@ class HandoffContractTests(unittest.TestCase):
             state["compile_trace_closure"]["e4_workflow"]["conclusion"],
             "SUCCESS",
         )
+        provenance = state["provenance_model"]
+        self.assertEqual(
+            provenance["schema"],
+            "vigilode-cycle-free-two-phase-provenance-v1",
+        )
+        self.assertTrue(provenance["self_referential_receipt_binding_forbidden"])
+        self.assertTrue(provenance["late_bound_verification_must_remain_external"])
         self.assertFalse(state["merge_authorized"])
         self.assertTrue(state["handoff_branch_must_not_be_merged"])
 
@@ -72,27 +79,57 @@ class HandoffContractTests(unittest.TestCase):
         ]:
             self.assertIn(token, corpus, token)
 
-    def test_workflow_provenance_is_load_bearing(self) -> None:
+    def test_workflow_provenance_is_cycle_free_and_load_bearing(self) -> None:
         corpus = "\n".join(
             (ROOT / relative).read_text(encoding="utf-8") for relative in REQUIRED
         )
         for token in [
             "github.event.pull_request.head.sha",
             "GITHUB_SHA",
-            "candidate_head_sha",
-            "candidate_head_tree",
-            "tested_merge_sha",
-            "tested_merge_tree",
-            "final merged main tree == reviewed tested_merge_tree",
+            "scientific_execution_head_sha",
+            "scientific_execution_head_tree",
+            "tested_execution_merge_sha",
+            "tested_execution_merge_tree",
+            "receipt_commit_sha",
+            "external_verification_run_id",
+            "self-referential Git",
+            "fixed-point problem",
+            "final merged main tree == reviewed final PR merge tree",
         ]:
             self.assertIn(token, corpus, token)
+
+        workflow = (ROOT / "WORKFLOW_PROVENANCE.md").read_text(encoding="utf-8")
+        prompt = (ROOT / "IMPLEMENTER_PROMPT.md").read_text(encoding="utf-8")
+        self.assertIn(
+            "The committed receipt MUST NOT contain `receipt_commit_sha`",
+            workflow,
+        )
+        self.assertIn(
+            "Do not amend or recommit the scientific receipt to insert late-bound",
+            prompt,
+        )
+        self.assertNotIn(
+            "Every atomic cell, artifact manifest, aggregate, and committed receipt must record:\n\n```text\nrepository\npull_request\ncandidate_head_sha",
+            workflow,
+        )
+
+    def test_receipt_schema_separates_execution_from_late_bound_closure(self) -> None:
+        matrix = (ROOT / "INVARIANT_TEST_MATRIX.yaml").read_text(encoding="utf-8")
+        for token in [
+            "scientific_execution_head_sha",
+            "execution_workflow_run_id",
+            "forbidden_tracked_receipt_fields",
+            "receipt_commit_sha",
+            "external_verification_run_id",
+        ]:
+            self.assertIn(token, matrix, token)
 
     def test_forbidden_nodes_are_explicit(self) -> None:
         prompt = (ROOT / "IMPLEMENTER_PROMPT.md").read_text(encoding="utf-8")
         for token in [
             "Do not perform A2/A3",
             "Do not change",
-            "Do not switch the committed arm inside the replay runner",
+            "Do not switch the committed arm inside this node",
             "Stop with PR #18 OPEN / DRAFT / UNMERGED",
             "Do not ask the user questions",
         ]:

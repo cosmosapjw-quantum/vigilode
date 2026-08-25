@@ -1,7 +1,7 @@
-schema: vigilode-a1-invariant-test-matrix/v1
+schema: vigilode-a1-invariant-test-matrix/v2
 
 matrix:
-  - invariant: committed arm remains legacy-fixed before final decision
+  - invariant: committed arm remains legacy-fixed throughout receipt node
     severity: P0
     positive: ordinary committed path reports legacy-fixed
     negative: candidate cannot be selected through ordinary runtime API
@@ -29,10 +29,18 @@ matrix:
     severity: P1
     positive: permutation of input files yields identical aggregate
     negative: wall-time and archive-metadata mutations do not change verdict or scientific digest
-  - invariant: source and artifact binding
+  - invariant: scientific execution source and artifact binding
     severity: P1
-    positive: cells, aggregate, workflow artifact, and committed receipt identify one head/tree/toolchain
-    negative: one-cell or source-identity mismatch rejected
+    positive: cells, aggregate, workflow artifact, and committed receipt identify one frozen scientific execution head/tree/toolchain
+    negative: one-cell or execution-source mismatch rejected
+  - invariant: cycle-free late-bound closure
+    severity: P1
+    positive: receipt commit and post-receipt workflow identities are recorded externally
+    negative: tracked receipt schema rejects receipt_commit_sha, receipt_commit_tree, or external_verification_run_id fields
+  - invariant: post-execution source immutability
+    severity: P0
+    positive: only receipt and interpretation paths change after the frozen scientific execution head
+    negative: any load-bearing runner, governed constant, or aggregation-semantics change invalidates artifacts
   - invariant: historical evidence remains immutable
     severity: P0
     positive: new receipt links legacy artifacts by identity and applicability
@@ -40,9 +48,16 @@ matrix:
 
 required_cell_fields:
   - schema
-  - source_commit
-  - source_tree
+  - scientific_execution_head_sha
+  - scientific_execution_head_tree
+  - base_sha
+  - base_tree
+  - tested_execution_merge_sha
+  - tested_execution_merge_tree
+  - execution_workflow_run_id
+  - execution_workflow_run_attempt
   - rust_version
+  - cargo_version
   - profile
   - family
   - arm
@@ -63,6 +78,12 @@ required_cell_fields:
   - hard_gates
   - limitations
 
+forbidden_tracked_receipt_fields:
+  - receipt_commit_sha
+  - receipt_commit_tree
+  - external_verification_run_id
+  - external_verification_run_attempt
+
 required_aggregate_fields:
   - complete_cell_keys
   - per_arm_totals
@@ -73,5 +94,5 @@ required_aggregate_fields:
   - audit_unsafe_event_keys
   - hires_positive_control
   - predeclared_decision
-  - artifact_manifest
-  - source_identity
+  - artifact_content_manifest
+  - scientific_execution_identity

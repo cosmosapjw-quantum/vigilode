@@ -10,7 +10,7 @@ A1-TWO-ARM-AUTHORITY-RECEIPT
 
 The compile/trace closure is already GREEN at implementation head
 `7952bf96bfd9fb604e87bce41bd9b918cc9b93f4`. The next task is not to redesign
-GMRES or to activate the candidate. It is to generate a complete, deterministic,
+GMRES or activate the candidate. It is to generate a complete, deterministic,
 read-only scientific receipt for:
 
 ```text
@@ -37,9 +37,10 @@ or equal outer-error contribution.
 
 ## Required receipt content
 
-Each cell and the aggregate must retain enough evidence to reconstruct:
+Each cell and aggregate retain enough evidence to reconstruct:
 
-- exact source/head/tree and toolchain identity;
+- frozen scientific execution head/tree and tested execution merge tree;
+- base, toolchain, execution workflow run, and artifact content manifest;
 - arm, family, profile, outer tolerance, linear tolerance, and phi tolerance;
 - attempts and accepted/rejected steps;
 - committed RHS/JVP/linear-matvec work;
@@ -53,6 +54,22 @@ Each cell and the aggregate must retain enough evidence to reconstruct:
 - all hard gates and limitations;
 - a predeclared final classification.
 
+## Cycle-free evidence lifecycle
+
+```text
+scientific execution head
+  -> twelve-cell workflow and artifacts
+  -> later receipt commit
+  -> external exact-head closure
+  -> fresh review
+```
+
+The committed receipt binds the earlier scientific execution identity. It does
+not contain its own later commit/tree or post-receipt workflow IDs. Those
+late-bound identities are recorded externally in GitHub/Atlassian and the
+completion report. Any load-bearing code change after scientific execution
+invalidates the artifacts and requires a new execution head.
+
 ## Decision classes
 
 ```text
@@ -62,12 +79,16 @@ NOT_ADMISSIBLE
 ```
 
 Only `ADMISSIBLE_AND_DISCRIMINATING` can make the candidate eligible for a
-separate committed-arm switch. Do not switch automatically inside the replay
-runner. The decision must be committed as evidence and independently reviewed.
+separate, explicitly approved activation commit. No activation occurs in this
+receipt node.
 
 ## Evidence ownership
 
 - GitHub source bytes and Actions artifacts are canonical execution evidence.
+- The committed receipt is durable scientific interpretation of the frozen
+  execution artifacts.
+- PR checks/comments carry late-bound receipt-commit and closure-run identity.
 - Jira PM-4 mirrors task state and blockers.
 - The canonical Confluence page mirrors the DAG and claim boundaries.
-- This handoff branch is navigation/control material only and must never be merged.
+- This handoff branch is navigation/control material only and must never be
+  merged.
