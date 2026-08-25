@@ -43,6 +43,9 @@ jobs:
           cargo test -p rodas5p-integrators \
             --test a1_inner_tolerance_parity_contracts \
             --locked
+          cargo test -p rodas5p-integrators \
+            --test a1_two_arm_receipt_contracts \
+            --locked
 
       - name: Run the committed external trace regression
         run: |
@@ -61,6 +64,10 @@ jobs:
           cargo test -p rodas5p-cli \
             --test frozen_full_e_shadow_cli_contracts \
             --locked
+          cargo test -p rodas5p-cli \
+            --test a1_tolerance_receipt_cli_contracts \
+            --locked
+          python3 tools/test_a1_tolerance_receipt.py -v
 
       - name: Compile every workspace target
         run: cargo test --workspace --all-targets --no-run --locked

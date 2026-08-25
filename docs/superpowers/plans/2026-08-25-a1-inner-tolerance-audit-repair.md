@@ -13,6 +13,8 @@
 ## Global constraints
 
 - Canonical audit base is PR #18 head `67ec3ad77d0a88f3ff9c096b309d3a12da72b600`.
+- Exact starting authority for the receipt node is
+  `7952bf96bfd9fb604e87bce41bd9b918cc9b93f4`.
 - PR remains draft and unmerged throughout this plan.
 - Do not retune `V36_FROZEN_ZETA34_TAU`, persistence, prefix budget, or continuation budget.
 - Do not modify GMRES iteration/QR algorithms, G1/G3 policies, solver equations, coefficient fixtures, or timing protocol.
@@ -133,32 +135,44 @@ Run two arms by six families, upload JSON results, aggregate them with a standar
 
 Require complete arm/family coverage, unique keys, consistent tau, hard-gate reporting, work/event/recommendation deltas, zeta margins, and Hires discriminating-event classification.
 
-### Task 6: Execute the replay and commit the authority decision
+### Task 6: Execute the replay and commit the authority decision cycle-free
 
 **Files:**
-- Create: `research/a1_inner_tolerance_audit_20260825/results/A1_TWO_ARM_RECEIPT.json`
-- Create: `research/a1_inner_tolerance_audit_20260825/reports/A1_TWO_ARM_RECEIPT.md`
+- Create: `research/a1_inner_tolerance_audit_20260825/A1_TWO_ARM_AUTHORITY_RECEIPT.json`
+- Create: `research/a1_inner_tolerance_audit_20260825/A1_TWO_ARM_AUTHORITY_RECEIPT.md`
 - Update: `research/a1_inner_tolerance_audit_20260825/CLAIM_SCOPE_AND_INVALIDATION.md`
 
-- [ ] **Step 1: Dispatch exact-head replay**
+- [ ] **Step 1: Freeze and publish the scientific execution head**
 
-Record workflow run, exact head, Rust version, and all artifact hashes.
+Commit all load-bearing runner, schema, aggregation, and workflow semantics as
+`H_exec`, without final generated receipt files and without an arm switch.
 
-- [ ] **Step 2: Download and independently inspect artifacts**
+- [ ] **Step 2: Execute the exact-head replay**
+
+Record `H_exec` SHA/tree, tested execution merge SHA/tree, workflow run/attempt,
+Rust/Cargo versions, and all deterministic artifact content hashes.
+
+- [ ] **Step 3: Download and independently inspect artifacts**
 
 Check family coverage, totals, event/recommendation sets, zeta margins on both sides of tau, unsafe recommendations, and the Hires positive control.
 
-- [ ] **Step 3: Classify the parity arm**
+- [ ] **Step 4: Classify the parity arm**
 
 Apply the predeclared `ADMISSIBLE_AND_DISCRIMINATING / ADMISSIBLE_BUT_NONDISCRIMINATING / NOT_ADMISSIBLE` rule without threshold retuning.
 
-- [ ] **Step 4: Select the committed arm**
+- [ ] **Step 5: Preserve the committed arm**
 
-Switch to `OuterScaledNumericParity` only for `ADMISSIBLE_AND_DISCRIMINATING`; otherwise retain `LegacyFixed` and narrow the PR to experiment/receipt infrastructure.
+Retain `LegacyFixed` for every result class. An
+`ADMISSIBLE_AND_DISCRIMINATING` result opens only a separate, explicitly
+approved activation commit.
 
-- [ ] **Step 5: Commit receipt and decision**
+- [ ] **Step 6: Commit receipt and decision**
 
-Do not rewrite historical v3.5/v3.7 files. Link them by exact identity and state whether they are preserved, superseded for current code, or remain legacy-only.
+Create `H_receipt` as a descendant of `H_exec`. The receipt binds the earlier
+scientific execution identity and content manifest, but never embeds its own
+commit/tree or later verification run IDs. Do not rewrite historical v3.5/v3.7
+files. Link them by exact identity and state whether they are preserved,
+superseded for current code, or remain legacy-only.
 
 ### Task 7: Expand CI and downstream closure
 
@@ -188,7 +202,10 @@ Confirm ordinary fast-forward history, draft/open/unmerged state, exact head/tre
 
 - [ ] **Step 2: Verify all workflows**
 
-Require A1 workspace CI and E4 fresh-clone CI success at the exact head. Confirm the two-arm receipt artifact corresponds to the committed receipt.
+Require A1 workspace CI, E4 fresh-clone CI, and receipt validation success at
+the exact `H_receipt`. Record `H_receipt` SHA/tree and these post-receipt run IDs
+externally; do not amend the receipt to insert them. Confirm the earlier
+two-arm execution artifact corresponds byte-for-byte to the committed receipt.
 
 - [ ] **Step 3: Perform fresh-context review**
 

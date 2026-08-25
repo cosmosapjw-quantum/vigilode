@@ -70,7 +70,10 @@ outer-scaled-numeric-parity:
   linear atol = max(3.0e-4 * outer_rtol, 1.0e-14)
 ```
 
-The committed production arm remains explicit in one constant. It may be changed from `legacy-fixed` to `outer-scaled-numeric-parity` only after the new arm independently satisfies the replay gates and the receipt is committed.
+The committed production arm remains explicit in one constant and stays
+`legacy-fixed` throughout the receipt node. If the new arm independently
+satisfies the replay gates, activation still requires a separate, explicitly
+approved commit.
 
 ### Typed lane wiring
 
@@ -104,7 +107,21 @@ The aggregate receipt classifies the new arm as one of:
 - `ADMISSIBLE_BUT_NONDISCRIMINATING`: hard gates pass but the positive control disappears;
 - `NOT_ADMISSIBLE`: any hard safety/provenance gate fails.
 
-Only the first class can support switching the committed arm in this PR. The second leaves A1 experimental; the third requires reverting the production change.
+Only the first class can make the candidate eligible for a separate,
+approval-gated activation commit. No class switches the committed arm inside
+the receipt node. The second leaves A1 experimental; the third classifies the
+candidate as not admissible.
+
+### Cycle-free execution and closure
+
+All load-bearing runner, schema, aggregation, and workflow semantics are frozen
+in a scientific execution head `H_exec`. The twelve cells and aggregate are
+generated from its tested pull-request merge. A later descendant `H_receipt`
+adds the validated JSON/Markdown receipt and decision. The tracked receipt binds
+`H_exec`, the tested execution merge, workflow run/attempt, toolchain, and cell
+content manifest, but never its own receipt commit/tree or later verification
+run IDs. A1, E4, receipt validation, and fresh review on `H_receipt` are external
+late-bound closure evidence.
 
 ## CI
 
@@ -118,7 +135,10 @@ The A1 workflow must run on relevant pull-request changes, relevant pushes to `m
 - run workspace Clippy with warnings denied;
 - run formatting, diff, and tracked-source stability checks.
 
-The expensive twelve-cell two-arm replay is a separate manual/explicit workflow and is not treated as a timing benchmark.
+The twelve-cell workflow runs the scientific campaign only while final receipt
+files are absent. On `H_receipt` it switches to validation-only mode and
+recomputes the committed receipt from the earlier execution artifacts. It is
+not treated as a timing benchmark.
 
 ## Non-goals
 
@@ -137,6 +157,7 @@ The repair is complete only when:
 2. fallible typed lane wiring replaces `expect` and source-text scanning;
 3. a frozen external trace fixture is green;
 4. workspace/downstream CI is green;
-5. a twelve-cell two-arm receipt is committed and its authority decision is explicit;
+5. a twelve-cell two-arm receipt is committed as a descendant of the frozen
+   scientific execution head and its authority decision is explicit;
 6. the PR body names superseded/conditional receipts and the remaining A2/A3/M1/M2 limitations;
 7. the PR remains draft and unmerged pending fresh-context review and explicit user approval.

@@ -81,7 +81,20 @@ outer-scaled-numeric-parity
 - `ADMISSIBLE_BUT_NONDISCRIMINATING`: hard gates pass and unsafe recommendations are zero, but the positive control disappears.
 - `NOT_ADMISSIBLE`: any hard safety/provenance gate fails or an unsafe recommendation appears.
 
-The committed arm may change to `outer-scaled-numeric-parity` in PR #18 only under `ADMISSIBLE_AND_DISCRIMINATING`. No threshold or persistence retuning is allowed to obtain that class.
+The committed arm remains `legacy-fixed` throughout the receipt node. An
+`ADMISSIBLE_AND_DISCRIMINATING` result makes the candidate eligible only for a
+separate, explicitly approved activation commit. It does not activate the
+candidate in this node. No threshold or persistence retuning is allowed to
+obtain that class.
+
+## Cycle-free receipt provenance
+
+The tracked receipt binds the frozen scientific execution head/tree, canonical
+base, tested execution merge SHA/tree, execution workflow run/attempt, Rust and
+Cargo versions, and the twelve-cell content manifest. It intentionally does not
+contain its own later receipt commit/tree or post-receipt verification run IDs.
+Those late-bound identities remain external in the PR conversation, Atlassian
+mirrors, and completion evidence.
 
 ## Deferred nodes
 
@@ -96,6 +109,7 @@ The following findings are accepted as real but deliberately kept outside this b
 
 ```text
 A1 production authority: BLOCKED_PENDING_TWO_ARM_RECEIPT
+A1 candidate activation: REQUIRES_SEPARATE_EXPLICIT_APPROVAL_COMMIT
 wall-time/ranking authority: NOT_AUTHORIZED
 active switching: NOT_AUTHORIZED
 merge: NOT_AUTHORIZED

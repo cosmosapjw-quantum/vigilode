@@ -1,5 +1,6 @@
 #![forbid(unsafe_code)]
 
+mod a1_two_arm_receipt;
 mod adaptive;
 mod adaptive_exponential;
 mod bdf;
@@ -230,6 +231,11 @@ pub use v38d_performance_tournament::{
     run_v38d_probe,
 };
 
+pub use a1_two_arm_receipt::{
+    A1_TWO_ARM_RECEIPT_PROFILE, A1_TWO_ARM_RECEIPT_SCHEMA, A1ScientificExecutionIdentity,
+    A1ToleranceReceiptCell, A1ToleranceReceiptEventRow, A1ToleranceReceiptRecommendationRow,
+    run_a1_two_arm_receipt_cell,
+};
 pub use policy_redesign_v25::{
     CausalRjfStep, PersistenceLatch, PointFeature, PrefixBudget, ProbeAction, causal_feature_value,
 };
