@@ -1,7 +1,5 @@
 use rodas5p_core::LinearMethod;
-use rodas5p_integrators::{
-    FusedOrthogonalization, G4S5B0InnerTolerancePolicy, G4S5B0Profile,
-};
+use rodas5p_integrators::{FusedOrthogonalization, G4S5B0InnerTolerancePolicy, G4S5B0Profile};
 
 fn assert_shared_tolerances(profile: G4S5B0Profile) {
     let (_, outer_rtol) = profile.tolerances();

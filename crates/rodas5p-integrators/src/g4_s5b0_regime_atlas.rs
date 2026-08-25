@@ -1,19 +1,18 @@
 use std::{collections::BTreeSet, sync::Arc, time::Instant};
 
 use rodas5p_core::{
-    CoreError, CoreResult, LinearMethod, LinearSolverConfig, WorkCounters, error_scale, safe_l2,
-    wrms,
+    CoreError, CoreResult, LinearSolverConfig, WorkCounters, error_scale, safe_l2, wrms,
 };
 use serde::{Deserialize, Serialize};
 
 use crate::{
     AdaptiveControllerState, AdaptiveStepConfig, ControllerKind, FusedOrthogonalization,
-    FusedPhiKrylovConfig, FusedPhiPrefixSession, OdeProblem, ParallelExecution, PersistenceLatch,
-    Pexprb54s4AccountedBudgetedLevel2PrefixOutcome, Pexprb54s4BudgetedLevel2PrefixOutcome,
-    Pexprb54s4Level1PrefixReport, Pexprb54s4Level2ContinuationOutcome, Pexprb54s4Level2Prefix,
-    Pexprb54s4Level2PrefixReport, Pexprb54s4QuadraticRemainderDrift,
-    Pexprb54s4RemainderVectorGeometry, pexprb54s4_fused_step, pexprb54s4_fused_step_resume_level2,
-    pexprb54s4_fused_step_resume_level2_accounted,
+    FusedPhiKrylovConfig, FusedPhiPrefixSession, G4S5B0InnerTolerancePolicy, OdeProblem,
+    ParallelExecution, PersistenceLatch, Pexprb54s4AccountedBudgetedLevel2PrefixOutcome,
+    Pexprb54s4BudgetedLevel2PrefixOutcome, Pexprb54s4Level1PrefixReport,
+    Pexprb54s4Level2ContinuationOutcome, Pexprb54s4Level2Prefix, Pexprb54s4Level2PrefixReport,
+    Pexprb54s4QuadraticRemainderDrift, Pexprb54s4RemainderVectorGeometry, pexprb54s4_fused_step,
+    pexprb54s4_fused_step_resume_level2, pexprb54s4_fused_step_resume_level2_accounted,
     pexprb54s4_fused_step_resume_level2_accounted_jvp_budget,
     pexprb54s4_level1_prefix_with_tolerance_scaled_telemetry,
     pexprb54s4_level2_prefix_resume_level1,
@@ -1309,27 +1308,17 @@ fn adaptive_config(profile: G4S5B0Profile, span: f64) -> AdaptiveStepConfig {
     }
 }
 
-fn phi_config(rtol: f64, dimension: usize) -> FusedPhiKrylovConfig {
-    FusedPhiKrylovConfig {
-        minimum_dimension: 2,
-        maximum_dimension: (dimension + 4).min(32),
-        dimension_increment: 2,
-        relative_tolerance: (0.03 * rtol).max(1.0e-12),
-        absolute_tolerance: (3.0e-4 * rtol).max(1.0e-14),
-        orthogonalization: FusedOrthogonalization::FullMgs,
-        maximum_substeps: 16,
-    }
+fn inner_tolerance_policy(rtol: f64) -> G4S5B0InnerTolerancePolicy {
+    G4S5B0InnerTolerancePolicy::try_from_outer_rtol(rtol)
+        .expect("G4/S5B0 profile rtol must be finite and positive")
 }
 
-fn linear_config() -> LinearSolverConfig {
-    LinearSolverConfig {
-        method: LinearMethod::Gmres,
-        rtol: 1.0e-10,
-        atol: 1.0e-12,
-        restart: 32,
-        maxiter: 256,
-        ..LinearSolverConfig::default()
-    }
+fn phi_config(rtol: f64, dimension: usize) -> FusedPhiKrylovConfig {
+    inner_tolerance_policy(rtol).phi_config(dimension)
+}
+
+fn linear_config(rtol: f64) -> LinearSolverConfig {
+    inner_tolerance_policy(rtol).linear_config()
 }
 
 struct ExponentialShadow {
@@ -1514,7 +1503,7 @@ fn run_trajectory(
     include_exponential_shadow: bool,
 ) -> (Vec<G4S5B0StepRow>, G4S5B0TrajectorySummary) {
     let adaptive = adaptive_config(profile, problem.t_span.1 - problem.t_span.0);
-    let linear = linear_config();
+    let linear = linear_config(adaptive.rtol);
     let mut controller = AdaptiveControllerState::default();
     let mut t = problem.t_span.0;
     let tf = problem.t_span.1;
@@ -1813,7 +1802,7 @@ fn run_rjf_attempt_trace_trajectory(
     G4S5B0TrajectorySummary,
 ) {
     let adaptive = adaptive_config(profile, problem.t_span.1 - problem.t_span.0);
-    let linear = linear_config();
+    let linear = linear_config(adaptive.rtol);
     let mut controller = AdaptiveControllerState::default();
     let mut t = problem.t_span.0;
     let tf = problem.t_span.1;
@@ -2101,7 +2090,7 @@ fn run_rjf_actual_level1_prefix_trajectory(
     G4S5B0TrajectorySummary,
 ) {
     let adaptive = adaptive_config(profile, problem.t_span.1 - problem.t_span.0);
-    let linear = linear_config();
+    let linear = linear_config(adaptive.rtol);
     let mut controller = AdaptiveControllerState::default();
     let mut policy_state =
         PrefixPolicyState::new(policy).expect("sealed persistence policy is valid");
@@ -2378,7 +2367,7 @@ fn run_rjf_actual_level2_prefix_trajectory(
     G4S5B0TrajectorySummary,
 ) {
     let adaptive = adaptive_config(profile, problem.t_span.1 - problem.t_span.0);
-    let linear = linear_config();
+    let linear = linear_config(adaptive.rtol);
     let mut controller = AdaptiveControllerState::default();
     let mut policy_state =
         PrefixPolicyState::new(policy).expect("sealed persistence policy is valid");
@@ -2902,7 +2891,7 @@ fn run_rjf_stage_growth_safety_trajectory(
     G4S5B0TrajectorySummary,
 ) {
     let adaptive = adaptive_config(profile, problem.t_span.1 - problem.t_span.0);
-    let linear = linear_config();
+    let linear = linear_config(adaptive.rtol);
     let mut controller = AdaptiveControllerState::default();
     let mut policy_state = PrefixPolicyState::new(G4S5B0PrefixProbePolicy::K3Development)
         .expect("sealed k=3 policy is valid");
@@ -3816,7 +3805,7 @@ fn run_rjf_frozen_full_e_shadow_trajectory(
     G4S5B0TrajectorySummary,
 ) {
     let adaptive = adaptive_config(profile, problem.t_span.1 - problem.t_span.0);
-    let linear = linear_config();
+    let linear = linear_config(adaptive.rtol);
     let mut controller = AdaptiveControllerState::default();
     let mut policy_state = PrefixPolicyState::new(G4S5B0PrefixProbePolicy::K3Development)
         .expect("sealed k=3 policy is valid");
