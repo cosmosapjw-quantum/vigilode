@@ -1,0 +1,49 @@
+name: A1 inner-tolerance parity
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/a1-inner-tolerance-parity.yml"
+      - "crates/rodas5p-integrators/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  a1-inner-tolerance-parity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Install the pinned Rust toolchain
+        run: |
+          rustup toolchain install 1.94.1 --profile minimal --component rustfmt,clippy
+          rustup override set 1.94.1
+
+      - name: Run the A1 inner-tolerance contract
+        run: |
+          cargo test -p rodas5p-integrators \
+            --test a1_inner_tolerance_parity_contracts \
+            --locked
+
+      - name: Run the affected G4/S5B0 behavioral contracts
+        run: |
+          cargo test -p rodas5p-integrators \
+            --test g4_s5b0_regime_atlas_contracts \
+            --locked
+
+      - name: Compile every integrator target
+        run: cargo test -p rodas5p-integrators --all-targets --no-run --locked
+
+      - name: Lint the affected crate
+        run: cargo clippy -p rodas5p-integrators --all-targets --locked -- -D warnings
+
+      - name: Check formatting and source stability
+        run: |
+          cargo fmt --all -- --check
+          git diff --check
+          test -z "$(git status --porcelain --untracked-files=no)"
