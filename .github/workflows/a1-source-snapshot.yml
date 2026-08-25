@@ -1,0 +1,41 @@
+name: A1 source snapshot (temporary)
+
+on:
+  push:
+    branches:
+      - scratch/a1-two-arm-local-snapshot-20260826
+
+permissions:
+  contents: read
+
+jobs:
+  package-source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out exact scratch ref
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Record exact source identity
+        run: |
+          git rev-parse HEAD > SOURCE_HEAD
+          git rev-parse HEAD^{tree} > SOURCE_TREE
+          git status --porcelain > SOURCE_STATUS
+          test ! -s SOURCE_STATUS
+
+      - name: Package complete worktree and Git metadata
+        run: |
+          tar \
+            --exclude='./target' \
+            --exclude='./.git/objects/pack/*.keep' \
+            -czf "$RUNNER_TEMP/vigilode-source.tgz" .
+
+      - name: Upload source snapshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: vigilode-a1-source-snapshot
+          path: ${{ runner.temp }}/vigilode-source.tgz
+          retention-days: 1
+          if-no-files-found: error
