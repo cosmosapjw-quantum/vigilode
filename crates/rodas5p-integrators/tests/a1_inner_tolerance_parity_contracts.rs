@@ -86,9 +86,7 @@ fn parity_policy_preserves_structure_and_is_wired_into_every_g4_s5b0_lane() {
 
     let atlas_source = include_str!("../src/g4_s5b0_regime_atlas.rs");
     assert_eq!(
-        atlas_source
-            .matches("linear_config(adaptive.rtol)")
-            .count(),
+        atlas_source.matches("linear_config(adaptive.rtol)").count(),
         6
     );
     assert!(!atlas_source.contains("let linear = linear_config();"));
