@@ -10,6 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 REQUIRED = [
     "AGENTS.md",
     "README.md",
+    "WORKFLOW_PROVENANCE.md",
     "CURRENT_STATE.json",
     "AUDIT_COMPILED_EXEC_PLAN.yaml",
     "P0_P1_THREAT_CATALOG.yaml",
@@ -68,6 +69,21 @@ class HandoffContractTests(unittest.TestCase):
             "NOT_ADMISSIBLE",
             "BLOCKED_BY_UNRESOLVED_SPEC",
             "OPEN_DRAFT_UNMERGED",
+        ]:
+            self.assertIn(token, corpus, token)
+
+    def test_workflow_provenance_is_load_bearing(self) -> None:
+        corpus = "\n".join(
+            (ROOT / relative).read_text(encoding="utf-8") for relative in REQUIRED
+        )
+        for token in [
+            "github.event.pull_request.head.sha",
+            "GITHUB_SHA",
+            "candidate_head_sha",
+            "candidate_head_tree",
+            "tested_merge_sha",
+            "tested_merge_tree",
+            "final merged main tree == reviewed tested_merge_tree",
         ]:
             self.assertIn(token, corpus, token)
 
