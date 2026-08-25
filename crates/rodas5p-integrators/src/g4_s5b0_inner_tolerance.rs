@@ -111,9 +111,7 @@ impl G4S5B0InnerTolerancePolicy {
         let phi_absolute_tolerance =
             (INNER_ABSOLUTE_FRACTION * outer_rtol).max(INNER_ABSOLUTE_FLOOR);
         let (linear_relative_tolerance, linear_absolute_tolerance) = match arm {
-            G4S5B0LinearToleranceArm::LegacyFixed => {
-                (LEGACY_LINEAR_RTOL, LEGACY_LINEAR_ATOL)
-            }
+            G4S5B0LinearToleranceArm::LegacyFixed => (LEGACY_LINEAR_RTOL, LEGACY_LINEAR_ATOL),
             G4S5B0LinearToleranceArm::OuterScaledNumericParity => {
                 (phi_relative_tolerance, phi_absolute_tolerance)
             }
@@ -130,15 +128,8 @@ impl G4S5B0InnerTolerancePolicy {
         })
     }
 
-    pub fn committed_for_lane(
-        lane: G4S5B0InnerToleranceLane,
-        outer_rtol: f64,
-    ) -> CoreResult<Self> {
-        Self::try_for_lane(
-            lane,
-            committed_g4_s5b0_linear_tolerance_arm(),
-            outer_rtol,
-        )
+    pub fn committed_for_lane(lane: G4S5B0InnerToleranceLane, outer_rtol: f64) -> CoreResult<Self> {
+        Self::try_for_lane(lane, committed_g4_s5b0_linear_tolerance_arm(), outer_rtol)
     }
 
     /// Compatibility constructor for callers that do not need an explicit

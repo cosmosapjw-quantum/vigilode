@@ -113,9 +113,8 @@ pub use g4_prefix_kernel_gate::{
     run_g4_prefix_kernel_gate,
 };
 pub use g4_s5b0_inner_tolerance::{
-    G4_S5B0_COMMITTED_LINEAR_TOLERANCE_ARM, G4S5B0InnerToleranceLane,
-    G4S5B0InnerTolerancePolicy, G4S5B0LinearToleranceArm,
-    committed_g4_s5b0_linear_tolerance_arm,
+    G4_S5B0_COMMITTED_LINEAR_TOLERANCE_ARM, G4S5B0InnerToleranceLane, G4S5B0InnerTolerancePolicy,
+    G4S5B0LinearToleranceArm, committed_g4_s5b0_linear_tolerance_arm,
 };
 pub use g4_s5b0_regime_atlas::{
     G4S5B0ActualLevel1PrefixReport, G4S5B0ActualLevel1PrefixRow, G4S5B0ActualLevel2PrefixReport,
@@ -137,8 +136,7 @@ pub use g4_s5b0_regime_atlas::{
     run_g4_s5b0_v37_continuation_transaction, run_g4_s5b0_v37_continuation_transaction_family,
 };
 pub use g4_s5b0_trace_authority::{
-    g4_s5b0_rjf_trace_digest,
-    run_g4_s5b0_rjf_attempt_trace_family_with_linear_tolerance_arm,
+    g4_s5b0_rjf_trace_digest, run_g4_s5b0_rjf_attempt_trace_family_with_linear_tolerance_arm,
 };
 pub use g4_s5b3_attempt_geometry::{
     G4S5B3AttemptGeometryReport, G4S5B3AttemptRow, G4S5B3CalibrationRow, G4S5B3HardGateSummary,

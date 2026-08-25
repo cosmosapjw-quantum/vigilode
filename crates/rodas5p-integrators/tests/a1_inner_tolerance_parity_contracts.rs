@@ -103,8 +103,7 @@ fn all_six_runtime_lane_accessors_are_value_equivalent_for_a_given_arm() {
         .unwrap();
 
         for lane in G4S5B0InnerToleranceLane::ALL {
-            let candidate =
-                G4S5B0InnerTolerancePolicy::try_for_lane(lane, arm, 1.0e-5).unwrap();
+            let candidate = G4S5B0InnerTolerancePolicy::try_for_lane(lane, arm, 1.0e-5).unwrap();
             assert_eq!(candidate.arm(), reference.arm());
             assert_eq!(
                 candidate.linear_relative_tolerance().to_bits(),
@@ -131,9 +130,7 @@ fn tolerance_construction_is_fallible_and_never_requires_abort() {
     for lane in G4S5B0InnerToleranceLane::ALL {
         for arm in G4S5B0LinearToleranceArm::ALL {
             for outer_rtol in [0.0, -1.0e-5, f64::NAN, f64::INFINITY] {
-                assert!(
-                    G4S5B0InnerTolerancePolicy::try_for_lane(lane, arm, outer_rtol).is_err()
-                );
+                assert!(G4S5B0InnerTolerancePolicy::try_for_lane(lane, arm, outer_rtol).is_err());
             }
         }
     }
