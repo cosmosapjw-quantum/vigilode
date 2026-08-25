@@ -130,7 +130,7 @@ jobs:
           FAMILY: ${{ matrix.family }}
         run: |
           mkdir -p cells
-          cargo run -p rodas5p-cli --locked -- \
+          cargo run -p rodas5p-cli --bin rodas5p --locked -- \
             a1-two-arm-receipt-cell \
             --family "$FAMILY" \
             --arm "$ARM" \
