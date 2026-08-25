@@ -61,7 +61,7 @@ fn nonpositive_or_nonfinite_outer_tolerance_is_rejected() {
 }
 
 #[test]
-fn parity_policy_preserves_solver_structure_and_changes_only_tolerances() {
+fn parity_policy_preserves_structure_and_is_wired_into_every_g4_s5b0_lane() {
     let policy = G4S5B0InnerTolerancePolicy::try_from_outer_rtol(1.0e-5).unwrap();
     let linear = policy.linear_config();
     let phi = policy.phi_config(128);
@@ -74,4 +74,17 @@ fn parity_policy_preserves_solver_structure_and_changes_only_tolerances() {
     assert_eq!(phi.dimension_increment, 2);
     assert_eq!(phi.orthogonalization, FusedOrthogonalization::FullMgs);
     assert_eq!(phi.maximum_substeps, 16);
+
+    let atlas_source = include_str!("../src/g4_s5b0_regime_atlas.rs");
+    assert_eq!(
+        atlas_source
+            .matches("linear_config(adaptive.rtol)")
+            .count(),
+        6
+    );
+    assert!(!atlas_source.contains("let linear = linear_config();"));
+    assert!(atlas_source.contains("inner_tolerance_policy(rtol).phi_config(dimension)"));
+    assert!(atlas_source.contains("inner_tolerance_policy(rtol).linear_config()"));
+    assert!(!atlas_source.contains("rtol: 1.0e-10"));
+    assert!(!atlas_source.contains("atol: 1.0e-12"));
 }
