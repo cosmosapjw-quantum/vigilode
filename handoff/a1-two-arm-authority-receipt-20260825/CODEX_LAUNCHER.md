@@ -1,6 +1,6 @@
 # CODEX LAUNCHER
 
-Resume VigilODE PR #18 from the durable two-arm receipt handoff.
+Resume VigilODE PR #18 from the repaired audit-full-E handoff.
 
 Repository:
 
@@ -16,12 +16,14 @@ research/a1-inner-tolerance-parity
 handoff/a1-two-arm-authority-receipt-20260825
 ```
 
-Create a detached read-only worktree for the handoff branch. Read its `AGENTS.md`, follow the mandatory read order, run `acceptance/test_handoff_contract.py`, and then execute `IMPLEMENTER_PROMPT.md` completely.
+Create a detached read-only worktree for the current remote handoff head. Read `AGENTS.md`, follow the mandatory read order, run `acceptance/test_handoff_contract.py`, and then execute `IMPLEMENTER_PROMPT.md` completely.
 
 Important:
 
-- The compile/trace baseline is already GREEN at `7952bf96bfd9fb604e87bce41bd9b918cc9b93f4`.
+- Run `32906175896` is diagnostic-only and cannot support a receipt.
+- The current implementation starts at `755b31750c1f0e026bbe11aca24efb71e6242624`.
+- Add independent arm-specific audit full-E evidence and publish a new H_exec.
 - Reuse PR #18. Do not open another PR.
 - Do not merge the handoff branch.
-- Implement only `A1-TWO-ARM-AUTHORITY-RECEIPT`.
 - Leave PR #18 draft and unmerged.
+- Do not activate the candidate or perform A2/A3, timing/ranking, switching, tag, release, or merge.

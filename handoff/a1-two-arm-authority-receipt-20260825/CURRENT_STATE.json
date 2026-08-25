@@ -1,5 +1,5 @@
 {
-  "schema": "vigilode-a1-two-arm-handoff-state-v2",
+  "schema": "vigilode-a1-audit-full-e-handoff-state-v1",
   "repository": "cosmosapjw-quantum/vigilode",
   "canonical_main": {
     "branch": "main",
@@ -9,37 +9,58 @@
   "implementation": {
     "branch": "research/a1-inner-tolerance-parity",
     "pull_request": 18,
-    "head": "7952bf96bfd9fb604e87bce41bd9b918cc9b93f4",
-    "tree": "dd32d7bebe50419c510f2e779b43ed6a26f29242",
+    "head": "755b31750c1f0e026bbe11aca24efb71e6242624",
+    "tree": "abbeed3aa1e8ac5d8b00f8173d67f560a914a087",
+    "tested_merge_sha": "31b0e52a0ebe025db99a299c38a47c88517c88c8",
     "state": "OPEN_DRAFT_UNMERGED_MERGEABLE",
     "changed_paths": [
       ".github/workflows/a1-inner-tolerance-parity.yml",
+      ".github/workflows/a1-two-arm-receipt.yml",
+      "crates/rodas5p-cli/src/main.rs",
+      "crates/rodas5p-cli/tests/a1_tolerance_receipt_cli_contracts.rs",
+      "crates/rodas5p-integrators/src/a1_two_arm_receipt.rs",
       "crates/rodas5p-integrators/src/g4_s5b0_inner_tolerance.rs",
       "crates/rodas5p-integrators/src/g4_s5b0_regime_atlas.rs",
       "crates/rodas5p-integrators/src/g4_s5b0_trace_authority.rs",
       "crates/rodas5p-integrators/src/lib.rs",
       "crates/rodas5p-integrators/tests/a1_committed_trace_regression.rs",
       "crates/rodas5p-integrators/tests/a1_inner_tolerance_parity_contracts.rs",
+      "crates/rodas5p-integrators/tests/a1_two_arm_receipt_contracts.rs",
       "docs/superpowers/plans/2026-08-25-a1-inner-tolerance-audit-repair.md",
       "docs/superpowers/specs/2026-08-25-a1-inner-tolerance-audit-repair-design.md",
-      "research/a1_inner_tolerance_audit_20260825/CLAIM_SCOPE_AND_INVALIDATION.md"
+      "research/a1_inner_tolerance_audit_20260825/CLAIM_SCOPE_AND_INVALIDATION.md",
+      "tools/summarize-a1-tolerance-arms.py",
+      "tools/test_a1_tolerance_receipt.py"
     ]
   },
-  "compile_trace_closure": {
-    "a1_workflow": {
-      "run": 32876594151,
+  "exact_head_workflows": {
+    "a1": {
+      "run": 32906175920,
       "conclusion": "SUCCESS"
     },
-    "e4_workflow": {
-      "run": 32876594326,
+    "e4": {
+      "run": 32906175923,
       "conclusion": "SUCCESS"
     },
-    "committed_trace_fixture": {
-      "profile": "smoke",
-      "family": "hires-ramped",
-      "arm": "legacy-fixed",
-      "sha256": "04cd9202b25df52357045754c8f10ffcb93d35f234ecace6a0c947ca306049de"
+    "two_arm_transport": {
+      "run": 32906175896,
+      "attempt": 1,
+      "conclusion": "SUCCESS_BUT_SCIENTIFICALLY_INVALID"
     }
+  },
+  "invalidated_execution": {
+    "scientific_execution_head": "755b31750c1f0e026bbe11aca24efb71e6242624",
+    "scientific_execution_tree": "abbeed3aa1e8ac5d8b00f8173d67f560a914a087",
+    "tested_execution_merge_sha": "31b0e52a0ebe025db99a299c38a47c88517c88c8",
+    "tested_execution_merge_tree": "abbeed3aa1e8ac5d8b00f8173d67f560a914a087",
+    "workflow_run_id": 32906175896,
+    "workflow_run_attempt": 1,
+    "artifact_id": 9584976503,
+    "artifact_transport_digest": "sha256:2dfa08350497a544d48833c697a6a148abcb954dc30dc7adbb7aefcc24a8b644",
+    "aggregate_scientific_digest": "7665718c60ff9c1e0d1e86d1ff4464e8eb71d806dd0e6ce5c4f6ac0501f027a1",
+    "reported_decision": "ADMISSIBLE_BUT_NONDISCRIMINATING",
+    "authority_status": "STOP_INVALID_NON_AUTHORITY",
+    "reason": "atomic cells omitted independent audit full-E evidence and derived audit_unsafe from runtime shadow execution"
   },
   "numerical_authority": {
     "committed_arm": "legacy-fixed",
@@ -50,19 +71,26 @@
     "prefix_budget_retuning_authorized": false,
     "continuation_budget_retuning_authorized": false
   },
+  "current_node": "A1-AUDIT-FULL-E-EVIDENCE-CLOSURE",
+  "required_next_execution": {
+    "publish_new_scientific_execution_head": true,
+    "rerun_exact_cells": 12,
+    "profile": "enforced-budget-holdout-320",
+    "arms": [
+      "legacy-fixed",
+      "outer-scaled-numeric-parity"
+    ],
+    "families": 6,
+    "old_execution_reusable": false
+  },
   "provenance_model": {
     "schema": "vigilode-cycle-free-two-phase-provenance-v1",
-    "scientific_execution_identity": "frozen head/tree and tested merge tree that generate the twelve cells",
-    "receipt_commit_identity": "later descendant; externally observed and forbidden from self-embedding",
-    "external_verification_identity": "post-receipt run IDs stored outside the committed receipt",
-    "activation_identity": "separate approval-gated node",
     "self_referential_receipt_binding_forbidden": true,
     "late_bound_verification_must_remain_external": true
   },
-  "current_node": "A1-TWO-ARM-AUTHORITY-RECEIPT",
-  "current_control_plane_disposition": "CYCLE_FREE_PROVENANCE_REPAIR_APPLIED",
   "not_started": [
-    "candidate-arm activation commit",
+    "receipt commit for the invalidated run",
+    "candidate activation",
     "A2 inner GMRES convergence",
     "A3 incremental Givens / QR replacement",
     "G1/G3 tolerance scope expansion",

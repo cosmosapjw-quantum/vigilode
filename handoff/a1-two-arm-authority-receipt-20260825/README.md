@@ -1,22 +1,14 @@
-# A1 Two-Arm Authority Receipt Handoff
+# A1 Audit Full-E Evidence Closure Handoff
 
 ## Objective
 
-Complete the next admissible node of VigilODE PR #18:
+Complete the only admissible next node of VigilODE PR #18:
 
 ```text
-A1-TWO-ARM-AUTHORITY-RECEIPT
+A1-AUDIT-FULL-E-EVIDENCE-CLOSURE
 ```
 
-The compile/trace closure is already GREEN at implementation head
-`7952bf96bfd9fb604e87bce41bd9b918cc9b93f4`. The next task is not to redesign
-GMRES or activate the candidate. It is to generate a complete, deterministic,
-read-only scientific receipt for:
-
-```text
-2 tolerance arms × 6 G4/S5B0 families = 12 cells
-profile = EnforcedBudgetHoldout320
-```
+The previous twelve-cell run completed computationally but could not support a scientific decision because the atomic cells conflated runtime recommendation shadows with independent audit full-E evidence.
 
 ## Current authority boundary
 
@@ -29,48 +21,28 @@ outer-scaled-numeric-parity
 
 frozen tau
 13.39706618860016
+
+invalidated run
+32906175896
 ```
 
-The candidate shares the preserved phi tolerance **numbers** for the same outer
-`rtol`. This is not a claim of equal forward/backward error, equal dimensions,
-or equal outer-error contribution.
+The candidate shares the preserved phi tolerance numbers for the same outer `rtol`. This remains a numerical-parameter experiment, not a claim of equal forward/backward error, equal dimensions, or equal outer-error contribution.
 
-## Required receipt content
+## Two distinct full-E channels
 
-Each cell and aggregate retain enough evidence to reconstruct:
+### Runtime shadow channel
 
-- frozen scientific execution head/tree and tested execution merge tree;
-- base, toolchain, execution workflow run, and artifact content manifest;
-- arm, family, profile, outer tolerance, linear tolerance, and phi tolerance;
-- attempts and accepted/rejected steps;
-- committed RHS/JVP/linear-matvec work;
-- canonical wall-excluding trace digest;
-- event keys and event counts;
-- every finite `zeta34` value and signed margin `zeta34 - tau`;
-- recommendation keys and counts;
-- unsafe recommendation keys and count;
-- audit unsafe-event keys and count;
-- Hires positive-control status;
-- all hard gates and limitations;
-- a predeclared final classification.
+This channel follows the recommendation policy. An unrecommended event normally has no runtime shadow execution. Its absence is expected and says nothing about safety.
 
-## Cycle-free evidence lifecycle
+### Independent audit full-E channel
 
-```text
-scientific execution head
-  -> twelve-cell workflow and artifacts
-  -> later receipt commit
-  -> external exact-head closure
-  -> fresh review
-```
+This channel is read-only, arm-specific, and executed for the audit-eligible event population regardless of recommendation. It must retain completion, error, admissibility, failure, and work evidence without affecting recommendation, budget, controller, or committed runtime behavior.
 
-The committed receipt binds the earlier scientific execution identity. It does
-not contain its own later commit/tree or post-receipt workflow IDs. Those
-late-bound identities are recorded externally in GitHub/Atlassian and the
-completion report. Any load-bearing code change after scientific execution
-invalidates the artifacts and requires a new execution head.
+## Valid classification rule
 
-## Decision classes
+A scientific decision is forbidden until the aggregate proves audit-evidence completeness. Missing audit evidence produces `STOP_INVALID`, not `ADMISSIBLE_BUT_NONDISCRIMINATING`.
+
+Only after complete evidence may the aggregate emit:
 
 ```text
 ADMISSIBLE_AND_DISCRIMINATING
@@ -78,17 +50,11 @@ ADMISSIBLE_BUT_NONDISCRIMINATING
 NOT_ADMISSIBLE
 ```
 
-Only `ADMISSIBLE_AND_DISCRIMINATING` can make the candidate eligible for a
-separate, explicitly approved activation commit. No activation occurs in this
-receipt node.
+The ordinary committed arm remains `legacy-fixed` throughout this node. Candidate activation is a separate explicitly approved commit after a complete receipt and fresh review.
 
 ## Evidence ownership
 
 - GitHub source bytes and Actions artifacts are canonical execution evidence.
-- The committed receipt is durable scientific interpretation of the frozen
-  execution artifacts.
-- PR checks/comments carry late-bound receipt-commit and closure-run identity.
 - Jira PM-4 mirrors task state and blockers.
 - The canonical Confluence page mirrors the DAG and claim boundaries.
-- This handoff branch is navigation/control material only and must never be
-  merged.
+- This handoff branch is navigation/control material only and must never be merged.
