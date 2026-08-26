@@ -197,8 +197,17 @@ fn back_substitute(
     coefficients[..dimension].fill(0.0);
     let diagonal_scale = (0..dimension)
         .map(|index| r_factor[(index, index)].abs())
-        .fold(0.0, f64::max)
-        .max(1.0);
+        .fold(0.0, f64::max);
+    if !diagonal_scale.is_finite() {
+        return Err(CoreError::NonFinite(
+            "GMRES incremental triangular factor scale is NaN/Inf".into(),
+        ));
+    }
+    if diagonal_scale == 0.0 {
+        return Err(CoreError::LinearSolve(
+            "GMRES incremental triangular factor is identically zero".into(),
+        ));
+    }
     let diagonal_tolerance = 100.0 * f64::EPSILON * diagonal_scale;
 
     for row in (0..dimension).rev() {
@@ -494,6 +503,7 @@ pub fn solve_gmres_givens(
 mod tests {
     use super::*;
     use crate::small::least_squares;
+    use rodas5p_core::{DenseOperator, IdentityPreconditioner};
 
     fn qr_oracle_residual(hessenberg: &DenseMatrix, beta: f64) -> CoreResult<f64> {
         let mut rhs = vec![0.0; hessenberg.nrows()];
@@ -568,5 +578,73 @@ mod tests {
                 .sum::<f64>();
             assert!((reconstructed - rhs[row]).abs() <= 2.0e-14);
         }
+    }
+
+    #[test]
+    fn triangular_backsolve_rejects_an_identically_zero_factor() {
+        let r = DenseMatrix::zeros(1, 1);
+        let mut coefficients = [0.0; 1];
+        let error = back_substitute(&r, &[1.0], 1, &mut coefficients).unwrap_err();
+        assert!(matches!(error, CoreError::LinearSolve(_)));
+    }
+
+    #[test]
+    fn uniformly_scaled_identity_preserves_solution_and_convergence() {
+        let solve = |alpha: f64| {
+            let matrix = DenseMatrix::from_rows(&[&[alpha, 0.0], &[0.0, alpha]]).unwrap();
+            let operator = DenseOperator::new(matrix).unwrap();
+            let preconditioner = IdentityPreconditioner::new(2);
+            let rhs = [alpha, -2.0 * alpha];
+            let config = GmresConfig {
+                restart: 2,
+                max_arnoldi: 2,
+                rtol: 1.0e-12,
+                atol: 0.0,
+            };
+            let mut counters = WorkCounters::default();
+            let report = solve_gmres_givens(
+                &operator,
+                &preconditioner,
+                &rhs,
+                None,
+                &config,
+                &mut counters,
+            )
+            .expect("scaled identity GMRES-Givens solve");
+            (report, counters, rhs, config)
+        };
+
+        let (unscaled, unscaled_work, unscaled_rhs, unscaled_config) = solve(1.0);
+        let (scaled, scaled_work, scaled_rhs, scaled_config) = solve(1.0e-15);
+        let expected = [1.0, -2.0];
+
+        for (report, rhs, config) in [
+            (&unscaled, &unscaled_rhs, &unscaled_config),
+            (&scaled, &scaled_rhs, &scaled_config),
+        ] {
+            let error: Vec<f64> = report
+                .x
+                .iter()
+                .zip(expected)
+                .map(|(actual, exact)| actual - exact)
+                .collect();
+            let threshold = config.atol.max(config.rtol * safe_l2(rhs));
+            assert!(safe_l2(&error) <= 64.0 * f64::EPSILON * safe_l2(&expected));
+            assert!(report.residual_norm <= threshold);
+            assert_eq!(report.iterations, 1);
+        }
+
+        let parity_error: Vec<f64> = unscaled
+            .x
+            .iter()
+            .zip(&scaled.x)
+            .map(|(left, right)| left - right)
+            .collect();
+        assert!(safe_l2(&parity_error) <= 64.0 * f64::EPSILON * safe_l2(&expected));
+        assert_eq!(
+            unscaled_work.linear_iterations,
+            scaled_work.linear_iterations
+        );
+        assert_eq!(unscaled_work.linear_matvecs, scaled_work.linear_matvecs);
     }
 }
