@@ -8,10 +8,33 @@ use rodas5p_core::{
 };
 use rodas5p_krylov::{
     GcrodrConfig, GcrodrState, GmresConfig, LgmresConfig, LgmresState, solve_gcrodr, solve_gmres,
-    solve_lgmres,
+    solve_gmres_givens, solve_lgmres,
 };
 
 use crate::OdeProblem;
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum GmresKernelArm {
+    LegacyRestartedGmres,
+    IncrementalGivensCandidate,
+}
+
+impl GmresKernelArm {
+    pub const ALL: [Self; 2] = [Self::LegacyRestartedGmres, Self::IncrementalGivensCandidate];
+
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::LegacyRestartedGmres => "legacy-restarted-gmres",
+            Self::IncrementalGivensCandidate => "incremental-givens-candidate",
+        }
+    }
+}
+
+pub const PRODUCTION_GMRES_KERNEL_ARM: GmresKernelArm = GmresKernelArm::LegacyRestartedGmres;
+
+pub const fn production_gmres_kernel_arm() -> GmresKernelArm {
+    PRODUCTION_GMRES_KERNEL_ARM
+}
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum KrylovState {
@@ -268,6 +291,22 @@ fn direct_report(
 pub fn sequential_stages(
     context: &StepContext<'_>,
     config: &LinearSolverConfig,
+    recycle: Option<&mut KrylovState>,
+    counters: &mut WorkCounters,
+) -> CoreResult<StageSolveData> {
+    sequential_stages_with_gmres_kernel(
+        context,
+        config,
+        production_gmres_kernel_arm(),
+        recycle,
+        counters,
+    )
+}
+
+pub fn sequential_stages_with_gmres_kernel(
+    context: &StepContext<'_>,
+    config: &LinearSolverConfig,
+    gmres_kernel: GmresKernelArm,
     mut recycle: Option<&mut KrylovState>,
     counters: &mut WorkCounters,
 ) -> CoreResult<StageSolveData> {
@@ -340,19 +379,32 @@ pub fn sequential_stages(
                 &rhs,
                 counters,
             )?,
-            LinearMethod::Gmres => solve_gmres(
-                &context.shifted,
-                pc.as_ref(),
-                &rhs,
-                x0,
-                &GmresConfig {
+            LinearMethod::Gmres => {
+                let gmres_config = GmresConfig {
                     restart: config.restart,
                     max_arnoldi: config.maxiter.max(config.restart),
                     rtol: config.rtol,
                     atol: config.atol,
-                },
-                counters,
-            )?,
+                };
+                match gmres_kernel {
+                    GmresKernelArm::LegacyRestartedGmres => solve_gmres(
+                        &context.shifted,
+                        pc.as_ref(),
+                        &rhs,
+                        x0,
+                        &gmres_config,
+                        counters,
+                    )?,
+                    GmresKernelArm::IncrementalGivensCandidate => solve_gmres_givens(
+                        &context.shifted,
+                        pc.as_ref(),
+                        &rhs,
+                        x0,
+                        &gmres_config,
+                        counters,
+                    )?,
+                }
+            }
             LinearMethod::Lgmres => {
                 let st = match state.as_deref_mut() {
                     Some(KrylovState::Lgmres(s)) => s,
@@ -522,6 +574,35 @@ pub fn sequential_matrix_free_step(
     y: &[f64],
     h: f64,
     config: &LinearSolverConfig,
+    recycle: Option<&mut KrylovState>,
+    atol: f64,
+    rtol: f64,
+    force_accept: bool,
+    counters: &mut WorkCounters,
+) -> CoreResult<StepResult> {
+    sequential_matrix_free_step_with_gmres_kernel(
+        problem,
+        t,
+        y,
+        h,
+        config,
+        production_gmres_kernel_arm(),
+        recycle,
+        atol,
+        rtol,
+        force_accept,
+        counters,
+    )
+}
+
+#[allow(clippy::too_many_arguments)]
+pub fn sequential_matrix_free_step_with_gmres_kernel(
+    problem: &OdeProblem,
+    t: f64,
+    y: &[f64],
+    h: f64,
+    config: &LinearSolverConfig,
+    gmres_kernel: GmresKernelArm,
     mut recycle: Option<&mut KrylovState>,
     atol: f64,
     rtol: f64,
@@ -539,7 +620,13 @@ pub fn sequential_matrix_free_step(
     let result = (|| {
         let context = build_step_context_matrix_free(problem, t, y, h, counters)?;
         let operator_before = *counters;
-        let data = sequential_stages(&context, config, recycle.as_deref_mut(), counters)?;
+        let data = sequential_stages_with_gmres_kernel(
+            &context,
+            config,
+            gmres_kernel,
+            recycle.as_deref_mut(),
+            counters,
+        )?;
         let delta = counters.delta(operator_before);
         let shifted_applications = delta
             .linear_matvecs

@@ -203,9 +203,11 @@ pub use rhs_telemetry::{
 };
 pub use sabr::{PredictorKind, SabrConfig, StageHistory, sabr_step};
 pub use sequential::{
-    KrylovState, StageSolveData, StepCertificate, StepContext, StepResult, build_step_context,
-    build_step_context_matrix_free, finish_step, sequential_matrix_free_step, sequential_stages,
-    sequential_step,
+    GmresKernelArm, KrylovState, PRODUCTION_GMRES_KERNEL_ARM, StageSolveData, StepCertificate,
+    StepContext, StepResult, build_step_context, build_step_context_matrix_free, finish_step,
+    production_gmres_kernel_arm, sequential_matrix_free_step,
+    sequential_matrix_free_step_with_gmres_kernel, sequential_stages,
+    sequential_stages_with_gmres_kernel, sequential_step,
 };
 pub use stage_batch::{
     StageBatchFeasibilityCase, StageBatchFeasibilityProfile, StageBatchFeasibilityReport,
@@ -232,8 +234,10 @@ pub use v38d_performance_tournament::{
 };
 
 pub use a1_two_arm_receipt::{
-    A1_TWO_ARM_RECEIPT_PROFILE, A1_TWO_ARM_RECEIPT_SCHEMA, A1ScientificExecutionIdentity,
-    A1ToleranceReceiptCell, A1ToleranceReceiptEventRow, A1ToleranceReceiptRecommendationRow,
+    A1_POST_A2A3_KERNEL_RECEIPT_SCHEMA, A1_POST_A2A3_KERNEL_RECEIPT_STATUS,
+    A1_TWO_ARM_RECEIPT_PROFILE, A1_TWO_ARM_RECEIPT_SCHEMA, A1PostA2A3KernelReceiptCell,
+    A1ScientificExecutionIdentity, A1ToleranceReceiptCell, A1ToleranceReceiptEventRow,
+    A1ToleranceReceiptRecommendationRow, run_a1_post_a2a3_kernel_receipt_cell,
     run_a1_two_arm_receipt_cell,
 };
 pub use policy_redesign_v25::{

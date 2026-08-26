@@ -14,18 +14,14 @@ fn explicit_kernel_arm_selection_preserves_the_legacy_production_default() {
     );
     assert_eq!(
         GmresKernelArm::ALL.map(GmresKernelArm::as_str),
-        [
-            "legacy-restarted-gmres",
-            "incremental-givens-candidate",
-        ]
+        ["legacy-restarted-gmres", "incremental-givens-candidate",]
     );
 
     let (problem, y0) = manufactured_vector_problem(4, 10.0, 1.0, 0.2, 0.0).unwrap();
     let problem = problem.jvp_only_clone().unwrap();
     let mut setup_counters = WorkCounters::default();
     let context =
-        build_step_context_matrix_free(&problem, 0.0, &y0, 1.0e-4, &mut setup_counters)
-            .unwrap();
+        build_step_context_matrix_free(&problem, 0.0, &y0, 1.0e-4, &mut setup_counters).unwrap();
     let config = LinearSolverConfig {
         method: LinearMethod::Gmres,
         rtol: 1.0e-10,

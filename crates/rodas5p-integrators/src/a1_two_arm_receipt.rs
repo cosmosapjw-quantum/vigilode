@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use crate::{
     G4S5B0AttemptTraceReport, G4S5B0Family, G4S5B0FrozenFullEShadowHardGates,
     G4S5B0InnerToleranceLane, G4S5B0InnerTolerancePolicy, G4S5B0LinearToleranceArm, G4S5B0Profile,
-    V36_FROZEN_ZETA34_TAU,
+    GmresKernelArm, V36_FROZEN_ZETA34_TAU,
     g4_s5b0_regime_atlas::{
         run_g4_s5b0_frozen_full_e_shadow_receipt_family,
         run_g4_s5b0_stage_growth_safety_receipt_audit_family,
@@ -16,6 +16,8 @@ use crate::{
 
 pub const A1_TWO_ARM_RECEIPT_SCHEMA: &str = "vigilode-a1-two-arm-atomic-cell-v2";
 pub const A1_TWO_ARM_RECEIPT_PROFILE: G4S5B0Profile = G4S5B0Profile::EnforcedBudgetHoldout320;
+pub const A1_POST_A2A3_KERNEL_RECEIPT_SCHEMA: &str = "vigilode-a1-post-a2a3-kernel-atomic-cell-v1";
+pub const A1_POST_A2A3_KERNEL_RECEIPT_STATUS: &str = "EXPLORATORY/NONAUTHORITATIVE";
 const INVALIDATED_EXECUTION_WORKFLOW_RUN_ID: u64 = 32_906_175_896;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -153,6 +155,15 @@ pub struct A1ToleranceReceiptCell {
     pub limitations: Vec<String>,
 }
 
+#[derive(Clone, Debug, PartialEq, Serialize)]
+pub struct A1PostA2A3KernelReceiptCell {
+    pub schema: &'static str,
+    pub status: &'static str,
+    pub kernel_arm: &'static str,
+    pub tolerance_arm: &'static str,
+    pub receipt: A1ToleranceReceiptCell,
+}
+
 /// Generate one deterministic receipt-only A1 replay cell.
 ///
 /// This is the sole API that admits `OuterScaledNumericParity`. It is fixed to
@@ -163,9 +174,23 @@ pub fn run_a1_two_arm_receipt_cell(
     family: G4S5B0Family,
     arm: G4S5B0LinearToleranceArm,
 ) -> CoreResult<A1ToleranceReceiptCell> {
+    run_a1_receipt_cell_with_kernel(
+        scientific_execution_identity,
+        family,
+        arm,
+        crate::production_gmres_kernel_arm(),
+    )
+}
+
+fn run_a1_receipt_cell_with_kernel(
+    scientific_execution_identity: A1ScientificExecutionIdentity,
+    family: G4S5B0Family,
+    arm: G4S5B0LinearToleranceArm,
+    kernel: GmresKernelArm,
+) -> CoreResult<A1ToleranceReceiptCell> {
     scientific_execution_identity.validate()?;
-    let report = run_g4_s5b0_frozen_full_e_shadow_receipt_family(family, arm)?;
-    let audit_report = run_g4_s5b0_stage_growth_safety_receipt_audit_family(family, arm)?;
+    let report = run_g4_s5b0_frozen_full_e_shadow_receipt_family(family, arm, kernel)?;
+    let audit_report = run_g4_s5b0_stage_growth_safety_receipt_audit_family(family, arm, kernel)?;
     let (_, outer_rtol) = A1_TWO_ARM_RECEIPT_PROFILE.tolerances();
     let tolerance = G4S5B0InnerTolerancePolicy::try_for_lane(
         G4S5B0InnerToleranceLane::FrozenFullEShadow,
@@ -396,5 +421,34 @@ pub fn run_a1_two_arm_receipt_cell(
         recommendation_rows,
         hard_gates: report.hard_gates,
         limitations,
+    })
+}
+
+/// Generate one post-A2/A3 kernel-isolation cell at the frozen legacy tolerance.
+pub fn run_a1_post_a2a3_kernel_receipt_cell(
+    scientific_execution_identity: A1ScientificExecutionIdentity,
+    family: G4S5B0Family,
+    kernel: GmresKernelArm,
+) -> CoreResult<A1PostA2A3KernelReceiptCell> {
+    let mut receipt = run_a1_receipt_cell_with_kernel(
+        scientific_execution_identity,
+        family,
+        G4S5B0LinearToleranceArm::LegacyFixed,
+        kernel,
+    )?;
+    receipt.limitations.push(
+        "This post-A2/A3 cell isolates only the GMRES kernel; LegacyFixed tolerances, equations, controller, frozen event policy, output schema, and failure semantics are unchanged."
+            .into(),
+    );
+    receipt.limitations.push(
+        "The result is exploratory and nonauthoritative; it does not activate the candidate, rank kernels, or support timing or speedup claims."
+            .into(),
+    );
+    Ok(A1PostA2A3KernelReceiptCell {
+        schema: A1_POST_A2A3_KERNEL_RECEIPT_SCHEMA,
+        status: A1_POST_A2A3_KERNEL_RECEIPT_STATUS,
+        kernel_arm: kernel.as_str(),
+        tolerance_arm: G4S5B0LinearToleranceArm::LegacyFixed.as_str(),
+        receipt,
     })
 }

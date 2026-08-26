@@ -8,8 +8,8 @@ use serde::{Deserialize, Serialize};
 use crate::{
     AdaptiveControllerState, AdaptiveStepConfig, ControllerKind, FusedOrthogonalization,
     FusedPhiKrylovConfig, FusedPhiPrefixSession, G4S5B0InnerToleranceLane,
-    G4S5B0InnerTolerancePolicy, G4S5B0LinearToleranceArm, OdeProblem, ParallelExecution,
-    PersistenceLatch, Pexprb54s4AccountedBudgetedLevel2PrefixOutcome,
+    G4S5B0InnerTolerancePolicy, G4S5B0LinearToleranceArm, GmresKernelArm, OdeProblem,
+    ParallelExecution, PersistenceLatch, Pexprb54s4AccountedBudgetedLevel2PrefixOutcome,
     Pexprb54s4BudgetedLevel2PrefixOutcome, Pexprb54s4Level1PrefixReport,
     Pexprb54s4Level2ContinuationOutcome, Pexprb54s4Level2Prefix, Pexprb54s4Level2PrefixReport,
     Pexprb54s4QuadraticRemainderDrift, Pexprb54s4RemainderVectorGeometry, pexprb54s4_fused_step,
@@ -19,7 +19,7 @@ use crate::{
     pexprb54s4_level2_prefix_resume_level1,
     pexprb54s4_level2_prefix_with_tolerance_scaled_telemetry_jvp_budget,
     pexprb54s4_level2_prefix_with_tolerance_scaled_telemetry_jvp_budget_accounted,
-    pexprb54s4_tableau, sequential_matrix_free_step,
+    pexprb54s4_tableau, sequential_matrix_free_step, sequential_matrix_free_step_with_gmres_kernel,
 };
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -1808,6 +1808,7 @@ fn run_rjf_attempt_trace_trajectory(
     problem: AtlasProblem,
     profile: G4S5B0Profile,
     arm: G4S5B0LinearToleranceArm,
+    kernel: GmresKernelArm,
 ) -> (
     Vec<G4S5B0RjfAttemptRow>,
     Vec<G4S5B0StepRow>,
@@ -1843,12 +1844,13 @@ fn run_rjf_attempt_trace_trajectory(
         let h_trial = h;
         let mut step_counters = WorkCounters::default();
         let start = Instant::now();
-        let trial = sequential_matrix_free_step(
+        let trial = sequential_matrix_free_step_with_gmres_kernel(
             &problem.problem,
             t,
             &y,
             h,
             &linear,
+            kernel,
             None,
             adaptive.atol,
             adaptive.rtol,
@@ -2005,6 +2007,7 @@ fn execute_rjf_attempt_trace_filtered(
     profile: G4S5B0Profile,
     family: Option<G4S5B0Family>,
     arm: G4S5B0LinearToleranceArm,
+    kernel: GmresKernelArm,
 ) -> CoreResult<RjfAttemptTraceExecution> {
     let mut execution = RjfAttemptTraceExecution {
         attempt_rows: Vec::new(),
@@ -2016,7 +2019,7 @@ fn execute_rjf_attempt_trace_filtered(
             continue;
         }
         let (mut attempts, mut accepted, summary) =
-            run_rjf_attempt_trace_trajectory(problem, profile, arm);
+            run_rjf_attempt_trace_trajectory(problem, profile, arm, kernel);
         execution.attempt_rows.append(&mut attempts);
         execution.accepted_rows.append(&mut accepted);
         execution.trajectories.push(summary);
@@ -2028,12 +2031,13 @@ fn run_g4_s5b0_rjf_attempt_trace_filtered(
     profile: G4S5B0Profile,
     family: Option<G4S5B0Family>,
     arm: G4S5B0LinearToleranceArm,
+    kernel: GmresKernelArm,
 ) -> CoreResult<G4S5B0AttemptTraceReport> {
     let RjfAttemptTraceExecution {
         attempt_rows,
         accepted_rows,
         trajectories,
-    } = execute_rjf_attempt_trace_filtered(profile, family, arm)?;
+    } = execute_rjf_attempt_trace_filtered(profile, family, arm, kernel)?;
     Ok(G4S5B0AttemptTraceReport {
         schema: "g4-s5b0-rjf-attempt-trace-v1",
         status: "read-only-rjf-attempt-trace",
@@ -2057,6 +2061,7 @@ pub fn run_g4_s5b0_rjf_attempt_trace(
         profile,
         None,
         crate::committed_g4_s5b0_linear_tolerance_arm(),
+        crate::production_gmres_kernel_arm(),
     )
 }
 
@@ -2068,6 +2073,7 @@ pub fn run_g4_s5b0_rjf_attempt_trace_family(
         profile,
         Some(family),
         crate::committed_g4_s5b0_linear_tolerance_arm(),
+        crate::production_gmres_kernel_arm(),
     )
 }
 
@@ -2907,6 +2913,7 @@ fn run_rjf_stage_growth_safety_trajectory(
     profile: G4S5B0Profile,
     budget_mode: StageGrowthBudgetMode,
     arm: G4S5B0LinearToleranceArm,
+    kernel: GmresKernelArm,
 ) -> (
     Vec<G4S5B0RjfAttemptRow>,
     Vec<G4S5B0StepRow>,
@@ -3138,12 +3145,13 @@ fn run_rjf_stage_growth_safety_trajectory(
 
         let mut step_counters = WorkCounters::default();
         let start = Instant::now();
-        let trial = sequential_matrix_free_step(
+        let trial = sequential_matrix_free_step_with_gmres_kernel(
             &problem.problem,
             t,
             &y,
             h,
             &linear,
+            kernel,
             None,
             adaptive.atol,
             adaptive.rtol,
@@ -3315,6 +3323,7 @@ pub fn run_g4_s5b0_stage_growth_safety_audit_family(
                 profile,
                 StageGrowthBudgetMode::Predictive,
                 crate::committed_g4_s5b0_linear_tolerance_arm(),
+                crate::production_gmres_kernel_arm(),
             );
         attempt_rows.append(&mut attempts);
         accepted_rows.append(&mut accepted);
@@ -3362,6 +3371,7 @@ fn run_g4_s5b0_enforced_prefix_budget_family_with_arm(
     profile: G4S5B0Profile,
     family: G4S5B0Family,
     arm: G4S5B0LinearToleranceArm,
+    kernel: GmresKernelArm,
 ) -> CoreResult<G4S5B0StageGrowthSafetyReport> {
     if matches!(profile, G4S5B0Profile::Canonical) {
         return Err(CoreError::InvalidInput(
@@ -3382,6 +3392,7 @@ fn run_g4_s5b0_enforced_prefix_budget_family_with_arm(
                 profile,
                 StageGrowthBudgetMode::Enforced,
                 arm,
+                kernel,
             );
         attempt_rows.append(&mut attempts);
         accepted_rows.append(&mut accepted);
@@ -3434,6 +3445,7 @@ pub fn run_g4_s5b0_enforced_prefix_budget_family(
         profile,
         family,
         crate::committed_g4_s5b0_linear_tolerance_arm(),
+        crate::production_gmres_kernel_arm(),
     )
 }
 
@@ -3445,11 +3457,13 @@ pub fn run_g4_s5b0_enforced_prefix_budget_family(
 pub(crate) fn run_g4_s5b0_stage_growth_safety_receipt_audit_family(
     family: G4S5B0Family,
     arm: G4S5B0LinearToleranceArm,
+    kernel: GmresKernelArm,
 ) -> CoreResult<G4S5B0StageGrowthSafetyReport> {
     run_g4_s5b0_enforced_prefix_budget_family_with_arm(
         G4S5B0Profile::EnforcedBudgetHoldout320,
         family,
         arm,
+        kernel,
     )
 }
 
@@ -3856,6 +3870,7 @@ fn run_rjf_frozen_full_e_shadow_trajectory(
     profile: G4S5B0Profile,
     continuation_mode: FrozenShadowContinuationMode,
     arm: G4S5B0LinearToleranceArm,
+    kernel: GmresKernelArm,
 ) -> (
     Vec<G4S5B0RjfAttemptRow>,
     Vec<G4S5B0StepRow>,
@@ -4132,12 +4147,13 @@ fn run_rjf_frozen_full_e_shadow_trajectory(
 
         let mut step_counters = WorkCounters::default();
         let start = Instant::now();
-        let trial = sequential_matrix_free_step(
+        let trial = sequential_matrix_free_step_with_gmres_kernel(
             &problem.problem,
             t,
             &y,
             h,
             &linear,
+            kernel,
             None,
             adaptive.atol,
             adaptive.rtol,
@@ -4339,6 +4355,7 @@ fn execute_frozen_full_e_shadow_filtered(
     profile: G4S5B0Profile,
     family: Option<G4S5B0Family>,
     arm: G4S5B0LinearToleranceArm,
+    kernel: GmresKernelArm,
 ) -> CoreResult<FrozenFullEShadowExecution> {
     if !v36_profile_is_consumed(profile) {
         return Err(CoreError::InvalidInput(
@@ -4361,6 +4378,7 @@ fn execute_frozen_full_e_shadow_filtered(
                 profile,
                 FrozenShadowContinuationMode::UnboundedV36,
                 arm,
+                kernel,
             );
         execution.attempt_rows.append(&mut attempts);
         execution.accepted_rows.append(&mut accepted);
@@ -4376,14 +4394,15 @@ fn run_g4_s5b0_frozen_full_e_shadow_filtered(
     profile: G4S5B0Profile,
     family: Option<G4S5B0Family>,
     arm: G4S5B0LinearToleranceArm,
+    kernel: GmresKernelArm,
 ) -> CoreResult<G4S5B0FrozenFullEShadowReport> {
     let FrozenFullEShadowExecution {
         attempt_rows,
         accepted_rows,
         rows,
         trajectories,
-    } = execute_frozen_full_e_shadow_filtered(profile, family, arm)?;
-    let reference = run_g4_s5b0_rjf_attempt_trace_filtered(profile, family, arm)?;
+    } = execute_frozen_full_e_shadow_filtered(profile, family, arm, kernel)?;
+    let reference = run_g4_s5b0_rjf_attempt_trace_filtered(profile, family, arm, kernel)?;
     let rjf_parity = rjf_parity(&attempt_rows, &accepted_rows, &trajectories, &reference);
 
     let recommendations = rows.iter().filter(|row| row.recommended).count();
@@ -4559,6 +4578,7 @@ pub fn run_g4_s5b0_frozen_full_e_shadow_family(
         profile,
         Some(family),
         crate::committed_g4_s5b0_linear_tolerance_arm(),
+        crate::production_gmres_kernel_arm(),
     )
 }
 
@@ -4569,17 +4589,20 @@ pub fn run_g4_s5b0_frozen_full_e_shadow(
         profile,
         None,
         crate::committed_g4_s5b0_linear_tolerance_arm(),
+        crate::production_gmres_kernel_arm(),
     )
 }
 
 pub(crate) fn run_g4_s5b0_frozen_full_e_shadow_receipt_family(
     family: G4S5B0Family,
     arm: G4S5B0LinearToleranceArm,
+    kernel: GmresKernelArm,
 ) -> CoreResult<G4S5B0FrozenFullEShadowReport> {
     run_g4_s5b0_frozen_full_e_shadow_filtered(
         G4S5B0Profile::EnforcedBudgetHoldout320,
         Some(family),
         arm,
+        kernel,
     )
 }
 
@@ -4619,6 +4642,7 @@ fn execute_v37_continuation_transaction_filtered(
                     jvp_cap: continuation_jvp_cap,
                 },
                 crate::committed_g4_s5b0_linear_tolerance_arm(),
+                crate::production_gmres_kernel_arm(),
             );
         execution.attempt_rows.append(&mut attempts);
         execution.accepted_rows.append(&mut accepted);
@@ -4704,6 +4728,7 @@ fn run_g4_s5b0_v37_continuation_transaction_filtered(
         profile,
         family,
         crate::committed_g4_s5b0_linear_tolerance_arm(),
+        crate::production_gmres_kernel_arm(),
     )?;
     let rjf_parity = rjf_parity(&attempt_rows, &accepted_rows, &trajectories, &reference);
 
@@ -5066,6 +5091,7 @@ fn timed_shadow_wall_arm(
                     profile,
                     None,
                     crate::committed_g4_s5b0_linear_tolerance_arm(),
+                    crate::production_gmres_kernel_arm(),
                 )?;
                 wall_seconds += start.elapsed().as_secs_f64();
                 proposed_interval += sorted_attempt_interval_sum(&suite.attempt_rows);
@@ -5085,6 +5111,7 @@ fn timed_shadow_wall_arm(
                     profile,
                     None,
                     crate::committed_g4_s5b0_linear_tolerance_arm(),
+                    crate::production_gmres_kernel_arm(),
                 )?;
                 wall_seconds += start.elapsed().as_secs_f64();
                 proposed_interval += sorted_attempt_interval_sum(&suite.attempt_rows);
