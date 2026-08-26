@@ -18,13 +18,13 @@ jobs:
       - name: Check out exact feature head
         uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          fetch-depth: 16
 
-      - name: Verify immutable correction parent
+      - name: Verify immutable correction source
         shell: bash
         run: |
           set -euo pipefail
-          test "$(git rev-parse HEAD^)" = "3b057f8cbae4062df5ea08bc4c150b07315d08d9"
+          git merge-base --is-ancestor 3b057f8cbae4062df5ea08bc4c150b07315d08d9 HEAD
           test "$(git hash-object crates/rodas5p-krylov/src/gmres_givens.rs)" = "6568a4989666ec851753fd8d3aee9ff9293b210a"
 
       - name: Apply one-file scale-invariance correction and regression
@@ -38,29 +38,25 @@ jobs:
           workflow_path = Path(".github/workflows/pr19-scale-invariant-backsolve-autopatch.yml")
           text = source_path.read_text(encoding="utf-8")
 
-          old = '''    let diagonal_scale = (0..dimension)
-              .map(|index| r_factor[(index, index)].abs())
-              .fold(0.0, f64::max)
-              .max(1.0);
-          let diagonal_tolerance = 100.0 * f64::EPSILON * diagonal_scale;
+          old = '''        .fold(0.0, f64::max)
+                  .max(1.0);
+              let diagonal_tolerance = 100.0 * f64::EPSILON * diagonal_scale;
           '''
-          new = '''    let diagonal_scale = (0..dimension)
-              .map(|index| r_factor[(index, index)].abs())
-              .fold(0.0, f64::max);
-          if !diagonal_scale.is_finite() {
-              return Err(CoreError::NonFinite(
-                  "GMRES incremental triangular factor scale is NaN/Inf".into(),
-              ));
-          }
-          if diagonal_scale == 0.0 {
-              return Err(CoreError::LinearSolve(
-                  "GMRES incremental triangular factor is identically zero".into(),
-              ));
-          }
-          let diagonal_tolerance = 100.0 * f64::EPSILON * diagonal_scale;
+          new = '''        .fold(0.0, f64::max);
+              if !diagonal_scale.is_finite() {
+                  return Err(CoreError::NonFinite(
+                      "GMRES incremental triangular factor scale is NaN/Inf".into(),
+                  ));
+              }
+              if diagonal_scale == 0.0 {
+                  return Err(CoreError::LinearSolve(
+                      "GMRES incremental triangular factor is identically zero".into(),
+                  ));
+              }
+              let diagonal_tolerance = 100.0 * f64::EPSILON * diagonal_scale;
           '''
           if text.count(old) != 1:
-              raise SystemExit("expected exactly one old back-substitution scale block")
+              raise SystemExit(f"expected one back-substitution scale block, found {text.count(old)}")
           text = text.replace(old, new, 1)
 
           import_anchor = "    use crate::small::least_squares;\n"
@@ -142,10 +138,10 @@ jobs:
           '''
           if "uniformly_scaled_identity_preserves_solution_and_convergence" in text:
               raise SystemExit("scaled-identity regression already exists unexpectedly")
-          head, tail = text.rsplit("\n}", 1)
-          if tail:
-              raise SystemExit("unexpected content after final module brace")
-          text = head + tests + "\n}\n"
+          stripped = text.rstrip()
+          if not stripped.endswith("}"):
+              raise SystemExit("test module final brace not found")
+          text = stripped[:-1] + tests + "\n}\n"
           source_path.write_text(text, encoding="utf-8")
           workflow_path.unlink()
           PY
@@ -168,7 +164,6 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add crates/rodas5p-krylov/src/gmres_givens.rs
-          git rm --cached --ignore-unmatch .github/workflows/pr19-scale-invariant-backsolve-autopatch.yml >/dev/null 2>&1 || true
           git add -u .github/workflows/pr19-scale-invariant-backsolve-autopatch.yml
           git commit -m "fix: make Givens backsolve scale invariant"
           git push origin HEAD:research/a2-a3-gmres-inner-cycle-givens
