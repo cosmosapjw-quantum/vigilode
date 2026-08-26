@@ -54,11 +54,24 @@ fn receipt_cli_emits_one_deterministic_candidate_cell_without_late_bound_fields(
 
     let bytes = fs::read(&output).unwrap();
     let cell: serde_json::Value = serde_json::from_slice(&bytes).unwrap();
-    assert_eq!(cell["schema"], "vigilode-a1-two-arm-atomic-cell-v1");
+    assert_eq!(cell["schema"], "vigilode-a1-two-arm-atomic-cell-v2");
     assert_eq!(cell["profile"], "enforced-budget-holdout-320");
     assert_eq!(cell["family"], "robertson-ramped");
     assert_eq!(cell["arm"], "outer-scaled-numeric-parity");
     assert_eq!(cell["switching_active"], false);
+    let events = cell["event_rows"].as_array().unwrap();
+    assert!(!events.is_empty());
+    assert!(events.iter().all(|event| {
+        event.get("audit_full_e_eligible").is_some()
+            && event.get("audit_full_e_attempted").is_some()
+            && event.get("audit_full_e_completed").is_some()
+            && event.get("audit_full_e_total_error").is_some()
+            && event.get("audit_full_e_locally_admissible").is_some()
+            && event.get("audit_full_e_failure").is_some()
+            && event.get("audit_full_e_work").is_some()
+            && event.get("audit_unsafe").is_some()
+            && event.get("audit_evidence_status").is_some()
+    }));
     assert!(cell.get("receipt_commit_sha").is_none());
     assert!(cell.get("receipt_commit_tree").is_none());
     assert!(cell.get("external_verification_run_id").is_none());

@@ -75,10 +75,34 @@ legacy-fixed
 outer-scaled-numeric-parity
 ```
 
+## Independent audit full-E evidence closure
+
+Workflow run `32906175896` and aggregate scientific digest
+`7665718c60ff9c1e0d1e86d1ff4464e8eb71d806dd0e6ce5c4f6ac0501f027a1`
+are preserved as diagnostic-only evidence. Their v1 atomic rows derived
+`audit_unsafe` from recommendation-path `shadow_full_e_*` fields and therefore
+cannot support a receipt or authority decision.
+
+The v2 atomic contract keeps two channels separate:
+
+- `shadow_full_e_*` records only the runtime recommendation path;
+- `audit_full_e_*` records an independent, arm-specific, read-only full-E
+  execution at the exact event state and trial step;
+- `audit_unsafe` is nullable whenever audit evidence is incomplete or the event
+  is explicitly ineligible;
+- every audit-eligible event must complete with finite error, local
+  admissibility, work, and exact arm/family/event identity before aggregation.
+
+The audit runner reuses the existing enforced stage-growth full-E computation
+and its `total_error <= 1` local admissibility rule. Its work is retained in a
+separate audit ledger and is not charged to the runtime prefix or continuation
+budgets. Any missing eligible evidence yields `STOP_INVALID` before a scientific
+decision and forbids creation of `H_receipt`.
+
 ## Predeclared decision rule
 
-- `ADMISSIBLE_AND_DISCRIMINATING`: all hard gates pass, zero unsafe recommendations, and at least one unsafe completed full-E event is correctly unrecommended.
-- `ADMISSIBLE_BUT_NONDISCRIMINATING`: hard gates pass and unsafe recommendations are zero, but the positive control disappears.
+- `ADMISSIBLE_AND_DISCRIMINATING`: all hard gates pass, zero unsafe recommendations, and each arm retains an above-tau unrecommended Hires event with completed independent audit full-E evidence and local inadmissibility.
+- `ADMISSIBLE_BUT_NONDISCRIMINATING`: hard gates pass and unsafe recommendations are zero, and complete independent audit evidence genuinely shows that the Hires positive control is absent.
 - `NOT_ADMISSIBLE`: any hard safety/provenance gate fails or an unsafe recommendation appears.
 
 The committed arm remains `legacy-fixed` throughout the receipt node. An

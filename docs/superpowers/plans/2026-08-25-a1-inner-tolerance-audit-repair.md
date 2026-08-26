@@ -137,6 +137,13 @@ Require complete arm/family coverage, unique keys, consistent tau, hard-gate rep
 
 ### Task 6: Execute the replay and commit the authority decision cycle-free
 
+The earlier v1 execution (`32906175896`) is diagnostic-only. Before freezing a
+new `H_exec`, add and locally validate the v2 independent `audit_full_e_*`
+channel. Reuse the enforced stage-growth full-E solver with receipt-only arm
+injection, preserve nullable unknown audit safety, and reject incomplete
+eligible evidence before any decision. Do not derive audit safety from runtime
+recommendation shadows.
+
 **Files:**
 - Create: `research/a1_inner_tolerance_audit_20260825/A1_TWO_ARM_AUTHORITY_RECEIPT.json`
 - Create: `research/a1_inner_tolerance_audit_20260825/A1_TWO_ARM_AUTHORITY_RECEIPT.md`

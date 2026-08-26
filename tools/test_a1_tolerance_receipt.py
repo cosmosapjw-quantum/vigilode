@@ -25,6 +25,55 @@ PHI_RTOL = 3.0e-2 * 1.0e-5
 PHI_ATOL = 3.0e-4 * 1.0e-5
 
 
+def audit_work() -> dict[str, int]:
+    return {
+        "rhs_calls": 0,
+        "rhs_batch_calls": 0,
+        "rhs_evaluations": 0,
+        "ft_calls": 0,
+        "jacobian_builds": 0,
+        "jvp_calls": 1,
+        "jvp_vectors": 1,
+        "mass_matvecs": 0,
+        "nonlinear_solves": 0,
+        "nonlinear_iterations": 0,
+        "nonlinear_residual_evaluations": 0,
+        "nonlinear_jacobian_evaluations": 0,
+        "nonlinear_failures": 0,
+        "linear_solves": 0,
+        "linear_iterations": 0,
+        "linear_matvecs": 0,
+        "preconditioner_apps": 0,
+        "direct_factorizations": 0,
+        "direct_solve_calls": 0,
+        "recycle_projection_calls": 0,
+        "recycle_same_operator_uses": 0,
+        "recycle_cross_operator_refreshes": 0,
+        "recycle_refresh_matvecs": 0,
+        "recycle_updates": 0,
+        "recycle_vectors_selected": 0,
+        "recycle_dropped_vectors": 0,
+        "harmonic_ritz_solves": 0,
+        "orthogonalization_inner_products": 0,
+        "orthogonalization_vector_updates": 0,
+        "diagnostic_matvecs": 0,
+        "phi_actions": 1,
+        "phi_krylov_vectors": 1,
+        "phi_projected_exponentials": 1,
+        "phi_restarts": 0,
+        "phi_dense_oracle_calls": 0,
+        "block_linear_solves": 0,
+        "block_linear_iterations": 0,
+        "block_matvecs": 0,
+        "block_preconditioner_apps": 0,
+        "fast_attempts": 0,
+        "fast_accepts": 0,
+        "fallback_steps": 0,
+        "accepted_steps": 0,
+        "rejected_steps": 0,
+    }
+
+
 def cell(arm: str, family: str) -> dict[str, object]:
     unsafe_control = family == "hires-ramped"
     key = f"{arm}:{family}:event-0"
@@ -34,15 +83,28 @@ def cell(arm: str, family: str) -> dict[str, object]:
         "decision_accepted_step": 4,
         "target_attempt_index": 5,
         "target_accepted_steps_before": 5,
+        "t_start": 0.125,
+        "h": 0.01,
         "quadratic_drift_zeta34": TAU + 1.0 if unsafe_control else TAU - 1.0,
         "zeta34_signed_margin": 1.0 if unsafe_control else -1.0,
         "recommended": not unsafe_control,
-        "shadow_full_e_completed": True,
+        "shadow_full_e_completed": not unsafe_control,
         "shadow_full_e_locally_admissible": not unsafe_control,
+        "audit_arm": arm,
+        "audit_family": family,
+        "audit_event_key": key,
+        "audit_full_e_eligible": True,
+        "audit_full_e_attempted": True,
+        "audit_full_e_completed": True,
+        "audit_full_e_total_error": 2.0 if unsafe_control else 0.5,
+        "audit_full_e_locally_admissible": not unsafe_control,
+        "audit_full_e_failure": None,
+        "audit_full_e_work": audit_work(),
         "audit_unsafe": unsafe_control,
+        "audit_evidence_status": "complete",
     }
     return {
-        "schema": "vigilode-a1-two-arm-atomic-cell-v1",
+        "schema": "vigilode-a1-two-arm-atomic-cell-v2",
         "repository": "cosmosapjw-quantum/vigilode",
         "pull_request": 18,
         "scientific_execution_head_sha": "1" * 40,
@@ -141,6 +203,93 @@ class ReceiptAggregateTests(unittest.TestCase):
         self.assertEqual(aggregate["unsafe_recommendation_keys"], [])
         self.assertTrue(all(aggregate["hires_positive_control"].values()))
 
+    def test_invalidated_v1_hires_cell_is_rejected_for_authority(self) -> None:
+        old = cell("legacy-fixed", "hires-ramped")
+        old["schema"] = "vigilode-a1-two-arm-atomic-cell-v1"
+        old["execution_workflow_run_id"] = 32906175896
+        event = old["event_rows"][0]
+        for field in list(event):
+            if field.startswith("audit_"):
+                del event[field]
+        event["shadow_full_e_completed"] = False
+        event["shadow_full_e_locally_admissible"] = False
+        result = self.run_aggregate([old])
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("wrong schema", result.stderr)
+
+    def test_invalidated_workflow_id_is_rejected_even_under_v2_schema(self) -> None:
+        cells = copy.deepcopy(self.cells)
+        for payload in cells:
+            payload["execution_workflow_run_id"] = 32906175896
+        result = self.run_aggregate(cells)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("diagnostic-only", result.stderr)
+
+    def test_runtime_shadow_absence_does_not_imply_audit_safety(self) -> None:
+        hires = cell("legacy-fixed", "hires-ramped")["event_rows"][0]
+        self.assertFalse(hires["shadow_full_e_completed"])
+        self.assertTrue(hires["audit_full_e_completed"])
+        self.assertTrue(hires["audit_unsafe"])
+
+    def test_unrecommended_event_can_have_completed_independent_audit(self) -> None:
+        result = self.run_aggregate()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        for payload in self.cells:
+            if payload["family"] == "hires-ramped":
+                event = payload["event_rows"][0]
+                self.assertFalse(event["recommended"])
+                self.assertFalse(event["shadow_full_e_completed"])
+                self.assertTrue(event["audit_full_e_completed"])
+
+    def test_missing_or_incomplete_audit_evidence_stops_before_decision(self) -> None:
+        variants = []
+        missing = copy.deepcopy(self.cells)
+        del missing[0]["event_rows"][0]["audit_full_e_completed"]
+        variants.append(missing)
+        incomplete = copy.deepcopy(self.cells)
+        event = incomplete[0]["event_rows"][0]
+        event["audit_full_e_completed"] = False
+        event["audit_full_e_total_error"] = None
+        event["audit_full_e_locally_admissible"] = None
+        event["audit_full_e_work"] = None
+        event["audit_unsafe"] = None
+        event["audit_evidence_status"] = "failed"
+        event["audit_full_e_failure"] = "audit continuation failed"
+        variants.append(incomplete)
+        for cells in variants:
+            result = self.run_aggregate(cells)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertFalse((self.root / "aggregate.json").exists())
+
+    def test_audit_identity_mismatch_is_rejected(self) -> None:
+        for field, value in (
+            ("audit_arm", "outer-scaled-numeric-parity"),
+            ("audit_family", "hires-ramped"),
+            ("audit_event_key", "different:event"),
+        ):
+            cells = copy.deepcopy(self.cells)
+            event = cells[0]["event_rows"][0]
+            if event[field] == value:
+                value = "legacy-fixed" if field == "audit_arm" else "robertson-ramped:other"
+            event[field] = value
+            result = self.run_aggregate(cells)
+            self.assertNotEqual(result.returncode, 0)
+
+    def test_audit_failure_and_ineligibility_require_explicit_reason(self) -> None:
+        cells = copy.deepcopy(self.cells)
+        event = cells[0]["event_rows"][0]
+        event["audit_full_e_eligible"] = False
+        event["audit_full_e_attempted"] = False
+        event["audit_full_e_completed"] = False
+        event["audit_full_e_total_error"] = None
+        event["audit_full_e_locally_admissible"] = None
+        event["audit_full_e_work"] = None
+        event["audit_unsafe"] = None
+        event["audit_evidence_status"] = "ineligible"
+        event["audit_full_e_failure"] = None
+        result = self.run_aggregate(cells)
+        self.assertNotEqual(result.returncode, 0)
+
     def test_missing_duplicate_extra_and_unknown_domain_are_rejected(self) -> None:
         variants = [
             self.cells[:-1],
@@ -199,7 +348,8 @@ class ReceiptAggregateTests(unittest.TestCase):
         cells = copy.deepcopy(self.cells)
         event = cells[0]["event_rows"][0]
         event["recommended"] = True
-        event["shadow_full_e_locally_admissible"] = False
+        event["audit_full_e_locally_admissible"] = False
+        event["audit_full_e_total_error"] = 2.0
         event["audit_unsafe"] = True
         cells[0]["recommendation_rows"] = [{"event_key": event["event_key"]}]
         result = self.run_aggregate(cells)
@@ -214,7 +364,8 @@ class ReceiptAggregateTests(unittest.TestCase):
             event = payload["event_rows"][0]
             event["quadratic_drift_zeta34"] = TAU - 1.0
             event["zeta34_signed_margin"] = -1.0
-            event["shadow_full_e_locally_admissible"] = True
+            event["audit_full_e_locally_admissible"] = True
+            event["audit_full_e_total_error"] = 0.5
             event["audit_unsafe"] = False
         result = self.run_aggregate(cells)
         self.assertEqual(result.returncode, 0, result.stderr)
@@ -222,6 +373,23 @@ class ReceiptAggregateTests(unittest.TestCase):
             self.aggregate()["predeclared_decision"],
             "ADMISSIBLE_BUT_NONDISCRIMINATING",
         )
+
+    def test_nondiscriminating_requires_complete_positive_control_absence(self) -> None:
+        cells = copy.deepcopy(self.cells)
+        for payload in cells:
+            if payload["family"] != "hires-ramped":
+                continue
+            event = payload["event_rows"][0]
+            event["audit_full_e_completed"] = False
+            event["audit_full_e_total_error"] = None
+            event["audit_full_e_locally_admissible"] = None
+            event["audit_full_e_work"] = None
+            event["audit_unsafe"] = None
+            event["audit_evidence_status"] = "failed"
+            event["audit_full_e_failure"] = "missing positive-control audit"
+        result = self.run_aggregate(cells)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertFalse((self.root / "aggregate.json").exists())
 
 
 if __name__ == "__main__":

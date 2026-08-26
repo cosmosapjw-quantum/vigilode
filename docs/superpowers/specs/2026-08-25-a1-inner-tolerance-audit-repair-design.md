@@ -101,10 +101,17 @@ GitHub Actions runs the Cartesian product of two arms and six families, uploads 
 
 ### Authority decision
 
+Before applying any decision class, validate the independent arm-specific
+audit full-E channel. Runtime `shadow_full_e_*` evidence follows the
+recommendation policy and cannot establish safety for an unrecommended event.
+The receipt schema keeps incomplete audit safety nullable and terminates
+`STOP_INVALID` if any eligible event lacks completed error, admissibility,
+failure, work, or exact event-identity evidence.
+
 The aggregate receipt classifies the new arm as one of:
 
-- `ADMISSIBLE_AND_DISCRIMINATING`: hard gates pass, zero unsafe recommendations, and at least one unsafe full-E event remains correctly unrecommended;
-- `ADMISSIBLE_BUT_NONDISCRIMINATING`: hard gates pass but the positive control disappears;
+- `ADMISSIBLE_AND_DISCRIMINATING`: hard gates pass, zero unsafe recommendations, and each arm retains an above-tau unrecommended Hires event whose independent audit full-E result is locally inadmissible;
+- `ADMISSIBLE_BUT_NONDISCRIMINATING`: hard gates pass and complete independent audit evidence genuinely contains no Hires positive control;
 - `NOT_ADMISSIBLE`: any hard safety/provenance gate fails.
 
 Only the first class can make the candidate eligible for a separate,

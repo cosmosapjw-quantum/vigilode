@@ -11,8 +11,8 @@ import sys
 from typing import Any
 
 
-SCHEMA = "vigilode-a1-two-arm-atomic-cell-v1"
-AGGREGATE_SCHEMA = "vigilode-a1-two-arm-authority-receipt-v1"
+SCHEMA = "vigilode-a1-two-arm-atomic-cell-v2"
+AGGREGATE_SCHEMA = "vigilode-a1-two-arm-authority-receipt-v2"
 PROFILE = "enforced-budget-holdout-320"
 TAU = 13.39706618860016
 PHI_RTOL = 3.0e-2 * 1.0e-5
@@ -84,6 +84,36 @@ BASE_HARD_GATES = (
 )
 GIT_OBJECT = re.compile(r"^[0-9a-f]{40}$")
 TRACE_DIGEST = re.compile(r"^[0-9a-f]{64}$")
+INVALIDATED_EXECUTION_WORKFLOW_RUN_ID = 32906175896
+INVALIDATED_AGGREGATE_SCIENTIFIC_DIGEST = (
+    "7665718c60ff9c1e0d1e86d1ff4464e8eb71d806dd0e6ce5c4f6ac0501f027a1"
+)
+EVENT_REQUIRED_FIELDS = {
+    "event_key",
+    "trajectory_id",
+    "decision_accepted_step",
+    "target_attempt_index",
+    "target_accepted_steps_before",
+    "t_start",
+    "h",
+    "quadratic_drift_zeta34",
+    "zeta34_signed_margin",
+    "recommended",
+    "shadow_full_e_completed",
+    "shadow_full_e_locally_admissible",
+    "audit_arm",
+    "audit_family",
+    "audit_event_key",
+    "audit_full_e_eligible",
+    "audit_full_e_attempted",
+    "audit_full_e_completed",
+    "audit_full_e_total_error",
+    "audit_full_e_locally_admissible",
+    "audit_full_e_failure",
+    "audit_full_e_work",
+    "audit_unsafe",
+    "audit_evidence_status",
+}
 
 
 class ReceiptValidationError(ValueError):
@@ -140,6 +170,10 @@ def validate_cell(cell: dict[str, Any], source: Path) -> None:
         f"{source}: invalid workflow run ID",
     )
     require(
+        cell["execution_workflow_run_id"] != INVALIDATED_EXECUTION_WORKFLOW_RUN_ID,
+        f"{source}: workflow run 32906175896 is diagnostic-only and invalid for authority",
+    )
+    require(
         isinstance(cell["execution_workflow_run_attempt"], int)
         and cell["execution_workflow_run_attempt"] > 0,
         f"{source}: invalid workflow run attempt",
@@ -182,6 +216,11 @@ def validate_cell(cell: dict[str, Any], source: Path) -> None:
     recommended_keys: set[str] = set()
     for event in events:
         require(isinstance(event, dict), f"{source}: event row must be an object")
+        missing_event = sorted(EVENT_REQUIRED_FIELDS - set(event))
+        require(
+            not missing_event,
+            f"{source}: event row missing audit fields: {', '.join(missing_event)}",
+        )
         key = event.get("event_key")
         require(isinstance(key, str) and key, f"{source}: invalid event key")
         require(key not in event_keys, f"{source}: duplicate event key {key}")
@@ -198,10 +237,76 @@ def validate_cell(cell: dict[str, Any], source: Path) -> None:
                 and math.isclose(margin, zeta - TAU, rel_tol=0.0, abs_tol=1.0e-14),
                 f"{source}: zeta34 signed margin mismatch",
             )
-        derived_unsafe = bool(event.get("shadow_full_e_completed")) and not bool(
-            event.get("shadow_full_e_locally_admissible")
+        require(type(event["recommended"]) is bool, f"{source}: recommended must be Boolean")
+        require(
+            type(event["shadow_full_e_completed"]) is bool
+            and type(event["shadow_full_e_locally_admissible"]) is bool,
+            f"{source}: runtime shadow completion/admissibility must be Boolean",
         )
-        require(event.get("audit_unsafe") is derived_unsafe, f"{source}: audit unsafe mismatch")
+        require(event["audit_arm"] == cell["arm"], f"{source}: audit arm identity mismatch")
+        require(event["audit_family"] == cell["family"], f"{source}: audit family identity mismatch")
+        require(event["audit_event_key"] == key, f"{source}: audit event identity mismatch")
+        require(
+            isinstance(event["t_start"], (int, float))
+            and math.isfinite(event["t_start"])
+            and isinstance(event["h"], (int, float))
+            and math.isfinite(event["h"])
+            and event["h"] > 0.0,
+            f"{source}: invalid audit event state or trial h",
+        )
+        for field in (
+            "audit_full_e_eligible",
+            "audit_full_e_attempted",
+            "audit_full_e_completed",
+        ):
+            require(type(event[field]) is bool, f"{source}: {field} must be Boolean")
+
+        eligible = event["audit_full_e_eligible"]
+        attempted = event["audit_full_e_attempted"]
+        completed = event["audit_full_e_completed"]
+        status = event["audit_evidence_status"]
+        require(isinstance(status, str) and status, f"{source}: missing audit evidence status")
+        if eligible:
+            require(
+                attempted and completed and status == "complete",
+                f"{source}: STOP_INVALID incomplete eligible audit evidence for {key}",
+            )
+            total_error = event["audit_full_e_total_error"]
+            require(
+                isinstance(total_error, (int, float))
+                and math.isfinite(total_error)
+                and total_error >= 0.0,
+                f"{source}: invalid completed audit total error for {key}",
+            )
+            admissible = event["audit_full_e_locally_admissible"]
+            require(type(admissible) is bool, f"{source}: missing completed audit admissibility for {key}")
+            require(event["audit_full_e_failure"] is None, f"{source}: completed audit has failure for {key}")
+            work = event["audit_full_e_work"]
+            require(isinstance(work, dict) and work, f"{source}: missing completed audit work for {key}")
+            require(
+                all(type(value) is int and value >= 0 for value in work.values()),
+                f"{source}: invalid completed audit work for {key}",
+            )
+            derived_unsafe = not admissible
+            require(
+                event["audit_unsafe"] is derived_unsafe,
+                f"{source}: audit unsafe mismatch for {key}",
+            )
+        else:
+            require(not attempted and not completed, f"{source}: inconsistent ineligible audit state for {key}")
+            require(status == "ineligible", f"{source}: invalid ineligible audit status for {key}")
+            require(
+                isinstance(event["audit_full_e_failure"], str)
+                and bool(event["audit_full_e_failure"].strip()),
+                f"{source}: ineligible audit requires an explicit reason for {key}",
+            )
+            for field in (
+                "audit_full_e_total_error",
+                "audit_full_e_locally_admissible",
+                "audit_full_e_work",
+                "audit_unsafe",
+            ):
+                require(event[field] is None, f"{source}: ineligible audit must keep {field} unknown for {key}")
         if event.get("recommended") is True:
             recommended_keys.add(key)
 
@@ -269,6 +374,8 @@ def summarize(cells_dir: Path) -> dict[str, Any]:
     unsafe_recommendation_keys: list[str] = []
     audit_unsafe_event_keys: list[str] = []
     hires_positive_control: dict[str, bool] = {}
+    audit_evidence_counts: dict[str, dict[str, dict[str, int]]] = {}
+    audit_failures: list[dict[str, str]] = []
     base_hard_gates_pass = True
 
     for arm in ARMS:
@@ -287,7 +394,10 @@ def summarize(cells_dir: Path) -> dict[str, Any]:
         arm_event_keys: list[str] = []
         arm_recommendations: list[str] = []
         arm_hires_positive = False
+        arm_hires_eligible = False
+        audit_evidence_counts[arm] = {}
         for cell in arm_cells:
+            family_counts = {"eligible": 0, "completed": 0, "ineligible": 0}
             base_hard_gates_pass &= all(cell["hard_gates"][gate] for gate in BASE_HARD_GATES)
             for event in cell["event_rows"]:
                 qualified_key = f"{arm}/{cell['family']}/{event['event_key']}"
@@ -302,14 +412,33 @@ def summarize(cells_dir: Path) -> dict[str, Any]:
                     )
                 if event["recommended"]:
                     arm_recommendations.append(qualified_key)
-                    if event["audit_unsafe"]:
+                    if event["audit_unsafe"] is True:
                         unsafe_recommendation_keys.append(qualified_key)
-                if event["audit_unsafe"]:
+                if event["audit_full_e_eligible"]:
+                    family_counts["eligible"] += 1
+                    family_counts["completed"] += int(event["audit_full_e_completed"])
+                    if cell["family"] == "hires-ramped":
+                        arm_hires_eligible = True
+                else:
+                    family_counts["ineligible"] += 1
+                if event["audit_unsafe"] is True:
                     audit_unsafe_event_keys.append(qualified_key)
-                    if cell["family"] == "hires-ramped" and not event["recommended"]:
+                    if (
+                        cell["family"] == "hires-ramped"
+                        and not event["recommended"]
+                        and event["quadratic_drift_zeta34"] is not None
+                        and event["quadratic_drift_zeta34"] > TAU
+                        and event["audit_full_e_completed"]
+                        and event["audit_full_e_locally_admissible"] is False
+                    ):
                         arm_hires_positive = True
+            audit_evidence_counts[arm][cell["family"]] = family_counts
         event_key_sets[arm] = sorted(arm_event_keys)
         recommendation_key_sets[arm] = sorted(arm_recommendations)
+        require(
+            arm_hires_eligible,
+            f"STOP_INVALID: no eligible completed Hires audit population for arm {arm}",
+        )
         hires_positive_control[arm] = arm_hires_positive
 
     unsafe_recommendation_keys.sort()
@@ -351,12 +480,19 @@ def summarize(cells_dir: Path) -> dict[str, Any]:
             "single_scientific_execution_identity": True,
             "frozen_tau_exact": True,
             "active_switching_false": True,
+            "audit_evidence_complete": True,
             "passed": all_hard_gates_pass,
         },
+        "audit_evidence_counts": audit_evidence_counts,
+        "audit_failures": audit_failures,
         "predeclared_decision": decision,
         "limitations": limitations,
     }
     scientific_digest = hashlib.sha256(canonical_bytes(scientific_payload)).hexdigest()
+    require(
+        scientific_digest != INVALIDATED_AGGREGATE_SCIENTIFIC_DIGEST,
+        "STOP_INVALID: invalidated aggregate digest cannot support authority",
+    )
     return {
         **scientific_payload,
         "artifact_content_manifest": manifest,
@@ -424,7 +560,7 @@ def main() -> int:
     try:
         receipt = summarize(args.cells_dir)
     except (OSError, ReceiptValidationError) as error:
-        print(f"A1 receipt validation failed: {error}", file=sys.stderr)
+        print(f"STOP_INVALID: A1 receipt validation failed: {error}", file=sys.stderr)
         return 1
     args.output_json.parent.mkdir(parents=True, exist_ok=True)
     args.output_markdown.parent.mkdir(parents=True, exist_ok=True)

@@ -2906,6 +2906,7 @@ fn run_rjf_stage_growth_safety_trajectory(
     problem: AtlasProblem,
     profile: G4S5B0Profile,
     budget_mode: StageGrowthBudgetMode,
+    arm: G4S5B0LinearToleranceArm,
 ) -> (
     Vec<G4S5B0RjfAttemptRow>,
     Vec<G4S5B0StepRow>,
@@ -2913,7 +2914,11 @@ fn run_rjf_stage_growth_safety_trajectory(
     G4S5B0TrajectorySummary,
 ) {
     let adaptive = adaptive_config(profile, problem.t_span.1 - problem.t_span.0);
-    let linear = linear_config(adaptive.rtol);
+    let linear = receipt_linear_config(
+        adaptive.rtol,
+        G4S5B0InnerToleranceLane::StageGrowthSafety,
+        arm,
+    );
     let mut controller = AdaptiveControllerState::default();
     let mut policy_state = PrefixPolicyState::new(G4S5B0PrefixProbePolicy::K3Development)
         .expect("sealed k=3 policy is valid");
@@ -3309,6 +3314,7 @@ pub fn run_g4_s5b0_stage_growth_safety_audit_family(
                 problem,
                 profile,
                 StageGrowthBudgetMode::Predictive,
+                crate::committed_g4_s5b0_linear_tolerance_arm(),
             );
         attempt_rows.append(&mut attempts);
         accepted_rows.append(&mut accepted);
@@ -3352,9 +3358,10 @@ pub fn run_g4_s5b0_stage_growth_safety_audit_family(
     })
 }
 
-pub fn run_g4_s5b0_enforced_prefix_budget_family(
+fn run_g4_s5b0_enforced_prefix_budget_family_with_arm(
     profile: G4S5B0Profile,
     family: G4S5B0Family,
+    arm: G4S5B0LinearToleranceArm,
 ) -> CoreResult<G4S5B0StageGrowthSafetyReport> {
     if matches!(profile, G4S5B0Profile::Canonical) {
         return Err(CoreError::InvalidInput(
@@ -3374,6 +3381,7 @@ pub fn run_g4_s5b0_enforced_prefix_budget_family(
                 problem,
                 profile,
                 StageGrowthBudgetMode::Enforced,
+                arm,
             );
         attempt_rows.append(&mut attempts);
         accepted_rows.append(&mut accepted);
@@ -3416,6 +3424,33 @@ pub fn run_g4_s5b0_enforced_prefix_budget_family(
             "N=2048 remains sealed.".into(),
         ],
     })
+}
+
+pub fn run_g4_s5b0_enforced_prefix_budget_family(
+    profile: G4S5B0Profile,
+    family: G4S5B0Family,
+) -> CoreResult<G4S5B0StageGrowthSafetyReport> {
+    run_g4_s5b0_enforced_prefix_budget_family_with_arm(
+        profile,
+        family,
+        crate::committed_g4_s5b0_linear_tolerance_arm(),
+    )
+}
+
+/// Receipt-only independent full-E audit for one tolerance arm and family.
+///
+/// This reuses the sealed v3.5 stage-growth audit path at the exact event state
+/// and trial step. It is not reachable through the ordinary committed runtime
+/// API, and its work is retained only as audit evidence.
+pub(crate) fn run_g4_s5b0_stage_growth_safety_receipt_audit_family(
+    family: G4S5B0Family,
+    arm: G4S5B0LinearToleranceArm,
+) -> CoreResult<G4S5B0StageGrowthSafetyReport> {
+    run_g4_s5b0_enforced_prefix_budget_family_with_arm(
+        G4S5B0Profile::EnforcedBudgetHoldout320,
+        family,
+        arm,
+    )
 }
 
 fn v36_profile_is_consumed(profile: G4S5B0Profile) -> bool {
