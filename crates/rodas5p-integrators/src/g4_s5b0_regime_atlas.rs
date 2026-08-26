@@ -1,19 +1,19 @@
 use std::{collections::BTreeSet, sync::Arc, time::Instant};
 
 use rodas5p_core::{
-    CoreError, CoreResult, LinearMethod, LinearSolverConfig, WorkCounters, error_scale, safe_l2,
-    wrms,
+    CoreError, CoreResult, LinearSolverConfig, WorkCounters, error_scale, safe_l2, wrms,
 };
 use serde::{Deserialize, Serialize};
 
 use crate::{
     AdaptiveControllerState, AdaptiveStepConfig, ControllerKind, FusedOrthogonalization,
-    FusedPhiKrylovConfig, FusedPhiPrefixSession, OdeProblem, ParallelExecution, PersistenceLatch,
-    Pexprb54s4AccountedBudgetedLevel2PrefixOutcome, Pexprb54s4BudgetedLevel2PrefixOutcome,
-    Pexprb54s4Level1PrefixReport, Pexprb54s4Level2ContinuationOutcome, Pexprb54s4Level2Prefix,
-    Pexprb54s4Level2PrefixReport, Pexprb54s4QuadraticRemainderDrift,
-    Pexprb54s4RemainderVectorGeometry, pexprb54s4_fused_step, pexprb54s4_fused_step_resume_level2,
-    pexprb54s4_fused_step_resume_level2_accounted,
+    FusedPhiKrylovConfig, FusedPhiPrefixSession, G4S5B0InnerToleranceLane,
+    G4S5B0InnerTolerancePolicy, G4S5B0LinearToleranceArm, OdeProblem, ParallelExecution,
+    PersistenceLatch, Pexprb54s4AccountedBudgetedLevel2PrefixOutcome,
+    Pexprb54s4BudgetedLevel2PrefixOutcome, Pexprb54s4Level1PrefixReport,
+    Pexprb54s4Level2ContinuationOutcome, Pexprb54s4Level2Prefix, Pexprb54s4Level2PrefixReport,
+    Pexprb54s4QuadraticRemainderDrift, Pexprb54s4RemainderVectorGeometry, pexprb54s4_fused_step,
+    pexprb54s4_fused_step_resume_level2, pexprb54s4_fused_step_resume_level2_accounted,
     pexprb54s4_fused_step_resume_level2_accounted_jvp_budget,
     pexprb54s4_level1_prefix_with_tolerance_scaled_telemetry,
     pexprb54s4_level2_prefix_resume_level1,
@@ -1309,27 +1309,27 @@ fn adaptive_config(profile: G4S5B0Profile, span: f64) -> AdaptiveStepConfig {
     }
 }
 
-fn phi_config(rtol: f64, dimension: usize) -> FusedPhiKrylovConfig {
-    FusedPhiKrylovConfig {
-        minimum_dimension: 2,
-        maximum_dimension: (dimension + 4).min(32),
-        dimension_increment: 2,
-        relative_tolerance: (0.03 * rtol).max(1.0e-12),
-        absolute_tolerance: (3.0e-4 * rtol).max(1.0e-14),
-        orthogonalization: FusedOrthogonalization::FullMgs,
-        maximum_substeps: 16,
-    }
+fn inner_tolerance_policy(rtol: f64) -> G4S5B0InnerTolerancePolicy {
+    G4S5B0InnerTolerancePolicy::try_from_outer_rtol(rtol)
+        .expect("G4/S5B0 profile rtol must be finite and positive")
 }
 
-fn linear_config() -> LinearSolverConfig {
-    LinearSolverConfig {
-        method: LinearMethod::Gmres,
-        rtol: 1.0e-10,
-        atol: 1.0e-12,
-        restart: 32,
-        maxiter: 256,
-        ..LinearSolverConfig::default()
-    }
+fn phi_config(rtol: f64, dimension: usize) -> FusedPhiKrylovConfig {
+    inner_tolerance_policy(rtol).phi_config(dimension)
+}
+
+fn linear_config(rtol: f64) -> LinearSolverConfig {
+    inner_tolerance_policy(rtol).linear_config()
+}
+
+fn receipt_linear_config(
+    rtol: f64,
+    lane: G4S5B0InnerToleranceLane,
+    arm: G4S5B0LinearToleranceArm,
+) -> LinearSolverConfig {
+    G4S5B0InnerTolerancePolicy::try_for_lane(lane, arm, rtol)
+        .expect("G4/S5B0 receipt profile rtol must be finite and positive")
+        .linear_config()
 }
 
 struct ExponentialShadow {
@@ -1514,7 +1514,7 @@ fn run_trajectory(
     include_exponential_shadow: bool,
 ) -> (Vec<G4S5B0StepRow>, G4S5B0TrajectorySummary) {
     let adaptive = adaptive_config(profile, problem.t_span.1 - problem.t_span.0);
-    let linear = linear_config();
+    let linear = linear_config(adaptive.rtol);
     let mut controller = AdaptiveControllerState::default();
     let mut t = problem.t_span.0;
     let tf = problem.t_span.1;
@@ -1807,13 +1807,14 @@ impl PrefixPolicyState {
 fn run_rjf_attempt_trace_trajectory(
     problem: AtlasProblem,
     profile: G4S5B0Profile,
+    arm: G4S5B0LinearToleranceArm,
 ) -> (
     Vec<G4S5B0RjfAttemptRow>,
     Vec<G4S5B0StepRow>,
     G4S5B0TrajectorySummary,
 ) {
     let adaptive = adaptive_config(profile, problem.t_span.1 - problem.t_span.0);
-    let linear = linear_config();
+    let linear = receipt_linear_config(adaptive.rtol, G4S5B0InnerToleranceLane::AttemptTrace, arm);
     let mut controller = AdaptiveControllerState::default();
     let mut t = problem.t_span.0;
     let tf = problem.t_span.1;
@@ -2003,6 +2004,7 @@ struct RjfAttemptTraceExecution {
 fn execute_rjf_attempt_trace_filtered(
     profile: G4S5B0Profile,
     family: Option<G4S5B0Family>,
+    arm: G4S5B0LinearToleranceArm,
 ) -> CoreResult<RjfAttemptTraceExecution> {
     let mut execution = RjfAttemptTraceExecution {
         attempt_rows: Vec::new(),
@@ -2014,7 +2016,7 @@ fn execute_rjf_attempt_trace_filtered(
             continue;
         }
         let (mut attempts, mut accepted, summary) =
-            run_rjf_attempt_trace_trajectory(problem, profile);
+            run_rjf_attempt_trace_trajectory(problem, profile, arm);
         execution.attempt_rows.append(&mut attempts);
         execution.accepted_rows.append(&mut accepted);
         execution.trajectories.push(summary);
@@ -2025,12 +2027,13 @@ fn execute_rjf_attempt_trace_filtered(
 fn run_g4_s5b0_rjf_attempt_trace_filtered(
     profile: G4S5B0Profile,
     family: Option<G4S5B0Family>,
+    arm: G4S5B0LinearToleranceArm,
 ) -> CoreResult<G4S5B0AttemptTraceReport> {
     let RjfAttemptTraceExecution {
         attempt_rows,
         accepted_rows,
         trajectories,
-    } = execute_rjf_attempt_trace_filtered(profile, family)?;
+    } = execute_rjf_attempt_trace_filtered(profile, family, arm)?;
     Ok(G4S5B0AttemptTraceReport {
         schema: "g4-s5b0-rjf-attempt-trace-v1",
         status: "read-only-rjf-attempt-trace",
@@ -2050,14 +2053,22 @@ fn run_g4_s5b0_rjf_attempt_trace_filtered(
 pub fn run_g4_s5b0_rjf_attempt_trace(
     profile: G4S5B0Profile,
 ) -> CoreResult<G4S5B0AttemptTraceReport> {
-    run_g4_s5b0_rjf_attempt_trace_filtered(profile, None)
+    run_g4_s5b0_rjf_attempt_trace_filtered(
+        profile,
+        None,
+        crate::committed_g4_s5b0_linear_tolerance_arm(),
+    )
 }
 
 pub fn run_g4_s5b0_rjf_attempt_trace_family(
     profile: G4S5B0Profile,
     family: G4S5B0Family,
 ) -> CoreResult<G4S5B0AttemptTraceReport> {
-    run_g4_s5b0_rjf_attempt_trace_filtered(profile, Some(family))
+    run_g4_s5b0_rjf_attempt_trace_filtered(
+        profile,
+        Some(family),
+        crate::committed_g4_s5b0_linear_tolerance_arm(),
+    )
 }
 
 fn finalize_actual_prefix_row(
@@ -2101,7 +2112,7 @@ fn run_rjf_actual_level1_prefix_trajectory(
     G4S5B0TrajectorySummary,
 ) {
     let adaptive = adaptive_config(profile, problem.t_span.1 - problem.t_span.0);
-    let linear = linear_config();
+    let linear = linear_config(adaptive.rtol);
     let mut controller = AdaptiveControllerState::default();
     let mut policy_state =
         PrefixPolicyState::new(policy).expect("sealed persistence policy is valid");
@@ -2378,7 +2389,7 @@ fn run_rjf_actual_level2_prefix_trajectory(
     G4S5B0TrajectorySummary,
 ) {
     let adaptive = adaptive_config(profile, problem.t_span.1 - problem.t_span.0);
-    let linear = linear_config();
+    let linear = linear_config(adaptive.rtol);
     let mut controller = AdaptiveControllerState::default();
     let mut policy_state =
         PrefixPolicyState::new(policy).expect("sealed persistence policy is valid");
@@ -2895,6 +2906,7 @@ fn run_rjf_stage_growth_safety_trajectory(
     problem: AtlasProblem,
     profile: G4S5B0Profile,
     budget_mode: StageGrowthBudgetMode,
+    arm: G4S5B0LinearToleranceArm,
 ) -> (
     Vec<G4S5B0RjfAttemptRow>,
     Vec<G4S5B0StepRow>,
@@ -2902,7 +2914,11 @@ fn run_rjf_stage_growth_safety_trajectory(
     G4S5B0TrajectorySummary,
 ) {
     let adaptive = adaptive_config(profile, problem.t_span.1 - problem.t_span.0);
-    let linear = linear_config();
+    let linear = receipt_linear_config(
+        adaptive.rtol,
+        G4S5B0InnerToleranceLane::StageGrowthSafety,
+        arm,
+    );
     let mut controller = AdaptiveControllerState::default();
     let mut policy_state = PrefixPolicyState::new(G4S5B0PrefixProbePolicy::K3Development)
         .expect("sealed k=3 policy is valid");
@@ -3298,6 +3314,7 @@ pub fn run_g4_s5b0_stage_growth_safety_audit_family(
                 problem,
                 profile,
                 StageGrowthBudgetMode::Predictive,
+                crate::committed_g4_s5b0_linear_tolerance_arm(),
             );
         attempt_rows.append(&mut attempts);
         accepted_rows.append(&mut accepted);
@@ -3341,9 +3358,10 @@ pub fn run_g4_s5b0_stage_growth_safety_audit_family(
     })
 }
 
-pub fn run_g4_s5b0_enforced_prefix_budget_family(
+fn run_g4_s5b0_enforced_prefix_budget_family_with_arm(
     profile: G4S5B0Profile,
     family: G4S5B0Family,
+    arm: G4S5B0LinearToleranceArm,
 ) -> CoreResult<G4S5B0StageGrowthSafetyReport> {
     if matches!(profile, G4S5B0Profile::Canonical) {
         return Err(CoreError::InvalidInput(
@@ -3363,6 +3381,7 @@ pub fn run_g4_s5b0_enforced_prefix_budget_family(
                 problem,
                 profile,
                 StageGrowthBudgetMode::Enforced,
+                arm,
             );
         attempt_rows.append(&mut attempts);
         accepted_rows.append(&mut accepted);
@@ -3405,6 +3424,33 @@ pub fn run_g4_s5b0_enforced_prefix_budget_family(
             "N=2048 remains sealed.".into(),
         ],
     })
+}
+
+pub fn run_g4_s5b0_enforced_prefix_budget_family(
+    profile: G4S5B0Profile,
+    family: G4S5B0Family,
+) -> CoreResult<G4S5B0StageGrowthSafetyReport> {
+    run_g4_s5b0_enforced_prefix_budget_family_with_arm(
+        profile,
+        family,
+        crate::committed_g4_s5b0_linear_tolerance_arm(),
+    )
+}
+
+/// Receipt-only independent full-E audit for one tolerance arm and family.
+///
+/// This reuses the sealed v3.5 stage-growth audit path at the exact event state
+/// and trial step. It is not reachable through the ordinary committed runtime
+/// API, and its work is retained only as audit evidence.
+pub(crate) fn run_g4_s5b0_stage_growth_safety_receipt_audit_family(
+    family: G4S5B0Family,
+    arm: G4S5B0LinearToleranceArm,
+) -> CoreResult<G4S5B0StageGrowthSafetyReport> {
+    run_g4_s5b0_enforced_prefix_budget_family_with_arm(
+        G4S5B0Profile::EnforcedBudgetHoldout320,
+        family,
+        arm,
+    )
 }
 
 fn v36_profile_is_consumed(profile: G4S5B0Profile) -> bool {
@@ -3809,6 +3855,7 @@ fn run_rjf_frozen_full_e_shadow_trajectory(
     problem: AtlasProblem,
     profile: G4S5B0Profile,
     continuation_mode: FrozenShadowContinuationMode,
+    arm: G4S5B0LinearToleranceArm,
 ) -> (
     Vec<G4S5B0RjfAttemptRow>,
     Vec<G4S5B0StepRow>,
@@ -3816,7 +3863,11 @@ fn run_rjf_frozen_full_e_shadow_trajectory(
     G4S5B0TrajectorySummary,
 ) {
     let adaptive = adaptive_config(profile, problem.t_span.1 - problem.t_span.0);
-    let linear = linear_config();
+    let linear = receipt_linear_config(
+        adaptive.rtol,
+        G4S5B0InnerToleranceLane::FrozenFullEShadow,
+        arm,
+    );
     let mut controller = AdaptiveControllerState::default();
     let mut policy_state = PrefixPolicyState::new(G4S5B0PrefixProbePolicy::K3Development)
         .expect("sealed k=3 policy is valid");
@@ -4287,6 +4338,7 @@ struct FrozenFullEShadowExecution {
 fn execute_frozen_full_e_shadow_filtered(
     profile: G4S5B0Profile,
     family: Option<G4S5B0Family>,
+    arm: G4S5B0LinearToleranceArm,
 ) -> CoreResult<FrozenFullEShadowExecution> {
     if !v36_profile_is_consumed(profile) {
         return Err(CoreError::InvalidInput(
@@ -4308,6 +4360,7 @@ fn execute_frozen_full_e_shadow_filtered(
                 problem,
                 profile,
                 FrozenShadowContinuationMode::UnboundedV36,
+                arm,
             );
         execution.attempt_rows.append(&mut attempts);
         execution.accepted_rows.append(&mut accepted);
@@ -4322,14 +4375,15 @@ fn execute_frozen_full_e_shadow_filtered(
 fn run_g4_s5b0_frozen_full_e_shadow_filtered(
     profile: G4S5B0Profile,
     family: Option<G4S5B0Family>,
+    arm: G4S5B0LinearToleranceArm,
 ) -> CoreResult<G4S5B0FrozenFullEShadowReport> {
     let FrozenFullEShadowExecution {
         attempt_rows,
         accepted_rows,
         rows,
         trajectories,
-    } = execute_frozen_full_e_shadow_filtered(profile, family)?;
-    let reference = run_g4_s5b0_rjf_attempt_trace_filtered(profile, family)?;
+    } = execute_frozen_full_e_shadow_filtered(profile, family, arm)?;
+    let reference = run_g4_s5b0_rjf_attempt_trace_filtered(profile, family, arm)?;
     let rjf_parity = rjf_parity(&attempt_rows, &accepted_rows, &trajectories, &reference);
 
     let recommendations = rows.iter().filter(|row| row.recommended).count();
@@ -4501,13 +4555,32 @@ pub fn run_g4_s5b0_frozen_full_e_shadow_family(
     profile: G4S5B0Profile,
     family: G4S5B0Family,
 ) -> CoreResult<G4S5B0FrozenFullEShadowReport> {
-    run_g4_s5b0_frozen_full_e_shadow_filtered(profile, Some(family))
+    run_g4_s5b0_frozen_full_e_shadow_filtered(
+        profile,
+        Some(family),
+        crate::committed_g4_s5b0_linear_tolerance_arm(),
+    )
 }
 
 pub fn run_g4_s5b0_frozen_full_e_shadow(
     profile: G4S5B0Profile,
 ) -> CoreResult<G4S5B0FrozenFullEShadowReport> {
-    run_g4_s5b0_frozen_full_e_shadow_filtered(profile, None)
+    run_g4_s5b0_frozen_full_e_shadow_filtered(
+        profile,
+        None,
+        crate::committed_g4_s5b0_linear_tolerance_arm(),
+    )
+}
+
+pub(crate) fn run_g4_s5b0_frozen_full_e_shadow_receipt_family(
+    family: G4S5B0Family,
+    arm: G4S5B0LinearToleranceArm,
+) -> CoreResult<G4S5B0FrozenFullEShadowReport> {
+    run_g4_s5b0_frozen_full_e_shadow_filtered(
+        G4S5B0Profile::EnforcedBudgetHoldout320,
+        Some(family),
+        arm,
+    )
 }
 
 struct V37ContinuationTransactionExecution {
@@ -4545,6 +4618,7 @@ fn execute_v37_continuation_transaction_filtered(
                 FrozenShadowContinuationMode::BoundedV37 {
                     jvp_cap: continuation_jvp_cap,
                 },
+                crate::committed_g4_s5b0_linear_tolerance_arm(),
             );
         execution.attempt_rows.append(&mut attempts);
         execution.accepted_rows.append(&mut accepted);
@@ -4626,7 +4700,11 @@ fn run_g4_s5b0_v37_continuation_transaction_filtered(
         rows,
         trajectories,
     } = execute_v37_continuation_transaction_filtered(profile, family, continuation_jvp_cap)?;
-    let reference = run_g4_s5b0_rjf_attempt_trace_filtered(profile, family)?;
+    let reference = run_g4_s5b0_rjf_attempt_trace_filtered(
+        profile,
+        family,
+        crate::committed_g4_s5b0_linear_tolerance_arm(),
+    )?;
     let rjf_parity = rjf_parity(&attempt_rows, &accepted_rows, &trajectories, &reference);
 
     let recommendations = rows.iter().filter(|row| row.recommended).count();
@@ -4984,7 +5062,11 @@ fn timed_shadow_wall_arm(
         match mode {
             ShadowWallMode::RjfOnly => {
                 let start = Instant::now();
-                let suite = execute_rjf_attempt_trace_filtered(profile, None)?;
+                let suite = execute_rjf_attempt_trace_filtered(
+                    profile,
+                    None,
+                    crate::committed_g4_s5b0_linear_tolerance_arm(),
+                )?;
                 wall_seconds += start.elapsed().as_secs_f64();
                 proposed_interval += sorted_attempt_interval_sum(&suite.attempt_rows);
                 observed_family_count = family_count(&suite.trajectories);
@@ -4999,7 +5081,11 @@ fn timed_shadow_wall_arm(
             }
             ShadowWallMode::FrozenFullE => {
                 let start = Instant::now();
-                let suite = execute_frozen_full_e_shadow_filtered(profile, None)?;
+                let suite = execute_frozen_full_e_shadow_filtered(
+                    profile,
+                    None,
+                    crate::committed_g4_s5b0_linear_tolerance_arm(),
+                )?;
                 wall_seconds += start.elapsed().as_secs_f64();
                 proposed_interval += sorted_attempt_interval_sum(&suite.attempt_rows);
                 observed_family_count = family_count(&suite.trajectories);

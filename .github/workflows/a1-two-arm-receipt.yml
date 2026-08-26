@@ -1,0 +1,240 @@
+name: A1 two-arm authority receipt
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/a1-two-arm-receipt.yml"
+      - "crates/rodas5p-integrators/**"
+      - "crates/rodas5p-cli/**"
+      - "tools/summarize-a1-tolerance-arms.py"
+      - "tools/test_a1_tolerance_receipt.py"
+      - "research/a1_inner_tolerance_audit_20260825/**"
+
+permissions:
+  actions: read
+  contents: read
+
+env:
+  STARTING_A1_HEAD: 7952bf96bfd9fb604e87bce41bd9b918cc9b93f4
+  RECEIPT_JSON: research/a1_inner_tolerance_audit_20260825/A1_TWO_ARM_AUTHORITY_RECEIPT.json
+  RECEIPT_MARKDOWN: research/a1_inner_tolerance_audit_20260825/A1_TWO_ARM_AUTHORITY_RECEIPT.md
+
+jobs:
+  mode-and-authority:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      receipt_exists: ${{ steps.mode.outputs.receipt_exists }}
+    steps:
+      - name: Check out the tested pull-request merge
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Bind the tested merge to the frozen feature head and base
+        env:
+          FEATURE_HEAD: ${{ github.event.pull_request.head.sha }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test "$(git rev-parse HEAD^1)" = "$BASE_SHA"
+          test "$(git rev-parse HEAD^2)" = "$FEATURE_HEAD"
+          test "$(git merge-base "$BASE_SHA" "$FEATURE_HEAD")" = "$BASE_SHA"
+
+      - name: Enforce forbidden-diff and ordinary-arm guards
+        env:
+          FEATURE_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          git diff --exit-code "$STARTING_A1_HEAD" "$FEATURE_HEAD" -- \
+            Cargo.toml Cargo.lock .cargo \
+            crates/rodas5p-krylov crates/rodas5p-core crates/rodas5p-fair-ab \
+            fixtures research/generic_enforced_prefix_budget_v35/results
+          git diff --exit-code "$STARTING_A1_HEAD" "$FEATURE_HEAD" -- \
+            crates/rodas5p-integrators/src/g4_s5b0_inner_tolerance.rs
+          source_file=crates/rodas5p-integrators/src/g4_s5b0_regime_atlas.rs
+          for token in \
+            V25_ERROR_DROP_THRESHOLD \
+            'PersistenceLatch::new(3)' \
+            V29_PREFIX_RESERVE_JVP \
+            V29_PREFIX_BUDGET_FRACTION \
+            V36_FROZEN_ZETA34_TAU \
+            V37_CONTINUATION_JVP_CAP
+          do
+            test "$(git show "$STARTING_A1_HEAD:$source_file" | grep -F "$token")" = \
+              "$(git show "$FEATURE_HEAD:$source_file" | grep -F "$token")"
+          done
+
+      - name: Select execution or receipt-validation mode
+        id: mode
+        run: |
+          if test -f "$RECEIPT_JSON" && test -f "$RECEIPT_MARKDOWN"; then
+            echo "receipt_exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "receipt_exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  scientific-execution-cells:
+    needs: mode-and-authority
+    if: needs.mode-and-authority.outputs.receipt_exists == 'false'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        arm:
+          - legacy-fixed
+          - outer-scaled-numeric-parity
+        family:
+          - robertson-ramped
+          - hires-ramped
+          - van-der-pol-ramped
+          - rotating-nonnormal
+          - nonautonomous-stiff-forcing
+          - semilinear-advection-diffusion-ramped
+    steps:
+      - name: Check out the tested pull-request merge
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install the pinned Rust toolchain
+        run: |
+          rustup toolchain install 1.94.1 --profile minimal
+          rustup override set 1.94.1
+
+      - name: Capture cycle-free execution identity
+        id: identity
+        env:
+          FEATURE_HEAD: ${{ github.event.pull_request.head.sha }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test "$(git rev-parse HEAD^1)" = "$BASE_SHA"
+          test "$(git rev-parse HEAD^2)" = "$FEATURE_HEAD"
+          echo "head_tree=$(git show -s --format=%T "$FEATURE_HEAD")" >> "$GITHUB_OUTPUT"
+          echo "base_tree=$(git show -s --format=%T "$BASE_SHA")" >> "$GITHUB_OUTPUT"
+          echo "merge_tree=$(git show -s --format=%T "$GITHUB_SHA")" >> "$GITHUB_OUTPUT"
+          echo "rust_version=$(rustc --version)" >> "$GITHUB_OUTPUT"
+          echo "cargo_version=$(cargo --version)" >> "$GITHUB_OUTPUT"
+
+      - name: Generate one atomic receipt cell
+        env:
+          FEATURE_HEAD: ${{ github.event.pull_request.head.sha }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_TREE: ${{ steps.identity.outputs.head_tree }}
+          BASE_TREE: ${{ steps.identity.outputs.base_tree }}
+          MERGE_TREE: ${{ steps.identity.outputs.merge_tree }}
+          RUST_VERSION: ${{ steps.identity.outputs.rust_version }}
+          CARGO_VERSION: ${{ steps.identity.outputs.cargo_version }}
+          ARM: ${{ matrix.arm }}
+          FAMILY: ${{ matrix.family }}
+        run: |
+          mkdir -p cells
+          cargo run -p rodas5p-cli --bin rodas5p --locked -- \
+            a1-two-arm-receipt-cell \
+            --family "$FAMILY" \
+            --arm "$ARM" \
+            --repository "$GITHUB_REPOSITORY" \
+            --pull-request "${{ github.event.pull_request.number }}" \
+            --scientific-execution-head-sha "$FEATURE_HEAD" \
+            --scientific-execution-head-tree "$HEAD_TREE" \
+            --base-sha "$BASE_SHA" \
+            --base-tree "$BASE_TREE" \
+            --tested-execution-merge-sha "$GITHUB_SHA" \
+            --tested-execution-merge-tree "$MERGE_TREE" \
+            --execution-workflow-run-id "$GITHUB_RUN_ID" \
+            --execution-workflow-run-attempt "$GITHUB_RUN_ATTEMPT" \
+            --rust-version "$RUST_VERSION" \
+            --cargo-version "$CARGO_VERSION" \
+            --output "cells/${ARM}--${FAMILY}.json"
+
+      - name: Upload the atomic cell
+        uses: actions/upload-artifact@v4
+        with:
+          name: a1-cell-${{ matrix.arm }}-${{ matrix.family }}
+          path: cells/*.json
+          if-no-files-found: error
+          retention-days: 90
+
+  scientific-execution-aggregate:
+    needs:
+      - mode-and-authority
+      - scientific-execution-cells
+    if: >-
+      always() &&
+      needs.mode-and-authority.outputs.receipt_exists == 'false' &&
+      needs.scientific-execution-cells.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out the tested pull-request merge
+        uses: actions/checkout@v4
+
+      - name: Download all twelve atomic cells
+        uses: actions/download-artifact@v4
+        with:
+          pattern: a1-cell-*
+          path: cells
+          merge-multiple: true
+
+      - name: Run adversarial validator contracts
+        run: python3 tools/test_a1_tolerance_receipt.py -v
+
+      - name: Validate and aggregate the twelve-cell campaign
+        run: |
+          python3 tools/summarize-a1-tolerance-arms.py \
+            --cells-dir cells \
+            --output-json A1_TWO_ARM_AUTHORITY_RECEIPT.json \
+            --output-markdown A1_TWO_ARM_AUTHORITY_RECEIPT.md
+
+      - name: Upload the cycle-free execution artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: a1-two-arm-execution-receipt
+          path: |
+            cells/*.json
+            A1_TWO_ARM_AUTHORITY_RECEIPT.json
+            A1_TWO_ARM_AUTHORITY_RECEIPT.md
+          if-no-files-found: error
+          retention-days: 90
+
+  receipt-validation:
+    needs: mode-and-authority
+    if: needs.mode-and-authority.outputs.receipt_exists == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out the tested receipt merge
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify receipt-only ancestry after scientific execution
+        env:
+          FEATURE_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          execution_head=$(python3 -c 'import json, os; print(json.load(open(os.environ["RECEIPT_JSON"], encoding="utf-8"))["scientific_execution_identity"]["scientific_execution_head_sha"])')
+          test "$(git merge-base "$execution_head" "$FEATURE_HEAD")" = "$execution_head"
+          changed=$(git diff --name-only "$execution_head" "$FEATURE_HEAD")
+          changed_csv=$(printf '%s\n' "$changed" | sort | paste -sd, -)
+          test "$changed_csv" = "research/a1_inner_tolerance_audit_20260825/A1_TWO_ARM_AUTHORITY_RECEIPT.json,research/a1_inner_tolerance_audit_20260825/A1_TWO_ARM_AUTHORITY_RECEIPT.md"
+
+      - name: Download exact scientific execution cells
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          execution_run=$(python3 -c 'import json, os; print(json.load(open(os.environ["RECEIPT_JSON"], encoding="utf-8"))["scientific_execution_identity"]["execution_workflow_run_id"])')
+          gh run download "$execution_run" \
+            --repo "$GITHUB_REPOSITORY" \
+            --pattern 'a1-cell-*' \
+            --dir downloaded-cells
+
+      - name: Recompute and compare the committed receipt
+        run: |
+          python3 tools/summarize-a1-tolerance-arms.py \
+            --cells-dir downloaded-cells \
+            --output-json /tmp/A1_TWO_ARM_AUTHORITY_RECEIPT.json \
+            --output-markdown /tmp/A1_TWO_ARM_AUTHORITY_RECEIPT.md
+          cmp "$RECEIPT_JSON" /tmp/A1_TWO_ARM_AUTHORITY_RECEIPT.json
+          cmp "$RECEIPT_MARKDOWN" /tmp/A1_TWO_ARM_AUTHORITY_RECEIPT.md
+          python3 tools/test_a1_tolerance_receipt.py -v

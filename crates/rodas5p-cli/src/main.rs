@@ -13,12 +13,13 @@ use rodas5p_fair_ab::{
     run_global_error_pareto_screen, summarize_comparison,
 };
 use rodas5p_integrators::{
-    CandidateCatalog, CandidateFamily, CandidateStatus, G1TransactionalGateProfile,
-    G2ExponentialGateProfile, G3FusedAdaptiveProfile, G4PrefixKernelProfile, G4S5B0Family,
-    G4S5B0PrefixProbePolicy, G4S5B0Profile, G4S5B0V37ContinuationTransactionReport, G4S5B3Profile,
-    HomotopyExperimentProfile, HomotopyRhsTelemetryProfile, MatrixFreeCommonWProfile,
-    NativeIntegratorGateReport, PathControllerProfile, StageBatchFeasibilityProfile,
-    UnifiedNonlinearScreen, UnifiedScientificGateReport, UnifiedScreenProfile,
+    A1ScientificExecutionIdentity, CandidateCatalog, CandidateFamily, CandidateStatus,
+    G1TransactionalGateProfile, G2ExponentialGateProfile, G3FusedAdaptiveProfile,
+    G4PrefixKernelProfile, G4S5B0Family, G4S5B0PrefixProbePolicy, G4S5B0Profile,
+    G4S5B0V37ContinuationTransactionReport, G4S5B3Profile, HomotopyExperimentProfile,
+    HomotopyRhsTelemetryProfile, MatrixFreeCommonWProfile, NativeIntegratorGateReport,
+    PathControllerProfile, StageBatchFeasibilityProfile, UnifiedNonlinearScreen,
+    UnifiedScientificGateReport, UnifiedScreenProfile, run_a1_two_arm_receipt_cell,
     run_g1_transactional_gate, run_g2_exponential_gate, run_g3_fused_adaptive_gate,
     run_g4_prefix_kernel_gate, run_g4_s5b0_actual_level1_prefix_family,
     run_g4_s5b0_actual_level2_prefix_family, run_g4_s5b0_enforced_prefix_budget_family,
@@ -214,6 +215,39 @@ enum Command {
         #[arg(long)]
         output: PathBuf,
     },
+    /// Generate one read-only A1 two-arm authority-receipt cell at the fixed N=320 holdout.
+    A1TwoArmReceiptCell {
+        #[arg(long, value_enum)]
+        family: CliA1ReceiptFamily,
+        #[arg(long, value_enum)]
+        arm: CliA1ReceiptArm,
+        #[arg(long)]
+        repository: String,
+        #[arg(long)]
+        pull_request: u64,
+        #[arg(long)]
+        scientific_execution_head_sha: String,
+        #[arg(long)]
+        scientific_execution_head_tree: String,
+        #[arg(long)]
+        base_sha: String,
+        #[arg(long)]
+        base_tree: String,
+        #[arg(long)]
+        tested_execution_merge_sha: String,
+        #[arg(long)]
+        tested_execution_merge_tree: String,
+        #[arg(long)]
+        execution_workflow_run_id: u64,
+        #[arg(long)]
+        execution_workflow_run_attempt: u64,
+        #[arg(long)]
+        rust_version: String,
+        #[arg(long)]
+        cargo_version: String,
+        #[arg(long)]
+        output: PathBuf,
+    },
     /// Resume frozen recommendations under the event-local v3.7 continuation transaction.
     GenericV37ContinuationTransaction {
         #[arg(long, value_enum)]
@@ -334,6 +368,54 @@ enum CliPolicyRedesignFamily {
     RotatingNonnormal,
     NonautonomousForcing,
     Semilinear,
+}
+
+#[derive(Clone, Copy, Debug, ValueEnum)]
+enum CliA1ReceiptFamily {
+    #[value(name = "robertson-ramped")]
+    RobertsonRamped,
+    #[value(name = "hires-ramped")]
+    HiresRamped,
+    #[value(name = "van-der-pol-ramped")]
+    VanDerPolRamped,
+    #[value(name = "rotating-nonnormal")]
+    RotatingNonnormal,
+    #[value(name = "nonautonomous-stiff-forcing")]
+    NonautonomousStiffForcing,
+    #[value(name = "semilinear-advection-diffusion-ramped")]
+    SemilinearAdvectionDiffusionRamped,
+}
+
+impl From<CliA1ReceiptFamily> for G4S5B0Family {
+    fn from(value: CliA1ReceiptFamily) -> Self {
+        match value {
+            CliA1ReceiptFamily::RobertsonRamped => Self::RobertsonRamped,
+            CliA1ReceiptFamily::HiresRamped => Self::HiresRamped,
+            CliA1ReceiptFamily::VanDerPolRamped => Self::VanDerPolRamped,
+            CliA1ReceiptFamily::RotatingNonnormal => Self::RotatingNonnormal,
+            CliA1ReceiptFamily::NonautonomousStiffForcing => Self::NonautonomousStiffForcing,
+            CliA1ReceiptFamily::SemilinearAdvectionDiffusionRamped => {
+                Self::SemilinearAdvectionDiffusionRamped
+            }
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, ValueEnum)]
+enum CliA1ReceiptArm {
+    #[value(name = "legacy-fixed")]
+    LegacyFixed,
+    #[value(name = "outer-scaled-numeric-parity")]
+    OuterScaledNumericParity,
+}
+
+impl From<CliA1ReceiptArm> for rodas5p_integrators::G4S5B0LinearToleranceArm {
+    fn from(value: CliA1ReceiptArm) -> Self {
+        match value {
+            CliA1ReceiptArm::LegacyFixed => Self::LegacyFixed,
+            CliA1ReceiptArm::OuterScaledNumericParity => Self::OuterScaledNumericParity,
+        }
+    }
 }
 
 impl From<CliPolicyRedesignFamily> for G4S5B0Family {
@@ -1405,6 +1487,40 @@ fn main() -> Result<()> {
         } => {
             let report = run_g4_s5b0_frozen_full_e_shadow_family(profile.into(), family.into())?;
             write_json(&output, &report)?;
+        }
+        Command::A1TwoArmReceiptCell {
+            family,
+            arm,
+            repository,
+            pull_request,
+            scientific_execution_head_sha,
+            scientific_execution_head_tree,
+            base_sha,
+            base_tree,
+            tested_execution_merge_sha,
+            tested_execution_merge_tree,
+            execution_workflow_run_id,
+            execution_workflow_run_attempt,
+            rust_version,
+            cargo_version,
+            output,
+        } => {
+            let identity = A1ScientificExecutionIdentity {
+                repository,
+                pull_request,
+                scientific_execution_head_sha,
+                scientific_execution_head_tree,
+                base_sha,
+                base_tree,
+                tested_execution_merge_sha,
+                tested_execution_merge_tree,
+                execution_workflow_run_id,
+                execution_workflow_run_attempt,
+                rust_version,
+                cargo_version,
+            };
+            let cell = run_a1_two_arm_receipt_cell(identity, family.into(), arm.into())?;
+            write_json(&output, &cell)?;
         }
         Command::GenericV37ContinuationTransaction {
             profile,

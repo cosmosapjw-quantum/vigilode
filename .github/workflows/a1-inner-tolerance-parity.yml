@@ -1,0 +1,85 @@
+name: A1 inner-tolerance parity
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/a1-inner-tolerance-parity.yml"
+      - "crates/rodas5p-integrators/**"
+      - "crates/rodas5p-cli/**"
+      - "docs/superpowers/plans/2026-08-25-a1-inner-tolerance-audit-repair.md"
+      - "docs/superpowers/specs/2026-08-25-a1-inner-tolerance-audit-repair-design.md"
+      - "research/a1_inner_tolerance_audit_20260825/**"
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/a1-inner-tolerance-parity.yml"
+      - "crates/rodas5p-integrators/**"
+      - "crates/rodas5p-cli/**"
+      - "docs/superpowers/plans/2026-08-25-a1-inner-tolerance-audit-repair.md"
+      - "docs/superpowers/specs/2026-08-25-a1-inner-tolerance-audit-repair-design.md"
+      - "research/a1_inner_tolerance_audit_20260825/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  a1-inner-tolerance-parity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Install the pinned Rust toolchain
+        run: |
+          rustup toolchain install 1.94.1 --profile minimal --component rustfmt,clippy
+          rustup override set 1.94.1
+
+      - name: Run the A1 tolerance-arm contracts
+        run: |
+          cargo test -p rodas5p-integrators \
+            --test a1_inner_tolerance_parity_contracts \
+            --locked
+          cargo test -p rodas5p-integrators \
+            --test a1_two_arm_receipt_contracts \
+            --locked
+
+      - name: Run the committed external trace regression
+        run: |
+          cargo test -p rodas5p-integrators \
+            --test a1_committed_trace_regression \
+            --locked -- --nocapture
+
+      - name: Run the affected G4/S5B0 behavioral contracts
+        run: |
+          cargo test -p rodas5p-integrators \
+            --test g4_s5b0_regime_atlas_contracts \
+            --locked
+
+      - name: Run the downstream frozen-threshold CLI contract
+        run: |
+          cargo test -p rodas5p-cli \
+            --test frozen_full_e_shadow_cli_contracts \
+            --locked
+          cargo test -p rodas5p-cli \
+            --test a1_tolerance_receipt_cli_contracts \
+            --locked
+          python3 tools/test_a1_tolerance_receipt.py -v
+
+      - name: Compile every workspace target
+        run: cargo test --workspace --all-targets --no-run --locked
+
+      - name: Run the workspace test closure
+        run: cargo test --workspace --all-targets --locked
+
+      - name: Lint the workspace
+        run: cargo clippy --workspace --all-targets --locked -- -D warnings
+
+      - name: Check formatting and source stability
+        run: |
+          cargo fmt --all -- --check
+          git diff --check
+          test -z "$(git status --porcelain --untracked-files=no)"
