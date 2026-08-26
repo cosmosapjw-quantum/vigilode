@@ -74,9 +74,16 @@ fn candidate_stops_inside_restart_and_preserves_true_residual_authority() {
     )
     .expect("Givens GMRES candidate");
 
-    let threshold = config
-        .atol
-        .max(config.rtol * safe_l2(&right_hand_side));
+    println!(
+        "legacy_iterations={} candidate_iterations={} legacy_linear_matvecs={} candidate_linear_matvecs={} candidate_diagnostic_matvecs={}",
+        legacy.iterations,
+        candidate.iterations,
+        legacy_work.linear_matvecs,
+        candidate_work.linear_matvecs,
+        candidate_work.diagnostic_matvecs,
+    );
+
+    let threshold = config.atol.max(config.rtol * safe_l2(&right_hand_side));
     assert!(candidate.iterations < config.restart as u64);
     assert!(candidate.iterations < legacy.iterations);
     assert!(candidate.residual_norm <= threshold);
@@ -112,9 +119,7 @@ fn candidate_resets_incremental_state_across_restart_cycles() {
     )
     .expect("restarted Givens GMRES");
 
-    let threshold = config
-        .atol
-        .max(config.rtol * safe_l2(&right_hand_side));
+    let threshold = config.atol.max(config.rtol * safe_l2(&right_hand_side));
     assert!(workspace.statistics().restart_cycles > 1);
     assert!(report.iterations > config.restart as u64);
     assert!(report.residual_norm <= threshold);
@@ -123,12 +128,8 @@ fn candidate_resets_incremental_state_across_restart_cycles() {
 
 #[test]
 fn candidate_preserves_the_jacobi_preconditioner_contract() {
-    let matrix = DenseMatrix::from_rows(&[
-        &[10.0, 2.0, 0.0],
-        &[1.0, 7.0, 1.0],
-        &[0.0, 1.0, 5.0],
-    ])
-    .unwrap();
+    let matrix =
+        DenseMatrix::from_rows(&[&[10.0, 2.0, 0.0], &[1.0, 7.0, 1.0], &[0.0, 1.0, 5.0]]).unwrap();
     let exact = vec![1.0, 2.0, -1.0];
     let right_hand_side = matrix.matvec(&exact).unwrap();
     let operator = DenseOperator::new(matrix.clone()).unwrap();
