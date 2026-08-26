@@ -1,6 +1,6 @@
 use rodas5p_core::{
-    ClosureOperator, DenseMatrix, DenseOperator, IdentityPreconditioner, JacobiPreconditioner,
-    WorkCounters, safe_l2,
+    ClosureOperator, CoreError, DenseMatrix, DenseOperator, IdentityPreconditioner,
+    JacobiPreconditioner, Preconditioner, WorkCounters, safe_l2,
 };
 use rodas5p_krylov::{
     GmresConfig, GmresGivensWorkspace, solve_gmres, solve_gmres_givens,
@@ -35,6 +35,27 @@ fn rhs(n: usize) -> Vec<f64> {
 fn relative_defect(left: &[f64], right: &[f64]) -> f64 {
     let difference: Vec<f64> = left.iter().zip(right).map(|(a, b)| a - b).collect();
     safe_l2(&difference) / safe_l2(right).max(1.0)
+}
+
+struct AnisotropicPreconditioner {
+    scales: [f64; 2],
+}
+
+impl Preconditioner for AnisotropicPreconditioner {
+    fn dimension(&self) -> usize {
+        2
+    }
+
+    fn apply(&self, x: &[f64], y: &mut [f64]) -> rodas5p_core::CoreResult<()> {
+        if x.len() != 2 || y.len() != 2 {
+            return Err(CoreError::Dimension(
+                "anisotropic preconditioner shape mismatch".into(),
+            ));
+        }
+        y[0] = self.scales[0] * x[0];
+        y[1] = self.scales[1] * x[1];
+        Ok(())
+    }
 }
 
 #[test]
@@ -124,6 +145,41 @@ fn candidate_resets_incremental_state_across_restart_cycles() {
     assert!(report.iterations > config.restart as u64);
     assert!(report.residual_norm <= threshold);
     assert_eq!(report.iterations, work.linear_iterations);
+}
+
+#[test]
+fn projected_residual_trigger_cannot_bypass_true_residual_certification() {
+    let matrix = DenseMatrix::from_rows(&[&[1.0, 0.0], &[0.0, 2.0]]).unwrap();
+    let operator = DenseOperator::new(matrix).unwrap();
+    let preconditioner = AnisotropicPreconditioner {
+        scales: [1.0, 1.0e-6],
+    };
+    let right_hand_side = [1.0, 1.0];
+    let config = GmresConfig {
+        restart: 2,
+        max_arnoldi: 4,
+        rtol: 1.0e-3,
+        atol: 0.0,
+    };
+    let mut workspace = GmresGivensWorkspace::default();
+    let mut work = WorkCounters::default();
+    let report = solve_gmres_givens_with_workspace(
+        &operator,
+        &preconditioner,
+        &right_hand_side,
+        None,
+        &config,
+        &mut workspace,
+        &mut work,
+    )
+    .expect("true-residual-certified candidate");
+
+    let threshold = config.atol.max(config.rtol * safe_l2(&right_hand_side));
+    assert!(workspace.statistics().projected_residual_checks >= 2);
+    assert!(workspace.statistics().rejected_projected_residual_checks >= 1);
+    assert!(report.residual_norm <= threshold);
+    assert_eq!(report.iterations, 2);
+    assert!(work.diagnostic_matvecs >= 3);
 }
 
 #[test]
