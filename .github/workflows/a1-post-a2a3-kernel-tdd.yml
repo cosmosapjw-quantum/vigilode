@@ -55,7 +55,7 @@ jobs:
       - name: Expand the checksum-gated payload and apply the minimal routing patch
         run: |
           cat tools/.a1-bootstrap-payload.part* | base64 --decode > /tmp/a1-kernel-bootstrap.zip
-          echo "53e7f0fd0bcefd6a971e58a70d94b300be195a2731ddb7ff2b1479e1608f5590  /tmp/a1-kernel-bootstrap.zip" | sha256sum -c -
+          echo "e234342d987658ddf5ac9cf4fa6e40c5c750cee1053abd47ad6fd4b69a937b7c  /tmp/a1-kernel-bootstrap.zip" | sha256sum -c -
           python3 - /tmp/a1-kernel-bootstrap.zip <<'PY'
           import os, pathlib, sys, zipfile
           root = pathlib.Path.cwd()
