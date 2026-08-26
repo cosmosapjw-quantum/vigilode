@@ -1,0 +1,30 @@
+name: A1 post-A2A3 kernel focused TDD
+
+on:
+  push:
+    branches:
+      - research/a1-post-a2a3-kernel-rerun
+    paths:
+      - ".github/workflows/a1-post-a2a3-kernel-tdd.yml"
+      - "crates/rodas5p-integrators/tests/a1_post_a2a3_kernel_contracts.rs"
+
+permissions:
+  contents: read
+
+jobs:
+  focused-red:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out the exact branch head
+        uses: actions/checkout@v4
+
+      - name: Install Rust 1.94.1
+        run: |
+          rustup toolchain install 1.94.1 --profile minimal
+          rustup override set 1.94.1
+
+      - name: Run the focused kernel-selection contract
+        run: |
+          cargo test --locked -p rodas5p-integrators \
+            --test a1_post_a2a3_kernel_contracts -- --nocapture
