@@ -63,13 +63,13 @@ jobs:
               "__apply_patch.py",
               "crates/rodas5p-cli/src/bin/a1_post_a2a3_kernel_cell.rs",
               "tools/run-a1-post-a2a3-kernel-cell.py",
-              "tols/summarize-a1-post-a2a3-kernel.py",
+              "tools/summarize-a1-post-a2a3-kernel.py",
               "tools/test_a1_post_a2a3_kernel.py",
           }
           with zipfile.ZipFile(sys.argv[1]) as archive:
               members = {item.filename for item in archive.infolist() if not item.is_dir()}
               if members != expected:
-                raise SystemExit(f"unexpected bootstrap members: {sorted(members)}")
+                  raise SystemExit(f"unexpected bootstrap members: {sorted(members)}")
               for member in sorted(members - {"__apply_patch.py"}):
                   target = root / member
                   target.parent.mkdir(parents=True, exist_ok=True)
