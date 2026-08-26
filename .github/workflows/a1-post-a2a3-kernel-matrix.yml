@@ -1,0 +1,294 @@
+name: A1 post-A2A3 kernel 12-cell exploratory receipt
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/a1-post-a2a3-kernel-matrix.yml"
+      - ".github/workflows/a1-two-arm-receipt.yml"
+      - "crates/rodas5p-integrators/src/sequential.rs"
+      - "crates/rodas5p-integrators/src/g4_s5b0_regime_atlas.rs"
+      - "crates/rodas5p-integrators/src/a1_two_arm_receipt.rs"
+      - "crates/rodas5p-integrators/src/lib.rs"
+      - "crates/rodas5p-integrators/tests/a1_post_a2a3_kernel_contracts.rs"
+      - "crates/rodas5p-cli/Cargo.toml"
+      - "crates/rodas5p-cli/src/bin/a1_post_a2a3_kernel_cell.rs"
+      - "tools/run-a1-post-a2a3-kernel-cell.py"
+      - "tools/summarize-a1-post-a2a3-kernel.py"
+      - "tools/test_a1_post_a2a3_kernel.py"
+
+permissions:
+  actions: read
+  contents: read
+
+env:
+  AUTHORITY_BASE_SHA: 8d0c79184e09efb5bdadc24a6315c60a71a44264
+  AUTHORITY_BASE_TREE: acd94364cf69f19d782619fc6c75554cb0754208
+  ACTIVE_BRANCH: research/a1-post-a2a3-kernel-rerun
+  AGGREGATE_JSON: A1_POST_A2A3_KERNEL_EXPLORATORY_RECEIPT.json
+  AGGREGATE_MARKDOWN: A1_POST_A2A3_KERNEL_EXPLORATORY_RECEIPT.md
+
+jobs:
+  authority-and-focused-contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Check out the tested pull-request merge
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Bind tested merge to the frozen base and feature head
+        env:
+          FEATURE_HEAD: ${{ github.event.pull_request.head.sha }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          test "${{ github.event.pull_request.head.ref }}" = "$ACTIVE_BRANCH"
+          test "$BASE_SHA" = "$AUTHORITY_BASE_SHA"
+          test "$(git rev-parse "$AUTHORITY_BASE_SHA^{tree}")" = "$AUTHORITY_BASE_TREE"
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test "$(git rev-parse HEAD^1)" = "$BASE_SHA"
+          test "$(git rev-parse HEAD^2)" = "$FEATURE_HEAD"
+          test "$(git merge-base "$BASE_SHA" "$FEATURE_HEAD")" = "$BASE_SHA"
+
+      - name: Enforce same-physics and historical-evidence guards
+        env:
+          FEATURE_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          git diff --exit-code "$AUTHORITY_BASE_SHA" "$FEATURE_HEAD" -- \
+            Cargo.lock Cargo.toml .cargo \
+            crates/rodas5p-core crates/rodas5p-krylov crates/rodas5p-fair-ab \
+            fixtures research/a1_inner_tolerance_audit_20260825
+          git diff --exit-code "$AUTHORITY_BASE_SHA" "$FEATURE_HEAD" -- \
+            crates/rodas5p-integrators/src/g4_s5b0_inner_tolerance.rs
+          source_file=crates/rodas5p-integrators/src/g4_s5b0_regime_atlas.rs
+          for token in \
+            V25_ERROR_DROP_THRESHOLD \
+            'PersistenceLatch::new(3)' \
+            V29_PREFIX_RESERVE_JVP \
+            V29_PREFIX_BUDGET_FRACTION \
+            V36_FROZEN_ZETA34_TAU \
+            V37_CONTINUATION_JVP_CAP
+          do
+            test "$(git show "$AUTHORITY_BASE_SHA:$source_file" | grep -F "$token")" = \
+              "$(git show "$FEATURE_HEAD:$source_file" | grep -F "$token")"
+          done
+
+      - name: Install Rust 1.94.1
+        run: |
+          rustup toolchain install 1.94.1 --profile minimal
+          rustup override set 1.94.1
+
+      - name: Verify production legacy default and explicit candidate routing
+        run: |
+          cargo test --locked -p rodas5p-integrators \
+            --test a1_post_a2a3_kernel_contracts -- --nocapture
+          cargo check --workspace --all-targets --locked
+          python3 tools/test_a1_post_a2a3_kernel.py -v
+
+  scientific-execution-cells:
+    needs: authority-and-focused-contracts
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      matrix:
+        kernel_arm:
+          - legacy-restarted-gmres
+          - incremental-givens-candidate
+        family:
+          - robertson-ramped
+          - hires-ramped
+          - van-der-pol-ramped
+          - rotating-nonnormal
+          - nonautonomous-stiff-forcing
+          - semilinear-advection-diffusion-ramped
+    steps:
+      - name: Check out the tested pull-request merge
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Rust 1.94.1
+        run: |
+          rustup toolchain install 1.94.1 --profile minimal
+          rustup override set 1.94.1
+
+      - name: Capture cycle-free scientific execution identity
+        id: identity
+        env:
+          FEATURE_HEAD: ${{ github.event.pull_request.head.sha }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test "$(git rev-parse HEAD^1)" = "$BASE_SHA"
+          test "$(git rev-parse HEAD^2)" = "$FEATURE_HEAD"
+          echo "head_tree=$(git show -s --format=%T "$FEATURE_HEAD")" >> "$GITHUB_OUTPUT"
+          echo "base_tree=$(git show -s --format=%T "$BASE_SHA")" >> "$GITHUB_OUTPUT"
+          echo "merge_tree=$(git show -s --format=%T "$GITHUB_SHA")" >> "$GITHUB_OUTPUT"
+          echo "rust_version=$(rustc --version)" >> "$GITHUB_OUTPUT"
+          echo "cargo_version=$(cargo --version)" >> "$GITHUB_OUTPUT"
+
+      - name: Execute one cell twice through the failure-preserving envelope
+        env:
+          FEATURE_HEAD: ${{ github.event.pull_request.head.sha }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_TREE: ${{ steps.identity.outputs.head_tree }}
+          BASE_TREE: ${{ steps.identity.outputs.base_tree }}
+          MERGE_TREE: ${{ steps.identity.outputs.merge_tree }}
+          RUST_VERSION: ${{ steps.identity.outputs.rust_version }}
+          CARGO_VERSION: ${{ steps.identity.outputs.cargo_version }}
+          FAMILY: ${{ matrix.family }}
+          KERNEL_ARM: ${{ matrix.kernel_arm }}
+        run: |
+          mkdir -p cells
+          python3 tools/run-a1-post-a2a3-kernel-cell.py \
+            --family "$FAMILY" \
+            --kernel-arm "$KERNEL_ARM" \
+            --output "cells/${KERNEL_ARM}--${FAMILY}.json" -- \
+            cargo run -p rodas5p-cli --bin a1-post-a2a3-kernel-cell --locked -- \
+              --family "$FAMILY" \
+              --kernel-arm "$KERNEL_ARM" \
+              --repository "$GITHUB_REPOSITORY" \
+              --pull-request "${{ github.event.pull_request.number }}" \
+              --scientific-execution-head-sha "$FEATURE_HEAD" \
+              --scientific-execution-head-tree "$HEAD_TREE" \
+              --base-sha "$BASE_SHA" \
+              --base-tree "$BASE_TREE" \
+              --tested-execution-merge-sha "$GITHUB_SHA" \
+              --tested-execution-merge-tree "$MERGE_TREE" \
+              --execution-workflow-run-id "$GITHUB_RUN_ID" \
+              --execution-workflow-run-attempt "$GITHUB_RUN_ATTEMPT" \
+              --rust-version "$RUST_VERSION" \
+              --cargo-version "$CARGO_VERSION"
+
+      - name: Preserve pre-scientific infrastructure failure as an explicit cell
+        if: always()
+        env:
+          FAMILY: ${{ matrix.family }}
+          KERNEL_ARM: ${{ matrix.kernel_arm }}
+        run: |
+          mkdir -p cells
+          output="cells/${KERNEL_ARM}--${FAMILY}.json"
+          if test -f "$output"; then
+            exit 0
+          fi
+          python3 - "$output" "$FAMILY" "$KERNEL_ARM" "${{ job.status }}" <<'PY'
+          import json, pathlib, sys
+          output, family, kernel, status = sys.argv[1:]
+          payload = {
+              "schema": "vigilode-a1-post-a2a3-kernel-execution-cell-v1",
+              "status": "EXPLORATORY/NONAUTHORITATIVE",
+              "execution_state": "ERROR",
+              "family": family,
+              "kernel_arm": kernel,
+              "deterministic_replay": False,
+              "payload_sha256_first": None,
+              "payload_sha256_second": None,
+              "payload": None,
+              "errors": [f"pre-scientific workflow failure; job status={status}"],
+          }
+          pathlib.Path(output).write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n")
+          PY
+
+      - name: Upload the explicit atomic cell
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: a1-post-a2a3-kernel-cell-${{ matrix.kernel_arm }}-${{ matrix.family }}
+          path: cells/*.json
+          if-no-files-found: error
+          retention-days: 90
+
+  scientific-execution-aggregate:
+    needs:
+      - authority-and-focused-contracts
+      - scientific-execution-cells
+    if: always() && needs.authority-and-focused-contracts.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out the tested pull-request merge
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Prepare aggregate directory
+        run: mkdir -p cells
+
+      - name: Download all available atomic cells
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          pattern: a1-post-a2a3-kernel-cell-*
+          path: cells
+          merge-multiple: true
+
+      - name: Run adversarial validator and failure-envelope contracts
+        id: validator
+        continue-on-error: true
+        run: python3 tools/test_a1_post_a2a3_kernel.py -v
+
+      - name: Validate and aggregate the frozen 12-cell campaign
+        run: |
+          set +e
+          python3 tools/summarize-a1-post-a2a3-kernel.py \
+            --cells-dir cells \
+            --output-json "$AGGREGATE_JSON" \
+            --output-markdown "$AGGREGATE_MARKDOWN"
+          rc=$?
+          set -e
+          if test "$rc" -ne 0 || ! test -s "$AGGREGATE_JSON"; then
+            python3 - "$AGGREGATE_JSON" "$AGGREGATE_MARKDOWN" "$rc" <<'PY'
+          import json, pathlib, sys
+          json_path, md_path, rc = sys.argv[1:]
+          report = {
+              "schema": "vigilode-a1-post-a2a3-kernel-aggregate-v1",
+              "status": "EXPLORATORY/NONAUTHORITATIVE",
+              "verdict": "STOP_INVALID",
+              "expected_cell_count": 12,
+              "observed_cell_count": 0,
+              "validation_errors": [f"aggregate process failed with exit code {rc}"],
+          }
+          pathlib.Path(json_path).write_text(json.dumps(report, indent=2, sort_keys=True) + "\n")
+          pathlib.Path(md_path).write_text(
+              "# A1 post-A2/A3 kernel-isolation receipt\n\n"
+              f"- Verdict: `STOP_INVALID`\n- Aggregate process exit code: `{rc}`\n"
+          )
+          PY
+          fi
+
+      - name: Capture exact feature source diff
+        env:
+          FEATURE_HEAD: ${{ github.event.pull_request.head.sha }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          git diff --binary "$BASE_SHA" "$FEATURE_HEAD" > A1_POST_A2A3_KERNEL_SOURCE_DIFF.patch
+          git diff --stat "$BASE_SHA" "$FEATURE_HEAD" > A1_POST_A2A3_KERNEL_SOURCE_DIFF.stat
+
+      - name: Upload cells, aggregate, and source diff before verdict enforcement
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: a1-post-a2a3-kernel-exploratory-receipt
+          path: |
+            cells/*.json
+            A1_POST_A2A3_KERNEL_EXPLORATORY_RECEIPT.json
+            A1_POST_A2A3_KERNEL_EXPLORATORY_RECEIPT.md
+            A1_POST_A2A3_KERNEL_SOURCE_DIFF.patch
+            A1_POST_A2A3_KERNEL_SOURCE_DIFF.stat
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Enforce validator and complete-matrix verdict
+        run: |
+          test "${{ steps.validator.outcome }}" = "success"
+          python3 - "$AGGREGATE_JSON" <<'PY'
+          import json, sys
+          report = json.load(open(sys.argv[1], encoding="utf-8"))
+          if report.get("verdict") != "COMPLETE":
+              raise SystemExit("kernel matrix is not COMPLETE: " + repr(report.get("validation_errors")))
+          if report.get("observed_cell_count") != 12:
+              raise SystemExit("kernel matrix does not contain 12 validated cells")
+          PY
