@@ -47,6 +47,7 @@ jobs:
       - name: Install Rust 1.94.1
         run: |
           rustup toolchain install 1.94.1 --profile minimal
+          rustup component add --toolchain 1.94.1 rustfmt
           rustup override set 1.94.1
           rustc --version
           cargo --version
