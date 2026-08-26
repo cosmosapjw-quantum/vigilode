@@ -70,6 +70,10 @@ jobs:
                   target.parent.mkdir(parents=True, exist_ok=True)
                   target.write_bytes(archive.read(member))
               source = archive.read("__apply_patch.py")
+          historical_workflow_call = b"    patch_historical_workflow()\n"
+          if source.count(historical_workflow_call) != 1:
+              raise SystemExit("embedded patcher historical-workflow call count drifted")
+          source = source.replace(historical_workflow_call, b"", 1)
           exec(compile(source, "<embedded-a1-routing-patch>", "exec"), {"__name__": "__main__"})
           for relative in [
               "tools/run-a1-post-a2a3-kernel-cell.py",
@@ -88,6 +92,7 @@ jobs:
             crates/rodas5p-core crates/rodas5p-krylov crates/rodas5p-fair-ab \
             fixtures research/a1_inner_tolerance_audit_20260825
           git diff --exit-code "$GITHUB_SHA" -- \
+            .github/workflows/a1-two-arm-receipt.yml \
             crates/rodas5p-integrators/src/g4_s5b0_inner_tolerance.rs
           source_file=crates/rodas5p-integrators/src/g4_s5b0_regime_atlas.rs
           for token in \
