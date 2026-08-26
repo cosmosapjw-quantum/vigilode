@@ -1,0 +1,48 @@
+name: A2+A3 GMRES inner-cycle candidate
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/a2-a3-gmres-inner-cycle.yml"
+      - "crates/rodas5p-krylov/**"
+      - "crates/rodas5p-integrators/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  a2-a3-gmres-candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Install the pinned Rust toolchain
+        run: |
+          rustup toolchain install 1.94.1 --profile minimal --component rustfmt,clippy
+          rustup override set 1.94.1
+
+      - name: Run incremental-Givens unit and integration contracts
+        run: |
+          cargo test -p rodas5p-krylov --lib --locked
+          cargo test -p rodas5p-krylov --test givens_gmres_contracts --locked -- --nocapture
+
+      - name: Run the directly affected Krylov suite
+        run: cargo test -p rodas5p-krylov --all-targets --locked
+
+      - name: Compile downstream integrator targets
+        run: cargo test -p rodas5p-integrators --all-targets --no-run --locked
+
+      - name: Lint the changed and downstream crates
+        run: |
+          cargo clippy -p rodas5p-krylov --all-targets --locked -- -D warnings
+          cargo clippy -p rodas5p-integrators --all-targets --locked -- -D warnings
+
+      - name: Check formatting and tracked-source stability
+        run: |
+          cargo fmt --all -- --check
+          git diff --check
+          test -z "$(git status --porcelain --untracked-files=no)"
