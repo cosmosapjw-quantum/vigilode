@@ -26,10 +26,10 @@
     "provenance": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["raw_receipt_path", "raw_receipt_sha256", "source_head", "source_tree"],
+      "required": ["source_head", "source_tree", "raw_receipt_path", "raw_receipt_sha256"],
       "properties": {
-        "raw_receipt_path": {"type": "string", "minLength": 1},
-        "raw_receipt_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "raw_receipt_path": {"type": ["string", "null"]},
+        "raw_receipt_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
         "source_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
         "source_tree": {"type": "string", "pattern": "^[0-9a-f]{40}$"}
       }
@@ -45,20 +45,13 @@
         "attempts": {"type": "integer", "minimum": 1},
         "accepted_steps": {"type": "integer", "minimum": 0},
         "rejected_steps": {"type": "integer", "minimum": 0},
-        "hard_gates": {
-          "type": "object",
-          "minProperties": 1,
-          "additionalProperties": {"const": true}
-        },
+        "hard_gates": {"type": "object", "minProperties": 1, "additionalProperties": {"const": true}},
         "audit_full_e_complete": {"const": true},
         "unsafe_recommendations": {"const": 0},
         "numerical_payload_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
       }
     },
-    "stages": {
-      "type": "array",
-      "items": {"$ref": "stage-receipt-v2.schema.json"}
-    },
+    "stages": {"type": "array", "items": {"$ref": "stage-receipt-v2.schema.json"}},
     "failure": {
       "oneOf": [
         {"type": "null"},
@@ -85,6 +78,12 @@
       "if": {"properties": {"execution_state": {"const": "COMPLETE"}}},
       "then": {
         "properties": {
+          "provenance": {
+            "properties": {
+              "raw_receipt_path": {"type": "string", "minLength": 1},
+              "raw_receipt_sha256": {"type": "string"}
+            }
+          },
           "campaign": {"type": "object"},
           "stages": {"minItems": 8},
           "failure": {"type": "null"}
@@ -92,6 +91,7 @@
       },
       "else": {
         "properties": {
+          "campaign": {"type": ["object", "null"]},
           "failure": {"type": "object"}
         }
       }
