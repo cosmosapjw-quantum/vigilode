@@ -1,0 +1,117 @@
+finding:
+  severity: P0
+  file: tools/verify-k0-stage-telemetry-plan-base.py
+  line_or_symbol: "evidence_check, lines 148-171"
+  violated_invariant: INV-K0-010
+  reproducer: |
+    PYTHONDONTWRITEBYTECODE=1 python - <<'PY'
+    import json, pathlib, subprocess, tempfile
+    root = pathlib.Path.cwd()
+    with tempfile.TemporaryDirectory(prefix="k0-invalid-evidence-") as raw:
+        evidence = pathlib.Path(raw)
+        for i in range(12):
+            (evidence / f"{i}.json").write_text(json.dumps({
+                "execution_state": "COMPLETE",
+                "kernel_arm": f"not-a-frozen-kernel-{i}",
+                "family": f"not-a-frozen-family-{i}",
+                "tolerance": {"rtol": 1e-10, "atol": 1e-12},
+                "stages": [],
+            }))
+        result = subprocess.run([
+            "python", "tools/verify-k0-stage-telemetry-plan.py",
+            "--repo-root", ".", "--evidence-dir", str(evidence),
+        ], cwd=root, text=True, capture_output=True)
+        print("exit=", result.returncode)
+        print(result.stdout)
+    PY
+    Observed: exit=0 and status=PASS for twelve invented kernel/family identities whose COMPLETE cells have no stages.
+  explanation: "The mandatory frozen-matrix gate checks only cardinality, arbitrary identity uniqueness, tolerance numbers, and optional work sums. It therefore accepts no actual frozen family, kernel, or stage evidence, violating the explicitly P0 exact-2x6 requirement."
+
+---
+finding:
+  severity: P0
+  file: research/k0_stage_telemetry_20260827/aggregate/build_k0_aggregate.py
+  line_or_symbol: "summarize_cell/totals_by_kernel, lines 44-96; main, lines 313-360"
+  violated_invariant: INV-K0-005
+  reproducer: |
+    PYTHONDONTWRITEBYTECODE=1 python - <<'PY'
+    import importlib.util, json
+    from pathlib import Path
+
+    root = Path(".")
+    def module(name, path):
+        spec = importlib.util.spec_from_file_location(name, path)
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        return mod
+
+    runner = module("runner", root / "research/k0_stage_telemetry_20260827/aggregate/run_k0_campaign_cell.py")
+    validator = module("validator", root / "research/k0_stage_telemetry_20260827/schema/validate_k0_cells.py")
+    builder = module("builder", root / "research/k0_stage_telemetry_20260827/aggregate/build_k0_aggregate.py")
+    authority = json.loads((root / "research/k0_stage_telemetry_20260827/aggregate/campaign-authority.json").read_text())
+    cell = runner.failure_cell(
+        authority, "robertson-ramped", "legacy-restarted-gmres",
+        "SCIENTIFIC_COMMAND_ERROR", "injected",
+    )
+    print("validator_state=", validator.validate_cell(
+        cell, ("legacy-restarted-gmres", "robertson-ramped"), "injected"
+    ))
+    summary = builder.summarize_cell(cell)
+    print("summary_a1_attempts=", summary["a1_attempts"])
+    print(builder.totals_by_kernel([summary], ("legacy-restarted-gmres",)))
+    PY
+    Observed: validator_state=ERROR and summary_a1_attempts=None, followed by TypeError from int(None) at totals_by_kernel line 92.
+  explanation: "A validator-valid preserved ERROR cell has null A1 totals. Aggregation crashes before writing failure_ledger.json, so an actual failed cell cannot be preserved in the required aggregate."
+
+---
+finding:
+  severity: P1
+  file: docs/exec-plans/k0-stage-telemetry-integration-20260827/schemas/stage-receipt.schema.json
+  line_or_symbol: "required/properties declarations, lines 7-16, 83-113, and 149-153"
+  violated_invariant: INV-K0-005
+  reproducer: |
+    PYTHONDONTWRITEBYTECODE=1 python - <<'PY'
+    import json
+    from pathlib import Path
+    from jsonschema import Draft202012Validator
+
+    schema = json.loads(Path(
+        "docs/exec-plans/k0-stage-telemetry-integration-20260827/schemas/stage-receipt.schema.json"
+    ).read_text())
+    base = {
+        "schema": "vigilode-k0-stage-receipt/v1",
+        "case_id": "case",
+        "family": "family",
+        "kernel_arm": "legacy-restarted-gmres",
+        "attempt_id": 0,
+        "stage_index": 0,
+        "claim_class": "EXPLORATORY_NONAUTHORITATIVE",
+    }
+    for state in ("ERROR", "STOP_INVALID"):
+        receipt = {**base, "execution_state": state}
+        errors = list(Draft202012Validator(schema).iter_errors(receipt))
+        print(state, "ACCEPTED" if not errors else "REJECTED", len(errors))
+    PY
+    Observed: ERROR ACCEPTED 0 and STOP_INVALID ACCEPTED 0.
+  explanation: "The canonical schema has no state-dependent work/error requirements, so it accepts information-free failed receipts. This reproduces WU-01 FM-WU01-002, which assigns P1 to missing preserved failure work."
+
+---
+finding:
+  severity: P1
+  file: crates/rodas5p-integrators/src/lib.rs
+  line_or_symbol: "new public reexports, lines 194-219 and 241-253"
+  violated_invariant: INV-K0-001
+  reproducer: |
+    git diff --unified=8 e1124586a4029f86669e7489278c61ef676d61aa..c7a5393a2cb1cf6f6095c6390348dd21fb45efe9 -- crates/rodas5p-integrators/src/lib.rs crates/rodas5p-krylov/src/lib.rs
+  explanation: "The delta publicly exports telemetry types, observed entrypoints, configuration tokens, novelty helpers, and observed Krylov solvers. #[doc(hidden)] affects documentation rather than Rust visibility. This reproduces WU-01 FM-WU01-003, explicitly classified P1."
+
+---
+finding:
+  severity: P1
+  file: crates/rodas5p-integrators/tests/k0_stage_telemetry_contracts.rs
+  line_or_symbol: "residual_sign_norm_telemetry_is_explicitly_non_authoritative, lines 155-161"
+  violated_invariant: INV-K0-008
+  reproducer: |
+    git grep -n -i -E 'signed.?residual|sign.?mutation|residual.?sign|NotCoveredByNormTelemetry' c7a5393a2cb1cf6f6095c6390348dd21fb45efe9 -- crates/rodas5p-integrators/src crates/rodas5p-integrators/tests
+    Observed: only the blind-spot enum and its constant-equality assertion occur; no signed-residual mutation regression occurs.
+  explanation: "The claim-boundary assertion exists, but INV-K0-008 mandates a separate signed-residual mutation negative test as the second guard."
