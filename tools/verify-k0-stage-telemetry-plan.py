@@ -82,7 +82,11 @@ def package_check(root):
         p = root / rel
         if not p.is_file():
             fail(f"manifest missing file {rel}")
-        got = hashlib.sha256(p.read_bytes()).hexdigest()
+        raw = p.read_bytes()
+        bad_controls = [byte for byte in raw if byte < 32 and byte not in (9, 10)]
+        if bad_controls:
+            fail(f"control character in manifest file {rel}: {sorted(set(bad_controls))}")
+        got = hashlib.sha256(raw).hexdigest()
         if got != digest:
             fail(f"manifest mismatch {rel}")
     return {"status":"PASS","publication_state":plan["publication_state"],"work_units":ids,"jira":EXPECTED_JIRA}

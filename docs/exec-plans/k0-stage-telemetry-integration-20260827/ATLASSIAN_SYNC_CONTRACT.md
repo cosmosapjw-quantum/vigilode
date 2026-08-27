@@ -4,10 +4,10 @@
 
 - GitHub repository: `cosmosapjw-quantum/vigilode`
 - Control-package branch: `docs/k0-codex-execution-package-20260827`
-- Control-package PR: `BOOTSTRAP_PENDING`
+- Control-package PR: `#21`
 - Implementation base PR: `#20` at `e1124586a4029f86669e7489278c61ef676d61aa`
 - Jira owner: `PM-7`
-- Confluence page: `BOOTSTRAP_PENDING`
+- Confluence page: `15499267`
 - Parent control page: `9732097`
 - Confluence space: `SD` / `163844`
 

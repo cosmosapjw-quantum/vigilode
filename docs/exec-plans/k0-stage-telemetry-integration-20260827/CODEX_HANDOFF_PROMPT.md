@@ -9,7 +9,7 @@ You are the implementation agent. Work in the orchestrator-prepared branch `rese
 - Required implementation base: draft PR #20, branch `research/a1-post-a2a3-kernel-rerun`, head `e1124586a4029f86669e7489278c61ef676d61aa`, tree `adbb933cf3bf3d401d652c8a6d9df661d8500a2b`
 - Machine plan: `docs/exec-plans/k0-stage-telemetry-integration-20260827/plan.json`
 - Jira: `PM-7`
-- Confluence page: `BOOTSTRAP_PENDING`
+- Confluence page: `15499267`
 - Claim class: `EXPLORATORY/NONAUTHORITATIVE`
 
 Do not ask me to run terminal commands. Inspect the machine and repository and perform the bounded work yourself.
@@ -72,7 +72,7 @@ Do not retarget to `main` unless PR #20 is merged and the package is mechanicall
 Use Atlassian MCP/Rovo after a durable GitHub commit/PR exists.
 
 - Jira `PM-7` owns work state and blockers.
-- Confluence page `BOOTSTRAP_PENDING` owns navigation and claim boundary.
+- Confluence page `15499267` owns navigation and claim boundary.
 - Write exact implementation branch, final commit/tree, draft PR, evidence manifest, final state, blockers, and review verdict.
 - Read both back.
 - If writes/readback are unavailable, create `research/k0_stage_telemetry_20260827/handback/ATLAS_SYNC_PENDING.json`, keep Jira non-Done, and report `ATLAS_SYNC_PENDING`.

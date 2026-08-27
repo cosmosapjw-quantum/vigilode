@@ -11,7 +11,7 @@ Read this file before changing the repository. It is a map, not a complete proce
 - P0/P1 policy: `docs/quality/P0_P1_POLICY.md`
 - Package validator: `python tools/verify-k0-stage-telemetry-plan.py --repo-root . --check-package`
 - Jira owner: `PM-7`
-- Confluence control page: `BOOTSTRAP_PENDING`
+- Confluence control page: `15499267`
 
 ## Required working policy
 

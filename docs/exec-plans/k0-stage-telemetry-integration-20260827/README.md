@@ -8,10 +8,10 @@ This is a machine-readable, weak-agent-safe implementation package for canonical
 - Canonical main: `8d0c79184e09efb5bdadc24a6315c60a71a44264`, tree `acd94364cf69f19d782619fc6c75554cb0754208`
 - Required stacked implementation base: draft PR #20 at `e1124586a4029f86669e7489278c61ef676d61aa`, tree `adbb933cf3bf3d401d652c8a6d9df661d8500a2b`
 - Package branch: `docs/k0-codex-execution-package-20260827`
-- Control PR: `BOOTSTRAP_PENDING`
+- Control PR: `#21`
 - Jira: `PM-7`
-- Confluence: `BOOTSTRAP_PENDING`
-- Publication state: `BOOTSTRAP`
+- Confluence: `15499267`
+- Publication state: `BOUND`
 
 ## Objective
 
