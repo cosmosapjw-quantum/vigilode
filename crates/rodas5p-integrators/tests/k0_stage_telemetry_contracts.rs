@@ -1,14 +1,20 @@
 #[path = "../src/k0_stage_telemetry.rs"]
+#[allow(dead_code)]
 mod k0_stage_telemetry;
 
 use k0_stage_telemetry::{
     K0_CLAIM_CLASS, K0_STAGE_RECEIPT_SCHEMA, K0ExecutionState, K0InitialGuessSource, K0KernelArm,
     K0ResidualSignCoverage, K0StageError, K0StageGeometry, K0StageIdentity, K0StageReceipt,
-    K0StageWork,
+    K0StageWork, scaled_nonlinear_remainder,
 };
 use rodas5p_core::{
-    CoreError, CoreResult, DenseMatrix, DenseOperator, IdentityPreconditioner, LinearOperator,
-    LinearSolveReport, WorkCounters,
+    CoreError, CoreResult, DenseMatrix, DenseOperator, IdentityPreconditioner, InitialGuess,
+    LinearMethod, LinearOperator, LinearSolveReport, LinearSolverConfig, PreconditionerKind,
+    WorkCounters, sha256_hex,
+};
+use rodas5p_integrators::{
+    GmresKernelArm, OdeProblem, analyze_stage_rhs_novelty, manufactured_vector_problem,
+    observe_sequential_matrix_free_step_k0, solver_configuration_token_k0,
 };
 use rodas5p_krylov::{
     GcrodrConfig, GcrodrState, GmresConfig, LgmresConfig, LgmresState, LinearSolveObservation,
@@ -16,7 +22,10 @@ use rodas5p_krylov::{
     solve_gmres_givens, solve_gmres_givens_observed, solve_gmres_observed, solve_lgmres,
     solve_lgmres_observed,
 };
-use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::{
+    Arc,
+    atomic::{AtomicUsize, Ordering},
+};
 
 fn identity() -> K0StageIdentity {
     K0StageIdentity {
@@ -626,4 +635,337 @@ fn solver_observation_true_residual_remains_authority() {
     );
     assert!(observation.final_true_residual_norm.unwrap() <= threshold);
     assert!(work.diagnostic_matvecs >= 1);
+}
+
+fn assert_close(actual: f64, expected: f64, tolerance: f64) {
+    assert!(
+        (actual - expected).abs() <= tolerance,
+        "actual={actual:.17e} expected={expected:.17e} tolerance={tolerance:.3e}"
+    );
+}
+
+#[test]
+fn nonlinear_remainder_equation_map() {
+    assert_eq!(
+        scaled_nonlinear_remainder(&[5.0, -7.0], &[2.0, -3.0], &[3.0, -4.0], &[0.0, 0.0]).unwrap(),
+        0.0
+    );
+    assert_close(
+        scaled_nonlinear_remainder(&[4.0], &[1.0], &[1.0], &[1.0]).unwrap(),
+        0.25,
+        0.0,
+    );
+}
+
+#[test]
+fn scaled_nonlinear_remainder_exact_oracle_and_mutations() {
+    let positive =
+        scaled_nonlinear_remainder(&[6.0, -7.0], &[2.0, -3.0], &[3.0, -4.0], &[0.0, 0.0]).unwrap();
+    assert_close(positive, 0.10846522890932808, 1.0e-15);
+
+    let uncapped = scaled_nonlinear_remainder(&[1.0], &[-1.0], &[-1.0], &[-1.0]).unwrap();
+    assert_eq!(uncapped, 4.0);
+    assert!(uncapped > 1.0, "rho_i must not be capped at one");
+
+    let denominator_witness =
+        scaled_nonlinear_remainder(&[1.0, 0.0], &[0.0, 10.0], &[0.0, 0.0], &[0.0, 0.0]).unwrap();
+    assert_close(denominator_witness, 101.0_f64.sqrt() / 10.0, 1.0e-15);
+    let fi_only_mutant = 101.0_f64.sqrt();
+    assert!((denominator_witness - fi_only_mutant).abs() > 1.0);
+
+    let omitted_time_mutant = 3.0;
+    assert_ne!(uncapped, omitted_time_mutant);
+
+    let remainder = [1.0_f64, 0.0];
+    let tolerance_weighted_wrms_mutant =
+        ((remainder[0] / 2.0).powi(2) + (remainder[1] / 5.0).powi(2)).sqrt() / 2.0_f64.sqrt();
+    assert!((positive - tolerance_weighted_wrms_mutant).abs() > 1.0e-2);
+}
+
+#[test]
+fn scaled_nonlinear_remainder_is_jointly_scale_invariant() {
+    let fi = [6.0, -7.0];
+    let f0 = [2.0, -3.0];
+    let j_delta = [3.0, -4.0];
+    let t_delta = [0.0, 0.0];
+    let baseline = scaled_nonlinear_remainder(&fi, &f0, &j_delta, &t_delta).unwrap();
+    for factor in [2.0_f64.powi(40), 2.0_f64.powi(-40)] {
+        let scaled = |values: &[f64]| {
+            values
+                .iter()
+                .map(|value| factor * value)
+                .collect::<Vec<_>>()
+        };
+        let actual = scaled_nonlinear_remainder(
+            &scaled(&fi),
+            &scaled(&f0),
+            &scaled(&j_delta),
+            &scaled(&t_delta),
+        )
+        .unwrap();
+        assert_close(actual, baseline, 2.0e-15);
+    }
+}
+
+#[test]
+fn rhs_novelty_angle_is_not_nested_space_overlap() {
+    let retained = vec![vec![1.0, 0.0, 0.0], vec![0.0, 1.0, 0.0]];
+    let orthogonal = analyze_stage_rhs_novelty(&retained, &[0.0, 0.0, 1.0]).unwrap();
+    assert_close(
+        orthogonal.rhs_to_retained_angle_rad.unwrap(),
+        std::f64::consts::FRAC_PI_2,
+        1.0e-14,
+    );
+
+    let contained = analyze_stage_rhs_novelty(&retained, &[2.0, -3.0, 0.0]).unwrap();
+    assert_close(contained.rhs_to_retained_angle_rad.unwrap(), 0.0, 1.0e-14);
+}
+
+#[test]
+fn rhs_geometry_known_angles_and_independent_scale_invariance() {
+    let retained = vec![vec![1.0, 0.0, 0.0]];
+    let parallel = analyze_stage_rhs_novelty(&retained, &[-7.0, 0.0, 0.0]).unwrap();
+    assert_close(parallel.rhs_to_retained_angle_rad.unwrap(), 0.0, 1.0e-14);
+
+    let orthogonal = analyze_stage_rhs_novelty(&retained, &[0.0, 3.0, 0.0]).unwrap();
+    assert_close(
+        orthogonal.rhs_to_retained_angle_rad.unwrap(),
+        std::f64::consts::FRAC_PI_2,
+        1.0e-14,
+    );
+
+    let scaled_retained = vec![vec![-13.0, 0.0, 0.0]];
+    let scaled = analyze_stage_rhs_novelty(&scaled_retained, &[0.0, -0.125, 0.0]).unwrap();
+    assert_close(
+        scaled.rhs_to_retained_angle_rad.unwrap(),
+        orthogonal.rhs_to_retained_angle_rad.unwrap(),
+        1.0e-14,
+    );
+    assert_eq!(
+        scaled.rhs_singular_values.len(),
+        orthogonal.rhs_singular_values.len()
+    );
+    for (actual, expected) in scaled
+        .rhs_singular_values
+        .iter()
+        .zip(&orthogonal.rhs_singular_values)
+    {
+        assert_close(*actual, *expected, 1.0e-14);
+    }
+
+    let first = analyze_stage_rhs_novelty(&[], &[3.0, 4.0]).unwrap();
+    assert_eq!(first.rhs_to_retained_angle_rad, None);
+    assert_eq!(first.rhs_singular_values, vec![1.0]);
+}
+
+fn k0_linear_config() -> LinearSolverConfig {
+    LinearSolverConfig {
+        method: LinearMethod::Gmres,
+        rtol: 1.0e-10,
+        atol: 1.0e-12,
+        restart: 40,
+        maxiter: 200,
+        inner_m: 30,
+        outer_k: 8,
+        recycle_dim: 8,
+        recycle_rank_tol: 1.0e-12,
+        preconditioner: PreconditionerKind::None,
+        x0_strategy: InitialGuess::Previous,
+    }
+}
+
+#[test]
+fn deterministic_solver_configuration_token_uses_only_canonical_values() {
+    let config = k0_linear_config();
+    let canonical = format!(
+        "vigilode-k0-solver-config/v1|method=Gmres|rtol={:016x}|atol={:016x}|restart=40|maxiter=200|inner_m=30|outer_k=8|recycle_dim=8|recycle_rank_tol={:016x}|preconditioner=None|x0_strategy=Previous|kernel=legacy-restarted-gmres",
+        config.rtol.to_bits(),
+        config.atol.to_bits(),
+        config.recycle_rank_tol.to_bits(),
+    );
+    let expected = sha256_hex(canonical.as_bytes());
+    assert_eq!(
+        solver_configuration_token_k0(&config, GmresKernelArm::LegacyRestartedGmres),
+        expected
+    );
+    assert_eq!(
+        solver_configuration_token_k0(&config.clone(), GmresKernelArm::LegacyRestartedGmres),
+        expected
+    );
+
+    let mut changed = config;
+    changed.preconditioner = PreconditionerKind::Jacobi;
+    assert_ne!(
+        solver_configuration_token_k0(&changed, GmresKernelArm::LegacyRestartedGmres),
+        expected
+    );
+}
+
+fn assert_step_parity(
+    left: &rodas5p_integrators::StepResult,
+    right: &rodas5p_integrators::StepResult,
+) {
+    assert_eq!(left.t_old.to_bits(), right.t_old.to_bits());
+    assert_eq!(left.t_new.to_bits(), right.t_new.to_bits());
+    assert_eq!(left.y_old, right.y_old);
+    assert_eq!(left.y_new, right.y_new);
+    assert_eq!(left.h.to_bits(), right.h.to_bits());
+    assert_eq!(left.stages, right.stages);
+    assert_eq!(left.error_vector, right.error_vector);
+    assert_eq!(left.error_norm.to_bits(), right.error_norm.to_bits());
+    assert_eq!(left.accepted, right.accepted);
+    assert_eq!(left.method, right.method);
+    assert_eq!(left.used_fallback, right.used_fallback);
+    assert_eq!(left.counters, right.counters);
+}
+
+#[test]
+fn stage_accounting_closes_and_telemetry_overhead_is_named_without_behavior_change() {
+    let (problem, y0) = manufactured_vector_problem(4, 100.0, 10.0, 0.2, 0.0).unwrap();
+    let config = k0_linear_config();
+    let mut plain_work = WorkCounters::default();
+    let plain = rodas5p_integrators::sequential_matrix_free_step_with_gmres_kernel(
+        &problem,
+        0.0,
+        &y0,
+        1.0e-4,
+        &config,
+        GmresKernelArm::LegacyRestartedGmres,
+        None,
+        1.0e-12,
+        1.0e-10,
+        true,
+        &mut plain_work,
+    )
+    .unwrap();
+
+    let mut observed_work = WorkCounters::default();
+    let observed = observe_sequential_matrix_free_step_k0(
+        "manufactured-k0-step",
+        "manufactured-vector",
+        &problem,
+        0.0,
+        &y0,
+        1.0e-4,
+        &config,
+        GmresKernelArm::LegacyRestartedGmres,
+        None,
+        1.0e-12,
+        1.0e-10,
+        true,
+        &mut observed_work,
+    );
+    assert_eq!(observed.error, None);
+    assert_step_parity(&plain, observed.step.as_ref().unwrap());
+    assert_eq!(plain_work, observed_work);
+    assert_eq!(observed.stage_receipts.len(), 8);
+    rodas5p_integrators::validate_stage_receipt_sequence(&observed.stage_receipts).unwrap();
+    assert_eq!(observed.solver_configuration_tokens.len(), 1);
+    for receipt in &observed.stage_receipts {
+        let work = receipt.work.as_ref().unwrap();
+        assert_eq!(
+            work.operator_applies_total,
+            work.linear_matvecs
+                .checked_add(work.diagnostic_matvecs)
+                .unwrap()
+        );
+    }
+    assert_eq!(
+        observed
+            .stage_receipts
+            .iter()
+            .map(|receipt| receipt.work.as_ref().unwrap().telemetry_jvp_overhead)
+            .sum::<u64>(),
+        7
+    );
+}
+
+fn stage_three_failure_problem() -> (OdeProblem, Vec<f64>) {
+    let calls = Arc::new(AtomicUsize::new(0));
+    let rhs_calls = calls.clone();
+    let rhs = Arc::new(move |_t: f64, y: &[f64], out: &mut [f64]| {
+        if rhs_calls.fetch_add(1, Ordering::SeqCst) == 3 {
+            return Err(CoreError::InvalidInput(
+                "injected stage-3 RHS failure".into(),
+            ));
+        }
+        out[0] = -y[0];
+        Ok(())
+    });
+    let jvp = Arc::new(move |_t: f64, _y: &[f64], v: &[f64], out: &mut [f64]| {
+        out[0] = -v[0];
+        Ok(())
+    });
+    (
+        OdeProblem::new(
+            "k0-stage-three-failure",
+            1,
+            rhs,
+            None,
+            None,
+            Some(jvp),
+            None,
+            true,
+            None,
+            None,
+        )
+        .unwrap(),
+        vec![1.0],
+    )
+}
+
+#[test]
+fn stage_identity_is_exhaustive_and_injected_stage_three_error_is_preserved() {
+    let (problem, y0) = stage_three_failure_problem();
+    let mut work = WorkCounters::default();
+    let outcome = observe_sequential_matrix_free_step_k0(
+        "injected-stage-failure",
+        "manufactured-failure",
+        &problem,
+        0.0,
+        &y0,
+        1.0e-3,
+        &k0_linear_config(),
+        GmresKernelArm::LegacyRestartedGmres,
+        None,
+        1.0e-12,
+        1.0e-10,
+        true,
+        &mut work,
+    );
+    assert!(outcome.step.is_none());
+    assert!(
+        outcome
+            .error
+            .as_deref()
+            .unwrap()
+            .contains("injected stage-3")
+    );
+    assert_eq!(outcome.stage_receipts.len(), 4);
+    assert_eq!(
+        outcome
+            .stage_receipts
+            .iter()
+            .map(|receipt| receipt.identity.stage_index)
+            .collect::<Vec<_>>(),
+        vec![0, 1, 2, 3]
+    );
+    assert!(outcome.stage_receipts[..3].iter().all(|receipt| {
+        receipt.execution_state == rodas5p_integrators::K0ExecutionState::Complete
+    }));
+    assert_eq!(
+        outcome.stage_receipts[3].execution_state,
+        rodas5p_integrators::K0ExecutionState::Error
+    );
+    assert!(outcome.stage_receipts[3].work.is_some());
+    assert!(outcome.stage_receipts[3].error.is_some());
+    rodas5p_integrators::validate_stage_receipt_sequence(&outcome.stage_receipts).unwrap();
+
+    let mut duplicate = outcome.stage_receipts.clone();
+    duplicate.push(duplicate[2].clone());
+    assert!(rodas5p_integrators::validate_stage_receipt_sequence(&duplicate).is_err());
+
+    let mut missing = outcome.stage_receipts;
+    missing.remove(1);
+    assert!(rodas5p_integrators::validate_stage_receipt_sequence(&missing).is_err());
 }

@@ -61,6 +61,14 @@ pub struct RhsSubspaceComparison {
     pub maximum_principal_angle_degrees: f64,
 }
 
+/// Receipt-only geometry for one stage RHS against its pre-solve RHS prefix.
+#[doc(hidden)]
+#[derive(Clone, Debug, PartialEq, Serialize)]
+pub struct StageRhsNoveltyAnalysis {
+    pub rhs_to_retained_angle_rad: Option<f64>,
+    pub rhs_singular_values: Vec<f64>,
+}
+
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct RhsBatchTelemetryRow {
     pub case_id: String,
@@ -487,8 +495,12 @@ pub fn analyze_rhs_directions(
     rank_tolerance: f64,
 ) -> CoreResult<RhsBatchAnalysis> {
     validate_rows(rows)?;
-    let normalized = rows
-        .iter()
+    let normalized = normalize_rhs_rows(rows);
+    analyze_rhs_batch(&normalized, rank_tolerance)
+}
+
+fn normalize_rhs_rows(rows: &[Vec<f64>]) -> Vec<Vec<f64>> {
+    rows.iter()
         .map(|row| {
             let norm = safe_l2(row);
             if norm <= f64::MIN_POSITIVE {
@@ -497,8 +509,79 @@ pub fn analyze_rhs_directions(
                 row.iter().map(|value| value / norm).collect()
             }
         })
-        .collect::<Vec<_>>();
-    analyze_rhs_batch(&normalized, rank_tolerance)
+        .collect()
+}
+
+/// Analyze current linear-solve RHS novelty against only the retained pre-solve prefix.
+///
+/// The singular spectrum uses the normalized prefix including the current RHS. The angle is
+/// computed before that append, by projecting the normalized current RHS onto the canonical
+/// faer-SVD basis of the retained prefix. This avoids nested-space self-overlap.
+#[doc(hidden)]
+pub fn analyze_stage_rhs_novelty(
+    retained_rhs: &[Vec<f64>],
+    current_rhs: &[f64],
+) -> CoreResult<StageRhsNoveltyAnalysis> {
+    if current_rhs.is_empty() || current_rhs.iter().any(|value| !value.is_finite()) {
+        return Err(CoreError::InvalidInput(
+            "stage RHS novelty requires one finite, nonempty current RHS".into(),
+        ));
+    }
+    if !retained_rhs.is_empty() {
+        let (dimension, _) = validate_rows(retained_rhs)?;
+        if dimension != current_rhs.len() {
+            return Err(CoreError::Dimension(
+                "stage RHS novelty prefix/current dimensions differ".into(),
+            ));
+        }
+    }
+
+    let mut full_prefix = retained_rhs.to_vec();
+    full_prefix.push(current_rhs.to_vec());
+    let normalized_full_prefix = normalize_rhs_rows(&full_prefix);
+    let (rhs_singular_values, _) =
+        singular_spectrum_and_basis(&normalized_full_prefix, DEFAULT_RANK_TOLERANCE)?;
+
+    let rhs_to_retained_angle_rad = if retained_rhs.is_empty() {
+        None
+    } else {
+        let current_norm = safe_l2(current_rhs);
+        let normalized_retained = normalize_rhs_rows(retained_rhs);
+        let (_, retained_basis) =
+            singular_spectrum_and_basis(&normalized_retained, DEFAULT_RANK_TOLERANCE)?;
+        if current_norm <= f64::MIN_POSITIVE || retained_basis.rank == 0 {
+            None
+        } else {
+            let current_unit = current_rhs
+                .iter()
+                .map(|value| value / current_norm)
+                .collect::<Vec<_>>();
+            let projection_squared = retained_basis
+                .vectors
+                .iter()
+                .map(|basis| {
+                    basis
+                        .iter()
+                        .zip(&current_unit)
+                        .map(|(left, right)| left * right)
+                        .sum::<f64>()
+                        .powi(2)
+                })
+                .sum::<f64>()
+                .clamp(0.0, 1.0);
+            let projection_norm = projection_squared.sqrt();
+            let projection_norm = if 1.0 - projection_norm <= 64.0 * f64::EPSILON {
+                1.0
+            } else {
+                projection_norm
+            };
+            Some(projection_norm.acos())
+        }
+    };
+    Ok(StageRhsNoveltyAnalysis {
+        rhs_to_retained_angle_rad,
+        rhs_singular_values,
+    })
 }
 
 pub fn compare_rhs_subspaces(

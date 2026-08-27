@@ -1,10 +1,10 @@
-use std::sync::Arc;
+use std::{cell::RefCell, collections::BTreeSet, sync::Arc};
 
 use rodas5p_core::{
     ApplyCategory, CoreError, CoreResult, IdentityPreconditioner, InitialGuess,
     JacobiPreconditioner, LinearMethod, LinearOperator, LinearSolveReport, LinearSolverConfig,
     LuFactorization, Preconditioner, PreconditionerKind, Rodas5pCoefficients, ShiftedOperator,
-    WorkCounters, apply_counted, error_scale, load_rodas5p_coefficients, safe_l2, wrms,
+    WorkCounters, apply_counted, error_scale, load_rodas5p_coefficients, safe_l2, sha256_hex, wrms,
 };
 use rodas5p_krylov::{
     GcrodrConfig, GcrodrState, GmresConfig, LgmresConfig, LgmresState, LinearSolveObservation,
@@ -14,6 +14,12 @@ use rodas5p_krylov::{
 };
 
 use crate::OdeProblem;
+use crate::k0_stage_telemetry::{
+    K0_CLAIM_CLASS, K0_STAGE_RECEIPT_SCHEMA, K0ExecutionState, K0InitialGuessSource, K0KernelArm,
+    K0StageError, K0StageGeometry, K0StageIdentity, K0StageReceipt, K0StageWork,
+    scaled_nonlinear_remainder,
+};
+use crate::rhs_telemetry::analyze_stage_rhs_novelty;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum GmresKernelArm {
@@ -36,6 +42,252 @@ pub const PRODUCTION_GMRES_KERNEL_ARM: GmresKernelArm = GmresKernelArm::LegacyRe
 
 pub const fn production_gmres_kernel_arm() -> GmresKernelArm {
     PRODUCTION_GMRES_KERNEL_ARM
+}
+
+#[derive(Clone, Debug)]
+pub(crate) struct K0CaptureMetadata {
+    pub(crate) case_id: String,
+    pub(crate) family: String,
+    pub(crate) kernel_arm: GmresKernelArm,
+}
+
+#[derive(Clone, Debug, Default)]
+pub(crate) struct K0CaptureOutput {
+    pub(crate) stage_receipts: Vec<K0StageReceipt>,
+    pub(crate) solver_configuration_tokens: Vec<String>,
+}
+
+#[derive(Clone, Debug)]
+struct K0CaptureState {
+    metadata: K0CaptureMetadata,
+    next_attempt_id: u64,
+    stage_receipts: Vec<K0StageReceipt>,
+    solver_configuration_tokens: BTreeSet<String>,
+}
+
+#[derive(Clone, Debug)]
+struct K0AttemptCapture {
+    identity: K0StageIdentity,
+}
+
+thread_local! {
+    static K0_STAGE_CAPTURE: RefCell<Option<K0CaptureState>> = const { RefCell::new(None) };
+}
+
+pub(crate) fn with_k0_stage_capture<T>(
+    metadata: K0CaptureMetadata,
+    action: impl FnOnce() -> CoreResult<T>,
+) -> (CoreResult<T>, K0CaptureOutput) {
+    let already_active = K0_STAGE_CAPTURE.with(|slot| slot.borrow().is_some());
+    if already_active {
+        return (
+            Err(CoreError::InvalidInput(
+                "nested K0 stage telemetry capture is forbidden".into(),
+            )),
+            K0CaptureOutput::default(),
+        );
+    }
+    K0_STAGE_CAPTURE.with(|slot| {
+        *slot.borrow_mut() = Some(K0CaptureState {
+            metadata,
+            next_attempt_id: 0,
+            stage_receipts: Vec::new(),
+            solver_configuration_tokens: BTreeSet::new(),
+        });
+    });
+    let result = action();
+    let state = K0_STAGE_CAPTURE
+        .with(|slot| slot.borrow_mut().take())
+        .expect("K0 capture installed above");
+    (
+        result,
+        K0CaptureOutput {
+            stage_receipts: state.stage_receipts,
+            solver_configuration_tokens: state.solver_configuration_tokens.into_iter().collect(),
+        },
+    )
+}
+
+fn k0_kernel_arm(kernel: GmresKernelArm) -> K0KernelArm {
+    match kernel {
+        GmresKernelArm::LegacyRestartedGmres => K0KernelArm::LegacyRestartedGmres,
+        GmresKernelArm::IncrementalGivensCandidate => K0KernelArm::IncrementalGivensCandidate,
+    }
+}
+
+/// Stable, pointer-free token for the complete linear-solver configuration and kernel arm.
+#[doc(hidden)]
+pub fn solver_configuration_token_k0(
+    config: &LinearSolverConfig,
+    kernel: GmresKernelArm,
+) -> String {
+    let canonical = format!(
+        "vigilode-k0-solver-config/v1|method={:?}|rtol={:016x}|atol={:016x}|restart={}|maxiter={}|inner_m={}|outer_k={}|recycle_dim={}|recycle_rank_tol={:016x}|preconditioner={:?}|x0_strategy={:?}|kernel={}",
+        config.method,
+        config.rtol.to_bits(),
+        config.atol.to_bits(),
+        config.restart,
+        config.maxiter,
+        config.inner_m,
+        config.outer_k,
+        config.recycle_dim,
+        config.recycle_rank_tol.to_bits(),
+        config.preconditioner,
+        config.x0_strategy,
+        kernel.as_str(),
+    );
+    sha256_hex(canonical.as_bytes())
+}
+
+fn begin_k0_attempt(
+    config: &LinearSolverConfig,
+    kernel: GmresKernelArm,
+) -> CoreResult<Option<K0AttemptCapture>> {
+    K0_STAGE_CAPTURE.with(|slot| {
+        let mut capture = slot.borrow_mut();
+        let Some(capture) = capture.as_mut() else {
+            return Ok(None);
+        };
+        if capture.metadata.kernel_arm != kernel {
+            return Err(CoreError::InvalidInput(format!(
+                "K0 capture kernel {} does not match executed kernel {}",
+                capture.metadata.kernel_arm.as_str(),
+                kernel.as_str()
+            )));
+        }
+        let attempt_id = capture.next_attempt_id;
+        capture.next_attempt_id = capture.next_attempt_id.checked_add(1).ok_or_else(|| {
+            CoreError::InvalidInput("K0 stage attempt identifier overflow".into())
+        })?;
+        capture
+            .solver_configuration_tokens
+            .insert(solver_configuration_token_k0(config, kernel));
+        Ok(Some(K0AttemptCapture {
+            identity: K0StageIdentity {
+                case_id: capture.metadata.case_id.clone(),
+                family: capture.metadata.family.clone(),
+                kernel_arm: k0_kernel_arm(kernel),
+                attempt_id,
+                stage_index: 0,
+            },
+        }))
+    })
+}
+
+fn record_k0_stage(receipt: K0StageReceipt) -> CoreResult<()> {
+    receipt.validate().map_err(|error| {
+        CoreError::InvalidInput(format!("invalid K0 stage receipt before commit: {error}"))
+    })?;
+    K0_STAGE_CAPTURE.with(|slot| {
+        let mut capture = slot.borrow_mut();
+        let capture = capture.as_mut().ok_or_else(|| {
+            CoreError::InvalidInput("K0 stage receipt emitted without active capture".into())
+        })?;
+        capture.stage_receipts.push(receipt);
+        Ok(())
+    })
+}
+
+fn k0_initial_guess_source(
+    source: Option<ObservedInitialGuessSource>,
+) -> Option<K0InitialGuessSource> {
+    source.map(|source| match source {
+        ObservedInitialGuessSource::Zero => K0InitialGuessSource::Zero,
+        ObservedInitialGuessSource::ExternalPrevious => K0InitialGuessSource::ExternalPrevious,
+        ObservedInitialGuessSource::InternalLgmresPrevious => {
+            K0InitialGuessSource::InternalLgmresPrevious
+        }
+        ObservedInitialGuessSource::InternalGcrodrPrevious => {
+            K0InitialGuessSource::InternalGcrodrPrevious
+        }
+        ObservedInitialGuessSource::RecycleProjection => K0InitialGuessSource::RecycleProjection,
+        ObservedInitialGuessSource::Direct => K0InitialGuessSource::Direct,
+    })
+}
+
+fn k0_stage_work(
+    counters: &WorkCounters,
+    before: WorkCounters,
+    telemetry_jvp_overhead: u64,
+) -> CoreResult<K0StageWork> {
+    let delta = counters
+        .checked_delta(before)
+        .ok_or_else(|| CoreError::InvalidInput("K0 stage work counters regressed".into()))?;
+    K0StageWork::new(
+        delta.linear_matvecs,
+        delta.diagnostic_matvecs,
+        telemetry_jvp_overhead,
+    )
+    .map_err(|error| CoreError::InvalidInput(format!("K0 stage work invalid: {error}")))
+}
+
+#[allow(clippy::too_many_arguments)]
+fn record_k0_stage_result(
+    attempt: &K0AttemptCapture,
+    stage_index: usize,
+    execution_state: K0ExecutionState,
+    solver_method: Option<String>,
+    observation: Option<&LinearSolveObservation>,
+    geometry: Option<K0StageGeometry>,
+    counters: &WorkCounters,
+    stage_before: WorkCounters,
+    telemetry_jvp_overhead: u64,
+    error: Option<K0StageError>,
+) -> CoreResult<()> {
+    let mut identity = attempt.identity.clone();
+    identity.stage_index = u8::try_from(stage_index)
+        .map_err(|_| CoreError::InvalidInput("K0 stage index overflow".into()))?;
+    record_k0_stage(K0StageReceipt {
+        schema: K0_STAGE_RECEIPT_SCHEMA.into(),
+        identity,
+        claim_class: K0_CLAIM_CLASS.into(),
+        execution_state,
+        solver_method,
+        initial_guess_source: k0_initial_guess_source(
+            observation.and_then(|value| value.initial_guess_source),
+        ),
+        initial_true_residual_norm: observation.and_then(|value| value.initial_true_residual_norm),
+        final_true_residual_norm: observation.and_then(|value| value.final_true_residual_norm),
+        work: Some(k0_stage_work(
+            counters,
+            stage_before,
+            telemetry_jvp_overhead,
+        )?),
+        geometry,
+        error,
+    })
+}
+
+#[allow(clippy::too_many_arguments)]
+fn record_k0_stage_error(
+    attempt: Option<&K0AttemptCapture>,
+    stage_index: usize,
+    config: &LinearSolverConfig,
+    observation: Option<&LinearSolveObservation>,
+    geometry: Option<K0StageGeometry>,
+    counters: &WorkCounters,
+    stage_before: WorkCounters,
+    telemetry_jvp_overhead: u64,
+    error: &CoreError,
+) -> CoreResult<()> {
+    let Some(attempt) = attempt else {
+        return Ok(());
+    };
+    record_k0_stage_result(
+        attempt,
+        stage_index,
+        K0ExecutionState::Error,
+        Some(format!("{:?}", config.method)),
+        observation,
+        geometry,
+        counters,
+        stage_before,
+        telemetry_jvp_overhead,
+        Some(K0StageError {
+            kind: "STAGE_EXECUTION_ERROR".into(),
+            message: error.to_string(),
+        }),
+    )
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -119,6 +371,16 @@ pub struct StepResult {
     pub used_fallback: bool,
     pub certificate: Option<StepCertificate>,
     pub counters: WorkCounters,
+}
+
+/// Receipt-only outcome for one explicitly observed matrix-free step.
+#[doc(hidden)]
+#[derive(Clone, Debug)]
+pub struct K0ObservedStepOutcome {
+    pub step: Option<StepResult>,
+    pub error: Option<String>,
+    pub stage_receipts: Vec<K0StageReceipt>,
+    pub solver_configuration_tokens: Vec<String>,
 }
 
 struct FactorPreconditioner {
@@ -316,6 +578,7 @@ pub fn sequential_stages_with_gmres_kernel(
 }
 
 #[allow(clippy::too_many_arguments)]
+#[allow(dead_code)]
 pub(crate) fn sequential_stages_with_gmres_kernel_observed(
     context: &StepContext<'_>,
     config: &LinearSolverConfig,
@@ -345,12 +608,14 @@ fn sequential_stages_with_gmres_kernel_impl(
     mut observations: Option<&mut Vec<LinearSolveObservation>>,
 ) -> CoreResult<StageSolveData> {
     config.validate().map_err(CoreError::InvalidInput)?;
+    let k0_attempt = begin_k0_attempt(config, gmres_kernel)?;
     let s = context.coeffs.stages();
     let n = context.problem.dimension;
     let mut stages = vec![vec![0.0; n]; s];
     let mut states = vec![vec![0.0; n]; s];
     let mut fvals = vec![vec![0.0; n]; s];
     let mut reports = Vec::with_capacity(s);
+    let mut rhs_prefix = Vec::<Vec<f64>>::with_capacity(s);
     let need_factor = config.method == LinearMethod::Direct
         || config.preconditioner == PreconditionerKind::Direct;
     let factor = if need_factor {
@@ -366,6 +631,7 @@ fn sequential_stages_with_gmres_kernel_impl(
     let mut owned_state = KrylovState::for_method(config.method);
     let state: &mut Option<&mut KrylovState> = &mut recycle;
     for i in 0..s {
+        let stage_before = *counters;
         let delta = if i == 0 {
             vec![0.0; n]
         } else {
@@ -373,12 +639,29 @@ fn sequential_stages_with_gmres_kernel_impl(
         };
         let yi: Vec<f64> = context.y.iter().zip(&delta).map(|(a, b)| a + b).collect();
         states[i] = yi.clone();
-        let fi = if i == 0 {
-            context.f0.clone()
+        let fi_result = if i == 0 {
+            Ok(context.f0.clone())
         } else {
             context
                 .problem
-                .eval_rhs(context.t + context.coeffs.c[i] * context.h, &yi, counters)?
+                .eval_rhs(context.t + context.coeffs.c[i] * context.h, &yi, counters)
+        };
+        let fi = match fi_result {
+            Ok(value) => value,
+            Err(error) => {
+                record_k0_stage_error(
+                    k0_attempt.as_ref(),
+                    i,
+                    config,
+                    None,
+                    None,
+                    counters,
+                    stage_before,
+                    0,
+                    &error,
+                )?;
+                return Err(error);
+            }
         };
         fvals[i] = fi.clone();
         let gmix = if i == 0 {
@@ -388,7 +671,20 @@ fn sequential_stages_with_gmres_kernel_impl(
         };
         let mut jg = vec![0.0; n];
         if gmix.iter().any(|v| *v != 0.0) {
-            context.jacobian.apply(&gmix, &mut jg)?;
+            if let Err(error) = context.jacobian.apply(&gmix, &mut jg) {
+                record_k0_stage_error(
+                    k0_attempt.as_ref(),
+                    i,
+                    config,
+                    None,
+                    None,
+                    counters,
+                    stage_before,
+                    0,
+                    &error,
+                )?;
+                return Err(error);
+            }
             counters.jvp_calls += 1;
             counters.jvp_vectors += 1;
         }
@@ -398,6 +694,88 @@ fn sequential_stages_with_gmres_kernel_impl(
                 + context.h * jg[q]
                 + context.h * context.h * context.coeffs.gamma_rows[i] * context.ft0[q];
         }
+        let (k0_geometry, telemetry_jvp_overhead) = if k0_attempt.is_some() {
+            let mut jacobian_delta = vec![0.0; n];
+            let telemetry_jvp_overhead = if delta.iter().any(|value| *value != 0.0) {
+                if let Err(error) = context.jacobian.apply(&delta, &mut jacobian_delta) {
+                    record_k0_stage_error(
+                        k0_attempt.as_ref(),
+                        i,
+                        config,
+                        None,
+                        None,
+                        counters,
+                        stage_before,
+                        1,
+                        &error,
+                    )?;
+                    return Err(error);
+                }
+                1
+            } else {
+                0
+            };
+            let time_derivative_increment = context
+                .ft0
+                .iter()
+                .map(|value| context.coeffs.c[i] * context.h * value)
+                .collect::<Vec<_>>();
+            let scaled = scaled_nonlinear_remainder(
+                &fi,
+                &context.f0,
+                &jacobian_delta,
+                &time_derivative_increment,
+            )
+            .map_err(|error| {
+                CoreError::InvalidInput(format!(
+                    "K0 scaled nonlinear remainder failed at stage {i}: {error}"
+                ))
+            });
+            let scaled = match scaled {
+                Ok(value) => value,
+                Err(error) => {
+                    record_k0_stage_error(
+                        k0_attempt.as_ref(),
+                        i,
+                        config,
+                        None,
+                        None,
+                        counters,
+                        stage_before,
+                        telemetry_jvp_overhead,
+                        &error,
+                    )?;
+                    return Err(error);
+                }
+            };
+            let novelty = match analyze_stage_rhs_novelty(&rhs_prefix, &rhs) {
+                Ok(value) => value,
+                Err(error) => {
+                    record_k0_stage_error(
+                        k0_attempt.as_ref(),
+                        i,
+                        config,
+                        None,
+                        None,
+                        counters,
+                        stage_before,
+                        telemetry_jvp_overhead,
+                        &error,
+                    )?;
+                    return Err(error);
+                }
+            };
+            (
+                Some(K0StageGeometry {
+                    scaled_nonlinear_remainder: Some(scaled),
+                    rhs_jacobian_angle_radians: novelty.rhs_to_retained_angle_rad,
+                    singular_values: novelty.rhs_singular_values,
+                }),
+                telemetry_jvp_overhead,
+            )
+        } else {
+            (None, 0)
+        };
         let x0 = if i > 0
             && config.method != LinearMethod::Direct
             && config.x0_strategy == InitialGuess::Previous
@@ -406,9 +784,8 @@ fn sequential_stages_with_gmres_kernel_impl(
         } else {
             None
         };
-        let mut stage_observation = observations
-            .as_ref()
-            .map(|_| LinearSolveObservation::default());
+        let mut stage_observation =
+            (observations.is_some() || k0_attempt.is_some()).then(LinearSolveObservation::default);
         let report = match config.method {
             LinearMethod::Direct => {
                 if let Some(observation) = stage_observation.as_mut() {
@@ -569,11 +946,43 @@ fn sequential_stages_with_gmres_kernel_impl(
             }
         };
         if let (Some(observations), Some(observation)) =
-            (observations.as_deref_mut(), stage_observation)
+            (observations.as_deref_mut(), stage_observation.as_ref())
         {
-            observations.push(observation);
+            observations.push(*observation);
+        }
+        match &report {
+            Ok(report) => {
+                if let Some(attempt) = k0_attempt.as_ref() {
+                    record_k0_stage_result(
+                        attempt,
+                        i,
+                        K0ExecutionState::Complete,
+                        Some(report.method.clone()),
+                        stage_observation.as_ref(),
+                        k0_geometry.clone(),
+                        counters,
+                        stage_before,
+                        telemetry_jvp_overhead,
+                        None,
+                    )?;
+                }
+            }
+            Err(error) => {
+                record_k0_stage_error(
+                    k0_attempt.as_ref(),
+                    i,
+                    config,
+                    stage_observation.as_ref(),
+                    k0_geometry,
+                    counters,
+                    stage_before,
+                    telemetry_jvp_overhead,
+                    error,
+                )?;
+            }
         }
         let report = report?;
+        rhs_prefix.push(rhs);
         stages[i] = report.x.clone();
         reports.push(report);
     }
@@ -773,6 +1182,62 @@ pub fn sequential_matrix_free_step_with_gmres_kernel(
         *target = saved;
     }
     result
+}
+
+/// Execute one opt-in K0-observed step without changing the ordinary public route.
+#[doc(hidden)]
+#[allow(clippy::too_many_arguments)]
+pub fn observe_sequential_matrix_free_step_k0(
+    case_id: &str,
+    family: &str,
+    problem: &OdeProblem,
+    t: f64,
+    y: &[f64],
+    h: f64,
+    config: &LinearSolverConfig,
+    gmres_kernel: GmresKernelArm,
+    recycle: Option<&mut KrylovState>,
+    atol: f64,
+    rtol: f64,
+    force_accept: bool,
+    counters: &mut WorkCounters,
+) -> K0ObservedStepOutcome {
+    let (result, capture) = with_k0_stage_capture(
+        K0CaptureMetadata {
+            case_id: case_id.into(),
+            family: family.into(),
+            kernel_arm: gmres_kernel,
+        },
+        || {
+            sequential_matrix_free_step_with_gmres_kernel(
+                problem,
+                t,
+                y,
+                h,
+                config,
+                gmres_kernel,
+                recycle,
+                atol,
+                rtol,
+                force_accept,
+                counters,
+            )
+        },
+    );
+    match result {
+        Ok(step) => K0ObservedStepOutcome {
+            step: Some(step),
+            error: None,
+            stage_receipts: capture.stage_receipts,
+            solver_configuration_tokens: capture.solver_configuration_tokens,
+        },
+        Err(error) => K0ObservedStepOutcome {
+            step: None,
+            error: Some(error.to_string()),
+            stage_receipts: capture.stage_receipts,
+            solver_configuration_tokens: capture.solver_configuration_tokens,
+        },
+    }
 }
 
 #[cfg(test)]

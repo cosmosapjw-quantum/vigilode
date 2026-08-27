@@ -199,16 +199,24 @@ pub use rhs_telemetry::{
     BackendRecommendationSummary, CommonWBackendChoice, HomotopyRhsTelemetryCase,
     HomotopyRhsTelemetryProfile, HomotopyRhsTelemetryReport, RhsBatchAnalysis,
     RhsBatchTelemetryRow, RhsSubspaceComparison, RhsTelemetryFailure, RhsTelemetryRisk,
-    analyze_rhs_batch, analyze_rhs_directions, compare_rhs_subspaces, recommend_common_w_backend,
-    run_homotopy_rhs_telemetry_screen,
+    StageRhsNoveltyAnalysis, analyze_rhs_batch, analyze_rhs_directions, analyze_stage_rhs_novelty,
+    compare_rhs_subspaces, recommend_common_w_backend, run_homotopy_rhs_telemetry_screen,
 };
 pub use sabr::{PredictorKind, SabrConfig, StageHistory, sabr_step};
 pub use sequential::{
-    GmresKernelArm, KrylovState, PRODUCTION_GMRES_KERNEL_ARM, StageSolveData, StepCertificate,
-    StepContext, StepResult, build_step_context, build_step_context_matrix_free, finish_step,
+    GmresKernelArm, K0ObservedStepOutcome, KrylovState, PRODUCTION_GMRES_KERNEL_ARM,
+    StageSolveData, StepCertificate, StepContext, StepResult, build_step_context,
+    build_step_context_matrix_free, finish_step, observe_sequential_matrix_free_step_k0,
     production_gmres_kernel_arm, sequential_matrix_free_step,
     sequential_matrix_free_step_with_gmres_kernel, sequential_stages,
-    sequential_stages_with_gmres_kernel, sequential_step,
+    sequential_stages_with_gmres_kernel, sequential_step, solver_configuration_token_k0,
+};
+
+#[doc(hidden)]
+pub use k0_stage_telemetry::{
+    K0_CLAIM_CLASS, K0_STAGE_RECEIPT_SCHEMA, K0ExecutionState, K0InitialGuessSource, K0KernelArm,
+    K0ResidualSignCoverage, K0StageError, K0StageGeometry, K0StageIdentity, K0StageReceipt,
+    K0StageWork, K0ValidationError, scaled_nonlinear_remainder, validate_stage_receipt_sequence,
 };
 pub use stage_batch::{
     StageBatchFeasibilityCase, StageBatchFeasibilityProfile, StageBatchFeasibilityReport,
@@ -238,8 +246,10 @@ pub use a1_two_arm_receipt::{
     A1_POST_A2A3_KERNEL_RECEIPT_SCHEMA, A1_POST_A2A3_KERNEL_RECEIPT_STATUS,
     A1_TWO_ARM_RECEIPT_PROFILE, A1_TWO_ARM_RECEIPT_SCHEMA, A1PostA2A3KernelReceiptCell,
     A1ScientificExecutionIdentity, A1ToleranceReceiptCell, A1ToleranceReceiptEventRow,
-    A1ToleranceReceiptRecommendationRow, run_a1_post_a2a3_kernel_receipt_cell,
-    run_a1_two_arm_receipt_cell,
+    A1ToleranceReceiptRecommendationRow, K0_SOURCE_BASE_SHA, K0_SOURCE_BASE_TREE,
+    K0_SOURCE_PULL_REQUEST, K0_STAGE_TELEMETRY_CELL_SCHEMA, K0A1ReceiptEvidence,
+    K0LegacyFixedTolerance, K0StageTelemetryCell, K0StageTelemetryExecutionIdentity,
+    run_a1_post_a2a3_kernel_receipt_cell, run_a1_two_arm_receipt_cell, run_k0_stage_telemetry_cell,
 };
 pub use policy_redesign_v25::{
     CausalRjfStep, PersistenceLatch, PointFeature, PrefixBudget, ProbeAction, causal_feature_value,

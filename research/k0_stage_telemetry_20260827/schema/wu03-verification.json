@@ -1,0 +1,110 @@
+{
+  "schema": "vigilode-k0-wu03-verification/v1",
+  "work_unit": "WU-03",
+  "claim_class": "EXPLORATORY_NONAUTHORITATIVE",
+  "authority_markers_before_mutation": [
+    "PACKAGE_CONTRACT_PASS",
+    "SPEC_REPAIR_AUTHORITY_PASS"
+  ],
+  "red": [
+    {
+      "command": "cargo test -p rodas5p-integrators --test k0_stage_telemetry_contracts --locked",
+      "exit_code": 101,
+      "observed": "missing exact-rho, RHS novelty, deterministic-token, observed-step, and stage-sequence APIs"
+    },
+    {
+      "command": "cargo test -p rodas5p-integrators --test a1_two_arm_receipt_contracts k0_cell_is_explicit_legacy_fixed_failure_preserving_and_a1_neutral --locked",
+      "exit_code": 101,
+      "observed": "missing K0 cell types and runner"
+    },
+    {
+      "command": "python research/k0_stage_telemetry_20260827/schema/test_validate_k0_cells.py -v",
+      "exit_code": 1,
+      "observed": "missing failure-preserving matrix validator"
+    }
+  ],
+  "green": [
+    {
+      "command": "cargo test -p rodas5p-integrators --test k0_stage_telemetry_contracts --locked",
+      "exit_code": 0,
+      "observed": "21 passed"
+    },
+    {
+      "command": "cargo test -p rodas5p-integrators --test a1_two_arm_receipt_contracts --locked",
+      "exit_code": 0,
+      "observed": "6 passed, including frozen 2x6 independent-audit completeness"
+    },
+    {
+      "command": "python research/k0_stage_telemetry_20260827/schema/test_validate_k0_cells.py -v",
+      "exit_code": 0,
+      "observed": "4 passed; missing-cell, tolerance, family, audit, claim, accounting, and explicit-error mutations covered"
+    },
+    {
+      "command": "cargo test -p rodas5p-integrators rhs_telemetry --locked",
+      "exit_code": 0,
+      "observed": "affected RHS telemetry regressions passed"
+    },
+    {
+      "command": "cargo test -p rodas5p-integrators matrix_free --locked",
+      "exit_code": 0,
+      "observed": "affected matrix-free regressions passed"
+    },
+    {
+      "command": "cargo check --workspace --all-targets --locked",
+      "exit_code": 0,
+      "observed": "workspace all-target integration check passed"
+    },
+    {
+      "command": "cargo fmt --all -- --check",
+      "exit_code": 0,
+      "observed": "format check passed"
+    },
+    {
+      "command": "cargo clippy -p rodas5p-integrators -p rodas5p-cli --all-targets --locked --no-deps -- -D warnings",
+      "exit_code": 0,
+      "observed": "WU-03 crates passed with warnings denied"
+    },
+    {
+      "command": "test $(rg -n '\\.thin_svd\\(' crates/rodas5p-integrators/src/rhs_telemetry.rs | wc -l) = 1",
+      "exit_code": 0,
+      "observed": "stage novelty reuses the one canonical faer SVD implementation"
+    }
+  ],
+  "cli_smoke": [
+    {
+      "family": "robertson-ramped",
+      "kernel_arm": "legacy-restarted-gmres",
+      "execution_state": "COMPLETE",
+      "stage_receipts": 400,
+      "solver_configuration_tokens": 1,
+      "final_evidence": false
+    },
+    {
+      "family": "robertson-ramped",
+      "kernel_arm": "incremental-givens-candidate",
+      "execution_state": "COMPLETE",
+      "stage_receipts": 400,
+      "solver_configuration_tokens": 1,
+      "final_evidence": false
+    }
+  ],
+  "additional_check": {
+    "command": "cargo clippy -p rodas5p-integrators -p rodas5p-cli --all-targets --locked -- -D warnings",
+    "exit_code": 101,
+    "acceptance_required_at": "WU-05",
+    "preserved_findings": [
+      "WU-02 gmres observed implementation: clippy::too_many_arguments",
+      "WU-02 gmres observed implementation: clippy::needless_option_as_deref",
+      "WU-02 givens observed implementation: clippy::too_many_arguments",
+      "WU-02 givens observed implementation: clippy::needless_option_as_deref"
+    ],
+    "disposition": "Do not expand WU-03 scope; preserve for the single WU-05 review/repair decision."
+  },
+  "scientific_guards": {
+    "scaled_nonlinear_remainder": "INV-K0-013 exact Euclidean joint denominator, f64::MIN_POSITIVE floor, time term retained, no cap",
+    "production_parity": "solver_observation_production_path_is_observationally_identical passed",
+    "failure_preservation": "stage-3 injected ERROR and explicit ERROR-cell matrix mutation passed",
+    "audit_capture_scope": "runtime frozen-shadow capture ends before independent audit execution",
+    "public_runtime": "LegacyFixed tolerance and legacy restarted-GMRES production selectors unchanged"
+  }
+}

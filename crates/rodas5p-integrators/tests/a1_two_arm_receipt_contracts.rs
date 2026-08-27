@@ -1,9 +1,13 @@
 use rodas5p_integrators::{
     A1ScientificExecutionIdentity, G4S5B0AttemptTraceReport, G4S5B0Family,
-    G4S5B0FrozenFullEShadowReport, G4S5B0LinearToleranceArm, G4S5B0Profile,
-    committed_g4_s5b0_linear_tolerance_arm, g4_s5b0_rjf_trace_digest, run_a1_two_arm_receipt_cell,
+    G4S5B0FrozenFullEShadowReport, G4S5B0LinearToleranceArm, G4S5B0Profile, GmresKernelArm,
+    K0_SOURCE_BASE_SHA, K0_SOURCE_BASE_TREE, K0_SOURCE_PULL_REQUEST,
+    K0_STAGE_TELEMETRY_CELL_SCHEMA, K0ExecutionState, K0StageTelemetryExecutionIdentity,
+    committed_g4_s5b0_linear_tolerance_arm, g4_s5b0_rjf_trace_digest,
+    run_a1_post_a2a3_kernel_receipt_cell, run_a1_two_arm_receipt_cell,
     run_g4_s5b0_frozen_full_e_shadow_family,
-    run_g4_s5b0_rjf_attempt_trace_family_with_linear_tolerance_arm,
+    run_g4_s5b0_rjf_attempt_trace_family_with_linear_tolerance_arm, run_k0_stage_telemetry_cell,
+    validate_stage_receipt_sequence,
 };
 
 fn execution_identity() -> A1ScientificExecutionIdentity {
@@ -21,6 +25,61 @@ fn execution_identity() -> A1ScientificExecutionIdentity {
         rust_version: "rustc 1.94.1".into(),
         cargo_version: "cargo 1.94.1".into(),
     }
+}
+
+fn k0_execution_identity() -> K0StageTelemetryExecutionIdentity {
+    K0StageTelemetryExecutionIdentity {
+        repository: "cosmosapjw-quantum/vigilode".into(),
+        source_pull_request: K0_SOURCE_PULL_REQUEST,
+        source_base_sha: K0_SOURCE_BASE_SHA.into(),
+        source_base_tree: K0_SOURCE_BASE_TREE.into(),
+        execution_head_sha: "7777777777777777777777777777777777777777".into(),
+        execution_head_tree: "8888888888888888888888888888888888888888".into(),
+        rust_version: "rustc 1.94.1".into(),
+        cargo_version: "cargo 1.94.1".into(),
+    }
+}
+
+#[test]
+fn k0_cell_is_explicit_legacy_fixed_failure_preserving_and_a1_neutral() {
+    let family = G4S5B0Family::RobertsonRamped;
+    let kernel = GmresKernelArm::LegacyRestartedGmres;
+    let plain = run_a1_post_a2a3_kernel_receipt_cell(execution_identity(), family, kernel)
+        .expect("plain frozen A1 evidence");
+    let cell = run_k0_stage_telemetry_cell(k0_execution_identity(), family, kernel);
+
+    assert_eq!(cell.schema, K0_STAGE_TELEMETRY_CELL_SCHEMA);
+    assert_eq!(cell.claim_class, "EXPLORATORY_NONAUTHORITATIVE");
+    assert_eq!(cell.execution_state, K0ExecutionState::Complete);
+    assert_eq!(cell.case_id, "robertson-ramped-n320");
+    assert_eq!(cell.family, "robertson-ramped");
+    assert_eq!(cell.kernel_arm, "legacy-restarted-gmres");
+    assert_eq!(cell.tolerance.kind, "LegacyFixed");
+    assert_eq!(cell.tolerance.rtol, 1.0e-10);
+    assert_eq!(cell.tolerance.atol, 1.0e-12);
+    assert!(!cell.stages.is_empty());
+    assert!(!cell.solver_configuration_tokens.is_empty());
+    validate_stage_receipt_sequence(&cell.stages).expect("exhaustive K0 stage sequence");
+    assert!(cell.error.is_none());
+
+    let observed = cell.receipt.expect("complete K0 A1 evidence");
+    assert_eq!(observed.profile, plain.receipt.profile);
+    assert_eq!(observed.family, plain.receipt.family);
+    assert_eq!(observed.tolerance_arm, plain.tolerance_arm);
+    assert_eq!(observed.trace_digest, plain.receipt.trace_digest);
+    assert_eq!(observed.attempts, plain.receipt.attempts);
+    assert_eq!(observed.accepted_steps, plain.receipt.accepted_steps);
+    assert_eq!(observed.rejected_steps, plain.receipt.rejected_steps);
+    assert_eq!(observed.event_rows, plain.receipt.event_rows);
+    assert_eq!(
+        observed.recommendation_rows,
+        plain.receipt.recommendation_rows
+    );
+    assert_eq!(observed.hard_gates, plain.receipt.hard_gates);
+    assert_eq!(
+        committed_g4_s5b0_linear_tolerance_arm(),
+        G4S5B0LinearToleranceArm::LegacyFixed
+    );
 }
 
 #[test]
