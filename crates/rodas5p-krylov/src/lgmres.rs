@@ -1,4 +1,5 @@
 use crate::{
+    LinearSolveObservation, ObservedInitialGuessSource,
     common::{apply_left_with_raw, true_residual_into, validate_system},
     gmres::arnoldi_augmented_with_workspace,
     kernels::{axpy, normalize},
@@ -40,7 +41,7 @@ pub struct LgmresState {
 
 // State, workspace, and work ledger have deliberately distinct lifetimes and commit rules.
 #[allow(clippy::too_many_arguments)]
-pub fn solve_lgmres_with_workspace(
+fn solve_lgmres_with_workspace_impl(
     op: &dyn LinearOperator,
     pc: &dyn Preconditioner,
     rhs: &[f64],
@@ -49,6 +50,7 @@ pub fn solve_lgmres_with_workspace(
     state: &mut LgmresState,
     workspace: &mut LgmresWorkspace,
     counters: &mut WorkCounters,
+    mut observation: Option<&mut LinearSolveObservation>,
 ) -> CoreResult<LinearSolveReport> {
     if config.inner_m == 0 || config.max_outer == 0 || config.outer_k == 0 {
         return Err(CoreError::InvalidInput(
@@ -73,6 +75,15 @@ pub fn solve_lgmres_with_workspace(
         }
 
         workspace.common.prepare(n);
+        if let Some(observation) = observation.as_deref_mut() {
+            observation.reset(if x0.is_some() {
+                ObservedInitialGuessSource::ExternalPrevious
+            } else if state.previous_solution.is_some() {
+                ObservedInitialGuessSource::InternalLgmresPrevious
+            } else {
+                ObservedInitialGuessSource::Zero
+            });
+        }
         if let Some(initial) = x0.or(state.previous_solution.as_deref()) {
             workspace.common.x.copy_from_slice(initial);
         }
@@ -93,7 +104,11 @@ pub fn solve_lgmres_with_workspace(
                     ApplyCategory::Krylov,
                 )?;
             }
-            if safe_l2(&workspace.common.residual) <= threshold {
+            let residual_norm = safe_l2(&workspace.common.residual);
+            if let Some(observation) = observation.as_deref_mut() {
+                observation.record_initial_once(residual_norm);
+            }
+            if residual_norm <= threshold {
                 break;
             }
             apply_preconditioner(
@@ -176,6 +191,9 @@ pub fn solve_lgmres_with_workspace(
             ApplyCategory::Diagnostic,
         )?;
         let residual_norm = safe_l2(&workspace.common.residual);
+        if let Some(observation) = observation.as_deref_mut() {
+            observation.record_final(residual_norm);
+        }
         if !residual_norm.is_finite() || residual_norm > threshold {
             return Err(CoreError::LinearSolve(format!(
                 "LGMRES true residual {residual_norm:.3e} exceeds {threshold:.3e}"
@@ -201,6 +219,45 @@ pub fn solve_lgmres_with_workspace(
         *state = snapshot;
     }
     result
+}
+
+#[allow(clippy::too_many_arguments)]
+pub fn solve_lgmres_with_workspace(
+    op: &dyn LinearOperator,
+    pc: &dyn Preconditioner,
+    rhs: &[f64],
+    x0: Option<&[f64]>,
+    config: &LgmresConfig,
+    state: &mut LgmresState,
+    workspace: &mut LgmresWorkspace,
+    counters: &mut WorkCounters,
+) -> CoreResult<LinearSolveReport> {
+    solve_lgmres_with_workspace_impl(op, pc, rhs, x0, config, state, workspace, counters, None)
+}
+
+#[doc(hidden)]
+#[allow(clippy::too_many_arguments)]
+pub fn solve_lgmres_observed(
+    op: &dyn LinearOperator,
+    pc: &dyn Preconditioner,
+    rhs: &[f64],
+    x0: Option<&[f64]>,
+    config: &LgmresConfig,
+    state: &mut LgmresState,
+    counters: &mut WorkCounters,
+    observation: &mut LinearSolveObservation,
+) -> CoreResult<LinearSolveReport> {
+    solve_lgmres_with_workspace_impl(
+        op,
+        pc,
+        rhs,
+        x0,
+        config,
+        state,
+        &mut LgmresWorkspace::default(),
+        counters,
+        Some(observation),
+    )
 }
 
 pub fn solve_lgmres(

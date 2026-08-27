@@ -1,4 +1,5 @@
 use crate::{
+    LinearSolveObservation, ObservedInitialGuessSource,
     common::{apply_left, apply_left_with_raw, true_residual_into, validate_system},
     kernels::{axpy, dot, linear_combination_into, normalize, two_pass_mgs},
     small::{generalized_eigen, least_squares},
@@ -381,7 +382,7 @@ fn prefix(a: &DenseMatrix, r: usize, c: usize) -> DenseMatrix {
 
 // State, workspace, and work ledger have deliberately distinct lifetimes and commit rules.
 #[allow(clippy::too_many_arguments)]
-pub fn solve_gcrodr_with_workspace(
+fn solve_gcrodr_with_workspace_impl(
     op: &dyn LinearOperator,
     pc: &dyn Preconditioner,
     rhs: &[f64],
@@ -390,6 +391,7 @@ pub fn solve_gcrodr_with_workspace(
     state: &mut GcrodrState,
     workspace: &mut GcrodrWorkspace,
     counters: &mut WorkCounters,
+    mut observation: Option<&mut LinearSolveObservation>,
 ) -> CoreResult<LinearSolveReport> {
     if config.restart < 2
         || config.max_arnoldi == 0
@@ -447,6 +449,15 @@ pub fn solve_gcrodr_with_workspace(
 
         let right_norm = safe_l2(rhs);
         let threshold = config.atol.max(config.rtol * right_norm);
+        if let Some(observation) = observation.as_deref_mut() {
+            observation.reset(if x0.is_some() {
+                ObservedInitialGuessSource::ExternalPrevious
+            } else if local.previous_solution.is_some() {
+                ObservedInitialGuessSource::InternalGcrodrPrevious
+            } else {
+                ObservedInitialGuessSource::Zero
+            });
+        }
         if let Some(initial) = x0.or(local.previous_solution.as_deref()) {
             workspace.common.x.copy_from_slice(initial);
         }
@@ -466,6 +477,9 @@ pub fn solve_gcrodr_with_workspace(
                 )?;
             }
             let mut residual_norm = safe_l2(&workspace.common.residual);
+            if let Some(observation) = observation.as_deref_mut() {
+                observation.record_initial_once(residual_norm);
+            }
             if residual_norm <= threshold {
                 break;
             }
@@ -524,6 +538,9 @@ pub fn solve_gcrodr_with_workspace(
                     ApplyCategory::Diagnostic,
                 )?;
                 residual_norm = safe_l2(&workspace.common.residual);
+                if let Some(observation) = observation.as_deref_mut() {
+                    observation.record_recycle_projection(residual_norm);
+                }
                 if residual_norm <= threshold {
                     break;
                 }
@@ -652,6 +669,9 @@ pub fn solve_gcrodr_with_workspace(
             ApplyCategory::Diagnostic,
         )?;
         let residual_norm = safe_l2(&workspace.common.residual);
+        if let Some(observation) = observation.as_deref_mut() {
+            observation.record_final(residual_norm);
+        }
         if !residual_norm.is_finite() || residual_norm > threshold {
             return Err(CoreError::LinearSolve(format!(
                 "GCRO-DR true residual {residual_norm:.3e} exceeds {threshold:.3e}"
@@ -679,6 +699,45 @@ pub fn solve_gcrodr_with_workspace(
         *state = snapshot;
     }
     result
+}
+
+#[allow(clippy::too_many_arguments)]
+pub fn solve_gcrodr_with_workspace(
+    op: &dyn LinearOperator,
+    pc: &dyn Preconditioner,
+    rhs: &[f64],
+    x0: Option<&[f64]>,
+    config: &GcrodrConfig,
+    state: &mut GcrodrState,
+    workspace: &mut GcrodrWorkspace,
+    counters: &mut WorkCounters,
+) -> CoreResult<LinearSolveReport> {
+    solve_gcrodr_with_workspace_impl(op, pc, rhs, x0, config, state, workspace, counters, None)
+}
+
+#[doc(hidden)]
+#[allow(clippy::too_many_arguments)]
+pub fn solve_gcrodr_observed(
+    op: &dyn LinearOperator,
+    pc: &dyn Preconditioner,
+    rhs: &[f64],
+    x0: Option<&[f64]>,
+    config: &GcrodrConfig,
+    state: &mut GcrodrState,
+    counters: &mut WorkCounters,
+    observation: &mut LinearSolveObservation,
+) -> CoreResult<LinearSolveReport> {
+    solve_gcrodr_with_workspace_impl(
+        op,
+        pc,
+        rhs,
+        x0,
+        config,
+        state,
+        &mut GcrodrWorkspace::default(),
+        counters,
+        Some(observation),
+    )
 }
 
 pub fn solve_gcrodr(

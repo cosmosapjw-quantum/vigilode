@@ -1,4 +1,5 @@
 use crate::{
+    LinearSolveObservation, ObservedInitialGuessSource,
     common::{apply_left_with_raw, true_residual_into, validate_system},
     kernels::{axpy, linear_combination_into, normalize, two_pass_mgs_into},
     small::least_squares,
@@ -158,7 +159,7 @@ pub(crate) fn arnoldi_augmented_with_workspace(
     Ok(ArnoldiResult { iterations: actual })
 }
 
-pub fn solve_gmres_with_workspace(
+fn solve_gmres_with_workspace_impl(
     op: &dyn LinearOperator,
     pc: &dyn Preconditioner,
     rhs: &[f64],
@@ -166,6 +167,7 @@ pub fn solve_gmres_with_workspace(
     config: &GmresConfig,
     workspace: &mut GmresWorkspace,
     counters: &mut WorkCounters,
+    mut observation: Option<&mut LinearSolveObservation>,
 ) -> CoreResult<LinearSolveReport> {
     config.validate()?;
     let n = validate_system(op, pc, rhs, x0)?;
@@ -173,6 +175,13 @@ pub fn solve_gmres_with_workspace(
     let right_norm = safe_l2(rhs);
     let threshold = config.atol.max(config.rtol * right_norm);
     workspace.common.prepare(n);
+    if let Some(observation) = observation.as_deref_mut() {
+        observation.reset(if x0.is_some() {
+            ObservedInitialGuessSource::ExternalPrevious
+        } else {
+            ObservedInitialGuessSource::Zero
+        });
+    }
     if let Some(initial) = x0 {
         workspace.common.x.copy_from_slice(initial);
     }
@@ -193,6 +202,9 @@ pub fn solve_gmres_with_workspace(
             )?;
         }
         let residual_norm = safe_l2(&workspace.common.residual);
+        if let Some(observation) = observation.as_deref_mut() {
+            observation.record_initial_once(residual_norm);
+        }
         if residual_norm <= threshold {
             break;
         }
@@ -246,6 +258,9 @@ pub fn solve_gmres_with_workspace(
         ApplyCategory::Diagnostic,
     )?;
     let residual_norm = safe_l2(&workspace.common.residual);
+    if let Some(observation) = observation.as_deref_mut() {
+        observation.record_final(residual_norm);
+    }
     if !residual_norm.is_finite() || residual_norm > threshold {
         return Err(CoreError::LinearSolve(format!(
             "GMRES true residual {residual_norm:.3e} exceeds {threshold:.3e}"
@@ -264,6 +279,40 @@ pub fn solve_gmres_with_workspace(
         preconditioner_apps: delta.preconditioner_apps,
         method: "gmres".into(),
     })
+}
+
+pub fn solve_gmres_with_workspace(
+    op: &dyn LinearOperator,
+    pc: &dyn Preconditioner,
+    rhs: &[f64],
+    x0: Option<&[f64]>,
+    config: &GmresConfig,
+    workspace: &mut GmresWorkspace,
+    counters: &mut WorkCounters,
+) -> CoreResult<LinearSolveReport> {
+    solve_gmres_with_workspace_impl(op, pc, rhs, x0, config, workspace, counters, None)
+}
+
+#[doc(hidden)]
+pub fn solve_gmres_observed(
+    op: &dyn LinearOperator,
+    pc: &dyn Preconditioner,
+    rhs: &[f64],
+    x0: Option<&[f64]>,
+    config: &GmresConfig,
+    counters: &mut WorkCounters,
+    observation: &mut LinearSolveObservation,
+) -> CoreResult<LinearSolveReport> {
+    solve_gmres_with_workspace_impl(
+        op,
+        pc,
+        rhs,
+        x0,
+        config,
+        &mut GmresWorkspace::default(),
+        counters,
+        Some(observation),
+    )
 }
 
 pub fn solve_gmres(

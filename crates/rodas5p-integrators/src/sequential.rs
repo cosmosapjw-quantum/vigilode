@@ -7,8 +7,10 @@ use rodas5p_core::{
     WorkCounters, apply_counted, error_scale, load_rodas5p_coefficients, safe_l2, wrms,
 };
 use rodas5p_krylov::{
-    GcrodrConfig, GcrodrState, GmresConfig, LgmresConfig, LgmresState, solve_gcrodr, solve_gmres,
-    solve_gmres_givens, solve_lgmres,
+    GcrodrConfig, GcrodrState, GmresConfig, LgmresConfig, LgmresState, LinearSolveObservation,
+    ObservedInitialGuessSource, solve_gcrodr, solve_gcrodr_observed, solve_gmres,
+    solve_gmres_givens, solve_gmres_givens_observed, solve_gmres_observed, solve_lgmres,
+    solve_lgmres_observed,
 };
 
 use crate::OdeProblem;
@@ -307,8 +309,40 @@ pub fn sequential_stages_with_gmres_kernel(
     context: &StepContext<'_>,
     config: &LinearSolverConfig,
     gmres_kernel: GmresKernelArm,
+    recycle: Option<&mut KrylovState>,
+    counters: &mut WorkCounters,
+) -> CoreResult<StageSolveData> {
+    sequential_stages_with_gmres_kernel_impl(context, config, gmres_kernel, recycle, counters, None)
+}
+
+#[allow(clippy::too_many_arguments)]
+pub(crate) fn sequential_stages_with_gmres_kernel_observed(
+    context: &StepContext<'_>,
+    config: &LinearSolverConfig,
+    gmres_kernel: GmresKernelArm,
+    recycle: Option<&mut KrylovState>,
+    counters: &mut WorkCounters,
+    observations: &mut Vec<LinearSolveObservation>,
+) -> CoreResult<StageSolveData> {
+    observations.clear();
+    sequential_stages_with_gmres_kernel_impl(
+        context,
+        config,
+        gmres_kernel,
+        recycle,
+        counters,
+        Some(observations),
+    )
+}
+
+#[allow(clippy::too_many_arguments)]
+fn sequential_stages_with_gmres_kernel_impl(
+    context: &StepContext<'_>,
+    config: &LinearSolverConfig,
+    gmres_kernel: GmresKernelArm,
     mut recycle: Option<&mut KrylovState>,
     counters: &mut WorkCounters,
+    mut observations: Option<&mut Vec<LinearSolveObservation>>,
 ) -> CoreResult<StageSolveData> {
     config.validate().map_err(CoreError::InvalidInput)?;
     let s = context.coeffs.stages();
@@ -372,13 +406,26 @@ pub fn sequential_stages_with_gmres_kernel(
         } else {
             None
         };
+        let mut stage_observation = observations
+            .as_ref()
+            .map(|_| LinearSolveObservation::default());
         let report = match config.method {
-            LinearMethod::Direct => direct_report(
-                context,
-                factor.as_ref().expect("factor created"),
-                &rhs,
-                counters,
-            )?,
+            LinearMethod::Direct => {
+                if let Some(observation) = stage_observation.as_mut() {
+                    observation.initial_guess_source = Some(ObservedInitialGuessSource::Direct);
+                    observation.initial_true_residual_norm = Some(safe_l2(&rhs));
+                }
+                let result = direct_report(
+                    context,
+                    factor.as_ref().expect("factor created"),
+                    &rhs,
+                    counters,
+                );
+                if let (Some(observation), Ok(report)) = (stage_observation.as_mut(), &result) {
+                    observation.final_true_residual_norm = Some(report.residual_norm);
+                }
+                result
+            }
             LinearMethod::Gmres => {
                 let gmres_config = GmresConfig {
                     restart: config.restart,
@@ -387,22 +434,50 @@ pub fn sequential_stages_with_gmres_kernel(
                     atol: config.atol,
                 };
                 match gmres_kernel {
-                    GmresKernelArm::LegacyRestartedGmres => solve_gmres(
-                        &context.shifted,
-                        pc.as_ref(),
-                        &rhs,
-                        x0,
-                        &gmres_config,
-                        counters,
-                    )?,
-                    GmresKernelArm::IncrementalGivensCandidate => solve_gmres_givens(
-                        &context.shifted,
-                        pc.as_ref(),
-                        &rhs,
-                        x0,
-                        &gmres_config,
-                        counters,
-                    )?,
+                    GmresKernelArm::LegacyRestartedGmres => {
+                        if let Some(observation) = stage_observation.as_mut() {
+                            solve_gmres_observed(
+                                &context.shifted,
+                                pc.as_ref(),
+                                &rhs,
+                                x0,
+                                &gmres_config,
+                                counters,
+                                observation,
+                            )
+                        } else {
+                            solve_gmres(
+                                &context.shifted,
+                                pc.as_ref(),
+                                &rhs,
+                                x0,
+                                &gmres_config,
+                                counters,
+                            )
+                        }
+                    }
+                    GmresKernelArm::IncrementalGivensCandidate => {
+                        if let Some(observation) = stage_observation.as_mut() {
+                            solve_gmres_givens_observed(
+                                &context.shifted,
+                                pc.as_ref(),
+                                &rhs,
+                                x0,
+                                &gmres_config,
+                                counters,
+                                observation,
+                            )
+                        } else {
+                            solve_gmres_givens(
+                                &context.shifted,
+                                pc.as_ref(),
+                                &rhs,
+                                x0,
+                                &gmres_config,
+                                counters,
+                            )
+                        }
+                    }
                 }
             }
             LinearMethod::Lgmres => {
@@ -418,21 +493,35 @@ pub fn sequential_stages_with_gmres_kernel(
                         _ => unreachable!(),
                     },
                 };
-                solve_lgmres(
-                    &context.shifted,
-                    pc.as_ref(),
-                    &rhs,
-                    x0,
-                    &LgmresConfig {
-                        inner_m: config.inner_m,
-                        max_outer: config.maxiter,
-                        outer_k: config.outer_k,
-                        rtol: config.rtol,
-                        atol: config.atol,
-                    },
-                    st,
-                    counters,
-                )?
+                let solver_config = LgmresConfig {
+                    inner_m: config.inner_m,
+                    max_outer: config.maxiter,
+                    outer_k: config.outer_k,
+                    rtol: config.rtol,
+                    atol: config.atol,
+                };
+                if let Some(observation) = stage_observation.as_mut() {
+                    solve_lgmres_observed(
+                        &context.shifted,
+                        pc.as_ref(),
+                        &rhs,
+                        x0,
+                        &solver_config,
+                        st,
+                        counters,
+                        observation,
+                    )
+                } else {
+                    solve_lgmres(
+                        &context.shifted,
+                        pc.as_ref(),
+                        &rhs,
+                        x0,
+                        &solver_config,
+                        st,
+                        counters,
+                    )
+                }
             }
             LinearMethod::Gcrodr => {
                 let st = match state.as_deref_mut() {
@@ -447,24 +536,44 @@ pub fn sequential_stages_with_gmres_kernel(
                         _ => unreachable!(),
                     },
                 };
-                solve_gcrodr(
-                    &context.shifted,
-                    pc.as_ref(),
-                    &rhs,
-                    x0,
-                    &GcrodrConfig {
-                        restart: config.restart,
-                        max_arnoldi: config.maxiter.max(config.restart),
-                        recycle_dim: config.recycle_dim,
-                        rank_tol: config.recycle_rank_tol,
-                        rtol: config.rtol,
-                        atol: config.atol,
-                    },
-                    st,
-                    counters,
-                )?
+                let solver_config = GcrodrConfig {
+                    restart: config.restart,
+                    max_arnoldi: config.maxiter.max(config.restart),
+                    recycle_dim: config.recycle_dim,
+                    rank_tol: config.recycle_rank_tol,
+                    rtol: config.rtol,
+                    atol: config.atol,
+                };
+                if let Some(observation) = stage_observation.as_mut() {
+                    solve_gcrodr_observed(
+                        &context.shifted,
+                        pc.as_ref(),
+                        &rhs,
+                        x0,
+                        &solver_config,
+                        st,
+                        counters,
+                        observation,
+                    )
+                } else {
+                    solve_gcrodr(
+                        &context.shifted,
+                        pc.as_ref(),
+                        &rhs,
+                        x0,
+                        &solver_config,
+                        st,
+                        counters,
+                    )
+                }
             }
         };
+        if let (Some(observations), Some(observation)) =
+            (observations.as_deref_mut(), stage_observation)
+        {
+            observations.push(observation);
+        }
+        let report = report?;
         stages[i] = report.x.clone();
         reports.push(report);
     }
@@ -664,4 +773,44 @@ pub fn sequential_matrix_free_step_with_gmres_kernel(
         *target = saved;
     }
     result
+}
+
+#[cfg(test)]
+mod k0_solver_observation_tests {
+    use super::*;
+    use crate::manufactured_vector_problem;
+    use rodas5p_krylov::{LinearSolveObservation, ObservedInitialGuessSource};
+
+    #[test]
+    fn solver_observation_direct_path_is_observationally_identical() {
+        let (problem, y0) = manufactured_vector_problem(4, 100.0, 10.0, 0.2, 0.0).unwrap();
+        let config = LinearSolverConfig::default();
+
+        let mut plain_work = WorkCounters::default();
+        let plain_context = build_step_context(&problem, 0.0, &y0, 0.01, &mut plain_work).unwrap();
+        let plain = sequential_stages(&plain_context, &config, None, &mut plain_work).unwrap();
+
+        let mut observed_work = WorkCounters::default();
+        let observed_context =
+            build_step_context(&problem, 0.0, &y0, 0.01, &mut observed_work).unwrap();
+        let mut observations = Vec::<LinearSolveObservation>::new();
+        let observed = sequential_stages_with_gmres_kernel_observed(
+            &observed_context,
+            &config,
+            production_gmres_kernel_arm(),
+            None,
+            &mut observed_work,
+            &mut observations,
+        )
+        .unwrap();
+
+        assert_eq!(plain.stages, observed.stages);
+        assert_eq!(plain_work, observed_work);
+        assert_eq!(observations.len(), 8);
+        assert!(observations.iter().all(|observation| {
+            observation.initial_guess_source == Some(ObservedInitialGuessSource::Direct)
+                && observation.initial_true_residual_norm.is_some()
+                && observation.final_true_residual_norm.is_some()
+        }));
+    }
 }
