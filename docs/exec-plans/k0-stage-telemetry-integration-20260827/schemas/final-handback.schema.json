@@ -1,0 +1,119 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "VigilODE K0 Codex Handback",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "final_state",
+    "base_sha",
+    "final_sha",
+    "final_tree",
+    "branch",
+    "draft_pr",
+    "jira",
+    "confluence",
+    "work_units",
+    "verification",
+    "blockers",
+    "claim_class"
+  ],
+  "properties": {
+    "schema": {
+      "const": "vigilode-k0-codex-handback/v1"
+    },
+    "final_state": {
+      "enum": [
+        "PASS",
+        "PASS_WITH_NONBLOCKING_FINDINGS",
+        "BLOCKED_BY_UNRESOLVED_SPEC",
+        "BLOCKED_BY_AUTHORITY_DRIFT",
+        "BLOCKED_BY_ATLASSIAN_AUTHORITY_DRIFT",
+        "BLOCKED_BY_P0",
+        "BLOCKED_BY_P1",
+        "ATLAS_SYNC_PENDING",
+        "PARTIAL",
+        "FAILED"
+      ]
+    },
+    "base_sha": {
+      "const": "e1124586a4029f86669e7489278c61ef676d61aa"
+    },
+    "final_sha": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "final_tree": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "branch": {
+      "const": "research/k0-stage-telemetry-integration-20260827"
+    },
+    "draft_pr": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 1
+    },
+    "jira": {
+      "type": "object",
+      "required": [
+        "issue",
+        "status"
+      ],
+      "properties": {
+        "issue": {
+          "const": "PM-7"
+        },
+        "status": {
+          "type": "string"
+        }
+      }
+    },
+    "confluence": {
+      "type": "object",
+      "required": [
+        "page_id",
+        "version"
+      ],
+      "properties": {
+        "page_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "version": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      }
+    },
+    "work_units": {
+      "type": "array",
+      "minItems": 6,
+      "items": {
+        "type": "object"
+      }
+    },
+    "verification": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "blockers": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "claim_class": {
+      "const": "EXPLORATORY_NONAUTHORITATIVE"
+    }
+  }
+}
