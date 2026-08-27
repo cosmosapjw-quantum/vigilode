@@ -1,0 +1,100 @@
+{
+  "schema": "vigilode-k0-wu05-local-repair-supplement/v2",
+  "status": "BOUND",
+  "purpose": "Additive controlling supplement for local WU-05 repair. It supersedes defective v1/v2 repair gates without modifying historical package files.",
+  "authority": {
+    "repository": "cosmosapjw-quantum/vigilode",
+    "canonical_main": "8d0c79184e09efb5bdadc24a6315c60a71a44264",
+    "source_parent": "e1124586a4029f86669e7489278c61ef676d61aa",
+    "implementation_branch": "research/k0-stage-telemetry-integration-20260827",
+    "fresh_review_head": "e95ce1e58a603306cb665a6ab91cfe02d279972f",
+    "fresh_review_tree": "e3621a370297a76907e97730ebd18c5c1e0fb83e",
+    "package_branch": "docs/k0-codex-execution-package-20260827",
+    "exact_package_sha_binding": "external K0_PACKAGE_SHA from PR #21, Jira PM-7, Confluence 15499267, and delivered publication receipt"
+  },
+  "supersedes_for_wu05_closure": [
+    "FRESH_REVIEW_REPAIR_AUTHORITY.json v1 clauses that permit self-reported bridge evidence",
+    "stage-receipt-v2.schema.json",
+    "cell-receipt-v2.schema.json",
+    "verify-k0-fresh-review-repair.py token-only signed-residual and weak evidence checks",
+    "moving-ref merge commands in REVIEW_REPAIR_HANDOFF.md"
+  ],
+  "legacy_unmanifested_git_blobs": {
+    "docs/exec-plans/k0-stage-telemetry-integration-20260827/FRESH_REVIEW_REPAIR_AUTHORITY.json": "41143c0d32c2a986af86acc68d30669e96c4516c",
+    "docs/exec-plans/k0-stage-telemetry-integration-20260827/PUBLIC_BRIDGE_CONTRACT.md": "142f22c46fd5718855dd20258848754e578a82f7",
+    "docs/exec-plans/k0-stage-telemetry-integration-20260827/REVIEW_REPAIR_HANDOFF.md": "7fa2c2a676929ad8a7849c9fba7ddd3c393b042b",
+    "docs/exec-plans/k0-stage-telemetry-integration-20260827/reviews/FRESH_REPAIR_REVIEW_PROMPT.md": "7b0eb0ed64491f9f49d4b8af2010d7ba5d2b05aa",
+    "docs/exec-plans/k0-stage-telemetry-integration-20260827/schemas/stage-receipt-v2.schema.json": "ff1b0245bb8823c084a0f97c0a3bb3ef0cf7e230",
+    "docs/exec-plans/k0-stage-telemetry-integration-20260827/schemas/cell-receipt-v2.schema.json": "33ef43497ebea8434b3c1c27b562366b45d3396a",
+    "tools/verify-k0-fresh-review-repair.py": "2f869abbde807ca38e41d1f286800ee0c4dcf889"
+  },
+  "observed_failure_modes": [
+    {
+      "id": "SR-K0-P0-001",
+      "severity": "P0",
+      "failure": "active repair files omitted from PACKAGE_MANIFEST while package validation passes",
+      "guard": "supplement manifest plus exact active-file-set check"
+    },
+    {
+      "id": "SR-K0-P1-001",
+      "severity": "P1",
+      "failure": "moving package branch is merged without exact external SHA pin",
+      "guard": "K0_PACKAGE_SHA equality and second-parent check"
+    },
+    {
+      "id": "SR-K0-P1-002",
+      "severity": "P1",
+      "failure": "public bridge receipt is self-reported rather than derived from Rust source",
+      "guard": "source-derived bridge inventory and call-site scan"
+    },
+    {
+      "id": "SR-K0-P1-003",
+      "severity": "P1",
+      "failure": "signed-residual guard name is present but test was not executed",
+      "guard": "targeted cargo execution with exactly one passing test"
+    },
+    {
+      "id": "SR-K0-P0-002",
+      "severity": "P0",
+      "failure": "arbitrary hard-gate map or fabricated numerical digest passes",
+      "guard": "raw-derived exact gate set and canonical payload recomputation"
+    },
+    {
+      "id": "SR-K0-P1-004",
+      "severity": "P1",
+      "failure": "failure work preservation is only an unchecked boolean",
+      "guard": "partial stage count and canonical digest equality"
+    }
+  ],
+  "active_files": {
+    "public_bridge_contract": "PUBLIC_BRIDGE_CONTRACT_V2.md",
+    "canonicalization": "evidence/EVIDENCE_V3_CANONICALIZATION.json",
+    "stage_schema": "schemas/stage-receipt-v3.schema.json",
+    "cell_schema": "schemas/cell-receipt-v3.schema.json",
+    "validator": "../../../tools/verify-k0-wu05-supplement.py",
+    "handoff": "WU05_LOCAL_REPAIR_HANDOFF.md",
+    "codex_prompt": "WU05_LOCAL_CODEX_PROMPT.md",
+    "fresh_review": "reviews/FRESH_REPAIR_SUPPLEMENT_REVIEW_PROMPT.md",
+    "manifest": "WU05_REPAIR_SUPPLEMENT_MANIFEST.sha256",
+    "validator_payload": "../../../tools/verify-k0-wu05-supplement.payload.b64"
+  },
+  "review_policy": "No new review layer. Reuse the single fresh repair review and final differential audit; v3 replaces weak gates rather than adding meta-review.",
+  "required_pre_repair_markers": [
+    "PACKAGE_CONTRACT_PASS",
+    "WU05_SUPPLEMENT_MANIFEST_PASS",
+    "LEGACY_REPAIR_BLOBS_PASS",
+    "EXTERNAL_PACKAGE_PIN_PASS",
+    "WU05_SUPPLEMENT_AUTHORITY_PASS",
+    "WU05_REPAIR_MERGE_PASS",
+    "HOSTILE_FIXTURES_PASS"
+  ],
+  "required_closure_markers": [
+    "PUBLIC_BRIDGE_SOURCE_PASS",
+    "EVIDENCE_V3_PASS",
+    "AGGREGATE_ERROR_GUARD_PASS",
+    "SIGNED_RESIDUAL_GUARD_PASS"
+  ],
+  "claim_boundary": "EXPLORATORY/NONAUTHORITATIVE",
+  "state": "ORCHESTRATOR_MERGE_PENDING",
+  "validator_transparency": "Run python tools/verify-k0-wu05-supplement.py --dump-source to inspect the exact UTF-8 validator source; the manifest binds both loader and compressed payload."
+}

@@ -1,0 +1,145 @@
+{
+  "schema": "vigilode-k0-evidence-v3-canonicalization/v1",
+  "status": "BOUND",
+  "raw_cell_contract": {
+    "receipt_object_discovery": {
+      "algorithm": "Recursively collect mapping objects containing every required_receipt_key. Exactly one candidate is required; zero or multiple candidates are BLOCKED_BY_UNRESOLVED_SPEC.",
+      "required_receipt_keys": [
+        "profile",
+        "family",
+        "attempts",
+        "accepted_steps",
+        "rejected_steps",
+        "rhs_evaluations",
+        "jvp_vectors",
+        "linear_matvecs",
+        "trace_digest",
+        "switching_active",
+        "frozen_zeta34_tau",
+        "event_rows",
+        "recommendation_rows",
+        "hard_gates"
+      ]
+    },
+    "stage_array_discovery": {
+      "algorithm": "Recursively collect nonempty arrays whose elements are mappings containing attempt_id, stage_index, execution_state, and work. Exactly one candidate is required.",
+      "required_stage_keys": [
+        "attempt_id",
+        "stage_index",
+        "execution_state",
+        "work"
+      ]
+    },
+    "outer_identity": {
+      "kernel_arm_path": "/kernel_arm",
+      "tolerance_arm_path": "/tolerance_arm",
+      "schema_path": "/schema",
+      "status_path": "/status"
+    }
+  },
+  "canonical_json": {
+    "encoding": "UTF-8",
+    "sort_keys": true,
+    "separators": [
+      ",",
+      ":"
+    ],
+    "ensure_ascii": false,
+    "allow_nan": false
+  },
+  "numerical_payload_projection": {
+    "fields": [
+      "raw_schema",
+      "raw_status",
+      "kernel_arm",
+      "tolerance_arm",
+      "profile",
+      "family",
+      "linear_rtol",
+      "linear_atol",
+      "attempts",
+      "accepted_steps",
+      "rejected_steps",
+      "rhs_evaluations",
+      "jvp_vectors",
+      "linear_matvecs",
+      "trace_digest",
+      "switching_active",
+      "frozen_zeta34_tau",
+      "event_rows",
+      "recommendation_rows",
+      "hard_gates",
+      "stages"
+    ],
+    "rule": "Build one mapping with the fields above from the unique raw receipt object and stage array, then SHA-256 the canonical JSON bytes. No wrapper-supplied value is trusted.",
+    "excluded_by_construction": [
+      "Git/source/workflow identities",
+      "Rust/Cargo versions",
+      "wall-time fields",
+      "human limitations/prose",
+      "wrapper schema and migration metadata"
+    ]
+  },
+  "stage_payload_projection": {
+    "fields": [
+      "execution_state",
+      "case_id",
+      "family",
+      "kernel_arm",
+      "attempt_id",
+      "stage_index",
+      "solver_method",
+      "initial_guess_source",
+      "initial_true_residual",
+      "final_true_residual",
+      "signed_residual_digest",
+      "work",
+      "geometry",
+      "failure"
+    ],
+    "rule": "Project raw and wrapper stages onto these fields, canonicalize, and require identical SHA-256 digests."
+  },
+  "campaign_projection": {
+    "required_fields": [
+      "raw_schema",
+      "raw_status",
+      "tolerance_arm",
+      "attempts",
+      "accepted_steps",
+      "rejected_steps",
+      "rhs_evaluations",
+      "jvp_vectors",
+      "linear_matvecs",
+      "trace_digest",
+      "event_count",
+      "recommendation_count",
+      "hard_gates",
+      "audit_full_e_complete",
+      "unsafe_recommendations",
+      "numerical_payload_sha256",
+      "raw_stage_payload_sha256"
+    ],
+    "audit_full_e_complete": "For every raw event row with audit_full_e_eligible=true, audit_full_e_completed must be true and audit_full_e_failure must be null. An empty eligible subset is allowed per cell but not used to infer a population safety claim.",
+    "unsafe_recommendations": "Count raw event rows with recommended=true and audit_unsafe=true.",
+    "hard_gates": [
+      "all_rjf_trajectories_successful",
+      "rjf_trace_exact_excluding_wall",
+      "zero_budget_breaches",
+      "prefix_transactions_resolved",
+      "zero_continuation_failures",
+      "zero_unsafe_recommendations",
+      "work_ledgers_exact",
+      "realized_work_ratios_finite",
+      "resume_cardinality_exact",
+      "shadow_implicit_expensive_work_zero",
+      "active_switching_false",
+      "passed"
+    ]
+  },
+  "failure_receipt": {
+    "partial_stage_count": "must equal len(stages)",
+    "partial_stage_receipts_sha256": "SHA-256 of canonical JSON bytes of the preserved stages array; empty arrays use the digest of []",
+    "raw_payload": "may be absent only when failure occurs before a raw receipt is successfully created"
+  },
+  "supersedes": "EVIDENCE_V2_CANONICALIZATION semantics; v3 is controlling for WU-05 closure"
+}

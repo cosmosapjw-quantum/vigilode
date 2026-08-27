@@ -1,0 +1,380 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/cosmosapjw-quantum/vigilode/schemas/k0-cell-receipt-v3.json",
+  "title": "VigilODE K0 Cell Receipt v3",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "execution_state",
+    "cell_id",
+    "family",
+    "kernel_arm",
+    "profile",
+    "tolerance",
+    "frozen_zeta34_tau",
+    "provenance",
+    "campaign",
+    "stages",
+    "failure",
+    "claim_class"
+  ],
+  "properties": {
+    "schema": {
+      "const": "vigilode-k0-cell-receipt/v3"
+    },
+    "execution_state": {
+      "enum": [
+        "COMPLETE",
+        "STOP_INVALID",
+        "ERROR"
+      ]
+    },
+    "cell_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "family": {
+      "enum": [
+        "robertson-ramped",
+        "hires-ramped",
+        "van-der-pol-ramped",
+        "rotating-nonnormal",
+        "nonautonomous-stiff-forcing",
+        "semilinear-advection-diffusion-ramped"
+      ]
+    },
+    "kernel_arm": {
+      "enum": [
+        "legacy-restarted-gmres",
+        "incremental-givens-candidate"
+      ]
+    },
+    "profile": {
+      "const": "enforced-budget-holdout-320"
+    },
+    "tolerance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "rtol",
+        "atol"
+      ],
+      "properties": {
+        "kind": {
+          "const": "legacy-fixed"
+        },
+        "rtol": {
+          "const": 1e-10
+        },
+        "atol": {
+          "const": 1e-12
+        }
+      }
+    },
+    "frozen_zeta34_tau": {
+      "const": 13.39706618860016
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_head",
+        "source_tree"
+      ],
+      "properties": {
+        "raw_receipt_path": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "raw_receipt_sha256": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "source_head": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "source_tree": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        }
+      }
+    },
+    "campaign": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "required": [
+        "raw_schema",
+        "raw_status",
+        "tolerance_arm",
+        "attempts",
+        "accepted_steps",
+        "rejected_steps",
+        "rhs_evaluations",
+        "jvp_vectors",
+        "linear_matvecs",
+        "trace_digest",
+        "event_count",
+        "recommendation_count",
+        "hard_gates",
+        "audit_full_e_complete",
+        "unsafe_recommendations",
+        "numerical_payload_sha256",
+        "raw_stage_payload_sha256"
+      ],
+      "properties": {
+        "raw_schema": {
+          "const": "vigilode-a1-post-a2a3-kernel-atomic-cell-v1"
+        },
+        "raw_status": {
+          "const": "EXPLORATORY/NONAUTHORITATIVE"
+        },
+        "tolerance_arm": {
+          "const": "legacy-fixed"
+        },
+        "attempts": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "accepted_steps": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "rejected_steps": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "rhs_evaluations": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "jvp_vectors": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "linear_matvecs": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "trace_digest": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "event_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "recommendation_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "hard_gates": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "all_rjf_trajectories_successful",
+            "rjf_trace_exact_excluding_wall",
+            "zero_budget_breaches",
+            "prefix_transactions_resolved",
+            "zero_continuation_failures",
+            "zero_unsafe_recommendations",
+            "work_ledgers_exact",
+            "realized_work_ratios_finite",
+            "resume_cardinality_exact",
+            "shadow_implicit_expensive_work_zero",
+            "active_switching_false",
+            "passed"
+          ],
+          "properties": {
+            "all_rjf_trajectories_successful": {
+              "const": true
+            },
+            "rjf_trace_exact_excluding_wall": {
+              "const": true
+            },
+            "zero_budget_breaches": {
+              "const": true
+            },
+            "prefix_transactions_resolved": {
+              "const": true
+            },
+            "zero_continuation_failures": {
+              "const": true
+            },
+            "zero_unsafe_recommendations": {
+              "const": true
+            },
+            "work_ledgers_exact": {
+              "const": true
+            },
+            "realized_work_ratios_finite": {
+              "const": true
+            },
+            "resume_cardinality_exact": {
+              "const": true
+            },
+            "shadow_implicit_expensive_work_zero": {
+              "const": true
+            },
+            "active_switching_false": {
+              "const": true
+            },
+            "passed": {
+              "const": true
+            }
+          }
+        },
+        "audit_full_e_complete": {
+          "const": true
+        },
+        "unsafe_recommendations": {
+          "const": 0
+        },
+        "numerical_payload_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "raw_stage_payload_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "stages": {
+      "type": "array",
+      "items": {
+        "$ref": "stage-receipt-v3.schema.json"
+      }
+    },
+    "failure": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "code",
+            "message",
+            "phase",
+            "command",
+            "exit_code",
+            "log_sha256",
+            "work_preserved",
+            "partial_stage_count",
+            "partial_stage_receipts_sha256"
+          ],
+          "properties": {
+            "code": {
+              "type": "string",
+              "minLength": 1
+            },
+            "message": {
+              "type": "string",
+              "minLength": 1
+            },
+            "phase": {
+              "type": "string",
+              "minLength": 1
+            },
+            "command": {
+              "type": "string",
+              "minLength": 1
+            },
+            "exit_code": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "log_sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "work_preserved": {
+              "const": true
+            },
+            "partial_stage_count": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "partial_stage_receipts_sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          }
+        }
+      ]
+    },
+    "claim_class": {
+      "const": "EXPLORATORY_NONAUTHORITATIVE"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "execution_state": {
+            "const": "COMPLETE"
+          }
+        },
+        "required": [
+          "execution_state"
+        ]
+      },
+      "then": {
+        "properties": {
+          "provenance": {
+            "required": [
+              "raw_receipt_path",
+              "raw_receipt_sha256",
+              "source_head",
+              "source_tree"
+            ],
+            "properties": {
+              "raw_receipt_path": {
+                "type": "string",
+                "minLength": 1
+              },
+              "raw_receipt_sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              }
+            }
+          },
+          "campaign": {
+            "type": "object"
+          },
+          "stages": {
+            "minItems": 8
+          },
+          "failure": {
+            "type": "null"
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "campaign": {
+            "type": "null"
+          },
+          "failure": {
+            "type": "object"
+          }
+        }
+      }
+    }
+  ]
+}
