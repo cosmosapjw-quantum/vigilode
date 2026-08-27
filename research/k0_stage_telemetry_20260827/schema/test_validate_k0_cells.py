@@ -116,7 +116,7 @@ def cell(family: str, kernel: str) -> dict[str, object]:
             "outer_rtol": 1.0e-5,
             "linear_rtol": 1.0e-10,
             "linear_atol": 1.0e-12,
-            "phi_relative_tolerance": 3.0e-7,
+            "phi_relative_tolerance": 3.0e-2 * 1.0e-5,
             "phi_absolute_tolerance": 3.0e-9,
             "attempts": 1,
             "accepted_steps": 1,

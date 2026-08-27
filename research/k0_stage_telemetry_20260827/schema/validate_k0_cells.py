@@ -215,8 +215,8 @@ def validate_receipt(receipt: Any, family: str, label: str) -> None:
         "outer_rtol": 1.0e-5,
         "linear_rtol": 1.0e-10,
         "linear_atol": 1.0e-12,
-        "phi_relative_tolerance": 3.0e-7,
-        "phi_absolute_tolerance": 3.0e-9,
+        "phi_relative_tolerance": 3.0e-2 * 1.0e-5,
+        "phi_absolute_tolerance": 3.0e-4 * 1.0e-5,
         "frozen_zeta34_tau": FROZEN_TAU,
     }
     for key, expected in expected_floats.items():
