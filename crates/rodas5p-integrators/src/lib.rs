@@ -22,6 +22,7 @@ mod homotopy_experiments;
 mod homotopy_order_policy;
 mod homotopy_policy;
 mod integrate;
+mod k0_stage_telemetry;
 mod native_gates;
 mod nonlinear;
 mod output;
