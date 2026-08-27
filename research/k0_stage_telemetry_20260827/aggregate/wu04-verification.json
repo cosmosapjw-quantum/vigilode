@@ -1,0 +1,124 @@
+{
+  "schema": "vigilode-k0-work-unit-verification/v1",
+  "work_unit": "WU-04",
+  "claim_class": "EXPLORATORY_NONAUTHORITATIVE",
+  "source_authority": {
+    "base_sha": "e1124586a4029f86669e7489278c61ef676d61aa",
+    "base_tree": "adbb933cf3bf3d401d652c8a6d9df661d8500a2b",
+    "execution_head_sha": "321c63ee8ca0f216001bf41b30d58c1858a4781a",
+    "execution_head_tree": "1beb1ff733822c2aa82f079bf4416ab3fc7e428b"
+  },
+  "red": {
+    "command": "python research/k0_stage_telemetry_20260827/aggregate/test_campaign_artifacts.py",
+    "exit_code": 1,
+    "observation": "expected exactly 12 cell receipts but observed 0 before campaign execution"
+  },
+  "preconditions": [
+    {
+      "command": "cargo test -p rodas5p-integrators --test k0_stage_telemetry_contracts --locked",
+      "exit_code": 0,
+      "result": "21 passed"
+    },
+    {
+      "command": "cargo test -p rodas5p-integrators --test a1_two_arm_receipt_contracts --locked",
+      "exit_code": 0,
+      "result": "6 passed"
+    }
+  ],
+  "campaign": {
+    "expected_cell_count": 12,
+    "observed_cell_count": 12,
+    "execution_state_counts": {
+      "COMPLETE": 12,
+      "STOP_INVALID": 0,
+      "ERROR": 0
+    },
+    "atomic_command_record": "executed_commands.json",
+    "all_command_exit_codes": 0,
+    "cells_were_not_rerun": true,
+    "stage_receipts_per_arm_and_family": {
+      "incremental-givens-candidate": {
+        "robertson-ramped": 400,
+        "hires-ramped": 368,
+        "van-der-pol-ramped": 1104,
+        "rotating-nonnormal": 1616,
+        "nonautonomous-stiff-forcing": 2960,
+        "semilinear-advection-diffusion-ramped": 512
+      },
+      "legacy-restarted-gmres": {
+        "robertson-ramped": 400,
+        "hires-ramped": 368,
+        "van-der-pol-ramped": 1104,
+        "rotating-nonnormal": 1616,
+        "nonautonomous-stiff-forcing": 2960,
+        "semilinear-advection-diffusion-ramped": 512
+      }
+    }
+  },
+  "targeted_validator_repair": {
+    "classification": "deterministic validator expectation defect; no scientific output or tolerance changed",
+    "red_command": "python -m unittest research/k0_stage_telemetry_20260827/schema/test_validate_k0_cells.py",
+    "red_exit_code": 1,
+    "red_observation": "actual repository arithmetic 3.0e-2 * 1.0e-5 is 3.0000000000000004e-7, one ULP above the validator literal 3.0e-7",
+    "green_command": "python -m unittest research/k0_stage_telemetry_20260827/schema/test_validate_k0_cells.py",
+    "green_exit_code": 0,
+    "green_result": "4 passed",
+    "repair_commit": "cda396d"
+  },
+  "verification": [
+    {
+      "command": "python tools/verify-k0-stage-telemetry-plan.py --repo-root . --evidence-dir research/k0_stage_telemetry_20260827/evidence",
+      "exit_code": 0,
+      "result": "12 explicit cells PASS"
+    },
+    {
+      "command": "python research/k0_stage_telemetry_20260827/schema/validate_k0_cells.py research/k0_stage_telemetry_20260827/evidence",
+      "exit_code": 0,
+      "result": "COMPLETE; 12 of 12 cells"
+    },
+    {
+      "command": "python -m unittest research/k0_stage_telemetry_20260827/schema/test_validate_k0_cells.py",
+      "exit_code": 0,
+      "result": "4 passed including missing-cell, tolerance, family, audit, claim, accounting, and preserved-error mutations"
+    },
+    {
+      "command": "python research/k0_stage_telemetry_20260827/aggregate/test_campaign_artifacts.py",
+      "exit_code": 0,
+      "result": "1 passed"
+    },
+    {
+      "command": "python tools/verify-k0-stage-telemetry-plan.py --repo-root . --scan-claims",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "cargo test --workspace --locked",
+      "exit_code": 0,
+      "result": "PASS"
+    }
+  ],
+  "plots": {
+    "files": [
+      "work_operator_applies.png",
+      "true_residuals.png",
+      "scaled_nonlinear_remainder.png",
+      "rhs_novelty_angle.png",
+      "output_acceptance.png"
+    ],
+    "visual_read_performed": true,
+    "repair": "separated kernel and stack legends after the first visual read; regenerated and reread the affected plots",
+    "interpretation_boundary": "descriptive telemetry only; no timing, ranking, speedup, or activation inference"
+  },
+  "skipped_checks": [
+    {
+      "test": "g4_s5b0_regime_atlas::tests::optimized_all_six_wall_contract",
+      "reason": "pre-existing measurement-profile-only ignored test; timing is explicitly out of K0 scope"
+    },
+    {
+      "test": "v37_continuation_transaction_contracts::v37_consumed_n192_replay",
+      "reason": "pre-existing long replay delegated to the optimized v3.7 replay gate; continuation work is outside K0"
+    }
+  ],
+  "failures": [],
+  "claim_boundary": "The replay establishes only failure-preserving K0 telemetry availability for the frozen 2x6 matrix. It does not establish scientific authority, timing, ranking, speedup, activation, or production suitability."
+}

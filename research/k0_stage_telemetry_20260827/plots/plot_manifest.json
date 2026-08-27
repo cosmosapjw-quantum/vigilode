@@ -1,0 +1,36 @@
+{
+  "claim_class": "EXPLORATORY_NONAUTHORITATIVE",
+  "plots": [
+    {
+      "file": "work_operator_applies.png",
+      "metric": "work",
+      "reading": "Checked linear plus diagnostic applies are shown separately from the named telemetry JVP overhead; this is not a duration plot.",
+      "sha256": "f5c88ae05dad430ab4f4296388942a6f15851387ad15a046f1f371fd04559ad6"
+    },
+    {
+      "file": "true_residuals.png",
+      "metric": "true_residual",
+      "reading": "Only unpreconditioned true-residual observations are plotted; projected residuals remain advisory and are not used here.",
+      "sha256": "fe6602e9cc647e4556138852dcfba1b1ef6dc0a228d1fbb94c4bdb88f58b30c1"
+    },
+    {
+      "file": "scaled_nonlinear_remainder.png",
+      "metric": "scaled_nonlinear_remainder",
+      "reading": "Each bar is the uncapped maximum of the exact Euclidean INV-K0-013 ratio for one cell.",
+      "sha256": "5805907c0069ef702469a972eed8e99d5fd343dd4af61380c4d02135253695d6"
+    },
+    {
+      "file": "rhs_novelty_angle.png",
+      "metric": "rhs_novelty_angle",
+      "reading": "Angles use the pre-solve retained RHS prefix, so the plot does not show nested-space self-overlap.",
+      "sha256": "27de11656a3aab53a06124197f4635f29104bc016ebc45764c52c73aa8494b6b"
+    },
+    {
+      "file": "output_acceptance.png",
+      "metric": "output_acceptance",
+      "reading": "Accepted and rejected counts are preserved outputs of the frozen controller; telemetry does not feed the decision path.",
+      "sha256": "701496810c006ccea549a980f9e6ab770171ee49c8b7cb2b43fc3c2155fda419"
+    }
+  ],
+  "schema": "vigilode-k0-plot-manifest/v1"
+}

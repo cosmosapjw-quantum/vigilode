@@ -1,0 +1,103 @@
+source_base=e1124586a4029f86669e7489278c61ef676d61aa
+execution_head=321c63ee8ca0f216001bf41b30d58c1858a4781a
+execution_tree=1beb1ff733822c2aa82f079bf4416ab3fc7e428b
+command=git diff --binary e1124586a4029f86669e7489278c61ef676d61aa 321c63ee8ca0f216001bf41b30d58c1858a4781a
+changed_paths=46
+forbidden_paths_changed=0
+
+changed_path_list:
+AGENTS.md
+PACKAGE_MANIFEST.sha256
+crates/rodas5p-cli/src/bin/k0_stage_telemetry_cell.rs
+crates/rodas5p-integrators/src/a1_two_arm_receipt.rs
+crates/rodas5p-integrators/src/k0_stage_telemetry.rs
+crates/rodas5p-integrators/src/lib.rs
+crates/rodas5p-integrators/src/rhs_telemetry.rs
+crates/rodas5p-integrators/src/sequential.rs
+crates/rodas5p-integrators/tests/a1_two_arm_receipt_contracts.rs
+crates/rodas5p-integrators/tests/k0_stage_telemetry_contracts.rs
+crates/rodas5p-krylov/src/gcrodr.rs
+crates/rodas5p-krylov/src/gmres.rs
+crates/rodas5p-krylov/src/gmres_givens.rs
+crates/rodas5p-krylov/src/lgmres.rs
+crates/rodas5p-krylov/src/lib.rs
+docs/exec-plans/k0-stage-telemetry-integration-20260827/ATLASSIAN_SYNC_CONTRACT.md
+docs/exec-plans/k0-stage-telemetry-integration-20260827/CODEX_HANDOFF_PROMPT.md
+docs/exec-plans/k0-stage-telemetry-integration-20260827/CODEX_LAUNCHER.md
+docs/exec-plans/k0-stage-telemetry-integration-20260827/PACKAGE_OVERLAY_CONTRACT.md
+docs/exec-plans/k0-stage-telemetry-integration-20260827/README.md
+docs/exec-plans/k0-stage-telemetry-integration-20260827/SPEC_REPAIR_HANDOFF.md
+docs/exec-plans/k0-stage-telemetry-integration-20260827/evidence/prototype-index.json
+docs/exec-plans/k0-stage-telemetry-integration-20260827/evidence/sample-stage-receipt.json
+docs/exec-plans/k0-stage-telemetry-integration-20260827/evidence/scaled-nonlinear-remainder-oracle.json
+docs/exec-plans/k0-stage-telemetry-integration-20260827/evidence/scaled-nonlinear-remainder-reference.rs
+docs/exec-plans/k0-stage-telemetry-integration-20260827/plan.json
+docs/exec-plans/k0-stage-telemetry-integration-20260827/reviews/FINAL_DIFFERENTIAL_AUDIT_PROMPT.md
+docs/exec-plans/k0-stage-telemetry-integration-20260827/reviews/FRESH_REVIEW_PROMPT.md
+docs/exec-plans/k0-stage-telemetry-integration-20260827/schemas/final-handback.schema.json
+docs/exec-plans/k0-stage-telemetry-integration-20260827/schemas/stage-receipt.schema.json
+docs/exec-plans/k0-stage-telemetry-integration-20260827/work-units/WU-00-authority-intake.json
+docs/exec-plans/k0-stage-telemetry-integration-20260827/work-units/WU-01-schema-and-observation-types.json
+docs/exec-plans/k0-stage-telemetry-integration-20260827/work-units/WU-02-solver-observation-hooks.json
+docs/exec-plans/k0-stage-telemetry-integration-20260827/work-units/WU-03-stage-receipts-and-aggregate.json
+docs/exec-plans/k0-stage-telemetry-integration-20260827/work-units/WU-04-frozen-six-family-replay.json
+docs/exec-plans/k0-stage-telemetry-integration-20260827/work-units/WU-05-review-audit-and-atlassian-sync.json
+docs/invariants/K0_STAGE_TELEMETRY.md
+docs/quality/P0_P1_POLICY.md
+research/k0_stage_telemetry_20260827/intake/authority_receipt.json
+research/k0_stage_telemetry_20260827/intake/test_authority_receipt.py
+research/k0_stage_telemetry_20260827/schema/k0-stage-telemetry-cell.schema.json
+research/k0_stage_telemetry_20260827/schema/test_validate_k0_cells.py
+research/k0_stage_telemetry_20260827/schema/validate_k0_cells.py
+research/k0_stage_telemetry_20260827/schema/wu03-verification.json
+tools/verify-k0-stage-telemetry-plan-base.py
+tools/verify-k0-stage-telemetry-plan.py
+
+diff_stat:
+ AGENTS.md                                          |  27 +
+ PACKAGE_MANIFEST.sha256                            |  26 +
+ .../rodas5p-cli/src/bin/k0_stage_telemetry_cell.rs |  96 ++
+ .../rodas5p-integrators/src/a1_two_arm_receipt.rs  | 478 +++++++++-
+ .../rodas5p-integrators/src/k0_stage_telemetry.rs  | 342 ++++++++
+ crates/rodas5p-integrators/src/lib.rs              |  25 +-
+ crates/rodas5p-integrators/src/rhs_telemetry.rs    |  91 +-
+ crates/rodas5p-integrators/src/sequential.rs       | 736 ++++++++++++++--
+ .../tests/a1_two_arm_receipt_contracts.rs          |  65 +-
+ .../tests/k0_stage_telemetry_contracts.rs          | 971 +++++++++++++++++++++
+ crates/rodas5p-krylov/src/gcrodr.rs                |  61 +-
+ crates/rodas5p-krylov/src/gmres.rs                 |  51 +-
+ crates/rodas5p-krylov/src/gmres_givens.rs          |  51 +-
+ crates/rodas5p-krylov/src/lgmres.rs                |  61 +-
+ crates/rodas5p-krylov/src/lib.rs                   |  59 +-
+ .../ATLASSIAN_SYNC_CONTRACT.md                     |  52 ++
+ .../CODEX_HANDOFF_PROMPT.md                        | 114 +++
+ .../CODEX_LAUNCHER.md                              |  68 ++
+ .../PACKAGE_OVERLAY_CONTRACT.md                    |  60 ++
+ .../README.md                                      |  41 +
+ .../SPEC_REPAIR_HANDOFF.md                         |  75 ++
+ .../evidence/prototype-index.json                  |  43 +
+ .../evidence/sample-stage-receipt.json             |  27 +
+ .../scaled-nonlinear-remainder-oracle.json         |  85 ++
+ .../scaled-nonlinear-remainder-reference.rs        |  42 +
+ .../plan.json                                      |   1 +
+ .../reviews/FINAL_DIFFERENTIAL_AUDIT_PROMPT.md     |  25 +
+ .../reviews/FRESH_REVIEW_PROMPT.md                 |  38 +
+ .../schemas/final-handback.schema.json             | 134 +++
+ .../schemas/stage-receipt.schema.json              | 159 ++++
+ .../work-units/WU-00-authority-intake.json         |   1 +
+ .../WU-01-schema-and-observation-types.json        |   1 +
+ .../work-units/WU-02-solver-observation-hooks.json |   1 +
+ .../WU-03-stage-receipts-and-aggregate.json        | 197 +++++
+ .../work-units/WU-04-frozen-six-family-replay.json |   1 +
+ .../WU-05-review-audit-and-atlassian-sync.json     |   1 +
+ docs/invariants/K0_STAGE_TELEMETRY.md              |  56 ++
+ docs/quality/P0_P1_POLICY.md                       |  26 +
+ .../intake/authority_receipt.json                  |  35 +
+ .../intake/test_authority_receipt.py               |  64 ++
+ .../schema/k0-stage-telemetry-cell.schema.json     |  81 ++
+ .../schema/test_validate_k0_cells.py               | 209 +++++
+ .../schema/validate_k0_cells.py                    | 388 ++++++++
+ .../schema/wu03-verification.json                  | 110 +++
+ tools/verify-k0-stage-telemetry-plan-base.py       | 219 +++++
+ tools/verify-k0-stage-telemetry-plan.py            | 121 +++
+ 46 files changed, 5517 insertions(+), 98 deletions(-)
