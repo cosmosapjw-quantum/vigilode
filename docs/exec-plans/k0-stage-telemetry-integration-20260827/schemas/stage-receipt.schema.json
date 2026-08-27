@@ -125,7 +125,9 @@
       "properties": {
         "scaled_nonlinear_remainder": {
           "type": "number",
-          "minimum": 0
+          "minimum": 0,
+          "description": "Exact rho_i = ||f_i-f_0-J_n(Y_i-y_n)-c_i h f_t,n||_2 / max(||f_i||_2, ||f_0||_2, ||J_n(Y_i-y_n)||_2, ||c_i h f_t,n||_2, f64::MIN_POSITIVE). Dimensionless, finite, nonnegative, and not capped at 1.",
+          "$comment": "Authority: docs/invariants/K0_STAGE_TELEMETRY.md INV-K0-013 and evidence/scaled-nonlinear-remainder-oracle.json."
         },
         "rhs_to_retained_angle_rad": {
           "type": [

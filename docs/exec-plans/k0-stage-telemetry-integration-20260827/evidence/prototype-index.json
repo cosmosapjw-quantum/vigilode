@@ -4,7 +4,9 @@
   "external_bundle": {
     "name": "VIGILODE_K0_TELEMETRY_CODING_LOOP_20260827.zip",
     "sha256": "04a3cd856501c0f7eda6c5f981e728999085fe4551d7acfcdbca6bfe1451700a",
-    "manifest_entries": 98
+    "manifest_entries": 98,
+    "availability": "OPTIONAL_EXTERNAL_PROVENANCE; NOT_REQUIRED_FOR_WU-03",
+    "required_for_execution": false
   },
   "verified_prototype_results": {
     "rust_unit_tests": {
@@ -30,5 +32,12 @@
     "Production safety",
     "Wall-time speedup",
     "RODAS5P versus BDF ranking"
-  ]
+  ],
+  "normalization_authority": {
+    "field": "scaled_nonlinear_remainder",
+    "formula": "l2(f_i - f_0 - J_n_delta_i - c_i_h_f_t_n) / max(l2(f_i), l2(f_0), l2(J_n_delta_i), l2(c_i_h_f_t_n), f64::MIN_POSITIVE)",
+    "oracle": "docs/exec-plans/k0-stage-telemetry-integration-20260827/evidence/scaled-nonlinear-remainder-oracle.json",
+    "prototype_symbol": "prototype/k0-telemetry-rs/src/lib.rs::scaled_nonlinear_remainder",
+    "durable_reference": "docs/exec-plans/k0-stage-telemetry-integration-20260827/evidence/scaled-nonlinear-remainder-reference.rs"
+  }
 }
