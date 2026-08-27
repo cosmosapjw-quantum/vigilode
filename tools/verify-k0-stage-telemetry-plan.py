@@ -1,11 +1,21 @@
 #!/usr/bin/env python3
 from __future__ import annotations
-import argparse, hashlib, json, pathlib, re, sys
+import argparse, hashlib, json, pathlib, re, subprocess
 
 PACKAGE = pathlib.Path("docs/exec-plans/k0-stage-telemetry-integration-20260827")
 EXPECTED_MAIN = "8d0c79184e09efb5bdadc24a6315c60a71a44264"
 EXPECTED_BASE = "e1124586a4029f86669e7489278c61ef676d61aa"
 EXPECTED_JIRA = "PM-7"
+EXPECTED_BRANCH = "research/k0-stage-telemetry-integration-20260827"
+PACKAGE_REMOTE_REF = "origin/docs/k0-codex-execution-package-20260827"
+OVERLAY_ALLOWED = (
+    "AGENTS.md",
+    "PACKAGE_MANIFEST.sha256",
+    "docs/exec-plans/k0-stage-telemetry-integration-20260827/",
+    "docs/invariants/K0_STAGE_TELEMETRY.md",
+    "docs/quality/P0_P1_POLICY.md",
+    "tools/verify-k0-stage-telemetry-plan.py",
+)
 REQUIRED_WU = [
     "WU-00-authority-intake.json",
     "WU-01-schema-and-observation-types.json",
@@ -24,15 +34,28 @@ def fail(msg):
     print(json.dumps({"status":"FAIL","error":msg}, indent=2))
     raise SystemExit(1)
 
+def git(root, *args, check=True):
+    proc = subprocess.run(["git", *args], cwd=root, text=True, capture_output=True)
+    if check and proc.returncode != 0:
+        fail(f"git {' '.join(args)} failed: {proc.stderr.strip()}")
+    return proc
+
 def package_check(root):
     pkg = root / PACKAGE
     plan = load(pkg / "plan.json")
     if plan.get("schema") != "vigilode-audit-compiled-execution-plan/v1":
         fail("bad plan schema")
+    if plan.get("revision", 0) < 2:
+        fail("package revision does not include explicit overlay contract")
     if plan["authority"]["canonical_main"]["sha"] != EXPECTED_MAIN:
         fail("canonical main drift")
     if plan["authority"]["stacked_implementation_base"]["sha"] != EXPECTED_BASE:
         fail("implementation base drift")
+    overlay = plan["authority"].get("package_overlay", {})
+    if overlay.get("kind") != "orchestrator_prepared_two_parent_merge":
+        fail("missing explicit package-overlay authority")
+    if overlay.get("prepared_branch") != EXPECTED_BRANCH:
+        fail("prepared branch drift")
     if plan["integrations"]["atlassian"]["jira_issue"] != EXPECTED_JIRA:
         fail("jira binding drift")
     bound = plan["publication_state"] == "BOUND"
@@ -89,7 +112,38 @@ def package_check(root):
         got = hashlib.sha256(raw).hexdigest()
         if got != digest:
             fail(f"manifest mismatch {rel}")
-    return {"status":"PASS","publication_state":plan["publication_state"],"work_units":ids,"jira":EXPECTED_JIRA}
+    return {"status":"PASS","marker":"PACKAGE_CONTRACT_PASS","publication_state":plan["publication_state"],"revision":plan["revision"],"work_units":ids,"jira":EXPECTED_JIRA}
+
+def overlay_check(root):
+    inside = git(root, "rev-parse", "--is-inside-work-tree").stdout.strip()
+    if inside != "true":
+        fail("overlay check requires a Git worktree")
+    branch = git(root, "branch", "--show-current").stdout.strip()
+    if branch != EXPECTED_BRANCH:
+        fail(f"wrong implementation branch {branch}")
+    status = git(root, "status", "--porcelain=v1").stdout
+    if status:
+        fail("dirty worktree before WU-00")
+    package_sha = git(root, "rev-parse", PACKAGE_REMOTE_REF).stdout.strip()
+    head = git(root, "rev-parse", "HEAD").stdout.strip()
+    parents = git(root, "show", "-s", "--format=%P", head).stdout.strip().split()
+    if parents != [EXPECTED_BASE, package_sha]:
+        fail(f"prepared HEAD parents {parents} do not equal source/package parents")
+    if git(root, "merge-base", "--is-ancestor", EXPECTED_BASE, head, check=False).returncode != 0:
+        fail("source parent is not an ancestor of prepared HEAD")
+    if git(root, "merge-base", "--is-ancestor", package_sha, head, check=False).returncode != 0:
+        fail("package parent is not an ancestor of prepared HEAD")
+    changed = git(root, "diff", "--name-only", EXPECTED_BASE, head).stdout.splitlines()
+    bad = [p for p in changed if not any(p == prefix or p.startswith(prefix) for prefix in OVERLAY_ALLOWED)]
+    if bad:
+        fail(f"package overlay changed forbidden paths: {bad}")
+    package_paths = [p for p in changed if any(p == prefix or p.startswith(prefix) for prefix in OVERLAY_ALLOWED)]
+    if not package_paths:
+        fail("package overlay contributed no package paths")
+    diff = git(root, "diff", "--name-only", package_sha, head, "--", *package_paths).stdout.splitlines()
+    if diff:
+        fail(f"prepared tree differs from exact package parent on package paths: {diff}")
+    return {"status":"PASS","marker":"PACKAGE_OVERLAY_PASS","source_parent":EXPECTED_BASE,"package_parent":package_sha,"prepared_head":head,"prepared_parents":parents,"overlay_paths":len(package_paths)}
 
 def evidence_check(root, evidence_dir):
     path = root / evidence_dir
@@ -112,16 +166,12 @@ def evidence_check(root, evidence_dir):
             fail(f"tolerance drift {cell}")
         for stage in obj.get("stages", []):
             work = stage.get("work")
-            if work:
-                if work["operator_applies_total"] != work["linear_matvecs"] + work["diagnostic_matvecs"]:
-                    fail(f"accounting mismatch {cell}")
+            if work and work["operator_applies_total"] != work["linear_matvecs"] + work["diagnostic_matvecs"]:
+                fail(f"accounting mismatch {cell}")
     return {"status":"PASS","cells":len(cells),"states":states}
 
 def claim_scan(root):
-    forbidden = [
-        r"\bauthoritative speedup\b", r"\bproduction-safe\b",
-        r"\bRODAS5P is faster than BDF\b", r"\bactivate in production\b"
-    ]
+    forbidden = [r"\bauthoritative speedup\b", r"\bproduction-safe\b", r"\bRODAS5P is faster than BDF\b", r"\bactivate in production\b"]
     hits = []
     for path in root.rglob("*"):
         if path.is_file() and path.suffix in {".md",".json",".rs",".py"}:
@@ -137,6 +187,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--repo-root", default=".")
     ap.add_argument("--check-package", action="store_true")
+    ap.add_argument("--check-overlay-authority", action="store_true")
     ap.add_argument("--evidence-dir")
     ap.add_argument("--scan-claims", action="store_true")
     ap.add_argument("--check-final-diff", action="store_true")
@@ -144,8 +195,10 @@ def main():
     args = ap.parse_args()
     root = pathlib.Path(args.repo_root).resolve()
     results = {}
-    if args.check_package or not any([args.evidence_dir,args.scan_claims,args.check_final_diff,args.check_atlassian_binding]):
+    if args.check_package or not any([args.check_overlay_authority,args.evidence_dir,args.scan_claims,args.check_final_diff,args.check_atlassian_binding]):
         results["package"] = package_check(root)
+    if args.check_overlay_authority:
+        results["overlay"] = overlay_check(root)
     if args.evidence_dir:
         results["evidence"] = evidence_check(root, pathlib.Path(args.evidence_dir))
     if args.scan_claims:

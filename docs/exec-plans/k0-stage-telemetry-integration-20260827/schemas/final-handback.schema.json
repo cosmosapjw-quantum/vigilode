@@ -7,6 +7,9 @@
     "schema",
     "final_state",
     "base_sha",
+    "package_parent_sha",
+    "prepared_start_sha",
+    "prepared_start_tree",
     "final_sha",
     "final_tree",
     "branch",
@@ -114,6 +117,18 @@
     },
     "claim_class": {
       "const": "EXPLORATORY_NONAUTHORITATIVE"
+    },
+    "package_parent_sha": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "prepared_start_sha": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "prepared_start_tree": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
     }
   }
 }
