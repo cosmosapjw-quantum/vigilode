@@ -106,9 +106,19 @@ def check_postmerge(repo: pathlib.Path, package: str) -> dict[str, object]:
     parents = git(repo, "show", "-s", "--format=%P", "HEAD").stdout.strip().split()
     if parents != [REVIEW, package]:
         stop(f"merge parents differ from bound order: {parents}", "BLOCKED_BY_AUTHORITY_DRIFT")
+    common = git(repo, "merge-base", REVIEW, package).stdout.strip()
     for path in BOOTSTRAP_PATHS + REQUIRED_PACKAGE_PATHS:
-        if git(repo, "diff", "--quiet", package, "HEAD", "--", path, check=False).returncode != 0:
-            stop(f"merged package path differs from exact package: {path}", "BLOCKED_BY_AUTHORITY_DRIFT")
+        # The accepted review includes a validator-only repair. When this package
+        # has not changed that path since the shared ancestor, Git must preserve
+        # the review parent's authorized bytes rather than restore stale bytes.
+        inherited = (
+            git(repo, "cat-file", "-e", f"{REVIEW}:{path}", check=False).returncode == 0
+            and git(repo, "diff", "--quiet", common, package, "--", path,
+                    check=False).returncode == 0
+        )
+        expected = REVIEW if inherited else package
+        if git(repo, "diff", "--quiet", expected, "HEAD", "--", path, check=False).returncode != 0:
+            stop(f"merged path differs from its exact authorized parent: {path}", "BLOCKED_BY_AUTHORITY_DRIFT")
     return {"head": git(repo, "rev-parse", "HEAD").stdout.strip(), "parents": parents}
 
 
@@ -168,8 +178,12 @@ def markers_in(text: str) -> set[str]:
 
     def visit(value: object) -> None:
         if isinstance(value, dict):
-            if value.get("status") == "PASS" and isinstance(value.get("marker"), str):
-                found.add(value["marker"])
+            if value.get("status") == "PASS":
+                # These are the existing deployed supplement's three named fields.
+                # Do not accept arbitrary prose, substring matches, or FAIL objects.
+                for key in ("marker", "legacy_marker", "pin_marker"):
+                    if isinstance(value.get(key), str):
+                        found.add(value[key])
             for child in value.values():
                 visit(child)
         elif isinstance(value, list):

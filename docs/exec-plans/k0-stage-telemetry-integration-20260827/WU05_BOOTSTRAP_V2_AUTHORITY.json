@@ -4,7 +4,6 @@
   "status": "BOUND",
   "repository": "cosmosapjw-quantum/vigilode",
   "package_branch": "docs/k0-codex-execution-package-20260827",
-  "package_minimum_ancestor": "cbdb597fdd58fd1f08a104b4ea8b662dac1f8ba1",
   "inspected_bootstrap_baseline": "13aed8dabfbb5da4381d9d73d3cb0c0403ad5354",
   "preserved_local": {
     "branch": "research/k0-stage-telemetry-integration-20260827",
@@ -13,91 +12,73 @@
     "clean": true
   },
   "bootstrap_owner": "HOST_CODEX_ORCHESTRATOR",
-  "authorization": {
-    "permitted": "The host Codex session may execute the exact pinned bootstrap runner as deterministic orchestrator preparation, then change role to WU-05 implementer only after readiness. No separate human merge action is required.",
-    "not_permitted": [
-      "manual merge resolution",
-      "reset",
-      "rebase",
-      "stash",
-      "amend",
-      "force push",
-      "source edits before readiness",
-      "running a package-only validator from the unprepared implementation tree"
-    ]
-  },
-  "supersedes": [
-    "earlier bootstrap-v2 clause prohibiting all Codex-owned branch preparation",
-    "earlier prompts that assume orchestrator preparation already happened",
-    "WU05_PREMERGE_BOOTSTRAP_AUTHORITY.json",
-    "WU05_PREMERGE_BOOTSTRAP_HANDOFF.md",
-    "WU05_PREMERGE_CODEX_PROMPT.md"
+  "authorization": "The same host Codex session may execute the externally pinned bootstrap script, then enter WU-05 implementer mode after readiness. No separate human merge is required. This narrowly overrides the earlier blanket branch-preparation ban.",
+  "external_pin": "Exact package SHA from the delivered publication receipt or PR #21; never infer the pin from a moving ref.",
+  "protocol": [
+    "extract runner and validator from the pinned Git commit",
+    "inspect clean preserved review or its exact clean [review, package] merge",
+    "reject non-control package/source deltas",
+    "run real package/supplement checks in detached worktree before merge",
+    "require zero exits and structured marker, legacy_marker, pin_marker PASS fields",
+    "merge exact ordered parents or revalidate that same merge without a new commit",
+    "preserve command logs under Git common directory",
+    "start source repair only after LOCAL_WU05_AUTHORITY_READY"
   ],
-  "root_cause": "The old validator command is absent by design at the preserved review commit; bootstrap and implementation roles must not be interchanged.",
-  "bootstrap_protocol": [
-    "obtain the exact external publication SHA",
-    "locate and inspect the preserved worktree without switching branches",
-    "fetch and extract the runner with git show from the pinned commit",
-    "reject non-control package delta; validate real dependencies in a detached worktree",
-    "require zero exits AND all structured PASS markers before merge",
-    "merge with ordered parents [preserved_review, exact_package] or revalidate that exact existing clean merge",
-    "preserve command logs outside tracked working tree",
-    "start WU-05 source repair only after LOCAL_WU05_AUTHORITY_READY"
-  ],
+  "inventory_rule": "Keep existing root and supplement hash checks. Cover added bootstrap files and executable payload using the externally pinned Git tree, not an incomplete hardcoded list. The existing loader supplies a transparent inventory-only compatibility repair; --dump-source emits its exact effective code.",
+  "parent_content_rule": "For a pre-existing required path unchanged on the package side since merge-base, retain exact REVIEW bytes. Otherwise require exact package bytes. No guessed conflict resolution.",
   "failure_modes": [
     {
       "id": "BR-ENTRY",
       "severity": "P1",
-      "trigger": "invoke absent package validator before preparation",
       "detector": "test_missing_validator_before_merge_is_expected_and_bootstrap_installs_it"
     },
     {
       "id": "BR-MARKER",
       "severity": "P1",
-      "trigger": "zero-exit validator omits mandatory markers",
       "detector": "test_exit_zero_without_required_markers_cannot_authorize_merge"
     },
     {
       "id": "BR-SCOPE",
       "severity": "P1",
-      "trigger": "package update changes non-control source",
       "detector": "test_source_in_package_delta_is_rejected_before_merge"
     },
     {
       "id": "BR-REENTRY",
       "severity": "P1",
-      "trigger": "successful bootstrap rerun is treated as authority corruption",
       "detector": "test_successful_bootstrap_is_idempotent"
+    },
+    {
+      "id": "BR-COVERAGE",
+      "severity": "P1",
+      "detector": "test_actual_dependency_validators_and_manifest_complete_before_ready"
+    },
+    {
+      "id": "BR-INHERITANCE",
+      "severity": "P1",
+      "detector": "test_inherited_authorized_validator_repair_is_preserved"
     }
   ],
-  "required_markers": [
-    "WU05_BOOTSTRAP_V2_PREMERGE_PASS",
-    "PACKAGE_CONTRACT_PASS",
-    "WU05_SUPPLEMENT_MANIFEST_PASS",
-    "LEGACY_REPAIR_BLOBS_PASS",
-    "EXTERNAL_PACKAGE_PIN_PASS",
-    "WU05_SUPPLEMENT_AUTHORITY_PASS",
-    "HOSTILE_FIXTURES_PASS",
-    "WU05_BOOTSTRAP_V2_POSTMERGE_PASS",
-    "WU05_REPAIR_MERGE_PASS",
-    "LOCAL_WU05_AUTHORITY_READY"
-  ],
-  "retry_policy": "Only the original clean review or its exact clean two-parent merge is accepted. No newer implementation commit is rewound. Post-merge failures preserve the merge and logs.",
-  "integrity_model": "Externally pinned commit/tree identify source/control bytes. Existing historical manifests remain unchanged; this revision does not add a new manifest gate. Package metadata drift is not a scientific failure.",
-  "review_policy": "The existing one fresh-context repair review and final differential audit remain. No additional review layer.",
+  "verification": "python3 -B tools/test_k0_bootstrap_v2.py",
+  "verification_scope": "11 tests: 8 real-Git lifecycle cases with explicit dependency stand-ins, plus 3 cases exercising real dependency-validator code. Git IDs and metadata are synthetic. Actual local e95 source/campaign replay is not claimed.",
+  "required_ready_marker": "LOCAL_WU05_AUTHORITY_READY",
+  "on_failure": "Never reset or stash. Abort a conflicted merge. Preserve a completed merge on post-validation failure, its logs, and the original review ancestry.",
   "integrations": {
     "jira": "PM-7",
     "confluence_page_id": "15499267",
     "control_pr": 21,
     "source_pr": 20,
-    "atlassian_outage": "ATLAS_SYNC_PENDING, never a source-repair success claim"
+    "outage_state": "ATLAS_SYNC_PENDING"
   },
+  "review_policy": "Reuse the existing one read-only fresh repair review and final differential audit. No new review tier.",
   "prohibited": [
-    "rewriting WU-00 through WU-04",
-    "campaign replay without distinct semantic/evidence reason",
-    "Cargo graph changes",
-    "production route/signature/threshold changes",
-    "homotopy certificate changes",
+    "rewrite WU-00 through WU-04",
+    "manual reset/rebase/stash/amend/force update",
+    "manual conflict resolution",
+    "source repair before readiness",
+    "Cargo graph change",
+    "equation/tolerance/production signature or route change",
+    "unjustified campaign rerun",
+    "homotopy-certificate change",
     "timing/ranking/speedup",
     "PR merge",
     "tag",
