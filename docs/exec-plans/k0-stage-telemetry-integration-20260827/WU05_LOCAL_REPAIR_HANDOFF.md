@@ -1,131 +1,57 @@
-# VigilODE K0 WU-05 local repair handoff — controlling additive supplement
+# WU-05 semantic-evidence repair handoff — resume execution, do not add process layers
 
-This handoff contains only work that must be performed in the preserved local implementation worktree. Package/control bytes are maintained on the GitHub documentation branch and are not to be edited locally.
+## Current local authority
 
-## Preserved local state
+The user reports a clean prepared merge:
 
 ```text
 branch        research/k0-stage-telemetry-integration-20260827
-fresh review  e95ce1e58a603306cb665a6ab91cfe02d279972f
-tree          e3621a370297a76907e97730ebd18c5c1e0fb83e
-worktree      clean
-remote        implementation branch still at the pre-WU prepared commit
+prepared      f6208a104d2f341157d900294aa30d8edb4446c0
+prepared tree 19c393ca5a1ebb6c440130c9c3155e5625c85ce3
+parents       [e95ce1e58a603306cb665a6ab91cfe02d279972f, c6ec0121be11f76b86afc21f8ae7a304d35c6d83]
+raw WU-04     12/12 byte-identical by the latest local report
 ```
 
-Do not reset, rebase, squash, amend, cherry-pick over, or replace WU-00 through WU-04 or the fresh-review commit.
+Treat these as local evidence to verify, not remote facts to overwrite. Do not reset/rebase/stash/amend/force-update or recreate the worktree.
 
-## External package pin
+## Bounded semantic repair
 
-A commit cannot contain its own SHA. The orchestrator must copy the exact current package SHA from the final publication receipt, PR #21, Jira PM-7, Confluence page `15499267`, or the assistant handback and export it:
+The immutable raw result is not modified. No raw top-level `status` or `tolerance_arm` label is required; LegacyFixed is derived from `linear_rtol=1e-10` and `linear_atol=1e-12`. Source head/tree are derived from the unique raw outer envelope. `error:null` is not ERROR. A historical missing signed-residual digest remains `null` with `LEGACY_NOT_RECORDED`; any invented backfill is rejected. Numerical identity excludes wrapper, source and transport metadata while retaining scientific/work/gate/audit content. Raw SHA remains exact provenance.
 
-```bash
-export K0_PACKAGE_SHA=<EXACT_FINAL_40_HEX_PACKAGE_SHA>
-```
+No new schema version, marker, review tier, or campaign rerun is introduced.
 
-A moving branch ref is discovery only, never authority.
+## Exact Git materialization and upgrade
 
-The validator payload is transparent: `python tools/verify-k0-wu05-supplement.py --dump-source` emits the exact source bound by the supplement manifest.
-
-## Orchestrator-owned merge
+Use the exact package SHA supplied after publication:
 
 ```bash
 set -euo pipefail
-cd /tmp/vigilode-k0-stage-telemetry.kAguIL/tree
-
-BRANCH=research/k0-stage-telemetry-integration-20260827
-REVIEW=e95ce1e58a603306cb665a6ab91cfe02d279972f
-REVIEW_TREE=e3621a370297a76907e97730ebd18c5c1e0fb83e
-PACKAGE_REF=origin/docs/k0-codex-execution-package-20260827
-
-test "${K0_PACKAGE_SHA:-}" != ""
-test "${#K0_PACKAGE_SHA}" = 40
-test "$(git branch --show-current)" = "$BRANCH"
-test "$(git rev-parse HEAD)" = "$REVIEW"
-test "$(git rev-parse HEAD^{tree})" = "$REVIEW_TREE"
+: "${K0_PACKAGE_SHA:?exact package SHA required}"
+REPO=/tmp/vigilode-k0-stage-telemetry.kAguIL/tree
+cd "$REPO"
+test "$(git branch --show-current)" = research/k0-stage-telemetry-integration-20260827
+test "$(git rev-parse HEAD)" = f6208a104d2f341157d900294aa30d8edb4446c0
+test "$(git rev-parse HEAD^{tree})" = 19c393ca5a1ebb6c440130c9c3155e5625c85ce3
 test -z "$(git status --porcelain=v1)"
-
 git fetch --prune origin docs/k0-codex-execution-package-20260827
-test "$(git rev-parse "$PACKAGE_REF")" = "$K0_PACKAGE_SHA"
-git cat-file -e "$K0_PACKAGE_SHA^{commit}"
-
-git merge --no-ff --no-edit "$K0_PACKAGE_SHA"
-
-test "$(git rev-parse HEAD^1)" = "$REVIEW"
-test "$(git rev-parse HEAD^2)" = "$K0_PACKAGE_SHA"
-test -z "$(git status --porcelain=v1)"
-
-python tools/verify-k0-stage-telemetry-plan.py \
-  --repo-root . \
-  --check-package
-
-python tools/verify-k0-wu05-supplement.py \
-  --repo-root . \
-  --expected-package-sha "$K0_PACKAGE_SHA" \
-  --check-supplement-manifest \
-  --check-authority \
-  --check-repair-merge \
-  --self-test
+test "$(git rev-parse origin/docs/k0-codex-execution-package-20260827)" = "$K0_PACKAGE_SHA"
+START=$(mktemp "${TMPDIR:-/tmp}/k0-start-continuation.XXXXXX")
+trap 'rm -f -- "$START"' EXIT
+git show "$K0_PACKAGE_SHA:docs/exec-plans/k0-stage-telemetry-integration-20260827/START_CONTINUATION.sh" > "$START"
+chmod 700 "$START"
+"$START" --repo-root "$REPO" --package-sha "$K0_PACKAGE_SHA"
 ```
 
-Required pre-repair markers:
+The runner must classify the existing c6 merge as `UPGRADE`, validate the exact new package, create ordered parents `[f6208a10..., K0_PACKAGE_SHA]`, and emit `LOCAL_WU05_AUTHORITY_READY`. A missing old ZIP is packaging/transport absence, not a scientific blocker.
 
-```text
-PACKAGE_CONTRACT_PASS
-WU05_SUPPLEMENT_MANIFEST_PASS
-LEGACY_REPAIR_BLOBS_PASS
-EXTERNAL_PACKAGE_PIN_PASS
-WU05_SUPPLEMENT_AUTHORITY_PASS
-WU05_REPAIR_MERGE_PASS
-HOSTILE_FIXTURES_PASS
-```
+## Immediate transition after readiness
 
-A merge conflict or marker failure is not permission to guess. Abort the merge when applicable and report `BLOCKED_BY_AUTHORITY_DRIFT`.
+Do not reopen WU-00–04 or add a representation-review cycle. Resume the five original WU-05 findings from their existing RED reproducers. Generate v3 wrappers mechanically from the twelve immutable raw cells, preserving all twelve raw SHA-256 values. Wrapper/package SHA changes alone do not authorize a campaign rerun. Rerun only for a real change in equations, tolerance, routing, convergence decisions, stage work, or numerical payload.
 
-## Bounded local repair
+Close the public bridge, aggregate ERROR preservation, information-rich failure schema, and current-code signed-residual mutation guard. Run targeted/workspace tests, the existing one read-only fresh repair review, and the existing differential audit. Publish only a draft stacked implementation PR after P0/P1=0.
 
-1. Preserve the five exact reproducers in `fresh_review_findings.yaml`.
-2. Add RED coverage only for the stronger supplement detectors not already reproduced.
-3. Implement exactly the two source-audited K0 bridge modules in `PUBLIC_BRIDGE_CONTRACT_V2.md`.
-4. Convert aggregate exceptions into structured **cell-v3** `ERROR`/`STOP_INVALID` receipts with the actual partial-stage array, count, and canonical digest.
-5. Preserve all twelve raw WU-04 receipts byte-for-byte.
-6. Generate **v3** wrappers mechanically from raw cells according to `EVIDENCE_V3_CANONICALIZATION.json`; never type campaign fields, hard gates, or digests by hand.
-7. Execute—not merely name—the aggregate-error serialization and signed-residual mutation tests.
-8. Run source-derived bridge validation and evidence-v3 validation.
-9. Run the existing single read-only fresh repair review using `FRESH_REPAIR_SUPPLEMENT_REVIEW_PROMPT.md`, then the existing final differential audit. Do not add another review layer.
-10. Push/open one draft stacked implementation PR only when the five original findings and all supplement findings are closed with P0=0 and P1=0.
+The prior Qwen output is `REJECTED_NONAUTHORITY`: it interpreted `error:null` as ERROR and proposed fields the validator did not read.
 
-## Required local verification
+## Prohibited
 
-```bash
-python tools/verify-k0-wu05-supplement.py \
-  --repo-root . \
-  --check-public-bridge
-
-python tools/verify-k0-wu05-supplement.py \
-  --repo-root . \
-  --evidence-dir research/k0_stage_telemetry_20260827/evidence_v3/cells
-
-python tools/verify-k0-wu05-supplement.py \
-  --repo-root . \
-  --execute-aggregate-error-guard \
-  --execute-signed-residual-guard
-
-cargo test -p rodas5p-integrators --test k0_stage_telemetry_contracts
-cargo test -p rodas5p-integrators --test a1_two_arm_receipt_contracts
-cargo test --workspace --locked
-```
-
-Required closure markers:
-
-```text
-PUBLIC_BRIDGE_SOURCE_PASS
-EVIDENCE_V3_PASS
-AGGREGATE_ERROR_GUARD_PASS
-SIGNED_RESIDUAL_GUARD_PASS
-```
-
-The four pre-existing Clippy P3 lints remain nonblocking. New lints in changed lines must be reported, but this node does not authorize broad cleanup.
-
-## Forbidden changes
-
-No Cargo graph change, production signature/route change, tolerance change, equation change, convergence-authority change, output change, raw campaign substitution, timing/speedup claim, BDF ranking, homotopy-certificate change, tag, release, or merge.
+No invented historical digest/status/tolerance label, raw rewrite, unnecessary 12-cell rerun, Cargo graph or production semantic change, timing/ranking/speedup, homotopy-certificate change, PR merge, tag, or release.
