@@ -1,0 +1,75 @@
+{
+  "schema": "vigilode-k0-wu05-semantic-continuation/v1",
+  "status": "BOUND",
+  "finding": "WU05-NEW-P0-001",
+  "classification": "REPRESENTATION_FALSE_FAIL_NOT_SCIENTIFIC_FAILURE",
+  "repository": "cosmosapjw-quantum/vigilode",
+  "package_branch": "docs/k0-codex-execution-package-20260827",
+  "prior_package_sha": "c6ec0121be11f76b86afc21f8ae7a304d35c6d83",
+  "preserved_prepared_local": {
+    "branch": "research/k0-stage-telemetry-integration-20260827",
+    "head": "f6208a104d2f341157d900294aa30d8edb4446c0",
+    "tree": "19c393ca5a1ebb6c440130c9c3155e5625c85ce3",
+    "parents": [
+      "e95ce1e58a603306cb665a6ab91cfe02d279972f",
+      "c6ec0121be11f76b86afc21f8ae7a304d35c6d83"
+    ],
+    "clean": true
+  },
+  "root_cause": [
+    "historical raw has no required top-level status label",
+    "historical raw has no required top-level tolerance_arm label",
+    "source SHA/tree live in the raw outer envelope rather than the discovered receipt object",
+    "historical COMPLETE stages did not record signed-residual digests",
+    "error:null was vulnerable to being interpreted as an ERROR",
+    "representation metadata was mixed into the numerical payload identity"
+  ],
+  "controlling_semantics": {
+    "tolerance": {
+      "rtol": 1e-10,
+      "atol": 1e-12,
+      "identity": "NUMERICAL_VALUES_NOT_OPTIONAL_LABEL"
+    },
+    "source_identity_keys": [
+      "scientific_execution_head_sha",
+      "scientific_execution_head_tree"
+    ],
+    "null_error": "NO_RECORDED_ERROR",
+    "legacy_signed_residual": {
+      "stage_value": null,
+      "coverage": "LEGACY_NOT_RECORDED",
+      "fabrication_forbidden": true
+    },
+    "scientific_identity": "CANONICAL_NUMERICAL_AND_WORK_PROJECTION",
+    "byte_identity": "PRESERVED_SEPARATELY_FOR_RAW_PROVENANCE"
+  },
+  "active_files": {
+    "entry": "START_CONTINUATION.sh",
+    "root_handoff": "WU05_SEMANTIC_REPAIR_HANDOFF.md",
+    "root_prompt": "CODEX_START_HERE.md",
+    "semantic_validator": "tools/verify-k0-wu05-semantic-evidence.py",
+    "canonicalization": "docs/exec-plans/k0-stage-telemetry-integration-20260827/evidence/EVIDENCE_V3_SEMANTIC_AUTHORITY.json",
+    "stage_schema": "docs/exec-plans/k0-stage-telemetry-integration-20260827/schemas/stage-receipt-v3-semantic.schema.json",
+    "cell_schema": "docs/exec-plans/k0-stage-telemetry-integration-20260827/schemas/cell-receipt-v3-semantic.schema.json"
+  },
+  "supersedes_only": [
+    "evidence-v3 clauses requiring raw top-level status",
+    "evidence-v3 clauses requiring raw top-level tolerance_arm",
+    "receipt-level source-head/tree lookup",
+    "fabricated historical signed-residual requirement",
+    "numerical digest inclusion of representation-only metadata"
+  ],
+  "preserves": [
+    "the five original WU-05 findings",
+    "public-bridge source audit",
+    "aggregate structured failure guard",
+    "current vector-aware signed-residual mutation test",
+    "all raw WU-04 bytes and SHA-256 values",
+    "one existing fresh repair review",
+    "one existing final differential audit"
+  ],
+  "required_marker": "EVIDENCE_V3_PASS",
+  "upgrade_ready_marker": "LOCAL_WU05_AUTHORITY_READY",
+  "campaign_rerun": "FORBIDDEN_FOR_REPRESENTATION_ONLY_CHANGE",
+  "claim_boundary": "EXPLORATORY/NONAUTHORITATIVE"
+}
