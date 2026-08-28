@@ -1,12 +1,43 @@
 {
   "schema": "vigilode-k0-evidence-v3-canonicalization/v1",
   "status": "BOUND",
+  "identity_policy": {
+    "raw_receipt": {
+      "class": "CLASS_2_DETERMINISTIC_EVIDENCE",
+      "required_identity": "BYTE_IDENTITY_FOR_PROVENANCE",
+      "mismatch_disposition": "PROVENANCE_REBIND_REQUIRED; not scientific refutation by itself"
+    },
+    "numerical_payload": {
+      "class": "CLASS_3_NUMERICAL_OUTPUT",
+      "required_identity": "SEMANTIC_NUMERICAL_IDENTITY",
+      "detectors": [
+        "exact frozen tolerance",
+        "hard gates",
+        "work counters",
+        "audit full-E",
+        "unsafe recommendation count",
+        "canonical numerical projection"
+      ]
+    },
+    "wrapper": {
+      "class": "CLASS_4_REPRESENTATION",
+      "required_identity": "CONTENT_STRUCTURAL_IDENTITY",
+      "rule": "derive mechanically; absent historical values remain null/LEGACY_NOT_RECORDED"
+    },
+    "package": {
+      "class": "CLASS_1_CONTROL_SOURCE",
+      "required_identity": "BYTE_IDENTITY_TO_SELECT_VALIDATOR",
+      "rule": "control mismatch is not scientific-output disagreement"
+    }
+  },
+  "execution_transition": "Fail closed on claims, not exploratory progress. Resume WU-05 directly after this bounded false-FAIL repair; no new review layer or WU-04 rerun solely for representation changes.",
   "raw_cell_contract": {
     "receipt_object_discovery": {
-      "algorithm": "Recursively collect mapping objects containing every required_receipt_key. Exactly one candidate is required; zero or multiple candidates are BLOCKED_BY_UNRESOLVED_SPEC.",
       "required_receipt_keys": [
         "profile",
         "family",
+        "linear_rtol",
+        "linear_atol",
         "attempts",
         "accepted_steps",
         "rejected_steps",
@@ -22,7 +53,6 @@
       ]
     },
     "stage_array_discovery": {
-      "algorithm": "Recursively collect nonempty arrays whose elements are mappings containing attempt_id, stage_index, execution_state, and work. Exactly one candidate is required.",
       "required_stage_keys": [
         "attempt_id",
         "stage_index",
@@ -30,29 +60,25 @@
         "work"
       ]
     },
-    "outer_identity": {
-      "kernel_arm_path": "/kernel_arm",
-      "tolerance_arm_path": "/tolerance_arm",
-      "schema_path": "/schema",
-      "status_path": "/status"
+    "semantic_derivation": {
+      "kernel_arm": "unique recursive kernel_arm",
+      "tolerance": "LegacyFixed from exact numerical pair; no label required",
+      "source_head": "unique recursive scientific_execution_head_sha",
+      "source_tree": "unique recursive scientific_execution_head_tree",
+      "execution_state": "null/absent error plus complete structural/scientific gates; error:null is never ERROR",
+      "raw_status": "not required or invented"
     }
   },
   "canonical_json": {
     "encoding": "UTF-8",
     "sort_keys": true,
-    "separators": [
-      ",",
-      ":"
-    ],
+    "separators": [",", ":"],
     "ensure_ascii": false,
     "allow_nan": false
   },
   "numerical_payload_projection": {
     "fields": [
-      "raw_schema",
-      "raw_status",
       "kernel_arm",
-      "tolerance_arm",
       "profile",
       "family",
       "linear_rtol",
@@ -71,13 +97,14 @@
       "hard_gates",
       "stages"
     ],
-    "rule": "Build one mapping with the fields above from the unique raw receipt object and stage array, then SHA-256 the canonical JSON bytes. No wrapper-supplied value is trusted.",
+    "rule": "stage-project first; exclude labels/source/wall/transport",
     "excluded_by_construction": [
+      "raw status/schema label",
+      "tolerance-arm label",
       "Git/source/workflow identities",
-      "Rust/Cargo versions",
-      "wall-time fields",
-      "human limitations/prose",
-      "wrapper schema and migration metadata"
+      "wall time",
+      "wrapper metadata",
+      "archive transport metadata"
     ]
   },
   "stage_payload_projection": {
@@ -97,13 +124,10 @@
       "geometry",
       "failure"
     ],
-    "rule": "Project raw and wrapper stages onto these fields, canonicalize, and require identical SHA-256 digests."
+    "rule": "historical null digest remains null; non-null backfill is fabrication unless raw-recorded"
   },
   "campaign_projection": {
     "required_fields": [
-      "raw_schema",
-      "raw_status",
-      "tolerance_arm",
       "attempts",
       "accepted_steps",
       "rejected_steps",
@@ -116,30 +140,30 @@
       "hard_gates",
       "audit_full_e_complete",
       "unsafe_recommendations",
+      "signed_residual_coverage",
       "numerical_payload_sha256",
       "raw_stage_payload_sha256"
     ],
-    "audit_full_e_complete": "For every raw event row with audit_full_e_eligible=true, audit_full_e_completed must be true and audit_full_e_failure must be null. An empty eligible subset is allowed per cell but not used to infer a population safety claim.",
-    "unsafe_recommendations": "Count raw event rows with recommended=true and audit_unsafe=true.",
+    "signed_residual_coverage": ["RECORDED", "LEGACY_NOT_RECORDED"],
     "hard_gates": [
+      "active_switching_false",
       "all_rjf_trajectories_successful",
-      "rjf_trace_exact_excluding_wall",
-      "zero_budget_breaches",
+      "passed",
       "prefix_transactions_resolved",
-      "zero_continuation_failures",
-      "zero_unsafe_recommendations",
-      "work_ledgers_exact",
       "realized_work_ratios_finite",
       "resume_cardinality_exact",
+      "rjf_trace_exact_excluding_wall",
       "shadow_implicit_expensive_work_zero",
-      "active_switching_false",
-      "passed"
+      "work_ledgers_exact",
+      "zero_budget_breaches",
+      "zero_continuation_failures",
+      "zero_unsafe_recommendations"
     ]
   },
   "failure_receipt": {
-    "partial_stage_count": "must equal len(stages)",
-    "partial_stage_receipts_sha256": "SHA-256 of canonical JSON bytes of the preserved stages array; empty arrays use the digest of []",
-    "raw_payload": "may be absent only when failure occurs before a raw receipt is successfully created"
+    "partial_stage_count": "equals len(stages)",
+    "partial_stage_receipts_sha256": "canonical JSON SHA-256",
+    "raw_payload": "may be absent only before creation"
   },
-  "supersedes": "EVIDENCE_V2_CANONICALIZATION semantics; v3 is controlling for WU-05 closure"
+  "supersedes": "Prior v3 outer-label and mandatory historical signed-digest clauses; schema name remains v3 to avoid another migration layer."
 }
