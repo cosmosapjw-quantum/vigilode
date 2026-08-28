@@ -1,67 +1,29 @@
 {
   "schema": "vigilode-k0-wu05-bootstrap-authority/v2",
-  "revision": 2,
+  "revision": 3,
   "status": "BOUND",
   "repository": "cosmosapjw-quantum/vigilode",
   "package_branch": "docs/k0-codex-execution-package-20260827",
-  "inspected_bootstrap_baseline": "13aed8dabfbb5da4381d9d73d3cb0c0403ad5354",
-  "preserved_local": {
-    "branch": "research/k0-stage-telemetry-integration-20260827",
-    "head": "e95ce1e58a603306cb665a6ab91cfe02d279972f",
-    "tree": "e3621a370297a76907e97730ebd18c5c1e0fb83e",
-    "clean": true
-  },
+  "previous_package": "c6ec0121be11f76b86afc21f8ae7a304d35c6d83",
+  "reported_prepared_head": "f6208a104d2f341157d900294aa30d8edb4446c0",
+  "reported_prepared_tree": "19c393ca5a1ebb6c440130c9c3155e5625c85ce3",
+  "reported_prepared_parents": [
+    "e95ce1e58a603306cb665a6ab91cfe02d279972f",
+    "c6ec0121be11f76b86afc21f8ae7a304d35c6d83"
+  ],
   "bootstrap_owner": "HOST_CODEX_ORCHESTRATOR",
-  "authorization": "The same host Codex session may execute the externally pinned bootstrap script, then enter WU-05 implementer mode after readiness. No separate human merge is required. This narrowly overrides the earlier blanket branch-preparation ban.",
-  "external_pin": "Exact package SHA from the delivered publication receipt or PR #21; never infer the pin from a moving ref.",
-  "protocol": [
-    "extract runner and validator from the pinned Git commit",
-    "inspect clean preserved review or its exact clean [review, package] merge",
-    "reject non-control package/source deltas",
-    "run real package/supplement checks in detached worktree before merge",
-    "require zero exits and structured marker, legacy_marker, pin_marker PASS fields",
-    "merge exact ordered parents or revalidate that same merge without a new commit",
-    "preserve command logs under Git common directory",
-    "start source repair only after LOCAL_WU05_AUTHORITY_READY"
+  "accepted_start_modes": [
+    "PREPARE",
+    "UPGRADE",
+    "REVALIDATE"
   ],
-  "inventory_rule": "Keep existing root and supplement hash checks. Cover added bootstrap files and executable payload using the externally pinned Git tree, not an incomplete hardcoded list. The existing loader supplies a transparent inventory-only compatibility repair; --dump-source emits its exact effective code.",
-  "parent_content_rule": "For a pre-existing required path unchanged on the package side since merge-base, retain exact REVIEW bytes. Otherwise require exact package bytes. No guessed conflict resolution.",
-  "failure_modes": [
-    {
-      "id": "BR-ENTRY",
-      "severity": "P1",
-      "detector": "test_missing_validator_before_merge_is_expected_and_bootstrap_installs_it"
-    },
-    {
-      "id": "BR-MARKER",
-      "severity": "P1",
-      "detector": "test_exit_zero_without_required_markers_cannot_authorize_merge"
-    },
-    {
-      "id": "BR-SCOPE",
-      "severity": "P1",
-      "detector": "test_source_in_package_delta_is_rejected_before_merge"
-    },
-    {
-      "id": "BR-REENTRY",
-      "severity": "P1",
-      "detector": "test_successful_bootstrap_is_idempotent"
-    },
-    {
-      "id": "BR-COVERAGE",
-      "severity": "P1",
-      "detector": "test_actual_dependency_validators_and_manifest_complete_before_ready"
-    },
-    {
-      "id": "BR-INHERITANCE",
-      "severity": "P1",
-      "detector": "test_inherited_authorized_validator_repair_is_preserved"
-    }
-  ],
-  "verification": "python3 -B tools/test_k0_bootstrap_v2.py",
-  "verification_scope": "11 tests: 8 real-Git lifecycle cases with explicit dependency stand-ins, plus 3 cases exercising real dependency-validator code. Git IDs and metadata are synthetic. Actual local e95 source/campaign replay is not claimed.",
+  "upgrade_rule": "The exact clean c6ec-prepared merge may be upgraded only to a descendant package with control-only delta; new merge parents are [old prepared, exact new package].",
+  "materialization_rule": "START_CONTINUATION.sh, semantic handoff, and Codex prompt are repository files in the exact package commit. No external ZIP is a prerequisite.",
+  "identity_policy": "Package exact SHA selects control bytes. Raw receipt SHA binds provenance. Numerical/scientific acceptance uses semantic projection and gates rather than wrapper/package byte equality.",
   "required_ready_marker": "LOCAL_WU05_AUTHORITY_READY",
-  "on_failure": "Never reset or stash. Abort a conflicted merge. Preserve a completed merge on post-validation failure, its logs, and the original review ancestry.",
+  "pass_transition": "After readiness, immediately resume the five original WU-05 source repairs; do not open another package-review cycle.",
+  "on_failure": "preserve current state/logs; abort conflicts; never reset/stash/rebase/amend/force-update",
+  "review_policy": "reuse the existing single fresh repair review and final differential audit; no new review layer",
   "integrations": {
     "jira": "PM-7",
     "confluence_page_id": "15499267",
@@ -69,20 +31,5 @@
     "source_pr": 20,
     "outage_state": "ATLAS_SYNC_PENDING"
   },
-  "review_policy": "Reuse the existing one read-only fresh repair review and final differential audit. No new review tier.",
-  "prohibited": [
-    "rewrite WU-00 through WU-04",
-    "manual reset/rebase/stash/amend/force update",
-    "manual conflict resolution",
-    "source repair before readiness",
-    "Cargo graph change",
-    "equation/tolerance/production signature or route change",
-    "unjustified campaign rerun",
-    "homotopy-certificate change",
-    "timing/ranking/speedup",
-    "PR merge",
-    "tag",
-    "release"
-  ],
   "claim_boundary": "EXPLORATORY/NONAUTHORITATIVE"
 }
