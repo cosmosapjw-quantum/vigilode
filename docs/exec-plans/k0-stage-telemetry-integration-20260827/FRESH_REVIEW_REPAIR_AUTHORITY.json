@@ -1,0 +1,105 @@
+{
+  "schema": "vigilode-k0-fresh-review-repair-authority/v1",
+  "status": "BOUND",
+  "supersedes_for_repair": [
+    "docs/exec-plans/k0-stage-telemetry-integration-20260827/schemas/stage-receipt.schema.json",
+    "tools/verify-k0-stage-telemetry-plan.py evidence validation",
+    "WU-05 prohibition on every new public symbol"
+  ],
+  "repository": "cosmosapjw-quantum/vigilode",
+  "source_parent": "e1124586a4029f86669e7489278c61ef676d61aa",
+  "preserved_local_state": {
+    "wu00": "183e24feb39fd7581450ae4380bd8afe09249451",
+    "wu01": "faa759de5c54848bb60d4cb8af4b06b6bcbbe514",
+    "wu02": "2badcec35b51d23fcd2938d1e15c9e0875a0f9df",
+    "wu03": "321c63ee8ca0f216001bf41b30d58c1858a4781a",
+    "wu04": "c7a5393a2cb1cf6f6095c6390348dd21fb45efe9",
+    "fresh_review": "e95ce1e58a603306cb665a6ab91cfe02d279972f",
+    "tree": "e3621a370297a76907e97730ebd18c5c1e0fb83e",
+    "worktree": "clean",
+    "published": false
+  },
+  "api_decision": {
+    "selected": "narrow_research_only_doc_hidden_public_bridge",
+    "rejected_for_this_node": "cargo_feature_or_new_crate_isolation",
+    "reason": "Rust has no workspace-private/friend visibility; the existing dependency graph already connects krylov to integrators to CLI, while Cargo graph changes would force an unnecessary campaign rebuild and evidence rebind.",
+    "modules": [
+      "rodas5p_krylov::k0_research_bridge",
+      "rodas5p_integrators::k0_research_bridge"
+    ],
+    "requirements": [
+      "bridge modules and every directly exported bridge item use #[doc(hidden)]",
+      "new bridge names start with K0 or contain _k0_ or _for_k0",
+      "no existing production function signature changes",
+      "no Cargo.toml, Cargo.lock, feature, crate, or dependency changes",
+      "call sites are limited to K0 receipt code, the atomic K0 CLI, and K0 tests",
+      "ordinary production paths do not import or call either bridge"
+    ]
+  },
+  "findings": [
+    {
+      "id": "FR-K0-P0-001",
+      "severity": "P0",
+      "failure": "top-level evidence gate accepts twelve invented empty COMPLETE cells",
+      "repair": "validate cell v2 identity, exact scientific configuration, nonempty campaign payload, hard gates, raw payload digest, and exhaustive stage coverage",
+      "detector": "python tools/verify-k0-fresh-review-repair.py --repo-root . --evidence-dir research/k0_stage_telemetry_20260827/evidence_v2/cells"
+    },
+    {
+      "id": "FR-K0-P0-002",
+      "severity": "P0",
+      "failure": "aggregate raises instead of preserving a validator-valid ERROR cell",
+      "repair": "catch per-cell execution/parse/validation failures and serialize a cell-v2 ERROR receipt with identity, phase, command, exit status, log digest, and preserved work",
+      "detector": "cargo test -p rodas5p-integrators --test k0_stage_telemetry_contracts aggregate_internal_error_is_serialized_not_raised"
+    },
+    {
+      "id": "FR-K0-P1-001",
+      "severity": "P1",
+      "failure": "schema accepts information-free ERROR or STOP_INVALID receipts",
+      "repair": "use conditional stage-v2 and cell-v2 schemas; failure states require a nonempty structured failure object and preserved-work metadata",
+      "detector": "python tools/verify-k0-fresh-review-repair.py --repo-root . --self-test"
+    },
+    {
+      "id": "FR-K0-P1-002",
+      "severity": "P1",
+      "failure": "required telemetry crossed crate boundaries through unauthorized public API",
+      "repair": "apply only the doc-hidden research bridge authorized above and emit a public-bridge surface receipt",
+      "detector": "python tools/verify-k0-fresh-review-repair.py --repo-root . --check-public-bridge"
+    },
+    {
+      "id": "FR-K0-P1-003",
+      "severity": "P1",
+      "failure": "signed-residual mutation guard is absent",
+      "repair": "add a vector-aware signed residual regression that fails when b-Ax is replaced by Ax-b at the observation boundary; norm-only tests do not satisfy this finding",
+      "detector": "cargo test -p rodas5p-integrators --test k0_stage_telemetry_contracts signed_residual_mutation_is_detected"
+    }
+  ],
+  "evidence_migration": {
+    "raw_wu04_evidence": "immutable",
+    "target": "research/k0_stage_telemetry_20260827/evidence_v2",
+    "rule": "Create v2 wrapper receipts referencing SHA-256 of every raw WU-04 payload. Do not rerun the expensive 12-cell campaign when solver outputs and raw payload bytes are unchanged. Rerun only if a repair changes equations, tolerance, routing, convergence, stage work, or numerical payload bytes.",
+    "required_parity": [
+      "same twelve arm/family identities",
+      "same raw payload SHA-256 values",
+      "same numerical outputs and work counters",
+      "only schema/wrapper/validator metadata may differ"
+    ]
+  },
+  "repair_order": [
+    "orchestrator merge current package tip into the clean fresh-review head",
+    "run package and repair-authority validators",
+    "write RED reproducers for all five findings",
+    "implement the public bridge and evidence/schema repairs",
+    "migrate raw WU-04 evidence to v2 wrappers without rerun if parity holds",
+    "run targeted tests and fresh read-only repair review",
+    "run final differential audit",
+    "only then push and open the draft stacked implementation PR"
+  ],
+  "required_markers": [
+    "PACKAGE_CONTRACT_PASS",
+    "FRESH_REVIEW_REPAIR_AUTHORITY_PASS",
+    "PUBLIC_BRIDGE_PASS",
+    "EVIDENCE_V2_PASS",
+    "SIGNED_RESIDUAL_GUARD_PASS"
+  ],
+  "claim_boundary": "EXPLORATORY/NONAUTHORITATIVE"
+}

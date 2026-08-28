@@ -1,0 +1,35 @@
+{
+  "schema": "vigilode-k0-wu05-bootstrap-authority/v2",
+  "revision": 3,
+  "status": "BOUND",
+  "repository": "cosmosapjw-quantum/vigilode",
+  "package_branch": "docs/k0-codex-execution-package-20260827",
+  "previous_package": "c6ec0121be11f76b86afc21f8ae7a304d35c6d83",
+  "reported_prepared_head": "f6208a104d2f341157d900294aa30d8edb4446c0",
+  "reported_prepared_tree": "19c393ca5a1ebb6c440130c9c3155e5625c85ce3",
+  "reported_prepared_parents": [
+    "e95ce1e58a603306cb665a6ab91cfe02d279972f",
+    "c6ec0121be11f76b86afc21f8ae7a304d35c6d83"
+  ],
+  "bootstrap_owner": "HOST_CODEX_ORCHESTRATOR",
+  "accepted_start_modes": [
+    "PREPARE",
+    "UPGRADE",
+    "REVALIDATE"
+  ],
+  "upgrade_rule": "The exact clean c6ec-prepared merge may be upgraded only to a descendant package with control-only delta; new merge parents are [old prepared, exact new package].",
+  "materialization_rule": "START_CONTINUATION.sh, semantic handoff, and Codex prompt are repository files in the exact package commit. No external ZIP is a prerequisite.",
+  "identity_policy": "Package exact SHA selects control bytes. Raw receipt SHA binds provenance. Numerical/scientific acceptance uses semantic projection and gates rather than wrapper/package byte equality.",
+  "required_ready_marker": "LOCAL_WU05_AUTHORITY_READY",
+  "pass_transition": "After readiness, immediately resume the five original WU-05 source repairs; do not open another package-review cycle.",
+  "on_failure": "preserve current state/logs; abort conflicts; never reset/stash/rebase/amend/force-update",
+  "review_policy": "reuse the existing single fresh repair review and final differential audit; no new review layer",
+  "integrations": {
+    "jira": "PM-7",
+    "confluence_page_id": "15499267",
+    "control_pr": 21,
+    "source_pr": 20,
+    "outage_state": "ATLAS_SYNC_PENDING"
+  },
+  "claim_boundary": "EXPLORATORY/NONAUTHORITATIVE"
+}

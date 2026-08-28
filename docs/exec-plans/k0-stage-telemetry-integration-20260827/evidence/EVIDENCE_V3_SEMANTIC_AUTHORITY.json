@@ -1,0 +1,147 @@
+{
+  "schema": "vigilode-k0-evidence-v3-semantic-authority/v1",
+  "status": "BOUND",
+  "purpose": "Replace representation-dependent false failures while preserving raw-byte provenance and all scientific/numerical gates.",
+  "raw_discovery": {
+    "receipt_object": {
+      "algorithm": "Recursively collect mapping objects containing every required_receipt_key; require exactly one.",
+      "required_receipt_keys": [
+        "profile",
+        "family",
+        "attempts",
+        "accepted_steps",
+        "rejected_steps",
+        "rhs_evaluations",
+        "jvp_vectors",
+        "linear_matvecs",
+        "trace_digest",
+        "switching_active",
+        "frozen_zeta34_tau",
+        "event_rows",
+        "recommendation_rows",
+        "hard_gates"
+      ]
+    },
+    "stage_array": {
+      "algorithm": "Recursively collect nonempty arrays whose elements contain attempt_id, stage_index, execution_state, and work; require exactly one.",
+      "required_stage_keys": [
+        "attempt_id",
+        "stage_index",
+        "execution_state",
+        "work"
+      ]
+    },
+    "kernel_arm": "Collect all non-null kernel_arm values in the raw document and require one unique canonical arm.",
+    "source_identity": {
+      "head_key": "scientific_execution_head_sha",
+      "tree_key": "scientific_execution_head_tree",
+      "algorithm": "Collect recursively from the entire raw envelope, require one unique 40-hex value for each. Do not require receipt-level duplicates."
+    },
+    "tolerance": {
+      "algorithm": "Find every mapping containing the pair linear_rtol/linear_atol, or a tolerance mapping containing rtol/atol; require all discovered pairs to agree exactly with rtol=1e-10 and atol=1e-12.",
+      "label_required": false
+    },
+    "outer_error": {
+      "algorithm": "If the top-level error key is absent or null, no error is recorded. A non-null value prevents COMPLETE migration."
+    }
+  },
+  "legacy_signed_residual": {
+    "none_present": "Set every migrated signed_residual_digest to null and campaign signed_residual_coverage to LEGACY_NOT_RECORDED.",
+    "all_present": "Copy the exact 64-hex values and set coverage to RECORDED.",
+    "mixed_presence": "STOP_INVALID because partially recorded historical telemetry is ambiguous.",
+    "fabrication": "FORBIDDEN",
+    "current_source_guard": "The separately executed vector-aware signed-residual mutation test remains mandatory and is not inferred from legacy receipts."
+  },
+  "canonical_json": {
+    "encoding": "UTF-8",
+    "sort_keys": true,
+    "separators": [",", ":"],
+    "ensure_ascii": false,
+    "allow_nan": false
+  },
+  "raw_byte_identity": {
+    "field": "raw_receipt_sha256",
+    "rule": "SHA-256 the exact preserved raw file bytes; retain all twelve values in the handback."
+  },
+  "numerical_payload_projection": {
+    "include": [
+      "kernel_arm",
+      "linear_rtol",
+      "linear_atol",
+      "profile",
+      "family",
+      "frozen_zeta34_tau",
+      "attempts",
+      "accepted_steps",
+      "rejected_steps",
+      "rhs_evaluations",
+      "jvp_vectors",
+      "linear_matvecs",
+      "trace_digest",
+      "switching_active",
+      "event_rows",
+      "recommendation_rows",
+      "hard_gates",
+      "audit_full_e_complete",
+      "unsafe_recommendations",
+      "stage_semantic_projection"
+    ],
+    "exclude": [
+      "raw schema/status/tolerance labels",
+      "Git/source/workflow identity",
+      "archive or transport identity",
+      "JSON key order and whitespace",
+      "wrapper schema and migration metadata",
+      "wall-time fields",
+      "legacy signed-residual availability metadata"
+    ],
+    "rule": "Derive all included values from raw evidence and SHA-256 the canonical JSON. Wrapper-supplied digests are never trusted."
+  },
+  "stage_semantic_projection": {
+    "include": [
+      "execution_state",
+      "attempt_id",
+      "stage_index",
+      "solver_method",
+      "initial_guess_source",
+      "initial_true_residual",
+      "final_true_residual",
+      "work",
+      "geometry",
+      "failure"
+    ],
+    "exclude": [
+      "case_id and repeated family/kernel labels",
+      "signed_residual_digest availability",
+      "wrapper-only claim/schema metadata"
+    ]
+  },
+  "campaign_semantics": {
+    "profile": "enforced-budget-holdout-320",
+    "linear_rtol": 1e-10,
+    "linear_atol": 1e-12,
+    "frozen_zeta34_tau": 13.39706618860016,
+    "hard_gates": [
+      "all_rjf_trajectories_successful",
+      "rjf_trace_exact_excluding_wall",
+      "zero_budget_breaches",
+      "prefix_transactions_resolved",
+      "zero_continuation_failures",
+      "zero_unsafe_recommendations",
+      "work_ledgers_exact",
+      "realized_work_ratios_finite",
+      "resume_cardinality_exact",
+      "shadow_implicit_expensive_work_zero",
+      "active_switching_false",
+      "passed"
+    ],
+    "audit_full_e_complete": "Every eligible raw event must be completed with null failure.",
+    "unsafe_recommendations": "Count raw events with recommended=true and audit_unsafe=true; COMPLETE requires zero."
+  },
+  "identity_decision": {
+    "byte_mismatch_only": "PROVENANCE_OR_REPRESENTATION_EVENT; not a scientific failure by itself.",
+    "semantic_projection_match": "SCIENTIFIC_CONTENT_IDENTICAL for the bounded comparison.",
+    "semantic_projection_mismatch": "STOP_INVALID and name the differing scientific fields."
+  },
+  "marker": "EVIDENCE_V3_PASS"
+}

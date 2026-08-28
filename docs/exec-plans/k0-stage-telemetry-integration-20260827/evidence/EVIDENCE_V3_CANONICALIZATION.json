@@ -1,0 +1,175 @@
+{
+  "schema": "vigilode-k0-evidence-v3-canonicalization/v1",
+  "status": "BOUND",
+  "identity_policy": {
+    "raw_receipt": {
+      "class": "CLASS_2_DETERMINISTIC_EVIDENCE",
+      "required_identity": "BYTE_IDENTITY_FOR_PROVENANCE",
+      "mismatch_disposition": "PROVENANCE_REBIND_REQUIRED; not scientific refutation by itself"
+    },
+    "numerical_payload": {
+      "class": "CLASS_3_NUMERICAL_OUTPUT",
+      "required_identity": "SEMANTIC_NUMERICAL_IDENTITY",
+      "detectors": [
+        "exact frozen tolerance",
+        "hard gates",
+        "work counters",
+        "audit full-E",
+        "unsafe recommendation count",
+        "canonical numerical projection"
+      ]
+    },
+    "wrapper": {
+      "class": "CLASS_4_REPRESENTATION",
+      "required_identity": "CONTENT_STRUCTURAL_IDENTITY",
+      "rule": "derive mechanically; absent historical values remain null/LEGACY_NOT_RECORDED"
+    },
+    "package": {
+      "class": "CLASS_1_CONTROL_SOURCE",
+      "required_identity": "BYTE_IDENTITY_TO_SELECT_VALIDATOR",
+      "rule": "control mismatch is not scientific-output disagreement"
+    }
+  },
+  "execution_transition": "Fail closed on claims, not exploratory progress. Resume WU-05 directly after this bounded false-FAIL repair; no new review layer or WU-04 rerun solely for representation changes.",
+  "raw_cell_contract": {
+    "receipt_object_discovery": {
+      "required_receipt_keys": [
+        "profile",
+        "family",
+        "linear_rtol",
+        "linear_atol",
+        "attempts",
+        "accepted_steps",
+        "rejected_steps",
+        "rhs_evaluations",
+        "jvp_vectors",
+        "linear_matvecs",
+        "trace_digest",
+        "switching_active",
+        "frozen_zeta34_tau",
+        "event_rows",
+        "recommendation_rows",
+        "hard_gates"
+      ]
+    },
+    "stage_array_discovery": {
+      "required_stage_keys": [
+        "attempt_id",
+        "stage_index",
+        "execution_state",
+        "work"
+      ]
+    },
+    "semantic_derivation": {
+      "kernel_arm": "unique recursive kernel_arm",
+      "tolerance": "LegacyFixed from exact numerical pair; no label required",
+      "source_head": "unique recursive scientific_execution_head_sha",
+      "source_tree": "unique recursive scientific_execution_head_tree",
+      "execution_state": "null/absent error plus complete structural/scientific gates; error:null is never ERROR",
+      "raw_status": "not required or invented"
+    }
+  },
+  "canonical_json": {
+    "encoding": "UTF-8",
+    "sort_keys": true,
+    "separators": [
+      ",",
+      ":"
+    ],
+    "ensure_ascii": false,
+    "allow_nan": false
+  },
+  "numerical_payload_projection": {
+    "fields": [
+      "kernel_arm",
+      "profile",
+      "family",
+      "linear_rtol",
+      "linear_atol",
+      "attempts",
+      "accepted_steps",
+      "rejected_steps",
+      "rhs_evaluations",
+      "jvp_vectors",
+      "linear_matvecs",
+      "trace_digest",
+      "switching_active",
+      "frozen_zeta34_tau",
+      "event_rows",
+      "recommendation_rows",
+      "hard_gates",
+      "stages"
+    ],
+    "rule": "stage-project first; exclude labels/source/wall/transport",
+    "excluded_by_construction": [
+      "raw status/schema label",
+      "tolerance-arm label",
+      "Git/source/workflow identities",
+      "wall time",
+      "wrapper metadata",
+      "archive transport metadata"
+    ]
+  },
+  "stage_payload_projection": {
+    "fields": [
+      "execution_state",
+      "case_id",
+      "family",
+      "kernel_arm",
+      "attempt_id",
+      "stage_index",
+      "solver_method",
+      "initial_guess_source",
+      "initial_true_residual",
+      "final_true_residual",
+      "signed_residual_digest",
+      "work",
+      "geometry",
+      "failure"
+    ],
+    "rule": "historical null digest remains null; non-null backfill is fabrication unless raw-recorded"
+  },
+  "campaign_projection": {
+    "required_fields": [
+      "attempts",
+      "accepted_steps",
+      "rejected_steps",
+      "rhs_evaluations",
+      "jvp_vectors",
+      "linear_matvecs",
+      "trace_digest",
+      "event_count",
+      "recommendation_count",
+      "hard_gates",
+      "audit_full_e_complete",
+      "unsafe_recommendations",
+      "signed_residual_coverage",
+      "numerical_payload_sha256",
+      "raw_stage_payload_sha256"
+    ],
+    "signed_residual_coverage": [
+      "RECORDED",
+      "LEGACY_NOT_RECORDED"
+    ],
+    "hard_gates": [
+      "active_switching_false",
+      "all_rjf_trajectories_successful",
+      "passed",
+      "prefix_transactions_resolved",
+      "realized_work_ratios_finite",
+      "resume_cardinality_exact",
+      "rjf_trace_exact_excluding_wall",
+      "shadow_implicit_expensive_work_zero",
+      "work_ledgers_exact",
+      "zero_budget_breaches",
+      "zero_continuation_failures",
+      "zero_unsafe_recommendations"
+    ]
+  },
+  "failure_receipt": {
+    "partial_stage_count": "equals len(stages)",
+    "partial_stage_receipts_sha256": "canonical JSON SHA-256",
+    "raw_payload": "may be absent only before creation"
+  },
+  "supersedes": "Prior v3 outer-label and mandatory historical signed-digest clauses; schema name remains v3 to avoid another migration layer."
+}

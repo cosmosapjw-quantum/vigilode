@@ -1,0 +1,54 @@
+{
+  "schema": "vigilode-k0-wu05-premerge-bootstrap-authority/v1",
+  "status": "BOUND",
+  "repository": "cosmosapjw-quantum/vigilode",
+  "package_branch": "docs/k0-codex-execution-package-20260827",
+  "package_minimum_ancestor": "cbdb597fdd58fd1f08a104b4ea8b662dac1f8ba1",
+  "preserved_local_state": {
+    "branch": "research/k0-stage-telemetry-integration-20260827",
+    "fresh_review_head": "e95ce1e58a603306cb665a6ab91cfe02d279972f",
+    "fresh_review_tree": "e3621a370297a76907e97730ebd18c5c1e0fb83e",
+    "worktree": "clean",
+    "published": false
+  },
+  "root_cause": "The previous handoff invoked package-resident validators before the package commit had been merged into the preserved implementation branch. The branch therefore could not contain the required validator or authority documents.",
+  "controlling_rule": "Bootstrap files are read from one externally pinned package commit with git show. Validate that exact commit in a detached temporary worktree, then merge that exact commit as second parent. No package-resident command is invoked from the preserved branch before the merge.",
+  "external_pin": {
+    "required": true,
+    "source": "PR #21 / GitHub branch readback / publication receipt",
+    "moving_branch_ref_is_authority": false
+  },
+  "premerge_requirements": [
+    "local branch, HEAD, tree, and clean status match the preserved fresh-review state",
+    "package SHA is a 40-hex commit and descends from package_minimum_ancestor",
+    "bootstrap manifest verifies every bootstrap payload byte",
+    "required WU-05 supplement, v3 schemas, canonicalization, validator, handoff, and prompt exist in the package commit",
+    "package validators pass in a detached temporary worktree before local history changes"
+  ],
+  "merge_requirements": {
+    "first_parent": "e95ce1e58a603306cb665a6ab91cfe02d279972f",
+    "second_parent": "externally pinned package SHA",
+    "strategy": "git merge --no-ff --no-edit exact-package-sha",
+    "conflict_state": "BLOCKED_BY_AUTHORITY_DRIFT"
+  },
+  "required_pre_repair_markers": [
+    "WU05_PREMERGE_BOOTSTRAP_PASS",
+    "PACKAGE_CONTRACT_PASS",
+    "WU05_SUPPLEMENT_MANIFEST_PASS",
+    "LEGACY_REPAIR_BLOBS_PASS",
+    "EXTERNAL_PACKAGE_PIN_PASS",
+    "WU05_SUPPLEMENT_AUTHORITY_PASS",
+    "HOSTILE_FIXTURES_PASS",
+    "WU05_REPAIR_MERGE_PASS",
+    "LOCAL_WU05_AUTHORITY_READY"
+  ],
+  "prohibited": [
+    "Codex branch creation, merge, rebase, reset, cherry-pick, amend, or force update",
+    "source mutation before every pre-repair marker passes",
+    "moving-ref merge without exact SHA pin",
+    "redoing WU-00 through WU-04",
+    "campaign rerun without solver-semantic or payload-byte change",
+    "production activation, timing or speedup claim, BDF ranking, tag, release, or merge"
+  ],
+  "claim_boundary": "EXPLORATORY/NONAUTHORITATIVE"
+}
