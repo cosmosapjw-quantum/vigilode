@@ -1,51 +1,44 @@
-# Codex prompt — VigilODE K0 WU-05 bounded local repair
+# Codex prompt — upgrade prepared WU-05 and finish the real repair
 
-Resume only the preserved WU-05 repair. Do not redo WU-00 through WU-04.
+Use the exact `K0_PACKAGE_SHA` supplied with this prompt. Do not search the host for an earlier ZIP and do not infer authority from a moving branch.
 
-## Frozen local authority
+You are authorized first as `HOST_CODEX_ORCHESTRATOR` for the exact Git-materialized entry script, then as WU-05 implementer after `LOCAL_WU05_AUTHORITY_READY`.
+
+Preserve exactly:
 
 ```text
 branch        research/k0-stage-telemetry-integration-20260827
-WU-00         183e24feb39fd7581450ae4380bd8afe09249451
-WU-01         faa759de5c54848bb60d4cb8af4b06b6bcbbe514
-WU-02         2badcec35b51d23fcd2938d1e15c9e0875a0f9df
-WU-03         321c63ee8ca0f216001bf41b30d58c1858a4781a
-WU-04         c7a5393a2cb1cf6f6095c6390348dd21fb45efe9
-fresh review  e95ce1e58a603306cb665a6ab91cfe02d279972f
-review tree   e3621a370297a76907e97730ebd18c5c1e0fb83e
+prepared      f6208a104d2f341157d900294aa30d8edb4446c0
+prepared tree 19c393ca5a1ebb6c440130c9c3155e5625c85ce3
+parents       e95ce1e58a603306cb665a6ab91cfe02d279972f
+              c6ec0121be11f76b86afc21f8ae7a304d35c6d83
 ```
 
-The orchestrator has already merged the exact externally pinned package SHA. Codex must not create, switch, merge, rebase, reset, cherry-pick, amend, or force-update branches.
+Keep WU-00 through WU-04, fresh review, and all twelve raw WU-04 files. Do not reset, rebase, stash, amend, force-update, create a replacement worktree, or ask the user to materialize a bundle.
 
-## Required intake
+## Exact Git entry
 
-Read in this order:
-
-1. `docs/exec-plans/k0-stage-telemetry-integration-20260827/WU05_LOCAL_REPAIR_SUPPLEMENT.json`
-2. `docs/exec-plans/k0-stage-telemetry-integration-20260827/WU05_LOCAL_REPAIR_HANDOFF.md`
-3. `docs/exec-plans/k0-stage-telemetry-integration-20260827/PUBLIC_BRIDGE_CONTRACT_V2.md`
-4. `docs/exec-plans/k0-stage-telemetry-integration-20260827/evidence/EVIDENCE_V3_CANONICALIZATION.json`
-5. `docs/exec-plans/k0-stage-telemetry-integration-20260827/schemas/stage-receipt-v3.schema.json`
-6. `docs/exec-plans/k0-stage-telemetry-integration-20260827/schemas/cell-receipt-v3.schema.json`
-7. `research/k0_stage_telemetry_20260827/review/fresh_review_findings.yaml`
-
-Require all pre-repair markers:
-
-```text
-PACKAGE_CONTRACT_PASS
-WU05_SUPPLEMENT_MANIFEST_PASS
-LEGACY_REPAIR_BLOBS_PASS
-EXTERNAL_PACKAGE_PIN_PASS
-WU05_SUPPLEMENT_AUTHORITY_PASS
-WU05_REPAIR_MERGE_PASS
-HOSTILE_FIXTURES_PASS
+```bash
+set -euo pipefail
+: "${K0_PACKAGE_SHA:?exact package SHA required}"
+REPO=/tmp/vigilode-k0-stage-telemetry.kAguIL/tree
+cd "$REPO"
+test "$(git branch --show-current)" = research/k0-stage-telemetry-integration-20260827
+test "$(git rev-parse HEAD)" = f6208a104d2f341157d900294aa30d8edb4446c0
+test "$(git rev-parse HEAD^{tree})" = 19c393ca5a1ebb6c440130c9c3155e5625c85ce3
+test -z "$(git status --porcelain=v1)"
+git fetch --prune origin docs/k0-codex-execution-package-20260827
+test "$(git rev-parse origin/docs/k0-codex-execution-package-20260827)" = "$K0_PACKAGE_SHA"
+START=$(mktemp "${TMPDIR:-/tmp}/k0-start-continuation.XXXXXX")
+trap 'rm -f -- "$START"' EXIT
+git show "$K0_PACKAGE_SHA:docs/exec-plans/k0-stage-telemetry-integration-20260827/START_CONTINUATION.sh" > "$START"
+chmod 700 "$START"
+"$START" --repo-root "$REPO" --package-sha "$K0_PACKAGE_SHA"
 ```
 
-If any marker is absent, stop. Do not infer success.
+The package closes `WU05-NEW-P0-001` as a representation false-fail, not a scientific-data failure. Raw top-level status/tolerance labels are not authority; exact rtol/atol establish LegacyFixed; source identity comes from the unique outer envelope; `error:null` is not ERROR; absent historical signed-residual digest stays null with `LEGACY_NOT_RECORDED`; invented backfill is forbidden. Numerical payload identity ignores packaging labels and transport metadata while retaining scientific/work/gate/audit content. Raw SHA remains immutable provenance.
 
-The validator payload is transparent: `python tools/verify-k0-wu05-supplement.py --dump-source` emits the exact source bound by the supplement manifest.
-
-## Repair exactly these findings
+After readiness, do not add another contract/review cycle and do not rerun WU-04 solely because wrapper bytes changed. Resume immediately:
 
 ```text
 FR-K0-P0-001
@@ -55,50 +48,14 @@ FR-K0-P1-002
 FR-K0-P1-003
 ```
 
-Also close the six supplement failure classes `SR-K0-*` mechanically. Do not ask user questions and do not guess across a new semantic boundary.
+Use only the two authorized doc-hidden K0 public bridges. Keep Cargo manifests, equations, tolerances, convergence authority, production signatures/routes, output semantics and homotopy certification unchanged.
 
-### API boundary
+Generate cell/stage v3 wrappers mechanically from immutable raw cells. Preserve all twelve raw SHA values and actual fields. Current source signed-residual correctness is proven by the targeted mutation test, not invented historical digests.
 
-Use only:
+Execute actual targeted RED/GREEN tests, source-derived bridge validation, evidence-v3 validation, aggregate ERROR and signed-residual guards, affected regressions and workspace tests. Reuse the existing one fresh repair review and final differential audit only. P2/P3 remain nonblocking unless they genuinely threaten the requested result.
 
-```text
-rodas5p_krylov::k0_research_bridge
-rodas5p_integrators::k0_research_bridge
-```
+Only after P0=P1=0, push the implementation branch and open one draft stacked implementation PR. Update/read back GitHub, Jira PM-7 and Confluence 15499267. Use `ATLAS_SYNC_PENDING` for a real integration outage. No merge, activation, timing/ranking/speedup, tag or release.
 
-Follow `PUBLIC_BRIDGE_CONTRACT_V2.md` literally. Every module declaration and direct export is K0-specific and `#[doc(hidden)]`; `pub use` is forbidden. Do not modify any Cargo manifest, `Cargo.lock`, existing production signature, or ordinary production call path. `public_bridge_surface.json` must be generated from the actual source-derived inventory, not used as authority.
+Return the bootstrap receipt, actual prepared/final SHAs and trees, executed commands, twelve raw SHA preservation result, finding dispositions, tests/reviews, skipped work with reasons, and cross-plane readbacks. The rejected Qwen candidate is not evidence.
 
-### Evidence boundary
-
-- Raw WU-04 receipts are immutable.
-- Build **cell/stage v3** wrappers mechanically from raw cells.
-- Recompute raw SHA-256, canonical numerical payload SHA-256, raw stage payload SHA-256, the exact twelve named hard gates, campaign counts, and source head/tree from raw evidence.
-- Never type a digest or hard-gate summary by hand.
-- A failed cell preserves its actual partial stage array, count, and canonical digest.
-- Do not rerun the 12-cell campaign unless equations, tolerance, routing, convergence, stage work, or numerical payload bytes changed.
-
-### Test order
-
-1. Preserve/reproduce the five original RED cases.
-2. Add RED cases for the six supplement failures.
-3. Apply the smallest bounded repair.
-4. Run targeted tests.
-5. Run source-derived bridge validation.
-6. Build and validate evidence-v3 wrappers.
-7. Execute the aggregate-error and signed-residual tests through the supplement validator.
-8. Run affected regressions and workspace tests.
-9. Run one read-only fresh repair review using `FRESH_REPAIR_SUPPLEMENT_REVIEW_PROMPT.md`.
-10. Repair only reproduced P0/P1, then run the existing final differential audit.
-
-Required closure markers:
-
-```text
-PUBLIC_BRIDGE_SOURCE_PASS
-EVIDENCE_V3_PASS
-AGGREGATE_ERROR_GUARD_PASS
-SIGNED_RESIDUAL_GUARD_PASS
-```
-
-Pass also requires original findings 5/5 `CLOSED`, all supplement findings closed, no new P0/P1, immutable raw receipt SHA-256 values, and unchanged numerical/stage payload digests.
-
-Do not push or open the stacked implementation PR before all closure conditions pass. Do not merge, activate, time, rank, tag, or release.
+After `LOCAL_WU05_AUTHORITY_READY`, continue the actual five-finding repair immediately. Do not create another bundle-audit cycle.
