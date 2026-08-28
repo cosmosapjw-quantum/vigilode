@@ -1,0 +1,56 @@
+{
+  "schema": "vigilode-k0-wu05-bootstrap-authority/v2",
+  "status": "BOUND",
+  "supersedes": [
+    "WU05_PREMERGE_BOOTSTRAP_AUTHORITY.json",
+    "WU05_PREMERGE_BOOTSTRAP_HANDOFF.md",
+    "WU05_PREMERGE_CODEX_PROMPT.md",
+    "tools/verify-k0-wu05-premerge-bootstrap.py",
+    "tools/k0-wu05-premerge-bootstrap.sh"
+  ],
+  "repository": "cosmosapjw-quantum/vigilode",
+  "package_branch": "docs/k0-codex-execution-package-20260827",
+  "package_minimum_ancestor": "cbdb597fdd58fd1f08a104b4ea8b662dac1f8ba1",
+  "preserved_local": {
+    "branch": "research/k0-stage-telemetry-integration-20260827",
+    "head": "e95ce1e58a603306cb665a6ab91cfe02d279972f",
+    "tree": "e3621a370297a76907e97730ebd18c5c1e0fb83e",
+    "clean": true
+  },
+  "root_cause": "Package-resident validators were invoked before the package commit was present in the preserved implementation branch.",
+  "bootstrap_protocol": [
+    "obtain one exact package commit SHA from the publication receipt and verify the moving branch still equals it",
+    "extract the bootstrap-v2 runner and validator from that exact commit with git show",
+    "verify the exact bootstrap and required package file set directly from the Git object database",
+    "validate the package in a detached temporary worktree before mutating local history",
+    "merge the exact package commit with preserved fresh-review head as first parent",
+    "run post-merge supplement authority and hostile-fixture checks",
+    "start Codex only after LOCAL_WU05_AUTHORITY_READY"
+  ],
+  "integrity_model": "The externally pinned 40-hex Git commit and its recursively hashed Git tree are the byte authority. The validator emits an aggregate SHA-256 over the sorted bootstrap path/byte pairs for the handback, but does not depend on a self-referential package manifest.",
+  "required_markers": [
+    "WU05_BOOTSTRAP_V2_PREMERGE_PASS",
+    "PACKAGE_CONTRACT_PASS",
+    "WU05_SUPPLEMENT_MANIFEST_PASS",
+    "LEGACY_REPAIR_BLOBS_PASS",
+    "EXTERNAL_PACKAGE_PIN_PASS",
+    "WU05_SUPPLEMENT_AUTHORITY_PASS",
+    "HOSTILE_FIXTURES_PASS",
+    "WU05_BOOTSTRAP_V2_POSTMERGE_PASS",
+    "WU05_REPAIR_MERGE_PASS",
+    "LOCAL_WU05_AUTHORITY_READY"
+  ],
+  "fail_closed_states": [
+    "BLOCKED_BY_AUTHORITY_DRIFT",
+    "STOP_INVALID"
+  ],
+  "prohibited": [
+    "source mutation before all pre-repair markers",
+    "branch merge or reset by Codex",
+    "moving-ref merge without an exact external SHA pin",
+    "redoing WU-00 through WU-04",
+    "campaign rerun without solver-semantic or numerical-payload change",
+    "production activation, timing, speedup, BDF ranking, tag, release, or merge"
+  ],
+  "claim_boundary": "EXPLORATORY/NONAUTHORITATIVE"
+}
