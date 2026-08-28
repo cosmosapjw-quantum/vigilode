@@ -1,11 +1,21 @@
 {
   "schema": "vigilode-k0-wu05-semantic-continuation/v1",
   "status": "BOUND",
+  "revision": 2,
   "finding": "WU05-NEW-P0-001",
   "classification": "REPRESENTATION_FALSE_FAIL_NOT_SCIENTIFIC_FAILURE",
   "repository": "cosmosapjw-quantum/vigilode",
   "package_branch": "docs/k0-codex-execution-package-20260827",
   "prior_package_sha": "c6ec0121be11f76b86afc21f8ae7a304d35c6d83",
+  "trusted_control_baseline": "3f2f7712d04e12beb3291b8369e82bd3f8d92c45",
+  "transition_repair": {
+    "observed_failure": "the old c6-to-package positive allowlist rejected a path already contained in the frozen semantic package",
+    "disposition": "PROVENANCE_REBIND_REQUIRED",
+    "scientific_failure": false,
+    "controlling_change": "freeze 3f2f771 as the finite trusted control boundary and inspect only the bounded successor repair delta",
+    "regression": "tools/test_k0_semantic_transition_scope.py",
+    "primary_guard": "tools/verify-k0-semantic-transition-scope.py"
+  },
   "preserved_prepared_local": {
     "branch": "research/k0-stage-telemetry-integration-20260827",
     "head": "f6208a104d2f341157d900294aa30d8edb4446c0",
@@ -16,14 +26,14 @@
     ],
     "clean": true
   },
-  "root_cause": [
-    "historical raw has no required top-level status label",
-    "historical raw has no required top-level tolerance_arm label",
-    "source SHA/tree live in the raw outer envelope rather than the discovered receipt object",
-    "historical COMPLETE stages did not record signed-residual digests",
-    "error:null was vulnerable to being interpreted as an ERROR",
-    "representation metadata was mixed into the numerical payload identity"
-  ],
+  "identity_policy": {
+    "immutable_raw_receipts": "BYTE_IDENTITY",
+    "numerical_results": "CANONICAL_NUMERICAL_IDENTITY",
+    "wrapper_and_packaging": "CONTENT_OR_STRUCTURAL_IDENTITY",
+    "result_validity": "NOT_EVALUATED",
+    "provenance_validity": "REBIND_REQUIRED",
+    "packaging_validity": "NONBLOCKING"
+  },
   "controlling_semantics": {
     "tolerance": {
       "rtol": 1e-10,
@@ -44,21 +54,31 @@
     "byte_identity": "PRESERVED_SEPARATELY_FOR_RAW_PROVENANCE"
   },
   "active_files": {
-    "entry": "START_CONTINUATION.sh",
+    "entry": "START_CONTINUATION_R2.sh",
+    "host_prompt": "HOST_CODEX_CONTINUE_R2.md",
     "root_handoff": "WU05_SEMANTIC_REPAIR_HANDOFF.md",
-    "root_prompt": "CODEX_START_HERE.md",
     "semantic_validator": "tools/verify-k0-wu05-semantic-evidence.py",
+    "transition_scope_validator": "tools/verify-k0-semantic-transition-scope.py",
+    "transition_regression": "tools/test_k0_semantic_transition_scope.py",
     "canonicalization": "docs/exec-plans/k0-stage-telemetry-integration-20260827/evidence/EVIDENCE_V3_SEMANTIC_AUTHORITY.json",
     "stage_schema": "docs/exec-plans/k0-stage-telemetry-integration-20260827/schemas/stage-receipt-v3-semantic.schema.json",
     "cell_schema": "docs/exec-plans/k0-stage-telemetry-integration-20260827/schemas/cell-receipt-v3-semantic.schema.json"
   },
-  "supersedes_only": [
-    "evidence-v3 clauses requiring raw top-level status",
-    "evidence-v3 clauses requiring raw top-level tolerance_arm",
-    "receipt-level source-head/tree lookup",
-    "fabricated historical signed-residual requirement",
-    "numerical digest inclusion of representation-only metadata"
-  ],
+  "trust_boundary": {
+    "frozen_baseline": "3f2f7712d04e12beb3291b8369e82bd3f8d92c45",
+    "ordinary_runs_do_not_reaudit": "the full c6-to-3f2 semantic package delta",
+    "reopen_only_for": [
+      "observed false PASS",
+      "observed false FAIL",
+      "destructive transition defect",
+      "scientific/numerical mismatch"
+    ]
+  },
+  "process_starvation_brake": {
+    "after_ready": "EXECUTE_ACTUAL_12_CELL_MIGRATION_THEN_WU05_SOURCE_REPAIR",
+    "new_governance_layer": "FORBIDDEN",
+    "additional_review_tier": "FORBIDDEN"
+  },
   "preserves": [
     "the five original WU-05 findings",
     "public-bridge source audit",
@@ -68,8 +88,8 @@
     "one existing fresh repair review",
     "one existing final differential audit"
   ],
-  "required_marker": "EVIDENCE_V3_PASS",
   "upgrade_ready_marker": "LOCAL_WU05_AUTHORITY_READY",
+  "actual_evidence_marker": "EVIDENCE_V3_PASS",
   "campaign_rerun": "FORBIDDEN_FOR_REPRESENTATION_ONLY_CHANGE",
   "claim_boundary": "EXPLORATORY/NONAUTHORITATIVE"
 }
