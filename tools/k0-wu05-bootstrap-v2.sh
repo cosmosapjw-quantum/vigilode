@@ -1,77 +1,26 @@
 #!/usr/bin/env bash
+# Run this extracted file, not an absent command in the preserved branch.
 set -euo pipefail
-
-usage() {
-  echo "usage: $0 --repo-root PATH --package-sha 40HEX" >&2
-  exit 2
-}
-
-REPO_ROOT=
-PACKAGE_SHA=
+REPO_ROOT= PACKAGE_SHA=
 while (($#)); do
   case "$1" in
-    --repo-root) REPO_ROOT=${2:-}; shift 2 ;;
-    --package-sha) PACKAGE_SHA=${2:-}; shift 2 ;;
-    *) usage ;;
+    --repo-root|--package-sha)
+      (($# >= 2)) || { echo 'missing argument value' >&2; exit 2; }
+      if [[ $1 == --repo-root ]]; then REPO_ROOT=$2; else PACKAGE_SHA=$2; fi
+      shift 2 ;;
+    *) echo "unknown argument: $1" >&2; exit 2 ;;
   esac
 done
-[[ -n "$REPO_ROOT" && -n "$PACKAGE_SHA" ]] || usage
-REPO_ROOT=$(cd "$REPO_ROOT" && pwd)
-VALIDATOR_REL=tools/verify-k0-wu05-bootstrap-v2.py
-TMP=$(mktemp -d "${TMPDIR:-/tmp}/vigilode-k0-wu05-bootstrap-v2.XXXXXX")
-PKG_WT="$TMP/package-worktree"
-cleanup() {
-  git -C "$REPO_ROOT" worktree remove --force "$PKG_WT" >/dev/null 2>&1 || true
-  rm -rf "$TMP"
+[[ -n $REPO_ROOT && $PACKAGE_SHA =~ ^[0-9a-f]{40}$ ]] || {
+  echo 'usage: bootstrap --repo-root PATH --package-sha 40HEX' >&2; exit 2;
 }
-trap cleanup EXIT
-
-cd "$REPO_ROOT"
-git fetch --prune origin docs/k0-codex-execution-package-20260827
-if [[ $(git rev-parse origin/docs/k0-codex-execution-package-20260827) != "$PACKAGE_SHA" ]]; then
-  echo '{"status":"BLOCKED_BY_AUTHORITY_DRIFT","error":"package branch tip differs from publication pin"}' >&2
-  exit 2
-fi
-
-git show "$PACKAGE_SHA:$VALIDATOR_REL" > "$TMP/validator.py"
-python "$TMP/validator.py" \
-  --repo-root "$REPO_ROOT" \
-  --package-sha "$PACKAGE_SHA" \
-  --check-premerge
-
-git worktree add --detach "$PKG_WT" "$PACKAGE_SHA" >/dev/null
-python "$PKG_WT/tools/verify-k0-stage-telemetry-plan.py" \
-  --repo-root "$PKG_WT" \
-  --check-package
-python "$PKG_WT/tools/verify-k0-wu05-supplement.py" \
-  --repo-root "$PKG_WT" \
-  --expected-package-sha "$PACKAGE_SHA" \
-  --check-supplement-manifest \
-  --check-authority \
-  --self-test
-
-git worktree remove --force "$PKG_WT" >/dev/null
-
-if ! git merge --no-ff --no-edit "$PACKAGE_SHA"; then
-  git merge --abort >/dev/null 2>&1 || true
-  echo '{"status":"BLOCKED_BY_AUTHORITY_DRIFT","error":"exact package merge conflicted"}' >&2
-  exit 2
-fi
-
-python tools/verify-k0-wu05-bootstrap-v2.py \
-  --repo-root "$REPO_ROOT" \
-  --package-sha "$PACKAGE_SHA" \
-  --check-postmerge
-python tools/verify-k0-stage-telemetry-plan.py \
-  --repo-root "$REPO_ROOT" \
-  --check-package
-python tools/verify-k0-wu05-supplement.py \
-  --repo-root "$REPO_ROOT" \
-  --expected-package-sha "$PACKAGE_SHA" \
-  --check-supplement-manifest \
-  --check-authority \
-  --check-repair-merge \
-  --self-test
-
-test -z "$(git status --porcelain=v1)"
-printf '%s\n' 'LOCAL_WU05_AUTHORITY_READY'
+REPO_ROOT=$(cd "$REPO_ROOT" && pwd -P)
+PYTHON=$(command -v python3 || command -v python) || exit 2
+TMP=$(mktemp -d "${TMPDIR:-/tmp}/k0-bootstrap-entry.XXXXXX")
+trap 'rm -rf -- "$TMP"' EXIT
+export PYTHONDONTWRITEBYTECODE=1 GIT_TERMINAL_PROMPT=0
+git -C "$REPO_ROOT" cat-file -e "$PACKAGE_SHA^{commit}"
+git -C "$REPO_ROOT" show \
+  "$PACKAGE_SHA:tools/verify-k0-wu05-bootstrap-v2.py" > "$TMP/validator.py"
+"$PYTHON" -B "$TMP/validator.py" --repo-root "$REPO_ROOT" \
+  --package-sha "$PACKAGE_SHA" --apply

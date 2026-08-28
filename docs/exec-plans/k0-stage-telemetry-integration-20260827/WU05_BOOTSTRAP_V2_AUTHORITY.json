@@ -1,33 +1,75 @@
 {
   "schema": "vigilode-k0-wu05-bootstrap-authority/v2",
+  "revision": 2,
   "status": "BOUND",
-  "supersedes": [
-    "WU05_PREMERGE_BOOTSTRAP_AUTHORITY.json",
-    "WU05_PREMERGE_BOOTSTRAP_HANDOFF.md",
-    "WU05_PREMERGE_CODEX_PROMPT.md",
-    "tools/verify-k0-wu05-premerge-bootstrap.py",
-    "tools/k0-wu05-premerge-bootstrap.sh"
-  ],
   "repository": "cosmosapjw-quantum/vigilode",
   "package_branch": "docs/k0-codex-execution-package-20260827",
   "package_minimum_ancestor": "cbdb597fdd58fd1f08a104b4ea8b662dac1f8ba1",
+  "inspected_bootstrap_baseline": "13aed8dabfbb5da4381d9d73d3cb0c0403ad5354",
   "preserved_local": {
     "branch": "research/k0-stage-telemetry-integration-20260827",
     "head": "e95ce1e58a603306cb665a6ab91cfe02d279972f",
     "tree": "e3621a370297a76907e97730ebd18c5c1e0fb83e",
     "clean": true
   },
-  "root_cause": "Package-resident validators were invoked before the package commit was present in the preserved implementation branch.",
-  "bootstrap_protocol": [
-    "obtain one exact package commit SHA from the publication receipt and verify the moving branch still equals it",
-    "extract the bootstrap-v2 runner and validator from that exact commit with git show",
-    "verify the exact bootstrap and required package file set directly from the Git object database",
-    "validate the package in a detached temporary worktree before mutating local history",
-    "merge the exact package commit with preserved fresh-review head as first parent",
-    "run post-merge supplement authority and hostile-fixture checks",
-    "start Codex only after LOCAL_WU05_AUTHORITY_READY"
+  "bootstrap_owner": "HOST_CODEX_ORCHESTRATOR",
+  "authorization": {
+    "permitted": "The host Codex session may execute the exact pinned bootstrap runner as deterministic orchestrator preparation, then change role to WU-05 implementer only after readiness. No separate human merge action is required.",
+    "not_permitted": [
+      "manual merge resolution",
+      "reset",
+      "rebase",
+      "stash",
+      "amend",
+      "force push",
+      "source edits before readiness",
+      "running a package-only validator from the unprepared implementation tree"
+    ]
+  },
+  "supersedes": [
+    "earlier bootstrap-v2 clause prohibiting all Codex-owned branch preparation",
+    "earlier prompts that assume orchestrator preparation already happened",
+    "WU05_PREMERGE_BOOTSTRAP_AUTHORITY.json",
+    "WU05_PREMERGE_BOOTSTRAP_HANDOFF.md",
+    "WU05_PREMERGE_CODEX_PROMPT.md"
   ],
-  "integrity_model": "The externally pinned 40-hex Git commit and its recursively hashed Git tree are the byte authority. The validator emits an aggregate SHA-256 over the sorted bootstrap path/byte pairs for the handback, but does not depend on a self-referential package manifest.",
+  "root_cause": "The old validator command is absent by design at the preserved review commit; bootstrap and implementation roles must not be interchanged.",
+  "bootstrap_protocol": [
+    "obtain the exact external publication SHA",
+    "locate and inspect the preserved worktree without switching branches",
+    "fetch and extract the runner with git show from the pinned commit",
+    "reject non-control package delta; validate real dependencies in a detached worktree",
+    "require zero exits AND all structured PASS markers before merge",
+    "merge with ordered parents [preserved_review, exact_package] or revalidate that exact existing clean merge",
+    "preserve command logs outside tracked working tree",
+    "start WU-05 source repair only after LOCAL_WU05_AUTHORITY_READY"
+  ],
+  "failure_modes": [
+    {
+      "id": "BR-ENTRY",
+      "severity": "P1",
+      "trigger": "invoke absent package validator before preparation",
+      "detector": "test_missing_validator_before_merge_is_expected_and_bootstrap_installs_it"
+    },
+    {
+      "id": "BR-MARKER",
+      "severity": "P1",
+      "trigger": "zero-exit validator omits mandatory markers",
+      "detector": "test_exit_zero_without_required_markers_cannot_authorize_merge"
+    },
+    {
+      "id": "BR-SCOPE",
+      "severity": "P1",
+      "trigger": "package update changes non-control source",
+      "detector": "test_source_in_package_delta_is_rejected_before_merge"
+    },
+    {
+      "id": "BR-REENTRY",
+      "severity": "P1",
+      "trigger": "successful bootstrap rerun is treated as authority corruption",
+      "detector": "test_successful_bootstrap_is_idempotent"
+    }
+  ],
   "required_markers": [
     "WU05_BOOTSTRAP_V2_PREMERGE_PASS",
     "PACKAGE_CONTRACT_PASS",
@@ -40,17 +82,26 @@
     "WU05_REPAIR_MERGE_PASS",
     "LOCAL_WU05_AUTHORITY_READY"
   ],
-  "fail_closed_states": [
-    "BLOCKED_BY_AUTHORITY_DRIFT",
-    "STOP_INVALID"
-  ],
+  "retry_policy": "Only the original clean review or its exact clean two-parent merge is accepted. No newer implementation commit is rewound. Post-merge failures preserve the merge and logs.",
+  "integrity_model": "Externally pinned commit/tree identify source/control bytes. Existing historical manifests remain unchanged; this revision does not add a new manifest gate. Package metadata drift is not a scientific failure.",
+  "review_policy": "The existing one fresh-context repair review and final differential audit remain. No additional review layer.",
+  "integrations": {
+    "jira": "PM-7",
+    "confluence_page_id": "15499267",
+    "control_pr": 21,
+    "source_pr": 20,
+    "atlassian_outage": "ATLAS_SYNC_PENDING, never a source-repair success claim"
+  },
   "prohibited": [
-    "source mutation before all pre-repair markers",
-    "branch merge or reset by Codex",
-    "moving-ref merge without an exact external SHA pin",
-    "redoing WU-00 through WU-04",
-    "campaign rerun without solver-semantic or numerical-payload change",
-    "production activation, timing, speedup, BDF ranking, tag, release, or merge"
+    "rewriting WU-00 through WU-04",
+    "campaign replay without distinct semantic/evidence reason",
+    "Cargo graph changes",
+    "production route/signature/threshold changes",
+    "homotopy certificate changes",
+    "timing/ranking/speedup",
+    "PR merge",
+    "tag",
+    "release"
   ],
   "claim_boundary": "EXPLORATORY/NONAUTHORITATIVE"
 }

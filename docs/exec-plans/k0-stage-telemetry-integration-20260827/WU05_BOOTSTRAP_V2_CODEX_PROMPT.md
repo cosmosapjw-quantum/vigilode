@@ -1,67 +1,35 @@
-# Codex prompt — VigilODE K0 WU-05 bounded repair
+# Host Codex: prepare first, then repair WU-05
 
-Resume only after the orchestrator emitted:
+Use the exact `K0_PACKAGE_SHA` supplied with this prompt. Do not derive authority from an unpinned moving branch.
 
-```text
-LOCAL_WU05_AUTHORITY_READY
-```
+You have TWO sequential roles in this same host session:
 
-Do not create, switch, merge, rebase, reset, cherry-pick, amend, or force-update branches.
+1. HOST_CODEX_ORCHESTRATOR: run the exact pinned bootstrap-v2 script.
+2. WU-05 IMPLEMENTER: only after `LOCAL_WU05_AUTHORITY_READY`, perform the existing bounded fresh-review repair.
 
-Preserve without rewriting or rerunning:
+The previous broad prohibition on Codex branch preparation is overridden ONLY for executing this pinned, tested bootstrap script. Do not perform manual merge resolution/reset/rebase/stash/amend/force-update. Do not run package-only validators from the unprepared implementation tree.
 
-```text
-WU-00        183e24feb39fd7581450ae4380bd8afe09249451
-WU-01        faa759de5c54848bb60d4cb8af4b06b6bcbbe514
-WU-02        2badcec35b51d23fcd2938d1e15c9e0875a0f9df
-WU-03        321c63ee8ca0f216001bf41b30d58c1858a4781a
-WU-04        c7a5393a2cb1cf6f6095c6390348dd21fb45efe9
-fresh review e95ce1e58a603306cb665a6ab91cfe02d279972f
-```
-
-Read in order:
-
-1. `WU05_LOCAL_REPAIR_SUPPLEMENT.json`
-2. `WU05_LOCAL_REPAIR_HANDOFF.md`
-3. `PUBLIC_BRIDGE_CONTRACT_V2.md`
-4. `evidence/EVIDENCE_V3_CANONICALIZATION.json`
-5. `schemas/stage-receipt-v3.schema.json`
-6. `schemas/cell-receipt-v3.schema.json`
-7. `research/k0_stage_telemetry_20260827/review/fresh_review_findings.yaml`
-
-Repair exactly the five original findings and every `SR-K0-*` supplement finding. Reproduce each finding and write RED tests before implementation.
-
-Use only these public-at-the-language-level research bridges:
+Expected preserved local state:
 
 ```text
-rodas5p_krylov::k0_research_bridge
-rodas5p_integrators::k0_research_bridge
+branch research/k0-stage-telemetry-integration-20260827
+head   e95ce1e58a603306cb665a6ab91cfe02d279972f
+tree   e3621a370297a76907e97730ebd18c5c1e0fb83e
+clean  true
 ```
 
-Every bridge module and direct export is K0-specific and `#[doc(hidden)]`. `pub use` is forbidden. Call sites are limited by `PUBLIC_BRIDGE_CONTRACT_V2.md`.
+Locate `/tmp/vigilode-k0-stage-telemetry.kAguIL/tree`; if moved, inspect `git -C ~/vigilode worktree list --porcelain` without switching branches. Keep every unpushed WU-00–04/review commit.
 
-Do not modify any Cargo manifest, `Cargo.lock`, existing production signature, ordinary production path, solver equation, tolerance, convergence authority, output, recycle transaction, semi-Jacobian-free homotopy certificate, or historical receipt.
+Fetch `docs/k0-codex-execution-package-20260827` and require its remote-tracking SHA to equal the supplied pin. Use `git show "$K0_PACKAGE_SHA:tools/k0-wu05-bootstrap-v2.sh"` to extract the runner to a `mktemp` file outside the worktree. Execute it with `bash ... --repo-root ... --package-sha "$K0_PACKAGE_SHA"`.
 
-Preserve all twelve raw WU-04 cells byte-for-byte. Build evidence-v3 wrappers mechanically from the raw cells. Do not rerun the campaign unless equations, tolerance, routing, convergence, stage work, or numerical payload bytes changed.
+The script accepts either the original clean review or its exact clean two-parent merge with this package; it never creates a second merge on a retry. It validates real package dependencies in a detached worktree before mutation, requires all structured PASS markers, preserves logs, and rejects non-control source changes.
 
-Required closure markers:
+After readiness, read `WU05_BOOTSTRAP_V2_HANDOFF.md`, then `WU05_LOCAL_CODEX_PROMPT.md` and its seven required source/contracts. The old instruction that an external orchestrator has ALREADY prepared the branch is superseded by your actual bootstrap receipt. Do not rerun WU-00–04.
 
-```text
-PUBLIC_BRIDGE_SOURCE_PASS
-EVIDENCE_V3_PASS
-AGGREGATE_ERROR_GUARD_PASS
-SIGNED_RESIDUAL_GUARD_PASS
-```
+Repair only the five recorded fresh-review findings and already-bound supplement cases. Preserve raw campaign receipts; build evidence-v3 wrappers mechanically; make no numerical claims from package tests. Keep Cargo manifests, tolerance, equations, production signatures/routes, and homotopy certification unchanged.
 
-After targeted and workspace tests, run exactly one read-only fresh repair review using the existing supplement review prompt, then the existing final differential audit. Repair only reproduced P0/P1 findings.
+Run actual targeted regression/mutation tests, source-derived bridge audit, evidence checks, the existing single read-only fresh review, and final differential audit. Retain original P3 lints as nonblocking unless your delta adds a new substantive defect.
 
-Push and open one draft stacked implementation PR only after:
+Do not push source or open the implementation PR until required P0/P1 closure gates pass. Then publish only the draft stacked implementation PR; no PR merge, activation, timing, ranking, tag, or release.
 
-- all original findings are `CLOSED`;
-- all supplement findings are closed;
-- no new P0/P1 remains;
-- raw cell SHA-256 and numerical/stage payload digests are preserved;
-- the required closure markers pass;
-- the worktree is clean.
-
-Do not merge, activate, time, rank, tag, or release.
+Record the bootstrap receipt path, exact package/prepared/final SHAs and trees, all actually executed commands, five finding dispositions, raw evidence preservation, skipped work and reasons, and GitHub/Jira PM-7/Confluence 15499267 synchronization. Report `ATLAS_SYNC_PENDING` on an actual integration outage.
