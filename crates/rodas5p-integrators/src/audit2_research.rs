@@ -21,6 +21,111 @@ use crate::{NonlinearRemainderSnapshot, StepContext, StructuredBlockSystem};
 /// campaign outcomes.
 pub const AUDIT2_STRUCTURE_PROJECTION_TOLERANCE: f64 = 64.0 * f64::EPSILON;
 
+/// Algebraic reconciliation of a computed correction against projected and
+/// original residual/Jacobian targets at one identical trial stage state.
+///
+/// With `rho_p = A_p z - r_p`, `DeltaA = A_o - A_p`, and
+/// `Deltar = r_o - r_p`, the original-target residual is
+/// `rho_o = rho_p + DeltaA z - Deltar = A_o z - r_o`.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct Audit2OriginalResidualBridge {
+    pub rho_projected: Vec<f64>,
+    pub jacobian_difference_action: Vec<f64>,
+    pub residual_difference: Vec<f64>,
+    pub rho_original_direct: Vec<f64>,
+    pub rho_original_decomposed: Vec<f64>,
+    pub identity_error_l2: f64,
+}
+
+/// Reconstruct the original-target residual without changing either target.
+///
+/// This feature-gated research helper performs no acceptance decision. Callers
+/// remain responsible for evaluating both Jacobian actions at the same trial
+/// stage vector and for accounting for those diagnostic applications.
+pub fn audit2_original_residual_bridge(
+    projected_image: &[f64],
+    projected_residual: &[f64],
+    original_image: &[f64],
+    original_residual: &[f64],
+) -> CoreResult<Audit2OriginalResidualBridge> {
+    let length = projected_image.len();
+    if projected_residual.len() != length
+        || original_image.len() != length
+        || original_residual.len() != length
+    {
+        return Err(CoreError::Dimension(
+            "Audit-2 original-target bridge vector length mismatch".into(),
+        ));
+    }
+    if projected_image
+        .iter()
+        .chain(projected_residual)
+        .chain(original_image)
+        .chain(original_residual)
+        .any(|value| !value.is_finite())
+    {
+        return Err(CoreError::NonFinite(
+            "Audit-2 original-target bridge input contains NaN/Inf".into(),
+        ));
+    }
+
+    let rho_projected: Vec<f64> = projected_image
+        .iter()
+        .zip(projected_residual)
+        .map(|(image, residual)| image - residual)
+        .collect();
+    let jacobian_difference_action: Vec<f64> = original_image
+        .iter()
+        .zip(projected_image)
+        .map(|(original, projected)| original - projected)
+        .collect();
+    let residual_difference: Vec<f64> = original_residual
+        .iter()
+        .zip(projected_residual)
+        .map(|(original, projected)| original - projected)
+        .collect();
+    let rho_original_direct: Vec<f64> = original_image
+        .iter()
+        .zip(original_residual)
+        .map(|(image, residual)| image - residual)
+        .collect();
+    let rho_original_decomposed: Vec<f64> = rho_projected
+        .iter()
+        .zip(&jacobian_difference_action)
+        .zip(&residual_difference)
+        .map(|((rho_p, delta_a_z), delta_r)| rho_p + delta_a_z - delta_r)
+        .collect();
+
+    if rho_projected
+        .iter()
+        .chain(&jacobian_difference_action)
+        .chain(&residual_difference)
+        .chain(&rho_original_direct)
+        .chain(&rho_original_decomposed)
+        .any(|value| !value.is_finite())
+    {
+        return Err(CoreError::NonFinite(
+            "Audit-2 original-target bridge arithmetic overflowed".into(),
+        ));
+    }
+    let identity_error_l2 = safe_l2(
+        &rho_original_direct
+            .iter()
+            .zip(&rho_original_decomposed)
+            .map(|(direct, decomposed)| direct - decomposed)
+            .collect::<Vec<_>>(),
+    );
+
+    Ok(Audit2OriginalResidualBridge {
+        rho_projected,
+        jacobian_difference_action,
+        residual_difference,
+        rho_original_direct,
+        rho_original_decomposed,
+        identity_error_l2,
+    })
+}
+
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum Audit2CorrectionBackend {
@@ -48,6 +153,15 @@ pub enum Audit2FailurePhase {
     Solve,
     LinearDiagnostic,
     NonlinearResidualAfter,
+    OriginalResidual,
+    OriginalSnapshot,
+    OriginalTargetAssembly,
+    OriginalDiagnostic,
+    ProjectedTargetUnavailable,
+    ConditionEstimate,
+    BridgeReconstruction,
+    OutputProjection,
+    EmbeddedProjection,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -150,6 +264,8 @@ pub struct Audit2CorrectionComparison {
     pub state_relative_difference: Option<f64>,
     pub independent_validation_apply_attempts: u64,
     pub independent_validation_apply_completed: u64,
+    pub independent_condition_estimate_attempts: u64,
+    pub independent_condition_estimate_completed: u64,
     pub independent_validation_counters: WorkCounters,
 }
 
@@ -164,6 +280,129 @@ pub struct Audit2SharedFailure {
 #[serde(tag = "status", rename_all = "kebab-case")]
 pub enum Audit2ComparisonOutcome {
     Completed(Box<Audit2CorrectionComparison>),
+    Failed(Box<Audit2SharedFailure>),
+}
+
+/// Accuracy admission is intentionally unavailable in this work unit because
+/// no independent observable output budget was supplied.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum Audit2OriginalTargetAccuracyDisposition {
+    BudgetNotSpecified,
+}
+
+/// Original-target-only diagnostic work. Projected preparation and both
+/// projected correction arms remain itemized in `projected` on the enclosing
+/// report and must not be folded into these counters a second time.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct Audit2OriginalTargetWork {
+    pub original_residual_attempts: u64,
+    pub original_residual_completed: u64,
+    pub original_snapshot_attempts: u64,
+    pub original_snapshot_completed: u64,
+    pub original_target_setup_attempts: u64,
+    pub original_target_setup_completed: u64,
+    pub factorization_attempts: u64,
+    pub factorization_completed: u64,
+    pub original_solve_attempts: u64,
+    pub original_solve_completed: u64,
+    pub condition_estimate_attempts: u64,
+    pub condition_estimate_completed: u64,
+    pub condition_solve_attempts: u64,
+    pub condition_solve_completed: u64,
+    pub projected_diagnostic_apply_attempts: u64,
+    pub projected_diagnostic_apply_completed: u64,
+    pub original_diagnostic_apply_attempts: u64,
+    pub original_diagnostic_apply_completed: u64,
+    pub bridge_reconstruction_attempts: u64,
+    pub bridge_reconstruction_completed: u64,
+    pub output_projection_attempts: u64,
+    pub output_projection_completed: u64,
+    pub embedded_projection_attempts: u64,
+    pub embedded_projection_completed: u64,
+    pub counters: WorkCounters,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct Audit2OriginalTargetSuccess {
+    pub projected_residual: Vec<Vec<f64>>,
+    pub original_residual: Vec<Vec<f64>>,
+    pub original_oracle_correction: Vec<Vec<f64>>,
+    pub original_target_condition_f: f64,
+    pub original_oracle_backward_error: f64,
+    pub common_w_original_backward_error: Option<f64>,
+    pub common_w_original_state_absolute_difference_l2: Option<f64>,
+    pub common_w_original_state_relative_difference: Option<f64>,
+    pub bridge: Option<Audit2OriginalResidualBridge>,
+    pub common_w_output_projection: Option<Vec<f64>>,
+    pub original_oracle_output_projection: Vec<f64>,
+    pub output_projection_absolute_difference_l2: Option<f64>,
+    pub common_w_embedded_error_projection: Option<Vec<f64>>,
+    pub original_oracle_embedded_error_projection: Vec<f64>,
+    pub embedded_projection_absolute_difference_l2: Option<f64>,
+    pub work: Audit2OriginalTargetWork,
+}
+
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct Audit2OriginalTargetPartial {
+    pub original_residual: Option<Vec<Vec<f64>>>,
+    pub original_oracle_correction: Vec<Vec<f64>>,
+    pub original_target_condition_f: Option<f64>,
+    pub original_oracle_backward_error: Option<f64>,
+    pub common_w_original_backward_error: Option<f64>,
+    pub common_w_original_state_absolute_difference_l2: Option<f64>,
+    pub common_w_original_state_relative_difference: Option<f64>,
+    pub bridge: Option<Audit2OriginalResidualBridge>,
+    pub common_w_output_projection: Option<Vec<f64>>,
+    pub original_oracle_output_projection: Option<Vec<f64>>,
+    pub common_w_embedded_error_projection: Option<Vec<f64>>,
+    pub original_oracle_embedded_error_projection: Option<Vec<f64>>,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct Audit2OriginalTargetFailure {
+    pub phase: Audit2FailurePhase,
+    pub message: String,
+    pub projected_residual: Vec<Vec<f64>>,
+    pub partial: Audit2OriginalTargetPartial,
+    pub work: Audit2OriginalTargetWork,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(tag = "status", rename_all = "kebab-case")]
+pub enum Audit2OriginalTargetDiagnosticOutcome {
+    Completed(Box<Audit2OriginalTargetSuccess>),
+    Failed(Box<Audit2OriginalTargetFailure>),
+}
+
+impl Audit2OriginalTargetDiagnosticOutcome {
+    pub fn completed(&self) -> Option<&Audit2OriginalTargetSuccess> {
+        match self {
+            Self::Completed(value) => Some(value),
+            Self::Failed(_) => None,
+        }
+    }
+
+    pub fn failed(&self) -> Option<&Audit2OriginalTargetFailure> {
+        match self {
+            Self::Completed(_) => None,
+            Self::Failed(value) => Some(value),
+        }
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct Audit2OriginalTargetBridgeComparison {
+    pub matching_trial_stage_states: bool,
+    pub accuracy_disposition: Audit2OriginalTargetAccuracyDisposition,
+    pub projected: Audit2CorrectionComparison,
+    pub original_target: Audit2OriginalTargetDiagnosticOutcome,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(tag = "status", rename_all = "kebab-case")]
+pub enum Audit2OriginalTargetBridgeOutcome {
+    Completed(Box<Audit2OriginalTargetBridgeComparison>),
     Failed(Box<Audit2SharedFailure>),
 }
 
@@ -904,18 +1143,12 @@ pub fn run_audit2_research_correction(
     }
 }
 
-/// Evaluate both research backends against one projected target snapshot and
-/// one initial residual at exactly the same supplied trial stage values.
-pub fn compare_audit2_research_corrections(
-    context: &StepContext<'_>,
+fn compare_prepared_target(
+    prepared: &PreparedTarget<'_>,
     trial_stages: &[Vec<f64>],
-) -> Audit2ComparisonOutcome {
-    let prepared = match prepare_target(context, trial_stages) {
-        Ok(prepared) => prepared,
-        Err(shared) => return Audit2ComparisonOutcome::Failed(shared),
-    };
-    let (full_target, target_matrix) = run_full_target(&prepared, trial_stages);
-    let common_w = run_common_w(&prepared, trial_stages);
+) -> (Audit2CorrectionComparison, Option<DenseMatrix>) {
+    let (full_target, target_matrix) = run_full_target(prepared, trial_stages);
+    let common_w = run_common_w(prepared, trial_stages);
     let mut target_condition_f = None;
     let mut full_target_backward_error = None;
     let mut common_w_backward_error = None;
@@ -923,20 +1156,30 @@ pub fn compare_audit2_research_corrections(
     let mut state_relative_difference = None;
     let mut independent_validation_apply_attempts = 0;
     let mut independent_validation_apply_completed = 0;
+    let mut independent_condition_estimate_attempts = 0;
+    let mut independent_condition_estimate_completed = 0;
     let mut independent_validation_counters = WorkCounters::default();
-    if let Some(matrix) = target_matrix {
+    if let Some(matrix) = target_matrix.as_ref() {
         let matrix_norm = safe_l2(matrix.as_slice());
-        if matrix_norm.is_finite()
-            && let Ok(matrix_inverse) = inverse(&matrix)
-        {
-            let value = matrix_norm * safe_l2(matrix_inverse.as_slice());
-            if value.is_finite() {
-                target_condition_f = Some(value);
+        if matrix_norm.is_finite() {
+            bump(&mut independent_condition_estimate_attempts);
+            independent_validation_counters.direct_factorizations = independent_validation_counters
+                .direct_factorizations
+                .saturating_add(1);
+            independent_validation_counters.direct_solve_calls = independent_validation_counters
+                .direct_solve_calls
+                .saturating_add(1);
+            if let Ok(matrix_inverse) = inverse(matrix) {
+                let value = matrix_norm * safe_l2(matrix_inverse.as_slice());
+                if value.is_finite() {
+                    target_condition_f = Some(value);
+                    bump(&mut independent_condition_estimate_completed);
+                }
             }
         }
         let rhs = flatten(&prepared.residual);
         full_target_backward_error = independent_backward_error(
-            &matrix,
+            matrix,
             matrix_norm,
             &rhs,
             &full_target,
@@ -945,7 +1188,7 @@ pub fn compare_audit2_research_corrections(
             &mut independent_validation_counters,
         );
         common_w_backward_error = independent_backward_error(
-            &matrix,
+            matrix,
             matrix_norm,
             &rhs,
             &common_w,
@@ -973,7 +1216,7 @@ pub fn compare_audit2_research_corrections(
             }
         }
     }
-    Audit2ComparisonOutcome::Completed(Box::new(Audit2CorrectionComparison {
+    let report = Audit2CorrectionComparison {
         projection: prepared.projection.clone(),
         shared_preparation_counters: prepared.preparation_counters,
         matching_trial_stage_states: true,
@@ -986,6 +1229,586 @@ pub fn compare_audit2_research_corrections(
         state_relative_difference,
         independent_validation_apply_attempts,
         independent_validation_apply_completed,
+        independent_condition_estimate_attempts,
+        independent_condition_estimate_completed,
         independent_validation_counters,
+    };
+    (report, target_matrix)
+}
+
+/// Evaluate both research backends against one projected target snapshot and
+/// one initial residual at exactly the same supplied trial stage values.
+pub fn compare_audit2_research_corrections(
+    context: &StepContext<'_>,
+    trial_stages: &[Vec<f64>],
+) -> Audit2ComparisonOutcome {
+    let prepared = match prepare_target(context, trial_stages) {
+        Ok(prepared) => prepared,
+        Err(shared) => return Audit2ComparisonOutcome::Failed(shared),
+    };
+    let (report, _) = compare_prepared_target(&prepared, trial_stages);
+    Audit2ComparisonOutcome::Completed(Box::new(report))
+}
+
+fn original_target_failure(
+    prepared: &PreparedTarget<'_>,
+    phase: Audit2FailurePhase,
+    error: impl ToString,
+    partial: Audit2OriginalTargetPartial,
+    work: Audit2OriginalTargetWork,
+) -> Audit2OriginalTargetDiagnosticOutcome {
+    Audit2OriginalTargetDiagnosticOutcome::Failed(Box::new(Audit2OriginalTargetFailure {
+        phase,
+        message: error.to_string(),
+        projected_residual: prepared.residual.clone(),
+        partial,
+        work,
+    }))
+}
+
+fn counted_target_matrix_apply(
+    matrix: &DenseMatrix,
+    input: &[f64],
+    projected: bool,
+    work: &mut Audit2OriginalTargetWork,
+) -> CoreResult<Vec<f64>> {
+    if projected {
+        bump(&mut work.projected_diagnostic_apply_attempts);
+    } else {
+        bump(&mut work.original_diagnostic_apply_attempts);
+    }
+    work.counters.diagnostic_matvecs = work.counters.diagnostic_matvecs.saturating_add(1);
+    let image = matrix.matvec(input)?;
+    if projected {
+        bump(&mut work.projected_diagnostic_apply_completed);
+    } else {
+        bump(&mut work.original_diagnostic_apply_completed);
+    }
+    Ok(image)
+}
+
+fn normalized_backward_error(
+    matrix_norm: f64,
+    correction: &[f64],
+    rhs: &[f64],
+    image: &[f64],
+) -> CoreResult<f64> {
+    let residual = safe_l2(
+        &image
+            .iter()
+            .zip(rhs)
+            .map(|(left, right)| left - right)
+            .collect::<Vec<_>>(),
+    );
+    let denominator = matrix_norm * safe_l2(correction) + safe_l2(rhs);
+    let value = if denominator == 0.0 {
+        if residual == 0.0 { 0.0 } else { f64::INFINITY }
+    } else {
+        residual / denominator
+    };
+    if value.is_finite() {
+        Ok(value)
+    } else {
+        Err(CoreError::NonFinite(
+            "Audit-2 original-target backward error is NaN/Inf".into(),
+        ))
+    }
+}
+
+fn counted_original_condition_f(
+    matrix: &DenseMatrix,
+    factor: &LuFactorization,
+    work: &mut Audit2OriginalTargetWork,
+) -> CoreResult<f64> {
+    bump(&mut work.condition_estimate_attempts);
+    let dimension = matrix.nrows();
+    let mut inverse_data = vec![0.0; dimension * dimension];
+    for column in 0..dimension {
+        let mut rhs = vec![0.0; dimension];
+        rhs[column] = 1.0;
+        bump(&mut work.condition_solve_attempts);
+        work.counters.direct_solve_calls = work.counters.direct_solve_calls.saturating_add(1);
+        let solution = factor.solve(&rhs)?;
+        bump(&mut work.condition_solve_completed);
+        for row in 0..dimension {
+            inverse_data[row * dimension + column] = solution[row];
+        }
+    }
+    let matrix_inverse = DenseMatrix::new(dimension, dimension, inverse_data)?;
+    let condition = safe_l2(matrix.as_slice()) * safe_l2(matrix_inverse.as_slice());
+    if !condition.is_finite() {
+        return Err(CoreError::NonFinite(
+            "Audit-2 original-target condition estimate is NaN/Inf".into(),
+        ));
+    }
+    bump(&mut work.condition_estimate_completed);
+    Ok(condition)
+}
+
+fn counted_newton_projection(
+    context: &StepContext<'_>,
+    trial_stages: &[Vec<f64>],
+    correction: &[Vec<f64>],
+    weights: &[f64],
+    include_initial_state: bool,
+    embedded: bool,
+    work: &mut Audit2OriginalTargetWork,
+) -> CoreResult<Vec<f64>> {
+    if embedded {
+        bump(&mut work.embedded_projection_attempts);
+    } else {
+        bump(&mut work.output_projection_attempts);
+    }
+    if weights.len() != context.coeffs.stages() {
+        return Err(CoreError::Dimension(
+            "Audit-2 original-target projection weight mismatch".into(),
+        ));
+    }
+    let updated = updated_stages(trial_stages, correction)?;
+    let mut projection = if include_initial_state {
+        context.y.clone()
+    } else {
+        vec![0.0; context.problem.dimension]
+    };
+    for (weight, row) in weights.iter().zip(updated) {
+        for (value, stage_value) in projection.iter_mut().zip(row) {
+            *value += weight * stage_value;
+        }
+    }
+    if projection.iter().any(|value| !value.is_finite()) {
+        return Err(CoreError::NonFinite(
+            "Audit-2 original-target output projection contains NaN/Inf".into(),
+        ));
+    }
+    if embedded {
+        bump(&mut work.embedded_projection_completed);
+    } else {
+        bump(&mut work.output_projection_completed);
+    }
+    Ok(projection)
+}
+
+fn run_original_target_diagnostic(
+    original_context: &StepContext<'_>,
+    prepared: &PreparedTarget<'_>,
+    projected_matrix: Option<&DenseMatrix>,
+    projected: &Audit2CorrectionComparison,
+    trial_stages: &[Vec<f64>],
+) -> Audit2OriginalTargetDiagnosticOutcome {
+    let mut work = Audit2OriginalTargetWork::default();
+    let mut partial = Audit2OriginalTargetPartial::default();
+    let block = StructuredBlockSystem::new(original_context);
+
+    bump(&mut work.original_residual_attempts);
+    let original_residual = match block.target_residual(trial_stages, &mut work.counters) {
+        Ok(residual) => {
+            bump(&mut work.original_residual_completed);
+            residual
+        }
+        Err(error) => {
+            return original_target_failure(
+                prepared,
+                Audit2FailurePhase::OriginalResidual,
+                error,
+                partial,
+                work,
+            );
+        }
+    };
+    partial.original_residual = Some(original_residual.clone());
+
+    bump(&mut work.original_snapshot_attempts);
+    let original_snapshot =
+        match block.nonlinear_remainder_snapshot(trial_stages, &mut work.counters) {
+            Ok(snapshot) => {
+                bump(&mut work.original_snapshot_completed);
+                snapshot
+            }
+            Err(error) => {
+                return original_target_failure(
+                    prepared,
+                    Audit2FailurePhase::OriginalSnapshot,
+                    error,
+                    partial,
+                    work,
+                );
+            }
+        };
+
+    bump(&mut work.original_target_setup_attempts);
+    let original_matrix =
+        match block.target_jacobian_matrix(trial_stages, &original_snapshot, &mut work.counters) {
+            Ok(matrix) => {
+                bump(&mut work.original_target_setup_completed);
+                matrix
+            }
+            Err(error) => {
+                return original_target_failure(
+                    prepared,
+                    Audit2FailurePhase::OriginalTargetAssembly,
+                    error,
+                    partial,
+                    work,
+                );
+            }
+        };
+
+    bump(&mut work.factorization_attempts);
+    work.counters.direct_factorizations = work.counters.direct_factorizations.saturating_add(1);
+    let factor = match LuFactorization::new(&original_matrix) {
+        Ok(factor) => {
+            bump(&mut work.factorization_completed);
+            factor
+        }
+        Err(error) => {
+            return original_target_failure(
+                prepared,
+                Audit2FailurePhase::Factorization,
+                error,
+                partial,
+                work,
+            );
+        }
+    };
+
+    let original_rhs = flatten(&original_residual);
+    bump(&mut work.original_solve_attempts);
+    work.counters.direct_solve_calls = work.counters.direct_solve_calls.saturating_add(1);
+    let original_oracle_flat = match factor.solve(&original_rhs) {
+        Ok(correction) => {
+            bump(&mut work.original_solve_completed);
+            correction
+        }
+        Err(error) => {
+            return original_target_failure(
+                prepared,
+                Audit2FailurePhase::Solve,
+                error,
+                partial,
+                work,
+            );
+        }
+    };
+    let original_oracle_correction = unflatten(
+        &original_oracle_flat,
+        original_context.coeffs.stages(),
+        original_context.problem.dimension,
+    );
+    partial.original_oracle_correction = original_oracle_correction.clone();
+
+    let original_target_condition_f =
+        match counted_original_condition_f(&original_matrix, &factor, &mut work) {
+            Ok(condition) => condition,
+            Err(error) => {
+                return original_target_failure(
+                    prepared,
+                    Audit2FailurePhase::ConditionEstimate,
+                    error,
+                    partial,
+                    work,
+                );
+            }
+        };
+    partial.original_target_condition_f = Some(original_target_condition_f);
+    let original_matrix_norm = safe_l2(original_matrix.as_slice());
+    let original_oracle_image = match counted_target_matrix_apply(
+        &original_matrix,
+        &original_oracle_flat,
+        false,
+        &mut work,
+    ) {
+        Ok(image) => image,
+        Err(error) => {
+            return original_target_failure(
+                prepared,
+                Audit2FailurePhase::OriginalDiagnostic,
+                error,
+                partial,
+                work,
+            );
+        }
+    };
+    let original_oracle_backward_error = match normalized_backward_error(
+        original_matrix_norm,
+        &original_oracle_flat,
+        &original_rhs,
+        &original_oracle_image,
+    ) {
+        Ok(value) => value,
+        Err(error) => {
+            return original_target_failure(
+                prepared,
+                Audit2FailurePhase::OriginalDiagnostic,
+                error,
+                partial,
+                work,
+            );
+        }
+    };
+    partial.original_oracle_backward_error = Some(original_oracle_backward_error);
+
+    let original_oracle_output_projection = match counted_newton_projection(
+        original_context,
+        trial_stages,
+        &original_oracle_correction,
+        &original_context.coeffs.b,
+        true,
+        false,
+        &mut work,
+    ) {
+        Ok(value) => value,
+        Err(error) => {
+            return original_target_failure(
+                prepared,
+                Audit2FailurePhase::OutputProjection,
+                error,
+                partial,
+                work,
+            );
+        }
+    };
+    partial.original_oracle_output_projection = Some(original_oracle_output_projection.clone());
+    let original_oracle_embedded_error_projection = match counted_newton_projection(
+        original_context,
+        trial_stages,
+        &original_oracle_correction,
+        &original_context.coeffs.btilde,
+        false,
+        true,
+        &mut work,
+    ) {
+        Ok(value) => value,
+        Err(error) => {
+            return original_target_failure(
+                prepared,
+                Audit2FailurePhase::EmbeddedProjection,
+                error,
+                partial,
+                work,
+            );
+        }
+    };
+    partial.original_oracle_embedded_error_projection =
+        Some(original_oracle_embedded_error_projection.clone());
+
+    let mut common_w_original_backward_error = None;
+    let mut common_w_original_state_absolute_difference_l2 = None;
+    let mut common_w_original_state_relative_difference = None;
+    let mut bridge = None;
+    let mut common_w_output_projection = None;
+    let mut output_projection_absolute_difference_l2 = None;
+    let mut common_w_embedded_error_projection = None;
+    let mut embedded_projection_absolute_difference_l2 = None;
+
+    if let Some(candidate) = projected.common_w.completed() {
+        let projected_matrix = match projected_matrix {
+            Some(matrix) => matrix,
+            None => {
+                return original_target_failure(
+                    prepared,
+                    Audit2FailurePhase::ProjectedTargetUnavailable,
+                    "projected target matrix unavailable for completed common-W correction",
+                    partial,
+                    work,
+                );
+            }
+        };
+        let candidate_flat = flatten(&candidate.correction);
+        let projected_image =
+            match counted_target_matrix_apply(projected_matrix, &candidate_flat, true, &mut work) {
+                Ok(image) => image,
+                Err(error) => {
+                    return original_target_failure(
+                        prepared,
+                        Audit2FailurePhase::LinearDiagnostic,
+                        error,
+                        partial,
+                        work,
+                    );
+                }
+            };
+        let original_image = match counted_target_matrix_apply(
+            &original_matrix,
+            &candidate_flat,
+            false,
+            &mut work,
+        ) {
+            Ok(image) => image,
+            Err(error) => {
+                return original_target_failure(
+                    prepared,
+                    Audit2FailurePhase::OriginalDiagnostic,
+                    error,
+                    partial,
+                    work,
+                );
+            }
+        };
+        bump(&mut work.bridge_reconstruction_attempts);
+        let bridge_report = match audit2_original_residual_bridge(
+            &projected_image,
+            &flatten(&prepared.residual),
+            &original_image,
+            &original_rhs,
+        ) {
+            Ok(report) => {
+                bump(&mut work.bridge_reconstruction_completed);
+                report
+            }
+            Err(error) => {
+                return original_target_failure(
+                    prepared,
+                    Audit2FailurePhase::BridgeReconstruction,
+                    error,
+                    partial,
+                    work,
+                );
+            }
+        };
+        partial.bridge = Some(bridge_report.clone());
+        common_w_original_backward_error = match normalized_backward_error(
+            original_matrix_norm,
+            &candidate_flat,
+            &original_rhs,
+            &original_image,
+        ) {
+            Ok(value) => Some(value),
+            Err(error) => {
+                return original_target_failure(
+                    prepared,
+                    Audit2FailurePhase::OriginalDiagnostic,
+                    error,
+                    partial,
+                    work,
+                );
+            }
+        };
+        partial.common_w_original_backward_error = common_w_original_backward_error;
+        let correction_difference = safe_l2(
+            &candidate_flat
+                .iter()
+                .zip(&original_oracle_flat)
+                .map(|(candidate, oracle)| candidate - oracle)
+                .collect::<Vec<_>>(),
+        );
+        common_w_original_state_absolute_difference_l2 = Some(correction_difference);
+        partial.common_w_original_state_absolute_difference_l2 = Some(correction_difference);
+        let oracle_norm = safe_l2(&original_oracle_flat);
+        if oracle_norm > 0.0 {
+            let relative = correction_difference / oracle_norm;
+            if relative.is_finite() {
+                common_w_original_state_relative_difference = Some(relative);
+                partial.common_w_original_state_relative_difference = Some(relative);
+            }
+        }
+        let candidate_output = match counted_newton_projection(
+            original_context,
+            trial_stages,
+            &candidate.correction,
+            &original_context.coeffs.b,
+            true,
+            false,
+            &mut work,
+        ) {
+            Ok(value) => value,
+            Err(error) => {
+                return original_target_failure(
+                    prepared,
+                    Audit2FailurePhase::OutputProjection,
+                    error,
+                    partial,
+                    work,
+                );
+            }
+        };
+        output_projection_absolute_difference_l2 = Some(safe_l2(
+            &candidate_output
+                .iter()
+                .zip(&original_oracle_output_projection)
+                .map(|(candidate, oracle)| candidate - oracle)
+                .collect::<Vec<_>>(),
+        ));
+        partial.common_w_output_projection = Some(candidate_output.clone());
+        common_w_output_projection = Some(candidate_output);
+
+        let candidate_embedded = match counted_newton_projection(
+            original_context,
+            trial_stages,
+            &candidate.correction,
+            &original_context.coeffs.btilde,
+            false,
+            true,
+            &mut work,
+        ) {
+            Ok(value) => value,
+            Err(error) => {
+                return original_target_failure(
+                    prepared,
+                    Audit2FailurePhase::EmbeddedProjection,
+                    error,
+                    partial,
+                    work,
+                );
+            }
+        };
+        embedded_projection_absolute_difference_l2 = Some(safe_l2(
+            &candidate_embedded
+                .iter()
+                .zip(&original_oracle_embedded_error_projection)
+                .map(|(candidate, oracle)| candidate - oracle)
+                .collect::<Vec<_>>(),
+        ));
+        partial.common_w_embedded_error_projection = Some(candidate_embedded.clone());
+        common_w_embedded_error_projection = Some(candidate_embedded);
+        bridge = Some(bridge_report);
+    }
+
+    Audit2OriginalTargetDiagnosticOutcome::Completed(Box::new(Audit2OriginalTargetSuccess {
+        projected_residual: prepared.residual.clone(),
+        original_residual,
+        original_oracle_correction,
+        original_target_condition_f,
+        original_oracle_backward_error,
+        common_w_original_backward_error,
+        common_w_original_state_absolute_difference_l2,
+        common_w_original_state_relative_difference,
+        bridge,
+        common_w_output_projection,
+        original_oracle_output_projection,
+        output_projection_absolute_difference_l2,
+        common_w_embedded_error_projection,
+        original_oracle_embedded_error_projection,
+        embedded_projection_absolute_difference_l2,
+        work,
+    }))
+}
+
+/// Explicitly opt-in bridge from the projected research target back to the
+/// unchanged original nonlinear block residual at the same supplied trial K.
+///
+/// This is a diagnostic research entry only. It does not dispatch from the
+/// production solver, does not change either target, and cannot emit an
+/// accuracy PASS because this API accepts no external observable budget.
+pub fn compare_audit2_original_target_bridge(
+    context: &StepContext<'_>,
+    trial_stages: &[Vec<f64>],
+) -> Audit2OriginalTargetBridgeOutcome {
+    let prepared = match prepare_target(context, trial_stages) {
+        Ok(prepared) => prepared,
+        Err(shared) => return Audit2OriginalTargetBridgeOutcome::Failed(shared),
+    };
+    let (projected, projected_matrix) = compare_prepared_target(&prepared, trial_stages);
+    let original_target = run_original_target_diagnostic(
+        context,
+        &prepared,
+        projected_matrix.as_ref(),
+        &projected,
+        trial_stages,
+    );
+    Audit2OriginalTargetBridgeOutcome::Completed(Box::new(Audit2OriginalTargetBridgeComparison {
+        matching_trial_stage_states: true,
+        accuracy_disposition: Audit2OriginalTargetAccuracyDisposition::BudgetNotSpecified,
+        projected,
+        original_target,
     }))
 }
