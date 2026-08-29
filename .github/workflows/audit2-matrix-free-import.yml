@@ -10,22 +10,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: c5fbd6d5703fc396bdf30eb3acfacb6c6bd2b921
+          ref: 981bf1bc2fa80216bad00495dd6c72b5fcf65ba3
           fetch-depth: 0
           persist-credentials: false
-      - name: Export the inspected PR31 source without mutation
+      - name: Recover the already-published PR33 source without mutation
         shell: bash
         run: |
           set -euo pipefail
-          test "$(git rev-parse HEAD)" = c5fbd6d5703fc396bdf30eb3acfacb6c6bd2b921
-          test "$(git rev-parse HEAD^{tree})" = a0fec46f857f00054d674fb417812065aeca8a31
+          test "$(git rev-parse HEAD)" = 981bf1bc2fa80216bad00495dd6c72b5fcf65ba3
+          test "$(git rev-parse HEAD^{tree})" = b08221dd389ab765743b8ab0144c3a381d23f097
           mkdir -p "$RUNNER_TEMP/exact-source"
-          git branch export-c5fbd6d HEAD
-          git bundle create "$RUNNER_TEMP/exact-source/source.bundle" export-c5fbd6d
+          git branch export-981bf1b HEAD
+          git bundle create "$RUNNER_TEMP/exact-source/source.bundle" export-981bf1b
           git rev-parse HEAD HEAD^{tree} > "$RUNNER_TEMP/exact-source/source-identity.txt"
           sha256sum Cargo.lock > "$RUNNER_TEMP/exact-source/lock.sha256"
       - uses: actions/upload-artifact@v4
         with:
-          name: audit2-matrix-free-source-c5fbd6d
+          name: audit2-matrix-free-source-981bf1b
           path: ${{ runner.temp }}/exact-source/
           retention-days: 7
