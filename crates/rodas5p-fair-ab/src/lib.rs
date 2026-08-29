@@ -8,6 +8,7 @@ mod error;
 mod external_comparators;
 mod global_error;
 mod numerical_reference;
+mod output_policy_assessment;
 mod runner;
 mod scenarios;
 mod scientific_validity_v2_campaign;
@@ -92,4 +93,9 @@ pub use numerical_reference::{
     numerical_reference_state_checksum, numerical_reference_v2_not_run_manifest,
     validate_numerical_reference_convergence, validate_numerical_reference_error_scale,
     validate_numerical_reference_manifest, validate_numerical_reference_manifest_v2,
+};
+
+pub use output_policy_assessment::{
+    AccuracyAssessment, MeasurementResolution, OutputPolicyMetricKey,
+    OutputSamplingPolicy, PolicyMeasurementAssessment, assess_policy_measurement,
 };
