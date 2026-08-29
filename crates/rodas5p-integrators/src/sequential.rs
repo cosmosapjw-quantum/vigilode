@@ -4,14 +4,16 @@ use rodas5p_core::{
     ApplyCategory, CoreError, CoreResult, IdentityPreconditioner, InitialGuess,
     JacobiPreconditioner, LinearMethod, LinearOperator, LinearSolveReport, LinearSolverConfig,
     LuFactorization, Preconditioner, PreconditionerKind, Rodas5pCoefficients, ShiftedOperator,
-    WorkCounters, apply_counted, error_scale, load_rodas5p_coefficients, safe_l2, wrms,
+    WorkCounters, apply_counted, apply_jvp_counted, error_scale, load_rodas5p_coefficients,
+    safe_l2, wrms,
 };
 use rodas5p_krylov::{
-    GcrodrConfig, GcrodrState, GmresConfig, LgmresConfig, LgmresState, solve_gcrodr, solve_gmres,
-    solve_lgmres,
+    GcrodrConfig, GcrodrState, GmresConfig, LgmresConfig, LgmresState, solve_gcrodr,
+    solve_gcrodr_with_residual_scale, solve_gmres, solve_gmres_with_residual_scale, solve_lgmres,
+    solve_lgmres_with_residual_scale,
 };
 
-use crate::OdeProblem;
+use crate::{OdeProblem, RODAS5P_INNER_FORCING_FLOOR, rodas5p_inner_forcing_target};
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum KrylovState {
@@ -34,11 +36,13 @@ impl KrylovState {
                     *image = None;
                 }
                 s.operator_token = None;
+                s.system_identity = None;
                 s.previous_solution = None;
             }
             Self::Gcrodr(s) => {
                 s.image.clear();
                 s.operator_token = None;
+                s.system_identity = None;
                 s.previous_solution = None;
             }
         }
@@ -63,6 +67,28 @@ pub struct StageSolveData {
     pub reports: Vec<LinearSolveReport>,
     pub stage_states: Vec<Vec<f64>>,
     pub stage_rhs_values: Vec<Vec<f64>>,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct StageInnerForcingReport {
+    pub stage_index: usize,
+    pub flow_wrms: f64,
+    pub rhs_wrms: f64,
+    pub eta: f64,
+    pub tau: f64,
+    pub achieved_residual_wrms: f64,
+}
+
+#[derive(Clone, Debug)]
+pub struct InnerForcedStepResult {
+    pub step: StepResult,
+    pub stage_forcing: Vec<StageInnerForcingReport>,
+}
+
+#[derive(Clone, Debug)]
+pub struct InnerForcedStageSolveData {
+    pub stage_data: StageSolveData,
+    pub stage_forcing: Vec<StageInnerForcingReport>,
 }
 
 #[derive(Clone, Debug, Default)]
@@ -177,7 +203,7 @@ pub fn build_step_context_matrix_free<'a>(
     let f0 = problem.eval_rhs(t, y, counters)?;
     let ft0 = problem.eval_partial_t(t, y, counters)?;
     let jacobian = problem.linearize_matrix_free(t, y)?;
-    let shifted = ShiftedOperator::new(
+    let shifted = ShiftedOperator::new_counted_jvp(
         problem.mass_matrix.clone(),
         jacobian.clone(),
         h,
@@ -265,19 +291,32 @@ fn direct_report(
     })
 }
 
-pub fn sequential_stages(
+fn sequential_stages_impl(
     context: &StepContext<'_>,
     config: &LinearSolverConfig,
     mut recycle: Option<&mut KrylovState>,
+    outer_tolerances: Option<(f64, f64)>,
     counters: &mut WorkCounters,
-) -> CoreResult<StageSolveData> {
+) -> CoreResult<InnerForcedStageSolveData> {
     config.validate().map_err(CoreError::InvalidInput)?;
+    if outer_tolerances.is_some() && config.method == LinearMethod::Direct {
+        return Err(CoreError::InvalidInput(
+            "RODAS5P inner forcing requires a Krylov linear solver".into(),
+        ));
+    }
     let s = context.coeffs.stages();
     let n = context.problem.dimension;
     let mut stages = vec![vec![0.0; n]; s];
     let mut states = vec![vec![0.0; n]; s];
     let mut fvals = vec![vec![0.0; n]; s];
     let mut reports = Vec::with_capacity(s);
+    let mut stage_forcing = Vec::with_capacity(if outer_tolerances.is_some() { s } else { 0 });
+    let output_weight_l1 = context
+        .coeffs
+        .b
+        .iter()
+        .map(|weight| weight.abs())
+        .sum::<f64>();
     let need_factor = config.method == LinearMethod::Direct
         || config.preconditioner == PreconditionerKind::Direct;
     let factor = if need_factor {
@@ -315,15 +354,34 @@ pub fn sequential_stages(
         };
         let mut jg = vec![0.0; n];
         if gmix.iter().any(|v| *v != 0.0) {
-            context.jacobian.apply(&gmix, &mut jg)?;
-            counters.jvp_calls += 1;
-            counters.jvp_vectors += 1;
+            apply_jvp_counted(context.jacobian.as_ref(), &gmix, &mut jg, counters)?;
         }
         let mut rhs = vec![0.0; n];
         for q in 0..n {
             rhs[q] = context.h * fi[q]
                 + context.h * jg[q]
                 + context.h * context.h * context.coeffs.gamma_rows[i] * context.ft0[q];
+        }
+        let forcing = if let Some((outer_atol, outer_rtol)) = outer_tolerances {
+            let scale = error_scale(&context.y, &yi, &[outer_atol], outer_rtol)?;
+            let flow_wrms = context.h.abs() * wrms(&fi, &scale)?;
+            let rhs_wrms = wrms(&rhs, &scale)?;
+            let target = rodas5p_inner_forcing_target(flow_wrms, rhs_wrms, output_weight_l1)?;
+            Some((scale, flow_wrms, rhs_wrms, target))
+        } else {
+            None
+        };
+        let residual_scale = forcing.as_ref().map(|(scale, _, _, _)| scale.as_slice());
+        let linear_rtol = forcing
+            .as_ref()
+            .map_or(config.rtol, |(_, _, _, target)| target.eta);
+        let linear_atol = if forcing.is_some() {
+            RODAS5P_INNER_FORCING_FLOOR
+        } else {
+            config.atol
+        };
+        if forcing.is_some() {
+            counters.forced_stage_solves = counters.forced_stage_solves.saturating_add(1);
         }
         let x0 = if i > 0
             && config.method != LinearMethod::Direct
@@ -340,19 +398,26 @@ pub fn sequential_stages(
                 &rhs,
                 counters,
             )?,
-            LinearMethod::Gmres => solve_gmres(
-                &context.shifted,
-                pc.as_ref(),
-                &rhs,
-                x0,
-                &GmresConfig {
+            LinearMethod::Gmres => {
+                let gmres = GmresConfig {
                     restart: config.restart,
                     max_arnoldi: config.maxiter.max(config.restart),
-                    rtol: config.rtol,
-                    atol: config.atol,
-                },
-                counters,
-            )?,
+                    rtol: linear_rtol,
+                    atol: linear_atol,
+                };
+                match residual_scale {
+                    Some(scale) => solve_gmres_with_residual_scale(
+                        &context.shifted,
+                        pc.as_ref(),
+                        &rhs,
+                        x0,
+                        &gmres,
+                        Some(scale),
+                        counters,
+                    )?,
+                    None => solve_gmres(&context.shifted, pc.as_ref(), &rhs, x0, &gmres, counters)?,
+                }
+            }
             LinearMethod::Lgmres => {
                 let st = match state.as_deref_mut() {
                     Some(KrylovState::Lgmres(s)) => s,
@@ -366,21 +431,34 @@ pub fn sequential_stages(
                         _ => unreachable!(),
                     },
                 };
-                solve_lgmres(
-                    &context.shifted,
-                    pc.as_ref(),
-                    &rhs,
-                    x0,
-                    &LgmresConfig {
-                        inner_m: config.inner_m,
-                        max_outer: config.maxiter,
-                        outer_k: config.outer_k,
-                        rtol: config.rtol,
-                        atol: config.atol,
-                    },
-                    st,
-                    counters,
-                )?
+                let lgmres = LgmresConfig {
+                    inner_m: config.inner_m,
+                    max_outer: config.maxiter,
+                    outer_k: config.outer_k,
+                    rtol: linear_rtol,
+                    atol: linear_atol,
+                };
+                match residual_scale {
+                    Some(scale) => solve_lgmres_with_residual_scale(
+                        &context.shifted,
+                        pc.as_ref(),
+                        &rhs,
+                        x0,
+                        &lgmres,
+                        st,
+                        Some(scale),
+                        counters,
+                    )?,
+                    None => solve_lgmres(
+                        &context.shifted,
+                        pc.as_ref(),
+                        &rhs,
+                        x0,
+                        &lgmres,
+                        st,
+                        counters,
+                    )?,
+                }
             }
             LinearMethod::Gcrodr => {
                 let st = match state.as_deref_mut() {
@@ -395,36 +473,95 @@ pub fn sequential_stages(
                         _ => unreachable!(),
                     },
                 };
-                solve_gcrodr(
-                    &context.shifted,
-                    pc.as_ref(),
-                    &rhs,
-                    x0,
-                    &GcrodrConfig {
-                        restart: config.restart,
-                        max_arnoldi: config.maxiter.max(config.restart),
-                        recycle_dim: config.recycle_dim,
-                        rank_tol: config.recycle_rank_tol,
-                        rtol: config.rtol,
-                        atol: config.atol,
-                    },
-                    st,
-                    counters,
-                )?
+                let gcrodr = GcrodrConfig {
+                    restart: config.restart,
+                    max_arnoldi: config.maxiter.max(config.restart),
+                    recycle_dim: config.recycle_dim,
+                    rank_tol: config.recycle_rank_tol,
+                    rtol: linear_rtol,
+                    atol: linear_atol,
+                };
+                match residual_scale {
+                    Some(scale) => solve_gcrodr_with_residual_scale(
+                        &context.shifted,
+                        pc.as_ref(),
+                        &rhs,
+                        x0,
+                        &gcrodr,
+                        st,
+                        Some(scale),
+                        counters,
+                    )?,
+                    None => solve_gcrodr(
+                        &context.shifted,
+                        pc.as_ref(),
+                        &rhs,
+                        x0,
+                        &gcrodr,
+                        st,
+                        counters,
+                    )?,
+                }
             }
         };
+        if let Some((_, flow_wrms, rhs_wrms, target)) = forcing {
+            if report.residual_norm > target.tau {
+                return Err(CoreError::LinearSolve(format!(
+                    "RODAS5P stage {i} achieved WRMS residual {:.3e} exceeds forcing target {:.3e}",
+                    report.residual_norm, target.tau
+                )));
+            }
+            stage_forcing.push(StageInnerForcingReport {
+                stage_index: i,
+                flow_wrms,
+                rhs_wrms,
+                eta: target.eta,
+                tau: target.tau,
+                achieved_residual_wrms: report.residual_norm,
+            });
+        }
         stages[i] = report.x.clone();
         reports.push(report);
     }
     if !stages.iter().flatten().all(|v| v.is_finite()) {
         return Err(CoreError::NonFinite("non-finite RODAS5P stages".into()));
     }
-    Ok(StageSolveData {
-        stages,
-        reports,
-        stage_states: states,
-        stage_rhs_values: fvals,
+    Ok(InnerForcedStageSolveData {
+        stage_data: StageSolveData {
+            stages,
+            reports,
+            stage_states: states,
+            stage_rhs_values: fvals,
+        },
+        stage_forcing,
     })
+}
+
+pub fn sequential_stages(
+    context: &StepContext<'_>,
+    config: &LinearSolverConfig,
+    recycle: Option<&mut KrylovState>,
+    counters: &mut WorkCounters,
+) -> CoreResult<StageSolveData> {
+    sequential_stages_impl(context, config, recycle, None, counters).map(|data| data.stage_data)
+}
+
+#[allow(clippy::too_many_arguments)]
+pub fn sequential_stages_with_inner_forcing(
+    context: &StepContext<'_>,
+    config: &LinearSolverConfig,
+    recycle: Option<&mut KrylovState>,
+    outer_atol: f64,
+    outer_rtol: f64,
+    counters: &mut WorkCounters,
+) -> CoreResult<InnerForcedStageSolveData> {
+    sequential_stages_impl(
+        context,
+        config,
+        recycle,
+        Some((outer_atol, outer_rtol)),
+        counters,
+    )
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -538,17 +675,7 @@ pub fn sequential_matrix_free_step(
     let snapshot = recycle.as_deref().cloned();
     let result = (|| {
         let context = build_step_context_matrix_free(problem, t, y, h, counters)?;
-        let operator_before = *counters;
         let data = sequential_stages(&context, config, recycle.as_deref_mut(), counters)?;
-        let delta = counters.delta(operator_before);
-        let shifted_applications = delta
-            .linear_matvecs
-            .saturating_add(delta.diagnostic_matvecs);
-        counters.jvp_calls = counters.jvp_calls.saturating_add(shifted_applications);
-        counters.jvp_vectors = counters.jvp_vectors.saturating_add(shifted_applications);
-        if context.problem.mass_matrix.is_some() {
-            counters.mass_matvecs = counters.mass_matvecs.saturating_add(shifted_applications);
-        }
         let mut report = finish_step(
             &context,
             data.stages,
@@ -572,6 +699,73 @@ pub fn sequential_matrix_free_step(
         Ok(report)
     })();
     if result.as_ref().map_or(true, |report| !report.accepted)
+        && let (Some(target), Some(saved)) = (recycle, snapshot)
+    {
+        *target = saved;
+    }
+    result
+}
+
+#[allow(clippy::too_many_arguments)]
+pub fn sequential_matrix_free_step_with_inner_forcing(
+    problem: &OdeProblem,
+    t: f64,
+    y: &[f64],
+    h: f64,
+    config: &LinearSolverConfig,
+    mut recycle: Option<&mut KrylovState>,
+    atol: f64,
+    rtol: f64,
+    force_accept: bool,
+    counters: &mut WorkCounters,
+) -> CoreResult<InnerForcedStepResult> {
+    if config.method == LinearMethod::Direct || config.preconditioner == PreconditionerKind::Direct
+    {
+        return Err(CoreError::InvalidInput(
+            "strict matrix-free sequential RODAS5P forbids direct factorization".into(),
+        ));
+    }
+    let before = *counters;
+    let snapshot = recycle.as_deref().cloned();
+    let result = (|| {
+        let context = build_step_context_matrix_free(problem, t, y, h, counters)?;
+        let data = sequential_stages_with_inner_forcing(
+            &context,
+            config,
+            recycle.as_deref_mut(),
+            atol,
+            rtol,
+            counters,
+        )?;
+        let mut step = finish_step(
+            &context,
+            data.stage_data.stages,
+            atol,
+            rtol,
+            format!(
+                "RODAS5P-protected-sequential-JF-{:?}-WRMS-forcing-v2",
+                config.method
+            ),
+            if force_accept { Some(true) } else { None },
+            false,
+            None,
+            before,
+            counters,
+        )?;
+        if step.accepted {
+            counters.accepted_steps += 1;
+        } else {
+            counters.rejected_steps += 1;
+        }
+        step.counters = counters.delta(before);
+        debug_assert_eq!(step.counters.jacobian_builds, 0);
+        debug_assert_eq!(step.counters.direct_factorizations, 0);
+        Ok(InnerForcedStepResult {
+            step,
+            stage_forcing: data.stage_forcing,
+        })
+    })();
+    if result.as_ref().map_or(true, |report| !report.step.accepted)
         && let (Some(target), Some(saved)) = (recycle, snapshot)
     {
         *target = saved;

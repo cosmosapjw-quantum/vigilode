@@ -1,5 +1,6 @@
 use std::{
-    fs,
+    fs::{self, OpenOptions},
+    io::Write,
     path::{Path, PathBuf},
 };
 
@@ -8,9 +9,13 @@ use clap::{Parser, Subcommand, ValueEnum};
 use rodas5p_core::{load_rodas5p_coefficients, sha256_hex};
 use rodas5p_fair_ab::{
     BenchmarkCell, BenchmarkPlan, FairSolveConfig, GlobalErrorParetoProfile, PreconditionerKind,
-    RecycleLifetime, SequenceConfig, SequenceKind, SolverKind, TraceDocument, generate_trace,
+    RecycleLifetime, ScientificValidityV2CaseArtifact, SequenceConfig, SequenceKind, SolverKind,
+    TraceDocument, freeze_scientific_validity_v2_calibration_artifacts, generate_trace,
+    load_numerical_reference_v2, replay_scientific_validity_v2_oregonator_artifacts,
     run_adaptive_global_error_screen, run_comparison, run_g1_adaptive_global_error_screen,
-    run_global_error_pareto_screen, summarize_comparison,
+    run_global_error_pareto_screen, run_scientific_validity_v2_case,
+    scientific_validity_v2_canonical_campaign_binding, scientific_validity_v2_compiled_revision,
+    summarize_comparison, validate_scientific_validity_v2_case_artifact,
 };
 use rodas5p_integrators::{
     A1ScientificExecutionIdentity, CandidateCatalog, CandidateFamily, CandidateStatus,
@@ -18,8 +23,10 @@ use rodas5p_integrators::{
     G4PrefixKernelProfile, G4S5B0Family, G4S5B0PrefixProbePolicy, G4S5B0Profile,
     G4S5B0V37ContinuationTransactionReport, G4S5B3Profile, HomotopyExperimentProfile,
     HomotopyRhsTelemetryProfile, MatrixFreeCommonWProfile, NativeIntegratorGateReport,
-    PathControllerProfile, StageBatchFeasibilityProfile, UnifiedNonlinearScreen,
-    UnifiedScientificGateReport, UnifiedScreenProfile, run_a1_two_arm_receipt_cell,
+    PathControllerProfile, ScientificCaseSpec, ScientificCorpusV2, ScientificFamily,
+    StageBatchFeasibilityProfile, UnifiedNonlinearScreen, UnifiedScientificGateReport,
+    UnifiedScreenProfile, V2CalibrationFreezeEnvelope, V2GateProfile, V2GateRow,
+    freeze_v2_calibration, replay_v2_oregonator_holdout, run_a1_two_arm_receipt_cell,
     run_g1_transactional_gate, run_g2_exponential_gate, run_g3_fused_adaptive_gate,
     run_g4_prefix_kernel_gate, run_g4_s5b0_actual_level1_prefix_family,
     run_g4_s5b0_actual_level2_prefix_family, run_g4_s5b0_enforced_prefix_budget_family,
@@ -32,8 +39,9 @@ use rodas5p_integrators::{
     run_matrix_free_common_w_gate, run_native_integrator_gates,
     run_p1_00_tolerance_scaled_early_defect, run_path_controller_screen,
     run_stage_batch_feasibility, run_unified_nonlinear_screen, run_unified_scientific_gates,
+    verify_v2_calibration_freeze,
 };
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use serde_json::json;
 
 #[derive(Parser)]
@@ -51,6 +59,54 @@ struct Cli {
 enum Command {
     /// Validate the frozen coefficient and Rust numerical contracts.
     Validate {
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Freeze a complete scientific-validity-v2 calibration measurement set.
+    #[command(name = "scientific-validity-v2-freeze")]
+    ScientificValidityV2Freeze {
+        #[arg(long, value_enum)]
+        profile: CliV2GateProfile,
+        #[arg(long)]
+        input: PathBuf,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Replay only the predeclared Oregonator holdout against an immutable v2 freeze.
+    #[command(name = "scientific-validity-v2-holdout-replay")]
+    ScientificValidityV2HoldoutReplay {
+        #[arg(long, value_enum)]
+        profile: CliV2GateProfile,
+        #[arg(long)]
+        freeze: PathBuf,
+        #[arg(long)]
+        input: PathBuf,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Execute all 54 canonical v2.1 calibration cases against a complete v2 reference manifest.
+    #[command(name = "scientific-validity-v2-run-calibration")]
+    ScientificValidityV2RunCalibration {
+        #[arg(long)]
+        reference_manifest: PathBuf,
+        #[arg(long)]
+        output: PathBuf,
+        /// Immutable calibration freeze emitted directly from the completed campaign.
+        #[arg(long)]
+        freeze_output: PathBuf,
+    },
+    /// After validating a frozen calibration, execute only the three Oregonator cases.
+    #[command(name = "scientific-validity-v2-run-oregonator")]
+    ScientificValidityV2RunOregonator {
+        #[arg(long, value_enum)]
+        profile: CliV2GateProfile,
+        #[arg(long)]
+        freeze: PathBuf,
+        /// Complete 54-case campaign emitted beside `--freeze` by run-calibration.
+        #[arg(long)]
+        calibration_campaign: PathBuf,
+        #[arg(long)]
+        reference_manifest: PathBuf,
         #[arg(long)]
         output: PathBuf,
     },
@@ -358,6 +414,21 @@ enum Command {
         #[arg(long)]
         zero_guess: bool,
     },
+}
+
+#[derive(Clone, Copy, Debug, ValueEnum)]
+enum CliV2GateProfile {
+    Smoke,
+    Canonical,
+}
+
+impl From<CliV2GateProfile> for V2GateProfile {
+    fn from(value: CliV2GateProfile) -> Self {
+        match value {
+            CliV2GateProfile::Smoke => Self::Smoke,
+            CliV2GateProfile::Canonical => Self::Canonical,
+        }
+    }
 }
 
 #[derive(Clone, Copy, Debug, ValueEnum)]
@@ -721,6 +792,213 @@ fn write_json<T: Serialize>(path: &Path, value: &T) -> Result<()> {
     }
     let bytes = serde_json::to_vec_pretty(value)?;
     fs::write(path, bytes).with_context(|| format!("writing {}", path.display()))
+}
+
+fn read_json<T: serde::de::DeserializeOwned>(path: &Path) -> Result<T> {
+    serde_json::from_slice(&fs::read(path).with_context(|| format!("reading {}", path.display()))?)
+        .with_context(|| format!("parsing {}", path.display()))
+}
+
+fn write_json_create_new<T: Serialize>(path: &Path, value: &T) -> Result<()> {
+    if let Some(parent) = path.parent()
+        && !parent.as_os_str().is_empty()
+    {
+        fs::create_dir_all(parent)
+            .with_context(|| format!("creating output directory {}", parent.display()))?;
+    }
+    let bytes = serde_json::to_vec_pretty(value)?;
+    if path.exists() {
+        anyhow::bail!("immutable output already exists: {}", path.display());
+    }
+    let file_name = path
+        .file_name()
+        .and_then(|name| name.to_str())
+        .context("immutable output has no UTF-8 file name")?;
+    let temporary = path.with_file_name(format!(".{file_name}.tmp.{}", std::process::id()));
+    let mut output = OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .open(&temporary)
+        .with_context(|| format!("creating atomic temporary output {}", temporary.display()))?;
+    if let Err(error) = output.write_all(&bytes).and_then(|()| output.sync_all()) {
+        let _ = fs::remove_file(&temporary);
+        return Err(error).with_context(|| format!("writing {}", temporary.display()));
+    }
+    drop(output);
+    if let Err(error) = fs::hard_link(&temporary, path) {
+        let _ = fs::remove_file(&temporary);
+        return Err(error).with_context(|| format!("atomically publishing {}", path.display()));
+    }
+    fs::remove_file(&temporary)
+        .with_context(|| format!("removing atomic temporary output {}", temporary.display()))
+}
+
+fn preflight_create_new_outputs(paths: &[&Path]) -> Result<()> {
+    for (index, path) in paths.iter().enumerate() {
+        if path.exists() {
+            anyhow::bail!("immutable output already exists: {}", path.display());
+        }
+        if paths[..index].contains(path) {
+            anyhow::bail!(
+                "immutable outputs must use distinct paths: {}",
+                path.display()
+            );
+        }
+    }
+    Ok(())
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(tag = "status", rename_all = "kebab-case", deny_unknown_fields)]
+enum V2CampaignCaseRecord {
+    Complete {
+        artifact: Box<ScientificValidityV2CaseArtifact>,
+    },
+    Failed {
+        spec: Box<ScientificCaseSpec>,
+        phase: String,
+        error: String,
+    },
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct V2CalibrationCampaignDocument {
+    schema: String,
+    status: String,
+    corpus_version: String,
+    code_revision: String,
+    expected_case_count: usize,
+    attempted_case_count: usize,
+    failure_count: usize,
+    freeze_eligible: bool,
+    freeze_checksum_sha256: Option<String>,
+    freeze_admission_error: Option<String>,
+    record_set_sha256: String,
+    records: Vec<V2CampaignCaseRecord>,
+    rows: Vec<V2GateRow>,
+}
+
+fn v2_record_set_sha256(records: &[V2CampaignCaseRecord]) -> String {
+    let checksum_ledger = records
+        .iter()
+        .map(|record| match record {
+            V2CampaignCaseRecord::Complete { artifact } => json!({
+                "case_id": artifact.spec.id,
+                "status": "complete",
+                "artifact_checksum_sha256": artifact.artifact_checksum_sha256,
+            }),
+            V2CampaignCaseRecord::Failed { spec, error, .. } => json!({
+                "case_id": spec.id,
+                "status": "failed",
+                "error": error,
+            }),
+        })
+        .collect::<Vec<_>>();
+    let mut checksum_bytes = b"vigilode-scientific-v2-campaign-record-set-v1\0".to_vec();
+    checksum_bytes.extend_from_slice(
+        &serde_json::to_vec(&checksum_ledger).expect("JSON value serialization cannot fail"),
+    );
+    sha256_hex(&checksum_bytes)
+}
+
+fn complete_v2_case_artifacts(
+    records: &[V2CampaignCaseRecord],
+) -> Vec<ScientificValidityV2CaseArtifact> {
+    records
+        .iter()
+        .filter_map(|record| match record {
+            V2CampaignCaseRecord::Complete { artifact } => Some((**artifact).clone()),
+            V2CampaignCaseRecord::Failed { .. } => None,
+        })
+        .collect()
+}
+
+fn validate_v2_calibration_campaign_document(
+    campaign: &V2CalibrationCampaignDocument,
+) -> Result<V2CalibrationFreezeEnvelope> {
+    let revision = scientific_validity_v2_compiled_revision()?;
+    if campaign.schema != "scientific-validity-v2-calibration-campaign-v1"
+        || campaign.status != "complete-pass"
+        || campaign.corpus_version != ScientificCorpusV2::VERSION
+        || campaign.code_revision != revision
+        || campaign.expected_case_count != 54
+        || campaign.attempted_case_count != 54
+        || campaign.failure_count != 0
+        || !campaign.freeze_eligible
+        || campaign.freeze_admission_error.is_some()
+        || campaign.records.len() != 54
+        || campaign.rows.len() != 54
+        || campaign.record_set_sha256 != v2_record_set_sha256(&campaign.records)
+    {
+        anyhow::bail!(
+            "canonical calibration campaign aggregate failed identity/cardinality checks"
+        );
+    }
+
+    let expected_ids = ScientificCorpusV2::calibration_specs()
+        .into_iter()
+        .map(|spec| spec.id)
+        .collect::<std::collections::BTreeSet<_>>();
+    let mut record_ids = std::collections::BTreeSet::new();
+    let mut artifact_rows = Vec::with_capacity(54);
+    for record in &campaign.records {
+        let V2CampaignCaseRecord::Complete { artifact } = record else {
+            anyhow::bail!("canonical calibration campaign contains a failed case record");
+        };
+        validate_scientific_validity_v2_case_artifact(artifact)?;
+        if !record_ids.insert(artifact.spec.id.clone()) {
+            anyhow::bail!("canonical calibration campaign contains a duplicate case artifact");
+        }
+        artifact_rows.push(artifact.row.clone());
+    }
+    if record_ids != expected_ids {
+        anyhow::bail!("canonical calibration campaign does not contain the exact 54-case set");
+    }
+    artifact_rows.sort_by(|left, right| left.case_id.cmp(&right.case_id));
+    let mut declared_rows = campaign.rows.clone();
+    declared_rows.sort_by(|left, right| left.case_id.cmp(&right.case_id));
+    if artifact_rows != declared_rows {
+        anyhow::bail!("canonical calibration rows differ from their validated case artifacts");
+    }
+    let artifacts = complete_v2_case_artifacts(&campaign.records);
+    let freeze = freeze_scientific_validity_v2_calibration_artifacts(&artifacts)?;
+    if campaign.freeze_checksum_sha256.as_deref() != Some(freeze.checksum_sha256.as_str()) {
+        anyhow::bail!("canonical calibration campaign freeze checksum mismatch");
+    }
+    Ok(freeze)
+}
+
+fn run_v2_case_records(
+    reference_manifest: &Path,
+    specs: Vec<ScientificCaseSpec>,
+) -> (Vec<V2CampaignCaseRecord>, Vec<V2GateRow>, usize, String) {
+    let mut records = Vec::with_capacity(specs.len());
+    let mut rows = Vec::with_capacity(specs.len());
+    let mut failures = 0_usize;
+    for spec in specs {
+        let result = load_numerical_reference_v2(reference_manifest, &spec)
+            .and_then(|reference| run_scientific_validity_v2_case(&spec, &reference));
+        match result {
+            Ok(artifact) => {
+                rows.push(artifact.row.clone());
+                records.push(V2CampaignCaseRecord::Complete {
+                    artifact: Box::new(artifact),
+                });
+            }
+            Err(error) => {
+                failures += 1;
+                let message = error.to_string();
+                records.push(V2CampaignCaseRecord::Failed {
+                    spec: Box::new(spec),
+                    phase: "reference-load-or-paired-integration".into(),
+                    error: message,
+                });
+            }
+        }
+    }
+    let record_set_sha256 = v2_record_set_sha256(&records);
+    (records, rows, failures, record_set_sha256)
 }
 
 fn write_v37_continuation_transaction_report(
@@ -1340,6 +1618,378 @@ fn main() -> Result<()> {
             });
             write_json(&output, &result)?;
         }
+        Command::ScientificValidityV2Freeze {
+            profile,
+            input,
+            output,
+        } => {
+            let profile = V2GateProfile::from(profile);
+            if profile == V2GateProfile::Canonical {
+                anyhow::bail!(
+                    "canonical raw-row freeze is disabled; use scientific-validity-v2-run-calibration so the freeze is emitted by the source-bound 54-case producer"
+                );
+            }
+            let rows: Vec<V2GateRow> = read_json(&input)?;
+            match freeze_v2_calibration(profile, rows.clone()) {
+                Ok(freeze) => write_json_create_new(&output, &freeze)?,
+                Err(error) => {
+                    write_json_create_new(
+                        &output,
+                        &json!({
+                            "schema": "scientific-validity-v2-calibration-freeze-failure-v1",
+                            "status": "fail",
+                            "profile": profile,
+                            "campaign_label": profile.campaign_label(),
+                            "error": error.to_string(),
+                            "rows": rows,
+                        }),
+                    )?;
+                    return Err(error.into());
+                }
+            }
+        }
+        Command::ScientificValidityV2HoldoutReplay {
+            profile,
+            freeze,
+            input,
+            output,
+        } => {
+            let profile = V2GateProfile::from(profile);
+            if profile == V2GateProfile::Canonical {
+                anyhow::bail!(
+                    "canonical raw-row holdout replay is disabled; use scientific-validity-v2-run-oregonator so the three rows are emitted by the source-bound producer"
+                );
+            }
+            let calibration_freeze: V2CalibrationFreezeEnvelope = read_json(&freeze)?;
+            if let Err(error) = verify_v2_calibration_freeze(&calibration_freeze) {
+                write_json_create_new(
+                    &output,
+                    &json!({
+                        "schema": "scientific-validity-v2-oregonator-holdout-replay-failure-v1",
+                        "status": "fail",
+                        "profile": profile,
+                        "campaign_label": profile.campaign_label(),
+                        "error": error.to_string(),
+                        "calibration_checksum_sha256": calibration_freeze.checksum_sha256,
+                        "rows": [],
+                        "holdout_input_accessed": false,
+                    }),
+                )?;
+                return Err(error.into());
+            }
+            if calibration_freeze.payload.profile != profile {
+                let error = "v2 replay CLI profile does not match calibration freeze profile";
+                write_json_create_new(
+                    &output,
+                    &json!({
+                        "schema": "scientific-validity-v2-oregonator-holdout-replay-failure-v1",
+                        "status": "fail",
+                        "profile": profile,
+                        "campaign_label": profile.campaign_label(),
+                        "error": error,
+                        "calibration_checksum_sha256": calibration_freeze.checksum_sha256,
+                        "rows": [],
+                        "holdout_input_accessed": false,
+                    }),
+                )?;
+                anyhow::bail!(error);
+            }
+            // The holdout path is deliberately opened only after the immutable
+            // calibration authority and requested profile have both verified.
+            let rows: Vec<V2GateRow> = read_json(&input)?;
+            match replay_v2_oregonator_holdout(&calibration_freeze, rows.clone()) {
+                Ok(replay) => {
+                    let overall_pass = replay.payload.overall_pass;
+                    write_json_create_new(&output, &replay)?;
+                    if !overall_pass {
+                        anyhow::bail!(
+                            "v2 Oregonator holdout replay preserved a non-passing result"
+                        );
+                    }
+                }
+                Err(error) => {
+                    write_json_create_new(
+                        &output,
+                        &json!({
+                            "schema": "scientific-validity-v2-oregonator-holdout-replay-failure-v1",
+                            "status": "fail",
+                            "profile": profile,
+                            "campaign_label": profile.campaign_label(),
+                            "error": error.to_string(),
+                            "calibration_checksum_sha256": calibration_freeze.checksum_sha256,
+                            "rows": rows,
+                        }),
+                    )?;
+                    return Err(error.into());
+                }
+            }
+        }
+        Command::ScientificValidityV2RunCalibration {
+            reference_manifest,
+            output,
+            freeze_output,
+        } => {
+            preflight_create_new_outputs(&[&output, &freeze_output])?;
+            let code_revision = match scientific_validity_v2_compiled_revision() {
+                Ok(revision) => revision,
+                Err(error) => {
+                    write_json_create_new(
+                        &output,
+                        &json!({
+                            "schema": "scientific-validity-v2-calibration-campaign-failure-v1",
+                            "status": "failed-preflight",
+                            "corpus_version": ScientificCorpusV2::VERSION,
+                            "reference_manifest_accessed": false,
+                            "records": [],
+                            "error": error.to_string(),
+                        }),
+                    )?;
+                    return Err(error.into());
+                }
+            };
+            let specs = ScientificCorpusV2::calibration_specs();
+            if specs.len() != 54 {
+                anyhow::bail!("ScientificCorpusV2.1 calibration cardinality is not 54");
+            }
+            let (records, rows, failures, record_set_sha256) =
+                run_v2_case_records(&reference_manifest, specs);
+            let freeze_admission = if failures == 0 && records.len() == 54 && rows.len() == 54 {
+                let artifacts = complete_v2_case_artifacts(&records);
+                freeze_scientific_validity_v2_calibration_artifacts(&artifacts)
+                    .map_err(|error| error.to_string())
+            } else {
+                Err("campaign lacks 54 complete bound rows".to_owned())
+            };
+            let freeze_eligible = freeze_admission.is_ok();
+            let freeze_checksum_sha256 = freeze_admission
+                .as_ref()
+                .ok()
+                .map(|freeze| freeze.checksum_sha256.clone());
+            let freeze_admission_error = freeze_admission.as_ref().err().cloned();
+            let campaign = V2CalibrationCampaignDocument {
+                schema: "scientific-validity-v2-calibration-campaign-v1".into(),
+                status: if freeze_eligible {
+                    "complete-pass".into()
+                } else {
+                    "complete-nonpassing".into()
+                },
+                corpus_version: ScientificCorpusV2::VERSION.into(),
+                code_revision: code_revision.into(),
+                expected_case_count: 54,
+                attempted_case_count: records.len(),
+                failure_count: failures,
+                freeze_eligible,
+                freeze_checksum_sha256,
+                freeze_admission_error,
+                record_set_sha256,
+                records,
+                rows,
+            };
+            write_json_create_new(&output, &campaign)?;
+            if !freeze_eligible {
+                anyhow::bail!(
+                    "v2 calibration preserved a non-freeze-eligible 54-case campaign ({failures} execution failures)"
+                );
+            }
+            let freeze = freeze_admission.expect("freeze eligibility checked");
+            // The full campaign is published first. A later filesystem race can
+            // therefore never leave a freeze without its complete 54-case record.
+            write_json_create_new(&freeze_output, &freeze)?;
+        }
+        Command::ScientificValidityV2RunOregonator {
+            profile,
+            freeze,
+            calibration_campaign,
+            reference_manifest,
+            output,
+        } => {
+            // Neither holdout specifications nor the reference path are opened
+            // before this immutable calibration authority passes completely.
+            let profile = V2GateProfile::from(profile);
+            if profile != V2GateProfile::Canonical {
+                let error = "the Oregonator producer accepts only the canonical 3-row profile";
+                write_json_create_new(
+                    &output,
+                    &json!({
+                        "schema": "scientific-validity-v2-oregonator-campaign-failure-v1",
+                        "status": "failed-profile-preflight",
+                        "freeze_accessed": false,
+                        "calibration_campaign_accessed": false,
+                        "holdout_spec_accessed": false,
+                        "reference_manifest_accessed": false,
+                        "records": [],
+                        "error": error,
+                    }),
+                )?;
+                anyhow::bail!(error);
+            }
+            let calibration_freeze: V2CalibrationFreezeEnvelope = read_json(&freeze)?;
+            if let Err(error) = verify_v2_calibration_freeze(&calibration_freeze) {
+                write_json_create_new(
+                    &output,
+                    &json!({
+                        "schema": "scientific-validity-v2-oregonator-campaign-failure-v1",
+                        "status": "failed-freeze-preflight",
+                        "calibration_campaign_accessed": false,
+                        "holdout_spec_accessed": false,
+                        "reference_manifest_accessed": false,
+                        "records": [],
+                        "error": error.to_string(),
+                    }),
+                )?;
+                return Err(error.into());
+            }
+            if calibration_freeze.payload.profile != profile {
+                let error = "Oregonator campaign profile differs from the verified freeze";
+                write_json_create_new(
+                    &output,
+                    &json!({
+                        "schema": "scientific-validity-v2-oregonator-campaign-failure-v1",
+                        "status": "failed-profile-preflight",
+                        "calibration_campaign_accessed": false,
+                        "holdout_spec_accessed": false,
+                        "reference_manifest_accessed": false,
+                        "records": [],
+                        "error": error,
+                    }),
+                )?;
+                anyhow::bail!(error);
+            }
+            let code_revision = match scientific_validity_v2_compiled_revision() {
+                Ok(revision) => revision,
+                Err(error) => {
+                    write_json_create_new(
+                        &output,
+                        &json!({
+                        "schema": "scientific-validity-v2-oregonator-campaign-failure-v1",
+                        "status": "failed-source-preflight",
+                        "calibration_campaign_accessed": false,
+                        "holdout_spec_accessed": false,
+                            "reference_manifest_accessed": false,
+                            "records": [],
+                            "error": error.to_string(),
+                        }),
+                    )?;
+                    return Err(error.into());
+                }
+            };
+            let current_binding = scientific_validity_v2_canonical_campaign_binding()?;
+            if calibration_freeze.payload.campaign_binding != current_binding {
+                let error =
+                    "verified freeze campaign binding differs from the current canonical runner";
+                write_json_create_new(
+                    &output,
+                    &json!({
+                        "schema": "scientific-validity-v2-oregonator-campaign-failure-v1",
+                        "status": "failed-runner-binding-preflight",
+                        "calibration_campaign_accessed": false,
+                        "holdout_spec_accessed": false,
+                        "reference_manifest_accessed": false,
+                        "records": [],
+                        "error": error,
+                    }),
+                )?;
+                anyhow::bail!(error);
+            }
+            let campaign: V2CalibrationCampaignDocument = match read_json(&calibration_campaign) {
+                Ok(campaign) => campaign,
+                Err(error) => {
+                    write_json_create_new(
+                        &output,
+                        &json!({
+                            "schema": "scientific-validity-v2-oregonator-campaign-failure-v1",
+                            "status": "failed-calibration-campaign-preflight",
+                            "calibration_campaign_accessed": true,
+                            "holdout_spec_accessed": false,
+                            "reference_manifest_accessed": false,
+                            "records": [],
+                            "error": error.to_string(),
+                        }),
+                    )?;
+                    return Err(error);
+                }
+            };
+            let derived_freeze = match validate_v2_calibration_campaign_document(&campaign) {
+                Ok(freeze) => freeze,
+                Err(error) => {
+                    write_json_create_new(
+                        &output,
+                        &json!({
+                            "schema": "scientific-validity-v2-oregonator-campaign-failure-v1",
+                            "status": "failed-calibration-campaign-preflight",
+                            "calibration_campaign_accessed": true,
+                            "holdout_spec_accessed": false,
+                            "reference_manifest_accessed": false,
+                            "records": [],
+                            "error": error.to_string(),
+                        }),
+                    )?;
+                    return Err(error);
+                }
+            };
+            if derived_freeze != calibration_freeze {
+                let error = "calibration freeze differs from the validated complete campaign";
+                write_json_create_new(
+                    &output,
+                    &json!({
+                        "schema": "scientific-validity-v2-oregonator-campaign-failure-v1",
+                        "status": "failed-calibration-freeze-link-preflight",
+                        "calibration_campaign_accessed": true,
+                        "holdout_spec_accessed": false,
+                        "reference_manifest_accessed": false,
+                        "records": [],
+                        "error": error,
+                    }),
+                )?;
+                anyhow::bail!(error);
+            }
+            let specs = ScientificCorpusV2::holdout_specs()
+                .into_iter()
+                .filter(|spec| spec.family == ScientificFamily::Oregonator)
+                .collect::<Vec<_>>();
+            if specs.len() != 3 {
+                anyhow::bail!("ScientificCorpusV2.1 Oregonator cardinality is not 3");
+            }
+            let (records, rows, failures, record_set_sha256) =
+                run_v2_case_records(&reference_manifest, specs);
+            let replay_result = if failures == 0 && rows.len() == 3 {
+                let artifacts = complete_v2_case_artifacts(&records);
+                replay_scientific_validity_v2_oregonator_artifacts(&calibration_freeze, &artifacts)
+                    .map(Some)
+                    .map_err(|error| error.to_string())
+            } else {
+                Ok(None)
+            };
+            let (replay, replay_error) = match replay_result {
+                Ok(replay) => (replay, None),
+                Err(error) => (None, Some(error)),
+            };
+            let replay_pass = replay
+                .as_ref()
+                .is_some_and(|value| value.payload.overall_pass);
+            write_json_create_new(
+                &output,
+                &json!({
+                    "schema": "scientific-validity-v2-oregonator-campaign-v1",
+                    "status": if failures == 0 && replay_pass { "complete-pass" } else { "complete-nonpassing" },
+                    "corpus_version": ScientificCorpusV2::VERSION,
+                    "code_revision": code_revision,
+                    "calibration_checksum_sha256": calibration_freeze.checksum_sha256,
+                    "expected_case_count": 3,
+                    "attempted_case_count": records.len(),
+                    "failure_count": failures,
+                    "replay_eligible": failures == 0 && rows.len() == 3,
+                    "record_set_sha256": record_set_sha256,
+                    "records": records,
+                    "rows": rows,
+                    "replay": replay,
+                    "replay_error": replay_error,
+                }),
+            )?;
+            if failures != 0 || !replay_pass {
+                anyhow::bail!("v2 Oregonator campaign preserved a non-passing result");
+            }
+        }
         Command::HomotopyDesignCheck { output } => {
             write_json(&output, &run_homotopy_design_check()?)?;
         }
@@ -1656,6 +2306,42 @@ fn main() -> Result<()> {
         }
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod scientific_validity_v2_producer_tests {
+    use super::*;
+
+    #[test]
+    fn calibration_record_loop_attempts_all_fifty_four_cases_after_individual_failures() {
+        let missing = std::env::temp_dir().join(format!(
+            "vigilode-missing-v2-reference-manifest-{}.json",
+            std::process::id()
+        ));
+        let _ = fs::remove_file(&missing);
+        let (records, rows, failures, digest) =
+            run_v2_case_records(&missing, ScientificCorpusV2::calibration_specs());
+        assert_eq!(records.len(), 54);
+        assert_eq!(failures, 54);
+        assert!(rows.is_empty());
+        assert_eq!(digest.len(), 64);
+        assert!(
+            records
+                .iter()
+                .all(|record| matches!(record, V2CampaignCaseRecord::Failed { .. }))
+        );
+        assert_eq!(
+            records
+                .iter()
+                .filter_map(|record| match record {
+                    V2CampaignCaseRecord::Failed { spec, .. } => Some(spec.id.as_str()),
+                    V2CampaignCaseRecord::Complete { .. } => None,
+                })
+                .collect::<std::collections::BTreeSet<_>>()
+                .len(),
+            54
+        );
+    }
 }
 
 #[cfg(test)]

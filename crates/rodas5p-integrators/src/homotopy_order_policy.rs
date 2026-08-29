@@ -542,7 +542,7 @@ fn build_trajectory_gates(
                     .iter()
                     .rev()
                     .take(2)
-                    .all(|order| *order >= 4.5));
+                    .all(|order| *order >= 4.8));
 
         let stiff_regression_applicable = problem_id != "manufactured-vector-order";
         let finest = group.first().copied();

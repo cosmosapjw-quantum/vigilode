@@ -1,7 +1,34 @@
 use rodas5p_core::{
     ApplyCategory, CoreError, CoreResult, LinearOperator, Preconditioner, WorkCounters,
-    apply_counted, apply_preconditioner,
+    apply_counted, apply_preconditioner, safe_l2, wrms,
 };
+
+pub fn validate_residual_scale(scale: Option<&[f64]>, dimension: usize) -> CoreResult<()> {
+    let Some(scale) = scale else {
+        return Ok(());
+    };
+    if scale.len() != dimension || scale.is_empty() {
+        return Err(CoreError::Dimension(
+            "WRMS residual scale shape mismatch or empty vector".into(),
+        ));
+    }
+    if scale
+        .iter()
+        .any(|value| !value.is_finite() || *value <= 0.0)
+    {
+        return Err(CoreError::InvalidInput(
+            "WRMS residual scale must be finite and positive".into(),
+        ));
+    }
+    Ok(())
+}
+
+pub fn selected_residual_norm(values: &[f64], scale: Option<&[f64]>) -> CoreResult<f64> {
+    match scale {
+        Some(scale) => wrms(values, scale),
+        None => Ok(safe_l2(values)),
+    }
+}
 
 pub fn validate_system(
     op: &dyn LinearOperator,

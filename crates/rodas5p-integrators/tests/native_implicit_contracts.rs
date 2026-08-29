@@ -2,15 +2,15 @@ use rodas5p_core::{DenseMatrix, WorkCounters};
 use rodas5p_integrators::{NewtonConfig, solve_dense_newton};
 
 #[test]
-fn dense_newton_solves_scalar_root_and_counts_every_operation() {
+fn dense_newton_freezes_one_jacobian_and_reuses_one_factorization() {
     let mut counters = WorkCounters::default();
     let report = solve_dense_newton(
         &[1.0],
         &[2.0_f64.sqrt()],
         &NewtonConfig {
-            atol: 1.0e-13,
-            rtol: 1.0e-11,
-            max_iterations: 12,
+            atol: 1.0e-15,
+            rtol: 1.0e-13,
+            max_iterations: 64,
             ..NewtonConfig::default()
         },
         &mut counters,
@@ -20,16 +20,85 @@ fn dense_newton_solves_scalar_root_and_counts_every_operation() {
     .unwrap();
 
     assert!(report.converged);
+    assert!(report.iterations > 1);
     assert!((report.x[0] - 2.0_f64.sqrt()).abs() < 1.0e-12);
     assert_eq!(counters.nonlinear_solves, 1);
     assert_eq!(counters.nonlinear_iterations, report.iterations as u64);
     assert!(counters.nonlinear_residual_evaluations > report.iterations as u64);
-    assert_eq!(
-        counters.nonlinear_jacobian_evaluations,
-        report.iterations as u64
-    );
-    assert_eq!(counters.direct_factorizations, report.iterations as u64);
+    assert_eq!(counters.nonlinear_jacobian_evaluations, 1);
+    assert_eq!(counters.direct_factorizations, 1);
     assert_eq!(counters.direct_solve_calls, report.iterations as u64);
+    assert_eq!(counters.linear_solves, report.iterations as u64);
+    assert_eq!(report.jacobian_refreshes, 0);
+    assert_eq!(report.line_search_refreshes, 0);
+    assert_eq!(report.stagnation_refreshes, 0);
+}
+
+#[test]
+fn dense_newton_refreshes_a_stale_jacobian_after_line_search_failure() {
+    let mut counters = WorkCounters::default();
+    let mut jacobian_calls = 0_usize;
+    let report = solve_dense_newton(
+        &[0.0],
+        &[1.0],
+        &NewtonConfig {
+            atol: 1.0e-14,
+            rtol: 0.0,
+            max_iterations: 8,
+            max_jacobian_refreshes: 1,
+            ..NewtonConfig::default()
+        },
+        &mut counters,
+        |x, _| Ok(vec![x[0] - 1.0]),
+        |_x, _| {
+            jacobian_calls += 1;
+            DenseMatrix::new(1, 1, vec![if jacobian_calls == 1 { -1.0 } else { 1.0 }])
+        },
+    )
+    .unwrap();
+
+    assert!(report.converged);
+    assert_eq!(report.x, vec![1.0]);
+    assert_eq!(report.jacobian_evaluations, 2);
+    assert_eq!(report.jacobian_refreshes, 1);
+    assert_eq!(report.line_search_refreshes, 1);
+    assert_eq!(report.stagnation_refreshes, 0);
+    assert_eq!(counters.nonlinear_jacobian_evaluations, 2);
+    assert_eq!(counters.direct_factorizations, 2);
+    assert_eq!(counters.direct_solve_calls, 2);
+    assert_eq!(counters.nonlinear_iterations, 2);
+}
+
+#[test]
+fn dense_newton_refreshes_after_bounded_residual_stagnation() {
+    let mut counters = WorkCounters::default();
+    let mut jacobian_calls = 0_usize;
+    let report = solve_dense_newton(
+        &[0.0],
+        &[1.0],
+        &NewtonConfig {
+            atol: 1.0e-14,
+            rtol: 0.0,
+            max_iterations: 8,
+            max_jacobian_refreshes: 1,
+            stagnation_ratio: 0.85,
+            ..NewtonConfig::default()
+        },
+        &mut counters,
+        |x, _| Ok(vec![x[0] - 1.0]),
+        |_x, _| {
+            jacobian_calls += 1;
+            DenseMatrix::new(1, 1, vec![if jacobian_calls == 1 { 10.0 } else { 1.0 }])
+        },
+    )
+    .unwrap();
+
+    assert_eq!(report.x, vec![1.0]);
+    assert_eq!(report.jacobian_refreshes, 1);
+    assert_eq!(report.line_search_refreshes, 0);
+    assert_eq!(report.stagnation_refreshes, 1);
+    assert_eq!(counters.nonlinear_jacobian_evaluations, 2);
+    assert_eq!(counters.direct_factorizations, 2);
 }
 
 use rodas5p_integrators::{
@@ -141,6 +210,18 @@ fn bdf_mass_matrix_path_is_accurate_and_failure_is_transactional() {
         },
     )
     .unwrap();
+    assert_eq!(
+        result.counters.direct_factorizations,
+        result.counters.nonlinear_solves
+    );
+    assert_eq!(
+        result.counters.nonlinear_jacobian_evaluations,
+        result.counters.nonlinear_solves
+    );
+    assert_eq!(
+        result.counters.direct_solve_calls,
+        result.counters.nonlinear_iterations
+    );
     let exact = problem.exact(0.05).unwrap();
     let error = result
         .y
@@ -188,7 +269,8 @@ fn bdf_mass_matrix_path_is_accurate_and_failure_is_transactional() {
 }
 
 use rodas5p_integrators::{
-    RadauConfig, RadauIiaStages, integrate_radau_fixed, radau_iia3_tableau, radau_step,
+    RadauConfig, RadauIiaStages, RadauStageSolveArchitecture, RadauTransformLimitation,
+    integrate_radau_fixed, radau_iia3_tableau, radau_iia3_transform_oracle, radau_step,
 };
 
 #[test]
@@ -201,6 +283,42 @@ fn radau_iia3_tableau_is_exactly_consistent_and_stiffly_accurate() {
     for j in 0..3 {
         assert!((a[(2, j)] - b[j]).abs() < 5.0e-15);
     }
+}
+
+#[test]
+fn radau_iia3_transform_is_oracle_bound_but_typed_as_deferred_on_real_only_lu() {
+    let oracle = radau_iia3_transform_oracle();
+    for row in 0..3 {
+        for column in 0..3 {
+            let product = (0..3)
+                .map(|index| oracle.inverse_transform[row][index] * oracle.transform[index][column])
+                .sum::<f64>();
+            let expected = if row == column { 1.0 } else { 0.0 };
+            assert!(
+                (product - expected).abs() < 2.0e-14,
+                "({row},{column})={product:e}"
+            );
+        }
+    }
+
+    let (problem, y0) = scalar_linear_problem(-4.0, 1.0);
+    let mut counters = WorkCounters::default();
+    let report = radau_step(
+        &problem,
+        0.0,
+        &y0,
+        0.02,
+        &RadauConfig::default(),
+        &mut counters,
+    )
+    .unwrap();
+    assert_eq!(
+        report.stage_solve_architecture,
+        RadauStageSolveArchitecture::FullRealStageSystemTransformDeferred(
+            RadauTransformLimitation::RealOnlyDenseLu
+        )
+    );
+    assert_eq!(counters.direct_factorizations, 1);
 }
 
 #[test]

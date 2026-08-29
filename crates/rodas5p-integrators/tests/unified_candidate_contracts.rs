@@ -439,6 +439,7 @@ fn unified_scientific_gates_distinguish_protected_fifth_order_from_low_order_fas
 
     let nonlinear = run_unified_nonlinear_screen(UnifiedScreenProfile::Smoke, 1).unwrap();
     let gates = run_unified_scientific_gates(UnifiedScreenProfile::Smoke, 1, &nonlinear).unwrap();
+    assert_eq!(gates.order_pass_floor.to_bits(), 4.8_f64.to_bits());
     let protected = gates
         .candidates
         .iter()
@@ -446,6 +447,18 @@ fn unified_scientific_gates_distinguish_protected_fifth_order_from_low_order_fas
         .unwrap();
     assert!(protected.order_pass);
     assert!(protected.stiff_decay_pass);
+    let protected_orders = gates
+        .order_rows
+        .iter()
+        .filter(|row| row.candidate_id == "sequential-direct-off")
+        .filter(|row| row.above_roundoff_floor == Some(true))
+        .filter_map(|row| row.observed_order)
+        .collect::<Vec<_>>();
+    assert!(!protected_orders.is_empty());
+    assert!(
+        protected_orders.iter().all(|order| *order >= 4.8),
+        "{protected_orders:?}"
+    );
 
     let low_order = gates
         .candidates

@@ -189,7 +189,7 @@ fn retained_level2_shadow_is_complete_charged_safe_and_rjf_identical() {
     );
     let mut expected_prefix_before = 0_u64;
     let mut expected_total_before = 0_u64;
-    for row in &report.rows {
+    for (row, expected_target_rjf_jvp_vectors) in report.rows.iter().zip([106, 118]) {
         assert!(row.recommended);
         assert!(row.retained_level2_resumed);
         assert!(row.shadow_full_e_completed);
@@ -220,7 +220,10 @@ fn retained_level2_shadow_is_complete_charged_safe_and_rjf_identical() {
             row.total_speculative_jvp_after_target,
             expected_total_before + full.jvp_vectors,
         );
-        assert_eq!(row.target_rjf_jvp_vectors, Some(118));
+        assert_eq!(
+            row.target_rjf_jvp_vectors,
+            Some(expected_target_rjf_jvp_vectors)
+        );
         assert_eq!(prefix.jacobian_builds, 0);
         assert_eq!(prefix.direct_factorizations, 0);
         assert_eq!(prefix.nonlinear_iterations, 0);

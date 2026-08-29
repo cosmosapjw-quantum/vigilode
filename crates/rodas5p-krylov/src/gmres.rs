@@ -1,5 +1,8 @@
 use crate::{
-    common::{apply_left_with_raw, true_residual_into, validate_system},
+    common::{
+        apply_left_with_raw, selected_residual_norm, true_residual_into, validate_residual_scale,
+        validate_system,
+    },
     kernels::{axpy, linear_combination_into, normalize, two_pass_mgs_into},
     small::least_squares,
     workspace::{ArnoldiWorkspace, GmresWorkspace},
@@ -45,6 +48,39 @@ impl GmresConfig {
 
 pub(crate) struct ArnoldiResult {
     pub iterations: usize,
+}
+
+/// Classify Arnoldi breakdown against the scale of the complete current relation.
+///
+/// The scale has no additive floor: uniformly scaling the operator must not alter
+/// whether a nonzero next Arnoldi vector is retained.  A wholly zero relation is
+/// the one explicit exact-breakdown case.
+pub(crate) fn arnoldi_happy_breakdown(
+    projection_coefficients: &[f64],
+    h_next: f64,
+) -> CoreResult<bool> {
+    arnoldi_happy_breakdown_from_norm(safe_l2(projection_coefficients), h_next)
+}
+
+pub(crate) fn arnoldi_happy_breakdown_from_norm(
+    projection_norm: f64,
+    h_next: f64,
+) -> CoreResult<bool> {
+    if !h_next.is_finite() {
+        return Err(CoreError::NonFinite(
+            "GMRES Arnoldi next-vector norm is NaN/Inf".into(),
+        ));
+    }
+    if !projection_norm.is_finite() {
+        return Err(CoreError::NonFinite(
+            "GMRES Arnoldi projection norm is NaN/Inf".into(),
+        ));
+    }
+    let column_scale = projection_norm.hypot(h_next);
+    if column_scale == 0.0 {
+        return Ok(true);
+    }
+    Ok(h_next <= 100.0 * f64::EPSILON * column_scale)
 }
 
 // Keep augmentation vectors, cached images, accounting, and reusable scratch explicit;
@@ -118,12 +154,9 @@ pub(crate) fn arnoldi_augmented_with_workspace(
         let h_next = safe_l2(w);
         workspace.hessenberg[(j + 1, j)] = h_next;
         actual = j + 1;
-        let orthogonalization_scale = workspace.h_column[..previous_basis.len()]
-            .iter()
-            .map(|value| value.abs())
-            .fold(0.0, f64::max);
-        let breakdown_threshold = 100.0 * f64::EPSILON * (1.0 + orthogonalization_scale);
-        if h_next > breakdown_threshold {
+        let happy_breakdown =
+            arnoldi_happy_breakdown(&workspace.h_column[..previous_basis.len()], h_next)?;
+        if !happy_breakdown {
             for value in w {
                 *value /= h_next;
             }
@@ -145,7 +178,7 @@ pub(crate) fn arnoldi_augmented_with_workspace(
             &workspace.hessenberg_prefix,
             &workspace.rhs_small[..actual + 1],
         )?;
-        if h_next <= breakdown_threshold {
+        if happy_breakdown {
             break;
         }
     }
@@ -158,19 +191,22 @@ pub(crate) fn arnoldi_augmented_with_workspace(
     Ok(ArnoldiResult { iterations: actual })
 }
 
-pub fn solve_gmres_with_workspace(
+#[allow(clippy::too_many_arguments)]
+pub fn solve_gmres_with_workspace_and_residual_scale(
     op: &dyn LinearOperator,
     pc: &dyn Preconditioner,
     rhs: &[f64],
     x0: Option<&[f64]>,
     config: &GmresConfig,
+    residual_scale: Option<&[f64]>,
     workspace: &mut GmresWorkspace,
     counters: &mut WorkCounters,
 ) -> CoreResult<LinearSolveReport> {
     config.validate()?;
     let n = validate_system(op, pc, rhs, x0)?;
+    validate_residual_scale(residual_scale, n)?;
     let before = *counters;
-    let right_norm = safe_l2(rhs);
+    let right_norm = selected_residual_norm(rhs, residual_scale)?;
     let threshold = config.atol.max(config.rtol * right_norm);
     workspace.common.prepare(n);
     if let Some(initial) = x0 {
@@ -192,7 +228,7 @@ pub fn solve_gmres_with_workspace(
                 ApplyCategory::Krylov,
             )?;
         }
-        let residual_norm = safe_l2(&workspace.common.residual);
+        let residual_norm = selected_residual_norm(&workspace.common.residual, residual_scale)?;
         if residual_norm <= threshold {
             break;
         }
@@ -245,7 +281,7 @@ pub fn solve_gmres_with_workspace(
         counters,
         ApplyCategory::Diagnostic,
     )?;
-    let residual_norm = safe_l2(&workspace.common.residual);
+    let residual_norm = selected_residual_norm(&workspace.common.residual, residual_scale)?;
     if !residual_norm.is_finite() || residual_norm > threshold {
         return Err(CoreError::LinearSolve(format!(
             "GMRES true residual {residual_norm:.3e} exceeds {threshold:.3e}"
@@ -266,6 +302,20 @@ pub fn solve_gmres_with_workspace(
     })
 }
 
+pub fn solve_gmres_with_workspace(
+    op: &dyn LinearOperator,
+    pc: &dyn Preconditioner,
+    rhs: &[f64],
+    x0: Option<&[f64]>,
+    config: &GmresConfig,
+    workspace: &mut GmresWorkspace,
+    counters: &mut WorkCounters,
+) -> CoreResult<LinearSolveReport> {
+    solve_gmres_with_workspace_and_residual_scale(
+        op, pc, rhs, x0, config, None, workspace, counters,
+    )
+}
+
 pub fn solve_gmres(
     op: &dyn LinearOperator,
     pc: &dyn Preconditioner,
@@ -280,6 +330,28 @@ pub fn solve_gmres(
         rhs,
         x0,
         config,
+        &mut GmresWorkspace::default(),
+        counters,
+    )
+}
+
+#[allow(clippy::too_many_arguments)]
+pub fn solve_gmres_with_residual_scale(
+    op: &dyn LinearOperator,
+    pc: &dyn Preconditioner,
+    rhs: &[f64],
+    x0: Option<&[f64]>,
+    config: &GmresConfig,
+    residual_scale: Option<&[f64]>,
+    counters: &mut WorkCounters,
+) -> CoreResult<LinearSolveReport> {
+    solve_gmres_with_workspace_and_residual_scale(
+        op,
+        pc,
+        rhs,
+        x0,
+        config,
+        residual_scale,
         &mut GmresWorkspace::default(),
         counters,
     )
@@ -511,9 +583,7 @@ impl GmresPrefixSession {
         }
         let next_norm = safe_l2(&work);
         self.hessenberg[(column + 1, column)] = next_norm;
-        let orthogonalization_scale = h_column.iter().map(|v| v.abs()).fold(0.0, f64::max);
-        let breakdown_threshold = 100.0 * f64::EPSILON * (1.0 + orthogonalization_scale);
-        self.happy_breakdown = next_norm <= breakdown_threshold;
+        self.happy_breakdown = arnoldi_happy_breakdown(&h_column, next_norm)?;
         if !self.happy_breakdown && column + 1 < maximum {
             self.basis
                 .push(work.iter().map(|value| value / next_norm).collect());

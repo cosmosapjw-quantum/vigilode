@@ -1,5 +1,5 @@
 use rodas5p_core::{CoreError, CoreResult, error_scale, wrms};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 use crate::ObservedIntegrationResult;
 
@@ -9,6 +9,52 @@ pub enum ControllerKind {
     #[default]
     Integral,
     Pi,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct AdaptiveEstimatorMetadata {
+    pub name: &'static str,
+    pub order: usize,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct AdaptiveMethodMetadata {
+    pub method: &'static str,
+    pub estimator: AdaptiveEstimatorMetadata,
+}
+
+/// Method-bound adaptive metadata for the protected RODAS5P embedded pair.
+pub const RODAS5P_ADAPTIVE_METHOD: AdaptiveMethodMetadata = AdaptiveMethodMetadata {
+    method: "rodas5p",
+    estimator: AdaptiveEstimatorMetadata {
+        name: "rodas5p-embedded",
+        order: 5,
+    },
+};
+
+/// Compatibility alias for callers that have not yet adopted method metadata.
+pub const RODAS5P_ESTIMATOR_ORDER: usize = RODAS5P_ADAPTIVE_METHOD.estimator.order;
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum AdaptiveFailureKind {
+    LocalError,
+    LinearSolve,
+    NonlinearSolve,
+    NonFinite,
+}
+
+pub(crate) fn record_adaptive_work_failure(
+    counters: &mut rodas5p_core::WorkCounters,
+    kind: AdaptiveFailureKind,
+) {
+    let target = match kind {
+        AdaptiveFailureKind::LocalError => &mut counters.local_error_failures,
+        AdaptiveFailureKind::LinearSolve => &mut counters.linear_solve_failures,
+        AdaptiveFailureKind::NonlinearSolve => &mut counters.nonlinear_solve_failures,
+        AdaptiveFailureKind::NonFinite => &mut counters.nonfinite_step_failures,
+    };
+    *target = target.saturating_add(1);
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize)]
@@ -214,6 +260,60 @@ impl AdaptiveControllerState {
     }
 }
 
+/// Update a method-bound controller after one attempted step.
+///
+/// A forced output landing is a scheduling artifact, not an error-estimator
+/// sample: a successful clipped trial restores the precise unclipped request
+/// and leaves PI history untouched. Rejections always scale the actual trial.
+#[allow(clippy::too_many_arguments)]
+pub fn adaptive_next_step_after_attempt(
+    controller: &mut AdaptiveControllerState,
+    config: &AdaptiveStepConfig,
+    requested_h: f64,
+    trial_h: f64,
+    error: f64,
+    estimator_order: usize,
+    accepted: bool,
+    forced_output_clipped: bool,
+) -> CoreResult<f64> {
+    if accepted {
+        if forced_output_clipped {
+            return Ok(requested_h);
+        }
+        controller.record_acceptance(error)?;
+        return Ok(trial_h * controller.propose_factor(config, error, estimator_order, true)?);
+    }
+    if error.is_finite() {
+        controller.record_rejection(error)?;
+        Ok(trial_h
+            * controller.propose_factor(config, error.max(1.0e-16), estimator_order, false)?)
+    } else {
+        Ok(trial_h * config.min_factor)
+    }
+}
+
+/// Compatibility wrapper for the protected RODAS5P embedded pair.
+pub fn rodas_next_step_after_attempt(
+    controller: &mut AdaptiveControllerState,
+    config: &AdaptiveStepConfig,
+    requested_h: f64,
+    trial_h: f64,
+    error: f64,
+    accepted: bool,
+    forced_output_clipped: bool,
+) -> CoreResult<f64> {
+    adaptive_next_step_after_attempt(
+        controller,
+        config,
+        requested_h,
+        trial_h,
+        error,
+        RODAS5P_ADAPTIVE_METHOD.estimator.order,
+        accepted,
+        forced_output_clipped,
+    )
+}
+
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct StepDoublingEstimate {
     pub method_order: usize,
@@ -269,7 +369,7 @@ pub fn step_doubling_wrms_error(
     })
 }
 
-#[derive(Clone, Debug, Default, PartialEq, Serialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct AdaptiveRunDiagnostics {
     pub attempts: usize,
     pub accepted_macro_steps: usize,
@@ -279,10 +379,77 @@ pub struct AdaptiveRunDiagnostics {
     pub error_norms: Vec<f64>,
     pub estimator_orders: Vec<usize>,
     pub estimator_ids: Vec<String>,
+    /// One cause entry per attempt; accepted attempts use `None`.
+    pub failure_kinds: Vec<Option<AdaptiveFailureKind>>,
+    pub local_error_failures: usize,
+    pub linear_solve_failures: usize,
+    pub nonlinear_solve_failures: usize,
+    pub non_finite_failures: usize,
     pub fallback_steps: usize,
 }
 
 impl AdaptiveRunDiagnostics {
+    /// Whether all per-attempt vectors and typed failure counts form one
+    /// complete, internally consistent adaptive ledger.
+    pub fn is_structurally_consistent(&self) -> bool {
+        self.attempts == self.error_norms.len()
+            && self.attempts == self.estimator_orders.len()
+            && self.attempts == self.estimator_ids.len()
+            && self.attempts == self.failure_kinds.len()
+            && self.attempts == self.accepted_macro_steps + self.rejected_macro_steps
+            && self.accepted_macro_steps == self.accepted_step_sizes.len()
+            && self.rejected_macro_steps == self.rejected_step_sizes.len()
+            && self.rejected_macro_steps
+                == self.local_error_failures
+                    + self.linear_solve_failures
+                    + self.nonlinear_solve_failures
+                    + self.non_finite_failures
+    }
+
+    /// Append an independently restarted segment while rejecting malformed
+    /// diagnostics and integer overflow.
+    pub fn checked_accumulate(&mut self, other: &Self) -> CoreResult<()> {
+        if !self.is_structurally_consistent() || !other.is_structurally_consistent() {
+            return Err(CoreError::InvalidInput(
+                "cannot accumulate structurally inconsistent adaptive diagnostics".into(),
+            ));
+        }
+        let mut next = self.clone();
+        macro_rules! checked_add {
+            ($($field:ident),* $(,)?) => {
+                $(next.$field = next.$field.checked_add(other.$field).ok_or_else(|| {
+                    CoreError::InvalidInput("adaptive diagnostic counter overflow".into())
+                })?;)*
+            };
+        }
+        checked_add!(
+            attempts,
+            accepted_macro_steps,
+            rejected_macro_steps,
+            local_error_failures,
+            linear_solve_failures,
+            nonlinear_solve_failures,
+            non_finite_failures,
+            fallback_steps,
+        );
+        next.accepted_step_sizes
+            .extend_from_slice(&other.accepted_step_sizes);
+        next.rejected_step_sizes
+            .extend_from_slice(&other.rejected_step_sizes);
+        next.error_norms.extend_from_slice(&other.error_norms);
+        next.estimator_orders
+            .extend_from_slice(&other.estimator_orders);
+        next.estimator_ids.extend_from_slice(&other.estimator_ids);
+        next.failure_kinds.extend_from_slice(&other.failure_kinds);
+        if !next.is_structurally_consistent() {
+            return Err(CoreError::InvalidInput(
+                "accumulated adaptive diagnostics are inconsistent".into(),
+            ));
+        }
+        *self = next;
+        Ok(())
+    }
+
     pub(crate) fn record(
         &mut self,
         step: f64,
@@ -291,10 +458,35 @@ impl AdaptiveRunDiagnostics {
         estimator_id: &str,
         accepted: bool,
     ) {
+        self.record_with_failure(step, error, estimator_order, estimator_id, accepted, None);
+    }
+
+    pub(crate) fn record_with_failure(
+        &mut self,
+        step: f64,
+        error: f64,
+        estimator_order: usize,
+        estimator_id: &str,
+        accepted: bool,
+        failure: Option<AdaptiveFailureKind>,
+    ) {
         self.attempts += 1;
         self.error_norms.push(error);
         self.estimator_orders.push(estimator_order);
         self.estimator_ids.push(estimator_id.to_owned());
+        let failure = if accepted {
+            None
+        } else {
+            failure.or(Some(AdaptiveFailureKind::LocalError))
+        };
+        self.failure_kinds.push(failure);
+        match failure {
+            Some(AdaptiveFailureKind::LocalError) => self.local_error_failures += 1,
+            Some(AdaptiveFailureKind::LinearSolve) => self.linear_solve_failures += 1,
+            Some(AdaptiveFailureKind::NonlinearSolve) => self.nonlinear_solve_failures += 1,
+            Some(AdaptiveFailureKind::NonFinite) => self.non_finite_failures += 1,
+            None => {}
+        }
         if accepted {
             self.accepted_macro_steps += 1;
             self.accepted_step_sizes.push(step);
@@ -309,4 +501,20 @@ impl AdaptiveRunDiagnostics {
 pub struct AdaptiveObservedIntegrationResult {
     pub observed: ObservedIntegrationResult,
     pub diagnostics: AdaptiveRunDiagnostics,
+}
+
+#[cfg(test)]
+mod method_metadata_tests {
+    use super::*;
+
+    #[test]
+    fn rodas_controller_order_comes_from_method_estimator_metadata() {
+        assert_eq!(RODAS5P_ADAPTIVE_METHOD.method, "rodas5p");
+        assert_eq!(RODAS5P_ADAPTIVE_METHOD.estimator.name, "rodas5p-embedded");
+        assert_eq!(RODAS5P_ADAPTIVE_METHOD.estimator.order, 5);
+        assert_eq!(
+            RODAS5P_ESTIMATOR_ORDER,
+            RODAS5P_ADAPTIVE_METHOD.estimator.order
+        );
+    }
 }

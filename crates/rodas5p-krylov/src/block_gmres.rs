@@ -1,7 +1,7 @@
 use faer::linalg::solvers::SolveLstsq;
 use rodas5p_core::{
-    CoreError, CoreResult, DenseMatrix, LinearOperator, Preconditioner, WorkCounters,
-    apply_preconditioner, safe_l2,
+    ApplyCategory, CoreError, CoreResult, DenseMatrix, LinearOperator, Preconditioner,
+    WorkCounters, apply_preconditioner, apply_rows_counted, safe_l2,
 };
 use serde::{Deserialize, Serialize};
 
@@ -109,6 +109,34 @@ fn orthogonalize(
     Ok(())
 }
 
+/// Decide whether an Arnoldi residual contributes a numerically independent direction.
+///
+/// The comparison uses the norm of the complete current Arnoldi column and has no
+/// additive floor. Uniformly scaling the operator therefore cannot change the rank
+/// decision. A wholly zero column is the one explicit dependent case.
+fn retains_arnoldi_direction(
+    projection_coefficients: &[f64],
+    residual_norm: f64,
+    rank_tolerance: f64,
+) -> CoreResult<bool> {
+    if !residual_norm.is_finite() {
+        return Err(CoreError::NonFinite(
+            "block GMRES Arnoldi residual norm is NaN/Inf".into(),
+        ));
+    }
+    let projection_norm = safe_l2(projection_coefficients);
+    if !projection_norm.is_finite() {
+        return Err(CoreError::NonFinite(
+            "block GMRES Arnoldi projection norm is NaN/Inf".into(),
+        ));
+    }
+    let column_scale = projection_norm.hypot(residual_norm);
+    if column_scale == 0.0 {
+        return Ok(false);
+    }
+    Ok(residual_norm > rank_tolerance * column_scale)
+}
+
 fn initial_basis(
     preconditioned_rhs: &[Vec<f64>],
     rank_tolerance: f64,
@@ -168,9 +196,7 @@ fn apply_left_rows(
     outputs: &mut [Vec<f64>],
     counters: &mut WorkCounters,
 ) -> CoreResult<()> {
-    op.apply_rows(inputs, outputs)?;
-    counters.linear_matvecs += inputs.len() as u64;
-    counters.block_matvecs += 1;
+    apply_rows_counted(op, inputs, outputs, counters, ApplyCategory::Krylov)?;
     for output in outputs.iter_mut() {
         let raw = output.clone();
         apply_preconditioner(pc, &raw, output, counters)?;
@@ -187,9 +213,13 @@ fn true_residuals(
 ) -> CoreResult<(Vec<f64>, Vec<f64>)> {
     let n = op.dimension();
     let mut applied = vec![vec![0.0; n]; solutions.len()];
-    op.apply_rows(solutions, &mut applied)?;
-    counters.diagnostic_matvecs += solutions.len() as u64;
-    counters.block_matvecs += 1;
+    apply_rows_counted(
+        op,
+        solutions,
+        &mut applied,
+        counters,
+        ApplyCategory::Diagnostic,
+    )?;
     let mut norms = Vec::with_capacity(rhs_rows.len());
     let mut relative = Vec::with_capacity(rhs_rows.len());
     for (rhs, ax) in rhs_rows.iter().zip(applied) {
@@ -323,11 +353,10 @@ pub fn solve_block_gmres(
 
         let basis_before = basis.len();
         for mut image in images {
-            let image_scale = safe_l2(&image).max(1.0);
             orthogonalize(&mut image, &basis, &mut coefficient_scratch, counters)?;
             let norm = safe_l2(&image);
             let mut column = coefficient_scratch.clone();
-            if norm > config.rank_tolerance * image_scale {
+            if retains_arnoldi_direction(&column, norm, config.rank_tolerance)? {
                 for value in &mut image {
                     *value /= norm;
                 }
@@ -497,11 +526,11 @@ pub fn solve_seeded_gmres(
         apply_left_rows(op, pc, &inputs, &mut images, counters)?;
         block_iterations += 1;
         let mut image = images.pop().expect("one image");
-        let image_scale = safe_l2(&image).max(1.0);
         orthogonalize(&mut image, &basis, &mut coefficient_scratch, counters)?;
         let norm = safe_l2(&image);
         let mut column = coefficient_scratch.clone();
-        if norm > config.rank_tolerance * image_scale {
+        let retain_direction = retains_arnoldi_direction(&column, norm, config.rank_tolerance)?;
+        if retain_direction {
             for value in &mut image {
                 *value /= norm;
             }
@@ -512,7 +541,7 @@ pub fn solve_seeded_gmres(
         directions += 1;
         counters.linear_iterations += 1;
         counters.block_linear_iterations += 1;
-        if norm <= config.rank_tolerance * image_scale {
+        if !retain_direction {
             break;
         }
     }

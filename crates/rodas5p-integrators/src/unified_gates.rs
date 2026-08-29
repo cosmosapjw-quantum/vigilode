@@ -17,7 +17,7 @@ use crate::{
 const GATE_ATOL: f64 = 1.0e-7;
 const GATE_RTOL: f64 = 1.0e-6;
 const HOMOTOPY_OUTPUT_BUDGET: f64 = 0.1;
-const ORDER_PASS_FLOOR: f64 = 4.5;
+const ORDER_PASS_FLOOR: f64 = 4.8;
 const STIFF_ABSOLUTE_FLOOR: f64 = 1.0e-8;
 const STIFF_REFERENCE_FACTOR: f64 = 10.0;
 
@@ -337,6 +337,23 @@ fn qualification_observed_order(rows: &[CandidateOrderGateRow]) -> Option<f64> {
     })
 }
 
+fn all_above_roundoff_orders_pass(rows: &[CandidateOrderGateRow]) -> bool {
+    let mut relevant = 0_usize;
+    for (index, row) in rows.iter().enumerate() {
+        if index == 0 || row.above_roundoff_floor != Some(true) {
+            continue;
+        }
+        relevant += 1;
+        if !row
+            .observed_order
+            .is_some_and(|order| order.is_finite() && order >= ORDER_PASS_FLOOR)
+        {
+            return false;
+        }
+    }
+    relevant > 0
+}
+
 fn run_candidate_order_rows(
     candidate: &CandidateSpec,
     profile: UnifiedScreenProfile,
@@ -550,7 +567,7 @@ fn candidate_report(
     };
     let finest_observed_order = finest_observed_order(order_rows);
     let qualification_observed_order = qualification_observed_order(order_rows);
-    let order_pass = qualification_observed_order.is_some_and(|value| value >= ORDER_PASS_FLOOR)
+    let order_pass = all_above_roundoff_orders_pass(order_rows)
         && order_rows.iter().all(|row| row.failure.is_none());
     let order_all_fast = order_rows.iter().all(|row| row.all_fast);
     let one_step_rejections = rows
@@ -829,6 +846,17 @@ mod qualification_tests {
             row(Some(1.5), 8.8e-5, 1.0e-14),
         ];
         assert_eq!(qualification_observed_order(&rows), Some(1.5));
+    }
+
+    #[test]
+    fn every_above_roundoff_order_must_meet_the_floor() {
+        let rows = vec![
+            row(None, 1.0e-3, 1.0e-14),
+            row(Some(4.7), 3.8e-5, 1.0e-14),
+            row(Some(5.0), 1.2e-6, 1.0e-14),
+        ];
+        assert_eq!(qualification_observed_order(&rows), Some(5.0));
+        assert!(!all_above_roundoff_orders_pass(&rows));
     }
 
     #[test]

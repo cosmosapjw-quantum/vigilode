@@ -9,6 +9,73 @@ const INNER_RELATIVE_FLOOR: f64 = 1.0e-12;
 const INNER_ABSOLUTE_FLOOR: f64 = 1.0e-14;
 const LEGACY_LINEAR_RTOL: f64 = 1.0e-10;
 const LEGACY_LINEAR_ATOL: f64 = 1.0e-12;
+/// Dimensionless allocation used to set per-stage WRMS *residual* targets.
+///
+/// This is not an endpoint-error budget. Translating a certified residual
+/// `r_i` into a stage error requires a problem-dependent bound on
+/// `W^{-1} r_i`, and no such resolvent bound is available in the generic
+/// matrix-free interface.
+pub const RODAS5P_INNER_RESIDUAL_HEURISTIC_FRACTION: f64 = 0.1;
+pub const RODAS5P_INNER_FORCING_FLOOR: f64 = 64.0 * f64::EPSILON;
+pub const RODAS5P_INNER_FORCING_ETA_MAX: f64 = 0.5;
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum Rodas5pInnerForcingClaimScope {
+    StageResidualHeuristicRequiresResolventBound,
+}
+
+pub const RODAS5P_INNER_FORCING_CLAIM_SCOPE: Rodas5pInnerForcingClaimScope =
+    Rodas5pInnerForcingClaimScope::StageResidualHeuristicRequiresResolventBound;
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Rodas5pInnerForcingTarget {
+    pub eta: f64,
+    pub tau: f64,
+}
+
+pub fn rodas5p_inner_forcing_target(
+    flow_wrms: f64,
+    rhs_wrms: f64,
+    output_weight_l1: f64,
+) -> CoreResult<Rodas5pInnerForcingTarget> {
+    if !flow_wrms.is_finite() || flow_wrms < 0.0 {
+        return Err(CoreError::InvalidInput(
+            "RODAS5P inner-forcing flow norm must be finite and nonnegative".into(),
+        ));
+    }
+    if !rhs_wrms.is_finite() || rhs_wrms < 0.0 {
+        return Err(CoreError::InvalidInput(
+            "RODAS5P inner-forcing RHS norm must be finite and nonnegative".into(),
+        ));
+    }
+    if !output_weight_l1.is_finite() || output_weight_l1 <= 0.0 {
+        return Err(CoreError::InvalidInput(
+            "RODAS5P inner-forcing output-weight norm must be finite and positive".into(),
+        ));
+    }
+
+    let forcing_scale = flow_wrms.max(rhs_wrms);
+    let unclamped_eta = if forcing_scale == 0.0 {
+        RODAS5P_INNER_FORCING_ETA_MAX
+    } else {
+        RODAS5P_INNER_RESIDUAL_HEURISTIC_FRACTION / (output_weight_l1 * forcing_scale)
+    };
+    let eta = unclamped_eta.clamp(RODAS5P_INNER_FORCING_FLOOR, RODAS5P_INNER_FORCING_ETA_MAX);
+    let relative_target = eta * rhs_wrms;
+    let tau = relative_target.max(RODAS5P_INNER_FORCING_FLOOR);
+    let roundoff_floor_is_active = unclamped_eta < RODAS5P_INNER_FORCING_FLOOR
+        || relative_target < RODAS5P_INNER_FORCING_FLOOR;
+    if roundoff_floor_is_active
+        && output_weight_l1 * tau > RODAS5P_INNER_RESIDUAL_HEURISTIC_FRACTION
+    {
+        return Err(CoreError::LinearSolve(
+            "RODAS5P inner-forcing roundoff floor exceeds the stage-residual heuristic allocation"
+                .into(),
+        ));
+    }
+    Ok(Rodas5pInnerForcingTarget { eta, tau })
+}
 
 /// Explicit GMRES tolerance arm used by the G4/S5B0 authority replay.
 ///

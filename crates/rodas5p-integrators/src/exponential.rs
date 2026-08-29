@@ -4,8 +4,8 @@ use std::sync::{
 };
 
 use rodas5p_core::{
-    ClosureOperator, CoreError, CoreResult, DenseMatrix, LinearOperator, WorkCounters,
-    dense_phi_action, error_scale, safe_l2, wrms,
+    ClosureOperator, CoreError, CoreResult, DenseMatrix, LinearOperator, OperatorApplicationWork,
+    WorkCounters, apply_jvp_counted, dense_phi_action, error_scale, safe_l2, wrms,
 };
 use serde::{Deserialize, Serialize};
 
@@ -701,6 +701,18 @@ impl LinearOperator for Pexprb54s4BudgetedOperator {
         self.inner.explicit()
     }
 
+    fn application_work(&self) -> OperatorApplicationWork {
+        self.inner.application_work()
+    }
+
+    fn row_batch_work(&self, vector_count: usize) -> OperatorApplicationWork {
+        self.inner.row_batch_work(vector_count)
+    }
+
+    fn exact_identity(&self) -> Option<rodas5p_core::ExactOperatorIdentity> {
+        self.inner.exact_identity()
+    }
+
     fn token(&self) -> u64 {
         self.inner.token()
     }
@@ -870,9 +882,7 @@ pub fn krylov_phi_action(
 
     for column in 0..maximum {
         let mut work = vec![0.0; n];
-        operator.apply(&basis[column], &mut work)?;
-        counters.jvp_calls += 1;
-        counters.jvp_vectors += 1;
+        apply_jvp_counted(operator.as_ref(), &basis[column], &mut work, counters)?;
         counters.phi_krylov_vectors += 1;
 
         for (row, basis_vector) in basis.iter().take(column + 1).enumerate() {
@@ -1069,9 +1079,7 @@ fn krylov_exponential_once(
 
     for column in 0..maximum {
         let mut work = vec![0.0; dimension];
-        operator.apply(&basis[column], &mut work)?;
-        counters.jvp_calls += 1;
-        counters.jvp_vectors += 1;
+        apply_jvp_counted(operator.as_ref(), &basis[column], &mut work, counters)?;
         counters.phi_krylov_vectors += 1;
         fused_orthogonalize(
             &basis,
@@ -1529,9 +1537,12 @@ impl FusedPhiPrefixSession {
         }
         let augmented_dimension = self.operator.dimension();
         let mut work = vec![0.0; augmented_dimension];
-        self.operator.apply(&self.basis[column], &mut work)?;
-        counters.jvp_calls += 1;
-        counters.jvp_vectors += 1;
+        apply_jvp_counted(
+            self.operator.as_ref(),
+            &self.basis[column],
+            &mut work,
+            counters,
+        )?;
         counters.phi_krylov_vectors += 1;
         fused_orthogonalize(
             &self.basis,
@@ -1723,9 +1734,7 @@ fn nonlinear_remainder(
     let f_stage = problem.eval_rhs(t, stage, counters)?;
     let increment: Vec<f64> = stage.iter().zip(y).map(|(a, b)| a - b).collect();
     let mut linear = vec![0.0; increment.len()];
-    operator.apply(&increment, &mut linear)?;
-    counters.jvp_calls += 1;
-    counters.jvp_vectors += 1;
+    apply_jvp_counted(operator, &increment, &mut linear, counters)?;
     Ok(f_stage
         .iter()
         .zip(f0)

@@ -8,6 +8,7 @@ mod block;
 mod candidates;
 mod certification;
 mod common_w_gate;
+mod dense_output_v2;
 mod exponential;
 mod g1_transactional_gate;
 mod g2_exponential_gate;
@@ -33,6 +34,8 @@ mod problems;
 mod radau;
 mod rhs_telemetry;
 mod sabr;
+mod scientific_corpus_v2;
+mod scientific_validity_v2_gate;
 mod sequential;
 mod stage_batch;
 mod transactional_q1_q2;
@@ -41,8 +44,10 @@ mod unified_screen;
 mod v38d_performance_tournament;
 
 pub use adaptive::{
-    AdaptiveControllerState, AdaptiveObservedIntegrationResult, AdaptiveRunDiagnostics,
-    AdaptiveStepConfig, ControllerKind, StepDoublingEstimate, step_doubling_wrms_error,
+    AdaptiveControllerState, AdaptiveFailureKind, AdaptiveObservedIntegrationResult,
+    AdaptiveRunDiagnostics, AdaptiveStepConfig, ControllerKind, RODAS5P_ESTIMATOR_ORDER,
+    StepDoublingEstimate, adaptive_next_step_after_attempt, rodas_next_step_after_attempt,
+    step_doubling_wrms_error,
 };
 pub use adaptive_exponential::{
     AdaptiveEarlyFlowDefectAttempt, AdaptiveEarlyFlowDefectOutcome,
@@ -52,9 +57,11 @@ pub use adaptive_exponential::{
     integrate_pexprb54s4_fused_adaptive_observed_with_tolerance_scaled_telemetry,
 };
 pub use bdf::{
-    BdfConfig, BdfHistory, BdfIntegrationResult, BdfOrder, BdfStepReport, VariableBdf2Coefficients,
-    bdf_step, bdf_step_variable, integrate_bdf_adaptive_observed, integrate_bdf_fixed,
-    integrate_bdf_fixed_observed, variable_bdf2_coefficients, variable_bdf2_predictor,
+    BDF2_ZERO_STABILITY_RATIO_MAX, BdfConfig, BdfHistory, BdfIntegrationResult, BdfOrder,
+    BdfStepReport, VariableBdf2Coefficients, bdf_step, bdf_step_variable,
+    bdf1_predictor_correction_lte_factor, bdf2_predictor_correction_lte_factor,
+    integrate_bdf_adaptive_observed, integrate_bdf_fixed, integrate_bdf_fixed_observed,
+    variable_bdf2_coefficients, variable_bdf2_predictor,
 };
 pub use block::{
     BlockMethod, BlockPreconditioner, BlockSolveReport, NonlinearRemainderSnapshot,
@@ -71,6 +78,15 @@ pub use certification::{
 pub use common_w_gate::{
     MatrixFreeCommonWCase, MatrixFreeCommonWProfile, MatrixFreeCommonWReport, MatrixFreeCommonWRow,
     run_matrix_free_common_w_gate,
+};
+pub use dense_output_v2::{
+    DenseOutputError, DenseOutputResult, bdf_dense_output,
+    integrate_adaptive_dense_observed_with_config, integrate_bdf_adaptive_dense_observed,
+    integrate_bdf_fixed_dense_observed, integrate_fixed_dense_observed,
+    integrate_homotopy_adaptive_dense_observed, integrate_radau_adaptive_dense_observed,
+    integrate_radau_fixed_dense_observed, integrate_sequential_matrix_free_adaptive_dense_observed,
+    integrate_transactional_q1_q2_adaptive_dense_observed, radau_dense_output,
+    rodas5p_dense_output,
 };
 pub use exponential::{
     EarlyFlowDefectDiagnosticWork, EarlyFlowDefectTelemetry, EarlyFlowDefectTelemetryMode,
@@ -115,7 +131,10 @@ pub use g4_prefix_kernel_gate::{
 };
 pub use g4_s5b0_inner_tolerance::{
     G4_S5B0_COMMITTED_LINEAR_TOLERANCE_ARM, G4S5B0InnerToleranceLane, G4S5B0InnerTolerancePolicy,
-    G4S5B0LinearToleranceArm, committed_g4_s5b0_linear_tolerance_arm,
+    G4S5B0LinearToleranceArm, RODAS5P_INNER_FORCING_CLAIM_SCOPE, RODAS5P_INNER_FORCING_ETA_MAX,
+    RODAS5P_INNER_FORCING_FLOOR, RODAS5P_INNER_RESIDUAL_HEURISTIC_FRACTION,
+    Rodas5pInnerForcingClaimScope, Rodas5pInnerForcingTarget,
+    committed_g4_s5b0_linear_tolerance_arm, rodas5p_inner_forcing_target,
 };
 pub use g4_s5b0_regime_atlas::{
     G4S5B0ActualLevel1PrefixReport, G4S5B0ActualLevel1PrefixRow, G4S5B0ActualLevel2PrefixReport,
@@ -175,7 +194,7 @@ pub use native_gates::{
     NativeIntegratorGateReport, NativeIntegratorGateRow, run_native_integrator_gates,
 };
 pub use nonlinear::{NewtonConfig, NewtonReport, solve_dense_newton};
-pub use output::{ObservedIntegrationResult, OutputSchedule};
+pub use output::{ObservedIntegrationResult, OutputSamplingPlan, OutputSchedule};
 pub use parallel::ParallelExecution;
 pub use path_controller::{
     PathControllerCase, PathControllerControlRow, PathControllerProfile, PathControllerReport,
@@ -190,9 +209,10 @@ pub use problems::{
     stiff_van_der_pol_problem,
 };
 pub use radau::{
-    RadauConfig, RadauIiaStages, RadauIntegrationResult, RadauStepReport,
+    RadauConfig, RadauIia3TransformOracle, RadauIiaStages, RadauIntegrationResult,
+    RadauStageSolveArchitecture, RadauStepReport, RadauTransformLimitation,
     integrate_radau_adaptive_observed, integrate_radau_fixed, integrate_radau_fixed_observed,
-    radau_iia3_tableau, radau_step,
+    radau_iia3_tableau, radau_iia3_transform_oracle, radau_step,
 };
 pub use rhs_telemetry::{
     BackendRecommendationSummary, CommonWBackendChoice, HomotopyRhsTelemetryCase,
@@ -202,10 +222,25 @@ pub use rhs_telemetry::{
     run_homotopy_rhs_telemetry_screen,
 };
 pub use sabr::{PredictorKind, SabrConfig, StageHistory, sabr_step};
+pub use scientific_corpus_v2::{
+    CorpusPartition, ScientificCaseSpec, ScientificCorpusV2, ScientificFamily,
+    ScientificProblemCase, ScientificProblemSegment, ScientificSourceProvenance,
+    v2_diversity_multiplier,
+};
+pub use scientific_validity_v2_gate::{
+    V2_THRESHOLD_DERIVATION_ID, V2CalibrationFreezeEnvelope, V2CalibrationFreezePayload,
+    V2CampaignBinding, V2EvidenceAuthority, V2GateProfile, V2GateRow, V2GateRowStatus,
+    V2OregonatorReplayEnvelope, V2OregonatorReplayPayload, V2OregonatorReplayRow,
+    V2RowEvidenceBinding, freeze_v2_calibration, replay_v2_oregonator_holdout,
+    v2_calibration_payload_checksum, v2_oregonator_replay_payload_checksum,
+    verify_v2_calibration_freeze, verify_v2_oregonator_replay,
+};
 pub use sequential::{
-    KrylovState, StageSolveData, StepCertificate, StepContext, StepResult, build_step_context,
-    build_step_context_matrix_free, finish_step, sequential_matrix_free_step, sequential_stages,
-    sequential_step,
+    InnerForcedStageSolveData, InnerForcedStepResult, KrylovState, StageInnerForcingReport,
+    StageSolveData, StepCertificate, StepContext, StepResult, build_step_context,
+    build_step_context_matrix_free, finish_step, sequential_matrix_free_step,
+    sequential_matrix_free_step_with_inner_forcing, sequential_stages,
+    sequential_stages_with_inner_forcing, sequential_step,
 };
 pub use stage_batch::{
     StageBatchFeasibilityCase, StageBatchFeasibilityProfile, StageBatchFeasibilityReport,

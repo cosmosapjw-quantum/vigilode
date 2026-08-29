@@ -1,6 +1,9 @@
 use crate::{
-    common::{apply_left_with_raw, true_residual_into, validate_system},
-    gmres::GmresConfig,
+    common::{
+        apply_left_with_raw, selected_residual_norm, true_residual_into, validate_residual_scale,
+        validate_system,
+    },
+    gmres::{GmresConfig, arnoldi_happy_breakdown},
     kernels::{axpy, linear_combination_into, normalize, two_pass_mgs_into},
 };
 use rodas5p_core::{
@@ -264,6 +267,7 @@ fn certify_candidate(
     op: &dyn LinearOperator,
     rhs: &[f64],
     threshold: f64,
+    residual_scale: Option<&[f64]>,
     workspace: &mut GmresGivensWorkspace,
     counters: &mut WorkCounters,
 ) -> CoreResult<bool> {
@@ -276,7 +280,7 @@ fn certify_candidate(
         counters,
         ApplyCategory::Diagnostic,
     )?;
-    let residual_norm = safe_l2(&workspace.residual);
+    let residual_norm = selected_residual_norm(&workspace.residual, residual_scale)?;
     if !residual_norm.is_finite() {
         return Err(CoreError::NonFinite(
             "GMRES true residual is NaN/Inf".into(),
@@ -285,13 +289,15 @@ fn certify_candidate(
     Ok(residual_norm <= threshold)
 }
 
-pub fn solve_gmres_givens_with_workspace(
+#[allow(clippy::too_many_arguments)]
+pub fn solve_gmres_givens_with_workspace_and_residual_scale(
     op: &dyn LinearOperator,
     pc: &dyn Preconditioner,
     rhs: &[f64],
     x0: Option<&[f64]>,
     config: &GmresConfig,
     workspace: &mut GmresGivensWorkspace,
+    residual_scale: Option<&[f64]>,
     counters: &mut WorkCounters,
 ) -> CoreResult<LinearSolveReport> {
     config.validate()?;
@@ -301,8 +307,9 @@ pub fn solve_gmres_givens_with_workspace(
         ));
     }
     let n = validate_system(op, pc, rhs, x0)?;
+    validate_residual_scale(residual_scale, n)?;
     let before = *counters;
-    let right_norm = safe_l2(rhs);
+    let right_norm = selected_residual_norm(rhs, residual_scale)?;
     let threshold = config.atol.max(config.rtol * right_norm);
     if !threshold.is_finite() {
         return Err(CoreError::InvalidInput(
@@ -330,7 +337,7 @@ pub fn solve_gmres_givens_with_workspace(
                 ApplyCategory::Krylov,
             )?;
         }
-        let true_initial_norm = safe_l2(&workspace.residual);
+        let true_initial_norm = selected_residual_norm(&workspace.residual, residual_scale)?;
         if !true_initial_norm.is_finite() {
             return Err(CoreError::NonFinite(
                 "GMRES cycle residual is NaN/Inf".into(),
@@ -383,6 +390,8 @@ pub fn solve_gmres_givens_with_workspace(
 
         let mut actual = 0usize;
         let mut certified = false;
+        let mut projected_certificate_gap = 1usize;
+        let mut next_projected_certificate_column = 0usize;
         for column in 0..cycle_columns {
             workspace.directions[column].copy_from_slice(&workspace.basis[column]);
             let (previous_basis, remaining_basis) = workspace.basis.split_at_mut(column + 1);
@@ -400,12 +409,8 @@ pub fn solve_gmres_givens_with_workspace(
             let h_next = safe_l2(work);
             actual = column + 1;
 
-            let orthogonalization_scale = workspace.h_column[..previous_basis.len()]
-                .iter()
-                .map(|value| value.abs())
-                .fold(0.0, f64::max);
-            let breakdown_threshold = 100.0 * f64::EPSILON * (1.0 + orthogonalization_scale);
-            let happy_breakdown = h_next <= breakdown_threshold;
+            let happy_breakdown =
+                arnoldi_happy_breakdown(&workspace.h_column[..previous_basis.len()], h_next)?;
             workspace.h_column[column + 1] = h_next;
             if happy_breakdown {
                 work.fill(0.0);
@@ -416,15 +421,28 @@ pub fn solve_gmres_givens_with_workspace(
             }
 
             let projected_residual = update_incremental_qr(workspace, column)?;
-            if projected_residual <= projected_trigger || happy_breakdown {
+            let projected_triggered = projected_residual <= projected_trigger;
+            let certify_now = happy_breakdown
+                || (projected_triggered && column >= next_projected_certificate_column);
+            if certify_now {
                 workspace.statistics.projected_residual_checks += 1;
                 let base_x = workspace.x.clone();
                 build_candidate(workspace, &base_x, actual, counters)?;
-                if certify_candidate(op, rhs, threshold, workspace, counters)? {
+                if certify_candidate(op, rhs, threshold, residual_scale, workspace, counters)? {
                     workspace.x.copy_from_slice(&workspace.candidate_x);
                     certified = true;
                 } else {
                     workspace.statistics.rejected_projected_residual_checks += 1;
+                    if happy_breakdown {
+                        counters.linear_iterations += actual as u64;
+                        return Err(CoreError::LinearSolve(
+                            "GMRES-Givens happy-breakdown candidate failed true-residual certification"
+                                .into(),
+                        ));
+                    }
+                    next_projected_certificate_column =
+                        column.saturating_add(projected_certificate_gap);
+                    projected_certificate_gap = projected_certificate_gap.saturating_mul(2);
                 }
             }
 
@@ -459,7 +477,7 @@ pub fn solve_gmres_givens_with_workspace(
         counters,
         ApplyCategory::Diagnostic,
     )?;
-    let residual_norm = safe_l2(&workspace.residual);
+    let residual_norm = selected_residual_norm(&workspace.residual, residual_scale)?;
     if !residual_norm.is_finite() || residual_norm > threshold {
         return Err(CoreError::LinearSolve(format!(
             "GMRES-Givens true residual {residual_norm:.3e} exceeds {threshold:.3e}"
@@ -480,6 +498,20 @@ pub fn solve_gmres_givens_with_workspace(
     })
 }
 
+pub fn solve_gmres_givens_with_workspace(
+    op: &dyn LinearOperator,
+    pc: &dyn Preconditioner,
+    rhs: &[f64],
+    x0: Option<&[f64]>,
+    config: &GmresConfig,
+    workspace: &mut GmresGivensWorkspace,
+    counters: &mut WorkCounters,
+) -> CoreResult<LinearSolveReport> {
+    solve_gmres_givens_with_workspace_and_residual_scale(
+        op, pc, rhs, x0, config, workspace, None, counters,
+    )
+}
+
 pub fn solve_gmres_givens(
     op: &dyn LinearOperator,
     pc: &dyn Preconditioner,
@@ -495,6 +527,28 @@ pub fn solve_gmres_givens(
         x0,
         config,
         &mut GmresGivensWorkspace::default(),
+        counters,
+    )
+}
+
+#[allow(clippy::too_many_arguments)]
+pub fn solve_gmres_givens_with_residual_scale(
+    op: &dyn LinearOperator,
+    pc: &dyn Preconditioner,
+    rhs: &[f64],
+    x0: Option<&[f64]>,
+    config: &GmresConfig,
+    residual_scale: Option<&[f64]>,
+    counters: &mut WorkCounters,
+) -> CoreResult<LinearSolveReport> {
+    solve_gmres_givens_with_workspace_and_residual_scale(
+        op,
+        pc,
+        rhs,
+        x0,
+        config,
+        &mut GmresGivensWorkspace::default(),
+        residual_scale,
         counters,
     )
 }

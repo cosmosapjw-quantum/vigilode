@@ -670,7 +670,7 @@ pub fn run_g2_exponential_gate(
             "The matrix-free phi engine is a full-Arnoldi correctness reference, not KIOPS: incomplete orthogonalization, adaptive substepping, restart and fused phi combinations are not implemented.".into(),
             "Nonautonomous augmentation and nonsingular mass-matrix exponential treatment are not implemented in this bounded node.".into(),
             "The declared pexprb54s4 critical depth of three is a dependency-graph property; separate unfused phi actions currently dominate work, so no wall-time promotion is authorized.".into(),
-            "BDF2 and Radau IIA3 remain byte-frozen comparators and physical clients are excluded from this gate.".into(),
+            "BDF2 remains a legacy context comparator; Radau IIA3 uses the authorized Cell-G frozen-Jacobian embedded-estimator baseline, and physical clients are excluded from this gate.".into(),
         ],
     })
 }

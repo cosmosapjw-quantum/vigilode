@@ -5,6 +5,7 @@ use rodas5p_core::{
 };
 use serde::{Deserialize, Serialize};
 
+use crate::adaptive::RODAS5P_ADAPTIVE_METHOD;
 use crate::{
     AdaptiveControllerState, AdaptiveStepConfig, ControllerKind, FusedOrthogonalization,
     FusedPhiKrylovConfig, FusedPhiPrefixSession, G4S5B0InnerToleranceLane,
@@ -19,7 +20,7 @@ use crate::{
     pexprb54s4_level2_prefix_resume_level1,
     pexprb54s4_level2_prefix_with_tolerance_scaled_telemetry_jvp_budget,
     pexprb54s4_level2_prefix_with_tolerance_scaled_telemetry_jvp_budget_accounted,
-    pexprb54s4_tableau, sequential_matrix_free_step,
+    pexprb54s4_tableau, sequential_matrix_free_step_with_inner_forcing,
 };
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -1021,6 +1022,15 @@ fn exact_shape_first(n: usize, t: f64) -> Vec<f64> {
         .collect()
 }
 
+fn exact_shape_second(n: usize, t: f64) -> Vec<f64> {
+    (0..n)
+        .map(|i| {
+            let k = 1.0 + (i % 7) as f64;
+            -0.4 * k * k * (k * t).sin() - 0.05 * k * k * (0.5 * k * t).cos()
+        })
+        .collect()
+}
+
 fn apply_rotating_operator(n: usize, t: f64, x: &[f64], out: &mut [f64]) {
     let (ramp, _) = smooth_ramp(t, 0.50, 0.08);
     let stiffness = 20.0 + 480.0 * ramp;
@@ -1040,6 +1050,38 @@ fn apply_rotating_operator(n: usize, t: f64, x: &[f64], out: &mut [f64]) {
     }
     for i in 2 * blocks..n {
         out[i] = -stiffness * x[i];
+    }
+}
+
+fn apply_rotating_operator_partial_t(n: usize, t: f64, x: &[f64], out: &mut [f64]) {
+    let (ramp, dramp) = smooth_ramp(t, 0.50, 0.08);
+    let stiffness = 20.0 + 480.0 * ramp;
+    let dstiffness = 480.0 * dramp;
+    let eta = 0.1 + 0.8 * ramp;
+    let deta = 0.8 * dramp;
+    let theta = 8.0 * t + 0.4 * (4.0 * t).sin();
+    let dtheta = 8.0 + 1.6 * (4.0 * t).cos();
+    let c = theta.cos();
+    let s = theta.sin();
+    let blocks = n / 2;
+    for block in 0..blocks {
+        let i = 2 * block;
+        let xr0 = c * x[i] + s * x[i + 1];
+        let xr1 = -s * x[i] + c * x[i + 1];
+        let dxr0 = dtheta * xr1;
+        let dxr1 = -dtheta * xr0;
+        let ar0 = -stiffness * xr0 + eta * stiffness * xr1;
+        let ar1 = -0.35 * stiffness * xr1;
+        let dar0 = -dstiffness * xr0 - stiffness * dxr0
+            + deta * stiffness * xr1
+            + eta * dstiffness * xr1
+            + eta * stiffness * dxr1;
+        let dar1 = -0.35 * (dstiffness * xr1 + stiffness * dxr1);
+        out[i] = c * dar0 - s * dar1 - dtheta * (s * ar0 + c * ar1);
+        out[i + 1] = s * dar0 + c * dar1 + dtheta * (c * ar0 - s * ar1);
+    }
+    for i in 2 * blocks..n {
+        out[i] = -dstiffness * x[i];
     }
 }
 
@@ -1066,25 +1108,19 @@ fn rotating_nonnormal_problem(n: usize) -> CoreResult<AtlasProblem> {
         Ok(())
     });
     let partial_t = Arc::new(move |t: f64, y: &[f64], out: &mut [f64]| {
-        let eps = 1.0e-6;
-        let mut plus = vec![0.0; n];
-        let mut minus = vec![0.0; n];
-        let phi_p = exact_shape(n, t + eps);
-        let dphi_p = exact_shape_first(n, t + eps);
-        let defect_p = y.iter().zip(&phi_p).map(|(a, b)| a - b).collect::<Vec<_>>();
-        apply_rotating_operator(n, t + eps, &defect_p, &mut plus);
-        let (rp, _) = smooth_ramp(t + eps, 0.60, 0.06);
+        let phi = exact_shape(n, t);
+        let dphi = exact_shape_first(n, t);
+        let ddphi = exact_shape_second(n, t);
+        let defect = y.iter().zip(&phi).map(|(a, b)| a - b).collect::<Vec<_>>();
+        apply_rotating_operator_partial_t(n, t, &defect, out);
+        let mut operator_phi_t = vec![0.0; n];
+        apply_rotating_operator(n, t, &dphi, &mut operator_phi_t);
+        let (ramp, dramp) = smooth_ramp(t, 0.60, 0.06);
+        let nonlinear = 40.0 * ramp;
+        let dnonlinear = 40.0 * dramp;
         for i in 0..n {
-            plus[i] += dphi_p[i] + 40.0 * rp * (y[i] * y[i] - phi_p[i] * phi_p[i]);
-        }
-        let phi_m = exact_shape(n, t - eps);
-        let dphi_m = exact_shape_first(n, t - eps);
-        let defect_m = y.iter().zip(&phi_m).map(|(a, b)| a - b).collect::<Vec<_>>();
-        apply_rotating_operator(n, t - eps, &defect_m, &mut minus);
-        let (rm, _) = smooth_ramp(t - eps, 0.60, 0.06);
-        for i in 0..n {
-            minus[i] += dphi_m[i] + 40.0 * rm * (y[i] * y[i] - phi_m[i] * phi_m[i]);
-            out[i] = (plus[i] - minus[i]) / (2.0 * eps);
+            out[i] += -operator_phi_t[i] + ddphi[i] + dnonlinear * (y[i] * y[i] - phi[i] * phi[i])
+                - 2.0 * nonlinear * phi[i] * dphi[i];
         }
         Ok(())
     });
@@ -1139,25 +1175,25 @@ fn nonautonomous_forcing_problem(n: usize) -> CoreResult<AtlasProblem> {
         Ok(())
     });
     let partial_t = Arc::new(move |t: f64, y: &[f64], out: &mut [f64]| {
-        let eps = 1.0e-6;
-        let evaluate = |time: f64, state: &[f64]| {
-            let (ramp, _) = smooth_ramp(time, 0.45, 0.07);
-            let stiffness = 30.0 + 470.0 * ramp;
-            let frequency = 2.0 + 28.0 * ramp;
-            (0..n)
-                .map(|i| {
-                    let phase = (i % 11) as f64 * 0.17;
-                    let phi = (frequency * time + phase).sin();
-                    let dphi = frequency * (frequency * time + phase).cos();
-                    let defect = state[i] - phi;
-                    -stiffness * defect + dphi + 20.0 * ramp * defect * defect
-                })
-                .collect::<Vec<_>>()
-        };
-        let plus = evaluate(t + eps, y);
-        let minus = evaluate(t - eps, y);
+        let (ramp, dramp) = smooth_ramp(t, 0.45, 0.07);
+        let stiffness = 30.0 + 470.0 * ramp;
+        let dstiffness = 470.0 * dramp;
+        let frequency = 2.0 + 28.0 * ramp;
+        let dfrequency = 28.0 * dramp;
         for i in 0..n {
-            out[i] = (plus[i] - minus[i]) / (2.0 * eps);
+            let phase = (i % 11) as f64 * 0.17;
+            let argument = frequency * t + phase;
+            let phi = argument.sin();
+            // This is the derivative of the implemented expression
+            // `frequency * cos(frequency * t + phase)`.
+            let dargument = frequency + t * dfrequency;
+            let ddphi = dfrequency * argument.cos() - frequency * argument.sin() * dargument;
+            let defect = y[i] - phi;
+            let ddefect = -dargument * argument.cos();
+            out[i] = -dstiffness * defect - stiffness * ddefect
+                + ddphi
+                + 20.0 * dramp * defect * defect
+                + 40.0 * ramp * defect * ddefect;
         }
         Ok(())
     });
@@ -1230,29 +1266,28 @@ fn semilinear_transition_problem(n: usize) -> CoreResult<AtlasProblem> {
         Ok(())
     });
     let partial_t = Arc::new(move |t: f64, y: &[f64], out: &mut [f64]| {
-        let eps = 1.0e-6;
-        let evaluate = |time: f64, state: &[f64]| {
-            let phi = (1..=n)
-                .map(|i| (-time).exp() * (std::f64::consts::PI * i as f64 * dx).sin())
-                .collect::<Vec<_>>();
-            let defect = state
-                .iter()
-                .zip(&phi)
-                .map(|(a, b)| a - b)
-                .collect::<Vec<_>>();
-            let mut value = vec![0.0; n];
-            apply_advection_diffusion(n, time, &defect, &mut value);
-            let (ramp, _) = smooth_ramp(time, 0.50, 0.08);
-            let nonlinear = 2.0 + 48.0 * ramp;
-            for i in 0..n {
-                value[i] += -phi[i] + nonlinear * (state[i] * state[i] - phi[i] * phi[i]);
-            }
-            value
-        };
-        let plus = evaluate(t + eps, y);
-        let minus = evaluate(t - eps, y);
+        let phi = (1..=n)
+            .map(|i| (-t).exp() * (std::f64::consts::PI * i as f64 * dx).sin())
+            .collect::<Vec<_>>();
+        let defect = y.iter().zip(&phi).map(|(a, b)| a - b).collect::<Vec<_>>();
+        let mut operator_defect_t = vec![0.0; n];
+        apply_advection_diffusion(n, t, &phi, &mut operator_defect_t);
+        let (_, dramp) = smooth_ramp(t, 0.50, 0.08);
+        let dadvection = 3.5 * dramp;
+        let mut operator_t = vec![0.0; n];
         for i in 0..n {
-            out[i] = (plus[i] - minus[i]) / (2.0 * eps);
+            let left = if i == 0 { 0.0 } else { defect[i - 1] };
+            operator_t[i] = -dadvection * (defect[i] - left) / dx;
+        }
+        let (ramp, _) = smooth_ramp(t, 0.50, 0.08);
+        let nonlinear = 2.0 + 48.0 * ramp;
+        let dnonlinear = 48.0 * dramp;
+        for i in 0..n {
+            out[i] = operator_t[i]
+                + operator_defect_t[i]
+                + phi[i]
+                + dnonlinear * (y[i] * y[i] - phi[i] * phi[i])
+                + 2.0 * nonlinear * phi[i] * phi[i];
         }
         Ok(())
     });
@@ -1277,6 +1312,80 @@ fn semilinear_transition_problem(n: usize) -> CoreResult<AtlasProblem> {
         t_span: (0.0, 1.0),
         transition,
     })
+}
+
+#[cfg(test)]
+mod analytic_partial_t_tests {
+    use super::*;
+
+    fn assert_partial_t_matches_centered_difference(problem: AtlasProblem) {
+        for &t in &[0.11, 0.47, 0.83] {
+            let y = problem
+                .y0
+                .iter()
+                .enumerate()
+                .map(|(index, value)| value + 0.07 * (index as f64 + 1.0))
+                .collect::<Vec<_>>();
+            let mut actual_work = WorkCounters::default();
+            let actual = problem
+                .problem
+                .eval_partial_t(t, &y, &mut actual_work)
+                .unwrap();
+            assert_eq!(actual_work.ft_calls, 1);
+            assert_eq!(actual_work.rhs_calls, 0);
+
+            let epsilon = 1.0e-6;
+            let mut oracle_work = WorkCounters::default();
+            let plus = problem
+                .problem
+                .eval_rhs(t + epsilon, &y, &mut oracle_work)
+                .unwrap();
+            let minus = problem
+                .problem
+                .eval_rhs(t - epsilon, &y, &mut oracle_work)
+                .unwrap();
+            for (analytic, finite_difference) in actual.iter().zip(plus.iter().zip(&minus)) {
+                let oracle = (finite_difference.0 - finite_difference.1) / (2.0 * epsilon);
+                let tolerance = 3.0e-4 + 2.0e-6 * oracle.abs();
+                assert!(
+                    (*analytic - oracle).abs() <= tolerance,
+                    "t={t:.3}, analytic={analytic:.17e}, oracle={oracle:.17e}, tolerance={tolerance:.3e}"
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn analytic_partial_t_matches_independent_centered_difference_without_rhs_calls() {
+        assert_partial_t_matches_centered_difference(rotating_nonnormal_problem(12).unwrap());
+        assert_partial_t_matches_centered_difference(nonautonomous_forcing_problem(12).unwrap());
+        assert_partial_t_matches_centered_difference(semilinear_transition_problem(12).unwrap());
+    }
+}
+
+#[cfg(test)]
+mod live_rodas_step_tests {
+    use super::*;
+    use crate::scalar_linear_problem;
+    use rodas5p_core::{LinearMethod, PreconditionerKind};
+
+    #[test]
+    fn live_atlas_step_uses_wrms_inner_forcing() {
+        let (problem, y0) = scalar_linear_problem(-2.0, 1.0);
+        let linear = LinearSolverConfig {
+            method: LinearMethod::Gmres,
+            restart: 8,
+            maxiter: 64,
+            preconditioner: PreconditionerKind::None,
+            ..LinearSolverConfig::default()
+        };
+        let mut work = WorkCounters::default();
+        let report =
+            g4_live_rodas_step(&problem, 0.0, &y0, 0.05, &linear, 1.0e-8, 1.0e-5, &mut work)
+                .unwrap();
+
+        assert!(report.method.ends_with("-WRMS-forcing-v2"));
+    }
 }
 
 fn build_problems(profile: G4S5B0Profile) -> CoreResult<Vec<AtlasProblem>> {
@@ -1508,6 +1617,23 @@ fn run_exponential_shadow(
     })
 }
 
+#[allow(clippy::too_many_arguments)]
+fn g4_live_rodas_step(
+    problem: &OdeProblem,
+    t: f64,
+    y: &[f64],
+    h: f64,
+    linear: &rodas5p_core::LinearSolverConfig,
+    atol: f64,
+    rtol: f64,
+    counters: &mut WorkCounters,
+) -> CoreResult<crate::StepResult> {
+    sequential_matrix_free_step_with_inner_forcing(
+        problem, t, y, h, linear, None, atol, rtol, false, counters,
+    )
+    .map(|forced| forced.step)
+}
+
 fn run_trajectory(
     problem: AtlasProblem,
     profile: G4S5B0Profile,
@@ -1538,16 +1664,14 @@ fn run_trajectory(
         }
         let mut step_counters = WorkCounters::default();
         let start = Instant::now();
-        let trial = sequential_matrix_free_step(
+        let trial = g4_live_rodas_step(
             &problem.problem,
             t,
             &y,
             h,
             &linear,
-            None,
             adaptive.atol,
             adaptive.rtol,
-            false,
             &mut step_counters,
         );
         let rodas_wall = start.elapsed().as_secs_f64();
@@ -1574,7 +1698,12 @@ fn run_trajectory(
             rejected += 1;
             let _ = controller.record_rejection(error.max(1.0e-16));
             h *= controller
-                .propose_factor(&adaptive, error.max(1.0e-16), 5, false)
+                .propose_factor(
+                    &adaptive,
+                    error.max(1.0e-16),
+                    RODAS5P_ADAPTIVE_METHOD.estimator.order,
+                    false,
+                )
                 .unwrap_or(adaptive.min_factor);
             continue;
         }
@@ -1635,7 +1764,12 @@ fn run_trajectory(
         accepted += 1;
         let _ = controller.record_acceptance(error);
         h *= controller
-            .propose_factor(&adaptive, error.max(1.0e-16), 5, true)
+            .propose_factor(
+                &adaptive,
+                error.max(1.0e-16),
+                RODAS5P_ADAPTIVE_METHOD.estimator.order,
+                true,
+            )
             .unwrap_or(1.0);
     }
 
@@ -1843,16 +1977,14 @@ fn run_rjf_attempt_trace_trajectory(
         let h_trial = h;
         let mut step_counters = WorkCounters::default();
         let start = Instant::now();
-        let trial = sequential_matrix_free_step(
+        let trial = g4_live_rodas_step(
             &problem.problem,
             t,
             &y,
             h,
             &linear,
-            None,
             adaptive.atol,
             adaptive.rtol,
-            false,
             &mut step_counters,
         );
         let wall = start.elapsed().as_secs_f64();
@@ -1934,7 +2066,12 @@ fn run_rjf_attempt_trace_trajectory(
             rejected += 1;
             let _ = controller.record_rejection(error.max(1.0e-16));
             h *= controller
-                .propose_factor(&adaptive, error.max(1.0e-16), 5, false)
+                .propose_factor(
+                    &adaptive,
+                    error.max(1.0e-16),
+                    RODAS5P_ADAPTIVE_METHOD.estimator.order,
+                    false,
+                )
                 .unwrap_or(adaptive.min_factor);
             continue;
         }
@@ -1969,7 +2106,12 @@ fn run_rjf_attempt_trace_trajectory(
         accepted += 1;
         let _ = controller.record_acceptance(error);
         h *= controller
-            .propose_factor(&adaptive, error.max(1.0e-16), 5, true)
+            .propose_factor(
+                &adaptive,
+                error.max(1.0e-16),
+                RODAS5P_ADAPTIVE_METHOD.estimator.order,
+                true,
+            )
             .unwrap_or(1.0);
     }
 
@@ -2194,16 +2336,14 @@ fn run_rjf_actual_level1_prefix_trajectory(
 
         let mut step_counters = WorkCounters::default();
         let start = Instant::now();
-        let trial = sequential_matrix_free_step(
+        let trial = g4_live_rodas_step(
             &problem.problem,
             t,
             &y,
             h,
             &linear,
-            None,
             adaptive.atol,
             adaptive.rtol,
-            false,
             &mut step_counters,
         );
         let wall = start.elapsed().as_secs_f64();
@@ -2306,7 +2446,12 @@ fn run_rjf_actual_level1_prefix_trajectory(
             rejected += 1;
             let _ = controller.record_rejection(error.max(1.0e-16));
             h *= controller
-                .propose_factor(&adaptive, error.max(1.0e-16), 5, false)
+                .propose_factor(
+                    &adaptive,
+                    error.max(1.0e-16),
+                    RODAS5P_ADAPTIVE_METHOD.estimator.order,
+                    false,
+                )
                 .unwrap_or(adaptive.min_factor);
             continue;
         }
@@ -2349,7 +2494,12 @@ fn run_rjf_actual_level1_prefix_trajectory(
         accepted += 1;
         let _ = controller.record_acceptance(error);
         h *= controller
-            .propose_factor(&adaptive, error.max(1.0e-16), 5, true)
+            .propose_factor(
+                &adaptive,
+                error.max(1.0e-16),
+                RODAS5P_ADAPTIVE_METHOD.estimator.order,
+                true,
+            )
             .unwrap_or(1.0);
         if let Some(feature_value) = event_feature {
             pending_probe = Some((decision_step, feature_value));
@@ -2475,16 +2625,14 @@ fn run_rjf_actual_level2_prefix_trajectory(
 
         let mut step_counters = WorkCounters::default();
         let start = Instant::now();
-        let trial = sequential_matrix_free_step(
+        let trial = g4_live_rodas_step(
             &problem.problem,
             t,
             &y,
             h,
             &linear,
-            None,
             adaptive.atol,
             adaptive.rtol,
-            false,
             &mut step_counters,
         );
         let wall = start.elapsed().as_secs_f64();
@@ -2587,7 +2735,12 @@ fn run_rjf_actual_level2_prefix_trajectory(
             rejected += 1;
             let _ = controller.record_rejection(error.max(1.0e-16));
             h *= controller
-                .propose_factor(&adaptive, error.max(1.0e-16), 5, false)
+                .propose_factor(
+                    &adaptive,
+                    error.max(1.0e-16),
+                    RODAS5P_ADAPTIVE_METHOD.estimator.order,
+                    false,
+                )
                 .unwrap_or(adaptive.min_factor);
             continue;
         }
@@ -2630,7 +2783,12 @@ fn run_rjf_actual_level2_prefix_trajectory(
         accepted += 1;
         let _ = controller.record_acceptance(error);
         h *= controller
-            .propose_factor(&adaptive, error.max(1.0e-16), 5, true)
+            .propose_factor(
+                &adaptive,
+                error.max(1.0e-16),
+                RODAS5P_ADAPTIVE_METHOD.estimator.order,
+                true,
+            )
             .unwrap_or(1.0);
         if let Some(feature_value) = event_feature {
             pending_probe = Some((decision_step, feature_value));
@@ -3138,16 +3296,14 @@ fn run_rjf_stage_growth_safety_trajectory(
 
         let mut step_counters = WorkCounters::default();
         let start = Instant::now();
-        let trial = sequential_matrix_free_step(
+        let trial = g4_live_rodas_step(
             &problem.problem,
             t,
             &y,
             h,
             &linear,
-            None,
             adaptive.atol,
             adaptive.rtol,
-            false,
             &mut step_counters,
         );
         let wall = start.elapsed().as_secs_f64();
@@ -3221,7 +3377,12 @@ fn run_rjf_stage_growth_safety_trajectory(
             rejected += 1;
             let _ = controller.record_rejection(error.max(1.0e-16));
             h *= controller
-                .propose_factor(&adaptive, error.max(1.0e-16), 5, false)
+                .propose_factor(
+                    &adaptive,
+                    error.max(1.0e-16),
+                    RODAS5P_ADAPTIVE_METHOD.estimator.order,
+                    false,
+                )
                 .unwrap_or(adaptive.min_factor);
             continue;
         }
@@ -3263,7 +3424,12 @@ fn run_rjf_stage_growth_safety_trajectory(
         accepted += 1;
         let _ = controller.record_acceptance(error);
         h *= controller
-            .propose_factor(&adaptive, error.max(1.0e-16), 5, true)
+            .propose_factor(
+                &adaptive,
+                error.max(1.0e-16),
+                RODAS5P_ADAPTIVE_METHOD.estimator.order,
+                true,
+            )
             .unwrap_or(1.0);
         if let Some(feature_value) = event_feature {
             pending_probe = Some((decision_step, feature_value));
@@ -4132,16 +4298,14 @@ fn run_rjf_frozen_full_e_shadow_trajectory(
 
         let mut step_counters = WorkCounters::default();
         let start = Instant::now();
-        let trial = sequential_matrix_free_step(
+        let trial = g4_live_rodas_step(
             &problem.problem,
             t,
             &y,
             h,
             &linear,
-            None,
             adaptive.atol,
             adaptive.rtol,
-            false,
             &mut step_counters,
         );
         let wall = start.elapsed().as_secs_f64();
@@ -4257,7 +4421,12 @@ fn run_rjf_frozen_full_e_shadow_trajectory(
             rejected += 1;
             let _ = controller.record_rejection(error.max(1.0e-16));
             h *= controller
-                .propose_factor(&adaptive, error.max(1.0e-16), 5, false)
+                .propose_factor(
+                    &adaptive,
+                    error.max(1.0e-16),
+                    RODAS5P_ADAPTIVE_METHOD.estimator.order,
+                    false,
+                )
                 .unwrap_or(adaptive.min_factor);
             continue;
         }
@@ -4299,7 +4468,12 @@ fn run_rjf_frozen_full_e_shadow_trajectory(
         accepted += 1;
         let _ = controller.record_acceptance(error);
         h *= controller
-            .propose_factor(&adaptive, error.max(1.0e-16), 5, true)
+            .propose_factor(
+                &adaptive,
+                error.max(1.0e-16),
+                RODAS5P_ADAPTIVE_METHOD.estimator.order,
+                true,
+            )
             .unwrap_or(1.0);
         if let Some(feature_value) = event_feature {
             pending_probe = Some((decision_step, feature_value));

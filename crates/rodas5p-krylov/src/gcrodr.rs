@@ -1,13 +1,18 @@
 use crate::{
-    common::{apply_left, apply_left_with_raw, true_residual_into, validate_system},
+    common::{
+        apply_left, apply_left_with_raw, selected_residual_norm, true_residual_into,
+        validate_residual_scale, validate_system,
+    },
+    gmres::arnoldi_happy_breakdown_from_norm,
     kernels::{axpy, dot, linear_combination_into, normalize, two_pass_mgs},
     small::{generalized_eigen, least_squares},
     workspace::GcrodrWorkspace,
 };
 use faer::{Mat, c64};
 use rodas5p_core::{
-    ApplyCategory, CoreError, CoreResult, DenseMatrix, LinearOperator, LinearSolveReport,
-    LuFactorization, Preconditioner, WorkCounters, safe_l2,
+    ApplyCategory, CoreError, CoreResult, DenseMatrix, KrylovSystemIdentity, LinearOperator,
+    LinearSolveReport, LuFactorization, Preconditioner, WorkCounters, exact_krylov_system_identity,
+    safe_l2,
 };
 use serde::{Deserialize, Serialize};
 
@@ -41,6 +46,7 @@ pub struct GcrodrState {
     pub basis: Vec<Vec<f64>>,
     pub image: Vec<Vec<f64>>,
     pub operator_token: Option<u64>,
+    pub system_identity: Option<KrylovSystemIdentity>,
     pub previous_solution: Option<Vec<f64>>,
     pub generation: u64,
 }
@@ -381,13 +387,14 @@ fn prefix(a: &DenseMatrix, r: usize, c: usize) -> DenseMatrix {
 
 // State, workspace, and work ledger have deliberately distinct lifetimes and commit rules.
 #[allow(clippy::too_many_arguments)]
-pub fn solve_gcrodr_with_workspace(
+pub fn solve_gcrodr_with_workspace_and_residual_scale(
     op: &dyn LinearOperator,
     pc: &dyn Preconditioner,
     rhs: &[f64],
     x0: Option<&[f64]>,
     config: &GcrodrConfig,
     state: &mut GcrodrState,
+    residual_scale: Option<&[f64]>,
     workspace: &mut GcrodrWorkspace,
     counters: &mut WorkCounters,
 ) -> CoreResult<LinearSolveReport> {
@@ -399,8 +406,10 @@ pub fn solve_gcrodr_with_workspace(
         return Err(CoreError::InvalidInput("invalid GCRO-DR dimensions".into()));
     }
     let n = validate_system(op, pc, rhs, x0)?;
+    validate_residual_scale(residual_scale, n)?;
     let before = *counters;
     let snapshot = state.clone();
+    let system_identity = exact_krylov_system_identity(op, pc);
     workspace.common.prepare(n);
     let result = (|| {
         let mut local = state.clone();
@@ -413,7 +422,10 @@ pub fn solve_gcrodr_with_workspace(
             local.image.clear();
         }
         if !local.basis.is_empty() {
-            if local.operator_token == Some(op.token()) && !local.image.is_empty() {
+            if system_identity.is_some()
+                && local.system_identity.as_ref() == system_identity.as_ref()
+                && !local.image.is_empty()
+            {
                 counters.recycle_same_operator_uses += 1;
             } else {
                 let mut images = Vec::with_capacity(local.basis.len());
@@ -445,7 +457,7 @@ pub fn solve_gcrodr_with_workspace(
             }
         }
 
-        let right_norm = safe_l2(rhs);
+        let right_norm = selected_residual_norm(rhs, residual_scale)?;
         let threshold = config.atol.max(config.rtol * right_norm);
         if let Some(initial) = x0.or(local.previous_solution.as_deref()) {
             workspace.common.x.copy_from_slice(initial);
@@ -465,7 +477,8 @@ pub fn solve_gcrodr_with_workspace(
                     ApplyCategory::Krylov,
                 )?;
             }
-            let mut residual_norm = safe_l2(&workspace.common.residual);
+            let mut residual_norm =
+                selected_residual_norm(&workspace.common.residual, residual_scale)?;
             if residual_norm <= threshold {
                 break;
             }
@@ -523,7 +536,7 @@ pub fn solve_gcrodr_with_workspace(
                     counters,
                     ApplyCategory::Diagnostic,
                 )?;
-                residual_norm = safe_l2(&workspace.common.residual);
+                residual_norm = selected_residual_norm(&workspace.common.residual, residual_scale)?;
                 if residual_norm <= threshold {
                     break;
                 }
@@ -576,8 +589,13 @@ pub fn solve_gcrodr_with_workspace(
                 actual_columns = column + 1;
                 total += 1;
                 counters.linear_iterations += 1;
-                let breakdown_scale = safe_l2(&h_column).max(1.0);
-                if next_norm > 100.0 * f64::EPSILON * breakdown_scale {
+                let full_projection_norm = (0..recycle_rank)
+                    .map(|index| recycle_coupling[(index, column)])
+                    .chain(h_column.iter().copied())
+                    .fold(0.0_f64, f64::hypot);
+                let happy_breakdown =
+                    arnoldi_happy_breakdown_from_norm(full_projection_norm, next_norm)?;
+                if !happy_breakdown {
                     for value in &mut next {
                         *value /= next_norm;
                     }
@@ -626,7 +644,7 @@ pub fn solve_gcrodr_with_workspace(
                 counters,
                 ApplyCategory::Diagnostic,
             )?;
-            residual_norm = safe_l2(&workspace.common.residual);
+            residual_norm = selected_residual_norm(&workspace.common.residual, residual_scale)?;
             if let Some((basis, image)) = update_recycle(
                 &augmented_basis,
                 &augmented_image,
@@ -651,13 +669,14 @@ pub fn solve_gcrodr_with_workspace(
             counters,
             ApplyCategory::Diagnostic,
         )?;
-        let residual_norm = safe_l2(&workspace.common.residual);
+        let residual_norm = selected_residual_norm(&workspace.common.residual, residual_scale)?;
         if !residual_norm.is_finite() || residual_norm > threshold {
             return Err(CoreError::LinearSolve(format!(
                 "GCRO-DR true residual {residual_norm:.3e} exceeds {threshold:.3e}"
             )));
         }
         local.operator_token = Some(op.token());
+        local.system_identity = system_identity;
         local.previous_solution = Some(workspace.common.x.clone());
         local.generation += 1;
         *state = local;
@@ -681,6 +700,22 @@ pub fn solve_gcrodr_with_workspace(
     result
 }
 
+#[allow(clippy::too_many_arguments)]
+pub fn solve_gcrodr_with_workspace(
+    op: &dyn LinearOperator,
+    pc: &dyn Preconditioner,
+    rhs: &[f64],
+    x0: Option<&[f64]>,
+    config: &GcrodrConfig,
+    state: &mut GcrodrState,
+    workspace: &mut GcrodrWorkspace,
+    counters: &mut WorkCounters,
+) -> CoreResult<LinearSolveReport> {
+    solve_gcrodr_with_workspace_and_residual_scale(
+        op, pc, rhs, x0, config, state, None, workspace, counters,
+    )
+}
+
 pub fn solve_gcrodr(
     op: &dyn LinearOperator,
     pc: &dyn Preconditioner,
@@ -697,6 +732,30 @@ pub fn solve_gcrodr(
         x0,
         config,
         state,
+        &mut GcrodrWorkspace::default(),
+        counters,
+    )
+}
+
+#[allow(clippy::too_many_arguments)]
+pub fn solve_gcrodr_with_residual_scale(
+    op: &dyn LinearOperator,
+    pc: &dyn Preconditioner,
+    rhs: &[f64],
+    x0: Option<&[f64]>,
+    config: &GcrodrConfig,
+    state: &mut GcrodrState,
+    residual_scale: Option<&[f64]>,
+    counters: &mut WorkCounters,
+) -> CoreResult<LinearSolveReport> {
+    solve_gcrodr_with_workspace_and_residual_scale(
+        op,
+        pc,
+        rhs,
+        x0,
+        config,
+        state,
+        residual_scale,
         &mut GcrodrWorkspace::default(),
         counters,
     )

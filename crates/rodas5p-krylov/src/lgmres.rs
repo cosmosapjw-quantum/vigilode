@@ -1,12 +1,15 @@
 use crate::{
-    common::{apply_left_with_raw, true_residual_into, validate_system},
+    common::{
+        apply_left_with_raw, selected_residual_norm, true_residual_into, validate_residual_scale,
+        validate_system,
+    },
     gmres::arnoldi_augmented_with_workspace,
     kernels::{axpy, normalize},
     workspace::LgmresWorkspace,
 };
 use rodas5p_core::{
-    ApplyCategory, CoreError, CoreResult, LinearOperator, LinearSolveReport, Preconditioner,
-    WorkCounters, apply_preconditioner, safe_l2,
+    ApplyCategory, CoreError, CoreResult, KrylovSystemIdentity, LinearOperator, LinearSolveReport,
+    Preconditioner, WorkCounters, apply_preconditioner, exact_krylov_system_identity, safe_l2,
 };
 use serde::{Deserialize, Serialize};
 
@@ -34,19 +37,21 @@ pub struct LgmresState {
     pub directions: Vec<Vec<f64>>,
     pub images: Vec<Option<Vec<f64>>>,
     pub operator_token: Option<u64>,
+    pub system_identity: Option<KrylovSystemIdentity>,
     pub previous_solution: Option<Vec<f64>>,
     pub generation: u64,
 }
 
 // State, workspace, and work ledger have deliberately distinct lifetimes and commit rules.
 #[allow(clippy::too_many_arguments)]
-pub fn solve_lgmres_with_workspace(
+pub fn solve_lgmres_with_workspace_and_residual_scale(
     op: &dyn LinearOperator,
     pc: &dyn Preconditioner,
     rhs: &[f64],
     x0: Option<&[f64]>,
     config: &LgmresConfig,
     state: &mut LgmresState,
+    residual_scale: Option<&[f64]>,
     workspace: &mut LgmresWorkspace,
     counters: &mut WorkCounters,
 ) -> CoreResult<LinearSolveReport> {
@@ -56,15 +61,20 @@ pub fn solve_lgmres_with_workspace(
         ));
     }
     let n = validate_system(op, pc, rhs, x0)?;
+    validate_residual_scale(residual_scale, n)?;
     let before = *counters;
     let snapshot = state.clone();
+    let system_identity = exact_krylov_system_identity(op, pc);
     let result = (|| {
-        if state.operator_token != Some(op.token()) {
+        let same_system =
+            system_identity.is_some() && state.system_identity.as_ref() == system_identity.as_ref();
+        if !same_system {
             for image in &mut state.images {
                 *image = None;
             }
             state.previous_solution = None;
             state.operator_token = Some(op.token());
+            state.system_identity = system_identity.clone();
         }
         state.directions.retain(|vector| vector.len() == n);
         state.images.truncate(state.directions.len());
@@ -76,7 +86,7 @@ pub fn solve_lgmres_with_workspace(
         if let Some(initial) = x0.or(state.previous_solution.as_deref()) {
             workspace.common.x.copy_from_slice(initial);
         }
-        let right_norm = safe_l2(rhs);
+        let right_norm = selected_residual_norm(rhs, residual_scale)?;
         let threshold = config.atol.max(config.rtol * right_norm);
         let mut total = 0usize;
         for _ in 0..config.max_outer {
@@ -93,7 +103,7 @@ pub fn solve_lgmres_with_workspace(
                     ApplyCategory::Krylov,
                 )?;
             }
-            if safe_l2(&workspace.common.residual) <= threshold {
+            if selected_residual_norm(&workspace.common.residual, residual_scale)? <= threshold {
                 break;
             }
             apply_preconditioner(
@@ -175,13 +185,15 @@ pub fn solve_lgmres_with_workspace(
             counters,
             ApplyCategory::Diagnostic,
         )?;
-        let residual_norm = safe_l2(&workspace.common.residual);
+        let residual_norm = selected_residual_norm(&workspace.common.residual, residual_scale)?;
         if !residual_norm.is_finite() || residual_norm > threshold {
             return Err(CoreError::LinearSolve(format!(
                 "LGMRES true residual {residual_norm:.3e} exceeds {threshold:.3e}"
             )));
         }
         state.previous_solution = Some(workspace.common.x.clone());
+        state.operator_token = Some(op.token());
+        state.system_identity = system_identity;
         state.generation += 1;
         counters.linear_solves += 1;
         let delta = counters.delta(before);
@@ -203,6 +215,22 @@ pub fn solve_lgmres_with_workspace(
     result
 }
 
+#[allow(clippy::too_many_arguments)]
+pub fn solve_lgmres_with_workspace(
+    op: &dyn LinearOperator,
+    pc: &dyn Preconditioner,
+    rhs: &[f64],
+    x0: Option<&[f64]>,
+    config: &LgmresConfig,
+    state: &mut LgmresState,
+    workspace: &mut LgmresWorkspace,
+    counters: &mut WorkCounters,
+) -> CoreResult<LinearSolveReport> {
+    solve_lgmres_with_workspace_and_residual_scale(
+        op, pc, rhs, x0, config, state, None, workspace, counters,
+    )
+}
+
 pub fn solve_lgmres(
     op: &dyn LinearOperator,
     pc: &dyn Preconditioner,
@@ -219,6 +247,30 @@ pub fn solve_lgmres(
         x0,
         config,
         state,
+        &mut LgmresWorkspace::default(),
+        counters,
+    )
+}
+
+#[allow(clippy::too_many_arguments)]
+pub fn solve_lgmres_with_residual_scale(
+    op: &dyn LinearOperator,
+    pc: &dyn Preconditioner,
+    rhs: &[f64],
+    x0: Option<&[f64]>,
+    config: &LgmresConfig,
+    state: &mut LgmresState,
+    residual_scale: Option<&[f64]>,
+    counters: &mut WorkCounters,
+) -> CoreResult<LinearSolveReport> {
+    solve_lgmres_with_workspace_and_residual_scale(
+        op,
+        pc,
+        rhs,
+        x0,
+        config,
+        state,
+        residual_scale,
         &mut LgmresWorkspace::default(),
         counters,
     )

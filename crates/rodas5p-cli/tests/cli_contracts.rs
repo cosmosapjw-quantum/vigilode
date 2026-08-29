@@ -382,8 +382,11 @@ fn global_error_pareto_command_emits_deterministic_method_independent_report() {
     let four: serde_json::Value = serde_json::from_slice(&fs::read(&parallel).unwrap()).unwrap();
     assert_eq!(one["schema"], "rodas5p-global-error-pareto-v2");
     assert_eq!(one["output_policy"]["save_internal_steps"], false);
-    assert_eq!(one["output_policy"]["dense_output_used"], false);
-    assert_eq!(one["output_policy"]["landing"], "step-clipping");
+    assert_eq!(one["output_policy"]["dense_output_used"], true);
+    assert_eq!(
+        one["output_policy"]["landing"],
+        "paired-step-clipping-and-dense-sampling"
+    );
     assert_eq!(one["profile"], "smoke");
     assert_eq!(one["execution"]["threads"], 1);
     assert_eq!(four["execution"]["threads"], 4);
@@ -413,12 +416,28 @@ fn adaptive_global_error_command_emits_current_family_report() {
         .unwrap();
     assert!(status.success());
     let report: serde_json::Value = serde_json::from_slice(&fs::read(&output).unwrap()).unwrap();
-    assert_eq!(report["schema"], "rodas5p-adaptive-global-error-v1");
+    assert_eq!(report["schema"], "rodas5p-adaptive-global-error-v2");
     assert_eq!(report["execution"]["threads"], 2);
     assert_eq!(report["candidates"].as_array().unwrap().len(), 10);
     assert_eq!(report["problems"].as_array().unwrap().len(), 2);
     assert_eq!(report["tolerance_ladder"].as_array().unwrap().len(), 2);
-    assert_eq!(report["runs"].as_array().unwrap().len(), 40);
+    assert_eq!(report["runs"].as_array().unwrap().len(), 80);
+    assert_eq!(report["output_policy_pairs"].as_array().unwrap().len(), 40);
+    assert_eq!(report["output_policy"]["dense_output_used"], true);
+    assert_eq!(
+        report["output_policy"]["landing"],
+        "paired-independent-step-clipping-and-dense-sampling"
+    );
+    assert!(report["runs"].as_array().unwrap().iter().any(|row| {
+        row["output_mode"] == "clipped" && !row["same_error_ranking_admissible"].as_bool().unwrap()
+    }));
+    assert!(
+        report["runs"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|row| row["output_mode"] == "dense")
+    );
     assert_eq!(report["scientific_checksum"].as_str().unwrap().len(), 64);
     let _ = fs::remove_file(output);
 }
@@ -586,9 +605,10 @@ fn generic_q1_q2_adaptive_cli_emits_bounded_decision_report() {
         .unwrap();
     assert!(status.success());
     let report: serde_json::Value = serde_json::from_slice(&fs::read(&output).unwrap()).unwrap();
-    assert_eq!(report["schema"], "generic-q1-q2-adaptive-global-error-v1");
+    assert_eq!(report["schema"], "generic-q1-q2-adaptive-global-error-v2");
     assert_eq!(report["candidates"].as_array().unwrap().len(), 5);
-    assert_eq!(report["runs"].as_array().unwrap().len(), 20);
+    assert_eq!(report["output_policy_pairs"].as_array().unwrap().len(), 20);
+    assert_eq!(report["runs"].as_array().unwrap().len(), 40);
     let _ = fs::remove_file(output);
 }
 

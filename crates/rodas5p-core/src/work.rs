@@ -46,9 +46,45 @@ pub struct WorkCounters {
     pub fallback_steps: u64,
     pub accepted_steps: u64,
     pub rejected_steps: u64,
+    #[serde(default)]
+    pub local_error_failures: u64,
+    #[serde(default)]
+    pub linear_solve_failures: u64,
+    #[serde(default)]
+    pub nonlinear_solve_failures: u64,
+    #[serde(default)]
+    pub nonfinite_step_failures: u64,
+    /// Stage solves whose residual scale and tolerance came from the v2 WRMS
+    /// stage-residual heuristic rather than fixed linear tolerances. This does
+    /// not certify endpoint contamination without a resolvent bound.
+    #[serde(default)]
+    pub forced_stage_solves: u64,
 }
 
 impl WorkCounters {
+    /// Count vector shifted-operator applications added after `before`.
+    ///
+    /// Matrix-free shifted actions are recorded by their Krylov categories,
+    /// including recycled-subspace refreshes.
+    pub fn shifted_operator_applications_since(self, before: Self) -> u64 {
+        let delta = self.delta(before);
+        delta
+            .linear_matvecs
+            .saturating_add(delta.diagnostic_matvecs)
+            .saturating_add(delta.recycle_refresh_matvecs)
+    }
+
+    /// Total vector operator applications across solver categories.
+    ///
+    /// `block_matvecs` counts batched calls, while `linear_matvecs` and
+    /// `diagnostic_matvecs` already count every vector carried by those calls.
+    /// Adding the block-call counter here would therefore double count work.
+    pub fn operator_applications(self) -> u64 {
+        self.linear_matvecs
+            .saturating_add(self.diagnostic_matvecs)
+            .saturating_add(self.recycle_refresh_matvecs)
+    }
+
     /// Saturating component-wise accumulation for independently measured work ledgers.
     ///
     /// This is used when bounded parallel stage/RHS jobs keep local counters and merge them
@@ -101,7 +137,78 @@ impl WorkCounters {
             fallback_steps,
             accepted_steps,
             rejected_steps,
+            local_error_failures,
+            linear_solve_failures,
+            nonlinear_solve_failures,
+            nonfinite_step_failures,
+            forced_stage_solves,
         );
+    }
+
+    /// Component-wise accumulation that rejects counter overflow.
+    ///
+    /// Scientific campaign segments are independent solver invocations.  Their
+    /// ledgers must not silently saturate while being assembled into one row.
+    pub fn checked_accumulate(&mut self, other: Self) -> Option<()> {
+        let mut next = *self;
+        macro_rules! checked_add_fields {
+            ($($f:ident),* $(,)?) => {{
+                $(next.$f = next.$f.checked_add(other.$f)?;)*
+            }};
+        }
+        checked_add_fields!(
+            rhs_calls,
+            rhs_batch_calls,
+            rhs_evaluations,
+            ft_calls,
+            jacobian_builds,
+            jvp_calls,
+            jvp_vectors,
+            mass_matvecs,
+            nonlinear_solves,
+            nonlinear_iterations,
+            nonlinear_residual_evaluations,
+            nonlinear_jacobian_evaluations,
+            nonlinear_failures,
+            linear_solves,
+            linear_iterations,
+            linear_matvecs,
+            preconditioner_apps,
+            direct_factorizations,
+            direct_solve_calls,
+            recycle_projection_calls,
+            recycle_same_operator_uses,
+            recycle_cross_operator_refreshes,
+            recycle_refresh_matvecs,
+            recycle_updates,
+            recycle_vectors_selected,
+            recycle_dropped_vectors,
+            harmonic_ritz_solves,
+            orthogonalization_inner_products,
+            orthogonalization_vector_updates,
+            diagnostic_matvecs,
+            phi_actions,
+            phi_krylov_vectors,
+            phi_projected_exponentials,
+            phi_restarts,
+            phi_dense_oracle_calls,
+            block_linear_solves,
+            block_linear_iterations,
+            block_matvecs,
+            block_preconditioner_apps,
+            fast_attempts,
+            fast_accepts,
+            fallback_steps,
+            accepted_steps,
+            rejected_steps,
+            local_error_failures,
+            linear_solve_failures,
+            nonlinear_solve_failures,
+            nonfinite_step_failures,
+            forced_stage_solves,
+        );
+        *self = next;
+        Some(())
     }
 
     pub fn delta(self, before: Self) -> Self {
@@ -151,6 +258,11 @@ impl WorkCounters {
             fallback_steps,
             accepted_steps,
             rejected_steps,
+            local_error_failures,
+            linear_solve_failures,
+            nonlinear_solve_failures,
+            nonfinite_step_failures,
+            forced_stage_solves,
         )
     }
 
@@ -214,6 +326,11 @@ impl WorkCounters {
             fallback_steps,
             accepted_steps,
             rejected_steps,
+            local_error_failures,
+            linear_solve_failures,
+            nonlinear_solve_failures,
+            nonfinite_step_failures,
+            forced_stage_solves,
         )
     }
 }

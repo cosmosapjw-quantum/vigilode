@@ -274,27 +274,27 @@ impl<'ctx, 'problem> MatrixFreeCommonWSolver<'ctx, 'problem> {
                 None,
                 &self.gmres,
                 &mut local,
-            )?;
-            let operator_vectors = local
-                .linear_matvecs
-                .saturating_add(local.diagnostic_matvecs);
-            local.jvp_calls = local.jvp_calls.saturating_add(operator_vectors);
-            local.jvp_vectors = local.jvp_vectors.saturating_add(operator_vectors);
-            if self.context.problem.mass_matrix.is_some() {
-                local.mass_matvecs = local.mass_matvecs.saturating_add(operator_vectors);
-            }
-            Ok((report.x, local))
+            );
+            Ok((report.map(|report| report.x), local))
         })?;
         counters.block_linear_solves += 1;
         work.w_solve_batches += 1;
         work.w_solve_vectors += rhs.len() as u64;
         let mut rows = Vec::with_capacity(rhs.len());
+        let mut first_error = None;
         for (row, local) in solved {
             counters.block_linear_iterations = counters
                 .block_linear_iterations
                 .saturating_add(local.linear_iterations);
             counters.accumulate(local);
-            rows.push(row);
+            match row {
+                Ok(row) => rows.push(row),
+                Err(error) if first_error.is_none() => first_error = Some(error),
+                Err(_) => {}
+            }
+        }
+        if let Some(error) = first_error {
+            return Err(error);
         }
         Ok(rows)
     }
@@ -500,22 +500,6 @@ fn build_step_certificate(
         observed_contraction: Some(gate.output_contraction),
         stage_residual_norm: gate.target_residual_after,
         stage_relative_residual: gate.target_relative_residual,
-    }
-}
-
-fn account_shifted_operator_applications(
-    context: &StepContext<'_>,
-    before: WorkCounters,
-    counters: &mut WorkCounters,
-) {
-    let delta = counters.delta(before);
-    let applications = delta
-        .linear_matvecs
-        .saturating_add(delta.diagnostic_matvecs);
-    counters.jvp_calls = counters.jvp_calls.saturating_add(applications);
-    counters.jvp_vectors = counters.jvp_vectors.saturating_add(applications);
-    if context.problem.mass_matrix.is_some() {
-        counters.mass_matvecs = counters.mass_matvecs.saturating_add(applications);
     }
 }
 
@@ -865,9 +849,7 @@ pub fn transactional_q1_q2_step(
             x0_strategy: InitialGuess::Previous,
             ..LinearSolverConfig::default()
         };
-        let operator_before = *counters;
         let data = sequential_stages(&context, &fallback_config, None, counters)?;
-        account_shifted_operator_applications(&context, operator_before, counters);
         finish_step(
             &context,
             data.stages,
@@ -911,4 +893,62 @@ pub fn transactional_q1_q2_step(
         critical_path_depth,
         work,
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use std::sync::{
+        Arc,
+        atomic::{AtomicUsize, Ordering},
+    };
+
+    use super::*;
+
+    #[test]
+    fn multi_row_failure_retains_later_row_shifted_work() {
+        let applies = Arc::new(AtomicUsize::new(0));
+        let jvp_applies = applies.clone();
+        let problem = OdeProblem::new(
+            "multi-row-accounting",
+            1,
+            Arc::new(|_t, _y, out| {
+                out[0] = 0.0;
+                Ok(())
+            }),
+            None,
+            None,
+            Some(Arc::new(move |_t, _y, v, out| {
+                if jvp_applies.fetch_add(1, Ordering::SeqCst) == 0 {
+                    return Err(CoreError::LinearSolve("first row injected failure".into()));
+                }
+                out[0] = v[0];
+                Ok(())
+            })),
+            Some(Arc::new(|_t, _y, out| {
+                out[0] = 0.0;
+                Ok(())
+            })),
+            false,
+            None,
+            None,
+        )
+        .unwrap();
+        let mut counters = WorkCounters::default();
+        let context =
+            build_step_context_matrix_free(&problem, 0.0, &[1.0], 0.1, &mut counters).unwrap();
+        let solver =
+            MatrixFreeCommonWSolver::new(&context, &TransactionalQ1Q2Config::default()).unwrap();
+        let mut work = HomotopyWorkLedger::default();
+
+        let error = solver
+            .solve_rows(&[vec![1.0], vec![2.0]], &mut counters, &mut work)
+            .unwrap_err();
+
+        assert!(error.to_string().contains("first row injected failure"));
+        assert!(applies.load(Ordering::SeqCst) > 1);
+        assert!(
+            counters.linear_matvecs > 0,
+            "later successful row applications must survive the first-row error"
+        );
+    }
 }

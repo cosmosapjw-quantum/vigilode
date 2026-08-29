@@ -1,0 +1,51 @@
+{
+  "payload": {
+    "schema": "scientific-validity-v2-oregonator-holdout-replay-v1",
+    "corpus_version": "scientific-corpus-v2.1",
+    "profile": "smoke",
+    "campaign_label": "ci-smoke-nonauthoritative",
+    "calibration_checksum_sha256": "c6485e5b964c3d733a5c3b9abe7ebd59237b81b1b8f981a33fc52429c0b1aa03",
+    "campaign_binding": {
+      "authority": "synthetic-ci-smoke",
+      "runner_schema": "scientific-validity-v2-synthetic-smoke-v1",
+      "candidate_id": "synthetic-cli-smoke",
+      "code_revision": "synthetic-ci-smoke-not-a-revision",
+      "solver_config_sha256": "3e4839a0976b21ad62cdc82e615247acc093199e71891a545bc2b912e17ad05f",
+      "wrms_scale_sha256": "8c1eb0b96a9648ddab673295976f726aefaae4d1dc4faa0338d71cc702112beb",
+      "output_policy_protocol_sha256": "e58a7bb8fd34a7b11ccca7df5aab06d478099fa30325d55df3c47d95a682fbda"
+    },
+    "frozen_threshold_wrms": 0.06,
+    "frozen_threshold_bits": 4588807732320345784,
+    "rows": [
+      {
+        "case_id": "oregonator-n3-rtol-1e-4-v2.1",
+        "family": "oregonator",
+        "partition": "holdout",
+        "dimension": 3,
+        "atol": 1.0000000000000002e-6,
+        "rtol": 0.0001,
+        "status": "pass",
+        "conservative_max_wrms": 0.05,
+        "binding": {
+          "campaign": {
+            "authority": "synthetic-ci-smoke",
+            "runner_schema": "scientific-validity-v2-synthetic-smoke-v1",
+            "candidate_id": "synthetic-cli-smoke",
+            "code_revision": "synthetic-ci-smoke-not-a-revision",
+            "solver_config_sha256": "3e4839a0976b21ad62cdc82e615247acc093199e71891a545bc2b912e17ad05f",
+            "wrms_scale_sha256": "8c1eb0b96a9648ddab673295976f726aefaae4d1dc4faa0338d71cc702112beb",
+            "output_policy_protocol_sha256": "e58a7bb8fd34a7b11ccca7df5aab06d478099fa30325d55df3c47d95a682fbda"
+          },
+          "reference_checksum_sha256": "c0f0c2093c461371c966f693fbe768b748df453d4682e3418f0209c1db4ebe26",
+          "clipped_output_checksum_sha256": "12a7c9ec406901cb060daa9c8015cb1b5590ea1087937ad2b3827bc2a153332e",
+          "dense_output_checksum_sha256": "ab51d55d918576bfa1bb71b5e9ff64124b0884f335b776175033c1718402c174"
+        },
+        "evidence": "synthetic ci smoke fixture; no numerical campaign was run",
+        "wall_seconds": null,
+        "within_frozen_threshold": true
+      }
+    ],
+    "overall_pass": true
+  },
+  "checksum_sha256": "0ad1cac03b459f9034d6c394eb15ffeff414ba4c9b5809fa9268f2ac26d0ac49"
+}

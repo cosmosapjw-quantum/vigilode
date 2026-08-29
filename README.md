@@ -22,6 +22,23 @@ Active method switching is treated as a research target rather than a completed 
 
 Scientific claims are evidence-gated. Research branches retain failed, speculative, fallback, and diagnostic work in their ledgers. Comparator implementations are not silently tuned to improve headline results, and holdout problems are not used to retune core policy thresholds.
 
+## Scientific-validity boundary
+
+The internal BDF1/BDF2/RadauIIA1/RadauIIA3 solvers are reference implementations, not competitive production baselines. Existing receipts support no comparison with RADAU5, CVODE, OrdinaryDiffEq, SciPy, or SUNDIALS. The synthetic stage-batch/parallel probe measures thread-pool and compute-bound overhead only; it does not predict memory-bandwidth-bound JVP scaling.
+
+`AcceptedSteps` and `InternalSteps` count accepted state-advancing substeps, not
+adaptive controller macro-attempts. Thus the explicit BDF startup and the Radau IIA1
+step-doubling path count their two retained half steps; their discarded coarse probe is
+not counted. Steady-state BDF1/BDF2 and embedded Radau IIA3 count one substep per
+accepted macro-step. Adaptive diagnostics separately expose accepted/rejected macro-step
+counts, so these axes must not be treated as interchangeable.
+
+The scientific-validity-v2 implementation has software-contract evidence only. Its
+canonical 54-row calibration and sealed Oregonator replay have not been run, so no v2
+performance, scaling, ranking, equal-error, or publication claim is admitted. Legacy
+v3.5/v3.6/v3.7 receipts remain valid only under their original corpus, comparator,
+inner-solve, and output policies and are not transplantable to v2.
+
 ## Build reproducibility
 
 A normal fresh clone uses Cargo's default crates.io configuration:

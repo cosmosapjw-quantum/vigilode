@@ -9,6 +9,12 @@ pub struct NewtonConfig {
     pub max_iterations: usize,
     pub max_backtracks: usize,
     pub minimum_damping: f64,
+    /// Maximum number of bounded modified-Newton Jacobian refreshes after the
+    /// initial factorization.
+    pub max_jacobian_refreshes: usize,
+    /// Refresh when one accepted Newton update contracts the residual by no
+    /// more than this ratio. Must lie in `(0, 1)`.
+    pub stagnation_ratio: f64,
 }
 
 impl Default for NewtonConfig {
@@ -19,6 +25,8 @@ impl Default for NewtonConfig {
             max_iterations: 12,
             max_backtracks: 8,
             minimum_damping: 1.0 / 256.0,
+            max_jacobian_refreshes: 1,
+            stagnation_ratio: 0.9,
         }
     }
 }
@@ -45,6 +53,14 @@ impl NewtonConfig {
                 "Newton minimum damping must lie in (0,1]".into(),
             ));
         }
+        if !(self.stagnation_ratio > 0.0
+            && self.stagnation_ratio < 1.0
+            && self.stagnation_ratio.is_finite())
+        {
+            return Err(CoreError::InvalidInput(
+                "Newton stagnation ratio must lie in (0,1)".into(),
+            ));
+        }
         Ok(())
     }
 }
@@ -57,6 +73,12 @@ pub struct NewtonReport {
     pub residual_wrms: f64,
     pub correction_wrms: f64,
     pub damping: f64,
+    /// Total Jacobian builds, including the initial build.
+    pub jacobian_evaluations: usize,
+    /// Number of bounded rebuilds after the initial frozen-Jacobian build.
+    pub jacobian_refreshes: usize,
+    pub line_search_refreshes: usize,
+    pub stagnation_refreshes: usize,
 }
 
 fn scaled_wrms(
@@ -99,8 +121,14 @@ where
 
     counters.nonlinear_solves += 1;
     let mut x = initial.to_vec();
-    let mut r = residual(&x, counters)?;
     counters.nonlinear_residual_evaluations += 1;
+    let mut r = match residual(&x, counters) {
+        Ok(residual) => residual,
+        Err(error) => {
+            counters.nonlinear_failures += 1;
+            return Err(error);
+        }
+    };
     if r.len() != x.len() || !r.iter().all(|value| value.is_finite()) {
         counters.nonlinear_failures += 1;
         return Err(CoreError::NonFinite(
@@ -116,26 +144,49 @@ where
             residual_wrms,
             correction_wrms: 0.0,
             damping: 1.0,
+            jacobian_evaluations: 0,
+            jacobian_refreshes: 0,
+            line_search_refreshes: 0,
+            stagnation_refreshes: 0,
         });
     }
 
-    let mut correction_wrms = f64::INFINITY;
-    let mut last_damping = 1.0;
-    for iteration in 1..=config.max_iterations {
-        let matrix = jacobian(&x, counters)?;
+    let mut factorize = |at: &[f64], counters: &mut WorkCounters| {
         counters.nonlinear_jacobian_evaluations += 1;
-        if matrix.nrows() != x.len() || matrix.ncols() != x.len() {
-            counters.nonlinear_failures += 1;
+        let matrix = jacobian(at, counters)?;
+        if matrix.nrows() != at.len() || matrix.ncols() != at.len() {
             return Err(CoreError::Dimension(
                 "Newton Jacobian shape mismatch".into(),
             ));
         }
-        let factor = LuFactorization::new(&matrix)?;
         counters.direct_factorizations += 1;
+        LuFactorization::new(&matrix)
+    };
+    let mut factor = match factorize(&x, counters) {
+        Ok(factor) => factor,
+        Err(error) => {
+            counters.nonlinear_failures += 1;
+            return Err(error);
+        }
+    };
+    let mut jacobian_evaluations = 1_usize;
+    let mut jacobian_refreshes = 0_usize;
+    let mut line_search_refreshes = 0_usize;
+    let mut stagnation_refreshes = 0_usize;
+
+    let mut correction_wrms = f64::INFINITY;
+    let mut last_damping = 1.0;
+    for iteration in 1..=config.max_iterations {
         let rhs: Vec<f64> = r.iter().map(|value| -value).collect();
-        let delta = factor.solve(&rhs)?;
         counters.direct_solve_calls += 1;
         counters.linear_solves += 1;
+        let delta = match factor.solve(&rhs) {
+            Ok(delta) => delta,
+            Err(error) => {
+                counters.nonlinear_failures += 1;
+                return Err(error);
+            }
+        };
         if !delta.iter().all(|value| value.is_finite()) {
             counters.nonlinear_failures += 1;
             return Err(CoreError::NonFinite(
@@ -152,8 +203,14 @@ where
                 .zip(&delta)
                 .map(|(value, correction)| value + damping * correction)
                 .collect();
-            let trial_r = residual(&trial, counters)?;
             counters.nonlinear_residual_evaluations += 1;
+            let trial_r = match residual(&trial, counters) {
+                Ok(residual) => residual,
+                Err(error) => {
+                    counters.nonlinear_failures += 1;
+                    return Err(error);
+                }
+            };
             if trial_r.len() != x.len() || !trial_r.iter().all(|value| value.is_finite()) {
                 damping *= 0.5;
                 if damping < config.minimum_damping {
@@ -173,6 +230,19 @@ where
         }
         let Some((trial, trial_r, trial_norm)) = accepted else {
             counters.nonlinear_iterations += 1;
+            if jacobian_refreshes < config.max_jacobian_refreshes {
+                factor = match factorize(&x, counters) {
+                    Ok(factor) => factor,
+                    Err(error) => {
+                        counters.nonlinear_failures += 1;
+                        return Err(error);
+                    }
+                };
+                jacobian_evaluations += 1;
+                jacobian_refreshes += 1;
+                line_search_refreshes += 1;
+                continue;
+            }
             counters.nonlinear_failures += 1;
             return Err(CoreError::NonlinearSolve(
                 "Newton line search failed to reduce the residual".into(),
@@ -195,7 +265,27 @@ where
                 residual_wrms,
                 correction_wrms,
                 damping: last_damping,
+                jacobian_evaluations,
+                jacobian_refreshes,
+                line_search_refreshes,
+                stagnation_refreshes,
             });
+        }
+        let contraction_ratio = residual_wrms / previous_residual;
+        if contraction_ratio >= config.stagnation_ratio
+            && iteration < config.max_iterations
+            && jacobian_refreshes < config.max_jacobian_refreshes
+        {
+            factor = match factorize(&x, counters) {
+                Ok(factor) => factor,
+                Err(error) => {
+                    counters.nonlinear_failures += 1;
+                    return Err(error);
+                }
+            };
+            jacobian_evaluations += 1;
+            jacobian_refreshes += 1;
+            stagnation_refreshes += 1;
         }
     }
 
