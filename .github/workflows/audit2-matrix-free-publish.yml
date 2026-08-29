@@ -1,0 +1,63 @@
+name: Publish exact matrix-free research objects
+
+on:
+  push:
+    branches: [transport/audit2-matrix-free-w-20260830]
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Import the tested commit and non-force push only the new research branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          parent=c5fbd6d5703fc396bdf30eb3acfacb6c6bd2b921
+          expected=981bf1bc2fa80216bad00495dd6c72b5fcf65ba3
+          expected_tree=b08221dd389ab765743b8ab0144c3a381d23f097
+          target_ref=refs/heads/research/audit2-matrix-free-w-20260830
+          test "$(git ls-remote origin refs/heads/research/audit2-original-target-bridge-20260830 | awk '{print $1}')" = "$parent"
+          cat _transport/matrix-free-w/part00 _transport/matrix-free-w/part01 _transport/matrix-free-w/part02 _transport/matrix-free-w/part03 > "$RUNNER_TEMP/payload.tar.xz"
+          printf '%s  %s\n' 6cde2d3a51e79413455a2e3fd0cffe8541d4b7c3d2042c28a6bad907d21c5470 "$RUNNER_TEMP/payload.tar.xz" | sha256sum -c -
+          python3 - "$RUNNER_TEMP/payload.tar.xz" "$RUNNER_TEMP/mfw-delivery" <<'PY'
+          import pathlib, sys, tarfile
+          destination = pathlib.Path(sys.argv[2])
+          destination.mkdir()
+          with tarfile.open(sys.argv[1]) as archive:
+              members = archive.getmembers()
+              assert len(members) == 2
+              assert {member.name for member in members} == {'delivery.patch', 'commit.txt'}
+              assert all(member.isfile() and member.size < 2_000_000 for member in members)
+              for member in members:
+                  (destination / member.name).write_bytes(archive.extractfile(member).read())
+          PY
+          git checkout --detach "$parent"
+          git apply --index "$RUNNER_TEMP/mfw-delivery/delivery.patch"
+          test "$(git write-tree)" = "$expected_tree"
+          imported=$(git hash-object -t commit -w "$RUNNER_TEMP/mfw-delivery/commit.txt")
+          test "$imported" = "$expected"
+          test "$(git show -s --format=%P "$imported")" = "$parent"
+          test "$(git rev-parse "$imported^{tree}")" = "$expected_tree"
+          git diff --exit-code "$parent" "$imported" -- fixtures crates/rodas5p-core crates/rodas5p-krylov Cargo.toml Cargo.lock research/scientific_validity_v2_20260829
+          existing=$(git ls-remote origin "$target_ref" | awk '{print $1}')
+          if test -n "$existing" && test "$existing" != "$imported"; then
+            echo 'Refusing to replace a different existing research head.' >&2
+            exit 2
+          fi
+          git push origin "$imported:$target_ref"
+          test "$(git ls-remote origin "$target_ref" | awk '{print $1}')" = "$imported"
+          printf 'HEAD=%s\nTREE=%s\nPARENT=%s\nREF=%s\nNON_FORCE_PUSH=PASS\nPROTECTED_DIFF=EMPTY\n' "$imported" "$expected_tree" "$parent" "$target_ref" | tee "$RUNNER_TEMP/mfw-publication-receipt.txt"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: matrix-free-publication-receipt
+          path: ${{ runner.temp }}/mfw-publication-receipt.txt
+          retention-days: 14
+          if-no-files-found: warn
