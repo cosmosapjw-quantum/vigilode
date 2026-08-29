@@ -5,6 +5,10 @@ edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 
+[features]
+default = []
+audit2-research = []
+
 [dependencies]
 faer.workspace = true
 rodas5p-core = { path = "../rodas5p-core" }
@@ -15,3 +19,8 @@ thiserror.workspace = true
 
 [dev-dependencies]
 serde_json.workspace = true
+
+[[test]]
+name = "audit2_structured_correction_contracts"
+path = "tests/audit2_structured_correction_contracts.rs"
+required-features = ["audit2-research"]

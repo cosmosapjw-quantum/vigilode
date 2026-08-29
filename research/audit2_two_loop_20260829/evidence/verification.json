@@ -1,0 +1,137 @@
+{
+  "status": "EXPLORATORY_NONAUTHORITATIVE_SCOPED_VERIFICATION_PASS",
+  "source_base": "93fe348ce36859dd5f78b31267d771ea9c054677",
+  "source_tree": "a0a045226175e261664533a56188352ded1da75a",
+  "delivery": {
+    "head": "SEE_LIVE_DRAFT_PR_RECEIPT",
+    "tree": "SEE_LIVE_DRAFT_PR_RECEIPT",
+    "ci": "SEE_LIVE_DRAFT_PR_CHECKS",
+    "atlassian": "SEE_EXISTING_PM1_AND_COMPANION_PAGE_COMMENTS"
+  },
+  "rust": "1.94.1",
+  "inherited_rust_targeted_and_affected": {
+    "scope": "pre-continuation source only; not relabelled as continuation verification",
+    "exit_code": 0,
+    "test_count": 40,
+    "suites": {
+      "global_error_contracts": 8,
+      "output_accuracy_assessment_contracts": 9,
+      "audit2_structured_correction_contracts": 2,
+      "dense_output_v2_contracts": 15,
+      "homotopy_numerical_contracts": 6
+    },
+    "log": "final_affected.log"
+  },
+  "continuation_interim_validation": {
+    "output_accuracy_assessment_contracts": {"test_count": 9, "status": "PASS"},
+    "audit2_structured_correction_contracts_before_late_test": {"test_count": 10, "status": "PASS"},
+    "late_overflow_test": {"test_count": 1, "status": "PASS_SEPARATE_INVOCATION"},
+    "final_aggregate_audit2_structured_correction_contracts": {"test_count": 11, "status": "PASS_SINGLE_INVOCATION"},
+    "affected_rust_suites": {"test_count": 49, "status": "PASS", "breakdown": [8, 9, 11, 15, 6]},
+    "adjacent_core_coefficient_checks": {"test_count": 2, "status": "PASS"},
+    "scope_note": "the final aggregate invocation is controlling; earlier split invocations are retained only as development history",
+    "log": "continuation_verification.log"
+  },
+  "python_tests": {"count": 8, "result": "PASS_CONTINUATION", "log": "continuation_verification.log"},
+  "analysis_script": {"compact_records": 54, "full_saved_trajectories": 6, "result": "RECOMPUTED_PASS", "log": "continuation_verification.log"},
+  "rust_mutations": [
+    {"mutation": "budget_none_false_pass", "exit_code": 101, "detected": true, "log": "budget_none_false_pass.log"},
+    {"mutation": "frozen_J_for_all_stages", "exit_code": 101, "detected": true, "log": "frozen_J_for_all_stages.log"},
+    {"mutation": "wrong_correction_sign", "exit_code": 101, "detected": true, "log": "wrong_correction_sign.log"}
+  ],
+  "fresh_context_review": {
+    "rounds": 1,
+    "range": "93fe348ce36859dd5f78b31267d771ea9c054677..25e086f86819577978e0710d2dab9c352555c4cc",
+    "decision": "REQUEST_CHANGES",
+    "confirmed": ["residual sign", "no production activation"],
+    "findings": [
+      "P1 unprojected coefficient leakage invalidated literal exact-structure claim",
+      "P1 reference-uncertainty authority missing",
+      "P1 failure work erased",
+      "P2 zero-RHS 0/0",
+      "P3 formatting"
+    ],
+    "disposition": "addressed in integrated source; scoped tests pass",
+    "report": "fresh_review_disposition.md",
+    "final_head_reviewed": false
+  },
+  "projection_observations": {
+    "tolerance": 1.4210854715202004e-14,
+    "max_alpha_forbidden_abs": 5.577737968635803e-16,
+    "max_gamma_upper_abs": 4.994632140352628e-16,
+    "max_gamma_diagonal_error_abs": 8.881784197001252e-16,
+    "result_independent_fixed_rule": true,
+    "exactness_scope": "projected research target only"
+  },
+  "structured_observations": {
+    "identity_cases": 12,
+    "identity_condition_f_range": [32.1868941892757, 2686.7976507838134],
+    "identity_max_state_relative_difference": 4.664692226645801e-15,
+    "identity_max_common_backward_error_approx": 4.6955771192625894e-17,
+    "mass_nonnormal": {
+      "mass_determinant": 2.7,
+      "off_diagonal_ratio": 134.6667,
+      "condition_f": 96.8247899149117,
+      "common_w_backward_error": 5.476681809776196e-17,
+      "state_relative_difference": 4.510978662006756e-16,
+      "nonlinear_residual_before": 7.134184555420351e-7,
+      "nonlinear_residual_after": 9.932618999112301e-17
+    },
+    "successful_common_w_work": {
+      "setup": 1,
+      "factorization": 1,
+      "solves": 8,
+      "correction_jvp_vectors": 14,
+      "diagnostic_shifted_applies": 8,
+      "diagnostic_offdiagonal_jvp_vectors": 14,
+      "nonlinear_diagnostic": 1,
+      "independent_full_target_validation_applies": 2,
+      "counted_candidate_jvp_vectors_identity_case": 52
+    },
+    "compact_data": "../data/continuation_correction_summary.csv",
+    "identity_raw_data": "../data/continuation_identity_raw.csv",
+    "identity_raw_rows": 12,
+    "identity_raw_runtime_parity": "PASS"
+  },
+  "fixed_rules": {
+    "selected_six": "all families at dimension=96 and rtol=1e-8; post-campaign disclosed metadata-only rule independent of outcomes; not a preregistered holdout",
+    "correction_cases_and_numeric_thresholds": "fixed before observing results",
+    "budget_B_selected_from_historical_54": false
+  },
+  "historical_inputs_sha256": {
+    "fixtures/rodas5p_coefficients_snapshot.json": "211255f6125b648c6955833c3da537d9c031ec78168b2918563c29fa88c8bce6",
+    "research/scientific_validity_v2_20260829/external_reaudit_bundle/rust/calibration_all_cases_compact.json": "23194d4638f16f7b21a79382c274c19a44532c77c707c2d8ebb93908235c456c",
+    "research/scientific_validity_v2_20260829/external_reaudit_bundle/rust/selected_raw_n96_rtol1e-8.json": "80af3493e69ac92f137a30492d65c88f9cc97f1f8cec1e7838ce2470413e9cdf"
+  },
+  "full_workspace": "NOT_RUN: earlier runtime replacement interrupted it; no final log or PASS inherited",
+  "historical_54_statuses": "UNCHANGED",
+  "calibration_freeze": false,
+  "holdout_opened": false,
+  "production_activation": false,
+  "timing_claim": false,
+  "claim_ceiling": {
+    "level": "EXPLORATORY_NONAUTHORITATIVE",
+    "allowed": "projected-target research diagnostic only",
+    "not_admitted": [
+      "unprojected exactness",
+      "nonlinear certificate",
+      "accuracy PASS",
+      "timing/ranking/speedup",
+      "BDF/CVODE comparison",
+      "production",
+      "holdout/freeze",
+      "scientific-publication admission"
+    ]
+  },
+  "source_sha256_at_document_snapshot": {
+    "crates/rodas5p-fair-ab/src/lib.rs": "f350606ab09247c102eee240ccaba7ca020f5f943fd5b51de9ab6688ac1197c1",
+    "crates/rodas5p-fair-ab/src/output_accuracy.rs": "478cf9e2b3f13f6f061f3d53855a734c83ab8a6f8d2eb85d989b62c1bdd0b776",
+    "crates/rodas5p-fair-ab/tests/output_accuracy_assessment_contracts.rs": "c431af50fc029890629d6cde9191b4df382cc2867262a275d5bf0819d498c3fc",
+    "crates/rodas5p-integrators/Cargo.toml": "c62e32f436528cfe37f3fbaafcf2315e6ce9fe069ea4bf75896f1bcb6914e4a3",
+    "crates/rodas5p-integrators/src/lib.rs": "865e78831ffffc74fd36a502804e7273e45cb2f50545236d2f1fdf51d4fe7f31",
+    "crates/rodas5p-integrators/src/audit2_research.rs": "c27af87882133e1af1d77e92ac3b984c5ffc5c14906b77cfdc2ba7df36f42ff3",
+    "crates/rodas5p-integrators/tests/audit2_structured_correction_contracts.rs": "18b33c1049554a48c266cf3ee74be437a17e9fabafce5b47654d7609c346fa85",
+    "tools/audit2_output_policy_research.py": "ba0065d46ffd61b37120a4dc7f697dea343d46ca10102f101ae28d30467bf64a",
+    "tools/test_audit2_output_policy_research.py": "9887506ac87e4c9e6568ec62870daba5a576ef58e7ba3620c88b666aae585b36"
+  }
+}

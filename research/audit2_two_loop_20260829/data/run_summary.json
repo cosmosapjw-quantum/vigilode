@@ -1,0 +1,32 @@
+{
+  "status": "EXPLORATORY_NONAUTHORITATIVE",
+  "python": "3.13.5",
+  "campaign": {
+    "cases": 54,
+    "dimensions": [96, 384, 1536],
+    "historical_statuses_unchanged": true,
+    "proposed_jvp_5pct_rejections": 54,
+    "jvp_gap_range": [0.06573341448569689, 3.4216867469879517],
+    "discrepancy_over_dense_range": [0.12454170289388176, 1.0941303386549561],
+    "accuracy_budget": "NOT_SPECIFIED_NO_NEW_PASS",
+    "holdout_opened": false,
+    "freeze_created": false
+  },
+  "selected_slice": {"full_state_cases": 6, "status": "PASS", "other_48_states": "not_in_repository; compact metrics only"},
+  "probe": {
+    "precision_digits": 70,
+    "polynomial_degree": 4,
+    "fourth_derivative": "-24*d2",
+    "expected_nonstiff_local": {"endpoint": 6, "dense": 5, "linear_mutant": 2},
+    "expected_nonstiff_global": {"endpoint": 5, "dense": 5, "linear_mutant": 2},
+    "stiff_order": "not uniform; retained as stress data",
+    "roundoff": "rounded input coefficients retained; do not interpret every tiny-h slope as asymptotic order"
+  },
+  "inputs_preserved": {
+    "fixtures/rodas5p_coefficients_snapshot.json": "211255f6125b648c6955833c3da537d9c031ec78168b2918563c29fa88c8bce6",
+    "research/scientific_validity_v2_20260829/external_reaudit_bundle/rust/calibration_all_cases_compact.json": "23194d4638f16f7b21a79382c274c19a44532c77c707c2d8ebb93908235c456c",
+    "research/scientific_validity_v2_20260829/external_reaudit_bundle/rust/selected_raw_n96_rtol1e-8.json": "80af3493e69ac92f137a30492d65c88f9cc97f1f8cec1e7838ce2470413e9cdf"
+  },
+  "freeze_created": false,
+  "holdout_opened": false
+}

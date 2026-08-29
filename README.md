@@ -43,6 +43,40 @@ baseline. Consequently no v2 performance, scaling, ranking, equal-error, or publ
 claim is admitted. Legacy v3.5/v3.6/v3.7 receipts remain valid only under their original
 corpus, comparator, inner-solve, and output policies and are not transplantable to v2.
 
+## Run the existing solver as a library example
+
+With Rust 1.94.1 and normal Cargo registry access (or an already populated cache):
+
+```bash
+cargo run --locked -p rodas5p-integrators --no-default-features --example solve_stiff > solution.json
+```
+
+`examples/solve_stiff.rs` supplies its own RHS and analytic JVP for the
+nondimensional system `y' = (-y[0], -1000*y[1])`, `y(0)=(1,1)`, on `[0,1]`.
+It uses the existing adaptive, matrix-free sequential RODAS5P path with dense
+output. No assembled Jacobian, exact-solution callback, or audit2 backend is
+provided to the integrator. Change the RHS/JVP and initial state in that example
+to start a problem-specific integration; independently validate the new problem.
+
+JSON includes sampled states, completion status, diagnostics, and work counters.
+A partial solve emits its available states and work but exits nonzero. This
+exercises that behavior deliberately (expected exit code 1):
+
+```bash
+cargo run --locked -p rodas5p-integrators --no-default-features --example solve_stiff -- --max-attempts 1 > partial.json
+```
+
+The example has a predeclared absolute error check against its analytic solution;
+it is a narrow usage regression, not a general accuracy, performance, or release
+certificate. The separate common-W correction still requires explicit W, remains
+behind `audit2-research`, and is not enabled by this example.
+
+For the scoped research-on / default-solver checks, run
+`bash tools/check-audit2-readiness.sh`. Output files go to a new temporary
+directory unless `AUDIT2_OUTPUT_DIR` is supplied; existing output is not replaced.
+The historical A1 receipt workflow runs its frozen experiment checks only for
+explicit A1 work or changed A1 evidence; an unrelated PR is not a new A1 receipt.
+
 ## Build reproducibility
 
 A normal fresh clone uses Cargo's default crates.io configuration:
