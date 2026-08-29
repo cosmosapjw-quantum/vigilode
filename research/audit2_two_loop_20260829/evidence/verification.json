@@ -1,0 +1,34 @@
+{
+  "status": "EXPLORATORY_NONAUTHORITATIVE",
+  "source_base": "93fe348ce36859dd5f78b31267d771ea9c054677",
+  "source_tree": "a0a045226175e261664533a56188352ded1da75a",
+  "rust": "1.94.1",
+  "rust_targeted_and_affected": {
+    "exit_code": 0,
+    "test_count": 40,
+    "suites": {"global_error_contracts": 8, "output_accuracy_assessment_contracts": 9, "audit2_structured_correction_contracts": 2, "dense_output_v2_contracts": 15, "homotopy_numerical_contracts": 6},
+    "log": "final_affected.log"
+  },
+  "python_tests": {"count": 8, "result": "PASS", "log": "python_tests.log"},
+  "rust_mutations": [
+    {"mutation": "budget_none_false_pass", "exit_code": 101, "detected": true, "log": "budget_none_false_pass.log"},
+    {"mutation": "frozen_J_for_all_stages", "exit_code": 101, "detected": true, "log": "frozen_J_for_all_stages.log"},
+    {"mutation": "wrong_correction_sign", "exit_code": 101, "detected": true, "log": "wrong_correction_sign.log"}
+  ],
+  "full_workspace": "NOT_VERIFIED: earlier runtime replacement interrupted it; no final log or PASS inherited",
+  "independent_fresh_source_review": "PENDING_LOCAL; self-adversarial pass is not an external review",
+  "historical_54_statuses": "UNCHANGED",
+  "calibration_freeze": false,
+  "holdout_opened": false,
+  "production_activation": false,
+  "timing_claim": false,
+  "source_sha256": {
+    "crates/rodas5p-fair-ab/src/lib.rs": "22809cda66669a0aaafca95a9428bd55c08735b6597928c6394cd163d7ccc3b7",
+    "crates/rodas5p-fair-ab/src/output_accuracy.rs": "6f497ebd548e40ee8749d8de60fc000fc6a2560b368757d529a1c04211f71165",
+    "crates/rodas5p-fair-ab/tests/output_accuracy_assessment_contracts.rs": "bfb919bdf122596a59addd39fdee11c0caa51fb3987dcfb6c75d702b6773c6c1",
+    "crates/rodas5p-integrators/tests/support/common_w_target_correction.rs": "0224fe173adfe78322e997a5769e1d27e8ce43a4786d336069c2321531d80d37",
+    "crates/rodas5p-integrators/tests/audit2_structured_correction_contracts.rs": "efd6d3e6ae4494627d03d534dc7443c0072757ac576c2e3dd05693b4a8a9d5ae",
+    "tools/audit2_output_policy_research.py": "ba0065d46ffd61b37120a4dc7f697dea343d46ca10102f101ae28d30467bf64a",
+    "tools/test_audit2_output_policy_research.py": "9887506ac87e4c9e6568ec62870daba5a576ef58e7ba3620c88b666aae585b36"
+  }
+}

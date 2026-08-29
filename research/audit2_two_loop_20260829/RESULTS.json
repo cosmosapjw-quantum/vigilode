@@ -1,0 +1,47 @@
+{
+  "status": "TWO_LOOPS_EXECUTED_CANDIDATES_HELD_FOR_FRESH_REVIEW",
+  "base": "93fe348ce36859dd5f78b31267d771ea9c054677",
+  "historical_campaign": {
+    "cases": 54,
+    "dimensions": [96, 384, 1536],
+    "historical_statuses_unchanged": true,
+    "proposed_jvp_5pct_rejections": 54,
+    "jvp_gap_range": [0.06573341448569689, 3.4216867469879517],
+    "discrepancy_over_dense_range": [0.12454170289388176, 1.0941303386549561],
+    "accuracy_budget": "NOT_SPECIFIED_NO_NEW_PASS",
+    "holdout_opened": false,
+    "freeze_created": false
+  },
+  "independent_refinement": {
+    "precision_digits": 70,
+    "polynomial_degree": 4,
+    "fourth_derivative": "-24*d2",
+    "expected_nonstiff_local": {"endpoint": 6, "dense": 5, "linear_mutant": 2},
+    "expected_nonstiff_global": {"endpoint": 5, "dense": 5, "linear_mutant": 2},
+    "stiff_order": "not uniform; retained as stress data",
+    "roundoff": "rounded input coefficients retained; do not interpret every tiny-h slope as asymptotic order"
+  },
+  "common_w": {
+    "cases": 12,
+    "max_state_relative_difference": 5.401770427481455e-15,
+    "max_backward_error": 4.385499289973989e-17,
+    "condition_f_range": [32.1868941892757, 2686.7976507838134],
+    "stage_jacobian_builds_candidate": 0,
+    "stage_jacobian_builds_oracle": 8,
+    "common_w_factorizations_per_correction": 1,
+    "vector_solves_per_correction": 8,
+    "analytic_jvp_vectors_per_correction": 14,
+    "timing_claim": false,
+    "production_activation": false,
+    "scope": "12 actual Rust tests using frozen context; oracle setup/condition calculation is validation overhead"
+  },
+  "validation": {
+    "rust_tests": 40,
+    "python_tests": 8,
+    "actual_rust_mutants_detected": 3,
+    "full_workspace": "NOT_VERIFIED",
+    "fresh_external_review": "PENDING"
+  },
+  "next_local_action": "fresh review, then bounded mass/nonnormal/failure extension; no old K0 bootstrap",
+  "unchanged": ["historical 54 rows", "raw evidence", "source v2 branch", "production routing", "full-target default oracle", "Cargo manifests", "sealed Oregonator"]
+}
