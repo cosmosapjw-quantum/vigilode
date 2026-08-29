@@ -118,6 +118,8 @@ class ResearchCoverageTests(unittest.TestCase):
         self.assertTrue(workflow.is_file(), "audit2 feature is not covered by CI")
         self.assertTrue(runner.is_file())
         self.assertIn("bash tools/check-audit2-readiness.sh", workflow.read_text())
+        self.assertIn("actions/setup-python@", workflow.read_text())
+        self.assertIn("numpy==2.3.5 mpmath==1.3.0", workflow.read_text())
         text = runner.read_text()
         self.assertIn("--features audit2-research --test audit2_structured_correction_contracts", text)
         self.assertIn("--no-default-features --example solve_stiff", text)
