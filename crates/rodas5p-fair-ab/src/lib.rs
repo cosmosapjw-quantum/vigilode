@@ -95,4 +95,7 @@ pub use numerical_reference::{
 };
 
 mod output_accuracy;
-pub use output_accuracy::{AccuracyBudgetVerdict, ErrorBudgetAssessment, OutputAccuracyAssessment, assess_error_budget, assess_output_accuracy};
+pub use output_accuracy::{
+    AccuracyBudgetVerdict, ErrorBudgetAssessment, OutputAccuracyAssessment,
+    ReferenceUncertaintyTreatment, assess_error_budget, assess_output_accuracy,
+};

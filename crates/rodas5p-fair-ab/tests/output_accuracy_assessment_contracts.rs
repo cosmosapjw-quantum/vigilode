@@ -73,7 +73,8 @@ fn paired_assessment_preserves_evidence_and_legacy_sensitivity() {
     use rodas5p_core::WorkCounters;
     use rodas5p_fair_ab::{
         CommonOutputGrid, DualOutputPolicyEvidence, ExternalErrorScale, IntegratorWorkReport,
-        OutputPolicyDominance, OutputPolicyRunEvidence, ReferenceWrmsBasis, assess_output_accuracy,
+        OutputPolicyDominance, OutputPolicyRunEvidence, ReferenceUncertaintyTreatment,
+        ReferenceWrmsBasis, assess_output_accuracy,
     };
     let grid = CommonOutputGrid::new(vec![0.0, 1.0]).unwrap();
     let basis = ReferenceWrmsBasis::new(
@@ -100,7 +101,31 @@ fn paired_assessment_preserves_evidence_and_legacy_sensitivity() {
     };
     let evidence = DualOutputPolicyEvidence::new(basis.clone(), arm(0.001), arm(0.002)).unwrap();
     let before = serde_json::to_vec(&evidence).unwrap();
-    let assessed = assess_output_accuracy(&evidence, Some(0.01)).unwrap();
+    let unresolved = assess_output_accuracy(
+        &evidence,
+        Some(0.01),
+        ReferenceUncertaintyTreatment::EstimateOnly,
+    )
+    .unwrap();
+    assert_eq!(unresolved.clipped.verdict, V::ReferenceUnresolved);
+    assert_eq!(unresolved.dense.verdict, V::ReferenceUnresolved);
+    let inaccurate_evidence =
+        DualOutputPolicyEvidence::new(basis.clone(), arm(10.0), arm(20.0)).unwrap();
+    let unresolved_outside = assess_output_accuracy(
+        &inaccurate_evidence,
+        Some(0.01),
+        ReferenceUncertaintyTreatment::EstimateOnly,
+    )
+    .unwrap();
+    assert_eq!(unresolved_outside.clipped.verdict, V::ReferenceUnresolved);
+    assert_eq!(unresolved_outside.dense.verdict, V::ReferenceUnresolved);
+
+    let assessed = assess_output_accuracy(
+        &evidence,
+        Some(0.01),
+        ReferenceUncertaintyTreatment::DeclaredUpperBound,
+    )
+    .unwrap();
     assert_eq!(
         assessed.policy_sensitivity,
         OutputPolicyDominance::Dominated
@@ -108,7 +133,7 @@ fn paired_assessment_preserves_evidence_and_legacy_sensitivity() {
     assert_eq!(assessed.clipped.verdict, V::WithinBudget);
     assert_eq!(assessed.dense.verdict, V::WithinBudget);
     assert_eq!(
-        assess_output_accuracy(&evidence, None)
+        assess_output_accuracy(&evidence, None, ReferenceUncertaintyTreatment::EstimateOnly)
             .unwrap()
             .dense
             .verdict,

@@ -1,5 +1,5 @@
 {
-  "status": "TWO_LOOPS_EXECUTED_CANDIDATES_HELD_FOR_FRESH_REVIEW",
+  "status": "EXPLORATORY_NONAUTHORITATIVE_SCOPED_VERIFICATION_PASS",
   "base": "93fe348ce36859dd5f78b31267d771ea9c054677",
   "historical_campaign": {
     "cases": 54,
@@ -9,6 +9,8 @@
     "jvp_gap_range": [0.06573341448569689, 3.4216867469879517],
     "discrepancy_over_dense_range": [0.12454170289388176, 1.0941303386549561],
     "accuracy_budget": "NOT_SPECIFIED_NO_NEW_PASS",
+    "reference_uncertainty_treatment": "REQUIRED_FROM_CALLER",
+    "selected_six_rule": "all six families at dimension=96 and rtol=1e-8; fixed metadata rule independent of outcomes",
     "holdout_opened": false,
     "freeze_created": false
   },
@@ -22,26 +24,124 @@
     "roundoff": "rounded input coefficients retained; do not interpret every tiny-h slope as asymptotic order"
   },
   "common_w": {
-    "cases": 12,
-    "max_state_relative_difference": 5.401770427481455e-15,
-    "max_backward_error": 4.385499289973989e-17,
-    "condition_f_range": [32.1868941892757, 2686.7976507838134],
-    "stage_jacobian_builds_candidate": 0,
-    "stage_jacobian_builds_oracle": 8,
-    "common_w_factorizations_per_correction": 1,
-    "vector_solves_per_correction": 8,
-    "analytic_jvp_vectors_per_correction": 14,
+    "scope": "exact block-forward solution for a separately projected research target only",
+    "cargo_feature": "audit2-research (non-default)",
+    "default_backend": "FullTargetOracle",
+    "opt_in_backend": "CommonWBlockForward",
+    "matching_trial_stage_states": true,
+    "projection": {
+      "rule": "fixed before outcomes; not fitted to residuals, state differences, or historical data",
+      "tolerance": 1.4210854715202004e-14,
+      "max_alpha_forbidden_abs": 5.577737968635803e-16,
+      "max_gamma_upper_abs": 4.994632140352628e-16,
+      "max_gamma_diagonal_error_abs": 8.881784197001252e-16,
+      "unprojected_exactness_claim": false,
+      "production_coefficients_changed": false
+    },
+    "identity_cases": 12,
+    "identity_max_state_relative_difference": 4.664692226645801e-15,
+    "identity_max_backward_error_approx": 4.6955771192625894e-17,
+    "identity_condition_f_range": [32.1868941892757, 2686.7976507838134],
+    "identity_raw_data": "data/continuation_identity_raw.csv",
+    "mass_nonnormal_case": {
+      "mass_determinant": 2.7,
+      "off_diagonal_ratio": 134.6667,
+      "condition_f": 96.8247899149117,
+      "common_w_backward_error": 5.476681809776196e-17,
+      "state_relative_difference": 4.510978662006756e-16,
+      "nonlinear_residual_before": 7.134184555420351e-7,
+      "nonlinear_residual_after": 9.932618999112301e-17
+    },
+    "covered_domains": [
+      "zero RHS",
+      "missing JVP",
+      "failed JVP",
+      "inconsistent JVP counterexample",
+      "singular solve",
+      "first and later solve overflow",
+      "NaN input",
+      "malformed shape"
+    ],
+    "successful_arm_work": {
+      "common_w_setup": 1,
+      "factorization": 1,
+      "solves": 8,
+      "correction_jvp_vectors": 14,
+      "diagnostic_shifted_applies": 8,
+      "diagnostic_offdiagonal_jvp_vectors": 14,
+      "nonlinear_diagnostics": 1,
+      "independent_full_target_validation_applies": 2,
+      "counted_candidate_jvp_vectors_identity_case": 52
+    },
+    "failure_accounting": "typed attempt/completion counters and partial corrections retained",
+    "nonlinear_certificate": false,
     "timing_claim": false,
-    "production_activation": false,
-    "scope": "12 actual Rust tests using frozen context; oracle setup/condition calculation is validation overhead"
+    "production_activation": false
+  },
+  "review": {
+    "range": "93fe348ce36859dd5f78b31267d771ea9c054677..25e086f86819577978e0710d2dab9c352555c4cc",
+    "rounds": 1,
+    "decision": "REQUEST_CHANGES",
+    "confirmed": ["residual sign", "no production activation"],
+    "findings": [
+      "P1 unprojected decimal coefficient leakage invalidated literal exact strict-lower claim",
+      "P1 missing reference-uncertainty authority",
+      "P1 failure work erased",
+      "P2 zero-RHS 0/0",
+      "P3 formatting"
+    ],
+    "repair_disposition": "ADDRESSED_AND_SCOPED_TESTS_PASS",
+    "final_head_reviewed": false
   },
   "validation": {
-    "rust_tests": 40,
-    "python_tests": 8,
+    "inherited_rust_tests": 40,
+    "inherited_python_tests": 8,
     "actual_rust_mutants_detected": 3,
-    "full_workspace": "NOT_VERIFIED",
-    "fresh_external_review": "PENDING"
+    "updated_accuracy_suite": {"tests": 9, "status": "PASS"},
+    "structured_suite_before_late_test": {"tests": 10, "status": "PASS"},
+    "late_overflow_test": {"tests": 1, "status": "PASS_SEPARATE_INVOCATION"},
+    "final_aggregate_structured_suite": {"tests": 11, "status": "PASS_SINGLE_INVOCATION"},
+    "affected_rust_suites": {"tests": 49, "status": "PASS"},
+    "adjacent_core_coefficient_checks": {"tests": 2, "status": "PASS"},
+    "independent_python_contracts": {"tests": 8, "status": "PASS"},
+    "analysis_records": {"compact": 54, "full_saved_trajectories": 6, "status": "RECOMPUTED"},
+    "full_workspace": "NOT_RUN: interrupted historical attempt is not a PASS"
   },
-  "next_local_action": "fresh review, then bounded mass/nonnormal/failure extension; no old K0 bootstrap",
-  "unchanged": ["historical 54 rows", "raw evidence", "source v2 branch", "production routing", "full-target default oracle", "Cargo manifests", "sealed Oregonator"]
+  "fixed_rules": {
+    "selected_six": "post-campaign disclosed metadata-only rule independent of outcomes; not a preregistered holdout",
+    "correction_case_matrix": "fixed before observing results",
+    "numeric_acceptance_thresholds": "fixed before observing results",
+    "projection_tolerance": "fixed before observing results",
+    "budget_B_selected_from_historical_54": false
+  },
+  "claim_ceiling": {
+    "level": "EXPLORATORY_NONAUTHORITATIVE",
+    "allowed": "research diagnostic for the explicitly projected target",
+    "not_admitted": [
+      "unprojected exactness",
+      "nonlinear certificate",
+      "accuracy PASS",
+      "timing/ranking/speedup",
+      "BDF/CVODE comparison",
+      "production activation",
+      "holdout/freeze validity",
+      "scientific-publication admission"
+    ]
+  },
+  "delivery": {
+    "head": "SEE_LIVE_DRAFT_PR_RECEIPT",
+    "tree": "SEE_LIVE_DRAFT_PR_RECEIPT",
+    "ci": "SEE_LIVE_DRAFT_PR_CHECKS",
+    "atlassian": "SEE_EXISTING_PM1_AND_COMPANION_PAGE_COMMENTS"
+  },
+  "next_local_action": "external re-audit of the draft-unmerged research PR; no production or campaign transition",
+  "unchanged": [
+    "historical 54 rows",
+    "historical raw evidence and index bytes",
+    "source v2 branch",
+    "production coefficients and residual",
+    "production routing",
+    "full-target default oracle",
+    "sealed Oregonator"
+  ]
 }

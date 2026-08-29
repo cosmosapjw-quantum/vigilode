@@ -1,5 +1,8 @@
 #![forbid(unsafe_code)]
 
+#[cfg(feature = "audit2-research")]
+pub mod audit2_research;
+
 mod a1_two_arm_receipt;
 mod adaptive;
 mod adaptive_exponential;

@@ -1,18 +1,55 @@
 {
-  "task": "audit2-math-then-code-research",
+  "task": "audit2-science-code-continuation",
   "source_branch": "codex/vigilode-scientific-validity-v2",
   "source_head": "93fe348ce36859dd5f78b31267d771ea9c054677",
   "source_tree": "a0a045226175e261664533a56188352ded1da75a",
   "delivery_branch": "research/audit2-output-policy-20260829",
+  "delivery_head": "SEE_LIVE_DRAFT_PR_RECEIPT",
+  "delivery_tree": "SEE_LIVE_DRAFT_PR_RECEIPT",
   "entry": "research/audit2_two_loop_20260829/CODEX_HANDOFF.md",
   "old_K0_continuation": "DO_NOT_EXECUTE",
-  "historical_calibration": "54 original nonpassing rows preserved",
+  "historical_calibration": "54 original nonpassing rows and source bytes preserved",
   "holdout": "SEALED_NOT_OPENED",
-  "accuracy_budget": "NO_DEFAULT; caller must supply a justified independent budget",
-  "common_W_candidate": "TEST_ONLY; no production dispatch",
-  "review": "Fresh independent diff review remains local",
-  "local_steps": ["fresh scoped review", "mass/nonnormal/domain/failure tests", "opt-in research integration only after validation"],
-  "forbidden": ["historical evidence rewrite", "post-hoc tolerance widening", "old K0 bootstrap", "production activation", "holdout opening", "timing or BDF ranking claim", "PR merge", "tag", "release"],
-  "identity_policy": {"immutable_inputs": "BYTE_IDENTITY", "numerical_outputs": "JUSTIFIED_NUMERICAL_OR_SEMANTIC_EQUIVALENCE", "archives": "CONTENT_OR_STRUCTURAL", "sha_mismatch_alone_is_scientific_failure": false},
-  "atlassian": {"existing_workstream": "PM-1", "old_K0_task_PM7": "DO_NOT_MARK_COMPLETE", "outage_state": "ATLAS_SYNC_PENDING"}
+  "accuracy_budget": "NO_DEFAULT; caller must supply a justified independent budget B",
+  "reference_uncertainty": "EXPLICIT_TREATMENT_REQUIRED; EstimateOnly cannot yield WithinBudget or OutsideBudget",
+  "common_W_candidate": "NON_DEFAULT audit2-research FEATURE; FullTargetOracle default; explicit CommonWBlockForward opt-in; no production dispatch",
+  "research_target": "fixed result-independent coefficient projection; unprojected production coefficients/residual unchanged",
+  "review": {
+    "rounds": 1,
+    "decision": "REQUEST_CHANGES",
+    "range": "93fe348ce36859dd5f78b31267d771ea9c054677..25e086f86819577978e0710d2dab9c352555c4cc",
+    "disposition": "repairs present and scoped tests pass; no second fresh review claimed"
+  },
+  "local_steps": [
+    "external re-audit may inspect the live draft-unmerged research PR receipt",
+    "do not promote to production, reopen holdout, freeze calibration, or touch PM-7/K0"
+  ],
+  "claim_ceiling": "EXPLORATORY_NONAUTHORITATIVE projected-target research diagnostic only",
+  "forbidden": [
+    "unprojected exactness claim",
+    "nonlinear certificate claim",
+    "accuracy PASS without independent B and uncertainty authority",
+    "historical evidence rewrite",
+    "post-hoc tolerance widening",
+    "old K0 bootstrap",
+    "production activation",
+    "holdout opening or freeze",
+    "timing/ranking/speedup or BDF/CVODE claim",
+    "scientific-publication admission",
+    "PR merge",
+    "tag",
+    "release"
+  ],
+  "identity_policy": {
+    "immutable_inputs": "BYTE_IDENTITY",
+    "numerical_outputs": "JUSTIFIED_NUMERICAL_OR_SEMANTIC_EQUIVALENCE",
+    "archives": "CONTENT_OR_STRUCTURAL",
+    "sha_mismatch_alone_is_scientific_failure": false
+  },
+  "ci": "SEE_LIVE_DRAFT_PR_CHECKS",
+  "atlassian": {
+    "existing_workstream": "PM-1",
+    "old_K0_task_PM7": "DO_NOT_MARK_COMPLETE",
+    "sync": "SEE_EXISTING_PM1_AND_COMPANION_PAGE_COMMENTS; use ATLAS_SYNC_PENDING only if a live connector attempt fails"
+  }
 }

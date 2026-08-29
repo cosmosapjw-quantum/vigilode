@@ -38,7 +38,7 @@ If `||yref-ytrue||* <= u` is justified in this SAME norm, then for each arm
 \max(E-u,0)\le\|y-y_{true}\|_*\le E+u.
 \]
 
-For a separately specified observable budget B: upper<=B means within budget; lower>B means outside; otherwise reference-unresolved. Without B, no accuracy PASS is inferred. An empirically estimated u is not automatically a proved bound. The additive Rust diagnostic makes this conditional nature explicit. It neither changes the old gate nor creates a freeze.
+For a separately specified observable budget B: upper<=B means within budget; lower>B means outside; otherwise reference-unresolved. Without B, no accuracy PASS is inferred. The caller must also declare whether u is an asserted upper bound or only an estimate. Estimate-only uncertainty may produce the interval diagnostic but cannot yield either `WithinBudget` or `OutsideBudget`; it remains `ReferenceUnresolved`. An empirically estimated u is not automatically a proved bound. The additive Rust diagnostic makes this conditional nature explicit. It neither changes the old gate nor creates a freeze.
 
 These norms and budgets are dimensionless after reference scaling. They are not solver-local rtol/atol guarantees. No equality of secondary error estimates, digest equality across backends, or post-hoc tolerance widening is required.
 
@@ -81,7 +81,17 @@ All coefficient strings are the original rounded decimal snapshot, evaluated at 
 
 ## 4. A stronger route to the original RODAS5P stage-cost problem
 
-The target is the full nonlinear eight-stage block, not merely a single linear stage solve. With frozen M, J_n, h and invertible `W=M-h gamma J_n`, its residual is
+The official decimal tableau is not bit-exactly strict lower/constant diagonal after its C-form to Gamma-form conversion. Direct observation of the unprojected f64 data gives maximum forbidden alpha `5.577737968635803e-16`, maximum upper-Gamma `4.994632140352628e-16`, and maximum Gamma diagonal error `8.881784197001252e-16`. Therefore the literal exact-structure claim made by the first candidate was invalid for those raw coefficients.
+
+The continuation defines a separate research target by projecting only those structurally forbidden entries with the fixed rule
+
+\[
+\tau_{\rm proj}=64\,\epsilon_{\rm f64}=1.4210854715202004\times10^{-14}.
+\]
+
+This tolerance and the projected entry pattern were fixed independently of correction residuals, state differences, campaign outcomes, and the historical54 rows. Leakage above the fixed tolerance is a typed projection failure; accepted leakage is set to the exact structural zero or common diagonal. Only this projected research target has bit-exact strict-lower/common-W structure. The official coefficients, production residual, historical gates, and production dispatch are unchanged.
+
+The target below is the projected full nonlinear eight-stage block, not merely a single linear stage solve. With frozen M, J_n, h and invertible `W=M-h gamma J_n`, its residual is
 
 \[
 R_i(K)=Wk_i-hf(t_i,y_n+\sum_{j<i}\alpha_{ij}k_j)
@@ -102,26 +112,34 @@ Wz_i=r_i+hJ_i\sum_{j<i}\alpha_{ij}z_j
              +hJ_n\sum_{j<i}\Gamma_{ij}z_j.
 \]
 
-One common-W factorization, eight vector solves and fourteen exact JVPs suffice for the implemented candidate. No full stage J_i or full 8n-by-8n Jacobian is assembled. It computes the SAME linearized Newton correction as the full target oracle, not a heuristic cheap substitute. For residual sign `R=lhs-rhs`, Newton updates `K <- K-z`.
+One common-W factorization, eight vector solves and fourteen correction JVPs suffice for the implemented candidate. No full stage J_i or full 8n-by-8n Jacobian is assembled. When the supplied JVP is consistent with the Jacobian oracle, it computes the same linearized Newton correction as the projected full-target oracle, not a heuristic cheap substitute. For residual sign `R=lhs-rhs`, Newton updates `K <- K-z`. The fresh review independently confirmed this sign.
 
 Algebraically, `J_R=D(I-L)` with D block diagonal W and L strictly lower block triangular. Thus `L^8=0` and `(I-L)^-1=sum_{k=0}^7 L^k`; no norm-less-than-one assumption is needed for this finite identity. `det(J_R)=det(W)^8`. Subject to well-defined stage evaluations, this causal target has a unique recursively constructed root for fixed W. Generic simple-fold/multiple-root rescue language is therefore not justified for this particular target while W stays invertible. Off-diagonal coupling may still make it very ill-conditioned or nonnormal. Domain failure, singular W or a different target are separate issues.
 
 This sharpens the semi-Jacobian-free homotopy proposal: first remove the unnecessary full-target factorization while preserving its linearized certificate. Do NOT immediately demote the oracle to a sampled shadow lane or replace it with an unproved residual bound. A Newton correction remains only a local linearized error diagnostic: nonlinear remainders, physical domains and conditioning still require safeguards.
 
-The test-only Rust candidate shares the real crate APIs and has no production dispatch. Full-oracle and candidate corrections are compared by independent backward errors and a condition-aware state-difference bound, not by comparing their already tiny error estimates to unrealistic relative precision. Setup/frozen-J costs are not claimed free; test-oracle and condition-number work are validation work, not part of a reported runtime speedup.
+The Rust candidate shares the real crate APIs but is compiled only by the non-default `audit2-research` feature and has no production dispatch. `FullTargetOracle` is the default research backend; `CommonWBlockForward` requires explicit selection, and the comparison constructs one target snapshot so both arms see matching trial stage states. Full-oracle and candidate corrections are compared by independent backward errors and a condition-aware state-difference bound, not by equality of already tiny secondary errors. Nonlinear residuals before and after the proposed update are reported but are not converted into a validity flag.
+
+The extended tests include the original12 identity-mass points and a nonsingular mass matrix with determinant2.7 plus strong nonnormal coupling ratio134.6667. The latter has full-target Frobenius condition estimate96.8247899149117 and common-W backward error5.476681809776196e-17. Across the original12 points the condition range is32.1868941892757 to2686.7976507838134, maximum state-relative difference is4.664692226645801e-15, and maximum independently applied common-W backward error is approximately4.6955771192625894e-17.
+
+Zero RHS uses absolute zero residual/state criteria and leaves the undefined relative 0/0 state comparison absent. Missing, failing and inconsistent JVPs, singular and overflowed solves including later-stage overflow, NaN input, and malformed shapes are retained as typed outcomes with attempt/completion counts and partial progress. An intentionally inconsistent JVP is a domain counterexample: a finite correction is not promoted to oracle agreement when the independent full-target residual exposes the mismatch.
+
+Setup/frozen-J costs are not claimed free. One successful common-W arm records one setup, one factorization, eight solves, fourteen correction JVPs, eight shifted diagnostic applies, fourteen off-diagonal diagnostic JVPs, and one nonlinear diagnostic. The comparison separately records two independent full-target validation applies. For the identity case this totals52 counted candidate JVP vectors under the existing counter semantics. Test-oracle and condition-number work are validation work, not part of a reported runtime speedup.
 
 ## 5. Hypothesis decisions and negative results
 
 - **Supported, scoped:** separate accuracy budget from relative policy sensitivity; keep old evidence intact.
 - **Supported by formula and probes:** quartic extension, local defect order five; stable global order five need not contradict “order-four extension.”
 - **Rejected shortcut:** force clipped/dense JVP parity; all54 fail it and no theorem justifies it.
-- **Test-only survivor:** common-W exact block-forward correction. Production promotion is HOLD for fresh independent review and broader mass/nonnormal/domain cases.
+- **Research-only survivor:** exact block-forward correction for the explicitly projected target, behind a non-default feature. It is not an exactness claim for the unprojected decimal tableau or a production promotion.
 - **Not established:** all54 outputs are accurate, a new threshold is valid, holdout/generalization passes, or RODAS5P beats BDF.
 - **Not established:** using scalar error ratios alone proves stiffness order, and low-stage rank guarantees easy Krylov solves.
 
-## 6. Minimal next research
+## 6. Claim ceiling and minimal next research
 
-Keep the calibration and holdout frozen. Independently review the correction identity and test candidate; extend only its mass-matrix, nonlinear and failure cases, then integrate behind an explicit opt-in research path. An actual accuracy/equal-error claim requires a predeclared observable budget and valid reference uncertainty. BDF comparison requires a working production comparator, not current unavailable rows. These are scientific dependencies, not new package checks.
+The ceiling is `EXPLORATORY_NONAUTHORITATIVE` research diagnostic only. Not admitted: unprojected exactness, a nonlinear certificate, an accuracy PASS, timing/ranking/speedup, BDF/CVODE performance, production activation, holdout/freeze claims, or scientific-publication admission.
+
+Keep the calibration and holdout frozen. The bounded mass/nonnormal/domain/failure extension and explicit research entry are implemented, and the final aggregate11-test structured-correction suite passed. This scoped test result does not authorize a new accuracy/equal-error campaign: that requires a predeclared observable budget B and reference-uncertainty treatment chosen independently of the historical54 outcomes. BDF comparison requires a working production comparator, not current unavailable rows. These are scientific dependencies, not new package checks.
 
 ## Primary sources
 

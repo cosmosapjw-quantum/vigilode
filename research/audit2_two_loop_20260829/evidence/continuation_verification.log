@@ -1,0 +1,68 @@
+VigilODE audit2 continuation scoped verification
+Date: 2026-08-29 Asia/Seoul
+Base: 93fe348ce36859dd5f78b31267d771ea9c054677
+Pre-repair reviewed head: 25e086f86819577978e0710d2dab9c352555c4cc
+Toolchain: rustc 1.94.1 (e408947bf 2026-03-25); cargo 1.94.1 (29ea6fb6a 2026-03-24); Python 3.12.3
+
+FINAL AGGREGATE
+cargo test --locked -p rodas5p-fair-ab --test output_accuracy_assessment_contracts
+exit=0; 9 passed; 0 failed
+
+cargo test --locked -p rodas5p-integrators --features audit2-research --test audit2_structured_correction_contracts -- --nocapture --test-threads=1
+exit=0; 11 passed; 0 failed
+
+BOUNDED AFFECTED REGRESSION SET
+cargo test --locked -p rodas5p-fair-ab --test global_error_contracts
+cargo test --locked -p rodas5p-fair-ab --test output_accuracy_assessment_contracts
+cargo test --locked -p rodas5p-integrators --features audit2-research --test audit2_structured_correction_contracts -- --nocapture --test-threads=1
+cargo test --locked -p rodas5p-integrators --test dense_output_v2_contracts
+cargo test --locked -p rodas5p-integrators --test homotopy_numerical_contracts
+aggregate exit=0; 49 passed; 0 failed (8 + 9 + 11 + 15 + 6)
+
+cargo test --locked -p rodas5p-core --test core_contracts coefficient_
+exit=0; 2 passed; 0 failed
+
+STATIC/BUILD
+cargo fmt --all -- --check
+exit=0
+cargo clippy --locked -p rodas5p-integrators --features audit2-research --all-targets -- -D warnings
+exit=0
+cargo check --locked -p rodas5p-integrators --no-default-features
+exit=0
+cargo clippy --locked -p rodas5p-fair-ab --all-targets -- -D warnings
+exit=0
+
+INDEPENDENT ANALYSIS
+python3 -m unittest -v tools/test_audit2_output_policy_research.py
+exit=0; 8 passed; 0 failed
+python3 tools/audit2_output_policy_research.py --output /tmp/vigilode-audit2-final-20260829
+exit=0; compact records reanalyzed=54; saved full trajectories recomputed=6
+
+python3 runtime-to-CSV parity check (fresh structured --nocapture output)
+exit=0; 12 AUDIT2_PROJECTED_CORRECTION JSON rows matched 19 emitted CSV fields; independent_full_target_applies=2 is a direct test invariant
+
+HISTORICAL INPUT SHA-256
+211255f6125b648c6955833c3da537d9c031ec78168b2918563c29fa88c8bce6  fixtures/rodas5p_coefficients_snapshot.json
+23194d4638f16f7b21a79382c274c19a44532c77c707c2d8ebb93908235c456c  research/scientific_validity_v2_20260829/external_reaudit_bundle/rust/calibration_all_cases_compact.json
+80af3493e69ac92f137a30492d65c88f9cc97f1f8cec1e7838ce2470413e9cdf  research/scientific_validity_v2_20260829/external_reaudit_bundle/rust/selected_raw_n96_rtol1e-8.json
+git diff --exit-code HEAD -- research/scientific_validity_v2_20260829
+exit=0
+
+DELIBERATE OMISSIONS
+Full workspace: NOT_RUN. The earlier runtime-replacement interruption is not a PASS.
+Timing/ranking/speedup: NOT_RUN and not authorized.
+Oregonator/holdout/calibration freeze: NOT_RUN and unchanged.
+CVODE/production-baseline campaign: NOT_RUN; separate later task.
+Second fresh-context review: NOT_RUN; exactly one pre-repair review is retained.
+
+CLAIM CEILING
+EXPLORATORY_NONAUTHORITATIVE projected-target research diagnostic only.
+No unprojected exactness, nonlinear certificate, historical accuracy PASS,
+performance ranking, production activation, holdout/freeze validity, or
+scientific-publication admission.
+
+FIXED RULES INDEPENDENT OF RESULTS
+- six full trajectories: disclosed post-campaign metadata-only selection, all six families at n=96 and rtol=1e-8; outcome-independent but not a preregistered holdout;
+- coefficient projection: structurally named entries and tolerance 64*f64::EPSILON;
+- correction cases and numerical backward/state/invariant thresholds: fixed before outcomes;
+- accuracy budget B: not selected from the historical 54 records.
