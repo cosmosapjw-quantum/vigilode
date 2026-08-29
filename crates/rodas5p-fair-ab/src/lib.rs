@@ -93,3 +93,6 @@ pub use numerical_reference::{
     validate_numerical_reference_convergence, validate_numerical_reference_error_scale,
     validate_numerical_reference_manifest, validate_numerical_reference_manifest_v2,
 };
+
+mod output_accuracy;
+pub use output_accuracy::{AccuracyBudgetVerdict, ErrorBudgetAssessment, OutputAccuracyAssessment, assess_error_budget, assess_output_accuracy};
