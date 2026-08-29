@@ -1,0 +1,125 @@
+{
+  "execution": "LOCAL_SOURCE_DELTA_ON_EXACT_c5_GIT_BUNDLE; publication identity late-bound externally",
+  "rust_version": "rustc 1.94.1 (e408947bf 2026-03-25)",
+  "rust_tests": {
+    "global_error": 8,
+    "output_accuracy": 9,
+    "existing_bridge": 15,
+    "dense_output": 15,
+    "homotopy": 6,
+    "matrix_free": 18,
+    "baseline_example": 5,
+    "total": 76
+  },
+  "python_tests": 20,
+  "mutants": {
+    "W_sign": "KILLED / failing numerical test",
+    "removed_extra_true_check": "KILLED / failing adversarial test"
+  },
+  "commands": [
+    {
+      "name": "mutant-w-sign",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "rodas5p-integrators",
+        "--features",
+        "audit2-research",
+        "--test",
+        "audit2_matrix_free_contracts",
+        "all_small_coordinates_have_independent_full_target_residuals"
+      ],
+      "exit_code": 101
+    },
+    {
+      "name": "mutant-drop-true-check",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "rodas5p-integrators",
+        "--features",
+        "audit2-research",
+        "--test",
+        "audit2_matrix_free_contracts",
+        "additional_true_residual_check_retains_a_report_before_rejecting"
+      ],
+      "exit_code": 101
+    },
+    {
+      "name": "mfw-final",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "rodas5p-integrators",
+        "--features",
+        "audit2-research",
+        "--test",
+        "audit2_matrix_free_contracts",
+        "--",
+        "--nocapture"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "clippy-final",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rodas5p-integrators",
+        "-p",
+        "rodas5p-fair-ab",
+        "--all-targets",
+        "--features",
+        "rodas5p-integrators/audit2-research",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "readiness-final",
+      "command": [
+        "bash",
+        "tools/check-audit2-readiness.sh"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "scoped_clippy": "PASS",
+  "format": "PASS",
+  "feature_off_build_and_example": "PASS",
+  "local_full_workspace": "NOT_RUN",
+  "fresh_independent_review": "NOT_PERFORMED",
+  "repeated_raw_outputs": {
+    "count": 22,
+    "byte_identical": true
+  },
+  "code_sha256": {
+    "crates/rodas5p-integrators/src/audit2_research.rs": "5d8d6ec071b896b1e9d185803c6d84ef9202fbc09b5a1c3ef2ebcbf52c2d7cef",
+    "crates/rodas5p-integrators/src/audit2_research/matrix_free.rs": "9de762d010917717065156f4730e9f9548b20e551f4c0172de9d8a46c7b43b2c",
+    "crates/rodas5p-integrators/tests/audit2_matrix_free_contracts.rs": "73673a5d52664cab5677a85f5f60aaa5f423ace8c95b5f2fbf3088cb6b380cdc",
+    "tools/check-audit2-readiness.sh": "dc686548eb12d007a21263d8f17b2a84d7c25aaad841d9cdb1777465f422c684"
+  },
+  "log_sha256": {
+    "mfw-final.log": "be3811579ebcfd7d58a8fc8572c199cbdb3f9c5e50f87941b5bcf629c20b346e",
+    "clippy-final.log": "ef0d0b273025f0edcac766df547d9ad04a863484766a70aebd0b242f2cd6020d",
+    "readiness-final.log": "b8a2a21ebb84b5343183a72212fee8a44772e6808bf336e0434fbac1995a91c7",
+    "mutant-w-sign.log": "3e3c46315c1ca018760074aba9d9651c380264229c2861de0d460f65b9fa9647",
+    "mutant-drop-true-check.log": "234512cbc3447553916b96e1a943f4539143a8b3b47e28191380f689fa98ba24"
+  },
+  "known_limits": [
+    "Inherited preparation/nonlinear failures flag incomplete callback work.",
+    "A kernel Err exposes no unfinished iterate and may not include unfinished-cycle iteration counts.",
+    "Caller context setup and arbitrary preconditioner-factory internals are separate.",
+    "Existing mass input is dense; retained workspace is not peak memory."
+  ]
+}

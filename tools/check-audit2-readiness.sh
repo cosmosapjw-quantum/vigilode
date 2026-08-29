@@ -16,6 +16,7 @@ python3 tools/test_a1_receipt_ci_scope.py -v
 python3 tools/test_audit2_output_policy_research.py -v
 cargo test --locked -p rodas5p-fair-ab --test global_error_contracts --test output_accuracy_assessment_contracts
 cargo test --locked -p rodas5p-integrators --features audit2-research --test audit2_structured_correction_contracts --test dense_output_v2_contracts --test homotopy_numerical_contracts
+AUDIT2_MATRIX_FREE_OUTPUT_DIR="$OUT/matrix-free" cargo test --locked -p rodas5p-integrators --features audit2-research --test audit2_matrix_free_contracts
 cargo test --locked -p rodas5p-integrators --no-default-features --example solve_stiff
 cargo check --locked -p rodas5p-integrators --no-default-features
 cargo clippy --locked -p rodas5p-integrators -p rodas5p-fair-ab --all-targets --features rodas5p-integrators/audit2-research -- -D warnings

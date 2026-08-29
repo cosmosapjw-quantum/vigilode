@@ -1,0 +1,52 @@
+VERBATIM EXCERPTS; full logs are in the downloadable handback.
+
+=== mfw-final.log ===
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.87s
+     Running tests/audit2_matrix_free_contracts.rs (/mnt/data/vigilode_mfw_work_20260830/target/debug/deps/audit2_matrix_free_contracts-a46f4bd70b038614)
+test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.20s
+
+=== clippy-final.log ===
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 12.80s
+
+=== readiness-final.log ===
+Ran 12 tests in 1.426s
+OK
+Ran 8 tests in 0.007s
+OK
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1m 09s
+     Running tests/global_error_contracts.rs (/mnt/data/vigilode_mfw_work_20260830/target/debug/deps/global_error_contracts-c04ce9dc40982e89)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.06s
+     Running tests/output_accuracy_assessment_contracts.rs (/mnt/data/vigilode_mfw_work_20260830/target/debug/deps/output_accuracy_assessment_contracts-d2a37433d5cc6954)
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.18s
+     Running tests/audit2_structured_correction_contracts.rs (/mnt/data/vigilode_mfw_work_20260830/target/debug/deps/audit2_structured_correction_contracts-351199ed96f1925d)
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.37s
+     Running tests/dense_output_v2_contracts.rs (/mnt/data/vigilode_mfw_work_20260830/target/debug/deps/dense_output_v2_contracts-b455433685b4f97d)
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.18s
+     Running tests/homotopy_numerical_contracts.rs (/mnt/data/vigilode_mfw_work_20260830/target/debug/deps/homotopy_numerical_contracts-8f9333c55851b13a)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.05s
+     Running tests/audit2_matrix_free_contracts.rs (/mnt/data/vigilode_mfw_work_20260830/target/debug/deps/audit2_matrix_free_contracts-a46f4bd70b038614)
+test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.28s
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 16.43s
+     Running unittests examples/solve_stiff.rs (/mnt/data/vigilode_mfw_work_20260830/target/debug/examples/solve_stiff-57133494fdc41213)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.51s
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 39.71s
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2.88s
+Default solver example: complete solve and typed partial failure exercised.
+AUDIT2_USAGE_OUTPUT_DIR=/mnt/data/vigilode_mfw_work_20260830/outputs/readiness
+
+=== mutant-w-sign.log ===
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.61s
+     Running tests/audit2_matrix_free_contracts.rs (/mnt/data/vigilode_mfw_work_20260830/target/debug/deps/audit2_matrix_free_contracts-a46f4bd70b038614)
+thread 'all_small_coordinates_have_independent_full_target_residuals' (8642) panicked at crates/rodas5p-integrators/tests/audit2_matrix_free_contracts.rs:165:13:
+assertion failed: original_residual <= 1e-8 * original_rhs_norm.max(1.0)
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 17 filtered out; finished in 0.06s
+
+=== mutant-drop-true-check.log ===
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.82s
+     Running tests/audit2_matrix_free_contracts.rs (/mnt/data/vigilode_mfw_work_20260830/target/debug/deps/audit2_matrix_free_contracts-a46f4bd70b038614)
+thread 'additional_true_residual_check_retains_a_report_before_rejecting' (8997) panicked at crates/rodas5p-integrators/tests/audit2_matrix_free_contracts.rs:453:5:
+assertion failed: !r.completed
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 17 filtered out; finished in 0.05s
+
