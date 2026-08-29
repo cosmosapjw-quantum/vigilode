@@ -7,7 +7,7 @@ permissions:
 jobs:
   import:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
         with:
@@ -19,8 +19,16 @@ jobs:
           git rev-parse HEAD^{tree}
           git archive --format=tar.gz -o source-93fe348.tar.gz HEAD
           sha256sum source-93fe348.tar.gz
+      - name: Export locked Cargo dependencies for offline verification
+        run: |
+          rustup toolchain install 1.94.1 --profile minimal
+          cargo +1.94.1 vendor --locked vendor > vendor-config.toml
+          tar -czf vendor-93fe348.tar.gz vendor vendor-config.toml
+          sha256sum vendor-93fe348.tar.gz
       - uses: actions/upload-artifact@v4
         with:
-          name: audit2-source-93fe348
-          path: source-93fe348.tar.gz
+          name: audit2-source-and-vendor-93fe348
+          path: |
+            source-93fe348.tar.gz
+            vendor-93fe348.tar.gz
           retention-days: 7
