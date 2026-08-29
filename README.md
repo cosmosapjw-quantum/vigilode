@@ -33,11 +33,15 @@ not counted. Steady-state BDF1/BDF2 and embedded Radau IIA3 count one substep pe
 accepted macro-step. Adaptive diagnostics separately expose accepted/rejected macro-step
 counts, so these axes must not be treated as interchangeable.
 
-The scientific-validity-v2 implementation has software-contract evidence only. Its
-canonical 54-row calibration and sealed Oregonator replay have not been run, so no v2
-performance, scaling, ranking, equal-error, or publication claim is admitted. Legacy
-v3.5/v3.6/v3.7 receipts remain valid only under their original corpus, comparator,
-inner-solve, and output policies and are not transplantable to v2.
+The scientific-validity-v2 implementation is locally committed at
+`ab8fbcdb709aa1e87603b1ef6f83c5e610c8cb04`. Its source-bound canonical calibration
+completed all 54 cases without an execution failure, but all 54 rows were classified
+`output-policy-dominated`. The pass-only freeze was therefore not created and the sealed
+Oregonator holdout was not opened. External calibration retained 54 successful SciPy
+Radau records and 54 typed-unavailable CVODE records; it is not a complete production
+baseline. Consequently no v2 performance, scaling, ranking, equal-error, or publication
+claim is admitted. Legacy v3.5/v3.6/v3.7 receipts remain valid only under their original
+corpus, comparator, inner-solve, and output policies and are not transplantable to v2.
 
 ## Build reproducibility
 

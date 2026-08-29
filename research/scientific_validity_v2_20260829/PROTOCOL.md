@@ -2,10 +2,13 @@
 
 ## Authority boundary
 
-This protocol is `IMPLEMENTED` as a deterministic gate and CLI. It does not run the
-numerical campaign that supplies measurement rows. The checked-in smoke JSON files are
-synthetic wiring fixtures labelled `ci-smoke-nonauthoritative`; they are not calibration,
-holdout, benchmark, or publication evidence. The canonical campaign is `NOT_RUN`.
+This protocol is `IMPLEMENTED` as a deterministic gate and source-bound CLI. The
+checked-in smoke JSON files are synthetic wiring fixtures labelled
+`ci-smoke-nonauthoritative`; they are not calibration, holdout, benchmark, or publication
+evidence. The canonical producer was executed at revision
+`ab8fbcdb709aa1e87603b1ef6f83c5e610c8cb04`: all 54 cases completed, all 54 rows were
+`output-policy-dominated`, no freeze was created, and the Oregonator holdout remained
+unopened by protocol.
 
 No v3.5, v3.6, v3.7, V25, V36, or A1 threshold is an input to this protocol.
 
@@ -118,16 +121,28 @@ file bytes it parsed and validated in its scientific-set checksum.
 The synthetic threshold `0.06` exists solely to test serialization, hashing, and replay
 wiring. It is forbidden as a scientific or production threshold.
 
-## Canonical execution state
+## Canonical execution state — 2026-08-29
 
-`NOT_RUN`. A future canonical run must materialize all 54 calibration measurements from
-the declared v2 pipeline, freeze exactly once, verify that immutable artifact, and only
-then generate the three Oregonator measurements. Holdout results may not feed back into
-the threshold or checksum. The runner must integrate Medical Akzo and Brusselator 2-D via
-their branch-fixed `integration_segments`, compute candidate errors with the exact WRMS
-scale returned in each validated numerical-reference bundle, and retain distinct clipped
-and dense output artifacts. Claim admission requires a separate review of those real
-artifacts; passing this implementation protocol is insufficient.
+- Implementation revision: `ab8fbcdb709aa1e87603b1ef6f83c5e610c8cb04`.
+- Complete reference manifest: 22 artifacts and 66 bindings; file SHA-256
+  `e272f32f3e235f506cfa59060846a54e20195ea4d991800c0706645c3fb78da2`.
+- Rust campaign: `complete-nonpassing`; 54/54 attempted, zero execution failures,
+  54 `output-policy-dominated`; campaign file SHA-256
+  `afbdbfb032a27b9d4ce8189a489a4ffb5745e096a53bed4349d90f6a780db80c`.
+- Freeze: absent by pass-only admission, with no frozen threshold.
+- Oregonator: `NOT_RUN_BY_PROTOCOL`; the holdout reference was not opened.
+- External calibration: 108/108 records; SciPy Radau 54/54 success, SUNDIALS CVODE
+  54/54 typed unavailable, zero solver failures; aggregate status
+  `full-surface-with-unavailable` and scientific-set SHA-256
+  `ca13d5911f45e8421ce1deefc6604862bfe7fd3488fdf3eafa87bdedeca61a84`.
+
+The raw campaign remains failure-preserving evidence. No threshold or tolerance was
+changed, and the canonical numerical campaign was not retried. A future campaign must use
+new declared output paths and authority after correcting the output-policy disagreement;
+it may not overwrite or reinterpret this result. Only a future passing 54-row campaign
+may freeze exactly once and then open the three Oregonator measurements. Holdout results
+may not feed back into the threshold or checksum. Claim admission still requires a
+separate review of any passing artifacts; execution alone is insufficient.
 
 The WRMS inner policy is a per-stage true-residual heuristic. Its `0.1` allocation does
 not bound endpoint contamination unless an independent bound on `W^-1` is available.
