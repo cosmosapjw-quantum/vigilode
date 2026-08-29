@@ -1,0 +1,115 @@
+{
+  "schema_version": "vigilode-scientific-validity-v2-external-reaudit-bundle-v1",
+  "bundle_id": "scientific-validity-v2-20260829-external-reaudit",
+  "purpose": "bounded review-enablement evidence; not scientific admission",
+  "base_revision": "8d0c79184e09efb5bdadc24a6315c60a71a44264",
+  "implementation_revision": "ab8fbcdb709aa1e87603b1ef6f83c5e610c8cb04",
+  "claim_document_revision": "8419d8e5e1adf306a76800514b61de2a7dfdbe45",
+  "size_ceiling_bytes": 26214400,
+  "integrity_index": "SHA256SUMS",
+  "source_evidence": {
+    "rust_campaign": {
+      "identity_class": "deterministic-generated-evidence",
+      "included_in_full": false,
+      "byte_size": 260879060,
+      "sha256": "afbdbfb032a27b9d4ce8189a489a4ffb5745e096a53bed4349d90f6a780db80c",
+      "status": "complete-nonpassing",
+      "records": 54,
+      "rows": 54
+    },
+    "reference_manifest": {
+      "identity_class": "deterministic-generated-evidence",
+      "included_as_exact_bytes": true,
+      "sha256": "e272f32f3e235f506cfa59060846a54e20195ea4d991800c0706645c3fb78da2",
+      "artifacts": 22,
+      "bindings": 66
+    },
+    "external_aggregate": {
+      "identity_class": "deterministic-generated-evidence",
+      "included_as_exact_bytes": true,
+      "sha256": "e5b6ac1604c2e504839925c64b137422e5cc6eb6ec6be084e3d894d67daba4f7",
+      "records": 108,
+      "status": "full-surface-with-unavailable"
+    }
+  },
+  "contents": {
+    "claim_documents": {
+      "identity_class": "packaging-metadata",
+      "exact_byte_copies": 3,
+      "authoritative_parent_files": [
+        "../CANONICAL_EXECUTION_EVIDENCE.md",
+        "../CLAIM_SCOPE_AND_INVALIDATION.md",
+        "../PROTOCOL.md"
+      ]
+    },
+    "all_case_compact": {
+      "identity_class": "packaging-metadata-derived-from-deterministic-evidence",
+      "path": "rust/calibration_all_cases_compact.json",
+      "records": 54,
+      "rows": 54,
+      "omitted_fields": [
+        "records[].artifact.clipped.states",
+        "records[].artifact.clipped.output_times",
+        "records[].artifact.dense.states",
+        "records[].artifact.dense.output_times"
+      ]
+    },
+    "selected_raw_rust": {
+      "identity_class": "semantic-extraction-from-deterministic-evidence",
+      "path": "rust/selected_raw_n96_rtol1e-8.json",
+      "selection_rule": "SELECTION_RULE.json",
+      "records": 6,
+      "complete_state_trajectories": true,
+      "outcome_blind": true,
+      "record_order": "ascending case_id",
+      "coverage_limit": "all families at n=96 and rtol=1e-8 only"
+    },
+    "selected_reference": {
+      "identity_class": "numerically-equivalent-output-with-exact-copied-bytes",
+      "directory": "reference/selected_raw",
+      "artifacts": 6
+    },
+    "selected_external": {
+      "identity_class": "numerically-equivalent-output-with-exact-copied-bytes",
+      "scipy_success_artifacts": 6,
+      "cvode_unavailable_artifacts": 6
+    },
+    "operational": {
+      "identity_class": "deterministic-generated-evidence",
+      "files": 4,
+      "includes_dirty_build_preflight_failure": true
+    }
+  },
+  "selection_integrity": {
+    "rule_id": "corpus-metadata-only-n96-rtol1e-8-all-families-v1",
+    "fixed_for_package": true,
+    "pre_campaign_preregistered": false,
+    "outcome_blind": true,
+    "selection_reads_only": [
+      "spec.partition",
+      "spec.dimension",
+      "spec.rtol",
+      "spec.family"
+    ],
+    "selection_does_not_read_numerical_results": true
+  },
+  "scientific_disposition": {
+    "rust_calibration": "complete-nonpassing",
+    "row_status_counts": {
+      "output-policy-dominated": 54
+    },
+    "execution_failures": 0,
+    "freeze": "not-created-by-protocol",
+    "oregonator": "not-run-by-protocol",
+    "scipy_radau": "54-success",
+    "cvode": "54-typed-unavailable",
+    "claim_admission": "not-admitted"
+  },
+  "deliberate_omissions": [
+    "full 260879060-byte Rust campaign",
+    "state trajectories for 48 non-selected Rust cases",
+    "16 non-selected physical reference artifacts",
+    "96 non-selected external comparator artifacts",
+    "freeze and Oregonator artifacts, which do not exist"
+  ]
+}

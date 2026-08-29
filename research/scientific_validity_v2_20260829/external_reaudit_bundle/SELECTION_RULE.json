@@ -1,0 +1,50 @@
+{
+  "schema_version": "vigilode-external-reaudit-selection-rule-v1",
+  "rule_id": "corpus-metadata-only-n96-rtol1e-8-all-families-v1",
+  "fixed_for_package": true,
+  "pre_campaign_preregistered": false,
+  "outcome_blind": true,
+  "record_order": "ascending case_id",
+  "source_campaign_sha256": "afbdbfb032a27b9d4ce8189a489a4ffb5745e096a53bed4349d90f6a780db80c",
+  "predicate": {
+    "partition": "calibration",
+    "dimension": 96,
+    "rtol": 1e-8,
+    "families": [
+      "hires-ramped",
+      "nonautonomous-stiff-forcing",
+      "robertson-ramped",
+      "rotating-nonnormal",
+      "semilinear-advection-diffusion-ramped",
+      "van-der-pol-ramped"
+    ]
+  },
+  "fields_read_by_selection": [
+    "spec.partition",
+    "spec.dimension",
+    "spec.rtol",
+    "spec.family"
+  ],
+  "outcome_fields_not_read": [
+    "row.status",
+    "row.conservative_max_wrms",
+    "output_policy_discrepancy_wrms",
+    "clipped.metrics",
+    "dense.metrics",
+    "clipped.counters",
+    "dense.counters",
+    "wall_seconds",
+    "artifact_checksum_sha256",
+    "comparator status"
+  ],
+  "expected_record_count": 6,
+  "coverage_claim": "family-complete only; no raw cross-dimension or cross-tolerance coverage claim",
+  "case_ids": [
+    "hires-ramped-n96-rtol-1e-8-v2.1",
+    "nonautonomous-stiff-forcing-n96-rtol-1e-8-v2.1",
+    "robertson-ramped-n96-rtol-1e-8-v2.1",
+    "rotating-nonnormal-n96-rtol-1e-8-v2.1",
+    "semilinear-advection-diffusion-ramped-n96-grid8x12-rtol-1e-8-v2.1",
+    "van-der-pol-ramped-n96-rtol-1e-8-v2.1"
+  ]
+}
