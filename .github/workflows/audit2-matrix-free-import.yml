@@ -1,0 +1,31 @@
+name: Audit2 matrix-free exact-source import
+on:
+  push:
+    branches: [connectivity/audit2-matrix-free-20260830-head]
+permissions:
+  contents: read
+jobs:
+  export-exact-source:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: c5fbd6d5703fc396bdf30eb3acfacb6c6bd2b921
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Export the inspected PR31 source without mutation
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = c5fbd6d5703fc396bdf30eb3acfacb6c6bd2b921
+          test "$(git rev-parse HEAD^{tree})" = a0fec46f857f00054d674fb417812065aeca8a31
+          mkdir -p "$RUNNER_TEMP/exact-source"
+          git branch export-c5fbd6d HEAD
+          git bundle create "$RUNNER_TEMP/exact-source/source.bundle" export-c5fbd6d
+          git rev-parse HEAD HEAD^{tree} > "$RUNNER_TEMP/exact-source/source-identity.txt"
+          sha256sum Cargo.lock > "$RUNNER_TEMP/exact-source/lock.sha256"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: audit2-matrix-free-source-c5fbd6d
+          path: ${{ runner.temp }}/exact-source/
+          retention-days: 7
