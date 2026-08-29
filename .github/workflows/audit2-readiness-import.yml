@@ -1,0 +1,50 @@
+name: audit2-readiness-import
+on:
+  push:
+    branches: [connectivity/audit2-readiness-20260829-head]
+permissions:
+  contents: read
+jobs:
+  import-and-feature-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: c8942d7840eb8a165bd1b02c0ec8051757cf1919
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.94.1
+      - name: Export immutable source and offline dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p delivery
+          test "$(git rev-parse HEAD)" = c8942d7840eb8a165bd1b02c0ec8051757cf1919
+          test "$(git rev-parse HEAD^{tree})" = baedef527245eb557e503db51b799a4e047cb0e5
+          git branch export-c894 HEAD
+          git bundle create delivery/source.bundle export-c894
+          git show -s --format='%H%n%T%n%P' HEAD > delivery/source-identity.txt
+          cargo vendor --locked vendor > delivery/vendor-config.toml
+          tar -czf delivery/vendor.tar.gz vendor
+          sha256sum delivery/source.bundle delivery/vendor.tar.gz > delivery/download-sha256.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: audit2-readiness-source-c894
+          path: delivery/
+          retention-days: 7
+          if-no-files-found: error
+      - name: Execute the explicitly enabled research contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo test --locked -p rodas5p-integrators --features audit2-research --test audit2_structured_correction_contracts -- --nocapture 2>&1 | tee delivery/feature-contracts.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: audit2-readiness-baseline-feature-log
+          path: delivery/feature-contracts.log
+          retention-days: 7
+          if-no-files-found: warn
