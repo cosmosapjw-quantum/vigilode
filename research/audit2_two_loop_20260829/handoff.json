@@ -1,5 +1,5 @@
 {
-  "task": "audit2-science-code-continuation",
+  "task": "audit2-ci-and-baseline-usage-to-original-target-bridge",
   "source_branch": "codex/vigilode-scientific-validity-v2",
   "source_head": "93fe348ce36859dd5f78b31267d771ea9c054677",
   "source_tree": "a0a045226175e261664533a56188352ded1da75a",
@@ -21,8 +21,9 @@
     "disposition": "repairs present and scoped tests pass; no second fresh review claimed"
   },
   "local_steps": [
-    "external re-audit may inspect the live draft-unmerged research PR receipt",
-    "do not promote to production, reopen holdout, freeze calibration, or touch PM-7/K0"
+    "Use the existing solver example immediately; validate any real application independently.",
+    "On an isolated branch, execute ORIGINAL_TARGET_BRIDGE below, not another K0 or packaging loop.",
+    "Do not rerun historical campaigns or open holdouts for CI/docs/example changes."
   ],
   "claim_ceiling": "EXPLORATORY_NONAUTHORITATIVE projected-target research diagnostic only",
   "forbidden": [
@@ -46,10 +47,168 @@
     "archives": "CONTENT_OR_STRUCTURAL",
     "sha_mismatch_alone_is_scientific_failure": false
   },
-  "ci": "SEE_LIVE_DRAFT_PR_CHECKS",
+  "ci": "CURRENT_HEAD_CHECKS_ONLY; not-applicable A1 scientific child jobs are not claimed as executed",
   "atlassian": {
     "existing_workstream": "PM-1",
     "old_K0_task_PM7": "DO_NOT_MARK_COMPLETE",
     "sync": "SEE_EXISTING_PM1_AND_COMPANION_PAGE_COMMENTS; use ATLAS_SYNC_PENDING only if a live connector attempt fails"
+  },
+  "maintenance_base": {
+    "head": "c8942d7840eb8a165bd1b02c0ec8051757cf1919",
+    "tree": "baedef527245eb557e503db51b799a4e047cb0e5"
+  },
+  "completed_here": {
+    "a1_scope": "actual-PR-diff routing; original frozen A1 checks preserved",
+    "feature_coverage": "explicit audit2-research tests plus no-default-feature usage",
+    "runnable_baseline": "examples/solve_stiff.rs; no audit2 backend or assembled Jacobian",
+    "tests": {
+      "rust": 54,
+      "python": 20,
+      "full_workspace_local": "NOT_RUN"
+    },
+    "runtime": "complete solve and typed partial failure actually executed",
+    "production_source_changed": false,
+    "historical_data_changed": false,
+    "new_fresh_review": "NOT_PERFORMED; differential self-check only"
+  },
+  "next_work_unit": {
+    "schema": "audit-compiled-work-unit/v1",
+    "id": "ORIGINAL_TARGET_BRIDGE",
+    "title": "Measure projected-to-original target compatibility on identical trial stages",
+    "authority": {
+      "base_sha": "USE_INSPECTED_DELIVERY_FROM_PR29",
+      "branch": "new isolated research branch",
+      "upstream_dependencies": [
+        "c894 research correction and current scoped tests"
+      ]
+    },
+    "objective": {
+      "statement": "Produce original-target diagnostic evidence without changing acceptance or the original target",
+      "observable_success": "All existing 12 trial cases and the nonidentity-mass case have explicit original/projected residuals, work and terminal states",
+      "non_goals": [
+        "production dispatch",
+        "new solver tolerance",
+        "full campaign",
+        "nonlinear certification",
+        "timing"
+      ]
+    },
+    "scope": {
+      "allowed_paths": [
+        "crates/rodas5p-integrators/src/audit2_research.rs",
+        "crates/rodas5p-integrators/tests/audit2_structured_correction_contracts.rs",
+        "research/audit2_two_loop_20260829/"
+      ],
+      "forbidden_paths": [
+        "fixtures/",
+        "research/scientific_validity_v2_20260829/",
+        "crates/rodas5p-core/",
+        "Cargo.lock"
+      ],
+      "forbidden_changes": [
+        "Do not project the original residual/oracle",
+        "Do not alter production routes, coefficient inputs, or error budgets",
+        "Do not claim that projected parity proves original-target equivalence"
+      ]
+    },
+    "invariants": [
+      {
+        "id": "SAME_TRIAL",
+        "statement": "R_o, R_p, A_o and A_p evaluated at identical frozen context and trial K",
+        "mechanical_check": "same-trial regression; incompatible snapshots rejected"
+      },
+      {
+        "id": "BRIDGE_SIGN",
+        "statement": "rho_o = rho_p + (A_o-A_p)z - (r_o-r_p), with K_new=K-z",
+        "mechanical_check": "direct original matrix/action residual versus decomposition; wrong sign mutant must fail"
+      },
+      {
+        "id": "NO_FALSE_CERTIFICATE",
+        "statement": "no budget or estimate-only reference implies no accuracy admission",
+        "mechanical_check": "existing output_accuracy_assessment_contracts unchanged"
+      },
+      {
+        "id": "NO_LOST_WORK",
+        "statement": "failures retain attempted/completed diagnostic work and partial output",
+        "mechanical_check": "existing failure-domain tests plus one original-action failure injection"
+      }
+    ],
+    "implementation": {
+      "ordered_steps": [
+        {
+          "id": "1",
+          "action": "Add a RED wrong-original-target/sign negative case to the existing feature-gated suite."
+        },
+        {
+          "id": "2",
+          "action": "Reuse existing trial fixtures; compute raw original residual/Jacobian action using original APIs, without modifying input coefficients."
+        },
+        {
+          "id": "3",
+          "action": "Record residual decomposition, original-target backward error, same-target correction agreement, output and embedded projections, and complete diagnostic work."
+        },
+        {
+          "id": "4",
+          "action": "Run the existing 12-case grid and nonidentity-mass case; record failures without dropping cases. Do not fit acceptance to outcomes."
+        }
+      ]
+    },
+    "verification": {
+      "targeted": [
+        "cargo test --locked -p rodas5p-integrators --features audit2-research --test audit2_structured_correction_contracts -- --nocapture"
+      ],
+      "negative": [
+        "original/projection substitution",
+        "sign flip",
+        "original-action failure with partial work"
+      ],
+      "integration": [
+        "bash tools/check-audit2-readiness.sh"
+      ],
+      "full_relevant_suite": "No full campaign required; broaden only for a distinct changed-interface failure"
+    },
+    "unresolved_boundaries": [
+      "No universal nonlinear/output budget is supplied: classify diagnostic-only, keep exploratory execution permitted."
+    ],
+    "review_gate": {
+      "fresh_context_required": "one review of NEW scientific delta only",
+      "pass_condition": {
+        "P0": 0,
+        "P1": 0
+      }
+    },
+    "agent_policy": {
+      "ask_user_questions": false,
+      "guessing_across_spec_boundary": "forbidden",
+      "suppressing_failures": "forbidden",
+      "claiming_unexecuted_work": "forbidden"
+    },
+    "completion_evidence": {
+      "required": [
+        "source/head/tree",
+        "original-versus-projected case table",
+        "complete failure/work ledger",
+        "actual test/mutation logs",
+        "unchanged protected source/data",
+        "unresolved numerical budgets"
+      ]
+    }
+  },
+  "readiness_estimate": {
+    "meaning": "capability transitions, not PR count, schedule or guaranteed speedup",
+    "baseline_now": "RUNNABLE_NARROW_DOMAIN; real application still needs independent validation",
+    "common_w_accelerated_solver_remaining": 4,
+    "steps": [
+      "original-target compatibility",
+      "scalable W backend and setup reuse",
+      "transactional whole-step integration",
+      "actual-client error/work/end-to-end validation"
+    ],
+    "competitive_polyalgorithm_remaining_approx": 6,
+    "additional_steps": [
+      "production BDF baseline with fair output/error/cost comparison",
+      "history-aware switching and held-family/long-run validation"
+    ],
+    "contingency": "newly observed substantive defects can add a repair transition"
   }
 }

@@ -16,3 +16,13 @@ One fresh-context review of the pre-repair bounded diff returned `REQUEST_CHANGE
 The maximum authorized claim is `EXPLORATORY_NONAUTHORITATIVE`: a research diagnostic for a result-independent projected target. It does not establish unprojected exactness, a nonlinear certificate, an accuracy PASS for the historical54, timing/ranking/speedup, BDF/CVODE comparison, production readiness, holdout/freeze validity, or scientific-publication admission.
 
 The six saved trajectories were selected by the fixed metadata rule “all six families at n=96 and rtol=1e-8,” independent of observed outcomes. This was a disclosed post-campaign extraction rule, not a preregistered holdout. The correction case matrix, numerical acceptance thresholds, and coefficient-projection tolerance were fixed before their results were observed. No numerical budget B was selected from the historical54 results.
+
+## Executable-use and CI follow-through
+
+The current maintenance adds a real default-solver client example and fixes
+A1 experiment applicability without removing its frozen guards. It explicitly
+tests the opt-in correction feature in CI. `evidence/readiness_verification.log`
+is an actual 54-Rust/20-Python scoped run plus complete/partial example output
+checks. Numerical source, the c894 correction, and historical evidence remain
+unchanged. See `CODEX_HANDOFF.md` for direct use and the next original-target
+bridge. Neither a green CI nor this narrow example is production readiness.

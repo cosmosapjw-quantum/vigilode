@@ -1,0 +1,59 @@
+name: Audit2 research and usable-solver checks
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/audit2-research.yml'
+      - '.github/workflows/a1-two-arm-receipt.yml'
+      - 'crates/rodas5p-core/**'
+      - 'crates/rodas5p-krylov/**'
+      - 'crates/rodas5p-integrators/**'
+      - 'crates/rodas5p-fair-ab/**'
+      - 'fixtures/rodas5p_coefficients_snapshot.json'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - 'tools/*audit2*'
+      - 'tools/*a1_receipt_ci_scope*'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/audit2-research.yml'
+      - '.github/workflows/a1-two-arm-receipt.yml'
+      - 'crates/**'
+      - 'fixtures/rodas5p_coefficients_snapshot.json'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - 'tools/*audit2*'
+      - 'tools/*a1_receipt_ci_scope*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit2-feature-and-usage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install the pinned Rust toolchain
+        run: |
+          rustup toolchain install 1.94.1 --profile minimal --component rustfmt,clippy
+          rustup override set 1.94.1
+      - name: Exercise research-on contracts and research-off solver use
+        env:
+          AUDIT2_OUTPUT_DIR: ${{ runner.temp }}/audit2-usage
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash tools/check-audit2-readiness.sh 2>&1 | tee "$RUNNER_TEMP/audit2-readiness.log"
+      - name: Preserve checks and runtime outputs, including failures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: audit2-readiness-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/audit2-readiness.log
+            ${{ runner.temp }}/audit2-usage/
+          if-no-files-found: warn
+          retention-days: 14
