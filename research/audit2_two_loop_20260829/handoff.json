@@ -1,9 +1,9 @@
 {
-  "task": "audit2-ci-and-baseline-usage-to-original-target-bridge",
+  "task": "audit2-matrix-free-w-research-to-transaction-boundary",
   "source_branch": "codex/vigilode-scientific-validity-v2",
   "source_head": "93fe348ce36859dd5f78b31267d771ea9c054677",
   "source_tree": "a0a045226175e261664533a56188352ded1da75a",
-  "delivery_branch": "research/audit2-output-policy-20260829",
+  "delivery_branch": "research/audit2-matrix-free-w-20260830",
   "delivery_head": "SEE_LIVE_DRAFT_PR_RECEIPT",
   "delivery_tree": "SEE_LIVE_DRAFT_PR_RECEIPT",
   "entry": "research/audit2_two_loop_20260829/CODEX_HANDOFF.md",
@@ -21,11 +21,12 @@
     "disposition": "repairs present and scoped tests pass; no second fresh review claimed"
   },
   "local_steps": [
-    "Use the existing solver example immediately; validate any real application independently.",
-    "On an isolated branch, execute ORIGINAL_TARGET_BRIDGE below, not another K0 or packaging loop.",
-    "Do not rerun historical campaigns or open holdouts for CI/docs/example changes."
+    "Read the exact published PR HEAD and this handoff; do not execute old K0 bootstrap.",
+    "Run one fresh HOST_CODEX_ONLY review of the c5-to-delivery scientific delta and one bounded repair for concrete P0/P1 findings.",
+    "Run the provided readiness command once on the user host and preserve failures; do not repeat historical campaigns.",
+    "Plan the next research-only whole-step transaction using the existing acceptance oracle; do not activate production or invent an accuracy budget."
   ],
-  "claim_ceiling": "EXPLORATORY_NONAUTHORITATIVE projected-target research diagnostic only",
+  "claim_ceiling": "EXPLORATORY_NONAUTHORITATIVE matrix-free correction diagnostic only",
   "forbidden": [
     "unprojected exactness claim",
     "nonlinear certificate claim",
@@ -58,140 +59,109 @@
     "tree": "baedef527245eb557e503db51b799a4e047cb0e5"
   },
   "completed_here": {
-    "a1_scope": "actual-PR-diff routing; original frozen A1 checks preserved",
-    "feature_coverage": "explicit audit2-research tests plus no-default-feature usage",
-    "runnable_baseline": "examples/solve_stiff.rs; no audit2 backend or assembled Jacobian",
-    "tests": {
-      "rust": 54,
-      "python": 20,
-      "full_workspace_local": "NOT_RUN"
-    },
-    "runtime": "complete solve and typed partial failure actually executed",
+    "matrix_free_child": "crates/rodas5p-integrators/src/audit2_research/matrix_free.rs",
+    "new_contracts": 18,
+    "total_rust": 76,
+    "python": 20,
+    "actual_mutants_killed": 2,
+    "repeated_raw_records": 22,
     "production_source_changed": false,
     "historical_data_changed": false,
-    "new_fresh_review": "NOT_PERFORMED; differential self-check only"
+    "local_full_workspace": "NOT_RUN",
+    "new_fresh_review": "NOT_PERFORMED",
+    "work_limits": [
+      "Inherited preparation/nonlinear failures flag incomplete callback work.",
+      "A kernel Err exposes no unfinished iterate and may not include unfinished-cycle iteration counts.",
+      "Caller context setup and arbitrary preconditioner-factory internals are separate.",
+      "Existing mass input is dense; retained workspace is not peak memory."
+    ]
   },
   "next_work_unit": {
     "schema": "audit-compiled-work-unit/v1",
-    "id": "ORIGINAL_TARGET_BRIDGE",
-    "title": "Measure projected-to-original target compatibility on identical trial stages",
+    "id": "MFW_HOST_REVIEW_AND_TRANSACTION_BOUNDARY",
     "authority": {
-      "base_sha": "USE_INSPECTED_DELIVERY_FROM_PR29",
-      "branch": "new isolated research branch",
-      "upstream_dependencies": [
-        "c894 research correction and current scoped tests"
-      ]
+      "base_sha": "USE_EXACT_PUBLISHED_DELIVERY",
+      "branch": "new isolated research branch"
     },
     "objective": {
-      "statement": "Produce original-target diagnostic evidence without changing acceptance or the original target",
-      "observable_success": "All existing 12 trial cases and the nonidentity-mass case have explicit original/projected residuals, work and terminal states",
+      "statement": "Close concrete host/review defects in the new matrix-free delta; define the original-target whole-step transaction boundary without activating it",
       "non_goals": [
-        "production dispatch",
-        "new solver tolerance",
-        "full campaign",
-        "nonlinear certification",
-        "timing"
+        "production activation",
+        "new scientific acceptance thresholds",
+        "timing",
+        "historical rerun",
+        "holdout",
+        "re-review loop"
       ]
     },
     "scope": {
       "allowed_paths": [
         "crates/rodas5p-integrators/src/audit2_research.rs",
-        "crates/rodas5p-integrators/tests/audit2_structured_correction_contracts.rs",
+        "crates/rodas5p-integrators/src/audit2_research/matrix_free.rs",
+        "crates/rodas5p-integrators/tests/audit2_matrix_free_contracts.rs",
+        "tools/check-audit2-readiness.sh",
         "research/audit2_two_loop_20260829/"
       ],
       "forbidden_paths": [
+        "crates/rodas5p-core/",
+        "crates/rodas5p-krylov/",
         "fixtures/",
         "research/scientific_validity_v2_20260829/",
-        "crates/rodas5p-core/",
         "Cargo.lock"
-      ],
-      "forbidden_changes": [
-        "Do not project the original residual/oracle",
-        "Do not alter production routes, coefficient inputs, or error budgets",
-        "Do not claim that projected parity proves original-target equivalence"
       ]
     },
-    "invariants": [
-      {
-        "id": "SAME_TRIAL",
-        "statement": "R_o, R_p, A_o and A_p evaluated at identical frozen context and trial K",
-        "mechanical_check": "same-trial regression; incompatible snapshots rejected"
-      },
-      {
-        "id": "BRIDGE_SIGN",
-        "statement": "rho_o = rho_p + (A_o-A_p)z - (r_o-r_p), with K_new=K-z",
-        "mechanical_check": "direct original matrix/action residual versus decomposition; wrong sign mutant must fail"
-      },
-      {
-        "id": "NO_FALSE_CERTIFICATE",
-        "statement": "no budget or estimate-only reference implies no accuracy admission",
-        "mechanical_check": "existing output_accuracy_assessment_contracts unchanged"
-      },
-      {
-        "id": "NO_LOST_WORK",
-        "statement": "failures retain attempted/completed diagnostic work and partial output",
-        "mechanical_check": "existing failure-domain tests plus one original-action failure injection"
-      }
+    "required_checks": [
+      "one independent fresh review of NEW delta only",
+      "inherited failed-callback accounting explicitly incomplete or genuinely instrumented, never renamed complete",
+      "kernel Err never invents an iterate/report",
+      "matrix-free original-target application validation stays independent of projected checks",
+      "one setup and workspace within one immutable context; new context requires new setup",
+      "no accuracy inference from residual, condition, or correction size"
     ],
-    "implementation": {
-      "ordered_steps": [
-        {
-          "id": "1",
-          "action": "Add a RED wrong-original-target/sign negative case to the existing feature-gated suite."
-        },
-        {
-          "id": "2",
-          "action": "Reuse existing trial fixtures; compute raw original residual/Jacobian action using original APIs, without modifying input coefficients."
-        },
-        {
-          "id": "3",
-          "action": "Record residual decomposition, original-target backward error, same-target correction agreement, output and embedded projections, and complete diagnostic work."
-        },
-        {
-          "id": "4",
-          "action": "Run the existing 12-case grid and nonidentity-mass case; record failures without dropping cases. Do not fit acceptance to outcomes."
-        }
-      ]
-    },
     "verification": {
       "targeted": [
-        "cargo test --locked -p rodas5p-integrators --features audit2-research --test audit2_structured_correction_contracts -- --nocapture"
-      ],
-      "negative": [
-        "original/projection substitution",
-        "sign flip",
-        "original-action failure with partial work"
+        "cargo test --locked -p rodas5p-integrators --features audit2-research --test audit2_matrix_free_contracts"
       ],
       "integration": [
         "bash tools/check-audit2-readiness.sh"
       ],
-      "full_relevant_suite": "No full campaign required; broaden only for a distinct changed-interface failure"
+      "failure_cases": [
+        "setup",
+        "JVP",
+        "late PC",
+        "misleading preconditioner",
+        "extra true residual",
+        "inner exhaustion",
+        "late nonlinear diagnostic",
+        "changed context"
+      ]
     },
-    "unresolved_boundaries": [
-      "No universal nonlinear/output budget is supplied: classify diagnostic-only, keep exploratory execution permitted."
-    ],
     "review_gate": {
-      "fresh_context_required": "one review of NEW scientific delta only",
+      "fresh_context_required": true,
+      "rounds": 1,
+      "bounded_repair": "at most one coherent repair pass; no second review required to claim objective regression fixes, and no review APPROVE invented",
       "pass_condition": {
         "P0": 0,
         "P1": 0
       }
     },
     "agent_policy": {
-      "ask_user_questions": false,
-      "guessing_across_spec_boundary": "forbidden",
-      "suppressing_failures": "forbidden",
-      "claiming_unexecuted_work": "forbidden"
+      "code_review_claim_admission": "HOST_CODEX_ONLY",
+      "local_llm": "not needed for this deterministic host/review work"
     },
-    "completion_evidence": {
-      "required": [
-        "source/head/tree",
-        "original-versus-projected case table",
-        "complete failure/work ledger",
-        "actual test/mutation logs",
-        "unchanged protected source/data",
-        "unresolved numerical budgets"
-      ]
+    "transaction_plan": {
+      "must_preserve": [
+        "original target and existing acceptance oracle",
+        "trial/accepted-state separation",
+        "rollback restores t,y,controller/cache state",
+        "all candidate/preparation/diagnostic work including rejected attempts",
+        "explicit caller budget and reference-uncertainty authority for real output admission"
+      ],
+      "unresolved": [
+        "An incomplete inherited failure ledger is not a completed whole-step work ledger.",
+        "This correction function does not define controller/cache transfer or an acceptance decision."
+      ],
+      "scope_rule": "This delivery does not authorize production dispatch. New transaction code belongs to a later explicit feature-gated work unit."
     }
   },
   "readiness_estimate": {
@@ -210,5 +180,11 @@
       "history-aware switching and held-family/long-run validation"
     ],
     "contingency": "newly observed substantive defects can add a repair transition"
+  },
+  "completed_original_target_bridge": {
+    "head": "c5fbd6d5703fc396bdf30eb3acfacb6c6bd2b921",
+    "tree": "a0fec46f857f00054d674fb417812065aeca8a31",
+    "pr": 31,
+    "status": "SCOPED_DIAGNOSTIC_COMPLETE; no accuracy admission"
   }
 }

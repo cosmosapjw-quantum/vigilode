@@ -5,6 +5,8 @@
 //! The common-W result is a linearized correction for an explicitly projected
 //! coefficient target; its norm is never an acceptance or nonlinear-validity test.
 
+pub mod matrix_free;
+
 use serde::{Deserialize, Serialize};
 
 use rodas5p_core::{
