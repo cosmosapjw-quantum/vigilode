@@ -1,0 +1,58 @@
+{
+  "schema": "vigilode-matrix-free-common-w-handoff/v1",
+  "repository": "cosmosapjw-quantum/vigilode",
+  "stack_base": {
+    "branch": "research/audit2-original-target-bridge-20260830",
+    "head": "c5fbd6d5703fc396bdf30eb3acfacb6c6bd2b921",
+    "tree": "a0fec46f857f00054d674fb417812065aeca8a31",
+    "pr": 31,
+    "required_state": "OPEN_DRAFT_UNMERGED"
+  },
+  "proposed_branch": "research/audit2-matrix-free-common-w-20260830",
+  "proposed_pr_base": "research/audit2-original-target-bridge-20260830",
+  "claim_ceiling": "EXPLORATORY_NONAUTHORITATIVE_MATRIX_FREE_COMMON_W_SUBSTRATE",
+  "first_actions": [
+    "verify the exact stack-base head/tree and clean worktree",
+    "apply SOURCE_PATCH_FROM_C5.patch without three-way fallback",
+    "run git diff --check and confirm zero diff in the seven PR31 paths",
+    "run the five new contracts and the fifteen PR31 original-target bridge contracts",
+    "run tools/check-audit2-readiness.sh on the exact stacked source",
+    "run affected clippy and formatting",
+    "perform one fresh-context source review with no auto-repair loop"
+  ],
+  "publication": {
+    "push": "non-force only",
+    "pr": "draft stacked PR",
+    "merge": "forbidden for scientific branch",
+    "mock_connectivity": "use disposable branches only; never merge into main or PR31",
+    "atlassian": "sync only after actual GitHub head/tree and live checks exist"
+  },
+  "mandatory_preservations": [
+    "production/default routing",
+    "PR29 and PR31 scientific bytes except clean stacking",
+    "original-target bridge evidence",
+    "historical 54 rows and checksums",
+    "Cargo.lock and protected fixtures",
+    "sealed holdouts, K0 and PM-7 state",
+    "all failed and partial-work evidence"
+  ],
+  "next_scientific_node_after_publication": {
+    "name": "REUSABLE_PRECONDITIONER_AND_TRANSACTIONAL_STEP",
+    "scope": [
+      "problem-derived or user-supplied reusable W preconditioner with explicit setup/update identity",
+      "same-operator versus changed-operator invalidation tests",
+      "transactional attempted-step integration with rollback and fallback",
+      "original-target and output/embedded diagnostics under an independent budget",
+      "real client validation before any timing or production claim"
+    ]
+  },
+  "forbidden": [
+    "claiming workspace reuse as Krylov-basis reuse",
+    "timing or speedup from test durations",
+    "production activation",
+    "threshold fitting from the observed rows",
+    "opening holdouts",
+    "merging PR29, PR31, or the new scientific PR",
+    "tag or release"
+  ]
+}
