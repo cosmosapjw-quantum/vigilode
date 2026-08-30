@@ -124,6 +124,20 @@ class ResearchCoverageTests(unittest.TestCase):
         self.assertIn("--features audit2-research --test audit2_structured_correction_contracts", text)
         self.assertIn("--test audit2_matrix_free_common_w_contracts", text)
         self.assertIn("--test audit2_reusable_preconditioner_transaction_contracts", text)
+        self.assertIn("python3 tools/test_audit2_real_client_authority.py -v", text)
+        self.assertIn("python3 tools/test_audit2_bateman_local_receipt.py -v", text)
+        self.assertIn(
+            "--features audit2-bateman-authority --test audit2_real_client_authority_contracts",
+            text,
+        )
+        self.assertIn(
+            "--features audit2-bateman-authority --example audit2_bateman_local_six_case",
+            text,
+        )
+        self.assertNotIn(
+            "cargo run --locked -p rodas5p-integrators --features audit2-bateman-authority",
+            text,
+        )
         self.assertIn("--no-default-features --example solve_stiff", text)
         self.assertIn("output_accuracy_assessment_contracts", text)
 

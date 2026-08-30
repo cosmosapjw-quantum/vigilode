@@ -396,6 +396,7 @@ pub struct Audit2ExternalOutputReference {
     pub source: String,
     pub state: Vec<f64>,
     pub uncertainty_l2: f64,
+    pub uncertainty_treatment: Audit2ReferenceUncertaintyTreatment,
 }
 
 impl Audit2ExternalOutputReference {
@@ -415,6 +416,189 @@ impl Audit2ExternalOutputReference {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum Audit2ReferenceUncertaintyTreatment {
+    /// `uncertainty_l2` is an asserted upper bound on the reference error.
+    DeclaredUpperBound,
+    /// `uncertainty_l2` is descriptive only and cannot admit a candidate.
+    EstimateOnly,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+pub struct Audit2ReferenceAwareOutputAssessment {
+    /// Conservative upper bound for the distance to the stored reference.
+    pub output_error_l2: f64,
+    /// Conservative lower bound for the independently declared budget.
+    pub output_budget_l2: f64,
+    pub reference_uncertainty_l2: f64,
+    /// A true-error upper bound only for `DeclaredUpperBound` treatment.
+    pub output_error_upper_l2: f64,
+    pub uncertainty_treatment: Audit2ReferenceUncertaintyTreatment,
+    pub accepted: bool,
+}
+
+fn add_up_nonnegative(left: f64, right: f64) -> f64 {
+    if left == 0.0 {
+        return right;
+    }
+    if right == 0.0 {
+        return left;
+    }
+    let rounded = left + right;
+    if rounded.is_finite() {
+        rounded.next_up()
+    } else {
+        rounded
+    }
+}
+
+fn multiply_up_nonnegative(left: f64, right: f64) -> f64 {
+    if left == 0.0 || right == 0.0 {
+        return 0.0;
+    }
+    let rounded = left * right;
+    if rounded.is_finite() {
+        rounded.next_up()
+    } else {
+        rounded
+    }
+}
+
+fn add_down_nonnegative(left: f64, right: f64) -> f64 {
+    if left == 0.0 {
+        return right;
+    }
+    if right == 0.0 {
+        return left;
+    }
+    (left + right).next_down().max(0.0)
+}
+
+fn multiply_down_nonnegative(left: f64, right: f64) -> f64 {
+    if left == 0.0 || right == 0.0 {
+        return 0.0;
+    }
+    (left * right).next_down().max(0.0)
+}
+
+/// Conservative binary64 upper bound for the Euclidean distance between two
+/// finite binary64 vectors, interpreted as exact real inputs.
+pub fn audit2_conservative_l2_difference_upper(actual: &[f64], expected: &[f64]) -> f64 {
+    if actual.len() != expected.len()
+        || actual
+            .iter()
+            .chain(expected)
+            .any(|value| !value.is_finite())
+    {
+        return f64::NAN;
+    }
+    let squared_upper = actual
+        .iter()
+        .zip(expected)
+        .map(|(actual, expected)| {
+            if actual == expected {
+                0.0
+            } else {
+                let rounded = (actual - expected).abs();
+                if rounded.is_finite() {
+                    rounded.next_up()
+                } else {
+                    rounded
+                }
+            }
+        })
+        .map(|difference| multiply_up_nonnegative(difference, difference))
+        .fold(0.0, add_up_nonnegative);
+    if squared_upper == 0.0 {
+        0.0
+    } else if squared_upper.is_finite() {
+        squared_upper.sqrt().next_up()
+    } else {
+        squared_upper
+    }
+}
+
+fn conservative_l2_lower(values: &[f64]) -> f64 {
+    if values.iter().any(|value| !value.is_finite()) {
+        return f64::NAN;
+    }
+    let squared_lower = values
+        .iter()
+        .map(|value| value.abs())
+        .map(|value| multiply_down_nonnegative(value, value))
+        .fold(0.0, add_down_nonnegative);
+    if squared_lower == 0.0 {
+        0.0
+    } else {
+        squared_lower.sqrt().next_down().max(0.0)
+    }
+}
+
+/// Conservative binary64 lower bound for `atol + rtol * norm2(reference)`.
+pub fn audit2_conservative_output_budget_lower(
+    output_atol_l2: f64,
+    output_rtol: f64,
+    reference: &[f64],
+) -> f64 {
+    if !output_atol_l2.is_finite()
+        || !output_rtol.is_finite()
+        || output_atol_l2 < 0.0
+        || output_rtol < 0.0
+    {
+        return f64::NAN;
+    }
+    let nearest_budget = output_atol_l2 + output_rtol * safe_l2(reference);
+    if !nearest_budget.is_finite() {
+        return f64::NAN;
+    }
+    let relative_lower = multiply_down_nonnegative(output_rtol, conservative_l2_lower(reference));
+    add_down_nonnegative(output_atol_l2, relative_lower)
+}
+
+/// Assess a candidate against an independent output budget without treating
+/// reference uncertainty as additional tolerance.
+///
+/// For a declared reference-error upper bound `u`, the triangle inequality
+/// proves `true_error <= output_error_l2 + u`; admission therefore requires
+/// that upper bound to fit *inside* `output_budget_l2`.  An estimate-only value
+/// never yields categorical admission.
+pub fn assess_audit2_reference_aware_output(
+    output_error_l2: f64,
+    output_budget_l2: f64,
+    reference_uncertainty_l2: f64,
+    uncertainty_treatment: Audit2ReferenceUncertaintyTreatment,
+) -> Audit2ReferenceAwareOutputAssessment {
+    let output_error_upper_l2 = if output_error_l2.is_finite()
+        && reference_uncertainty_l2.is_finite()
+        && output_error_l2 >= 0.0
+        && reference_uncertainty_l2 >= 0.0
+    {
+        add_up_nonnegative(output_error_l2, reference_uncertainty_l2)
+    } else {
+        f64::NAN
+    };
+    let finite_nonnegative = [
+        output_error_l2,
+        output_budget_l2,
+        reference_uncertainty_l2,
+        output_error_upper_l2,
+    ]
+    .into_iter()
+    .all(|value| value.is_finite() && value >= 0.0);
+    let accepted = finite_nonnegative
+        && uncertainty_treatment == Audit2ReferenceUncertaintyTreatment::DeclaredUpperBound
+        && output_error_upper_l2 <= output_budget_l2;
+    Audit2ReferenceAwareOutputAssessment {
+        output_error_l2,
+        output_budget_l2,
+        reference_uncertainty_l2,
+        output_error_upper_l2,
+        uncertainty_treatment,
+        accepted,
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum Audit2TransactionalSelection {
     Candidate,
@@ -427,7 +611,10 @@ pub struct Audit2IndependentBudgetReceipt {
     pub identifier: String,
     pub reference_source: String,
     pub output_error_l2: f64,
-    pub output_bound_l2: f64,
+    pub output_budget_l2: f64,
+    pub reference_uncertainty_l2: f64,
+    pub output_error_upper_l2: f64,
+    pub uncertainty_treatment: Audit2ReferenceUncertaintyTreatment,
     pub embedded_l2: f64,
     pub original_target_residual_l2: f64,
     pub original_target_contraction: f64,
@@ -619,6 +806,22 @@ where
             counters,
         );
     }
+    let output_budget_l2 = audit2_conservative_output_budget_lower(
+        budget.output_atol_l2,
+        budget.output_rtol,
+        &reference.state,
+    );
+    if !output_budget_l2.is_finite() {
+        return failure(
+            Audit2TransactionalFailurePhase::InputValidation,
+            "Audit-2 derived independent output budget is nonfinite",
+            context,
+            None,
+            cache,
+            before,
+            counters,
+        );
+    }
 
     let initial_residual =
         match StructuredBlockSystem::new(context).target_residual(trial_stages, counters) {
@@ -779,21 +982,16 @@ where
                 );
             }
         };
-        let output_error_l2 = safe_l2(
-            &step
-                .y_new
-                .iter()
-                .zip(&reference.state)
-                .map(|(actual, expected)| actual - expected)
-                .collect::<Vec<_>>(),
+        let output_error_l2 =
+            audit2_conservative_l2_difference_upper(&step.y_new, &reference.state);
+        let output_assessment = assess_audit2_reference_aware_output(
+            output_error_l2,
+            output_budget_l2,
+            reference.uncertainty_l2,
+            reference.uncertainty_treatment,
         );
-        let output_bound_l2 = budget.output_atol_l2
-            + budget.output_rtol * safe_l2(&reference.state)
-            + reference.uncertainty_l2;
         let embedded_l2 = safe_l2(&step.error_vector);
-        let output_accepted = output_error_l2.is_finite()
-            && output_bound_l2.is_finite()
-            && output_error_l2 <= output_bound_l2;
+        let output_accepted = output_assessment.accepted;
         let embedded_accepted = embedded_l2.is_finite() && embedded_l2 <= budget.max_embedded_l2;
         let original_target_accepted = final_residual_l2.is_finite()
             && contraction.is_finite()
@@ -803,7 +1001,10 @@ where
             identifier: budget.identifier.clone(),
             reference_source: reference.source.clone(),
             output_error_l2,
-            output_bound_l2,
+            output_budget_l2,
+            reference_uncertainty_l2: reference.uncertainty_l2,
+            output_error_upper_l2: output_assessment.output_error_upper_l2,
+            uncertainty_treatment: reference.uncertainty_treatment,
             embedded_l2,
             original_target_residual_l2: final_residual_l2,
             original_target_contraction: contraction,

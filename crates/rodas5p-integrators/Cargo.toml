@@ -8,6 +8,7 @@ license.workspace = true
 [features]
 default = []
 audit2-research = []
+audit2-bateman-authority = ["audit2-research", "dep:serde_json"]
 
 [dependencies]
 faer.workspace = true
@@ -15,6 +16,7 @@ rodas5p-core = { path = "../rodas5p-core" }
 rodas5p-krylov = { path = "../rodas5p-krylov" }
 rayon.workspace = true
 serde.workspace = true
+serde_json = { workspace = true, optional = true }
 thiserror.workspace = true
 
 [dev-dependencies]
@@ -24,3 +26,13 @@ serde_json.workspace = true
 name = "audit2_structured_correction_contracts"
 path = "tests/audit2_structured_correction_contracts.rs"
 required-features = ["audit2-research"]
+
+[[test]]
+name = "audit2_real_client_authority_contracts"
+path = "tests/audit2_real_client_authority_contracts.rs"
+required-features = ["audit2-bateman-authority"]
+
+[[example]]
+name = "audit2_bateman_local_six_case"
+path = "examples/audit2_bateman_local_six_case.rs"
+required-features = ["audit2-bateman-authority"]
