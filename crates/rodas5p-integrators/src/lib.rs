@@ -1,6 +1,8 @@
 #![forbid(unsafe_code)]
 
 #[cfg(feature = "audit2-research")]
+mod audit2_matrix_free_research;
+#[cfg(feature = "audit2-research")]
 pub mod audit2_research;
 
 mod a1_two_arm_receipt;
@@ -45,6 +47,17 @@ mod transactional_q1_q2;
 mod unified_gates;
 mod unified_screen;
 mod v38d_performance_tournament;
+
+#[cfg(feature = "audit2-research")]
+pub use audit2_matrix_free_research::{
+    Audit2MatrixFreeBatchFailure, Audit2MatrixFreeBatchOutcome, Audit2MatrixFreeBatchSuccess,
+    Audit2MatrixFreeCommonWConfig, Audit2MatrixFreeCommonWSession,
+    Audit2MatrixFreeCorrectionFailure, Audit2MatrixFreeCorrectionFailurePhase,
+    Audit2MatrixFreeCorrectionOutcome, Audit2MatrixFreeCorrectionSuccess,
+    Audit2MatrixFreeCorrectionWork, Audit2MatrixFreeFailurePhase,
+    Audit2MatrixFreeSessionSetupFailure, Audit2MatrixFreeSessionSnapshot,
+    run_audit2_matrix_free_common_w_correction,
+};
 
 pub use adaptive::{
     AdaptiveControllerState, AdaptiveFailureKind, AdaptiveObservedIntegrationResult,
