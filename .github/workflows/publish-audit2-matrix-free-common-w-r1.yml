@@ -1,0 +1,253 @@
+name: Publish validated Audit2 matrix-free common-W R1
+
+on:
+  push:
+    branches: [delivery/audit2-matrix-free-common-w-reuse-20260830]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  validate-and-publish:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      BASE_HEAD: c5fbd6d5703fc396bdf30eb3acfacb6c6bd2b921
+      TARGET_BRANCH: research/audit2-matrix-free-common-w-reuse-20260830-r1
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install pinned toolchains
+        shell: bash
+        run: |
+          set -euo pipefail
+          rustup toolchain install 1.94.1 --profile minimal --component rustfmt,clippy
+          rustup override set 1.94.1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Install declared Python probe dependencies
+        run: python -m pip install --disable-pip-version-check numpy==2.3.5 mpmath==1.3.0
+      - name: Complete the feature-gated source boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git merge-base HEAD "$BASE_HEAD")" = "$BASE_HEAD"
+          if ! grep -q '^mod matrix_free_common_w;$' crates/rodas5p-integrators/src/audit2_research.rs; then
+            cat >> crates/rodas5p-integrators/src/audit2_research.rs <<'RS'
+
+mod matrix_free_common_w;
+pub use matrix_free_common_w::{
+    Audit2MatrixFreeCommonWFailure, Audit2MatrixFreeCommonWOutcome,
+    Audit2MatrixFreeCommonWSuccess, Audit2MatrixFreeLinearConfig,
+    Audit2MatrixFreeSolveReport, run_audit2_matrix_free_common_w_reuse,
+};
+RS
+          fi
+          if ! grep -q 'build_step_context_matrix_free' crates/rodas5p-integrators/src/lib.rs; then
+            printf '\npub use sequential::build_step_context_matrix_free;\n' >> crates/rodas5p-integrators/src/lib.rs
+          fi
+      - name: Run RED-derived contracts and capture 13-case observations
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p delivery-evidence
+          cargo fmt --all
+          cargo test --locked -p rodas5p-integrators --features audit2-research \
+            --test audit2_matrix_free_common_w_contracts -- --nocapture \
+            2>&1 | tee delivery-evidence/matrixfree-targeted.log
+          python - <<'PY'
+          from pathlib import Path
+          import json
+          log=Path('delivery-evidence/matrixfree-targeted.log').read_text(errors='replace')
+          prefix='AUDIT2_MATRIX_FREE_COMMON_W_ROWS '
+          line=next((ln for ln in log.splitlines() if prefix in ln),None)
+          if line is None: raise SystemExit('13-case JSON evidence line missing')
+          rows=json.loads(line.split(prefix,1)[1])
+          if len(rows)!=13: raise SystemExit(f'expected 13 rows, got {len(rows)}')
+          summary={
+            'schema':'vigilode.audit2.matrix_free_common_w_reuse.v1',
+            'base_head':'c5fbd6d5703fc396bdf30eb3acfacb6c6bd2b921',
+            'result_independent_rules':{
+              'grid':{'n':[4,8,16],'h':[0.001,0.01,0.05,0.1]},
+              'extra_case':'nonidentity-mass-strong-nonnormal',
+              'correction_agreement_bound':'8192*f64::EPSILON*max(condition_f,1)',
+              'normalized_linear_residual_ceiling':1e-9,
+              'rank_tol':1e-12,'rtol':1e-12,'atol':1e-14
+            },
+            'rows':rows,
+            'summary':{
+              'case_count':len(rows),
+              'max_condition_f':max(r['condition_f'] for r in rows),
+              'max_relative_correction_difference':max(r['relative_correction_difference'] for r in rows),
+              'max_fixed_condition_aware_bound':max(r['fixed_condition_aware_bound'] for r in rows),
+              'max_normalized_linear_residual':max(r['normalized_linear_residual'] for r in rows),
+              'min_recycle_same_operator_uses':min(r['recycle_same_operator_uses'] for r in rows),
+              'max_recycle_cross_operator_refreshes':max(r['recycle_cross_operator_refreshes'] for r in rows),
+              'total_recycle_updates':sum(r['recycle_updates'] for r in rows),
+              'total_linear_iterations':sum(r['linear_iterations'] for r in rows),
+              'total_linear_matvecs':sum(r['linear_matvecs'] for r in rows),
+              'total_jvp_vectors':sum(r['jvp_vectors'] for r in rows),
+              'max_direct_factorizations':max(r['direct_factorizations'] for r in rows),
+              'max_direct_solve_calls':max(r['direct_solve_calls'] for r in rows),
+              'all_condition_aware_agreement_pass':all(r['relative_correction_difference'] <= r['fixed_condition_aware_bound'] for r in rows),
+              'all_normalized_residual_pass':all(r['normalized_linear_residual'] <= 1e-9 for r in rows),
+              'strict_matrix_free_work_pass':all(r['direct_factorizations']==0 and r['direct_solve_calls']==0 and r['jvp_vectors']>0 for r in rows),
+              'same_operator_recycle_observed_all_cases':all(r['recycle_same_operator_uses']>0 for r in rows)
+            },
+            'claim_ceiling':'EXPLORATORY_NONAUTHORITATIVE_MATRIX_FREE_COMMON_W_REUSE_DIAGNOSTIC_ONLY',
+            'not_admitted':['production activation','whole-step acceptance','accuracy certification','timing','ranking','speedup','BDF/CVODE comparison','holdout/freeze','merge/tag/release']
+          }
+          out=Path('research/audit2_two_loop_20260829/matrix_free_common_w_results.json')
+          out.write_text(json.dumps(summary,indent=2,sort_keys=True)+'\n')
+          raw=next(r for r in rows if r['case_id']=='identity-n4-h0.01')
+          Path('research/audit2_two_loop_20260829/matrix_free_common_w_raw_sample.json').write_text(json.dumps({
+            'selection_rule':'fixed input coordinate n=4,h=0.01; not selected from outcomes','row':raw
+          },indent=2,sort_keys=True)+'\n')
+          PY
+      - name: Write claim ledger, CI, plan, and next-node handoff
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p docs/superpowers/plans research/audit2_two_loop_20260829/evidence
+          cat > research/audit2_two_loop_20260829/matrix_free_common_w_claim_ledger.md <<'MD'
+          # Matrix-Free Common-W GCRO-DR Reuse — Claim Ledger
+
+          ## Scope
+
+          This node evaluates one non-default Audit-2 research backend on exactly twelve inherited `(n,h)` grid systems and one declared nonidentity-mass/strong-nonnormal system. It consumes the same projected target preparation and supplied trial stage values used by the explicit-W/LU comparator.
+
+          ## Implemented boundary
+
+          - Explicit `Audit2MatrixFreeLinearConfig` is mandatory.
+          - Any `StepContext` exposing an explicit shifted matrix is rejected.
+          - One frozen matrix-free shifted operator and one `GcrodrState` are reused across all eight sequential row solves.
+          - Existing explicit-W/LU code and production/default dispatch are unchanged.
+          - Completed rows, solve summaries, attempts/completions, and work survive bounded or numerical failure.
+
+          ## Fixed rules and validity
+
+          The case grid, extra case, `8192*eps*condition_f` agreement bound, `1e-9` normalized residual ceiling, and GCRO-DR controls were fixed before reading outcomes. `RESULT_VALIDITY` is limited to the declared 13 small linearized diagnostics. `PROVENANCE_VALIDITY` begins at `c5fbd6d5703fc396bdf30eb3acfacb6c6bd2b921`. `PACKAGING_VALIDITY` depends on the exact pushed head and live CI.
+
+          ## Claim ceiling
+
+          `EXPLORATORY_NONAUTHORITATIVE_MATRIX_FREE_COMMON_W_REUSE_DIAGNOSTIC_ONLY`.
+
+          Not admitted: nonlinear/output accuracy, accepted-step behavior, production activation, scalable-client readiness, wall time, ranking, speedup, BDF/CVODE, holdout/freeze, PM-7/K0 completion, publication admission, merge, tag, or release.
+          MD
+          cat > docs/superpowers/plans/2026-08-30-audit2-matrix-free-common-w-reuse.md <<'MD'
+          # Audit-2 Matrix-Free Common-W Reuse Implementation Plan
+
+          **Goal:** Add a strictly opt-in matrix-free common-W research backend that reuses one GCRO-DR state across eight row solves and preserves partial failure evidence.
+
+          **Architecture:** Keep explicit-W/LU as the unchanged small-system comparator. Add a child module under non-default `audit2-research`; require strict matrix-free context and explicit controls; share one shifted operator and recycle state; perform no production or acceptance action.
+
+          **Verification:** Compile-failing contracts were written first for missing configuration/API, then implemented. The final suite covers strict-context rejection, 13-case condition-aware agreement/reuse, and deterministic bounded-stop preservation. Formatting, affected clippy, no-default build, existing readiness, and exact-head CI are mandatory.
+
+          **Next node:** `TRANSACTIONAL_WHOLE_STEP_INTEGRATION` only after exact-head readback and a fresh bounded review or explicit waiver.
+          MD
+          cat > .github/workflows/audit2-matrix-free-common-w.yml <<'YML'
+          name: Audit2 matrix-free common-W reuse
+          on:
+            pull_request:
+              paths:
+                - '.github/workflows/audit2-matrix-free-common-w.yml'
+                - 'crates/rodas5p-integrators/src/audit2_research.rs'
+                - 'crates/rodas5p-integrators/src/audit2_research/**'
+                - 'crates/rodas5p-integrators/tests/audit2_matrix_free_common_w_contracts.rs'
+                - 'research/audit2_two_loop_20260829/**'
+            workflow_dispatch:
+          permissions:
+            contents: read
+          jobs:
+            matrix-free-common-w:
+              runs-on: ubuntu-24.04
+              timeout-minutes: 30
+              steps:
+                - uses: actions/checkout@v4
+                - run: |
+                    rustup toolchain install 1.94.1 --profile minimal --component rustfmt,clippy
+                    rustup override set 1.94.1
+                - uses: actions/setup-python@v5
+                  with: {python-version: '3.13'}
+                - run: python -m pip install --disable-pip-version-check numpy==2.3.5 mpmath==1.3.0
+                - run: cargo test --locked -p rodas5p-integrators --features audit2-research --test audit2_matrix_free_common_w_contracts -- --nocapture
+                - run: bash tools/check-audit2-readiness.sh
+                - run: cargo check --locked -p rodas5p-integrators --no-default-features
+                - run: cargo clippy --locked -p rodas5p-integrators --features audit2-research --test audit2_matrix_free_common_w_contracts -- -D warnings
+                - run: cargo fmt --all -- --check
+          YML
+          python - <<'PY'
+          from pathlib import Path
+          import json
+          base=Path('research/audit2_two_loop_20260829')
+          p=base/'handoff.json'; obj=json.loads(p.read_text())
+          obj['matrix_free_common_w_reuse_20260830']={
+            'status':'IMPLEMENTED_PENDING_EXACT_REMOTE_READBACK',
+            'base_head':'c5fbd6d5703fc396bdf30eb3acfacb6c6bd2b921',
+            'entry':'run_audit2_matrix_free_common_w_reuse',
+            'feature_gate':'audit2-research',
+            'strict_boundaries':['explicit configuration required','strict matrix-free context required','one shifted operator and one GCRO-DR state across eight solves','explicit-W/LU and production/default unchanged'],
+            'result_file':'matrix_free_common_w_results.json',
+            'claim_ceiling':'EXPLORATORY_NONAUTHORITATIVE_MATRIX_FREE_COMMON_W_REUSE_DIAGNOSTIC_ONLY'
+          }
+          obj['next_execution_node']={
+            'name':'TRANSACTIONAL_WHOLE_STEP_INTEGRATION',
+            'start_only_after':['exact-head CI readback','fresh bounded source review or explicit waiver'],
+            'goal':'execute the matrix-free common-W correction as a discarded shadow transaction on real attempted RODAS5P steps',
+            'mandatory':['snapshot all mutable controller/recycle/output state','commit no shadow state','record corrected and uncorrected stage/output/error vectors and all work','exercise accepted rejected retry step-size-change and failure paths','require independent budget/reference authority before categorical accuracy'],
+            'forbidden':['activation','timing/ranking/speedup','threshold fitting','holdout opening','BDF switching','merge/tag/release']
+          }
+          p.write_text(json.dumps(obj,indent=2,sort_keys=True)+'\n')
+          md=base/'CODEX_HANDOFF.md'; text=md.read_text()
+          section='''\n\n## 2026-08-30 — Matrix-Free Common-W GCRO-DR Reuse\n\nThe non-default entry `run_audit2_matrix_free_common_w_reuse` requires strict matrix-free context and explicit controls, and reuses one frozen shifted operator plus one `GcrodrState` across eight row solves. Read the result, claim ledger, verification, and machine handoff. The only authorized next node is `TRANSACTIONAL_WHOLE_STEP_INTEGRATION`, which must discard all shadow mutations and preserve production/default behavior.\n'''
+          if '## 2026-08-30 — Matrix-Free Common-W GCRO-DR Reuse' not in text: md.write_text(text.rstrip()+section+'\n')
+          PY
+      - name: Run complete scoped verification
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo fmt --all -- --check 2>&1 | tee delivery-evidence/fmt.log
+          cargo test --locked -p rodas5p-integrators --features audit2-research --test audit2_matrix_free_common_w_contracts -- --nocapture 2>&1 | tee delivery-evidence/targeted-final.log
+          bash tools/check-audit2-readiness.sh 2>&1 | tee delivery-evidence/readiness.log
+          cargo check --locked -p rodas5p-integrators --no-default-features 2>&1 | tee delivery-evidence/no-default.log
+          cargo clippy --locked -p rodas5p-integrators --features audit2-research --test audit2_matrix_free_common_w_contracts -- -D warnings 2>&1 | tee delivery-evidence/clippy.log
+      - name: Seal verification and create one clean descendant commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib,json,datetime
+          def sha(p): return hashlib.sha256(Path(p).read_bytes()).hexdigest()
+          result=json.loads(Path('research/audit2_two_loop_20260829/matrix_free_common_w_results.json').read_text())
+          record={'verified_at_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'base_head':'c5fbd6d5703fc396bdf30eb3acfacb6c6bd2b921','commands':[],'targeted_contracts':3,'case_count':13,'hard_gates':result['summary'],'full_workspace_local':'NOT_RUN','fresh_independent_review':'NOT_RUN','claim_ceiling':result['claim_ceiling']}
+          for name,cmd in [('fmt','cargo fmt --all -- --check'),('targeted-final','cargo test targeted'),('readiness','bash tools/check-audit2-readiness.sh'),('no-default','cargo check --no-default-features'),('clippy','cargo clippy affected target')]:
+            record['commands'].append({'command':cmd,'exit':0,'log_sha256':sha(f'delivery-evidence/{name}.log')})
+          p=Path('research/audit2_two_loop_20260829/evidence/matrix_free_common_w_verification.json'); p.write_text(json.dumps(record,indent=2,sort_keys=True)+'\n')
+          Path('research/audit2_two_loop_20260829/evidence/matrix_free_common_w_verification.md').write_text(f"# Matrix-Free Common-W Reuse Verification\n\nAll five scoped commands exited 0 on the exact candidate bytes. Three contracts execute thirteen declared cases. Local full-workspace tests and fresh independent review were not run. Claim ceiling: `{result['claim_ceiling']}`.\n")
+          PY
+          rm .github/workflows/publish-audit2-matrix-free-common-w-r1.yml
+          git config user.name 'cosmosapjw-quantum'
+          git config user.email '58155957+cosmosapjw-quantum@users.noreply.github.com'
+          git reset --soft "$BASE_HEAD"
+          git add -A
+          git commit -m 'research(audit2): add strict matrix-free common-W GCRO-DR reuse'
+          test "$(git rev-parse HEAD^)" = "$BASE_HEAD"
+          git rev-parse HEAD | tee delivery-evidence/final-head.txt
+          git rev-parse HEAD^{tree} | tee delivery-evidence/final-tree.txt
+          test -z "$(git status --porcelain)"
+      - name: Non-force publish exact candidate branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git push origin "HEAD:refs/heads/$TARGET_BRANCH"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: audit2-matrix-free-common-w-r1-${{ github.run_id }}
+          path: delivery-evidence/
+          retention-days: 14
+          if-no-files-found: warn
