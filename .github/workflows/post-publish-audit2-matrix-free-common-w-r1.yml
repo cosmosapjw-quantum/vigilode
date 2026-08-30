@@ -1,0 +1,143 @@
+name: Post-publish Audit2 matrix-free common-W R1
+
+on:
+  push:
+    branches: [delivery/audit2-matrix-free-common-w-reuse-20260830]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+  checks: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  publish-pr-and-readback:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TARGET_BRANCH: research/audit2-matrix-free-common-w-reuse-20260830-r1
+      BASE_BRANCH: research/audit2-original-target-bridge-20260830
+      BASE_HEAD: c5fbd6d5703fc396bdf30eb3acfacb6c6bd2b921
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - name: Verify published candidate and create or update stacked Draft PR
+        id: pr
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin "$TARGET_BRANCH" "$BASE_BRANCH"
+          head=$(git rev-parse "origin/$TARGET_BRANCH")
+          tree=$(git rev-parse "origin/$TARGET_BRANCH^{tree}")
+          parent=$(git rev-parse "$head^")
+          test "$parent" = "$BASE_HEAD"
+          results=$(git show "$head:research/audit2_two_loop_20260829/matrix_free_common_w_results.json")
+          count=$(jq -r '.summary.case_count' <<<"$results")
+          maxrel=$(jq -r '.summary.max_relative_correction_difference' <<<"$results")
+          maxres=$(jq -r '.summary.max_normalized_linear_residual' <<<"$results")
+          minreuse=$(jq -r '.summary.min_recycle_same_operator_uses' <<<"$results")
+          directf=$(jq -r '.summary.max_direct_factorizations' <<<"$results")
+          directs=$(jq -r '.summary.max_direct_solve_calls' <<<"$results")
+          pr=$(gh pr list --repo "$GITHUB_REPOSITORY" --head "$TARGET_BRANCH" --base "$BASE_BRANCH" --state open --json number --jq '.[0].number // empty')
+          if [ -z "$pr" ]; then
+            pr=$(gh pr create --repo "$GITHUB_REPOSITORY" --draft --head "$TARGET_BRANCH" --base "$BASE_BRANCH" --title 'research(audit2): strict matrix-free common-W GCRO-DR reuse' --body 'Stacked on Draft PR #31. Non-default Audit-2 matrix-free common-W reuse only. Exact head/tree and live CI are posted in comments. Keep OPEN / DRAFT / UNMERGED. No production/default activation, timing, ranking, speedup, BDF/CVODE, holdout/freeze, PM-7/K0, merge, tag, or release claim.' | sed -E 's#.*/pull/##')
+          fi
+          cat > /tmp/body.md <<EOF
+          ## Stack and scope
+
+          Stacked on Draft PR #31. Exact candidate: \`$head\`, tree \`$tree\`; direct child of \`$BASE_HEAD\`.
+
+          This PR adds one non-default Audit-2 entry requiring explicit GCRO-DR controls and a strict matrix-free \`StepContext\`. It rejects explicit shifted matrices, reuses one frozen shifted operator and one recycle state across eight row solves, and preserves completed rows/reports/work on bounded failure. Existing explicit-W/LU research comparison and production/default routing are unchanged.
+
+          ## Scoped observations
+
+          - cases: \`$count\`
+          - max relative correction difference versus explicit arm: \`$maxrel\`
+          - max normalized linear residual: \`$maxres\`
+          - minimum same-operator recycle uses across cases: \`$minreuse\`
+          - max direct factorizations / direct solves: \`$directf / $directs\`
+
+          These values are diagnostics under fixed pre-outcome rules, not accuracy or performance admission.
+
+          ## Claim ceiling
+
+          \`EXPLORATORY_NONAUTHORITATIVE_MATRIX_FREE_COMMON_W_REUSE_DIAGNOSTIC_ONLY\`.
+
+          Keep **OPEN / DRAFT / UNMERGED**. No nonlinear/output accuracy, accepted-step behavior, production readiness, timing, ranking, speedup, BDF/CVODE, holdout/freeze, PM-7/K0 completion, merge, tag, or release claim.
+          EOF
+          gh pr edit "$pr" --repo "$GITHUB_REPOSITORY" --title 'research(audit2): strict matrix-free common-W GCRO-DR reuse' --body-file /tmp/body.md
+          echo "number=$pr" >> "$GITHUB_OUTPUT"
+          echo "head=$head" >> "$GITHUB_OUTPUT"
+          echo "tree=$tree" >> "$GITHUB_OUTPUT"
+          echo "count=$count" >> "$GITHUB_OUTPUT"
+          echo "maxrel=$maxrel" >> "$GITHUB_OUTPUT"
+          echo "maxres=$maxres" >> "$GITHUB_OUTPUT"
+          echo "minreuse=$minreuse" >> "$GITHUB_OUTPUT"
+          echo "directf=$directf" >> "$GITHUB_OUTPUT"
+          echo "directs=$directs" >> "$GITHUB_OUTPUT"
+      - name: Wait for exact-head pull-request workflows
+        id: ci
+        shell: bash
+        run: |
+          set -euo pipefail
+          head='${{ steps.pr.outputs.head }}'
+          mkdir -p /tmp/readback
+          for attempt in $(seq 1 80); do
+            gh api --paginate "repos/$GITHUB_REPOSITORY/actions/runs?head_sha=$head&event=pull_request&per_page=100" > /tmp/readback/runs.json
+            count=$(jq '.workflow_runs | length' /tmp/readback/runs.json)
+            pending=$(jq '[.workflow_runs[] | select(.status != "completed")] | length' /tmp/readback/runs.json)
+            matrix=$(jq '[.workflow_runs[] | select(.name == "Audit2 matrix-free common-W reuse")] | length' /tmp/readback/runs.json)
+            if [ "$count" -gt 0 ] && [ "$matrix" -gt 0 ] && [ "$pending" -eq 0 ]; then break; fi
+            sleep 15
+          done
+          gh api --paginate "repos/$GITHUB_REPOSITORY/actions/runs?head_sha=$head&event=pull_request&per_page=100" > /tmp/readback/runs.json
+          jq '[.workflow_runs[] | {id,name,status,conclusion,html_url}] | sort_by(.name)' /tmp/readback/runs.json > /tmp/readback/runs-compact.json
+          pending=$(jq '[.[] | select(.status != "completed")] | length' /tmp/readback/runs-compact.json)
+          failed=$(jq '[.[] | select(.status == "completed" and (.conclusion != "success" and .conclusion != "skipped" and .conclusion != "neutral"))] | length' /tmp/readback/runs-compact.json)
+          matrix_success=$(jq '[.[] | select(.name == "Audit2 matrix-free common-W reuse" and .conclusion == "success")] | length' /tmp/readback/runs-compact.json)
+          if [ "$pending" -eq 0 ] && [ "$failed" -eq 0 ] && [ "$matrix_success" -gt 0 ]; then state=GREEN; else state=NOT_GREEN; fi
+          echo "state=$state" >> "$GITHUB_OUTPUT"
+          echo "pending=$pending" >> "$GITHUB_OUTPUT"
+          echo "failed=$failed" >> "$GITHUB_OUTPUT"
+      - name: Publish exact readback and append parent research PRs
+        shell: bash
+        run: |
+          set -euo pipefail
+          pr='${{ steps.pr.outputs.number }}'
+          table=$(jq -r '.[] | "- `\(.name)`: `\(.status) / \(.conclusion)` — \(.html_url)"' /tmp/readback/runs-compact.json)
+          cat > /tmp/comment.md <<EOF
+          <!-- audit2-matrix-free-common-w-r1-readback -->
+          ## Exact-head validation and CI readback
+
+          - head: \`${{ steps.pr.outputs.head }}\`
+          - tree: \`${{ steps.pr.outputs.tree }}\`
+          - direct parent: \`$BASE_HEAD\`
+          - cases: \`${{ steps.pr.outputs.count }}\`
+          - max relative correction difference: \`${{ steps.pr.outputs.maxrel }}\`
+          - max normalized residual: \`${{ steps.pr.outputs.maxres }}\`
+          - minimum same-operator recycle uses: \`${{ steps.pr.outputs.minreuse }}\`
+          - max direct factorization / direct solve: \`${{ steps.pr.outputs.directf }} / ${{ steps.pr.outputs.directs }}\`
+          - workflow aggregate: \`${{ steps.ci.outputs.state }}\`; pending \`${{ steps.ci.outputs.pending }}\`, failed \`${{ steps.ci.outputs.failed }}\`
+
+          $table
+
+          Local/full-workspace and fresh independent review are not inferred from CI. Claim ceiling remains \`EXPLORATORY_NONAUTHORITATIVE_MATRIX_FREE_COMMON_W_REUSE_DIAGNOSTIC_ONLY\`. Draft/unmerged state is retained.
+          EOF
+          gh pr comment "$pr" --repo "$GITHUB_REPOSITORY" --body-file /tmp/comment.md
+          cat > /tmp/parent.md <<EOF
+          ## Matrix-free common-W reuse child published
+
+          Stacked Draft PR #$pr is the exact child of \`$BASE_HEAD\`: \`${{ steps.pr.outputs.head }}\`, tree \`${{ steps.pr.outputs.tree }}\`. Thirteen fixed-rule cases completed with max relative explicit-arm difference \`${{ steps.pr.outputs.maxrel }}\`, max normalized residual \`${{ steps.pr.outputs.maxres }}\`, and zero direct factorization/solve maxima. Exact-head workflow aggregate: \`${{ steps.ci.outputs.state }}\` (pending \`${{ steps.ci.outputs.pending }}\`, failed \`${{ steps.ci.outputs.failed }}\`). This is matrix-free linearized diagnostic/reuse evidence only. No production/default activation, timing/ranking/speedup, BDF/CVODE, holdout/freeze, PM-7/K0, merge, tag, or release.
+          EOF
+          gh pr comment 31 --repo "$GITHUB_REPOSITORY" --body-file /tmp/parent.md
+          gh pr comment 29 --repo "$GITHUB_REPOSITORY" --body-file /tmp/parent.md
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: audit2-matrix-free-common-w-post-publish-${{ github.run_id }}
+          path: /tmp/readback/
+          retention-days: 14
+          if-no-files-found: warn
