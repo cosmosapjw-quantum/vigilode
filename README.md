@@ -68,8 +68,9 @@ cargo run --locked -p rodas5p-integrators --no-default-features --example solve_
 
 The example has a predeclared absolute error check against its analytic solution;
 it is a narrow usage regression, not a general accuracy, performance, or release
-certificate. The separate common-W correction still requires explicit W, remains
-behind `audit2-research`, and is not enabled by this example.
+certificate. The legacy common-W correction still requires explicit W. Separate
+matrix-free common-W and reusable-diagonal transactional entries remain behind
+`audit2-research`; neither is enabled by this example or the default dispatcher.
 
 For the scoped research-on / default-solver checks, run
 `bash tools/check-audit2-readiness.sh`. Output files go to a new temporary
