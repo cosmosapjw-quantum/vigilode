@@ -8,10 +8,11 @@ stacked base tree  1152e0c74235afd7ae30c3b6de6315634fa49a59
 base PR            #35 OPEN / DRAFT / UNMERGED
 archive SHA-256    c112309cab3e431ca563dd11dc1f67d95df0bfa85c8081251c33bea16ca44cfb
 archive status     recovered snapshot; incomplete transcript
-final head         PENDING_PARENT_FILL
-final tree         PENDING_PARENT_FILL
-draft stacked PR   PENDING_PARENT_FILL
-remote checks      PENDING_PARENT_FILL
+implementation head a2115e2dcaeb418185a3bccda62e60b6c4ff16ab
+implementation tree e560b501edff43043bfdd376a3490b924e504c65
+final branch/tree   RECORDED_IN_POST_COMMIT_PR_RECEIPT
+draft stacked PR    RECORDED_IN_POST_COMMIT_PR_RECEIPT
+remote checks       RECORDED_IN_POST_COMMIT_PR_RECEIPT
 ```
 
 The archive constrains roadmap continuity but is not executable evidence. PR

@@ -26,14 +26,19 @@ transactional fallback, and later real-client validation. It does not supply a
 missing exact contract or authorize a broader claim. Historical exploratory
 branches are non-authoritative design input only.
 
-Remote publication receipts are filled after immutable GitHub readback:
+The implementation-bearing anchor is immutable:
 
 ```text
-scientific branch head  PENDING_PARENT_FILL
-scientific branch tree  PENDING_PARENT_FILL
-draft stacked PR        PENDING_PARENT_FILL
-remote checks           PENDING_PARENT_FILL
+implementation head     a2115e2dcaeb418185a3bccda62e60b6c4ff16ab
+implementation tree     e560b501edff43043bfdd376a3490b924e504c65
+scientific branch head  RECORDED_IN_POST_COMMIT_PR_RECEIPT
+draft stacked PR        RECORDED_IN_POST_COMMIT_PR_RECEIPT
+remote checks           RECORDED_IN_POST_COMMIT_PR_RECEIPT
 ```
+
+The published branch has one later docs-only binding commit. Final branch/tree,
+Draft state, stack base, and check conclusions are necessarily recorded by
+immutable GitHub readback in the PR receipt rather than self-referentially here.
 
 ## Implemented research boundary
 

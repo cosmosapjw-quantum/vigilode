@@ -14,16 +14,18 @@ Repository: `cosmosapjw-quantum/vigilode`
 Required scientific branch after publication:
 
 ```text
-branch  research/audit2-reusable-preconditioner-transactional-step-20260830
-head    PENDING_PARENT_FILL
-tree    PENDING_PARENT_FILL
-base    17fcd447c1dadcea978f241ff3ba94635f9c2bd4
-tree    1152e0c74235afd7ae30c3b6de6315634fa49a59
+branch               research/audit2-reusable-preconditioner-transactional-step-20260830
+implementation head  a2115e2dcaeb418185a3bccda62e60b6c4ff16ab
+implementation tree  e560b501edff43043bfdd376a3490b924e504c65
+stack base head       17fcd447c1dadcea978f241ff3ba94635f9c2bd4
+stack base tree       1152e0c74235afd7ae30c3b6de6315634fa49a59
 ```
 
-Stop with `SOURCE_IDENTITY_UNRESOLVED` if the final placeholders have not been
-filled or the local checkout differs. Use an isolated clean worktree. Preserve
-all existing checkouts, untracked files, logs, and worktrees.
+The published branch contains a later docs-only handoff-binding commit, so local
+execution must check out the exact implementation head above and verify its
+tree. Stop with `SOURCE_IDENTITY_UNRESOLVED` if either differs. Use an isolated
+clean worktree. Preserve all existing checkouts, untracked files, logs, and
+worktrees.
 
 The implementation-bearing paths are:
 

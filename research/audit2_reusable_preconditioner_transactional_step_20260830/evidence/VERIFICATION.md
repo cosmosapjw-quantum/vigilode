@@ -1,20 +1,19 @@
 # Verification record
 
 This file separates implemented contracts, expected host replay, and immutable
-remote readback. Values marked `PENDING_PARENT_FILL` must be replaced only from
-actual command or GitHub receipts.
+remote readback. A final branch commit cannot contain its own SHA, so those
+values are recorded in the post-commit GitHub PR receipt.
 
 ## Source identity
 
 ```text
 exact stack base head  17fcd447c1dadcea978f241ff3ba94635f9c2bd4
 exact stack base tree  1152e0c74235afd7ae30c3b6de6315634fa49a59
-final local head       PENDING_PARENT_FILL
-final local tree       PENDING_PARENT_FILL
-remote branch head     PENDING_PARENT_FILL
-remote branch tree     PENDING_PARENT_FILL
-draft stacked PR       PENDING_PARENT_FILL
-remote checks          PENDING_PARENT_FILL
+implementation head    a2115e2dcaeb418185a3bccda62e60b6c4ff16ab
+implementation tree    e560b501edff43043bfdd376a3490b924e504c65
+final branch head/tree RECORDED_IN_POST_COMMIT_PR_RECEIPT
+draft stacked PR       RECORDED_IN_POST_COMMIT_PR_RECEIPT
+remote checks          RECORDED_IN_POST_COMMIT_PR_RECEIPT
 ```
 
 Recovered archive SHA-256:
@@ -123,14 +122,15 @@ OTHER_P1_NONE_ESTABLISHED; NO_SECOND_FRESH_REVIEW`.
 ## Publication/readback receipt
 
 ```text
-push mode             PENDING_PARENT_FILL
-draft PR URL          PENDING_PARENT_FILL
-PR base               PENDING_PARENT_FILL
-PR head               PENDING_PARENT_FILL
-merge state           PENDING_PARENT_FILL
-check names/states     PENDING_PARENT_FILL
-mock probe PR URL      PENDING_PARENT_FILL
-mock probe merge SHA   PENDING_PARENT_FILL
+push mode             NON_FORCE; CONFIRMED_IN_POST_COMMIT_PR_RECEIPT
+draft PR URL          RECORDED_IN_POST_COMMIT_PR_RECEIPT
+PR base               research/audit2-matrix-free-common-w-20260830
+PR head               research/audit2-reusable-preconditioner-transactional-step-20260830
+merge state           MUST_REMAIN_OPEN_DRAFT_UNMERGED
+check names/states     RECORDED_IN_POST_COMMIT_PR_RECEIPT
+mock probe PR URL      https://github.com/cosmosapjw-quantum/vigilode/pull/37
+mock probe checks      audit2-feature-and-usage=SUCCESS; fresh-clone-build=SUCCESS
+mock probe merge SHA   5467b8d6954d7acb87385e591470670588c2f970
 mock scientific value NONE_EXPECTED
 ```
 
