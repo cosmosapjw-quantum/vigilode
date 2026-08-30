@@ -78,6 +78,16 @@ directory unless `AUDIT2_OUTPUT_DIR` is supplied; existing output is not replace
 The historical A1 receipt workflow runs its frozen experiment checks only for
 explicit A1 work or changed A1 evidence; an unrelated PR is not a new A1 receipt.
 
+The non-default `audit2-bateman-authority` feature adds a single frozen
+four-state Bateman nuclear-decay client above the reusable transaction research
+substrate. Hosted checks validate its exact manifest, reference enclosure,
+canonical W identities, one-shot admission, and local-receipt validator without
+executing the six candidate scenarios. The actual fixed suite remains a
+host-only local handoff in
+`research/audit2_real_client_authority_construction_20260830/CODEX_START_HERE.md`.
+It is not a production client, default dispatch path, general real-client
+accuracy certificate, performance result, or holdout authorization.
+
 ## Build reproducibility
 
 A normal fresh clone uses Cargo's default crates.io configuration:
