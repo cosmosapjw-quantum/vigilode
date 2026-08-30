@@ -1,0 +1,102 @@
+{
+  "schema": "vigilode-audit2-reusable-transaction-host-verification/v1",
+  "date": "2026-08-30",
+  "execution_policy": "HOST_CODEX_ONLY",
+  "local_llm_used": false,
+  "authority": {
+    "repository": "cosmosapjw-quantum/vigilode",
+    "stack_base_head": "17fcd447c1dadcea978f241ff3ba94635f9c2bd4",
+    "stack_base_tree": "1152e0c74235afd7ae30c3b6de6315634fa49a59",
+    "stack_base_pr": 35,
+    "archive_sha256": "c112309cab3e431ca563dd11dc1f67d95df0bfa85c8081251c33bea16ca44cfb",
+    "archive_completeness": "INCOMPLETE_TRANSCRIPT_RECOVERY_SNAPSHOT"
+  },
+  "environment": {
+    "rustc": "1.94.1 (e408947bf 2026-03-25)",
+    "rust_distribution_sha256": "294b3d81fa72e62581276290c60c81eb8b58498d333d422ca1dfc432877d0c40",
+    "python": "3.12.13",
+    "numpy": "2.3.5",
+    "mpmath": "1.3.0"
+  },
+  "focused_tests": {
+    "reusable_preconditioner_transaction": "13/13 PASS",
+    "matrix_free_common_w_pr35_control": "6/6 PASS",
+    "original_target_bridge_pr31_control": "15/15 PASS",
+    "pr35_session_control": {
+      "linear_matvecs": 136,
+      "diagnostic_matvecs": 8,
+      "jvp_calls": 144,
+      "jvp_vectors": 144
+    },
+    "prepared_target_delta_from_pr35_history": {
+      "rhs_batch_calls": "2 -> 1",
+      "rhs_evaluations": "16 -> 8",
+      "preparation_jvp_calls": "24 -> 16",
+      "session_control_unchanged": true
+    }
+  },
+  "readiness": {
+    "final_exit": 0,
+    "rust_tests": 77,
+    "python_tests": 20,
+    "default_example_complete_and_typed_partial_failure": "PASS",
+    "clippy_D_warnings": "PASS",
+    "fmt_check": "PASS",
+    "diff_check": "PASS"
+  },
+  "mutation": {
+    "name": "REMOVE_FROZEN_W_SEMANTIC_DIGEST_FROM_REUSE_PREDICATE",
+    "criterion_frozen_before_result": true,
+    "mutant_exit": 101,
+    "killing_test": "changed_semantic_w_digest_invalidates_even_the_same_runtime_operator",
+    "observed_failure": "rebuilt handle remained Arc pointer-identical",
+    "source_restored": true,
+    "restored_exit": 0
+  },
+  "failure_history": [
+    {
+      "phase": "host_dependency",
+      "observation": "initial readiness stopped after 12 Python tests because mpmath was missing",
+      "disposition": "installed pinned mpmath 1.3.0 into scratch-only target; no scientific failure inferred"
+    },
+    {
+      "phase": "clippy",
+      "observation": "11 useless temporary Vec allocations in test inputs were rejected under -D warnings",
+      "disposition": "replaced with byte-equivalent slice literals and restarted full readiness"
+    },
+    {
+      "phase": "single_fresh_review_bounded_repair",
+      "observation": "an all-ones Jacobi map passed through the default false is_identity self-report, and a mutable provider could drift under a committed binding",
+      "disposition": "the two frozen regression contracts failed with 11 pass/2 fail and exit 101; one bounded repair added returned-bit identity classification plus a cache-owned guarded exact diagonal; the restored suite passed 13/13"
+    }
+  ],
+  "fresh_review": {
+    "count_allowed": 1,
+    "status": "ONE_REVIEW_BLOCKED_ON_ONE_P1; ONE_BOUNDED_REPAIR_APPLIED; P0_NONE; OTHER_P1_NONE_ESTABLISHED",
+    "repair": "REJECT_ALL_ONES_EXACT_JACOBI_AND_PREVENT_MUTABLE_PROVIDER_DRIFT_FROM_CHANGING_THE_VERIFIED_MAP",
+    "second_review_forbidden": true
+  },
+  "remote_publication": "RECORDED_BY_POST_COMMIT_GITHUB_READBACK_AND_PR_COMMENT",
+  "mock_connectivity": {
+    "pr": "https://github.com/cosmosapjw-quantum/vigilode/pull/37",
+    "checks": {
+      "audit2-feature-and-usage": "SUCCESS",
+      "fresh-clone-build": "SUCCESS"
+    },
+    "merge_sha": "5467b8d6954d7acb87385e591470670588c2f970",
+    "scientific_value": "NONE"
+  },
+  "claim_ceiling": "EXPLORATORY_NONAUTHORITATIVE_REUSABLE_PRECONDITIONER_TRANSACTIONAL_STEP_SUBSTRATE",
+  "forbidden_claims": [
+    "speedup",
+    "scalability",
+    "Krylov basis reuse",
+    "general or production preconditioner",
+    "production dispatcher",
+    "dense output correctness",
+    "general event handling",
+    "end-to-end integration transactionality",
+    "real-client accuracy before frozen local validation",
+    "scientific merge, tag or release"
+  ]
+}

@@ -6,10 +6,12 @@
 //! does not claim timing, speedup, nonlinear convergence, or output accuracy.
 
 use std::fmt;
+use std::sync::Arc;
+use std::sync::atomic::{AtomicU64, Ordering};
 
 use rodas5p_core::{
     ApplyCategory, CoreError, CoreResult, DenseMatrix, IdentityPreconditioner, LinearOperator,
-    LinearSolveReport, ShiftedOperator, WorkCounters, apply_counted, safe_l2,
+    LinearSolveReport, Preconditioner, ShiftedOperator, WorkCounters, apply_counted, safe_l2,
 };
 use rodas5p_krylov::{GmresConfig, GmresWorkspace, solve_gmres_with_workspace};
 use serde::{Deserialize, Serialize};
@@ -37,6 +39,10 @@ impl Default for Audit2MatrixFreeCommonWConfig {
 }
 
 impl Audit2MatrixFreeCommonWConfig {
+    pub(crate) fn validate(self) -> CoreResult<()> {
+        self.gmres().map(drop)
+    }
+
     fn gmres(self) -> CoreResult<GmresConfig> {
         let config = GmresConfig {
             restart: self.restart,
@@ -66,6 +72,9 @@ pub struct Audit2MatrixFreeSessionSnapshot {
     pub setup_attempts: u64,
     pub setup_completed: u64,
     pub identity_preconditioner_setups: u64,
+    pub reusable_preconditioner_setups: u64,
+    pub preconditioner_apply_attempts: u64,
+    pub preconditioner_apply_completed: u64,
     pub workspace_initializations: u64,
     pub batch_attempts: u64,
     pub batch_completed: u64,
@@ -78,6 +87,43 @@ pub struct Audit2MatrixFreeSessionSnapshot {
     pub workspace_capacity_current: usize,
     pub workspace_capacity_growth_after_first: usize,
     pub counters: WorkCounters,
+}
+
+#[derive(Default)]
+struct Audit2PreconditionerApplicationLedger {
+    attempts: AtomicU64,
+    completed: AtomicU64,
+}
+
+struct Audit2TrackedPreconditioner {
+    inner: Arc<dyn Preconditioner>,
+    ledger: Arc<Audit2PreconditionerApplicationLedger>,
+}
+
+impl Preconditioner for Audit2TrackedPreconditioner {
+    fn dimension(&self) -> usize {
+        self.inner.dimension()
+    }
+
+    fn apply(&self, input: &[f64], output: &mut [f64]) -> CoreResult<()> {
+        self.ledger.attempts.fetch_add(1, Ordering::Relaxed);
+        self.inner.apply(input, output)?;
+        if output.iter().any(|value| !value.is_finite()) {
+            return Err(CoreError::NonFinite(
+                "Audit-2 reusable preconditioner produced NaN/Inf".into(),
+            ));
+        }
+        self.ledger.completed.fetch_add(1, Ordering::Relaxed);
+        Ok(())
+    }
+
+    fn is_identity(&self) -> bool {
+        self.inner.is_identity()
+    }
+
+    fn exact_identity(&self) -> Option<rodas5p_core::ExactPreconditionerIdentity> {
+        self.inner.exact_identity()
+    }
 }
 
 #[derive(Debug)]
@@ -137,7 +183,8 @@ pub enum Audit2MatrixFreeBatchOutcome {
 /// existing explicit-LU common-W reference path.
 pub struct Audit2MatrixFreeCommonWSession<'a> {
     operator: &'a ShiftedOperator,
-    preconditioner: IdentityPreconditioner,
+    preconditioner: Audit2TrackedPreconditioner,
+    preconditioner_ledger: Arc<Audit2PreconditionerApplicationLedger>,
     config: GmresConfig,
     workspace: GmresWorkspace,
     snapshot: Audit2MatrixFreeSessionSnapshot,
@@ -157,6 +204,17 @@ impl<'a> Audit2MatrixFreeCommonWSession<'a> {
     pub fn new(
         context: &'a StepContext<'_>,
         config: Audit2MatrixFreeCommonWConfig,
+    ) -> Result<Self, Box<Audit2MatrixFreeSessionSetupFailure>> {
+        let preconditioner = Arc::new(IdentityPreconditioner::new(context.problem.dimension))
+            as Arc<dyn Preconditioner>;
+        Self::new_with_preconditioner(context, config, preconditioner, false)
+    }
+
+    pub(crate) fn new_with_preconditioner(
+        context: &'a StepContext<'_>,
+        config: Audit2MatrixFreeCommonWConfig,
+        preconditioner: Arc<dyn Preconditioner>,
+        reusable: bool,
     ) -> Result<Self, Box<Audit2MatrixFreeSessionSetupFailure>> {
         let operator = &context.shifted;
         let mut snapshot = Audit2MatrixFreeSessionSnapshot {
@@ -191,14 +249,31 @@ impl<'a> Audit2MatrixFreeCommonWSession<'a> {
                 }));
             }
         };
-        let preconditioner = IdentityPreconditioner::new(snapshot.dimension);
-        snapshot.identity_preconditioner_setups = 1;
+        if preconditioner.dimension() != snapshot.dimension {
+            return Err(Box::new(Audit2MatrixFreeSessionSetupFailure {
+                error: CoreError::Dimension(
+                    "Audit-2 matrix-free preconditioner dimension mismatch".into(),
+                ),
+                session: snapshot,
+            }));
+        }
+        if reusable {
+            snapshot.reusable_preconditioner_setups = 1;
+        } else {
+            snapshot.identity_preconditioner_setups = 1;
+        }
+        let preconditioner_ledger = Arc::new(Audit2PreconditionerApplicationLedger::default());
+        let preconditioner = Audit2TrackedPreconditioner {
+            inner: preconditioner,
+            ledger: Arc::clone(&preconditioner_ledger),
+        };
         let workspace = GmresWorkspace::default();
         snapshot.workspace_initializations = 1;
         snapshot.setup_completed = 1;
         Ok(Self {
             operator,
             preconditioner,
+            preconditioner_ledger,
             config,
             workspace,
             snapshot,
@@ -206,7 +281,12 @@ impl<'a> Audit2MatrixFreeCommonWSession<'a> {
     }
 
     pub fn snapshot(&self) -> Audit2MatrixFreeSessionSnapshot {
-        self.snapshot.clone()
+        let mut snapshot = self.snapshot.clone();
+        snapshot.preconditioner_apply_attempts =
+            self.preconditioner_ledger.attempts.load(Ordering::Relaxed);
+        snapshot.preconditioner_apply_completed =
+            self.preconditioner_ledger.completed.load(Ordering::Relaxed);
+        snapshot
     }
 
     fn refresh_workspace_capacity(&mut self) {
@@ -563,6 +643,29 @@ pub fn run_audit2_matrix_free_common_w_correction(
     trial_stages: &[Vec<f64>],
     config: Audit2MatrixFreeCommonWConfig,
 ) -> Audit2MatrixFreeCorrectionOutcome {
+    run_audit2_matrix_free_common_w_correction_impl(context, trial_stages, config, None)
+}
+
+pub(crate) fn run_audit2_matrix_free_common_w_correction_with_preconditioner(
+    context: &StepContext<'_>,
+    trial_stages: &[Vec<f64>],
+    config: Audit2MatrixFreeCommonWConfig,
+    preconditioner: Arc<dyn Preconditioner>,
+) -> Audit2MatrixFreeCorrectionOutcome {
+    run_audit2_matrix_free_common_w_correction_impl(
+        context,
+        trial_stages,
+        config,
+        Some(preconditioner),
+    )
+}
+
+fn run_audit2_matrix_free_common_w_correction_impl(
+    context: &StepContext<'_>,
+    trial_stages: &[Vec<f64>],
+    config: Audit2MatrixFreeCommonWConfig,
+    preconditioner: Option<Arc<dyn Preconditioner>>,
+) -> Audit2MatrixFreeCorrectionOutcome {
     let mut work = Audit2MatrixFreeCorrectionWork::default();
     let n = context.problem.dimension;
     let s = context.coeffs.stages();
@@ -629,7 +732,7 @@ pub fn run_audit2_matrix_free_common_w_correction(
         }
     };
     let block = StructuredBlockSystem::new(&projected);
-    let residual = match block.target_residual(trial_stages, &mut work.preparation_counters) {
+    let applied = match block.apply(trial_stages, &mut work.preparation_counters) {
         Ok(value) => value,
         Err(error) => {
             return correction_failure(
@@ -651,14 +754,27 @@ pub fn run_audit2_matrix_free_common_w_correction(
                     Audit2MatrixFreeCorrectionFailurePhase::SnapshotPreparation,
                     error,
                     Some(projection),
-                    Some(residual),
+                    None,
                     Vec::new(),
                     Vec::new(),
                     work,
                 );
             }
         };
-    let mut session = match Audit2MatrixFreeCommonWSession::new(&projected, config) {
+    let residual = applied
+        .iter()
+        .zip(&snapshot.rhs)
+        .map(|(lhs, rhs)| lhs.iter().zip(rhs).map(|(a, b)| a - b).collect())
+        .collect();
+    let mut session = match match preconditioner {
+        Some(preconditioner) => Audit2MatrixFreeCommonWSession::new_with_preconditioner(
+            &projected,
+            config,
+            preconditioner,
+            true,
+        ),
+        None => Audit2MatrixFreeCommonWSession::new(&projected, config),
+    } {
         Ok(value) => value,
         Err(failure) => {
             let Audit2MatrixFreeSessionSetupFailure { error, session } = *failure;

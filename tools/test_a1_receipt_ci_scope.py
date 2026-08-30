@@ -123,6 +123,7 @@ class ResearchCoverageTests(unittest.TestCase):
         text = runner.read_text()
         self.assertIn("--features audit2-research --test audit2_structured_correction_contracts", text)
         self.assertIn("--test audit2_matrix_free_common_w_contracts", text)
+        self.assertIn("--test audit2_reusable_preconditioner_transaction_contracts", text)
         self.assertIn("--no-default-features --example solve_stiff", text)
         self.assertIn("output_accuracy_assessment_contracts", text)
 

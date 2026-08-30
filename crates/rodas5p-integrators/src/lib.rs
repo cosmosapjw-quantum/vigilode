@@ -4,6 +4,8 @@
 mod audit2_matrix_free_research;
 #[cfg(feature = "audit2-research")]
 pub mod audit2_research;
+#[cfg(feature = "audit2-research")]
+mod audit2_reusable_transaction_research;
 
 mod a1_two_arm_receipt;
 mod adaptive;
@@ -57,6 +59,17 @@ pub use audit2_matrix_free_research::{
     Audit2MatrixFreeCorrectionWork, Audit2MatrixFreeFailurePhase,
     Audit2MatrixFreeSessionSetupFailure, Audit2MatrixFreeSessionSnapshot,
     run_audit2_matrix_free_common_w_correction,
+};
+#[cfg(feature = "audit2-research")]
+pub use audit2_reusable_transaction_research::{
+    Audit2ExternalOutputReference, Audit2FrozenWSemanticIdentity, Audit2IndependentBudgetReceipt,
+    Audit2IndependentStepBudget, Audit2ReusablePreconditionerBinding,
+    Audit2ReusablePreconditionerCache, Audit2ReusablePreconditionerCacheSnapshot,
+    Audit2ReusablePreconditionerIdentity, Audit2TransactionalAttemptConfig,
+    Audit2TransactionalAttemptFailure, Audit2TransactionalAttemptOutcome,
+    Audit2TransactionalAttemptSuccess, Audit2TransactionalCandidateReceipt,
+    Audit2TransactionalFailurePhase, Audit2TransactionalSelection,
+    run_audit2_reusable_preconditioner_transactional_attempt,
 };
 
 pub use adaptive::{
