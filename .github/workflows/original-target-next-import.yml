@@ -1,0 +1,50 @@
+name: original-target-next-import
+on:
+  push:
+    branches: [connectivity/original-target-next-20260830-head]
+permissions:
+  contents: read
+jobs:
+  export-and-replay:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: c5fbd6d5703fc396bdf30eb3acfacb6c6bd2b921
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.94.1
+      - name: Export exact source and locked Cargo vendor
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p delivery
+          test "$(git rev-parse HEAD)" = c5fbd6d5703fc396bdf30eb3acfacb6c6bd2b921
+          test "$(git rev-parse HEAD^{tree})" = a0fec46f857f00054d674fb417812065aeca8a31
+          git branch export-c5fbd6d HEAD
+          git bundle create delivery/source.bundle export-c5fbd6d
+          git show -s --format='%H%n%T%n%P' HEAD > delivery/source-identity.txt
+          cargo vendor --locked vendor > delivery/vendor-config.toml
+          tar -czf delivery/vendor.tar.gz vendor
+          sha256sum delivery/source.bundle delivery/vendor.tar.gz > delivery/download-sha256.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vigilode-original-target-c5fbd6d-source
+          path: delivery/
+          retention-days: 7
+          if-no-files-found: error
+      - name: Replay the exact original-target bridge contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo test --locked -p rodas5p-integrators --features audit2-research --test audit2_structured_correction_contracts -- --nocapture 2>&1 | tee delivery/bridge-contracts.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: vigilode-original-target-c5fbd6d-contract-log
+          path: delivery/bridge-contracts.log
+          retention-days: 7
+          if-no-files-found: warn
