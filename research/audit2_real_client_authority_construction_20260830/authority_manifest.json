@@ -1,0 +1,152 @@
+{
+  "schema": "vigilode-audit2-bateman-real-client-authority/v1",
+  "client_id": "bateman-two-timescale-parent-stable-daughter-v1",
+  "model_classification": "REAL_NUCLEAR_DECAY_PHYSICS_BATEMAN_TWO_PAIR",
+  "equation_authority_doi": "10.1063/1.2715785;10.1119/1.5064446",
+  "stiffness_authority": "Hykes-and-Ferrer-2013-Bateman-stiff-implicit-ODE",
+  "state_order": [
+    "fast-parent",
+    "fast-stable-daughter",
+    "slow-parent",
+    "slow-stable-daughter"
+  ],
+  "rate_bits": [
+    4652007308841189376,
+    4607182418800017408
+  ],
+  "initial_state_bits": [
+    4602678819172646912,
+    0,
+    4602678819172646912,
+    0
+  ],
+  "coefficient_gamma_bits": 4596803875735556352,
+  "frozen_w_serialization": "W=I-(h*gamma)*J; h_gamma rounded binary64 before row construction; domain=VIGILODE\\0AUDIT2\\0FROZEN_W\\0; u32/f64 big-endian; length-framed UTF-8",
+  "reference_method": "Bateman analytic solution enclosed by exact-rational Taylor-Lagrange S41/S40 endpoint bounds",
+  "reference_verifier": "stdlib Python Fraction.from_float; exact squared-L2 comparison; Wolfram cross-check only",
+  "trial_stage_policy": "eight all-zero stage increments; work starts before target preparation",
+  "candidate_execution_during_construction": "FORBIDDEN",
+  "holdout_access": "NOT_OPENED_OR_EXECUTED",
+  "operator_cases": [
+    {
+      "case_id": "nominal-h1e-3",
+      "t": 0.0,
+      "h": 0.001,
+      "attempt_config": {
+        "common_w": {
+          "restart": 24,
+          "max_arnoldi": 192,
+          "rtol": 1e-11,
+          "atol": 1e-13
+        },
+        "outer_atol": 0.0001,
+        "outer_rtol": 1e-6
+      },
+      "reference": {
+        "source": "bateman-taylor-lagrange-fraction-v1",
+        "state": [
+          0.18393972058572117,
+          0.31606027941427883,
+          0.4995002499166875,
+          0.0004997500833125041
+        ],
+        "uncertainty_l2": 1e-15,
+        "uncertainty_treatment": "DECLARED_UPPER_BOUND"
+      },
+      "budget": {
+        "identifier": "frozen-bateman-independent-budget-nominal-h1e-3-v1",
+        "output_atol_l2": 0.0001,
+        "output_rtol": 1e-6,
+        "max_embedded_l2": 0.0002,
+        "max_original_target_residual_l2": 1e-10,
+        "max_original_target_contraction": 1e-8
+      },
+      "frozen_w_semantic": {
+        "schema": "vigilode-audit2-bateman-frozen-w/v1",
+        "sha256": "8de6e2cb36fa3f899bae98ba36e9f28f5f293f3ca1259267f8d3ef6c12e22b58"
+      },
+      "preconditioner_identity": {
+        "provider": "analytic-bateman-jacobi-inverse-multiply",
+        "revision": 1,
+        "configuration_bits": [
+          4562254508917369340,
+          4596803875735556352,
+          4652007308841189376,
+          4607182418800017408,
+          4608136900730645024,
+          4607183373281948036
+        ],
+        "expected_inverse_diagonal_bits": [
+          4605607284965380088,
+          4607182418800017408,
+          4607180510240651573,
+          4607182418800017408
+        ]
+      }
+    },
+    {
+      "case_id": "changed-w-h5e-4",
+      "t": 0.0,
+      "h": 0.0005,
+      "attempt_config": {
+        "common_w": {
+          "restart": 24,
+          "max_arnoldi": 192,
+          "rtol": 1e-11,
+          "atol": 1e-13
+        },
+        "outer_atol": 0.0001,
+        "outer_rtol": 1e-6
+      },
+      "reference": {
+        "source": "bateman-taylor-lagrange-fraction-v1",
+        "state": [
+          0.3032653298563167,
+          0.1967346701436833,
+          0.49975006248958465,
+          0.0002499375104153647
+        ],
+        "uncertainty_l2": 1e-15,
+        "uncertainty_treatment": "DECLARED_UPPER_BOUND"
+      },
+      "budget": {
+        "identifier": "frozen-bateman-independent-budget-changed-w-h5e-4-v1",
+        "output_atol_l2": 0.0001,
+        "output_rtol": 1e-6,
+        "max_embedded_l2": 0.0002,
+        "max_original_target_residual_l2": 1e-10,
+        "max_original_target_contraction": 1e-8
+      },
+      "frozen_w_semantic": {
+        "schema": "vigilode-audit2-bateman-frozen-w/v1",
+        "sha256": "907c709cf96d60ff2372a1e3dc3e9ef7bc098e9499654292146cb23c98fe8386"
+      },
+      "preconditioner_identity": {
+        "provider": "analytic-bateman-jacobi-inverse-multiply",
+        "revision": 1,
+        "configuration_bits": [
+          4557750909289998844,
+          4596803875735556352,
+          4652007308841189376,
+          4607182418800017408,
+          4607659659765331216,
+          4607182896040982722
+        ],
+        "expected_inverse_diagonal_bits": [
+          4606319390885929964,
+          4607182418800017408,
+          4607181464419221350,
+          4607182418800017408
+        ]
+      }
+    }
+  ],
+  "execution_scenarios": [
+    "same-live-context-reuse",
+    "changed-w-invalidation",
+    "nominal-independent-budget",
+    "over-strict-budget-fallback",
+    "late-preconditioner-failure",
+    "terminal-rejection"
+  ]
+}

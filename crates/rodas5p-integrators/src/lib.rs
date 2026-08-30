@@ -1,5 +1,7 @@
 #![forbid(unsafe_code)]
 
+#[cfg(feature = "audit2-bateman-authority")]
+mod audit2_bateman_real_client_research;
 #[cfg(feature = "audit2-research")]
 mod audit2_matrix_free_research;
 #[cfg(feature = "audit2-research")]
@@ -50,6 +52,20 @@ mod unified_gates;
 mod unified_screen;
 mod v38d_performance_tournament;
 
+#[cfg(feature = "audit2-bateman-authority")]
+pub use audit2_bateman_real_client_research::{
+    AUDIT2_BATEMAN_AUTHORITY_MANIFEST_SHA256, AUDIT2_BATEMAN_AUTHORITY_PROOF_SHA256,
+    AUDIT2_BATEMAN_AUTHORITY_VERIFIER_SHA256, AUDIT2_BATEMAN_CHANGED_W_CASE_ID,
+    AUDIT2_BATEMAN_CLIENT_ID, AUDIT2_BATEMAN_FROZEN_W_SCHEMA, AUDIT2_BATEMAN_NOMINAL_CASE_ID,
+    AUDIT2_BATEMAN_SCENARIO_IDS, Audit2BatemanOperatorAuthority, Audit2BatemanPartialFailure,
+    Audit2BatemanRealClientAuthority, Audit2BatemanRealClientManifest,
+    Audit2BatemanRuntimeBindingReceipt, Audit2BatemanScenarioDisposition,
+    Audit2BatemanScenarioKind, Audit2BatemanScenarioPlan, Audit2BatemanScenarioReceipt,
+    Audit2BatemanSixCaseReport, Audit2BatemanStepReceipt,
+    admit_audit2_bateman_real_client_authority, audit2_bateman_real_client_manifest,
+    audit2_bateman_six_case_plan, audit2_bateman_verify_runtime_operator_bindings_candidate_free,
+    run_audit2_bateman_local_six_case_suite,
+};
 #[cfg(feature = "audit2-research")]
 pub use audit2_matrix_free_research::{
     Audit2MatrixFreeBatchFailure, Audit2MatrixFreeBatchOutcome, Audit2MatrixFreeBatchSuccess,
@@ -63,12 +79,15 @@ pub use audit2_matrix_free_research::{
 #[cfg(feature = "audit2-research")]
 pub use audit2_reusable_transaction_research::{
     Audit2ExternalOutputReference, Audit2FrozenWSemanticIdentity, Audit2IndependentBudgetReceipt,
-    Audit2IndependentStepBudget, Audit2ReusablePreconditionerBinding,
+    Audit2IndependentStepBudget, Audit2ReferenceAwareOutputAssessment,
+    Audit2ReferenceUncertaintyTreatment, Audit2ReusablePreconditionerBinding,
     Audit2ReusablePreconditionerCache, Audit2ReusablePreconditionerCacheSnapshot,
     Audit2ReusablePreconditionerIdentity, Audit2TransactionalAttemptConfig,
     Audit2TransactionalAttemptFailure, Audit2TransactionalAttemptOutcome,
     Audit2TransactionalAttemptSuccess, Audit2TransactionalCandidateReceipt,
     Audit2TransactionalFailurePhase, Audit2TransactionalSelection,
+    assess_audit2_reference_aware_output, audit2_conservative_l2_difference_upper,
+    audit2_conservative_output_budget_lower,
     run_audit2_reusable_preconditioner_transactional_attempt,
 };
 

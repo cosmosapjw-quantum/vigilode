@@ -11,9 +11,11 @@ use rodas5p_core::{
 use rodas5p_integrators::{
     Audit2ExternalOutputReference, Audit2FrozenWSemanticIdentity, Audit2IndependentStepBudget,
     Audit2MatrixFreeCommonWConfig, Audit2MatrixFreeCorrectionOutcome,
-    Audit2ReusablePreconditionerCache, Audit2ReusablePreconditionerIdentity,
-    Audit2TransactionalAttemptConfig, Audit2TransactionalAttemptOutcome,
-    Audit2TransactionalSelection, OdeProblem, build_step_context_matrix_free,
+    Audit2ReferenceUncertaintyTreatment, Audit2ReusablePreconditionerCache,
+    Audit2ReusablePreconditionerIdentity, Audit2TransactionalAttemptConfig,
+    Audit2TransactionalAttemptOutcome, Audit2TransactionalSelection, OdeProblem,
+    assess_audit2_reference_aware_output, audit2_conservative_l2_difference_upper,
+    audit2_conservative_output_budget_lower, build_step_context_matrix_free,
     manufactured_vector_problem, run_audit2_matrix_free_common_w_correction,
     run_audit2_reusable_preconditioner_transactional_attempt,
 };
@@ -449,6 +451,7 @@ fn transaction_setup_failure_preserves_partial_setup_work_before_candidate_solve
         source: "manufactured-exact-v1".into(),
         state: problem.exact(context.t + context.h).unwrap(),
         uncertainty_l2: 0.0,
+        uncertainty_treatment: Audit2ReferenceUncertaintyTreatment::DeclaredUpperBound,
     };
     let mut cache = Audit2ReusablePreconditionerCache::default();
     let mut work = WorkCounters::default();
@@ -518,6 +521,7 @@ fn invalid_common_w_config_fails_before_attempt_setup_or_work() -> CoreResult<()
         source: "manufactured-exact-v1".into(),
         state: problem.exact(context.t + context.h).unwrap(),
         uncertainty_l2: 0.0,
+        uncertainty_treatment: Audit2ReferenceUncertaintyTreatment::DeclaredUpperBound,
     };
     let setup_calls = AtomicUsize::new(0);
     let mut cache = Audit2ReusablePreconditionerCache::default();
@@ -558,6 +562,211 @@ fn invalid_common_w_config_fails_before_attempt_setup_or_work() -> CoreResult<()
 
 fn zero_trial(stages: usize, dimension: usize) -> Vec<Vec<f64>> {
     vec![vec![0.0; dimension]; stages]
+}
+
+#[test]
+fn asserted_reference_uncertainty_is_consumed_inside_the_output_budget() {
+    // Killing case for the former E_ref <= B + u gate: E_ref=0.9 would
+    // incorrectly pass against B=1 and u=0.2 even though the proved true-error
+    // upper bound is 1.1.  Estimate-only uncertainty cannot admit a candidate.
+    let rejected = assess_audit2_reference_aware_output(
+        0.9,
+        1.0,
+        0.2,
+        Audit2ReferenceUncertaintyTreatment::DeclaredUpperBound,
+    );
+    assert!(rejected.output_error_upper_l2 >= 1.1);
+    assert!(!rejected.accepted);
+
+    let admitted = assess_audit2_reference_aware_output(
+        0.7,
+        1.0,
+        0.2,
+        Audit2ReferenceUncertaintyTreatment::DeclaredUpperBound,
+    );
+    assert!((admitted.output_error_upper_l2 - 0.9).abs() <= f64::EPSILON);
+    assert!(admitted.accepted);
+
+    let unresolved = assess_audit2_reference_aware_output(
+        0.0,
+        1.0,
+        0.0,
+        Audit2ReferenceUncertaintyTreatment::EstimateOnly,
+    );
+    assert!(!unresolved.accepted);
+
+    let half_ulp = 2.0f64.powi(-54);
+    let rounding_boundary = assess_audit2_reference_aware_output(
+        1.0,
+        1.0,
+        half_ulp,
+        Audit2ReferenceUncertaintyTreatment::DeclaredUpperBound,
+    );
+    assert!(rounding_boundary.output_error_upper_l2 > 1.0);
+    assert!(!rounding_boundary.accepted);
+
+    let hidden_norm_increment = 2.0f64.powi(-27);
+    let distance_upper =
+        audit2_conservative_l2_difference_upper(&[1.0, hidden_norm_increment], &[0.0, 0.0]);
+    assert!(distance_upper > 1.0);
+    let budget_lower =
+        audit2_conservative_output_budget_lower(0.0, 1.0, &[1.0, hidden_norm_increment]);
+    assert!(budget_lower < 1.0);
+
+    let exact_boundary = assess_audit2_reference_aware_output(
+        1.0,
+        1.0,
+        0.0,
+        Audit2ReferenceUncertaintyTreatment::DeclaredUpperBound,
+    );
+    assert!(exact_boundary.accepted);
+    for invalid in [f64::NAN, f64::INFINITY, -1.0] {
+        assert!(
+            !assess_audit2_reference_aware_output(
+                0.0,
+                1.0,
+                invalid,
+                Audit2ReferenceUncertaintyTreatment::DeclaredUpperBound,
+            )
+            .accepted
+        );
+    }
+}
+
+#[test]
+fn transaction_cannot_commit_by_treating_reference_uncertainty_as_extra_tolerance() -> CoreResult<()>
+{
+    // This exercises the pre-commit transaction seam, not only the pure
+    // assessment helper. The former E_ref <= B + u formula would commit.
+    let (problem, y0) = manufactured_vector_problem(4, 80.0, 0.0, 0.2, 0.0)?;
+    let context =
+        build_step_context_matrix_free(&problem, 0.0, &y0, 1.0e-3, &mut WorkCounters::default())?;
+    let reference = Audit2ExternalOutputReference {
+        source: "manufactured-exact-with-declared-bound-v1".into(),
+        state: problem.exact(context.t + context.h).unwrap(),
+        uncertainty_l2: 2.0,
+        uncertainty_treatment: Audit2ReferenceUncertaintyTreatment::DeclaredUpperBound,
+    };
+    let budget = Audit2IndependentStepBudget {
+        identifier: "reference-uncertainty-inside-budget-killer-v1".into(),
+        output_atol_l2: 1.0,
+        output_rtol: 0.0,
+        max_embedded_l2: 10.0,
+        max_original_target_residual_l2: 10.0,
+        max_original_target_contraction: 10.0,
+    };
+    let config = Audit2TransactionalAttemptConfig {
+        common_w: Audit2MatrixFreeCommonWConfig::default(),
+        outer_atol: 1.0,
+        outer_rtol: 0.0,
+    };
+    let mut cache = Audit2ReusablePreconditionerCache::default();
+    let mut work = WorkCounters::default();
+    let outcome = run_audit2_reusable_preconditioner_transactional_attempt(
+        &context,
+        &zero_trial(context.coeffs.stages(), problem.dimension),
+        &config,
+        &budget,
+        &reference,
+        &mut cache,
+        frozen_w_identity('0'),
+        diagonal_identity("uncertainty-killer-diagonal", 1, &[0.5; 4]),
+        |_, _| {
+            Ok(Arc::new(DiagonalPreconditioner {
+                inverse: vec![0.5; 4],
+            }) as Arc<dyn Preconditioner>)
+        },
+        &mut work,
+    );
+    let completed = match outcome {
+        Audit2TransactionalAttemptOutcome::Completed(value) => *value,
+        Audit2TransactionalAttemptOutcome::Failed(failure) => {
+            panic!("protected fallback unexpectedly failed: {failure:?}")
+        }
+    };
+    assert_eq!(
+        completed.selection,
+        Audit2TransactionalSelection::ProtectedFallback
+    );
+    let candidate = completed.candidate.expect("candidate budget receipt");
+    assert_eq!(candidate.budget.output_budget_l2, 1.0);
+    assert!(candidate.budget.output_error_l2 < 1.0);
+    assert!(candidate.budget.output_error_upper_l2 >= 2.0);
+    assert!(candidate.budget.output_error_upper_l2 > candidate.budget.output_budget_l2);
+    assert_eq!(candidate.budget.reference_uncertainty_l2, 2.0);
+    assert_eq!(
+        candidate.budget.uncertainty_treatment,
+        Audit2ReferenceUncertaintyTreatment::DeclaredUpperBound
+    );
+    assert!(!candidate.budget.output_accepted);
+    assert_eq!(cache.snapshot().commits, 0);
+    assert_eq!(cache.snapshot().rollbacks, 1);
+    Ok(())
+}
+
+#[test]
+fn estimate_only_reference_forces_fallback_without_committing_candidate_cache() -> CoreResult<()> {
+    // Breaks if a numerically zero but non-authoritative uncertainty is
+    // silently upgraded into a declared upper bound by the transaction.
+    let (problem, y0) = manufactured_vector_problem(4, 80.0, 0.0, 0.2, 0.0)?;
+    let context =
+        build_step_context_matrix_free(&problem, 0.0, &y0, 1.0e-3, &mut WorkCounters::default())?;
+    let reference = Audit2ExternalOutputReference {
+        source: "manufactured-estimate-only-v1".into(),
+        state: problem.exact(context.t + context.h).unwrap(),
+        uncertainty_l2: 0.0,
+        uncertainty_treatment: Audit2ReferenceUncertaintyTreatment::EstimateOnly,
+    };
+    let budget = Audit2IndependentStepBudget {
+        identifier: "estimate-only-killer-v1".into(),
+        output_atol_l2: 1.0,
+        output_rtol: 0.0,
+        max_embedded_l2: 10.0,
+        max_original_target_residual_l2: 10.0,
+        max_original_target_contraction: 10.0,
+    };
+    let config = Audit2TransactionalAttemptConfig {
+        common_w: Audit2MatrixFreeCommonWConfig::default(),
+        outer_atol: 1.0,
+        outer_rtol: 0.0,
+    };
+    let mut cache = Audit2ReusablePreconditionerCache::default();
+    let mut work = WorkCounters::default();
+    let outcome = run_audit2_reusable_preconditioner_transactional_attempt(
+        &context,
+        &zero_trial(context.coeffs.stages(), problem.dimension),
+        &config,
+        &budget,
+        &reference,
+        &mut cache,
+        frozen_w_identity('9'),
+        diagonal_identity("estimate-only-diagonal", 1, &[0.5; 4]),
+        |_, _| {
+            Ok(Arc::new(DiagonalPreconditioner {
+                inverse: vec![0.5; 4],
+            }) as Arc<dyn Preconditioner>)
+        },
+        &mut work,
+    );
+    let completed = match outcome {
+        Audit2TransactionalAttemptOutcome::Completed(value) => *value,
+        Audit2TransactionalAttemptOutcome::Failed(failure) => {
+            panic!("estimate-only protected fallback unexpectedly failed: {failure:?}")
+        }
+    };
+    assert_eq!(
+        completed.selection,
+        Audit2TransactionalSelection::ProtectedFallback
+    );
+    let candidate = completed.candidate.expect("candidate budget receipt");
+    assert!(!candidate.budget.output_accepted);
+    assert_eq!(
+        candidate.budget.uncertainty_treatment,
+        Audit2ReferenceUncertaintyTreatment::EstimateOnly
+    );
+    assert_eq!(cache.snapshot().commits, 0);
+    assert_eq!(cache.snapshot().rollbacks, 1);
+    Ok(())
 }
 
 #[test]
@@ -638,6 +847,7 @@ fn admitted_candidate_commits_state_and_nonidentity_preconditioner_atomically() 
         source: "manufactured-exact-v1".into(),
         state: problem.exact(context.t + context.h).unwrap(),
         uncertainty_l2: 0.0,
+        uncertainty_treatment: Audit2ReferenceUncertaintyTreatment::DeclaredUpperBound,
     };
     let budget = Audit2IndependentStepBudget {
         identifier: "fixed-permissive-linear-probe-v1".into(),
@@ -758,6 +968,7 @@ fn late_preconditioner_apply_failure_rolls_back_lease_and_runs_isolated_fallback
         source: "manufactured-exact-v1".into(),
         state: problem.exact(context.t + context.h).unwrap(),
         uncertainty_l2: 0.0,
+        uncertainty_treatment: Audit2ReferenceUncertaintyTreatment::DeclaredUpperBound,
     };
     let budget = Audit2IndependentStepBudget {
         identifier: "fixed-permissive-failure-probe-v1".into(),
@@ -829,9 +1040,9 @@ fn late_preconditioner_apply_failure_rolls_back_lease_and_runs_isolated_fallback
 }
 
 #[test]
-fn nonfinite_derived_output_bound_cannot_admit_provisional_candidate() -> CoreResult<()> {
-    // Breaks if finite inputs whose arithmetic overflows to +infinity turn the
-    // independent output gate into an automatic PASS.
+fn nonfinite_derived_output_budget_fails_before_setup_or_candidate_work() -> CoreResult<()> {
+    // Breaks if finite inputs whose derived arithmetic overflows to +infinity
+    // are discovered only after reusable setup or candidate work.
     let (problem, y0) = manufactured_vector_problem(6, 80.0, 0.0, 0.2, 0.0)?;
     let context =
         build_step_context_matrix_free(&problem, 0.0, &y0, 1.0e-3, &mut WorkCounters::default())?;
@@ -839,6 +1050,7 @@ fn nonfinite_derived_output_bound_cannot_admit_provisional_candidate() -> CoreRe
         source: "manufactured-exact-v1".into(),
         state: problem.exact(context.t + context.h).unwrap(),
         uncertainty_l2: 0.0,
+        uncertainty_treatment: Audit2ReferenceUncertaintyTreatment::DeclaredUpperBound,
     };
     let budget = Audit2IndependentStepBudget {
         identifier: "fixed-overflow-killer-v1".into(),
@@ -871,23 +1083,20 @@ fn nonfinite_derived_output_bound_cannot_admit_provisional_candidate() -> CoreRe
         },
         &mut work,
     );
-    let completed = match outcome {
-        Audit2TransactionalAttemptOutcome::Completed(value) => *value,
-        Audit2TransactionalAttemptOutcome::Failed(failure) => {
-            panic!("protected fallback unexpectedly failed: {failure:?}")
+    let failed = match outcome {
+        Audit2TransactionalAttemptOutcome::Failed(value) => *value,
+        Audit2TransactionalAttemptOutcome::Completed(value) => {
+            panic!("nonfinite derived budget unexpectedly completed: {value:?}")
         }
     };
     assert_eq!(
-        completed.selection,
-        Audit2TransactionalSelection::ProtectedFallback
+        failed.phase,
+        rodas5p_integrators::Audit2TransactionalFailurePhase::InputValidation
     );
-    let candidate = completed.candidate.expect("candidate budget receipt");
-    assert!(!candidate.budget.output_bound_l2.is_finite());
-    assert!(!candidate.budget.output_accepted);
-    assert!(!candidate.budget.accepted);
-    assert_eq!(cache.snapshot().rollbacks, 1);
-    assert_eq!(work.accepted_steps, 1);
-    assert_eq!(work.rejected_steps, 0);
+    assert!(failed.message.contains("output budget is nonfinite"));
+    assert_eq!(cache.snapshot().attempts, 0);
+    assert_eq!(work, WorkCounters::default());
+    assert_eq!(failed.work, WorkCounters::default());
     Ok(())
 }
 
@@ -903,6 +1112,7 @@ fn candidate_and_fallback_rejection_preserves_base_state_and_exposes_no_selected
         source: "manufactured-exact-v1".into(),
         state: problem.exact(context.t + context.h).unwrap(),
         uncertainty_l2: 0.0,
+        uncertainty_treatment: Audit2ReferenceUncertaintyTreatment::DeclaredUpperBound,
     };
     let budget = Audit2IndependentStepBudget {
         identifier: "fixed-rejection-killer-v1".into(),

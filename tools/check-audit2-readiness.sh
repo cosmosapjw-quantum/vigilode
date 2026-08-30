@@ -14,11 +14,15 @@ done
 
 python3 tools/test_a1_receipt_ci_scope.py -v
 python3 tools/test_audit2_output_policy_research.py -v
+python3 tools/test_audit2_real_client_authority.py -v
+python3 tools/test_audit2_bateman_local_receipt.py -v
 cargo test --locked -p rodas5p-fair-ab --test global_error_contracts --test output_accuracy_assessment_contracts
 cargo test --locked -p rodas5p-integrators --features audit2-research --test audit2_structured_correction_contracts --test audit2_matrix_free_common_w_contracts --test audit2_reusable_preconditioner_transaction_contracts --test dense_output_v2_contracts --test homotopy_numerical_contracts
+cargo test --locked -p rodas5p-integrators --features audit2-bateman-authority --test audit2_real_client_authority_contracts
+cargo check --locked -p rodas5p-integrators --features audit2-bateman-authority --example audit2_bateman_local_six_case
 cargo test --locked -p rodas5p-integrators --no-default-features --example solve_stiff
 cargo check --locked -p rodas5p-integrators --no-default-features
-cargo clippy --locked -p rodas5p-integrators -p rodas5p-fair-ab --all-targets --features rodas5p-integrators/audit2-research -- -D warnings
+cargo clippy --locked -p rodas5p-integrators -p rodas5p-fair-ab --all-targets --features rodas5p-integrators/audit2-bateman-authority -- -D warnings
 cargo fmt --all -- --check
 
 cargo run --quiet --locked -p rodas5p-integrators --no-default-features --example solve_stiff > "$OUT/solve-stiff.json"
