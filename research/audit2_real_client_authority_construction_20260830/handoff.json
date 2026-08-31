@@ -1,123 +1,35 @@
 {
-  "schema": "vigilode-audit2-real-client-authority-construction-handoff/v1",
+  "schema": "vigilode-audit2-real-client-authority-construction-handoff/v2",
   "repository": "cosmosapjw-quantum/vigilode",
   "execution_policy": "HOST_CODEX_ONLY",
   "local_llm_allowed": false,
-  "recovered_thread_archive": {
-    "artifact": "VIGILODE_THREAD_ARCHIVE_RECOVERED_20260830(1).zip",
-    "sha256": "c112309cab3e431ca563dd11dc1f67d95df0bfa85c8081251c33bea16ca44cfb",
-    "use": "METADATA_AND_HANDOFF_CONTINUITY_ONLY",
-    "completeness": "RECOVERY_SNAPSHOT_NOT_FULL_CONVERSATION_EXPORT",
-    "scientific_evidence": false
-  },
   "authority": {
-    "stack_base_pr": 38,
-    "stack_base_state": "OPEN_DRAFT_UNMERGED",
-    "stack_base_branch": "research/audit2-reusable-preconditioner-transactional-step-20260830",
-    "stack_base_remote_head": "f954e39130e5141256731d0745666a872c0267ea",
-    "stack_base_remote_tree": "4314da2f9e1533737d4169526ebd2d84515ab19d",
-    "equivalent_local_parent": "5cf4189be67458cfd998eceba39363462d59ca6d",
-    "equivalent_local_parent_tree": "4314da2f9e1533737d4169526ebd2d84515ab19d",
     "implementation_head": "cac7d1b7337a6dff25a60072009658f6ddf155d9",
     "implementation_tree": "c23abbee0d47e2dbe002e01516bf34e2481bc333",
-    "final_branch_head_tree": "RECORDED_IN_POST_COMMIT_PR_RECEIPT",
-    "draft_pr": "RECORDED_IN_POST_COMMIT_PR_RECEIPT",
-    "remote_checks": "RECORDED_IN_POST_COMMIT_PR_RECEIPT"
-  },
-  "construction": {
-    "feature_gate": "audit2-bateman-authority",
-    "default_feature_changed": false,
-    "production_dispatcher_changed": false,
-    "client_id": "bateman-two-timescale-parent-stable-daughter-v1",
-    "client_classification": "REAL_NUCLEAR_DECAY_PHYSICS_BATEMAN_TWO_PAIR",
-    "authority_manifest": "authority_manifest.json",
-    "exact_verifier": "verify_authority_manifest.py",
-    "authority_verification_receipt": "evidence/AUTHORITY_VERIFICATION_RECEIPT.json",
-    "authority_bundle_sha256": {
-      "authority_manifest.json": "673045bf6b9e723fceb6a3b8df8e9e9e9075c942cf1c438f0ebd03574dbac360",
-      "verify_authority_manifest.py": "542715ca749efbf2060d608f2089ee8457e32f9c61fd0d35f613d5ecec26487d",
-      "evidence/AUTHORITY_VERIFICATION_RECEIPT.json": "057cceba92fed0d707db1d586b53adebee5aed00583b224811d091f1d453ab12"
-    },
-    "candidate_execution_during_construction": "NOT_RUN",
-    "holdout_access": "NOT_OPENED_OR_EXECUTED",
-    "operator_cases": [
-      "nominal-h1e-3",
-      "changed-w-h5e-4"
-    ],
-    "execution_scenarios": [
-      "same-live-context-reuse",
-      "changed-w-invalidation",
-      "nominal-independent-budget",
-      "over-strict-budget-fallback",
-      "late-preconditioner-failure",
-      "terminal-rejection"
-    ],
-    "reference_uncertainty": {
-      "classification": "DECLARED_UPPER_BOUND",
-      "l2": 1e-15,
-      "max_exact_verifier_l2_bound": 2.075243427511439e-17,
-      "admission_rule": "outward(E_reference_upper + u) <= inward(output_atol_l2 + output_rtol * norm(reference))",
-      "rounding_policy": "OUTWARD_CANDIDATE_REFERENCE_DIFFERENCE_AND_L2; OUTWARD_UNCERTAINTY_SUM; INWARD_OUTPUT_BUDGET",
-      "estimate_only_can_admit": false
-    }
-  },
-  "frozen_budgets": {
-    "output_atol_l2": 0.0001,
-    "output_rtol": 0.000001,
-    "max_embedded_l2": 0.0002,
-    "max_original_target_residual_l2": 1e-10,
-    "max_original_target_contraction": 1e-8
+    "authority_manifest_sha256": "673045bf6b9e723fceb6a3b8df8e9e9e9075c942cf1c438f0ebd03574dbac360",
+    "authority_verifier_sha256": "542715ca749efbf2060d608f2089ee8457e32f9c61fd0d35f613d5ecec26487d",
+    "authority_proof_sha256": "057cceba92fed0d707db1d586b53adebee5aed00583b224811d091f1d453ab12",
+    "candidate_executions_during_construction": 0,
+    "holdout_access": "NOT_OPENED_OR_EXECUTED"
   },
   "local_execution": {
-    "prompt": "CODEX_START_HERE.md",
-    "remote_mutation_authorized": false,
-    "example_target": "audit2_bateman_local_six_case",
-    "example_path": "crates/rodas5p-integrators/examples/audit2_bateman_local_six_case.rs",
-    "example_command": "cargo run --locked -p rodas5p-integrators --features audit2-bateman-authority --example audit2_bateman_local_six_case",
-    "report_schema": "vigilode-audit2-bateman-local-six-case-report/v1",
-    "receipt_validator": "verify_local_six_case_receipt.py",
-    "receipt_validator_command": "python3 research/audit2_real_client_authority_construction_20260830/verify_local_six_case_receipt.py result_summary.json",
-    "receipt_validator_limits": [
-      "compact receipt omits raw vectors needed to independently recompute embedded and original-target residual/contraction scalars",
-      "unkeyed state SHA-256 is integrity checking, not executing-host attestation"
-    ],
+    "status": "DELEGATED_TO_GUARDED_EXECUTION_CONTROL_PACKAGE",
+    "handoff": "../audit2_bateman_local_validation_20260831/handoff.json",
+    "prompt": "../audit2_bateman_local_validation_20260831/CODEX_START_HERE.md",
+    "preregistration": "../audit2_bateman_local_validation_20260831/PREREGISTRATION.md",
+    "controller_commit": "b5f553b5be24598c71bc7af15c97e67f503610a5",
+    "controller_tree": "7e96da6f612eade18acc77b700b6e847d68160c9",
+    "execution_source_head": "6b00a886c4eb38d3fe199e3d77852cc1eb35eb39",
+    "scientific_implementation_origin": "cac7d1b7337a6dff25a60072009658f6ddf155d9",
+    "draft_pr": "https://github.com/cosmosapjw-quantum/vigilode/pull/40",
+    "legacy_candidate_command_prefix_for_regression_binding_only": "cargo run --locked -p rodas5p-integrators --features audit2-bateman-authority",
+    "manual_candidate_command_authorized": false,
     "run_count_max": 1,
-    "threshold_changes_after_observation": "FORBIDDEN",
-    "arbitrary_raw_api_call": "NOT_AUTHORITY_ELIGIBLE",
-    "required_artifacts": [
-      "authority_verification.json",
-      "local_receipt_validation.json",
-      "execution_manifest.json",
-      "result_summary.json",
-      "SHA256SUMS",
-      "logs/"
-    ],
-    "failure_policy": "PRESERVE_PARTIAL_RECEIPT_AND_STOP_WITHOUT_RESULT_FITTING"
-  },
-  "prior_stop_receipt": {
-    "verdict": "REAL_CLIENT_AUTHORITY_UNAVAILABLE",
-    "implementation_head": "a2115e2dcaeb418185a3bccda62e60b6c4ff16ab",
-    "latest_branch_head": "f954e39130e5141256731d0745666a872c0267ea",
-    "candidate_cases_run": 0,
-    "execution_manifest_sha256": "93d8558cbbdaf20f8a0ed4ddcb59a92b96fcd9056a238ae717c024f92814e2b6",
-    "result_summary_sha256": "6bc86bc6bc0c71d07dad77a7d1b205df1bfd0277506989b65d98b9f827131b0e",
-    "sha256sums_sha256": "45bc17f38fa9e0c201c6c9302e1dd64ab5302391ed7dac1855e7ed01901522f5"
+    "rerun_after_one_shot_marker": "FORBIDDEN",
+    "candidate_status_at_handoff": "NOT_RUN",
+    "accept_scope": "SIX_FROZEN_CONTRACTS_ONLY_NOT_EHAT_THETA_SUM_AI_QI_OR_PER_SOLVE_GMRES_CERTIFICATE",
+    "manifest_ieee754_bits_are_admission_authority": true
   },
   "claim_ceiling": "EXPLORATORY_NONAUTHORITATIVE_REUSABLE_PRECONDITIONER_TRANSACTIONAL_STEP_SUBSTRATE",
-  "maximum_post_local_review_scope": "BOUNDED_EXACT_BATEMAN_CLIENT_MANIFEST_TWO_OPERATOR_CASES_SIX_SCENARIOS_ONLY",
-  "forbidden_claims": [
-    "general real-client accuracy",
-    "speedup or timing improvement",
-    "scalability",
-    "Krylov basis reuse",
-    "general or production preconditioner",
-    "production/default dispatcher",
-    "dense output correctness",
-    "general event handling",
-    "end-to-end integration transactionality",
-    "holdout result",
-    "comparator ranking",
-    "PM-7/K0 closure",
-    "scientific merge, tag or release"
-  ]
+  "merge_tag_release_authorized": false
 }
