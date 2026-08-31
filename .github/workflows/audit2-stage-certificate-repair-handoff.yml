@@ -1,0 +1,31 @@
+name: Audit2 stage-certificate repair handoff
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/audit2-stage-certificate-repair-handoff.yml'
+      - 'research/audit2_stage_certificate_repair_20260831/**'
+      - 'research/audit2_stage_certificate_telemetry_20260831/formal/**'
+      - 'crates/rodas5p-integrators/src/audit2_stage_certificate_research.rs'
+      - 'crates/rodas5p-integrators/tests/audit2_stage_certificate_contracts.rs'
+      - 'tools/*stage_certificate*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  handoff-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Validate the bounded successor contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tools/validate_audit2_stage_certificate_repair_handoff.py
+          python3 tools/test_audit2_stage_certificate_repair_handoff.py -v
