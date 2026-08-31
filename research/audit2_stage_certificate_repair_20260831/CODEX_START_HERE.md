@@ -48,6 +48,8 @@ directed-bound bridge.
 
 ## R2 — coding research loop
 
+Close exactly `TRACE_MAX_ARNOLDI_UNENFORCED` in this lane.
+
 Write RED tests, then the smallest repair. `max_arnoldi` is a
 `TOTAL_ARNOLDI_VECTOR_CAP` for each completed GMRES solve row, independent of
 iteration_limit; restart is per-cycle. Use LinearSolveReport.iterations, or an
