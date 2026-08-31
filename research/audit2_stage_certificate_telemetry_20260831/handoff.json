@@ -1,0 +1,38 @@
+{
+  "schema": "vigilode-audit2-stage-certificate-local-codex-handoff/v1",
+  "repository": "cosmosapjw-quantum/vigilode",
+  "publication": {
+    "branch": "research/audit2-stage-certificate-telemetry-20260831",
+    "draft_pr": null,
+    "draft_pr_url": null,
+    "required_state": "OPEN_DRAFT_UNMERGED",
+    "base_pr": 40,
+    "base_branch": "research/audit2-bateman-local-execution-orchestrator-20260831",
+    "base_head": "426d37ce3c0f4e5b7843b163eaf772b8e55bfa87",
+    "base_tree": "84ab302b6e7ec1318022753e9f31a669bdca4704",
+    "remote_write_authorized": true,
+    "remote_write_scope": "FOLLOWUP_COMMITS_TO_THIS_BRANCH_AND_DRAFT_PR_ONLY",
+    "merge_tag_release_authorized": false
+  },
+  "execution": {
+    "prompt": "CODEX_START_HERE.md",
+    "contract": "EXECUTION_CONTRACT.json",
+    "publication_schema": "PUBLICATION_SCHEMA.json",
+    "mode": "FRESH_LOCAL_GENERATION_NOT_RECOVERY",
+    "executor": "LOCAL_CODEX_JOB_ONLY",
+    "local_llm_allowed": false,
+    "candidate_executions": 0,
+    "holdout_access": "NOT_OPENED_OR_EXECUTED"
+  },
+  "return_requirements": [
+    "final head and tree",
+    "software test counts and exact command exits",
+    "formal backend versions, exits, source hashes, stdout/stderr hashes and expected tokens",
+    "external raw-manifest SHA-256 without raw data in Git",
+    "checked-in byte count and forbidden-file audit",
+    "complete failed-attempt history",
+    "unchanged claim ceiling",
+    "push and Draft PR readback"
+  ],
+  "claim_ceiling": "EXPLORATORY_NONAUTHORITATIVE_REUSABLE_PRECONDITIONER_TRANSACTIONAL_STEP_SUBSTRATE"
+}

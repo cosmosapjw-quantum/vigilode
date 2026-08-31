@@ -15,6 +15,7 @@ done
 python3 tools/test_a1_receipt_ci_scope.py -v
 python3 tools/test_audit2_output_policy_research.py -v
 python3 tools/test_audit2_real_client_authority.py -v
+python3 tools/test_audit2_stage_certificate_handoff.py -v
 python3 tools/test_audit2_bateman_local_receipt.py -v
 python3 tools/test_audit2_bateman_local_validation_runner.py -v
 python3 tools/test_adjudicate_audit2_bateman_local_validation.py -v

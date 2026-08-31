@@ -1,0 +1,127 @@
+{
+  "schema": "vigilode-audit2-stage-certificate-local-codex-contract/v1",
+  "authority": {
+    "repository": "cosmosapjw-quantum/vigilode",
+    "stack_base_pr": 40,
+    "stack_base_branch": "research/audit2-bateman-local-execution-orchestrator-20260831",
+    "stack_base_head": "426d37ce3c0f4e5b7843b163eaf772b8e55bfa87",
+    "stack_base_tree": "84ab302b6e7ec1318022753e9f31a669bdca4704",
+    "handoff_branch": "research/audit2-stage-certificate-telemetry-20260831",
+    "recovery_policy": "FRESH_LOCAL_GENERATION_NOT_UNPUBLISHED_COMMIT_RECOVERY"
+  },
+  "execution_policy": {
+    "executor": "LOCAL_CODEX_JOB_ONLY",
+    "local_llm_allowed": false,
+    "candidate_executions_required": 0,
+    "holdout_access": "NOT_OPENED_OR_EXECUTED",
+    "historic_one_shot_state": "DO_NOT_READ_WRITE_OR_REUSE",
+    "threshold_fitting": "FORBIDDEN",
+    "remote_write_scope": "EXACT_HANDOFF_BRANCH_AND_EXISTING_DRAFT_PR_ONLY"
+  },
+  "harness_inputs": [
+    {
+      "name": "physmath-research-harness-gpt56.zip",
+      "sha256": "9adde688f8020e7feb2c1c0304b3204dbe70dd01e2d87e64a5c4eb357c019934",
+      "role": "PROCESS_GUIDANCE_ONLY_NOT_REPOSITORY_CONTENT",
+      "required_entries": [
+        "PROJECT_INSTRUCTIONS.md",
+        "prompts/phases/01_research_contract.md",
+        "prompts/phases/05_independent_adversarial_review.md",
+        "prompts/phases/06_physics_math_validation.md",
+        "prompts/phases/07_verification_design.md"
+      ]
+    },
+    {
+      "name": "physmath-coding-harness-gpt56.zip",
+      "sha256": "6e67e999a0c19f6ed9de7c339067cc11691d5cf5cb662a11756d8fc393c849b4",
+      "role": "PROCESS_GUIDANCE_ONLY_NOT_REPOSITORY_CONTENT",
+      "required_entries": [
+        "AGENTS.md",
+        "SCIENTIFIC_CONTRACT.md",
+        "VALIDATION_MATRIX.md",
+        "prompts/phases/05_implementation.md",
+        "prompts/phases/09_independent_diff_review.md"
+      ]
+    }
+  ],
+  "implementation": {
+    "cargo_feature": "audit2-stage-certificate",
+    "required_feature_dependency": "audit2-research",
+    "forbidden_feature_dependency": "audit2-bateman-authority",
+    "production_default_changed": false,
+    "source_path": "crates/rodas5p-integrators/src/audit2_stage_certificate_research.rs",
+    "test_path": "crates/rodas5p-integrators/tests/audit2_stage_certificate_contracts.rs",
+    "minimum_focused_test_count": 11,
+    "norm_schema": "dimensionless-synthetic-l2/v1",
+    "norm_scale_bits": 4607182418800017408,
+    "directed_binary64": [
+      "next_up_nonnegative_product",
+      "next_up_nonnegative_sum"
+    ],
+    "decision_variants": [
+      "SyntheticConsistentAccept",
+      "SyntheticConsistentReject"
+    ],
+    "receipt_authority": "SyntheticSchemaConsistencyOnly",
+    "receipt_must_retain": [
+      "frozen_plan",
+      "frozen_trace",
+      "plan_sha256",
+      "trace_sha256",
+      "coefficient_digest",
+      "norm_and_scale_bits",
+      "operator_and_preconditioner_identities",
+      "rhs_digests",
+      "residual_history_and_completeness",
+      "restart_max_arnoldi_and_iterations",
+      "partial_failure_state"
+    ]
+  },
+  "formal": {
+    "required_obligations": ["F01", "F02", "F03", "F04", "F05"],
+    "required_backends": [
+      "wolfram-language",
+      "sagemath",
+      "singular",
+      "lean-mathlib",
+      "rocq"
+    ],
+    "xact_required": false,
+    "raw_backend_output_in_git": false,
+    "pass_requires_every_backend": true,
+    "receipt_is_remote_attestation": false
+  },
+  "local_storage": {
+    "root_template": "${XDG_STATE_HOME:-$HOME/.local/state}/vigilode/stage-certificate-telemetry/<UTC_RUN_ID>",
+    "fresh_directory_required": true,
+    "preserve_failures": true,
+    "overwrite_allowed": false
+  },
+  "publication": {
+    "allowed_result_files": [
+      "research/audit2_stage_certificate_telemetry_20260831/evidence/analysis_summary.json",
+      "research/audit2_stage_certificate_telemetry_20260831/evidence/formal_receipt.json",
+      "research/audit2_stage_certificate_telemetry_20260831/evidence/ANALYSIS.md",
+      "research/audit2_stage_certificate_telemetry_20260831/evidence/SHA256SUMS"
+    ],
+    "max_single_research_file_bytes": 262144,
+    "max_total_research_directory_bytes": 2000000,
+    "max_analysis_summary_bytes": 131072,
+    "max_formal_receipt_bytes": 131072,
+    "forbidden_suffixes": [
+      ".log", ".npy", ".npz", ".csv", ".parquet", ".h5", ".hdf5",
+      ".zip", ".tar", ".gz", ".xz", ".olean", ".vo", ".glob", ".aux",
+      ".pyc", ".o", ".a", ".so", ".db", ".sqlite"
+    ]
+  },
+  "terminal_dispositions": [
+    "LOCAL_GENERATION_VERIFIED",
+    "FORMAL_BACKEND_UNAVAILABLE",
+    "FORMAL_CHECK_FAILED",
+    "SOFTWARE_CONTRACT_FAILED",
+    "SOURCE_OR_PUBLICATION_IDENTITY_UNRESOLVED",
+    "PACKAGING_POLICY_FAILED"
+  ],
+  "claim_ceiling": "EXPLORATORY_NONAUTHORITATIVE_REUSABLE_PRECONDITIONER_TRANSACTIONAL_STEP_SUBSTRATE",
+  "merge_tag_release_authorized": false
+}
