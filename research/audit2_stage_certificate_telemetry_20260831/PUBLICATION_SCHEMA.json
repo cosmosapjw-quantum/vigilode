@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "vigilode-audit2-stage-certificate-publication/v1",
+  "title": "Compact candidate-free stage-certificate publication",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "source",
+    "policy",
+    "software",
+    "formal",
+    "storage",
+    "claim_ceiling"
+  ],
+  "properties": {
+    "schema": {"const": "vigilode-audit2-stage-certificate-analysis-summary/v1"},
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository", "branch", "base_head", "result_head", "result_tree", "clean"],
+      "properties": {
+        "repository": {"const": "cosmosapjw-quantum/vigilode"},
+        "branch": {"const": "research/audit2-stage-certificate-telemetry-20260831"},
+        "base_head": {"const": "426d37ce3c0f4e5b7843b163eaf772b8e55bfa87"},
+        "result_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "result_tree": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "clean": {"const": true}
+      }
+    },
+    "policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["executor", "local_llm_used", "candidate_executions", "holdout_access"],
+      "properties": {
+        "executor": {"const": "LOCAL_CODEX_JOB_ONLY"},
+        "local_llm_used": {"const": false},
+        "candidate_executions": {"const": 0},
+        "holdout_access": {"const": "NOT_OPENED_OR_EXECUTED"}
+      }
+    },
+    "software": {"type": "object"},
+    "formal": {"type": "object"},
+    "storage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["external_manifest_sha256", "raw_data_committed", "checked_in_bytes"],
+      "properties": {
+        "external_manifest_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "raw_data_committed": {"const": false},
+        "checked_in_bytes": {"type": "integer", "minimum": 0, "maximum": 2000000}
+      }
+    },
+    "claim_ceiling": {
+      "const": "EXPLORATORY_NONAUTHORITATIVE_REUSABLE_PRECONDITIONER_TRANSACTIONAL_STEP_SUBSTRATE"
+    }
+  },
+  "$defs": {
+    "formal_log_record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "backend", "version", "source_sha256", "argv", "exit_code",
+        "stdout_sha256", "stdout_bytes", "stderr_sha256", "stderr_bytes",
+        "expected_tokens"
+      ],
+      "properties": {
+        "backend": {"type": "string"},
+        "version": {"type": "string"},
+        "source_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "argv": {"type": "array", "items": {"type": "string"}},
+        "exit_code": {"type": "integer"},
+        "stdout_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "stdout_bytes": {"type": "integer", "minimum": 0},
+        "stderr_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "stderr_bytes": {"type": "integer", "minimum": 0},
+        "expected_tokens": {"type": "array", "items": {"type": "string"}}
+      }
+    }
+  }
+}
