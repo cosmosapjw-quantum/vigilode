@@ -127,6 +127,12 @@ class ResearchCoverageTests(unittest.TestCase):
         self.assertIn("python3 tools/test_audit2_real_client_authority.py -v", text)
         self.assertIn("python3 tools/test_audit2_bateman_local_receipt.py -v", text)
         self.assertIn(
+            "python3 tools/test_audit2_bateman_local_validation_runner.py -v", text
+        )
+        self.assertIn(
+            "python3 tools/test_adjudicate_audit2_bateman_local_validation.py -v", text
+        )
+        self.assertIn(
             "--features audit2-bateman-authority --test audit2_real_client_authority_contracts",
             text,
         )
