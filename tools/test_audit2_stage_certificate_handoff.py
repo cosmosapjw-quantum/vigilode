@@ -26,6 +26,14 @@ class StageCertificateHandoffTests(unittest.TestCase):
         destination = root / validator.DIRECTORY
         destination.parent.mkdir(parents=True)
         shutil.copytree(SOURCE_DIRECTORY, destination)
+        input_lock = json.loads((SOURCE_DIRECTORY / "HANDOFF_INPUT_LOCK.json").read_text())
+        for relative in input_lock["paths"]:
+            source = ROOT / relative
+            target = root / relative
+            if target.exists():
+                continue
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(source, target)
         return root
 
     def test_checked_in_handoff_is_candidate_free_and_bounded(self):
@@ -87,6 +95,14 @@ class StageCertificateHandoffTests(unittest.TestCase):
             value["harness_inputs"][0]["sha256"] = "0" * 64
             path.write_text(json.dumps(value))
             with self.assertRaisesRegex(ValueError, "harness identity"):
+                validator.validate(root)
+
+    def test_input_lock_hash_tamper_fails_closed(self):
+        with tempfile.TemporaryDirectory(prefix="audit2-stage-handoff-") as temporary:
+            root = self.copied_root(temporary)
+            path = root / validator.DIRECTORY / "README.md"
+            path.write_text(path.read_text() + "\ntampered after lock\n")
+            with self.assertRaisesRegex(ValueError, "input lock hash mismatch"):
                 validator.validate(root)
 
 

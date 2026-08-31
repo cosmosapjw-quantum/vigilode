@@ -17,13 +17,24 @@ holdout.
 
 Repository: `cosmosapjw-quantum/vigilode`
 
-The Draft PR must be open, Draft, unmerged, based on
+Draft PR: `https://github.com/cosmosapjw-quantum/vigilode/pull/41`
+
+Publication control C1 must be an ancestor:
+
+```text
+commit 193dcb8c0fb7c1042183739ecef627ae5df38612
+tree   f40f7f3a43d7ad24c28142ea61ba2e3698d13030
+```
+
+The Draft PR must remain open, Draft, unmerged, based on
 `research/audit2-bateman-local-execution-orchestrator-20260831`, and its base
 commit must be
 `426d37ce3c0f4e5b7843b163eaf772b8e55bfa87` with tree
 `84ab302b6e7ec1318022753e9f31a669bdca4704`. Resolve the current Draft PR head
 from GitHub, fetch it, and create an isolated clean worktree at that exact head.
 Run the checked-in handoff validator and test before making changes.
+They must validate every entry in `HANDOFF_INPUT_LOCK.json` against the fetched
+PR head.
 
 Stop as `SOURCE_OR_PUBLICATION_IDENTITY_UNRESOLVED` if the repository, branch,
 stack, state, ancestry, or cleanliness differs. Preserve all existing

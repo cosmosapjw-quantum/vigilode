@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import pathlib
 import sys
 
@@ -13,6 +14,7 @@ REQUIRED_FILES = {
     "CODEX_START_HERE.md",
     "EXECUTION_CONTRACT.json",
     "FORMAL_SCOPE.md",
+    "HANDOFF_INPUT_LOCK.json",
     "PUBLICATION_SCHEMA.json",
     "RAW_DATA_POLICY.md",
     "README.md",
@@ -44,6 +46,14 @@ def _load(path: pathlib.Path) -> dict:
     return value
 
 
+def _sha256(path: pathlib.Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as source:
+        for block in iter(lambda: source.read(1024 * 1024), b""):
+            digest.update(block)
+    return digest.hexdigest()
+
+
 def validate(root: pathlib.Path) -> dict:
     research = root / DIRECTORY
     if not research.is_dir():
@@ -56,6 +66,7 @@ def validate(root: pathlib.Path) -> dict:
 
     contract = _load(research / "EXECUTION_CONTRACT.json")
     handoff = _load(research / "handoff.json")
+    input_lock = _load(research / "HANDOFF_INPUT_LOCK.json")
     schema = _load(research / "PUBLICATION_SCHEMA.json")
 
     authority = contract.get("authority", {})
@@ -72,6 +83,12 @@ def validate(root: pathlib.Path) -> dict:
         raise ValueError("stack base head mismatch")
     if authority.get("recovery_policy") != "FRESH_LOCAL_GENERATION_NOT_UNPUBLISHED_COMMIT_RECOVERY":
         raise ValueError("fresh-generation policy mismatch")
+    if authority.get("draft_pr") != 41:
+        raise ValueError("Draft PR binding mismatch")
+    if authority.get("bootstrap_commit") != "193dcb8c0fb7c1042183739ecef627ae5df38612":
+        raise ValueError("bootstrap commit mismatch")
+    if authority.get("bootstrap_tree") != "f40f7f3a43d7ad24c28142ea61ba2e3698d13030":
+        raise ValueError("bootstrap tree mismatch")
 
     if policy.get("executor") != "LOCAL_CODEX_JOB_ONLY":
         raise ValueError("executor policy mismatch")
@@ -164,10 +181,25 @@ def validate(root: pathlib.Path) -> dict:
     if present_tokens:
         raise ValueError(f"historic candidate runtime surface named: {', '.join(present_tokens)}")
 
+    if input_lock.get("schema") != "vigilode-audit2-stage-certificate-handoff-input-lock/v1":
+        raise ValueError("input lock schema mismatch")
+    if input_lock.get("bootstrap_commit") != authority.get("bootstrap_commit"):
+        raise ValueError("input lock bootstrap mismatch")
+    locked_paths = input_lock.get("paths")
+    if not isinstance(locked_paths, dict) or not locked_paths:
+        raise ValueError("input lock paths missing")
+    for relative, expected in sorted(locked_paths.items()):
+        if not isinstance(relative, str) or not isinstance(expected, str):
+            raise ValueError("input lock entry shape mismatch")
+        path = root / relative
+        if not path.is_file() or _sha256(path) != expected:
+            raise ValueError(f"input lock hash mismatch: {relative}")
+
     return {
         "status": "CANDIDATE_FREE_LOCAL_CODEX_HANDOFF_VALID",
         "candidate_executions": 0,
         "required_files": len(REQUIRED_FILES),
+        "locked_paths": len(locked_paths),
         "checked_files": len(files),
         "checked_bytes": total,
         "claim_ceiling": CEILING,
