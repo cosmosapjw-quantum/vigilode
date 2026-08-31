@@ -65,6 +65,7 @@ def validate(root):
  if classes!={"BYTE":("SHA256_EXACT",),"CONTENT":("CANONICAL_JSON_EQUAL",),"NUMERICAL":("BITWISE_BINARY64","DIRECTED_BOUND","FIXED_NORM_TOLERANCE"),"SEMANTIC":("QUANTIFIED_OBLIGATION","POLICY_CONFORMANCE")}: raise ValueError("typed identity contract mismatch")
  if {x.get("title") for x in c.get("policy_adoption",[])}!=EXPECTED_POLICIES: raise ValueError("policy adoption mismatch")
  if f.get("dimension_scope")!="ARBITRARY_FINITE_DIMENSION_N_GE_1": raise ValueError("formal dimension scope mismatch")
+ if f.get("norm_scale_bits")!="0x3ff0000000000000": raise ValueError("formal norm scale bits mismatch")
  records=f.get("exact_backend_role_records"); tuples={(x.get("obligation"),x.get("backend"),x.get("role")) for x in records or [] if isinstance(x,dict)}
  if not isinstance(records,list) or len(records)!=13 or len(tuples)!=13 or tuples!=EXPECTED_RECORDS: raise ValueError("formal backend role matrix mismatch")
  if f.get("fixed_dimension_policy")!="FIXED_3X3_OR_NUMERIC_FIXTURES_ARE_SUPPLEMENTAL_ONLY_EXCEPT_FROZEN_F02_OPERATOR": raise ValueError("fixed-dimension policy mismatch")
