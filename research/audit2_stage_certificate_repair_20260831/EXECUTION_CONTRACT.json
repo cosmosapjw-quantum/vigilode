@@ -1,0 +1,597 @@
+{
+  "schema": "vigilode-audit2-stage-certificate-repair-contract/v1",
+  "authority": {
+    "repository": "cosmosapjw-quantum/vigilode",
+    "predecessor_pr": 41,
+    "predecessor_branch": "research/audit2-stage-certificate-telemetry-20260831",
+    "predecessor_head": "9fbdd84c64e99620805ebf634dcaf57aaad05cbc",
+    "predecessor_tree": "12a5bb79f94f2cb47d4f808f7254e01af0446cdb",
+    "predecessor_control_commit": "193dcb8c0fb7c1042183739ecef627ae5df38612",
+    "predecessor_control_tree": "f40f7f3a43d7ad24c28142ea61ba2e3698d13030",
+    "successor_branch": "research/audit2-stage-certificate-repair-handoff-20260831",
+    "successor_phase": "BOOTSTRAP_UNBOUND",
+    "successor_draft_pr": null,
+    "successor_draft_pr_url": null,
+    "successor_control_commit": null,
+    "successor_control_tree": null,
+    "executor": "LOCAL_CODEX_JOB_ONLY",
+    "local_llm_allowed": false,
+    "merge_tag_release_authorized": false
+  },
+  "predecessor": {
+    "terminal_disposition": "STOP_INVALID",
+    "reasons": [
+      "FORMAL_CHECK_FAILED",
+      "SOFTWARE_CONTRACT_FAILED"
+    ],
+    "repair_closeout_round_exhausted": true,
+    "immutable_run_directory": "/home/cosmosapjw/.local/state/vigilode/stage-certificate-telemetry/20260831T141627Z",
+    "external_manifest_sha256": "3812075cc7457f1797d512fde55b49b3202053d257e8a350a6cf48c2cea5029f",
+    "sha256sums_sha256": "057a1f5ccafc5889684caa72af0cd716edc3e04ec0f58b2b771a3971baeeb3d8",
+    "compiled_formal_receipt_sha256": "7629cfa8f5177b94a2be40dc83a73f1dd94c5ce76ba4e5bb8f1b3ecda832871a",
+    "review_paths": [
+      "reviews/formal_scope_review.json",
+      "reviews/software_contract_review.json"
+    ],
+    "terminal_paths": [
+      "terminal/command_readback.json",
+      "terminal/failed_attempt_history.json",
+      "terminal/formal_adjudication.json",
+      "terminal/bounded_closeout.json"
+    ],
+    "proof_source_sha256": {
+      "wolfram": "bef5a931967ff558449887c0f7e235534adea0a4d586c7a0fad81361b6373935",
+      "sage": "84d8eb2179df60d52f8b56e9b48c64e68ad6d3ead4a5b7ac9fae4d4bd9cc620a",
+      "singular": "aeb6d6fb70a4cf0524f5f740264595deb08868b37884d72c4c212cebe8ddf8ee",
+      "lean": "a0e1d45b44ab0a9ca92c4a38e44afa32526efacd9d17460d74f608ed6d97fd66",
+      "rocq": "e0dd47d26d71e030e1fa6794c64380f9aa58657373316f83d783fae77189cea6"
+    },
+    "historical_checks_not_reusable_for_repaired_bytes": true,
+    "candidate_executions": 0,
+    "holdout_access": "NOT_OPENED_OR_EXECUTED",
+    "raw_data_committed": false
+  },
+  "harness_inputs": [
+    {
+      "name": "physmath-research-harness-gpt56.zip",
+      "sha256": "9adde688f8020e7feb2c1c0304b3204dbe70dd01e2d87e64a5c4eb357c019934",
+      "role": "PROCESS_GUIDANCE_ONLY_NOT_REPOSITORY_CONTENT"
+    },
+    {
+      "name": "physmath-coding-harness-gpt56.zip",
+      "sha256": "6e67e999a0c19f6ed9de7c339067cc11691d5cf5cb662a11756d8fc393c849b4",
+      "role": "PROCESS_GUIDANCE_ONLY_NOT_REPOSITORY_CONTENT"
+    }
+  ],
+  "policy_adoption": [
+    {
+      "title": "Universal Anti-Meta-Loop and Progress-First.md",
+      "rules": [
+        "claims_fail_closed_progress_continues",
+        "two_process_only_cycles_stop",
+        "observed_failure_guards_only"
+      ]
+    },
+    {
+      "title": "Universal Audit-Compiled Execution Plan -.md",
+      "rules": [
+        "one_major_objective_per_phase",
+        "one_verification_bundle_per_phase",
+        "phase_plan_hash_bound"
+      ]
+    },
+    {
+      "title": "Universal Byte Identity vs Semantic Identity.md",
+      "rules": [
+        "typed_identity_required",
+        "identity_classes_not_substitutable",
+        "semantic_coverage_not_inferred_from_exit_zero"
+      ]
+    },
+    {
+      "title": "Anti-Stall, Durable Checkpoint, and.md",
+      "rules": [
+        "resume_latest_valid_checkpoint",
+        "one_diagnostic_retry_total",
+        "one_integrated_review_no_post_review_repair"
+      ]
+    }
+  ],
+  "compiled_plan": {
+    "mode": "USER_AUTHORIZED_SUCCESSOR_OBSERVED_DEFECT_CLOSURE",
+    "resume_point": "LATEST_VALID_DURABLE_CHECKPOINT",
+    "phases": [
+      {
+        "phase_id": "R0",
+        "objective": "bind predecessor and checkpoint preserved dirty worktree",
+        "major_objective_count": 1,
+        "verification_bundle_count": 1
+      },
+      {
+        "phase_id": "R1",
+        "objective": "close quantified F01 F03 F04 formal scope",
+        "major_objective_count": 1,
+        "verification_bundle_count": 1
+      },
+      {
+        "phase_id": "R2",
+        "objective": "close observed software contract defects",
+        "major_objective_count": 1,
+        "verification_bundle_count": 1
+      },
+      {
+        "phase_id": "R3",
+        "objective": "compile one integrated verification bundle",
+        "major_objective_count": 1,
+        "verification_bundle_count": 1
+      },
+      {
+        "phase_id": "R4",
+        "objective": "perform one fresh integrated closeout review",
+        "major_objective_count": 1,
+        "verification_bundle_count": 1
+      },
+      {
+        "phase_id": "R5",
+        "objective": "publish compact analysis and read back remote state",
+        "major_objective_count": 1,
+        "verification_bundle_count": 1
+      }
+    ],
+    "process_controls": {
+      "completed_predecessor_phases_replayed": false,
+      "max_diagnostic_retries_total": 1,
+      "integrated_review_events_exact": 1,
+      "integrated_review_artifact": "integrated_closeout_review.json",
+      "repair_after_integrated_review": 0,
+      "recursive_review": false,
+      "new_standalone_gate_creation": false,
+      "guard_policy": "OBSERVED_FAILURE_CLASSES_ONLY",
+      "claims_fail_closed_progress_continues": true,
+      "two_process_only_cycles_terminal": "STALL_PROCESS_ACCRETION",
+      "plan_or_identity_drift_terminal": "PROCESS_DRIFT_DETECTED"
+    },
+    "allowed_failure_classes": [
+      "F01_QUANTIFIER_SCOPE_INSUFFICIENT",
+      "F03_QUANTIFIER_SCOPE_INSUFFICIENT",
+      "F04_QUANTIFIER_SCOPE_INSUFFICIENT",
+      "TRACE_MAX_ARNOLDI_UNENFORCED",
+      "RECEIPT_SERIALIZATION_ROUNDTRIP_UNTESTED",
+      "DIRECTED_ROUNDING_ZERO_OVERFLOW_UNTESTED"
+    ],
+    "phase_ledger_required_fields": [
+      "phase_id",
+      "objective",
+      "verification",
+      "input_checkpoint",
+      "output_checkpoint",
+      "progress_delta",
+      "retry_used",
+      "review_used",
+      "next_step"
+    ]
+  },
+  "identity_contract": {
+    "classes": [
+      {
+        "class": "BYTE",
+        "comparators": [
+          "SHA256_EXACT"
+        ],
+        "required_context": [
+          "subject",
+          "expected",
+          "observed",
+          "evidence_sha256",
+          "status"
+        ]
+      },
+      {
+        "class": "CONTENT",
+        "comparators": [
+          "CANONICAL_JSON_EQUAL"
+        ],
+        "required_context": [
+          "normalizer",
+          "normalizer_version",
+          "expected",
+          "observed",
+          "evidence_sha256",
+          "status"
+        ]
+      },
+      {
+        "class": "NUMERICAL",
+        "comparators": [
+          "BITWISE_BINARY64",
+          "DIRECTED_BOUND",
+          "FIXED_NORM_TOLERANCE"
+        ],
+        "required_context": [
+          "norm",
+          "rounding_mode",
+          "tolerance",
+          "expected",
+          "observed",
+          "evidence_sha256",
+          "status"
+        ]
+      },
+      {
+        "class": "SEMANTIC",
+        "comparators": [
+          "QUANTIFIED_OBLIGATION",
+          "POLICY_CONFORMANCE"
+        ],
+        "required_context": [
+          "quantifiers",
+          "invariants",
+          "expected",
+          "observed",
+          "evidence_sha256",
+          "status"
+        ]
+      }
+    ],
+    "non_substitution": [
+      "BYTE_IDENTITY_DOES_NOT_PROVE_SEMANTIC_OR_NUMERICAL_IDENTITY",
+      "SEMANTIC_IDENTITY_DOES_NOT_PROVE_BYTE_IDENTITY",
+      "COMPILER_EXIT_ZERO_DOES_NOT_PROVE_QUANTIFIED_SCOPE"
+    ]
+  },
+  "repair_scope": {
+    "formal": {
+      "dimension_scope": "ARBITRARY_FINITE_DIMENSION_N_GE_1",
+      "norm_schema": "dimensionless-synthetic-l2/v1",
+      "norm_scale_bits": 4607182418800017400,
+      "exact_backend_role_records": [
+        {
+          "obligation": "F01",
+          "backend": "lean-mathlib",
+          "role": "UNIVERSAL_PROOF_AUTHORITY"
+        },
+        {
+          "obligation": "F01",
+          "backend": "rocq",
+          "role": "UNIVERSAL_PROOF_AUTHORITY"
+        },
+        {
+          "obligation": "F02",
+          "backend": "wolfram-language",
+          "role": "EXACT_DECLARED_OPERATOR_CROSSCHECK"
+        },
+        {
+          "obligation": "F02",
+          "backend": "sagemath",
+          "role": "EXACT_DECLARED_OPERATOR_CROSSCHECK"
+        },
+        {
+          "obligation": "F02",
+          "backend": "singular",
+          "role": "NUMERATOR_PATTERN_ONLY"
+        },
+        {
+          "obligation": "F03",
+          "backend": "lean-mathlib",
+          "role": "UNIVERSAL_PROOF_AUTHORITY"
+        },
+        {
+          "obligation": "F03",
+          "backend": "rocq",
+          "role": "UNIVERSAL_PROOF_AUTHORITY"
+        },
+        {
+          "obligation": "F03",
+          "backend": "wolfram-language",
+          "role": "SYMBOLIC_SCALAR_IMPLICATION_CROSSCHECK"
+        },
+        {
+          "obligation": "F04",
+          "backend": "lean-mathlib",
+          "role": "UNIVERSAL_PROOF_AUTHORITY"
+        },
+        {
+          "obligation": "F04",
+          "backend": "rocq",
+          "role": "UNIVERSAL_PROOF_AUTHORITY"
+        },
+        {
+          "obligation": "F04",
+          "backend": "sagemath",
+          "role": "GENERATED_DIMENSION_EXACT_CROSSCHECK"
+        },
+        {
+          "obligation": "F05",
+          "backend": "lean-mathlib",
+          "role": "UNIVERSAL_PROOF_AUTHORITY"
+        },
+        {
+          "obligation": "F05",
+          "backend": "rocq",
+          "role": "UNIVERSAL_PROOF_AUTHORITY"
+        }
+      ],
+      "universal_theorem_ids": [
+        "f01_strict_lower_nilpotent",
+        "f01_finite_neumann_left_inverse",
+        "f01_finite_neumann_right_inverse",
+        "f03_residual_solution_norm_bound",
+        "f04_stage_majorant_nonnegative",
+        "f04_stage_majorant_dominates",
+        "f04_weighted_contamination_bound",
+        "f05_safe_accept",
+        "f05_safe_reject"
+      ],
+      "F01": {
+        "quantifiers": [
+          "n >= 1",
+          "arbitrary strict-lower T indexed by Fin n"
+        ],
+        "conclusions": [
+          "T^n = 0",
+          "(I-T) sum(k=0..n-1,T^k) = I",
+          "sum(k=0..n-1,T^k) (I-T) = I"
+        ]
+      },
+      "F03": {
+        "quantifiers": [
+          "n >= 1",
+          "arbitrary invertible W with two-sided inverse V",
+          "arbitrary b x",
+          "kappa >= 0",
+          "forall v norm(V v) <= kappa norm(v)"
+        ],
+        "definitions": [
+          "rho = b - W x"
+        ],
+        "conclusions": [
+          "V b = x + V rho",
+          "norm(V b - x) <= kappa norm(rho)",
+          "norm(V b) <= norm(x) + kappa norm(rho)"
+        ],
+        "forbidden_misstatement": "DO_NOT_CONFUSE_RHS_B_WITH_RESIDUAL_RHO"
+      },
+      "F04": {
+        "quantifiers": [
+          "n >= 1",
+          "arbitrary nonnegative strict-lower A",
+          "arbitrary q >= 0",
+          "arbitrary admissible error d",
+          "arbitrary nonnegative endpoint and estimator weights"
+        ],
+        "recurrence": "z_i = q_i + sum(j<i,A_ij z_j)",
+        "conclusions": [
+          "z >= 0",
+          "z = sum(k=0..n-1,A^k) q",
+          "d_i <= z_i",
+          "alpha dot d <= alpha dot z",
+          "beta dot d <= beta dot z"
+        ]
+      },
+      "F02_F05_policy": "REGRESSION_ONLY_SCOPE_NOT_REINVENTED",
+      "fixed_dimension_policy": "FIXED_3X3_OR_NUMERIC_FIXTURES_ARE_SUPPLEMENTAL_ONLY_EXCEPT_FROZEN_F02_OPERATOR",
+      "scope_probe": {
+        "lean": "external arbitrary-n consumer plus #print axioms",
+        "rocq": "external arbitrary-n consumer plus Print Assumptions and coqchk",
+        "pointwise_hypotheses_required": true,
+        "no_sorry_admitted_or_project_local_axiom": true,
+        "compiler_signature_hash_binding": true
+      },
+      "CAS_limits": {
+        "wolfram": "exact symbolic cross-check only; never universal proof authority",
+        "sage": "exact rational generated dimensions including at least one n != 3; never universal proof authority",
+        "singular": "F02 numerator pattern only"
+      },
+      "directed_rounding_bridge_required": true,
+      "required_fail_closed_mutants": [
+        "LEAN_F01_FIXED_FIN3",
+        "ROCQ_F04_FIXED_DIM3",
+        "SORRY_OR_ADMITTED",
+        "WOLFRAM_F03_NUMERIC_ONLY",
+        "SAGE_F04_ONLY_DIM3",
+        "CAS_ROLE_ESCALATION",
+        "SINGULAR_OUTSIDE_F02",
+        "FORMAL_RECORD_MISSING_DUPLICATE_OR_UNKNOWN",
+        "ABI_SCOPE_SOURCE_OR_PROBE_HASH_TAMPER",
+        "EXIT_ZERO_WITHOUT_SCOPE_OR_ASSUMPTION_EVIDENCE"
+      ]
+    },
+    "software": {
+      "max_arnoldi": {
+        "meaning": "TOTAL_ARNOLDI_VECTOR_CAP_PER_COMPLETED_GMRES_LINEAR_SOLVE_TRACE_ROW",
+        "authoritative_counter": "LinearSolveReport.iterations_or_explicit_arnoldi_vectors_if_trace_iterations_has_other_semantics",
+        "residual_history_length_is_counter": false,
+        "equality_is_legal": true,
+        "max_plus_one_rejects": true,
+        "independent_of_iteration_limit": true,
+        "restart_is_per_cycle_not_total_cap": true,
+        "every_completed_decision_row_must_pass": true
+      },
+      "receipt_roundtrip": {
+        "operation": "serde_json serialize concrete receipt then deserialize same type then canonical reserialize",
+        "equality": "STRUCTURAL_AND_CANONICAL_CONTENT_EQUAL",
+        "retained_fields": [
+          "frozen_plan",
+          "frozen_trace",
+          "plan_sha256",
+          "trace_sha256",
+          "coefficient_digest",
+          "norm_and_scale_bits",
+          "operator_and_preconditioner_identities",
+          "rhs_digests",
+          "residual_history_and_completeness",
+          "restart_max_arnoldi_and_iterations",
+          "work_counters",
+          "authority",
+          "decision",
+          "partial_failure_state"
+        ]
+      },
+      "directed_binary64": {
+        "policy": "CORRECTLY_ROUNDED_TOWARD_POSITIVE_INFINITY_FOR_NONNEGATIVE_ADD_AND_MULTIPLY",
+        "exact_zero_preserved": true,
+        "exact_representable_preserved": true,
+        "inexact_requires_upward_correction": true,
+        "overflow_result": "POSITIVE_INFINITY_THEN_TYPED_NONFINITE_REJECTION_NO_DECISION",
+        "required_tests": [
+          "MAX_ARNOLDI_EXCEEDED",
+          "MAX_ARNOLDI_EQUALITY",
+          "MULTI_ROW_ONE_EXCEEDS",
+          "RECEIPT_JSON_ROUNDTRIP",
+          "ROUNDING_EXACT_ZERO",
+          "ROUNDING_EXACT_REPRESENTABLE",
+          "ROUNDING_INEXACT_UPWARD",
+          "PRODUCT_OVERFLOW_REJECTED",
+          "SUM_OVERFLOW_REJECTED",
+          "FEATURE_AND_CANDIDATE_ISOLATION"
+        ]
+      }
+    }
+  },
+  "continuation": {
+    "predecessor_run_immutable": true,
+    "create_fresh_successor_run": true,
+    "locate_preserved_worktree_from_predecessor_command_readback": true,
+    "checkpoint_before_mutation": [
+      "HEAD_AND_TREE",
+      "GIT_STATUS_PORCELAIN_V2_Z",
+      "TRACKED_AND_STAGED_BINARY_DIFFS",
+      "SHA256_SIZE_AND_CONTENT_COPY_OF_EVERY_ALLOWED_UNTRACKED_PATH"
+    ],
+    "forbidden_operations": [
+      "reset",
+      "clean",
+      "checkout_over_dirty_worktree",
+      "stash",
+      "rebase",
+      "overwrite_predecessor_run"
+    ],
+    "replay_target": "CLEAN_WORKTREE_AT_SUCCESSOR_DRAFT_PR_HEAD",
+    "nonoverlap_replay_identity": "BYTE_SHA256_EXACT",
+    "overlap_policy": "EXPLICIT_THREE_WAY_SEMANTIC_MERGE_WITH_BASE_BEFORE_AFTER_HASHES",
+    "unrelated_or_unexplained_dirty_path_terminal": "SOURCE_OR_PUBLICATION_IDENTITY_UNRESOLVED"
+  },
+  "verification": {
+    "research_loop": "contract and quantified propositions -> adversarial counterexamples -> formal proof plan",
+    "coding_loop": "red tests -> smallest repair -> green focused suite -> integrated verification",
+    "required_bundle": [
+      "successor handoff validator and tests",
+      "all 13 formal backend-role records",
+      "Lean generic scope probe and assumption audit",
+      "Rocq generic scope probe assumption audit and coqchk",
+      "focused Rust stage-certificate suite",
+      "candidate-free readiness",
+      "default no-default and feature checks",
+      "clippy -D warnings",
+      "cargo fmt --check",
+      "git diff --check",
+      "forbidden path and size audit"
+    ],
+    "review": {
+      "events_exact": 1,
+      "artifact": "integrated_closeout_review.json",
+      "snapshot_frozen": true,
+      "lenses": [
+        "software_contract",
+        "formal_scope"
+      ],
+      "pass_requires_zero_P0_P1": true,
+      "P0_P1_disposition": "STOP_INVALID_NO_POST_REVIEW_REPAIR"
+    }
+  },
+  "publication": {
+    "compact_analysis_only": true,
+    "allowed_result_files": [
+      "research/audit2_stage_certificate_repair_20260831/evidence/repair_closeout.json",
+      "research/audit2_stage_certificate_repair_20260831/evidence/formal_receipt.json",
+      "research/audit2_stage_certificate_repair_20260831/evidence/formal_obligation_abi.json",
+      "research/audit2_stage_certificate_repair_20260831/evidence/integrated_closeout_review.json",
+      "research/audit2_stage_certificate_repair_20260831/evidence/ANALYSIS.md",
+      "research/audit2_stage_certificate_repair_20260831/evidence/SHA256SUMS"
+    ],
+    "raw_data_committed": false,
+    "max_single_research_file_bytes": 262144,
+    "max_total_research_directory_bytes": 2000000,
+    "forbidden_suffixes": [
+      ".log",
+      ".npy",
+      ".npz",
+      ".csv",
+      ".parquet",
+      ".h5",
+      ".hdf5",
+      ".zip",
+      ".tar",
+      ".gz",
+      ".xz",
+      ".olean",
+      ".vo",
+      ".glob",
+      ".aux",
+      ".pyc",
+      ".o",
+      ".a",
+      ".so",
+      ".db",
+      ".sqlite"
+    ],
+    "remote_write_scope": "SUCCESSOR_BRANCH_AND_ITS_DRAFT_PR_ONLY",
+    "merge_tag_release_authorized": false
+  },
+  "terminal_dispositions": [
+    "REPAIR_CLOSEOUT_VERIFIED",
+    "FORMAL_BACKEND_UNAVAILABLE",
+    "FORMAL_CHECK_FAILED",
+    "SOFTWARE_CONTRACT_FAILED",
+    "SOURCE_OR_PUBLICATION_IDENTITY_UNRESOLVED",
+    "PACKAGING_POLICY_FAILED",
+    "PROCESS_DRIFT_DETECTED",
+    "STALL_PROCESS_ACCRETION",
+    "STOP_INVALID"
+  ],
+  "prompt_contract": {
+    "objective": "close exactly the observed formal and software defects from the immutable predecessor run",
+    "inputs": [
+      "published successor control head",
+      "immutable predecessor run and manifest",
+      "preserved dirty worktree checkpoint",
+      "two byte-identified harness archives"
+    ],
+    "non_goals": [
+      "candidate or real-client execution",
+      "holdout access",
+      "threshold fitting",
+      "production claim promotion",
+      "merge tag or release"
+    ],
+    "constraints": [
+      "one compiled phase plan",
+      "one diagnostic retry total",
+      "one integrated review",
+      "no post-review repair",
+      "typed identity"
+    ],
+    "deliverables": [
+      "repaired implementation tests and quantified proofs",
+      "compact formal and software receipts",
+      "one integrated review",
+      "remote readback"
+    ],
+    "acceptance_tests": [
+      "all formal universal and role gates",
+      "software boundary and roundtrip tests",
+      "integrated verification",
+      "zero P0/P1 in one review"
+    ],
+    "stop_conditions": [
+      "source identity unresolved",
+      "formal or software failure",
+      "process drift",
+      "process accretion"
+    ],
+    "failure_reporting": "preserve exact command ledger failures and typed terminal receipt without claim promotion"
+  },
+  "candidate_executions": 0,
+  "holdout_access": "NOT_OPENED_OR_EXECUTED",
+  "claim_ceiling": "EXPLORATORY_NONAUTHORITATIVE_REUSABLE_PRECONDITIONER_TRANSACTIONAL_STEP_SUBSTRATE"
+}
