@@ -16,8 +16,10 @@ use rodas5p_core::{
     WorkCounters,
 };
 use rodas5p_integrators::{
-    OdeProblem, rodas5p_inner_forcing_target, semilinear_advection_diffusion_problem,
-    sequential_matrix_free_step_with_inner_forcing, sequential_step,
+    OdeProblem, RODAS5P_INNER_FORCING_ERROR_EXPONENT, RODAS5P_INNER_RESIDUAL_HEURISTIC_FRACTION,
+    rodas5p_inner_forcing_error_limit, rodas5p_inner_forcing_target,
+    semilinear_advection_diffusion_problem, sequential_matrix_free_step_with_inner_forcing,
+    sequential_step,
 };
 
 /// Stated tracking factor: the inexact arm may lose at most this factor
@@ -200,6 +202,66 @@ fn forcing_target_on_a_stiff_stage_returns_a_floor_instead_of_an_error() {
         .expect("a stiff stage must get a residual floor, not an error");
     assert!(target.tau.is_finite() && target.tau > 0.0);
     assert!(target.tau >= 64.0 * f64::EPSILON * 1.0e13 * (1.0 - 1.0e-12));
+    assert!(
+        target.floor_active,
+        "a floor-limited target must be flagged"
+    );
+}
+
+#[test]
+fn error_scaled_residual_limit_shrinks_with_the_embedded_estimate() {
+    // F-008: the admitted stage residual must follow the truncation error.
+    let l1 = 4.9455;
+    let cap = RODAS5P_INNER_RESIDUAL_HEURISTIC_FRACTION / l1;
+    let at = |error: f64| rodas5p_inner_forcing_error_limit(error, l1).unwrap();
+    assert_eq!(at(1.0).to_bits(), cap.to_bits());
+    assert_eq!(at(4.0).to_bits(), cap.to_bits());
+    let expected = cap * 1.0e-3_f64.powf(RODAS5P_INNER_FORCING_ERROR_EXPONENT);
+    assert_eq!(at(1.0e-3).to_bits(), expected.to_bits());
+    assert!(at(1.0e-6) < at(1.0e-3) && at(1.0e-3) < at(0.5));
+    assert_eq!(at(0.0), 0.0);
+    assert!(rodas5p_inner_forcing_error_limit(f64::NAN, l1).is_err());
+    assert!(rodas5p_inner_forcing_error_limit(-1.0, l1).is_err());
+    assert!(rodas5p_inner_forcing_error_limit(0.5, 0.0).is_err());
+}
+
+#[test]
+fn refined_stage_reports_are_flagged_and_within_the_error_scaled_limit() {
+    let (problem, y0) = diagonal_prothero_robinson(64, 1.0e6);
+    let config = gmres_config();
+    let mut work = WorkCounters::default();
+    let report = sequential_matrix_free_step_with_inner_forcing(
+        &problem,
+        0.0,
+        &y0,
+        1.0 / 32.0,
+        &config,
+        None,
+        OUTER_ATOL,
+        OUTER_RTOL,
+        true,
+        &mut work,
+    )
+    .unwrap();
+    assert!(
+        report
+            .stage_forcing
+            .iter()
+            .any(|row| row.refinement_pass > 0)
+    );
+    let l1 = 4.9455;
+    let limit = rodas5p_inner_forcing_error_limit(report.step.error_norm, l1).unwrap();
+    for row in &report.stage_forcing {
+        let floor = 64.0 * f64::EPSILON * row.flow_wrms.max(row.rhs_wrms).max(1.0);
+        assert!(row.achieved_residual_wrms <= row.tau);
+        assert!(row.tau <= RODAS5P_INNER_RESIDUAL_HEURISTIC_FRACTION / l1);
+        // The final pass meets the limit of the estimate it was refined against;
+        // that estimate and the final one agree to well within a factor of two.
+        assert!(
+            row.achieved_residual_wrms <= 2.0 * limit.max(floor),
+            "{row:?} limit {limit:e}"
+        );
+    }
 }
 
 #[test]
