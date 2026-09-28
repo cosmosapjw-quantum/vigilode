@@ -6,6 +6,7 @@
 
 use std::path::PathBuf;
 
+use rodas5p_core::WorkCounters;
 use rodas5p_fair_ab::{
     ArmBudget, CommonOutputGrid, DualOutputPolicyEvidence, ExternalErrorScale, GlobalErrorMetrics,
     IntegratorWorkReport, OutputArmExceedance, OutputPolicyDominance, OutputPolicyRunEvidence,
@@ -13,7 +14,6 @@ use rodas5p_fair_ab::{
     TWO_ARM_INTERPOLANT_DELTA_LIMIT, TwoArmRowStatus, check_policy_gap_triangle,
     classify_arm_budget, classify_output_policy_dominance, classify_two_arm_row,
 };
-use rodas5p_core::WorkCounters;
 use serde_json::Value;
 
 #[test]
@@ -29,9 +29,18 @@ fn protocol_id_declares_budget_and_interpolant_limit_before_any_run() {
 #[test]
 fn arm_budget_has_three_bands_with_reference_uncertainty() {
     let b = 10.0;
-    assert_eq!(classify_arm_budget(9.0, 1.0, b).unwrap(), ArmBudget::WithinBudget);
-    assert_eq!(classify_arm_budget(3.0, 0.0, b).unwrap(), ArmBudget::WithinBudget);
-    assert_eq!(classify_arm_budget(11.5, 1.0, b).unwrap(), ArmBudget::ExceedsBudget);
+    assert_eq!(
+        classify_arm_budget(9.0, 1.0, b).unwrap(),
+        ArmBudget::WithinBudget
+    );
+    assert_eq!(
+        classify_arm_budget(3.0, 0.0, b).unwrap(),
+        ArmBudget::WithinBudget
+    );
+    assert_eq!(
+        classify_arm_budget(11.5, 1.0, b).unwrap(),
+        ArmBudget::ExceedsBudget
+    );
     assert_eq!(
         classify_arm_budget(11.0, 1.0, b).unwrap(),
         ArmBudget::ReferenceUndecidable,
@@ -48,7 +57,10 @@ fn arm_budget_has_three_bands_with_reference_uncertainty() {
         (1.0, 0.0, 0.0),
         (1.0, f64::INFINITY, b),
     ] {
-        assert!(classify_arm_budget(e, u, budget).is_err(), "{e} {u} {budget}");
+        assert!(
+            classify_arm_budget(e, u, budget).is_err(),
+            "{e} {u} {budget}"
+        );
     }
 }
 
@@ -133,9 +145,15 @@ fn arm(times: &[f64], states: Vec<Vec<f64>>) -> OutputPolicyRunEvidence {
 
 fn synthetic_evidence(seed: u64, dimension: usize, points: usize) -> DualOutputPolicyEvidence {
     let mut rng = Lcg(seed);
-    let times = (0..points).map(|i| i as f64 / (points - 1) as f64).collect::<Vec<_>>();
+    let times = (0..points)
+        .map(|i| i as f64 / (points - 1) as f64)
+        .collect::<Vec<_>>();
     let reference = (0..points)
-        .map(|_| (0..dimension).map(|_| 10.0 * rng.next()).collect::<Vec<_>>())
+        .map(|_| {
+            (0..dimension)
+                .map(|_| 10.0 * rng.next())
+                .collect::<Vec<_>>()
+        })
         .collect::<Vec<_>>();
     let perturb = |rng: &mut Lcg, scale: f64| {
         reference
@@ -148,7 +166,8 @@ fn synthetic_evidence(seed: u64, dimension: usize, points: usize) -> DualOutputP
     let basis = ReferenceWrmsBasis::new(
         CommonOutputGrid::new(times.clone()).unwrap(),
         reference,
-        ExternalErrorScale::new(vec![1.0e-10; dimension], 1.0e-8, 1.0e-3).unwrap(),
+        ExternalErrorScale::with_reference_uncertainty(vec![1.0e-10; dimension], 1.0e-8, 1.0e-3)
+            .unwrap(),
     )
     .unwrap();
     DualOutputPolicyEvidence::new(basis, arm(&times, clipped), arm(&times, dense)).unwrap()
@@ -158,7 +177,9 @@ fn synthetic_evidence(seed: u64, dimension: usize, points: usize) -> DualOutputP
 fn two_arm_classification_holds_the_triangle_on_random_trajectories() {
     for seed in 1..=64 {
         let evidence = synthetic_evidence(seed, 7, 11);
-        let row = evidence.classify_two_arm_v3(1.0e-6, 1.0e-4, Some(0.5)).unwrap();
+        let row = evidence
+            .classify_two_arm_v3(1.0e-6, 1.0e-4, Some(0.5))
+            .unwrap();
         assert_eq!(row.protocol_id, TWO_ARM_ADMISSIBILITY_PROTOCOL_ID);
         assert!(row.gap_case_wrms <= row.clipped_case_wrms + row.dense_case_wrms);
         // The frozen rule is untouched and still reachable on the same evidence.
@@ -188,11 +209,17 @@ fn case_tolerance_basis_scales_exactly_when_weights_are_proportional() {
         assert!(row.basis_id.contains("case-tolerance"));
     }
     // A different atol/rtol ratio is not a scalar rescaling.
-    let row = evidence.classify_two_arm_v3(1.0e-2, 1.0e-4, Some(0.0)).unwrap();
+    let row = evidence
+        .classify_two_arm_v3(1.0e-2, 1.0e-4, Some(0.0))
+        .unwrap();
     let scalar = tight.max_grid_wrms * 1.0e-8 / 1.0e-4;
     assert!((row.dense_case_wrms - scalar).abs() > 1.0e-6 * scalar);
     assert!(evidence.classify_two_arm_v3(0.0, 1.0e-4, None).is_err());
-    assert!(evidence.classify_two_arm_v3(1.0e-6, f64::NAN, None).is_err());
+    assert!(
+        evidence
+            .classify_two_arm_v3(1.0e-6, f64::NAN, None)
+            .is_err()
+    );
 }
 
 fn audit_experiment(path: &str) -> Value {
@@ -251,7 +278,10 @@ fn audit_records_classify_as_predeclared_under_the_new_protocol() {
             scipy_within += 1;
         }
     }
-    assert_eq!(scipy_within, 18, "the new criterion is attainable by SciPy Radau");
+    assert_eq!(
+        scipy_within, 18,
+        "the new criterion is attainable by SciPy Radau"
+    );
     assert!(scipy_max_case < 1.7);
 
     // The frozen 0.1 rule rejects SciPy Radau's own first-step pair in 17/18.
