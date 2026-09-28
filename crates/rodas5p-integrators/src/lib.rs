@@ -190,10 +190,12 @@ pub use g4_prefix_kernel_gate::{
 };
 pub use g4_s5b0_inner_tolerance::{
     G4_S5B0_COMMITTED_LINEAR_TOLERANCE_ARM, G4S5B0InnerToleranceLane, G4S5B0InnerTolerancePolicy,
-    G4S5B0LinearToleranceArm, RODAS5P_INNER_FORCING_CLAIM_SCOPE, RODAS5P_INNER_FORCING_ETA_MAX,
+    G4S5B0LinearToleranceArm, RODAS5P_INNER_FORCING_CLAIM_SCOPE,
+    RODAS5P_INNER_FORCING_ERROR_EXPONENT, RODAS5P_INNER_FORCING_ETA_MAX,
     RODAS5P_INNER_FORCING_FLOOR, RODAS5P_INNER_RESIDUAL_HEURISTIC_FRACTION,
     Rodas5pInnerForcingClaimScope, Rodas5pInnerForcingTarget,
-    committed_g4_s5b0_linear_tolerance_arm, rodas5p_inner_forcing_target,
+    committed_g4_s5b0_linear_tolerance_arm, rodas5p_inner_forcing_error_limit,
+    rodas5p_inner_forcing_target,
 };
 pub use g4_s5b0_regime_atlas::{
     G4S5B0ActualLevel1PrefixReport, G4S5B0ActualLevel1PrefixRow, G4S5B0ActualLevel2PrefixReport,

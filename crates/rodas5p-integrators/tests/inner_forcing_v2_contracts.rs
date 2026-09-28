@@ -57,13 +57,22 @@ fn protected_matrix_free_step_applies_stage_specific_wrms_forcing() {
     for row in &coarse.stage_forcing {
         let oracle =
             rodas5p_inner_forcing_target(row.flow_wrms, row.rhs_wrms, output_weight_l1).unwrap();
-        assert_eq!(row.eta.to_bits(), oracle.eta.to_bits());
-        assert_eq!(row.tau.to_bits(), oracle.tau.to_bits());
+        if row.refinement_pass == 0 {
+            assert_eq!(row.eta.to_bits(), oracle.eta.to_bits());
+            assert_eq!(row.tau.to_bits(), oracle.tau.to_bits());
+        } else {
+            // A refinement against the step's embedded estimate only tightens
+            // the allocation (WU-3, audit F-008).
+            assert!(row.tau <= oracle.tau);
+        }
         assert!(row.achieved_residual_wrms <= row.eta * row.rhs_wrms);
-        assert!(row.eta * row.rhs_wrms <= row.tau);
+        assert!(row.eta * row.rhs_wrms <= row.tau * (1.0 + 4.0 * f64::EPSILON));
         assert!(output_weight_l1 * row.tau <= 0.1);
     }
-    assert!(fine.stage_forcing[0].eta > coarse.stage_forcing[0].eta);
+    // Under the h-independent rule eta grew as h shrank (audit F-030 noted
+    // this assertion certified that). With the error-scaled budget the
+    // admitted stage residual must not grow when h is halved.
+    assert!(fine.stage_forcing[0].tau <= coarse.stage_forcing[0].tau);
     assert!(coarse.step.accepted);
     assert!(fine.step.accepted);
 }
@@ -126,7 +135,10 @@ fn forced_fixed_endpoint(step: f64) -> f64 {
 }
 
 #[test]
-fn forced_fixed_step_refinement_retains_order_five_before_roundoff() {
+fn forced_fixed_step_refinement_with_h6_tied_rtol_retains_order_five_before_roundoff() {
+    // This test ties rtol to h^6, so it cannot see a stage-residual budget
+    // that is independent of h (audit F-030); the fixed-rtol ladder lives in
+    // inner_forcing_fixed_step_ladder_contracts.rs.
     // Defect caught: an h-independent inner residual tolerance creates a global
     // error floor and makes at least one pre-roundoff refinement slope collapse.
     let errors = [0.08, 0.04, 0.02, 0.01].map(forced_fixed_endpoint);

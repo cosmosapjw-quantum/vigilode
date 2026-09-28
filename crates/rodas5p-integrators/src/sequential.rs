@@ -13,7 +13,14 @@ use rodas5p_krylov::{
     solve_lgmres_with_residual_scale,
 };
 
-use crate::{OdeProblem, RODAS5P_INNER_FORCING_FLOOR, rodas5p_inner_forcing_target};
+use crate::{
+    OdeProblem, RODAS5P_INNER_FORCING_ETA_MAX, RODAS5P_INNER_FORCING_FLOOR,
+    rodas5p_inner_forcing_error_limit, rodas5p_inner_forcing_target,
+};
+
+/// Stage-solve passes per inner-forced step: the first pass plus at most two
+/// refinements against the step's own embedded error estimate.
+const RODAS5P_INNER_FORCING_MAX_PASSES: usize = 3;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum KrylovState {
@@ -77,6 +84,11 @@ pub struct StageInnerForcingReport {
     pub eta: f64,
     pub tau: f64,
     pub achieved_residual_wrms: f64,
+    /// The roundoff floor `64 eps max(1, flow_wrms, rhs_wrms)`, not the
+    /// allocation, set `tau` (audit F-009).
+    pub floor_active: bool,
+    /// Zero for the first stage-solve pass, `k` for the `k`-th refinement.
+    pub refinement_pass: usize,
 }
 
 #[derive(Clone, Debug)]
@@ -291,11 +303,31 @@ fn direct_report(
     })
 }
 
+/// A refinement pass of the inner-forced stage solves.
+struct InnerForcingRefinement<'a> {
+    /// Upper bound on every stage residual budget, in outer-WRMS units.
+    residual_limit: f64,
+    /// Stages of the previous pass, used as Krylov initial guesses.
+    warm_start: &'a [Vec<f64>],
+    pass: usize,
+}
+
 fn sequential_stages_impl(
+    context: &StepContext<'_>,
+    config: &LinearSolverConfig,
+    recycle: Option<&mut KrylovState>,
+    outer_tolerances: Option<(f64, f64)>,
+    counters: &mut WorkCounters,
+) -> CoreResult<InnerForcedStageSolveData> {
+    sequential_stages_refined(context, config, recycle, outer_tolerances, None, counters)
+}
+
+fn sequential_stages_refined(
     context: &StepContext<'_>,
     config: &LinearSolverConfig,
     mut recycle: Option<&mut KrylovState>,
     outer_tolerances: Option<(f64, f64)>,
+    refinement: Option<&InnerForcingRefinement<'_>>,
     counters: &mut WorkCounters,
 ) -> CoreResult<InnerForcedStageSolveData> {
     config.validate().map_err(CoreError::InvalidInput)?;
@@ -366,7 +398,20 @@ fn sequential_stages_impl(
             let scale = error_scale(&context.y, &yi, &[outer_atol], outer_rtol)?;
             let flow_wrms = context.h.abs() * wrms(&fi, &scale)?;
             let rhs_wrms = wrms(&rhs, &scale)?;
-            let target = rodas5p_inner_forcing_target(flow_wrms, rhs_wrms, output_weight_l1)?;
+            let mut target = rodas5p_inner_forcing_target(flow_wrms, rhs_wrms, output_weight_l1)?;
+            if let Some(refinement) = refinement
+                && target.tau > refinement.residual_limit
+            {
+                // Never ask for less than the backward error a direct solve attains.
+                let floor = RODAS5P_INNER_FORCING_FLOOR * flow_wrms.max(rhs_wrms).max(1.0);
+                target.tau = refinement.residual_limit.max(floor);
+                target.floor_active = refinement.residual_limit < floor;
+                target.eta = if rhs_wrms > 0.0 {
+                    (target.tau / rhs_wrms).min(RODAS5P_INNER_FORCING_ETA_MAX)
+                } else {
+                    RODAS5P_INNER_FORCING_ETA_MAX
+                };
+            }
             Some((scale, flow_wrms, rhs_wrms, target))
         } else {
             None
@@ -383,7 +428,11 @@ fn sequential_stages_impl(
         if forcing.is_some() {
             counters.forced_stage_solves = counters.forced_stage_solves.saturating_add(1);
         }
-        let x0 = if i > 0
+        let x0 = if let Some(refinement) = refinement
+            && config.method != LinearMethod::Direct
+        {
+            Some(refinement.warm_start[i].as_slice())
+        } else if i > 0
             && config.method != LinearMethod::Direct
             && config.x0_strategy == InitialGuess::Previous
         {
@@ -518,6 +567,8 @@ fn sequential_stages_impl(
                 eta: target.eta,
                 tau: target.tau,
                 achieved_residual_wrms: report.residual_norm,
+                floor_active: target.floor_active,
+                refinement_pass: refinement.map_or(0, |refinement| refinement.pass),
             });
         }
         stages[i] = report.x.clone();
@@ -562,6 +613,83 @@ pub fn sequential_stages_with_inner_forcing(
         Some((outer_atol, outer_rtol)),
         counters,
     )
+}
+
+/// Embedded error estimate of candidate stages, exactly as `finish_step` forms it.
+fn embedded_error_norm(
+    context: &StepContext<'_>,
+    stages: &[Vec<f64>],
+    atol: f64,
+    rtol: f64,
+) -> CoreResult<f64> {
+    let n = context.problem.dimension;
+    let update = row_combination(&context.coeffs.b, stages, n);
+    let y_new: Vec<f64> = context.y.iter().zip(update).map(|(a, b)| a + b).collect();
+    let error_vector = row_combination(&context.coeffs.btilde, stages, n);
+    let scale = error_scale(&context.y, &y_new, &[atol], rtol)?;
+    wrms(&error_vector, &scale)
+}
+
+/// Inner-forced stage solves whose residual budget follows the step's own
+/// truncation error (audit F-008).
+///
+/// The first pass uses the `h`-independent allocation. Its embedded estimate
+/// `err` then bounds every stage budget by `0.1 / ||b||_1 * min(1, err)^{6/5}`;
+/// when a stage residual exceeds that bound, all stages are solved again,
+/// warm-started from the previous pass, since later stages depend on earlier
+/// ones. At most two refinements run. Work of every pass is charged.
+fn inner_forced_stages_with_error_refinement(
+    context: &StepContext<'_>,
+    config: &LinearSolverConfig,
+    mut recycle: Option<&mut KrylovState>,
+    outer_atol: f64,
+    outer_rtol: f64,
+    counters: &mut WorkCounters,
+) -> CoreResult<InnerForcedStageSolveData> {
+    let tolerances = Some((outer_atol, outer_rtol));
+    let output_weight_l1 = context
+        .coeffs
+        .b
+        .iter()
+        .map(|weight| weight.abs())
+        .sum::<f64>();
+    let mut data = sequential_stages_refined(
+        context,
+        config,
+        recycle.as_deref_mut(),
+        tolerances,
+        None,
+        counters,
+    )?;
+    for pass in 1..RODAS5P_INNER_FORCING_MAX_PASSES {
+        let error_norm =
+            embedded_error_norm(context, &data.stage_data.stages, outer_atol, outer_rtol)?;
+        if !error_norm.is_finite() {
+            break;
+        }
+        let residual_limit = rodas5p_inner_forcing_error_limit(error_norm, output_weight_l1)?;
+        let within_limit = data.stage_forcing.iter().all(|row| {
+            let floor = RODAS5P_INNER_FORCING_FLOOR * row.flow_wrms.max(row.rhs_wrms).max(1.0);
+            row.achieved_residual_wrms <= residual_limit.max(floor)
+        });
+        if within_limit {
+            break;
+        }
+        let warm_start = data.stage_data.stages.clone();
+        data = sequential_stages_refined(
+            context,
+            config,
+            recycle.as_deref_mut(),
+            tolerances,
+            Some(&InnerForcingRefinement {
+                residual_limit,
+                warm_start: &warm_start,
+                pass,
+            }),
+            counters,
+        )?;
+    }
+    Ok(data)
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -729,7 +857,7 @@ pub fn sequential_matrix_free_step_with_inner_forcing(
     let snapshot = recycle.as_deref().cloned();
     let result = (|| {
         let context = build_step_context_matrix_free(problem, t, y, h, counters)?;
-        let data = sequential_stages_with_inner_forcing(
+        let data = inner_forced_stages_with_error_refinement(
             &context,
             config,
             recycle.as_deref_mut(),
