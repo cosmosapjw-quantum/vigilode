@@ -5,8 +5,7 @@ use crate::output::OutputCollector;
 use crate::{
     AdaptiveControllerState, AdaptiveStepConfig, EarlyFlowDefectTelemetry,
     EarlyFlowDefectTelemetryMode, FusedPhiKrylovConfig, ObservedIntegrationResult, OdeProblem,
-    OutputSchedule, ParallelExecution, pexprb54s4_fused_step_with_telemetry_mode,
-    pexprb54s4_fused_step_with_tolerance_scaled_telemetry,
+    OutputSchedule, ParallelExecution, exponential::pexprb54s4_fused_step_charged,
 };
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
@@ -196,9 +195,12 @@ fn integrate_pexprb54s4_fused_adaptive_observed_with_telemetry_request(
         }
         let (trial_h, clipped) = collector.limit_step(t, h, tf)?;
         diagnostics.attempts += 1;
+        // The trial charges a local ledger that survives a failed trial, so
+        // rejected-trial work stays in the run counters (audit F-039).
+        let mut trial_work = WorkCounters::default();
         let trial = match telemetry_request {
             AdaptiveEarlyFlowTelemetryRequest::Legacy(telemetry_mode) => {
-                pexprb54s4_fused_step_with_telemetry_mode(
+                pexprb54s4_fused_step_charged(
                     problem,
                     t,
                     &y,
@@ -206,20 +208,24 @@ fn integrate_pexprb54s4_fused_adaptive_observed_with_telemetry_request(
                     phi_config,
                     execution,
                     telemetry_mode,
+                    None,
+                    &mut trial_work,
                 )
             }
             AdaptiveEarlyFlowTelemetryRequest::ToleranceScaled {
                 norm_component_count,
-            } => pexprb54s4_fused_step_with_tolerance_scaled_telemetry(
+            } => pexprb54s4_fused_step_charged(
                 problem,
                 t,
                 &y,
                 trial_h,
                 phi_config,
                 execution,
-                norm_component_count,
-                adaptive.atol,
-                adaptive.rtol,
+                EarlyFlowDefectTelemetryMode::ReadOnly {
+                    norm_component_count,
+                },
+                Some((adaptive.atol, adaptive.rtol)),
+                &mut trial_work,
             ),
         };
         let report = match trial {
@@ -240,10 +246,13 @@ fn integrate_pexprb54s4_fused_adaptive_observed_with_telemetry_request(
                             candidate_state_finite: None,
                             maximum_krylov_dimension: None,
                             phi_substeps: None,
+                            // The telemetry row stays unscorable; the measured
+                            // work is charged to the run counters below.
                             trial_work: None,
                             failure: Some(error.to_string()),
                         });
                 }
+                counters.accumulate(trial_work);
                 diagnostics.rejected_steps += 1;
                 diagnostics.rejected_step_sizes.push(trial_h);
                 diagnostics.time_error_norms.push(f64::INFINITY);

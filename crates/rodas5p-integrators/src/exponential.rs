@@ -802,6 +802,14 @@ fn axpy(alpha: f64, x: &[f64], y: &mut [f64]) {
     }
 }
 
+/// Relative Arnoldi breakdown test `h_{m+1,m} <= tol * max(1, |h_{i,m}|)`.
+///
+/// The former `64 sqrt(eps)` (about 9.5e-7) stopped Arnoldi on a residual that
+/// still carried a relative error near 1e-7 and certified it with an estimate
+/// of zero (audit F-011). A residual estimate now decides convergence, so the
+/// breakdown test only has to recognise a numerically invariant subspace.
+const PHI_KRYLOV_BREAKDOWN_TOLERANCE: f64 = 1.0e3 * f64::EPSILON;
+
 fn projected_action(
     basis: &[Vec<f64>],
     hessenberg: &[Vec<f64>],
@@ -878,7 +886,7 @@ pub fn krylov_phi_action(
     let mut latest_error = f64::INFINITY;
     let mut latest_dimension = 0;
     let mut happy_breakdown = false;
-    let breakdown_tolerance = 64.0 * f64::EPSILON.sqrt();
+    let breakdown_tolerance = PHI_KRYLOV_BREAKDOWN_TOLERANCE;
 
     for column in 0..maximum {
         let mut work = vec![0.0; n];
@@ -937,7 +945,37 @@ pub fn krylov_phi_action(
             let threshold =
                 config.absolute_tolerance + config.relative_tolerance * safe_l2(&current).max(beta);
             let full_space = dimension == n;
-            if happy_breakdown || full_space || latest_error <= threshold {
+            if happy_breakdown && !full_space {
+                // A breakdown ends the basis but is not itself a certificate:
+                // report the Arnoldi residual term
+                // |scale h_{m+1,m} beta e_m^T phi_{k+1}(scale H_m) e_1| and let
+                // it decide convergence (audit F-011).
+                let residual = breakdown_residual_estimate(
+                    &hessenberg,
+                    beta,
+                    dimension,
+                    scale,
+                    phi_index,
+                    counters,
+                )?;
+                latest_error = if latest_error.is_finite() {
+                    latest_error.max(residual)
+                } else {
+                    residual
+                };
+                let converged = next_norm == 0.0 || latest_error <= threshold;
+                return Ok(PhiActionReport {
+                    phi_index,
+                    scale,
+                    krylov_dimension: dimension,
+                    converged,
+                    happy_breakdown,
+                    error_estimate: latest_error,
+                    action_norm: safe_l2(&current),
+                    value: current,
+                });
+            }
+            if full_space || latest_error <= threshold {
                 return Ok(PhiActionReport {
                     phi_index,
                     scale,
@@ -970,6 +1008,31 @@ pub fn krylov_phi_action(
         action_norm: safe_l2(&latest),
         value: latest,
     })
+}
+
+/// First Arnoldi error term of `phi_k(scale A) v` after `dimension` vectors:
+/// `|scale h_{m+1,m} beta e_m^T phi_{k+1}(scale H_m) e_1|`.
+fn breakdown_residual_estimate(
+    hessenberg: &[Vec<f64>],
+    beta: f64,
+    dimension: usize,
+    scale: f64,
+    phi_index: usize,
+    counters: &mut WorkCounters,
+) -> CoreResult<f64> {
+    let mut h = DenseMatrix::zeros(dimension, dimension);
+    for i in 0..dimension {
+        for j in 0..dimension {
+            h[(i, j)] = hessenberg[i][j];
+        }
+    }
+    let mut unit = vec![0.0; dimension];
+    unit[0] = 1.0;
+    let reduced = dense_phi_action(&h, scale, phi_index + 1, &unit)?;
+    counters.phi_projected_exponentials += 1;
+    counters.phi_dense_oracle_calls += 1;
+    let h_next = hessenberg[dimension][dimension - 1].abs();
+    Ok(scale.abs() * h_next * beta * reduced[dimension - 1].abs())
 }
 
 fn projected_exponential_action_with_residual_estimate(
@@ -1075,7 +1138,7 @@ fn krylov_exponential_once(
     let mut latest_nested_difference = f64::INFINITY;
     let mut latest_dimension = 0;
     let mut latest_breakdown = false;
-    let breakdown_tolerance = 64.0 * f64::EPSILON.sqrt();
+    let breakdown_tolerance = PHI_KRYLOV_BREAKDOWN_TOLERANCE;
 
     for column in 0..maximum {
         let mut work = vec![0.0; dimension];
@@ -1136,14 +1199,19 @@ fn krylov_exponential_once(
             let full_space_exact = krylov_dimension == dimension
                 && matches!(config.orthogonalization, FusedOrthogonalization::FullMgs);
             if happy_breakdown || full_space_exact || residual_error_estimate <= threshold {
+                // A breakdown is reported with its residual estimate and is
+                // converged only when that estimate meets the threshold; the
+                // caller then halves the substep (audit F-011).
+                let converged =
+                    full_space_exact || next_norm == 0.0 || residual_error_estimate <= threshold;
                 return Ok((
                     current,
                     FusedPhiSubstepReport {
                         substep_index: 0,
                         krylov_dimension,
-                        converged: true,
+                        converged,
                         happy_breakdown,
-                        error_estimate: if happy_breakdown || full_space_exact {
+                        error_estimate: if full_space_exact {
                             0.0
                         } else {
                             residual_error_estimate
@@ -1560,7 +1628,7 @@ impl FusedPhiPrefixSession {
             .take(column + 1)
             .map(|row| row[column].abs())
             .fold(1.0, f64::max);
-        let breakdown_tolerance = 64.0 * f64::EPSILON.sqrt();
+        let breakdown_tolerance = PHI_KRYLOV_BREAKDOWN_TOLERANCE;
         self.happy_breakdown = next_norm <= breakdown_tolerance * column_scale;
         if !self.happy_breakdown && column + 1 < maximum {
             self.basis
@@ -1594,7 +1662,7 @@ impl FusedPhiPrefixSession {
         let threshold = self.config.absolute_tolerance
             + self.config.relative_tolerance * safe_l2(&self.latest_value_augmented).max(self.beta);
         let full_space = self.current_dimension == augmented_dimension;
-        self.converged = self.happy_breakdown || full_space || residual_error <= threshold;
+        self.converged = full_space || next_norm == 0.0 || residual_error <= threshold;
         Ok(())
     }
 
@@ -1630,11 +1698,7 @@ impl FusedPhiPrefixSession {
             substeps: usize::from(self.current_dimension > 0),
             converged: self.converged,
             maximum_krylov_dimension: self.current_dimension,
-            error_estimate: if self.converged && self.happy_breakdown {
-                0.0
-            } else {
-                self.latest_residual_error
-            },
+            error_estimate: self.latest_residual_error,
             nested_difference_estimate: self.latest_nested_difference,
             action_norm: safe_l2(&physical),
             value: physical,
@@ -2387,6 +2451,32 @@ fn pexprb54s4_level1_prefix_with_telemetry_config(
     telemetry_mode: EarlyFlowDefectTelemetryMode,
     tolerance_scale: Option<EarlyFlowDefectToleranceScale>,
 ) -> CoreResult<Pexprb54s4Level1Prefix> {
+    let mut work = WorkCounters::default();
+    pexprb54s4_level1_prefix_charged(
+        problem,
+        t,
+        y,
+        h,
+        config,
+        telemetry_mode,
+        tolerance_scale,
+        &mut work,
+    )
+}
+
+/// Level-1 prefix that charges its work to a caller-owned ledger, so the
+/// work survives when the prefix fails (audit F-039).
+#[allow(clippy::too_many_arguments)]
+fn pexprb54s4_level1_prefix_charged(
+    problem: &OdeProblem,
+    t: f64,
+    y: &[f64],
+    h: f64,
+    config: FusedPhiKrylovConfig,
+    telemetry_mode: EarlyFlowDefectTelemetryMode,
+    tolerance_scale: Option<EarlyFlowDefectToleranceScale>,
+    work: &mut WorkCounters,
+) -> CoreResult<Pexprb54s4Level1Prefix> {
     validate_problem(problem, y)?;
     if let EarlyFlowDefectTelemetryMode::ReadOnly {
         norm_component_count,
@@ -2400,8 +2490,7 @@ fn pexprb54s4_level1_prefix_with_telemetry_config(
     }
 
     let tableau = pexprb54s4_tableau();
-    let mut work = WorkCounters::default();
-    let f0 = problem.eval_rhs(t, y, &mut work)?;
+    let f0 = problem.eval_rhs(t, y, work)?;
     let operator = problem.linearize_matrix_free(t, y)?;
 
     // Dependency level 1: U2 and D2 only.  No U3/U4 or endpoint work is allowed here.
@@ -2414,10 +2503,10 @@ fn pexprb54s4_level1_prefix_with_telemetry_config(
             vector: &f0,
         }],
         config,
-        &mut work,
+        work,
     )?)?;
     let u2 = add_scaled_state(y, h, &u2_action.value);
-    let d2 = nonlinear_remainder(problem, operator.as_ref(), t, y, &f0, &u2, &mut work)?;
+    let d2 = nonlinear_remainder(problem, operator.as_ref(), t, y, &f0, &u2, work)?;
     let early_flow_defect =
         early_flow_defect_telemetry(telemetry_mode, tableau.c2, h, y, &u2, &d2, tolerance_scale)?;
 
@@ -2427,7 +2516,7 @@ fn pexprb54s4_level1_prefix_with_telemetry_config(
         h,
         logical_critical_depth: 1,
         fused_phi_reports: vec![u2_action.clone()],
-        work,
+        work: *work,
         early_flow_defect,
     };
 
@@ -2773,6 +2862,17 @@ pub fn pexprb54s4_level2_prefix_resume_level1(
     prefix: Pexprb54s4Level1Prefix,
     execution: &ParallelExecution,
 ) -> CoreResult<Pexprb54s4Level2Prefix> {
+    let mut ledger = WorkCounters::default();
+    pexprb54s4_level2_prefix_resume_level1_charged(prefix, execution, &mut ledger)
+}
+
+/// Level-2 prefix that leaves the cumulative work, including that of a failed
+/// stage, in `ledger` (audit F-039).
+fn pexprb54s4_level2_prefix_resume_level1_charged(
+    prefix: Pexprb54s4Level1Prefix,
+    execution: &ParallelExecution,
+    ledger: &mut WorkCounters,
+) -> CoreResult<Pexprb54s4Level2Prefix> {
     let Pexprb54s4Level1Prefix {
         problem,
         t,
@@ -2791,40 +2891,52 @@ pub fn pexprb54s4_level2_prefix_resume_level1(
 
     // Dependency level 2: U3 and U4 are independent once D2 is known.
     let stage_ids = [3usize, 4usize];
-    let stages = execution.map_ordered(&stage_ids, |id| {
+    *ledger = level1_report.work;
+    // Each stage result is carried as data so that both stage counters survive
+    // a failed stage; the first failure in stage order is then returned.
+    let outcomes = execution.map_ordered(&stage_ids, |id| {
         let mut local = WorkCounters::default();
-        let (c, a) = if *id == 3 {
-            (tableau.c3, tableau.a32_phi3)
-        } else {
-            (tableau.c4, tableau.a42_phi3)
-        };
-        let action = require_fused(fused_phi_linear_combination(
-            operator.clone(),
-            c * h,
-            &[
-                FusedPhiTerm {
-                    coefficient: c,
-                    phi_index: 1,
-                    vector: &f0,
-                },
-                FusedPhiTerm {
-                    coefficient: a,
-                    phi_index: 3,
-                    vector: &d2,
-                },
-            ],
-            config,
-            &mut local,
-        )?)?;
-        let stage = add_scaled_state(&y, h, &action.value);
-        let remainder =
-            nonlinear_remainder(&problem, operator.as_ref(), t, &y, &f0, &stage, &mut local)?;
-        Ok((action, stage, remainder, local))
+        let result = (|| {
+            let (c, a) = if *id == 3 {
+                (tableau.c3, tableau.a32_phi3)
+            } else {
+                (tableau.c4, tableau.a42_phi3)
+            };
+            let action = require_fused(fused_phi_linear_combination(
+                operator.clone(),
+                c * h,
+                &[
+                    FusedPhiTerm {
+                        coefficient: c,
+                        phi_index: 1,
+                        vector: &f0,
+                    },
+                    FusedPhiTerm {
+                        coefficient: a,
+                        phi_index: 3,
+                        vector: &d2,
+                    },
+                ],
+                config,
+                &mut local,
+            )?)?;
+            let stage = add_scaled_state(&y, h, &action.value);
+            let remainder =
+                nonlinear_remainder(&problem, operator.as_ref(), t, &y, &f0, &stage, &mut local)?;
+            Ok((action, stage, remainder))
+        })();
+        Ok((result, local))
     })?;
 
     let mut level2_incremental_work = WorkCounters::default();
-    for (_, _, _, local) in &stages {
+    for (_, local) in &outcomes {
         level2_incremental_work.accumulate(*local);
+    }
+    ledger.accumulate(level2_incremental_work);
+    let mut stages = Vec::with_capacity(outcomes.len());
+    for (result, local) in outcomes {
+        let (action, stage, remainder) = result?;
+        stages.push((action, stage, remainder, local));
     }
     let mut cumulative_work = level1_report.work;
     cumulative_work.accumulate(level2_incremental_work);
@@ -3253,6 +3365,66 @@ fn pexprb54s4_fused_step_with_telemetry_config(
         tolerance_scale,
     )?;
     pexprb54s4_fused_step_resume_level1(prefix, execution)
+}
+
+/// One `pexprb54s4` fused step whose work is charged to `ledger` whether the
+/// step succeeds or fails (audit F-039).
+///
+/// On success the report equals the one from
+/// `pexprb54s4_fused_step_with_telemetry_config` and `ledger` equals
+/// `report.work`. On failure `ledger` holds every counter charged before and
+/// during the failing level, including a failed endpoint action.
+#[allow(clippy::too_many_arguments)]
+pub(crate) fn pexprb54s4_fused_step_charged(
+    problem: &OdeProblem,
+    t: f64,
+    y: &[f64],
+    h: f64,
+    config: FusedPhiKrylovConfig,
+    execution: &ParallelExecution,
+    telemetry_mode: EarlyFlowDefectTelemetryMode,
+    tolerance_scale: Option<(f64, f64)>,
+    ledger: &mut WorkCounters,
+) -> CoreResult<FusedExponentialStepReport> {
+    *ledger = WorkCounters::default();
+    let tolerance_scale =
+        tolerance_scale.map(|(atol, rtol)| EarlyFlowDefectToleranceScale { atol, rtol });
+    let prefix = pexprb54s4_level1_prefix_charged(
+        problem,
+        t,
+        y,
+        h,
+        config,
+        telemetry_mode,
+        tolerance_scale,
+        ledger,
+    )?;
+    let level2 = pexprb54s4_level2_prefix_resume_level1_charged(prefix, execution, ledger)?;
+    match pexprb54s4_fused_step_resume_level2_accounted_impl(level2, execution, None)? {
+        Pexprb54s4Level2ContinuationOutcome::Complete {
+            report,
+            ledger: continuation,
+        } => {
+            *ledger = continuation.cumulative_work;
+            Ok(*report)
+        }
+        Pexprb54s4Level2ContinuationOutcome::Failed {
+            error,
+            ledger: continuation,
+        } => {
+            *ledger = continuation.cumulative_work;
+            Err(error)
+        }
+        Pexprb54s4Level2ContinuationOutcome::BudgetExhausted {
+            ledger: continuation,
+            ..
+        } => {
+            *ledger = continuation.cumulative_work;
+            Err(CoreError::LinearSolve(
+                "unbounded pexprb54s4 continuation reported budget exhaustion".into(),
+            ))
+        }
+    }
 }
 
 #[cfg(test)]

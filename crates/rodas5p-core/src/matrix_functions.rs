@@ -150,19 +150,37 @@ pub fn dense_phi_action(
     }
 
     let n = matrix.nrows();
+    // `phi_k(scale*A) v` is linear in `v`, but the Pade squaring count follows
+    // the 1-norm of the augmented matrix, which contains `v`. An unscaled
+    // column made accuracy depend on the physical scale of `v` (audit F-040,
+    // E-06: 1e-8 relative error at ||v|| = 1e8). The column is scaled by a
+    // power of two into (1/2, 1] in max-norm, which is exact, and undone on
+    // the result.
+    let vector_max = vector.iter().fold(0.0_f64, |m, value| m.max(value.abs()));
+    if vector_max == 0.0 {
+        return Ok(vec![0.0; n]);
+    }
+    let vector_scale = 2.0_f64.powi(vector_max.log2().ceil() as i32);
+    if !vector_scale.is_finite() || vector_scale == 0.0 {
+        return Err(CoreError::NonFinite(
+            "dense phi-action vector scale is not representable".into(),
+        ));
+    }
     let mut augmented = DenseMatrix::zeros(n + phi_index, n + phi_index);
     for i in 0..n {
         for j in 0..n {
             augmented[(i, j)] = scale * matrix[(i, j)];
         }
-        augmented[(i, n)] = vector[i];
+        augmented[(i, n)] = vector[i] / vector_scale;
     }
     for j in 0..phi_index.saturating_sub(1) {
         augmented[(n + j, n + j + 1)] = 1.0;
     }
     let exponential = matrix_exp_pade13(&augmented)?;
     let target_column = n + phi_index - 1;
-    let out: Vec<f64> = (0..n).map(|i| exponential[(i, target_column)]).collect();
+    let out: Vec<f64> = (0..n)
+        .map(|i| vector_scale * exponential[(i, target_column)])
+        .collect();
     if out.iter().all(|value| value.is_finite()) {
         Ok(out)
     } else {

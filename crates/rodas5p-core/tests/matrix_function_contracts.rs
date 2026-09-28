@@ -123,6 +123,21 @@ fn dense_phi_action_is_invariant_under_the_physical_scale_of_the_vector() {
     }
 }
 
+/// Reference `phi_k(z)` without cancellation: the Taylor series
+/// `sum_j z^j / (j + k)!` for `|z| <= 1`, the recurrence otherwise.
+fn scalar_phi_series_or_recurrence(z: f64, k: usize) -> f64 {
+    if z.abs() > 1.0 {
+        return scalar_phi(z, k);
+    }
+    let mut term = 1.0 / (1..=k).product::<usize>() as f64;
+    let mut sum = term;
+    for j in 1..60 {
+        term *= z / (k + j) as f64;
+        sum += term;
+    }
+    sum
+}
+
 #[test]
 fn dense_phi_action_is_accurate_for_a_large_vector_on_a_diagonal_matrix() {
     let lambdas = [-1.0e3, -30.0, -1.0, -1.0e-3];
@@ -136,7 +151,7 @@ fn dense_phi_action_is_accurate_for_a_large_vector_on_a_diagonal_matrix() {
         let expected: Vec<f64> = lambdas
             .iter()
             .zip(vector)
-            .map(|(lambda, v)| v * scalar_phi(*lambda, k))
+            .map(|(lambda, v)| v * scalar_phi_series_or_recurrence(*lambda, k))
             .collect();
         let error = relative_deviation(&actual, &expected);
         assert!(
