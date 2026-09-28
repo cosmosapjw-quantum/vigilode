@@ -50,7 +50,12 @@ pub struct StageCertificateProvenance {
     pub coefficient_digest: String,
     pub operator_identity: String,
     pub preconditioner_identity: String,
+    /// Digest of every stage right-hand side, in stage order.
     pub rhs_digest: String,
+    /// Digest of the inputs that drive the decision: `strict_lower`, both
+    /// weight vectors, `kappa_upper`, `ehat`, every stage approximate solution
+    /// and the inverse witness (audit F-064).
+    pub decision_input_digest: String,
     pub restart: u32,
     pub max_arnoldi: u32,
     pub iteration_limit: u32,
@@ -104,6 +109,20 @@ pub struct StageCertificateTrace {
     pub partial_failure: Option<StageCertificatePartialFailure>,
 }
 
+/// One stage linear solve `W K_i = b_i` with its approximate solution.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct StageCertificateStageSolve {
+    pub rhs: Vec<f64>,
+    pub approximate_solution: Vec<f64>,
+    pub caller_product_upper: f64,
+    pub caller_q_upper: f64,
+}
+
+/// Input of the synthetic stage certificate.
+///
+/// The state dimension `n` is the size of the shared operator `W`; the stage
+/// count `s` is the number of stage solves, trace rows, weights and the size
+/// of `strict_lower`. The two are independent (audit F-060).
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct StageCertificateInput {
     pub frozen_plan: FrozenJsonDocument,
@@ -113,11 +132,11 @@ pub struct StageCertificateInput {
     pub coefficients: Vec<f64>,
     pub operator: Vec<Vec<f64>>,
     pub preconditioner: Vec<Vec<f64>>,
-    pub rhs: Vec<f64>,
-    pub approximate_solution: Vec<f64>,
+    /// Approximate inverse `V` of `W`; it lets the evaluator verify that
+    /// `kappa_upper` bounds `||W^{-1}||_2` (audit F-059).
+    pub inverse_witness: Vec<Vec<f64>>,
+    pub stages: Vec<StageCertificateStageSolve>,
     pub kappa_upper: f64,
-    pub caller_product_upper: f64,
-    pub caller_q_upper: f64,
     pub strict_lower: Vec<Vec<f64>>,
     pub endpoint_weights: Vec<f64>,
     pub estimator_weights: Vec<f64>,
@@ -143,10 +162,12 @@ pub struct StageCertificateReceipt {
     pub trace: StageCertificateTrace,
     pub provenance: StageCertificateProvenance,
     pub norm: StageCertificateNorm,
-    pub solution_l2: f64,
-    pub residual_l2: f64,
-    pub directed_product_upper: f64,
-    pub q_upper: f64,
+    /// Verified upper bound on `||W^{-1}||_2` from the inverse witness.
+    pub inverse_norm_upper: f64,
+    pub solution_l2_upper: Vec<f64>,
+    pub residual_l2_upper: Vec<f64>,
+    pub directed_product_upper: Vec<f64>,
+    pub q_upper: Vec<f64>,
     pub stage_majorant: Vec<f64>,
     pub endpoint_contamination: f64,
     pub estimator_contamination: f64,
@@ -175,6 +196,12 @@ pub enum Audit2StageCertificateError {
     DownwardRoundedBound,
     #[error("stage certificate interval is neither a safe accept nor a safe reject")]
     InconclusiveInterval,
+    #[error("stage certificate trace row exceeds the frozen max_arnoldi cap")]
+    MaxArnoldiExceeded,
+    #[error("stage certificate kappa does not bound the verified inverse norm")]
+    KappaPremiseNotVerified,
+    #[error("stage certificate upper bound overflowed; no decision")]
+    NonFiniteBound,
 }
 
 /// Returns the SHA-256 of a JSON value serialized with recursively sorted map keys.
@@ -249,61 +276,98 @@ pub fn retain_completed_stage_traces(
 }
 
 /// Recomputes the narrow synthetic L2 contract and admits only safe intervals.
+///
+/// Every quantity that enters the decision is an upper bound computed with
+/// correctly rounded upward binary64 arithmetic, including the residuals and
+/// norms (audit F-061, F-101). Each stage has its own residual bound
+/// (audit F-060), and `kappa_upper` must dominate a verified bound on
+/// `||W^{-1}||_2` (audit F-059).
 pub fn evaluate_audit2_stage_certificate(
     input: StageCertificateInput,
 ) -> Result<StageCertificateReceipt, Audit2StageCertificateError> {
     verify_frozen_json(&input.frozen_plan)?;
     validate_provenance_policy(&input.provenance)?;
     validate_finite(&input.coefficients)?;
-    let dimension = input.rhs.len();
+    let dimension = input.operator.len();
+    let stage_count = input.stages.len();
     input.norm.validate(dimension)?;
     verify_trace(&input.trace, &input.provenance)?;
     if dimension == 0
-        || input.approximate_solution.len() != dimension
+        || stage_count == 0
         || !is_square(&input.operator, dimension)
         || !is_square(&input.preconditioner, dimension)
-        || !is_square(&input.strict_lower, dimension)
-        || input.endpoint_weights.len() != dimension
-        || input.estimator_weights.len() != dimension
-        || input.trace.stage_traces.len() != dimension
+        || !is_square(&input.inverse_witness, dimension)
+        || input.stages.iter().any(|stage| {
+            stage.rhs.len() != dimension || stage.approximate_solution.len() != dimension
+        })
+        || !is_square(&input.strict_lower, stage_count)
+        || input.endpoint_weights.len() != stage_count
+        || input.estimator_weights.len() != stage_count
+        || input.trace.stage_traces.len() != stage_count
         || !input.kappa_upper.is_finite()
         || input.kappa_upper < 0.0
-        || !input.caller_product_upper.is_finite()
-        || input.caller_product_upper < 0.0
-        || !input.caller_q_upper.is_finite()
-        || input.caller_q_upper < 0.0
         || !input.ehat.is_finite()
         || input.ehat < 0.0
     {
         return Err(Audit2StageCertificateError::InvalidField);
     }
-    validate_finite(&input.rhs)?;
-    validate_finite(&input.approximate_solution)?;
+    for stage in &input.stages {
+        validate_finite(&stage.rhs)?;
+        validate_finite(&stage.approximate_solution)?;
+        if !stage.caller_product_upper.is_finite()
+            || stage.caller_product_upper < 0.0
+            || !stage.caller_q_upper.is_finite()
+            || stage.caller_q_upper < 0.0
+        {
+            return Err(Audit2StageCertificateError::InvalidField);
+        }
+    }
     validate_matrix_finite(&input.operator)?;
     validate_matrix_finite(&input.preconditioner)?;
+    validate_matrix_finite(&input.inverse_witness)?;
     validate_nonnegative(&input.endpoint_weights)?;
     validate_nonnegative(&input.estimator_weights)?;
     validate_strict_lower(&input.strict_lower)?;
     verify_provenance(&input)?;
 
-    let residual = residual(&input.operator, &input.approximate_solution, &input.rhs)?;
-    let solution_l2 = l2(&input.approximate_solution)?;
-    let residual_l2 = l2(&residual)?;
-    let directed_product_upper = next_up_nonnegative_product(input.kappa_upper, residual_l2)?;
-    if input.caller_product_upper < directed_product_upper {
-        return Err(Audit2StageCertificateError::DownwardRoundedBound);
+    let inverse_norm_upper = verified_inverse_norm_upper(&input.operator, &input.inverse_witness)?;
+    if input.kappa_upper < inverse_norm_upper {
+        return Err(Audit2StageCertificateError::KappaPremiseNotVerified);
     }
-    let q_upper = next_up_nonnegative_sum(solution_l2, directed_product_upper)?;
-    if input.caller_q_upper < q_upper {
-        return Err(Audit2StageCertificateError::DownwardRoundedBound);
+
+    let mut solution_l2_upper = Vec::with_capacity(stage_count);
+    let mut residual_l2_upper = Vec::with_capacity(stage_count);
+    let mut directed_product_upper = Vec::with_capacity(stage_count);
+    let mut q_upper = Vec::with_capacity(stage_count);
+    for stage in &input.stages {
+        let residual =
+            residual_magnitude_upper(&input.operator, &stage.approximate_solution, &stage.rhs)?;
+        let residual_norm = l2_upper(&residual)?;
+        let solution_magnitude: Vec<f64> = stage
+            .approximate_solution
+            .iter()
+            .map(|value| value.abs())
+            .collect();
+        let solution_norm = l2_upper(&solution_magnitude)?;
+        let product = audit2_upper_mul(input.kappa_upper, residual_norm)?;
+        if stage.caller_product_upper < product {
+            return Err(Audit2StageCertificateError::DownwardRoundedBound);
+        }
+        let q = audit2_upper_add(solution_norm, product)?;
+        if stage.caller_q_upper < q {
+            return Err(Audit2StageCertificateError::DownwardRoundedBound);
+        }
+        solution_l2_upper.push(solution_norm);
+        residual_l2_upper.push(residual_norm);
+        directed_product_upper.push(product);
+        q_upper.push(q);
     }
-    let q = vec![q_upper; dimension];
-    let stage_majorant = forward_stage_majorant(&input.strict_lower, &q)?;
+    let stage_majorant = forward_stage_majorant(&input.strict_lower, &q_upper)?;
     let endpoint_contamination = nonnegative_dot(&input.endpoint_weights, &stage_majorant)?;
     let estimator_contamination = nonnegative_dot(&input.estimator_weights, &stage_majorant)?;
-    let theta = next_up_nonnegative_sum(endpoint_contamination, estimator_contamination)?;
-    let ehat_plus_theta = next_up_nonnegative_sum(input.ehat, theta)?;
-    let ehat_minus_theta_lower = next_down_nonnegative_difference(input.ehat, theta)?;
+    let theta = audit2_upper_add(endpoint_contamination, estimator_contamination)?;
+    let ehat_plus_theta = audit2_upper_add(input.ehat, theta)?;
+    let ehat_minus_theta_lower = lower_nonnegative_difference(input.ehat, theta);
     let decision = if ehat_plus_theta <= 1.0 {
         StageCertificateDecision::SyntheticConsistentAccept
     } else if ehat_minus_theta_lower > 1.0 {
@@ -318,8 +382,9 @@ pub fn evaluate_audit2_stage_certificate(
         trace: input.trace,
         provenance: input.provenance,
         norm: input.norm,
-        solution_l2,
-        residual_l2,
+        inverse_norm_upper,
+        solution_l2_upper,
+        residual_l2_upper,
         directed_product_upper,
         q_upper,
         stage_majorant,
@@ -329,6 +394,270 @@ pub fn evaluate_audit2_stage_certificate(
         ehat_plus_theta,
         ehat_minus_theta_lower,
     })
+}
+
+/// Digest of all stage right-hand sides, in stage order.
+#[must_use]
+pub fn audit2_stage_certificate_rhs_digest(stages: &[StageCertificateStageSolve]) -> String {
+    let bits: Vec<u64> = stages
+        .iter()
+        .flat_map(|stage| stage.rhs.iter().map(|value| value.to_bits()))
+        .collect();
+    audit2_stage_certificate_digest_f64_bits(&bits)
+}
+
+/// Digest of the decision-driving inputs, in the order documented on
+/// [`StageCertificateProvenance::decision_input_digest`].
+#[must_use]
+pub fn audit2_stage_certificate_decision_input_digest(input: &StageCertificateInput) -> String {
+    let mut bits = Vec::new();
+    bits.extend(
+        input
+            .strict_lower
+            .iter()
+            .flatten()
+            .map(|value| value.to_bits()),
+    );
+    bits.extend(input.endpoint_weights.iter().map(|value| value.to_bits()));
+    bits.extend(input.estimator_weights.iter().map(|value| value.to_bits()));
+    bits.push(input.kappa_upper.to_bits());
+    bits.push(input.ehat.to_bits());
+    for stage in &input.stages {
+        bits.extend(
+            stage
+                .approximate_solution
+                .iter()
+                .map(|value| value.to_bits()),
+        );
+    }
+    bits.extend(
+        input
+            .inverse_witness
+            .iter()
+            .flatten()
+            .map(|value| value.to_bits()),
+    );
+    audit2_stage_certificate_digest_f64_bits(&bits)
+}
+
+/// Correctly rounded upward sum of two finite nonnegative binary64 values.
+///
+/// The rounded-to-nearest sum is returned unchanged when it is exact, which
+/// includes every sum with a zero operand; otherwise the next binary64 value
+/// above it. The rounding error comes from the error-free TwoSum
+/// transformation, so no ambient rounding mode is changed. Overflow is a
+/// typed rejection with no decision.
+pub fn audit2_upper_add(a: f64, b: f64) -> Result<f64, Audit2StageCertificateError> {
+    if !a.is_finite() || !b.is_finite() || a < 0.0 || b < 0.0 {
+        return Err(Audit2StageCertificateError::InvalidField);
+    }
+    let sum = a + b;
+    if !sum.is_finite() {
+        return Err(Audit2StageCertificateError::NonFiniteBound);
+    }
+    let b_virtual = sum - a;
+    let error = (a - (sum - b_virtual)) + (b - b_virtual);
+    finite_bound(if error > 0.0 { sum.next_up() } else { sum })
+}
+
+/// Correctly rounded upward product of two finite nonnegative binary64 values.
+///
+/// The rounding error of a normal product comes from one fused multiply-add
+/// (`a * b - p` is exact there). Below `2^-969` that error may itself round,
+/// so a nonzero product in that range is moved up unconditionally, which is
+/// conservative. A positive product that underflows to zero becomes the
+/// smallest subnormal. Overflow is a typed rejection with no decision.
+pub fn audit2_upper_mul(a: f64, b: f64) -> Result<f64, Audit2StageCertificateError> {
+    if !a.is_finite() || !b.is_finite() || a < 0.0 || b < 0.0 {
+        return Err(Audit2StageCertificateError::InvalidField);
+    }
+    if a == 0.0 || b == 0.0 {
+        return Ok(0.0);
+    }
+    let product = a * b;
+    if !product.is_finite() {
+        return Err(Audit2StageCertificateError::NonFiniteBound);
+    }
+    const EXACT_ERROR_THRESHOLD: f64 = f64::MIN_POSITIVE * 9_007_199_254_740_992.0; // 2^-969
+    if product < EXACT_ERROR_THRESHOLD {
+        return finite_bound(product.next_up());
+    }
+    let error = a.mul_add(b, -product);
+    finite_bound(if error > 0.0 {
+        product.next_up()
+    } else {
+        product
+    })
+}
+
+fn finite_bound(value: f64) -> Result<f64, Audit2StageCertificateError> {
+    value
+        .is_finite()
+        .then_some(value)
+        .ok_or(Audit2StageCertificateError::NonFiniteBound)
+}
+
+/// Correctly rounded upward quotient `a / b` for finite `a >= 0`, `b > 0`.
+fn upper_div(a: f64, b: f64) -> Result<f64, Audit2StageCertificateError> {
+    if !a.is_finite() || !b.is_finite() || a < 0.0 || b <= 0.0 {
+        return Err(Audit2StageCertificateError::InvalidField);
+    }
+    let quotient = a / b;
+    if !quotient.is_finite() {
+        return Err(Audit2StageCertificateError::NonFiniteBound);
+    }
+    if quotient < f64::MIN_POSITIVE * 9_007_199_254_740_992.0 {
+        return finite_bound(quotient.next_up());
+    }
+    // q * b - a < 0 means the rounded quotient lies below a / b.
+    let error = quotient.mul_add(b, -a);
+    finite_bound(if error < 0.0 {
+        quotient.next_up()
+    } else {
+        quotient
+    })
+}
+
+/// Correctly rounded upward square root of a finite nonnegative value.
+fn upper_sqrt(value: f64) -> Result<f64, Audit2StageCertificateError> {
+    if !value.is_finite() || value < 0.0 {
+        return Err(Audit2StageCertificateError::InvalidField);
+    }
+    let root = value.sqrt();
+    if root == 0.0 {
+        return Ok(0.0);
+    }
+    let error = root.mul_add(root, -value);
+    finite_bound(if error < 0.0 { root.next_up() } else { root })
+}
+
+/// Lower bound on `minuend - subtrahend` for nonnegative operands, zero when
+/// the difference is not positive.
+fn lower_nonnegative_difference(minuend: f64, subtrahend: f64) -> f64 {
+    if minuend <= subtrahend {
+        return 0.0;
+    }
+    let difference = minuend - subtrahend;
+    let virtual_subtrahend = minuend - difference;
+    let error = (minuend - (difference + virtual_subtrahend)) + (virtual_subtrahend - subtrahend);
+    let lower = if error < 0.0 {
+        difference.next_down()
+    } else {
+        difference
+    };
+    lower.max(0.0)
+}
+
+/// Upward sum of nonnegative values.
+fn upper_sum(values: &[f64]) -> Result<f64, Audit2StageCertificateError> {
+    values
+        .iter()
+        .try_fold(0.0, |sum, value| audit2_upper_add(sum, *value))
+}
+
+/// Upper bound on the Euclidean norm of a vector of nonnegative magnitudes.
+fn l2_upper(magnitudes: &[f64]) -> Result<f64, Audit2StageCertificateError> {
+    let mut sum = 0.0;
+    for value in magnitudes {
+        sum = audit2_upper_add(sum, audit2_upper_mul(*value, *value)?)?;
+    }
+    upper_sqrt(sum)
+}
+
+/// `gamma_{k} = k u / (1 - k u)` rounded upward, `u = 2^-53`.
+fn gamma_upper(k: usize) -> Result<f64, Audit2StageCertificateError> {
+    let unit_roundoff = f64::EPSILON / 2.0;
+    let k = k as f64;
+    let numerator = audit2_upper_mul(k, unit_roundoff)?;
+    if numerator >= 1.0 {
+        return Err(Audit2StageCertificateError::NonFiniteBound);
+    }
+    upper_div(numerator, lower_nonnegative_difference(1.0, numerator))
+}
+
+/// Componentwise upper bounds on `|b - A x|` for the rounded recursive
+/// evaluation, `|r_i| <= |fl(r_i)| + gamma_{n+1} (|b_i| + sum_j |a_ij x_j|)
+/// plus (n + 1) eta`, with `eta` the smallest subnormal (Higham, Accuracy and
+/// Stability of Numerical Algorithms, sections 3.1 and 3.5).
+fn residual_magnitude_upper(
+    operator: &[Vec<f64>],
+    solution: &[f64],
+    rhs: &[f64],
+) -> Result<Vec<f64>, Audit2StageCertificateError> {
+    let dimension = solution.len();
+    let gamma = gamma_upper(dimension + 1)?;
+    let underflow = audit2_upper_mul((dimension + 1) as f64, f64::from_bits(1))?;
+    operator
+        .iter()
+        .zip(rhs)
+        .map(|(row, rhs_value)| {
+            let mut product = 0.0;
+            let mut magnitudes = Vec::with_capacity(row.len() + 1);
+            magnitudes.push(rhs_value.abs());
+            for (entry, value) in row.iter().zip(solution) {
+                product += entry * value;
+                magnitudes.push(audit2_upper_mul(entry.abs(), value.abs())?);
+            }
+            let rounded = rhs_value - product;
+            if !rounded.is_finite() {
+                return Err(Audit2StageCertificateError::NonFiniteBound);
+            }
+            let magnitude = upper_sum(&magnitudes)?;
+            if magnitude == 0.0 {
+                // Every term is an exact zero, so the evaluation is exact.
+                return Ok(0.0);
+            }
+            let rounding = audit2_upper_mul(gamma, magnitude)?;
+            audit2_upper_add(audit2_upper_add(rounded.abs(), rounding)?, underflow)
+        })
+        .collect()
+}
+
+/// Upper bound on the spectral norm, `sqrt(||M||_1 ||M||_inf)`, of a matrix
+/// given by componentwise upper bounds on its magnitudes.
+fn spectral_norm_upper(magnitudes: &[Vec<f64>]) -> Result<f64, Audit2StageCertificateError> {
+    let dimension = magnitudes.len();
+    let mut row_max: f64 = 0.0;
+    let mut column_sums = vec![0.0; dimension];
+    for row in magnitudes {
+        row_max = row_max.max(upper_sum(row)?);
+        for (sum, value) in column_sums.iter_mut().zip(row) {
+            *sum = audit2_upper_add(*sum, *value)?;
+        }
+    }
+    let column_max = column_sums.iter().copied().fold(0.0_f64, f64::max);
+    upper_sqrt(audit2_upper_mul(row_max, column_max)?)
+}
+
+/// Verified upper bound on `||W^{-1}||_2` from an approximate inverse `V`:
+/// with `delta >= ||I - V W||_2 < 1`, `||W^{-1}||_2 <= ||V||_2 / (1 - delta)`.
+fn verified_inverse_norm_upper(
+    operator: &[Vec<f64>],
+    witness: &[Vec<f64>],
+) -> Result<f64, Audit2StageCertificateError> {
+    let dimension = operator.len();
+    let mut defect = Vec::with_capacity(dimension);
+    for (row_index, witness_row) in witness.iter().enumerate() {
+        let mut defect_row = Vec::with_capacity(dimension);
+        for column_index in 0..dimension {
+            let column: Vec<f64> = operator.iter().map(|row| row[column_index]).collect();
+            let identity = if row_index == column_index { 1.0 } else { 0.0 };
+            let bound =
+                residual_magnitude_upper(std::slice::from_ref(witness_row), &column, &[identity])?;
+            defect_row.push(bound[0]);
+        }
+        defect.push(defect_row);
+    }
+    let delta = spectral_norm_upper(&defect)?;
+    if delta >= 1.0 {
+        return Err(Audit2StageCertificateError::KappaPremiseNotVerified);
+    }
+    let witness_magnitudes: Vec<Vec<f64>> = witness
+        .iter()
+        .map(|row| row.iter().map(|value| value.abs()).collect())
+        .collect();
+    let witness_norm = spectral_norm_upper(&witness_magnitudes)?;
+    upper_div(witness_norm, lower_nonnegative_difference(1.0, delta))
 }
 
 fn canonicalize_json(value: &Value) -> Value {
@@ -385,6 +714,7 @@ fn validate_provenance_policy(
             &provenance.operator_identity,
             &provenance.preconditioner_identity,
             &provenance.rhs_digest,
+            &provenance.decision_input_digest,
         ]
         .into_iter()
         .all(|digest| is_lower_hex_digest(digest))
@@ -422,6 +752,12 @@ fn verify_trace(
         {
             return Err(Audit2StageCertificateError::IncompleteResidualHistory);
         }
+        // `max_arnoldi` caps the Arnoldi vectors of every completed row on
+        // its own; the iteration limit and the per-cycle restart length do
+        // not substitute for it (audit F-057). Equality is legal.
+        if stage.work.arnoldi_iterations > u64::from(provenance.max_arnoldi) {
+            return Err(Audit2StageCertificateError::MaxArnoldiExceeded);
+        }
         work = work.checked_add(stage.work)?;
     }
     if work != trace.completed_work {
@@ -448,14 +784,15 @@ fn verify_provenance(input: &StageCertificateInput) -> Result<(), Audit2StageCer
         .flatten()
         .map(|value| value.to_bits())
         .collect();
-    let rhs_bits: Vec<u64> = input.rhs.iter().map(|value| value.to_bits()).collect();
     if audit2_stage_certificate_digest_f64_bits(&coefficient_bits)
         != input.provenance.coefficient_digest
         || audit2_stage_certificate_digest_f64_bits(&operator_bits)
             != input.provenance.operator_identity
         || audit2_stage_certificate_digest_f64_bits(&preconditioner_bits)
             != input.provenance.preconditioner_identity
-        || audit2_stage_certificate_digest_f64_bits(&rhs_bits) != input.provenance.rhs_digest
+        || audit2_stage_certificate_rhs_digest(&input.stages) != input.provenance.rhs_digest
+        || audit2_stage_certificate_decision_input_digest(input)
+            != input.provenance.decision_input_digest
     {
         return Err(Audit2StageCertificateError::ProvenanceMismatch);
     }
@@ -501,100 +838,6 @@ fn validate_strict_lower(matrix: &[Vec<f64>]) -> Result<(), Audit2StageCertifica
     Ok(())
 }
 
-fn residual(
-    operator: &[Vec<f64>],
-    solution: &[f64],
-    rhs: &[f64],
-) -> Result<Vec<f64>, Audit2StageCertificateError> {
-    operator
-        .iter()
-        .zip(rhs)
-        .map(|(row, rhs_value)| {
-            let product = row
-                .iter()
-                .zip(solution)
-                .try_fold(0.0, |sum, (entry, value)| {
-                    let next = sum + entry * value;
-                    next.is_finite()
-                        .then_some(next)
-                        .ok_or(Audit2StageCertificateError::InvalidField)
-                })?;
-            let value = rhs_value - product;
-            value
-                .is_finite()
-                .then_some(value)
-                .ok_or(Audit2StageCertificateError::InvalidField)
-        })
-        .collect()
-}
-
-fn l2(values: &[f64]) -> Result<f64, Audit2StageCertificateError> {
-    let norm = values.iter().try_fold(0.0_f64, |norm, value| {
-        let next = norm.hypot(*value);
-        next.is_finite()
-            .then_some(next)
-            .ok_or(Audit2StageCertificateError::InvalidField)
-    })?;
-    norm.is_finite()
-        .then_some(norm)
-        .ok_or(Audit2StageCertificateError::InvalidField)
-}
-
-fn next_up_nonnegative_product(a: f64, b: f64) -> Result<f64, Audit2StageCertificateError> {
-    if !a.is_finite() || !b.is_finite() || a < 0.0 || b < 0.0 {
-        return Err(Audit2StageCertificateError::InvalidField);
-    }
-    let product = a * b;
-    if product == 0.0 && a > 0.0 && b > 0.0 {
-        return Ok(f64::from_bits(1));
-    }
-    next_up_nonnegative(product)
-}
-
-fn next_up_nonnegative_sum(a: f64, b: f64) -> Result<f64, Audit2StageCertificateError> {
-    if !a.is_finite() || !b.is_finite() || a < 0.0 || b < 0.0 {
-        return Err(Audit2StageCertificateError::InvalidField);
-    }
-    next_up_nonnegative(a + b)
-}
-
-fn next_up_nonnegative(value: f64) -> Result<f64, Audit2StageCertificateError> {
-    if !value.is_finite() || value < 0.0 {
-        return Err(Audit2StageCertificateError::InvalidField);
-    }
-    if value == 0.0 {
-        return Ok(0.0);
-    }
-    let next = f64::from_bits(
-        value
-            .to_bits()
-            .checked_add(1)
-            .ok_or(Audit2StageCertificateError::InvalidField)?,
-    );
-    next.is_finite()
-        .then_some(next)
-        .ok_or(Audit2StageCertificateError::InvalidField)
-}
-
-fn next_down_nonnegative_difference(
-    minuend: f64,
-    subtrahend: f64,
-) -> Result<f64, Audit2StageCertificateError> {
-    if !minuend.is_finite()
-        || !subtrahend.is_finite()
-        || minuend < 0.0
-        || subtrahend < 0.0
-        || minuend <= subtrahend
-    {
-        return Ok(0.0);
-    }
-    let rounded = minuend - subtrahend;
-    if !rounded.is_finite() || rounded <= 0.0 {
-        return Ok(0.0);
-    }
-    Ok(f64::from_bits(rounded.to_bits() - 1))
-}
-
 fn forward_stage_majorant(
     strict_lower: &[Vec<f64>],
     q: &[f64],
@@ -603,8 +846,8 @@ fn forward_stage_majorant(
     for (row_index, row) in strict_lower.iter().enumerate() {
         let mut value = q[row_index];
         for (column_index, entry) in row.iter().take(row_index).enumerate() {
-            let product = next_up_nonnegative_product(*entry, propagated[column_index])?;
-            value = next_up_nonnegative_sum(value, product)?;
+            let product = audit2_upper_mul(*entry, propagated[column_index])?;
+            value = audit2_upper_add(value, product)?;
         }
         propagated.push(value);
     }
@@ -616,7 +859,7 @@ fn nonnegative_dot(weights: &[f64], values: &[f64]) -> Result<f64, Audit2StageCe
         .iter()
         .zip(values)
         .try_fold(0.0, |sum, (weight, value)| {
-            let product = next_up_nonnegative_product(*weight, *value)?;
-            next_up_nonnegative_sum(sum, product)
+            let product = audit2_upper_mul(*weight, *value)?;
+            audit2_upper_add(sum, product)
         })
 }
