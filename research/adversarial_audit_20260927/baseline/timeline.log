@@ -1,0 +1,32 @@
+[12:31:47] START 00_metadata: cargo-wrapped.sh metadata --format-version 1
+[12:31:54] END 00_metadata rc=0 dur=7s
+[12:31:54] START 01_build_dev: cargo-wrapped.sh test --workspace --all-targets --no-run
+[12:34:54] END 01_build_dev rc=0 dur=180s
+[12:34:54] START 02_test_default: cargo-wrapped.sh test --workspace --no-fail-fast
+[12:36:55] waiting for cargo lock, then building harness (measurement + dev)
+[12:43:48] END 02_test_default rc=0 dur=534s
+[12:43:48] START 03_build_audit2: cargo-wrapped.sh test -p rodas5p-integrators --features audit2-research --no-run
+[12:45:34] END 03_build_audit2 rc=0 dur=106s
+[12:45:34] START 04_test_audit2: cargo-wrapped.sh test -p rodas5p-integrators --features audit2-research --no-fail-fast
+[12:45:54] harness builds done rc=0/0 dur=539s
+[12:52:31] END 04_test_audit2 rc=0 dur=417s
+[12:52:31] START 05_build_bateman: cargo-wrapped.sh test -p rodas5p-integrators --features audit2-bateman-authority --no-run
+[12:52:48] END 05_build_bateman rc=0 dur=17s
+[12:52:48] START 06_test_bateman: cargo-wrapped.sh test -p rodas5p-integrators --features audit2-bateman-authority --no-fail-fast
+[12:58:59] END 06_test_bateman rc=0 dur=371s
+[12:58:59] START 07_clippy: cargo-wrapped.sh clippy --workspace --all-targets -- -D warnings
+[12:59:30] END 07_clippy rc=0 dur=31s
+[12:59:30] START 08_fmt: cargo fmt --all -- --check
+[12:59:31] END 08_fmt rc=0 dur=1s
+[12:59:31] START 09_build_meas_cli: cargo-wrapped.sh build --profile measurement -p rodas5p-cli --bins
+[12:59:52] END 09_build_meas_cli rc=0 dur=21s
+[12:59:52] START 10_build_meas_ex: cargo-wrapped.sh build --profile measurement -p rodas5p-integrators --examples --no-default-features
+[13:00:37] END 10_build_meas_ex rc=0 dur=45s
+[13:00:37] START 11_build_meas_ex2: cargo-wrapped.sh build --profile measurement -p rodas5p-integrators --examples --features audit2-bateman-authority
+[13:00:49] END 11_build_meas_ex2 rc=0 dur=12s
+[13:00:49] START 12_ignored_tests: cargo-wrapped.sh test --workspace --no-fail-fast -- --ignored
+[13:04:18] END 12_ignored_tests rc=101 dur=209s
+[13:04:18] TARGET SIZE: 24G  DF: /dev/nvme1n1p2  915G  807G   62G  93% /
+[13:04:18] BASELINE DONE
+[19:17:29] START 15_ignored_meas: v37 ignored test under measurement profile
+[19:18:34] END 15_ignored_meas rc=101 dur=65s

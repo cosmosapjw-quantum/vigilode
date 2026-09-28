@@ -1,0 +1,75 @@
+{
+ "group": "G3_krylov_robustness",
+ "fixes": [
+  {
+   "id": "G3-1",
+   "finding_ids": [
+    "F-010"
+   ],
+   "title": "GCRO-DR: identity-keyed warm-start reset plus typed Dimension error (no panic)",
+   "summary": "solve_gcrodr_with_workspace_and_residual_scale filters the recycle basis by len()==n (gcrodr.rs:420) but never filters or resets previous_solution, so x0.or(previous_solution) at gcrodr.rs:462-464 feeds a stale vector of the wrong length into copy_from_slice and aborts, and with equal n it silently warm-starts from a different linear system. Mirror the LGMRES rule (lgmres.rs:68-78): when the exact system identity is None or differs from state.system_identity, drop previous_solution (and images) before use; after that, any surviving previous_solution whose length is not n is state corruption and returns Err(CoreError::Dimension) instead of panicking. Because the whole body runs inside the snapshot/restore closure (gcrodr.rs:410-411, 697-699), the Err leaves `state` untouched. Callers that manually set state.previous_solution = None (krylov_contracts.rs:207, 227, 244) keep passing and become redundant.",
+   "files": [
+    "crates/rodas5p-krylov/src/gcrodr.rs",
+    "crates/rodas5p-krylov/src/lgmres.rs"
+   ],
+   "anchors": [
+    "crates/rodas5p-krylov/src/gcrodr.rs:401-423",
+    "crates/rodas5p-krylov/src/gcrodr.rs:458-466",
+    "crates/rodas5p-krylov/src/gcrodr.rs:677-682",
+    "crates/rodas5p-krylov/src/gcrodr.rs:697-699",
+    "crates/rodas5p-krylov/src/lgmres.rs:64-78",
+    "crates/rodas5p-krylov/src/common.rs:33-45",
+    "crates/rodas5p-integrators/src/sequential.rs:32-49",
+    "crates/rodas5p-core/src/operator.rs:48-61",
+    "crates/rodas5p-core/src/error.rs:4-17"
+   ],
+   "effort": "S",
+   "risk": "low",
+   "risk_notes": "Behaviour change: for operators/preconditioners whose exact_identity() is None (custom user types), the warm start is now always discarded, exactly as LGMRES already does; in-tree integrator operators are unaffected when identities are Some and stable across the step. GCRO-DR iteration counts in fair-ab may shift only for custom operators without exact identity; the certificate at gcrodr.rs:664-676 already guarantees correctness either way. Same-n operator swap now also stops using the stale warm start (secondary impact in F-010), which is the intended semantics.",
+   "diff_prose": [
+    "gcrodr.rs after :423 (inside the closure, right after the basis retain/image-clear block): add `let same_system = system_identity.is_some() && local.system_identity.as_ref() == system_identity.as_ref(); if !same_system { local.previous_solution = None; local.image.clear(); }` \u2014 the existing branch at :425-428 already refreshes images when !same_system, so clearing them here is redundant-but-safe and makes the recycle_same_operator_uses counter logic unchanged.",
+    "gcrodr.rs :462 replace `if let Some(initial) = x0.or(local.previous_solution.as_deref()) { workspace.common.x.copy_from_slice(initial); }` with a length-checked version: `if let Some(initial) = x0.or(local.previous_solution.as_deref()) { if initial.len() != n { return Err(CoreError::Dimension(format!(\"GCRO-DR warm start has length {} but the system has dimension {n}\", initial.len()))); } workspace.common.x.copy_from_slice(initial); }` (x0 is already validated at common.rs:40, so only the state path can trip this).",
+    "Optional parity: lgmres.rs :81 add the same length guard before copy_from_slice (currently protected only by the identity reset at :71-77; a stale same-identity state of another dimension is impossible for exact identities but the guard is free)."
+   ],
+   "code_sketch": "// gcrodr.rs, inside the (|| { ... })() closure after the basis retain block\nlet same_system = system_identity.is_some()\n    && local.system_identity.as_ref() == system_identity.as_ref();\nif !same_system {\n    // Warm start and recycle images belong to a different (or unknown) system.\n    local.previous_solution = None;\n    local.image.clear();\n}\n// ... later, replacing the x0.or(previous_solution) block\nif let Some(initial) = x0.or(local.previous_solution.as_deref()) {\n    if initial.len() != n {\n        return Err(CoreError::Dimension(format!(\n            \"GCRO-DR warm start has length {} but the system has dimension {n}\",\n            initial.len()\n        )));\n    }\n    workspace.common.x.copy_from_slice(initial);\n}",
+   "verification": [
+    "New test krylov_contracts.rs `gcrodr_dimension_change_returns_dimension_error_and_preserves_state`: solve n=32 nonnormal DenseOperator with IdentityPreconditioner(32) (E-05 child_dimchange, harness/src/bin/e05_krylov_stress.rs:342-358), then call solve_gcrodr with an n=16 operator, IdentityPreconditioner(16), x0=None and the SAME state; assert the result is Ok (identity differs -> warm start dropped, basis retained by len filter is empty) OR, if the state is hand-crafted with matching identity but wrong-length previous_solution, assert `matches!(err, CoreError::Dimension(_))` and `state == snapshot_before`. Never a panic: run under `#[should_panic]`-free harness.",
+    "Re-run E-05 child scenario: `RAYON_NUM_THREADS=1 $RUN/cargo-target/measurement/e05_krylov_stress --child-dimchange gcrodr` must exit 0 and print outcome ok/err JSON instead of SIGABRT (currently exit 134, $RUN/refute/scratch_10/gcrodr_dimchange.err).",
+    "E-05-style stale-state test (see G3-2) covering preconditioner swap and operator mutation with equal n: recycle_cross_operator_refreshes increments and the report's true residual (recomputed in the test with op.apply) is <= threshold.",
+    "Existing krylov_contracts.rs:180-260 counter assertions (recycle_same_operator_uses==1, refresh matvecs==retained) must remain unchanged."
+   ]
+  },
+  {
+   "id": "G3-2",
+   "finding_ids": [
+    "F-010"
+   ],
+   "title": "Tests: GCRO-DR recycle_dim>1 invariant test and E-05-style stale-state test",
+   "summary": "Every in-tree GCRO-DR contract test with a multi-solve sequence uses recycle_dim: 1 (krylov_contracts.rs:130,186,362,414) or n=1 (:447-476 with recycle_dim 6 on a 1x1 system), so the BU=C / C^T C invariant checked by GcrodrState::verify_invariant (gcrodr.rs:60-98) is never exercised with a rank>1 recycle space across operator, preconditioner and dimension changes. Add a test on the E-05 nonnormal matrix family (n=32, recycle_dim=4, restart=10) that solves several RHS, calls verify_invariant after each solve, swaps the preconditioner (Identity -> Jacobi), mutates the operator (shift), and finally changes dimension; assert invariant holds after every successful solve and the state is bitwise the snapshot after any Err.",
+   "files": [
+    "crates/rodas5p-krylov/tests/krylov_contracts.rs"
+   ],
+   "anchors": [
+    "crates/rodas5p-krylov/src/gcrodr.rs:60-98",
+    "crates/rodas5p-krylov/tests/krylov_contracts.rs:180-260",
+    "crates/rodas5p-krylov/tests/krylov_contracts.rs:446-476",
+    "crates/rodas5p-krylov/tests/workspace_contracts.rs:107-113",
+    "harness/src/bin/e05_krylov_stress.rs:342-358"
+   ],
+   "effort": "S",
+   "risk": "low",
+   "risk_notes": "Test-only. verify_invariant uses a fresh WorkCounters so it does not perturb the work ledger assertions. Tolerance for the invariant should be ~1e-10*(1+||c||) as already coded; a too-tight tol on the nonnormal s=10 matrix may need s=1.",
+   "diff_prose": [
+    "krylov_contracts.rs: add `fn nonnormal_operator(n, seed, shift) -> DenseOperator` building Q(D+N)Q^T as in e05_krylov_stress.rs build_a (or a simpler tridiagonal nonnormal matrix) so the test does not depend on the harness crate.",
+    "Test 1 `gcrodr_recycle_rank_gt1_invariant_survives_operator_and_preconditioner_change`: config restart 10, max_arnoldi 400, recycle_dim 4; loop over 4 RHS on op A with Identity -> after each solve assert state.rank() >= 1 and state.verify_invariant(&A,&Identity,1e-9).is_ok(); then Jacobi preconditioner (expect recycle_cross_operator_refreshes += 1, invariant vs (A,Jacobi) ok); then operator A' = A + 1e-3 I (expect refresh again, invariant vs (A',Jacobi) ok); assert every report.converged and a test-side true residual ||b - A x|| <= atol.max(rtol*||b||).",
+    "Test 2 `gcrodr_stale_state_dimension_change_is_typed_error_not_panic`: same state, then n=16 operator with x0=None: assert no panic; if Err, assert Dimension variant and state == snapshot; if Ok (identity-keyed reset path), assert basis is empty or all len()==16 and true residual <= threshold.",
+    "Test 3 (LGMRES parity) `lgmres_stale_state_dimension_change_does_not_panic`: mirror of Test 2 using LgmresState (E-05 children[1] currently returns Ok with 144 iterations; lock that in)."
+   ],
+   "code_sketch": "#[test]\nfn gcrodr_recycle_rank_gt1_invariant_survives_system_changes() {\n    let a = nonnormal_operator(32, 7, 0.0);\n    let identity = IdentityPreconditioner::new(32);\n    let config = GcrodrConfig { restart: 10, max_arnoldi: 400, recycle_dim: 4,\n        rank_tol: 1e-12, rtol: 1e-10, atol: 0.0 };\n    let mut state = GcrodrState::default();\n    let mut work = WorkCounters::default();\n    for seed in 0..4u64 {\n        let rhs = pseudo_random_rhs(32, seed);\n        let rep = solve_gcrodr(&a, &identity, &rhs, None, &config, &mut state, &mut work).unwrap();\n        assert!(rep.converged);\n        assert!(true_residual(&a, &rhs, &rep.x) <= config.rtol * safe_l2(&rhs));\n        assert!(state.rank() >= 1 && state.rank() <= 4);\n        state.verify_invariant(&a, &identity, 1e-9).unwrap();\n    }\n    let jacobi = JacobiPreconditioner::from_matrix(a.explicit().unwrap()).unwrap();\n    let before = work;\n    let rhs = pseudo_random_rhs(32, 99);\n    solve_gcrodr(&a, &jacobi, &rhs, None, &config, &mut state, &mut work).unwrap();\n    assert_eq!(work.delta(before).recycle_cross_operator_refreshes, 1);\n    state.verify_invariant(&a, &jacobi, 1e-9).unwrap();\n}",
+   "verification": [
+    "cargo test -p rodas5p-krylov --test krylov_contracts (tests must fail on the unfixed tree for the dimension-change case via SIGABRT, and pass with G3-1).",
+    "Cross-check with E-05 stale-state rows (ratio reported/recomputed residual in [0.9999999999999998, 1.0000000000000009]) \u2014 the test's true-residual assertion reproduces that check in-tree."
+   ]
+  }
+ ]
+}

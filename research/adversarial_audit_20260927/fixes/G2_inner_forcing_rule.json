@@ -1,0 +1,101 @@
+{
+ "group": "G2_inner_forcing_rule",
+ "fixes": [
+  {
+   "id": "G2-1",
+   "title": "Replace the h-independent stage-residual cap by an error-estimate-scaled forcing term (Eisenstat-Walker adapted to ROW stage solves)",
+   "finding_ids": [
+    "F-008",
+    "F-031",
+    "F-005"
+   ],
+   "summary": "Today tau_i = eta*rhs_wrms = 0.1/||b||_1 = 0.02022 outer-WRMS units whenever rhs_wrms >= flow_wrms (g4_s5b0_inner_tolerance.rs:58-66), which is every stiff stage, so the admitted stage residual is constant in h and rtol and E-04 shows a fixed-h floor of 0.10-0.32 rtol on P1PR and 0.18-0.29 rtol in the adaptive P1 arms. The fix keeps the residual target absolute in outer-WRMS units (so GMRES stops on max(atol, rtol*||rhs||)=tau, gmres.rs:210, and the K-form rhs inflation of F-031 does not enter the accepted residual) but multiplies the cap by a forcing term derived from the embedded error of the last accepted step: tau_i = cap * min(1, err_ref*(h/h_ref)^(q+1))^alpha with alpha=(p+1)/(q+1)=6/5 for RODAS5P (p=5, q=4). Because err_ref ~ C h^5/rtol at fixed rtol, tau ~ h^6, so per-step contamination sum|b_i| ||W^-1|| tau is O(h^6) and global fixed-h order 5 is preserved down to the roundoff floor; in adaptive mode err_ref is O(1) so tau stays within a small factor of today's value and the cost profile is essentially unchanged. The reference (err_norm, h) of the previous accepted step is threaded through a new optional `InnerForcingReference` argument; with no history (step 0, fixed-step API without a carried reference) the rule degrades to the current cap, never to an abort.",
+   "files": [
+    "crates/rodas5p-integrators/src/g4_s5b0_inner_tolerance.rs",
+    "crates/rodas5p-integrators/src/sequential.rs",
+    "crates/rodas5p-integrators/src/integrate.rs",
+    "crates/rodas5p-integrators/src/dense_output_v2.rs",
+    "crates/rodas5p-integrators/src/g4_s5b0_regime_atlas.rs",
+    "crates/rodas5p-integrators/src/lib.rs"
+   ],
+   "anchors": [
+    "crates/rodas5p-integrators/src/g4_s5b0_inner_tolerance.rs:18-20 (0.1 fraction, 64 eps floor, 0.5 eta max)",
+    "crates/rodas5p-integrators/src/g4_s5b0_inner_tolerance.rs:58-66 (forcing_scale=max(flow,rhs); eta=0.1/(l1*scale); tau=eta*rhs_wrms)",
+    "crates/rodas5p-integrators/src/sequential.rs:313-319 (output_weight_l1 = sum|b_i| = 4.9455)",
+    "crates/rodas5p-integrators/src/sequential.rs:359-369 (rhs = h f + h J gmix + h^2 gamma_i ft0; flow_wrms, rhs_wrms in outer error_scale)",
+    "crates/rodas5p-integrators/src/sequential.rs:374-382 (linear_rtol = target.eta, linear_atol = 64 eps)",
+    "crates/rodas5p-integrators/src/sequential.rs:507-513 (post-solve check residual_norm > tau -> Err)",
+    "crates/rodas5p-integrators/src/sequential.rs:583-586 (finish_step: error_vector = btilde.K, error_norm = wrms in outer scale; this is err_ref)",
+    "crates/rodas5p-integrators/src/sequential.rs:710-721 (pub fn sequential_matrix_free_step_with_inner_forcing signature; new Option<&InnerForcingReference> param goes here)",
+    "crates/rodas5p-integrators/src/integrate.rs:774-786 (adaptive driver call; controller already holds last accepted h and error)",
+    "crates/rodas5p-integrators/src/g4_s5b0_regime_atlas.rs:1631-1634 (atlas call, recycle None)",
+    "crates/rodas5p-krylov/src/gmres.rs:209-210 (threshold = atol.max(rtol*right_norm) -> equals tau when rtol=tau/rhs_wrms)",
+    "exp/E-04/README.md slope table (p1pr forcing:1e-6 floor 9.96e-8 = 0.10 rtol, slopes -0.43..0.83; eta exponent -1.86/-1.94; adaptive P1 err/rtol 0.18-0.29)",
+    "exp/E-04/table.md rows 119-126 (p1pr forcing:1e-6 k=3..10: err_max 1.4e-7..3.2e-7 flat, eta_mean 1.2e-11..9.7e-8)"
+   ],
+   "effort": "M",
+   "risk": "medium",
+   "risk_notes": "Behavioural change on every production matrix-free receipt (v2 campaign, atlas, dense-output v2): tau tightens by up to (err_ref)^1.2 in adaptive mode, so GMRES iteration counts rise a few percent to ~2x on hard steps; must be re-baselined and disclosed, never tuned post hoc. The forcing term uses the previous step's error, which is causal (no reference/holdout information). The step-0 value equals the current cap, so first-step behaviour is unchanged.",
+   "verification": "(1) Unit: rodas5p_inner_forcing_target_v3 with reference err_ref=1e-3,h=h_ref returns tau = cap*1e-3^1.2 = 5.1e-6 (cap=0.02022); with reference None returns cap; tau is monotone non-increasing in err_ref and in h. (2) Rebuild harness/src/bin/e04_order_krylov.rs (the `forcing` arm at harness line 339 must carry the previous step's error_norm/h into the new parameter) in a separate worktree, not in $TREE, and rerun `RAYON_NUM_THREADS=1 e04_order_krylov p1pr 3 10 direct,forcing:1e-4,forcing:1e-6,forcing:1e-8,forcing:1e-10`, same for p2 and p1; pass criteria against exp/E-04/table.md: p2 forcing:1e-6 and forcing:1e-8 local slopes >= 4.5 for >= 4 consecutive halvings (E-04 PLAN rule; today 0.29..3.82); p1pr forcing arms track the direct arm within 3x at every h until the direct arm's own roundoff floor (today h*=1/8, i.e. crossover at the first h); no 'failed step 0' rows. (3) Adaptive regression guard: rerun the `adaptive:1e-4..1e-10` arms and require err/rtol within [0.5x, 2x] of E-04 (0.18-0.29 on P1, 0.01-0.04 on P2) and linear_iterations within +25% of E-04 (P1: 136768/229920/354784/565120). (4) The existing inner_forcing_v2_contracts.rs tests are rewritten per fix G2-4.",
+   "code_sketch": "pub struct InnerForcingReference { pub err_norm: f64, pub h: f64 } // last accepted step\npub struct Rodas5pInnerForcingTarget { pub eta: f64, pub tau: f64, pub floor_active: bool }\nconst FORCING_ALPHA: f64 = 6.0 / 5.0; // (p+1)/(q+1) for RODAS5P (p=5, q=4)\nconst ROUNDOFF_RESIDUAL_MULT: f64 = 64.0;\npub fn rodas5p_inner_forcing_target_v3(flow_wrms: f64, rhs_wrms: f64, output_weight_l1: f64,\n    h: f64, reference: Option<InnerForcingReference>) -> CoreResult<Rodas5pInnerForcingTarget> {\n    // (input validation as in v2, lines 42-56)\n    let cap = RODAS5P_INNER_RESIDUAL_HEURISTIC_FRACTION / output_weight_l1; // 0.02022 outer-WRMS\n    let predicted_err = reference.map_or(1.0, |r| {\n        let ratio = (h / r.h).abs().powi(RODAS5P_ESTIMATOR_ORDER as i32 + 1); // (h/h_ref)^5\n        (r.err_norm * ratio).clamp(RODAS5P_INNER_FORCING_FLOOR, 1.0)\n    });\n    let tau_wanted = cap * predicted_err.powf(FORCING_ALPHA); // ~ h^6 at fixed rtol\n    let roundoff = ROUNDOFF_RESIDUAL_MULT * f64::EPSILON * rhs_wrms.max(flow_wrms);\n    let floor = roundoff.max(RODAS5P_INNER_FORCING_FLOOR);\n    let tau = tau_wanted.max(floor); // never Err: graceful fallback (fix G2-2)\n    let eta = if rhs_wrms > 0.0 { (tau / rhs_wrms).min(RODAS5P_INNER_FORCING_ETA_MAX) }\n              else { RODAS5P_INNER_FORCING_ETA_MAX };\n    Ok(Rodas5pInnerForcingTarget { eta, tau, floor_active: tau_wanted < floor })\n}"
+  },
+  {
+   "id": "G2-2",
+   "title": "Remove the step-0 abort: replace the 64-eps roundoff guard by a residual floor measured in the rhs scale plus a recorded flag, and let the embedded error estimate judge acceptance",
+   "finding_ids": [
+    "F-009",
+    "F-031"
+   ],
+   "summary": "rodas5p_inner_forcing_target returns Err('roundoff floor exceeds the stage-residual heuristic allocation') when unclamped_eta < 64 eps and l1*tau > 0.1 (g4_s5b0_inner_tolerance.rs:67-76), i.e. whenever rhs_wrms > 0.1/(4.9455*64 eps) = 1.42e12, which E-04 hits at step 0 on P1 for rtol<=1e-8 (every h in 1/8..1/256) and on P1PR rtol=1e-10 for h>=1/32; the adaptive driver then records error=INFINITY and shrinks h by min_factor (integrate.rs:789-810, adaptive.rs:286-292) on a criterion that is not an accuracy failure. The guard compares an absolute residual floor (64 eps * rhs_wrms, which is exactly the backward-error level an LU solve also attains, and the direct arm integrates the same input to 1e-15) against an allocation that was never a proven error bound (code comment lines 12-17). The fix: never Err on this condition; compute floor = max(64 eps, 64 eps * max(rhs_wrms, flow_wrms)), set tau = max(tau_wanted, floor), record floor_active in StageInnerForcingReport and a new WorkCounters field inner_forcing_floor_hits, and rely on the existing embedded error check (finish_step, sequential.rs:583-586, which does see the stage contamination through btilde.K) to reject the step if the contamination is real. The residual_norm > tau check at sequential.rs:507-513 stays as the hard contract.",
+   "files": [
+    "crates/rodas5p-integrators/src/g4_s5b0_inner_tolerance.rs",
+    "crates/rodas5p-integrators/src/sequential.rs",
+    "crates/rodas5p-core/src/counters.rs (WorkCounters)",
+    "crates/rodas5p-integrators/src/integrate.rs"
+   ],
+   "anchors": [
+    "crates/rodas5p-integrators/src/g4_s5b0_inner_tolerance.rs:19 (RODAS5P_INNER_FORCING_FLOOR = 64 eps)",
+    "crates/rodas5p-integrators/src/g4_s5b0_inner_tolerance.rs:64-76 (clamp, roundoff_floor_is_active, Err branch)",
+    "crates/rodas5p-integrators/src/sequential.rs:365-369 (rhs_wrms in outer scale; the abort input)",
+    "crates/rodas5p-integrators/src/sequential.rs:378-382 (linear_atol = 64 eps absolute, independent of rhs scale)",
+    "crates/rodas5p-integrators/src/sequential.rs:507-524 (residual_norm > tau -> Err; StageInnerForcingReport fields)",
+    "crates/rodas5p-integrators/src/integrate.rs:787-812 (Err -> rejected_steps += 1, record_work_failure, error INFINITY)",
+    "crates/rodas5p-integrators/src/adaptive.rs:286-292 (non-finite error -> trial_h * min_factor, no record_rejection)",
+    "exp/E-04/table.md rows 39-46 (p1 forcing:1e-8: 'failed step 0' for k=3..8, ok at k=9 with eta_mean 2.5e-10) and rows 103-110 (p1pr forcing:1e-10: failed k=3..5, err 2.9e-11 at k=6)",
+    "exp/E-04/README.md 'Free adaptive integrator' table (P1 rtol=1e-10: 3 linear_solve_failures, 7 rejections, h_min 5.5e-8)"
+   ],
+   "effort": "S",
+   "risk": "low",
+   "risk_notes": "Only changes behaviour on inputs that currently abort; a step whose stage contamination is genuinely too large is still rejected by the embedded estimate (error_norm > 1). The new counter must be surfaced in receipts so that floor-limited steps are disclosed, not hidden. Removing the Err changes the semantics of 'linear_solve_failures' in fair-ab reports for tight-tolerance stiff cases (fewer failures) and must be noted as a protocol change, not a tolerance widening (the accepted residual never exceeds what LU would deliver).",
+   "verification": "(1) Unit test of the Err branch that today has none (F-030 notes): rodas5p_inner_forcing_target_v3(flow=1e10, rhs=1e13, l1=4.9455, h=1/8, None) must return Ok with tau = 64 eps * 1e13 = 0.142 and floor_active=true (today: Err). (2) Rebuild e04_order_krylov against the patched tree and rerun `p1 3 10 forcing:1e-8,forcing:1e-10` and `p1pr 3 6 forcing:1e-10`: zero 'failed step 0' rows, err_max on p1 forcing:1e-8 k=3..8 within 3x of the direct arm (4.7e-2 transient-dominated max-norm; use err_end column) and p1pr forcing:1e-10 k=3..5 err within 3x of direct (6.6e-15..1e-11). (3) Adaptive P1 rtol=1e-10 rerun: linear_solve_failures 3 -> 0, rejections 7 -> <= 4, h_min rises from 5.5e-8, err/rtol stays <= 0.5. (4) Existing test inner_forcing_v2_contracts (prebuilt: cargo-target/debug/deps/inner_forcing_v2_contracts-178868446f6b021e) must be rebuilt; the synthetic (4.0, 2.0, 3.0) calls at lines 18/59/81 remain valid with reference None.",
+   "code_sketch": "// sequential.rs after the solve (replaces nothing: the tau contract stays)\nif let Some((_, flow_wrms, rhs_wrms, target)) = forcing {\n    if report.residual_norm > target.tau {\n        return Err(CoreError::LinearSolve(format!(\n            \"RODAS5P stage {i} achieved WRMS residual {:.3e} exceeds forcing target {:.3e}\",\n            report.residual_norm, target.tau)));\n    }\n    if target.floor_active {\n        counters.inner_forcing_floor_hits = counters.inner_forcing_floor_hits.saturating_add(1);\n    }\n    stage_forcing.push(StageInnerForcingReport { stage_index: i, flow_wrms, rhs_wrms,\n        eta: target.eta, tau: target.tau, floor_active: target.floor_active,\n        achieved_residual_wrms: report.residual_norm, /* ... */ });\n}\n// finish_step (sequential.rs:583-586) is unchanged: error_norm > 1 still rejects the step."
+  },
+  {
+   "id": "G2-3",
+   "title": "K-form vs U-form residual scaling: keep the certified K-form stage equations now, express every relative inner criterion against a solution-scale reference, and schedule the U-form as a separate lane",
+   "finding_ids": [
+    "F-031",
+    "F-008",
+    "F-009"
+   ],
+   "summary": "The K-form rhs_i = h f_i + h J sum_j gamma_ij K_j + h^2 gamma_i f_t (sequential.rs:359-364) has WRMS norm ~|h lambda| |K_i| on stiff modes (E-04: rhs_wrms/flow_wrms = 40 at h=1/8 on P1PR, rhs_wrms up to 5e11), so any criterion stated as a fraction of ||rhs|| (the fixed-eta GMRES arms with C_eta ~1e2-1e3, the eta = 64 eps floor test) becomes an absolute stage error inflated by |h lambda|. Because the forcing lane already passes an absolute tau through residual_scale and GMRES stops on max(atol, rtol*||rhs||) = tau, the inflation reaches the accepted residual only through the floor test (fixed by G2-2) and through the reported eta (which the test at inner_forcing_v2_contracts.rs:66 wrongly certifies as increasing when h shrinks). Decision: do not rewrite the stage formulation inside this fix group; instead (a) make tau absolute and error-scaled (G2-1), (b) define the achievable-residual floor in the rhs scale (G2-2), (c) report a solution-relative diagnostic rho_i = achieved_residual_wrms / max(flow_wrms, ||K_i||_WRMS) in StageInnerForcingReport so receipts show the residual against the stage-increment scale, and (d) open a separate U-form lane (Hairer-Wanner IV.7 transformed variables U_i = sum_j gamma_ij K_j, W' = (1/(h gamma)) I - J, no J*gmix on the rhs, one JVP per stage fewer) with its own certificate replay, since it changes every certified coefficient path, dense output and the embedded estimate.",
+   "files": [
+    "crates/rodas5p-integrators/src/sequential.rs",
+    "crates/rodas5p-integrators/src/g4_s5b0_inner_tolerance.rs",
+    "docs (new lane spec for the U-form)"
+   ],
+   "anchors": [
+    "crates/rodas5p-integrators/src/sequential.rs:349-358 (gmix = Gamma row . stages; jg = J*gmix via apply_jvp_counted, one extra JVP per stage i>=1)",
+    "crates/rodas5p-integrators/src/sequential.rs:359-364 (rhs assembly)",
+    "crates/rodas5p-integrators/src/sequential.rs:366-368 (flow_wrms = |h| wrms(f_i), rhs_wrms = wrms(rhs))",
+    "crates/rodas5p-krylov/src/gmres.rs:209-210 (right_norm of the rhs in residual_scale; threshold uses it)",
+    "exp/E-04/README.md paragraph 2 (C_eta ~ 1e2-1e3; crossover vs direct at h*=1/32 for gmres:1e-12 on P1PR) and slope table rows p1pr gmres:1e-12/1e-9/1e-6",
+    "exp/E-04/table.md rows 119-126 (rhs_wrms-dominated eta 1.2e-11..9.7e-8 on p1pr forcing:1e-6)"
+   ],
+   "effort": "S (diagnostic + decision record) / L (U-form lane, separate)",
+   "risk": "low (diagnostic) / high (U-form: touches certified tableau replays, dense output, error estimate, and the JVP accounting used in cost comparisons)",
+   "verification": "(1) Diagnostic: after G2-1/G2-2, dump rho_i on the E-04 p1pr forcing:1e-6 ladder; expect rho_i to shrink like h^5-h^6 while eta (rhs-relative) still shows the -1.9 exponent, documenting that eta is not the quantity to certify. (2) U-form lane, if pursued: bitwise-reproduce E-07 order conditions (main 5 / embedded 4 on P1NS), reproduce the direct-arm E-04 p2 slopes 5.33/5.27/5.15/5.05 to 3 digits, and show jvp_calls per step drops by exactly 7 on the 8-stage scheme; only then compare the inexact arms. No result from the U-form may be merged into existing receipts without a fresh two-arm replay.",
+   "code_sketch": "// sequential.rs, diagnostic only (no change to the solve)\nlet stage_increment_wrms = wrms(&report.x /* K_i */, scale)?;\nlet rho = report.residual_norm / flow_wrms.max(stage_increment_wrms).max(RODAS5P_INNER_FORCING_FLOOR);\nstage_forcing.push(StageInnerForcingReport { /* ... */ solution_relative_residual: rho, .. });"
+  }
+ ]
+}

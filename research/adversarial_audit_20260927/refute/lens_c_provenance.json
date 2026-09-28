@@ -1,0 +1,300 @@
+{
+ "agent": "lens_c",
+ "status": "complete",
+ "tree_commit": "b3e8165c8dc3b5016702821d280daea1a3f1feb7",
+ "method": {
+  "pr_bodies_read": [
+   29,
+   38,
+   39,
+   42
+  ],
+  "pr_numbers_from_title_list_only": [
+   3,
+   5,
+   7,
+   8,
+   10,
+   18,
+   35,
+   40,
+   41
+  ],
+  "blocker_ledger": "/home/cosmosapjw/vigilode/VIGILODE_MATH_BLOCKER_LEDGER_20260831.json",
+  "caveats": [
+   "Experimental magnitudes quoted in delta come from slim/top_set.json and were not re-measured by this lens.",
+   "related_prs taken from PR titles (not bodies) are topical associations, not confirmed acknowledgements.",
+   "No PR, commit or doc was found that FIXES any of the 11 findings at b3e8165; the strongest prior coverage is nonclaim/doc-level."
+  ]
+ },
+ "summary": {
+  "kind_counts": {
+   "doc": 5,
+   "nonclaim": 3,
+   "none": 3,
+   "pr": 0,
+   "commit": 0
+  },
+  "not_acknowledged": [
+   "F-009",
+   "F-010",
+   "F-011"
+  ],
+  "mostly_already_covered": [
+   "F-014"
+  ]
+ },
+ "items": [
+  {
+   "id": "F-002",
+   "already_addressed_on": {
+    "ref": "research/audit2_two_loop_20260829/README.md:7",
+    "kind": "doc",
+    "quote": "Official quartic continuous output has exact-start local defect O(h^5), consistent with global order5 in the tested nonstiff setting. Stiff limits and rounded-coefficient floors are separate."
+   },
+   "status": "partially_acknowledged",
+   "secondary_refs": [
+    "research/audit2_reusable_preconditioner_transactional_step_20260830/CLAIM_LEDGER.md:48 (Dense output correctness = FORBIDDEN nonclaim for the audit2 substrate)",
+    "research/scientific_validity_v2_20260829/CLAIM_SCOPE_AND_INVALIDATION.md:63 (row H: all 54 clipped/dense comparisons output-policy-dominated)",
+    "README.md:36-44 (no v2 performance/equal-error claim admitted)"
+   ],
+   "related_prs": [
+    29,
+    38
+   ],
+   "related_blockers": [
+    "M12"
+   ],
+   "delta": "Project knows the dense interpolant was only order-checked in a nonstiff setting and explicitly brackets stiff limits as 'separate'; the audit adds the measured stiff interior order reduction (interior 17x-610x over WRMS tolerance on Prothero-Robinson while endpoints pass) and the fact that no code path ever compares interior error to atol/rtol. Note: doc calls the extension 'quartic' while dense_output_v2.rs:59 doc-comment says 'third-degree' (unreconciled wording)."
+  },
+  {
+   "id": "F-003",
+   "already_addressed_on": {
+    "ref": "research/a1_inner_tolerance_audit_20260825/CLAIM_SCOPE_AND_INVALIDATION.md:21-33",
+    "kind": "doc",
+    "quote": "conditional and non-transplantable to a different protected GMRES tolerance arm until replay ... downstream v3.7 continuation/timing authority receipts that consume the frozen event distribution"
+   },
+   "status": "partially_acknowledged",
+   "secondary_refs": [
+    "research/generic_timing_replication_continuation_transaction_v37/receipts/FINAL_VERIFICATION.md:20 ('optimized N=192 charged-exhaustion contract: pass' - recorded as passing at the v3.7 head)",
+    "README.md:43-44 (legacy v3.5/v3.6/v3.7 receipts valid only under their original inner-solve policies)",
+    "no .github/workflows hit for '--ignored' or 'replay gate' in tree"
+   ],
+   "related_prs": [
+    3,
+    5,
+    10,
+    18,
+    29
+   ],
+   "related_blockers": [],
+   "delta": "Project knows legacy v3.7 receipts are non-transplantable to changed code until replayed (A1 audit) and recorded the N=192 contract as passing at its original head; the audit adds that the pinned assertion actually fails at b3e8165 (17 vs 18) and that the 'optimized v3.7 replay gate' named in the #[ignore] reason is wired into no workflow. Whether the A1 tolerance change is the cause of the 17/18 drift was NOT verified by this lens (A1 doc says the committed arm stays legacy-fixed, which would argue against it)."
+  },
+  {
+   "id": "F-004",
+   "already_addressed_on": {
+    "ref": "research/scientific_validity_v2_20260829/CLAIM_SCOPE_AND_INVALIDATION.md:86-90",
+    "kind": "nonclaim",
+    "quote": "the Rust same-error rows are invalidated and CVODE is unavailable; therefore it supports no relative production claim versus RADAU5, CVODE, OrdinaryDiffEq, SciPy, or SUNDIALS"
+   },
+   "status": "nonclaim_covers_comparison_but_not_the_omission",
+   "secondary_refs": [
+    "research/scientific_validity_v2_20260829/CANONICAL_EXECUTION_EVIDENCE.md:41-43 (only clipped/dense discrepancy and discrepancy/dense-error ratio ranges are published)",
+    "CANONICAL_EXECUTION_EVIDENCE.md:49-51 ('This result is not a solver-execution crash ... It is a scientific output-policy invalidation')"
+   ],
+   "related_prs": [
+    29
+   ],
+   "related_blockers": [
+    "M09",
+    "M12"
+   ],
+   "delta": "Project discloses 54/54 output-policy-dominated rows and withholds every comparative claim; it does not publish absolute dense-arm global error in case-tolerance units (12/18 n=96 rows >1, up to 207x) nor the ~2.6x gap to SciPy Radau, so the ledgers frame the campaign as a pure output-policy invalidation with solver accuracy unexamined. No published claim is falsified; this is an omission/doc-completeness addition."
+  },
+  {
+   "id": "F-005",
+   "already_addressed_on": {
+    "ref": "github/planning/vigilode-research-coding-spiral-20260904:docs/superpowers/specs/2026-09-04-vigilode-research-coding-spiral-design.md:216,223",
+    "kind": "doc",
+    "quote": "2. fixed-step/order-preservation experiments and theory; ... The order may change only when newly observed evidence creates a higher-priority blocker."
+   },
+   "status": "planned_but_not_prioritized",
+   "secondary_refs": [
+    "research/scientific_validity_v2_20260829/PROTOCOL.md:147-148",
+    "research/scientific_validity_v2_20260829/CLAIM_SCOPE_AND_INVALIDATION.md:61 (row F: 'endpoint contamination is not certified; canonical inner/outer study NOT_RUN')",
+    "VIGILODE_MATH_BLOCKER_LEDGER_20260831.json M07 remaining_evidence 'fixed-h refinement'"
+   ],
+   "related_prs": [
+    18,
+    39,
+    41,
+    42
+   ],
+   "related_blockers": [
+    "M04",
+    "M05",
+    "M07",
+    "M09"
+   ],
+   "delta": "Project already schedules fixed-step/order-preservation as lane 2 after real-client evidence and lists 'fixed-h refinement' as open evidence for M07; the audit supplies exactly the 'newly observed evidence' the plan's own reordering clause requires (E-04: eta loosens as h^-1.9, h-independent floor, step-0 aborts on the production path), arguing the lane should precede M0/M1. The finder's blocker tag M09 is weaker than M07/M04/M05, which match the mechanism directly."
+  },
+  {
+   "id": "F-006",
+   "already_addressed_on": {
+    "ref": "crates/rodas5p-integrators/src/adaptive.rs:264-266",
+    "kind": "doc",
+    "quote": "A forced output landing is a scheduling artifact, not an error-estimator sample: a successful clipped trial restores the precise unclipped request and leaves PI history untouched."
+   },
+   "status": "intentional_design_consequence_unacknowledged",
+   "secondary_refs": [
+    "research/scientific_validity_v2_20260829/CLAIM_SCOPE_AND_INVALIDATION.md:58 (row C 'clip-neutral controller state' IMPLEMENTED)",
+    "CLAIM_SCOPE_AND_INVALIDATION.md:63 (row H 'controller-neutral hard-stop/output handling')"
+   ],
+   "related_prs": [
+    29
+   ],
+   "related_blockers": [],
+   "delta": "Project documents clip-neutral controller state as a deliberate, implemented v2 feature; the audit adds the unrecognized consequence that once requested_h exceeds the output spacing every step is clipped, no acceptance is ever recorded, and the clipped arm degenerates to a fixed-step h=span/100 integrator independent of tolerance - which also explains part of the clipped/dense disagreement the project attributes to 'output policy'."
+  },
+  {
+   "id": "F-007",
+   "already_addressed_on": {
+    "ref": "research/scientific_validity_v2_20260829/CANONICAL_EXECUTION_EVIDENCE.md:42-43",
+    "kind": "doc",
+    "quote": "Discrepancy / dense-error ratio range: 0.12454170289388176 to 1.0941303386549561; every row strictly exceeded the frozen 0.1 dominance limit"
+   },
+   "status": "outcome_known_cause_misattributed",
+   "secondary_refs": [
+    "CLAIM_SCOPE_AND_INVALIDATION.md:72 ('improve output-policy agreement under a new declared campaign; do not tune the frozen gate')",
+    "PROTOCOL.md:139-141 ('after correcting the output-policy disagreement')",
+    "research/audit2_two_loop_20260829/README.md:5-6 ('Policy sensitivity is not independent accuracy' - project's own later critique of the discrepancy metric)"
+   ],
+   "related_prs": [
+    29
+   ],
+   "related_blockers": [
+    "M12"
+   ],
+   "delta": "Project knows 54/54 rows were dominated, publishes the exact 0.1245 minimum ratio, and (audit2) already concedes policy sensitivity is not independent accuracy; but it still frames the fix as 'improve output-policy agreement' under the same frozen 0.1 gate. The audit adds the triangle-inequality argument that the gate is unattainable by construction for two independently integrated O(tol) trajectories, so EXECUTED_NONPASSING is a gate-design artifact and a rerun under the frozen gate cannot pass."
+  },
+  {
+   "id": "F-008",
+   "already_addressed_on": {
+    "ref": "research/scientific_validity_v2_20260829/PROTOCOL.md:147-148",
+    "kind": "nonclaim",
+    "quote": "The WRMS inner policy is a per-stage true-residual heuristic. Its `0.1` allocation does not bound endpoint contamination unless an independent bound on `W^-1` is available."
+   },
+   "status": "limitation_declared_magnitude_unquantified",
+   "secondary_refs": [
+    "crates/rodas5p-integrators/src/g4_s5b0_inner_tolerance.rs:12-17 ('This is not an endpoint-error budget')",
+    "crates/rodas5p-integrators/tests/inner_forcing_v2_contracts.rs:104-107 ('A fixed-step global order-five check needs each local linear-solve contamination budget to scale as h^6' - test sets rtol=h^6 to sidestep)",
+    "research/audit2_bateman_local_validation_20260831/MATHEMATICAL_SCOPE.md:55-57 ('Fifth-order preservation additionally needs ... sum_i a_i q_i = O(h^6)')",
+    "blocker ledger M07 theorem"
+   ],
+   "related_prs": [
+    18,
+    40,
+    41,
+    42
+   ],
+   "related_blockers": [
+    "M04",
+    "M05",
+    "M07",
+    "M09"
+   ],
+   "delta": "Project states the 0.1 allocation is a heuristic that is not an endpoint budget and knows (M07, test comment) that order five needs an h^6-scaled budget; the audit adds the closed-form consequence that tau is the constant 0.1/||b||_1 (0.02022 WRMS) on every stiff stage, i.e. an h- and rtol-independent floor of ~0.1 tol per step, and that the only order test passes because it ties rtol to h^6 rather than exercising the production rule at fixed rtol."
+  },
+  {
+   "id": "F-009",
+   "already_addressed_on": {
+    "ref": "crates/rodas5p-integrators/src/g4_s5b0_inner_tolerance.rs:73",
+    "kind": "none",
+    "quote": "RODAS5P inner-forcing roundoff floor exceeds the stage-residual heuristic allocation"
+   },
+   "status": "not_acknowledged",
+   "secondary_refs": [
+    "grep 'roundoff floor' over crates/*/tests, research/, docs/ finds no test or ledger entry for this error path (only the source string)",
+    "docs/superpowers/specs/2026-08-08-unified-candidate-harness-design.md:128 ('global order five before the roundoff floor' - generic, unrelated to the guard)"
+   ],
+   "related_prs": [
+    18,
+    42
+   ],
+   "related_blockers": [
+    "M07",
+    "M09"
+   ],
+   "delta": "The Err is a deliberate typed failure in code, but no doc, ledger, nonclaim or test mentions when it fires; the audit adds that the guard compares 64*eps against a K-form rhs norm inflated by O(h|lambda|), giving threshold rhs_wrms > 1.42e12 that is crossed on ordinary stiff input (|lambda|~1e6, rtol<=1e-8), aborting the fixed-step API at step 0 and producing blind 0.2x rejections in the adaptive driver. New to the project."
+  },
+  {
+   "id": "F-010",
+   "already_addressed_on": {
+    "ref": "crates/rodas5p-krylov/src/lgmres.rs:69-77 (sibling solver only; introduced in ab8fbcd)",
+    "kind": "none",
+    "quote": "if !same_system { for image in &mut state.images { *image = None; } state.previous_solution = None;"
+   },
+   "status": "fixed_in_sibling_lgmres_not_in_gcrodr",
+   "secondary_refs": [
+    "crates/rodas5p-krylov/src/gcrodr.rs:420 (basis filtered by len()==n) vs :462 (previous_solution used unfiltered)",
+    "research/scientific_validity_v2_20260829/PROTOCOL.md:149 ('Matrix-free recycle images are refreshed for every new linearization identity')",
+    "research/audit2_matrix_free_common_w_20260830/CLAIM_LEDGER.md:74 (audit2 path: 'All recycle counters remain zero' - recycling not exercised there)"
+   ],
+   "related_prs": [
+    35
+   ],
+   "related_blockers": [
+    "M08"
+   ],
+   "delta": "Project knows stale recycled state must be invalidated on a system change and implemented that reset for LGMRES (and for GCRO-DR's basis by length), and the audit2 lane avoids recycling entirely; the audit adds that GCRO-DR's previous_solution is not covered by any such guard and panics (SIGABRT, not Err) on a dimension change. No doc or test acknowledges it."
+  },
+  {
+   "id": "F-011",
+   "already_addressed_on": {
+    "ref": "research/scientific_validity_v2_20260829/CLAIM_SCOPE_AND_INVALIDATION.md:57",
+    "kind": "none",
+    "quote": "B | Scale-invariant Krylov breakdown/certification and refresh accounting | IMPLEMENTED; local Krylov contracts"
+   },
+   "status": "not_acknowledged",
+   "secondary_refs": [
+    "docs/superpowers/specs/2026-08-23-v38d-high-entropy-performance-tournament-design.md:617-621 (per-candidate audit list: 'residual-estimator derivation and limitations', 'happy-breakdown and full-space limits' - a to-do item, not a finding)",
+    "crates/rodas5p-integrators/src/exponential.rs:1078 (breakdown_tolerance = 64*sqrt(eps))"
+   ],
+   "related_prs": [
+    7,
+    8
+   ],
+   "related_blockers": [],
+   "delta": "Project lists happy-breakdown limits as something each v3.8-D candidate must be audited for and claims scale-invariant breakdown as implemented for the linear Krylov lane; nothing records that the phi-action threshold is 64*sqrt(eps) (~9.5e-7) and that breakdown returns converged=true with error_estimate=0. The audit adds a concrete counterexample (true relative error 3.9e-7) showing any relative_tolerance below ~1e-6 is silently unenforced. New to the project; no math blocker covers phi-Krylov."
+  },
+  {
+   "id": "F-014",
+   "already_addressed_on": {
+    "ref": "research/audit2_reusable_preconditioner_transactional_step_20260830/README.md:91-92",
+    "kind": "nonclaim",
+    "quote": "This is attempt-level research plumbing. It is not a production controller or an end-to-end integration transaction."
+   },
+   "status": "declared_nonclaim_by_design",
+   "secondary_refs": [
+    "CLAIM_LEDGER.md:46 ('Real-client or original observable accuracy | UNESTABLISHED: manufactured references exercise admission wiring but do not substitute for a predeclared real-client budget and uncertainty authority')",
+    "PR #38 body ('commit atomically only after the outer, embedded, original-target, and independent-output gates'; 'No ... production preconditioner/dispatcher ... or real-client accuracy claim is made')",
+    "PR #29 body ('independent observable budget B and ReferenceUncertaintyTreatment remain mandatory for accuracy assessment')",
+    "Sep-4 spiral design :205-207 (planned causal replacement: certified accept from estimator plus contamination enclosure)",
+    "audit2_reusable_transaction_research.rs:3 ('This module is research-only')"
+   ],
+   "related_prs": [
+    29,
+    38,
+    39,
+    40
+   ],
+   "related_blockers": [
+    "M05",
+    "M06",
+    "M08",
+    "M12"
+   ],
+   "delta": "Project designed the external-reference gate deliberately, feature-gates it, and disclaims production/real-client status under claim ceiling EXPLORATORY_NONAUTHORITATIVE; the Sep-4 plan already targets a causal estimator+enclosure certificate. The audit adds only the explicit labelling that the reference participates in the commit decision itself (not just post-hoc assessment), so candidate-accept/fallback rates and work counts from this substrate are non-causal and must not be carried into any runtime or performance statement. Largely already covered; lowest incremental value of the 11."
+  }
+ ]
+}

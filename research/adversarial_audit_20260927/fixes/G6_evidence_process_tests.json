@@ -1,0 +1,257 @@
+{
+ "group": "G6_evidence_process_tests",
+ "fixes": [
+  {
+   "finding_ids": [
+    "F-030",
+    "F-018",
+    "F-020"
+   ],
+   "summary": "Add a fixed-h order test file whose outer tolerance is independent of h, so the production forcing rule is tested in the configuration the adaptive driver actually uses. Rename the existing h^6-coupled test to say what it tests (forced_fixed_step_with_h6_coupled_rtol_retains_order_five) and correct its 'Defect caught' comment, because at fixed rtol E-04 measures slopes of about 0 over seven halvings with a floor at 0.1-0.8 rtol. The new tests pin two honest properties: (1) direct-LU order is 5 on nonstiff problems and a documented 3-4 on stiff ones, with two-sided bands so an improvement also forces a re-seal; (2) the forcing arm's error is bounded by max(3 x direct error, 1.0 outer-WRMS unit), i.e. a tolerance-floor contract, not an order-5 claim. Thresholds come from E-04/E-09 (n=256/512 harness problems); the in-tree small-n variants need one measurement run before the bands are sealed.",
+   "files": [
+    "crates/rodas5p-integrators/tests/inner_forcing_v2_contracts.rs",
+    "crates/rodas5p-integrators/tests/stiff_order_contracts.rs (new)",
+    "crates/rodas5p-integrators/src/problems.rs"
+   ],
+   "anchors": [
+    "crates/rodas5p-integrators/tests/inner_forcing_v2_contracts.rs:92-140",
+    "crates/rodas5p-integrators/tests/inner_forcing_v2_contracts.rs:104-108",
+    "crates/rodas5p-integrators/src/problems.rs:37",
+    "crates/rodas5p-integrators/src/problems.rs:681",
+    "exp/E-04/README.md slope table",
+    "exp/E-09/README.md results table"
+   ],
+   "effort": "M",
+   "risk": "low",
+   "verification": "TEST PLAN (all fixed h = 1/2^k, slope = log2(e_k/e_{k+1}), only rows with error > 1e-12 count as pre-floor). T1 direct_fixed_step_nonstiff_order_is_five: semilinear_advection_diffusion_problem at reduced n and constant_affine_mass_problem, k=3..6, assert >= 2 consecutive slopes >= 4.8 (E-04 p2 direct 5.33/5.27/5.15/5.05; E-09 constant_affine_mass 5.18/5.64/5.83). T2 direct_fixed_step_stiff_pr_order_is_reduced_band: prothero_robinson_problem(-1e4, 0, 0), k=2..6, assert every pre-floor slope in [2.7, 3.6] and err(h=1/64) <= 1e-11 (E-09: 2.95/3.03/3.11/3.25, 1.75e-12). T3 direct_fixed_step_mildly_stiff_pr_band: lambda=-1e2, last two pre-floor slopes in [3.8, 5.2] (E-09: 4.03, 4.69). T4 forcing_fixed_outer_rtol_error_is_bounded_by_tolerance_floor: for rtol in {1e-4, 1e-6}, atol = 1e-2 rtol, rtol NOT a function of h, k=3..8, assert err_forcing(h) <= max(3*err_direct(h), 1.0 in outer WRMS units) (E-04 floors 0.10-0.32 rtol P1PR, 0.01-0.8 rtol P2). T5 forcing_fixed_outer_rtol_does_not_claim_order_five: same ladder, assert the test records slopes and that at least one pre-floor slope < 4.5 today; this is an expected-failure sentinel that must be inverted (>= 4.5 for >= 2 halvings until the floor) when the G2 forcing-rule fix lands. T6 forcing_rule_tight_tolerance_abort_is_typed: rtol=1e-10 on the stiff ladder returns the typed 'roundoff floor exceeds the stage-residual heuristic allocation' error at step 0 rather than a silent wrong answer (E-04 P1 rtol 1e-10: every h fails). Cross-check: rerun harness e04_order_krylov and e09_mass_ft in measurement profile, RAYON_NUM_THREADS=1, and confirm the in-tree bands bracket the harness numbers.",
+   "code_sketch": "fn ladder(ks: std::ops::RangeInclusive<u32>, f: impl Fn(f64) -> f64) -> Vec<f64> {\n    let e: Vec<f64> = ks.map(|k| f(0.5f64.powi(k as i32))).collect();\n    e.windows(2).filter(|p| p[1] > 1e-12).map(|p| (p[0] / p[1]).log2()).collect()\n}\n\n#[test]\nfn forcing_fixed_outer_rtol_error_is_bounded_by_tolerance_floor() {\n    for rtol in [1e-4, 1e-6] {\n        let atol = 1e-2 * rtol; // independent of h, as in the adaptive driver\n        for k in 3..=8 {\n            let h = 0.5f64.powi(k);\n            let direct = fixed_endpoint_wrms(Arm::Direct, h, atol, rtol);\n            let forced = fixed_endpoint_wrms(Arm::Forcing, h, atol, rtol);\n            assert!(forced <= (3.0 * direct).max(1.0), \"rtol={rtol} h={h} {forced} vs {direct}\");\n        }\n    }\n}\n\n#[test]\nfn direct_fixed_step_stiff_pr_order_is_reduced_band() {\n    let s = ladder(2..=6, |h| pr_direct_error(-1e4, 0.0, h));\n    assert!(s.len() >= 3 && s.iter().all(|o| (2.7..=3.6).contains(o)), \"{s:?}\");\n}"
+  },
+  {
+   "finding_ids": [
+    "F-020"
+   ],
+   "summary": "Cover the remaining load-bearing paths that today have only counter assertions: mass != I order and accuracy, direct vs matrix-free W agreement with a mass matrix, finite-difference f_t accuracy against analytic f_t, preconditioned GMRES through the integrator step, and dense output on a stiff problem. The stiff diagonal-mass problem used by E-09 lives only in the audit harness, so add it to problems.rs as a public constructor. All thresholds are initialised from the E-09 table with roughly one decade of slack on errors and 0.3-0.5 on slopes.",
+   "files": [
+    "crates/rodas5p-integrators/tests/mass_ft_precond_accuracy_contracts.rs (new)",
+    "crates/rodas5p-integrators/tests/dense_output_v2_contracts.rs",
+    "crates/rodas5p-integrators/src/problems.rs"
+   ],
+   "anchors": [
+    "crates/rodas5p-integrators/tests/dense_output_v2_contracts.rs:113-126",
+    "crates/rodas5p-integrators/src/problems.rs:245",
+    "crates/rodas5p-integrators/src/problems.rs:305",
+    "crates/rodas5p-integrators/src/sequential.rs:606",
+    "crates/rodas5p-core/src/solver_types.rs:70",
+    "exp/E-09/README.md results table"
+   ],
+   "effort": "M",
+   "risk": "low",
+   "verification": "TEST PLAN. M1 mass_constant_affine_fixed_step_order_is_five: constant_affine_mass_problem, k=2..5, all pre-floor slopes >= 4.8, err(1/64) <= 1e-12 (E-09: 5.18/5.64/5.83, 3.34e-14). M2 mass_nonlinear_manufactured_order_band: manufactured_mass_nonlinear_problem(1e3,1,1,0), >= 2 consecutive slopes >= 4.5 and err(1/64) <= 3e-11 (E-09: 3.88/4.58/5.04/4.13, 2.94e-12). M3 mass_stiff_diagonal_eps1e3_accuracy_band: new diagonal_mass_stiff_problem(1e-3), min pre-floor slope >= 2.5, err(1/64) <= 3e-11, no order-5 assertion (E-09: 3.22/3.6/4.78/2.79, 2.49e-12). M4 mass_direct_and_matrix_free_w_agree: GMRES rtol 1e-13 atol 1e-16, |err_direct - err_gmres| <= 1e-13 at every ladder point (E-09: <= 1.4e-15). FT1 fd_partial_t_matches_analytic_above_fd_floor: PR lambda in {-1e2,-1e4}, twin with partial_t=None, ratio err_fd/err_analytic in [0.5, 2] for h >= 1/64 (E-09: identical down to 1/64). FT2 fd_partial_t_floor_scales_with_lambda: err_fd at h=1/1024 <= 5e-14 (lambda=-1e2) and <= 5e-12 (lambda=-1e4) (E-09 floors 1.5e-15 and 1.6e-13). PC1 jacobi_and_direct_preconditioned_step_match_unpreconditioned: LinearMethod::Gmres with PreconditionerKind::Jacobi and ::Direct through sequential_matrix_free_step on a diagonally dominant stiff problem, y_new agrees with the LU step to 1e-10 relative and linear_iterations do not exceed the unpreconditioned count; plus one negative test that Direct method + preconditioner != None is rejected (solver_types.rs:70). D1 rodas5p_dense_output_stiff_interior_order_band: PR lambda=-1e5 single step, theta in {0.37, 0.5}, local interior slopes >= 3.5 and documented as order 4 local / 3 global, separate from the existing lambda=-2 test (D1 audit run: interior slope 4.0)."
+  },
+  {
+   "finding_ids": [
+    "F-002"
+   ],
+   "summary": "Make the dense-output error an explicit, reported quantity and give it an opt-in control. Add DenseErrorControl {Off, Report, Enforce}: on each accepted step that contains a requested output time, evaluate the defect of the interpolant at theta=0.5 (one extra rhs), filter it through the already-factorized W (one back-solve, the same stiff filter used for Rosenbrock error estimates) and take its WRMS as the interior estimate. Report is the default and only records the value; Enforce rejects the step when the estimate exceeds 1. Independently of the mode, the fair-ab dense arm must label its grid errors as interpolant error, and the docs must state that dense output is order 4 nonstiff and about order 3 stiff and is not tolerance-controlled by default.",
+   "files": [
+    "crates/rodas5p-integrators/src/dense_output_v2.rs",
+    "crates/rodas5p-integrators/src/output.rs",
+    "crates/rodas5p-integrators/tests/dense_output_v2_contracts.rs",
+    "README.md"
+   ],
+   "anchors": [
+    "crates/rodas5p-integrators/src/dense_output_v2.rs:436-458",
+    "crates/rodas5p-integrators/src/dense_output_v2.rs:64",
+    "crates/rodas5p-integrators/src/output.rs:337-350",
+    "crates/rodas5p-integrators/tests/dense_output_v2_contracts.rs:113-126"
+   ],
+   "effort": "L",
+   "risk": "medium",
+   "verification": "New test adaptive_dense_interior_wrms_on_stiff_pr: PR lambda=-1e5, rtol in {1e-4,1e-6,1e-8}. In Report mode assert the recorded estimate is within a factor 10 of the true interior WRMS (baseline true values from exp/D1: 17.5 / 610 / 206 with endpoints 0.002 / 0.095 / 0.136). In Enforce mode the acceptance target is true interior max WRMS <= 3 at all three tolerances. If the filtered-defect estimator cannot meet that target, the fallback is to clip steps at output times, which is tolerance-controlled by construction; the test then asserts the clipped arm instead. Nonstiff regression: existing lambda=-2 order > 3.8 test unchanged, and Off mode is bitwise identical to current output.",
+   "code_sketch": "pub enum DenseErrorControl { Off, Report, Enforce }\n\n// inside the accept path, only when an output time falls in (t, t + h]\nlet theta = 0.5;\nlet p = rodas5p_dense_output(&report, theta)?;\nlet dp = rodas5p_dense_derivative(&report, theta)?; // d/dt of the same polynomial\nlet f_mid = problem.rhs(t + theta * trial_h, &p)?;\n// defect = M p' - f(p); filtered through W = M - h*gamma*J (already factorized)\nlet defect: Vec<f64> = mass_apply(&dp).iter().zip(&f_mid).map(|(a, b)| a - b).collect();\nlet filtered = w_factor.solve(&scale_by(trial_h, &defect))?;\nlet interior = wrms(&filtered, &error_scale(&state, &report.y_new, atol, rtol)?)?;\ndiagnostics.record_dense_interior(interior);\nif matches!(control, DenseErrorControl::Enforce) && interior > 1.0 {\n    // treat as a rejection with estimator order 4, not 5\n}"
+  },
+  {
+   "finding_ids": [
+    "F-018"
+   ],
+   "summary": "Narrow the claim to what is measured. Rename the gate and its blocker string from 'global fifth-order gate' to a nonstiff classical-order gate, and amend README line 19 to state classical order 5 verified on a nonstiff manufactured problem with observed order 3-4 on stiff problems under exact linear algebra. Add a stiff characterization gate in homotopy_order_policy: for stiff problem ids with at least three h levels, the sequential-direct observed order must stay inside a recorded band, so a regression or an unexplained improvement is visible. The controller exponent stays at 1/5; that is an efficiency question to be settled by measurement, not by this change.",
+   "files": [
+    "crates/rodas5p-integrators/src/homotopy_order_policy.rs",
+    "crates/rodas5p-integrators/src/unified_gates.rs",
+    "crates/rodas5p-integrators/src/adaptive.rs",
+    "README.md"
+   ],
+   "anchors": [
+    "crates/rodas5p-integrators/src/homotopy_order_policy.rs:529-564",
+    "exp/E-04/README.md p1pr direct row",
+    "exp/E-09/README.md PR lambda=-1e4 rows"
+   ],
+   "effort": "S",
+   "risk": "low",
+   "verification": "Unit test stiff_rows_get_band_gate_not_fifth_order_gate: synthetic rows with problem_id != manufactured-vector-order and orders [3.0, 3.1, 3.2] pass the stiff band gate and are marked fifth_order_applicable = false; rows with order 1.5 fail it. The measured bands are those of fix 1 (PR lambda=-1e4: 2.7-3.6; P1PR: 3.4-4.3 from E-04 slopes 4.01/4.03/4.03/3.63/3.42). grep of README and crates/*/src for 'fifth-order' must return only scoped statements."
+  },
+  {
+   "finding_ids": [
+    "F-003"
+   ],
+   "summary": "Do not edit 18 to 17. The sealed ledger row (attempt 18, 17 accepted steps before) was produced at the v3.7 sealing commit and numerical source changed afterwards, so first bisect 84a3b0f..b3e8165 with the ignored test in the measurement profile to find the first divergent commit; candidates seen in the log are f4807d1, 0b8b359 (inner tolerance unification), 6cb005c and b712cde (Givens backsolve scaling), but the cause is not established. Then retire the trajectory-pinned literals with a tombstone and, only if the claim is still wanted, re-seal as a new versioned snapshot with provenance; the old ledger is never overwritten. Split the test: semantic invariants (2 recommendations, 1 exhaustion at cap 80, 1 completion, 0 unsafe, parity and hard gates pass, jvp below cap) stay as hard assertions, while attempt indices and JVP counts (12, 18, 36, 116) move to a snapshot file. Finally add one CI step that runs every ignored test in the measurement profile, since no workflow passes --ignored today. Note that assert_eq stops at the first failure, so the later literals (36, 116) may also have drifted.",
+   "files": [
+    "crates/rodas5p-integrators/tests/v37_continuation_transaction_contracts.rs",
+    "research/generic_timing_replication_continuation_transaction_v37/TOMBSTONE.json (new)",
+    "research/generic_timing_replication_continuation_transaction_v37/results/V37_REPLAY_SNAPSHOT_R1.json (new, only if re-sealed)",
+    ".github/workflows/e4-fresh-clone-build.yml"
+   ],
+   "anchors": [
+    "crates/rodas5p-integrators/tests/v37_continuation_transaction_contracts.rs:104-112",
+    "research/generic_policy_redesign_v33/results/calibration192_shards/semilinear.json:1240-1250",
+    "baseline/ignored_failure_note.md",
+    ".github/workflows/e4-fresh-clone-build.yml:43-78",
+    "git log 84a3b0f..HEAD -- crates/*/src"
+   ],
+   "effort": "M",
+   "risk": "medium",
+   "verification": "(1) Bisect result recorded in the tombstone: sealed_commit, first_divergent_commit, observed_diff {field: target_attempt_index, sealed: 18, head: 17}, cause_class in {intended-numerical-change, defect, unknown}, status NOT_REPRODUCIBLE_AT_HEAD_VALID_AT_SEALED_COMMIT. (2) At the sealed commit the original test passes with --ignored in the measurement profile; if it does not, the ledger itself is tombstoned as never reproduced. (3) At HEAD the split test passes without #[ignore] in the measurement profile (baseline run took 0.44 s there). (4) Snapshot provenance fields: commit, profile, toolchain, RAYON_NUM_THREADS, exact command, sha256 of the output. (5) CI: cargo test --workspace --profile measurement --locked -- --ignored is green, and a grep check fails the build if an #[ignore] test is not reachable from any workflow."
+  },
+  {
+   "finding_ids": [
+    "F-046"
+   ],
+   "summary": "Introduce one constants provenance table, docs/CONSTANTS_PROVENANCE.toml, and a test that keeps it in sync with the source. Each row has: name, value (exact literal), location, class (derived | fitted | declared | cited | unsourced), source_artifact path plus sha256, fit_dataset and n, selection_criterion, sensitivity (range over which published verdicts do not change), valid_scope (tolerance arm, dimensions, families), status (active | frozen | retired). Unsourced rows are allowed but must say so, and any claim that depends on an unsourced or fitted n<30 constant inherits that label. While doing this, replace the hard-coded committed_rjf_jvp / 4 in enforced_prefix_jvp_cap with the named fraction so the declared 0.25 has a single source.",
+   "files": [
+    "docs/CONSTANTS_PROVENANCE.toml (new)",
+    "crates/rodas5p-integrators/src/g4_s5b0_regime_atlas.rs",
+    "crates/rodas5p-integrators/tests/constants_provenance_contracts.rs (new)",
+    "crates/rodas5p-cli/src/main.rs"
+   ],
+   "anchors": [
+    "crates/rodas5p-integrators/src/g4_s5b0_regime_atlas.rs:377-379",
+    "crates/rodas5p-integrators/src/g4_s5b0_regime_atlas.rs:1875",
+    "crates/rodas5p-integrators/src/g4_s5b0_regime_atlas.rs:2942-2955",
+    "crates/rodas5p-integrators/src/g4_s5b0_regime_atlas.rs:3028",
+    "research/generic_policy_redesign_v33/results/calibration_analysis/FROZEN_ZETA34_POLICY.json",
+    "research/generic_enforced_prefix_budget_v35/reports/PHYS_MATH_AUDIT.md:7"
+   ],
+   "effort": "S",
+   "risk": "low",
+   "verification": "Test constants_provenance_table_matches_source parses the TOML, compares each value bitwise with the constant exported through a pub const registry, and fails if a policy constant matching V<digits>_ in the atlas is missing from the table. Initial rows: V25_ERROR_DROP_THRESHOLD 0.012790399606947056 class=unsourced (no fit artifact in tree); V29_STAGE_GROWTH_BASELINE 3.24 class=unsourced; V29_PREFIX_RESERVE_JVP 80 class=declared; V29_PREFIX_BUDGET_FRACTION 0.25 class=declared; V36_FROZEN_ZETA34_TAU 13.39706618860016 class=fitted, dataset calibration192 shards, candidate_count 24, eligible_events 23, criterion 'unsafe == 0 on calibration with one-rank backoff', valid_scope = calibration tolerance arm only; CLI 1.15 ratio class=declared. Follow-up measurement, not part of this fix: recover or regenerate the v2.5 and v2.9 fits so the two unsourced rows become fitted or are retired.",
+   "code_sketch": "# docs/CONSTANTS_PROVENANCE.toml\n[[constant]]\nname = \"V36_FROZEN_ZETA34_TAU\"\nvalue = \"13.39706618860016\"\nlocation = \"crates/rodas5p-integrators/src/g4_s5b0_regime_atlas.rs\"\nclass = \"fitted\"\nsource_artifact = \"research/generic_policy_redesign_v33/results/calibration_analysis/FROZEN_ZETA34_POLICY.json\"\nsource_sha256 = \"<sha256>\"\nfit_dataset = \"calibration192 shards\"\nfit_n = 23\nselection_criterion = \"unsafe == 0 on calibration, then one-rank backoff\"\nsensitivity = \"holdout N=320 verdict flips between tau_final and tau_selected\"\nvalid_scope = \"calibration tolerance arm; not transplantable across arms\"\nstatus = \"frozen\"\n\n[[constant]]\nname = \"V25_ERROR_DROP_THRESHOLD\"\nvalue = \"0.012790399606947056\"\nclass = \"unsourced\"\nsource_artifact = \"\"\nstatus = \"active\""
+  },
+  {
+   "finding_ids": [
+    "F-047"
+   ],
+   "summary": "Make the replay table unusable as holdout evidence. Delete the N=512 rows from frozen_k1_decision, rename the policy to a replayed k=1 table, and return a typed error when it is combined with a holdout profile, including from the CLI. Add a causal k=1 comparator that fires on the same error-drop feature as K3Development with a latch length of one, so comparisons on holdout profiles are between two causal policies. HOLDOUT HYGIENE RULE: (a) holdout dimensions, families and tolerances are declared in the contract before the run; (b) holdout rows are read only by a committed verdict script whose hash is in the contract, never by a person or agent who can still change a policy constant or policy code; (c) no literal in crates/*/src may be derived from a holdout row; (d) a holdout is consumed by its first verdict and is calibration data from then on, so any later rule needs a fresh holdout; (e) handoff packages for coding agents list calibration paths only and exclude holdout directories.",
+   "files": [
+    "crates/rodas5p-integrators/src/g4_s5b0_regime_atlas.rs",
+    "crates/rodas5p-cli/src/main.rs",
+    "crates/rodas5p-integrators/tests/g4_s5b0_regime_atlas_contracts.rs",
+    "docs/HOLDOUT_HYGIENE.md (new)"
+   ],
+   "anchors": [
+    "crates/rodas5p-integrators/src/g4_s5b0_regime_atlas.rs:1877-1898",
+    "crates/rodas5p-integrators/src/g4_s5b0_regime_atlas.rs:1924-1936"
+   ],
+   "effort": "S",
+   "risk": "low",
+   "verification": "Tests: replayed_k1_table_is_rejected_on_holdout_profile (Holdout512 + replay policy returns InvalidInput); causal_k1_comparator_fires_only_on_observed_feature (synthetic error sequence, decisions depend only on past accepted steps); holdout_dimensions_have_no_source_literals (for every profile flagged holdout, frozen_k1_decision returns false for all steps and families). Calibration128 behaviour of the existing contract test is unchanged. Since no published ledger references frozen-k1-comparator or holdout-512, no erratum is needed.",
+   "code_sketch": "G4S5B0PrefixProbePolicy::ReplayedK1Table => {\n    if profile.is_holdout() {\n        return Err(CoreError::InvalidInput(\n            \"replayed k=1 table is calibration-only; use K1Causal on holdout profiles\".into(),\n        ));\n    }\n    frozen_k1_decision(family, dimension, step_index)\n}\nG4S5B0PrefixProbePolicy::K1Causal => {\n    feature.is_some_and(|v| v.is_finite() && v >= V25_ERROR_DROP_THRESHOLD)\n}"
+  },
+  {
+   "finding_ids": [
+    "F-045",
+    "F-023"
+   ],
+   "summary": "Separate the self-estimate from the safety label and set a minimum evidence standard for holdouts. Keep the current quantity under an accurate name (self_estimate_inadmissible) and add a reference-anchored local error for every recommended row: advance the same (t, y, h) with a tight-tolerance protected solve and measure the WRMS difference, using the problem's declared atol vector rather than a single scalar. 'Unsafe' then means reference error > 1. A holdout verdict may be called discriminating only if it contains at least 5 reference-unsafe positives and the verdict is unchanged under a one-rank threshold perturbation in both directions; otherwise the verdict is INCONCLUSIVE_INSUFFICIENT_POSITIVES. The v3.5 result is relabelled by an appended erratum as 'survives, n_pos = 1, decided by the one-rank backoff', without editing sealed files.",
+   "files": [
+    "crates/rodas5p-integrators/src/g4_s5b0_regime_atlas.rs",
+    "research/generic_enforced_prefix_budget_v35/ERRATUM.md (new)",
+    "docs/HOLDOUT_HYGIENE.md (new)"
+   ],
+   "anchors": [
+    "crates/rodas5p-integrators/src/g4_s5b0_regime_atlas.rs:1555-1600",
+    "crates/rodas5p-integrators/src/g4_s5b0_regime_atlas.rs:4574-4582",
+    "research/generic_enforced_prefix_budget_v35/reports/PHYS_MATH_AUDIT.md:33-37",
+    "research/generic_policy_redesign_v33/results/calibration_analysis/FROZEN_ZETA34_POLICY.json"
+   ],
+   "effort": "L",
+   "risk": "medium",
+   "verification": "Unit test self_estimate_and_reference_label_are_independent_fields: a stub exponential report with embedded estimate 0.5 and a reference difference of 3 WRMS is labelled reference_unsafe = true, self_estimate_inadmissible = false. Verdict-script test: a synthetic holdout with one positive returns INCONCLUSIVE_INSUFFICIENT_POSITIVES; with six positives and a rank-stable threshold it returns a verdict. Replay check against exp/D11/v35_holdout320_tau_sensitivity.json: the script reports n_pos = 1, rank of the unsafe event 14 of 28, verdict flips between tau_final 13.397 and tau_selected 16.882. Measurement needed before any new safety claim: rerun the N=320 holdout with the reference label and report the 2x2 table of self-estimate vs reference verdicts; the agreement rate is unknown today. With zero misses among n positives the 95 percent upper bound on the miss rate is about 3/n, which is why n = 1 carries no information."
+  },
+  {
+   "finding_ids": [
+    "F-014"
+   ],
+   "summary": "Remove the reference from the commit decision. committed is computed from causal solver quantities only (step accepted, embedded estimate within budget, original-target residual and contraction within budget); the reference-aware assessment is still computed and recorded, but as a post-hoc audit field that cannot change the state that is carried forward. The scientific result of the transaction then becomes the 2x2 table of causal disposition against reference verdict, which is what a runtime-quality claim needs. Existing receipts keep their meaning only under the label 'reference-gated' and cannot be cited as runtime candidate quality.",
+   "files": [
+    "crates/rodas5p-integrators/src/audit2_reusable_transaction_research.rs",
+    "crates/rodas5p-integrators/tests/ (audit2-research feature tests)"
+   ],
+   "anchors": [
+    "crates/rodas5p-integrators/src/audit2_reusable_transaction_research.rs:565-600",
+    "crates/rodas5p-integrators/src/audit2_reusable_transaction_research.rs:980-1002"
+   ],
+   "effort": "S",
+   "risk": "low",
+   "verification": "Test transaction_commit_is_invariant_to_reference_state (feature audit2-research): run the attempt twice, the second time with reference.state displaced by 1e3 x output_budget_l2; assert committed, disposition and the carried state are bitwise identical and only the audit assessment differs. Second test: a candidate with embedded estimate above budget is not committed even when the reference distance is zero.",
+   "code_sketch": "let causal_accepted = embedded_accepted && original_target_accepted;\nlet committed = step.accepted && causal_accepted;\n// recorded, never consulted by the commit decision\nlet reference_audit = assess_audit2_reference_aware_output(\n    output_error_l2,\n    output_budget_l2,\n    reference.uncertainty_l2,\n    reference.uncertainty_treatment,\n);\nreceipt.causal_disposition = disposition_from(committed);\nreceipt.reference_audit_accepted = reference_audit.accepted;"
+  },
+  {
+   "finding_ids": [
+    "F-067"
+   ],
+   "summary": "Make the build script degrade instead of panic, and move the strictness to where evidence is written. Revision is resolved in order: VIGILODE_CODE_REVISION, then git, then the string 'unknown'. The dirty flag becomes tri-state (true, false, unknown), ignores untracked files and is restricted to build inputs, so a scratch note no longer flips provenance. Canonical evidence writers refuse at run time to emit a receipt when the revision is unknown or the tree is dirty, which preserves the existing guarantee. Document both requirements in the README.",
+   "files": [
+    "crates/rodas5p-fair-ab/build.rs",
+    "crates/rodas5p-fair-ab/src (receipt writer)",
+    "README.md",
+    ".github/workflows/e4-fresh-clone-build.yml"
+   ],
+   "anchors": [
+    "crates/rodas5p-fair-ab/build.rs:1-30",
+    "crates/rodas5p-fair-ab/build.rs:80-104",
+    ".github/workflows/e4-fresh-clone-build.yml:43-78"
+   ],
+   "effort": "S",
+   "risk": "low",
+   "verification": "CI step: git archive HEAD | tar -x -C \"$RUNNER_TEMP/src\" then cargo build -p rodas5p-fair-ab -p rodas5p-cli --locked in that directory succeeds with revision 'unknown'. Second step: in a clean clone, touch scratch.txt and build; the embedded dirty flag is false. Third: modify a tracked source file and build; the flag is true. Unit test: the canonical receipt writer returns an error for revision 'unknown' or dirty != false.",
+   "code_sketch": "fn git(root: &Path, args: &[&str]) -> Option<String> {\n    let out = Command::new(\"git\").arg(\"-C\").arg(root).args(args).output().ok()?;\n    out.status.success().then(|| String::from_utf8_lossy(&out.stdout).trim().to_string())\n}\n\nlet revision = std::env::var(\"VIGILODE_CODE_REVISION\").ok()\n    .or_else(|| git(&root, &[\"rev-parse\", \"HEAD\"]))\n    .unwrap_or_else(|| \"unknown\".into());\nlet dirty = match git(&root, &[\"status\", \"--porcelain=v1\", \"--untracked-files=no\",\n                              \"--\", \"crates\", \"Cargo.toml\", \"Cargo.lock\"]) {\n    Some(s) if s.is_empty() => \"false\",\n    Some(_) => \"true\",\n    None => \"unknown\",\n};\nprintln!(\"cargo:rustc-env=VIGILODE_DETECTED_GIT_REVISION={revision}\");\nprintln!(\"cargo:rustc-env=VIGILODE_SOURCE_DIRTY_AT_BUILD={dirty}\");"
+  },
+  {
+   "finding_ids": [
+    "F-025"
+   ],
+   "summary": "Publish the unpublished bytes before doing anything else with them. Commit the preserved dirty worktree as it is to a clearly named work-in-progress branch whose message states that it is unreviewed and that the three P1 and two P2 predecessor defects are still present, push it, and keep a git bundle with a sha256 off the machine. Drop the plan rule that forbids commits until RED evidence exists: a commit is storage, authority comes from a tag or ledger row that cites a pushed SHA. Any document that names a file as source authority must cite a commit reachable from a remote ref. This is an action for the repository owner; the audit did not and cannot push.",
+   "files": [
+    "planning branch: docs/superpowers/plans/2026-09-04-vigilode-m0-stage-certificate-closeout.md",
+    "tools/check-authority-refs.py (new)"
+   ],
+   "anchors": [
+    "github/planning/vigilode-research-coding-spiral-20260904:docs/superpowers/plans/2026-09-04-vigilode-m0-stage-certificate-closeout.md:36-44",
+    "same file:207-211"
+   ],
+   "effort": "XS",
+   "risk": "low",
+   "verification": "From a fresh clone of the remote, git cat-file -e <sha>:crates/rodas5p-integrators/src/audit2_stage_certificate_research.rs succeeds and the file sha256 equals the one recorded from the worktree. tools/check-authority-refs.py extracts every SHA cited as authority in research/ and docs/ and fails if git branch -r --contains <sha> is empty."
+  },
+  {
+   "finding_ids": [
+    "F-024"
+   ],
+   "summary": "Replace per-node receipt families with one append-only ledger and a hard cap on prose, keeping failure preservation as the one property that must not be lost. research/LEDGER.jsonl has a single schema: id, date, commit, command, profile, inputs_sha256, outputs_sha256, claim (one sentence), verdict (PASS | FAIL | INCONCLUSIVE | INVALID), supersedes. Failed and invalid rows are never deleted and a tombstone is just a row, so failures stay visible without a new schema each time; the 83 existing families are frozen as they are and not migrated. A research node consists of one pre-registration written before the run with results appended below it (the E-09 format), raw outputs, and one ledger row; contracts, receipts and audit reports are written only for a result that is being admitted. Formal-proof and computer-algebra obligations are deferred until a numerical claim has survived a holdout under the rule of fix 8. The next cycles should be measurements already specified by this audit (the test plans in fixes 1 and 2) rather than the five-node M0 governance layer.",
+   "files": [
+    "research/LEDGER.jsonl (new)",
+    "research/README.md",
+    "tools/check-research-node.py (new)",
+    "planning branch: docs/superpowers/specs/2026-09-04-vigilode-research-coding-spiral-design.md"
+   ],
+   "anchors": [
+    "github/planning/vigilode-research-coding-spiral-20260904:docs/superpowers/specs/2026-09-04-vigilode-research-coding-spiral-design.md:30-36",
+    "research/audit2_bateman_local_validation_20260831/README.md:3-8",
+    "exp/E-09/README.md (pre-registration format)"
+   ],
+   "effort": "M",
+   "risk": "medium",
+   "verification": "tools/check-research-node.py in CI: a new directory under research/ fails unless it contains a pre-registration, at least one results file with numeric rows, and a ledger row whose command and commit reproduce that file; it also fails if a ledger row is removed or edited (append-only check against the merge base). Process metrics tracked per cycle and compared with the audit baseline from exp/D11: distinct schema strings (83), Markdown to JSON line ratio in new nodes (about 1.06), admitted results since v3.6 (0). Enforcement of the project's own stall rule: two consecutive nodes without a numeric result block the opening of a third."
+  }
+ ]
+}

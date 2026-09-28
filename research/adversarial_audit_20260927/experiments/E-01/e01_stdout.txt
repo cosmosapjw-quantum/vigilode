@@ -1,0 +1,217 @@
+clipped keys: ['mode', 'status', 'committed_output_count', 'counters', 'diagnostics', 'internal_steps', 'output_clipped_steps', 'completed_segments', 'boundary_restarts', 'message', 'metrics', 'wall_seconds', 'output_checksum_sha256']
+clipped.metrics keys: ['endpoint_l2', 'max_grid_l2', 'rms_grid_l2', 'endpoint_wrms', 'max_grid_wrms', 'rms_grid_wrms', 'reference_uncertainty_wrms', 'conservative_max_wrms']
+clipped.work keys: []
+reference keys: ['case_id', 'problem_id', 'reference_checksum_sha256', 'implementation_revision', 'wrms_formula_id', 'anchor_state_sha256']
+config keys: ['method', 'linear_method', 'inner_tolerance_policy', 'inner_solve_claim_scope', 'cross_step_recycle_image_policy', 'restart', 'max_arnoldi', 'inner_m', 'outer_k', 'recycle_dim', 'recycle_rank_tolerance', 'preconditioner', 'initial_guess', 'fallback_inner_atol', 'fallback_inner_rtol', 'outer_atol', 'outer_rtol', 'initial_step', 'min_step', 'max_step', 'max_attempts_per_arm', 'controller', 'controller_safety', 'controller_min_factor', 'controller_max_factor', 'controller_reject_max_factor']
+{
+ "experiment": "E-01",
+ "source_file": "calibration_all_cases_compact.json",
+ "source_sha256": "23194d4638f16f7b21a79382c274c19a44532c77c707c2d8ebb93908235c456c",
+ "campaign_status": "complete-nonpassing",
+ "code_revision": "ab8fbcdb709aa1e87603b1ef6f83c5e610c8cb04",
+ "n_rows": 54,
+ "statuses": {
+  "output-policy-dominated": 54
+ },
+ "gap_over_dense_max": {
+  "n": 54,
+  "min": 0.12454170289388176,
+  "q25": 0.7341025111298893,
+  "median": 0.9439610955140106,
+  "q75": 1.0003991811283828,
+  "max": 1.0941303386549561
+ },
+ "clipped_max_over_dense_max": {
+  "n": 54,
+  "min": 0.0019508972913122838,
+  "q25": 0.058597983697908834,
+  "median": 0.21134267540700874,
+  "q75": 0.5679884742777519,
+  "max": 1.0529035037202235
+ },
+ "frac_rows_clipped_lt_half_dense": 0.7037037037037037,
+ "dense_max_over_dense_endpoint": {
+  "n": 54,
+  "min": 5.634772059454946,
+  "q25": 27.05549598610059,
+  "median": 49.55733449420755,
+  "q75": 221.9475897056186,
+  "max": 4994.500051520532
+ },
+ "clipped_max_over_clipped_endpoint": {
+  "n": 54,
+  "min": 1.0,
+  "q25": 17.636103420538543,
+  "median": 53.78854119116311,
+  "q75": 441.6118866237691,
+  "max": 14069.460122348548
+ },
+ "dense_max_wrms": {
+  "n": 54,
+  "min": 0.28888005638553327,
+  "q25": 2.279020808750911,
+  "median": 310.4233333027397,
+  "q75": 6653.1872587546895,
+  "max": 382741.25494917046
+ },
+ "clipped_max_wrms": {
+  "n": 54,
+  "min": 0.18400302722193854,
+  "q25": 1.6163763516041796,
+  "median": 25.856869737103885,
+  "q75": 548.0680530249135,
+  "max": 72450.97028250624
+ },
+ "rows_dense_max_wrms_gt_1": 48,
+ "rows_clipped_max_wrms_gt_1": 42,
+ "steps": {
+  "clipped_internal": {
+   "n": 54,
+   "min": 100,
+   "q25": 100.0,
+   "median": 112.0,
+   "q75": 182.75,
+   "max": 672
+  },
+  "clipped_accepted": {
+   "n": 54,
+   "min": 100,
+   "q25": 100.0,
+   "median": 112.0,
+   "q75": 182.75,
+   "max": 672
+  },
+  "clipped_rejected": {
+   "n": 28,
+   "min": 1,
+   "q25": 1.75,
+   "median": 3.0,
+   "q75": 6.0,
+   "max": 11
+  },
+  "clipped_output_clipped": {
+   "n": 54,
+   "min": 98,
+   "q25": 98.0,
+   "median": 98.0,
+   "q75": 98.0,
+   "max": 99
+  },
+  "dense_internal": {
+   "n": 54,
+   "min": 13,
+   "q25": 28.0,
+   "median": 66.0,
+   "q75": 142.5,
+   "max": 616
+  },
+  "dense_accepted": {
+   "n": 54,
+   "min": 13,
+   "q25": 28.0,
+   "median": 66.0,
+   "q75": 142.5,
+   "max": 616
+  },
+  "dense_rejected": {
+   "n": 54,
+   "min": 1,
+   "q25": 3.0,
+   "median": 6.0,
+   "q75": 8.0,
+   "max": 21
+  }
+ },
+ "work": {
+  "clipped_rhs": {
+   "n": 54,
+   "min": 800,
+   "q25": 800.0,
+   "median": 904.0,
+   "q75": 1480.0,
+   "max": 5464
+  },
+  "dense_rhs": {
+   "n": 54,
+   "min": 136,
+   "q25": 280.0,
+   "median": 572.0,
+   "q75": 1148.0,
+   "max": 4968
+  },
+  "clipped_jvp": {
+   "n": 54,
+   "min": 17646,
+   "q25": 22693.0,
+   "median": 30107.0,
+   "q75": 51177.5,
+   "max": 191444
+  },
+  "dense_jvp": {
+   "n": 54,
+   "min": 4565,
+   "q25": 9845.0,
+   "median": 20401.5,
+   "q75": 40958.5,
+   "max": 177606
+  }
+ },
+ "config": {
+  "method": "RODAS5P",
+  "linear_method": "GMRES",
+  "inner_tolerance_policy": "wrms-stage-residual-heuristic-v2",
+  "inner_solve_claim_scope": "residual-only; endpoint contamination requires an independent W-inverse resolvent certificate",
+  "cross_step_recycle_image_policy": "refresh-per-linearization; approximate cross-step image reuse is not admitted",
+  "restart": 32,
+  "max_arnoldi": 256,
+  "inner_m": 30,
+  "outer_k": 8,
+  "recycle_dim": 8,
+  "recycle_rank_tolerance": 1e-12,
+  "preconditioner": "none",
+  "initial_guess": "previous",
+  "fallback_inner_atol": 1e-12,
+  "fallback_inner_rtol": 1e-10,
+  "outer_atol": 1.0000000000000002e-06,
+  "outer_rtol": 0.0001,
+  "initial_step": 0.001,
+  "min_step": 1e-12,
+  "max_step": 0.1,
+  "max_attempts_per_arm": 200000,
+  "controller": "integral",
+  "controller_safety": 0.9,
+  "controller_min_factor": 0.2,
+  "controller_max_factor": 5.0,
+  "controller_reject_max_factor": 0.9
+ },
+ "reference_uncertainty": {
+  "n": 54,
+  "min": 2.559305690577144e-05,
+  "q25": 2.9347488946184724e-05,
+  "median": 4.499529854988562e-05,
+  "q75": 5.926495671832345e-05,
+  "max": 0.01689935635722317
+ },
+ "wall_total_s": 171.656871758,
+ "distinct_family_rtol_pairs": 18,
+ "criterion": "Dominated iff gap > 0.1 * dense_max_grid_wrms (classify_output_policy_dominance)"
+}
+--- replica spread (family@rtol: n_list, gap/dmax) ---
+hires-ramped@1e-08 [96, 384, 1536] [1.0162, 0.9865, 0.9866] dmax ['0.409', '0.421', '0.425'] cmax ['0.364', '0.374', '0.378']
+hires-ramped@1e-06 [96, 384, 1536] [1.0018, 1.0025, 1.0027] dmax ['91.8', '95.9', '89.7'] cmax ['0.345', '0.371', '0.378']
+hires-ramped@0.0001 [96, 384, 1536] [1.0005, 1.0006, 1.0006] dmax ['3.92e+03', '4.03e+03', '4.11e+03'] cmax ['24.2', '24.6', '24.8']
+nonautonomous-stiff-forcing@1e-08 [96, 384, 1536] [0.1819, 0.2743, 0.278] dmax ['2.28', '2.15', '2.12'] cmax ['2.07', '2.09', '2.06']
+nonautonomous-stiff-forcing@1e-06 [96, 384, 1536] [0.1245, 0.1287, 0.131] dmax ['233', '215', '212'] cmax ['218', '226', '223']
+nonautonomous-stiff-forcing@0.0001 [96, 384, 1536] [0.7433, 0.7331, 0.7327] dmax ['4.22e+04', '4.25e+04', '4.2e+04'] cmax ['1.9e+04', '1.77e+04', '1.7e+04']
+robertson-ramped@1e-08 [96, 384, 1536] [0.7406, 0.7379, 0.7372] dmax ['2.28', '2.27', '2.27'] cmax ['0.591', '0.596', '0.597']
+robertson-ramped@1e-06 [96, 384, 1536] [1.0004, 1.0004, 1.0003] dmax ['370', '361', '360'] cmax ['22', '21', '21']
+robertson-ramped@0.0001 [96, 384, 1536] [0.9848, 0.9846, 0.9846] dmax ['2.72e+03', '2.7e+03', '2.69e+03'] cmax ['568', '569', '569']
+rotating-nonnormal@1e-08 [96, 384, 1536] [0.1474, 0.1279, 0.1262] dmax ['1.62', '1.91', '1.78'] cmax ['1.38', '1.66', '1.6']
+rotating-nonnormal@1e-06 [96, 384, 1536] [0.5947, 0.7317, 0.737] dmax ['365', '454', '447'] cmax ['207', '258', '253']
+rotating-nonnormal@0.0001 [96, 384, 1536] [0.9532, 0.9659, 0.9655] dmax ['1.39e+04', '1.63e+04', '1.5e+04'] cmax ['709', '558', '520']
+semilinear-advection-diffusion-ramped@1e-08 [96, 384, 1536] [0.9063, 0.8827, 0.7247] dmax ['207', '261', '169'] cmax ['19.8', '32.7', '59.9']
+semilinear-advection-diffusion-ramped@1e-06 [96, 384, 1536] [1.0019, 1.0022, 0.9967] dmax ['5.32e+03', '7.1e+03', '9.28e+03'] cmax ['10.4', '45.5', '44.2']
+semilinear-advection-diffusion-ramped@0.0001 [96, 384, 1536] [0.7884, 0.9401, 1.0393] dmax ['1.7e+05', '2.28e+05', '3.83e+05'] cmax ['7.25e+04', '2.45e+04', '3.58e+04']
+van-der-pol-ramped@1e-08 [96, 384, 1536] [0.979, 0.9478, 1.0941] dmax ['0.51', '0.414', '0.289'] cmax ['0.184', '0.184', '0.184']
+van-der-pol-ramped@1e-06 [96, 384, 1536] [0.9322, 0.9231, 0.9204] dmax ['255', '225', '217'] cmax ['25.8', '25.9', '25.9']
+van-der-pol-ramped@0.0001 [96, 384, 1536] [0.8772, 1.0252, 1.0033] dmax ['7.97e+03', '7.22e+03', '7.22e+03'] cmax ['1.32e+03', '1.32e+03', '1.32e+03']

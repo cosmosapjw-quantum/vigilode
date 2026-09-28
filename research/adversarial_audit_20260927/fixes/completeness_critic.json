@@ -1,0 +1,426 @@
+{
+ "agent": "critic",
+ "silent_gaps": [
+  {
+   "lens": "D10/D11",
+   "vector": "Root cause of the sealed v3.7 replay mismatch (target_attempt_index 17 vs 18, baseline/ignored_failure_note.md)",
+   "status": "F-003 records the failure and the missing CI lane, but nobody bisected which change between the sealing revision and b3e8165 moved the accepted-attempt index.",
+   "cost": "Severity of F-003 (P2) assumes the drift is harmless because receipts are 'non-transplantable'; if a solver/controller change altered the step sequence, this is a behaviour regression (P1) or an invalidated ledger (P0). Undetermined."
+  },
+  {
+   "lens": "D1",
+   "vector": "W / Jacobian reuse across stages and steps in the protected RODAS5P lane (PLAN D1 'W reuse')",
+   "status": "No finding and no verified_ok entry; only the Direct preconditioner LU cache (D3) and audit2 identity-keyed reuse (D8) were looked at.",
+   "cost": "Staleness of W under reuse is the classic way a Rosenbrock method silently loses order; the audit cannot say it is absent."
+  },
+  {
+   "lens": "D2",
+   "vector": "Inclusion of the tau/time-augmented component in the WRMS norm vs the atlas slice (PLAN D2, map A2)",
+   "status": "No finding, no verified_ok. F-045 covers scalar atol only.",
+   "cost": "Error norms in the atlas/exponential lanes may be diluted or dominated by the time component; all 'unsafe'/'admissible' labels in v3.x atlases inherit this unknown."
+  },
+  {
+   "lens": "D2",
+   "vector": "Whether branch-fixed segments apply in dense mode (PLAN D2)",
+   "status": "verified_ok has 'Dense output segment boundaries' and 'Dense arm is never shortened', but nothing addresses branch-fixed segment semantics.",
+   "cost": "Low-to-medium: affects dense-arm validity on problems with branch switches (ramped families)."
+  },
+  {
+   "lens": "D3",
+   "vector": "Blocker M11",
+   "status": "M11 appears only as a related_blocker tag on F-036 (test-only gmres_givens kernel); no statement on whether M11 is open, closed or mis-stated.",
+   "cost": "Report cannot give a status for M11."
+  },
+  {
+   "lens": "D4",
+   "vector": "Krylov prefix-resume equivalence (resumed phi/GMRES prefix vs fresh solve)",
+   "status": "Only F-084 (GmresPrefixSession::prediction threshold mix, latent P3). No equivalence check was run or read-verified.",
+   "cost": "v3.6/v3.7 'retained level-2 resumption' receipts depend on resume == fresh; also a candidate cause of the 17-vs-18 replay drift."
+  },
+  {
+   "lens": "D4",
+   "vector": "pexprb54s4 stiff (Z=0 weak-form) order-5 conditions",
+   "status": "verified_ok covers nonstiff order only (exp/D4/pexprb54s4_order.out); F-041 says in-tree evidence is a scalar problem. No stiff order experiment for any exponential integrator (E-04 had no exponential arm).",
+   "cost": "Exponential-lane order under stiffness is UNTESTED, not verified and not refuted."
+  },
+  {
+   "lens": "D5",
+   "vector": "holdout_specs() reachability from calibration/tuning code (PLAN D5)",
+   "status": "Zero mentions in findings or verified_ok. F-093/F-098 cover atlas holdout profile re-consumption and artifact schema; F-047 covers the N=512 replay table. The fair-ab holdout_specs call graph was not traced.",
+   "cost": "Cannot assert that fair-ab holdout problems never reach a threshold-setting path; verified_ok item 'README:23 holdout not used to retune' rests on prose (v34 NEXT_NODE), not on a call-graph trace."
+  },
+  {
+   "lens": "D6",
+   "vector": "Timing taken inside a Rayon pool with threads>1; measured cost of per-step coefficient reload",
+   "status": "verified_ok only shows CLI default threads=1. F-049's '10-40 us per step' is an estimate from code reading; no profile was taken.",
+   "cost": "F-049/F-019 fairness impact is unquantified; any statement such as 'X% of wall time' would be unsupported."
+  },
+  {
+   "lens": "D7",
+   "vector": "Tolerance ladder and Richardson + method-disagreement uncertainty model of numerical_reference.rs",
+   "status": "Both attacks were refuted (F-054, F-055) and verified_ok only covers load-time arithmetic validation. Net: neither a confirmed weakness nor a positive verification of the uncertainty model.",
+   "cost": "Reference uncertainty feeds every 'reference-admissible' label in E-02/E-03; its adequacy is assumed. E-03c used a separate tight Radau reference (uncertainty <= 4e-3) which mitigates this for H1b only."
+  },
+  {
+   "lens": "D9",
+   "vector": "f64 bit-exactness of receipts (to_bits) and deny_unknown_fields coverage",
+   "status": "to_bits: no entry. deny_unknown_fields is listed in verified_ok with coverage 42/108 (fair-ab) and 3/184 (integrators), which is a coverage statistic, not a pass.",
+   "cost": "The verified_ok entry should be moved to findings (P3) or re-labelled; as filed it overstates what held up."
+  },
+  {
+   "lens": "D10",
+   "vector": "Controller-formula mutation adequacy and tolerance-proportionality tests",
+   "status": "E-10 mutant B not run; F-020 lists stiff order/dense/mass/FD f_t gaps but not tolerance proportionality.",
+   "cost": "No evidence that any test would catch a wrong controller exponent or the F-006 clipped-step freeze being changed; adaptive_controller_contracts.rs:80-83 actually pins the freeze."
+  },
+  {
+   "lens": "D11",
+   "vector": "Forking paths (48 events / 5 unsafe, v3.0->v3.2 sequential search) and the v3.4 post-hoc budget change",
+   "status": "Zero mentions of forking-path analysis in findings or verified_ok. v3.4 is touched only through a verified_ok citation of NEXT_NODE.md. F-023 covers the v3.5 single-event dependence only.",
+   "cost": "The statistical validity of tau=13.397 and B_abs=80/delta=0.25 (F-046 says unsourced) is not assessed for selection bias; report must not imply the v3.x thresholds were audited for multiplicity."
+  },
+  {
+   "lens": "D8",
+   "vector": "Overlay (untracked stage-certificate module, Lean/Rocq sources) dynamic behaviour",
+   "status": "Static reading plus prebuilt feature-gated test binaries only; proofs were not re-checked by Lean/Rocq; F-057..F-065 are absent from the slim group files so their refuter artifacts are not visible to this critic.",
+   "cost": "All D8 findings are read-only claims about bytes that exist only in a dirty local worktree (F-025)."
+  }
+ ],
+ "single_source_claims": [
+  {
+   "id": "ALL",
+   "severity": "-",
+   "basis": "Every entry in top_set and the group files carries exactly one refuter (first_refuter length 1); 55 of 95 confirmed findings (mostly P3, plus D8 P2s F-057..F-065) are not in any slim group file.",
+   "risk": "'Confirmed' means finder + one refuter. Decoy catch rate 13/13 measures refuter vigilance, not finder recall."
+  },
+  {
+   "id": "F-011",
+   "severity": "P1",
+   "basis": "Finder and refuter both used independent numpy/scipy replicas of the one-pass MGS Arnoldi (exp/D4/happy_breakdown.py, refute/scratch_05/f011_check.py). The Rust phi-action was never executed on the triggering input.",
+   "risk": "P1 rests on replica fidelity to exponential.rs:1078-1150. Two independent replicas agree, so risk is low but the evidence is not a Rust run."
+  },
+  {
+   "id": "F-002",
+   "severity": "P2",
+   "basis": "Python re-implementation only (exp/D1/dense_stiff_check.py) on synthetic PR lambda=-1e5; refuter notes 'Rust dense lane on PR not executed'.",
+   "risk": "Its impact text ('every consumer of the dense arm measures interpolant error') is contradicted on the campaign corpus by E-03c (interpolated/endpoint max ratio median 1.08, max 2.43). Keep the structural claim (no tolerance control of the interpolant), drop the campaign attribution."
+  },
+  {
+   "id": "F-009",
+   "severity": "P1",
+   "basis": "E-04 harness only; the refuter re-ran the same prebuilt e04_order_krylov binary. Aborts shown on P1 and the post-hoc P1PR variant only; refuter corrected the mechanism (stage-0 gmix is zero; abort comes from f being O(lambda) off-manifold).",
+   "risk": "A harness-level misuse (outer tolerance, force_accept) would propagate to both readers. Guard algebra was verified by reading, which is the independent leg. Not shown on any campaign corpus problem."
+  },
+  {
+   "id": "F-008",
+   "severity": "P2",
+   "basis": "Same single harness (E-04) plus code algebra; tau constant 0.02022 read from one table.",
+   "risk": "Same as F-009; F-005, F-030, F-031 and F-018 all cite the same E-04 run, so the whole H2 cluster (6 findings) has one experimental root."
+  },
+  {
+   "id": "F-010",
+   "severity": "P1",
+   "basis": "E-05 child scenario; refuter re-ran the same binary (exit 134). Panic message originates in crate source gcrodr.rs:463.",
+   "risk": "Low risk: the abort is unambiguous. Not reachable from in-tree integrators; P1 rests on the public-API-legal-input reading."
+  },
+  {
+   "id": "F-007",
+   "severity": "P1",
+   "basis": "E-01 (committed data re-analysis) + E-03 (new runs, n=96 only) + triangle-inequality argument. 'Both-correct' is defined by reference admissibility; under case tolerance only 6 pairs remain (all violate).",
+   "risk": "Best-supported top finding, but 'unattainable' must be worded 'practically unattainable for independently stepped arms' (2/18 and 1/18 same-path pairs passed; clipped-vs-clipped passes 16/18)."
+  },
+  {
+   "id": "F-006",
+   "severity": "P2",
+   "basis": "Code trace plus a data fingerprint (26/54 rows with 0 rejections, 98 clipped, 100 steps). No run logged the h sequence of the clipped arm directly.",
+   "risk": "Moderate: fingerprint is strong but indirect; a per-step h trace from the E-02 harness would close it."
+  },
+  {
+   "id": "F-004",
+   "severity": "P2",
+   "basis": "Refuter recounted 12/18 from E-03 rows, but the 'trails scipy Radau ~2.6x' figure was taken from E-03's own table and not recomputed; scipy and VigilODE differ in controller settings (F-099).",
+   "risk": "The 2.6x number is single-source and is an equal-tolerance error ratio, not an efficiency ratio."
+  },
+  {
+   "id": "F-033",
+   "severity": "P2",
+   "basis": "Committed campaign data only; refuter could not run a Direct-stage semilinear arm, and states the Krylov-inexactness attribution 'is not established'; title claim 'accepts every step' is false (3-8 rejections per row).",
+   "risk": "The 17-261x excess is real; its cause (inexact stages vs truncation/global accumulation vs estimator blindness) is open. Title must be corrected."
+  },
+  {
+   "id": "F-003",
+   "severity": "P2",
+   "basis": "Reproduced twice by run (baseline dev+measurement, refuter) but never root-caused.",
+   "risk": "See silent gap 1; severity depends on the unknown cause."
+  },
+  {
+   "id": "F-040/F-042",
+   "severity": "P2",
+   "basis": "E-06 measured rodas5p_core::dense_phi_action only; the production Krylov phi path (exponential.rs:805, :1351) was read, not run. F-042 magnitudes come from a Python 3x3 model.",
+   "risk": "Magnitude of the accuracy loss in the production exponential lane is inferred."
+  },
+  {
+   "id": "F-052/F-056/F-053",
+   "severity": "P2",
+   "basis": "Code reading only; no comparator sweep or timing dispersion measurement was run.",
+   "risk": "Handicap existence is established, its size is not. H4 cannot be quantified."
+  },
+  {
+   "id": "F-039/F-050/F-037/F-034/F-047/F-043",
+   "severity": "P2",
+   "basis": "Code-trace only, no execution (E-08 could not run the exponential arm; no atlas run with forced rejection).",
+   "risk": "Control-flow claims are plausible and unrefuted, but none has a run artifact."
+  },
+  {
+   "id": "F-023/F-024/F-025",
+   "severity": "P2",
+   "basis": "Counts and rank analysis from exp/D11 files by one reader, reproduced by one refuter; the spiral design is on an off-tree planning branch.",
+   "risk": "H3 rests on descriptive counts without a baseline for what ratio would be healthy."
+  },
+  {
+   "id": "F-067",
+   "severity": "P2",
+   "basis": "Static reading of build.rs (expect on git commands); no git-less or tarball build was attempted.",
+   "risk": "H5 supported statically only; failure mode is a build-script panic at compile time, not a runtime panic."
+  },
+  {
+   "id": "F-014",
+   "severity": "P2",
+   "basis": "Code trace; the design itself acknowledges the reference-aware admission rule.",
+   "risk": "Finder-P1 downgraded to P2 because it is preregistered research-only code; correct, but report must say it is by design."
+  }
+ ],
+ "unrun_or_changed": [
+  {
+   "experiment": "E-02",
+   "planned": "Full 54-case v2 campaign re-run with bitwise identity of output_policy_discrepancy_wrms",
+   "actual": "18 n=96 rows only, via a harness that replicates execute_arm because run_scientific_validity_v2_case cannot be called on the target tree",
+   "cost_to_conclusions": "Bitwise reproduction is established for n=96 only; n=384/1536 rows (used by F-033's n-dependence argument) are committed data, not reproduced. The replicated harness is a second source of drift."
+  },
+  {
+   "experiment": "E-04 (P1PR variant)",
+   "planned": "P1 with y0=g(0)+1 and P2, verdict by slope>=4.5 over >=4 halvings",
+   "actual": "P1 max-norm error was transient-dominated (5e-2..1e-1 for every arm) and unusable; P1PR (y0=g(0)) was added after seeing P1, and because the direct arm itself shows order ~4 on P1PR, arms were judged against 'direct' instead of the 4.5 slope rule",
+   "cost_to_conclusions": "P1PR results are exploratory, not pre-registered. H2 SUPPORTED must be carried by P2 (pre-specified): gmres eta=1e-9 keeps 1 halving, production rule 2 halvings. The P1PR floor (0.1-0.3 rtol) and the abort thresholds in F-009 are post-hoc observations that need an independent problem."
+  },
+  {
+   "experiment": "E-04 (FD-JVP arm)",
+   "planned": "FD-JVP arm on P1",
+   "actual": "Not run (no mention in README/results verdicts)",
+   "cost_to_conclusions": "No evidence on how finite-difference JVP noise interacts with the forcing rule or the 64*eps roundoff guard; users without analytic JVP are uncovered. The map note 'FD-JVP none' stays unverified."
+  },
+  {
+   "experiment": "E-05",
+   "planned": "Nonnormal matrices with cond 1e2..1e8; stale image after preconditioner swap under the same token",
+   "actual": "Main suite used N-scale s in {0,1,10,100}; stale suite re-run only at s=1 (cond 1e2) because no solver converges at s=10; stale-image scenario judged inconclusive (F-086 refuted) and ClosureOperator token identity unexercised",
+   "cost_to_conclusions": "FAIL is driven by the GCRO-DR panic and LGMRES stall, not by residual misreporting (42/42 honest). High-condition stale reuse is untested."
+  },
+  {
+   "experiment": "E-06",
+   "planned": "dense_phi_action vs mpmath",
+   "actual": "As planned, but only the dense kernel",
+   "cost_to_conclusions": "Does not cover the production Krylov phi-action; F-040/F-042/F-011 extend it by reading/replica."
+  },
+  {
+   "experiment": "E-07",
+   "planned": "Order conditions + embedded + dense-output conditions (Hairer-Wanner IV.7) residuals",
+   "actual": "Main and embedded conditions checked; dense-output conditions were not checked algebraically (only empirical slopes in exp/D1)",
+   "cost_to_conclusions": "Interpolant order 4 (nonstiff) is an empirical observation; F-069 'degree 4' is code-read."
+  },
+  {
+   "experiment": "E-08 (exponential arm)",
+   "planned": "WorkCounters vs atomic ground truth across lanes",
+   "actual": "Exponential arm not run: pexprb54s4 rejects non-autonomous problems and both test problems are non-autonomous; transactional, block and comparator lanes also not instrumented",
+   "cost_to_conclusions": "F-039 (failed exponential trial work dropped), phi_krylov_vectors and F-051 (block 8->1) have no ground-truth measurement. 'PASS for rhs/ft' applies to the RODAS5P generic and matrix-free lanes only."
+  },
+  {
+   "experiment": "E-09",
+   "planned": "FAIL if error vs analytic solution exceeds tolerance",
+   "actual": "Tolerance rule PASSES on all 20 ladders; the FAIL label comes from an order rule (two consecutive slopes >= 4.5) introduced in the experiment brief, not in PLAN",
+   "cost_to_conclusions": "Report must show both verdicts. The FAIL is classical ROW order reduction (known theory), not a defect of the implementation."
+  },
+  {
+   "experiment": "E-10 (mutant B)",
+   "planned": "Tableau entry +-1e-8 and one controller exponent",
+   "actual": "Tableau mutants A1 (1e-8) and A2 (1e-4) only; mutant B not run (session budget). Detection at 1e-8 is dominated by the fixture bit-identity test",
+   "cost_to_conclusions": "E-10 PASS says nothing about controller/test adequacy in D2. Behavioural tests alone detect tableau corruption only at ~1e-4; at 1e-8 detection is essentially a checksum."
+  },
+  {
+   "experiment": "baseline step 12/15",
+   "planned": "All tests green incl. ignored",
+   "actual": "One ignored test fails in dev and measurement profiles",
+   "cost_to_conclusions": "Covered by F-003; cause open."
+  }
+ ],
+ "hypotheses": [
+  {
+   "id": "H1a",
+   "verdict": "SUPPORTED",
+   "refined_statement": "The v2 admissibility rule gap <= 0.1 x dense error is practically unattainable for any two independently stepped O(tol) trajectories: it fails in 54/54 committed rows (18 effective cases x 3 replicas, min ratio 0.1245), in 89-94% of same-code-path admissible pairs and in 88-94% of SciPy Radau pairs. It is attainable only when both arms share a grid-locked step sequence (clipped-vs-clipped 16/18 pass), and the clipped arm is in fact a fixed-step h=span/100 run. The 54/54 nonpass therefore carries no solver information. Scope: n=96 runs; 'both-correct' means reference-admissible (only 6 pairs are within case tolerance, all 6 violate).",
+   "evidence": [
+    "E-01",
+    "E-02",
+    "E-03",
+    "F-007",
+    "F-006",
+    "F-029",
+    "F-076"
+   ]
+  },
+  {
+   "id": "H1b",
+   "verdict": "PARTIAL",
+   "refined_statement": "The premise holds (max-grid error is ~42x the final-endpoint error) but the attribution is refuted on the campaign corpus: interpolated-point error is only 0.70-2.43x (median 1.08) the accepted-step error, the large ratio being a transient-decay effect. What survives: (i) the interpolant is structurally never tolerance-controlled and on a synthetic stiff Prothero-Robinson problem exceeds tolerance 17-610x (Python replica only); (ii) the dense-arm global error exceeds case tolerance in 12/18 rows (up to 207x on the semilinear family) while every accepted embedded norm is <= 1, i.e. the problem is global error carried by accepted steps, cause not yet attributed.",
+   "evidence": [
+    "E-03",
+    "E-02",
+    "E-01",
+    "F-002",
+    "F-004",
+    "F-033",
+    "F-069"
+   ]
+  },
+  {
+   "id": "H2",
+   "verdict": "SUPPORTED",
+   "refined_statement": "Order 5 is not preserved under inexact Krylov stage solves: on the pre-specified advection-diffusion problem GMRES with eta=1e-9 keeps 1 clean halving and the production forcing rule 2, versus 4 for direct LU. The predicted mechanism is corrected: eta does loosen (h^-1.1 to h^-1.9) but never reaches the 0.5 clamp (eta_max <= 1e-5); the floor arises because tau = 0.1/||b||_1 is an h-independent absolute stage-residual budget (rhs_wrms-dominated K-form), giving an error floor at 0.1-0.3 rtol, and the 64*eps guard aborts on legal stiff input at tight rtol. The adaptive path stays within tolerance (err/rtol 0.01-0.29). Confounder: direct LU itself shows order 3-4 on stiff Prothero-Robinson, so order loss there is not attributable to inexactness alone. Caveats: single harness, P1PR variant post hoc, FD-JVP arm not run.",
+   "evidence": [
+    "E-04",
+    "E-09",
+    "E-07",
+    "F-008",
+    "F-009",
+    "F-031",
+    "F-030",
+    "F-018",
+    "F-005",
+    "F-027"
+   ]
+  },
+  {
+   "id": "H3",
+   "verdict": "SUPPORTED",
+   "refined_statement": "Descriptively supported: since v3.6 the tree gained 83 schema families and 4744 prose lines with zero admitted results and zero candidate executions; key scientific bytes exist only in a dirty local worktree; a sealed replay test fails and is run by no workflow; the v3.5 holdout pass rests on one unsafe event inside a one-rank margin. This is a count-based observation with no baseline ratio and no forking-path analysis; it is a productivity/assurance risk, not a falsified result.",
+   "evidence": [
+    "F-024",
+    "F-025",
+    "F-003",
+    "F-021",
+    "F-023",
+    "F-005"
+   ]
+  },
+  {
+   "id": "H4",
+   "verdict": "PARTIAL",
+   "refined_statement": "Internal BDF/Radau comparators are handicapped (outer-tolerance-independent Newton tolerances, fresh Jacobian+LU per implicit solve, extra estimator LU in RadauIIA3) so no relative performance claim is admissible, which the tree already forbids. The plan's 'J+LU every Newton iteration' is refuted (modified Newton, one LU per solve). Handicap magnitude is unmeasured (code reading only). External SciPy Radau shares rtol/atol with the v2 arm but not step-controller settings; at equal tolerance VigilODE's dense global error is larger in 17/18 rows (median ~2.6x, single-source, accuracy not efficiency).",
+   "evidence": [
+    "F-052",
+    "F-056",
+    "F-099",
+    "F-022",
+    "F-053",
+    "E-03",
+    "F-004"
+   ]
+  },
+  {
+   "id": "H5",
+   "verdict": "SUPPORTED",
+   "refined_statement": "Supported by static reading only: fair-ab build.rs invokes git 6-7 times with expect/assert, so rodas5p-fair-ab and (via dependency) rodas5p-cli cannot build from a tarball or without git; the failure is a build-script panic at compile time. Additionally any untracked file flips the embedded dirty flag. Neither requirement is documented. No git-less build was actually attempted.",
+   "evidence": [
+    "F-067"
+   ]
+  }
+ ],
+ "nonclaims": [
+  {
+   "statement": "The audit found no P0: no published claim, receipt or result of VigilODE is shown to be false.",
+   "reason": "confirmed_by_severity = P1 4, P2 42, P3 49. Equally, the audit does not certify the receipts: only the 18 n=96 v2 rows were reproduced bitwise (E-02)."
+  },
+  {
+   "statement": "No statement is made about wall-clock performance, efficiency or ranking of VigilODE against SciPy or any other solver.",
+   "reason": "No timing experiment was run; comparator handicaps are unquantified (F-052, F-056, F-053); the tree itself forbids such claims."
+  },
+  {
+   "statement": "The RODAS5P tableau and stage equations are not defective; observed order 3-4 on stiff Prothero-Robinson and mass-matrix problems is classical Rosenbrock order reduction.",
+   "reason": "E-07 PASS (17 order conditions to 2e-15), nonstiff order 5 observed in E-04/E-07/E-09; E-09 tolerance rule passes."
+  },
+  {
+   "statement": "The production inner-forcing rule is not shown to give out-of-tolerance results on the adaptive path.",
+   "reason": "E-04 adaptive err/rtol 0.01-0.29 on both problems; the defects are loss of fixed-h convergence and aborts (F-008, F-009)."
+  },
+  {
+   "statement": "H1b's refutation does not mean dense output is tolerance-controlled, and F-002 does not explain the campaign's dense-arm errors.",
+   "reason": "E-03c (campaign corpus) and F-002 (synthetic PR, Python replica) address different regimes."
+  },
+  {
+   "statement": "F-011, F-002 and F-042 were demonstrated on Python replicas of the Rust algorithms, not by executing the Rust code.",
+   "reason": "Refuter notes state Rust was not executed for these inputs."
+  },
+  {
+   "statement": "F-010 (GCRO-DR panic) and F-037 are not reachable from any in-tree integrator path; F-011, F-039-F-043 affect candidate exponential lanes, not the protected RODAS5P solver.",
+   "reason": "Refuter reachability notes."
+  },
+  {
+   "statement": "Nothing is claimed about the exponential integrators' stiff order, work-counter exactness, or prefix-resume equivalence.",
+   "reason": "E-08 exponential arm not run; no exponential arm in E-04; only nonstiff order verified."
+  },
+  {
+   "statement": "Nothing is claimed about finite-difference JVP users or about controller-formula test adequacy.",
+   "reason": "E-04 FD-JVP arm and E-10 mutant B were not run."
+  },
+  {
+   "statement": "The cause of the v3.7 replay mismatch (17 vs 18) is unknown; the audit does not claim the v3.7 ledger was wrong when produced, nor that the drift is benign.",
+   "reason": "F-003 not bisected."
+  },
+  {
+   "statement": "Overlay findings (D8 stage certificate, Lean/Rocq) are static reading of untracked local bytes; formal proofs were not re-checked.",
+   "reason": "PLAN limitation 'overlay static only'; F-025."
+  },
+  {
+   "statement": "Statistics over the v2 campaign refer to 18 effective cases, not 54 independent rows.",
+   "reason": "E-01: 54 rows = 18 (family, rtol) pairs x 3 near-identical dimension replicas."
+  },
+  {
+   "statement": "Refuted findings (10) mean the claim as written failed, not that the area was positively verified; verified_ok entries are spot checks, not proofs.",
+   "reason": "E.g. reference uncertainty model (F-054/F-055 refuted) has no positive verification; deny_unknown_fields entry is a coverage statistic."
+  },
+  {
+   "statement": "Seven of the eleven top findings were filed as P1 by finders and downgraded to P2 by the judge; the report's P1 count is 4 (F-007, F-009, F-010, F-011).",
+   "reason": "top_set severity vs finder_severity."
+  },
+  {
+   "statement": "P1PR results in E-04 are exploratory (variant added after seeing P1) and the E-09 FAIL uses an order rule that is not the PLAN's tolerance criterion.",
+   "reason": "E-04 README:54, E-09 README:13 vs PLAN:116,121."
+  }
+ ],
+ "followups": [
+  {
+   "check": "Bisect F-003: run the ignored v3.7 replay test at the commit that sealed the v3.7 ledger and at b3e8165 (git log -- on sequential.rs, g4_s5b0_regime_atlas.rs, gmres.rs), and diff the accepted-attempt sequence of the semilinear N=192 run.",
+   "resolves": "Decides whether F-003 is doc/test drift (P2), a behaviour regression (P1) or an invalidated ledger (P0); also tests the prefix-resume gap.",
+   "effort_min": 60
+  },
+  {
+   "check": "Rust micro-harness (one bin, outside the tree) that (a) calls the Krylov phi-action with A=diag(-1,-3), v=e1+4.5e-7*e2, rtol 1e-10 and prints converged/error_estimate/true error, (b) runs integrate_rodas_adaptive_dense on Prothero-Robinson lambda=-1e5 and prints interior vs endpoint WRMS.",
+   "resolves": "Converts F-011 (P1) and F-002 from replica-based to run-based evidence.",
+   "effort_min": 45
+  },
+  {
+   "check": "E-10 mutant B plus one more: change the controller exponent 1/5 -> 1/4 and, separately, make the clipped-accept branch apply growth (undo F-006); run the default suite in an isolated worktree.",
+   "resolves": "Closes the unrun E-10 arm; measures D2 test adequacy; confirms adaptive_controller_contracts pins the freeze.",
+   "effort_min": 45
+  },
+  {
+   "check": "Extend the E-04 harness with (a) a Direct-stage and a gmres eta=1e-12 arm on the semilinear advection-diffusion ramped family at the campaign's accepted step sequence, (b) the FD-JVP arm on P1PR, (c) one independent stiff problem (e.g. Robertson or van der Pol) for the production forcing rule.",
+   "resolves": "Attributes the 17-261x semilinear excess (F-033, H1b residual), closes the FD-JVP arm, and gives H2/F-008/F-009 a second pre-specified problem beyond the post-hoc P1PR.",
+   "effort_min": 60
+  },
+  {
+   "check": "E-08 exponential arm on an autonomous problem (autonomous Robertson or linear y'=Ay) with atomic counters and a forced failed trial; in the same session do `git archive b3e8165 | tar -x` into a temp dir and attempt `cargo build -p rodas5p-fair-ab` with and without git on PATH.",
+   "resolves": "Ground-truths F-039 and phi_krylov_vectors (H4 accounting); turns H5/F-067 from static to run evidence.",
+   "effort_min": 50
+  }
+ ]
+}

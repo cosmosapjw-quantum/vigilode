@@ -1,0 +1,154 @@
+{
+ "group": "G1_output_policy_protocol",
+ "fixes": [
+  {
+   "finding_ids": [
+    "F-007",
+    "F-029"
+   ],
+   "summary": "Replace the scale-free rule gap <= 0.1*E_dense (global_error.rs:715) with a three-part admissibility criterion evaluated in CASE-tolerance weights w = atol_case + rtol_case*|y_ref|. (A) Per-arm reference-aware budget: with E_a = max_i WRMS(y_a(t_i)-y_ref(t_i)) and reference uncertainty U in the same weights, the true error satisfies |E_a* - E_a| <= U (triangle inequality), so arm a in {clipped,dense} is WithinBudget iff E_a + U <= B, ExceedsBudget iff E_a - U > B, and ReferenceDominated (undecidable) otherwise; B is a predeclared constant in tolerance units (proposed B = 10; on the E-03 n=96 data the verdicts are invariant for any B in [4.3, 16.9]: non-semilinear dense rows max 4.2, semilinear 17/53/207, scipy Radau max 1.6). (B) The clipped-vs-dense gap G is demoted from a gate to an integrity assertion plus recorded diagnostic: y_c - y_d = (y_c - y_ref) - (y_d - y_ref) gives G <= E_c + E_d <= 2*max(E_c,E_d) identically for ANY y_ref, so a bound with constant >= 2 can only fail on grid/weight misalignment (hard error), while any constant < 1 re-creates the unattainable rule (E-03: scipy Radau itself violates 0.1 in 17/18 pairs, median ratio 1.29). (C) Output-policy sensitivity is gated by a same-step-sequence comparison: for every grid point t_i inside an accepted dense step [t_k, t_k+h_k], delta_i = WRMS(y_dense(t_i) - S(t_k,y_k; t_i-t_k)) where S is one hard-stop step restarted from the same accepted state; both are local approximations from the same y_k, so delta_i <= (interpolant local defect) + (sub-step local error) and the gate is max_i delta_i <= 2.0 tolerance units, reference-free and reachable by any solver whose local control holds. Row status order becomes ReferenceDominated -> GlobalErrorExceedsBudget{arm} -> InterpolantDominated -> Pass, issued under a NEW campaign/protocol id (the committed ab8fbcd records and their frozen 0.1 rule stay immutable as historical nonpassing evidence). Failure modes still caught: solver globally outside tolerance on either arm (the semilinear rows, previously masked by the policy verdict); broken dense interpolant coefficients/theta mapping (delta blows up, independent of reference); hard-stop landing corruption (clipped arm fails A, or delta fails); inadequate reference (undecidable band); metric pipeline misalignment (triangle assertion). Not caught: error common to both arms that stays below B.",
+   "files": [
+    "crates/rodas5p-fair-ab/src/global_error.rs",
+    "crates/rodas5p-fair-ab/src/scientific_validity_v2_campaign.rs",
+    "crates/rodas5p-fair-ab/src/numerical_reference.rs",
+    "crates/rodas5p-fair-ab/tests/ (new: two_arm_admissibility_contracts.rs)"
+   ],
+   "anchors": [
+    "crates/rodas5p-fair-ab/src/global_error.rs:240-284 (discrepancy_wrms: weights from reference_states[grid_index], max over grid)",
+    "crates/rodas5p-fair-ab/src/global_error.rs:701-720 (classify_output_policy_dominance, `> 0.1 * dense_max_grid_wrms`)",
+    "crates/rodas5p-fair-ab/src/global_error.rs:373 (conservative_max_wrms = max_grid_wrms + reference_uncertainty_wrms)",
+    "crates/rodas5p-fair-ab/src/scientific_validity_v2_campaign.rs:467-489 (independent Clipped/Dense arms)",
+    "crates/rodas5p-fair-ab/src/scientific_validity_v2_campaign.rs:727-744 (reference decision uses dense arm only; gap -> row_status)",
+    "crates/rodas5p-fair-ab/src/scientific_validity_v2_campaign.rs:1012,1024-1026,1084-1085 (pass-only freeze; threshold = max over rows; holdout compare)",
+    "crates/rodas5p-integrators/src/output.rs:80-102 (OutputSamplingPlan::new(output, hard_stops) already exists for the restart/hard-stop sub-step)",
+    "exp/E-03/README.md (H1a verdicts, scipy control, per-row table)"
+   ],
+   "effort": "M",
+   "risk": "medium",
+   "verification": "Unit: (1) property test that gap <= E_c + E_d holds for random trajectories/reference (assertion never fires on valid input) and fires when one arm's grid is shifted by one index; (2) classification table test for the three bands E+U<=B, E-U>B, straddle; (3) mutation test: perturb one dense-interpolant coefficient by 1% in a test double and require InterpolantDominated while both arms stay WithinBudget. Experiment: re-run the E-02 harness arms (bitwise-reproduced 36/36) through the new classifier offline using exp/E-03/e03a_rows.json field max_grid_wrms_casetol: expected dense verdicts 15/18 WithinBudget and 3/18 GlobalErrorExceedsBudget (semilinear 17, 53, 207), and the scipy Radau control from exp/E-03/scipy/*.json must be 18/18 WithinBudget (max 1.6) - this is the attainability proof the old rule lacked (scipy failed it 17/18). For part C reuse E-03c: the measured interpolated-grid/accepted-endpoint error ratio (median 1.08, range 0.70-2.43, 0/18 > 5) predicts delta well under 2.0; record delta per row and require 18/18 <= 2.0 before freezing the constant. B and the delta limit must be written into the new protocol id BEFORE the n=384/n=1536 rows and the Oregonator holdout are run.",
+   "code_sketch": "pub enum ArmBudget { Within, Exceeds, ReferenceUndecidable }\npub fn classify_arm_budget(e: f64, u: f64, budget: f64) -> FairResult<ArmBudget> {\n    if !(e.is_finite() && u.is_finite() && budget.is_finite() && e >= 0.0 && u >= 0.0 && budget > 0.0) {\n        return Err(FairError::Invalid(\"arm budget inputs must be finite and nonnegative\".into()));\n    }\n    Ok(if e + u <= budget { ArmBudget::Within }\n       else if e - u > budget { ArmBudget::Exceeds }\n       else { ArmBudget::ReferenceUndecidable })\n}\npub fn assert_gap_triangle(gap: f64, e_c: f64, e_d: f64) -> FairResult<()> {\n    // identity through y_ref; violation == grid/weight misalignment, not science\n    if gap > (e_c + e_d) * (1.0 + 64.0 * f64::EPSILON) {\n        return Err(FairError::Invalid(\"policy gap violates triangle identity\".into()));\n    }\n    Ok(())\n}\npub fn classify_row(c: ArmBudget, d: ArmBudget, delta_same_step: f64, local_budget: f64) -> V2RowStatus {\n    use ArmBudget::*;\n    match (c, d) {\n        (ReferenceUndecidable, _) | (_, ReferenceUndecidable) => V2RowStatus::ReferenceDominated,\n        (Exceeds, _) | (_, Exceeds) => V2RowStatus::GlobalErrorExceedsBudget,\n        _ if delta_same_step > local_budget => V2RowStatus::InterpolantDominated,\n        _ => V2RowStatus::Pass,\n    }\n}"
+  },
+  {
+   "finding_ids": [
+    "F-006"
+   ],
+   "summary": "adaptive_next_step_after_attempt (adaptive.rs:279-282) returns the pre-clip requested_h unchanged after every accepted clipped step and discards the error sample, so the controller's request is frozen between rejections. Keep the 'remember the pre-clip h' intent but let the sample update it: compute candidate = trial_h * factor(error); if the sample is informative (trial_h/requested_h >= 0.5) record it in PI history and, when it predicts rejection of the remembered request (error*(requested_h/trial_h)^q > 1), lower the request to clamp(candidate, trial_h, requested_h); in every other case return max(requested_h, candidate), so a sliver landing (trial << requested, error at roundoff floor) can never collapse h. Because integrate.rs:757-761 and all dense hard-stop loops (dense_output_v2.rs:379-484, 572-715, 811-899, 943-1024, 1181-1251) and radau.rs:645-691 share this helper, one change covers every observed/hard-stop lane. Protocol consequence that the controller change alone does NOT remove: an arm that hard-stops at every point of a uniform 101-point grid is by construction an h <= span/100 integrator (output.rs:281-282 returns (to_next, true) whenever base > to_next), so in the 26/54 zero-rejection rows the clipped arm will still take exactly 100 steps; the campaign must therefore rename that arm 'hard-stop-every-output (h <= grid spacing)' and stop presenting it as an adaptive run, or restrict hard stops to physical breakpoints via OutputSamplingPlan::new(output, hard_stops). Adjacent observation while editing: the non-clipped branch calls record_acceptance(error) BEFORE propose_factor (adaptive.rs:283-284), so under ControllerKind::Pi `previous` equals the current error and the PI law degenerates to safety*error^(-0.3/q); the campaign uses the integral controller so its records are unaffected, but the ordering should be fixed in the same patch.",
+   "files": [
+    "crates/rodas5p-integrators/src/adaptive.rs",
+    "crates/rodas5p-integrators/tests/adaptive_controller_contracts.rs",
+    "crates/rodas5p-integrators/tests/dense_output_v2_contracts.rs",
+    "crates/rodas5p-fair-ab/src/scientific_validity_v2_campaign.rs (arm naming / SOLVER_PROTOCOL_ID bump)"
+   ],
+   "anchors": [
+    "crates/rodas5p-integrators/src/adaptive.rs:263-293 (doc comment 'restores the precise unclipped request and leaves PI history untouched'; early return at 280-282)",
+    "crates/rodas5p-integrators/src/adaptive.rs:225-241 (propose_factor clamps; PI uses previous_accepted_error)",
+    "crates/rodas5p-integrators/src/adaptive.rs:75-91 (defaults safety 0.9, min_factor 0.2, max_factor 5)",
+    "crates/rodas5p-integrators/src/output.rs:254-288 (limit_step: base > to_next + tol -> (to_next, true))",
+    "crates/rodas5p-integrators/src/integrate.rs:757-761 and 862-869 (h passed as requested_h, trial_h, clipped)",
+    "crates/rodas5p-integrators/src/dense_output_v2.rs:572,613-620,671-678,708-715 (hard_stop_landing wired into the same helper)",
+    "crates/rodas5p-integrators/src/sequential.rs:583-586 (error_norm sample that the clipped branch currently discards)",
+    "crates/rodas5p-integrators/tests/adaptive_controller_contracts.rs:69-84 (test pins next == 0.4 and history None)",
+    "crates/rodas5p-integrators/tests/dense_output_v2_contracts.rs:343-360 (test pins next == 0.1 for trial 0.05, error 1e-12)",
+    "crates/rodas5p-fair-ab/src/scientific_validity_v2_campaign.rs:39,202-204 (protocol id; initial_step = span/100, max_step = span)"
+   ],
+   "effort": "M",
+   "risk": "high",
+   "verification": "Unit: adaptive_controller_contracts.rs:69-84 survives bit-for-bit (trial/requested = 0.025 is uninformative and candidate < requested, so next == 0.4 and history stays None); dense_output_v2_contracts.rs:343-360 must be REWRITTEN (ratio 0.5, error 1e-12 -> candidate = 0.05*max_factor(10) = 0.5, new expected next = 0.5, history Some(1e-12 floored)); add cases (a) informative sample with predicted error > 1 lowers the request but never below trial_h, (b) sliver landing with error 0 leaves the request unchanged, (c) PI ordering regression. Integration: non-uniform OutputSchedule (20 outputs packed in the first 5% of the span, none afterwards) on a problem whose admissible h shrinks during the packed phase; assert rejected_macro_steps after the last packed output is strictly lower than on the old helper and that accepted_step_sizes grows past the packed spacing. Campaign-level (re-use E-02 harness harness/src/bin/e0203_v2rows.rs): the 26 zero-rejection clipped rows must remain exactly (internal=100, clipped=98, rejections=0) - proving the residual fixed-step behaviour is the hard-stop policy, not the controller - while dense arms with no hard stops must stay bitwise equal to the committed checksums (they never enter the clipped branch). Any clipped-arm checksum change means the old records cannot be reproduced by the new code, which is why this ships under a new protocol id and risk is rated high.",
+   "code_sketch": "const CLIP_INFORMATIVE_RATIO: f64 = 0.5;\nif accepted {\n    let sample = error.max(1.0e-16);\n    // factor must be proposed BEFORE the sample is recorded (PI needs the older error)\n    let factor = controller.propose_factor(config, sample, estimator_order, true)?;\n    if !forced_output_clipped {\n        controller.record_acceptance(error)?;\n        return Ok(trial_h * factor);\n    }\n    let candidate = trial_h * factor;\n    let ratio = trial_h / requested_h;          // (0, 1) on a clipped trial\n    if ratio >= CLIP_INFORMATIVE_RATIO {\n        controller.record_acceptance(error)?;\n        let predicted = sample * ratio.powf(-(estimator_order as f64));\n        if predicted > 1.0 {\n            // remembered request would be rejected: shrink, never below the accepted trial\n            return Ok(candidate.max(trial_h).min(requested_h));\n        }\n    }\n    // remembered pre-clip request survives; an informative sample may only raise it\n    return Ok(requested_h.max(candidate));\n}"
+  },
+  {
+   "finding_ids": [
+    "F-029"
+   ],
+   "summary": "Report every campaign metric in two declared bases: the existing tight reference basis (absolute 1e-10, relative 1e-8; kept for continuity and checksum identity) and a case-tolerance basis built from spec.atol/spec.rtol anchored on the same reference states, with a basis id stored next to each number. The freeze threshold (campaign 1024-1026) and the holdout comparison (1084-1085) must be computed in case-tolerance units, or per-rtol stratum, because a single max over 54 tight-basis rows is dominated by rtol=1e-4 rows (semilinear 3.8e5) and would admit an rtol=1e-8 holdout row at ~1e4 times its own tolerance. Reference uncertainty must be converted with the same weights: when atol_case/rtol_case == 1e-10/1e-8 the weights are exactly proportional and every WRMS scales by 1e-8/rtol_case (the conversion the audit used); otherwise recompute from raw states and bound U_case <= U_tight * max_j(w_tight_j / w_case_j). The loader check at numerical_reference.rs:811-815 stays as is (it pins the reference artifact policy, not the evaluation basis).",
+   "files": [
+    "crates/rodas5p-fair-ab/src/global_error.rs",
+    "crates/rodas5p-fair-ab/src/scientific_validity_v2_campaign.rs",
+    "research/scientific_validity_v2_20260829/CANONICAL_EXECUTION_EVIDENCE.md"
+   ],
+   "anchors": [
+    "crates/rodas5p-fair-ab/src/global_error.rs:117-127 (weights = absolute + relative*|reference|)",
+    "crates/rodas5p-fair-ab/src/global_error.rs:154-163 (GlobalErrorMetrics has no basis identifier)",
+    "crates/rodas5p-fair-ab/src/numerical_reference.rs:761-765 and 809-816 (wrms_policy 1e-10 / 1e-8 pinned)",
+    "crates/rodas5p-fair-ab/src/scientific_validity_v2_campaign.rs:200-201 (outer_atol/outer_rtol = spec.atol/spec.rtol)",
+    "crates/rodas5p-fair-ab/src/scientific_validity_v2_campaign.rs:1024-1026,1084-1085 (single max threshold across rtol arms)",
+    "exp/E-02/README.md (unit caveat: 2722 tight-basis at rtol 1e-4 == 0.27 case units)"
+   ],
+   "effort": "S",
+   "risk": "low",
+   "verification": "Unit: for a synthetic trajectory, metrics in the case basis equal tight-basis metrics times 1e-8/rtol to 1 ulp when atol = 0.01*rtol, and differ when atol is changed (guards against hard-coding the scalar conversion). Experiment: recompute exp/E-03/e03a_rows.json max_grid_wrms_casetol from the E-02 raw 101-grid states with the new basis and require agreement; expected aggregate over the 54 committed rows (exp/D2/renormalized_e01.txt): median 2.15, > 1 in 36/54, versus the tight-basis headline median 310, > 1 in 48/54.",
+   "code_sketch": "pub struct BasisTaggedMetrics {\n    pub basis_id: String,            // e.g. \"case-tolerance;atol=1e-6;rtol=1e-4;anchor=reference\"\n    pub metrics: GlobalErrorMetrics,\n}\nimpl ReferenceWrmsBasis {\n    pub fn with_case_tolerance(&self, atol: f64, rtol: f64) -> FairResult<Self> {\n        let mut basis = self.clone();\n        let ratio = basis.error_scale.worst_weight_ratio(atol, rtol, &self.reference_states)?;\n        basis.error_scale.reference_uncertainty_wrms *= ratio; // max_j w_tight_j / w_case_j\n        basis.error_scale.absolute.iter_mut().for_each(|a| *a = atol);\n        basis.error_scale.relative = rtol;\n        Ok(basis)\n    }\n}"
+  },
+  {
+   "finding_ids": [
+    "F-033"
+   ],
+   "summary": "Give the semilinear exceedance its own row status and an attribution arm instead of letting the output-policy verdict consume it. Under the replacement criterion the three n=96 semilinear dense rows (17, 53, 207 case-tolerance units; scipy Radau 0.24, 1.6, 0.47 on the same problems) classify as GlobalErrorExceedsBudget, which is the solver-relevant result. Add a diagnostic-only third arm per row, 'dense-tight-inner', identical to the dense arm except that the per-stage residual forcing heuristic (sequential.rs:366-370, rejection at 507-513) is replaced by the fixed fallback inner tolerance (rtol 1e-10 / atol 1e-12 already in the campaign config), and record R_inner = E_dense / E_dense_tight_inner; R_inner > 2 attributes the excess to inexact stage solves, R_inner ~ 1 sends the investigation to W-method/non-autonomous order reduction, to be settled by a fixed-h convergence-order study (h, h/2, h/4) on the same family. The mechanism is NOT established by the audit (no exact-stage run was possible) and the ledger must say so; what is established is that the embedded estimator btilde*K (sequential.rs:583-585) is built from the same inexactly solved stages, so error common to all stages is invisible to it, and that the dense interpolant is not the cause (E-03c ratio 1.00-1.02 on semilinear rows). Correct the finding's wording when it is transcribed: the dense arm did reject 3-8 steps per row, so 'accepts every step' must read 'every accepted step has embedded norm <= 1'. Any change to the forcing rule itself belongs to group G2 and should consume R_inner as its acceptance metric.",
+   "files": [
+    "crates/rodas5p-fair-ab/src/scientific_validity_v2_campaign.rs",
+    "crates/rodas5p-integrators/src/dense_output_v2.rs (expose inner-forcing on/off to the dense sequential entry point)",
+    "research/scientific_validity_v2_20260829/CLAIM_SCOPE_AND_INVALIDATION.md"
+   ],
+   "anchors": [
+    "crates/rodas5p-integrators/src/sequential.rs:366-370 (forcing target from error_scale, flow_wrms, rhs_wrms)",
+    "crates/rodas5p-integrators/src/sequential.rs:505-513 (residual_norm > target.tau -> LinearSolve rejection)",
+    "crates/rodas5p-integrators/src/sequential.rs:583-586 (error_vector = btilde row combination of the same stages)",
+    "crates/rodas5p-integrators/src/sequential.rs:656-667 and 710-721 (step with / without inner forcing share a signature)",
+    "crates/rodas5p-integrators/src/dense_output_v2.rs:585-596 (dense loop hard-wires sequential_matrix_free_step_with_inner_forcing)",
+    "crates/rodas5p-fair-ab/src/scientific_validity_v2_campaign.rs:196-201 (fallback_inner_atol 1e-12, fallback_inner_rtol 1e-10)",
+    "research/scientific_validity_v2_20260829/CLAIM_SCOPE_AND_INVALIDATION.md:61 (cell F: 'endpoint contamination is not certified; canonical inner/outer study NOT_RUN')",
+    "exp/E-03/README.md (semilinear rows of the per-row table; side observation)"
+   ],
+   "effort": "M",
+   "risk": "medium",
+   "verification": "Extend the E-02 harness (harness/src/bin/e0203_v2rows.rs) with the dense-tight-inner arm for the three semilinear n=96 rows and one control family (hires): predeclare 'inexact stages are the cause' iff R_inner > 2 in at least 2 of 3 semilinear rows AND R_inner in [0.5, 2] on the control rows; either outcome is recorded. Fixed-h order study on semilinear n=96 with tight inner solves: observed order >= 4 rules out order reduction, observed order <= 3 confirms it. Acceptance for any later solver change: semilinear dense E + U <= B (B = 10 case units) at all three rtol, with the scipy Radau values from exp/E-03/scipy as the external yardstick."
+  },
+  {
+   "finding_ids": [
+    "F-004",
+    "F-006",
+    "F-007",
+    "F-029"
+   ],
+   "summary": "Amend the three committed documents with failure-preserving statements; no number is removed and the 54/54 classification stays on the record as the outcome of the frozen rule. (1) CANONICAL_EXECUTION_EVIDENCE.md:49-51: replace 'It is a scientific output-policy invalidation' by text stating that the frozen rule gap <= 0.1*dense error compares two independently stepped O(tol) trajectories whose difference is itself O(tol), that an independent audit found SciPy Radau violating the same rule in 17/18 pairs (h0 vs 0.7 h0), that the clipped arm hard-stopped at every grid point and therefore ran at h <= span/100 (26/54 rows exactly 100 steps, 98 clipped, 0 rejections), and that the 54/54 result consequently carries no information about solver accuracy or output handling. (2) Add a 'Global error versus case tolerance' section: all *_wrms values are in the tight reference basis (1e-10, 1e-8), not case-tolerance units; re-expressed in case weights the dense-arm max grid error exceeds 1 in 12/18 n=96 rows (36/54 over all rows by proportional conversion, median 2.15) and reaches 17/53/207 on the semilinear family, while the maximum accepted embedded norm is <= 1 in all 36 n=96 arms; at equal (rtol, atol) the dense global max error is larger than SciPy Radau's in 17/18 n=96 rows (median ~2.6x, semilinear rtol 1e-4 ~70x); attribution of the semilinear excess is open. (3) CLAIM_SCOPE_AND_INVALIDATION.md rows C and H (lines 58, 63): replace 'clip-neutral'/'controller-neutral' execution statements with 'clipped arm is a fixed-spacing hard-stop run; controller request frozen between rejections', and change the required fix on the freeze-threshold claim row (line 72) from 'improve output-policy agreement' to 'declare a new campaign with an attainable admissibility criterion; do not tune the frozen gate'. (4) README.md:36-44: add one sentence each for the unattainable rule and for the tolerance exceedance, scoped as audit-derived n=96 evidence at tree b3e8165 whose campaign arms reproduce ab8fbcd bitwise (36/36 checksums).",
+   "files": [
+    "research/scientific_validity_v2_20260829/CANONICAL_EXECUTION_EVIDENCE.md",
+    "research/scientific_validity_v2_20260829/CLAIM_SCOPE_AND_INVALIDATION.md",
+    "README.md"
+   ],
+   "anchors": [
+    "research/scientific_validity_v2_20260829/CANONICAL_EXECUTION_EVIDENCE.md:42-51 (discrepancy ratio range 0.1245-1.094; 'not a solver-execution crash ... scientific output-policy invalidation')",
+    "research/scientific_validity_v2_20260829/CLAIM_SCOPE_AND_INVALIDATION.md:58 (cell C 'clip-neutral controller state'), :63 (cell H), :72 (freeze threshold row 'improve output-policy agreement')",
+    "README.md:36-44 (v2 paragraph)",
+    "exp/E-02/README.md (36/36 bitwise; dense <= 1 in 6/18; solver norms 0.003-0.997)",
+    "exp/E-03/README.md (H1a 16/18 and 17/18; scipy 17/18; side observation 17/18 rows, median 2.6x)"
+   ],
+   "effort": "S",
+   "risk": "low",
+   "verification": "Doc contract test (the tree already has local document/counter contracts, cell A): assert the ledger contains the strings for the basis declaration, '12/18', '36/54', the semilinear values and the scope qualifier 'n=96', and that it no longer contains the unqualified phrase 'scientific output-policy invalidation'. Every number in the new text must be regenerated by a committed script from the campaign's own records plus the E-02/E-03 outputs (exp/E-02/results.json, exp/E-03/results.json, exp/E-03/e03a_rows.json), not typed by hand; the SciPy comparison must state its configuration (analytic sparse Jacobian, atol = 0.01*rtol) and that it comes from the audit run rather than from the 54 committed external-calibration records unless those are re-derived and agree."
+  },
+  {
+   "finding_ids": [
+    "F-007",
+    "F-006",
+    "F-029",
+    "F-033",
+    "F-004"
+   ],
+   "summary": "Single verification campaign that re-uses the audit experiments as regression oracles and is declared before any code lands. Stage 0 (no-change baseline): the E-02 harness on the unmodified tree must reproduce 36/36 arm checksums and 18/18 gap values bitwise, establishing that later differences come from the patches. Stage 1 (criterion, offline): apply the new classifier to the stored E-02 states and the E-03 scipy control without re-integrating; stage 2 (controller): re-run after the adaptive.rs patch; stage 3 (attribution): add the dense-tight-inner arm. Predeclared outcomes are listed in the verification field; any deviation is recorded as a result, not repaired by changing B, the delta limit or the informative-ratio constant.",
+   "files": [
+    "harness/src/bin/e0203_v2rows.rs (audit harness, outside the tree)",
+    "exp/E-03/analyze_e03a.py, exp/E-03/aggregate_e03.py (audit scripts, outside the tree)",
+    "crates/rodas5p-fair-ab/tests/ (new in-tree regression: scipy-control attainability fixture)"
+   ],
+   "anchors": [
+    "exp/E-02/README.md (commands, bitwise reproduction table)",
+    "exp/E-03/README.md (verdict thresholds fixed before running; per-row table)",
+    "crates/rodas5p-fair-ab/src/scientific_validity_v2_campaign.rs:633 region cited by E-02 (runner refuses reference bundles whose implementation_revision differs, so the in-tree runner cannot replay old references; the harness replicates execute_arm 428-560)"
+   ],
+   "effort": "M",
+   "risk": "low",
+   "verification": "Stage 1 expected: old rule -> 18/18 Dominated (unchanged, historical); new rule with B = 10, delta limit 2.0 -> dense arm 15/18 within budget, 3/18 GlobalErrorExceedsBudget (semilinear), 0 ReferenceDominated (all 108 arms were reference-admissible), triangle assertion fires 0 times; scipy Radau control 18/18 within budget; sensitivity table for B in {5, 10, 15} shows identical verdicts. Stage 2 expected: dense arms bitwise unchanged; clipped arms in zero-rejection rows still 100 steps / 98 clipped; clipped-vs-clipped h0 pair agreement (E-03: only 2/18 violations of the old rule) does not degrade. Stage 3 expected: R_inner recorded for 3 semilinear + control rows with the predeclared attribution rule from the F-033 fix. Pass condition for the whole package: a solver known to be correct (scipy Radau) reaches Pass on every row it is admissible on, and the semilinear rows fail for the stated reason - i.e. the gate is both attainable and discriminating."
+  }
+ ]
+}

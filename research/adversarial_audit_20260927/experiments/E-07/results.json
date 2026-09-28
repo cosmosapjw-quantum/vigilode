@@ -1,0 +1,314 @@
+{
+ "id": "E-07",
+ "purpose": "mpmath (50-digit) reconstruction of the RODAS5P ROW form exactly as coefficients.rs:134-141 computes it (Gamma=(I/gamma-C)^-1, alpha=A*Gamma, beta=alpha+Gamma, b=Gamma^T b_code, btilde=Gamma[7,:], gamma_rows=rowsum Gamma); first-principles B-series order conditions on all 17 rooted trees up to order 5 (main) and embedded weights (b - btilde), cross-checked against Hairer-Wanner IV.7 closed forms for p<=4; structural checks (strictly lower alpha, lower Gamma with diag gamma, beta_ii=gamma, c_i=sum_j alpha_ij, stiff accuracy b=beta[s,:]); f64 rounding vs crate output (e07_coeff_print); observed order on the E-04 P1 direct arm restricted to lambda in [-10,-1] (p1ns).",
+ "commands": [
+  "RAYON_NUM_THREADS=1 /home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/cargo-target/measurement/e07_coeff_print > coeff_f64.json",
+  "python3 e07_mpmath_check.py exact > mpmath_exact.out   # fixture decimal strings parsed exactly at 50 digits",
+  "python3 e07_mpmath_check.py f64 > mpmath_f64.out       # fixture strings first rounded to f64 as parse_number does",
+  "RAYON_NUM_THREADS=1 /home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/cargo-target/measurement/e04_order_krylov p1ns 3 10 direct,direct_embedded > ../E-04/p1ns_direct.jsonl"
+ ],
+ "inputs": [
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/tree/fixtures/rodas5p_coefficients_snapshot.json",
+   "sha256": "211255f6125b648c6955833c3da537d9c031ec78168b2918563c29fa88c8bce6"
+  },
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/tree/crates/rodas5p-core/src/coefficients.rs",
+   "sha256": "6312ceb85910cbc050946e878e5af8f93f59eb4e988c06a3612d829831b592c9"
+  },
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/tree/crates/rodas5p-integrators/src/sequential.rs",
+   "sha256": "8214a3a005774cd12045909dffcc3d7a1a867abd3923b297e20cb07ce419aef6"
+  },
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/harness/src/bin/e07_coeff_print.rs",
+   "sha256": "3351e8faeb0f382d5313f292a6470677314ccde8f3136cbfaa3cecba1ae6b1e3"
+  },
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/harness/src/bin/e04_order_krylov.rs",
+   "sha256": "6f5c62736a753ed72470e9585b13e9167daa26fcffddea9403e9336b19de4d49"
+  },
+  {
+   "path": "e07_mpmath_check.py",
+   "sha256": "505966d660a8385e7955a05a559090a2d593ee1d86ba1e4df253d491e7c55ad7"
+  }
+ ],
+ "outputs": [
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-07/coeff_f64.json",
+   "sha256": "c35635c31c37af66ce52f308d2fa22775471e1d000baf4eebd256c2bff54de42"
+  },
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-07/mpmath_exact.json",
+   "sha256": "d6ed1ea34366870b0d0f9904b4f23ff47f89785e7af398a5af37f9a6e621d344"
+  },
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-07/mpmath_exact.out",
+   "sha256": "4fe77505c942ca7c21feed7be4dededb1fb89936010391c6f2dd042278c5b1fc"
+  },
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-07/mpmath_f64.json",
+   "sha256": "44f0cd1ebe29a34cfa4a4a5b481562ff99f6a943385c4c72f9b833076da646ba"
+  },
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-07/mpmath_f64.out",
+   "sha256": "78a5223be4ac6010fc56873ad5505fc4f20d6967fd469bb597b4ccc99bd0b71e"
+  },
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-04/p1ns_direct.jsonl",
+   "sha256": "6eae8957b9fb0c730f5dd505cc97e006f7d7299a5872724080d1971246d1347b"
+  }
+ ],
+ "env": {
+  "RAYON_NUM_THREADS": "1",
+  "profile": "measurement",
+  "rustc": "rustc 1.94.1 (e408947bf 2026-03-25)",
+  "mpmath_dps": 50
+ },
+ "summary_metrics": {
+  "stage_equation_verified_in_code": "sequential.rs:335-363: Y_i=y+sum_{j<i}alpha_ij K_j; W K_i = h f(t+c_i h,Y_i) + h J sum_{j<i}Gamma_ij K_j + h^2 gamma_rows_i f_t (standard k-form, gamma_ij=Gamma_ij, gamma_ii=gamma)",
+  "n_conditions_checked": {
+   "main": 17,
+   "embedded": 17,
+   "orders": "1..5 = 1+1+2+4+9 rooted trees"
+  },
+  "max_resid_main_by_order_exact_fixture": {
+   "1": 5.524277592527456e-15,
+   "2": 1.5934909937998546e-15,
+   "3": 6.682289794308926e-16,
+   "4": 1.2777213958046112e-15,
+   "5": 1.2336424237816965e-15
+  },
+  "max_resid_embedded_by_order_exact_fixture": {
+   "1": 4.0362012020375064e-15,
+   "2": 2.673935901196704e-15,
+   "3": 8.239663569201216e-16,
+   "4": 9.360840869440466e-16,
+   "5": 0.014601073700828108
+  },
+  "max_resid_main_by_order_crate_f64_coefficients": {
+   "1": 2.858824288409778e-15,
+   "2": 6.827791981622067e-16,
+   "3": 1.7087916038964564e-15,
+   "4": 1.9213452528120316e-15,
+   "5": 1.9725774635187337e-15
+  },
+  "max_resid_embedded_by_order_crate_f64_coefficients": {
+   "1": 1.0130785099704553e-15,
+   "2": 1.2818968091065473e-15,
+   "3": 1.1837386970241877e-15,
+   "4": 1.850783024730316e-15,
+   "5": 0.014601073700828388
+  },
+  "hw_closed_form_p_le_4_max_abs_resid": 5.524277592527456e-15,
+  "structure": {
+   "cond_Ginv_1norm": 40740.201270351296,
+   "alpha_strictly_lower_max_upper_abs": 0.0,
+   "Gamma_lower_max_upper_abs": 0.0,
+   "beta_diag_minus_gamma_max": 3.3409558876152446e-52,
+   "Gamma_diag_minus_gamma_max": 2.3817361308194615e-52,
+   "c_minus_alpha_rowsum_max": 4.0362012020375064e-15,
+   "stiffly_accurate_b_minus_beta_lastrow_max": 1.0691058840368783e-50,
+   "embedded_bhat_minus_alpha_lastrow_max": 1.0691058840368783e-50,
+   "embedded_bhat_minus_beta_row_s2_max": 1.0691058840368783e-50,
+   "b_code_minus_(A_last+e_s)_max": 0.0,
+   "sum_b_minus_1": 5.524277592527456e-15,
+   "sum_bhat_minus_1": 4.0362012020375064e-15,
+   "gamma_rows": [
+    "0.211938",
+    "-0.423875",
+    "-0.338463",
+    "1.80465",
+    "2.32583",
+    "1.69148e-15",
+    "2.37063e-15",
+    "1.48808e-15"
+   ]
+  },
+  "f64_rounding_vs_mpmath": {
+   "gamma_matrix": {
+    "max_abs_ulp_significant": 164.5936994010641,
+    "n_significant": 36,
+    "n_small": 28,
+    "max_abs_diff_small_entries": 4.994632140352628e-16,
+    "max_abs_diff_all": 1.991257998218829e-14
+   },
+   "alpha": {
+    "max_abs_ulp_significant": 25358.05869448308,
+    "n_significant": 28,
+    "n_small": 36,
+    "max_abs_diff_small_entries": 5.577737968635803e-16,
+    "max_abs_diff_all": 1.4855115315678227e-14
+   },
+   "beta": {
+    "max_abs_ulp_significant": 25358.05869448308,
+    "n_significant": 35,
+    "n_small": 29,
+    "max_abs_diff_small_entries": 3.7683229960916457e-16,
+    "max_abs_diff_all": 1.4855115315678227e-14
+   },
+   "l": {
+    "max_abs_ulp_significant": 25358.05869448308,
+    "n_significant": 27,
+    "n_small": 37,
+    "max_abs_diff_small_entries": 3.7683229960916457e-16,
+    "max_abs_diff_all": 1.4855115315678227e-14
+   },
+   "b": {
+    "max_abs_ulp_significant": 807.1712042136483,
+    "n_significant": 8,
+    "n_small": 0,
+    "max_abs_diff_small_entries": 0.0,
+    "max_abs_diff_all": 1.0342233597327156e-14
+   },
+   "btilde": {
+    "max_abs_ulp_significant": 164.5936994010641,
+    "n_significant": 8,
+    "n_small": 0,
+    "max_abs_diff_small_entries": 0.0,
+    "max_abs_diff_all": 4.56839286958233e-15
+   },
+   "gamma_rows": {
+    "max_abs_ulp_significant": 3.261949383649426,
+    "n_significant": 5,
+    "n_small": 3,
+    "max_abs_diff_small_entries": 1.843270028258312e-15,
+    "max_abs_diff_all": 1.843270028258312e-15
+   },
+   "c": {
+    "max_abs_ulp_significant": 0.3165018500890624,
+    "n_significant": 7,
+    "n_small": 1,
+    "max_abs_diff_small_entries": 0.0,
+    "max_abs_diff_all": 2.652014223858714e-17
+   },
+   "b_code": {
+    "max_abs_ulp_significant": 0.456506453098496,
+    "n_significant": 8,
+    "n_small": 0,
+    "max_abs_diff_small_entries": 0.0,
+    "max_abs_diff_all": 4.662707015522756e-16
+   },
+   "gamma": {
+    "ulp": 0.17957607599767553
+   }
+  },
+  "p1ns_direct_main_slopes": [
+   {
+    "k": 4,
+    "h": 0.0625,
+    "err": 3.023597703744422e-08,
+    "slope": 4.480719514561206
+   },
+   {
+    "k": 5,
+    "h": 0.03125,
+    "err": 6.985173755575624e-10,
+    "slope": 5.4358263853953215
+   },
+   {
+    "k": 6,
+    "h": 0.015625,
+    "err": 1.31756401836795e-11,
+    "slope": 5.728351036025731
+   },
+   {
+    "k": 7,
+    "h": 0.0078125,
+    "err": 2.2478662988223186e-13,
+    "slope": 5.873173023792843
+   },
+   {
+    "k": 8,
+    "h": 0.00390625,
+    "err": 3.3679793002392257e-15,
+    "slope": 6.060529146050795
+   },
+   {
+    "k": 9,
+    "h": 0.001953125,
+    "err": 2.87333360136956e-15,
+    "slope": 0.22915776838562507
+   },
+   {
+    "k": 10,
+    "h": 0.0009765625,
+    "err": 2.907531405140252e-15,
+    "slope": -0.017069271601483846
+   }
+  ],
+  "p1ns_direct_embedded_slopes": [
+   {
+    "k": 4,
+    "h": 0.0625,
+    "err": 3.9737366333495425e-06,
+    "slope": 4.39630173593319
+   },
+   {
+    "k": 5,
+    "h": 0.03125,
+    "err": 2.0249836662650754e-07,
+    "slope": 4.294514082283936
+   },
+   {
+    "k": 6,
+    "h": 0.015625,
+    "err": 1.1076236717831521e-08,
+    "slope": 4.192370574029444
+   },
+   {
+    "k": 7,
+    "h": 0.0078125,
+    "err": 6.37666255444529e-10,
+    "slope": 4.118522444267791
+   },
+   {
+    "k": 8,
+    "h": 0.00390625,
+    "err": 3.809021802904386e-11,
+    "slope": 4.065309086428456
+   },
+   {
+    "k": 9,
+    "h": 0.001953125,
+    "err": 2.3233443872816928e-12,
+    "slope": 4.035145621416399
+   },
+   {
+    "k": 10,
+    "h": 0.0009765625,
+    "err": 1.4313820072944252e-13,
+    "slope": 4.0207223643247
+   }
+  ],
+  "p1ns_main_slopes_pre_floor": [
+   4.480719514561206,
+   5.4358263853953215,
+   5.728351036025731,
+   5.873173023792843
+  ],
+  "p1ns_embedded_slopes_pre_floor": [
+   4.39630173593319,
+   4.294514082283936,
+   4.192370574029444,
+   4.118522444267791,
+   4.065309086428456,
+   4.035145621416399,
+   4.0207223643247
+  ]
+ },
+ "pass_fail": "PASS",
+ "hypothesis_verdicts": [
+  "Tableau order (no PLAN hypothesis id): main weights satisfy all 17 Rosenbrock order conditions through order 5 with max residual 1.3e-15 (fixture) / 2.0e-15 (crate f64) < 1e-13 threshold -> PASS; embedded weights satisfy all 8 conditions through order 4 (max 9.4e-16 / 1.9e-15) and violate all 9 order-5 conditions (1.2e-4..1.5e-2) -> embedded order is exactly 4, not 3 as the task floor allowed.",
+  "Structure: alpha strictly lower (0 upper mass), Gamma lower with Gamma_ii=gamma (3e-52), beta_ii=gamma, c_i-sum_j alpha_ij <= 4.0e-15, b == beta[s,:] (stiffly accurate, 1e-50), bhat == alpha[s,:] == beta[s-1,:] (embedded = stage-7 value, also stiffly accurate) -> PASS.",
+  "f64 rounding: crate coefficients differ from 50-digit values by <= 5.6e-16 absolute in Gamma/alpha/beta/l, up to ~800 ulp (~1.8e-13 relative) in b and ~165 ulp in btilde (consistent with cond_1(Gamma^-1)=4.1e4 amplifying eps); order-condition residuals evaluated on the crate's own f64 coefficients stay <= 2.0e-15, so f64 inversion does not degrade the order -> PASS.",
+  "Observed order on E-04 P1 direct restricted to lambda in [-10,-1] (n=256): main local slopes 4.48,5.44,5.73,5.87,6.06 before the 3e-15 round-off floor at h<=1/256; embedded (direct_embedded arm) 4.40,4.29,4.19,4.12,4.07,4.04,4.02 -> ~5 / ~4 confirmed."
+ ],
+ "notes": [
+  "The fixture values are 17-significant-digit decimal literals (provenance: OrdinaryDiffEq.jl, 'not original exact rationals'); residuals of ~1e-15 are therefore the input-literal rounding, not a tableau defect. cond_1(I/gamma-C)=4.1e4 (predecessor's 2-norm estimate 2.6e3).",
+  "gamma_rows[5..8] are ~1e-15 in mpmath too (d_6=d_7=d_8=0 analytically: the last three stages are stiffly-accurate corrector stages), so the crate's f64 values 4e-16..6e-15 there are pure cancellation residue, not a bug.",
+  "Order-5 check is the full set (9 trees); no dense-output conditions were checked here (out of my task scope; see exp/D1/tableau_check.py for the predecessor's dense-weight dump).",
+  "p1ns main slopes exceed 5 (up to 6.06): at h=1/8 |h lambda| reaches 1.25 so the smallest h values are still leaving the pre-asymptotic regime; the direct_embedded arm is cleanly 4.0x.",
+  "The B-series check derives a_i(t) recursively from the k-form stage equation actually implemented (verified at sequential.rs:335-363), so it tests the code's ROW form, not a remembered textbook table; the HW closed forms for p<=4 agree to 5.5e-15 (max is the order-1 condition sum b = 1)."
+ ]
+}

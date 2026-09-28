@@ -1,0 +1,106 @@
+{
+ "id": "E-06",
+ "purpose": "Accuracy of rodas5p_core::dense_phi_action (k=0..4) and matrix_exp_pade13 vs mpmath 30-digit references (augmented-matrix expm) on 8x8/64x64 random dense, nonnormal upper-triangular, stiff diagonal, ||A||_1 in {1e-3,1,1e3}, ||v||_2 in {1e-8,1,1e8}; plus Rust-only proportionality probe phi(A, s v) vs s*phi(A, v).",
+ "commands": [
+  "python3 gen_cases.py  (predecessor; seed 20260927)",
+  "RAYON_NUM_THREADS=1 cargo-target/measurement/e06_phi_action cases.json > rust_out.json  (predecessor)",
+  "python3 reference.py > reference_stdout.txt 2> reference_stderr.txt  (this session; 242 s)"
+ ],
+ "inputs": [
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/harness/src/bin/e06_phi_action.rs",
+   "sha256": "936ead51cdb0e90dee7054808d2c7a6aaa9d7d383bd859b58185de10b528c113"
+  },
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-06/gen_cases.py",
+   "sha256": "b3a190bcd1dc53ed1c8b863d5b9494554546970778bb5e1ad88ea3bf7d8d8782"
+  },
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-06/reference.py",
+   "sha256": "c1b0562867dc8d7812b08e55d9b47d7498516bd46fda210a4506f4d5e7082d81"
+  },
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-06/cases.json",
+   "sha256": "8a8c5676cf511e77e8f1fc80b12c3d8ab36694e96376966682bd393b5b2e6b1f"
+  }
+ ],
+ "outputs": [
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-06/rust_out.json",
+   "sha256": "606617f0e3172bb3f6de19cf01a6abe10b791b00754c654341d37357f1c6f64e"
+  },
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-06/reference_results.json",
+   "sha256": "fc22d10cbadcf575e6eed195796ff070ad0f992a95726b4bda1b7ea3c809a364"
+  },
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-06/reference_stdout.txt",
+   "sha256": "b5f00c50ef4005b42ffc26b7b2f6ee4eeec9ce0d9b7d3fd1bca1053fe5521760"
+  },
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-06/reference_stderr.txt",
+   "sha256": "738056833a666b1427798170985297d13eb9fd36ab6d84cc2299d28f82c61ad2"
+  }
+ ],
+ "env": {
+  "RAYON_NUM_THREADS": "1",
+  "profile": "measurement",
+  "rustc": "rustc 1.94.1 (e408947bf 2026-03-25)",
+  "tree_ref": "b3e8165c8dc3b5016702821d280daea1a3f1feb7",
+  "python": "numpy/scipy/mpmath 1.3 (E-06 reference)"
+ },
+ "summary_metrics": {
+  "cases": 54,
+  "threshold_relerr": 2.220446049250313e-13,
+  "cases_failing_any_k": 18,
+  "failing_by_vnorm": {
+   "1e-8": 0,
+   "1": 0,
+   "1e8": 18
+  },
+  "worst_relerr_k0": 3.4711544068652114e-14,
+  "worst_relerr_k1_to_4": 1.5823052598336205e-08,
+  "worst_expm_v_relerr": 3.4711544068652114e-14,
+  "worst_relerr_k1_to_4_at_vnorm_1": 3.397093722319891e-14,
+  "worst_relerr_k1_to_4_at_vnorm_1e-8": 3.391920295758948e-14,
+  "worst_relerr_k1_to_4_at_vnorm_1e8": 1.5823052598336205e-08,
+  "proportionality_deviation_x1e8_range": [
+   2.7134197938954284e-09,
+   1.5823056713929965e-08
+  ],
+  "proportionality_deviation_x1e-8_max": 1.0592085031521361e-15,
+  "aug_vs_direct_mp_reference_consistency_max": 0,
+  "failing_cases": [
+   "n8_dense_A0.001_v1e+08",
+   "n8_dense_A1_v1e+08",
+   "n8_dense_A1000_v1e+08",
+   "n8_uppertri_A0.001_v1e+08",
+   "n8_uppertri_A1_v1e+08",
+   "n8_uppertri_A1000_v1e+08",
+   "n8_stiffdiag_A0.001_v1e+08",
+   "n8_stiffdiag_A1_v1e+08",
+   "n8_stiffdiag_A1000_v1e+08",
+   "n64_dense_A0.001_v1e+08",
+   "n64_dense_A1_v1e+08",
+   "n64_dense_A1000_v1e+08",
+   "n64_uppertri_A0.001_v1e+08",
+   "n64_uppertri_A1_v1e+08",
+   "n64_uppertri_A1000_v1e+08",
+   "n64_stiffdiag_A0.001_v1e+08",
+   "n64_stiffdiag_A1_v1e+08",
+   "n64_stiffdiag_A1000_v1e+08"
+  ]
+ },
+ "pass_fail": "FAIL",
+ "hypothesis_verdicts": [
+  "dense_phi_action is NOT scale-invariant in v: for every one of the 18 cases with ||v||=1e8 (all three matrix types, all ||A||, n=8 and 64), phi_k(A)v for k=1..4 has relative error 2.7e-9..1.6e-8 (threshold 2.2e-13), while k=0 (uses matrix_exp_pade13 directly) and matrix_exp_pade13 itself stay at 1e-16..3.5e-14. The Rust-only probe confirms phi_k(A,1e8 v) deviates from 1e8*phi_k(A,v) by the same ~1e-8 (and by <=1e-15 for 1e-8 v), so the mpmath reference is not the cause.",
+  "Mechanism (code read): crates/rodas5p-core/src/matrix_functions.rs dense_phi_action embeds the unscaled v in the augmented [[A, v, 0..],[0, J]] matrix and calls matrix_exp_pade13, whose squaring count is chosen from the 1-norm of the *augmented* matrix (matrix_functions.rs:80-86); ||v||=1e8 forces ~24 extra squarings, amplifying rounding to ~1e-8. Standard remedy (Al-Mohy & Higham 2011 / KIOPS) is to scale the augmentation column by 1/||v|| (or eta) and undo it on output.",
+  "||v||=1 and ||v||=1e-8: PASS for all k (worst 2.44e-14 at ||A||=1e3, within 1e3*eps).",
+  "matrix_exp_pade13: PASS (worst expm_v relerr 3.5e-14 at ||A||_1=1e3)."
+ ],
+ "notes": [
+  "expm_lastcol_relerr=1.0 for the stiff-diagonal ||A||=1e3 cases is exp(-1000)=5e-435 underflowing to 0 in f64 - not a defect.",
+  "Impact to be confirmed by the verification phase: which production paths call dense_phi_action / dense_fused_phi_action with vectors far from unit norm (the fused Krylov oracle passes projected vectors; counters phi_dense_oracle_calls). At integrator tolerances 1e-6..1e-8 a 1e-8 relative phi error is at the tolerance level.",
+  "Reference: one augmented (n+4)x(n+4) mpmath expm at 30 digits per case; consistency between augmented and direct expm(A)v references is exact to 30 digits (aug_vs_direct = 0)."
+ ]
+}

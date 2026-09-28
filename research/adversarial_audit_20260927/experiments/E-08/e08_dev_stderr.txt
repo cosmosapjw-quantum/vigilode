@@ -1,0 +1,26 @@
+debug_assertions=true
+PR-jvp-only mf_adaptive_reject: ok=true rhs Δ=0 ft Δ=0 jvp_calls=760 lin_mv=460 refresh=0 diag=160 atomic_jvp=760 acc-atomic=620 acc=20 rej=0 lsf=0 msg=success
+PR-jvp-only mf_dense_reject: ok=true rhs Δ=0 ft Δ=0 jvp_calls=380 lin_mv=230 refresh=0 diag=80 atomic_jvp=380 acc-atomic=310 acc=10 rej=0 lsf=0 msg=success
+PR-jvp-only mf_adaptive_gmresfail: ok=true rhs Δ=0 ft Δ=0 jvp_calls=760 lin_mv=460 refresh=0 diag=160 atomic_jvp=760 acc-atomic=620 acc=20 rej=0 lsf=0 msg=success
+PR-jvp-only mf_dense_gmresfail: ok=true rhs Δ=0 ft Δ=0 jvp_calls=380 lin_mv=230 refresh=0 diag=80 atomic_jvp=380 acc-atomic=310 acc=10 rej=0 lsf=0 msg=success
+PR-jvp-only expo_pexprb54s4_fused: ok=false rhs Δ=0 ft Δ=0 jvp_calls=0 lin_mv=0 refresh=0 diag=0 atomic_jvp=0 acc-atomic=0 acc=0 rej=0 lsf=0 msg=Err: invalid numerical input: G2 foundation currently supports autonomous problems only
+PR-jvp-only fixed_direct: ok=false rhs Δ=-1 ft Δ=-1 jvp_calls=0 lin_mv=0 refresh=0 diag=0 atomic_jvp=0 acc-atomic=0 acc=0 rej=0 lsf=0 msg=Err: linear solve failed: direct action needs explicit shifted matrix
+PR-jvp-only adaptive_direct_reject: ok=false rhs Δ=0 ft Δ=0 jvp_calls=0 lin_mv=0 refresh=0 diag=0 atomic_jvp=0 acc-atomic=0 acc=0 rej=19 lsf=19 msg=maximum step count or minimum step reached
+PR-jvp-only adaptive_gmres_gmresfail_generic: ok=true rhs Δ=0 ft Δ=0 jvp_calls=140 lin_mv=460 refresh=0 diag=160 atomic_jvp=760 acc-atomic=0 acc=20 rej=0 lsf=0 msg=success
+PR-with-jac mf_adaptive_reject: ok=true rhs Δ=0 ft Δ=0 jvp_calls=760 lin_mv=460 refresh=0 diag=160 atomic_jvp=760 acc-atomic=620 acc=20 rej=0 lsf=0 msg=success
+PR-with-jac mf_dense_reject: ok=true rhs Δ=0 ft Δ=0 jvp_calls=380 lin_mv=230 refresh=0 diag=80 atomic_jvp=380 acc-atomic=310 acc=10 rej=0 lsf=0 msg=success
+PR-with-jac mf_adaptive_gmresfail: ok=true rhs Δ=0 ft Δ=0 jvp_calls=760 lin_mv=460 refresh=0 diag=160 atomic_jvp=760 acc-atomic=620 acc=20 rej=0 lsf=0 msg=success
+PR-with-jac mf_dense_gmresfail: ok=true rhs Δ=0 ft Δ=0 jvp_calls=380 lin_mv=230 refresh=0 diag=80 atomic_jvp=380 acc-atomic=310 acc=10 rej=0 lsf=0 msg=success
+PR-with-jac expo_pexprb54s4_fused: ok=false rhs Δ=0 ft Δ=0 jvp_calls=0 lin_mv=0 refresh=0 diag=0 atomic_jvp=0 acc-atomic=0 acc=0 rej=0 lsf=0 msg=Err: invalid numerical input: G2 foundation currently supports autonomous problems only
+PR-with-jac fixed_direct: ok=true rhs Δ=0 ft Δ=0 jvp_calls=350 lin_mv=0 refresh=0 diag=400 atomic_jvp=0 acc-atomic=750 acc=50 rej=0 lsf=0 msg=success
+PR-with-jac adaptive_direct_reject: ok=true rhs Δ=0 ft Δ=0 jvp_calls=140 lin_mv=0 refresh=0 diag=160 atomic_jvp=0 acc-atomic=300 acc=20 rej=0 lsf=0 msg=success
+PR-with-jac adaptive_gmres_gmresfail_generic: ok=true rhs Δ=0 ft Δ=0 jvp_calls=140 lin_mv=460 refresh=0 diag=160 atomic_jvp=0 acc-atomic=760 acc=20 rej=0 lsf=0 msg=success
+robertson spec id=robertson-ramped-n96-rtol-1e-8-v2.1 segments=1 seg0 span=(0,0.1) clipped tf=0.1 autonomous=false has_jvp=true has_jac=false
+robertson-ramped-n96-jvp-only mf_adaptive_reject: ok=true rhs Δ=0 ft Δ=0 jvp_calls=29385 lin_mv=28095 refresh=0 diag=688 atomic_jvp=29385 acc-atomic=28783 acc=76 rej=10 lsf=0 msg=success
+robertson-ramped-n96-jvp-only mf_dense_reject: ok=true rhs Δ=0 ft Δ=0 jvp_calls=25717 lin_mv=24607 refresh=0 diag=592 atomic_jvp=25717 acc-atomic=25199 acc=66 rej=8 lsf=0 msg=success
+robertson-ramped-n96-jvp-only mf_adaptive_gmresfail: ok=true rhs Δ=0 ft Δ=0 jvp_calls=9800 lin_mv=7295 refresh=0 diag=1336 atomic_jvp=9800 acc-atomic=8631 acc=158 rej=93 lsf=84 msg=success
+robertson-ramped-n96-jvp-only mf_dense_gmresfail: ok=true rhs Δ=0 ft Δ=0 jvp_calls=10504 lin_mv=7819 refresh=0 diag=1432 atomic_jvp=10504 acc-atomic=9251 acc=172 rej=121 lsf=114 msg=success
+robertson-ramped-n96-jvp-only expo_pexprb54s4_fused: ok=false rhs Δ=0 ft Δ=0 jvp_calls=0 lin_mv=0 refresh=0 diag=0 atomic_jvp=0 acc-atomic=0 acc=0 rej=0 lsf=0 msg=Err: invalid numerical input: G2 foundation currently supports autonomous problems only
+robertson-ramped-n96-jvp-only fixed_direct: ok=false rhs Δ=-1 ft Δ=-1 jvp_calls=0 lin_mv=0 refresh=0 diag=0 atomic_jvp=0 acc-atomic=0 acc=0 rej=0 lsf=0 msg=Err: linear solve failed: direct action needs explicit shifted matrix
+robertson-ramped-n96-jvp-only adaptive_direct_reject: ok=false rhs Δ=0 ft Δ=0 jvp_calls=0 lin_mv=0 refresh=0 diag=0 atomic_jvp=0 acc-atomic=0 acc=0 rej=17 lsf=17 msg=maximum step count or minimum step reached
+robertson-ramped-n96-jvp-only adaptive_gmres_gmresfail_generic: ok=true rhs Δ=0 ft Δ=0 jvp_calls=8841 lin_mv=55952 refresh=0 diag=10104 atomic_jvp=74897 acc-atomic=0 acc=1260 rej=1231 lsf=1228 msg=success

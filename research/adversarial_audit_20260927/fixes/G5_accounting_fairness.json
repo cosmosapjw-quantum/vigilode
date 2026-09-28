@@ -1,0 +1,211 @@
+{
+ "group": "G5_accounting_fairness",
+ "fixes": [
+  {
+   "finding_ids": [
+    "F-048",
+    "F-022"
+   ],
+   "summary": "Adopt one WorkCounters contract with two axes that are never summed: a PROVENANCE axis (jvp_calls/jvp_vectors = number of user JVP callback invocations/vectors actually executed, on every lane; explicit dense J*v products go to a new jacobian_matvecs counter) and a ROLE axis (linear_matvecs, recycle_refresh_matvecs, diagnostic_matvecs, block_matvecs = solver-level operator applications by purpose). Enforce it by making provenance a property of the operator instead of the call site: the JVP-backed ClosureOperator built in OdeProblem::linearize/linearize_matrix_free reports application_work {jvp_calls:1,jvp_vectors:1}, DenseOperator reports {jacobian_matvecs:1}, ShiftedOperator::new derives its work from the inner operator plus mass, and apply_jvp_counted charges jacobian.application_work() instead of an unconditional +1 (today it charges jvp_calls for dense matvecs: 140 with 0 callbacks). new_counted_jvp becomes a thin alias so the matrix-free lane keeps its exact E-08 values; bump a work_counters_semantics_version so frozen generic-lane ledgers are marked v1 and never compared with v2.",
+   "files": [
+    "crates/rodas5p-core/src/operator.rs",
+    "crates/rodas5p-core/src/work.rs",
+    "crates/rodas5p-integrators/src/problem.rs",
+    "crates/rodas5p-integrators/src/sequential.rs",
+    "crates/rodas5p-fair-ab/src/contracts.rs"
+   ],
+   "anchors": [
+    "crates/rodas5p-integrators/src/problem.rs:229-245",
+    "crates/rodas5p-integrators/src/problem.rs:206-217",
+    "crates/rodas5p-core/src/operator.rs:63-88",
+    "crates/rodas5p-core/src/operator.rs:118-128",
+    "crates/rodas5p-core/src/operator.rs:180-215",
+    "crates/rodas5p-core/src/operator.rs:225-240",
+    "crates/rodas5p-core/src/operator.rs:274-284",
+    "crates/rodas5p-core/src/operator.rs:407-435",
+    "crates/rodas5p-core/src/operator.rs:513-515",
+    "crates/rodas5p-integrators/src/sequential.rs:154-163",
+    "crates/rodas5p-integrators/src/sequential.rs:202-211",
+    "crates/rodas5p-fair-ab/src/contracts.rs:102-104",
+    "exp/E-08/README.md results section"
+   ],
+   "effort": "M",
+   "risk": "medium",
+   "verification": "Re-run the E-08 harness (harness/src/bin/e08_work_counters.rs) with the pre-registered rule replaced by `counters.jvp_calls == atomic.jvp` on all 24 arms: generic GMRES arm must read 760 (PR) and 74897 (robertson n=96) instead of 140/8841, PR-with-jac must read jvp_calls=0 and jacobian_matvecs=760, and the 12 matrix-free arms must stay at difference 0. rhs_calls/ft_calls and all solution bits must be unchanged (accounting-only change).",
+   "code_sketch": "// operator.rs\npub struct OperatorApplicationWork { pub jvp_calls: u64, pub jvp_vectors: u64,\n    pub jacobian_matvecs: u64, pub mass_matvecs: u64, pub block_matvecs: u64 }\nimpl<F> ClosureOperator<F> {\n    pub fn new_user_jvp(n: usize, f: F) -> Self { /* work = {jvp_calls:1, jvp_vectors:1, ..} */ }\n}\nimpl LinearOperator for DenseOperator {\n    fn application_work(&self) -> OperatorApplicationWork {\n        OperatorApplicationWork { jacobian_matvecs: 1, ..Default::default() }\n    }\n}\nimpl ShiftedOperator {\n    pub fn new(mass, jacobian, h, gamma) -> CoreResult<Self> {\n        let mut w = jacobian.application_work();          // provenance comes from J\n        w.mass_matvecs += u64::from(mass.is_some());\n        Self::new_with_application_work(mass, jacobian, h, gamma, w)\n    }\n    pub fn new_counted_jvp(..) -> CoreResult<Self> { Self::new(..) } // alias, same numbers\n}\npub fn apply_jvp_counted(j: &dyn LinearOperator, x, y, c: &mut WorkCounters) -> CoreResult<()> {\n    j.apply(x, y)?;\n    j.application_work().charge(c);   // no unconditional jvp_calls += 1\n    Ok(())\n}\n// problem.rs: linearize / linearize_matrix_free use ClosureOperator::new_user_jvp"
+  },
+  {
+   "finding_ids": [
+    "F-022",
+    "F-048"
+   ],
+   "summary": "Add one integrator-level contract test that runs the SAME JVP-only problem through both lanes (generic integrate_adaptive_observed_with_config + LinearMethod::Gmres, and the strict matrix-free lane built on build_step_context_matrix_free) with the JVP closure wrapped in an AtomicU64, and asserts jvp_calls == jvp_vectors == atomic count on each lane, including an arm with forced GMRES failures and step rejections. A third arm with an explicit Jacobian asserts jvp_calls == 0 and jacobian_matvecs > 0. The existing operator_accounting_contracts.rs:36 assertion only covers the block path and would not fail on today's generic-lane undercount.",
+   "files": [
+    "crates/rodas5p-integrators/tests/work_counter_lane_contracts.rs",
+    "crates/rodas5p-core/tests/work_counter_contracts.rs"
+   ],
+   "anchors": [
+    "crates/rodas5p-integrators/tests/operator_accounting_contracts.rs:7-41",
+    "crates/rodas5p-integrators/src/sequential.rs:180-215",
+    "exp/E-08/README.md (arms mf_adaptive_reject, adaptive_gmres_gmresfail_generic)"
+   ],
+   "effort": "S",
+   "risk": "low",
+   "verification": "The new test must FAIL on b3e8165 (generic lane 140 != 760) and PASS after the operator-provenance fix; keep it in the default `cargo test -p rodas5p-integrators` set so any future call site that bypasses apply_counted/apply_jvp_counted breaks it.",
+   "code_sketch": "fn counted(problem: OdeProblem) -> (OdeProblem, Arc<AtomicU64>) { /* wrap problem.jvp, fetch_add(1) per call */ }\n\n#[test]\nfn jvp_calls_equals_user_callbacks_on_generic_and_matrix_free_lanes() {\n    for lane in [Lane::GenericGmres, Lane::MatrixFree, Lane::MatrixFreeForcedGmresFailure] {\n        let (problem, hits) = counted(prothero_robinson_problem(-1.0e4, 1.0, 0.0).unwrap());\n        let mut work = WorkCounters::default();\n        let _ = run_lane(lane, &problem, &mut work); // failures still charge work\n        let atomic = hits.load(Ordering::SeqCst);\n        assert_eq!(work.jvp_calls, atomic, \"{lane:?}\");\n        assert_eq!(work.jvp_vectors, atomic, \"{lane:?}\");\n    }\n}\n\n#[test]\nfn explicit_jacobian_lane_reports_no_jvp_callbacks() {\n    let mut work = WorkCounters::default();\n    run_lane(Lane::GenericGmres, &prothero_robinson_with_jacobian(), &mut work).unwrap();\n    assert_eq!(work.jvp_calls, 0);\n    assert!(work.jacobian_matvecs > 0);\n}"
+  },
+  {
+   "finding_ids": [
+    "F-049"
+   ],
+   "summary": "Parse and derive the RODAS5P tableau once per process in a std::sync::OnceLock and hand out &'static Rodas5pCoefficients; load_rodas5p_coefficients() stays as a cloning compatibility wrapper for tests and the CLI. StepContext.coeffs becomes &'static Rodas5pCoefficients (field reads keep compiling through auto-deref) and sequential.rs:154/:202, dense_output_v2.rs:82 and stage_batch.rs:173 (plus homotopy.rs, common_w_gate.rs) switch to the cached accessor. Expected effect: removes one serde_json parse of 4430 bytes, about 110 decimal parses, an 8x8 inverse and three matmuls from every step attempt and every interior dense-output sample (the audit's unmeasured estimate is 10-40 us each); results are bit-identical because the derivation is deterministic, only wall time changes, and the additive constant that compresses candidate/baseline ratios toward 1 on small-n corpora disappears.",
+   "files": [
+    "crates/rodas5p-core/src/coefficients.rs",
+    "crates/rodas5p-core/src/lib.rs",
+    "crates/rodas5p-integrators/src/sequential.rs",
+    "crates/rodas5p-integrators/src/dense_output_v2.rs",
+    "crates/rodas5p-integrators/src/stage_batch.rs",
+    "crates/rodas5p-integrators/src/homotopy.rs",
+    "crates/rodas5p-integrators/src/common_w_gate.rs"
+   ],
+   "anchors": [
+    "crates/rodas5p-core/src/coefficients.rs:102-161",
+    "crates/rodas5p-integrators/src/sequential.rs:57",
+    "crates/rodas5p-integrators/src/sequential.rs:154",
+    "crates/rodas5p-integrators/src/sequential.rs:202",
+    "crates/rodas5p-integrators/src/dense_output_v2.rs:64-88",
+    "crates/rodas5p-integrators/src/stage_batch.rs:173"
+   ],
+   "effort": "S",
+   "risk": "low",
+   "verification": "(1) Unit test: rodas5p_coefficients() returns the same pointer twice and equals a fresh parse field-by-field with to_bits(). (2) Scientific checksums of the fair-ab fixed and adaptive screens unchanged before/after. (3) Build exp/D6/coeff_bench.rs against the patched crates and record per-call cost before (full load) and after (pointer read); re-time E-08 robertson n=96 mf_adaptive_reject under the new timing protocol to report the measured share instead of the estimate.",
+   "code_sketch": "use std::sync::OnceLock;\n\nstatic RODAS5P: OnceLock<Result<Rodas5pCoefficients, String>> = OnceLock::new();\n\n/// Process-lifetime tableau; parsed and derived exactly once.\npub fn rodas5p_coefficients() -> CoreResult<&'static Rodas5pCoefficients> {\n    RODAS5P\n        .get_or_init(|| parse_rodas5p_coefficients().map_err(|e| e.to_string()))\n        .as_ref()\n        .map_err(|message| CoreError::Coefficients(message.clone()))\n}\n\n/// Compatibility wrapper (allocates); hot paths must use rodas5p_coefficients().\npub fn load_rodas5p_coefficients() -> CoreResult<Rodas5pCoefficients> {\n    rodas5p_coefficients().cloned()\n}\n\nfn parse_rodas5p_coefficients() -> CoreResult<Rodas5pCoefficients> { /* current body */ }\n\n// sequential.rs\npub struct StepContext<'a> { /* .. */ pub coeffs: &'static Rodas5pCoefficients, /* .. */ }\nlet coeffs = rodas5p_coefficients()?;"
+  },
+  {
+   "finding_ids": [
+    "F-051"
+   ],
+   "summary": "Counting rule for Block GMRES: linear_matvecs and preconditioner_apps remain SOLVER-LEVEL application counts (one apply of the s*n operator = 1), and two vector-unit counters are added, linear_matvec_vectors and preconditioner_vectors, charged in n-vector equivalents (s=8 per block apply, 1 per sequential apply). The unit comes from the object, not the caller: OperatorApplicationWork gains state_vectors (BlockOperator returns s, ShiftedOperator returns 1) and Preconditioner gains application_vectors() (BlockDirectPc and BlockJacobiPc return s); apply_counted/apply_preconditioner charge them. BlockSolveReport gains matvec_vectors/preconditioner_vectors, any block-vs-sequential comparison must read only the *_vectors fields, and unified_screen batch_vectors = 8*block_linear_solves is replaced by the counted value.",
+   "files": [
+    "crates/rodas5p-core/src/operator.rs",
+    "crates/rodas5p-core/src/work.rs",
+    "crates/rodas5p-core/src/solver_types.rs",
+    "crates/rodas5p-integrators/src/block.rs",
+    "crates/rodas5p-integrators/src/unified_screen.rs",
+    "crates/rodas5p-integrators/tests/operator_accounting_contracts.rs"
+   ],
+   "anchors": [
+    "crates/rodas5p-integrators/src/block.rs:551-577",
+    "crates/rodas5p-integrators/src/block.rs:612-636",
+    "crates/rodas5p-integrators/src/block.rs:639-653",
+    "crates/rodas5p-core/src/operator.rs:225-240",
+    "crates/rodas5p-core/src/operator.rs:525-534",
+    "crates/rodas5p-core/src/solver_types.rs:82-86",
+    "crates/rodas5p-integrators/src/unified_screen.rs:591",
+    "crates/rodas5p-integrators/tests/operator_accounting_contracts.rs:31-40"
+   ],
+   "effort": "M",
+   "risk": "low",
+   "verification": "Extend block_gmres_charges_every_stage_jvp_and_mass_action_at_the_operator_site with BlockPreconditioner::Direct: assert delta.linear_matvec_vectors == s*(linear_matvecs+diagnostic_matvecs) == delta.jvp_vectors and delta.preconditioner_vectors == s*delta.preconditioner_apps; add a sequential-GMRES twin asserting linear_matvec_vectors == linear_matvecs. Assert unified_screen batch_vectors equals the counted preconditioner/solve vectors on one SABR block solve.",
+   "code_sketch": "pub trait Preconditioner: Send + Sync {\n    fn dimension(&self) -> usize;\n    fn apply(&self, x: &[f64], y: &mut [f64]) -> CoreResult<()>;\n    /// n-vector equivalents solved by one apply (s for stage-block preconditioners).\n    fn application_vectors(&self) -> u64 { 1 }\n}\npub fn apply_preconditioner(p: &dyn Preconditioner, x: &[f64], y: &mut [f64],\n                            c: &mut WorkCounters) -> CoreResult<()> {\n    p.apply(x, y)?;\n    c.preconditioner_apps += 1;                               // solver-level\n    c.preconditioner_vectors += p.application_vectors();      // vector-level\n    Ok(())\n}\n// apply_counted, Krylov/Refresh/Diagnostic arms:\nlet w = op.application_work();\ncounters.linear_matvec_vectors += w.state_vectors.max(1);\nw.charge(counters);\n// block.rs\nimpl Preconditioner for BlockDirectPc { fn application_vectors(&self) -> u64 { self.s as u64 } }"
+  },
+  {
+   "finding_ids": [
+    "F-050"
+   ],
+   "summary": "Counting rule for failed trials: every attempt (accepted, rejected by the embedded estimate, or aborted by NonFinite/LinearSolve) charges all of its WorkCounters to the trajectory total and nothing is ever rolled back, which is the behaviour E-08 already observed on the production lanes. In g4_s5b0_regime_atlas::run_trajectory, merge the whole step_counters into a trajectory total immediately after the trial returns (before any `continue`), emit the totals plus an accepted/rejected/failed split in G4S5B0TrajectorySummary, and keep per-accepted-step rows as they are. Until regenerated, mark outputs of this runner `legacy-accepted-only-work` so its R-JF cost figures are not compared with the v3.x attempt-row runners. Same rule for error returns: a path that returns Err must leave the caller's counters charged (E-08 notes the fixed direct path drops them).",
+   "files": [
+    "crates/rodas5p-integrators/src/g4_s5b0_regime_atlas.rs",
+    "crates/rodas5p-cli/src/main.rs",
+    "README.md"
+   ],
+   "anchors": [
+    "crates/rodas5p-integrators/src/g4_s5b0_regime_atlas.rs:1665-1690",
+    "crates/rodas5p-integrators/src/g4_s5b0_regime_atlas.rs:1692-1710",
+    "crates/rodas5p-integrators/src/g4_s5b0_regime_atlas.rs:1733-1749",
+    "crates/rodas5p-integrators/src/g4_s5b0_regime_atlas.rs:1780-1794",
+    "exp/E-08/README.md (forced failures counted, never rolled back)"
+   ],
+   "effort": "S",
+   "risk": "low",
+   "verification": "New test: run the atlas trajectory on a profile with h0 forced large enough to reject at least once, with rhs/jvp closures wrapped in AtomicU64; assert summary.total_rhs_evaluations == atomic rhs, summary.total_jvp_vectors == atomic jvp, rejected_steps > 0, and total > sum of accepted rows. Must fail on b3e8165 where rejected/failed work is absent from the summary.",
+   "code_sketch": "let rodas_wall = start.elapsed().as_secs_f64();\n// Charge the attempt before looking at its outcome: failed and rejected work is real work.\ntotal_work = total_work.saturating_add(&step_counters);\ntotal_wall_seconds += rodas_wall;\nlet report = match trial {\n    Ok(report) => report,\n    Err(CoreError::NonFinite(_) | CoreError::LinearSolve(_)) => {\n        failed_work = failed_work.saturating_add(&step_counters);\n        rejected += 1;\n        h *= adaptive.min_factor;\n        continue;\n    }\n    Err(error) => { failure = Some(error.to_string()); break; }\n};\n// .. rejected branch: rejected_work = rejected_work.saturating_add(&step_counters);\n// summary: total_rhs_evaluations, total_jvp_vectors, total_linear_matvecs,\n//          rejected_* and failed_* splits, explicit_jacobian_builds = total_work.jacobian_builds"
+  },
+  {
+   "finding_ids": [
+    "F-052",
+    "F-056"
+   ],
+   "summary": "Two-tier comparator policy. Tier A (minimum fairness, required before any RODAS5P-vs-comparator front on RhsCalls, DirectFactorizations or WallSeconds may be read as performance): Newton stopping tolerance scaled by the outer tolerance (SciPy Radau rule kappa = max(10*eps/rtol, min(0.03, sqrt(rtol))), CVODE-style 0.1 for BDF) measured in the same atol/rtol WRMS norm, and Jacobian/LU reuse across Newton iterations and across steps with refactorization only on h*gamma change beyond a threshold or on slow convergence, so direct_factorizations reflects a modified-Newton implementation. Tier B (what ships today): every record, front and attainment produced with NewtonConfig::default() or RadauConfig::default() carries comparator_fidelity = \"reference-implementation-only\" and mixed fronts carry comparative_reading = \"forbidden\"; the fair-ab writer and the G3/unified gates refuse to emit a relative-performance verdict against a Tier-B comparator. This turns the README.md:27 disclosure into a machine-checked field.",
+   "files": [
+    "crates/rodas5p-integrators/src/nonlinear.rs",
+    "crates/rodas5p-integrators/src/radau.rs",
+    "crates/rodas5p-integrators/src/bdf.rs",
+    "crates/rodas5p-fair-ab/src/global_error.rs",
+    "crates/rodas5p-fair-ab/src/adaptive_global_error.rs",
+    "README.md"
+   ],
+   "anchors": [
+    "crates/rodas5p-integrators/src/nonlinear.rs:20-32",
+    "crates/rodas5p-integrators/src/nonlinear.rs:154-170",
+    "crates/rodas5p-integrators/src/nonlinear.rs:231-246",
+    "crates/rodas5p-integrators/src/radau.rs:116-127",
+    "crates/rodas5p-fair-ab/src/global_error.rs:1225-1228",
+    "crates/rodas5p-fair-ab/src/global_error.rs:1296",
+    "crates/rodas5p-fair-ab/src/global_error.rs:1548",
+    "crates/rodas5p-fair-ab/src/global_error.rs:1695-1699",
+    "README.md:27"
+   ],
+   "effort": "L",
+   "risk": "medium",
+   "verification": "Tier B (XS, ship first): schema test that every comparator row serializes comparator_fidelity and that a gate given a reference-only comparator returns NotEvaluated instead of Promote/Block. Tier A: (1) Radau IIA3 and BDF2 on Prothero-Robinson and robertson at rtol 1e-4 vs 1e-8 must show Newton iterations per step decreasing with looser rtol while global error stays within the fair-ab tolerance band; (2) direct_factorizations per accepted step < 1 on a constant-h linear problem; (3) frozen scientific checksums of the existing Tier-B runs unchanged because the default configs are kept under the reference-only label.",
+   "code_sketch": "#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]\n#[serde(rename_all = \"kebab-case\")]\npub enum ComparatorFidelity { ReferenceImplementationOnly, ToleranceScaledReuse }\n\nimpl NewtonConfig {\n    /// Tier-A stopping rule: converge the nonlinear solve only as far as the\n    /// outer error test can see.\n    pub fn scaled_to_outer(outer_atol: f64, outer_rtol: f64) -> Self {\n        let kappa = (10.0 * f64::EPSILON / outer_rtol).max(0.03_f64.min(outer_rtol.sqrt()));\n        Self { atol: kappa * outer_atol, rtol: kappa * outer_rtol, ..Self::default() }\n    }\n}\n\npub struct NewtonLinearCache {            // owned by the stepper, survives across steps\n    factor: Option<LuFactorization>,\n    h_gamma: f64,\n    jacobian_age_steps: usize,\n}\n// refactor iff |h_gamma/cached - 1| > 0.2, or contraction rate > 0.9, or age > 20;\n// counters.direct_factorizations += 1 only when a factorization really happens."
+  },
+  {
+   "finding_ids": [
+    "F-056"
+   ],
+   "summary": "The RadauIIA3 error estimate factorizes (mu/h)M - J on every trial in addition to the 3n stage system; that matrix is exactly SciPy's LU_real, which a faithful Radau already owns. Minimal fix: cache the estimator LU in the step kernel keyed on (h bits, frozen-Jacobian token) so rejections with unchanged h/J and the previous_local_rejection re-solve reuse it, and charge it to a separate estimator_factorizations counter so direct_factorizations-based comparisons can exclude or include it explicitly. Full fix (part of Tier A above): replace the dense 3n real Newton system by the standard real/complex split, one n x n real LU shared with the estimate plus one n x n complex LU, roughly 5 n^3/3-equivalents instead of 27 n^3/3 + n^3/3 per factorization event. Until then frozen-radau-iia3 stays reference-implementation-only in the G3 and unified gates.",
+   "files": [
+    "crates/rodas5p-integrators/src/radau.rs",
+    "crates/rodas5p-core/src/work.rs"
+   ],
+   "anchors": [
+    "crates/rodas5p-integrators/src/radau.rs:403-414",
+    "crates/rodas5p-integrators/src/radau.rs:421-432",
+    "crates/rodas5p-integrators/src/nonlinear.rs:154-165"
+   ],
+   "effort": "M",
+   "risk": "medium",
+   "verification": "Unit test on a linear constant-coefficient problem with a forced rejection followed by a retry at the same h: estimator_factorizations == 1 across both trials, error_norm bit-identical to the uncached path. For the split form: stage values and embedded error agree with the 3n formulation to 1e-12 relative on Prothero-Robinson and robertson, and direct_factorizations per accepted step drops accordingly.",
+   "code_sketch": "struct EstimatorLuCache { h_bits: u64, jacobian_token: u64, factor: LuFactorization }\n\nfn estimator_factor<'c>(cache: &'c mut Option<EstimatorLuCache>, mass: &DenseMatrix,\n    jacobian: &DenseMatrix, token: u64, h: f64, mu: f64, counters: &mut WorkCounters,\n) -> CoreResult<&'c LuFactorization> {\n    let hit = cache.as_ref()\n        .is_some_and(|c| c.h_bits == h.to_bits() && c.jacobian_token == token);\n    if !hit {\n        let op = mass.scale(mu / h).combine(jacobian, -1.0)?;\n        counters.estimator_factorizations += 1;   // reported separately from stage LUs\n        *cache = Some(EstimatorLuCache { h_bits: h.to_bits(), jacobian_token: token,\n                                         factor: LuFactorization::new(&op)? });\n    }\n    Ok(&cache.as_ref().expect(\"filled above\").factor)\n}"
+  },
+  {
+   "finding_ids": [
+    "F-053"
+   ],
+   "summary": "Replace `median ratio >= 1.15` by a paired timing protocol with a dispersion-aware decision. Per case: at least 2 warmups (batch size calibrated from the MINIMUM warmup sample, not the last), then at least 30 interleaved candidate/reference pairs in seeded random ABBA order on one pinned thread; the statistic is the median of per-pair log(reference/candidate), with a seeded case-clustered bootstrap (B=10000, percentile 95% CI) for the corpus-level speedup. Decision is three-valued: Promote iff CI lower bound >= 1.15, Block iff CI upper bound < 1.15, otherwise Inconclusive; an A/A control (reference vs reference) is run in the same session and the whole timing is declared non-authoritative if its CI excludes 1.0 or its half-width exceeds ln(1.15)/2. Smoke profiles (repetitions=1, warmups=0) and single-sample parallel timings may never emit Promote/Block on wall time, WallSeconds fronts are built only from authoritative reports, and each report records host metadata (CPU model, governor, load average, thread count, pinning).",
+   "files": [
+    "crates/rodas5p-fair-ab/src/global_error.rs",
+    "crates/rodas5p-fair-ab/src/adaptive_global_error.rs",
+    "crates/rodas5p-fair-ab/src/timing_protocol.rs",
+    "crates/rodas5p-cli/src/main.rs",
+    "crates/rodas5p-integrators/src/stage_batch.rs"
+   ],
+   "anchors": [
+    "crates/rodas5p-fair-ab/src/adaptive_global_error.rs:728-753",
+    "crates/rodas5p-fair-ab/src/global_error.rs:757-800",
+    "crates/rodas5p-fair-ab/src/global_error.rs:991-997",
+    "crates/rodas5p-fair-ab/src/global_error.rs:1721-1792",
+    "crates/rodas5p-fair-ab/src/global_error.rs:1794-1812",
+    "crates/rodas5p-cli/src/main.rs:783-784",
+    "crates/rodas5p-cli/src/main.rs:1080-1113",
+    "crates/rodas5p-cli/src/main.rs:1491-1496"
+   ],
+   "effort": "M",
+   "risk": "medium",
+   "verification": "(1) Deterministic unit tests on synthetic samples: true ratio 1.30 with 5% noise -> Promote; true ratio 1.15 with the v3.6 recorded spread (pair ratios 0.547-4.43) -> Inconclusive; identical arms -> A/A CI contains 1.0; same seed -> identical CI bits. (2) Test that the Smoke profile yields NotEvaluated for the wall blocker. (3) Experiment: rerun the v3.6 N=384 paired-wall case under the new protocol after the OnceLock fix and record CI width; the gate is usable only if the A/A half-width is below ln(1.15)/2.",
+   "code_sketch": "pub enum WallVerdict { Promote, Block, Inconclusive, NotEvaluated }\n\n/// log_ratios[case][pair] = ln(reference_seconds / candidate_seconds)\npub fn bootstrap_speedup_ci(log_ratios: &[Vec<f64>], seed: u64, draws: usize) -> (f64, f64) {\n    let mut rng = Pcg64Mcg::seed_from_u64(seed);\n    let mut stats = Vec::with_capacity(draws);\n    for _ in 0..draws {\n        let mut medians = Vec::with_capacity(log_ratios.len());\n        for _ in 0..log_ratios.len() {                       // resample cases\n            let case = &log_ratios[rng.random_range(0..log_ratios.len())];\n            let mut draw: Vec<f64> = (0..case.len())         // resample pairs\n                .map(|_| case[rng.random_range(0..case.len())]).collect();\n            draw.sort_by(f64::total_cmp);\n            medians.push(quantile_sorted(&draw, 0.5));\n        }\n        medians.sort_by(f64::total_cmp);\n        stats.push(quantile_sorted(&medians, 0.5));\n    }\n    stats.sort_by(f64::total_cmp);\n    (quantile_sorted(&stats, 0.025).exp(), quantile_sorted(&stats, 0.975).exp())\n}\npub fn decide(ci: (f64, f64), threshold: f64) -> WallVerdict {\n    if ci.0 >= threshold { WallVerdict::Promote }\n    else if ci.1 < threshold { WallVerdict::Block } else { WallVerdict::Inconclusive }\n}"
+  }
+ ]
+}
