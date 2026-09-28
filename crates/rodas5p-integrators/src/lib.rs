@@ -104,9 +104,9 @@ pub use audit2_stage_certificate_research::{
 
 pub use adaptive::{
     AdaptiveControllerState, AdaptiveFailureKind, AdaptiveObservedIntegrationResult,
-    AdaptiveRunDiagnostics, AdaptiveStepConfig, ControllerKind, RODAS5P_ESTIMATOR_ORDER,
-    StepDoublingEstimate, adaptive_next_step_after_attempt, rodas_next_step_after_attempt,
-    step_doubling_wrms_error,
+    AdaptiveRunDiagnostics, AdaptiveStepConfig, CLIPPED_SAMPLE_INFORMATIVE_RATIO, ControllerKind,
+    RODAS5P_ESTIMATOR_ORDER, StepDoublingEstimate, adaptive_next_step_after_attempt,
+    rodas_next_step_after_attempt, step_doubling_wrms_error,
 };
 pub use adaptive_exponential::{
     AdaptiveEarlyFlowDefectAttempt, AdaptiveEarlyFlowDefectOutcome,
