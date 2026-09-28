@@ -12,7 +12,8 @@ mod work;
 
 pub use coefficients::{
     CoefficientPrecisionAvailability, RODAS5P_COEFFICIENT_SNAPSHOT_SCHEMA_VERSION,
-    Rodas5pCoefficientProvenance, Rodas5pCoefficients, load_rodas5p_coefficients,
+    RODAS5P_COEFFICIENT_SNAPSHOT_SHA256, Rodas5pCoefficientProvenance, Rodas5pCoefficients,
+    load_rodas5p_coefficients, rodas5p_coefficients,
 };
 pub use error::{CoreError, CoreResult};
 pub use hash::sha256_hex;

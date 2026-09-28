@@ -1,9 +1,22 @@
+use std::sync::OnceLock;
+
 use serde::Deserialize;
 
-use crate::{CoreError, CoreResult, DenseMatrix, inverse};
+use crate::{CoreError, CoreResult, DenseMatrix, inverse, sha256_hex};
 
 pub const RODAS5P_COEFFICIENT_SNAPSHOT_SCHEMA_VERSION: &str =
     "vigilode-rodas5p-coefficient-snapshot-v2";
+
+/// SHA-256 of `fixtures/rodas5p_coefficients_snapshot.json`, checked at the single load.
+///
+/// The upstream `author_source_sha256` and `parity_source_sha256` fields name
+/// files that are not vendored in this repository, so they are checked for
+/// form only; this digest binds the bytes the tableau is actually parsed from.
+pub const RODAS5P_COEFFICIENT_SNAPSHOT_SHA256: &str =
+    "211255f6125b648c6955833c3da537d9c031ec78168b2918563c29fa88c8bce6";
+
+const RODAS5P_COEFFICIENT_SNAPSHOT: &str =
+    include_str!("../../../fixtures/rodas5p_coefficients_snapshot.json");
 
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -99,11 +112,53 @@ fn parse_matrix(rows: Vec<Vec<String>>) -> CoreResult<DenseMatrix> {
     DenseMatrix::from_vec_rows(parsed?)
 }
 
+static RODAS5P_COEFFICIENTS: OnceLock<Result<Rodas5pCoefficients, String>> = OnceLock::new();
+
+/// The process-lifetime RODAS5P tableau, parsed, verified and derived once.
+///
+/// Step construction and dense output used to re-parse the JSON snapshot and
+/// re-invert `Gamma^-1` on every call (audit F-049). The derivation is
+/// deterministic, so the cached tableau is bit-identical to a fresh one.
+pub fn rodas5p_coefficients() -> CoreResult<&'static Rodas5pCoefficients> {
+    RODAS5P_COEFFICIENTS
+        .get_or_init(|| {
+            parse_rodas5p_coefficients(RODAS5P_COEFFICIENT_SNAPSHOT).map_err(|error| match error {
+                CoreError::Coefficients(message) => message,
+                other => other.to_string(),
+            })
+        })
+        .as_ref()
+        .map_err(|message| CoreError::Coefficients(message.clone()))
+}
+
+/// Owned copy of the cached tableau, kept for callers that need ownership.
 pub fn load_rodas5p_coefficients() -> CoreResult<Rodas5pCoefficients> {
-    let raw: RawCoefficients = serde_json::from_str(include_str!(
-        "../../../fixtures/rodas5p_coefficients_snapshot.json"
-    ))
-    .map_err(|e| CoreError::Coefficients(e.to_string()))?;
+    rodas5p_coefficients().cloned()
+}
+
+fn is_lower_hex_sha256(value: &str) -> bool {
+    value.len() == 64
+        && value
+            .bytes()
+            .all(|byte| byte.is_ascii_digit() || (b'a'..=b'f').contains(&byte))
+}
+
+fn parse_rodas5p_coefficients(snapshot: &str) -> CoreResult<Rodas5pCoefficients> {
+    let digest = sha256_hex(snapshot.as_bytes());
+    if digest != RODAS5P_COEFFICIENT_SNAPSHOT_SHA256 {
+        return Err(CoreError::Coefficients(format!(
+            "RODAS5P coefficient snapshot digest {digest} differs from the pinned {RODAS5P_COEFFICIENT_SNAPSHOT_SHA256}"
+        )));
+    }
+    let raw: RawCoefficients =
+        serde_json::from_str(snapshot).map_err(|e| CoreError::Coefficients(e.to_string()))?;
+    if !is_lower_hex_sha256(&raw.provenance.author_source_sha256)
+        || !is_lower_hex_sha256(&raw.provenance.parity_source_sha256)
+    {
+        return Err(CoreError::Coefficients(
+            "RODAS5P coefficient provenance digests must be lowercase 64-hex".into(),
+        ));
+    }
     if raw.schema_version != RODAS5P_COEFFICIENT_SNAPSHOT_SCHEMA_VERSION {
         return Err(CoreError::Coefficients(format!(
             "unsupported RODAS5P coefficient snapshot schema: {}",
@@ -158,4 +213,49 @@ pub fn load_rodas5p_coefficients() -> CoreResult<Rodas5pCoefficients> {
         dense_h,
         dense_d,
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn a_tampered_snapshot_is_rejected_before_parsing() {
+        let tampered =
+            RODAS5P_COEFFICIENT_SNAPSHOT.replacen("0.21193756319429014", "0.2119375631942902", 1);
+        assert_ne!(tampered, RODAS5P_COEFFICIENT_SNAPSHOT);
+        assert!(matches!(
+            parse_rodas5p_coefficients(&tampered),
+            Err(CoreError::Coefficients(message)) if message.contains("digest")
+        ));
+    }
+
+    #[test]
+    fn the_cached_tableau_equals_a_fresh_derivation_bit_for_bit() {
+        let cached = rodas5p_coefficients().unwrap();
+        let fresh = parse_rodas5p_coefficients(RODAS5P_COEFFICIENT_SNAPSHOT).unwrap();
+        let bits = |values: &[f64]| values.iter().map(|v| v.to_bits()).collect::<Vec<_>>();
+        assert_eq!(cached.gamma.to_bits(), fresh.gamma.to_bits());
+        for (a, b) in [
+            (&cached.a, &fresh.a),
+            (&cached.c_matrix, &fresh.c_matrix),
+            (&cached.gamma_matrix, &fresh.gamma_matrix),
+            (&cached.alpha, &fresh.alpha),
+            (&cached.beta, &fresh.beta),
+            (&cached.l, &fresh.l),
+            (&cached.dense_h, &fresh.dense_h),
+            (&cached.dense_d, &fresh.dense_d),
+        ] {
+            assert_eq!(bits(a.as_slice()), bits(b.as_slice()));
+        }
+        for (a, b) in [
+            (&cached.c, &fresh.c),
+            (&cached.b_code, &fresh.b_code),
+            (&cached.b, &fresh.b),
+            (&cached.btilde, &fresh.btilde),
+            (&cached.gamma_rows, &fresh.gamma_rows),
+        ] {
+            assert_eq!(bits(a), bits(b));
+        }
+    }
 }
