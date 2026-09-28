@@ -84,6 +84,13 @@ pub fn solve_lgmres_with_workspace_and_residual_scale(
 
         workspace.common.prepare(n);
         if let Some(initial) = x0.or(state.previous_solution.as_deref()) {
+            // `x0` is validated by `validate_system`; only a corrupt state can trip this.
+            if initial.len() != n {
+                return Err(CoreError::Dimension(format!(
+                    "LGMRES warm start has length {} but the system has dimension {n}",
+                    initial.len()
+                )));
+            }
             workspace.common.x.copy_from_slice(initial);
         }
         let right_norm = selected_residual_norm(rhs, residual_scale)?;

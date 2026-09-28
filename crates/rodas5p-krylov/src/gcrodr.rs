@@ -421,6 +421,14 @@ pub fn solve_gcrodr_with_workspace_and_residual_scale(
         if local.image.len() != local.basis.len() {
             local.image.clear();
         }
+        let same_system =
+            system_identity.is_some() && local.system_identity.as_ref() == system_identity.as_ref();
+        if !same_system {
+            // A warm start solves the system it came from. After a dimension,
+            // operator, or preconditioner change it would seed a different
+            // system (audit F-010), so it is dropped exactly as LGMRES does.
+            local.previous_solution = None;
+        }
         if !local.basis.is_empty() {
             if system_identity.is_some()
                 && local.system_identity.as_ref() == system_identity.as_ref()
@@ -460,6 +468,13 @@ pub fn solve_gcrodr_with_workspace_and_residual_scale(
         let right_norm = selected_residual_norm(rhs, residual_scale)?;
         let threshold = config.atol.max(config.rtol * right_norm);
         if let Some(initial) = x0.or(local.previous_solution.as_deref()) {
+            // `x0` is validated by `validate_system`; only a corrupt state can trip this.
+            if initial.len() != n {
+                return Err(CoreError::Dimension(format!(
+                    "GCRO-DR warm start has length {} but the system has dimension {n}",
+                    initial.len()
+                )));
+            }
             workspace.common.x.copy_from_slice(initial);
         }
         let mut total = 0usize;
