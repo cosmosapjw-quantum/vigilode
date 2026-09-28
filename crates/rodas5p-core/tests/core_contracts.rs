@@ -339,3 +339,37 @@ fn linear_operator_row_application_rejects_ragged_shapes() {
     let mut outputs = vec![vec![0.0; 2]; 2];
     assert!(op.apply_rows(&inputs, &mut outputs).is_err());
 }
+
+#[test]
+fn linear_solver_config_rejects_non_finite_tolerances() {
+    // Audit F-034: the sign-only check let NaN and +/-Inf through to every kernel.
+    for bad in [f64::NAN, f64::INFINITY, f64::NEG_INFINITY, -0.5] {
+        let rtol = rodas5p_core::LinearSolverConfig {
+            rtol: bad,
+            ..rodas5p_core::LinearSolverConfig::default()
+        };
+        let message = rtol
+            .validate()
+            .expect_err("non-finite rtol must be rejected");
+        assert!(message.contains("finite"), "{message}");
+        let atol = rodas5p_core::LinearSolverConfig {
+            atol: bad,
+            ..rodas5p_core::LinearSolverConfig::default()
+        };
+        let message = atol
+            .validate()
+            .expect_err("non-finite atol must be rejected");
+        assert!(message.contains("finite"), "{message}");
+    }
+    let boundary = rodas5p_core::LinearSolverConfig {
+        rtol: 0.0,
+        atol: 0.0,
+        ..rodas5p_core::LinearSolverConfig::default()
+    };
+    assert!(boundary.validate().is_ok());
+    assert!(
+        rodas5p_core::LinearSolverConfig::default()
+            .validate()
+            .is_ok()
+    );
+}
