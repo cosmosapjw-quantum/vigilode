@@ -621,15 +621,26 @@ impl LinearOperator for BlockOperator<'_, '_, '_> {
     }
     fn application_work(&self) -> OperatorApplicationWork {
         let stage_vectors = self.system.s as u64;
+        // One Jacobian application per stage, charged with the provenance the
+        // Jacobian declares (a JVP callback or an explicit product); an
+        // undeclared Jacobian keeps the role-based JVP count (audit F-048).
+        let declared = self.system.context.jacobian.application_work();
+        let (jvp_per_stage, jacobian_per_stage) = if declared == OperatorApplicationWork::default()
+        {
+            (1, 0)
+        } else {
+            (declared.jvp_calls, declared.jacobian_matvecs)
+        };
         OperatorApplicationWork {
-            jvp_calls: stage_vectors,
-            jvp_vectors: stage_vectors,
+            jvp_calls: stage_vectors.saturating_mul(jvp_per_stage),
+            jvp_vectors: stage_vectors.saturating_mul(jvp_per_stage),
             mass_matvecs: if self.system.context.problem.mass_matrix.is_some() {
                 stage_vectors
             } else {
                 0
             },
             block_matvecs: 1,
+            jacobian_matvecs: stage_vectors.saturating_mul(jacobian_per_stage),
         }
     }
     fn token(&self) -> u64 {

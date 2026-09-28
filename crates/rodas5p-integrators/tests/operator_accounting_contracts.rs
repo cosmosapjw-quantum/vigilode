@@ -33,8 +33,12 @@ fn block_gmres_charges_every_stage_jvp_and_mass_action_at_the_operator_site() {
         .linear_matvecs
         .saturating_add(delta.diagnostic_matvecs);
     let expected_stage_vectors = (system.s as u64) * flattened_operator_vectors;
-    assert_eq!(delta.jvp_calls, expected_stage_vectors);
-    assert_eq!(delta.jvp_vectors, expected_stage_vectors);
+    // WU-7 (audit F-048): this problem supplies an explicit Jacobian, so the
+    // stage products are explicit Jacobian products, not JVP callbacks. They
+    // were counted as jvp_calls = jvp_vectors = 136 before the contract.
+    assert_eq!(delta.jvp_calls, 0);
+    assert_eq!(delta.jvp_vectors, 0);
+    assert_eq!(delta.jacobian_matvecs, expected_stage_vectors);
     assert_eq!(delta.mass_matvecs, expected_stage_vectors);
     assert_eq!(delta.block_matvecs, flattened_operator_vectors);
 }
