@@ -1,0 +1,27 @@
+[
+  {
+    "attempt": "attempt-001",
+    "command": "python3 -B tools/run_audit2_stage_certificate_formal.py --run-dir .../attempt-001 --mathlib-project /home/cosmosapjw/Dropbox/bianchi/htt_base/formal_mathlib",
+    "exit_code": 2,
+    "disposition": "ORCHESTRATOR_NOT_FOUND",
+    "detail": "The runner had been accidentally written to /home/cosmosapjw/vigilode before its absolute isolated-worktree reapplication; no formal backend was launched."
+  },
+  {
+    "attempt": "attempt-002",
+    "exit_code": 3,
+    "disposition": "FORMAL_CHECK_FAILED",
+    "detail": "Wolfram, Sage, Singular passed; Lean rejected an input outside the Lake root and Rocq rejected the obsolete -outputdir option."
+  },
+  {
+    "attempt": "attempt-003",
+    "exit_code": 3,
+    "disposition": "FORMAL_CHECK_FAILED",
+    "detail": "Wolfram, Sage, Singular passed; Lean source literals/proofs failed and Rocq record equality exposed noncanonical zero denominators."
+  },
+  {
+    "attempt": "attempt-004",
+    "exit_code": 3,
+    "disposition": "FORMAL_CHECK_FAILED_FINAL_RETRY",
+    "detail": "Wolfram, Sage, Singular passed; Lean F01 finite-inverse/F04 simplification and Rocq F03 Qle proof remain failing. Bounded repair/retry budget exhausted."
+  }
+]

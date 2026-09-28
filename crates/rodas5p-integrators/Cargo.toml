@@ -9,6 +9,7 @@ license.workspace = true
 default = []
 audit2-research = []
 audit2-bateman-authority = ["audit2-research", "dep:serde_json"]
+audit2-stage-certificate = ["audit2-research", "dep:serde_json", "dep:sha2"]
 
 [dependencies]
 faer.workspace = true
@@ -17,6 +18,7 @@ rodas5p-krylov = { path = "../rodas5p-krylov" }
 rayon.workspace = true
 serde.workspace = true
 serde_json = { workspace = true, optional = true }
+sha2 = { workspace = true, optional = true }
 thiserror.workspace = true
 
 [dev-dependencies]
@@ -31,6 +33,11 @@ required-features = ["audit2-research"]
 name = "audit2_real_client_authority_contracts"
 path = "tests/audit2_real_client_authority_contracts.rs"
 required-features = ["audit2-bateman-authority"]
+
+[[test]]
+name = "audit2_stage_certificate_contracts"
+path = "tests/audit2_stage_certificate_contracts.rs"
+required-features = ["audit2-stage-certificate"]
 
 [[example]]
 name = "audit2_bateman_local_six_case"

@@ -1,0 +1,13 @@
+// F02 numerator-pattern cross-check only.  The full rational identities are
+// authoritative in Wolfram Language and SageMath; denominators 2 and 3 are
+// nonzero exact constants for the declared Jacobi map.
+ring r = 0,(u),dp;
+matrix leftDeviationNumerator[2][2] = 0,u,0,0;
+matrix rightDeviationNumerator[2][2] = 0,u,0,0;
+matrix leftSquare = leftDeviationNumerator*leftDeviationNumerator;
+matrix rightSquare = rightDeviationNumerator*rightDeviationNumerator;
+if (leftSquare[1,1] != 0 || leftSquare[1,2] != 0 || leftSquare[2,1] != 0 || leftSquare[2,2] != 0) { ERROR("left numerator is not square-zero"); }
+if (rightSquare[1,1] != 0 || rightSquare[1,2] != 0 || rightSquare[2,1] != 0 || rightSquare[2,2] != 0) { ERROR("right numerator is not square-zero"); }
+print("F02_SINGULAR_NUMERATOR_PATTERN_SQUARE_ZERO");
+print("SINGULAR_FORMAL_PASS");
+quit;
