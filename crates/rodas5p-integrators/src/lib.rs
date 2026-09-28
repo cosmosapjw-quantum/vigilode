@@ -8,6 +8,8 @@ mod audit2_matrix_free_research;
 pub mod audit2_research;
 #[cfg(feature = "audit2-research")]
 mod audit2_reusable_transaction_research;
+#[cfg(feature = "audit2-stage-certificate")]
+pub mod audit2_stage_certificate_research;
 
 mod a1_two_arm_receipt;
 mod adaptive;
@@ -89,6 +91,15 @@ pub use audit2_reusable_transaction_research::{
     assess_audit2_reference_aware_output, audit2_conservative_l2_difference_upper,
     audit2_conservative_output_budget_lower,
     run_audit2_reusable_preconditioner_transactional_attempt,
+};
+#[cfg(feature = "audit2-stage-certificate")]
+pub use audit2_stage_certificate_research::{
+    Audit2StageCertificateError, FrozenJsonDocument, StageCertificateDecision,
+    StageCertificateInput, StageCertificateNorm, StageCertificatePartialFailure,
+    StageCertificateProvenance, StageCertificateReceipt, StageCertificateReceiptAuthority,
+    StageCertificateStageTrace, StageCertificateTrace, StageCertificateWork,
+    audit2_stage_certificate_digest_f64_bits, canonical_json_sha256,
+    evaluate_audit2_stage_certificate, retain_completed_stage_traces,
 };
 
 pub use adaptive::{
