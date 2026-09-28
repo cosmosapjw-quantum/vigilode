@@ -352,11 +352,20 @@ fn hard_stop_landing_is_controller_neutral_while_ordinary_outputs_are_not_landin
     let mut controller = AdaptiveControllerState::default();
     // `trial_h` is the hard-stop landing; the dense path wires this boolean
     // only for a true breakpoint, never for an ordinary output time.
+    // WU-6 (F-006): a landing at half the request is an informative sample.
+    // It enters the history and may raise the request (0.05 * max_factor),
+    // where it used to be discarded and the request frozen at 0.1.
     let next =
         rodas_next_step_after_attempt(&mut controller, &config, 0.1, 0.05, 1.0e-12, true, true)
             .unwrap();
+    assert_eq!(next.to_bits(), 0.5_f64.to_bits());
+    assert_eq!(controller.previous_accepted_error(), Some(1.0e-12));
+    // A sliver landing is still neutral: request kept, history untouched.
+    let mut sliver = AdaptiveControllerState::default();
+    let next = rodas_next_step_after_attempt(&mut sliver, &config, 0.1, 0.01, 1.0e-12, true, true)
+        .unwrap();
     assert_eq!(next.to_bits(), 0.1_f64.to_bits());
-    assert_eq!(controller.previous_accepted_error(), None);
+    assert_eq!(sliver.previous_accepted_error(), None);
 }
 
 #[test]

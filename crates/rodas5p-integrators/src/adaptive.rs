@@ -260,11 +260,22 @@ impl AdaptiveControllerState {
     }
 }
 
+/// A clipped trial at least this fraction of the remembered request is an
+/// informative error sample; a shorter landing (a sliver) is not.
+pub const CLIPPED_SAMPLE_INFORMATIVE_RATIO: f64 = 0.5;
+
 /// Update a method-bound controller after one attempted step.
 ///
-/// A forced output landing is a scheduling artifact, not an error-estimator
-/// sample: a successful clipped trial restores the precise unclipped request
-/// and leaves PI history untouched. Rejections always scale the actual trial.
+/// The factor is proposed before an accepted error is recorded, so a PI
+/// controller combines the current error with the previous accepted one.
+///
+/// A forced output landing remembers the pre-clip request.  A sliver landing
+/// (`trial_h < CLIPPED_SAMPLE_INFORMATIVE_RATIO * requested_h`) leaves the
+/// request and PI history untouched and can only raise the request.  An
+/// informative clipped sample enters the history; if it predicts rejection of
+/// the remembered request it lowers the request, never below the accepted
+/// trial, and otherwise it may only raise it.  Rejections always scale the
+/// actual trial.
 #[allow(clippy::too_many_arguments)]
 pub fn adaptive_next_step_after_attempt(
     controller: &mut AdaptiveControllerState,
@@ -277,11 +288,21 @@ pub fn adaptive_next_step_after_attempt(
     forced_output_clipped: bool,
 ) -> CoreResult<f64> {
     if accepted {
-        if forced_output_clipped {
-            return Ok(requested_h);
+        let factor = controller.propose_factor(config, error, estimator_order, true)?;
+        if !forced_output_clipped {
+            controller.record_acceptance(error)?;
+            return Ok(trial_h * factor);
         }
-        controller.record_acceptance(error)?;
-        return Ok(trial_h * controller.propose_factor(config, error, estimator_order, true)?);
+        let candidate = trial_h * factor;
+        let ratio = trial_h / requested_h;
+        if ratio >= CLIPPED_SAMPLE_INFORMATIVE_RATIO {
+            controller.record_acceptance(error)?;
+            let predicted = error * ratio.powf(-(estimator_order as f64));
+            if predicted > 1.0 {
+                return Ok(candidate.max(trial_h).min(requested_h));
+            }
+        }
+        return Ok(requested_h.max(candidate));
     }
     if error.is_finite() {
         controller.record_rejection(error)?;
