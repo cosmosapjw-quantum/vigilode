@@ -270,8 +270,8 @@ pub const CLIPPED_SAMPLE_INFORMATIVE_RATIO: f64 = 0.5;
 /// controller combines the current error with the previous accepted one.
 ///
 /// A forced output landing remembers the pre-clip request.  A sliver landing
-/// (`trial_h < CLIPPED_SAMPLE_INFORMATIVE_RATIO * requested_h`) leaves the
-/// request and PI history untouched and can only raise the request.  An
+/// (`trial_h < CLIPPED_SAMPLE_INFORMATIVE_RATIO * requested_h`) returns that
+/// request unchanged and leaves PI history untouched.  An
 /// informative clipped sample enters the history; if it predicts rejection of
 /// the remembered request it lowers the request, never below the accepted
 /// trial, and otherwise it may only raise it.  Rejections always scale the
@@ -293,14 +293,15 @@ pub fn adaptive_next_step_after_attempt(
             controller.record_acceptance(error)?;
             return Ok(trial_h * factor);
         }
-        let candidate = trial_h * factor;
         let ratio = trial_h / requested_h;
-        if ratio >= CLIPPED_SAMPLE_INFORMATIVE_RATIO {
-            controller.record_acceptance(error)?;
-            let predicted = error * ratio.powf(-(estimator_order as f64));
-            if predicted > 1.0 {
-                return Ok(candidate.max(trial_h).min(requested_h));
-            }
+        if ratio < CLIPPED_SAMPLE_INFORMATIVE_RATIO {
+            return Ok(requested_h);
+        }
+        controller.record_acceptance(error)?;
+        let candidate = trial_h * factor;
+        let predicted = error * ratio.powf(-(estimator_order as f64));
+        if predicted > 1.0 {
+            return Ok(candidate.max(trial_h).min(requested_h));
         }
         return Ok(requested_h.max(candidate));
     }

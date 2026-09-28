@@ -6,7 +6,7 @@
 //! (`trial_h / requested_h >= 0.5`) now enters the controller history.  It may
 //! raise the request, or lower it when it predicts rejection of the remembered
 //! request, but never below the accepted trial.  A sliver landing
-//! (`trial_h / requested_h < 0.5`) never lowers the request.
+//! (`trial_h / requested_h < 0.5`) keeps the pre-clip request unchanged.
 
 use rodas5p_integrators::{
     AdaptiveControllerState, AdaptiveStepConfig, ControllerKind, RODAS5P_ESTIMATOR_ORDER,
@@ -59,7 +59,7 @@ fn sliver_landing_never_collapses_the_request() {
         let mut state = AdaptiveControllerState::default();
         let next = rodas_next_step_after_attempt(&mut state, &config, 0.4, 0.01, error, true, true)
             .unwrap();
-        assert!(next >= 0.4, "error {error}: {next}");
+        assert_eq!(next.to_bits(), 0.4_f64.to_bits(), "error {error}: {next}");
         assert_eq!(
             state.previous_accepted_error(),
             None,
