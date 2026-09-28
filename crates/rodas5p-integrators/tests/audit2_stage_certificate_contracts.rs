@@ -300,3 +300,110 @@ fn isolated_feature_and_source_do_not_reference_prohibited_execution_surfaces() 
     assert!(!source.contains(concat!("hold", "out")));
     assert!(!source.contains("run_"));
 }
+
+// ---- WU-9 RED contracts (audit F-057, F-102, F-101, F-059, F-064) ----
+
+fn with_stage_iterations(
+    mut candidate: StageCertificateInput,
+    stage: usize,
+    iterations: u64,
+) -> StageCertificateInput {
+    let row = &mut candidate.trace.stage_traces[stage];
+    row.work = StageCertificateWork {
+        operator_applies: iterations,
+        preconditioner_applies: iterations,
+        arnoldi_iterations: iterations,
+    };
+    row.residual_history = (0..=iterations).map(|k| 1.0 / (k as f64 + 1.0)).collect();
+    let mut total = StageCertificateWork::default();
+    for row in &candidate.trace.stage_traces {
+        total.operator_applies += row.work.operator_applies;
+        total.preconditioner_applies += row.work.preconditioner_applies;
+        total.arnoldi_iterations += row.work.arnoldi_iterations;
+    }
+    candidate.trace.completed_work = total;
+    candidate
+}
+
+#[test]
+fn max_arnoldi_equality_is_legal() {
+    // MAX_ARNOLDI_EQUALITY: max_arnoldi = 4 < iteration_limit = 8.
+    let candidate = with_stage_iterations(input(), 1, 4);
+    assert!(evaluate_audit2_stage_certificate(candidate).is_ok());
+}
+
+#[test]
+fn max_arnoldi_exceeded_on_one_row_rejects_below_the_iteration_limit() {
+    // F-057 MAX_ARNOLDI_EXCEEDED / MULTI_ROW_ONE_EXCEEDS: row 1 uses
+    // max_arnoldi + 1 = 5 Arnoldi vectors, still below iteration_limit = 8.
+    let candidate = with_stage_iterations(input(), 1, 5);
+    assert!(evaluate_audit2_stage_certificate(candidate).is_err());
+}
+
+#[test]
+fn receipt_survives_a_serde_json_round_trip_structurally_and_canonically() {
+    // F-102 RECEIPT_JSON_ROUNDTRIP.
+    let receipt = evaluate_audit2_stage_certificate(input()).unwrap();
+    let bytes = serde_json::to_vec(&receipt).unwrap();
+    let back: rodas5p_integrators::StageCertificateReceipt =
+        serde_json::from_slice(&bytes).unwrap();
+    assert_eq!(back, receipt);
+    let canonical = canonical_json_sha256(&serde_json::to_value(&receipt).unwrap()).unwrap();
+    let reparsed = canonical_json_sha256(&serde_json::to_value(&back).unwrap()).unwrap();
+    assert_eq!(canonical, reparsed);
+    assert_eq!(serde_json::to_vec(&back).unwrap(), bytes);
+}
+
+#[test]
+fn an_exact_upper_sum_is_not_bumped_by_one_ulp() {
+    // F-101 ROUNDING_EXACT_REPRESENTABLE: theta = 0 exactly, so ehat + theta
+    // = 0.1 is exact and must not move to the next binary64 value.
+    let receipt = evaluate_audit2_stage_certificate(input()).unwrap();
+    assert_eq!(receipt.theta, 0.0);
+    assert_eq!(receipt.ehat_plus_theta.to_bits(), 0.1_f64.to_bits());
+}
+
+#[test]
+fn a_kappa_that_does_not_bound_the_inverse_is_rejected() {
+    // F-059: ||W^-1||_2 = 0.5 for W = diag(2, 4); kappa = 0.25 is false.
+    let mut candidate = input();
+    candidate.rhs = vec![2.0, 8.0];
+    candidate.provenance.rhs_digest = digest_bits(
+        &candidate
+            .rhs
+            .iter()
+            .map(|value| value.to_bits())
+            .collect::<Vec<_>>(),
+    );
+    candidate.caller_product_upper = 3.0;
+    candidate.caller_q_upper = 3.0;
+    candidate.endpoint_weights = vec![0.0, 0.0];
+    candidate.estimator_weights = vec![0.0, 0.0];
+    candidate.kappa_upper = 0.25;
+    assert!(evaluate_audit2_stage_certificate(candidate).is_err());
+}
+
+#[test]
+fn decision_driving_inputs_are_bound_by_the_provenance_digest() {
+    // F-064: T, weights, kappa, ehat and x drive the decision; changing any of
+    // them after the provenance was fixed must be a provenance mismatch.
+    let tamper: [fn(&mut StageCertificateInput); 6] = [
+        |c| c.strict_lower[1][0] = 0.5,
+        |c| c.endpoint_weights[0] = 0.5,
+        |c| c.estimator_weights[1] = 0.5,
+        |c| c.kappa_upper = 0.75,
+        |c| c.ehat = 0.2,
+        |c| c.approximate_solution[0] = 0.5,
+    ];
+    for (index, change) in tamper.iter().enumerate() {
+        let mut candidate = input();
+        change(&mut candidate);
+        assert!(
+            matches!(
+                evaluate_audit2_stage_certificate(candidate),
+                Err(Audit2StageCertificateError::ProvenanceMismatch)
+            ),
+            "tamper {index} was not detected as a provenance mismatch"
+        );
+    }
+}
