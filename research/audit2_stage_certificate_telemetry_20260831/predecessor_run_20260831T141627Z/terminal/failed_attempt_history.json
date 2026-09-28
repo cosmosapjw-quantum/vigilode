@@ -1,0 +1,29 @@
+{
+  "attempts": [
+    {"classification": "EXPECTED_ABSENCE_CHECK", "exit_code": 1, "label": "pre_fetch_ref_absence"},
+    {"classification": "SEARCH_ROOT_ABSENT_ARCHIVES_FOUND_ELSEWHERE", "exit_code": 1, "label": "locate_harness_archives"},
+    {"classification": "MISSING_EXTRACTION_PARENT", "exit_code": 2, "label": "research_harness_extract"},
+    {"classification": "MISSING_EXTRACTION_PARENT", "exit_code": 2, "label": "coding_harness_extract"},
+    {"classification": "DEPENDENT_INVENTORY_FAILURE", "exit_code": 1, "label": "harness_extracted_inventory"},
+    {"classification": "MLFLOW_NOT_YET_INSTALLED", "exit_code": 2, "label": "mlflow_version_precheck"},
+    {"classification": "MLFLOW_LOCAL_SCORER_REGISTRATION_UNSUPPORTED", "exit_code": 1, "label": "mlflow_child_bootstrap"},
+    {"classification": "MLFLOW_CLI_NOT_ON_INITIAL_PATH", "exit_code": 1, "label": "mlflow_child_validate_environment"},
+    {"classification": "FORMAL_RUNNER_WRONG_WORKTREE_PATH", "exit_code": 2, "label": "formal-worker/attempt-001"},
+    {"classification": "FORMAL_FILES_INITIAL_APPLY_PATCH_WRONG_WORKTREE", "exit_code": 1, "label": "formal-worker/initial-apply"},
+    {"classification": "FORMAL_CHECK_FAILED", "exit_code": 3, "label": "formal-worker/attempt-002"},
+    {"classification": "FORMAL_CHECK_FAILED", "exit_code": 3, "label": "formal-worker/attempt-003"},
+    {"classification": "FORMAL_CHECK_FAILED_FINAL_RETRY", "exit_code": 3, "label": "formal-worker/attempt-004"},
+    {"classification": "ROCQ_REPAIR_PROBES_BEFORE_COMPILE_PASS", "exit_code": 1, "label": "formal-repair/probe-001-through-004"},
+    {"classification": "RUST_FIXTURE_EXPECTED_UPWARD_ROUNDING_MISMATCH", "exit_code": 101, "label": "rust-worker/initial-focused-test"},
+    {"classification": "CLIPPY_NEEDLESS_BORROWS", "exit_code": 101, "label": "clippy_stage_contract_001"},
+    {"classification": "COMMAND_LOGGER_NOT_EXECUTABLE_DIRECTLY", "exit_code": 126, "label": "inspect_readiness_surfaces/direct-run"},
+    {"classification": "APPLY_PATCH_MALFORMED_WRAPPER", "exit_code": 1, "label": "readiness-script/first-apply"},
+    {"classification": "APPLY_PATCH_MULTI_OPERATION_CONFLICT", "exit_code": 1, "label": "rust-edge-repair/combined-apply"},
+    {"classification": "GITHUB_CLI_FIELD_UNAVAILABLE", "exit_code": 1, "label": "final_github_pr_readback_no_publication"},
+    {"classification": "GITHUB_CLI_CHECKS_JSON_FLAG_UNAVAILABLE", "exit_code": 1, "label": "final_github_checks_readback"},
+    {"classification": "FORMAL_SCOPE_REVIEW_P1", "exit_code": 1, "label": "formal_scope_review"},
+    {"classification": "SOFTWARE_CONTRACT_REVIEW_P1", "exit_code": 1, "label": "software_contract_review"}
+  ],
+  "schema": "vigilode-audit2-stage-certificate-failed-attempt-history/v1",
+  "terminal_disposition": ["FORMAL_CHECK_FAILED", "SOFTWARE_CONTRACT_FAILED", "STOP_INVALID"]
+}

@@ -1,0 +1,25 @@
+{
+  "blocking": true,
+  "findings": [
+    {
+      "classification": "P1",
+      "file": "crates/rodas5p-integrators/src/audit2_stage_certificate_research.rs",
+      "lines": "409-414",
+      "summary": "max_arnoldi is preserved but not enforced; only iteration_limit bounds a stage trace"
+    },
+    {
+      "classification": "P2",
+      "file": "crates/rodas5p-integrators/tests/audit2_stage_certificate_contracts.rs",
+      "lines": "281-290",
+      "summary": "receipt readback compares in-memory fields without a serde_json round trip"
+    },
+    {
+      "classification": "P2",
+      "file": "crates/rodas5p-integrators/tests/audit2_stage_certificate_contracts.rs",
+      "lines": "159-225",
+      "summary": "directed-rounding tests omit exact-zero and finite-input overflow boundaries"
+    }
+  ],
+  "review_kind": "READ_ONLY_SOFTWARE_CONTRACT",
+  "verdict": "FAIL"
+}

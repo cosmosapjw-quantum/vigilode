@@ -1,0 +1,106 @@
+{
+  "acceptance": {
+    "criteria": [
+      {
+        "cell": "sources",
+        "evidence": "Lean and Rocq zero-exit F01 token",
+        "id": "F01"
+      },
+      {
+        "cell": "sources",
+        "evidence": "Wolfram, Sage, Singular zero-exit F02 token",
+        "id": "F02"
+      },
+      {
+        "cell": "sources",
+        "evidence": "Lean, Rocq, Wolfram zero-exit F03 token",
+        "id": "F03"
+      },
+      {
+        "cell": "sources",
+        "evidence": "Sage, Lean, Rocq zero-exit F04 token",
+        "id": "F04"
+      },
+      {
+        "cell": "sources",
+        "evidence": "Lean and Rocq zero-exit F05 token",
+        "id": "F05"
+      },
+      {
+        "cell": "runner",
+        "evidence": "external compact receipt binds every source/log hash and PASS requires all five",
+        "id": "RECEIPT"
+      }
+    ]
+  },
+  "acceptance_sha256": "35d9fb0aa7a50184c59ea80753ed483c5581d34a562039210f412421c872d3bb",
+  "budgets": {
+    "active_agents": {
+      "limit": 4,
+      "used": 1
+    },
+    "metacognitive_passes": {
+      "limit": 1,
+      "used": 1
+    },
+    "repair_closeout_rounds": {
+      "limit": 1,
+      "used": 1
+    },
+    "review_rounds": {
+      "limit": 1,
+      "used": 0
+    },
+    "same_failure_retries": {
+      "limit": 1,
+      "used": 1
+    }
+  },
+  "cell_dependents": {
+    "formal-run": [],
+    "runner": [
+      "formal-run"
+    ],
+    "sources": [
+      "runner",
+      "formal-run"
+    ]
+  },
+  "cells": {
+    "formal-run": [
+      "external formal-worker/attempt-*"
+    ],
+    "runner": [
+      "tools/run_audit2_stage_certificate_formal.py"
+    ],
+    "sources": [
+      "research/audit2_stage_certificate_telemetry_20260831/formal/**"
+    ]
+  },
+  "changed_cells": [
+    "sources",
+    "runner",
+    "formal-run"
+  ],
+  "decision": "STOP_INVALID",
+  "deliverable": "candidate-free F01--F05 formal sources and fail-closed external receipt runner",
+  "finding": {
+    "acceptance_criterion_id": "F01",
+    "disposition": "STOP_INVALID",
+    "failure_class": "REGISTERED_ACCEPTANCE_FAILURE"
+  },
+  "metacognitive_output": {
+    "observable_action": "Write exact F01--F05 sources and execute them through the external receipt runner.",
+    "self_ask": "Is the next action inside the frozen acceptance set, and does it change an observable output?"
+  },
+  "out_of_scope": [
+    "Rust implementation/tests",
+    "candidate or holdout execution",
+    "historical controller paths",
+    "evidence publication",
+    "commit/push",
+    "claim-ceiling changes"
+  ],
+  "schema_version": 1,
+  "work_unit": "vigilode-stage-certificate-formal-f01-f05"
+}
