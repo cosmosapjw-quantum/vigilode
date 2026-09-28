@@ -126,7 +126,10 @@ fn forced_fixed_endpoint(step: f64) -> f64 {
 }
 
 #[test]
-fn forced_fixed_step_refinement_retains_order_five_before_roundoff() {
+fn forced_fixed_step_refinement_with_h6_tied_rtol_retains_order_five_before_roundoff() {
+    // This test ties rtol to h^6, so it cannot see a stage-residual budget
+    // that is independent of h (audit F-030); the fixed-rtol ladder lives in
+    // inner_forcing_fixed_step_ladder_contracts.rs.
     // Defect caught: an h-independent inner residual tolerance creates a global
     // error floor and makes at least one pre-roundoff refinement slope collapse.
     let errors = [0.08, 0.04, 0.02, 0.01].map(forced_fixed_endpoint);
