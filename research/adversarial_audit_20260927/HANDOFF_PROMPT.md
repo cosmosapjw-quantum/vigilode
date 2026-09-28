@@ -43,6 +43,8 @@ cargo build --locked --profile measurement
 ls target/measurement/
 ```
 
+The harness has its own `.gitignore` for `target/`. Keep it that way: `rodas5p-fair-ab/build.rs` embeds a dirty flag from `git status`, and any untracked file in the repository flips it. Write experiment outputs outside the repository.
+
 Run the harness binaries with `RAYON_NUM_THREADS=1`. Each experiment README lists the arguments its binary expects. Large raw inputs were not checked in. Files above 300 KB were left out, including the E-02 row dump and the E-05 and E-06 generated matrices. Regenerate them with the Python scripts in the experiment directories.
 
 ## 2. Rules
