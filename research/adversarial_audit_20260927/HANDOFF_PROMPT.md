@@ -1,20 +1,27 @@
-# VigilODE cloud handoff: implement the adversarial-audit fixes
+# VigilODE cloud handoff: audit fixes and stage-certificate repairs
 
-You are continuing work on `cosmosapjw-quantum/vigilode` in a cloud session. An adversarial audit of the solver was completed on 2026-09-28 and is checked in on this branch. Your job is to implement the code fixes it recommends, one work unit at a time, test first. The audit changed no source code.
+You are continuing work on `cosmosapjw-quantum/vigilode` in a cloud session. The repository is a public research project. Two things were published on 2026-09-28:
+
+- **Adversarial audit.** An audit of the solver, with fix designs, is in `research/adversarial_audit_20260927/`. The audit changed no source code.
+- **Stage-certificate work.** Work that had existed only in the owner's local worktree is now on GitHub, byte for byte: the stage-certificate module, its tests and proof sources.
+
+Your job is to implement the fixes, one work unit at a time, tests first.
 
 ## 0. Starting state
 
 | Item | Value |
 |---|---|
-| Repository | `cosmosapjw-quantum/vigilode` (public) |
+| Repository | `cosmosapjw-quantum/vigilode`, public |
 | Start branch | `audit/adversarial-audit-20260927` |
-| Its content | Draft PR #42 head `b3e8165c8dc3b5016702821d280daea1a3f1feb7` plus one commit that adds `research/adversarial_audit_20260927/` |
-| Rust source | identical to PR #40 head `426d37c` |
+| Branch history | Draft PR #42 head `b3e8165`, then audit commits `1aa3d71` and `1366083`, then merge commit `88c4890` of the stage-certificate branch, then this handoff update |
+| Stage-certificate branch | `research/audit2-stage-certificate-worktree-20260831`: PR #41 head `9fbdd84`, then `5ca1365` (worktree bytes), then `c4c152c` (predecessor receipts). Do not rewrite it |
+| Rust source | PR #40 head `426d37c`, plus the stage-certificate module behind the non-default feature `audit2-stage-certificate` |
 | `main` | `8d0c791`, older. Do not base fixes on `main` |
-| Toolchain | Rust 1.94.1, pinned in `rust-toolchain.toml` |
-| Dependencies | normal crates.io access; `.cargo/config.toml` is a placeholder |
+| Toolchain | Rust 1.94.1, pinned in `rust-toolchain.toml`. Normal crates.io access; `.cargo/config.toml` is a placeholder |
 
-Baseline measured at `b3e8165` on the audit host:
+### Baseline
+
+Measured at `b3e8165`, before the merge:
 
 | Command | Result |
 |---|---|
@@ -22,47 +29,74 @@ Baseline measured at `b3e8165` on the audit host:
 | `cargo test -p rodas5p-integrators --features audit2-research --locked` | 315 passed |
 | `cargo test -p rodas5p-integrators --features audit2-bateman-authority --locked` | 321 passed |
 | `cargo clippy --workspace --all-targets --locked -- -D warnings` | clean |
-| `cargo fmt --all -- --check` | clean |
 | `cargo test -p rodas5p-integrators --test v37_continuation_transaction_contracts --locked -- --ignored` | fails, `left: 17, right: 18` at line 110, in dev and optimized profiles |
 
-Reproduce this baseline before changing anything. The default suite takes about 9 minutes in the dev profile on 24 cores. If your numbers differ, stop and report the difference.
+Measured on merge commit `88c4890`:
+
+| Command | Result |
+|---|---|
+| `cargo fmt --all -- --check` | clean |
+| `cargo test -p rodas5p-integrators --features audit2-stage-certificate --test audit2_stage_certificate_contracts --locked` | 13 passed |
+| `cargo clippy -p rodas5p-integrators --features audit2-stage-certificate --all-targets --locked -- -D warnings` | clean |
+| `cargo check --workspace --all-targets --locked` | clean |
+| `cargo check -p rodas5p-integrators --no-default-features --locked` | clean |
+| `python3 tools/validate_audit2_stage_certificate_repair_handoff.py` | `STAGE_CERTIFICATE_REPAIR_HANDOFF_FINAL_VALID` |
+| `python3 tools/test_audit2_stage_certificate_repair_handoff.py -v` | 10 tests OK |
+
+The full default suite was not re-run after the merge. The merge touched only `Cargo.lock`, the integrators `Cargo.toml`, a feature-gated `lib.rs` export and new files.
+
+Reproduce the baseline before changing anything. The default suite takes about 9 minutes in the dev profile on 24 cores. If your numbers differ, stop and report the difference.
+
+### Provenance of the stage-certificate bytes
+
+Commit `5ca1365` holds the owner's worktree bytes unchanged: 3 modified tracked files and 9 new files. Its message lists the SHA-256 of every file. `research/audit2_stage_certificate_repair_20260831/EXECUTION_CONTRACT.json` binds eight hashes of that run: the external manifest, `SHA256SUMS`, the formal receipt, and five proof sources. All eight match the published bytes.
 
 ## 1. Read first, in this order
 
-All paths are relative to `research/adversarial_audit_20260927/`.
+Unless noted, paths are relative to `research/adversarial_audit_20260927/`.
 
-1. `VIGILODE_ADVERSARIAL_AUDIT_20260927.md`, chapters 1, 7 and 8. The report is in Korean. Chapter 1 is the summary, chapter 7 the improvement plan, chapter 8 the limits and the corrections made during the final check.
+1. `VIGILODE_ADVERSARIAL_AUDIT_20260927.md`, chapters 1, 7 and 8. The report is in Korean. Chapter 1 is the summary, chapter 7 the improvement plan, chapter 8 the limits and the corrections made in the final check.
 2. `VIGILODE_ADVERSARIAL_AUDIT_LEDGER_20260927.json`. Machine-readable. `findings[]` carries id, severity, status, locations, evidence, refutations and `proposed_fix`. Also read `improvement_plan`, `experiments`, `hypotheses_tested`, `corrections`, `nonclaims`. The schema is next to it.
 3. `fixes/G1_*.json` to `fixes/G6_*.json` and `fixes/G3b_*.json`. One file per fix group, with anchors, effort, risk, verification and code sketches. `fixes/roadmap_delta.json` and `fixes/completeness_critic.json` hold the roadmap proposal and the audit's own gaps.
-4. `experiments/E-xx/README.md` and `results.json`. These are the evidence and the numeric baselines for verification.
-5. `harness/`. A standalone crate with the experiment binaries. It is not a member of the repository workspace.
+4. `experiments/E-xx/README.md` and `results.json`. The evidence and the numeric baselines for verification.
+5. For WU-9 only, the stage-certificate material, with paths relative to the repository root:
+   - `research/audit2_stage_certificate_repair_20260831/`: PR #42's control package. Read `FORMAL_SCOPE.md`, `EXECUTION_CONTRACT.json` (`repair_scope`) and `CLAIM_LEDGER.md`.
+   - `research/audit2_stage_certificate_telemetry_20260831/predecessor_run_20260831T141627Z/`: receipts of the run that ended `STOP_INVALID`. Read `reviews/*.json` first.
+   - The owner's M0 plan, which lives on another branch:
+     ```bash
+     git fetch origin planning/vigilode-research-coding-spiral-20260904
+     git show FETCH_HEAD:docs/superpowers/plans/2026-09-04-vigilode-m0-stage-certificate-closeout.md
+     ```
+
+**Path mapping.** The ledger and report cite stage-certificate files as `overlay/untracked/<path>`. On this branch the file is at `<path>`. Strip the prefix.
+
+**Harness.** `harness/` is a standalone crate with the experiment binaries. It is not a member of the repository workspace. Keep its `target/` untracked: `rodas5p-fair-ab/build.rs` embeds a dirty flag from `git status`, and any untracked file flips it. Write experiment outputs outside the repository.
 
 ```bash
 cd research/adversarial_audit_20260927/harness
 cargo build --locked --profile measurement
-ls target/measurement/
 ```
 
-The harness has its own `.gitignore` for `target/`. Keep it that way: `rodas5p-fair-ab/build.rs` embeds a dirty flag from `git status`, and any untracked file in the repository flips it. Write experiment outputs outside the repository.
-
-Run the harness binaries with `RAYON_NUM_THREADS=1`. Each experiment README lists the arguments its binary expects. Large raw inputs were not checked in. Files above 300 KB were left out, including the E-02 row dump and the E-05 and E-06 generated matrices. Regenerate them with the Python scripts in the experiment directories.
+Run the binaries with `RAYON_NUM_THREADS=1`. Each experiment README lists the arguments its binary expects. Files above 300 KB were not checked in. Regenerate them with the Python scripts in the experiment directories.
 
 ## 2. Rules
 
 These follow the project's own governance. Do not break them.
 
 - **Test first.** Every work unit starts with a failing test that encodes the defect. Then make the smallest fix. Then run the focused suite, the full workspace suite, clippy with `-D warnings`, and fmt.
-- **One work unit, one branch, one Draft PR.** Base each PR on `audit/adversarial-audit-20260927`. Stack a unit on an earlier one only when both touch the same file. Never merge, tag or release. Never push to `main` or to any `research/audit2-*` branch.
+- **One work unit, one branch, one Draft PR.** Base each PR on `audit/adversarial-audit-20260927`. Stack a unit on an earlier one only when both touch the same file. Never merge, tag or release. Never push to `main`, to `research/audit2-*` branches, or to `research/audit2-stage-certificate-worktree-20260831`.
 - **No tolerance widening.** Do not loosen a tolerance, threshold or acceptance rule to make a test pass. If a fix changes a pinned snapshot, record the old value, the new value and the reason in the PR body.
-- **Ledgers are append-only.** Add dated addenda under `research/`. Never rewrite a historical ledger or receipt.
+- **Ledgers are append-only.** Add dated addenda under `research/`. Never rewrite a historical ledger, receipt or the audit ledger.
+- **Leave PR #42's control files alone.** `research/audit2_stage_certificate_repair_20260831/HANDOFF_INPUT_LOCK.json` binds nine files by SHA-256. Do not edit them. `python3 tools/validate_audit2_stage_certificate_repair_handoff.py` must keep passing.
 - **No performance claims.** No speedup, ranking, scaling or holdout claim. Do not read `tools/reference_v2/artifacts/*-holdout-v2.json` for any tuning purpose.
+- **No candidate execution.** Zero Bateman real-client candidate executions, as in PR #40–#42. The claim ceiling stays `EXPLORATORY_NONAUTHORITATIVE_REUSABLE_PRECONDITIONER_TRANSACTIONAL_STEP_SUBSTRATE`.
 - **Preserve failures.** If a unit cannot be finished, report what was tried and what failed. Do not drop it silently.
-- **Re-anchor line numbers.** Every line number in the audit refers to `b3e8165`. Confirm with `grep -n` before editing.
+- **Re-anchor line numbers.** Every line number in the audit refers to `b3e8165` or to the stage-certificate bytes. Confirm with `grep -n` before editing.
 - **Keep defaults stable.** Default behavior for library callers must not change unless the work unit says so. Research code stays behind its feature flag.
 
-## 3. Work units, in priority order
+## 3. Work units
 
-P1 findings come first. Effort uses the scale XS, S, M, L, XL.
+The order is a recommendation, and the owner may change it. WU-1 to WU-5 contain the four P1 findings. Effort uses the scale XS, S, M, L, XL.
 
 ### WU-1. GCRO-DR state validity. `F-010` (P1). Effort S, risk low.
 
@@ -120,16 +154,53 @@ P1 findings come first. Effort uses the scale XS, S, M, L, XL.
 - `crates/rodas5p-fair-ab/build.rs` calls git with `expect` and `assert`. Make it degrade to an `unknown` provenance value when git is absent, and compute the dirty flag from tracked files only.
 - Bisect the failing sealed replay test. `fixes/G6_evidence_process_tests.json` lists `84a3b0f..b3e8165` as the candidate range. Do not change the pinned 18 to 17. Record the first bad commit and the reason as a dated note. Later pinned literals in the same test may also have drifted, because the assertion stops at the first failure.
 
-### After WU-8
+### WU-9. Stage-certificate repairs. `F-057`, `F-060`, `F-061`, `F-059`, `F-064`, `F-101`, `F-102`, `F-104`, `F-058`. Effort M for the software part, L for the proofs.
+
+The owner's Sep-4 plan calls this work M0 and schedules it first. The audit places it after the P1 fixes. Follow the owner if they say otherwise.
+
+- Code: `crates/rodas5p-integrators/src/audit2_stage_certificate_research.rs` and `tests/audit2_stage_certificate_contracts.rs`, behind the feature `audit2-stage-certificate`.
+- Scope: `repair_scope` in `research/audit2_stage_certificate_repair_20260831/EXECUTION_CONTRACT.json`, `FORMAL_SCOPE.md` in the same directory, and Tasks 7 to 10 of the M0 plan.
+
+Software repairs. Write the failing test first for each.
+
+1. Enforce `max_arnoldi` per completed GMRES trace row, independent of the iteration limit and the restart length (`F-057`; the predecessor review rated this P1). Near lines 378 to 382 only the ordering is validated, and near 413 only `iteration_limit` bounds a trace.
+2. Round-trip the receipt through `serde_json`: serialize, deserialize into the same type, compare structurally, and reserialize canonically (`F-102`). The current test near line 280 compares in-memory structs.
+3. Fix directed rounding. Near line 561 the helpers bump every nonzero value by one ulp even when the result is exact, and a contract test pins that bump (`F-101`). Round nonnegative add and multiply correctly upward. Keep exact zero and exactly representable results unchanged. Map overflow to `+inf`, then to a typed rejection with no decision (`F-104`). Near line 504, residuals and norms are still rounded to nearest (`F-061`); extend directed rounding to them or document the gap in the claim ledger.
+4. Near line 300, one linear solve's residual bound is copied to every stage with `vec![q_upper; dimension]`. Near 258 to 268 the stage count is confused with the state dimension (`F-060`). Separate the two quantities.
+5. The only accepting case in the contract test near line 24 rests on a `kappa` premise that does not hold for its fixture matrix (`F-059`). Rebuild the fixture with a `kappa` that bounds the inverse, and add a negative test with a false `kappa`.
+6. Near line 433 the provenance digest binds coefficients, operator, preconditioner and right-hand side only. Bind the inputs that drive the decision too: `T`, the weights, `kappa`, `ehat` and `x` (`F-064`).
+
+Formal repairs (`F-058`, predecessor formal P1):
+
+- The Lean and Rocq sources in `research/audit2_stage_certificate_telemetry_20260831/formal/` prove F01, F03 and F04 only for a fixed 3 by 3 case or numeric fixtures. Prove them for arbitrary finite `n >= 1`, as `FORMAL_SCOPE.md` states. F05 is already quantified.
+- This needs Lean 4 with mathlib (via `elan` and `lake`) and Rocq (`coqc`, `coqchk`). Wolfram, SageMath and Singular are cross-checks only. If a tool cannot be installed, record that backend as unavailable. Do not substitute another tool and do not claim the proof.
+- `tools/run_audit2_stage_certificate_formal.py` runs all five backends. Read it before use; it expects a mathlib project path.
+
+PR #42's contract, and what it means here:
+
+- The contract names `LOCAL_CODEX_JOB_ONLY` as executor.
+- It requires two harness archives that are not in the repository.
+- It requires 13 backend-role records, including Wolfram.
+- The owner moved the work to the cloud on 2026-09-28 but has not amended the contract.
+
+So open WU-9 as an ordinary Draft PR based on the audit branch. Then:
+
+- Do not write under `research/audit2_stage_certificate_repair_20260831/evidence/`.
+- Do not claim `REPAIR_CLOSEOUT_VERIFIED` or any other PR #42 terminal disposition.
+- Report what passed and what could not run.
+
+The owner decides whether the result closes PR #42.
+
+### After WU-9
 
 Take the remaining P2 and P3 findings from the ledger in severity order. The test plan in `fixes/G6_evidence_process_tests.json` covers the missing accuracy and order tests.
 
-## 4. Blocked items and owner decisions
+## 4. Owner decisions and open investigations
 
-Do not attempt these.
+Do not decide these yourself.
 
-- **Stage-certificate findings.** `F-057` to `F-064` and `F-101` to `F-104` concern a module that exists only in the owner's local worktree. Its source is not on this branch. Wait until the owner publishes it.
 - **Roadmap order.** Reordering M0, M1 and later nodes is the owner's decision. The proposal is in `fixes/roadmap_delta.json`.
+- **PR #42 closeout.** Whether WU-9 closes PR #42, and under which amended contract, is the owner's decision.
 - **Cause of the tolerance exceedance.** The audit did not establish why global error exceeds the case tolerance on the semilinear rows (`F-033`). This is an investigation, not a fix. After WU-3, rerun the 18 rows at n = 96 with direct LU and with the new forcing rule. The six reference artifacts are in `research/scientific_validity_v2_20260829/external_reaudit_bundle/reference/selected_raw/`.
 
 ## 5. Known limits of the audit
@@ -137,6 +208,7 @@ Do not attempt these.
 - Each finding had one refuter. Only the top 11 had a second refuter, a severity judge and a provenance check.
 - Line anchors were re-opened for a sample of 18 finding blocks.
 - The six findings on the forcing rule rest on one harness, `e04_order_krylov`.
+- The audit reviewed the stage-certificate module statically. It was first compiled and tested on this branch at the merge commit.
 - The final check corrected 14 numbers. They are listed in `ledger.corrections` and in report section 8.6. The largest one: the median error ratio against SciPy Radau is 5.3, not 2.6.
 - Not run: the controller-exponent mutant, the finite-difference JVP arm, and the exponential arm of the counter experiment.
 
