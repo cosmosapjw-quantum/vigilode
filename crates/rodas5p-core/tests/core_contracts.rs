@@ -373,3 +373,27 @@ fn linear_solver_config_rejects_non_finite_tolerances() {
             .is_ok()
     );
 }
+
+/// External audit VIG-A04: `f64::max` drops a NaN operand, so the scale fold
+/// saw 0 and `safe_l2` returned 0 for `[NaN, NaN]`. Any NaN entry now makes
+/// the norm NaN, so callers' `is_finite` checks fail closed.
+#[test]
+fn safe_l2_propagates_nan_and_infinity() {
+    use rodas5p_core::safe_l2;
+    for x in [
+        vec![f64::NAN, f64::NAN],
+        vec![0.0, f64::NAN],
+        vec![f64::NAN, 0.0],
+        vec![1.0, f64::NAN],
+        vec![-0.0, f64::NAN],
+        vec![f64::INFINITY, f64::NAN],
+        vec![f64::NAN, f64::INFINITY],
+    ] {
+        assert!(safe_l2(&x).is_nan(), "{x:?}: {}", safe_l2(&x));
+    }
+    assert_eq!(safe_l2(&[f64::INFINITY, 1.0]), f64::INFINITY);
+    assert_eq!(safe_l2(&[f64::NEG_INFINITY]), f64::INFINITY);
+    assert_eq!(safe_l2(&[0.0, -0.0]), 0.0);
+    assert_eq!(safe_l2(&[]), 0.0);
+    assert_eq!(safe_l2(&[3.0, -4.0]), 5.0);
+}
