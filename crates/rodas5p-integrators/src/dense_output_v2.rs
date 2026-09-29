@@ -1,4 +1,8 @@
-use rodas5p_core::{CoreError, CoreResult, LinearSolverConfig, WorkCounters, rodas5p_coefficients};
+use rodas5p_core::{
+    CoreError, CoreResult, LinearSolverConfig, WorkCounters, error_scale, rodas5p_coefficients,
+    wrms,
+};
+use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 use crate::adaptive::record_adaptive_work_failure;
@@ -10,8 +14,8 @@ use crate::{
     OutputSamplingPlan, RadauConfig, RadauIiaStages, SabrConfig, StageHistory, StepResult,
     TransactionalQ1Q2AdaptiveResult, TransactionalQ1Q2Config, TransactionalQ1Q2RunDiagnostics,
     adaptive_next_step_after_attempt, bdf_step, homotopy_step, radau_step,
-    rodas_next_step_after_attempt, sabr_step, sequential_matrix_free_step_with_inner_forcing,
-    sequential_step, transactional_q1_q2_step,
+    rodas_next_step_after_attempt, sabr_step, sequential_matrix_free_step,
+    sequential_matrix_free_step_with_inner_forcing, sequential_step, transactional_q1_q2_step,
 };
 use crate::{bdf::adaptive_bdf_trial, radau::adaptive_radau_trial};
 
@@ -503,8 +507,199 @@ pub fn integrate_sequential_matrix_free_adaptive_dense_observed(
         linear_config,
         adaptive,
         sampling,
+        MatrixFreeDenseStep::InnerForcing,
         |report, theta| rodas5p_dense_output(report, theta).map_err(dense_output_core_error),
     )
+}
+
+/// The same protected dense run with every stage solved to the fixed inner
+/// tolerance `linear_config.{rtol, atol}` instead of the WRMS forcing rule.
+///
+/// Diagnostic attribution arm for audit F-033: comparing its global error
+/// with the forcing arm separates error caused by inexact stage solves from
+/// error the exact-stage method would also make.
+pub fn integrate_sequential_matrix_free_adaptive_dense_fixed_inner_observed(
+    problem: &OdeProblem,
+    t_span: (f64, f64),
+    y0: &[f64],
+    linear_config: &LinearSolverConfig,
+    adaptive: &AdaptiveStepConfig,
+    sampling: &OutputSamplingPlan,
+) -> DenseOutputResult<AdaptiveObservedIntegrationResult> {
+    integrate_sequential_matrix_free_adaptive_dense_observed_with(
+        problem,
+        t_span,
+        y0,
+        linear_config,
+        adaptive,
+        sampling,
+        MatrixFreeDenseStep::FixedInnerTolerance,
+        |report, theta| rodas5p_dense_output(report, theta).map_err(dense_output_core_error),
+    )
+}
+
+/// One same-step comparison at an interior output time (audit F-007, part C).
+///
+/// `delta_wrms` is the WRMS difference, in the run's own tolerance weights,
+/// between the dense interpolant at `t = step_start + theta * step_size` and
+/// one hard-stop step of length `theta * step_size` restarted from the same
+/// accepted state. Both are local approximations from the same state, so the
+/// difference is bounded by the interpolant defect plus the sub-step's local
+/// error and needs no reference solution.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct InterpolantAuditSample {
+    pub t: f64,
+    pub step_start: f64,
+    pub step_size: f64,
+    pub theta: f64,
+    pub delta_wrms: f64,
+}
+
+/// Same-step interpolant comparisons of one dense run. The sub-steps are
+/// charged to `counters` only, never to the run they audit.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct InterpolantAudit {
+    pub samples: Vec<InterpolantAuditSample>,
+    /// Sub-steps that returned an error; each also records `delta_wrms = inf`.
+    pub failed_substeps: usize,
+    pub counters: WorkCounters,
+}
+
+impl InterpolantAudit {
+    /// Largest delta, `None` when no interior output time was interpolated.
+    pub fn max_delta_wrms(&self) -> Option<f64> {
+        self.samples
+            .iter()
+            .map(|sample| sample.delta_wrms)
+            .reduce(|a, b| if a.is_nan() || b > a { b } else { a })
+    }
+
+    /// Append another segment's audit.
+    pub fn extend(&mut self, other: InterpolantAudit) {
+        self.samples.extend(other.samples);
+        self.failed_substeps += other.failed_substeps;
+        self.counters.accumulate(other.counters);
+    }
+
+    fn record(
+        &mut self,
+        problem: &OdeProblem,
+        report: &StepResult,
+        theta: f64,
+        interpolated: &[f64],
+        linear_config: &LinearSolverConfig,
+        adaptive: &AdaptiveStepConfig,
+    ) {
+        let step_size = theta * report.h;
+        let mut recycle = KrylovState::for_method(linear_config.method);
+        let substep = sequential_matrix_free_step_with_inner_forcing(
+            problem,
+            report.t_old,
+            &report.y_old,
+            step_size,
+            linear_config,
+            recycle.as_mut(),
+            adaptive.atol,
+            adaptive.rtol,
+            true,
+            &mut self.counters,
+        );
+        let delta_wrms = match substep {
+            Ok(substep) => {
+                let difference = interpolated
+                    .iter()
+                    .zip(&substep.step.y_new)
+                    .map(|(a, b)| a - b)
+                    .collect::<Vec<_>>();
+                error_scale(
+                    &report.y_old,
+                    &substep.step.y_new,
+                    &[adaptive.atol],
+                    adaptive.rtol,
+                )
+                .and_then(|scale| wrms(&difference, &scale))
+                .unwrap_or(f64::INFINITY)
+            }
+            Err(_) => {
+                self.failed_substeps += 1;
+                f64::INFINITY
+            }
+        };
+        self.samples.push(InterpolantAuditSample {
+            t: report.t_old + step_size,
+            step_start: report.t_old,
+            step_size: report.h,
+            theta,
+            delta_wrms,
+        });
+    }
+}
+
+/// `integrate_sequential_matrix_free_adaptive_dense_observed` plus the
+/// same-step interpolant audit of audit F-007 part C. The integration itself
+/// is unchanged bit for bit; every interior output time additionally gets one
+/// hard-stop sub-step from the accepted state that produced it.
+pub fn integrate_sequential_matrix_free_adaptive_dense_with_interpolant_audit(
+    problem: &OdeProblem,
+    t_span: (f64, f64),
+    y0: &[f64],
+    linear_config: &LinearSolverConfig,
+    adaptive: &AdaptiveStepConfig,
+    sampling: &OutputSamplingPlan,
+) -> DenseOutputResult<(AdaptiveObservedIntegrationResult, InterpolantAudit)> {
+    integrate_sequential_matrix_free_adaptive_dense_with_interpolant_audit_and_evaluator(
+        problem,
+        t_span,
+        y0,
+        linear_config,
+        adaptive,
+        sampling,
+        |report, theta| rodas5p_dense_output(report, theta).map_err(dense_output_core_error),
+    )
+}
+
+/// Test seam: the audited run with a substitute dense evaluator, so a
+/// corrupted interpolant can be shown to raise the audit's delta.
+#[doc(hidden)]
+pub fn integrate_sequential_matrix_free_adaptive_dense_with_interpolant_audit_and_evaluator<F>(
+    problem: &OdeProblem,
+    t_span: (f64, f64),
+    y0: &[f64],
+    linear_config: &LinearSolverConfig,
+    adaptive: &AdaptiveStepConfig,
+    sampling: &OutputSamplingPlan,
+    mut dense_evaluator: F,
+) -> DenseOutputResult<(AdaptiveObservedIntegrationResult, InterpolantAudit)>
+where
+    F: FnMut(&StepResult, f64) -> CoreResult<Vec<f64>>,
+{
+    let mut audit = InterpolantAudit::default();
+    let result = integrate_sequential_matrix_free_adaptive_dense_observed_with(
+        problem,
+        t_span,
+        y0,
+        linear_config,
+        adaptive,
+        sampling,
+        MatrixFreeDenseStep::InnerForcing,
+        |report, theta| {
+            let value = dense_evaluator(report, theta)?;
+            if theta > 0.0 && theta < 1.0 {
+                audit.record(problem, report, theta, &value, linear_config, adaptive);
+            }
+            Ok(value)
+        },
+    )?;
+    Ok((result, audit))
+}
+
+/// Stage-solve rule of the protected matrix-free dense loop.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum MatrixFreeDenseStep {
+    /// WRMS stage-residual forcing (production).
+    InnerForcing,
+    /// Fixed inner tolerance from the linear configuration (attribution arm).
+    FixedInnerTolerance,
 }
 
 fn protected_dense_adaptive_failure(
@@ -538,6 +733,7 @@ fn integrate_sequential_matrix_free_adaptive_dense_observed_with<F>(
     linear_config: &LinearSolverConfig,
     adaptive: &AdaptiveStepConfig,
     sampling: &OutputSamplingPlan,
+    step_kind: MatrixFreeDenseStep,
     mut dense_evaluator: F,
 ) -> DenseOutputResult<AdaptiveObservedIntegrationResult>
 where
@@ -580,19 +776,33 @@ where
             }
         };
         let recycle_snapshot = recycle.clone();
-        let trial = sequential_matrix_free_step_with_inner_forcing(
-            problem,
-            t,
-            &state,
-            trial_h,
-            linear_config,
-            recycle.as_mut(),
-            adaptive.atol,
-            adaptive.rtol,
-            false,
-            &mut counters,
-        )
-        .map(|report| report.step);
+        let trial = match step_kind {
+            MatrixFreeDenseStep::InnerForcing => sequential_matrix_free_step_with_inner_forcing(
+                problem,
+                t,
+                &state,
+                trial_h,
+                linear_config,
+                recycle.as_mut(),
+                adaptive.atol,
+                adaptive.rtol,
+                false,
+                &mut counters,
+            )
+            .map(|report| report.step),
+            MatrixFreeDenseStep::FixedInnerTolerance => sequential_matrix_free_step(
+                problem,
+                t,
+                &state,
+                trial_h,
+                linear_config,
+                recycle.as_mut(),
+                adaptive.atol,
+                adaptive.rtol,
+                false,
+                &mut counters,
+            ),
+        };
         let report = match trial {
             Ok(report) => report,
             Err(error) if adaptive_failure_kind(&error).is_some() => {
@@ -1494,6 +1704,7 @@ mod failure_preservation_tests {
             &linear,
             &adaptive,
             &sampling,
+            MatrixFreeDenseStep::InnerForcing,
             |report, theta| {
                 let call = calls.get();
                 calls.set(call + 1);
