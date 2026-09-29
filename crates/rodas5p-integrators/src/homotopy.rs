@@ -61,6 +61,18 @@ pub struct AffineOutputCertificate {
     pub correction_norm: f64,
 }
 
+/// One exact-Jacobian Newton correction of the stage target, projected on
+/// the output weights (re-audit RA-04).
+///
+/// `output_wrms` is a **linearized output correction**, not an error bound.
+/// It omits the nonlinear remainder of the target: when the coupling
+/// derivative is small at the candidate and large at the root, the
+/// correction misses most of the error. On y1' = 1 - y1, y2' = c y1^2 from
+/// zero stages (c = 100, h = 0.5) it reports 2.8e5 against a true output
+/// error of 2.1e6 (`tests/linearized_certificate_contracts.rs`). A rigorous
+/// certificate needs a bound on that remainder or an independent root;
+/// `certify_second_correction` and `refine_target_root` are diagnostics
+/// toward that, not bounds either.
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct NonlinearOutputCertificate {
     pub stage_residual_norm: f64,
@@ -71,11 +83,23 @@ pub struct NonlinearOutputCertificate {
     pub combined_error: f64,
 }
 
-/// Certify an approximate nonlinear stage vector against the original RODAS5P equations.
+impl NonlinearOutputCertificate {
+    /// Classification of `output_wrms` (re-audit RA-04).
+    pub const KIND: &'static str = "linearized-output-correction";
+
+    /// Always false: the nonlinear remainder is not bounded.
+    pub fn is_error_bound(&self) -> bool {
+        false
+    }
+}
+
+/// Linearized output correction of an approximate nonlinear stage vector
+/// against the original RODAS5P equations.
 ///
-/// This is intentionally an exact-reference certificate: it assembles and factors the
-/// current nonlinear target Jacobian.  The later speculative fast path may use cheaper
-/// bounds, but those bounds must be calibrated against this oracle rather than replacing it.
+/// It assembles and factors the exact current target Jacobian, so it is an
+/// exact-Jacobian reference, but one Newton correction is a linearization,
+/// not a root: see [`NonlinearOutputCertificate`]. Cheaper fast-path bounds
+/// must not be calibrated against it as if it were an error oracle.
 pub fn certify_nonlinear_target(
     block: &StructuredBlockSystem<'_, '_>,
     stages: &[Vec<f64>],
@@ -1195,6 +1219,8 @@ pub fn homotopy_step(
                         h,
                     )?;
                     let defect_ok = policy_decision.accepted;
+                    // Linearized acceptance (re-audit RA-04): combined_error
+                    // uses one Newton correction, not a bound on the root error.
                     let step_ok = force_accept || certificate.combined_error <= 1.0;
                     let finite = path.stages.iter().flatten().all(|value| value.is_finite());
                     if defect_ok && step_ok && finite {
