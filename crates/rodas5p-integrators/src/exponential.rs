@@ -2896,7 +2896,9 @@ fn pexprb54s4_level2_prefix_resume_level1_charged(
     // a failed stage; the first failure in stage order is then returned.
     let outcomes = execution.map_ordered(&stage_ids, |id| {
         let mut local = WorkCounters::default();
-        let result = (|| {
+        // Annotated: with research features on, `CoreError: From<_>` has
+        // several impls and `?` inside the closure cannot infer the error type.
+        let result: CoreResult<(FusedPhiActionReport, Vec<f64>, Vec<f64>)> = (|| {
             let (c, a) = if *id == 3 {
                 (tableau.c3, tableau.a32_phi3)
             } else {
