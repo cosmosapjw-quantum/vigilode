@@ -8,6 +8,7 @@ mod error;
 mod external_comparators;
 mod global_error;
 mod numerical_reference;
+mod output_admissibility;
 mod runner;
 mod scenarios;
 mod scientific_validity_v2_campaign;
@@ -92,6 +93,11 @@ pub use numerical_reference::{
     numerical_reference_state_checksum, numerical_reference_v2_not_run_manifest,
     validate_numerical_reference_convergence, validate_numerical_reference_error_scale,
     validate_numerical_reference_manifest, validate_numerical_reference_manifest_v2,
+};
+pub use output_admissibility::{
+    ArmBudget, OutputArmExceedance, TWO_ARM_ADMISSIBILITY_PROTOCOL_ID, TWO_ARM_GLOBAL_ERROR_BUDGET,
+    TWO_ARM_INTERPOLANT_DELTA_LIMIT, TwoArmAdmissibility, TwoArmRowStatus,
+    check_policy_gap_triangle, classify_arm_budget, classify_two_arm_row,
 };
 
 mod output_accuracy;

@@ -114,7 +114,7 @@ impl ExternalErrorScale {
         })
     }
 
-    fn weights(&self, reference: &[f64]) -> FairResult<Vec<f64>> {
+    pub(crate) fn weights(&self, reference: &[f64]) -> FairResult<Vec<f64>> {
         if reference.len() != self.absolute.len() {
             return Err(FairError::Invalid(
                 "external error scale/reference dimension mismatch".into(),
