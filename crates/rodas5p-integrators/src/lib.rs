@@ -143,8 +143,10 @@ pub use common_w_gate::{
     run_matrix_free_common_w_gate,
 };
 pub use dense_output_v2::{
-    DenseOutputError, DenseOutputResult, InterpolantAudit, InterpolantAuditSample,
-    bdf_dense_output, integrate_adaptive_dense_observed_with_config,
+    DenseErrorControl, DenseErrorReport, DenseErrorSample, DenseOutputError, DenseOutputResult,
+    InterpolantAudit, InterpolantAuditSample, bdf_dense_output,
+    integrate_adaptive_dense_observed_with_config,
+    integrate_adaptive_dense_observed_with_dense_error_control,
     integrate_bdf_adaptive_dense_observed, integrate_bdf_fixed_dense_observed,
     integrate_fixed_dense_observed, integrate_homotopy_adaptive_dense_observed,
     integrate_radau_adaptive_dense_observed, integrate_radau_fixed_dense_observed,
@@ -153,6 +155,7 @@ pub use dense_output_v2::{
     integrate_sequential_matrix_free_adaptive_dense_with_interpolant_audit,
     integrate_sequential_matrix_free_adaptive_dense_with_interpolant_audit_and_evaluator,
     integrate_transactional_q1_q2_adaptive_dense_observed, radau_dense_output,
+    rodas5p_dense_interior_defect_estimate, rodas5p_dense_interior_error_estimate,
     rodas5p_dense_output,
 };
 pub use exponential::{
