@@ -1,8 +1,9 @@
 # Research ledger and research-node rule
 
-This rule implements adversarial-audit finding F-024
+This rule implements adversarial-audit findings F-024 and F-025
 (`research/adversarial_audit_20260927/`). It replaces per-node receipt families with a
-single append-only ledger.
+single append-only ledger and requires every authority citation to point at published
+bytes.
 
 ## A research node
 
@@ -76,3 +77,23 @@ in this repository.
   result, a further node without one fails the check. The stall ends when a new or earlier
   node gets a `PASS`/`FAIL` numeric row, so the fix is to measure, not to open another
   process node.
+
+### `tools/check-authority-refs.py [--list] [--paths P ...]`
+
+This check scans tracked `.md`, `.json`, `.jsonl` and `.toml` files under `research/` and
+`docs/`. It extracts 40-hex tokens that are not part of a longer hex run, so SHA-256
+digests are excluded. A token counts as an authority citation when one of these contains
+an authority keyword: its JSON key path, its JSON string, or its own or the previous
+Markdown/TOML line. The keywords are authority, commit, head, parent, base, revision, rev,
+checkpoint, merge, sealed, source, tip, sha, ref, anchor, main and branch.
+
+Each citation is then resolved:
+
+- A tree or blob is skipped.
+- A commit passes only if `git branch -r --contains <sha>` is non-empty.
+- A missing object fails.
+
+Known historical exceptions are listed with a reason in
+`tools/authority_refs_allowlist.txt`. Do not add an entry to make a new citation pass.
+Push the cited commit to a branch instead, because a commit is storage and authority comes
+from a ledger row or tag that cites a pushed SHA.
