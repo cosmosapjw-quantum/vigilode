@@ -28,7 +28,10 @@ fn replayed_k1_table_is_refused_on_holdout_profiles() {
                 .unwrap();
             assert!(!output.status.success(), "{command} {policy}");
             let stderr = String::from_utf8_lossy(&output.stderr);
-            assert!(stderr.contains("calibration-only"), "{command} {policy}: {stderr}");
+            assert!(
+                stderr.contains("calibration-only"),
+                "{command} {policy}: {stderr}"
+            );
         }
     }
 }
