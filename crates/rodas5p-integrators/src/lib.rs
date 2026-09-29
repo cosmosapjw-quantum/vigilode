@@ -297,9 +297,9 @@ pub use scientific_validity_v2_gate::{
     verify_v2_calibration_freeze, verify_v2_oregonator_replay,
 };
 pub use sequential::{
-    InnerForcedStageSolveData, InnerForcedStepResult, KrylovState, StageInnerForcingReport,
-    StageSolveData, StepCertificate, StepContext, StepResult, build_step_context,
-    build_step_context_matrix_free, finish_step, sequential_matrix_free_step,
+    InnerForcedStageSolveData, InnerForcedStepResult, InnerForcingResolution, KrylovState,
+    StageInnerForcingReport, StageSolveData, StepCertificate, StepContext, StepResult,
+    build_step_context, build_step_context_matrix_free, finish_step, sequential_matrix_free_step,
     sequential_matrix_free_step_with_inner_forcing, sequential_stages,
     sequential_stages_with_inner_forcing, sequential_step,
 };
