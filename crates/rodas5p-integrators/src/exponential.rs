@@ -1098,10 +1098,14 @@ fn fused_orthogonalize(
     }
 }
 
+/// `physical` is the number of leading entries that are the physical state;
+/// the rest is augmentation bookkeeping and never sets the tolerance scale
+/// (audit F-043).
 fn krylov_exponential_once(
     operator: Arc<dyn LinearOperator>,
     scale: f64,
     vector: &[f64],
+    physical: usize,
     config: FusedPhiKrylovConfig,
     counters: &mut WorkCounters,
 ) -> CoreResult<(Vec<f64>, FusedPhiSubstepReport)> {
@@ -1187,8 +1191,9 @@ fn krylov_exponential_once(
             latest_dimension = krylov_dimension;
             latest_breakdown = happy_breakdown;
             latest = current.clone();
-            let threshold =
-                config.absolute_tolerance + config.relative_tolerance * safe_l2(&current).max(beta);
+            let threshold = config.absolute_tolerance
+                + config.relative_tolerance
+                    * safe_l2(&current[..physical]).max(safe_l2(&vector[..physical]));
             let full_space_exact = krylov_dimension == dimension
                 && matches!(config.orthogonalization, FusedOrthogonalization::FullMgs);
             if happy_breakdown || full_space_exact || residual_error_estimate <= threshold {
@@ -1234,6 +1239,7 @@ fn krylov_exponential_once(
 
 fn augmented_fused_operator(
     operator: Arc<dyn LinearOperator>,
+    scale: f64,
     vectors: &[Vec<f64>],
 ) -> CoreResult<(Arc<dyn LinearOperator>, Vec<f64>, usize)> {
     if vectors.is_empty() {
@@ -1251,7 +1257,31 @@ fn augmented_fused_operator(
     if p == 0 {
         return Ok((operator, vectors[0].clone(), n));
     }
-    let owned = vectors.to_vec();
+    // Balance the augmentation (audit F-042, F-043): the B block is divided
+    // by sigma and the chain's start entry is sigma instead of 1. The
+    // physical block of exp(tau M) start is unchanged. sigma is the power of
+    // two at or above max_k |tau|^k ||b_k||, the size of the term b_k enters
+    // the result with, so the tail neither vanishes against b0 nor swamps
+    // it when b_k carries a factor tau^-k. The augmented system is then
+    // homogeneous in the scale of the inputs: scaling every b_k by a power
+    // of two scales every Arnoldi quantity by the same factor.
+    let tau = scale.abs();
+    let b_max = vectors
+        .iter()
+        .enumerate()
+        .skip(1)
+        .map(|(k, vector)| tau.powi(k as i32) * safe_l2(vector))
+        .fold(0.0_f64, f64::max);
+    let sigma = if b_max > 0.0 && b_max.is_finite() {
+        let exponent = (b_max.log2().ceil() as i64).clamp(-1022, 1023);
+        f64::from_bits(((exponent + 1023) as u64) << 52)
+    } else {
+        1.0
+    };
+    let owned = vectors
+        .iter()
+        .map(|vector| vector.iter().map(|value| value / sigma).collect::<Vec<_>>())
+        .collect::<Vec<_>>();
     let augmented_dimension = n + p;
     let augmented = Arc::new(ClosureOperator::new(
         augmented_dimension,
@@ -1276,7 +1306,7 @@ fn augmented_fused_operator(
     )) as Arc<dyn LinearOperator>;
     let mut start = vec![0.0; augmented_dimension];
     start[..n].copy_from_slice(&vectors[0]);
-    start[augmented_dimension - 1] = 1.0;
+    start[augmented_dimension - 1] = sigma;
     Ok((augmented, start, n))
 }
 
@@ -1323,7 +1353,8 @@ pub fn fused_phi_action(
             substep_reports: Vec::new(),
         });
     }
-    let (augmented, initial, physical_dimension) = augmented_fused_operator(operator, vectors)?;
+    let (augmented, initial, physical_dimension) =
+        augmented_fused_operator(operator, scale, vectors)?;
     let config = config.validate(augmented.dimension())?;
     let mut substeps = 1usize;
     loop {
@@ -1335,8 +1366,14 @@ pub fn fused_phi_action(
         let mut maximum_dimension = 0;
         let mut completed = true;
         for index in 0..substeps {
-            let (next, mut report) =
-                krylov_exponential_once(augmented.clone(), delta, &state, config, counters)?;
+            let (next, mut report) = krylov_exponential_once(
+                augmented.clone(),
+                delta,
+                &state,
+                physical_dimension,
+                config,
+                counters,
+            )?;
             report.substep_index = index;
             maximum_dimension = maximum_dimension.max(report.krylov_dimension);
             if report.error_estimate.is_finite() {
@@ -1482,6 +1519,7 @@ pub struct FusedPhiPrefixSession {
     physical_dimension: usize,
     config: FusedPhiKrylovConfig,
     beta: f64,
+    physical_start_norm: f64,
     basis: Vec<Vec<f64>>,
     hessenberg: Vec<Vec<f64>>,
     current_dimension: usize,
@@ -1536,6 +1574,7 @@ impl FusedPhiPrefixSession {
                 physical_dimension: n,
                 config,
                 beta: 0.0,
+                physical_start_norm: 0.0,
                 basis: Vec::new(),
                 hessenberg: Vec::new(),
                 current_dimension: 0,
@@ -1549,7 +1588,8 @@ impl FusedPhiPrefixSession {
             });
         }
         let highest_phi_index = vectors.len() - 1;
-        let (augmented, initial, physical_dimension) = augmented_fused_operator(operator, vectors)?;
+        let (augmented, initial, physical_dimension) =
+            augmented_fused_operator(operator, scale, vectors)?;
         let config = config.validate(augmented.dimension())?;
         let beta = safe_l2(&initial);
         if !(beta > f64::MIN_POSITIVE && beta.is_finite()) {
@@ -1565,6 +1605,7 @@ impl FusedPhiPrefixSession {
             physical_dimension,
             config,
             beta,
+            physical_start_norm: safe_l2(&initial[..physical_dimension]),
             basis: vec![initial.iter().map(|value| value / beta).collect()],
             hessenberg: vec![vec![0.0; maximum]; maximum + 1],
             current_dimension: 0,
@@ -1646,15 +1687,23 @@ impl FusedPhiPrefixSession {
         self.previous_projected = Some(current);
         self.residual_history.push(residual_error);
         let threshold = self.config.absolute_tolerance
-            + self.config.relative_tolerance * safe_l2(&self.latest_value_augmented).max(self.beta);
+            + self.config.relative_tolerance * self.physical_magnitude();
         let full_space = self.current_dimension == augmented_dimension;
         self.converged = full_space || next_norm == 0.0 || residual_error <= threshold;
         Ok(())
     }
 
+    /// Tolerance scale: the physical part of the current value or of the
+    /// start vector, never the augmentation tail (audit F-043).
+    fn physical_magnitude(&self) -> f64 {
+        let physical = self.physical_dimension;
+        safe_l2(&self.latest_value_augmented[..physical.min(self.latest_value_augmented.len())])
+            .max(self.physical_start_norm)
+    }
+
     pub fn prediction(&self) -> FusedPhiPrefixPrediction {
         let target = self.config.absolute_tolerance
-            + self.config.relative_tolerance * safe_l2(&self.latest_value_augmented).max(self.beta);
+            + self.config.relative_tolerance * self.physical_magnitude();
         let (predicted, contraction) = predict_krylov_dimension(
             &self.residual_history,
             target,
