@@ -68,6 +68,9 @@ pub struct OperatorApplicationWork {
     pub block_matvecs: u64,
     /// Products with an explicit Jacobian matrix (not JVP callbacks).
     pub jacobian_matvecs: u64,
+    /// State vectors one application acts on: 0 or 1 for a single-state
+    /// operator, s for a block operator over s stages (audit F-051).
+    pub state_vectors: u64,
 }
 
 impl OperatorApplicationWork {
@@ -79,7 +82,14 @@ impl OperatorApplicationWork {
             mass_matvecs: self.mass_matvecs.saturating_mul(count),
             block_matvecs: self.block_matvecs.saturating_mul(count),
             jacobian_matvecs: self.jacobian_matvecs.saturating_mul(count),
+            state_vectors: self.state_vectors,
         }
+    }
+
+    /// State-vector units of one application; an undeclared operator acts on
+    /// one state vector.
+    pub fn state_vector_units(self) -> u64 {
+        self.state_vectors.max(1)
     }
 
     fn charge(self, counters: &mut WorkCounters) {
@@ -265,13 +275,19 @@ pub fn apply_counted(
     category: ApplyCategory,
 ) -> CoreResult<()> {
     op.apply(x, y)?;
+    let work = op.application_work();
     match category {
         ApplyCategory::Krylov => counters.linear_matvecs += 1,
         ApplyCategory::Refresh => counters.recycle_refresh_matvecs += 1,
         ApplyCategory::Diagnostic => counters.diagnostic_matvecs += 1,
         ApplyCategory::Block => counters.block_matvecs += 1,
     }
-    op.application_work().charge(counters);
+    if matches!(category, ApplyCategory::Krylov | ApplyCategory::Diagnostic) {
+        counters.linear_matvec_vectors = counters
+            .linear_matvec_vectors
+            .saturating_add(work.state_vector_units());
+    }
+    work.charge(counters);
     Ok(())
 }
 
@@ -284,6 +300,11 @@ pub fn apply_rows_counted(
 ) -> CoreResult<()> {
     op.apply_rows(inputs, outputs)?;
     let vectors = u64::try_from(inputs.len()).unwrap_or(u64::MAX);
+    if matches!(category, ApplyCategory::Krylov | ApplyCategory::Diagnostic) {
+        counters.linear_matvec_vectors = counters
+            .linear_matvec_vectors
+            .saturating_add(vectors.saturating_mul(op.application_work().state_vector_units()));
+    }
     match category {
         ApplyCategory::Krylov => {
             counters.linear_matvecs = counters.linear_matvecs.saturating_add(vectors)
@@ -338,6 +359,11 @@ pub trait Preconditioner: Send + Sync {
     /// implementations return `None`, which forces recycle-image refresh.
     fn exact_identity(&self) -> Option<ExactPreconditionerIdentity> {
         None
+    }
+    /// State vectors one application acts on: 1, or s for a block
+    /// preconditioner over s stages (audit F-051).
+    fn application_vectors(&self) -> u64 {
+        1
     }
 }
 
@@ -477,6 +503,7 @@ impl ShiftedOperator {
             mass_matvecs: u64::from(mass.is_some()),
             block_matvecs: 0,
             jacobian_matvecs: 0,
+            state_vectors: 0,
         };
         Self::new_with_application_work(mass, jacobian, h, gamma, application_work)
     }
@@ -574,5 +601,8 @@ pub fn apply_preconditioner(
 ) -> CoreResult<()> {
     p.apply(x, y)?;
     counters.preconditioner_apps += 1;
+    counters.preconditioner_vectors = counters
+        .preconditioner_vectors
+        .saturating_add(p.application_vectors());
     Ok(())
 }
