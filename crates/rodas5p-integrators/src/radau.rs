@@ -4,12 +4,13 @@ use rodas5p_core::{
 use serde::Serialize;
 
 use crate::adaptive::record_adaptive_work_failure;
+use crate::nonlinear::solve_dense_newton_retaining_factor;
 use crate::output::OutputCollector;
 use crate::{
     AdaptiveControllerState, AdaptiveFailureKind, AdaptiveObservedIntegrationResult,
-    AdaptiveRunDiagnostics, AdaptiveStepConfig, NewtonConfig, NewtonReport,
-    ObservedIntegrationResult, OdeProblem, OutputSchedule, adaptive_next_step_after_attempt,
-    solve_dense_newton, step_doubling_wrms_error,
+    AdaptiveRunDiagnostics, AdaptiveStepConfig, ComparatorFidelity, NewtonConfig, NewtonReport,
+    NewtonTolerancePolicy, ObservedIntegrationResult, OdeProblem, OutputSchedule,
+    adaptive_next_step_after_attempt, radau_newton_tolerance_factor, step_doubling_wrms_error,
 };
 
 const RADAU1_ESTIMATOR_ID: &str = "radau-iia1-step-doubling";
@@ -111,6 +112,13 @@ impl RadauIiaStages {
 pub struct RadauConfig {
     pub stages: RadauIiaStages,
     pub newton: NewtonConfig,
+    /// Opt-in Tier-A flag (audit F-056): solve the Radau IIA3 embedded
+    /// estimator system `((mu/h) M - J) e = r` with the retained 3n stage
+    /// factorization instead of a separate n x n factorization.  Default off
+    /// so frozen reference counters are unchanged.
+    pub reuse_stage_lu_for_error_estimate: bool,
+    /// Opt-in Tier-A Newton stopping policy (audit F-052).
+    pub newton_tolerance: NewtonTolerancePolicy,
 }
 
 impl Default for RadauConfig {
@@ -122,6 +130,39 @@ impl Default for RadauConfig {
                 rtol: 1.0e-12,
                 ..NewtonConfig::default()
             },
+            reuse_stage_lu_for_error_estimate: false,
+            newton_tolerance: NewtonTolerancePolicy::FixedNewtonConfig,
+        }
+    }
+}
+
+impl RadauConfig {
+    /// Audit F-052/F-056 label carried by every record this configuration
+    /// produces.  The internal Radau IIA integrator is a reference
+    /// implementation; opting into a Tier-A flag is recorded separately but
+    /// still does not make it a production comparator.
+    pub fn comparator_fidelity(&self) -> ComparatorFidelity {
+        if self.reuse_stage_lu_for_error_estimate
+            || self.newton_tolerance != NewtonTolerancePolicy::FixedNewtonConfig
+        {
+            ComparatorFidelity::TierAModifiedNewton
+        } else {
+            ComparatorFidelity::ReferenceImplementationOnly
+        }
+    }
+
+    /// Effective configuration for one adaptive trial at the outer tolerance.
+    fn for_adaptive_trial(&self, adaptive: &AdaptiveStepConfig) -> Option<Self> {
+        match self.newton_tolerance {
+            NewtonTolerancePolicy::FixedNewtonConfig => None,
+            NewtonTolerancePolicy::ScaledToOuterTolerance => Some(Self {
+                newton: self.newton.scaled_to_outer_tolerance(
+                    adaptive.atol,
+                    adaptive.rtol,
+                    radau_newton_tolerance_factor(adaptive.rtol),
+                ),
+                ..self.clone()
+            }),
         }
     }
 }
@@ -140,6 +181,8 @@ pub struct RadauStepReport {
 struct RadauStepKernel {
     report: RadauStepReport,
     frozen_jacobian: Option<DenseMatrix>,
+    /// Factorization of the stage operator built from `frozen_jacobian`.
+    stage_factor: Option<LuFactorization>,
 }
 
 #[derive(Clone, Debug)]
@@ -235,7 +278,7 @@ fn radau_step_kernel(
     let mass = problem.mass_or_identity();
     let mut frozen_jacobian = None;
 
-    let newton = solve_dense_newton(
+    let (newton, stage_factor) = solve_dense_newton_retaining_factor(
         &initial,
         &reference,
         &config.newton,
@@ -333,6 +376,7 @@ fn radau_step_kernel(
             newton,
         },
         frozen_jacobian,
+        stage_factor,
     })
 }
 
@@ -347,6 +391,60 @@ pub fn radau_step(
     Ok(radau_step_kernel(problem, t, y, h, config, counters)?.report)
 }
 
+/// Eigenvector `v` of the Radau IIA3 matrix `A` for its real eigenvalue
+/// `1/mu`, normalized so that `v[2] = 1` (the first column of SciPy's `T`).
+fn radau_iia3_real_eigenvector(a: &DenseMatrix, mu: f64) -> [f64; 3] {
+    let gamma = 1.0 / mu;
+    let (a00, a01, a02) = (a[(0, 0)] - gamma, a[(0, 1)], a[(0, 2)]);
+    let (a10, a11, a12) = (a[(1, 0)], a[(1, 1)] - gamma, a[(1, 2)]);
+    let determinant = a00 * a11 - a01 * a10;
+    [
+        (-a02 * a11 + a01 * a12) / determinant,
+        (-a00 * a12 + a10 * a02) / determinant,
+        1.0,
+    ]
+}
+
+/// The IIA3 embedded estimator's `n x n` linear system.
+enum Radau3EstimatorSolver<'a> {
+    /// Frozen reference path: a separate factorization of `(mu/h) M - J`.
+    Separate(LuFactorization),
+    /// Tier-A path.  The 3n stage operator is `I (x) M - h A (x) J`; for the
+    /// real eigenvector `v` of `A` it maps `v (x) e` to
+    /// `(h/mu) v (x) ((mu/h) M - J) e`, so the estimator system costs one 3n
+    /// back-substitution with the retained stage LU (SciPy reuses `LU_real`
+    /// the same way) and no additional factorization.
+    StageLu {
+        factor: &'a LuFactorization,
+        eigenvector: [f64; 3],
+        scale: f64,
+    },
+}
+
+impl Radau3EstimatorSolver<'_> {
+    fn solve(&self, rhs: &[f64]) -> CoreResult<Vec<f64>> {
+        match self {
+            Self::Separate(factor) => factor.solve(rhs),
+            Self::StageLu {
+                factor,
+                eigenvector,
+                scale,
+            } => {
+                let n = rhs.len();
+                let mut stacked = vec![0.0; 3 * n];
+                for (block, weight) in stacked.chunks_exact_mut(n).zip(eigenvector) {
+                    for (value, forcing) in block.iter_mut().zip(rhs) {
+                        *value = scale * weight * forcing;
+                    }
+                }
+                let solution = factor.solve(&stacked)?;
+                // `eigenvector[2] == 1`, so the last block is `e` itself.
+                Ok(solution[2 * n..].to_vec())
+            }
+        }
+    }
+}
+
 #[allow(clippy::too_many_arguments)]
 fn radau_iia3_embedded_error(
     problem: &OdeProblem,
@@ -354,6 +452,7 @@ fn radau_iia3_embedded_error(
     y: &[f64],
     h: f64,
     kernel: &RadauStepKernel,
+    config: &RadauConfig,
     adaptive: &AdaptiveStepConfig,
     previous_local_rejection: bool,
     counters: &mut WorkCounters,
@@ -400,18 +499,39 @@ fn radau_iia3_embedded_error(
         }
     }
 
-    let jacobian = match &kernel.frozen_jacobian {
-        Some(jacobian) => jacobian.clone(),
-        None => problem.dense_jacobian(t, y, counters)?,
-    };
-    let mass = problem.mass_or_identity();
-    counters.mass_matvecs += 1;
-    let mass_v = mass.matvec(&v)?;
-    let f_n = problem.eval_rhs(t, y, counters)?;
     let mu = 3.0 + 3.0_f64.powf(2.0 / 3.0) - 3.0_f64.powf(1.0 / 3.0);
-    let error_operator = mass.scale(mu / h).combine(&jacobian, -1.0)?;
-    counters.direct_factorizations += 1;
-    let factor = LuFactorization::new(&error_operator)?;
+    let mass = problem.mass_or_identity();
+    // The stage factor exists whenever Newton factorized, i.e. whenever a
+    // frozen Jacobian exists; a zero-iteration solve falls back to the
+    // separate factorization below.
+    let stage_lu = if config.reuse_stage_lu_for_error_estimate {
+        kernel.stage_factor.as_ref()
+    } else {
+        None
+    };
+    let (factor, mass_v, f_n) = if let Some(factor) = stage_lu {
+        counters.mass_matvecs += 1;
+        let mass_v = mass.matvec(&v)?;
+        let f_n = problem.eval_rhs(t, y, counters)?;
+        let solver = Radau3EstimatorSolver::StageLu {
+            factor,
+            eigenvector: radau_iia3_real_eigenvector(&a, mu),
+            scale: h / mu,
+        };
+        (solver, mass_v, f_n)
+    } else {
+        let jacobian = match &kernel.frozen_jacobian {
+            Some(jacobian) => jacobian.clone(),
+            None => problem.dense_jacobian(t, y, counters)?,
+        };
+        counters.mass_matvecs += 1;
+        let mass_v = mass.matvec(&v)?;
+        let f_n = problem.eval_rhs(t, y, counters)?;
+        let error_operator = mass.scale(mu / h).combine(&jacobian, -1.0)?;
+        counters.direct_factorizations += 1;
+        let factor = Radau3EstimatorSolver::Separate(LuFactorization::new(&error_operator)?);
+        (factor, mass_v, f_n)
+    };
 
     let first_rhs = f_n
         .iter()
@@ -455,6 +575,8 @@ pub(crate) fn adaptive_radau_trial(
     previous_local_rejection: bool,
     counters: &mut WorkCounters,
 ) -> CoreResult<AdaptiveRadauTrial> {
+    let scaled = config.for_adaptive_trial(adaptive);
+    let config = scaled.as_ref().unwrap_or(config);
     match config.stages {
         RadauIiaStages::One => {
             let coarse = radau_step(problem, t, state, h, config, counters)?;
@@ -485,6 +607,7 @@ pub(crate) fn adaptive_radau_trial(
                 state,
                 h,
                 &kernel,
+                config,
                 adaptive,
                 previous_local_rejection,
                 counters,
@@ -729,4 +852,89 @@ pub fn integrate_radau_adaptive_observed(
         observed,
         diagnostics,
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn real_eigenvector_matches_the_scipy_transform_column() {
+        let (a, _, _) = radau_iia3_tableau();
+        let mu = 3.0 + 3.0_f64.powf(2.0 / 3.0) - 3.0_f64.powf(1.0 / 3.0);
+        let oracle = radau_iia3_transform_oracle();
+        assert!((mu - oracle.mu_real).abs() < 1.0e-14);
+        let v = radau_iia3_real_eigenvector(&a, mu);
+        for (row, value) in v.iter().enumerate() {
+            assert!((value - oracle.transform[row][0]).abs() < 1.0e-14, "{row}");
+            let av = (0..3).map(|j| a[(row, j)] * v[j]).sum::<f64>();
+            assert!((av - value / mu).abs() < 1.0e-14);
+        }
+    }
+
+    #[test]
+    fn stage_lu_estimator_drops_exactly_one_factorization_per_trial() {
+        let (pr, pr_y0) = crate::prothero_robinson_problem(-1.0e4, 50.0, 0.0);
+        let (mass, mass_y0, _, _) =
+            crate::manufactured_mass_nonlinear_problem(20.0, 1.0, 0.2, 0.0).unwrap();
+        let adaptive = AdaptiveStepConfig {
+            atol: 1.0e-6,
+            rtol: 1.0e-4,
+            ..AdaptiveStepConfig::default()
+        };
+        let reuse = RadauConfig {
+            reuse_stage_lu_for_error_estimate: true,
+            ..RadauConfig::default()
+        };
+        let mut compared = 0;
+        for (problem, y0) in [(&pr, &pr_y0), (&mass, &mass_y0)] {
+            for h in [1.0e-4, 1.0e-3, 1.0e-2] {
+                for previous_local_rejection in [false, true] {
+                    let mut separate_counters = WorkCounters::default();
+                    let mut reused_counters = WorkCounters::default();
+                    let separate = adaptive_radau_trial(
+                        problem,
+                        0.0,
+                        y0,
+                        h,
+                        &RadauConfig::default(),
+                        &adaptive,
+                        previous_local_rejection,
+                        &mut separate_counters,
+                    );
+                    let reused = adaptive_radau_trial(
+                        problem,
+                        0.0,
+                        y0,
+                        h,
+                        &reuse,
+                        &adaptive,
+                        previous_local_rejection,
+                        &mut reused_counters,
+                    );
+                    let (Ok(separate), Ok(reused)) = (separate, reused) else {
+                        continue;
+                    };
+                    compared += 1;
+                    assert_eq!(
+                        separate_counters.direct_factorizations,
+                        reused_counters.direct_factorizations + 1
+                    );
+                    assert_eq!(
+                        separate_counters.direct_solve_calls,
+                        reused_counters.direct_solve_calls
+                    );
+                    assert_eq!(separate.y_new(), reused.y_new());
+                    let ratio = reused.error_norm / separate.error_norm;
+                    assert!(
+                        (0.5..=2.0).contains(&ratio) && (ratio - 1.0).abs() < 1.0e-8,
+                        "h={h:e}: separate={:e} reused={:e}",
+                        separate.error_norm,
+                        reused.error_norm
+                    );
+                }
+            }
+        }
+        assert!(compared >= 8, "only {compared} comparable trials");
+    }
 }

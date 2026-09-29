@@ -9,6 +9,7 @@ mod external_comparators;
 mod global_error;
 mod numerical_reference;
 mod output_admissibility;
+mod paired_timing;
 mod runner;
 mod scenarios;
 mod scientific_validity_v2_campaign;
@@ -38,6 +39,15 @@ pub use external_comparators::{
     external_runtime_identity_checksum, load_external_comparator_evidence,
     sundials_probe_evidence_checksum,
 };
+pub use paired_timing::{
+    AaControlAssessment, PAIRED_TIMING_BOOTSTRAP_RESAMPLES, PAIRED_TIMING_CONFIDENCE_LEVEL,
+    PAIRED_TIMING_MIN_INDEPENDENT_BLOCKS, PAIRED_TIMING_MIN_PAIRS, PAIRED_TIMING_MIN_WARMUPS,
+    PAIRED_TIMING_REQUIRED_SPEEDUP, PairedArm, PairedCaseSummary, PairedTimingAssessment,
+    PairedTimingCase, PairedTimingDecision, PairedTimingProtocol, SpeedupInterval,
+    TimingHostMetadata, abba_pair_order, assess_aa_control, assess_paired_timing,
+    calibrate_batch_iterations, case_clustered_bootstrap, detect_timing_host_metadata,
+    measure_paired_case, paired_timing_decision,
+};
 pub use runner::{
     BenchmarkCell, BenchmarkPlan, ComparisonResult, SummaryRow, TraceRunResult,
     build_execution_order, run_comparison, run_trace, summarize_comparison,
@@ -60,6 +70,9 @@ pub use scientific_validity_v2_campaign::{
 pub use session::{RecycleSessionManager, SolverSession, StateTransition};
 
 pub(crate) use contracts::relative_solution_error;
+
+/// Audit F-052/F-056 comparator labels carried by fair-ab records.
+pub use rodas5p_integrators::{ComparativeReading, ComparatorFidelity};
 
 pub use global_error::{
     CommonOutputGrid, DualOutputPolicyEvidence, ExternalErrorScale, FixedAnchorCandidate,

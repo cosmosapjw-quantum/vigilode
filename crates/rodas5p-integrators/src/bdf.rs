@@ -5,9 +5,9 @@ use crate::adaptive::record_adaptive_work_failure;
 use crate::output::OutputCollector;
 use crate::{
     AdaptiveControllerState, AdaptiveFailureKind, AdaptiveObservedIntegrationResult,
-    AdaptiveRunDiagnostics, AdaptiveStepConfig, NewtonConfig, NewtonReport,
-    ObservedIntegrationResult, OdeProblem, OutputSchedule, adaptive_next_step_after_attempt,
-    solve_dense_newton, step_doubling_wrms_error,
+    AdaptiveRunDiagnostics, AdaptiveStepConfig, BDF_NEWTON_TOLERANCE_FACTOR, ComparatorFidelity,
+    NewtonConfig, NewtonReport, NewtonTolerancePolicy, ObservedIntegrationResult, OdeProblem,
+    OutputSchedule, adaptive_next_step_after_attempt, solve_dense_newton, step_doubling_wrms_error,
 };
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
@@ -30,6 +30,8 @@ impl BdfOrder {
 pub struct BdfConfig {
     pub order: BdfOrder,
     pub newton: NewtonConfig,
+    /// Opt-in Tier-A Newton stopping policy (audit F-052).
+    pub newton_tolerance: NewtonTolerancePolicy,
 }
 
 impl Default for BdfConfig {
@@ -37,6 +39,36 @@ impl Default for BdfConfig {
         Self {
             order: BdfOrder::Two,
             newton: NewtonConfig::default(),
+            newton_tolerance: NewtonTolerancePolicy::FixedNewtonConfig,
+        }
+    }
+}
+
+impl BdfConfig {
+    /// Audit F-052 label carried by every record this configuration produces.
+    /// The internal BDF integrator is a reference implementation; opting into
+    /// a Tier-A flag is recorded separately but still does not make it a
+    /// production comparator.
+    pub fn comparator_fidelity(&self) -> ComparatorFidelity {
+        if self.newton_tolerance == NewtonTolerancePolicy::FixedNewtonConfig {
+            ComparatorFidelity::ReferenceImplementationOnly
+        } else {
+            ComparatorFidelity::TierAModifiedNewton
+        }
+    }
+
+    /// Effective configuration for one adaptive trial at the outer tolerance.
+    fn for_adaptive_trial(&self, adaptive: &AdaptiveStepConfig) -> Option<Self> {
+        match self.newton_tolerance {
+            NewtonTolerancePolicy::FixedNewtonConfig => None,
+            NewtonTolerancePolicy::ScaledToOuterTolerance => Some(Self {
+                newton: self.newton.scaled_to_outer_tolerance(
+                    adaptive.atol,
+                    adaptive.rtol,
+                    BDF_NEWTON_TOLERANCE_FACTOR,
+                ),
+                ..self.clone()
+            }),
         }
     }
 }
@@ -702,6 +734,8 @@ pub(crate) fn adaptive_bdf_trial(
     history: &BdfHistory,
     counters: &mut WorkCounters,
 ) -> CoreResult<AdaptiveBdfTrial> {
+    let scaled = config.for_adaptive_trial(adaptive);
+    let config = scaled.as_ref().unwrap_or(config);
     if !bdf_predictor_estimator_ready(history, config.order) {
         // Startup is explicit and finite: two advancing half steps are kept,
         // while the one coarse solve exists solely to certify their error.
