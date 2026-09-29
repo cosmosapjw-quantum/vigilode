@@ -197,7 +197,7 @@ pub use g4_s5b0_inner_tolerance::{
 };
 pub use g4_s5b0_regime_atlas::{
     G4S5B0ActualLevel1PrefixReport, G4S5B0ActualLevel1PrefixRow, G4S5B0ActualLevel2PrefixReport,
-    G4S5B0ActualLevel2PrefixRow, G4S5B0AttemptTraceReport, G4S5B0Family,
+    G4S5B0ActualLevel2PrefixRow, G4S5B0AttemptTraceReport, G4S5B0AttemptWork, G4S5B0Family,
     G4S5B0FrozenFullEShadowEconomicsReport, G4S5B0FrozenFullEShadowHardGates,
     G4S5B0FrozenFullEShadowReport, G4S5B0FrozenFullEShadowRow, G4S5B0PrefixProbePolicy,
     G4S5B0Profile, G4S5B0Report, G4S5B0RjfAttemptRow, G4S5B0RjfParitySummary, G4S5B0ShadowWallArm,
