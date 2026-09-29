@@ -1,6 +1,4 @@
-use rodas5p_core::{
-    CoreError, CoreResult, LinearSolverConfig, WorkCounters, load_rodas5p_coefficients,
-};
+use rodas5p_core::{CoreError, CoreResult, LinearSolverConfig, WorkCounters, rodas5p_coefficients};
 use thiserror::Error;
 
 use crate::adaptive::record_adaptive_work_failure;
@@ -79,7 +77,7 @@ pub fn rodas5p_dense_output(step: &StepResult, theta: f64) -> DenseOutputResult<
             CoreError::Dimension("RODAS5P dense-output stage shape mismatch".into()).into(),
         );
     }
-    let coefficients = load_rodas5p_coefficients()?;
+    let coefficients = rodas5p_coefficients()?;
     if coefficients.dense_d.nrows() != 3 || coefficients.dense_d.ncols() != step.stages.len() {
         return Err(CoreError::Coefficients(
             "RODAS5P dense-output coefficient shape mismatch".into(),

@@ -1,6 +1,7 @@
 use rodas5p_core::{
     CoefficientPrecisionAvailability, DenseMatrix, RODAS5P_COEFFICIENT_SNAPSHOT_SCHEMA_VERSION,
-    direct_solve, load_rodas5p_coefficients, safe_l2, wrms,
+    RODAS5P_COEFFICIENT_SNAPSHOT_SHA256, Rodas5pCoefficients, direct_solve,
+    load_rodas5p_coefficients, rodas5p_coefficients, safe_l2, sha256_hex, wrms,
 };
 
 #[test]
@@ -396,4 +397,69 @@ fn safe_l2_propagates_nan_and_infinity() {
     assert_eq!(safe_l2(&[0.0, -0.0]), 0.0);
     assert_eq!(safe_l2(&[]), 0.0);
     assert_eq!(safe_l2(&[3.0, -4.0]), 5.0);
+}
+
+fn matrix_bits(matrix: &DenseMatrix) -> Vec<u64> {
+    matrix
+        .as_slice()
+        .iter()
+        .map(|value| value.to_bits())
+        .collect()
+}
+
+fn vector_bits(values: &[f64]) -> Vec<u64> {
+    values.iter().map(|value| value.to_bits()).collect()
+}
+
+fn assert_coefficients_bit_identical(left: &Rodas5pCoefficients, right: &Rodas5pCoefficients) {
+    assert_eq!(left.snapshot_schema_version, right.snapshot_schema_version);
+    assert_eq!(left.provenance, right.provenance);
+    assert_eq!(left.gamma.to_bits(), right.gamma.to_bits());
+    for (a, b) in [
+        (&left.a, &right.a),
+        (&left.c_matrix, &right.c_matrix),
+        (&left.gamma_matrix, &right.gamma_matrix),
+        (&left.alpha, &right.alpha),
+        (&left.beta, &right.beta),
+        (&left.l, &right.l),
+        (&left.dense_h, &right.dense_h),
+        (&left.dense_d, &right.dense_d),
+    ] {
+        assert_eq!(matrix_bits(a), matrix_bits(b));
+    }
+    for (a, b) in [
+        (&left.c, &right.c),
+        (&left.b_code, &right.b_code),
+        (&left.b, &right.b),
+        (&left.btilde, &right.btilde),
+        (&left.gamma_rows, &right.gamma_rows),
+    ] {
+        assert_eq!(vector_bits(a), vector_bits(b));
+    }
+}
+
+#[test]
+fn coefficient_tableau_is_parsed_and_derived_once_per_process() {
+    // Audit F-049: every step attempt and dense sample re-parsed the JSON
+    // fixture and re-inverted Gamma^-1. The cached accessor must hand out one
+    // process-lifetime tableau, and the compatibility loader must return a
+    // bit-identical copy of it.
+    let first = rodas5p_coefficients().unwrap();
+    let second = rodas5p_coefficients().unwrap();
+    assert!(std::ptr::eq(first, second));
+    let loaded = load_rodas5p_coefficients().unwrap();
+    assert_coefficients_bit_identical(first, &loaded);
+}
+
+#[test]
+fn coefficient_snapshot_bytes_match_the_digest_verified_at_load() {
+    // Audit F-070: the fixture digest is checked at the single load, so the
+    // pinned constant must equal the SHA-256 of the committed fixture bytes.
+    let bytes = std::fs::read(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../fixtures/rodas5p_coefficients_snapshot.json"
+    ))
+    .unwrap();
+    assert_eq!(sha256_hex(&bytes), RODAS5P_COEFFICIENT_SNAPSHOT_SHA256);
+    assert!(rodas5p_coefficients().is_ok());
 }
