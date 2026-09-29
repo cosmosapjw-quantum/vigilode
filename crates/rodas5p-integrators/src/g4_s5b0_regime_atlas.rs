@@ -99,6 +99,18 @@ impl G4S5B0Profile {
         }
     }
 
+    /// Profiles whose rows are holdout evidence. No literal in the source
+    /// may be derived from their trajectories (docs/HOLDOUT_HYGIENE.md).
+    pub fn is_holdout(self) -> bool {
+        matches!(
+            self,
+            Self::Canonical
+                | Self::Holdout512
+                | Self::EnforcedBudgetHoldout320
+                | Self::StageGrowthHoldout384
+        )
+    }
+
     pub fn uses_canonical_tolerances(self) -> bool {
         matches!(
             self,
@@ -224,16 +236,35 @@ pub struct G4S5B0AttemptTraceReport {
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum G4S5B0PrefixProbePolicy {
-    FrozenK1Comparator,
+    /// Replays k = 1 decisions recorded on N = 128 calibration trajectories.
+    /// It reads step indices, not the observed feature, so it is not a
+    /// causal policy and is refused on holdout profiles (audit F-047).
+    #[serde(alias = "frozen-k1-comparator")]
+    ReplayedK1Table,
+    /// Causal k = 1 comparator: the K3 error-drop feature with a latch of
+    /// length one. Its decisions depend only on past accepted steps.
+    CausalK1,
     K3Development,
 }
 
 impl G4S5B0PrefixProbePolicy {
     pub fn as_str(self) -> &'static str {
         match self {
-            Self::FrozenK1Comparator => "frozen-k1-comparator",
+            Self::ReplayedK1Table => "replayed-k1-table",
+            Self::CausalK1 => "causal-k1",
             Self::K3Development => "k3-development",
         }
+    }
+
+    /// Rejects a non-causal policy on a holdout profile (audit F-047).
+    pub fn validate_for_profile(self, profile: G4S5B0Profile) -> CoreResult<()> {
+        if self == Self::ReplayedK1Table && profile.is_holdout() {
+            return Err(CoreError::InvalidInput(format!(
+                "the replayed k=1 table is calibration-only and cannot run on holdout profile {}",
+                profile.as_str()
+            )));
+        }
+        Ok(())
     }
 }
 
@@ -401,6 +432,21 @@ pub struct G4S5B0StageGrowthSafetyReport {
 /// never calibrated or retuned by the full-E shadow runner.
 pub const V36_FROZEN_ZETA34_TAU: f64 = 13.39706618860016;
 
+/// Every versioned policy constant of the atlas, for the provenance table
+/// test (docs/CONSTANTS_PROVENANCE.toml, audit F-046). Integer constants are
+/// listed as their exact f64 value.
+#[doc(hidden)]
+pub fn g4_s5b0_policy_constants() -> Vec<(&'static str, f64)> {
+    vec![
+        ("V25_ERROR_DROP_THRESHOLD", V25_ERROR_DROP_THRESHOLD),
+        ("V29_PREFIX_RESERVE_JVP", V29_PREFIX_RESERVE_JVP as f64),
+        ("V29_PREFIX_BUDGET_FRACTION", V29_PREFIX_BUDGET_FRACTION),
+        ("V29_STAGE_GROWTH_BASELINE", V29_STAGE_GROWTH_BASELINE),
+        ("V36_FROZEN_ZETA34_TAU", V36_FROZEN_ZETA34_TAU),
+        ("V37_CONTINUATION_JVP_CAP", V37_CONTINUATION_JVP_CAP as f64),
+    ]
+}
+
 pub fn frozen_full_e_shadow_recommended(
     prefix_succeeded: bool,
     budget_exhausted: bool,
@@ -490,7 +536,22 @@ pub struct G4S5B0FrozenFullEShadowRow {
     pub shadow_total_wall_seconds: f64,
     pub shadow_full_e_completed: bool,
     pub shadow_full_e_total_error: Option<f64>,
+    /// The shadow's own estimate (embedded error and Krylov estimates) at
+    /// most one tolerance unit. A self-estimate, not a safety label
+    /// (audit F-045); see `reference_local_error_wrms`.
     pub shadow_full_e_locally_admissible: bool,
+    /// WRMS distance, in tolerance units, between the shadow endpoint and
+    /// a tight-tolerance protected RODAS5P solve of the same (t, y, h).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub reference_local_error_wrms: Option<f64>,
+    /// WRMS distance between the references at 1e-3 and 1e-4 times the case
+    /// tolerances: the reference's own uncertainty.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub reference_uncertainty_wrms: Option<f64>,
+    /// Some(true) when error - uncertainty > 1, Some(false) when
+    /// error + uncertainty <= 1, None when the reference cannot decide.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub reference_unsafe: Option<bool>,
     pub shadow_full_e_failure: Option<String>,
     pub continuation_work: Option<WorkCounters>,
     pub shadow_full_e_work: Option<WorkCounters>,
@@ -518,7 +579,12 @@ pub struct G4S5B0FrozenFullEShadowReport {
     pub retained_level2_resumptions: usize,
     pub shadow_full_e_completions: usize,
     pub shadow_full_e_failures: usize,
+    /// Recommended rows whose self-estimate exceeds one tolerance unit.
     pub unsafe_recommendations: usize,
+    /// Recommended rows whose reference-anchored local error exceeds one
+    /// tolerance unit (audit F-045).
+    #[serde(default)]
+    pub reference_unsafe_recommendations: usize,
     pub budget_breaches: usize,
     pub budget_exhaustions: usize,
     pub prefix_speculative_work: WorkCounters,
@@ -617,7 +683,14 @@ pub struct G4S5B0V37ContinuationTransactionRow {
     pub shadow_total_wall_seconds: f64,
     pub shadow_full_e_completed: bool,
     pub shadow_full_e_total_error: Option<f64>,
+    /// Self-estimate only (audit F-045); see `reference_unsafe`.
     pub shadow_full_e_locally_admissible: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub reference_local_error_wrms: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub reference_uncertainty_wrms: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub reference_unsafe: Option<bool>,
     pub shadow_full_e_failure: Option<String>,
     pub continuation_work: Option<WorkCounters>,
     pub shadow_full_e_work: Option<WorkCounters>,
@@ -647,7 +720,10 @@ pub struct G4S5B0V37ContinuationTransactionReport {
     pub shadow_full_e_completions: usize,
     pub continuation_budget_exhaustions: usize,
     pub shadow_full_e_failures: usize,
+    /// Self-estimate count; see `reference_unsafe_recommendations`.
     pub unsafe_recommendations: usize,
+    #[serde(default)]
+    pub reference_unsafe_recommendations: usize,
     pub prefix_budget_breaches: usize,
     pub prefix_budget_exhaustions: usize,
     pub continuation_budget_breaches: usize,
@@ -1909,7 +1985,10 @@ pub fn run_g4_s5b0_rjf_only_family(
 
 const V25_ERROR_DROP_THRESHOLD: f64 = 0.012790399606947056;
 
-fn frozen_k1_decision(family: &str, dimension: usize, step: usize) -> bool {
+/// Replayed k = 1 decisions, N = 128 calibration rows only. The former
+/// N = 512 rows were read off holdout trajectories and were removed
+/// (audit F-047); holdout profiles are refused before this is consulted.
+fn replayed_k1_decision(family: &str, dimension: usize, step: usize) -> bool {
     let steps: &[usize] = match (dimension, family) {
         (128, "hires-ramped") => &[8, 13],
         (128, "nonautonomous-stiff-forcing") => &[
@@ -1919,23 +1998,21 @@ fn frozen_k1_decision(family: &str, dimension: usize, step: usize) -> bool {
         (128, "rotating-nonnormal") => &[6, 20, 29, 34, 43, 68, 95],
         (128, "semilinear-advection-diffusion-ramped") => &[9, 15],
         (128, "van-der-pol-ramped") => &[11, 14, 24, 62],
-        (512, "hires-ramped") => &[8, 13],
-        (512, "nonautonomous-stiff-forcing") => &[
-            7, 10, 12, 14, 17, 33, 46, 59, 77, 88, 93, 98, 104, 110, 115, 121, 139, 159, 170,
-        ],
-        (512, "robertson-ramped") => &[5, 14, 17, 21],
-        (512, "rotating-nonnormal") => &[6, 20, 29, 34, 43, 69, 95],
-        (512, "semilinear-advection-diffusion-ramped") => &[8, 20, 27, 34],
-        (512, "van-der-pol-ramped") => &[11, 14, 24, 62],
         _ => &[],
     };
     steps.contains(&step)
+}
+
+#[doc(hidden)]
+pub fn g4_s5b0_replayed_k1_decision(family: &str, dimension: usize, step: usize) -> bool {
+    replayed_k1_decision(family, dimension, step)
 }
 
 struct PrefixPolicyState {
     policy: G4S5B0PrefixProbePolicy,
     log_errors: Vec<f64>,
     k3_latch: PersistenceLatch,
+    k1_latch: PersistenceLatch,
 }
 
 impl PrefixPolicyState {
@@ -1944,6 +2021,7 @@ impl PrefixPolicyState {
             policy,
             log_errors: Vec::new(),
             k3_latch: PersistenceLatch::new(3)?,
+            k1_latch: PersistenceLatch::new(1)?,
         })
     }
 
@@ -1961,9 +2039,12 @@ impl PrefixPolicyState {
             None
         };
         let fire = match self.policy {
-            G4S5B0PrefixProbePolicy::FrozenK1Comparator => {
-                frozen_k1_decision(family, dimension, step_index)
+            G4S5B0PrefixProbePolicy::ReplayedK1Table => {
+                replayed_k1_decision(family, dimension, step_index)
             }
+            G4S5B0PrefixProbePolicy::CausalK1 => self.k1_latch.update(
+                feature.is_some_and(|value| value.is_finite() && value >= V25_ERROR_DROP_THRESHOLD),
+            ),
             G4S5B0PrefixProbePolicy::K3Development => self.k3_latch.update(
                 feature.is_some_and(|value| value.is_finite() && value >= V25_ERROR_DROP_THRESHOLD),
             ),
@@ -2863,6 +2944,7 @@ fn run_g4_s5b0_actual_level1_prefix_filtered(
     family: Option<G4S5B0Family>,
     policy: G4S5B0PrefixProbePolicy,
 ) -> CoreResult<G4S5B0ActualLevel1PrefixReport> {
+    policy.validate_for_profile(profile)?;
     if matches!(profile, G4S5B0Profile::Canonical) {
         return Err(CoreError::InvalidInput(
             "v2.7 prefix research requires an explicit single-dimension profile".into(),
@@ -2924,6 +3006,7 @@ fn run_g4_s5b0_actual_level2_prefix_filtered(
     family: Option<G4S5B0Family>,
     policy: G4S5B0PrefixProbePolicy,
 ) -> CoreResult<G4S5B0ActualLevel2PrefixReport> {
+    policy.validate_for_profile(profile)?;
     if matches!(profile, G4S5B0Profile::Canonical) {
         return Err(CoreError::InvalidInput(
             "v2.8 staged prefix research requires an explicit single-dimension profile".into(),
@@ -2984,7 +3067,9 @@ const V29_PREFIX_RESERVE_JVP: u64 = 80;
 const V29_PREFIX_BUDGET_FRACTION: f64 = 0.25;
 
 pub fn enforced_prefix_jvp_cap(committed_rjf_jvp: u64, speculative_jvp: u64) -> u64 {
-    let cumulative_limit = committed_rjf_jvp / 4;
+    // floor(fraction * committed): the declared 0.25 has this one source
+    // (audit F-046). Exact for committed counts below 2^53.
+    let cumulative_limit = (V29_PREFIX_BUDGET_FRACTION * committed_rjf_jvp as f64).floor() as u64;
     V29_PREFIX_RESERVE_JVP.min(cumulative_limit.saturating_sub(speculative_jvp))
 }
 
@@ -3745,6 +3830,93 @@ fn frozen_shadow_total_error(
     Ok(time_error.max(phi_error))
 }
 
+/// Reference-anchored local error of a shadow step (audit F-045): the same
+/// (t, y, h) advanced by protected sequential RODAS5P with tight GMRES
+/// solves, compared with the shadow endpoint in the case WRMS norm. It is
+/// independent of the exponential method's own estimates, but it is the
+/// same Rosenbrock family, so it is run at two tolerances (1e-3 and 1e-4
+/// times the case tolerances) and their distance is returned as the
+/// reference's uncertainty.
+fn reference_local_error_wrms(
+    problem: &OdeProblem,
+    t: f64,
+    y: &[f64],
+    h: f64,
+    candidate: &[f64],
+    adaptive: &AdaptiveStepConfig,
+) -> CoreResult<(f64, f64)> {
+    let tight = reference_endpoint(problem, t, y, h, adaptive, 1.0e-3)?;
+    let tighter = reference_endpoint(problem, t, y, h, adaptive, 1.0e-4)?;
+    Ok((
+        reference_wrms(candidate, &tighter, adaptive.atol, adaptive.rtol)?,
+        reference_wrms(&tight, &tighter, adaptive.atol, adaptive.rtol)?,
+    ))
+}
+
+fn reference_endpoint(
+    problem: &OdeProblem,
+    t: f64,
+    y: &[f64],
+    h: f64,
+    adaptive: &AdaptiveStepConfig,
+    tolerance_factor: f64,
+) -> CoreResult<Vec<f64>> {
+    let linear = rodas5p_core::LinearSolverConfig {
+        method: rodas5p_core::LinearMethod::Gmres,
+        rtol: 1.0e-13,
+        atol: 1.0e-15,
+        restart: 64,
+        maxiter: 1024,
+        preconditioner: rodas5p_core::PreconditionerKind::None,
+        x0_strategy: rodas5p_core::InitialGuess::Zero,
+        ..rodas5p_core::LinearSolverConfig::default()
+    };
+    let result = crate::integrate_adaptive(
+        problem,
+        (t, t + h),
+        y,
+        h / 16.0,
+        crate::IntegrationMethod::Sequential,
+        Some(&linear),
+        None,
+        adaptive.atol * tolerance_factor,
+        adaptive.rtol * tolerance_factor,
+        100_000,
+        h,
+    )?;
+    result
+        .y
+        .last()
+        .filter(|_| result.success)
+        .cloned()
+        .ok_or_else(|| {
+            CoreError::InvalidInput(format!("reference solve failed: {}", result.message))
+        })
+}
+
+fn reference_unsafe_label(error: f64, uncertainty: f64) -> Option<bool> {
+    if !(error.is_finite() && uncertainty.is_finite()) {
+        return None;
+    }
+    if error - uncertainty > 1.0 {
+        Some(true)
+    } else if error + uncertainty <= 1.0 {
+        Some(false)
+    } else {
+        None
+    }
+}
+
+fn reference_wrms(candidate: &[f64], reference: &[f64], atol: f64, rtol: f64) -> CoreResult<f64> {
+    let scale = error_scale(reference, reference, &[atol], rtol)?;
+    let difference = candidate
+        .iter()
+        .zip(reference)
+        .map(|(a, b)| a - b)
+        .collect::<Vec<_>>();
+    wrms(&difference, &scale)
+}
+
 fn exact_continuation_roundtrip(
     prefix: WorkCounters,
     continuation: WorkCounters,
@@ -3946,6 +4118,9 @@ fn new_frozen_shadow_row(
         shadow_full_e_completed: false,
         shadow_full_e_total_error: None,
         shadow_full_e_locally_admissible: false,
+        reference_local_error_wrms: None,
+        reference_uncertainty_wrms: None,
+        reference_unsafe: None,
         shadow_full_e_failure: None,
         continuation_work: None,
         shadow_full_e_work: None,
@@ -4047,6 +4222,9 @@ impl FrozenFullEShadowRuntimeRow {
             shadow_full_e_completed: row.shadow_full_e_completed,
             shadow_full_e_total_error: row.shadow_full_e_total_error,
             shadow_full_e_locally_admissible,
+            reference_local_error_wrms: row.reference_local_error_wrms,
+            reference_uncertainty_wrms: row.reference_uncertainty_wrms,
+            reference_unsafe: row.reference_unsafe,
             shadow_full_e_failure: row.shadow_full_e_failure,
             continuation_work: row.continuation_work,
             shadow_full_e_work: row.shadow_full_e_work,
@@ -4222,6 +4400,25 @@ fn run_rjf_frozen_full_e_shadow_trajectory(
                                                 row.shadow_full_e_total_error = Some(total_error);
                                                 row.shadow_full_e_locally_admissible =
                                                     total_error.is_finite() && total_error <= 1.0;
+                                                if row.recommended {
+                                                    let reference = reference_local_error_wrms(
+                                                        &problem.problem,
+                                                        t_start,
+                                                        &y,
+                                                        h_trial,
+                                                        &report.y_new[..problem.problem.dimension],
+                                                        &adaptive,
+                                                    )
+                                                    .ok();
+                                                    row.reference_local_error_wrms =
+                                                        reference.map(|(error, _)| error);
+                                                    row.reference_uncertainty_wrms =
+                                                        reference.map(|(_, spread)| spread);
+                                                    row.reference_unsafe =
+                                                        reference.and_then(|(error, spread)| {
+                                                            reference_unsafe_label(error, spread)
+                                                        });
+                                                }
                                             }
                                             Err(error) => {
                                                 continuation_outcome_label = "failed";
@@ -4624,6 +4821,10 @@ fn run_g4_s5b0_frozen_full_e_shadow_filtered(
             row.recommended && row.shadow_full_e_completed && !row.shadow_full_e_locally_admissible
         })
         .count();
+    let reference_unsafe_recommendations = rows
+        .iter()
+        .filter(|row| row.recommended && row.reference_unsafe == Some(true))
+        .count();
     let budget_breaches = rows.iter().filter(|row| row.budget_breached).count();
     let budget_exhaustions = rows.iter().filter(|row| row.budget_exhausted).count();
 
@@ -4745,6 +4946,7 @@ fn run_g4_s5b0_frozen_full_e_shadow_filtered(
         shadow_full_e_completions,
         shadow_full_e_failures,
         unsafe_recommendations,
+        reference_unsafe_recommendations,
         budget_breaches,
         budget_exhaustions,
         prefix_speculative_work,
@@ -4953,6 +5155,10 @@ fn run_g4_s5b0_v37_continuation_transaction_filtered(
                 && row.shadow_full_e_locally_admissible == Some(false)
         })
         .count();
+    let reference_unsafe_recommendations = rows
+        .iter()
+        .filter(|row| row.recommended && row.reference_unsafe == Some(true))
+        .count();
     let prefix_budget_breaches = rows.iter().filter(|row| row.budget_breached).count();
     let prefix_budget_exhaustions = rows.iter().filter(|row| row.budget_exhausted).count();
     let continuation_budget_breaches = rows
@@ -5110,6 +5316,7 @@ fn run_g4_s5b0_v37_continuation_transaction_filtered(
         continuation_budget_exhaustions,
         shadow_full_e_failures,
         unsafe_recommendations,
+        reference_unsafe_recommendations,
         prefix_budget_breaches,
         prefix_budget_exhaustions,
         continuation_budget_breaches,
@@ -5760,5 +5967,81 @@ mod trajectory_work_accounting_tests {
         parts.accumulate(work.failed);
         assert_eq!(parts, work.total);
         assert_eq!(summary.work_accounting, "all-attempts-charged-v1");
+    }
+}
+
+#[cfg(test)]
+mod causal_k1_policy_tests {
+    use super::{G4S5B0PrefixProbePolicy, PrefixPolicyState, V25_ERROR_DROP_THRESHOLD};
+
+    fn decisions(policy: G4S5B0PrefixProbePolicy, errors: &[f64]) -> Vec<bool> {
+        let mut state = PrefixPolicyState::new(policy).unwrap();
+        errors
+            .iter()
+            .enumerate()
+            .map(|(step, &error)| {
+                state
+                    .observe_accepted("robertson-ramped", 512, step, error)
+                    .is_some()
+            })
+            .collect()
+    }
+
+    #[test]
+    fn causal_k1_comparator_fires_only_on_observed_feature() {
+        // Audit F-047. The feature at step i is -(log10 e_i - log10 e_{i-2}).
+        let drop = 10f64.powf(-2.0 * V25_ERROR_DROP_THRESHOLD);
+        let errors = [1.0, 1.0, drop, drop, 1.0, 1.0, 1.0, drop * drop, 1.0];
+        let fired = decisions(G4S5B0PrefixProbePolicy::CausalK1, &errors);
+        // Step 2 drops by 2 thresholds against step 0; step 3 keeps the drop
+        // latched; step 7 is a new excursion.
+        assert_eq!(
+            fired,
+            [false, false, true, false, false, false, false, true, false]
+        );
+        // Causality: changing a later error never changes an earlier decision.
+        for cut in 0..errors.len() {
+            let mut altered = errors;
+            for value in &mut altered[cut..] {
+                *value *= 1.0e-6;
+            }
+            let other = decisions(G4S5B0PrefixProbePolicy::CausalK1, &altered);
+            assert_eq!(other[..cut], fired[..cut], "cut at {cut}");
+        }
+        // It ignores the step index: the replay table would never fire at
+        // N = 512, the causal policy does.
+        assert!(
+            decisions(G4S5B0PrefixProbePolicy::ReplayedK1Table, &errors)
+                .iter()
+                .all(|fired| !fired)
+        );
+    }
+}
+
+#[cfg(test)]
+mod reference_safety_label_tests {
+    use super::{reference_unsafe_label, reference_wrms};
+
+    #[test]
+    fn self_estimate_and_reference_label_are_independent_fields() {
+        // Audit F-045: an embedded estimate of 0.5 says admissible; a
+        // reference difference of 3 WRMS units says unsafe. Both are kept.
+        let (atol, rtol) = (1.0e-8, 1.0e-6);
+        let reference = [1.0, -2.0, 0.5];
+        let candidate = reference
+            .iter()
+            .map(|value: &f64| value + 3.0 * (atol + rtol * value.abs()))
+            .collect::<Vec<_>>();
+        let reference_error = reference_wrms(&candidate, &reference, atol, rtol).unwrap();
+        assert!((reference_error - 3.0).abs() < 1.0e-9, "{reference_error}");
+        let self_estimate: f64 = 0.5;
+        let self_estimate_admissible = self_estimate.is_finite() && self_estimate <= 1.0;
+        assert!(self_estimate_admissible);
+        assert_eq!(reference_unsafe_label(reference_error, 0.1), Some(true));
+        assert_eq!(reference_unsafe_label(0.8, 0.1), Some(false));
+        // The reference's own uncertainty can leave the label undecided.
+        assert_eq!(reference_unsafe_label(1.05, 0.1), None);
+        assert_eq!(reference_unsafe_label(0.95, 0.1), None);
+        assert_eq!(reference_unsafe_label(f64::NAN, 0.1), None);
     }
 }

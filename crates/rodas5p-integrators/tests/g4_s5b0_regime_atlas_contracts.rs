@@ -196,7 +196,7 @@ fn actual_level1_prefix_runner_is_read_only_and_targets_first_runtime_proposals(
     let probed = run_g4_s5b0_actual_level1_prefix_family(
         G4S5B0Profile::Calibration128,
         G4S5B0Family::RobertsonRamped,
-        G4S5B0PrefixProbePolicy::FrozenK1Comparator,
+        G4S5B0PrefixProbePolicy::ReplayedK1Table,
     )
     .unwrap();
     let baseline = run_g4_s5b0_rjf_attempt_trace_family(
@@ -243,7 +243,7 @@ fn actual_level1_prefix_runner_is_read_only_and_targets_first_runtime_proposals(
     assert_eq!(probed.prefix_rows.len(), 4);
 
     for row in &probed.prefix_rows {
-        assert_eq!(row.policy, "frozen-k1-comparator");
+        assert_eq!(row.policy, "replayed-k1-table");
         assert!(
             row.prefix_succeeded,
             "prefix failure: {:?}",
@@ -270,7 +270,7 @@ fn actual_level2_prefix_runner_is_read_only_and_exposes_later_stage_defects() {
     let probed = run_g4_s5b0_actual_level2_prefix_family(
         G4S5B0Profile::Calibration128,
         G4S5B0Family::RobertsonRamped,
-        G4S5B0PrefixProbePolicy::FrozenK1Comparator,
+        G4S5B0PrefixProbePolicy::ReplayedK1Table,
     )
     .unwrap();
     let baseline = run_g4_s5b0_rjf_attempt_trace_family(
@@ -436,5 +436,76 @@ fn v29_stage_growth_safety_audit_is_read_only_budgeted_and_explicit() {
         assert!(row.quadratic_drift_zeta34.is_some());
         assert!(row.quadratic_drift_relative.is_some());
         assert!((-1.0..=1.0).contains(&row.quadratic_drift_relative.unwrap()));
+    }
+}
+
+#[test]
+fn replayed_k1_table_is_rejected_on_holdout_profile() {
+    // Audit F-047: the replay table is not a causal policy, so it may never
+    // produce holdout evidence.
+    use rodas5p_integrators::{
+        G4S5B0PrefixProbePolicy, run_g4_s5b0_actual_level1_prefix_family,
+        run_g4_s5b0_actual_level2_prefix_family,
+    };
+    for profile in [
+        G4S5B0Profile::Holdout512,
+        G4S5B0Profile::EnforcedBudgetHoldout320,
+        G4S5B0Profile::StageGrowthHoldout384,
+    ] {
+        assert!(profile.is_holdout());
+        let level1 = run_g4_s5b0_actual_level1_prefix_family(
+            profile,
+            G4S5B0Family::RobertsonRamped,
+            G4S5B0PrefixProbePolicy::ReplayedK1Table,
+        );
+        assert!(
+            matches!(level1, Err(rodas5p_core::CoreError::InvalidInput(ref message)) if message.contains("calibration-only")),
+            "{profile:?}: {:?}",
+            level1.err()
+        );
+        let level2 = run_g4_s5b0_actual_level2_prefix_family(
+            profile,
+            G4S5B0Family::RobertsonRamped,
+            G4S5B0PrefixProbePolicy::ReplayedK1Table,
+        );
+        assert!(
+            matches!(level2, Err(rodas5p_core::CoreError::InvalidInput(_))),
+            "{profile:?}"
+        );
+    }
+    assert!(!G4S5B0Profile::Calibration128.is_holdout());
+}
+
+#[test]
+fn holdout_dimensions_have_no_source_literals() {
+    use rodas5p_integrators::g4_s5b0_replayed_k1_decision;
+    let families = [
+        "hires-ramped",
+        "nonautonomous-stiff-forcing",
+        "robertson-ramped",
+        "rotating-nonnormal",
+        "semilinear-advection-diffusion-ramped",
+        "van-der-pol-ramped",
+    ];
+    for profile in [
+        G4S5B0Profile::Canonical,
+        G4S5B0Profile::Holdout512,
+        G4S5B0Profile::EnforcedBudgetHoldout320,
+        G4S5B0Profile::StageGrowthHoldout384,
+    ] {
+        for &dimension in profile.dimensions() {
+            if dimension == 128 {
+                // Canonical also runs the N = 128 calibration rows.
+                continue;
+            }
+            for family in families {
+                for step in 0..10_000 {
+                    assert!(
+                        !g4_s5b0_replayed_k1_decision(family, dimension, step),
+                        "{family} N={dimension} step {step} is a holdout literal"
+                    );
+                }
+            }
+        }
     }
 }
