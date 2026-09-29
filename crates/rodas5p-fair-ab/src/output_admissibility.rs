@@ -266,49 +266,62 @@ impl DualOutputPolicyEvidence {
         interpolant_delta: Option<f64>,
     ) -> FairResult<TwoArmAdmissibility> {
         self.validate()?;
-        let basis = self
-            .reference_wrms_basis
-            .with_case_tolerance(case_atol, case_rtol)?;
-        let clipped = basis.metrics(&self.clipped.output_times, &self.clipped.states)?;
-        let dense = basis.metrics(&self.dense.output_times, &self.dense.states)?;
-        let gap = basis.discrepancy_wrms(
-            &self.clipped.output_times,
-            &self.clipped.states,
-            &self.dense.output_times,
-            &self.dense.states,
-        )?;
-        check_policy_gap_triangle(
-            gap,
-            clipped.max_grid_wrms,
-            dense.max_grid_wrms,
-            basis.error_scale.absolute.len(),
-        )?;
-        let uncertainty = basis.error_scale.reference_uncertainty_wrms;
-        let clipped_budget = classify_arm_budget(
-            clipped.max_grid_wrms,
-            uncertainty,
-            TWO_ARM_GLOBAL_ERROR_BUDGET,
-        )?;
-        let dense_budget = classify_arm_budget(
-            dense.max_grid_wrms,
-            uncertainty,
-            TWO_ARM_GLOBAL_ERROR_BUDGET,
-        )?;
-        let status = classify_two_arm_row(clipped_budget, dense_budget, interpolant_delta)?;
-        Ok(TwoArmAdmissibility {
-            protocol_id: TWO_ARM_ADMISSIBILITY_PROTOCOL_ID.into(),
-            basis_id: format!(
-                "case-tolerance;atol={case_atol:e};rtol={case_rtol:e};anchor=reference;grid={}",
-                basis.output_grid.grid_id
-            ),
-            clipped_case_wrms: clipped.max_grid_wrms,
-            dense_case_wrms: dense.max_grid_wrms,
-            reference_uncertainty_case_wrms: uncertainty,
-            gap_case_wrms: gap,
-            clipped: clipped_budget,
-            dense: dense_budget,
+        classify_two_arm_v3_states(
+            &self.reference_wrms_basis,
+            (&self.clipped.output_times, &self.clipped.states),
+            (&self.dense.output_times, &self.dense.states),
+            case_atol,
+            case_rtol,
             interpolant_delta,
-            status,
-        })
+        )
     }
+}
+
+/// `DualOutputPolicyEvidence::classify_two_arm_v3` on raw arm trajectories,
+/// for runners that hold states but no `IntegratorWorkReport`.
+pub fn classify_two_arm_v3_states(
+    reference_wrms_basis: &ReferenceWrmsBasis,
+    clipped: (&[f64], &[Vec<f64>]),
+    dense: (&[f64], &[Vec<f64>]),
+    case_atol: f64,
+    case_rtol: f64,
+    interpolant_delta: Option<f64>,
+) -> FairResult<TwoArmAdmissibility> {
+    let basis = reference_wrms_basis.with_case_tolerance(case_atol, case_rtol)?;
+    let gap = basis.discrepancy_wrms(clipped.0, clipped.1, dense.0, dense.1)?;
+    let clipped = basis.metrics(clipped.0, clipped.1)?;
+    let dense = basis.metrics(dense.0, dense.1)?;
+    check_policy_gap_triangle(
+        gap,
+        clipped.max_grid_wrms,
+        dense.max_grid_wrms,
+        basis.error_scale.absolute.len(),
+    )?;
+    let uncertainty = basis.error_scale.reference_uncertainty_wrms;
+    let clipped_budget = classify_arm_budget(
+        clipped.max_grid_wrms,
+        uncertainty,
+        TWO_ARM_GLOBAL_ERROR_BUDGET,
+    )?;
+    let dense_budget = classify_arm_budget(
+        dense.max_grid_wrms,
+        uncertainty,
+        TWO_ARM_GLOBAL_ERROR_BUDGET,
+    )?;
+    let status = classify_two_arm_row(clipped_budget, dense_budget, interpolant_delta)?;
+    Ok(TwoArmAdmissibility {
+        protocol_id: TWO_ARM_ADMISSIBILITY_PROTOCOL_ID.into(),
+        basis_id: format!(
+            "case-tolerance;atol={case_atol:e};rtol={case_rtol:e};anchor=reference;grid={}",
+            basis.output_grid.grid_id
+        ),
+        clipped_case_wrms: clipped.max_grid_wrms,
+        dense_case_wrms: dense.max_grid_wrms,
+        reference_uncertainty_case_wrms: uncertainty,
+        gap_case_wrms: gap,
+        clipped: clipped_budget,
+        dense: dense_budget,
+        interpolant_delta,
+        status,
+    })
 }

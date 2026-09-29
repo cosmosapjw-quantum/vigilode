@@ -13,6 +13,7 @@ mod runner;
 mod scenarios;
 mod scientific_validity_v2_campaign;
 mod session;
+mod two_arm_campaign_v3;
 
 pub use adapters::solve_case;
 pub use adaptive_global_error::{
@@ -98,6 +99,13 @@ pub use output_admissibility::{
     ArmBudget, OutputArmExceedance, TWO_ARM_ADMISSIBILITY_PROTOCOL_ID, TWO_ARM_GLOBAL_ERROR_BUDGET,
     TWO_ARM_INTERPOLANT_DELTA_LIMIT, TwoArmAdmissibility, TwoArmRowStatus,
     check_policy_gap_triangle, classify_arm_budget, classify_two_arm_row,
+    classify_two_arm_v3_states,
+};
+pub use two_arm_campaign_v3::{
+    TWO_ARM_V3_CASE_SCHEMA, TWO_ARM_V3_INEXACT_STAGE_RATIO, TwoArmAdmissibilityCaseV3,
+    TwoArmV3ArmSummary, TwoArmV3Attribution, TwoArmV3AttributionReading,
+    TwoArmV3InterpolantSummary, run_two_arm_admissibility_v3_case,
+    run_two_arm_admissibility_v3_case_synthetic_smoke, two_arm_v3_record_checksum,
 };
 
 mod output_accuracy;
