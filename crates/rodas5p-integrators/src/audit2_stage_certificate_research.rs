@@ -497,10 +497,33 @@ fn finite_bound(value: f64) -> Result<f64, Audit2StageCertificateError> {
         .ok_or(Audit2StageCertificateError::NonFiniteBound)
 }
 
+/// `x = m 2^e` with `m` in `[1, 2)`, for finite `x > 0`; exact.
+fn split_power_of_two(x: f64) -> (f64, i32) {
+    if x < f64::MIN_POSITIVE {
+        // Subnormal: 2^64 x is normal and the product is exact.
+        let (m, e) = split_power_of_two(x * 18_446_744_073_709_551_616.0);
+        return (m, e - 64);
+    }
+    let bits = x.to_bits();
+    let exponent = ((bits >> 52) & 0x7ff) as i32 - 1023;
+    let mantissa = f64::from_bits((bits & ((1_u64 << 52) - 1)) | (1023_u64 << 52));
+    (mantissa, exponent)
+}
+
 /// Correctly rounded upward quotient `a / b` for finite `a >= 0`, `b > 0`.
+///
+/// The direction is decided on the significands: with `a = m_a 2^e_a` and
+/// `b = m_b 2^e_b`, `fl(a / b) = fl(m_a / m_b) 2^(e_a - e_b)` whenever the
+/// quotient is normal, and `fl(m_a / m_b) m_b - m_a` is exact in one FMA.
+/// Evaluated on `a` and `b` directly, that residual can underflow to -0.0
+/// for tiny operands (`eta / (3 eta)`, external audit VIG-A05). A quotient
+/// below `2^-969` is moved up unconditionally, which is conservative.
 fn upper_div(a: f64, b: f64) -> Result<f64, Audit2StageCertificateError> {
     if !a.is_finite() || !b.is_finite() || a < 0.0 || b <= 0.0 {
         return Err(Audit2StageCertificateError::InvalidField);
+    }
+    if a == 0.0 {
+        return Ok(0.0);
     }
     let quotient = a / b;
     if !quotient.is_finite() {
@@ -509,8 +532,10 @@ fn upper_div(a: f64, b: f64) -> Result<f64, Audit2StageCertificateError> {
     if quotient < f64::MIN_POSITIVE * 9_007_199_254_740_992.0 {
         return finite_bound(quotient.next_up());
     }
-    // q * b - a < 0 means the rounded quotient lies below a / b.
-    let error = quotient.mul_add(b, -a);
+    let (ma, _) = split_power_of_two(a);
+    let (mb, _) = split_power_of_two(b);
+    // q m_b - m_a < 0 means the rounded quotient lies below a / b.
+    let error = (ma / mb).mul_add(mb, -ma);
     finite_bound(if error < 0.0 {
         quotient.next_up()
     } else {
@@ -519,6 +544,10 @@ fn upper_div(a: f64, b: f64) -> Result<f64, Audit2StageCertificateError> {
 }
 
 /// Correctly rounded upward square root of a finite nonnegative value.
+///
+/// As in `upper_div`, the direction is decided on `m` in `[1, 4)` with
+/// `value = m 4^k`, where `fl(sqrt m)^2 - m` is exact in one FMA; on `value`
+/// itself the residual can underflow (`sqrt(3 eta)`, external audit VIG-A05).
 fn upper_sqrt(value: f64) -> Result<f64, Audit2StageCertificateError> {
     if !value.is_finite() || value < 0.0 {
         return Err(Audit2StageCertificateError::InvalidField);
@@ -527,7 +556,12 @@ fn upper_sqrt(value: f64) -> Result<f64, Audit2StageCertificateError> {
     if root == 0.0 {
         return Ok(0.0);
     }
-    let error = root.mul_add(root, -value);
+    let (mut m, exponent) = split_power_of_two(value);
+    if exponent % 2 != 0 {
+        m *= 2.0;
+    }
+    let reduced_root = m.sqrt();
+    let error = reduced_root.mul_add(reduced_root, -m);
     finite_bound(if error < 0.0 { root.next_up() } else { root })
 }
 
