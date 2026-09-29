@@ -1,10 +1,23 @@
 use crate::{CoreError, CoreResult};
 
+/// Scaled Euclidean norm. Any NaN entry gives NaN and any infinite entry
+/// gives infinity, so callers' `is_finite` checks fail closed. (`f64::max`
+/// ignores a NaN operand, which made `[NaN, NaN]` a zero norm; external audit
+/// VIG-A04.)
 pub fn safe_l2(x: &[f64]) -> f64 {
     if x.is_empty() {
         return 0.0;
     }
-    let m = x.iter().fold(0.0_f64, |acc, &v| acc.max(v.abs()));
+    let mut m = 0.0_f64;
+    for &v in x {
+        let a = v.abs();
+        if a.is_nan() {
+            return f64::NAN;
+        }
+        if a > m {
+            m = a;
+        }
+    }
     if m == 0.0 {
         return 0.0;
     }

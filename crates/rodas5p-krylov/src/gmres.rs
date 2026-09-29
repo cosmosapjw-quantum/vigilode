@@ -1,7 +1,7 @@
 use crate::{
     common::{
-        apply_left_with_raw, selected_residual_norm, true_residual_into, validate_residual_scale,
-        validate_system,
+        apply_left_with_raw, residual_threshold, selected_residual_norm, true_residual_into,
+        validate_residual_scale, validate_system, validate_tolerances,
     },
     kernels::{axpy, linear_combination_into, normalize, two_pass_mgs_into},
     small::least_squares,
@@ -37,12 +37,7 @@ impl GmresConfig {
                 "GMRES iteration limits must be positive".into(),
             ));
         }
-        if self.rtol < 0.0 || self.atol < 0.0 {
-            return Err(CoreError::InvalidInput(
-                "GMRES tolerances must be nonnegative".into(),
-            ));
-        }
-        Ok(())
+        validate_tolerances("GMRES", self.rtol, self.atol)
     }
 }
 
@@ -207,7 +202,7 @@ pub fn solve_gmres_with_workspace_and_residual_scale(
     validate_residual_scale(residual_scale, n)?;
     let before = *counters;
     let right_norm = selected_residual_norm(rhs, residual_scale)?;
-    let threshold = config.atol.max(config.rtol * right_norm);
+    let threshold = residual_threshold("GMRES", config.rtol, config.atol, right_norm)?;
     workspace.common.prepare(n);
     if let Some(initial) = x0 {
         workspace.common.x.copy_from_slice(initial);
@@ -444,7 +439,7 @@ impl GmresPrefixSession {
         let n = validate_system(op, pc, rhs, x0)?;
         let start_counters = *counters;
         let right_norm = safe_l2(rhs);
-        let threshold = config.atol.max(config.rtol * right_norm);
+        let threshold = residual_threshold("GMRES", config.rtol, config.atol, right_norm)?;
         let x_base = x0.map_or_else(|| vec![0.0; n], ToOwned::to_owned);
         let mut residual = vec![0.0; n];
         if x_base.iter().all(|value| *value == 0.0) {

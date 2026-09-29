@@ -1,7 +1,7 @@
 use crate::{
     common::{
-        apply_left, apply_left_with_raw, selected_residual_norm, true_residual_into,
-        validate_residual_scale, validate_system,
+        apply_left, apply_left_with_raw, residual_threshold, selected_residual_norm,
+        true_residual_into, validate_residual_scale, validate_system, validate_tolerances,
     },
     gmres::arnoldi_happy_breakdown_from_norm,
     kernels::{axpy, dot, linear_combination_into, normalize, two_pass_mgs},
@@ -405,8 +405,16 @@ pub fn solve_gcrodr_with_workspace_and_residual_scale(
     {
         return Err(CoreError::InvalidInput("invalid GCRO-DR dimensions".into()));
     }
+    validate_tolerances("GCRO-DR", config.rtol, config.atol)?;
+    if !(config.rank_tol > 0.0 && config.rank_tol < 1.0) {
+        return Err(CoreError::InvalidInput(
+            "GCRO-DR rank_tol must lie in (0, 1)".into(),
+        ));
+    }
     let n = validate_system(op, pc, rhs, x0)?;
     validate_residual_scale(residual_scale, n)?;
+    let right_norm = selected_residual_norm(rhs, residual_scale)?;
+    let threshold = residual_threshold("GCRO-DR", config.rtol, config.atol, right_norm)?;
     let before = *counters;
     let snapshot = state.clone();
     let system_identity = exact_krylov_system_identity(op, pc);
@@ -465,8 +473,6 @@ pub fn solve_gcrodr_with_workspace_and_residual_scale(
             }
         }
 
-        let right_norm = selected_residual_norm(rhs, residual_scale)?;
-        let threshold = config.atol.max(config.rtol * right_norm);
         if let Some(initial) = x0.or(local.previous_solution.as_deref()) {
             // `x0` is validated by `validate_system`; only a corrupt state can trip this.
             if initial.len() != n {

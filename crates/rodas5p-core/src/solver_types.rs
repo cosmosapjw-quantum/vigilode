@@ -52,8 +52,10 @@ impl Default for LinearSolverConfig {
 }
 impl LinearSolverConfig {
     pub fn validate(&self) -> Result<(), String> {
-        if self.rtol < 0.0 || self.atol < 0.0 {
-            return Err("linear tolerances must be nonnegative".into());
+        // `< 0.0` alone lets NaN and +Inf through to every kernel (audit F-034).
+        let finite_nonnegative = |value: f64| value.is_finite() && value >= 0.0;
+        if !finite_nonnegative(self.rtol) || !finite_nonnegative(self.atol) {
+            return Err("linear tolerances must be finite and nonnegative".into());
         }
         if self.restart == 0 || self.maxiter == 0 || self.inner_m == 0 || self.outer_k == 0 {
             return Err("iteration limits must be positive".into());
