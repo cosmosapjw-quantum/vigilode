@@ -297,11 +297,13 @@ fn outer_wrms(problem: &OdeProblem, y: &[f64], final_time: f64, rtol: f64) -> f6
 }
 
 /// n = 64 semilinear advection-diffusion, matrix-free: large enough that
-/// GMRES stops at the forcing tolerance instead of converging exactly.
-/// Measured at rtol 1e-6, h = 1/8 .. 1/256: errors 4.7e-2, 2.6e-2, 2.0e-2,
+/// its GMRES solves are not exact. Before the error-scaled forcing budget (WU-3, F-009/F-008) GMRES
+/// stopped at the forcing tolerance instead of converging far enough:
+/// measured at rtol 1e-6, h = 1/8 .. 1/256, errors 4.7e-2, 2.6e-2, 2.0e-2,
 /// 6.6e-5, 4.3e-3, 5.1e-5 outer WRMS units, a tolerance floor with no
-/// order. The small in-tree problems (n <= 32) keep order five down to
-/// roundoff because their GMRES solves are exact.
+/// order. With the budget in place (integration branch, 2026-09-29) the
+/// same ladder gives 1.07e-2, 3.5e-4, 1.1e-5, 3.8e-7, 1.3e-8, 2.3e-9 outer
+/// WRMS units (absolute 1.07e-8 .. 2.3e-15), pre-floor slopes 4.95, 4.94.
 fn forcing_problem() -> (OdeProblem, Vec<f64>) {
     let (problem, y0) =
         semilinear_advection_diffusion_problem(64, 0.05, 0.5, -1.0, 0.5, 0.0).unwrap();
@@ -333,12 +335,12 @@ fn forcing_fixed_outer_rtol_error_is_bounded_by_tolerance_floor() {
 }
 
 #[test]
-fn forcing_fixed_outer_rtol_does_not_claim_order_five() {
-    // Expected-failure sentinel (audit F-018): at a fixed outer rtol the
-    // forcing arm's error stalls at a tolerance floor, so at least one
-    // pre-floor slope is below 4.5 today. Invert this test (>= 4.5 for at
-    // least two halvings until the floor) when a forcing rule that retains
-    // order five lands.
+fn forcing_fixed_outer_rtol_keeps_order_five() {
+    // Inverted sentinel (audit F-018 T5): with the error-scaled forcing
+    // budget the forcing arm keeps order five at a fixed outer rtol, i.e.
+    // at least two consecutive pre-floor slopes >= 4.5. Measured 4.95, 4.94;
+    // the next rows are below the 1e-12 floor. The pre-fix sentinel
+    // (at least one slope < 4.5) fired on the integration branch.
     let (problem, y0) = forcing_problem();
     let rtol = 1.0e-6;
     let errors = (3..=8)
@@ -348,34 +350,35 @@ fn forcing_fixed_outer_rtol_does_not_claim_order_five() {
         })
         .collect::<Vec<_>>();
     let slopes = pre_floor_slopes(&errors);
-    assert!(!slopes.is_empty(), "{errors:?}");
     assert!(
-        slopes.iter().any(|slope| *slope < 4.5),
-        "the forcing arm now keeps order five: invert this sentinel. slopes {slopes:?}"
+        has_consecutive_slopes_at_least(&slopes, 4.5, 2),
+        "slopes {slopes:?} errors {errors:?}"
     );
 }
 
 #[test]
-fn forcing_rule_tight_tolerance_abort_is_typed() {
-    // At rtol 1e-10 the forcing rule's roundoff floor exceeds its residual
-    // allocation. The failure must be the typed refusal at step 0, not a
-    // silent wrong answer. E-04 (P1, n = 256) refused at every h; on this
-    // 1-D problem the stage right-hand side h f shrinks with h, and the
-    // measured refusals are h = 1/4 .. 1/32. At h = 1/64 and 1/128 the run
-    // completes within the tolerance (1.7e-2 and 1.5e-3 WRMS units).
-    let (problem, y0) = prothero_robinson_problem(-1.0e4, 0.0, 0.0);
-    let problem = problem.jvp_only_clone().unwrap();
-    for k in 2..=5 {
-        let error = forcing_fixed_outer_error(&problem, &y0, 1.0, 1 << k, 1.0e-10)
-            .expect_err("rtol 1e-10 must refuse");
+fn forcing_rule_tight_tolerance_matches_direct_without_abort() {
+    // Before WU-3 the rule refused at rtol 1e-10 at step 0 ("roundoff
+    // floor exceeds the stage-residual heuristic allocation") for h = 1/4
+    // .. 1/32 (F-008 T6). WU-3 removed the step-0 abort: a roundoff floor
+    // above the allocation now sets the target instead. The run must then
+    // complete at every h and agree with the direct solve; the errors are
+    // the RODAS5P truncation errors on this stiff problem (90.0, 11.6, 1.42,
+    // 0.164, 1.7e-2, 1.5e-3 WRMS units at h = 1/4 .. 1/128, forcing and
+    // direct equal to 1.4e-8 relative at h = 1/4 and to all printed digits
+    // below).
+    let (dense, y0) = prothero_robinson_problem(-1.0e4, 0.0, 0.0);
+    let problem = dense.jvp_only_clone().unwrap();
+    let rtol = 1.0e-10;
+    for k in 2..=7 {
+        let steps = 1 << k;
+        let forcing = forcing_fixed_outer_error(&problem, &y0, 1.0, steps, rtol)
+            .unwrap_or_else(|error| panic!("h = 1/{steps}: {error}"));
+        let direct_state = integrate(&dense, &y0, 1.0, steps, &direct());
+        let direct_error = outer_wrms(&dense, &direct_state, 1.0, rtol);
         assert!(
-            error.starts_with("step 0:") && error.contains("roundoff floor"),
-            "h = 1/{}: {error}",
-            1 << k
+            (forcing - direct_error).abs() <= 1.0e-6 * direct_error.max(1.0),
+            "h = 1/{steps}: forcing {forcing:e} vs direct {direct_error:e}"
         );
-    }
-    for k in 6..=7 {
-        let error = forcing_fixed_outer_error(&problem, &y0, 1.0, 1 << k, 1.0e-10).unwrap();
-        assert!(error <= 1.0, "h = 1/{}: {error:e}", 1 << k);
     }
 }

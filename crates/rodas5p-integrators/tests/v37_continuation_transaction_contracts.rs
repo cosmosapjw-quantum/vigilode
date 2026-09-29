@@ -143,12 +143,14 @@ fn v37_exhaustion_is_a_charged_abstention_without_endpoint_or_failure_label() {
 /// versioned snapshot. The sealed v3.7 literals (18, 36, 116) are tombstoned
 /// in `research/generic_timing_replication_continuation_transaction_v37/results/
 /// V37_TRAJECTORY_LITERALS_TOMBSTONE_20260929.json`; a numerical change adds a
-/// new snapshot file, it never edits an old one.
+/// new snapshot file, it never edits an old one. V2 holds the audit-base
+/// values; V3 the integration-branch values (WU-3 and WU-10 move the JVP
+/// counts, see its `attribution`).
 #[test]
 #[ignore = "long consumed N=192 replay; run by the ignored-tests CI job in the measurement profile"]
 fn v37_trajectory_literals_match_the_latest_snapshot() {
     let snapshot: serde_json::Value = serde_json::from_str(include_str!(
-        "../../../research/generic_timing_replication_continuation_transaction_v37/results/V37_TRAJECTORY_SNAPSHOT_V2_20260929.json"
+        "../../../research/generic_timing_replication_continuation_transaction_v37/results/V37_TRAJECTORY_SNAPSHOT_V3_20260929.json"
     ))
     .unwrap();
     let expected = &snapshot["values"];
