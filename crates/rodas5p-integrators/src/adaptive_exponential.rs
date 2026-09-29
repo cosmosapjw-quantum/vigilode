@@ -1,4 +1,4 @@
-use rodas5p_core::{CoreError, CoreResult, WorkCounters, error_scale, safe_l2, wrms};
+use rodas5p_core::{CoreError, CoreResult, WorkCounters, error_scale, wrms};
 use serde::{Deserialize, Serialize};
 
 use crate::output::OutputCollector;
@@ -89,7 +89,17 @@ fn phi_error_proxy(reports: &[crate::FusedPhiActionReport], h: f64, scale: &[f64
                 .then_some(report.error_estimate)
         })
         .sum::<f64>();
-    h.abs() * estimate / safe_l2(scale).max(f64::MIN_POSITIVE)
+    // The Krylov estimates are Euclidean. Convert them to a WRMS bound with
+    // ||e||_wrms <= ||e||_2 / (sqrt(n) min_i w_i), not by dividing by the
+    // norm of the weight vector, which understates the error by a factor up
+    // to n max w / min w (audit F-043).
+    let smallest_weight = scale
+        .iter()
+        .copied()
+        .fold(f64::INFINITY, f64::min)
+        .max(f64::MIN_POSITIVE);
+    let root_n = (scale.len().max(1) as f64).sqrt();
+    h.abs() * estimate / (root_n * smallest_weight)
 }
 
 #[allow(clippy::too_many_arguments)]
