@@ -126,9 +126,12 @@ fn forced_fixed_endpoint(step: f64) -> f64 {
 }
 
 #[test]
-fn forced_fixed_step_refinement_retains_order_five_before_roundoff() {
-    // Defect caught: an h-independent inner residual tolerance creates a global
-    // error floor and makes at least one pre-roundoff refinement slope collapse.
+fn forced_fixed_step_with_h6_coupled_rtol_retains_order_five() {
+    // What this tests: with the outer rtol tied to h^6, the forcing rule's
+    // inner tolerance shrinks fast enough to keep order five. It says nothing
+    // about a fixed outer rtol, which is how the adaptive driver runs; there
+    // the error stalls at a tolerance floor (audit F-018, E-04), see
+    // fixed_step_order_contracts.rs.
     let errors = [0.08, 0.04, 0.02, 0.01].map(forced_fixed_endpoint);
     let orders = errors
         .windows(2)
