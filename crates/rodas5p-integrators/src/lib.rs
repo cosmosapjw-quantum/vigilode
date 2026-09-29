@@ -80,16 +80,18 @@ pub use audit2_matrix_free_research::{
 };
 #[cfg(feature = "audit2-research")]
 pub use audit2_reusable_transaction_research::{
-    Audit2ExternalOutputReference, Audit2FrozenWSemanticIdentity, Audit2IndependentBudgetReceipt,
-    Audit2IndependentStepBudget, Audit2ReferenceAwareOutputAssessment,
-    Audit2ReferenceUncertaintyTreatment, Audit2ReusablePreconditionerBinding,
-    Audit2ReusablePreconditionerCache, Audit2ReusablePreconditionerCacheSnapshot,
-    Audit2ReusablePreconditionerIdentity, Audit2TransactionalAttemptConfig,
+    AUDIT2_REUSE_CERTIFICATE_MAX_DIMENSION, AUDIT2_TRANSACTION_COMMIT_RULE_CAUSAL,
+    AUDIT2_TRANSACTION_COMMIT_RULE_REFERENCE_GATED, Audit2ExternalOutputReference,
+    Audit2FrozenWSemanticIdentity, Audit2IndependentBudgetReceipt, Audit2IndependentStepBudget,
+    Audit2ReferenceAwareOutputAssessment, Audit2ReferenceUncertaintyTreatment,
+    Audit2ReusablePreconditionerBinding, Audit2ReusablePreconditionerCache,
+    Audit2ReusablePreconditionerCacheSnapshot, Audit2ReusablePreconditionerIdentity,
+    Audit2ReuseCertificate, Audit2TransactionCommitRule, Audit2TransactionalAttemptConfig,
     Audit2TransactionalAttemptFailure, Audit2TransactionalAttemptOutcome,
     Audit2TransactionalAttemptSuccess, Audit2TransactionalCandidateReceipt,
     Audit2TransactionalFailurePhase, Audit2TransactionalSelection,
     assess_audit2_reference_aware_output, audit2_conservative_l2_difference_upper,
-    audit2_conservative_output_budget_lower,
+    audit2_conservative_output_budget_lower, audit2_preconditioner_reuse_certificate,
     run_audit2_reusable_preconditioner_transactional_attempt,
 };
 #[cfg(feature = "audit2-stage-certificate")]
