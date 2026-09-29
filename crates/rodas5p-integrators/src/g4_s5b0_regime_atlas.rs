@@ -163,6 +163,29 @@ pub struct G4S5B0TrajectorySummary {
     pub explicit_jacobian_builds: u64,
     pub direct_factorizations: u64,
     pub newton_iterations: u64,
+    /// Trajectory work split by attempt outcome. The legacy atlas runner
+    /// charges every attempt, accepted, rejected by the embedded estimate, or
+    /// failed with `NonFinite`/`LinearSolve`, and rolls nothing back (audit
+    /// F-050). Runners whose work is carried per attempt row report `None`.
+    #[serde(default)]
+    pub attempt_work: Option<G4S5B0AttemptWork>,
+    /// How work is accounted: `all-attempts-charged-v1`,
+    /// `per-attempt-rows`, or, for records written before audit F-050,
+    /// `legacy-accepted-only-work`.
+    #[serde(default = "legacy_accepted_only_work")]
+    pub work_accounting: String,
+}
+
+fn legacy_accepted_only_work() -> String {
+    "legacy-accepted-only-work".into()
+}
+
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct G4S5B0AttemptWork {
+    pub total: WorkCounters,
+    pub accepted: WorkCounters,
+    pub rejected: WorkCounters,
+    pub failed: WorkCounters,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -1653,6 +1676,7 @@ fn run_trajectory(
     let mut rows = Vec::new();
     let mut total_jacobian_builds = 0u64;
     let mut total_factorizations = 0u64;
+    let mut work = G4S5B0AttemptWork::default();
     let mut failure = None;
 
     while t < tf - tolerance && attempts < adaptive.max_attempts {
@@ -1680,11 +1704,13 @@ fn run_trajectory(
         let report = match trial {
             Ok(report) => report,
             Err(CoreError::NonFinite(_) | CoreError::LinearSolve(_)) => {
+                work.failed.accumulate(step_counters);
                 rejected += 1;
                 h *= adaptive.min_factor;
                 continue;
             }
             Err(error) => {
+                work.failed.accumulate(step_counters);
                 failure = Some(error.to_string());
                 break;
             }
@@ -1695,6 +1721,7 @@ fn run_trajectory(
             && error <= 1.0
             && report.y_new.iter().all(|value| value.is_finite());
         if !step_accepted {
+            work.rejected.accumulate(step_counters);
             rejected += 1;
             let _ = controller.record_rejection(error.max(1.0e-16));
             h *= controller
@@ -1708,6 +1735,7 @@ fn run_trajectory(
             continue;
         }
 
+        work.accepted.accumulate(step_counters);
         let shadow = if include_exponential_shadow {
             run_exponential_shadow(
                 &problem.problem,
@@ -1791,6 +1819,13 @@ fn run_trajectory(
         explicit_jacobian_builds: total_jacobian_builds,
         direct_factorizations: total_factorizations,
         newton_iterations: 0,
+        attempt_work: Some({
+            work.total = work.accepted;
+            work.total.accumulate(work.rejected);
+            work.total.accumulate(work.failed);
+            work
+        }),
+        work_accounting: "all-attempts-charged-v1".into(),
     };
     (rows, summary)
 }
@@ -2133,6 +2168,8 @@ fn run_rjf_attempt_trace_trajectory(
         explicit_jacobian_builds: total_jacobian_builds,
         direct_factorizations: total_factorizations,
         newton_iterations: 0,
+        attempt_work: None,
+        work_accounting: "per-attempt-rows".into(),
     };
     (attempt_rows, accepted_rows, summary)
 }
@@ -2524,6 +2561,8 @@ fn run_rjf_actual_level1_prefix_trajectory(
         explicit_jacobian_builds: total_jacobian_builds,
         direct_factorizations: total_factorizations,
         newton_iterations: 0,
+        attempt_work: None,
+        work_accounting: "per-attempt-rows".into(),
     };
     (attempt_rows, accepted_rows, prefix_rows, summary)
 }
@@ -2813,6 +2852,8 @@ fn run_rjf_actual_level2_prefix_trajectory(
         explicit_jacobian_builds: total_jacobian_builds,
         direct_factorizations: total_factorizations,
         newton_iterations: 0,
+        attempt_work: None,
+        work_accounting: "per-attempt-rows".into(),
     };
     (attempt_rows, accepted_rows, prefix_rows, summary)
 }
@@ -3454,6 +3495,8 @@ fn run_rjf_stage_growth_safety_trajectory(
         explicit_jacobian_builds: total_jacobian_builds,
         direct_factorizations: total_factorizations,
         newton_iterations: 0,
+        attempt_work: None,
+        work_accounting: "per-attempt-rows".into(),
     };
     (attempt_rows, accepted_rows, safety_rows, summary)
 }
@@ -4498,6 +4541,8 @@ fn run_rjf_frozen_full_e_shadow_trajectory(
         explicit_jacobian_builds: total_jacobian_builds,
         direct_factorizations: total_factorizations,
         newton_iterations: 0,
+        attempt_work: None,
+        work_accounting: "per-attempt-rows".into(),
     };
     (attempt_rows, accepted_rows, shadow_rows, summary)
 }
@@ -5638,5 +5683,82 @@ mod stage_trajectory_geometry_tests {
             &shadow_reference.rows[0],
             &wall_only_mutation
         ));
+    }
+}
+
+#[cfg(test)]
+mod trajectory_work_accounting_tests {
+    //! Audit F-050: every attempt of the legacy atlas trajectory, accepted,
+    //! rejected or failed, is charged to the trajectory total.
+    use super::*;
+    use std::sync::atomic::{AtomicU64, Ordering};
+
+    fn counted_transient() -> (AtlasProblem, Arc<AtomicU64>, Arc<AtomicU64>) {
+        let rhs_calls = Arc::new(AtomicU64::new(0));
+        let jvp_calls = Arc::new(AtomicU64::new(0));
+        let lambda = -1.0e3;
+        let (r, j) = (rhs_calls.clone(), jvp_calls.clone());
+        let rhs: crate::problem::RhsFn = Arc::new(move |t: f64, y: &[f64], out: &mut [f64]| {
+            r.fetch_add(1, Ordering::Relaxed);
+            out[0] = lambda * (y[0] - (10.0 * t).sin()) + 10.0 * (10.0 * t).cos();
+            Ok(())
+        });
+        let jvp: crate::problem::JvpFn =
+            Arc::new(move |_t: f64, _y: &[f64], v: &[f64], out: &mut [f64]| {
+                j.fetch_add(1, Ordering::Relaxed);
+                out[0] = lambda * v[0];
+                Ok(())
+            });
+        let problem = OdeProblem::new(
+            "counted-transient",
+            1,
+            rhs,
+            None,
+            None,
+            Some(jvp),
+            None,
+            false,
+            None,
+            None,
+        )
+        .unwrap();
+        (
+            AtlasProblem {
+                family: "counted-transient",
+                id: "counted-transient".into(),
+                problem,
+                // Far off the slow manifold y = sin(10 t): the first steps of
+                // length span/20 are rejected.
+                y0: vec![1.0],
+                t_span: (0.0, 1.0),
+                transition: Arc::new(|_: f64, _: &[f64]| 0.0),
+            },
+            rhs_calls,
+            jvp_calls,
+        )
+    }
+
+    #[test]
+    fn trajectory_totals_charge_every_attempt() {
+        let (problem, rhs_calls, jvp_calls) = counted_transient();
+        let (rows, summary) = run_trajectory(problem, G4S5B0Profile::Smoke, false);
+        assert!(summary.success);
+        assert!(summary.rejected_steps > 0, "the fixture must reject");
+        let work = summary
+            .attempt_work
+            .expect("legacy runner reports attempt work");
+        let accepted_rhs: u64 = rows.iter().map(|row| row.rodas_rhs_evaluations).sum();
+        assert_eq!(
+            work.total.rhs_evaluations,
+            rhs_calls.load(Ordering::Relaxed)
+        );
+        assert_eq!(work.total.jvp_calls, jvp_calls.load(Ordering::Relaxed));
+        assert_eq!(work.accepted.rhs_evaluations, accepted_rhs);
+        assert!(work.total.rhs_evaluations > accepted_rhs);
+        let mut parts = work.accepted;
+        parts.accumulate(work.rejected);
+        parts.accumulate(work.failed);
+        assert_eq!(parts, work.total);
+        assert_eq!(summary.work_accounting, "all-attempts-charged-v1");
     }
 }
