@@ -299,3 +299,59 @@ fn audit_records_classify_as_predeclared_under_the_new_protocol() {
         .count();
     assert_eq!((dominated, pairs.len()), (17, 18));
 }
+
+/// External audit VIG-A07 (2026-09-29): the bands are defined on the exact
+/// values `E + U` and `E - U`; a rounded `10 + 1e-16 = 10` made a boundary
+/// row WithinBudget.
+#[test]
+fn arm_budget_bands_are_decided_on_the_exact_sum_and_difference() {
+    let b = 10.0_f64;
+    let ulp = b - b.next_down(); // 2^-49 just below 10
+    let above = b.next_up() - b; // 2^-49 just above 10
+    let cases = [
+        (b, 1.0e-16, ArmBudget::ReferenceUndecidable),
+        (b, 0.0, ArmBudget::WithinBudget),
+        (b.next_down(), ulp, ArmBudget::WithinBudget),
+        (b.next_down(), ulp / 2.0, ArmBudget::WithinBudget),
+        (
+            b.next_down(),
+            ulp + 2.0_f64.powi(-60),
+            ArmBudget::ReferenceUndecidable,
+        ),
+        (b.next_up(), above, ArmBudget::ReferenceUndecidable),
+        (
+            b.next_up(),
+            above - 2.0_f64.powi(-80),
+            ArmBudget::ExceedsBudget,
+        ),
+        (b.next_up(), 0.0, ArmBudget::ExceedsBudget),
+        (f64::MAX, f64::MAX, ArmBudget::ReferenceUndecidable),
+    ];
+    for (error, uncertainty, expected) in cases {
+        let budget = if error == f64::MAX { f64::MAX } else { b };
+        assert_eq!(
+            classify_arm_budget(error, uncertainty, budget).unwrap(),
+            expected,
+            "E = {error:e}, U = {uncertainty:e}, B = {budget:e}"
+        );
+    }
+}
+
+#[test]
+fn case_tolerance_uncertainty_is_rounded_upward() {
+    // Weight ratio tight / case = 1 / 3, so U_case = U / 3 is inexact.
+    for u in [1.0, 2.0, 1.0e-300, 7.0e10] {
+        let basis = ReferenceWrmsBasis::new(
+            CommonOutputGrid::new(vec![0.0, 1.0]).unwrap(),
+            vec![vec![0.0], vec![0.0]],
+            ExternalErrorScale::with_reference_uncertainty(vec![1.0], 0.0, u).unwrap(),
+        )
+        .unwrap();
+        let case = basis.with_case_tolerance(3.0, 0.0).unwrap();
+        let u_case = case.error_scale.reference_uncertainty_wrms;
+        assert!(
+            u_case.mul_add(3.0, -u) >= 0.0,
+            "U = {u:e}: {u_case:e} is below U / 3"
+        );
+    }
+}
