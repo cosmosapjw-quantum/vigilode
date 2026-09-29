@@ -97,9 +97,11 @@ pub use audit2_stage_certificate_research::{
     Audit2StageCertificateError, FrozenJsonDocument, StageCertificateDecision,
     StageCertificateInput, StageCertificateNorm, StageCertificatePartialFailure,
     StageCertificateProvenance, StageCertificateReceipt, StageCertificateReceiptAuthority,
-    StageCertificateStageTrace, StageCertificateTrace, StageCertificateWork,
-    audit2_stage_certificate_digest_f64_bits, canonical_json_sha256,
-    evaluate_audit2_stage_certificate, retain_completed_stage_traces,
+    StageCertificateStageSolve, StageCertificateStageTrace, StageCertificateTrace,
+    StageCertificateWork, audit2_stage_certificate_decision_input_digest,
+    audit2_stage_certificate_digest_f64_bits, audit2_stage_certificate_rhs_digest,
+    audit2_upper_add, audit2_upper_mul, canonical_json_sha256, evaluate_audit2_stage_certificate,
+    retain_completed_stage_traces,
 };
 
 pub use adaptive::{
