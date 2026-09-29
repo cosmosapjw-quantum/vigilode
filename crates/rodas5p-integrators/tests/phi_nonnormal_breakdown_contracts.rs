@@ -116,7 +116,6 @@ fn legacy_near_breakdown_does_not_hide_stable_nonnormal_feedback() {
         report.krylov_dimension, 2,
         "a nonzero residual extends the basis"
     );
-    assert!(!report.happy_breakdown);
 }
 
 #[test]

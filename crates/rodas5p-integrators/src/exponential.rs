@@ -802,13 +802,18 @@ fn axpy(alpha: f64, x: &[f64], y: &mut [f64]) {
     }
 }
 
-/// Relative Arnoldi breakdown test `h_{m+1,m} <= tol * max(1, |h_{i,m}|)`.
+/// Arnoldi stops early only on an exactly zero residual.
 ///
-/// The former `64 sqrt(eps)` (about 9.5e-7) stopped Arnoldi on a residual that
-/// still carried a relative error near 1e-7 and certified it with an estimate
-/// of zero (audit F-011). A residual estimate now decides convergence, so the
-/// breakdown test only has to recognise a numerically invariant subspace.
-const PHI_KRYLOV_BREAKDOWN_TOLERANCE: f64 = 1.0e3 * f64::EPSILON;
+/// A relative test `h_{m+1,m} <= tol * max(1, |h_{i,m}|)` stopped on a residual
+/// that `A` can feed back with a large gain: for `A = [[-2, 2^46], [2^-46, -2]]`
+/// and `v = e1` the leak `2^-46` returns with gain `2^46`, and the first-term
+/// residual estimate (6e-15) hid a true error of 7e-2 (external audit VIG-A02;
+/// the former `64 sqrt(eps)` test hid 1e-7 on a diagonal matrix, audit F-011).
+/// A small nonzero residual is normalised and extends the basis like any
+/// other; convergence is then decided at the ordinary checkpoints.
+fn arnoldi_exact_breakdown(next_norm: f64) -> bool {
+    next_norm == 0.0
+}
 
 fn projected_action(
     basis: &[Vec<f64>],
@@ -886,7 +891,6 @@ pub fn krylov_phi_action(
     let mut latest_error = f64::INFINITY;
     let mut latest_dimension = 0;
     let mut happy_breakdown = false;
-    let breakdown_tolerance = PHI_KRYLOV_BREAKDOWN_TOLERANCE;
 
     for column in 0..maximum {
         let mut work = vec![0.0; n];
@@ -911,12 +915,7 @@ pub fn krylov_phi_action(
         }
         let next_norm = safe_l2(&work);
         hessenberg[column + 1][column] = next_norm;
-        let scale_norm = hessenberg
-            .iter()
-            .take(column + 1)
-            .map(|row| row[column].abs())
-            .fold(1.0, f64::max);
-        happy_breakdown = next_norm <= breakdown_tolerance * scale_norm;
+        happy_breakdown = arnoldi_exact_breakdown(next_norm);
         if !happy_breakdown && column + 1 < maximum {
             basis.push(work.iter().map(|value| value / next_norm).collect());
         }
@@ -1138,7 +1137,6 @@ fn krylov_exponential_once(
     let mut latest_nested_difference = f64::INFINITY;
     let mut latest_dimension = 0;
     let mut latest_breakdown = false;
-    let breakdown_tolerance = PHI_KRYLOV_BREAKDOWN_TOLERANCE;
 
     for column in 0..maximum {
         let mut work = vec![0.0; dimension];
@@ -1154,18 +1152,13 @@ fn krylov_exponential_once(
         );
         let next_norm = safe_l2(&work);
         hessenberg[column + 1][column] = next_norm;
-        let column_scale = hessenberg
-            .iter()
-            .take(column + 1)
-            .map(|row| row[column].abs())
-            .fold(1.0, f64::max);
-        let happy_breakdown = next_norm <= breakdown_tolerance * column_scale;
+        let happy_breakdown = arnoldi_exact_breakdown(next_norm);
         if !happy_breakdown && column + 1 < maximum {
             basis.push(work.iter().map(|value| value / next_norm).collect());
         }
 
         let krylov_dimension = column + 1;
-        // A true invariant-subspace breakdown is a valid checkpoint even before the requested
+        // An exact invariant-subspace breakdown is a valid checkpoint even before the requested
         // minimum dimension; otherwise zero or affine combinations can burn the entire budget.
         let checkpoint = happy_breakdown
             || krylov_dimension == maximum
@@ -1622,14 +1615,7 @@ impl FusedPhiPrefixSession {
         );
         let next_norm = safe_l2(&work);
         self.hessenberg[column + 1][column] = next_norm;
-        let column_scale = self
-            .hessenberg
-            .iter()
-            .take(column + 1)
-            .map(|row| row[column].abs())
-            .fold(1.0, f64::max);
-        let breakdown_tolerance = PHI_KRYLOV_BREAKDOWN_TOLERANCE;
-        self.happy_breakdown = next_norm <= breakdown_tolerance * column_scale;
+        self.happy_breakdown = arnoldi_exact_breakdown(next_norm);
         if !self.happy_breakdown && column + 1 < maximum {
             self.basis
                 .push(work.iter().map(|value| value / next_norm).collect());

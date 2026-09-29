@@ -154,18 +154,15 @@ pub fn dense_phi_action(
     // the 1-norm of the augmented matrix, which contains `v`. An unscaled
     // column made accuracy depend on the physical scale of `v` (audit F-040,
     // E-06: 1e-8 relative error at ||v|| = 1e8). The column is scaled by a
-    // power of two into (1/2, 1] in max-norm, which is exact, and undone on
-    // the result.
+    // power of two to max-norm near 1, which is exact, and undone on the
+    // result. The exponent is clamped to the normal range so the scale itself
+    // is always finite: `ceil(log2(1e308))` is 1024 (external audit VIG-A06).
     let vector_max = vector.iter().fold(0.0_f64, |m, value| m.max(value.abs()));
     if vector_max == 0.0 {
         return Ok(vec![0.0; n]);
     }
-    let vector_scale = 2.0_f64.powi(vector_max.log2().ceil() as i32);
-    if !vector_scale.is_finite() || vector_scale == 0.0 {
-        return Err(CoreError::NonFinite(
-            "dense phi-action vector scale is not representable".into(),
-        ));
-    }
+    let exponent = (vector_max.log2().ceil() as i64).clamp(-1022, 1023);
+    let vector_scale = f64::from_bits(((exponent + 1023) as u64) << 52);
     let mut augmented = DenseMatrix::zeros(n + phi_index, n + phi_index);
     for i in 0..n {
         for j in 0..n {
