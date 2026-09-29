@@ -4,8 +4,17 @@ use crate::parallel::ParallelExecution;
 
 use rodas5p_core::{
     ClosureOperator, CoreError, CoreResult, DenseMatrix, DenseOperator, LinearOperator,
-    WorkCounters,
+    OperatorApplicationWork, WorkCounters,
 };
+
+/// One user JVP callback evaluates one Jacobian-vector product.
+fn jvp_callback_work() -> OperatorApplicationWork {
+    OperatorApplicationWork {
+        jvp_calls: 1,
+        jvp_vectors: 1,
+        ..OperatorApplicationWork::default()
+    }
+}
 
 pub type RhsFn = Arc<dyn Fn(f64, &[f64], &mut [f64]) -> CoreResult<()> + Send + Sync>;
 pub type BatchRhsFn = Arc<dyn Fn(&[f64], &[Vec<f64>]) -> CoreResult<Vec<Vec<f64>>> + Send + Sync>;
@@ -232,16 +241,27 @@ impl OdeProblem {
         y: &[f64],
         counters: &mut WorkCounters,
     ) -> CoreResult<Arc<dyn LinearOperator>> {
+        // Each linearization declares what one application costs, so every
+        // lane counts user JVP callbacks in `jvp_calls` and explicit Jacobian
+        // products in `jacobian_matvecs` (audit F-048, F-022).
         if let Some(j) = &self.jacobian {
             counters.jacobian_builds += 1;
-            return Ok(Arc::new(DenseOperator::new(j(t, y)?)?));
+            return Ok(Arc::new(DenseOperator::with_application_work(
+                j(t, y)?,
+                OperatorApplicationWork {
+                    jacobian_matvecs: 1,
+                    ..OperatorApplicationWork::default()
+                },
+            )?));
         }
         let jvp = self.jvp.clone().expect("validated JVP");
         let state = y.to_vec();
         let n = self.dimension;
-        Ok(Arc::new(ClosureOperator::new(n, move |v, out| {
-            jvp(t, &state, v, out)
-        })))
+        Ok(Arc::new(ClosureOperator::with_application_work(
+            n,
+            move |v, out| jvp(t, &state, v, out),
+            jvp_callback_work(),
+        )))
     }
 
     /// Build a strictly matrix-free linearization operator.
@@ -263,9 +283,11 @@ impl OdeProblem {
         })?;
         let state = y.to_vec();
         let n = self.dimension;
-        Ok(Arc::new(ClosureOperator::new(n, move |v, out| {
-            jvp(t, &state, v, out)
-        })))
+        Ok(Arc::new(ClosureOperator::with_application_work(
+            n,
+            move |v, out| jvp(t, &state, v, out),
+            jvp_callback_work(),
+        )))
     }
 
     pub fn supports_matrix_free_jvp(&self) -> bool {

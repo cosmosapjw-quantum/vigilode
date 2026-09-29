@@ -184,7 +184,10 @@ fn assert_success_accounting(outcome: &Audit2CorrectionOutcome) {
     assert_eq!(work.counters.direct_factorizations, 1);
     assert_eq!(work.counters.direct_solve_calls, 8);
     assert_eq!(work.counters.diagnostic_matvecs, 8);
-    assert_eq!(work.counters.jvp_vectors, 52);
+    // WU-7 (F-048, F-022): 16 of the former 52 were explicit-Jacobian
+    // products, not JVP callbacks; the total is unchanged.
+    assert_eq!(work.counters.jvp_vectors, 36);
+    assert_eq!(work.counters.jacobian_matvecs, 16);
 }
 
 fn assert_original_target_diagnostic(report: &Audit2OriginalTargetBridgeComparison) {
@@ -566,7 +569,9 @@ fn original_action_failure_retains_projected_arms_and_attempted_work() {
     assert_eq!(failure.work.factorization_attempts, 0);
     assert_eq!(failure.work.original_solve_attempts, 0);
     assert_eq!(failure.work.counters.block_matvecs, 1);
-    assert!(failure.work.counters.jvp_vectors > 0);
+    // WU-7: the charged products are explicit-Jacobian products.
+    assert_eq!(failure.work.counters.jvp_vectors, 0);
+    assert!(failure.work.counters.jacobian_matvecs > 0);
     assert_eq!(failure.projected_residual.len(), context.coeffs.stages());
     assert!(failure.partial.original_residual.is_none());
     println!(

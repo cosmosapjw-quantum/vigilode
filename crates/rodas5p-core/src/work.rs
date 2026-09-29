@@ -59,6 +59,16 @@ pub struct WorkCounters {
     /// not certify endpoint contamination without a resolvent bound.
     #[serde(default)]
     pub forced_stage_solves: u64,
+    /// Products with an explicit Jacobian matrix. These are not user JVP
+    /// callbacks, so they are never counted in `jvp_calls` (audit F-048).
+    /// Omitted from serialized ledgers while zero, so JVP-only receipts keep
+    /// their bytes.
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub jacobian_matvecs: u64,
+}
+
+fn is_zero(value: &u64) -> bool {
+    *value == 0
 }
 
 impl WorkCounters {
@@ -142,6 +152,7 @@ impl WorkCounters {
             nonlinear_solve_failures,
             nonfinite_step_failures,
             forced_stage_solves,
+            jacobian_matvecs,
         );
     }
 
@@ -206,6 +217,7 @@ impl WorkCounters {
             nonlinear_solve_failures,
             nonfinite_step_failures,
             forced_stage_solves,
+            jacobian_matvecs,
         );
         *self = next;
         Some(())
@@ -263,6 +275,7 @@ impl WorkCounters {
             nonlinear_solve_failures,
             nonfinite_step_failures,
             forced_stage_solves,
+            jacobian_matvecs,
         )
     }
 
@@ -331,6 +344,7 @@ impl WorkCounters {
             nonlinear_solve_failures,
             nonfinite_step_failures,
             forced_stage_solves,
+            jacobian_matvecs,
         )
     }
 }
