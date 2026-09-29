@@ -1,10 +1,10 @@
 //! Audit F-053 paired timing protocol on deterministic synthetic samples.
 
 use rodas5p_fair_ab::{
-    PairedArm, PairedTimingCase, PairedTimingDecision, PairedTimingProtocol, TimingHostMetadata,
-    abba_pair_order, assess_aa_control, assess_paired_timing, calibrate_batch_iterations,
-    case_clustered_bootstrap, detect_timing_host_metadata, measure_paired_case,
-    paired_timing_decision,
+    PAIRED_TIMING_MIN_INDEPENDENT_BLOCKS, PairedArm, PairedTimingCase, PairedTimingDecision,
+    PairedTimingProtocol, TimingHostMetadata, abba_pair_order, assess_aa_control,
+    assess_paired_timing, calibrate_batch_iterations, case_clustered_bootstrap,
+    detect_timing_host_metadata, measure_paired_case, paired_timing_decision,
 };
 
 const SEED: u64 = 20_260_929;
@@ -37,6 +37,11 @@ fn protocol() -> PairedTimingProtocol {
     PairedTimingProtocol::authoritative(SEED)
 }
 
+/// Six independent processes of five consecutive pairs each.
+fn six_processes(pairs: usize) -> Vec<u32> {
+    (0..pairs).map(|pair| (pair * 6 / pairs) as u32).collect()
+}
+
 fn noisy_cases(ratio: f64, noise: f64, cases: usize, stream: u64) -> Vec<PairedTimingCase> {
     let protocol = protocol();
     let mut rng = Noise(stream);
@@ -57,6 +62,7 @@ fn noisy_cases(ratio: f64, noise: f64, cases: usize, stream: u64) -> Vec<PairedT
                 reference,
             )
             .unwrap()
+            .with_process_blocks(six_processes(protocol.pairs))
         })
         .collect()
 }
@@ -77,7 +83,9 @@ fn v36_spread_case(case_id: &str, order_seed: u64) -> PairedTimingCase {
     }
     let candidate = vec![1.0e-3; logs.len()];
     let reference = logs.iter().map(|log| 1.0e-3 * log.exp()).collect();
-    PairedTimingCase::from_samples(case_id, &protocol, warmups(), candidate, reference).unwrap()
+    PairedTimingCase::from_samples(case_id, &protocol, warmups(), candidate, reference)
+        .unwrap()
+        .with_process_blocks(six_processes(logs.len()))
 }
 
 fn host() -> TimingHostMetadata {
@@ -158,7 +166,8 @@ fn identical_arms_give_an_aa_interval_containing_one() {
         .collect::<Vec<_>>();
     let identical =
         PairedTimingCase::from_samples("identical", &protocol, warmups(), samples.clone(), samples)
-            .unwrap();
+            .unwrap()
+            .with_process_blocks(six_processes(protocol.pairs));
     let control = assess_aa_control(&[identical], &protocol).unwrap();
     assert!(control.contains_unity);
     assert_eq!(control.interval.lower, 1.0);
@@ -339,4 +348,41 @@ fn host_metadata_records_every_field_or_unknown() {
         assert!(!field.is_empty());
     }
     assert!(["single-cpu", "multi-cpu", "unknown"].contains(&host.pinning.as_str()));
+}
+
+#[test]
+fn pairs_of_one_process_are_not_resampled_as_independent() {
+    // External re-audit, 6.1: repeats inside one process share its state.
+    // Declared as one process, thirty noisy pairs are one resampling unit:
+    // the interval collapses to the case median and no decision is made.
+    let protocol = protocol();
+    let one_process = noisy_cases(1.30, 0.05, 1, 21)
+        .into_iter()
+        .map(|case| case.with_process_blocks(Vec::new()))
+        .collect::<Vec<_>>();
+    let interval = case_clustered_bootstrap(&one_process, &protocol).unwrap();
+    assert_eq!(interval.independent_blocks, 1);
+    assert_eq!(interval.lower.to_bits(), interval.upper.to_bits());
+    assert_eq!(
+        paired_timing_decision(&interval, 1.15),
+        PairedTimingDecision::Inconclusive
+    );
+    let control = assess_aa_control(&one_process, &protocol).unwrap();
+    assert!(!control.authoritative);
+
+    // The same samples from six processes give a real interval.
+    let six = noisy_cases(1.30, 0.05, 1, 21);
+    let interval = case_clustered_bootstrap(&six, &protocol).unwrap();
+    assert_eq!(
+        interval.independent_blocks,
+        PAIRED_TIMING_MIN_INDEPENDENT_BLOCKS
+    );
+    assert!(interval.lower < interval.upper);
+
+    // A block label per pair is required.
+    let mismatched = noisy_cases(1.30, 0.05, 1, 22)
+        .into_iter()
+        .map(|case| case.with_process_blocks(vec![0; 3]))
+        .collect::<Vec<_>>();
+    assert!(case_clustered_bootstrap(&mismatched, &protocol).is_err());
 }

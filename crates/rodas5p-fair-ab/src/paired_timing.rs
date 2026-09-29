@@ -10,8 +10,12 @@
 //!   candidate/reference pairs in a seeded ABBA order;
 //! * per case, the statistic is the median of per-pair
 //!   `ln(reference / candidate)`; the corpus statistic is the median of the
-//!   case statistics, with a seeded case-clustered (two-stage) percentile
-//!   bootstrap interval;
+//!   case statistics, with a seeded two-stage percentile bootstrap whose
+//!   units are independent: cases, then process blocks inside a case. Pairs
+//!   measured in one process share its state (caches, frequency, allocator)
+//!   and are never resampled as if independent (external re-audit, 6.1);
+//! * a decision needs at least [`PAIRED_TIMING_MIN_INDEPENDENT_BLOCKS`]
+//!   independent blocks in total; with fewer, it is Inconclusive;
 //! * the decision is three-valued: Promote iff the interval's lower bound is
 //!   at least the required speedup, Block iff its upper bound is below it,
 //!   otherwise Inconclusive;
@@ -33,6 +37,8 @@ pub const PAIRED_TIMING_MIN_PAIRS: usize = 30;
 pub const PAIRED_TIMING_BOOTSTRAP_RESAMPLES: usize = 10_000;
 pub const PAIRED_TIMING_CONFIDENCE_LEVEL: f64 = 0.95;
 pub const PAIRED_TIMING_REQUIRED_SPEEDUP: f64 = 1.15;
+/// Independent process blocks (over all cases) a decision needs.
+pub const PAIRED_TIMING_MIN_INDEPENDENT_BLOCKS: usize = 6;
 const PAIRED_TIMING_SCHEMA: &str = "vigilode-paired-timing-v1";
 const UNKNOWN: &str = "unknown";
 
@@ -185,9 +191,32 @@ pub struct PairedTimingCase {
     pub order: Vec<[PairedArm; 2]>,
     pub candidate_seconds: Vec<f64>,
     pub reference_seconds: Vec<f64>,
+    /// Process (independent run) of each pair; empty means one process for
+    /// the whole case. Pairs of one block are resampled together.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub process_blocks: Vec<u32>,
 }
 
 impl PairedTimingCase {
+    /// Attach the process of each pair.
+    pub fn with_process_blocks(mut self, process_blocks: Vec<u32>) -> Self {
+        self.process_blocks = process_blocks;
+        self
+    }
+
+    /// Log speedups grouped by process block, in block order.
+    fn block_log_speedups(&self) -> Vec<Vec<f64>> {
+        let logs = self.log_speedups();
+        if self.process_blocks.is_empty() {
+            return vec![logs];
+        }
+        let mut blocks = std::collections::BTreeMap::<u32, Vec<f64>>::new();
+        for (block, log) in self.process_blocks.iter().zip(logs) {
+            blocks.entry(*block).or_default().push(log);
+        }
+        blocks.into_values().collect()
+    }
+
     /// Case from already measured per-iteration samples (replayed or
     /// synthetic evidence).  The warmups must satisfy the protocol and fix the
     /// batch size exactly as [`measure_paired_case`] would; the order is the
@@ -208,6 +237,7 @@ impl PairedTimingCase {
             order: abba_pair_order(pairs, protocol.seed),
             candidate_seconds,
             reference_seconds,
+            process_blocks: Vec::new(),
         })
     }
 
@@ -224,6 +254,14 @@ impl PairedTimingCase {
             return Err(FairError::Invalid(format!(
                 "paired timing case {} needs at least {} complete pairs",
                 self.case_id, protocol.pairs
+            )));
+        }
+        if !self.process_blocks.is_empty()
+            && self.process_blocks.len() != self.candidate_seconds.len()
+        {
+            return Err(FairError::Invalid(format!(
+                "paired timing case {} needs one process block per pair",
+                self.case_id
             )));
         }
         if !self
@@ -308,6 +346,7 @@ where
         order,
         candidate_seconds,
         reference_seconds,
+        process_blocks: Vec::new(),
     })
 }
 
@@ -343,6 +382,9 @@ pub struct SpeedupInterval {
     pub confidence_level: f64,
     pub resamples: usize,
     pub seed: u64,
+    /// Independent process blocks over all cases, the resampling units.
+    #[serde(default)]
+    pub independent_blocks: usize,
 }
 
 impl SpeedupInterval {
@@ -356,8 +398,10 @@ impl SpeedupInterval {
 }
 
 /// Median over cases of the per-case median log speedup, with a seeded
-/// case-clustered percentile bootstrap: each resample draws cases with
-/// replacement and then pairs with replacement inside each drawn case.
+/// two-stage percentile bootstrap: each resample draws cases with
+/// replacement and then, inside each drawn case, whole process blocks with
+/// replacement. A case measured in one process keeps its median; pairs are
+/// never resampled individually.
 pub fn case_clustered_bootstrap(
     cases: &[PairedTimingCase],
     protocol: &PairedTimingProtocol,
@@ -378,13 +422,14 @@ pub fn case_clustered_bootstrap(
             )));
         }
     }
-    let log_speedups = cases
+    let blocks = cases
         .iter()
-        .map(PairedTimingCase::log_speedups)
+        .map(PairedTimingCase::block_log_speedups)
         .collect::<Vec<_>>();
-    let mut case_statistics = log_speedups
+    let independent_blocks = blocks.iter().map(Vec::len).sum::<usize>();
+    let mut case_statistics = blocks
         .iter()
-        .map(|values| median_in_place(&mut values.clone()))
+        .map(|case| median_in_place(&mut case.concat()))
         .collect::<Vec<_>>();
     let point_log = median_in_place(&mut case_statistics);
 
@@ -394,9 +439,11 @@ pub fn case_clustered_bootstrap(
     let mut resampled_pairs = Vec::new();
     for _ in 0..protocol.bootstrap_resamples {
         for slot in &mut resampled_cases {
-            let values = &log_speedups[rng.below(cases.len())];
+            let case = &blocks[rng.below(cases.len())];
             resampled_pairs.clear();
-            resampled_pairs.extend((0..values.len()).map(|_| values[rng.below(values.len())]));
+            for _ in 0..case.len() {
+                resampled_pairs.extend_from_slice(&case[rng.below(case.len())]);
+            }
             *slot = median_in_place(&mut resampled_pairs);
         }
         replicates.push(median_in_place(&mut resampled_cases));
@@ -415,6 +462,7 @@ pub fn case_clustered_bootstrap(
         confidence_level: protocol.confidence_level,
         resamples: protocol.bootstrap_resamples,
         seed: protocol.seed,
+        independent_blocks,
     })
 }
 
@@ -430,7 +478,9 @@ pub fn paired_timing_decision(
     interval: &SpeedupInterval,
     required_speedup: f64,
 ) -> PairedTimingDecision {
-    if interval.lower >= required_speedup {
+    if interval.independent_blocks < PAIRED_TIMING_MIN_INDEPENDENT_BLOCKS {
+        PairedTimingDecision::Inconclusive
+    } else if interval.lower >= required_speedup {
         PairedTimingDecision::Promote
     } else if interval.upper < required_speedup {
         PairedTimingDecision::Block
@@ -459,7 +509,9 @@ pub fn assess_aa_control(
     let half_width_log = interval.half_width_log();
     let maximum_half_width_log = 0.5 * protocol.required_speedup.ln();
     Ok(AaControlAssessment {
-        authoritative: contains_unity && half_width_log <= maximum_half_width_log,
+        authoritative: contains_unity
+            && half_width_log <= maximum_half_width_log
+            && interval.independent_blocks >= PAIRED_TIMING_MIN_INDEPENDENT_BLOCKS,
         interval,
         contains_unity,
         half_width_log,
