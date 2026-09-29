@@ -91,16 +91,33 @@ pub struct StageInnerForcingReport {
     pub refinement_pass: usize,
 }
 
+/// Whether the returned stages meet the forcing budget derived from their
+/// own embedded estimate (re-audit RA-05).
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum InnerForcingResolution {
+    /// No forcing refinement was run.
+    #[default]
+    NotApplicable,
+    /// Every stage residual is within the limit computed from the embedded
+    /// estimate of the returned stages.
+    SelfConsistent,
+    /// The refinement passes ran out, or the estimate was not finite, and
+    /// some stage residual still exceeds the limit of the returned stages.
+    Underresolved,
+}
+
 #[derive(Clone, Debug)]
 pub struct InnerForcedStepResult {
     pub step: StepResult,
     pub stage_forcing: Vec<StageInnerForcingReport>,
+    pub resolution: InnerForcingResolution,
 }
 
 #[derive(Clone, Debug)]
 pub struct InnerForcedStageSolveData {
     pub stage_data: StageSolveData,
     pub stage_forcing: Vec<StageInnerForcingReport>,
+    pub resolution: InnerForcingResolution,
 }
 
 #[derive(Clone, Debug, Default)]
@@ -585,6 +602,7 @@ fn sequential_stages_refined(
             stage_rhs_values: fvals,
         },
         stage_forcing,
+        resolution: InnerForcingResolution::NotApplicable,
     })
 }
 
@@ -630,6 +648,14 @@ fn embedded_error_norm(
     wrms(&error_vector, &scale)
 }
 
+/// Every stage residual within `residual_limit`, or within its roundoff floor.
+fn stage_residuals_within_limit(rows: &[StageInnerForcingReport], residual_limit: f64) -> bool {
+    rows.iter().all(|row| {
+        let floor = RODAS5P_INNER_FORCING_FLOOR * row.flow_wrms.max(row.rhs_wrms).max(1.0);
+        row.achieved_residual_wrms <= residual_limit.max(floor)
+    })
+}
+
 /// Inner-forced stage solves whose residual budget follows the step's own
 /// truncation error (audit F-008).
 ///
@@ -638,6 +664,10 @@ fn embedded_error_norm(
 /// when a stage residual exceeds that bound, all stages are solved again,
 /// warm-started from the previous pass, since later stages depend on earlier
 /// ones. At most two refinements run. Work of every pass is charged.
+///
+/// The limit is recomputed from the stages each pass returns, including the
+/// last one, and the result says whether the returned stages meet it
+/// (re-audit RA-05). The check adds no right-hand side or solve.
 fn inner_forced_stages_with_error_refinement(
     context: &StepContext<'_>,
     config: &LinearSolverConfig,
@@ -661,18 +691,19 @@ fn inner_forced_stages_with_error_refinement(
         None,
         counters,
     )?;
-    for pass in 1..RODAS5P_INNER_FORCING_MAX_PASSES {
+    let mut resolution = InnerForcingResolution::Underresolved;
+    for pass in 1..=RODAS5P_INNER_FORCING_MAX_PASSES {
         let error_norm =
             embedded_error_norm(context, &data.stage_data.stages, outer_atol, outer_rtol)?;
         if !error_norm.is_finite() {
             break;
         }
         let residual_limit = rodas5p_inner_forcing_error_limit(error_norm, output_weight_l1)?;
-        let within_limit = data.stage_forcing.iter().all(|row| {
-            let floor = RODAS5P_INNER_FORCING_FLOOR * row.flow_wrms.max(row.rhs_wrms).max(1.0);
-            row.achieved_residual_wrms <= residual_limit.max(floor)
-        });
-        if within_limit {
+        if stage_residuals_within_limit(&data.stage_forcing, residual_limit) {
+            resolution = InnerForcingResolution::SelfConsistent;
+            break;
+        }
+        if pass == RODAS5P_INNER_FORCING_MAX_PASSES {
             break;
         }
         let warm_start = data.stage_data.stages.clone();
@@ -689,6 +720,7 @@ fn inner_forced_stages_with_error_refinement(
             counters,
         )?;
     }
+    data.resolution = resolution;
     Ok(data)
 }
 
@@ -891,6 +923,7 @@ pub fn sequential_matrix_free_step_with_inner_forcing(
         Ok(InnerForcedStepResult {
             step,
             stage_forcing: data.stage_forcing,
+            resolution: data.resolution,
         })
     })();
     if result.as_ref().map_or(true, |report| !report.step.accepted)
@@ -899,4 +932,40 @@ pub fn sequential_matrix_free_step_with_inner_forcing(
         *target = saved;
     }
     result
+}
+
+#[cfg(test)]
+mod forcing_resolution_tests {
+    use super::{StageInnerForcingReport, stage_residuals_within_limit};
+    use crate::rodas5p_inner_forcing_error_limit;
+
+    fn row(achieved: f64) -> StageInnerForcingReport {
+        StageInnerForcingReport {
+            stage_index: 0,
+            flow_wrms: 1.0,
+            rhs_wrms: 1.0,
+            eta: 0.1,
+            tau: 1.0e-3,
+            achieved_residual_wrms: achieved,
+            floor_active: false,
+            refinement_pass: 2,
+        }
+    }
+
+    #[test]
+    fn the_last_pass_is_judged_against_the_limit_of_its_own_estimate() {
+        // Re-audit RA-05. A pass met the limit derived from the previous
+        // estimate (1e-3 here). If the new estimate is smaller, its limit is
+        // tighter, and the same residual no longer meets it.
+        let l1 = 2.0;
+        let previous_limit = rodas5p_inner_forcing_error_limit(1.0, l1).unwrap();
+        let tighter_limit = rodas5p_inner_forcing_error_limit(1.0e-3, l1).unwrap();
+        assert!(tighter_limit < previous_limit);
+        let rows = [row(0.9 * previous_limit)];
+        assert!(stage_residuals_within_limit(&rows, previous_limit));
+        assert!(!stage_residuals_within_limit(&rows, tighter_limit));
+        // A residual at the roundoff floor always passes.
+        let floor = [row(1.0e-15)];
+        assert!(stage_residuals_within_limit(&floor, 0.0));
+    }
 }
