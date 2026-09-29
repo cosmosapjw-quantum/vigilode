@@ -339,3 +339,61 @@ fn linear_operator_row_application_rejects_ragged_shapes() {
     let mut outputs = vec![vec![0.0; 2]; 2];
     assert!(op.apply_rows(&inputs, &mut outputs).is_err());
 }
+
+#[test]
+fn linear_solver_config_rejects_non_finite_tolerances() {
+    // Audit F-034: the sign-only check let NaN and +/-Inf through to every kernel.
+    for bad in [f64::NAN, f64::INFINITY, f64::NEG_INFINITY, -0.5] {
+        let rtol = rodas5p_core::LinearSolverConfig {
+            rtol: bad,
+            ..rodas5p_core::LinearSolverConfig::default()
+        };
+        let message = rtol
+            .validate()
+            .expect_err("non-finite rtol must be rejected");
+        assert!(message.contains("finite"), "{message}");
+        let atol = rodas5p_core::LinearSolverConfig {
+            atol: bad,
+            ..rodas5p_core::LinearSolverConfig::default()
+        };
+        let message = atol
+            .validate()
+            .expect_err("non-finite atol must be rejected");
+        assert!(message.contains("finite"), "{message}");
+    }
+    let boundary = rodas5p_core::LinearSolverConfig {
+        rtol: 0.0,
+        atol: 0.0,
+        ..rodas5p_core::LinearSolverConfig::default()
+    };
+    assert!(boundary.validate().is_ok());
+    assert!(
+        rodas5p_core::LinearSolverConfig::default()
+            .validate()
+            .is_ok()
+    );
+}
+
+/// External audit VIG-A04: `f64::max` drops a NaN operand, so the scale fold
+/// saw 0 and `safe_l2` returned 0 for `[NaN, NaN]`. Any NaN entry now makes
+/// the norm NaN, so callers' `is_finite` checks fail closed.
+#[test]
+fn safe_l2_propagates_nan_and_infinity() {
+    use rodas5p_core::safe_l2;
+    for x in [
+        vec![f64::NAN, f64::NAN],
+        vec![0.0, f64::NAN],
+        vec![f64::NAN, 0.0],
+        vec![1.0, f64::NAN],
+        vec![-0.0, f64::NAN],
+        vec![f64::INFINITY, f64::NAN],
+        vec![f64::NAN, f64::INFINITY],
+    ] {
+        assert!(safe_l2(&x).is_nan(), "{x:?}: {}", safe_l2(&x));
+    }
+    assert_eq!(safe_l2(&[f64::INFINITY, 1.0]), f64::INFINITY);
+    assert_eq!(safe_l2(&[f64::NEG_INFINITY]), f64::INFINITY);
+    assert_eq!(safe_l2(&[0.0, -0.0]), 0.0);
+    assert_eq!(safe_l2(&[]), 0.0);
+    assert_eq!(safe_l2(&[3.0, -4.0]), 5.0);
+}

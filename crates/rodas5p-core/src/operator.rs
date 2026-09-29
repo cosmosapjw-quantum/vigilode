@@ -283,6 +283,8 @@ pub fn apply_jvp_counted(
     Ok(())
 }
 
+/// A left preconditioner.  Implementations are not assumed nonsingular: every
+/// Krylov kernel certifies convergence on the unpreconditioned true residual.
 pub trait Preconditioner: Send + Sync {
     fn dimension(&self) -> usize;
     fn apply(&self, x: &[f64], y: &mut [f64]) -> CoreResult<()>;
