@@ -863,3 +863,69 @@ fn nonnegative_dot(weights: &[f64], values: &[f64]) -> Result<f64, Audit2StageCe
             audit2_upper_add(sum, product)
         })
 }
+
+#[cfg(test)]
+mod directed_rounding_tests {
+    //! External audit VIG-A05 (2026-09-29): in the subnormal range the FMA
+    //! residual used to decide the rounding direction can itself underflow to
+    //! -0.0, so the helper returned a value below the exact result.
+    use super::{upper_div, upper_sqrt};
+
+    const ETA: f64 = f64::from_bits(1); // 2^-1074
+    const TWO_POW_537: f64 = f64::from_bits((1023 + 537) << 52);
+
+    /// `q` is the upward-rounded `k / 3`: `3 q >= k` and `3 prev(q) < k`.
+    fn assert_upward_third(q: f64, k: f64, label: &str) {
+        assert!(q.mul_add(3.0, -k) >= 0.0, "{label}: {q:e} is below {k}/3");
+        assert!(
+            q.next_down().mul_add(3.0, -k) < 0.0,
+            "{label}: {q:e} is not the least upper value"
+        );
+    }
+
+    #[test]
+    fn subnormal_quotients_are_rounded_upward() {
+        for k in 1..=127_u32 {
+            let k = f64::from(k);
+            let q = upper_div(k * ETA, 3.0 * ETA).unwrap();
+            assert_upward_third(q, k, &format!("{k} eta / 3 eta"));
+        }
+        assert_eq!(upper_div(6.0 * ETA, 3.0 * ETA).unwrap(), 2.0);
+        assert_eq!(upper_div(ETA, ETA).unwrap(), 1.0);
+    }
+
+    #[test]
+    fn normal_quotients_are_rounded_upward_and_exact_ones_kept() {
+        assert_upward_third(upper_div(1.0, 3.0).unwrap(), 1.0, "1/3");
+        assert_upward_third(upper_div(2.0, 3.0).unwrap(), 2.0, "2/3");
+        assert_eq!(upper_div(1.0, 4.0).unwrap(), 0.25);
+        assert_eq!(upper_div(0.0, 3.0).unwrap(), 0.0);
+        let q = upper_div(f64::MIN_POSITIVE, 3.0).unwrap();
+        assert!(q * 3.0 >= f64::MIN_POSITIVE);
+    }
+
+    #[test]
+    fn subnormal_square_roots_are_rounded_upward() {
+        for k in 1..=127_u32 {
+            let k = f64::from(k);
+            // sqrt(k eta) = sqrt(k) 2^-537, so compare 2^537 s with sqrt(k).
+            let s = upper_sqrt(k * ETA).unwrap() * TWO_POW_537;
+            assert!(s.mul_add(s, -k) >= 0.0, "sqrt({k} eta): {s:e} is below");
+            let p = s.next_down();
+            assert!(
+                p.mul_add(p, -k) < 0.0,
+                "sqrt({k} eta): {s:e} is not the least upper value"
+            );
+        }
+        assert_eq!(upper_sqrt(4.0 * ETA).unwrap(), 2.0 / TWO_POW_537);
+    }
+
+    #[test]
+    fn normal_square_roots_are_rounded_upward_and_exact_ones_kept() {
+        let s = upper_sqrt(2.0).unwrap();
+        assert!(s.mul_add(s, -2.0) >= 0.0);
+        assert!(s.next_down().mul_add(s.next_down(), -2.0) < 0.0);
+        assert_eq!(upper_sqrt(4.0).unwrap(), 2.0);
+        assert_eq!(upper_sqrt(0.0).unwrap(), 0.0);
+    }
+}
