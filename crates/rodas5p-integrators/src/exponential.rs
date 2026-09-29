@@ -1353,7 +1353,8 @@ pub fn fused_phi_action(
             substep_reports: Vec::new(),
         });
     }
-    let (augmented, initial, physical_dimension) = augmented_fused_operator(operator, scale, vectors)?;
+    let (augmented, initial, physical_dimension) =
+        augmented_fused_operator(operator, scale, vectors)?;
     let config = config.validate(augmented.dimension())?;
     let mut substeps = 1usize;
     loop {
@@ -1365,15 +1366,14 @@ pub fn fused_phi_action(
         let mut maximum_dimension = 0;
         let mut completed = true;
         for index in 0..substeps {
-            let (next, mut report) =
-                krylov_exponential_once(
-                    augmented.clone(),
-                    delta,
-                    &state,
-                    physical_dimension,
-                    config,
-                    counters,
-                )?;
+            let (next, mut report) = krylov_exponential_once(
+                augmented.clone(),
+                delta,
+                &state,
+                physical_dimension,
+                config,
+                counters,
+            )?;
             report.substep_index = index;
             maximum_dimension = maximum_dimension.max(report.krylov_dimension);
             if report.error_estimate.is_finite() {
@@ -1588,7 +1588,8 @@ impl FusedPhiPrefixSession {
             });
         }
         let highest_phi_index = vectors.len() - 1;
-        let (augmented, initial, physical_dimension) = augmented_fused_operator(operator, scale, vectors)?;
+        let (augmented, initial, physical_dimension) =
+            augmented_fused_operator(operator, scale, vectors)?;
         let config = config.validate(augmented.dimension())?;
         let beta = safe_l2(&initial);
         if !(beta > f64::MIN_POSITIVE && beta.is_finite()) {

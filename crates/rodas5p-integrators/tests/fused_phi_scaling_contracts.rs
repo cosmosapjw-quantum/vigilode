@@ -173,8 +173,8 @@ fn fused_combination_on_diffusion_matches_the_dense_oracle_as_the_step_shrinks()
         // Oracle: the same combination through one dense augmented
         // exponential, whose accuracy the core contract pins (F-042).
         let mut vectors = vec![vec![0.0; 64]];
-        for k in 0..4 {
-            vectors.push(v[k].iter().map(|x| x / h.powi(k as i32 + 1)).collect());
+        for (k, vector) in v.iter().enumerate() {
+            vectors.push(vector.iter().map(|x| x / h.powi(k as i32 + 1)).collect());
         }
         let oracle = dense_fused_phi_action(&matrix, h, &vectors).unwrap();
         let error = report

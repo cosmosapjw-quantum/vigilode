@@ -40,9 +40,7 @@ fn stiff_coupled_problem(lambda: f64) -> OdeProblem {
         None,
         None,
         Some(Arc::new(move |_, y: &[f64], v: &[f64], out: &mut [f64]| {
-            out[0] = lambda * v[0]
-                + 2.0 * y[1] * v[1]
-                + (lambda * y[2].sin() - y[2].cos()) * v[2];
+            out[0] = lambda * v[0] + 2.0 * y[1] * v[1] + (lambda * y[2].sin() - y[2].cos()) * v[2];
             out[1] = y[1] * v[0] + (y[0] - 1.0) * v[1];
             out[2] = 0.0;
             Ok(())
@@ -225,14 +223,18 @@ fn krylov_truncation_is_reported_and_its_order_is_measured() {
     };
     let report = pexprb54s4_fused_step(&problem, 0.0, &u0, 0.01, capped, &execution).unwrap();
     assert!(report.fused_phi_reports.iter().all(|phi| phi.converged));
-    assert!(report
-        .fused_phi_reports
-        .iter()
-        .any(|phi| phi.maximum_krylov_dimension == 4 && phi.substeps > 1));
-    assert!(report
-        .fused_phi_reports
-        .iter()
-        .any(|phi| phi.error_estimate > 0.0));
+    assert!(
+        report
+            .fused_phi_reports
+            .iter()
+            .any(|phi| phi.maximum_krylov_dimension == 4 && phi.substeps > 1)
+    );
+    assert!(
+        report
+            .fused_phi_reports
+            .iter()
+            .any(|phi| phi.error_estimate > 0.0)
+    );
     let orders = richardson_orders(&problem, &u0, 0.2, &[10, 20, 40, 80], capped);
     eprintln!("maximum_dimension = 4 observed orders: {orders:?}");
     assert!(orders.iter().all(|order| order.is_finite()), "{orders:?}");
