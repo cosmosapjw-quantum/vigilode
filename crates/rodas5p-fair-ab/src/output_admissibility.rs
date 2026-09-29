@@ -78,13 +78,81 @@ pub fn classify_arm_budget(error: f64, uncertainty: f64, budget: f64) -> FairRes
             "arm budget inputs must be finite and nonnegative with a positive budget".into(),
         ));
     }
-    Ok(if error + uncertainty <= budget {
+    // The bands are defined on the exact values of E + U and E - U; a
+    // nearest-rounded 10 + 1e-16 = 10 made a boundary row WithinBudget
+    // (external audit VIG-A07).
+    Ok(if exact_sum_cmp(error, uncertainty, budget).is_le() {
         ArmBudget::WithinBudget
-    } else if error - uncertainty > budget {
+    } else if exact_sum_cmp(error, -uncertainty, budget).is_gt() {
         ArmBudget::ExceedsBudget
     } else {
         ArmBudget::ReferenceUndecidable
     })
+}
+
+/// Below this, an FMA residual of a product or quotient may itself round.
+const EXACT_RESIDUAL_THRESHOLD: f64 = f64::MIN_POSITIVE * 9_007_199_254_740_992.0; // 2^-969
+
+/// `a / b` rounded upward, for finite positive `a` and `b`; conservative
+/// (one step up) when the residual could be inexact.
+fn upward_div(a: f64, b: f64) -> f64 {
+    let quotient = a / b;
+    if a < EXACT_RESIDUAL_THRESHOLD || quotient < EXACT_RESIDUAL_THRESHOLD {
+        return quotient.next_up();
+    }
+    if quotient.mul_add(b, -a) < 0.0 {
+        quotient.next_up()
+    } else {
+        quotient
+    }
+}
+
+/// `a * b` rounded upward, for finite nonnegative `a` and `b`; conservative
+/// (one step up) when the residual could be inexact.
+fn upward_mul(a: f64, b: f64) -> f64 {
+    let product = a * b;
+    if product == 0.0 && (a == 0.0 || b == 0.0) {
+        return 0.0;
+    }
+    if product < EXACT_RESIDUAL_THRESHOLD {
+        return product.next_up();
+    }
+    if a.mul_add(b, -product) > 0.0 {
+        product.next_up()
+    } else {
+        product
+    }
+}
+
+/// Compare the exact real `a + b` with a finite `bound`, for finite `a`, `b`.
+///
+/// `s = fl(a + b)` is monotone in the exact sum and `bound` is representable,
+/// so `s < bound` and `s > bound` already decide; on `s == bound` the TwoSum
+/// error term decides. An overflowing sum exceeds every finite bound.
+fn exact_sum_cmp(a: f64, b: f64, bound: f64) -> std::cmp::Ordering {
+    let sum = a + b;
+    if !sum.is_finite() {
+        return if sum > 0.0 {
+            std::cmp::Ordering::Greater
+        } else {
+            std::cmp::Ordering::Less
+        };
+    }
+    if sum < bound {
+        return std::cmp::Ordering::Less;
+    }
+    if sum > bound {
+        return std::cmp::Ordering::Greater;
+    }
+    let b_virtual = sum - a;
+    let error = (a - (sum - b_virtual)) + (b - b_virtual);
+    if error > 0.0 {
+        std::cmp::Ordering::Greater
+    } else if error < 0.0 {
+        std::cmp::Ordering::Less
+    } else {
+        std::cmp::Ordering::Equal
+    }
 }
 
 /// `y_c - y_d = (y_c - y_ref) - (y_d - y_ref)` gives `G <= E_c + E_d` at every
@@ -164,15 +232,18 @@ impl ReferenceWrmsBasis {
         self.validate()?;
         let dimension = self.error_scale.absolute.len();
         let case_scale = ExternalErrorScale::new(vec![atol; dimension], rtol)?;
+        // Both the ratio and the product are rounded upward, so the converted
+        // uncertainty is never below U * max(w / w_case) of the computed
+        // weights (external audit VIG-A07).
         let mut ratio = 0.0_f64;
         for state in &self.reference_states {
             let tight = self.error_scale.weights(state)?;
             let case = case_scale.weights(state)?;
             for (t, c) in tight.iter().zip(&case) {
-                ratio = ratio.max(t / c);
+                ratio = ratio.max(upward_div(*t, *c));
             }
         }
-        let uncertainty = self.error_scale.reference_uncertainty_wrms * ratio;
+        let uncertainty = upward_mul(self.error_scale.reference_uncertainty_wrms, ratio);
         ReferenceWrmsBasis::new(
             self.output_grid.clone(),
             self.reference_states.clone(),
