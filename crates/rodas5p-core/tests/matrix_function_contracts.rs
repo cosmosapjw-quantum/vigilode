@@ -160,3 +160,43 @@ fn dense_phi_action_is_accurate_for_a_large_vector_on_a_diagonal_matrix() {
         );
     }
 }
+
+/// External audit VIG-A06: the power-of-two normalizer of the augmentation
+/// column must stay finite for every finite vector. `phi_1(0) v = v`.
+#[test]
+fn dense_phi_action_accepts_the_largest_finite_vectors() {
+    let zero = DenseMatrix::zeros(1, 1);
+    for (k, value) in [(1, 1.0e308), (1, f64::MAX), (1, -f64::MAX), (2, 1.0e308)] {
+        let out = dense_phi_action(&zero, 1.0, k, &[value])
+            .unwrap_or_else(|error| panic!("phi_{k}(0) {value:e}: {error}"));
+        let expected = value / if k == 1 { 1.0 } else { 2.0 };
+        assert!(
+            (out[0] / expected - 1.0).abs() <= 1.0e-15,
+            "phi_{k}(0) {value:e}: {}",
+            out[0]
+        );
+    }
+}
+
+#[test]
+fn dense_phi_action_is_exact_for_subnormal_and_power_of_two_vectors() {
+    let zero = DenseMatrix::zeros(1, 1);
+    for value in [
+        f64::from_bits(1),
+        f64::MIN_POSITIVE,
+        0.5,
+        1.0,
+        2.0,
+        2.0_f64.powi(1023),
+    ] {
+        let out = dense_phi_action(&zero, 1.0, 1, &[value]).unwrap();
+        assert_eq!(out[0].to_bits(), value.to_bits(), "phi_1(0) {value:e}");
+    }
+}
+
+#[test]
+fn dense_phi_action_reports_a_result_that_really_overflows() {
+    // phi_1(1) = e - 1 > 1, so phi_1(1) f64::MAX is not representable.
+    let one = DenseMatrix::from_rows(&[&[1.0]]).unwrap();
+    assert!(dense_phi_action(&one, 1.0, 1, &[f64::MAX]).is_err());
+}
