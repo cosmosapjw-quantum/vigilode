@@ -14,18 +14,22 @@
 //! must not hide that feedback. The KIOPS residual term at an ordinary
 //! checkpoint remains an estimate, not a bound, for nonnormal operators.
 //!
-//! Accuracy is judged against the requested threshold plus the normwise
-//! conditioning allowance `eps ||tA||_1 ||exp(tA) v||`: `exp(tA) v` has a
-//! relative condition number of order `||tA||`, so no normwise backward-stable
-//! method reaches 1e-10 at `||A|| = 2^46`. Measured on the full space, the
-//! relative error is about `0.15 eps ||tA||_1` (2e-3 at k = 46); the hidden
-//! near-breakdown error was 0.35 relative, about 22 times the allowance.
+//! Accuracy is judged against the requested threshold plus an acceptance
+//! allowance `eps ||tA||_1 ||exp(tA) v||`. The allowance is a tolerance for
+//! this implementation, not a lower bound on what any algorithm can attain:
+//! `||tA||` bounds the sensitivity to perturbations of the input, not the
+//! error achievable on this exact input. SciPy's `expm` reaches 4e-16 at
+//! k = 46, and a dyadic balancing that makes the matrix symmetric followed
+//! by the closed form reaches 1e-17 (external re-audit RA-03, 2026-09-29).
+//! With the Al-Mohy–Higham squaring rule of audit F-042 the full-space error
+//! here is about 1e-11 relative, well inside the allowance.
 
 use std::sync::Arc;
 
 use rodas5p_core::{DenseMatrix, DenseOperator, LinearOperator, WorkCounters, safe_l2};
 use rodas5p_integrators::{
-    ExponentialKrylovConfig, FusedPhiKrylovConfig, fused_phi_action, krylov_phi_action,
+    ExponentialKrylovConfig, FusedPhiKrylovConfig, FusedPhiPrefixSession, PhiConvergenceBasis,
+    fused_phi_action, fused_phi_action_incremental, krylov_phi_action,
 };
 
 /// Operator, `2^-k`, and `||A||_1 = 2^k + 2` (for k >= 0).
@@ -211,4 +215,128 @@ fn an_exactly_invariant_start_vector_still_stops_at_dimension_one() {
     assert_eq!(report.krylov_dimension, 1);
     assert!((report.value[0] - (-1.0_f64).exp()).abs() <= 1.0e-15);
     assert_eq!(report.value[1], 0.0);
+}
+
+fn l2_error(value: &[f64], exact: &[f64]) -> f64 {
+    safe_l2(
+        &value
+            .iter()
+            .zip(exact)
+            .map(|(a, b)| a - b)
+            .collect::<Vec<_>>(),
+    )
+}
+
+#[test]
+fn full_space_reports_carry_a_bound_basis_and_meet_the_threshold() {
+    // Re-audit RA-02: only an invariant or full Krylov space removes the
+    // projection error. Those reports say so, and on this case they are
+    // accurate to the requested 1e-10 without the conditioning allowance.
+    let (operator, small, _) = nonnormal(46);
+    let expected = exact(small, 1.0, 1.0);
+    let legacy = krylov_phi_action(
+        operator.clone(),
+        1.0,
+        0,
+        &[1.0, 0.0],
+        legacy_config(),
+        &mut WorkCounters::default(),
+    )
+    .unwrap();
+    let fused = fused_phi_action(
+        operator,
+        1.0,
+        &[vec![1.0, 0.0]],
+        fused_config(),
+        &mut WorkCounters::default(),
+    )
+    .unwrap();
+    for (label, basis, value) in [
+        ("legacy", legacy.convergence_basis, &legacy.value),
+        ("fused", fused.convergence_basis, &fused.value),
+    ] {
+        assert!(basis.error_bound_available(), "{label}: {basis:?}");
+        let error = l2_error(value, &expected);
+        eprintln!("{label} k=46 full space: basis {basis:?}, error {error:e}");
+        assert!(error <= 1.0e-10 * safe_l2(&expected), "{label}: {error:e}");
+    }
+}
+
+#[test]
+fn an_ordinary_checkpoint_is_an_estimate_not_a_bound() {
+    // Re-audit RA-02, known limitation kept visible. At an ordinary
+    // checkpoint the KIOPS residual term measures one direction; A feeds the
+    // 2^-46 leak back with gain 2^46. With minimum_dimension = 1, and on the
+    // prefix session, the action "converges" at dimension 1 with a true
+    // error near 7e-2. The report must not present that as bounded.
+    let (operator, small, _) = nonnormal(46);
+    let expected = exact(small, 1.0, 1.0);
+    let one_dimensional = FusedPhiKrylovConfig {
+        minimum_dimension: 1,
+        ..fused_config()
+    };
+    let fused = fused_phi_action(
+        operator.clone(),
+        1.0,
+        &[vec![1.0, 0.0]],
+        one_dimensional,
+        &mut WorkCounters::default(),
+    )
+    .unwrap();
+    let single_substep = FusedPhiKrylovConfig {
+        maximum_substeps: 1,
+        ..fused_config()
+    };
+    let incremental = fused_phi_action_incremental(
+        operator.clone(),
+        1.0,
+        &[vec![1.0, 0.0]],
+        single_substep,
+        &mut WorkCounters::default(),
+    )
+    .unwrap();
+    let prefix = FusedPhiPrefixSession::begin(
+        operator,
+        1.0,
+        &[vec![1.0, 0.0]],
+        single_substep,
+        1,
+        &mut WorkCounters::default(),
+    )
+    .unwrap()
+    .finish(&mut WorkCounters::default())
+    .unwrap();
+    for (label, report) in [
+        ("fused minimum_dimension = 1", &fused),
+        ("incremental", &incremental),
+        ("prefix session", &prefix),
+    ] {
+        let error = l2_error(&report.value, &expected);
+        eprintln!(
+            "{label}: converged {}, dimension {}, estimate {:e}, basis {:?}, true error {error:e}",
+            report.converged,
+            report.maximum_krylov_dimension,
+            report.error_estimate,
+            report.convergence_basis
+        );
+        if report.converged && error > 1.0e-10 * safe_l2(&expected) {
+            assert_eq!(
+                report.convergence_basis,
+                PhiConvergenceBasis::ResidualEstimate,
+                "{label}: an inaccurate converged report must be labelled an estimate"
+            );
+            assert!(!report.convergence_basis.error_bound_available());
+        }
+        if report.convergence_basis.error_bound_available() {
+            assert!(error <= 1.0e-10 * safe_l2(&expected), "{label}: {error:e}");
+        }
+    }
+    // The limitation is still present; this sentinel fails, and must be
+    // updated, once an ordinary checkpoint stops accepting this case.
+    assert!(
+        fused.converged
+            && fused.maximum_krylov_dimension == 1
+            && l2_error(&fused.value, &expected) > 1.0e-3,
+        "the one-dimensional checkpoint no longer accepts the k = 46 case"
+    );
 }
