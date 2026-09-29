@@ -257,7 +257,10 @@ pub use integrate::{
 pub use native_gates::{
     NativeIntegratorGateReport, NativeIntegratorGateRow, run_native_integrator_gates,
 };
-pub use nonlinear::{NewtonConfig, NewtonReport, solve_dense_newton};
+pub use nonlinear::{
+    BDF_NEWTON_TOLERANCE_FACTOR, NewtonConfig, NewtonReport, NewtonTolerancePolicy,
+    radau_newton_tolerance_factor, solve_dense_newton,
+};
 pub use output::{ObservedIntegrationResult, OutputSamplingPlan, OutputSchedule};
 pub use parallel::ParallelExecution;
 pub use path_controller::{

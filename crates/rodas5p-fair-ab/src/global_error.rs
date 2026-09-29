@@ -4,8 +4,8 @@ use rand::{Rng, SeedableRng};
 use rand_pcg::Pcg64Mcg;
 use rodas5p_core::{CoreError, LinearSolverConfig, WorkCounters, safe_l2, sha256_hex};
 use rodas5p_integrators::{
-    BdfConfig, BdfOrder, ComparativeReading, ComparatorFidelity, IntegrationMethod, NewtonConfig,
-    OdeProblem, OutputSamplingPlan, OutputSchedule, ParallelExecution, RadauConfig, RadauIiaStages,
+    BdfConfig, BdfOrder, ComparativeReading, ComparatorFidelity, IntegrationMethod, OdeProblem,
+    OutputSamplingPlan, OutputSchedule, ParallelExecution, RadauConfig, RadauIiaStages,
     integrate_bdf_fixed_dense_observed, integrate_bdf_fixed_observed,
     integrate_fixed_dense_observed, integrate_fixed_observed, integrate_radau_fixed_dense_observed,
     integrate_radau_fixed_observed, manufactured_mass_nonlinear_problem,
@@ -1096,7 +1096,7 @@ impl FixedAnchorCandidate {
         };
         Some(BdfConfig {
             order,
-            newton: NewtonConfig::default(),
+            ..BdfConfig::default()
         })
     }
 

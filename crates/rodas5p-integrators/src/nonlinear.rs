@@ -1,6 +1,38 @@
 use rodas5p_core::{
     CoreError, CoreResult, DenseMatrix, LuFactorization, WorkCounters, error_scale, safe_l2, wrms,
 };
+use serde::Serialize;
+
+/// CVODE-style Newton stopping factor for BDF: the corrector stops at
+/// `0.1` of the outer local-error tolerance.
+pub const BDF_NEWTON_TOLERANCE_FACTOR: f64 = 0.1;
+
+/// Newton stopping-tolerance policy of the internal BDF/Radau comparators
+/// (audit F-052 Tier A).  The default keeps the frozen reference behaviour.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum NewtonTolerancePolicy {
+    /// Stop at the fixed `NewtonConfig` tolerances regardless of the outer
+    /// tolerance (reference implementation; frozen checksums depend on it).
+    #[default]
+    FixedNewtonConfig,
+    /// In adaptive integration, stop at `kappa` times the outer atol/rtol in
+    /// the same WRMS norm: SciPy's Radau rule for Radau IIA and
+    /// [`BDF_NEWTON_TOLERANCE_FACTOR`] for BDF.  Fixed-step paths have no
+    /// outer tolerance and keep the `NewtonConfig` tolerances.
+    ScaledToOuterTolerance,
+}
+
+/// SciPy Radau Newton stopping factor
+/// `kappa = max(10 eps / rtol, min(0.03, sqrt(rtol)))`.  A zero `rtol` (pure
+/// absolute control) uses the `0.03` cap.
+pub fn radau_newton_tolerance_factor(rtol: f64) -> f64 {
+    if rtol > 0.0 {
+        (10.0 * f64::EPSILON / rtol).max(0.03_f64.min(rtol.sqrt()))
+    } else {
+        0.03
+    }
+}
 
 #[derive(Clone, Debug)]
 pub struct NewtonConfig {
@@ -32,6 +64,21 @@ impl Default for NewtonConfig {
 }
 
 impl NewtonConfig {
+    /// Copy whose stopping tolerances are `kappa` times the outer adaptive
+    /// tolerances.  A zero outer atol keeps this configuration's atol, because
+    /// the Newton WRMS scale requires a positive absolute floor.
+    pub fn scaled_to_outer_tolerance(&self, outer_atol: f64, outer_rtol: f64, kappa: f64) -> Self {
+        Self {
+            atol: if outer_atol > 0.0 {
+                kappa * outer_atol
+            } else {
+                self.atol
+            },
+            rtol: kappa * outer_rtol,
+            ..self.clone()
+        }
+    }
+
     pub fn validate(&self) -> CoreResult<()> {
         if !(self.atol > 0.0 && self.atol.is_finite()) {
             return Err(CoreError::InvalidInput(
@@ -96,9 +143,29 @@ pub fn solve_dense_newton<R, J>(
     reference: &[f64],
     config: &NewtonConfig,
     counters: &mut WorkCounters,
+    residual: R,
+    jacobian: J,
+) -> CoreResult<NewtonReport>
+where
+    R: FnMut(&[f64], &mut WorkCounters) -> CoreResult<Vec<f64>>,
+    J: FnMut(&[f64], &mut WorkCounters) -> CoreResult<DenseMatrix>,
+{
+    solve_dense_newton_retaining_factor(initial, reference, config, counters, residual, jacobian)
+        .map(|(report, _)| report)
+}
+
+/// [`solve_dense_newton`] that also returns the last LU factorization, i.e.
+/// the factorization of the matrix most recently returned by `jacobian`.
+/// `None` when the initial iterate already converged and nothing was
+/// factorized.  Counters are identical to [`solve_dense_newton`].
+pub(crate) fn solve_dense_newton_retaining_factor<R, J>(
+    initial: &[f64],
+    reference: &[f64],
+    config: &NewtonConfig,
+    counters: &mut WorkCounters,
     mut residual: R,
     mut jacobian: J,
-) -> CoreResult<NewtonReport>
+) -> CoreResult<(NewtonReport, Option<LuFactorization>)>
 where
     R: FnMut(&[f64], &mut WorkCounters) -> CoreResult<Vec<f64>>,
     J: FnMut(&[f64], &mut WorkCounters) -> CoreResult<DenseMatrix>,
@@ -137,18 +204,21 @@ where
     }
     let mut residual_wrms = scaled_wrms(&r, reference, &x, config)?;
     if residual_wrms <= 1.0 {
-        return Ok(NewtonReport {
-            x,
-            converged: true,
-            iterations: 0,
-            residual_wrms,
-            correction_wrms: 0.0,
-            damping: 1.0,
-            jacobian_evaluations: 0,
-            jacobian_refreshes: 0,
-            line_search_refreshes: 0,
-            stagnation_refreshes: 0,
-        });
+        return Ok((
+            NewtonReport {
+                x,
+                converged: true,
+                iterations: 0,
+                residual_wrms,
+                correction_wrms: 0.0,
+                damping: 1.0,
+                jacobian_evaluations: 0,
+                jacobian_refreshes: 0,
+                line_search_refreshes: 0,
+                stagnation_refreshes: 0,
+            },
+            None,
+        ));
     }
 
     let mut factorize = |at: &[f64], counters: &mut WorkCounters| {
@@ -258,18 +328,21 @@ where
         let roundoff_residual =
             safe_l2(&r) <= 64.0 * f64::EPSILON * (1.0 + safe_l2(reference) + safe_l2(&x));
         if residual_wrms <= 1.0 && (correction_wrms <= 1.0 || roundoff_residual) {
-            return Ok(NewtonReport {
-                x,
-                converged: true,
-                iterations: iteration,
-                residual_wrms,
-                correction_wrms,
-                damping: last_damping,
-                jacobian_evaluations,
-                jacobian_refreshes,
-                line_search_refreshes,
-                stagnation_refreshes,
-            });
+            return Ok((
+                NewtonReport {
+                    x,
+                    converged: true,
+                    iterations: iteration,
+                    residual_wrms,
+                    correction_wrms,
+                    damping: last_damping,
+                    jacobian_evaluations,
+                    jacobian_refreshes,
+                    line_search_refreshes,
+                    stagnation_refreshes,
+                },
+                Some(factor),
+            ));
         }
         let contraction_ratio = residual_wrms / previous_residual;
         if contraction_ratio >= config.stagnation_ratio
