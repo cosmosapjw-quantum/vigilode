@@ -207,3 +207,51 @@ fn dense_phi_action_reports_a_result_that_really_overflows() {
     let one = DenseMatrix::from_rows(&[&[1.0]]).unwrap();
     assert!(dense_phi_action(&one, 1.0, 1, &[f64::MAX]).is_err());
 }
+
+/// phi_k(z) by its Taylor series; exact to rounding for |z| <= 0.5.
+fn phi_series(z: f64, k: usize) -> f64 {
+    let mut term = 1.0;
+    for j in 1..=k {
+        term /= j as f64;
+    }
+    let mut sum = term;
+    for j in 1..40 {
+        term *= z / (k + j) as f64;
+        sum += term;
+    }
+    sum
+}
+
+/// External audit F-042: the fused combination divides its inputs by h^k, so
+/// the augmented matrix's 1-norm is O(1/h^3) while the phi arguments are
+/// O(h). Squaring by the 1-norm alone loses accuracy as h shrinks.
+#[test]
+fn fused_phi_combination_is_accurate_as_the_step_shrinks() {
+    use rodas5p_core::dense_fused_phi_action;
+    let diagonal = [-1.0, -3.0];
+    let matrix = DenseMatrix::from_rows(&[&[diagonal[0], 0.0], &[0.0, diagonal[1]]]).unwrap();
+    let v = [
+        [1.0, 2.0],
+        [0.5, -1.0],
+        [2.0, 0.25],
+        [-1.0, 1.0],
+        [0.75, -0.5],
+    ];
+    for h in [1.0e-1_f64, 1.0e-2, 1.0e-3, 1.0e-4] {
+        let vectors = (0..=4)
+            .map(|k| {
+                v[k].iter()
+                    .map(|x| x / h.powi(k as i32))
+                    .collect::<Vec<_>>()
+            })
+            .collect::<Vec<_>>();
+        let out = dense_fused_phi_action(&matrix, h, &vectors).unwrap();
+        let mut worst = 0.0_f64;
+        for i in 0..2 {
+            let z = h * diagonal[i];
+            let exact: f64 = (0..=4).map(|k| phi_series(z, k) * v[k][i]).sum();
+            worst = worst.max(((out[i] - exact) / exact).abs());
+        }
+        assert!(worst <= 1.0e-14, "h {h:e}: relative error {worst:e}");
+    }
+}

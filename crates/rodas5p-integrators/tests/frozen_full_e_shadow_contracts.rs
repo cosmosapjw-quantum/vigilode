@@ -112,8 +112,10 @@ fn retained_level2_shadow_is_complete_charged_safe_and_rjf_identical() {
     assert_eq!(report.unsafe_recommendations, 0);
     assert_eq!(report.budget_breaches, 0);
     assert_eq!(report.prefix_speculative_work.jvp_vectors, 42);
-    assert_eq!(report.continuation_work.jvp_vectors, 24);
-    assert_eq!(report.total_speculative_work.jvp_vectors, 66);
+    // 24 -> 26 and 66 -> 68 under the balanced augmented Krylov of audit F-043
+    // (research/generic_frozen_full_e_shadow_v36/ADDENDUM_20260929_F043_PINS.md).
+    assert_eq!(report.continuation_work.jvp_vectors, 26);
+    assert_eq!(report.total_speculative_work.jvp_vectors, 68);
     assert_eq!(
         report.committed_rjf_jvp_vectors,
         report
@@ -130,13 +132,13 @@ fn retained_level2_shadow_is_complete_charged_safe_and_rjf_identical() {
         report
             .realized_continuation_over_committed_rjf_jvp
             .to_bits(),
-        (24.0 / report.committed_rjf_jvp_vectors as f64).to_bits()
+        (26.0 / report.committed_rjf_jvp_vectors as f64).to_bits()
     );
     assert_eq!(
         report
             .realized_total_speculative_over_committed_rjf_jvp
             .to_bits(),
-        (66.0 / report.committed_rjf_jvp_vectors as f64).to_bits()
+        (68.0 / report.committed_rjf_jvp_vectors as f64).to_bits()
     );
     let mut aggregate_roundtrip = report.prefix_speculative_work;
     aggregate_roundtrip.accumulate(report.continuation_work);
@@ -238,7 +240,7 @@ fn retained_level2_shadow_is_complete_charged_safe_and_rjf_identical() {
         expected_total_before = row.total_speculative_jvp_after_target;
     }
     assert_eq!(expected_prefix_before, 42);
-    assert_eq!(expected_total_before, 66);
+    assert_eq!(expected_total_before, 68);
     assert!(report.trajectories.iter().all(|row| {
         row.success
             && row.explicit_jacobian_builds == 0

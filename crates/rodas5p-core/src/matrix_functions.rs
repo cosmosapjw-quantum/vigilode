@@ -1,6 +1,9 @@
 use crate::{CoreError, CoreResult, DenseMatrix, LuFactorization};
 
 const PADE_13_THETA: f64 = 5.371_920_351_148_152;
+/// Above this 1-norm the unscaled sixth power could overflow, and the
+/// squaring count falls back to the 1-norm alone.
+const PADE_13_POWER_GUARD: f64 = 1.0e40;
 const PADE_13_COEFFICIENTS: [f64; 14] = [
     64_764_752_532_480_000.0,
     32_382_376_266_240_000.0,
@@ -78,16 +81,53 @@ pub fn matrix_exp_pade13(a: &DenseMatrix) -> CoreResult<DenseMatrix> {
     }
 
     let norm = matrix_one_norm(a);
-    let squarings = if norm <= PADE_13_THETA || norm == 0.0 {
-        0_u32
-    } else {
-        (norm / PADE_13_THETA).log2().ceil().max(0.0) as u32
-    };
-    let scaled = a.scale(2.0_f64.powi(-(squarings as i32)));
     let identity = DenseMatrix::identity(n);
-    let a2 = scaled.matmul(&scaled)?;
-    let a4 = a2.matmul(&a2)?;
-    let a6 = a4.matmul(&a2)?;
+    let (squarings, scaled, a2, a4, a6) = if norm <= PADE_13_POWER_GUARD {
+        // Squaring count from alpha_p = max(d_p, d_{p+1}), d_k >= ||A^k||^(1/k),
+        // minimised over p(p-1) <= 27 (Al-Mohy & Higham 2009, Thm 4.2), with
+        // d_3 and d_5 bounded by (||A^2|| ||A||)^(1/3), (||A^4|| ||A||)^(1/5).
+        // For the nilpotent augmented chains of the fused phi combination,
+        // alpha << ||A||_1 and the 1-norm alone over-squares (audit F-042).
+        // The powers are formed once, unscaled, and rescaled by exact powers
+        // of two, so no extra products are needed.
+        let a2 = a.matmul(a)?;
+        let a4 = a2.matmul(&a2)?;
+        let a6 = a4.matmul(&a2)?;
+        let (n2, n4, n6) = (
+            matrix_one_norm(&a2),
+            matrix_one_norm(&a4),
+            matrix_one_norm(&a6),
+        );
+        let d2 = n2.sqrt();
+        let d3 = (n2 * norm).powf(1.0 / 3.0);
+        let d4 = n4.powf(0.25);
+        let d5 = (n4 * norm).powf(0.2);
+        let d6 = n6.powf(1.0 / 6.0);
+        let alpha = [d2.max(d3), d3.max(d4), d4.max(d5), d5.max(d6)]
+            .into_iter()
+            .fold(norm, f64::min);
+        let squarings = if alpha <= PADE_13_THETA || alpha == 0.0 {
+            0_i32
+        } else {
+            (alpha / PADE_13_THETA).log2().ceil().max(0.0) as i32
+        };
+        let two_pow = |k: i32| 2.0_f64.powi(-k);
+        (
+            squarings as u32,
+            a.scale(two_pow(squarings)),
+            a2.scale(two_pow(2 * squarings)),
+            a4.scale(two_pow(4 * squarings)),
+            a6.scale(two_pow(6 * squarings)),
+        )
+    } else {
+        // Unscaled sixth powers could overflow: scale by the 1-norm first.
+        let squarings = (norm / PADE_13_THETA).log2().ceil().max(0.0) as u32;
+        let scaled = a.scale(2.0_f64.powi(-(squarings as i32)));
+        let a2 = scaled.matmul(&scaled)?;
+        let a4 = a2.matmul(&a2)?;
+        let a6 = a4.matmul(&a2)?;
+        (squarings, scaled, a2, a4, a6)
+    };
     let b = PADE_13_COEFFICIENTS;
 
     let mut u_inner = a6.scale(b[13]);
