@@ -147,7 +147,8 @@ pub use dense_output_v2::{
     integrate_radau_adaptive_dense_observed, integrate_radau_fixed_dense_observed,
     integrate_sequential_matrix_free_adaptive_dense_observed,
     integrate_transactional_q1_q2_adaptive_dense_observed, radau_dense_output,
-    rodas5p_dense_interior_error_estimate, rodas5p_dense_output,
+    rodas5p_dense_interior_defect_estimate, rodas5p_dense_interior_error_estimate,
+    rodas5p_dense_output,
 };
 pub use exponential::{
     EarlyFlowDefectDiagnosticWork, EarlyFlowDefectTelemetry, EarlyFlowDefectTelemetryMode,

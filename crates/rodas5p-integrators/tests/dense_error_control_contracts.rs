@@ -20,7 +20,19 @@ fn run(
     rodas5p_integrators::DenseErrorReport,
     f64,
 ) {
-    let (problem, y0) = prothero_robinson_problem(LAMBDA, 0.0, 0.0);
+    run_lambda(LAMBDA, rtol, control)
+}
+
+fn run_lambda(
+    lambda: f64,
+    rtol: f64,
+    control: DenseErrorControl,
+) -> (
+    rodas5p_integrators::AdaptiveObservedIntegrationResult,
+    rodas5p_integrators::DenseErrorReport,
+    f64,
+) {
+    let (problem, y0) = prothero_robinson_problem(lambda, 0.0, 0.0);
     let atol = rtol * 1.0e-2;
     let adaptive = AdaptiveStepConfig {
         atol,
@@ -138,4 +150,28 @@ fn enforced_dense_error_bounds_the_true_interior_error() {
         );
         assert!(true_interior <= 3.0, "rtol {rtol:e}: {true_interior:e}");
     }
+}
+
+#[test]
+fn defect_report_needs_no_jacobian_and_overstates_stiff_components() {
+    // Re-audit RA-07: a cheap mode for matrix-free runs. The unfiltered
+    // defect costs one right-hand side per sampled step. On stiff
+    // components it overstates the interior error; on nonstiff ones it
+    // tracks it.
+    for (lambda, rtol) in [(LAMBDA, 1.0e-6), (-1.0, 1.0e-6), (-1.0, 1.0e-8)] {
+        let (_, report, true_interior) = run_lambda(lambda, rtol, DenseErrorControl::ReportDefect);
+        let estimate = report.max_accepted_estimate().expect("interior samples");
+        eprintln!(
+            "lambda {lambda:e} rtol {rtol:e}: true interior {true_interior:.3e}, defect estimate {estimate:.3e}"
+        );
+        assert_eq!(report.counters.jacobian_builds, 0);
+        assert_eq!(report.counters.direct_factorizations, 0);
+        assert_eq!(report.counters.jvp_calls, 0);
+        assert!(report.counters.rhs_evaluations > 0);
+        assert!(estimate >= true_interior / 10.0, "lambda {lambda:e}");
+        if lambda == -1.0 {
+            assert!(estimate <= 10.0 * true_interior, "lambda {lambda:e}");
+        }
+    }
+    assert_eq!(DenseErrorControl::default(), DenseErrorControl::Off);
 }

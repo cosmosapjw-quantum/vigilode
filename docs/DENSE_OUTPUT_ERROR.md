@@ -14,7 +14,8 @@ interpolant errors, not endpoint errors.
 
 | Mode | Effect |
 |---|---|
-| `Off` | the legacy path, bit for bit |
+| `Off` | the default; the legacy path, bit for bit |
+| `ReportDefect` | records the unfiltered defect (h/2) M^{-1} d of every accepted step that contains an interior output time: one right-hand side, no Jacobian, no LU (a mass solve when M != I); the run is unchanged |
 | `Report` | for every accepted step that contains an interior output time, records a filtered-defect estimate at theta = 1/2; the run is unchanged and the estimate's work is charged to the report only |
 | `Enforce` | as `Report`, and rejects the step when the estimate exceeds one tolerance unit; the estimate's work is charged to the run |
 
@@ -24,6 +25,20 @@ is one implicit-Euler step of M e' = J e + d over half a step: it stays
 bounded on stiff components (e -> -J^{-1} d) and is (h/2) M^{-1} d on
 nonstiff ones. Cost per sampled step: one right-hand side, one Jacobian and
 one LU.
+
+The filtered modes cost a Jacobian and an LU per sampled step, so they are
+audit modes for matrix-free runs, not defaults (external re-audit RA-07).
+`ReportDefect` is the cheap alternative. It is unfiltered: on a stiff
+component the defect carries the factor |h lambda|, so it overstates the
+error there. It is a pointwise sample at theta = 1/2, not a bound on the
+interval, and it does not separate the local defect from the error
+propagated from earlier steps.
+
+| Case | true interior max | `ReportDefect` estimate |
+|---|---:|---:|
+| PR lambda = -1e5, rtol 1e-6 | 312 | 1.3e7 |
+| PR lambda = -1, rtol 1e-6 | 0.140 | 0.196 |
+| PR lambda = -1, rtol 1e-8 | 0.168 | 0.261 |
 
 Measured on Prothero-Robinson, lambda = -1e5, t in [0, 2], 201 output times
 (`tests/dense_error_control_contracts.rs`):

@@ -125,14 +125,23 @@ pub fn rodas5p_dense_output(step: &StepResult, theta: f64) -> DenseOutputResult<
 /// error (audit F-002). The endpoint embedded estimate never controls the
 /// interpolant: RODAS5P dense output is order 4 nonstiff and about order 3
 /// on stiff problems, and it is not tolerance-controlled under `Off`.
+///
+/// `Off` is the default. The filtered modes cost one Jacobian and one LU per
+/// sampled step, which a matrix-free run must not pay by default
+/// (re-audit RA-07); `ReportDefect` needs one right-hand side only.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum DenseErrorControl {
     /// No interior estimate; bit-for-bit the legacy dense path.
-    Off,
-    /// Estimate and record the interior error of every accepted step that
-    /// contains an output time; never change the step sequence.
     #[default]
+    Off,
+    /// Record the unfiltered defect estimate (h/2) M^{-1} d: one right-hand
+    /// side, no Jacobian, no LU (a mass-matrix solve when M != I). It is
+    /// state-unit comparable but unfiltered, so it overstates the error of
+    /// stiff components by up to |h lambda|. A pointwise sample, not a bound.
+    ReportDefect,
+    /// Record the Jacobian-filtered estimate of every accepted step that
+    /// contains an output time; never change the step sequence.
     Report,
     /// As `Report`, and reject such a step when its estimate exceeds one
     /// tolerance unit.
@@ -143,7 +152,8 @@ pub enum DenseErrorControl {
 pub struct DenseErrorSample {
     pub step_start: f64,
     pub step_size: f64,
-    /// Filtered-defect interior estimate at theta = 1/2, WRMS tolerance units.
+    /// Interior estimate at theta = 1/2, WRMS tolerance units: filtered under
+    /// `Report` and `Enforce`, unfiltered under `ReportDefect`.
     pub estimate_wrms: f64,
     /// The step was accepted (under `Enforce` a large estimate rejects it).
     pub accepted: bool,
@@ -186,6 +196,43 @@ pub fn rodas5p_dense_interior_error_estimate(
     rtol: f64,
     counters: &mut WorkCounters,
 ) -> CoreResult<f64> {
+    let (defect, midpoint, mass) = scaled_midpoint_defect(problem, step, counters)?;
+    let t_mid = step.t_old + 0.5 * step.h;
+    let jacobian = problem.dense_jacobian(t_mid, &midpoint, counters)?;
+    let filter = LuFactorization::new(&mass.combine(&jacobian, -0.5 * step.h)?)?;
+    counters.direct_factorizations += 1;
+    let estimate = filter.solve(&defect)?;
+    let scale = error_scale(&step.y_old, &step.y_new, &[atol], rtol)?;
+    wrms(&estimate, &scale)
+}
+
+/// Unfiltered interior defect estimate WRMS((h/2) M^{-1} d) (re-audit
+/// RA-07): one right-hand side and no Jacobian. With M = I no solve is
+/// needed; otherwise M is factorized once per call and charged.
+pub fn rodas5p_dense_interior_defect_estimate(
+    problem: &OdeProblem,
+    step: &StepResult,
+    atol: f64,
+    rtol: f64,
+    counters: &mut WorkCounters,
+) -> CoreResult<f64> {
+    let (defect, _, mass) = scaled_midpoint_defect(problem, step, counters)?;
+    let estimate = if problem.mass_matrix.is_some() {
+        counters.direct_factorizations += 1;
+        LuFactorization::new(&mass)?.solve(&defect)?
+    } else {
+        defect
+    };
+    let scale = error_scale(&step.y_old, &step.y_new, &[atol], rtol)?;
+    wrms(&estimate, &scale)
+}
+
+/// (h/2) d at theta = 1/2, the midpoint state and the mass matrix.
+fn scaled_midpoint_defect(
+    problem: &OdeProblem,
+    step: &StepResult,
+    counters: &mut WorkCounters,
+) -> CoreResult<(Vec<f64>, Vec<f64>, rodas5p_core::DenseMatrix)> {
     let n = step.y_old.len();
     if step.stages.len() != 8 || step.y_new.len() != n {
         return Err(CoreError::Dimension(
@@ -218,12 +265,7 @@ pub fn rodas5p_dense_interior_error_estimate(
         .zip(&flow)
         .map(|(m_du, f)| 0.5 * h * (m_du - f))
         .collect::<Vec<_>>();
-    let jacobian = problem.dense_jacobian(t_mid, &midpoint, counters)?;
-    let filter = LuFactorization::new(&mass.combine(&jacobian, -0.5 * h)?)?;
-    counters.direct_factorizations += 1;
-    let estimate = filter.solve(&defect)?;
-    let scale = error_scale(&step.y_old, &step.y_new, &[atol], rtol)?;
-    wrms(&estimate, &scale)
+    Ok((defect, midpoint, mass))
 }
 
 fn radau_iia3_weights(theta: f64) -> [f64; 3] {
@@ -589,13 +631,24 @@ pub fn integrate_adaptive_dense_observed_with_dense_error_control(
                 .any(|&time| time > report.t_old && time < report.t_new)
         {
             let mut estimate_work = WorkCounters::default();
-            match rodas5p_dense_interior_error_estimate(
-                problem,
-                &report,
-                adaptive.atol,
-                adaptive.rtol,
-                &mut estimate_work,
-            ) {
+            let estimate = if control == DenseErrorControl::ReportDefect {
+                rodas5p_dense_interior_defect_estimate(
+                    problem,
+                    &report,
+                    adaptive.atol,
+                    adaptive.rtol,
+                    &mut estimate_work,
+                )
+            } else {
+                rodas5p_dense_interior_error_estimate(
+                    problem,
+                    &report,
+                    adaptive.atol,
+                    adaptive.rtol,
+                    &mut estimate_work,
+                )
+            };
+            match estimate {
                 Ok(estimate) => {
                     let rejected = control == DenseErrorControl::Enforce
                         && !(estimate.is_finite() && estimate <= 1.0);
