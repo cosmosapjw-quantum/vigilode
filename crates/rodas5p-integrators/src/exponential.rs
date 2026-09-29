@@ -134,6 +134,66 @@ impl FusedPhiKrylovConfig {
     }
 }
 
+/// What a converged phi report rests on (re-audit RA-02).
+///
+/// `converged` alone does not say whether the returned value is bounded.
+/// Only an exactly invariant Krylov space or the full space removes the
+/// projection error, and even then only in exact arithmetic: rounding in
+/// the Arnoldi process and in the small exponential is not bounded here.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum PhiConvergenceBasis {
+    /// A residual or nested-difference estimate met the threshold. For a
+    /// nonnormal operator this is an estimate, not an error bound: a small
+    /// residual in one direction can be fed back with a large gain.
+    #[default]
+    ResidualEstimate,
+    /// The Arnoldi residual was exactly zero, so the Krylov space is
+    /// invariant and the projected action is exact in exact arithmetic.
+    InvariantSubspace,
+    /// The Krylov dimension reached the operator dimension.
+    FullSpace,
+}
+
+impl PhiConvergenceBasis {
+    pub fn is_residual_estimate(&self) -> bool {
+        *self == Self::ResidualEstimate
+    }
+
+    /// True when the projection error is zero under `bound_assumptions`.
+    pub fn error_bound_available(self) -> bool {
+        !self.is_residual_estimate()
+    }
+
+    pub fn bound_assumptions(self) -> &'static str {
+        match self {
+            Self::ResidualEstimate => {
+                "none: a-posteriori estimate; not a bound for nonnormal operators"
+            }
+            Self::InvariantSubspace | Self::FullSpace => {
+                "exact arithmetic; rounding in Arnoldi and in the projected exponential is not bounded"
+            }
+        }
+    }
+
+    /// The weakest basis of several substeps.
+    fn weakest(bases: impl IntoIterator<Item = Self>) -> Self {
+        let mut all_full = true;
+        for basis in bases {
+            match basis {
+                Self::ResidualEstimate => return Self::ResidualEstimate,
+                Self::InvariantSubspace => all_full = false,
+                Self::FullSpace => {}
+            }
+        }
+        if all_full {
+            Self::FullSpace
+        } else {
+            Self::InvariantSubspace
+        }
+    }
+}
+
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct FusedPhiSubstepReport {
     pub substep_index: usize,
@@ -145,6 +205,11 @@ pub struct FusedPhiSubstepReport {
     pub error_estimate: f64,
     /// Nested-dimension difference retained only as an independent diagnostic.
     pub nested_difference_estimate: f64,
+    #[serde(
+        default,
+        skip_serializing_if = "PhiConvergenceBasis::is_residual_estimate"
+    )]
+    pub convergence_basis: PhiConvergenceBasis,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -161,6 +226,12 @@ pub struct FusedPhiActionReport {
     pub action_norm: f64,
     pub value: Vec<f64>,
     pub substep_reports: Vec<FusedPhiSubstepReport>,
+    /// The weakest basis over the substeps (re-audit RA-02).
+    #[serde(
+        default,
+        skip_serializing_if = "PhiConvergenceBasis::is_residual_estimate"
+    )]
+    pub convergence_basis: PhiConvergenceBasis,
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -180,6 +251,11 @@ pub struct PhiActionReport {
     pub error_estimate: f64,
     pub action_norm: f64,
     pub value: Vec<f64>,
+    #[serde(
+        default,
+        skip_serializing_if = "PhiConvergenceBasis::is_residual_estimate"
+    )]
+    pub convergence_basis: PhiConvergenceBasis,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -879,6 +955,7 @@ pub fn krylov_phi_action(
             error_estimate: 0.0,
             action_norm: 0.0,
             value: vec![0.0; n],
+            convergence_basis: PhiConvergenceBasis::InvariantSubspace,
         });
     }
 
@@ -972,6 +1049,11 @@ pub fn krylov_phi_action(
                     error_estimate: latest_error,
                     action_norm: safe_l2(&current),
                     value: current,
+                    convergence_basis: if next_norm == 0.0 {
+                        PhiConvergenceBasis::InvariantSubspace
+                    } else {
+                        PhiConvergenceBasis::ResidualEstimate
+                    },
                 });
             }
             if full_space || latest_error <= threshold {
@@ -988,6 +1070,13 @@ pub fn krylov_phi_action(
                     },
                     action_norm: safe_l2(&current),
                     value: current,
+                    convergence_basis: if full_space {
+                        PhiConvergenceBasis::FullSpace
+                    } else if happy_breakdown {
+                        PhiConvergenceBasis::InvariantSubspace
+                    } else {
+                        PhiConvergenceBasis::ResidualEstimate
+                    },
                 });
             }
             previous = Some(current);
@@ -1006,6 +1095,7 @@ pub fn krylov_phi_action(
         error_estimate: latest_error,
         action_norm: safe_l2(&latest),
         value: latest,
+        convergence_basis: PhiConvergenceBasis::ResidualEstimate,
     })
 }
 
@@ -1127,6 +1217,7 @@ fn krylov_exponential_once(
                 happy_breakdown: true,
                 error_estimate: 0.0,
                 nested_difference_estimate: 0.0,
+                convergence_basis: PhiConvergenceBasis::InvariantSubspace,
             },
         ));
     }
@@ -1215,6 +1306,13 @@ fn krylov_exponential_once(
                             residual_error_estimate
                         },
                         nested_difference_estimate,
+                        convergence_basis: if full_space_exact {
+                            PhiConvergenceBasis::FullSpace
+                        } else if next_norm == 0.0 {
+                            PhiConvergenceBasis::InvariantSubspace
+                        } else {
+                            PhiConvergenceBasis::ResidualEstimate
+                        },
                     },
                 ));
             }
@@ -1233,6 +1331,7 @@ fn krylov_exponential_once(
             happy_breakdown: latest_breakdown,
             error_estimate: latest_residual_error,
             nested_difference_estimate: latest_nested_difference,
+            convergence_basis: PhiConvergenceBasis::ResidualEstimate,
         },
     ))
 }
@@ -1351,6 +1450,7 @@ pub fn fused_phi_action(
             action_norm: 0.0,
             value: vec![0.0; n],
             substep_reports: Vec::new(),
+            convergence_basis: PhiConvergenceBasis::InvariantSubspace,
         });
     }
     let (augmented, initial, physical_dimension) =
@@ -1401,6 +1501,9 @@ pub fn fused_phi_action(
                 nested_difference_estimate: total_nested_difference,
                 action_norm: safe_l2(&value),
                 value,
+                convergence_basis: PhiConvergenceBasis::weakest(
+                    reports.iter().map(|report| report.convergence_basis),
+                ),
                 substep_reports: reports,
             });
         }
@@ -1417,6 +1520,7 @@ pub fn fused_phi_action(
                 action_norm: safe_l2(&value),
                 value,
                 substep_reports: reports,
+                convergence_basis: PhiConvergenceBasis::ResidualEstimate,
             });
         }
         counters.phi_restarts += 1;
@@ -1530,6 +1634,7 @@ pub struct FusedPhiPrefixSession {
     previous_projected: Option<Vec<f64>>,
     converged: bool,
     happy_breakdown: bool,
+    convergence_basis: PhiConvergenceBasis,
 }
 
 impl FusedPhiPrefixSession {
@@ -1585,6 +1690,7 @@ impl FusedPhiPrefixSession {
                 previous_projected: None,
                 converged: true,
                 happy_breakdown: true,
+                convergence_basis: PhiConvergenceBasis::InvariantSubspace,
             });
         }
         let highest_phi_index = vectors.len() - 1;
@@ -1616,6 +1722,7 @@ impl FusedPhiPrefixSession {
             previous_projected: None,
             converged: false,
             happy_breakdown: false,
+            convergence_basis: PhiConvergenceBasis::ResidualEstimate,
         };
         for _ in 0..prefix_dimension.min(maximum) {
             if session.converged || session.happy_breakdown {
@@ -1690,6 +1797,13 @@ impl FusedPhiPrefixSession {
             + self.config.relative_tolerance * self.physical_magnitude();
         let full_space = self.current_dimension == augmented_dimension;
         self.converged = full_space || next_norm == 0.0 || residual_error <= threshold;
+        self.convergence_basis = if full_space {
+            PhiConvergenceBasis::FullSpace
+        } else if next_norm == 0.0 {
+            PhiConvergenceBasis::InvariantSubspace
+        } else {
+            PhiConvergenceBasis::ResidualEstimate
+        };
         Ok(())
     }
 
@@ -1747,7 +1861,13 @@ impl FusedPhiPrefixSession {
                     happy_breakdown: self.happy_breakdown,
                     error_estimate: self.latest_residual_error,
                     nested_difference_estimate: self.latest_nested_difference,
+                    convergence_basis: self.convergence_basis,
                 }]
+            },
+            convergence_basis: if self.converged {
+                self.convergence_basis
+            } else {
+                PhiConvergenceBasis::ResidualEstimate
             },
         })
     }
