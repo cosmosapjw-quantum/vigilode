@@ -1856,11 +1856,17 @@ fn authoritative_timing(
 
     for spec in specs {
         let id = record_id(spec);
-        let mut calibration_seconds = None;
+        // Calibrate from the fastest warmup (audit F-053): a slow cold first
+        // sample must not shrink the batch below the timer-resolution floor.
+        let mut calibration_seconds: Option<f64> = None;
         for _ in 0..protocol.warmups.max(1) {
             let started = Instant::now();
             match execute_candidate(spec) {
-                Ok(_) => calibration_seconds = Some(started.elapsed().as_secs_f64()),
+                Ok(_) => {
+                    let seconds = started.elapsed().as_secs_f64();
+                    calibration_seconds =
+                        Some(calibration_seconds.map_or(seconds, |fastest| fastest.min(seconds)));
+                }
                 Err(error) => {
                     failures.insert(id.clone(), error.to_string());
                     break;

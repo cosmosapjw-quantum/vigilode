@@ -8,6 +8,7 @@ mod error;
 mod external_comparators;
 mod global_error;
 mod numerical_reference;
+mod paired_timing;
 mod runner;
 mod scenarios;
 mod scientific_validity_v2_campaign;
@@ -35,6 +36,14 @@ pub use external_comparators::{
     SundialsProbeFinding, external_runner_dependency_closure_checksum,
     external_runtime_identity_checksum, load_external_comparator_evidence,
     sundials_probe_evidence_checksum,
+};
+pub use paired_timing::{
+    AaControlAssessment, PAIRED_TIMING_BOOTSTRAP_RESAMPLES, PAIRED_TIMING_CONFIDENCE_LEVEL,
+    PAIRED_TIMING_MIN_PAIRS, PAIRED_TIMING_MIN_WARMUPS, PAIRED_TIMING_REQUIRED_SPEEDUP, PairedArm,
+    PairedCaseSummary, PairedTimingAssessment, PairedTimingCase, PairedTimingDecision,
+    PairedTimingProtocol, SpeedupInterval, TimingHostMetadata, abba_pair_order, assess_aa_control,
+    assess_paired_timing, calibrate_batch_iterations, case_clustered_bootstrap,
+    detect_timing_host_metadata, measure_paired_case, paired_timing_decision,
 };
 pub use runner::{
     BenchmarkCell, BenchmarkPlan, ComparisonResult, SummaryRow, TraceRunResult,

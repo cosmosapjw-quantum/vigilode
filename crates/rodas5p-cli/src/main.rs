@@ -1068,6 +1068,20 @@ const TIER_L_REFERENCE_FIDELITY: ComparatorFidelity = ComparatorFidelity::Produc
 const REFERENCE_ONLY_NOT_EVALUATED: &str =
     "relative performance not evaluated: reference is a reference-implementation-only comparator";
 
+const WALL_NOT_EVALUATED: &str = "wall-time criterion not evaluated: smoke or single-sample timing carries no dispersion estimate";
+
+/// Audit F-053: wall time may decide Promote/Hold only with repeated samples
+/// after a warmup.  Smoke (one repetition, no warmup) and single-sample
+/// timings are recorded but never decide; the dispersion-aware replacement
+/// is `rodas5p_fair_ab::assess_paired_timing`.
+fn wall_timing_admissible(repetitions: usize, warmups: usize) -> bool {
+    repetitions >= 2 && warmups >= 1
+}
+
+/// The Tier-N nonlinear screen times each case with a single `Instant`
+/// sample, so its wall ratios are never admissible gate evidence.
+const TIER_N_WALL_TIMING_ADMISSIBLE: bool = false;
+
 fn assess_linear_candidates(
     suites: &[UnifiedLinearSuite],
 ) -> Vec<UnifiedLinearCandidateAssessment> {
@@ -1127,12 +1141,19 @@ fn assess_linear_candidates_against(
                 blockers.push("nonfinite Tier-L solution error".into());
             }
             let relative_admissible = reference_fidelity.admits_relative_performance_reading();
+            let wall_admissible = suites
+                .iter()
+                .all(|suite| wall_timing_admissible(suite.plan.repetitions, suite.plan.warmups));
             let mut not_evaluated = Vec::new();
             if !is_reference && !relative_admissible {
                 not_evaluated.push(REFERENCE_ONLY_NOT_EVALUATED.to_string());
             }
+            if !is_reference && relative_admissible && !wall_admissible {
+                not_evaluated.push(WALL_NOT_EVALUATED.to_string());
+            }
             if !is_reference
                 && relative_admissible
+                && wall_admissible
                 && !wall_speedup.is_some_and(|speedup| speedup >= TIER_L_REQUIRED_WALL_SPEEDUP)
             {
                 blockers.push(format!(
@@ -1189,6 +1210,7 @@ fn tier_verdict(
 fn nonlinear_performance_verdict(
     is_reference: bool,
     reference_fidelity: ComparatorFidelity,
+    wall_timing_admissible: bool,
     represented_cases: usize,
     expected_cases: usize,
     failures: usize,
@@ -1211,6 +1233,14 @@ fn nonlinear_performance_verdict(
     }
     if !reference_fidelity.admits_relative_performance_reading() {
         let not_evaluated = vec![REFERENCE_ONLY_NOT_EVALUATED.to_string()];
+        let verdict = tier_verdict(false, &blockers, &not_evaluated);
+        return (verdict, blockers, not_evaluated);
+    }
+    if !wall_timing_admissible {
+        // The RHS/JVP work blockers apply only when wall speedup fails, so
+        // without admissible wall evidence none of the relative criteria
+        // can decide.
+        let not_evaluated = vec![WALL_NOT_EVALUATED.to_string()];
         let verdict = tier_verdict(false, &blockers, &not_evaluated);
         return (verdict, blockers, not_evaluated);
     }
@@ -1321,6 +1351,7 @@ fn assess_nonlinear_candidates(
             let (verdict, blockers, not_evaluated) = nonlinear_performance_verdict(
                 candidate.id() == "sequential-direct-off",
                 reference_fidelity,
+                TIER_N_WALL_TIMING_ADMISSIBLE,
                 rows.len(),
                 nonlinear.cases.len(),
                 failures,
@@ -2444,14 +2475,18 @@ mod unified_assessment_tests {
     }
 
     fn suite(gcrodr_wall: f64) -> UnifiedLinearSuite {
+        suite_with_plan(gcrodr_wall, 3, 1)
+    }
+
+    fn suite_with_plan(gcrodr_wall: f64, repetitions: usize, warmups: usize) -> UnifiedLinearSuite {
         UnifiedLinearSuite {
             kind: SequenceKind::Fixed,
             trace_id: "trace".into(),
             failures: 0,
             plan: BenchmarkPlan {
                 cells: strict_cells(),
-                repetitions: 3,
-                warmups: 1,
+                repetitions,
+                warmups,
                 seed: 1,
             },
             summary: vec![
@@ -2500,6 +2535,7 @@ mod unified_assessment_tests {
         let (verdict, blockers, not_evaluated) = nonlinear_performance_verdict(
             false,
             ComparatorFidelity::Production,
+            true,
             6,
             6,
             0,
@@ -2515,6 +2551,58 @@ mod unified_assessment_tests {
             })
         );
         assert!(not_evaluated.is_empty());
+    }
+
+    #[test]
+    fn smoke_and_single_sample_wall_blockers_are_not_evaluated() {
+        // Audit F-053: the Smoke profile (repetitions=1, warmups=0) and
+        // single-sample timings never decide Promote/Hold on wall time, in
+        // either direction.
+        for gcrodr_wall in [0.5, 0.9, 2.0] {
+            for (repetitions, warmups) in [(1, 0), (1, 1), (3, 0)] {
+                let rows =
+                    assess_linear_candidates(&[suite_with_plan(gcrodr_wall, repetitions, warmups)]);
+                let row = rows
+                    .iter()
+                    .find(|row| row.candidate_id == "sequential-gcrodr-persistent")
+                    .unwrap();
+                assert_eq!(row.verdict, UnifiedJointVerdict::NotEvaluated);
+                assert!(row.blockers.is_empty(), "{:?}", row.blockers);
+                assert_eq!(row.not_evaluated, vec![WALL_NOT_EVALUATED]);
+            }
+        }
+        for compute_ratio in [0.5, 2.0] {
+            let (verdict, blockers, not_evaluated) = nonlinear_performance_verdict(
+                false,
+                ComparatorFidelity::Production,
+                TIER_N_WALL_TIMING_ADMISSIBLE,
+                6,
+                6,
+                0,
+                Some(compute_ratio),
+                Some(3.0),
+                Some(5.0),
+                None,
+            );
+            assert_eq!(verdict, UnifiedJointVerdict::NotEvaluated);
+            assert!(blockers.is_empty());
+            assert_eq!(not_evaluated, vec![WALL_NOT_EVALUATED]);
+        }
+        // Intrinsic failures still hold without any wall evidence.
+        let (verdict, blockers, _) = nonlinear_performance_verdict(
+            false,
+            ComparatorFidelity::Production,
+            false,
+            5,
+            6,
+            1,
+            Some(0.5),
+            None,
+            None,
+            None,
+        );
+        assert_eq!(verdict, UnifiedJointVerdict::Hold);
+        assert_eq!(blockers.len(), 2);
     }
 
     #[test]
@@ -2538,6 +2626,7 @@ mod unified_assessment_tests {
             let (verdict, blockers, not_evaluated) = nonlinear_performance_verdict(
                 false,
                 ComparatorFidelity::ReferenceImplementationOnly,
+                true,
                 6,
                 6,
                 0,
