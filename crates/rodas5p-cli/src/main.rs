@@ -504,14 +504,19 @@ impl From<CliPolicyRedesignFamily> for G4S5B0Family {
 
 #[derive(Clone, Copy, Debug, ValueEnum)]
 enum CliPolicyRedesignPrefixPolicy {
-    FrozenK1,
+    /// Replayed N=128 calibration decisions; refused on holdout profiles.
+    #[value(alias = "frozen-k1")]
+    ReplayedK1,
+    /// Causal k=1 comparator on the observed error-drop feature.
+    CausalK1,
     K3,
 }
 
 impl From<CliPolicyRedesignPrefixPolicy> for G4S5B0PrefixProbePolicy {
     fn from(value: CliPolicyRedesignPrefixPolicy) -> Self {
         match value {
-            CliPolicyRedesignPrefixPolicy::FrozenK1 => Self::FrozenK1Comparator,
+            CliPolicyRedesignPrefixPolicy::ReplayedK1 => Self::ReplayedK1Table,
+            CliPolicyRedesignPrefixPolicy::CausalK1 => Self::CausalK1,
             CliPolicyRedesignPrefixPolicy::K3 => Self::K3Development,
         }
     }

@@ -1,0 +1,42 @@
+name: Ignored long tests
+
+# Every #[ignore]d test runs here in the measurement profile (audit F-003).
+# tools/check_ignored_tests_in_ci.py fails if a new ignored test is not
+# reachable from a workflow.
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/ignored-tests.yml'
+      - 'crates/**'
+      - 'research/generic_timing_replication_continuation_transaction_v37/results/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - 'tools/check_ignored_tests_in_ci.py'
+  push:
+    branches: [main]
+    paths:
+      - 'crates/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ignored-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install the pinned Rust toolchain
+        run: |
+          rustup toolchain install 1.94.1 --profile minimal
+          rustup override set 1.94.1
+      - name: Every ignored test is reachable from CI
+        run: python3 tools/check_ignored_tests_in_ci.py
+      - name: Run the ignored tests in the measurement profile
+        env:
+          RAYON_NUM_THREADS: '1'
+        run: cargo test --workspace --profile measurement --locked -- --ignored

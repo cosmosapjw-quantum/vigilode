@@ -195,6 +195,20 @@ fn retained_level2_shadow_is_complete_charged_safe_and_rjf_identical() {
         assert!(row.shadow_full_e_completed);
         assert!(row.shadow_full_e_failure.is_none());
         assert!(row.shadow_full_e_locally_admissible);
+        // Audit F-045: every recommended row carries a reference-anchored
+        // label next to the self-estimate.
+        let reference = row
+            .reference_local_error_wrms
+            .expect("reference local error");
+        let spread = row
+            .reference_uncertainty_wrms
+            .expect("reference uncertainty");
+        eprintln!(
+            "row {}: self-estimate {:?}, reference {reference:e} +- {spread:e}",
+            row.target_attempt_index, row.shadow_full_e_total_error
+        );
+        assert!(spread < 0.1 * reference.max(1.0), "reference not converged");
+        assert_eq!(row.reference_unsafe, Some(false));
         assert!(row.work_roundtrip_exact);
         assert_eq!(
             row.prefix_speculative_jvp_before_target,
