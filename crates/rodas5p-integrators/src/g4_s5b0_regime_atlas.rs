@@ -518,10 +518,15 @@ pub struct G4S5B0FrozenFullEShadowRow {
     /// (audit F-045); see `reference_local_error_wrms`.
     pub shadow_full_e_locally_admissible: bool,
     /// WRMS distance, in tolerance units, between the shadow endpoint and
-    /// an independent tight-tolerance RODAS5P solve of the same (t, y, h).
+    /// a tight-tolerance protected RODAS5P solve of the same (t, y, h).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub reference_local_error_wrms: Option<f64>,
-    /// `reference_local_error_wrms > 1`: the reference-anchored safety label.
+    /// WRMS distance between the references at 1e-3 and 1e-4 times the case
+    /// tolerances: the reference's own uncertainty.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub reference_uncertainty_wrms: Option<f64>,
+    /// Some(true) when error - uncertainty > 1, Some(false) when
+    /// error + uncertainty <= 1, None when the reference cannot decide.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub reference_unsafe: Option<bool>,
     pub shadow_full_e_failure: Option<String>,
@@ -659,6 +664,8 @@ pub struct G4S5B0V37ContinuationTransactionRow {
     pub shadow_full_e_locally_admissible: Option<bool>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub reference_local_error_wrms: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub reference_uncertainty_wrms: Option<f64>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub reference_unsafe: Option<bool>,
     pub shadow_full_e_failure: Option<String>,
@@ -3781,10 +3788,12 @@ fn frozen_shadow_total_error(
 }
 
 /// Reference-anchored local error of a shadow step (audit F-045): the same
-/// (t, y, h) advanced by protected sequential RODAS5P at 1e-3 times the
-/// case tolerances with tight GMRES solves, compared with the shadow
-/// endpoint in the case WRMS norm. It is independent of the exponential
-/// method's own estimates.
+/// (t, y, h) advanced by protected sequential RODAS5P with tight GMRES
+/// solves, compared with the shadow endpoint in the case WRMS norm. It is
+/// independent of the exponential method's own estimates, but it is the
+/// same Rosenbrock family, so it is run at two tolerances (1e-3 and 1e-4
+/// times the case tolerances) and their distance is returned as the
+/// reference's uncertainty.
 fn reference_local_error_wrms(
     problem: &OdeProblem,
     t: f64,
@@ -3792,7 +3801,23 @@ fn reference_local_error_wrms(
     h: f64,
     candidate: &[f64],
     adaptive: &AdaptiveStepConfig,
-) -> CoreResult<f64> {
+) -> CoreResult<(f64, f64)> {
+    let tight = reference_endpoint(problem, t, y, h, adaptive, 1.0e-3)?;
+    let tighter = reference_endpoint(problem, t, y, h, adaptive, 1.0e-4)?;
+    Ok((
+        reference_wrms(candidate, &tighter, adaptive.atol, adaptive.rtol)?,
+        reference_wrms(&tight, &tighter, adaptive.atol, adaptive.rtol)?,
+    ))
+}
+
+fn reference_endpoint(
+    problem: &OdeProblem,
+    t: f64,
+    y: &[f64],
+    h: f64,
+    adaptive: &AdaptiveStepConfig,
+    tolerance_factor: f64,
+) -> CoreResult<Vec<f64>> {
     let linear = rodas5p_core::LinearSolverConfig {
         method: rodas5p_core::LinearMethod::Gmres,
         rtol: 1.0e-13,
@@ -3811,19 +3836,32 @@ fn reference_local_error_wrms(
         crate::IntegrationMethod::Sequential,
         Some(&linear),
         None,
-        adaptive.atol * 1.0e-3,
-        adaptive.rtol * 1.0e-3,
+        adaptive.atol * tolerance_factor,
+        adaptive.rtol * tolerance_factor,
         100_000,
         h,
     )?;
-    let reference = result.y.last().filter(|_| result.success).ok_or_else(|| {
-        CoreError::InvalidInput(format!("reference solve failed: {}", result.message))
-    })?;
-    reference_wrms(candidate, reference, adaptive.atol, adaptive.rtol)
+    result
+        .y
+        .last()
+        .filter(|_| result.success)
+        .cloned()
+        .ok_or_else(|| {
+            CoreError::InvalidInput(format!("reference solve failed: {}", result.message))
+        })
 }
 
-fn reference_unsafe_label(reference_error: Option<f64>) -> Option<bool> {
-    reference_error.map(|error| !error.is_finite() || error > 1.0)
+fn reference_unsafe_label(error: f64, uncertainty: f64) -> Option<bool> {
+    if !(error.is_finite() && uncertainty.is_finite()) {
+        return None;
+    }
+    if error - uncertainty > 1.0 {
+        Some(true)
+    } else if error + uncertainty <= 1.0 {
+        Some(false)
+    } else {
+        None
+    }
 }
 
 fn reference_wrms(candidate: &[f64], reference: &[f64], atol: f64, rtol: f64) -> CoreResult<f64> {
@@ -4038,6 +4076,7 @@ fn new_frozen_shadow_row(
         shadow_full_e_total_error: None,
         shadow_full_e_locally_admissible: false,
         reference_local_error_wrms: None,
+        reference_uncertainty_wrms: None,
         reference_unsafe: None,
         shadow_full_e_failure: None,
         continuation_work: None,
@@ -4141,6 +4180,7 @@ impl FrozenFullEShadowRuntimeRow {
             shadow_full_e_total_error: row.shadow_full_e_total_error,
             shadow_full_e_locally_admissible,
             reference_local_error_wrms: row.reference_local_error_wrms,
+            reference_uncertainty_wrms: row.reference_uncertainty_wrms,
             reference_unsafe: row.reference_unsafe,
             shadow_full_e_failure: row.shadow_full_e_failure,
             continuation_work: row.continuation_work,
@@ -4327,9 +4367,14 @@ fn run_rjf_frozen_full_e_shadow_trajectory(
                                                         &adaptive,
                                                     )
                                                     .ok();
-                                                    row.reference_local_error_wrms = reference;
+                                                    row.reference_local_error_wrms =
+                                                        reference.map(|(error, _)| error);
+                                                    row.reference_uncertainty_wrms =
+                                                        reference.map(|(_, spread)| spread);
                                                     row.reference_unsafe =
-                                                        reference_unsafe_label(reference);
+                                                        reference.and_then(|(error, spread)| {
+                                                            reference_unsafe_label(error, spread)
+                                                        });
                                                 }
                                             }
                                             Err(error) => {
@@ -5870,9 +5915,11 @@ mod reference_safety_label_tests {
         let self_estimate: f64 = 0.5;
         let self_estimate_admissible = self_estimate.is_finite() && self_estimate <= 1.0;
         assert!(self_estimate_admissible);
-        assert_eq!(reference_unsafe_label(Some(reference_error)), Some(true));
-        assert_eq!(reference_unsafe_label(Some(0.9)), Some(false));
-        assert_eq!(reference_unsafe_label(Some(f64::NAN)), Some(true));
-        assert_eq!(reference_unsafe_label(None), None);
+        assert_eq!(reference_unsafe_label(reference_error, 0.1), Some(true));
+        assert_eq!(reference_unsafe_label(0.8, 0.1), Some(false));
+        // The reference's own uncertainty can leave the label undecided.
+        assert_eq!(reference_unsafe_label(1.05, 0.1), None);
+        assert_eq!(reference_unsafe_label(0.95, 0.1), None);
+        assert_eq!(reference_unsafe_label(f64::NAN, 0.1), None);
     }
 }

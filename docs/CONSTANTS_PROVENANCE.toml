@@ -12,10 +12,16 @@
 #   unsourced - no derivation or fit artifact exists in the tree
 # Any claim that depends on an unsourced constant, or on a fitted constant
 # with n < 30, inherits that label.
+# role: theory-bound | calibration-only | product-policy (external re-audit,
+#   6.5). A calibration-only constant may not carry threshold authority
+#   outside its calibration scope; an unsourced calibration-only constant is
+#   to be refitted or retired, not promoted. Listing a constant does not
+#   validate its value.
 # status: active | frozen | retired
 
 [[constant]]
 name = "V25_ERROR_DROP_THRESHOLD"
+role = "calibration-only"
 value = "0.012790399606947056"
 location = "crates/rodas5p-integrators/src/g4_s5b0_regime_atlas.rs"
 class = "unsourced"
@@ -30,6 +36,7 @@ status = "frozen"
 
 [[constant]]
 name = "V29_PREFIX_RESERVE_JVP"
+role = "product-policy"
 value = "80"
 location = "crates/rodas5p-integrators/src/g4_s5b0_regime_atlas.rs"
 class = "declared"
@@ -44,6 +51,7 @@ status = "frozen"
 
 [[constant]]
 name = "V29_PREFIX_BUDGET_FRACTION"
+role = "product-policy"
 value = "0.25"
 location = "crates/rodas5p-integrators/src/g4_s5b0_regime_atlas.rs"
 class = "declared"
@@ -58,6 +66,7 @@ status = "frozen"
 
 [[constant]]
 name = "V29_STAGE_GROWTH_BASELINE"
+role = "calibration-only"
 value = "3.24"
 location = "crates/rodas5p-integrators/src/g4_s5b0_regime_atlas.rs"
 class = "unsourced"
@@ -72,6 +81,7 @@ status = "frozen"
 
 [[constant]]
 name = "V36_FROZEN_ZETA34_TAU"
+role = "calibration-only"
 value = "13.39706618860016"
 location = "crates/rodas5p-integrators/src/g4_s5b0_regime_atlas.rs"
 class = "fitted"
@@ -86,6 +96,7 @@ status = "frozen"
 
 [[constant]]
 name = "V37_CONTINUATION_JVP_CAP"
+role = "product-policy"
 value = "80"
 location = "crates/rodas5p-integrators/src/g4_s5b0_regime_atlas.rs"
 class = "declared"
@@ -100,6 +111,7 @@ status = "frozen"
 
 [[constant]]
 name = "TIER_L_REQUIRED_WALL_SPEEDUP"
+role = "product-policy"
 value = "1.15"
 location = "crates/rodas5p-cli/src/main.rs"
 class = "declared"
@@ -114,6 +126,7 @@ status = "active"
 
 [[constant]]
 name = "TIER_N_REQUIRED_WALL_SPEEDUP"
+role = "product-policy"
 value = "1.15"
 location = "crates/rodas5p-cli/src/main.rs"
 class = "declared"

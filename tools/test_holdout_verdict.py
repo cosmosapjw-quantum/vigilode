@@ -21,6 +21,14 @@ def events(safe_scores, unsafe_scores):
 
 
 class HoldoutVerdictTests(unittest.TestCase):
+    def test_exact_zero_miss_bound(self):
+        self.assertAlmostEqual(hv.miss_rate_upper_95(5), 0.45072, places=5)
+        self.assertAlmostEqual(hv.miss_rate_upper_95(59), 0.04951, places=5)
+        self.assertAlmostEqual(hv.miss_rate_upper_95(299), 0.00997, places=5)
+        self.assertIsNone(hv.miss_rate_upper_95(0))
+        self.assertEqual(hv.positives_needed(0.05), 59)
+        self.assertEqual(hv.positives_needed(0.01), 299)
+
     def test_one_positive_is_inconclusive(self):
         report = hv.holdout_verdict(events([1, 2, 3, 4], [5]), 4.5)
         self.assertEqual(report["raw_verdict_at_tau"], "PASS")

@@ -10,8 +10,10 @@ const CLI: &str = include_str!("../../rodas5p-cli/src/main.rs");
 
 const CLASSES: [&str; 5] = ["derived", "fitted", "declared", "cited", "unsourced"];
 const STATUSES: [&str; 3] = ["active", "frozen", "retired"];
-const FIELDS: [&str; 12] = [
+const ROLES: [&str; 3] = ["theory-bound", "calibration-only", "product-policy"];
+const FIELDS: [&str; 13] = [
     "name",
+    "role",
     "value",
     "location",
     "class",
@@ -81,6 +83,10 @@ fn constants_provenance_table_matches_source() {
         names.push(name.clone());
         assert!(CLASSES.contains(&row["class"].as_str()), "{name}: class");
         assert!(STATUSES.contains(&row["status"].as_str()), "{name}: status");
+        assert!(ROLES.contains(&row["role"].as_str()), "{name}: role");
+        if row["class"] == "unsourced" {
+            assert_eq!(row["role"], "calibration-only", "{name}: unsourced role");
+        }
         let value: f64 = row["value"].parse().expect("numeric value");
         let source = match row["location"].as_str() {
             "crates/rodas5p-integrators/src/g4_s5b0_regime_atlas.rs" => ATLAS,

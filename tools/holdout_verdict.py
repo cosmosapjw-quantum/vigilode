@@ -11,8 +11,15 @@ holdout verdict at tau is PASS when no recommended event is a positive
 
 Otherwise the verdict is INCONCLUSIVE_INSUFFICIENT_POSITIVES (too few
 positives) or INCONCLUSIVE_RANK_UNSTABLE (enough positives, but a one-rank
-move flips it). With zero misses among n positives the 95% upper bound on the
-miss rate is about 3/n, which is why n = 1 carries no information.
+move flips it).
+
+The five-positive rule is a minimum sentinel, not evidence of low risk
+(external re-audit RA-08). With zero misses among n independent,
+identically distributed positives the exact one-sided 95% upper bound on the
+miss rate is 1 - 0.05^(1/n): 0.451 at n = 5, 0.0495 at n = 59, 0.00997 at
+n = 299. Correlated positives (for example stages of one trajectory) do not
+count as independent, and a consumed holdout is regression data, not a
+confirmatory one.
 
     python3 tools/holdout_verdict.py --v35-holdout320
 """
@@ -26,6 +33,17 @@ from pathlib import Path
 
 MIN_POSITIVES = 5
 REPO = Path(__file__).resolve().parents[1]
+
+
+def miss_rate_upper_95(n):
+    """Exact one-sided 95% upper bound on the miss rate after n positives with
+    zero misses; None without positives."""
+    return 1.0 - 0.05 ** (1.0 / n) if n else None
+
+
+def positives_needed(target_miss_rate):
+    """Smallest n whose zero-miss 95% upper bound is at most the target."""
+    return math.ceil(math.log(0.05) / math.log(1.0 - target_miss_rate))
 
 
 def verdict_at(events, tau):
@@ -70,7 +88,8 @@ def holdout_verdict(events, tau):
         "verdict_one_rank_down": at_down,
         "verdict_one_rank_up": at_up,
         "rank_stable": rank_stable,
-        "miss_rate_upper_95": min(1.0, 3.0 / n_pos) if n_pos else None,
+        "miss_rate_upper_95_if_zero_misses": miss_rate_upper_95(n_pos),
+        "miss_rate_bound_assumes": "independent, identically distributed positives",
     }
 
 

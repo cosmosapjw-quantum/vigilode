@@ -200,11 +200,15 @@ fn retained_level2_shadow_is_complete_charged_safe_and_rjf_identical() {
         let reference = row
             .reference_local_error_wrms
             .expect("reference local error");
+        let spread = row
+            .reference_uncertainty_wrms
+            .expect("reference uncertainty");
         eprintln!(
-            "row {}: self-estimate {:?}, reference {reference:e}",
+            "row {}: self-estimate {:?}, reference {reference:e} +- {spread:e}",
             row.target_attempt_index, row.shadow_full_e_total_error
         );
-        assert_eq!(row.reference_unsafe, Some(reference > 1.0));
+        assert!(spread < 0.1 * reference.max(1.0), "reference not converged");
+        assert_eq!(row.reference_unsafe, Some(false));
         assert!(row.work_roundtrip_exact);
         assert_eq!(
             row.prefix_speculative_jvp_before_target,

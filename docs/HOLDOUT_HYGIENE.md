@@ -21,11 +21,18 @@ Adopted 2026-09-29 after audit findings F-023 and F-047.
    five reference-unsafe positives and a verdict that survives a one-rank
    threshold move in both directions (`tools/holdout_verdict.py`). Otherwise
    it is `INCONCLUSIVE_INSUFFICIENT_POSITIVES` or
-   `INCONCLUSIVE_RANK_UNSTABLE`.
+   `INCONCLUSIVE_RANK_UNSTABLE`. Five positives are a minimum sentinel, not
+   evidence of low risk: with zero misses among n independent positives the
+   exact 95% upper bound on the miss rate is 1 - 0.05^(1/n), 0.451 at n = 5;
+   a 5% bound needs 59 and a 1% bound 299 (external re-audit RA-08). Stages
+   of one trajectory are not independent positives.
 7. **Safety labels are reference-anchored.** "Unsafe" means a reference local
    error above one tolerance unit, not the method's own estimate
    (`reference_unsafe` on the G4/S5B0 shadow rows).
 
 Profiles flagged as holdout today: `canonical` (it contains N = 512),
 `holdout-512`, `enforced-budget-holdout-320`, `stage-growth-holdout-384`. The
-N = 320 and N = 384 holdouts are already consumed.
+N = 320 and N = 384 holdouts are already consumed: they remain useful as
+regression data but may not be renamed confirmatory holdouts. A new
+dimension N alone does not make a holdout independent of its calibration
+families.
