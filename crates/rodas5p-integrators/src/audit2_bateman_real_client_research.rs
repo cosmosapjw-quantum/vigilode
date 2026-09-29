@@ -24,9 +24,10 @@ use crate::audit2_reusable_transaction_research::{
     Audit2ExternalOutputReference, Audit2FrozenWSemanticIdentity, Audit2IndependentBudgetReceipt,
     Audit2IndependentStepBudget, Audit2ReferenceUncertaintyTreatment,
     Audit2ReusablePreconditionerCache, Audit2ReusablePreconditionerCacheSnapshot,
-    Audit2ReusablePreconditionerIdentity, Audit2TransactionalAttemptConfig,
-    Audit2TransactionalAttemptOutcome, Audit2TransactionalFailurePhase,
-    Audit2TransactionalSelection, run_audit2_reusable_preconditioner_transactional_attempt,
+    Audit2ReusablePreconditionerIdentity, Audit2TransactionCommitRule,
+    Audit2TransactionalAttemptConfig, Audit2TransactionalAttemptOutcome,
+    Audit2TransactionalFailurePhase, Audit2TransactionalSelection,
+    run_audit2_reusable_preconditioner_transactional_attempt,
 };
 use crate::{OdeProblem, StepContext, StepResult, build_step_context_matrix_free};
 
@@ -497,6 +498,8 @@ fn operator_case(
             common_w: Audit2MatrixFreeCommonWConfig::default(),
             outer_atol: 1.0e-4,
             outer_rtol: 1.0e-6,
+            commit_rule: Audit2TransactionCommitRule::ReferenceGated,
+            reuse_certificate: false,
         },
         reference: Audit2ExternalOutputReference {
             source: "bateman-taylor-lagrange-fraction-v1".into(),

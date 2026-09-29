@@ -6,9 +6,9 @@
 use std::sync::Arc;
 
 use rodas5p_core::{
-    CoreError, CoreResult, ExactOperatorIdentity, ExactPreconditionerIdentity, InitialGuess,
-    LinearMethod, LinearOperator, LinearSolverConfig, Preconditioner, PreconditionerKind,
-    WorkCounters, safe_l2,
+    ApplyCategory, CoreError, CoreResult, ExactOperatorIdentity, ExactPreconditionerIdentity,
+    InitialGuess, LinearMethod, LinearOperator, LinearSolverConfig, Preconditioner,
+    PreconditionerKind, WorkCounters, apply_counted, apply_preconditioner, safe_l2,
 };
 use serde::{Deserialize, Serialize};
 
@@ -336,11 +336,136 @@ impl Audit2ReusablePreconditionerCache {
     }
 }
 
+/// What the transactional commit decision may read (audit F-014).
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum Audit2TransactionCommitRule {
+    /// Causal solver quantities only: the embedded estimate and the
+    /// original-target residual and contraction. The reference verdict is
+    /// recorded but cannot change the carried state.
+    Causal,
+    /// The pre-F-014 rule, which also requires the reference verdict. Kept
+    /// only so that frozen research scenarios (the Bateman local six-case
+    /// protocol) replay unchanged; its receipts cannot be cited as runtime
+    /// candidate quality.
+    ReferenceGated,
+}
+
+fn legacy_reference_gated() -> Audit2TransactionCommitRule {
+    Audit2TransactionCommitRule::ReferenceGated
+}
+
+fn is_reference_gated(rule: &Audit2TransactionCommitRule) -> bool {
+    *rule == Audit2TransactionCommitRule::ReferenceGated
+}
+
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Audit2TransactionalAttemptConfig {
     pub common_w: Audit2MatrixFreeCommonWConfig,
     pub outer_atol: f64,
     pub outer_rtol: f64,
+    /// Omitted from serialized configs when reference-gated, so frozen
+    /// configs keep their bytes; a config without it is reference-gated.
+    #[serde(
+        default = "legacy_reference_gated",
+        skip_serializing_if = "is_reference_gated"
+    )]
+    pub commit_rule: Audit2TransactionCommitRule,
+    /// Compute the M08 reuse certificate for the preconditioner this attempt
+    /// uses (audit F-062). Off in frozen configs, which omit the field.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub reuse_certificate: bool,
+}
+
+/// Largest dimension for which the reuse certificate is evaluated column by
+/// column (one operator and two preconditioner applications per column).
+pub const AUDIT2_REUSE_CERTIFICATE_MAX_DIMENSION: usize = 1024;
+
+/// M08 reuse certificate `epsilon + delta < 1` for a preconditioner `P`
+/// applied to the frozen shifted operator `W` (audit F-062).
+///
+/// `epsilon = ||I - P W||_1` is evaluated exactly in floating point, one unit
+/// column at a time; it is not a directed-rounding bound. The reusable cache
+/// reuses `P` only when the exact operator identity, the frozen-W digest and
+/// the preconditioner identity are all equal, so `Delta W = 0` and
+/// `delta = ||P||_1 ||Delta W||_1 = 0`. `certified` means
+/// `epsilon + delta < 1`: then `P W` is invertible with
+/// `||(P W)^-1||_1 <= 1 / (1 - epsilon - delta)`. Its work is its own,
+/// never the attempt's.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct Audit2ReuseCertificate {
+    pub method: String,
+    pub dimension: usize,
+    /// Whether this attempt reused the committed preconditioner.
+    pub reused: bool,
+    pub epsilon_l1: f64,
+    pub preconditioner_l1: f64,
+    pub delta_w_l1: f64,
+    pub bound: f64,
+    pub certified: bool,
+    pub work: WorkCounters,
+}
+
+pub fn audit2_preconditioner_reuse_certificate(
+    shifted: &dyn LinearOperator,
+    preconditioner: &dyn Preconditioner,
+    reused: bool,
+) -> CoreResult<Audit2ReuseCertificate> {
+    let n = shifted.dimension();
+    if preconditioner.dimension() != n {
+        return Err(CoreError::Dimension(
+            "Audit-2 reuse certificate operator/preconditioner shape mismatch".into(),
+        ));
+    }
+    if n > AUDIT2_REUSE_CERTIFICATE_MAX_DIMENSION {
+        return Err(CoreError::InvalidInput(format!(
+            "Audit-2 reuse certificate is evaluated only up to dimension {AUDIT2_REUSE_CERTIFICATE_MAX_DIMENSION}"
+        )));
+    }
+    let mut work = WorkCounters::default();
+    let mut unit = vec![0.0; n];
+    let mut w_column = vec![0.0; n];
+    let mut column = vec![0.0; n];
+    let mut epsilon = 0.0_f64;
+    let mut p_norm = 0.0_f64;
+    for j in 0..n {
+        unit[j] = 1.0;
+        apply_counted(
+            shifted,
+            &unit,
+            &mut w_column,
+            &mut work,
+            ApplyCategory::Diagnostic,
+        )?;
+        apply_preconditioner(preconditioner, &w_column, &mut column, &mut work)?;
+        let column_sum: f64 = column
+            .iter()
+            .enumerate()
+            .map(|(i, value)| (f64::from(u8::from(i == j)) - value).abs())
+            .sum();
+        epsilon = epsilon.max(column_sum);
+        apply_preconditioner(preconditioner, &unit, &mut column, &mut work)?;
+        p_norm = p_norm.max(column.iter().map(|value| value.abs()).sum());
+        unit[j] = 0.0;
+    }
+    if !(epsilon.is_finite() && p_norm.is_finite()) {
+        return Err(CoreError::NonFinite(
+            "Audit-2 reuse certificate produced a non-finite norm".into(),
+        ));
+    }
+    let delta_w_l1 = 0.0;
+    let bound = epsilon + p_norm * delta_w_l1;
+    Ok(Audit2ReuseCertificate {
+        method: "columnwise-l1;delta-w=0-by-identity-equality".into(),
+        dimension: n,
+        reused,
+        epsilon_l1: epsilon,
+        preconditioner_l1: p_norm,
+        delta_w_l1,
+        bound,
+        certified: bound < 1.0,
+        work,
+    })
 }
 
 impl Audit2TransactionalAttemptConfig {
@@ -606,8 +731,38 @@ pub enum Audit2TransactionalSelection {
     Rejected,
 }
 
+/// Receipt label of `Audit2TransactionCommitRule::Causal`.
+pub const AUDIT2_TRANSACTION_COMMIT_RULE_CAUSAL: &str = "causal-v1";
+/// Receipt label of `Audit2TransactionCommitRule::ReferenceGated`.
+pub const AUDIT2_TRANSACTION_COMMIT_RULE_REFERENCE_GATED: &str = "reference-gated";
+
+fn reference_gated_commit_rule() -> String {
+    AUDIT2_TRANSACTION_COMMIT_RULE_REFERENCE_GATED.into()
+}
+
+fn is_reference_gated_label(label: &str) -> bool {
+    label == AUDIT2_TRANSACTION_COMMIT_RULE_REFERENCE_GATED
+}
+
+/// Budget receipt of one transactional candidate.
+///
+/// Under the causal rule `accepted` is `embedded_accepted &&
+/// original_target_accepted`: the reference-aware assessment
+/// (`output_accepted` and its inputs) is a post-hoc audit field and never
+/// changes what is committed (audit F-014), so the scientific result is the
+/// 2x2 table of causal disposition against reference verdict. Under the
+/// reference-gated rule `accepted` also requires `output_accepted`; such
+/// receipts, and every receipt written before this rule (they have no
+/// `commit_rule`), cannot be cited as runtime candidate quality.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Audit2IndependentBudgetReceipt {
+    /// Omitted when reference-gated, so frozen receipt schemas keep their
+    /// exact field set.
+    #[serde(
+        default = "reference_gated_commit_rule",
+        skip_serializing_if = "is_reference_gated_label"
+    )]
+    pub commit_rule: String,
     pub identifier: String,
     pub reference_source: String,
     pub output_error_l2: f64,
@@ -645,6 +800,8 @@ pub struct Audit2TransactionalAttemptSuccess {
     pub fallback_step: Option<StepResult>,
     pub cache: Audit2ReusablePreconditionerCacheSnapshot,
     pub work: WorkCounters,
+    /// Present when `config.reuse_certificate` is set (audit F-062).
+    pub reuse_certificate: Option<Audit2ReuseCertificate>,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -840,6 +997,7 @@ where
         };
     let initial_residual_l2 = rows_l2(&initial_residual);
     let setup_work_before = cache.snapshot().setup_work;
+    let reuses_before = cache.snapshot().same_binding_reuses;
     let preconditioner_result =
         cache.begin_attempt(context, frozen_w_semantic, preconditioner_identity, setup);
     let setup_work_after = cache.snapshot().setup_work;
@@ -887,6 +1045,31 @@ where
                 counters,
             );
         }
+    };
+
+    let reuse_certificate = if config.reuse_certificate {
+        let reused = cache.snapshot().same_binding_reuses > reuses_before;
+        match audit2_preconditioner_reuse_certificate(
+            &context.shifted,
+            preconditioner.as_ref(),
+            reused,
+        ) {
+            Ok(certificate) => Some(certificate),
+            Err(error) => {
+                let _ = cache.rollback_attempt();
+                return failure(
+                    Audit2TransactionalFailurePhase::PreconditionerSetup,
+                    error,
+                    context,
+                    None,
+                    cache,
+                    before,
+                    counters,
+                );
+            }
+        }
+    } else {
+        None
     };
 
     let mut candidate_receipt = None;
@@ -998,6 +1181,13 @@ where
             && final_residual_l2 <= budget.max_original_target_residual_l2
             && contraction <= budget.max_original_target_contraction;
         let budget_receipt = Audit2IndependentBudgetReceipt {
+            commit_rule: match config.commit_rule {
+                Audit2TransactionCommitRule::Causal => AUDIT2_TRANSACTION_COMMIT_RULE_CAUSAL,
+                Audit2TransactionCommitRule::ReferenceGated => {
+                    AUDIT2_TRANSACTION_COMMIT_RULE_REFERENCE_GATED
+                }
+            }
+            .into(),
             identifier: budget.identifier.clone(),
             reference_source: reference.source.clone(),
             output_error_l2,
@@ -1011,7 +1201,16 @@ where
             output_accepted,
             embedded_accepted,
             original_target_accepted,
-            accepted: output_accepted && embedded_accepted && original_target_accepted,
+            // Under the causal rule the reference verdict is audit-only
+            // (audit F-014).
+            accepted: match config.commit_rule {
+                Audit2TransactionCommitRule::Causal => {
+                    embedded_accepted && original_target_accepted
+                }
+                Audit2TransactionCommitRule::ReferenceGated => {
+                    output_accepted && embedded_accepted && original_target_accepted
+                }
+            },
         };
         candidate_receipt = Some(Audit2TransactionalCandidateReceipt {
             correction,
@@ -1058,6 +1257,7 @@ where
                 fallback_step: None,
                 cache: cache.snapshot(),
                 work: counters.delta(before),
+                reuse_certificate,
             },
         ));
     }
@@ -1114,5 +1314,6 @@ where
         fallback_step: Some(fallback),
         cache: cache.snapshot(),
         work: counters.delta(before),
+        reuse_certificate,
     }))
 }

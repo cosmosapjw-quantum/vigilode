@@ -12,11 +12,12 @@ use rodas5p_integrators::{
     Audit2ExternalOutputReference, Audit2FrozenWSemanticIdentity, Audit2IndependentStepBudget,
     Audit2MatrixFreeCommonWConfig, Audit2MatrixFreeCorrectionOutcome,
     Audit2ReferenceUncertaintyTreatment, Audit2ReusablePreconditionerCache,
-    Audit2ReusablePreconditionerIdentity, Audit2TransactionalAttemptConfig,
-    Audit2TransactionalAttemptOutcome, Audit2TransactionalSelection, OdeProblem,
-    assess_audit2_reference_aware_output, audit2_conservative_l2_difference_upper,
-    audit2_conservative_output_budget_lower, build_step_context_matrix_free,
-    manufactured_vector_problem, run_audit2_matrix_free_common_w_correction,
+    Audit2ReusablePreconditionerIdentity, Audit2TransactionCommitRule,
+    Audit2TransactionalAttemptConfig, Audit2TransactionalAttemptOutcome,
+    Audit2TransactionalSelection, OdeProblem, assess_audit2_reference_aware_output,
+    audit2_conservative_l2_difference_upper, audit2_conservative_output_budget_lower,
+    build_step_context_matrix_free, manufactured_vector_problem,
+    run_audit2_matrix_free_common_w_correction,
     run_audit2_reusable_preconditioner_transactional_attempt,
 };
 
@@ -438,6 +439,8 @@ fn transaction_setup_failure_preserves_partial_setup_work_before_candidate_solve
         common_w: Audit2MatrixFreeCommonWConfig::default(),
         outer_atol: 1.0e-9,
         outer_rtol: 1.0e-7,
+        commit_rule: Audit2TransactionCommitRule::Causal,
+        reuse_certificate: false,
     };
     let budget = Audit2IndependentStepBudget {
         identifier: "fixed-setup-failure-budget-v1".into(),
@@ -508,6 +511,8 @@ fn invalid_common_w_config_fails_before_attempt_setup_or_work() -> CoreResult<()
         },
         outer_atol: 1.0e-9,
         outer_rtol: 1.0e-7,
+        commit_rule: Audit2TransactionCommitRule::Causal,
+        reuse_certificate: false,
     };
     let budget = Audit2IndependentStepBudget {
         identifier: "fixed-invalid-config-budget-v1".into(),
@@ -634,10 +639,11 @@ fn asserted_reference_uncertainty_is_consumed_inside_the_output_budget() {
 }
 
 #[test]
-fn transaction_cannot_commit_by_treating_reference_uncertainty_as_extra_tolerance() -> CoreResult<()>
-{
-    // This exercises the pre-commit transaction seam, not only the pure
-    // assessment helper. The former E_ref <= B + u formula would commit.
+fn reference_verdict_does_not_treat_reference_uncertainty_as_extra_tolerance() -> CoreResult<()> {
+    // This exercises the transaction seam, not only the pure assessment
+    // helper: the recorded reference verdict must reject, where the former
+    // E_ref <= B + u formula would accept. Since audit F-014 the verdict is
+    // audit-only, so the candidate commits on its causal gates.
     let (problem, y0) = manufactured_vector_problem(4, 80.0, 0.0, 0.2, 0.0)?;
     let context =
         build_step_context_matrix_free(&problem, 0.0, &y0, 1.0e-3, &mut WorkCounters::default())?;
@@ -659,6 +665,8 @@ fn transaction_cannot_commit_by_treating_reference_uncertainty_as_extra_toleranc
         common_w: Audit2MatrixFreeCommonWConfig::default(),
         outer_atol: 1.0,
         outer_rtol: 0.0,
+        commit_rule: Audit2TransactionCommitRule::Causal,
+        reuse_certificate: false,
     };
     let mut cache = Audit2ReusablePreconditionerCache::default();
     let mut work = WorkCounters::default();
@@ -684,11 +692,9 @@ fn transaction_cannot_commit_by_treating_reference_uncertainty_as_extra_toleranc
             panic!("protected fallback unexpectedly failed: {failure:?}")
         }
     };
-    assert_eq!(
-        completed.selection,
-        Audit2TransactionalSelection::ProtectedFallback
-    );
+    assert_eq!(completed.selection, Audit2TransactionalSelection::Candidate);
     let candidate = completed.candidate.expect("candidate budget receipt");
+    assert!(candidate.budget.accepted, "causal gates pass");
     assert_eq!(candidate.budget.output_budget_l2, 1.0);
     assert!(candidate.budget.output_error_l2 < 1.0);
     assert!(candidate.budget.output_error_upper_l2 >= 2.0);
@@ -699,15 +705,17 @@ fn transaction_cannot_commit_by_treating_reference_uncertainty_as_extra_toleranc
         Audit2ReferenceUncertaintyTreatment::DeclaredUpperBound
     );
     assert!(!candidate.budget.output_accepted);
-    assert_eq!(cache.snapshot().commits, 0);
-    assert_eq!(cache.snapshot().rollbacks, 1);
+    assert_eq!(cache.snapshot().commits, 1);
+    assert_eq!(cache.snapshot().rollbacks, 0);
     Ok(())
 }
 
 #[test]
-fn estimate_only_reference_forces_fallback_without_committing_candidate_cache() -> CoreResult<()> {
+fn estimate_only_reference_is_not_upgraded_in_the_reference_verdict() -> CoreResult<()> {
     // Breaks if a numerically zero but non-authoritative uncertainty is
-    // silently upgraded into a declared upper bound by the transaction.
+    // silently upgraded into a declared upper bound by the transaction. Since
+    // audit F-014 the verdict is audit-only: the candidate commits on its
+    // causal gates while the recorded reference verdict rejects.
     let (problem, y0) = manufactured_vector_problem(4, 80.0, 0.0, 0.2, 0.0)?;
     let context =
         build_step_context_matrix_free(&problem, 0.0, &y0, 1.0e-3, &mut WorkCounters::default())?;
@@ -729,6 +737,8 @@ fn estimate_only_reference_forces_fallback_without_committing_candidate_cache() 
         common_w: Audit2MatrixFreeCommonWConfig::default(),
         outer_atol: 1.0,
         outer_rtol: 0.0,
+        commit_rule: Audit2TransactionCommitRule::Causal,
+        reuse_certificate: false,
     };
     let mut cache = Audit2ReusablePreconditionerCache::default();
     let mut work = WorkCounters::default();
@@ -754,18 +764,16 @@ fn estimate_only_reference_forces_fallback_without_committing_candidate_cache() 
             panic!("estimate-only protected fallback unexpectedly failed: {failure:?}")
         }
     };
-    assert_eq!(
-        completed.selection,
-        Audit2TransactionalSelection::ProtectedFallback
-    );
+    assert_eq!(completed.selection, Audit2TransactionalSelection::Candidate);
     let candidate = completed.candidate.expect("candidate budget receipt");
+    assert!(candidate.budget.accepted, "causal gates pass");
     assert!(!candidate.budget.output_accepted);
     assert_eq!(
         candidate.budget.uncertainty_treatment,
         Audit2ReferenceUncertaintyTreatment::EstimateOnly
     );
-    assert_eq!(cache.snapshot().commits, 0);
-    assert_eq!(cache.snapshot().rollbacks, 1);
+    assert_eq!(cache.snapshot().commits, 1);
+    assert_eq!(cache.snapshot().rollbacks, 0);
     Ok(())
 }
 
@@ -861,6 +869,8 @@ fn admitted_candidate_commits_state_and_nonidentity_preconditioner_atomically() 
         common_w: Audit2MatrixFreeCommonWConfig::default(),
         outer_atol: 1.0e-9,
         outer_rtol: 1.0e-7,
+        commit_rule: Audit2TransactionCommitRule::Causal,
+        reuse_certificate: false,
     };
     let identity = diagonal_identity("scaled-diagonal-test", 1, &[0.5; 8]);
     let mut cache = Audit2ReusablePreconditionerCache::default();
@@ -982,6 +992,8 @@ fn late_preconditioner_apply_failure_rolls_back_lease_and_runs_isolated_fallback
         common_w: Audit2MatrixFreeCommonWConfig::default(),
         outer_atol: 1.0,
         outer_rtol: 0.0,
+        commit_rule: Audit2TransactionCommitRule::Causal,
+        reuse_certificate: false,
     };
     let failing = Arc::new(FailingDiagonalPreconditioner {
         inverse: vec![0.5; problem.dimension],
@@ -1064,6 +1076,8 @@ fn nonfinite_derived_output_budget_fails_before_setup_or_candidate_work() -> Cor
         common_w: Audit2MatrixFreeCommonWConfig::default(),
         outer_atol: 1.0,
         outer_rtol: 0.0,
+        commit_rule: Audit2TransactionCommitRule::Causal,
+        reuse_certificate: false,
     };
     let mut cache = Audit2ReusablePreconditionerCache::default();
     let mut work = WorkCounters::default();
@@ -1126,6 +1140,8 @@ fn candidate_and_fallback_rejection_preserves_base_state_and_exposes_no_selected
         common_w: Audit2MatrixFreeCommonWConfig::default(),
         outer_atol: 1.0e-30,
         outer_rtol: 0.0,
+        commit_rule: Audit2TransactionCommitRule::Causal,
+        reuse_certificate: false,
     };
     let mut cache = Audit2ReusablePreconditionerCache::default();
     let mut work = WorkCounters::default();
@@ -1163,5 +1179,259 @@ fn candidate_and_fallback_rejection_preserves_base_state_and_exposes_no_selected
     assert_eq!(work.accepted_steps, 0);
     assert_eq!(work.rejected_steps, 1);
     assert!(work.linear_solves > 0);
+    Ok(())
+}
+
+/// One transactional attempt on the 8-dimensional manufactured problem with
+/// the permissive linear-probe budget, against `reference_state`.
+fn causal_probe_attempt(
+    reference_state: Vec<f64>,
+    max_embedded_l2: f64,
+    commit_rule: Audit2TransactionCommitRule,
+) -> CoreResult<(
+    rodas5p_integrators::Audit2TransactionalAttemptSuccess,
+    Audit2ReusablePreconditionerCache,
+)> {
+    let (problem, y0) = manufactured_vector_problem(8, 80.0, 0.0, 0.2, 0.0)?;
+    let context =
+        build_step_context_matrix_free(&problem, 0.0, &y0, 1.0e-3, &mut WorkCounters::default())?;
+    let reference = Audit2ExternalOutputReference {
+        source: "manufactured-exact-v1".into(),
+        state: reference_state,
+        uncertainty_l2: 0.0,
+        uncertainty_treatment: Audit2ReferenceUncertaintyTreatment::DeclaredUpperBound,
+    };
+    let budget = Audit2IndependentStepBudget {
+        identifier: "causal-commit-probe-v1".into(),
+        output_atol_l2: 1.0,
+        output_rtol: 0.0,
+        max_embedded_l2,
+        max_original_target_residual_l2: 1.0e-8,
+        max_original_target_contraction: 1.0e-8,
+    };
+    let config = Audit2TransactionalAttemptConfig {
+        common_w: Audit2MatrixFreeCommonWConfig::default(),
+        outer_atol: 1.0e-9,
+        outer_rtol: 1.0e-7,
+        commit_rule,
+        reuse_certificate: false,
+    };
+    let mut cache = Audit2ReusablePreconditionerCache::default();
+    let outcome = run_audit2_reusable_preconditioner_transactional_attempt(
+        &context,
+        &zero_trial(context.coeffs.stages(), problem.dimension),
+        &config,
+        &budget,
+        &reference,
+        &mut cache,
+        frozen_w_identity('c'),
+        diagonal_identity("causal-probe-diagonal", 1, &[0.5; 8]),
+        |frozen, _| {
+            Ok(Arc::new(DiagonalPreconditioner {
+                inverse: vec![0.5; frozen.problem.dimension],
+            }) as Arc<dyn Preconditioner>)
+        },
+        &mut WorkCounters::default(),
+    );
+    match outcome {
+        Audit2TransactionalAttemptOutcome::Completed(value) => Ok((*value, cache)),
+        Audit2TransactionalAttemptOutcome::Failed(failure) => {
+            panic!("causal probe unexpectedly failed: {failure:?}")
+        }
+    }
+}
+
+#[test]
+fn transaction_commit_is_invariant_to_reference_state() -> CoreResult<()> {
+    // Audit F-014: the commit decision must not read the reference. A
+    // reference displaced by 1e3 x the output budget changes only the
+    // recorded reference verdict.
+    let (problem, _) = manufactured_vector_problem(8, 80.0, 0.0, 0.2, 0.0)?;
+    let exact = problem.exact(1.0e-3).unwrap();
+    let displaced = exact.iter().map(|value| value + 1.0e3).collect::<Vec<_>>();
+    let (near, near_cache) = causal_probe_attempt(exact, 1.0, Audit2TransactionCommitRule::Causal)?;
+    let (far, far_cache) =
+        causal_probe_attempt(displaced, 1.0, Audit2TransactionCommitRule::Causal)?;
+
+    assert_eq!(near.selection, far.selection);
+    assert_eq!(near.committed, far.committed);
+    assert_eq!(
+        near.committed_state
+            .iter()
+            .map(|v| v.to_bits())
+            .collect::<Vec<_>>(),
+        far.committed_state
+            .iter()
+            .map(|v| v.to_bits())
+            .collect::<Vec<_>>()
+    );
+    assert_eq!(near_cache.snapshot().commits, far_cache.snapshot().commits);
+    let near_budget = &near.candidate.as_ref().unwrap().budget;
+    let far_budget = &far.candidate.as_ref().unwrap().budget;
+    assert_eq!(near_budget.accepted, far_budget.accepted);
+    assert!(near_budget.output_accepted);
+    assert!(!far_budget.output_accepted);
+    assert_eq!(
+        far_budget.commit_rule,
+        rodas5p_integrators::AUDIT2_TRANSACTION_COMMIT_RULE_CAUSAL
+    );
+    Ok(())
+}
+
+#[test]
+fn an_embedded_estimate_above_budget_is_not_committed_with_an_exact_reference() -> CoreResult<()> {
+    let (problem, _) = manufactured_vector_problem(8, 80.0, 0.0, 0.2, 0.0)?;
+    let exact = problem.exact(1.0e-3).unwrap();
+    let (completed, cache) = causal_probe_attempt(exact, 0.0, Audit2TransactionCommitRule::Causal)?;
+    let budget = &completed.candidate.as_ref().unwrap().budget;
+    assert!(
+        budget.output_accepted,
+        "the reference verdict is favourable"
+    );
+    assert!(!budget.embedded_accepted);
+    assert!(!budget.accepted);
+    assert_eq!(
+        completed.selection,
+        Audit2TransactionalSelection::ProtectedFallback
+    );
+    assert_eq!(cache.snapshot().commits, 0);
+    Ok(())
+}
+
+#[test]
+fn reference_gated_rule_is_explicit_and_keeps_the_frozen_receipt_schema() -> CoreResult<()> {
+    // The pre-F-014 rule survives only as an explicit mode, for frozen
+    // research scenarios; its receipts omit `commit_rule` so their field set
+    // is the one the frozen verifier expects.
+    let (problem, _) = manufactured_vector_problem(8, 80.0, 0.0, 0.2, 0.0)?;
+    let displaced = problem
+        .exact(1.0e-3)
+        .unwrap()
+        .iter()
+        .map(|value| value + 1.0e3)
+        .collect::<Vec<_>>();
+    let (gated, cache) =
+        causal_probe_attempt(displaced, 1.0, Audit2TransactionCommitRule::ReferenceGated)?;
+    assert_eq!(
+        gated.selection,
+        Audit2TransactionalSelection::ProtectedFallback
+    );
+    assert_eq!(cache.snapshot().commits, 0);
+    let budget = &gated.candidate.as_ref().unwrap().budget;
+    assert_eq!(
+        budget.commit_rule,
+        rodas5p_integrators::AUDIT2_TRANSACTION_COMMIT_RULE_REFERENCE_GATED
+    );
+    let json = serde_json::to_value(budget).unwrap();
+    assert!(json.get("commit_rule").is_none());
+    let legacy: rodas5p_integrators::Audit2IndependentBudgetReceipt =
+        serde_json::from_value(json).unwrap();
+    assert_eq!(legacy.commit_rule, budget.commit_rule);
+    Ok(())
+}
+
+#[test]
+fn reuse_certificate_evaluates_the_preconditioner_defect() -> CoreResult<()> {
+    // Audit F-062: epsilon = ||I - P W||_1. W = [[2, 1], [0, 4]].
+    let w = rodas5p_core::DenseOperator::new(rodas5p_core::DenseMatrix::from_rows(&[
+        &[2.0, 1.0],
+        &[0.0, 4.0],
+    ])?)?;
+    let exact_diagonal = DiagonalPreconditioner {
+        inverse: vec![0.5, 0.25],
+    };
+    let certificate =
+        rodas5p_integrators::audit2_preconditioner_reuse_certificate(&w, &exact_diagonal, true)?;
+    // I - P W = [[0, -0.5], [0, 0]].
+    assert_eq!(certificate.epsilon_l1, 0.5);
+    assert_eq!(certificate.delta_w_l1, 0.0);
+    assert_eq!(certificate.bound, 0.5);
+    assert!(certificate.certified);
+    assert_eq!(certificate.preconditioner_l1, 0.5);
+    assert_eq!(certificate.work.diagnostic_matvecs, 2);
+
+    let poor_diagonal = DiagonalPreconditioner {
+        inverse: vec![1.5, 1.0],
+    };
+    let certificate =
+        rodas5p_integrators::audit2_preconditioner_reuse_certificate(&w, &poor_diagonal, true)?;
+    // I - P W = [[-2, -1.5], [0, -3]]: column sums 2 and 4.5.
+    assert_eq!(certificate.epsilon_l1, 4.5);
+    assert!(!certificate.certified);
+    Ok(())
+}
+
+#[test]
+fn transactional_attempts_report_the_reuse_certificate_on_request() -> CoreResult<()> {
+    let (problem, y0) = manufactured_vector_problem(8, 80.0, 0.0, 0.2, 0.0)?;
+    let context =
+        build_step_context_matrix_free(&problem, 0.0, &y0, 1.0e-3, &mut WorkCounters::default())?;
+    let reference = Audit2ExternalOutputReference {
+        source: "manufactured-exact-v1".into(),
+        state: problem.exact(context.t + context.h).unwrap(),
+        uncertainty_l2: 0.0,
+        uncertainty_treatment: Audit2ReferenceUncertaintyTreatment::DeclaredUpperBound,
+    };
+    let budget = Audit2IndependentStepBudget {
+        identifier: "reuse-certificate-probe-v1".into(),
+        output_atol_l2: 1.0,
+        output_rtol: 0.0,
+        max_embedded_l2: 1.0,
+        max_original_target_residual_l2: 1.0e-8,
+        max_original_target_contraction: 1.0e-8,
+    };
+    let mut cache = Audit2ReusablePreconditionerCache::default();
+    let mut run = |reuse_certificate: bool| {
+        let config = Audit2TransactionalAttemptConfig {
+            common_w: Audit2MatrixFreeCommonWConfig::default(),
+            outer_atol: 1.0e-9,
+            outer_rtol: 1.0e-7,
+            commit_rule: Audit2TransactionCommitRule::Causal,
+            reuse_certificate,
+        };
+        match run_audit2_reusable_preconditioner_transactional_attempt(
+            &context,
+            &zero_trial(context.coeffs.stages(), problem.dimension),
+            &config,
+            &budget,
+            &reference,
+            &mut cache,
+            frozen_w_identity('d'),
+            diagonal_identity("reuse-certificate-diagonal", 1, &[0.5; 8]),
+            |frozen, _| {
+                Ok(Arc::new(DiagonalPreconditioner {
+                    inverse: vec![0.5; frozen.problem.dimension],
+                }) as Arc<dyn Preconditioner>)
+            },
+            &mut WorkCounters::default(),
+        ) {
+            Audit2TransactionalAttemptOutcome::Completed(value) => *value,
+            Audit2TransactionalAttemptOutcome::Failed(failure) => {
+                panic!("reuse-certificate attempt failed: {failure:?}")
+            }
+        }
+    };
+    let first = run(true);
+    let first_certificate = first.reuse_certificate.as_ref().unwrap();
+    assert!(
+        !first_certificate.reused,
+        "fresh setup on the first attempt"
+    );
+    assert!(first.committed);
+    let second = run(true);
+    let second_certificate = second.reuse_certificate.as_ref().unwrap();
+    assert!(second_certificate.reused, "same binding is reused");
+    assert_eq!(second_certificate.delta_w_l1, 0.0);
+    assert_eq!(
+        second_certificate.epsilon_l1.to_bits(),
+        first_certificate.epsilon_l1.to_bits()
+    );
+    assert!(second_certificate.epsilon_l1.is_finite());
+    assert_eq!(second_certificate.certified, second_certificate.bound < 1.0);
+    // The certificate's work is its own: an attempt without it charges the
+    // same attempt work.
+    let third = run(false);
+    assert!(third.reuse_certificate.is_none());
+    assert_eq!(third.work, second.work);
     Ok(())
 }
