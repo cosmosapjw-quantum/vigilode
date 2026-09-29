@@ -1,0 +1,43 @@
+# Allowlist for tools/check-authority-refs.py (audit finding F-025).
+#
+# Format: <40-hex sha> <reason>. One entry per line; the reason is mandatory.
+# Every entry below was checked on 2026-09-29 against a clone with all 94 origin/*
+# branches fetched: `git cat-file -t <sha>` fails for each of them (the object is not in
+# the object database at all), so `git branch -r --contains <sha>` cannot succeed.
+# These citations are frozen history. Do NOT add a new entry to make a new citation pass;
+# publish the cited commit to a remote branch instead. An entry needs a reason that says
+# why the bytes cannot be published from this repository.
+
+# --- Pre-repository history (before the 2026-08-19 import in 501b15e; see docs/IMPORT_PROVENANCE.md).
+# The durable source history lives in the complete-history bundle whose SHA-256 is recorded in
+# docs/IMPORT_PROVENANCE.md; it was never pushed to this GitHub repository.
+ab017f8cb740e3403822f8bdd4beb28f7ec56983 pre-repository import source commit (docs/IMPORT_PROVENANCE.md); history exists only in the external complete-history bundle
+9c9a161bbcd1ee0560b97a0d4021cbbc0d9732a5 tree id of the pre-repository import source commit (docs/IMPORT_PROVENANCE.md); not a commit, and absent from this object DB
+ce1cc51034186958da3e27f641f29aae777ceaf1 pre-repository base commit of a 2026-08-07 design spec imported in 501b15e; history only in the external import bundle
+1e322cfbf5802dbabc6c94afce0e072a667f2081 pre-repository base commit of a 2026-08-08 design spec imported in 501b15e; history only in the external import bundle
+3726a98491728bd762fb6804c9127d799accdbe4 pre-repository parent commit of a 2026-08-17 plan imported in 501b15e; history only in the external import bundle
+3678c82313d1aabcd8720b6e369a8da7584bd957 pre-repository v3.1 contract parent_head, imported in 501b15e; history only in the external import bundle
+c6c668d1acea7c5b8dce9271606b561494b3493d pre-repository v3.1 implementation_head, imported in 501b15e; history only in the external import bundle
+eaae0e07c0da8992e7d8217e3c3691dbff512651 pre-repository v3.2 contract parent_head, imported in 501b15e; history only in the external import bundle
+722cfe4e2ce532953d78b94b75145d70a0d5269d pre-repository v3.2 pre_campaign_head, imported in 501b15e; history only in the external import bundle
+93c3478f3e56ada9c1d9dad43eb55fbf260336e7 pre-repository v3.3 contract parent_head, imported in 501b15e; history only in the external import bundle
+f2351cb99ac09682a0f11b4f7cec338b0626c748 pre-repository v3.4 contract parent_head/authority_commit, imported in 501b15e; history only in the external import bundle
+4a78a6893a630bea0e565c698e064c66367a2681 pre-repository v3.4 parent of v3.5, imported in 501b15e; history only in the external import bundle
+7c84b4f8d183fbf1e1165b28f87f667707281e0c pre-repository v3.5 contract_commit, imported in 501b15e; history only in the external import bundle
+c1ad28b57fc67145a22ec78645fb4f6ea59d7319 pre-repository v3.5 implementation_commit, imported in 501b15e; history only in the external import bundle
+b0d5a90df5ed0f4bff49d9e72777f28ede20046d pre-repository v3.5 fresh_holdout_contract_commit, imported in 501b15e; history only in the external import bundle
+8584f651f1802053c9df608e7da28d9c291edeb4 pre-repository v3.5 source_head_for_runs/fresh_profile_commit, imported in 501b15e; history only in the external import bundle (ledger row L-0001 is INCONCLUSIVE for this reason)
+
+# --- Post-import local or CI-only commits whose bytes were never pushed to a branch.
+8e2485323b0a86745dd8eb438cecacf63f914202 A1 "tested execution merge" of pull_request 18 in workflow run 32914955031: a CI merge-ref commit, not on any branch; its recorded tree equals the tree of the reachable scientific execution head 8f2eac6a (verified with git rev-parse)
+5cf4189be67458cfd998eceba39363462d59ca6d audit2 real-client "equivalent local parent": local-only worktree commit, bytes not published; its recorded tree equals the tree of the reachable remote base head f954e391 (verified with git rev-parse)
+50bb14f2f538846be26d29fe6afea1731a8fcdd1 audit2 Bateman preserved failed first controller invocation: local-only commit, bytes not published; cited only as preserved failure evidence
+
+# --- Third-party upstream revisions (not VigilODE commits; cannot be in this repository).
+000230a3e53a445a22c090aff9148430367a0a74 upstream SciML/OrdinaryDiffEq.jl author_commit of the RODAS5P tableau (coefficient fixture provenance copy in adversarial audit E-10)
+0542c1019a8a3be6ea77fb5363d057d8c2cade9e upstream SciML/OrdinaryDiffEq.jl parity_commit of the RODAS5P tableau (coefficient fixture provenance copy in adversarial audit E-10)
+63a13a7301a17feb8cb5e3a4b3ccef4487ae0c52 upstream SciML/SciMLSensitivity.jl source_revision of a v2 reference problem definition
+fea9aaa141f224a97f112e024082966a1a5ee6c2 upstream SciML/SciMLSensitivity.jl source_blob (a blob id, not a commit) of a v2 reference problem definition
+8c75ae75176236f233824e9a0483c26a69e6dfec upstream SciPy git revision of the installed scipy runtime used by the v2 reference/comparator runner
+c81c49f77451340651a751e76bca607d85e4fd55 upstream NumPy git revision of the installed numpy runtime used by the v2 reference/comparator runner
+68218e876d2a38b1985b8590fff244a83c321783 upstream Lean 4 toolchain commit (Lean 4.31.0) recorded in a formal receipt version string
