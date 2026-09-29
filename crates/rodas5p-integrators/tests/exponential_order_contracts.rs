@@ -15,7 +15,9 @@ use rodas5p_integrators::{
     pexprb54s4_fused_step,
 };
 
-/// Stiff floor: the documented stiff order of pexprb54s4 is about 4, not 5.
+/// Stiff floor for one finite window (|lambda| h = 100 .. 6.25, lambda
+/// fixed). It records an observation of that window; it is not a stiff-order
+/// theorem, and the classical order as h -> 0 at fixed lambda is not this.
 const STIFF_ORDER_FLOOR: f64 = 3.8;
 /// Nonstiff floor for the declared order 5.
 const NONSTIFF_ORDER_FLOOR: f64 = 4.7;
