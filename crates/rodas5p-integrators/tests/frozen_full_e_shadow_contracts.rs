@@ -189,7 +189,10 @@ fn retained_level2_shadow_is_complete_charged_safe_and_rjf_identical() {
     );
     let mut expected_prefix_before = 0_u64;
     let mut expected_total_before = 0_u64;
-    for (row, expected_target_rjf_jvp_vectors) in report.rows.iter().zip([106, 118]) {
+    // WU-3 (audit F-008): the first target's R-JF attempt was 106 JVP vectors
+    // under the h-independent inner forcing rule; the error-scaled budget adds
+    // one refinement pass and makes it 141. The second target is unchanged.
+    for (row, expected_target_rjf_jvp_vectors) in report.rows.iter().zip([141, 118]) {
         assert!(row.recommended);
         assert!(row.retained_level2_resumed);
         assert!(row.shadow_full_e_completed);
