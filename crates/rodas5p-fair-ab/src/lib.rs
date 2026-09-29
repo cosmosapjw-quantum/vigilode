@@ -59,6 +59,9 @@ pub use session::{RecycleSessionManager, SolverSession, StateTransition};
 
 pub(crate) use contracts::relative_solution_error;
 
+/// Audit F-052/F-056 comparator labels carried by fair-ab records.
+pub use rodas5p_integrators::{ComparativeReading, ComparatorFidelity};
+
 pub use global_error::{
     CommonOutputGrid, DualOutputPolicyEvidence, ExternalErrorScale, FixedAnchorCandidate,
     GlobalErrorMetric, GlobalErrorMetrics, GlobalErrorParetoFront, GlobalErrorParetoProfile,

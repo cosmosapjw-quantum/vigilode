@@ -19,6 +19,7 @@ mod block;
 mod candidates;
 mod certification;
 mod common_w_gate;
+mod comparator_fidelity;
 mod dense_output_v2;
 mod exponential;
 mod g1_transactional_gate;
@@ -137,6 +138,10 @@ pub use certification::{
 pub use common_w_gate::{
     MatrixFreeCommonWCase, MatrixFreeCommonWProfile, MatrixFreeCommonWReport, MatrixFreeCommonWRow,
     run_matrix_free_common_w_gate,
+};
+pub use comparator_fidelity::{
+    ComparativeReading, ComparatorFidelity, RelativePerformanceVerdict,
+    relative_performance_verdict,
 };
 pub use dense_output_v2::{
     DenseOutputError, DenseOutputResult, bdf_dense_output,

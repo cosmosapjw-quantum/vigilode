@@ -7,7 +7,7 @@ use crate::adaptive::record_adaptive_work_failure;
 use crate::output::OutputCollector;
 use crate::{
     AdaptiveControllerState, AdaptiveFailureKind, AdaptiveObservedIntegrationResult,
-    AdaptiveRunDiagnostics, AdaptiveStepConfig, NewtonConfig, NewtonReport,
+    AdaptiveRunDiagnostics, AdaptiveStepConfig, ComparatorFidelity, NewtonConfig, NewtonReport,
     ObservedIntegrationResult, OdeProblem, OutputSchedule, adaptive_next_step_after_attempt,
     solve_dense_newton, step_doubling_wrms_error,
 };
@@ -123,6 +123,15 @@ impl Default for RadauConfig {
                 ..NewtonConfig::default()
             },
         }
+    }
+}
+
+impl RadauConfig {
+    /// Audit F-052/F-056 label carried by every record this configuration
+    /// produces.  The internal Radau IIA integrator is a reference
+    /// implementation, never a production comparator.
+    pub fn comparator_fidelity(&self) -> ComparatorFidelity {
+        ComparatorFidelity::ReferenceImplementationOnly
     }
 }
 
