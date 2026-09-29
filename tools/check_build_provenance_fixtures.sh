@@ -73,7 +73,6 @@ echo "// mutated" >>"$WORK/parent/exports/vigilode/crates/rodas5p-fair-ab/src/li
 expect mutated "$WORK/parent/exports/vigilode" unknown/unknown
 
 # subdir: the export committed inside the parent repository
-git_quiet -C "$WORK/parent/exports/vigilode" checkout -- . 2>/dev/null || true
 rm -rf "$WORK/parent/exports/vigilode"
 export_to "$WORK/parent/exports/vigilode"
 git_quiet -C "$WORK/parent" add exports
