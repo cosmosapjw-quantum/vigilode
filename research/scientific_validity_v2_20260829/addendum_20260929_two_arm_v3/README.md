@@ -75,6 +75,36 @@ accumulation alone, but the local errors here are not only accumulated, they
 are also propagated. The accepted steps' local errors are within tolerance,
 and the embedded estimator is not blind to them.
 
+## Fixed-mesh ablation (external re-audit, 2.3)
+
+The re-audit asked for the attribution to be closed by varying one
+ingredient at a time on a fixed mesh. `examples/semilinear_f033_ablation.rs`
+fixes the accepted mesh of the adaptive dense campaign arm (segment 0,
+t in [0, 1]) and replays it with four arms. Output:
+`semilinear_f033_ablation.txt`. Case-tolerance WRMS, maximum over the mesh
+nodes:
+
+| rtol | campaign dense (output times) | forcing JVP-W | tight JVP-W | assembled W + LU | FD-JVP W |
+|---|---:|---:|---:|---:|---:|
+| 1e-4 | 17.0 | 16.7 | 16.8 | 16.8 | 16.8 |
+| 1e-6 | 53.2 | 53.1 | 53.3 | 53.3 | 53.1 |
+| 1e-8 | 207.5 | 207.4 | 207.4 | 207.4 | 200.5 |
+
+- The forcing rule, the stage-solve accuracy, the W construction (JVP
+  operator or assembled LU) and the derivative source (analytic or forward
+  difference) do not change the error.
+- The error at the mesh nodes equals the error at the output times, so the
+  interpolant does not cause it either.
+- The maximum is reached inside the interval; the segment endpoint errors
+  are 1.2, 2.6 and 3.8 units.
+
+Together with the local-error measurement above (every accepted step
+within 1.36 units, sum of local errors 12 to 30 times below the global
+error), the exceedance belongs to the RODAS5P steps on this mesh and to
+their propagation by the flow. The FD-JVP arm solves only to GMRES rtol
+1e-8: an FD operator whose eps depends on the direction is not an exact
+linear map and does not admit 1e-13.
+
 ## Not done
 
 - The 12 rows without exact solutions.
