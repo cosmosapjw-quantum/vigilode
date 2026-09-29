@@ -15,6 +15,7 @@
 #             -> unknown/unknown (only a checkout rooted at the workspace counts)
 #   checkout  a clone of REV -> REV/false; with an untracked file -> REV/false;
 #             after a tracked edit -> REV/true
+#   worktree  a linked worktree of that clone (.git is a file) -> REV/false
 #
 # Uses a private target directory and a scratch directory under $TMPDIR;
 # nothing in the repository is modified.
@@ -88,6 +89,10 @@ expect checkout-untracked "$WORK/checkout" "$REV/false"
 rm "$WORK/checkout/untracked_scratch_file.txt"
 echo "// tracked edit" >>"$WORK/checkout/crates/rodas5p-fair-ab/src/lib.rs"
 expect checkout-tracked-edit "$WORK/checkout" "$REV/true"
+
+# worktree: a linked worktree has a .git file, not a directory
+git_quiet -C "$WORK/checkout" worktree add -q --detach "$WORK/worktree" "$REV"
+expect worktree "$WORK/worktree" "$REV/false"
 
 echo "failures: $failures"
 [ "$failures" -eq 0 ]
