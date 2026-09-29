@@ -1,11 +1,12 @@
 use rodas5p_core::WorkCounters;
 use rodas5p_fair_ab::{
-    CommonOutputGrid, DualOutputPolicyEvidence, ExternalErrorScale, GlobalErrorMetric,
-    GlobalErrorMetrics, GlobalErrorParetoProfile, IntegratorRunRecord, IntegratorRunStatus,
-    IntegratorTimingReport, IntegratorWorkReport, OutputPolicyDominance, OutputPolicyRunEvidence,
-    ParetoCostMetric, ParetoObservation, ReferenceWrmsBasis, apply_output_policy_dominance,
-    classify_output_policy_dominance, compute_global_error_metrics, nondominated_observation_ids,
-    run_global_error_pareto_screen, select_cheapest_below_target,
+    CommonOutputGrid, ComparativeReading, ComparatorFidelity, DualOutputPolicyEvidence,
+    ExternalErrorScale, GlobalErrorMetric, GlobalErrorMetrics, GlobalErrorParetoProfile,
+    IntegratorRunRecord, IntegratorRunStatus, IntegratorTimingReport, IntegratorWorkReport,
+    OutputPolicyDominance, OutputPolicyRunEvidence, ParetoCostMetric, ParetoObservation,
+    ReferenceWrmsBasis, apply_output_policy_dominance, classify_output_policy_dominance,
+    compute_global_error_metrics, nondominated_observation_ids, run_global_error_pareto_screen,
+    select_cheapest_below_target,
 };
 
 #[test]
@@ -129,6 +130,40 @@ fn fixed_anchor_screen_is_thread_deterministic_and_exposes_all_five_candidates()
     }));
     assert!(!one.targets.is_empty());
     assert!(!one.attainments.is_empty());
+}
+
+#[test]
+fn every_fixed_anchor_comparator_row_serializes_comparator_fidelity() {
+    // Audit F-052/F-056 Tier B: the reference-only label is a serialized,
+    // machine-checked field on every row, and every mixed front/attainment
+    // forbids a comparative reading.
+    let report = run_global_error_pareto_screen(GlobalErrorParetoProfile::Smoke, 2).unwrap();
+    let json = serde_json::to_value(&report).unwrap();
+    for row in json["runs"].as_array().unwrap() {
+        let expected = if row["candidate_id"] == "sequential-rodas5p-direct" {
+            "production"
+        } else {
+            "reference-implementation-only"
+        };
+        assert_eq!(row["comparator_fidelity"], expected, "{}", row["record_id"]);
+    }
+    assert!(report.runs.iter().any(|row| {
+        row.candidate_id == "radau-iia3-fixed"
+            && row.comparator_fidelity == ComparatorFidelity::ReferenceImplementationOnly
+    }));
+    for front in json["fronts"].as_array().unwrap() {
+        assert_eq!(front["comparative_reading"], "forbidden");
+    }
+    for attainment in json["attainments"].as_array().unwrap() {
+        assert_eq!(attainment["comparative_reading"], "forbidden");
+        assert!(attainment.get("comparator_fidelity").is_some());
+    }
+    assert!(
+        report
+            .fronts
+            .iter()
+            .all(|front| front.comparative_reading == ComparativeReading::Forbidden)
+    );
 }
 
 #[test]
@@ -257,6 +292,7 @@ fn output_policy_dominance_is_strict_at_ten_percent_and_excludes_only_the_policy
     let row = IntegratorRunRecord {
         record_id: "policy-dominated".into(),
         candidate_id: "candidate".into(),
+        comparator_fidelity: ComparatorFidelity::Production,
         problem_id: "problem".into(),
         step_size: 0.1,
         status,

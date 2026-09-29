@@ -19,6 +19,7 @@ mod block;
 mod candidates;
 mod certification;
 mod common_w_gate;
+mod comparator_fidelity;
 mod dense_output_v2;
 mod exponential;
 mod g1_transactional_gate;
@@ -138,6 +139,10 @@ pub use common_w_gate::{
     MatrixFreeCommonWCase, MatrixFreeCommonWProfile, MatrixFreeCommonWReport, MatrixFreeCommonWRow,
     run_matrix_free_common_w_gate,
 };
+pub use comparator_fidelity::{
+    ComparativeReading, ComparatorFidelity, RelativePerformanceVerdict,
+    relative_performance_verdict,
+};
 pub use dense_output_v2::{
     DenseOutputError, DenseOutputResult, bdf_dense_output,
     integrate_adaptive_dense_observed_with_config, integrate_bdf_adaptive_dense_observed,
@@ -252,7 +257,10 @@ pub use integrate::{
 pub use native_gates::{
     NativeIntegratorGateReport, NativeIntegratorGateRow, run_native_integrator_gates,
 };
-pub use nonlinear::{NewtonConfig, NewtonReport, solve_dense_newton};
+pub use nonlinear::{
+    BDF_NEWTON_TOLERANCE_FACTOR, NewtonConfig, NewtonReport, NewtonTolerancePolicy,
+    radau_newton_tolerance_factor, solve_dense_newton,
+};
 pub use output::{ObservedIntegrationResult, OutputSamplingPlan, OutputSchedule};
 pub use parallel::ParallelExecution;
 pub use path_controller::{

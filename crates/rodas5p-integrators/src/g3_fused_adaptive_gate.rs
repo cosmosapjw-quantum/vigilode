@@ -7,11 +7,12 @@ use rodas5p_core::{
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    AdaptiveStepConfig, BdfConfig, ControllerKind, FusedOrthogonalization, FusedPhiKrylovConfig,
-    G1TransactionalGateProfile, OdeProblem, OutputSchedule, ParallelExecution, RadauConfig,
-    TransactionalQ1Q2Config, complex_dahlquist_problem, fused_phi_action,
-    integrate_bdf_adaptive_observed, integrate_pexprb54s4_fused_adaptive_observed,
-    integrate_radau_adaptive_observed, integrate_sequential_matrix_free_adaptive_observed,
+    AdaptiveStepConfig, BdfConfig, ComparativeReading, ComparatorFidelity, ControllerKind,
+    FusedOrthogonalization, FusedPhiKrylovConfig, G1TransactionalGateProfile, OdeProblem,
+    OutputSchedule, ParallelExecution, RadauConfig, TransactionalQ1Q2Config,
+    complex_dahlquist_problem, fused_phi_action, integrate_bdf_adaptive_observed,
+    integrate_pexprb54s4_fused_adaptive_observed, integrate_radau_adaptive_observed,
+    integrate_sequential_matrix_free_adaptive_observed,
     integrate_transactional_q1_q2_adaptive_observed, krylov_phi_action,
     oscillatory_prothero_robinson_problem, semilinear_advection_diffusion_problem,
 };
@@ -78,6 +79,9 @@ pub struct G3AdaptiveRow {
     pub maximum_phi_error: Option<f64>,
     pub maximum_total_error: Option<f64>,
     pub work: WorkCounters,
+    /// Audit F-052/F-056 label; BDF/Radau comparators here run the default
+    /// reference Newton configuration.
+    pub comparator_fidelity: ComparatorFidelity,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -103,6 +107,9 @@ pub struct G3FusedAdaptiveSummary {
     pub median_fused_phi_wall_speedup: Option<f64>,
     pub maximum_fresh_jvp_half_disagreement: f64,
     pub maximum_fresh_jvp_error_vs_supplied: f64,
+    /// Forbidden whenever a reference-implementation-only comparator shares
+    /// the adaptive rows; the gate status never ranks against those rows.
+    pub comparative_reading: ComparativeReading,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -334,6 +341,7 @@ fn run_exponential(
                 .filter(|x| x.is_finite())
                 .reduce(f64::max),
             work: run.observed.counters,
+            comparator_fidelity: ComparatorFidelity::Production,
         },
         Err(error) => failed_row(
             &runtime.id,
@@ -342,6 +350,14 @@ fn run_exponential(
             0.01 * rtol,
             format!("{error}; wall={wall}"),
         ),
+    }
+}
+
+fn g3_comparator_fidelity(candidate: &str) -> ComparatorFidelity {
+    match candidate {
+        "frozen-bdf2" => BdfConfig::default().comparator_fidelity(),
+        "frozen-radau-iia3" => RadauConfig::default().comparator_fidelity(),
+        _ => ComparatorFidelity::Production,
     }
 }
 
@@ -367,6 +383,7 @@ fn failed_row(
         maximum_phi_error: None,
         maximum_total_error: None,
         work: WorkCounters::default(),
+        comparator_fidelity: g3_comparator_fidelity(candidate),
     }
 }
 
@@ -474,6 +491,7 @@ fn run_comparator(runtime: &RuntimeProblem, rtol: f64, candidate: &str) -> G3Ada
             maximum_phi_error: None,
             maximum_total_error: None,
             work: observed.counters,
+            comparator_fidelity: g3_comparator_fidelity(candidate),
         },
         Err(error) => failed_row(
             &runtime.id,
@@ -766,6 +784,9 @@ pub fn run_g3_fused_adaptive_gate(
             .iter()
             .map(|r| r.relative_error_vs_supplied_jvp)
             .fold(0.0, f64::max),
+        comparative_reading: ComparativeReading::for_participants(
+            adaptive_rows.iter().map(|row| row.comparator_fidelity),
+        ),
     };
     let status = if summary.adaptive_successes == summary.adaptive_rows
         && explicit_jacobian_builds_in_primary == 0

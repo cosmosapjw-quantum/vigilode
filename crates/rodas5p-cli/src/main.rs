@@ -19,14 +19,14 @@ use rodas5p_fair_ab::{
 };
 use rodas5p_integrators::{
     A1ScientificExecutionIdentity, CandidateCatalog, CandidateFamily, CandidateStatus,
-    G1TransactionalGateProfile, G2ExponentialGateProfile, G3FusedAdaptiveProfile,
-    G4PrefixKernelProfile, G4S5B0Family, G4S5B0PrefixProbePolicy, G4S5B0Profile,
-    G4S5B0V37ContinuationTransactionReport, G4S5B3Profile, HomotopyExperimentProfile,
-    HomotopyRhsTelemetryProfile, MatrixFreeCommonWProfile, NativeIntegratorGateReport,
-    PathControllerProfile, ScientificCaseSpec, ScientificCorpusV2, ScientificFamily,
-    StageBatchFeasibilityProfile, UnifiedNonlinearScreen, UnifiedScientificGateReport,
-    UnifiedScreenProfile, V2CalibrationFreezeEnvelope, V2GateProfile, V2GateRow,
-    freeze_v2_calibration, replay_v2_oregonator_holdout, run_a1_two_arm_receipt_cell,
+    ComparatorFidelity, G1TransactionalGateProfile, G2ExponentialGateProfile,
+    G3FusedAdaptiveProfile, G4PrefixKernelProfile, G4S5B0Family, G4S5B0PrefixProbePolicy,
+    G4S5B0Profile, G4S5B0V37ContinuationTransactionReport, G4S5B3Profile,
+    HomotopyExperimentProfile, HomotopyRhsTelemetryProfile, MatrixFreeCommonWProfile,
+    NativeIntegratorGateReport, PathControllerProfile, ScientificCaseSpec, ScientificCorpusV2,
+    ScientificFamily, StageBatchFeasibilityProfile, UnifiedNonlinearScreen,
+    UnifiedScientificGateReport, UnifiedScreenProfile, V2CalibrationFreezeEnvelope, V2GateProfile,
+    V2GateRow, freeze_v2_calibration, replay_v2_oregonator_holdout, run_a1_two_arm_receipt_cell,
     run_g1_transactional_gate, run_g2_exponential_gate, run_g3_fused_adaptive_gate,
     run_g4_prefix_kernel_gate, run_g4_s5b0_actual_level1_prefix_family,
     run_g4_s5b0_actual_level2_prefix_family, run_g4_s5b0_enforced_prefix_budget_family,
@@ -734,6 +734,9 @@ enum UnifiedJointVerdict {
     Promote,
     Hold,
     Deferred,
+    /// No relative-performance verdict is admissible: the reference is a
+    /// reference-implementation-only comparator (audit F-052/F-056).
+    NotEvaluated,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize)]
@@ -748,8 +751,11 @@ struct UnifiedLinearCandidateAssessment {
     median_operator_ratio_to_gmres_off: Option<f64>,
     median_wall_speedup: Option<f64>,
     required_wall_speedup: f64,
+    reference_fidelity: ComparatorFidelity,
     verdict: UnifiedJointVerdict,
     blockers: Vec<String>,
+    /// Criteria the gate refused to evaluate; never Promote/Hold evidence.
+    not_evaluated: Vec<String>,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize)]
@@ -765,8 +771,10 @@ struct UnifiedNonlinearCandidateAssessment {
     median_batch_vector_ratio_to_direct: Option<f64>,
     median_wall_speedup: Option<f64>,
     required_wall_speedup: f64,
+    reference_fidelity: ComparatorFidelity,
     verdict: UnifiedJointVerdict,
     blockers: Vec<String>,
+    not_evaluated: Vec<String>,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize)]
@@ -778,6 +786,7 @@ struct UnifiedJointCandidateAssessment {
     tier_l_verdict: Option<UnifiedJointVerdict>,
     tier_n_verdict: Option<UnifiedJointVerdict>,
     blockers: Vec<String>,
+    not_evaluated: Vec<String>,
 }
 
 const TIER_L_REQUIRED_WALL_SPEEDUP: f64 = 1.15;
@@ -1053,8 +1062,35 @@ fn median(mut values: Vec<f64>) -> Option<f64> {
     })
 }
 
+/// Tier-L reference arm (GMRES/OFF) is a production RODAS5P linear solver.
+const TIER_L_REFERENCE_FIDELITY: ComparatorFidelity = ComparatorFidelity::Production;
+
+const REFERENCE_ONLY_NOT_EVALUATED: &str =
+    "relative performance not evaluated: reference is a reference-implementation-only comparator";
+
+const WALL_NOT_EVALUATED: &str = "wall-time criterion not evaluated: smoke or single-sample timing carries no dispersion estimate";
+
+/// Audit F-053: wall time may decide Promote/Hold only with repeated samples
+/// after a warmup.  Smoke (one repetition, no warmup) and single-sample
+/// timings are recorded but never decide; the dispersion-aware replacement
+/// is `rodas5p_fair_ab::assess_paired_timing`.
+fn wall_timing_admissible(repetitions: usize, warmups: usize) -> bool {
+    repetitions >= 2 && warmups >= 1
+}
+
+/// The Tier-N nonlinear screen times each case with a single `Instant`
+/// sample, so its wall ratios are never admissible gate evidence.
+const TIER_N_WALL_TIMING_ADMISSIBLE: bool = false;
+
 fn assess_linear_candidates(
     suites: &[UnifiedLinearSuite],
+) -> Vec<UnifiedLinearCandidateAssessment> {
+    assess_linear_candidates_against(suites, TIER_L_REFERENCE_FIDELITY)
+}
+
+fn assess_linear_candidates_against(
+    suites: &[UnifiedLinearSuite],
+    reference_fidelity: ComparatorFidelity,
 ) -> Vec<UnifiedLinearCandidateAssessment> {
     strict_cells()
         .into_iter()
@@ -1104,7 +1140,20 @@ fn assess_linear_candidates(
             if !maximum_relative_solution_error.is_finite() {
                 blockers.push("nonfinite Tier-L solution error".into());
             }
+            let relative_admissible = reference_fidelity.admits_relative_performance_reading();
+            let wall_admissible = suites
+                .iter()
+                .all(|suite| wall_timing_admissible(suite.plan.repetitions, suite.plan.warmups));
+            let mut not_evaluated = Vec::new();
+            if !is_reference && !relative_admissible {
+                not_evaluated.push(REFERENCE_ONLY_NOT_EVALUATED.to_string());
+            }
+            if !is_reference && relative_admissible && !wall_admissible {
+                not_evaluated.push(WALL_NOT_EVALUATED.to_string());
+            }
             if !is_reference
+                && relative_admissible
+                && wall_admissible
                 && !wall_speedup.is_some_and(|speedup| speedup >= TIER_L_REQUIRED_WALL_SPEEDUP)
             {
                 blockers.push(format!(
@@ -1112,16 +1161,13 @@ fn assess_linear_candidates(
                     TIER_L_REQUIRED_WALL_SPEEDUP
                 ));
             }
-            if !is_reference && operator_ratio.is_some_and(|ratio| ratio > 1.0) {
+            if !is_reference
+                && relative_admissible
+                && operator_ratio.is_some_and(|ratio| ratio > 1.0)
+            {
                 blockers.push("median Tier-L operator work exceeds GMRES/OFF".into());
             }
-            let verdict = if is_reference {
-                UnifiedJointVerdict::Reference
-            } else if blockers.is_empty() {
-                UnifiedJointVerdict::Promote
-            } else {
-                UnifiedJointVerdict::Hold
-            };
+            let verdict = tier_verdict(is_reference, &blockers, &not_evaluated);
             UnifiedLinearCandidateAssessment {
                 candidate_id: linear_candidate_id(cell.solver, cell.lifetime),
                 solver: cell.solver,
@@ -1133,16 +1179,38 @@ fn assess_linear_candidates(
                 median_operator_ratio_to_gmres_off: operator_ratio,
                 median_wall_speedup: wall_speedup,
                 required_wall_speedup: TIER_L_REQUIRED_WALL_SPEEDUP,
+                reference_fidelity,
                 verdict,
                 blockers,
+                not_evaluated,
             }
         })
         .collect()
 }
 
+/// Tier verdict: intrinsic blockers hold, refused criteria are NotEvaluated,
+/// and only a fully evaluated, blocker-free candidate is promoted.
+fn tier_verdict(
+    is_reference: bool,
+    blockers: &[String],
+    not_evaluated: &[String],
+) -> UnifiedJointVerdict {
+    if is_reference {
+        UnifiedJointVerdict::Reference
+    } else if !blockers.is_empty() {
+        UnifiedJointVerdict::Hold
+    } else if !not_evaluated.is_empty() {
+        UnifiedJointVerdict::NotEvaluated
+    } else {
+        UnifiedJointVerdict::Promote
+    }
+}
+
 #[allow(clippy::too_many_arguments)]
 fn nonlinear_performance_verdict(
     is_reference: bool,
+    reference_fidelity: ComparatorFidelity,
+    wall_timing_admissible: bool,
     represented_cases: usize,
     expected_cases: usize,
     failures: usize,
@@ -1150,9 +1218,9 @@ fn nonlinear_performance_verdict(
     rhs_ratio: Option<f64>,
     jvp_ratio: Option<f64>,
     _batch_depth_ratio: Option<f64>,
-) -> (UnifiedJointVerdict, Vec<String>) {
+) -> (UnifiedJointVerdict, Vec<String>, Vec<String>) {
     if is_reference {
-        return (UnifiedJointVerdict::Reference, Vec::new());
+        return (UnifiedJointVerdict::Reference, Vec::new(), Vec::new());
     }
     let mut blockers = Vec::new();
     if represented_cases != expected_cases {
@@ -1162,6 +1230,19 @@ fn nonlinear_performance_verdict(
         blockers.push(format!(
             "{failures} Tier-N execution/certification failures"
         ));
+    }
+    if !reference_fidelity.admits_relative_performance_reading() {
+        let not_evaluated = vec![REFERENCE_ONLY_NOT_EVALUATED.to_string()];
+        let verdict = tier_verdict(false, &blockers, &not_evaluated);
+        return (verdict, blockers, not_evaluated);
+    }
+    if !wall_timing_admissible {
+        // The RHS/JVP work blockers apply only when wall speedup fails, so
+        // without admissible wall evidence none of the relative criteria
+        // can decide.
+        let not_evaluated = vec![WALL_NOT_EVALUATED.to_string()];
+        let verdict = tier_verdict(false, &blockers, &not_evaluated);
+        return (verdict, blockers, not_evaluated);
     }
     let wall_speedup = compute_ratio
         .filter(|ratio| *ratio > 0.0)
@@ -1180,12 +1261,8 @@ fn nonlinear_performance_verdict(
             blockers.push("median nonlinear JVP work exceeds sequential/direct".into());
         }
     }
-    let verdict = if blockers.is_empty() {
-        UnifiedJointVerdict::Promote
-    } else {
-        UnifiedJointVerdict::Hold
-    };
-    (verdict, blockers)
+    let verdict = tier_verdict(false, &blockers, &[]);
+    (verdict, blockers, Vec::new())
 }
 
 fn ratio_if_positive(numerator: u64, denominator: u64) -> Option<f64> {
@@ -1202,6 +1279,14 @@ fn assess_nonlinear_candidates(
         .filter(|row| row.candidate_id == "sequential-direct-off")
         .map(|row| (row.case_id.as_str(), row))
         .collect();
+    let reference_fidelity = catalog
+        .entries()
+        .iter()
+        .find(|candidate| candidate.id() == "sequential-direct-off")
+        .map_or(
+            ComparatorFidelity::ReferenceImplementationOnly,
+            |candidate| candidate.comparator_fidelity(),
+        );
     catalog
         .entries()
         .iter()
@@ -1263,8 +1348,10 @@ fn assess_nonlinear_candidates(
             let wall_speedup = compute_ratio
                 .filter(|ratio| *ratio > 0.0)
                 .map(|ratio| 1.0 / ratio);
-            let (verdict, blockers) = nonlinear_performance_verdict(
+            let (verdict, blockers, not_evaluated) = nonlinear_performance_verdict(
                 candidate.id() == "sequential-direct-off",
+                reference_fidelity,
+                TIER_N_WALL_TIMING_ADMISSIBLE,
                 rows.len(),
                 nonlinear.cases.len(),
                 failures,
@@ -1285,8 +1372,10 @@ fn assess_nonlinear_candidates(
                 median_batch_vector_ratio_to_direct: batch_vector_ratio,
                 median_wall_speedup: wall_speedup,
                 required_wall_speedup: TIER_N_REQUIRED_WALL_SPEEDUP,
+                reference_fidelity,
                 verdict,
                 blockers,
+                not_evaluated,
             }
         })
         .collect()
@@ -1312,6 +1401,7 @@ fn build_joint_assessments(
                     tier_l_verdict: None,
                     tier_n_verdict: None,
                     blockers: vec!["Rust implementation is deferred".into()],
+                    not_evaluated: Vec::new(),
                 };
             }
             if candidate.is_native_complete_integrator() {
@@ -1358,6 +1448,7 @@ fn build_joint_assessments(
                     tier_l_verdict: None,
                     tier_n_verdict: None,
                     blockers,
+                    not_evaluated: Vec::new(),
                 };
             }
             let gate = gates
@@ -1382,24 +1473,34 @@ fn build_joint_assessments(
                 .iter()
                 .find(|row| row.candidate_id == candidate.id());
             let tier_n_verdict = tier_n.map(|row| row.verdict);
+            let mut not_evaluated = Vec::new();
             if candidate.family() == CandidateFamily::Sequential
                 && candidate.id() != "sequential-direct-off"
             {
                 blockers.retain(|blocker| blocker != "Tier-L performance assessment required");
                 if let Some(linear) = tier_l {
                     blockers.extend(linear.blockers.clone());
+                    not_evaluated.extend(linear.not_evaluated.clone());
                 } else {
                     blockers.push("Tier-L assessment missing".into());
                 }
             } else if candidate.id() != "sequential-direct-off" {
                 if let Some(nonlinear) = tier_n {
                     blockers.extend(nonlinear.blockers.clone());
+                    not_evaluated.extend(nonlinear.not_evaluated.clone());
                 } else {
                     blockers.push("Tier-N performance assessment missing".into());
                 }
             }
             blockers.sort();
             blockers.dedup();
+            not_evaluated.sort();
+            not_evaluated.dedup();
+            let tier_verdict_for_family = if candidate.family() == CandidateFamily::Sequential {
+                tier_l_verdict
+            } else {
+                tier_n_verdict
+            };
             let verdict = if candidate.id() == "sequential-direct-off"
                 || tier_l_verdict == Some(UnifiedJointVerdict::Reference)
             {
@@ -1412,6 +1513,11 @@ fn build_joint_assessments(
                 && blockers.is_empty()
             {
                 UnifiedJointVerdict::Promote
+            } else if scientific_eligible
+                && blockers.is_empty()
+                && tier_verdict_for_family == Some(UnifiedJointVerdict::NotEvaluated)
+            {
+                UnifiedJointVerdict::NotEvaluated
             } else {
                 UnifiedJointVerdict::Hold
             };
@@ -1423,6 +1529,7 @@ fn build_joint_assessments(
                 tier_l_verdict,
                 tier_n_verdict,
                 blockers,
+                not_evaluated,
             }
         })
         .collect()
@@ -2368,14 +2475,18 @@ mod unified_assessment_tests {
     }
 
     fn suite(gcrodr_wall: f64) -> UnifiedLinearSuite {
+        suite_with_plan(gcrodr_wall, 3, 1)
+    }
+
+    fn suite_with_plan(gcrodr_wall: f64, repetitions: usize, warmups: usize) -> UnifiedLinearSuite {
         UnifiedLinearSuite {
             kind: SequenceKind::Fixed,
             trace_id: "trace".into(),
             failures: 0,
             plan: BenchmarkPlan {
                 cells: strict_cells(),
-                repetitions: 3,
-                warmups: 1,
+                repetitions,
+                warmups,
                 seed: 1,
             },
             summary: vec![
@@ -2421,8 +2532,10 @@ mod unified_assessment_tests {
 
     #[test]
     fn nonlinear_batch_depth_advantage_does_not_replace_wall_speedup() {
-        let (verdict, blockers) = nonlinear_performance_verdict(
+        let (verdict, blockers, not_evaluated) = nonlinear_performance_verdict(
             false,
+            ComparatorFidelity::Production,
+            true,
             6,
             6,
             0,
@@ -2437,6 +2550,95 @@ mod unified_assessment_tests {
                 blocker.contains("median nonlinear candidate wall speedup below")
             })
         );
+        assert!(not_evaluated.is_empty());
+    }
+
+    #[test]
+    fn smoke_and_single_sample_wall_blockers_are_not_evaluated() {
+        // Audit F-053: the Smoke profile (repetitions=1, warmups=0) and
+        // single-sample timings never decide Promote/Hold on wall time, in
+        // either direction.
+        for gcrodr_wall in [0.5, 0.9, 2.0] {
+            for (repetitions, warmups) in [(1, 0), (1, 1), (3, 0)] {
+                let rows =
+                    assess_linear_candidates(&[suite_with_plan(gcrodr_wall, repetitions, warmups)]);
+                let row = rows
+                    .iter()
+                    .find(|row| row.candidate_id == "sequential-gcrodr-persistent")
+                    .unwrap();
+                assert_eq!(row.verdict, UnifiedJointVerdict::NotEvaluated);
+                assert!(row.blockers.is_empty(), "{:?}", row.blockers);
+                assert_eq!(row.not_evaluated, vec![WALL_NOT_EVALUATED]);
+            }
+        }
+        for compute_ratio in [0.5, 2.0] {
+            let (verdict, blockers, not_evaluated) = nonlinear_performance_verdict(
+                false,
+                ComparatorFidelity::Production,
+                TIER_N_WALL_TIMING_ADMISSIBLE,
+                6,
+                6,
+                0,
+                Some(compute_ratio),
+                Some(3.0),
+                Some(5.0),
+                None,
+            );
+            assert_eq!(verdict, UnifiedJointVerdict::NotEvaluated);
+            assert!(blockers.is_empty());
+            assert_eq!(not_evaluated, vec![WALL_NOT_EVALUATED]);
+        }
+        // Intrinsic failures still hold without any wall evidence.
+        let (verdict, blockers, _) = nonlinear_performance_verdict(
+            false,
+            ComparatorFidelity::Production,
+            false,
+            5,
+            6,
+            1,
+            Some(0.5),
+            None,
+            None,
+            None,
+        );
+        assert_eq!(verdict, UnifiedJointVerdict::Hold);
+        assert_eq!(blockers.len(), 2);
+    }
+
+    #[test]
+    fn relative_gates_against_a_reference_only_comparator_are_not_evaluated() {
+        // Audit F-052/F-056 Tier B: neither a clear win nor a clear loss may
+        // be emitted when the reference arm is reference-implementation-only.
+        for gcrodr_wall in [0.5, 2.0] {
+            let rows = assess_linear_candidates_against(
+                &[suite(gcrodr_wall)],
+                ComparatorFidelity::ReferenceImplementationOnly,
+            );
+            let row = rows
+                .iter()
+                .find(|row| row.candidate_id == "sequential-gcrodr-persistent")
+                .unwrap();
+            assert_eq!(row.verdict, UnifiedJointVerdict::NotEvaluated);
+            assert!(row.blockers.is_empty());
+            assert_eq!(row.not_evaluated, vec![REFERENCE_ONLY_NOT_EVALUATED]);
+        }
+        for compute_ratio in [0.5, 2.0] {
+            let (verdict, blockers, not_evaluated) = nonlinear_performance_verdict(
+                false,
+                ComparatorFidelity::ReferenceImplementationOnly,
+                true,
+                6,
+                6,
+                0,
+                Some(compute_ratio),
+                Some(3.0),
+                Some(5.0),
+                None,
+            );
+            assert_eq!(verdict, UnifiedJointVerdict::NotEvaluated);
+            assert!(blockers.is_empty());
+            assert_eq!(not_evaluated, vec![REFERENCE_ONLY_NOT_EVALUATED]);
+        }
     }
 
     #[test]

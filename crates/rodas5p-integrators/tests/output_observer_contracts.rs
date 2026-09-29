@@ -1,7 +1,7 @@
 use rodas5p_core::LinearSolverConfig;
 use rodas5p_integrators::{
-    BdfConfig, BdfOrder, IntegrationMethod, NewtonConfig, OutputSchedule, RadauConfig,
-    RadauIiaStages, integrate_adaptive_observed, integrate_bdf_fixed_observed, integrate_fixed,
+    BdfConfig, BdfOrder, IntegrationMethod, OutputSchedule, RadauConfig, RadauIiaStages,
+    integrate_adaptive_observed, integrate_bdf_fixed_observed, integrate_fixed,
     integrate_fixed_observed, integrate_radau_fixed_observed, scalar_linear_problem,
 };
 
@@ -88,7 +88,7 @@ fn all_fixed_anchor_families_land_on_the_same_requested_grid() {
         0.03,
         &BdfConfig {
             order: BdfOrder::One,
-            newton: NewtonConfig::default(),
+            ..BdfConfig::default()
         },
         &schedule,
     )
@@ -100,7 +100,7 @@ fn all_fixed_anchor_families_land_on_the_same_requested_grid() {
         0.03,
         &BdfConfig {
             order: BdfOrder::Two,
-            newton: NewtonConfig::default(),
+            ..BdfConfig::default()
         },
         &schedule,
     )

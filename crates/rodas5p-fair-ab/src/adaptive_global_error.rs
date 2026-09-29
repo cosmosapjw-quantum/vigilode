@@ -3,10 +3,10 @@ use std::time::Instant;
 use rodas5p_core::{CoreError, LinearMethod, LinearSolverConfig, WorkCounters, sha256_hex};
 use rodas5p_integrators::{
     AdaptiveObservedIntegrationResult, AdaptiveRunDiagnostics, AdaptiveStepConfig, BdfConfig,
-    BdfOrder, DenseOutputError, HomotopyPathConfig, HomotopyPredictor, HomotopyStepConfig,
-    IntegrationMethod, OdeProblem, OutputSamplingPlan, OutputSchedule, ParallelExecution,
-    RadauConfig, RadauIiaStages, SabrConfig, TransactionalQ1Q2Config,
-    TransactionalQ1Q2RunDiagnostics, complex_dahlquist_problem,
+    BdfOrder, ComparativeReading, ComparatorFidelity, DenseOutputError, HomotopyPathConfig,
+    HomotopyPredictor, HomotopyStepConfig, IntegrationMethod, OdeProblem, OutputSamplingPlan,
+    OutputSchedule, ParallelExecution, RadauConfig, RadauIiaStages, SabrConfig,
+    TransactionalQ1Q2Config, TransactionalQ1Q2RunDiagnostics, complex_dahlquist_problem,
     integrate_adaptive_dense_observed_with_config, integrate_adaptive_observed_with_config,
     integrate_bdf_adaptive_dense_observed, integrate_bdf_adaptive_observed,
     integrate_homotopy_adaptive_dense_observed, integrate_homotopy_adaptive_observed,
@@ -46,6 +46,9 @@ pub struct AdaptiveCandidateDescriptor {
     pub family: AdaptiveCandidateFamily,
     pub linear_solver: Option<String>,
     pub estimator: String,
+    /// Audit F-052/F-056 label.  Excluded from the scientific checksum, which
+    /// projects the pre-label descriptor fields.
+    pub comparator_fidelity: ComparatorFidelity,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize)]
@@ -82,6 +85,8 @@ pub struct AdaptiveRunRow {
     /// admissible pair may enter a same-error ranking.
     pub same_error_ranking_admissible: bool,
     pub candidate_id: String,
+    /// Audit F-052/F-056 label; not part of the scientific checksum.
+    pub comparator_fidelity: ComparatorFidelity,
     pub problem_id: String,
     pub rtol: f64,
     pub atol: f64,
@@ -130,6 +135,10 @@ pub struct AdaptiveGlobalErrorReport {
     pub profile: GlobalErrorParetoProfile,
     pub execution: AdaptiveScreenExecution,
     pub candidates: Vec<AdaptiveCandidateDescriptor>,
+    /// Forbidden whenever a reference-implementation-only comparator is in
+    /// the candidate set: rows remain valid accuracy evidence, but no
+    /// cross-candidate cost ranking may be read from this report.
+    pub comparative_reading: ComparativeReading,
     pub problems: Vec<AdaptiveProblemDescriptor>,
     pub tolerance_ladder: Vec<f64>,
     pub output_policy: OutputPolicyMetadata,
@@ -171,31 +180,71 @@ impl AdaptiveCandidate {
         Self::Radau3,
     ];
 
+    fn bdf_config(self) -> Option<BdfConfig> {
+        let order = match self {
+            Self::Bdf1 => BdfOrder::One,
+            Self::Bdf2 => BdfOrder::Two,
+            _ => return None,
+        };
+        Some(BdfConfig {
+            order,
+            ..BdfConfig::default()
+        })
+    }
+
+    fn radau_config(self) -> Option<RadauConfig> {
+        let stages = match self {
+            Self::Radau1 => RadauIiaStages::One,
+            Self::Radau3 => RadauIiaStages::Three,
+            _ => return None,
+        };
+        Some(RadauConfig {
+            stages,
+            ..RadauConfig::default()
+        })
+    }
+
+    /// Label derived from the exact configuration this arm executes with.
+    fn comparator_fidelity(self) -> ComparatorFidelity {
+        if let Some(config) = self.bdf_config() {
+            config.comparator_fidelity()
+        } else if let Some(config) = self.radau_config() {
+            config.comparator_fidelity()
+        } else {
+            ComparatorFidelity::Production
+        }
+    }
+
     fn descriptor(self) -> AdaptiveCandidateDescriptor {
+        let comparator_fidelity = self.comparator_fidelity();
         match self {
             Self::Sequential(method) => AdaptiveCandidateDescriptor {
                 candidate_id: format!("sequential-rodas5p-{}-adaptive", linear_method_id(method)),
                 family: AdaptiveCandidateFamily::SequentialRodas5p,
                 linear_solver: Some(linear_method_id(method).into()),
                 estimator: "rodas5p-embedded-plus-algebraic".into(),
+                comparator_fidelity,
             },
             Self::ProtectedSequentialJf => AdaptiveCandidateDescriptor {
                 candidate_id: "protected-sequential-jf-rodas5p-gmres-adaptive".into(),
                 family: AdaptiveCandidateFamily::SequentialRodas5p,
                 linear_solver: Some("strict-matrix-free-gmres".into()),
                 estimator: "rodas5p-embedded".into(),
+                comparator_fidelity,
             },
             Self::Sabr => AdaptiveCandidateDescriptor {
                 candidate_id: "sabr5p-adaptive".into(),
                 family: AdaptiveCandidateFamily::Sabr5p,
                 linear_solver: Some("direct-fallback".into()),
                 estimator: "rodas5p-embedded-plus-algebraic".into(),
+                comparator_fidelity,
             },
             Self::Homotopy => AdaptiveCandidateDescriptor {
                 candidate_id: "homotopy-rodas5p-q7-adaptive".into(),
                 family: AdaptiveCandidateFamily::HomotopyRodas5p,
                 linear_solver: Some("direct-fallback".into()),
                 estimator: "homotopy-native-rodas-endpoint".into(),
+                comparator_fidelity,
             },
             Self::Transactional1 | Self::Transactional4 => {
                 let threads = if self == Self::Transactional1 { 1 } else { 4 };
@@ -204,6 +253,7 @@ impl AdaptiveCandidate {
                     family: AdaptiveCandidateFamily::TransactionalRodas5p,
                     linear_solver: Some(format!("matrix-free-common-w-gmres-t{threads}")),
                     estimator: "rodas5p-embedded-plus-operational-q1-q2-certificate".into(),
+                    comparator_fidelity,
                 }
             }
             Self::Bdf1 => AdaptiveCandidateDescriptor {
@@ -211,24 +261,28 @@ impl AdaptiveCandidate {
                 family: AdaptiveCandidateFamily::Bdf,
                 linear_solver: Some("dense-newton".into()),
                 estimator: "bdf1-pure-bdf-backward-difference-lte-with-explicit-startup".into(),
+                comparator_fidelity,
             },
             Self::Bdf2 => AdaptiveCandidateDescriptor {
                 candidate_id: "bdf2-adaptive-reference".into(),
                 family: AdaptiveCandidateFamily::Bdf,
                 linear_solver: Some("dense-newton".into()),
                 estimator: "bdf2-pure-bdf-backward-difference-lte-with-explicit-startup".into(),
+                comparator_fidelity,
             },
             Self::Radau1 => AdaptiveCandidateDescriptor {
                 candidate_id: "radau-iia1-adaptive-reference".into(),
                 family: AdaptiveCandidateFamily::RadauIia,
                 linear_solver: Some("dense-newton".into()),
                 estimator: "radau-iia1-step-doubling".into(),
+                comparator_fidelity,
             },
             Self::Radau3 => AdaptiveCandidateDescriptor {
                 candidate_id: "radau-iia3-adaptive-reference".into(),
                 family: AdaptiveCandidateFamily::RadauIia,
                 linear_solver: Some("dense-newton".into()),
                 estimator: "radau-iia3-scipy-1.17.0-embedded-order3".into(),
+                comparator_fidelity,
             },
         }
     }
@@ -584,15 +638,10 @@ fn execute_candidate(
             })
         }
         AdaptiveCandidate::Bdf1 | AdaptiveCandidate::Bdf2 => {
-            let order = if spec.candidate == AdaptiveCandidate::Bdf1 {
-                BdfOrder::One
-            } else {
-                BdfOrder::Two
-            };
-            let config = BdfConfig {
-                order,
-                ..BdfConfig::default()
-            };
+            let config = spec
+                .candidate
+                .bdf_config()
+                .expect("BDF arm has a BDF configuration");
             let result = match output_mode {
                 AdaptiveOutputMode::Clipped => integrate_bdf_adaptive_observed(
                     &reference.problem,
@@ -617,15 +666,10 @@ fn execute_candidate(
             })
         }
         AdaptiveCandidate::Radau1 | AdaptiveCandidate::Radau3 => {
-            let stages = if spec.candidate == AdaptiveCandidate::Radau1 {
-                RadauIiaStages::One
-            } else {
-                RadauIiaStages::Three
-            };
-            let config = RadauConfig {
-                stages,
-                ..RadauConfig::default()
-            };
+            let config = spec
+                .candidate
+                .radau_config()
+                .expect("Radau arm has a Radau configuration");
             let result = match output_mode {
                 AdaptiveOutputMode::Clipped => integrate_radau_adaptive_observed(
                     &reference.problem,
@@ -705,6 +749,7 @@ fn failed_row(
         output_mode,
         same_error_ranking_admissible: false,
         candidate_id: spec.candidate.descriptor().candidate_id,
+        comparator_fidelity: spec.candidate.comparator_fidelity(),
         problem_id: spec.reference.problem.name.clone(),
         rtol: spec.rtol,
         atol: 0.01 * spec.rtol,
@@ -822,6 +867,7 @@ fn run_output_mode(
             output_mode,
             same_error_ranking_admissible: false,
             candidate_id: spec.candidate.descriptor().candidate_id,
+            comparator_fidelity: spec.candidate.comparator_fidelity(),
             problem_id: spec.reference.problem.name.clone(),
             rtol: spec.rtol,
             atol: 0.01 * spec.rtol,
@@ -1033,6 +1079,16 @@ struct ScientificAdaptiveRow<'a> {
     output_grid_id: &'a str,
 }
 
+/// Pre-label descriptor projection: the scientific checksum predates the
+/// comparator-fidelity labels and must stay byte-identical.
+#[derive(Serialize)]
+struct ScientificAdaptiveCandidate<'a> {
+    candidate_id: &'a str,
+    family: AdaptiveCandidateFamily,
+    linear_solver: &'a Option<String>,
+    estimator: &'a str,
+}
+
 fn scientific_checksum(
     profile: GlobalErrorParetoProfile,
     candidates: &[AdaptiveCandidateDescriptor],
@@ -1061,6 +1117,15 @@ fn scientific_checksum(
             transactional: &row.transactional,
             reference_checksum: &row.reference_checksum,
             output_grid_id: &row.output_grid_id,
+        })
+        .collect::<Vec<_>>();
+    let candidates = candidates
+        .iter()
+        .map(|candidate| ScientificAdaptiveCandidate {
+            candidate_id: &candidate.candidate_id,
+            family: candidate.family,
+            linear_solver: &candidate.linear_solver,
+            estimator: &candidate.estimator,
         })
         .collect::<Vec<_>>();
     Ok(sha256_hex(&serde_json::to_vec(&(
@@ -1150,6 +1215,11 @@ pub fn run_adaptive_global_error_screen(
             backend: execution.backend().into(),
             scientific_suite_wall_seconds,
         },
+        comparative_reading: ComparativeReading::for_participants(
+            candidates
+                .iter()
+                .map(|candidate| candidate.comparator_fidelity),
+        ),
         candidates,
         problems,
         tolerance_ladder: tolerances,
@@ -1238,6 +1308,11 @@ pub fn run_g1_adaptive_global_error_screen(
             backend: execution.backend().into(),
             scientific_suite_wall_seconds,
         },
+        comparative_reading: ComparativeReading::for_participants(
+            candidates
+                .iter()
+                .map(|candidate| candidate.comparator_fidelity),
+        ),
         candidates,
         problems,
         tolerance_ladder: tolerances,

@@ -1,8 +1,8 @@
 use std::collections::{BTreeMap, BTreeSet};
 
 use rodas5p_fair_ab::{
-    AdaptiveOutputMode, AdaptiveOutputPolicyPairStatus, GlobalErrorParetoProfile,
-    run_adaptive_global_error_screen,
+    AdaptiveCandidateFamily, AdaptiveOutputMode, AdaptiveOutputPolicyPairStatus,
+    ComparativeReading, GlobalErrorParetoProfile, run_adaptive_global_error_screen,
 };
 
 #[test]
@@ -152,4 +152,43 @@ fn g1_adaptive_screen_is_limited_to_the_transactional_decision_set() {
     assert_eq!(report.schema, "generic-q1-q2-adaptive-global-error-v2");
     assert_eq!(report.output_policy_pairs.len(), 5 * 2 * 2);
     assert_eq!(report.runs.len(), 2 * 5 * 2 * 2);
+}
+
+#[test]
+fn every_adaptive_comparator_row_serializes_comparator_fidelity() {
+    // Audit F-052/F-056 Tier B: BDF/Radau candidates run the default
+    // reference Newton configuration and every row says so.
+    for report in [
+        run_adaptive_global_error_screen(GlobalErrorParetoProfile::Smoke, 2).unwrap(),
+        rodas5p_fair_ab::run_g1_adaptive_global_error_screen(GlobalErrorParetoProfile::Smoke, 2)
+            .unwrap(),
+    ] {
+        assert_eq!(report.comparative_reading, ComparativeReading::Forbidden);
+        let json = serde_json::to_value(&report).unwrap();
+        assert_eq!(json["comparative_reading"], "forbidden");
+        let mut expected = BTreeMap::new();
+        for candidate in &report.candidates {
+            let label = match candidate.family {
+                AdaptiveCandidateFamily::Bdf | AdaptiveCandidateFamily::RadauIia => {
+                    "reference-implementation-only"
+                }
+                _ => "production",
+            };
+            expected.insert(candidate.candidate_id.clone(), label);
+        }
+        for candidate in json["candidates"].as_array().unwrap() {
+            assert_eq!(
+                candidate["comparator_fidelity"],
+                expected[candidate["candidate_id"].as_str().unwrap()]
+            );
+        }
+        for row in json["runs"].as_array().unwrap() {
+            assert_eq!(
+                row["comparator_fidelity"],
+                expected[row["candidate_id"].as_str().unwrap()],
+                "{}",
+                row["record_id"]
+            );
+        }
+    }
 }
