@@ -55,4 +55,18 @@ No human reviewer has approved the claim scope yet.
 
 ## Validation
 
-Filled in from the final matrix run on the head commit; see the PR description.
+Full matrix at `e4c96be` in one checkout, `RAYON_NUM_THREADS=1`; every command exited 0. The commit after it changes only this document.
+
+| Check | Result |
+|---|---|
+| fmt, clippy `-D warnings` (workspace; stage-certificate feature) | clean |
+| workspace tests | 598 passed, 0 failed, 3 ignored |
+| `--features audit2-research` | 415 passed |
+| `--features audit2-bateman-authority` | 421 passed |
+| `--features audit2-stage-certificate` | 443 passed |
+| `cargo check` for the 3 feature sets and `--no-default-features` | compiles |
+| ignored tests (`-- --ignored`) | 3 passed (wall protocol, v3.7 exhaustion invariants, v3.7 V4 snapshot) |
+| handoff validator and tests; holdout-verdict, research-node, authority-refs tool tests | pass |
+| `tools/check-authority-refs.py`, `tools/check-research-node.py --base` WU-21 | PASS |
+
+At WU-21 (`7708ef9`) the same matrix gave 574 / 399 / 405 / 427. The difference is the new regression tests; no existing test was edited except `paired_timing_contracts::pairs_of_one_process_are_not_resampled_as_independent`, whose unlabelled case now counts as 0 sessions instead of 1 (R2-STAT-01).
