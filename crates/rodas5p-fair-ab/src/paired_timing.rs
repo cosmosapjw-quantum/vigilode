@@ -286,11 +286,37 @@ impl PairedTimingCase {
         })
     }
 
+    /// Admission of a raw case against the protocol it claims (re-audit R3,
+    /// R3-STAT-01): the producer, the assessment and the raw-receipt check
+    /// all call this. Besides complete positive samples it requires finite
+    /// nonnegative warmups, the batch size the protocol derives from them,
+    /// and the protocol's seeded ABBA order for exactly the recorded pairs.
+    /// An empty or wrong order, a changed batch, or a negative or NaN warmup
+    /// used to pass and promote.
+    pub fn admit(&self, protocol: &PairedTimingProtocol) -> FairResult<()> {
+        self.validate(protocol)
+            .map_err(|error| FairError::Invalid(format!("INVALID_RAW_TIMING_PROTOCOL: {error}")))
+    }
+
     fn validate(&self, protocol: &PairedTimingProtocol) -> FairResult<()> {
         if self.warmup_seconds.len() < protocol.warmups || self.batch_iterations == 0 {
             return Err(FairError::Invalid(format!(
                 "paired timing case {} needs at least {} warmups and a calibrated batch",
                 self.case_id, protocol.warmups
+            )));
+        }
+        let calibrated = calibrate_batch_iterations(&self.warmup_seconds, protocol)
+            .map_err(|error| FairError::Invalid(format!("case {}: {error}", self.case_id)))?;
+        if calibrated != self.batch_iterations {
+            return Err(FairError::Invalid(format!(
+                "paired timing case {} records batch {} but its warmups calibrate to {calibrated}",
+                self.case_id, self.batch_iterations
+            )));
+        }
+        if self.order != abba_pair_order(self.candidate_seconds.len(), protocol.seed) {
+            return Err(FairError::Invalid(format!(
+                "paired timing case {} does not follow the protocol's seeded ABBA order",
+                self.case_id
             )));
         }
         if self.candidate_seconds.len() != self.reference_seconds.len()
@@ -405,7 +431,7 @@ where
             }
         }
     }
-    Ok(PairedTimingCase {
+    let case = PairedTimingCase {
         case_id: case_id.into(),
         batch_iterations,
         warmup_seconds,
@@ -413,7 +439,10 @@ where
         candidate_seconds,
         reference_seconds,
         process_blocks: Vec::new(),
-    })
+    };
+    // The producer passes the same admission as a replayed receipt.
+    case.admit(protocol)?;
+    Ok(case)
 }
 
 fn median_in_place(values: &mut [f64]) -> f64 {
@@ -497,7 +526,7 @@ pub fn case_clustered_bootstrap(
     }
     let mut ids = BTreeSet::new();
     for case in cases {
-        case.validate(protocol)?;
+        case.admit(protocol)?;
         if !ids.insert(case.case_id.as_str()) {
             return Err(FairError::Invalid(format!(
                 "duplicate paired timing case {}",
