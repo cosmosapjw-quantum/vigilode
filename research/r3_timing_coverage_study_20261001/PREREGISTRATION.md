@@ -83,3 +83,44 @@ thresholds are the ones stated in the R3 re-audit (`research/adversarial_reaudit
 ---
 
 ## Results (appended after the run)
+
+Run on 2026-10-01 (KST) at source commit `c8539fec58882b8e8bf28d43439c1163e76f2603`. That commit adds only this
+preregistration to `55eeb9d086a6c58176757b95302f27670f283863`. The run took 16 min 52 s of wall time with 4 threads.
+The output is `COVERAGE_STUDY.json`, with sha256 `1c528568a4f36e1ad2364172d1989608a4d6947aa5b5c7a18acf35bd2fa954c0`.
+
+**Verdict: FAIL** (`STATISTICAL_AUTHORITY_HOLD`). Of the 36 primary scenarios, 18 fail.
+
+| design | scenarios | coverage range | largest promote rate at theta <= ln 1.15 | fail |
+|---|---:|---|---:|---:|
+| S=6, C=1, primary | 9 | 0.7890 to 0.8890 | 0.0450 | 9 |
+| S=6, C=1, MNAR sensitivity | 3 | 0.8140 to 0.8290 | 0.0330 | 3 |
+| S=6, C=5, primary | 9 | 0.9925 to 0.9980 | 0.0005 | 0 |
+| S=6, C=5, MNAR sensitivity | 3 | 0.9920 to 0.9945 | 0.0020 | 0 |
+| S=12, C=1, primary | 9 | 0.8950 to 0.9255 | 0.0245 | 9 |
+| S=12, C=1, MNAR sensitivity | 3 | 0.8735 to 0.8900 | 0.0565 | 3 |
+| S=12, C=5, primary | 9 | 0.9970 to 1.0000 | 0.0000 | 0 |
+| S=12, C=5, MNAR sensitivity | 3 | 0.9965 to 0.9980 | 0.0005 | 0 |
+
+Every single-case scenario (C = 1) fails the coverage threshold:
+
+- The primary coverage ranges from 0.7890 to 0.9255.
+- `s6-c1-none-theta1.15` also promotes at 0.0450, above 0.0340.
+
+The session-resampling percentile interval of one case is too narrow at 6 and 12 sessions. Missing cells make it worse.
+
+Every five-case scenario (C = 5) passes, including MNAR:
+
+- Coverage ranges from 0.9925 to 1.0000.
+- The largest promotion rate at or below the threshold is 0.0005.
+
+Resampling the cases makes the interval conservative for the corpus estimand under this model.
+
+The Monte-Carlo and six-session gates withheld between 0 and 1739 endpoint decisions per scenario. Most of the large counts come from the six-session floor under MCAR with one case. This is resolution, not coverage.
+
+Consequences, stated without retesting or reseeding:
+
+1. No paired timing decision on a single-case corpus is authoritative under this contract.
+2. The five-case results are numerical evidence for this dependence model only. They are not a PASS of the preregistered gate.
+3. A redesigned interval, for example a studentized or calibrated one for few independent units, needs a new preregistered study.
+
+None of this says anything about solver speed.

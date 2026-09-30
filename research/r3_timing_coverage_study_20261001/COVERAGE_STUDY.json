@@ -1,0 +1,1781 @@
+{
+  "schema": "vigilode-timing-coverage-study-v1",
+  "contract": "vigilode-timing-design-v1/corpus-median-of-case-session-medians/balanced-cells",
+  "seed": 20261002,
+  "replications": 2000,
+  "bootstrap_resamples": 10000,
+  "confidence_level": 0.95,
+  "required_speedup": 1.15,
+  "mc_failure_budget": 0.01,
+  "min_coverage": 0.9374,
+  "max_false_promote": 0.034,
+  "scenarios": [
+    {
+      "id": "s6-c1-none-theta1",
+      "design": {
+        "sessions": 6,
+        "cases": 1,
+        "pairs_per_cell": 30,
+        "theta_log": 0.0,
+        "dependence": {
+          "session_sd": 0.05,
+          "case_sd": 0.1,
+          "interaction_sd": 0.03,
+          "pair_sd": 0.05,
+          "pair_autocorrelation": 0.5
+        },
+        "missingness": {
+          "kind": "none"
+        }
+      },
+      "primary": true,
+      "replications": 2000,
+      "intervals": 2000,
+      "covered": 1778,
+      "coverage": 0.889,
+      "promote": 0,
+      "block": 1974,
+      "inconclusive": 26,
+      "false_promote_rate": 0.0,
+      "endpoint_promote": 0,
+      "gate_withheld": 19,
+      "below_min_sessions": 0,
+      "mean_missing_cells": 0.0,
+      "mean_excluded_cases": 0.0,
+      "median_width_log": 0.08889370612212777,
+      "coverage_pass": false,
+      "false_promote_pass": true
+    },
+    {
+      "id": "s6-c1-none-theta1.15",
+      "design": {
+        "sessions": 6,
+        "cases": 1,
+        "pairs_per_cell": 30,
+        "theta_log": 0.13976194237515863,
+        "dependence": {
+          "session_sd": 0.05,
+          "case_sd": 0.1,
+          "interaction_sd": 0.03,
+          "pair_sd": 0.05,
+          "pair_autocorrelation": 0.5
+        },
+        "missingness": {
+          "kind": "none"
+        }
+      },
+      "primary": true,
+      "replications": 2000,
+      "intervals": 2000,
+      "covered": 1713,
+      "coverage": 0.8565,
+      "promote": 90,
+      "block": 105,
+      "inconclusive": 1805,
+      "false_promote_rate": 0.045,
+      "endpoint_promote": 139,
+      "gate_withheld": 92,
+      "below_min_sessions": 0,
+      "mean_missing_cells": 0.0,
+      "mean_excluded_cases": 0.0,
+      "median_width_log": 0.08638692642216489,
+      "coverage_pass": false,
+      "false_promote_pass": false
+    },
+    {
+      "id": "s6-c1-none-theta1.3",
+      "design": {
+        "sessions": 6,
+        "cases": 1,
+        "pairs_per_cell": 30,
+        "theta_log": 0.26236426446749106,
+        "dependence": {
+          "session_sd": 0.05,
+          "case_sd": 0.1,
+          "interaction_sd": 0.03,
+          "pair_sd": 0.05,
+          "pair_autocorrelation": 0.5
+        },
+        "missingness": {
+          "kind": "none"
+        }
+      },
+      "primary": true,
+      "replications": 2000,
+      "intervals": 2000,
+      "covered": 1766,
+      "coverage": 0.883,
+      "promote": 1945,
+      "block": 0,
+      "inconclusive": 55,
+      "false_promote_rate": null,
+      "endpoint_promote": 1986,
+      "gate_withheld": 41,
+      "below_min_sessions": 0,
+      "mean_missing_cells": 0.0,
+      "mean_excluded_cases": 0.0,
+      "median_width_log": 0.08842237290284419,
+      "coverage_pass": false,
+      "false_promote_pass": true
+    },
+    {
+      "id": "s6-c1-mcar0.1-theta1",
+      "design": {
+        "sessions": 6,
+        "cases": 1,
+        "pairs_per_cell": 30,
+        "theta_log": 0.0,
+        "dependence": {
+          "session_sd": 0.05,
+          "case_sd": 0.1,
+          "interaction_sd": 0.03,
+          "pair_sd": 0.05,
+          "pair_autocorrelation": 0.5
+        },
+        "missingness": {
+          "kind": "mcar",
+          "probability": 0.1
+        }
+      },
+      "primary": true,
+      "replications": 2000,
+      "intervals": 2000,
+      "covered": 1702,
+      "coverage": 0.851,
+      "promote": 0,
+      "block": 1041,
+      "inconclusive": 959,
+      "false_promote_rate": 0.0,
+      "endpoint_promote": 0,
+      "gate_withheld": 946,
+      "below_min_sessions": 948,
+      "mean_missing_cells": 0.5985,
+      "mean_excluded_cases": 0.0,
+      "median_width_log": 0.08969188039572124,
+      "coverage_pass": false,
+      "false_promote_pass": true
+    },
+    {
+      "id": "s6-c1-mcar0.1-theta1.15",
+      "design": {
+        "sessions": 6,
+        "cases": 1,
+        "pairs_per_cell": 30,
+        "theta_log": 0.13976194237515863,
+        "dependence": {
+          "session_sd": 0.05,
+          "case_sd": 0.1,
+          "interaction_sd": 0.03,
+          "pair_sd": 0.05,
+          "pair_autocorrelation": 0.5
+        },
+        "missingness": {
+          "kind": "mcar",
+          "probability": 0.1
+        }
+      },
+      "primary": true,
+      "replications": 2000,
+      "intervals": 2000,
+      "covered": 1725,
+      "coverage": 0.8625,
+      "promote": 47,
+      "block": 45,
+      "inconclusive": 1908,
+      "false_promote_rate": 0.0235,
+      "endpoint_promote": 142,
+      "gate_withheld": 183,
+      "below_min_sessions": 952,
+      "mean_missing_cells": 0.6115,
+      "mean_excluded_cases": 0.0,
+      "median_width_log": 0.09030039965324928,
+      "coverage_pass": false,
+      "false_promote_pass": true
+    },
+    {
+      "id": "s6-c1-mcar0.1-theta1.3",
+      "design": {
+        "sessions": 6,
+        "cases": 1,
+        "pairs_per_cell": 30,
+        "theta_log": 0.26236426446749106,
+        "dependence": {
+          "session_sd": 0.05,
+          "case_sd": 0.1,
+          "interaction_sd": 0.03,
+          "pair_sd": 0.05,
+          "pair_autocorrelation": 0.5
+        },
+        "missingness": {
+          "kind": "mcar",
+          "probability": 0.1
+        }
+      },
+      "primary": true,
+      "replications": 2000,
+      "intervals": 2000,
+      "covered": 1724,
+      "coverage": 0.862,
+      "promote": 1035,
+      "block": 0,
+      "inconclusive": 965,
+      "false_promote_rate": null,
+      "endpoint_promote": 1973,
+      "gate_withheld": 938,
+      "below_min_sessions": 942,
+      "mean_missing_cells": 0.608,
+      "mean_excluded_cases": 0.0,
+      "median_width_log": 0.08986542274523453,
+      "coverage_pass": false,
+      "false_promote_pass": true
+    },
+    {
+      "id": "s6-c1-mcar0.3-theta1",
+      "design": {
+        "sessions": 6,
+        "cases": 1,
+        "pairs_per_cell": 30,
+        "theta_log": 0.0,
+        "dependence": {
+          "session_sd": 0.05,
+          "case_sd": 0.1,
+          "interaction_sd": 0.03,
+          "pair_sd": 0.05,
+          "pair_autocorrelation": 0.5
+        },
+        "missingness": {
+          "kind": "mcar",
+          "probability": 0.3
+        }
+      },
+      "primary": true,
+      "replications": 2000,
+      "intervals": 1997,
+      "covered": 1578,
+      "coverage": 0.789,
+      "promote": 0,
+      "block": 228,
+      "inconclusive": 1772,
+      "false_promote_rate": 0.0,
+      "endpoint_promote": 0,
+      "gate_withheld": 1739,
+      "below_min_sessions": 1771,
+      "mean_missing_cells": 1.814,
+      "mean_excluded_cases": 0.0015,
+      "median_width_log": 0.0909008236649121,
+      "coverage_pass": false,
+      "false_promote_pass": true
+    },
+    {
+      "id": "s6-c1-mcar0.3-theta1.15",
+      "design": {
+        "sessions": 6,
+        "cases": 1,
+        "pairs_per_cell": 30,
+        "theta_log": 0.13976194237515863,
+        "dependence": {
+          "session_sd": 0.05,
+          "case_sd": 0.1,
+          "interaction_sd": 0.03,
+          "pair_sd": 0.05,
+          "pair_autocorrelation": 0.5
+        },
+        "missingness": {
+          "kind": "mcar",
+          "probability": 0.3
+        }
+      },
+      "primary": true,
+      "replications": 2000,
+      "intervals": 2000,
+      "covered": 1595,
+      "coverage": 0.7975,
+      "promote": 15,
+      "block": 14,
+      "inconclusive": 1971,
+      "false_promote_rate": 0.0075,
+      "endpoint_promote": 207,
+      "gate_withheld": 376,
+      "below_min_sessions": 1768,
+      "mean_missing_cells": 1.797,
+      "mean_excluded_cases": 0.0,
+      "median_width_log": 0.09159579769231409,
+      "coverage_pass": false,
+      "false_promote_pass": true
+    },
+    {
+      "id": "s6-c1-mcar0.3-theta1.3",
+      "design": {
+        "sessions": 6,
+        "cases": 1,
+        "pairs_per_cell": 30,
+        "theta_log": 0.26236426446749106,
+        "dependence": {
+          "session_sd": 0.05,
+          "case_sd": 0.1,
+          "interaction_sd": 0.03,
+          "pair_sd": 0.05,
+          "pair_autocorrelation": 0.5
+        },
+        "missingness": {
+          "kind": "mcar",
+          "probability": 0.3
+        }
+      },
+      "primary": true,
+      "replications": 2000,
+      "intervals": 1997,
+      "covered": 1600,
+      "coverage": 0.8,
+      "promote": 239,
+      "block": 0,
+      "inconclusive": 1761,
+      "false_promote_rate": null,
+      "endpoint_promote": 1927,
+      "gate_withheld": 1688,
+      "below_min_sessions": 1757,
+      "mean_missing_cells": 1.7915,
+      "mean_excluded_cases": 0.0015,
+      "median_width_log": 0.09144258071061231,
+      "coverage_pass": false,
+      "false_promote_pass": true
+    },
+    {
+      "id": "s6-c1-mnar0.3-theta1",
+      "design": {
+        "sessions": 6,
+        "cases": 1,
+        "pairs_per_cell": 30,
+        "theta_log": 0.0,
+        "dependence": {
+          "session_sd": 0.05,
+          "case_sd": 0.1,
+          "interaction_sd": 0.03,
+          "pair_sd": 0.05,
+          "pair_autocorrelation": 0.5
+        },
+        "missingness": {
+          "kind": "mnar",
+          "probability": 0.3
+        }
+      },
+      "primary": false,
+      "replications": 2000,
+      "intervals": 2000,
+      "covered": 1654,
+      "coverage": 0.827,
+      "promote": 0,
+      "block": 723,
+      "inconclusive": 1277,
+      "false_promote_rate": 0.0,
+      "endpoint_promote": 0,
+      "gate_withheld": 1256,
+      "below_min_sessions": 1267,
+      "mean_missing_cells": 0.912,
+      "mean_excluded_cases": 0.0,
+      "median_width_log": 0.0878061351251291,
+      "coverage_pass": false,
+      "false_promote_pass": true
+    },
+    {
+      "id": "s6-c1-mnar0.3-theta1.15",
+      "design": {
+        "sessions": 6,
+        "cases": 1,
+        "pairs_per_cell": 30,
+        "theta_log": 0.13976194237515863,
+        "dependence": {
+          "session_sd": 0.05,
+          "case_sd": 0.1,
+          "interaction_sd": 0.03,
+          "pair_sd": 0.05,
+          "pair_autocorrelation": 0.5
+        },
+        "missingness": {
+          "kind": "mnar",
+          "probability": 0.3
+        }
+      },
+      "primary": false,
+      "replications": 2000,
+      "intervals": 2000,
+      "covered": 1658,
+      "coverage": 0.829,
+      "promote": 66,
+      "block": 11,
+      "inconclusive": 1923,
+      "false_promote_rate": 0.033,
+      "endpoint_promote": 257,
+      "gate_withheld": 265,
+      "below_min_sessions": 1242,
+      "mean_missing_cells": 0.8765,
+      "mean_excluded_cases": 0.0,
+      "median_width_log": 0.09075374454041757,
+      "coverage_pass": false,
+      "false_promote_pass": true
+    },
+    {
+      "id": "s6-c1-mnar0.3-theta1.3",
+      "design": {
+        "sessions": 6,
+        "cases": 1,
+        "pairs_per_cell": 30,
+        "theta_log": 0.26236426446749106,
+        "dependence": {
+          "session_sd": 0.05,
+          "case_sd": 0.1,
+          "interaction_sd": 0.03,
+          "pair_sd": 0.05,
+          "pair_autocorrelation": 0.5
+        },
+        "missingness": {
+          "kind": "mnar",
+          "probability": 0.3
+        }
+      },
+      "primary": false,
+      "replications": 2000,
+      "intervals": 2000,
+      "covered": 1628,
+      "coverage": 0.814,
+      "promote": 747,
+      "block": 0,
+      "inconclusive": 1253,
+      "false_promote_rate": null,
+      "endpoint_promote": 1966,
+      "gate_withheld": 1219,
+      "below_min_sessions": 1244,
+      "mean_missing_cells": 0.913,
+      "mean_excluded_cases": 0.0,
+      "median_width_log": 0.08944609985794978,
+      "coverage_pass": false,
+      "false_promote_pass": true
+    },
+    {
+      "id": "s6-c5-none-theta1",
+      "design": {
+        "sessions": 6,
+        "cases": 5,
+        "pairs_per_cell": 30,
+        "theta_log": 0.0,
+        "dependence": {
+          "session_sd": 0.05,
+          "case_sd": 0.1,
+          "interaction_sd": 0.03,
+          "pair_sd": 0.05,
+          "pair_autocorrelation": 0.5
+        },
+        "missingness": {
+          "kind": "none"
+        }
+      },
+      "primary": true,
+      "replications": 2000,
+      "intervals": 2000,
+      "covered": 1994,
+      "coverage": 0.997,
+      "promote": 0,
+      "block": 1070,
+      "inconclusive": 930,
+      "false_promote_rate": 0.0,
+      "endpoint_promote": 0,
+      "gate_withheld": 182,
+      "below_min_sessions": 0,
+      "mean_missing_cells": 0.0,
+      "mean_excluded_cases": 0.0,
+      "median_width_log": 0.2463755029641493,
+      "coverage_pass": true,
+      "false_promote_pass": true
+    },
+    {
+      "id": "s6-c5-none-theta1.15",
+      "design": {
+        "sessions": 6,
+        "cases": 5,
+        "pairs_per_cell": 30,
+        "theta_log": 0.13976194237515863,
+        "dependence": {
+          "session_sd": 0.05,
+          "case_sd": 0.1,
+          "interaction_sd": 0.03,
+          "pair_sd": 0.05,
+          "pair_autocorrelation": 0.5
+        },
+        "missingness": {
+          "kind": "none"
+        }
+      },
+      "primary": true,
+      "replications": 2000,
+      "intervals": 2000,
+      "covered": 1996,
+      "coverage": 0.998,
+      "promote": 1,
+      "block": 0,
+      "inconclusive": 1999,
+      "false_promote_rate": 0.0005,
+      "endpoint_promote": 3,
+      "gate_withheld": 3,
+      "below_min_sessions": 0,
+      "mean_missing_cells": 0.0,
+      "mean_excluded_cases": 0.0,
+      "median_width_log": 0.2511687772846007,
+      "coverage_pass": true,
+      "false_promote_pass": true
+    },
+    {
+      "id": "s6-c5-none-theta1.3",
+      "design": {
+        "sessions": 6,
+        "cases": 5,
+        "pairs_per_cell": 30,
+        "theta_log": 0.26236426446749106,
+        "dependence": {
+          "session_sd": 0.05,
+          "case_sd": 0.1,
+          "interaction_sd": 0.03,
+          "pair_sd": 0.05,
+          "pair_autocorrelation": 0.5
+        },
+        "missingness": {
+          "kind": "none"
+        }
+      },
+      "primary": true,
+      "replications": 2000,
+      "intervals": 2000,
+      "covered": 1988,
+      "coverage": 0.994,
+      "promote": 804,
+      "block": 0,
+      "inconclusive": 1196,
+      "false_promote_rate": null,
+      "endpoint_promote": 1029,
+      "gate_withheld": 225,
+      "below_min_sessions": 0,
+      "mean_missing_cells": 0.0,
+      "mean_excluded_cases": 0.0,
+      "median_width_log": 0.2472503838919409,
+      "coverage_pass": true,
+      "false_promote_pass": true
+    },
+    {
+      "id": "s6-c5-mcar0.1-theta1",
+      "design": {
+        "sessions": 6,
+        "cases": 5,
+        "pairs_per_cell": 30,
+        "theta_log": 0.0,
+        "dependence": {
+          "session_sd": 0.05,
+          "case_sd": 0.1,
+          "interaction_sd": 0.03,
+          "pair_sd": 0.05,
+          "pair_autocorrelation": 0.5
+        },
+        "missingness": {
+          "kind": "mcar",
+          "probability": 0.1
+        }
+      },
+      "primary": true,
+      "replications": 2000,
+      "intervals": 2000,
+      "covered": 1989,
+      "coverage": 0.9945,
+      "promote": 0,
+      "block": 1018,
+      "inconclusive": 982,
+      "false_promote_rate": 0.0,
+      "endpoint_promote": 0,
+      "gate_withheld": 210,
+      "below_min_sessions": 0,
+      "mean_missing_cells": 2.923,
+      "mean_excluded_cases": 0.0,
+      "median_width_log": 0.25525272832707235,
+      "coverage_pass": true,
+      "false_promote_pass": true
+    },
+    {
+      "id": "s6-c5-mcar0.1-theta1.15",
+      "design": {
+        "sessions": 6,
+        "cases": 5,
+        "pairs_per_cell": 30,
+        "theta_log": 0.13976194237515863,
+        "dependence": {
+          "session_sd": 0.05,
+          "case_sd": 0.1,
+          "interaction_sd": 0.03,
+          "pair_sd": 0.05,
+          "pair_autocorrelation": 0.5
+        },
+        "missingness": {
+          "kind": "mcar",
+          "probability": 0.1
+        }
+      },
+      "primary": true,
+      "replications": 2000,
+      "intervals": 2000,
+      "covered": 1991,
+      "coverage": 0.9955,
+      "promote": 0,
+      "block": 1,
+      "inconclusive": 1999,
+      "false_promote_rate": 0.0,
+      "endpoint_promote": 3,
+      "gate_withheld": 8,
+      "below_min_sessions": 0,
+      "mean_missing_cells": 3.0315,
+      "mean_excluded_cases": 0.0,
+      "median_width_log": 0.2532490941687995,
+      "coverage_pass": true,
+      "false_promote_pass": true
+    },
+    {
+      "id": "s6-c5-mcar0.1-theta1.3",
+      "design": {
+        "sessions": 6,
+        "cases": 5,
+        "pairs_per_cell": 30,
+        "theta_log": 0.26236426446749106,
+        "dependence": {
+          "session_sd": 0.05,
+          "case_sd": 0.1,
+          "interaction_sd": 0.03,
+          "pair_sd": 0.05,
+          "pair_autocorrelation": 0.5
+        },
+        "missingness": {
+          "kind": "mcar",
+          "probability": 0.1
+        }
+      },
+      "primary": true,
+      "replications": 2000,
+      "intervals": 2000,
+      "covered": 1990,
+      "coverage": 0.995,
+      "promote": 811,
+      "block": 0,
+      "inconclusive": 1189,
+      "false_promote_rate": null,
+      "endpoint_promote": 1052,
+      "gate_withheld": 241,
+      "below_min_sessions": 0,
+      "mean_missing_cells": 3.0355,
+      "mean_excluded_cases": 0.0,
+      "median_width_log": 0.2485344854072507,
+      "coverage_pass": true,
+      "false_promote_pass": true
+    },
+    {
+      "id": "s6-c5-mcar0.3-theta1",
+      "design": {
+        "sessions": 6,
+        "cases": 5,
+        "pairs_per_cell": 30,
+        "theta_log": 0.0,
+        "dependence": {
+          "session_sd": 0.05,
+          "case_sd": 0.1,
+          "interaction_sd": 0.03,
+          "pair_sd": 0.05,
+          "pair_autocorrelation": 0.5
+        },
+        "missingness": {
+          "kind": "mcar",
+          "probability": 0.3
+        }
+      },
+      "primary": true,
+      "replications": 2000,
+      "intervals": 2000,
+      "covered": 1985,
+      "coverage": 0.9925,
+      "promote": 0,
+      "block": 916,
+      "inconclusive": 1084,
+      "false_promote_rate": 0.0,
+      "endpoint_promote": 0,
+      "gate_withheld": 258,
+      "below_min_sessions": 31,
+      "mean_missing_cells": 8.9875,
+      "mean_excluded_cases": 0.004,
+      "median_width_log": 0.2573822651755565,
+      "coverage_pass": true,
+      "false_promote_pass": true
+    },
+    {
+      "id": "s6-c5-mcar0.3-theta1.15",
+      "design": {
+        "sessions": 6,
+        "cases": 5,
+        "pairs_per_cell": 30,
+        "theta_log": 0.13976194237515863,
+        "dependence": {
+          "session_sd": 0.05,
+          "case_sd": 0.1,
+          "interaction_sd": 0.03,
+          "pair_sd": 0.05,
+          "pair_autocorrelation": 0.5
+        },
+        "missingness": {
+          "kind": "mcar",
+          "probability": 0.3
+        }
+      },
+      "primary": true,
+      "replications": 2000,
+      "intervals": 2000,
+      "covered": 1992,
+      "coverage": 0.996,
+      "promote": 1,
+      "block": 0,
+      "inconclusive": 1999,
+      "false_promote_rate": 0.0005,
+      "endpoint_promote": 6,
+      "gate_withheld": 7,
+      "below_min_sessions": 25,
+      "mean_missing_cells": 8.893,
+      "mean_excluded_cases": 0.002,
+      "median_width_log": 0.25322713402273456,
+      "coverage_pass": true,
+      "false_promote_pass": true
+    },
+    {
+      "id": "s6-c5-mcar0.3-theta1.3",
+      "design": {
+        "sessions": 6,
+        "cases": 5,
+        "pairs_per_cell": 30,
+        "theta_log": 0.26236426446749106,
+        "dependence": {
+          "session_sd": 0.05,
+          "case_sd": 0.1,
+          "interaction_sd": 0.03,
+          "pair_sd": 0.05,
+          "pair_autocorrelation": 0.5
+        },
+        "missingness": {
+          "kind": "mcar",
+          "probability": 0.3
+        }
+      },
+      "primary": true,
+      "replications": 2000,
+      "intervals": 2000,
+      "covered": 1989,
+      "coverage": 0.9945,
+      "promote": 717,
+      "block": 0,
+      "inconclusive": 1283,
+      "false_promote_rate": null,
+      "endpoint_promote": 952,
+      "gate_withheld": 235,
+      "below_min_sessions": 27,
+      "mean_missing_cells": 9.0025,
+      "mean_excluded_cases": 0.005,
+      "median_width_log": 0.260178117307026,
+      "coverage_pass": true,
+      "false_promote_pass": true
+    },
+    {
+      "id": "s6-c5-mnar0.3-theta1",
+      "design": {
+        "sessions": 6,
+        "cases": 5,
+        "pairs_per_cell": 30,
+        "theta_log": 0.0,
+        "dependence": {
+          "session_sd": 0.05,
+          "case_sd": 0.1,
+          "interaction_sd": 0.03,
+          "pair_sd": 0.05,
+          "pair_autocorrelation": 0.5
+        },
+        "missingness": {
+          "kind": "mnar",
+          "probability": 0.3
+        }
+      },
+      "primary": false,
+      "replications": 2000,
+      "intervals": 2000,
+      "covered": 1989,
+      "coverage": 0.9945,
+      "promote": 0,
+      "block": 911,
+      "inconclusive": 1089,
+      "false_promote_rate": 0.0,
+      "endpoint_promote": 0,
+      "gate_withheld": 223,
+      "below_min_sessions": 3,
+      "mean_missing_cells": 4.5115,
+      "mean_excluded_cases": 0.0005,
+      "median_width_log": 0.25290503947983656,
+      "coverage_pass": true,
+      "false_promote_pass": true
+    },
+    {
+      "id": "s6-c5-mnar0.3-theta1.15",
+      "design": {
+        "sessions": 6,
+        "cases": 5,
+        "pairs_per_cell": 30,
+        "theta_log": 0.13976194237515863,
+        "dependence": {
+          "session_sd": 0.05,
+          "case_sd": 0.1,
+          "interaction_sd": 0.03,
+          "pair_sd": 0.05,
+          "pair_autocorrelation": 0.5
+        },
+        "missingness": {
+          "kind": "mnar",
+          "probability": 0.3
+        }
+      },
+      "primary": false,
+      "replications": 2000,
+      "intervals": 2000,
+      "covered": 1984,
+      "coverage": 0.992,
+      "promote": 4,
+      "block": 1,
+      "inconclusive": 1995,
+      "false_promote_rate": 0.002,
+      "endpoint_promote": 13,
+      "gate_withheld": 11,
+      "below_min_sessions": 8,
+      "mean_missing_cells": 4.451,
+      "mean_excluded_cases": 0.0,
+      "median_width_log": 0.25649711149693966,
+      "coverage_pass": true,
+      "false_promote_pass": true
+    },
+    {
+      "id": "s6-c5-mnar0.3-theta1.3",
+      "design": {
+        "sessions": 6,
+        "cases": 5,
+        "pairs_per_cell": 30,
+        "theta_log": 0.26236426446749106,
+        "dependence": {
+          "session_sd": 0.05,
+          "case_sd": 0.1,
+          "interaction_sd": 0.03,
+          "pair_sd": 0.05,
+          "pair_autocorrelation": 0.5
+        },
+        "missingness": {
+          "kind": "mnar",
+          "probability": 0.3
+        }
+      },
+      "primary": false,
+      "replications": 2000,
+      "intervals": 2000,
+      "covered": 1988,
+      "coverage": 0.994,
+      "promote": 887,
+      "block": 0,
+      "inconclusive": 1113,
+      "false_promote_rate": null,
+      "endpoint_promote": 1124,
+      "gate_withheld": 237,
+      "below_min_sessions": 5,
+      "mean_missing_cells": 4.5425,
+      "mean_excluded_cases": 0.0,
+      "median_width_log": 0.2552575791831555,
+      "coverage_pass": true,
+      "false_promote_pass": true
+    },
+    {
+      "id": "s12-c1-none-theta1",
+      "design": {
+        "sessions": 12,
+        "cases": 1,
+        "pairs_per_cell": 30,
+        "theta_log": 0.0,
+        "dependence": {
+          "session_sd": 0.05,
+          "case_sd": 0.1,
+          "interaction_sd": 0.03,
+          "pair_sd": 0.05,
+          "pair_autocorrelation": 0.5
+        },
+        "missingness": {
+          "kind": "none"
+        }
+      },
+      "primary": true,
+      "replications": 2000,
+      "intervals": 2000,
+      "covered": 1851,
+      "coverage": 0.9255,
+      "promote": 0,
+      "block": 2000,
+      "inconclusive": 0,
+      "false_promote_rate": 0.0,
+      "endpoint_promote": 0,
+      "gate_withheld": 0,
+      "below_min_sessions": 0,
+      "mean_missing_cells": 0.0,
+      "mean_excluded_cases": 0.0,
+      "median_width_log": 0.06736186581214124,
+      "coverage_pass": false,
+      "false_promote_pass": true
+    },
+    {
+      "id": "s12-c1-none-theta1.15",
+      "design": {
+        "sessions": 12,
+        "cases": 1,
+        "pairs_per_cell": 30,
+        "theta_log": 0.13976194237515863,
+        "dependence": {
+          "session_sd": 0.05,
+          "case_sd": 0.1,
+          "interaction_sd": 0.03,
+          "pair_sd": 0.05,
+          "pair_autocorrelation": 0.5
+        },
+        "missingness": {
+          "kind": "none"
+        }
+      },
+      "primary": true,
+      "replications": 2000,
+      "intervals": 2000,
+      "covered": 1845,
+      "coverage": 0.9225,
+      "promote": 43,
+      "block": 40,
+      "inconclusive": 1917,
+      "false_promote_rate": 0.0215,
+      "endpoint_promote": 76,
+      "gate_withheld": 72,
+      "below_min_sessions": 0,
+      "mean_missing_cells": 0.0,
+      "mean_excluded_cases": 0.0,
+      "median_width_log": 0.06702197787594136,
+      "coverage_pass": false,
+      "false_promote_pass": true
+    },
+    {
+      "id": "s12-c1-none-theta1.3",
+      "design": {
+        "sessions": 12,
+        "cases": 1,
+        "pairs_per_cell": 30,
+        "theta_log": 0.26236426446749106,
+        "dependence": {
+          "session_sd": 0.05,
+          "case_sd": 0.1,
+          "interaction_sd": 0.03,
+          "pair_sd": 0.05,
+          "pair_autocorrelation": 0.5
+        },
+        "missingness": {
+          "kind": "none"
+        }
+      },
+      "primary": true,
+      "replications": 2000,
+      "intervals": 2000,
+      "covered": 1836,
+      "coverage": 0.918,
+      "promote": 2000,
+      "block": 0,
+      "inconclusive": 0,
+      "false_promote_rate": null,
+      "endpoint_promote": 2000,
+      "gate_withheld": 0,
+      "below_min_sessions": 0,
+      "mean_missing_cells": 0.0,
+      "mean_excluded_cases": 0.0,
+      "median_width_log": 0.06675620621921471,
+      "coverage_pass": false,
+      "false_promote_pass": true
+    },
+    {
+      "id": "s12-c1-mcar0.1-theta1",
+      "design": {
+        "sessions": 12,
+        "cases": 1,
+        "pairs_per_cell": 30,
+        "theta_log": 0.0,
+        "dependence": {
+          "session_sd": 0.05,
+          "case_sd": 0.1,
+          "interaction_sd": 0.03,
+          "pair_sd": 0.05,
+          "pair_autocorrelation": 0.5
+        },
+        "missingness": {
+          "kind": "mcar",
+          "probability": 0.1
+        }
+      },
+      "primary": true,
+      "replications": 2000,
+      "intervals": 2000,
+      "covered": 1820,
+      "coverage": 0.91,
+      "promote": 0,
+      "block": 1998,
+      "inconclusive": 2,
+      "false_promote_rate": 0.0,
+      "endpoint_promote": 0,
+      "gate_withheld": 2,
+      "below_min_sessions": 0,
+      "mean_missing_cells": 1.1865,
+      "mean_excluded_cases": 0.0,
+      "median_width_log": 0.06957329350089525,
+      "coverage_pass": false,
+      "false_promote_pass": true
+    },
+    {
+      "id": "s12-c1-mcar0.1-theta1.15",
+      "design": {
+        "sessions": 12,
+        "cases": 1,
+        "pairs_per_cell": 30,
+        "theta_log": 0.13976194237515863,
+        "dependence": {
+          "session_sd": 0.05,
+          "case_sd": 0.1,
+          "interaction_sd": 0.03,
+          "pair_sd": 0.05,
+          "pair_autocorrelation": 0.5
+        },
+        "missingness": {
+          "kind": "mcar",
+          "probability": 0.1
+        }
+      },
+      "primary": true,
+      "replications": 2000,
+      "intervals": 2000,
+      "covered": 1839,
+      "coverage": 0.9195,
+      "promote": 41,
+      "block": 36,
+      "inconclusive": 1923,
+      "false_promote_rate": 0.0205,
+      "endpoint_promote": 84,
+      "gate_withheld": 84,
+      "below_min_sessions": 0,
+      "mean_missing_cells": 1.2295,
+      "mean_excluded_cases": 0.0,
+      "median_width_log": 0.06957987584686426,
+      "coverage_pass": false,
+      "false_promote_pass": true
+    },
+    {
+      "id": "s12-c1-mcar0.1-theta1.3",
+      "design": {
+        "sessions": 12,
+        "cases": 1,
+        "pairs_per_cell": 30,
+        "theta_log": 0.26236426446749106,
+        "dependence": {
+          "session_sd": 0.05,
+          "case_sd": 0.1,
+          "interaction_sd": 0.03,
+          "pair_sd": 0.05,
+          "pair_autocorrelation": 0.5
+        },
+        "missingness": {
+          "kind": "mcar",
+          "probability": 0.1
+        }
+      },
+      "primary": true,
+      "replications": 2000,
+      "intervals": 2000,
+      "covered": 1832,
+      "coverage": 0.916,
+      "promote": 1997,
+      "block": 0,
+      "inconclusive": 3,
+      "false_promote_rate": null,
+      "endpoint_promote": 1999,
+      "gate_withheld": 2,
+      "below_min_sessions": 0,
+      "mean_missing_cells": 1.195,
+      "mean_excluded_cases": 0.0,
+      "median_width_log": 0.07004542345788144,
+      "coverage_pass": false,
+      "false_promote_pass": true
+    },
+    {
+      "id": "s12-c1-mcar0.3-theta1",
+      "design": {
+        "sessions": 12,
+        "cases": 1,
+        "pairs_per_cell": 30,
+        "theta_log": 0.0,
+        "dependence": {
+          "session_sd": 0.05,
+          "case_sd": 0.1,
+          "interaction_sd": 0.03,
+          "pair_sd": 0.05,
+          "pair_autocorrelation": 0.5
+        },
+        "missingness": {
+          "kind": "mcar",
+          "probability": 0.3
+        }
+      },
+      "primary": true,
+      "replications": 2000,
+      "intervals": 2000,
+      "covered": 1805,
+      "coverage": 0.9025,
+      "promote": 0,
+      "block": 1930,
+      "inconclusive": 70,
+      "false_promote_rate": 0.0,
+      "endpoint_promote": 0,
+      "gate_withheld": 67,
+      "below_min_sessions": 64,
+      "mean_missing_cells": 3.566,
+      "mean_excluded_cases": 0.0,
+      "median_width_log": 0.07863553605776434,
+      "coverage_pass": false,
+      "false_promote_pass": true
+    },
+    {
+      "id": "s12-c1-mcar0.3-theta1.15",
+      "design": {
+        "sessions": 12,
+        "cases": 1,
+        "pairs_per_cell": 30,
+        "theta_log": 0.13976194237515863,
+        "dependence": {
+          "session_sd": 0.05,
+          "case_sd": 0.1,
+          "interaction_sd": 0.03,
+          "pair_sd": 0.05,
+          "pair_autocorrelation": 0.5
+        },
+        "missingness": {
+          "kind": "mcar",
+          "probability": 0.3
+        }
+      },
+      "primary": true,
+      "replications": 2000,
+      "intervals": 2000,
+      "covered": 1799,
+      "coverage": 0.8995,
+      "promote": 49,
+      "block": 56,
+      "inconclusive": 1895,
+      "false_promote_rate": 0.0245,
+      "endpoint_promote": 99,
+      "gate_withheld": 96,
+      "below_min_sessions": 89,
+      "mean_missing_cells": 3.6565,
+      "mean_excluded_cases": 0.0,
+      "median_width_log": 0.07680992874876591,
+      "coverage_pass": false,
+      "false_promote_pass": true
+    },
+    {
+      "id": "s12-c1-mcar0.3-theta1.3",
+      "design": {
+        "sessions": 12,
+        "cases": 1,
+        "pairs_per_cell": 30,
+        "theta_log": 0.26236426446749106,
+        "dependence": {
+          "session_sd": 0.05,
+          "case_sd": 0.1,
+          "interaction_sd": 0.03,
+          "pair_sd": 0.05,
+          "pair_autocorrelation": 0.5
+        },
+        "missingness": {
+          "kind": "mcar",
+          "probability": 0.3
+        }
+      },
+      "primary": true,
+      "replications": 2000,
+      "intervals": 2000,
+      "covered": 1790,
+      "coverage": 0.895,
+      "promote": 1907,
+      "block": 0,
+      "inconclusive": 93,
+      "false_promote_rate": null,
+      "endpoint_promote": 1997,
+      "gate_withheld": 90,
+      "below_min_sessions": 79,
+      "mean_missing_cells": 3.6285,
+      "mean_excluded_cases": 0.0,
+      "median_width_log": 0.07845446051085272,
+      "coverage_pass": false,
+      "false_promote_pass": true
+    },
+    {
+      "id": "s12-c1-mnar0.3-theta1",
+      "design": {
+        "sessions": 12,
+        "cases": 1,
+        "pairs_per_cell": 30,
+        "theta_log": 0.0,
+        "dependence": {
+          "session_sd": 0.05,
+          "case_sd": 0.1,
+          "interaction_sd": 0.03,
+          "pair_sd": 0.05,
+          "pair_autocorrelation": 0.5
+        },
+        "missingness": {
+          "kind": "mnar",
+          "probability": 0.3
+        }
+      },
+      "primary": false,
+      "replications": 2000,
+      "intervals": 2000,
+      "covered": 1754,
+      "coverage": 0.877,
+      "promote": 0,
+      "block": 1997,
+      "inconclusive": 3,
+      "false_promote_rate": 0.0,
+      "endpoint_promote": 0,
+      "gate_withheld": 3,
+      "below_min_sessions": 1,
+      "mean_missing_cells": 1.774,
+      "mean_excluded_cases": 0.0,
+      "median_width_log": 0.07101356929731642,
+      "coverage_pass": false,
+      "false_promote_pass": true
+    },
+    {
+      "id": "s12-c1-mnar0.3-theta1.15",
+      "design": {
+        "sessions": 12,
+        "cases": 1,
+        "pairs_per_cell": 30,
+        "theta_log": 0.13976194237515863,
+        "dependence": {
+          "session_sd": 0.05,
+          "case_sd": 0.1,
+          "interaction_sd": 0.03,
+          "pair_sd": 0.05,
+          "pair_autocorrelation": 0.5
+        },
+        "missingness": {
+          "kind": "mnar",
+          "probability": 0.3
+        }
+      },
+      "primary": false,
+      "replications": 2000,
+      "intervals": 2000,
+      "covered": 1780,
+      "coverage": 0.89,
+      "promote": 113,
+      "block": 12,
+      "inconclusive": 1875,
+      "false_promote_rate": 0.0565,
+      "endpoint_promote": 193,
+      "gate_withheld": 95,
+      "below_min_sessions": 0,
+      "mean_missing_cells": 1.783,
+      "mean_excluded_cases": 0.0,
+      "median_width_log": 0.07083681046345847,
+      "coverage_pass": false,
+      "false_promote_pass": false
+    },
+    {
+      "id": "s12-c1-mnar0.3-theta1.3",
+      "design": {
+        "sessions": 12,
+        "cases": 1,
+        "pairs_per_cell": 30,
+        "theta_log": 0.26236426446749106,
+        "dependence": {
+          "session_sd": 0.05,
+          "case_sd": 0.1,
+          "interaction_sd": 0.03,
+          "pair_sd": 0.05,
+          "pair_autocorrelation": 0.5
+        },
+        "missingness": {
+          "kind": "mnar",
+          "probability": 0.3
+        }
+      },
+      "primary": false,
+      "replications": 2000,
+      "intervals": 2000,
+      "covered": 1747,
+      "coverage": 0.8735,
+      "promote": 1998,
+      "block": 0,
+      "inconclusive": 2,
+      "false_promote_rate": null,
+      "endpoint_promote": 2000,
+      "gate_withheld": 2,
+      "below_min_sessions": 1,
+      "mean_missing_cells": 1.7585,
+      "mean_excluded_cases": 0.0,
+      "median_width_log": 0.07105600049574935,
+      "coverage_pass": false,
+      "false_promote_pass": true
+    },
+    {
+      "id": "s12-c5-none-theta1",
+      "design": {
+        "sessions": 12,
+        "cases": 5,
+        "pairs_per_cell": 30,
+        "theta_log": 0.0,
+        "dependence": {
+          "session_sd": 0.05,
+          "case_sd": 0.1,
+          "interaction_sd": 0.03,
+          "pair_sd": 0.05,
+          "pair_autocorrelation": 0.5
+        },
+        "missingness": {
+          "kind": "none"
+        }
+      },
+      "primary": true,
+      "replications": 2000,
+      "intervals": 2000,
+      "covered": 1996,
+      "coverage": 0.998,
+      "promote": 0,
+      "block": 1128,
+      "inconclusive": 872,
+      "false_promote_rate": 0.0,
+      "endpoint_promote": 0,
+      "gate_withheld": 167,
+      "below_min_sessions": 0,
+      "mean_missing_cells": 0.0,
+      "mean_excluded_cases": 0.0,
+      "median_width_log": 0.24320792825047058,
+      "coverage_pass": true,
+      "false_promote_pass": true
+    },
+    {
+      "id": "s12-c5-none-theta1.15",
+      "design": {
+        "sessions": 12,
+        "cases": 5,
+        "pairs_per_cell": 30,
+        "theta_log": 0.13976194237515863,
+        "dependence": {
+          "session_sd": 0.05,
+          "case_sd": 0.1,
+          "interaction_sd": 0.03,
+          "pair_sd": 0.05,
+          "pair_autocorrelation": 0.5
+        },
+        "missingness": {
+          "kind": "none"
+        }
+      },
+      "primary": true,
+      "replications": 2000,
+      "intervals": 2000,
+      "covered": 1998,
+      "coverage": 0.999,
+      "promote": 0,
+      "block": 0,
+      "inconclusive": 2000,
+      "false_promote_rate": 0.0,
+      "endpoint_promote": 1,
+      "gate_withheld": 2,
+      "below_min_sessions": 0,
+      "mean_missing_cells": 0.0,
+      "mean_excluded_cases": 0.0,
+      "median_width_log": 0.2400719133956158,
+      "coverage_pass": true,
+      "false_promote_pass": true
+    },
+    {
+      "id": "s12-c5-none-theta1.3",
+      "design": {
+        "sessions": 12,
+        "cases": 5,
+        "pairs_per_cell": 30,
+        "theta_log": 0.26236426446749106,
+        "dependence": {
+          "session_sd": 0.05,
+          "case_sd": 0.1,
+          "interaction_sd": 0.03,
+          "pair_sd": 0.05,
+          "pair_autocorrelation": 0.5
+        },
+        "missingness": {
+          "kind": "none"
+        }
+      },
+      "primary": true,
+      "replications": 2000,
+      "intervals": 2000,
+      "covered": 1995,
+      "coverage": 0.9975,
+      "promote": 903,
+      "block": 0,
+      "inconclusive": 1097,
+      "false_promote_rate": null,
+      "endpoint_promote": 1085,
+      "gate_withheld": 182,
+      "below_min_sessions": 0,
+      "mean_missing_cells": 0.0,
+      "mean_excluded_cases": 0.0,
+      "median_width_log": 0.23720095546803954,
+      "coverage_pass": true,
+      "false_promote_pass": true
+    },
+    {
+      "id": "s12-c5-mcar0.1-theta1",
+      "design": {
+        "sessions": 12,
+        "cases": 5,
+        "pairs_per_cell": 30,
+        "theta_log": 0.0,
+        "dependence": {
+          "session_sd": 0.05,
+          "case_sd": 0.1,
+          "interaction_sd": 0.03,
+          "pair_sd": 0.05,
+          "pair_autocorrelation": 0.5
+        },
+        "missingness": {
+          "kind": "mcar",
+          "probability": 0.1
+        }
+      },
+      "primary": true,
+      "replications": 2000,
+      "intervals": 2000,
+      "covered": 2000,
+      "coverage": 1.0,
+      "promote": 0,
+      "block": 1147,
+      "inconclusive": 853,
+      "false_promote_rate": 0.0,
+      "endpoint_promote": 0,
+      "gate_withheld": 141,
+      "below_min_sessions": 0,
+      "mean_missing_cells": 6.0805,
+      "mean_excluded_cases": 0.0,
+      "median_width_log": 0.2387910654522084,
+      "coverage_pass": true,
+      "false_promote_pass": true
+    },
+    {
+      "id": "s12-c5-mcar0.1-theta1.15",
+      "design": {
+        "sessions": 12,
+        "cases": 5,
+        "pairs_per_cell": 30,
+        "theta_log": 0.13976194237515863,
+        "dependence": {
+          "session_sd": 0.05,
+          "case_sd": 0.1,
+          "interaction_sd": 0.03,
+          "pair_sd": 0.05,
+          "pair_autocorrelation": 0.5
+        },
+        "missingness": {
+          "kind": "mcar",
+          "probability": 0.1
+        }
+      },
+      "primary": true,
+      "replications": 2000,
+      "intervals": 2000,
+      "covered": 1999,
+      "coverage": 0.9995,
+      "promote": 0,
+      "block": 0,
+      "inconclusive": 2000,
+      "false_promote_rate": 0.0,
+      "endpoint_promote": 1,
+      "gate_withheld": 1,
+      "below_min_sessions": 0,
+      "mean_missing_cells": 5.985,
+      "mean_excluded_cases": 0.0,
+      "median_width_log": 0.2394759648843853,
+      "coverage_pass": true,
+      "false_promote_pass": true
+    },
+    {
+      "id": "s12-c5-mcar0.1-theta1.3",
+      "design": {
+        "sessions": 12,
+        "cases": 5,
+        "pairs_per_cell": 30,
+        "theta_log": 0.26236426446749106,
+        "dependence": {
+          "session_sd": 0.05,
+          "case_sd": 0.1,
+          "interaction_sd": 0.03,
+          "pair_sd": 0.05,
+          "pair_autocorrelation": 0.5
+        },
+        "missingness": {
+          "kind": "mcar",
+          "probability": 0.1
+        }
+      },
+      "primary": true,
+      "replications": 2000,
+      "intervals": 2000,
+      "covered": 1994,
+      "coverage": 0.997,
+      "promote": 962,
+      "block": 0,
+      "inconclusive": 1038,
+      "false_promote_rate": null,
+      "endpoint_promote": 1107,
+      "gate_withheld": 145,
+      "below_min_sessions": 0,
+      "mean_missing_cells": 6.0705,
+      "mean_excluded_cases": 0.0,
+      "median_width_log": 0.2410348462372292,
+      "coverage_pass": true,
+      "false_promote_pass": true
+    },
+    {
+      "id": "s12-c5-mcar0.3-theta1",
+      "design": {
+        "sessions": 12,
+        "cases": 5,
+        "pairs_per_cell": 30,
+        "theta_log": 0.0,
+        "dependence": {
+          "session_sd": 0.05,
+          "case_sd": 0.1,
+          "interaction_sd": 0.03,
+          "pair_sd": 0.05,
+          "pair_autocorrelation": 0.5
+        },
+        "missingness": {
+          "kind": "mcar",
+          "probability": 0.3
+        }
+      },
+      "primary": true,
+      "replications": 2000,
+      "intervals": 2000,
+      "covered": 1996,
+      "coverage": 0.998,
+      "promote": 0,
+      "block": 1065,
+      "inconclusive": 935,
+      "false_promote_rate": 0.0,
+      "endpoint_promote": 0,
+      "gate_withheld": 212,
+      "below_min_sessions": 0,
+      "mean_missing_cells": 18.063,
+      "mean_excluded_cases": 0.0,
+      "median_width_log": 0.24597526383272109,
+      "coverage_pass": true,
+      "false_promote_pass": true
+    },
+    {
+      "id": "s12-c5-mcar0.3-theta1.15",
+      "design": {
+        "sessions": 12,
+        "cases": 5,
+        "pairs_per_cell": 30,
+        "theta_log": 0.13976194237515863,
+        "dependence": {
+          "session_sd": 0.05,
+          "case_sd": 0.1,
+          "interaction_sd": 0.03,
+          "pair_sd": 0.05,
+          "pair_autocorrelation": 0.5
+        },
+        "missingness": {
+          "kind": "mcar",
+          "probability": 0.3
+        }
+      },
+      "primary": true,
+      "replications": 2000,
+      "intervals": 2000,
+      "covered": 1994,
+      "coverage": 0.997,
+      "promote": 0,
+      "block": 1,
+      "inconclusive": 1999,
+      "false_promote_rate": 0.0,
+      "endpoint_promote": 3,
+      "gate_withheld": 5,
+      "below_min_sessions": 0,
+      "mean_missing_cells": 18.026,
+      "mean_excluded_cases": 0.0,
+      "median_width_log": 0.24331808291147303,
+      "coverage_pass": true,
+      "false_promote_pass": true
+    },
+    {
+      "id": "s12-c5-mcar0.3-theta1.3",
+      "design": {
+        "sessions": 12,
+        "cases": 5,
+        "pairs_per_cell": 30,
+        "theta_log": 0.26236426446749106,
+        "dependence": {
+          "session_sd": 0.05,
+          "case_sd": 0.1,
+          "interaction_sd": 0.03,
+          "pair_sd": 0.05,
+          "pair_autocorrelation": 0.5
+        },
+        "missingness": {
+          "kind": "mcar",
+          "probability": 0.3
+        }
+      },
+      "primary": true,
+      "replications": 2000,
+      "intervals": 2000,
+      "covered": 1996,
+      "coverage": 0.998,
+      "promote": 859,
+      "block": 0,
+      "inconclusive": 1141,
+      "false_promote_rate": null,
+      "endpoint_promote": 1055,
+      "gate_withheld": 196,
+      "below_min_sessions": 0,
+      "mean_missing_cells": 18.1925,
+      "mean_excluded_cases": 0.0,
+      "median_width_log": 0.25016697165929436,
+      "coverage_pass": true,
+      "false_promote_pass": true
+    },
+    {
+      "id": "s12-c5-mnar0.3-theta1",
+      "design": {
+        "sessions": 12,
+        "cases": 5,
+        "pairs_per_cell": 30,
+        "theta_log": 0.0,
+        "dependence": {
+          "session_sd": 0.05,
+          "case_sd": 0.1,
+          "interaction_sd": 0.03,
+          "pair_sd": 0.05,
+          "pair_autocorrelation": 0.5
+        },
+        "missingness": {
+          "kind": "mnar",
+          "probability": 0.3
+        }
+      },
+      "primary": false,
+      "replications": 2000,
+      "intervals": 2000,
+      "covered": 1995,
+      "coverage": 0.9975,
+      "promote": 0,
+      "block": 1051,
+      "inconclusive": 949,
+      "false_promote_rate": 0.0,
+      "endpoint_promote": 0,
+      "gate_withheld": 184,
+      "below_min_sessions": 0,
+      "mean_missing_cells": 9.0265,
+      "mean_excluded_cases": 0.0,
+      "median_width_log": 0.23706290482033948,
+      "coverage_pass": true,
+      "false_promote_pass": true
+    },
+    {
+      "id": "s12-c5-mnar0.3-theta1.15",
+      "design": {
+        "sessions": 12,
+        "cases": 5,
+        "pairs_per_cell": 30,
+        "theta_log": 0.13976194237515863,
+        "dependence": {
+          "session_sd": 0.05,
+          "case_sd": 0.1,
+          "interaction_sd": 0.03,
+          "pair_sd": 0.05,
+          "pair_autocorrelation": 0.5
+        },
+        "missingness": {
+          "kind": "mnar",
+          "probability": 0.3
+        }
+      },
+      "primary": false,
+      "replications": 2000,
+      "intervals": 2000,
+      "covered": 1993,
+      "coverage": 0.9965,
+      "promote": 1,
+      "block": 0,
+      "inconclusive": 1999,
+      "false_promote_rate": 0.0005,
+      "endpoint_promote": 7,
+      "gate_withheld": 6,
+      "below_min_sessions": 0,
+      "mean_missing_cells": 8.96,
+      "mean_excluded_cases": 0.0,
+      "median_width_log": 0.24091247382895065,
+      "coverage_pass": true,
+      "false_promote_pass": true
+    },
+    {
+      "id": "s12-c5-mnar0.3-theta1.3",
+      "design": {
+        "sessions": 12,
+        "cases": 5,
+        "pairs_per_cell": 30,
+        "theta_log": 0.26236426446749106,
+        "dependence": {
+          "session_sd": 0.05,
+          "case_sd": 0.1,
+          "interaction_sd": 0.03,
+          "pair_sd": 0.05,
+          "pair_autocorrelation": 0.5
+        },
+        "missingness": {
+          "kind": "mnar",
+          "probability": 0.3
+        }
+      },
+      "primary": false,
+      "replications": 2000,
+      "intervals": 2000,
+      "covered": 1996,
+      "coverage": 0.998,
+      "promote": 1038,
+      "block": 0,
+      "inconclusive": 962,
+      "false_promote_rate": null,
+      "endpoint_promote": 1203,
+      "gate_withheld": 165,
+      "below_min_sessions": 0,
+      "mean_missing_cells": 8.9935,
+      "mean_excluded_cases": 0.0,
+      "median_width_log": 0.24305729134002912,
+      "coverage_pass": true,
+      "false_promote_pass": true
+    }
+  ],
+  "primary_pass": false,
+  "sensitivity_pass": false,
+  "verdict": "FAIL"
+}
