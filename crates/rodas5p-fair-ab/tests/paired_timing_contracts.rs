@@ -366,7 +366,10 @@ fn pairs_of_one_process_are_not_resampled_as_independent() {
         .map(|case| case.with_process_blocks(Vec::new()))
         .collect::<Vec<_>>();
     let interval = case_clustered_bootstrap(&one_process, &protocol).unwrap();
-    assert_eq!(interval.independent_blocks, 1);
+    // Unlabelled, it is resampled as one unit and counts as no session
+    // (re-audit R2, R2-STAT-01).
+    assert_eq!(interval.independent_blocks, 0);
+    assert_eq!(interval.unlabeled_cases, 1);
     assert_eq!(interval.lower.to_bits(), interval.upper.to_bits());
     assert_eq!(
         paired_timing_decision(&interval, 1.15),

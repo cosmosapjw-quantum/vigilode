@@ -1077,6 +1077,7 @@ const REFERENCE_ONLY_NOT_EVALUATED: &str =
 
 const WALL_NOT_EVALUATED: &str = "wall-time criterion not evaluated: no authoritative paired timing assessment (A/A control, at least six independent sessions) was supplied; repeated medians are recorded only";
 
+const WALL_REJECTED: &str = "wall-time criterion not evaluated: the paired timing record is not a confirmatory, self-consistent assessment";
 const WALL_INCONCLUSIVE: &str = "wall-time criterion not evaluated: the paired timing interval is inconclusive or its A/A control is not authoritative";
 
 /// Wall time decides Promote/Hold only through a paired timing assessment
@@ -1092,16 +1093,17 @@ enum WallCriterion {
 }
 
 fn wall_criterion(paired: Option<&PairedTimingAssessment>) -> WallCriterion {
-    match paired {
-        None => WallCriterion::NotEvaluated(WALL_NOT_EVALUATED),
-        Some(assessment) if !assessment.timing_authoritative => {
-            WallCriterion::NotEvaluated(WALL_INCONCLUSIVE)
-        }
-        Some(assessment) => match assessment.gate_decision {
-            PairedTimingDecision::Promote => WallCriterion::Passed,
-            PairedTimingDecision::Block => WallCriterion::Failed,
-            PairedTimingDecision::Inconclusive => WallCriterion::NotEvaluated(WALL_INCONCLUSIVE),
-        },
+    let Some(assessment) = paired else {
+        return WallCriterion::NotEvaluated(WALL_NOT_EVALUATED);
+    };
+    // The gate is re-derived from the record's own fields: another schema,
+    // a preview protocol or a decision its interval does not imply never
+    // decides (re-audit R2, R2-STAT-03).
+    match assessment.verified_gate_decision() {
+        Err(_) => WallCriterion::NotEvaluated(WALL_REJECTED),
+        Ok(PairedTimingDecision::Promote) => WallCriterion::Passed,
+        Ok(PairedTimingDecision::Block) => WallCriterion::Failed,
+        Ok(PairedTimingDecision::Inconclusive) => WallCriterion::NotEvaluated(WALL_INCONCLUSIVE),
     }
 }
 

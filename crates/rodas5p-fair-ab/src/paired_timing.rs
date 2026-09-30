@@ -19,16 +19,26 @@
 //!   in the same sessions cannot narrow the session part of the interval
 //!   (external re-audit 6.1; audit 2026-09-30, B-01). Resampling cases as
 //!   well keeps the interval conservative for a case population;
-//! * process labels are global session identities shared across cases; a
-//!   case without labels is one session of its own. A decision needs at
-//!   least [`PAIRED_TIMING_MIN_INDEPENDENT_BLOCKS`] distinct sessions over
+//! * process labels are global session identities shared across cases. A
+//!   case without labels is resampled as one session of its own but counts
+//!   as no session: a missing identity cannot be told apart from a shared
+//!   process, so any unlabelled case makes the decision Inconclusive (re-audit
+//!   R2, R2-STAT-01). A decision needs at least
+//!   [`PAIRED_TIMING_MIN_INDEPENDENT_BLOCKS`] distinct labelled sessions over
 //!   all cases; with fewer, it is Inconclusive;
 //! * the decision is three-valued: Promote iff the interval's lower bound is
 //!   at least the required speedup, Block iff its upper bound is below it,
 //!   otherwise Inconclusive;
-//! * an A/A control (reference against reference, same session) makes the
-//!   whole timing non-authoritative when its interval excludes `1.0` or its
-//!   log half-width exceeds `ln(required) / 2`.
+//! * an A/A control (reference against reference, same sessions) makes the
+//!   whole timing non-authoritative when its interval excludes `1.0`, its
+//!   log half-width exceeds `ln(required) / 2`, or its labelled sessions are
+//!   not exactly the candidate's (re-audit R2, R2-STAT-01);
+//! * only the confirmatory protocol ([`PairedTimingProtocol::is_confirmatory`]:
+//!   at least the default resamples, confidence and required speedup) may
+//!   gate; a weaker protocol is a preview, recorded but never authoritative
+//!   (re-audit R2, R2-STAT-03: one resample gave a zero-width interval that
+//!   promoted), and a consumer re-derives the gate from the recorded fields
+//!   with [`PairedTimingAssessment::verified_gate_decision`].
 //!
 //! Everything except [`detect_timing_host_metadata`] and the caller-supplied
 //! clock of [`measure_paired_case`] is a pure function of its inputs and seed.
@@ -46,7 +56,9 @@ pub const PAIRED_TIMING_CONFIDENCE_LEVEL: f64 = 0.95;
 pub const PAIRED_TIMING_REQUIRED_SPEEDUP: f64 = 1.15;
 /// Independent process blocks (over all cases) a decision needs.
 pub const PAIRED_TIMING_MIN_INDEPENDENT_BLOCKS: usize = 6;
-const PAIRED_TIMING_SCHEMA: &str = "vigilode-paired-timing-v1";
+/// v2: unlabelled cases count as no session, A/A sessions must match, and
+/// only a confirmatory protocol gates (re-audit R2).
+pub const PAIRED_TIMING_SCHEMA: &str = "vigilode-paired-timing-v2";
 const UNKNOWN: &str = "unknown";
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -74,6 +86,19 @@ impl PairedTimingProtocol {
             minimum_sample_seconds: 2.0e-3,
             maximum_batch_iterations: 10_000,
         }
+    }
+
+    /// True when the protocol is at least the confirmatory one: the
+    /// minimum warmups and pairs (which [`Self::validate`] enforces), at
+    /// least [`PAIRED_TIMING_BOOTSTRAP_RESAMPLES`] resamples, a confidence
+    /// level of at least [`PAIRED_TIMING_CONFIDENCE_LEVEL`] and a required
+    /// speedup of at least [`PAIRED_TIMING_REQUIRED_SPEEDUP`]. Anything
+    /// weaker is a preview and never gates.
+    pub fn is_confirmatory(&self) -> bool {
+        self.validate().is_ok()
+            && self.bootstrap_resamples >= PAIRED_TIMING_BOOTSTRAP_RESAMPLES
+            && self.confidence_level >= PAIRED_TIMING_CONFIDENCE_LEVEL
+            && self.required_speedup >= PAIRED_TIMING_REQUIRED_SPEEDUP
     }
 
     pub fn validate(&self) -> FairResult<()> {
@@ -308,6 +333,27 @@ impl PairedTimingCase {
     }
 }
 
+/// [`measure_paired_case`] in a declared global session: every pair is
+/// labelled `session`. A case measured without a session is never
+/// authoritative (re-audit R2, R2-STAT-01).
+pub fn measure_paired_case_in_session<C, R, K>(
+    case_id: impl Into<String>,
+    session: u32,
+    protocol: &PairedTimingProtocol,
+    candidate: C,
+    reference: R,
+    clock: K,
+) -> FairResult<PairedTimingCase>
+where
+    C: FnMut() -> FairResult<()>,
+    R: FnMut() -> FairResult<()>,
+    K: FnMut() -> f64,
+{
+    let case = measure_paired_case(case_id, protocol, candidate, reference, clock)?;
+    let pairs = case.candidate_seconds.len();
+    Ok(case.with_process_blocks(vec![session; pairs]))
+}
+
 /// Run one case: `protocol.warmups` alternating warmup rounds of both arms,
 /// batch calibration from the minimum warmup sample, then `protocol.pairs`
 /// batched pairs in seeded ABBA order.  `clock` returns monotonic seconds;
@@ -402,9 +448,24 @@ pub struct SpeedupInterval {
     pub confidence_level: f64,
     pub resamples: usize,
     pub seed: u64,
-    /// Independent process blocks over all cases, the resampling units.
+    /// Distinct labelled sessions over all cases (re-audit R2: unlabelled
+    /// cases are not counted).
     #[serde(default)]
     pub independent_blocks: usize,
+    /// The labelled sessions, sorted.
+    #[serde(default)]
+    pub sessions: Vec<u32>,
+    /// Cases without session labels; any makes the interval non-deciding.
+    #[serde(default)]
+    pub unlabeled_cases: usize,
+    /// Simulation uncertainty of the percentile endpoints: the replicate
+    /// order statistics two binomial standard deviations either side of each
+    /// endpoint's position, in log form. The endpoints themselves are those
+    /// of the finite-resample bootstrap distribution, not of the exact one.
+    #[serde(default)]
+    pub lower_log_simulation_band: [f64; 2],
+    #[serde(default)]
+    pub upper_log_simulation_band: [f64; 2],
 }
 
 impl SpeedupInterval {
@@ -455,7 +516,17 @@ pub fn case_clustered_bootstrap(
         .collect::<BTreeSet<_>>()
         .into_iter()
         .collect::<Vec<_>>();
-    let independent_blocks = sessions.len();
+    let labelled = sessions
+        .iter()
+        .filter_map(|key| match key {
+            SessionKey::Global(label) => Some(*label),
+            SessionKey::OwnCase(_) => None,
+        })
+        .collect::<Vec<_>>();
+    let unlabeled_cases = cases
+        .iter()
+        .filter(|case| case.process_blocks.is_empty())
+        .count();
     // For each case, its pairs by session index.
     let by_session = per_case
         .iter()
@@ -511,6 +582,14 @@ pub fn case_clustered_bootstrap(
     let tail = 0.5 * (1.0 - protocol.confidence_level);
     let lower_log = quantile_sorted(&replicates, tail);
     let upper_log = quantile_sorted(&replicates, 1.0 - tail);
+    let band = |probability: f64| {
+        let resamples = replicates.len() as f64;
+        let spread = 2.0 * (resamples * probability * (1.0 - probability)).sqrt() / resamples;
+        [
+            quantile_sorted(&replicates, (probability - spread).max(0.0)),
+            quantile_sorted(&replicates, (probability + spread).min(1.0)),
+        ]
+    };
     Ok(SpeedupInterval {
         point_log,
         lower_log,
@@ -521,7 +600,11 @@ pub fn case_clustered_bootstrap(
         confidence_level: protocol.confidence_level,
         resamples: protocol.bootstrap_resamples,
         seed: protocol.seed,
-        independent_blocks,
+        independent_blocks: labelled.len(),
+        sessions: labelled,
+        unlabeled_cases,
+        lower_log_simulation_band: band(tail),
+        upper_log_simulation_band: band(1.0 - tail),
     })
 }
 
@@ -537,7 +620,9 @@ pub fn paired_timing_decision(
     interval: &SpeedupInterval,
     required_speedup: f64,
 ) -> PairedTimingDecision {
-    if interval.independent_blocks < PAIRED_TIMING_MIN_INDEPENDENT_BLOCKS {
+    if interval.independent_blocks < PAIRED_TIMING_MIN_INDEPENDENT_BLOCKS
+        || interval.unlabeled_cases > 0
+    {
         PairedTimingDecision::Inconclusive
     } else if interval.lower >= required_speedup {
         PairedTimingDecision::Promote
@@ -570,7 +655,8 @@ pub fn assess_aa_control(
     Ok(AaControlAssessment {
         authoritative: contains_unity
             && half_width_log <= maximum_half_width_log
-            && interval.independent_blocks >= PAIRED_TIMING_MIN_INDEPENDENT_BLOCKS,
+            && interval.independent_blocks >= PAIRED_TIMING_MIN_INDEPENDENT_BLOCKS
+            && interval.unlabeled_cases == 0,
         interval,
         contains_unity,
         half_width_log,
@@ -675,11 +761,131 @@ pub struct PairedTimingAssessment {
     /// Three-valued decision from the candidate interval alone.
     pub decision: PairedTimingDecision,
     pub aa_control: Option<AaControlAssessment>,
-    /// True only with an A/A control whose interval contains 1.0 and whose
-    /// half-width resolves the required effect.
+    /// True only with an A/A control whose interval contains 1.0, whose
+    /// half-width resolves the required effect and whose labelled sessions
+    /// are exactly the candidate's.
     pub timing_authoritative: bool,
-    /// `decision` when authoritative, otherwise `Inconclusive`.
+    /// The A/A control measured in exactly the candidate's sessions.
+    #[serde(default)]
+    pub aa_sessions_match: bool,
+    /// The protocol is confirmatory ([`PairedTimingProtocol::is_confirmatory`]).
+    #[serde(default)]
+    pub confirmatory: bool,
+    /// `decision` when authoritative and confirmatory, otherwise
+    /// `Inconclusive`.
     pub gate_decision: PairedTimingDecision,
+    /// SHA-256 of the JSON of the raw candidate cases and A/A cases (with
+    /// their session labels) this record was computed from, so a record can
+    /// be tied to its raw receipt ([`Self::verify_against_raw`]).
+    #[serde(default)]
+    pub raw_cases_sha256: String,
+}
+
+fn raw_cases_digest(
+    cases: &[PairedTimingCase],
+    aa_cases: Option<&[PairedTimingCase]>,
+) -> FairResult<String> {
+    let json = serde_json::to_vec(&(cases, aa_cases))
+        .map_err(|error| FairError::Invalid(format!("paired timing raw cases: {error}")))?;
+    Ok(rodas5p_core::sha256_hex(&json))
+}
+
+impl PairedTimingAssessment {
+    /// Recompute the whole record from the raw cases it names and require
+    /// bit equality. Unlike [`Self::verified_gate_decision`], this also
+    /// catches edited interval values, which are self-consistent by
+    /// construction once decision and bounds are edited together.
+    pub fn verify_against_raw(
+        &self,
+        cases: &[PairedTimingCase],
+        aa_cases: Option<&[PairedTimingCase]>,
+    ) -> FairResult<PairedTimingDecision> {
+        if raw_cases_digest(cases, aa_cases)? != self.raw_cases_sha256 {
+            return Err(FairError::Invalid(
+                "paired timing record: raw cases do not match the recorded digest".into(),
+            ));
+        }
+        let recomputed = assess_paired_timing(&self.protocol, cases, aa_cases, self.host.clone())?;
+        if &recomputed != self {
+            return Err(FairError::Invalid(
+                "paired timing record: fields differ from the recomputation".into(),
+            ));
+        }
+        self.verified_gate_decision()
+    }
+
+    /// The gate decision re-derived from the recorded fields, for a
+    /// consumer that did not run the assessment. It checks internal
+    /// consistency only: interval values edited together with the decision
+    /// pass it; [`Self::verify_against_raw`] catches those. An assessment with another
+    /// schema, a preview protocol, an interval computed under other
+    /// settings, or a recorded decision or authority flag that its own
+    /// fields do not imply is rejected (re-audit R2, R2-STAT-03).
+    pub fn verified_gate_decision(&self) -> FairResult<PairedTimingDecision> {
+        let reject = |reason: &str| {
+            Err(FairError::Invalid(format!(
+                "paired timing record: {reason}"
+            )))
+        };
+        if self.schema != PAIRED_TIMING_SCHEMA {
+            return reject("schema is not the current one");
+        }
+        if !self.protocol.is_confirmatory() || !self.confirmatory {
+            return reject("protocol is not confirmatory");
+        }
+        let settings = |interval: &SpeedupInterval| {
+            interval.resamples == self.protocol.bootstrap_resamples
+                && interval.confidence_level == self.protocol.confidence_level
+                && interval.seed == self.protocol.seed
+                && interval.independent_blocks == interval.sessions.len()
+                && interval.sessions.windows(2).all(|pair| pair[0] < pair[1])
+                && interval.lower <= interval.upper
+        };
+        if !settings(&self.corpus) {
+            return reject("corpus interval does not match the protocol");
+        }
+        let decision = paired_timing_decision(&self.corpus, self.protocol.required_speedup);
+        if decision != self.decision {
+            return reject("decision does not follow from the corpus interval");
+        }
+        let Some(control) = &self.aa_control else {
+            if self.timing_authoritative
+                || self.aa_sessions_match
+                || self.gate_decision != PairedTimingDecision::Inconclusive
+            {
+                return reject("authority recorded without an A/A control");
+            }
+            return Ok(PairedTimingDecision::Inconclusive);
+        };
+        if !settings(&control.interval) {
+            return reject("A/A interval does not match the protocol");
+        }
+        let maximum = 0.5 * self.protocol.required_speedup.ln();
+        let control_authoritative = control.interval.contains(1.0)
+            && control.interval.half_width_log() <= maximum
+            && control.interval.independent_blocks >= PAIRED_TIMING_MIN_INDEPENDENT_BLOCKS
+            && control.interval.unlabeled_cases == 0;
+        if control.authoritative != control_authoritative {
+            return reject("A/A authority does not follow from its interval");
+        }
+        let sessions_match = self.corpus.sessions == control.interval.sessions;
+        if sessions_match != self.aa_sessions_match {
+            return reject("A/A session match flag does not follow from the sessions");
+        }
+        let authoritative = control_authoritative && sessions_match;
+        if authoritative != self.timing_authoritative {
+            return reject("timing authority does not follow from the A/A control");
+        }
+        let gate = if authoritative {
+            decision
+        } else {
+            PairedTimingDecision::Inconclusive
+        };
+        if gate != self.gate_decision {
+            return reject("gate decision does not follow from its fields");
+        }
+        Ok(gate)
+    }
 }
 
 /// Full paired assessment.  Without an A/A control the timing is recorded
@@ -695,9 +901,14 @@ pub fn assess_paired_timing(
     let aa_control = aa_cases
         .map(|aa_cases| assess_aa_control(aa_cases, protocol))
         .transpose()?;
-    let timing_authoritative = aa_control
+    let aa_sessions_match = aa_control
         .as_ref()
-        .is_some_and(|control| control.authoritative);
+        .is_some_and(|control| control.interval.sessions == corpus.sessions);
+    let timing_authoritative = aa_sessions_match
+        && aa_control
+            .as_ref()
+            .is_some_and(|control| control.authoritative);
+    let confirmatory = protocol.is_confirmatory();
     let summaries = cases
         .iter()
         .map(|case| {
@@ -723,7 +934,10 @@ pub fn assess_paired_timing(
         decision,
         aa_control,
         timing_authoritative,
-        gate_decision: if timing_authoritative {
+        aa_sessions_match,
+        confirmatory,
+        raw_cases_sha256: raw_cases_digest(cases, aa_cases)?,
+        gate_decision: if timing_authoritative && confirmatory {
             decision
         } else {
             PairedTimingDecision::Inconclusive
