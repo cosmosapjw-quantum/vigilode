@@ -58,7 +58,15 @@ pub const PAIRED_TIMING_REQUIRED_SPEEDUP: f64 = 1.15;
 pub const PAIRED_TIMING_MIN_INDEPENDENT_BLOCKS: usize = 6;
 /// v2: unlabelled cases count as no session, A/A sessions must match, and
 /// only a confirmatory protocol gates (re-audit R2).
-pub const PAIRED_TIMING_SCHEMA: &str = "vigilode-paired-timing-v2";
+/// v3: the decision also needs the Monte-Carlo gate (re-audit R3,
+/// STAT-DEV-03).
+pub const PAIRED_TIMING_SCHEMA: &str = "vigilode-paired-timing-v3";
+/// Predeclared two-sided failure probability of the Monte-Carlo gate.
+pub const PAIRED_TIMING_MC_FAILURE_BUDGET: f64 = 0.01;
+/// The number of resamples is the protocol's and is never extended after
+/// seeing data; an extension would need a predeclared schedule with the
+/// failure budget split over its stages.
+pub const PAIRED_TIMING_MC_EXTENSION_POLICY: &str = "fixed-resamples-no-data-adaptive-extension";
 const UNKNOWN: &str = "unknown";
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -541,6 +549,10 @@ pub struct SpeedupInterval {
     pub lower_log_simulation_band: [f64; 2],
     #[serde(default)]
     pub upper_log_simulation_band: [f64; 2],
+    /// Replicates strictly below `ln(required_speedup)` (compared in log
+    /// space), for the Monte-Carlo gate.
+    #[serde(default)]
+    pub replicates_below_required: usize,
 }
 
 impl SpeedupInterval {
@@ -654,6 +666,11 @@ pub fn case_clustered_bootstrap(
         }
     }
     replicates.sort_by(f64::total_cmp);
+    let threshold_log = protocol.required_speedup.ln();
+    let replicates_below_required = replicates
+        .iter()
+        .filter(|value| **value < threshold_log)
+        .count();
     let tail = 0.5 * (1.0 - protocol.confidence_level);
     let lower_log = quantile_sorted(&replicates, tail);
     let upper_log = quantile_sorted(&replicates, 1.0 - tail);
@@ -680,7 +697,63 @@ pub fn case_clustered_bootstrap(
         unlabeled_cases,
         lower_log_simulation_band: band(tail),
         upper_log_simulation_band: band(1.0 - tail),
+        replicates_below_required,
     })
+}
+
+/// The Monte-Carlo error gate on a finite-resample decision (re-audit R3,
+/// STAT-DEV-03).
+///
+/// With `K` of `B` replicates strictly below the threshold, the conditional
+/// probability `p` that a replicate falls below it lies in
+/// `[K/B - e, K/B + e]`, `e = sqrt(ln(2/delta) / (2B))` (Hoeffding), except
+/// with probability `delta` over the resampling. Promote needs `upper <
+/// tail`, Block needs `lower > 1 - tail`; anything else is Inconclusive
+/// (MC_UNRESOLVED). This bounds the simulation error of the resampling
+/// only; it says nothing about coverage of the population speedup.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct MonteCarloGate {
+    pub resamples: usize,
+    pub count_below: usize,
+    pub delta: f64,
+    pub tail: f64,
+    pub lower: f64,
+    pub upper: f64,
+    pub method: String,
+    pub decision: PairedTimingDecision,
+}
+
+pub fn monte_carlo_gate(
+    count_below: usize,
+    resamples: usize,
+    confidence_level: f64,
+    delta: f64,
+) -> MonteCarloGate {
+    let tail = 0.5 * (1.0 - confidence_level);
+    let b = resamples.max(1) as f64;
+    let epsilon = ((2.0 / delta).ln() / (2.0 * b)).sqrt();
+    let fraction = count_below as f64 / b;
+    let lower = (fraction - epsilon).max(0.0);
+    let upper = (fraction + epsilon).min(1.0);
+    let decision = if resamples == 0 {
+        PairedTimingDecision::Inconclusive
+    } else if upper < tail {
+        PairedTimingDecision::Promote
+    } else if lower > 1.0 - tail {
+        PairedTimingDecision::Block
+    } else {
+        PairedTimingDecision::Inconclusive
+    };
+    MonteCarloGate {
+        resamples,
+        count_below,
+        delta,
+        tail,
+        lower,
+        upper,
+        method: "hoeffding".into(),
+        decision,
+    }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -699,12 +772,28 @@ pub fn paired_timing_decision(
         || interval.unlabeled_cases > 0
     {
         PairedTimingDecision::Inconclusive
-    } else if interval.lower >= required_speedup {
-        PairedTimingDecision::Promote
-    } else if interval.upper < required_speedup {
-        PairedTimingDecision::Block
     } else {
-        PairedTimingDecision::Inconclusive
+        let endpoint = if interval.lower >= required_speedup {
+            PairedTimingDecision::Promote
+        } else if interval.upper < required_speedup {
+            PairedTimingDecision::Block
+        } else {
+            PairedTimingDecision::Inconclusive
+        };
+        // The percentile endpoints and the Monte-Carlo gate must agree: an
+        // endpoint decided by simulation noise is not decided (re-audit R3,
+        // STAT-DEV-03; the old endpoint rule is kept as the diagnostic).
+        let gate = monte_carlo_gate(
+            interval.replicates_below_required,
+            interval.resamples,
+            interval.confidence_level,
+            PAIRED_TIMING_MC_FAILURE_BUDGET,
+        );
+        if gate.decision == endpoint {
+            endpoint
+        } else {
+            PairedTimingDecision::Inconclusive
+        }
     }
 }
 

@@ -46,14 +46,15 @@ pub use paired_receipt::{
     measure_paired_session, merge_session_cases,
 };
 pub use paired_timing::{
-    AaControlAssessment, PAIRED_TIMING_BOOTSTRAP_RESAMPLES, PAIRED_TIMING_CONFIDENCE_LEVEL,
-    PAIRED_TIMING_MIN_INDEPENDENT_BLOCKS, PAIRED_TIMING_MIN_PAIRS, PAIRED_TIMING_MIN_WARMUPS,
-    PAIRED_TIMING_REQUIRED_SPEEDUP, PAIRED_TIMING_SCHEMA, PairedArm, PairedCaseSummary,
-    PairedTimingAssessment, PairedTimingCase, PairedTimingDecision, PairedTimingProtocol,
-    SpeedupInterval, TimingHostMetadata, abba_pair_order, assess_aa_control, assess_paired_timing,
-    calibrate_batch_iterations, case_clustered_bootstrap, detect_timing_host_metadata,
-    measure_paired_case, measure_paired_case_in_session, paired_timing_decision,
-    session_abba_order,
+    AaControlAssessment, MonteCarloGate, PAIRED_TIMING_BOOTSTRAP_RESAMPLES,
+    PAIRED_TIMING_CONFIDENCE_LEVEL, PAIRED_TIMING_MC_EXTENSION_POLICY,
+    PAIRED_TIMING_MC_FAILURE_BUDGET, PAIRED_TIMING_MIN_INDEPENDENT_BLOCKS, PAIRED_TIMING_MIN_PAIRS,
+    PAIRED_TIMING_MIN_WARMUPS, PAIRED_TIMING_REQUIRED_SPEEDUP, PAIRED_TIMING_SCHEMA, PairedArm,
+    PairedCaseSummary, PairedTimingAssessment, PairedTimingCase, PairedTimingDecision,
+    PairedTimingProtocol, SpeedupInterval, TimingHostMetadata, abba_pair_order, assess_aa_control,
+    assess_paired_timing, calibrate_batch_iterations, case_clustered_bootstrap,
+    detect_timing_host_metadata, measure_paired_case, measure_paired_case_in_session,
+    monte_carlo_gate, paired_timing_decision, session_abba_order,
 };
 pub use runner::{
     BenchmarkCell, BenchmarkPlan, ComparisonResult, SummaryRow, TraceRunResult,
