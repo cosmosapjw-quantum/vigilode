@@ -431,7 +431,7 @@ pub fn integrate_fixed_dense_observed(
     let mut hard_stops = HardStopCursor::new(sampling, t_span)?;
     let sabr_config = sabr_config.unwrap_or_default();
     let mut internal_steps = 0_usize;
-    while t < tf - crate::output::end_time_slack(tf) {
+    while t < tf {
         let (step, _hard_stop_landing) = hard_stops.limit_step(t, h, tf)?;
         let report = match method {
             IntegrationMethod::Sequential => {
@@ -544,7 +544,7 @@ pub fn integrate_adaptive_dense_observed_with_dense_error_control(
     }
     let config = linear_config.cloned().unwrap_or_default();
     let mut state = y0.to_vec();
-    let mut h = adaptive.initial_step.min(tf - t);
+    let mut h = adaptive.initial_step.min(crate::output::step_to(t, tf)?);
     let mut controller = AdaptiveControllerState::default();
     let mut counters = WorkCounters::default();
     let mut history = StageHistory::default();
@@ -556,8 +556,9 @@ pub fn integrate_adaptive_dense_observed_with_dense_error_control(
     let mut internal_steps = 0_usize;
 
     while t < tf && diagnostics.attempts < adaptive.max_attempts {
-        h = h.min(adaptive.max_step).min(tf - t);
-        if h < adaptive.min_step {
+        h = crate::output::end_step(t, h.min(adaptive.max_step), tf)?;
+        // A final piece that lands on tf is taken even below min_step.
+        if (h < adaptive.min_step && t + h < tf) || t + h == t {
             break;
         }
         let requested_h = h;
@@ -988,7 +989,7 @@ where
         .into());
     }
     let mut state = y0.to_vec();
-    let mut h = adaptive.initial_step.min(tf - t);
+    let mut h = adaptive.initial_step.min(crate::output::step_to(t, tf)?);
     let mut controller = AdaptiveControllerState::default();
     let mut counters = WorkCounters::default();
     let mut recycle = KrylovState::for_method(linear_config.method);
@@ -998,8 +999,9 @@ where
     let mut internal_steps = 0_usize;
 
     while t < tf && diagnostics.attempts < adaptive.max_attempts {
-        h = h.min(adaptive.max_step).min(tf - t);
-        if h < adaptive.min_step {
+        h = crate::output::end_step(t, h.min(adaptive.max_step), tf)?;
+        // A final piece that lands on tf is taken even below min_step.
+        if (h < adaptive.min_step && t + h < tf) || t + h == t {
             break;
         }
         let requested_h = h;
@@ -1177,7 +1179,7 @@ where
         }
     }
     diagnostics.fallback_steps = counters.fallback_steps as usize;
-    let success = t >= tf - crate::output::end_time_slack(tf);
+    let success = t >= tf;
     let observed = if success && collector.is_complete() {
         let (t, y, output_clipped_steps) = collector
             .finish()
@@ -1242,7 +1244,7 @@ pub fn integrate_homotopy_adaptive_dense_observed(
         .into());
     }
     let mut state = y0.to_vec();
-    let mut h = adaptive.initial_step.min(tf - t);
+    let mut h = adaptive.initial_step.min(crate::output::step_to(t, tf)?);
     let mut controller = AdaptiveControllerState::default();
     let mut counters = WorkCounters::default();
     let mut recycle = fallback_config.and_then(|config| KrylovState::for_method(config.method));
@@ -1252,8 +1254,9 @@ pub fn integrate_homotopy_adaptive_dense_observed(
     let mut internal_steps = 0_usize;
 
     while t < tf && diagnostics.attempts < adaptive.max_attempts {
-        h = h.min(adaptive.max_step).min(tf - t);
-        if h < adaptive.min_step {
+        h = crate::output::end_step(t, h.min(adaptive.max_step), tf)?;
+        // A final piece that lands on tf is taken even below min_step.
+        if (h < adaptive.min_step && t + h < tf) || t + h == t {
             break;
         }
         let requested_h = h;
@@ -1374,7 +1377,7 @@ pub fn integrate_transactional_q1_q2_adaptive_dense_observed(
         .into());
     }
     let mut state = y0.to_vec();
-    let mut h = adaptive.initial_step.min(tf - t);
+    let mut h = adaptive.initial_step.min(crate::output::step_to(t, tf)?);
     let mut controller = AdaptiveControllerState::default();
     let mut counters = WorkCounters::default();
     let mut collector = OutputCollector::new(sampling.output(), t_span, y0)?;
@@ -1384,8 +1387,9 @@ pub fn integrate_transactional_q1_q2_adaptive_dense_observed(
     let mut internal_steps = 0_usize;
 
     while t < tf && diagnostics.attempts < adaptive.max_attempts {
-        h = h.min(adaptive.max_step).min(tf - t);
-        if h < adaptive.min_step {
+        h = crate::output::end_step(t, h.min(adaptive.max_step), tf)?;
+        // A final piece that lands on tf is taken even below min_step.
+        if (h < adaptive.min_step && t + h < tf) || t + h == t {
             break;
         }
         let requested_h = h;
@@ -1505,7 +1509,7 @@ pub fn integrate_radau_fixed_dense_observed(
     let mut collector = OutputCollector::new(sampling.output(), t_span, y0)?;
     let mut hard_stops = HardStopCursor::new(sampling, t_span)?;
     let mut internal_steps = 0_usize;
-    while t < tf - crate::output::end_time_slack(tf) {
+    while t < tf {
         let (step, _hard_stop_landing) = hard_stops.limit_step(t, h, tf)?;
         let report = radau_step(problem, t, &state, step, config, &mut counters)?;
         let old_t = t;
@@ -1557,7 +1561,7 @@ pub fn integrate_bdf_fixed_dense_observed(
     let mut collector = OutputCollector::new(sampling.output(), t_span, y0)?;
     let mut hard_stops = HardStopCursor::new(sampling, t_span)?;
     let mut internal_steps = 0_usize;
-    while t < tf - crate::output::end_time_slack(tf) {
+    while t < tf {
         let (step, _hard_stop_shortened) = hard_stops.limit_step(t, h, tf)?;
         let report = bdf_step(
             problem,
@@ -1613,7 +1617,7 @@ pub fn integrate_radau_adaptive_dense_observed(
     let mut collector = OutputCollector::new(sampling.output(), t_span, y0)?;
     let mut hard_stops = HardStopCursor::new(sampling, t_span)?;
     let mut diagnostics = AdaptiveRunDiagnostics::default();
-    let mut h = adaptive.initial_step.min(tf - t);
+    let mut h = adaptive.initial_step.min(crate::output::step_to(t, tf)?);
     let mut internal_steps = 0_usize;
     let (estimator_order, estimator_id) = match config.stages {
         RadauIiaStages::One => (2, "radau-iia1-step-doubling"),
@@ -1622,8 +1626,9 @@ pub fn integrate_radau_adaptive_dense_observed(
     let mut previous_local_rejection = false;
 
     while t < tf && diagnostics.attempts < adaptive.max_attempts {
-        h = h.min(adaptive.max_step).min(tf - t);
-        if h < adaptive.min_step || 0.5 * h <= f64::MIN_POSITIVE {
+        h = crate::output::end_step(t, h.min(adaptive.max_step), tf)?;
+        // A final piece that lands on tf is taken even below min_step.
+        if (h < adaptive.min_step && t + h < tf) || 0.5 * h <= f64::MIN_POSITIVE || t + h == t {
             break;
         }
         let requested_h = h;
@@ -1749,12 +1754,13 @@ pub fn integrate_bdf_adaptive_dense_observed(
     let mut collector = OutputCollector::new(sampling.output(), t_span, y0)?;
     let mut hard_stops = HardStopCursor::new(sampling, t_span)?;
     let mut diagnostics = AdaptiveRunDiagnostics::default();
-    let mut h = adaptive.initial_step.min(tf - t);
+    let mut h = adaptive.initial_step.min(crate::output::step_to(t, tf)?);
     let mut internal_steps = 0_usize;
 
     while t < tf && diagnostics.attempts < adaptive.max_attempts {
-        h = h.min(adaptive.max_step).min(tf - t);
-        if h < adaptive.min_step || 0.5 * h <= f64::MIN_POSITIVE {
+        h = crate::output::end_step(t, h.min(adaptive.max_step), tf)?;
+        // A final piece that lands on tf is taken even below min_step.
+        if (h < adaptive.min_step && t + h < tf) || 0.5 * h <= f64::MIN_POSITIVE || t + h == t {
             break;
         }
         let requested_h = h;
@@ -1863,7 +1869,7 @@ fn dense_adaptive_result(
     internal_steps: usize,
     diagnostics: AdaptiveRunDiagnostics,
 ) -> DenseOutputResult<AdaptiveObservedIntegrationResult> {
-    let success = t >= tf - crate::output::end_time_slack(tf);
+    let success = t >= tf;
     let observed = if success {
         let (t, y, output_clipped_steps) = collector.finish()?;
         ObservedIntegrationResult {

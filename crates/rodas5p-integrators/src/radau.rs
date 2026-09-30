@@ -649,8 +649,9 @@ pub fn integrate_radau_fixed(
     let mut times = vec![t];
     let mut states = vec![state.clone()];
     let mut steps = 0;
-    while t < tf - 10.0 * f64::EPSILON * tf.abs().max(1.0) {
-        let step = h.min(tf - t);
+    while t < tf {
+        let step = crate::output::end_step(t, h, tf)?;
+        crate::output::require_progress(t, step)?;
         let report = radau_step(problem, t, &state, step, config, &mut counters)?;
         t = report.t_new;
         state = report.y_new;
@@ -685,7 +686,7 @@ pub fn integrate_radau_fixed_observed(
     let mut counters = WorkCounters::default();
     let mut collector = OutputCollector::new(output, t_span, y0)?;
     let mut internal_steps = 0_usize;
-    while t < tf - 10.0 * f64::EPSILON * tf.abs().max(1.0) {
+    while t < tf {
         let (step, clipped) = collector.limit_step(t, h, tf)?;
         let report = radau_step(problem, t, &state, step, config, &mut counters)?;
         t = report.t_new;
@@ -726,7 +727,7 @@ pub fn integrate_radau_adaptive_observed(
     let mut controller = AdaptiveControllerState::default();
     let mut collector = OutputCollector::new(output, t_span, y0)?;
     let mut diagnostics = AdaptiveRunDiagnostics::default();
-    let mut h = adaptive.initial_step.min(tf - t);
+    let mut h = adaptive.initial_step.min(crate::output::step_to(t, tf)?);
     let mut internal_steps = 0_usize;
     let (estimator_order, estimator_id) = match config.stages {
         RadauIiaStages::One => (2, RADAU1_ESTIMATOR_ID),
@@ -735,8 +736,9 @@ pub fn integrate_radau_adaptive_observed(
     let mut previous_local_rejection = false;
 
     while t < tf && diagnostics.attempts < adaptive.max_attempts {
-        h = h.min(adaptive.max_step).min(tf - t);
-        if h < adaptive.min_step || 0.5 * h <= f64::MIN_POSITIVE {
+        h = crate::output::end_step(t, h.min(adaptive.max_step), tf)?;
+        // A final piece that lands on tf is taken even below min_step.
+        if (h < adaptive.min_step && t + h < tf) || 0.5 * h <= f64::MIN_POSITIVE || t + h == t {
             break;
         }
         let requested_h = h;
@@ -824,7 +826,7 @@ pub fn integrate_radau_adaptive_observed(
         }
     }
 
-    let success = t >= tf - 10.0 * f64::EPSILON * tf.abs().max(1.0);
+    let success = t >= tf;
     let observed = if success {
         let (times, states, output_clipped_steps) = collector.finish()?;
         ObservedIntegrationResult {
