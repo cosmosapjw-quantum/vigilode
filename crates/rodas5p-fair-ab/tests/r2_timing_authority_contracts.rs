@@ -282,3 +282,54 @@ fn the_interval_reports_its_simulation_band() {
     let [low, high] = interval.upper_log_simulation_band;
     assert!(low <= interval.upper_log && interval.upper_log <= high);
 }
+
+#[test]
+fn the_resampled_interval_matches_the_exact_six_session_bootstrap() {
+    // Re-audit R2, R2-STAT-03 fixture: session ratios 0.8 .. 1.5, pairs
+    // identical within a session, one case. Enumerating all 6^6 session
+    // draws gives the exact percentile interval [0.848528137423857,
+    // 1.449137674618944] (research/adversarial_reaudit_20260930_r2/
+    // statistics/exact_bootstrap_oracle.json). The confirmatory B = 10000
+    // resample must reproduce it within its reported simulation band.
+    let protocol = PairedTimingProtocol::authoritative(1);
+    let ratios = [0.8, 0.9, 1.0, 1.1, 1.4, 1.5];
+    let labels = (0..protocol.pairs)
+        .map(|pair| (pair * 6 / protocol.pairs) as u32)
+        .collect::<Vec<_>>();
+    let candidate = vec![1.0e-3; protocol.pairs];
+    let reference = labels
+        .iter()
+        .map(|session| 1.0e-3 * ratios[*session as usize])
+        .collect();
+    let case = PairedTimingCase::from_samples(
+        "fixture",
+        &protocol,
+        vec![5.0e-3, 1.0e-3],
+        candidate,
+        reference,
+    )
+    .unwrap()
+    .with_process_blocks(labels);
+    let interval = case_clustered_bootstrap(&[case], &protocol).unwrap();
+    assert!((interval.point - 1.048_808_848_170_151_6).abs() <= 1.0e-12);
+    for (exact, band, estimate) in [
+        (
+            0.848_528_137_423_857_f64,
+            interval.lower_log_simulation_band,
+            interval.lower,
+        ),
+        (
+            1.449_137_674_618_944,
+            interval.upper_log_simulation_band,
+            interval.upper,
+        ),
+    ] {
+        assert!(
+            // 1e-12 absorbs the exp/ln round trip of the recorded endpoint.
+            band[0] - 1.0e-12 <= exact.ln() && exact.ln() <= band[1] + 1.0e-12,
+            "exact {exact} outside the band [{}, {}] (estimate {estimate})",
+            band[0].exp(),
+            band[1].exp()
+        );
+    }
+}
