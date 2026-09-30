@@ -38,6 +38,7 @@ mod integrate;
 mod native_gates;
 mod nonlinear;
 mod output;
+mod outward_certificate;
 mod parallel;
 mod path_controller;
 mod policy_redesign_v25;
@@ -282,6 +283,11 @@ pub use nonlinear::{
 pub use output::{
     ObservedIntegrationResult, OutputSamplingPlan, OutputSchedule, PRODUCTION_CLOCK_POLICY,
     RESEARCH_REPLAY_CLOCK_POLICY,
+};
+pub use outward_certificate::{
+    CertificateKind, DoublingCertificate, InverseWitness, PastStepData, QuadraticStageProblem,
+    RadiusAttempt, StageCertificate, WitnessIdentity, WitnessWork, candidate_digest,
+    certify_stage_target, doubling_certificate, predict_state_radius,
 };
 pub use parallel::ParallelExecution;
 pub use path_controller::{
