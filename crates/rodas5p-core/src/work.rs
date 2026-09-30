@@ -79,6 +79,11 @@ pub struct WorkCounters {
     /// zero; see [`Self::unknown_vector_calls`].
     #[serde(default, skip_serializing_if = "is_zero")]
     pub merged_unknown_vector_calls: u64,
+    /// Nonzero phi-combination inputs whose weight `h^k b_k` fell below the
+    /// smallest subnormal and became 0 (re-audit R2, PHI-R1). Omitted while
+    /// zero.
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub phi_weight_underflows: u64,
 }
 
 fn is_zero(value: &u64) -> bool {
@@ -206,6 +211,7 @@ impl WorkCounters {
             jacobian_matvecs,
             linear_matvec_vectors,
             preconditioner_vectors,
+            phi_weight_underflows,
         );
         self.merged_unknown_vector_calls = unknown;
     }
@@ -277,6 +283,7 @@ impl WorkCounters {
             jacobian_matvecs,
             linear_matvec_vectors,
             preconditioner_vectors,
+            phi_weight_underflows,
         );
         next.merged_unknown_vector_calls = unknown;
         *self = next;
@@ -338,6 +345,7 @@ impl WorkCounters {
             jacobian_matvecs,
             linear_matvec_vectors,
             preconditioner_vectors,
+            phi_weight_underflows,
             merged_unknown_vector_calls,
         )
     }
@@ -410,6 +418,7 @@ impl WorkCounters {
             jacobian_matvecs,
             linear_matvec_vectors,
             preconditioner_vectors,
+            phi_weight_underflows,
             merged_unknown_vector_calls,
         )
     }

@@ -290,3 +290,43 @@ fn an_adaptive_step_across_zero_reaches_the_end() {
         assert!((result.y[1][0] - (tf - t0)).abs() <= 1.0e-12);
     }
 }
+
+#[test]
+fn grids_through_zero_from_negative_times_add_no_micro_steps() {
+    // Second review, N1: the residue collapsed near zero, so
+    // -0.3 + 3 * 0.1 = 5.6e-17 missed the request at 0 and a 2.8e-17 step
+    // followed.
+    let (problem, y0) = scalar_linear_problem(-2.0, 1.0);
+    for (t0, tf, h, spacing) in [(-0.3, 0.7, 0.1, 0.1), (-0.2, 0.8, 0.05, 0.2)] {
+        let grid = OutputSchedule::uniform(t0, tf, spacing).unwrap();
+        let steps = ((tf - t0) / h).round() as usize;
+        let rodas = integrate_fixed_observed(
+            &problem,
+            (t0, tf),
+            &y0,
+            h,
+            IntegrationMethod::Sequential,
+            None,
+            None,
+            1.0e-10,
+            1.0e-9,
+            &grid,
+        )
+        .unwrap();
+        assert_eq!(rodas.internal_steps, steps, "({t0}, {tf})");
+        assert_eq!(rodas.output_clipped_steps, 0, "({t0}, {tf})");
+        let bdf =
+            integrate_bdf_fixed_observed(&problem, (t0, tf), &y0, h, &BdfConfig::default(), &grid)
+                .unwrap();
+        assert_eq!(bdf.internal_steps, steps, "BDF ({t0}, {tf})");
+    }
+    for t0 in [-1.0, -0.5, -0.7, -1.3] {
+        let result = fixed(t0, 0.0, 0.1).unwrap();
+        assert_eq!(
+            result.t.len(),
+            (-t0 / 0.1).round() as usize + 1,
+            "t0 = {t0}"
+        );
+        assert_eq!(*result.t.last().unwrap(), 0.0);
+    }
+}

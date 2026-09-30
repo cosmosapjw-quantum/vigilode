@@ -962,6 +962,11 @@ pub struct GlobalErrorParetoFront {
     /// Forbidden when any run competing on this problem is not a production
     /// arm; such a front carries no relative-performance information.
     pub comparative_reading: ComparativeReading,
+    /// Successful runs with errors whose cost in this metric is unknown
+    /// (e.g. merged legacy work without vector units): not evaluated, not
+    /// failures and not free (re-audit R2, R2-STAT-02).
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub not_evaluated_record_ids: Vec<String>,
 }
 
 pub type ParetoFront = GlobalErrorParetoFront;
@@ -1003,6 +1008,11 @@ pub struct TargetAttainment {
     /// Label of the selected record, if any.
     pub comparator_fidelity: Option<ComparatorFidelity>,
     pub comparative_reading: ComparativeReading,
+    /// Runs that reach the target but whose cost in this metric is unknown;
+    /// when nonempty the selected record is the cheapest known one only
+    /// (re-audit R2, R2-STAT-02).
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub not_evaluated_record_ids: Vec<String>,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -1623,7 +1633,19 @@ fn build_fronts(runs: &[IntegratorRunRecord]) -> Vec<GlobalErrorParetoFront> {
                         }
                     })
                     .collect::<Vec<_>>();
+                let not_evaluated_record_ids = problem_runs
+                    .iter()
+                    .filter(|run| {
+                        // Wall time has its own authority rule (timing.authoritative).
+                        cost_metric != ParetoCostMetric::WallSeconds
+                            && run.status.is_success()
+                            && run.errors.is_some()
+                            && run.cost(cost_metric).is_none()
+                    })
+                    .map(|run| run.record_id.clone())
+                    .collect();
                 fronts.push(GlobalErrorParetoFront {
+                    not_evaluated_record_ids,
                     problem_id: problem_id.to_owned(),
                     error_metric,
                     cost_metric,
@@ -1686,7 +1708,20 @@ fn build_attainments(
                             .then_with(|| left.1.total_cmp(&right.1))
                             .then_with(|| left.0.cmp(right.0))
                     });
+                let not_evaluated_record_ids = problem_runs
+                    .iter()
+                    .filter(|run| {
+                        cost_metric != ParetoCostMetric::WallSeconds
+                            && run.status.is_success()
+                            && run.cost(cost_metric).is_none()
+                            && run.errors.as_ref().is_some_and(|errors| {
+                                errors.value(target.metric) <= target.threshold
+                            })
+                    })
+                    .map(|run| run.record_id.clone())
+                    .collect();
                 out.push(TargetAttainment {
+                    not_evaluated_record_ids,
                     problem_id: problem_id.to_owned(),
                     target_id: target.target_id.clone(),
                     cost_metric,
@@ -2037,4 +2072,91 @@ pub fn run_global_error_pareto_screen(
         attainments,
         scientific_checksum,
     })
+}
+
+#[cfg(test)]
+mod r2_not_evaluated_tests {
+    use super::*;
+
+    fn run(id: &str, counters: WorkCounters) -> IntegratorRunRecord {
+        let metrics = GlobalErrorMetrics {
+            endpoint_l2: 1.0e-7,
+            max_grid_l2: 1.0e-7,
+            rms_grid_l2: 1.0e-7,
+            endpoint_wrms: 1.0e-7,
+            max_grid_wrms: 1.0e-7,
+            rms_grid_wrms: 1.0e-7,
+            reference_uncertainty_wrms: 0.0,
+            conservative_max_wrms: 1.0e-7,
+        };
+        IntegratorRunRecord {
+            record_id: id.into(),
+            candidate_id: id.into(),
+            comparator_fidelity: ComparatorFidelity::Production,
+            problem_id: "problem".into(),
+            step_size: 0.1,
+            status: IntegratorRunStatus::Success,
+            message: "ok".into(),
+            errors: Some(metrics),
+            work: IntegratorWorkReport {
+                counters,
+                internal_steps: 1,
+                output_clipped_steps: 0,
+                stored_state_bytes: 0,
+            },
+            timing: IntegratorTimingReport {
+                authoritative: false,
+                batch_iterations: 0,
+                wall_samples_seconds: Vec::new(),
+                wall_median_seconds: None,
+                wall_q25_seconds: None,
+                wall_q75_seconds: None,
+            },
+            reference_checksum: "reference".into(),
+            output_grid_id: "grid".into(),
+        }
+    }
+
+    #[test]
+    fn unknown_vector_cost_is_listed_as_not_evaluated() {
+        // Re-audit R2, R2-STAT-02: a run with unknown vector cost dropped
+        // out of the front and the attainment silently.
+        let known = WorkCounters {
+            linear_matvecs: 30,
+            linear_matvec_vectors: 30,
+            ..WorkCounters::default()
+        };
+        let mut unknown = WorkCounters {
+            linear_matvecs: 1,
+            linear_matvec_vectors: 1,
+            ..WorkCounters::default()
+        };
+        unknown.accumulate(WorkCounters {
+            linear_matvecs: 16,
+            ..WorkCounters::default()
+        });
+        let runs = [run("known", known), run("unknown", unknown)];
+        let front = build_fronts(&runs)
+            .into_iter()
+            .find(|front| front.cost_metric == ParetoCostMetric::OperatorStateVectors)
+            .unwrap();
+        assert_eq!(front.record_ids, vec!["known".to_string()]);
+        assert_eq!(front.not_evaluated_record_ids, vec!["unknown".to_string()]);
+        let calls = build_fronts(&runs)
+            .into_iter()
+            .find(|front| front.cost_metric == ParetoCostMetric::OperatorApplications)
+            .unwrap();
+        assert!(calls.not_evaluated_record_ids.is_empty());
+        let target =
+            GlobalErrorTarget::new("t".to_string(), GlobalErrorMetric::MaxGridL2, 1.0e-6).unwrap();
+        let attainment = build_attainments(&runs, &[target])
+            .into_iter()
+            .find(|row| row.cost_metric == ParetoCostMetric::OperatorStateVectors)
+            .unwrap();
+        assert_eq!(attainment.record_id.as_deref(), Some("known"));
+        assert_eq!(
+            attainment.not_evaluated_record_ids,
+            vec!["unknown".to_string()]
+        );
+    }
 }

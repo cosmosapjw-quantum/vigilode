@@ -25,11 +25,14 @@ pub fn binary_split(x: f64) -> (f64, i64) {
 /// `m * 2^e` for `m` in [1/8, 1], saturating to +inf above `f64::MAX` and
 /// rounding once into the subnormal range.
 pub fn binary_scale(m: f64, e: i64) -> f64 {
+    if m == 0.0 || !m.is_finite() {
+        return m;
+    }
     if e > 1100 {
-        return f64::INFINITY;
+        return f64::INFINITY.copysign(m);
     }
     if e < -1200 {
-        return 0.0;
+        return 0.0_f64.copysign(m);
     }
     let mut value = m;
     let mut e = e;

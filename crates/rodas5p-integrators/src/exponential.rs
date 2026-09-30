@@ -1345,8 +1345,19 @@ fn krylov_exponential_once(
 /// [`augmented_fused_operator`].
 /// `w_k = tau^k b_k`, formed on binary exponents so a representable weight
 /// is not lost to an intermediate `tau.powi(k)` (re-audit R2, PHI-R1).
-fn weighted_phi_vectors(scale: f64, vectors: &[Vec<f64>]) -> CoreResult<Vec<Vec<f64>>> {
-    rodas5p_core::weight_phi_vectors(scale, vectors).map(|(weighted, _)| weighted)
+/// Inputs whose weight underflows are charged to
+/// `counters.phi_weight_underflows`, so a converged report does not hide
+/// them.
+fn weighted_phi_vectors(
+    scale: f64,
+    vectors: &[Vec<f64>],
+    counters: &mut WorkCounters,
+) -> CoreResult<Vec<Vec<f64>>> {
+    let (weighted, lost) = rodas5p_core::weight_phi_vectors(scale, vectors)?;
+    counters.phi_weight_underflows = counters
+        .phi_weight_underflows
+        .saturating_add(u64::try_from(lost).unwrap_or(u64::MAX));
+    Ok(weighted)
 }
 
 /// The time-normalized augmented operator for
@@ -1484,7 +1495,7 @@ pub fn fused_phi_action(
             convergence_basis: PhiConvergenceBasis::InvariantSubspace,
         });
     }
-    let weighted = weighted_phi_vectors(scale, vectors)?;
+    let weighted = weighted_phi_vectors(scale, vectors, counters)?;
     fused_phi_action_weighted(operator, scale, &weighted, config, counters)
 }
 
@@ -1757,7 +1768,7 @@ impl FusedPhiPrefixSession {
             });
         }
         let highest_phi_index = vectors.len() - 1;
-        let weighted = weighted_phi_vectors(scale, vectors)?;
+        let weighted = weighted_phi_vectors(scale, vectors, counters)?;
         let (augmented, initial, physical_dimension) =
             augmented_fused_operator(operator, scale, &weighted)?;
         let config = config.validate(augmented.dimension())?;

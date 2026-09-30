@@ -16,9 +16,9 @@ pub(crate) struct Landing {
 ///
 /// A step that would pass the target is shortened to land on it exactly
 /// ([`step_to`]); it counts as shortened only when it passes by more than
-/// the rounding residue of the time sum, `64 eps max(|t + h|, |target|)`
-/// (or an eighth of the step). A step that would stop short of the target
-/// by no more than that residue is extended to land on it,
+/// the rounding residue of the time sum, `64 eps max(|t|, |t + h|,
+/// |target|)` capped at `2^-10 h`. A step that would stop short of the
+/// target by no more than that residue is extended to land on it,
 /// so fixed steps of 0.1 reach 1.0 exactly instead of 0.9999999999999999
 /// and then taking a 1e-16 step (re-audit R2 review). This is a step-size
 /// rule only; which interval owns a requested time is still decided by
@@ -26,15 +26,20 @@ pub(crate) struct Landing {
 pub(crate) fn land(t: f64, proposed: f64, target: f64) -> CoreResult<Landing> {
     let to_target = step_to(t, target)?;
     let natural = t + proposed;
-    let residue = 64.0 * f64::EPSILON * natural.abs().max(target.abs());
+    // Rounding residue of the time sum: relative to the largest magnitude
+    // involved, including t, so it does not collapse for a target near zero
+    // reached from t < 0 (-0.3 + 3 * 0.1 is 5.6e-17, not 0), and at most
+    // 2^-10 of the step, so a step is never stretched or shortened silently
+    // by more than 0.1% at a large epoch.
+    let residue = (64.0 * f64::EPSILON * t.abs().max(natural.abs()).max(target.abs()))
+        .min(proposed * 2.0_f64.powi(-10));
     if natural > target || proposed >= to_target {
-        // Passing the target by no more than the rounding residue is a
-        // landing, not a shortened step (0.07 + 0.01 = 0.08000000000000002).
-        let overshoot = natural - target;
+        // Passing the target by no more than the residue is a landing, not
+        // a shortened step (0.07 + 0.01 = 0.08000000000000002).
         return Ok(Landing {
             step: to_target,
-            lands: true,
-            shortened: overshoot > residue || overshoot > 0.125 * proposed,
+            lands: t + to_target == target,
+            shortened: natural - target > residue,
         });
     }
     if natural == target {
@@ -45,10 +50,10 @@ pub(crate) fn land(t: f64, proposed: f64, target: f64) -> CoreResult<Landing> {
         });
     }
     let gap = target - natural;
-    let lands = gap <= residue && gap <= 0.125 * proposed;
+    let extend = gap <= residue;
     Ok(Landing {
-        step: if lands { to_target } else { proposed },
-        lands,
+        step: if extend { to_target } else { proposed },
+        lands: extend && t + to_target == target,
         shortened: false,
     })
 }
