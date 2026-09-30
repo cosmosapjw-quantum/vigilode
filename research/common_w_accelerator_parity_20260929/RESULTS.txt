@@ -1,0 +1,16 @@
+dissipative-3 rtol 1e-4: 17 steps (baseline mesh)
+  sequential       rhs    119 jvp    799 W-apply    544 P-apply    544 W-solves   136 corrections    0 fallbacks   0 (+rhs 0 +W-apply 0) failures 0 | max diff endpoint 0.00e0 embedded 0.00e0 dense 0.00e0 | max rel residual 0.00e0
+  pred+1corr       rhs    272 jvp   1836 W-apply    544 P-apply    544 W-solves   136 corrections   17 fallbacks   0 (+rhs 0 +W-apply 0) failures 0 | max diff endpoint 4.16e0 embedded 8.17e-2 dense 6.62e-1 | max rel residual 1.47e-3
+  pred+2corr+fb    rhs    436 jvp   3520 W-apply   1148 P-apply   1148 W-solves   304 corrections   34 fallbacks   4 (+rhs 28 +W-apply 128) failures 0 | max diff endpoint 2.12e-7 embedded 4.71e-7 dense 1.43e-7 | max rel residual 7.92e-9
+semilinear-32 rtol 1e-4: 5 steps (baseline mesh)
+  sequential       rhs     35 jvp   1875 W-apply   1800 P-apply   1800 W-solves    40 corrections    0 fallbacks   0 (+rhs 0 +W-apply 0) failures 0 | max diff endpoint 0.00e0 embedded 0.00e0 dense 0.00e0 | max rel residual 0.00e0
+  pred+1corr       rhs     80 jvp   2180 W-apply   1800 P-apply   1800 W-solves    40 corrections    5 fallbacks   0 (+rhs 0 +W-apply 0) failures 0 | max diff endpoint 2.54e0 embedded 7.72e-2 dense 1.06e-1 | max rel residual 1.19e-3
+  pred+2corr+fb    rhs    120 jvp   3905 W-apply   3225 P-apply   3225 W-solves    80 corrections   10 fallbacks   0 (+rhs 0 +W-apply 0) failures 0 | max diff endpoint 8.41e-7 embedded 6.64e-7 dense 2.51e-7 | max rel residual 4.07e-10
+dissipative-3 rtol 1e-6: 44 steps (baseline mesh)
+  sequential       rhs    308 jvp   2068 W-apply   1408 P-apply   1408 W-solves   352 corrections    0 fallbacks   0 (+rhs 0 +W-apply 0) failures 0 | max diff endpoint 0.00e0 embedded 0.00e0 dense 0.00e0 | max rel residual 0.00e0
+  pred+1corr       rhs    704 jvp   4752 W-apply   1408 P-apply   1408 W-solves   352 corrections   44 fallbacks   0 (+rhs 0 +W-apply 0) failures 0 | max diff endpoint 4.57e0 embedded 5.72e-2 dense 5.55e-1 | max rel residual 7.41e-5
+  pred+2corr+fb    rhs   1056 jvp   8624 W-apply   2640 P-apply   2640 W-solves   704 corrections   88 fallbacks   0 (+rhs 0 +W-apply 0) failures 0 | max diff endpoint 3.60e-8 embedded 5.65e-8 dense 1.25e-8 | max rel residual 1.74e-12
+semilinear-32 rtol 1e-6: 7 steps (baseline mesh)
+  sequential       rhs     49 jvp   2505 W-apply   2400 P-apply   2400 W-solves    56 corrections    0 fallbacks   0 (+rhs 0 +W-apply 0) failures 0 | max diff endpoint 0.00e0 embedded 0.00e0 dense 0.00e0 | max rel residual 0.00e0
+  pred+1corr       rhs    112 jvp   2932 W-apply   2400 P-apply   2400 W-solves    56 corrections    7 fallbacks   0 (+rhs 0 +W-apply 0) failures 0 | max diff endpoint 1.40e0 embedded 4.95e-2 dense 9.91e-2 | max rel residual 1.95e-5
+  pred+2corr+fb    rhs    168 jvp   4952 W-apply   4000 P-apply   4000 W-solves   112 corrections   14 fallbacks   0 (+rhs 0 +W-apply 0) failures 0 | max diff endpoint 2.05e-8 embedded 6.89e-9 dense 1.45e-8 | max rel residual 6.18e-14
