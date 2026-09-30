@@ -14,7 +14,11 @@ Checks:
     ``merge-base(REF, HEAD)`` must have ``PREREGISTRATION.md``, a numeric results file and
     a ledger row covering a numeric results file in the directory.  Directories already
     present in the tree of the commit that first added ``research/LEDGER.jsonl`` are
-    frozen history and exempt; their receipt families are not migrated;
+    frozen history and exempt; their receipt families are not migrated.  A node listed in
+    the exemption file (default ``tools/research_node_exemptions.txt``, one
+    ``<node> <reason>`` per line, reason mandatory) is exempt from the
+    ``PREREGISTRATION.md`` requirement only; it still needs a numeric results file and a
+    covering ledger row.  An entry naming no tracked node is an error;
 (b) with ``--base REF``: the ledger is append-only, so the ledger lines present at the
     merge base must be an exact line-by-line prefix of the current ledger;
 (c) always: every ledger row validates against the single row schema, and every
@@ -67,6 +71,8 @@ COMMIT_RE = re.compile(r"^[0-9a-f]{40}$")
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 NUMBER_RE = re.compile(r"(?<![\w.])[-+]?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?(?![\w.])")
 MAX_CLAIM_CHARS = 600
+DEFAULT_EXEMPTIONS = "tools/research_node_exemptions.txt"
+EXEMPT_LINE_RE = re.compile(r"^([A-Za-z0-9_.-]+)\s+(\S.*)$")
 
 
 class GitError(Exception):
@@ -321,6 +327,27 @@ def _has_path(repo: Path, rev: str, path: str) -> bool:
     return proc.returncode == 0
 
 
+def load_exemptions(path: Path) -> tuple[dict[str, str], list[str]]:
+    """Nodes exempt from the pre-registration requirement, each with its reason."""
+    entries: dict[str, str] = {}
+    errors: list[str] = []
+    if not path.exists():
+        return entries, errors
+    for number, raw in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+        match = EXEMPT_LINE_RE.match(line)
+        if not match:
+            errors.append(f"{path.name}:{number}: expected '<node> <reason>'")
+            continue
+        node, reason = match.groups()
+        if node in entries:
+            errors.append(f"{path.name}:{number}: duplicate exemption {node}")
+        entries[node] = reason
+    return entries, errors
+
+
 def append_only_errors(base_lines: list[str], current_lines: list[str]) -> list[str]:
     errors: list[str] = []
     for index, base_line in enumerate(base_lines):
@@ -342,6 +369,9 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("--base", help="base ref; enables new-node and append-only checks")
     parser.add_argument("--repo", type=Path, default=None, help="repository root (default: current toplevel)")
+    parser.add_argument(
+        "--exemptions", default=DEFAULT_EXEMPTIONS, help="pre-registration exemption file relative to the repo root"
+    )
     args = parser.parse_args(argv)
 
     try:
@@ -352,6 +382,11 @@ def main(argv: list[str] | None = None) -> int:
         )
         rows, errors = parse_ledger(current_lines)
         errors.extend(check_outputs(repo, rows))
+        exemptions, exemption_errors = load_exemptions(repo / args.exemptions)
+        errors.extend(exemption_errors)
+        tracked_nodes = {node for node in map(node_of, tracked_research_files(repo)) if node}
+        for node in sorted(set(exemptions) - tracked_nodes):
+            errors.append(f"{args.exemptions}: exemption for research/{node}/, which is not a tracked node")
 
         new_ids: set[str] | None = None
         new_nodes: list[str] = []
@@ -375,7 +410,7 @@ def main(argv: list[str] | None = None) -> int:
             for node in new_nodes:
                 files = current_dirs[node]
                 prefix = f"research/{node}/"
-                if f"{prefix}{PREREG}" not in files:
+                if f"{prefix}{PREREG}" not in files and node not in exemptions:
                     errors.append(f"new node {prefix}: missing {PREREG} (pre-registration)")
                 numeric_files = {p for p in files if is_numeric_results_file(repo / p)}
                 if not numeric_files:
