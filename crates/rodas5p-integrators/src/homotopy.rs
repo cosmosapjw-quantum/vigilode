@@ -482,6 +482,17 @@ pub struct HomotopyWorkLedger {
     pub w_factorizations: u64,
     pub w_solve_batches: u64,
     pub w_solve_vectors: u64,
+    /// Native-target certificate attempts and their directed operations
+    /// (witness included), kept apart from the W batches (re-audit R3,
+    /// HOM-05). Omitted while zero.
+    #[serde(skip_serializing_if = "is_zero_u64")]
+    pub certificate_attempts: u64,
+    #[serde(skip_serializing_if = "is_zero_u64")]
+    pub certificate_operations: u64,
+}
+
+fn is_zero_u64(value: &u64) -> bool {
+    *value == 0
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize)]

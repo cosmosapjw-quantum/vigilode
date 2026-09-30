@@ -7,9 +7,71 @@ use serde::Serialize;
 
 use crate::homotopy::{add_scaled_rows, evaluate_partial_path};
 use crate::{
-    HomotopyWorkLedger, OdeProblem, ParallelExecution, StepCertificate, StepContext, StepResult,
-    StructuredBlockSystem, build_step_context_matrix_free, finish_step, sequential_stages,
+    HomotopyWorkLedger, InverseWitness, OdeProblem, ParallelExecution, QuadraticStageProblem,
+    STAGE_TARGET_SEQUENTIAL, StageCertificate, StageTarget, StepCertificate, StepContext,
+    StepResult, StructuredBlockSystem, build_step_context_matrix_free, candidate_digest,
+    certify_stage_target, finish_step, sequential_stages,
 };
+use rodas5p_core::directed::{mul_down, mul_up};
+
+/// How the escalated q=2 candidate is admitted (re-audit R3, HOM-05).
+#[derive(Clone, Copy)]
+pub enum Q2Admission<'a> {
+    /// The eighth common-W batch: a q=0 correction at the post-q2 residual,
+    /// never applied, estimates the remaining output defect. Operational,
+    /// not a bound.
+    OperationalDiagnostic,
+    /// No eighth batch: an outward certificate on the sequential stage
+    /// target ([`STAGE_TARGET_SEQUENTIAL`]) bounds the candidate output's
+    /// distance from the target's exact output, and the budget comes from the
+    /// certified lower bound of the embedded estimate.
+    NativeTargetCertificate(&'a dyn Q2CertificateSource),
+}
+
+impl Q2Admission<'_> {
+    pub fn name(&self) -> &'static str {
+        match self {
+            Self::OperationalDiagnostic => "operational-diagnostic",
+            Self::NativeTargetCertificate(_) => "native-target-certificate",
+        }
+    }
+}
+
+/// The certificate problem of a step. The certificate covers the
+/// autonomous, identity-mass family `f(y + d) = f(y) + J d + q d^2` (for
+/// example `f(z) = A z + q z^2` with `J = A + 2 diag(q y)`). What it bounds is
+/// the declared problem; its agreement with the integrated ODE is checked
+/// numerically (`f(y)` and one JVP), which is a consistency check, not a
+/// proof.
+pub trait Q2CertificateSource: Sync {
+    fn stage_problem(&self, t: f64, y: &[f64], h: f64) -> CoreResult<QuadraticStageProblem>;
+
+    /// An inverse witness for `W = I - h gamma J`: diagonal when `J` is,
+    /// otherwise the small dense one.
+    fn witness(&self, problem: &QuadraticStageProblem, gamma: f64) -> CoreResult<InverseWitness> {
+        let diagonal = problem.jacobian.iter().enumerate().all(|(a, row)| {
+            row.iter()
+                .enumerate()
+                .all(|(b, value)| a == b || *value == 0.0)
+        });
+        if diagonal {
+            InverseWitness::diagonal(problem, gamma)
+        } else {
+            InverseWitness::small(problem, gamma)
+        }
+    }
+}
+
+/// The certificate admission of one q=2 candidate.
+#[derive(Clone, Debug, PartialEq, Serialize)]
+pub struct Q2CertificateAdmission {
+    pub accepted: bool,
+    pub reason: String,
+    pub certificate: Option<StageCertificate>,
+    /// Lower bound on `min(absolute, fraction * E^(6/5))` for the certified
+    /// lower bound `E` of the embedded estimate.
+    pub budget_lower: f64,
+}
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "kebab-case")]
@@ -122,6 +184,9 @@ pub struct TransactionalQ1Q2StepReport {
     pub q2_candidate_y: Option<Vec<f64>>,
     pub critical_path_depth: u64,
     pub work: HomotopyWorkLedger,
+    /// [`Q2Admission::name`].
+    pub q2_admission: &'static str,
+    pub q2_certificate: Option<Q2CertificateAdmission>,
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize)]
@@ -512,6 +577,7 @@ struct FastPathSuccess {
     q2_gate: Option<OperationalGateReport>,
     active_gate: OperationalGateReport,
     escalated: bool,
+    q2_certificate: Option<Q2CertificateAdmission>,
 }
 
 struct FastPathFailure {
@@ -539,6 +605,133 @@ fn failed_operational_gate(reason: impl Into<String>) -> OperationalGateReport {
     }
 }
 
+/// Lower bound on `min(absolute, fraction * max(e, 1024 eps)^(6/5))`.
+fn certified_q2_budget(config: &TransactionalQ1Q2Config, embedded_lower: f64) -> CoreResult<f64> {
+    let x = embedded_lower.max(1024.0 * f64::EPSILON);
+    // r <= x^(1/5): step down until r^5 <= x holds with upward rounding.
+    let mut r = x.powf(0.2);
+    loop {
+        let fifth = mul_up(mul_up(mul_up(mul_up(r, r)?, r)?, r)?, r)?;
+        if fifth <= x {
+            break;
+        }
+        r = r.next_down();
+    }
+    Ok(config
+        .absolute_output_budget
+        .min(mul_down(config.embedded_budget_fraction, mul_down(x, r)?)?))
+}
+
+/// Certificate admission of the q=2 candidate; every failure rejects.
+fn certify_q2_candidate(
+    context: &StepContext<'_>,
+    source: &dyn Q2CertificateSource,
+    stages: &[Vec<f64>],
+    config: &TransactionalQ1Q2Config,
+    atol: f64,
+    rtol: f64,
+    work: &mut HomotopyWorkLedger,
+) -> Q2CertificateAdmission {
+    work.certificate_attempts += 1;
+    let attempt = || -> CoreResult<(StageCertificate, f64)> {
+        if !context.problem.autonomous
+            || context.ft0.iter().any(|value| *value != 0.0)
+            || context.problem.mass_matrix.is_some()
+        {
+            return Err(CoreError::InvalidInput(
+                "the certificate covers autonomous identity-mass problems only".into(),
+            ));
+        }
+        let problem = source.stage_problem(context.t, &context.y, context.h)?;
+        let n = context.problem.dimension;
+        if problem.h.to_bits() != context.h.to_bits()
+            || problem.y.len() != n
+            || problem
+                .y
+                .iter()
+                .zip(&context.y)
+                .any(|(a, b)| a.to_bits() != b.to_bits())
+        {
+            return Err(CoreError::InvalidInput(
+                "the certificate problem is not this step's (y, h)".into(),
+            ));
+        }
+        // Consistency with the integrated ODE: f(y) = J y - q y^2 and the
+        // JVP on the first stage direction.
+        let direction = &stages[0];
+        let mut jvp = vec![0.0; n];
+        context.jacobian.apply(direction, &mut jvp)?;
+        for (a, row) in problem.jacobian.iter().enumerate() {
+            let jy = row.iter().zip(&problem.y).map(|(j, y)| j * y).sum::<f64>();
+            let jy_scale = row
+                .iter()
+                .zip(&problem.y)
+                .map(|(j, y)| (j * y).abs())
+                .sum::<f64>();
+            let quadratic = problem.q[a] * problem.y[a] * problem.y[a];
+            let model_f = jy - quadratic;
+            let jd = row.iter().zip(direction).map(|(j, d)| j * d).sum::<f64>();
+            let jd_scale = row
+                .iter()
+                .zip(direction)
+                .map(|(j, d)| (j * d).abs())
+                .sum::<f64>();
+            let tolerance =
+                |scale: f64| 64.0 * f64::EPSILON * (n as f64) * scale + f64::MIN_POSITIVE;
+            if (model_f - context.f0[a]).abs() > tolerance(jy_scale + quadratic.abs())
+                || (jd - jvp[a]).abs() > tolerance(jd_scale)
+            {
+                return Err(CoreError::InvalidInput(format!(
+                    "the certificate problem disagrees with the ODE in component {a}"
+                )));
+            }
+        }
+        let target = StageTarget::sequential(&context.coeffs)?;
+        let witness = source.witness(&problem, target.gamma)?;
+        let y_hat = candidate_output(context, stages);
+        let e_hat = weighted_stage_update(&context.coeffs.btilde, stages, n);
+        let certificate = certify_stage_target(
+            &target, &problem, stages, &y_hat, &e_hat, &witness, atol, rtol,
+        )?;
+        if certificate.target_id != STAGE_TARGET_SEQUENTIAL
+            || certificate.candidate_sha256 != candidate_digest(stages)
+        {
+            return Err(CoreError::InvalidInput(
+                "the certificate is not about this candidate on the native target".into(),
+            ));
+        }
+        let budget = certified_q2_budget(config, certificate.embedded_target_wrms_lower)?;
+        Ok((certificate, budget))
+    };
+    match attempt() {
+        Ok((certificate, budget_lower)) => {
+            work.certificate_operations = work
+                .certificate_operations
+                .saturating_add(certificate.directed_operations);
+            let accepted = certificate.output_wrms_upper <= budget_lower;
+            Q2CertificateAdmission {
+                accepted,
+                reason: if accepted {
+                    "native-target certificate within the certified budget".into()
+                } else {
+                    format!(
+                        "ADMISSION_EQUIVALENCE_NOT_ESTABLISHED: certified output bound {:e} above budget {budget_lower:e}",
+                        certificate.output_wrms_upper
+                    )
+                },
+                certificate: Some(certificate),
+                budget_lower,
+            }
+        }
+        Err(error) => Q2CertificateAdmission {
+            accepted: false,
+            reason: format!("ADMISSION_EQUIVALENCE_NOT_ESTABLISHED: {error}"),
+            certificate: None,
+            budget_lower: 0.0,
+        },
+    }
+}
+
 #[allow(clippy::too_many_arguments)]
 fn attempt_fast_path(
     context: &StepContext<'_>,
@@ -547,6 +740,7 @@ fn attempt_fast_path(
     config: &TransactionalQ1Q2Config,
     atol: f64,
     rtol: f64,
+    admission: Q2Admission<'_>,
     counters: &mut WorkCounters,
     work: &mut HomotopyWorkLedger,
 ) -> Result<FastPathSuccess, Box<FastPathFailure>> {
@@ -651,6 +845,7 @@ fn attempt_fast_path(
             q2_gate,
             active_gate: q1_report,
             escalated,
+            q2_certificate: None,
         });
     }
 
@@ -684,6 +879,44 @@ fn attempt_fast_path(
         block, &stages, 0.0, 1.0, counters, work,
     ));
     let q2_candidate_y = Some(candidate_output(context, &stages));
+    if let Q2Admission::NativeTargetCertificate(source) = admission {
+        // The candidate is final here: no eighth batch, nothing applied.
+        let q2_embedded = fast_try!(embedded_error(context, &stages, atol, rtol));
+        let admitted = certify_q2_candidate(context, source, &stages, config, atol, rtol, work);
+        let bound = admitted
+            .certificate
+            .as_ref()
+            .map_or(f64::INFINITY, |certificate| certificate.output_wrms_upper);
+        let residual_after = q2_final.target_residual_norm;
+        let q2_report = OperationalGateReport {
+            accepted: admitted.accepted,
+            reason: admitted.reason.clone(),
+            finite: bound.is_finite() && residual_after.is_finite(),
+            target_residual_before: q2_before,
+            target_residual_after: residual_after,
+            target_residual_ratio: residual_after / q2_before.max(f64::MIN_POSITIVE),
+            target_relative_residual: residual_after
+                / q2_final.target_rhs_norm.max(f64::MIN_POSITIVE),
+            previous_output_correction_wrms: q2_correction_wrms,
+            last_output_correction_wrms: bound,
+            output_contraction: bound / q2_correction_wrms.max(f64::MIN_POSITIVE),
+            contraction_tail_wrms: bound,
+            embedded_error: q2_embedded,
+            output_budget: admitted.budget_lower,
+        };
+        q2_gate = Some(q2_report.clone());
+        return Ok(FastPathSuccess {
+            stages,
+            q1_candidate_y,
+            q2_candidate_y,
+            lane: TransactionalQ1Q2Lane::Q2Escalated,
+            q1_gate: q1_report,
+            q2_gate,
+            active_gate: q2_report,
+            escalated,
+            q2_certificate: Some(admitted),
+        });
+    }
     // One q=0 common-W diagnostic at the post-q2 residual estimates the *remaining* output
     // defect rather than reusing the magnitude of the correction that was already applied.
     // It is not applied to the state, so q=2 remains a single causal escalation; the eighth
@@ -716,6 +949,7 @@ fn attempt_fast_path(
         q2_gate,
         active_gate: q2_report,
         escalated,
+        q2_certificate: None,
     })
 }
 
@@ -729,6 +963,36 @@ pub fn transactional_q1_q2_step(
     atol: f64,
     rtol: f64,
     force_accept: bool,
+    counters: &mut WorkCounters,
+) -> CoreResult<TransactionalQ1Q2StepReport> {
+    transactional_q1_q2_step_with_admission(
+        problem,
+        t,
+        y,
+        h,
+        config,
+        atol,
+        rtol,
+        force_accept,
+        Q2Admission::OperationalDiagnostic,
+        counters,
+    )
+}
+
+/// [`transactional_q1_q2_step`] with an explicit q=2 admission. The q=1
+/// lane, the seven batches that build the q=2 candidate and the sequential
+/// fallback transaction are the same in both modes.
+#[allow(clippy::too_many_arguments)]
+pub fn transactional_q1_q2_step_with_admission(
+    problem: &OdeProblem,
+    t: f64,
+    y: &[f64],
+    h: f64,
+    config: &TransactionalQ1Q2Config,
+    atol: f64,
+    rtol: f64,
+    force_accept: bool,
+    admission: Q2Admission<'_>,
     counters: &mut WorkCounters,
 ) -> CoreResult<TransactionalQ1Q2StepReport> {
     config.validate()?;
@@ -753,7 +1017,7 @@ pub fn transactional_q1_q2_step(
     };
 
     let fast = attempt_fast_path(
-        &context, &block, &solver, config, atol, rtol, counters, &mut work,
+        &context, &block, &solver, config, atol, rtol, admission, counters, &mut work,
     );
     let (
         mut lane,
@@ -765,6 +1029,7 @@ pub fn transactional_q1_q2_step(
         q2_candidate_y,
         escalated,
         mut fallback_reason,
+        q2_certificate,
     ) = match fast {
         Ok(result) => (
             result.lane,
@@ -776,6 +1041,7 @@ pub fn transactional_q1_q2_step(
             result.q2_candidate_y,
             result.escalated,
             None,
+            result.q2_certificate,
         ),
         Err(failure) => match failure.error {
             CoreError::NonFinite(_) | CoreError::LinearSolve(_) => {
@@ -797,6 +1063,7 @@ pub fn transactional_q1_q2_step(
                     None,
                     failure.escalated,
                     Some(reason),
+                    None,
                 )
             }
             error => return Err(error),
@@ -892,6 +1159,8 @@ pub fn transactional_q1_q2_step(
         q2_candidate_y,
         critical_path_depth,
         work,
+        q2_admission: admission.name(),
+        q2_certificate,
     })
 }
 

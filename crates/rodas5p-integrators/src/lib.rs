@@ -349,8 +349,9 @@ pub use stage_target::{
     StageTargetBits, block_sequential_allowance, native_coefficient_leakage,
 };
 pub use transactional_q1_q2::{
-    OperationalGateReport, TransactionalQ1Q2Config, TransactionalQ1Q2Lane,
-    TransactionalQ1Q2RunDiagnostics, TransactionalQ1Q2StepReport, transactional_q1_q2_step,
+    OperationalGateReport, Q2Admission, Q2CertificateAdmission, Q2CertificateSource,
+    TransactionalQ1Q2Config, TransactionalQ1Q2Lane, TransactionalQ1Q2RunDiagnostics,
+    TransactionalQ1Q2StepReport, transactional_q1_q2_step, transactional_q1_q2_step_with_admission,
 };
 pub use unified_gates::{
     CandidateGateReport, CandidateGateVerdict, CandidateOrderGateRow, CandidateStiffGateRow,
