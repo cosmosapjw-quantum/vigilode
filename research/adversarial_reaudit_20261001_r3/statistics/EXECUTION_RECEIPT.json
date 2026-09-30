@@ -1,0 +1,116 @@
+{
+  "schema": "vigilode-r3-statistics-execution-v1",
+  "source_commit": "cc2cd041737e7ff543624d1b59893a3b4397369f",
+  "source_tree": "182fa306067b84ee10ec1f1b1e5fbad9e769aae1",
+  "native": {
+    "command": "source runtime_r3/env.sh && flock runtime_r3/cargo-build.lock cargo run --locked --offline --manifest-path r3/statistics/probe/Cargo.toml",
+    "exit_code": 0,
+    "raw_jsonl_records": 10,
+    "stderr": "native_build.log",
+    "raw": "native_probe.jsonl",
+    "checks": [
+      {
+        "id": "R3STAT_SESSION_CLOSURE",
+        "variant": null,
+        "status": "IMPLEMENTATION_VERIFIED",
+        "evidence": "native_probe.jsonl",
+        "jsonl_record_1_based": 1
+      },
+      {
+        "id": "R3STAT_MATCH_CLOSURE",
+        "variant": null,
+        "status": "IMPLEMENTATION_VERIFIED",
+        "evidence": "native_probe.jsonl",
+        "jsonl_record_1_based": 2
+      },
+      {
+        "id": "R3STAT_PREVIEW_CLOSURE",
+        "variant": null,
+        "status": "IMPLEMENTATION_VERIFIED",
+        "evidence": "native_probe.jsonl",
+        "jsonl_record_1_based": 3
+      },
+      {
+        "id": "R3STAT_UNKNOWN_CLOSURE",
+        "variant": null,
+        "status": "IMPLEMENTATION_VERIFIED",
+        "evidence": "native_probe.jsonl",
+        "jsonl_record_1_based": 4
+      },
+      {
+        "id": "R3STAT_MALFORMED_RAW",
+        "variant": "empty_order",
+        "status": "IMPLEMENTATION_VERIFIED",
+        "evidence": "native_probe.jsonl",
+        "jsonl_record_1_based": 5
+      },
+      {
+        "id": "R3STAT_MALFORMED_RAW",
+        "variant": "wrong_order",
+        "status": "IMPLEMENTATION_VERIFIED",
+        "evidence": "native_probe.jsonl",
+        "jsonl_record_1_based": 6
+      },
+      {
+        "id": "R3STAT_MALFORMED_RAW",
+        "variant": "wrong_batch",
+        "status": "IMPLEMENTATION_VERIFIED",
+        "evidence": "native_probe.jsonl",
+        "jsonl_record_1_based": 7
+      },
+      {
+        "id": "R3STAT_MALFORMED_RAW",
+        "variant": "negative_warmup",
+        "status": "IMPLEMENTATION_VERIFIED",
+        "evidence": "native_probe.jsonl",
+        "jsonl_record_1_based": 8
+      },
+      {
+        "id": "R3STAT_MALFORMED_RAW",
+        "variant": "nan_warmup",
+        "status": "IMPLEMENTATION_VERIFIED",
+        "evidence": "native_probe.jsonl",
+        "jsonl_record_1_based": 9
+      },
+      {
+        "id": "R3STAT_JSON_ROUNDTRIP",
+        "variant": null,
+        "status": "IMPLEMENTATION_VERIFIED",
+        "evidence": "native_probe.jsonl",
+        "jsonl_record_1_based": 10
+      }
+    ],
+    "synthetic_timing": true,
+    "observed_wall_speedup": false
+  },
+  "python": {
+    "command": "python3 r3/statistics/bootstrap_mc_candidate.py",
+    "exit_code": 0,
+    "version": "3.12.14",
+    "exact_enumeration_outcomes": 46656,
+    "result": "bootstrap_mc_candidate.json"
+  },
+  "wrapper": {
+    "status": "PREPARE_ONLY_VERIFIED",
+    "command": "python3 r3/statistics/run_probe.py --repo vigilode --out r3/statistics_relocation_check --prepare-only",
+    "exit_code": 0,
+    "native_reexecution": false
+  },
+  "limits": [
+    "No production edits",
+    "No independent decision review in this lane",
+    "Existing private Pareto/CLI regression execution belongs to root runtime campaign; not inferred from source reading"
+  ],
+  "artifact_hashes": {
+    "probe/src/main.rs": "e2794b549ee82cfb057f1c79b0633eee0f3e7863b8b705431d055e8c13cb8db7",
+    "probe/Cargo.toml": "1f3ad505a2f611ed6e7e9595a4eb7b74c5a077b17769bcfa1671686dd8a84d67",
+    "probe/Cargo.lock": "35b12b1d5405ddab31f0b8552e4913aeaa3c64c08391b14ee6eddbc12f1ad24f",
+    "native_probe.jsonl": "a835ab05d78fd41c9aa56a80da8c73fc7d4687e50d830062a3d8be7728c1e6ee",
+    "native_build.log": "ef50628b92dadf728890325fdd372fa85d6f996d64e9b06f1c7642feff3cdb55",
+    "native_exit.txt": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+    "bootstrap_mc_candidate.py": "ea11d7169b820e5fa73f1eb75b0ec7d76bc769e3d6f0f9bd7eef62b6cce11932",
+    "bootstrap_mc_candidate.json": "05b52fe321fae471344e4ffe944f04184e0003845b8b653cbec07e5e116ac8e3",
+    "bootstrap_mc_candidate.log": "05b52fe321fae471344e4ffe944f04184e0003845b8b653cbec07e5e116ac8e3"
+  },
+  "production_hashes_match_git_source_commit": true
+}

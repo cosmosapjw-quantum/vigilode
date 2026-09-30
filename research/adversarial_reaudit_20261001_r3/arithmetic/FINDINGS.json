@@ -1,0 +1,75 @@
+{
+  "schema_version": "1.0",
+  "source_commit": "cc2cd041737e7ff543624d1b59893a3b4397369f",
+  "source_tree": "182fa306067b84ee10ec1f1b1e5fbad9e769aae1",
+  "scope": "binary scaling, weighted phi action, dense amplitude reports, homotopy output budgets",
+  "findings": [
+    {
+      "id": "R3-ARITH-01",
+      "severity": "P2",
+      "title": "Partial weight underflow is counted but omitted from original-target phi convergence",
+      "title_ko": "부분 가중치 소실이 실제 출력까지 전파되지 않은 채 원 φ 문제 수렴으로 보고됨",
+      "status": "CONFIRMED",
+      "evidence_status": ["derived", "numerically checked", "implementation-verified"],
+      "failure_class": ["NUMERICAL", "IMPLEMENTATION"],
+      "regression_classification": "RESIDUAL_GAP; not evidence that a previously correct input regressed",
+      "locations": [
+        {"path": "crates/rodas5p-core/src/binary_scaling.rs", "lines": [136, 155]},
+        {"path": "crates/rodas5p-integrators/src/exponential.rs", "lines": [1356, 1360]},
+        {"path": "crates/rodas5p-integrators/src/exponential.rs", "lines": [1551, 1566]},
+        {"path": "crates/rodas5p-integrators/src/exponential.rs", "lines": [1912, 1946]},
+        {"path": "crates/rodas5p-core/src/matrix_functions.rs", "lines": [252, 253]}
+      ],
+      "reproducer": {
+        "matrix": [[0, 1e308], [0, 0]],
+        "h": [1e-8, -1e-8],
+        "vectors": [[1e-300, 0], [0, 0], [0, 1e-310]],
+        "relative_tolerance": 1e-12,
+        "absolute_tolerance": 0,
+        "independent_oracle": "A^2=0; u=[b0+h^3*A12*b2/6,h^2*b2/2] with exact Fraction of represented input",
+        "expected_dominant_positive_component": "1.6666666666666616977991606826580784676079142000064443286281451060389016504784491938825777387553972761720932805e-27"
+      },
+      "observed": {
+        "fused_value": [9.999999999999999e-301, 0],
+        "prefix_value": [9.999999999999999e-301, 0],
+        "fused_and_prefix_converged": true,
+        "convergence_basis": "invariant-subspace",
+        "error_estimate": 0,
+        "phi_weight_underflows": 1,
+        "dense_value": [0, 0],
+        "relative_dominant_component_error": 1
+      },
+      "impact": "The relative tolerance claim on the original finite-input action fails; floating-point Arnoldi convergence applies to the already rounded weighted problem.",
+      "evidence": ["native.jsonl", "EXACT_ORACLES.json", "NATIVE_EXECUTION.json", "REVIEW_KO.md"],
+      "scope_limits": [
+        "Extreme finite dynamic range and strongly nonnormal nilpotent operator; no claim about ordinary ODE trajectories or published campaign corruption.",
+        "The weighting-loss counter is present and visible; its omission from acceptance, not missing accounting, is the finding.",
+        "Dense loss of b0 also involves the known very-large-norm Pade limitation; the finding does not depend on assigning every dense error to weighting.",
+        "Original PHI-R1/R2/R2-POL-01 fixtures are closed, not reopened by this distinct counterexample."
+      ],
+      "minimal_remediation": "Propagate weighting quality into every action report/consumer and refuse original-target convergence after partial loss unless a propagated physical-output bound fits the tolerance.",
+      "acceptance_tests": [
+        "Positive and negative h nilpotent fixtures return accurate representable first component or typed failure/non-convergence with no original-target invariant-subspace certification.",
+        "A=0 partial-underflow control remains explicitly classified; a conservative fail-closed first patch is acceptable.",
+        "Same rule holds for fused, prefix/incremental, dense reference and final consumers.",
+        "Previously closed R2 range and amplitude fixtures remain within their original tolerances."
+      ],
+      "development_nodes": ["ARITH-01", "ARITH-02", "ARITH-03"]
+    }
+  ],
+  "acknowledged_limits_not_new_findings": [
+    {
+      "id": "ARITH-LIMIT-01",
+      "topic": "Dense amplitude normalization in mixed range",
+      "native_witness": "diag(700,-700), w0=(1e-300,1e300), true output0~10142.32, actual0=0; both mixed_range and output_below_input_half_precision true",
+      "evidence": "EXACT_ORACLES.json",
+      "reason_not_new": "Current closure document explicitly limits mixed-range accuracy and states G3 dense wrapper drops labels; this run quantifies that acknowledged limitation."
+    },
+    {
+      "id": "ARITH-LIMIT-02",
+      "topic": "Nearest-rounded budget is not a directed lower bound",
+      "status": "unresolved",
+      "reason_not_new": "Current closure document explicitly records no directed-rounding error_upper <= budget_lower path."
+    }
+  ]
+}

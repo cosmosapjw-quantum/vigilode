@@ -1,0 +1,337 @@
+{
+  "schema": "vigilode.r3.final_runtime_summary.v1",
+  "finalized": true,
+  "recorded_utc": "2026-09-30T16:12:50.145353+00:00",
+  "source_commit": "cc2cd041737e7ff543624d1b59893a3b4397369f",
+  "source_tree": "182fa306067b84ee10ec1f1b1e5fbad9e769aae1",
+  "full_workspace_pass": false,
+  "scientific_speed_claim": false,
+  "prior_pass_inherited": false,
+  "native_campaign_status": "PARTIAL_BOUNDED_NATIVE_CAMPAIGN",
+  "discovered_native_harnesses": 136,
+  "discovered_named_tests": 682,
+  "test_counts": {
+    "IGNORED_NOT_RUN": 3,
+    "NOT_RUN_TOTAL_BUDGET": 28,
+    "PASS": 625,
+    "UNRESOLVED_BOUNDED_TIMEOUT": 26
+  },
+  "binary_counts": {
+    "BOUNDED_TIMEOUT": 6,
+    "NOT_RUN_TOTAL_BUDGET": 4,
+    "PASS": 126
+  },
+  "observed_assertion_failures": 0,
+  "changed_surface_contracts": {
+    "target_count": 7,
+    "passed_tests": 37,
+    "target_results": [
+      {
+        "target": "paired_timing_contracts",
+        "status": "PASS",
+        "executable": "/workspace/scratch/0dc1e721cf82/runtime_r3/target-shared/debug/deps/paired_timing_contracts-29cdc3b85c71f839",
+        "rust_summary": {
+          "status": "ok",
+          "passed": 13,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        "tests": [
+          {
+            "name": "abba_order_is_seeded_mirrored_and_balanced",
+            "status": "PASS"
+          },
+          {
+            "name": "batch_size_is_calibrated_from_the_minimum_warmup",
+            "status": "PASS"
+          },
+          {
+            "name": "host_metadata_records_every_field_or_unknown",
+            "status": "PASS"
+          },
+          {
+            "name": "identical_arms_give_an_aa_interval_containing_one",
+            "status": "PASS"
+          },
+          {
+            "name": "measured_case_uses_warmups_minimum_calibration_and_abba_pairs",
+            "status": "PASS"
+          },
+          {
+            "name": "one_shared_process_is_one_session_however_many_cases",
+            "status": "PASS"
+          },
+          {
+            "name": "pairs_of_one_process_are_not_resampled_as_independent",
+            "status": "PASS"
+          },
+          {
+            "name": "protocol_and_cases_below_the_minimum_are_rejected",
+            "status": "PASS"
+          },
+          {
+            "name": "replicating_cases_does_not_narrow_a_session_level_interval",
+            "status": "PASS"
+          },
+          {
+            "name": "same_seed_reproduces_identical_interval_bits",
+            "status": "PASS"
+          },
+          {
+            "name": "threshold_speedup_with_the_v36_recorded_spread_is_inconclusive",
+            "status": "PASS"
+          },
+          {
+            "name": "true_speedup_of_0_90_blocks",
+            "status": "PASS"
+          },
+          {
+            "name": "true_speedup_of_1_30_with_five_percent_noise_promotes",
+            "status": "PASS"
+          }
+        ]
+      },
+      {
+        "target": "r2_output_budget_contracts",
+        "status": "PASS",
+        "executable": "/workspace/scratch/0dc1e721cf82/runtime_r3/target-shared/debug/deps/r2_output_budget_contracts-dd6be27754bf1f41",
+        "rust_summary": {
+          "status": "ok",
+          "passed": 3,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        "tests": [
+          {
+            "name": "the_homotopy_step_consumes_the_binding_step_budget_on_both_sides",
+            "status": "PASS"
+          },
+          {
+            "name": "the_step_term_is_evaluated_without_intermediate_overflow",
+            "status": "PASS"
+          },
+          {
+            "name": "the_step_term_matches_the_direct_formula_where_that_is_exact",
+            "status": "PASS"
+          }
+        ]
+      },
+      {
+        "target": "r2_output_time_identity_contracts",
+        "status": "PASS",
+        "executable": "/workspace/scratch/0dc1e721cf82/runtime_r3/target-shared/debug/deps/r2_output_time_identity_contracts-0d5b789956ddf7a5",
+        "rust_summary": {
+          "status": "ok",
+          "passed": 9,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        "tests": [
+          {
+            "name": "a_request_one_ulp_after_an_endpoint_is_interpolated_not_snapped",
+            "status": "PASS"
+          },
+          {
+            "name": "a_short_representable_span_at_a_large_epoch_is_integrated",
+            "status": "PASS"
+          },
+          {
+            "name": "a_step_below_half_an_ulp_is_a_typed_failure",
+            "status": "PASS"
+          },
+          {
+            "name": "a_uniform_output_grid_adds_no_micro_steps",
+            "status": "PASS"
+          },
+          {
+            "name": "adjacent_representable_output_times_are_distinct_requests",
+            "status": "PASS"
+          },
+          {
+            "name": "an_adaptive_step_across_zero_reaches_the_end",
+            "status": "PASS"
+          },
+          {
+            "name": "fixed_steps_that_accumulate_below_the_end_land_on_it",
+            "status": "PASS"
+          },
+          {
+            "name": "grids_through_zero_from_negative_times_add_no_micro_steps",
+            "status": "PASS"
+          },
+          {
+            "name": "radau_fixed_steps_cover_a_short_span_at_a_large_epoch",
+            "status": "PASS"
+          }
+        ]
+      },
+      {
+        "target": "r2_phi_range_contracts",
+        "status": "PASS",
+        "executable": "/workspace/scratch/0dc1e721cf82/runtime_r3/target-shared/debug/deps/r2_phi_range_contracts-8177e33efe45cc9b",
+        "rust_summary": {
+          "status": "ok",
+          "passed": 4,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        "tests": [
+          {
+            "name": "mixed_range_and_small_output_are_labelled",
+            "status": "PASS"
+          },
+          {
+            "name": "representable_weights_survive_the_transform",
+            "status": "PASS"
+          },
+          {
+            "name": "the_dense_oracle_is_invariant_to_input_amplitude",
+            "status": "PASS"
+          },
+          {
+            "name": "the_weight_transform_reports_loss_instead_of_hiding_it",
+            "status": "PASS"
+          }
+        ]
+      },
+      {
+        "target": "r2_timing_authority_contracts",
+        "status": "PASS",
+        "executable": "/workspace/scratch/0dc1e721cf82/runtime_r3/target-shared/debug/deps/r2_timing_authority_contracts-e0f62159fdde6f10",
+        "rust_summary": {
+          "status": "ok",
+          "passed": 5,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        "tests": [
+          {
+            "name": "a_preview_protocol_or_an_inconsistent_record_never_gates",
+            "status": "PASS"
+          },
+          {
+            "name": "a_producer_without_a_session_is_never_authoritative",
+            "status": "PASS"
+          },
+          {
+            "name": "an_aa_control_in_other_sessions_confers_no_authority",
+            "status": "PASS"
+          },
+          {
+            "name": "the_interval_reports_its_simulation_band",
+            "status": "PASS"
+          },
+          {
+            "name": "the_resampled_interval_matches_the_exact_six_session_bootstrap",
+            "status": "PASS"
+          }
+        ]
+      },
+      {
+        "target": "r2_work_coverage_consumer_contracts",
+        "status": "PASS",
+        "executable": "/workspace/scratch/0dc1e721cf82/runtime_r3/target-shared/debug/deps/r2_work_coverage_consumer_contracts-29645b7403d6e319",
+        "rust_summary": {
+          "status": "ok",
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        "tests": [
+          {
+            "name": "a_merged_legacy_segment_leaves_the_vector_cost_unevaluated",
+            "status": "PASS"
+          }
+        ]
+      },
+      {
+        "target": "work_unit_contracts",
+        "status": "PASS",
+        "executable": "/workspace/scratch/0dc1e721cf82/runtime_r3/target-shared/debug/deps/work_unit_contracts-7bed2525452ae881",
+        "rust_summary": {
+          "status": "ok",
+          "passed": 2,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        "tests": [
+          {
+            "name": "cross_lane_operator_work_is_counted_in_state_vectors",
+            "status": "PASS"
+          },
+          {
+            "name": "unknown_vector_coverage_survives_aggregation",
+            "status": "PASS"
+          }
+        ]
+      }
+    ]
+  },
+  "doctests": "NOT_RUN",
+  "ignored_tests": "NOT_EXECUTED",
+  "timeout_semantics": "unresolved within audit execution budget; neither assertion failure nor PASS",
+  "toolchain": {
+    "rustc": "1.94.1",
+    "cargo": "1.94.1",
+    "dependencies": "118/118 locked registry packages exact version+package checksum, offline",
+    "source": "setup_evidence.json"
+  },
+  "build_claim": "UNRESOLVED_FULL_WORKSPACE_BUILD_EVIDENCE",
+  "build_attempts": [
+    {
+      "role": "one full build",
+      "budget_seconds": 600,
+      "elapsed_seconds": 197.4534952009999,
+      "reported_exit_code": 0,
+      "status": "INVALID_AS_COMPLETION_EVIDENCE: no build-finished and no executable records in redirected stream",
+      "receipt": "full_suite_attempt1_incomplete/suite_summary.json"
+    },
+    {
+      "role": "bounded cached artifact metadata recovery",
+      "budget_seconds": 30,
+      "elapsed_seconds": 30.008795004003332,
+      "exit_code": 124,
+      "status": "TIMEOUT; actual recompile observed, no further Cargo",
+      "receipt": "full_suite/suite_summary.json"
+    }
+  ],
+  "native_artifact_admission": "Exact current-turn Cargo metadata workspace target -> unique native test fingerprint -> executable --list successful; complete stdout/stderr captured to memory before persistence. Full build success is not inferred.",
+  "native_campaign_budget_seconds": 300,
+  "native_campaign_elapsed_seconds": 300.02369989799627,
+  "profile": {
+    "opt_level": 0,
+    "debug_info": true,
+    "codegen_units": 1,
+    "incremental": false,
+    "features": "all"
+  },
+  "audit_helper_correction": {
+    "empty_artifact_vacuous_pass_rejected": true,
+    "invalid_original_receipt": "full_suite_attempt1_incomplete/suite_summary_before_empty_guard.json",
+    "raw_invalid_driver": "full_suite_driver.log",
+    "guard": "run_bounded_suite.py requires nonempty native artifacts and successful build-finished record"
+  },
+  "source_manifests_and_lock_unchanged_in_first_campaign": true,
+  "evidence_paths": [
+    "setup_evidence.json",
+    "dependency_match.json",
+    "runtime_incidents.json",
+    "targeted_cache_recovery.json",
+    "recovered_native/summary.json"
+  ],
+  "memory_events_after": "low 0\nhigh 0\nmax 504402\noom 0\noom_kill 0\noom_group_kill 0\n"
+}

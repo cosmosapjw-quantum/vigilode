@@ -1,0 +1,7 @@
+# R3 statistics audit and bounded research
+
+Source is cc2cd041737e7ff543624d1b59893a3b4397369f. Prior findings R2-STAT-01/02/03 are separate closure obligations, not assumed PASS. Production remains read-only; authored probes and candidates live here. Synthetic durations, session declarations and seeded resampling are functional/statistical inputs, never observed wall speedup.
+
+Acceptance: native execution of old public producer / assessment / raw verification / vector cost cases; source inspection and focused existing consumer tests; a new finding requires independently interpretable invariant violation. Missing native CLI runner and caller-provided session identities are acknowledged limitations and will not be rediscovered as new defects. Research candidate will constrain simulation error of percentile endpoints without changing the underlying performance estimand or claiming frequentist coverage of the bootstrap interval itself. Stop after bounded evidence and next development contracts; root independent reviewer makes promotion decision.
+
+Harness: loaded research and coding GPT-6 Astra v4.0.0 core under prior user selection. No model identity or model performance inference. Evidence labels distinguish derived, numerically checked and implementation-verified. Units of timings are seconds; ratios and log ratios dimensionless. Independence of actual sessions is a future runner obligation.

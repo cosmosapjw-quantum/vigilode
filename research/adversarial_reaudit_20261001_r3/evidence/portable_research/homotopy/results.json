@@ -1,0 +1,3788 @@
+{
+  "schema": "vigilode.r3.homotopy.outward.v1",
+  "source_commit": "cc2cd041737e7ff543624d1b59893a3b4397369f",
+  "coefficients_path": "/workspace/scratch/0dc1e721cf82/r3_portable_research_check/homotopy/native_tableau_bits.json",
+  "coefficients_sha256": "c9e971d237593bdd011346cbeedceee11e19246e346d7d82a0e07c72ec23bc71",
+  "runtime": {
+    "python": "3.12.14",
+    "numpy": "2.3.5"
+  },
+  "primitive_checks": {
+    "exact_operation_checks": 162,
+    "overflow_fails_closed": true
+  },
+  "rows": [
+    {
+      "family": "affine",
+      "h": 0.1,
+      "method": "q1",
+      "n": 1,
+      "checks": {
+        "inverse_witness_exact": true,
+        "residual_contains_exact": true,
+        "stage_componentwise_exact": true,
+        "output_projection_exact": true,
+        "embedded_projection_exact": true,
+        "output_wrms_exact": true,
+        "embedded_difference_wrms_exact": true
+      },
+      "candidate_w_batches": 6,
+      "candidate_w_vector_solves": 48,
+      "certificate_stage_layers": 8,
+      "certificate": {
+        "E": [
+          [
+            8.153861726201249e-17
+          ],
+          [
+            9.512838680568124e-17
+          ],
+          [
+            9.629443135945638e-17
+          ],
+          [
+            1.3342828429667328e-16
+          ],
+          [
+            1.920139523808909e-16
+          ],
+          [
+            1.778422810331226e-16
+          ],
+          [
+            1.708907427464509e-16
+          ],
+          [
+            1.8133588335999805e-11
+          ]
+        ],
+        "output_bound": [
+          3.844193083255444e-12
+        ],
+        "embedded_difference_bound": [
+          3.843394547292729e-12
+        ],
+        "output_wrms": 3.8061317655994497e-06,
+        "embedded_difference_wrms": 3.805341135933395e-06,
+        "embedded_target_wrms_upper": 0.0012685211983432777,
+        "combined_proxy_upper": 0.0012723273301088773,
+        "scale": [
+          1.0099999999999999e-06
+        ],
+        "projection_roundoff": [
+          [
+            3.33066907387547e-16,
+            3.996936947330899e-17
+          ]
+        ],
+        "certificate_seconds": 0.0006846909964224324,
+        "op_counts": {
+          "interval_add": 190,
+          "interval_mul": 198,
+          "upper_add": 116,
+          "upper_mul": 128
+        }
+      },
+      "exact_output_error_inf": 3.843119949339629e-12,
+      "exact_embedded_difference_inf": 3.843160483658002e-12,
+      "exact_output_wrms": 3.80506925677191e-06,
+      "exact_embedded_difference_wrms": 3.8051093897603983e-06,
+      "certificate_accept_output_01": true,
+      "certificate_accept_combined_1": true,
+      "doubling_certificate": {
+        "radius": 0.0001,
+        "closes": true,
+        "E": [
+          [
+            8.15386172620125e-17
+          ],
+          [
+            9.512838680568125e-17
+          ],
+          [
+            9.62944313594564e-17
+          ],
+          [
+            1.3342828429667328e-16
+          ],
+          [
+            1.9201395238089094e-16
+          ],
+          [
+            1.7784228103312262e-16
+          ],
+          [
+            1.7089074274645094e-16
+          ],
+          [
+            1.8133588335999808e-11
+          ]
+        ],
+        "state_radii": [
+          [
+            0.0
+          ],
+          [
+            5.1843287546228434e-17
+          ],
+          [
+            3.471691406058845e-17
+          ],
+          [
+            4.953369746079286e-16
+          ],
+          [
+            8.2635292025102e-17
+          ],
+          [
+            6.798937887420441e-16
+          ],
+          [
+            6.048048269780722e-16
+          ],
+          [
+            6.711207380196421e-16
+          ]
+        ],
+        "doubling_levels": 3,
+        "matrix_dimension": 8,
+        "dense_matrix_multiplications": 5,
+        "scope": "parallelizable algebra only; this Python evaluator executes serially",
+        "stage_enclosure_checked_exact": true
+      },
+      "exact_reference_seconds": 0.0003665019976324402,
+      "exact_reference_max_numerator_bits": 806
+    },
+    {
+      "family": "affine",
+      "h": 0.1,
+      "method": "q2",
+      "n": 1,
+      "checks": {
+        "inverse_witness_exact": true,
+        "residual_contains_exact": true,
+        "stage_componentwise_exact": true,
+        "output_projection_exact": true,
+        "embedded_projection_exact": true,
+        "output_wrms_exact": true,
+        "embedded_difference_wrms_exact": true
+      },
+      "candidate_w_batches": 8,
+      "candidate_w_vector_solves": 64,
+      "certificate_stage_layers": 8,
+      "certificate": {
+        "E": [
+          [
+            8.153861726201249e-17
+          ],
+          [
+            9.512838680568124e-17
+          ],
+          [
+            9.629443135945638e-17
+          ],
+          [
+            1.3342828429667328e-16
+          ],
+          [
+            1.920139523808909e-16
+          ],
+          [
+            1.778422810331226e-16
+          ],
+          [
+            1.708907427464509e-16
+          ],
+          [
+            1.7447379221142969e-16
+          ]
+        ],
+        "output_bound": [
+          1.0415369056018012e-15
+        ],
+        "embedded_difference_bound": [
+          2.4398785641755705e-16
+        ],
+        "output_wrms": 1.0312246590116846e-09,
+        "embedded_difference_wrms": 2.415721350668882e-10,
+        "embedded_target_wrms_upper": 0.0012609109958349022,
+        "combined_proxy_upper": 0.0012609120270595615,
+        "scale": [
+          1.0099999999999999e-06
+        ],
+        "projection_roundoff": [
+          [
+            3.33066907387547e-16,
+            4.095628300484422e-17
+          ]
+        ],
+        "certificate_seconds": 0.0007217269958346151,
+        "op_counts": {
+          "interval_add": 190,
+          "interval_mul": 198,
+          "upper_add": 116,
+          "upper_mul": 128
+        }
+      },
+      "exact_output_error_inf": 2.80727028129067e-17,
+      "exact_embedded_difference_inf": 6.50963518772331e-18,
+      "exact_output_wrms": 2.7794755260303664e-11,
+      "exact_embedded_difference_wrms": 6.445183354181496e-12,
+      "certificate_accept_output_01": true,
+      "certificate_accept_combined_1": true,
+      "doubling_certificate": {
+        "radius": 0.0001,
+        "closes": true,
+        "E": [
+          [
+            8.15386172620125e-17
+          ],
+          [
+            9.512838680568125e-17
+          ],
+          [
+            9.62944313594564e-17
+          ],
+          [
+            1.3342828429667328e-16
+          ],
+          [
+            1.9201395238089094e-16
+          ],
+          [
+            1.7784228103312262e-16
+          ],
+          [
+            1.7089074274645094e-16
+          ],
+          [
+            1.744737922114297e-16
+          ]
+        ],
+        "state_radii": [
+          [
+            0.0
+          ],
+          [
+            5.1843287546228434e-17
+          ],
+          [
+            3.471691406058845e-17
+          ],
+          [
+            4.953369746079286e-16
+          ],
+          [
+            8.2635292025102e-17
+          ],
+          [
+            6.798937887420441e-16
+          ],
+          [
+            6.048048269780722e-16
+          ],
+          [
+            6.711207380196421e-16
+          ]
+        ],
+        "doubling_levels": 3,
+        "matrix_dimension": 8,
+        "dense_matrix_multiplications": 5,
+        "scope": "parallelizable algebra only; this Python evaluator executes serially",
+        "stage_enclosure_checked_exact": true
+      },
+      "exact_reference_seconds": 0.0003665019976324402,
+      "exact_reference_max_numerator_bits": 806
+    },
+    {
+      "family": "affine",
+      "h": 1.0,
+      "method": "q1",
+      "n": 1,
+      "checks": {
+        "inverse_witness_exact": true,
+        "residual_contains_exact": true,
+        "stage_componentwise_exact": true,
+        "output_projection_exact": true,
+        "embedded_projection_exact": true,
+        "output_wrms_exact": true,
+        "embedded_difference_wrms_exact": true
+      },
+      "candidate_w_batches": 6,
+      "candidate_w_vector_solves": 48,
+      "certificate_stage_layers": 8,
+      "certificate": {
+        "E": [
+          [
+            5.496436739029466e-16
+          ],
+          [
+            9.160727898382447e-16
+          ],
+          [
+            9.893999056692555e-16
+          ],
+          [
+            4.200172581975915e-15
+          ],
+          [
+            9.871286663497164e-15
+          ],
+          [
+            7.130750707601693e-15
+          ],
+          [
+            1.9166550187884982e-14
+          ],
+          [
+            5.4685876233136446e-05
+          ]
+        ],
+        "output_bound": [
+          1.1589991377040326e-05
+        ],
+        "embedded_difference_bound": [
+          1.158999136078122e-05
+        ],
+        "output_wrms": 11.475238987168641,
+        "embedded_difference_wrms": 11.475238971070516,
+        "embedded_target_wrms_upper": 115.79771336852599,
+        "combined_proxy_upper": 127.27295235569464,
+        "scale": [
+          1.0099999999999999e-06
+        ],
+        "projection_roundoff": [
+          [
+            1.4988010832439615e-15,
+            2.6901766404796584e-16
+          ]
+        ],
+        "certificate_seconds": 0.0007484379966626875,
+        "op_counts": {
+          "interval_add": 190,
+          "interval_mul": 198,
+          "upper_add": 116,
+          "upper_mul": 128
+        }
+      },
+      "exact_output_error_inf": 1.1589991345234976e-05,
+      "exact_embedded_difference_inf": 1.1589991345298734e-05,
+      "exact_output_wrms": 11.475238955678194,
+      "exact_embedded_difference_wrms": 11.47523895574132,
+      "certificate_accept_output_01": false,
+      "certificate_accept_combined_1": false,
+      "doubling_certificate": {
+        "radius": 0.0001,
+        "closes": true,
+        "E": [
+          [
+            5.496436739029467e-16
+          ],
+          [
+            9.160727898382449e-16
+          ],
+          [
+            9.893999056692557e-16
+          ],
+          [
+            4.200172581975915e-15
+          ],
+          [
+            9.871286663497166e-15
+          ],
+          [
+            7.130750707601696e-15
+          ],
+          [
+            1.9166550187884997e-14
+          ],
+          [
+            5.4685876233136446e-05
+          ]
+        ],
+        "state_radii": [
+          [
+            0.0
+          ],
+          [
+            3.4947042261644273e-16
+          ],
+          [
+            2.6072409599990164e-16
+          ],
+          [
+            4.596811317986017e-15
+          ],
+          [
+            7.403292741962063e-16
+          ],
+          [
+            6.5253621712343405e-15
+          ],
+          [
+            7.82183021331899e-15
+          ],
+          [
+            2.495930571949497e-14
+          ]
+        ],
+        "doubling_levels": 3,
+        "matrix_dimension": 8,
+        "dense_matrix_multiplications": 5,
+        "scope": "parallelizable algebra only; this Python evaluator executes serially",
+        "stage_enclosure_checked_exact": true
+      },
+      "exact_reference_seconds": 0.0002819139990606345,
+      "exact_reference_max_numerator_bits": 376
+    },
+    {
+      "family": "affine",
+      "h": 1.0,
+      "method": "q2",
+      "n": 1,
+      "checks": {
+        "inverse_witness_exact": true,
+        "residual_contains_exact": true,
+        "stage_componentwise_exact": true,
+        "output_projection_exact": true,
+        "embedded_projection_exact": true,
+        "output_wrms_exact": true,
+        "embedded_difference_wrms_exact": true
+      },
+      "candidate_w_batches": 8,
+      "candidate_w_vector_solves": 64,
+      "certificate_stage_layers": 8,
+      "certificate": {
+        "E": [
+          [
+            5.496436739029466e-16
+          ],
+          [
+            9.160727898382447e-16
+          ],
+          [
+            9.893999056692555e-16
+          ],
+          [
+            4.200172581975915e-15
+          ],
+          [
+            9.871286663497164e-15
+          ],
+          [
+            7.130750707601693e-15
+          ],
+          [
+            1.9166550187884982e-14
+          ],
+          [
+            2.3094030844762476e-14
+          ]
+        ],
+        "output_bound": [
+          3.182830421451404e-14
+        ],
+        "embedded_difference_bound": [
+          1.56842157593908e-14
+        ],
+        "output_wrms": 3.151317248961787e-08,
+        "embedded_difference_wrms": 1.552892649444634e-08,
+        "embedded_target_wrms_upper": 92.84723545730753,
+        "combined_proxy_upper": 92.84723548882071,
+        "scale": [
+          1.0099999999999999e-06
+        ],
+        "projection_roundoff": [
+          [
+            1.3877787807814459e-15,
+            2.7301565955900613e-16
+          ]
+        ],
+        "certificate_seconds": 0.0005798029960715212,
+        "op_counts": {
+          "interval_add": 190,
+          "interval_mul": 198,
+          "upper_add": 116,
+          "upper_mul": 128
+        }
+      },
+      "exact_output_error_inf": 2.831241803801547e-17,
+      "exact_embedded_difference_inf": 6.508708102214917e-17,
+      "exact_output_wrms": 2.803209706734205e-11,
+      "exact_embedded_difference_wrms": 6.444265447737542e-11,
+      "certificate_accept_output_01": true,
+      "certificate_accept_combined_1": false,
+      "doubling_certificate": {
+        "radius": 0.0001,
+        "closes": true,
+        "E": [
+          [
+            5.496436739029467e-16
+          ],
+          [
+            9.160727898382449e-16
+          ],
+          [
+            9.893999056692557e-16
+          ],
+          [
+            4.200172581975915e-15
+          ],
+          [
+            9.871286663497166e-15
+          ],
+          [
+            7.130750707601696e-15
+          ],
+          [
+            1.9166550187884997e-14
+          ],
+          [
+            2.3094030844762498e-14
+          ]
+        ],
+        "state_radii": [
+          [
+            0.0
+          ],
+          [
+            3.4947042261644273e-16
+          ],
+          [
+            2.6072409599990164e-16
+          ],
+          [
+            4.596811317986017e-15
+          ],
+          [
+            7.403292741962063e-16
+          ],
+          [
+            6.5253621712343405e-15
+          ],
+          [
+            7.82183021331899e-15
+          ],
+          [
+            2.495930571949497e-14
+          ]
+        ],
+        "doubling_levels": 3,
+        "matrix_dimension": 8,
+        "dense_matrix_multiplications": 5,
+        "scope": "parallelizable algebra only; this Python evaluator executes serially",
+        "stage_enclosure_checked_exact": true
+      },
+      "exact_reference_seconds": 0.0002819139990606345,
+      "exact_reference_max_numerator_bits": 376
+    },
+    {
+      "family": "affine",
+      "h": 10.0,
+      "method": "q1",
+      "n": 1,
+      "checks": {
+        "inverse_witness_exact": true,
+        "residual_contains_exact": true,
+        "stage_componentwise_exact": true,
+        "output_projection_exact": true,
+        "embedded_projection_exact": true,
+        "output_wrms_exact": true,
+        "embedded_difference_wrms_exact": true
+      },
+      "candidate_w_batches": 6,
+      "candidate_w_vector_solves": 48,
+      "certificate_stage_layers": 8,
+      "certificate": {
+        "E": [
+          [
+            3.4167545989846336e-15
+          ],
+          [
+            3.986213698815408e-15
+          ],
+          [
+            6.7247122680984145e-15
+          ],
+          [
+            9.455304454463239e-14
+          ],
+          [
+            2.6995313322888786e-13
+          ],
+          [
+            2.1602291031344944e-13
+          ],
+          [
+            1.778192812537318e-12
+          ],
+          [
+            0.7307404917971163
+          ]
+        ],
+        "output_bound": [
+          0.15487135915982939
+        ],
+        "embedded_difference_bound": [
+          0.15487135915969205
+        ],
+        "output_wrms": 153337.97936616774,
+        "embedded_difference_wrms": 153337.97936603177,
+        "embedded_target_wrms_upper": 392337.72220303246,
+        "combined_proxy_upper": 545675.7015692004,
+        "scale": [
+          1.0099999999999999e-06
+        ],
+        "projection_roundoff": [
+          [
+            1.8679502389318262e-14,
+            1.8041124150158798e-15
+          ]
+        ],
+        "certificate_seconds": 0.00059403499471955,
+        "op_counts": {
+          "interval_add": 190,
+          "interval_mul": 198,
+          "upper_add": 116,
+          "upper_mul": 128
+        }
+      },
+      "exact_output_error_inf": 0.15487135915822975,
+      "exact_embedded_difference_inf": 0.15487135915823186,
+      "exact_output_wrms": 153337.9793645839,
+      "exact_embedded_difference_wrms": 153337.979364586,
+      "certificate_accept_output_01": false,
+      "certificate_accept_combined_1": false,
+      "doubling_certificate": {
+        "radius": 0.0001,
+        "closes": true,
+        "E": [
+          [
+            3.416754598984634e-15
+          ],
+          [
+            3.986213698815409e-15
+          ],
+          [
+            6.724712268098416e-15
+          ],
+          [
+            9.45530445446324e-14
+          ],
+          [
+            2.6995313322888796e-13
+          ],
+          [
+            2.1602291031344944e-13
+          ],
+          [
+            1.7781928125373188e-12
+          ],
+          [
+            0.7307404917971164
+          ]
+        ],
+        "state_radii": [
+          [
+            0.0
+          ],
+          [
+            2.1724159312250618e-15
+          ],
+          [
+            1.454760698208855e-15
+          ],
+          [
+            2.6661351852341713e-14
+          ],
+          [
+            4.989106025393348e-15
+          ],
+          [
+            4.2714359298195196e-14
+          ],
+          [
+            1.0553069503386624e-13
+          ],
+          [
+            9.132545089654301e-13
+          ]
+        ],
+        "doubling_levels": 3,
+        "matrix_dimension": 8,
+        "dense_matrix_multiplications": 5,
+        "scope": "parallelizable algebra only; this Python evaluator executes serially",
+        "stage_enclosure_checked_exact": true
+      },
+      "exact_reference_seconds": 0.0004207640013191849,
+      "exact_reference_max_numerator_bits": 371
+    },
+    {
+      "family": "affine",
+      "h": 10.0,
+      "method": "q2",
+      "n": 1,
+      "checks": {
+        "inverse_witness_exact": true,
+        "residual_contains_exact": true,
+        "stage_componentwise_exact": true,
+        "output_projection_exact": true,
+        "embedded_projection_exact": true,
+        "output_wrms_exact": true,
+        "embedded_difference_wrms_exact": true
+      },
+      "candidate_w_batches": 8,
+      "candidate_w_vector_solves": 64,
+      "certificate_stage_layers": 8,
+      "certificate": {
+        "E": [
+          [
+            3.4167545989846336e-15
+          ],
+          [
+            3.986213698815408e-15
+          ],
+          [
+            6.7247122680984145e-15
+          ],
+          [
+            9.455304454463239e-14
+          ],
+          [
+            2.6995313322888786e-13
+          ],
+          [
+            2.1602291031344944e-13
+          ],
+          [
+            1.7804706489366411e-12
+          ],
+          [
+            3.05328492518339e-12
+          ]
+        ],
+        "output_bound": [
+          1.598836422238939e-12
+        ],
+        "embedded_difference_bound": [
+          1.461979297859271e-12
+        ],
+        "output_wrms": 1.583006358652415e-06,
+        "embedded_difference_wrms": 1.447504255306209e-06,
+        "embedded_target_wrms_upper": 85661.76347386057,
+        "combined_proxy_upper": 85661.76347544359,
+        "scale": [
+          1.0099999999999999e-06
+        ],
+        "projection_roundoff": [
+          [
+            1.865868570760654e-14,
+            1.8041124150158798e-15
+          ]
+        ],
+        "certificate_seconds": 0.0007514410026487894,
+        "op_counts": {
+          "interval_add": 190,
+          "interval_mul": 198,
+          "upper_add": 116,
+          "upper_mul": 128
+        }
+      },
+      "exact_output_error_inf": 3.1606558268004815e-15,
+      "exact_embedded_difference_inf": 1.663800249042689e-15,
+      "exact_output_wrms": 3.129362204752952e-09,
+      "exact_embedded_difference_wrms": 1.6473269792501872e-09,
+      "certificate_accept_output_01": true,
+      "certificate_accept_combined_1": false,
+      "doubling_certificate": {
+        "radius": 0.0001,
+        "closes": true,
+        "E": [
+          [
+            3.416754598984634e-15
+          ],
+          [
+            3.986213698815409e-15
+          ],
+          [
+            6.724712268098416e-15
+          ],
+          [
+            9.45530445446324e-14
+          ],
+          [
+            2.6995313322888796e-13
+          ],
+          [
+            2.1602291031344944e-13
+          ],
+          [
+            1.7804706489366417e-12
+          ],
+          [
+            3.053284925183391e-12
+          ]
+        ],
+        "state_radii": [
+          [
+            0.0
+          ],
+          [
+            2.1724159312250618e-15
+          ],
+          [
+            1.454760698208855e-15
+          ],
+          [
+            2.6661351852341713e-14
+          ],
+          [
+            4.989106025393348e-15
+          ],
+          [
+            4.2714359298195196e-14
+          ],
+          [
+            1.0553069503386624e-13
+          ],
+          [
+            9.13737268061258e-13
+          ]
+        ],
+        "doubling_levels": 3,
+        "matrix_dimension": 8,
+        "dense_matrix_multiplications": 5,
+        "scope": "parallelizable algebra only; this Python evaluator executes serially",
+        "stage_enclosure_checked_exact": true
+      },
+      "exact_reference_seconds": 0.0004207640013191849,
+      "exact_reference_max_numerator_bits": 371
+    },
+    {
+      "family": "nonnormal",
+      "h": 0.1,
+      "method": "q1",
+      "n": 2,
+      "checks": {
+        "inverse_witness_exact": true,
+        "residual_contains_exact": true,
+        "stage_componentwise_exact": true,
+        "output_projection_exact": true,
+        "embedded_projection_exact": true,
+        "output_wrms_exact": true,
+        "embedded_difference_wrms_exact": true
+      },
+      "candidate_w_batches": 6,
+      "candidate_w_vector_solves": 48,
+      "certificate_stage_layers": 8,
+      "certificate": {
+        "E": [
+          [
+            8.866676964539148e-15,
+            8.153861726201249e-17
+          ],
+          [
+            1.0634371542227274e-14,
+            9.512838680568124e-17
+          ],
+          [
+            1.2620572994976818e-14,
+            9.629443135945638e-17
+          ],
+          [
+            1.9570992450013942e-14,
+            1.3342828429667328e-16
+          ],
+          [
+            3.1288440974910463e-14,
+            1.920139523808909e-16
+          ],
+          [
+            2.6694499952938905e-14,
+            1.6425251148945384e-16
+          ],
+          [
+            3.124239042785727e-14,
+            1.8308359536083386e-16
+          ],
+          [
+            1.2505257423897378e-08,
+            1.8133600893288445e-11
+          ]
+        ],
+        "output_bound": [
+          2.6504572177913727e-09,
+          3.844185200986096e-12
+        ],
+        "embedded_difference_bound": [
+          2.6503631324582096e-09,
+          3.843402960241566e-12
+        ],
+        "output_wrms": 0.00020691514724628242,
+        "embedded_difference_wrms": 0.00020690779633886108,
+        "embedded_target_wrms_upper": 0.05027493960339575,
+        "combined_proxy_upper": 0.050481854750642034,
+        "scale": [
+          9.058374182444236e-06,
+          1.0099999999999999e-06
+        ],
+        "projection_roundoff": [
+          [
+            2.309263891220326e-14,
+            3.3306691797545884e-15
+          ],
+          [
+            3.33066907387547e-16,
+            4.163336363023853e-17
+          ]
+        ],
+        "certificate_seconds": 0.0015929990040604025,
+        "op_counts": {
+          "interval_add": 416,
+          "interval_mul": 434,
+          "upper_add": 263,
+          "upper_mul": 288
+        }
+      },
+      "exact_output_error_inf": 2.634368909281588e-09,
+      "exact_embedded_difference_inf": 2.6343751289756172e-09,
+      "exact_output_wrms": 0.00020565937308862097,
+      "exact_embedded_difference_wrms": 0.00020565985891804546,
+      "certificate_accept_output_01": true,
+      "certificate_accept_combined_1": true,
+      "doubling_certificate": {
+        "radius": 0.0001,
+        "closes": true,
+        "E": [
+          [
+            8.86667696453915e-15,
+            8.15386172620125e-17
+          ],
+          [
+            1.0634371542227276e-14,
+            9.512838680568125e-17
+          ],
+          [
+            1.262057299497682e-14,
+            9.62944313594564e-17
+          ],
+          [
+            1.9570992450013942e-14,
+            1.3342828429667328e-16
+          ],
+          [
+            3.1288440974910476e-14,
+            1.9201395238089094e-16
+          ],
+          [
+            2.6694499952938917e-14,
+            1.6425251148945387e-16
+          ],
+          [
+            3.124239042785728e-14,
+            1.8308359536083388e-16
+          ],
+          [
+            1.250525742389738e-08,
+            1.813360089328845e-11
+          ]
+        ],
+        "state_radii": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            5.637545728486118e-15,
+            5.1843287546228434e-17
+          ],
+          [
+            3.803355906800787e-15,
+            3.471691406058845e-17
+          ],
+          [
+            5.912145670826647e-14,
+            4.953369746079286e-16
+          ],
+          [
+            9.618611332922484e-15,
+            8.2635292025102e-17
+          ],
+          [
+            8.16455795158183e-14,
+            6.798937887420441e-16
+          ],
+          [
+            7.595912248513931e-14,
+            6.019246443366151e-16
+          ],
+          [
+            9.985069762101071e-14,
+            6.594396330282856e-16
+          ]
+        ],
+        "doubling_levels": 3,
+        "matrix_dimension": 16,
+        "dense_matrix_multiplications": 5,
+        "scope": "parallelizable algebra only; this Python evaluator executes serially",
+        "stage_enclosure_checked_exact": true
+      },
+      "exact_reference_seconds": 0.0008637310020276345,
+      "exact_reference_max_numerator_bits": 910
+    },
+    {
+      "family": "nonnormal",
+      "h": 0.1,
+      "method": "q2",
+      "n": 2,
+      "checks": {
+        "inverse_witness_exact": true,
+        "residual_contains_exact": true,
+        "stage_componentwise_exact": true,
+        "output_projection_exact": true,
+        "embedded_projection_exact": true,
+        "output_wrms_exact": true,
+        "embedded_difference_wrms_exact": true
+      },
+      "candidate_w_batches": 8,
+      "candidate_w_vector_solves": 64,
+      "certificate_stage_layers": 8,
+      "certificate": {
+        "E": [
+          [
+            8.866676964539148e-15,
+            8.153861726201249e-17
+          ],
+          [
+            1.0634371542227274e-14,
+            9.512838680568124e-17
+          ],
+          [
+            1.2620572994976818e-14,
+            9.629443135945638e-17
+          ],
+          [
+            1.9570992450013942e-14,
+            1.3342828429667328e-16
+          ],
+          [
+            3.1288440974910463e-14,
+            1.920139523808909e-16
+          ],
+          [
+            2.6694499952938905e-14,
+            1.6425251148945384e-16
+          ],
+          [
+            3.124239042785727e-14,
+            1.8308359536083386e-16
+          ],
+          [
+            3.231340599847609e-14,
+            1.734413113098015e-16
+          ]
+        ],
+        "output_bound": [
+          1.2672796410126035e-13,
+          1.030774453612848e-15
+        ],
+        "embedded_difference_bound": [
+          3.6417389221163504e-14,
+          2.485337090820926e-16
+        ],
+        "output_wrms": 9.918813057609197e-09,
+        "embedded_difference_wrms": 2.8481020578491296e-09,
+        "embedded_target_wrms_upper": 0.049862379560101325,
+        "combined_proxy_upper": 0.04986238947891439,
+        "scale": [
+          9.058374179809865e-06,
+          1.0099999999999999e-06
+        ],
+        "projection_roundoff": [
+          [
+            1.9539925233402758e-14,
+            3.55271378467962e-15
+          ],
+          [
+            3.33066907387547e-16,
+            4.163336363023853e-17
+          ]
+        ],
+        "certificate_seconds": 0.0012913640020997263,
+        "op_counts": {
+          "interval_add": 416,
+          "interval_mul": 434,
+          "upper_add": 263,
+          "upper_mul": 288
+        }
+      },
+      "exact_output_error_inf": 2.0343289318894318e-15,
+      "exact_embedded_difference_inf": 4.775716061262736e-16,
+      "exact_output_wrms": 1.6001357451325392e-10,
+      "exact_embedded_difference_wrms": 3.8018936722311897e-11,
+      "certificate_accept_output_01": true,
+      "certificate_accept_combined_1": true,
+      "doubling_certificate": {
+        "radius": 0.0001,
+        "closes": true,
+        "E": [
+          [
+            8.86667696453915e-15,
+            8.15386172620125e-17
+          ],
+          [
+            1.0634371542227276e-14,
+            9.512838680568125e-17
+          ],
+          [
+            1.262057299497682e-14,
+            9.62944313594564e-17
+          ],
+          [
+            1.9570992450013942e-14,
+            1.3342828429667328e-16
+          ],
+          [
+            3.1288440974910476e-14,
+            1.9201395238089094e-16
+          ],
+          [
+            2.6694499952938917e-14,
+            1.6425251148945387e-16
+          ],
+          [
+            3.124239042785728e-14,
+            1.8308359536083388e-16
+          ],
+          [
+            3.231340599847611e-14,
+            1.7344131130980152e-16
+          ]
+        ],
+        "state_radii": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            5.637545728486118e-15,
+            5.1843287546228434e-17
+          ],
+          [
+            3.803355906800787e-15,
+            3.471691406058845e-17
+          ],
+          [
+            5.912145670826647e-14,
+            4.953369746079286e-16
+          ],
+          [
+            9.618611332922484e-15,
+            8.2635292025102e-17
+          ],
+          [
+            8.16455795158183e-14,
+            6.798937887420441e-16
+          ],
+          [
+            7.595912248513931e-14,
+            6.019246443366151e-16
+          ],
+          [
+            9.985069762101071e-14,
+            6.594396330282856e-16
+          ]
+        ],
+        "doubling_levels": 3,
+        "matrix_dimension": 16,
+        "dense_matrix_multiplications": 5,
+        "scope": "parallelizable algebra only; this Python evaluator executes serially",
+        "stage_enclosure_checked_exact": true
+      },
+      "exact_reference_seconds": 0.0008637310020276345,
+      "exact_reference_max_numerator_bits": 910
+    },
+    {
+      "family": "nonnormal",
+      "h": 1.0,
+      "method": "q1",
+      "n": 2,
+      "checks": {
+        "inverse_witness_exact": true,
+        "residual_contains_exact": true,
+        "stage_componentwise_exact": true,
+        "output_projection_exact": true,
+        "embedded_projection_exact": true,
+        "output_wrms_exact": true,
+        "embedded_difference_wrms_exact": true
+      },
+      "candidate_w_batches": 6,
+      "candidate_w_vector_solves": 48,
+      "certificate_stage_layers": 8,
+      "certificate": {
+        "E": [
+          [
+            7.996628318293174e-14,
+            5.496436739029466e-16
+          ],
+          [
+            9.809994350843097e-14,
+            9.160727898382447e-16
+          ],
+          [
+            1.399262949141156e-13,
+            9.893999056692555e-16
+          ],
+          [
+            9.467080464048174e-13,
+            4.200172581975915e-15
+          ],
+          [
+            2.3433220246750058e-12,
+            9.77967938451334e-15
+          ],
+          [
+            1.7529152356220054e-12,
+            7.403811850508713e-15
+          ],
+          [
+            6.362656516978964e-12,
+            1.9349819493412237e-14
+          ],
+          [
+            0.03349851746423664,
+            5.468587623314401e-05
+          ]
+        ],
+        "output_bound": [
+          0.007099594168500067,
+          1.1589991377162117e-05
+        ],
+        "embedded_difference_bound": [
+          0.007099594165235583,
+          1.1589991360925519e-05
+        ],
+        "output_wrms": 136.64291707349363,
+        "embedded_difference_wrms": 136.64291701021003,
+        "embedded_target_wrms_upper": 1066.6529235992857,
+        "combined_proxy_upper": 1203.2958406727796,
+        "scale": [
+          3.680429312065077e-05,
+          1.0099999999999999e-06
+        ],
+        "projection_roundoff": [
+          [
+            1.9895196601282808e-13,
+            2.2676305277968825e-14
+          ],
+          [
+            1.3877787807814459e-15,
+            3.192026721068886e-16
+          ]
+        ],
+        "certificate_seconds": 0.0012605279989656992,
+        "op_counts": {
+          "interval_add": 416,
+          "interval_mul": 434,
+          "upper_add": 263,
+          "upper_mul": 288
+        }
+      },
+      "exact_output_error_inf": 0.006694234247818661,
+      "exact_embedded_difference_inf": 0.006694234247735225,
+      "exact_output_wrms": 128.86946566405462,
+      "exact_embedded_difference_wrms": 128.86946566245967,
+      "certificate_accept_output_01": false,
+      "certificate_accept_combined_1": false,
+      "doubling_certificate": {
+        "radius": 0.0001,
+        "closes": true,
+        "E": [
+          [
+            7.996628318293175e-14,
+            5.496436739029467e-16
+          ],
+          [
+            9.8099943508431e-14,
+            9.160727898382449e-16
+          ],
+          [
+            1.399262949141156e-13,
+            9.893999056692557e-16
+          ],
+          [
+            9.467080464048176e-13,
+            4.200172581975915e-15
+          ],
+          [
+            2.3433220246750066e-12,
+            9.779679384513341e-15
+          ],
+          [
+            1.7529152356220064e-12,
+            7.403811850508718e-15
+          ],
+          [
+            6.362656516978972e-12,
+            1.9349819493412253e-14
+          ],
+          [
+            0.03349851746423666,
+            5.468587623314401e-05
+          ]
+        ],
+        "state_radii": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            5.084357758648529e-14,
+            3.4947042261644273e-16
+          ],
+          [
+            3.451438820444175e-14,
+            2.6072409599990164e-16
+          ],
+          [
+            5.945848950206297e-13,
+            4.596811317986017e-15
+          ],
+          [
+            1.0118587041623363e-13,
+            7.403292741962063e-16
+          ],
+          [
+            8.723153961047745e-13,
+            6.524775873015784e-15
+          ],
+          [
+            1.3244824978292982e-12,
+            7.877568275299988e-15
+          ],
+          [
+            6.153909442463519e-12,
+            2.5220258325065736e-14
+          ]
+        ],
+        "doubling_levels": 3,
+        "matrix_dimension": 16,
+        "dense_matrix_multiplications": 5,
+        "scope": "parallelizable algebra only; this Python evaluator executes serially",
+        "stage_enclosure_checked_exact": true
+      },
+      "exact_reference_seconds": 0.0006607849936699495,
+      "exact_reference_max_numerator_bits": 413
+    },
+    {
+      "family": "nonnormal",
+      "h": 1.0,
+      "method": "q2",
+      "n": 2,
+      "checks": {
+        "inverse_witness_exact": true,
+        "residual_contains_exact": true,
+        "stage_componentwise_exact": true,
+        "output_projection_exact": true,
+        "embedded_projection_exact": true,
+        "output_wrms_exact": true,
+        "embedded_difference_wrms_exact": true
+      },
+      "candidate_w_batches": 8,
+      "candidate_w_vector_solves": 64,
+      "certificate_stage_layers": 8,
+      "certificate": {
+        "E": [
+          [
+            7.996628318293174e-14,
+            5.496436739029466e-16
+          ],
+          [
+            9.809994350843097e-14,
+            9.160727898382447e-16
+          ],
+          [
+            1.399262949141156e-13,
+            9.893999056692555e-16
+          ],
+          [
+            9.467080464048174e-13,
+            4.200172581975915e-15
+          ],
+          [
+            2.3433220246750058e-12,
+            9.77967938451334e-15
+          ],
+          [
+            1.764640967331935e-12,
+            7.403811850508713e-15
+          ],
+          [
+            6.36960863812036e-12,
+            1.9166604935444588e-14
+          ],
+          [
+            8.075313449551211e-12,
+            2.3252416645777206e-14
+          ]
+        ],
+        "output_bound": [
+          8.261102998407644e-12,
+          3.2053825816952045e-14
+        ],
+        "embedded_difference_bound": [
+          4.959045502501024e-12,
+          1.5736760813172838e-14
+        ],
+        "output_wrms": 1.6032461763700127e-07,
+        "embedded_difference_wrms": 9.592834939860378e-08,
+        "embedded_target_wrms_upper": 801.3292013397887,
+        "combined_proxy_upper": 801.3292015001134,
+        "scale": [
+          3.679759888640309e-05,
+          1.0099999999999999e-06
+        ],
+        "projection_roundoff": [
+          [
+            2.273736754432321e-13,
+            2.2447321779139887e-14
+          ],
+          [
+            1.3877787807814459e-15,
+            2.7756930868344525e-16
+          ]
+        ],
+        "certificate_seconds": 0.0013104230019962415,
+        "op_counts": {
+          "interval_add": 416,
+          "interval_mul": 434,
+          "upper_add": 263,
+          "upper_mul": 288
+        }
+      },
+      "exact_output_error_inf": 1.3654294099637938e-13,
+      "exact_embedded_difference_inf": 2.0781317740219704e-15,
+      "exact_output_wrms": 2.6244633332910547e-09,
+      "exact_embedded_difference_wrms": 4.9335989301151897e-11,
+      "certificate_accept_output_01": true,
+      "certificate_accept_combined_1": false,
+      "doubling_certificate": {
+        "radius": 0.0001,
+        "closes": true,
+        "E": [
+          [
+            7.996628318293175e-14,
+            5.496436739029467e-16
+          ],
+          [
+            9.8099943508431e-14,
+            9.160727898382449e-16
+          ],
+          [
+            1.399262949141156e-13,
+            9.893999056692557e-16
+          ],
+          [
+            9.467080464048176e-13,
+            4.200172581975915e-15
+          ],
+          [
+            2.3433220246750066e-12,
+            9.779679384513341e-15
+          ],
+          [
+            1.764640967331936e-12,
+            7.403811850508718e-15
+          ],
+          [
+            6.369608638120368e-12,
+            1.9166604935444604e-14
+          ],
+          [
+            8.075313449551224e-12,
+            2.3252416645777228e-14
+          ]
+        ],
+        "state_radii": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            5.084357758648529e-14,
+            3.4947042261644273e-16
+          ],
+          [
+            3.451438820444175e-14,
+            2.6072409599990164e-16
+          ],
+          [
+            5.945848950206297e-13,
+            4.596811317986017e-15
+          ],
+          [
+            1.0118587041623363e-13,
+            7.403292741962063e-16
+          ],
+          [
+            8.723153961047745e-13,
+            6.524775873015784e-15
+          ],
+          [
+            1.3269676208345707e-12,
+            7.877568275299988e-15
+          ],
+          [
+            6.167691399528131e-12,
+            2.5181428278108354e-14
+          ]
+        ],
+        "doubling_levels": 3,
+        "matrix_dimension": 16,
+        "dense_matrix_multiplications": 5,
+        "scope": "parallelizable algebra only; this Python evaluator executes serially",
+        "stage_enclosure_checked_exact": true
+      },
+      "exact_reference_seconds": 0.0006607849936699495,
+      "exact_reference_max_numerator_bits": 413
+    },
+    {
+      "family": "nonnormal",
+      "h": 10.0,
+      "method": "q1",
+      "n": 2,
+      "checks": {
+        "inverse_witness_exact": true,
+        "residual_contains_exact": true,
+        "stage_componentwise_exact": true,
+        "output_projection_exact": true,
+        "embedded_projection_exact": true,
+        "output_wrms_exact": true,
+        "embedded_difference_wrms_exact": true
+      },
+      "candidate_w_batches": 6,
+      "candidate_w_vector_solves": 48,
+      "certificate_stage_layers": 8,
+      "certificate": {
+        "E": [
+          [
+            5.601506164706156e-13,
+            3.4167545989846336e-15
+          ],
+          [
+            6.352863613544674e-13,
+            3.986213698815408e-15
+          ],
+          [
+            1.496832770762463e-12,
+            6.7247122680984145e-15
+          ],
+          [
+            2.6096113874899716e-11,
+            9.455304454463239e-14
+          ],
+          [
+            9.666509906417802e-11,
+            2.7450880602753403e-13
+          ],
+          [
+            8.572857245433574e-11,
+            2.21488230225415e-13
+          ],
+          [
+            9.208304429751006e-10,
+            1.8091484661063642e-12
+          ],
+          [
+            263.27738607945605,
+            0.7307404917971718
+          ]
+        ],
+        "output_bound": [
+          55.79836765023562,
+          0.15487135915985623
+        ],
+        "embedded_difference_bound": [
+          55.798367650253745,
+          0.154871359159718
+        ],
+        "output_wrms": 917302.6461639808,
+        "embedded_difference_wrms": 917302.6461642632,
+        "embedded_target_wrms_upper": 1670074.446188492,
+        "combined_proxy_upper": 2587377.092352473,
+        "scale": [
+          4.3316077703567013e-05,
+          1.0099999999999999e-06
+        ],
+        "projection_roundoff": [
+          [
+            1.5631940186722206e-12,
+            1.9184653865522708e-13
+          ],
+          [
+            1.82354131794682e-14,
+            1.9706458687096533e-15
+          ]
+        ],
+        "certificate_seconds": 0.0012135470024077222,
+        "op_counts": {
+          "interval_add": 416,
+          "interval_mul": 434,
+          "upper_add": 263,
+          "upper_mul": 288
+        }
+      },
+      "exact_output_error_inf": 34.753734144944985,
+      "exact_embedded_difference_inf": 34.753734144945184,
+      "exact_output_wrms": 577600.184653797,
+      "exact_embedded_difference_wrms": 577600.1846538003,
+      "certificate_accept_output_01": false,
+      "certificate_accept_combined_1": false,
+      "doubling_certificate": {
+        "radius": 0.0001,
+        "closes": true,
+        "E": [
+          [
+            5.601506164706157e-13,
+            3.416754598984634e-15
+          ],
+          [
+            6.352863613544674e-13,
+            3.986213698815409e-15
+          ],
+          [
+            1.4968327707624632e-12,
+            6.724712268098416e-15
+          ],
+          [
+            2.609611387489972e-11,
+            9.45530445446324e-14
+          ],
+          [
+            9.666509906417804e-11,
+            2.7450880602753413e-13
+          ],
+          [
+            8.57285724543358e-11,
+            2.2148823022541502e-13
+          ],
+          [
+            9.208304429751013e-10,
+            1.8091484661063648e-12
+          ],
+          [
+            263.27738607945616,
+            0.7307404917971719
+          ]
+        ],
+        "state_radii": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            3.5615087002968506e-13,
+            2.1724159312250618e-15
+          ],
+          [
+            2.3672635788455075e-13,
+            1.454760698208855e-15
+          ],
+          [
+            5.202879260951835e-12,
+            2.6661351852341713e-14
+          ],
+          [
+            1.0126009137524955e-12,
+            4.989106025393348e-15
+          ],
+          [
+            9.018786954472143e-12,
+            4.274351618262403e-14
+          ],
+          [
+            3.294689355956937e-11,
+            1.0679511903804099e-13
+          ],
+          [
+            3.856018824790781e-10,
+            9.287608631555952e-13
+          ]
+        ],
+        "doubling_levels": 3,
+        "matrix_dimension": 16,
+        "dense_matrix_multiplications": 5,
+        "scope": "parallelizable algebra only; this Python evaluator executes serially",
+        "stage_enclosure_checked_exact": true
+      },
+      "exact_reference_seconds": 0.0006509899976663291,
+      "exact_reference_max_numerator_bits": 427
+    },
+    {
+      "family": "nonnormal",
+      "h": 10.0,
+      "method": "q2",
+      "n": 2,
+      "checks": {
+        "inverse_witness_exact": true,
+        "residual_contains_exact": true,
+        "stage_componentwise_exact": true,
+        "output_projection_exact": true,
+        "embedded_projection_exact": true,
+        "output_wrms_exact": true,
+        "embedded_difference_wrms_exact": true
+      },
+      "candidate_w_batches": 8,
+      "candidate_w_vector_solves": 64,
+      "certificate_stage_layers": 8,
+      "certificate": {
+        "E": [
+          [
+            5.601506164706156e-13,
+            3.4167545989846336e-15
+          ],
+          [
+            6.352863613544674e-13,
+            3.986213698815408e-15
+          ],
+          [
+            1.496832770762463e-12,
+            6.7247122680984145e-15
+          ],
+          [
+            2.6096113874899716e-11,
+            9.455304454463239e-14
+          ],
+          [
+            9.666509906417802e-11,
+            2.7450880602753403e-13
+          ],
+          [
+            8.572857245433574e-11,
+            2.21488230225415e-13
+          ],
+          [
+            9.208304429751006e-10,
+            1.8091484661063642e-12
+          ],
+          [
+            1.7827046995739388e-09,
+            3.10718302970755e-12
+          ]
+        ],
+        "output_bound": [
+          7.713512881975955e-10,
+          1.6292927446078887e-12
+        ],
+        "embedded_difference_bound": [
+          7.892558416002812e-10,
+          1.4864630874395325e-12
+        ],
+        "output_wrms": 6.371096447511044e-05,
+        "embedded_difference_wrms": 6.518767731031058e-05,
+        "embedded_target_wrms_upper": 855416.9737146082,
+        "combined_proxy_upper": 855416.9737783193,
+        "scale": [
+          8.562343558621942e-06,
+          1.0099999999999999e-06
+        ],
+        "projection_roundoff": [
+          [
+            1.749711486809247e-12,
+            1.7230661342182432e-13
+          ],
+          [
+            2.2655488596257104e-14,
+            1.8041124150158798e-15
+          ]
+        ],
+        "certificate_seconds": 0.001396122002915945,
+        "op_counts": {
+          "interval_add": 416,
+          "interval_mul": 434,
+          "upper_add": 263,
+          "upper_mul": 288
+        }
+      },
+      "exact_output_error_inf": 8.875236235688958e-14,
+      "exact_embedded_difference_inf": 9.642349848557205e-14,
+      "exact_output_wrms": 8.624069269402125e-09,
+      "exact_embedded_difference_wrms": 7.976555145685862e-09,
+      "certificate_accept_output_01": true,
+      "certificate_accept_combined_1": false,
+      "doubling_certificate": {
+        "radius": 0.0001,
+        "closes": true,
+        "E": [
+          [
+            5.601506164706157e-13,
+            3.416754598984634e-15
+          ],
+          [
+            6.352863613544674e-13,
+            3.986213698815409e-15
+          ],
+          [
+            1.4968327707624632e-12,
+            6.724712268098416e-15
+          ],
+          [
+            2.609611387489972e-11,
+            9.45530445446324e-14
+          ],
+          [
+            9.666509906417804e-11,
+            2.7450880602753413e-13
+          ],
+          [
+            8.57285724543358e-11,
+            2.2148823022541502e-13
+          ],
+          [
+            9.208304429751013e-10,
+            1.8091484661063648e-12
+          ],
+          [
+            1.7827046995739413e-09,
+            3.1071830297075525e-12
+          ]
+        ],
+        "state_radii": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            3.5615087002968506e-13,
+            2.1724159312250618e-15
+          ],
+          [
+            2.3672635788455075e-13,
+            1.454760698208855e-15
+          ],
+          [
+            5.202879260951835e-12,
+            2.6661351852341713e-14
+          ],
+          [
+            1.0126009137524955e-12,
+            4.989106025393348e-15
+          ],
+          [
+            9.018786954472143e-12,
+            4.274351618262403e-14
+          ],
+          [
+            3.294689355956937e-11,
+            1.0679511903804099e-13
+          ],
+          [
+            3.856018824790781e-10,
+            9.287608631555952e-13
+          ]
+        ],
+        "doubling_levels": 3,
+        "matrix_dimension": 16,
+        "dense_matrix_multiplications": 5,
+        "scope": "parallelizable algebra only; this Python evaluator executes serially",
+        "stage_enclosure_checked_exact": true
+      },
+      "exact_reference_seconds": 0.0006509899976663291,
+      "exact_reference_max_numerator_bits": 427
+    },
+    {
+      "family": "quadratic",
+      "h": 0.1,
+      "method": "q1",
+      "n": 1,
+      "checks": {
+        "inverse_witness_exact": true,
+        "residual_contains_exact": true,
+        "stage_componentwise_exact": true,
+        "output_projection_exact": true,
+        "embedded_projection_exact": true,
+        "output_wrms_exact": true,
+        "embedded_difference_wrms_exact": true
+      },
+      "candidate_w_batches": 6,
+      "candidate_w_vector_solves": 48,
+      "certificate_stage_layers": 8,
+      "certificate": {
+        "E": [
+          [
+            1.4948746498035623e-16
+          ],
+          [
+            1.5821054036272363e-16
+          ],
+          [
+            1.9375800639497238e-16
+          ],
+          [
+            2.222144845783863e-16
+          ],
+          [
+            1.3407680341817287e-13
+          ],
+          [
+            1.628179482621017e-12
+          ],
+          [
+            5.834564636846199e-11
+          ],
+          [
+            1.843189149942193e-10
+          ]
+        ],
+        "output_bound": [
+          5.324878797189795e-11
+        ],
+        "embedded_difference_bound": [
+          6.407590348200331e-11
+        ],
+        "output_wrms": 5.2721572249403915e-05,
+        "embedded_difference_wrms": 6.344148859604289e-05,
+        "embedded_target_wrms_upper": 0.08763349181548263,
+        "combined_proxy_upper": 0.08768621338773205,
+        "scale": [
+          1.0099999999999999e-06
+        ],
+        "projection_roundoff": [
+          [
+            3.33066907387547e-16,
+            5.480434194144352e-17
+          ]
+        ],
+        "certificate_seconds": 0.0007045410020509735,
+        "op_counts": {
+          "interval_add": 190,
+          "interval_mul": 198,
+          "upper_add": 116,
+          "upper_mul": 128
+        }
+      },
+      "exact_output_error_inf": 4.9290673263976306e-11,
+      "exact_embedded_difference_inf": 6.338452893409271e-11,
+      "exact_output_wrms": 4.880264679601615e-05,
+      "exact_embedded_difference_wrms": 6.275695934068585e-05,
+      "certificate_accept_output_01": true,
+      "certificate_accept_combined_1": true,
+      "doubling_certificate": {
+        "radius": 0.0001,
+        "closes": true,
+        "E": [
+          [
+            1.4948746498035626e-16
+          ],
+          [
+            1.5821077304635147e-16
+          ],
+          [
+            1.937581591292146e-16
+          ],
+          [
+            2.2221674988721905e-16
+          ],
+          [
+            1.3407680392262468e-13
+          ],
+          [
+            1.6281794879432316e-12
+          ],
+          [
+            5.834564722434415e-11
+          ],
+          [
+            1.8431894970329858e-10
+          ]
+        ],
+        "state_radii": [
+          [
+            0.0
+          ],
+          [
+            9.504602716808545e-17
+          ],
+          [
+            6.207458173018533e-17
+          ],
+          [
+            9.158316589710398e-16
+          ],
+          [
+            1.5123649934394667e-16
+          ],
+          [
+            2.115355140184727e-15
+          ],
+          [
+            3.4925022449594e-13
+          ],
+          [
+            1.416974727166614e-11
+          ]
+        ],
+        "doubling_levels": 3,
+        "matrix_dimension": 8,
+        "dense_matrix_multiplications": 5,
+        "scope": "parallelizable algebra only; this Python evaluator executes serially",
+        "stage_enclosure_checked_exact": true
+      },
+      "exact_reference_seconds": 0.006301781002548523,
+      "exact_reference_max_numerator_bits": 27672
+    },
+    {
+      "family": "quadratic",
+      "h": 0.1,
+      "method": "q2",
+      "n": 1,
+      "checks": {
+        "inverse_witness_exact": true,
+        "residual_contains_exact": true,
+        "stage_componentwise_exact": true,
+        "output_projection_exact": true,
+        "embedded_projection_exact": true,
+        "output_wrms_exact": true,
+        "embedded_difference_wrms_exact": true
+      },
+      "candidate_w_batches": 8,
+      "candidate_w_vector_solves": 64,
+      "certificate_stage_layers": 8,
+      "certificate": {
+        "E": [
+          [
+            1.4948746498035623e-16
+          ],
+          [
+            1.5821054036272363e-16
+          ],
+          [
+            1.9375800639497238e-16
+          ],
+          [
+            2.222144845783863e-16
+          ],
+          [
+            1.3407680341817287e-13
+          ],
+          [
+            1.3046886084035263e-12
+          ],
+          [
+            5.6045607060876015e-11
+          ],
+          [
+            1.0664801639302279e-10
+          ]
+        ],
+        "output_bound": [
+          3.5981413609274585e-11
+        ],
+        "embedded_difference_bound": [
+          4.660782801515006e-11
+        ],
+        "output_wrms": 3.5625161989380784e-05,
+        "embedded_difference_wrms": 4.614636437143571e-05,
+        "embedded_target_wrms_upper": 0.08763344376685432,
+        "combined_proxy_upper": 0.08766906892884371,
+        "scale": [
+          1.0099999999999999e-06
+        ],
+        "projection_roundoff": [
+          [
+            3.33066907387547e-16,
+            4.9244563259454104e-17
+          ]
+        ],
+        "certificate_seconds": 0.0006285569979809225,
+        "op_counts": {
+          "interval_add": 190,
+          "interval_mul": 198,
+          "upper_add": 116,
+          "upper_mul": 128
+        }
+      },
+      "exact_output_error_inf": 3.268406828393568e-11,
+      "exact_embedded_difference_inf": 4.5964982581836797e-11,
+      "exact_output_wrms": 3.236046364746107e-05,
+      "exact_embedded_difference_wrms": 4.550988374439287e-05,
+      "certificate_accept_output_01": true,
+      "certificate_accept_combined_1": true,
+      "doubling_certificate": {
+        "radius": 0.0001,
+        "closes": true,
+        "E": [
+          [
+            1.4948746498035626e-16
+          ],
+          [
+            1.5821077304635147e-16
+          ],
+          [
+            1.937581591292146e-16
+          ],
+          [
+            2.2221674988721905e-16
+          ],
+          [
+            1.3407680392262468e-13
+          ],
+          [
+            1.3046886137257409e-12
+          ],
+          [
+            5.6045607748915737e-11
+          ],
+          [
+            1.0664804907369877e-10
+          ]
+        ],
+        "state_radii": [
+          [
+            0.0
+          ],
+          [
+            9.504602716808545e-17
+          ],
+          [
+            6.207458173018533e-17
+          ],
+          [
+            9.158316589710398e-16
+          ],
+          [
+            1.5123649934394667e-16
+          ],
+          [
+            2.115355140184727e-15
+          ],
+          [
+            2.8069035689869427e-13
+          ],
+          [
+            1.3342713011663825e-11
+          ]
+        ],
+        "doubling_levels": 3,
+        "matrix_dimension": 8,
+        "dense_matrix_multiplications": 5,
+        "scope": "parallelizable algebra only; this Python evaluator executes serially",
+        "stage_enclosure_checked_exact": true
+      },
+      "exact_reference_seconds": 0.006301781002548523,
+      "exact_reference_max_numerator_bits": 27672
+    },
+    {
+      "family": "quadratic",
+      "h": 1.0,
+      "method": "q1",
+      "n": 1,
+      "checks": {
+        "inverse_witness_exact": true,
+        "residual_contains_exact": true,
+        "stage_componentwise_exact": true,
+        "output_projection_exact": true,
+        "embedded_projection_exact": true,
+        "output_wrms_exact": true,
+        "embedded_difference_wrms_exact": true
+      },
+      "candidate_w_batches": 6,
+      "candidate_w_vector_solves": 48,
+      "certificate_stage_layers": 8,
+      "certificate": {
+        "E": [
+          [
+            1.0992873478058933e-15
+          ],
+          [
+            1.6204626925951974e-15
+          ],
+          [
+            1.8069286685428704e-15
+          ],
+          [
+            8.868518105640609e-15
+          ],
+          [
+            8.426285604802288e-07
+          ],
+          [
+            8.344902568699499e-06
+          ],
+          [
+            4.4048731874493276e-05
+          ],
+          [
+            0.0020110449011310366
+          ]
+        ],
+        "output_bound": [
+          0.00044439883493106844
+        ],
+        "embedded_difference_bound": [
+          0.00044574330762049485
+        ],
+        "output_wrms": 439.9988464664044,
+        "embedded_difference_wrms": 441.33000754504445,
+        "embedded_target_wrms_upper": 1385.835837341738,
+        "combined_proxy_upper": 1825.8346838081427,
+        "scale": [
+          1.0099999999999999e-06
+        ],
+        "projection_roundoff": [
+          [
+            1.8318679906315087e-15,
+            2.8926513961913263e-16
+          ]
+        ],
+        "certificate_seconds": 0.0006844710005680099,
+        "op_counts": {
+          "interval_add": 190,
+          "interval_mul": 198,
+          "upper_add": 116,
+          "upper_mul": 128
+        }
+      },
+      "exact_output_error_inf": 0.0004229754378423929,
+      "exact_embedded_difference_inf": 0.0004075631748631233,
+      "exact_output_wrms": 418.787562220191,
+      "exact_embedded_difference_wrms": 403.52789590408247,
+      "certificate_accept_output_01": false,
+      "certificate_accept_combined_1": false,
+      "doubling_certificate": {
+        "radius": 0.0001,
+        "closes": true,
+        "E": [
+          [
+            1.0992873478058935e-15
+          ],
+          [
+            1.6204771104345825e-15
+          ],
+          [
+            1.806939612261008e-15
+          ],
+          [
+            8.868716857492552e-15
+          ],
+          [
+            8.426285604803451e-07
+          ],
+          [
+            8.344902679939889e-06
+          ],
+          [
+            4.404876820648806e-05
+          ],
+          [
+            0.002011045223507298
+          ]
+        ],
+        "state_radii": [
+          [
+            0.0
+          ],
+          [
+            6.989408452328855e-16
+          ],
+          [
+            5.008831331299513e-16
+          ],
+          [
+            8.422965063324293e-15
+          ],
+          [
+            1.3909545048273517e-15
+          ],
+          [
+            5.392941684004442e-09
+          ],
+          [
+            1.7882260921565667e-06
+          ],
+          [
+            1.868875542810545e-05
+          ]
+        ],
+        "doubling_levels": 3,
+        "matrix_dimension": 8,
+        "dense_matrix_multiplications": 5,
+        "scope": "parallelizable algebra only; this Python evaluator executes serially",
+        "stage_enclosure_checked_exact": true
+      },
+      "exact_reference_seconds": 0.0017704260026221164,
+      "exact_reference_max_numerator_bits": 13802
+    },
+    {
+      "family": "quadratic",
+      "h": 1.0,
+      "method": "q2",
+      "n": 1,
+      "checks": {
+        "inverse_witness_exact": true,
+        "residual_contains_exact": true,
+        "stage_componentwise_exact": true,
+        "output_projection_exact": true,
+        "embedded_projection_exact": true,
+        "output_wrms_exact": true,
+        "embedded_difference_wrms_exact": true
+      },
+      "candidate_w_batches": 8,
+      "candidate_w_vector_solves": 64,
+      "certificate_stage_layers": 8,
+      "certificate": {
+        "E": [
+          [
+            1.0992873478058933e-15
+          ],
+          [
+            1.6204626925951974e-15
+          ],
+          [
+            1.8069286685428704e-15
+          ],
+          [
+            8.868518105640609e-15
+          ],
+          [
+            8.426285604802288e-07
+          ],
+          [
+            6.223595595550013e-06
+          ],
+          [
+            1.8282443190391242e-05
+          ],
+          [
+            0.0018555691189161667
+          ]
+        ],
+        "output_bound": [
+          0.00040387317109530596
+        ],
+        "embedded_difference_bound": [
+          0.00040163730205565186
+        ],
+        "output_wrms": 399.8744268270357,
+        "embedded_difference_wrms": 397.66069510460585,
+        "embedded_target_wrms_upper": 1363.5107237081334,
+        "combined_proxy_upper": 1763.3851505351693,
+        "scale": [
+          1.0099999999999999e-06
+        ],
+        "projection_roundoff": [
+          [
+            1.8318679906315087e-15,
+            2.862293735361732e-16
+          ]
+        ],
+        "certificate_seconds": 0.0006111010006861761,
+        "op_counts": {
+          "interval_add": 190,
+          "interval_mul": 198,
+          "upper_add": 116,
+          "upper_mul": 128
+        }
+      },
+      "exact_output_error_inf": 0.0003945090128206481,
+      "exact_embedded_difference_inf": 0.00038600553406822094,
+      "exact_output_wrms": 390.6029829907407,
+      "exact_embedded_difference_wrms": 382.18369709724846,
+      "certificate_accept_output_01": false,
+      "certificate_accept_combined_1": false,
+      "doubling_certificate": {
+        "radius": 0.0001,
+        "closes": true,
+        "E": [
+          [
+            1.0992873478058935e-15
+          ],
+          [
+            1.6204771104345825e-15
+          ],
+          [
+            1.806939612261008e-15
+          ],
+          [
+            8.868716857492552e-15
+          ],
+          [
+            8.426285604803451e-07
+          ],
+          [
+            6.223595706790401e-06
+          ],
+          [
+            1.8282470538286336e-05
+          ],
+          [
+            0.0018555693276218809
+          ]
+        ],
+        "state_radii": [
+          [
+            0.0
+          ],
+          [
+            6.989408452328855e-16
+          ],
+          [
+            5.008831331299513e-16
+          ],
+          [
+            8.422965063324293e-15
+          ],
+          [
+            1.3909545048273517e-15
+          ],
+          [
+            5.392941684004442e-09
+          ],
+          [
+            1.338641461480208e-06
+          ],
+          [
+            1.1001165763347046e-05
+          ]
+        ],
+        "doubling_levels": 3,
+        "matrix_dimension": 8,
+        "dense_matrix_multiplications": 5,
+        "scope": "parallelizable algebra only; this Python evaluator executes serially",
+        "stage_enclosure_checked_exact": true
+      },
+      "exact_reference_seconds": 0.0017704260026221164,
+      "exact_reference_max_numerator_bits": 13802
+    },
+    {
+      "family": "quadratic",
+      "h": 10.0,
+      "method": "q1",
+      "n": 1,
+      "checks": {
+        "inverse_witness_exact": true,
+        "residual_contains_exact": true,
+        "stage_componentwise_exact": true,
+        "output_projection_exact": true,
+        "embedded_projection_exact": true,
+        "output_wrms_exact": true,
+        "embedded_difference_wrms_exact": true
+      },
+      "candidate_w_batches": 6,
+      "candidate_w_vector_solves": 48,
+      "certificate_stage_layers": 8,
+      "certificate": {
+        "E": [
+          [
+            5.125131898476951e-15
+          ],
+          [
+            2.355811990369551e-14
+          ],
+          [
+            1.893267507612141e-14
+          ],
+          [
+            1.1698165212001691e-12
+          ],
+          [
+            0.18487100679552265
+          ],
+          [
+            4.606887735764591
+          ],
+          [
+            64.15250047821056
+          ],
+          [
+            452.10811751404816
+          ]
+        ],
+        "output_bound": [
+          114.17051860297235
+        ],
+        "embedded_difference_bound": [
+          123.55270401528149
+        ],
+        "output_wrms": 36308890.45064111,
+        "embedded_difference_wrms": 39292644.45729294,
+        "embedded_target_wrms_upper": 41718588.55688828,
+        "combined_proxy_upper": 78027479.00752941,
+        "scale": [
+          3.14442323039801e-06
+        ],
+        "projection_roundoff": [
+          [
+            5.107025913275721e-14,
+            1.2434497875801755e-14
+          ]
+        ],
+        "certificate_seconds": 0.0006472149980254471,
+        "op_counts": {
+          "interval_add": 190,
+          "interval_mul": 198,
+          "upper_add": 116,
+          "upper_mul": 128
+        }
+      },
+      "exact_output_error_inf": 16.718022751002707,
+      "exact_embedded_difference_inf": 10.801052123571454,
+      "exact_output_wrms": 5316721.549880739,
+      "exact_embedded_difference_wrms": 3434986.7470621304,
+      "certificate_accept_output_01": false,
+      "certificate_accept_combined_1": false,
+      "doubling_certificate": {
+        "radius": 0.0001,
+        "closes": false,
+        "E": [
+          [
+            5.125131898476952e-15
+          ],
+          [
+            2.3558381063642345e-14
+          ],
+          [
+            1.8933059236491755e-14
+          ],
+          [
+            1.169838730894417e-12
+          ],
+          [
+            0.1848710067955227
+          ],
+          [
+            4.606886708605893
+          ],
+          [
+            63.381800531132754
+          ],
+          [
+            174.5182472082241
+          ]
+        ],
+        "state_radii": [
+          [
+            0.0
+          ],
+          [
+            3.2586238968375933e-15
+          ],
+          [
+            3.89006861758889e-15
+          ],
+          [
+            9.208036762460181e-14
+          ],
+          [
+            2.4325238713318188e-14
+          ],
+          [
+            0.0011831979201407188
+          ],
+          [
+            0.9806786298722873
+          ],
+          [
+            18.399060644820803
+          ]
+        ],
+        "doubling_levels": 3,
+        "matrix_dimension": 8,
+        "dense_matrix_multiplications": 5,
+        "scope": "parallelizable algebra only; this Python evaluator executes serially",
+        "stage_enclosure_checked_exact": null
+      },
+      "exact_reference_seconds": 0.001463344000512734,
+      "exact_reference_max_numerator_bits": 13784
+    },
+    {
+      "family": "quadratic",
+      "h": 10.0,
+      "method": "q2",
+      "n": 1,
+      "checks": {
+        "inverse_witness_exact": true,
+        "residual_contains_exact": true,
+        "stage_componentwise_exact": true,
+        "output_projection_exact": true,
+        "embedded_projection_exact": true,
+        "output_wrms_exact": true,
+        "embedded_difference_wrms_exact": true
+      },
+      "candidate_w_batches": 8,
+      "candidate_w_vector_solves": 64,
+      "certificate_stage_layers": 8,
+      "certificate": {
+        "E": [
+          [
+            5.125131898476951e-15
+          ],
+          [
+            2.355811990369551e-14
+          ],
+          [
+            1.893267507612141e-14
+          ],
+          [
+            1.1698165212001691e-12
+          ],
+          [
+            0.18487100679552265
+          ],
+          [
+            5.403881199140464
+          ],
+          [
+            81.55459709509734
+          ],
+          [
+            547.2816301352262
+          ]
+        ],
+        "output_bound": [
+          138.84163149460338
+        ],
+        "embedded_difference_bound": [
+          151.2054536502332
+        ],
+        "output_wrms": 78935780.10763428,
+        "embedded_difference_wrms": 85964997.0396222,
+        "embedded_target_wrms_upper": 88233487.20972532,
+        "combined_proxy_upper": 167169267.31735963,
+        "scale": [
+          1.7589188490350437e-06
+        ],
+        "projection_roundoff": [
+          [
+            5.0404125317982113e-14,
+            1.0214051826551442e-14
+          ]
+        ],
+        "certificate_seconds": 0.0006083759944885969,
+        "op_counts": {
+          "interval_add": 190,
+          "interval_mul": 198,
+          "upper_add": 116,
+          "upper_mul": 128
+        }
+      },
+      "exact_output_error_inf": 15.332518369639741,
+      "exact_embedded_difference_inf": 7.162947260201943,
+      "exact_output_wrms": 8717012.941245856,
+      "exact_embedded_difference_wrms": 4072358.0079499343,
+      "certificate_accept_output_01": false,
+      "certificate_accept_combined_1": false,
+      "doubling_certificate": {
+        "radius": 0.0001,
+        "closes": false,
+        "E": [
+          [
+            5.125131898476952e-15
+          ],
+          [
+            2.3558381063642345e-14
+          ],
+          [
+            1.8933059236491755e-14
+          ],
+          [
+            1.169838730894417e-12
+          ],
+          [
+            0.1848710067955227
+          ],
+          [
+            5.403880171981767
+          ],
+          [
+            80.49552753537009
+          ],
+          [
+            118.92678601009476
+          ]
+        ],
+        "state_radii": [
+          [
+            0.0
+          ],
+          [
+            3.2586238968375933e-15
+          ],
+          [
+            3.89006861758889e-15
+          ],
+          [
+            9.208036762460181e-14
+          ],
+          [
+            2.4325238713318188e-14
+          ],
+          [
+            0.0011831979201407188
+          ],
+          [
+            1.149591482381948
+          ],
+          [
+            22.862709060032138
+          ]
+        ],
+        "doubling_levels": 3,
+        "matrix_dimension": 8,
+        "dense_matrix_multiplications": 5,
+        "scope": "parallelizable algebra only; this Python evaluator executes serially",
+        "stage_enclosure_checked_exact": null
+      },
+      "exact_reference_seconds": 0.001463344000512734,
+      "exact_reference_max_numerator_bits": 13784
+    },
+    {
+      "family": "nonnormal_quadratic",
+      "h": 0.1,
+      "method": "q1",
+      "n": 2,
+      "checks": {
+        "inverse_witness_exact": true,
+        "residual_contains_exact": true,
+        "stage_componentwise_exact": true,
+        "output_projection_exact": true,
+        "embedded_projection_exact": true,
+        "output_wrms_exact": true,
+        "embedded_difference_wrms_exact": true
+      },
+      "candidate_w_batches": 6,
+      "candidate_w_vector_solves": 48,
+      "certificate_stage_layers": 8,
+      "certificate": {
+        "E": [
+          [
+            1.2111392695229878e-17,
+            1.061700745599121e-18
+          ],
+          [
+            1.438846788658523e-17,
+            1.3346878796616388e-18
+          ],
+          [
+            1.565989557698177e-17,
+            1.2783799634115887e-18
+          ],
+          [
+            2.3850159213177694e-17,
+            1.6354233434255393e-18
+          ],
+          [
+            3.9229324038701734e-17,
+            2.4920855359490406e-18
+          ],
+          [
+            3.454002138632737e-17,
+            2.003876990705207e-18
+          ],
+          [
+            6.346283301863923e-14,
+            1.5963469441684058e-16
+          ],
+          [
+            1.1883592254300187e-11,
+            1.8294194167429755e-13
+          ]
+        ],
+        "output_bound": [
+          2.532312501183511e-12,
+          3.8817810158976395e-14
+        ],
+        "embedded_difference_bound": [
+          2.54564680880256e-12,
+          3.8841911264454465e-14
+        ],
+        "output_wrms": 6.374647004596311e-05,
+        "embedded_difference_wrms": 6.408200063626827e-05,
+        "embedded_target_wrms_upper": 0.021525700619335824,
+        "combined_proxy_upper": 0.02158944708938179,
+        "scale": [
+          2.8096151354134427e-08,
+          2e-08
+        ],
+        "projection_roundoff": [
+          [
+            1.7347234759768074e-17,
+            2.8189257518598885e-18
+          ],
+          [
+            3.469446951953615e-18,
+            4.0657581629765134e-19
+          ]
+        ],
+        "certificate_seconds": 0.0015312159957829863,
+        "op_counts": {
+          "interval_add": 416,
+          "interval_mul": 434,
+          "upper_add": 263,
+          "upper_mul": 288
+        }
+      },
+      "exact_output_error_inf": 2.4888737675137192e-12,
+      "exact_embedded_difference_inf": 2.475431430463369e-12,
+      "exact_output_wrms": 6.265347803223432e-05,
+      "exact_embedded_difference_wrms": 6.231527687133696e-05,
+      "certificate_accept_output_01": true,
+      "certificate_accept_combined_1": true,
+      "doubling_certificate": {
+        "radius": 0.0001,
+        "closes": true,
+        "E": [
+          [
+            1.2111392695229879e-17,
+            1.0617007455991212e-18
+          ],
+          [
+            1.438847172556038e-17,
+            1.3346882101781558e-18
+          ],
+          [
+            1.5659898183116965e-17,
+            1.2783801903238174e-18
+          ],
+          [
+            2.3850198215549467e-17,
+            1.6354266429668428e-18
+          ],
+          [
+            3.922933463140929e-17,
+            2.492086271805768e-18
+          ],
+          [
+            3.45400786360401e-17,
+            2.003881674832491e-18
+          ],
+          [
+            6.346283308821395e-14,
+            1.596346992807151e-16
+          ],
+          [
+            1.1883592260970822e-11,
+            1.8294194169575727e-13
+          ]
+        ],
+        "state_radii": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            7.70057716414844e-18,
+            6.75042806591516e-19
+          ],
+          [
+            5.1818162846193894e-18,
+            4.613738450807563e-19
+          ],
+          [
+            7.703427540885046e-17,
+            6.68205795058356e-18
+          ],
+          [
+            1.2701197767044259e-17,
+            1.105148095656144e-18
+          ],
+          [
+            1.0610723530894084e-16,
+            9.15935098530214e-18
+          ],
+          [
+            9.742182808167918e-17,
+            8.010329826271089e-18
+          ],
+          [
+            1.3567272538582666e-14,
+            4.169934714271214e-17
+          ]
+        ],
+        "doubling_levels": 3,
+        "matrix_dimension": 16,
+        "dense_matrix_multiplications": 5,
+        "scope": "parallelizable algebra only; this Python evaluator executes serially",
+        "stage_enclosure_checked_exact": true
+      },
+      "exact_reference_seconds": 0.047194313003274146,
+      "exact_reference_max_numerator_bits": 69304
+    },
+    {
+      "family": "nonnormal_quadratic",
+      "h": 0.1,
+      "method": "q2",
+      "n": 2,
+      "checks": {
+        "inverse_witness_exact": true,
+        "residual_contains_exact": true,
+        "stage_componentwise_exact": true,
+        "output_projection_exact": true,
+        "embedded_projection_exact": true,
+        "output_wrms_exact": true,
+        "embedded_difference_wrms_exact": true
+      },
+      "candidate_w_batches": 8,
+      "candidate_w_vector_solves": 64,
+      "certificate_stage_layers": 8,
+      "certificate": {
+        "E": [
+          [
+            1.2111392695229878e-17,
+            1.061700745599121e-18
+          ],
+          [
+            1.438846788658523e-17,
+            1.3346878796616388e-18
+          ],
+          [
+            1.565989557698177e-17,
+            1.2783799634115887e-18
+          ],
+          [
+            2.3850159213177694e-17,
+            1.6354233434255393e-18
+          ],
+          [
+            3.9229324038701734e-17,
+            2.4920855359490406e-18
+          ],
+          [
+            3.9636184965203147e-17,
+            2.003876990705207e-18
+          ],
+          [
+            6.639559003620206e-14,
+            1.6897766097811284e-16
+          ],
+          [
+            2.537941499157425e-13,
+            6.493937313085993e-16
+          ]
+        ],
+        "output_bound": [
+          6.815822849293247e-14,
+          1.8690837852616425e-16
+        ],
+        "embedded_difference_bound": [
+          8.210676089936686e-14,
+          2.1133620125718775e-16
+        ],
+        "output_wrms": 1.715377404600581e-06,
+        "embedded_difference_wrms": 2.066426330975256e-06,
+        "embedded_target_wrms_upper": 0.02139932007490768,
+        "combined_proxy_upper": 0.021401035452312284,
+        "scale": [
+          2.809615135157815e-08,
+          2e-08
+        ],
+        "projection_roundoff": [
+          [
+            2.0816681711721688e-17,
+            3.4694470553511915e-18
+          ],
+          [
+            5.204170427930422e-18,
+            4.878909792340642e-19
+          ]
+        ],
+        "certificate_seconds": 0.0013358319993130863,
+        "op_counts": {
+          "interval_add": 416,
+          "interval_mul": 434,
+          "upper_add": 263,
+          "upper_mul": 288
+        }
+      },
+      "exact_output_error_inf": 6.740086889789608e-14,
+      "exact_embedded_difference_inf": 8.147442845306742e-14,
+      "exact_output_wrms": 1.6963146201354387e-06,
+      "exact_embedded_difference_wrms": 2.0505117170696665e-06,
+      "certificate_accept_output_01": true,
+      "certificate_accept_combined_1": true,
+      "doubling_certificate": {
+        "radius": 0.0001,
+        "closes": true,
+        "E": [
+          [
+            1.2111392695229879e-17,
+            1.0617007455991212e-18
+          ],
+          [
+            1.438847172556038e-17,
+            1.3346882101781558e-18
+          ],
+          [
+            1.5659898183116965e-17,
+            1.2783801903238174e-18
+          ],
+          [
+            2.3850198215549467e-17,
+            1.6354266429668428e-18
+          ],
+          [
+            3.922933463140929e-17,
+            2.492086271805768e-18
+          ],
+          [
+            3.963624221491588e-17,
+            2.003881674832491e-18
+          ],
+          [
+            6.639559010630561e-14,
+            1.6897766584198737e-16
+          ],
+          [
+            2.537941568935375e-13,
+            6.493937537378147e-16
+          ]
+        ],
+        "state_radii": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            7.70057716414844e-18,
+            6.75042806591516e-19
+          ],
+          [
+            5.1818162846193894e-18,
+            4.613738450807563e-19
+          ],
+          [
+            7.703427540885046e-17,
+            6.68205795058356e-18
+          ],
+          [
+            1.2701197767044259e-17,
+            1.105148095656144e-18
+          ],
+          [
+            1.0610723530894084e-16,
+            9.15935098530214e-18
+          ],
+          [
+            9.85018965722256e-17,
+            8.010329826271089e-18
+          ],
+          [
+            1.4194183375111528e-14,
+            4.367947270871392e-17
+          ]
+        ],
+        "doubling_levels": 3,
+        "matrix_dimension": 16,
+        "dense_matrix_multiplications": 5,
+        "scope": "parallelizable algebra only; this Python evaluator executes serially",
+        "stage_enclosure_checked_exact": true
+      },
+      "exact_reference_seconds": 0.047194313003274146,
+      "exact_reference_max_numerator_bits": 69304
+    },
+    {
+      "family": "nonnormal_quadratic",
+      "h": 1.0,
+      "method": "q1",
+      "n": 2,
+      "checks": {
+        "inverse_witness_exact": true,
+        "residual_contains_exact": true,
+        "stage_componentwise_exact": true,
+        "output_projection_exact": true,
+        "embedded_projection_exact": true,
+        "output_wrms_exact": true,
+        "embedded_difference_wrms_exact": true
+      },
+      "candidate_w_batches": 6,
+      "candidate_w_vector_solves": 48,
+      "certificate_stage_layers": 8,
+      "certificate": {
+        "E": [
+          [
+            1.0412276456110903e-16,
+            7.156818670611285e-18
+          ],
+          [
+            1.2176581367487029e-16,
+            8.609373142457179e-18
+          ],
+          [
+            1.67168148179037e-16,
+            1.0315688880923362e-17
+          ],
+          [
+            1.0033291328946977e-15,
+            4.109332366654306e-17
+          ],
+          [
+            1.3360067536439226e-13,
+            1.861889302503138e-16
+          ],
+          [
+            2.7013242752572876e-11,
+            1.5078981697617255e-13
+          ],
+          [
+            7.143445861408599e-08,
+            4.5323408525882564e-10
+          ],
+          [
+            3.262400269900369e-05,
+            5.497120339306036e-07
+          ]
+        ],
+        "output_bound": [
+          6.929583986624712e-06,
+          1.1660188854317186e-07
+        ],
+        "embedded_difference_bound": [
+          6.944699589359918e-06,
+          1.1669781199838032e-07
+        ],
+        "output_wrms": 97.15505358891816,
+        "embedded_difference_wrms": 97.36674182159865,
+        "embedded_target_wrms_upper": 800.0388039149152,
+        "combined_proxy_upper": 897.1938575038334,
+        "scale": [
+          5.047985431186064e-08,
+          2e-08
+        ],
+        "projection_roundoff": [
+          [
+            1.665334536937735e-16,
+            2.1690819713288126e-17
+          ],
+          [
+            1.3444106938820257e-17,
+            2.493876754953474e-18
+          ]
+        ],
+        "certificate_seconds": 0.0017376069954480045,
+        "op_counts": {
+          "interval_add": 416,
+          "interval_mul": 434,
+          "upper_add": 263,
+          "upper_mul": 288
+        }
+      },
+      "exact_output_error_inf": 6.4911649603652285e-06,
+      "exact_embedded_difference_inf": 6.47605324646669e-06,
+      "exact_output_wrms": 91.0196595130028,
+      "exact_embedded_difference_wrms": 90.80835109147567,
+      "certificate_accept_output_01": false,
+      "certificate_accept_combined_1": false,
+      "doubling_certificate": {
+        "radius": 0.0001,
+        "closes": true,
+        "E": [
+          [
+            1.0412276456110904e-16,
+            7.156818670611286e-18
+          ],
+          [
+            1.2176611963155397e-16,
+            8.609391915685549e-18
+          ],
+          [
+            1.6716836701765123e-16,
+            1.0315702041812916e-17
+          ],
+          [
+            1.0033328779014209e-15,
+            4.109353549472207e-17
+          ],
+          [
+            1.3360067879773373e-13,
+            1.8618906281908814e-16
+          ],
+          [
+            2.7013242763883104e-11,
+            1.5078981736193835e-13
+          ],
+          [
+            7.143445863797705e-08,
+            4.5323408539157985e-10
+          ],
+          [
+            3.26240027622708e-05,
+            5.497120343275779e-07
+          ]
+        ],
+        "state_radii": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            6.620257498240272e-17,
+            4.550396127818265e-18
+          ],
+          [
+            4.436075941247462e-17,
+            3.0724161998975127e-18
+          ],
+          [
+            7.301164524871249e-16,
+            4.805127200875738e-17
+          ],
+          [
+            1.2438754035881983e-16,
+            8.053897015240783e-18
+          ],
+          [
+            1.899185308065138e-15,
+            6.857978347229251e-17
+          ],
+          [
+            5.7292910265626455e-12,
+            3.20250696596625e-14
+          ],
+          [
+            1.5168096511384083e-08,
+            9.621580747777877e-11
+          ]
+        ],
+        "doubling_levels": 3,
+        "matrix_dimension": 16,
+        "dense_matrix_multiplications": 5,
+        "scope": "parallelizable algebra only; this Python evaluator executes serially",
+        "stage_enclosure_checked_exact": true
+      },
+      "exact_reference_seconds": 0.025094281001656782,
+      "exact_reference_max_numerator_bits": 48721
+    },
+    {
+      "family": "nonnormal_quadratic",
+      "h": 1.0,
+      "method": "q2",
+      "n": 2,
+      "checks": {
+        "inverse_witness_exact": true,
+        "residual_contains_exact": true,
+        "stage_componentwise_exact": true,
+        "output_projection_exact": true,
+        "embedded_projection_exact": true,
+        "output_wrms_exact": true,
+        "embedded_difference_wrms_exact": true
+      },
+      "candidate_w_batches": 8,
+      "candidate_w_vector_solves": 64,
+      "certificate_stage_layers": 8,
+      "certificate": {
+        "E": [
+          [
+            1.0412276456110903e-16,
+            7.156818670611285e-18
+          ],
+          [
+            1.2176581367487029e-16,
+            8.609373142457179e-18
+          ],
+          [
+            1.67168148179037e-16,
+            1.0315688880923362e-17
+          ],
+          [
+            1.0033291328946977e-15,
+            4.109332366654306e-17
+          ],
+          [
+            1.3360067536439226e-13,
+            1.861889302503138e-16
+          ],
+          [
+            3.696065502849791e-12,
+            1.13807147276012e-14
+          ],
+          [
+            7.650142276115293e-08,
+            3.960503494072994e-10
+          ],
+          [
+            2.4067651735385254e-07,
+            1.2761538986667554e-09
+          ]
+        ],
+        "output_bound": [
+          6.74038609330157e-08,
+          3.5533697456087504e-10
+        ],
+        "embedded_difference_bound": [
+          8.361401396384451e-08,
+          4.3926463194672494e-10
+        ],
+        "output_wrms": 0.9443793761561907,
+        "embedded_difference_wrms": 1.171495236076728,
+        "embedded_target_wrms_upper": 612.0312190083603,
+        "combined_proxy_upper": 612.9755983845166,
+        "scale": [
+          5.0473301553804234e-08,
+          2e-08
+        ],
+        "projection_roundoff": [
+          [
+            1.873501354054952e-16,
+            2.1257138844293924e-17
+          ],
+          [
+            1.3444106938820257e-17,
+            2.4937708758350674e-18
+          ]
+        ],
+        "certificate_seconds": 0.001269722000870388,
+        "op_counts": {
+          "interval_add": 416,
+          "interval_mul": 434,
+          "upper_add": 263,
+          "upper_mul": 288
+        }
+      },
+      "exact_output_error_inf": 6.159309604402915e-08,
+      "exact_embedded_difference_inf": 7.780919324948582e-08,
+      "exact_output_wrms": 0.8629665755788406,
+      "exact_embedded_difference_wrms": 1.0901657099861723,
+      "certificate_accept_output_01": false,
+      "certificate_accept_combined_1": false,
+      "doubling_certificate": {
+        "radius": 0.0001,
+        "closes": true,
+        "E": [
+          [
+            1.0412276456110904e-16,
+            7.156818670611286e-18
+          ],
+          [
+            1.2176611963155397e-16,
+            8.609391915685549e-18
+          ],
+          [
+            1.6716836701765123e-16,
+            1.0315702041812916e-17
+          ],
+          [
+            1.0033328779014209e-15,
+            4.109353549472207e-17
+          ],
+          [
+            1.3360067879773373e-13,
+            1.8618906281908814e-16
+          ],
+          [
+            3.69606551416002e-12,
+            1.1380715113366982e-14
+          ],
+          [
+            7.650142276444284e-08,
+            3.960503494181578e-10
+          ],
+          [
+            2.4067658485663005e-07,
+            1.2761542450156033e-09
+          ]
+        ],
+        "state_radii": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            6.620257498240272e-17,
+            4.550396127818265e-18
+          ],
+          [
+            4.436075941247462e-17,
+            3.0724161998975127e-18
+          ],
+          [
+            7.301164524871249e-16,
+            4.805127200875738e-17
+          ],
+          [
+            1.2438754035881983e-16,
+            8.053897015240783e-18
+          ],
+          [
+            1.899185308065138e-15,
+            6.857978347229251e-17
+          ],
+          [
+            7.875052996869862e-13,
+            2.4790442419965886e-15
+          ],
+          [
+            1.6217500418899283e-08,
+            8.395008760062675e-11
+          ]
+        ],
+        "doubling_levels": 3,
+        "matrix_dimension": 16,
+        "dense_matrix_multiplications": 5,
+        "scope": "parallelizable algebra only; this Python evaluator executes serially",
+        "stage_enclosure_checked_exact": true
+      },
+      "exact_reference_seconds": 0.025094281001656782,
+      "exact_reference_max_numerator_bits": 48721
+    },
+    {
+      "family": "nonnormal_quadratic",
+      "h": 10.0,
+      "method": "q1",
+      "n": 2,
+      "checks": {
+        "inverse_witness_exact": true,
+        "residual_contains_exact": true,
+        "stage_componentwise_exact": true,
+        "output_projection_exact": true,
+        "embedded_projection_exact": true,
+        "output_wrms_exact": true,
+        "embedded_difference_wrms_exact": true
+      },
+      "candidate_w_batches": 6,
+      "candidate_w_vector_solves": 48,
+      "certificate_stage_layers": 8,
+      "certificate": {
+        "E": [
+          [
+            5.674998572870237e-16,
+            3.114229452199536e-17
+          ],
+          [
+            6.502357607133932e-16,
+            3.583360069645408e-17
+          ],
+          [
+            1.5974115131598502e-15,
+            7.490152276875883e-17
+          ],
+          [
+            2.4900685785502207e-14,
+            8.150372190172756e-16
+          ],
+          [
+            3.963686655966376e-10,
+            1.0592877852605605e-13
+          ],
+          [
+            2.7842606594636694e-07,
+            2.0478138047133913e-10
+          ],
+          [
+            0.00014901494742299148,
+            6.288654574783191e-06
+          ],
+          [
+            0.2564042337709667,
+            0.0072986361108007035
+          ]
+        ],
+        "output_bound": [
+          0.054373887438042126,
+          0.0015482028056023076
+        ],
+        "embedded_difference_bound": [
+          0.054405222203677724,
+          0.0015495354261175957
+        ],
+        "output_wrms": 746963.0708640376,
+        "embedded_difference_wrms": 747394.674446252,
+        "embedded_target_wrms_upper": 1340440.4838961256,
+        "combined_proxy_upper": 2087403.5547601634,
+        "scale": [
+          5.1611378530243114e-08,
+          2e-08
+        ],
+        "projection_roundoff": [
+          [
+            1.7277845820729e-15,
+            1.8041124150158796e-16
+          ],
+          [
+            2.4134340359527334e-16,
+            3.035766082959413e-17
+          ]
+        ],
+        "certificate_seconds": 0.001466128000174649,
+        "op_counts": {
+          "interval_add": 416,
+          "interval_mul": 434,
+          "upper_add": 263,
+          "upper_mul": 288
+        }
+      },
+      "exact_output_error_inf": 0.033298997284898824,
+      "exact_embedded_difference_inf": 0.033312176855040856,
+      "exact_output_wrms": 459480.4661498423,
+      "exact_embedded_difference_wrms": 459665.358034646,
+      "certificate_accept_output_01": false,
+      "certificate_accept_combined_1": false,
+      "doubling_certificate": {
+        "radius": 0.0001,
+        "closes": true,
+        "E": [
+          [
+            5.674998572870238e-16,
+            3.1142294521995366e-17
+          ],
+          [
+            6.502437006660229e-16,
+            3.583391807833392e-17
+          ],
+          [
+            1.5974181457469104e-15,
+            7.490176649655474e-17
+          ],
+          [
+            2.490084580224281e-14,
+            8.150425384600449e-16
+          ],
+          [
+            3.9636866599084145e-10,
+            1.0592878753261487e-13
+          ],
+          [
+            2.7842606598769654e-07,
+            2.0478138049763443e-10
+          ],
+          [
+            0.00014901494837329645,
+            6.288654575479035e-06
+          ],
+          [
+            0.25640423426292425,
+            0.007298636131883091
+          ]
+        ],
+        "state_radii": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            3.608236105995577e-16,
+            1.9800666039811765e-17
+          ],
+          [
+            2.404756382582563e-16,
+            1.3211079733327258e-17
+          ],
+          [
+            5.461163327459313e-15,
+            2.7195788219274964e-16
+          ],
+          [
+            1.031330201460116e-15,
+            4.809826370608821e-17
+          ],
+          [
+            2.5455166821224386e-12,
+            1.090547024030381e-15
+          ],
+          [
+            5.90181873386901e-08,
+            4.340385194000044e-11
+          ],
+          [
+            3.1874409057554485e-05,
+            1.3330171618920848e-06
+          ]
+        ],
+        "doubling_levels": 3,
+        "matrix_dimension": 16,
+        "dense_matrix_multiplications": 5,
+        "scope": "parallelizable algebra only; this Python evaluator executes serially",
+        "stage_enclosure_checked_exact": true
+      },
+      "exact_reference_seconds": 0.024780106999969576,
+      "exact_reference_max_numerator_bits": 48277
+    },
+    {
+      "family": "nonnormal_quadratic",
+      "h": 10.0,
+      "method": "q2",
+      "n": 2,
+      "checks": {
+        "inverse_witness_exact": true,
+        "residual_contains_exact": true,
+        "stage_componentwise_exact": true,
+        "output_projection_exact": true,
+        "embedded_projection_exact": true,
+        "output_wrms_exact": true,
+        "embedded_difference_wrms_exact": true
+      },
+      "candidate_w_batches": 8,
+      "candidate_w_vector_solves": 64,
+      "certificate_stage_layers": 8,
+      "certificate": {
+        "E": [
+          [
+            5.674998572870237e-16,
+            3.114229452199536e-17
+          ],
+          [
+            6.502357607133932e-16,
+            3.583360069645408e-17
+          ],
+          [
+            1.5974115131598502e-15,
+            7.490152276875883e-17
+          ],
+          [
+            2.4900685785502207e-14,
+            8.150372190172756e-16
+          ],
+          [
+            3.963686655966376e-10,
+            1.0592877852605605e-13
+          ],
+          [
+            4.047265669274263e-09,
+            4.5571747304497195e-11
+          ],
+          [
+            6.135652139034901e-05,
+            1.8996487109898432e-06
+          ],
+          [
+            0.00013265453109893017,
+            3.21776511786314e-06
+          ]
+        ],
+        "output_bound": [
+          4.1265427832765165e-05,
+          1.0890427863358444e-06
+        ],
+        "embedded_difference_bound": [
+          5.426531242136438e-05,
+          1.491609230611233e-06
+        ],
+        "output_wrms": 1459.461179858692,
+        "embedded_difference_wrms": 1919.2931740243362,
+        "embedded_target_wrms_upper": 342186.30328759126,
+        "combined_proxy_upper": 343645.76446745003,
+        "scale": [
+          2e-08,
+          2e-08
+        ],
+        "projection_roundoff": [
+          [
+            1.7156415177410624e-15,
+            1.7867651802561116e-16
+          ],
+          [
+            2.7934468974089027e-16,
+            3.024924061234558e-17
+          ]
+        ],
+        "certificate_seconds": 0.0013278800033731386,
+        "op_counts": {
+          "interval_add": 416,
+          "interval_mul": 434,
+          "upper_add": 263,
+          "upper_mul": 288
+        }
+      },
+      "exact_output_error_inf": 7.4582611760093385e-06,
+      "exact_embedded_difference_inf": 1.2819318060476832e-07,
+      "exact_output_wrms": 263.86771394637304,
+      "exact_embedded_difference_wrms": 5.173512027627842,
+      "certificate_accept_output_01": false,
+      "certificate_accept_combined_1": false,
+      "doubling_certificate": {
+        "radius": 0.0001,
+        "closes": true,
+        "E": [
+          [
+            5.674998572870238e-16,
+            3.1142294521995366e-17
+          ],
+          [
+            6.502437006660229e-16,
+            3.583391807833392e-17
+          ],
+          [
+            1.5974181457469104e-15,
+            7.490176649655474e-17
+          ],
+          [
+            2.490084580224281e-14,
+            8.150425384600449e-16
+          ],
+          [
+            3.9636866599084145e-10,
+            1.0592878753261487e-13
+          ],
+          [
+            4.047265710603795e-09,
+            4.557174733079246e-11
+          ],
+          [
+            6.135652140544112e-05,
+            1.8996487111448333e-06
+          ],
+          [
+            0.00013265475616973017,
+            3.2177715460754743e-06
+          ]
+        ],
+        "state_radii": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            3.608236105995577e-16,
+            1.9800666039811765e-17
+          ],
+          [
+            2.404756382582563e-16,
+            1.3211079733327258e-17
+          ],
+          [
+            5.461163327459313e-15,
+            2.7195788219274964e-16
+          ],
+          [
+            1.031330201460116e-15,
+            4.809826370608821e-17
+          ],
+          [
+            2.5455166821224386e-12,
+            1.090547024030381e-15
+          ],
+          [
+            8.6701301579014e-10,
+            9.661350249563058e-12
+          ],
+          [
+            1.30082792694292e-05,
+            4.026548312527167e-07
+          ]
+        ],
+        "doubling_levels": 3,
+        "matrix_dimension": 16,
+        "dense_matrix_multiplications": 5,
+        "scope": "parallelizable algebra only; this Python evaluator executes serially",
+        "stage_enclosure_checked_exact": true
+      },
+      "exact_reference_seconds": 0.024780106999969576,
+      "exact_reference_max_numerator_bits": 48277
+    }
+  ],
+  "target": "strict-lower-projection",
+  "native_upper_triangle_leakage": {
+    "alpha": {
+      "maximum_abs": 5.577737968635803e-16,
+      "nonzero_entries": 28
+    },
+    "l": {
+      "maximum_abs": 3.7683229960916457e-16,
+      "nonzero_entries": 34
+    }
+  },
+  "all_exact_checks": true,
+  "seconds": 0.5571316389978165,
+  "claim_ceiling": "explicit strict-lower projection of native rounded tableau; no exact native full-block parity; 1/2-dimensional exact inverse witness; no ODE global error, production admission, or speedup",
+  "target_semantics": "native binary64 gamma/b/btilde and explicitly selected strict-lower alpha/l entries treated as exact; W=I-h*gamma*J and g=h*(J*y-q*y^2) interpreted over rationals; sequential code uses alpha and Gamma separately so exact native arithmetic parity is not claimed",
+  "arithmetic_semantics": "CPython binary64 nearest arithmetic plus nextafter interval widening; exact Fraction inverse witness and WRMS squared evaluation; overflow rejects"
+}

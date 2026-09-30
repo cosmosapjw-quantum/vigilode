@@ -1,0 +1,82 @@
+{
+  "status": "PASS_WITHIN_STATED_SCOPE",
+  "candidate_source": "polynomial/joint_polynomial_probe.py",
+  "reference": "Reviewer-selected 2x2 exact dyadic spectral projectors and independent 250-term Decimal160 Taylor series; no candidate scalar_phi/reference functions reused.",
+  "A": [
+    [
+      -4.25,
+      3.75
+    ],
+    [
+      3.75,
+      -4.25
+    ]
+  ],
+  "W": [
+    [
+      1.0,
+      -0.5,
+      0.125,
+      -0.03125,
+      0.015625
+    ],
+    [
+      -0.25,
+      0.75,
+      -0.0625,
+      0.125,
+      -0.0078125
+    ]
+  ],
+  "h": 0.75,
+  "rows": [
+    {
+      "algorithm": "laguerre",
+      "error_fused_L2": 4.3021178017855865e-14,
+      "column_errors": [
+        4.55332903853474e-14,
+        2.5647461473928696e-15,
+        7.063416976241428e-17,
+        1.6751537584003938e-17,
+        1.0123882925396071e-18
+      ],
+      "meta": {
+        "degree": 27,
+        "jvp_calls": 27,
+        "jvp_vectors": 135,
+        "block_width": 5,
+        "truncation_upper_fused": 9.57235086473428e-13,
+        "coefficient_min": 1.6740003181390724e-21,
+        "epsilon_abs_term_sum": 2.5183695410352395e-15,
+        "normalization_cap": 16
+      }
+    },
+    {
+      "algorithm": "chebyshev",
+      "error_fused_L2": 6.634685735505086e-15,
+      "column_errors": [
+        6.5985925910535365e-15,
+        1.1124232624234535e-16,
+        3.1776003249713776e-17,
+        1.3010426069826053e-17,
+        8.296980650816911e-19
+      ],
+      "meta": {
+        "degree": 17,
+        "jvp_calls": 17,
+        "jvp_vectors": 85,
+        "block_width": 5,
+        "truncation_upper_fused": 2.0937719226277455e-13,
+        "coefficient_min": 1.053893935048251e-18,
+        "epsilon_abs_term_sum": 1.2034067698149307e-16,
+        "normalization_cap": null
+      }
+    }
+  ],
+  "proof_review": {
+    "chebyshev_tail": "ACCEPT_DERIVED_FOR_REAL_SYMMETRIC_NONPOSITIVE_A_H_NONNEGATIVE",
+    "general_nonnormal": "NOT_SUPPORTED",
+    "quadrature_recurrence_roundoff": "NOT_CERTIFIED",
+    "wall_speedup": "NOT_MEASURED"
+  }
+}

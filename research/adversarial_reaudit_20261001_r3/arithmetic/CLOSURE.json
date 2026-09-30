@@ -1,0 +1,284 @@
+{
+  "source_commit": "cc2cd041737e7ff543624d1b59893a3b4397369f",
+  "legacy_probe_rows": 104,
+  "legacy_probe_production_rows": 91,
+  "legacy_probe_candidate_rows": 13,
+  "counts_by_case": {
+    "old_p1_closure": 22,
+    "old_p2_closure": 22,
+    "prefix_closure": 20,
+    "old_p3_closure": 1,
+    "scaled_range_dense": 3,
+    "scaled_range_fused": 3,
+    "scaled_range_candidate": 3,
+    "amplitude_dense": 10,
+    "amplitude_candidate": 10,
+    "amplitude_fused": 10
+  },
+  "closures": [
+    {
+      "id": "PHI-R1",
+      "status": "CLOSED_FOR_ORIGINAL_REPRODUCERS",
+      "native_production_rows": 6,
+      "maximum_relative_error": 8.498353220547801e-16,
+      "all_within_1e-12": true
+    },
+    {
+      "id": "PHI-R2",
+      "status": "CLOSED_FOR_ORIGINAL_REPRODUCERS",
+      "native_production_rows": 20,
+      "maximum_relative_error": 3.9270253872305477e-16,
+      "all_within_1e-12": true
+    },
+    {
+      "id": "R2-POL-01",
+      "status": "CLOSED_FOR_ORIGINAL_REPRODUCER",
+      "evidence": "EXACT_ORACLES.json#/other_oracles",
+      "consumer_regression": "repository r2_output_budget_contracts; execution is owned by runtime lane"
+    }
+  ],
+  "independent_rows": [
+    {
+      "finding": "PHI-R1",
+      "id": "scaled_range_dense",
+      "h": 1e-100,
+      "b4": 1e+300,
+      "expected": 4.166666666666667e-102,
+      "actual": 4.166666666666665e-102,
+      "relative_error": 6.200688271261428e-16,
+      "within_1e-12": true
+    },
+    {
+      "finding": "PHI-R1",
+      "id": "scaled_range_fused",
+      "h": 1e-100,
+      "b4": 1e+300,
+      "expected": 4.166666666666667e-102,
+      "actual": 4.166666666666664e-102,
+      "relative_error": 8.104144649248165e-16,
+      "within_1e-12": true
+    },
+    {
+      "finding": "PHI-R1",
+      "id": "scaled_range_dense",
+      "h": -1e-100,
+      "b4": 1e+300,
+      "expected": 4.166666666666667e-102,
+      "actual": 4.166666666666665e-102,
+      "relative_error": 6.200688271261428e-16,
+      "within_1e-12": true
+    },
+    {
+      "finding": "PHI-R1",
+      "id": "scaled_range_fused",
+      "h": -1e-100,
+      "b4": 1e+300,
+      "expected": 4.166666666666667e-102,
+      "actual": 4.166666666666664e-102,
+      "relative_error": 8.104144649248165e-16,
+      "within_1e-12": true
+    },
+    {
+      "finding": "PHI-R1",
+      "id": "scaled_range_dense",
+      "h": 1e+100,
+      "b4": 1e-300,
+      "expected": 4.166666666666667e+98,
+      "actual": 4.1666666666666635e+98,
+      "relative_error": 8.498353220547801e-16,
+      "within_1e-12": true
+    },
+    {
+      "finding": "PHI-R1",
+      "id": "scaled_range_fused",
+      "h": 1e+100,
+      "b4": 1e-300,
+      "expected": 4.166666666666667e+98,
+      "actual": 4.1666666666666635e+98,
+      "relative_error": 8.498353220547801e-16,
+      "within_1e-12": true
+    },
+    {
+      "finding": "PHI-R2",
+      "id": "amplitude_dense",
+      "amplitude": 1e-200,
+      "expected": "9.5162581964040424872637890238144559571744473135071748835937320457936597519996833748248959686331114315713865045E-201",
+      "actual": 9.516258196404041e-201,
+      "relative_error": 1.690789951227933e-16,
+      "within_1e-12": true
+    },
+    {
+      "finding": "PHI-R2",
+      "id": "amplitude_fused",
+      "amplitude": 1e-200,
+      "expected": "9.5162581964040424872637890238144559571744473135071748835937320457936597519996833748248959686331114315713865045E-201",
+      "actual": 9.516258196404042e-201,
+      "relative_error": 1.6664282323401664e-17,
+      "within_1e-12": true
+    },
+    {
+      "finding": "PHI-R2",
+      "id": "amplitude_dense",
+      "amplitude": 1e-100,
+      "expected": "9.5162581964040428478503940402328333250526558045794648755517750202140064988597936436955010190853356929363216529E-101",
+      "actual": 9.516258196404039e-101,
+      "relative_error": 3.9270253872305477e-16,
+      "within_1e-12": true
+    },
+    {
+      "finding": "PHI-R2",
+      "id": "amplitude_fused",
+      "amplitude": 1e-100,
+      "expected": "9.5162581964040428478503940402328333250526558045794648755517750202140064988597936436955010190853356929363216529E-101",
+      "actual": 9.51625819640404e-101,
+      "relative_error": 2.593548623078292e-16,
+      "within_1e-12": true
+    },
+    {
+      "finding": "PHI-R2",
+      "id": "amplitude_dense",
+      "amplitude": 1.0,
+      "expected": "0.95162581964040426576023136820247796195826661733233811055579056775229570083047381817902353086090224252421606956",
+      "actual": 0.9516258196404042,
+      "relative_error": 1.1318472123092008e-16,
+      "within_1e-12": true
+    },
+    {
+      "finding": "PHI-R2",
+      "id": "amplitude_fused",
+      "amplitude": 1.0,
+      "expected": "0.95162581964040426576023136820247796195826661733233811055579056775229570083047381817902353086090224252421606956",
+      "actual": 0.9516258196404042,
+      "relative_error": 1.1318472123092008e-16,
+      "within_1e-12": true
+    },
+    {
+      "finding": "PHI-R2",
+      "id": "amplitude_dense",
+      "amplitude": 10000000000.0,
+      "expected": "9516258196.4040426576023136820247796195826661733233811055579056775229570083047381817902353086090224252421606956",
+      "actual": 9516258196.404041,
+      "relative_error": 1.4368243088167792e-16,
+      "within_1e-12": true
+    },
+    {
+      "finding": "PHI-R2",
+      "id": "amplitude_fused",
+      "amplitude": 10000000000.0,
+      "expected": "9516258196.4040426576023136820247796195826661733233811055579056775229570083047381817902353086090224252421606956",
+      "actual": 9516258196.404041,
+      "relative_error": 1.4368243088167792e-16,
+      "within_1e-12": true
+    },
+    {
+      "finding": "PHI-R2",
+      "id": "amplitude_dense",
+      "amplitude": 1e+20,
+      "expected": "95162581964040426576.023136820247796195826661733233811055579056775229570083047381817902353086090224252421606956",
+      "actual": 9.51625819640404e+19,
+      "relative_error": 2.2681207982541197e-16,
+      "within_1e-12": true
+    },
+    {
+      "finding": "PHI-R2",
+      "id": "amplitude_fused",
+      "amplitude": 1e+20,
+      "expected": "95162581964040426576.023136820247796195826661733233811055579056775229570083047381817902353086090224252421606956",
+      "actual": 9.516258196404042e+19,
+      "relative_error": 5.464356924221757e-17,
+      "within_1e-12": true
+    },
+    {
+      "finding": "PHI-R2",
+      "id": "amplitude_dense",
+      "amplitude": 1e+40,
+      "expected": "9516258196404042946692941979175294323509.7791785461126915063548513919417436506466399757407576181689849863770400",
+      "actual": 9.516258196404042e+39,
+      "relative_error": 7.466693739110394e-17,
+      "within_1e-12": true
+    },
+    {
+      "finding": "PHI-R2",
+      "id": "amplitude_fused",
+      "amplitude": 1e+40,
+      "expected": "9516258196404042946692941979175294323509.7791785461126915063548513919417436506466399757407576181689849863770400",
+      "actual": 9.516258196404042e+39,
+      "relative_error": 7.466693739110394e-17,
+      "within_1e-12": true
+    },
+    {
+      "finding": "PHI-R2",
+      "id": "amplitude_dense",
+      "amplitude": 1e+60,
+      "expected": "951625819640404217595722510931655011754753665504902422907710.15734182066749754826836901469305237737967686815452",
+      "actual": 9.51625819640404e+59,
+      "relative_error": 2.053277648295925e-16,
+      "within_1e-12": true
+    },
+    {
+      "finding": "PHI-R2",
+      "id": "amplitude_fused",
+      "amplitude": 1e+60,
+      "expected": "951625819640404217595722510931655011754753665504902422907710.15734182066749754826836901469305237737967686815452",
+      "actual": 9.516258196404042e+59,
+      "relative_error": 1.7852858299985967e-17,
+      "within_1e-12": true
+    },
+    {
+      "finding": "PHI-R2",
+      "id": "amplitude_dense",
+      "amplitude": 1e+100,
+      "expected": "9516258196404042808938331551798581712622437310411039037118172138413553066441953292340551601161794564.7103412812",
+      "actual": 9.516258196404041e+99,
+      "relative_error": 1.449373217663613e-16,
+      "within_1e-12": true
+    },
+    {
+      "finding": "PHI-R2",
+      "id": "amplitude_fused",
+      "amplitude": 1e+100,
+      "expected": "9516258196404042808938331551798581712622437310411039037118172138413553066441953292340551601161794564.7103412812",
+      "actual": 9.516258196404041e+99,
+      "relative_error": 1.449373217663613e-16,
+      "within_1e-12": true
+    },
+    {
+      "finding": "PHI-R2",
+      "id": "amplitude_dense",
+      "amplitude": 1e+200,
+      "expected": "9.5162581964040423695748898572670527578993195827492035243555807718223085848151205989124348461896089666416050186E+199",
+      "actual": 9.51625819640404e+199,
+      "relative_error": 2.894234922460785e-16,
+      "within_1e-12": true
+    },
+    {
+      "finding": "PHI-R2",
+      "id": "amplitude_fused",
+      "amplitude": 1e+200,
+      "expected": "9.5162581964040423695748898572670527578993195827492035243555807718223085848151205989124348461896089666416050186E+199",
+      "actual": 9.51625819640404e+199,
+      "relative_error": 2.894234922460785e-16,
+      "within_1e-12": true
+    },
+    {
+      "finding": "PHI-R2",
+      "id": "amplitude_dense",
+      "amplitude": 1e+300,
+      "expected": "9.5162581964040431572511688108430583370300511986900277273578969649144174453842445115814820698741139514041043377E+299",
+      "actual": 9.516258196404043e+299,
+      "relative_error": 3.467400828342415e-17,
+      "within_1e-12": true
+    },
+    {
+      "finding": "PHI-R2",
+      "id": "amplitude_fused",
+      "amplitude": 1e+300,
+      "expected": "9.5162581964040431572511688108430583370300511986900277273578969649144174453842445115814820698741139514041043377E+299",
+      "actual": 9.516258196404043e+299,
+      "relative_error": 3.467400828342415e-17,
+      "within_1e-12": true
+    }
+  ],
+  "oracle": "PHI-R1 uses exact Fraction(h)^4*Fraction(b4)/24; PHI-R2 uses 110-digit Decimal exp of represented h=0.1; original non-amplitude rows keep prior scalar-series oracle as regression only",
+  "scope": "The same prior source bytes executed against R3 dependencies, not inherited R2 PASS or bypass of its immutable-source runner"
+}

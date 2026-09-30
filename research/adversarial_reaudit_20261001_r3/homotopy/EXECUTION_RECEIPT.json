@@ -1,0 +1,35 @@
+{
+  "command": [
+    "python",
+    "r3/homotopy/certified_majorant.py",
+    "--coefficients",
+    "r3/homotopy/native_tableau_bits.json",
+    "--target",
+    "strict-lower-projection",
+    "--out",
+    "r3/homotopy/results.json"
+  ],
+  "actual_exit": 0,
+  "seconds": 0.7683694362640381,
+  "script_sha256": "b4d7936eac38612b6734b7ada33ddfbbf913841787b63756d8acd1b8d00afbae",
+  "native_coefficients_sha256": "c9e971d237593bdd011346cbeedceee11e19246e346d7d82a0e07c72ec23bc71",
+  "coefficient_structure_execution": {
+    "actual_exit": 0,
+    "command": [
+      "python",
+      "coefficient_structure.py",
+      "--coefficients",
+      "native_tableau_bits.json",
+      "--out",
+      "coefficient_structure.json"
+    ],
+    "stdout": "coefficient_structure.log",
+    "stderr": "coefficient_structure.stderr"
+  },
+  "native_dump_provenance": {
+    "source": "../arithmetic/probe/src/bin/tableau_bits.rs",
+    "receipt": "../arithmetic/NATIVE_EXECUTION.json",
+    "actual_exit": 0
+  },
+  "result_sha256": "6cb4190e37218969a1fc6248274b7f85b64c4f15f07a084f32048880cec58543"
+}
