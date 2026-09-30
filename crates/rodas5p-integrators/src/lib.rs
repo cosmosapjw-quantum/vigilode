@@ -50,6 +50,7 @@ mod scientific_corpus_v2;
 mod scientific_validity_v2_gate;
 mod sequential;
 mod stage_batch;
+mod stage_target;
 mod transactional_q1_q2;
 mod unified_gates;
 mod unified_screen;
@@ -332,6 +333,10 @@ pub use sequential::{
 pub use stage_batch::{
     StageBatchFeasibilityCase, StageBatchFeasibilityProfile, StageBatchFeasibilityReport,
     StageBatchFeasibilityRow, run_stage_batch_feasibility,
+};
+pub use stage_target::{
+    CoefficientLeakage, STAGE_TARGET_SEQUENTIAL, STAGE_TARGET_STRICT_LOWER_PROJECTION, StageTarget,
+    StageTargetBits, block_sequential_allowance, native_coefficient_leakage,
 };
 pub use transactional_q1_q2::{
     OperationalGateReport, TransactionalQ1Q2Config, TransactionalQ1Q2Lane,

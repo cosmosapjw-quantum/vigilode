@@ -2,6 +2,7 @@
 
 mod binary_scaling;
 mod coefficients;
+pub mod directed;
 mod error;
 mod hash;
 mod matrix;
