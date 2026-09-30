@@ -44,7 +44,7 @@ pub use external_comparators::{
 pub use paired_receipt::{
     ArmIdentity, PAIRED_TIMING_MONOTONIC_CLOCK, PAIRED_TIMING_RECEIPT_SCHEMA, PairedTimingEvidence,
     PairedTimingReceipt, PairedWorkload, SessionFailure, SessionProvenance, SessionRecord,
-    measure_paired_session, merge_session_cases,
+    measure_paired_session, merge_session_cases, session_batches,
 };
 pub use paired_timing::{
     AaControlAssessment, MonteCarloGate, PAIRED_TIMING_BOOTSTRAP_RESAMPLES,

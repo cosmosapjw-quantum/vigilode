@@ -776,11 +776,7 @@ pub fn run_campaign(
             continue;
         };
         if session == 0 {
-            let batches = record
-                .cases
-                .iter()
-                .map(|case| (case.case_id.clone(), case.batch_iterations))
-                .collect::<BTreeMap<_, _>>();
+            let batches = rodas5p_fair_ab::session_batches(&record);
             crate::write_json(&batches_path, &batches)?;
         }
         records.push(record);

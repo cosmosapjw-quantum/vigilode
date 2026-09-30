@@ -147,7 +147,8 @@ fn measure_case(
 /// Measure one session in this process. Each workload is timed against its
 /// reference and, as the A/A control, its reference against itself. An arm
 /// that fails ends that case and is recorded as a failure; the session goes
-/// on. `batches` maps a case to the batch fixed by the first session.
+/// on. `batches` maps a case, and `<case>#aa` its A/A control, to the batch
+/// fixed by the first session ([`session_batches`]).
 pub fn measure_paired_session(
     campaign_id: &str,
     session: u32,
@@ -181,8 +182,12 @@ pub fn measure_paired_session(
                 continue;
             }
         }
-        // A/A: the reference arm against itself, with the same batch.
-        let aa_batch = batch.or_else(|| cases.last().map(|case| case.batch_iterations));
+        // A/A: the reference arm against itself. It records its own
+        // warmups, so its batch is its own calibration (fixed by the first
+        // session under `<case>#aa`), not the candidate case's: a fast
+        // candidate calibrates a larger batch than the reference alone, and
+        // the A/A case would then fail its own admission.
+        let aa_batch = batches.get(&format!("{}#aa", workload.case_id)).copied();
         let reference = std::cell::RefCell::new(&mut workload.reference);
         let mut left = || (reference.borrow_mut())();
         let mut right = || (reference.borrow_mut())();
@@ -217,6 +222,18 @@ pub fn measure_paired_session(
         aa_cases,
         failures,
     })
+}
+
+/// The batch of every case and A/A control of a session, keyed as
+/// [`measure_paired_session`] reads them: a campaign fixes later sessions to
+/// the first session's map.
+pub fn session_batches(record: &SessionRecord) -> BTreeMap<String, usize> {
+    record
+        .cases
+        .iter()
+        .chain(&record.aa_cases)
+        .map(|case| (case.case_id.clone(), case.batch_iterations))
+        .collect()
 }
 
 /// Concatenate one case's per-session measurements, in session order. The
