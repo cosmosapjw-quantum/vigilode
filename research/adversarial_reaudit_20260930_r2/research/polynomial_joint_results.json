@@ -1,0 +1,427 @@
+{
+  "schema": "vigilode.reaudit.polynomial_joint.v1",
+  "source_commit": "7708ef90554fc3986478d4602de6a01c7266b14f",
+  "evidence_status": [
+    "derived",
+    "numerically checked",
+    "implementation-verified"
+  ],
+  "claim_ceiling": "standalone bounded prototype only; no production implementation, roundoff/quad certificate, nonnormal admission, or wall speedup",
+  "tolerance": 1e-10,
+  "runtime": {
+    "python": "3.12.14",
+    "numpy": "2.3.5",
+    "scipy": "1.17.0"
+  },
+  "input_sha256": "d16c7b782b2c3682b7deff139e3d1ea4a94ce1e8d628d60799ac12a6232cdfa2",
+  "oracle": "Decimal110 scalar exp and phi recurrence; same input v in every cap comparison",
+  "checks": {
+    "same_case_L64_failure_preserved": true,
+    "same_case_cap16_all_outputs_pass": true,
+    "coefficients_nonnegative": true,
+    "joint_reuses_basis_five_outputs": true,
+    "cap16_refinement_below_target": true
+  },
+  "rows": [
+    {
+      "h": 0.001,
+      "h_rho": 0.1,
+      "dimension": 24,
+      "cap": 64.0,
+      "L": 32.0,
+      "degree": 6,
+      "JVPs": 6,
+      "output_order": [
+        "exp",
+        "phi1",
+        "phi2",
+        "phi3",
+        "phi4"
+      ],
+      "error_L2": [
+        2.0299096904827101e-13,
+        2.5452338444549762e-14,
+        2.845409000843205e-15,
+        3.065830826522993e-16,
+        3.2157985203493746e-17
+      ],
+      "raw_summation_error_L2": [
+        2.03004852308011e-13,
+        2.5438438203382933e-14,
+        2.8387767160898068e-15,
+        3.060828702106403e-16,
+        3.23209105444854e-17
+      ],
+      "analytic_truncation_upper": [
+        2.530326032466496e-11,
+        2.530326032466496e-11,
+        1.265163016233248e-11,
+        4.217210054110826e-12,
+        1.0543025135277066e-12
+      ],
+      "quadrature_refinement_L2": [
+        0.0,
+        2.532636865891146e-16,
+        4.906730591320637e-17,
+        4.721262776727936e-16,
+        2.5162895528370934e-16
+      ],
+      "all_outputs_meet_target": true,
+      "max_component_abs_term_sum": 0.3378419409656405,
+      "epsilon_abs_term_sum": 7.50159803088214e-17,
+      "chebyshev_exp_JVPs": 5,
+      "chebyshev_exp_error": 4.800225280487418e-13,
+      "coefficient_nonnegative": true
+    },
+    {
+      "h": 0.001,
+      "h_rho": 0.1,
+      "dimension": 24,
+      "cap": 16.0,
+      "L": 16.0,
+      "degree": 6,
+      "JVPs": 6,
+      "output_order": [
+        "exp",
+        "phi1",
+        "phi2",
+        "phi3",
+        "phi4"
+      ],
+      "error_L2": [
+        1.7147877762044985e-14,
+        2.1553239354598193e-15,
+        2.4057134282168504e-16,
+        4.068460526144846e-17,
+        2.2427856036550666e-17
+      ],
+      "raw_summation_error_L2": [
+        1.7149042641023352e-14,
+        2.141470637153243e-15,
+        2.4903139746050935e-16,
+        3.855920479851811e-17,
+        2.1177496539233038e-17
+      ],
+      "analytic_truncation_upper": [
+        1.0631014806068554e-12,
+        1.0631014806068554e-12,
+        5.315507403034277e-13,
+        1.7718358010114257e-13,
+        4.429589502528564e-14
+      ],
+      "quadrature_refinement_L2": [
+        0.0,
+        0.0,
+        6.245907949978884e-17,
+        5.235446481037439e-16,
+        2.50632599001285e-16
+      ],
+      "all_outputs_meet_target": true,
+      "max_component_abs_term_sum": 0.33574294678186867,
+      "epsilon_abs_term_sum": 7.454990997454584e-17,
+      "chebyshev_exp_JVPs": 5,
+      "chebyshev_exp_error": 4.800225280487418e-13,
+      "coefficient_nonnegative": true
+    },
+    {
+      "h": 0.01,
+      "h_rho": 1.0,
+      "dimension": 24,
+      "cap": 64.0,
+      "L": 16.0,
+      "degree": 10,
+      "JVPs": 10,
+      "output_order": [
+        "exp",
+        "phi1",
+        "phi2",
+        "phi3",
+        "phi4"
+      ],
+      "error_L2": [
+        1.044624357041786e-12,
+        9.176240189475769e-14,
+        7.385853669415946e-15,
+        5.4465141906171575e-16,
+        4.3338871362665156e-17
+      ],
+      "raw_summation_error_L2": [
+        1.044615866463585e-12,
+        9.177307999937689e-14,
+        7.382788344559686e-15,
+        5.44852056264285e-16,
+        4.4430930446657174e-17
+      ],
+      "analytic_truncation_upper": [
+        8.697966287840957e-11,
+        8.697966287840957e-11,
+        4.3489831439204784e-11,
+        1.4496610479734928e-11,
+        3.624152619933732e-12
+      ],
+      "quadrature_refinement_L2": [
+        0.0,
+        2.376670083585374e-16,
+        2.56302550051564e-16,
+        5.15513860453604e-16,
+        2.526457387002049e-16
+      ],
+      "all_outputs_meet_target": true,
+      "max_component_abs_term_sum": 0.3460083475882391,
+      "epsilon_abs_term_sum": 7.682928684099346e-17,
+      "chebyshev_exp_JVPs": 8,
+      "chebyshev_exp_error": 9.404346103493093e-12,
+      "coefficient_nonnegative": true
+    },
+    {
+      "h": 0.01,
+      "h_rho": 1.0,
+      "dimension": 24,
+      "cap": 16.0,
+      "L": 16.0,
+      "degree": 10,
+      "JVPs": 10,
+      "output_order": [
+        "exp",
+        "phi1",
+        "phi2",
+        "phi3",
+        "phi4"
+      ],
+      "error_L2": [
+        1.044624357041786e-12,
+        9.176240189475769e-14,
+        7.385853669415946e-15,
+        5.4465141906171575e-16,
+        4.3338871362665156e-17
+      ],
+      "raw_summation_error_L2": [
+        1.044615866463585e-12,
+        9.177307999937689e-14,
+        7.382788344559686e-15,
+        5.44852056264285e-16,
+        4.4430930446657174e-17
+      ],
+      "analytic_truncation_upper": [
+        8.697966287840957e-11,
+        8.697966287840957e-11,
+        4.3489831439204784e-11,
+        1.4496610479734928e-11,
+        3.624152619933732e-12
+      ],
+      "quadrature_refinement_L2": [
+        0.0,
+        2.376670083585374e-16,
+        2.56302550051564e-16,
+        5.15513860453604e-16,
+        2.526457387002049e-16
+      ],
+      "all_outputs_meet_target": true,
+      "max_component_abs_term_sum": 0.3460083475882391,
+      "epsilon_abs_term_sum": 7.682928684099346e-17,
+      "chebyshev_exp_JVPs": 8,
+      "chebyshev_exp_error": 9.404346103493093e-12,
+      "coefficient_nonnegative": true
+    },
+    {
+      "h": 0.1,
+      "h_rho": 10.0,
+      "dimension": 24,
+      "cap": 64.0,
+      "L": 64.0,
+      "degree": 27,
+      "JVPs": 27,
+      "output_order": [
+        "exp",
+        "phi1",
+        "phi2",
+        "phi3",
+        "phi4"
+      ],
+      "error_L2": [
+        2.2644904806349457e-13,
+        9.176777758830007e-15,
+        1.8496438220695903e-16,
+        5.293819038045464e-17,
+        2.819197988977437e-17
+      ],
+      "raw_summation_error_L2": [
+        2.2644909397780232e-13,
+        9.17827078832915e-15,
+        2.460879091401784e-16,
+        5.45382790849389e-17,
+        3.147703608708989e-17
+      ],
+      "analytic_truncation_upper": [
+        3.6218901014575876e-11,
+        3.6218901014575876e-11,
+        1.8109450507287938e-11,
+        6.0364835024293125e-12,
+        1.5091208756073281e-12
+      ],
+      "quadrature_refinement_L2": [
+        0.0,
+        7.61272947230437e-16,
+        9.326191129547826e-16,
+        7.058824952349323e-16,
+        2.9536925277071413e-16
+      ],
+      "all_outputs_meet_target": true,
+      "max_component_abs_term_sum": 123.734219943558,
+      "epsilon_abs_term_sum": 2.7474515983074266e-14,
+      "chebyshev_exp_JVPs": 18,
+      "chebyshev_exp_error": 3.978055988008111e-12,
+      "coefficient_nonnegative": true
+    },
+    {
+      "h": 0.1,
+      "h_rho": 10.0,
+      "dimension": 24,
+      "cap": 16.0,
+      "L": 16.0,
+      "degree": 32,
+      "JVPs": 32,
+      "output_order": [
+        "exp",
+        "phi1",
+        "phi2",
+        "phi3",
+        "phi4"
+      ],
+      "error_L2": [
+        2.865147477194512e-13,
+        1.3580142304721847e-14,
+        5.857321435388687e-16,
+        5.19746042465601e-17,
+        2.3078330251317537e-17
+      ],
+      "raw_summation_error_L2": [
+        2.8651578591611383e-13,
+        1.358456096377169e-14,
+        6.037777829765962e-16,
+        6.029207850122051e-17,
+        2.283179331455149e-17
+      ],
+      "analytic_truncation_upper": [
+        6.028862404849286e-11,
+        6.028862404849286e-11,
+        3.014431202424643e-11,
+        1.0048104008082142e-11,
+        2.5120260020205355e-12
+      ],
+      "quadrature_refinement_L2": [
+        0.0,
+        6.667270736416291e-16,
+        8.896935876077221e-16,
+        6.873890425675839e-16,
+        2.9045226809931597e-16
+      ],
+      "all_outputs_meet_target": true,
+      "max_component_abs_term_sum": 3.09769008963917,
+      "epsilon_abs_term_sum": 6.878253721341143e-16,
+      "chebyshev_exp_JVPs": 18,
+      "chebyshev_exp_error": 3.978055988008111e-12,
+      "coefficient_nonnegative": true
+    },
+    {
+      "h": 1.0,
+      "h_rho": 100.0,
+      "dimension": 24,
+      "cap": 64.0,
+      "L": 64.0,
+      "degree": 111,
+      "JVPs": 111,
+      "output_order": [
+        "exp",
+        "phi1",
+        "phi2",
+        "phi3",
+        "phi4"
+      ],
+      "error_L2": [
+        1.891911563350548e-08,
+        1.0227105001263058e-08,
+        8.427222056146758e-11,
+        5.232852337662562e-12,
+        1.5730047176512234e-11
+      ],
+      "raw_summation_error_L2": [
+        1.891911559709007e-08,
+        1.0227105001155275e-08,
+        8.427220663475506e-11,
+        5.23285217532557e-12,
+        1.5730048043891e-11
+      ],
+      "analytic_truncation_upper": [
+        6.837737740879277e-11,
+        6.837737740879277e-11,
+        3.4188688704396384e-11,
+        1.1396229568132127e-11,
+        2.849057392033032e-12
+      ],
+      "quadrature_refinement_L2": [
+        0.0,
+        1.3506871345679038e-08,
+        3.3296429657136995e-11,
+        3.7721168975508e-11,
+        1.1420710740289154e-11
+      ],
+      "all_outputs_meet_target": false,
+      "max_component_abs_term_sum": 698896971.6831063,
+      "epsilon_abs_term_sum": 1.5518630196067613e-07,
+      "chebyshev_exp_JVPs": 50,
+      "chebyshev_exp_error": 3.048947786580141e-12,
+      "coefficient_nonnegative": true
+    },
+    {
+      "h": 1.0,
+      "h_rho": 100.0,
+      "dimension": 24,
+      "cap": 16.0,
+      "L": 16.0,
+      "degree": 209,
+      "JVPs": 209,
+      "output_order": [
+        "exp",
+        "phi1",
+        "phi2",
+        "phi3",
+        "phi4"
+      ],
+      "error_L2": [
+        2.272031612614469e-13,
+        6.6224267582318065e-15,
+        8.120603600336629e-16,
+        2.228877409664892e-16,
+        6.824344005791151e-17
+      ],
+      "raw_summation_error_L2": [
+        2.2718392977459e-13,
+        6.6100343213791204e-15,
+        8.075229171689077e-16,
+        2.355608562620202e-16,
+        6.939988444297041e-17
+      ],
+      "analytic_truncation_upper": [
+        8.673175165100793e-11,
+        8.673175165100793e-11,
+        4.336587582550397e-11,
+        1.4455291941834655e-11,
+        3.613822985458664e-12
+      ],
+      "quadrature_refinement_L2": [
+        0.0,
+        1.7839858296647885e-15,
+        1.7786549059555757e-15,
+        9.21915389193047e-16,
+        3.2959141288877544e-16
+      ],
+      "all_outputs_meet_target": true,
+      "max_component_abs_term_sum": 20.640247612048082,
+      "epsilon_abs_term_sum": 4.583055626572037e-15,
+      "chebyshev_exp_JVPs": 50,
+      "chebyshev_exp_error": 3.048947786580141e-12,
+      "coefficient_nonnegative": true
+    }
+  ]
+}

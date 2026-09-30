@@ -606,7 +606,7 @@ pub fn integrate_bdf_fixed(
     let mut states = vec![state.clone()];
     let mut applied_orders = Vec::new();
     let mut startup_steps = 0;
-    while t < tf - 10.0 * f64::EPSILON * tf.abs().max(1.0) {
+    while t < tf - crate::output::end_time_slack(tf) {
         let step = h.min(tf - t);
         let report = bdf_step(
             problem,
@@ -655,7 +655,7 @@ pub fn integrate_bdf_fixed_observed(
     let mut counters = WorkCounters::default();
     let mut collector = OutputCollector::new(output, t_span, y0)?;
     let mut internal_steps = 0_usize;
-    while t < tf - 10.0 * f64::EPSILON * tf.abs().max(1.0) {
+    while t < tf - crate::output::end_time_slack(tf) {
         let (step, clipped) = collector.limit_step(t, h, tf)?;
         let report = bdf_step(
             problem,
@@ -952,7 +952,7 @@ pub fn integrate_bdf_adaptive_observed(
         }
     }
 
-    let success = t >= tf - 10.0 * f64::EPSILON * tf.abs().max(1.0);
+    let success = t >= tf - crate::output::end_time_slack(tf);
     let observed = if success {
         let (times, states, output_clipped_steps) = collector.finish()?;
         ObservedIntegrationResult {

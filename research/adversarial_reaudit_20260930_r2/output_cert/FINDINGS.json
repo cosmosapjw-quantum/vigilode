@@ -1,0 +1,276 @@
+{
+  "schema": "vigilode.reaudit.output_cert.findings.v1",
+  "source_commit": "7708ef90554fc3986478d4602de6a01c7266b14f",
+  "reviewer": "/root/r2_output_cert",
+  "verdict": "REWORK",
+  "production_source_mutated": false,
+  "old_findings": [
+    {
+      "id": "AD-01",
+      "status": "PARTIALLY_FIXED",
+      "evidence": "existing_regressions.log",
+      "residual_finding": "R2-OUT-01"
+    },
+    {
+      "id": "AD-02",
+      "status": "CLOSED_REPRODUCER",
+      "ceiling": "native dense-enforcement scenario; not every driver"
+    },
+    {
+      "id": "AD-03",
+      "status": "CLOSED_REPRODUCER",
+      "ceiling": "nonfinite-intermediate failure; rigorous roundoff certificate not established"
+    },
+    {
+      "id": "CERT-01",
+      "status": "CLOSED_REPRODUCER",
+      "ceiling": "malformed public/deserialized fields; valid-input evaluation has separate R2-POL-01"
+    },
+    {
+      "id": "CERT-02",
+      "status": "CLOSED_REPRODUCER",
+      "ceiling": "native malformed-state/tolerance scenarios"
+    }
+  ],
+  "findings": [
+    {
+      "id": "R2-OUT-01",
+      "severity": "P1",
+      "status": "CONFIRMED",
+      "evidence_status": [
+        "implementation-verified",
+        "derived"
+      ],
+      "failure_layers": [
+        "NUMERICAL",
+        "IMPLEMENTATION"
+      ],
+      "title": "Representable time ordering still overridden by epoch-scaled slack",
+      "locations": [
+        {
+          "path": "crates/rodas5p-integrators/src/output.rs",
+          "lines": [
+            12,
+            20,
+            291,
+            295,
+            354,
+            383
+          ]
+        },
+        {
+          "path": "crates/rodas5p-integrators/src/integrate.rs",
+          "lines": [
+            92,
+            94
+          ]
+        }
+      ],
+      "observations": [
+        {
+          "probe": "fixed_short_representable_span",
+          "origins": [
+            1000000000000.0,
+            -1000000000000.0
+          ],
+          "span": 0.0009765625,
+          "steps": 0,
+          "success": true,
+          "last_time_equals_origin": true,
+          "last_state": 0,
+          "exact_endpoint_state": 1
+        },
+        {
+          "probe": "dense_boundary",
+          "origin": 1000000000000.0,
+          "velocity": 8192,
+          "request": "next_up(origin+0.25)",
+          "observed": 2048.000000000006,
+          "expected": 2049,
+          "error": -0.9999999999940883,
+          "success": true
+        },
+        {
+          "probe": "clipped_adjacent_times",
+          "observed": "InvalidInput duplicate requested time",
+          "input": "strictly increasing representable times"
+        }
+      ],
+      "proof_ceiling": "Public fixed and matrix-free dense ODE API native reproductions; other drivers source-shared but not all executed",
+      "evidence": [
+        "native_probe.jsonl",
+        "EXECUTION_RECEIPT.json"
+      ]
+    },
+    {
+      "id": "R2-POL-01",
+      "severity": "P2",
+      "status": "CONFIRMED",
+      "evidence_status": [
+        "implementation-verified",
+        "derived"
+      ],
+      "failure_layers": [
+        "NUMERICAL",
+        "IMPLEMENTATION"
+      ],
+      "title": "Mixed output budget masks overflow or NaN of a valid component",
+      "locations": [
+        {
+          "path": "crates/rodas5p-integrators/src/homotopy_policy.rs",
+          "lines": [
+            146,
+            166
+          ]
+        },
+        {
+          "path": "crates/rodas5p-integrators/src/homotopy.rs",
+          "lines": [
+            1216
+          ]
+        }
+      ],
+      "input": {
+        "eta": 10,
+        "embedded_error": 1,
+        "epsilon_ref": 1e-320,
+        "h_ref": 1e-160,
+        "exponent": 2,
+        "h": 1,
+        "output_wrms": 5
+      },
+      "observed_budget": 10,
+      "observed_accepted": true,
+      "exact_binary64_input_budget": {
+        "numerator": "2505590639513609676395827429376",
+        "denominator": "2505618534107015908629993881161",
+        "float": 0.999988867182683
+      },
+      "expected_accepted": false,
+      "proof_ceiling": "Policy API false acceptance and source consumer verified; full ODE false acceptance not executed",
+      "evidence": [
+        "native_probe.jsonl",
+        "exact_oracles.json"
+      ]
+    }
+  ],
+  "limitations": [
+    {
+      "id": "R2-M08-L1",
+      "status": "LIMITATION_CONFIRMED",
+      "new_finding": false,
+      "claim": "Returned M08 epsilon does not rigorously upper-bound exact residual norm",
+      "example": "P=1+2^-52,W=1-2^-52 gives exact epsilon2^-104 but returned0",
+      "invertible": true,
+      "not_claimed": [
+        "singular false-certificate",
+        "production false acceptance"
+      ],
+      "evidence": [
+        "native_probe.jsonl",
+        "exact_oracles.json"
+      ]
+    },
+    {
+      "id": "R2-LEDGER-COVERAGE",
+      "status": "SOURCE_REVIEW_ONLY",
+      "new_finding": false,
+      "claim": "legacy integrate_adaptive lacks explicit outer-rejection reconciliation; no reachable counterexample established"
+    },
+    {
+      "id": "R2-SUBNORMAL",
+      "status": "UNRESOLVED",
+      "new_finding": false,
+      "observed": "subnormal-span dense API success=false, internal_steps0; not a false success"
+    }
+  ],
+  "validation": {
+    "copied_original_tests": 7,
+    "passed": 7,
+    "failed": 0,
+    "duplicates_with_full_workspace_suite": true,
+    "native_probe_exit": 0,
+    "candidate_cases": 3,
+    "candidate_exit": 0,
+    "whole_workspace": false
+  },
+  "research_results": [
+    {
+      "id": "R2-MATH-M08",
+      "status": [
+        "derived",
+        "numerically checked"
+      ],
+      "statement": "q=e_upper+eta_fp<1 implies inverse norm <=1/(1-q)",
+      "assumptions": [
+        "linear P,W",
+        "certified operator-action error bound",
+        "outward computed residual norm"
+      ],
+      "production_implementation": "NOT_IMPLEMENTED"
+    },
+    {
+      "id": "R2-CODE-POLICY",
+      "status": [
+        "implementation-verified"
+      ],
+      "artifact": "probe/src/bin/safe_budget.rs",
+      "claim": "Zero branch plus independent term checks prevent two observed false accepts",
+      "limitations": [
+        "finite mathematically valid overflow case returns typed error",
+        "not a general stable evaluator",
+        "not integrated",
+        "independent promotion not requested"
+      ]
+    }
+  ],
+  "next_development_steps": [
+    {
+      "id": "DEV-OUT-ORDER",
+      "priority": "P1",
+      "depends_on": [],
+      "action": "Replace tolerance-based timestamp membership/completion with explicit ordered target identities and progress guard",
+      "acceptance": [
+        "8ULP spans at ±1e12 must integrate or explicitly fail; never success without endpoint",
+        "next_up(endpoint) cannot consume at endpoint",
+        "adjacent representable schedules are not duplicates",
+        "hard-stop identity and partial prefixes preserved"
+      ]
+    },
+    {
+      "id": "DEV-POLICY-SAFE",
+      "priority": "P2",
+      "depends_on": [],
+      "action": "Check Mixed components before min; handle exact zero; add stable scaled evaluation",
+      "acceptance": [
+        "both native overflow cases never acceptWRMS5",
+        "exact rational finite budget matched within stated rounding contract",
+        "safe acceptance uses error_upper<=budget_lower near threshold"
+      ]
+    },
+    {
+      "id": "DEV-M08-SEMANTICS",
+      "priority": "P2",
+      "depends_on": [],
+      "action": "Separate computed diagnostic from directed error enclosure; add certified dense profile before generic callbacks",
+      "acceptance": [
+        "diagnostic bool not advertised as exact bound",
+        "bound includes eta_fp independent of cached operator identity",
+        "near-threshold exact rational cases and nonfinite cases"
+      ]
+    },
+    {
+      "id": "DEV-LEDGER-OWNER",
+      "priority": "P3",
+      "depends_on": [
+        "DEV-OUT-ORDER"
+      ],
+      "action": "Define macro/subtrial ledger and centralize final disposition",
+      "acceptance": [
+        "one final disposition per macro attempt",
+        "computational work never discarded on rejection",
+        "reachable outer-rejection scenarios in dense and non-dense lanes"
+      ]
+    }
+  ]
+}

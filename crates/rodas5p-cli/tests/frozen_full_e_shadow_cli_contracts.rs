@@ -41,8 +41,11 @@ fn frozen_full_e_shadow_command_emits_the_dedicated_v36_schema() {
     assert_eq!(report["shadow_full_e_failures"], 0);
     assert_eq!(report["unsafe_recommendations"], 0);
     assert_eq!(report["prefix_speculative_work"]["jvp_vectors"], 42);
-    assert_eq!(report["continuation_work"]["jvp_vectors"], 26); // 24 before audit F-043
-    assert_eq!(report["total_speculative_work"]["jvp_vectors"], 68); // 66 before audit F-043
+    // 24 / 66 before audit F-043, 26 / 68 before the 2026-09-30 phi
+    // normalization (research/generic_frozen_full_e_shadow_v36/
+    // ADDENDUM_20260930_PHI_NORMALIZATION_PINS.md).
+    assert_eq!(report["continuation_work"]["jvp_vectors"], 28);
+    assert_eq!(report["total_speculative_work"]["jvp_vectors"], 70);
     assert_eq!(report["rjf_parity"]["passed"], true);
     assert_eq!(report["hard_gates"]["passed"], true);
     assert_eq!(report["rows"].as_array().unwrap().len(), 2);

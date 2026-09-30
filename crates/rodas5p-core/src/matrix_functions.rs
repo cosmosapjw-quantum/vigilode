@@ -235,24 +235,65 @@ pub fn dense_phi_action(
 /// KIOPS/augmented-exponential convention `B=[b_p,...,b_1]`, while the lower Jordan chain is
 /// seeded with its final basis vector.  This routine is the small projected-space oracle for the
 /// matrix-free fused Krylov path; it is not used on the large physical state directly.
+///
+/// The inputs are weighted to `w_k = scale^k b_k` and passed to
+/// [`dense_phi_combination`], which never forms `scale^-k` (audit
+/// 2026-09-30, PHI-P2).
 pub fn dense_fused_phi_action(
     matrix: &DenseMatrix,
     scale: f64,
     vectors: &[Vec<f64>],
 ) -> CoreResult<Vec<f64>> {
-    if matrix.nrows() != matrix.ncols() || vectors.is_empty() {
+    if !scale.is_finite() {
+        return Err(CoreError::NonFinite(
+            "dense fused phi-action input contains NaN/Inf".into(),
+        ));
+    }
+    let weighted = vectors
+        .iter()
+        .enumerate()
+        .map(|(k, vector)| {
+            let factor = scale.powi(k as i32);
+            vector
+                .iter()
+                .map(|value| factor * value)
+                .collect::<Vec<_>>()
+        })
+        .collect::<Vec<_>>();
+    dense_phi_combination(matrix, scale, &weighted)
+}
+
+/// `exp(scale*A) w_0 + sum_{k=1}^p phi_k(scale*A) w_k` with one dense
+/// exponential of the time-normalized augmented matrix
+///
+/// `M_hat = [[scale*A, [w_p, ..., w_1]], [0, J_p]]`, start `[w_0; e_p]`.
+///
+/// This is `D^-1 (scale M) D` for `D = diag(I, scale^(p-1), ..., scale, 1)`
+/// and the unnormalized `M = [[A, [b_p, ..., b_1]], [0, J_p]]` with
+/// `b_k = w_k / scale^k`; `D` fixes the start and the physical projection,
+/// so the result is the same exactly. The unnormalized matrix grew like
+/// `scale^-p` as `scale -> 0`: its 1-norm passed the Pade power guard near
+/// `scale = 1e-14` and the result was 0 instead of about 2.36 for the
+/// scalar `A = -1` case of the 2026-09-30 audit. `scale = 0` is valid and
+/// returns `w_0 + sum_k w_k / k!`.
+pub fn dense_phi_combination(
+    matrix: &DenseMatrix,
+    scale: f64,
+    weighted: &[Vec<f64>],
+) -> CoreResult<Vec<f64>> {
+    if matrix.nrows() != matrix.ncols() || weighted.is_empty() {
         return Err(CoreError::Dimension(
             "dense fused phi-action requires a square matrix and at least b0".into(),
         ));
     }
     let n = matrix.nrows();
-    if vectors.iter().any(|vector| vector.len() != n) {
+    if weighted.iter().any(|vector| vector.len() != n) {
         return Err(CoreError::Dimension(
             "dense fused phi-action vector shape mismatch".into(),
         ));
     }
     if !scale.is_finite()
-        || !vectors
+        || !weighted
             .iter()
             .flat_map(|vector| vector.iter())
             .all(|value| value.is_finite())
@@ -261,28 +302,28 @@ pub fn dense_fused_phi_action(
             "dense fused phi-action input contains NaN/Inf".into(),
         ));
     }
-    let p = vectors.len() - 1;
+    let p = weighted.len() - 1;
     if p == 0 {
-        return matrix_exp_pade13(&matrix.scale(scale))?.matvec(&vectors[0]);
+        return matrix_exp_pade13(&matrix.scale(scale))?.matvec(&weighted[0]);
     }
 
     let mut augmented = DenseMatrix::zeros(n + p, n + p);
     for i in 0..n {
         for j in 0..n {
-            augmented[(i, j)] = matrix[(i, j)];
+            augmented[(i, j)] = scale * matrix[(i, j)];
         }
         for column in 0..p {
-            // B = [b_p, b_{p-1}, ..., b_1].
-            augmented[(i, n + column)] = vectors[p - column][i];
+            // W = [w_p, w_{p-1}, ..., w_1].
+            augmented[(i, n + column)] = weighted[p - column][i];
         }
     }
     for j in 0..p.saturating_sub(1) {
         augmented[(n + j, n + j + 1)] = 1.0;
     }
     let mut start = vec![0.0; n + p];
-    start[..n].copy_from_slice(&vectors[0]);
+    start[..n].copy_from_slice(&weighted[0]);
     start[n + p - 1] = 1.0;
-    let value = matrix_exp_pade13(&augmented.scale(scale))?.matvec(&start)?;
+    let value = matrix_exp_pade13(&augmented)?.matvec(&start)?;
     let out = value[..n].to_vec();
     if out.iter().all(|value| value.is_finite()) {
         Ok(out)

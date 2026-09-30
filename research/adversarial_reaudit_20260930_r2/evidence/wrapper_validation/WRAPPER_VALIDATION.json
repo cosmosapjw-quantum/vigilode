@@ -1,0 +1,178 @@
+{
+  "schema": "vigilode.reaudit.wrapper_validation.v1",
+  "timestamp_utc": "2026-09-30T08:40:49.621989+00:00",
+  "status": "PASS_WITH_EXPLICIT_NATIVE_EXECUTION_LIMIT",
+  "source_manifest_sha256": "e49bbd026fba184052635bce121039b3e2eda26bc3cee0b785f894fd1afcdd9b",
+  "files_checked": 1052,
+  "relocated_package": "/workspace/scratch/0dc1e721cf82/vigilode-r2-relocation-bfi_sjvr/published/research/adversarial_reaudit_20260930_r2",
+  "validation_workspace": "/workspace/scratch/0dc1e721cf82/vigilode-r2-relocation-bfi_sjvr",
+  "checks": {
+    "source_hash_gate_matched": true,
+    "source_mismatch_refused_before_output": true,
+    "all_nine_commands_prepared": true,
+    "all_five_math_scripts_executed": true,
+    "original_probe_scripts_and_existing_result_bytes_preserved": true
+  },
+  "native_relocated_build_run": "NOT_RUN",
+  "native_original_execution": "See lane execution receipts and decision independent rerun receipts; not repeated here",
+  "commands": [
+    {
+      "case": "all",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-B",
+        "/workspace/scratch/0dc1e721cf82/vigilode-r2-relocation-bfi_sjvr/published/research/adversarial_reaudit_20260930_r2/run_reproductions.py",
+        "--repo",
+        "/workspace/scratch/0dc1e721cf82/vigilode",
+        "--out",
+        "/workspace/scratch/0dc1e721cf82/vigilode-r2-relocation-bfi_sjvr/prepared",
+        "--case",
+        "all",
+        "--prepare-only"
+      ],
+      "exit_code": 0,
+      "status": "PREPARED_NOT_EXECUTED"
+    },
+    {
+      "case": "math",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-B",
+        "/workspace/scratch/0dc1e721cf82/vigilode-r2-relocation-bfi_sjvr/published/research/adversarial_reaudit_20260930_r2/run_reproductions.py",
+        "--repo",
+        "/workspace/scratch/0dc1e721cf82/vigilode",
+        "--out",
+        "/workspace/scratch/0dc1e721cf82/vigilode-r2-relocation-bfi_sjvr/math-executed",
+        "--case",
+        "math"
+      ],
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "case": "source_mismatch",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-B",
+        "/workspace/scratch/0dc1e721cf82/vigilode-r2-relocation-bfi_sjvr/published/research/adversarial_reaudit_20260930_r2/run_reproductions.py",
+        "--repo",
+        "/workspace/scratch/0dc1e721cf82/vigilode-r2-relocation-bfi_sjvr/wrong-source",
+        "--out",
+        "/workspace/scratch/0dc1e721cf82/vigilode-r2-relocation-bfi_sjvr/must-not-be-created",
+        "--case",
+        "all",
+        "--prepare-only"
+      ],
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "output_created": false,
+      "status": "EXPECTED_REFUSAL"
+    }
+  ],
+  "protected_original_sha256": {
+    "phi/probe/Cargo.lock": "a3b1ebd09188f762c9e79eecff4d68d6e1480553aab0b0080093d2f65624fc37",
+    "phi/probe/Cargo.toml": "c45a063e03b4a68b165447b99bd52fb31c653f1de806c1841e3d934a15d8d8ec",
+    "phi/probe/src/main.rs": "c298efcb86260d239d722f309c6f07cc4817c423084acd87d030ddad51898eb1",
+    "output_cert/probe/Cargo.lock": "15b009683462db0e0360e1eabd4661f7633347943f34c233c16f289a63d5d7eb",
+    "output_cert/probe/Cargo.toml": "326890ce0f879b83e01900a8624627f482df2bb2de84ae72be3d1ca41d61b928",
+    "output_cert/probe/src/main.rs": "7e4ef22ea6bb706b7549181049fdd0fbd6e1a623e546c241fafe3d0fc0f20dcf",
+    "output_cert/probe/tests/output_time_covariance_contracts.rs": "4a0ff1b1bbcab2daa3b5f7a804e10ed863986154de72d3374599ff2b808dd101",
+    "output_cert/probe/tests/audit0930_validation_contracts.rs": "8af1b0222f7419067d87d3a19f0128f70e0b083bd626d286d4f3ae670ca065a7",
+    "output_cert/probe/tests/audit0930_accounting_contracts.rs": "71c83c3aef615dc2c7f28c3a74ccbaf6749cadfa81af81726457cf8856edd6de",
+    "output_cert/probe/tests/audit0930_reuse_certificate_contracts.rs": "603cb91bcbf4cb0533f7f41bbfea3e05912904657fd9edc034c57d5a8fd2f32c",
+    "output_cert/probe/src/bin/safe_budget.rs": "a2c82fa8ccb427efcae0d5299e12cffebe5f68efa37051af60cae830144c3aa2",
+    "statistics/probe/Cargo.lock": "35b12b1d5405ddab31f0b8552e4913aeaa3c64c08391b14ee6eddbc12f1ad24f",
+    "statistics/probe/Cargo.toml": "1f3ad505a2f611ed6e7e9595a4eb7b74c5a077b17769bcfa1671686dd8a84d67",
+    "statistics/probe/src/candidate.rs": "6436a00dbfccad5e539c542609113ce369255010de9ddde6d449b2e82ce51188",
+    "statistics/probe/src/main.rs": "628fd8ff64a7b70a62ae2a73b00effdc22bc31458eb4a93d04fa17f59bde39c4",
+    "research/polynomial_joint_probe.py": "095915825dea797e7f3b4aa01494d6a6cf1630da5d69299afac93fbc47b12a04",
+    "research/homotopy_majorant_probe.py": "18c10c915c56be75da4ffe20a25ff3a74e84a5c91d112b40e31d5257e2e1de9c",
+    "owner/telemetry_covariance.py": "62a42747581d4b61378f9140e725a0f29ed6dfe7a6925abaa23b3a643ced5ebf",
+    "output_cert/derive_exact_oracles.py": "7a2c73e66c190f93ba3f247e74b8cf63d34b1edf690a70a02a92531c5d7f8da2",
+    "statistics/exact_bootstrap_oracle.py": "3e9ba62947ab5939e507ef08ed8d76cfefef8ff016af98a87a0ae5467e5f2567",
+    "research/polynomial_joint_results.json": "01c2c96082070b2d3366f934360fb17dc49441a71ac2aef300ea0d7687ca4866",
+    "research/homotopy_majorant_results.json": "76feb867b2d1ac919ac7d4c497846211b9b96cd651bfc49f62ac0e05ffd1d490",
+    "owner/telemetry_covariance_results.json": "ee05b8dad361e3917e6f377515be4da5caf02b182808f58bfd77b69b21450dba",
+    "statistics/exact_bootstrap_oracle.json": "34143242cdca6af1efb1d46c335ae0f5c416222396c845bf3d43965518cf6a76"
+  },
+  "math_command_results": [
+    {
+      "name": "polynomial_joint",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-B",
+        "/workspace/scratch/0dc1e721cf82/vigilode-r2-relocation-bfi_sjvr/math-executed/work/math/research/polynomial_joint_probe.py"
+      ],
+      "cwd": "/workspace/scratch/0dc1e721cf82/vigilode-r2-relocation-bfi_sjvr/math-executed/work/math/research",
+      "kind": "python",
+      "status": "PASS",
+      "exit_code": 0,
+      "stdout": "logs/polynomial_joint.stdout",
+      "stderr": "logs/polynomial_joint.stderr",
+      "elapsed_seconds": 0.47287144899746636
+    },
+    {
+      "name": "homotopy_majorant",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-B",
+        "/workspace/scratch/0dc1e721cf82/vigilode-r2-relocation-bfi_sjvr/math-executed/work/math/research/homotopy_majorant_probe.py",
+        "--tableau",
+        "/workspace/scratch/0dc1e721cf82/vigilode/fixtures/rodas5p_coefficients_snapshot.json"
+      ],
+      "cwd": "/workspace/scratch/0dc1e721cf82/vigilode-r2-relocation-bfi_sjvr/math-executed/work/math/research",
+      "kind": "python",
+      "status": "PASS",
+      "exit_code": 0,
+      "stdout": "logs/homotopy_majorant.stdout",
+      "stderr": "logs/homotopy_majorant.stderr",
+      "elapsed_seconds": 0.1172099219984375
+    },
+    {
+      "name": "telemetry_covariance",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-B",
+        "/workspace/scratch/0dc1e721cf82/vigilode-r2-relocation-bfi_sjvr/math-executed/work/math/owner/telemetry_covariance.py"
+      ],
+      "cwd": "/workspace/scratch/0dc1e721cf82/vigilode-r2-relocation-bfi_sjvr/math-executed/work/math/owner",
+      "kind": "python",
+      "status": "PASS",
+      "exit_code": 0,
+      "stdout": "logs/telemetry_covariance.stdout",
+      "stderr": "logs/telemetry_covariance.stderr",
+      "elapsed_seconds": 0.4738481589956791
+    },
+    {
+      "name": "output_exact_oracle",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-B",
+        "/workspace/scratch/0dc1e721cf82/vigilode-r2-relocation-bfi_sjvr/math-executed/work/math/output_cert/derive_exact_oracles.py"
+      ],
+      "cwd": "/workspace/scratch/0dc1e721cf82/vigilode-r2-relocation-bfi_sjvr/math-executed/work/math/output_cert",
+      "kind": "python",
+      "status": "PASS",
+      "exit_code": 0,
+      "stdout": "logs/output_exact_oracle.stdout",
+      "stderr": "logs/output_exact_oracle.stderr",
+      "elapsed_seconds": 0.03204952499800129
+    },
+    {
+      "name": "statistics_exact_bootstrap",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-B",
+        "/workspace/scratch/0dc1e721cf82/vigilode-r2-relocation-bfi_sjvr/math-executed/work/math/statistics/exact_bootstrap_oracle.py"
+      ],
+      "cwd": "/workspace/scratch/0dc1e721cf82/vigilode-r2-relocation-bfi_sjvr/math-executed/work/math/statistics",
+      "kind": "python",
+      "status": "PASS",
+      "exit_code": 0,
+      "stdout": "logs/statistics_exact_bootstrap.stdout",
+      "stderr": "logs/statistics_exact_bootstrap.stderr",
+      "elapsed_seconds": 0.1669346649941872
+    }
+  ],
+  "runner_sha256": "2a223f05b63ae8a966b53dab2d50b89452aeb72b4c3a2a149b38bfb04858af80"
+}

@@ -520,7 +520,13 @@ pub enum ParetoCostMetric {
     WallSeconds,
     RhsEvaluations,
     JvpVectors,
+    /// Shifted-operator applications as solver-level calls; a block apply
+    /// over s stages is one. Not comparable across batching lanes.
     OperatorApplications,
+    /// Shifted-operator work in state-vector units, the cross-lane metric
+    /// (audit 2026-09-30, B-02). Unknown for legacy ledgers without vector
+    /// counters.
+    OperatorStateVectors,
     JacobianBuilds,
     DirectFactorizations,
     NonlinearIterations,
@@ -932,6 +938,9 @@ impl IntegratorRunRecord {
             ParetoCostMetric::RhsEvaluations => Some(counters.rhs_evaluations as f64),
             ParetoCostMetric::JvpVectors => Some(counters.jvp_vectors as f64),
             ParetoCostMetric::OperatorApplications => Some(counters.operator_applications() as f64),
+            ParetoCostMetric::OperatorStateVectors => counters
+                .operator_state_vectors()
+                .map(|vectors| vectors as f64),
             ParetoCostMetric::JacobianBuilds => Some(counters.jacobian_builds as f64),
             ParetoCostMetric::DirectFactorizations => Some(counters.direct_factorizations as f64),
             ParetoCostMetric::NonlinearIterations => Some(counters.nonlinear_iterations as f64),
@@ -1569,12 +1578,13 @@ fn error_metrics() -> [GlobalErrorMetric; 7] {
     ]
 }
 
-fn cost_metrics() -> [ParetoCostMetric; 12] {
+fn cost_metrics() -> [ParetoCostMetric; 13] {
     [
         ParetoCostMetric::WallSeconds,
         ParetoCostMetric::RhsEvaluations,
         ParetoCostMetric::JvpVectors,
         ParetoCostMetric::OperatorApplications,
+        ParetoCostMetric::OperatorStateVectors,
         ParetoCostMetric::JacobianBuilds,
         ParetoCostMetric::DirectFactorizations,
         ParetoCostMetric::NonlinearIterations,

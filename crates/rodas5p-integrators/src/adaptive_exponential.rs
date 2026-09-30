@@ -196,7 +196,7 @@ fn integrate_pexprb54s4_fused_adaptive_observed_with_telemetry_request(
     let mut controller = AdaptiveControllerState::default();
     let mut counters = WorkCounters::default();
     let mut diagnostics = AdaptiveFusedExponentialDiagnostics::default();
-    let tolerance = 10.0 * f64::EPSILON * tf.abs().max(1.0);
+    let tolerance = crate::output::end_time_slack(tf);
 
     while t < tf - tolerance && diagnostics.attempts < adaptive.max_attempts {
         h = h.min(adaptive.max_step).min(tf - t);

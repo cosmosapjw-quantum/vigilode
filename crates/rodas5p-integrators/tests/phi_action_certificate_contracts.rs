@@ -159,11 +159,15 @@ fn adaptive_fused_exponential_keeps_the_work_of_failed_trials() {
         initial_step: 0.5,
         ..AdaptiveStepConfig::default()
     };
-    // Two Krylov vectors and one substep cannot resolve exp(0.5 * 2e3): the
-    // first trials fail and force step rejections.
+    // At most five Krylov vectors, one below the augmented dimension 6
+    // (n = 2, phi_1..phi_4), and one substep cannot resolve exp(0.5 * 2e3):
+    // trials fail and force step rejections. (With the time-normalized
+    // augmentation of the 2026-09-30 audit the Jordan chain no longer
+    // shrinks with h, so a cap of three never converges; the old cap
+    // passed through the same early acceptance as PHI-P1.)
     let phi_config = FusedPhiKrylovConfig {
         minimum_dimension: 2,
-        maximum_dimension: 3,
+        maximum_dimension: 5,
         dimension_increment: 1,
         maximum_substeps: 1,
         ..FusedPhiKrylovConfig::default()

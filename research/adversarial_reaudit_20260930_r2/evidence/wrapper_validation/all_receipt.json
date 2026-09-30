@@ -1,0 +1,173 @@
+{
+  "schema": "vigilode.reaudit.reproduction.v1",
+  "started_at_utc": "2026-09-30T08:40:48.053908+00:00",
+  "case": "all",
+  "prepare_only": true,
+  "source_identity": {
+    "status": "MANIFESTED_SOURCE_FILES_MATCHED",
+    "files_checked": 1052,
+    "manifest_sha256": "e49bbd026fba184052635bce121039b3e2eda26bc3cee0b785f894fd1afcdd9b",
+    "source_commit": "7708ef90554fc3986478d4602de6a01c7266b14f",
+    "observed_head": "7708ef90554fc3986478d4602de6a01c7266b14f",
+    "scope": "Listed source bytes only; a later report-only commit may have a different HEAD."
+  },
+  "original_evidence_mutation": false,
+  "native_build_reuse": false,
+  "scientific_claim": "Reexecution only; scenario-specific acceptance and limitations remain in lane reports.",
+  "commands": [
+    {
+      "name": "phi_vigilode-r2-phi-independent-probe",
+      "argv": [
+        "cargo",
+        "run",
+        "--locked",
+        "--offline",
+        "--manifest-path",
+        "/workspace/scratch/0dc1e721cf82/vigilode-r2-relocation-bfi_sjvr/prepared/work/phi/probe/Cargo.toml",
+        "--bin",
+        "vigilode-r2-phi-independent-probe"
+      ],
+      "cwd": "/workspace/scratch/0dc1e721cf82/vigilode-r2-relocation-bfi_sjvr/prepared/work/phi/probe",
+      "kind": "native",
+      "status": "NOT_RUN",
+      "exit_code": null
+    },
+    {
+      "name": "output_vigilode-output-cert-reaudit",
+      "argv": [
+        "cargo",
+        "run",
+        "--locked",
+        "--offline",
+        "--manifest-path",
+        "/workspace/scratch/0dc1e721cf82/vigilode-r2-relocation-bfi_sjvr/prepared/work/output/probe/Cargo.toml",
+        "--bin",
+        "vigilode-output-cert-reaudit"
+      ],
+      "cwd": "/workspace/scratch/0dc1e721cf82/vigilode-r2-relocation-bfi_sjvr/prepared/work/output/probe",
+      "kind": "native",
+      "status": "NOT_RUN",
+      "exit_code": null
+    },
+    {
+      "name": "output_safe_budget",
+      "argv": [
+        "cargo",
+        "run",
+        "--locked",
+        "--offline",
+        "--manifest-path",
+        "/workspace/scratch/0dc1e721cf82/vigilode-r2-relocation-bfi_sjvr/prepared/work/output/probe/Cargo.toml",
+        "--bin",
+        "safe_budget"
+      ],
+      "cwd": "/workspace/scratch/0dc1e721cf82/vigilode-r2-relocation-bfi_sjvr/prepared/work/output/probe",
+      "kind": "native",
+      "status": "NOT_RUN",
+      "exit_code": null
+    },
+    {
+      "name": "statistics_vigilode-statistics-reaudit",
+      "argv": [
+        "cargo",
+        "run",
+        "--locked",
+        "--offline",
+        "--manifest-path",
+        "/workspace/scratch/0dc1e721cf82/vigilode-r2-relocation-bfi_sjvr/prepared/work/statistics/probe/Cargo.toml",
+        "--bin",
+        "vigilode-statistics-reaudit"
+      ],
+      "cwd": "/workspace/scratch/0dc1e721cf82/vigilode-r2-relocation-bfi_sjvr/prepared/work/statistics/probe",
+      "kind": "native",
+      "status": "NOT_RUN",
+      "exit_code": null
+    },
+    {
+      "name": "polynomial_joint",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-B",
+        "/workspace/scratch/0dc1e721cf82/vigilode-r2-relocation-bfi_sjvr/prepared/work/math/research/polynomial_joint_probe.py"
+      ],
+      "cwd": "/workspace/scratch/0dc1e721cf82/vigilode-r2-relocation-bfi_sjvr/prepared/work/math/research",
+      "kind": "python",
+      "status": "NOT_RUN",
+      "exit_code": null
+    },
+    {
+      "name": "homotopy_majorant",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-B",
+        "/workspace/scratch/0dc1e721cf82/vigilode-r2-relocation-bfi_sjvr/prepared/work/math/research/homotopy_majorant_probe.py",
+        "--tableau",
+        "/workspace/scratch/0dc1e721cf82/vigilode/fixtures/rodas5p_coefficients_snapshot.json"
+      ],
+      "cwd": "/workspace/scratch/0dc1e721cf82/vigilode-r2-relocation-bfi_sjvr/prepared/work/math/research",
+      "kind": "python",
+      "status": "NOT_RUN",
+      "exit_code": null
+    },
+    {
+      "name": "telemetry_covariance",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-B",
+        "/workspace/scratch/0dc1e721cf82/vigilode-r2-relocation-bfi_sjvr/prepared/work/math/owner/telemetry_covariance.py"
+      ],
+      "cwd": "/workspace/scratch/0dc1e721cf82/vigilode-r2-relocation-bfi_sjvr/prepared/work/math/owner",
+      "kind": "python",
+      "status": "NOT_RUN",
+      "exit_code": null
+    },
+    {
+      "name": "output_exact_oracle",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-B",
+        "/workspace/scratch/0dc1e721cf82/vigilode-r2-relocation-bfi_sjvr/prepared/work/math/output_cert/derive_exact_oracles.py"
+      ],
+      "cwd": "/workspace/scratch/0dc1e721cf82/vigilode-r2-relocation-bfi_sjvr/prepared/work/math/output_cert",
+      "kind": "python",
+      "status": "NOT_RUN",
+      "exit_code": null
+    },
+    {
+      "name": "statistics_exact_bootstrap",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-B",
+        "/workspace/scratch/0dc1e721cf82/vigilode-r2-relocation-bfi_sjvr/prepared/work/math/statistics/exact_bootstrap_oracle.py"
+      ],
+      "cwd": "/workspace/scratch/0dc1e721cf82/vigilode-r2-relocation-bfi_sjvr/prepared/work/math/statistics",
+      "kind": "python",
+      "status": "NOT_RUN",
+      "exit_code": null
+    }
+  ],
+  "status": "PREPARED_NOT_EXECUTED",
+  "finished_at_utc": "2026-09-30T08:40:48.057297+00:00",
+  "output_sha256": {
+    "work/math/output_cert/derive_exact_oracles.py": "7a2c73e66c190f93ba3f247e74b8cf63d34b1edf690a70a02a92531c5d7f8da2",
+    "work/math/owner/telemetry_covariance.py": "62a42747581d4b61378f9140e725a0f29ed6dfe7a6925abaa23b3a643ced5ebf",
+    "work/math/research/homotopy_majorant_probe.py": "18c10c915c56be75da4ffe20a25ff3a74e84a5c91d112b40e31d5257e2e1de9c",
+    "work/math/research/polynomial_joint_probe.py": "095915825dea797e7f3b4aa01494d6a6cf1630da5d69299afac93fbc47b12a04",
+    "work/math/statistics/exact_bootstrap_oracle.py": "3e9ba62947ab5939e507ef08ed8d76cfefef8ff016af98a87a0ae5467e5f2567",
+    "work/output/probe/Cargo.lock": "15b009683462db0e0360e1eabd4661f7633347943f34c233c16f289a63d5d7eb",
+    "work/output/probe/Cargo.toml": "97cf4b68f0b2dda0579d1beab43c14b0ffff25123e9f8cdb15aef3fe2d1924ab",
+    "work/output/probe/src/bin/safe_budget.rs": "a2c82fa8ccb427efcae0d5299e12cffebe5f68efa37051af60cae830144c3aa2",
+    "work/output/probe/src/main.rs": "7e4ef22ea6bb706b7549181049fdd0fbd6e1a623e546c241fafe3d0fc0f20dcf",
+    "work/output/probe/tests/audit0930_accounting_contracts.rs": "71c83c3aef615dc2c7f28c3a74ccbaf6749cadfa81af81726457cf8856edd6de",
+    "work/output/probe/tests/audit0930_reuse_certificate_contracts.rs": "603cb91bcbf4cb0533f7f41bbfea3e05912904657fd9edc034c57d5a8fd2f32c",
+    "work/output/probe/tests/audit0930_validation_contracts.rs": "8af1b0222f7419067d87d3a19f0128f70e0b083bd626d286d4f3ae670ca065a7",
+    "work/output/probe/tests/output_time_covariance_contracts.rs": "4a0ff1b1bbcab2daa3b5f7a804e10ed863986154de72d3374599ff2b808dd101",
+    "work/phi/probe/Cargo.lock": "a3b1ebd09188f762c9e79eecff4d68d6e1480553aab0b0080093d2f65624fc37",
+    "work/phi/probe/Cargo.toml": "6f009d1123292b9be7593647feee7b36de4b8da7ae74e760f7b1eedce954f943",
+    "work/phi/probe/src/main.rs": "c298efcb86260d239d722f309c6f07cc4817c423084acd87d030ddad51898eb1",
+    "work/statistics/probe/Cargo.lock": "35b12b1d5405ddab31f0b8552e4913aeaa3c64c08391b14ee6eddbc12f1ad24f",
+    "work/statistics/probe/Cargo.toml": "fe452caeb97c400e022fff431d57d85ed232a7d27856ebd4b0ec1503b6d84475",
+    "work/statistics/probe/src/candidate.rs": "6436a00dbfccad5e539c542609113ce369255010de9ddde6d449b2e82ce51188",
+    "work/statistics/probe/src/main.rs": "628fd8ff64a7b70a62ae2a73b00effdc22bc31458eb4a93d04fa17f59bde39c4"
+  }
+}

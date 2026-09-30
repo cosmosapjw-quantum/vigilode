@@ -98,7 +98,43 @@ impl OutputBudgetPolicy {
         }
     }
 
+    /// Recheck the constructors' invariants. The variants are public and
+    /// deserializable, so a policy can bypass the constructors; `budget`
+    /// calls this on every evaluation (audit 2026-09-30, CERT-01: a direct
+    /// `StepPower { exponent: u32::MAX, .. }` cast to exponent -1 and gave a
+    /// budget that grows as h shrinks, and `Mixed { eta: NaN, .. }` was
+    /// hidden by `f64::min`).
+    pub fn validate(&self) -> CoreResult<()> {
+        match self {
+            Self::Absolute { epsilon } => validate_nonnegative("absolute output budget", *epsilon),
+            Self::EmbeddedRelative { eta } => {
+                validate_nonnegative("embedded-relative coefficient", *eta)
+            }
+            Self::StepPower {
+                epsilon_ref,
+                h_ref,
+                exponent,
+            } => {
+                validate_nonnegative("step-power reference budget", *epsilon_ref)?;
+                validate_reference_step(*h_ref)?;
+                validate_exponent(*exponent)
+            }
+            Self::Mixed {
+                eta,
+                epsilon_ref,
+                h_ref,
+                exponent,
+            } => {
+                validate_nonnegative("mixed embedded-relative coefficient", *eta)?;
+                validate_nonnegative("mixed step-power reference budget", *epsilon_ref)?;
+                validate_reference_step(*h_ref)?;
+                validate_exponent(*exponent)
+            }
+        }
+    }
+
     pub fn budget(&self, embedded_error: f64, h: f64) -> CoreResult<f64> {
+        self.validate()?;
         validate_nonnegative("embedded error", embedded_error)?;
         if !(h > 0.0 && h.is_finite()) {
             return Err(if h.is_finite() {

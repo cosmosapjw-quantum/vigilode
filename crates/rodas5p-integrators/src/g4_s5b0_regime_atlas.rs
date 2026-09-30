@@ -5354,6 +5354,19 @@ pub fn run_g4_s5b0_v37_continuation_transaction_family(
     )
 }
 
+/// The same family replay with a different continuation JVP cap. A research
+/// diagnostic: a cap below a row's completing work exercises the charged
+/// abstention path deterministically, which no calibration replay reaches
+/// at the frozen cap of 80 since the time-normalized phi augmentation
+/// (audit 2026-09-30).
+pub fn run_g4_s5b0_v37_continuation_transaction_family_with_cap(
+    profile: G4S5B0Profile,
+    family: G4S5B0Family,
+    continuation_jvp_cap: u64,
+) -> CoreResult<G4S5B0V37ContinuationTransactionReport> {
+    run_g4_s5b0_v37_continuation_transaction_filtered(profile, Some(family), continuation_jvp_cap)
+}
+
 pub fn run_g4_s5b0_v37_continuation_transaction(
     profile: G4S5B0Profile,
 ) -> CoreResult<G4S5B0V37ContinuationTransactionReport> {

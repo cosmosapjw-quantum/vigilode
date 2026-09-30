@@ -1,0 +1,51 @@
+   Compiling rodas5p-core v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-core)
+   Compiling rodas5p-integrators v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-integrators)
+   Compiling rodas5p-krylov v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-krylov)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 32.58s
+     Running tests/fused_phi_krylov_contracts.rs (runtime_r2/target-phi/debug/deps/fused_phi_krylov_contracts-6968e9f7221007e5)
+
+running 4 tests
+test zero_fused_action_short_circuits_without_operator_work ... ok
+test fused_error_estimate_matches_first_arnoldi_term ... ok
+test fused_convergence_uses_residual_estimate_not_nested_difference ... ok
+test fused_matrix_free_action_matches_dense_oracle ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/fused_phi_scaling_contracts.rs (runtime_r2/target-phi/debug/deps/fused_phi_scaling_contracts-78d7842d711a4d33)
+
+running 4 tests
+test fused_action_is_invariant_under_the_physical_scale_of_its_inputs ... ok
+test fused_combination_matches_exact_phi_as_the_step_shrinks ... ok
+test diffusion_action_is_invariant_under_the_physical_scale_of_its_inputs ... ok
+test fused_combination_on_diffusion_matches_the_dense_oracle_as_the_step_shrinks ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.19s
+
+     Running tests/phi_action_certificate_contracts.rs (runtime_r2/target-phi/debug/deps/phi_action_certificate_contracts-383c0e8f7fb2a2f9)
+
+running 3 tests
+test fused_phi_action_does_not_certify_an_understated_error ... ok
+test legacy_krylov_phi_action_does_not_certify_an_understated_error ... ok
+test adaptive_fused_exponential_keeps_the_work_of_failed_trials ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.79s
+
+     Running tests/phi_normalized_augmentation_contracts.rs (runtime_r2/target-phi/debug/deps/phi_normalized_augmentation_contracts-b59356e856069f81)
+
+running 5 tests
+test unfused_happy_breakdown_below_the_minimum_dimension_is_projected ... ok
+test zero_and_negative_scales_are_the_continuous_combination ... ok
+test dense_oracle_does_not_vanish_at_small_steps ... ok
+test scaled_convention_and_prefix_session_agree_with_the_series ... ok
+test fused_krylov_combination_is_accurate_for_every_step ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/prefix_phi_contracts.rs (runtime_r2/target-phi/debug/deps/prefix_phi_contracts-0a2c43a2a84831e8)
+
+running 1 test
+test fused_phi_prefix_resume_matches_cold_incremental_path ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+

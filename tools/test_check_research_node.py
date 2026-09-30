@@ -119,6 +119,28 @@ class ResearchNodeTests(unittest.TestCase):
         self.repo.commit("add node without prereg")
         self.assertFails(self.repo.check("--base", "base"), "missing PREREGISTRATION.md")
 
+    def test_exempt_node_needs_no_preregistration_but_still_needs_a_ledger_row(self):
+        self.repo.write("tools/research_node_exemptions.txt", "# header\nimported imported as written\n")
+        self.repo.write("research/imported/results.json", json.dumps({"count": 7}))
+        self.repo.commit("add exempt node without a row")
+        self.assertFails(self.repo.check("--base", "base"), "no research/LEDGER.jsonl row")
+        self.repo.append_rows(self.repo.row(["research/imported/results.json"], verdict="INCONCLUSIVE"))
+        self.repo.commit("add row")
+        self.assertPasses(self.repo.check("--base", "base"))
+
+    def test_exemption_needs_a_reason_and_a_tracked_node(self):
+        self.repo.node("new_node", prereg=False)
+        self.repo.write("tools/research_node_exemptions.txt", "new_node\n")
+        self.repo.commit("exemption without reason")
+        proc = self.repo.check("--base", "base")
+        self.assertFails(proc, "expected '<node> <reason>'")
+        self.assertIn("missing PREREGISTRATION.md", proc.stdout)
+        self.repo.write("tools/research_node_exemptions.txt", "new_node reason\nghost reason\n")
+        self.repo.commit("exemption for a missing node")
+        proc = self.repo.check("--base", "base")
+        self.assertFails(proc, "research/ghost/, which is not a tracked node")
+        self.assertNotIn("missing PREREGISTRATION.md", proc.stdout)
+
     def test_new_node_without_ledger_row_fails(self):
         self.repo.write("research/new_node/PREREGISTRATION.md", "# Plan\n")
         self.repo.write("research/new_node/results.csv", "case,error\na,2.0\n")

@@ -998,10 +998,14 @@ pub fn krylov_phi_action(
         }
 
         let dimension = column + 1;
-        let checkpoint = dimension >= config.minimum_dimension
-            && ((dimension - config.minimum_dimension) % config.dimension_increment == 0
-                || dimension == maximum
-                || happy_breakdown);
+        // A breakdown ends the basis whatever the minimum dimension, so it is
+        // always a checkpoint (as in the fused path). Before, a breakdown
+        // below the minimum left the loop without a projection: A = -I_8
+        // returned 0, dimension 0, unconverged (audit 2026-09-30, PHI-P3).
+        let checkpoint = happy_breakdown
+            || dimension == maximum
+            || (dimension >= config.minimum_dimension
+                && (dimension - config.minimum_dimension) % config.dimension_increment == 0);
         if checkpoint {
             let current = projected_action(
                 &basis,
@@ -1336,40 +1340,81 @@ fn krylov_exponential_once(
     ))
 }
 
+/// The scaled convention `b0 + tau phi1(tau A) b1 + ... + tau^p phi_p(tau A) b_p`
+/// in the weighted form `w0 = b0`, `w_k = tau^k b_k` used by
+/// [`augmented_fused_operator`].
+fn weighted_phi_vectors(scale: f64, vectors: &[Vec<f64>]) -> CoreResult<Vec<Vec<f64>>> {
+    let weighted = vectors
+        .iter()
+        .enumerate()
+        .map(|(k, vector)| {
+            let factor = scale.powi(k as i32);
+            vector
+                .iter()
+                .map(|value| factor * value)
+                .collect::<Vec<_>>()
+        })
+        .collect::<Vec<_>>();
+    if weighted.iter().flatten().all(|value| value.is_finite()) {
+        Ok(weighted)
+    } else {
+        Err(CoreError::NonFinite(
+            "fused phi action: tau^k b_k is not finite".into(),
+        ))
+    }
+}
+
+/// The time-normalized augmented operator for
+/// `e^{tau A} w0 + phi1(tau A) w1 + ... + phi_p(tau A) w_p`.
+///
+/// With `M = [[A, [b_p .. b_1]], [0, J_p]]` and `D = diag(I, tau^(p-1), ..,
+/// tau, 1)`, `D^-1 (tau M) D = [[tau A, [tau^p b_p .. tau b_1]], [0, J_p]]`,
+/// `D^-1 q = q` for the start `q = [b0; e_p]`, and the physical projection
+/// is unchanged, so the physical part of `exp(tau M) q` equals that of
+/// `exp(M_hat) q` exactly for every tau != 0 (audit 2026-09-30, PHI-P1/P2).
+/// The operator returned here is `M_hat` and is exponentiated with scale
+/// one; its upper-right block holds `w_k = tau^k b_k` directly, so no
+/// `tau^-k` factor is ever formed. The earlier form kept `b_k ~ v_k/tau^k`
+/// next to `tau A`: `||tau M||` grew like `tau^-p` as tau -> 0, the Arnoldi
+/// residual estimate accepted a dimension-1 projection with a relative
+/// error of 3e-3 on the scalar A = -1 at tau = 1e-4, and the dense Pade
+/// path returned 0 at tau = 1e-14. At tau = 0 the operator is
+/// `[[0, W], [0, J_p]]` and the output is `w0 + sum_k w_k / k!`, the limit.
+///
+/// The B block is divided by sigma, the power of two at or above
+/// `max_k ||w_k||`, and the chain's start entry is sigma (audit F-042,
+/// F-043): the augmented system is then homogeneous in the scale of the
+/// inputs.
 fn augmented_fused_operator(
     operator: Arc<dyn LinearOperator>,
     scale: f64,
-    vectors: &[Vec<f64>],
+    weighted: &[Vec<f64>],
 ) -> CoreResult<(Arc<dyn LinearOperator>, Vec<f64>, usize)> {
-    if vectors.is_empty() {
+    if weighted.is_empty() {
         return Err(CoreError::InvalidInput(
             "fused phi action requires at least b0".into(),
         ));
     }
     let n = operator.dimension();
-    if vectors.iter().any(|vector| vector.len() != n) {
+    if weighted.iter().any(|vector| vector.len() != n) {
         return Err(CoreError::Dimension(
             "fused phi action vector shape mismatch".into(),
         ));
     }
-    let p = vectors.len() - 1;
+    let p = weighted.len() - 1;
+    let tau = scale;
     if p == 0 {
-        return Ok((operator, vectors[0].clone(), n));
+        let scaled = Arc::new(ClosureOperator::new(n, move |input, output| {
+            operator.apply(input, output)?;
+            output.iter_mut().for_each(|value| *value *= tau);
+            Ok(())
+        })) as Arc<dyn LinearOperator>;
+        return Ok((scaled, weighted[0].clone(), n));
     }
-    // Balance the augmentation (audit F-042, F-043): the B block is divided
-    // by sigma and the chain's start entry is sigma instead of 1. The
-    // physical block of exp(tau M) start is unchanged. sigma is the power of
-    // two at or above max_k |tau|^k ||b_k||, the size of the term b_k enters
-    // the result with, so the tail neither vanishes against b0 nor swamps
-    // it when b_k carries a factor tau^-k. The augmented system is then
-    // homogeneous in the scale of the inputs: scaling every b_k by a power
-    // of two scales every Arnoldi quantity by the same factor.
-    let tau = scale.abs();
-    let b_max = vectors
+    let b_max = weighted
         .iter()
-        .enumerate()
         .skip(1)
-        .map(|(k, vector)| tau.powi(k as i32) * safe_l2(vector))
+        .map(|vector| safe_l2(vector))
         .fold(0.0_f64, f64::max);
     let sigma = if b_max > 0.0 && b_max.is_finite() {
         let exponent = (b_max.log2().ceil() as i64).clamp(-1022, 1023);
@@ -1377,7 +1422,7 @@ fn augmented_fused_operator(
     } else {
         1.0
     };
-    let owned = vectors
+    let owned = weighted
         .iter()
         .map(|vector| vector.iter().map(|value| value / sigma).collect::<Vec<_>>())
         .collect::<Vec<_>>();
@@ -1391,6 +1436,7 @@ fn augmented_fused_operator(
                 ));
             }
             operator.apply(&input[..n], &mut output[..n])?;
+            output[..n].iter_mut().for_each(|value| *value *= tau);
             for column in 0..p {
                 let coefficient = input[n + column];
                 if coefficient != 0.0 {
@@ -1404,7 +1450,7 @@ fn augmented_fused_operator(
         },
     )) as Arc<dyn LinearOperator>;
     let mut start = vec![0.0; augmented_dimension];
-    start[..n].copy_from_slice(&vectors[0]);
+    start[..n].copy_from_slice(&weighted[0]);
     start[augmented_dimension - 1] = sigma;
     Ok((augmented, start, n))
 }
@@ -1453,12 +1499,29 @@ pub fn fused_phi_action(
             convergence_basis: PhiConvergenceBasis::InvariantSubspace,
         });
     }
+    let weighted = weighted_phi_vectors(scale, vectors)?;
+    fused_phi_action_weighted(operator, scale, &weighted, config, counters)
+}
+
+/// [`fused_phi_action`] on the weighted vectors `w0 = b0`, `w_k = tau^k b_k`:
+/// `e^{tau A} w0 + sum_k phi_k(tau A) w_k`. `vectors` must be finite and
+/// not all zero; the caller has counted the phi action.
+fn fused_phi_action_weighted(
+    operator: Arc<dyn LinearOperator>,
+    scale: f64,
+    weighted: &[Vec<f64>],
+    config: FusedPhiKrylovConfig,
+    counters: &mut WorkCounters,
+) -> CoreResult<FusedPhiActionReport> {
     let (augmented, initial, physical_dimension) =
-        augmented_fused_operator(operator, scale, vectors)?;
+        augmented_fused_operator(operator, scale, weighted)?;
     let config = config.validate(augmented.dimension())?;
+    let highest_phi_index = weighted.len() - 1;
     let mut substeps = 1usize;
     loop {
-        let delta = scale / substeps as f64;
+        // The normalized operator already carries tau: exp(M_hat) is taken
+        // as exp(M_hat / m)^m.
+        let delta = 1.0 / substeps as f64;
         let mut state = initial.clone();
         let mut reports = Vec::with_capacity(substeps);
         let mut total_error = 0.0;
@@ -1493,7 +1556,7 @@ pub fn fused_phi_action(
             let value = state[..physical_dimension].to_vec();
             return Ok(FusedPhiActionReport {
                 scale,
-                highest_phi_index: vectors.len() - 1,
+                highest_phi_index,
                 substeps,
                 converged: true,
                 maximum_krylov_dimension: maximum_dimension,
@@ -1511,7 +1574,7 @@ pub fn fused_phi_action(
             let value = state[..physical_dimension].to_vec();
             return Ok(FusedPhiActionReport {
                 scale,
-                highest_phi_index: vectors.len() - 1,
+                highest_phi_index,
                 substeps,
                 converged: false,
                 maximum_krylov_dimension: maximum_dimension,
@@ -1529,6 +1592,10 @@ pub fn fused_phi_action(
 }
 
 /// Fused unscaled combination `sum coefficient*phi_k(scale*A)vector`.
+///
+/// The terms enter the normalized augmentation as `w_k = coefficient *
+/// vector` directly; no `scale^-k` is formed, so small and zero scales are
+/// valid (at scale 0 the value is `sum coefficient * vector / k!`).
 pub fn fused_phi_linear_combination(
     operator: Arc<dyn LinearOperator>,
     scale: f64,
@@ -1536,33 +1603,44 @@ pub fn fused_phi_linear_combination(
     config: FusedPhiKrylovConfig,
     counters: &mut WorkCounters,
 ) -> CoreResult<FusedPhiActionReport> {
-    if scale == 0.0 {
+    if !scale.is_finite() {
         return Err(CoreError::InvalidInput(
-            "fused unscaled phi combination requires nonzero scale".into(),
+            "fused unscaled phi combination requires a finite scale".into(),
         ));
     }
     let n = operator.dimension();
     let highest = terms.iter().map(|term| term.phi_index).max().unwrap_or(0);
-    let mut vectors = vec![vec![0.0; n]; highest + 1];
+    let mut weighted = vec![vec![0.0; n]; highest + 1];
     for term in terms {
         if term.vector.len() != n || !term.coefficient.is_finite() {
             return Err(CoreError::Dimension(
                 "fused phi combination term shape mismatch".into(),
             ));
         }
-        let divisor = scale.powi(term.phi_index as i32);
-        if divisor == 0.0 || !divisor.is_finite() {
-            return Err(CoreError::NonFinite(
-                "fused phi combination scale power is invalid".into(),
-            ));
-        }
-        axpy(
-            term.coefficient / divisor,
-            term.vector,
-            &mut vectors[term.phi_index],
-        );
+        axpy(term.coefficient, term.vector, &mut weighted[term.phi_index]);
     }
-    fused_phi_action(operator, scale, &vectors, config, counters)
+    if !weighted.iter().flatten().all(|value| value.is_finite()) {
+        return Err(CoreError::InvalidInput(
+            "invalid fused phi-action input".into(),
+        ));
+    }
+    counters.phi_actions += 1;
+    if weighted.iter().all(|vector| safe_l2(vector) == 0.0) {
+        return Ok(FusedPhiActionReport {
+            scale,
+            highest_phi_index: highest,
+            substeps: 0,
+            converged: true,
+            maximum_krylov_dimension: 0,
+            error_estimate: 0.0,
+            nested_difference_estimate: 0.0,
+            action_norm: 0.0,
+            value: vec![0.0; n],
+            substep_reports: Vec::new(),
+            convergence_basis: PhiConvergenceBasis::InvariantSubspace,
+        });
+    }
+    fused_phi_action_weighted(operator, scale, &weighted, config, counters)
 }
 
 /// Advisory cost prediction from an actually computed fused-phi Arnoldi prefix.
@@ -1694,8 +1772,9 @@ impl FusedPhiPrefixSession {
             });
         }
         let highest_phi_index = vectors.len() - 1;
+        let weighted = weighted_phi_vectors(scale, vectors)?;
         let (augmented, initial, physical_dimension) =
-            augmented_fused_operator(operator, scale, vectors)?;
+            augmented_fused_operator(operator, scale, &weighted)?;
         let config = config.validate(augmented.dimension())?;
         let beta = safe_l2(&initial);
         if !(beta > f64::MIN_POSITIVE && beta.is_finite()) {
@@ -1774,7 +1853,8 @@ impl FusedPhiPrefixSession {
             &self.hessenberg,
             self.beta,
             self.current_dimension,
-            self.scale,
+            // The normalized operator already carries the scale.
+            1.0,
             counters,
         )?;
         let nested = self

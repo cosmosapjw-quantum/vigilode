@@ -1,0 +1,8 @@
+# Pre-registration exemptions for tools/check-research-node.py (audit finding F-024).
+#
+# Format: <research node directory> <reason>. One entry per line; the reason is mandatory.
+# An entry waives only PREREGISTRATION.md. The node still needs a numeric results file
+# and a research/LEDGER.jsonl row covering it, and the stall rule still applies.
+# Use it only for material that was not produced by a planned run in this repository,
+# and whose bytes cannot take an added file.
+adversarial_reaudit_20260930_r2 external audit package imported as written on 2026-09-30 (commit 1ba914d); its MANIFEST.sha256 must cover exactly the package files, so an added PREREGISTRATION.md would break its own validator; no pre-registration exists

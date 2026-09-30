@@ -25,6 +25,11 @@ thiserror.workspace = true
 serde_json.workspace = true
 
 [[test]]
+name = "audit0930_reuse_certificate_contracts"
+path = "tests/audit0930_reuse_certificate_contracts.rs"
+required-features = ["audit2-research"]
+
+[[test]]
 name = "audit2_structured_correction_contracts"
 path = "tests/audit2_structured_correction_contracts.rs"
 required-features = ["audit2-research"]

@@ -36,6 +36,19 @@ pub fn error_scale(y0: &[f64], y1: &[f64], atol: &[f64], rtol: f64) -> CoreResul
             "rtol must be finite and nonnegative".into(),
         ));
     }
+    // Each input is checked on its own (audit 2026-09-30, CERT-02):
+    // `abs().max()` drops a NaN on one side, and a negative atol can still
+    // give a positive scale when the relative term is large.
+    if !atol.iter().all(|value| value.is_finite() && *value >= 0.0) {
+        return Err(CoreError::InvalidInput(
+            "atol must be finite and nonnegative".into(),
+        ));
+    }
+    if !y0.iter().chain(y1).all(|value| value.is_finite()) {
+        return Err(CoreError::NonFinite(
+            "error-scale state contains NaN/Inf".into(),
+        ));
+    }
     let mut out = Vec::with_capacity(y0.len());
     for i in 0..y0.len() {
         let a = if atol.len() == 1 { atol[0] } else { atol[i] };

@@ -1,0 +1,2651 @@
+diff --git a/crates/rodas5p-cli/src/main.rs b/crates/rodas5p-cli/src/main.rs
+index 861db52..54bfdc3 100644
+--- a/crates/rodas5p-cli/src/main.rs
++++ b/crates/rodas5p-cli/src/main.rs
+@@ -1,4 +1,5 @@
+ use std::{
++    collections::BTreeMap,
+     fs::{self, OpenOptions},
+     io::Write,
+     path::{Path, PathBuf},
+@@ -8,9 +9,10 @@ use anyhow::{Context, Result};
+ use clap::{Parser, Subcommand, ValueEnum};
+ use rodas5p_core::{load_rodas5p_coefficients, sha256_hex};
+ use rodas5p_fair_ab::{
+-    BenchmarkCell, BenchmarkPlan, FairSolveConfig, GlobalErrorParetoProfile, PreconditionerKind,
+-    RecycleLifetime, ScientificValidityV2CaseArtifact, SequenceConfig, SequenceKind, SolverKind,
+-    TraceDocument, freeze_scientific_validity_v2_calibration_artifacts, generate_trace,
++    BenchmarkCell, BenchmarkPlan, FairSolveConfig, GlobalErrorParetoProfile,
++    PairedTimingAssessment, PairedTimingDecision, PreconditionerKind, RecycleLifetime,
++    ScientificValidityV2CaseArtifact, SequenceConfig, SequenceKind, SolverKind, TraceDocument,
++    freeze_scientific_validity_v2_calibration_artifacts, generate_trace,
+     load_numerical_reference_v2, replay_scientific_validity_v2_oregonator_artifacts,
+     run_adaptive_global_error_screen, run_comparison, run_g1_adaptive_global_error_screen,
+     run_global_error_pareto_screen, run_scientific_validity_v2_case,
+@@ -1073,29 +1075,54 @@ const TIER_L_REFERENCE_FIDELITY: ComparatorFidelity = ComparatorFidelity::Produc
+ const REFERENCE_ONLY_NOT_EVALUATED: &str =
+     "relative performance not evaluated: reference is a reference-implementation-only comparator";
+ 
+-const WALL_NOT_EVALUATED: &str = "wall-time criterion not evaluated: smoke or single-sample timing carries no dispersion estimate";
++const WALL_NOT_EVALUATED: &str = "wall-time criterion not evaluated: no authoritative paired timing assessment (A/A control, at least six independent sessions) was supplied; repeated medians are recorded only";
+ 
+-/// Audit F-053: wall time may decide Promote/Hold only with repeated samples
+-/// after a warmup.  Smoke (one repetition, no warmup) and single-sample
+-/// timings are recorded but never decide; the dispersion-aware replacement
+-/// is `rodas5p_fair_ab::assess_paired_timing`.
+-fn wall_timing_admissible(repetitions: usize, warmups: usize) -> bool {
+-    repetitions >= 2 && warmups >= 1
++const WALL_INCONCLUSIVE: &str = "wall-time criterion not evaluated: the paired timing interval is inconclusive or its A/A control is not authoritative";
++
++/// Wall time decides Promote/Hold only through a paired timing assessment
++/// (`rodas5p_fair_ab::assess_paired_timing`): its gate decision is Promote
++/// or Block only when the A/A control is authoritative and at least six
++/// independent sessions were measured. A median of a few repetitions, with
++/// or without warmups, carries no dispersion estimate and never decides
++/// (audit F-053; audit 2026-09-30, B-03).
++enum WallCriterion {
++    Passed,
++    Failed,
++    NotEvaluated(&'static str),
++}
++
++fn wall_criterion(paired: Option<&PairedTimingAssessment>) -> WallCriterion {
++    match paired {
++        None => WallCriterion::NotEvaluated(WALL_NOT_EVALUATED),
++        Some(assessment) if !assessment.timing_authoritative => {
++            WallCriterion::NotEvaluated(WALL_INCONCLUSIVE)
++        }
++        Some(assessment) => match assessment.gate_decision {
++            PairedTimingDecision::Promote => WallCriterion::Passed,
++            PairedTimingDecision::Block => WallCriterion::Failed,
++            PairedTimingDecision::Inconclusive => WallCriterion::NotEvaluated(WALL_INCONCLUSIVE),
++        },
++    }
+ }
+ 
+ /// The Tier-N nonlinear screen times each case with a single `Instant`
+ /// sample, so its wall ratios are never admissible gate evidence.
+ const TIER_N_WALL_TIMING_ADMISSIBLE: bool = false;
+ 
++/// Tier-L candidates. No paired timing runner feeds this command yet, so
++/// no assessment is supplied and the wall criterion is NotEvaluated.
+ fn assess_linear_candidates(
+     suites: &[UnifiedLinearSuite],
+ ) -> Vec<UnifiedLinearCandidateAssessment> {
+-    assess_linear_candidates_against(suites, TIER_L_REFERENCE_FIDELITY)
++    assess_linear_candidates_against(suites, TIER_L_REFERENCE_FIDELITY, &BTreeMap::new())
+ }
+ 
++/// `paired_timing` maps a candidate id to its paired assessment against
++/// GMRES/OFF.
+ fn assess_linear_candidates_against(
+     suites: &[UnifiedLinearSuite],
+     reference_fidelity: ComparatorFidelity,
++    paired_timing: &BTreeMap<String, PairedTimingAssessment>,
+ ) -> Vec<UnifiedLinearCandidateAssessment> {
+     strict_cells()
+         .into_iter()
+@@ -1146,25 +1173,20 @@ fn assess_linear_candidates_against(
+                 blockers.push("nonfinite Tier-L solution error".into());
+             }
+             let relative_admissible = reference_fidelity.admits_relative_performance_reading();
+-            let wall_admissible = suites
+-                .iter()
+-                .all(|suite| wall_timing_admissible(suite.plan.repetitions, suite.plan.warmups));
++            let candidate_id = linear_candidate_id(cell.solver, cell.lifetime);
+             let mut not_evaluated = Vec::new();
+             if !is_reference && !relative_admissible {
+                 not_evaluated.push(REFERENCE_ONLY_NOT_EVALUATED.to_string());
+             }
+-            if !is_reference && relative_admissible && !wall_admissible {
+-                not_evaluated.push(WALL_NOT_EVALUATED.to_string());
+-            }
+-            if !is_reference
+-                && relative_admissible
+-                && wall_admissible
+-                && !wall_speedup.is_some_and(|speedup| speedup >= TIER_L_REQUIRED_WALL_SPEEDUP)
+-            {
+-                blockers.push(format!(
+-                    "median Tier-L wall speedup below {:.2}x",
+-                    TIER_L_REQUIRED_WALL_SPEEDUP
+-                ));
++            if !is_reference && relative_admissible {
++                match wall_criterion(paired_timing.get(&candidate_id)) {
++                    WallCriterion::Passed => {}
++                    WallCriterion::Failed => blockers.push(format!(
++                        "paired Tier-L wall-speedup interval lies below {:.2}x",
++                        TIER_L_REQUIRED_WALL_SPEEDUP
++                    )),
++                    WallCriterion::NotEvaluated(reason) => not_evaluated.push(reason.to_string()),
++                }
+             }
+             if !is_reference
+                 && relative_admissible
+@@ -1174,7 +1196,7 @@ fn assess_linear_candidates_against(
+             }
+             let verdict = tier_verdict(is_reference, &blockers, &not_evaluated);
+             UnifiedLinearCandidateAssessment {
+-                candidate_id: linear_candidate_id(cell.solver, cell.lifetime),
++                candidate_id,
+                 solver: cell.solver,
+                 lifetime: cell.lifetime,
+                 suites: represented_suites,
+@@ -2518,21 +2540,90 @@ mod unified_assessment_tests {
+         assert!(ids.contains(&"sequential-gcrodr-persistent".to_string()));
+     }
+ 
++    /// Paired assessment of GCRO-DR/persistent against GMRES/OFF from
++    /// deterministic samples: six sessions of five pairs, 2% noise.
++    fn paired_assessment(speedup: f64, with_aa: bool) -> PairedTimingAssessment {
++        use rodas5p_fair_ab::{
++            PairedTimingCase, PairedTimingProtocol, assess_paired_timing,
++            detect_timing_host_metadata,
++        };
++        let protocol = PairedTimingProtocol::authoritative(7);
++        let mut state = 1_u64;
++        let mut noise = move || {
++            state = state
++                .wrapping_mul(6_364_136_223_846_793_005)
++                .wrapping_add(1_442_695_040_888_963_407);
++            1.0 + 0.02 * (2.0 * ((state >> 11) as f64 / (1_u64 << 53) as f64) - 1.0)
++        };
++        let mut cases = |ratio: f64, prefix: &str| {
++            (0..4)
++                .map(|case| {
++                    let base = 1.0e-3 * (1.0 + case as f64);
++                    let candidate = (0..protocol.pairs)
++                        .map(|_| base * noise())
++                        .collect::<Vec<_>>();
++                    let reference = (0..protocol.pairs)
++                        .map(|_| base * ratio * noise())
++                        .collect::<Vec<_>>();
++                    let sessions = (0..protocol.pairs)
++                        .map(|pair| (pair * 6 / protocol.pairs) as u32)
++                        .collect();
++                    PairedTimingCase::from_samples(
++                        format!("{prefix}-{case}"),
++                        &protocol,
++                        vec![5.0e-3, 1.0e-3],
++                        candidate,
++                        reference,
++                    )
++                    .unwrap()
++                    .with_process_blocks(sessions)
++                })
++                .collect::<Vec<_>>()
++        };
++        let corpus = cases(speedup, "case");
++        let aa = cases(1.0, "aa");
++        assess_paired_timing(
++            &protocol,
++            &corpus,
++            with_aa.then_some(aa.as_slice()),
++            detect_timing_host_metadata(1),
++        )
++        .unwrap()
++    }
++
+     #[test]
+-    fn tier_l_promotion_requires_the_locked_fifteen_percent_wall_speedup() {
+-        let promoted = assess_linear_candidates(&[suite(0.8)]);
+-        let row = promoted
+-            .iter()
+-            .find(|row| row.candidate_id == "sequential-gcrodr-persistent")
+-            .unwrap();
+-        assert_eq!(row.verdict, UnifiedJointVerdict::Promote);
+-
+-        let held = assess_linear_candidates(&[suite(0.9)]);
+-        let row = held
+-            .iter()
+-            .find(|row| row.candidate_id == "sequential-gcrodr-persistent")
+-            .unwrap();
+-        assert_eq!(row.verdict, UnifiedJointVerdict::Hold);
++    fn tier_l_wall_decisions_come_only_from_a_paired_assessment() {
++        // Audit 2026-09-30, B-03: three repetitions after one warmup with a
++        // median wall ratio of 0.8 used to promote. Without a paired
++        // assessment the wall criterion is not evaluated.
++        let gcrodr = |rows: Vec<UnifiedLinearCandidateAssessment>| {
++            rows.into_iter()
++                .find(|row| row.candidate_id == "sequential-gcrodr-persistent")
++                .unwrap()
++        };
++        let row = gcrodr(assess_linear_candidates(&[suite(0.8)]));
++        assert_eq!(row.verdict, UnifiedJointVerdict::NotEvaluated);
++        assert_eq!(row.not_evaluated, vec![WALL_NOT_EVALUATED]);
++
++        let with = |assessment: PairedTimingAssessment| {
++            let map = BTreeMap::from([("sequential-gcrodr-persistent".to_string(), assessment)]);
++            gcrodr(assess_linear_candidates_against(
++                &[suite(0.8)],
++                TIER_L_REFERENCE_FIDELITY,
++                &map,
++            ))
++        };
++        // An authoritative paired interval above 1.15x promotes.
++        let row = with(paired_assessment(1.30, true));
++        assert_eq!(row.verdict, UnifiedJointVerdict::Promote, "{row:?}");
++        // One below 1.15x holds.
++        let row = with(paired_assessment(0.90, true));
++        assert_eq!(row.verdict, UnifiedJointVerdict::Hold, "{row:?}");
++        assert!(row.blockers[0].contains("paired Tier-L wall-speedup interval"));
++        // Without an A/A control the timing is not authoritative.
++        let row = with(paired_assessment(1.30, false));
++        assert_eq!(row.verdict, UnifiedJointVerdict::NotEvaluated);
++        assert_eq!(row.not_evaluated, vec![WALL_INCONCLUSIVE]);
+     }
+ 
+     #[test]
+@@ -2618,6 +2709,7 @@ mod unified_assessment_tests {
+             let rows = assess_linear_candidates_against(
+                 &[suite(gcrodr_wall)],
+                 ComparatorFidelity::ReferenceImplementationOnly,
++                &BTreeMap::new(),
+             );
+             let row = rows
+                 .iter()
+diff --git a/crates/rodas5p-cli/tests/frozen_full_e_shadow_cli_contracts.rs b/crates/rodas5p-cli/tests/frozen_full_e_shadow_cli_contracts.rs
+index 33edfb5..7be3645 100644
+--- a/crates/rodas5p-cli/tests/frozen_full_e_shadow_cli_contracts.rs
++++ b/crates/rodas5p-cli/tests/frozen_full_e_shadow_cli_contracts.rs
+@@ -41,8 +41,11 @@ fn frozen_full_e_shadow_command_emits_the_dedicated_v36_schema() {
+     assert_eq!(report["shadow_full_e_failures"], 0);
+     assert_eq!(report["unsafe_recommendations"], 0);
+     assert_eq!(report["prefix_speculative_work"]["jvp_vectors"], 42);
+-    assert_eq!(report["continuation_work"]["jvp_vectors"], 26); // 24 before audit F-043
+-    assert_eq!(report["total_speculative_work"]["jvp_vectors"], 68); // 66 before audit F-043
++    // 24 / 66 before audit F-043, 26 / 68 before the 2026-09-30 phi
++    // normalization (research/generic_frozen_full_e_shadow_v36/
++    // ADDENDUM_20260930_PHI_NORMALIZATION_PINS.md).
++    assert_eq!(report["continuation_work"]["jvp_vectors"], 28);
++    assert_eq!(report["total_speculative_work"]["jvp_vectors"], 70);
+     assert_eq!(report["rjf_parity"]["passed"], true);
+     assert_eq!(report["hard_gates"]["passed"], true);
+     assert_eq!(report["rows"].as_array().unwrap().len(), 2);
+diff --git a/crates/rodas5p-core/src/lib.rs b/crates/rodas5p-core/src/lib.rs
+index 0c77773..91d5989 100644
+--- a/crates/rodas5p-core/src/lib.rs
++++ b/crates/rodas5p-core/src/lib.rs
+@@ -18,7 +18,9 @@ pub use coefficients::{
+ pub use error::{CoreError, CoreResult};
+ pub use hash::sha256_hex;
+ pub use matrix::{DenseMatrix, LuFactorization, direct_solve, inverse};
+-pub use matrix_functions::{dense_fused_phi_action, dense_phi_action, matrix_exp_pade13};
++pub use matrix_functions::{
++    dense_fused_phi_action, dense_phi_action, dense_phi_combination, matrix_exp_pade13,
++};
+ pub use norms::{error_scale, safe_l2, wrms};
+ pub use operator::{
+     ApplyCategory, ClosureOperator, DenseOperator, DirectPreconditioner, ExactDenseMatrixIdentity,
+diff --git a/crates/rodas5p-core/src/matrix_functions.rs b/crates/rodas5p-core/src/matrix_functions.rs
+index 40e37c9..68a02ed 100644
+--- a/crates/rodas5p-core/src/matrix_functions.rs
++++ b/crates/rodas5p-core/src/matrix_functions.rs
+@@ -235,24 +235,65 @@ pub fn dense_phi_action(
+ /// KIOPS/augmented-exponential convention `B=[b_p,...,b_1]`, while the lower Jordan chain is
+ /// seeded with its final basis vector.  This routine is the small projected-space oracle for the
+ /// matrix-free fused Krylov path; it is not used on the large physical state directly.
++///
++/// The inputs are weighted to `w_k = scale^k b_k` and passed to
++/// [`dense_phi_combination`], which never forms `scale^-k` (audit
++/// 2026-09-30, PHI-P2).
+ pub fn dense_fused_phi_action(
+     matrix: &DenseMatrix,
+     scale: f64,
+     vectors: &[Vec<f64>],
+ ) -> CoreResult<Vec<f64>> {
+-    if matrix.nrows() != matrix.ncols() || vectors.is_empty() {
++    if !scale.is_finite() {
++        return Err(CoreError::NonFinite(
++            "dense fused phi-action input contains NaN/Inf".into(),
++        ));
++    }
++    let weighted = vectors
++        .iter()
++        .enumerate()
++        .map(|(k, vector)| {
++            let factor = scale.powi(k as i32);
++            vector
++                .iter()
++                .map(|value| factor * value)
++                .collect::<Vec<_>>()
++        })
++        .collect::<Vec<_>>();
++    dense_phi_combination(matrix, scale, &weighted)
++}
++
++/// `exp(scale*A) w_0 + sum_{k=1}^p phi_k(scale*A) w_k` with one dense
++/// exponential of the time-normalized augmented matrix
++///
++/// `M_hat = [[scale*A, [w_p, ..., w_1]], [0, J_p]]`, start `[w_0; e_p]`.
++///
++/// This is `D^-1 (scale M) D` for `D = diag(I, scale^(p-1), ..., scale, 1)`
++/// and the unnormalized `M = [[A, [b_p, ..., b_1]], [0, J_p]]` with
++/// `b_k = w_k / scale^k`; `D` fixes the start and the physical projection,
++/// so the result is the same exactly. The unnormalized matrix grew like
++/// `scale^-p` as `scale -> 0`: its 1-norm passed the Pade power guard near
++/// `scale = 1e-14` and the result was 0 instead of about 2.36 for the
++/// scalar `A = -1` case of the 2026-09-30 audit. `scale = 0` is valid and
++/// returns `w_0 + sum_k w_k / k!`.
++pub fn dense_phi_combination(
++    matrix: &DenseMatrix,
++    scale: f64,
++    weighted: &[Vec<f64>],
++) -> CoreResult<Vec<f64>> {
++    if matrix.nrows() != matrix.ncols() || weighted.is_empty() {
+         return Err(CoreError::Dimension(
+             "dense fused phi-action requires a square matrix and at least b0".into(),
+         ));
+     }
+     let n = matrix.nrows();
+-    if vectors.iter().any(|vector| vector.len() != n) {
++    if weighted.iter().any(|vector| vector.len() != n) {
+         return Err(CoreError::Dimension(
+             "dense fused phi-action vector shape mismatch".into(),
+         ));
+     }
+     if !scale.is_finite()
+-        || !vectors
++        || !weighted
+             .iter()
+             .flat_map(|vector| vector.iter())
+             .all(|value| value.is_finite())
+@@ -261,28 +302,28 @@ pub fn dense_fused_phi_action(
+             "dense fused phi-action input contains NaN/Inf".into(),
+         ));
+     }
+-    let p = vectors.len() - 1;
++    let p = weighted.len() - 1;
+     if p == 0 {
+-        return matrix_exp_pade13(&matrix.scale(scale))?.matvec(&vectors[0]);
++        return matrix_exp_pade13(&matrix.scale(scale))?.matvec(&weighted[0]);
+     }
+ 
+     let mut augmented = DenseMatrix::zeros(n + p, n + p);
+     for i in 0..n {
+         for j in 0..n {
+-            augmented[(i, j)] = matrix[(i, j)];
++            augmented[(i, j)] = scale * matrix[(i, j)];
+         }
+         for column in 0..p {
+-            // B = [b_p, b_{p-1}, ..., b_1].
+-            augmented[(i, n + column)] = vectors[p - column][i];
++            // W = [w_p, w_{p-1}, ..., w_1].
++            augmented[(i, n + column)] = weighted[p - column][i];
+         }
+     }
+     for j in 0..p.saturating_sub(1) {
+         augmented[(n + j, n + j + 1)] = 1.0;
+     }
+     let mut start = vec![0.0; n + p];
+-    start[..n].copy_from_slice(&vectors[0]);
++    start[..n].copy_from_slice(&weighted[0]);
+     start[n + p - 1] = 1.0;
+-    let value = matrix_exp_pade13(&augmented.scale(scale))?.matvec(&start)?;
++    let value = matrix_exp_pade13(&augmented)?.matvec(&start)?;
+     let out = value[..n].to_vec();
+     if out.iter().all(|value| value.is_finite()) {
+         Ok(out)
+diff --git a/crates/rodas5p-core/src/norms.rs b/crates/rodas5p-core/src/norms.rs
+index 3535d11..dbfea69 100644
+--- a/crates/rodas5p-core/src/norms.rs
++++ b/crates/rodas5p-core/src/norms.rs
+@@ -36,6 +36,19 @@ pub fn error_scale(y0: &[f64], y1: &[f64], atol: &[f64], rtol: f64) -> CoreResul
+             "rtol must be finite and nonnegative".into(),
+         ));
+     }
++    // Each input is checked on its own (audit 2026-09-30, CERT-02):
++    // `abs().max()` drops a NaN on one side, and a negative atol can still
++    // give a positive scale when the relative term is large.
++    if !atol.iter().all(|value| value.is_finite() && *value >= 0.0) {
++        return Err(CoreError::InvalidInput(
++            "atol must be finite and nonnegative".into(),
++        ));
++    }
++    if !y0.iter().chain(y1).all(|value| value.is_finite()) {
++        return Err(CoreError::NonFinite(
++            "error-scale state contains NaN/Inf".into(),
++        ));
++    }
+     let mut out = Vec::with_capacity(y0.len());
+     for i in 0..y0.len() {
+         let a = if atol.len() == 1 { atol[0] } else { atol[i] };
+diff --git a/crates/rodas5p-core/src/work.rs b/crates/rodas5p-core/src/work.rs
+index 21335a6..779c258 100644
+--- a/crates/rodas5p-core/src/work.rs
++++ b/crates/rodas5p-core/src/work.rs
+@@ -93,17 +93,34 @@ impl WorkCounters {
+             .saturating_add(delta.recycle_refresh_matvecs)
+     }
+ 
+-    /// Total vector operator applications across solver categories.
+-    ///
+-    /// `block_matvecs` counts batched calls, while `linear_matvecs` and
+-    /// `diagnostic_matvecs` already count every vector carried by those calls.
+-    /// Adding the block-call counter here would therefore double count work.
++    /// Shifted-operator applications counted as solver-level calls: a block
++    /// apply over s stages is one call (audit F-051). Comparable only
++    /// between lanes with the same batching; across lanes use
++    /// [`Self::operator_state_vectors`].
+     pub fn operator_applications(self) -> u64 {
+         self.linear_matvecs
+             .saturating_add(self.diagnostic_matvecs)
+             .saturating_add(self.recycle_refresh_matvecs)
+     }
+ 
++    /// Shifted-operator work in state-vector units: Krylov and diagnostic
++    /// applies as declared by the operator (s for an s-stage block apply)
++    /// plus recycled-subspace refreshes, which are single-vector applies.
++    ///
++    /// `None` when calls were recorded but no vector units: a ledger written
++    /// before the vector counters existed deserializes them as 0, and that
++    /// must read as unknown, not as free work (audit 2026-09-30, B-02).
++    pub fn operator_state_vectors(self) -> Option<u64> {
++        let calls = self.linear_matvecs.saturating_add(self.diagnostic_matvecs);
++        if calls > 0 && self.linear_matvec_vectors == 0 {
++            return None;
++        }
++        Some(
++            self.linear_matvec_vectors
++                .saturating_add(self.recycle_refresh_matvecs),
++        )
++    }
++
+     /// Saturating component-wise accumulation for independently measured work ledgers.
+     ///
+     /// This is used when bounded parallel stage/RHS jobs keep local counters and merge them
+diff --git a/crates/rodas5p-core/tests/work_unit_contracts.rs b/crates/rodas5p-core/tests/work_unit_contracts.rs
+new file mode 100644
+index 0000000..c4dca93
+--- /dev/null
++++ b/crates/rodas5p-core/tests/work_unit_contracts.rs
+@@ -0,0 +1,40 @@
++//! Cross-lane operator work is compared in state-vector units (audit
++//! 2026-09-30, B-02).
++
++use rodas5p_core::WorkCounters;
++
++#[test]
++fn cross_lane_operator_work_is_counted_in_state_vectors() {
++    // Audit 2026-09-30, B-02: a sequential lane with 16 single-vector
++    // applies and an 8-stage block lane with 3 block applies. As calls the
++    // block lane looks cheaper (3 < 16); in state vectors it is not
++    // (24 > 16).
++    let sequential = WorkCounters {
++        linear_matvecs: 16,
++        linear_matvec_vectors: 16,
++        ..WorkCounters::default()
++    };
++    let block = WorkCounters {
++        linear_matvecs: 3,
++        linear_matvec_vectors: 24,
++        ..WorkCounters::default()
++    };
++    assert!(block.operator_applications() < sequential.operator_applications());
++    assert_eq!(sequential.operator_state_vectors(), Some(16));
++    assert_eq!(block.operator_state_vectors(), Some(24));
++    // A legacy ledger without vector counters is unknown, not free.
++    let legacy = WorkCounters {
++        linear_matvecs: 16,
++        ..WorkCounters::default()
++    };
++    assert_eq!(legacy.operator_state_vectors(), None);
++    assert_eq!(WorkCounters::default().operator_state_vectors(), Some(0));
++    // Refreshes are single-vector applies.
++    let refreshed = WorkCounters {
++        linear_matvecs: 2,
++        linear_matvec_vectors: 2,
++        recycle_refresh_matvecs: 3,
++        ..WorkCounters::default()
++    };
++    assert_eq!(refreshed.operator_state_vectors(), Some(5));
++}
+diff --git a/crates/rodas5p-fair-ab/src/global_error.rs b/crates/rodas5p-fair-ab/src/global_error.rs
+index acf63c6..44615fe 100644
+--- a/crates/rodas5p-fair-ab/src/global_error.rs
++++ b/crates/rodas5p-fair-ab/src/global_error.rs
+@@ -520,7 +520,13 @@ pub enum ParetoCostMetric {
+     WallSeconds,
+     RhsEvaluations,
+     JvpVectors,
++    /// Shifted-operator applications as solver-level calls; a block apply
++    /// over s stages is one. Not comparable across batching lanes.
+     OperatorApplications,
++    /// Shifted-operator work in state-vector units, the cross-lane metric
++    /// (audit 2026-09-30, B-02). Unknown for legacy ledgers without vector
++    /// counters.
++    OperatorStateVectors,
+     JacobianBuilds,
+     DirectFactorizations,
+     NonlinearIterations,
+@@ -932,6 +938,9 @@ impl IntegratorRunRecord {
+             ParetoCostMetric::RhsEvaluations => Some(counters.rhs_evaluations as f64),
+             ParetoCostMetric::JvpVectors => Some(counters.jvp_vectors as f64),
+             ParetoCostMetric::OperatorApplications => Some(counters.operator_applications() as f64),
++            ParetoCostMetric::OperatorStateVectors => counters
++                .operator_state_vectors()
++                .map(|vectors| vectors as f64),
+             ParetoCostMetric::JacobianBuilds => Some(counters.jacobian_builds as f64),
+             ParetoCostMetric::DirectFactorizations => Some(counters.direct_factorizations as f64),
+             ParetoCostMetric::NonlinearIterations => Some(counters.nonlinear_iterations as f64),
+@@ -1569,12 +1578,13 @@ fn error_metrics() -> [GlobalErrorMetric; 7] {
+     ]
+ }
+ 
+-fn cost_metrics() -> [ParetoCostMetric; 12] {
++fn cost_metrics() -> [ParetoCostMetric; 13] {
+     [
+         ParetoCostMetric::WallSeconds,
+         ParetoCostMetric::RhsEvaluations,
+         ParetoCostMetric::JvpVectors,
+         ParetoCostMetric::OperatorApplications,
++        ParetoCostMetric::OperatorStateVectors,
+         ParetoCostMetric::JacobianBuilds,
+         ParetoCostMetric::DirectFactorizations,
+         ParetoCostMetric::NonlinearIterations,
+diff --git a/crates/rodas5p-fair-ab/src/paired_timing.rs b/crates/rodas5p-fair-ab/src/paired_timing.rs
+index 628cc30..351747b 100644
+--- a/crates/rodas5p-fair-ab/src/paired_timing.rs
++++ b/crates/rodas5p-fair-ab/src/paired_timing.rs
+@@ -10,12 +10,19 @@
+ //!   candidate/reference pairs in a seeded ABBA order;
+ //! * per case, the statistic is the median of per-pair
+ //!   `ln(reference / candidate)`; the corpus statistic is the median of the
+-//!   case statistics, with a seeded two-stage percentile bootstrap whose
+-//!   units are independent: cases, then process blocks inside a case. Pairs
+-//!   measured in one process share its state (caches, frequency, allocator)
+-//!   and are never resampled as if independent (external re-audit, 6.1);
+-//! * a decision needs at least [`PAIRED_TIMING_MIN_INDEPENDENT_BLOCKS`]
+-//!   independent blocks in total; with fewer, it is Inconclusive;
++//!   case statistics, with a seeded two-way percentile bootstrap: each
++//!   resample draws measurement sessions (processes) with replacement, once
++//!   for all cases, and draws cases with replacement; a drawn case takes the
++//!   pairs its drawn sessions measured. Pairs measured in one process share
++//!   its state (caches, frequency, allocator), within a case and across
++//!   cases, so a session moves all its cases together and replicating cases
++//!   in the same sessions cannot narrow the session part of the interval
++//!   (external re-audit 6.1; audit 2026-09-30, B-01). Resampling cases as
++//!   well keeps the interval conservative for a case population;
++//! * process labels are global session identities shared across cases; a
++//!   case without labels is one session of its own. A decision needs at
++//!   least [`PAIRED_TIMING_MIN_INDEPENDENT_BLOCKS`] distinct sessions over
++//!   all cases; with fewer, it is Inconclusive;
+ //! * the decision is three-valued: Promote iff the interval's lower bound is
+ //!   at least the required speedup, Block iff its upper bound is below it,
+ //!   otherwise Inconclusive;
+@@ -191,30 +198,43 @@ pub struct PairedTimingCase {
+     pub order: Vec<[PairedArm; 2]>,
+     pub candidate_seconds: Vec<f64>,
+     pub reference_seconds: Vec<f64>,
+-    /// Process (independent run) of each pair; empty means one process for
+-    /// the whole case. Pairs of one block are resampled together.
++    /// Global session (process) identity of each pair, shared by every case
++    /// measured in that process; empty means the whole case ran in one
++    /// session of its own. A session is resampled as one unit across all
++    /// cases (audit 2026-09-30, B-01).
+     #[serde(default, skip_serializing_if = "Vec::is_empty")]
+     pub process_blocks: Vec<u32>,
+ }
+ 
++/// Identity of a measurement session: a declared global process label, or
++/// the implicit single session of a case without labels.
++#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
++enum SessionKey {
++    Global(u32),
++    OwnCase(usize),
++}
++
+ impl PairedTimingCase {
+-    /// Attach the process of each pair.
++    /// Attach the global session (process) of each pair.
+     pub fn with_process_blocks(mut self, process_blocks: Vec<u32>) -> Self {
+         self.process_blocks = process_blocks;
+         self
+     }
+ 
+-    /// Log speedups grouped by process block, in block order.
+-    fn block_log_speedups(&self) -> Vec<Vec<f64>> {
++    /// Log speedups grouped by session, keyed by the session identity.
++    fn session_log_speedups(&self, case_index: usize) -> Vec<(SessionKey, Vec<f64>)> {
+         let logs = self.log_speedups();
+         if self.process_blocks.is_empty() {
+-            return vec![logs];
++            return vec![(SessionKey::OwnCase(case_index), logs)];
+         }
+         let mut blocks = std::collections::BTreeMap::<u32, Vec<f64>>::new();
+         for (block, log) in self.process_blocks.iter().zip(logs) {
+             blocks.entry(*block).or_default().push(log);
+         }
+-        blocks.into_values().collect()
++        blocks
++            .into_iter()
++            .map(|(block, logs)| (SessionKey::Global(block), logs))
++            .collect()
+     }
+ 
+     /// Case from already measured per-iteration samples (replayed or
+@@ -398,10 +418,12 @@ impl SpeedupInterval {
+ }
+ 
+ /// Median over cases of the per-case median log speedup, with a seeded
+-/// two-stage percentile bootstrap: each resample draws cases with
+-/// replacement and then, inside each drawn case, whole process blocks with
+-/// replacement. A case measured in one process keeps its median; pairs are
+-/// never resampled individually.
++/// two-way percentile bootstrap: each resample draws sessions with
++/// replacement (shared by all cases, so a session moves every case it
++/// measured together; audit 2026-09-30, B-01) and cases with replacement,
++/// and a drawn case takes the pairs of its drawn sessions, with
++/// multiplicity. A case with no pairs in a replicate's sessions is left out
++/// of that replicate's median.
+ pub fn case_clustered_bootstrap(
+     cases: &[PairedTimingCase],
+     protocol: &PairedTimingProtocol,
+@@ -422,31 +444,68 @@ pub fn case_clustered_bootstrap(
+             )));
+         }
+     }
+-    let blocks = cases
++    let per_case = cases
++        .iter()
++        .enumerate()
++        .map(|(index, case)| case.session_log_speedups(index))
++        .collect::<Vec<_>>();
++    let sessions = per_case
++        .iter()
++        .flat_map(|case| case.iter().map(|(key, _)| *key))
++        .collect::<BTreeSet<_>>()
++        .into_iter()
++        .collect::<Vec<_>>();
++    let independent_blocks = sessions.len();
++    // For each case, its pairs by session index.
++    let by_session = per_case
+         .iter()
+-        .map(PairedTimingCase::block_log_speedups)
++        .map(|case| {
++            case.iter()
++                .map(|(key, logs)| {
++                    let index = sessions.binary_search(key).expect("session collected");
++                    (index, logs.clone())
++                })
++                .collect::<Vec<_>>()
++        })
+         .collect::<Vec<_>>();
+-    let independent_blocks = blocks.iter().map(Vec::len).sum::<usize>();
+-    let mut case_statistics = blocks
++    let mut case_statistics = per_case
+         .iter()
+-        .map(|case| median_in_place(&mut case.concat()))
++        .map(|case| {
++            let mut all = case
++                .iter()
++                .flat_map(|(_, logs)| logs.iter().copied())
++                .collect::<Vec<_>>();
++            median_in_place(&mut all)
++        })
+         .collect::<Vec<_>>();
+     let point_log = median_in_place(&mut case_statistics);
+ 
+     let mut rng = SplitMix64(protocol.seed);
+     let mut replicates = Vec::with_capacity(protocol.bootstrap_resamples);
+-    let mut resampled_cases = vec![0.0; cases.len()];
++    let mut multiplicity = vec![0usize; sessions.len()];
++    let mut resampled_cases = Vec::with_capacity(cases.len());
+     let mut resampled_pairs = Vec::new();
+-    for _ in 0..protocol.bootstrap_resamples {
+-        for slot in &mut resampled_cases {
+-            let case = &blocks[rng.below(cases.len())];
++    while replicates.len() < protocol.bootstrap_resamples {
++        multiplicity.fill(0);
++        for _ in 0..sessions.len() {
++            multiplicity[rng.below(sessions.len())] += 1;
++        }
++        resampled_cases.clear();
++        for _ in 0..by_session.len() {
++            let case = &by_session[rng.below(by_session.len())];
+             resampled_pairs.clear();
+-            for _ in 0..case.len() {
+-                resampled_pairs.extend_from_slice(&case[rng.below(case.len())]);
++            for (session, logs) in case {
++                for _ in 0..multiplicity[*session] {
++                    resampled_pairs.extend_from_slice(logs);
++                }
++            }
++            if !resampled_pairs.is_empty() {
++                resampled_cases.push(median_in_place(&mut resampled_pairs));
+             }
+-            *slot = median_in_place(&mut resampled_pairs);
+         }
+-        replicates.push(median_in_place(&mut resampled_cases));
++        if !resampled_cases.is_empty() {
++            replicates.push(median_in_place(&mut resampled_cases));
++        }
+     }
+     replicates.sort_by(f64::total_cmp);
+     let tail = 0.5 * (1.0 - protocol.confidence_level);
+diff --git a/crates/rodas5p-fair-ab/tests/paired_timing_contracts.rs b/crates/rodas5p-fair-ab/tests/paired_timing_contracts.rs
+index f344ea7..bbd4ed6 100644
+--- a/crates/rodas5p-fair-ab/tests/paired_timing_contracts.rs
++++ b/crates/rodas5p-fair-ab/tests/paired_timing_contracts.rs
+@@ -203,6 +203,11 @@ fn same_seed_reproduces_identical_interval_bits() {
+         seed: SEED + 1,
+         ..protocol()
+     };
++    // With three cases in six shared sessions the two-way bootstrap has few
++    // distinct replicate values, and a percentile can land on the same one
++    // under another seed; twelve cases make the reseeding visible.
++    let cases = noisy_cases(1.20, 0.10, 12, 13);
++    let first = case_clustered_bootstrap(&cases, &protocol()).unwrap();
+     let other = case_clustered_bootstrap(&cases, &reseeded).unwrap();
+     assert_eq!(other.point.to_bits(), first.point.to_bits());
+     assert!(
+@@ -386,3 +391,95 @@ fn pairs_of_one_process_are_not_resampled_as_independent() {
+         .collect::<Vec<_>>();
+     assert!(case_clustered_bootstrap(&mismatched, &protocol).is_err());
+ }
++
++#[test]
++fn one_shared_process_is_one_session_however_many_cases() {
++    // Audit 2026-09-30, B-01: six cases all measured in global process 77
++    // were counted as six independent blocks and promoted.
++    let protocol = protocol();
++    for cases in [1, 6, 60] {
++        let shared = noisy_cases(1.30, 0.05, cases, 31)
++            .into_iter()
++            .map(|case| {
++                let pairs = case.candidate_seconds.len();
++                case.with_process_blocks(vec![77; pairs])
++            })
++            .collect::<Vec<_>>();
++        let interval = case_clustered_bootstrap(&shared, &protocol).unwrap();
++        assert_eq!(interval.independent_blocks, 1, "{cases} cases");
++        assert_eq!(
++            paired_timing_decision(&interval, 1.15),
++            PairedTimingDecision::Inconclusive
++        );
++        let aa = identical_arm_cases(cases, 77);
++        let assessment = assess_paired_timing(&protocol, &shared, Some(&aa), host()).unwrap();
++        assert!(!assessment.timing_authoritative, "{cases} cases");
++        assert_ne!(assessment.gate_decision, PairedTimingDecision::Promote);
++    }
++}
++
++#[test]
++fn replicating_cases_does_not_narrow_a_session_level_interval() {
++    // Six sessions with a common per-session effect on every case. The
++    // interval is about the sessions; ten times more cases measured in the
++    // same six sessions must not make it much narrower.
++    let protocol = protocol();
++    let session_factor = [0.85, 0.95, 1.0, 1.05, 1.2, 1.35];
++    let build = |cases: usize| {
++        let mut noise = Noise(41);
++        (0..cases)
++            .map(|case| {
++                let base = 1.0e-3 * (1.0 + case as f64);
++                let labels = six_processes(protocol.pairs);
++                let candidate = (0..protocol.pairs)
++                    .map(|_| base * noise.factor(0.01))
++                    .collect::<Vec<_>>();
++                let reference = labels
++                    .iter()
++                    .map(|&session| {
++                        base * 1.3 * session_factor[session as usize] * noise.factor(0.01)
++                    })
++                    .collect::<Vec<_>>();
++                PairedTimingCase::from_samples(
++                    format!("case-{case}"),
++                    &protocol,
++                    warmups(),
++                    candidate,
++                    reference,
++                )
++                .unwrap()
++                .with_process_blocks(labels)
++            })
++            .collect::<Vec<_>>()
++    };
++    let few = case_clustered_bootstrap(&build(6), &protocol).unwrap();
++    let many = case_clustered_bootstrap(&build(60), &protocol).unwrap();
++    assert_eq!(few.independent_blocks, 6);
++    assert_eq!(many.independent_blocks, 6);
++    assert!(
++        many.half_width_log() >= 0.8 * few.half_width_log(),
++        "6 cases {:.4}, 60 cases {:.4}",
++        few.half_width_log(),
++        many.half_width_log()
++    );
++}
++
++/// Reference-against-reference cases, all pairs in one global process.
++fn identical_arm_cases(cases: usize, process: u32) -> Vec<PairedTimingCase> {
++    let protocol = protocol();
++    let mut noise = Noise(51);
++    (0..cases)
++        .map(|case| {
++            let base = 1.0e-3 * (1.0 + case as f64);
++            let a = (0..protocol.pairs)
++                .map(|_| base * noise.factor(0.01))
++                .collect::<Vec<_>>();
++            let b = (0..protocol.pairs)
++                .map(|_| base * noise.factor(0.01))
++                .collect::<Vec<_>>();
++            PairedTimingCase::from_samples(format!("aa-{case}"), &protocol, warmups(), a, b)
++                .unwrap()
++                .with_process_blocks(vec![process; protocol.pairs])
++        })
++        .collect()
++}
+diff --git a/crates/rodas5p-integrators/Cargo.toml b/crates/rodas5p-integrators/Cargo.toml
+index ac7f4f5..d88259d 100644
+--- a/crates/rodas5p-integrators/Cargo.toml
++++ b/crates/rodas5p-integrators/Cargo.toml
+@@ -24,6 +24,11 @@ thiserror.workspace = true
+ [dev-dependencies]
+ serde_json.workspace = true
+ 
++[[test]]
++name = "audit0930_reuse_certificate_contracts"
++path = "tests/audit0930_reuse_certificate_contracts.rs"
++required-features = ["audit2-research"]
++
+ [[test]]
+ name = "audit2_structured_correction_contracts"
+ path = "tests/audit2_structured_correction_contracts.rs"
+diff --git a/crates/rodas5p-integrators/src/adaptive.rs b/crates/rodas5p-integrators/src/adaptive.rs
+index 0357214..b52b9e2 100644
+--- a/crates/rodas5p-integrators/src/adaptive.rs
++++ b/crates/rodas5p-integrators/src/adaptive.rs
+@@ -44,6 +44,25 @@ pub enum AdaptiveFailureKind {
+     NonFinite,
+ }
+ 
++/// Reconcile the step ledger with the trial's final disposition. Step
++/// kernels count their own endpoint verdict in `accepted_steps` /
++/// `rejected_steps`; an outer gate (dense-error enforcement, the algebraic
++/// error term, a non-finite state) can still reject the trial afterwards,
++/// and the ledger must then show one more rejection, not an acceptance. The
++/// work itself stays charged (audit 2026-09-30, AD-02: Enforce reported
++/// 26 accepted and 0 rejected for 12 retained steps and 14 dense
++/// rejections).
++pub(crate) fn reconcile_outer_rejection(
++    counters: &mut rodas5p_core::WorkCounters,
++    endpoint_accepted: bool,
++    final_accepted: bool,
++) {
++    if endpoint_accepted && !final_accepted {
++        counters.accepted_steps = counters.accepted_steps.saturating_sub(1);
++        counters.rejected_steps = counters.rejected_steps.saturating_add(1);
++    }
++}
++
+ pub(crate) fn record_adaptive_work_failure(
+     counters: &mut rodas5p_core::WorkCounters,
+     kind: AdaptiveFailureKind,
+diff --git a/crates/rodas5p-integrators/src/adaptive_exponential.rs b/crates/rodas5p-integrators/src/adaptive_exponential.rs
+index c3dc2eb..6c30f50 100644
+--- a/crates/rodas5p-integrators/src/adaptive_exponential.rs
++++ b/crates/rodas5p-integrators/src/adaptive_exponential.rs
+@@ -196,7 +196,7 @@ fn integrate_pexprb54s4_fused_adaptive_observed_with_telemetry_request(
+     let mut controller = AdaptiveControllerState::default();
+     let mut counters = WorkCounters::default();
+     let mut diagnostics = AdaptiveFusedExponentialDiagnostics::default();
+-    let tolerance = 10.0 * f64::EPSILON * tf.abs().max(1.0);
++    let tolerance = crate::output::end_time_slack(tf);
+ 
+     while t < tf - tolerance && diagnostics.attempts < adaptive.max_attempts {
+         h = h.min(adaptive.max_step).min(tf - t);
+diff --git a/crates/rodas5p-integrators/src/audit2_reusable_transaction_research.rs b/crates/rodas5p-integrators/src/audit2_reusable_transaction_research.rs
+index 4fd75f5..fb8c43c 100644
+--- a/crates/rodas5p-integrators/src/audit2_reusable_transaction_research.rs
++++ b/crates/rodas5p-integrators/src/audit2_reusable_transaction_research.rs
+@@ -437,22 +437,39 @@ pub fn audit2_preconditioner_reuse_certificate(
+             &mut work,
+             ApplyCategory::Diagnostic,
+         )?;
++        // Every intermediate is checked before it reaches a `max`: `f64::max`
++        // returns the other operand when one is NaN, so a final finiteness
++        // test cannot see an inf - inf inside a column (audit 2026-09-30,
++        // AD-03: W = 1e308 [[1, 1], [1, 1]], P = [[2, -2], [2, -2]] has
++        // P W = 0 exactly but certified with epsilon = 0).
++        let w_column_finite = w_column.iter().all(|value| value.is_finite());
++        if !w_column_finite {
++            return Err(CoreError::NonFinite(format!(
++                "Audit-2 reuse certificate: W e_{j} is not finite"
++            )));
++        }
+         apply_preconditioner(preconditioner, &w_column, &mut column, &mut work)?;
+         let column_sum: f64 = column
+             .iter()
+             .enumerate()
+             .map(|(i, value)| (f64::from(u8::from(i == j)) - value).abs())
+             .sum();
++        if !column_sum.is_finite() {
++            return Err(CoreError::NonFinite(format!(
++                "Audit-2 reuse certificate: column {j} of I - P W is not finite"
++            )));
++        }
+         epsilon = epsilon.max(column_sum);
+         apply_preconditioner(preconditioner, &unit, &mut column, &mut work)?;
+-        p_norm = p_norm.max(column.iter().map(|value| value.abs()).sum());
++        let p_column: f64 = column.iter().map(|value| value.abs()).sum();
++        if !p_column.is_finite() {
++            return Err(CoreError::NonFinite(format!(
++                "Audit-2 reuse certificate: column {j} of P is not finite"
++            )));
++        }
++        p_norm = p_norm.max(p_column);
+         unit[j] = 0.0;
+     }
+-    if !(epsilon.is_finite() && p_norm.is_finite()) {
+-        return Err(CoreError::NonFinite(
+-            "Audit-2 reuse certificate produced a non-finite norm".into(),
+-        ));
+-    }
+     let delta_w_l1 = 0.0;
+     let bound = epsilon + p_norm * delta_w_l1;
+     Ok(Audit2ReuseCertificate {
+diff --git a/crates/rodas5p-integrators/src/audit2_stage_certificate_research.rs b/crates/rodas5p-integrators/src/audit2_stage_certificate_research.rs
+index f02ae92..a086945 100644
+--- a/crates/rodas5p-integrators/src/audit2_stage_certificate_research.rs
++++ b/crates/rodas5p-integrators/src/audit2_stage_certificate_research.rs
+@@ -278,8 +278,11 @@ pub fn retain_completed_stage_traces(
+ /// Recomputes the narrow synthetic L2 contract and admits only safe intervals.
+ ///
+ /// Every quantity that enters the decision is an upper bound computed with
+-/// correctly rounded upward binary64 arithmetic, including the residuals and
+-/// norms (audit F-061, F-101). Each stage has its own residual bound
++/// outward-rounded binary64 arithmetic, including the residuals and norms
++/// (audit F-061, F-101). The primitives return rigorous conservative upper
++/// bounds: for normal operands the least representable one, for some
++/// subnormal products and quotients a larger one (audit 2026-09-30 found
++/// 71 and 64 such returns in 4,162 exact-rational checks, all safe). Each stage has its own residual bound
+ /// (audit F-060), and `kappa_upper` must dominate a verified bound on
+ /// `||W^{-1}||_2` (audit F-059).
+ pub fn evaluate_audit2_stage_certificate(
+diff --git a/crates/rodas5p-integrators/src/bdf.rs b/crates/rodas5p-integrators/src/bdf.rs
+index 4a63520..4584b08 100644
+--- a/crates/rodas5p-integrators/src/bdf.rs
++++ b/crates/rodas5p-integrators/src/bdf.rs
+@@ -606,7 +606,7 @@ pub fn integrate_bdf_fixed(
+     let mut states = vec![state.clone()];
+     let mut applied_orders = Vec::new();
+     let mut startup_steps = 0;
+-    while t < tf - 10.0 * f64::EPSILON * tf.abs().max(1.0) {
++    while t < tf - crate::output::end_time_slack(tf) {
+         let step = h.min(tf - t);
+         let report = bdf_step(
+             problem,
+@@ -655,7 +655,7 @@ pub fn integrate_bdf_fixed_observed(
+     let mut counters = WorkCounters::default();
+     let mut collector = OutputCollector::new(output, t_span, y0)?;
+     let mut internal_steps = 0_usize;
+-    while t < tf - 10.0 * f64::EPSILON * tf.abs().max(1.0) {
++    while t < tf - crate::output::end_time_slack(tf) {
+         let (step, clipped) = collector.limit_step(t, h, tf)?;
+         let report = bdf_step(
+             problem,
+@@ -952,7 +952,7 @@ pub fn integrate_bdf_adaptive_observed(
+         }
+     }
+ 
+-    let success = t >= tf - 10.0 * f64::EPSILON * tf.abs().max(1.0);
++    let success = t >= tf - crate::output::end_time_slack(tf);
+     let observed = if success {
+         let (times, states, output_clipped_steps) = collector.finish()?;
+         ObservedIntegrationResult {
+diff --git a/crates/rodas5p-integrators/src/dense_output_v2.rs b/crates/rodas5p-integrators/src/dense_output_v2.rs
+index 6808a8c..4d93186 100644
+--- a/crates/rodas5p-integrators/src/dense_output_v2.rs
++++ b/crates/rodas5p-integrators/src/dense_output_v2.rs
+@@ -431,7 +431,7 @@ pub fn integrate_fixed_dense_observed(
+     let mut hard_stops = HardStopCursor::new(sampling, t_span)?;
+     let sabr_config = sabr_config.unwrap_or_default();
+     let mut internal_steps = 0_usize;
+-    while t < tf - 10.0 * f64::EPSILON * tf.abs().max(1.0) {
++    while t < tf - crate::output::end_time_slack(tf) {
+         let (step, _hard_stop_landing) = hard_stops.limit_step(t, h, tf)?;
+         let report = match method {
+             IntegrationMethod::Sequential => {
+@@ -674,6 +674,7 @@ pub fn integrate_adaptive_dense_observed_with_dense_error_control(
+                 counters.accumulate(estimate_work);
+             }
+         }
++        crate::adaptive::reconcile_outer_rejection(&mut counters, report.accepted, accepted);
+         let failure = (!accepted).then_some(adaptive_rejection_kind(error, &report.y_new));
+         diagnostics.record_with_failure(
+             trial_h,
+@@ -780,6 +781,11 @@ pub fn integrate_sequential_matrix_free_adaptive_dense_fixed_inner_observed(
+ /// accepted state. Both are local approximations from the same state, so the
+ /// difference is bounded by the interpolant defect plus the sub-step's local
+ /// error and needs no reference solution.
++///
++/// It is an attribution diagnostic, not a bound on the dense error: only
++/// `||u_dense - y|| <= delta + ||u_sub - y||` holds, and the second term is
++/// not estimated here. The sub-step shares the method, coefficients and
++/// forcing with the run and is force-accepted (audit 2026-09-30).
+ #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+ pub struct InterpolantAuditSample {
+     pub t: f64,
+@@ -1087,6 +1093,7 @@ where
+         let error = report.error_norm;
+         let accepted =
+             report.accepted && error <= 1.0 && report.y_new.iter().all(|value| value.is_finite());
++        crate::adaptive::reconcile_outer_rejection(&mut counters, report.accepted, accepted);
+         if accepted {
+             diagnostics.record(
+                 trial_h,
+@@ -1170,7 +1177,7 @@ where
+         }
+     }
+     diagnostics.fallback_steps = counters.fallback_steps as usize;
+-    let success = t >= tf - 10.0 * f64::EPSILON * tf.abs().max(1.0);
++    let success = t >= tf - crate::output::end_time_slack(tf);
+     let observed = if success && collector.is_complete() {
+         let (t, y, output_clipped_steps) = collector
+             .finish()
+@@ -1498,7 +1505,7 @@ pub fn integrate_radau_fixed_dense_observed(
+     let mut collector = OutputCollector::new(sampling.output(), t_span, y0)?;
+     let mut hard_stops = HardStopCursor::new(sampling, t_span)?;
+     let mut internal_steps = 0_usize;
+-    while t < tf - 10.0 * f64::EPSILON * tf.abs().max(1.0) {
++    while t < tf - crate::output::end_time_slack(tf) {
+         let (step, _hard_stop_landing) = hard_stops.limit_step(t, h, tf)?;
+         let report = radau_step(problem, t, &state, step, config, &mut counters)?;
+         let old_t = t;
+@@ -1550,7 +1557,7 @@ pub fn integrate_bdf_fixed_dense_observed(
+     let mut collector = OutputCollector::new(sampling.output(), t_span, y0)?;
+     let mut hard_stops = HardStopCursor::new(sampling, t_span)?;
+     let mut internal_steps = 0_usize;
+-    while t < tf - 10.0 * f64::EPSILON * tf.abs().max(1.0) {
++    while t < tf - crate::output::end_time_slack(tf) {
+         let (step, _hard_stop_shortened) = hard_stops.limit_step(t, h, tf)?;
+         let report = bdf_step(
+             problem,
+@@ -1856,7 +1863,7 @@ fn dense_adaptive_result(
+     internal_steps: usize,
+     diagnostics: AdaptiveRunDiagnostics,
+ ) -> DenseOutputResult<AdaptiveObservedIntegrationResult> {
+-    let success = t >= tf - 10.0 * f64::EPSILON * tf.abs().max(1.0);
++    let success = t >= tf - crate::output::end_time_slack(tf);
+     let observed = if success {
+         let (t, y, output_clipped_steps) = collector.finish()?;
+         ObservedIntegrationResult {
+diff --git a/crates/rodas5p-integrators/src/exponential.rs b/crates/rodas5p-integrators/src/exponential.rs
+index fa78521..eeec6f8 100644
+--- a/crates/rodas5p-integrators/src/exponential.rs
++++ b/crates/rodas5p-integrators/src/exponential.rs
+@@ -998,10 +998,14 @@ pub fn krylov_phi_action(
+         }
+ 
+         let dimension = column + 1;
+-        let checkpoint = dimension >= config.minimum_dimension
+-            && ((dimension - config.minimum_dimension) % config.dimension_increment == 0
+-                || dimension == maximum
+-                || happy_breakdown);
++        // A breakdown ends the basis whatever the minimum dimension, so it is
++        // always a checkpoint (as in the fused path). Before, a breakdown
++        // below the minimum left the loop without a projection: A = -I_8
++        // returned 0, dimension 0, unconverged (audit 2026-09-30, PHI-P3).
++        let checkpoint = happy_breakdown
++            || dimension == maximum
++            || (dimension >= config.minimum_dimension
++                && (dimension - config.minimum_dimension) % config.dimension_increment == 0);
+         if checkpoint {
+             let current = projected_action(
+                 &basis,
+@@ -1336,40 +1340,81 @@ fn krylov_exponential_once(
+     ))
+ }
+ 
++/// The scaled convention `b0 + tau phi1(tau A) b1 + ... + tau^p phi_p(tau A) b_p`
++/// in the weighted form `w0 = b0`, `w_k = tau^k b_k` used by
++/// [`augmented_fused_operator`].
++fn weighted_phi_vectors(scale: f64, vectors: &[Vec<f64>]) -> CoreResult<Vec<Vec<f64>>> {
++    let weighted = vectors
++        .iter()
++        .enumerate()
++        .map(|(k, vector)| {
++            let factor = scale.powi(k as i32);
++            vector
++                .iter()
++                .map(|value| factor * value)
++                .collect::<Vec<_>>()
++        })
++        .collect::<Vec<_>>();
++    if weighted.iter().flatten().all(|value| value.is_finite()) {
++        Ok(weighted)
++    } else {
++        Err(CoreError::NonFinite(
++            "fused phi action: tau^k b_k is not finite".into(),
++        ))
++    }
++}
++
++/// The time-normalized augmented operator for
++/// `e^{tau A} w0 + phi1(tau A) w1 + ... + phi_p(tau A) w_p`.
++///
++/// With `M = [[A, [b_p .. b_1]], [0, J_p]]` and `D = diag(I, tau^(p-1), ..,
++/// tau, 1)`, `D^-1 (tau M) D = [[tau A, [tau^p b_p .. tau b_1]], [0, J_p]]`,
++/// `D^-1 q = q` for the start `q = [b0; e_p]`, and the physical projection
++/// is unchanged, so the physical part of `exp(tau M) q` equals that of
++/// `exp(M_hat) q` exactly for every tau != 0 (audit 2026-09-30, PHI-P1/P2).
++/// The operator returned here is `M_hat` and is exponentiated with scale
++/// one; its upper-right block holds `w_k = tau^k b_k` directly, so no
++/// `tau^-k` factor is ever formed. The earlier form kept `b_k ~ v_k/tau^k`
++/// next to `tau A`: `||tau M||` grew like `tau^-p` as tau -> 0, the Arnoldi
++/// residual estimate accepted a dimension-1 projection with a relative
++/// error of 3e-3 on the scalar A = -1 at tau = 1e-4, and the dense Pade
++/// path returned 0 at tau = 1e-14. At tau = 0 the operator is
++/// `[[0, W], [0, J_p]]` and the output is `w0 + sum_k w_k / k!`, the limit.
++///
++/// The B block is divided by sigma, the power of two at or above
++/// `max_k ||w_k||`, and the chain's start entry is sigma (audit F-042,
++/// F-043): the augmented system is then homogeneous in the scale of the
++/// inputs.
+ fn augmented_fused_operator(
+     operator: Arc<dyn LinearOperator>,
+     scale: f64,
+-    vectors: &[Vec<f64>],
++    weighted: &[Vec<f64>],
+ ) -> CoreResult<(Arc<dyn LinearOperator>, Vec<f64>, usize)> {
+-    if vectors.is_empty() {
++    if weighted.is_empty() {
+         return Err(CoreError::InvalidInput(
+             "fused phi action requires at least b0".into(),
+         ));
+     }
+     let n = operator.dimension();
+-    if vectors.iter().any(|vector| vector.len() != n) {
++    if weighted.iter().any(|vector| vector.len() != n) {
+         return Err(CoreError::Dimension(
+             "fused phi action vector shape mismatch".into(),
+         ));
+     }
+-    let p = vectors.len() - 1;
++    let p = weighted.len() - 1;
++    let tau = scale;
+     if p == 0 {
+-        return Ok((operator, vectors[0].clone(), n));
+-    }
+-    // Balance the augmentation (audit F-042, F-043): the B block is divided
+-    // by sigma and the chain's start entry is sigma instead of 1. The
+-    // physical block of exp(tau M) start is unchanged. sigma is the power of
+-    // two at or above max_k |tau|^k ||b_k||, the size of the term b_k enters
+-    // the result with, so the tail neither vanishes against b0 nor swamps
+-    // it when b_k carries a factor tau^-k. The augmented system is then
+-    // homogeneous in the scale of the inputs: scaling every b_k by a power
+-    // of two scales every Arnoldi quantity by the same factor.
+-    let tau = scale.abs();
+-    let b_max = vectors
++        let scaled = Arc::new(ClosureOperator::new(n, move |input, output| {
++            operator.apply(input, output)?;
++            output.iter_mut().for_each(|value| *value *= tau);
++            Ok(())
++        })) as Arc<dyn LinearOperator>;
++        return Ok((scaled, weighted[0].clone(), n));
++    }
++    let b_max = weighted
+         .iter()
+-        .enumerate()
+         .skip(1)
+-        .map(|(k, vector)| tau.powi(k as i32) * safe_l2(vector))
++        .map(|vector| safe_l2(vector))
+         .fold(0.0_f64, f64::max);
+     let sigma = if b_max > 0.0 && b_max.is_finite() {
+         let exponent = (b_max.log2().ceil() as i64).clamp(-1022, 1023);
+@@ -1377,7 +1422,7 @@ fn augmented_fused_operator(
+     } else {
+         1.0
+     };
+-    let owned = vectors
++    let owned = weighted
+         .iter()
+         .map(|vector| vector.iter().map(|value| value / sigma).collect::<Vec<_>>())
+         .collect::<Vec<_>>();
+@@ -1391,6 +1436,7 @@ fn augmented_fused_operator(
+                 ));
+             }
+             operator.apply(&input[..n], &mut output[..n])?;
++            output[..n].iter_mut().for_each(|value| *value *= tau);
+             for column in 0..p {
+                 let coefficient = input[n + column];
+                 if coefficient != 0.0 {
+@@ -1404,7 +1450,7 @@ fn augmented_fused_operator(
+         },
+     )) as Arc<dyn LinearOperator>;
+     let mut start = vec![0.0; augmented_dimension];
+-    start[..n].copy_from_slice(&vectors[0]);
++    start[..n].copy_from_slice(&weighted[0]);
+     start[augmented_dimension - 1] = sigma;
+     Ok((augmented, start, n))
+ }
+@@ -1453,12 +1499,29 @@ pub fn fused_phi_action(
+             convergence_basis: PhiConvergenceBasis::InvariantSubspace,
+         });
+     }
++    let weighted = weighted_phi_vectors(scale, vectors)?;
++    fused_phi_action_weighted(operator, scale, &weighted, config, counters)
++}
++
++/// [`fused_phi_action`] on the weighted vectors `w0 = b0`, `w_k = tau^k b_k`:
++/// `e^{tau A} w0 + sum_k phi_k(tau A) w_k`. `vectors` must be finite and
++/// not all zero; the caller has counted the phi action.
++fn fused_phi_action_weighted(
++    operator: Arc<dyn LinearOperator>,
++    scale: f64,
++    weighted: &[Vec<f64>],
++    config: FusedPhiKrylovConfig,
++    counters: &mut WorkCounters,
++) -> CoreResult<FusedPhiActionReport> {
+     let (augmented, initial, physical_dimension) =
+-        augmented_fused_operator(operator, scale, vectors)?;
++        augmented_fused_operator(operator, scale, weighted)?;
+     let config = config.validate(augmented.dimension())?;
++    let highest_phi_index = weighted.len() - 1;
+     let mut substeps = 1usize;
+     loop {
+-        let delta = scale / substeps as f64;
++        // The normalized operator already carries tau: exp(M_hat) is taken
++        // as exp(M_hat / m)^m.
++        let delta = 1.0 / substeps as f64;
+         let mut state = initial.clone();
+         let mut reports = Vec::with_capacity(substeps);
+         let mut total_error = 0.0;
+@@ -1493,7 +1556,7 @@ pub fn fused_phi_action(
+             let value = state[..physical_dimension].to_vec();
+             return Ok(FusedPhiActionReport {
+                 scale,
+-                highest_phi_index: vectors.len() - 1,
++                highest_phi_index,
+                 substeps,
+                 converged: true,
+                 maximum_krylov_dimension: maximum_dimension,
+@@ -1511,7 +1574,7 @@ pub fn fused_phi_action(
+             let value = state[..physical_dimension].to_vec();
+             return Ok(FusedPhiActionReport {
+                 scale,
+-                highest_phi_index: vectors.len() - 1,
++                highest_phi_index,
+                 substeps,
+                 converged: false,
+                 maximum_krylov_dimension: maximum_dimension,
+@@ -1529,6 +1592,10 @@ pub fn fused_phi_action(
+ }
+ 
+ /// Fused unscaled combination `sum coefficient*phi_k(scale*A)vector`.
++///
++/// The terms enter the normalized augmentation as `w_k = coefficient *
++/// vector` directly; no `scale^-k` is formed, so small and zero scales are
++/// valid (at scale 0 the value is `sum coefficient * vector / k!`).
+ pub fn fused_phi_linear_combination(
+     operator: Arc<dyn LinearOperator>,
+     scale: f64,
+@@ -1536,33 +1603,44 @@ pub fn fused_phi_linear_combination(
+     config: FusedPhiKrylovConfig,
+     counters: &mut WorkCounters,
+ ) -> CoreResult<FusedPhiActionReport> {
+-    if scale == 0.0 {
++    if !scale.is_finite() {
+         return Err(CoreError::InvalidInput(
+-            "fused unscaled phi combination requires nonzero scale".into(),
++            "fused unscaled phi combination requires a finite scale".into(),
+         ));
+     }
+     let n = operator.dimension();
+     let highest = terms.iter().map(|term| term.phi_index).max().unwrap_or(0);
+-    let mut vectors = vec![vec![0.0; n]; highest + 1];
++    let mut weighted = vec![vec![0.0; n]; highest + 1];
+     for term in terms {
+         if term.vector.len() != n || !term.coefficient.is_finite() {
+             return Err(CoreError::Dimension(
+                 "fused phi combination term shape mismatch".into(),
+             ));
+         }
+-        let divisor = scale.powi(term.phi_index as i32);
+-        if divisor == 0.0 || !divisor.is_finite() {
+-            return Err(CoreError::NonFinite(
+-                "fused phi combination scale power is invalid".into(),
+-            ));
+-        }
+-        axpy(
+-            term.coefficient / divisor,
+-            term.vector,
+-            &mut vectors[term.phi_index],
+-        );
++        axpy(term.coefficient, term.vector, &mut weighted[term.phi_index]);
++    }
++    if !weighted.iter().flatten().all(|value| value.is_finite()) {
++        return Err(CoreError::InvalidInput(
++            "invalid fused phi-action input".into(),
++        ));
++    }
++    counters.phi_actions += 1;
++    if weighted.iter().all(|vector| safe_l2(vector) == 0.0) {
++        return Ok(FusedPhiActionReport {
++            scale,
++            highest_phi_index: highest,
++            substeps: 0,
++            converged: true,
++            maximum_krylov_dimension: 0,
++            error_estimate: 0.0,
++            nested_difference_estimate: 0.0,
++            action_norm: 0.0,
++            value: vec![0.0; n],
++            substep_reports: Vec::new(),
++            convergence_basis: PhiConvergenceBasis::InvariantSubspace,
++        });
+     }
+-    fused_phi_action(operator, scale, &vectors, config, counters)
++    fused_phi_action_weighted(operator, scale, &weighted, config, counters)
+ }
+ 
+ /// Advisory cost prediction from an actually computed fused-phi Arnoldi prefix.
+@@ -1694,8 +1772,9 @@ impl FusedPhiPrefixSession {
+             });
+         }
+         let highest_phi_index = vectors.len() - 1;
++        let weighted = weighted_phi_vectors(scale, vectors)?;
+         let (augmented, initial, physical_dimension) =
+-            augmented_fused_operator(operator, scale, vectors)?;
++            augmented_fused_operator(operator, scale, &weighted)?;
+         let config = config.validate(augmented.dimension())?;
+         let beta = safe_l2(&initial);
+         if !(beta > f64::MIN_POSITIVE && beta.is_finite()) {
+@@ -1774,7 +1853,8 @@ impl FusedPhiPrefixSession {
+             &self.hessenberg,
+             self.beta,
+             self.current_dimension,
+-            self.scale,
++            // The normalized operator already carries the scale.
++            1.0,
+             counters,
+         )?;
+         let nested = self
+diff --git a/crates/rodas5p-integrators/src/g4_s5b0_regime_atlas.rs b/crates/rodas5p-integrators/src/g4_s5b0_regime_atlas.rs
+index 0f696ac..207dc5c 100644
+--- a/crates/rodas5p-integrators/src/g4_s5b0_regime_atlas.rs
++++ b/crates/rodas5p-integrators/src/g4_s5b0_regime_atlas.rs
+@@ -5354,6 +5354,19 @@ pub fn run_g4_s5b0_v37_continuation_transaction_family(
+     )
+ }
+ 
++/// The same family replay with a different continuation JVP cap. A research
++/// diagnostic: a cap below a row's completing work exercises the charged
++/// abstention path deterministically, which no calibration replay reaches
++/// at the frozen cap of 80 since the time-normalized phi augmentation
++/// (audit 2026-09-30).
++pub fn run_g4_s5b0_v37_continuation_transaction_family_with_cap(
++    profile: G4S5B0Profile,
++    family: G4S5B0Family,
++    continuation_jvp_cap: u64,
++) -> CoreResult<G4S5B0V37ContinuationTransactionReport> {
++    run_g4_s5b0_v37_continuation_transaction_filtered(profile, Some(family), continuation_jvp_cap)
++}
++
+ pub fn run_g4_s5b0_v37_continuation_transaction(
+     profile: G4S5B0Profile,
+ ) -> CoreResult<G4S5B0V37ContinuationTransactionReport> {
+diff --git a/crates/rodas5p-integrators/src/homotopy_policy.rs b/crates/rodas5p-integrators/src/homotopy_policy.rs
+index ad1c02c..35f3eb9 100644
+--- a/crates/rodas5p-integrators/src/homotopy_policy.rs
++++ b/crates/rodas5p-integrators/src/homotopy_policy.rs
+@@ -98,7 +98,43 @@ impl OutputBudgetPolicy {
+         }
+     }
+ 
++    /// Recheck the constructors' invariants. The variants are public and
++    /// deserializable, so a policy can bypass the constructors; `budget`
++    /// calls this on every evaluation (audit 2026-09-30, CERT-01: a direct
++    /// `StepPower { exponent: u32::MAX, .. }` cast to exponent -1 and gave a
++    /// budget that grows as h shrinks, and `Mixed { eta: NaN, .. }` was
++    /// hidden by `f64::min`).
++    pub fn validate(&self) -> CoreResult<()> {
++        match self {
++            Self::Absolute { epsilon } => validate_nonnegative("absolute output budget", *epsilon),
++            Self::EmbeddedRelative { eta } => {
++                validate_nonnegative("embedded-relative coefficient", *eta)
++            }
++            Self::StepPower {
++                epsilon_ref,
++                h_ref,
++                exponent,
++            } => {
++                validate_nonnegative("step-power reference budget", *epsilon_ref)?;
++                validate_reference_step(*h_ref)?;
++                validate_exponent(*exponent)
++            }
++            Self::Mixed {
++                eta,
++                epsilon_ref,
++                h_ref,
++                exponent,
++            } => {
++                validate_nonnegative("mixed embedded-relative coefficient", *eta)?;
++                validate_nonnegative("mixed step-power reference budget", *epsilon_ref)?;
++                validate_reference_step(*h_ref)?;
++                validate_exponent(*exponent)
++            }
++        }
++    }
++
+     pub fn budget(&self, embedded_error: f64, h: f64) -> CoreResult<f64> {
++        self.validate()?;
+         validate_nonnegative("embedded error", embedded_error)?;
+         if !(h > 0.0 && h.is_finite()) {
+             return Err(if h.is_finite() {
+diff --git a/crates/rodas5p-integrators/src/integrate.rs b/crates/rodas5p-integrators/src/integrate.rs
+index 10927df..ade4220 100644
+--- a/crates/rodas5p-integrators/src/integrate.rs
++++ b/crates/rodas5p-integrators/src/integrate.rs
+@@ -89,7 +89,7 @@ pub fn integrate_fixed(
+     let mut errors = Vec::new();
+     let sabr_cfg = sabr_config.unwrap_or_default();
+     let mut attempts = 0;
+-    while t < tf - 10.0 * f64::EPSILON * tf.abs().max(1.0) {
++    while t < tf - crate::output::end_time_slack(tf) {
+         attempts += 1;
+         let step = h.min(tf - t);
+         let r = match method {
+@@ -259,7 +259,7 @@ pub fn integrate_adaptive(
+             };
+         }
+     }
+-    let success = t >= tf - 10.0 * f64::EPSILON * tf.abs().max(1.0);
++    let success = t >= tf - crate::output::end_time_slack(tf);
+     Ok(IntegrationResult {
+         t: times,
+         y: states,
+@@ -305,7 +305,7 @@ pub fn integrate_fixed_observed(
+     let mut collector = OutputCollector::new(output, t_span, y0)?;
+     let sabr_cfg = sabr_config.unwrap_or_default();
+     let mut internal_steps = 0_usize;
+-    while t < tf - 10.0 * f64::EPSILON * tf.abs().max(1.0) {
++    while t < tf - crate::output::end_time_slack(tf) {
+         let (step, clipped) = collector.limit_step(t, h, tf)?;
+         let r = match method {
+             IntegrationMethod::Sequential => {
+@@ -480,6 +480,7 @@ pub fn integrate_adaptive_observed_with_config(
+         let error = effective(&report);
+         let accepted =
+             report.accepted && error <= 1.0 && report.y_new.iter().all(|value| value.is_finite());
++        crate::adaptive::reconcile_outer_rejection(&mut counters, report.accepted, accepted);
+         let failure = (!accepted).then_some(adaptive_rejection_kind(error, &report.y_new));
+         diagnostics.record_with_failure(
+             trial_h,
+@@ -524,7 +525,7 @@ pub fn integrate_adaptive_observed_with_config(
+         }
+     }
+     diagnostics.fallback_steps = counters.fallback_steps as usize;
+-    let success = t >= tf - 10.0 * f64::EPSILON * tf.abs().max(1.0);
++    let success = t >= tf - crate::output::end_time_slack(tf);
+     let observed = if success {
+         let (times, states, output_clipped_steps) = collector.finish()?;
+         ObservedIntegrationResult {
+@@ -675,7 +676,7 @@ pub fn integrate_homotopy_adaptive_observed(
+         }
+     }
+ 
+-    let success = t >= tf - 10.0 * f64::EPSILON * tf.abs().max(1.0);
++    let success = t >= tf - crate::output::end_time_slack(tf);
+     let observed = if success {
+         let (times, states, output_clipped_steps) = collector.finish()?;
+         ObservedIntegrationResult {
+@@ -834,6 +835,7 @@ pub fn integrate_sequential_matrix_free_adaptive_observed(
+         let error = report.error_norm;
+         let accepted =
+             report.accepted && error <= 1.0 && report.y_new.iter().all(|value| value.is_finite());
++        crate::adaptive::reconcile_outer_rejection(&mut counters, report.accepted, accepted);
+         let failure = (!accepted).then_some(adaptive_rejection_kind(error, &report.y_new));
+         diagnostics.record_with_failure(
+             trial_h,
+@@ -904,7 +906,7 @@ pub fn integrate_sequential_matrix_free_adaptive_observed(
+         }
+     }
+ 
+-    let success = t >= tf - 10.0 * f64::EPSILON * tf.abs().max(1.0);
++    let success = t >= tf - crate::output::end_time_slack(tf);
+     let observed = if success && collector.is_complete() {
+         let (times, states, output_clipped_steps) = collector
+             .finish()
+@@ -1068,7 +1070,7 @@ pub fn integrate_transactional_q1_q2_adaptive_observed(
+     }
+ 
+     diagnostics.fallback_steps = transactional.accepted_sequential_fallback_steps;
+-    let success = t >= tf - 10.0 * f64::EPSILON * tf.abs().max(1.0);
++    let success = t >= tf - crate::output::end_time_slack(tf);
+     let observed = if success {
+         let (times, states, output_clipped_steps) = collector.finish()?;
+         ObservedIntegrationResult {
+diff --git a/crates/rodas5p-integrators/src/lib.rs b/crates/rodas5p-integrators/src/lib.rs
+index f960689..1bb9c6a 100644
+--- a/crates/rodas5p-integrators/src/lib.rs
++++ b/crates/rodas5p-integrators/src/lib.rs
+@@ -232,6 +232,7 @@ pub use g4_s5b0_regime_atlas::{
+     run_g4_s5b0_rjf_only, run_g4_s5b0_rjf_only_family,
+     run_g4_s5b0_stage_growth_safety_audit_family, run_g4_s5b0_v37_continuation_transaction,
+     run_g4_s5b0_v37_continuation_transaction_family,
++    run_g4_s5b0_v37_continuation_transaction_family_with_cap,
+ };
+ pub use g4_s5b0_trace_authority::{
+     g4_s5b0_rjf_trace_digest, run_g4_s5b0_rjf_attempt_trace_family_with_linear_tolerance_arm,
+diff --git a/crates/rodas5p-integrators/src/output.rs b/crates/rodas5p-integrators/src/output.rs
+index bb0d7c4..bc47541 100644
+--- a/crates/rodas5p-integrators/src/output.rs
++++ b/crates/rodas5p-integrators/src/output.rs
+@@ -1,7 +1,23 @@
+ use rodas5p_core::{CoreError, CoreResult, WorkCounters};
+ 
++/// Slack for treating two timestamps as the same represented time: a few
++/// units in the last place of the larger magnitude, and nothing more. It
++/// absorbs the rounding of `t + (stop - t)` landings, but it never merges
++/// two distinct requested times, so output sampling is invariant under a
++/// shift of the time origin and a change of time unit (audit AD-01). The
++/// earlier `128 eps max(|t|, 1)` had an absolute floor of one time unit and
++/// grew with the global epoch: on a span of 1e-15 it consumed every request
++/// at the first step endpoint, and at t0 = 1e12 it snapped outputs spaced
++/// 0.01 apart onto step endpoints.
+ fn time_tolerance(left: f64, right: f64) -> f64 {
+-    128.0 * f64::EPSILON * left.abs().max(right.abs()).max(1.0)
++    (4.0 * f64::EPSILON * left.abs().max(right.abs())).max(f64::MIN_POSITIVE)
++}
++
++/// End-of-span slack for the drivers' `while t < tf - slack` loops and
++/// their success test: relative to |tf| only, with no absolute floor, so a
++/// span shorter than one time unit is still integrated (audit AD-01).
++pub(crate) fn end_time_slack(tf: f64) -> f64 {
++    10.0 * f64::EPSILON * tf.abs()
+ }
+ 
+ #[derive(Clone, Debug, PartialEq)]
+@@ -345,19 +361,15 @@ impl OutputCollector {
+             if next > t_new + tolerance {
+                 break;
+             }
+-            let theta = if (next - t_new).abs() <= tolerance {
+-                1.0
+-            } else if (next - t_old).abs() <= tolerance {
+-                0.0
+-            } else {
+-                (next - t_old) / (t_new - t_old)
+-            };
+-            if !(0.0..=1.0).contains(&theta) {
++            // Interval-local fraction of the accepted step; only requests
++            // within the representation slack of an endpoint are clamped.
++            let theta = ((next - t_old) / (t_new - t_old)).clamp(0.0, 1.0);
++            if !theta.is_finite() {
+                 return Err(CoreError::InvalidInput(
+                     "dense output requested time lies outside the accepted interval".into(),
+                 ));
+             }
+-            let state = if theta == 1.0 {
++            let state = if next >= t_new || theta == 1.0 {
+                 y_new.to_vec()
+             } else {
+                 interpolate(theta)?
+diff --git a/crates/rodas5p-integrators/tests/audit0930_accounting_contracts.rs b/crates/rodas5p-integrators/tests/audit0930_accounting_contracts.rs
+new file mode 100644
+index 0000000..1416551
+--- /dev/null
++++ b/crates/rodas5p-integrators/tests/audit0930_accounting_contracts.rs
+@@ -0,0 +1,71 @@
++//! Step ledgers record the final disposition (audit 2026-09-30, AD-02).
++
++use rodas5p_core::{LinearMethod, LinearSolverConfig};
++use rodas5p_integrators::{
++    AdaptiveStepConfig, DenseErrorControl, IntegrationMethod, OutputSamplingPlan, OutputSchedule,
++    integrate_adaptive_dense_observed_with_dense_error_control, prothero_robinson_problem,
++};
++
++#[test]
++fn dense_enforcement_rejections_are_counted_as_rejections() {
++    // Before: Off 7/0, Enforce counters 26 accepted / 0 rejected for 12
++    // retained steps and 14 dense rejections.
++    let (problem, y0) = prothero_robinson_problem(-1.0e5, 0.0, 0.0);
++    let adaptive = AdaptiveStepConfig {
++        atol: 1.0e-8,
++        rtol: 1.0e-6,
++        initial_step: 1.0e-3,
++        min_step: 1.0e-12,
++        max_step: 1.0,
++        max_attempts: 100_000,
++        ..AdaptiveStepConfig::default()
++    };
++    let linear = LinearSolverConfig {
++        method: LinearMethod::Direct,
++        ..LinearSolverConfig::default()
++    };
++    let sampling = OutputSamplingPlan::dense(
++        OutputSchedule::new((0..=200).map(|i| i as f64 * 0.01).collect()).unwrap(),
++    );
++    let mut dense_rejections = Vec::new();
++    for mode in [DenseErrorControl::Off, DenseErrorControl::Enforce] {
++        let (result, report) = integrate_adaptive_dense_observed_with_dense_error_control(
++            &problem,
++            (0.0, 2.0),
++            &y0,
++            IntegrationMethod::Sequential,
++            Some(&linear),
++            None,
++            &adaptive,
++            &sampling,
++            mode,
++        )
++        .unwrap();
++        assert!(result.observed.success);
++        let counters = result.observed.counters;
++        assert_eq!(
++            counters.accepted_steps as usize, result.observed.internal_steps,
++            "{mode:?}"
++        );
++        assert_eq!(
++            counters.accepted_steps as usize, result.diagnostics.accepted_macro_steps,
++            "{mode:?}"
++        );
++        assert_eq!(
++            counters.rejected_steps as usize, result.diagnostics.rejected_macro_steps,
++            "{mode:?}"
++        );
++        dense_rejections.push(
++            report
++                .samples
++                .iter()
++                .filter(|sample| !sample.accepted)
++                .count(),
++        );
++    }
++    assert_eq!(dense_rejections[0], 0);
++    assert!(
++        dense_rejections[1] > 0,
++        "the case must exercise enforcement"
++    );
++}
+diff --git a/crates/rodas5p-integrators/tests/audit0930_reuse_certificate_contracts.rs b/crates/rodas5p-integrators/tests/audit0930_reuse_certificate_contracts.rs
+new file mode 100644
+index 0000000..46f0c7b
+--- /dev/null
++++ b/crates/rodas5p-integrators/tests/audit0930_reuse_certificate_contracts.rs
+@@ -0,0 +1,69 @@
++//! The M08 reuse certificate rejects non-finite intermediates (audit
++//! 2026-09-30, AD-03).
++
++use rodas5p_core::{CoreResult, DenseMatrix, DenseOperator, LinearOperator, Preconditioner};
++use rodas5p_integrators::audit2_preconditioner_reuse_certificate;
++
++struct TwoByTwo;
++
++impl Preconditioner for TwoByTwo {
++    fn dimension(&self) -> usize {
++        2
++    }
++
++    fn apply(&self, x: &[f64], y: &mut [f64]) -> CoreResult<()> {
++        y[0] = 2.0 * x[0] - 2.0 * x[1];
++        y[1] = y[0];
++        Ok(())
++    }
++}
++
++struct Nan;
++
++impl Preconditioner for Nan {
++    fn dimension(&self) -> usize {
++        2
++    }
++
++    fn apply(&self, _: &[f64], y: &mut [f64]) -> CoreResult<()> {
++        y.fill(f64::NAN);
++        Ok(())
++    }
++}
++
++struct NanOperator;
++
++impl LinearOperator for NanOperator {
++    fn dimension(&self) -> usize {
++        2
++    }
++
++    fn apply(&self, _: &[f64], y: &mut [f64]) -> CoreResult<()> {
++        y.fill(f64::NAN);
++        Ok(())
++    }
++
++    fn token(&self) -> u64 {
++        1
++    }
++}
++
++#[test]
++fn reuse_certificate_rejects_nonfinite_intermediates() {
++    // Finite W and P with P W = 0 exactly: ||I - P W||_1 = 1, no
++    // certificate. In floating point 2e308 - 2e308 = inf - inf = NaN, which
++    // f64::max dropped, so the old code certified with epsilon = 0.
++    let singular = DenseOperator::new(
++        DenseMatrix::from_rows(&[&[1.0e308, 1.0e308], &[1.0e308, 1.0e308]]).unwrap(),
++    )
++    .unwrap();
++    assert!(audit2_preconditioner_reuse_certificate(&singular, &TwoByTwo, false).is_err());
++    let identity = DenseOperator::new(DenseMatrix::identity(2)).unwrap();
++    assert!(audit2_preconditioner_reuse_certificate(&identity, &Nan, false).is_err());
++    assert!(audit2_preconditioner_reuse_certificate(&NanOperator, &TwoByTwo, false).is_err());
++    // A finite P W: P = [[2, -2], [2, -2]], W = I, I - P = [[-1, 2], [-2, 3]],
++    // column sums 3 and 5, so epsilon = 5.
++    let certificate = audit2_preconditioner_reuse_certificate(&identity, &TwoByTwo, false).unwrap();
++    assert_eq!(certificate.epsilon_l1, 5.0);
++    assert!(!certificate.certified);
++}
+diff --git a/crates/rodas5p-integrators/tests/audit0930_validation_contracts.rs b/crates/rodas5p-integrators/tests/audit0930_validation_contracts.rs
+new file mode 100644
+index 0000000..f2b0fdd
+--- /dev/null
++++ b/crates/rodas5p-integrators/tests/audit0930_validation_contracts.rs
+@@ -0,0 +1,62 @@
++//! Input validation (audit 2026-09-30: CERT-01, CERT-02).
++
++use rodas5p_core::error_scale;
++use rodas5p_integrators::OutputBudgetPolicy;
++
++#[test]
++fn malformed_budget_policies_are_rejected_at_evaluation() {
++    // Each of these bypassed the validating constructors and was evaluated:
++    // 0.25, 1, 2 (exponent u32::MAX cast to -1) and 0.015625 (NaN hidden by
++    // f64::min) at embedded error 0.1, h = 0.5.
++    let malformed = [
++        OutputBudgetPolicy::StepPower {
++            epsilon_ref: 1.0,
++            h_ref: -1.0,
++            exponent: 2,
++        },
++        OutputBudgetPolicy::StepPower {
++            epsilon_ref: 1.0,
++            h_ref: 1.0,
++            exponent: 0,
++        },
++        OutputBudgetPolicy::StepPower {
++            epsilon_ref: 1.0,
++            h_ref: 1.0,
++            exponent: u32::MAX,
++        },
++        OutputBudgetPolicy::Mixed {
++            eta: f64::NAN,
++            epsilon_ref: 1.0,
++            h_ref: 1.0,
++            exponent: 6,
++        },
++        OutputBudgetPolicy::Absolute { epsilon: -1.0 },
++        OutputBudgetPolicy::EmbeddedRelative { eta: f64::INFINITY },
++    ];
++    for policy in malformed {
++        assert!(policy.validate().is_err(), "{policy:?}");
++        assert!(policy.budget(0.1, 0.5).is_err(), "{policy:?}");
++    }
++    // Deserialized policies take the same path.
++    let json = r#"{"kind":"step-power","epsilon_ref":1.0,"h_ref":1.0,"exponent":4294967295}"#;
++    let policy: OutputBudgetPolicy = serde_json::from_str(json).unwrap();
++    assert!(policy.budget(0.1, 0.5).is_err());
++    // A valid order-6 policy is unchanged: (1/2)^6.
++    let valid = OutputBudgetPolicy::step_power(1.0, 1.0, 6).unwrap();
++    assert_eq!(valid.budget(0.1, 0.5).unwrap(), 1.0 / 64.0);
++}
++
++#[test]
++fn error_scale_checks_each_input() {
++    // All three returned a finite scale before.
++    assert!(error_scale(&[f64::NAN], &[1.0], &[0.1], 0.1).is_err());
++    assert!(error_scale(&[1.0], &[f64::NAN], &[0.1], 0.1).is_err());
++    assert!(error_scale(&[2.0], &[2.0], &[-1.0], 1.0).is_err());
++    assert!(error_scale(&[2.0], &[2.0], &[f64::INFINITY], 1.0).is_err());
++    // atol = 0 with rtol > 0 and a nonzero state stays valid.
++    assert_eq!(error_scale(&[2.0], &[1.0], &[0.0], 0.5).unwrap(), vec![1.0]);
++    assert_eq!(
++        error_scale(&[1.0, -3.0], &[2.0, 1.0], &[0.1, 0.2], 0.1).unwrap(),
++        vec![0.1 + 0.1 * 2.0, 0.2 + 0.1 * 3.0]
++    );
++}
+diff --git a/crates/rodas5p-integrators/tests/frozen_full_e_shadow_contracts.rs b/crates/rodas5p-integrators/tests/frozen_full_e_shadow_contracts.rs
+index debe56f..16b84e9 100644
+--- a/crates/rodas5p-integrators/tests/frozen_full_e_shadow_contracts.rs
++++ b/crates/rodas5p-integrators/tests/frozen_full_e_shadow_contracts.rs
+@@ -113,9 +113,11 @@ fn retained_level2_shadow_is_complete_charged_safe_and_rjf_identical() {
+     assert_eq!(report.budget_breaches, 0);
+     assert_eq!(report.prefix_speculative_work.jvp_vectors, 42);
+     // 24 -> 26 and 66 -> 68 under the balanced augmented Krylov of audit F-043
+-    // (research/generic_frozen_full_e_shadow_v36/ADDENDUM_20260929_F043_PINS.md).
+-    assert_eq!(report.continuation_work.jvp_vectors, 26);
+-    assert_eq!(report.total_speculative_work.jvp_vectors, 68);
++    // (research/generic_frozen_full_e_shadow_v36/ADDENDUM_20260929_F043_PINS.md),
++    // 26 -> 28 and 68 -> 70 under the time-normalized augmentation of the
++    // 2026-09-30 audit (ADDENDUM_20260930_PHI_NORMALIZATION_PINS.md).
++    assert_eq!(report.continuation_work.jvp_vectors, 28);
++    assert_eq!(report.total_speculative_work.jvp_vectors, 70);
+     assert_eq!(
+         report.committed_rjf_jvp_vectors,
+         report
+@@ -132,13 +134,13 @@ fn retained_level2_shadow_is_complete_charged_safe_and_rjf_identical() {
+         report
+             .realized_continuation_over_committed_rjf_jvp
+             .to_bits(),
+-        (26.0 / report.committed_rjf_jvp_vectors as f64).to_bits()
++        (28.0 / report.committed_rjf_jvp_vectors as f64).to_bits()
+     );
+     assert_eq!(
+         report
+             .realized_total_speculative_over_committed_rjf_jvp
+             .to_bits(),
+-        (68.0 / report.committed_rjf_jvp_vectors as f64).to_bits()
++        (70.0 / report.committed_rjf_jvp_vectors as f64).to_bits()
+     );
+     let mut aggregate_roundtrip = report.prefix_speculative_work;
+     aggregate_roundtrip.accumulate(report.continuation_work);
+@@ -254,7 +256,7 @@ fn retained_level2_shadow_is_complete_charged_safe_and_rjf_identical() {
+         expected_total_before = row.total_speculative_jvp_after_target;
+     }
+     assert_eq!(expected_prefix_before, 42);
+-    assert_eq!(expected_total_before, 68);
++    assert_eq!(expected_total_before, 70);
+     assert!(report.trajectories.iter().all(|row| {
+         row.success
+             && row.explicit_jacobian_builds == 0
+diff --git a/crates/rodas5p-integrators/tests/output_time_covariance_contracts.rs b/crates/rodas5p-integrators/tests/output_time_covariance_contracts.rs
+new file mode 100644
+index 0000000..8021f87
+--- /dev/null
++++ b/crates/rodas5p-integrators/tests/output_time_covariance_contracts.rs
+@@ -0,0 +1,174 @@
++//! Output sampling is invariant under a shift of the time origin and a
++//! change of time unit (audit 2026-09-30, AD-01).
++//!
++//! y' = v, y(t0) = 0, exact y(t) = v (t - t0). Before the fix the collector
++//! merged times within 128 eps max(|t|, 1) of a step endpoint: at t0 = 1e12
++//! outputs 0.01 apart were snapped onto endpoints (max error 0.020), and on
++//! a span of 1e-15 every request was consumed at the first endpoint, so the
++//! successful run returned y(tf) = 0.25 instead of 1.
++
++use std::sync::Arc;
++
++use rodas5p_core::{DenseMatrix, LinearMethod, LinearSolverConfig};
++use rodas5p_integrators::{
++    AdaptiveStepConfig, IntegrationMethod, OdeProblem, OutputSamplingPlan, OutputSchedule,
++    integrate_adaptive, integrate_adaptive_observed, integrate_fixed,
++    integrate_sequential_matrix_free_adaptive_dense_observed,
++};
++
++fn constant_velocity(velocity: f64) -> OdeProblem {
++    OdeProblem::new(
++        "constant-velocity",
++        1,
++        Arc::new(move |_, _, out: &mut [f64]| {
++            out[0] = velocity;
++            Ok(())
++        }),
++        None,
++        Some(Arc::new(|_, _| DenseMatrix::from_rows(&[&[0.0]]))),
++        Some(Arc::new(|_, _, _, out: &mut [f64]| {
++            out[0] = 0.0;
++            Ok(())
++        })),
++        None,
++        true,
++        None,
++        None,
++    )
++    .unwrap()
++}
++
++const CASES: [(f64, f64, f64); 3] = [(0.0, 1.0, 1.0), (1.0e12, 1.0, 1.0), (0.0, 1.0e-15, 1.0e15)];
++
++fn schedule(origin: f64, duration: f64) -> Vec<f64> {
++    (0..=100)
++        .map(|i| origin + duration * (i as f64) / 100.0)
++        .collect()
++}
++
++#[test]
++fn dense_outputs_do_not_depend_on_the_time_origin_or_unit() {
++    for (origin, duration, velocity) in CASES {
++        let problem = constant_velocity(velocity);
++        let sampling =
++            OutputSamplingPlan::dense(OutputSchedule::new(schedule(origin, duration)).unwrap());
++        let adaptive = AdaptiveStepConfig {
++            atol: 1.0e-10,
++            rtol: 1.0e-9,
++            initial_step: duration / 4.0,
++            min_step: duration * 1.0e-10,
++            max_step: duration / 4.0,
++            max_attempts: 1000,
++            ..AdaptiveStepConfig::default()
++        };
++        let linear = LinearSolverConfig {
++            method: LinearMethod::Gmres,
++            ..LinearSolverConfig::default()
++        };
++        let run = integrate_sequential_matrix_free_adaptive_dense_observed(
++            &problem,
++            (origin, origin + duration),
++            &[0.0],
++            &linear,
++            &adaptive,
++            &sampling,
++        )
++        .unwrap();
++        let observed = run.observed;
++        assert!(observed.success, "{origin:e}, {duration:e}");
++        assert_eq!(observed.t.len(), 101);
++        // Errors relative to the solution scale v * duration = 1. At t0 = 1e12
++        // the requested times themselves are quantized to ulp(1e12) = 1.2e-4
++        // of a unit, so the exact value is taken at the represented time.
++        let worst = observed
++            .t
++            .iter()
++            .zip(&observed.y)
++            .map(|(t, y)| (y[0] - velocity * (t - origin)).abs())
++            .fold(0.0_f64, f64::max);
++        assert!(
++            worst <= 1.0e-12,
++            "origin {origin:e}, duration {duration:e}: max error {worst:e}"
++        );
++        let last = observed.y.last().unwrap()[0];
++        assert!((last - 1.0).abs() <= 1.0e-12, "final value {last}");
++    }
++}
++
++#[test]
++fn clipped_outputs_do_not_depend_on_the_time_origin_or_unit() {
++    for (origin, duration, velocity) in CASES {
++        let problem = constant_velocity(velocity);
++        let output = OutputSchedule::new(schedule(origin, duration)).unwrap();
++        let observed = integrate_adaptive_observed(
++            &problem,
++            (origin, origin + duration),
++            &[0.0],
++            duration / 4.0,
++            IntegrationMethod::Sequential,
++            None,
++            None,
++            1.0e-10,
++            1.0e-9,
++            10_000,
++            duration / 4.0,
++            &output,
++        )
++        .unwrap();
++        assert!(observed.success, "{origin:e}, {duration:e}");
++        assert_eq!(observed.t.len(), 101);
++        let worst = observed
++            .t
++            .iter()
++            .zip(&observed.y)
++            .map(|(t, y)| (y[0] - velocity * (t - origin)).abs())
++            .fold(0.0_f64, f64::max);
++        assert!(
++            worst <= 1.0e-12,
++            "origin {origin:e}, duration {duration:e}: max error {worst:e}"
++        );
++    }
++}
++
++#[test]
++fn a_span_shorter_than_one_time_unit_is_integrated() {
++    // The fixed-step loops ran `while t < tf - 10 eps max(|tf|, 1)`: on
++    // [0, 1e-15] that is 0 < -1.2e-15, so no step was taken and the run
++    // returned y(tf) = y0 = 0 with success. The adaptive drivers loop on
++    // `t < tf` but share the same success test.
++    let problem = constant_velocity(1.0e15);
++    let result = integrate_fixed(
++        &problem,
++        (0.0, 1.0e-15),
++        &[0.0],
++        2.5e-16,
++        IntegrationMethod::Sequential,
++        None,
++        None,
++        1.0e-10,
++        1.0e-9,
++    )
++    .unwrap();
++    assert!(result.success);
++    assert_eq!(result.t.len(), 5, "{:?}", result.t);
++    let last = result.y.last().unwrap()[0];
++    assert!((last - 1.0).abs() <= 1.0e-12, "y(tf) = {last}");
++
++    let adaptive = integrate_adaptive(
++        &problem,
++        (0.0, 1.0e-15),
++        &[0.0],
++        2.5e-16,
++        IntegrationMethod::Sequential,
++        None,
++        None,
++        1.0e-10,
++        1.0e-9,
++        1000,
++        2.5e-16,
++    )
++    .unwrap();
++    assert!(adaptive.success);
++    let last = adaptive.y.last().unwrap()[0];
++    assert!((last - 1.0).abs() <= 1.0e-12, "adaptive y(tf) = {last}");
++}
+diff --git a/crates/rodas5p-integrators/tests/phi_action_certificate_contracts.rs b/crates/rodas5p-integrators/tests/phi_action_certificate_contracts.rs
+index cd62d84..9df2d28 100644
+--- a/crates/rodas5p-integrators/tests/phi_action_certificate_contracts.rs
++++ b/crates/rodas5p-integrators/tests/phi_action_certificate_contracts.rs
+@@ -159,11 +159,15 @@ fn adaptive_fused_exponential_keeps_the_work_of_failed_trials() {
+         initial_step: 0.5,
+         ..AdaptiveStepConfig::default()
+     };
+-    // Two Krylov vectors and one substep cannot resolve exp(0.5 * 2e3): the
+-    // first trials fail and force step rejections.
++    // At most five Krylov vectors, one below the augmented dimension 6
++    // (n = 2, phi_1..phi_4), and one substep cannot resolve exp(0.5 * 2e3):
++    // trials fail and force step rejections. (With the time-normalized
++    // augmentation of the 2026-09-30 audit the Jordan chain no longer
++    // shrinks with h, so a cap of three never converges; the old cap
++    // passed through the same early acceptance as PHI-P1.)
+     let phi_config = FusedPhiKrylovConfig {
+         minimum_dimension: 2,
+-        maximum_dimension: 3,
++        maximum_dimension: 5,
+         dimension_increment: 1,
+         maximum_substeps: 1,
+         ..FusedPhiKrylovConfig::default()
+diff --git a/crates/rodas5p-integrators/tests/phi_normalized_augmentation_contracts.rs b/crates/rodas5p-integrators/tests/phi_normalized_augmentation_contracts.rs
+new file mode 100644
+index 0000000..dcb2c17
+--- /dev/null
++++ b/crates/rodas5p-integrators/tests/phi_normalized_augmentation_contracts.rs
+@@ -0,0 +1,237 @@
++//! Time-normalized phi augmentation (audit 2026-09-30, PHI-P1, PHI-P2,
++//! PHI-P3).
++//!
++//! The scalar physical operator A = -1 has nothing stiff, nonnormal or
++//! complex about it. For u(h) = sum_k v_k phi_k(-h) the old augmentation
++//! (b_k = v_k / h^k next to hA) converged at Krylov dimension 1 with a
++//! relative error of 3.05e-3 at h = 1e-4, 1e-8 and 1e-12 (residual estimate
++//! 5e-14 and below), and the dense Pade oracle returned 0 for h <= 1e-14.
++
++use std::sync::Arc;
++
++use rodas5p_core::{
++    ClosureOperator, DenseMatrix, LinearOperator, WorkCounters, dense_fused_phi_action,
++    dense_phi_combination,
++};
++use rodas5p_integrators::{
++    ExponentialKrylovConfig, FusedPhiKrylovConfig, FusedPhiPrefixSession, FusedPhiTerm,
++    fused_phi_action, fused_phi_linear_combination, krylov_phi_action,
++};
++
++/// phi_k(z) from its series; 80 terms are exact to roundoff for |z| <= 0.1.
++fn phi(z: f64, k: usize) -> f64 {
++    let mut term = (1..=k).fold(1.0, |acc, j| acc / j as f64);
++    let mut sum = term;
++    for j in 1..80 {
++        term *= z / (k + j) as f64;
++        sum += term;
++    }
++    sum
++}
++
++const V: [f64; 5] = [1.0, 0.5, 2.0, -1.0, 0.75];
++
++fn exact(h: f64, with_b0: bool) -> f64 {
++    (0..=4)
++        .map(|k| {
++            if k == 0 && !with_b0 {
++                0.0
++            } else {
++                V[k] * phi(-h, k)
++            }
++        })
++        .sum()
++}
++
++fn minus_one() -> Arc<dyn LinearOperator> {
++    Arc::new(ClosureOperator::new(1, |x, y| {
++        y[0] = -x[0];
++        Ok(())
++    }))
++}
++
++fn config() -> FusedPhiKrylovConfig {
++    FusedPhiKrylovConfig {
++        relative_tolerance: 1.0e-12,
++        absolute_tolerance: 1.0e-14,
++        ..FusedPhiKrylovConfig::default()
++    }
++}
++
++const STEPS: [f64; 9] = [
++    1.0e-1, 1.0e-4, 1.0e-8, 1.0e-12, 1.0e-14, 1.0e-16, 1.0e-20, 1.0e-40, 1.0e-70,
++];
++
++#[test]
++fn fused_krylov_combination_is_accurate_for_every_step() {
++    for with_b0 in [false, true] {
++        let first = usize::from(!with_b0);
++        let terms = (first..=4)
++            .map(|k| FusedPhiTerm {
++                coefficient: V[k],
++                phi_index: k,
++                vector: &[1.0],
++            })
++            .collect::<Vec<_>>();
++        for h in STEPS {
++            let report = fused_phi_linear_combination(
++                minus_one(),
++                h,
++                &terms,
++                config(),
++                &mut WorkCounters::default(),
++            )
++            .unwrap();
++            let expected = exact(h, with_b0);
++            let relative = (report.value[0] / expected - 1.0).abs();
++            assert!(report.converged, "h = {h:e}");
++            assert!(
++                relative <= 1.0e-12,
++                "b0 {with_b0}, h = {h:e}: {} vs {expected} (relative {relative:e}, dimension {})",
++                report.value[0],
++                report.maximum_krylov_dimension
++            );
++        }
++    }
++}
++
++#[test]
++fn scaled_convention_and_prefix_session_agree_with_the_series() {
++    // b_k = v_k / h^k in the scaled convention b0 + sum h^k phi_k(hA) b_k.
++    for h in [1.0e-1_f64, 1.0e-4, 1.0e-8, 1.0e-12] {
++        let vectors = (0..=4)
++            .map(|k| vec![V[k] / h.powi(k as i32)])
++            .collect::<Vec<_>>();
++        let expected = exact(h, true);
++        let report = fused_phi_action(
++            minus_one(),
++            h,
++            &vectors,
++            config(),
++            &mut WorkCounters::default(),
++        )
++        .unwrap();
++        assert!(
++            (report.value[0] / expected - 1.0).abs() <= 1.0e-12,
++            "fused h = {h:e}: {}",
++            report.value[0]
++        );
++        let single = FusedPhiKrylovConfig {
++            maximum_substeps: 1,
++            ..config()
++        };
++        let session = FusedPhiPrefixSession::begin(
++            minus_one(),
++            h,
++            &vectors,
++            single,
++            0,
++            &mut WorkCounters::default(),
++        )
++        .unwrap()
++        .finish(&mut WorkCounters::default())
++        .unwrap();
++        assert!(
++            (session.value[0] / expected - 1.0).abs() <= 1.0e-12,
++            "prefix h = {h:e}: {}",
++            session.value[0]
++        );
++    }
++}
++
++#[test]
++fn dense_oracle_does_not_vanish_at_small_steps() {
++    let matrix = DenseMatrix::from_rows(&[&[-1.0]]).unwrap();
++    for h in STEPS {
++        let expected = exact(h, true);
++        let weighted = V.iter().map(|value| vec![*value]).collect::<Vec<_>>();
++        let combination = dense_phi_combination(&matrix, h, &weighted).unwrap();
++        assert!(
++            (combination[0] / expected - 1.0).abs() <= 1.0e-14,
++            "combination h = {h:e}: {} vs {expected}",
++            combination[0]
++        );
++        // The scaled convention stays representable down to h = 1e-70
++        // (v_k / h^4 <= 1e280).
++        let vectors = (0..=4)
++            .map(|k| vec![V[k] / h.powi(k as i32)])
++            .collect::<Vec<_>>();
++        let scaled = dense_fused_phi_action(&matrix, h, &vectors).unwrap();
++        assert!(
++            (scaled[0] / expected - 1.0).abs() <= 1.0e-14,
++            "scaled h = {h:e}: {} vs {expected}",
++            scaled[0]
++        );
++    }
++}
++
++#[test]
++fn zero_and_negative_scales_are_the_continuous_combination() {
++    let matrix = DenseMatrix::from_rows(&[&[-1.0]]).unwrap();
++    let weighted = V.iter().map(|value| vec![*value]).collect::<Vec<_>>();
++    // h = 0: sum v_k / k!.
++    let at_zero = dense_phi_combination(&matrix, 0.0, &weighted).unwrap()[0];
++    let limit = 1.0 + 0.5 + 2.0 / 2.0 - 1.0 / 6.0 + 0.75 / 24.0;
++    assert!((at_zero - limit).abs() <= 1.0e-15, "{at_zero} vs {limit}");
++    let terms = (0..=4)
++        .map(|k| FusedPhiTerm {
++            coefficient: V[k],
++            phi_index: k,
++            vector: &[1.0],
++        })
++        .collect::<Vec<_>>();
++    let krylov = fused_phi_linear_combination(
++        minus_one(),
++        0.0,
++        &terms,
++        config(),
++        &mut WorkCounters::default(),
++    )
++    .unwrap();
++    assert!((krylov.value[0] - limit).abs() <= 1.0e-14);
++    // Negative scale: phi_k(+h) for A = -1.
++    for h in [1.0e-1, 1.0e-6] {
++        let expected = (0..=4).map(|k| V[k] * phi(h, k)).sum::<f64>();
++        let krylov = fused_phi_linear_combination(
++            minus_one(),
++            -h,
++            &terms,
++            config(),
++            &mut WorkCounters::default(),
++        )
++        .unwrap();
++        assert!(
++            (krylov.value[0] / expected - 1.0).abs() <= 1.0e-12,
++            "h = -{h:e}: {}",
++            krylov.value[0]
++        );
++    }
++}
++
++#[test]
++fn unfused_happy_breakdown_below_the_minimum_dimension_is_projected() {
++    // A = -I_8, v = e1: the first Arnoldi vector spans an invariant
++    // subspace. Before the fix: value 0, dimension 0, unconverged.
++    let operator = Arc::new(ClosureOperator::new(8, |x, y| {
++        for (out, value) in y.iter_mut().zip(x) {
++            *out = -value;
++        }
++        Ok(())
++    })) as Arc<dyn LinearOperator>;
++    let mut v = vec![0.0; 8];
++    v[0] = 1.0;
++    let report = krylov_phi_action(
++        operator,
++        0.1,
++        1,
++        &v,
++        ExponentialKrylovConfig::default(),
++        &mut WorkCounters::default(),
++    )
++    .unwrap();
++    assert!(report.converged);
++    assert!(report.happy_breakdown);
++    assert_eq!(report.krylov_dimension, 1);
++    assert!((report.value[0] - phi(-0.1, 1)).abs() <= 1.0e-15);
++    assert!(report.value[1..].iter().all(|value| *value == 0.0));
++}
+diff --git a/crates/rodas5p-integrators/tests/v37_continuation_transaction_contracts.rs b/crates/rodas5p-integrators/tests/v37_continuation_transaction_contracts.rs
+index a41c324..f029445 100644
+--- a/crates/rodas5p-integrators/tests/v37_continuation_transaction_contracts.rs
++++ b/crates/rodas5p-integrators/tests/v37_continuation_transaction_contracts.rs
+@@ -1,6 +1,7 @@
+ use rodas5p_integrators::{
+     G4S5B0Family, G4S5B0Profile, V37_CONTINUATION_JVP_CAP,
+     run_g4_s5b0_v37_continuation_transaction_family,
++    run_g4_s5b0_v37_continuation_transaction_family_with_cap,
+ };
+ 
+ #[test]
+@@ -65,9 +66,7 @@ fn v37_completing_family_preserves_frozen_policy_and_rjf_authority() {
+     }
+ }
+ 
+-/// Semantic invariants of the consumed N=192 semilinear replay (audit F-003).
+-/// They hold whatever the trajectory; attempt indices and JVP counts live in
+-/// the versioned snapshot checked by the next test.
++/// The consumed N=192 semilinear replay (audit F-003).
+ fn consumed_n192_semilinear_report() -> rodas5p_integrators::G4S5B0V37ContinuationTransactionReport
+ {
+     run_g4_s5b0_v37_continuation_transaction_family(
+@@ -77,55 +76,46 @@ fn consumed_n192_semilinear_report() -> rodas5p_integrators::G4S5B0V37Continuati
+     .unwrap()
+ }
+ 
+-#[test]
+-#[ignore = "long consumed N=192 replay; run by the ignored-tests CI job in the measurement profile"]
+-fn v37_exhaustion_is_a_charged_abstention_without_endpoint_or_failure_label() {
+-    let report = consumed_n192_semilinear_report();
+-
+-    assert_eq!(report.recommendations, 2);
+-    assert_eq!(report.retained_level2_resumptions, 2);
+-    assert_eq!(report.shadow_full_e_completions, 1);
+-    assert_eq!(report.continuation_budget_exhaustions, 1);
++/// Invariants that hold for every recommended row and the report,
++/// whatever the trajectory.
++fn assert_transaction_invariants(
++    report: &rodas5p_integrators::G4S5B0V37ContinuationTransactionReport,
++) {
+     assert_eq!(report.shadow_full_e_failures, 0);
+     assert_eq!(report.unsafe_recommendations, 0);
+     assert_eq!(report.continuation_budget_breaches, 0);
+     assert!(report.rjf_parity.passed);
+     assert!(report.hard_gates.passed);
+-
+-    let exhausted = report
+-        .rows
+-        .iter()
+-        .find(|row| row.continuation_budget_exhausted)
+-        .expect("the sealed N=192 semilinear outlier must exhaust");
+-    assert!(exhausted.recommended);
+-    assert!(exhausted.retained_level2_resumed);
+-    assert_eq!(exhausted.continuation_outcome, "budget-exhausted");
+-    assert_eq!(exhausted.continuation_jvp_cap, V37_CONTINUATION_JVP_CAP);
+     assert_eq!(
+-        exhausted.continuation_used_jvp_vectors,
+-        Some(V37_CONTINUATION_JVP_CAP)
++        report.recommendations,
++        report.shadow_full_e_completions + report.continuation_budget_exhaustions
+     );
+-    assert_eq!(
+-        exhausted.continuation_work.unwrap().jvp_vectors,
+-        V37_CONTINUATION_JVP_CAP
+-    );
+-    assert!(!exhausted.shadow_full_e_completed);
+-    assert!(exhausted.shadow_full_e_total_error.is_none());
+-    assert!(exhausted.shadow_full_e_locally_admissible.is_none());
+-    assert!(exhausted.shadow_full_e_failure.is_none());
+-    assert!(exhausted.work_roundtrip_exact);
+-
+-    let completed = report
+-        .rows
+-        .iter()
+-        .find(|row| row.recommended && !row.continuation_budget_exhausted)
+-        .expect("the second frozen recommendation must complete");
+-    assert!(completed.target_attempt_index > exhausted.target_attempt_index);
+-    assert_eq!(completed.continuation_outcome, "complete");
+-    assert!(completed.continuation_work.unwrap().jvp_vectors < V37_CONTINUATION_JVP_CAP);
+-    assert!(completed.shadow_full_e_completed);
+-    assert_eq!(completed.shadow_full_e_locally_admissible, Some(true));
+-
++    for row in report.rows.iter().filter(|row| row.recommended) {
++        assert!(row.retained_level2_resumed);
++        assert!(row.work_roundtrip_exact);
++        if row.continuation_budget_exhausted {
++            // A charged abstention: the whole cap is spent and recorded, and
++            // no endpoint, error or failure label is emitted.
++            assert_eq!(row.continuation_outcome, "budget-exhausted");
++            assert_eq!(
++                row.continuation_used_jvp_vectors,
++                Some(row.continuation_jvp_cap)
++            );
++            assert_eq!(
++                row.continuation_work.unwrap().jvp_vectors,
++                row.continuation_jvp_cap
++            );
++            assert!(!row.shadow_full_e_completed);
++            assert!(row.shadow_full_e_total_error.is_none());
++            assert!(row.shadow_full_e_locally_admissible.is_none());
++            assert!(row.shadow_full_e_failure.is_none());
++        } else {
++            assert_eq!(row.continuation_outcome, "complete");
++            assert!(row.continuation_work.unwrap().jvp_vectors < row.continuation_jvp_cap);
++            assert!(row.shadow_full_e_completed);
++            assert_eq!(row.shadow_full_e_locally_admissible, Some(true));
++        }
++    }
+     let row_continuation = report
+         .rows
+         .iter()
+@@ -139,36 +129,80 @@ fn v37_exhaustion_is_a_charged_abstention_without_endpoint_or_failure_label() {
+     );
+ }
+ 
++/// Exhaustion is a charged abstention without endpoint or failure label.
++///
++/// Until the time-normalized phi augmentation of the 2026-09-30 audit, the
++/// consumed N=192 semilinear replay exhausted its 80-JVP continuation at the
++/// frozen cap. It no longer does (see the V4 snapshot and
++/// `ADDENDUM_20260930_PHI_NORMALIZATION.md`), and no calibration replay
++/// does, so the abstention path is exercised with a reduced cap of 24,
++/// below the 48 JVP vectors the recommended row needs.
++#[test]
++#[ignore = "long consumed N=192 replay; run by the ignored-tests CI job in the measurement profile"]
++fn v37_exhaustion_is_a_charged_abstention_without_endpoint_or_failure_label() {
++    let at_frozen_cap = consumed_n192_semilinear_report();
++    assert_eq!(
++        at_frozen_cap.absolute_continuation_jvp_cap,
++        V37_CONTINUATION_JVP_CAP
++    );
++    assert_transaction_invariants(&at_frozen_cap);
++
++    let reduced = run_g4_s5b0_v37_continuation_transaction_family_with_cap(
++        G4S5B0Profile::StageGrowthCalibration192,
++        G4S5B0Family::SemilinearAdvectionDiffusionRamped,
++        24,
++    )
++    .unwrap();
++    assert_transaction_invariants(&reduced);
++    assert!(reduced.continuation_budget_exhaustions >= 1);
++    let exhausted = reduced
++        .rows
++        .iter()
++        .find(|row| row.continuation_budget_exhausted)
++        .expect("a cap below the completing work must exhaust");
++    assert_eq!(exhausted.continuation_jvp_cap, 24);
++    // The prefix and the committed trajectory do not depend on the cap.
++    assert_eq!(
++        reduced.prefix_speculative_work,
++        at_frozen_cap.prefix_speculative_work
++    );
++    assert_eq!(reduced.recommendations, at_frozen_cap.recommendations);
++}
++
+ /// Trajectory literals of the same replay, checked against the latest
+ /// versioned snapshot. The sealed v3.7 literals (18, 36, 116) are tombstoned
+ /// in `research/generic_timing_replication_continuation_transaction_v37/results/
+ /// V37_TRAJECTORY_LITERALS_TOMBSTONE_20260929.json`; a numerical change adds a
+ /// new snapshot file, it never edits an old one. V2 holds the audit-base
+-/// values; V3 the integration-branch values (WU-3 and WU-10 move the JVP
+-/// counts, see its `attribution`).
++/// values, V3 the integration-branch values (WU-3 and WU-10 move the JVP
++/// counts), V4 the values after the time-normalized phi augmentation, under
++/// which the replay recommends once and completes (see its `attribution`).
+ #[test]
+ #[ignore = "long consumed N=192 replay; run by the ignored-tests CI job in the measurement profile"]
+ fn v37_trajectory_literals_match_the_latest_snapshot() {
+     let snapshot: serde_json::Value = serde_json::from_str(include_str!(
+-        "../../../research/generic_timing_replication_continuation_transaction_v37/results/V37_TRAJECTORY_SNAPSHOT_V3_20260929.json"
++        "../../../research/generic_timing_replication_continuation_transaction_v37/results/V37_TRAJECTORY_SNAPSHOT_V4_20260930.json"
+     ))
+     .unwrap();
+     let expected = &snapshot["values"];
+     let report = consumed_n192_semilinear_report();
+-    let exhausted = report
+-        .rows
+-        .iter()
+-        .find(|row| row.continuation_budget_exhausted)
+-        .unwrap();
+-    let completed = report
++    let recommended = report
+         .rows
+         .iter()
+-        .find(|row| row.recommended && !row.continuation_budget_exhausted)
+-        .unwrap();
++        .filter(|row| row.recommended)
++        .map(|row| {
++            serde_json::json!({
++                "target_attempt_index": row.target_attempt_index,
++                "continuation_outcome": row.continuation_outcome,
++                "continuation_jvp_vectors": row.continuation_work.map(|work| work.jvp_vectors),
++            })
++        })
++        .collect::<Vec<_>>();
+     let observed = serde_json::json!({
+-        "exhausted_target_attempt_index": exhausted.target_attempt_index,
+-        "completed_target_attempt_index": completed.target_attempt_index,
+-        "completed_continuation_jvp_vectors": completed.continuation_work.unwrap().jvp_vectors,
++        "recommendations": report.recommendations,
++        "shadow_full_e_completions": report.shadow_full_e_completions,
++        "continuation_budget_exhaustions": report.continuation_budget_exhaustions,
++        "recommended_rows": recommended,
+         "report_continuation_jvp_vectors": report.continuation_work.jvp_vectors,
+         "report_prefix_jvp_vectors": report.prefix_speculative_work.jvp_vectors,
+     });
+diff --git a/research/generic_frozen_full_e_shadow_v36/ADDENDUM_20260930_PHI_NORMALIZATION_PINS.md b/research/generic_frozen_full_e_shadow_v36/ADDENDUM_20260930_PHI_NORMALIZATION_PINS.md
+new file mode 100644
+index 0000000..97060cd
+--- /dev/null
++++ b/research/generic_frozen_full_e_shadow_v36/ADDENDUM_20260930_PHI_NORMALIZATION_PINS.md
+@@ -0,0 +1,48 @@
++# Addendum: v3.6 test pins move under the time-normalized phi augmentation (2026-09-30)
++
++Appended note. No sealed v3.6 result, receipt or ledger is edited.
++
++## What changed in the code
++
++Audit 2026-09-30, PHI-P1 / PHI-P2: the fused phi action exponentiated
++`tau M` with `M = [[A, [b_p .. b_1]], [0, J_p]]`. In the scaled convention
++`b_k ~ v_k / tau^k`, so `||tau M||` grows like `tau^-p` as tau shrinks. On the
++scalar A = -1 the Arnoldi residual estimate then accepted a dimension-1
++projection with a relative error of 3e-3 (h = 1e-4, 1e-8, 1e-12), and the
++dense Pade oracle returned 0 for h <= 1e-14.
++
++Branch `claude/jolly-wozniak-7wl15h-wu21-audit0930` exponentiates
++`M_hat = D^-1 (tau M) D = [[tau A, [tau^p b_p .. tau b_1]], [0, J_p]]`, with
++`D = diag(I, tau^(p-1), .., tau, 1)`. `D` fixes the start vector and the
++physical projection, so the physical output is the same exactly. The upper
++block holds `w_k = tau^k b_k` directly. The fused action, its substeps, the
++prefix session and the dense oracle (`dense_phi_combination`) all use this
++form. `tests/phi_normalized_augmentation_contracts.rs` pins the scalar
++counterexample to 1e-12 for h = 1e-1 .. 1e-70, including zero and negative
++scale.
++
++## Pins that moved
++
++`StageGrowthCalibration96`, Robertson, frozen full-E shadow
++(`crates/rodas5p-integrators/tests/frozen_full_e_shadow_contracts.rs`,
++`crates/rodas5p-cli/tests/frozen_full_e_shadow_cli_contracts.rs`):
++
++| Quantity | F-043 (2026-09-29) | Now |
++|---|---:|---:|
++| continuation JVP vectors | 26 | 28 |
++| total speculative JVP vectors | 68 | 70 |
++| prefix JVP vectors | 42 | 42 |
++| recommendations, completions, unsafe, breaches | 2, 2, 0, 0 | 2, 2, 0, 0 |
++
++The continuation takes one more Krylov vector on each of the two rows: the
++normalized chain no longer shrinks with h, so the residual estimate stops
++accepting early. The prefix and the committed trajectory are unchanged, and
++so are all safety counts.
++
++`tests/phi_action_certificate_contracts.rs`, adaptive fused failed-trial
++accounting: the Krylov cap is raised from 3 to 5 (augmented dimension 6).
++Under the normalized form a cap of 3 never converges; the old cap passed
++through the same early acceptance as PHI-P1.
++
++The v3.7 consumed N=192 replay moves more, see
++`research/generic_timing_replication_continuation_transaction_v37/reports/ADDENDUM_20260930_PHI_NORMALIZATION.md`.
+diff --git a/research/generic_timing_replication_continuation_transaction_v37/reports/ADDENDUM_20260930_PHI_NORMALIZATION.md b/research/generic_timing_replication_continuation_transaction_v37/reports/ADDENDUM_20260930_PHI_NORMALIZATION.md
+new file mode 100644
+index 0000000..f0f7167
+--- /dev/null
++++ b/research/generic_timing_replication_continuation_transaction_v37/reports/ADDENDUM_20260930_PHI_NORMALIZATION.md
+@@ -0,0 +1,45 @@
++# Addendum: the consumed N=192 replay under the time-normalized phi augmentation (2026-09-30)
++
++Appended note. No sealed v3.7 result, receipt, report or ledger is edited.
++V2 and V3 snapshots are unchanged; `results/V37_TRAJECTORY_SNAPSHOT_V4_20260930.json`
++records the new values with their attribution.
++
++## What moved
++
++The fused-phi prefix session now runs on the time-normalized augmented
++operator (audit 2026-09-30, PHI-P1 / PHI-P2; see
++`research/generic_frozen_full_e_shadow_v36/ADDENDUM_20260930_PHI_NORMALIZATION_PINS.md`).
++Its Arnoldi residual history, from which the frozen `zeta34` statistic is
++formed, differs from the one the frozen v3.x policy was calibrated on.
++
++`StageGrowthCalibration192`, semilinear advection-diffusion:
++
++| Quantity | V3 (integration, 2026-09-29) | V4 (now) |
++|---|---:|---:|
++| recommendations | 2 (attempts 12, 17) | 1 (attempt 17) |
++| continuation budget exhaustions | 1 (attempt 12, 80 JVP) | 0 |
++| completions | 1 (attempt 17, 48 JVP) | 1 (attempt 17, 48 JVP) |
++| prefix JVP vectors | 116 | 129 |
++| continuation JVP vectors | 128 | 48 |
++| unsafe recommendations | 0 | 0 |
++
++Attribution: the same replay with only `exponential.rs` reverted (every other
++change of the branch applied) gives the V3 values exactly.
++
++The completing row's shadow full-E error is 0.048, with reference local error
++1.7e-3 (safe). Across all six families of the StageGrowthCalibration96, 192
++and 256 profiles (18 replays, no holdout), no continuation exhausts the
++80-JVP cap and no recommendation is unsafe.
++
++## Consequences
++
++- The sealed v3.7 statement that this consumed replay exhausts its
++  continuation does not reproduce at head. It stays valid at its sealed
++  commit; nothing here is a new result about the policy.
++- The frozen tau = 13.397 was fitted on telemetry of the non-normalized
++  augmentation. Whether it still separates the classes it was fitted on is
++  unknown; it was not refitted, and no holdout was read.
++- The abstention semantics (charged, no endpoint, no failure label) are
++  now tested with a reduced continuation cap of 24 on the same replay
++  (`run_g4_s5b0_v37_continuation_transaction_family_with_cap`), because no
++  calibration replay reaches the cap of 80.
+diff --git a/research/generic_timing_replication_continuation_transaction_v37/results/V37_TRAJECTORY_SNAPSHOT_V4_20260930.json b/research/generic_timing_replication_continuation_transaction_v37/results/V37_TRAJECTORY_SNAPSHOT_V4_20260930.json
+new file mode 100644
+index 0000000..8feb3d3
+--- /dev/null
++++ b/research/generic_timing_replication_continuation_transaction_v37/results/V37_TRAJECTORY_SNAPSHOT_V4_20260930.json
+@@ -0,0 +1,40 @@
++{
++  "schema": "vigilode-trajectory-snapshot-v1",
++  "version": 4,
++  "date": "2026-09-30",
++  "finding": "F-003; audit 2026-09-30 PHI-P1/PHI-P2",
++  "supersedes": "research/generic_timing_replication_continuation_transaction_v37/results/V37_TRAJECTORY_SNAPSHOT_V3_20260929.json",
++  "family": "semilinear-advection-diffusion-ramped",
++  "profile_under_test": "stage-growth-calibration-192",
++  "provenance": {
++    "code": "branch claude/jolly-wozniak-7wl15h-wu21-audit0930 on the integration head ff84ed6",
++    "cargo_profile": "dev with CARGO_PROFILE_DEV_DEBUG=0",
++    "toolchain": "rustc 1.94.1 (e408947bf 2026-03-25)",
++    "RAYON_NUM_THREADS": 1,
++    "command": "cargo test -p rodas5p-integrators --test v37_continuation_transaction_contracts -- --ignored",
++    "values_sha256": "f39c34badd46eebc136a25b598dec04a6c89a4fd91c1e45d33ab90a207add634",
++    "values_sha256_of": "compact sorted-key JSON of `values`"
++  },
++  "attribution": {
++    "method": "the same replay with only crates/rodas5p-integrators/src/exponential.rs reverted to ff84ed6 (every other WU-21 change applied)",
++    "with exponential.rs at ff84ed6": "V3 values: 2 recommendations (attempts 12 and 17), attempt 12 exhausts the 80-JVP cap, attempt 17 completes with 48; prefix 116, continuation 128",
++    "with the time-normalized augmentation": "attempt 12 is no longer recommended; attempt 17 is recommended and completes with 48 JVP vectors; prefix 129, continuation 48",
++    "cause": "the fused-phi prefix session now runs on the time-normalized operator [[hA, h^k b_k], [0, J]]; its Arnoldi residual history, from which the frozen zeta34 statistic is formed, differs, and at attempt 12 the statistic no longer passes the frozen tau 13.397"
++  },
++  "interpretation": "The frozen v3.x policy (tau = 13.397) was calibrated on residual telemetry of the earlier, non-normalized augmentation, whose early acceptance the 2026-09-30 audit showed to be wrong on a scalar A = -1 (PHI-P1). Under the corrected operator the sealed v3.7 claim that this consumed replay exhausts its continuation does not reproduce at head; it stays valid at its sealed commit. The completing row's shadow full-E error is 0.048 with reference local error 1.7e-3 (safe). No unsafe recommendation; no accuracy or speed claim follows.",
++  "values": {
++    "recommendations": 1,
++    "shadow_full_e_completions": 1,
++    "continuation_budget_exhaustions": 0,
++    "recommended_rows": [
++      {
++        "target_attempt_index": 17,
++        "continuation_outcome": "complete",
++        "continuation_jvp_vectors": 48
++      }
++    ],
++    "report_continuation_jvp_vectors": 48,
++    "report_prefix_jvp_vectors": 129
++  },
++  "note": "A numerical change that moves these values adds a V5 snapshot file; this file is never edited."
++}

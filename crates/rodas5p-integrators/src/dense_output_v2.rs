@@ -431,7 +431,7 @@ pub fn integrate_fixed_dense_observed(
     let mut hard_stops = HardStopCursor::new(sampling, t_span)?;
     let sabr_config = sabr_config.unwrap_or_default();
     let mut internal_steps = 0_usize;
-    while t < tf - 10.0 * f64::EPSILON * tf.abs().max(1.0) {
+    while t < tf - crate::output::end_time_slack(tf) {
         let (step, _hard_stop_landing) = hard_stops.limit_step(t, h, tf)?;
         let report = match method {
             IntegrationMethod::Sequential => {
@@ -674,6 +674,7 @@ pub fn integrate_adaptive_dense_observed_with_dense_error_control(
                 counters.accumulate(estimate_work);
             }
         }
+        crate::adaptive::reconcile_outer_rejection(&mut counters, report.accepted, accepted);
         let failure = (!accepted).then_some(adaptive_rejection_kind(error, &report.y_new));
         diagnostics.record_with_failure(
             trial_h,
@@ -780,6 +781,11 @@ pub fn integrate_sequential_matrix_free_adaptive_dense_fixed_inner_observed(
 /// accepted state. Both are local approximations from the same state, so the
 /// difference is bounded by the interpolant defect plus the sub-step's local
 /// error and needs no reference solution.
+///
+/// It is an attribution diagnostic, not a bound on the dense error: only
+/// `||u_dense - y|| <= delta + ||u_sub - y||` holds, and the second term is
+/// not estimated here. The sub-step shares the method, coefficients and
+/// forcing with the run and is force-accepted (audit 2026-09-30).
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct InterpolantAuditSample {
     pub t: f64,
@@ -1087,6 +1093,7 @@ where
         let error = report.error_norm;
         let accepted =
             report.accepted && error <= 1.0 && report.y_new.iter().all(|value| value.is_finite());
+        crate::adaptive::reconcile_outer_rejection(&mut counters, report.accepted, accepted);
         if accepted {
             diagnostics.record(
                 trial_h,
@@ -1170,7 +1177,7 @@ where
         }
     }
     diagnostics.fallback_steps = counters.fallback_steps as usize;
-    let success = t >= tf - 10.0 * f64::EPSILON * tf.abs().max(1.0);
+    let success = t >= tf - crate::output::end_time_slack(tf);
     let observed = if success && collector.is_complete() {
         let (t, y, output_clipped_steps) = collector
             .finish()
@@ -1498,7 +1505,7 @@ pub fn integrate_radau_fixed_dense_observed(
     let mut collector = OutputCollector::new(sampling.output(), t_span, y0)?;
     let mut hard_stops = HardStopCursor::new(sampling, t_span)?;
     let mut internal_steps = 0_usize;
-    while t < tf - 10.0 * f64::EPSILON * tf.abs().max(1.0) {
+    while t < tf - crate::output::end_time_slack(tf) {
         let (step, _hard_stop_landing) = hard_stops.limit_step(t, h, tf)?;
         let report = radau_step(problem, t, &state, step, config, &mut counters)?;
         let old_t = t;
@@ -1550,7 +1557,7 @@ pub fn integrate_bdf_fixed_dense_observed(
     let mut collector = OutputCollector::new(sampling.output(), t_span, y0)?;
     let mut hard_stops = HardStopCursor::new(sampling, t_span)?;
     let mut internal_steps = 0_usize;
-    while t < tf - 10.0 * f64::EPSILON * tf.abs().max(1.0) {
+    while t < tf - crate::output::end_time_slack(tf) {
         let (step, _hard_stop_shortened) = hard_stops.limit_step(t, h, tf)?;
         let report = bdf_step(
             problem,
@@ -1856,7 +1863,7 @@ fn dense_adaptive_result(
     internal_steps: usize,
     diagnostics: AdaptiveRunDiagnostics,
 ) -> DenseOutputResult<AdaptiveObservedIntegrationResult> {
-    let success = t >= tf - 10.0 * f64::EPSILON * tf.abs().max(1.0);
+    let success = t >= tf - crate::output::end_time_slack(tf);
     let observed = if success {
         let (t, y, output_clipped_steps) = collector.finish()?;
         ObservedIntegrationResult {

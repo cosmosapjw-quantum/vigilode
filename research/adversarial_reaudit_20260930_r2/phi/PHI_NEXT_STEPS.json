@@ -1,0 +1,60 @@
+{
+  "schema": "vigilode.development_nodes.v1",
+  "source_commit": "7708ef90554fc3986478d4602de6a01c7266b14f",
+  "production_implementation_performed": false,
+  "nodes": [
+    {
+      "id": "PHI-DEV-01",
+      "priority": "P2",
+      "depends_on": [],
+      "objective": "Shared range-aware scaled phi weight transformation",
+      "implementation_candidate": "probe/src/main.rs::scaled_weights",
+      "affected_files": ["crates/rodas5p-core/src/matrix_functions.rs", "crates/rodas5p-integrators/src/exponential.rs"],
+      "protected_semantics": ["scaled convention h^k phi_k(hA)b_k", "negative/zero h", "physical-only tolerance", "prefix resume accounting"],
+      "acceptance": [
+        {"case": "A=0; h=+/-1e-100; b4=1e300; other vectors zero", "expected": 4.166666666666667e-102, "relative_error_max": 1e-12},
+        {"case": "A=0; h=1e100; b4=1e-300; other vectors zero", "expected": 4.1666666666666665e98, "relative_error_max": 1e-12},
+        {"case": "existing normalized/scaling/krylov/prefix/certificate contracts", "require": "all 17 tests pass without tolerance relaxation"}
+      ],
+      "stop_condition": "Finite representable weights survive transformation; true overflow/underflow is explicit; targeted regression gate closes",
+      "claim_ceiling": "range repair in declared floating-point domain; not a forward error certificate"
+    },
+    {
+      "id": "PHI-DEV-02",
+      "priority": "P2",
+      "depends_on": [],
+      "objective": "Balanced dense phi oracle with explicit normalization diagnostics",
+      "implementation_candidate": "probe/src/main.rs::balanced_dense",
+      "acceptance": [
+        {"case": "A=-1; h=0.1; w1=c; c in [1e-200,1e-100,1,1e10,1e20,1e40,1e60,1e100,1e200,1e300]", "relative_error_max": 1e-12, "require": "no finite-output zero collapse"},
+        {"case": "mixed amplitude and cancellation", "status": "NOT_EVALUATED", "require": "detect nonzero components lost by normalization and distinguish condition-sensitive output"}
+      ],
+      "stop_condition": "Scalar amplitude invariance and mixed-range handling documented/tested; general stability claims remain gated",
+      "claim_ceiling": "balanced oracle in validated amplitude domain"
+    },
+    {
+      "id": "PHI-DEV-03",
+      "priority": "P2",
+      "depends_on": ["PHI-DEV-01", "PHI-DEV-02"],
+      "objective": "Separate input-transform, projection-estimate, and roundoff assurance in consumers",
+      "affected_files": ["crates/rodas5p-integrators/src/exponential.rs::require_fused"],
+      "acceptance": [
+        {"require": "A transformed-zero input cannot silently masquerade as assurance for the original nonzero input"},
+        {"require": "ResidualEstimate and exact-arithmetic projection status remain distinct from rigorous total forward bound"}
+      ],
+      "claim_ceiling": "consumer policy and traceability; no new numerical bound implied"
+    },
+    {
+      "id": "PHI-RESEARCH-04",
+      "priority": "RESEARCH",
+      "depends_on": ["PHI-DEV-03"],
+      "objective": "Physical endpoint residual transport bound with augmentation-tail forcing and roundoff budget",
+      "status": "unresolved",
+      "acceptance": [
+        {"require": "State semigroup/logarithmic norm assumptions for the actual operator; do not substitute physical dissipativity for augmented dissipativity"},
+        {"require": "Include time integration and restart propagation rather than simply summing local residual estimates"},
+        {"require": "Independent decision review before rigorous-certificate promotion"}
+      ]
+    }
+  ]
+}

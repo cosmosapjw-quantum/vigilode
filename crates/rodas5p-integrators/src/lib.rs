@@ -232,6 +232,7 @@ pub use g4_s5b0_regime_atlas::{
     run_g4_s5b0_rjf_only, run_g4_s5b0_rjf_only_family,
     run_g4_s5b0_stage_growth_safety_audit_family, run_g4_s5b0_v37_continuation_transaction,
     run_g4_s5b0_v37_continuation_transaction_family,
+    run_g4_s5b0_v37_continuation_transaction_family_with_cap,
 };
 pub use g4_s5b0_trace_authority::{
     g4_s5b0_rjf_trace_digest, run_g4_s5b0_rjf_attempt_trace_family_with_linear_tolerance_arm,

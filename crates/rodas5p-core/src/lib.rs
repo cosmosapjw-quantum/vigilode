@@ -18,7 +18,9 @@ pub use coefficients::{
 pub use error::{CoreError, CoreResult};
 pub use hash::sha256_hex;
 pub use matrix::{DenseMatrix, LuFactorization, direct_solve, inverse};
-pub use matrix_functions::{dense_fused_phi_action, dense_phi_action, matrix_exp_pade13};
+pub use matrix_functions::{
+    dense_fused_phi_action, dense_phi_action, dense_phi_combination, matrix_exp_pade13,
+};
 pub use norms::{error_scale, safe_l2, wrms};
 pub use operator::{
     ApplyCategory, ClosureOperator, DenseOperator, DirectPreconditioner, ExactDenseMatrixIdentity,
