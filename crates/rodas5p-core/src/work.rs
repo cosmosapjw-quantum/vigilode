@@ -93,15 +93,32 @@ impl WorkCounters {
             .saturating_add(delta.recycle_refresh_matvecs)
     }
 
-    /// Total vector operator applications across solver categories.
-    ///
-    /// `block_matvecs` counts batched calls, while `linear_matvecs` and
-    /// `diagnostic_matvecs` already count every vector carried by those calls.
-    /// Adding the block-call counter here would therefore double count work.
+    /// Shifted-operator applications counted as solver-level calls: a block
+    /// apply over s stages is one call (audit F-051). Comparable only
+    /// between lanes with the same batching; across lanes use
+    /// [`Self::operator_state_vectors`].
     pub fn operator_applications(self) -> u64 {
         self.linear_matvecs
             .saturating_add(self.diagnostic_matvecs)
             .saturating_add(self.recycle_refresh_matvecs)
+    }
+
+    /// Shifted-operator work in state-vector units: Krylov and diagnostic
+    /// applies as declared by the operator (s for an s-stage block apply)
+    /// plus recycled-subspace refreshes, which are single-vector applies.
+    ///
+    /// `None` when calls were recorded but no vector units: a ledger written
+    /// before the vector counters existed deserializes them as 0, and that
+    /// must read as unknown, not as free work (audit 2026-09-30, B-02).
+    pub fn operator_state_vectors(self) -> Option<u64> {
+        let calls = self.linear_matvecs.saturating_add(self.diagnostic_matvecs);
+        if calls > 0 && self.linear_matvec_vectors == 0 {
+            return None;
+        }
+        Some(
+            self.linear_matvec_vectors
+                .saturating_add(self.recycle_refresh_matvecs),
+        )
     }
 
     /// Saturating component-wise accumulation for independently measured work ledgers.

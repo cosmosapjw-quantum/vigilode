@@ -203,6 +203,11 @@ fn same_seed_reproduces_identical_interval_bits() {
         seed: SEED + 1,
         ..protocol()
     };
+    // With three cases in six shared sessions the two-way bootstrap has few
+    // distinct replicate values, and a percentile can land on the same one
+    // under another seed; twelve cases make the reseeding visible.
+    let cases = noisy_cases(1.20, 0.10, 12, 13);
+    let first = case_clustered_bootstrap(&cases, &protocol()).unwrap();
     let other = case_clustered_bootstrap(&cases, &reseeded).unwrap();
     assert_eq!(other.point.to_bits(), first.point.to_bits());
     assert!(
@@ -385,4 +390,96 @@ fn pairs_of_one_process_are_not_resampled_as_independent() {
         .map(|case| case.with_process_blocks(vec![0; 3]))
         .collect::<Vec<_>>();
     assert!(case_clustered_bootstrap(&mismatched, &protocol).is_err());
+}
+
+#[test]
+fn one_shared_process_is_one_session_however_many_cases() {
+    // Audit 2026-09-30, B-01: six cases all measured in global process 77
+    // were counted as six independent blocks and promoted.
+    let protocol = protocol();
+    for cases in [1, 6, 60] {
+        let shared = noisy_cases(1.30, 0.05, cases, 31)
+            .into_iter()
+            .map(|case| {
+                let pairs = case.candidate_seconds.len();
+                case.with_process_blocks(vec![77; pairs])
+            })
+            .collect::<Vec<_>>();
+        let interval = case_clustered_bootstrap(&shared, &protocol).unwrap();
+        assert_eq!(interval.independent_blocks, 1, "{cases} cases");
+        assert_eq!(
+            paired_timing_decision(&interval, 1.15),
+            PairedTimingDecision::Inconclusive
+        );
+        let aa = identical_arm_cases(cases, 77);
+        let assessment = assess_paired_timing(&protocol, &shared, Some(&aa), host()).unwrap();
+        assert!(!assessment.timing_authoritative, "{cases} cases");
+        assert_ne!(assessment.gate_decision, PairedTimingDecision::Promote);
+    }
+}
+
+#[test]
+fn replicating_cases_does_not_narrow_a_session_level_interval() {
+    // Six sessions with a common per-session effect on every case. The
+    // interval is about the sessions; ten times more cases measured in the
+    // same six sessions must not make it much narrower.
+    let protocol = protocol();
+    let session_factor = [0.85, 0.95, 1.0, 1.05, 1.2, 1.35];
+    let build = |cases: usize| {
+        let mut noise = Noise(41);
+        (0..cases)
+            .map(|case| {
+                let base = 1.0e-3 * (1.0 + case as f64);
+                let labels = six_processes(protocol.pairs);
+                let candidate = (0..protocol.pairs)
+                    .map(|_| base * noise.factor(0.01))
+                    .collect::<Vec<_>>();
+                let reference = labels
+                    .iter()
+                    .map(|&session| {
+                        base * 1.3 * session_factor[session as usize] * noise.factor(0.01)
+                    })
+                    .collect::<Vec<_>>();
+                PairedTimingCase::from_samples(
+                    format!("case-{case}"),
+                    &protocol,
+                    warmups(),
+                    candidate,
+                    reference,
+                )
+                .unwrap()
+                .with_process_blocks(labels)
+            })
+            .collect::<Vec<_>>()
+    };
+    let few = case_clustered_bootstrap(&build(6), &protocol).unwrap();
+    let many = case_clustered_bootstrap(&build(60), &protocol).unwrap();
+    assert_eq!(few.independent_blocks, 6);
+    assert_eq!(many.independent_blocks, 6);
+    assert!(
+        many.half_width_log() >= 0.8 * few.half_width_log(),
+        "6 cases {:.4}, 60 cases {:.4}",
+        few.half_width_log(),
+        many.half_width_log()
+    );
+}
+
+/// Reference-against-reference cases, all pairs in one global process.
+fn identical_arm_cases(cases: usize, process: u32) -> Vec<PairedTimingCase> {
+    let protocol = protocol();
+    let mut noise = Noise(51);
+    (0..cases)
+        .map(|case| {
+            let base = 1.0e-3 * (1.0 + case as f64);
+            let a = (0..protocol.pairs)
+                .map(|_| base * noise.factor(0.01))
+                .collect::<Vec<_>>();
+            let b = (0..protocol.pairs)
+                .map(|_| base * noise.factor(0.01))
+                .collect::<Vec<_>>();
+            PairedTimingCase::from_samples(format!("aa-{case}"), &protocol, warmups(), a, b)
+                .unwrap()
+                .with_process_blocks(vec![process; protocol.pairs])
+        })
+        .collect()
 }

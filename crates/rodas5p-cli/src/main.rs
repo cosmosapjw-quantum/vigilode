@@ -1,4 +1,5 @@
 use std::{
+    collections::BTreeMap,
     fs::{self, OpenOptions},
     io::Write,
     path::{Path, PathBuf},
@@ -8,9 +9,10 @@ use anyhow::{Context, Result};
 use clap::{Parser, Subcommand, ValueEnum};
 use rodas5p_core::{load_rodas5p_coefficients, sha256_hex};
 use rodas5p_fair_ab::{
-    BenchmarkCell, BenchmarkPlan, FairSolveConfig, GlobalErrorParetoProfile, PreconditionerKind,
-    RecycleLifetime, ScientificValidityV2CaseArtifact, SequenceConfig, SequenceKind, SolverKind,
-    TraceDocument, freeze_scientific_validity_v2_calibration_artifacts, generate_trace,
+    BenchmarkCell, BenchmarkPlan, FairSolveConfig, GlobalErrorParetoProfile,
+    PairedTimingAssessment, PairedTimingDecision, PreconditionerKind, RecycleLifetime,
+    ScientificValidityV2CaseArtifact, SequenceConfig, SequenceKind, SolverKind, TraceDocument,
+    freeze_scientific_validity_v2_calibration_artifacts, generate_trace,
     load_numerical_reference_v2, replay_scientific_validity_v2_oregonator_artifacts,
     run_adaptive_global_error_screen, run_comparison, run_g1_adaptive_global_error_screen,
     run_global_error_pareto_screen, run_scientific_validity_v2_case,
@@ -1073,29 +1075,54 @@ const TIER_L_REFERENCE_FIDELITY: ComparatorFidelity = ComparatorFidelity::Produc
 const REFERENCE_ONLY_NOT_EVALUATED: &str =
     "relative performance not evaluated: reference is a reference-implementation-only comparator";
 
-const WALL_NOT_EVALUATED: &str = "wall-time criterion not evaluated: smoke or single-sample timing carries no dispersion estimate";
+const WALL_NOT_EVALUATED: &str = "wall-time criterion not evaluated: no authoritative paired timing assessment (A/A control, at least six independent sessions) was supplied; repeated medians are recorded only";
 
-/// Audit F-053: wall time may decide Promote/Hold only with repeated samples
-/// after a warmup.  Smoke (one repetition, no warmup) and single-sample
-/// timings are recorded but never decide; the dispersion-aware replacement
-/// is `rodas5p_fair_ab::assess_paired_timing`.
-fn wall_timing_admissible(repetitions: usize, warmups: usize) -> bool {
-    repetitions >= 2 && warmups >= 1
+const WALL_INCONCLUSIVE: &str = "wall-time criterion not evaluated: the paired timing interval is inconclusive or its A/A control is not authoritative";
+
+/// Wall time decides Promote/Hold only through a paired timing assessment
+/// (`rodas5p_fair_ab::assess_paired_timing`): its gate decision is Promote
+/// or Block only when the A/A control is authoritative and at least six
+/// independent sessions were measured. A median of a few repetitions, with
+/// or without warmups, carries no dispersion estimate and never decides
+/// (audit F-053; audit 2026-09-30, B-03).
+enum WallCriterion {
+    Passed,
+    Failed,
+    NotEvaluated(&'static str),
+}
+
+fn wall_criterion(paired: Option<&PairedTimingAssessment>) -> WallCriterion {
+    match paired {
+        None => WallCriterion::NotEvaluated(WALL_NOT_EVALUATED),
+        Some(assessment) if !assessment.timing_authoritative => {
+            WallCriterion::NotEvaluated(WALL_INCONCLUSIVE)
+        }
+        Some(assessment) => match assessment.gate_decision {
+            PairedTimingDecision::Promote => WallCriterion::Passed,
+            PairedTimingDecision::Block => WallCriterion::Failed,
+            PairedTimingDecision::Inconclusive => WallCriterion::NotEvaluated(WALL_INCONCLUSIVE),
+        },
+    }
 }
 
 /// The Tier-N nonlinear screen times each case with a single `Instant`
 /// sample, so its wall ratios are never admissible gate evidence.
 const TIER_N_WALL_TIMING_ADMISSIBLE: bool = false;
 
+/// Tier-L candidates. No paired timing runner feeds this command yet, so
+/// no assessment is supplied and the wall criterion is NotEvaluated.
 fn assess_linear_candidates(
     suites: &[UnifiedLinearSuite],
 ) -> Vec<UnifiedLinearCandidateAssessment> {
-    assess_linear_candidates_against(suites, TIER_L_REFERENCE_FIDELITY)
+    assess_linear_candidates_against(suites, TIER_L_REFERENCE_FIDELITY, &BTreeMap::new())
 }
 
+/// `paired_timing` maps a candidate id to its paired assessment against
+/// GMRES/OFF.
 fn assess_linear_candidates_against(
     suites: &[UnifiedLinearSuite],
     reference_fidelity: ComparatorFidelity,
+    paired_timing: &BTreeMap<String, PairedTimingAssessment>,
 ) -> Vec<UnifiedLinearCandidateAssessment> {
     strict_cells()
         .into_iter()
@@ -1146,25 +1173,20 @@ fn assess_linear_candidates_against(
                 blockers.push("nonfinite Tier-L solution error".into());
             }
             let relative_admissible = reference_fidelity.admits_relative_performance_reading();
-            let wall_admissible = suites
-                .iter()
-                .all(|suite| wall_timing_admissible(suite.plan.repetitions, suite.plan.warmups));
+            let candidate_id = linear_candidate_id(cell.solver, cell.lifetime);
             let mut not_evaluated = Vec::new();
             if !is_reference && !relative_admissible {
                 not_evaluated.push(REFERENCE_ONLY_NOT_EVALUATED.to_string());
             }
-            if !is_reference && relative_admissible && !wall_admissible {
-                not_evaluated.push(WALL_NOT_EVALUATED.to_string());
-            }
-            if !is_reference
-                && relative_admissible
-                && wall_admissible
-                && !wall_speedup.is_some_and(|speedup| speedup >= TIER_L_REQUIRED_WALL_SPEEDUP)
-            {
-                blockers.push(format!(
-                    "median Tier-L wall speedup below {:.2}x",
-                    TIER_L_REQUIRED_WALL_SPEEDUP
-                ));
+            if !is_reference && relative_admissible {
+                match wall_criterion(paired_timing.get(&candidate_id)) {
+                    WallCriterion::Passed => {}
+                    WallCriterion::Failed => blockers.push(format!(
+                        "paired Tier-L wall-speedup interval lies below {:.2}x",
+                        TIER_L_REQUIRED_WALL_SPEEDUP
+                    )),
+                    WallCriterion::NotEvaluated(reason) => not_evaluated.push(reason.to_string()),
+                }
             }
             if !is_reference
                 && relative_admissible
@@ -1174,7 +1196,7 @@ fn assess_linear_candidates_against(
             }
             let verdict = tier_verdict(is_reference, &blockers, &not_evaluated);
             UnifiedLinearCandidateAssessment {
-                candidate_id: linear_candidate_id(cell.solver, cell.lifetime),
+                candidate_id,
                 solver: cell.solver,
                 lifetime: cell.lifetime,
                 suites: represented_suites,
@@ -2518,21 +2540,90 @@ mod unified_assessment_tests {
         assert!(ids.contains(&"sequential-gcrodr-persistent".to_string()));
     }
 
-    #[test]
-    fn tier_l_promotion_requires_the_locked_fifteen_percent_wall_speedup() {
-        let promoted = assess_linear_candidates(&[suite(0.8)]);
-        let row = promoted
-            .iter()
-            .find(|row| row.candidate_id == "sequential-gcrodr-persistent")
-            .unwrap();
-        assert_eq!(row.verdict, UnifiedJointVerdict::Promote);
+    /// Paired assessment of GCRO-DR/persistent against GMRES/OFF from
+    /// deterministic samples: six sessions of five pairs, 2% noise.
+    fn paired_assessment(speedup: f64, with_aa: bool) -> PairedTimingAssessment {
+        use rodas5p_fair_ab::{
+            PairedTimingCase, PairedTimingProtocol, assess_paired_timing,
+            detect_timing_host_metadata,
+        };
+        let protocol = PairedTimingProtocol::authoritative(7);
+        let mut state = 1_u64;
+        let mut noise = move || {
+            state = state
+                .wrapping_mul(6_364_136_223_846_793_005)
+                .wrapping_add(1_442_695_040_888_963_407);
+            1.0 + 0.02 * (2.0 * ((state >> 11) as f64 / (1_u64 << 53) as f64) - 1.0)
+        };
+        let mut cases = |ratio: f64, prefix: &str| {
+            (0..4)
+                .map(|case| {
+                    let base = 1.0e-3 * (1.0 + case as f64);
+                    let candidate = (0..protocol.pairs)
+                        .map(|_| base * noise())
+                        .collect::<Vec<_>>();
+                    let reference = (0..protocol.pairs)
+                        .map(|_| base * ratio * noise())
+                        .collect::<Vec<_>>();
+                    let sessions = (0..protocol.pairs)
+                        .map(|pair| (pair * 6 / protocol.pairs) as u32)
+                        .collect();
+                    PairedTimingCase::from_samples(
+                        format!("{prefix}-{case}"),
+                        &protocol,
+                        vec![5.0e-3, 1.0e-3],
+                        candidate,
+                        reference,
+                    )
+                    .unwrap()
+                    .with_process_blocks(sessions)
+                })
+                .collect::<Vec<_>>()
+        };
+        let corpus = cases(speedup, "case");
+        let aa = cases(1.0, "aa");
+        assess_paired_timing(
+            &protocol,
+            &corpus,
+            with_aa.then_some(aa.as_slice()),
+            detect_timing_host_metadata(1),
+        )
+        .unwrap()
+    }
 
-        let held = assess_linear_candidates(&[suite(0.9)]);
-        let row = held
-            .iter()
-            .find(|row| row.candidate_id == "sequential-gcrodr-persistent")
-            .unwrap();
-        assert_eq!(row.verdict, UnifiedJointVerdict::Hold);
+    #[test]
+    fn tier_l_wall_decisions_come_only_from_a_paired_assessment() {
+        // Audit 2026-09-30, B-03: three repetitions after one warmup with a
+        // median wall ratio of 0.8 used to promote. Without a paired
+        // assessment the wall criterion is not evaluated.
+        let gcrodr = |rows: Vec<UnifiedLinearCandidateAssessment>| {
+            rows.into_iter()
+                .find(|row| row.candidate_id == "sequential-gcrodr-persistent")
+                .unwrap()
+        };
+        let row = gcrodr(assess_linear_candidates(&[suite(0.8)]));
+        assert_eq!(row.verdict, UnifiedJointVerdict::NotEvaluated);
+        assert_eq!(row.not_evaluated, vec![WALL_NOT_EVALUATED]);
+
+        let with = |assessment: PairedTimingAssessment| {
+            let map = BTreeMap::from([("sequential-gcrodr-persistent".to_string(), assessment)]);
+            gcrodr(assess_linear_candidates_against(
+                &[suite(0.8)],
+                TIER_L_REFERENCE_FIDELITY,
+                &map,
+            ))
+        };
+        // An authoritative paired interval above 1.15x promotes.
+        let row = with(paired_assessment(1.30, true));
+        assert_eq!(row.verdict, UnifiedJointVerdict::Promote, "{row:?}");
+        // One below 1.15x holds.
+        let row = with(paired_assessment(0.90, true));
+        assert_eq!(row.verdict, UnifiedJointVerdict::Hold, "{row:?}");
+        assert!(row.blockers[0].contains("paired Tier-L wall-speedup interval"));
+        // Without an A/A control the timing is not authoritative.
+        let row = with(paired_assessment(1.30, false));
+        assert_eq!(row.verdict, UnifiedJointVerdict::NotEvaluated);
+        assert_eq!(row.not_evaluated, vec![WALL_INCONCLUSIVE]);
     }
 
     #[test]
@@ -2618,6 +2709,7 @@ mod unified_assessment_tests {
             let rows = assess_linear_candidates_against(
                 &[suite(gcrodr_wall)],
                 ComparatorFidelity::ReferenceImplementationOnly,
+                &BTreeMap::new(),
             );
             let row = rows
                 .iter()

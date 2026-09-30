@@ -10,12 +10,19 @@
 //!   candidate/reference pairs in a seeded ABBA order;
 //! * per case, the statistic is the median of per-pair
 //!   `ln(reference / candidate)`; the corpus statistic is the median of the
-//!   case statistics, with a seeded two-stage percentile bootstrap whose
-//!   units are independent: cases, then process blocks inside a case. Pairs
-//!   measured in one process share its state (caches, frequency, allocator)
-//!   and are never resampled as if independent (external re-audit, 6.1);
-//! * a decision needs at least [`PAIRED_TIMING_MIN_INDEPENDENT_BLOCKS`]
-//!   independent blocks in total; with fewer, it is Inconclusive;
+//!   case statistics, with a seeded two-way percentile bootstrap: each
+//!   resample draws measurement sessions (processes) with replacement, once
+//!   for all cases, and draws cases with replacement; a drawn case takes the
+//!   pairs its drawn sessions measured. Pairs measured in one process share
+//!   its state (caches, frequency, allocator), within a case and across
+//!   cases, so a session moves all its cases together and replicating cases
+//!   in the same sessions cannot narrow the session part of the interval
+//!   (external re-audit 6.1; audit 2026-09-30, B-01). Resampling cases as
+//!   well keeps the interval conservative for a case population;
+//! * process labels are global session identities shared across cases; a
+//!   case without labels is one session of its own. A decision needs at
+//!   least [`PAIRED_TIMING_MIN_INDEPENDENT_BLOCKS`] distinct sessions over
+//!   all cases; with fewer, it is Inconclusive;
 //! * the decision is three-valued: Promote iff the interval's lower bound is
 //!   at least the required speedup, Block iff its upper bound is below it,
 //!   otherwise Inconclusive;
@@ -191,30 +198,43 @@ pub struct PairedTimingCase {
     pub order: Vec<[PairedArm; 2]>,
     pub candidate_seconds: Vec<f64>,
     pub reference_seconds: Vec<f64>,
-    /// Process (independent run) of each pair; empty means one process for
-    /// the whole case. Pairs of one block are resampled together.
+    /// Global session (process) identity of each pair, shared by every case
+    /// measured in that process; empty means the whole case ran in one
+    /// session of its own. A session is resampled as one unit across all
+    /// cases (audit 2026-09-30, B-01).
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub process_blocks: Vec<u32>,
 }
 
+/// Identity of a measurement session: a declared global process label, or
+/// the implicit single session of a case without labels.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
+enum SessionKey {
+    Global(u32),
+    OwnCase(usize),
+}
+
 impl PairedTimingCase {
-    /// Attach the process of each pair.
+    /// Attach the global session (process) of each pair.
     pub fn with_process_blocks(mut self, process_blocks: Vec<u32>) -> Self {
         self.process_blocks = process_blocks;
         self
     }
 
-    /// Log speedups grouped by process block, in block order.
-    fn block_log_speedups(&self) -> Vec<Vec<f64>> {
+    /// Log speedups grouped by session, keyed by the session identity.
+    fn session_log_speedups(&self, case_index: usize) -> Vec<(SessionKey, Vec<f64>)> {
         let logs = self.log_speedups();
         if self.process_blocks.is_empty() {
-            return vec![logs];
+            return vec![(SessionKey::OwnCase(case_index), logs)];
         }
         let mut blocks = std::collections::BTreeMap::<u32, Vec<f64>>::new();
         for (block, log) in self.process_blocks.iter().zip(logs) {
             blocks.entry(*block).or_default().push(log);
         }
-        blocks.into_values().collect()
+        blocks
+            .into_iter()
+            .map(|(block, logs)| (SessionKey::Global(block), logs))
+            .collect()
     }
 
     /// Case from already measured per-iteration samples (replayed or
@@ -398,10 +418,12 @@ impl SpeedupInterval {
 }
 
 /// Median over cases of the per-case median log speedup, with a seeded
-/// two-stage percentile bootstrap: each resample draws cases with
-/// replacement and then, inside each drawn case, whole process blocks with
-/// replacement. A case measured in one process keeps its median; pairs are
-/// never resampled individually.
+/// two-way percentile bootstrap: each resample draws sessions with
+/// replacement (shared by all cases, so a session moves every case it
+/// measured together; audit 2026-09-30, B-01) and cases with replacement,
+/// and a drawn case takes the pairs of its drawn sessions, with
+/// multiplicity. A case with no pairs in a replicate's sessions is left out
+/// of that replicate's median.
 pub fn case_clustered_bootstrap(
     cases: &[PairedTimingCase],
     protocol: &PairedTimingProtocol,
@@ -422,31 +444,68 @@ pub fn case_clustered_bootstrap(
             )));
         }
     }
-    let blocks = cases
+    let per_case = cases
         .iter()
-        .map(PairedTimingCase::block_log_speedups)
+        .enumerate()
+        .map(|(index, case)| case.session_log_speedups(index))
         .collect::<Vec<_>>();
-    let independent_blocks = blocks.iter().map(Vec::len).sum::<usize>();
-    let mut case_statistics = blocks
+    let sessions = per_case
         .iter()
-        .map(|case| median_in_place(&mut case.concat()))
+        .flat_map(|case| case.iter().map(|(key, _)| *key))
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect::<Vec<_>>();
+    let independent_blocks = sessions.len();
+    // For each case, its pairs by session index.
+    let by_session = per_case
+        .iter()
+        .map(|case| {
+            case.iter()
+                .map(|(key, logs)| {
+                    let index = sessions.binary_search(key).expect("session collected");
+                    (index, logs.clone())
+                })
+                .collect::<Vec<_>>()
+        })
+        .collect::<Vec<_>>();
+    let mut case_statistics = per_case
+        .iter()
+        .map(|case| {
+            let mut all = case
+                .iter()
+                .flat_map(|(_, logs)| logs.iter().copied())
+                .collect::<Vec<_>>();
+            median_in_place(&mut all)
+        })
         .collect::<Vec<_>>();
     let point_log = median_in_place(&mut case_statistics);
 
     let mut rng = SplitMix64(protocol.seed);
     let mut replicates = Vec::with_capacity(protocol.bootstrap_resamples);
-    let mut resampled_cases = vec![0.0; cases.len()];
+    let mut multiplicity = vec![0usize; sessions.len()];
+    let mut resampled_cases = Vec::with_capacity(cases.len());
     let mut resampled_pairs = Vec::new();
-    for _ in 0..protocol.bootstrap_resamples {
-        for slot in &mut resampled_cases {
-            let case = &blocks[rng.below(cases.len())];
-            resampled_pairs.clear();
-            for _ in 0..case.len() {
-                resampled_pairs.extend_from_slice(&case[rng.below(case.len())]);
-            }
-            *slot = median_in_place(&mut resampled_pairs);
+    while replicates.len() < protocol.bootstrap_resamples {
+        multiplicity.fill(0);
+        for _ in 0..sessions.len() {
+            multiplicity[rng.below(sessions.len())] += 1;
         }
-        replicates.push(median_in_place(&mut resampled_cases));
+        resampled_cases.clear();
+        for _ in 0..by_session.len() {
+            let case = &by_session[rng.below(by_session.len())];
+            resampled_pairs.clear();
+            for (session, logs) in case {
+                for _ in 0..multiplicity[*session] {
+                    resampled_pairs.extend_from_slice(logs);
+                }
+            }
+            if !resampled_pairs.is_empty() {
+                resampled_cases.push(median_in_place(&mut resampled_pairs));
+            }
+        }
+        if !resampled_cases.is_empty() {
+            replicates.push(median_in_place(&mut resampled_cases));
+        }
     }
     replicates.sort_by(f64::total_cmp);
     let tail = 0.5 * (1.0 - protocol.confidence_level);
