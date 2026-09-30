@@ -1,0 +1,63 @@
+# Re-audit R3 closure (2026-10-01)
+
+This document covers the external R3 re-audit package `research/adversarial_reaudit_20261001_r3/`
+(source `cc2cd041737e7ff543624d1b59893a3b4397369f`, 21-node `NEXT_DEVELOPMENT_DAG.json`). It lists what the stacked
+branch `claude/jolly-wozniak-7wl15h-wu23-reaudit-r3` implements for each node, which contract tests check it, the
+research results with their preregistrations and ledger rows, and what stays open. Each node's claim ceiling is the one
+the DAG states. Nothing here is a production readiness or speed promotion.
+
+## Status legend
+
+| Status | Meaning |
+|---|---|
+| **Closed** | Every acceptance item has a contract test on this branch. |
+| **Closed (research)** | The node is implemented and tested. Its claim is limited to the research module or the declared domain. |
+| **Measured: FAIL** | The preregistered experiment ran. Its numeric gate failed, and the result is kept as a negative ledger row. |
+| **Measured: PASS** | The preregistered gate was met. The claim stays limited to the measured population. |
+
+## Matrix
+
+| Node | Status | Implementation | Contract tests / evidence |
+|---|---|---|---|
+| TIME-01 | Closed | `output.rs`: `step_to` integrates `h_eff = t_end - t` on the represented interval, with a TwoSum clock check, a `max_step` cap with one-resolution slack and `split_clock` for step doubling. Adaptive drivers stop on a typed time-resolution failure. | `r3_represented_clock_contracts.rs`: constant flow at `t0 = +-1e12` on the 8-ULP span, origin and unit shifts, hard stops, below-ULP steps, BDF across power-of-two boundaries. |
+| TIME-02 | Closed | Strict `validate_span`. `OutputSchedule::uniform` and `CommonOutputGrid::uniform` reject indivisible spans (tolerance `min(8 eps max(|t0|,|tf|,span), spacing/1024)`) and a lone `[tf]`. | Same file: `uniform(1e12, nextafter^4(1e12), 1)` rejected, explicit `[tf]` rejected, adjacent endpoints and subnormal spans kept distinct, the valid control integrates. |
+| TIME-03 | Closed | `FixedGrid` (`t0 + k h`, no final micro-step). The fixed BDF uses variable coefficients on unequal spacing. Sealed research replays keep `RESEARCH_REPLAY_CLOCK_POLICY = "nominal-accumulated-v0"`. Production uses `PRODUCTION_CLOCK_POLICY = "represented-indexed-v1"`. | 1000 steps of 0.01 on (0, 10) give exactly 1000 grid points. BDF startup and order history are checked. |
+| ARITH-01 | Closed | `PhiTransformStatus`. A lost or subnormal weight makes the report non-converged (`TRANSFORM_ERROR_UNBOUNDED`). `dense_fused_phi_action` returns a typed error. The report variant carries the status. | `r3_phi_transform_authority_contracts.rs`: nilpotent witnesses at positive and negative `h`, PHI-R1/R2 fixtures within 1e-12, `A = 0` bounded acceptance. |
+| ARITH-02 | Closed (research) | `rodas5p_core::transform_bound`: `ExpBound` mantissa and exponent bounds, `bound_transform_error` for nilpotent and dissipative classes, `Unbounded` otherwise. Exact weights give `delta = 0`. | `transform_bound_contracts.rs`: the `+-1e-8` / `1e308` fixture bound `1.6666666666666680e-27`, subnormal and overflow branches. |
+| ARITH-03 | Closed | `is_reference_authoritative` and `weight_underflows` on dense references. The G3 gate holds a phi row whose reference is not authoritative (`phi_reference_not_evaluated`). | `r3_phi_transform_authority_contracts.rs`: the `diag(700, -700)` witness is flagged, the amplitude sweep keeps authority, an injected flagged row holds the gate. |
+| ARITH-04 | Closed (research) | `certified_budget.rs`: `step_power_enclosure` and `OutputBudgetPolicy::certified_budget`/`certified_decide` with the statuses Exact, Enclosed, ExactZero, UnderflowLowerZero and OverflowNonBinding. | `r3_certified_budget_contracts.rs`: 18 exact rational fixtures (`fixtures/r3_certified_budget_fixtures.json`), including one-ULP boundaries. |
+| STAT-DEV-01 | Closed | `PairedTimingCase::admit` (`INVALID_RAW_TIMING_PROTOCOL`) serves producer, assessment and replay. Per-session ABBA segments are allowed only for complete session runs. | `r3_raw_protocol_admission_contracts.rs`: five malformed variants, A/A cases, round-trip, singleton-session gaming. |
+| STAT-DEV-02 | Closed | `paired_receipt.rs`: session provenance, recorded failures, arm and executable identity. `paired-timing-campaign` runs one process per session. The CLI wall criterion checks arm and identity. | `paired_timing_campaign_cli_contracts.rs`: a real 6-process campaign. No receipt gives NotEvaluated. Corruption is rejected. |
+| STAT-DEV-03 | Closed | Hoeffding Monte-Carlo gate on `K = #{T* < ln 1.15}` with a predeclared `delta = 0.01`. The decision needs agreement between endpoints and gate, otherwise it is Inconclusive (schema v3). Resamples are never extended after the data are seen. `percentile_endpoint_decision` is kept as a diagnostic. | `r3_monte_carlo_gate_contracts.rs`: the exact 6^6 probability 32884/46656 lies inside the gate interval, the atom at the threshold stays unresolved, all-above and all-below cases, no promotion below B = 4239. |
+| STAT-DEV-04 | **Measured: FAIL** | `docs/TIMING_DESIGN_CONTRACT.md` fixes the estimand, cells, missing-cell policy and frozen recipe. `timing_design.rs` and `rodas5p paired-timing-coverage-study` implement the study. The median is computed by selection, with the same bits. | `r3_timing_design_contracts.rs`: pair multiplication changes no bit, session duplication adds no session. Preregistered study `research/r3_timing_coverage_study_20261001/`, ledger `L-0007` FAIL: single-case designs cover 0.789 to 0.926, five-case designs cover 0.9925 to 1.0. |
+| HOM-01 | Closed | `stage_target.rs`: `STAGE_TARGET_SEQUENTIAL` and `STAGE_TARGET_STRICT_LOWER_PROJECTION` carry coefficient bits. `native_coefficient_leakage` counts alpha 28 / 5.58e-16 and L 34 / 3.77e-16. `block_sequential_allowance` gives the allowance, and `strictly_lower_nilpotent` checks the target's own structure. | `coefficient_structural_contracts.rs` and `fixtures/stage_target_semantics.json`. |
+| HOM-02 | Closed (research) | `outward_certificate.rs::certify_stage_target`: residual enclosure, witness, upward recurrence, output and embedded projections. `CertificateKind::StageTargetBound` is not an ODE error bound. | `outward_certificate_contracts.rs`: all 24 recorded fixtures are enclosed on the matching target and match the Python decisions (output accept 12, combined 8). Fail-closed cases are covered. |
+| HOM-03 | Closed (research) | `InverseWitness::{diagonal, small, approximate}` with a `WitnessIdentity` (h, gamma, Jacobian SHA-256, structure, tolerance) and `WitnessWork`. | Same file: wrong-identity witnesses are rejected, residual arithmetic is enclosed, costs are recorded. |
+| HOM-04 | Closed (research) | `doubling_certificate`: path sum `(I+H^4)(I+H^2)(I+H) a` with a radius from `PastStepData`, which has no reference field. Failed radii are recorded, and at most `max_attempts` are tried. | Same file: 22 radii close, closure failures reject, enclosures are compared with the serial certificate. Worker execution is measured. |
+| HOM-05 | Closed | `Q2Admission::NativeTargetCertificate` in `transactional_q1_q2.rs`. The eighth batch is not spent. The certificate binds `(y, h)`, the candidate digest and the sequential target. The budget comes from the certified embedded lower bound. Certificate work is ledgered separately. | `q2_diagnostic_replacement_contracts.rs`: q1 and q2 candidates, the accepted step and its stages are bit-identical, with 7 W batches instead of 8. Five wrong or unverified certificates fall back to the unchanged sequential path. |
+| HOM-06 | see below | `rodas5p r3-campaign --study hom06` and `r3-campaign-verify`. | `research/r3_matched_accuracy_hom06_20261001/`, ledger `L-0008`. |
+| POLY-01 | Closed (research) | `rodas5p_core::polynomial_action`: joint Chebyshev and Laguerre actions for given `w_k`, a symmetric nonpositive domain with a Gershgorin-verified or declared enclosure, separate distinct-vector and same-vector recurrences, `poly_*` WorkCounters, and a coefficient cache keyed to operator, enclosure, `h`, degree and scale. | `r3_polynomial_action_contracts.rs`: 20 joint actions and 100 columns against the independent oracle (`fixtures/r3_polynomial_oracle_fixtures.json`), `h = 0`, `A = 0`, scalar matrices, nonnormal and range rejections, cache keys. |
+| POLY-02 | Closed (research) | Coefficient enclosures from positive series with directed rounding. The degree is chosen by rigorous tail bounds. `TotalErrorStatus::Certified` applies to Chebyshev with a verified enclosure. `EstimateOnly` (`TOTAL_ERROR_NOT_CERTIFIED`) applies to Laguerre and to declared enclosures. | Same file: coefficient enclosures contain the 40-digit quadrature values, certified bounds enclose the observed errors, the one-ULP budget boundary never understates, range failures are explicit. |
+| POLY-03 | see below | `rodas5p r3-campaign --study poly03`. | `research/r3_matched_accuracy_poly03_20261001/`, ledger `L-0009`. |
+| PROCESS-01 | Closed | Every experiment on this branch has its `PREREGISTRATION.md` committed and pushed before its first output: `c8539fe` for the coverage study and `380f565` for HOM-06 and POLY-03. Each discloses its pilot runs. Ledger rows L-0007 to L-0009 are appended. The existing prefix L-0001 to L-0006 is unchanged (`check-research-node.py --base` passes). | `git log` chronology. Each claim separates the process verdict, the numeric evidence and production readiness. |
+
+## Research results
+
+HOM06_POLY03_RESULTS_PLACEHOLDER
+
+## Known limitations kept open
+
+- Timing receipts are unauthenticated JSON. A fabricated record with fresh provenance cannot be excluded
+  cryptographically. Only its internal consistency and the executable hash are bound.
+- `check_clock` is effectively vacuous after `step_to`, because the represented step is exact by construction. It is kept
+  as a guard.
+- A fixed `h` between 0.5 and 1 ULP of `t` becomes 1-ULP steps. `same_step` in the fixed BDF has an absolute floor.
+- G3 rows serialized before R3 deserialize with `authoritative: false`, which is conservative.
+- The research replay drivers (G2, G4 atlas, unified gates, homotopy experiments) keep the sealed legacy clock under
+  `RESEARCH_REPLAY_CLOCK_POLICY`. Their outputs are unchanged and are not new evidence.
+- The HOM-05 certificate covers autonomous identity-mass problems of the quadratic family. It checks agreement with
+  the integrated ODE only numerically, at `f(y)` and one JVP.
+- The POLY-01/02 module is dense and research only. The Laguerre recurrence rounding has no propagation bound, and a
+  declared enclosure is recorded but not verified.
+- The STAT-DEV-04 gate failed, so paired timing decisions carry `STATISTICAL_AUTHORITY_HOLD`. A redesigned interval for
+  few independent units needs a new preregistered study.
