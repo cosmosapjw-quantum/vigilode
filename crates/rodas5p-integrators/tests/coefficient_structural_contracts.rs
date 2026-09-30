@@ -95,14 +95,14 @@ fn residuals(
     let jv = |v: &[f64]| jacobian.matvec(v).unwrap();
     let mut sequential = Vec::new();
     let mut block = Vec::new();
-    for i in 0..s {
+    for (i, stage) in stages.iter().enumerate().take(s) {
         let delta = combine(&|j| coeffs.alpha[(i, j)], i);
         let mix = combine(&|j| coeffs.gamma_matrix[(i, j)], i);
         let state = y.iter().zip(&delta).map(|(a, b)| a + b).collect::<Vec<_>>();
-        let (jk, js, jm) = (jv(&stages[i]), jv(&state), jv(&mix));
+        let (jk, js, jm) = (jv(stage), jv(&state), jv(&mix));
         sequential.push(
             (0..n)
-                .map(|q| stages[i][q] - h * coeffs.gamma * jk[q] - h * js[q] - h * jm[q])
+                .map(|q| stage[q] - h * coeffs.gamma * jk[q] - h * js[q] - h * jm[q])
                 .collect(),
         );
         let coupling = combine(&|j| coeffs.beta[(i, j)] - coeffs.alpha[(i, j)], s);
@@ -113,11 +113,7 @@ fn residuals(
             .map(|(a, b)| a + b)
             .collect::<Vec<_>>();
         let (jc, jf) = (jv(&coupling), jv(&full_state));
-        block.push(
-            (0..n)
-                .map(|q| stages[i][q] - h * jc[q] - h * jf[q])
-                .collect(),
-        );
+        block.push((0..n).map(|q| stage[q] - h * jc[q] - h * jf[q]).collect());
     }
     (sequential, block)
 }

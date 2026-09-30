@@ -66,6 +66,8 @@ impl ExpBound {
         self.mantissa == 0.0
     }
 
+    // Fallible (an overflow is an error), so not `std::ops`.
+    #[allow(clippy::should_implement_trait)]
     pub fn mul(self, other: Self) -> CoreResult<Self> {
         if self.is_zero() || other.is_zero() {
             return Ok(Self::ZERO);
@@ -78,6 +80,8 @@ impl ExpBound {
 
     /// Upper bound on the sum. A term too small to shift into the larger
     /// one's scale adds one unit of its last place, never 0.
+    // Fallible (an overflow is an error), so not `std::ops`.
+    #[allow(clippy::should_implement_trait)]
     pub fn add(self, other: Self) -> CoreResult<Self> {
         if self.is_zero() {
             return Ok(other);

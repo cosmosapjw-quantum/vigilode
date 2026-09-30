@@ -172,7 +172,7 @@ pub(crate) fn adaptive_end_step(
     max_step: f64,
 ) -> CoreResult<Option<f64>> {
     let nominal = proposed.min(max_step);
-    if !(nominal > 0.0) || t + nominal <= t {
+    if nominal.is_nan() || nominal <= 0.0 || t + nominal <= t {
         return Ok(None);
     }
     end_step_capped(t, nominal, tf, max_step).map(Some)

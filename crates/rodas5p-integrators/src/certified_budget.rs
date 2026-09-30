@@ -138,8 +138,12 @@ pub fn step_power_enclosure(
     h_ref: f64,
     exponent: u32,
 ) -> CoreResult<CertifiedBudget> {
-    if !(epsilon_ref >= 0.0 && epsilon_ref.is_finite() && h > 0.0 && h_ref > 0.0)
-        || !(h.is_finite() && h_ref.is_finite())
+    if !(epsilon_ref >= 0.0
+        && epsilon_ref.is_finite()
+        && h > 0.0
+        && h_ref > 0.0
+        && h.is_finite()
+        && h_ref.is_finite())
     {
         return Err(CoreError::InvalidInput(
             "certified step-power budget needs finite nonnegative epsilon and positive steps"
@@ -236,7 +240,7 @@ impl OutputBudgetPolicy {
         embedded_error_lower: f64,
         h: f64,
     ) -> CoreResult<CertifiedBudgetDecision> {
-        if !(output_error_upper >= 0.0) {
+        if output_error_upper.is_nan() || output_error_upper < 0.0 {
             return Err(CoreError::InvalidInput(
                 "certified budget decision needs a nonnegative output error bound".into(),
             ));

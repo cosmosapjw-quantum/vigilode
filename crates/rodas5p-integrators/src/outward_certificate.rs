@@ -158,6 +158,7 @@ fn shifted_entry(
 
 impl InverseWitness {
     /// Diagonal `J`: `U_aa = up(1 / |1 - h gamma J_aa|)`.
+    #[allow(clippy::needless_range_loop)] // index form mirrors the matrix formula
     pub fn diagonal(problem: &QuadraticStageProblem, gamma: f64) -> CoreResult<Self> {
         problem.validate()?;
         let n = problem.dimension();
@@ -211,7 +212,7 @@ impl InverseWitness {
                         "INVERSE_WITNESS_UNAVAILABLE: determinant interval contains 0".into(),
                     ));
                 }
-                let adj = [[w(1, 1)?, w(0, 1)?.neg()], [w(1, 0)?.neg(), w(0, 0)?]];
+                let adj = [[w(1, 1)?, -w(0, 1)?], [-w(1, 0)?, w(0, 0)?]];
                 let mut upper = vec![vec![0.0; 2]; 2];
                 for a in 0..2 {
                     for b in 0..2 {
@@ -274,7 +275,7 @@ impl InverseWitness {
             .collect::<CoreResult<Vec<_>>>()?
             .into_iter()
             .fold(0.0_f64, f64::max);
-        if !(theta < 1.0) {
+        if theta.is_nan() || theta >= 1.0 {
             return Err(CoreError::InvalidInput(format!(
                 "INVERSE_WITNESS_UNAVAILABLE: ||I - V W||_inf <= {theta:e} is not below 1"
             )));
@@ -334,6 +335,9 @@ fn column(stages: &[Vec<f64>], a: usize, upto: usize) -> Vec<f64> {
     stages[..upto].iter().map(|stage| stage[a]).collect()
 }
 
+/// Residual intervals per stage and component, and increment bounds.
+type ResidualEnclosure = (Vec<Vec<Interval>>, Vec<Vec<f64>>);
+
 /// Residual intervals `r_i` of the declared stage equations at the
 /// candidate and the upper bounds `|delta_i|` of the candidate's stage
 /// increments.
@@ -341,7 +345,7 @@ fn residual_enclosure(
     target: &StageTarget,
     problem: &QuadraticStageProblem,
     candidate: &[Vec<f64>],
-) -> CoreResult<(Vec<Vec<Interval>>, Vec<Vec<f64>>)> {
+) -> CoreResult<ResidualEnclosure> {
     let n = problem.dimension();
     let h = Interval::point(problem.h)?;
     let gamma = Interval::point(target.gamma)?;
@@ -538,7 +542,10 @@ fn finish_certificate(
     let scale_upper = (0..n)
         .map(|a| add_up(atol, mul_up(rtol, problem.y[a].abs().max(y_hat[a].abs()))?))
         .collect::<CoreResult<Vec<_>>>()?;
-    if scale_lower.iter().any(|scale| !(*scale > 0.0)) {
+    if scale_lower
+        .iter()
+        .any(|scale| scale.is_nan() || *scale <= 0.0)
+    {
         return Err(CoreError::InvalidInput(
             "CERTIFICATE_NOT_VALIDATED: nonpositive error scale".into(),
         ));
@@ -571,9 +578,9 @@ fn finish_certificate(
 }
 
 /// The serial certificate (HOM-02): residual enclosure and the positive
-/// recurrence `E_i = U [ |r_i| + h (|J| sum_{j<i} |L*_ij| E_j
-/// + |q| (2 |delta_i| d_i + d_i^2)) ]`, `d_i = sum_{j<i} |alpha_ij| E_j`,
-/// every operation rounded upward. Any non-finite intermediate, a witness
+/// recurrence
+/// `E_i = U [ |r_i| + h (|J| sum_{j<i} |L*_ij| E_j + |q| (2 |delta_i| d_i + d_i^2)) ]`,
+/// `d_i = sum_{j<i} |alpha_ij| E_j`, every operation rounded upward. Any non-finite intermediate, a witness
 /// for another operator or a target that is not strictly lower is a typed
 /// rejection.
 #[allow(clippy::too_many_arguments)]
@@ -712,6 +719,7 @@ fn upper_matmul(a: &Matrix, b: &Matrix, workers: usize) -> CoreResult<Matrix> {
 /// The radius must close; each failed radius is recorded and retried at
 /// four times the radius, up to `max_attempts`.
 #[allow(clippy::too_many_arguments)]
+#[allow(clippy::needless_range_loop)] // index form mirrors the matrix formula
 pub fn doubling_certificate(
     target: &StageTarget,
     problem: &QuadraticStageProblem,

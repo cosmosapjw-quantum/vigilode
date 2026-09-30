@@ -122,7 +122,7 @@ pub fn div_down(a: f64, b: f64) -> CoreResult<f64> {
 
 /// Upper bound on `sqrt(x)` for `x >= 0`.
 pub fn sqrt_up(x: f64) -> CoreResult<f64> {
-    if !(x >= 0.0) {
+    if x.is_nan() || x < 0.0 {
         return Err(CoreError::InvalidInput(
             "directed rounding: square root of a negative number".into(),
         ));
@@ -143,7 +143,7 @@ pub fn sqrt_up(x: f64) -> CoreResult<f64> {
 
 /// Lower bound on `sqrt(x)` for `x >= 0`.
 pub fn sqrt_down(x: f64) -> CoreResult<f64> {
-    if !(x >= 0.0) {
+    if x.is_nan() || x < 0.0 {
         return Err(CoreError::InvalidInput(
             "directed rounding: square root of a negative number".into(),
         ));
@@ -216,21 +216,20 @@ impl Interval {
         }
     }
 
+    // Fallible (an overflow is an error), so not `std::ops`.
+    #[allow(clippy::should_implement_trait)]
     pub fn add(self, other: Self) -> CoreResult<Self> {
         Self::new(add_down(self.lo, other.lo)?, add_up(self.hi, other.hi)?)
     }
 
+    // Fallible (an overflow is an error), so not `std::ops`.
+    #[allow(clippy::should_implement_trait)]
     pub fn sub(self, other: Self) -> CoreResult<Self> {
         Self::new(sub_down(self.lo, other.hi)?, sub_up(self.hi, other.lo)?)
     }
 
-    pub fn neg(self) -> Self {
-        Self {
-            lo: -self.hi,
-            hi: -self.lo,
-        }
-    }
-
+    // Fallible (an overflow is an error), so not `std::ops`.
+    #[allow(clippy::should_implement_trait)]
     pub fn mul(self, other: Self) -> CoreResult<Self> {
         let corners = [
             (self.lo, other.lo),
@@ -248,6 +247,8 @@ impl Interval {
     }
 
     /// Quotient; an error when the divisor contains 0.
+    // Fallible (an overflow is an error), so not `std::ops`.
+    #[allow(clippy::should_implement_trait)]
     pub fn div(self, other: Self) -> CoreResult<Self> {
         if other.contains_zero() {
             return Err(CoreError::InvalidInput(
@@ -271,6 +272,17 @@ impl Interval {
 
     pub fn scale(self, factor: f64) -> CoreResult<Self> {
         self.mul(Self::point(factor)?)
+    }
+}
+
+impl std::ops::Neg for Interval {
+    type Output = Self;
+
+    fn neg(self) -> Self {
+        Self {
+            lo: -self.hi,
+            hi: -self.lo,
+        }
     }
 }
 

@@ -31,7 +31,7 @@ fn the_nilpotent_witness_is_bounded_and_rejected_for_both_signs_of_h() {
         assert_eq!(*class, TransformOperatorClass::Nilpotent { index: 2 });
         let value = upper.to_f64_up();
         assert!(value >= 1.6666666666666617e-27, "h = {h}: {value:e}");
-        assert!(value <= 1.6666666666666680e-27, "h = {h}: {value:e}");
+        assert!(value <= 1.666666666666668e-27, "h = {h}: {value:e}");
         // Against the relative tolerance 1e-12 of the output (about
         // 1.67e-27) the bound is far too large: rejected.
         assert!(!result.admits(1.0e-12 * 1.6666666666666617e-27));

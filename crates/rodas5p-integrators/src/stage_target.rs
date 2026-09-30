@@ -112,6 +112,7 @@ impl StageTarget {
     /// structural premise of every finite path sum over the stages. It is a
     /// property of the target's data, not of the native full matrices
     /// (whose `alpha^8` is not zero).
+    #[allow(clippy::needless_range_loop)] // index form mirrors the matrix formula
     pub fn strictly_lower_nilpotent(&self) -> bool {
         let s = self.stages();
         let mut pattern = vec![vec![false; s]; s];
@@ -216,6 +217,8 @@ pub fn native_coefficient_leakage(coeffs: &Rodas5pCoefficients) -> CoefficientLe
     }
 }
 
+type Matrix = Vec<Vec<f64>>;
+
 /// Upper bounds `(D, U)` with `D_ij >= |beta_ij - alpha_ij - [j<i] Gamma_ij
 /// - [j=i] gamma|` and `U_ij = |alpha_ij|` for `j >= i` (0 below).
 ///
@@ -225,9 +228,7 @@ pub fn native_coefficient_leakage(coeffs: &Rodas5pCoefficients) -> CoefficientLe
 /// `h |J| sum_j D_ij |K_j| + h Lip sum_j U_ij |K_j|` (plus the rounding of
 /// evaluating either): the quantified data perturbation between the two
 /// consumers (HOM-01).
-pub fn block_sequential_allowance(
-    coeffs: &Rodas5pCoefficients,
-) -> CoreResult<(Vec<Vec<f64>>, Vec<Vec<f64>>)> {
+pub fn block_sequential_allowance(coeffs: &Rodas5pCoefficients) -> CoreResult<(Matrix, Matrix)> {
     let s = coeffs.stages();
     let mut discrepancy = vec![vec![0.0; s]; s];
     let mut upper_alpha = vec![vec![0.0; s]; s];
