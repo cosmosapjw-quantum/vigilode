@@ -239,18 +239,42 @@ pub fn dense_phi_action(
 /// The inputs are weighted to `w_k = scale^k b_k` and passed to
 /// [`dense_phi_combination`], which never forms `scale^-k` (audit
 /// 2026-09-30, PHI-P2).
+///
+/// A nonzero input whose weight underflows to 0 makes this a typed error
+/// (TRANSFORM_ERROR_UNBOUNDED, re-audit R3, R3-ARITH-01): the value would be
+/// the action of a different, rounded problem. [`dense_fused_phi_action_report`]
+/// returns the value with the loss recorded instead.
 pub fn dense_fused_phi_action(
     matrix: &DenseMatrix,
     scale: f64,
     vectors: &[Vec<f64>],
 ) -> CoreResult<Vec<f64>> {
+    let report = dense_fused_phi_action_report(matrix, scale, vectors)?;
+    if report.weight_underflows > 0 {
+        return Err(CoreError::InvalidInput(format!(
+            "TRANSFORM_ERROR_UNBOUNDED: {} nonzero phi input(s) underflowed to zero weight",
+            report.weight_underflows
+        )));
+    }
+    Ok(report.value)
+}
+
+/// [`dense_fused_phi_action`] with the amplitude state and the number of
+/// inputs whose weight underflowed (re-audit R3, R3-ARITH-01/03).
+pub fn dense_fused_phi_action_report(
+    matrix: &DenseMatrix,
+    scale: f64,
+    vectors: &[Vec<f64>],
+) -> CoreResult<DensePhiCombinationReport> {
     if !scale.is_finite() {
         return Err(CoreError::NonFinite(
             "dense fused phi-action input contains NaN/Inf".into(),
         ));
     }
-    let (weighted, _) = crate::weight_phi_vectors(scale, vectors)?;
-    dense_phi_combination(matrix, scale, &weighted)
+    let (weighted, lost) = crate::weight_phi_vectors(scale, vectors)?;
+    let mut report = dense_phi_combination_report(matrix, scale, &weighted)?;
+    report.weight_underflows = u64::try_from(lost).unwrap_or(u64::MAX);
+    Ok(report)
 }
 
 /// `exp(scale*A) w_0 + sum_{k=1}^p phi_k(scale*A) w_k` with one dense
@@ -292,6 +316,21 @@ pub struct DensePhiCombinationReport {
     /// (cancellation or strong decay): the value is accurate relative to
     /// the weights, and its own relative accuracy is not established.
     pub output_below_input_half_precision: bool,
+    /// Nonzero inputs whose weight `scale^k b_k` underflowed to 0 before the
+    /// combination (only from [`dense_fused_phi_action_report`]).
+    pub weight_underflows: u64,
+}
+
+impl DensePhiCombinationReport {
+    /// The value may serve as a precision reference for its own entries:
+    /// no input was lost to weighting, the weights span less than the
+    /// binary64 precision, and the output is not dominated by cancellation
+    /// (re-audit R3, R3-ARITH-03). A consumer that needs a reference must
+    /// treat anything else as not evaluated unless an independent oracle
+    /// resolves it.
+    pub fn is_reference_authoritative(&self) -> bool {
+        self.weight_underflows == 0 && !self.mixed_range && !self.output_below_input_half_precision
+    }
 }
 
 /// [`dense_phi_combination`] with its amplitude state.
@@ -344,6 +383,7 @@ pub fn dense_phi_combination_report(
             weight_dynamic_range_log2: 0.0,
             mixed_range: false,
             output_below_input_half_precision: false,
+            weight_underflows: 0,
         });
     }
     let (_, amplitude_exponent) = crate::binary_split(largest);
@@ -374,6 +414,7 @@ pub fn dense_phi_combination_report(
         weight_dynamic_range_log2: dynamic_range,
         mixed_range: dynamic_range > 53.0,
         output_below_input_half_precision: output_unit < 2.0_f64.powi(-26),
+        weight_underflows: 0,
     })
 }
 

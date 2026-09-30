@@ -23,8 +23,8 @@ pub use error::{CoreError, CoreResult};
 pub use hash::sha256_hex;
 pub use matrix::{DenseMatrix, LuFactorization, direct_solve, inverse};
 pub use matrix_functions::{
-    DensePhiCombinationReport, dense_fused_phi_action, dense_phi_action, dense_phi_combination,
-    dense_phi_combination_report, matrix_exp_pade13,
+    DensePhiCombinationReport, dense_fused_phi_action, dense_fused_phi_action_report,
+    dense_phi_action, dense_phi_combination, dense_phi_combination_report, matrix_exp_pade13,
 };
 pub use norms::{error_scale, safe_l2, wrms};
 pub use operator::{

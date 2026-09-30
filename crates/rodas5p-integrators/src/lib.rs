@@ -173,10 +173,11 @@ pub use exponential::{
     Pexprb54s4Level1PrefixReport, Pexprb54s4Level2ContinuationLedger,
     Pexprb54s4Level2ContinuationOutcome, Pexprb54s4Level2Prefix, Pexprb54s4Level2PrefixReport,
     Pexprb54s4QuadraticRemainderDrift, Pexprb54s4RemainderVectorGeometry, Pexprb54s4Tableau,
-    PhiActionReport, PhiConvergenceBasis, exprb2_fused_step, exprb2_step, exprb43_fused_step,
-    exprb43_step, fused_phi_action, fused_phi_action_incremental, fused_phi_linear_combination,
-    krylov_phi_action, pexprb54s4_fused_step, pexprb54s4_fused_step_resume_level1,
-    pexprb54s4_fused_step_resume_level2, pexprb54s4_fused_step_resume_level2_accounted,
+    PhiActionReport, PhiConvergenceBasis, PhiTransformStatus, exprb2_fused_step, exprb2_step,
+    exprb43_fused_step, exprb43_step, fused_phi_action, fused_phi_action_incremental,
+    fused_phi_linear_combination, krylov_phi_action, pexprb54s4_fused_step,
+    pexprb54s4_fused_step_resume_level1, pexprb54s4_fused_step_resume_level2,
+    pexprb54s4_fused_step_resume_level2_accounted,
     pexprb54s4_fused_step_resume_level2_accounted_jvp_budget,
     pexprb54s4_fused_step_with_telemetry_mode,
     pexprb54s4_fused_step_with_tolerance_scaled_telemetry,
@@ -197,8 +198,9 @@ pub use g2_exponential_gate::{
     OscillatoryExponentialRow, PhiOracleRow, StiffLinearExponentialRow, run_g2_exponential_gate,
 };
 pub use g3_fused_adaptive_gate::{
-    G3AdaptiveRow, G3FreshJvpRow, G3FusedAdaptiveProfile, G3FusedAdaptiveReport,
-    G3FusedAdaptiveSummary, G3PhiFusionRow, run_g3_fused_adaptive_gate,
+    G3AdaptiveRow, G3DenseReferenceStatus, G3FreshJvpRow, G3FusedAdaptiveProfile,
+    G3FusedAdaptiveReport, G3FusedAdaptiveSummary, G3PhiFusionComparison, G3PhiFusionRow,
+    compare_fused_phi_to_dense_reference, run_g3_fused_adaptive_gate,
 };
 pub use g4_prefix_kernel_gate::{
     G4PrefixKernelProfile, G4PrefixKernelReport, G4PrefixKernelRow, G4PrefixKernelSummary,
