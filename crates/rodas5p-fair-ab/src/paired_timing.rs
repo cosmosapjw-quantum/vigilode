@@ -187,6 +187,22 @@ pub fn abba_pair_order(pairs: usize, seed: u64) -> Vec<[PairedArm; 2]> {
     order
 }
 
+/// Lengths of the contiguous runs of equal session labels.
+fn session_run_lengths(process_blocks: &[u32]) -> Vec<usize> {
+    let mut lengths = Vec::new();
+    let mut start = 0;
+    while start < process_blocks.len() {
+        let label = process_blocks[start];
+        let end = process_blocks[start..]
+            .iter()
+            .position(|block| *block != label)
+            .map_or(process_blocks.len(), |offset| start + offset);
+        lengths.push(end - start);
+        start = end;
+    }
+    lengths
+}
+
 /// The seeded ABBA order restarted in each contiguous run of equal session
 /// labels: the order of a case whose sessions each measured
 /// `protocol.pairs` pairs in their own process and were then concatenated
@@ -332,8 +348,17 @@ impl PairedTimingCase {
                 self.case_id, self.batch_iterations
             )));
         }
+        // The whole-case ABBA order, or the per-session order of a merged
+        // case in which every session measured exactly `protocol.pairs`
+        // pairs (singleton or odd session runs would let every pair restart
+        // the same seed; re-audit R3 review).
+        let session_runs_complete = !self.process_blocks.is_empty()
+            && session_run_lengths(&self.process_blocks)
+                .iter()
+                .all(|length| *length == protocol.pairs);
         if self.order != abba_pair_order(self.candidate_seconds.len(), protocol.seed)
-            && self.order != session_abba_order(&self.process_blocks, protocol.seed)
+            && !(session_runs_complete
+                && self.order == session_abba_order(&self.process_blocks, protocol.seed))
         {
             return Err(FairError::Invalid(format!(
                 "paired timing case {} does not follow the protocol's seeded ABBA order",

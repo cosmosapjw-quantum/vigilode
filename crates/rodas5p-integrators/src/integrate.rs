@@ -183,9 +183,12 @@ pub fn integrate_adaptive(
     let mut attempts = 0;
     while t < tf && attempts < adaptive.max_attempts {
         attempts += 1;
-        h = crate::output::end_step_capped(t, h.min(adaptive.max_step), tf, adaptive.max_step)?;
+        let Some(next_h) = crate::output::adaptive_end_step(t, h, tf, adaptive.max_step)? else {
+            break;
+        };
+        h = next_h;
         // A final piece that lands on tf is taken even below min_step.
-        if (h < adaptive.min_step && t + h < tf) || t + h == t {
+        if (crate::output::below_min_step(t, h, adaptive.min_step) && t + h < tf) || t + h == t {
             break;
         }
         let state_snapshot = recycle.clone();
@@ -419,9 +422,12 @@ pub fn integrate_adaptive_observed_with_config(
     let mut diagnostics = AdaptiveRunDiagnostics::default();
     let mut internal_steps = 0_usize;
     while t < tf && diagnostics.attempts < adaptive.max_attempts {
-        h = crate::output::end_step_capped(t, h.min(adaptive.max_step), tf, adaptive.max_step)?;
+        let Some(next_h) = crate::output::adaptive_end_step(t, h, tf, adaptive.max_step)? else {
+            break;
+        };
+        h = next_h;
         // A final piece that lands on tf is taken even below min_step.
-        if (h < adaptive.min_step && t + h < tf) || t + h == t {
+        if (crate::output::below_min_step(t, h, adaptive.min_step) && t + h < tf) || t + h == t {
             break;
         }
         let (trial_h, clipped) = collector.limit_step(t, h, tf)?;
@@ -589,9 +595,12 @@ pub fn integrate_homotopy_adaptive_observed(
     let mut internal_steps = 0_usize;
 
     while t < tf && diagnostics.attempts < adaptive.max_attempts {
-        h = crate::output::end_step_capped(t, h.min(adaptive.max_step), tf, adaptive.max_step)?;
+        let Some(next_h) = crate::output::adaptive_end_step(t, h, tf, adaptive.max_step)? else {
+            break;
+        };
+        h = next_h;
         // A final piece that lands on tf is taken even below min_step.
-        if (h < adaptive.min_step && t + h < tf) || t + h == t {
+        if (crate::output::below_min_step(t, h, adaptive.min_step) && t + h < tf) || t + h == t {
             break;
         }
         let (trial_h, clipped) = collector.limit_step(t, h, tf)?;
@@ -763,9 +772,12 @@ pub fn integrate_sequential_matrix_free_adaptive_observed(
     let mut internal_steps = 0_usize;
 
     while t < tf && diagnostics.attempts < adaptive.max_attempts {
-        h = crate::output::end_step_capped(t, h.min(adaptive.max_step), tf, adaptive.max_step)?;
+        let Some(next_h) = crate::output::adaptive_end_step(t, h, tf, adaptive.max_step)? else {
+            break;
+        };
+        h = next_h;
         // A final piece that lands on tf is taken even below min_step.
-        if (h < adaptive.min_step && t + h < tf) || t + h == t {
+        if (crate::output::below_min_step(t, h, adaptive.min_step) && t + h < tf) || t + h == t {
             break;
         }
         let (trial_h, clipped) = match collector.limit_step(t, h, tf) {
@@ -991,9 +1003,12 @@ pub fn integrate_transactional_q1_q2_adaptive_observed(
     let mut internal_steps = 0_usize;
 
     while t < tf && diagnostics.attempts < adaptive.max_attempts {
-        h = crate::output::end_step_capped(t, h.min(adaptive.max_step), tf, adaptive.max_step)?;
+        let Some(next_h) = crate::output::adaptive_end_step(t, h, tf, adaptive.max_step)? else {
+            break;
+        };
+        h = next_h;
         // A final piece that lands on tf is taken even below min_step.
-        if (h < adaptive.min_step && t + h < tf) || t + h == t {
+        if (crate::output::below_min_step(t, h, adaptive.min_step) && t + h < tf) || t + h == t {
             break;
         }
         let (trial_h, clipped) = collector.limit_step(t, h, tf)?;

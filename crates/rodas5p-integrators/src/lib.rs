@@ -202,7 +202,7 @@ pub use g2_exponential_gate::{
 pub use g3_fused_adaptive_gate::{
     G3AdaptiveRow, G3DenseReferenceStatus, G3FreshJvpRow, G3FusedAdaptiveProfile,
     G3FusedAdaptiveReport, G3FusedAdaptiveSummary, G3PhiFusionComparison, G3PhiFusionRow,
-    compare_fused_phi_to_dense_reference, run_g3_fused_adaptive_gate,
+    compare_fused_phi_to_dense_reference, g3_gate_status, run_g3_fused_adaptive_gate,
 };
 pub use g4_prefix_kernel_gate::{
     G4PrefixKernelProfile, G4PrefixKernelReport, G4PrefixKernelRow, G4PrefixKernelSummary,

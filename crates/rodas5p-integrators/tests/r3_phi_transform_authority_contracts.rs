@@ -131,3 +131,48 @@ fn a_flagged_dense_reference_is_not_evaluated_by_the_gate_consumer() {
         assert!(row.relative_error_vs_dense.unwrap() <= 1.0e-10, "c = {c:e}");
     }
 }
+
+#[test]
+fn a_weight_rounded_into_the_subnormal_range_is_a_loss() {
+    // h = 1e-8, b2 = 3e-308: h^2 b2 = 3e-324 rounds to 5e-324 (65% error)
+    // and dominates the first output component (independent review).
+    let matrix = DenseMatrix::from_rows(&[&[0.0, 1.0e308], &[0.0, 0.0]]).unwrap();
+    let vectors = vec![vec![1.0e-300, 0.0], vec![0.0, 0.0], vec![0.0, 3.0e-308]];
+    let operator = Arc::new(DenseOperator::new(matrix).unwrap());
+    let mut counters = WorkCounters::default();
+    let report = fused_phi_action(operator, 1.0e-8, &vectors, config(), &mut counters).unwrap();
+    assert!(!report.converged);
+    assert!(
+        report
+            .substep_reports
+            .iter()
+            .all(|substep| !substep.converged)
+    );
+    assert_eq!(
+        report.transform_status,
+        PhiTransformStatus::TransformErrorUnbounded { lost: 1 }
+    );
+}
+
+#[test]
+fn a_non_authoritative_reference_holds_the_g3_gate() {
+    use rodas5p_integrators::{ComparativeReading, G3FusedAdaptiveSummary, g3_gate_status};
+    let mut summary = G3FusedAdaptiveSummary {
+        phi_rows: 1,
+        phi_completed: 1,
+        adaptive_rows: 1,
+        adaptive_successes: 1,
+        explicit_jacobian_builds_in_primary: 0,
+        direct_factorizations_in_primary: 0,
+        newton_iterations_in_primary: 0,
+        legacy_to_fused_phi_action_ratio: 3.0,
+        median_fused_phi_wall_speedup: None,
+        maximum_fresh_jvp_half_disagreement: 0.0,
+        maximum_fresh_jvp_error_vs_supplied: 0.0,
+        comparative_reading: ComparativeReading::for_participants(std::iter::empty()),
+        phi_reference_not_evaluated: 0,
+    };
+    assert_eq!(g3_gate_status(&summary), "pass");
+    summary.phi_reference_not_evaluated = 1;
+    assert_eq!(g3_gate_status(&summary), "hold");
+}

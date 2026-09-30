@@ -281,6 +281,11 @@ impl FusedPhiActionReport {
         if lost > 0 {
             self.converged = false;
             self.convergence_basis = PhiConvergenceBasis::ResidualEstimate;
+            // The substeps converged on the rounded problem only.
+            for substep in &mut self.substep_reports {
+                substep.converged = false;
+                substep.convergence_basis = PhiConvergenceBasis::ResidualEstimate;
+            }
         }
         self
     }
@@ -1672,13 +1677,14 @@ pub fn fused_phi_linear_combination(
             ));
         }
         axpy(term.coefficient, term.vector, &mut weighted[term.phi_index]);
-        // Products of a nonzero coefficient and a nonzero entry that
-        // underflow to 0 lose that input (re-audit R3, R3-ARITH-01).
+        // Products of a nonzero coefficient and a nonzero entry that fall
+        // below the smallest normal number lose that input wholly or in
+        // part (re-audit R3, R3-ARITH-01).
         lost += term
             .vector
             .iter()
             .filter(|&&value| value != 0.0 && term.coefficient != 0.0)
-            .filter(|&&value| term.coefficient * value == 0.0)
+            .filter(|&&value| (term.coefficient * value).abs() < f64::MIN_POSITIVE)
             .count() as u64;
     }
     counters.phi_weight_underflows = counters.phi_weight_underflows.saturating_add(lost);
@@ -2009,11 +2015,15 @@ impl FusedPhiPrefixSession {
                 vec![FusedPhiSubstepReport {
                     substep_index: 0,
                     krylov_dimension: self.current_dimension,
-                    converged: self.converged,
+                    converged: self.converged && self.transform_lost == 0,
                     happy_breakdown: self.happy_breakdown,
                     error_estimate: self.latest_residual_error,
                     nested_difference_estimate: self.latest_nested_difference,
-                    convergence_basis: self.convergence_basis,
+                    convergence_basis: if self.transform_lost == 0 {
+                        self.convergence_basis
+                    } else {
+                        PhiConvergenceBasis::ResidualEstimate
+                    },
                 }]
             },
             convergence_basis: if self.converged && self.transform_lost == 0 {

@@ -202,6 +202,27 @@ pub struct G3FusedAdaptiveSummary {
     /// Forbidden whenever a reference-implementation-only comparator shares
     /// the adaptive rows; the gate status never ranks against those rows.
     pub comparative_reading: ComparativeReading,
+    /// Phi rows whose dense reference is not authoritative (re-audit R3,
+    /// ARITH-03); any such row holds the gate.
+    #[serde(default)]
+    pub phi_reference_not_evaluated: usize,
+}
+
+/// The G3 gate status from its summary: every adaptive row succeeded, the
+/// primary arm used no explicit Jacobian, factorization or Newton
+/// iteration, and every phi row was scored against an authoritative
+/// reference.
+pub fn g3_gate_status(summary: &G3FusedAdaptiveSummary) -> &'static str {
+    if summary.adaptive_successes == summary.adaptive_rows
+        && summary.explicit_jacobian_builds_in_primary == 0
+        && summary.direct_factorizations_in_primary == 0
+        && summary.newton_iterations_in_primary == 0
+        && summary.phi_reference_not_evaluated == 0
+    {
+        "pass"
+    } else {
+        "hold"
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -847,16 +868,12 @@ pub fn run_g3_fused_adaptive_gate(
         comparative_reading: ComparativeReading::for_participants(
             adaptive_rows.iter().map(|row| row.comparator_fidelity),
         ),
+        phi_reference_not_evaluated: phi_rows
+            .iter()
+            .filter(|row| !row.reference.authoritative)
+            .count(),
     };
-    let status = if summary.adaptive_successes == summary.adaptive_rows
-        && explicit_jacobian_builds_in_primary == 0
-        && direct_factorizations_in_primary == 0
-        && newton_iterations_in_primary == 0
-    {
-        "pass"
-    } else {
-        "hold"
-    };
+    let status = g3_gate_status(&summary);
     Ok(G3FusedAdaptiveReport {
         schema: "generic-parallel-exponential-g3-v1",
         status,

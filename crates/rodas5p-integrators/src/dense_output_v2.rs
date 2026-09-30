@@ -559,9 +559,12 @@ pub fn integrate_adaptive_dense_observed_with_dense_error_control(
     let mut internal_steps = 0_usize;
 
     while t < tf && diagnostics.attempts < adaptive.max_attempts {
-        h = crate::output::end_step_capped(t, h.min(adaptive.max_step), tf, adaptive.max_step)?;
+        let Some(next_h) = crate::output::adaptive_end_step(t, h, tf, adaptive.max_step)? else {
+            break;
+        };
+        h = next_h;
         // A final piece that lands on tf is taken even below min_step.
-        if (h < adaptive.min_step && t + h < tf) || t + h == t {
+        if (crate::output::below_min_step(t, h, adaptive.min_step) && t + h < tf) || t + h == t {
             break;
         }
         let requested_h = h;
@@ -1003,9 +1006,12 @@ where
     let mut internal_steps = 0_usize;
 
     while t < tf && diagnostics.attempts < adaptive.max_attempts {
-        h = crate::output::end_step_capped(t, h.min(adaptive.max_step), tf, adaptive.max_step)?;
+        let Some(next_h) = crate::output::adaptive_end_step(t, h, tf, adaptive.max_step)? else {
+            break;
+        };
+        h = next_h;
         // A final piece that lands on tf is taken even below min_step.
-        if (h < adaptive.min_step && t + h < tf) || t + h == t {
+        if (crate::output::below_min_step(t, h, adaptive.min_step) && t + h < tf) || t + h == t {
             break;
         }
         let requested_h = h;
@@ -1259,9 +1265,12 @@ pub fn integrate_homotopy_adaptive_dense_observed(
     let mut internal_steps = 0_usize;
 
     while t < tf && diagnostics.attempts < adaptive.max_attempts {
-        h = crate::output::end_step_capped(t, h.min(adaptive.max_step), tf, adaptive.max_step)?;
+        let Some(next_h) = crate::output::adaptive_end_step(t, h, tf, adaptive.max_step)? else {
+            break;
+        };
+        h = next_h;
         // A final piece that lands on tf is taken even below min_step.
-        if (h < adaptive.min_step && t + h < tf) || t + h == t {
+        if (crate::output::below_min_step(t, h, adaptive.min_step) && t + h < tf) || t + h == t {
             break;
         }
         let requested_h = h;
@@ -1393,9 +1402,12 @@ pub fn integrate_transactional_q1_q2_adaptive_dense_observed(
     let mut internal_steps = 0_usize;
 
     while t < tf && diagnostics.attempts < adaptive.max_attempts {
-        h = crate::output::end_step_capped(t, h.min(adaptive.max_step), tf, adaptive.max_step)?;
+        let Some(next_h) = crate::output::adaptive_end_step(t, h, tf, adaptive.max_step)? else {
+            break;
+        };
+        h = next_h;
         // A final piece that lands on tf is taken even below min_step.
-        if (h < adaptive.min_step && t + h < tf) || t + h == t {
+        if (crate::output::below_min_step(t, h, adaptive.min_step) && t + h < tf) || t + h == t {
             break;
         }
         let requested_h = h;
@@ -1637,9 +1649,15 @@ pub fn integrate_radau_adaptive_dense_observed(
     let mut previous_local_rejection = false;
 
     while t < tf && diagnostics.attempts < adaptive.max_attempts {
-        h = crate::output::end_step_capped(t, h.min(adaptive.max_step), tf, adaptive.max_step)?;
+        let Some(next_h) = crate::output::adaptive_end_step(t, h, tf, adaptive.max_step)? else {
+            break;
+        };
+        h = next_h;
         // A final piece that lands on tf is taken even below min_step.
-        if (h < adaptive.min_step && t + h < tf) || 0.5 * h <= f64::MIN_POSITIVE || t + h == t {
+        if (crate::output::below_min_step(t, h, adaptive.min_step) && t + h < tf)
+            || 0.5 * h <= f64::MIN_POSITIVE
+            || t + h == t
+        {
             break;
         }
         let requested_h = h;
@@ -1770,9 +1788,15 @@ pub fn integrate_bdf_adaptive_dense_observed(
     let mut internal_steps = 0_usize;
 
     while t < tf && diagnostics.attempts < adaptive.max_attempts {
-        h = crate::output::end_step_capped(t, h.min(adaptive.max_step), tf, adaptive.max_step)?;
+        let Some(next_h) = crate::output::adaptive_end_step(t, h, tf, adaptive.max_step)? else {
+            break;
+        };
+        h = next_h;
         // A final piece that lands on tf is taken even below min_step.
-        if (h < adaptive.min_step && t + h < tf) || 0.5 * h <= f64::MIN_POSITIVE || t + h == t {
+        if (crate::output::below_min_step(t, h, adaptive.min_step) && t + h < tf)
+            || 0.5 * h <= f64::MIN_POSITIVE
+            || t + h == t
+        {
             break;
         }
         let requested_h = h;

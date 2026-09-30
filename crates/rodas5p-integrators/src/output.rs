@@ -81,7 +81,10 @@ fn land_nominal(t: f64, proposed: f64, target: f64, cap: f64) -> CoreResult<Land
         });
     }
     let gap = target - natural;
-    let extend = gap <= residue && to_target <= cap;
+    // The extension respects a hard maximum up to one clock resolution at
+    // the target, like `represent`.
+    let extend =
+        gap <= residue && (to_target <= cap || to_target - cap <= target.next_up() - target);
     Ok(Landing {
         step: if extend { to_target } else { proposed },
         lands: extend && t + to_target == target,
@@ -129,7 +132,12 @@ pub(crate) fn represent(t: f64, step: f64, cap: f64) -> CoreResult<f64> {
         )));
     }
     let mut h = step_to(t, t_end)?;
-    if h > cap {
+    // The represented step may exceed the nominal one by the rounding of
+    // t_end, up to one clock resolution at t_end; that is representation,
+    // not enlargement (an exact 0.07 + 0.01 == 0.08 landing has
+    // h = 0.010000000000000009). Only a larger excess is capped.
+    let resolution = t_end.next_up() - t_end;
+    if h > cap && h - cap > resolution {
         let below = t_end.next_down();
         if below <= t {
             return Err(CoreError::InvalidInput(format!(
@@ -142,6 +150,32 @@ pub(crate) fn represent(t: f64, step: f64, cap: f64) -> CoreResult<f64> {
     }
     check_clock(t, h)?;
     Ok(h)
+}
+
+/// True when a represented step `h` from `t` is below `min_step`: it ends
+/// before the represented time `t + min_step` (re-audit R3 review). Comparing
+/// the step sizes themselves would reject `0.02 -> 0.03`, whose represented
+/// step 0.009999999999999998 rounds below a `min_step` of 0.01.
+pub(crate) fn below_min_step(t: f64, h: f64, min_step: f64) -> bool {
+    t + h < t + min_step
+}
+
+/// The adaptive drivers' step toward `tf`: `None` when the proposal does not
+/// advance the represented time at all (the driver stops with
+/// `success = false`, as before the represented clock), otherwise the
+/// represented step, or a typed time-resolution error when the time
+/// resolution at `t` exceeds `max_step`.
+pub(crate) fn adaptive_end_step(
+    t: f64,
+    proposed: f64,
+    tf: f64,
+    max_step: f64,
+) -> CoreResult<Option<f64>> {
+    let nominal = proposed.min(max_step);
+    if !(nominal > 0.0) || t + nominal <= t {
+        return Ok(None);
+    }
+    end_step_capped(t, nominal, tf, max_step).map(Some)
 }
 
 /// A typed error unless the represented interval `fl(t + h) - t` equals `h`
@@ -234,6 +268,11 @@ impl FixedGrid {
         Ok(Self { t0, tf, h, steps })
     }
 
+    fn reached_within_residue(&self, t: f64, point: f64, k: u64) -> bool {
+        k < self.steps
+            && point - t <= (64.0 * f64::EPSILON * t.abs().max(point.abs())).min(self.h / 1024.0)
+    }
+
     /// The indexed time of grid point `k`: `t0 + k h`, and `tf` at the end.
     pub(crate) fn time(&self, k: u64) -> f64 {
         if k >= self.steps {
@@ -267,7 +306,11 @@ impl FixedGrid {
         while k > 0 && self.time(k) > t {
             k -= 1;
         }
-        while self.time(k) <= t {
+        // A grid point within the rounding residue after t counts as
+        // reached: after a clipped landing on a literal output 0.3, the
+        // indexed point 0.1 * 3 = 0.30000000000000004 is not a step of its
+        // own (re-audit R3 review).
+        while self.time(k) <= t || self.reached_within_residue(t, self.time(k), k) {
             k += 1;
         }
         step_to(t, self.time(k))
@@ -370,13 +413,16 @@ impl OutputSchedule {
         }
         let span = end - start;
         let intervals = (span / spacing).round() as usize;
-        // Divisibility is judged relative to the span, not the epoch: at
-        // t0 = 1e12 a 4-ULP span with spacing 1 has zero intervals and was
-        // accepted by an epoch-scaled slack, giving the schedule [tf] and y0
-        // reported as y(tf) (re-audit R3, R3-TIME-02).
-        if (span > 0.0 && intervals == 0)
-            || (intervals as f64 * spacing - span).abs() > 4.0 * f64::EPSILON * span
-        {
+        // At t0 = 1e12 a 4-ULP span with spacing 1 has zero intervals and
+        // was accepted by an epoch-scaled slack, giving the schedule [tf] and
+        // y0 reported as y(tf) (re-audit R3, R3-TIME-02).
+        // The tolerance is the rounding of the inputs themselves (a few eps
+        // of the largest magnitude, so decimal grids such as
+        // uniform(1.1, 1.2, 0.1) pass) but never more than 2^-10 of the
+        // spacing, and a nonzero span needs at least one interval.
+        let tolerance =
+            (8.0 * f64::EPSILON * start.abs().max(end.abs()).max(span)).min(spacing / 1024.0);
+        if (span > 0.0 && intervals == 0) || (intervals as f64 * spacing - span).abs() > tolerance {
             return Err(CoreError::InvalidInput(
                 "output spacing must divide the integration interval".into(),
             ));

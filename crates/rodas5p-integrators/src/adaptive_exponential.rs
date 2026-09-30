@@ -198,9 +198,12 @@ fn integrate_pexprb54s4_fused_adaptive_observed_with_telemetry_request(
     let mut diagnostics = AdaptiveFusedExponentialDiagnostics::default();
 
     while t < tf && diagnostics.attempts < adaptive.max_attempts {
-        h = crate::output::end_step_capped(t, h.min(adaptive.max_step), tf, adaptive.max_step)?;
+        let Some(next_h) = crate::output::adaptive_end_step(t, h, tf, adaptive.max_step)? else {
+            break;
+        };
+        h = next_h;
         // A final piece that lands on tf is taken even below min_step.
-        if (h < adaptive.min_step && t + h < tf) || t + h == t {
+        if (crate::output::below_min_step(t, h, adaptive.min_step) && t + h < tf) || t + h == t {
             break;
         }
         let (trial_h, clipped) = collector.limit_step(t, h, tf)?;

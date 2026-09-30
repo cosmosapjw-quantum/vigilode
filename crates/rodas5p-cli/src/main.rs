@@ -1139,14 +1139,57 @@ const WALL_WRONG_ARMS: &str = "wall-time criterion not evaluated: the paired tim
 /// The Tier-L reference arm of every paired timing.
 const TIER_L_TIMING_REFERENCE: &str = "sequential-gmres-off";
 
-fn wall_criterion(candidate_id: &str, paired: Option<&PairedTimingEvidence>) -> WallCriterion {
+const WALL_WRONG_IDENTITY: &str = "wall-time criterion not evaluated: the paired timing evidence was measured on another workload or executable";
+
+/// What paired timing evidence must have measured to count for this
+/// document: the workload profile and, when known, this executable.
+#[derive(Clone, Debug)]
+struct TimingExpectation {
+    workload_prefix: String,
+    executable_sha256: Option<String>,
+}
+
+impl TimingExpectation {
+    fn for_profile(profile: CliHomotopyProfile) -> Result<Self> {
+        Ok(Self {
+            workload_prefix: format!("tier-l-{}-", cli_profile_name(profile)),
+            executable_sha256: Some(sha256_hex(&fs::read(std::env::current_exe()?)?)),
+        })
+    }
+}
+
+fn cli_profile_name(profile: CliHomotopyProfile) -> &'static str {
+    match profile {
+        CliHomotopyProfile::Smoke => "smoke",
+        CliHomotopyProfile::Canonical => "canonical",
+    }
+}
+
+fn wall_criterion(
+    candidate_id: &str,
+    paired: Option<&PairedTimingEvidence>,
+    expected: &TimingExpectation,
+) -> WallCriterion {
     let Some(evidence) = paired else {
         return WallCriterion::NotEvaluated(WALL_NOT_EVALUATED);
     };
-    if evidence.receipt.candidate.arm_id != candidate_id
-        || evidence.receipt.reference.arm_id != TIER_L_TIMING_REFERENCE
+    let receipt = &evidence.receipt;
+    if receipt.candidate.arm_id != candidate_id
+        || receipt.reference.arm_id != TIER_L_TIMING_REFERENCE
     {
         return WallCriterion::NotEvaluated(WALL_WRONG_ARMS);
+    }
+    // Smoke-profile or other-binary evidence never gates this document
+    // (re-audit R3 review).
+    let identity_matches = [&receipt.candidate, &receipt.reference].iter().all(|arm| {
+        arm.workload_id.starts_with(&expected.workload_prefix)
+            && expected
+                .executable_sha256
+                .as_ref()
+                .is_none_or(|hash| &arm.executable_sha256 == hash)
+    });
+    if !identity_matches {
+        return WallCriterion::NotEvaluated(WALL_WRONG_IDENTITY);
     }
     // The gate is recomputed from the raw receipt: the assessment must
     // equal its recomputation from the receipt's session records, the
@@ -1252,11 +1295,9 @@ fn run_tier_l_paired_campaign(
     );
     let directory = output.with_extension("sessions");
     fs::create_dir_all(&directory)?;
-    let profile_arg = match profile {
-        CliHomotopyProfile::Smoke => "smoke",
-        CliHomotopyProfile::Canonical => "canonical",
-    };
+    let profile_arg = cli_profile_name(profile);
     let mut records = Vec::new();
+    let mut failed_sessions = Vec::new();
     let batches_path = directory.join("batches.json");
     for session in 0..sessions {
         let record_path = directory.join(format!("session-{session}.json"));
@@ -1270,14 +1311,27 @@ fn run_tier_l_paired_campaign(
             .args(["--seed", &seed.to_string()])
             .arg("--output")
             .arg(&record_path);
-        if session > 0 {
+        if session > 0 && batches_path.exists() {
             command.arg("--batches").arg(&batches_path);
         }
         let status = command.status()?;
-        if !status.success() {
-            anyhow::bail!("paired timing session {session} exited with {status}");
-        }
-        let record: SessionRecord = serde_json::from_slice(&fs::read(&record_path)?)?;
+        let record = if status.success() {
+            fs::read(&record_path)
+                .ok()
+                .and_then(|bytes| serde_json::from_slice::<SessionRecord>(&bytes).ok())
+        } else {
+            None
+        };
+        // A session that produced no record is retained as a failure; the
+        // receipt then never gates (re-audit R3 review).
+        let Some(record) = record else {
+            failed_sessions.push(rodas5p_fair_ab::SessionFailure {
+                session,
+                case_id: "*".into(),
+                message: format!("session process exited with {status} and no readable record"),
+            });
+            continue;
+        };
         if session == 0 {
             let batches = record
                 .cases
@@ -1289,7 +1343,7 @@ fn run_tier_l_paired_campaign(
         records.push(record);
     }
     let workload_id = format!("tier-l-{profile_arg}-seed-{seed}");
-    let receipt = PairedTimingReceipt::from_sessions(
+    let receipt = PairedTimingReceipt::from_sessions_with_failures(
         &campaign_id,
         ArmIdentity {
             arm_id: candidate_id.to_owned(),
@@ -1303,6 +1357,7 @@ fn run_tier_l_paired_campaign(
         },
         PairedTimingProtocol::authoritative(seed),
         records,
+        failed_sessions,
     )?;
     Ok(PairedTimingEvidence::from_receipt(receipt)?)
 }
@@ -1317,7 +1372,15 @@ const TIER_N_WALL_TIMING_ADMISSIBLE: bool = false;
 fn assess_linear_candidates(
     suites: &[UnifiedLinearSuite],
 ) -> Vec<UnifiedLinearCandidateAssessment> {
-    assess_linear_candidates_against(suites, TIER_L_REFERENCE_FIDELITY, &BTreeMap::new())
+    assess_linear_candidates_against(
+        suites,
+        TIER_L_REFERENCE_FIDELITY,
+        &BTreeMap::new(),
+        &TimingExpectation {
+            workload_prefix: "test".into(),
+            executable_sha256: None,
+        },
+    )
 }
 
 /// `paired_timing` maps a candidate id to its paired assessment against
@@ -1326,6 +1389,7 @@ fn assess_linear_candidates_against(
     suites: &[UnifiedLinearSuite],
     reference_fidelity: ComparatorFidelity,
     paired_timing: &BTreeMap<String, PairedTimingEvidence>,
+    expected: &TimingExpectation,
 ) -> Vec<UnifiedLinearCandidateAssessment> {
     strict_cells()
         .into_iter()
@@ -1382,7 +1446,7 @@ fn assess_linear_candidates_against(
                 not_evaluated.push(REFERENCE_ONLY_NOT_EVALUATED.to_string());
             }
             if !is_reference && relative_admissible {
-                match wall_criterion(&candidate_id, paired_timing.get(&candidate_id)) {
+                match wall_criterion(&candidate_id, paired_timing.get(&candidate_id), expected) {
                     WallCriterion::Passed => {}
                     WallCriterion::Failed => blockers.push(format!(
                         "paired Tier-L wall-speedup interval lies below {:.2}x",
@@ -1865,8 +1929,12 @@ fn run_unified_candidate_document(
     let mut nonlinear = run_unified_nonlinear_screen(profile.into(), threads)?;
     let scientific_gates = run_unified_scientific_gates(profile.into(), threads, &nonlinear)?;
     let native_integrator_gates = run_native_integrator_gates()?;
-    let linear_assessments =
-        assess_linear_candidates_against(&linear_suites, TIER_L_REFERENCE_FIDELITY, paired_timing);
+    let linear_assessments = assess_linear_candidates_against(
+        &linear_suites,
+        TIER_L_REFERENCE_FIDELITY,
+        paired_timing,
+        &TimingExpectation::for_profile(profile)?,
+    );
     let catalog = CandidateCatalog::research_default()?;
     let nonlinear_assessments = assess_nonlinear_candidates(&catalog, &nonlinear);
     let joint_assessments = build_joint_assessments(
@@ -2883,6 +2951,10 @@ mod unified_assessment_tests {
                 &[suite(0.8)],
                 TIER_L_REFERENCE_FIDELITY,
                 &map,
+                &TimingExpectation {
+                    workload_prefix: "test".into(),
+                    executable_sha256: Some("0".repeat(64)),
+                },
             ))
         };
         // Receipt-backed paired evidence above 1.15x promotes.
@@ -2916,6 +2988,23 @@ mod unified_assessment_tests {
         let mut other = paired_evidence(1.30, true);
         other.receipt.candidate.arm_id = "sequential-lgmres-off".into();
         assert_eq!(with(other).not_evaluated, vec![WALL_WRONG_ARMS]);
+        // Evidence from another executable or workload never gates.
+        let mut binary = paired_evidence(1.30, true);
+        binary.receipt.reference.executable_sha256 = "1".repeat(64);
+        assert_eq!(with(binary).not_evaluated, vec![WALL_WRONG_IDENTITY]);
+        let mut smoke = paired_evidence(1.30, true);
+        smoke.receipt.candidate.workload_id = "tier-l-smoke-seed-1".into();
+        assert_eq!(with(smoke).not_evaluated, vec![WALL_WRONG_IDENTITY]);
+        // Failures dropped from the top-level list are detected.
+        let mut hidden = paired_evidence(1.30, true);
+        hidden.receipt.session_records[1]
+            .failures
+            .push(rodas5p_fair_ab::SessionFailure {
+                session: 1,
+                case_id: "case-9".into(),
+                message: "failed solve".into(),
+            });
+        assert_eq!(with(hidden).not_evaluated, vec![WALL_REJECTED]);
     }
 
     #[test]
@@ -3002,6 +3091,10 @@ mod unified_assessment_tests {
                 &[suite(gcrodr_wall)],
                 ComparatorFidelity::ReferenceImplementationOnly,
                 &BTreeMap::new(),
+                &TimingExpectation {
+                    workload_prefix: "test".into(),
+                    executable_sha256: None,
+                },
             );
             let row = rows
                 .iter()

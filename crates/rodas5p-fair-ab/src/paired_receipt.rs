@@ -256,6 +256,38 @@ pub fn merge_session_cases(parts: &[&PairedTimingCase]) -> FairResult<PairedTimi
     Ok(merged)
 }
 
+/// Merge the records' cases per case id. A case whose session parts do not
+/// merge (different batches, for example after a failure in the first
+/// session) is left out and reported as a failure, never dropped silently.
+fn merge_records(
+    records: &[SessionRecord],
+    select: fn(&SessionRecord) -> &Vec<PairedTimingCase>,
+) -> (Vec<PairedTimingCase>, Vec<SessionFailure>) {
+    let mut by_case = BTreeMap::<String, Vec<(u32, &PairedTimingCase)>>::new();
+    for record in records {
+        for case in select(record) {
+            by_case
+                .entry(case.case_id.clone())
+                .or_default()
+                .push((record.provenance.session, case));
+        }
+    }
+    let mut merged = Vec::new();
+    let mut failures = Vec::new();
+    for (case_id, parts) in by_case {
+        let cases = parts.iter().map(|(_, case)| *case).collect::<Vec<_>>();
+        match merge_session_cases(&cases) {
+            Ok(case) => merged.push(case),
+            Err(error) => failures.push(SessionFailure {
+                session: parts[0].0,
+                case_id,
+                message: format!("sessions do not merge: {error}"),
+            }),
+        }
+    }
+    (merged, failures)
+}
+
 /// Everything a wall decision was computed from.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct PairedTimingReceipt {
@@ -267,7 +299,13 @@ pub struct PairedTimingReceipt {
     pub sessions: Vec<SessionProvenance>,
     pub cases: Vec<PairedTimingCase>,
     pub aa_cases: Vec<PairedTimingCase>,
+    /// Every failure: those the session records carry, then the cases whose
+    /// sessions do not merge, then sessions whose process produced no record.
     pub failures: Vec<SessionFailure>,
+    /// Sessions that were started but produced no record (their process
+    /// failed); retained so an unsuccessful session is not invisible.
+    #[serde(default)]
+    pub failed_sessions: Vec<SessionFailure>,
     /// Per-session raw records exactly as the session processes wrote
     /// them, including their own warmups.
     pub session_records: Vec<SessionRecord>,
@@ -280,23 +318,29 @@ impl PairedTimingReceipt {
         candidate: ArmIdentity,
         reference: ArmIdentity,
         protocol: PairedTimingProtocol,
+        records: Vec<SessionRecord>,
+    ) -> FairResult<Self> {
+        Self::from_sessions_with_failures(
+            campaign_id,
+            candidate,
+            reference,
+            protocol,
+            records,
+            Vec::new(),
+        )
+    }
+
+    /// [`Self::from_sessions`] with sessions that produced no record.
+    pub fn from_sessions_with_failures(
+        campaign_id: &str,
+        candidate: ArmIdentity,
+        reference: ArmIdentity,
+        protocol: PairedTimingProtocol,
         mut records: Vec<SessionRecord>,
+        failed_sessions: Vec<SessionFailure>,
     ) -> FairResult<Self> {
         records.sort_by_key(|record| record.provenance.session);
-        let merge = |select: fn(&SessionRecord) -> &Vec<PairedTimingCase>| {
-            let mut by_case = BTreeMap::<String, Vec<&PairedTimingCase>>::new();
-            for record in &records {
-                for case in select(record) {
-                    by_case.entry(case.case_id.clone()).or_default().push(case);
-                }
-            }
-            by_case
-                .values()
-                .map(|parts| merge_session_cases(parts))
-                .collect::<FairResult<Vec<_>>>()
-        };
-        let cases = merge(|record| &record.cases)?;
-        let aa_cases = merge(|record| &record.aa_cases)?;
+        let (cases, aa_cases, failures) = Self::derive(&records, &failed_sessions);
         let receipt = Self {
             schema: PAIRED_TIMING_RECEIPT_SCHEMA.into(),
             campaign_id: campaign_id.to_owned(),
@@ -309,21 +353,42 @@ impl PairedTimingReceipt {
                 .collect(),
             cases,
             aa_cases,
-            failures: records
-                .iter()
-                .flat_map(|record| record.failures.clone())
-                .collect(),
+            failures,
+            failed_sessions,
             session_records: records,
         };
         receipt.validate()?;
         Ok(receipt)
     }
 
+    /// The merged cases and the complete failure list implied by the
+    /// records; [`Self::validate`] requires the receipt to equal them.
+    fn derive(
+        records: &[SessionRecord],
+        failed_sessions: &[SessionFailure],
+    ) -> (
+        Vec<PairedTimingCase>,
+        Vec<PairedTimingCase>,
+        Vec<SessionFailure>,
+    ) {
+        let (cases, case_failures) = merge_records(records, |record| &record.cases);
+        let (aa_cases, aa_failures) = merge_records(records, |record| &record.aa_cases);
+        let mut failures = records
+            .iter()
+            .flat_map(|record| record.failures.clone())
+            .collect::<Vec<_>>();
+        failures.extend(case_failures);
+        failures.extend(aa_failures);
+        failures.extend(failed_sessions.iter().cloned());
+        (cases, aa_cases, failures)
+    }
+
     /// Provenance checks: current schema, a campaign identity carried by
     /// every session record, one monotonic clock, distinct sessions measured
-    /// by distinct processes, and every session label used by a case
-    /// declared by a session record of this campaign. The merged cases must
-    /// be the session records' own measurements.
+    /// by distinct processes, cases labelled only with their own record's
+    /// session, finite nonnegative warmups in every session, per-session
+    /// orders of exactly `protocol.pairs` pairs, and merged cases and the
+    /// failure list that are exactly those the records imply.
     pub fn validate(&self) -> FairResult<()> {
         let reject = |reason: String| {
             Err(FairError::Invalid(format!(
@@ -368,17 +433,36 @@ impl PairedTimingReceipt {
         {
             return reject("session records do not match the declared sessions".into());
         }
-        for case in self.cases.iter().chain(&self.aa_cases) {
-            if case
-                .process_blocks
-                .iter()
-                .any(|label| !sessions.contains(label))
-            {
-                return reject(format!(
-                    "case {} uses a session no record of this campaign declares",
-                    case.case_id
-                ));
+        for record in &self.session_records {
+            let session = record.provenance.session;
+            for case in record.cases.iter().chain(&record.aa_cases) {
+                if case.process_blocks.len() != self.protocol.pairs
+                    || case.process_blocks.iter().any(|label| *label != session)
+                {
+                    return reject(format!(
+                        "case {} in session {session} is not labelled with that session",
+                        case.case_id
+                    ));
+                }
+                if case.order != abba_pair_order(self.protocol.pairs, self.protocol.seed) {
+                    return reject(format!(
+                        "case {} in session {session} does not follow the seeded order",
+                        case.case_id
+                    ));
+                }
+                if !case
+                    .warmup_seconds
+                    .iter()
+                    .all(|seconds| seconds.is_finite() && *seconds >= 0.0)
+                {
+                    return reject(format!(
+                        "case {} in session {session} has an invalid warmup",
+                        case.case_id
+                    ));
+                }
             }
+        }
+        for case in self.cases.iter().chain(&self.aa_cases) {
             if case.order != session_abba_order(&case.process_blocks, self.protocol.seed) {
                 return reject(format!(
                     "case {} is not the concatenation of its sessions",
@@ -386,30 +470,15 @@ impl PairedTimingReceipt {
                 ));
             }
         }
-        let rebuilt = Self::from_sessions_unchecked(self);
-        if rebuilt.0 != self.cases || rebuilt.1 != self.aa_cases {
+        let (cases, aa_cases, failures) =
+            Self::derive(&self.session_records, &self.failed_sessions);
+        if cases != self.cases || aa_cases != self.aa_cases {
             return reject("merged cases differ from the session records".into());
         }
+        if failures != self.failures {
+            return reject("the failure list differs from the session records".into());
+        }
         Ok(())
-    }
-
-    fn from_sessions_unchecked(&self) -> (Vec<PairedTimingCase>, Vec<PairedTimingCase>) {
-        let merge = |select: fn(&SessionRecord) -> &Vec<PairedTimingCase>| {
-            let mut by_case = BTreeMap::<String, Vec<&PairedTimingCase>>::new();
-            for record in &self.session_records {
-                for case in select(record) {
-                    by_case.entry(case.case_id.clone()).or_default().push(case);
-                }
-            }
-            by_case
-                .values()
-                .filter_map(|parts| merge_session_cases(parts).ok())
-                .collect::<Vec<_>>()
-        };
-        (
-            merge(|record| &record.cases),
-            merge(|record| &record.aa_cases),
-        )
     }
 
     /// Assess the receipt's raw cases.
@@ -458,7 +527,7 @@ impl PairedTimingEvidence {
         let decision = self
             .assessment
             .verify_against_raw(&self.receipt.cases, self.receipt.aa_option())?;
-        if !self.receipt.failures.is_empty() {
+        if !self.receipt.failures.is_empty() || !self.receipt.failed_sessions.is_empty() {
             return Ok(PairedTimingDecision::Inconclusive);
         }
         Ok(decision)

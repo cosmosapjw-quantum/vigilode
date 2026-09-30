@@ -431,3 +431,101 @@ fn a_long_fixed_run_steps_on_the_indexed_grid() {
         rodas5p_integrators::RESEARCH_REPLAY_CLOCK_POLICY
     );
 }
+
+// Independent review of the first R3 patch.
+
+#[test]
+fn adaptive_runs_cruising_at_max_step_land_on_outputs_without_micro_steps() {
+    let output = OutputSchedule::uniform(0.0, 1.0, 0.01).unwrap();
+    for (min_step, label) in [(1.0e-14, "min 1e-14"), (0.01, "min == max")] {
+        let config = AdaptiveStepConfig {
+            atol: 1.0e-10,
+            rtol: 1.0e-9,
+            initial_step: 0.01,
+            min_step,
+            max_step: 0.01,
+            max_attempts: 1_000,
+            ..AdaptiveStepConfig::default()
+        };
+        let result = integrate_adaptive_observed_with_config(
+            &flow(1.0),
+            (0.0, 1.0),
+            &[0.0],
+            IntegrationMethod::Sequential,
+            None,
+            None,
+            &config,
+            &output,
+        )
+        .unwrap()
+        .observed;
+        assert!(result.success, "{label}: {}", result.message);
+        assert_eq!(result.internal_steps, 100, "{label}");
+        assert!((result.y.last().unwrap()[0] - 1.0).abs() <= 1.0e-12);
+    }
+}
+
+#[test]
+fn decimal_uniform_grids_are_admitted() {
+    for (start, end, spacing) in [(1.1, 1.2, 0.1), (1000.1, 1000.7, 0.2), (0.3, 2.7, 0.3)] {
+        let schedule = OutputSchedule::uniform(start, end, spacing).unwrap();
+        assert_eq!(schedule.times()[0], start);
+        assert_eq!(*schedule.times().last().unwrap(), end);
+    }
+}
+
+#[test]
+fn literal_output_times_do_not_add_steps_to_the_indexed_grid() {
+    // Outputs i / 100 differ from the indexed 0.01 * i by an ULP at some i;
+    // the grid point just after a clipped landing counts as reached.
+    let output = OutputSchedule::new((0..=100).map(|i| i as f64 / 100.0).collect()).unwrap();
+    let problem = shifted_sine(0.0);
+    let rodas = integrate_fixed_observed(
+        &problem,
+        (0.0, 1.0),
+        &[0.0],
+        0.01,
+        IntegrationMethod::Sequential,
+        None,
+        None,
+        1.0e-10,
+        1.0e-9,
+        &output,
+    )
+    .unwrap();
+    assert_eq!(rodas.internal_steps, 100);
+    let bdf = integrate_bdf_fixed_observed(
+        &problem,
+        (0.0, 1.0),
+        &[0.0],
+        0.01,
+        &BdfConfig::default(),
+        &output,
+    )
+    .unwrap();
+    assert_eq!(bdf.internal_steps, 100);
+    assert!((bdf.y.last().unwrap()[0] - 1.0_f64.sin()).abs() <= 1.0e-4);
+}
+
+#[test]
+fn a_step_across_zero_integrates_its_represented_interval() {
+    // Opposite-sign endpoints: -0.7 + 1.0 has no exact landing on 0.3; the
+    // represented interval is integrated in every step.
+    let result = integrate_fixed(
+        &shifted_sine(0.0),
+        (-0.7, 0.3),
+        &[(-0.7_f64).sin()],
+        0.1,
+        IntegrationMethod::Sequential,
+        None,
+        None,
+        1.0e-10,
+        1.0e-9,
+    )
+    .unwrap();
+    assert_eq!(*result.t.last().unwrap(), 0.3);
+    for (k, h) in result.step_sizes.iter().enumerate() {
+        assert_eq!(result.t[k] + h, result.t[k + 1]);
+    }
+    assert!((result.y.last().unwrap()[0] - 0.3_f64.sin()).abs() <= 1.0e-9);
+}

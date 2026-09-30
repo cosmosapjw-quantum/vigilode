@@ -108,10 +108,12 @@ pub fn times_power(value: f64, scale: f64, k: u32) -> f64 {
 /// 1e100` with `b_4 = 1e-300` gives `1e100` rather than an overflow.
 ///
 /// A weight whose true value lies above `f64::MAX` is an error. A nonzero
-/// input whose weight lies below the smallest subnormal becomes 0 and is
-/// counted in the returned total; when every nonzero input is lost this way
-/// the result is an error, so a combination of nonzero inputs never comes
-/// back as an exact zero from the transform alone.
+/// input whose weight (k >= 1) lies below the smallest normal number is
+/// counted in the returned total: below the smallest subnormal it becomes
+/// 0, and in the subnormal range it keeps fewer than 53 bits. When every
+/// nonzero input becomes 0 the result is an error, so a combination of
+/// nonzero inputs never comes back as an exact zero from the transform
+/// alone.
 pub fn weight_phi_vectors(scale: f64, vectors: &[Vec<f64>]) -> CoreResult<(Vec<Vec<f64>>, usize)> {
     if !scale.is_finite() || !vectors.iter().flatten().all(|value| value.is_finite()) {
         return Err(CoreError::NonFinite(
@@ -135,7 +137,10 @@ pub fn weight_phi_vectors(scale: f64, vectors: &[Vec<f64>]) -> CoreResult<(Vec<V
             }
             if value != 0.0 && scale != 0.0 {
                 nonzero_inputs += 1;
-                if weight == 0.0 {
+                // A weight rounded into the subnormal range keeps fewer than
+                // 53 bits: h = 1e-8, b_2 = 3e-308 gives 3e-324 -> 5e-324, a
+                // 65% error (re-audit R3 review). It counts as lost too.
+                if weight == 0.0 || (k > 0 && weight.abs() < f64::MIN_POSITIVE) {
                     lost += 1;
                 }
             }

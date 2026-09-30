@@ -126,3 +126,14 @@ fn malformed_raw_protocols_are_rejected_before_assessment() {
         }
     }
 }
+
+#[test]
+fn singleton_session_runs_cannot_restart_the_order_every_pair() {
+    // Review: labels 0..29 with the per-session order made every pair
+    // [Candidate, Reference] admissible.
+    let protocol = PairedTimingProtocol::authoritative(SEED);
+    let mut case = cases(&protocol, 1.3, "case").remove(0);
+    case.process_blocks = (0..protocol.pairs as u32).collect();
+    case.order = rodas5p_fair_ab::session_abba_order(&case.process_blocks, SEED);
+    assert!(case.admit(&protocol).is_err());
+}
