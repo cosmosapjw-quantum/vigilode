@@ -187,6 +187,25 @@ pub fn abba_pair_order(pairs: usize, seed: u64) -> Vec<[PairedArm; 2]> {
     order
 }
 
+/// The seeded ABBA order restarted in each contiguous run of equal session
+/// labels: the order of a case whose sessions each measured
+/// `protocol.pairs` pairs in their own process and were then concatenated
+/// ([`merge_session_cases`]). Empty labels give an empty order.
+pub fn session_abba_order(process_blocks: &[u32], seed: u64) -> Vec<[PairedArm; 2]> {
+    let mut order = Vec::with_capacity(process_blocks.len());
+    let mut start = 0;
+    while start < process_blocks.len() {
+        let label = process_blocks[start];
+        let end = process_blocks[start..]
+            .iter()
+            .position(|block| *block != label)
+            .map_or(process_blocks.len(), |offset| start + offset);
+        order.extend(abba_pair_order(end - start, seed));
+        start = end;
+    }
+    order
+}
+
 /// Batch iterations such that the fastest warmup sample would reach the
 /// minimum sample time.  The minimum, not the last, sample is used so a slow
 /// cold warmup cannot shrink the batch below the timer-resolution floor.
@@ -313,7 +332,9 @@ impl PairedTimingCase {
                 self.case_id, self.batch_iterations
             )));
         }
-        if self.order != abba_pair_order(self.candidate_seconds.len(), protocol.seed) {
+        if self.order != abba_pair_order(self.candidate_seconds.len(), protocol.seed)
+            && self.order != session_abba_order(&self.process_blocks, protocol.seed)
+        {
             return Err(FairError::Invalid(format!(
                 "paired timing case {} does not follow the protocol's seeded ABBA order",
                 self.case_id

@@ -208,7 +208,18 @@ fn same_seed_reproduces_identical_interval_bits() {
     // under another seed; twelve cases make the reseeding visible.
     let cases = noisy_cases(1.20, 0.10, 12, 13);
     let first = case_clustered_bootstrap(&cases, &protocol()).unwrap();
-    let other = case_clustered_bootstrap(&cases, &reseeded).unwrap();
+    // The seed also fixes the ABBA order, which raw-case admission checks
+    // (re-audit R3, R3-STAT-01): the same samples under the other seed
+    // carry that seed's order.
+    let reordered = cases
+        .iter()
+        .cloned()
+        .map(|mut case| {
+            case.order = rodas5p_fair_ab::abba_pair_order(case.order.len(), SEED + 1);
+            case
+        })
+        .collect::<Vec<_>>();
+    let other = case_clustered_bootstrap(&reordered, &reseeded).unwrap();
     assert_eq!(other.point.to_bits(), first.point.to_bits());
     assert!(
         other.lower.to_bits() != first.lower.to_bits()
