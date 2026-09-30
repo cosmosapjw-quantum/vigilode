@@ -412,6 +412,23 @@ enum Command {
         #[arg(long)]
         output: PathBuf,
     },
+    /// Coverage study of the paired timing interval and decision under the
+    /// preregistered dependence and missingness models (re-audit R3,
+    /// STAT-DEV-04). Refuses to overwrite its output.
+    #[command(name = "paired-timing-coverage-study")]
+    PairedTimingCoverageStudy {
+        #[arg(long, default_value_t = rodas5p_fair_ab::COVERAGE_STUDY_REPLICATIONS)]
+        replications: usize,
+        #[arg(long, default_value_t = 20_261_001)]
+        seed: u64,
+        #[arg(long, default_value_t = 4)]
+        threads: usize,
+        /// Run only these scenario ids (default: the whole grid).
+        #[arg(long)]
+        scenario: Vec<String>,
+        #[arg(long)]
+        output: PathBuf,
+    },
     /// Generate a deterministic immutable linear-system trace.
     Trace {
         #[arg(long, value_enum)]
@@ -2684,6 +2701,31 @@ fn main() -> Result<()> {
             let mut map = BTreeMap::new();
             map.insert(candidate, evidence);
             write_json(&output, &map)?;
+        }
+        Command::PairedTimingCoverageStudy {
+            replications,
+            seed,
+            threads,
+            scenario,
+            output,
+        } => {
+            let protocol = rodas5p_fair_ab::PairedTimingProtocol::authoritative(seed);
+            let grid = rodas5p_fair_ab::preregistered_coverage_grid(&protocol)
+                .into_iter()
+                .filter(|entry| scenario.is_empty() || scenario.contains(&entry.id))
+                .collect::<Vec<_>>();
+            if grid.is_empty() {
+                anyhow::bail!("no coverage scenario matches {scenario:?}");
+            }
+            let report =
+                rodas5p_fair_ab::coverage_study(&grid, replications, seed, threads, &protocol)?;
+            write_json_create_new(&output, &report)?;
+            println!(
+                "coverage study: {} scenarios, verdict {} (sensitivity pass: {})",
+                report.scenarios.len(),
+                report.verdict,
+                report.sensitivity_pass
+            );
         }
         Command::Trace {
             kind,

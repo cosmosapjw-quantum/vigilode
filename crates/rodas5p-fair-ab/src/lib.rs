@@ -15,6 +15,7 @@ mod runner;
 mod scenarios;
 mod scientific_validity_v2_campaign;
 mod session;
+mod timing_design;
 mod two_arm_campaign_v3;
 
 pub use adapters::solve_case;
@@ -54,7 +55,7 @@ pub use paired_timing::{
     PairedTimingProtocol, SpeedupInterval, TimingHostMetadata, abba_pair_order, assess_aa_control,
     assess_paired_timing, calibrate_batch_iterations, case_clustered_bootstrap,
     detect_timing_host_metadata, measure_paired_case, measure_paired_case_in_session,
-    monte_carlo_gate, paired_timing_decision, session_abba_order,
+    monte_carlo_gate, paired_timing_decision, percentile_endpoint_decision, session_abba_order,
 };
 pub use runner::{
     BenchmarkCell, BenchmarkPlan, ComparisonResult, SummaryRow, TraceRunResult,
@@ -76,6 +77,13 @@ pub use scientific_validity_v2_campaign::{
     validate_scientific_validity_v2_case_artifact,
 };
 pub use session::{RecycleSessionManager, SolverSession, StateTransition};
+pub use timing_design::{
+    COVERAGE_STUDY_MAX_FALSE_PROMOTE, COVERAGE_STUDY_MIN_COVERAGE, COVERAGE_STUDY_REPLICATIONS,
+    COVERAGE_STUDY_SCHEMA, CoverageReplication, CoverageScenario, CoverageScenarioResult,
+    CoverageStudyReport, DependenceModel, Missingness, SimulatedCorpus, TIMING_DESIGN_CONTRACT,
+    TimingDesign, coverage_replication, coverage_study, preregistered_coverage_grid,
+    simulate_corpus,
+};
 
 pub(crate) use contracts::relative_solution_error;
 

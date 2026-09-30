@@ -150,10 +150,10 @@ impl PairedTimingProtocol {
 /// generator so the order and bootstrap bits are reproducible without
 /// depending on an external crate's stream stability.
 #[derive(Clone, Debug)]
-struct SplitMix64(u64);
+pub(crate) struct SplitMix64(pub(crate) u64);
 
 impl SplitMix64 {
-    fn next_u64(&mut self) -> u64 {
+    pub(crate) fn next_u64(&mut self) -> u64 {
         self.0 = self.0.wrapping_add(0x9e37_79b9_7f4a_7c15);
         let mut z = self.0;
         z = (z ^ (z >> 30)).wrapping_mul(0xbf58_476d_1ce4_e5b9);
@@ -163,7 +163,7 @@ impl SplitMix64 {
 
     /// Uniform index in `0..bound` by multiply-shift (bias below 2^-32 for
     /// the small bounds used here).
-    fn below(&mut self, bound: usize) -> usize {
+    pub(crate) fn below(&mut self, bound: usize) -> usize {
         ((u128::from(self.next_u64()) * bound as u128) >> 64) as usize
     }
 }
@@ -499,14 +499,22 @@ where
     Ok(case)
 }
 
-fn median_in_place(values: &mut [f64]) -> f64 {
+/// The median by selection: the same order statistics, and so the same bits,
+/// as sorting, in linear time.
+pub(crate) fn median_in_place(values: &mut [f64]) -> f64 {
     debug_assert!(!values.is_empty());
-    values.sort_by(f64::total_cmp);
+    let even = values.len().is_multiple_of(2);
     let middle = values.len() / 2;
-    if values.len().is_multiple_of(2) {
-        0.5 * (values[middle - 1] + values[middle])
+    let (left, upper, _) = values.select_nth_unstable_by(middle, f64::total_cmp);
+    if even {
+        let lower = left
+            .iter()
+            .copied()
+            .max_by(f64::total_cmp)
+            .expect("an even nonempty slice has a lower half");
+        0.5 * (lower + *upper)
     } else {
-        values[middle]
+        *upper
     }
 }
 
@@ -764,6 +772,21 @@ pub enum PairedTimingDecision {
     Inconclusive,
 }
 
+/// The percentile-endpoint rule alone, without the session count or the
+/// Monte-Carlo gate: the pre-R3 decision, kept as a diagnostic.
+pub fn percentile_endpoint_decision(
+    interval: &SpeedupInterval,
+    required_speedup: f64,
+) -> PairedTimingDecision {
+    if interval.lower >= required_speedup {
+        PairedTimingDecision::Promote
+    } else if interval.upper < required_speedup {
+        PairedTimingDecision::Block
+    } else {
+        PairedTimingDecision::Inconclusive
+    }
+}
+
 pub fn paired_timing_decision(
     interval: &SpeedupInterval,
     required_speedup: f64,
@@ -773,13 +796,7 @@ pub fn paired_timing_decision(
     {
         PairedTimingDecision::Inconclusive
     } else {
-        let endpoint = if interval.lower >= required_speedup {
-            PairedTimingDecision::Promote
-        } else if interval.upper < required_speedup {
-            PairedTimingDecision::Block
-        } else {
-            PairedTimingDecision::Inconclusive
-        };
+        let endpoint = percentile_endpoint_decision(interval, required_speedup);
         // The percentile endpoints and the Monte-Carlo gate must agree: an
         // endpoint decided by simulation noise is not decided (re-audit R3,
         // STAT-DEV-03; the old endpoint rule is kept as the diagnostic).
@@ -1077,6 +1094,8 @@ pub fn assess_paired_timing(
         .iter()
         .map(|case| {
             let mut logs = case.log_speedups();
+            logs.sort_by(f64::total_cmp);
+            let (minimum, maximum) = (logs[0], logs[logs.len() - 1]);
             let median_log_speedup = median_in_place(&mut logs);
             PairedCaseSummary {
                 case_id: case.case_id.clone(),
@@ -1084,8 +1103,8 @@ pub fn assess_paired_timing(
                 batch_iterations: case.batch_iterations,
                 median_log_speedup,
                 median_speedup: median_log_speedup.exp(),
-                minimum_pair_speedup: logs[0].exp(),
-                maximum_pair_speedup: logs[logs.len() - 1].exp(),
+                minimum_pair_speedup: minimum.exp(),
+                maximum_pair_speedup: maximum.exp(),
             }
         })
         .collect();
