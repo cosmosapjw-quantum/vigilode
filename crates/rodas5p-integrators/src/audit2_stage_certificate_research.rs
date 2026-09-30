@@ -278,8 +278,11 @@ pub fn retain_completed_stage_traces(
 /// Recomputes the narrow synthetic L2 contract and admits only safe intervals.
 ///
 /// Every quantity that enters the decision is an upper bound computed with
-/// correctly rounded upward binary64 arithmetic, including the residuals and
-/// norms (audit F-061, F-101). Each stage has its own residual bound
+/// outward-rounded binary64 arithmetic, including the residuals and norms
+/// (audit F-061, F-101). The primitives return rigorous conservative upper
+/// bounds: for normal operands the least representable one, for some
+/// subnormal products and quotients a larger one (audit 2026-09-30 found
+/// 71 and 64 such returns in 4,162 exact-rational checks, all safe). Each stage has its own residual bound
 /// (audit F-060), and `kappa_upper` must dominate a verified bound on
 /// `||W^{-1}||_2` (audit F-059).
 pub fn evaluate_audit2_stage_certificate(

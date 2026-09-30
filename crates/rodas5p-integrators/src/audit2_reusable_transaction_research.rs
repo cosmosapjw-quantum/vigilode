@@ -437,21 +437,38 @@ pub fn audit2_preconditioner_reuse_certificate(
             &mut work,
             ApplyCategory::Diagnostic,
         )?;
+        // Every intermediate is checked before it reaches a `max`: `f64::max`
+        // returns the other operand when one is NaN, so a final finiteness
+        // test cannot see an inf - inf inside a column (audit 2026-09-30,
+        // AD-03: W = 1e308 [[1, 1], [1, 1]], P = [[2, -2], [2, -2]] has
+        // P W = 0 exactly but certified with epsilon = 0).
+        let w_column_finite = w_column.iter().all(|value| value.is_finite());
+        if !w_column_finite {
+            return Err(CoreError::NonFinite(format!(
+                "Audit-2 reuse certificate: W e_{j} is not finite"
+            )));
+        }
         apply_preconditioner(preconditioner, &w_column, &mut column, &mut work)?;
         let column_sum: f64 = column
             .iter()
             .enumerate()
             .map(|(i, value)| (f64::from(u8::from(i == j)) - value).abs())
             .sum();
+        if !column_sum.is_finite() {
+            return Err(CoreError::NonFinite(format!(
+                "Audit-2 reuse certificate: column {j} of I - P W is not finite"
+            )));
+        }
         epsilon = epsilon.max(column_sum);
         apply_preconditioner(preconditioner, &unit, &mut column, &mut work)?;
-        p_norm = p_norm.max(column.iter().map(|value| value.abs()).sum());
+        let p_column: f64 = column.iter().map(|value| value.abs()).sum();
+        if !p_column.is_finite() {
+            return Err(CoreError::NonFinite(format!(
+                "Audit-2 reuse certificate: column {j} of P is not finite"
+            )));
+        }
+        p_norm = p_norm.max(p_column);
         unit[j] = 0.0;
-    }
-    if !(epsilon.is_finite() && p_norm.is_finite()) {
-        return Err(CoreError::NonFinite(
-            "Audit-2 reuse certificate produced a non-finite norm".into(),
-        ));
     }
     let delta_w_l1 = 0.0;
     let bound = epsilon + p_norm * delta_w_l1;
