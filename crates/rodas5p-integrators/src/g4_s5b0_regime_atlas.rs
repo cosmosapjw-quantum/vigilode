@@ -1745,6 +1745,7 @@ fn run_trajectory(
     let tf = problem.t_span.1;
     let mut y = problem.y0.clone();
     let mut h = adaptive.initial_step.min(tf - t);
+    // Sealed replay clock: crate::RESEARCH_REPLAY_CLOCK_POLICY.
     let tolerance = 10.0 * f64::EPSILON * tf.abs().max(1.0);
     let mut attempts = 0usize;
     let mut accepted = 0usize;
@@ -2070,6 +2071,7 @@ fn run_rjf_attempt_trace_trajectory(
     let tf = problem.t_span.1;
     let mut y = problem.y0.clone();
     let mut h = adaptive.initial_step.min(tf - t);
+    // Sealed replay clock: crate::RESEARCH_REPLAY_CLOCK_POLICY.
     let tolerance = 10.0 * f64::EPSILON * tf.abs().max(1.0);
     let mut attempts = 0usize;
     let mut accepted = 0usize;
@@ -2381,6 +2383,7 @@ fn run_rjf_actual_level1_prefix_trajectory(
     let tf = problem.t_span.1;
     let mut y = problem.y0.clone();
     let mut h = adaptive.initial_step.min(tf - t);
+    // Sealed replay clock: crate::RESEARCH_REPLAY_CLOCK_POLICY.
     let tolerance = 10.0 * f64::EPSILON * tf.abs().max(1.0);
     let mut attempts = 0usize;
     let mut accepted = 0usize;
@@ -2668,6 +2671,7 @@ fn run_rjf_actual_level2_prefix_trajectory(
     let tf = problem.t_span.1;
     let mut y = problem.y0.clone();
     let mut h = adaptive.initial_step.min(tf - t);
+    // Sealed replay clock: crate::RESEARCH_REPLAY_CLOCK_POLICY.
     let tolerance = 10.0 * f64::EPSILON * tf.abs().max(1.0);
     let mut attempts = 0usize;
     let mut accepted = 0usize;
@@ -3211,6 +3215,7 @@ fn run_rjf_stage_growth_safety_trajectory(
     let tf = problem.t_span.1;
     let mut y = problem.y0.clone();
     let mut h = adaptive.initial_step.min(tf - t);
+    // Sealed replay clock: crate::RESEARCH_REPLAY_CLOCK_POLICY.
     let tolerance = 10.0 * f64::EPSILON * tf.abs().max(1.0);
     let mut attempts = 0usize;
     let mut accepted = 0usize;
@@ -4263,6 +4268,7 @@ fn run_rjf_frozen_full_e_shadow_trajectory(
     let tf = problem.t_span.1;
     let mut y = problem.y0.clone();
     let mut h = adaptive.initial_step.min(tf - t);
+    // Sealed replay clock: crate::RESEARCH_REPLAY_CLOCK_POLICY.
     let tolerance = 10.0 * f64::EPSILON * tf.abs().max(1.0);
     let mut attempts = 0usize;
     let mut accepted = 0usize;

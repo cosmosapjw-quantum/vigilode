@@ -276,7 +276,10 @@ pub use nonlinear::{
     BDF_NEWTON_TOLERANCE_FACTOR, NewtonConfig, NewtonReport, NewtonTolerancePolicy,
     radau_newton_tolerance_factor, solve_dense_newton,
 };
-pub use output::{ObservedIntegrationResult, OutputSamplingPlan, OutputSchedule};
+pub use output::{
+    ObservedIntegrationResult, OutputSamplingPlan, OutputSchedule, PRODUCTION_CLOCK_POLICY,
+    RESEARCH_REPLAY_CLOCK_POLICY,
+};
 pub use parallel::ParallelExecution;
 pub use path_controller::{
     PathControllerCase, PathControllerControlRow, PathControllerProfile, PathControllerReport,
