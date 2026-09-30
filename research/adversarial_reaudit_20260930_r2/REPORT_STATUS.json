@@ -1,0 +1,223 @@
+{
+  "schema": "vigilode.reaudit.status.v1",
+  "source": {
+    "repository": "cosmosapjw-quantum/vigilode",
+    "branch": "claude/jolly-wozniak-7wl15h-wu21-audit0930",
+    "head": "7708ef90554fc3986478d4602de6a01c7266b14f",
+    "tree": "23ffcacb8e4afcd72734e162c0e83536d565ba6c",
+    "update_parent": "ff84ed6c196bb0d9fbb9985b80e5d24517dbe5d2",
+    "previous_audit_integration": "83a38d20eecb3ee375cdeffc60852f19494f294f",
+    "observed_at_utc": "2026-09-30T08:18:25.671353+00:00",
+    "branch_selection": "newest committer date among freshly fetched remote heads, update explicitly repairs previous audit findings",
+    "checkout": "detached HEAD, no new local or remote branch created",
+    "previous_archive_sha256": "cfa0ea62992431208c79e695a14c7de5371ee4444d0921d198c5a1d36327b96d",
+    "prior_snapshot_ancestry": {
+      "integration": {
+        "commit": "83a38d20eecb3ee375cdeffc60852f19494f294f",
+        "ancestor_of_current": true
+      },
+      "phi": {
+        "commit": "720a96cba697abaa28f823904cfc76b6ac445c8e",
+        "ancestor_of_current": true
+      },
+      "certificate": {
+        "commit": "fcde4fec654a2af7f2c1d143912cf2be12978d00",
+        "ancestor_of_current": true
+      },
+      "dense": {
+        "commit": "c57b2631c2c5fae3cf6655e22481b37d1516740e",
+        "ancestor_of_current": true
+      },
+      "interpolant": {
+        "commit": "af24dcc84e1defbacbc649fee04da010809bc994",
+        "ancestor_of_current": true
+      },
+      "holdout": {
+        "commit": "1ac1871636d88942570ab00ab5b89024f9c5c137",
+        "ancestor_of_current": true
+      },
+      "timing": {
+        "commit": "41a964c58738166e037c115b491c776e673cc3b6",
+        "ancestor_of_current": true
+      },
+      "transaction": {
+        "commit": "b0ae34b6c4bafef797ee3ffa4fa5d01d521040d0",
+        "ancestor_of_current": true
+      },
+      "accounting": {
+        "commit": "08dcbeb006220c5b0afc2c05d39012ab185f2516",
+        "ancestor_of_current": true
+      },
+      "process": {
+        "commit": "6718afbb7b6a052194480f5a8687ffea8db465ce",
+        "ancestor_of_current": true
+      }
+    }
+  },
+  "audit_verdict": "REWORK",
+  "production_readiness": "HOLD_MAJOR_REVISION_REQUIRED",
+  "scientific_deliverable": "ACCEPT_BOUNDED_AUDIT_AND_RESEARCH_RESULTS",
+  "production_source_mutated": false,
+  "new_branch_created": false,
+  "severity_counts": {
+    "P1": 1,
+    "P2": 6
+  },
+  "prior_closures": [
+    {
+      "id": "PHI-P1",
+      "status": "CLOSED_FOR_ORIGINAL_REPRODUCER",
+      "evidence": [
+        "phi/PHI_STATUS.json",
+        "phi/native_probe.jsonl"
+      ]
+    },
+    {
+      "id": "PHI-P2",
+      "status": "CLOSED_FOR_ORIGINAL_REPRODUCER",
+      "evidence": [
+        "phi/PHI_STATUS.json",
+        "phi/native_probe.jsonl"
+      ]
+    },
+    {
+      "id": "PHI-P3",
+      "status": "CLOSED_FOR_ORIGINAL_REPRODUCER",
+      "evidence": [
+        "phi/PHI_STATUS.json",
+        "phi/native_probe.jsonl"
+      ]
+    },
+    {
+      "id": "AD-01",
+      "status": "PARTIALLY_CLOSED",
+      "evidence": [
+        "output_cert/FINDINGS.json",
+        "output_cert/existing_regressions.log"
+      ],
+      "residual_finding": "R2-OUT-01",
+      "claim_ceiling": "See R2-OUT-01"
+    },
+    {
+      "id": "AD-02",
+      "status": "CLOSED_FOR_ORIGINAL_REPRODUCER",
+      "evidence": [
+        "output_cert/FINDINGS.json",
+        "output_cert/existing_regressions.log"
+      ],
+      "residual_finding": null,
+      "claim_ceiling": "native dense-enforcement scenario; not every driver"
+    },
+    {
+      "id": "AD-03",
+      "status": "CLOSED_FOR_ORIGINAL_REPRODUCER",
+      "evidence": [
+        "output_cert/FINDINGS.json",
+        "output_cert/existing_regressions.log"
+      ],
+      "residual_finding": null,
+      "claim_ceiling": "nonfinite-intermediate failure; rigorous roundoff certificate not established"
+    },
+    {
+      "id": "CERT-01",
+      "status": "CLOSED_FOR_ORIGINAL_REPRODUCER",
+      "evidence": [
+        "output_cert/FINDINGS.json",
+        "output_cert/existing_regressions.log"
+      ],
+      "residual_finding": null,
+      "claim_ceiling": "malformed public/deserialized fields; valid-input evaluation has separate R2-POL-01"
+    },
+    {
+      "id": "CERT-02",
+      "status": "CLOSED_FOR_ORIGINAL_REPRODUCER",
+      "evidence": [
+        "output_cert/FINDINGS.json",
+        "output_cert/existing_regressions.log"
+      ],
+      "residual_finding": null,
+      "claim_ceiling": "native malformed-state/tolerance scenarios"
+    },
+    {
+      "id": "B-01",
+      "status": "PARTIALLY_CLOSED",
+      "evidence": [
+        "statistics/RESULT.json",
+        "statistics/paired_contracts.log",
+        "statistics/cli_gate.log"
+      ],
+      "residual_finding": "R2-STAT-01"
+    },
+    {
+      "id": "B-02",
+      "status": "CLOSED_FOR_ORIGINAL_REPRODUCER",
+      "evidence": [
+        "statistics/RESULT.json",
+        "statistics/paired_contracts.log",
+        "statistics/cli_gate.log"
+      ],
+      "residual_finding": "R2-STAT-02"
+    },
+    {
+      "id": "B-03",
+      "status": "CLOSED_FOR_ORIGINAL_REPRODUCER",
+      "evidence": [
+        "statistics/RESULT.json",
+        "statistics/paired_contracts.log",
+        "statistics/cli_gate.log"
+      ],
+      "residual_finding": null
+    }
+  ],
+  "old_branch_fragmentation": "CLOSED_ALL_10_PRIOR_SNAPSHOTS_ARE_ANCESTORS",
+  "current_test_campaign": {
+    "schema": "vigilode.reaudit.native_summary.v1",
+    "source_commit": "7708ef90554fc3986478d4602de6a01c7266b14f",
+    "full_suite_claim": "NOT_COMPLETE_BOUNDED_TIMEOUT",
+    "build_exit": 0,
+    "binary_counts": {
+      "BOUNDED_TIMEOUT": 6,
+      "PASS": 125
+    },
+    "test_counts": {
+      "IGNORED_NOT_RUN": 3,
+      "PASS": 632,
+      "UNRESOLVED_BOUNDED_TIMEOUT": 23
+    },
+    "assertion_failures_observed": 0,
+    "unique_test_count": 658,
+    "source_manifests_and_lock_unchanged": true,
+    "complete_summary_counts_all_agree": true,
+    "ignored_changed_snapshot_tests": "NOT_RUN",
+    "doc_tests": "NOT_RUN",
+    "performance_claim": "NONE: verification runtimes are not independent performance measurements",
+    "authoritative_summary": "reaudit/evidence/runtime/full_suite/suite_summary.json",
+    "summary_sha256": "9858680338cb97601242f9f7799439f04f1eb9f21714c33b321e291cb7e88714",
+    "oom_events": 0,
+    "oom_kill_events": 0
+  },
+  "focused_tests": {
+    "phi": 17,
+    "output_cert": 7,
+    "paired_timing": 13,
+    "cli_gate": 1,
+    "overlap_with_workspace_campaign": true,
+    "do_not_add_to_campaign_total": true
+  },
+  "independent_review": "decision/INDEPENDENT_DECISION.json",
+  "limitations": [
+    "Timeout and ignored are not PASS",
+    "No universal nonlinear/stiff-order theorem",
+    "No actual wall speedup measured for new prototypes",
+    "No directed floating-point actual-tableau certificate",
+    "No new calibration or sealed holdout replay",
+    "No general nonnormal Laguerre guarantee",
+    "No full ODE false accept executed for R2-POL-01"
+  ],
+  "delivery": {
+    "authorized": true,
+    "target_branch": "claude/jolly-wozniak-7wl15h-wu21-audit0930",
+    "folder": "research/adversarial_reaudit_20260930_r2",
+    "commit_identity": "Use enclosing git commit; source_commit remains immutable audited parent, distinct from report commit."
+  }
+}

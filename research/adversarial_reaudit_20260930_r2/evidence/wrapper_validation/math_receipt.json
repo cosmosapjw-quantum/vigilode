@@ -1,0 +1,119 @@
+{
+  "schema": "vigilode.reaudit.reproduction.v1",
+  "started_at_utc": "2026-09-30T08:40:48.201902+00:00",
+  "case": "math",
+  "prepare_only": false,
+  "source_identity": {
+    "status": "MANIFESTED_SOURCE_FILES_MATCHED",
+    "files_checked": 1052,
+    "manifest_sha256": "e49bbd026fba184052635bce121039b3e2eda26bc3cee0b785f894fd1afcdd9b",
+    "source_commit": "7708ef90554fc3986478d4602de6a01c7266b14f",
+    "observed_head": "7708ef90554fc3986478d4602de6a01c7266b14f",
+    "scope": "Listed source bytes only; a later report-only commit may have a different HEAD."
+  },
+  "original_evidence_mutation": false,
+  "native_build_reuse": false,
+  "scientific_claim": "Reexecution only; scenario-specific acceptance and limitations remain in lane reports.",
+  "commands": [
+    {
+      "name": "polynomial_joint",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-B",
+        "/workspace/scratch/0dc1e721cf82/vigilode-r2-relocation-bfi_sjvr/math-executed/work/math/research/polynomial_joint_probe.py"
+      ],
+      "cwd": "/workspace/scratch/0dc1e721cf82/vigilode-r2-relocation-bfi_sjvr/math-executed/work/math/research",
+      "kind": "python",
+      "status": "PASS",
+      "exit_code": 0,
+      "stdout": "logs/polynomial_joint.stdout",
+      "stderr": "logs/polynomial_joint.stderr",
+      "elapsed_seconds": 0.47287144899746636
+    },
+    {
+      "name": "homotopy_majorant",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-B",
+        "/workspace/scratch/0dc1e721cf82/vigilode-r2-relocation-bfi_sjvr/math-executed/work/math/research/homotopy_majorant_probe.py",
+        "--tableau",
+        "/workspace/scratch/0dc1e721cf82/vigilode/fixtures/rodas5p_coefficients_snapshot.json"
+      ],
+      "cwd": "/workspace/scratch/0dc1e721cf82/vigilode-r2-relocation-bfi_sjvr/math-executed/work/math/research",
+      "kind": "python",
+      "status": "PASS",
+      "exit_code": 0,
+      "stdout": "logs/homotopy_majorant.stdout",
+      "stderr": "logs/homotopy_majorant.stderr",
+      "elapsed_seconds": 0.1172099219984375
+    },
+    {
+      "name": "telemetry_covariance",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-B",
+        "/workspace/scratch/0dc1e721cf82/vigilode-r2-relocation-bfi_sjvr/math-executed/work/math/owner/telemetry_covariance.py"
+      ],
+      "cwd": "/workspace/scratch/0dc1e721cf82/vigilode-r2-relocation-bfi_sjvr/math-executed/work/math/owner",
+      "kind": "python",
+      "status": "PASS",
+      "exit_code": 0,
+      "stdout": "logs/telemetry_covariance.stdout",
+      "stderr": "logs/telemetry_covariance.stderr",
+      "elapsed_seconds": 0.4738481589956791
+    },
+    {
+      "name": "output_exact_oracle",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-B",
+        "/workspace/scratch/0dc1e721cf82/vigilode-r2-relocation-bfi_sjvr/math-executed/work/math/output_cert/derive_exact_oracles.py"
+      ],
+      "cwd": "/workspace/scratch/0dc1e721cf82/vigilode-r2-relocation-bfi_sjvr/math-executed/work/math/output_cert",
+      "kind": "python",
+      "status": "PASS",
+      "exit_code": 0,
+      "stdout": "logs/output_exact_oracle.stdout",
+      "stderr": "logs/output_exact_oracle.stderr",
+      "elapsed_seconds": 0.03204952499800129
+    },
+    {
+      "name": "statistics_exact_bootstrap",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-B",
+        "/workspace/scratch/0dc1e721cf82/vigilode-r2-relocation-bfi_sjvr/math-executed/work/math/statistics/exact_bootstrap_oracle.py"
+      ],
+      "cwd": "/workspace/scratch/0dc1e721cf82/vigilode-r2-relocation-bfi_sjvr/math-executed/work/math/statistics",
+      "kind": "python",
+      "status": "PASS",
+      "exit_code": 0,
+      "stdout": "logs/statistics_exact_bootstrap.stdout",
+      "stderr": "logs/statistics_exact_bootstrap.stderr",
+      "elapsed_seconds": 0.1669346649941872
+    }
+  ],
+  "status": "PASS",
+  "finished_at_utc": "2026-09-30T08:40:49.468033+00:00",
+  "output_sha256": {
+    "logs/homotopy_majorant.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "logs/homotopy_majorant.stdout": "76feb867b2d1ac919ac7d4c497846211b9b96cd651bfc49f62ac0e05ffd1d490",
+    "logs/output_exact_oracle.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "logs/output_exact_oracle.stdout": "67a152dd09224e9d7c1d4fddaa96fd7b4c630adca9d4edf648811d1ec68cbb75",
+    "logs/polynomial_joint.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "logs/polynomial_joint.stdout": "01c2c96082070b2d3366f934360fb17dc49441a71ac2aef300ea0d7687ca4866",
+    "logs/statistics_exact_bootstrap.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "logs/statistics_exact_bootstrap.stdout": "34143242cdca6af1efb1d46c335ae0f5c416222396c845bf3d43965518cf6a76",
+    "logs/telemetry_covariance.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "logs/telemetry_covariance.stdout": "ee05b8dad361e3917e6f377515be4da5caf02b182808f58bfd77b69b21450dba",
+    "work/math/output_cert/derive_exact_oracles.py": "7a2c73e66c190f93ba3f247e74b8cf63d34b1edf690a70a02a92531c5d7f8da2",
+    "work/math/owner/telemetry_covariance.py": "62a42747581d4b61378f9140e725a0f29ed6dfe7a6925abaa23b3a643ced5ebf",
+    "work/math/owner/telemetry_covariance_results.json": "ee05b8dad361e3917e6f377515be4da5caf02b182808f58bfd77b69b21450dba",
+    "work/math/research/homotopy_majorant_probe.py": "18c10c915c56be75da4ffe20a25ff3a74e84a5c91d112b40e31d5257e2e1de9c",
+    "work/math/research/homotopy_majorant_results.json": "76feb867b2d1ac919ac7d4c497846211b9b96cd651bfc49f62ac0e05ffd1d490",
+    "work/math/research/polynomial_joint_probe.py": "095915825dea797e7f3b4aa01494d6a6cf1630da5d69299afac93fbc47b12a04",
+    "work/math/research/polynomial_joint_results.json": "01c2c96082070b2d3366f934360fb17dc49441a71ac2aef300ea0d7687ca4866",
+    "work/math/statistics/exact_bootstrap_oracle.json": "34143242cdca6af1efb1d46c335ae0f5c416222396c845bf3d43965518cf6a76",
+    "work/math/statistics/exact_bootstrap_oracle.py": "3e9ba62947ab5939e507ef08ed8d76cfefef8ff016af98a87a0ae5467e5f2567"
+  }
+}

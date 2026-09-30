@@ -1,0 +1,144 @@
+{
+  "schema": "vigilode.reaudit.runtime_setup.v1",
+  "recorded_utc": "2026-09-30T08:18:18.771257+00:00",
+  "status": "RUST_EXECUTION_PASS",
+  "source_commit": "7708ef90554fc3986478d4602de6a01c7266b14f",
+  "rust_version": "1.94.1",
+  "components": [
+    "rustc",
+    "cargo",
+    "rust-std-x86_64-unknown-linux-gnu",
+    "rustfmt-preview",
+    "clippy-preview"
+  ],
+  "env_file": "/workspace/scratch/0dc1e721cf82/runtime_r2/env.sh",
+  "network_fetch": false,
+  "repo_mutation": false,
+  "prior_pass_inherited": false,
+  "commands": [
+    {
+      "argv": [
+        "rustc",
+        "--version",
+        "--verbose"
+      ],
+      "exit_code": 0,
+      "stdout": "rustc 1.94.1 (e408947bf 2026-03-25)\nbinary: rustc\ncommit-hash: e408947bfd200af42db322daf0fadfe7e26d3bd1\ncommit-date: 2026-03-25\nhost: x86_64-unknown-linux-gnu\nrelease: 1.94.1\nLLVM version: 21.1.8\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "cargo",
+        "--version"
+      ],
+      "exit_code": 0,
+      "stdout": "cargo 1.94.1 (29ea6fb6a 2026-03-24)\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "rustfmt",
+        "--version"
+      ],
+      "exit_code": 0,
+      "stdout": "rustfmt 1.8.0-stable (e408947bfd 2026-03-25)\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "rustc",
+        "/workspace/scratch/0dc1e721cf82/runtime_r2/probes/hello.rs",
+        "-o",
+        "/workspace/scratch/0dc1e721cf82/runtime_r2/probes/hello"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/workspace/scratch/0dc1e721cf82/runtime_r2/probes/hello"
+      ],
+      "exit_code": 0,
+      "stdout": "RUST_EXECUTION_PASS 42\n",
+      "stderr": ""
+    }
+  ],
+  "python": {
+    "python": "3.12.14 (main, Aug 25 2026, 14:00:49) [Clang 22.1.3 ]",
+    "numpy": {
+      "status": "IMPORT_PASS",
+      "version": "2.3.5"
+    },
+    "scipy": {
+      "status": "IMPORT_PASS",
+      "version": "1.17.0"
+    },
+    "sympy": {
+      "status": "IMPORT_FAILED",
+      "exception_type": "ModuleNotFoundError",
+      "message": "No module named 'sympy'"
+    },
+    "matplotlib": {
+      "status": "IMPORT_PASS",
+      "version": "3.10.8"
+    }
+  },
+  "resources": {
+    "memory.max": "8589934592",
+    "memory.current": "6548639744",
+    "cpu.max": "800000 100000",
+    "cpu_affinity_count": 9
+  },
+  "cargo_metadata_packages": 123,
+  "dependency_match": "118/118 exact version and package checksum",
+  "signature_verification": "NOT_PERFORMED: no trusted signing key supplied; archive hash identity recorded",
+  "recovery": [
+    {
+      "class": "ENVIRONMENT_EXTRACTION_FAILURE",
+      "symptom": "initial extracted LLVM silently short",
+      "initial_bytes": 102630400,
+      "expected_bytes": 186862176,
+      "action": "stream exact tar member using tar -xO then install",
+      "resolved": true,
+      "root_cause": "unresolved extraction path anomaly"
+    },
+    {
+      "class": "ENVIRONMENT_EXTRACTION_METADATA_FAILURE",
+      "symptom": "vendor tar cannot chown uid/gid1000",
+      "action": "rerun tar --no-same-owner",
+      "resolved": true
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "/workspace/scratch/0dc1e721cf82/project_sources/06-rust-1.94.1-x86_64-unknown-linux-gnu.tar.xz",
+      "bytes": 192287020,
+      "sha256": "294b3d81fa72e62581276290c60c81eb8b58498d333d422ca1dfc432877d0c40"
+    },
+    {
+      "path": "/workspace/scratch/0dc1e721cf82/project_sources/15-GENERIC_VECTOR_JF_OFFLINE_CARGO_VENDOR_20260816-1-.zip",
+      "bytes": 112967859,
+      "sha256": "9c7671ba5eef9f511560df402418f8cd46bed161e8743f0a5dd5696daf92fb8d"
+    },
+    {
+      "path": "/workspace/scratch/0dc1e721cf82/runtime_r2/vendor.tar.zst",
+      "bytes": 112965934,
+      "sha256": "dc2b1ba76059b56042852975845578e51df67ebfdd59b29305106ad71b578be3"
+    },
+    {
+      "path": "/workspace/scratch/0dc1e721cf82/runtime_r2/rust-1.94.1/lib/libLLVM.so.21.1-rust-1.94.1-stable",
+      "bytes": 186862176,
+      "sha256": "158c711c64147bb127a2a5174df22718d26b755560a1487945e7c788c947986f"
+    },
+    {
+      "path": "/workspace/scratch/0dc1e721cf82/vigilode/Cargo.lock",
+      "bytes": 28994,
+      "sha256": "04c7d6c147bf19ebb1a627463705d9dcf27337a3ff228dd1169f19eb73c71400"
+    }
+  ],
+  "supplied_script_review": {
+    "03-rust_1_94_1_env.sh": "Read; obsolete /mnt/data prefix replaced with isolated runtime_r2 prefix",
+    "09-bootstrap.sh": "Read; not executed because it targets Bianchi package, installs via pip, and mutates audit/__init__.py, outside this audit runtime scope"
+  }
+}

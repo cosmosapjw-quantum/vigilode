@@ -1,0 +1,210 @@
+{
+  "schema": "vigilode.reaudit.research_claims.v1",
+  "source_commit": "7708ef90554fc3986478d4602de6a01c7266b14f",
+  "production_promotion": "HOLD",
+  "independent_decision": "decision/INDEPENDENT_DECISION.json",
+  "claims": [
+    {
+      "id": "MATH-LAGUERRE-JOINT",
+      "status": [
+        "DERIVED",
+        "NUMERICALLY_CHECKED"
+      ],
+      "claim": "For real symmetric negative A, h beta>0 and L=rho/beta, common Laguerre basis supports exp and phi1..4 with exact-arithmetic tail <= exp(L/2) q^(m+1)||v||/k!, q=h beta/(1+h beta).",
+      "premises": [
+        "real symmetric negative operator",
+        "k=0..4 with0!=1",
+        "same input vector",
+        "exact coefficients and exact recurrence for theorem"
+      ],
+      "evidence": [
+        "research/POLYNOMIAL_HOMOTOPY_RESEARCH_KO.md",
+        "research/polynomial_joint_results.json"
+      ],
+      "result": "24D joint20outputs pass1e-10 with cap16; cap64 fails exp/phi1 at h*rho100.",
+      "not_established": [
+        "quadrature/roundoff total certificate",
+        "unseen holdout",
+        "different-v fused backend",
+        "nonnormal theorem",
+        "wall speedup"
+      ],
+      "next": [
+        "DEV-10"
+      ]
+    },
+    {
+      "id": "MATH-HOMOTOPY-MAJORANT",
+      "status": [
+        "DERIVED",
+        "EXACT_TOY_VERIFIED",
+        "NUMERICALLY_CHECKED_NOT_DIRECTED"
+      ],
+      "claim": "For a strict-lower quadratic stage target and verified U>=|W^-1|, earlier-stage componentwise bounds imply successive stage and weighted output enclosures by induction.",
+      "premises": [
+        "fixed target convention",
+        "h>=0",
+        "quadratic remainder or independently valid derivative enclosure",
+        "valid U and residual bounds",
+        "rounding enclosed for any production certificate"
+      ],
+      "evidence": [
+        "research/homotopy_majorant_results.json",
+        "decision/INDEPENDENT_MATH_CHECKS.json"
+      ],
+      "result": "Exact scalar12candidate toy plus independent2component8stage checks pass; actual-tableau binary64 diagnostics include tiny underbounds and are not interval proof.",
+      "not_established": [
+        "directed actual-tableau certificate",
+        "large matrix-free U",
+        "stiff-uniform order",
+        "wall speedup"
+      ],
+      "next": [
+        "DEV-11",
+        "DEV-12"
+      ]
+    },
+    {
+      "id": "MATH-TELEMETRY-COVARIANCE",
+      "status": [
+        "DERIVED",
+        "SYMBOLICALLY_CHECKED",
+        "NUMERICALLY_CHECKED"
+      ],
+      "claim": "Projected residual-transport integral is covariant under a consistent auxiliary similarity; augmented Euclidean residual norm need not be.",
+      "premises": [
+        "all M,q,P,residual transforms consistent",
+        "controlled p3 approximation, not claimed to be actual Arnoldi output"
+      ],
+      "evidence": [
+        "owner/wolfram_telemetry_identity_p3.json",
+        "owner/telemetry_covariance_results.json",
+        "decision/INDEPENDENT_MATH_CHECKS.json"
+      ],
+      "result": "Physical error .5-exp(-1) invariant; residual norm alpha^-2 for alpha=.25,1,4,16,64.",
+      "not_established": [
+        "actual zeta34 false accept",
+        "fresh N192 calibration"
+      ],
+      "next": [
+        "DEV-09"
+      ]
+    },
+    {
+      "id": "CODE-PHI-CANDIDATES",
+      "status": [
+        "IMPLEMENTATION_VERIFIED_BOUNDED"
+      ],
+      "claim": "Standalone sequential-weight and power2-balanced dense candidates close13 declared fixtures.",
+      "premises": [
+        "declared scalar finite-amplitude fixtures"
+      ],
+      "evidence": [
+        "phi/native_probe.jsonl",
+        "phi/PHI_STATUS.json"
+      ],
+      "result": "max relative error7.77e-16 on13 fixtures.",
+      "not_established": [
+        "production integration",
+        "mixed-range/cancellation coverage",
+        "general stability"
+      ],
+      "next": [
+        "DEV-03",
+        "DEV-04"
+      ]
+    },
+    {
+      "id": "CODE-POLICY-CANDIDATE",
+      "status": [
+        "IMPLEMENTATION_VERIFIED_BOUNDED"
+      ],
+      "claim": "Zero branch and per-term finite checks prevent observed false acceptance.",
+      "premises": [
+        "explicit failure allowed when safe finite evaluation not available"
+      ],
+      "evidence": [
+        "output_cert/safe_budget_candidate.jsonl"
+      ],
+      "result": "3 candidate checks; finite mathematical overflow case returns explicit error.",
+      "not_established": [
+        "general stable evaluation",
+        "production integration"
+      ],
+      "next": [
+        "DEV-02"
+      ]
+    },
+    {
+      "id": "CODE-MEASUREMENT-CANDIDATES",
+      "status": [
+        "IMPLEMENTATION_VERIFIED_BOUNDED"
+      ],
+      "claim": "Standalone session/protocol matching and Unknown-absorbing ledger assertions hold.",
+      "premises": [
+        "synthetic fixtures and candidate semantics"
+      ],
+      "evidence": [
+        "statistics/probe_results.json",
+        "statistics/probe/src/candidate.rs"
+      ],
+      "result": "candidate checks execute; no real clock performance result.",
+      "not_established": [
+        "production implementation",
+        "actual paired CLI campaign"
+      ],
+      "next": [
+        "DEV-05",
+        "DEV-06",
+        "DEV-07",
+        "DEV-13"
+      ]
+    },
+    {
+      "id": "MATH-SMALL-SAMPLE-COVERAGE",
+      "status": [
+        "EXACT_EMPIRICAL_ENUMERATION",
+        "MONTE_CARLO_CHECKED"
+      ],
+      "claim": "Six-session empirical bootstrap endpoints match6^6 enumeration; nominal95% coverage need not equal population coverage at this sample size.",
+      "premises": [
+        "declared distributions/estimand/seed",
+        "20000 outer datasets each"
+      ],
+      "evidence": [
+        "statistics/exact_bootstrap_oracle.json"
+      ],
+      "result": "Uniform coverage.93845,Normal.93575; SE approximately.00170/.00173.",
+      "not_established": [
+        "universal coverage level",
+        "replacement estimand equivalence"
+      ],
+      "next": [
+        "DEV-07"
+      ]
+    },
+    {
+      "id": "MATH-Q1-COST",
+      "status": [
+        "DERIVED_COST_MODEL_ONLY"
+      ],
+      "claim": "With q1depth6,q2depth8, sequentialdepth8 and fallbackcost8, expected depth8-2p1+8pf; a reduction requires p1>4pf before certificate/overhead costs.",
+      "premises": [
+        "simplified wave-depth model",
+        "mutually exclusive acceptedq1/acceptedq2/fallback outcomes"
+      ],
+      "evidence": [
+        "research/POLYNOMIAL_HOMOTOPY_RESEARCH_KO.md"
+      ],
+      "result": "Recommendation to implement q1 first is conditional on measured acceptance and cost.",
+      "not_established": [
+        "actual parallel speedup",
+        "automatic timestep parallelization"
+      ],
+      "next": [
+        "DEV-12",
+        "DEV-14"
+      ]
+    }
+  ]
+}

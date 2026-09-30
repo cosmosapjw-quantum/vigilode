@@ -1,0 +1,136 @@
+{
+  "schema": "vigilode.reaudit.phi.v1",
+  "source_commit": "7708ef90554fc3986478d4602de6a01c7266b14f",
+  "source_tree": "23ffcacb8e4afcd72734e162c0e83536d565ba6c",
+  "claim_ceiling": "bounded native closure; no general forward certificate; no production patch applied",
+  "native_execution": {
+    "exit": 0,
+    "raw_rows": 104,
+    "raw_rows_are_not_test_count": true,
+    "command": "source runtime_r2/env.sh; CARGO_TARGET_DIR=runtime_r2/target-phi CARGO_BUILD_JOBS=1 cargo run --manifest-path reaudit/phi/probe/Cargo.toml --offline"
+  },
+  "existing_contracts": {
+    "exit": 0,
+    "passed": 17,
+    "failed": 0,
+    "suites": 5,
+    "source_mutation": false
+  },
+  "old_closure": {
+    "old_p1_closure": {
+      "observations": 22,
+      "max_relative_error": 4.440892098500626e-16,
+      "status": "PASS_BOUNDED_FIXTURES"
+    },
+    "old_p2_closure": {
+      "observations": 22,
+      "max_relative_error": 6.661338147750939e-16,
+      "status": "PASS_BOUNDED_FIXTURES"
+    },
+    "prefix_closure": {
+      "observations": 20,
+      "max_relative_error": 4.440892098500626e-16,
+      "status": "PASS_BOUNDED_FIXTURES"
+    },
+    "old_p3_closure": {
+      "observations": 1,
+      "status": "PASS_BOUNDED_FIXTURE",
+      "absolute_error": 1.1102230246251565e-16
+    }
+  },
+  "findings": [
+    {
+      "id": "PHI-R1",
+      "severity": "P2",
+      "status": "implementation-verified",
+      "failure_class": [
+        "NUMERICAL",
+        "IMPLEMENTATION"
+      ],
+      "title_ko": "가중치 변환이 표현 가능한 h^k b를 중간 powi 언더플로로 0으로 소실",
+      "scope": "public scaled fused/dense APIs; prefix shares helper by source trace; ordinary-step integrator failure not established",
+      "source_locations": [
+        "crates/rodas5p-integrators/src/exponential.rs:1346-1364",
+        "crates/rodas5p-integrators/src/exponential.rs:1774-1777",
+        "crates/rodas5p-core/src/matrix_functions.rs:252-263"
+      ],
+      "input": {
+        "A": 0,
+        "h": [
+          1e-100,
+          -1e-100
+        ],
+        "b4": 1e+300,
+        "other_b": 0,
+        "rtol": 1e-12,
+        "atol": 0
+      },
+      "expected": 4.166666666666667e-102,
+      "actual": 0,
+      "fused_converged": true,
+      "overflow_variant": {
+        "h": 1e+100,
+        "b4": 1e-300,
+        "finite_expected": 4.1666666666666665e+98,
+        "actual": "Err(NonFinite)"
+      },
+      "historical_class": "newly identified failure in changed weighting lines; old implementation performance at these inputs NOT_EVALUATED"
+    },
+    {
+      "id": "PHI-R2",
+      "severity": "P2",
+      "status": "implementation-verified",
+      "failure_class": [
+        "NUMERICAL"
+      ],
+      "title_ko": "Dense φ oracle의 입력 진폭 비불변성: 유한한 큰 결과가 Ok(0)",
+      "scope": "dense_phi_combination and its oracle role; fused direct combination passes same amplitude sweep",
+      "source_locations": [
+        "crates/rodas5p-core/src/matrix_functions.rs:310-328",
+        "crates/rodas5p-core/src/matrix_functions.rs:85-130"
+      ],
+      "input": {
+        "A": -1,
+        "h": 0.1,
+        "w1": 1e+60,
+        "other_w": 0
+      },
+      "expected": 9.516258196404042e+59,
+      "actual": 0,
+      "intermediate_amplitude_errors": {
+        "1e20": 6.801411656098821e-10,
+        "1e40": 0.043049753133909685
+      },
+      "historical_class": "remaining amplitude-conditioning failure after time-normalization; not reopening the fixed small-step fixture"
+    }
+  ],
+  "candidate": {
+    "status": [
+      "derived",
+      "numerically checked",
+      "implementation-verified"
+    ],
+    "production_applied": false,
+    "functions": [
+      "scaled_weights",
+      "balanced_dense"
+    ],
+    "observations": 13,
+    "max_relative_error": 7.771561172376096e-16,
+    "independent_decision": "PENDING_ROOT_REVIEW",
+    "general_nonnormal_stability": "unresolved",
+    "mixed_extreme_dynamic_range": "NOT_EVALUATED; common normalization may underflow small components"
+  },
+  "data_semantics": {
+    "amplitude_dense/amplitude_candidate": "legacy helper field h contains amplitude, while actual step is fixed h=0.1; amplitude_fused has explicit amplitude key",
+    "null_nested_difference": "serde_json encodes initial Infinity diagnostic as null; not an observed finite zero"
+  },
+  "sha256": {
+    "probe/src/main.rs": "c298efcb86260d239d722f309c6f07cc4817c423084acd87d030ddad51898eb1",
+    "probe/Cargo.toml": "c45a063e03b4a68b165447b99bd52fb31c653f1de806c1841e3d934a15d8d8ec",
+    "probe/Cargo.lock": "a3b1ebd09188f762c9e79eecff4d68d6e1480553aab0b0080093d2f65624fc37",
+    "native_probe.jsonl": "815f97c165a539e49208eb5bf3f65c4ad8dc64547a97fcb9fe77e1ea1e0224ed",
+    "native_probe.stderr": "993ae79170b5cf4a2a73c456f51a1770a8550cebb260b319f253956a51a827e2",
+    "existing_contracts.log": "867719ccc38ab868d92c6552627368576d553347efe785afaf09c9b889c6b499"
+  }
+}

@@ -1,0 +1,86 @@
+{
+  "schema": "vigilode.reaudit.independent_decision.v1",
+  "reviewer": "/root/r2_decision",
+  "independent_of_candidate_development": true,
+  "source_commit": "7708ef90554fc3986478d4602de6a01c7266b14f",
+  "source_tree": "23ffcacb8e4afcd72734e162c0e83536d565ba6c",
+  "scientific_deliverable_verdict": "ACCEPT_BOUNDED_AUDIT_AND_RESEARCH_RESULTS",
+  "production_readiness": "HOLD_MAJOR_REVISION_REQUIRED",
+  "finding_ids_confirmed": [
+    "R2-OUT-01",
+    "R2-POL-01",
+    "PHI-R1",
+    "PHI-R2",
+    "R2-STAT-01",
+    "R2-STAT-02",
+    "R2-STAT-03"
+  ],
+  "not_new_defects": [
+    "M08 scalar inverse-bound underestimation confirms known non-directed limitation",
+    "Subnormal output explicit failure",
+    "No paired CLI runner connected yet"
+  ],
+  "independent_executions": {
+    "native_reruns": 3,
+    "native_all_exit_zero": true,
+    "native_rows_not_test_count": [
+      104,
+      9,
+      5
+    ],
+    "math_script_exit": 0,
+    "math_checks": 6,
+    "independent_fraction_fixture": "8 stages x 2 components; zero and perturbed candidates"
+  },
+  "claim_exclusions": [
+    "production correctness certification",
+    "wall speedup",
+    "general nonnormal Laguerre guarantee",
+    "Laguerre total roundoff/quadrature bound",
+    "actual-tableau directed enclosure",
+    "stiff-uniform 5th-order theorem",
+    "actual zeta34 false-accept counterexample",
+    "M08 singular false-certificate recurrence",
+    "full workspace tests PASS"
+  ],
+  "reviewed_lane_reports": [
+    "phi/PHI_REVIEW_KO.md",
+    "output_cert/REVIEW_KO.md",
+    "statistics/STATISTICS_REAUDIT_KO.md",
+    "research/POLYNOMIAL_HOMOTOPY_RESEARCH_KO.md",
+    "owner/TELEMETRY_MIGRATION_RESEARCH_KO.md"
+  ],
+  "main_report_review": {
+    "status": "FINAL_REVIEW_COMPLETE",
+    "path": "REPORT_KO.md",
+    "sha256_at_review": "b4aacc91ef3dd17efda79a66057de5a4f5819e1705509a1e2d3910c9f8450eb6",
+    "blocking_corrections": [],
+    "minor_correction": "epsilon_ref zero wording corrected",
+    "runtime_readback": "RUNTIME_FINAL_READBACK.json"
+  },
+  "production_mutation": false,
+  "remote_actions": false,
+  "evidence": [
+    "EXECUTION_RECEIPT.json",
+    "INDEPENDENT_MATH_CHECKS.json",
+    "INDEPENDENT_DECISION.md",
+    "RUNTIME_FINAL_READBACK.json"
+  ],
+  "final_runtime_summary": {
+    "native_summary_sha_matches": true,
+    "unique_tests": 658,
+    "independently_aggregated_test_counts": {
+      "PASS": 632,
+      "UNRESOLVED_BOUNDED_TIMEOUT": 23,
+      "IGNORED_NOT_RUN": 3
+    },
+    "harness_counts": {
+      "PASS": 125,
+      "BOUNDED_TIMEOUT": 6
+    },
+    "build_exit": 0,
+    "complete_harness_summary_agreements": 125,
+    "full_suite_claim": "NOT_COMPLETE_BOUNDED_TIMEOUT",
+    "readback_scope": "counts/identity/summary correspondence, not another scientific execution"
+  }
+}
