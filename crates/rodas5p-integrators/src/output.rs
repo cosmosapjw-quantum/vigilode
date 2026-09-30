@@ -1,7 +1,23 @@
 use rodas5p_core::{CoreError, CoreResult, WorkCounters};
 
+/// Slack for treating two timestamps as the same represented time: a few
+/// units in the last place of the larger magnitude, and nothing more. It
+/// absorbs the rounding of `t + (stop - t)` landings, but it never merges
+/// two distinct requested times, so output sampling is invariant under a
+/// shift of the time origin and a change of time unit (audit AD-01). The
+/// earlier `128 eps max(|t|, 1)` had an absolute floor of one time unit and
+/// grew with the global epoch: on a span of 1e-15 it consumed every request
+/// at the first step endpoint, and at t0 = 1e12 it snapped outputs spaced
+/// 0.01 apart onto step endpoints.
 fn time_tolerance(left: f64, right: f64) -> f64 {
-    128.0 * f64::EPSILON * left.abs().max(right.abs()).max(1.0)
+    (4.0 * f64::EPSILON * left.abs().max(right.abs())).max(f64::MIN_POSITIVE)
+}
+
+/// End-of-span slack for the drivers' `while t < tf - slack` loops and
+/// their success test: relative to |tf| only, with no absolute floor, so a
+/// span shorter than one time unit is still integrated (audit AD-01).
+pub(crate) fn end_time_slack(tf: f64) -> f64 {
+    10.0 * f64::EPSILON * tf.abs()
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -345,19 +361,15 @@ impl OutputCollector {
             if next > t_new + tolerance {
                 break;
             }
-            let theta = if (next - t_new).abs() <= tolerance {
-                1.0
-            } else if (next - t_old).abs() <= tolerance {
-                0.0
-            } else {
-                (next - t_old) / (t_new - t_old)
-            };
-            if !(0.0..=1.0).contains(&theta) {
+            // Interval-local fraction of the accepted step; only requests
+            // within the representation slack of an endpoint are clamped.
+            let theta = ((next - t_old) / (t_new - t_old)).clamp(0.0, 1.0);
+            if !theta.is_finite() {
                 return Err(CoreError::InvalidInput(
                     "dense output requested time lies outside the accepted interval".into(),
                 ));
             }
-            let state = if theta == 1.0 {
+            let state = if next >= t_new || theta == 1.0 {
                 y_new.to_vec()
             } else {
                 interpolate(theta)?

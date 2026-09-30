@@ -89,7 +89,7 @@ pub fn integrate_fixed(
     let mut errors = Vec::new();
     let sabr_cfg = sabr_config.unwrap_or_default();
     let mut attempts = 0;
-    while t < tf - 10.0 * f64::EPSILON * tf.abs().max(1.0) {
+    while t < tf - crate::output::end_time_slack(tf) {
         attempts += 1;
         let step = h.min(tf - t);
         let r = match method {
@@ -259,7 +259,7 @@ pub fn integrate_adaptive(
             };
         }
     }
-    let success = t >= tf - 10.0 * f64::EPSILON * tf.abs().max(1.0);
+    let success = t >= tf - crate::output::end_time_slack(tf);
     Ok(IntegrationResult {
         t: times,
         y: states,
@@ -305,7 +305,7 @@ pub fn integrate_fixed_observed(
     let mut collector = OutputCollector::new(output, t_span, y0)?;
     let sabr_cfg = sabr_config.unwrap_or_default();
     let mut internal_steps = 0_usize;
-    while t < tf - 10.0 * f64::EPSILON * tf.abs().max(1.0) {
+    while t < tf - crate::output::end_time_slack(tf) {
         let (step, clipped) = collector.limit_step(t, h, tf)?;
         let r = match method {
             IntegrationMethod::Sequential => {
@@ -480,6 +480,7 @@ pub fn integrate_adaptive_observed_with_config(
         let error = effective(&report);
         let accepted =
             report.accepted && error <= 1.0 && report.y_new.iter().all(|value| value.is_finite());
+        crate::adaptive::reconcile_outer_rejection(&mut counters, report.accepted, accepted);
         let failure = (!accepted).then_some(adaptive_rejection_kind(error, &report.y_new));
         diagnostics.record_with_failure(
             trial_h,
@@ -524,7 +525,7 @@ pub fn integrate_adaptive_observed_with_config(
         }
     }
     diagnostics.fallback_steps = counters.fallback_steps as usize;
-    let success = t >= tf - 10.0 * f64::EPSILON * tf.abs().max(1.0);
+    let success = t >= tf - crate::output::end_time_slack(tf);
     let observed = if success {
         let (times, states, output_clipped_steps) = collector.finish()?;
         ObservedIntegrationResult {
@@ -675,7 +676,7 @@ pub fn integrate_homotopy_adaptive_observed(
         }
     }
 
-    let success = t >= tf - 10.0 * f64::EPSILON * tf.abs().max(1.0);
+    let success = t >= tf - crate::output::end_time_slack(tf);
     let observed = if success {
         let (times, states, output_clipped_steps) = collector.finish()?;
         ObservedIntegrationResult {
@@ -834,6 +835,7 @@ pub fn integrate_sequential_matrix_free_adaptive_observed(
         let error = report.error_norm;
         let accepted =
             report.accepted && error <= 1.0 && report.y_new.iter().all(|value| value.is_finite());
+        crate::adaptive::reconcile_outer_rejection(&mut counters, report.accepted, accepted);
         let failure = (!accepted).then_some(adaptive_rejection_kind(error, &report.y_new));
         diagnostics.record_with_failure(
             trial_h,
@@ -904,7 +906,7 @@ pub fn integrate_sequential_matrix_free_adaptive_observed(
         }
     }
 
-    let success = t >= tf - 10.0 * f64::EPSILON * tf.abs().max(1.0);
+    let success = t >= tf - crate::output::end_time_slack(tf);
     let observed = if success && collector.is_complete() {
         let (times, states, output_clipped_steps) = collector
             .finish()
@@ -1068,7 +1070,7 @@ pub fn integrate_transactional_q1_q2_adaptive_observed(
     }
 
     diagnostics.fallback_steps = transactional.accepted_sequential_fallback_steps;
-    let success = t >= tf - 10.0 * f64::EPSILON * tf.abs().max(1.0);
+    let success = t >= tf - crate::output::end_time_slack(tf);
     let observed = if success {
         let (times, states, output_clipped_steps) = collector.finish()?;
         ObservedIntegrationResult {

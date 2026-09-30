@@ -44,6 +44,25 @@ pub enum AdaptiveFailureKind {
     NonFinite,
 }
 
+/// Reconcile the step ledger with the trial's final disposition. Step
+/// kernels count their own endpoint verdict in `accepted_steps` /
+/// `rejected_steps`; an outer gate (dense-error enforcement, the algebraic
+/// error term, a non-finite state) can still reject the trial afterwards,
+/// and the ledger must then show one more rejection, not an acceptance. The
+/// work itself stays charged (audit 2026-09-30, AD-02: Enforce reported
+/// 26 accepted and 0 rejected for 12 retained steps and 14 dense
+/// rejections).
+pub(crate) fn reconcile_outer_rejection(
+    counters: &mut rodas5p_core::WorkCounters,
+    endpoint_accepted: bool,
+    final_accepted: bool,
+) {
+    if endpoint_accepted && !final_accepted {
+        counters.accepted_steps = counters.accepted_steps.saturating_sub(1);
+        counters.rejected_steps = counters.rejected_steps.saturating_add(1);
+    }
+}
+
 pub(crate) fn record_adaptive_work_failure(
     counters: &mut rodas5p_core::WorkCounters,
     kind: AdaptiveFailureKind,
