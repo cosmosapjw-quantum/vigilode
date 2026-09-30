@@ -321,6 +321,38 @@ fn unified_candidate_screen_combines_linear_and_nonlinear_tiers() {
             .iter()
             .any(|value| value.as_str().unwrap().contains("performance assessment"))
     );
+    // Audit F-053: the smoke profile (one repetition, no warmup) and the
+    // single-sample Tier-N timings never decide on wall time.
+    for field in ["linear_assessments", "nonlinear_assessments"] {
+        for row in report[field].as_array().unwrap() {
+            let verdict = row["verdict"].as_str().unwrap();
+            assert_ne!(verdict, "promote", "{field} {}", row["candidate_id"]);
+            if verdict == "reference" {
+                continue;
+            }
+            assert!(
+                row["not_evaluated"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .any(|value| value
+                        .as_str()
+                        .unwrap()
+                        .starts_with("wall-time criterion not evaluated")),
+                "{field} {}",
+                row["candidate_id"]
+            );
+            assert!(
+                row["blockers"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .all(|value| !value.as_str().unwrap().contains("wall speedup")),
+                "{field} {}",
+                row["candidate_id"]
+            );
+        }
+    }
     let _ = fs::remove_file(output);
 }
 

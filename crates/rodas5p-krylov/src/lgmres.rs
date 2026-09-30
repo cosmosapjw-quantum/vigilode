@@ -1,7 +1,7 @@
 use crate::{
     common::{
-        apply_left_with_raw, selected_residual_norm, true_residual_into, validate_residual_scale,
-        validate_system,
+        apply_left_with_raw, residual_threshold, selected_residual_norm, true_residual_into,
+        validate_residual_scale, validate_system, validate_tolerances,
     },
     gmres::arnoldi_augmented_with_workspace,
     kernels::{axpy, normalize},
@@ -60,8 +60,11 @@ pub fn solve_lgmres_with_workspace_and_residual_scale(
             "LGMRES iteration limits must be positive".into(),
         ));
     }
+    validate_tolerances("LGMRES", config.rtol, config.atol)?;
     let n = validate_system(op, pc, rhs, x0)?;
     validate_residual_scale(residual_scale, n)?;
+    let right_norm = selected_residual_norm(rhs, residual_scale)?;
+    let threshold = residual_threshold("LGMRES", config.rtol, config.atol, right_norm)?;
     let before = *counters;
     let snapshot = state.clone();
     let system_identity = exact_krylov_system_identity(op, pc);
@@ -84,10 +87,15 @@ pub fn solve_lgmres_with_workspace_and_residual_scale(
 
         workspace.common.prepare(n);
         if let Some(initial) = x0.or(state.previous_solution.as_deref()) {
+            // `x0` is validated by `validate_system`; only a corrupt state can trip this.
+            if initial.len() != n {
+                return Err(CoreError::Dimension(format!(
+                    "LGMRES warm start has length {} but the system has dimension {n}",
+                    initial.len()
+                )));
+            }
             workspace.common.x.copy_from_slice(initial);
         }
-        let right_norm = selected_residual_norm(rhs, residual_scale)?;
-        let threshold = config.atol.max(config.rtol * right_norm);
         let mut total = 0usize;
         for _ in 0..config.max_outer {
             if workspace.common.x.iter().all(|value| *value == 0.0) {

@@ -4,8 +4,8 @@ use rand::{Rng, SeedableRng};
 use rand_pcg::Pcg64Mcg;
 use rodas5p_core::{CoreError, LinearSolverConfig, WorkCounters, safe_l2, sha256_hex};
 use rodas5p_integrators::{
-    BdfConfig, BdfOrder, IntegrationMethod, NewtonConfig, OdeProblem, OutputSamplingPlan,
-    OutputSchedule, ParallelExecution, RadauConfig, RadauIiaStages,
+    BdfConfig, BdfOrder, ComparativeReading, ComparatorFidelity, IntegrationMethod, OdeProblem,
+    OutputSamplingPlan, OutputSchedule, ParallelExecution, RadauConfig, RadauIiaStages,
     integrate_bdf_fixed_dense_observed, integrate_bdf_fixed_observed,
     integrate_fixed_dense_observed, integrate_fixed_observed, integrate_radau_fixed_dense_observed,
     integrate_radau_fixed_observed, manufactured_mass_nonlinear_problem,
@@ -114,7 +114,7 @@ impl ExternalErrorScale {
         })
     }
 
-    fn weights(&self, reference: &[f64]) -> FairResult<Vec<f64>> {
+    pub(crate) fn weights(&self, reference: &[f64]) -> FairResult<Vec<f64>> {
         if reference.len() != self.absolute.len() {
             return Err(FairError::Invalid(
                 "external error scale/reference dimension mismatch".into(),
@@ -901,6 +901,9 @@ pub(crate) fn completed_reference_status(
 pub struct IntegratorRunRecord {
     pub record_id: String,
     pub candidate_id: String,
+    /// Audit F-052/F-056 label.  Excluded from the scientific checksum, which
+    /// projects the pre-label record fields.
+    pub comparator_fidelity: ComparatorFidelity,
     pub problem_id: String,
     pub step_size: f64,
     pub status: IntegratorRunStatus,
@@ -947,6 +950,9 @@ pub struct GlobalErrorParetoFront {
     pub error_metric: GlobalErrorMetric,
     pub cost_metric: ParetoCostMetric,
     pub record_ids: Vec<String>,
+    /// Forbidden when any run competing on this problem is not a production
+    /// arm; such a front carries no relative-performance information.
+    pub comparative_reading: ComparativeReading,
 }
 
 pub type ParetoFront = GlobalErrorParetoFront;
@@ -985,6 +991,9 @@ pub struct TargetAttainment {
     pub record_id: Option<String>,
     pub achieved_error: Option<f64>,
     pub cost: Option<f64>,
+    /// Label of the selected record, if any.
+    pub comparator_fidelity: Option<ComparatorFidelity>,
+    pub comparative_reading: ComparativeReading,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -1076,6 +1085,42 @@ impl FixedAnchorCandidate {
             Self::Bdf2 => "bdf2-fixed",
             Self::RadauIia1 => "radau-iia1-fixed",
             Self::RadauIia3 => "radau-iia3-fixed",
+        }
+    }
+
+    fn bdf_config(self) -> Option<BdfConfig> {
+        let order = match self {
+            Self::Bdf1 => BdfOrder::One,
+            Self::Bdf2 => BdfOrder::Two,
+            _ => return None,
+        };
+        Some(BdfConfig {
+            order,
+            ..BdfConfig::default()
+        })
+    }
+
+    fn radau_config(self) -> Option<RadauConfig> {
+        let stages = match self {
+            Self::RadauIia1 => RadauIiaStages::One,
+            Self::RadauIia3 => RadauIiaStages::Three,
+            _ => return None,
+        };
+        Some(RadauConfig {
+            stages,
+            ..RadauConfig::default()
+        })
+    }
+
+    /// Audit F-052/F-056 label derived from the exact configuration this arm
+    /// executes with.
+    pub fn comparator_fidelity(self) -> ComparatorFidelity {
+        if let Some(config) = self.bdf_config() {
+            config.comparator_fidelity()
+        } else if let Some(config) = self.radau_config() {
+            config.comparator_fidelity()
+        } else {
+            ComparatorFidelity::Production
         }
     }
 }
@@ -1211,39 +1256,27 @@ fn execute_candidate(spec: &FixedRunSpec) -> Result<Trajectory, CoreError> {
                 &output,
             )?
         }
-        FixedAnchorCandidate::Bdf1 | FixedAnchorCandidate::Bdf2 => {
-            let order = if matches!(spec.candidate, FixedAnchorCandidate::Bdf1) {
-                BdfOrder::One
-            } else {
-                BdfOrder::Two
-            };
-            integrate_bdf_fixed_observed(
-                problem,
-                t_span,
-                y0,
-                h,
-                &BdfConfig {
-                    order,
-                    newton: NewtonConfig::default(),
-                },
-                &output,
-            )?
-        }
+        FixedAnchorCandidate::Bdf1 | FixedAnchorCandidate::Bdf2 => integrate_bdf_fixed_observed(
+            problem,
+            t_span,
+            y0,
+            h,
+            &spec
+                .candidate
+                .bdf_config()
+                .expect("BDF arm has a BDF configuration"),
+            &output,
+        )?,
         FixedAnchorCandidate::RadauIia1 | FixedAnchorCandidate::RadauIia3 => {
-            let stages = if matches!(spec.candidate, FixedAnchorCandidate::RadauIia1) {
-                RadauIiaStages::One
-            } else {
-                RadauIiaStages::Three
-            };
             integrate_radau_fixed_observed(
                 problem,
                 t_span,
                 y0,
                 h,
-                &RadauConfig {
-                    stages,
-                    ..RadauConfig::default()
-                },
+                &spec
+                    .candidate
+                    .radau_config()
+                    .expect("Radau arm has a Radau configuration"),
                 &output,
             )?
         }
@@ -1281,38 +1314,28 @@ fn execute_candidate_dense(spec: &FixedRunSpec) -> Result<Trajectory, CoreError>
             )
         }
         FixedAnchorCandidate::Bdf1 | FixedAnchorCandidate::Bdf2 => {
-            let order = if matches!(spec.candidate, FixedAnchorCandidate::Bdf1) {
-                BdfOrder::One
-            } else {
-                BdfOrder::Two
-            };
             integrate_bdf_fixed_dense_observed(
                 problem,
                 t_span,
                 y0,
                 h,
-                &BdfConfig {
-                    order,
-                    newton: NewtonConfig::default(),
-                },
+                &spec
+                    .candidate
+                    .bdf_config()
+                    .expect("BDF arm has a BDF configuration"),
                 &sampling,
             )
         }
         FixedAnchorCandidate::RadauIia1 | FixedAnchorCandidate::RadauIia3 => {
-            let stages = if matches!(spec.candidate, FixedAnchorCandidate::RadauIia1) {
-                RadauIiaStages::One
-            } else {
-                RadauIiaStages::Three
-            };
             integrate_radau_fixed_dense_observed(
                 problem,
                 t_span,
                 y0,
                 h,
-                &RadauConfig {
-                    stages,
-                    ..RadauConfig::default()
-                },
+                &spec
+                    .candidate
+                    .radau_config()
+                    .expect("Radau arm has a Radau configuration"),
                 &sampling,
             )
         }
@@ -1471,6 +1494,7 @@ fn run_scientific_spec(spec: &FixedRunSpec) -> IntegratorRunRecord {
                 IntegratorRunRecord {
                     record_id: id,
                     candidate_id: spec.candidate.id().into(),
+                    comparator_fidelity: spec.candidate.comparator_fidelity(),
                     problem_id: spec.reference.problem.name.clone(),
                     step_size: spec.step_size,
                     status,
@@ -1490,6 +1514,7 @@ fn run_scientific_spec(spec: &FixedRunSpec) -> IntegratorRunRecord {
             Err(error) => IntegratorRunRecord {
                 record_id: id,
                 candidate_id: spec.candidate.id().into(),
+                comparator_fidelity: spec.candidate.comparator_fidelity(),
                 problem_id: spec.reference.problem.name.clone(),
                 step_size: spec.step_size,
                 status: if error.to_string().contains("missing common output time") {
@@ -1513,6 +1538,7 @@ fn run_scientific_spec(spec: &FixedRunSpec) -> IntegratorRunRecord {
         Err(error) => IntegratorRunRecord {
             record_id: id,
             candidate_id: spec.candidate.id().into(),
+            comparator_fidelity: spec.candidate.comparator_fidelity(),
             problem_id: spec.reference.problem.name.clone(),
             step_size: spec.step_size,
             status: IntegratorRunStatus::SolverFailure,
@@ -1567,6 +1593,9 @@ fn build_fronts(runs: &[IntegratorRunRecord]) -> Vec<GlobalErrorParetoFront> {
     }
     let mut fronts = Vec::new();
     for (problem_id, problem_runs) in by_problem {
+        let comparative_reading = ComparativeReading::for_participants(
+            problem_runs.iter().map(|run| run.comparator_fidelity),
+        );
         for error_metric in error_metrics() {
             for cost_metric in cost_metrics() {
                 let observations = problem_runs
@@ -1592,6 +1621,7 @@ fn build_fronts(runs: &[IntegratorRunRecord]) -> Vec<GlobalErrorParetoFront> {
                         .into_iter()
                         .map(str::to_owned)
                         .collect(),
+                    comparative_reading,
                 });
             }
         }
@@ -1622,6 +1652,9 @@ fn build_attainments(
     }
     let mut out = Vec::new();
     for (problem_id, problem_runs) in by_problem {
+        let comparative_reading = ComparativeReading::for_participants(
+            problem_runs.iter().map(|run| run.comparator_fidelity),
+        );
         for target in targets {
             for cost_metric in cost_metrics() {
                 let best = problem_runs
@@ -1630,7 +1663,12 @@ fn build_attainments(
                         let errors = run.errors.as_ref()?;
                         let error = errors.value(target.metric);
                         let cost = run.cost(cost_metric)?;
-                        (error <= target.threshold).then_some((run.record_id.as_str(), error, cost))
+                        (error <= target.threshold).then_some((
+                            run.record_id.as_str(),
+                            error,
+                            cost,
+                            run.comparator_fidelity,
+                        ))
                     })
                     .min_by(|left, right| {
                         left.2
@@ -1645,6 +1683,8 @@ fn build_attainments(
                     record_id: best.map(|item| item.0.to_owned()),
                     achieved_error: best.map(|item| item.1),
                     cost: best.map(|item| item.2),
+                    comparator_fidelity: best.map(|item| item.3),
+                    comparative_reading,
                 });
             }
         }
@@ -1663,6 +1703,27 @@ struct ScientificRun<'a> {
     work: &'a IntegratorWorkReport,
     reference_checksum: &'a str,
     output_grid_id: &'a str,
+}
+
+/// Pre-label front projection: the scientific checksum predates the
+/// comparator-fidelity labels and must stay byte-identical.
+#[derive(Serialize)]
+struct ScientificFront<'a> {
+    problem_id: &'a str,
+    error_metric: GlobalErrorMetric,
+    cost_metric: ParetoCostMetric,
+    record_ids: &'a [String],
+}
+
+/// Pre-label attainment projection; see [`ScientificFront`].
+#[derive(Serialize)]
+struct ScientificAttainment<'a> {
+    problem_id: &'a str,
+    target_id: &'a str,
+    cost_metric: ParetoCostMetric,
+    record_id: &'a Option<String>,
+    achieved_error: Option<f64>,
+    cost: Option<f64>,
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -1693,10 +1754,24 @@ fn scientific_checksum(
     let scientific_fronts = fronts
         .iter()
         .filter(|front| front.cost_metric != ParetoCostMetric::WallSeconds)
+        .map(|front| ScientificFront {
+            problem_id: &front.problem_id,
+            error_metric: front.error_metric,
+            cost_metric: front.cost_metric,
+            record_ids: &front.record_ids,
+        })
         .collect::<Vec<_>>();
     let scientific_attainments = attainments
         .iter()
         .filter(|row| row.cost_metric != ParetoCostMetric::WallSeconds)
+        .map(|row| ScientificAttainment {
+            problem_id: &row.problem_id,
+            target_id: &row.target_id,
+            cost_metric: row.cost_metric,
+            record_id: &row.record_id,
+            achieved_error: row.achieved_error,
+            cost: row.cost,
+        })
         .collect::<Vec<_>>();
     Ok(sha256_hex(&serde_json::to_vec(&(
         profile,
@@ -1708,6 +1783,54 @@ fn scientific_checksum(
         targets,
         scientific_attainments,
     ))?))
+}
+
+/// Writer-side refusal (audit F-052/F-056 Tier B): every run must carry the
+/// label of its configured arm, and no front or attainment may admit a
+/// comparative reading over a problem that includes a non-production arm.
+fn validate_comparator_fidelity(
+    runs: &[IntegratorRunRecord],
+    fronts: &[GlobalErrorParetoFront],
+    attainments: &[TargetAttainment],
+) -> FairResult<()> {
+    let mut problem_readings = BTreeMap::<&str, Vec<ComparatorFidelity>>::new();
+    for run in runs {
+        let expected = FixedAnchorCandidate::ALL
+            .into_iter()
+            .find(|candidate| candidate.id() == run.candidate_id)
+            .map(FixedAnchorCandidate::comparator_fidelity);
+        if expected != Some(run.comparator_fidelity) {
+            return Err(FairError::Invalid(format!(
+                "run {} carries comparator fidelity {:?} inconsistent with its arm",
+                run.record_id, run.comparator_fidelity
+            )));
+        }
+        problem_readings
+            .entry(&run.problem_id)
+            .or_default()
+            .push(run.comparator_fidelity);
+    }
+    let reading = |problem_id: &str| {
+        ComparativeReading::for_participants(
+            problem_readings
+                .get(problem_id)
+                .into_iter()
+                .flatten()
+                .copied(),
+        )
+    };
+    if fronts
+        .iter()
+        .any(|front| front.comparative_reading != reading(&front.problem_id))
+        || attainments
+            .iter()
+            .any(|row| row.comparative_reading != reading(&row.problem_id))
+    {
+        return Err(FairError::Invalid(
+            "a front or attainment admits a comparative reading against a reference-implementation-only comparator".into(),
+        ));
+    }
+    Ok(())
 }
 
 fn shuffled_indices(length: usize, rng: &mut Pcg64Mcg) -> Vec<usize> {
@@ -1733,11 +1856,17 @@ fn authoritative_timing(
 
     for spec in specs {
         let id = record_id(spec);
-        let mut calibration_seconds = None;
+        // Calibrate from the fastest warmup (audit F-053): a slow cold first
+        // sample must not shrink the batch below the timer-resolution floor.
+        let mut calibration_seconds: Option<f64> = None;
         for _ in 0..protocol.warmups.max(1) {
             let started = Instant::now();
             match execute_candidate(spec) {
-                Ok(_) => calibration_seconds = Some(started.elapsed().as_secs_f64()),
+                Ok(_) => {
+                    let seconds = started.elapsed().as_secs_f64();
+                    calibration_seconds =
+                        Some(calibration_seconds.map_or(seconds, |fastest| fastest.min(seconds)));
+                }
                 Err(error) => {
                     failures.insert(id.clone(), error.to_string());
                     break;
@@ -1867,6 +1996,7 @@ pub fn run_global_error_pareto_screen(
     let fronts = build_fronts(&runs);
     let targets = default_targets()?;
     let attainments = build_attainments(&runs, &targets);
+    validate_comparator_fidelity(&runs, &fronts, &attainments)?;
     let scientific_checksum = scientific_checksum(
         profile,
         &output_policy,

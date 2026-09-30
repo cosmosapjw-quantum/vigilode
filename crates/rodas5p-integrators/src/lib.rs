@@ -19,6 +19,7 @@ mod block;
 mod candidates;
 mod certification;
 mod common_w_gate;
+mod comparator_fidelity;
 mod dense_output_v2;
 mod exponential;
 mod g1_transactional_gate;
@@ -80,16 +81,18 @@ pub use audit2_matrix_free_research::{
 };
 #[cfg(feature = "audit2-research")]
 pub use audit2_reusable_transaction_research::{
-    Audit2ExternalOutputReference, Audit2FrozenWSemanticIdentity, Audit2IndependentBudgetReceipt,
-    Audit2IndependentStepBudget, Audit2ReferenceAwareOutputAssessment,
-    Audit2ReferenceUncertaintyTreatment, Audit2ReusablePreconditionerBinding,
-    Audit2ReusablePreconditionerCache, Audit2ReusablePreconditionerCacheSnapshot,
-    Audit2ReusablePreconditionerIdentity, Audit2TransactionalAttemptConfig,
+    AUDIT2_REUSE_CERTIFICATE_MAX_DIMENSION, AUDIT2_TRANSACTION_COMMIT_RULE_CAUSAL,
+    AUDIT2_TRANSACTION_COMMIT_RULE_REFERENCE_GATED, Audit2ExternalOutputReference,
+    Audit2FrozenWSemanticIdentity, Audit2IndependentBudgetReceipt, Audit2IndependentStepBudget,
+    Audit2ReferenceAwareOutputAssessment, Audit2ReferenceUncertaintyTreatment,
+    Audit2ReusablePreconditionerBinding, Audit2ReusablePreconditionerCache,
+    Audit2ReusablePreconditionerCacheSnapshot, Audit2ReusablePreconditionerIdentity,
+    Audit2ReuseCertificate, Audit2TransactionCommitRule, Audit2TransactionalAttemptConfig,
     Audit2TransactionalAttemptFailure, Audit2TransactionalAttemptOutcome,
     Audit2TransactionalAttemptSuccess, Audit2TransactionalCandidateReceipt,
     Audit2TransactionalFailurePhase, Audit2TransactionalSelection,
     assess_audit2_reference_aware_output, audit2_conservative_l2_difference_upper,
-    audit2_conservative_output_budget_lower,
+    audit2_conservative_output_budget_lower, audit2_preconditioner_reuse_certificate,
     run_audit2_reusable_preconditioner_transactional_attempt,
 };
 #[cfg(feature = "audit2-stage-certificate")]
@@ -97,16 +100,18 @@ pub use audit2_stage_certificate_research::{
     Audit2StageCertificateError, FrozenJsonDocument, StageCertificateDecision,
     StageCertificateInput, StageCertificateNorm, StageCertificatePartialFailure,
     StageCertificateProvenance, StageCertificateReceipt, StageCertificateReceiptAuthority,
-    StageCertificateStageTrace, StageCertificateTrace, StageCertificateWork,
-    audit2_stage_certificate_digest_f64_bits, canonical_json_sha256,
-    evaluate_audit2_stage_certificate, retain_completed_stage_traces,
+    StageCertificateStageSolve, StageCertificateStageTrace, StageCertificateTrace,
+    StageCertificateWork, audit2_stage_certificate_decision_input_digest,
+    audit2_stage_certificate_digest_f64_bits, audit2_stage_certificate_rhs_digest,
+    audit2_upper_add, audit2_upper_mul, canonical_json_sha256, evaluate_audit2_stage_certificate,
+    retain_completed_stage_traces,
 };
 
 pub use adaptive::{
     AdaptiveControllerState, AdaptiveFailureKind, AdaptiveObservedIntegrationResult,
-    AdaptiveRunDiagnostics, AdaptiveStepConfig, ControllerKind, RODAS5P_ESTIMATOR_ORDER,
-    StepDoublingEstimate, adaptive_next_step_after_attempt, rodas_next_step_after_attempt,
-    step_doubling_wrms_error,
+    AdaptiveRunDiagnostics, AdaptiveStepConfig, CLIPPED_SAMPLE_INFORMATIVE_RATIO, ControllerKind,
+    RODAS5P_ESTIMATOR_ORDER, StepDoublingEstimate, adaptive_next_step_after_attempt,
+    rodas_next_step_after_attempt, step_doubling_wrms_error,
 };
 pub use adaptive_exponential::{
     AdaptiveEarlyFlowDefectAttempt, AdaptiveEarlyFlowDefectOutcome,
@@ -138,13 +143,24 @@ pub use common_w_gate::{
     MatrixFreeCommonWCase, MatrixFreeCommonWProfile, MatrixFreeCommonWReport, MatrixFreeCommonWRow,
     run_matrix_free_common_w_gate,
 };
+pub use comparator_fidelity::{
+    ComparativeReading, ComparatorFidelity, RelativePerformanceVerdict,
+    relative_performance_verdict,
+};
 pub use dense_output_v2::{
-    DenseOutputError, DenseOutputResult, bdf_dense_output,
-    integrate_adaptive_dense_observed_with_config, integrate_bdf_adaptive_dense_observed,
-    integrate_bdf_fixed_dense_observed, integrate_fixed_dense_observed,
-    integrate_homotopy_adaptive_dense_observed, integrate_radau_adaptive_dense_observed,
-    integrate_radau_fixed_dense_observed, integrate_sequential_matrix_free_adaptive_dense_observed,
+    DenseErrorControl, DenseErrorReport, DenseErrorSample, DenseOutputError, DenseOutputResult,
+    InterpolantAudit, InterpolantAuditSample, bdf_dense_output,
+    integrate_adaptive_dense_observed_with_config,
+    integrate_adaptive_dense_observed_with_dense_error_control,
+    integrate_bdf_adaptive_dense_observed, integrate_bdf_fixed_dense_observed,
+    integrate_fixed_dense_observed, integrate_homotopy_adaptive_dense_observed,
+    integrate_radau_adaptive_dense_observed, integrate_radau_fixed_dense_observed,
+    integrate_sequential_matrix_free_adaptive_dense_fixed_inner_observed,
+    integrate_sequential_matrix_free_adaptive_dense_observed,
+    integrate_sequential_matrix_free_adaptive_dense_with_interpolant_audit,
+    integrate_sequential_matrix_free_adaptive_dense_with_interpolant_audit_and_evaluator,
     integrate_transactional_q1_q2_adaptive_dense_observed, radau_dense_output,
+    rodas5p_dense_interior_defect_estimate, rodas5p_dense_interior_error_estimate,
     rodas5p_dense_output,
 };
 pub use exponential::{
@@ -157,8 +173,8 @@ pub use exponential::{
     Pexprb54s4Level1PrefixReport, Pexprb54s4Level2ContinuationLedger,
     Pexprb54s4Level2ContinuationOutcome, Pexprb54s4Level2Prefix, Pexprb54s4Level2PrefixReport,
     Pexprb54s4QuadraticRemainderDrift, Pexprb54s4RemainderVectorGeometry, Pexprb54s4Tableau,
-    PhiActionReport, exprb2_fused_step, exprb2_step, exprb43_fused_step, exprb43_step,
-    fused_phi_action, fused_phi_action_incremental, fused_phi_linear_combination,
+    PhiActionReport, PhiConvergenceBasis, exprb2_fused_step, exprb2_step, exprb43_fused_step,
+    exprb43_step, fused_phi_action, fused_phi_action_incremental, fused_phi_linear_combination,
     krylov_phi_action, pexprb54s4_fused_step, pexprb54s4_fused_step_resume_level1,
     pexprb54s4_fused_step_resume_level2, pexprb54s4_fused_step_resume_level2_accounted,
     pexprb54s4_fused_step_resume_level2_accounted_jvp_budget,
@@ -190,14 +206,16 @@ pub use g4_prefix_kernel_gate::{
 };
 pub use g4_s5b0_inner_tolerance::{
     G4_S5B0_COMMITTED_LINEAR_TOLERANCE_ARM, G4S5B0InnerToleranceLane, G4S5B0InnerTolerancePolicy,
-    G4S5B0LinearToleranceArm, RODAS5P_INNER_FORCING_CLAIM_SCOPE, RODAS5P_INNER_FORCING_ETA_MAX,
+    G4S5B0LinearToleranceArm, RODAS5P_INNER_FORCING_CLAIM_SCOPE,
+    RODAS5P_INNER_FORCING_ERROR_EXPONENT, RODAS5P_INNER_FORCING_ETA_MAX,
     RODAS5P_INNER_FORCING_FLOOR, RODAS5P_INNER_RESIDUAL_HEURISTIC_FRACTION,
     Rodas5pInnerForcingClaimScope, Rodas5pInnerForcingTarget,
-    committed_g4_s5b0_linear_tolerance_arm, rodas5p_inner_forcing_target,
+    committed_g4_s5b0_linear_tolerance_arm, rodas5p_inner_forcing_error_limit,
+    rodas5p_inner_forcing_target,
 };
 pub use g4_s5b0_regime_atlas::{
     G4S5B0ActualLevel1PrefixReport, G4S5B0ActualLevel1PrefixRow, G4S5B0ActualLevel2PrefixReport,
-    G4S5B0ActualLevel2PrefixRow, G4S5B0AttemptTraceReport, G4S5B0Family,
+    G4S5B0ActualLevel2PrefixRow, G4S5B0AttemptTraceReport, G4S5B0AttemptWork, G4S5B0Family,
     G4S5B0FrozenFullEShadowEconomicsReport, G4S5B0FrozenFullEShadowHardGates,
     G4S5B0FrozenFullEShadowReport, G4S5B0FrozenFullEShadowRow, G4S5B0PrefixProbePolicy,
     G4S5B0Profile, G4S5B0Report, G4S5B0RjfAttemptRow, G4S5B0RjfParitySummary, G4S5B0ShadowWallArm,
@@ -206,13 +224,14 @@ pub use g4_s5b0_regime_atlas::{
     G4S5B0TrajectorySummary, G4S5B0V37ContinuationTransactionHardGates,
     G4S5B0V37ContinuationTransactionReport, G4S5B0V37ContinuationTransactionRow,
     V36_FROZEN_ZETA34_TAU, V37_CONTINUATION_JVP_CAP, enforced_prefix_jvp_cap,
-    frozen_full_e_shadow_recommended, run_g4_s5b0_actual_level1_prefix_family,
-    run_g4_s5b0_actual_level2_prefix_family, run_g4_s5b0_enforced_prefix_budget_family,
-    run_g4_s5b0_frozen_full_e_shadow, run_g4_s5b0_frozen_full_e_shadow_economics,
-    run_g4_s5b0_frozen_full_e_shadow_family, run_g4_s5b0_regime_atlas,
-    run_g4_s5b0_rjf_attempt_trace, run_g4_s5b0_rjf_attempt_trace_family, run_g4_s5b0_rjf_only,
-    run_g4_s5b0_rjf_only_family, run_g4_s5b0_stage_growth_safety_audit_family,
-    run_g4_s5b0_v37_continuation_transaction, run_g4_s5b0_v37_continuation_transaction_family,
+    frozen_full_e_shadow_recommended, g4_s5b0_policy_constants, g4_s5b0_replayed_k1_decision,
+    run_g4_s5b0_actual_level1_prefix_family, run_g4_s5b0_actual_level2_prefix_family,
+    run_g4_s5b0_enforced_prefix_budget_family, run_g4_s5b0_frozen_full_e_shadow,
+    run_g4_s5b0_frozen_full_e_shadow_economics, run_g4_s5b0_frozen_full_e_shadow_family,
+    run_g4_s5b0_regime_atlas, run_g4_s5b0_rjf_attempt_trace, run_g4_s5b0_rjf_attempt_trace_family,
+    run_g4_s5b0_rjf_only, run_g4_s5b0_rjf_only_family,
+    run_g4_s5b0_stage_growth_safety_audit_family, run_g4_s5b0_v37_continuation_transaction,
+    run_g4_s5b0_v37_continuation_transaction_family,
 };
 pub use g4_s5b0_trace_authority::{
     g4_s5b0_rjf_trace_digest, run_g4_s5b0_rjf_attempt_trace_family_with_linear_tolerance_arm,
@@ -252,7 +271,10 @@ pub use integrate::{
 pub use native_gates::{
     NativeIntegratorGateReport, NativeIntegratorGateRow, run_native_integrator_gates,
 };
-pub use nonlinear::{NewtonConfig, NewtonReport, solve_dense_newton};
+pub use nonlinear::{
+    BDF_NEWTON_TOLERANCE_FACTOR, NewtonConfig, NewtonReport, NewtonTolerancePolicy,
+    radau_newton_tolerance_factor, solve_dense_newton,
+};
 pub use output::{ObservedIntegrationResult, OutputSamplingPlan, OutputSchedule};
 pub use parallel::ParallelExecution;
 pub use path_controller::{
@@ -295,9 +317,9 @@ pub use scientific_validity_v2_gate::{
     verify_v2_calibration_freeze, verify_v2_oregonator_replay,
 };
 pub use sequential::{
-    InnerForcedStageSolveData, InnerForcedStepResult, KrylovState, StageInnerForcingReport,
-    StageSolveData, StepCertificate, StepContext, StepResult, build_step_context,
-    build_step_context_matrix_free, finish_step, sequential_matrix_free_step,
+    InnerForcedStageSolveData, InnerForcedStepResult, InnerForcingResolution, KrylovState,
+    StageInnerForcingReport, StageSolveData, StepCertificate, StepContext, StepResult,
+    build_step_context, build_step_context_matrix_free, finish_step, sequential_matrix_free_step,
     sequential_matrix_free_step_with_inner_forcing, sequential_stages,
     sequential_stages_with_inner_forcing, sequential_step,
 };

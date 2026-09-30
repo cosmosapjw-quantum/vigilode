@@ -23,6 +23,30 @@ pub fn validate_residual_scale(scale: Option<&[f64]>, dimension: usize) -> CoreR
     Ok(())
 }
 
+/// Rejects a stopping tolerance that is NaN, infinite, or negative.
+///
+/// `f64::max` ignores NaN and `+Inf` makes every residual acceptable, so either
+/// would let a kernel certify an arbitrary iterate (audit F-034).
+pub fn validate_tolerances(kernel: &str, rtol: f64, atol: f64) -> CoreResult<()> {
+    if !(rtol.is_finite() && rtol >= 0.0 && atol.is_finite() && atol >= 0.0) {
+        return Err(CoreError::InvalidInput(format!(
+            "{kernel} tolerances must be finite and nonnegative (rtol={rtol:e}, atol={atol:e})"
+        )));
+    }
+    Ok(())
+}
+
+/// Builds `max(atol, rtol * right_norm)` and rejects a threshold that overflows.
+pub fn residual_threshold(kernel: &str, rtol: f64, atol: f64, right_norm: f64) -> CoreResult<f64> {
+    let threshold = atol.max(rtol * right_norm);
+    if !threshold.is_finite() {
+        return Err(CoreError::InvalidInput(format!(
+            "{kernel} residual threshold is not finite (rtol={rtol:e}, ||b||={right_norm:e})"
+        )));
+    }
+    Ok(threshold)
+}
+
 pub fn selected_residual_norm(values: &[f64], scale: Option<&[f64]>) -> CoreResult<f64> {
     match scale {
         Some(scale) => wrms(values, scale),

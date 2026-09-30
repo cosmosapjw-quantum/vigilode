@@ -66,6 +66,11 @@ pub struct OperatorApplicationWork {
     pub jvp_vectors: u64,
     pub mass_matvecs: u64,
     pub block_matvecs: u64,
+    /// Products with an explicit Jacobian matrix (not JVP callbacks).
+    pub jacobian_matvecs: u64,
+    /// State vectors one application acts on: 0 or 1 for a single-state
+    /// operator, s for a block operator over s stages (audit F-051).
+    pub state_vectors: u64,
 }
 
 impl OperatorApplicationWork {
@@ -76,7 +81,15 @@ impl OperatorApplicationWork {
             jvp_vectors: self.jvp_vectors.saturating_mul(count),
             mass_matvecs: self.mass_matvecs.saturating_mul(count),
             block_matvecs: self.block_matvecs.saturating_mul(count),
+            jacobian_matvecs: self.jacobian_matvecs.saturating_mul(count),
+            state_vectors: self.state_vectors,
         }
+    }
+
+    /// State-vector units of one application; an undeclared operator acts on
+    /// one state vector.
+    pub fn state_vector_units(self) -> u64 {
+        self.state_vectors.max(1)
     }
 
     fn charge(self, counters: &mut WorkCounters) {
@@ -84,6 +97,9 @@ impl OperatorApplicationWork {
         counters.jvp_vectors = counters.jvp_vectors.saturating_add(self.jvp_vectors);
         counters.mass_matvecs = counters.mass_matvecs.saturating_add(self.mass_matvecs);
         counters.block_matvecs = counters.block_matvecs.saturating_add(self.block_matvecs);
+        counters.jacobian_matvecs = counters
+            .jacobian_matvecs
+            .saturating_add(self.jacobian_matvecs);
     }
 }
 
@@ -140,11 +156,21 @@ pub trait LinearOperator: Send + Sync {
 #[derive(Clone)]
 pub struct DenseOperator {
     matrix: DenseMatrix,
+    application_work: OperatorApplicationWork,
     token: u64,
 }
 
 impl DenseOperator {
     pub fn new(matrix: DenseMatrix) -> CoreResult<Self> {
+        Self::with_application_work(matrix, OperatorApplicationWork::default())
+    }
+
+    /// A dense operator that declares the physical work of one application,
+    /// for example one explicit Jacobian product.
+    pub fn with_application_work(
+        matrix: DenseMatrix,
+        application_work: OperatorApplicationWork,
+    ) -> CoreResult<Self> {
         if matrix.nrows() != matrix.ncols() {
             return Err(CoreError::Dimension(
                 "linear operator must be square".into(),
@@ -152,6 +178,7 @@ impl DenseOperator {
         }
         Ok(Self {
             matrix,
+            application_work,
             token: NEXT_TOKEN.fetch_add(1, Ordering::Relaxed),
         })
     }
@@ -166,6 +193,9 @@ impl LinearOperator for DenseOperator {
     }
     fn explicit(&self) -> Option<&DenseMatrix> {
         Some(&self.matrix)
+    }
+    fn application_work(&self) -> OperatorApplicationWork {
+        self.application_work
     }
     fn exact_identity(&self) -> Option<ExactOperatorIdentity> {
         Some(ExactOperatorIdentity::Dense(
@@ -183,6 +213,7 @@ where
 {
     n: usize,
     f: F,
+    application_work: OperatorApplicationWork,
     token: u64,
 }
 
@@ -191,9 +222,20 @@ where
     F: Fn(&[f64], &mut [f64]) -> CoreResult<()> + Send + Sync,
 {
     pub fn new(n: usize, f: F) -> Self {
+        Self::with_application_work(n, f, OperatorApplicationWork::default())
+    }
+
+    /// A closure operator that declares the physical work of one application,
+    /// for example one user JVP callback.
+    pub fn with_application_work(
+        n: usize,
+        f: F,
+        application_work: OperatorApplicationWork,
+    ) -> Self {
         Self {
             n,
             f,
+            application_work,
             token: NEXT_TOKEN.fetch_add(1, Ordering::Relaxed),
         }
     }
@@ -208,6 +250,9 @@ where
     }
     fn apply(&self, x: &[f64], y: &mut [f64]) -> CoreResult<()> {
         (self.f)(x, y)
+    }
+    fn application_work(&self) -> OperatorApplicationWork {
+        self.application_work
     }
     fn token(&self) -> u64 {
         self.token
@@ -230,13 +275,19 @@ pub fn apply_counted(
     category: ApplyCategory,
 ) -> CoreResult<()> {
     op.apply(x, y)?;
+    let work = op.application_work();
     match category {
         ApplyCategory::Krylov => counters.linear_matvecs += 1,
         ApplyCategory::Refresh => counters.recycle_refresh_matvecs += 1,
         ApplyCategory::Diagnostic => counters.diagnostic_matvecs += 1,
         ApplyCategory::Block => counters.block_matvecs += 1,
     }
-    op.application_work().charge(counters);
+    if matches!(category, ApplyCategory::Krylov | ApplyCategory::Diagnostic) {
+        counters.linear_matvec_vectors = counters
+            .linear_matvec_vectors
+            .saturating_add(work.state_vector_units());
+    }
+    work.charge(counters);
     Ok(())
 }
 
@@ -249,6 +300,11 @@ pub fn apply_rows_counted(
 ) -> CoreResult<()> {
     op.apply_rows(inputs, outputs)?;
     let vectors = u64::try_from(inputs.len()).unwrap_or(u64::MAX);
+    if matches!(category, ApplyCategory::Krylov | ApplyCategory::Diagnostic) {
+        counters.linear_matvec_vectors = counters
+            .linear_matvec_vectors
+            .saturating_add(vectors.saturating_mul(op.application_work().state_vector_units()));
+    }
     match category {
         ApplyCategory::Krylov => {
             counters.linear_matvecs = counters.linear_matvecs.saturating_add(vectors)
@@ -278,11 +334,21 @@ pub fn apply_jvp_counted(
     counters: &mut WorkCounters,
 ) -> CoreResult<()> {
     jacobian.apply(x, y)?;
-    counters.jvp_calls = counters.jvp_calls.saturating_add(1);
-    counters.jvp_vectors = counters.jvp_vectors.saturating_add(1);
+    // An operator that declares its provenance (a JVP callback or an
+    // explicit Jacobian product) is charged exactly that; an undeclared
+    // operator keeps the historical role-based count of one JVP.
+    let declared = jacobian.application_work();
+    if declared == OperatorApplicationWork::default() {
+        counters.jvp_calls = counters.jvp_calls.saturating_add(1);
+        counters.jvp_vectors = counters.jvp_vectors.saturating_add(1);
+    } else {
+        declared.charge(counters);
+    }
     Ok(())
 }
 
+/// A left preconditioner.  Implementations are not assumed nonsingular: every
+/// Krylov kernel certifies convergence on the unpreconditioned true residual.
 pub trait Preconditioner: Send + Sync {
     fn dimension(&self) -> usize;
     fn apply(&self, x: &[f64], y: &mut [f64]) -> CoreResult<()>;
@@ -293,6 +359,11 @@ pub trait Preconditioner: Send + Sync {
     /// implementations return `None`, which forces recycle-image refresh.
     fn exact_identity(&self) -> Option<ExactPreconditionerIdentity> {
         None
+    }
+    /// State vectors one application acts on: 1, or s for a block
+    /// preconditioner over s stages (audit F-051).
+    fn application_vectors(&self) -> u64 {
+        1
     }
 }
 
@@ -410,13 +481,14 @@ impl ShiftedOperator {
         h: f64,
         gamma: f64,
     ) -> CoreResult<Self> {
-        Self::new_with_application_work(
-            mass,
-            jacobian,
-            h,
-            gamma,
-            OperatorApplicationWork::default(),
-        )
+        // `M - h gamma J` performs one application of J, plus one mass
+        // product when M is present. A Jacobian that declares its provenance
+        // passes it on; an undeclared one keeps the historical zero.
+        let mut application_work = jacobian.application_work();
+        if application_work != OperatorApplicationWork::default() && mass.is_some() {
+            application_work.mass_matvecs = application_work.mass_matvecs.saturating_add(1);
+        }
+        Self::new_with_application_work(mass, jacobian, h, gamma, application_work)
     }
 
     pub fn new_counted_jvp(
@@ -430,6 +502,8 @@ impl ShiftedOperator {
             jvp_vectors: 1,
             mass_matvecs: u64::from(mass.is_some()),
             block_matvecs: 0,
+            jacobian_matvecs: 0,
+            state_vectors: 0,
         };
         Self::new_with_application_work(mass, jacobian, h, gamma, application_work)
     }
@@ -527,5 +601,8 @@ pub fn apply_preconditioner(
 ) -> CoreResult<()> {
     p.apply(x, y)?;
     counters.preconditioner_apps += 1;
+    counters.preconditioner_vectors = counters
+        .preconditioner_vectors
+        .saturating_add(p.application_vectors());
     Ok(())
 }

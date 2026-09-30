@@ -24,7 +24,7 @@ Scientific claims are evidence-gated. Research branches retain failed, speculati
 
 ## Scientific-validity boundary
 
-The internal BDF1/BDF2/RadauIIA1/RadauIIA3 solvers are reference implementations, not competitive production baselines. Existing receipts support no comparison with RADAU5, CVODE, OrdinaryDiffEq, SciPy, or SUNDIALS. The synthetic stage-batch/parallel probe measures thread-pool and compute-bound overhead only; it does not predict memory-bandwidth-bound JVP scaling.
+The internal BDF1/BDF2/RadauIIA1/RadauIIA3 solvers are reference implementations, not competitive production baselines. This is machine-checked: every fair-ab run row and G3 adaptive row they produce carries `comparator_fidelity = "reference-implementation-only"`, every front, attainment, or report that mixes them with production arms carries `comparative_reading = "forbidden"`, and the unified gates return `not-evaluated` rather than promote/hold for any relative comparison against such a reference (audit F-052/F-056 Tier B). Existing receipts support no comparison with RADAU5, CVODE, OrdinaryDiffEq, SciPy, or SUNDIALS. The synthetic stage-batch/parallel probe measures thread-pool and compute-bound overhead only; it does not predict memory-bandwidth-bound JVP scaling.
 
 `AcceptedSteps` and `InternalSteps` count accepted state-advancing substeps, not
 adaptive controller macro-attempts. Thus the explicit BDF startup and the Radau IIA1

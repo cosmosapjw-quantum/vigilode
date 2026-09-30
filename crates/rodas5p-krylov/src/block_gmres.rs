@@ -490,16 +490,38 @@ pub fn solve_seeded_gmres(
         .map(|(index, _)| index)
         .expect("validated nonempty RHS");
     let seed_norm = safe_l2(&preconditioned_rhs[seed_index]);
+    if !seed_norm.is_finite() {
+        return Err(CoreError::NonFinite(
+            "seeded GMRES preconditioned seed norm is NaN/Inf".into(),
+        ));
+    }
     if seed_norm <= f64::MIN_POSITIVE {
+        // The returned iterate is x = 0, so the true residual is b itself.
+        // Certify it rather than assume it: a singular preconditioner can
+        // annihilate a nonzero right-hand side (audit F-037).
+        let residual_norms: Vec<f64> = rhs_rows.iter().map(|rhs| safe_l2(rhs)).collect();
+        for (index, norm) in residual_norms.iter().enumerate() {
+            let threshold = config.atol.max(config.rtol * norm);
+            if !(norm.is_finite() && *norm <= threshold) {
+                return Err(CoreError::LinearSolve(format!(
+                    "seeded GMRES preconditioner annihilated nonzero RHS {index} \
+                     (||b||={norm:.3e}, threshold {threshold:.3e})"
+                )));
+            }
+        }
+        let relative_residuals: Vec<f64> = residual_norms
+            .iter()
+            .map(|norm| if *norm == 0.0 { 0.0 } else { 1.0 })
+            .collect();
         counters.linear_solves += rhs_count as u64;
         counters.block_linear_solves += 1;
         return Ok(BlockLinearSolveReport {
             solutions: vec![vec![0.0; n]; rhs_count],
             converged: true,
-            residual_norms: vec![0.0; rhs_count],
-            relative_residuals: vec![0.0; rhs_count],
-            maximum_residual_norm: 0.0,
-            maximum_relative_residual: 0.0,
+            maximum_residual_norm: residual_norms.iter().copied().fold(0.0_f64, f64::max),
+            maximum_relative_residual: relative_residuals.iter().copied().fold(0.0_f64, f64::max),
+            residual_norms,
+            relative_residuals,
             initial_block_rank: 0,
             final_basis_dimension: 0,
             search_directions: 0,

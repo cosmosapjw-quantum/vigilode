@@ -42,6 +42,10 @@ pub struct BlockSolveReport {
     pub iterations: u64,
     pub matvecs: u64,
     pub preconditioner_apps: u64,
+    /// `matvecs` and `preconditioner_apps` in state-vector units: s per
+    /// block application (audit F-051). Compare lanes on these only.
+    pub matvec_vectors: u64,
+    pub preconditioner_vectors: u64,
     pub method: String,
     pub polynomial_terms: usize,
 }
@@ -438,6 +442,8 @@ impl<'ctx, 'p> StructuredBlockSystem<'ctx, 'p> {
             iterations,
             matvecs,
             preconditioner_apps: pcapps,
+            matvec_vectors: matvecs.saturating_mul(self.s as u64),
+            preconditioner_vectors: pcapps.saturating_mul(self.s as u64),
             method,
             polynomial_terms: terms,
         })
@@ -538,7 +544,10 @@ impl<'ctx, 'p> StructuredBlockSystem<'ctx, 'p> {
             None
         };
         let pc: Box<dyn Preconditioner> = match preconditioner {
-            BlockPreconditioner::None => Box::new(IdentityPreconditioner::new(self.s * self.n)),
+            BlockPreconditioner::None => Box::new(BlockIdentityPc {
+                inner: IdentityPreconditioner::new(self.s * self.n),
+                s: self.s,
+            }),
             BlockPreconditioner::Direct => Box::new(BlockDirectPc {
                 factor: factor.expect("factor"),
                 s: self.s,
@@ -621,21 +630,57 @@ impl LinearOperator for BlockOperator<'_, '_, '_> {
     }
     fn application_work(&self) -> OperatorApplicationWork {
         let stage_vectors = self.system.s as u64;
+        // One Jacobian application per stage, charged with the provenance the
+        // Jacobian declares (a JVP callback or an explicit product); an
+        // undeclared Jacobian keeps the role-based JVP count (audit F-048).
+        let declared = self.system.context.jacobian.application_work();
+        let (jvp_per_stage, jacobian_per_stage) = if declared == OperatorApplicationWork::default()
+        {
+            (1, 0)
+        } else {
+            (declared.jvp_calls, declared.jacobian_matvecs)
+        };
         OperatorApplicationWork {
-            jvp_calls: stage_vectors,
-            jvp_vectors: stage_vectors,
+            jvp_calls: stage_vectors.saturating_mul(jvp_per_stage),
+            jvp_vectors: stage_vectors.saturating_mul(jvp_per_stage),
             mass_matvecs: if self.system.context.problem.mass_matrix.is_some() {
                 stage_vectors
             } else {
                 0
             },
             block_matvecs: 1,
+            jacobian_matvecs: stage_vectors.saturating_mul(jacobian_per_stage),
+            state_vectors: stage_vectors,
         }
     }
     fn token(&self) -> u64 {
         self.system.context.shifted.token() ^ 0xB10C_5A5A
     }
 }
+/// The identity on the flattened s*n block, reporting its s state vectors
+/// per application (audit F-051).
+struct BlockIdentityPc {
+    inner: IdentityPreconditioner,
+    s: usize,
+}
+impl Preconditioner for BlockIdentityPc {
+    fn dimension(&self) -> usize {
+        self.inner.dimension()
+    }
+    fn apply(&self, x: &[f64], y: &mut [f64]) -> CoreResult<()> {
+        self.inner.apply(x, y)
+    }
+    fn is_identity(&self) -> bool {
+        true
+    }
+    fn exact_identity(&self) -> Option<rodas5p_core::ExactPreconditionerIdentity> {
+        self.inner.exact_identity()
+    }
+    fn application_vectors(&self) -> u64 {
+        self.s as u64
+    }
+}
+
 struct BlockDirectPc {
     factor: LuFactorization,
     s: usize,
@@ -644,6 +689,9 @@ struct BlockDirectPc {
 impl Preconditioner for BlockDirectPc {
     fn dimension(&self) -> usize {
         self.s * self.n
+    }
+    fn application_vectors(&self) -> u64 {
+        self.s as u64
     }
     fn apply(&self, x: &[f64], y: &mut [f64]) -> CoreResult<()> {
         let rows = unflatten(x, self.s, self.n);
@@ -672,6 +720,9 @@ impl BlockJacobiPc {
 impl Preconditioner for BlockJacobiPc {
     fn dimension(&self) -> usize {
         self.s * self.inv.len()
+    }
+    fn application_vectors(&self) -> u64 {
+        self.s as u64
     }
     fn apply(&self, x: &[f64], y: &mut [f64]) -> CoreResult<()> {
         if x.len() != self.dimension() || y.len() != self.dimension() {

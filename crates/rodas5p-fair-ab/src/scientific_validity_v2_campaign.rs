@@ -10,12 +10,14 @@ use rodas5p_core::{
     InitialGuess, LinearMethod, LinearSolverConfig, PreconditionerKind, WorkCounters, sha256_hex,
 };
 use rodas5p_integrators::{
-    AdaptiveRunDiagnostics, AdaptiveStepConfig, ControllerKind, CorpusPartition,
+    AdaptiveRunDiagnostics, AdaptiveStepConfig, ControllerKind, CorpusPartition, InterpolantAudit,
     OutputSamplingPlan, OutputSchedule, ScientificCaseSpec, ScientificCorpusV2, ScientificFamily,
     ScientificProblemCase, V2_THRESHOLD_DERIVATION_ID, V2CalibrationFreezeEnvelope,
     V2CalibrationFreezePayload, V2CampaignBinding, V2EvidenceAuthority, V2GateProfile, V2GateRow,
     V2GateRowStatus, V2OregonatorReplayEnvelope, V2OregonatorReplayPayload, V2OregonatorReplayRow,
-    V2RowEvidenceBinding, integrate_sequential_matrix_free_adaptive_dense_observed,
+    V2RowEvidenceBinding, integrate_sequential_matrix_free_adaptive_dense_fixed_inner_observed,
+    integrate_sequential_matrix_free_adaptive_dense_observed,
+    integrate_sequential_matrix_free_adaptive_dense_with_interpolant_audit,
     integrate_sequential_matrix_free_adaptive_observed, v2_calibration_payload_checksum,
     v2_oregonator_replay_payload_checksum, verify_v2_calibration_freeze,
     verify_v2_oregonator_replay,
@@ -36,7 +38,7 @@ pub const SCIENTIFIC_VALIDITY_V2_MAX_ATTEMPTS_PER_ARM: usize = 200_000;
 
 const OUTPUT_PROTOCOL_ID: &str =
     "branch-fixed-controller-krylov-restart; clipped-and-rodas5p-dense-independent-v1";
-const SOLVER_PROTOCOL_ID: &str = "rodas5p;gmres-restart32-max256;fallback-atol=1e-12;fallback-rtol=1e-10;inner-m=30;outer-k=8;recycle-dim=8;recycle-rank-tol=1e-12;pc-none;x0-previous;wrms-stage-residual-heuristic-v2;endpoint-bound=requires-resolvent-certificate;cross-step-recycle-images=refresh-per-linearization;outer=case-spec;initial=span/100;min=1e-12;max=span;controller=integral;safety=.9;factors=.2,5;reject=.9;total-attempts=200000";
+pub(crate) const SOLVER_PROTOCOL_ID: &str = "rodas5p;gmres-restart32-max256;fallback-atol=1e-12;fallback-rtol=1e-10;inner-m=30;outer-k=8;recycle-dim=8;recycle-rank-tol=1e-12;pc-none;x0-previous;wrms-stage-residual-heuristic-v2;endpoint-bound=requires-resolvent-certificate;cross-step-recycle-images=refresh-per-linearization;outer=case-spec;initial=span/100;min=1e-12;max=span;controller=integral;safety=.9;factors=.2,5;reject=.9;total-attempts=200000";
 const ZERO_SHA256: &str = "0000000000000000000000000000000000000000000000000000000000000000";
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -176,7 +178,7 @@ pub fn scientific_validity_v2_source_dirty_at_build() -> bool {
     env!("VIGILODE_SOURCE_DIRTY_AT_BUILD") != "false"
 }
 
-fn campaign_config(spec: &ScientificCaseSpec) -> V2Rodas5pCampaignConfig {
+pub(crate) fn campaign_config(spec: &ScientificCaseSpec) -> V2Rodas5pCampaignConfig {
     let span = spec.t_span.1 - spec.t_span.0;
     V2Rodas5pCampaignConfig {
         method: "RODAS5P".into(),
@@ -211,7 +213,7 @@ fn campaign_config(spec: &ScientificCaseSpec) -> V2Rodas5pCampaignConfig {
     }
 }
 
-fn linear_config(config: &V2Rodas5pCampaignConfig) -> LinearSolverConfig {
+pub(crate) fn linear_config(config: &V2Rodas5pCampaignConfig) -> LinearSolverConfig {
     LinearSolverConfig {
         method: LinearMethod::Gmres,
         // Every stage replaces these fixed thresholds with the WRMS forcing
@@ -229,7 +231,10 @@ fn linear_config(config: &V2Rodas5pCampaignConfig) -> LinearSolverConfig {
     }
 }
 
-fn adaptive_config(config: &V2Rodas5pCampaignConfig, max_attempts: usize) -> AdaptiveStepConfig {
+pub(crate) fn adaptive_config(
+    config: &V2Rodas5pCampaignConfig,
+    max_attempts: usize,
+) -> AdaptiveStepConfig {
     AdaptiveStepConfig {
         atol: config.outer_atol,
         rtol: config.outer_rtol,
@@ -374,7 +379,7 @@ fn output_checksum(
     sha256_hex(&bytes)
 }
 
-fn arm_failure_from_error(
+pub(crate) fn arm_failure_from_error(
     case: &ScientificProblemCase,
     mode: V2CampaignOutputMode,
     error: &FairError,
@@ -432,6 +437,26 @@ fn execute_arm(
     config: &V2Rodas5pCampaignConfig,
     mode: V2CampaignOutputMode,
 ) -> FairResult<V2CampaignArmEvidence> {
+    execute_arm_variant(case, config, mode, DenseArmVariant::Production, None)
+}
+
+/// How the dense arm solves its stages and whether it is audited. The v2
+/// runner only ever uses `Production` without an audit.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum DenseArmVariant {
+    /// WRMS stage-residual forcing, as in the v2 campaign.
+    Production,
+    /// Fixed fallback inner tolerance (audit F-033 attribution arm).
+    FixedInnerTolerance,
+}
+
+pub(crate) fn execute_arm_variant(
+    case: &ScientificProblemCase,
+    config: &V2Rodas5pCampaignConfig,
+    mode: V2CampaignOutputMode,
+    variant: DenseArmVariant,
+    mut audit: Option<&mut InterpolantAudit>,
+) -> FairResult<V2CampaignArmEvidence> {
     let started = Instant::now();
     let linear = linear_config(config);
     // Even a pre-stage solver failure retains the supplied initial condition
@@ -476,15 +501,45 @@ fn execute_arm(
             .map_err(|error| error.to_string()),
             V2CampaignOutputMode::Dense => {
                 let sampling = OutputSamplingPlan::dense(schedule);
-                integrate_sequential_matrix_free_adaptive_dense_observed(
-                    &matrix_free_problem,
-                    segment.t_span,
-                    &state,
-                    &linear,
-                    &adaptive,
-                    &sampling,
-                )
-                .map_err(|error| error.to_string())
+                match (variant, audit.as_deref_mut()) {
+                    (DenseArmVariant::Production, None) => {
+                        integrate_sequential_matrix_free_adaptive_dense_observed(
+                            &matrix_free_problem,
+                            segment.t_span,
+                            &state,
+                            &linear,
+                            &adaptive,
+                            &sampling,
+                        )
+                        .map_err(|error| error.to_string())
+                    }
+                    (DenseArmVariant::Production, Some(audit)) => {
+                        integrate_sequential_matrix_free_adaptive_dense_with_interpolant_audit(
+                            &matrix_free_problem,
+                            segment.t_span,
+                            &state,
+                            &linear,
+                            &adaptive,
+                            &sampling,
+                        )
+                        .map(|(result, segment_audit)| {
+                            audit.extend(segment_audit);
+                            result
+                        })
+                        .map_err(|error| error.to_string())
+                    }
+                    (DenseArmVariant::FixedInnerTolerance, _) => {
+                        integrate_sequential_matrix_free_adaptive_dense_fixed_inner_observed(
+                            &matrix_free_problem,
+                            segment.t_span,
+                            &state,
+                            &linear,
+                            &adaptive,
+                            &sampling,
+                        )
+                        .map_err(|error| error.to_string())
+                    }
+                }
             }
         };
         let result = match result {
@@ -596,40 +651,14 @@ fn preserve_failed_pair(
     ))
 }
 
-pub fn run_scientific_validity_v2_case(
-    spec: &ScientificCaseSpec,
-    reference: &NumericalReferenceBundleV2,
-) -> FairResult<ScientificValidityV2CaseArtifact> {
-    let code_revision = scientific_validity_v2_compiled_revision()?;
-    run_scientific_validity_v2_case_with_authority(
-        spec,
-        reference,
-        code_revision,
-        V2EvidenceAuthority::CanonicalV2Runner,
-    )
-}
-
-/// Dirty-tree execution path used only to exercise wiring in CI/development.
-/// Its evidence is permanently typed synthetic and is ineligible for a
-/// canonical calibration freeze.
-pub fn run_scientific_validity_v2_case_synthetic_smoke(
-    spec: &ScientificCaseSpec,
-    reference: &NumericalReferenceBundleV2,
-) -> FairResult<ScientificValidityV2CaseArtifact> {
-    run_scientific_validity_v2_case_with_authority(
-        spec,
-        reference,
-        scientific_validity_v2_detected_revision(),
-        V2EvidenceAuthority::SyntheticCiSmoke,
-    )
-}
-
-fn run_scientific_validity_v2_case_with_authority(
+/// Check that `reference` is exactly the numerical reference of `spec` for
+/// `code_revision` and return its binding. Shared by the v2 runner and the
+/// two-arm v3 runner.
+pub(crate) fn campaign_reference_binding(
     spec: &ScientificCaseSpec,
     reference: &NumericalReferenceBundleV2,
     code_revision: &str,
-    authority: V2EvidenceAuthority,
-) -> FairResult<ScientificValidityV2CaseArtifact> {
+) -> FairResult<V2CampaignReferenceBinding> {
     if reference.case_id != spec.id || reference.implementation_revision != code_revision {
         return Err(FairError::Invalid(
             "reference case/revision does not match the compiled canonical runner".into(),
@@ -695,14 +724,51 @@ fn run_scientific_validity_v2_case_with_authority(
             "v2 campaign numerical-reference provenance is internally inconsistent".into(),
         ));
     }
-    let reference_binding = V2CampaignReferenceBinding {
+    Ok(V2CampaignReferenceBinding {
         case_id: reference.case_id.clone(),
         problem_id: reference.problem_id.clone(),
         reference_checksum_sha256: reference.reference_checksum_sha256.clone(),
         implementation_revision: reference.implementation_revision.clone(),
         wrms_formula_id,
         anchor_state_sha256,
-    };
+    })
+}
+
+pub fn run_scientific_validity_v2_case(
+    spec: &ScientificCaseSpec,
+    reference: &NumericalReferenceBundleV2,
+) -> FairResult<ScientificValidityV2CaseArtifact> {
+    let code_revision = scientific_validity_v2_compiled_revision()?;
+    run_scientific_validity_v2_case_with_authority(
+        spec,
+        reference,
+        code_revision,
+        V2EvidenceAuthority::CanonicalV2Runner,
+    )
+}
+
+/// Dirty-tree execution path used only to exercise wiring in CI/development.
+/// Its evidence is permanently typed synthetic and is ineligible for a
+/// canonical calibration freeze.
+pub fn run_scientific_validity_v2_case_synthetic_smoke(
+    spec: &ScientificCaseSpec,
+    reference: &NumericalReferenceBundleV2,
+) -> FairResult<ScientificValidityV2CaseArtifact> {
+    run_scientific_validity_v2_case_with_authority(
+        spec,
+        reference,
+        scientific_validity_v2_detected_revision(),
+        V2EvidenceAuthority::SyntheticCiSmoke,
+    )
+}
+
+fn run_scientific_validity_v2_case_with_authority(
+    spec: &ScientificCaseSpec,
+    reference: &NumericalReferenceBundleV2,
+    code_revision: &str,
+    authority: V2EvidenceAuthority,
+) -> FairResult<ScientificValidityV2CaseArtifact> {
+    let reference_binding = campaign_reference_binding(spec, reference, code_revision)?;
     let config = campaign_config(spec);
     let case = spec.build()?;
     let (mut clipped, mut dense) =

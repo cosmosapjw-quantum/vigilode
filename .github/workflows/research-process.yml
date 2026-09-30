@@ -1,0 +1,69 @@
+name: Research ledger and authority references
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/research-process.yml'
+      - 'research/**'
+      - 'docs/**'
+      - 'tools/check-research-node.py'
+      - 'tools/test_check_research_node.py'
+      - 'tools/check-authority-refs.py'
+      - 'tools/test_check_authority_refs.py'
+      - 'tools/authority_refs_allowlist.txt'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/research-process.yml'
+      - 'research/**'
+      - 'docs/**'
+      - 'tools/check-research-node.py'
+      - 'tools/test_check_research_node.py'
+      - 'tools/check-authority-refs.py'
+      - 'tools/test_check_authority_refs.py'
+      - 'tools/authority_refs_allowlist.txt'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  research-process:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Full history and all remote branches: the merge base for the append-only
+          # ledger check and `git branch -r --contains` for authority references.
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Test the research-process checks
+        shell: bash
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: |
+          set -euo pipefail
+          python3 tools/test_check_research_node.py -v
+          python3 tools/test_check_authority_refs.py -v
+      - name: Check research nodes and the append-only ledger
+        shell: bash
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          set -euo pipefail
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            python3 tools/check-research-node.py --base "origin/${BASE_REF}"
+          else
+            python3 tools/check-research-node.py
+          fi
+      - name: Check authority commit references are published
+        shell: bash
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: |
+          set -euo pipefail
+          python3 tools/check-authority-refs.py

@@ -1,7 +1,25 @@
+//! Research candidate: restarted GMRES with Givens-rotation least squares.
+//!
+//! No integrator, fair-ab or CLI path calls this kernel; production dispatch
+//! uses [`crate::solve_gmres`] (`sequential.rs`).  Its outcomes differ from
+//! production GMRES by design, and `givens_production_differential_contracts`
+//! pins that difference on the audit's E-05 nonnormal rows (audit F-036):
+//!
+//! * a rejected happy-breakdown candidate fails closed here, while
+//!   `gmres.rs` ends the cycle and restarts;
+//! * a triangular factor whose diagonal falls below `100 eps max|R_ii|` is
+//!   rejected here, while `gmres.rs` solves a small least-squares problem;
+//! * the projected residual triggers a true-residual check through the
+//!   heuristic `threshold * beta / ||r_true||`.
+//!
+//! In-cycle certifications are charged as diagnostic work, so its `matvecs`
+//! are not comparable with production GMRES counts.  No claim that
+//! projected-residual termination reduces production cost may cite it.
+
 use crate::{
     common::{
-        apply_left_with_raw, selected_residual_norm, true_residual_into, validate_residual_scale,
-        validate_system,
+        apply_left_with_raw, residual_threshold, selected_residual_norm, true_residual_into,
+        validate_residual_scale, validate_system,
     },
     gmres::{GmresConfig, arnoldi_happy_breakdown},
     kernels::{axpy, linear_combination_into, normalize, two_pass_mgs_into},
@@ -301,21 +319,11 @@ pub fn solve_gmres_givens_with_workspace_and_residual_scale(
     counters: &mut WorkCounters,
 ) -> CoreResult<LinearSolveReport> {
     config.validate()?;
-    if !config.rtol.is_finite() || !config.atol.is_finite() {
-        return Err(CoreError::InvalidInput(
-            "GMRES tolerances must be finite".into(),
-        ));
-    }
     let n = validate_system(op, pc, rhs, x0)?;
     validate_residual_scale(residual_scale, n)?;
     let before = *counters;
     let right_norm = selected_residual_norm(rhs, residual_scale)?;
-    let threshold = config.atol.max(config.rtol * right_norm);
-    if !threshold.is_finite() {
-        return Err(CoreError::InvalidInput(
-            "GMRES residual threshold must be finite".into(),
-        ));
-    }
+    let threshold = residual_threshold("GMRES", config.rtol, config.atol, right_norm)?;
 
     workspace.prepare_solve(n);
     if let Some(initial) = x0 {

@@ -2,7 +2,7 @@ use rodas5p_core::{ClosureOperator, IdentityPreconditioner, WorkCounters};
 use rodas5p_integrators::{
     ScientificCorpusV2, ScientificFamily, ScientificProblemCase, v2_diversity_multiplier,
 };
-use rodas5p_krylov::{GmresConfig, solve_gmres_givens};
+use rodas5p_krylov::{GmresConfig, solve_gmres, solve_gmres_givens};
 use std::collections::BTreeSet;
 
 #[test]
@@ -207,7 +207,7 @@ fn v2_calibration_partial_t_callbacks_match_the_implemented_rhs() {
     }
 }
 
-fn gmres_iterations_for_nonautonomous(dimension: usize) -> u64 {
+fn gmres_iterations_for_nonautonomous(dimension: usize) -> (u64, Option<u64>) {
     let case = calibration_case(ScientificFamily::NonautonomousStiffForcing, dimension);
     let t = 0.72;
     let (ramp, _) = {
@@ -241,28 +241,50 @@ fn gmres_iterations_for_nonautonomous(dimension: usize) -> u64 {
     for (i, value) in rhs[..active_modes].iter_mut().enumerate() {
         *value = 0.75 + 0.25 * (0.31 * (i + 1) as f64).sin();
     }
-    let report = solve_gmres_givens(
+    let config = GmresConfig {
+        restart: 64,
+        max_arnoldi: 128,
+        rtol: 2.0e-13,
+        atol: 0.0,
+    };
+    let pc = IdentityPreconditioner::new(dimension);
+    // Production dispatch only calls solve_gmres, so the corpus probe uses it
+    // (audit F-036). The Givens kernel is test-only; it is kept as a second,
+    // labelled column and is not corpus authority.
+    let report = solve_gmres(
         &shifted,
-        &IdentityPreconditioner::new(dimension),
+        &pc,
         &rhs,
         None,
-        &GmresConfig {
-            restart: 64,
-            max_arnoldi: 128,
-            rtol: 2.0e-13,
-            atol: 0.0,
-        },
+        &config,
         &mut WorkCounters::default(),
     )
     .unwrap();
     assert!(report.converged);
-    report.iterations
+    let givens = solve_gmres_givens(
+        &shifted,
+        &pc,
+        &rhs,
+        None,
+        &config,
+        &mut WorkCounters::default(),
+    )
+    .unwrap();
+    (
+        report.iterations,
+        givens.converged.then_some(givens.iterations),
+    )
 }
 
 #[test]
 fn deterministic_matrix_free_gmres_probe_is_not_dimension_constant() {
-    let iterations = [96, 384, 1536].map(gmres_iterations_for_nonautonomous);
-    eprintln!("v2 nonautonomous GMRES iterations: {iterations:?}");
+    let probes = [96, 384, 1536].map(gmres_iterations_for_nonautonomous);
+    let iterations = probes.map(|(production, _)| production);
+    eprintln!(
+        "v2 nonautonomous GMRES iterations (production solve_gmres): {iterations:?}; \
+         test-only Givens kernel: {:?}",
+        probes.map(|(_, givens)| givens)
+    );
     assert!(
         iterations.into_iter().collect::<BTreeSet<_>>().len() > 1,
         "v2 operator diversification must make the deterministic GMRES probe dimension-sensitive"

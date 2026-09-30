@@ -8,10 +8,13 @@ mod error;
 mod external_comparators;
 mod global_error;
 mod numerical_reference;
+mod output_admissibility;
+mod paired_timing;
 mod runner;
 mod scenarios;
 mod scientific_validity_v2_campaign;
 mod session;
+mod two_arm_campaign_v3;
 
 pub use adapters::solve_case;
 pub use adaptive_global_error::{
@@ -36,6 +39,15 @@ pub use external_comparators::{
     external_runtime_identity_checksum, load_external_comparator_evidence,
     sundials_probe_evidence_checksum,
 };
+pub use paired_timing::{
+    AaControlAssessment, PAIRED_TIMING_BOOTSTRAP_RESAMPLES, PAIRED_TIMING_CONFIDENCE_LEVEL,
+    PAIRED_TIMING_MIN_INDEPENDENT_BLOCKS, PAIRED_TIMING_MIN_PAIRS, PAIRED_TIMING_MIN_WARMUPS,
+    PAIRED_TIMING_REQUIRED_SPEEDUP, PairedArm, PairedCaseSummary, PairedTimingAssessment,
+    PairedTimingCase, PairedTimingDecision, PairedTimingProtocol, SpeedupInterval,
+    TimingHostMetadata, abba_pair_order, assess_aa_control, assess_paired_timing,
+    calibrate_batch_iterations, case_clustered_bootstrap, detect_timing_host_metadata,
+    measure_paired_case, paired_timing_decision,
+};
 pub use runner::{
     BenchmarkCell, BenchmarkPlan, ComparisonResult, SummaryRow, TraceRunResult,
     build_execution_order, run_comparison, run_trace, summarize_comparison,
@@ -58,6 +70,9 @@ pub use scientific_validity_v2_campaign::{
 pub use session::{RecycleSessionManager, SolverSession, StateTransition};
 
 pub(crate) use contracts::relative_solution_error;
+
+/// Audit F-052/F-056 comparator labels carried by fair-ab records.
+pub use rodas5p_integrators::{ComparativeReading, ComparatorFidelity};
 
 pub use global_error::{
     CommonOutputGrid, DualOutputPolicyEvidence, ExternalErrorScale, FixedAnchorCandidate,
@@ -92,6 +107,18 @@ pub use numerical_reference::{
     numerical_reference_state_checksum, numerical_reference_v2_not_run_manifest,
     validate_numerical_reference_convergence, validate_numerical_reference_error_scale,
     validate_numerical_reference_manifest, validate_numerical_reference_manifest_v2,
+};
+pub use output_admissibility::{
+    ArmBudget, OutputArmExceedance, TWO_ARM_ADMISSIBILITY_PROTOCOL_ID, TWO_ARM_GLOBAL_ERROR_BUDGET,
+    TWO_ARM_INTERPOLANT_DELTA_LIMIT, TwoArmAdmissibility, TwoArmRowStatus,
+    check_policy_gap_triangle, classify_arm_budget, classify_two_arm_row,
+    classify_two_arm_v3_states,
+};
+pub use two_arm_campaign_v3::{
+    TWO_ARM_V3_CASE_SCHEMA, TWO_ARM_V3_INEXACT_STAGE_RATIO, TwoArmAdmissibilityCaseV3,
+    TwoArmV3ArmSummary, TwoArmV3Attribution, TwoArmV3AttributionReading,
+    TwoArmV3InterpolantSummary, run_two_arm_admissibility_v3_case,
+    run_two_arm_admissibility_v3_case_synthetic_smoke, two_arm_v3_record_checksum,
 };
 
 mod output_accuracy;
