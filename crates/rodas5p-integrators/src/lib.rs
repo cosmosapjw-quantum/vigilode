@@ -18,6 +18,7 @@ mod bdf;
 mod block;
 mod candidates;
 mod certification;
+mod certified_budget;
 mod common_w_gate;
 mod comparator_fidelity;
 mod dense_output_v2;
@@ -140,6 +141,9 @@ pub use candidates::{
 pub use certification::{
     CorrectionDiagnostic, RefinedRootCertificate, RefinedRootConfig, certify_second_correction,
     refine_target_root,
+};
+pub use certified_budget::{
+    CertifiedBudget, CertifiedBudgetDecision, CertifiedBudgetStatus, step_power_enclosure,
 };
 pub use common_w_gate::{
     MatrixFreeCommonWCase, MatrixFreeCommonWProfile, MatrixFreeCommonWReport, MatrixFreeCommonWRow,
