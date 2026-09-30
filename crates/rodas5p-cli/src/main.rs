@@ -6,6 +6,8 @@ use std::{
 };
 
 use anyhow::{Context, Result};
+
+mod r3_campaigns;
 use clap::{Parser, Subcommand, ValueEnum};
 use rodas5p_core::{load_rodas5p_coefficients, sha256_hex};
 use rodas5p_fair_ab::{
@@ -426,6 +428,59 @@ enum Command {
         /// Run only these scenario ids (default: the whole grid).
         #[arg(long)]
         scenario: Vec<String>,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// One paired-timing session of an R3 matched-accuracy arm (run by
+    /// `r3-campaign`).
+    #[command(name = "r3-campaign-session")]
+    R3CampaignSession {
+        #[arg(long, value_enum)]
+        study: r3_campaigns::Study,
+        #[arg(long)]
+        arm: String,
+        #[arg(long)]
+        campaign_id: String,
+        #[arg(long)]
+        session: u32,
+        #[arg(long, default_value_t = 20_261_001)]
+        seed: u64,
+        #[arg(long)]
+        batches: Option<PathBuf>,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// R3 matched-accuracy paired timing (HOM-06, POLY-03): every candidate
+    /// arm against the study's reference, one process per session.
+    /// Refuses to overwrite its output.
+    #[command(name = "r3-campaign")]
+    R3Campaign {
+        #[arg(long, value_enum)]
+        study: r3_campaigns::Study,
+        #[arg(long, default_value_t = 6)]
+        sessions: u32,
+        #[arg(long, default_value_t = 20_261_001)]
+        seed: u64,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Untimed accuracy, work and memory of one R3 arm (run by
+    /// `r3-campaign-verify`).
+    #[command(name = "r3-verify-arm")]
+    R3VerifyArm {
+        #[arg(long, value_enum)]
+        study: r3_campaigns::Study,
+        #[arg(long)]
+        arm: String,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Untimed verification of every arm of an R3 study, one process per
+    /// arm. Refuses to overwrite its output.
+    #[command(name = "r3-campaign-verify")]
+    R3CampaignVerify {
+        #[arg(long, value_enum)]
+        study: r3_campaigns::Study,
         #[arg(long)]
         output: PathBuf,
     },
@@ -2701,6 +2756,99 @@ fn main() -> Result<()> {
             let mut map = BTreeMap::new();
             map.insert(candidate, evidence);
             write_json(&output, &map)?;
+        }
+        Command::R3CampaignSession {
+            study,
+            arm,
+            campaign_id,
+            session,
+            seed,
+            batches,
+            output,
+        } => {
+            let batches = match batches {
+                Some(path) => serde_json::from_slice(&fs::read(&path)?)?,
+                None => BTreeMap::new(),
+            };
+            let record =
+                r3_campaigns::run_session(study, &arm, &campaign_id, session, seed, &batches)?;
+            write_json(&output, &record)?;
+        }
+        Command::R3Campaign {
+            study,
+            sessions,
+            seed,
+            output,
+        } => {
+            if output.exists() {
+                anyhow::bail!("immutable output already exists: {}", output.display());
+            }
+            let mut evidence = BTreeMap::new();
+            let mut summary = BTreeMap::new();
+            for arm in study.arms() {
+                let arm_evidence = r3_campaigns::run_campaign(study, arm, sessions, seed, &output)?;
+                summary.insert(
+                    arm.to_string(),
+                    json!({
+                        "decision": arm_evidence.assessment.decision,
+                        "gate_decision": arm_evidence.assessment.gate_decision,
+                        "verified_decision": arm_evidence
+                            .verified_decision()
+                            .map_or_else(|error| format!("not verified: {error}"), |d| format!("{d:?}")),
+                        "speedup_point": arm_evidence.assessment.corpus.point,
+                        "speedup_lower": arm_evidence.assessment.corpus.lower,
+                        "speedup_upper": arm_evidence.assessment.corpus.upper,
+                        "independent_sessions": arm_evidence.assessment.corpus.independent_blocks,
+                        "failed_sessions": arm_evidence.receipt.failed_sessions.len(),
+                    }),
+                );
+                println!(
+                    "{} {arm}: {:?}",
+                    study.name(),
+                    arm_evidence.assessment.decision
+                );
+                evidence.insert(arm.to_string(), arm_evidence);
+            }
+            write_json_create_new(
+                &output,
+                &json!({
+                    "study": study.name(),
+                    "reference": study.reference(),
+                    "seed": seed,
+                    "sessions": sessions,
+                    "summary": summary,
+                    "evidence": evidence,
+                }),
+            )?;
+        }
+        Command::R3VerifyArm { study, arm, output } => {
+            r3_campaigns::verify_arm(study, &arm, &output)?;
+        }
+        Command::R3CampaignVerify { study, output } => {
+            if output.exists() {
+                anyhow::bail!("immutable output already exists: {}", output.display());
+            }
+            let executable = std::env::current_exe()?;
+            let directory = output.with_extension("arms");
+            fs::create_dir_all(&directory)?;
+            let mut arms = BTreeMap::new();
+            for arm in std::iter::once(study.reference()).chain(study.arms().iter().copied()) {
+                let path = directory.join(format!("{arm}.json"));
+                let status = std::process::Command::new(&executable)
+                    .arg("r3-verify-arm")
+                    .args(["--study", study.name()])
+                    .args(["--arm", arm])
+                    .arg("--output")
+                    .arg(&path)
+                    .status()?;
+                let value = if status.success() {
+                    serde_json::from_slice::<serde_json::Value>(&fs::read(&path)?)?
+                } else {
+                    json!({ "arm": arm, "failed": format!("verification process exited with {status}") })
+                };
+                arms.insert(arm.to_string(), value);
+            }
+            write_json_create_new(&output, &json!({ "study": study.name(), "arms": arms }))?;
         }
         Command::PairedTimingCoverageStudy {
             replications,

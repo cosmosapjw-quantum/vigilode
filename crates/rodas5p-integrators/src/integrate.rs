@@ -5,7 +5,8 @@ use crate::{
     ObservedIntegrationResult, OdeProblem, OutputSchedule, RODAS5P_ESTIMATOR_ORDER, SabrConfig,
     StageHistory, StepResult, TransactionalQ1Q2Config, TransactionalQ1Q2RunDiagnostics,
     homotopy_step, rodas_next_step_after_attempt, sabr_step,
-    sequential_matrix_free_step_with_inner_forcing, sequential_step, transactional_q1_q2_step,
+    sequential_matrix_free_step_with_inner_forcing, sequential_step,
+    transactional_q1_q2_step_with_admission,
 };
 use rodas5p_core::{CoreError, CoreResult, LinearSolverConfig, WorkCounters};
 
@@ -985,6 +986,29 @@ pub fn integrate_transactional_q1_q2_adaptive_observed(
     adaptive: &AdaptiveStepConfig,
     output: &OutputSchedule,
 ) -> CoreResult<TransactionalQ1Q2AdaptiveResult> {
+    integrate_transactional_q1_q2_adaptive_observed_with_admission(
+        problem,
+        t_span,
+        y0,
+        step_config,
+        adaptive,
+        output,
+        crate::Q2Admission::OperationalDiagnostic,
+    )
+}
+
+/// [`integrate_transactional_q1_q2_adaptive_observed`] with an explicit
+/// q=2 admission (re-audit R3, HOM-05).
+#[allow(clippy::too_many_arguments)]
+pub fn integrate_transactional_q1_q2_adaptive_observed_with_admission(
+    problem: &OdeProblem,
+    t_span: (f64, f64),
+    y0: &[f64],
+    step_config: &TransactionalQ1Q2Config,
+    adaptive: &AdaptiveStepConfig,
+    output: &OutputSchedule,
+    admission: crate::Q2Admission<'_>,
+) -> CoreResult<TransactionalQ1Q2AdaptiveResult> {
     adaptive.validate()?;
     step_config.validate()?;
     let (mut t, tf) = t_span;
@@ -1012,7 +1036,7 @@ pub fn integrate_transactional_q1_q2_adaptive_observed(
             break;
         }
         let (trial_h, clipped) = collector.limit_step(t, h, tf)?;
-        let trial = transactional_q1_q2_step(
+        let trial = transactional_q1_q2_step_with_admission(
             problem,
             t,
             &y,
@@ -1021,6 +1045,7 @@ pub fn integrate_transactional_q1_q2_adaptive_observed(
             adaptive.atol,
             adaptive.rtol,
             false,
+            admission,
             &mut counters,
         );
         let report = match trial {

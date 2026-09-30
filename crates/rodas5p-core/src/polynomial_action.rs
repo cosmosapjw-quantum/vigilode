@@ -941,6 +941,46 @@ fn recurrence_step(
     Ok((next, norm_up(residual)?))
 }
 
+/// One recurrence step in plain binary64, without the residual enclosure.
+fn recurrence_step_plain(
+    matrix: &DenseMatrix,
+    transform: &Transform,
+    n: usize,
+    previous: Option<&[f64]>,
+    current: &[f64],
+) -> CoreResult<Vec<f64>> {
+    let mut next = vec![0.0; current.len()];
+    for (i, out) in next.iter_mut().enumerate() {
+        let dot = matrix
+            .row(i)
+            .iter()
+            .zip(current)
+            .map(|(entry, x)| entry * x)
+            .sum::<f64>();
+        let x_current = match transform.basis {
+            PolynomialBasis::Chebyshev => {
+                (dot + transform.shift * current[i]) / transform.half_width
+            }
+            PolynomialBasis::Laguerre => -dot / transform.beta,
+        };
+        *out = match (transform.basis, previous) {
+            (PolynomialBasis::Chebyshev, None) => x_current,
+            (PolynomialBasis::Chebyshev, Some(prev)) => 2.0 * x_current - prev[i],
+            (PolynomialBasis::Laguerre, None) => current[i] - x_current,
+            (PolynomialBasis::Laguerre, Some(prev)) => {
+                let k = n as f64;
+                ((2.0 * k + 1.0) * current[i] - x_current - k * prev[i]) / (k + 1.0)
+            }
+        };
+        if !out.is_finite() {
+            return Err(CoreError::NonFinite(
+                "polynomial recurrence produced NaN/Inf".into(),
+            ));
+        }
+    }
+    Ok(next)
+}
+
 fn empty_components() -> ErrorComponents {
     ErrorComponents {
         truncation: 0.0,
@@ -963,6 +1003,36 @@ pub fn joint_phi_action(
     budget: f64,
     cache: Option<&mut CoefficientCache>,
     work: &mut WorkCounters,
+) -> CoreResult<JointPhiReport> {
+    joint_phi_action_impl(op, h, input, basis, budget, cache, work, true)
+}
+
+/// [`joint_phi_action`] without the rounding enclosures: the same degree,
+/// coefficients and values, a recurrence in plain binary64, and a total
+/// error that is always [`TotalErrorStatus::EstimateOnly`]. For timing
+/// comparisons whose results are verified separately (POLY-03).
+pub fn joint_phi_action_unbounded(
+    op: &SymmetricNonpositiveOperator,
+    h: f64,
+    input: JointPhiInput<'_>,
+    basis: PolynomialBasis,
+    budget: f64,
+    cache: Option<&mut CoefficientCache>,
+    work: &mut WorkCounters,
+) -> CoreResult<JointPhiReport> {
+    joint_phi_action_impl(op, h, input, basis, budget, cache, work, false)
+}
+
+#[allow(clippy::too_many_arguments)]
+fn joint_phi_action_impl(
+    op: &SymmetricNonpositiveOperator,
+    h: f64,
+    input: JointPhiInput<'_>,
+    basis: PolynomialBasis,
+    budget: f64,
+    cache: Option<&mut CoefficientCache>,
+    work: &mut WorkCounters,
+    bounds: bool,
 ) -> CoreResult<JointPhiReport> {
     let n = op.dimension();
     if !(h.is_finite() && h >= 0.0) {
@@ -1098,8 +1168,11 @@ pub fn joint_phi_action(
                     for i in 0..n {
                         let x = vector[i];
                         sums[k][column][i] += c * x;
-                        sums_lo[k][column][i] = add_down(sums_lo[k][column][i], mul_down(c, x)?)?;
-                        sums_hi[k][column][i] = add_up(sums_hi[k][column][i], mul_up(c, x)?)?;
+                        if bounds {
+                            sums_lo[k][column][i] =
+                                add_down(sums_lo[k][column][i], mul_down(c, x)?)?;
+                            sums_hi[k][column][i] = add_up(sums_hi[k][column][i], mul_up(c, x)?)?;
+                        }
                     }
                 }
             }
@@ -1112,15 +1185,17 @@ pub fn joint_phi_action(
         for step in 0..degree {
             let mut next = Vec::with_capacity(width);
             for (column, vector) in current.iter().enumerate() {
-                let (value, residual) = recurrence_step(
-                    &op.matrix,
-                    &transform,
-                    step,
-                    previous.as_ref().map(|p| p[column].as_slice()),
-                    vector,
-                )?;
-                local[column].push(residual);
-                next.push(value);
+                let prev = previous.as_ref().map(|p| p[column].as_slice());
+                if bounds {
+                    let (value, residual) =
+                        recurrence_step(&op.matrix, &transform, step, prev, vector)?;
+                    local[column].push(residual);
+                    next.push(value);
+                } else {
+                    next.push(recurrence_step_plain(
+                        &op.matrix, &transform, step, prev, vector,
+                    )?);
+                }
             }
             work.poly_block_products += 1;
             work.poly_vector_products += width as u64;
@@ -1131,6 +1206,12 @@ pub fn joint_phi_action(
         // Error components per term.
         for k in 0..JOINT_PHI_TERMS {
             let column = if width == 1 { 0 } else { k };
+            if !bounds {
+                for i in 0..n {
+                    columns[k][i] = scales[k] * sums[k][column][i];
+                }
+                continue;
+            }
             let source_norm = norm_up(block[column].iter().copied())?;
             let norm_bound = |index: usize| -> CoreResult<f64> {
                 match transform.basis {
@@ -1215,7 +1296,12 @@ pub fn joint_phi_action(
             bounded = add_up(bounded, recurrence)?;
         }
     }
-    let total_error = if !recurrence_bounded {
+    let total_error = if !bounds && !scalar_branch && weight_factor != 0.0 {
+        TotalErrorStatus::EstimateOnly {
+            reason: format!("{TOTAL_ERROR_NOT_CERTIFIED}: rounding bounds not computed"),
+            bounded_components: 0.0,
+        }
+    } else if !recurrence_bounded {
         TotalErrorStatus::EstimateOnly {
             reason: format!(
                 "{TOTAL_ERROR_NOT_CERTIFIED}: the Laguerre recurrence rounding is not propagated"

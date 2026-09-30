@@ -497,3 +497,38 @@ fn the_degree_near_the_budget_never_understates_the_bound() {
         }
     }
 }
+
+#[test]
+fn the_unbounded_mode_returns_the_same_values_without_a_bound() {
+    let rows = (0..6)
+        .map(|i| {
+            (0..6)
+                .map(|j| if i == j { -(i as f64 + 1.0) * 3.0 } else { 0.0 })
+                .collect()
+        })
+        .collect::<Vec<Vec<f64>>>();
+    let op = SymmetricNonpositiveOperator::gershgorin(dense(&rows)).unwrap();
+    let w = simple_w(6);
+    for basis in [PolynomialBasis::Chebyshev, PolynomialBasis::Laguerre] {
+        let (bounded, _) = run(&op, 0.8, &w, basis, BUDGET);
+        let mut work = WorkCounters::default();
+        let plain = rodas5p_core::polynomial_action::joint_phi_action_unbounded(
+            &op,
+            0.8,
+            JointPhiInput::Distinct(&w),
+            basis,
+            BUDGET,
+            None,
+            &mut work,
+        )
+        .unwrap();
+        assert_eq!(plain.degree, bounded.degree);
+        assert_eq!(plain.fused, bounded.fused, "{basis:?}");
+        assert_eq!(plain.columns, bounded.columns, "{basis:?}");
+        let TotalErrorStatus::EstimateOnly { reason, .. } = &plain.total_error else {
+            panic!("an unbounded run is never certified")
+        };
+        assert!(reason.contains("not computed"));
+        assert_eq!(work.poly_block_products, plain.degree as u64);
+    }
+}

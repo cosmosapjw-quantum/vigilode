@@ -210,10 +210,35 @@ pub struct TransactionalQ1Q2RunDiagnostics {
     pub max_critical_path_depth_per_attempt: u64,
     pub accepted_critical_path_depths: Vec<u64>,
     pub attempted_lanes: Vec<TransactionalQ1Q2Lane>,
+    /// Native-target certificate attempts, admissions and directed
+    /// operations (re-audit R3, HOM-05). Omitted while zero.
+    #[serde(skip_serializing_if = "is_zero_usize")]
+    pub certificate_attempts: usize,
+    #[serde(skip_serializing_if = "is_zero_usize")]
+    pub certificate_admissions: usize,
+    #[serde(skip_serializing_if = "is_zero_u64")]
+    pub certificate_operations: u64,
+}
+
+fn is_zero_usize(value: &usize) -> bool {
+    *value == 0
+}
+
+fn is_zero_u64(value: &u64) -> bool {
+    *value == 0
 }
 
 impl TransactionalQ1Q2RunDiagnostics {
     pub(crate) fn record(&mut self, report: &TransactionalQ1Q2StepReport, accepted: bool) {
+        if let Some(admission) = &report.q2_certificate {
+            self.certificate_attempts += 1;
+            if admission.accepted {
+                self.certificate_admissions += 1;
+            }
+        }
+        self.certificate_operations = self
+            .certificate_operations
+            .saturating_add(report.work.certificate_operations);
         self.total_w_solve_batches = self
             .total_w_solve_batches
             .saturating_add(report.work.w_solve_batches);

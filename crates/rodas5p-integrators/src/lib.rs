@@ -276,6 +276,7 @@ pub use integrate::{
     integrate_fixed_observed, integrate_homotopy_adaptive_observed,
     integrate_sequential_matrix_free_adaptive_observed,
     integrate_transactional_q1_q2_adaptive_observed,
+    integrate_transactional_q1_q2_adaptive_observed_with_admission,
 };
 pub use native_gates::{
     NativeIntegratorGateReport, NativeIntegratorGateRow, run_native_integrator_gates,
