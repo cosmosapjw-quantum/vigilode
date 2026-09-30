@@ -1343,25 +1343,10 @@ fn krylov_exponential_once(
 /// The scaled convention `b0 + tau phi1(tau A) b1 + ... + tau^p phi_p(tau A) b_p`
 /// in the weighted form `w0 = b0`, `w_k = tau^k b_k` used by
 /// [`augmented_fused_operator`].
+/// `w_k = tau^k b_k`, formed on binary exponents so a representable weight
+/// is not lost to an intermediate `tau.powi(k)` (re-audit R2, PHI-R1).
 fn weighted_phi_vectors(scale: f64, vectors: &[Vec<f64>]) -> CoreResult<Vec<Vec<f64>>> {
-    let weighted = vectors
-        .iter()
-        .enumerate()
-        .map(|(k, vector)| {
-            let factor = scale.powi(k as i32);
-            vector
-                .iter()
-                .map(|value| factor * value)
-                .collect::<Vec<_>>()
-        })
-        .collect::<Vec<_>>();
-    if weighted.iter().flatten().all(|value| value.is_finite()) {
-        Ok(weighted)
-    } else {
-        Err(CoreError::NonFinite(
-            "fused phi action: tau^k b_k is not finite".into(),
-        ))
-    }
+    rodas5p_core::weight_phi_vectors(scale, vectors).map(|(weighted, _)| weighted)
 }
 
 /// The time-normalized augmented operator for
