@@ -1,0 +1,392 @@
+{
+  "schema": "vigilode.r3.time.exact_oracle.v1",
+  "oracle": "Fraction.from_float; dy/dt=v, y(t0)=0",
+  "raw_rows": 29,
+  "checks": {
+    "original_closures": true,
+    "candidate_constant_flow": true,
+    "controls": true,
+    "alias_counterexamples": true,
+    "strict_schedule_candidate": true,
+    "nonadvancing_typed_failure": true
+  },
+  "results": [
+    {
+      "case": "r2_original_short_span",
+      "method": "fixed_rodas",
+      "origin": 1000000000000.0,
+      "success": true,
+      "samples": 3,
+      "max_absolute_error": 2.886579864025407e-15,
+      "last": {
+        "time": 1000000000000.001,
+        "expected_exact": "1",
+        "actual": 1.0000000000000029,
+        "absolute_error": 2.886579864025407e-15
+      },
+      "sum_h_exact": "1/1024",
+      "represented_displacement_exact": "1/1024",
+      "sum_h_over_displacement": 1.0,
+      "max_step_clock_defect": 0.0
+    },
+    {
+      "case": "documented_step_clock_mismatch",
+      "method": "fixed_rodas",
+      "origin": 1000000000000.0,
+      "success": true,
+      "samples": 9,
+      "max_absolute_error": 0.18079999999999785,
+      "last": {
+        "time": 1000000000000.001,
+        "expected_exact": "1",
+        "actual": 0.8192000000000021,
+        "absolute_error": 0.18079999999999785
+      },
+      "sum_h_exact": "7378697629483821/9223372036854775808",
+      "represented_displacement_exact": "1/1024",
+      "sum_h_over_displacement": 0.8192,
+      "max_step_clock_defect": 2.2070312499999995e-05
+    },
+    {
+      "case": "represented_h_candidate",
+      "method": "public_sequential_step_driver",
+      "origin": 1000000000000.0,
+      "success": true,
+      "samples": 9,
+      "max_absolute_error": 2.886579864025407e-15,
+      "last": {
+        "time": 1000000000000.001,
+        "expected_exact": "1",
+        "actual": 1.0000000000000029,
+        "absolute_error": 2.886579864025407e-15
+      },
+      "sum_h_exact": "1/1024",
+      "represented_displacement_exact": "1/1024",
+      "sum_h_over_displacement": 1.0,
+      "max_step_clock_defect": 0.0
+    },
+    {
+      "case": "r2_original_short_span",
+      "method": "fixed_rodas",
+      "origin": -1000000000000.0,
+      "success": true,
+      "samples": 3,
+      "max_absolute_error": 2.886579864025407e-15,
+      "last": {
+        "time": -999999999999.999,
+        "expected_exact": "1",
+        "actual": 1.0000000000000029,
+        "absolute_error": 2.886579864025407e-15
+      },
+      "sum_h_exact": "1/1024",
+      "represented_displacement_exact": "1/1024",
+      "sum_h_over_displacement": 1.0,
+      "max_step_clock_defect": 0.0
+    },
+    {
+      "case": "documented_step_clock_mismatch",
+      "method": "fixed_rodas",
+      "origin": -1000000000000.0,
+      "success": true,
+      "samples": 9,
+      "max_absolute_error": 0.18079999999999785,
+      "last": {
+        "time": -999999999999.999,
+        "expected_exact": "1",
+        "actual": 0.8192000000000021,
+        "absolute_error": 0.18079999999999785
+      },
+      "sum_h_exact": "7378697629483821/9223372036854775808",
+      "represented_displacement_exact": "1/1024",
+      "sum_h_over_displacement": 0.8192,
+      "max_step_clock_defect": 2.2070312499999995e-05
+    },
+    {
+      "case": "represented_h_candidate",
+      "method": "public_sequential_step_driver",
+      "origin": -1000000000000.0,
+      "success": true,
+      "samples": 9,
+      "max_absolute_error": 2.886579864025407e-15,
+      "last": {
+        "time": -999999999999.999,
+        "expected_exact": "1",
+        "actual": 1.0000000000000029,
+        "absolute_error": 2.886579864025407e-15
+      },
+      "sum_h_exact": "1/1024",
+      "represented_displacement_exact": "1/1024",
+      "sum_h_over_displacement": 1.0,
+      "max_step_clock_defect": 0.0
+    },
+    {
+      "case": "r2_original_one_ulp_span",
+      "method": "fixed_rodas",
+      "origin": 1.0,
+      "success": true,
+      "samples": 2,
+      "max_absolute_error": 2.886579864025407e-15,
+      "last": {
+        "time": 1.0000000000000002,
+        "expected_exact": "1",
+        "actual": 1.0000000000000029,
+        "absolute_error": 2.886579864025407e-15
+      },
+      "sum_h_exact": "1/4503599627370496",
+      "represented_displacement_exact": "1/4503599627370496",
+      "sum_h_over_displacement": 1.0,
+      "max_step_clock_defect": 0.0
+    },
+    {
+      "case": "local_clock_control",
+      "method": "fixed_rodas",
+      "origin": 0.0,
+      "success": true,
+      "samples": 11,
+      "max_absolute_error": 2.4424906541753444e-15,
+      "last": {
+        "time": 0.0009765625,
+        "expected_exact": "1",
+        "actual": 1.0000000000000024,
+        "absolute_error": 2.4424906541753444e-15
+      },
+      "sum_h_exact": "72057594037927925/73786976294838206464",
+      "represented_displacement_exact": "1/1024",
+      "sum_h_over_displacement": 0.9999999999999999,
+      "max_step_clock_defect": 4.0657581468206416e-20
+    },
+    {
+      "case": "represented_h_candidate",
+      "method": "public_sequential_step_driver",
+      "origin": 0.0,
+      "success": true,
+      "samples": 11,
+      "max_absolute_error": 3.1086244689504383e-15,
+      "last": {
+        "time": 0.0009765625,
+        "expected_exact": "1",
+        "actual": 1.000000000000003,
+        "absolute_error": 3.1086244689504383e-15
+      },
+      "sum_h_exact": "1/1024",
+      "represented_displacement_exact": "1/1024",
+      "sum_h_over_displacement": 1.0,
+      "max_step_clock_defect": 0.0
+    },
+    {
+      "case": "documented_step_clock_mismatch",
+      "method": "adaptive_rodas",
+      "origin": 1000000000000.0,
+      "success": true,
+      "samples": 2,
+      "max_absolute_error": 0.18079999999999785,
+      "last": {
+        "time": 1000000000000.001,
+        "expected_exact": "1",
+        "actual": 0.8192000000000021,
+        "absolute_error": 0.18079999999999785
+      }
+    },
+    {
+      "case": "documented_step_clock_mismatch",
+      "method": "fixed_radau",
+      "origin": 1000000000000.0,
+      "success": true,
+      "samples": 2,
+      "max_absolute_error": 0.18079999999999985,
+      "last": {
+        "time": 1000000000000.001,
+        "expected_exact": "1",
+        "actual": 0.8192000000000002,
+        "absolute_error": 0.18079999999999985
+      }
+    },
+    {
+      "case": "documented_step_clock_mismatch",
+      "method": "fixed_bdf",
+      "origin": 1000000000000.0,
+      "success": true,
+      "samples": 2,
+      "max_absolute_error": 0.18079999999999707,
+      "last": {
+        "time": 1000000000000.001,
+        "expected_exact": "1",
+        "actual": 0.8192000000000029,
+        "absolute_error": 0.18079999999999707
+      }
+    },
+    {
+      "case": "documented_step_clock_mismatch",
+      "method": "adaptive_fused_exp",
+      "origin": 1000000000000.0,
+      "success": true,
+      "samples": 2,
+      "max_absolute_error": 0.18079999999999985,
+      "last": {
+        "time": 1000000000000.001,
+        "expected_exact": "1",
+        "actual": 0.8192000000000002,
+        "absolute_error": 0.18079999999999985
+      }
+    },
+    {
+      "case": "documented_step_clock_mismatch",
+      "method": "fixed_dense_rodas",
+      "origin": 1000000000000.0,
+      "success": true,
+      "samples": 2,
+      "max_absolute_error": 0.18079999999999785,
+      "last": {
+        "time": 1000000000000.001,
+        "expected_exact": "1",
+        "actual": 0.8192000000000021,
+        "absolute_error": 0.18079999999999785
+      }
+    },
+    {
+      "case": "r2_original_dense_adjacent",
+      "method": "matrixfree_dense_rodas",
+      "origin": 1000000000000.0,
+      "success": true,
+      "samples": 4,
+      "max_absolute_error": 2.3646862246096134e-11,
+      "last": {
+        "time": 1000000000001.0,
+        "expected_exact": "8192",
+        "actual": 8192.000000000024,
+        "absolute_error": 2.3646862246096134e-11
+      }
+    },
+    {
+      "case": "r2_original_clipped_adjacent",
+      "method": "adaptive_rodas",
+      "origin": 1000000000000.0,
+      "success": true,
+      "samples": 3,
+      "max_absolute_error": 3.1086244689504383e-15,
+      "last": {
+        "time": 1000000000001.0,
+        "expected_exact": "1",
+        "actual": 1.000000000000003,
+        "absolute_error": 3.1086244689504383e-15
+      }
+    },
+    {
+      "case": "single_point_uniform",
+      "method": "fixed_observed_rodas",
+      "origin": 1000000000000.0,
+      "success": true,
+      "samples": 1,
+      "max_absolute_error": 1.0,
+      "last": {
+        "time": 1000000000000.0005,
+        "expected_exact": "1",
+        "actual": 0.0,
+        "absolute_error": 1.0
+      }
+    },
+    {
+      "case": "single_point_uniform",
+      "method": "fixed_dense_rodas",
+      "origin": 1000000000000.0,
+      "success": true,
+      "samples": 1,
+      "max_absolute_error": 1.0,
+      "last": {
+        "time": 1000000000000.0005,
+        "expected_exact": "1",
+        "actual": 0.0,
+        "absolute_error": 1.0
+      }
+    },
+    {
+      "case": "single_point_explicit",
+      "method": "fixed_observed_rodas",
+      "origin": 1000000000000.0,
+      "success": true,
+      "samples": 1,
+      "max_absolute_error": 1.0,
+      "last": {
+        "time": 1000000000000.0005,
+        "expected_exact": "1",
+        "actual": 0.0,
+        "absolute_error": 1.0
+      }
+    },
+    {
+      "case": "single_point_explicit",
+      "method": "fixed_dense_rodas",
+      "origin": 1000000000000.0,
+      "success": true,
+      "samples": 1,
+      "max_absolute_error": 1.0,
+      "last": {
+        "time": 1000000000000.0005,
+        "expected_exact": "1",
+        "actual": 0.0,
+        "absolute_error": 1.0
+      }
+    },
+    {
+      "case": "valid_two_point_control",
+      "method": "fixed_observed_rodas",
+      "origin": 1000000000000.0,
+      "success": true,
+      "samples": 2,
+      "max_absolute_error": 2.886579864025407e-15,
+      "last": {
+        "time": 1000000000000.0005,
+        "expected_exact": "1",
+        "actual": 1.0000000000000029,
+        "absolute_error": 2.886579864025407e-15
+      }
+    },
+    {
+      "case": "valid_two_point_control",
+      "method": "fixed_dense_rodas",
+      "origin": 1000000000000.0,
+      "success": true,
+      "samples": 2,
+      "max_absolute_error": 2.886579864025407e-15,
+      "last": {
+        "time": 1000000000000.0005,
+        "expected_exact": "1",
+        "actual": 1.0000000000000029,
+        "absolute_error": 2.886579864025407e-15
+      }
+    },
+    {
+      "case": "endpoint_alias_labels",
+      "method": "fixed_observed_rodas",
+      "origin": 1000000000000.0,
+      "success": true,
+      "samples": 2,
+      "max_absolute_error": 1.0,
+      "last": {
+        "time": 1000000000001.0001,
+        "expected_exact": "8193",
+        "actual": 8192.000000000024,
+        "absolute_error": 0.9999999999763531
+      }
+    },
+    {
+      "case": "long_run_acknowledged_microstep",
+      "method": "fixed_rodas",
+      "origin": 0.0,
+      "success": true,
+      "samples": 1002,
+      "max_absolute_error": 1.7930101847696278e-14,
+      "last": {
+        "time": 10.0,
+        "expected_exact": "18014398509481985/18014398509481984",
+        "actual": 1.000000000000018,
+        "absolute_error": 1.7930101847696278e-14
+      },
+      "sum_h_exact": "720575940379291535/72057594037927936",
+      "represented_displacement_exact": "10",
+      "sum_h_over_displacement": 1.0000000000000169,
+      "max_step_clock_defect": 2.3071822230491534e-16
+    }
+  ],
+  "claim_ceiling": "Exact reference for represented scalar constant velocity fixtures; candidate only local clock and endpoint admission checks, not production repair."
+}

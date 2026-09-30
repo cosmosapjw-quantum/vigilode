@@ -42,11 +42,11 @@ pub use external_comparators::{
 pub use paired_timing::{
     AaControlAssessment, PAIRED_TIMING_BOOTSTRAP_RESAMPLES, PAIRED_TIMING_CONFIDENCE_LEVEL,
     PAIRED_TIMING_MIN_INDEPENDENT_BLOCKS, PAIRED_TIMING_MIN_PAIRS, PAIRED_TIMING_MIN_WARMUPS,
-    PAIRED_TIMING_REQUIRED_SPEEDUP, PairedArm, PairedCaseSummary, PairedTimingAssessment,
-    PairedTimingCase, PairedTimingDecision, PairedTimingProtocol, SpeedupInterval,
-    TimingHostMetadata, abba_pair_order, assess_aa_control, assess_paired_timing,
+    PAIRED_TIMING_REQUIRED_SPEEDUP, PAIRED_TIMING_SCHEMA, PairedArm, PairedCaseSummary,
+    PairedTimingAssessment, PairedTimingCase, PairedTimingDecision, PairedTimingProtocol,
+    SpeedupInterval, TimingHostMetadata, abba_pair_order, assess_aa_control, assess_paired_timing,
     calibrate_batch_iterations, case_clustered_bootstrap, detect_timing_host_metadata,
-    measure_paired_case, paired_timing_decision,
+    measure_paired_case, measure_paired_case_in_session, paired_timing_decision,
 };
 pub use runner::{
     BenchmarkCell, BenchmarkPlan, ComparisonResult, SummaryRow, TraceRunResult,

@@ -1,0 +1,50 @@
+{
+  "schema": "vigilode.r3.time.findings.v1",
+  "source_commit": "cc2cd041737e7ff543624d1b59893a3b4397369f",
+  "verdict": "REWORK",
+  "production_modified": false,
+  "prior_closures": [
+    {"id": "R2-OUT-01", "status": "CLOSED_FOR_ORIGINAL_REPRODUCERS", "evidence": ["native_raw.jsonl", "exact_oracle.json"], "scope": "8-ULP spans at +-1e12 with h=span/2; one-ULP span at t0=1; adjacent dense and clipped requests", "general_claim": "HOLD; distinct residuals R3-TIME-01 and R3-TIME-02 remain"}
+  ],
+  "findings": [
+    {
+      "id": "R3-TIME-01",
+      "severity": "P1",
+      "status": "CONFIRMED_ACKNOWLEDGED_RESIDUAL",
+      "novelty": "Already explicitly admitted as limit 1 in docs/REAUDIT_R2_CLOSURE_20260930.md; independently reproduced across additional public consumers, not a newly discovered regression.",
+      "title": "Successful time integration can consume a different physical interval from its represented timestamps",
+      "failure_class": "NUMERICAL_IMPLEMENTATION",
+      "evidence_status": ["derived", "numerically checked", "implementation-verified"],
+      "source_locations": ["crates/rodas5p-integrators/src/output.rs:26-57", "crates/rodas5p-integrators/src/integrate.rs:92-103", "crates/rodas5p-integrators/src/dense_output_v2.rs:434-450", "crates/rodas5p-integrators/src/bdf.rs:608-619", "crates/rodas5p-integrators/src/radau.rs:651-655", "crates/rodas5p-integrators/src/adaptive_exponential.rs:201-212"],
+      "input": {"origin": 1000000000000.0, "span_ulps": 8, "span": 0.0009765625, "proposed_step": 0.0001, "ode": "y'=1/span", "initial_y": 0.0, "atol": 1e-10, "rtol": 1e-9},
+      "observed": {"success": true, "expected_final_y": 1.0, "actual_final_y_approximately": 0.8192, "relative_error_approximately": 0.1808, "native_observations": 7, "distinct_driver_types": 6, "extra_negative_origin_checked": true},
+      "mechanism": "Each represented time advances one ULP=0.0001220703125, while stage equations consume nominal h=0.0001. Eight nominal increments integrate only 0.8192 of the labelled duration. Embedded error cannot identify a shared clock mismatch on constant flow.",
+      "scope": "Native fixed RODAS, adaptive RODAS, fixed Radau, fixed BDF, adaptive fused exponential and fixed dense RODAS. Constant autonomous scalar fixtures; no claim that every ODE or every adaptive driver fails.",
+      "evidence": ["native_raw.jsonl:case=documented_step_clock_mismatch", "exact_oracle.json", "probe/src/main.rs"],
+      "remediation": "TIME-01",
+      "candidate_status": "Standalone public sequential_step driver with h_eff=t_next-t passes three constant-flow origins; not installed in production, and does not resolve global cancellation, internal half steps, BDF history or adaptive max_step policy."
+    },
+    {
+      "id": "R3-TIME-02",
+      "severity": "P2",
+      "status": "CONFIRMED",
+      "novelty": "Previously unlisted endpoint-admission counterexample on current source. The tolerant endpoint validation predates this update; not classified as an introduced regression.",
+      "title": "A nonzero integration span can accept a singleton output schedule and return y0 labelled as y(tf)",
+      "failure_class": "IMPLEMENTATION",
+      "evidence_status": ["derived", "numerically checked", "implementation-verified"],
+      "source_locations": ["crates/rodas5p-integrators/src/output.rs:173-186", "crates/rodas5p-integrators/src/output.rs:193-203", "crates/rodas5p-integrators/src/output.rs:361-378", "crates/rodas5p-integrators/src/output.rs:408-417"],
+      "input": {"origin": 1000000000000.0, "span_ulps": 4, "span": 0.00048828125, "uniform_spacing": 1.0, "ode": "y'=2048", "initial_y": 0.0, "physical_step": 0.000244140625},
+      "observed": {"constructed_schedule": "[tf]", "success": true, "actual_internal_steps": 2, "returned_samples": 1, "returned_y_at_tf": 0.0, "expected_y_at_tf": 1.0, "dense_and_clipped_both_reproduced": true},
+      "mechanism": "The epoch-scaled tolerance accepts intervals=0 in uniform and admits the singleton as both endpoints. Collector initializes y0 at schedule[0] and next_index=1, so no integrated state is stored.",
+      "related_observation": "A two-point schedule shifted one ULP at both ends is admitted and preserves requested labels while returning values at t0/tf; velocity8192 yields absolute timestamp/value inconsistency 1. This alias behavior is source-documented but should be explicit in the public contract or rejected.",
+      "scope": "Public OutputSchedule::uniform and OutputSchedule::new with fixed dense/clipped RODAS consumers. Valid exact [t0,tf] control succeeds with error2.89e-15.",
+      "evidence": ["native_raw.jsonl:case=single_point_uniform", "native_raw.jsonl:case=single_point_explicit", "native_raw.jsonl:case=endpoint_alias_labels", "exact_oracle.json"],
+      "remediation": "TIME-02",
+      "candidate_status": "Standalone strict represented-endpoint admission rejects three invalid/aliased inputs and accepts the exact two-point control; production API compatibility choice remains open."
+    }
+  ],
+  "acknowledged_nonfindings": [
+    {"id": "LONG_FIXED_CLOCK_DRIFT", "status": "REPRODUCED_DOCUMENTED_LIMIT", "evidence": "native_raw.jsonl:case=long_run_acknowledged_microstep", "observed": "0 to10 with h=.01 takes1001steps, endpoint error1.79e-14 on y'=.1", "decision": "Not counted as a new correctness finding; prioritize after endpoint clock contract, especially BDF order/work history."},
+    {"id": "RESEARCH_DRIVER_OLD_SLACK", "status": "SOURCE_ACKNOWLEDGED_NOT_EXECUTED", "evidence": "docs/REAUDIT_R2_CLOSURE_20260930.md limit5", "decision": "Do not silently update sealed replay policy; version and rerun when authorized development reaches it."}
+  ]
+}

@@ -1,0 +1,13 @@
+[package]
+name = "vigilode-r2-phi-independent-probe"
+version = "0.1.0"
+edition = "2024"
+[workspace]
+[dependencies]
+rodas5p-core = { path = "../../../vigilode/crates/rodas5p-core" }
+rodas5p-integrators = { path = "../../../vigilode/crates/rodas5p-integrators" }
+serde_json = "1"
+
+[[bin]]
+name = "legacy_closure"
+path = "src/legacy_closure.rs"

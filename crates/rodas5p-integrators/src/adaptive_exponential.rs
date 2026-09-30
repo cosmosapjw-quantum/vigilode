@@ -191,16 +191,16 @@ fn integrate_pexprb54s4_fused_adaptive_observed_with_telemetry_request(
     }
     let (mut t, tf) = t_span;
     let mut y = y0.to_vec();
-    let mut h = adaptive.initial_step.min(tf - t);
+    let mut h = adaptive.initial_step.min(crate::output::step_to(t, tf)?);
     let mut collector = OutputCollector::new(output, t_span, y0)?;
     let mut controller = AdaptiveControllerState::default();
     let mut counters = WorkCounters::default();
     let mut diagnostics = AdaptiveFusedExponentialDiagnostics::default();
-    let tolerance = crate::output::end_time_slack(tf);
 
-    while t < tf - tolerance && diagnostics.attempts < adaptive.max_attempts {
-        h = h.min(adaptive.max_step).min(tf - t);
-        if h < adaptive.min_step {
+    while t < tf && diagnostics.attempts < adaptive.max_attempts {
+        h = crate::output::end_step(t, h.min(adaptive.max_step), tf)?;
+        // A final piece that lands on tf is taken even below min_step.
+        if (h < adaptive.min_step && t + h < tf) || t + h == t {
             break;
         }
         let (trial_h, clipped) = collector.limit_step(t, h, tf)?;
@@ -345,7 +345,7 @@ fn integrate_pexprb54s4_fused_adaptive_observed_with_telemetry_request(
                 };
         }
     }
-    let success = t >= tf - tolerance;
+    let success = t >= tf;
     let (times, states, output_clipped_steps) = if success {
         collector.finish()?
     } else {

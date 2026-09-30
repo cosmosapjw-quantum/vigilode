@@ -1,5 +1,6 @@
 #![forbid(unsafe_code)]
 
+mod binary_scaling;
 mod coefficients;
 mod error;
 mod hash;
@@ -10,6 +11,9 @@ mod operator;
 mod solver_types;
 mod work;
 
+pub use binary_scaling::{
+    binary_power, binary_scale, binary_split, times_power, weight_phi_vectors,
+};
 pub use coefficients::{
     CoefficientPrecisionAvailability, RODAS5P_COEFFICIENT_SNAPSHOT_SCHEMA_VERSION,
     RODAS5P_COEFFICIENT_SNAPSHOT_SHA256, Rodas5pCoefficientProvenance, Rodas5pCoefficients,
@@ -19,7 +23,8 @@ pub use error::{CoreError, CoreResult};
 pub use hash::sha256_hex;
 pub use matrix::{DenseMatrix, LuFactorization, direct_solve, inverse};
 pub use matrix_functions::{
-    dense_fused_phi_action, dense_phi_action, dense_phi_combination, matrix_exp_pade13,
+    DensePhiCombinationReport, dense_fused_phi_action, dense_phi_action, dense_phi_combination,
+    dense_phi_combination_report, matrix_exp_pade13,
 };
 pub use norms::{error_scale, safe_l2, wrms};
 pub use operator::{

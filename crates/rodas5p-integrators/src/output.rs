@@ -1,23 +1,142 @@
 use rodas5p_core::{CoreError, CoreResult, WorkCounters};
 
-/// Slack for treating two timestamps as the same represented time: a few
-/// units in the last place of the larger magnitude, and nothing more. It
-/// absorbs the rounding of `t + (stop - t)` landings, but it never merges
-/// two distinct requested times, so output sampling is invariant under a
-/// shift of the time origin and a change of time unit (audit AD-01). The
-/// earlier `128 eps max(|t|, 1)` had an absolute floor of one time unit and
-/// grew with the global epoch: on a span of 1e-15 it consumed every request
-/// at the first step endpoint, and at t0 = 1e12 it snapped outputs spaced
-/// 0.01 apart onto step endpoints.
+/// How a step is limited by a target time (span end, hard stop or clipped
+/// output time).
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub(crate) struct Landing {
+    /// The step to take.
+    pub(crate) step: f64,
+    /// The step was chosen to land on the target.
+    pub(crate) lands: bool,
+    /// The proposed step would have passed the target and was shortened.
+    pub(crate) shortened: bool,
+}
+
+/// Limit a proposed step by `target`.
+///
+/// A step that would pass the target is shortened to land on it exactly
+/// ([`step_to`]); it counts as shortened only when it passes by more than
+/// the rounding residue of the time sum, `64 eps max(|t|, |t + h|,
+/// |target|)` capped at `2^-10 h`. A step that would stop short of the
+/// target by no more than that residue is extended to land on it,
+/// so fixed steps of 0.1 reach 1.0 exactly instead of 0.9999999999999999
+/// and then taking a 1e-16 step (re-audit R2 review). This is a step-size
+/// rule only; which interval owns a requested time is still decided by
+/// exact comparison, so adjacent representable requests stay distinct.
+pub(crate) fn land(t: f64, proposed: f64, target: f64) -> CoreResult<Landing> {
+    let to_target = step_to(t, target)?;
+    let natural = t + proposed;
+    // Rounding residue of the time sum: relative to the largest magnitude
+    // involved, including t, so it does not collapse for a target near zero
+    // reached from t < 0 (-0.3 + 3 * 0.1 is 5.6e-17, not 0), and at most
+    // 2^-10 of the step, so a step is never stretched or shortened silently
+    // by more than 0.1% at a large epoch.
+    let residue = (64.0 * f64::EPSILON * t.abs().max(natural.abs()).max(target.abs()))
+        .min(proposed * 2.0_f64.powi(-10));
+    if natural > target || proposed >= to_target {
+        // Passing the target by no more than the residue is a landing, not
+        // a shortened step (0.07 + 0.01 = 0.08000000000000002).
+        return Ok(Landing {
+            step: to_target,
+            lands: t + to_target == target,
+            shortened: natural - target > residue,
+        });
+    }
+    if natural == target {
+        return Ok(Landing {
+            step: proposed,
+            lands: true,
+            shortened: false,
+        });
+    }
+    let gap = target - natural;
+    let extend = gap <= residue;
+    Ok(Landing {
+        step: if extend { to_target } else { proposed },
+        lands: extend && t + to_target == target,
+        shortened: false,
+    })
+}
+
+/// The step toward the span end `tf` for a proposed step, by [`land`].
+pub(crate) fn end_step(t: f64, proposed: f64, tf: f64) -> CoreResult<f64> {
+    Ok(land(t, proposed, tf)?.step)
+}
+
+/// Slack for checking that a schedule's first and last requested times name
+/// the integration span, and that a uniform spacing divides it: a few units
+/// in the last place of the larger magnitude, with no absolute floor.
+///
+/// It is used only for these validations. Which accepted interval owns a
+/// requested time, and when an integration is finished, are decided by
+/// exact comparisons of represented times (audit R2-OUT-01): a slack there,
+/// however small, merges adjacent representable requests and lets the end
+/// of a short span at a large epoch count as reached before any step.
 fn time_tolerance(left: f64, right: f64) -> f64 {
     (4.0 * f64::EPSILON * left.abs().max(right.abs())).max(f64::MIN_POSITIVE)
 }
 
-/// End-of-span slack for the drivers' `while t < tf - slack` loops and
-/// their success test: relative to |tf| only, with no absolute floor, so a
-/// span shorter than one time unit is still integrated (audit AD-01).
-pub(crate) fn end_time_slack(tf: f64) -> f64 {
-    10.0 * f64::EPSILON * tf.abs()
+/// A typed failure for a step that would not move the represented time:
+/// `t + h == t` (re-audit R2, R2-OUT-01: a fixed step below half an ULP of
+/// `t` used to loop, and an end slack used to report success instead).
+pub(crate) fn require_progress(t: f64, h: f64) -> CoreResult<()> {
+    if t + h > t {
+        Ok(())
+    } else {
+        Err(CoreError::InvalidInput(format!(
+            "step h = {h:e} does not advance the represented time t = {t:e}"
+        )))
+    }
+}
+
+/// A step size `h > 0` with `t + h == target` in binary64, so a step that is
+/// meant to land on `target` (the span end, a hard stop or a clipped output
+/// time) lands on it exactly, and the drivers can use exact comparisons.
+///
+/// `target - t` is exact when the two are within a factor of two
+/// (Sterbenz); otherwise a few neighbouring step sizes are tried. When no
+/// step size lands exactly, the largest tried step that stays below
+/// `target` is returned, so a step never overshoots its target. When even
+/// that does not advance `t`, the result is a typed error rather than a
+/// zero-length step. `target == t` gives 0.
+pub(crate) fn step_to(t: f64, target: f64) -> CoreResult<f64> {
+    if !(t.is_finite() && target.is_finite()) || target < t {
+        return Err(CoreError::InvalidInput(
+            "step target must be finite and not before the current time".into(),
+        ));
+    }
+    if target == t {
+        return Ok(0.0);
+    }
+    let mut h = target - t;
+    if !h.is_finite() {
+        // The distance itself overflows (e.g. -1e308 to 1e308): no single
+        // step can land, and every finite proposal stays below the target.
+        return Ok(f64::MAX);
+    }
+    let mut below: Option<f64> = None;
+    for _ in 0..8 {
+        if !(h.is_finite() && h > 0.0) {
+            break;
+        }
+        let landed = t + h;
+        if landed == target {
+            return Ok(h);
+        }
+        if landed < target {
+            if landed > t {
+                below = Some(below.map_or(h, |best: f64| best.max(h)));
+            }
+            h = h.next_up();
+        } else {
+            h = h.next_down();
+        }
+    }
+    below.ok_or_else(|| {
+        CoreError::InvalidInput(format!(
+            "no binary64 step advances t = {t:e} toward {target:e}"
+        ))
+    })
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -127,12 +246,9 @@ impl OutputSamplingPlan {
 
     pub(crate) fn validate_span(&self, t0: f64, tf: f64) -> CoreResult<()> {
         self.output.validate_span(t0, tf)?;
-        let tolerance = time_tolerance(t0, tf);
-        if self
-            .hard_stops
-            .iter()
-            .any(|time| *time < t0 - tolerance || *time > tf + tolerance)
-        {
+        // Exact bounds: the cursor compares stops to represented times
+        // exactly, so a stop just before t0 could never be consumed.
+        if self.hard_stops.iter().any(|time| *time < t0 || *time > tf) {
             return Err(CoreError::InvalidInput(
                 "hard stop lies outside the integration span".into(),
             ));
@@ -169,32 +285,27 @@ impl HardStopCursor {
                 "hard-stop step limit requires finite time and positive step".into(),
             ));
         }
-        let base = proposed_h.min(tf - t);
+        let base = end_step(t, proposed_h, tf)?;
         if base <= 0.0 {
             return Err(CoreError::InvalidInput(
                 "hard-stop step limit became nonpositive".into(),
             ));
         }
         while let Some(&stop) = self.stops.get(self.next_index) {
-            let tolerance = time_tolerance(t, stop);
-            if stop < t - tolerance {
+            if stop < t {
                 return Err(CoreError::InvalidInput(
                     "hard-stop cursor advanced past a breakpoint".into(),
                 ));
             }
-            if stop <= t + tolerance {
+            if stop == t {
                 self.next_index += 1;
                 continue;
             }
-            let to_stop = stop - t;
-            if base > to_stop + tolerance {
-                return Ok((to_stop, true));
-            }
-            if (base - to_stop).abs() <= tolerance {
-                return Ok((to_stop, false));
-            }
-            break;
+            let landing = land(t, base, stop)?;
+            require_progress(t, landing.step)?;
+            return Ok((landing.step, landing.shortened));
         }
+        require_progress(t, base)?;
         Ok((base, false))
     }
 
@@ -213,13 +324,12 @@ impl HardStopCursor {
         let Some(&stop) = self.stops.get(self.next_index) else {
             return Ok(false);
         };
-        let tolerance = time_tolerance(t, stop);
-        if stop < t - tolerance {
+        if stop < t {
             return Err(CoreError::InvalidInput(
                 "hard-stop cursor advanced past a breakpoint".into(),
             ));
         }
-        if (stop - t).abs() <= tolerance {
+        if stop == t {
             self.next_index += 1;
             return Ok(true);
         }
@@ -240,6 +350,7 @@ pub struct ObservedIntegrationResult {
 
 pub(crate) struct OutputCollector {
     schedule: OutputSchedule,
+    end: f64,
     next_index: usize,
     times: Vec<f64>,
     states: Vec<Vec<f64>>,
@@ -260,6 +371,7 @@ impl OutputCollector {
         }
         Ok(Self {
             schedule: schedule.clone(),
+            end: t_span.1,
             next_index: 1,
             times: vec![schedule.times[0]],
             states: vec![y0.to_vec()],
@@ -273,34 +385,36 @@ impl OutputCollector {
                 "output-aware step limit requires finite time and positive step".into(),
             ));
         }
-        let base = proposed_h.min(tf - t);
+        let base = end_step(t, proposed_h, tf)?;
         if base <= 0.0 {
             return Err(CoreError::InvalidInput(
                 "output-aware step limit became nonpositive".into(),
             ));
         }
-        let Some(&next) = self.schedule.times.get(self.next_index) else {
+        let Some(next) = self.due(self.next_index) else {
+            require_progress(t, base)?;
             return Ok((base, false));
         };
-        let tolerance = time_tolerance(t, next);
-        if next < t - tolerance {
+        if next <= t {
             return Err(CoreError::InvalidInput(
                 "output collector advanced past a requested time".into(),
             ));
         }
-        let to_next = next - t;
-        if to_next <= tolerance {
-            return Err(CoreError::InvalidInput(
-                "output collector encountered a duplicate requested time".into(),
-            ));
-        }
-        if base > to_next + tolerance {
-            Ok((to_next, true))
-        } else if (base - to_next).abs() <= tolerance {
-            Ok((to_next, false))
+        let landing = land(t, base, next)?;
+        require_progress(t, landing.step)?;
+        Ok((landing.step, landing.shortened))
+    }
+
+    /// The time at which request `index` is due. The last request is due at
+    /// the span end, which it names up to [`time_tolerance`]; every other
+    /// request is due at its own represented time.
+    fn due(&self, index: usize) -> Option<f64> {
+        let time = *self.schedule.times.get(index)?;
+        Some(if index + 1 == self.schedule.times.len() {
+            self.end
         } else {
-            Ok((base, false))
-        }
+            time
+        })
     }
 
     pub(crate) fn accept(&mut self, t: f64, y: &[f64], clipped: bool) -> CoreResult<()> {
@@ -309,11 +423,10 @@ impl OutputCollector {
                 "accepted output state contains NaN/Inf".into(),
             ));
         }
-        let Some(&next) = self.schedule.times.get(self.next_index) else {
+        let Some(next) = self.due(self.next_index) else {
             return Ok(());
         };
-        let tolerance = time_tolerance(t, next);
-        if t > next + tolerance {
+        if t > next {
             return Err(CoreError::InvalidInput(
                 "accepted step overshot a requested output time".into(),
             ));
@@ -321,8 +434,8 @@ impl OutputCollector {
         if clipped {
             self.clipped_steps += 1;
         }
-        if (t - next).abs() <= tolerance {
-            self.times.push(next);
+        if t == next {
+            self.times.push(self.schedule.times[self.next_index]);
             self.states.push(y.to_vec());
             self.next_index += 1;
         }
@@ -351,27 +464,27 @@ impl OutputCollector {
                 "dense output interval must be finite, increasing, and finite-valued".into(),
             ));
         }
-        while let Some(&next) = self.schedule.times.get(self.next_index) {
-            let tolerance = time_tolerance(t_new, next);
-            if next < t_old - tolerance {
+        // The interval (t_old, t_new] owns exactly the requests due in it,
+        // by exact comparison; t_old's own requests were consumed by the
+        // interval that ended there.
+        while let Some(next) = self.due(self.next_index) {
+            if next <= t_old {
                 return Err(CoreError::InvalidInput(
                     "dense output interval begins after a requested time".into(),
                 ));
             }
-            if next > t_new + tolerance {
+            if next > t_new {
                 break;
             }
-            // Interval-local fraction of the accepted step; only requests
-            // within the representation slack of an endpoint are clamped.
-            let theta = ((next - t_old) / (t_new - t_old)).clamp(0.0, 1.0);
-            if !theta.is_finite() {
-                return Err(CoreError::InvalidInput(
-                    "dense output requested time lies outside the accepted interval".into(),
-                ));
-            }
-            let state = if next >= t_new || theta == 1.0 {
+            let state = if next == t_new {
                 y_new.to_vec()
             } else {
+                let theta = (next - t_old) / (t_new - t_old);
+                if !(theta.is_finite() && theta > 0.0 && theta <= 1.0) {
+                    return Err(CoreError::InvalidInput(
+                        "dense output requested time lies outside the accepted interval".into(),
+                    ));
+                }
                 interpolate(theta)?
             };
             if !state.iter().all(|value| value.is_finite()) {
@@ -379,7 +492,7 @@ impl OutputCollector {
                     "dense output state contains NaN/Inf".into(),
                 ));
             }
-            self.times.push(next);
+            self.times.push(self.schedule.times[self.next_index]);
             self.states.push(state);
             self.next_index += 1;
         }

@@ -1343,25 +1343,21 @@ fn krylov_exponential_once(
 /// The scaled convention `b0 + tau phi1(tau A) b1 + ... + tau^p phi_p(tau A) b_p`
 /// in the weighted form `w0 = b0`, `w_k = tau^k b_k` used by
 /// [`augmented_fused_operator`].
-fn weighted_phi_vectors(scale: f64, vectors: &[Vec<f64>]) -> CoreResult<Vec<Vec<f64>>> {
-    let weighted = vectors
-        .iter()
-        .enumerate()
-        .map(|(k, vector)| {
-            let factor = scale.powi(k as i32);
-            vector
-                .iter()
-                .map(|value| factor * value)
-                .collect::<Vec<_>>()
-        })
-        .collect::<Vec<_>>();
-    if weighted.iter().flatten().all(|value| value.is_finite()) {
-        Ok(weighted)
-    } else {
-        Err(CoreError::NonFinite(
-            "fused phi action: tau^k b_k is not finite".into(),
-        ))
-    }
+/// `w_k = tau^k b_k`, formed on binary exponents so a representable weight
+/// is not lost to an intermediate `tau.powi(k)` (re-audit R2, PHI-R1).
+/// Inputs whose weight underflows are charged to
+/// `counters.phi_weight_underflows`, so a converged report does not hide
+/// them.
+fn weighted_phi_vectors(
+    scale: f64,
+    vectors: &[Vec<f64>],
+    counters: &mut WorkCounters,
+) -> CoreResult<Vec<Vec<f64>>> {
+    let (weighted, lost) = rodas5p_core::weight_phi_vectors(scale, vectors)?;
+    counters.phi_weight_underflows = counters
+        .phi_weight_underflows
+        .saturating_add(u64::try_from(lost).unwrap_or(u64::MAX));
+    Ok(weighted)
 }
 
 /// The time-normalized augmented operator for
@@ -1499,7 +1495,7 @@ pub fn fused_phi_action(
             convergence_basis: PhiConvergenceBasis::InvariantSubspace,
         });
     }
-    let weighted = weighted_phi_vectors(scale, vectors)?;
+    let weighted = weighted_phi_vectors(scale, vectors, counters)?;
     fused_phi_action_weighted(operator, scale, &weighted, config, counters)
 }
 
@@ -1772,7 +1768,7 @@ impl FusedPhiPrefixSession {
             });
         }
         let highest_phi_index = vectors.len() - 1;
-        let weighted = weighted_phi_vectors(scale, vectors)?;
+        let weighted = weighted_phi_vectors(scale, vectors, counters)?;
         let (augmented, initial, physical_dimension) =
             augmented_fused_operator(operator, scale, &weighted)?;
         let config = config.validate(augmented.dimension())?;

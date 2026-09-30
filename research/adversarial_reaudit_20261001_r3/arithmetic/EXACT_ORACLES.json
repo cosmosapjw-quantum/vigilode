@@ -1,0 +1,4843 @@
+{
+  "source_commit": "cc2cd041737e7ff543624d1b59893a3b4397369f",
+  "oracle_independence": "Fraction/Decimal standard library; analytic nilpotent polynomial; no native phi/matrix exponential implementation reused",
+  "nilpotent": [
+    {
+      "id": "nilpotent_partial_underflow",
+      "formula": "[b0+h^3*off*b2/6, h^2*b2/2]; A^2=0, b0 aligned with kernel",
+      "exact_decimal": [
+        "1.6666666666666616977991606826580784676079142000064443286281451060389016504784491938825777387553972761720932805E-27",
+        "4.9999999999999849338893597501300744240190350125568166942068947859175137516889153848488848252978566846177929756E-327"
+      ],
+      "rounded": [
+        1.6666666666666616e-27,
+        0.0
+      ],
+      "original": {
+        "fused": {
+          "output": [
+            9.999999999999999e-301,
+            0.0
+          ],
+          "relative_component0_error": 1.0,
+          "error_above_declared_relative_budget": true
+        },
+        "prefix": {
+          "output": [
+            9.999999999999999e-301,
+            0.0
+          ],
+          "relative_component0_error": 1.0,
+          "error_above_declared_relative_budget": true
+        },
+        "dense": {
+          "output": [
+            0.0,
+            0.0
+          ],
+          "relative_component0_error": 1.0,
+          "error_above_declared_relative_budget": true
+        }
+      },
+      "nilpotent_candidate_relative_error": 6.528332571792047e-17,
+      "guard": "Err: weighting underflow requires propagated error bound",
+      "candidate_scope": "this 2D nilpotent structure only; fail-closed weighting guard is general but conservative"
+    },
+    {
+      "id": "nilpotent_negative_h",
+      "formula": "[b0+h^3*off*b2/6, h^2*b2/2]; A^2=0, b0 aligned with kernel",
+      "exact_decimal": [
+        "-1.6666666666666616977991606826580784676079142000064443286281451060389016504784491938825777387553972761720932805E-27",
+        "4.9999999999999849338893597501300744240190350125568166942068947859175137516889153848488848252978566846177929756E-327"
+      ],
+      "rounded": [
+        -1.6666666666666616e-27,
+        0.0
+      ],
+      "original": {
+        "fused": {
+          "output": [
+            9.999999999999999e-301,
+            0.0
+          ],
+          "relative_component0_error": 1.0,
+          "error_above_declared_relative_budget": true
+        },
+        "prefix": {
+          "output": [
+            9.999999999999999e-301,
+            0.0
+          ],
+          "relative_component0_error": 1.0,
+          "error_above_declared_relative_budget": true
+        },
+        "dense": {
+          "output": [
+            0.0,
+            0.0
+          ],
+          "relative_component0_error": 1.0,
+          "error_above_declared_relative_budget": true
+        }
+      },
+      "nilpotent_candidate_relative_error": 6.528332571792047e-17,
+      "guard": "Err: weighting underflow requires propagated error bound",
+      "candidate_scope": "this 2D nilpotent structure only; fail-closed weighting guard is general but conservative"
+    },
+    {
+      "id": "zero_operator_partial_underflow",
+      "formula": "[b0+h^3*off*b2/6, h^2*b2/2]; A^2=0, b0 aligned with kernel",
+      "exact_decimal": [
+        "1.0000000000000000250590918352087596856961468077037052499253423199004660431840514846763028121819501008949623063E-300",
+        "4.9999999999999849338893597501300744240190350125568166942068947859175137516889153848488848252978566846177929756E-327"
+      ],
+      "rounded": [
+        1e-300,
+        0.0
+      ],
+      "original": {
+        "fused": {
+          "output": [
+            9.999999999999999e-301,
+            0.0
+          ],
+          "relative_component0_error": 1.6578092116916188e-16,
+          "error_above_declared_relative_budget": false
+        },
+        "prefix": {
+          "output": [
+            9.999999999999999e-301,
+            0.0
+          ],
+          "relative_component0_error": 1.6578092116916188e-16,
+          "error_above_declared_relative_budget": false
+        },
+        "dense": {
+          "output": [
+            9.999999999999999e-301,
+            0.0
+          ],
+          "relative_component0_error": 1.6578092116916188e-16,
+          "error_above_declared_relative_budget": false
+        }
+      },
+      "nilpotent_candidate_relative_error": 0.0,
+      "guard": "Err: weighting underflow requires propagated error bound",
+      "candidate_scope": "this 2D nilpotent structure only; fail-closed weighting guard is general but conservative"
+    }
+  ],
+  "power_summary": {
+    "count": 520,
+    "within_8_ulp_count": 520,
+    "maximum_ulp": 2,
+    "special_note": "subnormal relative error is not O(eps); compare absolute ulps instead"
+  },
+  "power_rows": [
+    {
+      "i": 0,
+      "finite_reference": true,
+      "rounded_reference_bits": 11376486396509483065,
+      "result_bits": 11376486396509483065,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 1,
+      "finite_reference": true,
+      "rounded_reference_bits": 11662916372805450741,
+      "result_bits": 11662916372805450741,
+      "ulp_distance": 0,
+      "relative_error": 6.110467365603039e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 2,
+      "finite_reference": true,
+      "rounded_reference_bits": 14475256269171594570,
+      "result_bits": 14475256269171594570,
+      "ulp_distance": 0,
+      "relative_error": 9.429717213259122e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 3,
+      "finite_reference": true,
+      "rounded_reference_bits": 9223372036854775808,
+      "result_bits": 9223372036854775808,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 4,
+      "finite_reference": false,
+      "rounded_reference_bits": 18442240474082181120,
+      "result_bits": 18442240474082181120,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 5,
+      "finite_reference": true,
+      "rounded_reference_bits": 4841224270423807124,
+      "result_bits": 4841224270423807124,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 6,
+      "finite_reference": true,
+      "rounded_reference_bits": 3277379505495764342,
+      "result_bits": 3277379505495764342,
+      "ulp_distance": 0,
+      "relative_error": 3.009867943505723e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 7,
+      "finite_reference": false,
+      "rounded_reference_bits": 9218868437227405312,
+      "result_bits": 9218868437227405312,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 8,
+      "finite_reference": true,
+      "rounded_reference_bits": 0,
+      "result_bits": 0,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 9,
+      "finite_reference": true,
+      "rounded_reference_bits": 5403014964,
+      "result_bits": 5403014964,
+      "ulp_distance": 0,
+      "relative_error": 7.791886214744748e-11,
+      "within_8_ulp": true
+    },
+    {
+      "i": 10,
+      "finite_reference": true,
+      "rounded_reference_bits": 11152185662759285403,
+      "result_bits": 11152185662759285403,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 11,
+      "finite_reference": true,
+      "rounded_reference_bits": 9223372036854775808,
+      "result_bits": 9223372036854775808,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 12,
+      "finite_reference": true,
+      "rounded_reference_bits": 17904452277185458892,
+      "result_bits": 17904452277185458891,
+      "ulp_distance": 1,
+      "relative_error": 1.4333122676475048e-16,
+      "within_8_ulp": true
+    },
+    {
+      "i": 13,
+      "finite_reference": true,
+      "rounded_reference_bits": 0,
+      "result_bits": 0,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 14,
+      "finite_reference": false,
+      "rounded_reference_bits": 18442240474082181120,
+      "result_bits": 18442240474082181120,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 15,
+      "finite_reference": true,
+      "rounded_reference_bits": 607531975591189581,
+      "result_bits": 607531975591189581,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 16,
+      "finite_reference": true,
+      "rounded_reference_bits": 18328326895200008551,
+      "result_bits": 18328326895200008551,
+      "ulp_distance": 0,
+      "relative_error": 1.423666094178069e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 17,
+      "finite_reference": true,
+      "rounded_reference_bits": 16259415595923842267,
+      "result_bits": 16259415595923842267,
+      "ulp_distance": 0,
+      "relative_error": 3.2782629462144423e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 18,
+      "finite_reference": true,
+      "rounded_reference_bits": 9223372036854775808,
+      "result_bits": 9223372036854775808,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 19,
+      "finite_reference": false,
+      "rounded_reference_bits": 18442240474082181120,
+      "result_bits": 18442240474082181120,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 20,
+      "finite_reference": true,
+      "rounded_reference_bits": 15458180752783757806,
+      "result_bits": 15458180752783757806,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 21,
+      "finite_reference": true,
+      "rounded_reference_bits": 4991819313264328383,
+      "result_bits": 4991819313264328383,
+      "ulp_distance": 0,
+      "relative_error": 5.916753224921262e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 22,
+      "finite_reference": true,
+      "rounded_reference_bits": 0,
+      "result_bits": 0,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 23,
+      "finite_reference": true,
+      "rounded_reference_bits": 15747838709345969375,
+      "result_bits": 15747838709345969374,
+      "ulp_distance": 1,
+      "relative_error": 1.1034219300520581e-16,
+      "within_8_ulp": true
+    },
+    {
+      "i": 24,
+      "finite_reference": true,
+      "rounded_reference_bits": 9223372036854775808,
+      "result_bits": 9223372036854775808,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 25,
+      "finite_reference": true,
+      "rounded_reference_bits": 16962189643040326260,
+      "result_bits": 16962189643040326260,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 26,
+      "finite_reference": true,
+      "rounded_reference_bits": 7188196488786390974,
+      "result_bits": 7188196488786390974,
+      "ulp_distance": 0,
+      "relative_error": 7.923608554339663e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 27,
+      "finite_reference": true,
+      "rounded_reference_bits": 5074965058158718064,
+      "result_bits": 5074965058158718064,
+      "ulp_distance": 0,
+      "relative_error": 1.2228872997541548e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 28,
+      "finite_reference": false,
+      "rounded_reference_bits": 18442240474082181120,
+      "result_bits": 18442240474082181120,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 29,
+      "finite_reference": false,
+      "rounded_reference_bits": 9218868437227405312,
+      "result_bits": 9218868437227405312,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 30,
+      "finite_reference": true,
+      "rounded_reference_bits": 12144049996029934430,
+      "result_bits": 12144049996029934430,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 31,
+      "finite_reference": true,
+      "rounded_reference_bits": 14529976641660925162,
+      "result_bits": 14529976641660925162,
+      "ulp_distance": 0,
+      "relative_error": 6.018097239021419e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 32,
+      "finite_reference": false,
+      "rounded_reference_bits": 9218868437227405312,
+      "result_bits": 9218868437227405312,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 33,
+      "finite_reference": false,
+      "rounded_reference_bits": 9218868437227405312,
+      "result_bits": 9218868437227405312,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 34,
+      "finite_reference": false,
+      "rounded_reference_bits": 9218868437227405312,
+      "result_bits": 9218868437227405312,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 35,
+      "finite_reference": true,
+      "rounded_reference_bits": 12650525850046125503,
+      "result_bits": 12650525850046125503,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 36,
+      "finite_reference": true,
+      "rounded_reference_bits": 4073406278782584888,
+      "result_bits": 4073406278782584888,
+      "ulp_distance": 0,
+      "relative_error": 5.019948091150098e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 37,
+      "finite_reference": false,
+      "rounded_reference_bits": 9218868437227405312,
+      "result_bits": 9218868437227405312,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 38,
+      "finite_reference": true,
+      "rounded_reference_bits": 9223372036854775808,
+      "result_bits": 9223372036854775808,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 39,
+      "finite_reference": false,
+      "rounded_reference_bits": 18442240474082181120,
+      "result_bits": 18442240474082181120,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 40,
+      "finite_reference": true,
+      "rounded_reference_bits": 7359076564908499192,
+      "result_bits": 7359076564908499192,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 41,
+      "finite_reference": false,
+      "rounded_reference_bits": 9218868437227405312,
+      "result_bits": 9218868437227405312,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 42,
+      "finite_reference": true,
+      "rounded_reference_bits": 9223372036854775808,
+      "result_bits": 9223372036854775808,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 43,
+      "finite_reference": false,
+      "rounded_reference_bits": 9218868437227405312,
+      "result_bits": 9218868437227405312,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 44,
+      "finite_reference": true,
+      "rounded_reference_bits": 0,
+      "result_bits": 0,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 45,
+      "finite_reference": true,
+      "rounded_reference_bits": 14000010722643235597,
+      "result_bits": 14000010722643235597,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 46,
+      "finite_reference": true,
+      "rounded_reference_bits": 872414099863969203,
+      "result_bits": 872414099863969203,
+      "ulp_distance": 0,
+      "relative_error": 9.820711509662667e-18,
+      "within_8_ulp": true
+    },
+    {
+      "i": 47,
+      "finite_reference": true,
+      "rounded_reference_bits": 5457856138237084684,
+      "result_bits": 5457856138237084683,
+      "ulp_distance": 1,
+      "relative_error": 9.242202643197287e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 48,
+      "finite_reference": true,
+      "rounded_reference_bits": 9223372036854775808,
+      "result_bits": 9223372036854775808,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 49,
+      "finite_reference": true,
+      "rounded_reference_bits": 11399450322882686480,
+      "result_bits": 11399450322882686480,
+      "ulp_distance": 0,
+      "relative_error": 8.110191328561265e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 50,
+      "finite_reference": true,
+      "rounded_reference_bits": 18061619558866259063,
+      "result_bits": 18061619558866259063,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 51,
+      "finite_reference": true,
+      "rounded_reference_bits": 17607297924336915449,
+      "result_bits": 17607297924336915449,
+      "ulp_distance": 0,
+      "relative_error": 4.786393809279999e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 52,
+      "finite_reference": true,
+      "rounded_reference_bits": 0,
+      "result_bits": 0,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 53,
+      "finite_reference": true,
+      "rounded_reference_bits": 0,
+      "result_bits": 0,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 54,
+      "finite_reference": true,
+      "rounded_reference_bits": 6369614743272989047,
+      "result_bits": 6369614743272989047,
+      "ulp_distance": 0,
+      "relative_error": 7.279052775847005e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 55,
+      "finite_reference": true,
+      "rounded_reference_bits": 6399061187546275341,
+      "result_bits": 6399061187546275341,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 56,
+      "finite_reference": true,
+      "rounded_reference_bits": 9094271158106987891,
+      "result_bits": 9094271158106987891,
+      "ulp_distance": 0,
+      "relative_error": 8.182045259193729e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 57,
+      "finite_reference": true,
+      "rounded_reference_bits": 993353586927179746,
+      "result_bits": 993353586927179745,
+      "ulp_distance": 1,
+      "relative_error": 1.0201216752723929e-16,
+      "within_8_ulp": true
+    },
+    {
+      "i": 58,
+      "finite_reference": true,
+      "rounded_reference_bits": 10571214100656666543,
+      "result_bits": 10571214100656666542,
+      "ulp_distance": 1,
+      "relative_error": 9.582286588822306e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 59,
+      "finite_reference": false,
+      "rounded_reference_bits": 9218868437227405312,
+      "result_bits": 9218868437227405312,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 60,
+      "finite_reference": true,
+      "rounded_reference_bits": 16844940183416384338,
+      "result_bits": 16844940183416384338,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 61,
+      "finite_reference": true,
+      "rounded_reference_bits": 4685696318859276284,
+      "result_bits": 4685696318859276284,
+      "ulp_distance": 0,
+      "relative_error": 2.6303514904061904e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 62,
+      "finite_reference": false,
+      "rounded_reference_bits": 9218868437227405312,
+      "result_bits": 9218868437227405312,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 63,
+      "finite_reference": true,
+      "rounded_reference_bits": 5649345008437409003,
+      "result_bits": 5649345008437409003,
+      "ulp_distance": 0,
+      "relative_error": 7.531360392636743e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 64,
+      "finite_reference": true,
+      "rounded_reference_bits": 13564628673546034961,
+      "result_bits": 13564628673546034960,
+      "ulp_distance": 1,
+      "relative_error": 1.1250954253940332e-16,
+      "within_8_ulp": true
+    },
+    {
+      "i": 65,
+      "finite_reference": true,
+      "rounded_reference_bits": 13709504611799118966,
+      "result_bits": 13709504611799118966,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 66,
+      "finite_reference": false,
+      "rounded_reference_bits": 9218868437227405312,
+      "result_bits": 9218868437227405312,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 67,
+      "finite_reference": true,
+      "rounded_reference_bits": 207216531741252824,
+      "result_bits": 207216531741252823,
+      "ulp_distance": 1,
+      "relative_error": 1.2996692314015107e-16,
+      "within_8_ulp": true
+    },
+    {
+      "i": 68,
+      "finite_reference": true,
+      "rounded_reference_bits": 9223372036854775808,
+      "result_bits": 9223372036854775808,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 69,
+      "finite_reference": false,
+      "rounded_reference_bits": 9218868437227405312,
+      "result_bits": 9218868437227405312,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 70,
+      "finite_reference": true,
+      "rounded_reference_bits": 5362744126062853684,
+      "result_bits": 5362744126062853684,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 71,
+      "finite_reference": false,
+      "rounded_reference_bits": 9218868437227405312,
+      "result_bits": 9218868437227405312,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 72,
+      "finite_reference": true,
+      "rounded_reference_bits": 17055871972776053278,
+      "result_bits": 17055871972776053278,
+      "ulp_distance": 0,
+      "relative_error": 1.163558091647486e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 73,
+      "finite_reference": false,
+      "rounded_reference_bits": 9218868437227405312,
+      "result_bits": 9218868437227405312,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 74,
+      "finite_reference": false,
+      "rounded_reference_bits": 18442240474082181120,
+      "result_bits": 18442240474082181120,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 75,
+      "finite_reference": true,
+      "rounded_reference_bits": 4234078738000768733,
+      "result_bits": 4234078738000768733,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 76,
+      "finite_reference": true,
+      "rounded_reference_bits": 9223372036854775808,
+      "result_bits": 9223372036854775808,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 77,
+      "finite_reference": true,
+      "rounded_reference_bits": 9223372036854775808,
+      "result_bits": 9223372036854775808,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 78,
+      "finite_reference": true,
+      "rounded_reference_bits": 0,
+      "result_bits": 0,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 79,
+      "finite_reference": true,
+      "rounded_reference_bits": 15232815121594522956,
+      "result_bits": 15232815121594522956,
+      "ulp_distance": 0,
+      "relative_error": 3.9562965948130805e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 80,
+      "finite_reference": true,
+      "rounded_reference_bits": 9161944608549553185,
+      "result_bits": 9161944608549553185,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 81,
+      "finite_reference": true,
+      "rounded_reference_bits": 3821998466726575157,
+      "result_bits": 3821998466726575157,
+      "ulp_distance": 0,
+      "relative_error": 2.6836216213635283e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 82,
+      "finite_reference": true,
+      "rounded_reference_bits": 288973277526377201,
+      "result_bits": 288973277526377202,
+      "ulp_distance": 1,
+      "relative_error": 1.6435366957899492e-16,
+      "within_8_ulp": true
+    },
+    {
+      "i": 83,
+      "finite_reference": false,
+      "rounded_reference_bits": 18442240474082181120,
+      "result_bits": 18442240474082181120,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 84,
+      "finite_reference": true,
+      "rounded_reference_bits": 0,
+      "result_bits": 0,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 85,
+      "finite_reference": true,
+      "rounded_reference_bits": 6883694686435989709,
+      "result_bits": 6883694686435989709,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 86,
+      "finite_reference": true,
+      "rounded_reference_bits": 0,
+      "result_bits": 0,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 87,
+      "finite_reference": true,
+      "rounded_reference_bits": 8345038638411190470,
+      "result_bits": 8345038638411190470,
+      "ulp_distance": 0,
+      "relative_error": 5.879647173894358e-18,
+      "within_8_ulp": true
+    },
+    {
+      "i": 88,
+      "finite_reference": true,
+      "rounded_reference_bits": 12319350819229662924,
+      "result_bits": 12319350819229662924,
+      "ulp_distance": 0,
+      "relative_error": 3.6903879450834866e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 89,
+      "finite_reference": true,
+      "rounded_reference_bits": 0,
+      "result_bits": 0,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 90,
+      "finite_reference": true,
+      "rounded_reference_bits": 14737481738763513368,
+      "result_bits": 14737481738763513368,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 91,
+      "finite_reference": true,
+      "rounded_reference_bits": 9223372036854775808,
+      "result_bits": 9223372036854775808,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 92,
+      "finite_reference": false,
+      "rounded_reference_bits": 9218868437227405312,
+      "result_bits": 9218868437227405312,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 93,
+      "finite_reference": false,
+      "rounded_reference_bits": 9218868437227405312,
+      "result_bits": 9218868437227405312,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 94,
+      "finite_reference": false,
+      "rounded_reference_bits": 18442240474082181120,
+      "result_bits": 18442240474082181120,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 95,
+      "finite_reference": true,
+      "rounded_reference_bits": 16060716250899406976,
+      "result_bits": 16060716250899406976,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 96,
+      "finite_reference": true,
+      "rounded_reference_bits": 5136664517574182403,
+      "result_bits": 5136664517574182403,
+      "ulp_distance": 0,
+      "relative_error": 4.1012108445919444e-18,
+      "within_8_ulp": true
+    },
+    {
+      "i": 97,
+      "finite_reference": true,
+      "rounded_reference_bits": 0,
+      "result_bits": 0,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 98,
+      "finite_reference": true,
+      "rounded_reference_bits": 5012561017319904245,
+      "result_bits": 5012561017319904245,
+      "ulp_distance": 0,
+      "relative_error": 4.7621811130349323e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 99,
+      "finite_reference": true,
+      "rounded_reference_bits": 9223372036854775808,
+      "result_bits": 9223372036854775808,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 100,
+      "finite_reference": true,
+      "rounded_reference_bits": 2750634273713908411,
+      "result_bits": 2750634273713908411,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 101,
+      "finite_reference": true,
+      "rounded_reference_bits": 10628962090627082921,
+      "result_bits": 10628962090627082921,
+      "ulp_distance": 0,
+      "relative_error": 9.536514322726074e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 102,
+      "finite_reference": false,
+      "rounded_reference_bits": 9218868437227405312,
+      "result_bits": 9218868437227405312,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 103,
+      "finite_reference": true,
+      "rounded_reference_bits": 9223372036854775808,
+      "result_bits": 9223372036854775808,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 104,
+      "finite_reference": true,
+      "rounded_reference_bits": 0,
+      "result_bits": 0,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 105,
+      "finite_reference": true,
+      "rounded_reference_bits": 760994189363064573,
+      "result_bits": 760994189363064573,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 106,
+      "finite_reference": true,
+      "rounded_reference_bits": 0,
+      "result_bits": 0,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 107,
+      "finite_reference": true,
+      "rounded_reference_bits": 9223372036854775808,
+      "result_bits": 9223372036854775808,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 108,
+      "finite_reference": false,
+      "rounded_reference_bits": 9218868437227405312,
+      "result_bits": 9218868437227405312,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 109,
+      "finite_reference": true,
+      "rounded_reference_bits": 9223372036854775808,
+      "result_bits": 9223372036854775808,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 110,
+      "finite_reference": true,
+      "rounded_reference_bits": 13322542053369887301,
+      "result_bits": 13322542053369887301,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 111,
+      "finite_reference": false,
+      "rounded_reference_bits": 9218868437227405312,
+      "result_bits": 9218868437227405312,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 112,
+      "finite_reference": true,
+      "rounded_reference_bits": 9449983062196635881,
+      "result_bits": 9449983062196635882,
+      "ulp_distance": 1,
+      "relative_error": 9.06281095429072e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 113,
+      "finite_reference": false,
+      "rounded_reference_bits": 9218868437227405312,
+      "result_bits": 9218868437227405312,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 114,
+      "finite_reference": false,
+      "rounded_reference_bits": 18442240474082181120,
+      "result_bits": 18442240474082181120,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 115,
+      "finite_reference": true,
+      "rounded_reference_bits": 2765699174558087223,
+      "result_bits": 2765699174558087223,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 116,
+      "finite_reference": true,
+      "rounded_reference_bits": 4483102067167806377,
+      "result_bits": 4483102067167806377,
+      "ulp_distance": 0,
+      "relative_error": 7.581976843432765e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 117,
+      "finite_reference": true,
+      "rounded_reference_bits": 4392198589287680517,
+      "result_bits": 4392198589287680517,
+      "ulp_distance": 0,
+      "relative_error": 3.4167335131919294e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 118,
+      "finite_reference": true,
+      "rounded_reference_bits": 9223372036854775808,
+      "result_bits": 9223372036854775808,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 119,
+      "finite_reference": true,
+      "rounded_reference_bits": 0,
+      "result_bits": 0,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 120,
+      "finite_reference": true,
+      "rounded_reference_bits": 18322925029147575109,
+      "result_bits": 18322925029147575109,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 121,
+      "finite_reference": false,
+      "rounded_reference_bits": 18442240474082181120,
+      "result_bits": 18442240474082181120,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 122,
+      "finite_reference": true,
+      "rounded_reference_bits": 2311395510859373806,
+      "result_bits": 2311395510859373806,
+      "ulp_distance": 0,
+      "relative_error": 3.387106932946201e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 123,
+      "finite_reference": false,
+      "rounded_reference_bits": 9218868437227405312,
+      "result_bits": 9218868437227405312,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 124,
+      "finite_reference": true,
+      "rounded_reference_bits": 0,
+      "result_bits": 0,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 125,
+      "finite_reference": true,
+      "rounded_reference_bits": 1741103579383524826,
+      "result_bits": 1741103579383524826,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 126,
+      "finite_reference": true,
+      "rounded_reference_bits": 11505887366438059924,
+      "result_bits": 11505887366438059924,
+      "ulp_distance": 0,
+      "relative_error": 2.3814950873477994e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 127,
+      "finite_reference": true,
+      "rounded_reference_bits": 9223372036854775808,
+      "result_bits": 9223372036854775808,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 128,
+      "finite_reference": true,
+      "rounded_reference_bits": 0,
+      "result_bits": 0,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 129,
+      "finite_reference": true,
+      "rounded_reference_bits": 5460687765134733180,
+      "result_bits": 5460687765134733180,
+      "ulp_distance": 0,
+      "relative_error": 2.499797423490084e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 130,
+      "finite_reference": true,
+      "rounded_reference_bits": 14016750698964770957,
+      "result_bits": 14016750698964770957,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 131,
+      "finite_reference": true,
+      "rounded_reference_bits": 5360660940226629123,
+      "result_bits": 5360660940226629123,
+      "ulp_distance": 0,
+      "relative_error": 4.4241944311537786e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 132,
+      "finite_reference": true,
+      "rounded_reference_bits": 9223372036854775808,
+      "result_bits": 9223372036854775808,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 133,
+      "finite_reference": true,
+      "rounded_reference_bits": 9223372036854775808,
+      "result_bits": 9223372036854775808,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 134,
+      "finite_reference": true,
+      "rounded_reference_bits": 9223372036854775808,
+      "result_bits": 9223372036854775808,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 135,
+      "finite_reference": true,
+      "rounded_reference_bits": 15054302335274395488,
+      "result_bits": 15054302335274395488,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 136,
+      "finite_reference": true,
+      "rounded_reference_bits": 9223372036854775808,
+      "result_bits": 9223372036854775808,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 137,
+      "finite_reference": true,
+      "rounded_reference_bits": 48682654114,
+      "result_bits": 48682654114,
+      "ulp_distance": 0,
+      "relative_error": 9.574920162247075e-12,
+      "within_8_ulp": true
+    },
+    {
+      "i": 138,
+      "finite_reference": false,
+      "rounded_reference_bits": 9218868437227405312,
+      "result_bits": 9218868437227405312,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 139,
+      "finite_reference": true,
+      "rounded_reference_bits": 0,
+      "result_bits": 0,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 140,
+      "finite_reference": true,
+      "rounded_reference_bits": 6505439805662433482,
+      "result_bits": 6505439805662433482,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 141,
+      "finite_reference": true,
+      "rounded_reference_bits": 10844736455130718622,
+      "result_bits": 10844736455130718622,
+      "ulp_distance": 0,
+      "relative_error": 2.223851319646833e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 142,
+      "finite_reference": false,
+      "rounded_reference_bits": 18442240474082181120,
+      "result_bits": 18442240474082181120,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 143,
+      "finite_reference": false,
+      "rounded_reference_bits": 18442240474082181120,
+      "result_bits": 18442240474082181120,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 144,
+      "finite_reference": true,
+      "rounded_reference_bits": 0,
+      "result_bits": 0,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 145,
+      "finite_reference": true,
+      "rounded_reference_bits": 4902317608010269110,
+      "result_bits": 4902317608010269110,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 146,
+      "finite_reference": true,
+      "rounded_reference_bits": 11888124207329550578,
+      "result_bits": 11888124207329550578,
+      "ulp_distance": 0,
+      "relative_error": 3.4147897935387766e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 147,
+      "finite_reference": false,
+      "rounded_reference_bits": 18442240474082181120,
+      "result_bits": 18442240474082181120,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 148,
+      "finite_reference": true,
+      "rounded_reference_bits": 4347883718627367072,
+      "result_bits": 4347883718627367071,
+      "ulp_distance": 1,
+      "relative_error": 9.687489923951988e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 149,
+      "finite_reference": true,
+      "rounded_reference_bits": 0,
+      "result_bits": 0,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 150,
+      "finite_reference": true,
+      "rounded_reference_bits": 14017718940361746067,
+      "result_bits": 14017718940361746067,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 151,
+      "finite_reference": true,
+      "rounded_reference_bits": 9223372036854775808,
+      "result_bits": 9223372036854775808,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 152,
+      "finite_reference": true,
+      "rounded_reference_bits": 13454637692248174787,
+      "result_bits": 13454637692248174787,
+      "ulp_distance": 0,
+      "relative_error": 2.3699772843192346e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 153,
+      "finite_reference": true,
+      "rounded_reference_bits": 9223372036854775808,
+      "result_bits": 9223372036854775808,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 154,
+      "finite_reference": true,
+      "rounded_reference_bits": 13279103478461912802,
+      "result_bits": 13279103478461912801,
+      "ulp_distance": 1,
+      "relative_error": 1.2198663694347853e-16,
+      "within_8_ulp": true
+    },
+    {
+      "i": 155,
+      "finite_reference": true,
+      "rounded_reference_bits": 11180169727126179336,
+      "result_bits": 11180169727126179336,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 156,
+      "finite_reference": true,
+      "rounded_reference_bits": 13775028972843264267,
+      "result_bits": 13775028972843264267,
+      "ulp_distance": 0,
+      "relative_error": 4.3253501691597326e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 157,
+      "finite_reference": true,
+      "rounded_reference_bits": 7955001698261112190,
+      "result_bits": 7955001698261112190,
+      "ulp_distance": 0,
+      "relative_error": 4.0177091924086254e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 158,
+      "finite_reference": true,
+      "rounded_reference_bits": 9223372036854775808,
+      "result_bits": 9223372036854775808,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 159,
+      "finite_reference": true,
+      "rounded_reference_bits": 15002078258282388854,
+      "result_bits": 15002078258282388854,
+      "ulp_distance": 0,
+      "relative_error": 7.524876487472395e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 160,
+      "finite_reference": true,
+      "rounded_reference_bits": 1931360801225224428,
+      "result_bits": 1931360801225224428,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 161,
+      "finite_reference": true,
+      "rounded_reference_bits": 18228545925606335148,
+      "result_bits": 18228545925606335148,
+      "ulp_distance": 0,
+      "relative_error": 5.960382536349812e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 162,
+      "finite_reference": true,
+      "rounded_reference_bits": 9223372036854775808,
+      "result_bits": 9223372036854775808,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 163,
+      "finite_reference": true,
+      "rounded_reference_bits": 0,
+      "result_bits": 0,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 164,
+      "finite_reference": true,
+      "rounded_reference_bits": 57904978301,
+      "result_bits": 57904978301,
+      "ulp_distance": 0,
+      "relative_error": 4.409532427651591e-12,
+      "within_8_ulp": true
+    },
+    {
+      "i": 165,
+      "finite_reference": true,
+      "rounded_reference_bits": 2596077169759567657,
+      "result_bits": 2596077169759567657,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 166,
+      "finite_reference": false,
+      "rounded_reference_bits": 18442240474082181120,
+      "result_bits": 18442240474082181120,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 167,
+      "finite_reference": true,
+      "rounded_reference_bits": 9082592768261058884,
+      "result_bits": 9082592768261058884,
+      "ulp_distance": 0,
+      "relative_error": 3.211192929599144e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 168,
+      "finite_reference": true,
+      "rounded_reference_bits": 591357158937350174,
+      "result_bits": 591357158937350173,
+      "ulp_distance": 1,
+      "relative_error": 1.2772768751978032e-16,
+      "within_8_ulp": true
+    },
+    {
+      "i": 169,
+      "finite_reference": true,
+      "rounded_reference_bits": 5268108883864023507,
+      "result_bits": 5268108883864023506,
+      "ulp_distance": 1,
+      "relative_error": 9.804304232148598e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 170,
+      "finite_reference": true,
+      "rounded_reference_bits": 13353103914487592458,
+      "result_bits": 13353103914487592458,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 171,
+      "finite_reference": true,
+      "rounded_reference_bits": 13189951956043892093,
+      "result_bits": 13189951956043892093,
+      "ulp_distance": 0,
+      "relative_error": 5.701588084179601e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 172,
+      "finite_reference": true,
+      "rounded_reference_bits": 9223372036854775808,
+      "result_bits": 9223372036854775808,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 173,
+      "finite_reference": true,
+      "rounded_reference_bits": 9223372036854776079,
+      "result_bits": 9223372036854776079,
+      "ulp_distance": 0,
+      "relative_error": 2.3194664903882006e-05,
+      "within_8_ulp": true
+    },
+    {
+      "i": 174,
+      "finite_reference": false,
+      "rounded_reference_bits": 18442240474082181120,
+      "result_bits": 18442240474082181120,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 175,
+      "finite_reference": true,
+      "rounded_reference_bits": 2164154268863173040,
+      "result_bits": 2164154268863173040,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 176,
+      "finite_reference": true,
+      "rounded_reference_bits": 14202770332079370787,
+      "result_bits": 14202770332079370787,
+      "ulp_distance": 0,
+      "relative_error": 3.1930694345725415e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 177,
+      "finite_reference": true,
+      "rounded_reference_bits": 15411461881676747106,
+      "result_bits": 15411461881676747106,
+      "ulp_distance": 0,
+      "relative_error": 2.03089124151084e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 178,
+      "finite_reference": true,
+      "rounded_reference_bits": 9223372036854775808,
+      "result_bits": 9223372036854775808,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 179,
+      "finite_reference": true,
+      "rounded_reference_bits": 9223372036854775808,
+      "result_bits": 9223372036854775808,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 180,
+      "finite_reference": true,
+      "rounded_reference_bits": 8043980007600503351,
+      "result_bits": 8043980007600503351,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 181,
+      "finite_reference": true,
+      "rounded_reference_bits": 12106275573806319231,
+      "result_bits": 12106275573806319231,
+      "ulp_distance": 0,
+      "relative_error": 8.319116489936047e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 182,
+      "finite_reference": true,
+      "rounded_reference_bits": 11522095341723480627,
+      "result_bits": 11522095341723480627,
+      "ulp_distance": 0,
+      "relative_error": 3.091905134744245e-18,
+      "within_8_ulp": true
+    },
+    {
+      "i": 183,
+      "finite_reference": true,
+      "rounded_reference_bits": 0,
+      "result_bits": 0,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 184,
+      "finite_reference": true,
+      "rounded_reference_bits": 0,
+      "result_bits": 0,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 185,
+      "finite_reference": true,
+      "rounded_reference_bits": 4054201813545543208,
+      "result_bits": 4054201813545543208,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 186,
+      "finite_reference": true,
+      "rounded_reference_bits": 7899162783702042211,
+      "result_bits": 7899162783702042211,
+      "ulp_distance": 0,
+      "relative_error": 9.703502183683622e-18,
+      "within_8_ulp": true
+    },
+    {
+      "i": 187,
+      "finite_reference": true,
+      "rounded_reference_bits": 0,
+      "result_bits": 0,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 188,
+      "finite_reference": true,
+      "rounded_reference_bits": 9223372036854775808,
+      "result_bits": 9223372036854775808,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 189,
+      "finite_reference": false,
+      "rounded_reference_bits": 9218868437227405312,
+      "result_bits": 9218868437227405312,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 190,
+      "finite_reference": true,
+      "rounded_reference_bits": 6710503827324358344,
+      "result_bits": 6710503827324358344,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 191,
+      "finite_reference": true,
+      "rounded_reference_bits": 16006382137674836914,
+      "result_bits": 16006382137674836914,
+      "ulp_distance": 0,
+      "relative_error": 4.9044744149589887e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 192,
+      "finite_reference": false,
+      "rounded_reference_bits": 9218868437227405312,
+      "result_bits": 9218868437227405312,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 193,
+      "finite_reference": true,
+      "rounded_reference_bits": 7377668175365522228,
+      "result_bits": 7377668175365522228,
+      "ulp_distance": 0,
+      "relative_error": 7.844018524480315e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 194,
+      "finite_reference": true,
+      "rounded_reference_bits": 13640748665887095488,
+      "result_bits": 13640748665887095490,
+      "ulp_distance": 2,
+      "relative_error": 2.947034289183854e-16,
+      "within_8_ulp": true
+    },
+    {
+      "i": 195,
+      "finite_reference": true,
+      "rounded_reference_bits": 10827640832079355909,
+      "result_bits": 10827640832079355909,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 196,
+      "finite_reference": true,
+      "rounded_reference_bits": 10627946899317614812,
+      "result_bits": 10627946899317614812,
+      "ulp_distance": 0,
+      "relative_error": 3.912657259345631e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 197,
+      "finite_reference": true,
+      "rounded_reference_bits": 11802351696308036207,
+      "result_bits": 11802351696308036207,
+      "ulp_distance": 0,
+      "relative_error": 4.322476595939442e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 198,
+      "finite_reference": true,
+      "rounded_reference_bits": 0,
+      "result_bits": 0,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 199,
+      "finite_reference": false,
+      "rounded_reference_bits": 18442240474082181120,
+      "result_bits": 18442240474082181120,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 200,
+      "finite_reference": true,
+      "rounded_reference_bits": 3821364122646733328,
+      "result_bits": 3821364122646733328,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 201,
+      "finite_reference": false,
+      "rounded_reference_bits": 18442240474082181120,
+      "result_bits": 18442240474082181120,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 202,
+      "finite_reference": false,
+      "rounded_reference_bits": 9218868437227405312,
+      "result_bits": 9218868437227405312,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 203,
+      "finite_reference": false,
+      "rounded_reference_bits": 18442240474082181120,
+      "result_bits": 18442240474082181120,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 204,
+      "finite_reference": false,
+      "rounded_reference_bits": 18442240474082181120,
+      "result_bits": 18442240474082181120,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 205,
+      "finite_reference": true,
+      "rounded_reference_bits": 7966782073616223231,
+      "result_bits": 7966782073616223231,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 206,
+      "finite_reference": true,
+      "rounded_reference_bits": 259225303792437290,
+      "result_bits": 259225303792437290,
+      "ulp_distance": 0,
+      "relative_error": 3.42025151135826e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 207,
+      "finite_reference": true,
+      "rounded_reference_bits": 16735485951781110596,
+      "result_bits": 16735485951781110596,
+      "ulp_distance": 0,
+      "relative_error": 6.148103270482046e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 208,
+      "finite_reference": true,
+      "rounded_reference_bits": 0,
+      "result_bits": 0,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 209,
+      "finite_reference": true,
+      "rounded_reference_bits": 6580628010997990779,
+      "result_bits": 6580628010997990778,
+      "ulp_distance": 1,
+      "relative_error": 1.299935543089086e-16,
+      "within_8_ulp": true
+    },
+    {
+      "i": 210,
+      "finite_reference": true,
+      "rounded_reference_bits": 11703801513807792013,
+      "result_bits": 11703801513807792013,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 211,
+      "finite_reference": true,
+      "rounded_reference_bits": 3783308887172794239,
+      "result_bits": 3783308887172794239,
+      "ulp_distance": 0,
+      "relative_error": 8.89186859609459e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 212,
+      "finite_reference": true,
+      "rounded_reference_bits": 7391154152587916102,
+      "result_bits": 7391154152587916102,
+      "ulp_distance": 0,
+      "relative_error": 4.1356564557817206e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 213,
+      "finite_reference": true,
+      "rounded_reference_bits": 0,
+      "result_bits": 0,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 214,
+      "finite_reference": true,
+      "rounded_reference_bits": 0,
+      "result_bits": 0,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 215,
+      "finite_reference": true,
+      "rounded_reference_bits": 16748714238930374928,
+      "result_bits": 16748714238930374928,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 216,
+      "finite_reference": true,
+      "rounded_reference_bits": 6464829360169000146,
+      "result_bits": 6464829360169000146,
+      "ulp_distance": 0,
+      "relative_error": 5.816593307216091e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 217,
+      "finite_reference": true,
+      "rounded_reference_bits": 9223372036854775808,
+      "result_bits": 9223372036854775808,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 218,
+      "finite_reference": false,
+      "rounded_reference_bits": 18442240474082181120,
+      "result_bits": 18442240474082181120,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 219,
+      "finite_reference": true,
+      "rounded_reference_bits": 9223372036854775808,
+      "result_bits": 9223372036854775808,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 220,
+      "finite_reference": true,
+      "rounded_reference_bits": 14179659758986726831,
+      "result_bits": 14179659758986726831,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 221,
+      "finite_reference": true,
+      "rounded_reference_bits": 7845503823877193123,
+      "result_bits": 7845503823877193123,
+      "ulp_distance": 0,
+      "relative_error": 7.237324823269807e-19,
+      "within_8_ulp": true
+    },
+    {
+      "i": 222,
+      "finite_reference": false,
+      "rounded_reference_bits": 18442240474082181120,
+      "result_bits": 18442240474082181120,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 223,
+      "finite_reference": false,
+      "rounded_reference_bits": 9218868437227405312,
+      "result_bits": 9218868437227405312,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 224,
+      "finite_reference": true,
+      "rounded_reference_bits": 8793745243164951582,
+      "result_bits": 8793745243164951583,
+      "ulp_distance": 1,
+      "relative_error": 2.0752686770806188e-16,
+      "within_8_ulp": true
+    },
+    {
+      "i": 225,
+      "finite_reference": true,
+      "rounded_reference_bits": 7612151125873644095,
+      "result_bits": 7612151125873644095,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 226,
+      "finite_reference": true,
+      "rounded_reference_bits": 6932821712826759288,
+      "result_bits": 6932821712826759288,
+      "ulp_distance": 0,
+      "relative_error": 4.2164665066711225e-18,
+      "within_8_ulp": true
+    },
+    {
+      "i": 227,
+      "finite_reference": true,
+      "rounded_reference_bits": 4594829986051303374,
+      "result_bits": 4594829986051303374,
+      "ulp_distance": 0,
+      "relative_error": 7.75086619892217e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 228,
+      "finite_reference": false,
+      "rounded_reference_bits": 9218868437227405312,
+      "result_bits": 9218868437227405312,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 229,
+      "finite_reference": false,
+      "rounded_reference_bits": 18442240474082181120,
+      "result_bits": 18442240474082181120,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 230,
+      "finite_reference": true,
+      "rounded_reference_bits": 11558091000378042926,
+      "result_bits": 11558091000378042926,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 231,
+      "finite_reference": true,
+      "rounded_reference_bits": 1847072449914958590,
+      "result_bits": 1847072449914958590,
+      "ulp_distance": 0,
+      "relative_error": 1.2465961024525059e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 232,
+      "finite_reference": true,
+      "rounded_reference_bits": 0,
+      "result_bits": 0,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 233,
+      "finite_reference": true,
+      "rounded_reference_bits": 9223372036854775808,
+      "result_bits": 9223372036854775808,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 234,
+      "finite_reference": true,
+      "rounded_reference_bits": 9223372036854775808,
+      "result_bits": 9223372036854775808,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 235,
+      "finite_reference": true,
+      "rounded_reference_bits": 5911280006971343713,
+      "result_bits": 5911280006971343713,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 236,
+      "finite_reference": true,
+      "rounded_reference_bits": 11395567600427566351,
+      "result_bits": 11395567600427566351,
+      "ulp_distance": 0,
+      "relative_error": 4.2031682743384625e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 237,
+      "finite_reference": true,
+      "rounded_reference_bits": 6080446792180924988,
+      "result_bits": 6080446792180924988,
+      "ulp_distance": 0,
+      "relative_error": 6.893603167989143e-18,
+      "within_8_ulp": true
+    },
+    {
+      "i": 238,
+      "finite_reference": true,
+      "rounded_reference_bits": 9223372036854775808,
+      "result_bits": 9223372036854775808,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 239,
+      "finite_reference": true,
+      "rounded_reference_bits": 318314479411661830,
+      "result_bits": 318314479411661830,
+      "ulp_distance": 0,
+      "relative_error": 3.077787873351219e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 240,
+      "finite_reference": true,
+      "rounded_reference_bits": 17855422650817452182,
+      "result_bits": 17855422650817452182,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 241,
+      "finite_reference": true,
+      "rounded_reference_bits": 12030874678999942322,
+      "result_bits": 12030874678999942322,
+      "ulp_distance": 0,
+      "relative_error": 1.315212459592526e-18,
+      "within_8_ulp": true
+    },
+    {
+      "i": 242,
+      "finite_reference": true,
+      "rounded_reference_bits": 0,
+      "result_bits": 0,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 243,
+      "finite_reference": false,
+      "rounded_reference_bits": 18442240474082181120,
+      "result_bits": 18442240474082181120,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 244,
+      "finite_reference": false,
+      "rounded_reference_bits": 18442240474082181120,
+      "result_bits": 18442240474082181120,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 245,
+      "finite_reference": true,
+      "rounded_reference_bits": 6360846948767721896,
+      "result_bits": 6360846948767721896,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 246,
+      "finite_reference": true,
+      "rounded_reference_bits": 496153079445746614,
+      "result_bits": 496153079445746614,
+      "ulp_distance": 0,
+      "relative_error": 1.5952995416745777e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 247,
+      "finite_reference": false,
+      "rounded_reference_bits": 18442240474082181120,
+      "result_bits": 18442240474082181120,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 248,
+      "finite_reference": false,
+      "rounded_reference_bits": 9218868437227405312,
+      "result_bits": 9218868437227405312,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 249,
+      "finite_reference": false,
+      "rounded_reference_bits": 9218868437227405312,
+      "result_bits": 9218868437227405312,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 250,
+      "finite_reference": true,
+      "rounded_reference_bits": 7721145907868193418,
+      "result_bits": 7721145907868193418,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 251,
+      "finite_reference": false,
+      "rounded_reference_bits": 9218868437227405312,
+      "result_bits": 9218868437227405312,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 252,
+      "finite_reference": true,
+      "rounded_reference_bits": 0,
+      "result_bits": 0,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 253,
+      "finite_reference": true,
+      "rounded_reference_bits": 14328260423798492781,
+      "result_bits": 14328260423798492782,
+      "ulp_distance": 1,
+      "relative_error": 1.1872607958388936e-16,
+      "within_8_ulp": true
+    },
+    {
+      "i": 254,
+      "finite_reference": false,
+      "rounded_reference_bits": 18442240474082181120,
+      "result_bits": 18442240474082181120,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 255,
+      "finite_reference": true,
+      "rounded_reference_bits": 18323154738101953940,
+      "result_bits": 18323154738101953940,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 256,
+      "finite_reference": true,
+      "rounded_reference_bits": 16420104609814396854,
+      "result_bits": 16420104609814396854,
+      "ulp_distance": 0,
+      "relative_error": 1.3858413473659405e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 257,
+      "finite_reference": true,
+      "rounded_reference_bits": 13830047891842382966,
+      "result_bits": 13830047891842382966,
+      "ulp_distance": 0,
+      "relative_error": 4.613329347965835e-19,
+      "within_8_ulp": true
+    },
+    {
+      "i": 258,
+      "finite_reference": true,
+      "rounded_reference_bits": 9223372036854775808,
+      "result_bits": 9223372036854775808,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 259,
+      "finite_reference": true,
+      "rounded_reference_bits": 4708822804933186853,
+      "result_bits": 4708822804933186852,
+      "ulp_distance": 1,
+      "relative_error": 1.599196420611496e-16,
+      "within_8_ulp": true
+    },
+    {
+      "i": 260,
+      "finite_reference": true,
+      "rounded_reference_bits": 1273427076849722462,
+      "result_bits": 1273427076849722462,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 261,
+      "finite_reference": false,
+      "rounded_reference_bits": 9218868437227405312,
+      "result_bits": 9218868437227405312,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 262,
+      "finite_reference": true,
+      "rounded_reference_bits": 1104893729924150252,
+      "result_bits": 1104893729924150252,
+      "ulp_distance": 0,
+      "relative_error": 1.8417291808285073e-18,
+      "within_8_ulp": true
+    },
+    {
+      "i": 263,
+      "finite_reference": false,
+      "rounded_reference_bits": 9218868437227405312,
+      "result_bits": 9218868437227405312,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 264,
+      "finite_reference": true,
+      "rounded_reference_bits": 1190391920134637271,
+      "result_bits": 1190391920134637271,
+      "ulp_distance": 0,
+      "relative_error": 3.202396219890902e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 265,
+      "finite_reference": true,
+      "rounded_reference_bits": 869077023368367372,
+      "result_bits": 869077023368367372,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 266,
+      "finite_reference": false,
+      "rounded_reference_bits": 18442240474082181120,
+      "result_bits": 18442240474082181120,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 267,
+      "finite_reference": false,
+      "rounded_reference_bits": 18442240474082181120,
+      "result_bits": 18442240474082181120,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 268,
+      "finite_reference": false,
+      "rounded_reference_bits": 9218868437227405312,
+      "result_bits": 9218868437227405312,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 269,
+      "finite_reference": true,
+      "rounded_reference_bits": 3065180206497290490,
+      "result_bits": 3065180206497290490,
+      "ulp_distance": 0,
+      "relative_error": 2.3304521125629746e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 270,
+      "finite_reference": true,
+      "rounded_reference_bits": 2742026815779117099,
+      "result_bits": 2742026815779117099,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 271,
+      "finite_reference": true,
+      "rounded_reference_bits": 12226139467358309715,
+      "result_bits": 12226139467358309715,
+      "ulp_distance": 0,
+      "relative_error": 7.788498545420894e-18,
+      "within_8_ulp": true
+    },
+    {
+      "i": 272,
+      "finite_reference": true,
+      "rounded_reference_bits": 18321072570211136602,
+      "result_bits": 18321072570211136602,
+      "ulp_distance": 0,
+      "relative_error": 1.6048262025774493e-18,
+      "within_8_ulp": true
+    },
+    {
+      "i": 273,
+      "finite_reference": false,
+      "rounded_reference_bits": 9218868437227405312,
+      "result_bits": 9218868437227405312,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 274,
+      "finite_reference": true,
+      "rounded_reference_bits": 0,
+      "result_bits": 0,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 275,
+      "finite_reference": true,
+      "rounded_reference_bits": 1937569920428608283,
+      "result_bits": 1937569920428608283,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 276,
+      "finite_reference": true,
+      "rounded_reference_bits": 12286069717751183461,
+      "result_bits": 12286069717751183461,
+      "ulp_distance": 0,
+      "relative_error": 1.6452678743001518e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 277,
+      "finite_reference": true,
+      "rounded_reference_bits": 14340058372846658371,
+      "result_bits": 14340058372846658371,
+      "ulp_distance": 0,
+      "relative_error": 8.042054588529563e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 278,
+      "finite_reference": true,
+      "rounded_reference_bits": 1870169012658474015,
+      "result_bits": 1870169012658474015,
+      "ulp_distance": 0,
+      "relative_error": 6.932472743583475e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 279,
+      "finite_reference": true,
+      "rounded_reference_bits": 10092618152589081839,
+      "result_bits": 10092618152589081840,
+      "ulp_distance": 1,
+      "relative_error": 1.4525381256817476e-16,
+      "within_8_ulp": true
+    },
+    {
+      "i": 280,
+      "finite_reference": true,
+      "rounded_reference_bits": 2354033145976433135,
+      "result_bits": 2354033145976433135,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 281,
+      "finite_reference": false,
+      "rounded_reference_bits": 9218868437227405312,
+      "result_bits": 9218868437227405312,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 282,
+      "finite_reference": true,
+      "rounded_reference_bits": 15436566876685653419,
+      "result_bits": 15436566876685653420,
+      "ulp_distance": 1,
+      "relative_error": 1.1884895111746335e-16,
+      "within_8_ulp": true
+    },
+    {
+      "i": 283,
+      "finite_reference": false,
+      "rounded_reference_bits": 9218868437227405312,
+      "result_bits": 9218868437227405312,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 284,
+      "finite_reference": false,
+      "rounded_reference_bits": 18442240474082181120,
+      "result_bits": 18442240474082181120,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 285,
+      "finite_reference": true,
+      "rounded_reference_bits": 2219872337331740887,
+      "result_bits": 2219872337331740887,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 286,
+      "finite_reference": true,
+      "rounded_reference_bits": 10043658968896613686,
+      "result_bits": 10043658968896613686,
+      "ulp_distance": 0,
+      "relative_error": 6.912369215413395e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 287,
+      "finite_reference": true,
+      "rounded_reference_bits": 2494383532301283448,
+      "result_bits": 2494383532301283448,
+      "ulp_distance": 0,
+      "relative_error": 5.1218130671562627e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 288,
+      "finite_reference": true,
+      "rounded_reference_bits": 2110860603571006852,
+      "result_bits": 2110860603571006852,
+      "ulp_distance": 0,
+      "relative_error": 1.6865577563032244e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 289,
+      "finite_reference": false,
+      "rounded_reference_bits": 9218868437227405312,
+      "result_bits": 9218868437227405312,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 290,
+      "finite_reference": true,
+      "rounded_reference_bits": 15718846136990804247,
+      "result_bits": 15718846136990804247,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 291,
+      "finite_reference": true,
+      "rounded_reference_bits": 3289253790043671596,
+      "result_bits": 3289253790043671596,
+      "ulp_distance": 0,
+      "relative_error": 7.6281303146434e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 292,
+      "finite_reference": false,
+      "rounded_reference_bits": 18442240474082181120,
+      "result_bits": 18442240474082181120,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 293,
+      "finite_reference": true,
+      "rounded_reference_bits": 0,
+      "result_bits": 0,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 294,
+      "finite_reference": true,
+      "rounded_reference_bits": 10862812804460234937,
+      "result_bits": 10862812804460234936,
+      "ulp_distance": 1,
+      "relative_error": 1.58467481656248e-16,
+      "within_8_ulp": true
+    },
+    {
+      "i": 295,
+      "finite_reference": true,
+      "rounded_reference_bits": 6737623029173565207,
+      "result_bits": 6737623029173565207,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 296,
+      "finite_reference": true,
+      "rounded_reference_bits": 0,
+      "result_bits": 0,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 297,
+      "finite_reference": true,
+      "rounded_reference_bits": 4290494310966374005,
+      "result_bits": 4290494310966374005,
+      "ulp_distance": 0,
+      "relative_error": 2.3222247242434163e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 298,
+      "finite_reference": false,
+      "rounded_reference_bits": 18442240474082181120,
+      "result_bits": 18442240474082181120,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 299,
+      "finite_reference": false,
+      "rounded_reference_bits": 9218868437227405312,
+      "result_bits": 9218868437227405312,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 300,
+      "finite_reference": true,
+      "rounded_reference_bits": 12694777425071816186,
+      "result_bits": 12694777425071816186,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 301,
+      "finite_reference": true,
+      "rounded_reference_bits": 15529073491637966141,
+      "result_bits": 15529073491637966141,
+      "ulp_distance": 0,
+      "relative_error": 4.0131128458900026e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 302,
+      "finite_reference": false,
+      "rounded_reference_bits": 18442240474082181120,
+      "result_bits": 18442240474082181120,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 303,
+      "finite_reference": false,
+      "rounded_reference_bits": 18442240474082181120,
+      "result_bits": 18442240474082181120,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 304,
+      "finite_reference": true,
+      "rounded_reference_bits": 9223372036854775808,
+      "result_bits": 9223372036854775808,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 305,
+      "finite_reference": true,
+      "rounded_reference_bits": 12330924978313072053,
+      "result_bits": 12330924978313072053,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 306,
+      "finite_reference": true,
+      "rounded_reference_bits": 17304886361356403453,
+      "result_bits": 17304886361356403453,
+      "ulp_distance": 0,
+      "relative_error": 2.11538200621395e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 307,
+      "finite_reference": true,
+      "rounded_reference_bits": 12584481200906815383,
+      "result_bits": 12584481200906815383,
+      "ulp_distance": 0,
+      "relative_error": 7.99822436600061e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 308,
+      "finite_reference": false,
+      "rounded_reference_bits": 18442240474082181120,
+      "result_bits": 18442240474082181120,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 309,
+      "finite_reference": true,
+      "rounded_reference_bits": 9223372036854775808,
+      "result_bits": 9223372036854775808,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 310,
+      "finite_reference": true,
+      "rounded_reference_bits": 15025176164689093046,
+      "result_bits": 15025176164689093046,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 311,
+      "finite_reference": true,
+      "rounded_reference_bits": 0,
+      "result_bits": 0,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 312,
+      "finite_reference": true,
+      "rounded_reference_bits": 3644777848617835738,
+      "result_bits": 3644777848617835738,
+      "ulp_distance": 0,
+      "relative_error": 3.164252070940881e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 313,
+      "finite_reference": false,
+      "rounded_reference_bits": 9218868437227405312,
+      "result_bits": 9218868437227405312,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 314,
+      "finite_reference": true,
+      "rounded_reference_bits": 4198404567604977075,
+      "result_bits": 4198404567604977075,
+      "ulp_distance": 0,
+      "relative_error": 6.512808485678491e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 315,
+      "finite_reference": true,
+      "rounded_reference_bits": 2974207957654925100,
+      "result_bits": 2974207957654925100,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 316,
+      "finite_reference": true,
+      "rounded_reference_bits": 5200414239907907572,
+      "result_bits": 5200414239907907572,
+      "ulp_distance": 0,
+      "relative_error": 2.4276591707659636e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 317,
+      "finite_reference": false,
+      "rounded_reference_bits": 18442240474082181120,
+      "result_bits": 18442240474082181120,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 318,
+      "finite_reference": true,
+      "rounded_reference_bits": 7645067307533926968,
+      "result_bits": 7645067307533926968,
+      "ulp_distance": 0,
+      "relative_error": 5.591579663644284e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 319,
+      "finite_reference": true,
+      "rounded_reference_bits": 9223372036854775808,
+      "result_bits": 9223372036854775808,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 320,
+      "finite_reference": true,
+      "rounded_reference_bits": 3362984409185423617,
+      "result_bits": 3362984409185423617,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 321,
+      "finite_reference": true,
+      "rounded_reference_bits": 11791730297777283225,
+      "result_bits": 11791730297777283225,
+      "ulp_distance": 0,
+      "relative_error": 1.1621885987154225e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 322,
+      "finite_reference": true,
+      "rounded_reference_bits": 14491400204006643312,
+      "result_bits": 14491400204006643312,
+      "ulp_distance": 0,
+      "relative_error": 1.328627099153495e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 323,
+      "finite_reference": true,
+      "rounded_reference_bits": 9945956030388510612,
+      "result_bits": 9945956030388510612,
+      "ulp_distance": 0,
+      "relative_error": 7.02506790560018e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 324,
+      "finite_reference": true,
+      "rounded_reference_bits": 0,
+      "result_bits": 0,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 325,
+      "finite_reference": true,
+      "rounded_reference_bits": 14835477103169380205,
+      "result_bits": 14835477103169380205,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 326,
+      "finite_reference": true,
+      "rounded_reference_bits": 1188963767940097017,
+      "result_bits": 1188963767940097017,
+      "ulp_distance": 0,
+      "relative_error": 5.242276720932494e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 327,
+      "finite_reference": false,
+      "rounded_reference_bits": 9218868437227405312,
+      "result_bits": 9218868437227405312,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 328,
+      "finite_reference": true,
+      "rounded_reference_bits": 11924317976265714655,
+      "result_bits": 11924317976265714655,
+      "ulp_distance": 0,
+      "relative_error": 8.749934657446237e-18,
+      "within_8_ulp": true
+    },
+    {
+      "i": 329,
+      "finite_reference": true,
+      "rounded_reference_bits": 14368097319604931899,
+      "result_bits": 14368097319604931898,
+      "ulp_distance": 1,
+      "relative_error": 1.5337976362109954e-16,
+      "within_8_ulp": true
+    },
+    {
+      "i": 330,
+      "finite_reference": true,
+      "rounded_reference_bits": 9804333684933204542,
+      "result_bits": 9804333684933204542,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 331,
+      "finite_reference": true,
+      "rounded_reference_bits": 8505735156609934674,
+      "result_bits": 8505735156609934674,
+      "ulp_distance": 0,
+      "relative_error": 4.462971074383603e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 332,
+      "finite_reference": true,
+      "rounded_reference_bits": 11971987070819706077,
+      "result_bits": 11971987070819706077,
+      "ulp_distance": 0,
+      "relative_error": 5.983911112717807e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 333,
+      "finite_reference": true,
+      "rounded_reference_bits": 5306802330747466702,
+      "result_bits": 5306802330747466702,
+      "ulp_distance": 0,
+      "relative_error": 1.4355703831132635e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 334,
+      "finite_reference": true,
+      "rounded_reference_bits": 9223372036854775808,
+      "result_bits": 9223372036854775808,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 335,
+      "finite_reference": true,
+      "rounded_reference_bits": 17961021176283597830,
+      "result_bits": 17961021176283597830,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 336,
+      "finite_reference": true,
+      "rounded_reference_bits": 16383305342523316191,
+      "result_bits": 16383305342523316191,
+      "ulp_distance": 0,
+      "relative_error": 4.5589033890644316e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 337,
+      "finite_reference": true,
+      "rounded_reference_bits": 9223372036854775808,
+      "result_bits": 9223372036854775808,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 338,
+      "finite_reference": true,
+      "rounded_reference_bits": 0,
+      "result_bits": 0,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 339,
+      "finite_reference": true,
+      "rounded_reference_bits": 0,
+      "result_bits": 0,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 340,
+      "finite_reference": true,
+      "rounded_reference_bits": 1181629675848478146,
+      "result_bits": 1181629675848478146,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 341,
+      "finite_reference": true,
+      "rounded_reference_bits": 15827622446666907173,
+      "result_bits": 15827622446666907173,
+      "ulp_distance": 0,
+      "relative_error": 6.984850109446597e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 342,
+      "finite_reference": true,
+      "rounded_reference_bits": 9741316592322785824,
+      "result_bits": 9741316592322785823,
+      "ulp_distance": 1,
+      "relative_error": 1.1902673750830397e-16,
+      "within_8_ulp": true
+    },
+    {
+      "i": 343,
+      "finite_reference": true,
+      "rounded_reference_bits": 11597320003711387119,
+      "result_bits": 11597320003711387119,
+      "ulp_distance": 0,
+      "relative_error": 2.195292700883878e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 344,
+      "finite_reference": true,
+      "rounded_reference_bits": 9223372036854775808,
+      "result_bits": 9223372036854775808,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 345,
+      "finite_reference": true,
+      "rounded_reference_bits": 14279022733849421486,
+      "result_bits": 14279022733849421486,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 346,
+      "finite_reference": false,
+      "rounded_reference_bits": 9218868437227405312,
+      "result_bits": 9218868437227405312,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 347,
+      "finite_reference": true,
+      "rounded_reference_bits": 4630311467041570837,
+      "result_bits": 4630311467041570837,
+      "ulp_distance": 0,
+      "relative_error": 5.792727078829984e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 348,
+      "finite_reference": true,
+      "rounded_reference_bits": 6184467847418623379,
+      "result_bits": 6184467847418623379,
+      "ulp_distance": 0,
+      "relative_error": 8.87969625200755e-18,
+      "within_8_ulp": true
+    },
+    {
+      "i": 349,
+      "finite_reference": true,
+      "rounded_reference_bits": 9223372036854775808,
+      "result_bits": 9223372036854775808,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 350,
+      "finite_reference": true,
+      "rounded_reference_bits": 3156404892509792855,
+      "result_bits": 3156404892509792855,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 351,
+      "finite_reference": true,
+      "rounded_reference_bits": 11428775292842883674,
+      "result_bits": 11428775292842883674,
+      "ulp_distance": 0,
+      "relative_error": 8.068173968619049e-18,
+      "within_8_ulp": true
+    },
+    {
+      "i": 352,
+      "finite_reference": true,
+      "rounded_reference_bits": 6863542390586406422,
+      "result_bits": 6863542390586406422,
+      "ulp_distance": 0,
+      "relative_error": 6.019550427239899e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 353,
+      "finite_reference": true,
+      "rounded_reference_bits": 995224335227206314,
+      "result_bits": 995224335227206314,
+      "ulp_distance": 0,
+      "relative_error": 2.0862025218861604e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 354,
+      "finite_reference": true,
+      "rounded_reference_bits": 0,
+      "result_bits": 0,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 355,
+      "finite_reference": true,
+      "rounded_reference_bits": 13088013339382710812,
+      "result_bits": 13088013339382710812,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 356,
+      "finite_reference": true,
+      "rounded_reference_bits": 612987551718509196,
+      "result_bits": 612987551718509196,
+      "ulp_distance": 0,
+      "relative_error": 8.991588552627591e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 357,
+      "finite_reference": true,
+      "rounded_reference_bits": 11225865330464411321,
+      "result_bits": 11225865330464411321,
+      "ulp_distance": 0,
+      "relative_error": 1.295115735477794e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 358,
+      "finite_reference": false,
+      "rounded_reference_bits": 18442240474082181120,
+      "result_bits": 18442240474082181120,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 359,
+      "finite_reference": false,
+      "rounded_reference_bits": 18442240474082181120,
+      "result_bits": 18442240474082181120,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 360,
+      "finite_reference": true,
+      "rounded_reference_bits": 4012549799606552394,
+      "result_bits": 4012549799606552394,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 361,
+      "finite_reference": true,
+      "rounded_reference_bits": 15161973736380471512,
+      "result_bits": 15161973736380471512,
+      "ulp_distance": 0,
+      "relative_error": 4.6979865345956485e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 362,
+      "finite_reference": false,
+      "rounded_reference_bits": 9218868437227405312,
+      "result_bits": 9218868437227405312,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 363,
+      "finite_reference": false,
+      "rounded_reference_bits": 18442240474082181120,
+      "result_bits": 18442240474082181120,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 364,
+      "finite_reference": false,
+      "rounded_reference_bits": 18442240474082181120,
+      "result_bits": 18442240474082181120,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 365,
+      "finite_reference": true,
+      "rounded_reference_bits": 7669345326258024364,
+      "result_bits": 7669345326258024364,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 366,
+      "finite_reference": true,
+      "rounded_reference_bits": 3332264694134390274,
+      "result_bits": 3332264694134390274,
+      "ulp_distance": 0,
+      "relative_error": 5.60468241181598e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 367,
+      "finite_reference": false,
+      "rounded_reference_bits": 18442240474082181120,
+      "result_bits": 18442240474082181120,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 368,
+      "finite_reference": false,
+      "rounded_reference_bits": 18442240474082181120,
+      "result_bits": 18442240474082181120,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 369,
+      "finite_reference": true,
+      "rounded_reference_bits": 0,
+      "result_bits": 0,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 370,
+      "finite_reference": true,
+      "rounded_reference_bits": 4904239189795057471,
+      "result_bits": 4904239189795057471,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 371,
+      "finite_reference": true,
+      "rounded_reference_bits": 1945344020911063431,
+      "result_bits": 1945344020911063431,
+      "ulp_distance": 0,
+      "relative_error": 2.4648335558568185e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 372,
+      "finite_reference": true,
+      "rounded_reference_bits": 5528884714138658203,
+      "result_bits": 5528884714138658203,
+      "ulp_distance": 0,
+      "relative_error": 5.70239257166699e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 373,
+      "finite_reference": true,
+      "rounded_reference_bits": 11718753097504813923,
+      "result_bits": 11718753097504813924,
+      "ulp_distance": 1,
+      "relative_error": 1.1314140589636437e-16,
+      "within_8_ulp": true
+    },
+    {
+      "i": 374,
+      "finite_reference": true,
+      "rounded_reference_bits": 9223372036854775808,
+      "result_bits": 9223372036854775808,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 375,
+      "finite_reference": true,
+      "rounded_reference_bits": 8395628274695393118,
+      "result_bits": 8395628274695393118,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 376,
+      "finite_reference": true,
+      "rounded_reference_bits": 10394052574854574318,
+      "result_bits": 10394052574854574318,
+      "ulp_distance": 0,
+      "relative_error": 4.979673133517252e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 377,
+      "finite_reference": true,
+      "rounded_reference_bits": 14332760609159247852,
+      "result_bits": 14332760609159247852,
+      "ulp_distance": 0,
+      "relative_error": 3.3058200837005245e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 378,
+      "finite_reference": true,
+      "rounded_reference_bits": 12138087950886203825,
+      "result_bits": 12138087950886203826,
+      "ulp_distance": 1,
+      "relative_error": 1.0037596097981411e-16,
+      "within_8_ulp": true
+    },
+    {
+      "i": 379,
+      "finite_reference": true,
+      "rounded_reference_bits": 10898357253343453266,
+      "result_bits": 10898357253343453265,
+      "ulp_distance": 1,
+      "relative_error": 7.496545021827314e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 380,
+      "finite_reference": true,
+      "rounded_reference_bits": 947961195179227702,
+      "result_bits": 947961195179227702,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 381,
+      "finite_reference": true,
+      "rounded_reference_bits": 16032958356704826263,
+      "result_bits": 16032958356704826263,
+      "ulp_distance": 0,
+      "relative_error": 5.960184528891046e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 382,
+      "finite_reference": false,
+      "rounded_reference_bits": 18442240474082181120,
+      "result_bits": 18442240474082181120,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 383,
+      "finite_reference": true,
+      "rounded_reference_bits": 15333154872542955449,
+      "result_bits": 15333154872542955449,
+      "ulp_distance": 0,
+      "relative_error": 5.0616146547619884e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 384,
+      "finite_reference": true,
+      "rounded_reference_bits": 2390199461526090089,
+      "result_bits": 2390199461526090088,
+      "ulp_distance": 1,
+      "relative_error": 1.667716000385272e-16,
+      "within_8_ulp": true
+    },
+    {
+      "i": 385,
+      "finite_reference": true,
+      "rounded_reference_bits": 856330410137996832,
+      "result_bits": 856330410137996832,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 386,
+      "finite_reference": false,
+      "rounded_reference_bits": 18442240474082181120,
+      "result_bits": 18442240474082181120,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 387,
+      "finite_reference": true,
+      "rounded_reference_bits": 0,
+      "result_bits": 0,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 388,
+      "finite_reference": false,
+      "rounded_reference_bits": 18442240474082181120,
+      "result_bits": 18442240474082181120,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 389,
+      "finite_reference": true,
+      "rounded_reference_bits": 7034676353922718992,
+      "result_bits": 7034676353922718992,
+      "ulp_distance": 0,
+      "relative_error": 8.427439665592749e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 390,
+      "finite_reference": true,
+      "rounded_reference_bits": 11856846174808146639,
+      "result_bits": 11856846174808146639,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 391,
+      "finite_reference": true,
+      "rounded_reference_bits": 13697299815371115975,
+      "result_bits": 13697299815371115975,
+      "ulp_distance": 0,
+      "relative_error": 6.818031740142564e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 392,
+      "finite_reference": true,
+      "rounded_reference_bits": 14320528671424124782,
+      "result_bits": 14320528671424124782,
+      "ulp_distance": 0,
+      "relative_error": 2.032648374902697e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 393,
+      "finite_reference": false,
+      "rounded_reference_bits": 18442240474082181120,
+      "result_bits": 18442240474082181120,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 394,
+      "finite_reference": false,
+      "rounded_reference_bits": 18442240474082181120,
+      "result_bits": 18442240474082181120,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 395,
+      "finite_reference": true,
+      "rounded_reference_bits": 8242780797030296656,
+      "result_bits": 8242780797030296656,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 396,
+      "finite_reference": true,
+      "rounded_reference_bits": 7871042573605415999,
+      "result_bits": 7871042573605415999,
+      "ulp_distance": 0,
+      "relative_error": 1.67724123713217e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 397,
+      "finite_reference": true,
+      "rounded_reference_bits": 0,
+      "result_bits": 0,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 398,
+      "finite_reference": true,
+      "rounded_reference_bits": 0,
+      "result_bits": 0,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 399,
+      "finite_reference": false,
+      "rounded_reference_bits": 9218868437227405312,
+      "result_bits": 9218868437227405312,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 400,
+      "finite_reference": true,
+      "rounded_reference_bits": 12665567834439912724,
+      "result_bits": 12665567834439912724,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 401,
+      "finite_reference": true,
+      "rounded_reference_bits": 11673750490608685630,
+      "result_bits": 11673750490608685630,
+      "ulp_distance": 0,
+      "relative_error": 3.885728390849947e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 402,
+      "finite_reference": false,
+      "rounded_reference_bits": 18442240474082181120,
+      "result_bits": 18442240474082181120,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 403,
+      "finite_reference": true,
+      "rounded_reference_bits": 8084000874839452258,
+      "result_bits": 8084000874839452258,
+      "ulp_distance": 0,
+      "relative_error": 2.3927991978894114e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 404,
+      "finite_reference": false,
+      "rounded_reference_bits": 18442240474082181120,
+      "result_bits": 18442240474082181120,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 405,
+      "finite_reference": true,
+      "rounded_reference_bits": 15971029606849382756,
+      "result_bits": 15971029606849382756,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 406,
+      "finite_reference": true,
+      "rounded_reference_bits": 585915175975912759,
+      "result_bits": 585915175975912759,
+      "ulp_distance": 0,
+      "relative_error": 7.204341023668147e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 407,
+      "finite_reference": false,
+      "rounded_reference_bits": 9218868437227405312,
+      "result_bits": 9218868437227405312,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 408,
+      "finite_reference": true,
+      "rounded_reference_bits": 9223372036854775808,
+      "result_bits": 9223372036854775808,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 409,
+      "finite_reference": false,
+      "rounded_reference_bits": 9218868437227405312,
+      "result_bits": 9218868437227405312,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 410,
+      "finite_reference": true,
+      "rounded_reference_bits": 5073833469135084963,
+      "result_bits": 5073833469135084963,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 411,
+      "finite_reference": true,
+      "rounded_reference_bits": 16630606582544929807,
+      "result_bits": 16630606582544929807,
+      "ulp_distance": 0,
+      "relative_error": 5.364125587505179e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 412,
+      "finite_reference": true,
+      "rounded_reference_bits": 12152837862419028869,
+      "result_bits": 12152837862419028869,
+      "ulp_distance": 0,
+      "relative_error": 1.6227983939771193e-18,
+      "within_8_ulp": true
+    },
+    {
+      "i": 413,
+      "finite_reference": true,
+      "rounded_reference_bits": 13474547028484802836,
+      "result_bits": 13474547028484802835,
+      "ulp_distance": 1,
+      "relative_error": 6.547159675842393e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 414,
+      "finite_reference": true,
+      "rounded_reference_bits": 0,
+      "result_bits": 0,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 415,
+      "finite_reference": true,
+      "rounded_reference_bits": 4957873444946010782,
+      "result_bits": 4957873444946010782,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 416,
+      "finite_reference": true,
+      "rounded_reference_bits": 11984520040536082900,
+      "result_bits": 11984520040536082900,
+      "ulp_distance": 0,
+      "relative_error": 1.5042671921983745e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 417,
+      "finite_reference": true,
+      "rounded_reference_bits": 12075729308784921475,
+      "result_bits": 12075729308784921475,
+      "ulp_distance": 0,
+      "relative_error": 2.3046475838005892e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 418,
+      "finite_reference": true,
+      "rounded_reference_bits": 0,
+      "result_bits": 0,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 419,
+      "finite_reference": false,
+      "rounded_reference_bits": 18442240474082181120,
+      "result_bits": 18442240474082181120,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 420,
+      "finite_reference": true,
+      "rounded_reference_bits": 14007600761011620385,
+      "result_bits": 14007600761011620385,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 421,
+      "finite_reference": true,
+      "rounded_reference_bits": 9463692092406705862,
+      "result_bits": 9463692092406705862,
+      "ulp_distance": 0,
+      "relative_error": 7.967108372481715e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 422,
+      "finite_reference": true,
+      "rounded_reference_bits": 3813649878043554488,
+      "result_bits": 3813649878043554487,
+      "ulp_distance": 1,
+      "relative_error": 6.832875475255023e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 423,
+      "finite_reference": true,
+      "rounded_reference_bits": 3524503127998795412,
+      "result_bits": 3524503127998795412,
+      "ulp_distance": 0,
+      "relative_error": 1.9360228912721794e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 424,
+      "finite_reference": false,
+      "rounded_reference_bits": 9218868437227405312,
+      "result_bits": 9218868437227405312,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 425,
+      "finite_reference": true,
+      "rounded_reference_bits": 7539895410732331007,
+      "result_bits": 7539895410732331007,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 426,
+      "finite_reference": false,
+      "rounded_reference_bits": 18442240474082181120,
+      "result_bits": 18442240474082181120,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 427,
+      "finite_reference": false,
+      "rounded_reference_bits": 18442240474082181120,
+      "result_bits": 18442240474082181120,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 428,
+      "finite_reference": true,
+      "rounded_reference_bits": 9223372036854775808,
+      "result_bits": 9223372036854775808,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 429,
+      "finite_reference": true,
+      "rounded_reference_bits": 0,
+      "result_bits": 0,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 430,
+      "finite_reference": true,
+      "rounded_reference_bits": 16801596748056434719,
+      "result_bits": 16801596748056434719,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 431,
+      "finite_reference": true,
+      "rounded_reference_bits": 9223372036854775808,
+      "result_bits": 9223372036854775808,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 432,
+      "finite_reference": false,
+      "rounded_reference_bits": 9218868437227405312,
+      "result_bits": 9218868437227405312,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 433,
+      "finite_reference": true,
+      "rounded_reference_bits": 0,
+      "result_bits": 0,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 434,
+      "finite_reference": true,
+      "rounded_reference_bits": 9223372036854775808,
+      "result_bits": 9223372036854775808,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 435,
+      "finite_reference": true,
+      "rounded_reference_bits": 8001503568268111661,
+      "result_bits": 8001503568268111661,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 436,
+      "finite_reference": true,
+      "rounded_reference_bits": 0,
+      "result_bits": 0,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 437,
+      "finite_reference": false,
+      "rounded_reference_bits": 18442240474082181120,
+      "result_bits": 18442240474082181120,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 438,
+      "finite_reference": true,
+      "rounded_reference_bits": 17522441780099401674,
+      "result_bits": 17522441780099401674,
+      "ulp_distance": 0,
+      "relative_error": 3.059692645633492e-18,
+      "within_8_ulp": true
+    },
+    {
+      "i": 439,
+      "finite_reference": true,
+      "rounded_reference_bits": 0,
+      "result_bits": 0,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 440,
+      "finite_reference": true,
+      "rounded_reference_bits": 6755730018407559654,
+      "result_bits": 6755730018407559654,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 441,
+      "finite_reference": true,
+      "rounded_reference_bits": 9223372036854775808,
+      "result_bits": 9223372036854775808,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 442,
+      "finite_reference": true,
+      "rounded_reference_bits": 2173722031527040832,
+      "result_bits": 2173722031527040831,
+      "ulp_distance": 1,
+      "relative_error": 1.001647379839269e-16,
+      "within_8_ulp": true
+    },
+    {
+      "i": 443,
+      "finite_reference": true,
+      "rounded_reference_bits": 252316092999880238,
+      "result_bits": 252316092999880238,
+      "ulp_distance": 0,
+      "relative_error": 9.712399750814433e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 444,
+      "finite_reference": true,
+      "rounded_reference_bits": 15671398479928016999,
+      "result_bits": 15671398479928016999,
+      "ulp_distance": 0,
+      "relative_error": 6.18654307287112e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 445,
+      "finite_reference": true,
+      "rounded_reference_bits": 12351579167083667241,
+      "result_bits": 12351579167083667241,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 446,
+      "finite_reference": false,
+      "rounded_reference_bits": 18442240474082181120,
+      "result_bits": 18442240474082181120,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 447,
+      "finite_reference": false,
+      "rounded_reference_bits": 9218868437227405312,
+      "result_bits": 9218868437227405312,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 448,
+      "finite_reference": true,
+      "rounded_reference_bits": 9223372036854775808,
+      "result_bits": 9223372036854775808,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 449,
+      "finite_reference": false,
+      "rounded_reference_bits": 18442240474082181120,
+      "result_bits": 18442240474082181120,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 450,
+      "finite_reference": true,
+      "rounded_reference_bits": 8381028874591376696,
+      "result_bits": 8381028874591376696,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 451,
+      "finite_reference": true,
+      "rounded_reference_bits": 14475420992944930075,
+      "result_bits": 14475420992944930075,
+      "ulp_distance": 0,
+      "relative_error": 3.616363004116835e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 452,
+      "finite_reference": true,
+      "rounded_reference_bits": 3783329930937602370,
+      "result_bits": 3783329930937602370,
+      "ulp_distance": 0,
+      "relative_error": 1.3164362597121967e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 453,
+      "finite_reference": false,
+      "rounded_reference_bits": 9218868437227405312,
+      "result_bits": 9218868437227405312,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 454,
+      "finite_reference": false,
+      "rounded_reference_bits": 9218868437227405312,
+      "result_bits": 9218868437227405312,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 455,
+      "finite_reference": true,
+      "rounded_reference_bits": 4623891763239375269,
+      "result_bits": 4623891763239375269,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 456,
+      "finite_reference": true,
+      "rounded_reference_bits": 11933606147962645731,
+      "result_bits": 11933606147962645731,
+      "ulp_distance": 0,
+      "relative_error": 3.852914784194305e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 457,
+      "finite_reference": true,
+      "rounded_reference_bits": 0,
+      "result_bits": 0,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 458,
+      "finite_reference": true,
+      "rounded_reference_bits": 0,
+      "result_bits": 0,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 459,
+      "finite_reference": false,
+      "rounded_reference_bits": 9218868437227405312,
+      "result_bits": 9218868437227405312,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 460,
+      "finite_reference": true,
+      "rounded_reference_bits": 11478789484199233908,
+      "result_bits": 11478789484199233908,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 461,
+      "finite_reference": true,
+      "rounded_reference_bits": 17401141974886703248,
+      "result_bits": 17401141974886703248,
+      "ulp_distance": 0,
+      "relative_error": 2.5635981182199404e-18,
+      "within_8_ulp": true
+    },
+    {
+      "i": 462,
+      "finite_reference": false,
+      "rounded_reference_bits": 9218868437227405312,
+      "result_bits": 9218868437227405312,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 463,
+      "finite_reference": true,
+      "rounded_reference_bits": 3419045150155052170,
+      "result_bits": 3419045150155052170,
+      "ulp_distance": 0,
+      "relative_error": 3.177983966524138e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 464,
+      "finite_reference": true,
+      "rounded_reference_bits": 0,
+      "result_bits": 0,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 465,
+      "finite_reference": true,
+      "rounded_reference_bits": 9972606169255622442,
+      "result_bits": 9972606169255622442,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 466,
+      "finite_reference": true,
+      "rounded_reference_bits": 5618288118237807515,
+      "result_bits": 5618288118237807515,
+      "ulp_distance": 0,
+      "relative_error": 6.176366908906568e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 467,
+      "finite_reference": true,
+      "rounded_reference_bits": 13058335746658082502,
+      "result_bits": 13058335746658082503,
+      "ulp_distance": 1,
+      "relative_error": 1.1014650316002533e-16,
+      "within_8_ulp": true
+    },
+    {
+      "i": 468,
+      "finite_reference": true,
+      "rounded_reference_bits": 9223372036854775808,
+      "result_bits": 9223372036854775808,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 469,
+      "finite_reference": true,
+      "rounded_reference_bits": 9223372036854775808,
+      "result_bits": 9223372036854775808,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 470,
+      "finite_reference": true,
+      "rounded_reference_bits": 1406883266221286838,
+      "result_bits": 1406883266221286838,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 471,
+      "finite_reference": false,
+      "rounded_reference_bits": 18442240474082181120,
+      "result_bits": 18442240474082181120,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 472,
+      "finite_reference": false,
+      "rounded_reference_bits": 18442240474082181120,
+      "result_bits": 18442240474082181120,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 473,
+      "finite_reference": false,
+      "rounded_reference_bits": 18442240474082181120,
+      "result_bits": 18442240474082181120,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 474,
+      "finite_reference": true,
+      "rounded_reference_bits": 0,
+      "result_bits": 0,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 475,
+      "finite_reference": true,
+      "rounded_reference_bits": 14456874399551613976,
+      "result_bits": 14456874399551613976,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 476,
+      "finite_reference": true,
+      "rounded_reference_bits": 1468273382930396038,
+      "result_bits": 1468273382930396038,
+      "ulp_distance": 0,
+      "relative_error": 4.909324443536536e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 477,
+      "finite_reference": true,
+      "rounded_reference_bits": 9223372036854775808,
+      "result_bits": 9223372036854775808,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 478,
+      "finite_reference": true,
+      "rounded_reference_bits": 3412843883428343392,
+      "result_bits": 3412843883428343392,
+      "ulp_distance": 0,
+      "relative_error": 1.1157380102615784e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 479,
+      "finite_reference": false,
+      "rounded_reference_bits": 18442240474082181120,
+      "result_bits": 18442240474082181120,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 480,
+      "finite_reference": true,
+      "rounded_reference_bits": 7486893240510891672,
+      "result_bits": 7486893240510891672,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 481,
+      "finite_reference": true,
+      "rounded_reference_bits": 2020415548578786314,
+      "result_bits": 2020415548578786314,
+      "ulp_distance": 0,
+      "relative_error": 5.895860902311744e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 482,
+      "finite_reference": true,
+      "rounded_reference_bits": 293011769261457043,
+      "result_bits": 293011769261457043,
+      "ulp_distance": 0,
+      "relative_error": 1.7280262284729087e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 483,
+      "finite_reference": true,
+      "rounded_reference_bits": 4378148052601344537,
+      "result_bits": 4378148052601344537,
+      "ulp_distance": 0,
+      "relative_error": 5.346090069279717e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 484,
+      "finite_reference": true,
+      "rounded_reference_bits": 17800087804541722452,
+      "result_bits": 17800087804541722453,
+      "ulp_distance": 1,
+      "relative_error": 1.8404659807339997e-16,
+      "within_8_ulp": true
+    },
+    {
+      "i": 485,
+      "finite_reference": true,
+      "rounded_reference_bits": 6641580752703309391,
+      "result_bits": 6641580752703309391,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 486,
+      "finite_reference": true,
+      "rounded_reference_bits": 4759484857577145806,
+      "result_bits": 4759484857577145806,
+      "ulp_distance": 0,
+      "relative_error": 3.5024655812503324e-18,
+      "within_8_ulp": true
+    },
+    {
+      "i": 487,
+      "finite_reference": true,
+      "rounded_reference_bits": 0,
+      "result_bits": 0,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 488,
+      "finite_reference": true,
+      "rounded_reference_bits": 0,
+      "result_bits": 0,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 489,
+      "finite_reference": true,
+      "rounded_reference_bits": 9223372036854775808,
+      "result_bits": 9223372036854775808,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 490,
+      "finite_reference": true,
+      "rounded_reference_bits": 11817705422585692176,
+      "result_bits": 11817705422585692176,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 491,
+      "finite_reference": true,
+      "rounded_reference_bits": 7015714104128858801,
+      "result_bits": 7015714104128858801,
+      "ulp_distance": 0,
+      "relative_error": 5.304373465505558e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 492,
+      "finite_reference": true,
+      "rounded_reference_bits": 0,
+      "result_bits": 0,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 493,
+      "finite_reference": true,
+      "rounded_reference_bits": 2503818655760418487,
+      "result_bits": 2503818655760418486,
+      "ulp_distance": 1,
+      "relative_error": 9.95604845004581e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 494,
+      "finite_reference": false,
+      "rounded_reference_bits": 9218868437227405312,
+      "result_bits": 9218868437227405312,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 495,
+      "finite_reference": true,
+      "rounded_reference_bits": 12910877053734197668,
+      "result_bits": 12910877053734197668,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 496,
+      "finite_reference": true,
+      "rounded_reference_bits": 27949,
+      "result_bits": 27949,
+      "ulp_distance": 0,
+      "relative_error": 1.4900960357492164e-05,
+      "within_8_ulp": true
+    },
+    {
+      "i": 497,
+      "finite_reference": true,
+      "rounded_reference_bits": 4050332857492444789,
+      "result_bits": 4050332857492444789,
+      "ulp_distance": 0,
+      "relative_error": 5.3518739976333875e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 498,
+      "finite_reference": true,
+      "rounded_reference_bits": 7400267158264618209,
+      "result_bits": 7400267158264618209,
+      "ulp_distance": 0,
+      "relative_error": 4.044416485802039e-18,
+      "within_8_ulp": true
+    },
+    {
+      "i": 499,
+      "finite_reference": true,
+      "rounded_reference_bits": 0,
+      "result_bits": 0,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 500,
+      "finite_reference": true,
+      "rounded_reference_bits": 3408752425343487440,
+      "result_bits": 3408752425343487440,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 501,
+      "finite_reference": true,
+      "rounded_reference_bits": 7285403352834797777,
+      "result_bits": 7285403352834797777,
+      "ulp_distance": 0,
+      "relative_error": 3.7478579968880513e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 502,
+      "finite_reference": false,
+      "rounded_reference_bits": 18442240474082181120,
+      "result_bits": 18442240474082181120,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 503,
+      "finite_reference": true,
+      "rounded_reference_bits": 9223372036854775808,
+      "result_bits": 9223372036854775808,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 504,
+      "finite_reference": true,
+      "rounded_reference_bits": 0,
+      "result_bits": 0,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 505,
+      "finite_reference": true,
+      "rounded_reference_bits": 13504183882833233636,
+      "result_bits": 13504183882833233636,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 506,
+      "finite_reference": false,
+      "rounded_reference_bits": 18442240474082181120,
+      "result_bits": 18442240474082181120,
+      "ulp_distance": null,
+      "relative_error": null,
+      "within_8_ulp": true
+    },
+    {
+      "i": 507,
+      "finite_reference": true,
+      "rounded_reference_bits": 9223372036854775808,
+      "result_bits": 9223372036854775808,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 508,
+      "finite_reference": true,
+      "rounded_reference_bits": 9223372036854775808,
+      "result_bits": 9223372036854775808,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 509,
+      "finite_reference": true,
+      "rounded_reference_bits": 0,
+      "result_bits": 0,
+      "ulp_distance": 0,
+      "relative_error": 1.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 510,
+      "finite_reference": true,
+      "rounded_reference_bits": 1633931071642042223,
+      "result_bits": 1633931071642042223,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 511,
+      "finite_reference": true,
+      "rounded_reference_bits": 13311269837183366141,
+      "result_bits": 13311269837183366141,
+      "ulp_distance": 0,
+      "relative_error": 5.189175900747435e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 512,
+      "finite_reference": true,
+      "rounded_reference_bits": 1,
+      "result_bits": 1,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 513,
+      "finite_reference": true,
+      "rounded_reference_bits": 2251799813685248,
+      "result_bits": 2251799813685248,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 514,
+      "finite_reference": true,
+      "rounded_reference_bits": 9214364837600034815,
+      "result_bits": 9214364837600034815,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 515,
+      "finite_reference": true,
+      "rounded_reference_bits": 1,
+      "result_bits": 1,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 516,
+      "finite_reference": true,
+      "rounded_reference_bits": 1,
+      "result_bits": 1,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    },
+    {
+      "i": 517,
+      "finite_reference": true,
+      "rounded_reference_bits": 3110860544497550641,
+      "result_bits": 3110860544497550640,
+      "ulp_distance": 1,
+      "relative_error": 1.1248045966301306e-16,
+      "within_8_ulp": true
+    },
+    {
+      "i": 518,
+      "finite_reference": true,
+      "rounded_reference_bits": 6103021453049119613,
+      "result_bits": 6103021453049119613,
+      "ulp_distance": 0,
+      "relative_error": 7.276776516448851e-17,
+      "within_8_ulp": true
+    },
+    {
+      "i": 519,
+      "finite_reference": true,
+      "rounded_reference_bits": 13856168678535462912,
+      "result_bits": 13856168678535462912,
+      "ulp_distance": 0,
+      "relative_error": 0.0,
+      "within_8_ulp": true
+    }
+  ],
+  "other_oracles": [
+    {
+      "id": "dense_amplified_mixed_range",
+      "exact_decimal_precision": 110,
+      "expected": [
+        "10142.320547350045348710637970482229717543464363788037514752197599790142827964090308213849424631402361549226327",
+        "0.000098596765437597713743853260718187677813881535345184541486264216270991968500637075998788009671976247486664913286"
+      ],
+      "actual": [
+        0.0,
+        9.859676543760618e-05
+      ],
+      "mixed_range": true,
+      "output_below_input_half_precision": true,
+      "classification": "documented labelled limitation; not a separate new finding"
+    },
+    {
+      "id": "original_budget",
+      "exact_numerator": "2505590639513609676395827429376",
+      "exact_denominator": "2505618534107015908629993881161",
+      "exact_decimal": "0.99998886718268302813982710414019336391944680288184770121886129743353131603364657961982570109812932148304443228",
+      "actual": 0.9999888671826829,
+      "relative_error": 1.558160896863323e-16,
+      "wrms5_rejected": true
+    }
+  ]
+}

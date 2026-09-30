@@ -74,6 +74,16 @@ pub struct WorkCounters {
     /// Preconditioner applications in state-vector units (audit F-051).
     #[serde(default, skip_serializing_if = "is_zero")]
     pub preconditioner_vectors: u64,
+    /// Krylov and diagnostic applications merged into this ledger from
+    /// ledgers without vector units (re-audit R2, R2-STAT-02). Omitted while
+    /// zero; see [`Self::unknown_vector_calls`].
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub merged_unknown_vector_calls: u64,
+    /// Nonzero phi-combination inputs whose weight `h^k b_k` fell below the
+    /// smallest subnormal and became 0 (re-audit R2, PHI-R1). Omitted while
+    /// zero.
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub phi_weight_underflows: u64,
 }
 
 fn is_zero(value: &u64) -> bool {
@@ -111,8 +121,7 @@ impl WorkCounters {
     /// before the vector counters existed deserializes them as 0, and that
     /// must read as unknown, not as free work (audit 2026-09-30, B-02).
     pub fn operator_state_vectors(self) -> Option<u64> {
-        let calls = self.linear_matvecs.saturating_add(self.diagnostic_matvecs);
-        if calls > 0 && self.linear_matvec_vectors == 0 {
+        if self.unknown_vector_calls() > 0 {
             return None;
         }
         Some(
@@ -121,12 +130,33 @@ impl WorkCounters {
         )
     }
 
+    /// Krylov and diagnostic applications whose vector units are unknown.
+    ///
+    /// A ledger with applications but no vector units predates the vector
+    /// counters (every current application records at least one vector), so
+    /// all its applications are unknown; otherwise the count merged in from
+    /// such ledgers. Accumulation adds these counts, so unknown coverage is
+    /// absorbing under merging, in any order and grouping: 16 legacy calls
+    /// merged with 1 current call of 1 vector give 17 calls and an unknown
+    /// vector cost, not a cost of 1 (re-audit R2, R2-STAT-02).
+    pub fn unknown_vector_calls(self) -> u64 {
+        let calls = self.linear_matvecs.saturating_add(self.diagnostic_matvecs);
+        if calls > 0 && self.linear_matvec_vectors == 0 {
+            calls
+        } else {
+            self.merged_unknown_vector_calls
+        }
+    }
+
     /// Saturating component-wise accumulation for independently measured work ledgers.
     ///
     /// This is used when bounded parallel stage/RHS jobs keep local counters and merge them
     /// only after every job has completed.  Saturation preserves the existing failure-safe
     /// accounting semantics instead of wrapping on pathological runs.
     pub fn accumulate(&mut self, other: Self) {
+        let unknown = self
+            .unknown_vector_calls()
+            .saturating_add(other.unknown_vector_calls());
         macro_rules! add_fields { ($($f:ident),* $(,)?) => { $(self.$f = self.$f.saturating_add(other.$f);)* } }
         add_fields!(
             rhs_calls,
@@ -181,7 +211,9 @@ impl WorkCounters {
             jacobian_matvecs,
             linear_matvec_vectors,
             preconditioner_vectors,
+            phi_weight_underflows,
         );
+        self.merged_unknown_vector_calls = unknown;
     }
 
     /// Component-wise accumulation that rejects counter overflow.
@@ -189,6 +221,9 @@ impl WorkCounters {
     /// Scientific campaign segments are independent solver invocations.  Their
     /// ledgers must not silently saturate while being assembled into one row.
     pub fn checked_accumulate(&mut self, other: Self) -> Option<()> {
+        let unknown = self
+            .unknown_vector_calls()
+            .checked_add(other.unknown_vector_calls())?;
         let mut next = *self;
         macro_rules! checked_add_fields {
             ($($f:ident),* $(,)?) => {{
@@ -248,7 +283,9 @@ impl WorkCounters {
             jacobian_matvecs,
             linear_matvec_vectors,
             preconditioner_vectors,
+            phi_weight_underflows,
         );
+        next.merged_unknown_vector_calls = unknown;
         *self = next;
         Some(())
     }
@@ -308,6 +345,8 @@ impl WorkCounters {
             jacobian_matvecs,
             linear_matvec_vectors,
             preconditioner_vectors,
+            phi_weight_underflows,
+            merged_unknown_vector_calls,
         )
     }
 
@@ -379,6 +418,8 @@ impl WorkCounters {
             jacobian_matvecs,
             linear_matvec_vectors,
             preconditioner_vectors,
+            phi_weight_underflows,
+            merged_unknown_vector_calls,
         )
     }
 }

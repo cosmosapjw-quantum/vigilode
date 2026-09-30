@@ -1,0 +1,5 @@
+# R3 output/time lane contract
+
+Source cc2cd041737e7ff543624d1b59893a3b4397369f; parent R2 publication 1ba914dc234e25c532a9598b1c30ab156c75218d. Read research/coding v4 core instructions, routing, research state template and active prompts plus root preregistration. The user explicitly selected these GPT6 harnesses; this does not verify runtime model identity or performance.
+
+Acceptance: directly re-execute the three original R2-OUT-01 cases on current public Rust APIs; execute copied current output-time contracts; discriminate documented h versus represented-time residual from previously unlisted endpoint aliasing. Constant velocity has exact oracle y(t)=v(t-t0), evaluated with Python Fraction from actual binary64 inputs. A separate public-step candidate normalizes effective h to represented displacement in the local Sterbenz regime and rejects inconsistent clocks. Production is read-only. No speed, stiff-uniform order or all-driver certification claim. Raw first failures retained. Stop after bounded decisive native checks and one independent decision review by root.

@@ -1,0 +1,40 @@
+{
+  "exit": 0,
+  "elapsed_seconds": 1.1578788757324219,
+  "rows": 10,
+  "malformed": [
+    {
+      "mutation": "empty_order",
+      "gate": "promote",
+      "candidate": "abba_order_mismatch"
+    },
+    {
+      "mutation": "wrong_order",
+      "gate": "promote",
+      "candidate": "abba_order_mismatch"
+    },
+    {
+      "mutation": "wrong_batch",
+      "gate": "promote",
+      "candidate": "batch_calibration_mismatch"
+    },
+    {
+      "mutation": "negative_warmup",
+      "gate": "promote",
+      "candidate": "invalid_warmups"
+    },
+    {
+      "mutation": "nan_warmup",
+      "gate": "promote",
+      "candidate": "invalid_warmups"
+    }
+  ],
+  "json_roundtrip": [
+    {
+      "assessment_equal": true,
+      "id": "R3STAT_JSON_ROUNDTRIP",
+      "raw_equal": true,
+      "verify": "Ok(Promote)"
+    }
+  ]
+}

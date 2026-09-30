@@ -1,4 +1,4 @@
-use rodas5p_core::{CoreError, CoreResult};
+use rodas5p_core::{CoreError, CoreResult, binary_power, binary_scale, binary_split};
 use serde::{Deserialize, Serialize};
 
 /// Dimensionless acceptance budget for the output-directed homotopy correction.
@@ -150,13 +150,25 @@ impl OutputBudgetPolicy {
                 epsilon_ref,
                 h_ref,
                 exponent,
-            } => epsilon_ref * (h.abs() / h_ref).powi(*exponent as i32),
+            } => step_power_term(*epsilon_ref, h, *h_ref, *exponent),
             Self::Mixed {
                 eta,
                 epsilon_ref,
                 h_ref,
                 exponent,
-            } => (eta * embedded_error).min(epsilon_ref * (h.abs() / h_ref).powi(*exponent as i32)),
+            } => {
+                // Each component is evaluated on its own and must be a
+                // number before the minimum is taken; `f64::min` drops a
+                // NaN operand (re-audit R2-POL-01).
+                let embedded = eta * embedded_error;
+                let step = step_power_term(*epsilon_ref, h, *h_ref, *exponent);
+                if embedded.is_nan() || step.is_nan() {
+                    return Err(CoreError::NonFinite(
+                        "mixed output budget component is NaN".into(),
+                    ));
+                }
+                embedded.min(step)
+            }
         };
         if budget.is_finite() && budget >= 0.0 {
             Ok(budget)
@@ -183,6 +195,33 @@ impl OutputBudgetPolicy {
             accepted: output_wrms <= budget,
         })
     }
+}
+
+/// `epsilon_ref * (h / h_ref)^exponent` without intermediate overflow or
+/// underflow (re-audit R2-POL-01).
+///
+/// Each operand is split into a mantissa in [1/2, 1) and a binary exponent;
+/// the power is taken by squaring on renormalized mantissas and the binary
+/// exponents are summed as integers (`rodas5p_core::binary_power`), so the
+/// only roundings are the mantissa products and the final scaling. The direct form overflowed
+/// `(h / h_ref)^p` to +inf for h = 1, h_ref = 1e-160, p = 2, and the product
+/// with epsilon_ref = 1e-320 then gave +inf instead of about 0.99999, which
+/// `min` turned into the embedded term. A true value above `f64::MAX` is
+/// +inf (the component does not bind), below the smallest subnormal it is
+/// 0, and `epsilon_ref = 0` gives 0 for every finite ratio.
+pub(crate) fn step_power_term(epsilon_ref: f64, h: f64, h_ref: f64, exponent: u32) -> f64 {
+    if epsilon_ref == 0.0 {
+        return 0.0;
+    }
+    let (m_eps, e_eps) = binary_split(epsilon_ref);
+    let (m_h, e_h) = binary_split(h.abs());
+    let (m_ref, e_ref) = binary_split(h_ref);
+    // m_h / m_ref lies in (1/2, 2); its power is formed on binary exponents.
+    let (power_m, power_e) = binary_power(m_h / m_ref, exponent);
+    binary_scale(
+        m_eps * power_m,
+        e_eps + i64::from(exponent) * (e_h - e_ref) + power_e,
+    )
 }
 
 fn validate_nonnegative(label: &str, value: f64) -> CoreResult<()> {

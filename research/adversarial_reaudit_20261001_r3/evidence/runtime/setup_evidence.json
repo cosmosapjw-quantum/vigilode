@@ -1,0 +1,126 @@
+{
+  "schema": "vigilode.reaudit.runtime_setup.v1",
+  "recorded_utc": "2026-09-30T15:48:20.733963+00:00",
+  "status": "RUST_EXECUTION_PASS",
+  "source_commit": "cc2cd041737e7ff543624d1b59893a3b4397369f",
+  "prior_pass_inherited": false,
+  "network_fetch": false,
+  "repo_mutation": false,
+  "env_file": "/workspace/scratch/0dc1e721cf82/runtime_r3/env.sh",
+  "commands": [
+    {
+      "argv": [
+        "rustc",
+        "--version",
+        "--verbose"
+      ],
+      "exit_code": 0,
+      "stdout": "rustc 1.94.1 (e408947bf 2026-03-25)\nbinary: rustc\ncommit-hash: e408947bfd200af42db322daf0fadfe7e26d3bd1\ncommit-date: 2026-03-25\nhost: x86_64-unknown-linux-gnu\nrelease: 1.94.1\nLLVM version: 21.1.8\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "cargo",
+        "--version"
+      ],
+      "exit_code": 0,
+      "stdout": "cargo 1.94.1 (29ea6fb6a 2026-03-24)\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "rustfmt",
+        "--version"
+      ],
+      "exit_code": 0,
+      "stdout": "rustfmt 1.8.0-stable (e408947bfd 2026-03-25)\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "rustc",
+        "/workspace/scratch/0dc1e721cf82/runtime_r3/probes/hello.rs",
+        "-o",
+        "/workspace/scratch/0dc1e721cf82/runtime_r3/probes/hello"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/workspace/scratch/0dc1e721cf82/runtime_r3/probes/hello"
+      ],
+      "exit_code": 0,
+      "stdout": "RUST_EXECUTION_PASS 42\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "cargo",
+        "metadata",
+        "--locked",
+        "--offline",
+        "--format-version",
+        "1",
+        "--manifest-path",
+        "/workspace/scratch/0dc1e721cf82/vigilode/Cargo.toml"
+      ],
+      "exit_code": 0,
+      "stdout": "[cargo_metadata.json]",
+      "stderr": ""
+    }
+  ],
+  "cargo_metadata_packages": 123,
+  "dependency_match": "118/118 exact version and package checksum",
+  "host_preflight": "python_host_preflight.json",
+  "artifacts": [
+    {
+      "path": "/workspace/scratch/0dc1e721cf82/project_sources/06-rust-1.94.1-x86_64-unknown-linux-gnu.tar.xz",
+      "bytes": 192287020,
+      "sha256": "294b3d81fa72e62581276290c60c81eb8b58498d333d422ca1dfc432877d0c40"
+    },
+    {
+      "path": "/workspace/scratch/0dc1e721cf82/project_sources/15-GENERIC_VECTOR_JF_OFFLINE_CARGO_VENDOR_20260816-1-.zip",
+      "bytes": 112967859,
+      "sha256": "9c7671ba5eef9f511560df402418f8cd46bed161e8743f0a5dd5696daf92fb8d"
+    },
+    {
+      "path": "/workspace/scratch/0dc1e721cf82/runtime_r3/vendor_archive/rust-offline-rodas5p-rs-20260806.tar.zst",
+      "bytes": 112965934,
+      "sha256": "dc2b1ba76059b56042852975845578e51df67ebfdd59b29305106ad71b578be3"
+    },
+    {
+      "path": "/workspace/scratch/0dc1e721cf82/runtime_r3/rust-1.94.1/lib/libLLVM.so.21.1-rust-1.94.1-stable",
+      "bytes": 186862176,
+      "sha256": "158c711c64147bb127a2a5174df22718d26b755560a1487945e7c788c947986f"
+    },
+    {
+      "path": "/workspace/scratch/0dc1e721cf82/runtime_r3/rust-1.94.1/lib/librustc_driver-83018425804cb0fc.so",
+      "bytes": 153848240,
+      "sha256": "e51e2f6796ac2730a11744a0d3e126e6b1e60d43e2e602a091551b1ad1a9ba2f"
+    },
+    {
+      "path": "/workspace/scratch/0dc1e721cf82/vigilode/Cargo.lock",
+      "bytes": 28994,
+      "sha256": "04c7d6c147bf19ebb1a627463705d9dcf27337a3ff228dd1169f19eb73c71400"
+    }
+  ],
+  "signature_verification": "NOT_PERFORMED: no trusted signing key supplied; archive hash identity recorded",
+  "installation_note": "tar --ignore-zeros required: normal listing ends after 1771 entries; ignore-zeros sees 51085. Full LLVM size/hash verified. Extracted driver was truncated; exact member tar -xO recovery performed. Root cause of archive/extraction anomalies is unresolved.",
+  "installation_failures_preserved": [
+    {
+      "stage": "initial_rustc_probe",
+      "exit_code": 127,
+      "stderr": "rustc: error while loading shared libraries: librustc_driver-83018425804cb0fc.so: cannot read file data",
+      "initial_extracted_driver_bytes": 27959296,
+      "classification": "ENVIRONMENT_EXTRACTION_FAILURE"
+    },
+    {
+      "stage": "initial_receipt_writer",
+      "exception": "NameError: metadata_count not defined after early rustc failure",
+      "classification": "AUDIT_HELPER_IMPLEMENTATION_ERROR",
+      "resolved": true
+    }
+  ]
+}

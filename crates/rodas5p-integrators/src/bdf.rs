@@ -606,8 +606,9 @@ pub fn integrate_bdf_fixed(
     let mut states = vec![state.clone()];
     let mut applied_orders = Vec::new();
     let mut startup_steps = 0;
-    while t < tf - crate::output::end_time_slack(tf) {
-        let step = h.min(tf - t);
+    while t < tf {
+        let step = crate::output::end_step(t, h, tf)?;
+        crate::output::require_progress(t, step)?;
         let report = bdf_step(
             problem,
             t,
@@ -655,7 +656,7 @@ pub fn integrate_bdf_fixed_observed(
     let mut counters = WorkCounters::default();
     let mut collector = OutputCollector::new(output, t_span, y0)?;
     let mut internal_steps = 0_usize;
-    while t < tf - crate::output::end_time_slack(tf) {
+    while t < tf {
         let (step, clipped) = collector.limit_step(t, h, tf)?;
         let report = bdf_step(
             problem,
@@ -862,12 +863,13 @@ pub fn integrate_bdf_adaptive_observed(
     let mut controller = AdaptiveControllerState::default();
     let mut collector = OutputCollector::new(output, t_span, y0)?;
     let mut diagnostics = AdaptiveRunDiagnostics::default();
-    let mut h = adaptive.initial_step.min(tf - t);
+    let mut h = adaptive.initial_step.min(crate::output::step_to(t, tf)?);
     let mut internal_steps = 0_usize;
 
     while t < tf && diagnostics.attempts < adaptive.max_attempts {
-        h = h.min(adaptive.max_step).min(tf - t);
-        if h < adaptive.min_step || 0.5 * h <= f64::MIN_POSITIVE {
+        h = crate::output::end_step(t, h.min(adaptive.max_step), tf)?;
+        // A final piece that lands on tf is taken even below min_step.
+        if (h < adaptive.min_step && t + h < tf) || 0.5 * h <= f64::MIN_POSITIVE || t + h == t {
             break;
         }
         let requested_h = h;
@@ -952,7 +954,7 @@ pub fn integrate_bdf_adaptive_observed(
         }
     }
 
-    let success = t >= tf - crate::output::end_time_slack(tf);
+    let success = t >= tf;
     let observed = if success {
         let (times, states, output_clipped_steps) = collector.finish()?;
         ObservedIntegrationResult {

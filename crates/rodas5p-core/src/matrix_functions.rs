@@ -249,17 +249,7 @@ pub fn dense_fused_phi_action(
             "dense fused phi-action input contains NaN/Inf".into(),
         ));
     }
-    let weighted = vectors
-        .iter()
-        .enumerate()
-        .map(|(k, vector)| {
-            let factor = scale.powi(k as i32);
-            vector
-                .iter()
-                .map(|value| factor * value)
-                .collect::<Vec<_>>()
-        })
-        .collect::<Vec<_>>();
+    let (weighted, _) = crate::weight_phi_vectors(scale, vectors)?;
     dense_phi_combination(matrix, scale, &weighted)
 }
 
@@ -281,6 +271,43 @@ pub fn dense_phi_combination(
     scale: f64,
     weighted: &[Vec<f64>],
 ) -> CoreResult<Vec<f64>> {
+    dense_phi_combination_report(matrix, scale, weighted).map(|report| report.value)
+}
+
+/// Amplitude state of one dense phi combination (re-audit R2, PHI-R2).
+#[derive(Clone, Debug, PartialEq)]
+pub struct DensePhiCombinationReport {
+    pub value: Vec<f64>,
+    /// `e` in the exact normalization `w / 2^e` that brings the largest
+    /// weight into [1/2, 1) before the exponential; the value is scaled
+    /// back by `2^e`. 0 when every weight is 0.
+    pub amplitude_exponent: i64,
+    /// log2 of the largest over the smallest nonzero weight magnitude.
+    pub weight_dynamic_range_log2: f64,
+    /// The smallest nonzero weights lie below the rounding unit of the
+    /// largest (dynamic range above 2^53): their contribution is resolved
+    /// only normwise, relative to the largest weight.
+    pub mixed_range: bool,
+    /// The output amplitude is below 2^-26 of the largest weight
+    /// (cancellation or strong decay): the value is accurate relative to
+    /// the weights, and its own relative accuracy is not established.
+    pub output_below_input_half_precision: bool,
+}
+
+/// [`dense_phi_combination`] with its amplitude state.
+///
+/// The combination is linear in the weights, so it is evaluated on
+/// `w / 2^e`, with `2^e` the binary order of the largest weight, and scaled
+/// back; both scalings are exact apart from under- or overflow. Without the
+/// normalization the weights sat unscaled in the augmented matrix, whose
+/// 1-norm then drove the Pade scaling: with `A = -1`, `h = 0.1` and
+/// `w_1 = c`, the relative error was 6.8e-10 at `c = 1e20`, 0.043 at
+/// `c = 1e40`, and the result was exactly 0 at `c = 1e60`.
+pub fn dense_phi_combination_report(
+    matrix: &DenseMatrix,
+    scale: f64,
+    weighted: &[Vec<f64>],
+) -> CoreResult<DensePhiCombinationReport> {
     if matrix.nrows() != matrix.ncols() || weighted.is_empty() {
         return Err(CoreError::Dimension(
             "dense fused phi-action requires a square matrix and at least b0".into(),
@@ -302,6 +329,76 @@ pub fn dense_phi_combination(
             "dense fused phi-action input contains NaN/Inf".into(),
         ));
     }
+    let magnitudes = weighted
+        .iter()
+        .flatten()
+        .map(|value| value.abs())
+        .filter(|value| *value > 0.0);
+    let (largest, smallest) = magnitudes.fold((0.0_f64, f64::INFINITY), |(hi, lo), value| {
+        (hi.max(value), lo.min(value))
+    });
+    if largest == 0.0 {
+        return Ok(DensePhiCombinationReport {
+            value: vec![0.0; n],
+            amplitude_exponent: 0,
+            weight_dynamic_range_log2: 0.0,
+            mixed_range: false,
+            output_below_input_half_precision: false,
+        });
+    }
+    let (_, amplitude_exponent) = crate::binary_split(largest);
+    let normalized = weighted
+        .iter()
+        .map(|vector| {
+            vector
+                .iter()
+                .map(|value| times_power_of_two(*value, -amplitude_exponent))
+                .collect::<Vec<_>>()
+        })
+        .collect::<Vec<_>>();
+    let unit = dense_phi_combination_normalized(matrix, scale, &normalized)?;
+    let value = unit
+        .iter()
+        .map(|value| times_power_of_two(*value, amplitude_exponent))
+        .collect::<Vec<_>>();
+    if !value.iter().all(|value| value.is_finite()) {
+        return Err(CoreError::NonFinite(
+            "dense fused phi-action produced NaN/Inf".into(),
+        ));
+    }
+    let dynamic_range = largest.log2() - smallest.log2();
+    let output_unit = unit.iter().fold(0.0_f64, |acc, value| acc.max(value.abs()));
+    Ok(DensePhiCombinationReport {
+        value,
+        amplitude_exponent,
+        weight_dynamic_range_log2: dynamic_range,
+        mixed_range: dynamic_range > 53.0,
+        output_below_input_half_precision: output_unit < 2.0_f64.powi(-26),
+    })
+}
+
+/// `x * 2^e`, in steps that stay in the normal range until the last one.
+fn times_power_of_two(x: f64, e: i64) -> f64 {
+    let mut x = x;
+    let mut e = e;
+    while e > 1000 {
+        x *= 2.0_f64.powi(1000);
+        e -= 1000;
+    }
+    while e < -1000 {
+        x *= 2.0_f64.powi(-1000);
+        e += 1000;
+    }
+    x * 2.0_f64.powi(e as i32)
+}
+
+/// The dense combination for weights whose largest magnitude is O(1).
+fn dense_phi_combination_normalized(
+    matrix: &DenseMatrix,
+    scale: f64,
+    weighted: &[Vec<f64>],
+) -> CoreResult<Vec<f64>> {
+    let n = matrix.nrows();
     let p = weighted.len() - 1;
     if p == 0 {
         return matrix_exp_pade13(&matrix.scale(scale))?.matvec(&weighted[0]);
