@@ -10,6 +10,7 @@ mod matrix_functions;
 mod norms;
 mod operator;
 mod solver_types;
+pub mod transform_bound;
 mod work;
 
 pub use binary_scaling::{
