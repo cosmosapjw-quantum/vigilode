@@ -781,6 +781,11 @@ pub fn integrate_sequential_matrix_free_adaptive_dense_fixed_inner_observed(
 /// accepted state. Both are local approximations from the same state, so the
 /// difference is bounded by the interpolant defect plus the sub-step's local
 /// error and needs no reference solution.
+///
+/// It is an attribution diagnostic, not a bound on the dense error: only
+/// `||u_dense - y|| <= delta + ||u_sub - y||` holds, and the second term is
+/// not estimated here. The sub-step shares the method, coefficients and
+/// forcing with the run and is force-accepted (audit 2026-09-30).
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct InterpolantAuditSample {
     pub t: f64,
