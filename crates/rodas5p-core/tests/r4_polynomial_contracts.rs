@@ -362,3 +362,34 @@ fn laguerre_scales_outside_the_cap_are_rejected() {
         );
     }
 }
+
+#[test]
+fn the_continuous_laguerre_scale_minimizes_the_analytic_tail() {
+    use rodas5p_core::polynomial_action::{LAGUERRE_SCALE_CAP, laguerre_scale_for_degree};
+    // log T(beta) up to log W.
+    let log_tail = |h: f64, rho: f64, r: f64, beta: f64| {
+        rho / (2.0 * beta) + r * (h * beta / (1.0 + h * beta)).ln()
+    };
+    for (h, rho) in [(0.1, 2.0), (1.0, 3.0), (0.01, 50.0), (2.0, 1.0)] {
+        for degree in [2_usize, 5, 10, 40] {
+            let r = (degree + 1) as f64;
+            match laguerre_scale_for_degree(h, rho, degree) {
+                None => assert!(2.0 * r <= h * rho),
+                Some(scale) => {
+                    let exact = 2.0 * r - h * rho;
+                    assert_eq!(scale, exact.min(LAGUERRE_SCALE_CAP));
+                    if exact <= LAGUERRE_SCALE_CAP {
+                        let beta = rho / scale;
+                        let at = log_tail(h, rho, r, beta);
+                        for factor in [0.9, 0.99, 1.01, 1.1] {
+                            assert!(at <= log_tail(h, rho, r, beta * factor) + 1.0e-12);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    // Exact zero branches stay separate.
+    assert_eq!(laguerre_scale_for_degree(0.0, 1.0, 3), None);
+    assert_eq!(laguerre_scale_for_degree(1.0, 0.0, 3), None);
+}

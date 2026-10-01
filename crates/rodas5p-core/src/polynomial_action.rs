@@ -1219,6 +1219,24 @@ pub fn joint_phi_action_laguerre_scales(
     )
 }
 
+/// The continuous Laguerre scale of re-audit R4 (R4-POLY-DEV-05) for a
+/// fixed degree `m`: the exact-arithmetic tail `T(beta) = W exp(rho / (2
+/// beta)) [h beta / (1 + h beta)]^(m+1)` has `d log T / d beta = -rho / (2
+/// beta^2) + r / (beta (1 + h beta))`, `r = m + 1`, whose only zero for
+/// `2r > h rho` is `beta* = rho / (2r - h rho)`, a minimum; for `2r <= h
+/// rho` the tail decreases in `beta` towards `W` and no finite scale meets a
+/// budget below `W`. The scale `L = rho / beta* = 2r - h rho` is capped at
+/// [`LAGUERRE_SCALE_CAP`]; `None` when it is not positive or `h`, `rho`
+/// are not finite and positive (the exact zero branches stay separate).
+/// A selection rule, not a bound: the action re-derives its tail.
+pub fn laguerre_scale_for_degree(h: f64, rho: f64, degree: usize) -> Option<f64> {
+    if !(h.is_finite() && rho.is_finite() && h > 0.0 && rho > 0.0) {
+        return None;
+    }
+    let scale = 2.0 * (degree + 1) as f64 - h * rho;
+    (scale.is_finite() && scale > 0.0).then(|| scale.min(LAGUERRE_SCALE_CAP))
+}
+
 /// Upper bounds of `phi_0 .. phi_4` at a real `z` in `[-600, 0]` as
 /// intervals (the scalar branch's enclosures), for references.
 pub fn scalar_phi_enclosure(z: Interval) -> CoreResult<[Interval; JOINT_PHI_TERMS]> {
