@@ -1,0 +1,115 @@
+{
+  "schema": "vigilode-r4-findings-v1",
+  "source_commit": "1c54194123ee6abc6daa512e8574922f510b4e2c",
+  "findings": [
+    {
+      "id": "R4-ARITH-01",
+      "severity": "P2",
+      "status": "implementation-verified",
+      "layer": "NUMERICAL_IMPLEMENTATION",
+      "title": "Zero exponent ordering erases subunit nilpotent norm and understates transform-error bound",
+      "scope": "Research-only public transform_bound helper; not currently called by production fused-phi integrators",
+      "source": [
+        "crates/rodas5p-core/src/transform_bound.rs:298-313"
+      ],
+      "witness": "subunit_nilpotent_generated",
+      "inputs": {
+        "A": [
+          [
+            0,
+            0.25
+          ],
+          [
+            0,
+            0
+          ]
+        ],
+        "h": 1000.1,
+        "b0": [
+          0,
+          0
+        ],
+        "b1": [
+          0,
+          0
+        ],
+        "b2": [
+          0,
+          1
+        ],
+        "stored": "actual weight_phi_vectors output"
+      },
+      "observed_error": "1.5071782093206548331317682236877119006582919794292467838980032291353019037447977735947178701026576603632500926759235074197380302929675942428e-9",
+      "claimed_bound": "5.82076609134674072265625e-11",
+      "reason": "ZERO=(mantissa0,exponent0) wins over positive .25 exponent-1 in row/column maxima. The selected nilpotent norm becomes zero, omitting h*A amplification.",
+      "fix_task": "R4-ARITH-DEV-01",
+      "evidence": [
+        "native.jsonl",
+        "ORACLE_RESULTS.json"
+      ],
+      "production_impact_demonstrated": false
+    },
+    {
+      "id": "R4-ARITH-02",
+      "severity": "P2",
+      "status": "implementation-verified",
+      "layer": "NUMERICAL_IMPLEMENTATION",
+      "title": "Binary64 factorial overflow invalidates generic high-order phi transform bounds",
+      "scope": "Research-only public helper accepts arbitrary vector order; current joint polynomial module only uses orders0..4",
+      "source": [
+        "crates/rodas5p-core/src/transform_bound.rs:274-275",
+        "crates/rodas5p-core/src/transform_bound.rs:316-321",
+        "crates/rodas5p-core/src/transform_bound.rs:344-347"
+      ],
+      "witnesses": [
+        "order_171",
+        "order_172"
+      ],
+      "inputs": {
+        "A": [
+          [
+            0
+          ]
+        ],
+        "h": 1.1,
+        "nonzero_input": "b_p=[1], all other b_k zero",
+        "stored": "actual weight_phi_vectors output"
+      },
+      "observed_error_p171": "2.0810186525441548770063122530685197033350982977482357772091266470150810280761203512971317104689258548542813294431714027238859791951732860151e-317",
+      "claimed_bound_p171": "2.7792123154561306599774169818722243319125484747723877216973691455126554369107455585770411525147793758418143268306666380677344338321591507366e-330",
+      "reason": "factorial171 overflows to infinity; the reciprocal operation creates a tiny subnormal coefficient rather than an upper bound for1/171!.",
+      "fix_task": "R4-ARITH-DEV-02",
+      "evidence": [
+        "native.jsonl",
+        "ORACLE_RESULTS.json"
+      ],
+      "production_impact_demonstrated": false
+    },
+    {
+      "id": "R4-ARITH-03",
+      "severity": "P3",
+      "status": "implementation-verified",
+      "layer": "IMPLEMENTATION_API_CONTRACT",
+      "title": "Signed stored-weight mismatch and negative tolerances do not fail closed",
+      "scope": "Public helper malformed/externally supplied input; weight_phi_vectors itself always preserves b0",
+      "source": [
+        "crates/rodas5p-core/src/transform_bound.rs:230-236",
+        "crates/rodas5p-core/src/transform_bound.rs:150-161"
+      ],
+      "witnesses": [
+        "signed_stored_order0",
+        "negative_tolerance"
+      ],
+      "observations": [
+        "A=0,h=1,b0=1,stored0=-1 returns zero error bound and admits zero tolerance, although error=2.",
+        "Error bound1 admits tolerance-10 because ExpBound::exact takes absolute value."
+      ],
+      "fix_task": "R4-ARITH-DEV-03",
+      "evidence": [
+        "native.jsonl",
+        "ORACLE_RESULTS.json"
+      ],
+      "production_impact_demonstrated": false
+    }
+  ]
+}

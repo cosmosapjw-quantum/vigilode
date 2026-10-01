@@ -1,0 +1,479 @@
+{
+  "schema": "vigilode-r4-exact-session-median-v1",
+  "status": "EXACT_CHECKS_PASS",
+  "source_commit": "1c54194123ee6abc6daa512e8574922f510b4e2c",
+  "alpha": "1/20",
+  "estimand": "median over fixed cases of population median of complete session-cell median log speedup",
+  "assumptions": [
+    "independent identically distributed session vectors",
+    "complete declared fixed case corpus",
+    "non-informative session inclusion",
+    "specified medians; ties conservative"
+  ],
+  "not_claimed": [
+    "equivalence to pooled-pair population median outside symmetric model",
+    "general replacement validated in production",
+    "wall-time speedup",
+    "arbitrary missingness robustness"
+  ],
+  "designs": [
+    {
+      "sessions": 1,
+      "cases": 1,
+      "k": null,
+      "per_case_failure": "0",
+      "simultaneous_coverage_lower": "1",
+      "unbounded": true
+    },
+    {
+      "sessions": 1,
+      "cases": 5,
+      "k": null,
+      "per_case_failure": "0",
+      "simultaneous_coverage_lower": "1",
+      "unbounded": true
+    },
+    {
+      "sessions": 2,
+      "cases": 1,
+      "k": null,
+      "per_case_failure": "0",
+      "simultaneous_coverage_lower": "1",
+      "unbounded": true
+    },
+    {
+      "sessions": 2,
+      "cases": 5,
+      "k": null,
+      "per_case_failure": "0",
+      "simultaneous_coverage_lower": "1",
+      "unbounded": true
+    },
+    {
+      "sessions": 3,
+      "cases": 1,
+      "k": null,
+      "per_case_failure": "0",
+      "simultaneous_coverage_lower": "1",
+      "unbounded": true
+    },
+    {
+      "sessions": 3,
+      "cases": 5,
+      "k": null,
+      "per_case_failure": "0",
+      "simultaneous_coverage_lower": "1",
+      "unbounded": true
+    },
+    {
+      "sessions": 4,
+      "cases": 1,
+      "k": null,
+      "per_case_failure": "0",
+      "simultaneous_coverage_lower": "1",
+      "unbounded": true
+    },
+    {
+      "sessions": 4,
+      "cases": 5,
+      "k": null,
+      "per_case_failure": "0",
+      "simultaneous_coverage_lower": "1",
+      "unbounded": true
+    },
+    {
+      "sessions": 5,
+      "cases": 1,
+      "k": null,
+      "per_case_failure": "0",
+      "simultaneous_coverage_lower": "1",
+      "unbounded": true
+    },
+    {
+      "sessions": 5,
+      "cases": 5,
+      "k": null,
+      "per_case_failure": "0",
+      "simultaneous_coverage_lower": "1",
+      "unbounded": true
+    },
+    {
+      "sessions": 6,
+      "cases": 1,
+      "k": 1,
+      "per_case_failure": "1/32",
+      "simultaneous_coverage_lower": "31/32",
+      "unbounded": false
+    },
+    {
+      "sessions": 6,
+      "cases": 5,
+      "k": null,
+      "per_case_failure": "0",
+      "simultaneous_coverage_lower": "1",
+      "unbounded": true
+    },
+    {
+      "sessions": 7,
+      "cases": 1,
+      "k": 1,
+      "per_case_failure": "1/64",
+      "simultaneous_coverage_lower": "63/64",
+      "unbounded": false
+    },
+    {
+      "sessions": 7,
+      "cases": 5,
+      "k": null,
+      "per_case_failure": "0",
+      "simultaneous_coverage_lower": "1",
+      "unbounded": true
+    },
+    {
+      "sessions": 8,
+      "cases": 1,
+      "k": 1,
+      "per_case_failure": "1/128",
+      "simultaneous_coverage_lower": "127/128",
+      "unbounded": false
+    },
+    {
+      "sessions": 8,
+      "cases": 5,
+      "k": 1,
+      "per_case_failure": "1/128",
+      "simultaneous_coverage_lower": "123/128",
+      "unbounded": false
+    },
+    {
+      "sessions": 9,
+      "cases": 1,
+      "k": 2,
+      "per_case_failure": "5/128",
+      "simultaneous_coverage_lower": "123/128",
+      "unbounded": false
+    },
+    {
+      "sessions": 9,
+      "cases": 5,
+      "k": 1,
+      "per_case_failure": "1/256",
+      "simultaneous_coverage_lower": "251/256",
+      "unbounded": false
+    },
+    {
+      "sessions": 10,
+      "cases": 1,
+      "k": 2,
+      "per_case_failure": "11/512",
+      "simultaneous_coverage_lower": "501/512",
+      "unbounded": false
+    },
+    {
+      "sessions": 10,
+      "cases": 5,
+      "k": 1,
+      "per_case_failure": "1/512",
+      "simultaneous_coverage_lower": "507/512",
+      "unbounded": false
+    },
+    {
+      "sessions": 11,
+      "cases": 1,
+      "k": 2,
+      "per_case_failure": "3/256",
+      "simultaneous_coverage_lower": "253/256",
+      "unbounded": false
+    },
+    {
+      "sessions": 11,
+      "cases": 5,
+      "k": 1,
+      "per_case_failure": "1/1024",
+      "simultaneous_coverage_lower": "1019/1024",
+      "unbounded": false
+    },
+    {
+      "sessions": 12,
+      "cases": 1,
+      "k": 3,
+      "per_case_failure": "79/2048",
+      "simultaneous_coverage_lower": "1969/2048",
+      "unbounded": false
+    },
+    {
+      "sessions": 12,
+      "cases": 5,
+      "k": 2,
+      "per_case_failure": "13/2048",
+      "simultaneous_coverage_lower": "1983/2048",
+      "unbounded": false
+    },
+    {
+      "sessions": 13,
+      "cases": 1,
+      "k": 3,
+      "per_case_failure": "23/1024",
+      "simultaneous_coverage_lower": "1001/1024",
+      "unbounded": false
+    },
+    {
+      "sessions": 13,
+      "cases": 5,
+      "k": 2,
+      "per_case_failure": "7/2048",
+      "simultaneous_coverage_lower": "2013/2048",
+      "unbounded": false
+    },
+    {
+      "sessions": 14,
+      "cases": 1,
+      "k": 3,
+      "per_case_failure": "53/4096",
+      "simultaneous_coverage_lower": "4043/4096",
+      "unbounded": false
+    },
+    {
+      "sessions": 14,
+      "cases": 5,
+      "k": 2,
+      "per_case_failure": "15/8192",
+      "simultaneous_coverage_lower": "8117/8192",
+      "unbounded": false
+    },
+    {
+      "sessions": 15,
+      "cases": 1,
+      "k": 4,
+      "per_case_failure": "9/256",
+      "simultaneous_coverage_lower": "247/256",
+      "unbounded": false
+    },
+    {
+      "sessions": 15,
+      "cases": 5,
+      "k": 3,
+      "per_case_failure": "121/16384",
+      "simultaneous_coverage_lower": "15779/16384",
+      "unbounded": false
+    },
+    {
+      "sessions": 16,
+      "cases": 1,
+      "k": 4,
+      "per_case_failure": "697/32768",
+      "simultaneous_coverage_lower": "32071/32768",
+      "unbounded": false
+    },
+    {
+      "sessions": 16,
+      "cases": 5,
+      "k": 3,
+      "per_case_failure": "137/32768",
+      "simultaneous_coverage_lower": "32083/32768",
+      "unbounded": false
+    }
+  ],
+  "enumerations": [
+    {
+      "sessions": 6,
+      "cases": 1,
+      "k": 1,
+      "accepted_sign_patterns": 62,
+      "total": 64,
+      "per_case_coverage": "31/32"
+    },
+    {
+      "sessions": 6,
+      "cases": 5,
+      "k": null,
+      "accepted_sign_patterns": 64,
+      "total": 64,
+      "per_case_coverage": "1"
+    },
+    {
+      "sessions": 8,
+      "cases": 1,
+      "k": 1,
+      "accepted_sign_patterns": 254,
+      "total": 256,
+      "per_case_coverage": "127/128"
+    },
+    {
+      "sessions": 8,
+      "cases": 5,
+      "k": 1,
+      "accepted_sign_patterns": 254,
+      "total": 256,
+      "per_case_coverage": "127/128"
+    },
+    {
+      "sessions": 12,
+      "cases": 1,
+      "k": 3,
+      "accepted_sign_patterns": 3938,
+      "total": 4096,
+      "per_case_coverage": "1969/2048"
+    },
+    {
+      "sessions": 12,
+      "cases": 5,
+      "k": 2,
+      "accepted_sign_patterns": 4070,
+      "total": 4096,
+      "per_case_coverage": "2035/2048"
+    }
+  ],
+  "controls": [
+    {
+      "sessions": 6,
+      "cases": 1,
+      "ratio": 0.9,
+      "status": "FINITE",
+      "lower": -0.10536051565782628,
+      "upper": -0.10536051565782628,
+      "k": 1,
+      "coverage_lower": "31/32",
+      "decision": "Block"
+    },
+    {
+      "sessions": 6,
+      "cases": 1,
+      "ratio": 1.15,
+      "status": "FINITE",
+      "lower": 0.13976194237515863,
+      "upper": 0.13976194237515863,
+      "k": 1,
+      "coverage_lower": "31/32",
+      "decision": "Inconclusive"
+    },
+    {
+      "sessions": 6,
+      "cases": 1,
+      "ratio": 1.3,
+      "status": "FINITE",
+      "lower": 0.26236426446749106,
+      "upper": 0.26236426446749106,
+      "k": 1,
+      "coverage_lower": "31/32",
+      "decision": "Promote"
+    },
+    {
+      "sessions": 6,
+      "cases": 5,
+      "ratio": 0.9,
+      "status": "UNBOUNDED",
+      "decision": "Inconclusive",
+      "lower": null,
+      "upper": null,
+      "k": null,
+      "coverage_lower": "1"
+    },
+    {
+      "sessions": 6,
+      "cases": 5,
+      "ratio": 1.15,
+      "status": "UNBOUNDED",
+      "decision": "Inconclusive",
+      "lower": null,
+      "upper": null,
+      "k": null,
+      "coverage_lower": "1"
+    },
+    {
+      "sessions": 6,
+      "cases": 5,
+      "ratio": 1.3,
+      "status": "UNBOUNDED",
+      "decision": "Inconclusive",
+      "lower": null,
+      "upper": null,
+      "k": null,
+      "coverage_lower": "1"
+    },
+    {
+      "sessions": 8,
+      "cases": 5,
+      "ratio": 0.9,
+      "status": "FINITE",
+      "lower": -0.10536051565782628,
+      "upper": -0.10536051565782628,
+      "k": 1,
+      "coverage_lower": "123/128",
+      "decision": "Block"
+    },
+    {
+      "sessions": 8,
+      "cases": 5,
+      "ratio": 1.15,
+      "status": "FINITE",
+      "lower": 0.13976194237515863,
+      "upper": 0.13976194237515863,
+      "k": 1,
+      "coverage_lower": "123/128",
+      "decision": "Inconclusive"
+    },
+    {
+      "sessions": 8,
+      "cases": 5,
+      "ratio": 1.3,
+      "status": "FINITE",
+      "lower": 0.26236426446749106,
+      "upper": 0.26236426446749106,
+      "k": 1,
+      "coverage_lower": "123/128",
+      "decision": "Promote"
+    },
+    {
+      "sessions": 12,
+      "cases": 5,
+      "ratio": 0.9,
+      "status": "FINITE",
+      "lower": -0.10536051565782628,
+      "upper": -0.10536051565782628,
+      "k": 2,
+      "coverage_lower": "1983/2048",
+      "decision": "Block"
+    },
+    {
+      "sessions": 12,
+      "cases": 5,
+      "ratio": 1.15,
+      "status": "FINITE",
+      "lower": 0.13976194237515863,
+      "upper": 0.13976194237515863,
+      "k": 2,
+      "coverage_lower": "1983/2048",
+      "decision": "Inconclusive"
+    },
+    {
+      "sessions": 12,
+      "cases": 5,
+      "ratio": 1.3,
+      "status": "FINITE",
+      "lower": 0.26236426446749106,
+      "upper": 0.26236426446749106,
+      "k": 2,
+      "coverage_lower": "1983/2048",
+      "decision": "Promote"
+    }
+  ],
+  "invalid_inputs": [
+    {
+      "mutation": "duplicate_session",
+      "rejected": "duplicate session"
+    },
+    {
+      "mutation": "missing_case",
+      "rejected": "missing/extra case"
+    },
+    {
+      "mutation": "nan",
+      "rejected": "nonfinite cell"
+    },
+    {
+      "mutation": "failed_session",
+      "rejected": "failed session"
+    }
+  ]
+}

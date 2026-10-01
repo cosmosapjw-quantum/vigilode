@@ -1,0 +1,163 @@
+{
+  "schema": "vigilode.r4.runtime_remainder.v1",
+  "status": "NOT_EXECUTED",
+  "purpose": "Close bounded omissions on local hardware without repeating completed regressions",
+  "source_commit": "1c54194123ee6abc6daa512e8574922f510b4e2c",
+  "execution_commit": "b2914f3e3c03eda60a8547619db6284aac8250a2",
+  "profile": {
+    "name": "debug",
+    "incremental": false,
+    "codegen_units": 1,
+    "jobs": 1,
+    "test_threads": 1,
+    "features": "all",
+    "targets": "all"
+  },
+  "targets": [
+    {
+      "target": "cli_contracts",
+      "status": "BOUNDED_TIMEOUT",
+      "tests": [
+        "matrix_free_common_w_cli_emits_strict_jf_report",
+        "native_integrator_gates_command_emits_deterministic_bdf_and_radau_rows",
+        "stage_batch_feasibility_cli_emits_deterministic_within_step_report",
+        "stage_growth_safety_audit_cli_emits_explicit_budget_and_audit_fields",
+        "stage_growth_safety_cli_exposes_independent_calibration192_profile",
+        "tolerance_scaled_early_defect_cli_is_threshold_free_and_machine_readable",
+        "unified_candidate_screen_combines_linear_and_nonlinear_tiers",
+        "validate_trace_and_benchmark_commands_emit_machine_readable_artifacts"
+      ]
+    },
+    {
+      "target": "common_w_gate_contracts",
+      "status": "BOUNDED_TIMEOUT",
+      "tests": [
+        "smoke_common_w_gate_is_strictly_jacobian_free_and_deterministic"
+      ]
+    },
+    {
+      "target": "fixed_step_order_contracts",
+      "status": "BOUNDED_TIMEOUT",
+      "tests": [
+        "forcing_fixed_outer_rtol_error_is_bounded_by_tolerance_floor",
+        "forcing_fixed_outer_rtol_keeps_order_five",
+        "forcing_rule_tight_tolerance_matches_direct_without_abort",
+        "preconditioned_gmres_paths_keep_the_direct_order"
+      ]
+    },
+    {
+      "target": "two_arm_v3_campaign_contracts",
+      "status": "BOUNDED_TIMEOUT",
+      "tests": [
+        "v3_record_is_reproducible_bit_for_bit",
+        "v3_record_runs_all_three_parts_on_unchanged_v2_arms"
+      ]
+    },
+    {
+      "target": "a1_two_arm_receipt_contracts",
+      "status": "BOUNDED_TIMEOUT",
+      "tests": [
+        "all_two_by_six_cells_have_explicit_complete_or_reasoned_audit_states",
+        "audit_execution_is_neutral_to_runtime_policy_budgets_controller_and_trace",
+        "receipt_only_candidate_is_explicit_and_ordinary_runtime_remains_legacy_fixed",
+        "scientific_execution_identity_rejects_late_bound_or_malformed_values",
+        "unrecommended_hires_event_has_arm_bound_independent_audit_evidence"
+      ]
+    },
+    {
+      "target": "g4_s5b0_regime_atlas_contracts",
+      "status": "NOT_RUN_TOTAL_BUDGET",
+      "tests": [
+        "actual_level1_prefix_runner_is_read_only_and_targets_first_runtime_proposals",
+        "actual_level2_prefix_runner_is_read_only_and_exposes_later_stage_defects",
+        "attempt_trace_smoke_reconstructs_committed_rjf_rows_and_retains_trials",
+        "family_shard_registry_matches_the_six_atlas_families",
+        "holdout_dimensions_have_no_source_literals",
+        "replayed_k1_table_is_rejected_on_holdout_profile",
+        "rjf_only_smoke_skips_every_exponential_shadow",
+        "smoke_atlas_contains_all_transition_families",
+        "smoke_atlas_is_read_only_and_matrix_free",
+        "split_profiles_freeze_dimension_and_canonical_tolerances",
+        "v29_stage_growth_profiles_are_fresh_and_freeze_tolerances",
+        "v29_stage_growth_safety_audit_is_read_only_budgeted_and_explicit"
+      ]
+    },
+    {
+      "target": "givens_production_differential_contracts",
+      "status": "NOT_RUN_TOTAL_BUDGET",
+      "tests": [
+        "candidate_and_production_outcomes_are_pinned_on_the_e05_nonnormal_jacobi_rows"
+      ]
+    },
+    {
+      "target": "homotopy_policy_contracts",
+      "status": "NOT_RUN_TOTAL_BUDGET",
+      "tests": [
+        "homotopy_step_config_preserves_absolute_constructor_and_accepts_policy",
+        "local_rayon_execution_matches_sequential_ordered_results",
+        "order_policy_screen_keeps_the_protected_sequential_fifth_order_gate",
+        "output_budget_policies_match_dimensionless_formulas",
+        "output_budget_policies_reject_invalid_parameters",
+        "parallel_execution_mutates_outputs_in_order_without_intermediate_results",
+        "policy_replay_split_is_disjoint_and_rayon_scientific_output_is_deterministic",
+        "trajectory_gate_false_accepts_are_scoped_to_the_matching_path_configuration"
+      ]
+    },
+    {
+      "target": "inner_forcing_fixed_step_ladder_contracts",
+      "status": "NOT_RUN_TOTAL_BUDGET",
+      "tests": [
+        "error_scaled_residual_limit_shrinks_with_the_embedded_estimate",
+        "forcing_target_on_a_stiff_stage_returns_a_floor_instead_of_an_error",
+        "inexact_arm_tracks_direct_lu_on_a_fixed_rtol_halving_ladder_advection_diffusion",
+        "inexact_arm_tracks_direct_lu_on_a_fixed_rtol_halving_ladder_prothero_robinson",
+        "refined_stage_reports_are_flagged_and_within_the_error_scaled_limit",
+        "tight_rtol_stiff_fixed_steps_do_not_abort_at_step_zero"
+      ]
+    },
+    {
+      "target": "unified_candidate_contracts",
+      "status": "NOT_RUN_TOTAL_BUDGET",
+      "tests": [
+        "c3_budget_pass_does_not_override_an_independent_candidate_rejection",
+        "catalog_exposes_all_current_and_deferred_candidate_families",
+        "nonlinear_reference_certification_exposes_first_correction_underestimate",
+        "protected_oracle_fallback_can_certify_research_output_when_c3_exhausts",
+        "reference_budget_pass_does_not_override_an_independent_candidate_rejection",
+        "refined_root_certificate_accepts_an_already_converged_protected_stage_vector",
+        "uncertified_unified_candidate_row_requires_an_explicit_decision_reason",
+        "unified_candidate_row_rejects_certified_failure_state",
+        "unified_scientific_gates_are_thread_deterministic",
+        "unified_scientific_gates_distinguish_protected_fifth_order_from_low_order_fast_path",
+        "unified_screen_applies_the_same_c3_output_budget_to_every_nonlinear_candidate",
+        "unified_smoke_screen_is_scientifically_identical_across_one_and_four_threads",
+        "unified_smoke_screen_runs_all_current_nonlinear_families_against_one_oracle"
+      ]
+    }
+  ],
+  "ignored": [
+    {
+      "target": "coefficient_structural_contracts",
+      "test": "write_stage_target_semantics"
+    },
+    {
+      "target": "rodas5p_integrators",
+      "test": "g4_s5b0_regime_atlas::stage_trajectory_geometry_tests::one_pair_wall_protocol_is_self_describing_and_identity_checked"
+    },
+    {
+      "target": "v37_continuation_transaction_contracts",
+      "test": "v37_exhaustion_is_a_charged_abstention_without_endpoint_or_failure_label"
+    },
+    {
+      "target": "v37_continuation_transaction_contracts",
+      "test": "v37_trajectory_literals_match_the_latest_snapshot"
+    }
+  ],
+  "gates": [
+    "Use same source/dependencies/profile or explicitly report changed identity",
+    "Run remaining named tests with an explicitly larger local execution budget",
+    "Keep timeout distinct from assertion failure",
+    "Doctests remain a separate named gate",
+    "Do not reinterpret artifact verification as a scientific correctness proof"
+  ]
+}

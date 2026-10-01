@@ -1,0 +1,576 @@
+{
+  "evidence_status": "inherited published campaign; no new timing execution",
+  "audited_source": "1c54194123ee6abc6daa512e8574922f510b4e2c",
+  "campaign_source": "0799a05e6c616084af4d58671ee4c6c93e2c5a1c",
+  "code_source": "d198558b981a538b7f8293f8b059b9f2f515d080",
+  "source_directory": "research/r3_matched_accuracy_hom06_20261001",
+  "file_hashes": {
+    "CAMPAIGN.json": "8d665866f10f5c2bc0d945f704e6bc2cd600f8e04b3e4e7f9a1a8abd1aba0980",
+    "VERIFY.json": "cdaf676814fe216237137b60455cd4754bc8578c63ffe31fc4874a50143eff45",
+    "PREREGISTRATION.md": "2cef3a0805fe0a7decc0f22e91394e833600c9cbf96d23f90c8c24fae51945cd"
+  },
+  "summary": {
+    "transactional-certified-p1": {
+      "assessment_decision": "block",
+      "failed_sessions": 0,
+      "gate_decision": "block",
+      "independent_sessions": 6,
+      "receipt_failures": 0,
+      "speedup_lower": 0.1349220158044715,
+      "speedup_point": 0.17350331624809945,
+      "speedup_upper": 0.18705355491190911,
+      "verified_decision": "Block"
+    },
+    "transactional-certified-p2": {
+      "assessment_decision": "block",
+      "failed_sessions": 0,
+      "gate_decision": "block",
+      "independent_sessions": 6,
+      "receipt_failures": 0,
+      "speedup_lower": 0.03782723941975327,
+      "speedup_point": 0.0717592005850954,
+      "speedup_upper": 0.12939096368228356,
+      "verified_decision": "Block"
+    },
+    "transactional-certified-p4": {
+      "assessment_decision": "block",
+      "failed_sessions": 0,
+      "gate_decision": "block",
+      "independent_sessions": 6,
+      "receipt_failures": 0,
+      "speedup_lower": 0.026464363950655944,
+      "speedup_point": 0.0481496386635852,
+      "speedup_upper": 0.10423480970876496,
+      "verified_decision": "Block"
+    },
+    "transactional-certified-p8": {
+      "assessment_decision": "block",
+      "failed_sessions": 0,
+      "gate_decision": "block",
+      "independent_sessions": 6,
+      "receipt_failures": 0,
+      "speedup_lower": 0.019744491666055144,
+      "speedup_point": 0.03689295996739762,
+      "speedup_upper": 0.09573957112942082,
+      "verified_decision": "Block"
+    }
+  },
+  "verification": {
+    "sequential-jf-gmres": {
+      "cases": [
+        {
+          "case_id": "scalar-linear",
+          "accuracy": 0.025899661980691633,
+          "accuracy_pass": true,
+          "details": {
+            "attempts": 37,
+            "internal_steps": 37
+          },
+          "rhs_evaluations": 359,
+          "jvp_vectors": 1539
+        },
+        {
+          "case_id": "scalar-quadratic",
+          "accuracy": 0.05752201055296028,
+          "accuracy_pass": true,
+          "details": {
+            "attempts": 40,
+            "internal_steps": 40
+          },
+          "rhs_evaluations": 376,
+          "jvp_vectors": 1692
+        },
+        {
+          "case_id": "diagonal-quadratic-8",
+          "accuracy": 0.028821146570977865,
+          "accuracy_pass": true,
+          "details": {
+            "attempts": 75,
+            "internal_steps": 74
+          },
+          "rhs_evaluations": 649,
+          "jvp_vectors": 7196
+        },
+        {
+          "case_id": "coupled-linear-6",
+          "accuracy": 0.016854546133028534,
+          "accuracy_pass": true,
+          "details": {
+            "attempts": 41,
+            "internal_steps": 41
+          },
+          "rhs_evaluations": 377,
+          "jvp_vectors": 3072
+        },
+        {
+          "case_id": "nonsymmetric-linear-2",
+          "accuracy": 7.911687554617252e-06,
+          "accuracy_pass": true,
+          "details": {
+            "attempts": 13,
+            "internal_steps": 13
+          },
+          "rhs_evaluations": 195,
+          "jvp_vectors": 872
+        }
+      ]
+    },
+    "transactional-certified-p1": {
+      "cases": [
+        {
+          "case_id": "scalar-linear",
+          "accuracy": 0.025899659897722627,
+          "accuracy_pass": true,
+          "details": {
+            "accepted_q2_escalated_steps": 32,
+            "admission_mismatches": 0,
+            "attempts": 37,
+            "certificate_admissions": 32,
+            "certificate_attempts": 34,
+            "certificate_fraction": 0.9411764705882353,
+            "certificate_operations": 14450,
+            "internal_steps": 37,
+            "p1_accepted_q1_fraction": 0.08108108108108109,
+            "pf_fallback_fraction": 0.05405405405405406,
+            "q2_escalation_fraction": 0.918918918918919,
+            "total_critical_path_depth": 272,
+            "total_w_solve_batches": 256
+          },
+          "rhs_evaluations": 1745,
+          "jvp_vectors": 12042
+        },
+        {
+          "case_id": "scalar-quadratic",
+          "accuracy": 0.05940831042337486,
+          "accuracy_pass": true,
+          "details": {
+            "accepted_q2_escalated_steps": 36,
+            "admission_mismatches": 0,
+            "attempts": 40,
+            "certificate_admissions": 36,
+            "certificate_attempts": 37,
+            "certificate_fraction": 0.972972972972973,
+            "certificate_operations": 15725,
+            "internal_steps": 40,
+            "p1_accepted_q1_fraction": 0.075,
+            "pf_fallback_fraction": 0.025,
+            "q2_escalation_fraction": 0.925,
+            "total_critical_path_depth": 285,
+            "total_w_solve_batches": 277
+          },
+          "rhs_evaluations": 1882,
+          "jvp_vectors": 13404
+        },
+        {
+          "case_id": "diagonal-quadratic-8",
+          "accuracy": 0.029148824980906304,
+          "accuracy_pass": true,
+          "details": {
+            "accepted_q2_escalated_steps": 74,
+            "admission_mismatches": 0,
+            "attempts": 75,
+            "certificate_admissions": 75,
+            "certificate_attempts": 75,
+            "certificate_fraction": 1.0,
+            "certificate_operations": 591000,
+            "internal_steps": 74,
+            "p1_accepted_q1_fraction": 0.0,
+            "pf_fallback_fraction": 0.0,
+            "q2_escalation_fraction": 1.0,
+            "total_critical_path_depth": 525,
+            "total_w_solve_batches": 525
+          },
+          "rhs_evaluations": 3600,
+          "jvp_vectors": 43252
+        },
+        {
+          "case_id": "coupled-linear-6",
+          "accuracy": 0.016854547217802798,
+          "accuracy_pass": true,
+          "details": {
+            "accepted_q2_escalated_steps": 0,
+            "admission_mismatches": 0,
+            "attempts": 41,
+            "certificate_admissions": 0,
+            "certificate_attempts": 41,
+            "certificate_fraction": 0.0,
+            "certificate_operations": 0,
+            "internal_steps": 41,
+            "p1_accepted_q1_fraction": 0.0,
+            "pf_fallback_fraction": 1.0,
+            "q2_escalation_fraction": 1.0,
+            "total_critical_path_depth": 615,
+            "total_w_solve_batches": 287
+          },
+          "rhs_evaluations": 2249,
+          "jvp_vectors": 22372
+        },
+        {
+          "case_id": "nonsymmetric-linear-2",
+          "accuracy": 7.915213196619421e-06,
+          "accuracy_pass": true,
+          "details": {
+            "accepted_q2_escalated_steps": 10,
+            "admission_mismatches": 0,
+            "attempts": 13,
+            "certificate_admissions": 10,
+            "certificate_attempts": 11,
+            "certificate_fraction": 0.9090909090909091,
+            "certificate_operations": 11528,
+            "internal_steps": 13,
+            "p1_accepted_q1_fraction": 0.15384615384615385,
+            "pf_fallback_fraction": 0.07692307692307693,
+            "q2_escalation_fraction": 0.8461538461538461,
+            "total_critical_path_depth": 97,
+            "total_w_solve_batches": 89
+          },
+          "rhs_evaluations": 601,
+          "jvp_vectors": 4519
+        }
+      ]
+    },
+    "transactional-certified-p2": {
+      "cases": [
+        {
+          "case_id": "scalar-linear",
+          "accuracy": 0.025899659897722627,
+          "accuracy_pass": true,
+          "details": {
+            "accepted_q2_escalated_steps": 32,
+            "admission_mismatches": 0,
+            "attempts": 37,
+            "certificate_admissions": 32,
+            "certificate_attempts": 34,
+            "certificate_fraction": 0.9411764705882353,
+            "certificate_operations": 14450,
+            "internal_steps": 37,
+            "p1_accepted_q1_fraction": 0.08108108108108109,
+            "pf_fallback_fraction": 0.05405405405405406,
+            "q2_escalation_fraction": 0.918918918918919,
+            "total_critical_path_depth": 272,
+            "total_w_solve_batches": 256
+          },
+          "rhs_evaluations": 1745,
+          "jvp_vectors": 12042
+        },
+        {
+          "case_id": "scalar-quadratic",
+          "accuracy": 0.05940831042337486,
+          "accuracy_pass": true,
+          "details": {
+            "accepted_q2_escalated_steps": 36,
+            "admission_mismatches": 0,
+            "attempts": 40,
+            "certificate_admissions": 36,
+            "certificate_attempts": 37,
+            "certificate_fraction": 0.972972972972973,
+            "certificate_operations": 15725,
+            "internal_steps": 40,
+            "p1_accepted_q1_fraction": 0.075,
+            "pf_fallback_fraction": 0.025,
+            "q2_escalation_fraction": 0.925,
+            "total_critical_path_depth": 285,
+            "total_w_solve_batches": 277
+          },
+          "rhs_evaluations": 1882,
+          "jvp_vectors": 13404
+        },
+        {
+          "case_id": "diagonal-quadratic-8",
+          "accuracy": 0.029148824980906304,
+          "accuracy_pass": true,
+          "details": {
+            "accepted_q2_escalated_steps": 74,
+            "admission_mismatches": 0,
+            "attempts": 75,
+            "certificate_admissions": 75,
+            "certificate_attempts": 75,
+            "certificate_fraction": 1.0,
+            "certificate_operations": 591000,
+            "internal_steps": 74,
+            "p1_accepted_q1_fraction": 0.0,
+            "pf_fallback_fraction": 0.0,
+            "q2_escalation_fraction": 1.0,
+            "total_critical_path_depth": 525,
+            "total_w_solve_batches": 525
+          },
+          "rhs_evaluations": 3600,
+          "jvp_vectors": 43252
+        },
+        {
+          "case_id": "coupled-linear-6",
+          "accuracy": 0.016854547217802798,
+          "accuracy_pass": true,
+          "details": {
+            "accepted_q2_escalated_steps": 0,
+            "admission_mismatches": 0,
+            "attempts": 41,
+            "certificate_admissions": 0,
+            "certificate_attempts": 41,
+            "certificate_fraction": 0.0,
+            "certificate_operations": 0,
+            "internal_steps": 41,
+            "p1_accepted_q1_fraction": 0.0,
+            "pf_fallback_fraction": 1.0,
+            "q2_escalation_fraction": 1.0,
+            "total_critical_path_depth": 615,
+            "total_w_solve_batches": 287
+          },
+          "rhs_evaluations": 2249,
+          "jvp_vectors": 22372
+        },
+        {
+          "case_id": "nonsymmetric-linear-2",
+          "accuracy": 7.915213196619421e-06,
+          "accuracy_pass": true,
+          "details": {
+            "accepted_q2_escalated_steps": 10,
+            "admission_mismatches": 0,
+            "attempts": 13,
+            "certificate_admissions": 10,
+            "certificate_attempts": 11,
+            "certificate_fraction": 0.9090909090909091,
+            "certificate_operations": 11528,
+            "internal_steps": 13,
+            "p1_accepted_q1_fraction": 0.15384615384615385,
+            "pf_fallback_fraction": 0.07692307692307693,
+            "q2_escalation_fraction": 0.8461538461538461,
+            "total_critical_path_depth": 97,
+            "total_w_solve_batches": 89
+          },
+          "rhs_evaluations": 601,
+          "jvp_vectors": 4519
+        }
+      ]
+    },
+    "transactional-certified-p4": {
+      "cases": [
+        {
+          "case_id": "scalar-linear",
+          "accuracy": 0.025899659897722627,
+          "accuracy_pass": true,
+          "details": {
+            "accepted_q2_escalated_steps": 32,
+            "admission_mismatches": 0,
+            "attempts": 37,
+            "certificate_admissions": 32,
+            "certificate_attempts": 34,
+            "certificate_fraction": 0.9411764705882353,
+            "certificate_operations": 14450,
+            "internal_steps": 37,
+            "p1_accepted_q1_fraction": 0.08108108108108109,
+            "pf_fallback_fraction": 0.05405405405405406,
+            "q2_escalation_fraction": 0.918918918918919,
+            "total_critical_path_depth": 272,
+            "total_w_solve_batches": 256
+          },
+          "rhs_evaluations": 1745,
+          "jvp_vectors": 12042
+        },
+        {
+          "case_id": "scalar-quadratic",
+          "accuracy": 0.05940831042337486,
+          "accuracy_pass": true,
+          "details": {
+            "accepted_q2_escalated_steps": 36,
+            "admission_mismatches": 0,
+            "attempts": 40,
+            "certificate_admissions": 36,
+            "certificate_attempts": 37,
+            "certificate_fraction": 0.972972972972973,
+            "certificate_operations": 15725,
+            "internal_steps": 40,
+            "p1_accepted_q1_fraction": 0.075,
+            "pf_fallback_fraction": 0.025,
+            "q2_escalation_fraction": 0.925,
+            "total_critical_path_depth": 285,
+            "total_w_solve_batches": 277
+          },
+          "rhs_evaluations": 1882,
+          "jvp_vectors": 13404
+        },
+        {
+          "case_id": "diagonal-quadratic-8",
+          "accuracy": 0.029148824980906304,
+          "accuracy_pass": true,
+          "details": {
+            "accepted_q2_escalated_steps": 74,
+            "admission_mismatches": 0,
+            "attempts": 75,
+            "certificate_admissions": 75,
+            "certificate_attempts": 75,
+            "certificate_fraction": 1.0,
+            "certificate_operations": 591000,
+            "internal_steps": 74,
+            "p1_accepted_q1_fraction": 0.0,
+            "pf_fallback_fraction": 0.0,
+            "q2_escalation_fraction": 1.0,
+            "total_critical_path_depth": 525,
+            "total_w_solve_batches": 525
+          },
+          "rhs_evaluations": 3600,
+          "jvp_vectors": 43252
+        },
+        {
+          "case_id": "coupled-linear-6",
+          "accuracy": 0.016854547217802798,
+          "accuracy_pass": true,
+          "details": {
+            "accepted_q2_escalated_steps": 0,
+            "admission_mismatches": 0,
+            "attempts": 41,
+            "certificate_admissions": 0,
+            "certificate_attempts": 41,
+            "certificate_fraction": 0.0,
+            "certificate_operations": 0,
+            "internal_steps": 41,
+            "p1_accepted_q1_fraction": 0.0,
+            "pf_fallback_fraction": 1.0,
+            "q2_escalation_fraction": 1.0,
+            "total_critical_path_depth": 615,
+            "total_w_solve_batches": 287
+          },
+          "rhs_evaluations": 2249,
+          "jvp_vectors": 22372
+        },
+        {
+          "case_id": "nonsymmetric-linear-2",
+          "accuracy": 7.915213196619421e-06,
+          "accuracy_pass": true,
+          "details": {
+            "accepted_q2_escalated_steps": 10,
+            "admission_mismatches": 0,
+            "attempts": 13,
+            "certificate_admissions": 10,
+            "certificate_attempts": 11,
+            "certificate_fraction": 0.9090909090909091,
+            "certificate_operations": 11528,
+            "internal_steps": 13,
+            "p1_accepted_q1_fraction": 0.15384615384615385,
+            "pf_fallback_fraction": 0.07692307692307693,
+            "q2_escalation_fraction": 0.8461538461538461,
+            "total_critical_path_depth": 97,
+            "total_w_solve_batches": 89
+          },
+          "rhs_evaluations": 601,
+          "jvp_vectors": 4519
+        }
+      ]
+    },
+    "transactional-certified-p8": {
+      "cases": [
+        {
+          "case_id": "scalar-linear",
+          "accuracy": 0.025899659897722627,
+          "accuracy_pass": true,
+          "details": {
+            "accepted_q2_escalated_steps": 32,
+            "admission_mismatches": 0,
+            "attempts": 37,
+            "certificate_admissions": 32,
+            "certificate_attempts": 34,
+            "certificate_fraction": 0.9411764705882353,
+            "certificate_operations": 14450,
+            "internal_steps": 37,
+            "p1_accepted_q1_fraction": 0.08108108108108109,
+            "pf_fallback_fraction": 0.05405405405405406,
+            "q2_escalation_fraction": 0.918918918918919,
+            "total_critical_path_depth": 272,
+            "total_w_solve_batches": 256
+          },
+          "rhs_evaluations": 1745,
+          "jvp_vectors": 12042
+        },
+        {
+          "case_id": "scalar-quadratic",
+          "accuracy": 0.05940831042337486,
+          "accuracy_pass": true,
+          "details": {
+            "accepted_q2_escalated_steps": 36,
+            "admission_mismatches": 0,
+            "attempts": 40,
+            "certificate_admissions": 36,
+            "certificate_attempts": 37,
+            "certificate_fraction": 0.972972972972973,
+            "certificate_operations": 15725,
+            "internal_steps": 40,
+            "p1_accepted_q1_fraction": 0.075,
+            "pf_fallback_fraction": 0.025,
+            "q2_escalation_fraction": 0.925,
+            "total_critical_path_depth": 285,
+            "total_w_solve_batches": 277
+          },
+          "rhs_evaluations": 1882,
+          "jvp_vectors": 13404
+        },
+        {
+          "case_id": "diagonal-quadratic-8",
+          "accuracy": 0.029148824980906304,
+          "accuracy_pass": true,
+          "details": {
+            "accepted_q2_escalated_steps": 74,
+            "admission_mismatches": 0,
+            "attempts": 75,
+            "certificate_admissions": 75,
+            "certificate_attempts": 75,
+            "certificate_fraction": 1.0,
+            "certificate_operations": 591000,
+            "internal_steps": 74,
+            "p1_accepted_q1_fraction": 0.0,
+            "pf_fallback_fraction": 0.0,
+            "q2_escalation_fraction": 1.0,
+            "total_critical_path_depth": 525,
+            "total_w_solve_batches": 525
+          },
+          "rhs_evaluations": 3600,
+          "jvp_vectors": 43252
+        },
+        {
+          "case_id": "coupled-linear-6",
+          "accuracy": 0.016854547217802798,
+          "accuracy_pass": true,
+          "details": {
+            "accepted_q2_escalated_steps": 0,
+            "admission_mismatches": 0,
+            "attempts": 41,
+            "certificate_admissions": 0,
+            "certificate_attempts": 41,
+            "certificate_fraction": 0.0,
+            "certificate_operations": 0,
+            "internal_steps": 41,
+            "p1_accepted_q1_fraction": 0.0,
+            "pf_fallback_fraction": 1.0,
+            "q2_escalation_fraction": 1.0,
+            "total_critical_path_depth": 615,
+            "total_w_solve_batches": 287
+          },
+          "rhs_evaluations": 2249,
+          "jvp_vectors": 22372
+        },
+        {
+          "case_id": "nonsymmetric-linear-2",
+          "accuracy": 7.915213196619421e-06,
+          "accuracy_pass": true,
+          "details": {
+            "accepted_q2_escalated_steps": 10,
+            "admission_mismatches": 0,
+            "attempts": 13,
+            "certificate_admissions": 10,
+            "certificate_attempts": 11,
+            "certificate_fraction": 0.9090909090909091,
+            "certificate_operations": 11528,
+            "internal_steps": 13,
+            "p1_accepted_q1_fraction": 0.15384615384615385,
+            "pf_fallback_fraction": 0.07692307692307693,
+            "q2_escalation_fraction": 0.8461538461538461,
+            "total_critical_path_depth": 97,
+            "total_w_solve_batches": 89
+          },
+          "rhs_evaluations": 601,
+          "jvp_vectors": 4519
+        }
+      ]
+    }
+  },
+  "claim_ceiling": "measured population negative speed evidence on nonauthoritative shared host; no production promotion"
+}

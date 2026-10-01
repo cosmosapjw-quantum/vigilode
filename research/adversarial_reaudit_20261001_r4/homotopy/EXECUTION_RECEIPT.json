@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "audited_production_source": "1c54194123ee6abc6daa512e8574922f510b4e2c",
+  "preregistration_commit": "b2914f3e3c03eda60a8547619db6284aac8250a2",
+  "execution_checkout_head": "b2914f3e3c03eda60a8547619db6284aac8250a2",
+  "receipt_written_utc": "2026-10-01T11:24:13.335147+00:00",
+  "native": {
+    "command": "source runtime_r4/env.sh; flock runtime_r4/cargo-build.lock cargo run --offline --locked --manifest-path r4/homotopy/probe/Cargo.toml",
+    "exit_code": 0,
+    "rows": 9,
+    "stdout": "native.jsonl",
+    "stderr": "native.stderr",
+    "scientific_verdict_not_implied_by_exit": true
+  },
+  "exact": {
+    "command": "python3 r4/homotopy/exact_checks.py --native r4/homotopy/native.jsonl --output r4/homotopy/RESULTS.json",
+    "exit_code": 0,
+    "stdout": "exact.stdout",
+    "stderr": "exact.stderr",
+    "oracle": "Python Fraction of exact binary64 native inputs"
+  },
+  "preflight_incident": {
+    "class": "IMPLEMENTATION_TEST_HARNESS",
+    "description": "Initial Cargo metadata-only attempt had one too many parent path segments; corrected before preregistration. No native science run or production mutation occurred.",
+    "first_log": "lockfile.stderr",
+    "fixed_log": "lockfile.corrected.stderr",
+    "first_exit": 101,
+    "fixed_exit": 0
+  },
+  "files_sha256": {
+    "CONTRACT.md": "4f185569e90a14b8a4eebdad0b4dc237fe3804939e5e5733cb1df06a51f4f703",
+    "exact_checks.py": "959ff6771d07a1baf61afb95fd14f4032284f7e84b13a7223ee76b6e634e7c0e",
+    "probe/Cargo.toml": "2e258e8dd8e14432b91b132eb820c9441ba3b8f160663817f995fde4fec531a1",
+    "probe/Cargo.lock": "c47d120ee5a3fbbad1bc48b6a17192b49176a36a5f5bd8b4f99eb788650f11c0",
+    "probe/src/main.rs": "aaaac51e7840ea07ab40ac417a20981a46848ae4ed12139bef86ad6a55dace8c",
+    "native.jsonl": "353cf7f1f9f94d151abeab4c2a7a56adde0be453a25c62c80e70d30490368100",
+    "RESULTS.json": "06cdabe16d93ce56317c0056a7c0011d0ea38e97c22b641f797c4c9a4cb0a5b4"
+  },
+  "production_changes": false,
+  "timing_run_performed": false
+}

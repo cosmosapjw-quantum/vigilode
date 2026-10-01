@@ -1,0 +1,52 @@
+{
+  "schema": "vigilode-r4-statistics-development-v1",
+  "source_commit": "1c54194123ee6abc6daa512e8574922f510b4e2c",
+  "nodes": [
+    {
+      "id": "R4-STAT-DEV-01",
+      "priority": "P2",
+      "title": "Propagate statistical authority separately from the numeric timing decision",
+      "depends_on": [],
+      "problem": "Coverage studies are FAIL and closure imposes STATISTICAL_AUTHORITY_HOLD, but verified_decision only verifies integrity and CLI maps Promote to Passed.",
+      "implementation": ["Add a typed TimingAuthority with study identity, design/estimand version, validated domain and Hold/Admissible/NotEvaluated status.", "Keep diagnostic Promote/Block/Inconclusive and raw receipts immutable; expose a separate admissible_decision consumed by CLI wall_criterion.", "Make absent, mismatched or failed coverage authority yield NotEvaluated and a machine-readable reason; do not erase the historical numeric POLY03 PASS."],
+      "acceptance": ["Current single-case synthetic receipt retains its diagnostic Promote but cannot pass the consumer under current failed study.", "Published POLY03 numeric summary remains preserved and reports effective authority hold.", "Forged or unrelated authority identifiers fail; preregistered future passing domain may authorize only matching designs."],
+      "kill_criterion": "A bool copied from user JSON without an externally selected study/domain binding is not an authority implementation."
+    },
+    {
+      "id": "R4-STAT-DEV-02",
+      "priority": "P2",
+      "title": "Validate every raw session cell before merging",
+      "depends_on": [],
+      "implementation": ["Require candidate_seconds.len == reference_seconds.len == process_blocks.len == order.len == protocol.pairs for every session cell.", "Require at least protocol.warmups finite nonnegative warmup samples in every record; preserve the existing producer's 2*warmups convention explicitly.", "Bind fixed batch calibration to the first calibration session/case, require each later cell's batch match it, and keep each session's own warmups. Do not demand re-calibration from each later warmup because the campaign intentionally fixes the first batch.", "Check finite ordered start/finish timestamps and nonempty arm/workload identities; retain failures explicitly."],
+      "acceptance": ["Empty or singleton later warmups reject before assessment.", "29/31 candidate or reference samples in adjacent sessions reject even when the merged flat vector is unchanged.", "Existing genuine fixed-batch campaigns and all five original R3 malformed-case rejections remain valid."],
+      "kill_criterion": "Passing by dropping malformed cells, merging first and validating only totals, or deleting old raw receipts is forbidden."
+    },
+    {
+      "id": "R4-STAT-DEV-03",
+      "priority": "P2",
+      "title": "Decide and version the estimand before changing intervals",
+      "depends_on": ["R4-STAT-DEV-01"],
+      "implementation": ["Resolve the discrepancy between the contract ID/module description naming case-session medians and prose/code pooling pair logs.", "Choose explicitly between the existing pooled-pair median target and the proposed median of population session-cell medians; state conditions for equality.", "Version inputs and outputs so intervals for distinct estimands cannot be compared or substituted silently."],
+      "acceptance": ["An asymmetric cell-law fixture demonstrates that the two estimands can differ.", "The symmetric additive timing-design family yields the same theta by proof.", "Published R3 evidence remains attached to its original estimand and algorithm."],
+      "kill_criterion": "A new interval that changes the scientific target without a new contract is rejected."
+    },
+    {
+      "id": "R4-STAT-DEV-04",
+      "priority": "P2",
+      "title": "Port the exact simultaneous session-median interval candidate and validate its domain",
+      "depends_on": ["R4-STAT-DEV-02", "R4-STAT-DEV-03"],
+      "implementation": ["Compute binomial tails using exact integers or a rigorously bounded recurrence; avoid overflow in 2^S.", "Return unbounded intervals when the chosen construction cannot meet alpha/C with a finite order statistic.", "Require complete fixed case sets, unique sessions, fixed stopping and explicit iid-session assumptions; reject missing/failing cells.", "Preregister a new coverage and power study at S={6,8,12,24}, C={1,5}, including case_sd=0, identical case responses, dependence, atoms and symmetric heavy tails. Use separate data/test streams and do not select seeds after seeing outcomes."],
+      "acceptance": ["Reproduce all 32 exact design checks, six exhaustive sign enumerations, 12 controls and four invalid-input checks.", "S6/C1 interval has per-case coverage31/32; S6/C5 is unbounded; S8/C5 simultaneous lower bound123/128.", "Coverage claims apply only to the new explicit target and valid session model; power and wall-time outcomes remain separate."],
+      "kill_criterion": "Pair multiplication or extra case labels must never substitute for independent sessions."
+    },
+    {
+      "id": "R4-STAT-DEV-05",
+      "priority": "P3",
+      "title": "Separate kernel timing, certificate cost, cache setup and amortized production work",
+      "depends_on": ["R4-STAT-DEV-01"],
+      "implementation": ["Keep existing POLY03 as an unbounded-action kernel campaign with post-hoc independent accuracy verification.", "For certified-path timing, include coefficient enclosure, recurrence propagation, cache validation and rejection/fallback costs in both timed work and counters.", "For frozen symmetric operators compare warm polynomial action with an explicitly amortized cached eigensystem/Schur baseline; preregister reuse count, changing-h policy and setup allocation.", "Move homotopy worker-pool construction outside the step loop before the next timing campaign, then count dispatch, RHS/JVP, certificate and fallback work separately."],
+      "acceptance": ["Every timing arm's work definition matches the output verification path and declared claim.", "Cold, warm, setup and full-certified costs are separately machine-readable.", "No speed claim crosses the still-open statistical authority gate."],
+      "kill_criterion": "A faster unbounded kernel cannot be used as measured evidence that the certified production path is faster."
+    }
+  ]
+}

@@ -1,0 +1,158 @@
+{
+  "query": "For matrix exponential and phi-function actions in stiff differential equations, what primary studies compare Chebyshev, Laguerre, Leja interpolation and truncated Taylor methods under rounding-error control and reused operator or coefficient setup costs?",
+  "scope": "Discovery/abstract metadata only; primary sources verified separately",
+  "papers": [
+    {
+      "title": "The Leja Method Revisited: Backward Error Analysis for the Matrix Exponential",
+      "doi": "10.1137/15M1027620",
+      "date": "2016-06-01T00:00:00Z",
+      "abstract": "The Leja method is a polynomial interpolation procedure that can be used to compute matrix functions. In particular, computing the action of the matrix exponential on a given vector is a typical application. This quantity is required, e.g., in exponential integrators. The Leja method essentially depends on three parameters: the scaling parameter, the location of the interpolation points, and the degree of interpolation. We present here a backward error analysis that allows us to determine these three parameters as a function of the prescribed accuracy. Additional aspects that are required for an efficient and reliable implementation are discussed. Numerical examples illustrating the performance of our MATLAB code are included.",
+      "urls": {
+        "order": [
+          "Html",
+          "Others"
+        ],
+        "data": {
+          "Html": [
+            "https://dblp.uni-trier.de/db/journals/siamsc/siamsc38.html#CaliariKOR16",
+            "https://epubs.siam.org/doi/abs/10.1137/15M1027620"
+          ],
+          "Others": [
+            "http://dblp.uni-trier.de/db/journals/siamsc/siamsc38.html#CaliariKOR16"
+          ]
+        },
+        "is_show": true
+      }
+    },
+    {
+      "title": "The Leja method revisited: backward error analysis for the matrix exponential",
+      "doi": "10.48550/arxiv.1506.08665",
+      "date": "2022-03-07T00:00:00Z",
+      "abstract": "The Leja method is a polynomial interpolation procedure that can be used to compute matrix functions. In particular, computing the action of the matrix exponential on a given vector is a typical application. This quantity is required, e.g., in exponential integrators. The Leja method essentially depends on three parameters: the scaling parameter, the location of the interpolation points, and the degree of interpolation. We present here a backward error analysis that allows us to determine these three parameters as a function of the prescribed accuracy. Additional aspects that are required for an efficient and reliable implementation are discussed. Numerical examples that illustrate the performance of our Matlab code are included. "
+    },
+    {
+      "title": "The Leja method revisited: backward error analysis for the matrix exponential",
+      "doi": "10.1137/15M1027620",
+      "date": "2015-06-29T00:00:00Z",
+      "abstract": "The Leja method is a polynomial interpolation procedure that can be used to compute matrix functions. In particular, computing the action of the matrix exponential on a given vector is a typical application. This quantity is required, e.g., in exponential integrators. \r\nThe Leja method essentially depends on three parameters: the scaling parameter, the location of the interpolation points, and the degree of interpolation. We present here a backward error analysis that allows us to determine these three parameters as a function of the prescribed accuracy. Additional aspects that are required for an efficient and reliable implementation are discussed. Numerical examples that illustrate the performance of our Matlab code are included.",
+      "urls": {
+        "order": [
+          "Html"
+        ],
+        "data": {
+          "Html": [
+            "https://arxiv.org/abs/1506.08665",
+            "https://ui.adsabs.harvard.edu/abs/2015arXiv150608665C/abstract"
+          ]
+        },
+        "is_show": true
+      }
+    },
+    {
+      "title": "Backward error analysis of polynomial approximations for computing the action of the matrix exponential",
+      "doi": "10.1007/S10543-018-0718-9",
+      "date": "2018-08-02T00:00:00Z",
+      "abstract": "We describe how to perform the backward error analysis for the approximation of $$\\exp (A)v$$\n by $$p(s^{-1}A)^sv$$\n , for any given polynomial p(x). The result of this analysis is an optimal choice of the scaling parameter s which assures a bound on the backward error, i.e. the equivalence of the approximation with the exponential of a slightly perturbed matrix. Thanks to the SageMath package expbea we have developed, one can optimize the performance of the given polynomial approximation. On the other hand, we employ the package for the analysis of polynomials interpolating the exponential function at so called Leja–Hermite points. The resulting method for the action of the matrix exponential can be considered an extension of both Taylor series approximation and Leja point interpolation. We illustrate the behavior of the new approximation with several numerical examples.",
+      "urls": {
+        "order": [
+          "Html"
+        ],
+        "data": {
+          "Html": [
+            "https://link.springer.com/article/10.1007/s10543-018-0718-9",
+            "https://iris.univr.it/handle/11562/987259"
+          ]
+        },
+        "is_show": true
+      }
+    },
+    {
+      "title": "A comparison of Leja- and Krylov-based iterative schemes for Exponential Integrators",
+      "doi": "10.48550/arXiv.2211.08948",
+      "date": "2022-11-16T00:00:00Z",
+      "abstract": "Krylov-based algorithms have long been preferred to compute the matrix exponential and exponential-like functions appearing in exponential integrators. Of late, direct polynomial interpolation of the action of these exponential-like functions have been shown to be competitive with the Krylov methods. We analyse the performance of the state-of-the-art Krylov algorithm, KIOPS , and the method of polynomial interpolation at Leja points for a number of exponential integrators for various test problems and with varying amounts of sti ﬀ ness. Additionally, we investigate the performance of an iterative scheme that combines both the KIOPS and Leja approach, named LeKry, that shows substantial improvements over both the Leja- and Krylov-based methods for certain exponential integrators. Whilst we do manage to single out a favoured iterative scheme for each of the exponential integrators that we consider in this study, we do not ﬁnd any conclusive evidence for preferring either KIOPS or Leja for di ﬀ erent classes of exponential integrators. We are unable to identify a superior exponential integrator, one that performs better than all others, for most, if not all of the problems under consideration. We, however, do ﬁnd that the performance signiﬁcantly depends on the interplay between the iterative scheme and the speciﬁc exponential integrator under consideration."
+    },
+    {
+      "title": "Computing the Action of the Matrix Exponential, with an Application to Exponential Integrators",
+      "doi": "10.1137/100788860",
+      "date": "2011-04-01T00:00:00Z",
+      "abstract": "A new algorithm is developed for computing $e^{tA}B$, where $A$ is an $n\\times n$ matrix and $B$ is $n\\times n_0$ with $n_0 \\ll n$. The algorithm works for any $A$, its computational cost is dominated by the formation of products of $A$ with $n\\times n_0$ matrices, and the only input parameter is a backward error tolerance. The algorithm can return a single matrix $e^{tA}B$ or a sequence $e^{t_kA}B$ on an equally spaced grid of points $t_k$. It uses the scaling part of the scaling and squaring method together with a truncated Taylor series approximation to the exponential. It determines the amount of scaling and the Taylor degree using the recent analysis of Al-Mohy and Higham [SIAM J. Matrix Anal. Appl., 31 (2009), pp. 970-989], which provides sharp truncation error bounds expressed in terms of the quantities $\\|A^k\\|^{1/k}$ for a few values of $k$, where the norms are estimated using a matrix norm estimator. Shifting and balancing are used as preprocessing steps to reduce the cost of the algorithm. Numerical experiments show that the algorithm performs in a numerically stable fashion across a wide range of problems, and analysis of rounding errors and of the conditioning of the problem provides theoretical support. Experimental comparisons with MATLAB codes based on Krylov subspace, Chebyshev polynomial, and Laguerre polynomial methods show the new algorithm to be sometimes much superior in terms of computational cost and accuracy. An important application of the algorithm is to exponential integrators for ordinary differential equations. It is shown that the sums of the form $\\sum_{k=0}^p \\varphi_k(A)u_k$ that arise in exponential integrators, where the $\\varphi_k$ are related to the exponential function, can be expressed in terms of a single exponential of a matrix of dimension $n+p$ built by augmenting $A$ with additional rows and columns, and the algorithm of this paper can therefore be employed.",
+      "urls": {
+        "order": [
+          "Html",
+          "Others"
+        ],
+        "data": {
+          "Html": [
+            "http://eprints.maths.manchester.ac.uk/1591/",
+            "https://epubs.siam.org/doi/10.1137/100788860"
+          ],
+          "Others": [
+            "http://doi.org/10.1137/100788860",
+            "http://dx.doi.org/10.1137/100788860"
+          ]
+        },
+        "is_show": true
+      }
+    },
+    {
+      "title": "Backward error accurate methods for computing the matrix exponential and its action",
+      "doi": "10.15168/11572_250078",
+      "date": "2020-04-06T00:00:00Z",
+      "abstract": "The theory of partial differential equations constitutes today one of the most important topics of scientific understanding. A standard approach for solving a time-dependent partial differential equation consists in discretizing the spatial variables by finite differences or finite elements. This results in a huge system of (stiff) ordinary differential equations that has to be integrated in time. Exponential integrators constitute an interesting class of numerical methods for the time integration of stiff systems of differential equations. Their efficient implementation heavily relies on the fast computation of the action of certain matrix functions; among those, the matrix exponential is the most prominent one. In this manuscript, we go through the steps that led to the development of backward error accurate routines for computing the action of the matrix exponential. "
+    },
+    {
+      "title": "New scaling-squaring taylor algorithms for computing the matrix exponential ∗",
+      "doi": "10.1137/090763202",
+      "date": "2015-02-12T00:00:00Z",
+      "abstract": "The matrix exponential plays a fundamental role in linear differential equations arising in engineering, mechanics, and control theory. The most widely used, and the most generally efficient, technique for calculating the matrix exponential is a combination of “scaling and squaring” with a Pade approximation. For alternative scaling and squaring methods based on Taylor series, we present two modifications that provably reduce the number of matrix multiplications needed to satisfy the required accuracy bounds, and a detailed comparison of the several algorithmic variants is provided.",
+      "urls": {
+        "order": [
+          "Html"
+        ],
+        "data": {
+          "Html": [
+            "https://epubs.siam.org/doi/abs/10.1137/090763202",
+            "https://dblp.uni-trier.de/db/journals/siamsc/siamsc37.html#SastreIDR15"
+          ]
+        },
+        "is_show": true
+      }
+    },
+    {
+      "title": "Comparison of software for computing the action of the matrix exponential",
+      "doi": "10.1007/S10543-013-0446-0",
+      "date": "2014-03-01T00:00:00Z",
+      "abstract": "The implementation of exponential integrators requires the action of the matrix exponential and related functions of a possibly large matrix. There are various methods in the literature for carrying out this task. In this paper we describe a new implementation of a method based on interpolation at Leja points. We numerically compare this method with other codes from the literature. As we are interested in applications to exponential integrators we choose the test examples from spatial discretization of time dependent partial differential equations in two and three space dimensions. The test matrices thus have large eigenvalues and can be nonnormal.",
+      "urls": {
+        "order": [
+          "Html"
+        ],
+        "data": {
+          "Html": [
+            "https://link.springer.com/article/10.1007%2Fs10543-013-0446-0",
+            "https://rd.springer.com/article/10.1007/s10543-013-0446-0"
+          ]
+        },
+        "is_show": true
+      }
+    },
+    {
+      "title": "Computing Linear Combinations of $φ$-Function Actions for Exponential Integrators",
+      "doi": "10.48550/arxiv.2509.26475",
+      "date": "2025-10-01T00:00:00Z",
+      "abstract": "We propose a matrix-free algorithm for evaluating linear combinations of $φ$-function actions, $w_i := \\sum_{j=0}^{p} α_i^{\\,j}\\,φ_j(t_i A)v_j$ for $i=1\\colon r$, arising in exponential integrators. The method combines the scaling and recovering method with a truncated Taylor series, choosing a spectral shift and a scaling parameter by minimizing a power-based objective of the shifted operator. Accuracy is user-controlled and ultimately limited by the working precision. The algorithm decouples the stage abscissae $t_i$ from the polynomial weights $α_i^j$, and a block variant enables simultaneous evaluation of $\\{w_i\\}_{i=1}^r$. Across standard benchmarks, including stiff and highly nonnormal matrices, the algorithm attains near-machine accuracy (IEEE double precision in our tests) for small step sizes and maintains reliable accuracy for larger steps where several existing Krylov-based algorithms deteriorate, providing a favorable balance of reliability and computational cost. ",
+      "urls": {
+        "order": [
+          "Pdf"
+        ],
+        "data": {
+          "Pdf": [
+            "https://export.arxiv.org/pdf/2509.26475v1.pdf"
+          ]
+        },
+        "is_show": true
+      }
+    }
+  ]
+}

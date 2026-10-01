@@ -1,0 +1,129 @@
+{
+  "schema_version": 1,
+  "source_commit": "1c54194123ee6abc6daa512e8574922f510b4e2c",
+  "findings": [
+    {
+      "id": "R4-HOM-01",
+      "priority": "P2",
+      "status": "implementation-verified",
+      "classification": "IMPLEMENTATION_CERTIFICATE_INPUT_VALIDATION",
+      "title": "잘못된 inverse witness 내용/내부 shape가 identity 검사 후 인증값으로 소비됨",
+      "scope": "public/serde witness interface; native eight-stage target; built-in constructors and published HOM06 campaign are not shown wrong",
+      "source_refs": [
+        {
+          "path": "crates/rodas5p-integrators/src/outward_certificate.rs",
+          "lines": [
+            135,
+            143
+          ]
+        },
+        {
+          "path": "crates/rodas5p-integrators/src/outward_certificate.rs",
+          "lines": [
+            435,
+            467
+          ]
+        },
+        {
+          "path": "crates/rodas5p-integrators/src/outward_certificate.rs",
+          "lines": [
+            318,
+            323
+          ]
+        }
+      ],
+      "trigger": {
+        "J": [
+          [
+            -1
+          ]
+        ],
+        "y": [
+          1
+        ],
+        "h": 0.0625,
+        "q": [
+          0
+        ],
+        "candidate": "eight zero scalar stages",
+        "witness_variants": [
+          "valid identity plus upper=[[0]]",
+          "valid identity plus upper=[[]]"
+        ]
+      },
+      "observed": {
+        "returned_status": "Ok(StageCertificate)",
+        "first_stage_error_bound": 0,
+        "exact_first_stage_error": "140737488355328/2281627374017361"
+      },
+      "oracle": "exact rational first-stage solve W K_0 = -1/16",
+      "normal_constructor_control": "sound",
+      "not_demonstrated": [
+        "downstream q2 step with corrupt source witness",
+        "wrong bound produced by an unchanged built-in witness constructor",
+        "published campaign admissions invalid"
+      ],
+      "advice": "Seal validated witness fields; deserialize to unverified data; reject malformed shape; verify/rebuild inverse proof before consumption. Hash equality only binds identity."
+    },
+    {
+      "id": "R4-HOM-02",
+      "priority": "P2",
+      "status": "implementation-verified",
+      "classification": "IMPLEMENTATION_GENERALIZED_STAGE_API",
+      "title": "가변 StageTarget에 고정 3-level doubling을 적용해 9단계 이상 경로를 누락",
+      "scope": "public generic StageTarget API with s>8; native Rodas5P eight-stage path passes this control",
+      "source_refs": [
+        {
+          "path": "crates/rodas5p-integrators/src/stage_target.rs",
+          "lines": [
+            47,
+            58
+          ]
+        },
+        {
+          "path": "crates/rodas5p-integrators/src/outward_certificate.rs",
+          "lines": [
+            776,
+            786
+          ]
+        }
+      ],
+      "trigger": {
+        "stages": [
+          9,
+          16
+        ],
+        "gamma": 0,
+        "J": [
+          [
+            1
+          ]
+        ],
+        "y": [
+          1
+        ],
+        "h": 1,
+        "q": [
+          0
+        ],
+        "alpha": "all zero",
+        "coupling": "unit first subdiagonal",
+        "candidate": "all zero",
+        "b": "select last stage"
+      },
+      "observed": {
+        "doubling_output_bounds": [
+          8,
+          8
+        ],
+        "exact_output_errors": [
+          9,
+          16
+        ],
+        "radius_closure": "accepted at radius 0",
+        "serial_bounds": "sound at all 1,2,4,8,9,16 fixtures"
+      },
+      "advice": "Either validate s<=8 with typed unsupported rejection, or derive ceil(log2 s) from the declared structural nilpotency upper bound."
+    }
+  ]
+}
