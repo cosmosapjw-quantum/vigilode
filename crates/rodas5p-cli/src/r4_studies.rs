@@ -87,10 +87,22 @@ fn diagonal_error(eigenvalues: &[f64], h: f64, w: &Vectors, fused: &[f64]) -> Re
     let mut square = 0.0;
     for (i, lambda) in eigenvalues.iter().enumerate() {
         let z = -h * lambda;
-        let phi = scalar_phi_enclosure(Interval::new(z, z)?)?;
-        let reference = (0..5)
-            .map(|k| (0.5 * phi[k].lo + 0.5 * phi[k].hi) * w[k][i])
-            .sum::<f64>();
+        let phi: [f64; 5] = if z >= -600.0 {
+            let enclosure = scalar_phi_enclosure(Interval::new(z, z)?)?;
+            std::array::from_fn(|k| 0.5 * enclosure[k].lo + 0.5 * enclosure[k].hi)
+        } else {
+            // Beyond the enclosure's range: e^z < 1e-260 is negligible and
+            // phi_k(z) = (phi_(k-1)(z) - 1/(k-1)!) / z has no cancellation
+            // for z < -600.
+            let mut values = [0.0; 5];
+            let mut factorial = 1.0;
+            for k in 1..5 {
+                values[k] = (values[k - 1] - 1.0 / factorial) / z;
+                factorial *= k as f64;
+            }
+            values
+        };
+        let reference = (0..5).map(|k| phi[k] * w[k][i]).sum::<f64>();
         square += (fused[i] - reference).powi(2);
     }
     Ok(square.sqrt())

@@ -43,3 +43,12 @@ The rules are applied as stated. Wall seconds are not measured and no speed is c
 ## Prior information
 
 The contract tests ran the majorant on six amplitude cases at h = 0.1 only. This grid has not been run before.
+
+## Addendum before the rerun (process deviation, disclosed)
+
+The first run of the preregistered command at `95cb66e` aborted before writing any output. The reference evaluation
+calls the scalar phi enclosure, which supports `-600 <= z <= 0`. The `diag8-stiff` family at `h = 1` reaches
+`z = -1000`. The fix is a study-code change only. For `z < -600` the reference is computed in binary64 by the
+cancellation-free recurrence `phi_k(z) = (phi_(k-1)(z) - 1/(k-1)!)/z`, where `e^z < 1e-260` is taken as 0. The
+grid, the arms and both gates are unchanged. The output of the aborted run was an error message only, so nothing was
+seen.
