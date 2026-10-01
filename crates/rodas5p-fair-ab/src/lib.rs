@@ -82,7 +82,7 @@ pub use timing_design::{
     COVERAGE_STUDY_SCHEMA, CoverageReplication, CoverageScenario, CoverageScenarioResult,
     CoverageStudyReport, DependenceModel, Missingness, SimulatedCorpus, TIMING_DESIGN_CONTRACT,
     TimingDesign, coverage_replication, coverage_study, preregistered_coverage_grid,
-    simulate_corpus,
+    replication_seeds, simulate_corpus,
 };
 
 pub(crate) use contracts::relative_solution_error;

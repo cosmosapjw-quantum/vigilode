@@ -523,8 +523,11 @@ fn the_unbounded_mode_returns_the_same_values_without_a_bound() {
         )
         .unwrap();
         assert_eq!(plain.degree, bounded.degree);
-        assert_eq!(plain.fused, bounded.fused, "{basis:?}");
-        assert_eq!(plain.columns, bounded.columns, "{basis:?}");
+        let bits = |values: &[f64]| values.iter().map(|x| x.to_bits()).collect::<Vec<_>>();
+        assert_eq!(bits(&plain.fused), bits(&bounded.fused), "{basis:?}");
+        for (a, b) in plain.columns.iter().zip(&bounded.columns) {
+            assert_eq!(bits(a), bits(b), "{basis:?}");
+        }
         let TotalErrorStatus::EstimateOnly { reason, .. } = &plain.total_error else {
             panic!("an unbounded run is never certified")
         };

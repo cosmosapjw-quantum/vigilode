@@ -242,3 +242,67 @@ fn a_wrong_or_unverified_certificate_cannot_fast_accept() {
         assert_eq!(report.critical_path_depth, 7 + 8, "{label}");
     }
 }
+
+/// `y' = a y + q y^2 + c y^3` declared as the quadratic model with the true
+/// `J = a + 2 q y + 3 c y^2` and `q' = q + 2 c y`: it reproduces `f(y)` and
+/// every JVP at `y` exactly, so only the stage states expose the cubic term
+/// (re-audit R3 review).
+struct CubicAsQuadratic {
+    a: f64,
+    q: f64,
+    c: f64,
+}
+
+impl Q2CertificateSource for CubicAsQuadratic {
+    fn stage_problem(&self, _t: f64, y: &[f64], h: f64) -> CoreResult<QuadraticStageProblem> {
+        let y0 = y[0];
+        Ok(QuadraticStageProblem {
+            jacobian: vec![vec![self.a + 2.0 * self.q * y0 + 3.0 * self.c * y0 * y0]],
+            y: y.to_vec(),
+            h,
+            q: vec![self.q + 2.0 * self.c * y0],
+        })
+    }
+}
+
+#[test]
+fn a_model_that_matches_only_at_y_is_rejected() {
+    let (a, q, c) = (-20.0, -2.0, -5.0);
+    let cubic = OdeProblem::new(
+        "cubic",
+        1,
+        Arc::new(move |_t, y: &[f64], out: &mut [f64]| {
+            out[0] = a * y[0] + q * y[0] * y[0] + c * y[0] * y[0] * y[0];
+            Ok(())
+        }),
+        None,
+        None,
+        Some(Arc::new(
+            move |_t, y: &[f64], v: &[f64], out: &mut [f64]| {
+                out[0] = (a + 2.0 * q * y[0] + 3.0 * c * y[0] * y[0]) * v[0];
+                Ok(())
+            },
+        )),
+        None,
+        true,
+        None,
+        None,
+    )
+    .unwrap();
+    let source = CubicAsQuadratic { a, q, c };
+    let report = step(
+        &cubic,
+        0.01,
+        &TransactionalQ1Q2Config::default(),
+        Q2Admission::NativeTargetCertificate(&source),
+    );
+    assert_eq!(report.lane, TransactionalQ1Q2Lane::SequentialFallback);
+    let admission = report.q2_certificate.as_ref().unwrap();
+    assert!(!admission.accepted);
+    assert!(
+        admission.reason.contains("at stage"),
+        "{}",
+        admission.reason
+    );
+    assert!(!report.fast_accepted);
+}

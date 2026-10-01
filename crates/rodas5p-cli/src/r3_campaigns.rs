@@ -314,7 +314,7 @@ fn hom06_run(
         "certificate_fraction": d.certificate_admissions as f64 / d.certificate_attempts.max(1) as f64,
         "certificate_operations": d.certificate_operations,
         "accepted_q2_escalated_steps": d.accepted_q2_escalated_steps,
-        "admission_mismatches": d.accepted_q2_escalated_steps.saturating_sub(d.certificate_admissions),
+        "admission_mismatches": d.certificate_mismatches,
         "total_w_solve_batches": d.total_w_solve_batches,
         "total_critical_path_depth": d.total_critical_path_depth,
     });
@@ -355,17 +355,26 @@ fn tolerance_ratio(states: &[Vec<f64>], reference: &[Vec<f64>]) -> f64 {
         .zip(reference)
         .flat_map(|(row, reference_row)| row.iter().zip(reference_row))
         .map(|(y, r)| (y - r).abs() / (adaptive.atol + adaptive.rtol * r.abs()))
-        .fold(0.0, f64::max)
+        // A NaN is an unbounded error, not a skipped value.
+        .fold(0.0, |worst, ratio| {
+            if ratio.is_nan() {
+                f64::INFINITY
+            } else {
+                worst.max(ratio)
+            }
+        })
 }
 
 // ---------------------------------------------------------------------------
 // POLY-03: symmetric nonpositive operators, h = 1 so w_k = b_k exactly
 // ---------------------------------------------------------------------------
 
+/// Both operators are built once, outside every timed call.
 struct PolyCase {
     id: &'static str,
     matrix: DenseMatrix,
     operator: SymmetricNonpositiveOperator,
+    dense: Arc<DenseOperator>,
     vectors: [Vec<f64>; 5],
 }
 
@@ -395,10 +404,12 @@ fn poly03_cases() -> Result<Vec<PolyCase>> {
                 }
             };
             let n = rows.len();
+            let dense = Arc::new(DenseOperator::new(matrix.clone())?);
             cases.push(PolyCase {
                 id,
                 matrix,
                 operator,
+                dense,
                 vectors: poly_vectors(n),
             });
             Ok(())
@@ -470,9 +481,8 @@ fn poly03_run(
         "chebyshev-cold" | "chebyshev-warm" => PolynomialBasis::Chebyshev,
         "laguerre-cold" | "laguerre-warm" => PolynomialBasis::Laguerre,
         reference if reference == Study::Poly03.reference() => {
-            let operator = Arc::new(DenseOperator::new(case.matrix.clone())?);
             let report = fused_phi_action(
-                operator,
+                case.dense.clone(),
                 1.0,
                 &case.vectors,
                 FusedPhiKrylovConfig {

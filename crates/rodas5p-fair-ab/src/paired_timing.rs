@@ -717,8 +717,12 @@ pub fn case_clustered_bootstrap(
 /// `[K/B - e, K/B + e]`, `e = sqrt(ln(2/delta) / (2B))` (Hoeffding), except
 /// with probability `delta` over the resampling. Promote needs `upper <
 /// tail`, Block needs `lower > 1 - tail`; anything else is Inconclusive
-/// (MC_UNRESOLVED). This bounds the simulation error of the resampling
-/// only; it says nothing about coverage of the population speedup.
+/// (MC_UNRESOLVED). It says nothing about coverage of the population
+/// speedup. Hoeffding ignores the variance of the indicator, so the gate is
+/// conservative beyond the resampling error: at `B = 10000` a Promote needs
+/// `K / B < 0.0087` against the 2.5% tail, and some decisions a
+/// variance-aware (Clopper-Pearson or Bernstein) bound would resolve are
+/// withheld. It can only withhold a decision, never create one.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct MonteCarloGate {
     pub resamples: usize,
@@ -1022,7 +1026,8 @@ impl PairedTimingAssessment {
                 && interval.sessions.windows(2).all(|pair| pair[0] < pair[1])
                 && interval.lower <= interval.upper
         };
-        if !settings(&self.corpus) {
+        if !settings(&self.corpus) || self.corpus.replicates_below_required > self.corpus.resamples
+        {
             return reject("corpus interval does not match the protocol");
         }
         let decision = paired_timing_decision(&self.corpus, self.protocol.required_speedup);

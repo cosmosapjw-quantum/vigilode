@@ -32,9 +32,10 @@ pub const TIMING_DESIGN_CONTRACT: &str =
 pub const COVERAGE_STUDY_SCHEMA: &str = "vigilode-timing-coverage-study-v1";
 /// `0.95 - 2.576 sqrt(0.95 * 0.05 / 2000)`: the nominal coverage less the
 /// 99% binomial allowance of the preregistered 2000 replications.
-pub const COVERAGE_STUDY_MIN_COVERAGE: f64 = 0.9374;
-/// `0.025 + 2.576 sqrt(0.025 * 0.975 / 2000)`.
-pub const COVERAGE_STUDY_MAX_FALSE_PROMOTE: f64 = 0.0340;
+/// (0.937446..., rounded up: the R3 package's 0.9374 rounded leniently).
+pub const COVERAGE_STUDY_MIN_COVERAGE: f64 = 0.93745;
+/// `0.025 + 2.576 sqrt(0.025 * 0.975 / 2000)` (0.033993..., rounded down).
+pub const COVERAGE_STUDY_MAX_FALSE_PROMOTE: f64 = 0.03399;
 pub const COVERAGE_STUDY_REPLICATIONS: usize = 2000;
 
 /// Standard deviations (log scale) of the random effects.
@@ -345,9 +346,21 @@ pub struct CoverageStudyReport {
     pub verdict: String,
 }
 
-fn replication_seed(study_seed: u64, scenario: usize, replication: usize) -> u64 {
-    let mut rng = SplitMix64(study_seed ^ ((scenario as u64) << 40) ^ replication as u64);
-    rng.next_u64()
+/// Independent data and bootstrap seeds of one replication, keyed by the
+/// scenario id (so a scenario run alone reproduces its grid rows) and the
+/// replication index. The data and the resampling never share a stream
+/// (re-audit R3 review: the first study reused one seed for both).
+pub fn replication_seeds(study_seed: u64, scenario_id: &str, replication: usize) -> (u64, u64) {
+    // FNV-1a of the id.
+    let id_hash = scenario_id
+        .bytes()
+        .fold(0xcbf2_9ce4_8422_2325_u64, |hash, byte| {
+            (hash ^ u64::from(byte)).wrapping_mul(0x0000_0100_0000_01b3)
+        });
+    let mut rng =
+        SplitMix64(study_seed ^ id_hash ^ (replication as u64).wrapping_mul(0x9e37_79b9_7f4a_7c15));
+    // Two consecutive SplitMix64 outputs seed two separate streams.
+    (rng.next_u64(), rng.next_u64())
 }
 
 /// Runs every scenario; `threads` only changes the wall time, not a bit of
@@ -368,7 +381,7 @@ pub fn coverage_study(
     let threads = threads.max(1);
     let threshold_log = base.required_speedup.ln();
     let mut results = Vec::with_capacity(scenarios.len());
-    for (index, scenario) in scenarios.iter().enumerate() {
+    for scenario in scenarios {
         let runs = std::thread::scope(|scope| {
             let workers = (0..threads)
                 .map(|worker| {
@@ -376,12 +389,13 @@ pub fn coverage_study(
                         (worker..replications)
                             .step_by(threads)
                             .map(|replication| {
-                                let run_seed = replication_seed(seed, index, replication);
+                                let (data_seed, bootstrap_seed) =
+                                    replication_seeds(seed, &scenario.id, replication);
                                 let protocol = PairedTimingProtocol {
-                                    seed: run_seed,
+                                    seed: bootstrap_seed,
                                     ..base.clone()
                                 };
-                                coverage_replication(&scenario.design, &protocol, run_seed)
+                                coverage_replication(&scenario.design, &protocol, data_seed)
                                     .map(|run| (replication, run))
                             })
                             .collect::<FairResult<Vec<_>>>()

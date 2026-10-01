@@ -5,7 +5,7 @@
 use rodas5p_fair_ab::{
     CoverageScenario, DependenceModel, Missingness, PairedTimingCase, PairedTimingDecision,
     PairedTimingProtocol, TimingDesign, case_clustered_bootstrap, coverage_study,
-    paired_timing_decision, preregistered_coverage_grid, simulate_corpus,
+    paired_timing_decision, preregistered_coverage_grid, replication_seeds, simulate_corpus,
 };
 
 fn design(sessions: usize, cases: usize, missingness: Missingness) -> TimingDesign {
@@ -195,4 +195,14 @@ fn the_study_is_deterministic_and_thread_count_free() {
     assert!(one.scenarios[1].false_promote_rate.is_none());
     // Fewer than 4239 resamples can never promote (STAT-DEV-03).
     assert!(one.scenarios.iter().all(|scenario| scenario.promote == 0));
+    // A scenario run alone reproduces its row of a larger run (seeds are
+    // keyed by scenario id), and data and resampling use separate streams.
+    let alone = coverage_study(&scenarios[1..], 6, 99, 2, &base).unwrap();
+    assert_eq!(
+        serde_json::to_string(&alone.scenarios[0]).unwrap(),
+        serde_json::to_string(&one.scenarios[1]).unwrap()
+    );
+    let (data, bootstrap) = replication_seeds(99, &scenarios[0].id, 0);
+    assert_ne!(data, bootstrap);
+    assert_ne!(replication_seeds(99, &scenarios[0].id, 1).0, data);
 }

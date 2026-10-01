@@ -2782,27 +2782,36 @@ fn main() -> Result<()> {
             let mut evidence = BTreeMap::new();
             let mut summary = BTreeMap::new();
             for arm in study.arms() {
-                let arm_evidence = r3_campaigns::run_campaign(study, arm, sessions, seed, &output)?;
+                // An arm whose campaign cannot be assessed is recorded, not
+                // allowed to discard the other arms (re-audit R3 review).
+                let arm_evidence =
+                    match r3_campaigns::run_campaign(study, arm, sessions, seed, &output) {
+                        Ok(arm_evidence) => arm_evidence,
+                        Err(error) => {
+                            println!("{} {arm}: campaign failed: {error}", study.name());
+                            summary.insert(arm.to_string(), json!({ "error": error.to_string() }));
+                            continue;
+                        }
+                    };
+                let verified = arm_evidence.verified_decision().map_or_else(
+                    |error| format!("not verified: {error}"),
+                    |d| format!("{d:?}"),
+                );
                 summary.insert(
                     arm.to_string(),
                     json!({
-                        "decision": arm_evidence.assessment.decision,
+                        "verified_decision": verified,
+                        "assessment_decision": arm_evidence.assessment.decision,
                         "gate_decision": arm_evidence.assessment.gate_decision,
-                        "verified_decision": arm_evidence
-                            .verified_decision()
-                            .map_or_else(|error| format!("not verified: {error}"), |d| format!("{d:?}")),
                         "speedup_point": arm_evidence.assessment.corpus.point,
                         "speedup_lower": arm_evidence.assessment.corpus.lower,
                         "speedup_upper": arm_evidence.assessment.corpus.upper,
                         "independent_sessions": arm_evidence.assessment.corpus.independent_blocks,
                         "failed_sessions": arm_evidence.receipt.failed_sessions.len(),
+                        "receipt_failures": arm_evidence.receipt.failures.len(),
                     }),
                 );
-                println!(
-                    "{} {arm}: {:?}",
-                    study.name(),
-                    arm_evidence.assessment.decision
-                );
+                println!("{} {arm}: verified decision {verified}", study.name());
                 evidence.insert(arm.to_string(), arm_evidence);
             }
             write_json_create_new(

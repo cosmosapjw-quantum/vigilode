@@ -951,12 +951,13 @@ fn recurrence_step_plain(
 ) -> CoreResult<Vec<f64>> {
     let mut next = vec![0.0; current.len()];
     for (i, out) in next.iter_mut().enumerate() {
+        // The same left-to-right sum from +0.0 as the enclosing path, so
+        // both modes return the same bits (`Iterator::sum` starts at -0.0).
         let dot = matrix
             .row(i)
             .iter()
             .zip(current)
-            .map(|(entry, x)| entry * x)
-            .sum::<f64>();
+            .fold(0.0, |acc, (entry, x)| acc + entry * x);
         let x_current = match transform.basis {
             PolynomialBasis::Chebyshev => {
                 (dot + transform.shift * current[i]) / transform.half_width
