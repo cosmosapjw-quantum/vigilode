@@ -9,7 +9,8 @@
 //! bound far below the smallest subnormal stays nonzero, and supplies `C_k`
 //! only for operator classes it can verify:
 //!
-//! * [`TransformOperatorClass::Nilpotent`]: `A` strictly triangular, so
+//! * [`TransformOperatorClass::Nilpotent`]: `A` strictly triangular up to a
+//!   symmetric permutation (an acyclic nonzero pattern), so
 //!   `A^n = 0` and `||phi_k(hA)|| <= sum_{j<n} (|h| N)^j / (j + k)!` with
 //!   `N = max(||A||_1, ||A||_inf) >= ||A||_2`;
 //! * [`TransformOperatorClass::Dissipative`]: the Gershgorin bound on the
@@ -19,10 +20,22 @@
 //! Any other operator is [`TransformBound::Unbounded`]; there is no generic
 //! matrix-free bound here, and a bound that exceeds the caller's tolerance is
 //! a rejection, never a reason to relax it.
+//!
+//! Re-audit R4 of 2026-10-01: every comparison of bounds goes through
+//! [`ExpBound::total_cmp`] (zero below every positive value; ARITH-DEV-01),
+//! `1/k!` is an outward recurrence on [`ExpBound`] that never forms `k!` in
+//! binary64 (ARITH-DEV-02, orders up to [`MAX_TRANSFORM_ORDER`]), and the
+//! order-0 difference and the tolerance domain are validated (ARITH-DEV-03).
 
 use crate::directed::{add_up, mul_up, sub_up};
 use crate::{CoreError, CoreResult, DenseMatrix, binary_split};
 use serde::{Deserialize, Serialize};
+use std::cmp::Ordering;
+
+/// The highest phi order [`bound_transform_error`] accepts. The reciprocal
+/// factorials are outward [`ExpBound`] recurrences, so the limit is a
+/// declared domain (and a cost bound), not a binary64 range limit.
+pub const MAX_TRANSFORM_ORDER: usize = 1000;
 
 /// An upper bound `m 2^e` with `m` in [1/2, 1), or exactly 0.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
@@ -64,6 +77,45 @@ impl ExpBound {
 
     pub fn is_zero(&self) -> bool {
         self.mantissa == 0.0
+    }
+
+    /// The comparison key of the total order: 0 for zero, 1 for a positive
+    /// finite bound (renormalized, so a hand-built `m 2^e` outside [1/2, 1)
+    /// compares by value), 2 for a malformed one (negative, NaN or infinite
+    /// mantissa), which therefore sorts above every valid bound and is never
+    /// admitted.
+    fn order_key(&self) -> (u8, i64, f64) {
+        if self.mantissa == 0.0 {
+            (0, 0, 0.0)
+        } else if self.mantissa.is_finite() && self.mantissa > 0.0 {
+            let (m, shift) = binary_split(self.mantissa);
+            (1, self.exponent.saturating_add(shift), m)
+        } else {
+            (2, 0, 0.0)
+        }
+    }
+
+    /// One total order on bounds (re-audit R4, ARITH-DEV-01): `ZERO` below
+    /// every positive value, positive values by value, malformed values
+    /// above everything. The old `(exponent, mantissa)` key put `ZERO`
+    /// (exponent 0) above every bound below 1/2, so a zero row erased a
+    /// subunit nilpotent norm.
+    pub fn total_cmp(&self, other: &Self) -> Ordering {
+        let (a_class, a_exponent, a_mantissa) = self.order_key();
+        let (b_class, b_exponent, b_mantissa) = other.order_key();
+        a_class
+            .cmp(&b_class)
+            .then(a_exponent.cmp(&b_exponent))
+            .then(a_mantissa.total_cmp(&b_mantissa))
+    }
+
+    /// The larger of two bounds under [`ExpBound::total_cmp`].
+    pub fn max_bound(self, other: Self) -> Self {
+        if other.total_cmp(&self) == Ordering::Greater {
+            other
+        } else {
+            self
+        }
     }
 
     // Fallible (an overflow is an error), so not `std::ops`.
@@ -147,17 +199,19 @@ impl ExpBound {
         }
     }
 
-    /// `self <= bound` for a nonnegative binary64 `bound`.
+    /// `self <= bound` for a tolerance in the domain `0 <= bound < inf`.
+    /// A negative, NaN or infinite tolerance admits nothing (re-audit R4,
+    /// ARITH-DEV-03: `ExpBound::exact` takes `|x|`, so -10 used to admit a
+    /// bound of 1); a zero tolerance admits exactly the zero bound. An
+    /// infinite tolerance is not "no limit": a caller with no limit has no
+    /// reason to ask.
     pub fn at_most(&self, bound: f64) -> bool {
-        if self.is_zero() {
-            return bound >= 0.0;
+        if !(bound.is_finite() && bound >= 0.0) {
+            return false;
         }
         match ExpBound::exact(bound) {
-            Ok(other) if !other.is_zero() => {
-                self.exponent < other.exponent
-                    || (self.exponent == other.exponent && self.mantissa <= other.mantissa)
-            }
-            _ => false,
+            Ok(other) => self.total_cmp(&other) != Ordering::Greater,
+            Err(_) => false,
         }
     }
 }
@@ -228,9 +282,13 @@ fn entry_delta(h: f64, k: u32, b: f64, stored: f64) -> CoreResult<ExpBound> {
         return ExpBound::exact(stored);
     }
     if k == 0 {
-        // w_0 = b_0 is stored as is.
+        // w_0 = b_0 is stored as is by the source; an externally supplied
+        // stored weight is compared with its sign (re-audit R4,
+        // ARITH-DEV-03: b = 1, stored = -1 is an error of 2, not 0).
         return ExpBound::exact(if stored == b {
             0.0
+        } else if (b < 0.0) != (stored < 0.0) && b != 0.0 && stored != 0.0 {
+            add_up(b.abs(), stored.abs())?
         } else {
             sub_up(b.abs().max(stored.abs()), b.abs().min(stored.abs()))?
         });
@@ -271,8 +329,56 @@ fn entry_delta(h: f64, k: u32, b: f64, stored: f64) -> CoreResult<ExpBound> {
     Ok(ExpBound::normalized(difference, exponent))
 }
 
-fn factorial(n: usize) -> f64 {
-    (1..=n).fold(1.0, |acc, value| acc * value as f64)
+/// Upper bounds on `1/k!` for `k = 0..=n` by the outward recurrence
+/// `r_k = r_{k-1} / k` (re-audit R4, ARITH-DEV-02). Each division rounds
+/// up and `k` is an exact binary64 integer, so `r_k >= 1/k!`; `k!` itself
+/// is never formed (171! overflowed binary64, and dividing by the infinite
+/// factorial made the "upper bound" of `1/171!` zero).
+pub fn reciprocal_factorials_upper(n: usize) -> CoreResult<Vec<ExpBound>> {
+    let mut table = Vec::with_capacity(n + 1);
+    let mut current = ExpBound::exact(1.0)?;
+    table.push(current);
+    for k in 1..=n {
+        if k as f64 >= 2.0_f64.powi(53) {
+            return Err(CoreError::InvalidInput(
+                "reciprocal factorial: index is not an exact binary64 integer".into(),
+            ));
+        }
+        current = current.div_integer(k as f64)?;
+        table.push(current);
+    }
+    Ok(table)
+}
+
+/// Whether the graph `i -> j` for `A_ij != 0` has no cycle (no loop either).
+/// Then a permutation makes `A` strictly triangular, so `A^n = 0`; the
+/// row and column sums in the nilpotent bound are invariant under that
+/// permutation (re-audit R4, ARITH-DEV-01: a permuted or transposed
+/// triangular witness keeps its bound).
+fn nonzero_pattern_is_acyclic(matrix: &DenseMatrix) -> bool {
+    let n = matrix.nrows();
+    let mut indegree = vec![0_usize; n];
+    for i in 0..n {
+        for (j, degree) in indegree.iter_mut().enumerate() {
+            if matrix[(i, j)] != 0.0 {
+                *degree += 1;
+            }
+        }
+    }
+    let mut ready = (0..n).filter(|&j| indegree[j] == 0).collect::<Vec<_>>();
+    let mut removed = 0;
+    while let Some(i) = ready.pop() {
+        removed += 1;
+        for j in 0..n {
+            if matrix[(i, j)] != 0.0 {
+                indegree[j] -= 1;
+                if indegree[j] == 0 {
+                    ready.push(j);
+                }
+            }
+        }
+    }
+    removed == n
 }
 
 /// `C_k` for `k = 0..=p` when the class is verified.
@@ -282,10 +388,9 @@ fn operator_bounds(
     p: usize,
 ) -> CoreResult<Option<(TransformOperatorClass, Vec<ExpBound>)>> {
     let n = matrix.nrows();
-    let strictly_lower = (0..n).all(|i| (i..n).all(|j| matrix[(i, j)] == 0.0));
-    let strictly_upper = (0..n).all(|i| (0..=i).all(|j| matrix[(i, j)] == 0.0));
+    let reciprocal = reciprocal_factorials_upper(n.max(1) + p)?;
     let mut candidates = Vec::new();
-    if strictly_lower || strictly_upper {
+    if nonzero_pattern_is_acyclic(matrix) {
         let mut row_max = ExpBound::ZERO;
         let mut column_max = ExpBound::ZERO;
         for i in 0..n {
@@ -295,30 +400,23 @@ fn operator_bounds(
                 row = row.add(ExpBound::exact(matrix[(i, j)])?)?;
                 column = column.add(ExpBound::exact(matrix[(j, i)])?)?;
             }
-            for (acc, value) in [(&mut row_max, row), (&mut column_max, column)] {
-                if value.exponent > acc.exponent
-                    || (value.exponent == acc.exponent && value.mantissa > acc.mantissa)
-                    || acc.is_zero()
-                {
-                    *acc = value;
-                }
-            }
+            row_max = row_max.max_bound(row);
+            column_max = column_max.max_bound(column);
         }
-        let norm = if row_max.exponent > column_max.exponent
-            || (row_max.exponent == column_max.exponent && row_max.mantissa >= column_max.mantissa)
-        {
-            row_max
-        } else {
-            column_max
-        };
+        let norm = row_max.max_bound(column_max);
         let scaled = norm.mul(ExpBound::exact(h)?)?;
+        let index = n.max(1);
+        let mut powers = Vec::with_capacity(index);
+        let mut power = ExpBound::exact(1.0)?;
+        for _ in 0..index {
+            powers.push(power);
+            power = power.mul(scaled)?;
+        }
         let mut bounds = Vec::with_capacity(p + 1);
         for k in 0..=p {
             let mut total = ExpBound::ZERO;
-            let mut power = ExpBound::exact(1.0)?;
-            for j in 0..n.max(1) {
-                total = total.add(power.div_integer(factorial(j + k))?)?;
-                power = power.mul(scaled)?;
+            for (j, power) in powers.iter().enumerate() {
+                total = total.add(power.mul(reciprocal[j + k])?)?;
             }
             bounds.push(total);
         }
@@ -342,18 +440,14 @@ fn operator_bounds(
         }
     }
     if dissipative {
-        let bounds = (0..=p)
-            .map(|k| ExpBound::exact(1.0)?.div_integer(factorial(k)))
-            .collect::<CoreResult<Vec<_>>>()?;
+        let bounds = reciprocal[..=p].to_vec();
         candidates.push((TransformOperatorClass::Dissipative, bounds));
     }
     // Take the class with the smaller total weight on the highest order.
     Ok(candidates.into_iter().min_by(|left, right| {
         let a = left.1.last().copied().unwrap_or(ExpBound::ZERO);
         let b = right.1.last().copied().unwrap_or(ExpBound::ZERO);
-        (a.exponent, a.mantissa)
-            .partial_cmp(&(b.exponent, b.mantissa))
-            .unwrap_or(std::cmp::Ordering::Equal)
+        a.total_cmp(&b)
     }))
 }
 
@@ -373,6 +467,22 @@ pub fn bound_transform_error(
     {
         return Err(CoreError::Dimension(
             "transform bound: shapes or step invalid".into(),
+        ));
+    }
+    if vectors.len() > MAX_TRANSFORM_ORDER + 1 {
+        return Err(CoreError::InvalidInput(format!(
+            "transform bound: order {} above the supported {MAX_TRANSFORM_ORDER}",
+            vectors.len() - 1
+        )));
+    }
+    if vectors
+        .iter()
+        .chain(stored)
+        .flatten()
+        .any(|x| !x.is_finite())
+    {
+        return Err(CoreError::NonFinite(
+            "transform bound: non-finite input or stored weight".into(),
         ));
     }
     let Some((class, operator)) = operator_bounds(matrix, h, vectors.len().saturating_sub(1))?
