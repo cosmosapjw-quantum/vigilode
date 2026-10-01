@@ -61,3 +61,26 @@ response to them.
 ---
 
 ## Results (appended after the run)
+
+Run on 2026-10-01 (KST), 00:35–00:51 UTC, at source commit `0799a05e6c616084af4d58671ee4c6c93e2c5a1c` (code `d198558`). The output is `COVERAGE_STUDY.json`.
+
+**Verdict: FAIL** (`STATISTICAL_AUTHORITY_HOLD`). Of the 36 primary scenarios, 18 fail.
+
+| design | scenarios | coverage range | largest promote rate at theta <= ln 1.15 | fail |
+|---|---:|---|---:|---:|
+| S=6, C=1, primary | 9 | 0.7825 to 0.8875 | 0.0405 | 9 |
+| S=6, C=1, MNAR sensitivity | 3 | 0.8170 to 0.8385 | 0.0250 | 3 |
+| S=6, C=5, primary | 9 | 0.9935 to 0.9975 | 0.0015 | 0 |
+| S=6, C=5, MNAR sensitivity | 3 | 0.9930 to 0.9955 | 0.0005 | 0 |
+| S=12, C=1, primary | 9 | 0.8905 to 0.9255 | 0.0265 | 9 |
+| S=12, C=1, MNAR sensitivity | 3 | 0.8745 to 0.8760 | 0.0580 | 3 |
+| S=12, C=5, primary | 9 | 0.9960 to 1.0000 | 0.0005 | 0 |
+| S=12, C=5, MNAR sensitivity | 3 | 0.9970 to 0.9980 | 0.0000 | 0 |
+
+This repeats the v1 pattern with independent streams and strict thresholds:
+
+- Single-case designs undercover.
+- Five-case designs are conservative.
+
+The v1 defects did not cause the v1 failure. Single-case paired timing decisions are not authoritative, and a
+redesigned interval for few independent units needs a new preregistered study.

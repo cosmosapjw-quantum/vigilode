@@ -119,3 +119,30 @@ commands at source commit `d198558b981a538b7f8293f8b059b9f2f515d080`, where the 
 ---
 
 ## Results (appended after the run)
+
+Rerun on 2026-10-01 (KST), 00:19–00:35 UTC, at source commit `0799a05e6c616084af4d58671ee4c6c93e2c5a1c` (code `d198558`). The outputs are `VERIFY.json` (with `VERIFY.arms/`), `CAMPAIGN.json` and `CAMPAIGN.<arm>.sessions/`.
+
+**Verdict: PASS** for the preregistered gate. Every arm is verified on every case, and `chebyshev-warm` has a verified decision of `Promote` against the Arnoldi reference.
+
+| arm | verified decision | speedup point | 95% interval | sessions | failures |
+|---|---|---:|---|---:|---:|
+| `chebyshev-cold` | Inconclusive | 0.565 | [0.018, 1.989] | 6 | 0/0 |
+| `chebyshev-warm` | Promote | 3.166 | [1.167, 13.414] | 6 | 0/0 |
+| `laguerre-cold` | Block | 0.122 | [0.001, 0.317] | 6 | 0/0 |
+| `laguerre-warm` | Inconclusive | 1.180 | [0.196, 3.119] | 6 | 0/0 |
+
+Untimed verification, as the largest relative error over the 5 cases, and peak RSS:
+
+- `arnoldi-fused-phi`: 2.16e-13, 10324 KiB, all within 1e-9: True
+- `chebyshev-cold`: 1.96e-14, 10724 KiB, all within 1e-9: True
+- `chebyshev-warm`: 1.96e-14, 9980 KiB, all within 1e-9: True
+- `laguerre-cold`: 1.22e-14, 10256 KiB, all within 1e-9: True
+- `laguerre-warm`: 1.22e-14, 10632 KiB, all within 1e-9: True
+
+Only the warm Chebyshev arm promotes. It reuses the coefficient table across repeated calls with the same operator,
+enclosure and `h`. With coefficient setup on every call (cold), Chebyshev is Inconclusive and Laguerre is Blocked.
+The intervals are wide, for example [1.17, 13.4] for the warm arm, because the five cases differ strongly.
+
+This PASS is limited to the measured population: these five dense symmetric operators, `h = 1`, a frozen operator
+and this host. It is under `STATISTICAL_AUTHORITY_HOLD` from the R3 coverage studies (`L-0007`, `L-0010`). It is not
+a production speed claim. No ratio of polynomial degrees is reported as a speedup.

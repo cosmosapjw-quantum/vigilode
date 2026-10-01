@@ -137,3 +137,33 @@ operational gate, and the report gives their fraction as p1.
 ---
 
 ## Results (appended after the run)
+
+Rerun on 2026-10-01 (KST), 00:12–00:19 UTC, at source commit `0799a05e6c616084af4d58671ee4c6c93e2c5a1c` (code `d198558`). The outputs are `VERIFY.json` (with `VERIFY.arms/`), `CAMPAIGN.json` and the raw session records in `CAMPAIGN.<arm>.sessions/`.
+
+**Verdict: FAIL** (`SPEEDUP_UNPROVEN`). Items 1–3 hold. Item 4 does not: no arm promotes.
+
+| arm | verified decision | speedup point | 95% interval | sessions | failures |
+|---|---|---:|---|---:|---:|
+| `transactional-certified-p1` | Block | 0.174 | [0.135, 0.187] | 6 | 0/0 |
+| `transactional-certified-p2` | Block | 0.072 | [0.038, 0.129] | 6 | 0/0 |
+| `transactional-certified-p4` | Block | 0.048 | [0.026, 0.104] | 6 | 0/0 |
+| `transactional-certified-p8` | Block | 0.037 | [0.020, 0.096] | 6 | 0/0 |
+
+Untimed verification:
+
+| case | reference tolerance ratio | candidate tolerance ratio | p1 | pf | certificate fraction | candidate / reference RHS evaluations | candidate / reference JVP vectors |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| `scalar-linear` | 0.0259 | 0.0259 | 0.081 | 0.054 | 0.941 | 1745 / 359 | 12042 / 1539 |
+| `scalar-quadratic` | 0.0575 | 0.0594 | 0.075 | 0.025 | 0.973 | 1882 / 376 | 13404 / 1692 |
+| `diagonal-quadratic-8` | 0.0288 | 0.0291 | 0.000 | 0.000 | 1.000 | 3600 / 649 | 43252 / 7196 |
+| `coupled-linear-6` | 0.0169 | 0.0169 | 0.000 | 1.000 | 0.000 | 2249 / 377 | 22372 / 3072 |
+| `nonsymmetric-linear-2` | 0.0000 | 0.0000 | 0.154 | 0.077 | 0.909 | 601 / 195 | 4519 / 872 |
+
+The thread count changes no accuracy or lane statistic. Admission mismatches are 0 per step in every arm.
+
+Peak RSS per arm process, in KiB: sequential-jf-gmres 7316, transactional-certified-p1 7676, transactional-certified-p2 8420, transactional-certified-p4 8620, transactional-certified-p8 9480.
+
+The certified transactional path costs about five times the baseline's RHS evaluations and six to eight times its JVP
+vectors on this corpus. Its wall time is 0.17× the baseline at P = 1. It is worse with more threads, because the
+thread pool is built for each step. This measures only the campaign population and the host stated above; no other
+speed claim follows.
