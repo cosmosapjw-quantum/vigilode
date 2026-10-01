@@ -1,5 +1,19 @@
 use rodas5p_core::{CoreError, CoreResult, WorkCounters};
 
+/// Clock policy of the production drivers (re-audit R3, R3-TIME-01/03):
+/// every step integrates the represented interval `t_end - t`
+/// ([`represent`]), fixed-step drivers step on the indexed grid
+/// `t0 + k h` ([`FixedGrid`]), and the end is reached by exact comparison.
+pub const PRODUCTION_CLOCK_POLICY: &str = "represented-indexed-v1";
+
+/// Clock policy of the sealed research replay drivers: the nominal step is
+/// integrated, the clock accumulates `t += h`, and the span ends within
+/// `10 eps max(|tf|, 1)`. The G4-S5B0 regime atlas, the unified gates and
+/// the homotopy experiment and order-policy drivers keep this policy so
+/// their sealed evidence stays reproducible; results produced under it are
+/// not results of [`PRODUCTION_CLOCK_POLICY`].
+pub const RESEARCH_REPLAY_CLOCK_POLICY: &str = "nominal-accumulated-v0";
+
 /// How a step is limited by a target time (span end, hard stop or clipped
 /// output time).
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -24,6 +38,23 @@ pub(crate) struct Landing {
 /// rule only; which interval owns a requested time is still decided by
 /// exact comparison, so adjacent representable requests stay distinct.
 pub(crate) fn land(t: f64, proposed: f64, target: f64) -> CoreResult<Landing> {
+    land_capped(t, proposed, target, f64::INFINITY)
+}
+
+/// [`land`] with a hard maximum `cap` on the represented step (an adaptive
+/// driver's `max_step`): the rounding residue is never used to stretch a
+/// step past `cap`, and the represented step is checked against it
+/// ([`represent`]).
+pub(crate) fn land_capped(t: f64, proposed: f64, target: f64, cap: f64) -> CoreResult<Landing> {
+    let mut landing = land_nominal(t, proposed, target, cap)?;
+    if landing.step > 0.0 {
+        landing.step = represent(t, landing.step, cap)?;
+        landing.lands = t + landing.step == target;
+    }
+    Ok(landing)
+}
+
+fn land_nominal(t: f64, proposed: f64, target: f64, cap: f64) -> CoreResult<Landing> {
     let to_target = step_to(t, target)?;
     let natural = t + proposed;
     // Rounding residue of the time sum: relative to the largest magnitude
@@ -50,7 +81,10 @@ pub(crate) fn land(t: f64, proposed: f64, target: f64) -> CoreResult<Landing> {
         });
     }
     let gap = target - natural;
-    let extend = gap <= residue;
+    // The extension respects a hard maximum up to one clock resolution at
+    // the target, like `represent`.
+    let extend =
+        gap <= residue && (to_target <= cap || to_target - cap <= target.next_up() - target);
     Ok(Landing {
         step: if extend { to_target } else { proposed },
         lands: extend && t + to_target == target,
@@ -63,17 +97,224 @@ pub(crate) fn end_step(t: f64, proposed: f64, tf: f64) -> CoreResult<f64> {
     Ok(land(t, proposed, tf)?.step)
 }
 
-/// Slack for checking that a schedule's first and last requested times name
-/// the integration span, and that a uniform spacing divides it: a few units
-/// in the last place of the larger magnitude, with no absolute floor.
+/// [`end_step`] with a hard maximum on the represented step.
+pub(crate) fn end_step_capped(t: f64, proposed: f64, tf: f64, cap: f64) -> CoreResult<f64> {
+    Ok(land_capped(t, proposed, tf, cap)?.step)
+}
+
+/// The step the stage equations must use for a step of nominal size `step`
+/// from `t` (re-audit R3, R3-TIME-01).
 ///
-/// It is used only for these validations. Which accepted interval owns a
-/// requested time, and when an integration is finished, are decided by
-/// exact comparisons of represented times (audit R2-OUT-01): a slack there,
-/// however small, merges adjacent representable requests and lets the end
-/// of a short span at a large epoch count as reached before any step.
-fn time_tolerance(left: f64, right: f64) -> f64 {
-    (4.0 * f64::EPSILON * left.abs().max(right.abs())).max(f64::MIN_POSITIVE)
+/// A stepper moves the clock to `t_end = t + step` rounded, but used to
+/// integrate the nominal `step`; at `t = 1e12` a step of `1e-4` moved the
+/// clock by one ULP (`1.22e-4`) and integrated `1e-4`, so eight steps over
+/// an 8-ULP span integrated 0.8192 of it. The returned `h` has
+/// `t + h == t_end` and is the represented interval `t_end - t` (exact
+/// when `t` and `t_end` are within a factor of two, otherwise within a few
+/// roundings of `h`, checked by [`check_clock`]), so the stage equations,
+/// dense output, error estimate and controller history all see the
+/// interval the clock records.
+///
+/// A represented step above `cap` is replaced by the one ending at the
+/// representable time below `t_end`; when that does not advance `t`, the
+/// time resolution at `t` is coarser than `cap` and the result is a typed
+/// error instead of a silently enlarged step.
+pub(crate) fn represent(t: f64, step: f64, cap: f64) -> CoreResult<f64> {
+    if !(t.is_finite() && step.is_finite() && step > 0.0) {
+        return Err(CoreError::InvalidInput(format!(
+            "time resolution: step {step:e} at t = {t:e} must be finite and positive"
+        )));
+    }
+    let t_end = t + step;
+    if !(t_end > t && t_end.is_finite()) {
+        return Err(CoreError::InvalidInput(format!(
+            "time resolution: step h = {step:e} does not advance the represented time t = {t:e}"
+        )));
+    }
+    let mut h = step_to(t, t_end)?;
+    // The represented step may exceed the nominal one by the rounding of
+    // t_end, up to one clock resolution at t_end; that is representation,
+    // not enlargement (an exact 0.07 + 0.01 == 0.08 landing has
+    // h = 0.010000000000000009). Only a larger excess is capped.
+    let resolution = t_end.next_up() - t_end;
+    if h > cap && h - cap > resolution {
+        let below = t_end.next_down();
+        if below <= t {
+            return Err(CoreError::InvalidInput(format!(
+                "time resolution: the next representable time after t = {t:e} is {:e} away, \
+                 above the maximum step {cap:e}",
+                t_end - t
+            )));
+        }
+        h = step_to(t, below)?;
+    }
+    check_clock(t, h)?;
+    Ok(h)
+}
+
+/// True when a represented step `h` from `t` is below `min_step`: it ends
+/// before the represented time `t + min_step` (re-audit R3 review). Comparing
+/// the step sizes themselves would reject `0.02 -> 0.03`, whose represented
+/// step 0.009999999999999998 rounds below a `min_step` of 0.01.
+pub(crate) fn below_min_step(t: f64, h: f64, min_step: f64) -> bool {
+    t + h < t + min_step
+}
+
+/// The adaptive drivers' step toward `tf`: `None` when the proposal does not
+/// advance the represented time at all (the driver stops with
+/// `success = false`, as before the represented clock), otherwise the
+/// represented step, or a typed time-resolution error when the time
+/// resolution at `t` exceeds `max_step`.
+pub(crate) fn adaptive_end_step(
+    t: f64,
+    proposed: f64,
+    tf: f64,
+    max_step: f64,
+) -> CoreResult<Option<f64>> {
+    let nominal = proposed.min(max_step);
+    if nominal.is_nan() || nominal <= 0.0 || t + nominal <= t {
+        return Ok(None);
+    }
+    end_step_capped(t, nominal, tf, max_step).map(Some)
+}
+
+/// A typed error unless the represented interval `fl(t + h) - t` equals `h`
+/// to within `4 eps h` (exact residual of the sum by TwoSum).
+pub(crate) fn check_clock(t: f64, h: f64) -> CoreResult<()> {
+    let sum = t + h;
+    let virtual_h = sum - t;
+    let residual = (t - (sum - virtual_h)) + (h - virtual_h);
+    if sum > t && residual.abs() <= 4.0 * f64::EPSILON * h {
+        Ok(())
+    } else {
+        Err(CoreError::InvalidInput(format!(
+            "inconsistent clock: step h = {h:e} at t = {t:e} moves the clock by {:e}",
+            h - residual
+        )))
+    }
+}
+
+/// Split a represented step `h` from `t` into two represented halves for
+/// step doubling (re-audit R3, R3-TIME-01: the second half used to start at
+/// `t + h/2` rounded and integrate `h/2`, which need not end at `t + h`).
+/// Returns `(h1, t_mid, h2)` with `t + h1 == t_mid`, `t_mid + h2 == t + h`
+/// and `t < t_mid < t + h`, or a typed error when the time resolution at `t`
+/// cannot hold a midpoint.
+pub(crate) fn split_clock(t: f64, h: f64) -> CoreResult<(f64, f64, f64)> {
+    let t_end = t + h;
+    let t_mid = t + 0.5 * h;
+    if !(t < t_mid && t_mid < t_end) {
+        return Err(CoreError::InvalidInput(format!(
+            "time resolution: no representable midpoint in ({t:e}, {t_end:e}) for step doubling"
+        )));
+    }
+    let h1 = step_to(t, t_mid)?;
+    let h2 = step_to(t_mid, t_end)?;
+    if t + h1 != t_mid || t_mid + h2 != t_end {
+        return Err(CoreError::InvalidInput(format!(
+            "inconsistent clock: step-doubling halves of h = {h:e} at t = {t:e} do not tile the step"
+        )));
+    }
+    check_clock(t, h1)?;
+    check_clock(t_mid, h2)?;
+    Ok((h1, t_mid, h2))
+}
+
+/// The time grid of a fixed-step integration (re-audit R3, R3-TIME-03).
+///
+/// Step `k` ends at the indexed time `t0 + k h`, formed with one rounding,
+/// and the last step ends at `tf` exactly; the clock never accumulates
+/// `t += h`. The count is `round(span / h)` when that many steps reach `tf`
+/// to within the rounding residue of the grid (at most `64 eps` of the
+/// largest magnitude and `h / 1024`), otherwise `ceil(span / h)` with a
+/// shorter final step. 1000 steps of 0.01 on (0, 10) are 1000 steps; the
+/// accumulated clock used to end 1.7e-13 short and add a micro-step.
+#[derive(Clone, Copy, Debug)]
+pub(crate) struct FixedGrid {
+    t0: f64,
+    tf: f64,
+    h: f64,
+    steps: u64,
+}
+
+impl FixedGrid {
+    pub(crate) fn new(t0: f64, tf: f64, h: f64) -> CoreResult<Self> {
+        if !(t0.is_finite() && tf.is_finite() && h.is_finite() && h > 0.0 && tf >= t0) {
+            return Err(CoreError::InvalidInput(
+                "fixed-step grid needs finite t0 <= tf and a finite positive step".into(),
+            ));
+        }
+        let span = tf - t0;
+        if !span.is_finite() {
+            return Err(CoreError::InvalidInput(
+                "fixed-step grid span overflows binary64".into(),
+            ));
+        }
+        let ratio = span / h;
+        if ratio > 2.0_f64.powi(52) {
+            return Err(CoreError::InvalidInput(format!(
+                "fixed-step grid of {ratio:e} steps is beyond the indexed range"
+            )));
+        }
+        let rounded = ratio.round();
+        let residue = (64.0 * f64::EPSILON * t0.abs().max(tf.abs()).max(span)).min(h / 1024.0);
+        let steps = if span == 0.0 {
+            0
+        } else if rounded >= 1.0 && (rounded * h - span).abs() <= residue {
+            rounded as u64
+        } else {
+            ratio.ceil().max(1.0) as u64
+        };
+        Ok(Self { t0, tf, h, steps })
+    }
+
+    fn reached_within_residue(&self, t: f64, point: f64, k: u64) -> bool {
+        k < self.steps
+            && point - t <= (64.0 * f64::EPSILON * t.abs().max(point.abs())).min(self.h / 1024.0)
+    }
+
+    /// The indexed time of grid point `k`: `t0 + k h`, and `tf` at the end.
+    pub(crate) fn time(&self, k: u64) -> f64 {
+        if k >= self.steps {
+            self.tf
+        } else {
+            (self.t0 + k as f64 * self.h).min(self.tf)
+        }
+    }
+
+    /// The nominal step from `t` to the first grid point after it. Grid
+    /// points that round to or below `t` are skipped (several indexed times
+    /// can round to one represented time when `h` is below one ULP but above
+    /// half of one); a clipped step inside an interval returns to its grid
+    /// point. A nominal step that does not advance `t` at all is a typed
+    /// time-resolution error.
+    pub(crate) fn step_from(&self, t: f64) -> CoreResult<f64> {
+        if t >= self.tf {
+            return Err(CoreError::InvalidInput(
+                "fixed-step grid is already at its end".into(),
+            ));
+        }
+        // A nominal step below half an ULP of t is below the time
+        // resolution; skipping grid points would silently enlarge it.
+        require_progress(t, self.h)?;
+        let estimate = ((t - self.t0) / self.h).floor();
+        let mut k = if estimate.is_finite() && estimate > 0.0 {
+            (estimate as u64).min(self.steps)
+        } else {
+            0
+        };
+        while k > 0 && self.time(k) > t {
+            k -= 1;
+        }
+        // A grid point within the rounding residue after t counts as
+        // reached: after a clipped landing on a literal output 0.3, the
+        // indexed point 0.1 * 3 = 0.30000000000000004 is not a step of its
+        // own (re-audit R3 review).
+        while self.time(k) <= t || self.reached_within_residue(t, self.time(k), k) {
+            k += 1;
+        }
+        step_to(t, self.time(k))
+    }
 }
 
 /// A typed failure for a step that would not move the represented time:
@@ -84,7 +325,7 @@ pub(crate) fn require_progress(t: f64, h: f64) -> CoreResult<()> {
         Ok(())
     } else {
         Err(CoreError::InvalidInput(format!(
-            "step h = {h:e} does not advance the represented time t = {t:e}"
+            "time resolution: step h = {h:e} does not advance the represented time t = {t:e}"
         )))
     }
 }
@@ -172,7 +413,16 @@ impl OutputSchedule {
         }
         let span = end - start;
         let intervals = (span / spacing).round() as usize;
-        if (start + intervals as f64 * spacing - end).abs() > time_tolerance(start, end) {
+        // At t0 = 1e12 a 4-ULP span with spacing 1 has zero intervals and
+        // was accepted by an epoch-scaled slack, giving the schedule [tf] and
+        // y0 reported as y(tf) (re-audit R3, R3-TIME-02).
+        // The tolerance is the rounding of the inputs themselves (a few eps
+        // of the largest magnitude, so decimal grids such as
+        // uniform(1.1, 1.2, 0.1) pass) but never more than 2^-10 of the
+        // spacing, and a nonzero span needs at least one interval.
+        let tolerance =
+            (8.0 * f64::EPSILON * start.abs().max(end.abs()).max(span)).min(spacing / 1024.0);
+        if (span > 0.0 && intervals == 0) || (intervals as f64 * spacing - span).abs() > tolerance {
             return Err(CoreError::InvalidInput(
                 "output spacing must divide the integration interval".into(),
             ));
@@ -190,14 +440,23 @@ impl OutputSchedule {
         &self.times
     }
 
+    /// The schedule must name the span's represented endpoints exactly, and
+    /// a nonzero span needs both of them as distinct requests (re-audit R3,
+    /// R3-TIME-02: `[tf]` for `t0 < tf` passed as both endpoints and
+    /// returned the initial state labelled as the final time; endpoints a
+    /// few ULP off were accepted and relabelled).
     pub(crate) fn validate_span(&self, t0: f64, tf: f64) -> CoreResult<()> {
         let first = *self.times.first().expect("nonempty schedule");
         let last = *self.times.last().expect("nonempty schedule");
-        if (first - t0).abs() > time_tolerance(first, t0)
-            || (last - tf).abs() > time_tolerance(last, tf)
-        {
+        if first != t0 || last != tf {
+            return Err(CoreError::InvalidInput(format!(
+                "output schedule must start at t0 = {t0:e} and end at tf = {tf:e} exactly \
+                 (got {first:e} .. {last:e})"
+            )));
+        }
+        if tf > t0 && self.times.len() < 2 {
             return Err(CoreError::InvalidInput(
-                "output schedule must include the integration start and end".into(),
+                "a nonzero integration span needs distinct start and end requests".into(),
             ));
         }
         Ok(())
@@ -261,6 +520,7 @@ impl OutputSamplingPlan {
 pub(crate) struct HardStopCursor {
     stops: Vec<f64>,
     next_index: usize,
+    max_step: f64,
 }
 
 impl HardStopCursor {
@@ -269,7 +529,14 @@ impl HardStopCursor {
         Ok(Self {
             stops: plan.hard_stops.clone(),
             next_index: 0,
+            max_step: f64::INFINITY,
         })
+    }
+
+    /// Hard maximum on represented steps (an adaptive driver's `max_step`).
+    pub(crate) fn with_max_step(mut self, max_step: f64) -> Self {
+        self.max_step = max_step;
+        self
     }
 
     /// Return the actual trial size and whether a hard stop shortened an
@@ -285,7 +552,7 @@ impl HardStopCursor {
                 "hard-stop step limit requires finite time and positive step".into(),
             ));
         }
-        let base = end_step(t, proposed_h, tf)?;
+        let base = end_step_capped(t, proposed_h, tf, self.max_step)?;
         if base <= 0.0 {
             return Err(CoreError::InvalidInput(
                 "hard-stop step limit became nonpositive".into(),
@@ -301,7 +568,7 @@ impl HardStopCursor {
                 self.next_index += 1;
                 continue;
             }
-            let landing = land(t, base, stop)?;
+            let landing = land_capped(t, base, stop, self.max_step)?;
             require_progress(t, landing.step)?;
             return Ok((landing.step, landing.shortened));
         }
@@ -355,6 +622,7 @@ pub(crate) struct OutputCollector {
     times: Vec<f64>,
     states: Vec<Vec<f64>>,
     clipped_steps: usize,
+    max_step: f64,
 }
 
 impl OutputCollector {
@@ -376,7 +644,14 @@ impl OutputCollector {
             times: vec![schedule.times[0]],
             states: vec![y0.to_vec()],
             clipped_steps: 0,
+            max_step: f64::INFINITY,
         })
+    }
+
+    /// Hard maximum on represented steps (an adaptive driver's `max_step`).
+    pub(crate) fn with_max_step(mut self, max_step: f64) -> Self {
+        self.max_step = max_step;
+        self
     }
 
     pub(crate) fn limit_step(&self, t: f64, proposed_h: f64, tf: f64) -> CoreResult<(f64, bool)> {
@@ -385,7 +660,7 @@ impl OutputCollector {
                 "output-aware step limit requires finite time and positive step".into(),
             ));
         }
-        let base = end_step(t, proposed_h, tf)?;
+        let base = end_step_capped(t, proposed_h, tf, self.max_step)?;
         if base <= 0.0 {
             return Err(CoreError::InvalidInput(
                 "output-aware step limit became nonpositive".into(),
@@ -400,21 +675,17 @@ impl OutputCollector {
                 "output collector advanced past a requested time".into(),
             ));
         }
-        let landing = land(t, base, next)?;
+        let landing = land_capped(t, base, next, self.max_step)?;
         require_progress(t, landing.step)?;
         Ok((landing.step, landing.shortened))
     }
 
-    /// The time at which request `index` is due. The last request is due at
-    /// the span end, which it names up to [`time_tolerance`]; every other
-    /// request is due at its own represented time.
+    /// The time at which request `index` is due: its own represented time
+    /// (the last request is the span end exactly, [`OutputSchedule::validate_span`]).
     fn due(&self, index: usize) -> Option<f64> {
         let time = *self.schedule.times.get(index)?;
-        Some(if index + 1 == self.schedule.times.len() {
-            self.end
-        } else {
-            time
-        })
+        debug_assert!(index + 1 < self.schedule.times.len() || time == self.end);
+        Some(time)
     }
 
     pub(crate) fn accept(&mut self, t: f64, y: &[f64], clipped: bool) -> CoreResult<()> {

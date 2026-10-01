@@ -5,7 +5,8 @@ use crate::{
     ObservedIntegrationResult, OdeProblem, OutputSchedule, RODAS5P_ESTIMATOR_ORDER, SabrConfig,
     StageHistory, StepResult, TransactionalQ1Q2Config, TransactionalQ1Q2RunDiagnostics,
     homotopy_step, rodas_next_step_after_attempt, sabr_step,
-    sequential_matrix_free_step_with_inner_forcing, sequential_step, transactional_q1_q2_step,
+    sequential_matrix_free_step_with_inner_forcing, sequential_step,
+    transactional_q1_q2_step_with_admission,
 };
 use rodas5p_core::{CoreError, CoreResult, LinearSolverConfig, WorkCounters};
 
@@ -89,9 +90,11 @@ pub fn integrate_fixed(
     let mut errors = Vec::new();
     let sabr_cfg = sabr_config.unwrap_or_default();
     let mut attempts = 0;
+    // Indexed grid t0 + k h (re-audit R3, R3-TIME-03).
+    let grid = crate::output::FixedGrid::new(t_span.0, tf, h)?;
     while t < tf {
         attempts += 1;
-        let step = crate::output::end_step(t, h, tf)?;
+        let step = crate::output::end_step(t, grid.step_from(t)?, tf)?;
         crate::output::require_progress(t, step)?;
         let r = match method {
             IntegrationMethod::Sequential => {
@@ -181,9 +184,12 @@ pub fn integrate_adaptive(
     let mut attempts = 0;
     while t < tf && attempts < adaptive.max_attempts {
         attempts += 1;
-        h = crate::output::end_step(t, h.min(adaptive.max_step), tf)?;
+        let Some(next_h) = crate::output::adaptive_end_step(t, h, tf, adaptive.max_step)? else {
+            break;
+        };
+        h = next_h;
         // A final piece that lands on tf is taken even below min_step.
-        if (h < adaptive.min_step && t + h < tf) || t + h == t {
+        if (crate::output::below_min_step(t, h, adaptive.min_step) && t + h < tf) || t + h == t {
             break;
         }
         let state_snapshot = recycle.clone();
@@ -307,8 +313,10 @@ pub fn integrate_fixed_observed(
     let mut collector = OutputCollector::new(output, t_span, y0)?;
     let sabr_cfg = sabr_config.unwrap_or_default();
     let mut internal_steps = 0_usize;
+    // Indexed grid t0 + k h (re-audit R3, R3-TIME-03).
+    let grid = crate::output::FixedGrid::new(t_span.0, tf, h)?;
     while t < tf {
-        let (step, clipped) = collector.limit_step(t, h, tf)?;
+        let (step, clipped) = collector.limit_step(t, grid.step_from(t)?, tf)?;
         let r = match method {
             IntegrationMethod::Sequential => {
                 let r = sequential_step(
@@ -411,13 +419,16 @@ pub fn integrate_adaptive_observed_with_config(
     let mut history = StageHistory::default();
     let mut recycle = KrylovState::for_method(config.method);
     let sabr_cfg = sabr_config.unwrap_or_default();
-    let mut collector = OutputCollector::new(output, t_span, y0)?;
+    let mut collector = OutputCollector::new(output, t_span, y0)?.with_max_step(adaptive.max_step);
     let mut diagnostics = AdaptiveRunDiagnostics::default();
     let mut internal_steps = 0_usize;
     while t < tf && diagnostics.attempts < adaptive.max_attempts {
-        h = crate::output::end_step(t, h.min(adaptive.max_step), tf)?;
+        let Some(next_h) = crate::output::adaptive_end_step(t, h, tf, adaptive.max_step)? else {
+            break;
+        };
+        h = next_h;
         // A final piece that lands on tf is taken even below min_step.
-        if (h < adaptive.min_step && t + h < tf) || t + h == t {
+        if (crate::output::below_min_step(t, h, adaptive.min_step) && t + h < tf) || t + h == t {
             break;
         }
         let (trial_h, clipped) = collector.limit_step(t, h, tf)?;
@@ -580,14 +591,17 @@ pub fn integrate_homotopy_adaptive_observed(
     let mut controller = AdaptiveControllerState::default();
     let mut counters = WorkCounters::default();
     let mut recycle = fallback_config.and_then(|config| KrylovState::for_method(config.method));
-    let mut collector = OutputCollector::new(output, t_span, y0)?;
+    let mut collector = OutputCollector::new(output, t_span, y0)?.with_max_step(adaptive.max_step);
     let mut diagnostics = AdaptiveRunDiagnostics::default();
     let mut internal_steps = 0_usize;
 
     while t < tf && diagnostics.attempts < adaptive.max_attempts {
-        h = crate::output::end_step(t, h.min(adaptive.max_step), tf)?;
+        let Some(next_h) = crate::output::adaptive_end_step(t, h, tf, adaptive.max_step)? else {
+            break;
+        };
+        h = next_h;
         // A final piece that lands on tf is taken even below min_step.
-        if (h < adaptive.min_step && t + h < tf) || t + h == t {
+        if (crate::output::below_min_step(t, h, adaptive.min_step) && t + h < tf) || t + h == t {
             break;
         }
         let (trial_h, clipped) = collector.limit_step(t, h, tf)?;
@@ -754,14 +768,17 @@ pub fn integrate_sequential_matrix_free_adaptive_observed(
     let mut controller = AdaptiveControllerState::default();
     let mut counters = WorkCounters::default();
     let mut recycle = KrylovState::for_method(linear_config.method);
-    let mut collector = OutputCollector::new(output, t_span, y0)?;
+    let mut collector = OutputCollector::new(output, t_span, y0)?.with_max_step(adaptive.max_step);
     let mut diagnostics = AdaptiveRunDiagnostics::default();
     let mut internal_steps = 0_usize;
 
     while t < tf && diagnostics.attempts < adaptive.max_attempts {
-        h = crate::output::end_step(t, h.min(adaptive.max_step), tf)?;
+        let Some(next_h) = crate::output::adaptive_end_step(t, h, tf, adaptive.max_step)? else {
+            break;
+        };
+        h = next_h;
         // A final piece that lands on tf is taken even below min_step.
-        if (h < adaptive.min_step && t + h < tf) || t + h == t {
+        if (crate::output::below_min_step(t, h, adaptive.min_step) && t + h < tf) || t + h == t {
             break;
         }
         let (trial_h, clipped) = match collector.limit_step(t, h, tf) {
@@ -969,6 +986,29 @@ pub fn integrate_transactional_q1_q2_adaptive_observed(
     adaptive: &AdaptiveStepConfig,
     output: &OutputSchedule,
 ) -> CoreResult<TransactionalQ1Q2AdaptiveResult> {
+    integrate_transactional_q1_q2_adaptive_observed_with_admission(
+        problem,
+        t_span,
+        y0,
+        step_config,
+        adaptive,
+        output,
+        crate::Q2Admission::OperationalDiagnostic,
+    )
+}
+
+/// [`integrate_transactional_q1_q2_adaptive_observed`] with an explicit
+/// q=2 admission (re-audit R3, HOM-05).
+#[allow(clippy::too_many_arguments)]
+pub fn integrate_transactional_q1_q2_adaptive_observed_with_admission(
+    problem: &OdeProblem,
+    t_span: (f64, f64),
+    y0: &[f64],
+    step_config: &TransactionalQ1Q2Config,
+    adaptive: &AdaptiveStepConfig,
+    output: &OutputSchedule,
+    admission: crate::Q2Admission<'_>,
+) -> CoreResult<TransactionalQ1Q2AdaptiveResult> {
     adaptive.validate()?;
     step_config.validate()?;
     let (mut t, tf) = t_span;
@@ -981,19 +1021,22 @@ pub fn integrate_transactional_q1_q2_adaptive_observed(
     let mut h = adaptive.initial_step.min(crate::output::step_to(t, tf)?);
     let mut controller = AdaptiveControllerState::default();
     let mut counters = WorkCounters::default();
-    let mut collector = OutputCollector::new(output, t_span, y0)?;
+    let mut collector = OutputCollector::new(output, t_span, y0)?.with_max_step(adaptive.max_step);
     let mut diagnostics = AdaptiveRunDiagnostics::default();
     let mut transactional = TransactionalQ1Q2RunDiagnostics::default();
     let mut internal_steps = 0_usize;
 
     while t < tf && diagnostics.attempts < adaptive.max_attempts {
-        h = crate::output::end_step(t, h.min(adaptive.max_step), tf)?;
+        let Some(next_h) = crate::output::adaptive_end_step(t, h, tf, adaptive.max_step)? else {
+            break;
+        };
+        h = next_h;
         // A final piece that lands on tf is taken even below min_step.
-        if (h < adaptive.min_step && t + h < tf) || t + h == t {
+        if (crate::output::below_min_step(t, h, adaptive.min_step) && t + h < tf) || t + h == t {
             break;
         }
         let (trial_h, clipped) = collector.limit_step(t, h, tf)?;
-        let trial = transactional_q1_q2_step(
+        let trial = transactional_q1_q2_step_with_admission(
             problem,
             t,
             &y,
@@ -1002,6 +1045,7 @@ pub fn integrate_transactional_q1_q2_adaptive_observed(
             adaptive.atol,
             adaptive.rtol,
             false,
+            admission,
             &mut counters,
         );
         let report = match trial {

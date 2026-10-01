@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "claims": [
+    {
+      "id": "R4-HOM-C01",
+      "statement": "Valid inverse witness and native strict-lower target imply serial quadratic stage-error majorant by triangular induction",
+      "evidence_status": [
+        "derived"
+      ],
+      "evidence": [
+        "THEORY_KO.md"
+      ],
+      "ceiling": "stage target error; not ODE truncation/global error"
+    },
+    {
+      "id": "R4-HOM-C02",
+      "statement": "ceil(log2 s) exact doubling reproduces finite inverse on six exact chain fixtures",
+      "evidence_status": [
+        "derived",
+        "numerically checked",
+        "implementation-verified"
+      ],
+      "evidence": [
+        "exact_checks.py",
+        "RESULTS.json"
+      ],
+      "ceiling": "standalone Fraction candidate; no production change or speed evidence"
+    },
+    {
+      "id": "R4-HOM-C03",
+      "statement": "Diagonal J and U permit component-factorized stage majorants with O(ns²) storage and O(ns³) dense-product arithmetic; full/blocked/serial exact on three fixtures",
+      "evidence_status": [
+        "derived",
+        "numerically checked",
+        "implementation-verified"
+      ],
+      "evidence": [
+        "THEORY_KO.md",
+        "RESULTS.json"
+      ],
+      "ceiling": "exact structural candidate and algebraic counts, not Rust outward integration or measured acceleration"
+    },
+    {
+      "id": "R4-HOM-C04",
+      "statement": "HOM06 published paired campaign records Block for all four worker arms",
+      "evidence_status": [
+        "established"
+      ],
+      "evidence_origin": "inherited published artifact; current turn source inspection only",
+      "evidence": [
+        "INHERITED_CAMPAIGN_SUMMARY.json"
+      ],
+      "ceiling": "no fresh timing execution; shared host measured population only"
+    },
+    {
+      "id": "R4-HOM-C05",
+      "statement": "No eighth q2 W batch is used in native-target mode, but certification still uses serial recurrence and q1 uses operational admission",
+      "evidence_status": [
+        "implementation-verified"
+      ],
+      "evidence_origin": "source inspection and runtime agent targeted q2 fixture run",
+      "evidence": [
+        "crates/rodas5p-integrators/src/transactional_q1_q2.rs:793-795,938-949,984-1019",
+        "../evidence/runtime/native/suite_summary.json"
+      ],
+      "ceiling": "q2 certificate branch only; full integration not globally certified"
+    }
+  ],
+  "decision_authority": "independent reviewer pending; owner does not promote"
+}

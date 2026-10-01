@@ -1,0 +1,32 @@
+{
+  "schema": "vigilode-r4-statistics-execution-v1",
+  "audited_source_commit": "1c54194123ee6abc6daa512e8574922f510b4e2c",
+  "preregistration_commit": "b2914f3e3c03eda60a8547619db6284aac8250a2",
+  "exact_run": {
+    "command": "python3 r4/statistics/exact_session_interval.py --output r4/statistics/EXACT_SESSION_INTERVAL.json",
+    "exit_code": 0,
+    "input_sha256": "2131b8948b19f87beb5b87c728bdd1ad0437053c71846998e095862f2b9e65ef",
+    "output_sha256": "b7e1689648a526b466f1c189b69144b1fe90707565ecc3c3d70b55e66df3e791",
+    "stdout_sha256": "0c138fa0966fc136ed93cfa98760e5d1a46690f99e37996e5170ac2f34e02c61",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "evidence_status": [
+      "derived",
+      "numerically checked"
+    ],
+    "interpretation": "Exact combinatorial coverage checked; no fresh timing and no population speed promotion."
+  },
+  "native_run": {
+    "status": "COMPLETED",
+    "command": "source runtime_r4/env.sh; flock runtime_r4/cargo-build.lock cargo run --manifest-path r4/statistics/probe/Cargo.toml --offline --locked -- /workspace/scratch/0dc1e721cf82/vigilode",
+    "exit_code": 0,
+    "raw_rows": 21,
+    "input_sha256": "9ba6f52dbb9d403aaac8cf6e87b46eeac8561630ffb076860747f4d21f6b7826",
+    "cargo_lock_sha256": "ed92f07bdf7a7af6d957d1860db5092be2ddab596d9149c200737c9354cafe1a",
+    "stdout_sha256": "f65cc36b63a00f57807899e18fa924a60cb4ba22bad1491331a9080ede739bfc",
+    "stderr_sha256": "123fc0820a98698a9fb88f8b70967c40c87c66c4febe9bee7484eca015e2f6db",
+    "binary_path_at_execution": "runtime_r4/target-shared/debug/vigilode-r4-statistics-probe",
+    "binary_sha256": "fef5afd2ccb84a233a89877fb315d07ad07b3e44954a26b54cd386913178a036",
+    "compile_corrections": [],
+    "build_incident": null
+  }
+}

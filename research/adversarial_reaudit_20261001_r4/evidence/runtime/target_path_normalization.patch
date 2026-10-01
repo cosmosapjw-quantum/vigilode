@@ -1,0 +1,11 @@
+--- run_bounded_suite.py
++++ run_bounded_suite_normalized_paths.py
+@@ -3,7 +3,7 @@
+ from pathlib import Path
+ import argparse,subprocess,json,time,datetime,os,signal,re,hashlib,collections
+ ap=argparse.ArgumentParser();ap.add_argument('--repo',required=True);ap.add_argument('--target-dir',required=True);ap.add_argument('--evidence-dir',required=True);ap.add_argument('--build-lock',required=True);ap.add_argument('--plan',required=True);ap.add_argument('--prereg-commit',required=True);a=ap.parse_args()
+-repo=Path(a.repo).resolve();out=Path(a.evidence_dir).resolve();out.mkdir(parents=True,exist_ok=True);plan=json.loads(Path(a.plan).read_text())
++a.target_dir=str(Path(a.target_dir).resolve());repo=Path(a.repo).resolve();out=Path(a.evidence_dir).resolve();out.mkdir(parents=True,exist_ok=True);plan=json.loads(Path(a.plan).read_text())
+ # A caller must provide the actual committed preregistration identity; no dates inferred.
+ subprocess.run(['git','cat-file','-e',a.prereg_commit+'^{commit}'],cwd=repo,check=True)
+ os.environ.update(CARGO_INCREMENTAL='0',CARGO_PROFILE_DEV_CODEGEN_UNITS='1',CARGO_PROFILE_TEST_CODEGEN_UNITS='1',CARGO_BUILD_JOBS='1')

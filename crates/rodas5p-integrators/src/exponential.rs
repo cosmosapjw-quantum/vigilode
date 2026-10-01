@@ -194,6 +194,41 @@ impl PhiConvergenceBasis {
     }
 }
 
+/// Whether a phi action solved the original weighted problem or only a
+/// rounded one (re-audit R3, R3-ARITH-01).
+///
+/// The weights `w_k = h^k b_k` are formed in binary64; an input whose weight
+/// falls below the smallest subnormal becomes 0 and the Krylov iteration then
+/// converges on a different problem. A nilpotent `A` with `A12 = 1e308` and
+/// `h = 1e-8` lost `b2 = 1e-310` that way and reported `converged` with a
+/// relative error of 1 in the dominant component. Without a bound on how far
+/// that loss moves the output, the action is not converged for the original
+/// target.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case", tag = "kind")]
+pub enum PhiTransformStatus {
+    /// Every nonzero input kept a nonzero weight.
+    #[default]
+    Exact,
+    /// `lost` nonzero inputs underflowed to zero weight; no bound on the
+    /// resulting output error is available (TRANSFORM_ERROR_UNBOUNDED).
+    TransformErrorUnbounded { lost: u64 },
+}
+
+impl PhiTransformStatus {
+    pub fn is_exact(&self) -> bool {
+        matches!(self, Self::Exact)
+    }
+
+    fn from_lost(lost: u64) -> Self {
+        if lost == 0 {
+            Self::Exact
+        } else {
+            Self::TransformErrorUnbounded { lost }
+        }
+    }
+}
+
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct FusedPhiSubstepReport {
     pub substep_index: usize,
@@ -232,6 +267,28 @@ pub struct FusedPhiActionReport {
         skip_serializing_if = "PhiConvergenceBasis::is_residual_estimate"
     )]
     pub convergence_basis: PhiConvergenceBasis,
+    /// Weighting quality; anything but `Exact` forces `converged = false`
+    /// (re-audit R3, R3-ARITH-01).
+    #[serde(default, skip_serializing_if = "PhiTransformStatus::is_exact")]
+    pub transform_status: PhiTransformStatus,
+}
+
+impl FusedPhiActionReport {
+    /// Mark a report computed on weights of which `lost` inputs underflowed:
+    /// the Krylov convergence then holds for the rounded problem only.
+    fn with_transform_loss(mut self, lost: u64) -> Self {
+        self.transform_status = PhiTransformStatus::from_lost(lost);
+        if lost > 0 {
+            self.converged = false;
+            self.convergence_basis = PhiConvergenceBasis::ResidualEstimate;
+            // The substeps converged on the rounded problem only.
+            for substep in &mut self.substep_reports {
+                substep.converged = false;
+                substep.convergence_basis = PhiConvergenceBasis::ResidualEstimate;
+            }
+        }
+        self
+    }
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -1352,12 +1409,11 @@ fn weighted_phi_vectors(
     scale: f64,
     vectors: &[Vec<f64>],
     counters: &mut WorkCounters,
-) -> CoreResult<Vec<Vec<f64>>> {
+) -> CoreResult<(Vec<Vec<f64>>, u64)> {
     let (weighted, lost) = rodas5p_core::weight_phi_vectors(scale, vectors)?;
-    counters.phi_weight_underflows = counters
-        .phi_weight_underflows
-        .saturating_add(u64::try_from(lost).unwrap_or(u64::MAX));
-    Ok(weighted)
+    let lost = u64::try_from(lost).unwrap_or(u64::MAX);
+    counters.phi_weight_underflows = counters.phi_weight_underflows.saturating_add(lost);
+    Ok((weighted, lost))
 }
 
 /// The time-normalized augmented operator for
@@ -1482,6 +1538,7 @@ pub fn fused_phi_action(
     }
     if vectors.iter().all(|vector| safe_l2(vector) == 0.0) {
         return Ok(FusedPhiActionReport {
+            transform_status: PhiTransformStatus::Exact,
             scale,
             highest_phi_index: vectors.len() - 1,
             substeps: 0,
@@ -1495,8 +1552,11 @@ pub fn fused_phi_action(
             convergence_basis: PhiConvergenceBasis::InvariantSubspace,
         });
     }
-    let weighted = weighted_phi_vectors(scale, vectors, counters)?;
-    fused_phi_action_weighted(operator, scale, &weighted, config, counters)
+    let (weighted, lost) = weighted_phi_vectors(scale, vectors, counters)?;
+    Ok(
+        fused_phi_action_weighted(operator, scale, &weighted, config, counters)?
+            .with_transform_loss(lost),
+    )
 }
 
 /// [`fused_phi_action`] on the weighted vectors `w0 = b0`, `w_k = tau^k b_k`:
@@ -1551,6 +1611,7 @@ fn fused_phi_action_weighted(
         if completed {
             let value = state[..physical_dimension].to_vec();
             return Ok(FusedPhiActionReport {
+                transform_status: PhiTransformStatus::Exact,
                 scale,
                 highest_phi_index,
                 substeps,
@@ -1569,6 +1630,7 @@ fn fused_phi_action_weighted(
         if substeps >= config.maximum_substeps {
             let value = state[..physical_dimension].to_vec();
             return Ok(FusedPhiActionReport {
+                transform_status: PhiTransformStatus::Exact,
                 scale,
                 highest_phi_index,
                 substeps,
@@ -1607,6 +1669,7 @@ pub fn fused_phi_linear_combination(
     let n = operator.dimension();
     let highest = terms.iter().map(|term| term.phi_index).max().unwrap_or(0);
     let mut weighted = vec![vec![0.0; n]; highest + 1];
+    let mut lost = 0_u64;
     for term in terms {
         if term.vector.len() != n || !term.coefficient.is_finite() {
             return Err(CoreError::Dimension(
@@ -1614,7 +1677,17 @@ pub fn fused_phi_linear_combination(
             ));
         }
         axpy(term.coefficient, term.vector, &mut weighted[term.phi_index]);
+        // Products of a nonzero coefficient and a nonzero entry that fall
+        // below the smallest normal number lose that input wholly or in
+        // part (re-audit R3, R3-ARITH-01).
+        lost += term
+            .vector
+            .iter()
+            .filter(|&&value| value != 0.0 && term.coefficient != 0.0)
+            .filter(|&&value| (term.coefficient * value).abs() < f64::MIN_POSITIVE)
+            .count() as u64;
     }
+    counters.phi_weight_underflows = counters.phi_weight_underflows.saturating_add(lost);
     if !weighted.iter().flatten().all(|value| value.is_finite()) {
         return Err(CoreError::InvalidInput(
             "invalid fused phi-action input".into(),
@@ -1623,6 +1696,7 @@ pub fn fused_phi_linear_combination(
     counters.phi_actions += 1;
     if weighted.iter().all(|vector| safe_l2(vector) == 0.0) {
         return Ok(FusedPhiActionReport {
+            transform_status: PhiTransformStatus::Exact,
             scale,
             highest_phi_index: highest,
             substeps: 0,
@@ -1636,7 +1710,10 @@ pub fn fused_phi_linear_combination(
             convergence_basis: PhiConvergenceBasis::InvariantSubspace,
         });
     }
-    fused_phi_action_weighted(operator, scale, &weighted, config, counters)
+    Ok(
+        fused_phi_action_weighted(operator, scale, &weighted, config, counters)?
+            .with_transform_loss(lost),
+    )
 }
 
 /// Advisory cost prediction from an actually computed fused-phi Arnoldi prefix.
@@ -1709,6 +1786,8 @@ pub struct FusedPhiPrefixSession {
     converged: bool,
     happy_breakdown: bool,
     convergence_basis: PhiConvergenceBasis,
+    /// Inputs whose weight underflowed (re-audit R3, R3-ARITH-01).
+    transform_lost: u64,
 }
 
 impl FusedPhiPrefixSession {
@@ -1765,10 +1844,11 @@ impl FusedPhiPrefixSession {
                 converged: true,
                 happy_breakdown: true,
                 convergence_basis: PhiConvergenceBasis::InvariantSubspace,
+                transform_lost: 0,
             });
         }
         let highest_phi_index = vectors.len() - 1;
-        let weighted = weighted_phi_vectors(scale, vectors, counters)?;
+        let (weighted, transform_lost) = weighted_phi_vectors(scale, vectors, counters)?;
         let (augmented, initial, physical_dimension) =
             augmented_fused_operator(operator, scale, &weighted)?;
         let config = config.validate(augmented.dimension())?;
@@ -1798,6 +1878,7 @@ impl FusedPhiPrefixSession {
             converged: false,
             happy_breakdown: false,
             convergence_basis: PhiConvergenceBasis::ResidualEstimate,
+            transform_lost,
         };
         for _ in 0..prefix_dimension.min(maximum) {
             if session.converged || session.happy_breakdown {
@@ -1918,10 +1999,11 @@ impl FusedPhiPrefixSession {
         }
         let physical = self.latest_value_augmented[..self.physical_dimension].to_vec();
         Ok(FusedPhiActionReport {
+            transform_status: PhiTransformStatus::from_lost(self.transform_lost),
             scale: self.scale,
             highest_phi_index: self.highest_phi_index,
             substeps: usize::from(self.current_dimension > 0),
-            converged: self.converged,
+            converged: self.converged && self.transform_lost == 0,
             maximum_krylov_dimension: self.current_dimension,
             error_estimate: self.latest_residual_error,
             nested_difference_estimate: self.latest_nested_difference,
@@ -1933,14 +2015,18 @@ impl FusedPhiPrefixSession {
                 vec![FusedPhiSubstepReport {
                     substep_index: 0,
                     krylov_dimension: self.current_dimension,
-                    converged: self.converged,
+                    converged: self.converged && self.transform_lost == 0,
                     happy_breakdown: self.happy_breakdown,
                     error_estimate: self.latest_residual_error,
                     nested_difference_estimate: self.latest_nested_difference,
-                    convergence_basis: self.convergence_basis,
+                    convergence_basis: if self.transform_lost == 0 {
+                        self.convergence_basis
+                    } else {
+                        PhiConvergenceBasis::ResidualEstimate
+                    },
                 }]
             },
-            convergence_basis: if self.converged {
+            convergence_basis: if self.converged && self.transform_lost == 0 {
                 self.convergence_basis
             } else {
                 PhiConvergenceBasis::ResidualEstimate

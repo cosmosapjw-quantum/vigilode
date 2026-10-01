@@ -1,0 +1,146 @@
+{
+  "schema_version": 1,
+  "source_commit": "1c54194123ee6abc6daa512e8574922f510b4e2c",
+  "native_rows": 9,
+  "native_checks": [
+    {
+      "test": "witness:constructor",
+      "exact_error_fraction": "140737488355328/2281627374017361",
+      "bound": 0.06168294172747646,
+      "sound": true
+    },
+    {
+      "test": "witness:zero-upper",
+      "exact_error_fraction": "140737488355328/2281627374017361",
+      "bound": 0.0,
+      "sound": false
+    },
+    {
+      "test": "witness:empty-row",
+      "exact_error_fraction": "140737488355328/2281627374017361",
+      "bound": 0.0,
+      "sound": false
+    },
+    {
+      "test": "depth:1",
+      "s": 1,
+      "serial_sound": true,
+      "doubling_sound": true,
+      "doubling_output_bound": 1.0,
+      "exact_output_distance": 1
+    },
+    {
+      "test": "depth:2",
+      "s": 2,
+      "serial_sound": true,
+      "doubling_sound": true,
+      "doubling_output_bound": 2.0,
+      "exact_output_distance": 2
+    },
+    {
+      "test": "depth:4",
+      "s": 4,
+      "serial_sound": true,
+      "doubling_sound": true,
+      "doubling_output_bound": 4.0,
+      "exact_output_distance": 4
+    },
+    {
+      "test": "depth:8",
+      "s": 8,
+      "serial_sound": true,
+      "doubling_sound": true,
+      "doubling_output_bound": 8.0,
+      "exact_output_distance": 8
+    },
+    {
+      "test": "depth:9",
+      "s": 9,
+      "serial_sound": true,
+      "doubling_sound": false,
+      "doubling_output_bound": 8.0,
+      "exact_output_distance": 9
+    },
+    {
+      "test": "depth:16",
+      "s": 16,
+      "serial_sound": true,
+      "doubling_sound": false,
+      "doubling_output_bound": 8.0,
+      "exact_output_distance": 16
+    }
+  ],
+  "adaptive_doubling_candidate": [
+    {
+      "s": 1,
+      "levels": 0,
+      "last_bound": 1,
+      "exact": true
+    },
+    {
+      "s": 2,
+      "levels": 1,
+      "last_bound": 2,
+      "exact": true
+    },
+    {
+      "s": 4,
+      "levels": 2,
+      "last_bound": 4,
+      "exact": true
+    },
+    {
+      "s": 8,
+      "levels": 3,
+      "last_bound": 8,
+      "exact": true
+    },
+    {
+      "s": 9,
+      "levels": 4,
+      "last_bound": 9,
+      "exact": true
+    },
+    {
+      "s": 16,
+      "levels": 4,
+      "last_bound": 16,
+      "exact": true
+    }
+  ],
+  "candidate_all_exact": true,
+  "component_factorization": [
+    {
+      "s": 8,
+      "n": 1,
+      "full_equals_component_equals_serial": true,
+      "full_stored_matrix_values": 64,
+      "component_stored_matrix_values": 64,
+      "dense_matmul_multiply_count_full": 512,
+      "dense_matmul_multiply_count_component": 512,
+      "claim": "algebraic storage and dense-loop work counts only"
+    },
+    {
+      "s": 8,
+      "n": 2,
+      "full_equals_component_equals_serial": true,
+      "full_stored_matrix_values": 256,
+      "component_stored_matrix_values": 128,
+      "dense_matmul_multiply_count_full": 4096,
+      "dense_matmul_multiply_count_component": 1024,
+      "claim": "algebraic storage and dense-loop work counts only"
+    },
+    {
+      "s": 8,
+      "n": 4,
+      "full_equals_component_equals_serial": true,
+      "full_stored_matrix_values": 1024,
+      "component_stored_matrix_values": 256,
+      "dense_matmul_multiply_count_full": 32768,
+      "dense_matmul_multiply_count_component": 2048,
+      "claim": "algebraic storage and dense-loop work counts only"
+    }
+  ],
+  "component_all_exact": true,
+  "claim_ceiling": "exact arithmetic structural candidate; no production integration, no speed measurement"
+}

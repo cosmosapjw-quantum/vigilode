@@ -561,6 +561,7 @@ fn integrate_order_screen_method(
     let mut fast_accepts = 0_usize;
     let mut fallbacks = 0_usize;
 
+    // Sealed replay clock: crate::RESEARCH_REPLAY_CLOCK_POLICY.
     while time < final_time - 10.0 * f64::EPSILON * final_time.max(1.0) {
         let step_size = h.min(final_time - time);
         match method {

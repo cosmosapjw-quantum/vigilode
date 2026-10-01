@@ -6,18 +6,22 @@ use std::{
 };
 
 use anyhow::{Context, Result};
+
+mod r3_campaigns;
 use clap::{Parser, Subcommand, ValueEnum};
 use rodas5p_core::{load_rodas5p_coefficients, sha256_hex};
 use rodas5p_fair_ab::{
-    BenchmarkCell, BenchmarkPlan, FairSolveConfig, GlobalErrorParetoProfile,
-    PairedTimingAssessment, PairedTimingDecision, PreconditionerKind, RecycleLifetime,
-    ScientificValidityV2CaseArtifact, SequenceConfig, SequenceKind, SolverKind, TraceDocument,
+    ArmIdentity, BenchmarkCell, BenchmarkPlan, FairSolveConfig, GlobalErrorParetoProfile,
+    PairedTimingDecision, PairedTimingEvidence, PairedTimingProtocol, PairedTimingReceipt,
+    PairedWorkload, PreconditionerKind, RecycleLifetime, ScientificValidityV2CaseArtifact,
+    SequenceConfig, SequenceKind, SessionRecord, SolverKind, TraceDocument,
     freeze_scientific_validity_v2_calibration_artifacts, generate_trace,
-    load_numerical_reference_v2, replay_scientific_validity_v2_oregonator_artifacts,
-    run_adaptive_global_error_screen, run_comparison, run_g1_adaptive_global_error_screen,
-    run_global_error_pareto_screen, run_scientific_validity_v2_case,
-    scientific_validity_v2_canonical_campaign_binding, scientific_validity_v2_compiled_revision,
-    summarize_comparison, validate_scientific_validity_v2_case_artifact,
+    load_numerical_reference_v2, measure_paired_session,
+    replay_scientific_validity_v2_oregonator_artifacts, run_adaptive_global_error_screen,
+    run_comparison, run_g1_adaptive_global_error_screen, run_global_error_pareto_screen,
+    run_scientific_validity_v2_case, run_trace, scientific_validity_v2_canonical_campaign_binding,
+    scientific_validity_v2_compiled_revision, summarize_comparison,
+    validate_scientific_validity_v2_case_artifact,
 };
 use rodas5p_integrators::{
     A1ScientificExecutionIdentity, CandidateCatalog, CandidateFamily, CandidateStatus,
@@ -367,6 +371,116 @@ enum Command {
         threads: usize,
         #[arg(long)]
         full: bool,
+        /// JSON map from Tier-L candidate id to its paired timing evidence
+        /// (`paired-timing-campaign` output). Without it every wall
+        /// criterion is not evaluated.
+        #[arg(long)]
+        paired_timing_evidence: Option<PathBuf>,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Measure one paired-timing session of a Tier-L candidate against
+    /// GMRES/OFF in this process (run by `paired-timing-campaign`).
+    #[command(name = "paired-timing-session")]
+    PairedTimingSession {
+        #[arg(long)]
+        campaign_id: String,
+        #[arg(long)]
+        session: u32,
+        #[arg(long)]
+        candidate: String,
+        #[arg(long, value_enum, default_value_t = CliHomotopyProfile::Smoke)]
+        profile: CliHomotopyProfile,
+        #[arg(long, default_value_t = 20_261_001)]
+        seed: u64,
+        /// Batch per case fixed by the first session (JSON map).
+        #[arg(long)]
+        batches: Option<PathBuf>,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Run a paired-timing campaign: each session in its own process, then
+    /// merge the raw session records into a receipt and assess it.
+    #[command(name = "paired-timing-campaign")]
+    PairedTimingCampaign {
+        #[arg(long)]
+        candidate: String,
+        #[arg(long, value_enum, default_value_t = CliHomotopyProfile::Smoke)]
+        profile: CliHomotopyProfile,
+        #[arg(long, default_value_t = 6)]
+        sessions: u32,
+        #[arg(long, default_value_t = 20_261_001)]
+        seed: u64,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Coverage study of the paired timing interval and decision under the
+    /// preregistered dependence and missingness models (re-audit R3,
+    /// STAT-DEV-04). Refuses to overwrite its output.
+    #[command(name = "paired-timing-coverage-study")]
+    PairedTimingCoverageStudy {
+        #[arg(long, default_value_t = rodas5p_fair_ab::COVERAGE_STUDY_REPLICATIONS)]
+        replications: usize,
+        #[arg(long, default_value_t = 20_261_001)]
+        seed: u64,
+        #[arg(long, default_value_t = 4)]
+        threads: usize,
+        /// Run only these scenario ids (default: the whole grid).
+        #[arg(long)]
+        scenario: Vec<String>,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// One paired-timing session of an R3 matched-accuracy arm (run by
+    /// `r3-campaign`).
+    #[command(name = "r3-campaign-session")]
+    R3CampaignSession {
+        #[arg(long, value_enum)]
+        study: r3_campaigns::Study,
+        #[arg(long)]
+        arm: String,
+        #[arg(long)]
+        campaign_id: String,
+        #[arg(long)]
+        session: u32,
+        #[arg(long, default_value_t = 20_261_001)]
+        seed: u64,
+        #[arg(long)]
+        batches: Option<PathBuf>,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// R3 matched-accuracy paired timing (HOM-06, POLY-03): every candidate
+    /// arm against the study's reference, one process per session.
+    /// Refuses to overwrite its output.
+    #[command(name = "r3-campaign")]
+    R3Campaign {
+        #[arg(long, value_enum)]
+        study: r3_campaigns::Study,
+        #[arg(long, default_value_t = 6)]
+        sessions: u32,
+        #[arg(long, default_value_t = 20_261_001)]
+        seed: u64,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Untimed accuracy, work and memory of one R3 arm (run by
+    /// `r3-campaign-verify`).
+    #[command(name = "r3-verify-arm")]
+    R3VerifyArm {
+        #[arg(long, value_enum)]
+        study: r3_campaigns::Study,
+        #[arg(long)]
+        arm: String,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Untimed verification of every arm of an R3 study, one process per
+    /// arm. Refuses to overwrite its output.
+    #[command(name = "r3-campaign-verify")]
+    R3CampaignVerify {
+        #[arg(long, value_enum)]
+        study: r3_campaigns::Study,
         #[arg(long)]
         output: PathBuf,
     },
@@ -1092,14 +1206,69 @@ enum WallCriterion {
     NotEvaluated(&'static str),
 }
 
-fn wall_criterion(paired: Option<&PairedTimingAssessment>) -> WallCriterion {
-    let Some(assessment) = paired else {
+const WALL_WRONG_ARMS: &str = "wall-time criterion not evaluated: the paired timing evidence does not time this candidate against GMRES/OFF";
+
+/// The Tier-L reference arm of every paired timing.
+const TIER_L_TIMING_REFERENCE: &str = "sequential-gmres-off";
+
+const WALL_WRONG_IDENTITY: &str = "wall-time criterion not evaluated: the paired timing evidence was measured on another workload or executable";
+
+/// What paired timing evidence must have measured to count for this
+/// document: the workload profile and, when known, this executable.
+#[derive(Clone, Debug)]
+struct TimingExpectation {
+    workload_prefix: String,
+    executable_sha256: Option<String>,
+}
+
+impl TimingExpectation {
+    fn for_profile(profile: CliHomotopyProfile) -> Result<Self> {
+        Ok(Self {
+            workload_prefix: format!("tier-l-{}-", cli_profile_name(profile)),
+            executable_sha256: Some(sha256_hex(&fs::read(std::env::current_exe()?)?)),
+        })
+    }
+}
+
+fn cli_profile_name(profile: CliHomotopyProfile) -> &'static str {
+    match profile {
+        CliHomotopyProfile::Smoke => "smoke",
+        CliHomotopyProfile::Canonical => "canonical",
+    }
+}
+
+fn wall_criterion(
+    candidate_id: &str,
+    paired: Option<&PairedTimingEvidence>,
+    expected: &TimingExpectation,
+) -> WallCriterion {
+    let Some(evidence) = paired else {
         return WallCriterion::NotEvaluated(WALL_NOT_EVALUATED);
     };
-    // The gate is re-derived from the record's own fields: another schema,
-    // a preview protocol or a decision its interval does not imply never
-    // decides (re-audit R2, R2-STAT-03).
-    match assessment.verified_gate_decision() {
+    let receipt = &evidence.receipt;
+    if receipt.candidate.arm_id != candidate_id
+        || receipt.reference.arm_id != TIER_L_TIMING_REFERENCE
+    {
+        return WallCriterion::NotEvaluated(WALL_WRONG_ARMS);
+    }
+    // Smoke-profile or other-binary evidence never gates this document
+    // (re-audit R3 review).
+    let identity_matches = [&receipt.candidate, &receipt.reference].iter().all(|arm| {
+        arm.workload_id.starts_with(&expected.workload_prefix)
+            && expected
+                .executable_sha256
+                .as_ref()
+                .is_none_or(|hash| &arm.executable_sha256 == hash)
+    });
+    if !identity_matches {
+        return WallCriterion::NotEvaluated(WALL_WRONG_IDENTITY);
+    }
+    // The gate is recomputed from the raw receipt: the assessment must
+    // equal its recomputation from the receipt's session records, the
+    // sessions must be distinct processes of one campaign, and a receipt
+    // with any failed case never gates (re-audit R3, STAT-DEV-02; R2,
+    // R2-STAT-03).
+    match evidence.verified_decision() {
         Err(_) => WallCriterion::NotEvaluated(WALL_REJECTED),
         Ok(PairedTimingDecision::Promote) => WallCriterion::Passed,
         Ok(PairedTimingDecision::Block) => WallCriterion::Failed,
@@ -1107,16 +1276,179 @@ fn wall_criterion(paired: Option<&PairedTimingAssessment>) -> WallCriterion {
     }
 }
 
+/// Parse a Tier-L candidate id back to its strict cell.
+fn tier_l_cell(candidate_id: &str) -> Result<BenchmarkCell> {
+    strict_cells()
+        .into_iter()
+        .find(|cell| linear_candidate_id(cell.solver, cell.lifetime) == candidate_id)
+        .with_context(|| format!("unknown Tier-L candidate {candidate_id}"))
+}
+
+fn tier_l_solve_config(solver: SolverKind) -> FairSolveConfig {
+    FairSolveConfig {
+        solver,
+        rtol: 1e-9,
+        atol: 1e-12,
+        restart: 20,
+        recycle_dim: 6,
+        hard_operator_budget: 2_000,
+        preconditioner: PreconditionerKind::None,
+        use_previous_oracle_guess: true,
+    }
+}
+
+/// One session of the Tier-L paired timing: each unified linear trace is a
+/// case, the candidate cell against GMRES/OFF, with its A/A control. A
+/// trace with a failed solve is a session failure, not a fast sample.
+fn run_tier_l_paired_session(
+    campaign_id: &str,
+    session: u32,
+    candidate_id: &str,
+    profile: CliHomotopyProfile,
+    seed: u64,
+    batches: &BTreeMap<String, usize>,
+) -> Result<SessionRecord> {
+    let cell = tier_l_cell(candidate_id)?;
+    let reference = tier_l_cell(TIER_L_TIMING_REFERENCE)?;
+    let traces = unified_linear_configs(profile)
+        .iter()
+        .map(generate_trace)
+        .collect::<std::result::Result<Vec<_>, _>>()?;
+    let arm = |cell: BenchmarkCell, trace: &rodas5p_fair_ab::LinearSystemTrace| {
+        let config = tier_l_solve_config(cell.solver);
+        let trace = trace.clone();
+        move || -> rodas5p_fair_ab::FairResult<()> {
+            let run = run_trace(&trace, &config, cell.lifetime, 0)?;
+            if run.failures > 0 {
+                return Err(rodas5p_fair_ab::FairError::Invalid(format!(
+                    "{} failed solve(s) on {}",
+                    run.failures, trace.trace_id
+                )));
+            }
+            Ok(())
+        }
+    };
+    let mut workloads = traces
+        .iter()
+        .map(|trace| PairedWorkload {
+            case_id: trace.trace_id.clone(),
+            candidate: Box::new(arm(cell, trace)),
+            reference: Box::new(arm(reference, trace)),
+        })
+        .collect::<Vec<_>>();
+    Ok(measure_paired_session(
+        campaign_id,
+        session,
+        &PairedTimingProtocol::authoritative(seed),
+        &mut workloads,
+        batches,
+    )?)
+}
+
+/// Run each session in a fresh process of this executable, the first to
+/// calibrate the batch per case, merge the records into a receipt, and
+/// assess it.
+fn run_tier_l_paired_campaign(
+    candidate_id: &str,
+    profile: CliHomotopyProfile,
+    sessions: u32,
+    seed: u64,
+    output: &Path,
+) -> Result<PairedTimingEvidence> {
+    tier_l_cell(candidate_id)?;
+    let executable = std::env::current_exe()?;
+    let executable_sha256 = sha256_hex(&fs::read(&executable)?);
+    let campaign_id = format!(
+        "tier-l-{candidate_id}-{}-{}",
+        std::process::id(),
+        std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)?
+            .as_nanos()
+    );
+    let directory = output.with_extension("sessions");
+    fs::create_dir_all(&directory)?;
+    let profile_arg = cli_profile_name(profile);
+    let mut records = Vec::new();
+    let mut failed_sessions = Vec::new();
+    let batches_path = directory.join("batches.json");
+    for session in 0..sessions {
+        let record_path = directory.join(format!("session-{session}.json"));
+        let mut command = std::process::Command::new(&executable);
+        command
+            .arg("paired-timing-session")
+            .args(["--campaign-id", &campaign_id])
+            .args(["--session", &session.to_string()])
+            .args(["--candidate", candidate_id])
+            .args(["--profile", profile_arg])
+            .args(["--seed", &seed.to_string()])
+            .arg("--output")
+            .arg(&record_path);
+        if session > 0 && batches_path.exists() {
+            command.arg("--batches").arg(&batches_path);
+        }
+        let status = command.status()?;
+        let record = if status.success() {
+            fs::read(&record_path)
+                .ok()
+                .and_then(|bytes| serde_json::from_slice::<SessionRecord>(&bytes).ok())
+        } else {
+            None
+        };
+        // A session that produced no record is retained as a failure; the
+        // receipt then never gates (re-audit R3 review).
+        let Some(record) = record else {
+            failed_sessions.push(rodas5p_fair_ab::SessionFailure {
+                session,
+                case_id: "*".into(),
+                message: format!("session process exited with {status} and no readable record"),
+            });
+            continue;
+        };
+        if session == 0 {
+            let batches = rodas5p_fair_ab::session_batches(&record);
+            write_json(&batches_path, &batches)?;
+        }
+        records.push(record);
+    }
+    let workload_id = format!("tier-l-{profile_arg}-seed-{seed}");
+    let receipt = PairedTimingReceipt::from_sessions_with_failures(
+        &campaign_id,
+        ArmIdentity {
+            arm_id: candidate_id.to_owned(),
+            executable_sha256: executable_sha256.clone(),
+            workload_id: workload_id.clone(),
+        },
+        ArmIdentity {
+            arm_id: TIER_L_TIMING_REFERENCE.to_owned(),
+            executable_sha256,
+            workload_id,
+        },
+        PairedTimingProtocol::authoritative(seed),
+        records,
+        failed_sessions,
+    )?;
+    Ok(PairedTimingEvidence::from_receipt(receipt)?)
+}
+
 /// The Tier-N nonlinear screen times each case with a single `Instant`
 /// sample, so its wall ratios are never admissible gate evidence.
 const TIER_N_WALL_TIMING_ADMISSIBLE: bool = false;
 
-/// Tier-L candidates. No paired timing runner feeds this command yet, so
-/// no assessment is supplied and the wall criterion is NotEvaluated.
+/// Tier-L candidates without paired timing evidence: every wall criterion
+/// is NotEvaluated.
+#[cfg(test)]
 fn assess_linear_candidates(
     suites: &[UnifiedLinearSuite],
 ) -> Vec<UnifiedLinearCandidateAssessment> {
-    assess_linear_candidates_against(suites, TIER_L_REFERENCE_FIDELITY, &BTreeMap::new())
+    assess_linear_candidates_against(
+        suites,
+        TIER_L_REFERENCE_FIDELITY,
+        &BTreeMap::new(),
+        &TimingExpectation {
+            workload_prefix: "test".into(),
+            executable_sha256: None,
+        },
+    )
 }
 
 /// `paired_timing` maps a candidate id to its paired assessment against
@@ -1124,7 +1456,8 @@ fn assess_linear_candidates(
 fn assess_linear_candidates_against(
     suites: &[UnifiedLinearSuite],
     reference_fidelity: ComparatorFidelity,
-    paired_timing: &BTreeMap<String, PairedTimingAssessment>,
+    paired_timing: &BTreeMap<String, PairedTimingEvidence>,
+    expected: &TimingExpectation,
 ) -> Vec<UnifiedLinearCandidateAssessment> {
     strict_cells()
         .into_iter()
@@ -1181,7 +1514,7 @@ fn assess_linear_candidates_against(
                 not_evaluated.push(REFERENCE_ONLY_NOT_EVALUATED.to_string());
             }
             if !is_reference && relative_admissible {
-                match wall_criterion(paired_timing.get(&candidate_id)) {
+                match wall_criterion(&candidate_id, paired_timing.get(&candidate_id), expected) {
                     WallCriterion::Passed => {}
                     WallCriterion::Failed => blockers.push(format!(
                         "paired Tier-L wall-speedup interval lies below {:.2}x",
@@ -1623,6 +1956,7 @@ fn run_unified_candidate_document(
     profile: CliHomotopyProfile,
     threads: usize,
     full: bool,
+    paired_timing: &BTreeMap<String, PairedTimingEvidence>,
 ) -> Result<UnifiedCandidateDocument> {
     let repetitions = if matches!(profile, CliHomotopyProfile::Smoke) {
         1
@@ -1663,7 +1997,12 @@ fn run_unified_candidate_document(
     let mut nonlinear = run_unified_nonlinear_screen(profile.into(), threads)?;
     let scientific_gates = run_unified_scientific_gates(profile.into(), threads, &nonlinear)?;
     let native_integrator_gates = run_native_integrator_gates()?;
-    let linear_assessments = assess_linear_candidates(&linear_suites);
+    let linear_assessments = assess_linear_candidates_against(
+        &linear_suites,
+        TIER_L_REFERENCE_FIDELITY,
+        paired_timing,
+        &TimingExpectation::for_profile(profile)?,
+    );
     let catalog = CandidateCatalog::research_default()?;
     let nonlinear_assessments = assess_nonlinear_candidates(&catalog, &nonlinear);
     let joint_assessments = build_joint_assessments(
@@ -2363,12 +2702,183 @@ fn main() -> Result<()> {
             profile,
             threads,
             full,
+            paired_timing_evidence,
             output,
         } => {
+            let evidence = match paired_timing_evidence {
+                Some(path) => serde_json::from_slice::<BTreeMap<String, PairedTimingEvidence>>(
+                    &fs::read(&path).with_context(|| format!("reading {}", path.display()))?,
+                )
+                .with_context(|| format!("parsing {}", path.display()))?,
+                None => BTreeMap::new(),
+            };
             write_json(
                 &output,
-                &run_unified_candidate_document(profile, threads, full)?,
+                &run_unified_candidate_document(profile, threads, full, &evidence)?,
             )?;
+        }
+        Command::PairedTimingSession {
+            campaign_id,
+            session,
+            candidate,
+            profile,
+            seed,
+            batches,
+            output,
+        } => {
+            let batches = match batches {
+                Some(path) => serde_json::from_slice(&fs::read(&path)?)?,
+                None => BTreeMap::new(),
+            };
+            let record = run_tier_l_paired_session(
+                &campaign_id,
+                session,
+                &candidate,
+                profile,
+                seed,
+                &batches,
+            )?;
+            write_json(&output, &record)?;
+        }
+        Command::PairedTimingCampaign {
+            candidate,
+            profile,
+            sessions,
+            seed,
+            output,
+        } => {
+            let evidence =
+                run_tier_l_paired_campaign(&candidate, profile, sessions, seed, &output)?;
+            let mut map = BTreeMap::new();
+            map.insert(candidate, evidence);
+            write_json(&output, &map)?;
+        }
+        Command::R3CampaignSession {
+            study,
+            arm,
+            campaign_id,
+            session,
+            seed,
+            batches,
+            output,
+        } => {
+            let batches = match batches {
+                Some(path) => serde_json::from_slice(&fs::read(&path)?)?,
+                None => BTreeMap::new(),
+            };
+            let record =
+                r3_campaigns::run_session(study, &arm, &campaign_id, session, seed, &batches)?;
+            write_json(&output, &record)?;
+        }
+        Command::R3Campaign {
+            study,
+            sessions,
+            seed,
+            output,
+        } => {
+            if output.exists() {
+                anyhow::bail!("immutable output already exists: {}", output.display());
+            }
+            let mut evidence = BTreeMap::new();
+            let mut summary = BTreeMap::new();
+            for arm in study.arms() {
+                // An arm whose campaign cannot be assessed is recorded, not
+                // allowed to discard the other arms (re-audit R3 review).
+                let arm_evidence =
+                    match r3_campaigns::run_campaign(study, arm, sessions, seed, &output) {
+                        Ok(arm_evidence) => arm_evidence,
+                        Err(error) => {
+                            println!("{} {arm}: campaign failed: {error}", study.name());
+                            summary.insert(arm.to_string(), json!({ "error": error.to_string() }));
+                            continue;
+                        }
+                    };
+                let verified = arm_evidence.verified_decision().map_or_else(
+                    |error| format!("not verified: {error}"),
+                    |d| format!("{d:?}"),
+                );
+                summary.insert(
+                    arm.to_string(),
+                    json!({
+                        "verified_decision": verified,
+                        "assessment_decision": arm_evidence.assessment.decision,
+                        "gate_decision": arm_evidence.assessment.gate_decision,
+                        "speedup_point": arm_evidence.assessment.corpus.point,
+                        "speedup_lower": arm_evidence.assessment.corpus.lower,
+                        "speedup_upper": arm_evidence.assessment.corpus.upper,
+                        "independent_sessions": arm_evidence.assessment.corpus.independent_blocks,
+                        "failed_sessions": arm_evidence.receipt.failed_sessions.len(),
+                        "receipt_failures": arm_evidence.receipt.failures.len(),
+                    }),
+                );
+                println!("{} {arm}: verified decision {verified}", study.name());
+                evidence.insert(arm.to_string(), arm_evidence);
+            }
+            write_json_create_new(
+                &output,
+                &json!({
+                    "study": study.name(),
+                    "reference": study.reference(),
+                    "seed": seed,
+                    "sessions": sessions,
+                    "summary": summary,
+                    "evidence": evidence,
+                }),
+            )?;
+        }
+        Command::R3VerifyArm { study, arm, output } => {
+            r3_campaigns::verify_arm(study, &arm, &output)?;
+        }
+        Command::R3CampaignVerify { study, output } => {
+            if output.exists() {
+                anyhow::bail!("immutable output already exists: {}", output.display());
+            }
+            let executable = std::env::current_exe()?;
+            let directory = output.with_extension("arms");
+            fs::create_dir_all(&directory)?;
+            let mut arms = BTreeMap::new();
+            for arm in std::iter::once(study.reference()).chain(study.arms().iter().copied()) {
+                let path = directory.join(format!("{arm}.json"));
+                let status = std::process::Command::new(&executable)
+                    .arg("r3-verify-arm")
+                    .args(["--study", study.name()])
+                    .args(["--arm", arm])
+                    .arg("--output")
+                    .arg(&path)
+                    .status()?;
+                let value = if status.success() {
+                    serde_json::from_slice::<serde_json::Value>(&fs::read(&path)?)?
+                } else {
+                    json!({ "arm": arm, "failed": format!("verification process exited with {status}") })
+                };
+                arms.insert(arm.to_string(), value);
+            }
+            write_json_create_new(&output, &json!({ "study": study.name(), "arms": arms }))?;
+        }
+        Command::PairedTimingCoverageStudy {
+            replications,
+            seed,
+            threads,
+            scenario,
+            output,
+        } => {
+            let protocol = rodas5p_fair_ab::PairedTimingProtocol::authoritative(seed);
+            let grid = rodas5p_fair_ab::preregistered_coverage_grid(&protocol)
+                .into_iter()
+                .filter(|entry| scenario.is_empty() || scenario.contains(&entry.id))
+                .collect::<Vec<_>>();
+            if grid.is_empty() {
+                anyhow::bail!("no coverage scenario matches {scenario:?}");
+            }
+            let report =
+                rodas5p_fair_ab::coverage_study(&grid, replications, seed, threads, &protocol)?;
+            write_json_create_new(&output, &report)?;
+            println!(
+                "coverage study: {} scenarios, verdict {} (sensitivity pass: {})",
+                report.scenarios.len(),
+                report.verdict,
+                report.sensitivity_pass
+            );
         }
         Command::Trace {
             kind,
@@ -2542,11 +3052,12 @@ mod unified_assessment_tests {
         assert!(ids.contains(&"sequential-gcrodr-persistent".to_string()));
     }
 
-    /// Paired assessment of GCRO-DR/persistent against GMRES/OFF from
-    /// deterministic samples: six sessions of five pairs, 2% noise.
-    fn paired_assessment(speedup: f64, with_aa: bool) -> PairedTimingAssessment {
+    /// Paired timing evidence of GCRO-DR/persistent against GMRES/OFF from
+    /// deterministic samples: six session records (distinct processes) of
+    /// four cases with 2% noise, merged into a receipt.
+    fn paired_evidence(speedup: f64, with_aa: bool) -> PairedTimingEvidence {
         use rodas5p_fair_ab::{
-            PairedTimingCase, PairedTimingProtocol, assess_paired_timing,
+            PAIRED_TIMING_MONOTONIC_CLOCK, PairedTimingCase, SessionProvenance,
             detect_timing_host_metadata,
         };
         let protocol = PairedTimingProtocol::authoritative(7);
@@ -2557,7 +3068,7 @@ mod unified_assessment_tests {
                 .wrapping_add(1_442_695_040_888_963_407);
             1.0 + 0.02 * (2.0 * ((state >> 11) as f64 / (1_u64 << 53) as f64) - 1.0)
         };
-        let mut cases = |ratio: f64, prefix: &str| {
+        let mut cases = |ratio: f64, suffix: &str, session: u32| {
             (0..4)
                 .map(|case| {
                     let base = 1.0e-3 * (1.0 + case as f64);
@@ -2567,37 +3078,59 @@ mod unified_assessment_tests {
                     let reference = (0..protocol.pairs)
                         .map(|_| base * ratio * noise())
                         .collect::<Vec<_>>();
-                    let sessions = (0..protocol.pairs)
-                        .map(|pair| (pair * 6 / protocol.pairs) as u32)
-                        .collect();
                     PairedTimingCase::from_samples(
-                        format!("{prefix}-{case}"),
+                        format!("case-{case}{suffix}"),
                         &protocol,
                         vec![5.0e-3, 1.0e-3],
                         candidate,
                         reference,
                     )
                     .unwrap()
-                    .with_process_blocks(sessions)
+                    .with_process_blocks(vec![session; protocol.pairs])
                 })
                 .collect::<Vec<_>>()
         };
-        let corpus = cases(speedup, "case");
-        let aa = cases(1.0, "aa");
-        assess_paired_timing(
-            &protocol,
-            &corpus,
-            with_aa.then_some(aa.as_slice()),
-            detect_timing_host_metadata(1),
+        let records = (0..6)
+            .map(|session| SessionRecord {
+                campaign_id: "test-campaign".into(),
+                provenance: SessionProvenance {
+                    session,
+                    process_id: 1_000 + session,
+                    started_unix_seconds: 0.0,
+                    finished_unix_seconds: 1.0,
+                    clock: PAIRED_TIMING_MONOTONIC_CLOCK.into(),
+                    host: detect_timing_host_metadata(1),
+                },
+                cases: cases(speedup, "", session),
+                aa_cases: if with_aa {
+                    cases(1.0, "#aa", session)
+                } else {
+                    Vec::new()
+                },
+                failures: Vec::new(),
+            })
+            .collect();
+        let arm = |id: &str| ArmIdentity {
+            arm_id: id.into(),
+            executable_sha256: "0".repeat(64),
+            workload_id: "test".into(),
+        };
+        let receipt = PairedTimingReceipt::from_sessions(
+            "test-campaign",
+            arm("sequential-gcrodr-persistent"),
+            arm(TIER_L_TIMING_REFERENCE),
+            protocol,
+            records,
         )
-        .unwrap()
+        .unwrap();
+        PairedTimingEvidence::from_receipt(receipt).unwrap()
     }
 
     #[test]
     fn tier_l_wall_decisions_come_only_from_a_paired_assessment() {
         // Audit 2026-09-30, B-03: three repetitions after one warmup with a
-        // median wall ratio of 0.8 used to promote. Without a paired
-        // assessment the wall criterion is not evaluated.
+        // median wall ratio of 0.8 used to promote. Without paired timing
+        // evidence the wall criterion is not evaluated.
         let gcrodr = |rows: Vec<UnifiedLinearCandidateAssessment>| {
             rows.into_iter()
                 .find(|row| row.candidate_id == "sequential-gcrodr-persistent")
@@ -2607,25 +3140,66 @@ mod unified_assessment_tests {
         assert_eq!(row.verdict, UnifiedJointVerdict::NotEvaluated);
         assert_eq!(row.not_evaluated, vec![WALL_NOT_EVALUATED]);
 
-        let with = |assessment: PairedTimingAssessment| {
-            let map = BTreeMap::from([("sequential-gcrodr-persistent".to_string(), assessment)]);
+        let with = |evidence: PairedTimingEvidence| {
+            let map = BTreeMap::from([("sequential-gcrodr-persistent".to_string(), evidence)]);
             gcrodr(assess_linear_candidates_against(
                 &[suite(0.8)],
                 TIER_L_REFERENCE_FIDELITY,
                 &map,
+                &TimingExpectation {
+                    workload_prefix: "test".into(),
+                    executable_sha256: Some("0".repeat(64)),
+                },
             ))
         };
-        // An authoritative paired interval above 1.15x promotes.
-        let row = with(paired_assessment(1.30, true));
+        // Receipt-backed paired evidence above 1.15x promotes.
+        let row = with(paired_evidence(1.30, true));
         assert_eq!(row.verdict, UnifiedJointVerdict::Promote, "{row:?}");
         // One below 1.15x holds.
-        let row = with(paired_assessment(0.90, true));
+        let row = with(paired_evidence(0.90, true));
         assert_eq!(row.verdict, UnifiedJointVerdict::Hold, "{row:?}");
         assert!(row.blockers[0].contains("paired Tier-L wall-speedup interval"));
         // Without an A/A control the timing is not authoritative.
-        let row = with(paired_assessment(1.30, false));
+        let row = with(paired_evidence(1.30, false));
         assert_eq!(row.verdict, UnifiedJointVerdict::NotEvaluated);
         assert_eq!(row.not_evaluated, vec![WALL_INCONCLUSIVE]);
+        // Re-audit R3, STAT-DEV-02: an assessment whose raw receipt was
+        // corrupted, a receipt with a failed case, or evidence for another
+        // arm never gates.
+        let mut corrupted = paired_evidence(1.30, true);
+        corrupted.receipt.session_records[2].cases[0].candidate_seconds[0] *= 0.5;
+        assert_eq!(with(corrupted).not_evaluated, vec![WALL_REJECTED]);
+        let mut failed = paired_evidence(1.30, true);
+        let failure = rodas5p_fair_ab::SessionFailure {
+            session: 3,
+            case_id: "case-9".into(),
+            message: "failed solve".into(),
+        };
+        failed.receipt.session_records[3]
+            .failures
+            .push(failure.clone());
+        failed.receipt.failures.push(failure);
+        assert_eq!(with(failed).not_evaluated, vec![WALL_INCONCLUSIVE]);
+        let mut other = paired_evidence(1.30, true);
+        other.receipt.candidate.arm_id = "sequential-lgmres-off".into();
+        assert_eq!(with(other).not_evaluated, vec![WALL_WRONG_ARMS]);
+        // Evidence from another executable or workload never gates.
+        let mut binary = paired_evidence(1.30, true);
+        binary.receipt.reference.executable_sha256 = "1".repeat(64);
+        assert_eq!(with(binary).not_evaluated, vec![WALL_WRONG_IDENTITY]);
+        let mut smoke = paired_evidence(1.30, true);
+        smoke.receipt.candidate.workload_id = "tier-l-smoke-seed-1".into();
+        assert_eq!(with(smoke).not_evaluated, vec![WALL_WRONG_IDENTITY]);
+        // Failures dropped from the top-level list are detected.
+        let mut hidden = paired_evidence(1.30, true);
+        hidden.receipt.session_records[1]
+            .failures
+            .push(rodas5p_fair_ab::SessionFailure {
+                session: 1,
+                case_id: "case-9".into(),
+                message: "failed solve".into(),
+            });
+        assert_eq!(with(hidden).not_evaluated, vec![WALL_REJECTED]);
     }
 
     #[test]
@@ -2712,6 +3286,10 @@ mod unified_assessment_tests {
                 &[suite(gcrodr_wall)],
                 ComparatorFidelity::ReferenceImplementationOnly,
                 &BTreeMap::new(),
+                &TimingExpectation {
+                    workload_prefix: "test".into(),
+                    executable_sha256: None,
+                },
             );
             let row = rows
                 .iter()

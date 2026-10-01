@@ -18,6 +18,7 @@ mod bdf;
 mod block;
 mod candidates;
 mod certification;
+mod certified_budget;
 mod common_w_gate;
 mod comparator_fidelity;
 mod dense_output_v2;
@@ -38,6 +39,7 @@ mod integrate;
 mod native_gates;
 mod nonlinear;
 mod output;
+mod outward_certificate;
 mod parallel;
 mod path_controller;
 mod policy_redesign_v25;
@@ -50,6 +52,7 @@ mod scientific_corpus_v2;
 mod scientific_validity_v2_gate;
 mod sequential;
 mod stage_batch;
+mod stage_target;
 mod transactional_q1_q2;
 mod unified_gates;
 mod unified_screen;
@@ -139,6 +142,9 @@ pub use certification::{
     CorrectionDiagnostic, RefinedRootCertificate, RefinedRootConfig, certify_second_correction,
     refine_target_root,
 };
+pub use certified_budget::{
+    CertifiedBudget, CertifiedBudgetDecision, CertifiedBudgetStatus, step_power_enclosure,
+};
 pub use common_w_gate::{
     MatrixFreeCommonWCase, MatrixFreeCommonWProfile, MatrixFreeCommonWReport, MatrixFreeCommonWRow,
     run_matrix_free_common_w_gate,
@@ -173,10 +179,11 @@ pub use exponential::{
     Pexprb54s4Level1PrefixReport, Pexprb54s4Level2ContinuationLedger,
     Pexprb54s4Level2ContinuationOutcome, Pexprb54s4Level2Prefix, Pexprb54s4Level2PrefixReport,
     Pexprb54s4QuadraticRemainderDrift, Pexprb54s4RemainderVectorGeometry, Pexprb54s4Tableau,
-    PhiActionReport, PhiConvergenceBasis, exprb2_fused_step, exprb2_step, exprb43_fused_step,
-    exprb43_step, fused_phi_action, fused_phi_action_incremental, fused_phi_linear_combination,
-    krylov_phi_action, pexprb54s4_fused_step, pexprb54s4_fused_step_resume_level1,
-    pexprb54s4_fused_step_resume_level2, pexprb54s4_fused_step_resume_level2_accounted,
+    PhiActionReport, PhiConvergenceBasis, PhiTransformStatus, exprb2_fused_step, exprb2_step,
+    exprb43_fused_step, exprb43_step, fused_phi_action, fused_phi_action_incremental,
+    fused_phi_linear_combination, krylov_phi_action, pexprb54s4_fused_step,
+    pexprb54s4_fused_step_resume_level1, pexprb54s4_fused_step_resume_level2,
+    pexprb54s4_fused_step_resume_level2_accounted,
     pexprb54s4_fused_step_resume_level2_accounted_jvp_budget,
     pexprb54s4_fused_step_with_telemetry_mode,
     pexprb54s4_fused_step_with_tolerance_scaled_telemetry,
@@ -197,8 +204,9 @@ pub use g2_exponential_gate::{
     OscillatoryExponentialRow, PhiOracleRow, StiffLinearExponentialRow, run_g2_exponential_gate,
 };
 pub use g3_fused_adaptive_gate::{
-    G3AdaptiveRow, G3FreshJvpRow, G3FusedAdaptiveProfile, G3FusedAdaptiveReport,
-    G3FusedAdaptiveSummary, G3PhiFusionRow, run_g3_fused_adaptive_gate,
+    G3AdaptiveRow, G3DenseReferenceStatus, G3FreshJvpRow, G3FusedAdaptiveProfile,
+    G3FusedAdaptiveReport, G3FusedAdaptiveSummary, G3PhiFusionComparison, G3PhiFusionRow,
+    compare_fused_phi_to_dense_reference, g3_gate_status, run_g3_fused_adaptive_gate,
 };
 pub use g4_prefix_kernel_gate::{
     G4PrefixKernelProfile, G4PrefixKernelReport, G4PrefixKernelRow, G4PrefixKernelSummary,
@@ -268,6 +276,7 @@ pub use integrate::{
     integrate_fixed_observed, integrate_homotopy_adaptive_observed,
     integrate_sequential_matrix_free_adaptive_observed,
     integrate_transactional_q1_q2_adaptive_observed,
+    integrate_transactional_q1_q2_adaptive_observed_with_admission,
 };
 pub use native_gates::{
     NativeIntegratorGateReport, NativeIntegratorGateRow, run_native_integrator_gates,
@@ -276,7 +285,15 @@ pub use nonlinear::{
     BDF_NEWTON_TOLERANCE_FACTOR, NewtonConfig, NewtonReport, NewtonTolerancePolicy,
     radau_newton_tolerance_factor, solve_dense_newton,
 };
-pub use output::{ObservedIntegrationResult, OutputSamplingPlan, OutputSchedule};
+pub use output::{
+    ObservedIntegrationResult, OutputSamplingPlan, OutputSchedule, PRODUCTION_CLOCK_POLICY,
+    RESEARCH_REPLAY_CLOCK_POLICY,
+};
+pub use outward_certificate::{
+    CertificateKind, DoublingCertificate, InverseWitness, PastStepData, QuadraticStageProblem,
+    RadiusAttempt, StageCertificate, WitnessIdentity, WitnessWork, candidate_digest,
+    certify_stage_target, doubling_certificate, predict_state_radius,
+};
 pub use parallel::ParallelExecution;
 pub use path_controller::{
     PathControllerCase, PathControllerControlRow, PathControllerProfile, PathControllerReport,
@@ -328,9 +345,15 @@ pub use stage_batch::{
     StageBatchFeasibilityCase, StageBatchFeasibilityProfile, StageBatchFeasibilityReport,
     StageBatchFeasibilityRow, run_stage_batch_feasibility,
 };
+pub use stage_target::{
+    CoefficientLeakage, STAGE_TARGET_SEQUENTIAL, STAGE_TARGET_STRICT_LOWER_PROJECTION, StageTarget,
+    StageTargetBits, block_sequential_allowance, native_coefficient_leakage,
+};
 pub use transactional_q1_q2::{
-    OperationalGateReport, TransactionalQ1Q2Config, TransactionalQ1Q2Lane,
-    TransactionalQ1Q2RunDiagnostics, TransactionalQ1Q2StepReport, transactional_q1_q2_step,
+    NATIVE_TARGET_CERTIFICATE_ADMISSION, OPERATIONAL_DIAGNOSTIC_ADMISSION, OperationalGateReport,
+    Q2Admission, Q2CertificateAdmission, Q2CertificateSource, TransactionalQ1Q2Config,
+    TransactionalQ1Q2Lane, TransactionalQ1Q2RunDiagnostics, TransactionalQ1Q2StepReport,
+    transactional_q1_q2_step, transactional_q1_q2_step_with_admission,
 };
 pub use unified_gates::{
     CandidateGateReport, CandidateGateVerdict, CandidateOrderGateRow, CandidateStiffGateRow,

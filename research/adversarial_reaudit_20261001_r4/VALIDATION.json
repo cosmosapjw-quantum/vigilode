@@ -1,0 +1,45 @@
+{
+  "schema": "vigilode.r4.validation.v1",
+  "status": "PASS",
+  "artifact_validation": "ARTIFACT_VALIDATION.json",
+  "repository_checks": [
+    {
+      "name": "research_node",
+      "argv": [
+        "python3",
+        "tools/check-research-node.py",
+        "--base",
+        "1c54194123ee6abc6daa512e8574922f510b4e2c"
+      ],
+      "exit_code": 0,
+      "stdout": "check-research-node: PASS (12 ledger rows, base=1c54194123ee6abc6daa512e8574922f510b4e2c, new nodes=['adversarial_reaudit_20261001_r4'])",
+      "stderr": ""
+    },
+    {
+      "name": "authority_refs",
+      "argv": [
+        "python3",
+        "tools/check-authority-refs.py",
+        "--paths",
+        "research/adversarial_reaudit_20261001_r4",
+        "research/LEDGER.jsonl"
+      ],
+      "exit_code": 0,
+      "stdout": "check-authority-refs: PASS (117 citations, 16 distinct SHAs: missing+allowlisted=1, non-commit=1, reachable=14)",
+      "stderr": ""
+    }
+  ],
+  "ledger_prefix_byte_identical": true,
+  "new_ledger_rows": [
+    "L-0011",
+    "L-0012"
+  ],
+  "production_source_diff_empty": true,
+  "preregistered_input_hashes": "MATCH",
+  "new_exemptions_or_allowlist_edits": false,
+  "authority_reference_detail": "14distinct reachable commit SHAs; one source tree is a non-commit object; compiler rustc internal SHA e408947bfd200af42db322daf0fadfe7e26d3bd1 is already allowlisted, not a new repository source authority.",
+  "final_manifest": "MANIFEST.sha256 covers package files except itself; verify locally and compare final Git tree remotely after publication.",
+  "publication": "RESULT_COMMIT_REMOTE_VERIFIED",
+  "scientific_verdict": "REWORK; process PASS is not scientific correctness or speed promotion.",
+  "publication_receipt": "PUBLICATION.json"
+}

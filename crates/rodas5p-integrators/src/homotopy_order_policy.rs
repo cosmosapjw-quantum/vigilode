@@ -382,6 +382,7 @@ fn run_trajectory_job(job: &TrajectoryJob) -> CoreResult<PolicyTrajectoryRow> {
     let mut w_solve_vectors = 0_u64;
     let mut counters = WorkCounters::default();
 
+    // Sealed replay clock: crate::RESEARCH_REPLAY_CLOCK_POLICY.
     while time < job.problem.final_time - 10.0 * f64::EPSILON * job.problem.final_time.max(1.0) {
         let step_size = job.h.min(job.problem.final_time - time);
         match &job.method {

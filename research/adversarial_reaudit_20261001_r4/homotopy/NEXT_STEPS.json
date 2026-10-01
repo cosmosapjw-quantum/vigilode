@@ -1,0 +1,132 @@
+{
+  "schema_version": 1,
+  "source_commit": "1c54194123ee6abc6daa512e8574922f510b4e2c",
+  "nodes": [
+    {
+      "id": "R4-HOM-DEV-01",
+      "priority": "P2",
+      "title": "InverseWitness를 검증된 값과 wire-format으로 분리",
+      "depends_on": [],
+      "changes": [
+        "upper/identity를 private으로 하고 validated constructor만 제공",
+        "Deserialize는 UnverifiedWitness로 받고 shape·유한 비음수·operator identity·certificate proof를 검증한 뒤 승격",
+        "단순 digest 비교를 inverse bound proof로 취급하지 않기; 구조 witness 재생성 또는 approximate inverse V/residual witness 검증"
+      ],
+      "acceptance": [
+        "zero-upper 및 empty-row native 반례가 typed rejection 또는 재검증 경로로 닫힘",
+        "정상 diagonal/small/approximate witness와 24 fixture enclosure 유지"
+      ],
+      "risk": "재검증 비용과 cache invalidation 비용; witness 자체를 다시 조립할 때 source operator 변경 누락 금지"
+    },
+    {
+      "id": "R4-HOM-DEV-02",
+      "priority": "P2",
+      "title": "StageTarget 단계수 계약과 doubling depth를 일치",
+      "depends_on": [],
+      "changes": [
+        "s=8 전용이면 생성자와 certificate 진입점에서 제한",
+        "일반화한다면 strict block structure의 nilpotency 상계 s로 ceil(log2 s) 계산",
+        "zero stage·shape mismatch·부정 반지름을 typed rejection 처리"
+      ],
+      "acceptance": [
+        "s=1,2,4,8,9,16 exact chain 모두 sound 또는 unsupported rejection",
+        "native 8-stage worker-count bit identity 유지"
+      ],
+      "risk": "API generalization probe이며 현재 native8 경로의 잘못된 출력 증거는 아님"
+    },
+    {
+      "id": "R4-HOM-DEV-03",
+      "priority": "P2",
+      "title": "모델과 certificate target의 내용 identity 결합",
+      "depends_on": [
+        "R4-HOM-DEV-01"
+      ],
+      "changes": [
+        "target 전체 coefficient bits와 problem y,h,J,q 및 output scale의 canonical digest 기록",
+        "quadratic model 한 타입에서 RHS/JVP/certificate source를 생성",
+        "일반 callback은 model-defect enclosure를 요구하고 sampling agreement를 proof로 승격하지 않기"
+      ],
+      "acceptance": [
+        "coefficient/scale/model parameter 변경마다 stale certificate 거절",
+        "생성된 동일 모델의 q2 replacement fixture 유지"
+      ],
+      "risk": "identity는 수학적 enclosure의 대체가 아님"
+    },
+    {
+      "id": "R4-HOM-DEV-04",
+      "priority": "P2",
+      "title": "integration lifetime의 persistent pool과 scratch 재사용",
+      "depends_on": [],
+      "changes": [
+        "ParallelExecution을 step context 외부 owner가 보관",
+        "outward upper_matmul도 per-product pool 생성을 제거",
+        "workers1은 순차 경로 유지; ordering과 accumulation 순서 고정"
+      ],
+      "acceptance": [
+        "outputs/stages/decisions bit identity 또는 사전 합의 error contract 유지",
+        "pool creation 수가 integration당 1 이하; 모든 step의 비용 포함"
+      ],
+      "risk": "공유 scratch alias/race와 nested parallel oversubscription"
+    },
+    {
+      "id": "R4-HOM-DEV-05",
+      "priority": "P2",
+      "title": "diagonal component-factorized majorant를 Rust research path로 이식",
+      "depends_on": [
+        "R4-HOM-DEV-01",
+        "R4-HOM-DEV-02",
+        "R4-HOM-DEV-04"
+      ],
+      "changes": [
+        "U와 J의 verified diagonal 구조를 enum으로 표현",
+        "n개의 8x8 stage blocks를 구성하고 성분 축으로 병렬 처리",
+        "actual allocated bytes/nonzero count/directed arithmetic를 분리 계측"
+      ],
+      "acceptance": [
+        "Fraction full/blocked/serial 동일성 fixtures 통과",
+        "outward path가 serial exact oracle를 enclosure",
+        "memory가 O(ns²), 형식적 dense work가 O(ns³ log s)이며 walltime은 별도 보고"
+      ],
+      "risk": "diagonal 이외에 구조를 조용히 적용하지 않기; fill-in 있는 banded는 별도증명 필요"
+    },
+    {
+      "id": "R4-HOM-DEV-06",
+      "priority": "P2",
+      "title": "구조상 불가능한 witness를 speculative work 전에 판별",
+      "depends_on": [
+        "R4-HOM-DEV-03"
+      ],
+      "changes": [
+        "default witness가 n>2 non-diagonal에서 unavailable인 조건을 빠른 capability check로 노출",
+        "지원하지 않는 구조는 즉시 baseline을 선택하거나 검증된 approximate inverse witness를 제공",
+        "단순 dimension cutoff와 수학적 reject를 telemetry에서 구별"
+      ],
+      "acceptance": [
+        "coupled-linear-6에서 certificate unavailable을 얻기 위해 먼저 7 batches를 낭비하지 않음",
+        "기존 baseline 정확도와 failure semantics 유지"
+      ],
+      "risk": "p1 operational fast path까지 중단할지 전략은 명시적 별도 arm으로 사전등록"
+    },
+    {
+      "id": "R4-HOM-DEV-07",
+      "priority": "P2",
+      "title": "직렬·blocked·doubling 인증의 조건부 비용 선택 및 matched campaign",
+      "depends_on": [
+        "R4-HOM-DEV-04",
+        "R4-HOM-DEV-05",
+        "R4-HOM-DEV-06"
+      ],
+      "changes": [
+        "동일 candidate에 대해 serial/doubling 인증비용과 enclosure 폭을 분리 측정",
+        "7-batch saving과 witness/RHS/pool/fallback 전체비용을 함께 기록",
+        "새 seed·고정 corpus·host quota·thread affinity·warm/cold scope를 사전등록"
+      ],
+      "acceptance": [
+        "모든 accepted candidate가 동일 target/accuracy contract를 만족",
+        "p1,pf와 (7-p1)ceil(8/P)+8pf 예산식의 적용가정 공개",
+        "full-path paired evidence가 기준을 넘기 전 SPEEDUP_UNPROVEN 유지"
+      ],
+      "risk": "microbenchmark 인증만 빠르다는 결과로 전체 적분 speedup을 주장하지 않기"
+    }
+  ]
+}

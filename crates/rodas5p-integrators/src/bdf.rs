@@ -463,13 +463,21 @@ fn bdf_step_impl(
     }
     let previous = history.previous_state.as_ref().filter(|state| {
         state.len() == y.len()
-            && history.previous_step.is_some_and(|previous_h| match mode {
-                BdfStepMode::Fixed => same_step(previous_h, h),
-                BdfStepMode::Variable => previous_h > 0.0 && previous_h.is_finite(),
-            })
+            && history
+                .previous_step
+                .is_some_and(|previous_h| previous_h > 0.0 && previous_h.is_finite())
     });
+    // Fixed mode keeps the constant-step coefficients only while successive
+    // represented steps agree; a step that differs (a clipped or final step,
+    // or a represented step whose size changes at a power-of-two ULP
+    // boundary) uses the variable-step coefficients of the actual steps
+    // instead of assuming equal spacing (re-audit R3, R3-TIME-01).
+    let variable_spacing = mode == BdfStepMode::Variable
+        || history
+            .previous_step
+            .is_some_and(|previous_h| !same_step(previous_h, h));
     let stability_restart = config.order == BdfOrder::Two
-        && mode == BdfStepMode::Variable
+        && variable_spacing
         && previous.is_some()
         && requires_bdf2_stability_restart(
             h,
@@ -480,7 +488,7 @@ fn bdf_step_impl(
         BdfOrder::Two if previous.is_some() && !stability_restart => (BdfOrder::Two, false),
         BdfOrder::Two => (BdfOrder::One, true),
     };
-    let variable_coefficients = if applied_order == BdfOrder::Two && mode == BdfStepMode::Variable {
+    let variable_coefficients = if applied_order == BdfOrder::Two && variable_spacing {
         Some(variable_bdf2_coefficients(
             h,
             history.previous_step.expect("BDF2 history validated"),
@@ -521,7 +529,7 @@ fn bdf_step_impl(
             let rhs = problem.eval_rhs(t_new, candidate, local_counters)?;
             let (mass_next, mass_current, mass_previous, rhs_scale) = match applied_order {
                 BdfOrder::One => (1.0, -1.0, 0.0, h),
-                BdfOrder::Two if mode == BdfStepMode::Fixed => (3.0, -4.0, 1.0, 2.0 * h),
+                BdfOrder::Two if !variable_spacing => (3.0, -4.0, 1.0, 2.0 * h),
                 BdfOrder::Two => {
                     let coefficients = variable_coefficients.expect("BDF2 coefficients validated");
                     (coefficients.a0, coefficients.a1, coefficients.a2, h)
@@ -547,7 +555,7 @@ fn bdf_step_impl(
             let jacobian = problem.dense_jacobian(t_new, candidate, local_counters)?;
             match applied_order {
                 BdfOrder::One => scaled_mass_jacobian(&mass, &jacobian, 1.0, -h),
-                BdfOrder::Two if mode == BdfStepMode::Fixed => {
+                BdfOrder::Two if !variable_spacing => {
                     scaled_mass_jacobian(&mass, &jacobian, 3.0, -2.0 * h)
                 }
                 BdfOrder::Two => {
@@ -606,8 +614,10 @@ pub fn integrate_bdf_fixed(
     let mut states = vec![state.clone()];
     let mut applied_orders = Vec::new();
     let mut startup_steps = 0;
+    // Indexed grid t0 + k h (re-audit R3, R3-TIME-03).
+    let grid = crate::output::FixedGrid::new(t_span.0, tf, h)?;
     while t < tf {
-        let step = crate::output::end_step(t, h, tf)?;
+        let step = crate::output::end_step(t, grid.step_from(t)?, tf)?;
         crate::output::require_progress(t, step)?;
         let report = bdf_step(
             problem,
@@ -656,8 +666,10 @@ pub fn integrate_bdf_fixed_observed(
     let mut counters = WorkCounters::default();
     let mut collector = OutputCollector::new(output, t_span, y0)?;
     let mut internal_steps = 0_usize;
+    // Indexed grid t0 + k h (re-audit R3, R3-TIME-03).
+    let grid = crate::output::FixedGrid::new(t_span.0, tf, h)?;
     while t < tf {
-        let (step, clipped) = collector.limit_step(t, h, tf)?;
+        let (step, clipped) = collector.limit_step(t, grid.step_from(t)?, tf)?;
         let report = bdf_step(
             problem,
             t,
@@ -746,14 +758,22 @@ pub(crate) fn adaptive_bdf_trial(
         let mut fine_history = history.clone();
         let coarse =
             bdf_step_variable(problem, t, state, h, config, &mut coarse_history, counters)?;
-        let half = 0.5 * h;
-        let fine_first =
-            bdf_step_variable(problem, t, state, half, config, &mut fine_history, counters)?;
+        // Represented halves that tile [t, t + h] (re-audit R3, R3-TIME-01).
+        let (first_half, t_mid, second_half) = crate::output::split_clock(t, h)?;
+        let fine_first = bdf_step_variable(
+            problem,
+            t,
+            state,
+            first_half,
+            config,
+            &mut fine_history,
+            counters,
+        )?;
         let fine_second = bdf_step_variable(
             problem,
-            t + half,
+            t_mid,
             &fine_first.y_new,
-            half,
+            second_half,
             config,
             &mut fine_history,
             counters,
@@ -861,15 +881,21 @@ pub fn integrate_bdf_adaptive_observed(
     let mut history = BdfHistory::default();
     let mut counters = WorkCounters::default();
     let mut controller = AdaptiveControllerState::default();
-    let mut collector = OutputCollector::new(output, t_span, y0)?;
+    let mut collector = OutputCollector::new(output, t_span, y0)?.with_max_step(adaptive.max_step);
     let mut diagnostics = AdaptiveRunDiagnostics::default();
     let mut h = adaptive.initial_step.min(crate::output::step_to(t, tf)?);
     let mut internal_steps = 0_usize;
 
     while t < tf && diagnostics.attempts < adaptive.max_attempts {
-        h = crate::output::end_step(t, h.min(adaptive.max_step), tf)?;
+        let Some(next_h) = crate::output::adaptive_end_step(t, h, tf, adaptive.max_step)? else {
+            break;
+        };
+        h = next_h;
         // A final piece that lands on tf is taken even below min_step.
-        if (h < adaptive.min_step && t + h < tf) || 0.5 * h <= f64::MIN_POSITIVE || t + h == t {
+        if (crate::output::below_min_step(t, h, adaptive.min_step) && t + h < tf)
+            || 0.5 * h <= f64::MIN_POSITIVE
+            || t + h == t
+        {
             break;
         }
         let requested_h = h;

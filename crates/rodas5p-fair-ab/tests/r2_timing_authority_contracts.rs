@@ -247,6 +247,9 @@ fn a_preview_protocol_or_an_inconsistent_record_never_gates() {
     let mut forged = unpromoted.clone();
     forged.corpus.lower = 1.2;
     forged.corpus.upper = 1.3;
+    // Since R3 (STAT-DEV-03) the Monte-Carlo count is part of the decision,
+    // so a consistent forgery edits it too.
+    forged.corpus.replicates_below_required = 0;
     forged.decision = PairedTimingDecision::Promote;
     forged.gate_decision = PairedTimingDecision::Promote;
     assert_eq!(

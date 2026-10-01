@@ -58,7 +58,15 @@ pub const PAIRED_TIMING_REQUIRED_SPEEDUP: f64 = 1.15;
 pub const PAIRED_TIMING_MIN_INDEPENDENT_BLOCKS: usize = 6;
 /// v2: unlabelled cases count as no session, A/A sessions must match, and
 /// only a confirmatory protocol gates (re-audit R2).
-pub const PAIRED_TIMING_SCHEMA: &str = "vigilode-paired-timing-v2";
+/// v3: the decision also needs the Monte-Carlo gate (re-audit R3,
+/// STAT-DEV-03).
+pub const PAIRED_TIMING_SCHEMA: &str = "vigilode-paired-timing-v3";
+/// Predeclared two-sided failure probability of the Monte-Carlo gate.
+pub const PAIRED_TIMING_MC_FAILURE_BUDGET: f64 = 0.01;
+/// The number of resamples is the protocol's and is never extended after
+/// seeing data; an extension would need a predeclared schedule with the
+/// failure budget split over its stages.
+pub const PAIRED_TIMING_MC_EXTENSION_POLICY: &str = "fixed-resamples-no-data-adaptive-extension";
 const UNKNOWN: &str = "unknown";
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -142,10 +150,10 @@ impl PairedTimingProtocol {
 /// generator so the order and bootstrap bits are reproducible without
 /// depending on an external crate's stream stability.
 #[derive(Clone, Debug)]
-struct SplitMix64(u64);
+pub(crate) struct SplitMix64(pub(crate) u64);
 
 impl SplitMix64 {
-    fn next_u64(&mut self) -> u64 {
+    pub(crate) fn next_u64(&mut self) -> u64 {
         self.0 = self.0.wrapping_add(0x9e37_79b9_7f4a_7c15);
         let mut z = self.0;
         z = (z ^ (z >> 30)).wrapping_mul(0xbf58_476d_1ce4_e5b9);
@@ -155,7 +163,7 @@ impl SplitMix64 {
 
     /// Uniform index in `0..bound` by multiply-shift (bias below 2^-32 for
     /// the small bounds used here).
-    fn below(&mut self, bound: usize) -> usize {
+    pub(crate) fn below(&mut self, bound: usize) -> usize {
         ((u128::from(self.next_u64()) * bound as u128) >> 64) as usize
     }
 }
@@ -183,6 +191,41 @@ pub fn abba_pair_order(pairs: usize, seed: u64) -> Vec<[PairedArm; 2]> {
         if order.len() < pairs {
             order.push([first[1], first[0]]);
         }
+    }
+    order
+}
+
+/// Lengths of the contiguous runs of equal session labels.
+fn session_run_lengths(process_blocks: &[u32]) -> Vec<usize> {
+    let mut lengths = Vec::new();
+    let mut start = 0;
+    while start < process_blocks.len() {
+        let label = process_blocks[start];
+        let end = process_blocks[start..]
+            .iter()
+            .position(|block| *block != label)
+            .map_or(process_blocks.len(), |offset| start + offset);
+        lengths.push(end - start);
+        start = end;
+    }
+    lengths
+}
+
+/// The seeded ABBA order restarted in each contiguous run of equal session
+/// labels: the order of a case whose sessions each measured
+/// `protocol.pairs` pairs in their own process and were then concatenated
+/// ([`merge_session_cases`]). Empty labels give an empty order.
+pub fn session_abba_order(process_blocks: &[u32], seed: u64) -> Vec<[PairedArm; 2]> {
+    let mut order = Vec::with_capacity(process_blocks.len());
+    let mut start = 0;
+    while start < process_blocks.len() {
+        let label = process_blocks[start];
+        let end = process_blocks[start..]
+            .iter()
+            .position(|block| *block != label)
+            .map_or(process_blocks.len(), |offset| start + offset);
+        order.extend(abba_pair_order(end - start, seed));
+        start = end;
     }
     order
 }
@@ -286,11 +329,48 @@ impl PairedTimingCase {
         })
     }
 
+    /// Admission of a raw case against the protocol it claims (re-audit R3,
+    /// R3-STAT-01): the producer, the assessment and the raw-receipt check
+    /// all call this. Besides complete positive samples it requires finite
+    /// nonnegative warmups, the batch size the protocol derives from them,
+    /// and the protocol's seeded ABBA order for exactly the recorded pairs.
+    /// An empty or wrong order, a changed batch, or a negative or NaN warmup
+    /// used to pass and promote.
+    pub fn admit(&self, protocol: &PairedTimingProtocol) -> FairResult<()> {
+        self.validate(protocol)
+            .map_err(|error| FairError::Invalid(format!("INVALID_RAW_TIMING_PROTOCOL: {error}")))
+    }
+
     fn validate(&self, protocol: &PairedTimingProtocol) -> FairResult<()> {
         if self.warmup_seconds.len() < protocol.warmups || self.batch_iterations == 0 {
             return Err(FairError::Invalid(format!(
                 "paired timing case {} needs at least {} warmups and a calibrated batch",
                 self.case_id, protocol.warmups
+            )));
+        }
+        let calibrated = calibrate_batch_iterations(&self.warmup_seconds, protocol)
+            .map_err(|error| FairError::Invalid(format!("case {}: {error}", self.case_id)))?;
+        if calibrated != self.batch_iterations {
+            return Err(FairError::Invalid(format!(
+                "paired timing case {} records batch {} but its warmups calibrate to {calibrated}",
+                self.case_id, self.batch_iterations
+            )));
+        }
+        // The whole-case ABBA order, or the per-session order of a merged
+        // case in which every session measured exactly `protocol.pairs`
+        // pairs (singleton or odd session runs would let every pair restart
+        // the same seed; re-audit R3 review).
+        let session_runs_complete = !self.process_blocks.is_empty()
+            && session_run_lengths(&self.process_blocks)
+                .iter()
+                .all(|length| *length == protocol.pairs);
+        if self.order != abba_pair_order(self.candidate_seconds.len(), protocol.seed)
+            && !(session_runs_complete
+                && self.order == session_abba_order(&self.process_blocks, protocol.seed))
+        {
+            return Err(FairError::Invalid(format!(
+                "paired timing case {} does not follow the protocol's seeded ABBA order",
+                self.case_id
             )));
         }
         if self.candidate_seconds.len() != self.reference_seconds.len()
@@ -405,7 +485,7 @@ where
             }
         }
     }
-    Ok(PairedTimingCase {
+    let case = PairedTimingCase {
         case_id: case_id.into(),
         batch_iterations,
         warmup_seconds,
@@ -413,17 +493,28 @@ where
         candidate_seconds,
         reference_seconds,
         process_blocks: Vec::new(),
-    })
+    };
+    // The producer passes the same admission as a replayed receipt.
+    case.admit(protocol)?;
+    Ok(case)
 }
 
-fn median_in_place(values: &mut [f64]) -> f64 {
+/// The median by selection: the same order statistics, and so the same bits,
+/// as sorting, in linear time.
+pub(crate) fn median_in_place(values: &mut [f64]) -> f64 {
     debug_assert!(!values.is_empty());
-    values.sort_by(f64::total_cmp);
+    let even = values.len().is_multiple_of(2);
     let middle = values.len() / 2;
-    if values.len().is_multiple_of(2) {
-        0.5 * (values[middle - 1] + values[middle])
+    let (left, upper, _) = values.select_nth_unstable_by(middle, f64::total_cmp);
+    if even {
+        let lower = left
+            .iter()
+            .copied()
+            .max_by(f64::total_cmp)
+            .expect("an even nonempty slice has a lower half");
+        0.5 * (lower + *upper)
     } else {
-        values[middle]
+        *upper
     }
 }
 
@@ -466,6 +557,10 @@ pub struct SpeedupInterval {
     pub lower_log_simulation_band: [f64; 2],
     #[serde(default)]
     pub upper_log_simulation_band: [f64; 2],
+    /// Replicates strictly below `ln(required_speedup)` (compared in log
+    /// space), for the Monte-Carlo gate.
+    #[serde(default)]
+    pub replicates_below_required: usize,
 }
 
 impl SpeedupInterval {
@@ -497,7 +592,7 @@ pub fn case_clustered_bootstrap(
     }
     let mut ids = BTreeSet::new();
     for case in cases {
-        case.validate(protocol)?;
+        case.admit(protocol)?;
         if !ids.insert(case.case_id.as_str()) {
             return Err(FairError::Invalid(format!(
                 "duplicate paired timing case {}",
@@ -579,6 +674,11 @@ pub fn case_clustered_bootstrap(
         }
     }
     replicates.sort_by(f64::total_cmp);
+    let threshold_log = protocol.required_speedup.ln();
+    let replicates_below_required = replicates
+        .iter()
+        .filter(|value| **value < threshold_log)
+        .count();
     let tail = 0.5 * (1.0 - protocol.confidence_level);
     let lower_log = quantile_sorted(&replicates, tail);
     let upper_log = quantile_sorted(&replicates, 1.0 - tail);
@@ -605,7 +705,67 @@ pub fn case_clustered_bootstrap(
         unlabeled_cases,
         lower_log_simulation_band: band(tail),
         upper_log_simulation_band: band(1.0 - tail),
+        replicates_below_required,
     })
+}
+
+/// The Monte-Carlo error gate on a finite-resample decision (re-audit R3,
+/// STAT-DEV-03).
+///
+/// With `K` of `B` replicates strictly below the threshold, the conditional
+/// probability `p` that a replicate falls below it lies in
+/// `[K/B - e, K/B + e]`, `e = sqrt(ln(2/delta) / (2B))` (Hoeffding), except
+/// with probability `delta` over the resampling. Promote needs `upper <
+/// tail`, Block needs `lower > 1 - tail`; anything else is Inconclusive
+/// (MC_UNRESOLVED). It says nothing about coverage of the population
+/// speedup. Hoeffding ignores the variance of the indicator, so the gate is
+/// conservative beyond the resampling error: at `B = 10000` a Promote needs
+/// `K / B < 0.0087` against the 2.5% tail, and some decisions a
+/// variance-aware (Clopper-Pearson or Bernstein) bound would resolve are
+/// withheld. It can only withhold a decision, never create one.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct MonteCarloGate {
+    pub resamples: usize,
+    pub count_below: usize,
+    pub delta: f64,
+    pub tail: f64,
+    pub lower: f64,
+    pub upper: f64,
+    pub method: String,
+    pub decision: PairedTimingDecision,
+}
+
+pub fn monte_carlo_gate(
+    count_below: usize,
+    resamples: usize,
+    confidence_level: f64,
+    delta: f64,
+) -> MonteCarloGate {
+    let tail = 0.5 * (1.0 - confidence_level);
+    let b = resamples.max(1) as f64;
+    let epsilon = ((2.0 / delta).ln() / (2.0 * b)).sqrt();
+    let fraction = count_below as f64 / b;
+    let lower = (fraction - epsilon).max(0.0);
+    let upper = (fraction + epsilon).min(1.0);
+    let decision = if resamples == 0 {
+        PairedTimingDecision::Inconclusive
+    } else if upper < tail {
+        PairedTimingDecision::Promote
+    } else if lower > 1.0 - tail {
+        PairedTimingDecision::Block
+    } else {
+        PairedTimingDecision::Inconclusive
+    };
+    MonteCarloGate {
+        resamples,
+        count_below,
+        delta,
+        tail,
+        lower,
+        upper,
+        method: "hoeffding".into(),
+        decision,
+    }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -616,6 +776,21 @@ pub enum PairedTimingDecision {
     Inconclusive,
 }
 
+/// The percentile-endpoint rule alone, without the session count or the
+/// Monte-Carlo gate: the pre-R3 decision, kept as a diagnostic.
+pub fn percentile_endpoint_decision(
+    interval: &SpeedupInterval,
+    required_speedup: f64,
+) -> PairedTimingDecision {
+    if interval.lower >= required_speedup {
+        PairedTimingDecision::Promote
+    } else if interval.upper < required_speedup {
+        PairedTimingDecision::Block
+    } else {
+        PairedTimingDecision::Inconclusive
+    }
+}
+
 pub fn paired_timing_decision(
     interval: &SpeedupInterval,
     required_speedup: f64,
@@ -624,12 +799,22 @@ pub fn paired_timing_decision(
         || interval.unlabeled_cases > 0
     {
         PairedTimingDecision::Inconclusive
-    } else if interval.lower >= required_speedup {
-        PairedTimingDecision::Promote
-    } else if interval.upper < required_speedup {
-        PairedTimingDecision::Block
     } else {
-        PairedTimingDecision::Inconclusive
+        let endpoint = percentile_endpoint_decision(interval, required_speedup);
+        // The percentile endpoints and the Monte-Carlo gate must agree: an
+        // endpoint decided by simulation noise is not decided (re-audit R3,
+        // STAT-DEV-03; the old endpoint rule is kept as the diagnostic).
+        let gate = monte_carlo_gate(
+            interval.replicates_below_required,
+            interval.resamples,
+            interval.confidence_level,
+            PAIRED_TIMING_MC_FAILURE_BUDGET,
+        );
+        if gate.decision == endpoint {
+            endpoint
+        } else {
+            PairedTimingDecision::Inconclusive
+        }
     }
 }
 
@@ -841,7 +1026,8 @@ impl PairedTimingAssessment {
                 && interval.sessions.windows(2).all(|pair| pair[0] < pair[1])
                 && interval.lower <= interval.upper
         };
-        if !settings(&self.corpus) {
+        if !settings(&self.corpus) || self.corpus.replicates_below_required > self.corpus.resamples
+        {
             return reject("corpus interval does not match the protocol");
         }
         let decision = paired_timing_decision(&self.corpus, self.protocol.required_speedup);
@@ -913,6 +1099,8 @@ pub fn assess_paired_timing(
         .iter()
         .map(|case| {
             let mut logs = case.log_speedups();
+            logs.sort_by(f64::total_cmp);
+            let (minimum, maximum) = (logs[0], logs[logs.len() - 1]);
             let median_log_speedup = median_in_place(&mut logs);
             PairedCaseSummary {
                 case_id: case.case_id.clone(),
@@ -920,8 +1108,8 @@ pub fn assess_paired_timing(
                 batch_iterations: case.batch_iterations,
                 median_log_speedup,
                 median_speedup: median_log_speedup.exp(),
-                minimum_pair_speedup: logs[0].exp(),
-                maximum_pair_speedup: logs[logs.len() - 1].exp(),
+                minimum_pair_speedup: minimum.exp(),
+                maximum_pair_speedup: maximum.exp(),
             }
         })
         .collect();

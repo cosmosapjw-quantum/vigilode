@@ -1,0 +1,145 @@
+{
+  "schema": "vigilode-r4-inherited-campaign-intake-v1",
+  "source_commit": "1c54194123ee6abc6daa512e8574922f510b4e2c",
+  "new_timing_execution": false,
+  "campaigns": {
+    "poly03": {
+      "path": "research/r3_matched_accuracy_poly03_20261001/CAMPAIGN.json",
+      "sha256": "fa131ca0320f4b88493634f9c7621611c56cdab23eee141d61164539e0787ef0",
+      "summary": {
+        "chebyshev-cold": {
+          "assessment_decision": "inconclusive",
+          "failed_sessions": 0,
+          "gate_decision": "inconclusive",
+          "independent_sessions": 6,
+          "receipt_failures": 0,
+          "speedup_lower": 0.018079595653714555,
+          "speedup_point": 0.5650647739663472,
+          "speedup_upper": 1.9894547486227057,
+          "verified_decision": "Inconclusive"
+        },
+        "chebyshev-warm": {
+          "assessment_decision": "promote",
+          "failed_sessions": 0,
+          "gate_decision": "promote",
+          "independent_sessions": 6,
+          "receipt_failures": 0,
+          "speedup_lower": 1.1671795178738387,
+          "speedup_point": 3.1656527281961147,
+          "speedup_upper": 13.414005168897003,
+          "verified_decision": "Promote"
+        },
+        "laguerre-cold": {
+          "assessment_decision": "block",
+          "failed_sessions": 0,
+          "gate_decision": "block",
+          "independent_sessions": 6,
+          "receipt_failures": 0,
+          "speedup_lower": 0.0014243830381166066,
+          "speedup_point": 0.12241553937181447,
+          "speedup_upper": 0.31702600958749855,
+          "verified_decision": "Block"
+        },
+        "laguerre-warm": {
+          "assessment_decision": "inconclusive",
+          "failed_sessions": 0,
+          "gate_decision": "inconclusive",
+          "independent_sessions": 6,
+          "receipt_failures": 0,
+          "speedup_lower": 0.19567555503623638,
+          "speedup_point": 1.179579201071508,
+          "speedup_upper": 3.1194015291532176,
+          "verified_decision": "Inconclusive"
+        }
+      },
+      "verification_path": "research/r3_matched_accuracy_poly03_20261001/VERIFY.json",
+      "verification_sha256": "4ecb3fc5d109ef35ccbf3987a8ea16e3222b09b20ef92b5023a0e9ef00710408",
+      "authority": "STATISTICAL_AUTHORITY_HOLD per committed closure/preregistration; not encoded in campaign JSON"
+    },
+    "hom06": {
+      "path": "research/r3_matched_accuracy_hom06_20261001/CAMPAIGN.json",
+      "sha256": "8d665866f10f5c2bc0d945f704e6bc2cd600f8e04b3e4e7f9a1a8abd1aba0980",
+      "summary": {
+        "transactional-certified-p1": {
+          "assessment_decision": "block",
+          "failed_sessions": 0,
+          "gate_decision": "block",
+          "independent_sessions": 6,
+          "receipt_failures": 0,
+          "speedup_lower": 0.1349220158044715,
+          "speedup_point": 0.17350331624809945,
+          "speedup_upper": 0.18705355491190911,
+          "verified_decision": "Block"
+        },
+        "transactional-certified-p2": {
+          "assessment_decision": "block",
+          "failed_sessions": 0,
+          "gate_decision": "block",
+          "independent_sessions": 6,
+          "receipt_failures": 0,
+          "speedup_lower": 0.03782723941975327,
+          "speedup_point": 0.0717592005850954,
+          "speedup_upper": 0.12939096368228356,
+          "verified_decision": "Block"
+        },
+        "transactional-certified-p4": {
+          "assessment_decision": "block",
+          "failed_sessions": 0,
+          "gate_decision": "block",
+          "independent_sessions": 6,
+          "receipt_failures": 0,
+          "speedup_lower": 0.026464363950655944,
+          "speedup_point": 0.0481496386635852,
+          "speedup_upper": 0.10423480970876496,
+          "verified_decision": "Block"
+        },
+        "transactional-certified-p8": {
+          "assessment_decision": "block",
+          "failed_sessions": 0,
+          "gate_decision": "block",
+          "independent_sessions": 6,
+          "receipt_failures": 0,
+          "speedup_lower": 0.019744491666055144,
+          "speedup_point": 0.03689295996739762,
+          "speedup_upper": 0.09573957112942082,
+          "verified_decision": "Block"
+        }
+      },
+      "verification_path": "research/r3_matched_accuracy_hom06_20261001/VERIFY.json",
+      "verification_sha256": "cdaf676814fe216237137b60455cd4754bc8578c63ffe31fc4874a50143eff45",
+      "authority": "STATISTICAL_AUTHORITY_HOLD per committed closure/preregistration; not encoded in campaign JSON"
+    }
+  },
+  "coverage": {
+    "r3_timing_coverage_study_20261001": {
+      "path": "research/r3_timing_coverage_study_20261001/COVERAGE_STUDY.json",
+      "sha256": "1c528568a4f36e1ad2364172d1989608a4d6947aa5b5c7a18acf35bd2fa954c0",
+      "verdict": "FAIL",
+      "primary_count": 36,
+      "primary_failures": 18,
+      "single_case_coverage_range": [
+        0.789,
+        0.9255
+      ],
+      "five_case_coverage_range": [
+        0.9925,
+        1.0
+      ]
+    },
+    "r3_timing_coverage_study_v2_20261001": {
+      "path": "research/r3_timing_coverage_study_v2_20261001/COVERAGE_STUDY.json",
+      "sha256": "e0eeb056b88782487615bd9cc2f7e37c26d6d50a3fcaf0e29dfc96d6b9ab2d53",
+      "verdict": "FAIL",
+      "primary_count": 36,
+      "primary_failures": 18,
+      "single_case_coverage_range": [
+        0.7825,
+        0.9255
+      ],
+      "five_case_coverage_range": [
+        0.9935,
+        1.0
+      ]
+    }
+  }
+}

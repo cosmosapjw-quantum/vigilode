@@ -84,6 +84,23 @@ pub struct WorkCounters {
     /// zero.
     #[serde(default, skip_serializing_if = "is_zero")]
     pub phi_weight_underflows: u64,
+    /// Research polynomial phi actions (re-audit R3, POLY-01): operator
+    /// applications to a whole block (one per recurrence step), the same in
+    /// vector units (block width times steps), coefficient tables built and
+    /// reused, block buffers allocated, and dense fallbacks. Omitted while
+    /// zero.
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub poly_block_products: u64,
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub poly_vector_products: u64,
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub poly_coefficient_setups: u64,
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub poly_coefficient_reuses: u64,
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub poly_block_allocations: u64,
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub poly_fallbacks: u64,
 }
 
 fn is_zero(value: &u64) -> bool {
@@ -212,6 +229,12 @@ impl WorkCounters {
             linear_matvec_vectors,
             preconditioner_vectors,
             phi_weight_underflows,
+            poly_block_products,
+            poly_vector_products,
+            poly_coefficient_setups,
+            poly_coefficient_reuses,
+            poly_block_allocations,
+            poly_fallbacks,
         );
         self.merged_unknown_vector_calls = unknown;
     }
@@ -284,6 +307,12 @@ impl WorkCounters {
             linear_matvec_vectors,
             preconditioner_vectors,
             phi_weight_underflows,
+            poly_block_products,
+            poly_vector_products,
+            poly_coefficient_setups,
+            poly_coefficient_reuses,
+            poly_block_allocations,
+            poly_fallbacks,
         );
         next.merged_unknown_vector_calls = unknown;
         *self = next;
@@ -346,6 +375,12 @@ impl WorkCounters {
             linear_matvec_vectors,
             preconditioner_vectors,
             phi_weight_underflows,
+            poly_block_products,
+            poly_vector_products,
+            poly_coefficient_setups,
+            poly_coefficient_reuses,
+            poly_block_allocations,
+            poly_fallbacks,
             merged_unknown_vector_calls,
         )
     }
@@ -419,6 +454,12 @@ impl WorkCounters {
             linear_matvec_vectors,
             preconditioner_vectors,
             phi_weight_underflows,
+            poly_block_products,
+            poly_vector_products,
+            poly_coefficient_setups,
+            poly_coefficient_reuses,
+            poly_block_allocations,
+            poly_fallbacks,
             merged_unknown_vector_calls,
         )
     }

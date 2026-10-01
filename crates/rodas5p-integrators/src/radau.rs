@@ -580,10 +580,17 @@ pub(crate) fn adaptive_radau_trial(
     match config.stages {
         RadauIiaStages::One => {
             let coarse = radau_step(problem, t, state, h, config, counters)?;
-            let half = 0.5 * h;
-            let fine_first = radau_step(problem, t, state, half, config, counters)?;
-            let fine_second =
-                radau_step(problem, t + half, &fine_first.y_new, half, config, counters)?;
+            // Represented halves that tile [t, t + h] (re-audit R3, R3-TIME-01).
+            let (first_half, t_mid, second_half) = crate::output::split_clock(t, h)?;
+            let fine_first = radau_step(problem, t, state, first_half, config, counters)?;
+            let fine_second = radau_step(
+                problem,
+                t_mid,
+                &fine_first.y_new,
+                second_half,
+                config,
+                counters,
+            )?;
             let estimate = step_doubling_wrms_error(
                 state,
                 &coarse.y_new,
@@ -649,8 +656,10 @@ pub fn integrate_radau_fixed(
     let mut times = vec![t];
     let mut states = vec![state.clone()];
     let mut steps = 0;
+    // Indexed grid t0 + k h (re-audit R3, R3-TIME-03).
+    let grid = crate::output::FixedGrid::new(t_span.0, tf, h)?;
     while t < tf {
-        let step = crate::output::end_step(t, h, tf)?;
+        let step = crate::output::end_step(t, grid.step_from(t)?, tf)?;
         crate::output::require_progress(t, step)?;
         let report = radau_step(problem, t, &state, step, config, &mut counters)?;
         t = report.t_new;
@@ -686,8 +695,10 @@ pub fn integrate_radau_fixed_observed(
     let mut counters = WorkCounters::default();
     let mut collector = OutputCollector::new(output, t_span, y0)?;
     let mut internal_steps = 0_usize;
+    // Indexed grid t0 + k h (re-audit R3, R3-TIME-03).
+    let grid = crate::output::FixedGrid::new(t_span.0, tf, h)?;
     while t < tf {
-        let (step, clipped) = collector.limit_step(t, h, tf)?;
+        let (step, clipped) = collector.limit_step(t, grid.step_from(t)?, tf)?;
         let report = radau_step(problem, t, &state, step, config, &mut counters)?;
         t = report.t_new;
         state = report.y_new;
@@ -725,7 +736,7 @@ pub fn integrate_radau_adaptive_observed(
     let mut state = y0.to_vec();
     let mut counters = WorkCounters::default();
     let mut controller = AdaptiveControllerState::default();
-    let mut collector = OutputCollector::new(output, t_span, y0)?;
+    let mut collector = OutputCollector::new(output, t_span, y0)?.with_max_step(adaptive.max_step);
     let mut diagnostics = AdaptiveRunDiagnostics::default();
     let mut h = adaptive.initial_step.min(crate::output::step_to(t, tf)?);
     let mut internal_steps = 0_usize;
@@ -736,9 +747,15 @@ pub fn integrate_radau_adaptive_observed(
     let mut previous_local_rejection = false;
 
     while t < tf && diagnostics.attempts < adaptive.max_attempts {
-        h = crate::output::end_step(t, h.min(adaptive.max_step), tf)?;
+        let Some(next_h) = crate::output::adaptive_end_step(t, h, tf, adaptive.max_step)? else {
+            break;
+        };
+        h = next_h;
         // A final piece that lands on tf is taken even below min_step.
-        if (h < adaptive.min_step && t + h < tf) || 0.5 * h <= f64::MIN_POSITIVE || t + h == t {
+        if (crate::output::below_min_step(t, h, adaptive.min_step) && t + h < tf)
+            || 0.5 * h <= f64::MIN_POSITIVE
+            || t + h == t
+        {
             break;
         }
         let requested_h = h;

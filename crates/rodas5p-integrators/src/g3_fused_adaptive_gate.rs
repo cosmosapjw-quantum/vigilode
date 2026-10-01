@@ -1,8 +1,8 @@
 use std::{sync::Arc, time::Instant};
 
 use rodas5p_core::{
-    CoreError, CoreResult, DenseMatrix, DenseOperator, LinearMethod, LinearSolverConfig,
-    WorkCounters, dense_fused_phi_action, safe_l2,
+    CoreError, CoreResult, DenseMatrix, DenseOperator, DensePhiCombinationReport, LinearMethod,
+    LinearSolverConfig, WorkCounters, dense_fused_phi_action_report, safe_l2,
 };
 use serde::{Deserialize, Serialize};
 
@@ -61,6 +61,98 @@ pub struct G3PhiFusionRow {
     pub fused_residual_error_estimate: Option<f64>,
     pub fused_nested_difference_estimate: Option<f64>,
     pub failure: Option<String>,
+    /// Amplitude and weighting state of the dense reference (re-audit R3,
+    /// R3-ARITH-03). A row whose reference is not authoritative carries no
+    /// error value and does not count as completed.
+    #[serde(default)]
+    pub reference: G3DenseReferenceStatus,
+}
+
+/// The dense oracle's own state, retained in each comparison row.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct G3DenseReferenceStatus {
+    pub authoritative: bool,
+    pub mixed_range: bool,
+    pub output_below_input_half_precision: bool,
+    pub weight_underflows: u64,
+}
+
+impl From<&DensePhiCombinationReport> for G3DenseReferenceStatus {
+    fn from(report: &DensePhiCombinationReport) -> Self {
+        Self {
+            authoritative: report.is_reference_authoritative(),
+            mixed_range: report.mixed_range,
+            output_below_input_half_precision: report.output_below_input_half_precision,
+            weight_underflows: report.weight_underflows,
+        }
+    }
+}
+
+/// The comparison of one fused action with its dense reference.
+#[derive(Clone, Debug, PartialEq)]
+pub struct G3PhiFusionComparison {
+    pub completed: bool,
+    pub relative_error_vs_dense: Option<f64>,
+    pub substeps: Option<usize>,
+    pub residual_error_estimate: Option<f64>,
+    pub nested_difference_estimate: Option<f64>,
+    pub failure: Option<String>,
+    pub reference: G3DenseReferenceStatus,
+}
+
+/// Classify a fused phi action against a dense reference (re-audit R3,
+/// R3-ARITH-03). A reference flagged as mixed-range, cancellation-dominated
+/// or computed after weight loss is not a precision oracle: the row is not
+/// evaluated rather than scored against it.
+pub fn compare_fused_phi_to_dense_reference(
+    fused: &CoreResult<crate::FusedPhiActionReport>,
+    separate_ok: bool,
+    reference: &DensePhiCombinationReport,
+) -> G3PhiFusionComparison {
+    let status = G3DenseReferenceStatus::from(reference);
+    let (substeps, residual, nested) = match fused {
+        Ok(report) => (
+            Some(report.substeps),
+            Some(report.error_estimate),
+            Some(report.nested_difference_estimate),
+        ),
+        Err(_) => (None, None, None),
+    };
+    let (completed, error, failure) = match fused {
+        Ok(_) if !status.authoritative => (
+            false,
+            None,
+            Some("not evaluated: dense reference is not authoritative".into()),
+        ),
+        Ok(report) if report.converged && separate_ok => {
+            let defect = report
+                .value
+                .iter()
+                .zip(&reference.value)
+                .map(|(x, y)| x - y)
+                .collect::<Vec<_>>();
+            (
+                true,
+                Some(safe_l2(&defect) / safe_l2(&reference.value).max(1e-300)),
+                None,
+            )
+        }
+        Ok(_) => (
+            false,
+            None,
+            Some("fused or separate action did not converge".into()),
+        ),
+        Err(error) => (false, None, Some(error.to_string())),
+    };
+    G3PhiFusionComparison {
+        completed,
+        relative_error_vs_dense: error,
+        substeps,
+        residual_error_estimate: residual,
+        nested_difference_estimate: nested,
+        failure,
+        reference: status,
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -110,6 +202,27 @@ pub struct G3FusedAdaptiveSummary {
     /// Forbidden whenever a reference-implementation-only comparator shares
     /// the adaptive rows; the gate status never ranks against those rows.
     pub comparative_reading: ComparativeReading,
+    /// Phi rows whose dense reference is not authoritative (re-audit R3,
+    /// ARITH-03); any such row holds the gate.
+    #[serde(default)]
+    pub phi_reference_not_evaluated: usize,
+}
+
+/// The G3 gate status from its summary: every adaptive row succeeded, the
+/// primary arm used no explicit Jacobian, factorization or Newton
+/// iteration, and every phi row was scored against an authoritative
+/// reference.
+pub fn g3_gate_status(summary: &G3FusedAdaptiveSummary) -> &'static str {
+    if summary.adaptive_successes == summary.adaptive_rows
+        && summary.explicit_jacobian_builds_in_primary == 0
+        && summary.direct_factorizations_in_primary == 0
+        && summary.newton_iterations_in_primary == 0
+        && summary.phi_reference_not_evaluated == 0
+    {
+        "pass"
+    } else {
+        "hold"
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -536,7 +649,7 @@ fn phi_fusion_rows(profile: G3FusedAdaptiveProfile) -> CoreResult<Vec<G3PhiFusio
                 })
                 .collect::<Vec<_>>();
             let scale = 0.08;
-            let dense = dense_fused_phi_action(&a, scale, &vectors)?;
+            let dense = dense_fused_phi_action_report(&a, scale, &vectors)?;
             for orth in [
                 FusedOrthogonalization::FullMgs,
                 FusedOrthogonalization::Incomplete { length: 2 },
@@ -592,59 +705,27 @@ fn phi_fusion_rows(profile: G3FusedAdaptiveProfile) -> CoreResult<Vec<G3PhiFusio
                     &mut fused_work,
                 );
                 let fused_wall = fused_start.elapsed().as_secs_f64();
-                let (
-                    completed,
-                    error,
-                    substeps,
-                    residual_estimate,
-                    nested_difference_estimate,
-                    failure,
-                ) = match fused {
-                    Ok(report) if report.converged && separate_ok => {
-                        let defect = report
-                            .value
-                            .iter()
-                            .zip(&dense)
-                            .map(|(x, y)| x - y)
-                            .collect::<Vec<_>>();
-                        (
-                            true,
-                            Some(safe_l2(&defect) / safe_l2(&dense).max(1e-300)),
-                            Some(report.substeps),
-                            Some(report.error_estimate),
-                            Some(report.nested_difference_estimate),
-                            None,
-                        )
-                    }
-                    Ok(report) => (
-                        false,
-                        None,
-                        Some(report.substeps),
-                        Some(report.error_estimate),
-                        Some(report.nested_difference_estimate),
-                        Some("fused or separate action did not converge".into()),
-                    ),
-                    Err(error) => (false, None, None, None, None, Some(error.to_string())),
-                };
+                let comparison = compare_fused_phi_to_dense_reference(&fused, separate_ok, &dense);
                 rows.push(G3PhiFusionRow {
                     case_id: format!("n{n}-eta{eta}"),
                     dimension: n,
                     nonnormality: eta,
                     orthogonalization: format!("{orth:?}"),
-                    completed,
-                    relative_error_vs_dense: error,
+                    completed: comparison.completed,
+                    relative_error_vs_dense: comparison.relative_error_vs_dense,
                     separate_wall_seconds: separate_wall,
                     fused_wall_seconds: fused_wall,
-                    wall_speedup: (completed && fused_wall > 0.0)
+                    wall_speedup: (comparison.completed && fused_wall > 0.0)
                         .then_some(separate_wall / fused_wall),
                     separate_jvp_vectors: separate_work.jvp_vectors,
                     fused_jvp_vectors: fused_work.jvp_vectors,
                     separate_orthogonalizations: separate_work.orthogonalization_inner_products,
                     fused_orthogonalizations: fused_work.orthogonalization_inner_products,
-                    fused_substeps: substeps,
-                    fused_residual_error_estimate: residual_estimate,
-                    fused_nested_difference_estimate: nested_difference_estimate,
-                    failure,
+                    fused_substeps: comparison.substeps,
+                    fused_residual_error_estimate: comparison.residual_error_estimate,
+                    fused_nested_difference_estimate: comparison.nested_difference_estimate,
+                    failure: comparison.failure,
+                    reference: comparison.reference,
                 });
             }
         }
@@ -787,16 +868,12 @@ pub fn run_g3_fused_adaptive_gate(
         comparative_reading: ComparativeReading::for_participants(
             adaptive_rows.iter().map(|row| row.comparator_fidelity),
         ),
+        phi_reference_not_evaluated: phi_rows
+            .iter()
+            .filter(|row| !row.reference.authoritative)
+            .count(),
     };
-    let status = if summary.adaptive_successes == summary.adaptive_rows
-        && explicit_jacobian_builds_in_primary == 0
-        && direct_factorizations_in_primary == 0
-        && newton_iterations_in_primary == 0
-    {
-        "pass"
-    } else {
-        "hold"
-    };
+    let status = g3_gate_status(&summary);
     Ok(G3FusedAdaptiveReport {
         schema: "generic-parallel-exponential-g3-v1",
         status,

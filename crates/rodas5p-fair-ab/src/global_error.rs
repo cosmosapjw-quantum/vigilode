@@ -61,8 +61,15 @@ impl CommonOutputGrid {
         }
         let span = end - start;
         let intervals = (span / spacing).round() as usize;
-        let tolerance = 128.0 * f64::EPSILON * end.abs().max(start.abs()).max(1.0);
-        if (start + intervals as f64 * spacing - end).abs() > tolerance {
+        // Same admission as OutputSchedule::uniform (re-audit R3,
+        // R3-TIME-02): a nonzero span needs at least one interval, and the
+        // rounding slack never exceeds 2^-10 of the spacing, so a short span
+        // at a large epoch cannot collapse to the one-point grid [end].
+        let tolerance =
+            (128.0 * f64::EPSILON * end.abs().max(start.abs()).max(1.0)).min(spacing / 1024.0);
+        if (span > 0.0 && intervals == 0)
+            || (start + intervals as f64 * spacing - end).abs() > tolerance
+        {
             return Err(FairError::Invalid(
                 "uniform output spacing must divide the interval".into(),
             ));

@@ -375,6 +375,7 @@ fn integrate_square(method: &str, h: f64) -> CoreResult<(f64, WorkCounters)> {
         };
         y = report.y_new;
         work.accumulate(report.work);
+        // Sealed replay clock: crate::RESEARCH_REPLAY_CLOCK_POLICY.
         t += h;
     }
     Ok(((y[0] - 1.0 / (1.0 - final_time)).abs(), work))
