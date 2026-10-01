@@ -381,9 +381,15 @@ enum BdfStepMode {
     Variable,
 }
 
+/// Exactly equal represented steps (re-audit R4, R4-TIME-DEV-01). The R3
+/// test `|h - k| <= 32 eps max(|h|, |k|, 1)` gave the number 1 a time unit:
+/// below it, distinct steps such as 2 and 1 ULP of 1.0 were "equal", and
+/// the constant coefficients `3, -4, 1` left the residual `v (h - k)` on an
+/// exact linear flow (a 2.08% endpoint error). Unequal steps of any size
+/// now take the variable coefficients of their actual ratio, so the rule is
+/// invariant under power-of-two changes of the time unit.
 fn same_step(previous: f64, current: f64) -> bool {
-    let scale = previous.abs().max(current.abs()).max(1.0);
-    (previous - current).abs() <= 32.0 * f64::EPSILON * scale
+    previous == current
 }
 
 fn requires_bdf2_stability_restart(current_step: f64, previous_step: f64) -> bool {
