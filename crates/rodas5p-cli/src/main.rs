@@ -463,6 +463,12 @@ enum Command {
         repetitions: usize,
         #[arg(long, default_value_t = 1)]
         warmups: usize,
+        /// Comma-separated problem ids (default: the four of the first run).
+        #[arg(long, value_delimiter = ',')]
+        problems: Option<Vec<String>>,
+        /// Comma-separated arms (default: all five).
+        #[arg(long, value_delimiter = ',')]
+        arms: Option<Vec<String>>,
         #[arg(long)]
         output: PathBuf,
     },
@@ -2992,14 +2998,28 @@ fn main() -> Result<()> {
         Command::StiffBenchmark {
             repetitions,
             warmups,
+            problems,
+            arms,
             output,
         } => {
+            let problems = problems.unwrap_or_else(|| {
+                stiff_benchmark::DEFAULT_PROBLEMS
+                    .iter()
+                    .map(|id| id.to_string())
+                    .collect()
+            });
+            let arms = arms.unwrap_or_else(|| {
+                stiff_benchmark::ARMS
+                    .iter()
+                    .map(|id| id.to_string())
+                    .collect()
+            });
             if output.exists() {
                 anyhow::bail!("immutable output already exists: {}", output.display());
             }
             write_json(
                 &output,
-                &stiff_benchmark::stiff_benchmark(repetitions, warmups)?,
+                &stiff_benchmark::stiff_benchmark(repetitions, warmups, &problems, &arms)?,
             )?;
         }
         Command::R4Study {

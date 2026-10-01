@@ -165,7 +165,30 @@ fn brusselator_problem(cells: usize) -> CoreResult<(OdeProblem, Vec<f64>)> {
     ))
 }
 
+/// The four problems of the first benchmark (the default selection).
+pub const DEFAULT_PROBLEMS: [&str; 4] = [
+    "robertson",
+    "hires",
+    "van-der-pol-mu1000",
+    "brusselator-1d-50",
+];
+
+/// Every problem the benchmark can run: the defaults and the 400-component
+/// Brusselator of the native comparison.
 pub fn benchmark_problems() -> CoreResult<Vec<BenchmarkProblem>> {
+    let mut problems = default_problems()?;
+    let (large, large_y0) = brusselator_problem(200)?;
+    problems.push(BenchmarkProblem {
+        id: "brusselator-1d-200",
+        problem: large,
+        y0: large_y0,
+        t_span: (0.0, 10.0),
+        atol_scale: 1.0,
+    });
+    Ok(problems)
+}
+
+fn default_problems() -> CoreResult<Vec<BenchmarkProblem>> {
     let (robertson, robertson_y0) = robertson_problem()?;
     let (hires, hires_y0) = hires_problem()?;
     let (vdp, vdp_y0) = stiff_van_der_pol_problem(1.0e3)?;
@@ -315,14 +338,31 @@ fn parity_samples(problem: &BenchmarkProblem) -> Result<Value> {
 
 /// Every arm, problem and tolerance: `warmups` untimed runs, then
 /// `repetitions` timed runs, which must all end in the same state.
-pub fn stiff_benchmark(repetitions: usize, warmups: usize) -> Result<Value> {
+pub fn stiff_benchmark(
+    repetitions: usize,
+    warmups: usize,
+    problem_ids: &[String],
+    arms: &[String],
+) -> Result<Value> {
     anyhow::ensure!(repetitions >= 1, "at least one timed repetition");
-    let problems = benchmark_problems()?;
+    for arm in arms {
+        anyhow::ensure!(ARMS.contains(&arm.as_str()), "unknown arm {arm}");
+    }
+    let mut problems = Vec::new();
+    for problem in benchmark_problems()? {
+        if problem_ids.iter().any(|id| id == problem.id) {
+            problems.push(problem);
+        }
+    }
+    anyhow::ensure!(
+        problems.len() == problem_ids.len(),
+        "unknown problem in {problem_ids:?}"
+    );
     let mut rows = Vec::new();
     let mut parity = serde_json::Map::new();
     for problem in &problems {
         parity.insert(problem.id.into(), parity_samples(problem)?);
-        for arm in ARMS {
+        for arm in arms.iter().map(String::as_str) {
             for &rtol in &TOLERANCES {
                 for _ in 0..warmups {
                     let _ = run_arm(arm, problem, rtol);
@@ -401,8 +441,49 @@ pub fn stiff_benchmark(repetitions: usize, warmups: usize) -> Result<Value> {
             "y0": p.y0, "atol_scale": p.atol_scale,
         })).collect::<Vec<_>>(),
         "parity_samples": parity,
+        "lu_microbench": lu_microbench(&[50, 200], 51)?,
         "rows": rows,
     }))
+}
+
+/// Median seconds of one dense LU factorization (faer partial pivoting, as
+/// used by the RODAS5P arm) of two `2 cells` square matrices: the Brusselator
+/// iteration matrix `I - 0.05 J(y0)` ("banded") and the full matrix
+/// `1/(1 + |i - j|) + n delta_ij`, the same pair the native driver times.
+fn lu_microbench(cells: &[usize], repetitions: usize) -> Result<Value> {
+    let mut out = serde_json::Map::new();
+    for &c in cells {
+        let (problem, y0) = brusselator_problem(c)?;
+        let n = problem.dimension;
+        let mut counters = WorkCounters::default();
+        let jac = problem.dense_jacobian(0.0, &y0, &mut counters)?;
+        let mut banded = DenseMatrix::zeros(n, n);
+        let mut full = DenseMatrix::zeros(n, n);
+        for i in 0..n {
+            for j in 0..n {
+                let delta = f64::from(u8::from(i == j));
+                banded[(i, j)] = delta - 0.05 * jac[(i, j)];
+                full[(i, j)] = 1.0 / (1.0 + i.abs_diff(j) as f64) + n as f64 * delta;
+            }
+        }
+        let mut entry = serde_json::Map::new();
+        for (label, matrix) in [("banded", &banded), ("full", &full)] {
+            let mut walls = Vec::with_capacity(repetitions);
+            for _ in 0..repetitions {
+                let started = Instant::now();
+                let lu = rodas5p_core::LuFactorization::new(matrix)?;
+                walls.push(started.elapsed().as_secs_f64());
+                std::hint::black_box(&lu);
+            }
+            walls.sort_by(f64::total_cmp);
+            entry.insert(
+                label.into(),
+                json!({ "faer-partial-pivot-lu": walls[walls.len() / 2] }),
+            );
+        }
+        out.insert(n.to_string(), Value::Object(entry));
+    }
+    Ok(Value::Object(out))
 }
 
 #[cfg(test)]
@@ -412,6 +493,9 @@ mod tests {
     #[test]
     fn analytic_jacobians_match_finite_differences() {
         for problem in benchmark_problems().unwrap() {
+            if problem.problem.dimension > 100 {
+                continue;
+            }
             let p = &problem.problem;
             let n = p.dimension;
             for state in parity_states(&problem.y0) {

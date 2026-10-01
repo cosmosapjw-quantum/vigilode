@@ -143,6 +143,8 @@ PROBLEMS = {
     "hires": hires(),
     "van-der-pol-mu1000": van_der_pol(1.0e3),
     "brusselator-1d-50": brusselator(50),
+    # Native comparison only (research/stiff_native_benchmark_20261001).
+    "brusselator-1d-200": brusselator(200),
 }
 
 
