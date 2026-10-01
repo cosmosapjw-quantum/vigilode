@@ -9,7 +9,7 @@ use rodas5p_core::{
         EXECUTION_CERTIFIED, EXECUTION_UNBOUNDED_TIMING, JointPhiInput, NORMALIZATION_WINDOW,
         POLYNOMIAL_RANGE_UNSUPPORTED, PolynomialBasis, SymmetricNonpositiveOperator,
         TOTAL_ERROR_ABOVE_BUDGET, TOTAL_ERROR_NOT_CERTIFIED, TotalErrorAdmission, TotalErrorStatus,
-        joint_phi_action, joint_phi_action_unbounded,
+        joint_phi_action, joint_phi_action_laguerre_scales, joint_phi_action_unbounded,
     },
     transform_bound::ExpBound,
 };
@@ -130,6 +130,45 @@ fn amplitude_scaled_actions_are_enclosed_or_rejected_never_zero() {
         );
         if id == "mixed_lossy" {
             assert!(report.column_errors[0].normalization > 0.0);
+        }
+        // R4 POLY-DEV-03: the Laguerre majorant total encloses the same
+        // error at every scale, and the status stays an estimate.
+        for scale in [1.0, 2.0, 4.0, 8.0, 16.0] {
+            let mut work = WorkCounters::default();
+            let laguerre = joint_phi_action_laguerre_scales(
+                &op,
+                h,
+                JointPhiInput::Distinct(&vectors),
+                &[scale],
+                budget,
+                &mut work,
+            )
+            .unwrap_or_else(|error| panic!("{id} L={scale}: {error}"));
+            assert!(matches!(
+                laguerre.total_error,
+                TotalErrorStatus::EstimateOnly { .. }
+            ));
+            assert!(
+                laguerre
+                    .column_errors
+                    .iter()
+                    .all(|c| c.recurrence.is_none())
+            );
+            let distances = (0..2)
+                .map(|i| {
+                    let fused = laguerre.fused[i];
+                    sub_up(fused, lo[i])
+                        .unwrap()
+                        .max(sub_up(hi[i], fused).unwrap())
+                })
+                .collect::<Vec<_>>();
+            let error = ExpBound::l2_norm_upper(&distances).unwrap().to_f64_up();
+            let majorant = laguerre.laguerre_majorant_total.unwrap();
+            assert!(
+                majorant >= error,
+                "{id} L={scale}: {majorant:e} < {error:e}"
+            );
+            assert!(majorant > 0.0);
         }
     }
 }
@@ -300,5 +339,26 @@ fn estimates_and_the_timing_path_never_admit() {
             assert!(reason.starts_with(TOTAL_ERROR_NOT_CERTIFIED), "{reason}")
         }
         other => panic!("{other:?}"),
+    }
+}
+
+#[test]
+fn laguerre_scales_outside_the_cap_are_rejected() {
+    let op = diagonal(&[-1.0, -2.0]);
+    let vectors = unit_vectors();
+    for scales in [&[][..], &[0.0][..], &[17.0][..], &[f64::NAN][..]] {
+        let mut work = WorkCounters::default();
+        assert!(
+            joint_phi_action_laguerre_scales(
+                &op,
+                0.1,
+                JointPhiInput::Distinct(&vectors),
+                scales,
+                1.0e-12,
+                &mut work
+            )
+            .is_err(),
+            "{scales:?}"
+        );
     }
 }

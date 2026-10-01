@@ -85,6 +85,8 @@ pub const NORMALIZATION_WINDOW: i64 = 500;
 pub const COEFFICIENT_RANGE_LIMIT: f64 = 600.0;
 /// Laguerre scales `L` (`beta = rho / L`); the cap 16 is a policy.
 pub const LAGUERRE_SCALES: [f64; 5] = [1.0, 2.0, 4.0, 8.0, 16.0];
+/// The largest Laguerre scale `L = rho / beta` any selection may use.
+pub const LAGUERRE_SCALE_CAP: f64 = 16.0;
 pub const MAX_POLYNOMIAL_DEGREE: usize = 4096;
 const MAX_SERIES_TERMS: usize = 200_000;
 /// Stop a positive series once the tail is below this fraction of the sum.
@@ -650,6 +652,13 @@ pub struct ErrorComponents {
     /// propagated (re-audit R4, POLY-DEV-01); 0 inside the window.
     #[serde(default)]
     pub normalization: f64,
+    /// Laguerre only: the scalar recurrence majorant of re-audit R4
+    /// (POLY-DEV-03), `E_{n+1} <= d_n E_n + n/(n+1) E_{n-1} + ||eps_n||`
+    /// with `d_n = max(2n+1, L' - 2n - 1)/(n+1)`, weighted by the
+    /// coefficients. A baseline under review: it never enters
+    /// [`TotalErrorStatus::Certified`] and `recurrence` stays `None`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub recurrence_majorant: Option<f64>,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -699,6 +708,11 @@ pub struct JointPhiReport {
     /// [`EXECUTION_CERTIFIED`] or [`EXECUTION_UNBOUNDED_TIMING`].
     #[serde(default)]
     pub execution: String,
+    /// Laguerre: the bounded components plus every column's
+    /// `recurrence_majorant` (re-audit R4, POLY-DEV-03). A candidate total
+    /// for the tightness study, not a certificate.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub laguerre_majorant_total: Option<f64>,
 }
 
 /// How the action was executed: with the rounding enclosures
@@ -864,6 +878,30 @@ fn meets_budget(tail: f64, weight: f64, budget: f64) -> bool {
 // The action
 // ---------------------------------------------------------------------------
 
+/// `E_0 .. E_m` with `E_0 = 0` and `E_{n+1} = d_n E_n + n/(n+1) E_{n-1} +
+/// eps_n`, `d_n = max(2n+1, L' - (2n+1)) / (n+1)`, all rounded up: a
+/// majorant of `||t_n - L_n(X) w||_2` when `spec(X) in [0, L']`, `X`
+/// symmetric and `eps_n` bounds the exact local residual of step `n`
+/// (re-audit R4, POLY-DEV-03). The error obeys `e_{n+1} = ((2n+1) I - X)
+/// e_n / (n+1) - n e_{n-1} / (n+1) + eps_n`, and `||(2n+1) I - X||_2 =
+/// max over [0, L'] of |2n+1-x|`. It ignores the three-term cancellation,
+/// so it can grow like `(1 + sqrt 2)^n`: a correctness baseline whose
+/// tightness is measured, not a certificate.
+fn laguerre_majorant(local: &[f64], extent: f64) -> CoreResult<Vec<f64>> {
+    let mut bounds = vec![0.0; local.len() + 1];
+    for (n, eps) in local.iter().enumerate() {
+        let k = n as f64;
+        let center = 2.0 * k + 1.0;
+        let d = div_up(center.max(sub_up(extent, center)?), k + 1.0)?;
+        let mut next = add_up(mul_up(d, bounds[n])?, *eps)?;
+        if n > 0 {
+            next = add_up(next, mul_up(div_up(k, k + 1.0)?, bounds[n - 1])?)?;
+        }
+        bounds[n + 1] = next;
+    }
+    Ok(bounds)
+}
+
 struct Transform {
     basis: PolynomialBasis,
     /// Chebyshev: `X = (A + shift I) / half_width`; Laguerre: `X = -A / beta`.
@@ -877,6 +915,8 @@ struct Transform {
     eta: f64,
     /// Laguerre: `||L_n(X)|| <= e^{L'/2}`.
     laguerre_norm: f64,
+    /// Laguerre: `L' >= rho / beta`, so `spec(X) in [0, L']`.
+    laguerre_extent: f64,
     a: Interval,
     b: Interval,
 }
@@ -887,6 +927,7 @@ fn choose_transform(
     basis: PolynomialBasis,
     weight_factor: f64,
     budget: f64,
+    laguerre_scales: &[f64],
 ) -> CoreResult<Transform> {
     let SpectralEnclosure { lambda, rho, .. } = op.enclosure;
     match basis {
@@ -918,6 +959,7 @@ fn choose_transform(
                         tail_factor: tail,
                         eta,
                         laguerre_norm: 0.0,
+                        laguerre_extent: 0.0,
                         a,
                         b,
                     });
@@ -929,7 +971,7 @@ fn choose_transform(
         }
         PolynomialBasis::Laguerre => {
             let mut best: Option<Transform> = None;
-            for scale in LAGUERRE_SCALES {
+            for &scale in laguerre_scales {
                 let beta = rho / scale;
                 let a = Interval::new(mul_down(h, beta)?, mul_up(h, beta)?)?;
                 let q_hi = div_up(a.hi, add_down(1.0, a.hi)?)?;
@@ -959,6 +1001,7 @@ fn choose_transform(
                             tail_factor: tail,
                             eta: 0.0,
                             laguerre_norm: norm,
+                            laguerre_extent: scale_up,
                             a,
                             b: Interval::point(0.0)?,
                         });
@@ -1111,6 +1154,7 @@ fn empty_components() -> ErrorComponents {
         recurrence: Some(0.0),
         summation: 0.0,
         normalization: 0.0,
+        recurrence_majorant: None,
     }
 }
 
@@ -1128,7 +1172,57 @@ pub fn joint_phi_action(
     cache: Option<&mut CoefficientCache>,
     work: &mut WorkCounters,
 ) -> CoreResult<JointPhiReport> {
-    joint_phi_action_impl(op, h, input, basis, budget, cache, work, true)
+    joint_phi_action_impl(
+        op,
+        h,
+        input,
+        basis,
+        budget,
+        cache,
+        work,
+        true,
+        &LAGUERRE_SCALES,
+    )
+}
+
+/// [`joint_phi_action`] in the Laguerre basis with the scale `L` (`beta =
+/// rho / L`) chosen among `scales` instead of [`LAGUERRE_SCALES`]: each
+/// finite and in `(0, 16]`, the policy cap (re-audit R4, POLY-DEV-03 and
+/// POLY-DEV-05 sweeps). Research only.
+pub fn joint_phi_action_laguerre_scales(
+    op: &SymmetricNonpositiveOperator,
+    h: f64,
+    input: JointPhiInput<'_>,
+    scales: &[f64],
+    budget: f64,
+    work: &mut WorkCounters,
+) -> CoreResult<JointPhiReport> {
+    if scales.is_empty()
+        || !scales
+            .iter()
+            .all(|scale| scale.is_finite() && *scale > 0.0 && *scale <= LAGUERRE_SCALE_CAP)
+    {
+        return Err(unsupported(format!(
+            "Laguerre scales must be nonempty and in (0, {LAGUERRE_SCALE_CAP}]"
+        )));
+    }
+    joint_phi_action_impl(
+        op,
+        h,
+        input,
+        PolynomialBasis::Laguerre,
+        budget,
+        None,
+        work,
+        true,
+        scales,
+    )
+}
+
+/// Upper bounds of `phi_0 .. phi_4` at a real `z` in `[-600, 0]` as
+/// intervals (the scalar branch's enclosures), for references.
+pub fn scalar_phi_enclosure(z: Interval) -> CoreResult<[Interval; JOINT_PHI_TERMS]> {
+    scalar_phi(z)
 }
 
 /// [`joint_phi_action`] without the rounding enclosures: the same degree,
@@ -1144,7 +1238,17 @@ pub fn joint_phi_action_unbounded(
     cache: Option<&mut CoefficientCache>,
     work: &mut WorkCounters,
 ) -> CoreResult<JointPhiReport> {
-    joint_phi_action_impl(op, h, input, basis, budget, cache, work, false)
+    joint_phi_action_impl(
+        op,
+        h,
+        input,
+        basis,
+        budget,
+        cache,
+        work,
+        false,
+        &LAGUERRE_SCALES,
+    )
 }
 
 /// The action with power-of-two input normalization (re-audit R4,
@@ -1169,6 +1273,7 @@ fn joint_phi_action_impl(
     cache: Option<&mut CoefficientCache>,
     work: &mut WorkCounters,
     bounds: bool,
+    laguerre_scales: &[f64],
 ) -> CoreResult<JointPhiReport> {
     let entries: Vec<f64> = match input {
         JointPhiInput::Distinct(vectors) => vectors.iter().flatten().copied().collect(),
@@ -1184,7 +1289,17 @@ fn joint_phi_action_impl(
         || !(budget.is_finite() && budget > 0.0)
         || !(h.is_finite() && h >= 0.0)
     {
-        return joint_phi_action_core(op, h, input, basis, budget, cache, work, bounds);
+        return joint_phi_action_core(
+            op,
+            h,
+            input,
+            basis,
+            budget,
+            cache,
+            work,
+            bounds,
+            laguerre_scales,
+        );
     }
     let range = |what: &str| {
         CoreError::NonFinite(format!(
@@ -1250,6 +1365,7 @@ fn joint_phi_action_impl(
         cache,
         work,
         bounds,
+        laguerre_scales,
     )?;
     // Scale back; count entries rounded into the subnormal range.
     let unscale = |values: &mut Vec<f64>| -> CoreResult<usize> {
@@ -1278,6 +1394,10 @@ fn joint_phi_action_impl(
         )?;
         components.recurrence = components
             .recurrence
+            .map(|value| scale_bound_up(value, shift))
+            .transpose()?;
+        components.recurrence_majorant = components
+            .recurrence_majorant
             .map(|value| scale_bound_up(value, shift))
             .transpose()?;
         if lossy[k] > 0 {
@@ -1313,6 +1433,10 @@ fn joint_phi_action_impl(
     {
         return Err(range("the total error bound"));
     }
+    report.laguerre_majorant_total = report
+        .laguerre_majorant_total
+        .map(|value| -> CoreResult<f64> { add_up(scale_bound_up(value, shift)?, added) })
+        .transpose()?;
     report.normalization_shift = shift;
     let fused_norm = crate::safe_l2(&report.fused);
     let column_norms = report
@@ -1340,6 +1464,7 @@ fn joint_phi_action_core(
     cache: Option<&mut CoefficientCache>,
     work: &mut WorkCounters,
     bounds: bool,
+    laguerre_scales: &[f64],
 ) -> CoreResult<JointPhiReport> {
     let n = op.dimension();
     if !(h.is_finite() && h >= 0.0) {
@@ -1422,7 +1547,7 @@ fn joint_phi_action_core(
             column_errors[k].summation = norm_up(errors)?;
         }
     } else {
-        let transform = choose_transform(op, h, basis, weight_factor, budget)?;
+        let transform = choose_transform(op, h, basis, weight_factor, budget, laguerre_scales)?;
         degree = transform.degree;
         laguerre_scale = transform.laguerre_scale;
         truncation = mul_up(transform.tail_factor, weight_factor)?;
@@ -1554,6 +1679,17 @@ fn joint_phi_action_core(
                     None
                 }
             };
+            let majorant = match transform.basis {
+                PolynomialBasis::Chebyshev => None,
+                PolynomialBasis::Laguerre => {
+                    let propagated = laguerre_majorant(&local[column], transform.laguerre_extent)?;
+                    let mut total = 0.0;
+                    for (row, bound) in chosen.iter().zip(&propagated).skip(1) {
+                        total = add_up(total, mul_up(row[k].abs(), *bound)?)?;
+                    }
+                    Some(mul_up(scales[k].abs(), total)?)
+                }
+            };
             // Summation of chosen * t_n and the scaling by scales[k].
             let scale = Interval::point(scales[k])?;
             let mut errors = Vec::with_capacity(n);
@@ -1572,6 +1708,7 @@ fn joint_phi_action_core(
                     .transpose()?,
                 summation: norm_up(errors)?,
                 normalization: 0.0,
+                recurrence_majorant: majorant,
             };
         }
     }
@@ -1604,6 +1741,18 @@ fn joint_phi_action_core(
             bounded = add_up(bounded, recurrence)?;
         }
     }
+    let laguerre_majorant_total = if column_errors
+        .iter()
+        .any(|c| c.recurrence_majorant.is_some())
+    {
+        let mut total = bounded;
+        for components in &column_errors {
+            total = add_up(total, components.recurrence_majorant.unwrap_or(0.0))?;
+        }
+        Some(total)
+    } else {
+        None
+    };
     let total_error = if !bounds && !scalar_branch && weight_factor != 0.0 {
         TotalErrorStatus::EstimateOnly {
             reason: format!("{TOTAL_ERROR_NOT_CERTIFIED}: rounding bounds not computed"),
@@ -1669,6 +1818,7 @@ fn joint_phi_action_core(
             EXECUTION_UNBOUNDED_TIMING
         }
         .into(),
+        laguerre_majorant_total,
     })
 }
 
