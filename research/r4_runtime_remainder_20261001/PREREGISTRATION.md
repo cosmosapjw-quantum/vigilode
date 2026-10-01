@@ -31,3 +31,27 @@ The plan's four ignored tests are listed and not run. One of them writes a track
 
 The same targets ran in this branch's full workspace test runs, all at once rather than one by one. Their outcome
 there is known, so this run measures per-test status and wall time under the stated budget. It is not a blind test.
+
+---
+
+## Results (appended after the run at `f18ceb5`)
+
+Output: `NAMED_TESTS.json`. **Verdict: PASS.** All 60 named tests passed when run one at a time with a budget of
+3600 s each: 60 PASS, 0 FAIL, 0 TIMEOUT, 0 NOT_FOUND.
+
+| | Wall time |
+|---|---|
+| Longest: `a1_two_arm_receipt_contracts::all_two_by_six_cells_have_explicit_complete_or_reasoned_audit_states` | 409 s |
+| `inner_forcing_fixed_step_ladder_contracts::...prothero_robinson` | 277 s |
+| The two `two_arm_v3_campaign_contracts` tests | 217 s and 200 s |
+| Total across all 60 tests | 1585 s |
+
+The R4 audit stopped these tests because of its total budget and per-target timeouts. None of them is a failure.
+The plan's four ignored tests are listed in the output and were not run.
+
+**Process deviation.** The first invocation, at the same commit, was started under a tool runner with a 2-hour limit.
+It was stopped by hand after 9 tests had passed and had written no output. It was restarted as a detached process so
+that the limit could not cut it off. The output above comes from the complete second run.
+
+**Changed identity.** As preregistered, the run used debug with default features, not the plan's "all features". The
+output records this.

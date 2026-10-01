@@ -92,9 +92,9 @@ pub use session_median_study::{
     session_median_study, session_median_study_grid, simulate_session_cells,
 };
 pub use timing_authority::{
-    AdmissibleTimingDecision, TimingAuthority, TimingAuthorityDomain, TimingAuthorityStatus,
-    TimingDesignIdentity, select_timing_authority, timing_authority_registry,
-    verify_timing_authority,
+    AdmissibleTimingDecision, SESSION_MEDIAN_INTERVAL_SCHEMA, TimingAuthority,
+    TimingAuthorityDomain, TimingAuthorityStatus, TimingDesignIdentity, select_timing_authority,
+    timing_authority_registry, verify_timing_authority,
 };
 pub use timing_design::{
     COVERAGE_STUDY_MAX_FALSE_PROMOTE, COVERAGE_STUDY_MIN_COVERAGE, COVERAGE_STUDY_REPLICATIONS,

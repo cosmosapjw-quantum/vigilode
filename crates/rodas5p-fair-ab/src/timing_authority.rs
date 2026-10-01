@@ -7,7 +7,8 @@
 //! the preregistered coverage studies of its design and estimand. Their
 //! outcomes are compiled into [`timing_authority_registry`]; nothing a
 //! receipt or a user JSON says can raise the status. A design covered by a
-//! failed study is [`TimingAuthorityStatus::Hold`], one covered by no study
+//! failed study, or by a passed one awaiting its independent review, is
+//! [`TimingAuthorityStatus::Hold`], one covered by no study
 //! is [`TimingAuthorityStatus::NotEvaluated`], and only a design covered by
 //! admissible studies alone is [`TimingAuthorityStatus::Admissible`]. No
 //! registry entry is admissible today: both R3 coverage studies failed
@@ -18,8 +19,11 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     FairError, FairResult, PAIRED_TIMING_SCHEMA, POOLED_PAIR_MEDIAN_ESTIMAND, PairedTimingDecision,
-    PairedTimingEvidence,
+    PairedTimingEvidence, SESSION_CELL_MEDIAN_ESTIMAND,
 };
+
+/// The schema the session-median interval designs are registered under.
+pub const SESSION_MEDIAN_INTERVAL_SCHEMA: &str = "vigilode-r4-exact-session-median-v1";
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
@@ -94,6 +98,19 @@ pub fn timing_authority_registry() -> Vec<TimingAuthority> {
             domain: pooled,
             status: TimingAuthorityStatus::Hold,
             reason: "preregistered coverage study v2 FAIL (separate streams, scenario-keyed seeds): same undercoverage".into(),
+        },
+        TimingAuthority {
+            study_id: "r4_session_median_coverage_20261001".into(),
+            ledger_row: "L-0018".into(),
+            domain: TimingAuthorityDomain {
+                estimand: SESSION_CELL_MEDIAN_ESTIMAND.into(),
+                assessment_schema: SESSION_MEDIAN_INTERVAL_SCHEMA.into(),
+                min_sessions: 6,
+                max_sessions: 24,
+                case_counts: vec![1, 5],
+            },
+            status: TimingAuthorityStatus::Hold,
+            reason: "preregistered coverage study PASS within its simulated domain; held until an independent domain review (R4 authority gate)".into(),
         },
     ]
 }

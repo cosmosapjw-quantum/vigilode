@@ -241,7 +241,7 @@ fn authority_comes_from_the_registry_and_forgeries_fail() {
             TimingAuthorityStatus::NotEvaluated
         );
     }
-    // The session-cell estimand has no study in the compiled registry.
+    // The session-cell estimand under the pooled schema has no study.
     assert_eq!(
         select_timing_authority(
             &timing_authority_registry(),
@@ -253,6 +253,28 @@ fn authority_comes_from_the_registry_and_forgeries_fail() {
         .0,
         TimingAuthorityStatus::NotEvaluated
     );
+    // The session-median interval's study passed (L-0018) but is held for
+    // its independent domain review, inside its simulated domain only.
+    let session_design = |sessions: usize, cases: usize| TimingDesignIdentity {
+        estimand: SESSION_CELL_MEDIAN_ESTIMAND.into(),
+        assessment_schema: rodas5p_fair_ab::SESSION_MEDIAN_INTERVAL_SCHEMA.into(),
+        sessions,
+        cases,
+    };
+    let (status, studies) =
+        select_timing_authority(&timing_authority_registry(), &session_design(8, 5));
+    assert_eq!(status, TimingAuthorityStatus::Hold);
+    assert_eq!(studies[0].ledger_row, "L-0018");
+    for (sessions, cases) in [(30, 5), (8, 3), (4, 1)] {
+        assert_eq!(
+            select_timing_authority(
+                &timing_authority_registry(),
+                &session_design(sessions, cases)
+            )
+            .0,
+            TimingAuthorityStatus::NotEvaluated
+        );
+    }
 }
 
 /// Population medians of a discrete session law `u` plus `pairs` iid pair
