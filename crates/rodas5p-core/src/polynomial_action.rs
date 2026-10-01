@@ -157,7 +157,7 @@ fn exp_neg_interval(x: Interval) -> CoreResult<Interval> {
 
 /// Upper bound on `e^x` for any real `x` (at most 709); `e^x <= e^-700`
 /// is used below `-700`.
-fn exp_up(x: f64) -> CoreResult<f64> {
+pub(crate) fn exp_up(x: f64) -> CoreResult<f64> {
     if x >= 0.0 {
         exp_nonneg(x, true)
     } else {
@@ -1327,7 +1327,7 @@ fn joint_phi_action_impl(
         // A smaller budget is stricter, never looser.
         budget_scaled = f64::MAX;
     }
-    if !(budget_scaled > 0.0) {
+    if budget_scaled.is_nan() || budget_scaled <= 0.0 {
         return Err(range("the truncation budget"));
     }
     let mut lossy = [0_usize; JOINT_PHI_TERMS];
