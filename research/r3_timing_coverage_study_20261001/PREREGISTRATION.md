@@ -124,3 +124,18 @@ Consequences, stated without retesting or reseeding:
 3. A redesigned interval, for example a studentized or calibrated one for few independent units, needs a new preregistered study.
 
 None of this says anything about solver speed.
+
+### Post-run review note (appended 2026-10-01; the verdict above is unchanged)
+
+An independent code review after the run found two harness defects. Both are fixed in `d198558`.
+
+1. The data and the bootstrap of a replication shared one random stream: `protocol.seed` was the data seed. Roughly
+   the first 56 of the 10000 replicates of a single-case design were therefore drawn from the same numbers as the
+   simulated data. This dependence is small, but the replications do not satisfy the independence the study assumes.
+2. The seeds depended on a scenario's position in the grid, so a scenario run alone did not reproduce its row.
+
+Separately, the thresholds 0.9374 and 0.0340 round the exact values 0.937446 and 0.033993 in the lenient direction.
+Under the exact values the verdict above is the same: no row lies between the rounded and exact thresholds.
+
+The corrected study is preregistered separately in `research/r3_timing_coverage_study_v2_20261001/`. This note does
+not rerun, reseed or relabel the run above.

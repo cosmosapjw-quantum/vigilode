@@ -94,6 +94,46 @@ The untimed verification ran once at the source commit, into a scratch directory
 
 No timing was measured. Nothing was changed after the pilot. The seed 20261003 was not used before this commit.
 
+## Addendum before the rerun (committed before any rerun output)
+
+### What happened at `86750eb` / `380f565`
+
+The first execution of the commands above completed the untimed verification. The timed campaign then aborted in the
+shared session harness, before any receipt was written:
+
+- `transactional-certified-p1` finished. Its unverified assessment decision, `Block`, was printed to the log. This is
+  disclosed, and it is not a result.
+- `transactional-certified-p2` aborted with `INVALID_RAW_TIMING_PROTOCOL` on `scalar-linear#aa` (batch 2 against a
+  calibration of 3).
+
+The cause was a STAT-DEV-02 harness defect: the A/A control was given the candidate case's batch, while it records its
+own warmups. It is fixed in `c8aa0dc` and has a regression test. All outputs of that execution are kept unchanged in
+`aborted-run-380f565/`, including the verification and the raw session records of the sessions that ran.
+
+### Changes made before the rerun
+
+An independent review of the code then found defects, which are fixed in `d198558`:
+
+- HOM-05: the certificate model must also reproduce the ODE at every candidate stage state.
+- HOM-06 gate item 2 is now counted per step (`certificate_mismatches`). The earlier count difference could not fail.
+- POLY-03: the Arnoldi operator is built outside the timed call, like the candidate's.
+- `r3-campaign` headlines the verified decision and records a failing arm instead of aborting.
+
+The corpora, arms, tolerances, accuracy gates, speed gate and seeds above are unchanged. The rerun repeats both
+commands at source commit `d198558b981a538b7f8293f8b059b9f2f515d080`, where the input hashes are:
+  - `crates/rodas5p-cli/src/r3_campaigns.rs` `8dd1c5e3a06aaad5c4e812823682caf45571d66689ed2db1f97d8d718a185b95`
+  - `crates/rodas5p-cli/src/main.rs` `12d9979405c2a0058df6eb3911e97e99d3cdaf0319e21cd4b583914449f4ec3c`
+  - `crates/rodas5p-core/src/polynomial_action.rs` `5e79dc83462ab668ad61df33f6ece1202857afd21dbf80af165be7e321691f54`
+  - `crates/rodas5p-integrators/src/transactional_q1_q2.rs` `ccd8d6b7dd4cbbb12e34c5d9d19f59297bd11785cfd5c7654796a8e3d744acaa`
+  - `crates/rodas5p-integrators/src/integrate.rs` `aee8dfa8005c038b3b9cd0c92934522720aadfb83d07782af59f5a22e8b73313`
+  - `crates/rodas5p-integrators/src/exponential.rs` `da84a475c085d76d1275fea88b8099c807754a38a93afa1e2d02848c69df7f80`
+  - `crates/rodas5p-fair-ab/src/paired_timing.rs` `2edd38248c5d8bd79fa308c2b62fe4142154313d5efbaa753b7d3f3f1d0ce614`
+  - `crates/rodas5p-fair-ab/src/paired_receipt.rs` `65466446e4c2b3f39a7f9272ac63e186ae0c80f51a7ea5560510a1532f43f106`
+  - `Cargo.lock` `04c7d6c147bf19ebb1a627463705d9dcf27337a3ff228dd1169f19eb73c71400`
+
+The label "certified" in the HOM-06 arm names refers to the q=2 admission only. q=1 fast accepts still pass the
+operational gate, and the report gives their fraction as p1.
+
 ---
 
 ## Results (appended after the run)
