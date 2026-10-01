@@ -105,6 +105,7 @@ fn main() {
             max_factor: 5.0,
             reject_max_factor: 0.9,
             controller: ControllerKind::Integral,
+            max_step_policy: rodas5p_integrators::MaxStepPolicy::AllowClockResolutionSlack,
         };
         let campaign_linear = LinearSolverConfig {
             method: LinearMethod::Gmres,

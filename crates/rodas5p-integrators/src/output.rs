@@ -38,14 +38,57 @@ pub(crate) struct Landing {
 /// rule only; which interval owns a requested time is still decided by
 /// exact comparison, so adjacent representable requests stay distinct.
 pub(crate) fn land(t: f64, proposed: f64, target: f64) -> CoreResult<Landing> {
-    land_capped(t, proposed, target, f64::INFINITY)
+    land_capped(t, proposed, target, StepCap::NONE)
+}
+
+/// How an adaptive driver's `max_step` binds the represented step
+/// (re-audit R4, R4-TIME-DEV-04).
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum MaxStepPolicy {
+    /// No represented step exceeds `max_step`; when no representable time
+    /// after `t` lies within it, the run fails with a typed time-resolution
+    /// error.
+    StrictRepresentedCap,
+    /// The represented step may exceed `max_step` by at most one clock
+    /// resolution at its end (`ulp(t + h)`): the rounding of `t + h`
+    /// (0.07 + 0.01 represents 0.010000000000000009), and a sub-ULP
+    /// `max_step` becomes a full-ULP step. Not a hard maximum. The default,
+    /// as before R4.
+    #[default]
+    AllowClockResolutionSlack,
+}
+
+/// A `max_step` and its policy.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub(crate) struct StepCap {
+    pub(crate) max: f64,
+    pub(crate) policy: MaxStepPolicy,
+}
+
+impl StepCap {
+    pub(crate) const NONE: Self = Self {
+        max: f64::INFINITY,
+        policy: MaxStepPolicy::AllowClockResolutionSlack,
+    };
+
+    /// Whether a represented step `h` ending at `end` exceeds the cap
+    /// beyond what the policy allows.
+    fn exceeded(&self, h: f64, end: f64) -> bool {
+        match self.policy {
+            MaxStepPolicy::StrictRepresentedCap => h > self.max,
+            MaxStepPolicy::AllowClockResolutionSlack => {
+                h > self.max && h - self.max > end.next_up() - end
+            }
+        }
+    }
 }
 
 /// [`land`] with a hard maximum `cap` on the represented step (an adaptive
 /// driver's `max_step`): the rounding residue is never used to stretch a
 /// step past `cap`, and the represented step is checked against it
 /// ([`represent`]).
-pub(crate) fn land_capped(t: f64, proposed: f64, target: f64, cap: f64) -> CoreResult<Landing> {
+pub(crate) fn land_capped(t: f64, proposed: f64, target: f64, cap: StepCap) -> CoreResult<Landing> {
     let mut landing = land_nominal(t, proposed, target, cap)?;
     if landing.step > 0.0 {
         landing.step = represent(t, landing.step, cap)?;
@@ -54,7 +97,7 @@ pub(crate) fn land_capped(t: f64, proposed: f64, target: f64, cap: f64) -> CoreR
     Ok(landing)
 }
 
-fn land_nominal(t: f64, proposed: f64, target: f64, cap: f64) -> CoreResult<Landing> {
+fn land_nominal(t: f64, proposed: f64, target: f64, cap: StepCap) -> CoreResult<Landing> {
     let to_target = step_to(t, target)?;
     let natural = t + proposed;
     // Rounding residue of the time sum: relative to the largest magnitude
@@ -83,8 +126,7 @@ fn land_nominal(t: f64, proposed: f64, target: f64, cap: f64) -> CoreResult<Land
     let gap = target - natural;
     // The extension respects a hard maximum up to one clock resolution at
     // the target, like `represent`.
-    let extend =
-        gap <= residue && (to_target <= cap || to_target - cap <= target.next_up() - target);
+    let extend = gap <= residue && !cap.exceeded(to_target, target);
     Ok(Landing {
         step: if extend { to_target } else { proposed },
         lands: extend && t + to_target == target,
@@ -98,7 +140,7 @@ pub(crate) fn end_step(t: f64, proposed: f64, tf: f64) -> CoreResult<f64> {
 }
 
 /// [`end_step`] with a hard maximum on the represented step.
-pub(crate) fn end_step_capped(t: f64, proposed: f64, tf: f64, cap: f64) -> CoreResult<f64> {
+pub(crate) fn end_step_capped(t: f64, proposed: f64, tf: f64, cap: StepCap) -> CoreResult<f64> {
     Ok(land_capped(t, proposed, tf, cap)?.step)
 }
 
@@ -119,7 +161,7 @@ pub(crate) fn end_step_capped(t: f64, proposed: f64, tf: f64, cap: f64) -> CoreR
 /// representable time below `t_end`; when that does not advance `t`, the
 /// time resolution at `t` is coarser than `cap` and the result is a typed
 /// error instead of a silently enlarged step.
-pub(crate) fn represent(t: f64, step: f64, cap: f64) -> CoreResult<f64> {
+pub(crate) fn represent(t: f64, step: f64, cap: StepCap) -> CoreResult<f64> {
     if !(t.is_finite() && step.is_finite() && step > 0.0) {
         return Err(CoreError::InvalidInput(format!(
             "time resolution: step {step:e} at t = {t:e} must be finite and positive"
@@ -136,17 +178,25 @@ pub(crate) fn represent(t: f64, step: f64, cap: f64) -> CoreResult<f64> {
     // t_end, up to one clock resolution at t_end; that is representation,
     // not enlargement (an exact 0.07 + 0.01 == 0.08 landing has
     // h = 0.010000000000000009). Only a larger excess is capped.
-    let resolution = t_end.next_up() - t_end;
-    if h > cap && h - cap > resolution {
+    if cap.exceeded(h, t_end) {
         let below = t_end.next_down();
         if below <= t {
             return Err(CoreError::InvalidInput(format!(
                 "time resolution: the next representable time after t = {t:e} is {:e} away, \
-                 above the maximum step {cap:e}",
-                t_end - t
+                 above the maximum step {:e} ({:?})",
+                t_end - t,
+                cap.max,
+                cap.policy
             )));
         }
         h = step_to(t, below)?;
+        // Strict: one step below may still be above a sub-ULP cap.
+        if cap.exceeded(h, below) {
+            return Err(CoreError::InvalidInput(format!(
+                "time resolution: no representable time after t = {t:e} within the maximum step {:e} ({:?})",
+                cap.max, cap.policy
+            )));
+        }
     }
     check_clock(t, h)?;
     Ok(h)
@@ -165,17 +215,47 @@ pub(crate) fn below_min_step(t: f64, h: f64, min_step: f64) -> bool {
 /// `success = false`, as before the represented clock), otherwise the
 /// represented step, or a typed time-resolution error when the time
 /// resolution at `t` exceeds `max_step`.
+///
+/// After a rejected attempt from the same `t` (re-audit R4, TIME-DEV-02),
+/// the represented step is strictly shorter than the rejected one: at a
+/// coarse clock a proposal of 2.55 ULPs represents as the rejected 3 ULPs
+/// again, and the drivers used to retry the identical step until
+/// `max_attempts`. The step ends at the representable time below the
+/// rejected end instead, or the run fails with a typed time-resolution
+/// error when there is none after `t`.
 pub(crate) fn adaptive_end_step(
     t: f64,
     proposed: f64,
     tf: f64,
-    max_step: f64,
+    cap: StepCap,
+    controller: &crate::AdaptiveControllerState,
 ) -> CoreResult<Option<f64>> {
-    let nominal = proposed.min(max_step);
+    if cap.policy == MaxStepPolicy::StrictRepresentedCap && t.next_up() - t > cap.max {
+        return Err(CoreError::InvalidInput(format!(
+            "time resolution: no representable time after t = {t:e} within the strict maximum step {:e}",
+            cap.max
+        )));
+    }
+    let nominal = proposed.min(cap.max);
     if nominal.is_nan() || nominal <= 0.0 || t + nominal <= t {
         return Ok(None);
     }
-    end_step_capped(t, nominal, tf, max_step).map(Some)
+    let step = end_step_capped(t, nominal, tf, cap)?;
+    match controller.last_rejected_trial() {
+        Some(rejected) if step >= rejected => {
+            let below = (t + rejected).next_down();
+            if below <= t {
+                return Err(CoreError::InvalidInput(format!(
+                    "time resolution: the rejected step {rejected:e} at t = {t:e} is one clock \
+                     resolution and cannot be shortened"
+                )));
+            }
+            let shorter = step_to(t, below)?;
+            check_clock(t, shorter)?;
+            Ok(Some(shorter))
+        }
+        _ => Ok(Some(step)),
+    }
 }
 
 /// A typed error unless the represented interval `fl(t + h) - t` equals `h`
@@ -520,7 +600,7 @@ impl OutputSamplingPlan {
 pub(crate) struct HardStopCursor {
     stops: Vec<f64>,
     next_index: usize,
-    max_step: f64,
+    max_step: StepCap,
 }
 
 impl HardStopCursor {
@@ -529,12 +609,12 @@ impl HardStopCursor {
         Ok(Self {
             stops: plan.hard_stops.clone(),
             next_index: 0,
-            max_step: f64::INFINITY,
+            max_step: StepCap::NONE,
         })
     }
 
     /// Hard maximum on represented steps (an adaptive driver's `max_step`).
-    pub(crate) fn with_max_step(mut self, max_step: f64) -> Self {
+    pub(crate) fn with_max_step(mut self, max_step: StepCap) -> Self {
         self.max_step = max_step;
         self
     }
@@ -622,7 +702,7 @@ pub(crate) struct OutputCollector {
     times: Vec<f64>,
     states: Vec<Vec<f64>>,
     clipped_steps: usize,
-    max_step: f64,
+    max_step: StepCap,
 }
 
 impl OutputCollector {
@@ -644,12 +724,12 @@ impl OutputCollector {
             times: vec![schedule.times[0]],
             states: vec![y0.to_vec()],
             clipped_steps: 0,
-            max_step: f64::INFINITY,
+            max_step: StepCap::NONE,
         })
     }
 
     /// Hard maximum on represented steps (an adaptive driver's `max_step`).
-    pub(crate) fn with_max_step(mut self, max_step: f64) -> Self {
+    pub(crate) fn with_max_step(mut self, max_step: StepCap) -> Self {
         self.max_step = max_step;
         self
     }

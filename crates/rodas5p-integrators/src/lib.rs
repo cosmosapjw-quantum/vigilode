@@ -114,7 +114,8 @@ pub use adaptive::{
     AdaptiveControllerState, AdaptiveFailureKind, AdaptiveObservedIntegrationResult,
     AdaptiveRunDiagnostics, AdaptiveStepConfig, CLIPPED_SAMPLE_INFORMATIVE_RATIO, ControllerKind,
     RODAS5P_ESTIMATOR_ORDER, StepDoublingEstimate, adaptive_next_step_after_attempt,
-    rodas_next_step_after_attempt, step_doubling_wrms_error,
+    rodas_next_step_after_attempt, step_doubling_divisor, step_doubling_wrms_error,
+    step_doubling_wrms_error_for_halves,
 };
 pub use adaptive_exponential::{
     AdaptiveEarlyFlowDefectAttempt, AdaptiveEarlyFlowDefectOutcome,
@@ -124,8 +125,9 @@ pub use adaptive_exponential::{
     integrate_pexprb54s4_fused_adaptive_observed_with_tolerance_scaled_telemetry,
 };
 pub use bdf::{
+    BDF_STARTUP_BDF1_BDF1_ESTIMATOR_ID, BDF_STARTUP_BDF1_BDF2_ESTIMATOR_ID,
     BDF2_ZERO_STABILITY_RATIO_MAX, BdfConfig, BdfHistory, BdfIntegrationResult, BdfOrder,
-    BdfStepReport, VariableBdf2Coefficients, bdf_step, bdf_step_variable,
+    BdfStepReport, VariableBdf2Coefficients, bdf_startup_divisor, bdf_step, bdf_step_variable,
     bdf1_predictor_correction_lte_factor, bdf2_predictor_correction_lte_factor,
     integrate_bdf_adaptive_observed, integrate_bdf_fixed, integrate_bdf_fixed_observed,
     variable_bdf2_coefficients, variable_bdf2_predictor,
@@ -286,13 +288,16 @@ pub use nonlinear::{
     radau_newton_tolerance_factor, solve_dense_newton,
 };
 pub use output::{
-    ObservedIntegrationResult, OutputSamplingPlan, OutputSchedule, PRODUCTION_CLOCK_POLICY,
-    RESEARCH_REPLAY_CLOCK_POLICY,
+    MaxStepPolicy, ObservedIntegrationResult, OutputSamplingPlan, OutputSchedule,
+    PRODUCTION_CLOCK_POLICY, RESEARCH_REPLAY_CLOCK_POLICY,
 };
 pub use outward_certificate::{
+    BlockedCertificateWork, BlockedDoublingCertificate, CERTIFICATE_STRUCTURE_UNSUPPORTED,
     CertificateKind, DoublingCertificate, InverseWitness, PastStepData, QuadraticStageProblem,
-    RadiusAttempt, StageCertificate, WitnessIdentity, WitnessWork, candidate_digest,
-    certify_stage_target, doubling_certificate, predict_state_radius,
+    RadiusAttempt, StageCertificate, UnverifiedWitness, WITNESS_NOT_VERIFIED, WitnessIdentity,
+    WitnessWork, blocked_doubling_certificate_with_execution, candidate_digest,
+    certificate_binding, certify_stage_target, doubling_certificate,
+    doubling_certificate_with_execution, doubling_levels, predict_state_radius,
 };
 pub use parallel::ParallelExecution;
 pub use path_controller::{
@@ -350,10 +355,12 @@ pub use stage_target::{
     StageTargetBits, block_sequential_allowance, native_coefficient_leakage,
 };
 pub use transactional_q1_q2::{
-    NATIVE_TARGET_CERTIFICATE_ADMISSION, OPERATIONAL_DIAGNOSTIC_ADMISSION, OperationalGateReport,
-    Q2Admission, Q2CertificateAdmission, Q2CertificateSource, TransactionalQ1Q2Config,
-    TransactionalQ1Q2Lane, TransactionalQ1Q2RunDiagnostics, TransactionalQ1Q2StepReport,
+    CERTIFICATE_CAPABILITY_UNAVAILABLE, ModelBinding, NATIVE_TARGET_CERTIFICATE_ADMISSION,
+    OPERATIONAL_DIAGNOSTIC_ADMISSION, OperationalGateReport, Q2Admission, Q2CertificateAdmission,
+    Q2CertificateSource, QuadraticModel, TransactionalQ1Q2Config, TransactionalQ1Q2Lane,
+    TransactionalQ1Q2RunDiagnostics, TransactionalQ1Q2StepReport, WitnessCapability,
     transactional_q1_q2_step, transactional_q1_q2_step_with_admission,
+    transactional_q1_q2_step_with_execution,
 };
 pub use unified_gates::{
     CandidateGateReport, CandidateGateVerdict, CandidateOrderGateRow, CandidateStiffGateRow,

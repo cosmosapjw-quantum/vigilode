@@ -247,6 +247,7 @@ pub(crate) fn adaptive_config(
         max_factor: config.controller_max_factor,
         reject_max_factor: config.controller_reject_max_factor,
         controller: ControllerKind::Integral,
+        max_step_policy: rodas5p_integrators::MaxStepPolicy::AllowClockResolutionSlack,
     }
 }
 

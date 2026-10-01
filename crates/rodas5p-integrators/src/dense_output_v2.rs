@@ -553,13 +553,15 @@ pub fn integrate_adaptive_dense_observed_with_dense_error_control(
     let mut recycle = KrylovState::for_method(config.method);
     let sabr_config = sabr_config.unwrap_or_default();
     let mut collector =
-        OutputCollector::new(sampling.output(), t_span, y0)?.with_max_step(adaptive.max_step);
-    let mut hard_stops = HardStopCursor::new(sampling, t_span)?.with_max_step(adaptive.max_step);
+        OutputCollector::new(sampling.output(), t_span, y0)?.with_max_step(adaptive.step_cap());
+    let mut hard_stops = HardStopCursor::new(sampling, t_span)?.with_max_step(adaptive.step_cap());
     let mut diagnostics = AdaptiveRunDiagnostics::default();
     let mut internal_steps = 0_usize;
 
     while t < tf && diagnostics.attempts < adaptive.max_attempts {
-        let Some(next_h) = crate::output::adaptive_end_step(t, h, tf, adaptive.max_step)? else {
+        let Some(next_h) =
+            crate::output::adaptive_end_step(t, h, tf, adaptive.step_cap(), &controller)?
+        else {
             break;
         };
         h = next_h;
@@ -1000,13 +1002,15 @@ where
     let mut counters = WorkCounters::default();
     let mut recycle = KrylovState::for_method(linear_config.method);
     let mut collector =
-        OutputCollector::new(sampling.output(), t_span, y0)?.with_max_step(adaptive.max_step);
-    let mut hard_stops = HardStopCursor::new(sampling, t_span)?.with_max_step(adaptive.max_step);
+        OutputCollector::new(sampling.output(), t_span, y0)?.with_max_step(adaptive.step_cap());
+    let mut hard_stops = HardStopCursor::new(sampling, t_span)?.with_max_step(adaptive.step_cap());
     let mut diagnostics = AdaptiveRunDiagnostics::default();
     let mut internal_steps = 0_usize;
 
     while t < tf && diagnostics.attempts < adaptive.max_attempts {
-        let Some(next_h) = crate::output::adaptive_end_step(t, h, tf, adaptive.max_step)? else {
+        let Some(next_h) =
+            crate::output::adaptive_end_step(t, h, tf, adaptive.step_cap(), &controller)?
+        else {
             break;
         };
         h = next_h;
@@ -1259,13 +1263,15 @@ pub fn integrate_homotopy_adaptive_dense_observed(
     let mut counters = WorkCounters::default();
     let mut recycle = fallback_config.and_then(|config| KrylovState::for_method(config.method));
     let mut collector =
-        OutputCollector::new(sampling.output(), t_span, y0)?.with_max_step(adaptive.max_step);
-    let mut hard_stops = HardStopCursor::new(sampling, t_span)?.with_max_step(adaptive.max_step);
+        OutputCollector::new(sampling.output(), t_span, y0)?.with_max_step(adaptive.step_cap());
+    let mut hard_stops = HardStopCursor::new(sampling, t_span)?.with_max_step(adaptive.step_cap());
     let mut diagnostics = AdaptiveRunDiagnostics::default();
     let mut internal_steps = 0_usize;
 
     while t < tf && diagnostics.attempts < adaptive.max_attempts {
-        let Some(next_h) = crate::output::adaptive_end_step(t, h, tf, adaptive.max_step)? else {
+        let Some(next_h) =
+            crate::output::adaptive_end_step(t, h, tf, adaptive.step_cap(), &controller)?
+        else {
             break;
         };
         h = next_h;
@@ -1395,14 +1401,16 @@ pub fn integrate_transactional_q1_q2_adaptive_dense_observed(
     let mut controller = AdaptiveControllerState::default();
     let mut counters = WorkCounters::default();
     let mut collector =
-        OutputCollector::new(sampling.output(), t_span, y0)?.with_max_step(adaptive.max_step);
-    let mut hard_stops = HardStopCursor::new(sampling, t_span)?.with_max_step(adaptive.max_step);
+        OutputCollector::new(sampling.output(), t_span, y0)?.with_max_step(adaptive.step_cap());
+    let mut hard_stops = HardStopCursor::new(sampling, t_span)?.with_max_step(adaptive.step_cap());
     let mut diagnostics = AdaptiveRunDiagnostics::default();
     let mut transactional = TransactionalQ1Q2RunDiagnostics::default();
     let mut internal_steps = 0_usize;
 
     while t < tf && diagnostics.attempts < adaptive.max_attempts {
-        let Some(next_h) = crate::output::adaptive_end_step(t, h, tf, adaptive.max_step)? else {
+        let Some(next_h) =
+            crate::output::adaptive_end_step(t, h, tf, adaptive.step_cap(), &controller)?
+        else {
             break;
         };
         h = next_h;
@@ -1637,8 +1645,8 @@ pub fn integrate_radau_adaptive_dense_observed(
     let mut counters = WorkCounters::default();
     let mut controller = AdaptiveControllerState::default();
     let mut collector =
-        OutputCollector::new(sampling.output(), t_span, y0)?.with_max_step(adaptive.max_step);
-    let mut hard_stops = HardStopCursor::new(sampling, t_span)?.with_max_step(adaptive.max_step);
+        OutputCollector::new(sampling.output(), t_span, y0)?.with_max_step(adaptive.step_cap());
+    let mut hard_stops = HardStopCursor::new(sampling, t_span)?.with_max_step(adaptive.step_cap());
     let mut diagnostics = AdaptiveRunDiagnostics::default();
     let mut h = adaptive.initial_step.min(crate::output::step_to(t, tf)?);
     let mut internal_steps = 0_usize;
@@ -1649,7 +1657,9 @@ pub fn integrate_radau_adaptive_dense_observed(
     let mut previous_local_rejection = false;
 
     while t < tf && diagnostics.attempts < adaptive.max_attempts {
-        let Some(next_h) = crate::output::adaptive_end_step(t, h, tf, adaptive.max_step)? else {
+        let Some(next_h) =
+            crate::output::adaptive_end_step(t, h, tf, adaptive.step_cap(), &controller)?
+        else {
             break;
         };
         h = next_h;
@@ -1781,14 +1791,16 @@ pub fn integrate_bdf_adaptive_dense_observed(
     let mut counters = WorkCounters::default();
     let mut controller = AdaptiveControllerState::default();
     let mut collector =
-        OutputCollector::new(sampling.output(), t_span, y0)?.with_max_step(adaptive.max_step);
-    let mut hard_stops = HardStopCursor::new(sampling, t_span)?.with_max_step(adaptive.max_step);
+        OutputCollector::new(sampling.output(), t_span, y0)?.with_max_step(adaptive.step_cap());
+    let mut hard_stops = HardStopCursor::new(sampling, t_span)?.with_max_step(adaptive.step_cap());
     let mut diagnostics = AdaptiveRunDiagnostics::default();
     let mut h = adaptive.initial_step.min(crate::output::step_to(t, tf)?);
     let mut internal_steps = 0_usize;
 
     while t < tf && diagnostics.attempts < adaptive.max_attempts {
-        let Some(next_h) = crate::output::adaptive_end_step(t, h, tf, adaptive.max_step)? else {
+        let Some(next_h) =
+            crate::output::adaptive_end_step(t, h, tf, adaptive.step_cap(), &controller)?
+        else {
             break;
         };
         h = next_h;
@@ -1978,6 +1990,7 @@ mod failure_preservation_tests {
             max_factor: 5.0,
             reject_max_factor: 0.9,
             controller: ControllerKind::Integral,
+            max_step_policy: crate::MaxStepPolicy::AllowClockResolutionSlack,
         };
         let calls = Cell::new(0_usize);
         let result = integrate_sequential_matrix_free_adaptive_dense_observed_with(

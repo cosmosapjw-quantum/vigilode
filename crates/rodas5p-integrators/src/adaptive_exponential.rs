@@ -192,13 +192,16 @@ fn integrate_pexprb54s4_fused_adaptive_observed_with_telemetry_request(
     let (mut t, tf) = t_span;
     let mut y = y0.to_vec();
     let mut h = adaptive.initial_step.min(crate::output::step_to(t, tf)?);
-    let mut collector = OutputCollector::new(output, t_span, y0)?.with_max_step(adaptive.max_step);
+    let mut collector =
+        OutputCollector::new(output, t_span, y0)?.with_max_step(adaptive.step_cap());
     let mut controller = AdaptiveControllerState::default();
     let mut counters = WorkCounters::default();
     let mut diagnostics = AdaptiveFusedExponentialDiagnostics::default();
 
     while t < tf && diagnostics.attempts < adaptive.max_attempts {
-        let Some(next_h) = crate::output::adaptive_end_step(t, h, tf, adaptive.max_step)? else {
+        let Some(next_h) =
+            crate::output::adaptive_end_step(t, h, tf, adaptive.step_cap(), &controller)?
+        else {
             break;
         };
         h = next_h;

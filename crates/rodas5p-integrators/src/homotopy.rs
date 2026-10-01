@@ -489,6 +489,10 @@ pub struct HomotopyWorkLedger {
     pub certificate_attempts: u64,
     #[serde(skip_serializing_if = "is_zero_u64")]
     pub certificate_operations: u64,
+    /// Thread pools built inside this step (re-audit R4, R4-HOM-DEV-04);
+    /// 0 when the caller owns the execution context. Omitted while zero.
+    #[serde(skip_serializing_if = "is_zero_u64")]
+    pub pool_creations: u64,
 }
 
 fn is_zero_u64(value: &u64) -> bool {

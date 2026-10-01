@@ -176,6 +176,7 @@ fn main() {
             max_factor: 5.0,
             reject_max_factor: 0.9,
             controller: ControllerKind::Integral,
+            max_step_policy: rodas5p_integrators::MaxStepPolicy::AllowClockResolutionSlack,
         };
         let matrix_free = segment.problem.jvp_only_clone().unwrap();
         let outputs = spec

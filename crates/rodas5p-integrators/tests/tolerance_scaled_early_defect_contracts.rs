@@ -61,6 +61,7 @@ fn adaptive_config() -> AdaptiveStepConfig {
         max_factor: 4.0,
         reject_max_factor: 0.8,
         controller: ControllerKind::Pi,
+        max_step_policy: rodas5p_integrators::MaxStepPolicy::AllowClockResolutionSlack,
     }
 }
 

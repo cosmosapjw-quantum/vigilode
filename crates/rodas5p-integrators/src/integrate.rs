@@ -6,7 +6,6 @@ use crate::{
     StageHistory, StepResult, TransactionalQ1Q2Config, TransactionalQ1Q2RunDiagnostics,
     homotopy_step, rodas_next_step_after_attempt, sabr_step,
     sequential_matrix_free_step_with_inner_forcing, sequential_step,
-    transactional_q1_q2_step_with_admission,
 };
 use rodas5p_core::{CoreError, CoreResult, LinearSolverConfig, WorkCounters};
 
@@ -184,7 +183,9 @@ pub fn integrate_adaptive(
     let mut attempts = 0;
     while t < tf && attempts < adaptive.max_attempts {
         attempts += 1;
-        let Some(next_h) = crate::output::adaptive_end_step(t, h, tf, adaptive.max_step)? else {
+        let Some(next_h) =
+            crate::output::adaptive_end_step(t, h, tf, adaptive.step_cap(), &controller)?
+        else {
             break;
         };
         h = next_h;
@@ -419,11 +420,14 @@ pub fn integrate_adaptive_observed_with_config(
     let mut history = StageHistory::default();
     let mut recycle = KrylovState::for_method(config.method);
     let sabr_cfg = sabr_config.unwrap_or_default();
-    let mut collector = OutputCollector::new(output, t_span, y0)?.with_max_step(adaptive.max_step);
+    let mut collector =
+        OutputCollector::new(output, t_span, y0)?.with_max_step(adaptive.step_cap());
     let mut diagnostics = AdaptiveRunDiagnostics::default();
     let mut internal_steps = 0_usize;
     while t < tf && diagnostics.attempts < adaptive.max_attempts {
-        let Some(next_h) = crate::output::adaptive_end_step(t, h, tf, adaptive.max_step)? else {
+        let Some(next_h) =
+            crate::output::adaptive_end_step(t, h, tf, adaptive.step_cap(), &controller)?
+        else {
             break;
         };
         h = next_h;
@@ -591,12 +595,15 @@ pub fn integrate_homotopy_adaptive_observed(
     let mut controller = AdaptiveControllerState::default();
     let mut counters = WorkCounters::default();
     let mut recycle = fallback_config.and_then(|config| KrylovState::for_method(config.method));
-    let mut collector = OutputCollector::new(output, t_span, y0)?.with_max_step(adaptive.max_step);
+    let mut collector =
+        OutputCollector::new(output, t_span, y0)?.with_max_step(adaptive.step_cap());
     let mut diagnostics = AdaptiveRunDiagnostics::default();
     let mut internal_steps = 0_usize;
 
     while t < tf && diagnostics.attempts < adaptive.max_attempts {
-        let Some(next_h) = crate::output::adaptive_end_step(t, h, tf, adaptive.max_step)? else {
+        let Some(next_h) =
+            crate::output::adaptive_end_step(t, h, tf, adaptive.step_cap(), &controller)?
+        else {
             break;
         };
         h = next_h;
@@ -768,12 +775,15 @@ pub fn integrate_sequential_matrix_free_adaptive_observed(
     let mut controller = AdaptiveControllerState::default();
     let mut counters = WorkCounters::default();
     let mut recycle = KrylovState::for_method(linear_config.method);
-    let mut collector = OutputCollector::new(output, t_span, y0)?.with_max_step(adaptive.max_step);
+    let mut collector =
+        OutputCollector::new(output, t_span, y0)?.with_max_step(adaptive.step_cap());
     let mut diagnostics = AdaptiveRunDiagnostics::default();
     let mut internal_steps = 0_usize;
 
     while t < tf && diagnostics.attempts < adaptive.max_attempts {
-        let Some(next_h) = crate::output::adaptive_end_step(t, h, tf, adaptive.max_step)? else {
+        let Some(next_h) =
+            crate::output::adaptive_end_step(t, h, tf, adaptive.step_cap(), &controller)?
+        else {
             break;
         };
         h = next_h;
@@ -1021,13 +1031,20 @@ pub fn integrate_transactional_q1_q2_adaptive_observed_with_admission(
     let mut h = adaptive.initial_step.min(crate::output::step_to(t, tf)?);
     let mut controller = AdaptiveControllerState::default();
     let mut counters = WorkCounters::default();
-    let mut collector = OutputCollector::new(output, t_span, y0)?.with_max_step(adaptive.max_step);
+    let mut collector =
+        OutputCollector::new(output, t_span, y0)?.with_max_step(adaptive.step_cap());
     let mut diagnostics = AdaptiveRunDiagnostics::default();
     let mut transactional = TransactionalQ1Q2RunDiagnostics::default();
     let mut internal_steps = 0_usize;
+    // One execution context for the whole integration (re-audit R4,
+    // R4-HOM-DEV-04); the steps used to build a pool each.
+    let execution = crate::ParallelExecution::rayon(step_config.threads)?;
+    transactional.pool_creations += u64::from(execution.threads() > 1);
 
     while t < tf && diagnostics.attempts < adaptive.max_attempts {
-        let Some(next_h) = crate::output::adaptive_end_step(t, h, tf, adaptive.max_step)? else {
+        let Some(next_h) =
+            crate::output::adaptive_end_step(t, h, tf, adaptive.step_cap(), &controller)?
+        else {
             break;
         };
         h = next_h;
@@ -1036,7 +1053,7 @@ pub fn integrate_transactional_q1_q2_adaptive_observed_with_admission(
             break;
         }
         let (trial_h, clipped) = collector.limit_step(t, h, tf)?;
-        let trial = transactional_q1_q2_step_with_admission(
+        let trial = crate::transactional_q1_q2_step_with_execution(
             problem,
             t,
             &y,
@@ -1046,6 +1063,7 @@ pub fn integrate_transactional_q1_q2_adaptive_observed_with_admission(
             adaptive.rtol,
             false,
             admission,
+            &execution,
             &mut counters,
         );
         let report = match trial {
