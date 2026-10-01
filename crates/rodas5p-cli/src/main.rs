@@ -9,6 +9,7 @@ use anyhow::{Context, Result};
 
 mod r3_campaigns;
 mod r4_studies;
+mod stiff_benchmark;
 use clap::{Parser, Subcommand, ValueEnum};
 use rodas5p_core::{load_rodas5p_coefficients, sha256_hex};
 use rodas5p_fair_ab::{
@@ -453,6 +454,18 @@ enum Command {
     /// `homotopy-cost`); work counters, enclosures and accuracy decide, wall
     /// seconds are diagnostics. Refuses to overwrite its output.
     #[command(name = "r4-study")]
+    /// Work-precision benchmark of RODAS5P against the in-repository BDF
+    /// and Radau IIA integrators on four standard stiff problems. Refuses
+    /// to overwrite its output.
+    #[command(name = "stiff-benchmark")]
+    StiffBenchmark {
+        #[arg(long, default_value_t = 7)]
+        repetitions: usize,
+        #[arg(long, default_value_t = 1)]
+        warmups: usize,
+        #[arg(long)]
+        output: PathBuf,
+    },
     R4Study {
         #[arg(long)]
         study: String,
@@ -2975,6 +2988,19 @@ fn main() -> Result<()> {
                 arms.insert(arm.to_string(), value);
             }
             write_json_create_new(&output, &json!({ "study": study.name(), "arms": arms }))?;
+        }
+        Command::StiffBenchmark {
+            repetitions,
+            warmups,
+            output,
+        } => {
+            if output.exists() {
+                anyhow::bail!("immutable output already exists: {}", output.display());
+            }
+            write_json(
+                &output,
+                &stiff_benchmark::stiff_benchmark(repetitions, warmups)?,
+            )?;
         }
         Command::R4Study {
             study,
