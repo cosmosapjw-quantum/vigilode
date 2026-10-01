@@ -1,0 +1,90 @@
+{
+  "schema": "vigilode.r4.runtime_setup.v1",
+  "utc": "2026-10-01T11:08:06.654527+00:00",
+  "status": "PASS",
+  "commands": [
+    {
+      "argv": [
+        "rustc",
+        "--version",
+        "--verbose"
+      ],
+      "exit_code": 0,
+      "stdout": "rustc 1.94.1 (e408947bf 2026-03-25)\nbinary: rustc\ncommit-hash: e408947bfd200af42db322daf0fadfe7e26d3bd1\ncommit-date: 2026-03-25\nhost: x86_64-unknown-linux-gnu\nrelease: 1.94.1\nLLVM version: 21.1.8\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "cargo",
+        "--version"
+      ],
+      "exit_code": 0,
+      "stdout": "cargo 1.94.1 (29ea6fb6a 2026-03-24)\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "rustfmt",
+        "--version"
+      ],
+      "exit_code": 0,
+      "stdout": "rustfmt 1.8.0-stable (e408947bfd 2026-03-25)\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "rustc",
+        "/workspace/scratch/0dc1e721cf82/runtime_r4/probes/hello.rs",
+        "-o",
+        "/workspace/scratch/0dc1e721cf82/runtime_r4/probes/hello"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/workspace/scratch/0dc1e721cf82/runtime_r4/probes/hello"
+      ],
+      "exit_code": 0,
+      "stdout": "RUST_EXECUTION_PASS 42\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "flock",
+        "/workspace/scratch/0dc1e721cf82/runtime_r4/cargo-build.lock",
+        "cargo",
+        "metadata",
+        "--locked",
+        "--offline",
+        "--format-version",
+        "1",
+        "--manifest-path",
+        "/workspace/scratch/0dc1e721cf82/vigilode/Cargo.toml"
+      ],
+      "exit_code": 0,
+      "stdout": "cargo_metadata.json",
+      "stderr": "",
+      "packages": 123
+    }
+  ],
+  "memory_max": "8589934592",
+  "cpu_max": "800000 100000",
+  "source_commit": "1c54194123ee6abc6daa512e8574922f510b4e2c",
+  "prior_pass_inherited": false,
+  "source_mutation": false,
+  "installation_incidents": [
+    {
+      "classification": "RUNTIME_ENVIRONMENT",
+      "stage": "vendor extraction",
+      "observed": "tar ownership uid/gid 1000 invalid argument",
+      "first_failure_log": "vendor_extract.initial_ownership_error.stderr.gz",
+      "repair": "--no-same-owner",
+      "repaired_exit": 0,
+      "uncompressed_bytes": 2840601,
+      "uncompressed_sha256": "5e9f90c06575f220aa2d003eeddc60e8ddc0f94261b83d7c09daa9660108a182"
+    }
+  ],
+  "dependency_receipt": "dependency_match.json"
+}
