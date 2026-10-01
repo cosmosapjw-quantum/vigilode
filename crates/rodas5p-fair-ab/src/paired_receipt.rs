@@ -291,7 +291,34 @@ fn merge_records(
     }
     let mut merged = Vec::new();
     let mut failures = Vec::new();
+    // Sessions that already report a failure for a case (or for the case an
+    // A/A control belongs to) explain its absence; only an unexplained
+    // absence is a new missing-cell failure.
+    let explained = |record: &SessionRecord, case_id: &str| {
+        let base = case_id.strip_suffix("#aa").unwrap_or(case_id);
+        record
+            .failures
+            .iter()
+            .any(|failure| failure.case_id == case_id || failure.case_id == base)
+    };
     for (case_id, parts) in by_case {
+        // A case some session did not measure is a missing cell, kept as a
+        // failure (re-audit R4, R4-STAT-DEV-02): merging the others would
+        // let the case's session count depend on which sessions failed.
+        let present = parts
+            .iter()
+            .map(|(session, _)| *session)
+            .collect::<BTreeSet<_>>();
+        for record in records {
+            let session = record.provenance.session;
+            if !present.contains(&session) && !explained(record, &case_id) {
+                failures.push(SessionFailure {
+                    session,
+                    case_id: case_id.clone(),
+                    message: "missing cell: the session has no record of this case".into(),
+                });
+            }
+        }
         let cases = parts.iter().map(|(_, case)| *case).collect::<Vec<_>>();
         match merge_session_cases(&cases) {
             Ok(case) => merged.push(case),
@@ -418,14 +445,25 @@ impl PairedTimingReceipt {
         if self.campaign_id.trim().is_empty() {
             return reject("receipt has no campaign identity".into());
         }
-        if self.candidate.executable_sha256.is_empty()
-            || self.reference.executable_sha256.is_empty()
-        {
-            return reject("arm identities must name their executables".into());
+        if [&self.candidate, &self.reference].iter().any(|arm| {
+            arm.executable_sha256.trim().is_empty()
+                || arm.arm_id.trim().is_empty()
+                || arm.workload_id.trim().is_empty()
+        }) {
+            return reject("arm identities must name their arm, executable and workload".into());
         }
         let mut sessions = BTreeSet::new();
         let mut processes = BTreeSet::new();
         for session in &self.sessions {
+            if !(session.started_unix_seconds.is_finite()
+                && session.finished_unix_seconds.is_finite()
+                && session.started_unix_seconds <= session.finished_unix_seconds)
+            {
+                return reject(format!(
+                    "session {} has no finite ordered start and finish",
+                    session.session
+                ));
+            }
             if session.clock != PAIRED_TIMING_MONOTONIC_CLOCK {
                 return reject(format!(
                     "session {} used clock {}",
@@ -450,9 +488,68 @@ impl PairedTimingReceipt {
         {
             return reject("session records do not match the declared sessions".into());
         }
+        // Every raw cell is validated before anything is merged (re-audit
+        // R4, R4-STAT-DEV-02): 29 + 31 samples in adjacent sessions used to
+        // merge into a valid-looking 60, and a later session's empty
+        // warmups were never read. The producer records 2 warmups per round
+        // (candidate and reference), `2 * protocol.warmups` samples; at
+        // least `protocol.warmups` finite nonnegative ones are required. The
+        // batch is fixed by the first session's calibration of each case:
+        // that session's warmups must calibrate to it, later sessions must
+        // run it (they keep their own warmups and are not recalibrated).
+        let mut first_batch = BTreeMap::<&str, usize>::new();
+        let first_session = self
+            .session_records
+            .iter()
+            .map(|record| record.provenance.session)
+            .min();
         for record in &self.session_records {
             let session = record.provenance.session;
             for case in record.cases.iter().chain(&record.aa_cases) {
+                let pairs = self.protocol.pairs;
+                if case.case_id.trim().is_empty()
+                    || case.candidate_seconds.len() != pairs
+                    || case.reference_seconds.len() != pairs
+                    || case.order.len() != pairs
+                {
+                    return reject(format!(
+                        "case {:?} in session {session} does not hold exactly {pairs} pairs",
+                        case.case_id
+                    ));
+                }
+                if case.warmup_seconds.len() < self.protocol.warmups {
+                    return reject(format!(
+                        "case {} in session {session} has {} warmups, fewer than {}",
+                        case.case_id,
+                        case.warmup_seconds.len(),
+                        self.protocol.warmups
+                    ));
+                }
+                match first_batch.get(case.case_id.as_str()) {
+                    // A case absent from the first session (it failed there)
+                    // has no fixed batch; its later parts are left to the
+                    // merge, which records a disagreement as a failure.
+                    None if Some(session) != first_session => {}
+                    None => {
+                        let calibrated =
+                            crate::calibrate_batch_iterations(&case.warmup_seconds, &self.protocol)
+                                .ok();
+                        if calibrated != Some(case.batch_iterations) {
+                            return reject(format!(
+                                "case {} in its first session {session} records batch {} but its warmups calibrate to {calibrated:?}",
+                                case.case_id, case.batch_iterations
+                            ));
+                        }
+                        first_batch.insert(&case.case_id, case.batch_iterations);
+                    }
+                    Some(batch) if *batch != case.batch_iterations => {
+                        return reject(format!(
+                            "case {} in session {session} ran batch {}, not the first session's {batch}",
+                            case.case_id, case.batch_iterations
+                        ));
+                    }
+                    Some(_) => {}
+                }
                 if case.process_blocks.len() != self.protocol.pairs
                     || case.process_blocks.iter().any(|label| *label != session)
                 {

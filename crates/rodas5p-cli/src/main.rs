@@ -8,6 +8,7 @@ use std::{
 use anyhow::{Context, Result};
 
 mod r3_campaigns;
+mod r4_studies;
 use clap::{Parser, Subcommand, ValueEnum};
 use rodas5p_core::{load_rodas5p_coefficients, sha256_hex};
 use rodas5p_fair_ab::{
@@ -431,6 +432,35 @@ enum Command {
         #[arg(long)]
         output: PathBuf,
     },
+    /// Coverage and power of the exact session-median interval on its
+    /// preregistered grid (re-audit R4, R4-STAT-DEV-04). Refuses to
+    /// overwrite its output.
+    #[command(name = "session-median-coverage-study")]
+    SessionMedianCoverageStudy {
+        #[arg(long, default_value_t = 10_000)]
+        replications: usize,
+        #[arg(long, default_value_t = 20_261_013)]
+        seed: u64,
+        #[arg(long, default_value_t = 4)]
+        threads: usize,
+        /// Run only these scenario ids (default: the whole grid).
+        #[arg(long)]
+        scenario: Vec<String>,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// A deterministic R4 research study (`laguerre`, `polynomial-regimes`,
+    /// `homotopy-cost`); work counters, enclosures and accuracy decide, wall
+    /// seconds are diagnostics. Refuses to overwrite its output.
+    #[command(name = "r4-study")]
+    R4Study {
+        #[arg(long)]
+        study: String,
+        #[arg(long, default_value_t = 20)]
+        actions: usize,
+        #[arg(long)]
+        output: PathBuf,
+    },
     /// One paired-timing session of an R3 matched-accuracy arm (run by
     /// `r3-campaign`).
     #[command(name = "r3-campaign-session")]
@@ -481,6 +511,18 @@ enum Command {
     R3CampaignVerify {
         #[arg(long, value_enum)]
         study: r3_campaigns::Study,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// The statistical authority of every arm of a published paired-timing
+    /// campaign (re-audit R4, R4-STAT-DEV-01): the verified diagnostic
+    /// decision, unchanged, beside the authority the compiled study registry
+    /// assigns to its design and the decision a consumer may act on.
+    /// Refuses to overwrite its output.
+    #[command(name = "timing-authority")]
+    TimingAuthority {
+        #[arg(long)]
+        campaign: PathBuf,
         #[arg(long)]
         output: PathBuf,
     },
@@ -1193,6 +1235,7 @@ const WALL_NOT_EVALUATED: &str = "wall-time criterion not evaluated: no authorit
 
 const WALL_REJECTED: &str = "wall-time criterion not evaluated: the paired timing record is not a confirmatory, self-consistent assessment";
 const WALL_INCONCLUSIVE: &str = "wall-time criterion not evaluated: the paired timing interval is inconclusive or its A/A control is not authoritative";
+const WALL_AUTHORITY_HOLD: &str = "wall-time criterion not evaluated: the paired timing design has no admissible statistical authority (STATISTICAL_AUTHORITY_HOLD or NOT_EVALUATED); the diagnostic decision is recorded only";
 
 /// Wall time decides Promote/Hold only through a paired timing assessment
 /// (`rodas5p_fair_ab::assess_paired_timing`): its gate decision is Promote
@@ -1219,6 +1262,9 @@ const WALL_WRONG_IDENTITY: &str = "wall-time criterion not evaluated: the paired
 struct TimingExpectation {
     workload_prefix: String,
     executable_sha256: Option<String>,
+    /// The study registry the authority is selected from; `None` is the
+    /// compiled one (re-audit R4, R4-STAT-DEV-01). Only tests pass another.
+    authorities: Option<Vec<rodas5p_fair_ab::TimingAuthority>>,
 }
 
 impl TimingExpectation {
@@ -1226,6 +1272,7 @@ impl TimingExpectation {
         Ok(Self {
             workload_prefix: format!("tier-l-{}-", cli_profile_name(profile)),
             executable_sha256: Some(sha256_hex(&fs::read(std::env::current_exe()?)?)),
+            authorities: None,
         })
     }
 }
@@ -1268,12 +1315,61 @@ fn wall_criterion(
     // sessions must be distinct processes of one campaign, and a receipt
     // with any failed case never gates (re-audit R3, STAT-DEV-02; R2,
     // R2-STAT-03).
-    match evidence.verified_decision() {
+    // Integrity first, then the statistical authority of the design: a
+    // verified Promote of a design whose coverage study failed is recorded,
+    // never acted on (re-audit R4, R4-STAT-DEV-01).
+    let decision = match &expected.authorities {
+        Some(registry) => evidence.admissible_decision_in(registry),
+        None => evidence.admissible_decision(),
+    };
+    match decision {
         Err(_) => WallCriterion::NotEvaluated(WALL_REJECTED),
-        Ok(PairedTimingDecision::Promote) => WallCriterion::Passed,
-        Ok(PairedTimingDecision::Block) => WallCriterion::Failed,
-        Ok(PairedTimingDecision::Inconclusive) => WallCriterion::NotEvaluated(WALL_INCONCLUSIVE),
+        Ok(decision) => match decision.admissible {
+            None if decision.diagnostic == PairedTimingDecision::Inconclusive => {
+                WallCriterion::NotEvaluated(WALL_INCONCLUSIVE)
+            }
+            None => WallCriterion::NotEvaluated(WALL_AUTHORITY_HOLD),
+            Some(PairedTimingDecision::Promote) => WallCriterion::Passed,
+            Some(PairedTimingDecision::Block) => WallCriterion::Failed,
+            Some(PairedTimingDecision::Inconclusive) => {
+                WallCriterion::NotEvaluated(WALL_INCONCLUSIVE)
+            }
+        },
     }
+}
+
+/// Per arm of a campaign JSON (`{"evidence": {arm: PairedTimingEvidence}}`):
+/// the published numeric summary is read, never rewritten.
+fn timing_authority_report(campaign: &serde_json::Value) -> Result<serde_json::Value> {
+    let evidence = campaign["evidence"]
+        .as_object()
+        .context("campaign has no evidence object")?;
+    let mut arms = BTreeMap::new();
+    for (arm, value) in evidence {
+        let row = match serde_json::from_value::<PairedTimingEvidence>(value.clone()) {
+            Err(error) => json!({ "error": format!("not paired timing evidence: {error}") }),
+            Ok(evidence) => match evidence.admissible_decision() {
+                Err(error) => json!({ "error": format!("not verified: {error}") }),
+                Ok(decision) => json!({
+                    "diagnostic_decision": decision.diagnostic,
+                    "design": decision.design,
+                    "authority": decision.authority,
+                    "studies": decision.studies,
+                    "admissible_decision": decision.admissible,
+                    "reason": decision.reason,
+                    "speedup_point": evidence.assessment.corpus.point,
+                    "speedup_lower": evidence.assessment.corpus.lower,
+                    "speedup_upper": evidence.assessment.corpus.upper,
+                }),
+            },
+        };
+        arms.insert(arm.clone(), row);
+    }
+    Ok(json!({
+        "schema": "vigilode-timing-authority-report-v1",
+        "study": campaign["study"],
+        "arms": arms,
+    }))
 }
 
 /// Parse a Tier-L candidate id back to its strict cell.
@@ -1447,6 +1543,7 @@ fn assess_linear_candidates(
         &TimingExpectation {
             workload_prefix: "test".into(),
             executable_sha256: None,
+            authorities: None,
         },
     )
 }
@@ -2797,10 +2894,15 @@ fn main() -> Result<()> {
                     |error| format!("not verified: {error}"),
                     |d| format!("{d:?}"),
                 );
+                let authority = arm_evidence
+                    .admissible_decision()
+                    .map(|decision| json!({ "authority": decision.authority, "admissible_decision": decision.admissible, "reason": decision.reason }))
+                    .unwrap_or_else(|error| json!({ "error": error.to_string() }));
                 summary.insert(
                     arm.to_string(),
                     json!({
                         "verified_decision": verified,
+                        "statistical_authority": authority,
                         "assessment_decision": arm_evidence.assessment.decision,
                         "gate_decision": arm_evidence.assessment.gate_decision,
                         "speedup_point": arm_evidence.assessment.corpus.point,
@@ -2829,6 +2931,13 @@ fn main() -> Result<()> {
         Command::R3VerifyArm { study, arm, output } => {
             r3_campaigns::verify_arm(study, &arm, &output)?;
         }
+        Command::TimingAuthority { campaign, output } => {
+            if output.exists() {
+                anyhow::bail!("immutable output already exists: {}", output.display());
+            }
+            let report = timing_authority_report(&serde_json::from_slice(&fs::read(&campaign)?)?)?;
+            write_json_create_new(&output, &report)?;
+        }
         Command::R3CampaignVerify { study, output } => {
             if output.exists() {
                 anyhow::bail!("immutable output already exists: {}", output.display());
@@ -2854,6 +2963,50 @@ fn main() -> Result<()> {
                 arms.insert(arm.to_string(), value);
             }
             write_json_create_new(&output, &json!({ "study": study.name(), "arms": arms }))?;
+        }
+        Command::R4Study {
+            study,
+            actions,
+            output,
+        } => {
+            if output.exists() {
+                anyhow::bail!("immutable output already exists: {}", output.display());
+            }
+            let report = match study.as_str() {
+                "laguerre" => r4_studies::laguerre_study()?,
+                "polynomial-regimes" => r4_studies::polynomial_regimes_study(actions)?,
+                "homotopy-cost" => r4_studies::homotopy_cost_study()?,
+                other => anyhow::bail!("unknown R4 study {other:?}"),
+            };
+            write_json_create_new(&output, &report)?;
+            println!("r4 study {study}: written to {}", output.display());
+        }
+        Command::SessionMedianCoverageStudy {
+            replications,
+            seed,
+            threads,
+            scenario,
+            output,
+        } => {
+            if output.exists() {
+                anyhow::bail!("immutable output already exists: {}", output.display());
+            }
+            let grid = rodas5p_fair_ab::session_median_study_grid()
+                .into_iter()
+                .filter(|entry| scenario.is_empty() || scenario.contains(&entry.id))
+                .collect::<Vec<_>>();
+            if grid.is_empty() {
+                anyhow::bail!("no session-median scenario matches {scenario:?}");
+            }
+            let report = rodas5p_fair_ab::session_median_study(&grid, replications, seed, threads)?;
+            write_json_create_new(&output, &report)?;
+            println!(
+                "session-median study: {} scenarios, verdict {} (in-domain failures {}, out-of-domain failures {})",
+                report.scenarios.len(),
+                report.verdict,
+                report.in_domain_failures,
+                report.out_of_domain_failures
+            );
         }
         Command::PairedTimingCoverageStudy {
             replications,
@@ -3127,6 +3280,36 @@ mod unified_assessment_tests {
     }
 
     #[test]
+    fn the_published_poly03_campaign_keeps_its_numbers_under_an_authority_hold() {
+        // Re-audit R4, R4-STAT-DEV-01: the R3 POLY-03 PASS (ledger L-0009)
+        // stays a verified diagnostic Promote; its design's authority is the
+        // failed coverage studies' hold, so no consumer may act on it.
+        let path = concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../research/r3_matched_accuracy_poly03_20261001/CAMPAIGN.json"
+        );
+        let campaign: serde_json::Value = serde_json::from_slice(&fs::read(path).unwrap()).unwrap();
+        let report = timing_authority_report(&campaign).unwrap();
+        let arms = report["arms"].as_object().unwrap();
+        assert_eq!(arms.len(), 4);
+        for (arm, row) in arms {
+            assert_eq!(row["authority"], "hold", "{arm}: {row}");
+            assert!(row["admissible_decision"].is_null(), "{arm}");
+            assert!(row["reason"].as_str().unwrap().contains("L-0010"), "{arm}");
+            let published = &campaign["summary"][arm];
+            assert_eq!(row["speedup_point"], published["speedup_point"], "{arm}");
+            assert_eq!(
+                row["diagnostic_decision"].as_str().unwrap(),
+                published["verified_decision"]
+                    .as_str()
+                    .unwrap()
+                    .to_lowercase(),
+                "{arm}"
+            );
+        }
+    }
+
+    #[test]
     fn tier_l_wall_decisions_come_only_from_a_paired_assessment() {
         // Audit 2026-09-30, B-03: three repetitions after one warmup with a
         // median wall ratio of 0.8 used to promote. Without paired timing
@@ -3140,18 +3323,32 @@ mod unified_assessment_tests {
         assert_eq!(row.verdict, UnifiedJointVerdict::NotEvaluated);
         assert_eq!(row.not_evaluated, vec![WALL_NOT_EVALUATED]);
 
-        let with = |evidence: PairedTimingEvidence| {
-            let map = BTreeMap::from([("sequential-gcrodr-persistent".to_string(), evidence)]);
-            gcrodr(assess_linear_candidates_against(
-                &[suite(0.8)],
-                TIER_L_REFERENCE_FIDELITY,
-                &map,
-                &TimingExpectation {
-                    workload_prefix: "test".into(),
-                    executable_sha256: Some("0".repeat(64)),
-                },
-            ))
-        };
+        // A registry in which the pooled design passed its study: the
+        // integrity path alone decides (as before R4).
+        let admissible = rodas5p_fair_ab::timing_authority_registry()
+            .into_iter()
+            .map(|mut study| {
+                study.status = rodas5p_fair_ab::TimingAuthorityStatus::Admissible;
+                study
+            })
+            .collect::<Vec<_>>();
+        let with_registry =
+            |evidence: PairedTimingEvidence,
+             authorities: Option<Vec<rodas5p_fair_ab::TimingAuthority>>| {
+                let map = BTreeMap::from([("sequential-gcrodr-persistent".to_string(), evidence)]);
+                gcrodr(assess_linear_candidates_against(
+                    &[suite(0.8)],
+                    TIER_L_REFERENCE_FIDELITY,
+                    &map,
+                    &TimingExpectation {
+                        workload_prefix: "test".into(),
+                        executable_sha256: Some("0".repeat(64)),
+                        authorities,
+                    },
+                ))
+            };
+        let with =
+            |evidence: PairedTimingEvidence| with_registry(evidence, Some(admissible.clone()));
         // Receipt-backed paired evidence above 1.15x promotes.
         let row = with(paired_evidence(1.30, true));
         assert_eq!(row.verdict, UnifiedJointVerdict::Promote, "{row:?}");
@@ -3159,6 +3356,25 @@ mod unified_assessment_tests {
         let row = with(paired_evidence(0.90, true));
         assert_eq!(row.verdict, UnifiedJointVerdict::Hold, "{row:?}");
         assert!(row.blockers[0].contains("paired Tier-L wall-speedup interval"));
+        // Re-audit R4, R4-STAT-DEV-01: under the compiled registry (both
+        // coverage studies failed) neither decision is acted on; the
+        // diagnostic Promote is still what the evidence verifies to.
+        for speedup in [1.30, 0.90] {
+            let evidence = paired_evidence(speedup, true);
+            let decision = evidence.admissible_decision().unwrap();
+            assert_eq!(
+                decision.authority,
+                rodas5p_fair_ab::TimingAuthorityStatus::Hold
+            );
+            assert!(decision.admissible.is_none());
+            let row = with_registry(evidence, None);
+            assert_eq!(row.verdict, UnifiedJointVerdict::NotEvaluated, "{row:?}");
+            assert_eq!(row.not_evaluated, vec![WALL_AUTHORITY_HOLD]);
+        }
+        assert_eq!(
+            paired_evidence(1.30, true).verified_decision().unwrap(),
+            PairedTimingDecision::Promote
+        );
         // Without an A/A control the timing is not authoritative.
         let row = with(paired_evidence(1.30, false));
         assert_eq!(row.verdict, UnifiedJointVerdict::NotEvaluated);
@@ -3289,6 +3505,7 @@ mod unified_assessment_tests {
                 &TimingExpectation {
                     workload_prefix: "test".into(),
                     executable_sha256: None,
+                    authorities: None,
                 },
             );
             let row = rows
