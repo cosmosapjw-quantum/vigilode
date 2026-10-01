@@ -39,11 +39,32 @@ the DAG states. Nothing here is a production readiness or speed promotion.
 | POLY-01 | Closed (research) | `rodas5p_core::polynomial_action`: joint Chebyshev and Laguerre actions for given `w_k`, a symmetric nonpositive domain with a Gershgorin-verified or declared enclosure, separate distinct-vector and same-vector recurrences, `poly_*` WorkCounters, and a coefficient cache keyed to operator, enclosure, `h`, degree and scale. | `r3_polynomial_action_contracts.rs`: 20 joint actions and 100 columns against the independent oracle (`fixtures/r3_polynomial_oracle_fixtures.json`), `h = 0`, `A = 0`, scalar matrices, nonnormal and range rejections, cache keys. |
 | POLY-02 | Closed (research) | Coefficient enclosures from positive series with directed rounding. The degree is chosen by rigorous tail bounds. `TotalErrorStatus::Certified` applies to Chebyshev with a verified enclosure. `EstimateOnly` (`TOTAL_ERROR_NOT_CERTIFIED`) applies to Laguerre and to declared enclosures. | Same file: coefficient enclosures contain the 40-digit quadrature values, certified bounds enclose the observed errors, the one-ULP budget boundary never understates, range failures are explicit. |
 | POLY-03 | see below | `rodas5p r3-campaign --study poly03`. | `research/r3_matched_accuracy_poly03_20261001/`, ledger `L-0009`. |
-| PROCESS-01 | Closed | Every experiment on this branch has its `PREREGISTRATION.md` committed and pushed before its first output: `c8539fe` for the coverage study and `380f565` for HOM-06 and POLY-03. Each discloses its pilot runs. Ledger rows L-0007 to L-0009 are appended. The existing prefix L-0001 to L-0006 is unchanged (`check-research-node.py --base` passes). | `git log` chronology. Each claim separates the process verdict, the numeric evidence and production readiness. |
+| PROCESS-01 | Closed | Every experiment on this branch has its `PREREGISTRATION.md` committed and pushed before its first output. The coverage study is `c8539fe`, its corrected v2 is `0799a05`, and HOM-06 and POLY-03 are `380f565` with a rerun addendum in `0799a05`. Each discloses its pilot runs and incidents. Ledger rows from L-0007 are appended. The existing prefix L-0001 to L-0006 is unchanged (`check-research-node.py --base` passes). | `git log` chronology. Each claim separates the process verdict, the numeric evidence and production readiness. |
 
 ## Research results
 
 HOM06_POLY03_RESULTS_PLACEHOLDER
+
+## Independent review and execution incidents
+
+A read-only adversarial review of the branch diff (2026-10-01) reported the findings below. Each is resolved in `d198558`
+unless stated otherwise.
+
+| Finding | Resolution |
+|---|---|
+| HOM-05: the model check (`f(y)`, one JVP) passes a cubic ODE declared as quadratic, and a `q` hidden where `y_a = 0`. | The model must also match the ODE at every candidate stage state. The cubic case is a regression test and now falls back. Agreement remains a consistency check, not a proof. |
+| The coverage study's data and bootstrap shared one random stream, and its seeds depended on grid position. | Separate seeds, keyed by scenario id. The committed v1 result is kept with an appended note. The corrected v2 study is preregistered and run separately. |
+| The Monte-Carlo gate documentation claimed it bounds simulation error only. | Documented as conservative beyond the resampling error: Promote needs `K/B < 0.0087` at B = 10000. The gate is unchanged, as preregistered. A variance-aware bound is future work. |
+| The HOM-06 "admission mismatch" item was a count difference that could not fail. | Counted per step (`certificate_mismatches`). |
+| POLY-03 built the reference operator inside the timed call. | Both operators are built outside. |
+| `r3-campaign` headlined the unverified decision and aborted all arms on one failure. | The verified decision is headlined, receipt failures are counted, and a failing arm is recorded. |
+| Unbounded polynomial mode differed in the sign of zero. | Sums start at +0.0. The test compares bits. |
+| `critical_path_depth` and the reused gate fields in certificate mode. | Documented. The certificate work is `certificate_operations`. |
+
+Execution incident: the first preregistered HOM-06/POLY-03 run, at `86750eb`/`380f565`, aborted in the shared session
+harness on the A/A batch defect (`INVALID_RAW_TIMING_PROTOCOL`) before any receipt was written. The defect is fixed in
+`c8aa0dc` with a regression test. The outputs are kept in `aborted-run-380f565/`. The rerun addenda were committed before
+the rerun. The one unverified decision that was printed, HOM-06 p1 `Block`, is disclosed there.
 
 ## Known limitations kept open
 
