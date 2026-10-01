@@ -492,8 +492,10 @@ impl PairedTimingReceipt {
         // R4, R4-STAT-DEV-02): 29 + 31 samples in adjacent sessions used to
         // merge into a valid-looking 60, and a later session's empty
         // warmups were never read. The producer records 2 warmups per round
-        // (candidate and reference), `2 * protocol.warmups` samples; at
-        // least `protocol.warmups` finite nonnegative ones are required. The
+        // (candidate and reference), `2 * protocol.warmups` samples, but the
+        // check is only the lower bound `protocol.warmups` (one per round,
+        // the count hand-built receipts carry); every sample must be finite
+        // and nonnegative. The
         // batch is fixed by the first session's calibration of each case:
         // that session's warmups must calibrate to it, later sessions must
         // run it (they keep their own warmups and are not recalibrated).

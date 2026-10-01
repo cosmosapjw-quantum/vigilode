@@ -78,3 +78,21 @@ with a typed non-finite product at `diag8-stiff`, `h = 1`, where the coefficient
 - The majorant was within 10x and accuracy held at all 22 points. Where the continuous scale differed from the grid
   (h <= 0.01 with narrow or moderate spectra), it lowered the majorant by up to 27x at equal degree.
 - That is not the preregistered gain, so the fixed grid {1, 2, 4, 8, 16} stays. The scale cap is not lifted.
+
+## Corrections after the second independent review
+
+The numbers in `STUDY.json` are unchanged. This section corrects how they were described above. The text above is
+left as first published. Ledger rows L-0020 and L-0021 supersede L-0013 and L-0014 with input hashes taken at the
+execution commit `d700572`, where this file is the preregistration and its addendum, before any results.
+
+- **What "enclosed" means.** The observed error is measured against an f64 reference (the midpoint of the scalar
+  enclosure, or the recurrence for `z < -600`). Enclosing it at every grid point is an empirical check. It does not
+  certify a region, and the words "certified region" above overstate it.
+- **Distinct evaluations.** 13 of the 22 compared rows run both arms at scale 16, so the 44 points are 31 distinct
+  evaluations, and the 8 budget rejections are 4 distinct cases.
+- **Median.** The median tightness is 156.8. The 162 above is the upper median.
+- **Where the continuous scale differed.** It lowered the majorant at h = 0.001 on `diag24-wide` (4.5x and 21x) and
+  at h = 0.001 to 0.1 on `diag24-narrow` (8.6x to 27x). The largest, 27x, is at `diag24-narrow`, h = 0.1, budget
+  1e-6 (scale 13.6 against 4), not at h <= 0.01.
+- **Contract count.** The POLY-DEV-03 contract checks the seven fixture actions at L in {1, 2, 4, 8, 16}, not six
+  as the prior-information paragraph says.

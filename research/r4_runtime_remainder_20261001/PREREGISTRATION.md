@@ -55,3 +55,8 @@ that the limit could not cut it off. The output above comes from the complete se
 
 **Changed identity.** As preregistered, the run used debug with default features, not the plan's "all features". The
 output records this.
+
+## Provenance correction after the second independent review
+
+The numbers and the verdict are unchanged. Ledger row L-0026 supersedes L-0019 with input hashes taken at the
+execution commit `f18ceb5`, where this file is the preregistration before its results.

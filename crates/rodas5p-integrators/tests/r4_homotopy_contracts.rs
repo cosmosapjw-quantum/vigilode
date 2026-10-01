@@ -217,6 +217,7 @@ struct Row {
     yhat: Vec<String>,
     ehat: Vec<String>,
     stage_distance: Vec<Vec<[String; 2]>>,
+    doubling_closes: bool,
 }
 
 fn bits(hex: &str) -> f64 {
@@ -236,6 +237,7 @@ fn the_blocked_certificate_is_the_full_one_bit_for_bit_and_encloses_the_fixtures
     let sequential = ParallelExecution::sequential();
     let parallel = ParallelExecution::rayon(3).unwrap();
     let mut diagonal_rows = 0;
+    let mut certifying_rows = 0;
     for row in &fixtures.rows {
         let problem = QuadraticStageProblem {
             jacobian: row.jacobian.clone(),
@@ -290,6 +292,16 @@ fn the_blocked_certificate_is_the_full_one_bit_for_bit_and_encloses_the_fixtures
             &sequential,
         )
         .unwrap();
+        // The fixture says which rows close; a row that should certify and
+        // does not is a failure, not a skipped comparison.
+        assert_eq!(
+            full.certificate.is_some(),
+            row.doubling_closes,
+            "{} h = {}",
+            row.family,
+            row.h
+        );
+        certifying_rows += usize::from(full.certificate.is_some());
         for execution in [&sequential, &parallel] {
             let blocked = blocked_doubling_certificate_with_execution(
                 &target,
@@ -321,6 +333,9 @@ fn the_blocked_certificate_is_the_full_one_bit_for_bit_and_encloses_the_fixtures
         }
     }
     assert_eq!(diagonal_rows, 12);
+    // 10 of the 12 diagonal (all scalar) rows certify; quadratic h = 10
+    // does not close.
+    assert_eq!(certifying_rows, 10);
 }
 
 #[test]
@@ -342,26 +357,11 @@ fn blocked_storage_and_work_scale_with_components() {
     let witness = InverseWitness::diagonal(&problem, target.gamma).unwrap();
     let candidate = vec![vec![1.0e-3; n]; 8];
     let execution = ParallelExecution::sequential();
-    let full = doubling_certificate_with_execution(
-        &target, &problem, &candidate, &[1.0; 6], &[0.0; 6], &witness, 1.0e-6, 1.0e-6, 1.0e-3, 4,
-        &execution,
-    )
-    .unwrap();
     let blocked = blocked_doubling_certificate_with_execution(
         &target, &problem, &candidate, &[1.0; 6], &[0.0; 6], &witness, 1.0e-6, 1.0e-6, 1.0e-3, 4,
         &execution,
     )
     .unwrap();
-    assert_eq!(
-        full.certificate
-            .as_ref()
-            .map(|c| bound_bits(&c.stage_bound)),
-        blocked
-            .doubling
-            .certificate
-            .as_ref()
-            .map(|c| bound_bits(&c.stage_bound))
-    );
     let work = blocked.work;
     let s = 8;
     assert_eq!((work.components, work.block_size, work.levels), (n, s, 3));
@@ -371,6 +371,90 @@ fn blocked_storage_and_work_scale_with_components() {
     assert_eq!(work.allocated_values, attempts * (n * 7 * s * s) as u64);
     assert!(work.nonzeros <= (n * s * (s - 1) / 2) as u64);
     assert!(work.directed_operations > 0);
+}
+
+#[test]
+fn blocked_and_full_certificates_agree_on_a_certifying_six_component_problem() {
+    // Six certifying scalar fixture rows with a common h, stacked into one
+    // decoupled n = 6 problem: both paths must certify, bit for bit.
+    let fixtures: Fixtures = serde_json::from_str(FIXTURES).unwrap();
+    let target = StageTarget::strict_lower_projection(rodas5p_coefficients().unwrap()).unwrap();
+    let scalar = fixtures
+        .rows
+        .iter()
+        .filter(|row| row.jacobian.len() == 1 && row.h == 1.0 && row.doubling_closes)
+        .collect::<Vec<_>>();
+    assert_eq!(scalar.len(), 4);
+    let rows = [0, 1, 2, 3, 0, 2].map(|i| scalar[i]);
+    let n = rows.len();
+    let problem = QuadraticStageProblem {
+        jacobian: (0..n)
+            .map(|a| {
+                (0..n)
+                    .map(|b| if a == b { rows[a].jacobian[0][0] } else { 0.0 })
+                    .collect()
+            })
+            .collect(),
+        y: rows.iter().map(|row| row.y[0]).collect(),
+        h: 1.0,
+        q: rows.iter().map(|row| row.q[0]).collect(),
+    };
+    let stages = rows[0].candidate.len();
+    let candidate = (0..stages)
+        .map(|i| rows.iter().map(|row| bits(&row.candidate[i][0])).collect())
+        .collect::<Vec<Vec<f64>>>();
+    let yhat = rows
+        .iter()
+        .map(|row| bits(&row.yhat[0]))
+        .collect::<Vec<_>>();
+    let ehat = rows
+        .iter()
+        .map(|row| bits(&row.ehat[0]))
+        .collect::<Vec<_>>();
+    let witness = InverseWitness::diagonal(&problem, target.gamma).unwrap();
+    let execution = ParallelExecution::sequential();
+    let full = doubling_certificate_with_execution(
+        &target,
+        &problem,
+        &candidate,
+        &yhat,
+        &ehat,
+        &witness,
+        fixtures.atol,
+        fixtures.rtol,
+        fixtures.doubling_radius,
+        4,
+        &execution,
+    )
+    .unwrap();
+    let blocked = blocked_doubling_certificate_with_execution(
+        &target,
+        &problem,
+        &candidate,
+        &yhat,
+        &ehat,
+        &witness,
+        fixtures.atol,
+        fixtures.rtol,
+        fixtures.doubling_radius,
+        4,
+        &execution,
+    )
+    .unwrap();
+    let full = full.certificate.expect("the stacked problem certifies");
+    let blocked = blocked
+        .doubling
+        .certificate
+        .expect("the blocked path certifies it too");
+    assert_eq!(
+        bound_bits(&blocked.stage_bound),
+        bound_bits(&full.stage_bound)
+    );
+    for (a, row) in rows.iter().enumerate() {
+        for (i, stage) in row.stage_distance.iter().enumerate() {
+            assert!(full.stage_bound[i][a] >= bits(&stage[0][1]));
+        }
+    }
 }
 
 /// `y' = A y` with a coupled 6x6 `A`: no default witness exists.

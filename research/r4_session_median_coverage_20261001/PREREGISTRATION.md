@@ -85,3 +85,19 @@ verdict.
 **Scope.** The study checks the implementation against its theorem. It does not establish the iid-session premise on
 any host. Under the R4 authority gate, the session-cell estimand is recorded in the study registry as **hold pending an
 independent domain review**, not as admissible. No timing decision is admissible on this branch.
+
+## Corrections after the second independent review
+
+The numbers in `COVERAGE_STUDY.json` and the verdict are unchanged. Ledger row L-0025 supersedes L-0018 with the
+hash of this preregistration before its results.
+
+- **Exact-check power.** "An over-conservative implementation therefore fails as well" holds only where `q(S, 1)`
+  exceeds the tolerance 0.0222. At S = 8, `q = 0.0078`: the two-sided check accepts miss rates from 0 to 0.030,
+  so a zero-miss implementation passes, and a miss rate 3.8 times the nominal one also passes. At S = 24,
+  `q = 0.02266` is only just above the tolerance.
+- **Distinct laws.** At C = 1, three of the five continuous laws are one distribution, and theta only shifts the
+  location, which leaves coverage unchanged. The 40 exact checks therefore cover about 3 laws x 4 session counts.
+- **The data.** The binomial z-scores of the 40 exact checks, `(miss - q) / sqrt(q (1 - q) / 10000)`, lie in
+  [-2.27, 2.03]. That is consistent with the exact rate.
+- **Registry domain.** The registry entry now covers only the simulated session counts S in {6, 8, 12, 24}, not the
+  range 6..24.

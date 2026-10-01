@@ -418,20 +418,24 @@ pub fn polynomial_regimes_study(actions: usize) -> Result<Value> {
         && cache.len() == 2;
     contract_ok &= identity_ok;
     // Formal-cost decomposition against an amortized cached eigensystem
-    // (dense symmetric: ~9 n^3 setup, 2 n^2 + 25 n per action of five phi).
+    // (dense symmetric: ~9 n^3 setup; per action of five phi, Q^T on each of
+    // the five distinct input columns and Q on the result, ~6 n^2 + 25 n).
     let chebyshev_degree = arms[0]["work"]["degree_sum"].as_u64().unwrap() as f64 / actions as f64;
     let per_action_poly = 5.0 * chebyshev_degree * (n * n) as f64;
     let eig_setup = 9.0 * (n * n * n) as f64;
-    let eig_per_action = 2.0 * (n * n) as f64 + 25.0 * n as f64;
+    let eig_per_action = 6.0 * (n * n) as f64 + 25.0 * n as f64;
     let crossover = if per_action_poly > eig_per_action {
         (eig_setup / (per_action_poly - eig_per_action)).ceil()
     } else {
         f64::INFINITY
     };
-    // The timing arm's work must be the verification path's work: for each
-    // basis and cache mode the unbounded-timing arm runs the same degrees,
-    // products and coefficient setups as the certified arm, and every arm's
-    // counters reconcile.
+    // The timing arm's polynomial work must be the verification path's: for
+    // each basis and cache mode the unbounded-timing arm runs the same
+    // degrees, products and coefficient setups as the certified arm, and
+    // every arm's counters reconcile. Both arms run one routine that differs
+    // by a flag, so this holds by construction; the enclosure arithmetic the
+    // certified arm adds has no counter and is not compared (second R4
+    // review).
     let mut separated = arms.iter().all(|arm| arm["counters_reconcile"] == true);
     for certified in arms
         .iter()
@@ -460,7 +464,7 @@ pub fn polynomial_regimes_study(actions: usize) -> Result<Value> {
             "eigensystem_setup_multiply_adds": eig_setup,
             "eigensystem_multiply_adds_per_action": eig_per_action,
             "eigensystem_amortized_crossover_actions": crossover,
-            "model": "dense symmetric eigensystem ~9 n^3 once; Q^T w and Q (phi o) per action, 2 n^2 + 25 n; polynomial 5 m n^2 (five distinct columns)",
+            "model": "dense symmetric eigensystem ~9 n^3 once; Q^T on each of five input columns and Q on the result per action, 6 n^2 + 25 n; polynomial 5 m n^2 (five distinct columns)",
         },
         "poly04": { "verdict": if contract_ok { "PASS" } else { "FAIL" } },
         "stat05": { "cost_fields_separated": separated, "verdict": if separated { "PASS" } else { "FAIL" } },

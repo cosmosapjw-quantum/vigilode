@@ -74,3 +74,8 @@ n = 16. The margin left for certificate, RHS and pool costs is under one solve.
 
 `SPEEDUP_UNPROVEN` is retained. The doubling radius schedule does not close at n >= 8 on this family; the R3 radius
 prediction from past steps is not used here. That is the next work item.
+
+## Provenance correction after the second independent review
+
+The numbers and the verdict are unchanged. Ledger row L-0024 supersedes L-0017 with input hashes taken at the
+execution commit `95cb66e`, where this file is the preregistration before its results.

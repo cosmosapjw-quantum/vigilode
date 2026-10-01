@@ -180,9 +180,9 @@ fn published_campaigns_stay_valid_and_keep_their_estimand() {
         );
         // ... and its authority is the failed studies' hold.
         let admissible = evidence.admissible_decision().unwrap();
-        assert_eq!(admissible.authority, TimingAuthorityStatus::Hold, "{arm}");
-        assert_eq!(admissible.diagnostic, decision);
-        assert!(admissible.admissible.is_none());
+        assert_eq!(admissible.authority(), TimingAuthorityStatus::Hold, "{arm}");
+        assert_eq!(admissible.diagnostic(), decision);
+        assert!(admissible.admissible().is_none());
     }
 }
 
@@ -191,10 +191,10 @@ fn authority_comes_from_the_registry_and_forgeries_fail() {
     let evidence =
         PairedTimingEvidence::from_receipt(receipt(records(&protocol())).unwrap()).unwrap();
     let decision = evidence.admissible_decision().unwrap();
-    assert_eq!(decision.diagnostic, PairedTimingDecision::Promote);
-    assert_eq!(decision.authority, TimingAuthorityStatus::Hold);
-    assert!(decision.admissible.is_none());
-    assert!(decision.reason.contains("L-0007") && decision.reason.contains("L-0010"));
+    assert_eq!(decision.diagnostic(), PairedTimingDecision::Promote);
+    assert_eq!(decision.authority(), TimingAuthorityStatus::Hold);
+    assert!(decision.admissible().is_none());
+    assert!(decision.reason().contains("L-0007") && decision.reason().contains("L-0010"));
     for study in timing_authority_registry() {
         verify_timing_authority(&study).unwrap();
         let mut forged = study.clone();
@@ -213,14 +213,40 @@ fn authority_comes_from_the_registry_and_forgeries_fail() {
             assessment_schema: evidence.assessment.schema.clone(),
             min_sessions: 6,
             max_sessions: 6,
+            session_counts: None,
             case_counts: vec![1],
         },
         status: TimingAuthorityStatus::Admissible,
         reason: "test".into(),
     };
     let registry = vec![passed];
-    let admitted = evidence.admissible_decision_in(&registry).unwrap();
-    assert_eq!(admitted.admissible, Some(PairedTimingDecision::Promote));
+    // A hand-made registry yields only a counterfactual, marked as such;
+    // the decision a consumer may act on stays the compiled hold.
+    let counterfactual = evidence.hypothetical_decision_in(&registry).unwrap();
+    assert_eq!(
+        counterfactual.would_admit,
+        Some(PairedTimingDecision::Promote)
+    );
+    assert!(!counterfactual.registry_verified);
+    assert!(
+        evidence
+            .admissible_decision()
+            .unwrap()
+            .admissible()
+            .is_none()
+    );
+    // A forged admissible copy of a compiled entry is likewise unverified.
+    let mut forged_registry = timing_authority_registry();
+    for study in &mut forged_registry {
+        study.status = TimingAuthorityStatus::Admissible;
+    }
+    let forged = evidence.hypothetical_decision_in(&forged_registry).unwrap();
+    assert_eq!(forged.would_admit, Some(PairedTimingDecision::Promote));
+    assert!(!forged.registry_verified);
+    let compiled = evidence
+        .hypothetical_decision_in(&timing_authority_registry())
+        .unwrap();
+    assert!(compiled.registry_verified && compiled.would_admit.is_none());
     let design = evidence.design_identity();
     for other in [
         TimingDesignIdentity {
@@ -253,8 +279,9 @@ fn authority_comes_from_the_registry_and_forgeries_fail() {
         .0,
         TimingAuthorityStatus::NotEvaluated
     );
-    // The session-median interval's study passed (L-0018) but is held for
-    // its independent domain review, inside its simulated domain only.
+    // The session-median interval's study passed (L-0018, provenance corrected by L-0025) but is held for
+    // its independent domain review, inside its simulated domain only: the
+    // session counts it ran (6, 8, 12, 24), not the range between them.
     let session_design = |sessions: usize, cases: usize| TimingDesignIdentity {
         estimand: SESSION_CELL_MEDIAN_ESTIMAND.into(),
         assessment_schema: rodas5p_fair_ab::SESSION_MEDIAN_INTERVAL_SCHEMA.into(),
@@ -264,8 +291,8 @@ fn authority_comes_from_the_registry_and_forgeries_fail() {
     let (status, studies) =
         select_timing_authority(&timing_authority_registry(), &session_design(8, 5));
     assert_eq!(status, TimingAuthorityStatus::Hold);
-    assert_eq!(studies[0].ledger_row, "L-0018");
-    for (sessions, cases) in [(30, 5), (8, 3), (4, 1)] {
+    assert_eq!(studies[0].ledger_row, "L-0025");
+    for (sessions, cases) in [(30, 5), (8, 3), (4, 1), (10, 5), (7, 1)] {
         assert_eq!(
             select_timing_authority(
                 &timing_authority_registry(),

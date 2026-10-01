@@ -85,3 +85,21 @@ In the alternating-h control, coefficients were reused only for an identical key
 
 - On this frozen symmetric operator, an amortized eigensystem is formally cheaper from the third action on. That is
   a formal count, not a measured speed. No speed claim is made.
+
+## Corrections after the second independent review
+
+The numbers in `STUDY.json` are unchanged. This section corrects their reading; the text above is left as first
+published. Ledger rows L-0022 and L-0023 supersede L-0015 and L-0016 with input hashes at the execution commit
+`95cb66e`, where `crates/rodas5p-cli/src/r4_studies.rs` is the version that ran and this file is the
+preregistration before its results.
+
+- **STAT-DEV-05 holds for polynomial work only.** The certified and unbounded arms call one routine that differs by
+  a flag. Equal degrees, block products and coefficient setups therefore follow by construction, and the gate could
+  hardly fail. The certified arm's enclosure and recurrence arithmetic has no work counter and is not compared. The
+  wall diagnostic shows its size: the cached Chebyshev arm took 0.0211 s warm when certified against 0.00215 s
+  unbounded, about 10x. "The timing path's work is the verification path's work" above should read "the timing
+  path does the verification path's polynomial work; the certificate overhead is not counted."
+- **Eigensystem per-action cost.** The model `2 n^2 + 25 n` (1752 at n = 24) ignored `Q^T` on each of the five
+  distinct input columns. The corrected model is `6 n^2 + 25 n` = 4056. The crossover is unchanged:
+  124416 / (60480 - 4056) = 2.2, so 3 actions. The study code now uses the corrected model; this `STUDY.json` was
+  produced with the old one.

@@ -43,6 +43,10 @@ pub struct TimingAuthorityDomain {
     pub assessment_schema: String,
     pub min_sessions: usize,
     pub max_sessions: usize,
+    /// When present, the session counts the study simulated; designs with
+    /// another count inside `min_sessions..=max_sessions` are not covered.
+    #[serde(default)]
+    pub session_counts: Option<Vec<usize>>,
     pub case_counts: Vec<usize>,
 }
 
@@ -51,6 +55,10 @@ impl TimingAuthorityDomain {
         self.estimand == design.estimand
             && self.assessment_schema == design.assessment_schema
             && (self.min_sessions..=self.max_sessions).contains(&design.sessions)
+            && self
+                .session_counts
+                .as_ref()
+                .is_none_or(|counts| counts.contains(&design.sessions))
             && self.case_counts.contains(&design.cases)
     }
 }
@@ -82,6 +90,7 @@ pub fn timing_authority_registry() -> Vec<TimingAuthority> {
         assessment_schema: PAIRED_TIMING_SCHEMA.into(),
         min_sessions: 1,
         max_sessions: usize::MAX,
+        session_counts: None,
         case_counts: (1..=64).collect(),
     };
     vec![
@@ -101,12 +110,13 @@ pub fn timing_authority_registry() -> Vec<TimingAuthority> {
         },
         TimingAuthority {
             study_id: "r4_session_median_coverage_20261001".into(),
-            ledger_row: "L-0018".into(),
+            ledger_row: "L-0025".into(),
             domain: TimingAuthorityDomain {
                 estimand: SESSION_CELL_MEDIAN_ESTIMAND.into(),
                 assessment_schema: SESSION_MEDIAN_INTERVAL_SCHEMA.into(),
                 min_sessions: 6,
                 max_sessions: 24,
+                session_counts: Some(vec![6, 8, 12, 24]),
                 case_counts: vec![1, 5],
             },
             status: TimingAuthorityStatus::Hold,
@@ -159,17 +169,61 @@ pub fn verify_timing_authority(claimed: &TimingAuthority) -> FairResult<()> {
 }
 
 /// The diagnostic decision, the authority of its design, and the decision a
-/// consumer may act on.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+/// consumer may act on. Its fields are private and it is not deserializable:
+/// the only value of this type is one [`PairedTimingEvidence::admissible_decision`]
+/// built from the compiled registry.
+#[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct AdmissibleTimingDecision {
+    diagnostic: PairedTimingDecision,
+    design: TimingDesignIdentity,
+    authority: TimingAuthorityStatus,
+    studies: Vec<String>,
+    admissible: Option<PairedTimingDecision>,
+    reason: String,
+}
+
+impl AdmissibleTimingDecision {
     /// [`PairedTimingEvidence::verified_decision`], unchanged.
+    pub fn diagnostic(&self) -> PairedTimingDecision {
+        self.diagnostic
+    }
+
+    pub fn design(&self) -> &TimingDesignIdentity {
+        &self.design
+    }
+
+    pub fn authority(&self) -> TimingAuthorityStatus {
+        self.authority
+    }
+
+    /// The covering studies, as `study_id (ledger row)`.
+    pub fn studies(&self) -> &[String] {
+        &self.studies
+    }
+
+    /// `Some(diagnostic)` only when the authority is admissible.
+    pub fn admissible(&self) -> Option<PairedTimingDecision> {
+        self.admissible
+    }
+
+    pub fn reason(&self) -> &str {
+        &self.reason
+    }
+}
+
+/// A counterfactual decision under a registry that is not (or need not be)
+/// the compiled one; see [`PairedTimingEvidence::hypothetical_decision_in`].
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct HypotheticalTimingDecision {
     pub diagnostic: PairedTimingDecision,
     pub design: TimingDesignIdentity,
     pub authority: TimingAuthorityStatus,
     pub studies: Vec<String>,
-    /// `Some(diagnostic)` only when the authority is admissible.
-    pub admissible: Option<PairedTimingDecision>,
+    /// What the decision would admit under the supplied registry.
+    pub would_admit: Option<PairedTimingDecision>,
     pub reason: String,
+    /// Whether every entry of the supplied registry is a compiled one.
+    pub registry_verified: bool,
 }
 
 impl PairedTimingEvidence {
@@ -183,17 +237,39 @@ impl PairedTimingEvidence {
         }
     }
 
-    /// [`Self::admissible_decision_in`] against the compiled registry.
+    /// The verified diagnostic decision with the authority the compiled
+    /// registry assigns to its design; integrity failures are errors, as
+    /// before. This is the only constructor of a decision a consumer may act
+    /// on: no registry, receipt or JSON field supplied at run time enters it.
     pub fn admissible_decision(&self) -> FairResult<AdmissibleTimingDecision> {
-        self.admissible_decision_in(&timing_authority_registry())
+        self.decision_under(&timing_authority_registry())
     }
 
-    /// The verified diagnostic decision with the authority `registry`
-    /// assigns to its design; integrity failures are errors, as before.
-    pub fn admissible_decision_in(
+    /// What [`Self::admissible_decision`] would return if `registry` were the
+    /// compiled one: a counterfactual for tests and for planning a future
+    /// study, never authority. Its type carries no `admissible` field, and
+    /// `registry_verified` says whether every entry is a compiled one (a
+    /// registry with an entry that is not cannot be mistaken for the real
+    /// verdict even by a caller that unwraps the decision).
+    pub fn hypothetical_decision_in(
         &self,
         registry: &[TimingAuthority],
-    ) -> FairResult<AdmissibleTimingDecision> {
+    ) -> FairResult<HypotheticalTimingDecision> {
+        let decision = self.decision_under(registry)?;
+        Ok(HypotheticalTimingDecision {
+            registry_verified: registry
+                .iter()
+                .all(|entry| verify_timing_authority(entry).is_ok()),
+            diagnostic: decision.diagnostic,
+            design: decision.design,
+            authority: decision.authority,
+            studies: decision.studies,
+            would_admit: decision.admissible,
+            reason: decision.reason,
+        })
+    }
+
+    fn decision_under(&self, registry: &[TimingAuthority]) -> FairResult<AdmissibleTimingDecision> {
         let diagnostic = self.verified_decision()?;
         let design = self.design_identity();
         let (authority, covering) = select_timing_authority(registry, &design);

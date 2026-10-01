@@ -1262,8 +1262,10 @@ const WALL_WRONG_IDENTITY: &str = "wall-time criterion not evaluated: the paired
 struct TimingExpectation {
     workload_prefix: String,
     executable_sha256: Option<String>,
-    /// The study registry the authority is selected from; `None` is the
-    /// compiled one (re-audit R4, R4-STAT-DEV-01). Only tests pass another.
+    /// A counterfactual study registry for unit tests of the post-authority
+    /// paths; absent from every non-test build, where the compiled registry
+    /// alone decides (re-audit R4, R4-STAT-DEV-01).
+    #[cfg(test)]
     authorities: Option<Vec<rodas5p_fair_ab::TimingAuthority>>,
 }
 
@@ -1272,6 +1274,7 @@ impl TimingExpectation {
         Ok(Self {
             workload_prefix: format!("tier-l-{}-", cli_profile_name(profile)),
             executable_sha256: Some(sha256_hex(&fs::read(std::env::current_exe()?)?)),
+            #[cfg(test)]
             authorities: None,
         })
     }
@@ -1318,14 +1321,23 @@ fn wall_criterion(
     // Integrity first, then the statistical authority of the design: a
     // verified Promote of a design whose coverage study failed is recorded,
     // never acted on (re-audit R4, R4-STAT-DEV-01).
+    #[cfg(test)]
     let decision = match &expected.authorities {
-        Some(registry) => evidence.admissible_decision_in(registry),
-        None => evidence.admissible_decision(),
+        Some(registry) => evidence
+            .hypothetical_decision_in(registry)
+            .map(|decision| (decision.diagnostic, decision.would_admit)),
+        None => evidence
+            .admissible_decision()
+            .map(|decision| (decision.diagnostic(), decision.admissible())),
     };
+    #[cfg(not(test))]
+    let decision = evidence
+        .admissible_decision()
+        .map(|decision| (decision.diagnostic(), decision.admissible()));
     match decision {
         Err(_) => WallCriterion::NotEvaluated(WALL_REJECTED),
-        Ok(decision) => match decision.admissible {
-            None if decision.diagnostic == PairedTimingDecision::Inconclusive => {
+        Ok((diagnostic, admissible)) => match admissible {
+            None if diagnostic == PairedTimingDecision::Inconclusive => {
                 WallCriterion::NotEvaluated(WALL_INCONCLUSIVE)
             }
             None => WallCriterion::NotEvaluated(WALL_AUTHORITY_HOLD),
@@ -1351,12 +1363,12 @@ fn timing_authority_report(campaign: &serde_json::Value) -> Result<serde_json::V
             Ok(evidence) => match evidence.admissible_decision() {
                 Err(error) => json!({ "error": format!("not verified: {error}") }),
                 Ok(decision) => json!({
-                    "diagnostic_decision": decision.diagnostic,
-                    "design": decision.design,
-                    "authority": decision.authority,
-                    "studies": decision.studies,
-                    "admissible_decision": decision.admissible,
-                    "reason": decision.reason,
+                    "diagnostic_decision": decision.diagnostic(),
+                    "design": decision.design(),
+                    "authority": decision.authority(),
+                    "studies": decision.studies(),
+                    "admissible_decision": decision.admissible(),
+                    "reason": decision.reason(),
                     "speedup_point": evidence.assessment.corpus.point,
                     "speedup_lower": evidence.assessment.corpus.lower,
                     "speedup_upper": evidence.assessment.corpus.upper,
@@ -2896,7 +2908,7 @@ fn main() -> Result<()> {
                 );
                 let authority = arm_evidence
                     .admissible_decision()
-                    .map(|decision| json!({ "authority": decision.authority, "admissible_decision": decision.admissible, "reason": decision.reason }))
+                    .map(|decision| json!({ "authority": decision.authority(), "admissible_decision": decision.admissible(), "reason": decision.reason() }))
                     .unwrap_or_else(|error| json!({ "error": error.to_string() }));
                 summary.insert(
                     arm.to_string(),
@@ -3363,10 +3375,10 @@ mod unified_assessment_tests {
             let evidence = paired_evidence(speedup, true);
             let decision = evidence.admissible_decision().unwrap();
             assert_eq!(
-                decision.authority,
+                decision.authority(),
                 rodas5p_fair_ab::TimingAuthorityStatus::Hold
             );
-            assert!(decision.admissible.is_none());
+            assert!(decision.admissible().is_none());
             let row = with_registry(evidence, None);
             assert_eq!(row.verdict, UnifiedJointVerdict::NotEvaluated, "{row:?}");
             assert_eq!(row.not_evaluated, vec![WALL_AUTHORITY_HOLD]);
