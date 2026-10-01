@@ -30,7 +30,6 @@
 //! D_i`) or the attempt is rejected. The radius comes from
 //! [`PastStepData`], which by construction holds no reference solution.
 
-use rayon::prelude::*;
 use rodas5p_core::{
     CoreError, CoreResult,
     directed::{Interval, add_up, div_up, mul_up, sqrt_up, sub_down, sum_up},
@@ -133,14 +132,79 @@ pub struct WitnessWork {
 }
 
 /// An entrywise upper bound `U >= |W^-1|` tied to the operator it bounds.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+///
+/// The fields are sealed (re-audit R4, R4-HOM-DEV-01): a value of this type
+/// exists only through [`InverseWitness::diagonal`],
+/// [`InverseWitness::small`], [`InverseWitness::approximate`] or
+/// [`UnverifiedWitness::verify`], each of which proves the bound from the
+/// operator. Editing `upper` (a zero entry, an empty row) after
+/// construction used to pass the identity check and certify a first stage
+/// error of 0 against an exact 0.0617. Wire data deserializes into
+/// [`UnverifiedWitness`] and is rebuilt before use; an identity digest
+/// binds a witness to an operator, it is not a proof of the bound.
+#[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct InverseWitness {
-    pub identity: WitnessIdentity,
-    pub upper: Vec<Vec<f64>>,
+    identity: WitnessIdentity,
+    upper: Vec<Vec<f64>>,
     /// `||I - V W||_inf` (upper) for an approximate-inverse witness, 0 for an
     /// exact structural one.
+    residual_norm_upper: f64,
+    work: WitnessWork,
+    /// The approximate inverse `V` an approximate witness was proved from,
+    /// kept so that wire data can be re-verified.
+    approximate_inverse: Option<Vec<Vec<f64>>>,
+}
+
+/// An [`InverseWitness`] as read from the wire: nothing in it is trusted
+/// until [`UnverifiedWitness::verify`] rebuilds the bound from the operator.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct UnverifiedWitness {
+    pub identity: WitnessIdentity,
+    pub upper: Vec<Vec<f64>>,
     pub residual_norm_upper: f64,
     pub work: WitnessWork,
+    #[serde(default)]
+    pub approximate_inverse: Option<Vec<Vec<f64>>>,
+}
+
+pub const WITNESS_NOT_VERIFIED: &str = "WITNESS_NOT_VERIFIED";
+
+impl UnverifiedWitness {
+    /// Rebuild the witness its identity names for `problem` and `gamma`
+    /// (`diagonal`, `exact-small`, or an approximate inverse `V`), and
+    /// accept it only if the supplied bound is bit for bit the rebuilt one.
+    /// A shape, sign or value change, another operator, or a structure with
+    /// no reconstruction is [`WITNESS_NOT_VERIFIED`].
+    pub fn verify(self, problem: &QuadraticStageProblem, gamma: f64) -> CoreResult<InverseWitness> {
+        let reject = |why: &str| CoreError::InvalidInput(format!("{WITNESS_NOT_VERIFIED}: {why}"));
+        let rebuilt = match (self.identity.structure.as_str(), &self.approximate_inverse) {
+            ("diagonal", None) => InverseWitness::diagonal(problem, gamma)?,
+            ("exact-small", None) => InverseWitness::small(problem, gamma)?,
+            (structure, Some(v)) => InverseWitness::approximate(problem, gamma, v, structure)?,
+            (structure, None) => {
+                return Err(reject(&format!(
+                    "structure {structure:?} has no reconstruction"
+                )));
+            }
+        };
+        if rebuilt.identity != self.identity {
+            return Err(reject("the identity is for another operator"));
+        }
+        let same_bits = |a: &[Vec<f64>], b: &[Vec<f64>]| {
+            a.len() == b.len()
+                && a.iter().zip(b).all(|(x, y)| {
+                    x.len() == y.len() && x.iter().zip(y).all(|(p, q)| p.to_bits() == q.to_bits())
+                })
+        };
+        if !same_bits(&rebuilt.upper, &self.upper)
+            || rebuilt.residual_norm_upper.to_bits() != self.residual_norm_upper.to_bits()
+        {
+            return Err(reject(
+                "the supplied bound is not the bound of the operator",
+            ));
+        }
+        Ok(rebuilt)
+    }
 }
 
 fn shifted_entry(
@@ -157,6 +221,34 @@ fn shifted_entry(
 }
 
 impl InverseWitness {
+    pub fn identity(&self) -> &WitnessIdentity {
+        &self.identity
+    }
+
+    /// `U >= |W^-1|` entrywise, `n x n`, finite and nonnegative.
+    pub fn upper(&self) -> &[Vec<f64>] {
+        &self.upper
+    }
+
+    pub fn residual_norm_upper(&self) -> f64 {
+        self.residual_norm_upper
+    }
+
+    pub fn work(&self) -> WitnessWork {
+        self.work
+    }
+
+    /// The wire form, to be re-verified on the other side.
+    pub fn to_unverified(&self) -> UnverifiedWitness {
+        UnverifiedWitness {
+            identity: self.identity.clone(),
+            upper: self.upper.clone(),
+            residual_norm_upper: self.residual_norm_upper,
+            work: self.work,
+            approximate_inverse: self.approximate_inverse.clone(),
+        }
+    }
+
     /// Diagonal `J`: `U_aa = up(1 / |1 - h gamma J_aa|)`.
     #[allow(clippy::needless_range_loop)] // index form mirrors the matrix formula
     pub fn diagonal(problem: &QuadraticStageProblem, gamma: f64) -> CoreResult<Self> {
@@ -187,6 +279,7 @@ impl InverseWitness {
             upper,
             residual_norm_upper: 0.0,
             work,
+            approximate_inverse: None,
         })
     }
 
@@ -235,6 +328,7 @@ impl InverseWitness {
             },
             upper,
             residual_norm_upper: 0.0,
+            approximate_inverse: None,
         })
     }
 
@@ -251,6 +345,16 @@ impl InverseWitness {
     ) -> CoreResult<Self> {
         problem.validate()?;
         let n = problem.dimension();
+        if structure == "diagonal" || structure == "exact-small" {
+            return Err(CoreError::InvalidInput(format!(
+                "INVERSE_WITNESS_UNAVAILABLE: {structure:?} names an exact structural witness"
+            )));
+        }
+        if !v.iter().flatten().all(|value| value.is_finite()) {
+            return Err(CoreError::InvalidInput(
+                "INVERSE_WITNESS_UNAVAILABLE: approximate inverse is not finite".into(),
+            ));
+        }
         if v.len() != n || v.iter().any(|row| row.len() != n) {
             return Err(CoreError::Dimension(
                 "INVERSE_WITNESS_UNAVAILABLE: approximate inverse shape".into(),
@@ -304,6 +408,7 @@ impl InverseWitness {
             upper,
             residual_norm_upper: theta,
             work,
+            approximate_inverse: Some(v.to_vec()),
         })
     }
 
@@ -419,6 +524,123 @@ pub struct StageCertificate {
     pub embedded_target_wrms_lower: f64,
     pub combined_proxy_upper: f64,
     pub directed_operations: u64,
+    /// [`certificate_binding`] of everything the bound is about (re-audit
+    /// R4, R4-HOM-DEV-03); see [`StageCertificate::is_bound_to`].
+    #[serde(default)]
+    pub binding_sha256: String,
+}
+
+impl StageCertificate {
+    /// Whether this certificate was computed for exactly this target,
+    /// problem, candidate, projections `y_hat` and `e_hat`, witness and
+    /// output scale. Any changed coefficient, state, step, Jacobian entry,
+    /// `q`, projection, witness identity, tolerance or candidate bit makes
+    /// it stale. An identity check for consumers that keep certificates, not
+    /// a proof: the bound itself comes from the enclosure that produced it.
+    #[allow(clippy::too_many_arguments)]
+    pub fn is_bound_to(
+        &self,
+        target: &StageTarget,
+        problem: &QuadraticStageProblem,
+        candidate: &[Vec<f64>],
+        y_hat: &[f64],
+        e_hat: &[f64],
+        witness: &WitnessIdentity,
+        atol: f64,
+        rtol: f64,
+    ) -> bool {
+        self.binding_sha256
+            == certificate_binding(
+                target, problem, candidate, y_hat, e_hat, witness, atol, rtol,
+            )
+    }
+}
+
+/// Canonical SHA-256 of a certificate's subject (re-audit R4,
+/// R4-HOM-DEV-03): the target id and every coefficient bit (`gamma`, `c`,
+/// the `gamma`, `alpha` and coupling rows with both interval ends, `b`,
+/// `btilde`), the problem's `y`, `h`, `J` and `q` bits, the candidate's
+/// stage bits, the projections `y_hat` and `e_hat`, the witness identity
+/// and the output scale `(atol, rtol)`. Every field is length-prefixed, so
+/// no separator inside a string can make two subjects collide.
+#[allow(clippy::too_many_arguments)]
+pub fn certificate_binding(
+    target: &StageTarget,
+    problem: &QuadraticStageProblem,
+    candidate: &[Vec<f64>],
+    y_hat: &[f64],
+    e_hat: &[f64],
+    witness: &WitnessIdentity,
+    atol: f64,
+    rtol: f64,
+) -> String {
+    fn hex(values: impl IntoIterator<Item = f64>) -> String {
+        values
+            .into_iter()
+            .map(|value| format!("{:016x}", value.to_bits()))
+            .collect::<Vec<_>>()
+            .join(",")
+    }
+    let rows = |rows: &[Vec<f64>]| {
+        rows.iter()
+            .map(|row| format!("[{}]", hex(row.iter().copied())))
+            .collect::<Vec<_>>()
+            .join(";")
+    };
+    let coupling = target
+        .coupling_rows
+        .iter()
+        .map(|row| {
+            format!(
+                "[{}]",
+                hex(row.iter().flat_map(|interval| [interval.lo, interval.hi]))
+            )
+        })
+        .collect::<Vec<_>>()
+        .join(";");
+    let fields = [
+        ("target", target.id.to_string()),
+        ("snapshot", target.snapshot_sha256.to_string()),
+        ("gamma", hex([target.gamma])),
+        ("c", hex(target.c.iter().copied())),
+        ("gamma_rows", hex(target.gamma_rows.iter().copied())),
+        ("alpha", rows(&target.alpha_rows)),
+        ("coupling", coupling),
+        ("b", hex(target.b.iter().copied())),
+        ("btilde", hex(target.btilde.iter().copied())),
+        ("y", hex(problem.y.iter().copied())),
+        ("h", hex([problem.h])),
+        ("J", rows(&problem.jacobian)),
+        ("q", hex(problem.q.iter().copied())),
+        ("candidate", rows(candidate)),
+        ("y_hat", hex(y_hat.iter().copied())),
+        ("e_hat", hex(e_hat.iter().copied())),
+        ("witness_h", format!("{:016x}", witness.h_bits)),
+        ("witness_gamma", format!("{:016x}", witness.gamma_bits)),
+        ("witness_jacobian", witness.jacobian_sha256.clone()),
+        ("witness_structure", witness.structure.clone()),
+        (
+            "witness_tolerance",
+            format!("{:016x}", witness.tolerance_bits),
+        ),
+        ("atol", hex([atol])),
+        ("rtol", hex([rtol])),
+    ];
+    let mut canonical = String::from("vigilode-stage-certificate-binding-v2");
+    for (name, value) in fields {
+        canonical.push_str(&format!("|{name}:{}:{value}", value.len()));
+    }
+    sha256_hex(canonical.as_bytes())
+}
+
+/// `L = ceil(log2 s)` doubling levels for `s >= 1` stages: the smallest `L`
+/// with `2^L >= s` (0 for one stage, whose `H` is zero).
+pub fn doubling_levels(stages: usize) -> usize {
+    let mut levels = 0;
+    while (1_usize << levels) < stages {
+        levels += 1;
+    }
+    levels
 }
 
 /// Digest of a candidate's stage bits.
@@ -440,6 +662,17 @@ fn validate_inputs(
 ) -> CoreResult<()> {
     problem.validate()?;
     let n = problem.dimension();
+    let s = target.stages();
+    if s == 0
+        || target.coupling_rows.len() != s
+        || target.b.len() != s
+        || target.btilde.len() != s
+        || !target.gamma.is_finite()
+    {
+        return Err(CoreError::InvalidInput(
+            "TARGET_SEMANTICS_UNRESOLVED: a target needs s >= 1 stages with matching b, btilde and coupling rows".into(),
+        ));
+    }
     if !target.strictly_lower_nilpotent() {
         return Err(CoreError::InvalidInput(
             "TARGET_SEMANTICS_UNRESOLVED: target is not strictly lower".into(),
@@ -459,7 +692,12 @@ fn validate_inputs(
         tolerance_bits: witness.identity.tolerance_bits,
         ..WitnessIdentity::for_problem(problem, target.gamma, "", 0.0)
     };
-    if witness.identity != expected || witness.upper.len() != n {
+    let well_formed = witness.upper.len() == n
+        && witness
+            .upper
+            .iter()
+            .all(|row| row.len() == n && row.iter().all(|x| x.is_finite() && *x >= 0.0));
+    if witness.identity != expected || !well_formed {
         return Err(CoreError::InvalidInput(
             "CERTIFICATE_NOT_VALIDATED: the inverse witness is for another operator".into(),
         ));
@@ -574,6 +812,16 @@ fn finish_certificate(
         embedded_target_wrms_lower,
         combined_proxy_upper: add_up(output_wrms_upper, embedded_target_wrms_upper)?,
         directed_operations: operations + witness.work.directed_operations,
+        binding_sha256: certificate_binding(
+            target,
+            problem,
+            candidate,
+            y_hat,
+            e_hat,
+            &witness.identity,
+            atol,
+            rtol,
+        ),
     })
 }
 
@@ -681,15 +929,25 @@ pub struct DoublingCertificate {
     pub certificate: Option<StageCertificate>,
     pub attempts: Vec<RadiusAttempt>,
     pub workers: usize,
+    /// Thread pools built by this call (re-audit R4, R4-HOM-DEV-04): one
+    /// per call at most, none with a caller-owned execution context.
+    #[serde(default)]
+    pub pool_creations: u64,
 }
 
 type Matrix = Vec<Vec<f64>>;
 
 /// `A B` rounded upward for nonnegative matrices, rows in parallel with a
 /// fixed per-entry summation order (bitwise identical for any worker count).
-fn upper_matmul(a: &Matrix, b: &Matrix, workers: usize) -> CoreResult<Matrix> {
+fn upper_matmul(
+    a: &Matrix,
+    b: &Matrix,
+    execution: &crate::ParallelExecution,
+) -> CoreResult<Matrix> {
     let m = b.first().map_or(0, Vec::len);
-    let row = |left: &Vec<f64>| -> CoreResult<Vec<f64>> {
+    // Rows are independent and each is summed in a fixed order, so the
+    // result is the same for any thread count.
+    execution.map_ordered(a, |left: &Vec<f64>| -> CoreResult<Vec<f64>> {
         (0..m)
             .map(|c| {
                 let mut total = 0.0;
@@ -701,21 +959,14 @@ fn upper_matmul(a: &Matrix, b: &Matrix, workers: usize) -> CoreResult<Matrix> {
                 Ok(total)
             })
             .collect()
-    };
-    if workers <= 1 {
-        return a.iter().map(row).collect();
-    }
-    let pool = rayon::ThreadPoolBuilder::new()
-        .num_threads(workers)
-        .build()
-        .map_err(|error| CoreError::InvalidInput(format!("certificate workers: {error}")))?;
-    pool.install(|| a.par_iter().map(row).collect())
+    })
 }
 
 /// HOM-04: `E = S a`, `S = (I + H^4)(I + H^2)(I + H)` evaluated as three
 /// doubling levels (`S += Q S; Q = Q^2`), with
 /// `H_(i,u),(j,v) = h sum_w U_uw (|J_wv| |L*_ij| + [w = v] ell_iw |alpha_ij|)`
 /// for `j < i`, `ell_iw = |q_w| (2 |delta_iw| + D)`, and `a_i = U |r_i|`.
+/// The product has `L = ceil(log2 s)` factors ([`doubling_levels`]).
 /// The radius must close; each failed radius is recorded and retried at
 /// four times the radius, up to `max_attempts`.
 #[allow(clippy::too_many_arguments)]
@@ -733,10 +984,56 @@ pub fn doubling_certificate(
     max_attempts: usize,
     workers: usize,
 ) -> CoreResult<DoublingCertificate> {
+    let execution = crate::ParallelExecution::rayon(workers.max(1))?;
+    let mut certificate = doubling_certificate_with_execution(
+        target,
+        problem,
+        candidate,
+        y_hat,
+        e_hat,
+        witness,
+        atol,
+        rtol,
+        initial_radius,
+        max_attempts,
+        &execution,
+    )?;
+    certificate.pool_creations = u64::from(execution.threads() > 1);
+    Ok(certificate)
+}
+
+/// [`doubling_certificate`] on a caller-owned execution context (re-audit
+/// R4, R4-HOM-DEV-04): every matrix product of every radius attempt uses
+/// it; no pool is created per product.
+#[allow(clippy::too_many_arguments)]
+#[allow(clippy::needless_range_loop)] // index form mirrors the matrix formula
+pub fn doubling_certificate_with_execution(
+    target: &StageTarget,
+    problem: &QuadraticStageProblem,
+    candidate: &[Vec<f64>],
+    y_hat: &[f64],
+    e_hat: &[f64],
+    witness: &InverseWitness,
+    atol: f64,
+    rtol: f64,
+    initial_radius: f64,
+    max_attempts: usize,
+    execution: &crate::ParallelExecution,
+) -> CoreResult<DoublingCertificate> {
+    let workers = execution.threads();
     validate_inputs(target, problem, candidate, witness)?;
+    if !(initial_radius.is_finite() && initial_radius >= 0.0) {
+        return Err(CoreError::InvalidInput(format!(
+            "CERTIFICATE_NOT_VALIDATED: initial state radius {initial_radius:e} must be finite and >= 0"
+        )));
+    }
     let n = problem.dimension();
     let s = target.stages();
     let m = s * n;
+    // prod_{l < L} (I + H^(2^l)) = sum_{j < 2^L} H^j covers every path of
+    // the strictly lower H (H^s = 0) iff 2^L >= s (re-audit R4,
+    // R4-HOM-DEV-02: the fixed L = 3 dropped H^8.. for s = 9 and 16).
+    let levels = doubling_levels(s);
     let (residuals, increments) = residual_enclosure(target, problem, candidate)?;
     let mut a = Vec::with_capacity(m);
     for residual in &residuals {
@@ -774,15 +1071,15 @@ pub fn doubling_certificate(
             .map(|r| (0..m).map(|c| if r == c { 1.0 } else { 0.0 }).collect())
             .collect::<Matrix>();
         let mut power = h_matrix;
-        for level in 0..3 {
-            let product = upper_matmul(&power, &sum, workers)?;
+        for level in 0..levels {
+            let product = upper_matmul(&power, &sum, execution)?;
             for (row, add) in sum.iter_mut().zip(&product) {
                 for (value, extra) in row.iter_mut().zip(add) {
                     *value = add_up(*value, *extra)?;
                 }
             }
-            if level < 2 {
-                power = upper_matmul(&power, &power, workers)?;
+            if level + 1 < levels {
+                power = upper_matmul(&power, &power, execution)?;
             }
         }
         let flat = sum
@@ -818,12 +1115,13 @@ pub fn doubling_certificate(
                 witness,
                 atol,
                 rtol,
-                (5 * m * m * m) as u64,
+                ((2 * levels).saturating_sub(1) * m * m * m) as u64,
             )?;
             return Ok(DoublingCertificate {
                 certificate: Some(certificate),
                 attempts,
                 workers,
+                pool_creations: 0,
             });
         }
         radius = mul_up(radius, 4.0)?;
@@ -832,5 +1130,220 @@ pub fn doubling_certificate(
         certificate: None,
         attempts,
         workers,
+        pool_creations: 0,
+    })
+}
+
+/// Allocation and arithmetic of a component-blocked certificate, kept
+/// apart (re-audit R4, R4-HOM-DEV-05): `allocated_values` counts the f64
+/// slots actually allocated for the blocks, `nonzeros` the nonzero entries
+/// of the `n` stage blocks of `H`, `directed_operations` every rounded
+/// multiply and add of the products.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct BlockedCertificateWork {
+    pub components: usize,
+    pub block_size: usize,
+    pub levels: usize,
+    pub allocated_values: u64,
+    pub nonzeros: u64,
+    pub directed_operations: u64,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct BlockedDoublingCertificate {
+    pub doubling: DoublingCertificate,
+    pub work: BlockedCertificateWork,
+}
+
+pub const CERTIFICATE_STRUCTURE_UNSUPPORTED: &str = "CERTIFICATE_STRUCTURE_UNSUPPORTED";
+
+/// [`doubling_certificate_with_execution`] for a diagonal `J` with the
+/// structural diagonal witness (re-audit R4, R4-HOM-DEV-05). Then `U`, `J`
+/// and `q` couple no two components, so with the component-major order
+/// `P H P^T = diag(H_1, .., H_n)`, `H_u` the `s x s` stage block
+/// `(H_u)_ij = h U_uu (|J_uu| |L*_ij| + ell_iu |alpha_ij|)`, `j < i`, and
+/// `E_u = prod_l (I + H_u^(2^l)) a_u` per component, in parallel over the
+/// components on `execution`. The products skip zero terms in the same
+/// order as the full `(sn) x (sn)` products, so the bound is bit for bit
+/// the full one, with `n s^2` values per block matrix instead of `(sn)^2`
+/// and `O(n s^3 log s)` formal work instead of `O((sn)^3 log s)`. Any other
+/// structure (a non-diagonal `J`, an approximate or small witness) is
+/// [`CERTIFICATE_STRUCTURE_UNSUPPORTED`]: nothing is applied silently
+/// beyond the diagonal case.
+#[allow(clippy::too_many_arguments)]
+#[allow(clippy::needless_range_loop)] // index form mirrors the matrix formula
+pub fn blocked_doubling_certificate_with_execution(
+    target: &StageTarget,
+    problem: &QuadraticStageProblem,
+    candidate: &[Vec<f64>],
+    y_hat: &[f64],
+    e_hat: &[f64],
+    witness: &InverseWitness,
+    atol: f64,
+    rtol: f64,
+    initial_radius: f64,
+    max_attempts: usize,
+    execution: &crate::ParallelExecution,
+) -> CoreResult<BlockedDoublingCertificate> {
+    validate_inputs(target, problem, candidate, witness)?;
+    let n = problem.dimension();
+    let diagonal_jacobian = (0..n).all(|a| (0..n).all(|b| a == b || problem.jacobian[a][b] == 0.0));
+    if witness.identity.structure != "diagonal" || !diagonal_jacobian {
+        return Err(CoreError::InvalidInput(format!(
+            "{CERTIFICATE_STRUCTURE_UNSUPPORTED}: the blocked certificate needs a diagonal J and the diagonal witness (got {:?})",
+            witness.identity.structure
+        )));
+    }
+    if !(initial_radius.is_finite() && initial_radius >= 0.0) {
+        return Err(CoreError::InvalidInput(format!(
+            "CERTIFICATE_NOT_VALIDATED: initial state radius {initial_radius:e} must be finite and >= 0"
+        )));
+    }
+    let s = target.stages();
+    let levels = doubling_levels(s);
+    let (residuals, increments) = residual_enclosure(target, problem, candidate)?;
+    // a_(i,u) = U_uu |r_iu| (U is diagonal: the full apply_upper adds
+    // exact zeros only).
+    let mut a = vec![vec![0.0; s]; n];
+    for (i, residual) in residuals.iter().enumerate() {
+        let magnitudes = residual.iter().map(Interval::mag).collect::<Vec<_>>();
+        let applied = witness.apply_upper(&magnitudes)?;
+        for u in 0..n {
+            a[u][i] = applied[u];
+        }
+    }
+    let mut work = BlockedCertificateWork {
+        components: n,
+        block_size: s,
+        levels,
+        ..BlockedCertificateWork::default()
+    };
+    let components = (0..n).collect::<Vec<_>>();
+    let mut attempts = Vec::new();
+    let mut radius = initial_radius;
+    for attempt in 0..max_attempts.max(1) {
+        type BlockResult = (Vec<f64>, u64, u64, u64);
+        let blocks = execution.map_ordered(&components, |&u| -> CoreResult<BlockResult> {
+            let (mut allocated, mut nonzeros, mut operations) = (0_u64, 0_u64, 0_u64);
+            let mut h_block = vec![vec![0.0; s]; s];
+            allocated += (s * s) as u64;
+            for i in 0..s {
+                for j in 0..i {
+                    let coupling = target.coupling_rows[i][j].mag();
+                    let alpha = target.alpha_rows[i][j].abs();
+                    let ell = mul_up(
+                        problem.q[u].abs(),
+                        add_up(mul_up(2.0, increments[i][u])?, radius)?,
+                    )?;
+                    let mut term = mul_up(problem.jacobian[u][u].abs(), coupling)?;
+                    term = add_up(term, mul_up(ell, alpha)?)?;
+                    let inner = add_up(0.0, mul_up(witness.upper[u][u], term)?)?;
+                    h_block[i][j] = mul_up(problem.h, inner)?;
+                    operations += 8;
+                    nonzeros += u64::from(h_block[i][j] != 0.0);
+                }
+            }
+            let mut sum = (0..s)
+                .map(|r| (0..s).map(|c| if r == c { 1.0 } else { 0.0 }).collect())
+                .collect::<Matrix>();
+            allocated += (s * s) as u64;
+            let product =
+                |left: &Matrix, right: &Matrix, operations: &mut u64| -> CoreResult<Matrix> {
+                    let mut out = vec![vec![0.0; s]; s];
+                    for (r, row) in left.iter().enumerate() {
+                        for c in 0..s {
+                            let mut total = 0.0;
+                            for (k, value) in row.iter().enumerate() {
+                                if *value != 0.0 && right[k][c] != 0.0 {
+                                    total = add_up(total, mul_up(*value, right[k][c])?)?;
+                                    *operations += 2;
+                                }
+                            }
+                            out[r][c] = total;
+                        }
+                    }
+                    Ok(out)
+                };
+            let mut power = h_block;
+            for level in 0..levels {
+                let added = product(&power, &sum, &mut operations)?;
+                allocated += (s * s) as u64;
+                for (row, extra_row) in sum.iter_mut().zip(&added) {
+                    for (value, extra) in row.iter_mut().zip(extra_row) {
+                        *value = add_up(*value, *extra)?;
+                        operations += 1;
+                    }
+                }
+                if level + 1 < levels {
+                    power = product(&power, &power, &mut operations)?;
+                    allocated += (s * s) as u64;
+                }
+            }
+            let bound = sum
+                .iter()
+                .map(|row| upper_dot(row, &a[u]))
+                .collect::<CoreResult<Vec<_>>>()?;
+            operations += (2 * s * s) as u64;
+            Ok((bound, allocated, nonzeros, operations))
+        })?;
+        let mut bound = vec![vec![0.0; n]; s];
+        for (u, (column_bound, allocated, nonzeros, operations)) in blocks.into_iter().enumerate() {
+            for i in 0..s {
+                bound[i][u] = column_bound[i];
+            }
+            work.allocated_values += allocated;
+            if attempt == 0 {
+                work.nonzeros += nonzeros;
+            }
+            work.directed_operations += operations;
+        }
+        let mut max_state_radius = 0.0_f64;
+        for i in 0..s {
+            for v in 0..n {
+                let state = upper_dot(&target.alpha_rows[i], &column(&bound, v, i))?;
+                max_state_radius = max_state_radius.max(state);
+            }
+        }
+        let closes = max_state_radius <= radius;
+        attempts.push(RadiusAttempt {
+            attempt,
+            radius,
+            closes,
+            max_state_radius,
+            reason: (!closes).then(|| "RADIUS_CLOSURE_FAIL".into()),
+        });
+        if closes {
+            let certificate = finish_certificate(
+                target,
+                problem,
+                candidate,
+                y_hat,
+                e_hat,
+                bound,
+                witness,
+                atol,
+                rtol,
+                work.directed_operations,
+            )?;
+            return Ok(BlockedDoublingCertificate {
+                doubling: DoublingCertificate {
+                    certificate: Some(certificate),
+                    attempts,
+                    workers: execution.threads(),
+                    pool_creations: 0,
+                },
+                work,
+            });
+        }
+        radius = mul_up(radius, 4.0)?;
+    }
+    Ok(BlockedDoublingCertificate {
+        doubling: DoublingCertificate {
+            certificate: None,
+            attempts,
+            workers: execution.threads(),
+            pool_creations: 0,
+        },
+        work,
     })
 }

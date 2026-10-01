@@ -10,7 +10,8 @@ use crate::{
     AdaptiveControllerState, AdaptiveFailureKind, AdaptiveObservedIntegrationResult,
     AdaptiveRunDiagnostics, AdaptiveStepConfig, ComparatorFidelity, NewtonConfig, NewtonReport,
     NewtonTolerancePolicy, ObservedIntegrationResult, OdeProblem, OutputSchedule,
-    adaptive_next_step_after_attempt, radau_newton_tolerance_factor, step_doubling_wrms_error,
+    adaptive_next_step_after_attempt, radau_newton_tolerance_factor,
+    step_doubling_wrms_error_for_halves,
 };
 
 const RADAU1_ESTIMATOR_ID: &str = "radau-iia1-step-doubling";
@@ -591,13 +592,18 @@ pub(crate) fn adaptive_radau_trial(
                 config,
                 counters,
             )?;
-            let estimate = step_doubling_wrms_error(
+            // The divisor of the actual halves (re-audit R4, TIME-DEV-02):
+            // a 3-ULP step splits into 2 + 1 ULPs, where the equal-halves
+            // divisor understated the fine error 5/9 as 4/9.
+            let estimate = step_doubling_wrms_error_for_halves(
                 state,
                 &coarse.y_new,
                 &fine_second.y_new,
                 adaptive.atol,
                 adaptive.rtol,
                 1,
+                first_half,
+                second_half,
             )?;
             Ok(AdaptiveRadauTrial {
                 accepted_reports: vec![fine_first, fine_second],
@@ -736,7 +742,8 @@ pub fn integrate_radau_adaptive_observed(
     let mut state = y0.to_vec();
     let mut counters = WorkCounters::default();
     let mut controller = AdaptiveControllerState::default();
-    let mut collector = OutputCollector::new(output, t_span, y0)?.with_max_step(adaptive.max_step);
+    let mut collector =
+        OutputCollector::new(output, t_span, y0)?.with_max_step(adaptive.step_cap());
     let mut diagnostics = AdaptiveRunDiagnostics::default();
     let mut h = adaptive.initial_step.min(crate::output::step_to(t, tf)?);
     let mut internal_steps = 0_usize;
@@ -747,7 +754,9 @@ pub fn integrate_radau_adaptive_observed(
     let mut previous_local_rejection = false;
 
     while t < tf && diagnostics.attempts < adaptive.max_attempts {
-        let Some(next_h) = crate::output::adaptive_end_step(t, h, tf, adaptive.max_step)? else {
+        let Some(next_h) =
+            crate::output::adaptive_end_step(t, h, tf, adaptive.step_cap(), &controller)?
+        else {
             break;
         };
         h = next_h;

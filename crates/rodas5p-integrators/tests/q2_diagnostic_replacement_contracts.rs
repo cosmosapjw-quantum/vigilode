@@ -5,9 +5,10 @@ use std::sync::Arc;
 
 use rodas5p_core::{CoreError, CoreResult, WorkCounters};
 use rodas5p_integrators::{
-    InverseWitness, OdeProblem, Q2Admission, Q2CertificateSource, QuadraticStageProblem,
-    TransactionalQ1Q2Config, TransactionalQ1Q2Lane, TransactionalQ1Q2StepReport,
-    scalar_linear_problem, transactional_q1_q2_step, transactional_q1_q2_step_with_admission,
+    CERTIFICATE_CAPABILITY_UNAVAILABLE, InverseWitness, OdeProblem, Q2Admission,
+    Q2CertificateSource, QuadraticStageProblem, TransactionalQ1Q2Config, TransactionalQ1Q2Lane,
+    TransactionalQ1Q2StepReport, WitnessCapability, scalar_linear_problem,
+    transactional_q1_q2_step, transactional_q1_q2_step_with_admission,
 };
 
 /// `y' = a y + c y^2`: `J = a + 2 c y`, `q = c`.
@@ -206,10 +207,9 @@ fn a_wrong_or_unverified_certificate_cannot_fast_accept() {
         ..TransactionalQ1Q2Config::default()
     };
     let default = TransactionalQ1Q2Config::default();
-    let cases: [(&str, &dyn Q2CertificateSource, &TransactionalQ1Q2Config); 5] = [
+    let cases: [(&str, &dyn Q2CertificateSource, &TransactionalQ1Q2Config); 4] = [
         ("another state", &Shifted, &default),
         ("another operator", &wrong_operator, &default),
-        ("no structure", &Failing, &default),
         ("foreign witness", &ForeignWitness, &default),
         ("budget", &right, &tight),
     ];
@@ -241,6 +241,31 @@ fn a_wrong_or_unverified_certificate_cannot_fast_accept() {
         assert_eq!(report.work.certificate_attempts, 1, "{label}");
         assert_eq!(report.critical_path_depth, 7 + 8, "{label}");
     }
+    // A source with no certificate problem is known before the escalation
+    // (re-audit R4, R4-HOM-DEV-06): the q=2 batches are not spent on a
+    // candidate no certificate can admit, and the fallback is the same.
+    let report = step(
+        &linear,
+        0.01,
+        &default,
+        Q2Admission::NativeTargetCertificate(&Failing),
+    );
+    assert!(matches!(
+        report.q2_capability,
+        Some(WitnessCapability::ProblemUnavailable { .. })
+    ));
+    assert!(report.q2_certificate.is_none());
+    assert!(!report.escalated);
+    assert_eq!(report.lane, TransactionalQ1Q2Lane::SequentialFallback);
+    assert!(
+        report
+            .fallback_reason
+            .as_deref()
+            .unwrap()
+            .starts_with(CERTIFICATE_CAPABILITY_UNAVAILABLE)
+    );
+    assert!(report.work.w_solve_batches < 7);
+    assert_eq!(report.work.certificate_attempts, 0);
 }
 
 /// `y' = a y + q y^2 + c y^3` declared as the quadratic model with the true

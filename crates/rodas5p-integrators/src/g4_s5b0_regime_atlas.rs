@@ -1514,6 +1514,7 @@ fn adaptive_config(profile: G4S5B0Profile, span: f64) -> AdaptiveStepConfig {
         max_factor: 4.0,
         reject_max_factor: 0.8,
         controller: ControllerKind::Pi,
+        max_step_policy: crate::MaxStepPolicy::AllowClockResolutionSlack,
     }
 }
 

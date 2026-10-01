@@ -273,10 +273,10 @@ fn witnesses_bind_their_operator_and_fail_closed() {
     ];
     let approximate =
         InverseWitness::approximate(&problem, target.gamma, &v, "dense-approximate").unwrap();
-    assert!(approximate.residual_norm_upper < 1.0e-12);
+    assert!(approximate.residual_norm_upper() < 1.0e-12);
     for a in 0..2 {
         for b in 0..2 {
-            assert!(approximate.upper[a][b] >= small.upper[a][b] * (1.0 - 1.0e-12));
+            assert!(approximate.upper()[a][b] >= small.upper()[a][b] * (1.0 - 1.0e-12));
         }
     }
     let bad_v = vec![vec![0.0, 0.0], vec![0.0, 0.0]];

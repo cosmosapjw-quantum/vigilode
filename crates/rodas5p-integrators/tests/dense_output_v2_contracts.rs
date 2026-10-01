@@ -593,8 +593,9 @@ fn implicit_dense_paths_land_on_hard_stops_before_interpolating_later_outputs() 
     assert_eq!(
         bdf.diagnostics.estimator_ids,
         vec![
-            "bdf-explicit-startup-step-doubling",
-            "bdf-explicit-startup-step-doubling"
+            // Re-audit R4, R4-TIME-DEV-03: the derived startup estimator.
+            "bdf-startup-bdf1-bdf2-mixed-v1",
+            "bdf-startup-bdf1-bdf2-mixed-v1"
         ],
         "a declared hard stop must discard pre-discontinuity BDF history"
     );
@@ -629,8 +630,9 @@ fn bdf_history_restarts_when_the_natural_step_exactly_matches_a_hard_stop() {
     assert_eq!(
         result.diagnostics.estimator_ids,
         vec![
-            "bdf-explicit-startup-step-doubling",
-            "bdf-explicit-startup-step-doubling"
+            // Re-audit R4, R4-TIME-DEV-03: the derived startup estimator.
+            "bdf-startup-bdf1-bdf2-mixed-v1",
+            "bdf-startup-bdf1-bdf2-mixed-v1"
         ],
         "hard-stop identity, not only step shortening, defines the BDF restart boundary"
     );

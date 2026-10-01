@@ -89,6 +89,9 @@ pub struct AdaptiveStepConfig {
     pub max_factor: f64,
     pub reject_max_factor: f64,
     pub controller: ControllerKind,
+    /// How `max_step` binds the represented step (re-audit R4,
+    /// R4-TIME-DEV-04); the default allows one clock resolution of slack.
+    pub max_step_policy: crate::MaxStepPolicy,
 }
 
 impl Default for AdaptiveStepConfig {
@@ -105,11 +108,20 @@ impl Default for AdaptiveStepConfig {
             max_factor: 5.0,
             reject_max_factor: 0.9,
             controller: ControllerKind::Integral,
+            max_step_policy: crate::MaxStepPolicy::AllowClockResolutionSlack,
         }
     }
 }
 
 impl AdaptiveStepConfig {
+    /// `max_step` with its policy, for the represented clock.
+    pub(crate) fn step_cap(&self) -> crate::output::StepCap {
+        crate::output::StepCap {
+            max: self.max_step,
+            policy: self.max_step_policy,
+        }
+    }
+
     pub fn validate(&self) -> CoreResult<()> {
         if !(self.atol >= 0.0 && self.atol.is_finite()) {
             return Err(CoreError::InvalidInput(
@@ -199,6 +211,7 @@ impl AdaptiveStepConfig {
             max_factor: 5.0,
             reject_max_factor: 0.9,
             controller: ControllerKind::Integral,
+            max_step_policy: crate::MaxStepPolicy::AllowClockResolutionSlack,
         };
         config.validate()?;
         Ok(config)
@@ -208,11 +221,20 @@ impl AdaptiveStepConfig {
 #[derive(Clone, Debug, Default, PartialEq, Serialize)]
 pub struct AdaptiveControllerState {
     previous_accepted_error: Option<f64>,
+    /// The represented trial step of the last attempt when it was rejected
+    /// (re-audit R4, TIME-DEV-02): the next attempt from the same time must
+    /// be strictly shorter, see [`crate::output::adaptive_end_step`].
+    #[serde(skip)]
+    last_rejected_trial: Option<f64>,
 }
 
 impl AdaptiveControllerState {
     pub fn previous_accepted_error(&self) -> Option<f64> {
         self.previous_accepted_error
+    }
+
+    pub fn last_rejected_trial(&self) -> Option<f64> {
+        self.last_rejected_trial
     }
 
     pub fn propose_factor(
@@ -306,6 +328,7 @@ pub fn adaptive_next_step_after_attempt(
     accepted: bool,
     forced_output_clipped: bool,
 ) -> CoreResult<f64> {
+    controller.last_rejected_trial = (!accepted).then_some(trial_h);
     if accepted {
         let factor = controller.propose_factor(config, error, estimator_order, true)?;
         if !forced_output_clipped {
@@ -361,6 +384,77 @@ pub struct StepDoublingEstimate {
     pub estimator_order: usize,
     pub error_vector: Vec<f64>,
     pub error_norm: f64,
+    /// The represented fine intervals `(h1, h2)` the estimate was formed
+    /// for; `None` for the equal-halves rule (re-audit R4, TIME-DEV-02).
+    pub halves: Option<(f64, f64)>,
+    /// `(1 - eta) / eta` with `eta = theta^(p+1) + (1 - theta)^(p+1)`,
+    /// `theta = h1 / (h1 + h2)`: the divisor of `fine - coarse`. Equal
+    /// halves give `2^p - 1`.
+    pub divisor: f64,
+}
+
+/// `(1 - eta) / eta` for the represented halves `(h1, h2)` of a step of
+/// method order `p` (re-audit R4, R4-TIME-DEV-02): under the leading-order
+/// local error model `C H^(p+1)` with one `C` on both halves, the coarse
+/// error is `C H^(p+1)`, the fine one `eta C H^(p+1)`, so the fine error is
+/// `(fine - coarse) eta / (1 - eta)`. Equal halves give exactly `2^p - 1`;
+/// the R3 split of a 3-ULP step into 2 + 1 ULPs gives `eta = 5/9` for
+/// Radau1 and a divisor 4/5, not 1. An asymptotic estimate, not a
+/// certificate. Halves that are not positive and finite fail closed.
+pub fn step_doubling_divisor(h1: f64, h2: f64, method_order: usize) -> CoreResult<f64> {
+    if method_order == 0 {
+        return Err(CoreError::InvalidInput(
+            "step-doubling method order must be positive".into(),
+        ));
+    }
+    if !(h1.is_finite() && h2.is_finite() && h1 > 0.0 && h2 > 0.0) {
+        return Err(CoreError::InvalidInput(format!(
+            "time resolution: step-doubling halves ({h1:e}, {h2:e}) must be positive and finite"
+        )));
+    }
+    if h1 == h2 {
+        return Ok(2.0_f64.powi(method_order as i32) - 1.0);
+    }
+    let total = h1 + h2;
+    let theta = h1 / total;
+    let rest = h2 / total;
+    let exponent = method_order as i32 + 1;
+    let eta = theta.powi(exponent) + rest.powi(exponent);
+    let divisor = (1.0 - eta) / eta;
+    if !(divisor.is_finite() && divisor > 0.0) {
+        return Err(CoreError::InvalidInput(format!(
+            "time resolution: step-doubling halves ({h1:e}, {h2:e}) give no finite Richardson divisor"
+        )));
+    }
+    Ok(divisor)
+}
+
+/// [`step_doubling_wrms_error`] for represented halves `(h1, h2)` of the
+/// coarse step, with the geometry-aware [`step_doubling_divisor`]. Equal
+/// halves are bit for bit the equal-halves rule.
+#[allow(clippy::too_many_arguments)]
+pub fn step_doubling_wrms_error_for_halves(
+    old_state: &[f64],
+    coarse_state: &[f64],
+    fine_state: &[f64],
+    atol: f64,
+    rtol: f64,
+    method_order: usize,
+    h1: f64,
+    h2: f64,
+) -> CoreResult<StepDoublingEstimate> {
+    let divisor = step_doubling_divisor(h1, h2, method_order)?;
+    let mut estimate = step_doubling_estimate(
+        old_state,
+        coarse_state,
+        fine_state,
+        atol,
+        rtol,
+        method_order,
+        divisor,
+    )?;
+    estimate.halves = Some((h1, h2));
+    Ok(estimate)
 }
 
 pub fn step_doubling_wrms_error(
@@ -394,7 +488,49 @@ pub fn step_doubling_wrms_error(
             "step-doubling state contains NaN/Inf".into(),
         ));
     }
-    let denominator = 2.0_f64.powi(method_order as i32) - 1.0;
+    step_doubling_estimate(
+        old_state,
+        coarse_state,
+        fine_state,
+        atol,
+        rtol,
+        method_order,
+        2.0_f64.powi(method_order as i32) - 1.0,
+    )
+}
+
+pub(crate) fn step_doubling_estimate(
+    old_state: &[f64],
+    coarse_state: &[f64],
+    fine_state: &[f64],
+    atol: f64,
+    rtol: f64,
+    method_order: usize,
+    denominator: f64,
+) -> CoreResult<StepDoublingEstimate> {
+    if method_order == 0 {
+        return Err(CoreError::InvalidInput(
+            "step-doubling method order must be positive".into(),
+        ));
+    }
+    if old_state.len() != coarse_state.len()
+        || old_state.len() != fine_state.len()
+        || old_state.is_empty()
+    {
+        return Err(CoreError::Dimension(
+            "step-doubling state shape mismatch".into(),
+        ));
+    }
+    if !old_state
+        .iter()
+        .chain(coarse_state)
+        .chain(fine_state)
+        .all(|value| value.is_finite())
+    {
+        return Err(CoreError::NonFinite(
+            "step-doubling state contains NaN/Inf".into(),
+        ));
+    }
     let error_vector = fine_state
         .iter()
         .zip(coarse_state)
@@ -407,6 +543,8 @@ pub fn step_doubling_wrms_error(
         estimator_order: method_order + 1,
         error_vector,
         error_norm,
+        halves: None,
+        divisor: denominator,
     })
 }
 

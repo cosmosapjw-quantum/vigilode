@@ -381,9 +381,15 @@ enum BdfStepMode {
     Variable,
 }
 
+/// Exactly equal represented steps (re-audit R4, R4-TIME-DEV-01). The R3
+/// test `|h - k| <= 32 eps max(|h|, |k|, 1)` gave the number 1 a time unit:
+/// below it, distinct steps such as 2 and 1 ULP of 1.0 were "equal", and
+/// the constant coefficients `3, -4, 1` left the residual `v (h - k)` on an
+/// exact linear flow (a 2.08% endpoint error). Unequal steps of any size
+/// now take the variable coefficients of their actual ratio, so the rule is
+/// invariant under power-of-two changes of the time unit.
 fn same_step(previous: f64, current: f64) -> bool {
-    let scale = previous.abs().max(current.abs()).max(1.0);
-    (previous - current).abs() <= 32.0 * f64::EPSILON * scale
+    previous == current
 }
 
 fn requires_bdf2_stability_restart(current_step: f64, previous_step: f64) -> bool {
@@ -698,6 +704,51 @@ pub fn integrate_bdf_fixed_observed(
 }
 
 const BDF_STARTUP_ESTIMATOR_ID: &str = "bdf-explicit-startup-step-doubling";
+/// Startup from an empty history with the derived geometry divisor
+/// (re-audit R4, R4-TIME-DEV-03; see [`bdf_startup_divisor`]).
+pub const BDF_STARTUP_BDF1_BDF1_ESTIMATOR_ID: &str = "bdf-startup-bdf1-bdf1-geometry-v1";
+pub const BDF_STARTUP_BDF1_BDF2_ESTIMATOR_ID: &str = "bdf-startup-bdf1-bdf2-mixed-v1";
+
+/// The Richardson divisor `D` of a BDF startup trial from an empty history
+/// (re-audit R4, R4-TIME-DEV-03): the fine error is `(fine - coarse) / D`
+/// in magnitude at leading order. Coarse is BDF1 over `H = h1 + h2` from
+/// the exact start, local error `e_c = H^2 y''/2`.
+///
+/// * BDF1 + BDF1 (order-one configuration): `e_f = (h1^2 + h2^2) y''/2`
+///   (implicit Euler carries the first error unchanged at leading order),
+///   so `D = (1 - eta) / eta`, `eta = theta^2 + (1 - theta)^2`, the Radau1
+///   rule of [`crate::step_doubling_divisor`] with `p = 1`.
+/// * BDF1 + BDF2 (order-two configuration): BDF1 over `h1` leaves
+///   `e_1 = h1^2 y''/2`; variable BDF2 over `h2` with `r = h2 / h1` is exact
+///   on quadratics and carries `e_1` by `-a1/a0 = (1 + r)^2 / (1 + 2r)` at
+///   leading order, so `e_f = (1 + r)^2 / (1 + 2r) h1^2 y''/2 = H^2 y''/2 /
+///   (1 + 2r)` and `|e_f| = |fine - coarse| / (2r)`: `D = 2 r`. Equal
+///   halves give `D = 2`; the old rule used `2^1 - 1 = 1` from the smaller
+///   applied order (conservative for `r >= 1/2`, which every represented
+///   split has, but not derived).
+///
+/// Exact for solutions whose second derivative is constant and a RHS that
+/// does not depend on the state (the quadratic-primitive family); an
+/// asymptotic estimate otherwise, not a certificate.
+pub fn bdf_startup_divisor(h1: f64, h2: f64, second_order: BdfOrder) -> CoreResult<f64> {
+    match second_order {
+        BdfOrder::One => crate::step_doubling_divisor(h1, h2, 1),
+        BdfOrder::Two => {
+            if !(h1.is_finite() && h2.is_finite() && h1 > 0.0 && h2 > 0.0) {
+                return Err(CoreError::InvalidInput(format!(
+                    "time resolution: BDF startup halves ({h1:e}, {h2:e}) must be positive and finite"
+                )));
+            }
+            let divisor = 2.0 * (h2 / h1);
+            if !(divisor.is_finite() && divisor > 0.0) {
+                return Err(CoreError::InvalidInput(format!(
+                    "time resolution: BDF startup halves ({h1:e}, {h2:e}) give no finite divisor"
+                )));
+            }
+            Ok(divisor)
+        }
+    }
+}
 const BDF1_PREDICTOR_ESTIMATOR_ID: &str = "bdf1-pure-bdf-backward-difference-lte";
 const BDF2_PREDICTOR_ESTIMATOR_ID: &str = "bdf2-pure-bdf-backward-difference-lte";
 
@@ -783,20 +834,49 @@ pub(crate) fn adaptive_bdf_trial(
             .value()
             .min(fine_first.applied_order.value())
             .min(fine_second.applied_order.value());
-        let estimate = step_doubling_wrms_error(
-            state,
-            &coarse.y_new,
-            &fine_second.y_new,
-            adaptive.atol,
-            adaptive.rtol,
-            method_order,
-        )?;
+        // The derived divisor needs the empty-history sequence it was
+        // derived for: BDF1 coarse, BDF1 first half, then BDF1 or BDF2
+        // (re-audit R4, R4-TIME-DEV-03). Anything else keeps the previous
+        // rule under its own estimator id.
+        let derived = history.previous_state.is_none()
+            && coarse.applied_order == BdfOrder::One
+            && fine_first.applied_order == BdfOrder::One;
+        let (estimate, estimator_id) = if derived {
+            let divisor = bdf_startup_divisor(first_half, second_half, fine_second.applied_order)?;
+            let mut estimate = crate::adaptive::step_doubling_estimate(
+                state,
+                &coarse.y_new,
+                &fine_second.y_new,
+                adaptive.atol,
+                adaptive.rtol,
+                1,
+                divisor,
+            )?;
+            estimate.halves = Some((first_half, second_half));
+            let id = match fine_second.applied_order {
+                BdfOrder::One => BDF_STARTUP_BDF1_BDF1_ESTIMATOR_ID,
+                BdfOrder::Two => BDF_STARTUP_BDF1_BDF2_ESTIMATOR_ID,
+            };
+            (estimate, id)
+        } else {
+            (
+                step_doubling_wrms_error(
+                    state,
+                    &coarse.y_new,
+                    &fine_second.y_new,
+                    adaptive.atol,
+                    adaptive.rtol,
+                    method_order,
+                )?,
+                BDF_STARTUP_ESTIMATOR_ID,
+            )
+        };
         return Ok(AdaptiveBdfTrial {
             accepted_reports: vec![fine_first, fine_second],
             accepted_history: fine_history,
             error_norm: estimate.error_norm,
             estimator_order: estimate.estimator_order,
-            estimator_id: BDF_STARTUP_ESTIMATOR_ID,
+            estimator_id,
         });
     }
 
@@ -881,13 +961,16 @@ pub fn integrate_bdf_adaptive_observed(
     let mut history = BdfHistory::default();
     let mut counters = WorkCounters::default();
     let mut controller = AdaptiveControllerState::default();
-    let mut collector = OutputCollector::new(output, t_span, y0)?.with_max_step(adaptive.max_step);
+    let mut collector =
+        OutputCollector::new(output, t_span, y0)?.with_max_step(adaptive.step_cap());
     let mut diagnostics = AdaptiveRunDiagnostics::default();
     let mut h = adaptive.initial_step.min(crate::output::step_to(t, tf)?);
     let mut internal_steps = 0_usize;
 
     while t < tf && diagnostics.attempts < adaptive.max_attempts {
-        let Some(next_h) = crate::output::adaptive_end_step(t, h, tf, adaptive.max_step)? else {
+        let Some(next_h) =
+            crate::output::adaptive_end_step(t, h, tf, adaptive.step_cap(), &controller)?
+        else {
             break;
         };
         h = next_h;

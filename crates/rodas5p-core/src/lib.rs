@@ -11,6 +11,7 @@ mod norms;
 mod operator;
 pub mod polynomial_action;
 mod solver_types;
+pub mod taylor_phi;
 pub mod transform_bound;
 mod work;
 

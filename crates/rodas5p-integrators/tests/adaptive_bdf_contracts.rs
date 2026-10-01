@@ -418,7 +418,9 @@ fn adaptive_bdf2_uses_startup_order_then_variable_step_order() {
     assert!(
         result.diagnostics.estimator_ids[..first_steady]
             .iter()
-            .all(|id| id == "bdf-explicit-startup-step-doubling")
+            // Re-audit R4, R4-TIME-DEV-03: the empty-history BDF1 + BDF2
+            // startup is named by its derived estimator.
+            .all(|id| id == "bdf-startup-bdf1-bdf2-mixed-v1")
     );
     assert!(
         result.diagnostics.estimator_ids[first_steady..]
@@ -428,6 +430,7 @@ fn adaptive_bdf2_uses_startup_order_then_variable_step_order() {
                 "bdf2-pure-bdf-backward-difference-lte"
                     | "bdf1-pure-bdf-backward-difference-lte"
                     | "bdf-explicit-startup-step-doubling"
+                    | "bdf-startup-bdf1-bdf2-mixed-v1"
             )),
         "post-startup trials may include typed order-one ratio restarts before rebuilding BDF2 history: {:?}",
         result.diagnostics.estimator_ids
@@ -480,7 +483,7 @@ fn accepted_output_clipping_restores_the_preclip_bdf_request() {
     );
     assert_eq!(
         result.diagnostics.estimator_ids[0],
-        "bdf-explicit-startup-step-doubling"
+        "bdf-startup-bdf1-bdf2-mixed-v1"
     );
     assert_eq!(
         result.diagnostics.estimator_ids[1], "bdf1-pure-bdf-backward-difference-lte",

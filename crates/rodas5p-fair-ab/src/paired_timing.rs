@@ -61,6 +61,22 @@ pub const PAIRED_TIMING_MIN_INDEPENDENT_BLOCKS: usize = 6;
 /// v3: the decision also needs the Monte-Carlo gate (re-audit R3,
 /// STAT-DEV-03).
 pub const PAIRED_TIMING_SCHEMA: &str = "vigilode-paired-timing-v3";
+/// The estimand of [`assess_paired_timing`] (re-audit R4, R4-STAT-DEV-03):
+/// per case, the median of the case's per-pair log speedups pooled over all
+/// its sessions; over cases, the median of those. Not the median over cases
+/// of the population median of session-cell medians
+/// ([`SESSION_CELL_MEDIAN_ESTIMAND`]); the two coincide in the symmetric
+/// additive family of `docs/TIMING_DESIGN_CONTRACT.md` and can differ
+/// otherwise.
+pub const POOLED_PAIR_MEDIAN_ESTIMAND: &str = "case-median-of-pooled-pair-log-speedup-median-v1";
+/// The estimand of the exact session-median interval (re-audit R4,
+/// R4-STAT-DEV-04): the median over a fixed case set of each case's
+/// population median of complete session-cell medians.
+pub const SESSION_CELL_MEDIAN_ESTIMAND: &str = "case-median-of-session-cell-median-log-speedup-v1";
+
+fn pooled_pair_estimand() -> String {
+    POOLED_PAIR_MEDIAN_ESTIMAND.into()
+}
 /// Predeclared two-sided failure probability of the Monte-Carlo gate.
 pub const PAIRED_TIMING_MC_FAILURE_BUDGET: f64 = 0.01;
 /// The number of resamples is the protocol's and is never extended after
@@ -939,6 +955,10 @@ pub struct PairedCaseSummary {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct PairedTimingAssessment {
     pub schema: String,
+    /// [`POOLED_PAIR_MEDIAN_ESTIMAND`]; records written before R4 name no
+    /// estimand and deserialize to it, the estimand they were computed for.
+    #[serde(default = "pooled_pair_estimand")]
+    pub estimand: String,
     pub protocol: PairedTimingProtocol,
     pub host: TimingHostMetadata,
     pub cases: Vec<PairedCaseSummary>,
@@ -1115,6 +1135,7 @@ pub fn assess_paired_timing(
         .collect();
     Ok(PairedTimingAssessment {
         schema: PAIRED_TIMING_SCHEMA.into(),
+        estimand: POOLED_PAIR_MEDIAN_ESTIMAND.into(),
         protocol: protocol.clone(),
         host,
         cases: summaries,

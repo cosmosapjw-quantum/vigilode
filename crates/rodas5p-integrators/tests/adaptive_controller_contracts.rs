@@ -22,6 +22,7 @@ fn adaptive_config_rejects_inconsistent_bounds() {
         max_factor: 5.0,
         reject_max_factor: 0.9,
         controller: ControllerKind::Integral,
+        max_step_policy: rodas5p_integrators::MaxStepPolicy::AllowClockResolutionSlack,
     };
     assert!(config.validate().is_err());
 }
@@ -40,6 +41,7 @@ fn integral_controller_uses_estimator_order_and_rejection_cap() {
         max_factor: 5.0,
         reject_max_factor: 0.8,
         controller: ControllerKind::Integral,
+        max_step_policy: rodas5p_integrators::MaxStepPolicy::AllowClockResolutionSlack,
     };
     let state = AdaptiveControllerState::default();
     let accepted = state.propose_factor(&config, 0.25, 2, true).unwrap();
