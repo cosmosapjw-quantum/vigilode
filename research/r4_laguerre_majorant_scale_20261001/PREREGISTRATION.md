@@ -91,8 +91,9 @@ execution commit `d700572`, where this file is the preregistration and its adden
 - **Distinct evaluations.** 13 of the 22 compared rows run both arms at scale 16, so the 44 points are 31 distinct
   evaluations, and the 8 budget rejections are 4 distinct cases.
 - **Median.** The median tightness is 156.8. The 162 above is the upper median.
-- **Where the continuous scale differed.** It lowered the majorant at h = 0.001 on `diag24-wide` (4.5x and 21x) and
-  at h = 0.001 to 0.1 on `diag24-narrow` (8.6x to 27x). The largest, 27x, is at `diag24-narrow`, h = 0.1, budget
+- **Where the continuous scale differed.** It differed from the grid at 9 of the 22 compared points. It lowered the
+  majorant at h = 0.001 on `diag24-wide` (4.5x and 21x) and at h = 0.001 to 0.1 on `diag24-narrow` (8.6x to 27x),
+  and by 1.02x at `diag24-wide`, h = 0.01, and `diag8-stiff`, h = 0.001 (both budget 1e-6, scale 15 against 16). The largest, 27x, is at `diag24-narrow`, h = 0.1, budget
   1e-6 (scale 13.6 against 4), not at h <= 0.01.
 - **Contract count.** The POLY-DEV-03 contract checks the seven fixture actions at L in {1, 2, 4, 8, 16}, not six
   as the prior-information paragraph says.
