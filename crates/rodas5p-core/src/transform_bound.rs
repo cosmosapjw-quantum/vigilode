@@ -176,6 +176,56 @@ impl ExpBound {
         ))
     }
 
+    /// Upper bound on the Euclidean norm of `values`, formed on a
+    /// power-of-two scale (re-audit R4, POLY-DEV-01): every `|x|` is divided
+    /// by `2^e` of the largest one (rounded up when the shift is inexact),
+    /// the squares are summed upward in [0, n], and the root is rescaled on
+    /// the exponent. `[1e300, 1e300]` no longer overflows and
+    /// `[1e-300, 1e-300]` no longer collapses to a subnormal square.
+    pub fn l2_norm_upper(values: &[f64]) -> CoreResult<Self> {
+        if values.iter().any(|x| !x.is_finite()) {
+            return Err(CoreError::NonFinite(
+                "ExpBound norm of a non-finite value".into(),
+            ));
+        }
+        let max = values.iter().fold(0.0_f64, |acc, x| acc.max(x.abs()));
+        if max == 0.0 {
+            return Ok(Self::ZERO);
+        }
+        let (_, e) = binary_split(max);
+        let mut sum = 0.0;
+        for &x in values {
+            let ax = x.abs();
+            if ax == 0.0 {
+                continue;
+            }
+            let (m, xe) = binary_split(ax);
+            let y = crate::binary_scale(m, xe - e);
+            let y = if crate::binary_scale(y, e) == ax {
+                y
+            } else {
+                y.next_up()
+            };
+            sum = add_up(sum, mul_up(y, y)?)?;
+        }
+        let root = Self::exact(crate::directed::sqrt_up(sum)?)?;
+        Ok(Self {
+            mantissa: root.mantissa,
+            exponent: root.exponent + e,
+        })
+    }
+
+    /// `self * 2^shift`, exact on the exponent.
+    pub fn scaled_pow2(self, shift: i64) -> Self {
+        if self.is_zero() {
+            return self;
+        }
+        Self {
+            mantissa: self.mantissa,
+            exponent: self.exponent.saturating_add(shift),
+        }
+    }
+
     /// The smallest binary64 value at least this bound: `5e-324` for any
     /// nonzero bound below the subnormal range, `+inf` above `f64::MAX`.
     pub fn to_f64_up(&self) -> f64 {
