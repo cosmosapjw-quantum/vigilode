@@ -50,3 +50,38 @@ that review. The rule is applied as stated, with no reseeding.
 ## Prior information
 
 Seed 20261013 is unused. No run of this grid exists before this commit. Only unit contracts on fixed inputs were run.
+
+---
+
+## Results (appended after the run at `d700572`)
+
+Output: `COVERAGE_STUDY.json`, 112 scenarios at 10000 replications each. The run took 15 s with 4 threads. Tolerance
+is 0.0222.
+
+**Verdict: PASS.** None of the 96 in-domain scenarios failed.
+
+- **Coverage against the design bound.** Coverage minus the design bound was at least -0.0023 in every in-domain
+  scenario.
+- **Exact checks.** All 40 one-case exact checks passed. The largest deviation of the miss rate from `q(S, k)` was
+  0.0040.
+- **By design:**
+
+| Design | k | Coverage | False-promote rate at theta = ln 1.15 | Power at theta = ln 1.3 |
+|---|---|---|---|---|
+| S6 C1 | 1 | 0.9665 to 0.9727 (bound 31/32) | at most 0.017 | 0.08 to 0.86 |
+| S6 C5 | unbounded | 1 (as designed) | 0 | 0 |
+| S8 C5 | 1 | 0.9908 to 1.0 (bound 123/128) | at most 0.004 | 0.03 to 0.83 |
+| S12 C1 | — | 0.9591 to 0.9660 | at most 0.022 | 0.16 to 0.999 |
+| S24 C1 | — | 0.976 to 0.980 | at most 0.013 | 0.23 to 1.0 |
+| S24 C5 | — | 0.992 to 1.0 | at most 0.005 | 0.11 to 1.0 |
+
+- **Power by law.** Within each design, power varies with the law. Heavy tails and the strong shared session effect
+  are the lowest; atoms and the additive law are the highest.
+
+**Out of domain.** The drift law, which breaks the iid premise, failed 14 of its 16 scenarios. Its coverage fell to
+between 0 and 0.92 as the session count grew. This is the expected failure of the premise and does not enter the
+verdict.
+
+**Scope.** The study checks the implementation against its theorem. It does not establish the iid-session premise on
+any host. Under the R4 authority gate, the session-cell estimand is recorded in the study registry as **hold pending an
+independent domain review**, not as admissible. No timing decision is admissible on this branch.

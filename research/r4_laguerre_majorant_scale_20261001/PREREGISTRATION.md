@@ -52,3 +52,29 @@ calls the scalar phi enclosure, which supports `-600 <= z <= 0`. The `diag8-stif
 cancellation-free recurrence `phi_k(z) = (phi_(k-1)(z) - 1/(k-1)!)/z`, where `e^z < 1e-260` is taken as 0. The
 grid, the arms and both gates are unchanged. The output of the aborted run was an error message only, so nothing was
 seen.
+
+---
+
+## Results (appended after the run at `d700572`)
+
+Output: `STUDY.json`. The run took 15 s; wall time is not an outcome. The grid has 24 points. Both Laguerre arms fail
+with a typed non-finite product at `diag8-stiff`, `h = 1`, where the coefficient series leaves the binary64 range.
+
+**POLY-DEV-03: PASS.**
+
+- The majorant total enclosed the observed error at all 44 evaluated Laguerre points (both arms).
+- It exceeded the budget at 8 of the 44 points, a rate of 0.18 against the 0.5 limit.
+- Tightness (majorant over observed error): median 162. The maximum is 3.5e65, at degrees 152 and 214, where the
+  scalar recurrence majorant grows like `(1+sqrt 2)^n`. Those points reach majorant totals of 1e33 to 6e52 against
+  observed errors of 1e-10 to 1e-13.
+- The useful certified region is therefore low degree. The baseline is too loose to certify high-degree Laguerre
+  actions.
+- Laguerre stays EstimateOnly until the majorant is independently reviewed.
+
+**POLY-DEV-05: FAIL (the candidate is rejected).**
+
+- On all 22 points where both arms ran, the continuous scale `L*(m)` chose the same degree as the fixed grid. It was
+  never smaller (0 of 22, where the gate needs at least a quarter).
+- The majorant was within 10x and accuracy held at all 22 points. Where the continuous scale differed from the grid
+  (h <= 0.01 with narrow or moderate spectra), it lowered the majorant by up to 27x at equal degree.
+- That is not the preregistered gain, so the fixed grid {1, 2, 4, 8, 16} stays. The scale cap is not lifted.
