@@ -416,3 +416,7 @@ pub use a1_two_arm_receipt::{
 pub use policy_redesign_v25::{
     CausalRjfStep, PersistenceLatch, PointFeature, PrefixBudget, ProbeAction, causal_feature_value,
 };
+
+/// Optional model-specific physical error transport; not a default solver path.
+#[cfg(feature = "audit2-research")]
+pub mod chart_transport;

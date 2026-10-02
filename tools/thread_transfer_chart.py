@@ -64,14 +64,18 @@ def moving_frame_connection() -> dict:
 
 class SemilinearChart:
     """w = y / x^2 - 1 / kappa on one branch of x, with |D| = x^2 >= d_min and an inverse-chart
-    norm |dw/dy| = 1 / x^2 <= cond_max."""
+    transverse sensitivity |dw/dy| = 1 / x^2 <= cond_max. This is not a bound on
+    the full chart Jacobian; physical-coordinate error transport is separate."""
 
     def __init__(self, kappa, branch_sign, d_min, cond_max):
-        if branch_sign not in (-1, 1) or not (kappa > 0 and d_min > 0 and cond_max > 0):
+        if (branch_sign not in (-1, 1)
+                or not all(mp.isfinite(v) and v > 0 for v in (kappa, d_min, cond_max))):
             raise ValueError("invalid chart parameters")
         self.kappa, self.branch, self.d_min, self.cond_max = kappa, branch_sign, d_min, cond_max
 
     def _check(self, x):
+        if not mp.isfinite(x) or not mp.isfinite(x * x):
+            raise ChartDomainError("nonfinite coordinate or denominator")
         if x == 0:
             raise ChartDomainError("D = x^2 = 0: the chart is undefined")
         if (1 if x > 0 else -1) != self.branch:
@@ -79,15 +83,25 @@ class SemilinearChart:
         if x * x < self.d_min:
             raise ChartDomainError(f"|D| = {x * x} below d_min = {self.d_min}")
         if 1 / (x * x) > self.cond_max:
-            raise ChartDomainError(f"inverse-chart norm {1 / (x * x)} above {self.cond_max}")
+            raise ChartDomainError(f"transverse inverse sensitivity {1 / (x * x)} above {self.cond_max}")
 
     def to_chart(self, x, y):
         self._check(x)
-        return y / (x * x) - 1 / self.kappa
+        if not mp.isfinite(y):
+            raise ChartDomainError("nonfinite physical coordinate")
+        value = y / (x * x) - 1 / self.kappa
+        if not mp.isfinite(value):
+            raise ChartDomainError("chart evaluation overflow")
+        return value
 
     def from_chart(self, x, w):
         self._check(x)
-        return x * x * (w + 1 / self.kappa)
+        if not mp.isfinite(w):
+            raise ChartDomainError("nonfinite chart coordinate")
+        value = x * x * (w + 1 / self.kappa)
+        if not mp.isfinite(value):
+            raise ChartDomainError("chart reconstruction overflow")
+        return value
 
 
 def refuses(callable_):

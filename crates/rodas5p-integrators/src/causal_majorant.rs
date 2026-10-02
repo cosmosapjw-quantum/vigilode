@@ -345,6 +345,29 @@ pub struct BoxEvaluation {
     pub nonzeros: u64,
 }
 
+/// Validate the state-error map as well as the path-sum blocks. A negative
+/// caller-supplied "absolute" coefficient would otherwise make a radius
+/// inequality falsely close. `MajorantEntries` values must be deterministic
+/// throughout an evaluation, just as an operator action must be.
+fn validate_state_map<E: MajorantEntries>(entries: &E) -> CoreResult<()> {
+    if entries.stages() == 0 || entries.components() == 0 {
+        return Err(CoreError::InvalidInput(
+            "CERTIFICATE_NOT_VALIDATED: a majorant needs stages and components".into(),
+        ));
+    }
+    for i in 0..entries.stages() {
+        for j in 0..i {
+            let alpha = entries.alpha_abs(i, j);
+            if !(alpha.is_finite() && alpha >= 0.0) {
+                return Err(CoreError::InvalidInput(format!(
+                    "CERTIFICATE_NOT_VALIDATED: absolute state coefficient ({i}, {j}) must be finite and nonnegative"
+                )));
+            }
+        }
+    }
+    Ok(())
+}
+
 /// Forms `H_u` at `radii` (row `i` of component `u` at `radii[u][i]`),
 /// evaluates `E_u` in `mode` per component on `execution`, and checks
 /// closure. Deterministic for any worker count: components are independent
@@ -357,11 +380,7 @@ pub fn evaluate_radius_box<E: MajorantEntries>(
     execution: &ParallelExecution,
 ) -> CoreResult<BoxEvaluation> {
     let (s, n) = (entries.stages(), entries.components());
-    if s == 0 || n == 0 {
-        return Err(CoreError::InvalidInput(
-            "CERTIFICATE_NOT_VALIDATED: a majorant needs stages and components".into(),
-        ));
-    }
+    validate_state_map(entries)?;
     radii.validate(n, s)?;
     let components = (0..n).collect::<Vec<_>>();
     type ComponentResult = (Vec<f64>, PathSumWork, u64);
@@ -491,6 +510,7 @@ pub fn causal_radius_box<E: MajorantEntries>(
         )));
     }
     let (s, n) = (entries.stages(), entries.components());
+    validate_state_map(entries)?;
     let scale = add_up(1.0, inflation)?;
     let mut radii = vec![vec![0.0; s]; n];
     for (u, row) in radii.iter_mut().enumerate() {

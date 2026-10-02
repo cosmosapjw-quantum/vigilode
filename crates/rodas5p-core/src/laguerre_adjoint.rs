@@ -165,10 +165,10 @@ fn envelopes_impl(
         && extent > 0.0
         && coefficients
             .iter()
-            .all(|c| c.lo.is_finite() && c.hi.is_finite()))
+            .all(|c| c.lo.is_finite() && c.hi.is_finite() && c.lo <= c.hi))
     {
         return Err(CoreError::InvalidInput(
-            "LAGUERRE_ADJOINT_UNSUPPORTED: the extent must be finite and positive, the coefficients finite"
+            "LAGUERRE_ADJOINT_UNSUPPORTED: the extent must be finite and positive, the coefficient intervals finite and ordered"
                 .into(),
         ));
     }

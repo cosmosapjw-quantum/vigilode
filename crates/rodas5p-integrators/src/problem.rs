@@ -42,7 +42,43 @@ pub struct OdeProblem {
     exact_solution: Option<ExactFn>,
 }
 
+/// Retained callback identities for a frozen matrix-free state. This is an
+/// allocation identity, not a proof that interior mutable callback data stayed
+/// unchanged. Callers changing such data must request a fresh linearization.
+#[derive(Clone)]
+pub(crate) struct MatrixFreeCallbackIdentity {
+    rhs: RhsFn,
+    jvp: Option<JvpFn>,
+    partial_t: Option<PartialTFn>,
+    autonomous: bool,
+}
+
+impl MatrixFreeCallbackIdentity {
+    pub(crate) fn matches(&self, problem: &OdeProblem) -> bool {
+        fn same<T: ?Sized>(a: &Option<Arc<T>>, b: &Option<Arc<T>>) -> bool {
+            match (a, b) {
+                (None, None) => true,
+                (Some(a), Some(b)) => Arc::ptr_eq(a, b),
+                _ => false,
+            }
+        }
+        Arc::ptr_eq(&self.rhs, &problem.rhs)
+            && same(&self.jvp, &problem.jvp)
+            && same(&self.partial_t, &problem.partial_t)
+            && self.autonomous == problem.autonomous
+    }
+}
+
 impl OdeProblem {
+    pub(crate) fn matrix_free_callback_identity(&self) -> MatrixFreeCallbackIdentity {
+        MatrixFreeCallbackIdentity {
+            rhs: self.rhs.clone(),
+            jvp: self.jvp.clone(),
+            partial_t: self.partial_t.clone(),
+            autonomous: self.autonomous,
+        }
+    }
+
     #[allow(clippy::too_many_arguments)]
     pub fn new(
         name: impl Into<String>,

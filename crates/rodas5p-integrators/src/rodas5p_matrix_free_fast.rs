@@ -49,7 +49,8 @@ use rodas5p_krylov::{
 use crate::{
     AdaptiveControllerState, AdaptiveFailureKind, AdaptiveStepConfig, KrylovState,
     ObservedIntegrationResult, OdeProblem, OutputSchedule, output::OutputCollector,
-    raw_absolute_residual_budget, rodas_next_step_after_attempt,
+    problem::MatrixFreeCallbackIdentity, raw_absolute_residual_budget,
+    rodas_next_step_after_attempt,
 };
 
 /// Identifier of this driver in research records.
@@ -83,6 +84,9 @@ pub struct Rodas5pMfFastWorkspace {
     lgmres: LgmresWorkspace,
     gcrodr: GcrodrWorkspace,
     jvp: Option<Arc<dyn LinearOperator>>,
+    cached_callbacks: Option<MatrixFreeCallbackIdentity>,
+    cached_t_bits: u64,
+    cached_y: Vec<f64>,
     f0: Vec<f64>,
     ft: Vec<f64>,
     u: Vec<f64>,
@@ -158,6 +162,9 @@ impl Rodas5pMfFastWorkspace {
             lgmres: LgmresWorkspace::default(),
             gcrodr: GcrodrWorkspace::default(),
             jvp: None,
+            cached_callbacks: None,
+            cached_t_bits: 0,
+            cached_y: vec![0.0; n],
             f0: vec![0.0; n],
             ft: vec![0.0; n],
             u: vec![0.0; s * n],
@@ -181,7 +188,10 @@ impl Rodas5pMfFastWorkspace {
     /// [`Self::y_new`] and the WRMS norm of the embedded error `U_(s-1)` in
     /// the sequential path's scale `atol + rtol max(|y|, |y_new|)`. `fresh`
     /// evaluates `f(t, y)`, `f_t` and the JVP operator at this state;
-    /// otherwise those of the previous attempt from the same state are used.
+    /// otherwise reuse is allowed only for the exact same time/state bits and
+    /// retained callback identities. Changing `h` alone does not invalidate
+    /// the frozen state. Interior callback-data changes require `fresh = true`.
+    /// A failed refresh invalidates all frozen data before any retry.
     #[allow(clippy::too_many_arguments)]
     pub fn attempt(
         &mut self,
@@ -196,6 +206,17 @@ impl Rodas5pMfFastWorkspace {
         counters: &mut WorkCounters,
     ) -> CoreResult<f64> {
         let (n, s, gamma) = (self.n, self.s, self.gamma);
+        validate_strict(problem, &self.config)?;
+        if problem.dimension != n {
+            return Err(CoreError::Dimension(
+                "matrix-free workspace/problem dimensions differ".into(),
+            ));
+        }
+        if !(t.is_finite() && atol.is_finite() && atol >= 0.0 && rtol.is_finite() && rtol >= 0.0) {
+            return Err(CoreError::InvalidInput(
+                "time must be finite and output tolerances finite and nonnegative".into(),
+            ));
+        }
         if !(h.is_finite() && h != 0.0) {
             return Err(CoreError::InvalidInput(
                 "step size must be finite and nonzero".into(),
@@ -204,7 +225,21 @@ impl Rodas5pMfFastWorkspace {
         if y.len() != n || !y.iter().all(|value| value.is_finite()) {
             return Err(CoreError::InvalidInput("invalid initial state".into()));
         }
-        if fresh || self.jvp.is_none() {
+        let same_state = self.cached_t_bits == t.to_bits()
+            && self
+                .cached_y
+                .iter()
+                .zip(y)
+                .all(|(a, b)| a.to_bits() == b.to_bits())
+            && self
+                .cached_callbacks
+                .as_ref()
+                .is_some_and(|id| id.matches(problem));
+        if fresh || self.jvp.is_none() || !same_state {
+            // Invalidate before fallible callbacks: a partially written RHS or
+            // failed f_t must never be paired with the old state's operator.
+            self.jvp = None;
+            self.cached_callbacks = None;
             problem.eval_rhs_into(t, y, &mut self.f0, counters)?;
             if problem.autonomous {
                 self.ft.fill(0.0);
@@ -212,7 +247,11 @@ impl Rodas5pMfFastWorkspace {
                 let ft = problem.eval_partial_t(t, y, counters)?;
                 self.ft.copy_from_slice(&ft);
             }
-            self.jvp = Some(problem.linearize_matrix_free(t, y)?);
+            let jvp = problem.linearize_matrix_free(t, y)?;
+            self.cached_y.copy_from_slice(y);
+            self.cached_t_bits = t.to_bits();
+            self.cached_callbacks = Some(problem.matrix_free_callback_identity());
+            self.jvp = Some(jvp);
         }
         let jvp = self.jvp.clone().expect("linearized above");
         let shifted = ShiftedOperator::new_counted_jvp(None, jvp, h, gamma)?;
@@ -352,7 +391,13 @@ impl Rodas5pMfFastWorkspace {
         let error = &self.u[(s - 1) * n..s * n];
         let mut sum = 0.0;
         for ((e, a), b) in error.iter().zip(y).zip(&self.y_new) {
-            let z = e / (atol + rtol * a.abs().max(b.abs()));
+            let scale = atol + rtol * a.abs().max(b.abs());
+            if !(scale.is_finite() && scale > 0.0) {
+                return Err(CoreError::InvalidInput(
+                    "every output error scale must be finite and positive".into(),
+                ));
+            }
+            let z = e / scale;
             sum += z * z;
         }
         let norm = (sum / n as f64).sqrt();
