@@ -47,6 +47,7 @@ mod policy_redesign_v25;
 mod problem;
 mod problems;
 mod radau;
+mod raw_stage_target;
 mod rhs_telemetry;
 mod rodas5p_fast;
 mod sabr;
@@ -327,6 +328,11 @@ pub use radau::{
     RadauStageSolveArchitecture, RadauStepReport, RadauTransformLimitation,
     integrate_radau_adaptive_observed, integrate_radau_fixed, integrate_radau_fixed_observed,
     radau_iia3_tableau, radau_iia3_transform_oracle, radau_step,
+};
+pub use raw_stage_target::{
+    RAW_STAGE_TARGET_ID, RawStageAllowance, RawStageReceipt, raw_absolute_residual_budget,
+    raw_coefficient_digest, raw_relative_residual_budget, raw_residual_transport_bound,
+    raw_stage_allowance, residual_scale_digest, sequential_gamma,
 };
 pub use rhs_telemetry::{
     BackendRecommendationSummary, CommonWBackendChoice, HomotopyRhsTelemetryCase,
