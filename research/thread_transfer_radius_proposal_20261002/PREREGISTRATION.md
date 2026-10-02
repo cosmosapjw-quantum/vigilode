@@ -73,3 +73,28 @@ an admission or speed result, and the cost margin `1 + p1 - 8 pf` of L-0024 is n
 - The review's Python probe: the 1.1x proposal closed all five fixtures (n = 8: proposal 2.5164, required 2.2994;
   n = 16: 16.2533 vs 15.0046); an anisotropic box was verified with one recheck on each.
 - No Rust code of this node exists before this commit.
+
+## Amendment before the recorded run (enclosure reference)
+
+During development the directed-interval reference root named above proved unusable as an oracle: where a
+certificate is tight to rounding it cannot decide. At stage 0 the bound `U |r_0|` equals the exact distance up to
+rounding, so the few-ulp width of an interval root makes `|K_hat - K*|` over the whole enclosure exceed even the
+serial certificate, which is known to be valid (it is checked against exact roots in
+`outward_certificate_contracts.rs`). All three paths (serial, matrix, action) "failed" that check at every n, while
+all other development checks behaved as expected.
+
+The reference is therefore replaced, before the recorded run, by the repository's existing oracle convention:
+
+- `cargo test ... --test thread_transfer_path_action -- --ignored write_r4_stage_inputs` writes the exact R4
+  fixture inputs (`fixtures/thread_transfer_r4_stage_inputs.json`): `J`, `y`, `q`, `h`, candidate bits, and the
+  target's `alpha` and native `Gamma` bits;
+- `python3 tools/thread_transfer_root_oracle.py` solves the same causal stage recurrence in exact rationals
+  (`Fraction`, with `alpha_ij + Gamma_ij` as the exact real sum) and writes one-ulp brackets `[down, up]` of every
+  exact distance `|K_hat - K*|` (`fixtures/thread_transfer_r4_root_oracle.json`);
+- a bound encloses when `bound >= up`, or `down == up` and `bound >= down`, as in
+  `outward_certificate_contracts.rs`; an undecidable case counts as not enclosed. The tests check that the oracle's
+  inputs equal the fixture bits in memory, so a stale oracle fails.
+
+The gates are otherwise unchanged. Development runs of the tests before the recorded run showed: exact identity,
+rejection of invalid input, the same closing attempts, determinism over workers, and an operation ratio of 0.565
+(action/matrix) on all five fixtures. No result file was written.
