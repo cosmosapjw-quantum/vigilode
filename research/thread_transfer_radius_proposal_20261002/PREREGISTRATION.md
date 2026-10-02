@@ -98,3 +98,40 @@ The reference is therefore replaced, before the recorded run, by the repository'
 The gates are otherwise unchanged. Development runs of the tests before the recorded run showed: exact identity,
 rejection of invalid input, the same closing attempts, determinism over workers, and an operation ratio of 0.565
 (action/matrix) on all five fixtures. No result file was written.
+
+---
+
+## Results (appended after the run at `a8554b2`)
+
+Output: `RESULTS.json`. Ledger row L-0036.
+
+**Gate: PASS.**
+
+| Gate item | Outcome |
+|---|---|
+| 1. Residual seed closes R4 | holds: factor 2 closes all five fixtures at its first check (2 evaluations) in both orders; the box certificates enclose the exact roots |
+| 2. Constant box = blocked | holds: at the closing proposal and at D = 1e-3, state radius, closure, stage bounds and operation count equal the blocked certificate's bit for bit |
+| 3. Scalar no-go vs box | holds: no tested common radius closes (stage 2 needs `1 + D <= D`); both seed factors report failure; the causal box `(0, 1.000001, 2.000003)` and `(0, 1, 2)` close |
+| 4. Causal box on R4 | holds: verified by the full evaluation in both orders at all five n; certificates enclose the exact roots |
+| 5. Fail closed | holds: NaN, infinite, negative and misshaped boxes, factors NaN/inf/-2/0 and an overflowing proposal are errors; a zero seed proposes D = 0 and closes in one evaluation |
+
+Proposal cost against the extended 4x schedule (counted directed operations; preflight + check for the seed):
+
+| n | `B = max B E(0)` | factor 2: D | schedule: attempts / ops | seed (matrix / action) ops | causal box check (matrix / action) | serial |
+|---|---|---|---|---|---|---|
+| 1 | 0.01941 | 0.0388 | 4 / 3,616 | 1,808 / 1,022 | 904 / 511 | 425 |
+| 2 | 0.08901 | 0.178 | 5 / 9,040 | 3,616 / 2,044 | 1,808 / 1,022 | 1,010 |
+| 4 | 0.3949 | 0.790 | 6 / 21,696 | 7,232 / 4,088 | 3,616 / 2,044 | 2,660 |
+| 8 | 2.288 | 4.58 | 7 / 50,624 | 14,464 / 8,176 | 7,232 / 4,088 | 7,880 |
+| 16 | 14.78 | 29.6 | 8 / 115,712 | 28,928 / 16,352 | 14,464 / 8,176 | 26,000 |
+
+Reading:
+
+- `B` matches the review's exact preflight values (e.g. n = 8: 2.28765; n = 16: 14.7757).
+- Factor 2 costs width: its output bounds are up to 1.139 times the serial ones at n = 16, against 1.073 for the
+  review's factor 1.1 (which also closed everywhere, reported only) and 1.000 for the causal box.
+- The causal box's count covers only its verifying evaluation. Its construction is a serial recurrence of about the
+  serial certificate's cost, which is not counted in that column. It is not a free parallelisation: the review
+  said so, and it holds here.
+- The serial certificate remains cheapest or near-cheapest by count. Radius closure does not close the cost margin
+  `1 + p1 - 8 pf` of L-0024, and no admission or default-route change follows.

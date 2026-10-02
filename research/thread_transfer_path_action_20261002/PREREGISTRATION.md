@@ -92,3 +92,27 @@ The reference is therefore replaced, before the recorded run, by the repository'
 The gates are otherwise unchanged. Development runs of the tests before the recorded run showed: exact identity,
 rejection of invalid input, the same closing attempts, determinism over workers, and an operation ratio of 0.565
 (action/matrix) on all five fixtures. No result file was written.
+
+---
+
+## Results (appended after the run at `a8554b2`)
+
+Output: `RESULTS.json`. Ledger row L-0035.
+
+**Gate: PASS.**
+
+| Gate item | Outcome |
+|---|---|
+| 1. Exact identity | holds: 20 integer blocks (s = 1, 3, 8, 9, 16, four seeds each), action = matrix order = causal solve bit for bit, every value an integer below 2^53 |
+| 2. Invalid structure rejected | holds: 12 invalid inputs (including a 1e-300 upper entry) rejected by all three evaluations; the valid block accepted |
+| 3. Enclosure | holds: same first closing attempt (4, 5, 6, 7, 8) as the blocked certificate; the action, matrix and serial bounds all enclose the exact-rational stage distances |
+| 4. Fewer operations | holds: action/matrix directed operations 0.565 and allocated f64 slots 0.643 on all five fixtures (e.g. n = 16: 65,408 vs 115,712 operations; 36,864 vs 57,344 slots) |
+| 5. Deterministic | holds: bit-identical bounds for 1, 2, 4 and 8 workers |
+
+Reported: the action and matrix stage bounds differ by at most 4.4e-16 relative; output bounds of either are
+1.00008 (n = 1) to 1.074 (n = 16) times the serial certificate's. The serial certificate stays far cheaper by
+count (425 to 26,000 operations against 2,044 to 65,408 for the action path over its 4-8 attempts); the doubling
+form only has the shorter dependency depth (`ceil(log2 s)` levels), which this node does not time.
+
+Claim ceiling as preregistered: action-first correctness and counted cost; no wall-clock, admission or default-route
+change.
