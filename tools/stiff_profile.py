@@ -205,7 +205,7 @@ def run_json(cmd):
 
 def gzip_into(src: Path, dst_dir: Path):
     dst = dst_dir / (src.name + ".gz")
-    with open(src, "rb") as fin, gzip.open(dst, "wb", compresslevel=9, mtime=0) as fout:
+    with open(src, "rb") as fin, gzip.GzipFile(dst, "wb", compresslevel=9, mtime=0) as fout:
         shutil.copyfileobj(fin, fout)
     return dst
 
