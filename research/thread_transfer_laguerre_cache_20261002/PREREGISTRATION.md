@@ -50,3 +50,15 @@ change of `TotalErrorStatus`.
 
 L-0039 (envelopes valid, cubic-looking setup in development, not measured). No code of this node exists before this
 commit.
+
+## Amendment before any code (exact check of item 3)
+
+Rust has no exact rational arithmetic here, so the exact part of gate item 3 runs, as for L-0039, in Python: the
+test's ignored writer stores the same-vector cases (operator, source, column coefficient bits, scales, native
+recurrence vectors, native combined and per-column bounds) in `fixtures/thread_transfer_laguerre_cache_cases.json`,
+and
+
+`python3 tools/thread_transfer_laguerre_cache_check.py --cases fixtures/thread_transfer_laguerre_cache_cases.json --output research/thread_transfer_laguerre_cache_20261002/EXACT_CHECK.json`
+
+computes the fused recurrence error `sum_k s_k sum_n c_(n,k) (t_hat_n - t_n)` exactly and checks it against the
+native combined bound. The threshold is unchanged.
