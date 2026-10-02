@@ -472,6 +472,19 @@ enum Command {
         #[arg(long)]
         output: PathBuf,
     },
+    /// Run one stiff-benchmark arm on one problem, `repetitions` times, and
+    /// print its work: the workload of the RODAS5P profiling node.
+    #[command(name = "stiff-profile-run")]
+    StiffProfileRun {
+        #[arg(long)]
+        problem: String,
+        #[arg(long, default_value = "rodas5p")]
+        arm: String,
+        #[arg(long)]
+        rtol: f64,
+        #[arg(long, default_value_t = 1)]
+        repetitions: usize,
+    },
     R4Study {
         #[arg(long)]
         study: String,
@@ -3021,6 +3034,17 @@ fn main() -> Result<()> {
                 &output,
                 &stiff_benchmark::stiff_benchmark(repetitions, warmups, &problems, &arms)?,
             )?;
+        }
+        Command::StiffProfileRun {
+            problem,
+            arm,
+            rtol,
+            repetitions,
+        } => {
+            println!(
+                "{}",
+                stiff_benchmark::profile_run(&problem, &arm, rtol, repetitions)?
+            );
         }
         Command::R4Study {
             study,

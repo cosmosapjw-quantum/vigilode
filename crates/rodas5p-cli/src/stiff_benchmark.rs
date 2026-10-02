@@ -446,6 +446,36 @@ pub fn stiff_benchmark(
     }))
 }
 
+/// Run one arm on one problem `repetitions` times and nothing else: the
+/// workload of the profiling node (`research/stiff_rodas5p_profile_20261002`).
+/// Reports the work of one run and checks that every repetition ends in the
+/// same state.
+pub fn profile_run(problem_id: &str, arm: &str, rtol: f64, repetitions: usize) -> Result<Value> {
+    anyhow::ensure!(repetitions >= 1, "at least one repetition");
+    anyhow::ensure!(ARMS.contains(&arm), "unknown arm {arm}");
+    let problem = benchmark_problems()?
+        .into_iter()
+        .find(|p| p.id == problem_id)
+        .ok_or_else(|| anyhow::anyhow!("unknown problem {problem_id}"))?;
+    let first = run_arm(arm, &problem, rtol)?;
+    let mut deterministic = true;
+    for _ in 1..repetitions {
+        let again = run_arm(arm, &problem, rtol)?;
+        deterministic &= again.observed.y == first.observed.y;
+    }
+    let d = &first.diagnostics;
+    Ok(json!({
+        "problem": problem_id, "arm": arm, "rtol": rtol, "repetitions": repetitions,
+        "success": first.observed.success,
+        "attempts": d.attempts,
+        "accepted_steps": d.accepted_macro_steps,
+        "rejected_steps": d.rejected_macro_steps,
+        "counters": counters_json(&first.observed.counters),
+        "final_state": first.observed.y.last(),
+        "deterministic": deterministic,
+    }))
+}
+
 /// Median seconds of one dense LU factorization (faer partial pivoting, as
 /// used by the RODAS5P arm) of two `2 cells` square matrices: the Brusselator
 /// iteration matrix `I - 0.05 J(y0)` ("banded") and the full matrix
