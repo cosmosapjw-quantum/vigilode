@@ -55,3 +55,44 @@ anything (DAG stop condition).
 - L-0017/L-0024 (FAIL): attempts 4/5/6 at n = 1/2/4; none closes at n = 8/16 within 6.
 - The review's Python probe values above. No Rust run of this test exists before this commit; the template has never
   been compiled.
+
+---
+
+## Results (appended after the run at `8f8b6d7`)
+
+Output: `RESULTS.json` (every attempt of both paths, 6 and 8 attempts, with the reference comparison).
+
+**Gate: PASS.**
+
+| Gate item | Outcome |
+|---|---|
+| 1. Old failure preserved | holds: with 6 attempts neither path certifies n = 8 or 16 (6 attempts recorded each); n = 1, 2, 4 close |
+| 2. Extended closure | holds: first closing attempt 4, 5, 6, 7, 8 for n = 1, 2, 4, 8, 16, in both paths |
+| 3. Full = blocked | holds: stage bounds and every attempt's state radius bit-identical at all five n |
+| 4. Native vs exact reference | holds: native state radii lie 2.7e-15 to 5.8e-15 relative **above** the exact-rational values, never below |
+
+At the closing attempt (blocked path):
+
+| n | attempt | D | state radius | output bound (max) | counted operations | allocated f64 |
+|---|---|---|---|---|---|---|
+| 1 | 4 | 0.064 | 0.01942 | 0.0216 | 3,616 | 1,792 |
+| 2 | 5 | 0.256 | 0.08906 | 0.100 | 9,040 | 4,480 |
+| 4 | 6 | 1.024 | 0.3953 | 0.450 | 21,696 | 10,752 |
+| 8 | 7 | 4.096 | 2.307 | 2.71 | 50,624 | 25,088 |
+| 16 | 8 | 16.384 | 15.006 | 18.5 | 115,712 | 57,344 |
+
+(The operation counts are the blocks' own; L-0024's 3689/9186/21988 also include the projection and witness work of
+the finished certificate.)
+
+Reading:
+
+- The R4 cap at n >= 8 is a schedule limit on these two fixtures: one or two more factor-4 attempts close the same
+  inequality in native directed arithmetic. That reproduces the review's Python diagnosis.
+- Closure is not usefulness. At n = 16 the certified output bound is 18.5 on a state of size about 1-2.5: the
+  candidate `h f(y)` is crude, so the distance to the target root is large. No admission gain follows, and the
+  operational q2 path (serial certificate) is a separate consumer that this node does not touch.
+- L-0017/L-0024 stay FAIL. This node does not change the six-attempt schedule.
+
+Deviation from the text above: the template's `Q2CertificateSource` import is not unused (it brings the trait
+method `stage_problem` into scope), so it was kept. Nothing else differs from the template, apart from the added
+dimensions and the JSON ledger.
