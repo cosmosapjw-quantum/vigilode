@@ -63,86 +63,129 @@ pub fn r4_fixture(n: usize) -> CoreResult<R4Fixture> {
     })
 }
 
-fn interval_dot(weights: &[Interval], values: &[Interval]) -> CoreResult<Interval> {
-    let mut total = Interval::point(0.0)?;
-    for (w, v) in weights.iter().zip(values) {
-        total = total.add(w.mul(*v)?)?;
-    }
-    Ok(total)
+const STAGE_INPUTS: &str = "fixtures/thread_transfer_r4_stage_inputs.json";
+const ROOT_ORACLE: &str = "fixtures/thread_transfer_r4_root_oracle.json";
+
+fn workspace_path(relative: &str) -> std::path::PathBuf {
+    std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../..")
+        .join(relative)
 }
 
-/// An interval enclosure of the exact root `K*` of the declared stage
-/// equations for a diagonal `J`:
-/// `(1 - h gamma J_aa) K_ia = h (J y - q y^2)_a + h J_aa sum_{j<i} L*_ij K_ja
-/// + h q_a (sum_{j<i} alpha_ij K_ja)^2`, explicit in `K_i` given `K_j`,
-/// `j < i`, evaluated in directed interval arithmetic. It is the reference a
-/// stage bound must enclose; it is computed without any certificate.
-pub fn interval_root(
-    target: &StageTarget,
-    problem: &QuadraticStageProblem,
-) -> CoreResult<Vec<Vec<Interval>>> {
-    let n = problem.dimension();
-    for a in 0..n {
-        for b in 0..n {
-            assert!(
-                a == b || problem.jacobian[a][b] == 0.0,
-                "reference root needs a diagonal J"
-            );
-        }
-    }
-    let h = Interval::point(problem.h)?;
-    let gamma = Interval::point(target.gamma)?;
-    let mut root: Vec<Vec<Interval>> = Vec::with_capacity(target.stages());
-    for i in 0..target.stages() {
-        let alpha = target.alpha_rows[i]
-            .iter()
-            .map(|value| Interval::point(*value))
-            .collect::<CoreResult<Vec<_>>>()?;
-        let mut row = Vec::with_capacity(n);
-        for a in 0..n {
-            let column = root.iter().map(|stage| stage[a]).collect::<Vec<_>>();
-            let delta = interval_dot(&alpha, &column)?;
-            let coupled = interval_dot(&target.coupling_rows[i], &column)?;
-            let j = Interval::point(problem.jacobian[a][a])?;
-            let q = Interval::point(problem.q[a])?;
-            let y = Interval::point(problem.y[a])?;
-            let base = j.mul(y)?.sub(q.mul(y)?.mul(y)?)?;
-            let right = h
-                .mul(base)?
-                .add(h.mul(j)?.mul(coupled)?)?
-                .add(h.mul(q)?.mul(delta.mul(delta)?)?)?;
-            let w = Interval::point(1.0)?.sub(h.mul(gamma)?.mul(j)?)?;
-            row.push(right.div(w)?);
-        }
-        root.push(row);
-    }
-    Ok(root)
+fn hex(value: f64) -> String {
+    format!("{:016x}", value.to_bits())
 }
 
-/// `|K_hat - K*| <= E` for every point of the root enclosure.
-pub fn encloses_root(
-    certificate: &StageCertificate,
-    candidate: &[Vec<f64>],
-    root: &[Vec<Interval>],
-) -> CoreResult<bool> {
-    for (i, stage) in root.iter().enumerate() {
-        for (a, value) in stage.iter().enumerate() {
-            let distance = Interval::point(candidate[i][a])?.sub(*value)?.mag();
-            if distance > certificate.stage_bound[i][a] {
-                return Ok(false);
+fn hex_rows(rows: &[Vec<f64>]) -> Vec<Vec<String>> {
+    rows.iter()
+        .map(|row| row.iter().copied().map(hex).collect())
+        .collect()
+}
+
+/// The exact inputs of the R4 fixtures, for the exact-rational root oracle
+/// `tools/thread_transfer_root_oracle.py`: problem and candidate bits, and
+/// the target's `alpha` and native `Gamma` bits (its coupling is the exact
+/// real `alpha_ij + Gamma_ij`).
+pub fn stage_inputs() -> serde_json::Value {
+    let coeffs = rodas5p_coefficients().unwrap();
+    let fixtures = R4_DIMENSIONS
+        .iter()
+        .map(|&n| {
+            let f = r4_fixture(n).unwrap();
+            let s = f.target.stages();
+            // The target's coupling is exactly alpha + Gamma.
+            for i in 0..s {
+                for j in 0..i {
+                    let sum =
+                        Interval::exact_sum(f.target.alpha_rows[i][j], coeffs.gamma_matrix[(i, j)])
+                            .unwrap();
+                    assert_eq!(sum, f.target.coupling_rows[i][j]);
+                    assert_eq!(f.target.alpha_rows[i][j], coeffs.alpha[(i, j)]);
+                }
             }
-        }
-    }
-    Ok(true)
+            serde_json::json!({
+                "dimension": n,
+                "h": hex(f.problem.h),
+                "jacobian": hex_rows(&f.problem.jacobian),
+                "y": f.problem.y.iter().copied().map(hex).collect::<Vec<_>>(),
+                "q": f.problem.q.iter().copied().map(hex).collect::<Vec<_>>(),
+                "candidate": hex_rows(&f.candidate),
+                "gamma": hex(f.target.gamma),
+                "alpha_rows": hex_rows(&f.target.alpha_rows),
+                "gamma_rows_strict_lower": (0..s)
+                    .map(|i| (0..i).map(|j| hex(coeffs.gamma_matrix[(i, j)])).collect::<Vec<_>>())
+                    .collect::<Vec<_>>(),
+            })
+        })
+        .collect::<Vec<_>>();
+    serde_json::json!({
+        "schema": "vigilode-thread-transfer-r4-stage-inputs-v1",
+        "target_id": r4_fixture(1).unwrap().target.id,
+        "fixtures": fixtures,
+    })
+}
+
+/// Writes [`stage_inputs`] to the fixture path.
+pub fn write_stage_inputs() {
+    let path = workspace_path(STAGE_INPUTS);
+    let text = serde_json::to_string_pretty(&stage_inputs()).unwrap() + "\n";
+    std::fs::write(&path, text).unwrap();
+    println!("wrote {}", path.display());
+}
+
+fn bits(hex: &str) -> f64 {
+    f64::from_bits(u64::from_str_radix(hex, 16).unwrap())
+}
+
+/// One-ulp brackets `[down, up]` of the exact distances `|K_hat - K*|`
+/// from the oracle, after checking that the oracle was computed from the
+/// fixture bits in memory.
+pub fn root_distances(n: usize) -> Vec<Vec<[f64; 2]>> {
+    let text = std::fs::read_to_string(workspace_path(ROOT_ORACLE))
+        .unwrap_or_else(|error| panic!("{ROOT_ORACLE}: {error}"));
+    let oracle: serde_json::Value = serde_json::from_str(&text).unwrap();
+    let inputs = stage_inputs();
+    let index = R4_DIMENSIONS.iter().position(|&m| m == n).unwrap();
+    assert_eq!(
+        oracle["inputs"]["fixtures"][index], inputs["fixtures"][index],
+        "the root oracle is stale: its inputs differ from the fixture bits"
+    );
+    oracle["fixtures"][index]["stage_distance"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|stage| {
+            stage
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|pair| {
+                    [
+                        bits(pair[0].as_str().unwrap()),
+                        bits(pair[1].as_str().unwrap()),
+                    ]
+                })
+                .collect()
+        })
+        .collect()
+}
+
+/// `bound >= |K_hat - K*|` decided against the exact bracket: `bound >= up`,
+/// or a degenerate bracket and `bound >= down`. Undecidable counts as no.
+pub fn encloses_root(certificate: &StageCertificate, distances: &[Vec<[f64; 2]>]) -> bool {
+    distances.iter().enumerate().all(|(i, stage)| {
+        stage.iter().enumerate().all(|(a, [down, up])| {
+            let bound = certificate.stage_bound[i][a];
+            bound >= *up || (down == up && bound >= *down)
+        })
+    })
 }
 
 /// Writes `value` to the path in `variable`, if set; a relative path is
 /// taken from the workspace root (tests run in the crate directory).
 pub fn write_output(variable: &str, value: &serde_json::Value) {
     if let Ok(path) = std::env::var(variable) {
-        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("../..")
-            .join(path);
+        let path = workspace_path(&path);
         let text = serde_json::to_string_pretty(value).expect("serialize results") + "\n";
         std::fs::write(&path, text)
             .unwrap_or_else(|error| panic!("write {}: {error}", path.display()));

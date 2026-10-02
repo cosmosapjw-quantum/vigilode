@@ -1347,3 +1347,237 @@ pub fn blocked_doubling_certificate_with_execution(
         work,
     })
 }
+
+/// The entries of [`blocked_doubling_certificate_with_execution`] as a
+/// [`crate::MajorantEntries`] (thread-transfer nodes P1-PATH-ACTION and
+/// P1-RADIUS-PROPOSAL): a diagonal `J` and the structural diagonal witness,
+/// seeds `a_(u,i) = U_uu |r_iu|` from the residual enclosure, and
+/// `H_u(D)_ij = h U_uu (|J_uu| |L*_ij| + |q_u| (2 |delta_iu| + D) |alpha_ij|)`
+/// with the blocked certificate's own operations in its own order, so a
+/// constant radius in matrix order reproduces it bit for bit. Built from the
+/// step's own inputs; nothing is cached across steps.
+pub struct DiagonalMajorant<'a> {
+    target: &'a StageTarget,
+    problem: &'a QuadraticStageProblem,
+    witness: &'a InverseWitness,
+    increments: Vec<Vec<f64>>,
+    /// `seeds[u][i]`.
+    seeds: Vec<Vec<f64>>,
+}
+
+impl<'a> DiagonalMajorant<'a> {
+    pub fn new(
+        target: &'a StageTarget,
+        problem: &'a QuadraticStageProblem,
+        candidate: &[Vec<f64>],
+        witness: &'a InverseWitness,
+    ) -> CoreResult<Self> {
+        validate_inputs(target, problem, candidate, witness)?;
+        let n = problem.dimension();
+        let diagonal_jacobian =
+            (0..n).all(|a| (0..n).all(|b| a == b || problem.jacobian[a][b] == 0.0));
+        if witness.identity.structure != "diagonal" || !diagonal_jacobian {
+            return Err(CoreError::InvalidInput(format!(
+                "{CERTIFICATE_STRUCTURE_UNSUPPORTED}: the diagonal majorant needs a diagonal J and the diagonal witness (got {:?})",
+                witness.identity.structure
+            )));
+        }
+        let s = target.stages();
+        let (residuals, increments) = residual_enclosure(target, problem, candidate)?;
+        let mut seeds = vec![vec![0.0; s]; n];
+        for (i, residual) in residuals.iter().enumerate() {
+            let magnitudes = residual.iter().map(Interval::mag).collect::<Vec<_>>();
+            let applied = witness.apply_upper(&magnitudes)?;
+            for u in 0..n {
+                seeds[u][i] = applied[u];
+            }
+        }
+        Ok(Self {
+            target,
+            problem,
+            witness,
+            increments,
+            seeds,
+        })
+    }
+}
+
+impl crate::MajorantEntries for DiagonalMajorant<'_> {
+    fn stages(&self) -> usize {
+        self.target.stages()
+    }
+    fn components(&self) -> usize {
+        self.problem.dimension()
+    }
+    fn seed(&self, component: usize, stage: usize) -> f64 {
+        self.seeds[component][stage]
+    }
+    fn alpha_abs(&self, stage: usize, column: usize) -> f64 {
+        self.target.alpha_rows[stage][column].abs()
+    }
+    fn coupling(
+        &self,
+        component: usize,
+        stage: usize,
+        column: usize,
+        radius: f64,
+    ) -> CoreResult<f64> {
+        let u = component;
+        let coupling = self.target.coupling_rows[stage][column].mag();
+        let alpha = self.target.alpha_rows[stage][column].abs();
+        let ell = mul_up(
+            self.problem.q[u].abs(),
+            add_up(mul_up(2.0, self.increments[stage][u])?, radius)?,
+        )?;
+        let mut term = mul_up(self.problem.jacobian[u][u].abs(), coupling)?;
+        term = add_up(term, mul_up(ell, alpha)?)?;
+        let inner = add_up(0.0, mul_up(self.witness.upper[u][u], term)?)?;
+        mul_up(self.problem.h, inner)
+    }
+    fn coupling_operations(&self) -> u64 {
+        8
+    }
+}
+
+/// A certificate at one radius box, with its evaluation.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct BoxCertificate {
+    pub certificate: Option<StageCertificate>,
+    pub evaluation: crate::BoxEvaluation,
+}
+
+/// The component-blocked certificate at a given radius box `D_(u,i)`
+/// (thread-transfer node P1-RADIUS-PROPOSAL). The entries are rebuilt from
+/// this step's inputs, the box is evaluated in full in `mode`, and the
+/// certificate is finished only if every state radius closes. Where the box
+/// came from does not matter: this evaluation alone decides.
+#[allow(clippy::too_many_arguments)]
+pub fn blocked_box_certificate_with_execution(
+    target: &StageTarget,
+    problem: &QuadraticStageProblem,
+    candidate: &[Vec<f64>],
+    y_hat: &[f64],
+    e_hat: &[f64],
+    witness: &InverseWitness,
+    atol: f64,
+    rtol: f64,
+    radii: &crate::RadiusBox,
+    mode: crate::PathEvaluation,
+    execution: &crate::ParallelExecution,
+) -> CoreResult<BoxCertificate> {
+    let entries = DiagonalMajorant::new(target, problem, candidate, witness)?;
+    let evaluation = crate::evaluate_radius_box(&entries, radii, mode, execution)?;
+    let certificate = if evaluation.closes {
+        Some(finish_certificate(
+            target,
+            problem,
+            candidate,
+            y_hat,
+            e_hat,
+            evaluation.bound.clone(),
+            witness,
+            atol,
+            rtol,
+            evaluation.work.directed_operations,
+        )?)
+    } else {
+        None
+    };
+    Ok(BoxCertificate {
+        certificate,
+        evaluation,
+    })
+}
+
+/// [`blocked_doubling_certificate_with_execution`] with the action-first
+/// path sum `e <- e + Q e; Q <- Q^2` (thread-transfer node P1-PATH-ACTION):
+/// the same arguments, entries, radius schedule (initial radius, times four
+/// per failed attempt) and result type; only the evaluation order of
+/// `sum_k H_u^k a_u` differs, so the bound is a separate upward enclosure,
+/// not bit-identical to the matrix order. `work.allocated_values` and
+/// `work.directed_operations` count block formation and path sums of every
+/// attempt.
+#[allow(clippy::too_many_arguments)]
+pub fn blocked_action_doubling_certificate_with_execution(
+    target: &StageTarget,
+    problem: &QuadraticStageProblem,
+    candidate: &[Vec<f64>],
+    y_hat: &[f64],
+    e_hat: &[f64],
+    witness: &InverseWitness,
+    atol: f64,
+    rtol: f64,
+    initial_radius: f64,
+    max_attempts: usize,
+    execution: &crate::ParallelExecution,
+) -> CoreResult<BlockedDoublingCertificate> {
+    let entries = DiagonalMajorant::new(target, problem, candidate, witness)?;
+    if !(initial_radius.is_finite() && initial_radius >= 0.0) {
+        return Err(CoreError::InvalidInput(format!(
+            "CERTIFICATE_NOT_VALIDATED: initial state radius {initial_radius:e} must be finite and >= 0"
+        )));
+    }
+    let (n, s) = (problem.dimension(), target.stages());
+    let mut work = BlockedCertificateWork {
+        components: n,
+        block_size: s,
+        levels: doubling_levels(s),
+        ..BlockedCertificateWork::default()
+    };
+    let mut attempts = Vec::new();
+    let mut radius = initial_radius;
+    for attempt in 0..max_attempts.max(1) {
+        let radii = crate::RadiusBox::common(n, s, radius)?;
+        let evaluation = crate::evaluate_radius_box(
+            &entries,
+            &radii,
+            crate::PathEvaluation::ActionFirst,
+            execution,
+        )?;
+        work.allocated_values += evaluation.work.allocated_values;
+        work.directed_operations += evaluation.work.directed_operations;
+        if attempt == 0 {
+            work.nonzeros = evaluation.nonzeros;
+        }
+        attempts.push(RadiusAttempt {
+            attempt,
+            radius,
+            closes: evaluation.closes,
+            max_state_radius: evaluation.max_state_radius,
+            reason: (!evaluation.closes).then(|| "RADIUS_CLOSURE_FAIL".into()),
+        });
+        if evaluation.closes {
+            let certificate = finish_certificate(
+                target,
+                problem,
+                candidate,
+                y_hat,
+                e_hat,
+                evaluation.bound,
+                witness,
+                atol,
+                rtol,
+                work.directed_operations,
+            )?;
+            return Ok(BlockedDoublingCertificate {
+                doubling: DoublingCertificate {
+                    certificate: Some(certificate),
+                    attempts,
+                    workers: execution.threads(),
+                    pool_creations: 0,
+                },
+                work,
+            });
+        }
+        radius = mul_up(radius, 4.0)?;
+    }
+    Ok(BlockedDoublingCertificate {
+        doubling: DoublingCertificate {
+            certificate: None,
+            attempts,
+            workers: execution.threads(),
+            pool_creations: 0,
+        },
+        work,
+    })
+}

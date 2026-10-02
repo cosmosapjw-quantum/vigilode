@@ -17,6 +17,7 @@ mod adaptive_exponential;
 mod bdf;
 mod block;
 mod candidates;
+mod causal_majorant;
 mod certification;
 mod certified_budget;
 mod common_w_gate;
@@ -140,6 +141,12 @@ pub use block::{
 pub use candidates::{
     CandidateCatalog, CandidateExecution, CandidateFamily, CandidateRecycleLifetime, CandidateSpec,
     CandidateStatus, HomotopyPredictorVariant, SabrBlockVariant, SabrPredictorVariant,
+};
+pub use causal_majorant::{
+    AffineMajorant, BoxEvaluation, MajorantEntries, PathEvaluation, PathSumWork, RadiusBox,
+    RadiusProposal, causal_radius_box, evaluate_radius_box, residual_seeded_common_radius,
+    upper_causal_solve, upper_path_sum, upper_path_sum_action, upper_path_sum_matrix,
+    validate_strict_lower_block,
 };
 pub use certification::{
     CorrectionDiagnostic, RefinedRootCertificate, RefinedRootConfig, certify_second_correction,
@@ -293,12 +300,14 @@ pub use output::{
     PRODUCTION_CLOCK_POLICY, RESEARCH_REPLAY_CLOCK_POLICY,
 };
 pub use outward_certificate::{
-    BlockedCertificateWork, BlockedDoublingCertificate, CERTIFICATE_STRUCTURE_UNSUPPORTED,
-    CertificateKind, DoublingCertificate, InverseWitness, PastStepData, QuadraticStageProblem,
-    RadiusAttempt, StageCertificate, UnverifiedWitness, WITNESS_NOT_VERIFIED, WitnessIdentity,
-    WitnessWork, blocked_doubling_certificate_with_execution, candidate_digest,
-    certificate_binding, certify_stage_target, doubling_certificate,
-    doubling_certificate_with_execution, doubling_levels, predict_state_radius,
+    BlockedCertificateWork, BlockedDoublingCertificate, BoxCertificate,
+    CERTIFICATE_STRUCTURE_UNSUPPORTED, CertificateKind, DiagonalMajorant, DoublingCertificate,
+    InverseWitness, PastStepData, QuadraticStageProblem, RadiusAttempt, StageCertificate,
+    UnverifiedWitness, WITNESS_NOT_VERIFIED, WitnessIdentity, WitnessWork,
+    blocked_action_doubling_certificate_with_execution, blocked_box_certificate_with_execution,
+    blocked_doubling_certificate_with_execution, candidate_digest, certificate_binding,
+    certify_stage_target, doubling_certificate, doubling_certificate_with_execution,
+    doubling_levels, predict_state_radius,
 };
 pub use parallel::ParallelExecution;
 pub use path_controller::{
