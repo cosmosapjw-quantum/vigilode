@@ -105,3 +105,101 @@ Otherwise **FAIL**. The verdict says the attribution is valid. Which category do
   - the conversion to faer;
   - many small vector allocations per stage.
 - No profile of these workloads exists before this commit.
+
+---
+
+## Results (appended after the run at `cc4071b`)
+
+Outputs: `PROFILE.json` and the 12 raw callgrind profiles in `callgrind/` (gzipped), plus the post-hoc
+`POSTHOC.json` described below.
+
+**Deviation (disclosed).** The first run of the tool aborted before writing anything to the node. It called
+`gzip.open` with an `mtime` argument, which `gzip.open` does not take; `GzipFile` does. That run had written one
+scratch callgrind profile, deleted unread, and an empty `callgrind/` directory, removed. The tool was fixed in
+`cc4071b` and run again. The profiled binary was the same one, built from `629c950`; `cc4071b` changes only the
+Python tool.
+
+**Gate: FAIL.** The verdict follows the preregistered rule:
+
+- The profiled runs reproduced the benchmark's work: 210, 469 and 92 attempts, with the same factorizations and
+  right-hand sides as L-0029.
+- The repeated callgrind profiles were identical.
+- The native attribution covered at least 99.8% of instructions.
+- **The RODAS5P attribution did not reach 90%.** "other" was 41%, 57% and 41%. The preregistered mapping had two
+  defects:
+  - **glibc has line tables in this container.** Its code is filed under `./malloc/malloc.c` and
+    `sysdeps/.../memmove-*.S`, not under the `libc.so` object the `libc-allocator-and-memory` rule expected.
+  - **faer's gemm microkernels have no line tables at all.** They appear as unsymbolized addresses in the binary
+    (23.6% of the Brusselator run).
+
+**Instructions per attempted step** (callgrind, one integration). These numbers do not depend on the attribution:
+
+| Problem | Attempts | RODAS5P Ir per attempt | Hairer RODAS Ir per attempt | Ratio |
+|---|---|---|---|---|
+| HIRES | 210 | 115,000 | 9,160 | 12.6 |
+| van der Pol | 469 | 79,500 | 2,950 | 27.0 |
+| Brusselator n = 400 | 92 | 36.4 M | 8.83 M | 4.1 |
+
+The per-step wall-time ratios of L-0029 (8 to 16 on the small problems) are of the same order. Instructions explain
+the gap; no memory-bound effect is needed to account for it.
+
+**Where RODAS5P's instructions go: post-hoc reading (not preregistered).** `tools/stiff_profile_posthoc.py` reads the
+kept raw profiles and does two things:
+
+- It corrects the two mapping defects. glibc source paths go to the allocator and memory category, and the
+  unsymbolized code is resolved with `addr2line`; every such address was a faer gemm microkernel and goes to LU.
+- It attributes the inclusive cost of calls into the hot callees to their callers.
+
+Rerunning it from the committed script reproduced `POSTHOC.json` bit for bit. Its shares are exploratory:
+
+| Share of one run | HIRES | van der Pol | Brusselator n = 400 |
+|---|---|---|---|
+| glibc allocator and memory (malloc, free, calloc, memalign, memcpy, memset) | 40.5% | 55.9% | 9.4% |
+| Rust std (Vec growth and zeroing, iterator code inlined from `core`) | 31.7% | 23.3% | 49.6% |
+| faer (factorization, solves, gemm kernels) | 15.3% | 8.4% | 38.3% |
+| Everything in the repository's own files together | 11% | 10% | 2% |
+
+The inclusive view, by callee and caller:
+
+- **Allocator.**
+  - Small problems: 37% (HIRES) and 52% (van der Pol) of all instructions are spent inside malloc and free.
+  - The largest callers are:
+    - the stage loop `sequential_stages_refined`, 9% and 12% (per-stage `Vec` allocations for stages, states,
+      right-hand sides, combinations and residuals);
+    - the zeroed allocations of `__rust_alloc_zeroed`, 4% and 5%;
+    - `sequential_step`, 3% and 5% (step results and copies of y and of the stages);
+    - `row_combination`, 2% and 3%;
+    - the adaptive loop, 2% and 3%.
+- **faer on small matrices.**
+  - The per-stage solve took 17% (HIRES) and 12% (van der Pol). It goes through a heap-allocated faer matrix for
+    each right-hand side.
+  - The factorization itself took 4% and 1%.
+  - For n = 2 to 8, faer's generic machinery costs far more than the arithmetic. Hairer's RODAS spends 24% to 61% of
+    its far smaller instruction count in DEC and SOL.
+- **Dense matrix-vector products.** These went through the shifted operator's `apply`: 7% (HIRES), 3% (van der Pol)
+  and **27% (Brusselator n = 400)**. They are the diagnostic residual `W x - b` after every direct stage solve
+  (`direct_report`, 8 per step) and the Jacobian product for the gamma terms of every stage after the first (7 per
+  step). The loop is an iterator `zip`/`sum` that the compiler does not vectorize; its body is the `core::iter` share
+  above. perf measured `matvec_into` at 35% of the Brusselator wall time.
+- **Brusselator n = 400, the rest.**
+  - The faer factorization took 43%. Hairer's DEC and SOL took 79% of RODAS's run, on a matrix whose zero
+    multipliers DEC skips.
+  - Matrix construction took 14%: zeroed `DenseMatrix` allocations, W assembly, conversion to faer.
+  - The per-stage solves took about 8%.
+- **perf cross-check (wall time, cpu-clock).**
+  - The malloc, free and memory-copy symbols took 38% (HIRES) and 50% (van der Pol) of samples, against 37% and
+    52% of instructions.
+  - `matvec_into` took 35% on the Brusselator.
+  - Samples: 27K, 32K and 48K.
+
+**Implications.** These are not tested here; each needs its own measurement:
+
+1. Reuse workspace across stages and steps instead of allocating per stage. On the small problems this is the
+   largest single item, about 40% to 55% of instructions.
+2. Drop or gate the diagnostic residual product after direct solves. A direct solve's residual is not needed for
+   acceptance; this is 8 dense products per step.
+3. Use the standard transformed Rosenbrock formulation, which needs no Jacobian products for the gamma terms.
+   Together with item 2, this removes the 27% (n = 400).
+4. Use a small-matrix LU and solve path (unblocked, in place, no allocation) below a dimension threshold, and a
+   banded or sparse factorization where the structure allows.
+5. Assemble W in place and stop zeroing new matrices every step.

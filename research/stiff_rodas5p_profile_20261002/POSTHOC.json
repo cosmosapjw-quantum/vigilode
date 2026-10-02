@@ -1,0 +1,602 @@
+{
+ "schema": "vigilode-stiff-rodas5p-profile-posthoc-v1",
+ "preregistered": false,
+ "workloads": [
+  {
+   "problem": "hires",
+   "ir_per_run": 24143906,
+   "corrected_categories": {
+    "libc-allocator-and-memory": {
+     "ir": 9778114,
+     "share": 0.4049930446216946
+    },
+    "rust-std-alloc-iter": {
+     "ir": 7659682,
+     "share": 0.31725115231976136
+    },
+    "lu-faer": {
+     "ir": 3703350,
+     "share": 0.15338653157446852
+    },
+    "stage-assembly": {
+     "ir": 862980,
+     "share": 0.035743180908673185
+    },
+    "norms": {
+     "ir": 448338,
+     "share": 0.018569406292420123
+    },
+    "dense-matrix-wrapper": {
+     "ir": 371280,
+     "share": 0.01537779346887782
+    },
+    "work-counters": {
+     "ir": 345873,
+     "share": 0.014325478238690955
+    },
+    "adaptive-control-and-output": {
+     "ir": 259792,
+     "share": 0.010760147923041119
+    },
+    "shifted-operator-and-matvec": {
+     "ir": 259140,
+     "share": 0.0107331431790697
+    },
+    "problem-user-code": {
+     "ir": 187611,
+     "share": 0.007770532241137784
+    },
+    "other-unsymbolized": {
+     "ir": 158130,
+     "share": 0.006549478779448528
+    },
+    "problem-wrapper": {
+     "ir": 69720,
+     "share": 0.002887685198906921
+    },
+    "other": {
+     "ir": 27506,
+     "share": 0.0011392522817144832
+    },
+    "coefficients": {
+     "ir": 12390,
+     "share": 0.0005131729720949046
+    }
+   },
+   "unsymbolized_resolved": [],
+   "hot_callees_by_caller": {
+    "dense-matvec": {
+     "inclusive_ir": 1666350,
+     "share": 0.06901741582327234,
+     "top_callers": [
+      {
+       "caller": "<rodas5p_core::operator::DenseOperator as rodas5p_core::operator::LinearOperator>::apply",
+       "ir": 1666350,
+       "share": 0.06901741582327234
+      }
+     ]
+    },
+    "allocator": {
+     "inclusive_ir": 8991810,
+     "share": 0.3724256547387154,
+     "top_callers": [
+      {
+       "caller": "rodas5p_integrators::sequential::sequential_stages_refined",
+       "ir": 2143614,
+       "share": 0.08878488841035083
+      },
+      {
+       "caller": "__rustc::__rust_alloc_zeroed",
+       "ir": 916909,
+       "share": 0.037976829432652695
+      },
+      {
+       "caller": "rodas5p_integrators::sequential::sequential_step",
+       "ir": 755540,
+       "share": 0.03129319671804554
+      },
+      {
+       "caller": "rodas5p_integrators::sequential::row_combination",
+       "ir": 534240,
+       "share": 0.022127322728973515
+      },
+      {
+       "caller": "rodas5p_integrators::integrate::integrate_adaptive_observed_with_config",
+       "ir": 515134,
+       "share": 0.021335984326645407
+      },
+      {
+       "caller": "__rustc::__rust_alloc",
+       "ir": 463050,
+       "share": 0.01917875260117398
+      },
+      {
+       "caller": "posix_memalign",
+       "ir": 423661,
+       "share": 0.017547326435084696
+      },
+      {
+       "caller": "core::ptr::drop_in_place<rodas5p_core::coefficients::Rodas5pCoefficients>",
+       "ir": 383172,
+       "share": 0.01587034011812339
+      }
+     ]
+    },
+    "faer-lu-factor": {
+     "inclusive_ir": 927570,
+     "share": 0.03841839013124057,
+     "top_callers": [
+      {
+       "caller": "faer::linalg::solvers::PartialPivLu<T>::new_imp",
+       "ir": 927570,
+       "share": 0.03841839013124057
+      }
+     ]
+    },
+    "faer-solve": {
+     "inclusive_ir": 4172440,
+     "share": 0.1728154508222489,
+     "top_callers": [
+      {
+       "caller": "rodas5p_core::matrix::LuFactorization::solve",
+       "ir": 4172440,
+       "share": 0.1728154508222489
+      }
+     ]
+    },
+    "matrix-construction": {
+     "inclusive_ir": 252272,
+     "share": 0.010448682164352362,
+     "top_callers": [
+      {
+       "caller": "rodas5p_core::operator::ShiftedOperator::new_with_application_work",
+       "ir": 170940,
+       "share": 0.007080047445512752
+      },
+      {
+       "caller": "faer::mat::matown::noalias_annotate",
+       "ir": 40320,
+       "share": 0.001669986621054605
+      },
+      {
+       "caller": "0x000000000498f740",
+       "ir": 21019,
+       "share": 0.0008705716465264568
+      },
+      {
+       "caller": "faer::linalg::solvers::split_LU",
+       "ir": 17430,
+       "share": 0.0007219212997267302
+      },
+      {
+       "caller": "faer::linalg::solvers::PartialPivLu<T>::new_imp",
+       "ir": 2520,
+       "share": 0.00010437416381591281
+      },
+      {
+       "caller": "rodas5p_integrators::integrate::integrate_adaptive_observed_with_config",
+       "ir": 43,
+       "share": 1.7809877159064487e-06
+      }
+     ]
+    }
+   }
+  },
+  {
+   "problem": "van-der-pol-mu1000",
+   "ir_per_run": 37270168,
+   "corrected_categories": {
+    "libc-allocator-and-memory": {
+     "ir": 20827002,
+     "share": 0.5588115943024459
+    },
+    "rust-std-alloc-iter": {
+     "ir": 8681210,
+     "share": 0.2329265057243638
+    },
+    "lu-faer": {
+     "ir": 3139972,
+     "share": 0.08424893603913994
+    },
+    "stage-assembly": {
+     "ir": 1205581,
+     "share": 0.0323470771583321
+    },
+    "work-counters": {
+     "ir": 772446,
+     "share": 0.020725584064981945
+    },
+    "adaptive-control-and-output": {
+     "ir": 569209,
+     "share": 0.015272509638271552
+    },
+    "shifted-operator-and-matvec": {
+     "ir": 541226,
+     "share": 0.014521694670117935
+    },
+    "dense-matrix-wrapper": {
+     "ir": 510272,
+     "share": 0.013691164472346891
+    },
+    "other-unsymbolized": {
+     "ir": 353157,
+     "share": 0.009475594529115082
+    },
+    "norms": {
+     "ir": 326967,
+     "share": 0.008772887742282246
+    },
+    "problem-wrapper": {
+     "ir": 155708,
+     "share": 0.004177818570605853
+    },
+    "problem-user-code": {
+     "ir": 101854,
+     "share": 0.002732855939903464
+    },
+    "other": {
+     "ir": 57893,
+     "share": 0.0015533334864495378
+    },
+    "coefficients": {
+     "ir": 27671,
+     "share": 0.0007424436616438112
+    }
+   },
+   "unsymbolized_resolved": [],
+   "hot_callees_by_caller": {
+    "dense-matvec": {
+     "inclusive_ir": 977865,
+     "share": 0.02623720397503977,
+     "top_callers": [
+      {
+       "caller": "<rodas5p_core::operator::DenseOperator as rodas5p_core::operator::LinearOperator>::apply",
+       "ir": 977865,
+       "share": 0.02623720397503977
+      }
+     ]
+    },
+    "allocator": {
+     "inclusive_ir": 19260622,
+     "share": 0.5167838792677296,
+     "top_callers": [
+      {
+       "caller": "rodas5p_integrators::sequential::sequential_stages_refined",
+       "ir": 4589138,
+       "share": 0.12313166927500836
+      },
+      {
+       "caller": "__rustc::__rust_alloc_zeroed",
+       "ir": 1952237,
+       "share": 0.05238068688072455
+      },
+      {
+       "caller": "rodas5p_integrators::sequential::sequential_step",
+       "ir": 1700594,
+       "share": 0.04562882571390609
+      },
+      {
+       "caller": "rodas5p_integrators::integrate::integrate_adaptive_observed_with_config",
+       "ir": 1252745,
+       "share": 0.03361253965906459
+      },
+      {
+       "caller": "rodas5p_integrators::sequential::row_combination",
+       "ir": 1133104,
+       "share": 0.030402438754770302
+      },
+      {
+       "caller": "posix_memalign",
+       "ir": 1078665,
+       "share": 0.028941779924362025
+      },
+      {
+       "caller": "__rustc::__rust_alloc",
+       "ir": 1034145,
+       "share": 0.027747258880078028
+      },
+      {
+       "caller": "rodas5p_integrators::problem::OdeProblem::eval_rhs_uncounted",
+       "ir": 649234,
+       "share": 0.01741966926470522
+      }
+     ]
+    },
+    "faer-lu-factor": {
+     "inclusive_ir": 300144,
+     "share": 0.00805319686243432,
+     "top_callers": [
+      {
+       "caller": "faer::linalg::solvers::PartialPivLu<T>::new_imp",
+       "ir": 300144,
+       "share": 0.00805319686243432
+      }
+     ]
+    },
+    "faer-solve": {
+     "inclusive_ir": 4518326,
+     "share": 0.12123170467060948,
+     "top_callers": [
+      {
+       "caller": "rodas5p_core::matrix::LuFactorization::solve",
+       "ir": 4518326,
+       "share": 0.12123170467060948
+      }
+     ]
+    },
+    "matrix-construction": {
+     "inclusive_ir": 197408,
+     "share": 0.005296675882974286,
+     "top_callers": [
+      {
+       "caller": "rodas5p_core::operator::ShiftedOperator::new_with_application_work",
+       "ir": 104034,
+       "share": 0.0027913477610296794
+      },
+      {
+       "caller": "faer::mat::matown::noalias_annotate",
+       "ir": 51590,
+       "share": 0.0013842169962850718
+      },
+      {
+       "caller": "rodas5p_integrators::problems::stiff_van_der_pol_problem::{{closure}}",
+       "ir": 30485,
+       "share": 0.0008179464068957242
+      },
+      {
+       "caller": "faer::linalg::solvers::split_LU",
+       "ir": 6097,
+       "share": 0.00016358928137914485
+      },
+      {
+       "caller": "faer::linalg::solvers::PartialPivLu<T>::new_imp",
+       "ir": 5159,
+       "share": 0.00013842169962850718
+      },
+      {
+       "caller": "rodas5p_integrators::integrate::integrate_adaptive_observed_with_config",
+       "ir": 43,
+       "share": 1.153737756159296e-06
+      }
+     ]
+    }
+   }
+  },
+  {
+   "problem": "brusselator-1d-200",
+   "ir_per_run": 3346670087,
+   "corrected_categories": {
+    "rust-std-alloc-iter": {
+     "ir": 1658278734,
+     "share": 0.4955011073369659
+    },
+    "lu-faer": {
+     "ir": 1282092680,
+     "share": 0.3830950307830567
+    },
+    "libc-allocator-and-memory": {
+     "ir": 315632720,
+     "share": 0.09431246934858088
+    },
+    "other": {
+     "ir": 44300876,
+     "share": 0.013237300017137901
+    },
+    "dense-matrix-wrapper": {
+     "ir": 18447472,
+     "share": 0.005512187195164063
+    },
+    "stage-assembly": {
+     "ir": 9646622,
+     "share": 0.002882453827006104
+    },
+    "problem-user-code": {
+     "ir": 8647437,
+     "share": 0.0025838928771588832
+    },
+    "norms": {
+     "ir": 8419012,
+     "share": 0.002515638464843995
+    },
+    "shifted-operator-and-matvec": {
+     "ir": 834808,
+     "share": 0.0002494443665788202
+    },
+    "work-counters": {
+     "ir": 151527,
+     "share": 4.5276945758292785e-05
+    },
+    "adaptive-control-and-output": {
+     "ir": 112951,
+     "share": 3.375026431160736e-05
+    },
+    "other-unsymbolized": {
+     "ir": 69276,
+     "share": 2.069997884437421e-05
+    },
+    "problem-wrapper": {
+     "ir": 30544,
+     "share": 9.126683899511604e-06
+    },
+    "coefficients": {
+     "ir": 5428,
+     "share": 1.6219106929854959e-06
+    }
+   },
+   "unsymbolized_resolved": [
+    {
+     "function": "gemm_v0_gemm_microkernel_f64_simd256_load_m12_n4",
+     "ir": 790050000,
+     "share": 0.2360704758646262
+    },
+    {
+     "function": "gemm_v0_gemm_microkernel_f64_simd256_m12_n4",
+     "ir": 60777224,
+     "share": 0.018160506539346852
+    },
+    {
+     "function": "gemm_v0_gemm_microkernel_f64_simd256_load_packA_m12_n4",
+     "ir": 53957632,
+     "share": 0.01612278192869867
+    },
+    {
+     "function": "gemm_v0_gemm_microkernel_f64_simd256_load_m4_n4",
+     "ir": 53425320,
+     "share": 0.01596372472073911
+    },
+    {
+     "function": "gemm_v0_gemm_microkernel_f64_simd256_epilogue_store_add_m12_n4",
+     "ir": 26924352,
+     "share": 0.008045116877395989
+    },
+    {
+     "function": "gemm_v0_gemm_microkernel_f64_simd256_load_m8_n4",
+     "ir": 24447528,
+     "share": 0.007305030781183183
+    },
+    {
+     "function": "gemm_v0_gemm_microkernel_f64_simd256_load_packA_m4_n4",
+     "ir": 2586672,
+     "share": 0.0007729091702369526
+    },
+    {
+     "function": "gemm_v0_gemm_microkernel_f64_simd256_epilogue_store_add_m4_n4",
+     "ir": 2397888,
+     "share": 0.0007164996661351519
+    }
+   ],
+   "hot_callees_by_caller": {
+    "dense-matvec": {
+     "inclusive_ir": 898723620,
+     "share": 0.26854263988884186,
+     "top_callers": [
+      {
+       "caller": "<rodas5p_core::operator::DenseOperator as rodas5p_core::operator::LinearOperator>::apply",
+       "ir": 898723620,
+       "share": 0.26854263988884186
+      }
+     ]
+    },
+    "allocator": {
+     "inclusive_ir": 157138131,
+     "share": 0.04695357681368011,
+     "top_callers": [
+      {
+       "caller": "rodas5p::stiff_benchmark::brusselator_problem::{{closure}}",
+       "ir": 117783736,
+       "share": 0.03519430745729195
+      },
+      {
+       "caller": "rodas5p_core::operator::ShiftedOperator::new_with_application_work",
+       "ir": 12380084,
+       "share": 0.0036992245062009307
+      },
+      {
+       "caller": "__rustc::__rust_alloc_zeroed",
+       "ir": 8431300,
+       "share": 0.002519310174238875
+      },
+      {
+       "caller": "rodas5p_integrators::sequential::row_combination",
+       "ir": 5098194,
+       "share": 0.0015233631841404748
+      },
+      {
+       "caller": "rodas5p_integrators::problem::OdeProblem::eval_rhs_uncounted",
+       "ir": 2528047,
+       "share": 0.000755391757861073
+      },
+      {
+       "caller": "rodas5p_integrators::sequential::sequential_stages_refined",
+       "ir": 2451614,
+       "share": 0.0007325532353855828
+      },
+      {
+       "caller": "posix_memalign",
+       "ir": 1665477,
+       "share": 0.0004976519814335675
+      },
+      {
+       "caller": "__rustc::__rust_alloc",
+       "ir": 1194609,
+       "share": 0.00035695451566630624
+      }
+     ]
+    },
+    "faer-lu-factor": {
+     "inclusive_ir": 1444053252,
+     "share": 0.43148957455034614,
+     "top_callers": [
+      {
+       "caller": "faer::linalg::solvers::PartialPivLu<T>::new_imp",
+       "ir": 1444053252,
+       "share": 0.43148957455034614
+      }
+     ]
+    },
+    "faer-solve": {
+     "inclusive_ir": 650962261,
+     "share": 0.19451043696498072,
+     "top_callers": [
+      {
+       "caller": "faer::linalg::lu::partial_pivoting::factor::lu_in_place_recursion",
+       "ir": 269659820,
+       "share": 0.08057556107710835
+      },
+      {
+       "caller": "rodas5p_core::matrix::LuFactorization::solve",
+       "ir": 254914589,
+       "share": 0.07616962006210444
+      },
+      {
+       "caller": "faer::linalg::lu::partial_pivoting::factor::lu_in_place_recursion'2",
+       "ir": 126387852,
+       "share": 0.037765255825767924
+      }
+     ]
+    },
+    "matrix-construction": {
+     "inclusive_ir": 455133071,
+     "share": 0.13599579856046923,
+     "top_callers": [
+      {
+       "caller": "rodas5p_core::operator::ShiftedOperator::new_with_application_work",
+       "ir": 150921400,
+       "share": 0.045095989767933164
+      },
+      {
+       "caller": "0x000000000498f740",
+       "ir": 146657304,
+       "share": 0.04382185879919391
+      },
+      {
+       "caller": "faer::mat::matown::noalias_annotate",
+       "ir": 120753312,
+       "share": 0.036081630056413745
+      },
+      {
+       "caller": "faer::linalg::solvers::split_LU",
+       "ir": 36485544,
+       "share": 0.010902043838060576
+      },
+      {
+       "caller": "faer::linalg::solvers::PartialPivLu<T>::new_imp",
+       "ir": 295964,
+       "share": 8.84353677853278e-05
+      },
+      {
+       "caller": "private_gemm_x86::kernel_imp",
+       "ir": 19504,
+       "share": 5.827882490049579e-06
+      },
+      {
+       "caller": "rodas5p_integrators::integrate::integrate_adaptive_observed_with_config",
+       "ir": 43,
+       "share": 1.2848592446274195e-08
+      }
+     ]
+    }
+   }
+  }
+ ]
+}
