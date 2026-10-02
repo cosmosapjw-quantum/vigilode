@@ -58,3 +58,41 @@ ODE error bound.
 
 - The prior thread's results (above). Before this commit the vendored scripts were dry-run once in a scratch
   directory (40/40 and 89/89 checks, about 7 s); no native run of these problems exists.
+
+---
+
+## Results (appended after the run at `4e86588`)
+
+Outputs: `thread_loop3/results/exact_loop3.json`, `thread_loop3/results/numeric_loop3.json` (vendored scripts),
+`NATIVE.json`. Ledger row L-0040.
+
+**Gate: PASS.**
+
+| Gate item | Outcome |
+|---|---|
+| 1. Reproduction | holds: 40/40 exact and 89/89 numeric checks; RVJ5 two-step `y` error / h^3 = 1.643, 1.478, 1.403, 1.368, 1.350 for N = 16 .. 256 (limit 4/3); effectivity 5.0e-6 at `z = -1e6` |
+| 2. Native runs complete | holds: every case finite for every method |
+| 3. Labels kept apart | holds: reported per method below |
+
+Native results (binary64):
+
+| Method | two-step `y` error / h^3, N = 16 .. 256 | order at kappa = 8 | effectivity, z = -10, -100, -1e4, -1e6 | shares RVJ5 no-go / blindness |
+|---|---|---|---|---|
+| RODAS5P | -1.7e-11, -2.2e-14, -3.6e-17, -6.4e-20, -1.1e-22 | 5.00, 5.00, 5.01 | 11, 6.2, 4.6, 4.6 | no / no |
+| EXPRB43 | -1.2e-9, -6.6e-12, -4.8e-14, -4.0e-15, -2.2e-14 | 3.99, 3.99, 4.00 | 29, 152, 1.4e4, 1.4e6 | no / no |
+| PEXPRB54S4 | -1.3e-9, -6.6e-12, -5.0e-14, -4.0e-15, -2.2e-14 | 4.99, 4.99, 5.01 | 11.7, 3.5, 3.1, 3.1 | no / no |
+
+Reading, per method and only for these problems:
+
+- RODAS5P stays on the slow manifold. Its two-step error falls far faster than h^3. It is stiffly accurate with
+  the exact Jacobian, which RVJ5 is not.
+- The exponential methods' errors at N >= 128 are at the binary64 floor of `y` (about 1e-15 relative to
+  `x^2 / kappa`), not an h^3 law.
+- No method's embedded estimate is blind on the quintic PR problem. EXPRB43's estimate over-estimates the true local
+  error by up to 1.4e6 (pessimistic, so it rejects steps it need not). RODAS5P and PEXPRB54S4 over-estimate by
+  3 to 12.
+- This does not show that RODAS5P or the exponential methods are safe in general. It shows only that these two RVJ5
+  counterexamples do not transfer to them, and no stage certificate or embedded proxy is called an error bound.
+
+Development disclosure: the native test ran once before the recorded run (same code, same outcome); the vendored
+scripts were dry-run in scratch before the preregistration (stated there).

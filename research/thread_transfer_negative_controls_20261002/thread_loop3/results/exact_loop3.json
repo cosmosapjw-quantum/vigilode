@@ -1,0 +1,211 @@
+{
+  "scope": "exact research certificates, including no-go results; not a production solver",
+  "environment": {
+    "python": "3.11.15",
+    "sympy": "1.14.0"
+  },
+  "passed": 40,
+  "total": 40,
+  "elapsed_seconds": 4.097587644999294,
+  "checks": [
+    {
+      "name": "damped_defect_factorization",
+      "passed": true
+    },
+    {
+      "name": "K_bound_halfplane_SOS",
+      "passed": true
+    },
+    {
+      "name": "K_poles_open_right_halfplane",
+      "passed": true
+    },
+    {
+      "name": "R5_imaginary_boundary_gap",
+      "passed": true
+    },
+    {
+      "name": "R5_Hurwitz_margin",
+      "passed": true
+    },
+    {
+      "name": "ordered_Abel_identity",
+      "passed": true
+    },
+    {
+      "name": "ordered_Abel_test_noncommuting",
+      "passed": true
+    },
+    {
+      "name": "fast_matrix_1_dissipative_Sylvester",
+      "passed": true
+    },
+    {
+      "name": "fast_matrix_1_nonnormal",
+      "passed": true
+    },
+    {
+      "name": "fast_matrix_2_dissipative_Sylvester",
+      "passed": true
+    },
+    {
+      "name": "fast_matrix_2_nonnormal",
+      "passed": true
+    },
+    {
+      "name": "fast_matrix_1_defective",
+      "passed": true
+    },
+    {
+      "name": "semilinear_g_independent_of_stiffness",
+      "passed": true
+    },
+    {
+      "name": "semilinear_higher_nonlinearity_derivatives_zero",
+      "passed": true
+    },
+    {
+      "name": "Darboux_C_cofactor",
+      "passed": true
+    },
+    {
+      "name": "Darboux_D_cofactor",
+      "passed": true
+    },
+    {
+      "name": "gauge_exact_constant_fast_equation",
+      "passed": true
+    },
+    {
+      "name": "chart_jacobian",
+      "passed": true
+    },
+    {
+      "name": "chart_inverse_composition",
+      "passed": true
+    },
+    {
+      "name": "normalized_C_degree2_search",
+      "passed": true
+    },
+    {
+      "name": "normalized_D_degree2_search",
+      "passed": true
+    },
+    {
+      "name": "semilinear_flow_jet_1",
+      "passed": true
+    },
+    {
+      "name": "semilinear_flow_jet_2",
+      "passed": true
+    },
+    {
+      "name": "semilinear_flow_jet_3",
+      "passed": true
+    },
+    {
+      "name": "semilinear_flow_jet_4",
+      "passed": true
+    },
+    {
+      "name": "semilinear_flow_jet_5",
+      "passed": true
+    },
+    {
+      "name": "weighted_boundary_amplification",
+      "passed": true
+    },
+    {
+      "name": "weighted_boundary_manifold_defect",
+      "passed": true
+    },
+    {
+      "name": "weighted_boundary_regular_denominators",
+      "passed": true
+    },
+    {
+      "name": "two_step_leading_error_four_thirds",
+      "passed": true
+    },
+    {
+      "name": "slow_U_consistency",
+      "passed": true
+    },
+    {
+      "name": "full_matrix_map_matches_slow_update",
+      "passed": true
+    },
+    {
+      "name": "full_matrix_map_matches_error_recurrence",
+      "passed": true
+    },
+    {
+      "name": "variable_fast_rate_amplification_growth",
+      "passed": true
+    },
+    {
+      "name": "quintic_estimator_ratio",
+      "passed": true
+    },
+    {
+      "name": "quintic_estimator_blind_stiff_limit",
+      "passed": true
+    },
+    {
+      "name": "quintic_estimator_leading_ratio",
+      "passed": true
+    },
+    {
+      "name": "quintic_defect_certificate_exact",
+      "passed": true
+    },
+    {
+      "name": "rotating_frame_connection_nonzero",
+      "passed": true
+    },
+    {
+      "name": "vector_PR_full_augmented_matrix_recurrence",
+      "passed": true
+    }
+  ],
+  "vector_PR": {
+    "K": "(-z**2 + 4*z - 11)/(120*z**2 - 720*z + 7200)",
+    "K_halfplane_bound": "1/60",
+    "SOS": "3*w**4 - 330*w**2 + 14279",
+    "fixed_step_bound": "||e_N||_H <= ||e0||_H + h^5*((2 M5+T M6)/60+T M6/720)"
+  },
+  "semilinear_counterexample": {
+    "F": [
+      "x**2",
+      "x**2 + y*(-k + 2*x)"
+    ],
+    "g": [
+      "x**2",
+      "x**2 + 2*x*y"
+    ],
+    "initial_state": [
+      "1",
+      "1/k"
+    ],
+    "k": "h^(-6)",
+    "A_scaled_boundary": "-x**2/3",
+    "D_scaled_boundary": "-4*x**7",
+    "two_step_error_over_h3_limit": "4/3",
+    "scaled_amplification": "(-360*h**33*x**10 + 2472*h**32*x**9 - 7794*h**31*x**8 + 12984*h**30*x**7 - 10050*h**29*x**6 + 1728*h**28*x**5 + 648*h**27*x**9 + 1584*h**27*x**4 - 3894*h**26*x**8 + 1008*h**26*x**3 + 10425*h**25*x**7 + 2268*h**25*x**2 - 14088*h**24*x**6 - 1080*h**24*x + 7776*h**23*x**5 + 2700*h**23 - 504*h**22*x**4 - 450*h**21*x**8 - 144*h**21*x**3 + 2385*h**20*x**7 - 1080*h**20*x**2 - 5592*h**19*x**6 + 756*h**19*x + 6336*h**18*x**5 - 1080*h**18 - 2277*h**17*x**4 - 90*h**16*x**3 + 152*h**15*x**7 + 216*h**15*x**2 - 734*h**14*x**6 - 162*h**14*x + 1593*h**13*x**5 + 135*h**13 - 1590*h**12*x**4 + 375*h**11*x**3 - 26*h**9*x**6 + 121*h**8*x**5 - 252*h**7*x**4 + 231*h**6*x**3 - 30*h**5*x**2 + 2*h**3*x**5 - 9*h**2*x**4 + 18*h*x**3 - 15*x**2)/(48*h**21*x**6 - 432*h**20*x**5 + 1836*h**19*x**4 - 4608*h**18*x**3 + 7128*h**17*x**2 - 6480*h**16*x - 72*h**15*x**5 + 2700*h**15 + 540*h**14*x**4 - 1836*h**13*x**3 + 3456*h**12*x**2 - 3564*h**11*x + 1620*h**10 + 36*h**9*x**4 - 216*h**8*x**3 + 567*h**7*x**2 - 756*h**6*x + 405*h**5 - 6*h**3*x**3 + 27*h**2*x**2 - 54*h*x + 45)",
+    "scaled_defect": "(-288*h**27*x**19 + 2352*h**26*x**18 - 9080*h**25*x**17 + 20116*h**24*x**16 - 27256*h**23*x**15 + 28348*h**22*x**14 + 432*h**21*x**18 - 58128*h**21*x**13 - 2880*h**20*x**17 + 175128*h**20*x**12 + 8652*h**19*x**16 - 369744*h**19*x**11 - 13524*h**18*x**15 + 502992*h**18*x**10 + 11460*h**17*x**14 - 416160*h**17*x**9 - 10480*h**16*x**13 + 171000*h**16*x**8 - 216*h**15*x**17 + 36000*h**15*x**12 + 1116*h**14*x**16 - 89964*h**14*x**11 - 2490*h**13*x**15 + 128400*h**13*x**10 + 2433*h**12*x**14 - 89316*h**12*x**9 - 864*h**11*x**13 + 2160*h**11*x**8 + 1024*h**10*x**12 + 39600*h**10*x**7 + 36*h**9*x**16 - 3756*h**9*x**11 - 132*h**8*x**15 + 2112*h**8*x**10 + 217*h**7*x**14 + 7656*h**7*x**9 - 80*h**6*x**13 - 17460*h**6*x**8 - 16*h**5*x**12 + 14400*h**5*x**7 + 192*h**4*x**11 - 816*h**3*x**10 + 2964*h**2*x**9 - 4140*h*x**8 + 3600*x**7)/(128*h**24*x**9 - 1728*h**23*x**8 + 11232*h**22*x**7 - 45648*h**21*x**6 + 127008*h**20*x**5 - 250128*h**19*x**4 - 192*h**18*x**8 + 348192*h**18*x**3 + 2304*h**17*x**7 - 330480*h**17*x**2 - 13104*h**16*x**6 + 194400*h**16*x + 45648*h**15*x**5 - 54000*h**15 - 105840*h**14*x**4 + 166752*h**13*x**3 + 96*h**12*x**7 - 174096*h**12*x**2 - 1008*h**11*x**6 + 110160*h**11*x + 4968*h**10*x**5 - 32400*h**10 - 14724*h**9*x**4 + 28080*h**8*x**3 - 34344*h**7*x**2 - 16*h**6*x**6 + 24840*h**6*x + 144*h**5*x**5 - 8100*h**5 - 612*h**4*x**4 + 1536*h**3*x**3 - 2376*h**2*x**2 + 2160*h*x - 900)",
+    "domain": "0<=t<=1/4; k>=1; local smooth cutoff may globalize g"
+  },
+  "chart": {
+    "w": "y/x**2 - 1/k",
+    "reconstruction": "Matrix([[x], [x**2*(w + 1/k)]])",
+    "jacobian": "x^2",
+    "open_conditions": [
+      "x!=0",
+      "k!=0"
+    ],
+    "C_solution": "[{a0: 0, a1: 0, a2: k, a3: -1}]",
+    "D_solution": "[{a0: 0, a1: 0, a2: 0, a3: k}]"
+  },
+  "embedded_effectivity": "-5*(z**2 - 5*z + 12)/(z*(z**2 - 4*z + 11))"
+}
