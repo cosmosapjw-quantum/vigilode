@@ -70,3 +70,63 @@ consistently worse than the sequential MF path stops promotion of this driver.
 - The review's 12 Python JVP-only comparisons removed 7 RHS JVPs in every case.
 - The fast (explicit-J) driver's raw-stage algebra passed L-0032/L-0033. No code of this node exists before this
   commit.
+
+---
+
+## Results (appended after the run at `55267cf`)
+
+Output: `RESULTS.json`. Ledger row L-0038.
+
+**Gate: FAIL** (items 1, 2 and 5 hold; 3, 4 and 6 fail).
+
+| Gate item | Outcome |
+|---|---|
+| 1. RHS-assembly JVPs 7 -> 0 | **holds**: 7 per attempt for the sequential step, 0 for the U form, in every one-step and adaptive run |
+| 2. Strict MF | **holds**: no Jacobian build or factorization anywhere; Direct, Jacobi and Direct-preconditioner configurations, a mass matrix and a JVP-less problem are refused |
+| 3. One step agrees | **fails**: 22 of 36 comparisons miss `1e-9 (|y| + 1e-6)` or 1e-6 relative error norm (classified below) |
+| 4. Matched accuracy | **fails** on one of 18 runs: GCRO-DR on the Brusselator completes for neither driver within 5,000 attempts; the other 17 complete, at most 2.6x the sequential error (Prothero-Robinson with GCRO-DR; all others 0.76-1.0x) |
+| 5. Semantics | **holds**: a rejected attempt changes the recycle state and the restored snapshot reproduces a clean attempt bit for bit; output times equal the schedule bit for bit through a rejected first attempt; zero RHS gives zero stages; h = 1e-12 completes; Prothero-Robinson error 9.5e-10 at rtol 1e-8 |
+| 6. Allocations <= 0.5x | **fails**: 0.32-0.62x on the small problems, 0.81-0.86x on the Brusselator (1.03x for the non-completing GCRO-DR run) |
+
+Adaptive runs (rtol 1e-6; relative final error against the reference; attempts; allocations per attempt U form /
+sequential):
+
+| Problem | GMRES | LGMRES | GCRO-DR |
+|---|---|---|---|
+| Robertson | 3.67e-7 both, 45 att, 0.41 | same, 0.48 | same, 0.54 |
+| van der Pol | 7.59e-7 both, 469 att, 0.40 | same, 0.48 | same, 0.53 |
+| HIRES | 2.63e-7 vs 3.44e-7, 210/213 att, 0.62 | same, 0.62 | same, 0.70 |
+| Brusselator n=100 | 2.14e-6 both, 92 att, 0.81 | same, 0.86 | neither completes (5,000 att) |
+| Prothero-Robinson | 5.98e-9 both, 12 att, 0.32 | same, 0.51 | 1.54e-8 vs 5.98e-9, 16/12 att, 0.49 |
+| quadratic n=4 | 4.68e-8 both, 13 att, 0.55 | same, 0.58 | same, 0.62 |
+
+Total JVPs per attempt fall by about 7 everywhere except the Brusselator, where the U-form stage systems took more
+Krylov iterations (GMRES 328 vs 315 per attempt) and total JVPs rose (351 vs 345). The protected (inner-forced)
+driver reaches the same errors on the 17 completing runs (descriptive).
+
+Classification of the failures (descriptive; the gate stands as preregistered):
+
+- **One-step comparisons.** (a) Robertson at h = 1e-2 diverges in both drivers (states near 1e117, error norm 1e6):
+  the comparison is meaningless at that step size. (b) Where the embedded error norm is 1e-13 to 1e-9 (h = 1e-4 and
+  some h = 1e-2 cases), the states agree to 1e-16 to 1e-10, but the two error norms differ by 1e-6 to 7x relative.
+  At those sizes the norms are Krylov noise: a relative 1e-12 residual on a different right-hand side. The
+  preregistered relative criterion did not allow for that. (c) GCRO-DR on the Brusselator fails at the tight
+  tolerance ("least-squares solve produced NaN/Inf") in both drivers at h = 1e-4, and in the sequential one at
+  h = 1e-2.
+- **GCRO-DR on the Brusselator.** Unpreconditioned GCRO-DR at rtol 1e-11 alternates between a failed and an
+  accepted attempt in the sequential step, in the protected driver and in the U form alike ("Arnoldi budget
+  exhausted"; also with maxiter 1000 in a development check). This is a property of that solver configuration on
+  that problem, not of the U form. During development the same runs aborted inside faer (scratch too small for a
+  2x2 complex pencil). That crash is fixed separately (`crates/rodas5p-krylov/src/small.rs`, commit `01f4266`,
+  regression test), and the fixed code is what ran here.
+- **Allocations.** The stage loop no longer allocates, but each Krylov solve still returns a fresh solution vector
+  and report, and the GCRO-DR/LGMRES states allocate during updates. At n = 100 the Krylov work dominates. Halving
+  the allocations needs Krylov kernels that write into caller storage, which this node did not change.
+
+Development disclosure: the test ran several times before the recorded run, with the same driver, to fix test bugs
+(an invalid initial step in the semantics check, an iteration budget raised to 4000 for the tight one-step solves,
+recording Krylov failures instead of panicking, a 5,000-attempt cap so that non-completing runs end). Those runs showed
+the outcomes above. No gate threshold was changed.
+
+Claim ceiling: native counters and correctness of a research driver; no wall-time claim; timing authority stays on
+HOLD.
