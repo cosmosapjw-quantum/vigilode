@@ -1,0 +1,88 @@
+{
+  "schema": "vigilode-review-final-verification-v1",
+  "source_commit": "d1e9ba3b0125ee478c28d0b2c280ca0869289c15",
+  "publication_base": "687def63d3f6d24297d37bc1cb1a99558be2d71f",
+  "python_source_files_syntax_checked": 10,
+  "machine_readable_dag": {
+    "nodes": 12,
+    "acyclic": true,
+    "referenced_sources_and_blockers_resolved": true
+  },
+  "executed": {
+    "unit_contracts": {
+      "passed": 13,
+      "total": 13,
+      "includes_disposable_local_git_only": true
+    },
+    "homotopy_cases": {
+      "count": 5,
+      "source_six_trial_rejections_reproduced": [
+        8,
+        16
+      ],
+      "extended_closure_attempts": [
+        7,
+        8
+      ],
+      "native_rust_bit_parity": false
+    },
+    "path_action": {
+      "exact_equalities": 5,
+      "invalid_inputs_rejected": 4,
+      "native_speedup": false
+    },
+    "laguerre": {
+      "finite_polynomial_cases": 7,
+      "whole_phi_action_certified": false,
+      "max_bound_improvement": 82423471053025.06
+    },
+    "matrix_free_transform": {
+      "cases_passed": 12,
+      "rhs_JVP_removed_per_case": 7,
+      "maximum_endpoint_difference": 2.318811809232102e-12,
+      "native_faer_parity": false
+    },
+    "thread_replay": {
+      "exact": {
+        "passed": 40,
+        "total": 40
+      },
+      "numeric": {
+        "passed": 89,
+        "total": 89
+      },
+      "negative_controls_included": true
+    },
+    "connected_wolfram": {
+      "identity_checks": "mass residual scaling and signed Laguerre adjoint; synthetic radius difference=1",
+      "receipt": "WOLFRAM_RECEIPT.json",
+      "local_kernel_run": false
+    }
+  },
+  "official_fixture_intake": {
+    "bytes": 4430,
+    "sha256": "211255f6125b648c6955833c3da537d9c031ec78168b2918563c29fa88c8bce6",
+    "git_blob_sha": "bc55da4d43549ffbcee3cb25e31be05658507742",
+    "matches_remote_reported_ids": true,
+    "exported_payload_representation": "selected fields, not a full byte duplicate"
+  },
+  "runtime": {
+    "python": "3.13.5",
+    "cargo": null,
+    "rustc": null
+  },
+  "not_executed": [
+    "native Rust workspace build/tests",
+    "native homotopy template",
+    "AD backend",
+    "native Krylov/parallel speedup",
+    "native matched-error BDF/Radau campaign",
+    "GitHub write/commit/push"
+  ],
+  "authority": {
+    "old_results_rewritten": false,
+    "timing": "HOLD_PRESERVED",
+    "new_scientific_pass_promotion": false
+  },
+  "source_unchanged_during_replay": true
+}
