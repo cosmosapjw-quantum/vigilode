@@ -5,6 +5,7 @@ mod coefficients;
 pub mod directed;
 mod error;
 mod hash;
+pub mod laguerre_adjoint;
 mod matrix;
 mod matrix_functions;
 mod norms;

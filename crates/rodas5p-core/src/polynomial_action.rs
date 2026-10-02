@@ -659,6 +659,14 @@ pub struct ErrorComponents {
     /// [`TotalErrorStatus::Certified`] and `recurrence` stays `None`.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub recurrence_majorant: Option<f64>,
+    /// Laguerre only, degree at most
+    /// [`crate::laguerre_adjoint::LAGUERRE_ADJOINT_DEGREE_LIMIT`]: the signed
+    /// output-adjoint bound `sum_j beta_j eps_j` of the recurrence error of
+    /// the stored finite polynomial (thread-transfer node P1-LAGUERRE-CERT).
+    /// A proved component; it does not by itself make the total
+    /// [`TotalErrorStatus::Certified`].
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub recurrence_adjoint: Option<f64>,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -713,6 +721,11 @@ pub struct JointPhiReport {
     /// for the tightness study, not a certificate.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub laguerre_majorant_total: Option<f64>,
+    /// Laguerre with a verified enclosure and every column's
+    /// `recurrence_adjoint`: the bounded components plus those bounds. A
+    /// candidate total; [`JointPhiReport::total_error`] is unchanged.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub laguerre_adjoint_total: Option<f64>,
 }
 
 /// How the action was executed: with the rounding enclosures
@@ -1147,6 +1160,50 @@ fn recurrence_step_plain(
     Ok(next)
 }
 
+/// The Laguerre recurrence `t_0 = w`, `t_(n+1) = ((2n+1) t_n - X t_n - n
+/// t_(n-1))/(n+1)` with `X = -A / beta`, exactly as the action runs it, with
+/// an upper bound on the 2-norm of every step's exact local residual
+/// (research access for thread-transfer node P1-LAGUERRE-CERT).
+pub fn laguerre_recurrence_with_residuals(
+    matrix: &DenseMatrix,
+    beta: f64,
+    w: &[f64],
+    degree: usize,
+) -> CoreResult<(Vec<Vec<f64>>, Vec<f64>)> {
+    if matrix.nrows() != w.len() || matrix.ncols() != w.len() || !(beta.is_finite() && beta > 0.0) {
+        return Err(unsupported("Laguerre recurrence shape or beta"));
+    }
+    let transform = Transform {
+        basis: PolynomialBasis::Laguerre,
+        shift: 0.0,
+        half_width: 0.0,
+        beta,
+        degree,
+        laguerre_scale: None,
+        tail_factor: 0.0,
+        eta: 0.0,
+        laguerre_norm: 0.0,
+        laguerre_extent: 0.0,
+        a: Interval::point(0.0)?,
+        b: Interval::point(0.0)?,
+    };
+    let mut vectors = vec![w.to_vec()];
+    let mut local = Vec::with_capacity(degree);
+    for step in 0..degree {
+        let previous = (step > 0).then(|| vectors[step - 1].clone());
+        let (next, residual) = recurrence_step(
+            matrix,
+            &transform,
+            step,
+            previous.as_deref(),
+            &vectors[step],
+        )?;
+        vectors.push(next);
+        local.push(residual);
+    }
+    Ok((vectors, local))
+}
+
 fn empty_components() -> ErrorComponents {
     ErrorComponents {
         truncation: 0.0,
@@ -1155,6 +1212,7 @@ fn empty_components() -> ErrorComponents {
         summation: 0.0,
         normalization: 0.0,
         recurrence_majorant: None,
+        recurrence_adjoint: None,
     }
 }
 
@@ -1418,6 +1476,10 @@ fn joint_phi_action_impl(
             .recurrence_majorant
             .map(|value| scale_bound_up(value, shift))
             .transpose()?;
+        components.recurrence_adjoint = components
+            .recurrence_adjoint
+            .map(|value| scale_bound_up(value, shift))
+            .transpose()?;
         if lossy[k] > 0 {
             let delta = mul_up(scales[k].abs(), rounding_norm_up(lossy[k], shift - 1075)?)?;
             let term = div_up(delta, factorial(k))?;
@@ -1453,6 +1515,10 @@ fn joint_phi_action_impl(
     }
     report.laguerre_majorant_total = report
         .laguerre_majorant_total
+        .map(|value| -> CoreResult<f64> { add_up(scale_bound_up(value, shift)?, added) })
+        .transpose()?;
+    report.laguerre_adjoint_total = report
+        .laguerre_adjoint_total
         .map(|value| -> CoreResult<f64> { add_up(scale_bound_up(value, shift)?, added) })
         .transpose()?;
     report.normalization_shift = shift;
@@ -1708,6 +1774,21 @@ fn joint_phi_action_core(
                     Some(mul_up(scales[k].abs(), total)?)
                 }
             };
+            let adjoint = match transform.basis {
+                PolynomialBasis::Laguerre
+                    if degree <= crate::laguerre_adjoint::LAGUERRE_ADJOINT_DEGREE_LIMIT =>
+                {
+                    let stored = chosen.iter().map(|row| row[k]).collect::<Vec<_>>();
+                    let bound = crate::laguerre_adjoint::laguerre_adjoint_recurrence_bound(
+                        &stored,
+                        transform.laguerre_extent,
+                        &local[column],
+                        crate::laguerre_adjoint::LAGUERRE_ADJOINT_DEPTH,
+                    )?;
+                    Some(mul_up(scales[k].abs(), bound)?)
+                }
+                _ => None,
+            };
             // Summation of chosen * t_n and the scaling by scales[k].
             let scale = Interval::point(scales[k])?;
             let mut errors = Vec::with_capacity(n);
@@ -1727,6 +1808,7 @@ fn joint_phi_action_core(
                 summation: norm_up(errors)?,
                 normalization: 0.0,
                 recurrence_majorant: majorant,
+                recurrence_adjoint: adjoint,
             };
         }
     }
@@ -1771,6 +1853,17 @@ fn joint_phi_action_core(
     } else {
         None
     };
+    let verified = matches!(evidence, EnclosureEvidence::Gershgorin);
+    let laguerre_adjoint_total =
+        if verified && column_errors.iter().all(|c| c.recurrence_adjoint.is_some()) {
+            let mut total = bounded;
+            for components in &column_errors {
+                total = add_up(total, components.recurrence_adjoint.unwrap_or(0.0))?;
+            }
+            Some(total)
+        } else {
+            None
+        };
     let total_error = if !bounds && !scalar_branch && weight_factor != 0.0 {
         TotalErrorStatus::EstimateOnly {
             reason: format!("{TOTAL_ERROR_NOT_CERTIFIED}: rounding bounds not computed"),
@@ -1837,6 +1930,7 @@ fn joint_phi_action_core(
         }
         .into(),
         laguerre_majorant_total,
+        laguerre_adjoint_total,
     })
 }
 
