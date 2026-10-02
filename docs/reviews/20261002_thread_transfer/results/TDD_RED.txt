@@ -1,0 +1,83 @@
+FFFF                                                                     [100%]
+=================================== FAILURES ===================================
+__________________________ test_all_paths_act_on_rhs ___________________________
+
+    def test_all_paths_act_on_rhs():
+        h = [[F(0),F(0),F(0)], [F(2),F(0),F(0)], [F(3),F(5),F(0)]]
+>       assert path_sum_action(h, [F(1),F(7),F(11)]) == [F(1),F(9),F(59)]
+E       assert [Fraction(1, ...action(11, 1)] == [Fraction(1, ...action(59, 1)]
+E         
+E         At index 1 diff: Fraction(7, 1) != Fraction(9, 1)
+E         
+E         Full diff:
+E           [
+E               Fraction(1, 1),
+E         -     Fraction(9, 1),
+E         ?              ^
+E         +     Fraction(7, 1),
+E         ?              ^
+E         -     Fraction(59, 1),
+E         ?              ^^
+E         +     Fraction(11, 1),
+E         ?              ^^
+E           ]
+
+test_probes.py:7: AssertionError
+____________ test_radius_grid_miss_is_repaired_by_feasible_interval ____________
+
+    def test_radius_grid_miss_is_repaired_by_feasible_interval():
+        p = [F(29,100), F(0), F(4,5)]
+        result = feasible_radius([p])
+>       assert result["status"] == "feasible"
+E       AssertionError: assert 'schedule_failed' == 'feasible'
+E         
+E         - feasible
+E         + schedule_failed
+
+test_probes.py:12: AssertionError
+_____________ test_radius_infeasibility_has_algebraic_certificate ______________
+
+    def test_radius_infeasibility_has_algebraic_certificate():
+        result = feasible_radius([[F(1),F(0),F(1)]])
+>       assert result["status"] == "infeasible"
+E       AssertionError: assert 'schedule_failed' == 'infeasible'
+E         
+E         - infeasible
+E         + schedule_failed
+
+test_probes.py:18: AssertionError
+_____________________ test_non_nilpotent_input_is_rejected _____________________
+
+    def test_non_nilpotent_input_is_rejected():
+>       with pytest.raises(ValueError, match="strict-lower"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+test_probes.py:22: Failed
+=========================== short test summary info ============================
+FAILED test_probes.py::test_all_paths_act_on_rhs - assert [Fraction(1, ...action(11, 1)] == [Fraction(1, ...action(59, 1)]
+  
+  At index 1 diff: Fraction(7, 1) != Fraction(9, 1)
+  
+  Full diff:
+    [
+        Fraction(1, 1),
+  -     Fraction(9, 1),
+  ?              ^
+  +     Fraction(7, 1),
+  ?              ^
+  -     Fraction(59, 1),
+  ?              ^^
+  +     Fraction(11, 1),
+  ?              ^^
+    ]
+FAILED test_probes.py::test_radius_grid_miss_is_repaired_by_feasible_interval - AssertionError: assert 'schedule_failed' == 'feasible'
+  
+  - feasible
+  + schedule_failed
+FAILED test_probes.py::test_radius_infeasibility_has_algebraic_certificate - AssertionError: assert 'schedule_failed' == 'infeasible'
+  
+  - infeasible
+  + schedule_failed
+FAILED test_probes.py::test_non_nilpotent_input_is_rejected - Failed: DID NOT RAISE <class 'ValueError'>
+4 failed in 0.06s
