@@ -48,3 +48,35 @@ gate item; timing authority stays on HOLD. L-0033 stays FAIL whatever this node 
 
 - L-0032/L-0033 numbers: v2 HIRES 20,720 and van der Pol 9,227 instructions per attempt at rtol 1e-6.
 - No code of this node exists before this commit.
+
+---
+
+## Results (appended after the run at `8d41b8b`)
+
+Output: `EVALUATION.json`. Ledger row L-0041.
+
+**Gate: PASS.**
+
+| Gate item | Outcome |
+|---|---|
+| 1. Identical results | holds at all 9 points (3 problems x rtol 1e-4, 1e-6, 1e-8): final states, accepted and rejected steps, RHS, Jacobian and factorization counts; the contract test also compares output times, states and every counter, including runs with rejections and Jacobian reuse |
+| 2. Instructions <= 0.8 | holds: van der Pol **0.393** (3,569 vs 9,090 per attempt), HIRES **0.602** (12,302 vs 20,427) |
+
+Reported: Robertson 0.444 (5,060 vs 11,384). Ensemble of 64 van der Pol trajectories (mu = 1000 .. 1984): 1.12 M
+against 2.86 M instructions per trajectory (0.393), identical checksums and attempts (20,083). One trajectory at
+mu = 1000 costs 1.67 M against 4.26 M. The per-trajectory cost of an ensemble member is lower than that of a single
+run because the members differ in mu, not because of shared work.
+
+Attribution (callgrind, rtol 1e-6): in v2 the driver function holds 74-83% of the instructions and the dynamic
+problem callbacks with their `OdeProblem` wrappers 6-8%. In the small driver the method's share falls to 58-82%, and
+the shared represented-clock helpers (`land_capped`, `step_to`) become the largest remainder on van der Pol (23%) and
+Robertson (17%). These helpers are unchanged, audited rules; this node does not touch them.
+
+Reading: the small-problem cost that L-0033 did not remove was runtime-length loop overhead and dynamic dispatch, not
+zero operations. With the dimension and the problem known at compile time, the same arithmetic in the same order runs
+in 0.39-0.60 of the instructions. This is a specialization, not a replacement: it needs a `SmallProblem` per model and
+covers autonomous problems with the identity mass matrix only. L-0033 stays FAIL. Timing authority stays on HOLD, and
+no wall time was measured.
+
+Development disclosure: the identity contract test ran once before the recorded run (it passed), and one
+`stiff-profile-run` of HIRES served as a smoke check. The evaluation itself ran once, as recorded.
