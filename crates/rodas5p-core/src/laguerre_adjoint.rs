@@ -44,68 +44,91 @@ pub const LAGUERRE_ADJOINT_DEPTH: usize = 3;
 
 type Bernstein = Vec<Interval>;
 
+/// Interval operations of an envelope setup (each `+ - * /` or scaling of
+/// an interval counts one).
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+struct Ops(u64);
+
+impl Ops {
+    fn tick(&mut self, count: u64) {
+        self.0 += count;
+    }
+}
+
 fn point(value: f64) -> CoreResult<Interval> {
     Interval::point(value)
 }
 
-fn ratio(numerator: f64, denominator: f64) -> CoreResult<Interval> {
+fn ratio(numerator: f64, denominator: f64, ops: &mut Ops) -> CoreResult<Interval> {
+    ops.tick(1);
     point(numerator)?.div(point(denominator)?)
 }
 
 /// Degree elevation by one: `e_k = k/(d+1) b_(k-1) + (d+1-k)/(d+1) b_k`.
-fn elevate(b: &[Interval]) -> CoreResult<Bernstein> {
+fn elevate(b: &[Interval], ops: &mut Ops) -> CoreResult<Bernstein> {
     let d = b.len() - 1;
     let n = (d + 1) as f64;
     let mut out = Vec::with_capacity(d + 2);
     for k in 0..=d + 1 {
         let mut value = point(0.0)?;
         if k > 0 {
-            value = value.add(ratio(k as f64, n)?.mul(b[k - 1])?)?;
+            value = value.add(ratio(k as f64, n, ops)?.mul(b[k - 1])?)?;
+            ops.tick(2);
         }
         if k <= d {
-            value = value.add(ratio((d + 1 - k) as f64, n)?.mul(b[k])?)?;
+            value = value.add(ratio((d + 1 - k) as f64, n, ops)?.mul(b[k])?)?;
+            ops.tick(2);
         }
         out.push(value);
     }
     Ok(out)
 }
 
-fn elevate_to(mut b: Bernstein, degree: usize) -> CoreResult<Bernstein> {
+fn elevate_to(mut b: Bernstein, degree: usize, ops: &mut Ops) -> CoreResult<Bernstein> {
     while b.len() - 1 < degree {
-        b = elevate(&b)?;
+        b = elevate(&b, ops)?;
     }
     Ok(b)
 }
 
 /// `(alpha - g t) p(t)` for `t in [0, 1]`, degree `d + 1`:
 /// `alpha e_k - g k/(d+1) b_(k-1)` with `e` the elevation of `b`.
-fn mul_affine(b: &[Interval], alpha: Interval, g: Interval) -> CoreResult<Bernstein> {
+fn mul_affine(
+    b: &[Interval],
+    alpha: Interval,
+    g: Interval,
+    ops: &mut Ops,
+) -> CoreResult<Bernstein> {
     let d = b.len() - 1;
     let n = (d + 1) as f64;
-    let elevated = elevate(b)?;
+    let elevated = elevate(b, ops)?;
     let mut out = Vec::with_capacity(d + 2);
     for (k, e) in elevated.iter().enumerate() {
         let mut value = alpha.mul(*e)?;
+        ops.tick(1);
         if k > 0 {
-            value = value.sub(g.mul(ratio(k as f64, n)?)?.mul(b[k - 1])?)?;
+            value = value.sub(g.mul(ratio(k as f64, n, ops)?)?.mul(b[k - 1])?)?;
+            ops.tick(3);
         }
         out.push(value);
     }
     Ok(out)
 }
 
-fn add(p: Bernstein, q: Bernstein) -> CoreResult<Bernstein> {
+fn add(p: Bernstein, q: Bernstein, ops: &mut Ops) -> CoreResult<Bernstein> {
     let degree = (p.len() - 1).max(q.len() - 1);
-    let (p, q) = (elevate_to(p, degree)?, elevate_to(q, degree)?);
+    let (p, q) = (elevate_to(p, degree, ops)?, elevate_to(q, degree, ops)?);
+    ops.tick(p.len() as u64);
     p.iter().zip(&q).map(|(a, b)| a.add(*b)).collect()
 }
 
 /// De Casteljau halving at `t = 1/2`.
-fn split(b: &[Interval]) -> CoreResult<(Bernstein, Bernstein)> {
+fn split(b: &[Interval], ops: &mut Ops) -> CoreResult<(Bernstein, Bernstein)> {
     let mut row = b.to_vec();
     let mut left = vec![row[0]];
     let mut right = vec![row[row.len() - 1]];
     while row.len() > 1 {
+        ops.tick(2 * (row.len() as u64 - 1));
         row = row
             .windows(2)
             .map(|w| w[0].add(w[1])?.scale(0.5))
@@ -119,12 +142,64 @@ fn split(b: &[Interval]) -> CoreResult<(Bernstein, Bernstein)> {
 
 /// `max |coefficient|` over the `2^depth` pieces: an upper bound of `|p|` on
 /// `[0, 1]` by the convex-hull property.
-fn bound(b: &[Interval], depth: usize) -> CoreResult<f64> {
+fn bound(b: &[Interval], depth: usize, ops: &mut Ops) -> CoreResult<f64> {
     if depth == 0 {
         return Ok(b.iter().map(Interval::mag).fold(0.0, f64::max));
     }
-    let (left, right) = split(b)?;
-    Ok(bound(&left, depth - 1)?.max(bound(&right, depth - 1)?))
+    let (left, right) = split(b, ops)?;
+    Ok(bound(&left, depth - 1, ops)?.max(bound(&right, depth - 1, ops)?))
+}
+
+fn envelopes_impl(
+    coefficients: &[Interval],
+    extent: f64,
+    depth: usize,
+    ops: &mut Ops,
+) -> CoreResult<Vec<f64>> {
+    if coefficients.is_empty() || coefficients.len() - 1 > LAGUERRE_ADJOINT_DEGREE_LIMIT {
+        return Err(CoreError::InvalidInput(format!(
+            "LAGUERRE_ADJOINT_UNSUPPORTED: degree must be in 0..={LAGUERRE_ADJOINT_DEGREE_LIMIT}"
+        )));
+    }
+    if !(extent.is_finite()
+        && extent > 0.0
+        && coefficients
+            .iter()
+            .all(|c| c.lo.is_finite() && c.hi.is_finite()))
+    {
+        return Err(CoreError::InvalidInput(
+            "LAGUERRE_ADJOINT_UNSUPPORTED: the extent must be finite and positive, the coefficients finite"
+                .into(),
+        ));
+    }
+    let m = coefficients.len() - 1;
+    let zero = vec![point(0.0)?];
+    // z[j] for j = 0 ..= m + 2.
+    let mut z: Vec<Bernstein> = vec![zero.clone(); m + 3];
+    for j in (0..=m).rev() {
+        let jf = j as f64;
+        let alpha = ratio(2.0 * jf + 1.0, jf + 1.0, ops)?;
+        // x = extent t, so a_j = alpha - (extent / (j+1)) t.
+        let g = ratio(extent, jf + 1.0, ops)?;
+        let linear = mul_affine(&z[j + 1], alpha, g, ops)?;
+        let damping = ratio(jf + 1.0, jf + 2.0, ops)?;
+        ops.tick(z[j + 2].len() as u64);
+        let damped = z[j + 2]
+            .iter()
+            .map(|v| damping.mul(*v).map(|x| -x))
+            .collect::<CoreResult<Vec<_>>>()?;
+        z[j] = add(add(vec![coefficients[j]], linear, ops)?, damped, ops)?;
+    }
+    let envelopes = z[..=m]
+        .iter()
+        .map(|p| bound(p, depth, ops))
+        .collect::<CoreResult<Vec<_>>>()?;
+    if !envelopes.iter().all(|b| b.is_finite()) {
+        return Err(CoreError::NonFinite(
+            "LAGUERRE_ADJOINT_UNSUPPORTED: an envelope is not finite".into(),
+        ));
+    }
+    Ok(envelopes)
 }
 
 /// `beta_0 .. beta_m` with `beta_j >= sup_{x in [0, extent]} |z_j(x)|` for
@@ -134,43 +209,121 @@ pub fn laguerre_adjoint_envelopes(
     extent: f64,
     depth: usize,
 ) -> CoreResult<Vec<f64>> {
-    if stored.is_empty() || stored.len() - 1 > LAGUERRE_ADJOINT_DEGREE_LIMIT {
-        return Err(CoreError::InvalidInput(format!(
-            "LAGUERRE_ADJOINT_UNSUPPORTED: degree must be in 0..={LAGUERRE_ADJOINT_DEGREE_LIMIT}"
-        )));
-    }
-    if !(extent.is_finite() && extent > 0.0 && stored.iter().all(|c| c.is_finite())) {
-        return Err(CoreError::InvalidInput(
-            "LAGUERRE_ADJOINT_UNSUPPORTED: the extent must be finite and positive, the coefficients finite"
-                .into(),
-        ));
-    }
-    let m = stored.len() - 1;
-    let zero = vec![point(0.0)?];
-    // z[j] for j = 0 ..= m + 2.
-    let mut z: Vec<Bernstein> = vec![zero.clone(); m + 3];
-    for j in (0..=m).rev() {
-        let jf = j as f64;
-        let alpha = ratio(2.0 * jf + 1.0, jf + 1.0)?;
-        // x = extent t, so a_j = alpha - (extent / (j+1)) t.
-        let g = ratio(extent, jf + 1.0)?;
-        let linear = mul_affine(&z[j + 1], alpha, g)?;
-        let damped = z[j + 2]
-            .iter()
-            .map(|v| ratio(jf + 1.0, jf + 2.0)?.mul(*v).map(|x| -x))
-            .collect::<CoreResult<Vec<_>>>()?;
-        z[j] = add(add(vec![point(stored[j])?], linear)?, damped)?;
-    }
-    let envelopes = z[..=m]
+    Ok(laguerre_adjoint_envelopes_counted(stored, extent, depth)?.0)
+}
+
+/// [`laguerre_adjoint_envelopes`] and the number of interval operations of
+/// the setup (thread-transfer node P2-LAGUERRE-CACHE).
+pub fn laguerre_adjoint_envelopes_counted(
+    stored: &[f64],
+    extent: f64,
+    depth: usize,
+) -> CoreResult<(Vec<f64>, u64)> {
+    let coefficients = stored
         .iter()
-        .map(|p| bound(p, depth))
+        .map(|c| {
+            if c.is_finite() {
+                point(*c)
+            } else {
+                Err(CoreError::InvalidInput(
+                    "LAGUERRE_ADJOINT_UNSUPPORTED: the coefficients must be finite".into(),
+                ))
+            }
+        })
         .collect::<CoreResult<Vec<_>>>()?;
-    if !envelopes.iter().all(|b| b.is_finite()) {
-        return Err(CoreError::NonFinite(
-            "LAGUERRE_ADJOINT_UNSUPPORTED: an envelope is not finite".into(),
-        ));
+    laguerre_adjoint_envelopes_interval(&coefficients, extent, depth)
+}
+
+/// The envelopes for coefficients known only as intervals (each exact
+/// coefficient lies in its interval), e.g. an exact-real combination
+/// `sum_k s_k c_(n,k)`: every `z_j` is enclosed for every choice of the
+/// coefficients, so `beta_j` bounds them all. Also returns the interval
+/// operation count.
+pub fn laguerre_adjoint_envelopes_interval(
+    coefficients: &[Interval],
+    extent: f64,
+    depth: usize,
+) -> CoreResult<(Vec<f64>, u64)> {
+    let mut ops = Ops::default();
+    let envelopes = envelopes_impl(coefficients, extent, depth, &mut ops)?;
+    Ok((envelopes, ops.0))
+}
+
+/// What the envelopes depend on, and nothing else: the degree, the extent
+/// and depth bits, the coefficient interval bits and the proof version.
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+pub struct EnvelopeKey {
+    pub degree: usize,
+    pub extent_bits: u64,
+    pub depth: usize,
+    pub coefficients_sha256: String,
+    pub proof_version: &'static str,
+}
+
+/// Version of the envelope construction; a change of the proof or the
+/// arithmetic changes it and so misses every cached entry.
+pub const LAGUERRE_ADJOINT_PROOF_VERSION: &str = "laguerre-adjoint-bernstein-interval-v1";
+
+impl EnvelopeKey {
+    pub fn new(
+        coefficients: &[Interval],
+        extent: f64,
+        depth: usize,
+        proof_version: &'static str,
+    ) -> Self {
+        let text = coefficients
+            .iter()
+            .map(|c| format!("{:016x}:{:016x}", c.lo.to_bits(), c.hi.to_bits()))
+            .collect::<Vec<_>>()
+            .join(",");
+        Self {
+            degree: coefficients.len().saturating_sub(1),
+            extent_bits: extent.to_bits(),
+            depth,
+            coefficients_sha256: crate::sha256_hex(text.as_bytes()),
+            proof_version,
+        }
     }
-    Ok(envelopes)
+}
+
+/// A cache of envelopes keyed by [`EnvelopeKey`], with hit and miss counts.
+/// Reuse is valid only because the envelopes are a function of the key: the
+/// operator and the vectors do not enter them (the domain check of the
+/// operator stays with the caller).
+#[derive(Clone, Debug, Default)]
+pub struct LaguerreEnvelopeCache {
+    entries: std::collections::HashMap<EnvelopeKey, Vec<f64>>,
+    pub hits: u64,
+    pub misses: u64,
+}
+
+impl LaguerreEnvelopeCache {
+    pub fn len(&self) -> usize {
+        self.entries.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.entries.is_empty()
+    }
+
+    /// The envelopes, whether they were cached, and the interval operations
+    /// spent (zero on a hit).
+    pub fn envelopes(
+        &mut self,
+        coefficients: &[Interval],
+        extent: f64,
+        depth: usize,
+    ) -> CoreResult<(Vec<f64>, bool, u64)> {
+        let key = EnvelopeKey::new(coefficients, extent, depth, LAGUERRE_ADJOINT_PROOF_VERSION);
+        if let Some(found) = self.entries.get(&key) {
+            self.hits += 1;
+            return Ok((found.clone(), true, 0));
+        }
+        let (envelopes, ops) = laguerre_adjoint_envelopes_interval(coefficients, extent, depth)?;
+        self.misses += 1;
+        self.entries.insert(key, envelopes.clone());
+        Ok((envelopes, false, ops))
+    }
 }
 
 /// `sum_{j=1}^m beta_j eps_(j-1)`, rounded upward, where `local[n]` bounds
