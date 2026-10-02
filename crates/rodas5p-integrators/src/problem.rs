@@ -19,6 +19,10 @@ fn jvp_callback_work() -> OperatorApplicationWork {
 pub type RhsFn = Arc<dyn Fn(f64, &[f64], &mut [f64]) -> CoreResult<()> + Send + Sync>;
 pub type BatchRhsFn = Arc<dyn Fn(&[f64], &[Vec<f64>]) -> CoreResult<Vec<Vec<f64>>> + Send + Sync>;
 pub type JacobianFn = Arc<dyn Fn(f64, &[f64]) -> CoreResult<DenseMatrix> + Send + Sync>;
+/// Writes the Jacobian into a caller-owned `n x n` matrix; see
+/// [`OdeProblem::with_jacobian_into`] for the contract.
+pub type JacobianIntoFn =
+    Arc<dyn Fn(f64, &[f64], &mut DenseMatrix) -> CoreResult<()> + Send + Sync>;
 pub type JvpFn = Arc<dyn Fn(f64, &[f64], &[f64], &mut [f64]) -> CoreResult<()> + Send + Sync>;
 pub type PartialTFn = Arc<dyn Fn(f64, &[f64], &mut [f64]) -> CoreResult<()> + Send + Sync>;
 pub type ExactFn = Arc<dyn Fn(f64) -> Vec<f64> + Send + Sync>;
@@ -30,6 +34,7 @@ pub struct OdeProblem {
     rhs: RhsFn,
     rhs_batch: Option<BatchRhsFn>,
     jacobian: Option<JacobianFn>,
+    jacobian_into: Option<JacobianIntoFn>,
     jvp: Option<JvpFn>,
     partial_t: Option<PartialTFn>,
     pub autonomous: bool,
@@ -73,6 +78,7 @@ impl OdeProblem {
             rhs,
             rhs_batch,
             jacobian,
+            jacobian_into: None,
             jvp,
             partial_t,
             autonomous,
@@ -215,6 +221,47 @@ impl OdeProblem {
             .unwrap_or_else(|| DenseMatrix::identity(self.dimension))
     }
 
+    /// Add an in-place Jacobian for drivers that keep one matrix across
+    /// steps (the RODAS5P fast driver). The callback receives the matrix it
+    /// last wrote for this problem, all zero on the first call, and must
+    /// write every entry that is nonzero in any Jacobian of the problem;
+    /// entries it never writes must be zero in every Jacobian (a fixed
+    /// sparsity pattern). It must produce the same values as the explicit
+    /// Jacobian, which every other path keeps using.
+    pub fn with_jacobian_into(mut self, jacobian_into: JacobianIntoFn) -> Self {
+        self.jacobian_into = Some(jacobian_into);
+        self
+    }
+
+    /// The Jacobian into `out`, which must be `n x n` and hold the previous
+    /// Jacobian of this problem (or zeros): through the in-place callback
+    /// when there is one, otherwise copied from [`Self::dense_jacobian`].
+    pub fn dense_jacobian_into(
+        &self,
+        t: f64,
+        y: &[f64],
+        out: &mut DenseMatrix,
+        counters: &mut WorkCounters,
+    ) -> CoreResult<()> {
+        if y.len() != self.dimension
+            || out.nrows() != self.dimension
+            || out.ncols() != self.dimension
+        {
+            return Err(CoreError::Dimension("Jacobian state shape mismatch".into()));
+        }
+        match &self.jacobian_into {
+            Some(fill) => {
+                counters.jacobian_builds += 1;
+                fill(t, y, out)
+            }
+            None => {
+                let matrix = self.dense_jacobian(t, y, counters)?;
+                out.as_mut_slice().copy_from_slice(matrix.as_slice());
+                Ok(())
+            }
+        }
+    }
+
     pub fn dense_jacobian(
         &self,
         t: f64,
@@ -328,6 +375,7 @@ impl OdeProblem {
         }
         let mut cloned = self.clone();
         cloned.jacobian = None;
+        cloned.jacobian_into = None;
         Ok(cloned)
     }
 

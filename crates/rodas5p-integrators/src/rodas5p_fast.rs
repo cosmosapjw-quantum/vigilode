@@ -16,10 +16,13 @@
 //!   `y_new = y + sum_j b_code_j u_j`, and the embedded error is `u_s`
 //!   (`btilde` is the last row of Gamma), so no Jacobian product is formed;
 //! * no residual product after a direct solve (it never decided acceptance);
-//! * one workspace for the whole integration, so a step allocates nothing
-//!   beyond what the user's Jacobian callback returns;
-//! * an in-place partial-pivoting LU that skips zero multipliers (banded and
-//!   small matrices), or faer's blocked LU for dense matrices above 64 rows;
+//! * one workspace for the whole integration; with an in-place Jacobian
+//!   ([`OdeProblem::with_jacobian_into`]) a step allocates nothing at all;
+//! * an in-place partial-pivoting LU that skips zero multipliers and, since
+//!   v2 (`research/stiff_rodas5p_fast_v2_20261002`), stops every row update,
+//!   row swap and triangular solve at the row's tracked nonzero extent, so a
+//!   banded W costs O(n b^2); or faer's blocked LU for dense matrices above
+//!   64 rows. The skipped operations are exact zeros: v2 reproduces v1;
 //! * the Jacobian, `f(t, y)` and `f_t` reused after a rejected attempt from
 //!   the same state.
 //!
@@ -39,7 +42,7 @@ use crate::{
 };
 
 /// Identifier of this driver in benchmark and research records.
-pub const RODAS5P_FAST_DRIVER_ID: &str = "rodas5p-fast-transformed-v1";
+pub const RODAS5P_FAST_DRIVER_ID: &str = "rodas5p-fast-transformed-v2";
 
 /// Matrices with at most this many rows always use the in-place LU.
 pub const RODAS5P_FAST_SMALL_LU_MAX: usize = 64;
@@ -77,19 +80,28 @@ struct Workspace {
     n: usize,
     s: usize,
     gamma: f64,
-    a: Vec<f64>,
-    c_matrix: Vec<f64>,
     c: Vec<f64>,
-    b_code: Vec<f64>,
     gamma_rows: Vec<f64>,
     lu_kind: Rodas5pFastLu,
     /// Row-major `W` and its in-place factors (in-place LU).
     w: Vec<f64>,
     pivots: Vec<usize>,
+    /// Per row of the in-place factors: the last column that can be nonzero
+    /// (U part) and the first stored multiplier (L part; `n` for none).
+    row_end: Vec<usize>,
+    l_start: Vec<usize>,
+    /// Nonzero entries of the strictly lower `a` and `C` rows and of
+    /// `b_code`, in ascending column order.
+    a_nonzero: Vec<Vec<(usize, f64)>>,
+    c_nonzero: Vec<Vec<(usize, f64)>>,
+    b_nonzero: Vec<(usize, f64)>,
     /// `W` for faer, and its factorization.
     w_dense: DenseMatrix,
     faer_lu: Option<LuFactorization>,
-    jacobian: Option<DenseMatrix>,
+    /// The Jacobian at the state of the current attempt, kept across steps
+    /// (the in-place Jacobian callback rewrites its own pattern).
+    jacobian: DenseMatrix,
+    lu_chosen: bool,
     f0: Vec<f64>,
     ft: Vec<f64>,
     u: Vec<f64>,
@@ -102,7 +114,6 @@ impl Workspace {
     fn new(n: usize) -> CoreResult<Self> {
         let coeffs = rodas5p_coefficients()?;
         let s = coeffs.stages();
-        let flat = |m: &DenseMatrix| m.as_slice().to_vec();
         for i in 0..s {
             for j in i..s {
                 if coeffs.a[(i, j)] != 0.0 || coeffs.c_matrix[(i, j)] != 0.0 {
@@ -112,21 +123,36 @@ impl Workspace {
                 }
             }
         }
+        let nonzero_row = |m: &DenseMatrix, i: usize| {
+            (0..i)
+                .filter(|&j| m[(i, j)] != 0.0)
+                .map(|j| (j, m[(i, j)]))
+                .collect::<Vec<_>>()
+        };
         Ok(Self {
+            row_end: vec![0; n],
+            l_start: vec![n; n],
+            a_nonzero: (0..s).map(|i| nonzero_row(&coeffs.a, i)).collect(),
+            c_nonzero: (0..s).map(|i| nonzero_row(&coeffs.c_matrix, i)).collect(),
+            b_nonzero: coeffs
+                .b_code
+                .iter()
+                .enumerate()
+                .filter(|(_, b)| **b != 0.0)
+                .map(|(j, b)| (j, *b))
+                .collect(),
             n,
             s,
             gamma: coeffs.gamma,
-            a: flat(&coeffs.a),
-            c_matrix: flat(&coeffs.c_matrix),
             c: coeffs.c.clone(),
-            b_code: coeffs.b_code.clone(),
             gamma_rows: coeffs.gamma_rows.clone(),
             lu_kind: Rodas5pFastLu::InPlaceZeroSkipping,
             w: vec![0.0; n * n],
             pivots: vec![0; n],
             w_dense: DenseMatrix::zeros(0, 0),
             faer_lu: None,
-            jacobian: None,
+            jacobian: DenseMatrix::zeros(n, n),
+            lu_chosen: false,
             f0: vec![0.0; n],
             ft: vec![0.0; n],
             u: vec![0.0; s * n],
@@ -136,9 +162,14 @@ impl Workspace {
         })
     }
 
-    fn choose_lu(&mut self, jacobian: &DenseMatrix) {
+    fn choose_lu(&mut self) {
         let n = self.n;
-        let nonzero = jacobian.as_slice().iter().filter(|v| **v != 0.0).count();
+        let nonzero = self
+            .jacobian
+            .as_slice()
+            .iter()
+            .filter(|v| **v != 0.0)
+            .count();
         let density = nonzero as f64 / (n * n) as f64;
         self.lu_kind =
             if n <= RODAS5P_FAST_SMALL_LU_MAX || density <= RODAS5P_FAST_SPARSE_DENSITY_MAX {
@@ -153,10 +184,7 @@ impl Workspace {
     fn factor(&mut self, h: f64, counters: &mut WorkCounters) -> CoreResult<()> {
         let n = self.n;
         let inv = 1.0 / (h * self.gamma);
-        let jacobian = self
-            .jacobian
-            .as_ref()
-            .expect("Jacobian before factorization");
+        let jacobian = &self.jacobian;
         let target = match self.lu_kind {
             Rodas5pFastLu::InPlaceZeroSkipping => self.w.as_mut_slice(),
             Rodas5pFastLu::Faer => self.w_dense.as_mut_slice(),
@@ -169,7 +197,20 @@ impl Workspace {
         }
         counters.direct_factorizations += 1;
         match self.lu_kind {
-            Rodas5pFastLu::InPlaceZeroSkipping => lu_in_place(&mut self.w, n, &mut self.pivots),
+            Rodas5pFastLu::InPlaceZeroSkipping => {
+                for (i, row) in self.w.chunks_exact(n).enumerate() {
+                    let last = row.iter().rposition(|v| *v != 0.0).unwrap_or(0);
+                    self.row_end[i] = last.max(i);
+                    self.l_start[i] = n;
+                }
+                lu_in_place(
+                    &mut self.w,
+                    n,
+                    &mut self.pivots,
+                    &mut self.row_end,
+                    &mut self.l_start,
+                )
+            }
             Rodas5pFastLu::Faer => {
                 self.faer_lu = Some(LuFactorization::new(&self.w_dense)?);
                 Ok(())
@@ -183,7 +224,14 @@ impl Workspace {
         counters.direct_solve_calls += 1;
         match self.lu_kind {
             Rodas5pFastLu::InPlaceZeroSkipping => {
-                lu_solve_in_place(&self.w, self.n, &self.pivots, &mut self.stage_rhs);
+                lu_solve_in_place(
+                    &self.w,
+                    self.n,
+                    &self.pivots,
+                    &self.row_end,
+                    &self.l_start,
+                    &mut self.stage_rhs,
+                );
             }
             Rodas5pFastLu::Faer => {
                 let x = self
@@ -221,11 +269,11 @@ impl Workspace {
     ) -> CoreResult<f64> {
         let (n, s) = (self.n, self.s);
         if fresh {
-            let jacobian = problem.dense_jacobian(t, y, counters)?;
-            if self.jacobian.is_none() {
-                self.choose_lu(&jacobian);
+            problem.dense_jacobian_into(t, y, &mut self.jacobian, counters)?;
+            if !self.lu_chosen {
+                self.choose_lu();
+                self.lu_chosen = true;
             }
-            self.jacobian = Some(jacobian);
             problem.eval_rhs_into(t, y, &mut self.f0, counters)?;
             if !problem.autonomous {
                 let ft = problem.eval_partial_t(t, y, counters)?;
@@ -238,13 +286,10 @@ impl Workspace {
                 self.stage_rhs.copy_from_slice(&self.f0);
             } else {
                 self.stage_state.copy_from_slice(y);
-                for j in 0..i {
-                    let aij = self.a[i * s + j];
-                    if aij != 0.0 {
-                        let uj = &self.u[j * n..(j + 1) * n];
-                        for (x, v) in self.stage_state.iter_mut().zip(uj) {
-                            *x += aij * v;
-                        }
+                for &(j, aij) in &self.a_nonzero[i] {
+                    let uj = &self.u[j * n..(j + 1) * n];
+                    for (x, v) in self.stage_state.iter_mut().zip(uj) {
+                        *x += aij * v;
                     }
                 }
                 problem.eval_rhs_into(
@@ -254,8 +299,8 @@ impl Workspace {
                     counters,
                 )?;
             }
-            for j in 0..i {
-                let cij = self.c_matrix[i * s + j] / h;
+            for &(j, c) in &self.c_nonzero[i] {
+                let cij = c / h;
                 if cij != 0.0 {
                     let uj = &self.u[j * n..(j + 1) * n];
                     for (x, v) in self.stage_rhs.iter_mut().zip(uj) {
@@ -273,13 +318,10 @@ impl Workspace {
             self.u[i * n..(i + 1) * n].copy_from_slice(&self.stage_rhs);
         }
         self.y_new.copy_from_slice(y);
-        for j in 0..s {
-            let bj = self.b_code[j];
-            if bj != 0.0 {
-                let uj = &self.u[j * n..(j + 1) * n];
-                for (x, v) in self.y_new.iter_mut().zip(uj) {
-                    *x += bj * v;
-                }
+        for &(j, bj) in &self.b_nonzero {
+            let uj = &self.u[j * n..(j + 1) * n];
+            for (x, v) in self.y_new.iter_mut().zip(uj) {
+                *x += bj * v;
             }
         }
         if !self.y_new.iter().all(|v| v.is_finite()) {
@@ -305,8 +347,19 @@ impl Workspace {
 }
 
 /// Row-major partial-pivoting LU of `a` in place; `pivots[k]` is the row
-/// swapped with row `k`. Zero multipliers skip their row update.
-fn lu_in_place(a: &mut [f64], n: usize, pivots: &mut [usize]) -> CoreResult<()> {
+/// swapped with row `k`. `row_end[i]` must bound the nonzero columns of row
+/// `i` on entry; it is kept up to date under fill-in and row swaps, and every
+/// update stops there, so a banded matrix costs O(n b^2) instead of O(n^3).
+/// `l_start[i]` (`n` on entry) becomes the first stored multiplier of row
+/// `i`. Zero multipliers skip their row update. Every skipped operation is
+/// an exact zero, so the factors equal those of the full loops.
+fn lu_in_place(
+    a: &mut [f64],
+    n: usize,
+    pivots: &mut [usize],
+    row_end: &mut [usize],
+    l_start: &mut [usize],
+) -> CoreResult<()> {
     for k in 0..n {
         let mut p = k;
         let mut max = a[k * n + k].abs();
@@ -324,47 +377,66 @@ fn lu_in_place(a: &mut [f64], n: usize, pivots: &mut [usize]) -> CoreResult<()> 
         }
         pivots[k] = p;
         if p != k {
-            for j in 0..n {
+            // Both rows are zero beyond their ends; the pivot row reaches
+            // column k, so this span covers their multipliers as well.
+            let span = row_end[k].max(row_end[p]) + 1;
+            for j in 0..span {
                 a.swap(k * n + j, p * n + j);
             }
+            row_end.swap(k, p);
+            l_start.swap(k, p);
         }
+        let pivot_end = row_end[k];
         let (top, bottom) = a.split_at_mut((k + 1) * n);
-        let pivot_row = &top[k * n..(k + 1) * n];
-        let pivot = pivot_row[k];
-        for row in bottom.chunks_exact_mut(n) {
+        let pivot_row = &top[k * n + k..k * n + pivot_end + 1];
+        let pivot = pivot_row[0];
+        for (offset, row) in bottom.chunks_exact_mut(n).enumerate() {
             if row[k] == 0.0 {
                 continue;
             }
+            let i = k + 1 + offset;
             let l = row[k] / pivot;
             row[k] = l;
-            for (x, r) in row[k + 1..].iter_mut().zip(&pivot_row[k + 1..]) {
+            l_start[i] = l_start[i].min(k);
+            for (x, r) in row[k + 1..=pivot_end].iter_mut().zip(&pivot_row[1..]) {
                 *x -= l * r;
             }
+            row_end[i] = row_end[i].max(pivot_end);
         }
     }
     Ok(())
 }
 
-/// Solve with the factors of [`lu_in_place`], overwriting `b`.
-fn lu_solve_in_place(lu: &[f64], n: usize, pivots: &[usize], b: &mut [f64]) {
+/// Solve with the factors of [`lu_in_place`], overwriting `b`; the loops
+/// stop at the stored extents of each row.
+fn lu_solve_in_place(
+    lu: &[f64],
+    n: usize,
+    pivots: &[usize],
+    row_end: &[usize],
+    l_start: &[usize],
+    b: &mut [f64],
+) {
     for (k, &p) in pivots.iter().enumerate().take(n) {
         b.swap(k, p);
     }
     for i in 0..n {
-        let row = &lu[i * n..i * n + i];
+        let start = l_start[i].min(i);
+        let row = &lu[i * n + start..i * n + i];
         let mut sum = b[i];
-        for (l, x) in row.iter().zip(&b[..i]) {
+        for (l, x) in row.iter().zip(&b[start..i]) {
             sum -= l * x;
         }
         b[i] = sum;
     }
     for i in (0..n).rev() {
-        let row = &lu[i * n..(i + 1) * n];
+        let end = row_end[i];
+        let row = &lu[i * n + i..i * n + end + 1];
         let mut sum = b[i];
-        for (u, x) in row[i + 1..].iter().zip(&b[i + 1..]) {
+        for (u, x) in row[1..].iter().zip(&b[i + 1..=end]) {
             sum -= u * x;
         }
-        b[i] = sum / row[i];
+        b[i] = sum / row[0];
     }
 }
 
@@ -460,7 +532,7 @@ pub fn integrate_rodas5p_fast_observed(
         );
         // Every path below has the state's Jacobian and f(t, y) in place,
         // unless they failed to build.
-        fresh_state = work.jacobian.is_some();
+        fresh_state = work.lu_chosen;
         let (error, failure) = match outcome {
             Ok(error) if error <= 1.0 => (error, None),
             Ok(error) => (error, Some(AdaptiveFailureKind::LocalError)),
@@ -552,16 +624,20 @@ mod tests {
             .collect();
         let mut lu = a.to_vec();
         let mut piv = vec![0; n];
-        lu_in_place(&mut lu, n, &mut piv).unwrap();
+        let mut row_end: Vec<usize> = (0..n)
+            .map(|i| (0..n).rev().find(|&j| a[i * n + j] != 0.0).unwrap().max(i))
+            .collect();
+        let mut l_start = vec![n; n];
+        lu_in_place(&mut lu, n, &mut piv, &mut row_end, &mut l_start).unwrap();
         let mut sol = b.clone();
-        lu_solve_in_place(&lu, n, &piv, &mut sol);
+        lu_solve_in_place(&lu, n, &piv, &row_end, &l_start, &mut sol);
         for (s, e) in sol.iter().zip(x) {
             assert!((s - e).abs() <= 1e-14, "{sol:?}");
         }
         // A singular matrix is a typed linear-solve error.
         let mut singular = vec![1.0, 2.0, 2.0, 4.0];
         assert!(matches!(
-            lu_in_place(&mut singular, 2, &mut [0, 0]),
+            lu_in_place(&mut singular, 2, &mut [0, 0], &mut [1, 1], &mut [2, 2]),
             Err(CoreError::LinearSolve(_))
         ));
     }

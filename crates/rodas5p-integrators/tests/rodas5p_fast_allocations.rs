@@ -1,7 +1,8 @@
-//! Allocation contract of the lean RODAS5P driver (research node
-//! `research/stiff_rodas5p_fast_20261002`): after its workspace is built, a
-//! step allocates only what the problem's Jacobian callback returns. One test
-//! per binary, so the counting allocator sees no other thread.
+//! Allocation contract of the lean RODAS5P driver (research nodes
+//! `research/stiff_rodas5p_fast_20261002` and `..._fast_v2_20261002`): after
+//! its workspace is built, a step allocates nothing when the problem fills
+//! its Jacobian in place. One test per binary, so the counting allocator sees
+//! no other thread.
 
 use std::alloc::{GlobalAlloc, Layout, System};
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -43,32 +44,42 @@ fn allocations_during<T>(f: impl FnOnce() -> T) -> (T, usize) {
     (value, ALLOCATIONS.load(Ordering::Relaxed) - before)
 }
 
-#[test]
-fn a_fast_step_allocates_only_the_jacobian() {
-    let (problem, y0) = robertson_problem().unwrap();
-    let adaptive = AdaptiveStepConfig {
-        atol: 1.0e-10,
-        rtol: 1.0e-6,
+fn config(rtol: f64) -> AdaptiveStepConfig {
+    AdaptiveStepConfig {
+        atol: 1.0e-4 * rtol,
+        rtol,
         initial_step: 1.0e-6,
         min_step: 1.0e-14,
         max_step: 40.0,
         max_attempts: 1_000_000,
         ..AdaptiveStepConfig::default()
-    };
+    }
+}
+
+#[test]
+fn a_fast_step_allocates_nothing() {
+    // Robertson supplies an in-place Jacobian, so after its workspace is
+    // built the driver allocates nothing per step: the count is the same at
+    // two tolerances whose attempt counts differ several times.
+    let (problem, y0) = robertson_problem().unwrap();
     let output = OutputSchedule::new(vec![0.0, 40.0]).unwrap();
     // Warm the coefficient cache and any lazy statics first.
-    integrate_rodas5p_fast_observed(&problem, (0.0, 40.0), &y0, &adaptive, &output).unwrap();
-    let (fast, fast_allocations) = allocations_during(|| {
-        integrate_rodas5p_fast_observed(&problem, (0.0, 40.0), &y0, &adaptive, &output).unwrap()
-    });
-    let jacobians = fast.observed.counters.jacobian_builds as usize;
-    // Workspace, output collection and result: a fixed number, independent
-    // of the step count. Every other allocation is a Jacobian matrix.
-    assert!(
-        fast_allocations <= jacobians + 40,
-        "{fast_allocations} allocations for {jacobians} Jacobians over {} attempts",
-        fast.attempts
+    integrate_rodas5p_fast_observed(&problem, (0.0, 40.0), &y0, &config(1.0e-6), &output).unwrap();
+    let mut runs = Vec::new();
+    for rtol in [1.0e-6, 1.0e-9] {
+        let (fast, allocations) = allocations_during(|| {
+            integrate_rodas5p_fast_observed(&problem, (0.0, 40.0), &y0, &config(rtol), &output)
+                .unwrap()
+        });
+        runs.push((fast.attempts, allocations));
+    }
+    assert!(runs[1].0 >= 3 * runs[0].0, "{runs:?}");
+    assert_eq!(
+        runs[0].1, runs[1].1,
+        "allocations depend on the step count: {runs:?}"
     );
+    assert!(runs[0].1 <= 64, "{runs:?}");
+    // The sequential driver allocates per stage.
     let direct = LinearSolverConfig {
         method: LinearMethod::Direct,
         ..LinearSolverConfig::default()
@@ -81,18 +92,14 @@ fn a_fast_step_allocates_only_the_jacobian() {
             IntegrationMethod::Sequential,
             Some(&direct),
             None,
-            &adaptive,
+            &config(1.0e-6),
             &output,
         )
         .unwrap()
     });
-    let per_attempt = |allocations: usize, attempts: usize| allocations as f64 / attempts as f64;
-    let fast_rate = per_attempt(fast_allocations, fast.attempts);
-    let sequential_rate = per_attempt(sequential_allocations, sequential.diagnostics.attempts);
-    assert!(fast_rate <= 1.5, "{fast_rate} allocations per attempt");
-    assert!(
-        sequential_rate >= 20.0 * fast_rate,
-        "{sequential_rate} vs {fast_rate}"
+    let sequential_rate = sequential_allocations as f64 / sequential.diagnostics.attempts as f64;
+    assert!(sequential_rate >= 100.0, "{sequential_rate}");
+    eprintln!(
+        "fast: {runs:?} (attempts, allocations); sequential: {sequential_rate:.1} per attempt"
     );
-    eprintln!("allocations per attempt: fast {fast_rate:.2}, sequential {sequential_rate:.1}");
 }

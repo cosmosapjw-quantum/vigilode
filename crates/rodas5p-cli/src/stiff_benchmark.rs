@@ -62,8 +62,8 @@ fn hires_problem() -> CoreResult<(OdeProblem, Vec<f64>)> {
         out[7] = -280.0 * y[5] * y[7] + 1.81 * y[6];
         Ok(())
     });
-    let jacobian = Arc::new(|_t: f64, y: &[f64]| {
-        let mut j = DenseMatrix::zeros(8, 8);
+    // One fill for both Jacobian callbacks: same values, fixed pattern.
+    fn hires_fill(y: &[f64], j: &mut DenseMatrix) {
         j[(0, 0)] = -1.71;
         j[(0, 1)] = 0.43;
         j[(0, 2)] = 8.32;
@@ -89,7 +89,15 @@ fn hires_problem() -> CoreResult<(OdeProblem, Vec<f64>)> {
         j[(7, 5)] = -280.0 * y[7];
         j[(7, 6)] = 1.81;
         j[(7, 7)] = -280.0 * y[5];
+    }
+    let jacobian = Arc::new(|_t: f64, y: &[f64]| {
+        let mut j = DenseMatrix::zeros(8, 8);
+        hires_fill(y, &mut j);
         Ok(j)
+    });
+    let jacobian_into = Arc::new(|_t: f64, y: &[f64], j: &mut DenseMatrix| {
+        hires_fill(y, j);
+        Ok(())
     });
     Ok((
         OdeProblem::new(
@@ -103,7 +111,8 @@ fn hires_problem() -> CoreResult<(OdeProblem, Vec<f64>)> {
             true,
             None,
             None,
-        )?,
+        )?
+        .with_jacobian_into(jacobian_into),
         vec![1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0057],
     ))
 }
@@ -131,8 +140,7 @@ fn brusselator_problem(cells: usize) -> CoreResult<(OdeProblem, Vec<f64>)> {
         Ok(())
     });
     let n = 2 * cells;
-    let jacobian = Arc::new(move |_t: f64, y: &[f64]| {
-        let mut j = DenseMatrix::zeros(n, n);
+    let fill = move |y: &[f64], j: &mut DenseMatrix| {
         for i in 0..cells {
             let (u, v) = (y[2 * i], y[2 * i + 1]);
             let (a, b) = (2 * i, 2 * i + 1);
@@ -149,7 +157,15 @@ fn brusselator_problem(cells: usize) -> CoreResult<(OdeProblem, Vec<f64>)> {
                 j[(b, b + 2)] = c;
             }
         }
+    };
+    let jacobian = Arc::new(move |_t: f64, y: &[f64]| {
+        let mut j = DenseMatrix::zeros(n, n);
+        fill(y, &mut j);
         Ok(j)
+    });
+    let jacobian_into = Arc::new(move |_t: f64, y: &[f64], j: &mut DenseMatrix| {
+        fill(y, j);
+        Ok(())
     });
     let y0 = (0..cells)
         .flat_map(|i| {
@@ -169,7 +185,8 @@ fn brusselator_problem(cells: usize) -> CoreResult<(OdeProblem, Vec<f64>)> {
             true,
             None,
             None,
-        )?,
+        )?
+        .with_jacobian_into(jacobian_into),
         y0,
     ))
 }
@@ -575,6 +592,23 @@ mod tests {
                         );
                     }
                 }
+            }
+        }
+    }
+
+    #[test]
+    fn in_place_jacobians_equal_the_explicit_ones() {
+        for problem in benchmark_problems().unwrap() {
+            let p = &problem.problem;
+            let n = p.dimension;
+            let mut buffer = DenseMatrix::zeros(n, n);
+            let mut counters = WorkCounters::default();
+            for state in parity_states(&problem.y0) {
+                // The buffer keeps the previous Jacobian, as the contract allows.
+                p.dense_jacobian_into(0.0, &state, &mut buffer, &mut counters)
+                    .unwrap();
+                let explicit = p.dense_jacobian(0.0, &state, &mut counters).unwrap();
+                assert_eq!(buffer.as_slice(), explicit.as_slice(), "{}", problem.id);
             }
         }
     }
