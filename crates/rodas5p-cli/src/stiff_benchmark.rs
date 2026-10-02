@@ -15,9 +15,9 @@ use rodas5p_core::{CoreResult, DenseMatrix, LinearMethod, LinearSolverConfig, Wo
 use rodas5p_integrators::{
     AdaptiveObservedIntegrationResult, AdaptiveRunDiagnostics, AdaptiveStepConfig, BdfConfig,
     IntegrationMethod, NewtonTolerancePolicy, OdeProblem, OutputSchedule, RadauConfig,
-    integrate_adaptive_observed_with_config, integrate_bdf_adaptive_observed,
-    integrate_radau_adaptive_observed, integrate_rodas5p_fast_observed, robertson_problem,
-    stiff_van_der_pol_problem,
+    SmallProblem, integrate_adaptive_observed_with_config, integrate_bdf_adaptive_observed,
+    integrate_radau_adaptive_observed, integrate_rodas5p_fast_observed,
+    integrate_rodas5p_fast_small_observed, robertson_problem, stiff_van_der_pol_problem,
 };
 use serde_json::{Value, json};
 
@@ -28,7 +28,7 @@ pub const TOLERANCES: [f64; 7] = [1.0e-3, 1.0e-4, 1.0e-5, 1.0e-6, 1.0e-7, 1.0e-8
 pub const FAST_ARM: &str = "rodas5p-fast";
 
 fn known_arm(arm: &str) -> bool {
-    ARMS.contains(&arm) || arm == FAST_ARM
+    ARMS.contains(&arm) || arm == FAST_ARM || arm == SMALL_ARM
 }
 
 pub const ARMS: [&str; 5] = [
@@ -300,6 +300,7 @@ pub fn run_arm(
                 },
             })
         }
+        SMALL_ARM => run_small(problem, &adaptive, &output),
         "repo-bdf2" => {
             integrate_bdf_adaptive_observed(p, span, y0, &BdfConfig::default(), &adaptive, &output)
         }
@@ -554,6 +555,205 @@ fn lu_microbench(cells: &[usize], repetitions: usize) -> Result<Value> {
         out.insert(n.to_string(), Value::Object(entry));
     }
     Ok(Value::Object(out))
+}
+
+/// The small-n specialization of the fast driver
+/// (`research/thread_transfer_smalln_cost_20261002`): van der Pol, Robertson
+/// and HIRES with compile-time dimension and static dispatch. Not in
+/// [`ARMS`].
+pub const SMALL_ARM: &str = "rodas5p-fast-small";
+
+/// van der Pol with the same operations as `stiff_van_der_pol_problem`.
+struct SmallVanDerPol {
+    mu: f64,
+}
+
+impl SmallProblem<2> for SmallVanDerPol {
+    fn rhs(&self, y: &[f64; 2], out: &mut [f64; 2]) {
+        let mu = self.mu;
+        out[0] = y[1];
+        out[1] = mu * (1.0 - y[0] * y[0]) * y[1] - y[0];
+    }
+    fn jacobian(&self, y: &[f64; 2], out: &mut [[f64; 2]; 2]) {
+        let mu = self.mu;
+        out[0][0] = 0.0;
+        out[0][1] = 1.0;
+        out[1][0] = -2.0 * mu * y[0] * y[1] - 1.0;
+        out[1][1] = mu * (1.0 - y[0] * y[0]);
+    }
+}
+
+/// Robertson with the same operations as `robertson_problem`.
+struct SmallRobertson;
+
+impl SmallProblem<3> for SmallRobertson {
+    fn rhs(&self, y: &[f64; 3], out: &mut [f64; 3]) {
+        out[0] = -0.04 * y[0] + 1.0e4 * y[1] * y[2];
+        out[1] = 0.04 * y[0] - 1.0e4 * y[1] * y[2] - 3.0e7 * y[1] * y[1];
+        out[2] = 3.0e7 * y[1] * y[1];
+    }
+    fn jacobian(&self, y: &[f64; 3], out: &mut [[f64; 3]; 3]) {
+        out[0][0] = -0.04;
+        out[0][1] = 1.0e4 * y[2];
+        out[0][2] = 1.0e4 * y[1];
+        out[1][0] = 0.04;
+        out[1][1] = -1.0e4 * y[2] - 6.0e7 * y[1];
+        out[1][2] = -1.0e4 * y[1];
+        out[2][1] = 6.0e7 * y[1];
+    }
+}
+
+/// HIRES with the same operations as [`hires_problem`].
+struct SmallHires;
+
+impl SmallProblem<8> for SmallHires {
+    fn rhs(&self, y: &[f64; 8], out: &mut [f64; 8]) {
+        out[0] = -1.71 * y[0] + 0.43 * y[1] + 8.32 * y[2] + 0.0007;
+        out[1] = 1.71 * y[0] - 8.75 * y[1];
+        out[2] = -10.03 * y[2] + 0.43 * y[3] + 0.035 * y[4];
+        out[3] = 8.32 * y[1] + 1.71 * y[2] - 1.12 * y[3];
+        out[4] = -1.745 * y[4] + 0.43 * y[5] + 0.43 * y[6];
+        out[5] = -280.0 * y[5] * y[7] + 0.69 * y[3] + 1.71 * y[4] - 0.43 * y[5] + 0.69 * y[6];
+        out[6] = 280.0 * y[5] * y[7] - 1.81 * y[6];
+        out[7] = -280.0 * y[5] * y[7] + 1.81 * y[6];
+    }
+    fn jacobian(&self, y: &[f64; 8], j: &mut [[f64; 8]; 8]) {
+        j[0][0] = -1.71;
+        j[0][1] = 0.43;
+        j[0][2] = 8.32;
+        j[1][0] = 1.71;
+        j[1][1] = -8.75;
+        j[2][2] = -10.03;
+        j[2][3] = 0.43;
+        j[2][4] = 0.035;
+        j[3][1] = 8.32;
+        j[3][2] = 1.71;
+        j[3][3] = -1.12;
+        j[4][4] = -1.745;
+        j[4][5] = 0.43;
+        j[4][6] = 0.43;
+        j[5][3] = 0.69;
+        j[5][4] = 1.71;
+        j[5][5] = -280.0 * y[7] - 0.43;
+        j[5][6] = 0.69;
+        j[5][7] = -280.0 * y[5];
+        j[6][5] = 280.0 * y[7];
+        j[6][6] = -1.81;
+        j[6][7] = 280.0 * y[5];
+        j[7][5] = -280.0 * y[7];
+        j[7][6] = 1.81;
+        j[7][7] = -280.0 * y[5];
+    }
+}
+
+fn small_result(
+    run: rodas5p_integrators::Rodas5pFastSmallResult,
+) -> AdaptiveObservedIntegrationResult {
+    AdaptiveObservedIntegrationResult {
+        observed: run.observed,
+        diagnostics: AdaptiveRunDiagnostics {
+            attempts: run.attempts,
+            accepted_macro_steps: run.accepted_steps,
+            rejected_macro_steps: run.rejected_steps,
+            ..AdaptiveRunDiagnostics::default()
+        },
+    }
+}
+
+fn fixed<const N: usize>(y0: &[f64]) -> CoreResult<[f64; N]> {
+    y0.try_into().map_err(|_| {
+        rodas5p_core::CoreError::Dimension(format!("the small arm expects dimension {N}"))
+    })
+}
+
+/// The small arm on one benchmark problem; `mu` overrides van der Pol's
+/// stiffness (the ensemble).
+fn run_small(
+    problem: &BenchmarkProblem,
+    adaptive: &AdaptiveStepConfig,
+    output: &OutputSchedule,
+) -> CoreResult<AdaptiveObservedIntegrationResult> {
+    let span = problem.t_span;
+    match problem.id {
+        "van-der-pol-mu1000" => Ok(small_result(integrate_rodas5p_fast_small_observed(
+            &SmallVanDerPol { mu: 1000.0 },
+            span,
+            &fixed::<2>(&problem.y0)?,
+            adaptive,
+            output,
+        )?)),
+        "robertson" => Ok(small_result(integrate_rodas5p_fast_small_observed(
+            &SmallRobertson,
+            span,
+            &fixed::<3>(&problem.y0)?,
+            adaptive,
+            output,
+        )?)),
+        "hires" => Ok(small_result(integrate_rodas5p_fast_small_observed(
+            &SmallHires,
+            span,
+            &fixed::<8>(&problem.y0)?,
+            adaptive,
+            output,
+        )?)),
+        other => Err(rodas5p_core::CoreError::InvalidInput(format!(
+            "the small arm covers van der Pol, Robertson and HIRES, not {other}"
+        ))),
+    }
+}
+
+/// An ensemble of `members` van der Pol trajectories,
+/// `mu = 1000 (1 + k / members)`, run back to back with `arm`
+/// (`rodas5p-fast` or `rodas5p-fast-small`): the summed attempts and a
+/// checksum of the final states.
+pub fn ensemble_run(arm: &str, members: usize, rtol: f64) -> Result<Value> {
+    anyhow::ensure!(members >= 1, "at least one member");
+    anyhow::ensure!(
+        arm == FAST_ARM || arm == SMALL_ARM,
+        "ensemble arms: {FAST_ARM}, {SMALL_ARM}"
+    );
+    let base = benchmark_problems()?
+        .into_iter()
+        .find(|p| p.id == "van-der-pol-mu1000")
+        .expect("van der Pol is a benchmark problem");
+    let adaptive = adaptive_config(&base, rtol);
+    let output = OutputSchedule::new(vec![base.t_span.0, base.t_span.1])?;
+    let (mut attempts, mut checksum) = (0_usize, 0.0_f64);
+    for k in 0..members {
+        let mu = 1000.0 * (1.0 + k as f64 / members as f64);
+        let run = if arm == SMALL_ARM {
+            small_result(integrate_rodas5p_fast_small_observed(
+                &SmallVanDerPol { mu },
+                base.t_span,
+                &fixed::<2>(&base.y0)?,
+                &adaptive,
+                &output,
+            )?)
+        } else {
+            let (problem, _) = stiff_van_der_pol_problem(mu)?;
+            let fast = integrate_rodas5p_fast_observed(
+                &problem,
+                base.t_span,
+                &base.y0,
+                &adaptive,
+                &output,
+            )?;
+            small_result(rodas5p_integrators::Rodas5pFastSmallResult {
+                observed: fast.observed,
+                attempts: fast.attempts,
+                accepted_steps: fast.accepted_steps,
+                rejected_steps: fast.rejected_steps,
+                jacobian_reuses: fast.jacobian_reuses,
+                driver: fast.driver,
+            })
+        };
+        anyhow::ensure!(run.observed.success, "member {k} failed");
+        attempts += run.diagnostics.attempts;
+        checksum += run.observed.y.last().unwrap().iter().sum::<f64>();
+    }
+    Ok(
+        json!({"arm": arm, "members": members, "rtol": rtol, "attempts": attempts, "checksum": checksum}),
+    )
 }
 
 #[cfg(test)]

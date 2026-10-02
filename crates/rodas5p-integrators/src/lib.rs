@@ -50,6 +50,7 @@ mod radau;
 mod raw_stage_target;
 mod rhs_telemetry;
 mod rodas5p_fast;
+mod rodas5p_fast_small;
 mod rodas5p_matrix_free_fast;
 mod sabr;
 mod scientific_corpus_v2;
@@ -345,6 +346,10 @@ pub use rhs_telemetry::{
 pub use rodas5p_fast::{
     RODAS5P_FAST_DRIVER_ID, RODAS5P_FAST_SMALL_LU_MAX, RODAS5P_FAST_SPARSE_DENSITY_MAX,
     Rodas5pFastLu, Rodas5pFastResult, integrate_rodas5p_fast_observed, rodas5p_fast_step,
+};
+pub use rodas5p_fast_small::{
+    RODAS5P_FAST_SMALL_DRIVER_ID, Rodas5pFastSmallResult, SmallProblem,
+    integrate_rodas5p_fast_small_observed,
 };
 pub use rodas5p_matrix_free_fast::{
     RODAS5P_MF_FAST_DRIVER_ID, Rodas5pMfFastResult, Rodas5pMfFastWorkspace,

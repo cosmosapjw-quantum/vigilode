@@ -485,6 +485,17 @@ enum Command {
         #[arg(long, default_value_t = 1)]
         repetitions: usize,
     },
+    /// An ensemble of van der Pol trajectories run back to back with one
+    /// fast arm (research node `research/thread_transfer_smalln_cost_20261002`).
+    #[command(name = "stiff-ensemble-run")]
+    StiffEnsembleRun {
+        #[arg(long)]
+        arm: String,
+        #[arg(long, default_value_t = 64)]
+        members: usize,
+        #[arg(long, default_value_t = 1.0e-6)]
+        rtol: f64,
+    },
     R4Study {
         #[arg(long)]
         study: String,
@@ -3045,6 +3056,9 @@ fn main() -> Result<()> {
                 "{}",
                 stiff_benchmark::profile_run(&problem, &arm, rtol, repetitions)?
             );
+        }
+        Command::StiffEnsembleRun { arm, members, rtol } => {
+            println!("{}", stiff_benchmark::ensemble_run(&arm, members, rtol)?);
         }
         Command::R4Study {
             study,
