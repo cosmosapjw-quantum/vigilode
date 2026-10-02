@@ -73,3 +73,31 @@ ratios.
 
 - The review's exact Python prototype (`probes/laguerre_adjoint_probe.py`) and its ratios above.
 - No native code of this node exists before this commit.
+
+---
+
+## Results (appended after the run at `c489795`)
+
+Outputs: `RESULTS.json` (native), `EXACT_CHECK.json` (exact rationals). Ledger row L-0039.
+
+**Gate: PASS.**
+
+| Gate item | Outcome |
+|---|---|
+| 1. Backward identity | holds exactly in all 9 cases (6 geometric diagonal, 1 geometric rotated, 2 signed random); every native local residual bound `eps_j` also bounds the exact defect `||delta_j||` |
+| 2. Bernstein bounds valid | holds: every native `beta_j` is at least the exact depth-3 Bernstein bound and `|z_j|` on 257 exact points; envelopes with one entry lowered to half the exact bound are rejected by the same check |
+| 3. Enclosure | holds: exact recurrence errors 1.3e-17 to 2.3e-15 against native bounds 8.2e-17 to 2.1e-13 |
+| 4. Integration | holds: on a Gershgorin-verified 6x6 case (degree 13, scale 16) all five columns carry `recurrence_adjoint`; candidate total 1.06414e-10 >= bounded 1.06413e-10; `total_error` stays `EstimateOnly`; a declared enclosure gets no candidate total; at degree 176 (> 128) the adjoint is absent |
+| 5. Tighter | holds: majorant / adjoint 7.35 (m = 16), 6.5e5 (32, L = 1), 7.6e13 (64, L = 1), 4.4e5 (32, 4), 2.4e13 (64, 4), 5.7e5 (32, 16), 6.0e5 (rotated); the review's 7.37, 6.63e5, 8.24e13 reproduced in magnitude |
+
+Notes:
+
+- The native interval envelopes equal the exact Bernstein bounds to 1e-9 up to degree 32, but widen at degree 64:
+  up to 3.2x (L = 1) and 111x (L = 4) on single `beta_j`. They remain valid and the total bound stays within 2.8e-15
+  there. Interval width growth in the backward recurrence is the limit, which is why degree 128 is the policy cap.
+- Development disclosure: the checker's first non-vacuity test lowered the native `beta` by half, which at degree 64
+  can still exceed the exact bound. It was corrected, before the recorded run, to lower one envelope below the exact
+  bound. The above-limit integration case first used `h = 400`. There the existing R4 scalar majorant overflows
+  binary64 at a degree near 1300 and the whole action returns an error, independent of this node. The case was moved
+  to `h = 20` (degree 176). The overflow of the majorant at high degree is a pre-existing limitation, recorded here.
+- Claim ceiling as preregistered: one proved error component. The Laguerre total is not certified by this node.
