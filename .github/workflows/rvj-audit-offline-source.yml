@@ -1,0 +1,42 @@
+name: RVJ audit offline source export
+
+on:
+  pull_request:
+    types: [opened]
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    if: github.head_ref == 'audit/rvj-native-followup-20261003' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 5a8d7fe9ffc681bca98a98a2f9889a2a05505783
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Resolve exactly the pinned Cargo.lock
+        shell: bash
+        run: |
+          set -euo pipefail
+          rustup toolchain install 1.94.1 --profile minimal
+          rustup override set 1.94.1
+          mkdir -p "$RUNNER_TEMP/rvj-offline"
+          cargo vendor --locked "$RUNNER_TEMP/rvj-vendor" > "$RUNNER_TEMP/rvj-offline/vendor-config.toml"
+          git diff --exit-code -- Cargo.lock Cargo.toml
+          git rev-parse HEAD > "$RUNNER_TEMP/rvj-offline/SOURCE_COMMIT.txt"
+          git rev-parse HEAD^{tree} > "$RUNNER_TEMP/rvj-offline/SOURCE_TREE.txt"
+          rustc -vV > "$RUNNER_TEMP/rvj-offline/RUST_VERSION.txt"
+          git bundle create "$RUNNER_TEMP/rvj-offline/source.bundle" HEAD
+          tar -czf "$RUNNER_TEMP/rvj-offline/vendor.tar.gz" -C "$RUNNER_TEMP" rvj-vendor
+          cd "$RUNNER_TEMP/rvj-offline"
+          sha256sum source.bundle vendor.tar.gz > SHA256SUMS
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rvj-offline-base-5a8d7fe9
+          path: ${{ runner.temp }}/rvj-offline/
+          retention-days: 7
+          if-no-files-found: error
