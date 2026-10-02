@@ -1,7 +1,7 @@
 //! JVP-only raw-stage matrix-free workspace driver (research node
 //! `research/thread_transfer_mf_workspace_20261002`, thread-transfer DAG node
-//! P1-MF-WORKSPACE). Run with `--test-threads=1`: the counting allocator is
-//! global to this binary.
+//! P1-MF-WORKSPACE). Run with `--ignored --test-threads=1`: the counting
+//! allocator is global to this binary, and the run is long in a debug build.
 
 #[path = "thread_transfer_common/mod.rs"]
 mod common;
@@ -450,6 +450,7 @@ fn per_attempt(c: &WorkCounters, attempts: usize) -> Value {
 }
 
 #[test]
+#[ignore = "research run of research/thread_transfer_mf_workspace_20261002 (about 2 min in release); run by the ignored-tests CI job in the measurement profile"]
 fn matrix_free_u_form_driver() {
     let methods = [
         LinearMethod::Gmres,

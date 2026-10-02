@@ -130,3 +130,9 @@ the outcomes above. No gate threshold was changed.
 
 Claim ceiling: native counters and correctness of a research driver; no wall-time claim; timing authority stays on
 HOLD.
+
+### Note after recording
+
+The research test takes about 2 minutes in release and far longer in the debug build of `cargo test --workspace`,
+so it is marked `#[ignore]` (run by the ignored-tests CI job). To reproduce L-0038, add `--ignored` to the command
+above. Nothing else in the test changed.
