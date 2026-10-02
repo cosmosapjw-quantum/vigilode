@@ -1,0 +1,275 @@
+{
+  "schema": "vigilode-thread-transfer-review-v1",
+  "date": "2026-10-02",
+  "repository": "cosmosapjw-quantum/vigilode",
+  "reviewed_head": "d1e9ba3b0125ee478c28d0b2c280ca0869289c15",
+  "reviewed_tree": "25e00400a0b8a76ee41171e717094344069a1b28",
+  "existing_branch": "claude/jolly-wozniak-7wl15h-wu25-stiff-benchmark",
+  "preregistration_commit": "f2797d8891eb7201da31576080f2118bb23b7b1b",
+  "scope": "documentation review plus isolated executable exact probes; no new admitted timing node",
+  "status": {
+    "python_tests": {
+      "passed": 54,
+      "total": 54,
+      "scope": "includes scientific counterexamples"
+    },
+    "native_rust": "BLOCKED_ENVIRONMENT_NO_TOOLCHAIN",
+    "native_performance": "NOT_RUN",
+    "CI": "NOT_CLAIMED",
+    "L0033": "FAIL_UNCHANGED",
+    "timing_authority": "HOLD_UNCHANGED",
+    "protected_R_JF": "UNCHANGED",
+    "existing_ledger": "UNCHANGED"
+  },
+  "findings": [
+    {
+      "id": "TF-01",
+      "classification": "derived-and-exactly-checked",
+      "priority": "P1",
+      "component": "HOM-04 radius research",
+      "claim": "n=8 and n=16 have feasible common radii; the current six-attempt cap is too small",
+      "evidence": [
+        "S09",
+        "S12",
+        "S14",
+        "results/PROBE_RESULTS.json"
+      ],
+      "not_claimed": [
+        "native Rust outward admission",
+        "production q2 admission",
+        "ODE error control"
+      ],
+      "next": [
+        "N1",
+        "N2"
+      ]
+    },
+    {
+      "id": "TF-02",
+      "classification": "derived-and-implementation-checked-in-Python",
+      "priority": "P1",
+      "component": "path-sum certificate",
+      "claim": "action-first computes the same exact finite polynomial without the sum matrix",
+      "evidence": [
+        "S09",
+        "probes.py",
+        "test_probes.py"
+      ],
+      "arithmetic_ratio": 0.47115384615384615,
+      "not_claimed": [
+        "bitwise identity after floating reordering",
+        "native wall-time gain"
+      ],
+      "next": [
+        "N1"
+      ]
+    },
+    {
+      "id": "TF-03",
+      "classification": "source-derived-complexity-bound",
+      "priority": "P1",
+      "component": "rodas5p-fast-v2",
+      "claim": "dense scans and pivot/zero tests retain an O(n^2) floor despite banded row updates",
+      "evidence": [
+        "S06",
+        "results/PROBE_RESULTS.json"
+      ],
+      "next": [
+        "P1"
+      ]
+    },
+    {
+      "id": "TF-04",
+      "classification": "source-derived-storage-bound",
+      "priority": "P1",
+      "component": "certificate inputs/witness",
+      "claim": "diagonal model J and witness upper still allocate dense matrices; blocked H does not remove this floor",
+      "evidence": [
+        "S09",
+        "S10"
+      ],
+      "next": [
+        "N3"
+      ]
+    },
+    {
+      "id": "TF-05",
+      "classification": "source-verified-contract",
+      "priority": "P0",
+      "component": "native q2 admission",
+      "claim": "current native q2 uses serial certify_stage_target, not doubling; closure is not acceptance",
+      "evidence": [
+        "S10"
+      ],
+      "next": [
+        "N1",
+        "N2",
+        "N3"
+      ]
+    },
+    {
+      "id": "TF-06",
+      "classification": "derived-and-symbolically-checked",
+      "priority": "P0",
+      "component": "thread RVJ transfer",
+      "claim": "retain RVJ failure and estimator blindness; use a static stage-residual chart as a candidate adapter before any new ODE method",
+      "evidence": [
+        "thread_artifacts",
+        "test_probes.py"
+      ],
+      "next": [
+        "M1",
+        "V1"
+      ]
+    },
+    {
+      "id": "TF-07",
+      "classification": "derived-and-symbolically-checked",
+      "priority": "P1",
+      "component": "strict-lower target homotopy",
+      "claim": "regular lower-triangular target Jacobian has determinant det(W)^s; radius failure is not evidence of a fold",
+      "evidence": [
+        "S08",
+        "S11",
+        "test_probes.py"
+      ],
+      "assumptions": [
+        "W invertible",
+        "strict-lower target",
+        "smooth RHS on the path",
+        "no domain escape"
+      ],
+      "next": [
+        "M1"
+      ]
+    },
+    {
+      "id": "TF-08",
+      "classification": "source-supported-existing-blocker",
+      "priority": "P1",
+      "component": "small-case performance",
+      "claim": "L-0033 remains FAIL; current v2 optimizations should not be proposed again",
+      "evidence": [
+        "S04",
+        "S05",
+        "S06"
+      ],
+      "next": [
+        "P1"
+      ]
+    },
+    {
+      "id": "TF-09",
+      "classification": "source-supported-existing-blocker",
+      "priority": "P2",
+      "component": "nonnormal polynomial/Krylov accuracy",
+      "claim": "sampled residual and scalar spectrum are insufficient for output-error certification",
+      "evidence": [
+        "S03",
+        "S13"
+      ],
+      "next": [
+        "V1"
+      ]
+    }
+  ],
+  "development_dag": [
+    {
+      "id": "N1",
+      "priority": "P1",
+      "depends_on": [],
+      "title": "native action-first directed certificate",
+      "observed_target": "crates/rodas5p-integrators/src/outward_certificate.rs",
+      "status": "PROPOSED_NOT_IMPLEMENTED",
+      "future_focused_command": "cargo test -p rodas5p-integrators --test thread_transfer_action_certificate",
+      "full_check": "cargo test --workspace --locked",
+      "contract_document": "IMPLEMENTATION_PLAN.md",
+      "contract_section": "Task N1"
+    },
+    {
+      "id": "N2",
+      "priority": "P1",
+      "depends_on": [
+        "N1"
+      ],
+      "title": "explicit residual-seeded radius policy",
+      "observed_target": "crates/rodas5p-integrators/src/outward_certificate.rs",
+      "status": "PROPOSED_NOT_IMPLEMENTED",
+      "future_focused_command": "cargo test -p rodas5p-integrators --test thread_transfer_radius_policy",
+      "full_check": "cargo test --workspace --locked",
+      "contract_document": "IMPLEMENTATION_PLAN.md",
+      "contract_section": "Task N2"
+    },
+    {
+      "id": "N3",
+      "priority": "P1",
+      "depends_on": [],
+      "title": "structural witness and prepared immutable admission context",
+      "observed_target": "crates/rodas5p-integrators/src/transactional_q1_q2.rs",
+      "status": "PROPOSED_NOT_IMPLEMENTED",
+      "future_focused_command": "cargo test -p rodas5p-integrators --test thread_transfer_structural_witness",
+      "full_check": "cargo test --workspace --locked",
+      "contract_document": "IMPLEMENTATION_PLAN.md",
+      "contract_section": "Task N3"
+    },
+    {
+      "id": "P1",
+      "priority": "P1",
+      "depends_on": [],
+      "title": "small fast kernels and true banded pipeline",
+      "observed_target": "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+      "status": "PROPOSED_NOT_IMPLEMENTED",
+      "future_focused_command": "cargo test -p rodas5p-integrators --test thread_transfer_fast_kernel",
+      "full_check": "cargo test --workspace --locked",
+      "contract_document": "IMPLEMENTATION_PLAN.md",
+      "contract_section": "Task P1"
+    },
+    {
+      "id": "M1",
+      "priority": "P2",
+      "depends_on": [],
+      "title": "regular static stage-coordinate candidate adapter",
+      "observed_target": "crates/rodas5p-integrators/src/homotopy.rs",
+      "status": "PROPOSED_NOT_IMPLEMENTED",
+      "future_focused_command": "cargo test -p rodas5p-integrators --test thread_transfer_stage_chart",
+      "full_check": "cargo test --workspace --locked",
+      "contract_document": "IMPLEMENTATION_PLAN.md",
+      "contract_section": "Task M1"
+    },
+    {
+      "id": "V1",
+      "priority": "P2",
+      "depends_on": [],
+      "title": "certified nonnormal/recurrence output-error contract",
+      "observed_target": "crates/rodas5p-core/src/polynomial_action.rs",
+      "status": "PROPOSED_NOT_IMPLEMENTED",
+      "future_focused_command": "cargo test -p rodas5p-core --test thread_transfer_output_bound",
+      "full_check": "cargo test --workspace --locked",
+      "contract_document": "IMPLEMENTATION_PLAN.md",
+      "contract_section": "Task V1"
+    }
+  ],
+  "native_q2_activation_requires": [
+    "N1",
+    "N2",
+    "N3",
+    "new preregistered cost evidence",
+    "original target-distance budget and binding gates"
+  ],
+  "publication_contract": {
+    "prefix": "docs/reviews/20261002_thread_transfer/",
+    "new_branch": false,
+    "force_push": false,
+    "production_code_changed": false
+  },
+  "results_file": "results/PROBE_RESULTS.json",
+  "source_map": "SOURCE_MAP.json",
+  "not_claimed": [
+    "no native radius admission claim",
+    "no ODE error certificate claim",
+    "no real-wall-speedup claim",
+    "no claim that current Q2 uses doubling",
+    "no general RVJ replacement",
+    "no claim of bitwise equivalence of reordered floating point operations"
+  ]
+}
