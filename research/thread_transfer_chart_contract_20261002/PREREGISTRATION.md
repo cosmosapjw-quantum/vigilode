@@ -56,3 +56,27 @@ RVJ activation and no RODAS5P change.
 
 The prior thread's chart checks (vendored in `research/thread_transfer_negative_controls_20261002`, 89/89 numeric
 checks including chart repair). No code of this node exists before this commit.
+
+---
+
+## Results (appended after the run at the execution commit recorded in L-0043)
+
+Output: `RESULTS.json`. Ledger row L-0043.
+
+**Gate: PASS.**
+
+| Gate item | Outcome |
+|---|---|
+| 1. Identity | holds: the general identity simplifies to 0; for the semilinear chart `a = 2x`, `r_C = 0`, `r_D = 0` |
+| 2. Fail closed | holds: `to_chart`/`from_chart` refuse D = 0, `x^2 < d_min`, an inverse-chart norm above the limit and the other branch; a valid point round-trips |
+| 3. Fast mode kept | holds: `w(0.1) = 0.1 e^(-4) = 1.83e-3`, not zero, and the reconstructed `y` equals the 50-digit solution of the original ODE to working precision (the reference was checked to respond to a 1e-20 change of `y(0)` with an 8.5e-22 change) |
+| 4. Finite eps | holds: with `r_C = eps x^3` kept, exact to working precision; with it dropped, 9.9e-4 relative error in `y` at eps = 1e-3 |
+| 5. Connection | holds: `-S^-1 L_F S = -2x` for `S = x^2`, cancelling `a = 2x` |
+
+Reading: the chart is exact for this model only because both cofactor residuals vanish. Any residual enters the chart
+equation divided by `D`, so a chart needs a lower bound on `|D|`, a conditioning limit and a fixed branch, and the
+adapter refuses to map outside them. This is the contract of one model. It does not enable RVJ, change RODAS5P or
+offer a generic chart.
+
+Development disclosure: the script ran once before the recorded run (same outcome), and one sensitivity check of
+the reference was run by hand.
