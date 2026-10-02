@@ -94,6 +94,27 @@ impl OdeProblem {
         }
     }
 
+    /// [`Self::eval_rhs`] into a caller-owned buffer, with the same checks
+    /// and counting (the RODAS5P fast driver's allocation-free stages).
+    pub fn eval_rhs_into(
+        &self,
+        t: f64,
+        y: &[f64],
+        out: &mut [f64],
+        counters: &mut WorkCounters,
+    ) -> CoreResult<()> {
+        if y.len() != self.dimension || out.len() != self.dimension {
+            return Err(CoreError::Dimension("RHS state shape mismatch".into()));
+        }
+        (self.rhs)(t, y, out)?;
+        if !out.iter().all(|v| v.is_finite()) {
+            return Err(CoreError::NonFinite("RHS produced NaN/Inf".into()));
+        }
+        counters.rhs_calls += 1;
+        counters.rhs_evaluations += 1;
+        Ok(())
+    }
+
     pub fn eval_rhs(&self, t: f64, y: &[f64], counters: &mut WorkCounters) -> CoreResult<Vec<f64>> {
         let out = self.eval_rhs_uncounted(t, y)?;
         counters.rhs_calls += 1;

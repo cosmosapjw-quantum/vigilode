@@ -13,15 +13,24 @@ use std::{sync::Arc, time::Instant};
 use anyhow::Result;
 use rodas5p_core::{CoreResult, DenseMatrix, LinearMethod, LinearSolverConfig, WorkCounters};
 use rodas5p_integrators::{
-    AdaptiveObservedIntegrationResult, AdaptiveStepConfig, BdfConfig, IntegrationMethod,
-    NewtonTolerancePolicy, OdeProblem, OutputSchedule, RadauConfig,
+    AdaptiveObservedIntegrationResult, AdaptiveRunDiagnostics, AdaptiveStepConfig, BdfConfig,
+    IntegrationMethod, NewtonTolerancePolicy, OdeProblem, OutputSchedule, RadauConfig,
     integrate_adaptive_observed_with_config, integrate_bdf_adaptive_observed,
-    integrate_radau_adaptive_observed, robertson_problem, stiff_van_der_pol_problem,
+    integrate_radau_adaptive_observed, integrate_rodas5p_fast_observed, robertson_problem,
+    stiff_van_der_pol_problem,
 };
 use serde_json::{Value, json};
 
 pub const SCHEMA: &str = "vigilode-stiff-bdf-radau-benchmark-v1";
 pub const TOLERANCES: [f64; 7] = [1.0e-3, 1.0e-4, 1.0e-5, 1.0e-6, 1.0e-7, 1.0e-8, 1.0e-9];
+/// The lean RODAS5P driver (`research/stiff_rodas5p_fast_20261002`). Not in
+/// [`ARMS`], so the default selection of the earlier nodes is unchanged.
+pub const FAST_ARM: &str = "rodas5p-fast";
+
+fn known_arm(arm: &str) -> bool {
+    ARMS.contains(&arm) || arm == FAST_ARM
+}
+
 pub const ARMS: [&str; 5] = [
     "rodas5p",
     "repo-bdf2",
@@ -260,6 +269,20 @@ pub fn run_arm(
             &adaptive,
             &output,
         ),
+        FAST_ARM => {
+            // Only the counts of the per-attempt diagnostics are filled; the
+            // fast driver keeps no per-attempt vectors.
+            let fast = integrate_rodas5p_fast_observed(p, span, y0, &adaptive, &output)?;
+            Ok(AdaptiveObservedIntegrationResult {
+                observed: fast.observed,
+                diagnostics: AdaptiveRunDiagnostics {
+                    attempts: fast.attempts,
+                    accepted_macro_steps: fast.accepted_steps,
+                    rejected_macro_steps: fast.rejected_steps,
+                    ..AdaptiveRunDiagnostics::default()
+                },
+            })
+        }
         "repo-bdf2" => {
             integrate_bdf_adaptive_observed(p, span, y0, &BdfConfig::default(), &adaptive, &output)
         }
@@ -346,7 +369,7 @@ pub fn stiff_benchmark(
 ) -> Result<Value> {
     anyhow::ensure!(repetitions >= 1, "at least one timed repetition");
     for arm in arms {
-        anyhow::ensure!(ARMS.contains(&arm.as_str()), "unknown arm {arm}");
+        anyhow::ensure!(known_arm(arm), "unknown arm {arm}");
     }
     let mut problems = Vec::new();
     for problem in benchmark_problems()? {
@@ -452,7 +475,7 @@ pub fn stiff_benchmark(
 /// same state.
 pub fn profile_run(problem_id: &str, arm: &str, rtol: f64, repetitions: usize) -> Result<Value> {
     anyhow::ensure!(repetitions >= 1, "at least one repetition");
-    anyhow::ensure!(ARMS.contains(&arm), "unknown arm {arm}");
+    anyhow::ensure!(known_arm(arm), "unknown arm {arm}");
     let problem = benchmark_problems()?
         .into_iter()
         .find(|p| p.id == problem_id)
@@ -560,7 +583,7 @@ mod tests {
     fn every_arm_completes_a_loose_hires_run() {
         let problems = benchmark_problems().unwrap();
         let hires = problems.iter().find(|p| p.id == "hires").unwrap();
-        for arm in ARMS {
+        for arm in ARMS.into_iter().chain([FAST_ARM]) {
             let result = run_arm(arm, hires, 1.0e-3).unwrap();
             assert!(
                 result.observed.success,

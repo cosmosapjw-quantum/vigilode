@@ -47,6 +47,7 @@ mod problem;
 mod problems;
 mod radau;
 mod rhs_telemetry;
+mod rodas5p_fast;
 mod sabr;
 mod scientific_corpus_v2;
 mod scientific_validity_v2_gate;
@@ -324,6 +325,10 @@ pub use rhs_telemetry::{
     RhsBatchTelemetryRow, RhsSubspaceComparison, RhsTelemetryFailure, RhsTelemetryRisk,
     analyze_rhs_batch, analyze_rhs_directions, compare_rhs_subspaces, recommend_common_w_backend,
     run_homotopy_rhs_telemetry_screen,
+};
+pub use rodas5p_fast::{
+    RODAS5P_FAST_DRIVER_ID, RODAS5P_FAST_SMALL_LU_MAX, RODAS5P_FAST_SPARSE_DENSITY_MAX,
+    Rodas5pFastLu, Rodas5pFastResult, integrate_rodas5p_fast_observed, rodas5p_fast_step,
 };
 pub use sabr::{PredictorKind, SabrConfig, StageHistory, sabr_step};
 pub use scientific_corpus_v2::{
