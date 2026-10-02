@@ -74,3 +74,34 @@ Otherwise **FAIL**. Reported: the largest magnitudes of each discrepancy.
   or upper entries of native `alpha` (largest 5.6e-16) and 34 of `L` (largest 3.8e-16).
 - L-0032 found the fast driver within 2% of the sequential driver on adaptive runs. No code of this node exists
   before this commit.
+
+---
+
+## Results (appended after the run at `672a12a`)
+
+Outputs: `RESULTS.json` (native contracts), `EXACT_CHECK.json` (symbolic identity, exact containment). Ledger
+row L-0037. SymPy 1.14.0 was installed with pip in the run environment (it was absent).
+
+**Gate: PASS.**
+
+| Gate item | Outcome |
+|---|---|
+| 1. Symbolic identity | holds: the stage arguments agree identically and `r_U - gamma r_K` simplifies to 0 for generic 2x2 `M`, `J` and 3 stages. A mutated form (the `gamma` factor dropped from the `C` term) fails the same check, so the check is not vacuous (development run, not recorded) |
+| 2. Outward enclosure | holds: all 168 exact values lie in their intervals |
+| 3. Native transport | holds: on 16 cases (h = 1e-3 and 0.05, 8 stage sets each), the largest ratio of `|r_U(SK) - gamma r_K(K)|` to bound plus rounding allowance is 0.16 |
+| 4. Receipt invalidation | holds: the receipt validates unchanged and fails after each of 10 coefficient mutations, `h`, operator and scale |
+| 5. Residual mapping | holds: `tau_U = |gamma| tau_K` rounded down (gamma = 0.2119); invalid budgets rejected; the relative target comes from the U right-hand side |
+
+Discrepancy sizes (exact maximum; width of the Rust enclosure):
+
+| Term | exact max | enclosure width (max) |
+|---|---|---|
+| `D_Gamma = (I - gamma C) S - gamma I` | 4.1e-15 | 3.7e-14 |
+| `D_alpha = A S - alpha0` | 1.2e-15 | 1.8e-15 |
+| output `b_code^T S - b^T` | 1.2e-15 | 1.8e-15 |
+| embedded `e_s^T S - btilde^T` | 1.1e-16 | 0 (point) |
+| dense `H_raw S - D_dense` | 1.4e-14 | 2.3e-13 |
+
+Reading: the two targets differ at the level of coefficient rounding. The interval enclosures are about ten times
+wider than the exact values (cancellation in `S - gamma C S`), which is still far below any solver tolerance in use.
+These numbers bound target transport only; they say nothing about the ODE's local or global error.
