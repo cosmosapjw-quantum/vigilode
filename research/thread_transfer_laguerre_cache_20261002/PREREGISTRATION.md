@@ -62,3 +62,38 @@ and
 
 computes the fused recurrence error `sum_k s_k sum_n c_(n,k) (t_hat_n - t_n)` exactly and checks it against the
 native combined bound. The threshold is unchanged.
+
+---
+
+## Results (appended after the run at `94c3f8f`)
+
+Outputs: `RESULTS.json`, `EXACT_CHECK.json`. Ledger row L-0042.
+
+**Gate: PASS.**
+
+| Gate item | Outcome |
+|---|---|
+| 1. Invalidation | holds: the identical key hits with bit-identical envelopes; the degree, a one-ulp extent, the depth, a one-ulp coefficient, the coefficients of `h` one ulp larger and the proof version each miss |
+| 2. Cold and warm separated | holds: the cold setup at m = 32 costs 145,454 interval operations, a hit 0; 1 hit and 6 misses counted |
+| 3. Combination valid | holds: exact fused recurrence errors 3.87e-17 (m = 16) and 3.82e-17 (m = 32) against combined bounds 4.79e-16 and 5.10e-16 |
+
+Setup cost (interval operations; the number of actions of cost `m (n^2 + 8n)` flops one setup equals):
+
+| m | setup | n = 8 | n = 64 |
+|---|---|---|---|
+| 16 | 23,342 | 11 | 0.3 |
+| 32 | 145,454 | 36 | 1.0 |
+| 64 | 1,013,806 | 124 | 3.4 |
+| 128 | 7,540,782 | 460 | 12.8 |
+
+The fitted exponent over m = 16..128 is 2.78, close to the cubic count of Bernstein subdivision (an interval
+operation is several binary64 operations, so these counts understate the setup in flops). For small operators a
+setup costs tens to hundreds of actions, so the bound pays only with reuse of identical keys (same `h`, scale, degree
+and depth). Large degrees should not be enabled without that reuse.
+
+The same-vector combination gave no gain here: the combined bound equals the sum of the column bounds to 1e-11,
+because the Laguerre phi coefficients of all five columns have one sign, so nothing cancels. It would matter only for
+coefficient sets with mixed signs, which this node did not test.
+
+Development disclosure: the test and the checker ran once before the recorded run (same outcomes). Claim ceiling: an
+amortized cost study and cache safety; no support above degree 128; `TotalErrorStatus` unchanged.
