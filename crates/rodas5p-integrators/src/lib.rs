@@ -304,13 +304,14 @@ pub use output::{
 };
 pub use outward_certificate::{
     BlockedCertificateWork, BlockedDoublingCertificate, BoxCertificate,
-    CERTIFICATE_STRUCTURE_UNSUPPORTED, CertificateKind, DiagonalMajorant, DoublingCertificate,
-    InverseWitness, PastStepData, QuadraticStageProblem, RadiusAttempt, StageCertificate,
-    UnverifiedWitness, WITNESS_NOT_VERIFIED, WitnessIdentity, WitnessWork,
-    blocked_action_doubling_certificate_with_execution, blocked_box_certificate_with_execution,
-    blocked_doubling_certificate_with_execution, candidate_digest, certificate_binding,
-    certify_stage_target, doubling_certificate, doubling_certificate_with_execution,
-    doubling_levels, predict_state_radius,
+    CERTIFICATE_STRUCTURE_UNSUPPORTED, CertificateKind, DIAGONAL_STRUCTURED, DiagonalMajorant,
+    DiagonalStageProblem, DoublingCertificate, InverseWitness, PastStepData, QuadraticStageProblem,
+    RadiusAttempt, StageCertificate, UnverifiedWitness, WITNESS_NOT_VERIFIED, WitnessIdentity,
+    WitnessWork, blocked_action_doubling_certificate_with_execution,
+    blocked_box_certificate_with_execution, blocked_doubling_certificate_with_execution,
+    candidate_digest, certificate_binding, certify_stage_target, certify_stage_target_diagonal,
+    doubling_certificate, doubling_certificate_with_execution, doubling_levels,
+    predict_state_radius,
 };
 pub use parallel::ParallelExecution;
 pub use path_controller::{
@@ -386,12 +387,13 @@ pub use stage_target::{
     StageTargetBits, block_sequential_allowance, native_coefficient_leakage,
 };
 pub use transactional_q1_q2::{
-    CERTIFICATE_CAPABILITY_UNAVAILABLE, ModelBinding, NATIVE_TARGET_CERTIFICATE_ADMISSION,
-    OPERATIONAL_DIAGNOSTIC_ADMISSION, OperationalGateReport, Q2Admission, Q2CertificateAdmission,
-    Q2CertificateSource, QuadraticModel, TransactionalQ1Q2Config, TransactionalQ1Q2Lane,
-    TransactionalQ1Q2RunDiagnostics, TransactionalQ1Q2StepReport, WitnessCapability,
-    transactional_q1_q2_step, transactional_q1_q2_step_with_admission,
-    transactional_q1_q2_step_with_execution,
+    CERTIFICATE_CAPABILITY_UNAVAILABLE, DiagonalQuadraticModel, ModelBinding,
+    NATIVE_TARGET_CERTIFICATE_ADMISSION, OPERATIONAL_DIAGNOSTIC_ADMISSION, OperationalGateReport,
+    PREPARED_STRUCTURED_CERTIFICATE_ADMISSION, PreparedQ2Certificate, PreparedStageProblem,
+    Q2Admission, Q2CertificateAdmission, Q2CertificateSource, QuadraticModel,
+    TransactionalQ1Q2Config, TransactionalQ1Q2Lane, TransactionalQ1Q2RunDiagnostics,
+    TransactionalQ1Q2StepReport, WitnessCapability, transactional_q1_q2_step,
+    transactional_q1_q2_step_with_admission, transactional_q1_q2_step_with_execution,
 };
 pub use unified_gates::{
     CandidateGateReport, CandidateGateVerdict, CandidateOrderGateRow, CandidateStiffGateRow,

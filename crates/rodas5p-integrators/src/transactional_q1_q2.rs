@@ -7,10 +7,11 @@ use serde::Serialize;
 
 use crate::homotopy::{add_scaled_rows, evaluate_partial_path};
 use crate::{
-    HomotopyWorkLedger, InverseWitness, OdeProblem, ParallelExecution, QuadraticStageProblem,
-    STAGE_TARGET_SEQUENTIAL, StageCertificate, StageTarget, StepCertificate, StepContext,
-    StepResult, StructuredBlockSystem, build_step_context_matrix_free, candidate_digest,
-    certify_stage_target, finish_step, sequential_stages,
+    DiagonalStageProblem, HomotopyWorkLedger, InverseWitness, OdeProblem, ParallelExecution,
+    QuadraticStageProblem, STAGE_TARGET_SEQUENTIAL, StageCertificate, StageTarget, StepCertificate,
+    StepContext, StepResult, StructuredBlockSystem, build_step_context_matrix_free,
+    candidate_digest, certify_stage_target, certify_stage_target_diagonal, finish_step,
+    sequential_stages,
 };
 use rodas5p_core::directed::{mul_down, mul_up};
 
@@ -26,16 +27,26 @@ pub enum Q2Admission<'a> {
     /// distance from the target's exact output, and the budget comes from the
     /// certified lower bound of the embedded estimate.
     NativeTargetCertificate(&'a dyn Q2CertificateSource),
+    /// [`Q2Admission::NativeTargetCertificate`] with one
+    /// [`PreparedQ2Certificate`] per attempt (integrated DAG node INT-02):
+    /// the stage problem and its witness are built once, before the fast
+    /// path, and serve both the capability decision and the certificate. A
+    /// source with [`Q2CertificateSource::diagonal_stage_problem`] is
+    /// certified on its O(n) diagonal form. Every binding and consistency
+    /// check of the native path is kept.
+    PreparedStructuredCertificate(&'a dyn Q2CertificateSource),
 }
 
 pub const OPERATIONAL_DIAGNOSTIC_ADMISSION: &str = "operational-diagnostic";
 pub const NATIVE_TARGET_CERTIFICATE_ADMISSION: &str = "native-target-certificate";
+pub const PREPARED_STRUCTURED_CERTIFICATE_ADMISSION: &str = "prepared-structured-certificate";
 
 impl Q2Admission<'_> {
     pub fn name(&self) -> &'static str {
         match self {
             Self::OperationalDiagnostic => OPERATIONAL_DIAGNOSTIC_ADMISSION,
             Self::NativeTargetCertificate(_) => NATIVE_TARGET_CERTIFICATE_ADMISSION,
+            Self::PreparedStructuredCertificate(_) => PREPARED_STRUCTURED_CERTIFICATE_ADMISSION,
         }
     }
 }
@@ -78,6 +89,28 @@ pub trait Q2CertificateSource: Sync {
                 reason: error.to_string(),
             },
         }
+    }
+
+    /// The stage problem in diagonal form, for sources whose `J` is diagonal
+    /// by construction (integrated DAG node INT-02). `None` (the default)
+    /// means the dense [`Q2CertificateSource::stage_problem`] is used.
+    fn diagonal_stage_problem(
+        &self,
+        _t: f64,
+        _y: &[f64],
+        _h: f64,
+    ) -> Option<CoreResult<DiagonalStageProblem>> {
+        None
+    }
+
+    /// The witness of a diagonal stage problem:
+    /// [`InverseWitness::diagonal_structured`].
+    fn diagonal_witness(
+        &self,
+        problem: &DiagonalStageProblem,
+        gamma: f64,
+    ) -> CoreResult<InverseWitness> {
+        InverseWitness::diagonal_structured(problem, gamma)
     }
 
     /// An inverse witness for `W = I - h gamma J`: diagonal when `J` is,
@@ -254,6 +287,186 @@ impl Q2CertificateSource for QuadraticModel {
     fn binding(&self) -> ModelBinding {
         ModelBinding::GeneratedFromModel {
             model_sha256: self.model_sha256(),
+        }
+    }
+}
+
+/// A [`QuadraticModel`] whose `A` is diagonal, with that diagonal kept, so
+/// that its stage problems are O(n) data (integrated DAG node INT-02). Its
+/// dense [`Q2CertificateSource::stage_problem`], binding and ODE are the
+/// wrapped model's.
+#[derive(Clone, Debug, PartialEq)]
+pub struct DiagonalQuadraticModel {
+    model: QuadraticModel,
+    diagonal: Vec<f64>,
+}
+
+impl DiagonalQuadraticModel {
+    /// Rejects a model with a nonzero off-diagonal entry of `A`.
+    pub fn new(model: QuadraticModel) -> CoreResult<Self> {
+        let n = model.dimension();
+        if (0..n).any(|a| (0..n).any(|b| a != b && model.a[a][b] != 0.0)) {
+            return Err(CoreError::InvalidInput(
+                "CERTIFICATE_STRUCTURE_UNSUPPORTED: the model's A is not diagonal".into(),
+            ));
+        }
+        let diagonal = (0..n).map(|a| model.a[a][a]).collect();
+        Ok(Self { model, diagonal })
+    }
+
+    pub fn model(&self) -> &QuadraticModel {
+        &self.model
+    }
+}
+
+impl Q2CertificateSource for DiagonalQuadraticModel {
+    fn stage_problem(&self, t: f64, y: &[f64], h: f64) -> CoreResult<QuadraticStageProblem> {
+        self.model.stage_problem(t, y, h)
+    }
+
+    fn binding(&self) -> ModelBinding {
+        self.model.binding()
+    }
+
+    fn diagonal_stage_problem(
+        &self,
+        _t: f64,
+        y: &[f64],
+        h: f64,
+    ) -> Option<CoreResult<DiagonalStageProblem>> {
+        if y.len() != self.diagonal.len() {
+            return Some(Err(CoreError::Dimension(
+                "quadratic model: state dimension".into(),
+            )));
+        }
+        // J = A + 2 diag(q y), entry by entry as in the dense stage problem.
+        let diagonal = self
+            .diagonal
+            .iter()
+            .zip(&self.model.q)
+            .zip(y)
+            .map(|((a, q), y)| a + 2.0 * q * y)
+            .collect();
+        Some(Ok(DiagonalStageProblem {
+            diagonal,
+            y: y.to_vec(),
+            h,
+            q: self.model.q.clone(),
+        }))
+    }
+}
+
+/// The stage problem of one attempt, dense or diagonal.
+#[derive(Clone, Debug, PartialEq)]
+pub enum PreparedStageProblem {
+    Dense(QuadraticStageProblem),
+    Diagonal(DiagonalStageProblem),
+}
+
+impl PreparedStageProblem {
+    pub fn y(&self) -> &[f64] {
+        match self {
+            Self::Dense(problem) => &problem.y,
+            Self::Diagonal(problem) => &problem.y,
+        }
+    }
+
+    pub fn h(&self) -> f64 {
+        match self {
+            Self::Dense(problem) => problem.h,
+            Self::Diagonal(problem) => problem.h,
+        }
+    }
+
+    pub fn q(&self) -> &[f64] {
+        match self {
+            Self::Dense(problem) => &problem.q,
+            Self::Diagonal(problem) => &problem.q,
+        }
+    }
+
+    /// `f(J row a)`: calls `visit(b, J_ab)` for the stored entries of row
+    /// `a` (all `n` of a dense row, in order; only the diagonal otherwise).
+    fn for_each_entry(&self, a: usize, mut visit: impl FnMut(usize, f64)) {
+        match self {
+            Self::Dense(problem) => {
+                for (b, value) in problem.jacobian[a].iter().enumerate() {
+                    visit(b, *value);
+                }
+            }
+            Self::Diagonal(problem) => visit(a, problem.diagonal[a]),
+        }
+    }
+
+    /// Stored f64 slots of `J`.
+    pub fn jacobian_slots(&self) -> usize {
+        match self {
+            Self::Dense(problem) => problem.jacobian.iter().map(Vec::len).sum(),
+            Self::Diagonal(problem) => problem.diagonal.len(),
+        }
+    }
+}
+
+/// The stage problem and witness of one q=2 attempt, built once and not
+/// changed afterwards (integrated DAG node INT-02, external review N3).
+#[derive(Debug)]
+pub struct PreparedQ2Certificate {
+    problem: CoreResult<PreparedStageProblem>,
+    witness: Option<CoreResult<InverseWitness>>,
+}
+
+impl PreparedQ2Certificate {
+    pub fn prepare(
+        source: &dyn Q2CertificateSource,
+        t: f64,
+        y: &[f64],
+        h: f64,
+        gamma: f64,
+    ) -> Self {
+        let problem = match source.diagonal_stage_problem(t, y, h) {
+            Some(problem) => problem.map(PreparedStageProblem::Diagonal),
+            None => source
+                .stage_problem(t, y, h)
+                .map(PreparedStageProblem::Dense),
+        };
+        let witness = problem.as_ref().ok().map(|problem| match problem {
+            PreparedStageProblem::Dense(problem) => source.witness(problem, gamma),
+            PreparedStageProblem::Diagonal(problem) => source.diagonal_witness(problem, gamma),
+        });
+        Self { problem, witness }
+    }
+
+    pub fn problem(&self) -> Option<&PreparedStageProblem> {
+        self.problem.as_ref().ok()
+    }
+
+    pub fn witness(&self) -> Option<&InverseWitness> {
+        self.witness.as_ref().and_then(|w| w.as_ref().ok())
+    }
+
+    /// The capability decision of [`Q2CertificateSource::capability`],
+    /// from the prepared witness.
+    pub fn capability(&self) -> WitnessCapability {
+        match (&self.problem, &self.witness) {
+            (Err(error), _) => WitnessCapability::ProblemUnavailable {
+                reason: error.to_string(),
+            },
+            (Ok(_), Some(Ok(witness))) => WitnessCapability::Available {
+                structure: witness.identity().structure.clone(),
+            },
+            (Ok(problem), Some(Err(error)))
+                if error.to_string().contains(SMALL_WITNESS_DIMENSION_LIMIT) =>
+            {
+                WitnessCapability::DimensionCutoff {
+                    dimension: problem.y().len(),
+                }
+            }
+            (Ok(_), Some(Err(error))) => WitnessCapability::MathematicalReject {
+                reason: error.to_string(),
+            },
+            (Ok(_), None) => WitnessCapability::MathematicalReject {
+                reason: "no witness".into(),
+            },
         }
     }
 }
@@ -957,6 +1170,7 @@ fn certified_q2_budget(config: &TransactionalQ1Q2Config, embedded_lower: f64) ->
 fn certify_q2_candidate(
     context: &StepContext<'_>,
     source: &dyn Q2CertificateSource,
+    prepared: Option<&PreparedQ2Certificate>,
     stages: &[Vec<f64>],
     config: &TransactionalQ1Q2Config,
     atol: f64,
@@ -974,12 +1188,26 @@ fn certify_q2_candidate(
                 "the certificate covers autonomous identity-mass problems only".into(),
             ));
         }
-        let problem = source.stage_problem(context.t, &context.y, context.h)?;
+        // The prepared problem of this attempt, or the dense one built here.
+        let built;
+        let problem = match prepared {
+            Some(prepared) => match &prepared.problem {
+                Ok(problem) => problem,
+                Err(error) => return Err(CoreError::InvalidInput(error.to_string())),
+            },
+            None => {
+                built = PreparedStageProblem::Dense(
+                    source.stage_problem(context.t, &context.y, context.h)?,
+                );
+                &built
+            }
+        };
         let n = context.problem.dimension;
-        if problem.h.to_bits() != context.h.to_bits()
-            || problem.y.len() != n
+        if problem.h().to_bits() != context.h.to_bits()
+            || problem.y().len() != n
+            || problem.q().len() != n
             || problem
-                .y
+                .y()
                 .iter()
                 .zip(&context.y)
                 .any(|(a, b)| a.to_bits() != b.to_bits())
@@ -993,21 +1221,17 @@ fn certify_q2_candidate(
         let direction = &stages[0];
         let mut jvp = vec![0.0; n];
         context.jacobian.apply(direction, &mut jvp)?;
-        for (a, row) in problem.jacobian.iter().enumerate() {
-            let jy = row.iter().zip(&problem.y).map(|(j, y)| j * y).sum::<f64>();
-            let jy_scale = row
-                .iter()
-                .zip(&problem.y)
-                .map(|(j, y)| (j * y).abs())
-                .sum::<f64>();
-            let quadratic = problem.q[a] * problem.y[a] * problem.y[a];
+        let (y0, q) = (problem.y(), problem.q());
+        for a in 0..n {
+            let (mut jy, mut jy_scale, mut jd, mut jd_scale) = (-0.0, -0.0, -0.0, -0.0);
+            problem.for_each_entry(a, |b, j| {
+                jy += j * y0[b];
+                jy_scale += (j * y0[b]).abs();
+                jd += j * direction[b];
+                jd_scale += (j * direction[b]).abs();
+            });
+            let quadratic = q[a] * y0[a] * y0[a];
             let model_f = jy - quadratic;
-            let jd = row.iter().zip(direction).map(|(j, d)| j * d).sum::<f64>();
-            let jd_scale = row
-                .iter()
-                .zip(direction)
-                .map(|(j, d)| (j * d).abs())
-                .sum::<f64>();
             let tolerance =
                 |scale: f64| 64.0 * f64::EPSILON * (n as f64) * scale + f64::MIN_POSITIVE;
             if (model_f - context.f0[a]).abs() > tolerance(jy_scale + quadratic.abs())
@@ -1024,13 +1248,11 @@ fn certify_q2_candidate(
         // unconstrained quadratic term would show (re-audit R3 review). This
         // is still a consistency check between the model and the ODE, not a
         // proof that they agree near the exact root.
-        let model_f0 = problem
-            .jacobian
-            .iter()
-            .enumerate()
-            .map(|(a, row)| {
-                row.iter().zip(&problem.y).map(|(j, y)| j * y).sum::<f64>()
-                    - problem.q[a] * problem.y[a] * problem.y[a]
+        let model_f0 = (0..n)
+            .map(|a| {
+                let mut jy = -0.0;
+                problem.for_each_entry(a, |b, j| jy += j * y0[b]);
+                jy - q[a] * y0[a] * y0[a]
             })
             .collect::<Vec<_>>();
         for (i, alpha) in target.alpha_rows.iter().enumerate().skip(1) {
@@ -1050,10 +1272,13 @@ fn certify_q2_candidate(
                 .zip(&context.y)
                 .map(|(s, y)| s - y)
                 .collect::<Vec<_>>();
-            for (a, row) in problem.jacobian.iter().enumerate() {
-                let jd = row.iter().zip(&d).map(|(j, x)| j * x).sum::<f64>();
-                let jd_scale = row.iter().zip(&d).map(|(j, x)| (j * x).abs()).sum::<f64>();
-                let quadratic = problem.q[a] * d[a] * d[a];
+            for a in 0..n {
+                let (mut jd, mut jd_scale) = (-0.0, -0.0);
+                problem.for_each_entry(a, |b, j| {
+                    jd += j * d[b];
+                    jd_scale += (j * d[b]).abs();
+                });
+                let quadratic = q[a] * d[a] * d[a];
                 let model = model_f0[a] + jd + quadratic;
                 let scale = model_f0[a].abs() + jd_scale + quadratic.abs() + actual[a].abs();
                 if !actual[a].is_finite()
@@ -1066,24 +1291,67 @@ fn certify_q2_candidate(
                 }
             }
         }
-        let witness = source.witness(&problem, target.gamma)?;
+        let built_witness;
+        let witness = match prepared {
+            Some(prepared) => match &prepared.witness {
+                Some(Ok(witness)) => witness,
+                Some(Err(error)) => return Err(CoreError::InvalidInput(error.to_string())),
+                None => {
+                    return Err(CoreError::InvalidInput(
+                        "the prepared certificate has no witness".into(),
+                    ));
+                }
+            },
+            None => match problem {
+                PreparedStageProblem::Dense(problem) => {
+                    built_witness = source.witness(problem, target.gamma)?;
+                    &built_witness
+                }
+                PreparedStageProblem::Diagonal(problem) => {
+                    built_witness = source.diagonal_witness(problem, target.gamma)?;
+                    &built_witness
+                }
+            },
+        };
         let y_hat = candidate_output(context, stages);
         let e_hat = weighted_stage_update(&context.coeffs.btilde, stages, n);
-        let certificate = certify_stage_target(
-            &target, &problem, stages, &y_hat, &e_hat, &witness, atol, rtol,
-        )?;
+        let (certificate, bound_to) = match problem {
+            PreparedStageProblem::Dense(problem) => {
+                let certificate = certify_stage_target(
+                    &target, problem, stages, &y_hat, &e_hat, witness, atol, rtol,
+                )?;
+                let bound = certificate.is_bound_to(
+                    &target,
+                    problem,
+                    stages,
+                    &y_hat,
+                    &e_hat,
+                    witness.identity(),
+                    atol,
+                    rtol,
+                );
+                (certificate, bound)
+            }
+            PreparedStageProblem::Diagonal(problem) => {
+                let certificate = certify_stage_target_diagonal(
+                    &target, problem, stages, &y_hat, &e_hat, witness, atol, rtol,
+                )?;
+                let bound = certificate.is_bound_to_diagonal(
+                    &target,
+                    problem,
+                    stages,
+                    &y_hat,
+                    &e_hat,
+                    witness.identity(),
+                    atol,
+                    rtol,
+                );
+                (certificate, bound)
+            }
+        };
         if certificate.target_id != STAGE_TARGET_SEQUENTIAL
             || certificate.candidate_sha256 != candidate_digest(stages)
-            || !certificate.is_bound_to(
-                &target,
-                &problem,
-                stages,
-                &y_hat,
-                &e_hat,
-                witness.identity(),
-                atol,
-                rtol,
-            )
+            || !bound_to
         {
             return Err(CoreError::InvalidInput(
                 "the certificate is not about this candidate on the native target".into(),
@@ -1137,6 +1405,7 @@ fn attempt_fast_path(
     rtol: f64,
     admission: Q2Admission<'_>,
     q2_certifiable: bool,
+    prepared: Option<&PreparedQ2Certificate>,
     counters: &mut WorkCounters,
     work: &mut HomotopyWorkLedger,
 ) -> Result<FastPathSuccess, Box<FastPathFailure>> {
@@ -1245,7 +1514,11 @@ fn attempt_fast_path(
         });
     }
 
-    if matches!(admission, Q2Admission::NativeTargetCertificate(_)) && !q2_certifiable {
+    if matches!(
+        admission,
+        Q2Admission::NativeTargetCertificate(_) | Q2Admission::PreparedStructuredCertificate(_)
+    ) && !q2_certifiable
+    {
         // No certificate can admit a q=2 candidate here: do not spend the
         // escalation batches on one (re-audit R4, R4-HOM-DEV-06).
         let gate = failed_operational_gate(format!(
@@ -1294,11 +1567,14 @@ fn attempt_fast_path(
         block, &stages, 0.0, 1.0, counters, work,
     ));
     let q2_candidate_y = Some(candidate_output(context, &stages));
-    if let Q2Admission::NativeTargetCertificate(source) = admission {
+    if let Q2Admission::NativeTargetCertificate(source)
+    | Q2Admission::PreparedStructuredCertificate(source) = admission
+    {
         // The candidate is final here: no eighth batch, nothing applied.
         let q2_embedded = fast_try!(embedded_error(context, &stages, atol, rtol));
-        let admitted =
-            certify_q2_candidate(context, source, &stages, config, atol, rtol, counters, work);
+        let admitted = certify_q2_candidate(
+            context, source, prepared, &stages, config, atol, rtol, counters, work,
+        );
         let bound = admitted
             .certificate
             .as_ref()
@@ -1472,7 +1748,20 @@ pub fn transactional_q1_q2_step_with_execution(
         ..HomotopyWorkLedger::default()
     };
 
+    let prepared = match admission {
+        Q2Admission::PreparedStructuredCertificate(source) => Some(PreparedQ2Certificate::prepare(
+            source,
+            context.t,
+            &context.y,
+            context.h,
+            context.coeffs.gamma,
+        )),
+        _ => None,
+    };
     let q2_capability = match admission {
+        Q2Admission::PreparedStructuredCertificate(_) => {
+            prepared.as_ref().map(PreparedQ2Certificate::capability)
+        }
         Q2Admission::NativeTargetCertificate(source) => Some(
             match source.stage_problem(context.t, &context.y, context.h) {
                 Ok(problem) => source.capability(&problem, context.coeffs.gamma),
@@ -1495,6 +1784,7 @@ pub fn transactional_q1_q2_step_with_execution(
         rtol,
         admission,
         q2_certifiable,
+        prepared.as_ref(),
         counters,
         &mut work,
     );
