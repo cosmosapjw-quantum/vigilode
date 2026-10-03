@@ -96,3 +96,43 @@ against an allowance of about 12. In the subnormal range, each upward-rounded ad
 the amended item 1 for normalized cases therefore becomes: the total times `(1 + 1e-12)`, plus
 `(5 sqrt(n) + 64) 2^-1074`. In-window cases stay bitwise. Every other case of that run met item 1, and the guards
 and resource items held. Nothing else changes.
+
+---
+
+## Results (appended after the run at `028f585`)
+
+Outputs: `cases.json` (native), `RESULTS.json` (50-digit check). Ledger row L-0047.
+
+**Gate: PASS** (items 1-4 hold).
+
+| Gate item | Outcome |
+|---|---|
+| 1. Coverage | **holds**: on all 57 Laguerre recurrence reports the registry's recomputation from the component fields equals `laguerre_adjoint_total` bit for bit inside the normalization window, and lies within the amended allowance on the two normalized cases. The derivation below accounts for every term |
+| 2. Enclosure | **holds**: all 52 admitted cases enclose the 50-digit target; the bound exceeds the actual error by 7.4x to 1452x (median 125x). That covers near cancellation (condition proxy about 2000, bound/error 16.8), amplitude 1e-310 (156x) and 1e300 (151x), and the scalar branch (18.8x) |
+| 3. Guards | **holds**: declared enclosure, timing execution, Chebyshev report, degree 643 (above 128), NaN/negative/infinite budgets and a budget of half the bound are rejected; the scalar branch follows `admit_total_error`; every Laguerre recurrence report keeps `total_error = EstimateOnly` |
+| 4. Bounded resources | **holds**: depth 13 and `usize::MAX` are refused before any work, depth 12 is accepted; keys made under other limits differ; the same key hits; the existing Laguerre adjoint and cache tests pass |
+
+Not admitted, by the budget rather than a guard: the six cases with `rho = 400`, `h = 0.1` (degree 111-114). Their
+totals are 9.5e6 to 2.1e8 while the actual errors are 6e-14 to 3e-13. At `h rho` of about 48, the components that
+carry `e^{L'/2}` (truncation, coefficient) make the bound useless, though the computation is accurate. So the
+admission is sound but loose. Its practical range on these operators ends near `h rho = 5`.
+
+Derivation of the coverage (gate item 1). Write `F = sum_k s_k phi_k(h A) w` (or distinct `w_k`), with `X = -A/beta`
+for the stored `beta`, and `a = h beta` exactly. Then `hA = -aX`, and `phi_k(-a x) = sum_n c_{n,k}(a) L_n(x)` for
+`x >= 0`. The coefficient enclosures are computed for that exact `a`, so the transform carries no error. The
+verified Gershgorin enclosure `spec(A) in [-rho, 0]` and `L' >= rho/beta` (rounded up) give `spec(X) in [0, L']`. For
+the computed column `col_k = fl(s_k fl(sum_n c~_n t^_n))`:
+`col_k - s_k sum_n c_n L_n(X) w = [col_k - s_k sum c~_n t^_n] + s_k sum c~_n (t^_n - L_n(X) w)
++ s_k sum (c~_n - c_n) L_n(X) w - s_k sum_{n>m} c_n L_n(X) w`.
+The four brackets are bounded by `summation` (the interval sum and scaling), `recurrence_adjoint` (summation by
+parts with the exact local defects, L-0039), `coefficient` (`|c~_n - c_n| e^{L'/2} ||w||`, since
+`||L_n(X)|| <= e^{L'/2}`) and `truncation` (the exact-arithmetic tail). The fused sum adds `fused_summation`. Under
+normalization the input scaling adds `normalization` and the subnormal rounding of the fused result, and every
+other term is scaled exactly by the power of two. No term is counted twice: the stored coefficients appear only in
+the adjoint term, and the enclosure radii only in the coefficient term.
+
+Development disclosure: before the recorded run the native test ran twice. The first exposed a test bug (a
+"declared" enclosure narrower than the diagonal, which the operator correctly refused). The second exposed the
+subnormal allowance, amended in the second amendment above. The Python check ran only on the recorded cases. Claim
+ceiling: admission on verified symmetric nonpositive operators at degree <= 128, and the bound can be very loose at
+large `h rho`. No general or non-normal matrix claim, no speed claim. `total_error` is unchanged.
