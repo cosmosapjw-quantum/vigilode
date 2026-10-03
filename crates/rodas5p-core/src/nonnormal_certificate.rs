@@ -23,7 +23,8 @@ use serde::Serialize;
 use crate::{
     CoreError, CoreResult,
     directed::{
-        Interval, add_down, add_up, div_up, mul_down, mul_up, sqrt_down, sqrt_up, sub_down,
+        Interval, add_down, add_up, div_up, exp_interval, mul_down, mul_up, sqrt_down, sqrt_up,
+        sub_down, sub_up,
     },
 };
 
@@ -256,18 +257,286 @@ fn truncation_upper(range: NumericalRangeBox, tau: f64, degree: usize) -> CoreRe
     let growth = if growth_exponent <= 0.0 {
         1.0
     } else {
-        // exp rounded up by a relative margin of 4 eps (libm exp is within
-        // 1 ulp); overflow gives infinity, which the caller treats as no bound.
-        let e = growth_exponent.exp();
-        if !e.is_finite() {
-            return Err(invalid("growth factor overflows"));
-        }
-        mul_up(e, 1.0 + 4.0 * f64::EPSILON)?
+        // REV-02: a directed enclosure of the exponential (overflow is no
+        // bound).
+        crate::directed::exp_interval(growth_exponent)
+            .map_err(|_| invalid("growth factor overflows"))?
+            .hi
     };
     let bound = mul_up(term, growth)?;
     if bound.is_finite() {
         Ok(bound)
     } else {
         Err(invalid("truncation bound overflows"))
+    }
+}
+
+/// The Osborne balancing metric of `A` (review DAG node REV-02): powers of
+/// two `d_i` such that, for every `i`, the off-diagonal 1-norms of row `i`
+/// and column `i` of `D A D^-1` are within a factor of 2 (the LAPACK `gebal`
+/// iteration without permutation; at most 100 sweeps). Computed from `A`
+/// alone; `D A D^-1` is exact in binary64.
+pub fn osborne_metric(a: &[Vec<f64>]) -> CoreResult<Vec<f64>> {
+    let n = a.len();
+    if n == 0 || a.iter().any(|row| row.len() != n) {
+        return Err(CoreError::Dimension(
+            "nonnormal certificate: A must be square".into(),
+        ));
+    }
+    if !a.iter().flatten().all(|x| x.is_finite()) {
+        return Err(invalid("non-finite A"));
+    }
+    let mut d = vec![1.0_f64; n];
+    for _ in 0..100 {
+        let mut changed = false;
+        for i in 0..n {
+            let (mut row, mut col) = (0.0_f64, 0.0_f64);
+            for j in 0..n {
+                if j != i {
+                    row += (d[i] * a[i][j] / d[j]).abs();
+                    col += (d[j] * a[j][i] / d[i]).abs();
+                }
+            }
+            if row == 0.0 || col == 0.0 {
+                continue;
+            }
+            // Scaling d_i by f multiplies the row sum by f and divides the
+            // column sum by f.
+            let mut f = 1.0_f64;
+            while row * f < col / f / 2.0 {
+                f *= 2.0;
+            }
+            while row * f > 2.0 * col / f {
+                f /= 2.0;
+            }
+            if f != 1.0 {
+                d[i] *= f;
+                changed = true;
+            }
+        }
+        if !changed {
+            break;
+        }
+    }
+    if !d.iter().all(|x| x.is_finite() && *x > 0.0) {
+        return Err(invalid("balancing produced an unusable metric"));
+    }
+    Ok(d)
+}
+
+/// The largest number of steps a stepped certificate takes; beyond it the
+/// certificate is [`NonnormalBoundStatus::Unbounded`].
+pub const MAX_STEPS: usize = 100_000;
+
+/// A stepped certificate (review DAG node REV-02): `N = steps` steps of
+/// `h = tau / N`, each a degree-`m` Taylor step `x_(j+1) = mid(P_j)` with
+/// `P_j` the interval Horner enclosure of `p_m(h B) x_j`, `B = D A D^-1`.
+/// The error in `B` coordinates is bounded by
+/// `(1 + sqrt 2) [e^{N h a_hi} ||rad(D v)|| + sum_j e^{(N-1-j) h a_hi}
+/// (t_j + rho_j)]`, Crouzeix-Palencia applied once per term, with the local
+/// truncation `t_j = (1 + sqrt 2) S_h ||x_j||` and rounding
+/// `rho_j = ||rad P_j||`; it is transported by `||D^-1||_2` and the
+/// back-transform rounding is added. Certifies the method's own value.
+pub fn certify_exp_action_stepped(
+    a: &[Vec<f64>],
+    v: &[f64],
+    tau: f64,
+    metric: Option<&[f64]>,
+    degree: usize,
+    steps: usize,
+) -> CoreResult<NonnormalExpCertificate> {
+    // Validation, B and Omega as in the single-step certificate.
+    let probe = certify_exp_action(a, v, 0.0, metric, degree, None)?;
+    if steps == 0 {
+        return Err(invalid("steps must be positive"));
+    }
+    if !(tau.is_finite() && tau >= 0.0) {
+        return Err(invalid("tau must be finite and nonnegative"));
+    }
+    let n = v.len();
+    let ones = vec![1.0; n];
+    let d = metric.unwrap_or(&ones);
+    let range = probe.numerical_range;
+    let unbounded = |candidate: Vec<f64>| NonnormalExpCertificate {
+        status: NonnormalBoundStatus::Unbounded,
+        candidate,
+        error_upper: f64::INFINITY,
+        error_lower: 0.0,
+        truncation_upper: f64::INFINITY,
+        distance_upper: f64::INFINITY,
+        distance_lower: 0.0,
+        transport: probe.transport,
+        numerical_range: range,
+        degree,
+    };
+    if steps > MAX_STEPS {
+        return Ok(unbounded(vec![f64::NAN; n]));
+    }
+    let mut b = vec![vec![Interval::point(0.0)?; n]; n];
+    for i in 0..n {
+        for j in 0..n {
+            b[i][j] = Interval::point(d[i])?
+                .mul(Interval::point(a[i][j])?)?
+                .div(Interval::point(d[j])?)?;
+        }
+    }
+    let h = tau / steps as f64;
+    // The method integrates N steps of exactly this binary64 h; a (tau, N)
+    // with N h != tau is refused rather than bounded.
+    // N h = tau exactly in the reals: the FMA residual N h - tau is exact
+    // unless it underflows, and a nonzero exact residual never rounds to 0.
+    if h.mul_add(steps as f64, -tau) != 0.0 {
+        return Err(invalid(
+            "tau / steps is not exact; choose steps so that it is",
+        ));
+    }
+    let local = match truncation_upper(range, h, degree) {
+        Ok(s) => mul_up(add_up(1.0, sqrt_up(2.0)?)?, s)?,
+        Err(_) => return Ok(unbounded(vec![f64::NAN; n])),
+    };
+    let cp = add_up(1.0, sqrt_up(2.0)?)?;
+    let u = (0..n)
+        .map(|i| Interval::point(d[i])?.mul(Interval::point(v[i])?))
+        .collect::<CoreResult<Vec<_>>>()?;
+    let radius_norm = |w: &[Interval]| -> CoreResult<f64> {
+        let mut total = 0.0;
+        for x in w {
+            let r = mul_up(sub_up(x.hi, x.lo)?, 0.5)?;
+            total = add_up(total, mul_up(r, r)?)?;
+        }
+        sqrt_up(total)
+    };
+    let point_norm = |w: &[f64]| -> CoreResult<f64> {
+        let mut total = 0.0;
+        for x in w {
+            total = add_up(total, mul_up(*x, *x)?)?;
+        }
+        sqrt_up(total)
+    };
+    let decay = |count: usize| -> CoreResult<f64> {
+        let exponent = mul_up(mul_up(count as f64, h)?, range.re_hi)?;
+        if exponent <= 0.0 {
+            // e^{t a_hi} <= 1 for a_hi <= 0; keep the exact decay when cheap.
+            Ok(exp_interval(exponent).map(|e| e.hi).unwrap_or(1.0).min(1.0))
+        } else {
+            Ok(exp_interval(exponent)?.hi)
+        }
+    };
+    let mut x: Vec<f64> = u.iter().map(|w| 0.5 * w.lo + 0.5 * w.hi).collect();
+    let mut total = mul_up(decay(steps)?, radius_norm(&u)?)?;
+    for j in 0..steps {
+        let xi = x
+            .iter()
+            .map(|value| Interval::point(*value))
+            .collect::<CoreResult<Vec<_>>>()?;
+        let mut w = xi.clone();
+        for k in (1..=degree).rev() {
+            let factor = Interval::point(h)?.div(Interval::point(k as f64)?)?;
+            let mut next = Vec::with_capacity(n);
+            for i in 0..n {
+                let mut bw = Interval::point(0.0)?;
+                for (bik, wk) in b[i].iter().zip(&w) {
+                    bw = bw.add(bik.mul(*wk)?)?;
+                }
+                next.push(xi[i].add(factor.mul(bw)?)?);
+            }
+            w = next;
+        }
+        let truncation = mul_up(local, point_norm(&x)?)?;
+        let rounding = radius_norm(&w)?;
+        total = add_up(
+            total,
+            mul_up(decay(steps - 1 - j)?, add_up(truncation, rounding)?)?,
+        )?;
+        x = w.iter().map(|p| 0.5 * p.lo + 0.5 * p.hi).collect();
+        if !x.iter().all(|value| value.is_finite()) || !total.is_finite() {
+            return Ok(unbounded(x));
+        }
+    }
+    let error_b = mul_up(cp, total)?;
+    let inv_max = d
+        .iter()
+        .map(|value| div_up(1.0, *value))
+        .collect::<CoreResult<Vec<_>>>()?
+        .into_iter()
+        .fold(0.0_f64, f64::max);
+    let back = (0..n)
+        .map(|i| Interval::point(x[i])?.div(Interval::point(d[i])?))
+        .collect::<CoreResult<Vec<_>>>()?;
+    let candidate: Vec<f64> = back.iter().map(|p| 0.5 * p.lo + 0.5 * p.hi).collect();
+    let mut back_sq = 0.0;
+    for (c, p) in candidate.iter().zip(&back) {
+        let gap = Interval::point(*c)?.sub(*p)?.mag();
+        back_sq = add_up(back_sq, mul_up(gap, gap)?)?;
+    }
+    let distance = sqrt_up(back_sq)?;
+    let error_upper = add_up(mul_up(inv_max, error_b)?, distance)?;
+    Ok(NonnormalExpCertificate {
+        status: if error_upper.is_finite() {
+            NonnormalBoundStatus::Bounded
+        } else {
+            NonnormalBoundStatus::Unbounded
+        },
+        candidate,
+        error_upper,
+        error_lower: 0.0,
+        truncation_upper: mul_up(inv_max, error_b)?,
+        distance_upper: distance,
+        distance_lower: 0.0,
+        transport: probe.transport,
+        numerical_range: range,
+        degree,
+    })
+}
+
+/// The step rule of REV-02: `N = max(1, ceil(tau R))` with `R` the largest
+/// modulus on `Omega`, rounded up to a power of two so that `tau / N` is
+/// exact when `tau` is.
+pub fn stepping_rule(range: NumericalRangeBox, tau: f64) -> usize {
+    let re = range.re_lo.abs().max(range.re_hi.abs());
+    let r = (re * re + range.im * range.im).sqrt() * (1.0 + 4.0 * f64::EPSILON);
+    let needed = (tau * r).ceil().max(1.0);
+    if !(needed.is_finite()) || needed > MAX_STEPS as f64 {
+        return MAX_STEPS + 1;
+    }
+    (needed as usize).next_power_of_two()
+}
+
+/// Which metric an automatic certificate used.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum AutoMetric {
+    Identity,
+    Osborne,
+}
+
+/// The automatic certificate of REV-02: the stepped certificate (degree
+/// 20, [`stepping_rule`]) under the identity and under
+/// [`osborne_metric`], the one with the smaller `error_upper` (both are
+/// valid bounds). Returns both, the chosen one first.
+pub fn certify_exp_action_auto(
+    a: &[Vec<f64>],
+    v: &[f64],
+    tau: f64,
+) -> CoreResult<(
+    AutoMetric,
+    NonnormalExpCertificate,
+    NonnormalExpCertificate,
+    [usize; 2],
+)> {
+    let osborne = osborne_metric(a)?;
+    let mut out = Vec::new();
+    for metric in [None, Some(osborne.as_slice())] {
+        let probe = certify_exp_action(a, v, 0.0, metric, 20, None)?;
+        let steps = stepping_rule(probe.numerical_range, tau);
+        let cert = certify_exp_action_stepped(a, v, tau, metric, 20, steps)?;
+        out.push((cert, steps));
+    }
+    let (osb, osb_steps) = out.pop().unwrap();
+    let (ident, ident_steps) = out.pop().unwrap();
+    if osb.error_upper < ident.error_upper {
+        Ok((AutoMetric::Osborne, osb, ident, [osb_steps, ident_steps]))
+    } else {
+        Ok((AutoMetric::Identity, ident, osb, [ident_steps, osb_steps]))
     }
 }
