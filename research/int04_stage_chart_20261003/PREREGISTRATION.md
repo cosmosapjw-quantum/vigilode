@@ -84,3 +84,35 @@ Any acceptance derived from the chart status or the chart residual, or a lost ro
 
 The external review's section 8.4 (static chain rule, symbolic check of `det D_K F = det(W)^s`), L-0040 (RVJ
 negative controls) and L-0051 (RVJ5 not uniform). No code of this node exists before this commit.
+
+---
+
+## Results (appended after the run at `feb4375`)
+
+Output: `RESULTS.json`. Ledger row L-0055. Contract tests `int04_stage_chart_contracts` 3/3 (chart identities,
+typed singular-chart and domain-exit statuses on all 8 family/h cases, invalid inputs).
+
+**Gate: FAIL** (items 2 and 3 hold; items 1, 4 and 5 fail as recorded).
+
+| Gate item | Outcome |
+|---|---|
+| 1. Root correspondence | **fails**. The triangular chart does not converge from `Psi^-1(0)` on 3 of 8 cases: R4 n = 16 at h = 0.05 (`singular-chart` after 8 iterations, residual 8e10), n = 4 at h = 0.5 (`not-converged` after 20) and n = 16 at h = 0.5 (`singular-chart`, residual 9e176). Where it converges, the restored `K` matches the sequential root to 1.4e-15 relative (5e-14 on the 2x2 at h = 0.5). The scaling chart converges on all 8 within 4 iterations (difference at most 3.7e-13). But 6 of the 13 converged runs have a certified output bound above the gate's 1e-8 WRMS (largest 2.3e-7). With atol = rtol = 1e-6, 1e-8 WRMS is about 2e-14 absolute, at the level of the binary64 residual the Newton tolerance allows. The threshold was set below what a converged binary64 candidate can certify |
+| 2. Chart identities | **holds** (contract tests) |
+| 3. Typed rejections | **holds** (contract tests) |
+| 4. No authority | **fails as written**. On 7 of 8 cases, the certified stage bound of the approximate-W candidate is at least its distance from the reference root (ratio 1.0000000000004 to 1.09). On R4 n = 16 at h = 0.5 the smallest ratio is 0.999999999999914: the bound is 1.2e-14 below a distance of 0.13 measured from the *binary64* reference root. The certificate bounds the distance to the exact root. The binary64 reference differs from it by its own rounding, and the gate did not allow for that. So the item compares against the wrong quantity; it is not evidence of a non-enclosing certificate. The certificate reports output bounds of 1.7 to 2.1e5 WRMS for these predictors, so they are not admitted |
+| 5. Accounting | **fails as recorded, because of the test**. The test checked the counts only for converged runs and counted any other run as a failure. Recounted post hoc from `RESULTS.json` with the preregistered rule (residual evaluations and forward calls = iterations + 1; `s n` JVPs and `s n` `D_K R` actions per formed Jacobian; one LU per formed Jacobian), all 16 runs match, the non-converged ones included |
+
+What the run shows:
+
+- **The adapter keeps its contract.** Every failure is a typed status, and a non-converged candidate's certificate
+  reports what it is (output bounds 3.5e5 and 5e5 WRMS, or no certificate at all for a non-finite candidate). The
+  approximate-W predictors are not admitted either.
+- **A chart is not free.** The polynomial triangular chart, regular everywhere with `det D Psi = 1`, still turns a
+  problem that the direct sequential solve handles in one pass into a Newton iteration that diverges from the zero
+  start at n = 16 or h = 0.5. The scaling chart does not hurt.
+- **Cost.** One adapter iteration factors a matrix of order `s n` (up to 128 here). The direct sequential root needs
+  one LU of order `n` and 8 solves. The target is block lower triangular with `det = det(W)^s` (TF-07), so this
+  family offers the adapter no cost case. Its use would be as a candidate provider where the native target is not
+  solved stage by stage.
+
+Claim ceiling: the adapter's contract on two small families; no solver path, and no timing.
