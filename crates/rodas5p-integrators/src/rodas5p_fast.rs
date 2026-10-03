@@ -31,6 +31,8 @@
 //! sequential path itself is untouched; this driver has its own identifier
 //! and records.
 
+use std::sync::Arc;
+
 use rodas5p_core::{
     CoreError, CoreResult, DenseMatrix, LuFactorization, WorkCounters, rodas5p_coefficients,
 };
@@ -43,6 +45,145 @@ use crate::{
 
 /// Identifier of this driver in benchmark and research records.
 pub const RODAS5P_FAST_DRIVER_ID: &str = "rodas5p-fast-transformed-v2";
+
+/// Identifier of the banded pipeline (integrated DAG node INT-03).
+pub const RODAS5P_FAST_BANDED_DRIVER_ID: &str = "rodas5p-fast-banded-v1";
+
+/// Writes the Jacobian's band at `(t, y)`: row `i`, column `j`
+/// (`i - lower <= j <= i + upper`) at `i (lower + upper + 1) + (j + lower - i)`.
+/// The buffer is zeroed before each call; entries outside the matrix are
+/// never read.
+pub type BandedJacobianFn = Arc<dyn Fn(f64, &[f64], &mut [f64]) -> CoreResult<()> + Send + Sync>;
+
+/// An explicit band structure and its Jacobian provider for
+/// [`integrate_rodas5p_fast_banded_observed`] (integrated DAG node INT-03,
+/// external review TF-03). The provider must agree with the problem's
+/// Jacobian; nothing here checks that.
+#[derive(Clone)]
+pub struct BandedJacobian {
+    pub lower: usize,
+    pub upper: usize,
+    pub fill: BandedJacobianFn,
+}
+
+/// Counted linear-algebra work and storage of a banded run.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize)]
+pub struct BandedWork {
+    /// Multiply-subtracts count 2, divisions 1, `W` assembly 1 per band entry.
+    pub factor_operations: u64,
+    pub solve_operations: u64,
+    /// f64 slots of the Jacobian band and the factors.
+    pub stored_slots: usize,
+}
+
+#[derive(Clone, Debug)]
+pub struct Rodas5pFastBandedResult {
+    pub fast: Rodas5pFastResult,
+    pub work: BandedWork,
+}
+
+/// The band storage and factors of the banded pipeline.
+struct BandState {
+    l: usize,
+    u: usize,
+    fill: BandedJacobianFn,
+    /// Jacobian band, `n (l + u + 1)`.
+    jacobian: Vec<f64>,
+    /// `W` and then its factors, row `i` holding columns `i - l ..= i + u + l`
+    /// (`n (2l + u + 1)`): `U` in columns `>= i`, the multiplier of column
+    /// `k` in column `k` (not moved by later interchanges).
+    factors: Vec<f64>,
+    pivots: Vec<usize>,
+    work: BandedWork,
+}
+
+impl BandState {
+    fn width(&self) -> usize {
+        2 * self.l + self.u + 1
+    }
+
+    fn at(&self, i: usize, j: usize) -> usize {
+        i * self.width() + (j + self.l - i)
+    }
+
+    /// `W = I/(h gamma) - J` on the band, then the banded LU with partial
+    /// pivoting over rows `k ..= k + l`.
+    fn factor(&mut self, n: usize, inv: f64) -> CoreResult<()> {
+        let (l, u, width) = (self.l, self.u, self.width());
+        let jw = l + u + 1;
+        self.factors.fill(0.0);
+        for i in 0..n {
+            for d in 0..jw {
+                self.factors[i * width + d] = -self.jacobian[i * jw + d];
+            }
+            self.factors[i * width + l] += inv;
+        }
+        self.work.factor_operations += (n * jw) as u64;
+        for k in 0..n {
+            let last_row = (k + l).min(n - 1);
+            let mut p = k;
+            let mut max = self.factors[self.at(k, k)].abs();
+            for i in k + 1..=last_row {
+                let v = self.factors[self.at(i, k)].abs();
+                if v > max {
+                    max = v;
+                    p = i;
+                }
+            }
+            if !(max > 0.0 && max.is_finite()) {
+                return Err(CoreError::LinearSolve(format!(
+                    "RODAS5P fast banded LU: singular or non-finite pivot at column {k}"
+                )));
+            }
+            self.pivots[k] = p;
+            let last_col = (k + u + l).min(n - 1);
+            if p != k {
+                for j in k..=last_col {
+                    let (a, b) = (self.at(k, j), self.at(p, j));
+                    self.factors.swap(a, b);
+                }
+            }
+            let pivot = self.factors[self.at(k, k)];
+            for i in k + 1..=last_row {
+                let ik = self.at(i, k);
+                if self.factors[ik] == 0.0 {
+                    continue;
+                }
+                let m = self.factors[ik] / pivot;
+                self.factors[ik] = m;
+                for j in k + 1..=last_col {
+                    let (x, r) = (self.at(i, j), self.at(k, j));
+                    self.factors[x] -= m * self.factors[r];
+                }
+                self.work.factor_operations += 1 + 2 * (last_col - k) as u64;
+            }
+        }
+        Ok(())
+    }
+
+    /// Solve with the factors, applying the interchanges as it goes.
+    #[allow(clippy::needless_range_loop)] // the band offsets index both arrays
+    fn solve(&mut self, n: usize, b: &mut [f64]) {
+        let (l, u) = (self.l, self.u);
+        for k in 0..n {
+            b.swap(k, self.pivots[k]);
+            let bk = b[k];
+            for i in k + 1..=(k + l).min(n - 1) {
+                b[i] -= self.factors[self.at(i, k)] * bk;
+            }
+            self.work.solve_operations += 2 * ((k + l).min(n - 1) - k) as u64;
+        }
+        for i in (0..n).rev() {
+            let last = (i + u + l).min(n - 1);
+            let mut sum = b[i];
+            for j in i + 1..=last {
+                sum -= self.factors[self.at(i, j)] * b[j];
+            }
+            b[i] = sum / self.factors[self.at(i, i)];
+            self.work.solve_operations += 1 + 2 * (last - i) as u64;
+        }
+    }
+}
 
 /// Matrices with at most this many rows always use the in-place LU.
 pub const RODAS5P_FAST_SMALL_LU_MAX: usize = 64;
@@ -60,6 +201,8 @@ pub enum Rodas5pFastLu {
     InPlaceZeroSkipping,
     /// faer's blocked partial-pivoting LU (one allocation per factorization).
     Faer,
+    /// The banded pipeline of [`integrate_rodas5p_fast_banded_observed`].
+    Banded,
 }
 
 #[derive(Clone, Debug)]
@@ -108,10 +251,38 @@ struct Workspace {
     stage_state: Vec<f64>,
     stage_rhs: Vec<f64>,
     y_new: Vec<f64>,
+    band: Option<BandState>,
 }
 
 impl Workspace {
+    /// The banded workspace: no `n x n` storage.
+    fn new_banded(n: usize, band: &BandedJacobian) -> CoreResult<Self> {
+        let (l, u) = (band.lower, band.upper);
+        let mut work = Self::with_dense_size(n, 0)?;
+        let state = BandState {
+            l,
+            u,
+            fill: band.fill.clone(),
+            jacobian: vec![0.0; n * (l + u + 1)],
+            factors: vec![0.0; n * (2 * l + u + 1)],
+            pivots: vec![0; n],
+            work: BandedWork {
+                stored_slots: n * (3 * l + 2 * u + 2),
+                ..BandedWork::default()
+            },
+        };
+        work.band = Some(state);
+        work.lu_kind = Rodas5pFastLu::Banded;
+        work.lu_chosen = true;
+        Ok(work)
+    }
+
     fn new(n: usize) -> CoreResult<Self> {
+        Self::with_dense_size(n, n)
+    }
+
+    /// `dense` is the order of the dense `W` and `J` buffers (0 for none).
+    fn with_dense_size(n: usize, dense: usize) -> CoreResult<Self> {
         let coeffs = rodas5p_coefficients()?;
         let s = coeffs.stages();
         for i in 0..s {
@@ -147,11 +318,11 @@ impl Workspace {
             c: coeffs.c.clone(),
             gamma_rows: coeffs.gamma_rows.clone(),
             lu_kind: Rodas5pFastLu::InPlaceZeroSkipping,
-            w: vec![0.0; n * n],
+            w: vec![0.0; dense * dense],
             pivots: vec![0; n],
             w_dense: DenseMatrix::zeros(0, 0),
             faer_lu: None,
-            jacobian: DenseMatrix::zeros(n, n),
+            jacobian: DenseMatrix::zeros(dense, dense),
             lu_chosen: false,
             f0: vec![0.0; n],
             ft: vec![0.0; n],
@@ -159,6 +330,7 @@ impl Workspace {
             stage_state: vec![0.0; n],
             stage_rhs: vec![0.0; n],
             y_new: vec![0.0; n],
+            band: None,
         })
     }
 
@@ -184,10 +356,15 @@ impl Workspace {
     fn factor(&mut self, h: f64, counters: &mut WorkCounters) -> CoreResult<()> {
         let n = self.n;
         let inv = 1.0 / (h * self.gamma);
+        if let Some(band) = self.band.as_mut() {
+            counters.direct_factorizations += 1;
+            return band.factor(n, inv);
+        }
         let jacobian = &self.jacobian;
         let target = match self.lu_kind {
             Rodas5pFastLu::InPlaceZeroSkipping => self.w.as_mut_slice(),
             Rodas5pFastLu::Faer => self.w_dense.as_mut_slice(),
+            Rodas5pFastLu::Banded => unreachable!("banded factors are formed above"),
         };
         for (w, j) in target.iter_mut().zip(jacobian.as_slice()) {
             *w = -j;
@@ -215,6 +392,7 @@ impl Workspace {
                 self.faer_lu = Some(LuFactorization::new(&self.w_dense)?);
                 Ok(())
             }
+            Rodas5pFastLu::Banded => unreachable!("banded factors are formed above"),
         }
     }
 
@@ -240,6 +418,13 @@ impl Workspace {
                     .expect("factored")
                     .solve(&self.stage_rhs)?;
                 self.stage_rhs.copy_from_slice(&x);
+            }
+            Rodas5pFastLu::Banded => {
+                let n = self.n;
+                self.band
+                    .as_mut()
+                    .expect("banded workspace")
+                    .solve(n, &mut self.stage_rhs);
             }
         }
         if self.stage_rhs.iter().all(|v| v.is_finite()) {
@@ -269,7 +454,13 @@ impl Workspace {
     ) -> CoreResult<f64> {
         let (n, s) = (self.n, self.s);
         if fresh {
-            problem.dense_jacobian_into(t, y, &mut self.jacobian, counters)?;
+            if let Some(band) = self.band.as_mut() {
+                band.jacobian.fill(0.0);
+                counters.jacobian_builds += 1;
+                (band.fill)(t, y, &mut band.jacobian)?;
+            } else {
+                problem.dense_jacobian_into(t, y, &mut self.jacobian, counters)?;
+            }
             if !self.lu_chosen {
                 self.choose_lu();
                 self.lu_chosen = true;
@@ -440,6 +631,41 @@ fn lu_solve_in_place(
     }
 }
 
+/// Factor `W = I/(h gamma) - J` for a Jacobian band `jacobian` (layout of
+/// [`BandedJacobianFn`]) with the banded pipeline's LU and solve `W x = b`:
+/// the solution and the pivot row of each column. For contract tests of
+/// [`integrate_rodas5p_fast_banded_observed`]; `inv = 1/(h gamma)`.
+pub fn rodas5p_fast_banded_solve(
+    n: usize,
+    lower: usize,
+    upper: usize,
+    jacobian: &[f64],
+    inv: f64,
+    b: &[f64],
+) -> CoreResult<(Vec<f64>, Vec<usize>)> {
+    if n == 0
+        || lower >= n
+        || upper >= n
+        || jacobian.len() != n * (lower + upper + 1)
+        || b.len() != n
+    {
+        return Err(CoreError::InvalidInput("invalid banded solve input".into()));
+    }
+    let mut state = BandState {
+        l: lower,
+        u: upper,
+        fill: Arc::new(|_, _, _| Ok(())),
+        jacobian: jacobian.to_vec(),
+        factors: vec![0.0; n * (2 * lower + upper + 1)],
+        pivots: vec![0; n],
+        work: BandedWork::default(),
+    };
+    state.factor(n, inv)?;
+    let mut x = b.to_vec();
+    state.solve(n, &mut x);
+    Ok((x, state.pivots))
+}
+
 /// One step of this driver from `(t, y)` with step `h`: the new state, the
 /// WRMS norm of the embedded error and the LU used. For verification
 /// against [`crate::sequential_step`]; the adaptive driver keeps its
@@ -482,6 +708,44 @@ pub fn integrate_rodas5p_fast_observed(
     adaptive: &AdaptiveStepConfig,
     output: &OutputSchedule,
 ) -> CoreResult<Rodas5pFastResult> {
+    integrate_fast(problem, None, t_span, y0, adaptive, output).map(|(result, _)| result)
+}
+
+/// [`integrate_rodas5p_fast_observed`] with an explicit band structure
+/// (integrated DAG node INT-03): the Jacobian comes from `band`, `W` is
+/// assembled and factored on the band (partial pivoting over the `lower`
+/// rows below the diagonal, `U` with bandwidth `upper + lower`), and
+/// nothing is stored as an `n x n` matrix. The controller, clock, output
+/// and rejection rules are v2's. Requires `lower, upper < n`.
+pub fn integrate_rodas5p_fast_banded_observed(
+    problem: &OdeProblem,
+    band: &BandedJacobian,
+    t_span: (f64, f64),
+    y0: &[f64],
+    adaptive: &AdaptiveStepConfig,
+    output: &OutputSchedule,
+) -> CoreResult<Rodas5pFastBandedResult> {
+    let n = problem.dimension;
+    if band.lower >= n.max(1) || band.upper >= n.max(1) {
+        return Err(CoreError::InvalidInput(
+            "the band of the RODAS5P fast banded driver must lie inside the matrix".into(),
+        ));
+    }
+    let (fast, work) = integrate_fast(problem, Some(band), t_span, y0, adaptive, output)?;
+    Ok(Rodas5pFastBandedResult {
+        fast,
+        work: work.unwrap_or_default(),
+    })
+}
+
+fn integrate_fast(
+    problem: &OdeProblem,
+    band: Option<&BandedJacobian>,
+    t_span: (f64, f64),
+    y0: &[f64],
+    adaptive: &AdaptiveStepConfig,
+    output: &OutputSchedule,
+) -> CoreResult<(Rodas5pFastResult, Option<BandedWork>)> {
     adaptive.validate()?;
     let (mut t, tf) = t_span;
     if tf < t || y0.len() != problem.dimension {
@@ -494,7 +758,10 @@ pub fn integrate_rodas5p_fast_observed(
             "the RODAS5P fast driver supports the identity mass matrix only".into(),
         ));
     }
-    let mut work = Workspace::new(problem.dimension)?;
+    let mut work = match band {
+        Some(band) => Workspace::new_banded(problem.dimension, band)?,
+        None => Workspace::new(problem.dimension)?,
+    };
     let mut y = y0.to_vec();
     let mut h = adaptive.initial_step.min(crate::output::step_to(t, tf)?);
     let mut controller = AdaptiveControllerState::default();
@@ -581,7 +848,8 @@ pub fn integrate_rodas5p_fast_observed(
     } else {
         collector.finish_partial()
     };
-    Ok(Rodas5pFastResult {
+    let banded = work.band.as_ref().map(|band| band.work);
+    let result = Rodas5pFastResult {
         observed: ObservedIntegrationResult {
             t: times,
             y: states,
@@ -600,8 +868,13 @@ pub fn integrate_rodas5p_fast_observed(
         rejected_steps,
         jacobian_reuses: reuses,
         lu: work.lu_kind,
-        driver: RODAS5P_FAST_DRIVER_ID,
-    })
+        driver: if banded.is_some() {
+            RODAS5P_FAST_BANDED_DRIVER_ID
+        } else {
+            RODAS5P_FAST_DRIVER_ID
+        },
+    };
+    Ok((result, banded))
 }
 
 #[cfg(test)]

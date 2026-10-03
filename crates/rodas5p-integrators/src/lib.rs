@@ -345,8 +345,11 @@ pub use rhs_telemetry::{
     run_homotopy_rhs_telemetry_screen,
 };
 pub use rodas5p_fast::{
+    BandedJacobian, BandedJacobianFn, BandedWork, RODAS5P_FAST_BANDED_DRIVER_ID,
     RODAS5P_FAST_DRIVER_ID, RODAS5P_FAST_SMALL_LU_MAX, RODAS5P_FAST_SPARSE_DENSITY_MAX,
-    Rodas5pFastLu, Rodas5pFastResult, integrate_rodas5p_fast_observed, rodas5p_fast_step,
+    Rodas5pFastBandedResult, Rodas5pFastLu, Rodas5pFastResult,
+    integrate_rodas5p_fast_banded_observed, integrate_rodas5p_fast_observed,
+    rodas5p_fast_banded_solve, rodas5p_fast_step,
 };
 pub use rodas5p_fast_small::{
     RODAS5P_FAST_SMALL_DRIVER_ID, Rodas5pFastSmallResult, SmallProblem,
