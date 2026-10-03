@@ -89,3 +89,37 @@ had run when this was written.
 
 L-0033 (fast v2 FAIL on its own performance gate) and L-0041 (small-n specialization) are unchanged. The external
 review's TF-03 and P1. No code of this node exists before this commit.
+
+---
+
+## Results (appended after the run at `d07b29d`)
+
+Output: `RESULTS.json`. Ledger row L-0054. Contract tests `int03_banded_fast_contracts` 4/4 (pivot rows equal dense
+partial pivoting on 30 random banded systems with more than 20 interchanges); `rodas5p_fast_contracts` 4/4 (v2
+unchanged).
+
+**Gate: PASS.**
+
+| Gate item | Outcome |
+|---|---|
+| 1. Parity with v2 | **holds** on all six cases where both run (n = 64, 256, 1024 of each family): the same attempts, accepted and rejected steps, Jacobian reuses and success. All 41 output states are bitwise identical, and the `WorkCounters` are equal |
+| 2. No O(n^2) floor | **holds**: slopes of counted operations per attempt against n are 1.007 (Brusselator, n = 64..4096) and 1.004 (Burgers, n = 64..4096). Stored slots are `n (3l + 2u + 2)` in every case (n = 4096: 49,152 and 28,672) |
+| 3. Pivoting correct | **holds** (contract tests) |
+| 4. Contracts | **holds** (a NaN band rejects every attempt; a wrong state length, a band at least n wide and a mass matrix are rejected) |
+
+| Case | n | attempts (acc/rej) | operations per attempt | banded slots | v2 dense slots |
+|---|---|---|---|---|---|
+| Brusselator | 64 | 105 (97/8) | 7,875 | 768 | 8,192 |
+| Brusselator | 256 | 105 (97/8) | 32,259 | 3,072 | 131,072 |
+| Brusselator | 1024 | 105 (97/8) | 129,795 | 12,288 | 2,097,152 |
+| Brusselator | 4096 | 105 (97/8) | 519,939 | 49,152 | (not run) |
+| Burgers | 64 | 59 (58/1) | 4,025 | 448 | 8,192 |
+| Burgers | 256 | 61 (60/1) | 16,313 | 1,792 | 131,072 |
+| Burgers | 1024 | 57 (56/1) | 65,465 | 7,168 | 2,097,152 |
+| Burgers | 4096 | 57 (56/1) | 262,073 | 28,672 | (not run) |
+
+v2 also assembles and scans `2 n^2` entries per factorization (2,097,152 at n = 1024). Its counted factor work is
+not instrumented, so only its storage and assembly floor are compared here.
+
+The study did not record how many interchanges each run made. Pivoting is covered by the contract tests. Claim
+ceiling: two banded families with a correct band provider; no timing, and no change to L-0033 or L-0041.
