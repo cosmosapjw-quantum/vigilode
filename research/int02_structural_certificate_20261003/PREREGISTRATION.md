@@ -85,3 +85,26 @@ Any changed bound or decision, or a stale or edited input that is accepted, stop
 
 L-0050 (actual q=2 candidates, both certificate arms accept with equal bounds; margins negative for n <= 8). The
 external review's TF-04 and N3. No code of this node exists before this commit.
+
+---
+
+## Results (appended after the run at `ab89ce8`)
+
+Output: `RESULTS.json`. Ledger row L-0053. Contract tests `int02_structural_certificate_contracts` 7/7. The existing
+outward-certificate, R4 homotopy, q2 diagnostic, transactional, path-action and radius-policy contract tests pass.
+
+**Gate: FAIL** (items 1, 3, 4 and 5 hold; item 2 fails on its threshold for the dense comparison arm).
+
+| Gate item | Outcome |
+|---|---|
+| 1. Same bounds and decisions | **holds**: all 87 q=2 candidates over n = 1..64 have bitwise equal stage, output and embedded bounds and WRMS values. Every attempt has the same lane, acceptance, `y_new` bits, error norm, next step and admission decision. The contract test also matches the dense certificate bit for bit on every diagonal R3 fixture row |
+| 2. Storage and work | **fails as written**. The structured arm stores `2n` slots against the dense `2n^2` (n = 64: 128 against 8,192), and its slope of certificate operations is 1.00. The gate also required the dense arm's slope to be at least 1.8, and it is 1.76 over n = 4..64. Its O(n) terms still weigh at n = 4 and 8 (2,660 and 7,880 operations, against 349,760 at n = 64). The threshold was a wrong prediction about the comparison arm, not a property of the structured path |
+| 3. One construction | **holds**: the structured arm builds the stage problem and the witness once per certified attempt, the dense arm twice each |
+| 4. Rejections | **holds** (contract tests) |
+| 5. Defaults unchanged | **holds**: the dense arm replays L-0050 at n = 1..16 (lanes, acceptance and certificate operations of every attempt) |
+
+Mean certificate operations per candidate (dense / structured): n = 1: 425 / 425, 2: 1,010 / 850, 4: 2,660 / 1,700,
+8: 7,880 / 3,400, 16: 26,000 / 6,800, 32: 92,960 / 13,600, 64: 349,760 / 27,200.
+
+For comparison with L-0050's margins: at n = 16 the serial certificate costs 6,800 instead of 26,000 operations per
+candidate. This node does not recompute the net-cost margins; INT-06 uses these numbers. No timing.
