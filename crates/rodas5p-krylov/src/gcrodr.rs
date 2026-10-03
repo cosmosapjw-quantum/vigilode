@@ -687,8 +687,8 @@ fn solve_gcrodr_inner(
                         defect = defect.max(safe_l2(&difference));
                         images.push(image);
                     }
-                    // NaN compares false: a non-finite defect rebuilds too.
-                    rebuilt = !(defect <= tol);
+                    // A non-finite defect rebuilds too.
+                    rebuilt = defect.is_nan() || defect > tol;
                     if let Some(trace) = trace.as_deref_mut() {
                         trace.reuse_checks.push(GcrodrReuseCheck {
                             rank: local.basis.len(),
