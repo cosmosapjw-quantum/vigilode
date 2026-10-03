@@ -91,3 +91,50 @@ A bound below a 50-digit error, or any sampled quantity entering the certificate
 VIG-A02 and its closed form, from `crates/rodas5p-integrators/tests/phi_nonnormal_breakdown_contracts.rs`. RA-03
 noted that dyadic balancing makes it symmetric. L-0039 and L-0047 cover the symmetric case. Crouzeix and Palencia
 (2017) is used as published; no other external source is applied. No code of this node exists before this commit.
+
+---
+
+## Results (appended after the run at `3079dd1`)
+
+Outputs: `cases.json` (native certificates) and `RESULTS.json` (50-digit check, mpmath 1.3.0). Ledger row L-0056.
+Contract tests `int05_nonnormal_contracts` 3/3.
+
+**Gate: PASS.**
+
+| Gate item | Outcome |
+|---|---|
+| 1. Enclosure | **holds**: the 50-digit error lies in `[error_lower, error_upper]` in all 66 `Bounded` cases (78 cases, 12 `Unbounded`) |
+| 2. Counterexample exposed | **holds**: with the metric `D = diag(1, 2^k)`, the Arnoldi candidate `exp(-2) e1` gets `error_lower` of 6.46e-2 (m = 10) and 7.3498e-2 (m = 20, 30) at k = 10, 20 and 46. At m = 30 the true error 7.3498136e-2 is pinned by bounds agreeing to 12 digits |
+| 3. Metric useful | **holds**: VIG-A02 at k = 46 and m = 30 certifies the method's own value at 1.11e-15 (true error 6.6e-17) under `D`. Under `I` it is `Unbounded`: the Euclidean numerical range reaches `Re z = 3.5e13` |
+| 4. Typed rejections | **holds** (contract tests) |
+
+Degree 30, method's own value (true error / certified upper bound / transport `||D^-1|| ||D v||`):
+
+| Family | metric `I` | metric `D` |
+|---|---|---|
+| VIG-A02 k = 10 | 6.6e-17 / 4.3e276 / 1 | 6.6e-17 / 1.1e-15 / 1 |
+| VIG-A02 k = 20, 46 | 6.6e-17 / unbounded | 6.6e-17 / 1.1e-15 / 1 |
+| Jordan mu = 1 | 1.0e-16 / 8.2e-16 / 2.8 | 1.0e-16 / 8.2e-16 / 148 |
+| Jordan mu = 10 | 4.7e-13 / 1.5e7 / 2.8 | 4.8e-13 / 7.6e-12 / 1.3e9 |
+| Jordan mu = 100 | 2.6e-6 / 4.4e76 / 2.8 | 1.3e-6 / 3.1e-5 / 1.3e16 |
+| Convection-diffusion Pe = 10 | 1.7e-15 / 1.3e-13 / 4.1 | 1.7e-15 / 1.5e-12 / 87 |
+| Convection-diffusion Pe = 50 | 2.4e-15 / 6.6e-13 / 4.1 | 2.6e-15 / 2.0e-7 / 2.4e9 |
+
+What this shows:
+
+- **A metric is a choice, not a free gain.** For VIG-A02 and the Jordan blocks with large `mu`, the diagonal metric
+  turns an unbounded or useless Euclidean bound into one within 8 to 24 times the true error. For central
+  convection-diffusion, the exponential weights (the continuum symmetrizer, which is not the exact one for central
+  differences) make the bound worse than the identity, because their transport factor (87 and 2.4e9) outweighs the
+  smaller numerical range. Gershgorin already keeps `W(A)` in the left half plane there.
+- **The method's own value differs with the coordinates.** Taylor evaluation in `B` coordinates rounds differently.
+  For Jordan mu = 100 the degree-30 truncation error is real (true error about 1e-6), and both bounds report it.
+- **Where the bound is useless.** It is valid but large when `tau |W|` is large, since Taylor needs scaling that this
+  node does not add (degree 10 for mu = 100: 1.2e11). In those cases a user reads the bound and rejects the value.
+  Nothing is relabelled as an estimate.
+
+Disclosure: the growth factor `e^{tau re_hi}` uses the platform `exp` with a relative margin of `4 eps` instead of a
+directed exponential. It is 1 whenever `re_hi <= 0`, which holds for every bounded case with the metric except
+VIG-A02 at k = 0. Every other operation rounds outward. Claim ceiling: dense matrices up to n = 32, a Taylor
+polynomial without scaling and squaring, and caller-supplied diagonal metrics. No change to `EstimateOnly` labels
+or to the symmetric certificates; no timing.
