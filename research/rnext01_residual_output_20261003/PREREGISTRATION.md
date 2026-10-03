@@ -76,3 +76,34 @@ fallback accounting are untouched (this node changes no driver). No speed or sti
 
 L-0038's RESULTS.json (the failing comparisons and their sizes); L-0037's exact raw-target identity
 (`r_U = gamma r_K`, coefficient terms 1e-16 to 1e-14). No code of this node exists before this commit.
+
+---
+
+## Results (appended after the run; tool fix at the ledger commit)
+
+Outputs: `stages.json` (native export), `RESULTS.json`. Ledger row L-0049.
+
+**Gate: FAIL** (items 1, 2 and 4 hold; item 3 fails).
+
+| Gate item | Outcome |
+|---|---|
+| 1. Budget validity | **holds**: in all 33 completed cases (3 are GCRO-DR solver failures on the Brusselator, R-NEXT-03 scope), each driver's error-norm deviation from its exact step lies within `B_X`, `y_new`'s deviation within its bound, and every stage deviation within `d_i` |
+| 2. Classification | **holds**: all 20 completed L-0038 item-3 failures are explained; `|err_U - err_K|` uses at most 0.16 of `B_U + B_K + E_native_coefficient` (quadratic-4, h = 1e-4), mostly 1e-5 to 1e-2 |
+| 3. No unresolved decision | **fails**: at Robertson h = 1e-2 (all three methods) the error norm is 1e6 for both drivers *and* for the exact step, and the drivers differ from the exact value by only 4.5e-11 to 1.9e-10. But `B_X` is about 2e122: the exact stages reach 1e117, so the interval Jacobian on the boxes reaches 6e67 and the residuals 1e109. The reject decision is right but not resolved by the budget. All 30 other completed decisions are resolved (accept, or reject for van der Pol h = 1e-2) |
+| 4. Bounds available | **holds**: every budget is finite |
+
+What the run shows about L-0038's failures: the relative criterion compared two tiny error norms (1e-13 to 1e-9)
+whose difference is far inside the residual budget. For HIRES h = 1e-4 the U form's norm is 6.5e-10 against K's
+4.3e-10, with `B_U` = 1.5e-6. The budget's U-form share is larger than K's, because the U form's raw-stage
+residuals are larger at the same Krylov relative tolerance (the residual tolerance applies to the U right-hand side,
+which scales differently). The coefficient term `E_native_coefficient` is 1e-13 to 5e-10, as in L-0037.
+
+Tightness: `d_(s-1)` over the actual stage deviation is 1-10 for K and 5-2000 for U on the small problems, and up
+to 5e7 at van der Pol h = 1e-2 and 1e6 at Brusselator h = 1e-2, where the mean-value bound over the box is loose.
+So the budget explains the discrepancies but is not a practical step-acceptance guard. A driver-side guard would
+need tighter (linearized-plus-remainder) propagation; this node does not build one.
+
+Disclosure: the first invocation of the Python tool stopped before writing anything (point times interval in
+mpmath), and the fix is the tool commit named in the ledger. The tool file also appeared, unchanged in its logic,
+in the R-NEXT-05 results commit `ffb1a6f` by mistake. No driver changed. L-0038 stays FAIL. Claim ceiling: a
+residual-to-output budget on these one-step cases; no speed or stiff-order claim.
