@@ -1,42 +1,38 @@
 name: RVJ audit offline source export
 
 on:
-  pull_request:
-    types: [opened]
+  push:
+    branches: ['audit/rvj-native-followup-20261003']
+    paths: ['.github/workflows/rvj-audit-offline-source.yml']
 
 permissions:
   contents: read
 
 jobs:
   export:
-    if: github.head_ref == 'audit/rvj-native-followup-20261003' && github.event.pull_request.head.repo.full_name == github.repository
+    if: github.repository == 'cosmosapjw-quantum/vigilode'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: 5a8d7fe9ffc681bca98a98a2f9889a2a05505783
+          ref: 77275e2b431e4280366060d44a883f1832909fe6
           fetch-depth: 0
           persist-credentials: false
-      - name: Resolve exactly the pinned Cargo.lock
+      - name: Export exact interrupted source, without credentials
         shell: bash
         run: |
           set -euo pipefail
-          rustup toolchain install 1.94.1 --profile minimal
-          rustup override set 1.94.1
           mkdir -p "$RUNNER_TEMP/rvj-offline"
-          cargo vendor --locked "$RUNNER_TEMP/rvj-vendor" > "$RUNNER_TEMP/rvj-offline/vendor-config.toml"
-          git diff --exit-code -- Cargo.lock Cargo.toml
+          test "$(git rev-parse HEAD)" = 77275e2b431e4280366060d44a883f1832909fe6
           git rev-parse HEAD > "$RUNNER_TEMP/rvj-offline/SOURCE_COMMIT.txt"
           git rev-parse HEAD^{tree} > "$RUNNER_TEMP/rvj-offline/SOURCE_TREE.txt"
-          rustc -vV > "$RUNNER_TEMP/rvj-offline/RUST_VERSION.txt"
           git bundle create "$RUNNER_TEMP/rvj-offline/source.bundle" HEAD
-          tar -czf "$RUNNER_TEMP/rvj-offline/vendor.tar.gz" -C "$RUNNER_TEMP" rvj-vendor
           cd "$RUNNER_TEMP/rvj-offline"
-          sha256sum source.bundle vendor.tar.gz > SHA256SUMS
+          sha256sum source.bundle > SHA256SUMS
       - uses: actions/upload-artifact@v4
         with:
-          name: rvj-offline-base-5a8d7fe9
+          name: rvj-recovery-source-77275e2
           path: ${{ runner.temp }}/rvj-offline/
           retention-days: 7
           if-no-files-found: error
