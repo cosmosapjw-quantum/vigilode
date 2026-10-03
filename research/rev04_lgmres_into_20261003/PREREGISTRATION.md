@@ -58,3 +58,28 @@ shared Arnoldi routine, are listed by source. No timing.
 ## Prior information
 
 L-0045 (GMRES into: bitwise identity and 0.025-0.24x allocations). No code of this node exists before this commit.
+
+---
+
+## Results (appended after the run at `d520918`)
+
+Output: `RESULTS.json`. Ledger row L-0061. Contract tests `rev04_lgmres_into_contracts` 4/4. These cover success,
+failure with rollback, a carried direction of the wrong length, and a wrong output length.
+
+**Gate: PASS.**
+
+| Gate item | Outcome |
+|---|---|
+| 1. Bitwise identity | **holds** on all 1,216 solves (13 sequences, 344 of them failures): same outcome, solution bits, residual norm, iterations, matvecs, `WorkCounters` and carried state; after every failure both states equal their pre-solve value |
+| 2. Output only on success | **holds**: the output buffer is unchanged after all 344 failures |
+| 3. Fewer allocations | **holds** on every sequence, but the reduction is small: 0.979x to 0.990x on the CDR sequences and 0.950x on the Brusselator trajectory (0.944x to 0.988x on the failing runs) |
+
+What remains, and why: after the warm-up solve, 455 to 4,099 allocations per solve are left. They come from the
+shared Arnoldi routine that LGMRES calls, `gmres::arnoldi_augmented_with_workspace`. In every inner iteration it
+resizes `hessenberg_prefix` and calls `small::least_squares`, which returns a fresh solution vector and builds its
+factorization in fresh storage. Only the last of those solutions is used. The GMRES `solve_into` of L-0045 removed
+the same per-iteration least-squares solve for GMRES by solving once per cycle. Doing that for the augmented
+routine would change code that LGMRES shares with other solvers, so it is left for its own node.
+
+So the snapshot, image, direction and solution allocations this node targeted are gone, and they are a small share
+of LGMRES's total. Claim ceiling: allocation counts on these systems; no timing.
