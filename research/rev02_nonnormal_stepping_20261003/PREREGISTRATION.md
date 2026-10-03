@@ -82,6 +82,14 @@ rounding, enclosed).
 Otherwise **FAIL**. Reported, not gated (P1): F3 and F4 usefulness (`error_upper` over the true error), step counts,
 which metric the automatic certificate chose, and the INT-05 single-step bound on the same cases for comparison.
 
+## Amendment (before any recorded run, while writing the code)
+
+`tau / N` must be exact in binary64, or the method integrates to `N fl(tau / N)` instead of `tau`. The step rule
+therefore rounds `N = max(1, ceil(tau R))` up to the next power of two. That can only increase `N`, by less than a
+factor of 2, so the bound stays valid. The stepped certificate refuses a `(tau, N)` whose quotient is not exact. A
+step count above 100,000 makes the certificate `Unbounded`: the identity metric of VIG-A02 at k = 46 would need
+3.5e13 steps. Nothing else changes, and no study code had run when this was written.
+
 ## Prior information
 
 L-0056 (INT-05) and the critical review C2. Gate thresholds 1e-8 and 1e-10 are relative to the 50-digit solution
