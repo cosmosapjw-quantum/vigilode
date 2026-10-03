@@ -427,6 +427,11 @@ pub struct TransactionalQ1Q2StepReport {
     /// [`Q2Admission::name`].
     pub q2_admission: &'static str,
     pub q2_certificate: Option<Q2CertificateAdmission>,
+    /// Certificate mode only: the q=2 candidate stages the certificate was
+    /// attempted on, kept for research comparisons of certificate arms on
+    /// the same candidate (research node
+    /// `research/rnext06_homotopy_net_cost_20261003`).
+    pub q2_candidate_stages: Option<Vec<Vec<f64>>>,
     /// Certificate mode only: the capability decided before the fast path
     /// (re-audit R4, R4-HOM-DEV-06). When unavailable, the q=2 escalation
     /// is skipped and a q=1 failure falls back at once.
@@ -1543,6 +1548,11 @@ pub fn transactional_q1_q2_step_with_execution(
             error => return Err(error),
         },
     };
+    let q2_candidate_stages = if q2_certificate.is_some() {
+        fast_stages.clone()
+    } else {
+        None
+    };
 
     let fast_path_accepted = active_gate.accepted && fast_stages.is_some();
     let mut step = if fast_path_accepted {
@@ -1635,6 +1645,7 @@ pub fn transactional_q1_q2_step_with_execution(
         work,
         q2_admission: admission.name(),
         q2_certificate,
+        q2_candidate_stages,
         q2_capability,
     })
 }
