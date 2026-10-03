@@ -110,3 +110,30 @@ fresh sets: the reuse check (L-0052), the start projection (L-0057) and the reor
 Brusselator systems recycling also saves no operator products against cold GCRO-DR. Recycled GCRO-DR stays opt-in
 and is not recommended for such systems. Cold GCRO-DR and GMRES had no failure on any set. Further repair attempts
 need a preregistered breakdown diagnostic first. Claim ceiling: these frozen systems; no timing.
+
+### Post-hoc diagnostic (after the recorded run; not part of the gate)
+
+`tests/rev01b_posthoc_breakdown.rs` (`POSTHOC_BREAKDOWN.json`) reruns control FG on the primary trajectory set. Every
+traced cycle now also records two values (uncounted, traced runs only):
+
+- `creation_ctv_max`: the largest `|c_j^T v|` of each Arnoldi vector right after its normalization, `v_1`
+  included;
+- `min_next_ratio`: the smallest `||next|| / column scale` before normalization.
+
+The command is
+`REV01B_POSTHOC_OUTPUT=<absolute path> cargo test --release -p rodas5p-integrators --locked --test rev01b_posthoc_breakdown -- --ignored --test-threads=1`.
+
+- 302 of the 738 cycles that carry a recycle space end with `max |C^T V| > 1e-8`, and in all 302 the loss is already
+  there when a vector is created (`creation_ctv_max` equal to the end value, up to 0.9996). `C^T C` stays orthonormal
+  (largest defect 1.7e-15).
+- The smallest `||next||` relative to its column scale in those cycles is 3.9e-7. That is far above the breakdown
+  threshold (`100 eps`, 2.2e-14), and far too large for rounding to produce an O(1) component after two projection
+  passes.
+- So the near-breakdown candidate named above is not supported either.
+
+What is consistent with all three runs (an inference, not tested): the carried or updated pair violates
+`M^-1 A U = C`. Then the correction `U C^T r` does not remove `C C^T r` from the true residual, and the recomputed
+residual lies almost entirely in `span(C)`. Its part orthogonal to `C`, which becomes `v_1`, is then mostly
+cancellation error, which explains a large `|C^T v_1|`. L-0046's post-hoc probe saw updates turn a defect of 3.4e-5
+into 2.59. The update's normalization `U = Y R^-1` can amplify an inherited defect by up to `1/sqrt(eps)`. Testing
+that requires restoring the invariant after each update; REV-01c does so on a fresh set.

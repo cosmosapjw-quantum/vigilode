@@ -413,6 +413,13 @@ pub struct GcrodrCycleTrace {
     pub matvecs: u64,
     /// The stagnation reset dropped the recycle space after this cycle.
     pub reset: bool,
+    /// Largest `max_j |c_j^T v|` of an Arnoldi vector right after its
+    /// normalization, and smallest `||next|| / column scale` before it
+    /// (post-hoc diagnostic of
+    /// `research/rev01b_gcrodr_recycle_reorthogonalization_20261003`;
+    /// computed only when traced, uncounted).
+    pub creation_ctv_max: f64,
+    pub min_next_ratio: f64,
     /// The solve aborted inside this cycle (research node
     /// `research/int01_gcrodr_verified_reuse_20261003`): only `recycle_rank`,
     /// `residual_start` and `matvecs` (charged since the cycle began) are set.
@@ -941,6 +948,17 @@ fn solve_gcrodr_inner(
             let mut hessenberg = DenseMatrix::zeros(maximum_columns + 1, maximum_columns);
             let mut recycle_coupling = DenseMatrix::zeros(recycle_rank, maximum_columns);
             let mut actual_columns = 0usize;
+            let (mut diag_creation_ctv, mut diag_min_ratio) = (0.0_f64, f64::INFINITY);
+            if trace.is_some() {
+                for image in &local.image {
+                    let c: f64 = image
+                        .iter()
+                        .zip(&arnoldi_basis[0])
+                        .map(|(a, b)| a * b)
+                        .sum();
+                    diag_creation_ctv = diag_creation_ctv.max(c.abs());
+                }
+            }
             for column in 0..maximum_columns {
                 let mut next = vec![0.0; n];
                 apply_left_with_raw(
@@ -981,9 +999,21 @@ fn solve_gcrodr_inner(
                     .fold(0.0_f64, f64::hypot);
                 let happy_breakdown =
                     arnoldi_happy_breakdown_from_norm(full_projection_norm, next_norm)?;
+                if trace.is_some() {
+                    let scale = full_projection_norm.hypot(next_norm);
+                    if scale > 0.0 {
+                        diag_min_ratio = diag_min_ratio.min(next_norm / scale);
+                    }
+                }
                 if !happy_breakdown {
                     for value in &mut next {
                         *value /= next_norm;
+                    }
+                    if trace.is_some() {
+                        for image in &local.image {
+                            let c: f64 = image.iter().zip(&next).map(|(a, b)| a * b).sum();
+                            diag_creation_ctv = diag_creation_ctv.max(c.abs());
+                        }
                     }
                     arnoldi_basis.push(next);
                 } else {
@@ -1084,6 +1114,8 @@ fn solve_gcrodr_inner(
                     arnoldi_gram_defect: arnoldi_gram,
                     matvecs: charged_matvecs(counters) - cycle_start_matvecs,
                     reset,
+                    creation_ctv_max: diag_creation_ctv,
+                    min_next_ratio: diag_min_ratio,
                     aborted: false,
                 });
             }
