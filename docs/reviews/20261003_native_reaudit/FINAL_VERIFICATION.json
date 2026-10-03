@@ -1,0 +1,229 @@
+{
+  "schema": "vigilode-native-reaudit-verification-v1",
+  "classification": "RUNTIME_INTERRUPTION_RECOVERY",
+  "reviewed_base_commit": "5a8d7fe9ffc681bca98a98a2f9889a2a05505783",
+  "recovered_published_code_commit": "77275e2b431e4280366060d44a883f1832909fe6",
+  "recovered_tree_matches_remote": "20d57400028c7e6a595020d810977e07bcdb0876",
+  "latest_remote_head": "312aa57ada821f383f2a8b4da7b2800e4d227d54",
+  "latest_remote_tree": "fb2bc19fccdf34153b86b1dc69fabc4404a0e478",
+  "local_product_overlay_tree": "6acf94c30da4395b8f69a607c682df1a13a195f1",
+  "tested_crates_tree": "95f5570ca3e55c8b3752b51a5abf96708e88cda7",
+  "tests": {
+    "red": {
+      "red_laguerre": {
+        "log": "evidence/red_laguerre.log",
+        "exit_code": 101,
+        "rust_harness_counts": {
+          "completed_harnesses": 1,
+          "passed": 1,
+          "failed": 2,
+          "ignored": 0
+        }
+      },
+      "red_cache_radius": {
+        "log": "evidence/red_cache_radius.log",
+        "exit_code": 101,
+        "rust_harness_counts": {
+          "completed_harnesses": 1,
+          "passed": 1,
+          "failed": 7,
+          "ignored": 0
+        }
+      },
+      "red_radius": {
+        "log": "evidence/red_radius.log",
+        "exit_code": 101,
+        "rust_harness_counts": {
+          "completed_harnesses": 1,
+          "passed": 2,
+          "failed": 1,
+          "ignored": 0
+        }
+      },
+      "red_chart_python": {
+        "log": "evidence/red_chart_python.log",
+        "exit_code": 1,
+        "rust_harness_counts": {
+          "completed_harnesses": 0,
+          "passed": 0,
+          "failed": 0,
+          "ignored": 0
+        }
+      },
+      "red_resume_shape": {
+        "log": "evidence/red_resume_shape.log",
+        "exit_code": 101,
+        "rust_harness_counts": {
+          "completed_harnesses": 1,
+          "passed": 0,
+          "failed": 3,
+          "ignored": 0
+        }
+      }
+    },
+    "restored_published_pr": {
+      "green_laguerre": {
+        "log": "evidence/green_laguerre.log",
+        "exit_code": 0,
+        "rust_harness_counts": {
+          "completed_harnesses": 1,
+          "passed": 3,
+          "failed": 0,
+          "ignored": 0
+        }
+      },
+      "green_integrators": {
+        "log": "evidence/green_integrators.log",
+        "exit_code": 0,
+        "rust_harness_counts": {
+          "completed_harnesses": 3,
+          "passed": 16,
+          "failed": 0,
+          "ignored": 0
+        }
+      },
+      "green_chart_python": {
+        "log": "evidence/green_chart_python.log",
+        "exit_code": 0,
+        "rust_harness_counts": {
+          "completed_harnesses": 0,
+          "passed": 0,
+          "failed": 0,
+          "ignored": 0
+        }
+      }
+    },
+    "final_focused_replay": {
+      "log": "evidence/final_replay_retry.log",
+      "exit_code": 0,
+      "rust_harness_counts": {
+        "completed_harnesses": 12,
+        "passed": 37,
+        "failed": 0,
+        "ignored": 2
+      }
+    },
+    "related_native_binaries": {
+      "harnesses": 12,
+      "passed": 37,
+      "failed": 0,
+      "ignored": 2,
+      "includes_final_regressions": 22,
+      "details": "evidence/related_tests.json"
+    },
+    "full_workspace": {
+      "log": "evidence/full_workspace.log",
+      "exit_code": 124,
+      "rust_harness_counts": {
+        "completed_harnesses": 50,
+        "passed": 269,
+        "failed": 0,
+        "ignored": 3
+      },
+      "status": "INCOMPLETE_TIMEOUT",
+      "budget_seconds": 600,
+      "whole_suite_pass_claim": false
+    },
+    "clippy_first_attempt": {
+      "log": "evidence/full_clippy.log",
+      "exit_code": 101,
+      "rust_harness_counts": {
+        "completed_harnesses": 0,
+        "passed": 0,
+        "failed": 0,
+        "ignored": 0
+      },
+      "classification": "OFFLINE_CONFIG_PROPAGATION_FAILURE",
+      "fix": "config passed after clippy and placed in isolated CARGO_HOME; --frozen retained"
+    },
+    "clippy_retry": {
+      "log": "evidence/clippy_retry.log",
+      "exit_code": 0,
+      "rust_harness_counts": {
+        "completed_harnesses": 0,
+        "passed": 0,
+        "failed": 0,
+        "ignored": 0
+      },
+      "all_workspace_all_targets_all_features": true,
+      "deny_warnings": true
+    },
+    "fmt": {
+      "log": "evidence/final_fmt.log",
+      "exit_code": 0,
+      "rust_harness_counts": {
+        "completed_harnesses": 0,
+        "passed": 0,
+        "failed": 0,
+        "ignored": 0
+      }
+    },
+    "python_tools": {
+      "log": "evidence/python_tools.log",
+      "exit_code": 0,
+      "rust_harness_counts": {
+        "completed_harnesses": 0,
+        "passed": 0,
+        "failed": 0,
+        "ignored": 0
+      },
+      "passed": 211,
+      "failed": 0
+    },
+    "exact_algebra": {
+      "scope": "exact algebra only",
+      "checks": {
+        "physical_reconstruction_identity": true,
+        "cofactor_quotient_identity": true,
+        "positive_radius_needed": true,
+        "nonzero_diagonal_breaks_nilpotency": true
+      },
+      "passed": 4,
+      "total": 4
+    },
+    "replay_first_invocation": {
+      "status": "CONTAINER_CALL_TIMEOUT_20_SECONDS",
+      "full_command_finished": false,
+      "log": "evidence/final_replay.log",
+      "replayed_successfully": true
+    }
+  },
+  "plan_validation": {
+    "nodes": 9,
+    "acyclic": true,
+    "remaining_only": true,
+    "target_paths_resolve": true
+  },
+  "protected_objects_unchanged": {
+    "Cargo.toml": "e8ed593db451a95c7a71964e56c3b7b53c7b613c",
+    "Cargo.lock": "3539daa972b78bbfb532bf293bd1cdc6a09c5903",
+    "fixtures": "02142d5606a0610a74d6b1471086b1ee68a8470b",
+    "research": "897ddf7c795ea728ecb6844fd84658a7cdce2677",
+    "tools": "3b893567d19da740ee0559efea2af55e93214f11",
+    ".github": "219179df7ec734da75073d0a52d2f2bd2bfca556"
+  },
+  "runtime": {
+    "rustc": "1.94.1 (e408947bf 2026-03-25)",
+    "rustc_commit": "e408947bfd200af42db322daf0fadfe7e26d3bd1",
+    "cargo": "1.94.1",
+    "cargo_frozen": true,
+    "independent_signature_validation": false,
+    "lockfile_vendor_from_artifact": 11247252078
+  },
+  "publication": {
+    "existing_pr": 70,
+    "new_pr_created_in_resume": false,
+    "additional_push_completed": false,
+    "blocker": "GITHUB_WRITE_FUNCTION_NOT_EXPOSED; direct Git DNS unavailable",
+    "remote_ci_observation": "6 success; 1 in_progress at latest read; not CI for local overlay",
+    "no_force_or_merge": true
+  },
+  "claim_limits": [
+    "no full workspace test PASS",
+    "no new timing result",
+    "no generic RVJ stiff-uniform5 theorem",
+    "no automatic interior-mutable callback semantic identity",
+    "conditional chart bound is not an ODE local/global error provider",
+    "source reconstruction is not independent signature authentication"
+  ]
+}

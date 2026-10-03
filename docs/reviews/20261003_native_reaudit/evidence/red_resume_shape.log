@@ -1,0 +1,42 @@
+   Compiling rodas5p-integrators v0.1.0 (/mnt/data/vigilode_resume_20261003/repo/crates/rodas5p-integrators)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 7.59s
+     Running tests/native_reaudit_radius_contracts.rs (target/debug/deps/native_reaudit_radius_contracts-5ba7062e30d08355)
+
+running 3 tests
+test malformed_affine_structural_entries_are_not_silently_ignored ... FAILED
+test malformed_affine_causal_proposal_is_a_typed_rejection ... FAILED
+test malformed_affine_storage_is_rejected_without_panicking ... FAILED
+
+failures:
+
+---- malformed_affine_structural_entries_are_not_silently_ignored stdout ----
+
+thread 'malformed_affine_structural_entries_are_not_silently_ignored' (7624) panicked at crates/rodas5p-integrators/tests/native_reaudit_radius_contracts.rs:104:9:
+non-strict-lower field 0 was accepted
+
+---- malformed_affine_causal_proposal_is_a_typed_rejection stdout ----
+
+thread 'malformed_affine_causal_proposal_is_a_typed_rejection' (7622) panicked at crates/rodas5p-integrators/src/causal_majorant.rs:599:20:
+index out of bounds: the len is 0 but the index is 1
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'malformed_affine_causal_proposal_is_a_typed_rejection' (7622) panicked at crates/rodas5p-integrators/tests/native_reaudit_radius_contracts.rs:120:5:
+proposal indexed malformed backing storage
+
+---- malformed_affine_storage_is_rejected_without_panicking stdout ----
+
+thread 'malformed_affine_storage_is_rejected_without_panicking' (7623) panicked at crates/rodas5p-integrators/src/causal_majorant.rs:599:20:
+index out of bounds: the len is 0 but the index is 1
+
+thread 'malformed_affine_storage_is_rejected_without_panicking' (7623) panicked at crates/rodas5p-integrators/tests/native_reaudit_radius_contracts.rs:90:9:
+malformed field 0 caused a panic
+
+
+failures:
+    malformed_affine_causal_proposal_is_a_typed_rejection
+    malformed_affine_storage_is_rejected_without_panicking
+    malformed_affine_structural_entries_are_not_silently_ignored
+
+test result: FAILED. 0 passed; 3 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p rodas5p-integrators --test native_reaudit_radius_contracts`

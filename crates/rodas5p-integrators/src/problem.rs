@@ -26,6 +26,8 @@ pub type JacobianIntoFn =
 pub type JvpFn = Arc<dyn Fn(f64, &[f64], &[f64], &mut [f64]) -> CoreResult<()> + Send + Sync>;
 pub type PartialTFn = Arc<dyn Fn(f64, &[f64], &mut [f64]) -> CoreResult<()> + Send + Sync>;
 pub type ExactFn = Arc<dyn Fn(f64) -> Vec<f64> + Send + Sync>;
+/// A client-owned model generation counter; see [`OdeProblem::with_model_epoch`].
+pub type ModelEpochFn = Arc<dyn Fn() -> u64 + Send + Sync>;
 
 #[derive(Clone)]
 pub struct OdeProblem {
@@ -40,9 +42,69 @@ pub struct OdeProblem {
     pub autonomous: bool,
     pub mass_matrix: Option<DenseMatrix>,
     exact_solution: Option<ExactFn>,
+    model_epoch: Option<ModelEpochFn>,
+}
+
+/// Retained callback identities for a frozen matrix-free state. This is an
+/// allocation identity, not a proof that interior mutable callback data stayed
+/// unchanged. Callers changing such data must request a fresh linearization.
+#[derive(Clone)]
+pub(crate) struct MatrixFreeCallbackIdentity {
+    rhs: RhsFn,
+    jvp: Option<JvpFn>,
+    partial_t: Option<PartialTFn>,
+    model_epoch: Option<ModelEpochFn>,
+    autonomous: bool,
+}
+
+impl MatrixFreeCallbackIdentity {
+    pub(crate) fn matches(&self, problem: &OdeProblem) -> bool {
+        fn same<T: ?Sized>(a: &Option<Arc<T>>, b: &Option<Arc<T>>) -> bool {
+            match (a, b) {
+                (None, None) => true,
+                (Some(a), Some(b)) => Arc::ptr_eq(a, b),
+                _ => false,
+            }
+        }
+        Arc::ptr_eq(&self.rhs, &problem.rhs)
+            && same(&self.jvp, &problem.jvp)
+            && same(&self.partial_t, &problem.partial_t)
+            && same(&self.model_epoch, &problem.model_epoch)
+            && self.autonomous == problem.autonomous
+    }
 }
 
 impl OdeProblem {
+    pub(crate) fn matrix_free_callback_identity(&self) -> MatrixFreeCallbackIdentity {
+        MatrixFreeCallbackIdentity {
+            rhs: self.rhs.clone(),
+            jvp: self.jvp.clone(),
+            partial_t: self.partial_t.clone(),
+            model_epoch: self.model_epoch.clone(),
+            autonomous: self.autonomous,
+        }
+    }
+
+    /// Attach a client-owned model epoch (research node
+    /// `research/rnext07_model_epoch_20261003`). The client must change the
+    /// returned value whenever data read by `rhs`, the Jacobian, `jvp` or
+    /// `partial_t` change, for example parameters behind an `Arc<AtomicU64>`
+    /// or a `Mutex`. Drivers that keep frozen linearization data across calls
+    /// (the U-form matrix-free workspace) then rebuild it when the epoch
+    /// differs from the one it was built under. The epoch is the client's
+    /// promise: the library cannot check it, and neither it nor any callback
+    /// pointer is a proof that the model is unchanged. Without an epoch, such
+    /// changes need `fresh = true` (the manual contract).
+    pub fn with_model_epoch(mut self, epoch: ModelEpochFn) -> Self {
+        self.model_epoch = Some(epoch);
+        self
+    }
+
+    /// The current model epoch, if the client supplied one.
+    pub fn model_epoch(&self) -> Option<u64> {
+        self.model_epoch.as_ref().map(|epoch| epoch())
+    }
+
     #[allow(clippy::too_many_arguments)]
     pub fn new(
         name: impl Into<String>,
@@ -84,6 +146,7 @@ impl OdeProblem {
             autonomous,
             mass_matrix,
             exact_solution,
+            model_epoch: None,
         })
     }
 

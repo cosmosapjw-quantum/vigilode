@@ -57,6 +57,7 @@ mod scientific_corpus_v2;
 mod scientific_validity_v2_gate;
 mod sequential;
 mod stage_batch;
+mod stage_chart_candidate;
 mod stage_target;
 mod transactional_q1_q2;
 mod unified_gates;
@@ -304,13 +305,14 @@ pub use output::{
 };
 pub use outward_certificate::{
     BlockedCertificateWork, BlockedDoublingCertificate, BoxCertificate,
-    CERTIFICATE_STRUCTURE_UNSUPPORTED, CertificateKind, DiagonalMajorant, DoublingCertificate,
-    InverseWitness, PastStepData, QuadraticStageProblem, RadiusAttempt, StageCertificate,
-    UnverifiedWitness, WITNESS_NOT_VERIFIED, WitnessIdentity, WitnessWork,
-    blocked_action_doubling_certificate_with_execution, blocked_box_certificate_with_execution,
-    blocked_doubling_certificate_with_execution, candidate_digest, certificate_binding,
-    certify_stage_target, doubling_certificate, doubling_certificate_with_execution,
-    doubling_levels, predict_state_radius,
+    CERTIFICATE_STRUCTURE_UNSUPPORTED, CertificateKind, DIAGONAL_STRUCTURED, DiagonalMajorant,
+    DiagonalStageProblem, DoublingCertificate, InverseWitness, PastStepData, QuadraticStageProblem,
+    RadiusAttempt, StageCertificate, UnverifiedWitness, WITNESS_NOT_VERIFIED, WitnessIdentity,
+    WitnessWork, blocked_action_doubling_certificate_with_execution,
+    blocked_box_certificate_with_execution, blocked_doubling_certificate_with_execution,
+    candidate_digest, certificate_binding, certify_stage_target, certify_stage_target_diagonal,
+    doubling_certificate, doubling_certificate_with_execution, doubling_levels,
+    predict_state_radius,
 };
 pub use parallel::ParallelExecution;
 pub use path_controller::{
@@ -318,7 +320,7 @@ pub use path_controller::{
     PathControllerRow, PathControllerScheduleSummary, PathControllerSummary,
     run_path_controller_screen,
 };
-pub use problem::{JacobianIntoFn, OdeProblem};
+pub use problem::{JacobianIntoFn, ModelEpochFn, OdeProblem};
 pub use problems::{
     complex_dahlquist_problem, constant_affine_mass_problem, manufactured_mass_nonlinear_problem,
     manufactured_vector_problem, oscillatory_prothero_robinson_problem, prothero_robinson_problem,
@@ -344,16 +346,20 @@ pub use rhs_telemetry::{
     run_homotopy_rhs_telemetry_screen,
 };
 pub use rodas5p_fast::{
+    BandedJacobian, BandedJacobianFn, BandedWork, RODAS5P_FAST_BANDED_DRIVER_ID,
     RODAS5P_FAST_DRIVER_ID, RODAS5P_FAST_SMALL_LU_MAX, RODAS5P_FAST_SPARSE_DENSITY_MAX,
-    Rodas5pFastLu, Rodas5pFastResult, integrate_rodas5p_fast_observed, rodas5p_fast_step,
+    Rodas5pFastBandedResult, Rodas5pFastLu, Rodas5pFastResult,
+    integrate_rodas5p_fast_banded_observed, integrate_rodas5p_fast_observed,
+    rodas5p_fast_banded_solve, rodas5p_fast_step,
 };
 pub use rodas5p_fast_small::{
     RODAS5P_FAST_SMALL_DRIVER_ID, Rodas5pFastSmallResult, SmallProblem,
     integrate_rodas5p_fast_small_observed,
 };
 pub use rodas5p_matrix_free_fast::{
-    RODAS5P_MF_FAST_DRIVER_ID, Rodas5pMfFastResult, Rodas5pMfFastWorkspace,
-    integrate_rodas5p_mf_fast_observed,
+    MfAttemptObserver, RODAS5P_MF_FAST_DRIVER_ID, Rodas5pMfFastResult, Rodas5pMfFastWorkspace,
+    integrate_rodas5p_mf_fast_observed, integrate_rodas5p_mf_fast_observed_gmres_into,
+    integrate_rodas5p_mf_fast_observed_traced,
 };
 pub use sabr::{PredictorKind, SabrConfig, StageHistory, sabr_step};
 pub use scientific_corpus_v2::{
@@ -380,17 +386,21 @@ pub use stage_batch::{
     StageBatchFeasibilityCase, StageBatchFeasibilityProfile, StageBatchFeasibilityReport,
     StageBatchFeasibilityRow, run_stage_batch_feasibility,
 };
+pub use stage_chart_candidate::{
+    ChartCandidate, ChartStatus, ChartWork, StageChart, stage_chart_candidate, stage_residual,
+};
 pub use stage_target::{
     CoefficientLeakage, STAGE_TARGET_SEQUENTIAL, STAGE_TARGET_STRICT_LOWER_PROJECTION, StageTarget,
     StageTargetBits, block_sequential_allowance, native_coefficient_leakage,
 };
 pub use transactional_q1_q2::{
-    CERTIFICATE_CAPABILITY_UNAVAILABLE, ModelBinding, NATIVE_TARGET_CERTIFICATE_ADMISSION,
-    OPERATIONAL_DIAGNOSTIC_ADMISSION, OperationalGateReport, Q2Admission, Q2CertificateAdmission,
-    Q2CertificateSource, QuadraticModel, TransactionalQ1Q2Config, TransactionalQ1Q2Lane,
-    TransactionalQ1Q2RunDiagnostics, TransactionalQ1Q2StepReport, WitnessCapability,
-    transactional_q1_q2_step, transactional_q1_q2_step_with_admission,
-    transactional_q1_q2_step_with_execution,
+    CERTIFICATE_CAPABILITY_UNAVAILABLE, DiagonalQuadraticModel, ModelBinding,
+    NATIVE_TARGET_CERTIFICATE_ADMISSION, OPERATIONAL_DIAGNOSTIC_ADMISSION, OperationalGateReport,
+    PREPARED_STRUCTURED_CERTIFICATE_ADMISSION, PreparedQ2Certificate, PreparedStageProblem,
+    Q2Admission, Q2CertificateAdmission, Q2CertificateSource, QuadraticModel,
+    TransactionalQ1Q2Config, TransactionalQ1Q2Lane, TransactionalQ1Q2RunDiagnostics,
+    TransactionalQ1Q2StepReport, WitnessCapability, transactional_q1_q2_step,
+    transactional_q1_q2_step_with_admission, transactional_q1_q2_step_with_execution,
 };
 pub use unified_gates::{
     CandidateGateReport, CandidateGateVerdict, CandidateOrderGateRow, CandidateStiffGateRow,
@@ -416,3 +426,7 @@ pub use a1_two_arm_receipt::{
 pub use policy_redesign_v25::{
     CausalRjfStep, PersistenceLatch, PointFeature, PrefixBudget, ProbeAction, causal_feature_value,
 };
+
+/// Optional model-specific physical error transport; not a default solver path.
+#[cfg(feature = "audit2-research")]
+pub mod chart_transport;

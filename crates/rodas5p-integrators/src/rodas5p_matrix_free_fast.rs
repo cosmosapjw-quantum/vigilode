@@ -42,14 +42,16 @@ use rodas5p_core::{
     LinearSolverConfig, PreconditionerKind, ShiftedOperator, WorkCounters, rodas5p_coefficients,
 };
 use rodas5p_krylov::{
-    GcrodrConfig, GcrodrWorkspace, GmresConfig, GmresWorkspace, LgmresConfig, LgmresWorkspace,
-    solve_gcrodr_with_workspace, solve_gmres_with_workspace, solve_lgmres_with_workspace,
+    GcrodrConfig, GcrodrWorkspace, GmresCapacity, GmresConfig, GmresWorkspace, LgmresConfig,
+    LgmresWorkspace, solve_gcrodr_with_workspace, solve_gmres_into, solve_gmres_with_workspace,
+    solve_lgmres_with_workspace,
 };
 
 use crate::{
     AdaptiveControllerState, AdaptiveFailureKind, AdaptiveStepConfig, KrylovState,
     ObservedIntegrationResult, OdeProblem, OutputSchedule, output::OutputCollector,
-    raw_absolute_residual_budget, rodas_next_step_after_attempt,
+    problem::MatrixFreeCallbackIdentity, raw_absolute_residual_budget,
+    rodas_next_step_after_attempt,
 };
 
 /// Identifier of this driver in research records.
@@ -83,6 +85,13 @@ pub struct Rodas5pMfFastWorkspace {
     lgmres: LgmresWorkspace,
     gcrodr: GcrodrWorkspace,
     jvp: Option<Arc<dyn LinearOperator>>,
+    cached_callbacks: Option<MatrixFreeCallbackIdentity>,
+    cached_t_bits: u64,
+    cached_y: Vec<f64>,
+    cached_epoch: Option<u64>,
+    /// Research switch (R-NEXT-02): GMRES stage solves through
+    /// `solve_gmres_into`, writing into the stage storage.
+    gmres_into: bool,
     f0: Vec<f64>,
     ft: Vec<f64>,
     u: Vec<f64>,
@@ -158,6 +167,11 @@ impl Rodas5pMfFastWorkspace {
             lgmres: LgmresWorkspace::default(),
             gcrodr: GcrodrWorkspace::default(),
             jvp: None,
+            cached_callbacks: None,
+            cached_t_bits: 0,
+            cached_y: vec![0.0; n],
+            cached_epoch: None,
+            gmres_into: false,
             f0: vec![0.0; n],
             ft: vec![0.0; n],
             u: vec![0.0; s * n],
@@ -168,6 +182,13 @@ impl Rodas5pMfFastWorkspace {
     }
 
     /// The new state of the last attempt.
+    /// Route GMRES stage solves through `solve_gmres_into` (research node
+    /// `research/rnext02_gmres_into_20261003`); same results bit for bit,
+    /// fewer allocations. Off by default.
+    pub fn set_gmres_into(&mut self, on: bool) {
+        self.gmres_into = on;
+    }
+
     pub fn y_new(&self) -> &[f64] {
         &self.y_new
     }
@@ -181,7 +202,14 @@ impl Rodas5pMfFastWorkspace {
     /// [`Self::y_new`] and the WRMS norm of the embedded error `U_(s-1)` in
     /// the sequential path's scale `atol + rtol max(|y|, |y_new|)`. `fresh`
     /// evaluates `f(t, y)`, `f_t` and the JVP operator at this state;
-    /// otherwise those of the previous attempt from the same state are used.
+    /// otherwise reuse is allowed only for the exact same time/state bits and
+    /// retained callback identities. Changing `h` alone does not invalidate
+    /// the frozen state. Interior callback-data changes require `fresh = true`,
+    /// unless the problem carries a model epoch
+    /// ([`OdeProblem::with_model_epoch`]): the epoch is read once per attempt
+    /// and any change rebuilds `f(t, y)`, `f_t` and the operator (whose new
+    /// token makes a carried recycle state refresh its images).
+    /// A failed refresh invalidates all frozen data before any retry.
     #[allow(clippy::too_many_arguments)]
     pub fn attempt(
         &mut self,
@@ -196,6 +224,17 @@ impl Rodas5pMfFastWorkspace {
         counters: &mut WorkCounters,
     ) -> CoreResult<f64> {
         let (n, s, gamma) = (self.n, self.s, self.gamma);
+        validate_strict(problem, &self.config)?;
+        if problem.dimension != n {
+            return Err(CoreError::Dimension(
+                "matrix-free workspace/problem dimensions differ".into(),
+            ));
+        }
+        if !(t.is_finite() && atol.is_finite() && atol >= 0.0 && rtol.is_finite() && rtol >= 0.0) {
+            return Err(CoreError::InvalidInput(
+                "time must be finite and output tolerances finite and nonnegative".into(),
+            ));
+        }
         if !(h.is_finite() && h != 0.0) {
             return Err(CoreError::InvalidInput(
                 "step size must be finite and nonzero".into(),
@@ -204,7 +243,23 @@ impl Rodas5pMfFastWorkspace {
         if y.len() != n || !y.iter().all(|value| value.is_finite()) {
             return Err(CoreError::InvalidInput("invalid initial state".into()));
         }
-        if fresh || self.jvp.is_none() {
+        let epoch = problem.model_epoch();
+        let same_state = self.cached_t_bits == t.to_bits()
+            && self.cached_epoch == epoch
+            && self
+                .cached_y
+                .iter()
+                .zip(y)
+                .all(|(a, b)| a.to_bits() == b.to_bits())
+            && self
+                .cached_callbacks
+                .as_ref()
+                .is_some_and(|id| id.matches(problem));
+        if fresh || self.jvp.is_none() || !same_state {
+            // Invalidate before fallible callbacks: a partially written RHS or
+            // failed f_t must never be paired with the old state's operator.
+            self.jvp = None;
+            self.cached_callbacks = None;
             problem.eval_rhs_into(t, y, &mut self.f0, counters)?;
             if problem.autonomous {
                 self.ft.fill(0.0);
@@ -212,7 +267,12 @@ impl Rodas5pMfFastWorkspace {
                 let ft = problem.eval_partial_t(t, y, counters)?;
                 self.ft.copy_from_slice(&ft);
             }
-            self.jvp = Some(problem.linearize_matrix_free(t, y)?);
+            let jvp = problem.linearize_matrix_free(t, y)?;
+            self.cached_y.copy_from_slice(y);
+            self.cached_t_bits = t.to_bits();
+            self.cached_epoch = epoch;
+            self.cached_callbacks = Some(problem.matrix_free_callback_identity());
+            self.jvp = Some(jvp);
         }
         let jvp = self.jvp.clone().expect("linearized above");
         let shifted = ShiftedOperator::new_counted_jvp(None, jvp, h, gamma)?;
@@ -264,20 +324,43 @@ impl Rodas5pMfFastWorkspace {
                     *x += g * v;
                 }
             }
-            let x0 = (i > 0 && self.config.x0_strategy == InitialGuess::Previous)
-                .then(|| &self.u[(i - 1) * n..i * n]);
+            let previous = i > 0 && self.config.x0_strategy == InitialGuess::Previous;
+            let gmres_config = GmresConfig {
+                restart: self.config.restart,
+                max_arnoldi: self.config.maxiter.max(self.config.restart),
+                rtol: self.config.rtol,
+                atol: linear_atol,
+            };
+            if self.gmres_into && self.config.method == LinearMethod::Gmres {
+                let (done, rest) = self.u.split_at_mut(i * n);
+                let stage = &mut rest[..n];
+                solve_gmres_into(
+                    &shifted,
+                    &self.preconditioner,
+                    &self.stage_rhs,
+                    previous.then(|| &done[(i - 1) * n..]),
+                    &gmres_config,
+                    None,
+                    stage,
+                    &mut self.gmres,
+                    GmresCapacity::unbounded(),
+                    counters,
+                )?;
+                if !stage.iter().all(|value| value.is_finite()) {
+                    return Err(CoreError::NonFinite(
+                        "RODAS5P U-form stage solve produced NaN/Inf".into(),
+                    ));
+                }
+                continue;
+            }
+            let x0 = previous.then(|| &self.u[(i - 1) * n..i * n]);
             let report = match self.config.method {
                 LinearMethod::Gmres => solve_gmres_with_workspace(
                     &shifted,
                     &self.preconditioner,
                     &self.stage_rhs,
                     x0,
-                    &GmresConfig {
-                        restart: self.config.restart,
-                        max_arnoldi: self.config.maxiter.max(self.config.restart),
-                        rtol: self.config.rtol,
-                        atol: linear_atol,
-                    },
+                    &gmres_config,
                     &mut self.gmres,
                     counters,
                 )?,
@@ -352,7 +435,13 @@ impl Rodas5pMfFastWorkspace {
         let error = &self.u[(s - 1) * n..s * n];
         let mut sum = 0.0;
         for ((e, a), b) in error.iter().zip(y).zip(&self.y_new) {
-            let z = e / (atol + rtol * a.abs().max(b.abs()));
+            let scale = atol + rtol * a.abs().max(b.abs());
+            if !(scale.is_finite() && scale > 0.0) {
+                return Err(CoreError::InvalidInput(
+                    "every output error scale must be finite and positive".into(),
+                ));
+            }
+            let z = e / scale;
             sum += z * z;
         }
         let norm = (sum / n as f64).sqrt();
@@ -384,6 +473,61 @@ pub fn integrate_rodas5p_mf_fast_observed(
     adaptive: &AdaptiveStepConfig,
     output: &OutputSchedule,
 ) -> CoreResult<Rodas5pMfFastResult> {
+    integrate_rodas5p_mf_fast_observed_traced(
+        problem,
+        t_span,
+        y0,
+        linear_config,
+        adaptive,
+        output,
+        false,
+        &mut |_, _, _, _, _| {},
+    )
+}
+
+/// [`integrate_rodas5p_mf_fast_observed`] with
+/// [`Rodas5pMfFastWorkspace::set_gmres_into`] on (research node
+/// `research/rnext02_gmres_into_20261003`).
+pub fn integrate_rodas5p_mf_fast_observed_gmres_into(
+    problem: &OdeProblem,
+    t_span: (f64, f64),
+    y0: &[f64],
+    linear_config: &LinearSolverConfig,
+    adaptive: &AdaptiveStepConfig,
+    output: &OutputSchedule,
+) -> CoreResult<Rodas5pMfFastResult> {
+    integrate_rodas5p_mf_fast_observed_traced(
+        problem,
+        t_span,
+        y0,
+        linear_config,
+        adaptive,
+        output,
+        true,
+        &mut |_, _, _, _, _| {},
+    )
+}
+
+/// Called after every attempt with the attempt's `t`, `y` and step, its
+/// embedded error norm (`None` when the attempt failed) and the workspace
+/// (stages and `y_new`), before the step is accepted or rejected.
+pub type MfAttemptObserver<'a> =
+    &'a mut dyn FnMut(f64, &[f64], f64, Option<f64>, &Rodas5pMfFastWorkspace);
+
+/// The U-form driver with an attempt observer (research records, e.g. the
+/// frozen systems of `research/rnext03_gcrodr_attribution_20261003`) and
+/// the `gmres_into` switch. The observer cannot change the run.
+#[allow(clippy::too_many_arguments)]
+pub fn integrate_rodas5p_mf_fast_observed_traced(
+    problem: &OdeProblem,
+    t_span: (f64, f64),
+    y0: &[f64],
+    linear_config: &LinearSolverConfig,
+    adaptive: &AdaptiveStepConfig,
+    output: &OutputSchedule,
+    gmres_into: bool,
+    observer: MfAttemptObserver<'_>,
+) -> CoreResult<Rodas5pMfFastResult> {
     adaptive.validate()?;
     let (mut t, tf) = t_span;
     if tf < t || y0.len() != problem.dimension {
@@ -392,6 +536,7 @@ pub fn integrate_rodas5p_mf_fast_observed(
         ));
     }
     let mut work = Rodas5pMfFastWorkspace::new(problem, linear_config)?;
+    work.set_gmres_into(gmres_into);
     let mut y = y0.to_vec();
     let mut h = adaptive.initial_step.min(crate::output::step_to(t, tf)?);
     let mut controller = AdaptiveControllerState::default();
@@ -431,6 +576,7 @@ pub fn integrate_rodas5p_mf_fast_observed(
             &mut counters,
         );
         fresh_state = work.jvp.is_some();
+        observer(t, &y, trial_h, outcome.as_ref().ok().copied(), &work);
         let (error, failure) = match outcome {
             Ok(error) if error <= 1.0 => (error, None),
             Ok(error) => (error, Some(AdaptiveFailureKind::LocalError)),

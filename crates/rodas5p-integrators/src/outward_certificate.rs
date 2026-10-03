@@ -84,15 +84,142 @@ impl QuadraticStageProblem {
         Ok(())
     }
 
-    fn jacobian_digest(&self) -> String {
-        let bits = self
-            .jacobian
-            .iter()
+    fn view(&self) -> StageView<'_> {
+        StageView {
+            jacobian: JacobianRows::Dense(&self.jacobian),
+            y: &self.y,
+            h: self.h,
+            q: &self.q,
+        }
+    }
+}
+
+/// The test family with a diagonal `J = diag(diagonal)`, stored as O(n)
+/// data (integrated DAG node INT-02, external review TF-04/N3). Every
+/// certificate on it touches only the diagonal; the bounds are bitwise those
+/// of the same problem in dense form.
+#[derive(Clone, Debug, PartialEq)]
+pub struct DiagonalStageProblem {
+    pub diagonal: Vec<f64>,
+    pub y: Vec<f64>,
+    pub h: f64,
+    pub q: Vec<f64>,
+}
+
+impl DiagonalStageProblem {
+    pub fn dimension(&self) -> usize {
+        self.y.len()
+    }
+
+    /// The dense form, for comparisons outside the hot path.
+    pub fn to_dense(&self) -> QuadraticStageProblem {
+        let n = self.dimension();
+        QuadraticStageProblem {
+            jacobian: (0..n)
+                .map(|a| {
+                    (0..n)
+                        .map(|b| if a == b { self.diagonal[a] } else { 0.0 })
+                        .collect()
+                })
+                .collect(),
+            y: self.y.clone(),
+            h: self.h,
+            q: self.q.clone(),
+        }
+    }
+
+    fn view(&self) -> StageView<'_> {
+        StageView {
+            jacobian: JacobianRows::Diagonal(&self.diagonal),
+            y: &self.y,
+            h: self.h,
+            q: &self.q,
+        }
+    }
+}
+
+/// Row access to `J`: dense rows (every entry, zeros included, as the dense
+/// certificate has always read them) or a diagonal (only `J_aa`).
+#[derive(Clone, Copy)]
+enum JacobianRows<'a> {
+    Dense(&'a [Vec<f64>]),
+    Diagonal(&'a [f64]),
+}
+
+impl<'a> JacobianRows<'a> {
+    fn entries(self, a: usize) -> impl Iterator<Item = (usize, f64)> + 'a {
+        let (dense, diagonal) = match self {
+            Self::Dense(rows) => (Some(rows[a].iter().copied().enumerate()), None),
+            Self::Diagonal(values) => (None, Some(std::iter::once((a, values[a])))),
+        };
+        dense
+            .into_iter()
             .flatten()
-            .map(|value| format!("{:016x}", value.to_bits()))
-            .collect::<Vec<_>>()
-            .join(",");
-        sha256_hex(bits.as_bytes())
+            .chain(diagonal.into_iter().flatten())
+    }
+
+    /// Stored entries of row `a` (the `n` of the dense operation counts).
+    fn row_len(self, a: usize) -> usize {
+        match self {
+            Self::Dense(rows) => rows[a].len(),
+            Self::Diagonal(_) => 1,
+        }
+    }
+}
+
+/// A stage problem as the certificates read it.
+#[derive(Clone, Copy)]
+struct StageView<'a> {
+    jacobian: JacobianRows<'a>,
+    y: &'a [f64],
+    h: f64,
+    q: &'a [f64],
+}
+
+impl StageView<'_> {
+    fn dimension(&self) -> usize {
+        self.y.len()
+    }
+
+    fn validate(&self) -> CoreResult<()> {
+        let n = self.dimension();
+        let shape = match self.jacobian {
+            JacobianRows::Dense(rows) => rows.len() == n && rows.iter().all(|row| row.len() == n),
+            JacobianRows::Diagonal(values) => values.len() == n,
+        };
+        let finite = match self.jacobian {
+            JacobianRows::Dense(rows) => rows.iter().flatten().all(|v| v.is_finite()),
+            JacobianRows::Diagonal(values) => values.iter().all(|v| v.is_finite()),
+        };
+        let valid = n > 0
+            && self.q.len() == n
+            && shape
+            && finite
+            && self.h.is_finite()
+            && self.h > 0.0
+            && self.y.iter().chain(self.q).all(|value| value.is_finite());
+        if !valid {
+            return Err(CoreError::InvalidInput(
+                "CERTIFICATE_NOT_VALIDATED: invalid quadratic stage problem".into(),
+            ));
+        }
+        Ok(())
+    }
+
+    /// The dense digest is unchanged; a diagonal one is domain-separated.
+    fn jacobian_digest(&self) -> String {
+        let hex = |values: &mut dyn Iterator<Item = &f64>| {
+            values
+                .map(|value| format!("{:016x}", value.to_bits()))
+                .collect::<Vec<_>>()
+                .join(",")
+        };
+        match self.jacobian {
+            JacobianRows::Dense(rows) => sha256_hex(hex(&mut rows.iter().flatten()).as_bytes()),
+            JacobianRows::Diagonal(values) => sha256_hex(
+                format!("vigilode-diagonal-jacobian-v1|{}", hex(&mut values.iter())).as_bytes(),
+            ),
+        }
     }
 }
 
@@ -114,10 +241,24 @@ impl WitnessIdentity {
         structure: &str,
         tolerance: f64,
     ) -> Self {
+        Self::for_view(problem.view(), gamma, structure, tolerance)
+    }
+
+    /// The identity of a witness for a [`DiagonalStageProblem`].
+    pub fn for_diagonal_problem(
+        problem: &DiagonalStageProblem,
+        gamma: f64,
+        structure: &str,
+        tolerance: f64,
+    ) -> Self {
+        Self::for_view(problem.view(), gamma, structure, tolerance)
+    }
+
+    fn for_view(view: StageView<'_>, gamma: f64, structure: &str, tolerance: f64) -> Self {
         Self {
-            h_bits: problem.h.to_bits(),
+            h_bits: view.h.to_bits(),
             gamma_bits: gamma.to_bits(),
-            jacobian_sha256: problem.jacobian_digest(),
+            jacobian_sha256: view.jacobian_digest(),
             structure: structure.into(),
             tolerance_bits: tolerance.to_bits(),
         }
@@ -145,7 +286,12 @@ pub struct WitnessWork {
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct InverseWitness {
     identity: WitnessIdentity,
+    /// The dense bound; empty for a diagonal-structured witness.
     upper: Vec<Vec<f64>>,
+    /// The diagonal of a diagonal-structured witness (INT-02), whose bound is
+    /// zero off the diagonal.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    diagonal_upper: Option<Vec<f64>>,
     /// `||I - V W||_inf` (upper) for an approximate-inverse witness, 0 for an
     /// exact structural one.
     residual_norm_upper: f64,
@@ -168,8 +314,41 @@ pub struct UnverifiedWitness {
 }
 
 pub const WITNESS_NOT_VERIFIED: &str = "WITNESS_NOT_VERIFIED";
+/// Witness structure of [`InverseWitness::diagonal_structured`].
+pub const DIAGONAL_STRUCTURED: &str = "diagonal-structured";
 
 impl UnverifiedWitness {
+    /// [`UnverifiedWitness::verify`] for a diagonal-structured witness of a
+    /// [`DiagonalStageProblem`]: rebuilt by
+    /// [`InverseWitness::diagonal_structured`] and accepted only if the
+    /// supplied identity and (dense wire) bound are bit for bit the rebuilt
+    /// ones.
+    pub fn verify_diagonal(
+        self,
+        problem: &DiagonalStageProblem,
+        gamma: f64,
+    ) -> CoreResult<InverseWitness> {
+        let reject = |why: &str| CoreError::InvalidInput(format!("{WITNESS_NOT_VERIFIED}: {why}"));
+        if self.identity.structure != DIAGONAL_STRUCTURED || self.approximate_inverse.is_some() {
+            return Err(reject("not a diagonal-structured witness"));
+        }
+        let rebuilt = InverseWitness::diagonal_structured(problem, gamma)?;
+        if rebuilt.identity != self.identity {
+            return Err(reject("the identity is for another operator"));
+        }
+        let dense = rebuilt.upper();
+        let same = dense.len() == self.upper.len()
+            && dense.iter().zip(&self.upper).all(|(x, y)| {
+                x.len() == y.len() && x.iter().zip(y).all(|(p, q)| p.to_bits() == q.to_bits())
+            });
+        if !same || rebuilt.residual_norm_upper.to_bits() != self.residual_norm_upper.to_bits() {
+            return Err(reject(
+                "the supplied bound is not the bound of the operator",
+            ));
+        }
+        Ok(rebuilt)
+    }
+
     /// Rebuild the witness its identity names for `problem` and `gamma`
     /// (`diagonal`, `exact-small`, or an approximate inverse `V`), and
     /// accept it only if the supplied bound is bit for bit the rebuilt one.
@@ -196,7 +375,7 @@ impl UnverifiedWitness {
                     x.len() == y.len() && x.iter().zip(y).all(|(p, q)| p.to_bits() == q.to_bits())
                 })
         };
-        if !same_bits(&rebuilt.upper, &self.upper)
+        if !same_bits(&rebuilt.upper(), &self.upper)
             || rebuilt.residual_norm_upper.to_bits() != self.residual_norm_upper.to_bits()
         {
             return Err(reject(
@@ -225,9 +404,57 @@ impl InverseWitness {
         &self.identity
     }
 
-    /// `U >= |W^-1|` entrywise, `n x n`, finite and nonnegative.
-    pub fn upper(&self) -> &[Vec<f64>] {
-        &self.upper
+    /// `U >= |W^-1|` entrywise, `n x n`, finite and nonnegative. A
+    /// diagonal-structured witness materializes it here, on request.
+    pub fn upper(&self) -> std::borrow::Cow<'_, [Vec<f64>]> {
+        match &self.diagonal_upper {
+            None => std::borrow::Cow::Borrowed(&self.upper),
+            Some(values) => std::borrow::Cow::Owned(
+                (0..values.len())
+                    .map(|a| {
+                        (0..values.len())
+                            .map(|b| if a == b { values[a] } else { 0.0 })
+                            .collect()
+                    })
+                    .collect(),
+            ),
+        }
+    }
+
+    /// `U_ab`.
+    fn entry(&self, a: usize, b: usize) -> f64 {
+        match &self.diagonal_upper {
+            None => self.upper[a][b],
+            Some(values) => {
+                if a == b {
+                    values[a]
+                } else {
+                    0.0
+                }
+            }
+        }
+    }
+
+    /// Stored f64 slots of the bound (INT-02): `n^2` dense, `n` diagonal.
+    pub fn stored_slots(&self) -> usize {
+        match &self.diagonal_upper {
+            None => self.upper.iter().map(Vec::len).sum(),
+            Some(values) => values.len(),
+        }
+    }
+
+    fn well_formed(&self, n: usize) -> bool {
+        let entries_ok = |values: &[f64]| values.iter().all(|x| x.is_finite() && *x >= 0.0);
+        match &self.diagonal_upper {
+            None => {
+                self.upper.len() == n
+                    && self
+                        .upper
+                        .iter()
+                        .all(|row| row.len() == n && entries_ok(row))
+            }
+            Some(values) => self.upper.is_empty() && values.len() == n && entries_ok(values),
+        }
     }
 
     pub fn residual_norm_upper(&self) -> f64 {
@@ -242,7 +469,7 @@ impl InverseWitness {
     pub fn to_unverified(&self) -> UnverifiedWitness {
         UnverifiedWitness {
             identity: self.identity.clone(),
-            upper: self.upper.clone(),
+            upper: self.upper().into_owned(),
             residual_norm_upper: self.residual_norm_upper,
             work: self.work,
             approximate_inverse: self.approximate_inverse.clone(),
@@ -277,8 +504,44 @@ impl InverseWitness {
         Ok(Self {
             identity: WitnessIdentity::for_problem(problem, gamma, "diagonal", 0.0),
             upper,
+            diagonal_upper: None,
             residual_norm_upper: 0.0,
             work,
+            approximate_inverse: None,
+        })
+    }
+
+    /// The diagonal witness of a [`DiagonalStageProblem`] (INT-02): the same
+    /// entries as [`InverseWitness::diagonal`] of its dense form, stored as
+    /// `n` values.
+    pub fn diagonal_structured(problem: &DiagonalStageProblem, gamma: f64) -> CoreResult<Self> {
+        let view = problem.view();
+        view.validate()?;
+        let n = view.dimension();
+        let one = Interval::point(1.0)?;
+        let mut values = Vec::with_capacity(n);
+        for &d in &problem.diagonal {
+            let entry = one.sub(
+                Interval::point(problem.h)?
+                    .mul(Interval::point(gamma)?)?
+                    .mul(Interval::point(d)?)?,
+            )?;
+            if entry.contains_zero() {
+                return Err(CoreError::InvalidInput(
+                    "INVERSE_WITNESS_UNAVAILABLE: singular diagonal".into(),
+                ));
+            }
+            values.push(div_up(1.0, entry.mig())?);
+        }
+        Ok(Self {
+            identity: WitnessIdentity::for_view(view, gamma, DIAGONAL_STRUCTURED, 0.0),
+            upper: Vec::new(),
+            diagonal_upper: Some(values),
+            residual_norm_upper: 0.0,
+            work: WitnessWork {
+                directed_operations: 5 * n as u64,
+                stored_values: n as u64,
+            },
             approximate_inverse: None,
         })
     }
@@ -327,6 +590,7 @@ impl InverseWitness {
                 stored_values: (n * n) as u64,
             },
             upper,
+            diagonal_upper: None,
             residual_norm_upper: 0.0,
             approximate_inverse: None,
         })
@@ -406,6 +670,7 @@ impl InverseWitness {
         Ok(Self {
             identity: WitnessIdentity::for_problem(problem, gamma, structure, theta),
             upper,
+            diagonal_upper: None,
             residual_norm_upper: theta,
             work,
             approximate_inverse: Some(v.to_vec()),
@@ -413,10 +678,19 @@ impl InverseWitness {
     }
 
     fn apply_upper(&self, vector: &[f64]) -> CoreResult<Vec<f64>> {
-        self.upper
-            .iter()
-            .map(|row| upper_dot(row, vector))
-            .collect()
+        match &self.diagonal_upper {
+            None => self
+                .upper
+                .iter()
+                .map(|row| upper_dot(row, vector))
+                .collect(),
+            // The dense row adds exact zeros around this one product.
+            Some(values) => values
+                .iter()
+                .zip(vector)
+                .map(|(u, v)| add_up(0.0, mul_up(u.abs(), v.abs())?))
+                .collect(),
+        }
     }
 }
 
@@ -448,7 +722,7 @@ type ResidualEnclosure = (Vec<Vec<Interval>>, Vec<Vec<f64>>);
 /// increments.
 fn residual_enclosure(
     target: &StageTarget,
-    problem: &QuadraticStageProblem,
+    problem: StageView<'_>,
     candidate: &[Vec<f64>],
 ) -> CoreResult<ResidualEnclosure> {
     let n = problem.dimension();
@@ -456,13 +730,10 @@ fn residual_enclosure(
     let gamma = Interval::point(target.gamma)?;
     let mut rhs = Vec::with_capacity(n);
     for a in 0..n {
-        let jy = interval_dot(
-            &problem.jacobian[a]
-                .iter()
-                .map(|value| Interval::point(*value))
-                .collect::<CoreResult<Vec<_>>>()?,
-            &problem.y,
-        )?;
+        let mut jy = Interval::point(0.0)?;
+        for (b, value) in problem.jacobian.entries(a) {
+            jy = jy.add(Interval::point(value)?.mul(Interval::point(problem.y[b])?)?)?;
+        }
         let qyy = Interval::point(problem.q[a])?
             .mul(Interval::point(problem.y[a])?)?
             .mul(Interval::point(problem.y[a])?)?;
@@ -485,9 +756,9 @@ fn residual_enclosure(
         for a in 0..n {
             let mut wk = Interval::point(0.0)?;
             let mut jc = Interval::point(0.0)?;
-            for b in 0..n {
+            for (b, value) in problem.jacobian.entries(a) {
                 let identity = Interval::point(if a == b { 1.0 } else { 0.0 })?;
-                let j_ab = Interval::point(problem.jacobian[a][b])?;
+                let j_ab = Interval::point(value)?;
                 let w_ab = identity.sub(h.mul(gamma)?.mul(j_ab)?)?;
                 wk = wk.add(w_ab.mul(Interval::point(candidate[i][b])?)?)?;
                 jc = jc.add(j_ab.mul(coupled[b])?)?;
@@ -554,6 +825,32 @@ impl StageCertificate {
                 target, problem, candidate, y_hat, e_hat, witness, atol, rtol,
             )
     }
+
+    /// [`StageCertificate::is_bound_to`] for a [`DiagonalStageProblem`].
+    #[allow(clippy::too_many_arguments)]
+    pub fn is_bound_to_diagonal(
+        &self,
+        target: &StageTarget,
+        problem: &DiagonalStageProblem,
+        candidate: &[Vec<f64>],
+        y_hat: &[f64],
+        e_hat: &[f64],
+        witness: &WitnessIdentity,
+        atol: f64,
+        rtol: f64,
+    ) -> bool {
+        self.binding_sha256
+            == binding_for(
+                target,
+                problem.view(),
+                candidate,
+                y_hat,
+                e_hat,
+                witness,
+                atol,
+                rtol,
+            )
+    }
 }
 
 /// Canonical SHA-256 of a certificate's subject (re-audit R4,
@@ -567,6 +864,31 @@ impl StageCertificate {
 pub fn certificate_binding(
     target: &StageTarget,
     problem: &QuadraticStageProblem,
+    candidate: &[Vec<f64>],
+    y_hat: &[f64],
+    e_hat: &[f64],
+    witness: &WitnessIdentity,
+    atol: f64,
+    rtol: f64,
+) -> String {
+    binding_for(
+        target,
+        problem.view(),
+        candidate,
+        y_hat,
+        e_hat,
+        witness,
+        atol,
+        rtol,
+    )
+}
+
+/// The binding of a dense problem is the v2 binding unchanged; a diagonal
+/// one names its diagonal as `J_diagonal` in place of the dense rows.
+#[allow(clippy::too_many_arguments)]
+fn binding_for(
+    target: &StageTarget,
+    problem: StageView<'_>,
     candidate: &[Vec<f64>],
     y_hat: &[f64],
     e_hat: &[f64],
@@ -610,7 +932,10 @@ pub fn certificate_binding(
         ("btilde", hex(target.btilde.iter().copied())),
         ("y", hex(problem.y.iter().copied())),
         ("h", hex([problem.h])),
-        ("J", rows(&problem.jacobian)),
+        match problem.jacobian {
+            JacobianRows::Dense(jacobian) => ("J", rows(jacobian)),
+            JacobianRows::Diagonal(diagonal) => ("J_diagonal", hex(diagonal.iter().copied())),
+        },
         ("q", hex(problem.q.iter().copied())),
         ("candidate", rows(candidate)),
         ("y_hat", hex(y_hat.iter().copied())),
@@ -656,7 +981,7 @@ pub fn candidate_digest(candidate: &[Vec<f64>]) -> String {
 
 fn validate_inputs(
     target: &StageTarget,
-    problem: &QuadraticStageProblem,
+    problem: StageView<'_>,
     candidate: &[Vec<f64>],
     witness: &InverseWitness,
 ) -> CoreResult<()> {
@@ -690,14 +1015,9 @@ fn validate_inputs(
     let expected = WitnessIdentity {
         structure: witness.identity.structure.clone(),
         tolerance_bits: witness.identity.tolerance_bits,
-        ..WitnessIdentity::for_problem(problem, target.gamma, "", 0.0)
+        ..WitnessIdentity::for_view(problem, target.gamma, "", 0.0)
     };
-    let well_formed = witness.upper.len() == n
-        && witness
-            .upper
-            .iter()
-            .all(|row| row.len() == n && row.iter().all(|x| x.is_finite() && *x >= 0.0));
-    if witness.identity != expected || !well_formed {
+    if witness.identity != expected || !witness.well_formed(n) {
         return Err(CoreError::InvalidInput(
             "CERTIFICATE_NOT_VALIDATED: the inverse witness is for another operator".into(),
         ));
@@ -729,7 +1049,7 @@ fn wrms_lower(values: &[f64], scale_upper: &[f64]) -> CoreResult<f64> {
 #[allow(clippy::too_many_arguments)]
 fn finish_certificate(
     target: &StageTarget,
-    problem: &QuadraticStageProblem,
+    problem: StageView<'_>,
     candidate: &[Vec<f64>],
     y_hat: &[f64],
     e_hat: &[f64],
@@ -812,7 +1132,7 @@ fn finish_certificate(
         embedded_target_wrms_lower,
         combined_proxy_upper: add_up(output_wrms_upper, embedded_target_wrms_upper)?,
         directed_operations: operations + witness.work.directed_operations,
-        binding_sha256: certificate_binding(
+        binding_sha256: binding_for(
             target,
             problem,
             candidate,
@@ -842,10 +1162,63 @@ pub fn certify_stage_target(
     atol: f64,
     rtol: f64,
 ) -> CoreResult<StageCertificate> {
+    certify_view(
+        target,
+        problem.view(),
+        candidate,
+        y_hat,
+        e_hat,
+        witness,
+        atol,
+        rtol,
+    )
+}
+
+/// [`certify_stage_target`] on a [`DiagonalStageProblem`] with a
+/// [`InverseWitness::diagonal_structured`] witness (integrated DAG node
+/// INT-02). It reads only the diagonal, in the dense path's order, so its
+/// bounds are bitwise those of the dense form; its counted operations use
+/// the dense formulas with one entry per row; its binding names the
+/// diagonal (see [`StageCertificate::is_bound_to_diagonal`]).
+#[allow(clippy::too_many_arguments)]
+pub fn certify_stage_target_diagonal(
+    target: &StageTarget,
+    problem: &DiagonalStageProblem,
+    candidate: &[Vec<f64>],
+    y_hat: &[f64],
+    e_hat: &[f64],
+    witness: &InverseWitness,
+    atol: f64,
+    rtol: f64,
+) -> CoreResult<StageCertificate> {
+    certify_view(
+        target,
+        problem.view(),
+        candidate,
+        y_hat,
+        e_hat,
+        witness,
+        atol,
+        rtol,
+    )
+}
+
+#[allow(clippy::too_many_arguments)]
+fn certify_view(
+    target: &StageTarget,
+    problem: StageView<'_>,
+    candidate: &[Vec<f64>],
+    y_hat: &[f64],
+    e_hat: &[f64],
+    witness: &InverseWitness,
+    atol: f64,
+    rtol: f64,
+) -> CoreResult<StageCertificate> {
     validate_inputs(target, problem, candidate, witness)?;
     let n = problem.dimension();
     let (residuals, increments) = residual_enclosure(target, problem, candidate)?;
-    let mut operations = (target.stages() * n * (6 * n + 12)) as u64;
+    let row_entries = (0..n).map(|a| problem.jacobian.row_len(a)).sum::<usize>();
+    let mut operations = (target.stages() * (6 * row_entries + 12 * n)) as u64;
     let mut bound: Vec<Vec<f64>> = Vec::with_capacity(target.stages());
     for i in 0..target.stages() {
         let coupling = target.coupling_rows[i]
@@ -860,7 +1233,10 @@ pub fn certify_stage_target(
             .map(|a| upper_dot(&coupling, &column(&bound, a, i)))
             .collect::<CoreResult<Vec<_>>>()?;
         for a in 0..n {
-            let linear = upper_dot(&problem.jacobian[a], &lc)?;
+            let mut linear = 0.0;
+            for (b, value) in problem.jacobian.entries(a) {
+                linear = add_up(linear, mul_up(value.abs(), lc[b].abs())?)?;
+            }
             let remainder = mul_up(
                 problem.q[a].abs(),
                 add_up(
@@ -874,7 +1250,7 @@ pub fn certify_stage_target(
             )?);
         }
         bound.push(witness.apply_upper(&right)?);
-        operations += (n * (4 * i + 4 * n + 8)) as u64;
+        operations += ((4 * i + 8) * n + 4 * row_entries) as u64;
     }
     finish_certificate(
         target, problem, candidate, y_hat, e_hat, bound, witness, atol, rtol, operations,
@@ -1021,7 +1397,7 @@ pub fn doubling_certificate_with_execution(
     execution: &crate::ParallelExecution,
 ) -> CoreResult<DoublingCertificate> {
     let workers = execution.threads();
-    validate_inputs(target, problem, candidate, witness)?;
+    validate_inputs(target, problem.view(), candidate, witness)?;
     if !(initial_radius.is_finite() && initial_radius >= 0.0) {
         return Err(CoreError::InvalidInput(format!(
             "CERTIFICATE_NOT_VALIDATED: initial state radius {initial_radius:e} must be finite and >= 0"
@@ -1034,7 +1410,7 @@ pub fn doubling_certificate_with_execution(
     // the strictly lower H (H^s = 0) iff 2^L >= s (re-audit R4,
     // R4-HOM-DEV-02: the fixed L = 3 dropped H^8.. for s = 9 and 16).
     let levels = doubling_levels(s);
-    let (residuals, increments) = residual_enclosure(target, problem, candidate)?;
+    let (residuals, increments) = residual_enclosure(target, problem.view(), candidate)?;
     let mut a = Vec::with_capacity(m);
     for residual in &residuals {
         let magnitudes = residual.iter().map(Interval::mag).collect::<Vec<_>>();
@@ -1060,7 +1436,7 @@ pub fn doubling_certificate_with_execution(
                             if w == v {
                                 term = add_up(term, mul_up(ell, alpha)?)?;
                             }
-                            inner = add_up(inner, mul_up(witness.upper[u][w], term)?)?;
+                            inner = add_up(inner, mul_up(witness.entry(u, w), term)?)?;
                         }
                         h_matrix[i * n + u][j * n + v] = mul_up(problem.h, inner)?;
                     }
@@ -1107,7 +1483,7 @@ pub fn doubling_certificate_with_execution(
         if closes {
             let certificate = finish_certificate(
                 target,
-                problem,
+                problem.view(),
                 candidate,
                 y_hat,
                 e_hat,
@@ -1185,7 +1561,7 @@ pub fn blocked_doubling_certificate_with_execution(
     max_attempts: usize,
     execution: &crate::ParallelExecution,
 ) -> CoreResult<BlockedDoublingCertificate> {
-    validate_inputs(target, problem, candidate, witness)?;
+    validate_inputs(target, problem.view(), candidate, witness)?;
     let n = problem.dimension();
     let diagonal_jacobian = (0..n).all(|a| (0..n).all(|b| a == b || problem.jacobian[a][b] == 0.0));
     if witness.identity.structure != "diagonal" || !diagonal_jacobian {
@@ -1201,7 +1577,7 @@ pub fn blocked_doubling_certificate_with_execution(
     }
     let s = target.stages();
     let levels = doubling_levels(s);
-    let (residuals, increments) = residual_enclosure(target, problem, candidate)?;
+    let (residuals, increments) = residual_enclosure(target, problem.view(), candidate)?;
     // a_(i,u) = U_uu |r_iu| (U is diagonal: the full apply_upper adds
     // exact zeros only).
     let mut a = vec![vec![0.0; s]; n];
@@ -1237,7 +1613,7 @@ pub fn blocked_doubling_certificate_with_execution(
                     )?;
                     let mut term = mul_up(problem.jacobian[u][u].abs(), coupling)?;
                     term = add_up(term, mul_up(ell, alpha)?)?;
-                    let inner = add_up(0.0, mul_up(witness.upper[u][u], term)?)?;
+                    let inner = add_up(0.0, mul_up(witness.entry(u, u), term)?)?;
                     h_block[i][j] = mul_up(problem.h, inner)?;
                     operations += 8;
                     nonzeros += u64::from(h_block[i][j] != 0.0);
@@ -1315,7 +1691,7 @@ pub fn blocked_doubling_certificate_with_execution(
         if closes {
             let certificate = finish_certificate(
                 target,
-                problem,
+                problem.view(),
                 candidate,
                 y_hat,
                 e_hat,
@@ -1372,7 +1748,7 @@ impl<'a> DiagonalMajorant<'a> {
         candidate: &[Vec<f64>],
         witness: &'a InverseWitness,
     ) -> CoreResult<Self> {
-        validate_inputs(target, problem, candidate, witness)?;
+        validate_inputs(target, problem.view(), candidate, witness)?;
         let n = problem.dimension();
         let diagonal_jacobian =
             (0..n).all(|a| (0..n).all(|b| a == b || problem.jacobian[a][b] == 0.0));
@@ -1383,7 +1759,7 @@ impl<'a> DiagonalMajorant<'a> {
             )));
         }
         let s = target.stages();
-        let (residuals, increments) = residual_enclosure(target, problem, candidate)?;
+        let (residuals, increments) = residual_enclosure(target, problem.view(), candidate)?;
         let mut seeds = vec![vec![0.0; s]; n];
         for (i, residual) in residuals.iter().enumerate() {
             let magnitudes = residual.iter().map(Interval::mag).collect::<Vec<_>>();
@@ -1431,7 +1807,7 @@ impl crate::MajorantEntries for DiagonalMajorant<'_> {
         )?;
         let mut term = mul_up(self.problem.jacobian[u][u].abs(), coupling)?;
         term = add_up(term, mul_up(ell, alpha)?)?;
-        let inner = add_up(0.0, mul_up(self.witness.upper[u][u], term)?)?;
+        let inner = add_up(0.0, mul_up(self.witness.entry(u, u), term)?)?;
         mul_up(self.problem.h, inner)
     }
     fn coupling_operations(&self) -> u64 {
@@ -1470,7 +1846,7 @@ pub fn blocked_box_certificate_with_execution(
     let certificate = if evaluation.closes {
         Some(finish_certificate(
             target,
-            problem,
+            problem.view(),
             candidate,
             y_hat,
             e_hat,
@@ -1549,7 +1925,7 @@ pub fn blocked_action_doubling_certificate_with_execution(
         if evaluation.closes {
             let certificate = finish_certificate(
                 target,
-                problem,
+                problem.view(),
                 candidate,
                 y_hat,
                 e_hat,

@@ -8,6 +8,7 @@ mod hash;
 pub mod laguerre_adjoint;
 mod matrix;
 mod matrix_functions;
+pub mod nonnormal_certificate;
 mod norms;
 mod operator;
 pub mod polynomial_action;

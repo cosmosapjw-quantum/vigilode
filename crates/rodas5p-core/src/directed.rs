@@ -286,6 +286,50 @@ impl std::ops::Neg for Interval {
     }
 }
 
+/// An enclosure of `e^x` for finite `x` (review DAG node REV-02): with
+/// `k = round(x / ln 2)` and `r = x - k [ln 2]` enclosed (Cody-Waite
+/// two-part `ln 2`), `e^r` is the
+/// degree-20 Taylor sum in interval arithmetic plus the remainder
+/// `|r|^21 / 21! e^|r|` (`e^|r| <= 1.5` for `|r| <= 0.35`), scaled by `2^k`.
+/// An overflowing result is an error; a result below the normal range is
+/// enclosed by `[0, 2^-1020]`.
+pub fn exp_interval(x: f64) -> CoreResult<Interval> {
+    if x.is_nan() {
+        return Err(CoreError::NonFinite("directed rounding: exp of NaN".into()));
+    }
+    if x > 709.0 {
+        return Err(CoreError::NonFinite(
+            "directed rounding: exp overflows".into(),
+        ));
+    }
+    if x < -707.0 {
+        return Interval::new(0.0, f64::from_bits((1023_u64 - 1020) << 52));
+    }
+    // Cody-Waite: ln 2 = LN2_HI + LN2_LO + d with 0 < d < ulp(LN2_LO)
+    // (checked at 60 digits: d = 1.16e-26, ulp = 2.58e-26). LN2_HI has 21
+    // trailing zero bits, so k LN2_HI is exact for |k| <= 1024.
+    let ln2_hi = f64::from_bits(0x3FE6_2E42_FEE0_0000);
+    let ln2_lo = f64::from_bits(0x3DEA_39EF_3579_3C76);
+    let k = (x / (ln2_hi + ln2_lo)).round();
+    let r = Interval::point(x)?
+        .sub(Interval::point(k * ln2_hi)?)?
+        .sub(Interval::point(k)?.mul(Interval::new(ln2_lo, ln2_lo.next_up())?)?)?;
+    let mut sum = Interval::point(1.0)?;
+    let mut term = Interval::point(1.0)?;
+    for j in 1..=20 {
+        term = term.mul(r)?.div(Interval::point(j as f64)?)?;
+        sum = sum.add(term)?;
+    }
+    let mut remainder = 1.5;
+    for j in 1..=21 {
+        remainder = mul_up(remainder, div_up(r.mag(), j as f64)?)?;
+    }
+    let sum = sum.add(Interval::new(-remainder, remainder)?)?;
+    // 2^k exactly: k is in [-1021, 1023] here.
+    let scale = f64::from_bits(((k as i64 + 1023) as u64) << 52);
+    Interval::new(mul_down(sum.lo, scale)?, mul_up(sum.hi, scale)?)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
