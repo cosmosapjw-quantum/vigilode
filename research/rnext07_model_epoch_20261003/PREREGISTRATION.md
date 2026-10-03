@@ -78,3 +78,30 @@ detected. The outcome (error text or difference) is recorded. A second case uses
 attempt must complete and differ from both the unchanged-model and the changed-model attempts (stale `f` with live
 operator). `fresh = true` gives the changed-model result bitwise. Items 1, 2, 4 and 5 are unchanged. The epoch
 removes exactly this mixed state for clients who opt in.
+
+---
+
+## Results (appended after the run at `f73cd3c`)
+
+Output: `RESULTS.json`. Ledger row L-0044.
+
+**Gate: PASS** (items 1-5 hold).
+
+| Gate item | Outcome |
+|---|---|
+| 1. Epoch change invalidates everything | **holds**: after `p` 2 -> 5 and an epoch bump, the `fresh = false` attempt evaluates `f(t, y)` and `f_t` again (8 RHS evaluations, 1 `f_t` call, as a fresh attempt), refreshes the rank-2 GCRO-DR recycle images (1 cross-operator refresh, 2 refresh matvecs) and is bitwise equal to the `fresh = true` twin, stages and error norm included |
+| 2. Same epoch keeps the reuse | **holds**: 7 RHS evaluations, no `f_t`, no refresh; bitwise equal to the same sequence without an epoch |
+| 3. No epoch, old contract (amended) | **holds**: with GCRO-DR the stale `f`, `f_t` and recycle images under the live operator fail ("least-squares solve produced NaN/Inf for 5x4 system"); with GMRES the attempt completes and differs from both the unchanged-model and the changed-model attempts; `fresh = true` gives the changed-model result bitwise |
+| 4. Any change, failure safety | **holds**: a smaller epoch (5 -> 3) invalidates; a refresh that fails after an epoch change leaves nothing reusable, and the next `fresh = false` attempt with the old epoch restored refreshes and equals its twin |
+| 5. No other effect | **holds**: `native_reaudit_cache_contracts` 8/8 and `matrix_free_problem_contracts` 2/2 pass (all features) |
+
+Development disclosure: before the recorded run the test ran three times. The first showed the wrong item-3
+prediction (amended in `daf40ca` before the recorded run). The second had a test bug in item 4: it compared with a
+lane whose recycle history differed, so the two attempts differed at rounding level; the comparison now uses a twin
+lane with the same history. In the third, the recorded command failed before writing anything, because the output
+path was resolved from the crate directory. That was fixed in `f73cd3c`. No gate threshold changed.
+
+What the run shows beyond the gate: without an epoch, `fresh = false` after an interior change is not just stale.
+It mixes old and new model data, and with GCRO-DR it can fail outright. The epoch removes that state for clients who
+opt in. Claim ceiling: an API contract for clients who keep their epoch honest; no automatic detection of callback
+mutations; no accuracy, speed or timing claim.
