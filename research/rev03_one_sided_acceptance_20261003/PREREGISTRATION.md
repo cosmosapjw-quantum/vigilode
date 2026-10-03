@@ -39,3 +39,28 @@ cases.
 
 L-0049 and the critical review C7. Only the exporter's step list changes; the budget tool is the one recorded at
 L-0049. No run at these step sizes has been made before this commit.
+
+---
+
+## Results (appended after the run at `892ffc1`)
+
+Outputs: `stages.json` (native export), `BUDGETS.json` (60-digit budgets from the unchanged R-NEXT-01 tool) and
+`RESULTS.json` (this node's gate). Ledger row L-0062. Disclosure: `stages.json` went into the REV-04 results commit
+`5beab96` by mistake; its content is the export of the command above and has not changed since.
+
+**Gate: PASS.**
+
+| Gate item | Outcome |
+|---|---|
+| 1. Budget validity | **holds** on all 52 completed cases (54 exported; 2 are GCRO-DR solver failures on the Brusselator, at h = 3e-4 for both drivers and at h = 3e-3 for the K driver) |
+| 2. One-sided rule | **holds**: all 68 acceptances (`err <= 1`) are resolved (`err + B <= 1`) |
+| 3. Bounds available | **holds**: every budget is finite |
+
+- **Rejections.** 30 rejections are resolved and 6 are not. All 6 are Robertson at h = 3e-2 (both drivers, all three
+  Krylov methods). The error norm there is 1e6, and the budget is 1.8e246 to 2.5e246, for the same reason as
+  L-0049's h = 1e-2 case: the exact stages explode. These are the safe side, since an unresolved rejection rejects.
+- **L-0038's relative criterion** flags 27 of the cases as discrepancies between the drivers. All 27 lie inside the
+  budgets, as at L-0049.
+- **The guard this supports:** accept a step only if `err + B <= 1`. It resolved every acceptance on these fresh
+  step sizes. That is evidence on six problems at three step sizes, not a proof for others. The budget remains far
+  from tight on stiff blow-ups. Claim ceiling: one-step comparisons; no driver change; no timing.
