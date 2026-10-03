@@ -155,6 +155,13 @@ fn exp_neg_interval(x: Interval) -> CoreResult<Interval> {
     )
 }
 
+/// Enclosure of `e^{-x}` for `0 <= x <= 709`, from the directed Taylor
+/// series (no library `exp`); used by the chart provider of research node
+/// `research/rnext05_chart_provider_20261003`.
+pub fn exp_neg_enclosure(x: f64) -> CoreResult<Interval> {
+    exp_neg_interval(Interval::point(x)?)
+}
+
 /// Upper bound on `e^x` for any real `x` (at most 709); `e^x <= e^-700`
 /// is used below `-700`.
 pub(crate) fn exp_up(x: f64) -> CoreResult<f64> {
