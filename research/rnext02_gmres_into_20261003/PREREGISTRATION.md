@@ -76,3 +76,28 @@ Stop if a saving needs stale operator products or drops failure accounting.
 
 L-0038 allocation ratios for GMRES: Robertson 0.41, van der Pol 0.40, HIRES 0.62, Brusselator 0.81,
 Prothero-Robinson 0.32, quadratic-4 0.55. No code of this node exists before this commit.
+
+---
+
+## Results (appended after the run at `93d75b0`)
+
+Output: `RESULTS.json`. Ledger row L-0045. Contracts: `rnext02_gmres_into_contracts` 5/5.
+
+**Gate: PASS** (items 1-4 hold).
+
+| Gate item | Outcome |
+|---|---|
+| 1. Bitwise identity | **holds**: 56 families (12 problem/step states x 2 configurations x 2 initial-guess modes, plus 8 convection-diffusion families), 408 measured solves, no failures; output, residual norm, iterations and every counter equal to the old API bit for bit. No state was excluded |
+| 2. Capacity contract | **holds** (contract tests): too small a dimension or column capacity with `Refuse` gives `KRYLOV_CAPACITY_EXCEEDED` with zero counters and the output unchanged; a failed (budget-exhausted) solve gives the old error text, the same counters and an unchanged output; `Allow` reports growth on the first call only; a reserved workspace does not grow |
+| 3. Solver allocations | **holds**: on the 32 families averaging at least 4 columns per cycle the ratio is 0.025 (Brusselator and convection-diffusion, restart 40), 0.10 (restart 10), 0.23-0.24 (HIRES, quadratic-4). Below 4 columns per cycle (Robertson, van der Pol, Prothero-Robinson; ungated) it is 0.36-0.85 |
+| 4. MF driver | **holds**: switch on vs off bitwise identical (final state, times, steps, counters) on all six problems; allocations per attempt relative to the sequential MF step 0.18 (Robertson), 0.19 (van der Pol), 0.15 (HIRES), 0.021 (Brusselator), 0.28 (Prothero-Robinson), 0.14 (quadratic-4). With the switch off they are 0.33-0.81, as in L-0038 |
+
+Where the allocations went: the old loop solved the small least-squares problem (a faer QR with several allocations)
+after every Arnoldi column and used only the last solution; the new entry point solves it once per cycle and returns
+no solution vector or `String`. The remaining allocations per solve are those of the one QR per cycle. At one or two
+columns per cycle there is little to remove, which is why the small problems sit near 0.4-0.85 at the solver level.
+
+No development run of the study preceded the recorded run; the contract tests ran once during development (all
+passing). L-0038 stays FAIL: its gate covered all three Krylov methods and the other items. Claim ceiling: allocation
+counts and bitwise identity; no wall-time or speed claim (timing authority stays on HOLD); LGMRES and GCRO-DR are
+unchanged.
