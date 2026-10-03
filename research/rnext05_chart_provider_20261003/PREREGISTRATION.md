@@ -94,3 +94,30 @@ Changes (nothing else changes; the gate items keep their numbers):
   comes from the enclosure of the exact solution propagated from the exact initial data, as before.
 - **Controller.** Accept iff `B_loc <= atol + rtol |y~|` (gate item 4 now refers to `B_loc`). Gate items 1-3 check
   the global boxes and `B_phys` against the 50-digit reference, as before. The proxy stays unused.
+
+---
+
+## Results (appended after the run at `7767e75`)
+
+Outputs: `runs.json` (native), `RESULTS.json` (50-digit check). Ledger row L-0048.
+
+**Gate: PASS** (items 1-6 hold).
+
+| Gate item | Outcome |
+|---|---|
+| 1. Tube and enclosure | **holds**: every accepted step's whole-step `x` tube is regular, and all 19,652 step, dense and output points of the 16 runs have `x` and `w` boxes that contain the 50-digit chart solution |
+| 2. Physical bound | **holds**: `|y~ - y_ref| <= B_phys` at all 19,652 points. The worst ratio is 1.0 at `eps = 0` (the enclosure is nearly a point, so the global bound is essentially the actual error plus rounding) and 0.68-0.9999 at `eps = 1e-3` (the forcing integral widens the box) |
+| 3. Fast mode retained | **holds**: at `t = 1/kappa` the fast amplitude `|y_ref - x^2/kappa|` is at least 2.2e4 times the bound (2.4e4 for `kappa = 40`); at `t = 1/(4 kappa)` about 1.4e6-1.7e6 times |
+| 4. Controller | **holds**: every accepted step has `B_loc <= atol + rtol |y~|`; the proxy is reported only |
+| 5. Fail closed | **holds**: `x0 = 1` to `t = 1.2` is refused at `t = 1 - 2.3e-12` ("within a factor 2 of the blow-up"), with every step satisfying `x t <= 1/2` on its start box and ending before 1; `x0 = -1` with `d_min = 1e-3` is refused at `t = 30.62` (`x^2` reaches 1e-3), with every tube above the margin; dense queries with another `kappa` or `eps` are refused |
+| 6. Cofactor forcing necessary | **holds**: with the model's `eps = 1e-3` but the stepper told 0, none of the 828 points is enclosed (worst error/bound 4.3e7) |
+
+Steps (accepted / rejected): 50-1,042 accepted per run, 8-596 rejected; `tol = 1e-9` with `eps = 1e-3` needs the
+most (the `x`-linear forcing model limits the step).
+
+Development disclosure: before the recorded run the native test ran three times, and the Python check not at all.
+The first run showed the two design errors amended above (global-bound controller, inconsistent forcing). The
+second showed a wrong check in the test: the blow-up condition was applied to the end of the tube instead of the
+start box. The third was the recorded run. Claim ceiling: one model with a known chart and fixed `kappa`;
+certified coordinate errors come from an exact-flow enclosure that this model admits. This is not a general ODE
+error estimator, no stage-target proxy is promoted, and nothing replaces the protected solver.
