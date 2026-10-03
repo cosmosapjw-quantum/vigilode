@@ -75,3 +75,37 @@ Any false convergence, or an uncharged product, stops the option.
 L-0046 (attribution), its post-hoc invariant probe, L-0052 (reuse check; the traces of the two remaining failures),
 and the critical review's item C3. The fresh Brusselator set's control-C count above is from the calibration run
 (`tests/rev01_calibration.rs`, committed with this preregistration). No code of the option exists before this commit.
+
+---
+
+## Results (appended after the run at `e0882f8`)
+
+Output: `RESULTS.json`. Ledger row L-0057. Contract tests `rev01_gcrodr_options_contracts` 2/2,
+`int01_gcrodr_policy_contracts` 5/5, `rnext03_gcrodr_trace_contracts` 2/2.
+
+**Gate: FAIL** (items 1, 3 and 4 hold; item 2 fails).
+
+Failures per control (operator products):
+
+| Set | B cold | C recycled | E check | F start projection | EF both |
+|---|---|---|---|---|---|
+| Brusselator-50 trajectory (320) | 0 (13,328) | 13 (15,741) | 0 (14,637) | 6 (13,491) | 0 (14,462) |
+| Brusselator-50 one-step (16) | 0 (631) | 8 (5,464) | 2 (1,857) | 11 (6,727) | 0 (807) |
+| Brusselator-80 trajectory (320), fresh | 0 (15,743) | 30 (22,539) | 6 (19,880) | 28 (21,297) | 4 (19,260) |
+| Brusselator-80 one-step (16), fresh | 0 (631) | 6 (4,154) | 0 (770) | 11 (9,258) | 0 (735) |
+| fresh CDR (288) | 0 | 0 | 0 | 0 | 0 |
+
+- **Item 2 fails.** F alone has 56 recycle-induced failures (B succeeds, F fails), more than C on both one-step sets.
+  The start projection does not remove the mechanism.
+- **The diagnosis C3 was wrong.** With F, `v_1` is orthogonal to `C` by construction, yet `max |C^T V|` in the
+  failing solves is still 0.71 to 0.999. So `[C V]` loses orthogonality *during* the Arnoldi process, not at its
+  start.
+- **Combined controls are better but not clean.** E and F together (EF) have 4 failures, all on the fresh trajectory
+  set, against E's 6 and C's 30.
+- Item 3 (no false convergence, full accounting) and item 4 (no harm on the CDR family) hold.
+
+What the code shows (an inference; not tested by this node): each new Arnoldi vector is orthogonalized against the
+recycle images `C` in a single pass, then against `V` with two passes. Near an invariant subspace, `||next||` is much
+smaller than `||A v||`, and the single-pass error `eps ||A v||` along `C` becomes O(1) after normalization. That is
+consistent with large `C^T V` from the first cycle onward, in both INT-01 and here. REV-01b tests it on a fresh set.
+Claim ceiling: these frozen systems; no timing.
