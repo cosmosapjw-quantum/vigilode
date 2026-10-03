@@ -420,6 +420,9 @@ pub struct GcrodrCycleTrace {
     /// computed only when traced, uncounted).
     pub creation_ctv_max: f64,
     pub min_next_ratio: f64,
+    /// Operator products of the REV-01c refresh after this cycle's update
+    /// (research node `research/rev01c_gcrodr_refreshed_update_20261003`).
+    pub update_refresh_matvecs: u64,
     /// The solve aborted inside this cycle (research node
     /// `research/int01_gcrodr_verified_reuse_20261003`): only `recycle_rank`,
     /// `residual_start` and `matvecs` (charged since the cycle began) are set.
@@ -464,6 +467,10 @@ pub struct GcrodrSolveOptions {
     /// twice instead of once (research node
     /// `research/rev01b_gcrodr_recycle_reorthogonalization_20261003`).
     pub reorthogonalize_recycle: bool,
+    /// Recompute `C = M^-1 A U` (charged) and re-orthonormalize the pair
+    /// after every recycle update (research node
+    /// `research/rev01c_gcrodr_refreshed_update_20261003`).
+    pub refresh_after_update: bool,
 }
 
 /// How a carried recycle pair is treated (research nodes
@@ -949,6 +956,7 @@ fn solve_gcrodr_inner(
             let mut recycle_coupling = DenseMatrix::zeros(recycle_rank, maximum_columns);
             let mut actual_columns = 0usize;
             let (mut diag_creation_ctv, mut diag_min_ratio) = (0.0_f64, f64::INFINITY);
+            let mut diag_update_refresh = 0_u64;
             if trace.is_some() {
                 for image in &local.image {
                     let c: f64 = image
@@ -1088,6 +1096,34 @@ fn solve_gcrodr_inner(
             )? {
                 local.basis = basis;
                 local.image = image;
+                if options.refresh_after_update && !local.basis.is_empty() {
+                    // REV-01c: restore M^-1 A U = C from the operator itself.
+                    let refresh_start = charged_matvecs(counters);
+                    let mut images = Vec::with_capacity(local.basis.len());
+                    for basis_vector in &local.basis {
+                        let mut image = vec![0.0; n];
+                        apply_left_with_raw(
+                            op,
+                            pc,
+                            basis_vector,
+                            &mut image,
+                            &mut workspace.common.scratch_b,
+                            counters,
+                            ApplyCategory::Refresh,
+                        )?;
+                        images.push(image);
+                    }
+                    let (basis, image) = orthonormalize_pair(
+                        local.basis.clone(),
+                        images,
+                        config.rank_tol,
+                        0.0,
+                        counters,
+                    )?;
+                    local.basis = basis;
+                    local.image = image;
+                    diag_update_refresh = charged_matvecs(counters) - refresh_start;
+                }
             }
             let reset = options.policy.reset_factor.is_some_and(|q| {
                 start_rank > 0 && residual_norm > threshold && residual_norm > q * residual_start
@@ -1116,6 +1152,7 @@ fn solve_gcrodr_inner(
                     reset,
                     creation_ctv_max: diag_creation_ctv,
                     min_next_ratio: diag_min_ratio,
+                    update_refresh_matvecs: diag_update_refresh,
                     aborted: false,
                 });
             }
