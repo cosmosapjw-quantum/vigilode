@@ -77,3 +77,12 @@ degree <= 128; no non-normal or general-matrix claim; no speed claim.
 
 L-0039 (adjoint bound exact-checked, 7.35x to 7.6e13x tighter than the majorant), L-0042 (cache). No code of this
 node exists before this commit.
+
+## Amendment before any code (no run yet)
+
+Gate item 1's "equals" holds only inside the normalization window. For a normalized input, `laguerre_adjoint_total`
+is formed as `scale(total) + normalization + fused subnormal rounding`. The per-column `summation` fields, by
+contrast, also carry the subnormal rounding of the *columns*, which is not an error of the fused output, and the
+additions run in a different order. Item 1 therefore reads: inside the window, the total equals the registry's
+recomputation bit for bit. For normalized cases, the recomputation is at least the total, and at most the total
+times `(1 + 1e-12)` plus `5 sqrt(n) 2^-1074` (the column subnormal-rounding terms). Nothing else changes.
