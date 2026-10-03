@@ -1,0 +1,50 @@
+name: Publish verified PR70 recovery once
+on:
+  push:
+    branches: ['audit/rvj-native-followup-20261003']
+    paths: ['.github/workflows/rvj-publish-recovery-once.yml']
+permissions:
+  contents: write
+concurrency:
+  group: rvj-pr70-exact-publication
+  cancel-in-progress: false
+jobs:
+  publish:
+    if: github.repository == 'cosmosapjw-quantum/vigilode' && github.event.before == '312aa57ada821f383f2a8b4da7b2800e4d227d54'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 2
+      - name: Verify and publish only the prepared exact tree
+        shell: bash
+        env:
+          EXPECTED_PARENT: 312aa57ada821f383f2a8b4da7b2800e4d227d54
+          EXPECTED_TREE: 2c4a1570e42c133bbb5c3b035f81e81c3a627754
+          TARGET_REF: refs/heads/audit/rvj-native-followup-20261003
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test "$(git rev-parse HEAD^)" = "$EXPECTED_PARENT"
+          test "$(git rev-parse HEAD^^{tree})" = fb2bc19fccdf34153b86b1dc69fabc4404a0e478
+          python3 - <<'PYCODE'
+          import base64, hashlib, pathlib, lzma
+          parts = sorted(pathlib.Path('.rvj-publication-20261003').glob('part-*.b64'))
+          assert [p.name for p in parts] == [f'part-{i:03d}.b64' for i in range(56)]
+          text = ''.join(p.read_text(encoding='ascii').strip() for p in parts)
+          data = lzma.decompress(base64.b64decode(text, validate=True))
+          assert len(data) == 274742
+          assert hashlib.sha256(data).hexdigest() == 'e41d3402e8615994a6e9b78efbc33d2ecabc69cf9e4dcb201aa6d9dc0d8f6239'
+          pathlib.Path('/tmp/rvj-verified.patch').write_bytes(data)
+          PYCODE
+          git apply --index --check /tmp/rvj-verified.patch
+          git apply --index --whitespace=nowarn /tmp/rvj-verified.patch
+          git rm -r -- .rvj-publication-20261003 .github/workflows/rvj-publish-recovery-once.yml
+          test "$(git write-tree)" = "$EXPECTED_TREE"
+          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'fix(audit): publish validated storage guards and native re-audit evidence'
+          test "$(git rev-parse HEAD^{tree})" = "$EXPECTED_TREE"
+          test "$(git ls-remote origin "$TARGET_REF" | cut -f1)" = "$GITHUB_SHA"
+          git push origin "HEAD:$TARGET_REF"
+          printf 'Published commit: `%s`\n\nTree: `%s`\n' "$(git rev-parse HEAD)" "$EXPECTED_TREE" >> "$GITHUB_STEP_SUMMARY"
