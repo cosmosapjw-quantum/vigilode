@@ -94,3 +94,45 @@ step count above 100,000 makes the certificate `Unbounded`: the identity metric 
 
 L-0056 (INT-05) and the critical review C2. Gate thresholds 1e-8 and 1e-10 are relative to the 50-digit solution
 norm, not absolute WRMS levels (P1). No code of this node exists before this commit.
+
+---
+
+## Results (appended after the run at `979a2c8`)
+
+Outputs: `cases.json` (native certificates) and `RESULTS.json` (50-digit check, mpmath 1.3.0). Ledger row L-0060.
+Contract tests `rev02_nonnormal_contracts` 3/3 and `int05_nonnormal_contracts` 3/3. One change came after the
+preregistration and before the run: the range reduction in `exp_interval` uses the two-part (Cody-Waite) `ln 2`.
+`LN2_HI + LN2_LO` is below `ln 2` by 1.16e-26, less than one ulp of `LN2_LO`, checked at 60 digits. This keeps the
+enclosure's width at a few ulps instead of `|k|` ulps; the contract test that caught the wide version stays.
+
+**Gate: FAIL** (items 1, 2, 4 and 5 hold; item 3 fails).
+
+| Gate item | Outcome |
+|---|---|
+| 1. Enclosure | **holds**: every bounded stepped certificate (both metrics, 18 cases) is above its 50-digit error |
+| 2. Directed exponential | **holds**: all 251 grid points enclose the 50-digit `e^x` |
+| 3. Stiff usefulness | **fails**: three F2 cases meet `1e-8 ||exp(tau A) v||` (relative bounds 3.5e-14 to 1.9e-12), three do not. In those three the solution has decayed to 2e-7, 3e-24 and 1e-91, while the certified absolute bound stays at 9e-14 to 2e-13 |
+| 4. Automatic metric | **holds**: for VIG-A02 at k = 46, Osborne balancing, computed from `A` alone, gives a stepped bound of 2.2e-15 relative in 4 steps. The identity would need 3.5e13 steps (`Unbounded`) |
+| 5. Contracts | **holds** |
+
+What the run shows:
+
+- **Stepping removes the stiffness limit on the absolute error.** On all six stiff convection-diffusion cases the
+  stepped bound is 9e-14 to 7e-13 absolute (`||v|| = 4`), 99 to 257 times the true error where the solution has not
+  decayed. INT-05's single Taylor step on the same cases certifies nothing usable: 2e17 to 6e147 relative.
+- **The bound does not decay with the solution.** For central differences, the symmetric part of `A` is the diffusion
+  matrix, and its Gershgorin upper bound is 0 although its largest eigenvalue is about -10. So the bound gives early
+  rounding errors no decay, while the solution decays by `e^{-55}` to `e^{-210}`. Item 3's threshold, set relative
+  to the solution norm, could not be met there. Choosing a reference that varies over 90 orders of magnitude without
+  calibration is the P1 mistake the critical review named.
+- **Strongly nonnormal random matrices stay out of reach.** For F3 with mu = 30 and the Jordan block with mu = 100,
+  the certified bounds are 1e9 to 1e19 relative, valid but useless. Gershgorin bounds on the numerical range of such
+  matrices reach far into the right half plane (transient growth), and Osborne balancing helps on one seed out of
+  four. For mu = 1 the bounds are within 70 to 2,500 times the true error (relative 5e-14 to 7e-14).
+- **Metric choice.** The automatic choice picked the identity in 16 of 18 cases and Osborne in 2. Osborne helped on
+  VIG-A02 and on one random seed, and was worse or equal elsewhere.
+
+**What would remove the two limits** (not done here): a verified upper bound on the largest eigenvalue of the
+symmetric part (an inertia count of `H - mu I`, for example) in place of Gershgorin, which would make the bound decay;
+and a metric that minimizes the numerical range rather than balancing norms. Claim ceiling: dense matrices up to
+n = 32, degree 20, the fixed step rule; no timing.
