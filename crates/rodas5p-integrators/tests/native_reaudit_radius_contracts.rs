@@ -68,3 +68,70 @@ fn valid_state_map_requires_one_unit_of_radius() {
         .closes
     );
 }
+
+#[test]
+fn malformed_affine_storage_is_rejected_without_panicking() {
+    for field in 0..4 {
+        let mut m = fixture();
+        match field {
+            0 => m.h0.clear(),
+            1 => m.h1[1].clear(),
+            2 => m.alpha_abs[1].clear(),
+            _ => m.seed.push(0.0),
+        }
+        let attempt = std::panic::catch_unwind(|| {
+            evaluate_radius_box(
+                &m,
+                &RadiusBox::common(1, m.seed.len(), 1.0).unwrap(),
+                PathEvaluation::ActionFirst,
+                &ParallelExecution::sequential(),
+            )
+        });
+        assert!(attempt.is_ok(), "malformed field {field} caused a panic");
+        assert!(
+            attempt.unwrap().is_err(),
+            "malformed field {field} was accepted"
+        );
+    }
+}
+
+#[test]
+fn malformed_affine_structural_entries_are_not_silently_ignored() {
+    for field in 0..3 {
+        let mut m = fixture();
+        match field {
+            0 => m.h0[0][0] = 1.0,
+            1 => m.h1[0][1] = f64::MIN_POSITIVE,
+            _ => m.alpha_abs[0][0] = 1.0,
+        }
+        assert!(
+            evaluate_radius_box(
+                &m,
+                &RadiusBox::common(1, 2, 1.0).unwrap(),
+                PathEvaluation::ActionFirst,
+                &ParallelExecution::sequential(),
+            )
+            .is_err(),
+            "non-strict-lower field {field} was accepted"
+        );
+    }
+}
+
+#[test]
+fn malformed_affine_causal_proposal_is_a_typed_rejection() {
+    let mut m = fixture();
+    m.h0.clear();
+    let attempt = std::panic::catch_unwind(|| {
+        causal_radius_box(
+            &m,
+            0.01,
+            PathEvaluation::ActionFirst,
+            &ParallelExecution::sequential(),
+        )
+    });
+    assert!(
+        attempt.is_ok(),
+        "proposal indexed malformed backing storage"
+    );
+    assert!(attempt.unwrap().is_err());
+}

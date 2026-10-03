@@ -270,6 +270,13 @@ pub fn upper_path_sum(
 /// depends on that row's state radius, a seed `a_u`, and the absolute
 /// state map `|alpha|` shared by all components.
 pub trait MajorantEntries: Sync {
+    /// Validate caller-owned backing storage before any indexed accessor is
+    /// used. Custom implementations must keep accessors total for their
+    /// declared dimensions throughout one evaluation. Immutable structured
+    /// implementations may use this default; mutable array models override it.
+    fn validate_storage(&self) -> CoreResult<()> {
+        Ok(())
+    }
     fn stages(&self) -> usize;
     fn components(&self) -> usize;
     /// `a_(u,i) >= 0`.
@@ -350,6 +357,7 @@ pub struct BoxEvaluation {
 /// inequality falsely close. `MajorantEntries` values must be deterministic
 /// throughout an evaluation, just as an operator action must be.
 fn validate_state_map<E: MajorantEntries>(entries: &E) -> CoreResult<()> {
+    entries.validate_storage()?;
     if entries.stages() == 0 || entries.components() == 0 {
         return Err(CoreError::InvalidInput(
             "CERTIFICATE_NOT_VALIDATED: a majorant needs stages and components".into(),
@@ -576,6 +584,13 @@ impl AffineMajorant {
 }
 
 impl MajorantEntries for AffineMajorant {
+    fn validate_storage(&self) -> CoreResult<()> {
+        // These arrays remain public for research construction, so the
+        // constructor's checks are not a lifetime validity certificate.
+        validate_strict_lower_block(&self.h0, &self.seed)?;
+        validate_strict_lower_block(&self.h1, &self.seed)?;
+        validate_strict_lower_block(&self.alpha_abs, &self.seed)
+    }
     fn stages(&self) -> usize {
         self.seed.len()
     }

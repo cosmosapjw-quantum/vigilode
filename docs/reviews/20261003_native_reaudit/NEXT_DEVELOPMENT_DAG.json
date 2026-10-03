@@ -1,0 +1,277 @@
+{
+  "schema": "vigilode-native-reaudit-remaining-dag-v1",
+  "repository": "cosmosapjw-quantum/vigilode",
+  "review_pr": 70,
+  "reviewed_base_commit": "5a8d7fe9ffc681bca98a98a2f9889a2a05505783",
+  "reviewed_pr_head": "77275e2b431e4280366060d44a883f1832909fe6",
+  "scope": "remaining unperformed work only",
+  "completed_work_record": "EXECUTION_RECORD_KO.md",
+  "preserve": [
+    "L-0038 FAIL",
+    "timing HOLD",
+    "all historical ledger rows",
+    "protected solver default",
+    "sealed holdouts"
+  ],
+  "nodes": [
+    {
+      "id": "R-NEXT-01",
+      "priority": "P1",
+      "title": "Physical residual-to-output agreement for raw/K drivers",
+      "status": "not_started",
+      "depends_on": [],
+      "target_paths": [
+        "crates/rodas5p-integrators/src/raw_stage_target.rs",
+        "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs"
+      ],
+      "inputs": [
+        "frozen current-J problems",
+        "native coefficient enclosures",
+        "physical scales",
+        "true residuals"
+      ],
+      "outputs": [
+        "source-bound additive error budget",
+        "preregistered agreement study"
+      ],
+      "acceptance_tests": [
+        "classify tiny-embedded relative discrepancies without rewriting L-0038",
+        "reject or explicitly mark unresolved solves",
+        "preserve dense-output, clock, fallback accounting"
+      ],
+      "stop_condition": "stop if a required operator/remainder bound is unavailable",
+      "claim_ceiling": "no production-speed or generic stiff-uniform-order promotion",
+      "completed_in_this_audit": false
+    },
+    {
+      "id": "R-NEXT-02",
+      "priority": "P1",
+      "title": "Caller-owned Krylov outputs and bounded storage",
+      "status": "not_started",
+      "depends_on": [
+        "R-NEXT-01"
+      ],
+      "target_paths": [
+        "crates/rodas5p-krylov/src/workspace.rs",
+        "crates/rodas5p-krylov/src/gmres.rs",
+        "crates/rodas5p-krylov/src/lgmres.rs",
+        "crates/rodas5p-krylov/src/gcrodr.rs"
+      ],
+      "inputs": [
+        "frozen operator/RHS/tolerance",
+        "allocation and vector-work counters"
+      ],
+      "outputs": [
+        "solve_into prototype",
+        "growth and failed-solve validity contract"
+      ],
+      "acceptance_tests": [
+        "GMRES first, without changed stopping rules",
+        "record warm-up, accepted, rejected, failed and resize work",
+        "same physical error budget as original API"
+      ],
+      "stop_condition": "stop if savings require stale operator products or missing failure accounting",
+      "claim_ceiling": "no production-speed or generic stiff-uniform-order promotion",
+      "completed_in_this_audit": false
+    },
+    {
+      "id": "R-NEXT-03",
+      "priority": "P1",
+      "title": "GCRO-DR residual/rank/recycle failure attribution",
+      "status": "not_started",
+      "depends_on": [],
+      "target_paths": [
+        "crates/rodas5p-krylov/src/gcrodr.rs",
+        "crates/rodas5p-krylov/src/small.rs"
+      ],
+      "inputs": [
+        "same frozen Brusselator systems",
+        "cold/warm/recycled controls"
+      ],
+      "outputs": [
+        "true-residual histories",
+        "rank/orthogonality diagnostics",
+        "bounded reset policy proposal"
+      ],
+      "acceptance_tests": [
+        "do not conflate existing pencil scratch fix with convergence",
+        "all controls share exact target and predeclared budgets",
+        "no Ritz-only error certificate"
+      ],
+      "stop_condition": "stop promotion on false convergence or uncharged resets",
+      "claim_ceiling": "no production-speed or generic stiff-uniform-order promotion",
+      "completed_in_this_audit": false
+    },
+    {
+      "id": "R-NEXT-04",
+      "priority": "P1",
+      "title": "End-to-end Laguerre admission in verified domain",
+      "status": "not_started",
+      "depends_on": [],
+      "target_paths": [
+        "crates/rodas5p-core/src/laguerre_adjoint.rs",
+        "crates/rodas5p-core/src/polynomial_action.rs"
+      ],
+      "inputs": [
+        "existing diagnostic adjoint total",
+        "exact transformed domain",
+        "coefficient intervals and local defects"
+      ],
+      "outputs": [
+        "component-coverage proof",
+        "bounded-resource envelope contract",
+        "guarded total admission"
+      ],
+      "acceptance_tests": [
+        "include tail, coefficients, recurrence, summation and normalization",
+        "independent non-scalar and extreme-range tests",
+        "unsupported domain stays EstimateOnly"
+      ],
+      "stop_condition": "stop if any component is unbounded or physical scaling is unresolved",
+      "claim_ceiling": "no production-speed or generic stiff-uniform-order promotion",
+      "completed_in_this_audit": false
+    },
+    {
+      "id": "R-NEXT-05",
+      "priority": "P1",
+      "title": "Certified chart coordinate-error provider and controller",
+      "status": "not_started",
+      "depends_on": [],
+      "target_paths": [
+        "crates/rodas5p-integrators/src/chart_transport.rs",
+        "tools/thread_transfer_chart.py"
+      ],
+      "inputs": [
+        "regular chart tube",
+        "coordinate defects",
+        "cofactor residuals",
+        "nonzero initial fast mode"
+      ],
+      "outputs": [
+        "physical local-error provider",
+        "opt-in switching and dense-output contract"
+      ],
+      "acceptance_tests": [
+        "enclose entire step tube and stored reconstruction",
+        "retain nonzero fast amplitude",
+        "no stage-target proxy promoted to ODE error"
+      ],
+      "stop_condition": "stop or use protected solver on chart/rank/parameter uncertainty",
+      "claim_ceiling": "no production-speed or generic stiff-uniform-order promotion",
+      "completed_in_this_audit": false
+    },
+    {
+      "id": "R-NEXT-06",
+      "priority": "P2",
+      "title": "Net-cost admission of causal homotopy candidates",
+      "status": "not_started",
+      "depends_on": [],
+      "target_paths": [
+        "crates/rodas5p-integrators/src/causal_majorant.rs",
+        "crates/rodas5p-integrators/src/outward_certificate.rs",
+        "crates/rodas5p-integrators/src/transactional_q1_q2.rs"
+      ],
+      "inputs": [
+        "actual q2 candidates",
+        "same target/physical budget",
+        "all work counters"
+      ],
+      "outputs": [
+        "counter-only net-cost assessment",
+        "regime abstention rule"
+      ],
+      "acceptance_tests": [
+        "charge preflight, witnesses, radius failures, dispatch and fallback",
+        "distinguish closure from outer acceptance",
+        "no timing promotion under HOLD"
+      ],
+      "stop_condition": "stop parallel expansion if certificate overhead consumes the cost margin",
+      "claim_ceiling": "no production-speed or generic stiff-uniform-order promotion",
+      "completed_in_this_audit": false
+    },
+    {
+      "id": "R-NEXT-07",
+      "priority": "P2",
+      "title": "Optional model epoch for interior-mutable callbacks",
+      "status": "not_started",
+      "depends_on": [],
+      "target_paths": [
+        "crates/rodas5p-integrators/src/problem.rs",
+        "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs"
+      ],
+      "inputs": [
+        "client-owned parameter-generation contract",
+        "retained callback identity"
+      ],
+      "outputs": [
+        "immutable snapshot/epoch API design"
+      ],
+      "acceptance_tests": [
+        "invalidate f0, ft, JVP and products together on epoch change",
+        "preserve documented manual-fresh compatibility",
+        "pointer/hash not called semantic proof"
+      ],
+      "stop_condition": "do not claim automatic detection of arbitrary callback mutations",
+      "claim_ceiling": "no production-speed or generic stiff-uniform-order promotion",
+      "completed_in_this_audit": false
+    },
+    {
+      "id": "R-NEXT-08",
+      "priority": "P2",
+      "title": "Generic no-chart perturbation-stable alternative",
+      "status": "not_started",
+      "depends_on": [],
+      "target_paths": [
+        "research/thread_transfer_negative_controls_20261002"
+      ],
+      "inputs": [
+        "method-labelled RVJ counterexamples",
+        "two-mode nonnormal systems",
+        "primary stiff-order theory"
+      ],
+      "outputs": [
+        "limited-domain proof or negative result",
+        "derivative-light correction/peer comparison"
+      ],
+      "acceptance_tests": [
+        "bound internal amplification not only R(z)",
+        "declare changed maps/charts explicitly",
+        "account derivative and solve DAG depth"
+      ],
+      "stop_condition": "no generic stiff-uniform5 promotion without uniform error stability",
+      "claim_ceiling": "no production-speed or generic stiff-uniform-order promotion",
+      "completed_in_this_audit": false
+    },
+    {
+      "id": "R-NEXT-09",
+      "priority": "P0",
+      "title": "Publish resumed overlay and validate exact PR HEAD",
+      "status": "blocked",
+      "depends_on": [],
+      "target_paths": [
+        ".github/workflows",
+        "docs/reviews/20261003_native_reaudit"
+      ],
+      "inputs": [
+        "verified source tree",
+        "resumed patch and manifest",
+        "authorized write capability"
+      ],
+      "outputs": [
+        "non-force PR70 update",
+        "exact-head CI result",
+        "separate publication receipt"
+      ],
+      "acceptance_tests": [
+        "preserve base and other concurrent commits",
+        "no duplicate PR or auto merge",
+        "action_required and not-run never reported as pass"
+      ],
+      "stop_condition": "blocked until actual write capability; never bypass workflow approval",
+      "claim_ceiling": "no production-speed or generic stiff-uniform-order promotion",
+      "completed_in_this_audit": false
+    }
+  ],
+  "publication_base_commit": "312aa57ada821f383f2a8b4da7b2800e4d227d54",
+  "publication_base_tree": "fb2bc19fccdf34153b86b1dc69fabc4404a0e478"
+}

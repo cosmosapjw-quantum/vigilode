@@ -1,0 +1,119 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.11s
+     Running tests/native_reaudit_laguerre_contracts.rs (target/debug/deps/native_reaudit_laguerre_contracts-72be714faf94e813)
+
+running 3 tests
+test reversed_intervals_cannot_be_widened_into_accepted_coefficients ... ok
+test a_failed_invalid_input_does_not_enter_the_envelope_cache ... ok
+test ordered_interval_coefficients_still_work ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Compiling rodas5p-integrators v0.1.0 (/mnt/data/vigilode_resume_20261003/repo/crates/rodas5p-integrators)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 20.29s
+     Running tests/matrix_free_problem_contracts.rs (target/debug/deps/matrix_free_problem_contracts-23752a1908c741e7)
+
+running 2 tests
+test supplied_jvp_matches_the_explicit_jacobian_action ... ok
+test jvp_only_clone_hides_explicit_jacobian_and_builds_matrix_free_shifted_operator ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/native_reaudit_cache_contracts.rs (target/debug/deps/native_reaudit_cache_contracts-07224ece30ba34f9)
+
+running 8 tests
+test a_nonfinite_time_and_overflowing_error_scale_are_not_admissible ... ok
+test a_cloned_problem_same_state_changed_step_still_reuses_the_cache ... ok
+test a_failed_time_derivative_refresh_is_also_atomic ... ok
+test a_failed_fresh_callback_cannot_leave_an_old_linearization_reusable ... ok
+test the_public_attempt_cannot_bypass_the_identity_mass_contract ... ok
+test nonfinite_or_negative_output_tolerances_are_rejected_before_work ... ok
+test a_same_named_different_callback_is_not_the_same_frozen_problem ... ok
+test a_reuse_hint_does_not_override_state_or_time_identity ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/native_reaudit_chart_transport.rs (target/debug/deps/native_reaudit_chart_transport-84e43313304bcf66)
+
+running 5 tests
+test nonfinite_negative_or_overflowing_inputs_fail_closed ... ok
+test a_bad_stored_reconstruction_is_included_not_assumed_exact ... ok
+test reconstruction_encloses_every_dyadic_corner_and_interior_sample ... ok
+test the_whole_box_not_just_its_center_must_remain_in_the_chart ... ok
+test zero_coordinate_and_reconstruction_error_gives_zero ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/native_reaudit_radius_contracts.rs (target/debug/deps/native_reaudit_radius_contracts-982643bb1cd311a9)
+
+running 6 tests
+test malformed_affine_storage_is_rejected_without_panicking ... ok
+test malformed_affine_causal_proposal_is_a_typed_rejection ... ok
+test malformed_affine_structural_entries_are_not_silently_ignored ... ok
+test negative_alpha_cannot_turn_a_required_positive_radius_into_zero ... ok
+test radius_policies_reject_nonfinite_or_negative_alpha ... ok
+test valid_state_map_requires_one_unit_of_radius ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/thread_transfer_negative_controls.rs (target/debug/deps/thread_transfer_negative_controls-35b6a7dd57a2438b)
+
+running 1 test
+test negative_controls_by_method ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.62s
+
+     Running tests/thread_transfer_path_action.rs (target/debug/deps/thread_transfer_path_action-e6b7da82c15ebb6c)
+
+running 2 tests
+test write_r4_stage_inputs ... ignored, writes fixtures/thread_transfer_r4_stage_inputs.json
+test action_first_path_sum_is_exact_valid_and_cheaper ... ok
+
+test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.14s
+
+     Running tests/thread_transfer_radius.rs (target/debug/deps/thread_transfer_radius-1dca8e92b42c8236)
+
+running 1 test
+test extended_radius_schedule_is_separate_from_the_original_failed_gate ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.09s
+
+     Running tests/thread_transfer_radius_policy.rs (target/debug/deps/thread_transfer_radius_policy-c2f482f7a9371e4d)
+
+running 2 tests
+test proposals_are_rebuilt_from_the_step_residual ... ok
+test radius_proposals_close_only_when_rechecked ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.17s
+
+     Running tests/thread_transfer_raw_target.rs (target/debug/deps/thread_transfer_raw_target-c9483c7064d7ec8a)
+
+running 2 tests
+test write_raw_stage_allowance ... ignored, writes fixtures/thread_transfer_raw_stage_allowance.json
+test raw_stage_target_contract ... ok
+
+test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+   Compiling rodas5p-krylov v0.1.0 (/mnt/data/vigilode_resume_20261003/repo/crates/rodas5p-krylov)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.43s
+     Running tests/gcrodr_state_validity_contracts.rs (target/debug/deps/gcrodr_state_validity_contracts-7cf5f9ce0647c747)
+
+running 6 tests
+test gcrodr_same_system_keeps_the_warm_start ... ok
+test gcrodr_wrong_length_warm_start_under_matching_identity_is_a_typed_error ... ok
+test gcrodr_state_reused_across_a_dimension_change_returns_without_panicking ... ok
+test lgmres_state_reused_across_a_dimension_change_returns_without_panicking ... ok
+test gcrodr_operator_identity_change_clears_the_stale_warm_start ... ok
+test gcrodr_recycle_rank_above_one_keeps_its_invariant_across_system_changes ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.44s
+
+     Running tests/workspace_contracts.rs (target/debug/deps/workspace_contracts-5672cdaa1cd8fa7e)
+
+running 1 test
+test reusable_workspaces_preserve_all_three_solver_contracts ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+   Compiling rodas5p-fair-ab v0.1.0 (/mnt/data/vigilode_resume_20261003/repo/crates/rodas5p-fair-ab)
+    Checking rodas5p-cli v0.1.0 (/mnt/data/vigilode_resume_20261003/repo/crates/rodas5p-cli)
+Terminated

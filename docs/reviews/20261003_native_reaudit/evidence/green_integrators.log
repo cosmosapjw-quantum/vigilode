@@ -1,0 +1,37 @@
+   Compiling rodas5p-integrators v0.1.0 (/mnt/data/vigilode_resume_20261003/repo/crates/rodas5p-integrators)
+   Compiling rodas5p-krylov v0.1.0 (/mnt/data/vigilode_resume_20261003/repo/crates/rodas5p-krylov)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 17.03s
+     Running tests/native_reaudit_cache_contracts.rs (target/debug/deps/native_reaudit_cache_contracts-c8f80e7b5dda9a6c)
+
+running 8 tests
+test a_cloned_problem_same_state_changed_step_still_reuses_the_cache ... ok
+test a_failed_fresh_callback_cannot_leave_an_old_linearization_reusable ... ok
+test a_nonfinite_time_and_overflowing_error_scale_are_not_admissible ... ok
+test nonfinite_or_negative_output_tolerances_are_rejected_before_work ... ok
+test the_public_attempt_cannot_bypass_the_identity_mass_contract ... ok
+test a_same_named_different_callback_is_not_the_same_frozen_problem ... ok
+test a_failed_time_derivative_refresh_is_also_atomic ... ok
+test a_reuse_hint_does_not_override_state_or_time_identity ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/native_reaudit_chart_transport.rs (target/debug/deps/native_reaudit_chart_transport-26edb438bcef3d35)
+
+running 5 tests
+test nonfinite_negative_or_overflowing_inputs_fail_closed ... ok
+test a_bad_stored_reconstruction_is_included_not_assumed_exact ... ok
+test the_whole_box_not_just_its_center_must_remain_in_the_chart ... ok
+test reconstruction_encloses_every_dyadic_corner_and_interior_sample ... ok
+test zero_coordinate_and_reconstruction_error_gives_zero ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/native_reaudit_radius_contracts.rs (target/debug/deps/native_reaudit_radius_contracts-2911b26faf619919)
+
+running 3 tests
+test negative_alpha_cannot_turn_a_required_positive_radius_into_zero ... ok
+test radius_policies_reject_nonfinite_or_negative_alpha ... ok
+test valid_state_map_requires_one_unit_of_radius ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
