@@ -81,3 +81,60 @@ Any false convergence, or an uncharged product, stops promotion of the check.
 
 L-0046 results and its post-hoc `POSTHOC_INVARIANT.json` (mechanism described above). No code of this node exists
 before this commit.
+
+---
+
+## Results (appended after the run at `0ca066f`)
+
+Output: `RESULTS.json`. Ledger row L-0052. Contract tests: `int01_gcrodr_policy_contracts` 5/5 and
+`rnext03_gcrodr_trace_contracts` 2/2. The fresh family uses central differences for `D1` and `r = 10`.
+
+**Gate: FAIL** (items 1, 2, 4, 5 and 6 hold; item 3 fails).
+
+| Gate item | Outcome |
+|---|---|
+| 1. Defaults unchanged | **holds**: the default policy is bitwise the plain and the traced solve (solution, report, counters, state); a healthy pair passes the check and the solve is unchanged apart from the k charged products |
+| 2. Reproduction | **holds**: control C fails on exactly the 21 solves of L-0046 (13 trajectory, 8 one-step) |
+| 3. Mechanism removed | **fails**: control E fails on 2 one-step solves (Brusselator, h = 1e-2, right-hand sides 6 and 7) where cold GCRO-DR succeeds. On the trajectory set E fails on none |
+| 4. Accounting | **holds** for every GCRO-DR solve of every control and set, aborted cycles included |
+| 5. No false convergence | **holds** |
+| 6. Fresh family | **holds**: no control fails on any of its 288 solves (cold GMRES included, so the family tests false convergence and cost, not failure removal) |
+
+Operator products (failures):
+
+| Set | A cold GMRES | B cold GCRO-DR | C recycled | D reset | E checked (1e-8) |
+|---|---|---|---|---|---|
+| trajectory (320) | 13,358 (0) | 13,328 (0) | 15,741 (13) | 13,604 (0) | 14,637 (0) |
+| one-step (16) | 631 (0) | 631 (0) | 5,464 (8) | 919 (0) | 1,857 (2) |
+| fresh (288) | 47,233 (0) | 41,531 (0) | 33,364 (0) | 33,364 (0) | 35,380 (0) |
+
+E checked 280, 14 and 252 carried pairs and rebuilt 11, 4 and 0 of them. Defects of the pairs it kept were at most
+2.5e-13 on the fresh family and up to 2.2e-9 on the one-step set.
+
+**Why E still fails twice.** Both failures start from a carried pair with defect 2.2e-9, under the tolerance. In the
+first cycle, `max |C^T V|` is already 0.64, and the true residual then grows each cycle (4e-8, 2e-3, 4e4, ... to
+1e282) until a product overflows. The recycle projection removes almost all of the residual (2.2e-4 to about
+1e-12 here), so a defect `delta` in unit-norm columns becomes a component of order `delta ||C^T r||` in the
+recomputed residual. That component is comparable to the projected residual itself. The first Arnoldi vector then
+has an O(1) part along `C`. The small least-squares problem assumes `[C V]` is orthonormal, so it no longer
+minimizes the true residual, and the residual can grow. So an absolute tolerance on the defect is the wrong scale.
+The defect has to be small relative to `||r - C C^T r|| / ||C^T r||`, or `v_1` has to be projected against `C` again.
+
+On the fresh family, recycling pays: C and D use 0.80x of cold GCRO-DR's products and 0.71x of cold GMRES's. E costs
+6% more than C. On the Brusselator sets, recycling saves nothing, as in L-0046.
+
+### Post-hoc diagnostic (after the recorded run; not part of the gate)
+
+`tests/int01_posthoc_tolerance.rs` (`POSTHOC_TOLERANCE.json`) reruns the study with E's tolerance at 1e-10 and at
+1e-12. The command is
+`INT01_POSTHOC_TOL=<tol> INT01_POSTHOC_OUTPUT=<absolute path of POSTHOC_TOLERANCE.json> cargo test --release -p rodas5p-integrators --locked --test int01_posthoc_tolerance -- --ignored --test-threads=1`.
+
+| Tolerance | Trajectory, E (failures) | One-step, E (failures) | Fresh, E (failures) |
+|---|---|---|---|
+| 1e-10 | 14,392 (0) | 736 (0) | 35,380 (0) |
+| 1e-12 | 14,357 (0) | 736 (0) | 35,380 (0) |
+
+Both settings remove every failure, with accounting and true residuals intact. This tolerance was chosen after
+seeing the failures, so it is not evidence for any fixed value. A residual-relative check, or a second projection
+of `v_1`, follows from the mechanism above and would need its own preregistered node. Claim ceiling: these frozen
+systems; no Ritz-value-based certificate; no timing.
