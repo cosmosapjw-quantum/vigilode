@@ -72,3 +72,25 @@ general-ODE, speed or timing claim. The protected solver remains the default.
 
 L-0043 (chart identity, fail-closed rules, fast mode, finite-eps residual) and PR #70's `certify_reconstruction`
 with its regressions. No code of this node exists before this commit.
+
+## Amendment before the recorded run (development observation, disclosed)
+
+A development run of the native test showed two design errors (the Python check had not run):
+
+1. The controller compared the *global* certified bound (distance of the never re-centred approximation to the
+   enclosure of the exact solution) with the tolerance. Once the accumulated error exceeded it, no step could be
+   accepted, so runs with `eps = 0` and `x0 = 1` were refused near t = 0.28 "below the minimum step".
+2. The method's forcing `eps h x~` is not consistent for `kappa h >> 1`, so at tolerance 1e-9 runs needed up to
+   8e5 steps, and one run was killed for memory.
+
+Changes (nothing else changes; the gate items keep their numbers):
+
+- **Method.** `x~ <- x~ / (1 - x~ h)` (the flow formula in binary64).
+  `w~ <- R w~ + eps [x~ (1 - R)/kappa + x~^2 (h/kappa - (1 - R)/kappa^2)]` with `R = R(-kappa h)`, the L-stable
+  (1,2) Pade approximant `(1 + z/3) / (1 - 2z/3 + z^2/6)`. This is the exponential-integrator form for `x` linear in
+  time over the step, with `e^z` replaced by `R`.
+- **Two bounds.** The *local* physical bound `B_loc` comes from the exact-flow enclosure started at the point
+  `(x~_n, w~_n)` (the method's local error, transported by `certify_reconstruction`). The *global* bound `B_phys`
+  comes from the enclosure of the exact solution propagated from the exact initial data, as before.
+- **Controller.** Accept iff `B_loc <= atol + rtol |y~|` (gate item 4 now refers to `B_loc`). Gate items 1-3 check
+  the global boxes and `B_phys` against the 50-digit reference, as before. The proxy stays unused.
