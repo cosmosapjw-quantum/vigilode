@@ -72,6 +72,19 @@ dense floor (its `n^2` assembly and scans) for comparison. No timing.
 
 Lost parity, a pivot outside the band region, or an O(n^2) term left in the banded path stops it.
 
+## Amendment (before any recorded run, while writing the study test)
+
+Neither driver exposes its accepted states step by step; they record states at output times. Gate item 1 therefore
+compares the following, instead of "every accepted state":
+
+- the states at 41 equally spaced output times (each an accepted step endpoint, since steps are clipped to output
+  times);
+- the full `WorkCounters` of both runs, which must be equal. These cover Jacobian builds, RHS evaluations,
+  factorizations, solves, accepted and rejected steps, and failures by kind.
+
+The other parts of the comparison (attempts, accepted, rejected, reuses, final success) are as before. No study code
+had run when this was written.
+
 ## Prior information
 
 L-0033 (fast v2 FAIL on its own performance gate) and L-0041 (small-n specialization) are unchanged. The external
