@@ -318,7 +318,7 @@ pub use path_controller::{
     PathControllerRow, PathControllerScheduleSummary, PathControllerSummary,
     run_path_controller_screen,
 };
-pub use problem::{JacobianIntoFn, OdeProblem};
+pub use problem::{JacobianIntoFn, ModelEpochFn, OdeProblem};
 pub use problems::{
     complex_dahlquist_problem, constant_affine_mass_problem, manufactured_mass_nonlinear_problem,
     manufactured_vector_problem, oscillatory_prothero_robinson_problem, prothero_robinson_problem,

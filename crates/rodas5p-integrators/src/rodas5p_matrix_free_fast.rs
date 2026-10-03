@@ -87,6 +87,7 @@ pub struct Rodas5pMfFastWorkspace {
     cached_callbacks: Option<MatrixFreeCallbackIdentity>,
     cached_t_bits: u64,
     cached_y: Vec<f64>,
+    cached_epoch: Option<u64>,
     f0: Vec<f64>,
     ft: Vec<f64>,
     u: Vec<f64>,
@@ -165,6 +166,7 @@ impl Rodas5pMfFastWorkspace {
             cached_callbacks: None,
             cached_t_bits: 0,
             cached_y: vec![0.0; n],
+            cached_epoch: None,
             f0: vec![0.0; n],
             ft: vec![0.0; n],
             u: vec![0.0; s * n],
@@ -190,7 +192,11 @@ impl Rodas5pMfFastWorkspace {
     /// evaluates `f(t, y)`, `f_t` and the JVP operator at this state;
     /// otherwise reuse is allowed only for the exact same time/state bits and
     /// retained callback identities. Changing `h` alone does not invalidate
-    /// the frozen state. Interior callback-data changes require `fresh = true`.
+    /// the frozen state. Interior callback-data changes require `fresh = true`,
+    /// unless the problem carries a model epoch
+    /// ([`OdeProblem::with_model_epoch`]): the epoch is read once per attempt
+    /// and any change rebuilds `f(t, y)`, `f_t` and the operator (whose new
+    /// token makes a carried recycle state refresh its images).
     /// A failed refresh invalidates all frozen data before any retry.
     #[allow(clippy::too_many_arguments)]
     pub fn attempt(
@@ -225,7 +231,9 @@ impl Rodas5pMfFastWorkspace {
         if y.len() != n || !y.iter().all(|value| value.is_finite()) {
             return Err(CoreError::InvalidInput("invalid initial state".into()));
         }
+        let epoch = problem.model_epoch();
         let same_state = self.cached_t_bits == t.to_bits()
+            && self.cached_epoch == epoch
             && self
                 .cached_y
                 .iter()
@@ -250,6 +258,7 @@ impl Rodas5pMfFastWorkspace {
             let jvp = problem.linearize_matrix_free(t, y)?;
             self.cached_y.copy_from_slice(y);
             self.cached_t_bits = t.to_bits();
+            self.cached_epoch = epoch;
             self.cached_callbacks = Some(problem.matrix_free_callback_identity());
             self.jvp = Some(jvp);
         }
