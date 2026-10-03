@@ -62,3 +62,19 @@ No claim that arbitrary callback mutations are detected automatically.
 
 PR #70's A-CACHE-01/02 regressions (`native_reaudit_cache_contracts.rs`) cover time, state, callback identity and
 failed refresh. No epoch code exists before this commit.
+
+## Amendment before the recorded run (development observation, disclosed)
+
+A development run of the test showed that gate item 3's prediction was wrong for this model. The workspace's JVP
+operator calls the client's `jvp` callback at every product, and that callback reads `p` live. So without an epoch,
+after a change of `p` with `fresh = false`, the attempt combines a stale `f(t, y)` and `f_t` (old `p`), a live
+operator (new `p`), and GCRO-DR recycle images built with the old operator. The token is unchanged, so they count
+as current. In the development run, GCRO-DR then failed ("least-squares solve produced NaN/Inf for 5x4 system").
+The attempt is therefore neither the unchanged-model attempt nor the changed-model attempt.
+
+Item 3 is replaced by: **3. No epoch, old contract.** A problem without an epoch, `p` changed, `fresh = false`: the
+attempt is not equal to a `fresh = true` attempt on the changed model (it fails or differs), i.e. the change is not
+detected. The outcome (error text or difference) is recorded. A second case uses GMRES (no recycle state), where the
+attempt must complete and differ from both the unchanged-model and the changed-model attempts (stale `f` with live
+operator). `fresh = true` gives the changed-model result bitwise. Items 1, 2, 4 and 5 are unchanged. The epoch
+removes exactly this mixed state for clients who opt in.
