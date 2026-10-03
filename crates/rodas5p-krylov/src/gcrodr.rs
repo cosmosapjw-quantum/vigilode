@@ -413,6 +413,22 @@ pub struct GcrodrCycleTrace {
     pub matvecs: u64,
     /// The stagnation reset dropped the recycle space after this cycle.
     pub reset: bool,
+    /// The solve aborted inside this cycle (research node
+    /// `research/int01_gcrodr_verified_reuse_20261003`): only `recycle_rank`,
+    /// `residual_start` and `matvecs` (charged since the cycle began) are set.
+    pub aborted: bool,
+}
+
+/// One check of a carried recycle pair before its reuse on the same system
+/// (see [`GcrodrReusePolicy::verify_reuse`]).
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
+pub struct GcrodrReuseCheck {
+    pub rank: usize,
+    /// `max_j ||M^-1 A u_j - c_j||_2`.
+    pub defect: f64,
+    /// The defect exceeded the tolerance and the pair was rebuilt from the
+    /// fresh images.
+    pub rebuilt: bool,
 }
 
 /// A traced solve: its cycles and the operator applications charged
@@ -422,6 +438,26 @@ pub struct GcrodrTrace {
     pub cycles: Vec<GcrodrCycleTrace>,
     pub matvecs_total: u64,
     pub matvecs_outside_cycles: u64,
+    pub reuse_checks: Vec<GcrodrReuseCheck>,
+    /// `(charged products, recycle rank, residual)` at the start of the
+    /// cycle in progress; moved into `cycles` as an aborted cycle if the
+    /// solve stops inside it.
+    open_cycle: Option<(u64, usize, f64)>,
+}
+
+/// How a carried recycle pair is treated (research nodes
+/// `research/rnext03_gcrodr_attribution_20261003` and
+/// `research/int01_gcrodr_verified_reuse_20261003`). The default is the
+/// plain GCRO-DR solve.
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
+pub struct GcrodrReusePolicy {
+    /// Stagnation reset factor `q` in (0, 1); see [`solve_gcrodr_traced`].
+    pub reset_factor: Option<f64>,
+    /// Check `M^-1 A U = C` before reusing a carried pair on the same system:
+    /// each `u_j` is applied once (charged as refresh products) and, if
+    /// `max_j ||M^-1 A u_j - c_j||_2` exceeds this tolerance, the pair is
+    /// rebuilt from those images as after an operator change.
+    pub verify_reuse: Option<f64>,
 }
 
 fn charged_matvecs(c: &WorkCounters) -> u64 {
@@ -464,9 +500,51 @@ pub fn solve_gcrodr_traced(
     trace: &mut GcrodrTrace,
     counters: &mut WorkCounters,
 ) -> CoreResult<LinearSolveReport> {
-    if reset_factor.is_some_and(|q| !(q > 0.0 && q < 1.0)) {
+    solve_gcrodr_with_policy(
+        op,
+        pc,
+        rhs,
+        x0,
+        config,
+        state,
+        residual_scale,
+        workspace,
+        GcrodrReusePolicy {
+            reset_factor,
+            verify_reuse: None,
+        },
+        trace,
+        counters,
+    )
+}
+
+/// GCRO-DR under a [`GcrodrReusePolicy`], traced. With the default policy
+/// it is exactly [`solve_gcrodr_with_workspace_and_residual_scale`].
+#[allow(clippy::too_many_arguments)]
+pub fn solve_gcrodr_with_policy(
+    op: &dyn LinearOperator,
+    pc: &dyn Preconditioner,
+    rhs: &[f64],
+    x0: Option<&[f64]>,
+    config: &GcrodrConfig,
+    state: &mut GcrodrState,
+    residual_scale: Option<&[f64]>,
+    workspace: &mut GcrodrWorkspace,
+    policy: GcrodrReusePolicy,
+    trace: &mut GcrodrTrace,
+    counters: &mut WorkCounters,
+) -> CoreResult<LinearSolveReport> {
+    if policy.reset_factor.is_some_and(|q| !(q > 0.0 && q < 1.0)) {
         return Err(CoreError::InvalidInput(
             "GCRO-DR reset factor must lie in (0, 1)".into(),
+        ));
+    }
+    if policy
+        .verify_reuse
+        .is_some_and(|tol| !(tol.is_finite() && tol > 0.0))
+    {
+        return Err(CoreError::InvalidInput(
+            "GCRO-DR reuse tolerance must be finite and positive".into(),
         ));
     }
     *trace = GcrodrTrace::default();
@@ -480,11 +558,21 @@ pub fn solve_gcrodr_traced(
         state,
         residual_scale,
         workspace,
-        reset_factor,
+        policy,
         Some(&mut *trace),
         counters,
     );
-    trace.matvecs_total = charged_matvecs(counters) - start;
+    let now = charged_matvecs(counters);
+    if let Some((cycle_start, rank, residual_start)) = trace.open_cycle.take() {
+        trace.cycles.push(GcrodrCycleTrace {
+            recycle_rank: rank,
+            residual_start,
+            matvecs: now - cycle_start,
+            aborted: true,
+            ..GcrodrCycleTrace::default()
+        });
+    }
+    trace.matvecs_total = now - start;
     trace.matvecs_outside_cycles =
         trace.matvecs_total - trace.cycles.iter().map(|c| c.matvecs).sum::<u64>();
     result
@@ -512,7 +600,7 @@ pub fn solve_gcrodr_with_workspace_and_residual_scale(
         state,
         residual_scale,
         workspace,
-        None,
+        GcrodrReusePolicy::default(),
         None,
         counters,
     )
@@ -528,7 +616,7 @@ fn solve_gcrodr_inner(
     state: &mut GcrodrState,
     residual_scale: Option<&[f64]>,
     workspace: &mut GcrodrWorkspace,
-    reset_factor: Option<f64>,
+    policy: GcrodrReusePolicy,
     mut trace: Option<&mut GcrodrTrace>,
     counters: &mut WorkCounters,
 ) -> CoreResult<LinearSolveReport> {
@@ -576,7 +664,53 @@ fn solve_gcrodr_inner(
                 && local.system_identity.as_ref() == system_identity.as_ref()
                 && !local.image.is_empty()
             {
-                counters.recycle_same_operator_uses += 1;
+                let mut rebuilt = false;
+                if let Some(tol) = policy.verify_reuse {
+                    let mut images = Vec::with_capacity(local.basis.len());
+                    let mut defect = 0.0_f64;
+                    for (basis_vector, carried) in local.basis.iter().zip(&local.image) {
+                        let mut image = vec![0.0; n];
+                        apply_left_with_raw(
+                            op,
+                            pc,
+                            basis_vector,
+                            &mut image,
+                            &mut workspace.common.scratch_b,
+                            counters,
+                            ApplyCategory::Refresh,
+                        )?;
+                        let difference = image
+                            .iter()
+                            .zip(carried)
+                            .map(|(a, b)| a - b)
+                            .collect::<Vec<_>>();
+                        defect = defect.max(safe_l2(&difference));
+                        images.push(image);
+                    }
+                    // NaN compares false: a non-finite defect rebuilds too.
+                    rebuilt = !(defect <= tol);
+                    if let Some(trace) = trace.as_deref_mut() {
+                        trace.reuse_checks.push(GcrodrReuseCheck {
+                            rank: local.basis.len(),
+                            defect,
+                            rebuilt,
+                        });
+                    }
+                    if rebuilt {
+                        let (basis, image) = orthonormalize_pair(
+                            local.basis.clone(),
+                            images,
+                            config.rank_tol,
+                            0.0,
+                            counters,
+                        )?;
+                        local.basis = basis;
+                        local.image = image;
+                    }
+                }
+                if !rebuilt {
+                    counters.recycle_same_operator_uses += 1;
+                }
             } else {
                 let mut images = Vec::with_capacity(local.basis.len());
                 for basis_vector in &local.basis {
@@ -645,6 +779,9 @@ fn solve_gcrodr_inner(
             let cycle_start_matvecs = charged_matvecs(counters);
             let residual_start = residual_norm;
             let start_rank = local.basis.len();
+            if let Some(trace) = trace.as_deref_mut() {
+                trace.open_cycle = Some((cycle_start_matvecs, start_rank, residual_start));
+            }
             rodas5p_core::apply_preconditioner(
                 pc,
                 &workspace.common.residual,
@@ -703,6 +840,7 @@ fn solve_gcrodr_inner(
                 residual_norm = selected_residual_norm(&workspace.common.residual, residual_scale)?;
                 if residual_norm <= threshold {
                     if let Some(trace) = trace.as_deref_mut() {
+                        trace.open_cycle = None;
                         trace.cycles.push(GcrodrCycleTrace {
                             recycle_rank: start_rank,
                             residual_start,
@@ -849,7 +987,7 @@ fn solve_gcrodr_inner(
                 local.basis = basis;
                 local.image = image;
             }
-            let reset = reset_factor.is_some_and(|q| {
+            let reset = policy.reset_factor.is_some_and(|q| {
                 start_rank > 0 && residual_norm > threshold && residual_norm > q * residual_start
             });
             if reset {
@@ -860,6 +998,7 @@ fn solve_gcrodr_inner(
             if let (Some(trace), Some((ls, gram, coupling, arnoldi_gram))) =
                 (trace.as_deref_mut(), traced_geometry)
             {
+                trace.open_cycle = None;
                 trace.cycles.push(GcrodrCycleTrace {
                     recycle_rank: start_rank,
                     residual_start,
@@ -873,6 +1012,7 @@ fn solve_gcrodr_inner(
                     arnoldi_gram_defect: arnoldi_gram,
                     matvecs: charged_matvecs(counters) - cycle_start_matvecs,
                     reset,
+                    aborted: false,
                 });
             }
             if residual_norm <= threshold {
