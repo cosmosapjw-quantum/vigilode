@@ -86,3 +86,13 @@ contrast, also carry the subnormal rounding of the *columns*, which is not an er
 additions run in a different order. Item 1 therefore reads: inside the window, the total equals the registry's
 recomputation bit for bit. For normalized cases, the recomputation is at least the total, and at most the total
 times `(1 + 1e-12)` plus `5 sqrt(n) 2^-1074` (the column subnormal-rounding terms). Nothing else changes.
+
+## Second amendment before the recorded run (development observation, disclosed)
+
+A development run of the native test (the Python check had not run) showed one coverage miss. In the subnormal
+case (amplitude 1e-310, normalization shift -1029), the recomputation exceeded the total by 34 units of `2^-1074`,
+against an allowance of about 12. In the subnormal range, each upward-rounded addition can add one unit of
+`2^-1074` regardless of size, and the two computations together make at most 64 such additions. The allowance of
+the amended item 1 for normalized cases therefore becomes: the total times `(1 + 1e-12)`, plus
+`(5 sqrt(n) + 64) 2^-1074`. In-window cases stay bitwise. Every other case of that run met item 1, and the guards
+and resource items held. Nothing else changes.
