@@ -8,6 +8,7 @@ mod gmres_givens;
 mod gmres_into;
 mod kernels;
 mod lgmres;
+mod lgmres_into;
 mod small;
 mod workspace;
 
@@ -36,4 +37,5 @@ pub use lgmres::{
     LgmresConfig, LgmresState, solve_lgmres, solve_lgmres_with_residual_scale,
     solve_lgmres_with_workspace, solve_lgmres_with_workspace_and_residual_scale,
 };
+pub use lgmres_into::{LgmresIntoReport, LgmresIntoWorkspace, solve_lgmres_into};
 pub use workspace::{GcrodrWorkspace, GmresWorkspace, LgmresWorkspace};
