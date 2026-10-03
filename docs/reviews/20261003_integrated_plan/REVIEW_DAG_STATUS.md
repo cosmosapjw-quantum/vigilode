@@ -34,3 +34,21 @@ preregistration. Amendments made before a recorded run are disclosed there.
 - A verified numerical-abscissa bound and a range-minimizing metric (REV-02).
 - A q=2 activation decision with a measured directed-operation cost and timing authority (HOLD).
 - The timing campaign (HOLD).
+
+## Validation
+
+**Final head `88546d8`** (local, Rust 1.94.1). All 16 matrix steps exited 0:
+
+- fmt, and clippy (four configurations);
+- workspace tests and three feature-gated test runs;
+- ignored tests in the measurement profile, including every research test;
+- readiness, research-node (62 ledger rows), authority and ignored-in-CI checks;
+- the 211 Python tool tests and the algebra checks.
+
+Across all runs, 2,479 Rust tests passed and none failed. Every crate was rebuilt from this worktree first.
+
+**Hosted CI on `88546d8`.** Seven checks passed. Three (`scientific-execution-aggregate`, `scientific-execution-cells`,
+`receipt-validation`) were skipped by their workflows' own conditions.
+
+Intermediate heads between a preregistration and its results fail `research-process` by design: a new node directory
+without its ledger row. Every node's final head passes.
