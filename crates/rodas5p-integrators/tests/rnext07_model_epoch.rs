@@ -329,10 +329,11 @@ fn model_epoch_contract() {
         "note": "item 5 (existing MF workspace contract tests) is recorded from their own test runs",
     });
     if let Ok(path) = std::env::var("RNEXT07_OUTPUT") {
-        assert!(
-            !std::path::Path::new(&path).exists(),
-            "immutable output exists"
-        );
+        // Relative to the workspace root, not the crate directory.
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../..")
+            .join(path);
+        assert!(!path.exists(), "immutable output exists");
         std::fs::write(&path, serde_json::to_string_pretty(&report).unwrap() + "\n").unwrap();
     }
     println!(
