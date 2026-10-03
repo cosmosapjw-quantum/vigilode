@@ -69,3 +69,44 @@ that isolates H2. Control G is reported. Nothing else changes, and no study code
 
 L-0046, L-0052 and L-0057 (all on the Brusselator-50 sets, plus the Brusselator-80 set in L-0057) and the calibration
 above. No code of the option exists before this commit.
+
+---
+
+## Results (appended after the run at `a06bc40`)
+
+Output: `RESULTS.json`. Ledger row L-0058. Contract tests: `rev01b_gcrodr_reorthogonalization_contracts` 2/2,
+`rev01_gcrodr_options_contracts` 2/2, `int01_gcrodr_policy_contracts` 5/5, `rnext03_gcrodr_trace_contracts` 2/2.
+
+**Gate: FAIL. H2 is refuted** (items 2 and 3 fail; items 1 and 4 hold).
+
+Failures per control (operator products in parentheses where useful):
+
+| Set | B cold | C recycled | G reorth. | FG start + reorth. | EG check + reorth. |
+|---|---|---|---|---|---|
+| **Brusselator-120 trajectory (320), primary** | 0 | 3 | 10 | 28 | 5 |
+| **Brusselator-120 one-step (16), primary** | 0 | 9 | 3 | 0 | 0 |
+| Brusselator-50 trajectory (320) | 0 | 13 | 23 | 10 | 0 |
+| Brusselator-50 one-step (16) | 0 | 8 | 1 | 0 | 0 |
+| Brusselator-80 trajectory (320) | 0 | 30 | 32 | 19 | 10 |
+| Brusselator-80 one-step (16) | 0 | 6 | 6 | 11 | 0 |
+| CDR (288) | 0 | 0 | 0 | 0 | 0 |
+
+- **Item 2 fails.** In FG's completed cycles on the primary set, `max |C^T V|` reaches 0.9999. On the healthy contract
+  system it was 2.6e-14, and on the CDR family 2.8e-11. A second projection pass against `C`, with the first vector
+  projected as well, does not keep `[C V]` orthonormal on the Brusselator systems. So the loss is not the
+  single-pass rounding H2 described.
+- **Item 3 fails.** FG has 28 recycle-induced failures on the primary set, more than C's 12. On the primary
+  trajectory set every option is worse than plain recycling (C: 3). On one-step sets FG and EG remove the failures.
+- **Item 4 holds:** no false convergence, full accounting, and no harm on the CDR family.
+
+**What remains open.** A component of norm about 1 along `C` that survives two projections can only enter where a
+vector is normalized after almost everything has been projected away. That makes the next candidate an undetected
+near-breakdown. The Arnoldi step tests breakdown against the full projection norm, and with a stiff `W`
+(`||W||` up to 1e4 here) a vector that is rounding noise relative to `||M^-1 A v||` can pass that test and enter `V`.
+This is an inference that no node has tested.
+
+**Decision for the GCRO-DR line.** Three preregistered repairs have now failed to remove recycle-induced failures on
+fresh sets: the reuse check (L-0052), the start projection (L-0057) and the reorthogonalization (this node). On these
+Brusselator systems recycling also saves no operator products against cold GCRO-DR. Recycled GCRO-DR stays opt-in
+and is not recommended for such systems. Cold GCRO-DR and GMRES had no failure on any set. Further repair attempts
+need a preregistered breakdown diagnostic first. Claim ceiling: these frozen systems; no timing.
