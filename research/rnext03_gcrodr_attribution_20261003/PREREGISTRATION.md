@@ -84,3 +84,46 @@ Stop promotion on false convergence or uncharged resets.
 
 L-0038 recorded the failure texts above. In a development check during L-0038, maxiter 1000 did not help. No code of
 this node exists before this commit.
+
+---
+
+## Results (appended after the run at `f2743bf`)
+
+Output: `RESULTS.json`. Ledger row L-0046. Contract tests `rnext03_gcrodr_trace_contracts` 2/2 (the traced solve
+without a reset is bitwise the plain solve).
+
+**Gate: FAIL** (items 1, 2 and 4 hold; item 3 fails on its accounting part).
+
+| Gate item | Outcome |
+|---|---|
+| 1. Reproduction | **holds**: control C fails on 13 of 320 trajectory solves and 8 of 16 one-step solves; the two in-process runs are identical |
+| 2. Attribution | **holds**: all 21 failures carry R2 (recycle-induced: cold GCRO-DR succeeds on every one of them), R3 (residual gap) and R4 (orthogonality loss); 7 also carry R5 (non-finite least squares). None carries R1 |
+| 3. No false convergence and full accounting | **fails**. No false convergence: every reported success of every control has an independent true residual within the threshold. Every solve's traced total equals its counters. But on 7 failed one-step solves of control C, the solve aborted inside a cycle (a non-finite least-squares solution), so that cycle's 33-37 operator products are charged to the counters but appear in no cycle record. The preregistered rule counts them as work outside the cycles and finds 52-53 against its limit of 19. This is a limitation of the rule (and of the trace, which records only completed cycles), not uncharged work. It still fails the gate as written |
+| 4. Reset rule | **holds**: control D fails on 0 of the 336 trajectory and one-step solves (C: 21). On the held-out set D and C fail equally often (256 of 384), and D uses 76,141 operator products against C's 76,230 (0.999x) |
+
+Failure texts of control C: "Arnoldi budget exhausted" (13), "least-squares solve produced NaN/Inf for 41x40
+system" (7), "shifted operator produced NaN/Inf" (1). In the failing cycles, `max |C^T V|` reaches 0.9999997,
+while `C^T C` and `V^T V` stay orthonormal to 1e-15. The true residual grows within a cycle (for example
+6.5e-4 -> 6.4e13 -> 4.0e31) while the small least-squares residual stays far smaller (gap up to 1.4e22).
+
+Work (operator products, trajectory set): cold GMRES 13,358, cold GCRO-DR 13,328, recycled 15,741, recycled with
+reset 13,604. Recycling saves nothing on these systems even when it does not fail.
+
+The held-out set turned out to be uninformative about failures: all four controls, cold GMRES included, fail 256 of
+its 384 solves at rtol 1e-11 within 200 products, the same ones. It was fixed before the run and is reported as is.
+
+### Post-hoc diagnostic (after the recorded run; not part of the gate)
+
+`tests/rnext03_posthoc_invariant.rs` (`POSTHOC_INVARIANT.json`, command
+`RNEXT03_POSTHOC_OUTPUT=research/rnext03_gcrodr_attribution_20261003/POSTHOC_INVARIANT.json cargo test --release -p rodas5p-integrators --locked --test rnext03_posthoc_invariant -- --ignored --nocapture --test-threads=1`)
+checks the recycle invariant `A U = C` of the carried state before and after each control-C solve. On the first
+solve of each attempt the state is stale (new operator, defect 1e-2), and the cross-operator refresh restores it to
+1e-15 to 1e-12. Within an attempt, some recycle updates return a pair that breaks the invariant (for example 3.4e-5
+-> 2.59 at attempt 9, stage 6; 6e-4 after the first one-step solve at h = 1e-4). Because the operator is unchanged,
+the next solves reuse that pair without checking it, and they fail. Every failure follows such a broken pair. So the
+mechanism is a recycle update that does not preserve `A U = C`, reused unverified under "same operator". Restart
+length and the scratch defect fixed in `01f4266` play no part.
+
+A rule that checks the invariant on reuse (k extra products per solve) or always refreshes would address the
+mechanism directly; the stagnation reset addresses its symptom and, here, removes every failure. Neither is
+promoted by this node. Claim ceiling: attribution on these frozen systems; no Ritz-value-based certificate; no timing.
