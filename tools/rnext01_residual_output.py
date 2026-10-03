@@ -36,10 +36,15 @@ def vec(hexes):
 # binary64 values the Rust problems use.
 # ---------------------------------------------------------------------------
 
-F = lambda x: mp.mpf(float(x))
+def point_constant(x):
+    return mp.mpf(float(x))
 
 
-def robertson():
+def interval_constant(x):
+    return mp.mpi(float(x))
+
+
+def robertson(F=point_constant):
     k1, k2, k3 = F(0.04), F(1.0e4), F(3.0e7)
     f = lambda t, y: [-k1 * y[0] + k2 * y[1] * y[2], k1 * y[0] - k2 * y[1] * y[2] - k3 * y[1] ** 2, k3 * y[1] ** 2]
     jac = lambda t, y: [(0, 0, -k1), (0, 1, k2 * y[2]), (0, 2, k2 * y[1]), (1, 0, k1),
@@ -47,14 +52,14 @@ def robertson():
     return f, jac, None
 
 
-def van_der_pol():
+def van_der_pol(F=point_constant):
     mu = F(1000.0)
     f = lambda t, y: [y[1], mu * (1 - y[0] ** 2) * y[1] - y[0]]
-    jac = lambda t, y: [(0, 1, mp.mpf(1)), (1, 0, -2 * mu * y[0] * y[1] - 1), (1, 1, mu * (1 - y[0] ** 2))]
+    jac = lambda t, y: [(0, 1, F(1.0)), (1, 0, -2 * mu * y[0] * y[1] - 1), (1, 1, mu * (1 - y[0] ** 2))]
     return f, jac, None
 
 
-def hires():
+def hires(F=point_constant):
     c = {k: F(v) for k, v in dict(a=1.71, b=0.43, c=8.32, d=0.0007, e=8.75, g=10.03, i=0.035, j=1.12,
                                     k=1.745, l=280.0, m=0.69, o=1.81).items()}
 
@@ -78,12 +83,12 @@ def hires():
     return f, jac, None
 
 
-def brusselator(cells=50):
-    cc = mp.mpf(float(cells + 1.0) ** 2 / 50.0)
+def brusselator(F=point_constant, cells=50):
+    cc = F(float(cells + 1.0) ** 2 / 50.0)
 
     def nb(y, i):
-        ul, vl = (mp.mpf(1), mp.mpf(3)) if i == 0 else (y[2 * i - 2], y[2 * i - 1])
-        ur, vr = (mp.mpf(1), mp.mpf(3)) if i + 1 == cells else (y[2 * i + 2], y[2 * i + 3])
+        ul, vl = (F(1.0), F(3.0)) if i == 0 else (y[2 * i - 2], y[2 * i - 1])
+        ur, vr = (F(1.0), F(3.0)) if i + 1 == cells else (y[2 * i + 2], y[2 * i + 3])
         return ul, vl, ur, vr
 
     def f(t, y):
@@ -108,7 +113,7 @@ def brusselator(cells=50):
     return f, jac, None
 
 
-def prothero_robinson():
+def prothero_robinson(F=point_constant):
     lam = F(-1.0e4)
     f = lambda t, y: [lam * (y[0] - mp.sin(t)) + mp.cos(t)]
     jac = lambda t, y: [(0, 0, lam)]
@@ -116,7 +121,7 @@ def prothero_robinson():
     return f, jac, ft
 
 
-def quadratic():
+def quadratic(F=point_constant):
     a = [F(-1.0 - i) for i in range(4)]
     q = [F(-0.05 * (1 + i % 3)) for i in range(4)]
     f = lambda t, y: [a[i] * y[i] + q[i] * y[i] ** 2 for i in range(4)]
@@ -149,7 +154,7 @@ def frobenius_interval(entries):
     """||J||_F over a box: sqrt of the sum of squared magnitudes, combining duplicates."""
     acc = {}
     for i, j, v in entries:
-        acc[(i, j)] = acc.get((i, j), mp.mpi(0)) + (v if isinstance(v, mp.ctx_iv.ivmpf) else mp.mpi(v))
+        acc[(i, j)] = acc.get((i, j), mp.mpi(0)) + (v if hasattr(v, "a") else mp.mpi(v))
     total = mp.mpf(0)
     for v in acc.values():
         mag = max(abs(mp.mpf(v.a)), abs(mp.mpf(v.b)))
@@ -195,8 +200,9 @@ def wrms(v, scale):
     return mp.sqrt(mp.fsum((a / b) ** 2 for a, b in zip(v, scale)) / len(v))
 
 
-def budget(kind, problem, coeffs, t, y, h, n, J, W, nW, ftv, S, exact, reported, atol, rtol):
-    """Bounds and actual deviations for driver `kind` ('U' or 'K')."""
+def budget(kind, problem, coeffs, t, y, h, n, J, W, nW, ftv, S, exact, reported, atol, rtol, jac_iv):
+    """Bounds and actual deviations for driver `kind` ('U' or 'K'); `jac_iv` is the
+    problem's Jacobian with interval constants, evaluated on boxes."""
     f, jac, _ = problem
     g = coeffs["gamma"]
     s = len(S)
@@ -221,7 +227,7 @@ def budget(kind, problem, coeffs, t, y, h, n, J, W, nW, ftv, S, exact, reported,
         rho = mp.fsum(abs(mix_a[i][j]) * d[j] for j in range(i))
         if rho > 0:
             box = [mp.mpi(Y[q] - rho, Y[q] + rho) for q in range(n)]
-            L = frobenius_interval(jac(t + coeffs["c"][i] * h, box))
+            L = frobenius_interval(jac_iv(mp.mpi(t + coeffs["c"][i] * h), box))
         else:
             L = mp.mpf(0)
         if kind == "U":
@@ -302,6 +308,7 @@ def main():
             print(label, "solver failure", flush=True)
             continue
         problem = PROBLEMS[case["problem"]]()
+        jac_iv = PROBLEMS[case["problem"]](interval_constant)[1]
         t, h = unhex(case["t"]), unhex(case["h"])
         y = vec(case["y"])
         n = len(y)
@@ -319,8 +326,8 @@ def main():
                  "error_vector": vec(case["k"]["error_vector"])}
         U_c = [vec(x) for x in case["u"]["stages"]]
         K_c = [vec(x) for x in case["k"]["stages"]]
-        bu = budget("U", problem, coeffs, t, y, h, n, J, W, nW, ftv, U_c, U_star, u_rep, atol, rtol)
-        bk = budget("K", problem, coeffs, t, y, h, n, J, W, nW, ftv, K_c, K_star, k_rep, atol, rtol)
+        bu = budget("U", problem, coeffs, t, y, h, n, J, W, nW, ftv, U_c, U_star, u_rep, atol, rtol, jac_iv)
+        bk = budget("K", problem, coeffs, t, y, h, n, J, W, nW, ftv, K_c, K_star, k_rep, atol, rtol, jac_iv)
         finite = all(mp.isfinite(x) for x in (bu["B"], bk["B"], bu["bound_y"], bk["bound_y"]))
         available &= finite
         validity &= bu["valid"] and bk["valid"]
