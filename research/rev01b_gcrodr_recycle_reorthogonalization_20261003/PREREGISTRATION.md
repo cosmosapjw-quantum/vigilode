@@ -55,6 +55,16 @@ Otherwise **FAIL**. If item 2 holds and item 3 fails, H2 explains the orthogonal
 item 2 fails, H2 is refuted. Reported, not gated: every control on sets 1 to 3, and operator products against B and
 C.
 
+## Amendment (before any recorded run, while writing the contract tests)
+
+Gate items 2 and 3 named control G, which reorthogonalizes the Arnoldi vectors but not the first one. Without the
+REV-01 start projection, `v_1` is the recomputed residual and has a component along `C` whenever the carried pair has
+any defect. So `max |C^T V| <= 1e-8` cannot hold for G whatever H2 says about the later vectors. A contract system
+showed this: G alone gave `max |C^T V|` above 1e-8; G with the start projection gave 7e-15 to 2.6e-14.
+
+Items 2 and 3 therefore apply to **control FG** (start projection plus reorthogonalization). That is the control
+that isolates H2. Control G is reported. Nothing else changes, and no study code had run when this was written.
+
 ## Prior information
 
 L-0046, L-0052 and L-0057 (all on the Brusselator-50 sets, plus the Brusselator-80 set in L-0057) and the calibration
