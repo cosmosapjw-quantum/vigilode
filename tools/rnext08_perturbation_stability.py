@@ -84,7 +84,7 @@ def linear_case(k, c):
     I = mp.eye(2)
     P = I + mp.mpf(2) / 5 * Z + Z * Z / 20
     Q = I - mp.mpf(3) / 5 * Z + mp.mpf(3) / 20 * Z * Z - Z * Z * Z / 60
-    R_rvj = mp.lu_solve(Q, P)
+    R_rvj = mp.inverse(Q) * P
     gated = c * c < 4 * k * (10 * k)
     return {"K": mp.nstr(k, 3), "c_over_K": mp.nstr(c / k, 3), "numerical_range_left": bool(gated),
             "rodas5p_norm": two_norm(R_rodas), "rvj5_norm": two_norm(R_rvj)}
