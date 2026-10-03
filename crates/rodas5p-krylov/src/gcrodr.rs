@@ -453,6 +453,10 @@ pub struct GcrodrSolveOptions {
     /// Build each cycle's first Arnoldi vector from `r - C C^T r` (two
     /// classical Gram-Schmidt passes, charged) instead of `r`.
     pub orthogonalize_start: bool,
+    /// Orthogonalize each new Arnoldi vector against the recycle images
+    /// twice instead of once (research node
+    /// `research/rev01b_gcrodr_recycle_reorthogonalization_20261003`).
+    pub reorthogonalize_recycle: bool,
 }
 
 /// How a carried recycle pair is treated (research nodes
@@ -555,7 +559,7 @@ pub fn solve_gcrodr_with_policy(
         workspace,
         GcrodrSolveOptions {
             policy,
-            orthogonalize_start: false,
+            ..GcrodrSolveOptions::default()
         },
         trace,
         counters,
@@ -952,6 +956,15 @@ fn solve_gcrodr_inner(
                     let coefficient = dot(&local.image[index], &next, counters)?;
                     recycle_coupling[(index, column)] = coefficient;
                     axpy(-coefficient, &local.image[index], &mut next, counters)?;
+                }
+                if options.reorthogonalize_recycle {
+                    // REV-01b: a second pass against C; its coefficients join
+                    // B = C^T A V so that A V_p = C B + V_{p+1} H stays exact.
+                    for index in 0..recycle_rank {
+                        let coefficient = dot(&local.image[index], &next, counters)?;
+                        recycle_coupling[(index, column)] += coefficient;
+                        axpy(-coefficient, &local.image[index], &mut next, counters)?;
+                    }
                 }
                 let h_column = two_pass_mgs(&mut next, &arnoldi_basis, counters)?;
                 for (row, &coefficient) in h_column.iter().enumerate() {

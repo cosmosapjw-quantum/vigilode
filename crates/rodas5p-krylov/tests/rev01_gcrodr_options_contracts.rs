@@ -89,6 +89,7 @@ fn without_the_start_projection_the_options_are_the_policy() {
                 GcrodrSolveOptions {
                     policy,
                     orthogonalize_start: false,
+                    ..GcrodrSolveOptions::default()
                 },
                 &mut tb,
                 &mut cb,
@@ -127,6 +128,7 @@ fn with_the_start_projection_recycled_solves_converge_and_charge_their_work() {
             GcrodrSolveOptions {
                 policy: GcrodrReusePolicy::default(),
                 orthogonalize_start: true,
+                ..GcrodrSolveOptions::default()
             },
             &mut trace,
             &mut counters,
