@@ -445,6 +445,16 @@ pub struct GcrodrTrace {
     open_cycle: Option<(u64, usize, f64)>,
 }
 
+/// [`GcrodrReusePolicy`] plus the REV-01 start projection
+/// (`research/rev01_gcrodr_start_projection_20261003`).
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
+pub struct GcrodrSolveOptions {
+    pub policy: GcrodrReusePolicy,
+    /// Build each cycle's first Arnoldi vector from `r - C C^T r` (two
+    /// classical Gram-Schmidt passes, charged) instead of `r`.
+    pub orthogonalize_start: bool,
+}
+
 /// How a carried recycle pair is treated (research nodes
 /// `research/rnext03_gcrodr_attribution_20261003` and
 /// `research/int01_gcrodr_verified_reuse_20261003`). The default is the
@@ -534,6 +544,43 @@ pub fn solve_gcrodr_with_policy(
     trace: &mut GcrodrTrace,
     counters: &mut WorkCounters,
 ) -> CoreResult<LinearSolveReport> {
+    solve_gcrodr_with_options(
+        op,
+        pc,
+        rhs,
+        x0,
+        config,
+        state,
+        residual_scale,
+        workspace,
+        GcrodrSolveOptions {
+            policy,
+            orthogonalize_start: false,
+        },
+        trace,
+        counters,
+    )
+}
+
+/// GCRO-DR under [`GcrodrSolveOptions`], traced (research node
+/// `research/rev01_gcrodr_start_projection_20261003`). With
+/// `orthogonalize_start = false` it is exactly
+/// [`solve_gcrodr_with_policy`].
+#[allow(clippy::too_many_arguments)]
+pub fn solve_gcrodr_with_options(
+    op: &dyn LinearOperator,
+    pc: &dyn Preconditioner,
+    rhs: &[f64],
+    x0: Option<&[f64]>,
+    config: &GcrodrConfig,
+    state: &mut GcrodrState,
+    residual_scale: Option<&[f64]>,
+    workspace: &mut GcrodrWorkspace,
+    options: GcrodrSolveOptions,
+    trace: &mut GcrodrTrace,
+    counters: &mut WorkCounters,
+) -> CoreResult<LinearSolveReport> {
+    let policy = options.policy;
     if policy.reset_factor.is_some_and(|q| !(q > 0.0 && q < 1.0)) {
         return Err(CoreError::InvalidInput(
             "GCRO-DR reset factor must lie in (0, 1)".into(),
@@ -558,7 +605,7 @@ pub fn solve_gcrodr_with_policy(
         state,
         residual_scale,
         workspace,
-        policy,
+        options,
         Some(&mut *trace),
         counters,
     );
@@ -600,7 +647,7 @@ pub fn solve_gcrodr_with_workspace_and_residual_scale(
         state,
         residual_scale,
         workspace,
-        GcrodrReusePolicy::default(),
+        GcrodrSolveOptions::default(),
         None,
         counters,
     )
@@ -616,7 +663,7 @@ fn solve_gcrodr_inner(
     state: &mut GcrodrState,
     residual_scale: Option<&[f64]>,
     workspace: &mut GcrodrWorkspace,
-    policy: GcrodrReusePolicy,
+    options: GcrodrSolveOptions,
     mut trace: Option<&mut GcrodrTrace>,
     counters: &mut WorkCounters,
 ) -> CoreResult<LinearSolveReport> {
@@ -665,7 +712,7 @@ fn solve_gcrodr_inner(
                 && !local.image.is_empty()
             {
                 let mut rebuilt = false;
-                if let Some(tol) = policy.verify_reuse {
+                if let Some(tol) = options.policy.verify_reuse {
                     let mut images = Vec::with_capacity(local.basis.len());
                     let mut defect = 0.0_f64;
                     for (basis_vector, carried) in local.basis.iter().zip(&local.image) {
@@ -861,7 +908,20 @@ fn solve_gcrodr_inner(
                 )?;
             }
             let residual_after_projection = residual_norm;
-            let beta = safe_l2(&workspace.common.preconditioned);
+            // The first basis vector: the residual itself, or (REV-01) its
+            // part orthogonal to the recycle images, so that [C V] stays
+            // orthonormal and r = C C^T r + beta v_1 lies in its span. The
+            // small problem's right-hand side stays [C V]^T r either way.
+            let mut first_basis = workspace.common.preconditioned.clone();
+            if options.orthogonalize_start && !local.basis.is_empty() {
+                for _ in 0..2 {
+                    for image in &local.image {
+                        let coefficient = dot(image, &first_basis, counters)?;
+                        axpy(-coefficient, image, &mut first_basis, counters)?;
+                    }
+                }
+            }
+            let beta = safe_l2(&first_basis);
             if beta <= f64::MIN_POSITIVE {
                 return Err(CoreError::LinearSolve("GCRO-DR residual breakdown".into()));
             }
@@ -870,7 +930,6 @@ fn solve_gcrodr_inner(
                 .max(1)
                 .min(config.max_arnoldi - total)
                 .min(n.max(1));
-            let mut first_basis = workspace.common.preconditioned.clone();
             for value in &mut first_basis {
                 *value /= beta;
             }
@@ -987,7 +1046,7 @@ fn solve_gcrodr_inner(
                 local.basis = basis;
                 local.image = image;
             }
-            let reset = policy.reset_factor.is_some_and(|q| {
+            let reset = options.policy.reset_factor.is_some_and(|q| {
                 start_rank > 0 && residual_norm > threshold && residual_norm > q * residual_start
             });
             if reset {
