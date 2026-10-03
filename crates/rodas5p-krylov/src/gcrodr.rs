@@ -385,6 +385,111 @@ fn prefix(a: &DenseMatrix, r: usize, c: usize) -> DenseMatrix {
     out
 }
 
+/// Diagnostics of one GCRO-DR cycle (research node
+/// `research/rnext03_gcrodr_attribution_20261003`). Computed with uncounted
+/// plain loops; tracing does not change the solve.
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct GcrodrCycleTrace {
+    /// Recycle rank `k` at the start of the cycle.
+    pub recycle_rank: usize,
+    /// True residual norm at the start of the cycle, before the projection.
+    pub residual_start: f64,
+    /// `||C^T r|| / ||r||` of the preconditioned residual before projection.
+    pub retained_fraction: f64,
+    /// True residual norm after the recycle projection (start if `k = 0`).
+    pub residual_after_projection: f64,
+    pub arnoldi_columns: usize,
+    /// `||C^T r - R y||`-type residual of the small least-squares problem.
+    pub least_squares_residual: f64,
+    /// True residual norm after the cycle's correction.
+    pub residual_end: f64,
+    /// `max |C^T C - I|`, `max |C^T V|`, `max |V^T V - I|` for the recycle
+    /// images `C` and the Arnoldi basis `V` of this cycle.
+    pub recycle_gram_defect: f64,
+    pub recycle_arnoldi_coupling: f64,
+    pub arnoldi_gram_defect: f64,
+    /// Operator applications charged during the cycle (Krylov, diagnostic
+    /// and refresh), from the counters.
+    pub matvecs: u64,
+    /// The stagnation reset dropped the recycle space after this cycle.
+    pub reset: bool,
+}
+
+/// A traced solve: its cycles and the operator applications charged
+/// outside them (initial residual, refresh, final check).
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct GcrodrTrace {
+    pub cycles: Vec<GcrodrCycleTrace>,
+    pub matvecs_total: u64,
+    pub matvecs_outside_cycles: u64,
+}
+
+fn charged_matvecs(c: &WorkCounters) -> u64 {
+    c.linear_matvecs + c.diagnostic_matvecs + c.recycle_refresh_matvecs
+}
+
+fn max_gram_defect(left: &[Vec<f64>], right: &[Vec<f64>], identity: bool) -> f64 {
+    let mut worst = 0.0_f64;
+    for (i, a) in left.iter().enumerate() {
+        for (j, b) in right.iter().enumerate() {
+            let product: f64 = a.iter().zip(b).map(|(x, y)| x * y).sum();
+            let target = if identity && i == j { 1.0 } else { 0.0 };
+            worst = worst.max((product - target).abs());
+        }
+    }
+    worst
+}
+
+/// GCRO-DR with a per-cycle trace and an optional stagnation reset
+/// (research node `research/rnext03_gcrodr_attribution_20261003`). With
+/// `reset_factor = Some(q)`: after a cycle that started with recycle rank
+/// `k > 0` and reduced the true residual by less than the factor `q`
+/// (`residual_end > q residual_start`), the recycle space is dropped; the
+/// solve continues with rank 0 and GCRO-DR rebuilds a recycle space from
+/// its own later cycles, to which the rule applies again. Every operator
+/// application stays charged to the same budget and counters; dropped
+/// vectors are counted in `recycle_dropped_vectors`. With `None` the solve
+/// is exactly [`solve_gcrodr_with_workspace_and_residual_scale`].
+#[allow(clippy::too_many_arguments)]
+pub fn solve_gcrodr_traced(
+    op: &dyn LinearOperator,
+    pc: &dyn Preconditioner,
+    rhs: &[f64],
+    x0: Option<&[f64]>,
+    config: &GcrodrConfig,
+    state: &mut GcrodrState,
+    residual_scale: Option<&[f64]>,
+    workspace: &mut GcrodrWorkspace,
+    reset_factor: Option<f64>,
+    trace: &mut GcrodrTrace,
+    counters: &mut WorkCounters,
+) -> CoreResult<LinearSolveReport> {
+    if reset_factor.is_some_and(|q| !(q > 0.0 && q < 1.0)) {
+        return Err(CoreError::InvalidInput(
+            "GCRO-DR reset factor must lie in (0, 1)".into(),
+        ));
+    }
+    *trace = GcrodrTrace::default();
+    let start = charged_matvecs(counters);
+    let result = solve_gcrodr_inner(
+        op,
+        pc,
+        rhs,
+        x0,
+        config,
+        state,
+        residual_scale,
+        workspace,
+        reset_factor,
+        Some(&mut *trace),
+        counters,
+    );
+    trace.matvecs_total = charged_matvecs(counters) - start;
+    trace.matvecs_outside_cycles =
+        trace.matvecs_total - trace.cycles.iter().map(|c| c.matvecs).sum::<u64>();
+    result
+}
+
 // State, workspace, and work ledger have deliberately distinct lifetimes and commit rules.
 #[allow(clippy::too_many_arguments)]
 pub fn solve_gcrodr_with_workspace_and_residual_scale(
@@ -396,6 +501,35 @@ pub fn solve_gcrodr_with_workspace_and_residual_scale(
     state: &mut GcrodrState,
     residual_scale: Option<&[f64]>,
     workspace: &mut GcrodrWorkspace,
+    counters: &mut WorkCounters,
+) -> CoreResult<LinearSolveReport> {
+    solve_gcrodr_inner(
+        op,
+        pc,
+        rhs,
+        x0,
+        config,
+        state,
+        residual_scale,
+        workspace,
+        None,
+        None,
+        counters,
+    )
+}
+
+#[allow(clippy::too_many_arguments)]
+fn solve_gcrodr_inner(
+    op: &dyn LinearOperator,
+    pc: &dyn Preconditioner,
+    rhs: &[f64],
+    x0: Option<&[f64]>,
+    config: &GcrodrConfig,
+    state: &mut GcrodrState,
+    residual_scale: Option<&[f64]>,
+    workspace: &mut GcrodrWorkspace,
+    reset_factor: Option<f64>,
+    mut trace: Option<&mut GcrodrTrace>,
     counters: &mut WorkCounters,
 ) -> CoreResult<LinearSolveReport> {
     if config.restart < 2
@@ -508,12 +642,17 @@ pub fn solve_gcrodr_with_workspace_and_residual_scale(
                     "GCRO-DR Arnoldi budget exhausted".into(),
                 ));
             }
+            let cycle_start_matvecs = charged_matvecs(counters);
+            let residual_start = residual_norm;
+            let start_rank = local.basis.len();
             rodas5p_core::apply_preconditioner(
                 pc,
                 &workspace.common.residual,
                 &mut workspace.common.preconditioned,
                 counters,
             )?;
+            let preconditioned_norm = safe_l2(&workspace.common.preconditioned);
+            let mut retained_fraction = 0.0;
             if !local.basis.is_empty() {
                 workspace.common.coefficients.resize(local.image.len(), 0.0);
                 for (coefficient, image) in
@@ -548,6 +687,10 @@ pub fn solve_gcrodr_with_workspace_and_residual_scale(
                     counters,
                 )?;
                 counters.recycle_projection_calls += 1;
+                if trace.is_some() {
+                    retained_fraction = safe_l2(&workspace.common.coefficients)
+                        / preconditioned_norm.max(f64::MIN_POSITIVE);
+                }
                 true_residual_into(
                     op,
                     rhs,
@@ -559,6 +702,17 @@ pub fn solve_gcrodr_with_workspace_and_residual_scale(
                 )?;
                 residual_norm = selected_residual_norm(&workspace.common.residual, residual_scale)?;
                 if residual_norm <= threshold {
+                    if let Some(trace) = trace.as_deref_mut() {
+                        trace.cycles.push(GcrodrCycleTrace {
+                            recycle_rank: start_rank,
+                            residual_start,
+                            retained_fraction,
+                            residual_after_projection: residual_norm,
+                            residual_end: residual_norm,
+                            matvecs: charged_matvecs(counters) - cycle_start_matvecs,
+                            ..GcrodrCycleTrace::default()
+                        });
+                    }
                     break;
                 }
                 rodas5p_core::apply_preconditioner(
@@ -568,6 +722,7 @@ pub fn solve_gcrodr_with_workspace_and_residual_scale(
                     counters,
                 )?;
             }
+            let residual_after_projection = residual_norm;
             let beta = safe_l2(&workspace.common.preconditioned);
             if beta <= f64::MIN_POSITIVE {
                 return Err(CoreError::LinearSolve("GCRO-DR residual breakdown".into()));
@@ -645,6 +800,23 @@ pub fn solve_gcrodr_with_workspace_and_residual_scale(
                 })
                 .collect();
             let small_solution = least_squares(&relation, &right_small)?;
+            let traced_geometry = trace.is_some().then(|| {
+                let v = &arnoldi_basis[..actual_columns];
+                let fitted: f64 = (0..relation.nrows())
+                    .map(|row| {
+                        let value: f64 = (0..relation.ncols())
+                            .map(|column| relation[(row, column)] * small_solution[column])
+                            .sum();
+                        (right_small[row] - value).powi(2)
+                    })
+                    .sum();
+                (
+                    fitted.sqrt(),
+                    max_gram_defect(&local.image, &local.image, true),
+                    max_gram_defect(&local.image, v, false),
+                    max_gram_defect(v, v, true),
+                )
+            });
             linear_combination_into(
                 &augmented_basis,
                 &small_solution,
@@ -676,6 +848,32 @@ pub fn solve_gcrodr_with_workspace_and_residual_scale(
             )? {
                 local.basis = basis;
                 local.image = image;
+            }
+            let reset = reset_factor.is_some_and(|q| {
+                start_rank > 0 && residual_norm > threshold && residual_norm > q * residual_start
+            });
+            if reset {
+                counters.recycle_dropped_vectors += local.basis.len() as u64;
+                local.basis.clear();
+                local.image.clear();
+            }
+            if let (Some(trace), Some((ls, gram, coupling, arnoldi_gram))) =
+                (trace.as_deref_mut(), traced_geometry)
+            {
+                trace.cycles.push(GcrodrCycleTrace {
+                    recycle_rank: start_rank,
+                    residual_start,
+                    retained_fraction,
+                    residual_after_projection,
+                    arnoldi_columns: actual_columns,
+                    least_squares_residual: ls,
+                    residual_end: residual_norm,
+                    recycle_gram_defect: gram,
+                    recycle_arnoldi_coupling: coupling,
+                    arnoldi_gram_defect: arnoldi_gram,
+                    matvecs: charged_matvecs(counters) - cycle_start_matvecs,
+                    reset,
+                });
             }
             if residual_norm <= threshold {
                 break;
