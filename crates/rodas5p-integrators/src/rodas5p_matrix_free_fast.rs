@@ -42,8 +42,9 @@ use rodas5p_core::{
     LinearSolverConfig, PreconditionerKind, ShiftedOperator, WorkCounters, rodas5p_coefficients,
 };
 use rodas5p_krylov::{
-    GcrodrConfig, GcrodrWorkspace, GmresConfig, GmresWorkspace, LgmresConfig, LgmresWorkspace,
-    solve_gcrodr_with_workspace, solve_gmres_with_workspace, solve_lgmres_with_workspace,
+    GcrodrConfig, GcrodrWorkspace, GmresCapacity, GmresConfig, GmresWorkspace, LgmresConfig,
+    LgmresWorkspace, solve_gcrodr_with_workspace, solve_gmres_into, solve_gmres_with_workspace,
+    solve_lgmres_with_workspace,
 };
 
 use crate::{
@@ -88,6 +89,9 @@ pub struct Rodas5pMfFastWorkspace {
     cached_t_bits: u64,
     cached_y: Vec<f64>,
     cached_epoch: Option<u64>,
+    /// Research switch (R-NEXT-02): GMRES stage solves through
+    /// `solve_gmres_into`, writing into the stage storage.
+    gmres_into: bool,
     f0: Vec<f64>,
     ft: Vec<f64>,
     u: Vec<f64>,
@@ -167,6 +171,7 @@ impl Rodas5pMfFastWorkspace {
             cached_t_bits: 0,
             cached_y: vec![0.0; n],
             cached_epoch: None,
+            gmres_into: false,
             f0: vec![0.0; n],
             ft: vec![0.0; n],
             u: vec![0.0; s * n],
@@ -177,6 +182,13 @@ impl Rodas5pMfFastWorkspace {
     }
 
     /// The new state of the last attempt.
+    /// Route GMRES stage solves through `solve_gmres_into` (research node
+    /// `research/rnext02_gmres_into_20261003`); same results bit for bit,
+    /// fewer allocations. Off by default.
+    pub fn set_gmres_into(&mut self, on: bool) {
+        self.gmres_into = on;
+    }
+
     pub fn y_new(&self) -> &[f64] {
         &self.y_new
     }
@@ -312,20 +324,43 @@ impl Rodas5pMfFastWorkspace {
                     *x += g * v;
                 }
             }
-            let x0 = (i > 0 && self.config.x0_strategy == InitialGuess::Previous)
-                .then(|| &self.u[(i - 1) * n..i * n]);
+            let previous = i > 0 && self.config.x0_strategy == InitialGuess::Previous;
+            let gmres_config = GmresConfig {
+                restart: self.config.restart,
+                max_arnoldi: self.config.maxiter.max(self.config.restart),
+                rtol: self.config.rtol,
+                atol: linear_atol,
+            };
+            if self.gmres_into && self.config.method == LinearMethod::Gmres {
+                let (done, rest) = self.u.split_at_mut(i * n);
+                let stage = &mut rest[..n];
+                solve_gmres_into(
+                    &shifted,
+                    &self.preconditioner,
+                    &self.stage_rhs,
+                    previous.then(|| &done[(i - 1) * n..]),
+                    &gmres_config,
+                    None,
+                    stage,
+                    &mut self.gmres,
+                    GmresCapacity::unbounded(),
+                    counters,
+                )?;
+                if !stage.iter().all(|value| value.is_finite()) {
+                    return Err(CoreError::NonFinite(
+                        "RODAS5P U-form stage solve produced NaN/Inf".into(),
+                    ));
+                }
+                continue;
+            }
+            let x0 = previous.then(|| &self.u[(i - 1) * n..i * n]);
             let report = match self.config.method {
                 LinearMethod::Gmres => solve_gmres_with_workspace(
                     &shifted,
                     &self.preconditioner,
                     &self.stage_rhs,
                     x0,
-                    &GmresConfig {
-                        restart: self.config.restart,
-                        max_arnoldi: self.config.maxiter.max(self.config.restart),
-                        rtol: self.config.rtol,
-                        atol: linear_atol,
-                    },
+                    &gmres_config,
                     &mut self.gmres,
                     counters,
                 )?,
@@ -438,6 +473,61 @@ pub fn integrate_rodas5p_mf_fast_observed(
     adaptive: &AdaptiveStepConfig,
     output: &OutputSchedule,
 ) -> CoreResult<Rodas5pMfFastResult> {
+    integrate_rodas5p_mf_fast_observed_traced(
+        problem,
+        t_span,
+        y0,
+        linear_config,
+        adaptive,
+        output,
+        false,
+        &mut |_, _, _, _, _| {},
+    )
+}
+
+/// [`integrate_rodas5p_mf_fast_observed`] with
+/// [`Rodas5pMfFastWorkspace::set_gmres_into`] on (research node
+/// `research/rnext02_gmres_into_20261003`).
+pub fn integrate_rodas5p_mf_fast_observed_gmres_into(
+    problem: &OdeProblem,
+    t_span: (f64, f64),
+    y0: &[f64],
+    linear_config: &LinearSolverConfig,
+    adaptive: &AdaptiveStepConfig,
+    output: &OutputSchedule,
+) -> CoreResult<Rodas5pMfFastResult> {
+    integrate_rodas5p_mf_fast_observed_traced(
+        problem,
+        t_span,
+        y0,
+        linear_config,
+        adaptive,
+        output,
+        true,
+        &mut |_, _, _, _, _| {},
+    )
+}
+
+/// Called after every attempt with the attempt's `t`, `y` and step, its
+/// embedded error norm (`None` when the attempt failed) and the workspace
+/// (stages and `y_new`), before the step is accepted or rejected.
+pub type MfAttemptObserver<'a> =
+    &'a mut dyn FnMut(f64, &[f64], f64, Option<f64>, &Rodas5pMfFastWorkspace);
+
+/// The U-form driver with an attempt observer (research records, e.g. the
+/// frozen systems of `research/rnext03_gcrodr_attribution_20261003`) and
+/// the `gmres_into` switch. The observer cannot change the run.
+#[allow(clippy::too_many_arguments)]
+pub fn integrate_rodas5p_mf_fast_observed_traced(
+    problem: &OdeProblem,
+    t_span: (f64, f64),
+    y0: &[f64],
+    linear_config: &LinearSolverConfig,
+    adaptive: &AdaptiveStepConfig,
+    output: &OutputSchedule,
+    gmres_into: bool,
+    observer: MfAttemptObserver<'_>,
+) -> CoreResult<Rodas5pMfFastResult> {
     adaptive.validate()?;
     let (mut t, tf) = t_span;
     if tf < t || y0.len() != problem.dimension {
@@ -446,6 +536,7 @@ pub fn integrate_rodas5p_mf_fast_observed(
         ));
     }
     let mut work = Rodas5pMfFastWorkspace::new(problem, linear_config)?;
+    work.set_gmres_into(gmres_into);
     let mut y = y0.to_vec();
     let mut h = adaptive.initial_step.min(crate::output::step_to(t, tf)?);
     let mut controller = AdaptiveControllerState::default();
@@ -485,6 +576,7 @@ pub fn integrate_rodas5p_mf_fast_observed(
             &mut counters,
         );
         fresh_state = work.jvp.is_some();
+        observer(t, &y, trial_h, outcome.as_ref().ok().copied(), &work);
         let (error, failure) = match outcome {
             Ok(error) if error <= 1.0 => (error, None),
             Ok(error) => (error, Some(AdaptiveFailureKind::LocalError)),

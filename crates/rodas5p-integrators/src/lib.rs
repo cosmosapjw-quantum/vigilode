@@ -352,8 +352,9 @@ pub use rodas5p_fast_small::{
     integrate_rodas5p_fast_small_observed,
 };
 pub use rodas5p_matrix_free_fast::{
-    RODAS5P_MF_FAST_DRIVER_ID, Rodas5pMfFastResult, Rodas5pMfFastWorkspace,
-    integrate_rodas5p_mf_fast_observed,
+    MfAttemptObserver, RODAS5P_MF_FAST_DRIVER_ID, Rodas5pMfFastResult, Rodas5pMfFastWorkspace,
+    integrate_rodas5p_mf_fast_observed, integrate_rodas5p_mf_fast_observed_gmres_into,
+    integrate_rodas5p_mf_fast_observed_traced,
 };
 pub use sabr::{PredictorKind, SabrConfig, StageHistory, sabr_step};
 pub use scientific_corpus_v2::{
