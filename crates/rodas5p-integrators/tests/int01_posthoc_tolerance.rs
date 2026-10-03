@@ -452,6 +452,12 @@ fn study(gmres_only: bool) -> Value {
 #[test]
 #[ignore = "post-hoc diagnostic of research/int01_gcrodr_verified_reuse_20261003; release build"]
 fn gcrodr_reuse_tolerance_posthoc() {
+    // Without INT01_POSTHOC_TOL (the workspace's ignored-test run) there is
+    // no tolerance to diagnose.
+    if std::env::var("INT01_POSTHOC_TOL").is_err() {
+        println!("INT01_POSTHOC_TOL not set: post-hoc diagnostic skipped");
+        return;
+    }
     let report = study(false);
     let mut out = serde_json::Map::new();
     for set in ["trajectory", "one_step", "fresh"] {

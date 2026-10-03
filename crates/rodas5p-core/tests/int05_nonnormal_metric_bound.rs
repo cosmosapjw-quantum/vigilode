@@ -147,9 +147,18 @@ fn nonnormal_metric_bound_cases() {
             }
         }
     }
-    let path = std::env::var("INT05_CASES").expect("INT05_CASES");
+    // Without INT05_CASES (the workspace's ignored-test run) nothing is written.
+    let Ok(path) = std::env::var("INT05_CASES") else {
+        println!("INT05_CASES not set: cases not written");
+        return;
+    };
     let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
     let target = root.join(path);
+    assert!(
+        !target.exists(),
+        "immutable output exists: {}",
+        target.display()
+    );
     std::fs::write(
         &target,
         serde_json::to_string_pretty(&json!({"schema": "vigilode-int05-cases-v1", "cases": cases}))
