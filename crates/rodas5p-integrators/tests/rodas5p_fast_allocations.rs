@@ -1,11 +1,12 @@
 //! Allocation contract of the lean RODAS5P driver (research nodes
 //! `research/stiff_rodas5p_fast_20261002` and `..._fast_v2_20261002`): after
 //! its workspace is built, a step allocates nothing when the problem fills
-//! its Jacobian in place. One test per binary, so the counting allocator sees
-//! no other thread.
+//! its Jacobian in place. Allocations are counted per thread: the test
+//! harness's own thread can allocate while a measured run is in progress
+//! (hosted CI saw 50 vs 46 with one global counter on unchanged code).
 
 use std::alloc::{GlobalAlloc, Layout, System};
-use std::sync::atomic::{AtomicUsize, Ordering};
+use std::cell::Cell;
 
 use rodas5p_core::{LinearMethod, LinearSolverConfig};
 use rodas5p_integrators::{
@@ -15,19 +16,27 @@ use rodas5p_integrators::{
 
 struct Counting;
 
-static ALLOCATIONS: AtomicUsize = AtomicUsize::new(0);
+thread_local! {
+    // A const-initialized `Cell` needs no allocation and no destructor, so
+    // the allocator can use it on any thread at any time.
+    static ALLOCATIONS: Cell<usize> = const { Cell::new(0) };
+}
+
+fn count() {
+    let _ = ALLOCATIONS.try_with(|n| n.set(n.get() + 1));
+}
 
 unsafe impl GlobalAlloc for Counting {
     unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
-        ALLOCATIONS.fetch_add(1, Ordering::Relaxed);
+        count();
         unsafe { System.alloc(layout) }
     }
     unsafe fn alloc_zeroed(&self, layout: Layout) -> *mut u8 {
-        ALLOCATIONS.fetch_add(1, Ordering::Relaxed);
+        count();
         unsafe { System.alloc_zeroed(layout) }
     }
     unsafe fn realloc(&self, ptr: *mut u8, layout: Layout, new_size: usize) -> *mut u8 {
-        ALLOCATIONS.fetch_add(1, Ordering::Relaxed);
+        count();
         unsafe { System.realloc(ptr, layout, new_size) }
     }
     unsafe fn dealloc(&self, ptr: *mut u8, layout: Layout) {
@@ -38,10 +47,12 @@ unsafe impl GlobalAlloc for Counting {
 #[global_allocator]
 static COUNTING: Counting = Counting;
 
+/// Allocations made by this thread during `f` (the drivers measured here
+/// run on the calling thread).
 fn allocations_during<T>(f: impl FnOnce() -> T) -> (T, usize) {
-    let before = ALLOCATIONS.load(Ordering::Relaxed);
+    let before = ALLOCATIONS.with(Cell::get);
     let value = f();
-    (value, ALLOCATIONS.load(Ordering::Relaxed) - before)
+    (value, ALLOCATIONS.with(Cell::get) - before)
 }
 
 fn config(rtol: f64) -> AdaptiveStepConfig {
