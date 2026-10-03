@@ -65,3 +65,41 @@ authority stays on HOLD, and `SPEEDUP_UNPROVEN` is retained.
 
 R4/L-0024 (serial cheapest, margin under one solve), L-0035 (action-first 0.565x of matrix order), L-0036 (seeded
 radius closes the R4 fixtures with two evaluations). No code of this node exists before this commit.
+
+---
+
+## Results (appended after the run at `a06d385`)
+
+Output: `RESULTS.json`. Ledger row L-0050.
+
+**Gate: FAIL** (items 1, 2 and 4 hold; item 3 fails).
+
+| Gate item | Outcome |
+|---|---|
+| 1. Same target | **holds**: for every q=2 candidate, the recomputed serial certificate matches the step's bit for bit (operations, output bound, stage bounds), and both arms used the same inputs |
+| 2. Closure vs acceptance | **holds**: both arms close on every candidate, and both accept every candidate within the certified budget. The action-first output bound is 1.0000000000000002x to 1.00000000006x the serial bound |
+| 3. Everything charged | **fails**: the test charged the action-first arm with its evaluations plus the witness, assuming the box certificate adds nothing else. Its own check found that the certificate also counts its finishing work (output and embedded bounds): 68 operations per component (73 = 68 + 5 at n = 1, 292 at n = 4, 1,168 at n = 16; post-hoc diagnostic). So the recorded action-first margins are too favourable by `68 n / c_solve` per candidate |
+| 4. Decision | **holds** (as recorded): the rule is evaluated for every n |
+
+All 39 attempts took the q=2 lane (q=1 never passed, and no fallback was needed), with critical-path depth 7.
+Margins in sequential-solve units (`c_solve`: unpreconditioned GMRES on the diagonal `W`, 20 to 18,316 operations
+per stage solve). The action-first column below is **corrected post hoc** by the missing `68 n` per candidate:
+
+| n | serial / action-first operations | mean margin, serial | mean margin, action-first (corrected) | decision |
+|---|---|---|---|---|
+| 1 | 425 / 1,095 | -20.5 | -54.4 | abstain |
+| 2 | 1,010 / 2,190 | -12.0 | -27.3 | abstain |
+| 4 | 2,660 / 4,380 | -5.6 | -9.9 | abstain |
+| 8 | 7,880 / 8,760 | -2.07 | -2.41 | abstain |
+| 16 | 26,000 / 17,520 | -0.42 | +0.043 (total +0.65 over 15 attempts) | admit by the rule, marginally |
+
+Reading: the certificate costs more than the eight sequential stage solves it replaces, except at n = 16. There
+the action-first arm becomes cheaper than serial, and the margin is 0.04 solve units per step with no dispatch
+charge (threads = 1). Real dispatch, a pool, or a preconditioned (cheaper) solve would remove that margin.
+Parallel expansion therefore stops on this family for n <= 8. At n = 16 the regime is admitted only by a margin
+smaller than any uncounted overhead, so no speed claim follows. Timing authority stays on HOLD, and
+`SPEEDUP_UNPROVEN` is retained.
+
+Disclosure: the post-hoc diagnostic was a temporary test that was not committed. It printed the evaluation, box and
+certificate operations for n = 1, 4 and 16, and the corrected column uses those measured 68 n finishing operations.
+The recorded verdict stays FAIL. No development run of the study preceded the recorded run.
