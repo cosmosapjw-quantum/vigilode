@@ -41,6 +41,10 @@ use crate::{
 pub const LAGUERRE_ADJOINT_DEGREE_LIMIT: usize = 128;
 /// De Casteljau halving depth (`2^depth` pieces).
 pub const LAGUERRE_ADJOINT_DEPTH: usize = 3;
+/// Largest depth a caller may request: the setup grows as `2^depth`, so a
+/// larger public input is refused before any work (research node
+/// `research/rnext04_laguerre_admission_20261003`).
+pub const LAGUERRE_ADJOINT_MAX_DEPTH: usize = 12;
 
 type Bernstein = Vec<Interval>;
 
@@ -156,6 +160,11 @@ fn envelopes_impl(
     depth: usize,
     ops: &mut Ops,
 ) -> CoreResult<Vec<f64>> {
+    if depth > LAGUERRE_ADJOINT_MAX_DEPTH {
+        return Err(CoreError::InvalidInput(format!(
+            "LAGUERRE_ADJOINT_UNSUPPORTED: depth {depth} above {LAGUERRE_ADJOINT_MAX_DEPTH}"
+        )));
+    }
     if coefficients.is_empty() || coefficients.len() - 1 > LAGUERRE_ADJOINT_DEGREE_LIMIT {
         return Err(CoreError::InvalidInput(format!(
             "LAGUERRE_ADJOINT_UNSUPPORTED: degree must be in 0..={LAGUERRE_ADJOINT_DEGREE_LIMIT}"
@@ -250,7 +259,8 @@ pub fn laguerre_adjoint_envelopes_interval(
 }
 
 /// What the envelopes depend on, and nothing else: the degree, the extent
-/// and depth bits, the coefficient interval bits and the proof version.
+/// and depth bits, the coefficient interval bits, the proof version and the
+/// resource limits the envelopes were computed under.
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct EnvelopeKey {
     pub degree: usize,
@@ -258,6 +268,10 @@ pub struct EnvelopeKey {
     pub depth: usize,
     pub coefficients_sha256: String,
     pub proof_version: &'static str,
+    /// [`LAGUERRE_ADJOINT_DEGREE_LIMIT`] when the key was made.
+    pub degree_limit: usize,
+    /// [`LAGUERRE_ADJOINT_MAX_DEPTH`] when the key was made.
+    pub max_depth: usize,
 }
 
 /// Version of the envelope construction; a change of the proof or the
@@ -282,6 +296,8 @@ impl EnvelopeKey {
             depth,
             coefficients_sha256: crate::sha256_hex(text.as_bytes()),
             proof_version,
+            degree_limit: LAGUERRE_ADJOINT_DEGREE_LIMIT,
+            max_depth: LAGUERRE_ADJOINT_MAX_DEPTH,
         }
     }
 }

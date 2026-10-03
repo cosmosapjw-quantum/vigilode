@@ -797,6 +797,121 @@ impl JointPhiReport {
     }
 }
 
+/// The components of a Laguerre total and the report fields that hold them
+/// (research node `research/rnext04_laguerre_admission_20261003`). The
+/// transform `X = -A / beta` with the stored `beta` and the coefficients for
+/// the exact `a = h beta` make the transform exact, so it has no field.
+pub const LAGUERRE_TOTAL_COMPONENTS: [(&str, &str); 6] = [
+    (
+        "transform",
+        "none: exact by construction (X = -A/beta, coefficients for a = h beta)",
+    ),
+    ("tail", "column_errors[k].truncation"),
+    ("coefficient", "column_errors[k].coefficient"),
+    ("recurrence", "column_errors[k].recurrence_adjoint"),
+    (
+        "accumulation",
+        "column_errors[k].summation and fused_summation",
+    ),
+    ("normalization", "column_errors[k].normalization"),
+];
+
+pub const LAGUERRE_TOTAL_NOT_ADMITTED: &str = "LAGUERRE_TOTAL_NOT_ADMITTED";
+
+impl JointPhiReport {
+    /// The registry's recomputation of the Laguerre total from the report
+    /// fields, rounded upward in the action's order: `fused_summation`, then
+    /// per column truncation, coefficient, summation, then every column's
+    /// `recurrence_adjoint`, then every column's `normalization`. `None`
+    /// unless every column has a `recurrence_adjoint`.
+    pub fn laguerre_total_recomputed(&self) -> CoreResult<Option<f64>> {
+        if self
+            .column_errors
+            .iter()
+            .any(|c| c.recurrence_adjoint.is_none())
+        {
+            return Ok(None);
+        }
+        let mut total = self.fused_summation;
+        for c in &self.column_errors {
+            total = add_up(total, c.truncation)?;
+            total = add_up(total, c.coefficient)?;
+            total = add_up(total, c.summation)?;
+        }
+        for c in &self.column_errors {
+            total = add_up(total, c.recurrence_adjoint.unwrap_or(0.0))?;
+        }
+        for c in &self.column_errors {
+            total = add_up(total, c.normalization)?;
+        }
+        Ok(Some(total))
+    }
+
+    /// Opt-in admission of the Laguerre total (research node
+    /// `research/rnext04_laguerre_admission_20261003`): `||fused - F||_2 <=
+    /// laguerre_adjoint_total <= budget` for a Laguerre recurrence report with
+    /// certified enclosures, a Gershgorin-verified enclosure, degree at most
+    /// [`crate::laguerre_adjoint::LAGUERRE_ADJOINT_DEGREE_LIMIT`] and every
+    /// column's adjoint bound. The scalar branch defers to
+    /// [`Self::admit_total_error`]. Everything else is rejected;
+    /// [`Self::total_error`] is not changed.
+    pub fn admit_laguerre_total(&self, budget: f64) -> TotalErrorAdmission {
+        let reject = |why: String| TotalErrorAdmission::Rejected {
+            reason: format!("{LAGUERRE_TOTAL_NOT_ADMITTED}: {why}"),
+        };
+        if !(budget.is_finite() && budget >= 0.0) {
+            return reject(format!("absolute budget {budget:e} outside [0, inf)"));
+        }
+        if self.basis != PolynomialBasis::Laguerre {
+            return reject("not a Laguerre report".into());
+        }
+        if self.execution != EXECUTION_CERTIFIED {
+            return reject(format!("execution {}", self.execution));
+        }
+        if !matches!(self.evidence, EnclosureEvidence::Gershgorin) {
+            return reject("the spectral enclosure is not verified".into());
+        }
+        if self.branch == "scalar" {
+            return self.admit_total_error(budget);
+        }
+        if self.degree > crate::laguerre_adjoint::LAGUERRE_ADJOINT_DEGREE_LIMIT {
+            return reject(format!(
+                "degree {} above the adjoint limit {}",
+                self.degree,
+                crate::laguerre_adjoint::LAGUERRE_ADJOINT_DEGREE_LIMIT
+            ));
+        }
+        let Some(bound) = self.laguerre_adjoint_total.filter(|_| {
+            self.column_errors
+                .iter()
+                .all(|c| c.recurrence_adjoint.is_some())
+        }) else {
+            return reject("a column has no adjoint bound".into());
+        };
+        if !bound.is_finite() {
+            return reject("the total is not finite".into());
+        }
+        if bound > budget {
+            return reject(format!(
+                "{TOTAL_ERROR_ABOVE_BUDGET}: bound {bound:e} > budget {budget:e}"
+            ));
+        }
+        let norm = crate::safe_l2(&self.fused);
+        TotalErrorAdmission::Admitted {
+            bound,
+            budget,
+            relative_bound: if norm > 0.0 {
+                bound / norm
+            } else if bound == 0.0 {
+                0.0
+            } else {
+                f64::INFINITY
+            },
+            condition_proxy: self.condition_proxy,
+        }
+    }
+}
+
 /// Upper bound on the Euclidean norm, formed on a power-of-two scale
 /// ([`ExpBound::l2_norm_upper`], re-audit R4 POLY-DEV-01): the squares of
 /// `1e300` no longer overflow and those of `1e-300` no longer round up to a
