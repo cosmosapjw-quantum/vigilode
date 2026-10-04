@@ -69,4 +69,25 @@ G4 Contract tests pass; fmt and clippy clean.
 No default solver change, no timing, no claim beyond this invariant-leaf
 client.
 
+## Amendment before any run (2026-10-04, while writing the code)
+
+1. Initial condition. The source requires the path's start `p(0)` to equal
+   the state exactly, which its rational `enforce_start` guarantees. In
+   binary64 the start coefficient `z - sum_k c[k,0]` is generally not
+   representable, so exact equality would reject almost every candidate.
+   The native certificate instead charges the mismatch: the start error is
+   `state.error + max_j |a_j - p_j(0)|_1` (outward), which is the source's
+   bound with the true start at distance at most that from `p(0)`; it is
+   zero when they are equal. The G3 control "initial-condition mismatch"
+   therefore fails closed by its charged bound exceeding the budget, not by
+   an error.
+2. Phase witness (finding A-PORT-03). The source's `certificate` takes the
+   phase polynomial and `phase_error` from the caller. The native
+   certificate builds the phase witness itself from (omega, t, h) with the
+   rotation enclosure and does not accept a caller phase; the predictor
+   computes its own binary64 phase, which is untrusted. G2 parity compares
+   with the source certificate given the source's own phase for the same
+   (omega, t, h) and the state with `a = p(0)` (so the source's equality
+   check holds).
+
 ## Results (append only after the recorded run)
