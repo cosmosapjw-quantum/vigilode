@@ -41,3 +41,32 @@ Reported: predictor calls, transforms, padded grid points, certified steps
 and rejections next to the direct predictor. No timing.
 
 ## Results (append only after the recorded run)
+
+### Executed result — 2026-10-04 (source `fb52d1f`)
+
+Commands: `PP06_CASES=research/pp06_fourier_fft_candidate_20261004/cases.json
+cargo test --release -p rodas5p-integrators --locked --test pp06_fourier_fft
+-- --ignored --nocapture`, then `python3 tools/pp06_fft_check.py --cases
+.../cases.json --output .../RESULTS.json`. Unit test
+`fourier_path_candidate::tests::roundtrip_and_conjugation_order` passes
+(G4): a transform roundtrip reproduces the coefficients to 1e-15 while
+conjugating grid values gives a different right side (relative
+difference > 0.5).
+
+**Verdict: FAIL (G3 as registered); G1, G2 and G4 PASS.**
+- G1: on all 48 predictor calls of the padded runs (omega 40 and 1e4) the
+  FFT right side equals the direct noncyclic one within 5.3e-16 relative.
+- G2: both FFT runs reach T = 1/2 in 4 steps; every state and interior
+  point encloses the reference (worst 0.108 and 0.069); 120 forward and 48
+  inverse 2-D transforms per run on grids of at most 1024 points.
+- G3 FAIL: the under-padded harmonic axis (`N_k = 8`, the power of two
+  above `2K + 1 = 7`; the registered `2K + 1` is not a power of two) was
+  refused without the override in 16 of 24 calls (the other 8 are first
+  sweeps whose constant paths fit in 8 rows). With the override forced, the
+  aliased right side differs from the direct one by at most 3.6e-12
+  relative, all 4 steps were committed, and every committed bound encloses
+  the reference (worst 0.083). As in PP05, the folded harmonics of this
+  client are below the tolerance, so the certificate correctly accepted
+  accurate candidates; the registered expectation of rejection did not
+  occur and the control did not exercise harmful aliasing.
+- No bound is below the actual error in any run.
