@@ -345,6 +345,23 @@ pub fn certify_exp_action_stepped(
     degree: usize,
     steps: usize,
 ) -> CoreResult<NonnormalExpCertificate> {
+    stepped_with_propagation(a, v, tau, metric, degree, steps, None)
+}
+
+/// The stepped certificate with either propagation: `None` is REV-02's
+/// Crouzeix-Palencia factor with the numerical-range box (unchanged), and
+/// `Some(mu)` is `||e^{tB}||_2 <= e^{t mu}` for a verified
+/// `mu >= lambda_max((B + B^T)/2)` (RVJ DAG node PP12), which needs no
+/// factor on propagation.
+fn stepped_with_propagation(
+    a: &[Vec<f64>],
+    v: &[f64],
+    tau: f64,
+    metric: Option<&[f64]>,
+    degree: usize,
+    steps: usize,
+    lognorm: Option<f64>,
+) -> CoreResult<NonnormalExpCertificate> {
     // Validation, B and Omega as in the single-step certificate.
     let probe = certify_exp_action(a, v, 0.0, metric, degree, None)?;
     if steps == 0 {
@@ -413,7 +430,8 @@ pub fn certify_exp_action_stepped(
         }
         sqrt_up(total)
     };
-    let decay = |count: usize| decay_upper(count, h, range.re_hi);
+    let rate = lognorm.unwrap_or(range.re_hi);
+    let decay = |count: usize| decay_upper(count, h, rate);
     let mut x: Vec<f64> = u
         .iter()
         .map(|w| midpoint_radius(*w).map(|(m, _)| m))
@@ -451,7 +469,11 @@ pub fn certify_exp_action_stepped(
             return Ok(unbounded(x));
         }
     }
-    let error_b = mul_up(cp, total)?;
+    let error_b = if lognorm.is_some() {
+        total
+    } else {
+        mul_up(cp, total)?
+    };
     let inv_max = d
         .iter()
         .map(|value| div_up(1.0, *value))
@@ -563,5 +585,209 @@ pub fn certify_exp_action_auto(
         Ok((AutoMetric::Osborne, osb, ident, [osb_steps, ident_steps]))
     } else {
         Ok((AutoMetric::Identity, ident, osb, [ident_steps, osb_steps]))
+    }
+}
+
+/// A stepped certificate with log-norm propagation (RVJ DAG node PP12,
+/// research node `research/pp12_lognorm_decay_20261004`).
+#[derive(Clone, Debug, PartialEq, Serialize)]
+pub struct LognormCertificate {
+    pub certificate: NonnormalExpCertificate,
+    /// Verified `mu >= lambda_max((B + B^T)/2)` used for propagation.
+    pub mu_up: f64,
+    /// `interval-cholesky` or the `gershgorin` fallback.
+    pub mu_source: &'static str,
+    /// REV-02's propagation rate (numerical-range box), for comparison.
+    pub gershgorin_re_hi: f64,
+    pub metric: AutoMetric,
+    pub steps: usize,
+}
+
+#[allow(clippy::needless_range_loop, clippy::neg_cmp_op_on_partial_ord)]
+fn metric_matrix(a: &[Vec<f64>], d: &[f64]) -> CoreResult<Vec<Vec<Interval>>> {
+    let n = a.len();
+    let mut b = vec![vec![Interval::point(0.0)?; n]; n];
+    for i in 0..n {
+        for j in 0..n {
+            b[i][j] = Interval::point(d[i])?
+                .mul(Interval::point(a[i][j])?)?
+                .div(Interval::point(d[j])?)?;
+        }
+    }
+    Ok(b)
+}
+
+fn interval_square(x: Interval) -> CoreResult<Interval> {
+    if x.contains_zero() {
+        Interval::new(0.0, mul_up(x.mag(), x.mag())?)
+    } else {
+        Interval::new(mul_down(x.mig(), x.mig())?, mul_up(x.mag(), x.mag())?)
+    }
+}
+
+/// Whether the interval Cholesky factorization of `mu I - S` is feasible:
+/// then every symmetric matrix in `S` has all eigenvalues below `mu`
+/// (Alefeld and Mayer: feasibility of the interval Cholesky method implies
+/// positive definiteness of every symmetric member).
+#[allow(clippy::needless_range_loop, clippy::neg_cmp_op_on_partial_ord)]
+fn interval_cholesky_feasible(mu: f64, s: &[Vec<Interval>]) -> CoreResult<bool> {
+    let n = s.len();
+    let mut l = vec![vec![Interval::point(0.0)?; n]; n];
+    for k in 0..n {
+        let mut d = Interval::point(mu)?.sub(s[k][k])?;
+        for j in 0..k {
+            d = d.sub(interval_square(l[k][j])?)?;
+        }
+        if !(d.lo > 0.0) {
+            return Ok(false);
+        }
+        let root = Interval::new(sqrt_down(d.lo)?, sqrt_up(d.hi)?)?;
+        l[k][k] = root;
+        for i in k + 1..n {
+            let mut x = -s[i][k];
+            for j in 0..k {
+                x = x.sub(l[i][j].mul(l[k][j])?)?;
+            }
+            l[i][k] = x.div(root)?;
+        }
+    }
+    Ok(true)
+}
+
+/// Largest eigenvalue of a symmetric binary64 matrix by cyclic Jacobi: an
+/// estimate only, used to start the verified search.
+#[allow(clippy::needless_range_loop, clippy::neg_cmp_op_on_partial_ord)]
+fn jacobi_max_eigenvalue(m: &[Vec<f64>]) -> f64 {
+    let n = m.len();
+    let mut a = m.to_vec();
+    for _ in 0..100 {
+        let off: f64 = (0..n)
+            .flat_map(|i| (0..n).filter(move |j| *j != i).map(move |j| (i, j)))
+            .map(|(i, j)| a[i][j] * a[i][j])
+            .sum();
+        if off < 1e-30 {
+            break;
+        }
+        for p in 0..n {
+            for q in p + 1..n {
+                if a[p][q] == 0.0 {
+                    continue;
+                }
+                let theta = (a[q][q] - a[p][p]) / (2.0 * a[p][q]);
+                let t = theta.signum() / (theta.abs() + (theta * theta + 1.0).sqrt());
+                let t = if theta == 0.0 { 1.0 } else { t };
+                let c = 1.0 / (t * t + 1.0).sqrt();
+                let sn = t * c;
+                for k in 0..n {
+                    let (akp, akq) = (a[k][p], a[k][q]);
+                    a[k][p] = c * akp - sn * akq;
+                    a[k][q] = sn * akp + c * akq;
+                }
+                for k in 0..n {
+                    let (apk, aqk) = (a[p][k], a[q][k]);
+                    a[p][k] = c * apk - sn * aqk;
+                    a[q][k] = sn * apk + c * aqk;
+                }
+            }
+        }
+    }
+    (0..n).map(|i| a[i][i]).fold(f64::NEG_INFINITY, f64::max)
+}
+
+/// A verified `mu >= lambda_max` of the symmetric part of the interval
+/// matrix `b`: the binary64 Jacobi estimate raised by `1e-12 (1 + |est|)`
+/// times 10^k (k < 40) until the interval Cholesky of `mu I - S` is
+/// feasible; otherwise the symmetric-part Gershgorin row bound.
+#[allow(clippy::needless_range_loop, clippy::neg_cmp_op_on_partial_ord)]
+pub fn symmetric_part_upper(b: &[Vec<Interval>]) -> CoreResult<(f64, &'static str)> {
+    let n = b.len();
+    let half = Interval::point(0.5)?;
+    let mut s = vec![vec![Interval::point(0.0)?; n]; n];
+    for i in 0..n {
+        for j in 0..n {
+            s[i][j] = b[i][j].add(b[j][i])?.mul(half)?;
+        }
+    }
+    let mut gershgorin = f64::NEG_INFINITY;
+    for i in 0..n {
+        let mut row = s[i][i].hi;
+        for j in 0..n {
+            if j != i {
+                row = add_up(row, s[i][j].mag())?;
+            }
+        }
+        gershgorin = gershgorin.max(row);
+    }
+    let mid: Vec<Vec<f64>> = s
+        .iter()
+        .map(|row| row.iter().map(|x| 0.5 * x.lo + 0.5 * x.hi).collect())
+        .collect();
+    let estimate = jacobi_max_eigenvalue(&mid);
+    if estimate.is_finite() {
+        let mut offset = 1e-12 * (1.0 + estimate.abs());
+        for _ in 0..40 {
+            let mu = estimate + offset;
+            if mu >= gershgorin {
+                break;
+            }
+            if interval_cholesky_feasible(mu, &s)? {
+                return Ok((mu, "interval-cholesky"));
+            }
+            offset *= 10.0;
+        }
+    }
+    Ok((gershgorin, "gershgorin"))
+}
+
+/// The stepped certificate (same steps, degree and enclosures as REV-02)
+/// with propagation `e^{t mu_up}`.
+pub fn certify_exp_action_lognorm(
+    a: &[Vec<f64>],
+    v: &[f64],
+    tau: f64,
+    metric: Option<&[f64]>,
+    degree: usize,
+    steps: usize,
+) -> CoreResult<LognormCertificate> {
+    let probe = certify_exp_action(a, v, 0.0, metric, degree, None)?;
+    let ones = vec![1.0; v.len()];
+    let b = metric_matrix(a, metric.unwrap_or(&ones))?;
+    let (mu_up, mu_source) = symmetric_part_upper(&b)?;
+    let certificate = stepped_with_propagation(a, v, tau, metric, degree, steps, Some(mu_up))?;
+    Ok(LognormCertificate {
+        certificate,
+        mu_up,
+        mu_source,
+        gershgorin_re_hi: probe.numerical_range.re_hi,
+        metric: if metric.is_some() {
+            AutoMetric::Osborne
+        } else {
+            AutoMetric::Identity
+        },
+        steps,
+    })
+}
+
+/// [`certify_exp_action_auto`] with log-norm propagation: identity and
+/// Osborne metrics, the REV-02 step rule and degree 20; returns the smaller
+/// bound first (both are valid).
+pub fn certify_exp_action_lognorm_auto(
+    a: &[Vec<f64>],
+    v: &[f64],
+    tau: f64,
+) -> CoreResult<(LognormCertificate, LognormCertificate)> {
+    let osborne = osborne_metric(a)?;
+    let mut out = Vec::new();
+    for metric in [None, Some(osborne.as_slice())] {
+        let probe = certify_exp_action(a, v, 0.0, metric, 20, None)?;
+        let steps = stepping_rule(probe.numerical_range, tau);
+        out.push(certify_exp_action_lognorm(a, v, tau, metric, 20, steps)?);
+    }
+    let osb = out.pop().unwrap();
+    let ident = out.pop().unwrap();
+    if osb.certificate.error_upper < ident.certificate.error_upper {
+        Ok((osb, ident))
+    } else {
+        Ok((ident, osb))
     }
 }
