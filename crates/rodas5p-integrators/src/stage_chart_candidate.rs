@@ -153,22 +153,58 @@ fn check_shapes(
     k: &[f64],
 ) -> CoreResult<(usize, usize)> {
     let (s, n) = (target.stages(), problem.dimension());
-    if n == 0
+    if s == 0
+        || n == 0
         || problem.q.len() != n
         || problem.jacobian.len() != n
         || problem.jacobian.iter().any(|row| row.len() != n)
-        || k.len() != s * n
+        || Some(k.len()) != s.checked_mul(n)
+        || target.coupling_rows.len() != s
+        || target
+            .alpha_rows
+            .iter()
+            .enumerate()
+            .any(|(i, row)| row.len() != i)
+        || target
+            .coupling_rows
+            .iter()
+            .enumerate()
+            .any(|(i, row)| row.len() != i)
     {
         return Err(CoreError::Dimension(format!(
             "stage chart: expected {s} stages of dimension {n} ({} values), got {}",
-            s * n,
+            s.saturating_mul(n),
             k.len()
         )));
+    }
+    if !problem.h.is_finite()
+        || !target.gamma.is_finite()
+        || !problem
+            .jacobian
+            .iter()
+            .flatten()
+            .chain(&problem.y)
+            .chain(&problem.q)
+            .chain(k)
+            .chain(target.alpha_rows.iter().flatten())
+            .all(|value| value.is_finite())
+        || target
+            .coupling_rows
+            .iter()
+            .flatten()
+            .any(|value| !value.lo.is_finite() || !value.hi.is_finite() || value.lo > value.hi)
+    {
+        return Err(CoreError::NonFinite(
+            "stage chart: invalid or non-finite target, problem or stage value".into(),
+        ));
     }
     Ok((s, n))
 }
 
 fn inf_norm(v: &[f64]) -> f64 {
+    if v.iter().any(|value| !value.is_finite()) {
+        return f64::INFINITY;
+    }
     v.iter().fold(0.0_f64, |m, x| m.max(x.abs()))
 }
 
@@ -219,7 +255,8 @@ pub fn stage_chart_candidate(
     let mut iterations = 0;
     loop {
         let norm = inf_norm(&r);
-        if !(norm.is_finite() && k.iter().all(|v| v.is_finite())) {
+        if !(norm.is_finite() && r.iter().all(|v| v.is_finite()) && k.iter().all(|v| v.is_finite()))
+        {
             return Ok(finish(&k, ChartStatus::NonFinite, iterations, norm, work));
         }
         if norm <= limit {
@@ -240,10 +277,22 @@ pub fn stage_chart_candidate(
         for column in 0..m {
             unit[column] = 1.0;
             let dk = chart.jvp(&z, &unit)?;
+            work.chart_jvps += 1;
+            if dk.len() != m {
+                return Err(CoreError::Dimension(format!(
+                    "stage chart: JVP has {} values, expected {m}",
+                    dk.len()
+                )));
+            }
+            if !dk.iter().all(|v| v.is_finite()) {
+                return Ok(finish(&k, ChartStatus::NonFinite, iterations, norm, work));
+            }
             let dr = residual_jacobian_action(target, problem, &k, &dk);
             unit[column] = 0.0;
-            work.chart_jvps += 1;
             work.residual_jacobian_actions += 1;
+            if !dr.iter().all(|v| v.is_finite()) {
+                return Ok(finish(&k, ChartStatus::NonFinite, iterations, norm, work));
+            }
             for (row, value) in dr.iter().enumerate() {
                 jacobian[(row, column)] = *value;
             }

@@ -366,7 +366,20 @@ pub fn chart_integrate(
         && y0.is_finite()
         && (x0 > 0.0) == (identity.branch > 0)
         && x0 != 0.0
+        && t0.is_finite()
+        && t_end.is_finite()
         && t_end > t0
+        && [
+            config.atol,
+            config.rtol,
+            config.initial_step,
+            config.min_step,
+            config.max_step,
+            config.denominator_min,
+        ]
+        .iter()
+        .all(|v| v.is_finite())
+        && outputs.iter().all(|t| t.is_finite())
         && config.atol >= 0.0
         && config.rtol >= 0.0
         && config.initial_step > 0.0
@@ -412,6 +425,12 @@ pub fn chart_integrate(
         let remaining = target - state.t;
         let landing = h >= remaining;
         let tau = if landing { remaining } else { h };
+        // A physical advance at a timestamp which cannot advance is not a
+        // step of this run. Refuse before changing state or its enclosure.
+        if !(tau.is_finite() && (state.t + tau).is_finite() && state.t + tau > state.t) {
+            run.refused = Some((state.t, "the step cannot advance representable time".into()));
+            return Ok(run);
+        }
         let trial = advance(identity, &state, tau, config.denominator_min);
         let accepted = match &trial {
             Ok((point, _)) => {

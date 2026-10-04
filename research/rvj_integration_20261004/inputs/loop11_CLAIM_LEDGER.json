@@ -1,0 +1,59 @@
+{
+  "schema": "rvj-loop11-claims-v1",
+  "claims": [
+    {
+      "id": "C1",
+      "claim": "line flattening may send two roots to infinity; finite cusp coalescence is distinct",
+      "status": "derived; exact symbolic checked",
+      "evidence": "code/run_algebra.py"
+    },
+    {
+      "id": "C2",
+      "claim": "rank3 local algebra and parity retain multiplicity; scalar evaluation at coalescence is not invertible",
+      "status": "derived; exact reference checked",
+      "evidence": "code/fusion.py; tests/test_fusion.py"
+    },
+    {
+      "id": "C3",
+      "claim": "stable confluent analytic transfer formula",
+      "status": "derived; numerically checked, not f64-certified",
+      "evidence": "evidence/cluster_results.json"
+    },
+    {
+      "id": "C4",
+      "claim": "shared resolvent jets for current H-dissipative J with |delta|<gamma0",
+      "status": "derived; exact rational reference checked",
+      "evidence": "evidence/shifted_results.json"
+    },
+    {
+      "id": "C5",
+      "claim": "48dim shared-center factorization/RHS reuse",
+      "status": "numerically checked; no wall-clock promotion",
+      "evidence": "evidence/shifted_results.json"
+    },
+    {
+      "id": "C6",
+      "claim": "f64 FFT predictor accepted by unchanged parent exact original-target certificate in two settings",
+      "status": "implementation-verified; scoped exact-target reference",
+      "evidence": "evidence/fft_case_fft_40.json; evidence/fft_case_fft_10000.json"
+    },
+    {
+      "id": "C7",
+      "claim": "Cauchy–FFT central jet alias bound and sample-error distinction",
+      "status": "derived; small numerical/unit probe",
+      "evidence": "code/fusion.py; tests/test_fusion.py"
+    },
+    {
+      "id": "C8",
+      "claim": "arbitrary independent dynamical modes recoverable from one scalar",
+      "status": "rejected by rank/multiplicity counterexamples",
+      "evidence": "RESEARCH_NOTE_KO.md sections3–4"
+    },
+    {
+      "id": "C9",
+      "claim": "generic stiff/oscillatory order, production performance, method promotion",
+      "status": "unresolved; not claimed",
+      "evidence": "FINAL_VERIFICATION.json"
+    }
+  ]
+}
