@@ -112,3 +112,10 @@ distinct, and Hessenberg reuse never had the least count here (its
 reduction costs 7 LUs). These are counted flops with an opaque LU charged
 by its standard count; directed certificate work is the same for every
 method and excluded; no timing and no speed claim.
+
+Correction (same day, after checking RESULTS.json): "Hessenberg reuse never
+had the least count" above is wrong. It is the cheapest method in 3 of the
+90 configurations, all `wide`: (8, 1, 65) 35,797 vs 38,805 for LU and
+52,644 for the jet; (32, 1, 17) 294,229 vs 344,052 jet and 440,997 LU;
+(96, 4, 17) 7.81e6 vs 1.06e7 jet and 1.16e7 LU. The selector chose it in
+all three. The verdict and the gate numbers are unchanged.
