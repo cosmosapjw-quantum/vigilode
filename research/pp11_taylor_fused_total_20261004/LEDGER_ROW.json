@@ -1,0 +1,20 @@
+{
+ "command": "PP11_CASES=research/pp11_taylor_fused_total_20261004/cases.json cargo test --release -p rodas5p-core --locked --test pp11_taylor_fused_total_study -- --ignored --nocapture --test-threads=1 && python3 tools/pp11_taylor_fused_check.py --cases research/pp11_taylor_fused_total_20261004/cases.json --output research/pp11_taylor_fused_total_20261004/RESULTS.json",
+ "profile": "preregistered opt-in total-target certificate for the scaled-Taylor fused phi action (RVJ DAG node PP11): REV-02 stepped certificate of exp(M~) v + rounding perturbation of hA + candidate distance; 72 native cases checked against a 50-digit mpmath expm reference; source commit 764d3c2bbf97b16b4ad67977e3aa17e093de59b7",
+ "inputs": [
+  "crates/rodas5p-core/src/taylor_phi_total.rs",
+  "crates/rodas5p-core/src/taylor_phi.rs",
+  "crates/rodas5p-core/src/nonnormal_certificate.rs",
+  "crates/rodas5p-core/src/directed.rs",
+  "crates/rodas5p-core/tests/pp11_taylor_fused_total_contracts.rs",
+  "crates/rodas5p-core/tests/pp11_taylor_fused_total_study.rs",
+  "tools/pp11_taylor_fused_check.py",
+  "research/pp11_taylor_fused_total_20261004/PREREGISTRATION.md"
+ ],
+ "outputs": [
+  "research/pp11_taylor_fused_total_20261004/cases.json",
+  "research/pp11_taylor_fused_total_20261004/RESULTS.json"
+ ],
+ "claim": "PASS: all 54 bounded certificates enclose the 50-digit error of the fused candidate; the perturbation is >0 in all 54 rounding cases and exactly 0 in all 18 power-of-two controls. Seeded and control cases are useful (bound 1.4e-15 to 1.0e-11 relative, 3.5 to 4.9e4 times the error; perturbation dominates 16/18 seeded). Subnormal w: valid but useless (absolute floor ~1e-15). Large w (1e100): Taylor rejects and all 18 are Unbounded (e^omega overflows). No speed claim.",
+ "verdict": "PASS"
+}
