@@ -671,6 +671,48 @@ pub fn solve_gcrodr_with_workspace_and_residual_scale(
     )
 }
 
+/// [`solve_gcrodr_with_workspace_and_residual_scale`] with explicit
+/// [`GcrodrSolveOptions`] and no trace (no uncounted trace diagnostics);
+/// used by the U-form driver's explicit recycle policy (RVJ DAG node
+/// SAFE-RECYCLE, `research/safe_recycle_policy_20261004`).
+#[allow(clippy::too_many_arguments)]
+pub fn solve_gcrodr_with_workspace_and_options(
+    op: &dyn LinearOperator,
+    pc: &dyn Preconditioner,
+    rhs: &[f64],
+    x0: Option<&[f64]>,
+    config: &GcrodrConfig,
+    state: &mut GcrodrState,
+    residual_scale: Option<&[f64]>,
+    workspace: &mut GcrodrWorkspace,
+    options: GcrodrSolveOptions,
+    counters: &mut WorkCounters,
+) -> CoreResult<LinearSolveReport> {
+    let policy = options.policy;
+    if policy.reset_factor.is_some_and(|q| !(q > 0.0 && q < 1.0))
+        || policy
+            .verify_reuse
+            .is_some_and(|tol| !(tol.is_finite() && tol > 0.0))
+    {
+        return Err(CoreError::InvalidInput(
+            "GCRO-DR reuse policy parameters out of range".into(),
+        ));
+    }
+    solve_gcrodr_inner(
+        op,
+        pc,
+        rhs,
+        x0,
+        config,
+        state,
+        residual_scale,
+        workspace,
+        options,
+        None,
+        counters,
+    )
+}
+
 #[allow(clippy::too_many_arguments)]
 fn solve_gcrodr_inner(
     op: &dyn LinearOperator,
@@ -1123,6 +1165,7 @@ fn solve_gcrodr_inner(
                     local.basis = basis;
                     local.image = image;
                     diag_update_refresh = charged_matvecs(counters) - refresh_start;
+                    counters.recycle_update_refreshes += 1;
                 }
             }
             let reset = options.policy.reset_factor.is_some_and(|q| {

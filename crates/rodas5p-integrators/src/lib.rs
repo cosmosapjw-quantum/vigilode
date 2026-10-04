@@ -357,9 +357,10 @@ pub use rodas5p_fast_small::{
     integrate_rodas5p_fast_small_observed,
 };
 pub use rodas5p_matrix_free_fast::{
-    MfAttemptObserver, RODAS5P_MF_FAST_DRIVER_ID, Rodas5pMfFastResult, Rodas5pMfFastWorkspace,
-    integrate_rodas5p_mf_fast_observed, integrate_rodas5p_mf_fast_observed_gmres_into,
-    integrate_rodas5p_mf_fast_observed_traced,
+    GcrodrRecyclePolicy, MfAttemptObserver, RODAS5P_MF_FAST_DRIVER_ID, Rodas5pMfFastResult,
+    Rodas5pMfFastWorkspace, gcrodr_stage_solve, integrate_rodas5p_mf_fast_observed,
+    integrate_rodas5p_mf_fast_observed_gmres_into, integrate_rodas5p_mf_fast_observed_traced,
+    integrate_rodas5p_mf_fast_observed_with_gcrodr_policy,
 };
 pub use sabr::{PredictorKind, SabrConfig, StageHistory, sabr_step};
 pub use scientific_corpus_v2::{

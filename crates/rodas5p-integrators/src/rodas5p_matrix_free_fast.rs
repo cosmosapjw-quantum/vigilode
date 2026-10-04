@@ -37,13 +37,16 @@
 
 use std::sync::Arc;
 
+use rodas5p_core::LinearSolveReport;
+use rodas5p_core::Preconditioner;
 use rodas5p_core::{
     CoreError, CoreResult, IdentityPreconditioner, InitialGuess, LinearMethod, LinearOperator,
     LinearSolverConfig, PreconditionerKind, ShiftedOperator, WorkCounters, rodas5p_coefficients,
 };
 use rodas5p_krylov::{
-    GcrodrConfig, GcrodrWorkspace, GmresCapacity, GmresConfig, GmresWorkspace, LgmresConfig,
-    LgmresWorkspace, solve_gcrodr_with_workspace, solve_gmres_into, solve_gmres_with_workspace,
+    GcrodrConfig, GcrodrSolveOptions, GcrodrState, GcrodrWorkspace, GmresCapacity, GmresConfig,
+    GmresWorkspace, LgmresConfig, LgmresWorkspace, solve_gcrodr_with_workspace,
+    solve_gcrodr_with_workspace_and_options, solve_gmres_into, solve_gmres_with_workspace,
     solve_lgmres_with_workspace,
 };
 
@@ -57,6 +60,74 @@ use crate::{
 /// Identifier of this driver in research records.
 pub const RODAS5P_MF_FAST_DRIVER_ID: &str = "rodas5p-mf-fast-transformed-v1";
 
+/// How the U-form driver's GCRO-DR stage solves treat the carried recycle
+/// pair (RVJ DAG node SAFE-RECYCLE, `research/safe_recycle_policy_20261004`).
+/// `Legacy` is the default and the call the driver always made.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum GcrodrRecyclePolicy {
+    /// Carried pair, no refresh after a recycle update (the pre-existing
+    /// behaviour; L-0059 found it breaks `M^-1 A U = C`).
+    #[default]
+    Legacy,
+    /// Carried pair, `C = M^-1 A U` recomputed (charged) and re-orthonormalized
+    /// after every recycle update (REV-01c, L-0059).
+    RefreshAfterUpdate,
+    /// Every stage solve starts from an empty recycle state; the carried
+    /// state is never changed.
+    Cold,
+}
+
+impl GcrodrRecyclePolicy {
+    /// Stable identifier for research records.
+    pub fn id(self) -> &'static str {
+        match self {
+            Self::Legacy => "gcrodr-recycle-legacy-v1",
+            Self::RefreshAfterUpdate => "gcrodr-recycle-refresh-after-update-v1",
+            Self::Cold => "gcrodr-cold-v1",
+        }
+    }
+}
+
+/// One GCRO-DR stage solve under `policy`, exactly as the U-form driver
+/// makes it.
+#[allow(clippy::too_many_arguments)]
+pub fn gcrodr_stage_solve(
+    policy: GcrodrRecyclePolicy,
+    op: &dyn LinearOperator,
+    pc: &dyn Preconditioner,
+    rhs: &[f64],
+    x0: Option<&[f64]>,
+    config: &GcrodrConfig,
+    state: &mut GcrodrState,
+    workspace: &mut GcrodrWorkspace,
+    counters: &mut WorkCounters,
+) -> CoreResult<LinearSolveReport> {
+    match policy {
+        GcrodrRecyclePolicy::Legacy => {
+            solve_gcrodr_with_workspace(op, pc, rhs, x0, config, state, workspace, counters)
+        }
+        GcrodrRecyclePolicy::RefreshAfterUpdate => solve_gcrodr_with_workspace_and_options(
+            op,
+            pc,
+            rhs,
+            x0,
+            config,
+            state,
+            None,
+            workspace,
+            GcrodrSolveOptions {
+                refresh_after_update: true,
+                ..GcrodrSolveOptions::default()
+            },
+            counters,
+        ),
+        GcrodrRecyclePolicy::Cold => {
+            let mut cold = GcrodrState::default();
+            solve_gcrodr_with_workspace(op, pc, rhs, x0, config, &mut cold, workspace, counters)
+        }
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct Rodas5pMfFastResult {
     pub observed: ObservedIntegrationResult,
@@ -67,6 +138,8 @@ pub struct Rodas5pMfFastResult {
     /// rejected attempt from the same state.
     pub state_reuses: usize,
     pub driver: &'static str,
+    /// [`GcrodrRecyclePolicy::id`] of the run (meaningful for GCRO-DR).
+    pub gcrodr_policy: &'static str,
 }
 
 /// The stage arithmetic and Krylov workspaces of one integration.
@@ -92,6 +165,8 @@ pub struct Rodas5pMfFastWorkspace {
     /// Research switch (R-NEXT-02): GMRES stage solves through
     /// `solve_gmres_into`, writing into the stage storage.
     gmres_into: bool,
+    /// Research switch (SAFE-RECYCLE): the GCRO-DR recycle policy.
+    gcrodr_policy: GcrodrRecyclePolicy,
     f0: Vec<f64>,
     ft: Vec<f64>,
     u: Vec<f64>,
@@ -172,6 +247,7 @@ impl Rodas5pMfFastWorkspace {
             cached_y: vec![0.0; n],
             cached_epoch: None,
             gmres_into: false,
+            gcrodr_policy: GcrodrRecyclePolicy::Legacy,
             f0: vec![0.0; n],
             ft: vec![0.0; n],
             u: vec![0.0; s * n],
@@ -187,6 +263,16 @@ impl Rodas5pMfFastWorkspace {
     /// fewer allocations. Off by default.
     pub fn set_gmres_into(&mut self, on: bool) {
         self.gmres_into = on;
+    }
+
+    /// Set the GCRO-DR recycle policy (research node
+    /// `research/safe_recycle_policy_20261004`). `Legacy` by default.
+    pub fn set_gcrodr_policy(&mut self, policy: GcrodrRecyclePolicy) {
+        self.gcrodr_policy = policy;
+    }
+
+    pub fn gcrodr_policy(&self) -> GcrodrRecyclePolicy {
+        self.gcrodr_policy
     }
 
     pub fn y_new(&self) -> &[f64] {
@@ -393,7 +479,8 @@ impl Rodas5pMfFastWorkspace {
                             "GCRO-DR needs a GCRO-DR recycle state".into(),
                         ));
                     };
-                    solve_gcrodr_with_workspace(
+                    gcrodr_stage_solve(
+                        self.gcrodr_policy,
                         &shifted,
                         &self.preconditioner,
                         &self.stage_rhs,
@@ -528,6 +615,57 @@ pub fn integrate_rodas5p_mf_fast_observed_traced(
     gmres_into: bool,
     observer: MfAttemptObserver<'_>,
 ) -> CoreResult<Rodas5pMfFastResult> {
+    integrate_mf_fast_inner(
+        problem,
+        t_span,
+        y0,
+        linear_config,
+        adaptive,
+        output,
+        gmres_into,
+        GcrodrRecyclePolicy::Legacy,
+        observer,
+    )
+}
+
+/// [`integrate_rodas5p_mf_fast_observed`] with an explicit GCRO-DR recycle
+/// policy (RVJ DAG node SAFE-RECYCLE,
+/// `research/safe_recycle_policy_20261004`). `Legacy` is the default
+/// driver; the policy only matters for `LinearMethod::Gcrodr`.
+pub fn integrate_rodas5p_mf_fast_observed_with_gcrodr_policy(
+    problem: &OdeProblem,
+    t_span: (f64, f64),
+    y0: &[f64],
+    linear_config: &LinearSolverConfig,
+    adaptive: &AdaptiveStepConfig,
+    output: &OutputSchedule,
+    policy: GcrodrRecyclePolicy,
+) -> CoreResult<Rodas5pMfFastResult> {
+    integrate_mf_fast_inner(
+        problem,
+        t_span,
+        y0,
+        linear_config,
+        adaptive,
+        output,
+        false,
+        policy,
+        &mut |_, _, _, _, _| {},
+    )
+}
+
+#[allow(clippy::too_many_arguments)]
+fn integrate_mf_fast_inner(
+    problem: &OdeProblem,
+    t_span: (f64, f64),
+    y0: &[f64],
+    linear_config: &LinearSolverConfig,
+    adaptive: &AdaptiveStepConfig,
+    output: &OutputSchedule,
+    gmres_into: bool,
+    policy: GcrodrRecyclePolicy,
+    observer: MfAttemptObserver<'_>,
+) -> CoreResult<Rodas5pMfFastResult> {
     adaptive.validate()?;
     let (mut t, tf) = t_span;
     if tf < t || y0.len() != problem.dimension {
@@ -537,6 +675,7 @@ pub fn integrate_rodas5p_mf_fast_observed_traced(
     }
     let mut work = Rodas5pMfFastWorkspace::new(problem, linear_config)?;
     work.set_gmres_into(gmres_into);
+    work.set_gcrodr_policy(policy);
     let mut y = y0.to_vec();
     let mut h = adaptive.initial_step.min(crate::output::step_to(t, tf)?);
     let mut controller = AdaptiveControllerState::default();
@@ -643,5 +782,6 @@ pub fn integrate_rodas5p_mf_fast_observed_traced(
         rejected_steps,
         state_reuses: reuses,
         driver: RODAS5P_MF_FAST_DRIVER_ID,
+        gcrodr_policy: policy.id(),
     })
 }

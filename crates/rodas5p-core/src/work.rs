@@ -101,6 +101,11 @@ pub struct WorkCounters {
     pub poly_block_allocations: u64,
     #[serde(default, skip_serializing_if = "is_zero")]
     pub poly_fallbacks: u64,
+    /// GCRO-DR recycle updates followed by a refresh of `C = M^-1 A U`
+    /// (RVJ DAG node SAFE-RECYCLE); the refresh products themselves are in
+    /// `recycle_refresh_matvecs`. Omitted while zero.
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub recycle_update_refreshes: u64,
 }
 
 fn is_zero(value: &u64) -> bool {
@@ -235,6 +240,7 @@ impl WorkCounters {
             poly_coefficient_reuses,
             poly_block_allocations,
             poly_fallbacks,
+            recycle_update_refreshes,
         );
         self.merged_unknown_vector_calls = unknown;
     }
@@ -313,6 +319,7 @@ impl WorkCounters {
             poly_coefficient_reuses,
             poly_block_allocations,
             poly_fallbacks,
+            recycle_update_refreshes,
         );
         next.merged_unknown_vector_calls = unknown;
         *self = next;
@@ -381,6 +388,7 @@ impl WorkCounters {
             poly_coefficient_reuses,
             poly_block_allocations,
             poly_fallbacks,
+            recycle_update_refreshes,
             merged_unknown_vector_calls,
         )
     }
@@ -460,6 +468,7 @@ impl WorkCounters {
             poly_coefficient_reuses,
             poly_block_allocations,
             poly_fallbacks,
+            recycle_update_refreshes,
             merged_unknown_vector_calls,
         )
     }

@@ -20,7 +20,7 @@ pub use gcrodr::{
     GcrodrConfig, GcrodrCycleTrace, GcrodrReuseCheck, GcrodrReusePolicy, GcrodrSolveOptions,
     GcrodrState, GcrodrTrace, solve_gcrodr, solve_gcrodr_traced, solve_gcrodr_with_options,
     solve_gcrodr_with_policy, solve_gcrodr_with_residual_scale, solve_gcrodr_with_workspace,
-    solve_gcrodr_with_workspace_and_residual_scale,
+    solve_gcrodr_with_workspace_and_options, solve_gcrodr_with_workspace_and_residual_scale,
 };
 pub use gmres::{
     GmresConfig, GmresPrefixPrediction, GmresPrefixSession, solve_gmres, solve_gmres_incremental,
