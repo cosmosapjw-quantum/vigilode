@@ -162,6 +162,14 @@ pub fn exp_neg_enclosure(x: f64) -> CoreResult<Interval> {
     exp_neg_interval(Interval::point(x)?)
 }
 
+/// Enclosure of `e^{-x}` over every `x` in `x_range` (`0 <= lo <= hi <= 709`):
+/// `e^{-x}` decreases, so the lower end of the range gives the upper bound
+/// (RVJ DAG node SAFE-ENCLOSURE, `research/safe_enclosure_composition_20261004`).
+/// Pass the product interval `[mul_down(a, b), mul_up(a, b)]` for `e^{-a b}`.
+pub fn exp_neg_interval_enclosure(x_range: Interval) -> CoreResult<Interval> {
+    exp_neg_interval(x_range)
+}
+
 /// Upper bound on `e^x` for any real `x` (at most 709); `e^x <= e^-700`
 /// is used below `-700`.
 pub(crate) fn exp_up(x: f64) -> CoreResult<f64> {

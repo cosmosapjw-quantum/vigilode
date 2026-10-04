@@ -237,7 +237,12 @@ fn enclose_flow(
     }
     // w(tau) = e^{-kappa tau} w0 + eps * int_0^tau e^{-kappa (tau - s)} x(s) ds,
     // and the integral lies in tube * (1 - e^{-kappa tau}) / kappa.
-    let decay = rodas5p_core::polynomial_action::exp_neg_enclosure(mul_up(identity.kappa, tau)?)?;
+    // SAFE-ENCLOSURE: e^{-x} decreases, so enclose it over the whole product
+    // interval of kappa tau, not only at the rounded-up product.
+    let decay = rodas5p_core::polynomial_action::exp_neg_interval_enclosure(Interval::new(
+        mul_down(identity.kappa, tau)?,
+        mul_up(identity.kappa, tau)?,
+    )?)?;
     let kappa = Interval::point(identity.kappa)?;
     let gain = one.sub(decay)?.div(kappa)?;
     let w_end = decay

@@ -401,7 +401,7 @@ pub fn certify_exp_action_stepped(
     let radius_norm = |w: &[Interval]| -> CoreResult<f64> {
         let mut total = 0.0;
         for x in w {
-            let r = mul_up(sub_up(x.hi, x.lo)?, 0.5)?;
+            let (_, r) = midpoint_radius(*x)?;
             total = add_up(total, mul_up(r, r)?)?;
         }
         sqrt_up(total)
@@ -413,16 +413,11 @@ pub fn certify_exp_action_stepped(
         }
         sqrt_up(total)
     };
-    let decay = |count: usize| -> CoreResult<f64> {
-        let exponent = mul_up(mul_up(count as f64, h)?, range.re_hi)?;
-        if exponent <= 0.0 {
-            // e^{t a_hi} <= 1 for a_hi <= 0; keep the exact decay when cheap.
-            Ok(exp_interval(exponent).map(|e| e.hi).unwrap_or(1.0).min(1.0))
-        } else {
-            Ok(exp_interval(exponent)?.hi)
-        }
-    };
-    let mut x: Vec<f64> = u.iter().map(|w| 0.5 * w.lo + 0.5 * w.hi).collect();
+    let decay = |count: usize| decay_upper(count, h, range.re_hi);
+    let mut x: Vec<f64> = u
+        .iter()
+        .map(|w| midpoint_radius(*w).map(|(m, _)| m))
+        .collect::<CoreResult<Vec<_>>>()?;
     let mut total = mul_up(decay(steps)?, radius_norm(&u)?)?;
     for j in 0..steps {
         let xi = x
@@ -448,7 +443,10 @@ pub fn certify_exp_action_stepped(
             total,
             mul_up(decay(steps - 1 - j)?, add_up(truncation, rounding)?)?,
         )?;
-        x = w.iter().map(|p| 0.5 * p.lo + 0.5 * p.hi).collect();
+        x = w
+            .iter()
+            .map(|p| midpoint_radius(*p).map(|(m, _)| m))
+            .collect::<CoreResult<Vec<_>>>()?;
         if !x.iter().all(|value| value.is_finite()) || !total.is_finite() {
             return Ok(unbounded(x));
         }
@@ -487,6 +485,33 @@ pub fn certify_exp_action_stepped(
         numerical_range: range,
         degree,
     })
+}
+
+/// Upper bound on `e^{count h a}` for the exact real `count * h` (RVJ DAG
+/// node SAFE-ENCLOSURE, `research/safe_enclosure_composition_20261004`):
+/// the exponent is the upper end of the interval product
+/// `[mul_down(count, h), mul_up(count, h)] * a`, so a negative `a` takes the
+/// lower time. Capped at 1 for `a <= 0`.
+pub fn decay_upper(count: usize, h: f64, a: f64) -> CoreResult<f64> {
+    let time = Interval::new(mul_down(count as f64, h)?, mul_up(count as f64, h)?)?;
+    let exponent = time.mul(Interval::point(a)?)?.hi;
+    if a <= 0.0 {
+        // e^{t a} <= 1 for a <= 0; keep the exact decay when it is finite.
+        Ok(exp_interval(exponent).map(|e| e.hi).unwrap_or(1.0).min(1.0))
+    } else {
+        Ok(exp_interval(exponent)?.hi)
+    }
+}
+
+/// The rounded midpoint `m = 0.5 lo + 0.5 hi` of `x` and the outward
+/// distance `max(m - lo, hi - m)` from it to the far endpoint (RVJ DAG node
+/// SAFE-ENCLOSURE): the half width alone misses the rounding of `m`.
+pub fn midpoint_radius(x: Interval) -> CoreResult<(f64, f64)> {
+    let m = 0.5 * x.lo + 0.5 * x.hi;
+    if !m.is_finite() {
+        return Err(invalid("interval midpoint is not finite"));
+    }
+    Ok((m, sub_up(m, x.lo)?.max(sub_up(x.hi, m)?)))
 }
 
 /// The step rule of REV-02: `N = max(1, ceil(tau R))` with `R` the largest
