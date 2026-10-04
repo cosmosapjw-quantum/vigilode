@@ -30,3 +30,15 @@ G2. The L-0064 C2 probe rows re-exported with the repaired code (same seed)
 G3. Existing directed, nonnormal (INT-05, REV-02) and chart tests pass.
 
 ## Results (append only after the recorded run)
+
+### Executed result — 2026-10-04 (source `171a4d2`)
+
+**Verdict: PASS.** G1: zero violations in 40,511 rows (the L-0064
+counterexample, 20,001 grid points on [-709, -700], 258 neighbours of -707
+and of ln 2^-1020, the 251 REV-02 grid points verbatim, 20,000 random
+points). G2: the SAFE-ENCLOSURE probes re-exported with the same seeds have
+zero repaired violations in C1, C2 and C3; the base C2 replica now has 676
+violations (the floor one is gone, the 676 time-direction ones remain).
+G3: core lib, INT-05, REV-02, SAFE-ENCLOSURE tests and the chart tests
+(INT-04 contracts, native re-audit, RVJ boundaries, R-NEXT-05) pass; clippy
+on rodas5p-core clean.
