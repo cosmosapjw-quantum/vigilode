@@ -42,3 +42,33 @@ Prediction (reported): near-dependent 1e-6 sets have rank 3 (no saving
 lost) or reject; full-rank sets abstain with `HighRank`.
 
 ## Results (append only after the recorded run)
+
+### Executed result — 2026-10-04 (sources `f01ce4a` module, `e22d12e` exporter and oracle)
+
+Commands: `PP03_CASES=research/pp03_rhs_compression_20261004/cases.json
+cargo test --release -p rodas5p-core --locked --test pp03_rhs_compression
+export_compression_study -- --ignored --nocapture`, then `python3
+tools/pp03_rhs_compression_check.py --cases .../cases.json --output
+.../RESULTS.json`. Contract tests pass (coefficients kept per column,
+full-rank abstention, malformed input refused).
+
+**Verdict: PASS.** 24 configurations (n 8/32 x M 4/16 x 6 sets), 9
+targets each, degree 15 or 16 from the planner.
+- G1: 2,052 n = 8 output columns (compressed and uncompressed) against the
+  exact rational oracle; every certified one encloses (worst error / bound
+  0.40). All 216 uncompressed and all 135 compressed targets certified.
+- G2: plus/minus outputs are distinct and individually enclosed; every
+  compressed output is within the sum of the two bounds of the
+  uncompressed jet's output.
+- G3: compressed LU column solves are exactly `k (d+1)`: 16 instead of 64
+  or 256 (rank 1), 32 instead of 64 or 256 (rank 2), 34 instead of 68 or
+  272 (plus/minus), 128 instead of 256 when M = 16 > n = 8.
+
+Predictions: full-rank sets abstain (`HighRank`) when M <= n, observed;
+with M = 16 > n = 8 the rank is 8 and compression halves the solves.
+The near-dependent prediction ("rank 3 or reject") was not observed: with
+the rank tolerance 1e-13 both the 1e-12 and the 1e-6 perturbations make the
+sets full rank, so they abstain (M <= n) or compress to n (M > n), and
+every target still certifies. A looser rank tolerance would compress them
+and leave the perturbation `e_j` to the residual certificate; that was not
+tried. Counted solves, not time.
