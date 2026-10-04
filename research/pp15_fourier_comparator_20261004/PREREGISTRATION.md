@@ -69,3 +69,29 @@ tools/pp15_comparator_check.py --cases .../cases.json --output
   RODAS5P solved the same leaf model. This is not evidence about general
   closures (PP14) or other problems.
 - G3: see REVIEW.md.
+
+### Independent review and corrections (after the draft above)
+
+**Verdict: FAIL (G3).** G1 and G2 hold. The independent reviewer
+(REVIEW.md, verbatim) found the draft above misleading on matched error and
+carrying an unstated cost argument. The draft is kept as reviewed; these
+corrections replace its G2 and work paragraphs:
+- No matched physical error was reached. The certified client bound is
+  2.8e-11, 2.9e-12 and 2.2e-12 for omega 1, 40, 1e4. RODAS5P at tol 1e-10
+  reaches 3.9e-12 (omega 1, below the bound), 4.6e-12 (omega 40, 1.6x the
+  bound) and 4.2e-10 (omega 1e4, 193x the bound and 2,280x the client's
+  actual error). "Closest tolerance" only names the nearer of the two
+  tolerances tried; at omega 40 and 1e4 neither reaches the client's level.
+- The comparison is asymmetric: the client's number is a certified bound,
+  RODAS5P's is its actual error against the reference (it has no bound).
+- The work counts are at unmatched accuracy and in different units; they
+  support no cost or scaling statement. The draft's sentence that the
+  client's work "does not grow with omega because ... RODAS5P resolves it
+  with steps" is an untested causal claim and is withdrawn.
+- "8 certificates" was not a separate count: the exporter copies
+  `certificate_calls` from `candidate_builds` (each build calls the
+  certificate once). Candidate rejections were 4 of 8 at every omega;
+  RODAS5P Jacobian builds were 11/64/4,972 accepted-step Jacobians at tol
+  1e-10 (omega 1, 40, 1e4) and 10/31/1,696 at 1e-8.
+- The omega = 1e4 reference is the non-rigorous scipy pair (difference
+  3.4e-15 between its two tolerances).
