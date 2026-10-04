@@ -99,8 +99,13 @@ def reference_scipy(omega, sigma, times):
 
 
 def path_value(path, a, tau):
-    return sum((mp.mpc(unhex(re), unhex(im)) * mp.mpf(tau) ** j * mp.exp(1j * k * a * mp.mpf(tau))
+    return sum((mp.mpc(unhex(re), unhex(im)) * mq(tau) ** j * mp.exp(1j * k * a * mq(tau))
                 for k, j, re, im in path), mp.mpc(0))
+
+
+def mq(x):
+    x = F(x)
+    return mp.mpf(x.numerator) / x.denominator
 
 
 def err1(z, w):
@@ -159,7 +164,7 @@ def main() -> int:
             worst = max(worst, float(e / bound))
             if e > bound:
                 g1 = False
-            a = mp.mpf(omega) * mp.mpf(h)
+            a = mp.mpf(omega) * mq(h)
             interior_bound = mp.mpf(unhex(tr["growth"])) * (
                 mp.mpf(unhex(r["start"]["error"])) + mp.mpf(unhex(tr["start_mismatch"]))
                 + mp.mpf(unhex(tr["residual"])))

@@ -102,3 +102,41 @@ client.
    The enclosed quantity is the same.
 
 ## Results (append only after the recorded run)
+
+### Executed result — 2026-10-04 (source `5c59328`)
+
+Commands: `PP05_CASES=research/pp05_fourier_client_20261004/cases.json
+cargo test --release -p rodas5p-integrators --locked --test
+pp05_fourier_client export_fourier_client -- --ignored --nocapture`, then
+`python3 tools/pp05_fourier_check.py --cases .../cases.json --output
+.../RESULTS.json`. The checker first crashed (mpmath cannot take a
+`Fraction`) before writing anything; the fix (a `Fraction -> mpf`
+conversion helper, no gate or threshold change) is in the commit that
+records these results. The exporter ran once.
+
+**Verdict: FAIL (G2 and G3 as registered); G1 PASS.**
+- All six runs reach T = 1/2: 4 steps each at tol 1e-8 (8 builds, 4
+  rejected first candidates, 24 predictor calls), 8 steps with 7 halvings
+  at tol 1e-11.
+- G1 PASS: every committed state's bound encloses the actual error (worst
+  actual / bound 0.18, resonance) and every interior point the growth bound
+  (worst 0.13); final bounds 5.3e-13 to 2.8e-11, physical H-errors
+  <= 4.8e-11. References: mpmath odefun 30 digits; omega 1e4 with scipy
+  DOP853 (difference of the two tolerances 1.0e-14, not rigorous).
+  `negative` (omega -40, sigma -1) gives the same numbers as `forty`, as the
+  conjugation symmetry of the model predicts.
+- G2 FAIL: the archived exact certificate accepts every native path and
+  the native error is never below it (ratio >= 1.000006), but the ratio
+  reaches 1.0112 in `forty_tight` (1.0011 at most elsewhere), above the
+  registered 1.01. The native bound is outward and looser by up to 1.1 %.
+- G3 FAIL: the independent-scalar and wrong-phase candidates are rejected
+  (certified bounds 7.1e-4 and 7.2e-5 enclose actual errors 1.3e-4 and
+  8.1e-6); stale state, epoch, h and path bindings, the start mismatch
+  (charged 1.0e-3), `h growth >= 1` and `B > 1` all fail closed. The
+  cyclic-alias candidate was **committed**: on the first step at omega 40,
+  K = 3, the wrapped harmonics are below the tolerance, the candidate's
+  actual error is 2.8e-14 and its certified bound 6.2e-13 encloses it. This
+  is a correct acceptance of an accurate candidate, not a false
+  certificate, but the registered control expected rejection and the
+  control did not exercise aliasing at this step.
+- No bound in any run or control is below the actual error.
