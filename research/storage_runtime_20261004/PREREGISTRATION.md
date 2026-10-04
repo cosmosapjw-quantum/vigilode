@@ -32,3 +32,34 @@ allocations"; every refusal builds a `CoreError::InvalidInput` message
 bytes". No measurement had been made when this was changed.
 
 ## Results (append only after the recorded run)
+
+### Executed result — 2026-10-04 (source `108a0d5`)
+
+Command: `STORAGE_RUNTIME_OUTPUT=research/storage_runtime_20261004/RESULTS.json
+cargo test --release -p rodas5p-core --locked --test storage_runtime --
+--ignored --nocapture --test-threads=1` (the test writes the gate and the
+verdict into RESULTS.json).
+
+**Verdict: FAIL (G2, as registered).**
+- G1 PASS: in all 72 configurations the non-LU peak `P_total - P_lu` is
+  within `S_explicit + 64 x allocations`. The explicit f64-slot bound alone
+  does not cover it in 22 configurations (n = 4 everywhere, and n = 16 with
+  m = 65): there the non-LU peak is 1.0x to 2.0x `S_explicit`, the excess
+  being struct and `Vec` header bytes of the per-target candidates and
+  certificates, which are not f64 slots. The slot bound is therefore not a
+  byte bound for small n, which the module documentation already states
+  (it excludes metadata and faer workspace).
+- G2 FAIL: every refusal (both budgets, 72 configurations) made 2
+  allocator events of at most 72 bytes, where the amended gate allowed at
+  most one. From the code, the refusal path allocates only the error
+  message: `format!` reserves an estimated capacity for
+  `"shared shift jet: {message}"` and grows it once (the tracking allocator
+  counts the growth `realloc` as an event). No buffer proportional to the
+  problem is allocated before the budget check, which is what the gate was
+  meant to show; the registered count limit was nevertheless exceeded and
+  the verdict stays FAIL. The realloc reading is from the code and the
+  72-byte size, not from a separate measurement.
+- G3 (reported): `P_lu / (8 n^2)` is 3.0 to 3.1 for n >= 16 (6.5 and 10.5
+  at n = 4; 131 for the first n = 64, r = 1 measurement, an unexplained
+  outlier, possibly first-use workspace in faer, not investigated);
+  `P_total / S_explicit` is 1.14 to 2.24.
