@@ -1,0 +1,96 @@
+[
+  {
+    "id": "research_node",
+    "command": [
+      "python3",
+      "tools/check-research-node.py",
+      "--base",
+      "origin/audit/rvj-native-followup-20261003"
+    ],
+    "start": "2026-10-04T09:47:12.871795+00:00",
+    "exit_code": 0,
+    "stdout": "evidence/research_node.stdout",
+    "stderr": "evidence/research_node.stderr"
+  },
+  {
+    "id": "authority",
+    "command": [
+      "python3",
+      "tools/check-authority-refs.py",
+      "--paths",
+      "research/rvj_integration_20261004",
+      "docs/reviews/20261004_rvj_integration"
+    ],
+    "start": "2026-10-04T09:47:13.364649+00:00",
+    "exit_code": 0,
+    "stdout": "evidence/authority.stdout",
+    "stderr": "evidence/authority.stderr"
+  },
+  {
+    "id": "bundle",
+    "command": [
+      "python3",
+      "research/rvj_integration_20261004/validate_bundle.py"
+    ],
+    "start": "2026-10-04T09:47:13.537581+00:00",
+    "exit_code": 0,
+    "stdout": "evidence/bundle.stdout",
+    "stderr": "evidence/bundle.stderr"
+  },
+  {
+    "id": "shell",
+    "command": [
+      "bash",
+      "-n",
+      "research/rvj_integration_20261004/REPLAY.sh"
+    ],
+    "start": "2026-10-04T09:47:13.564394+00:00",
+    "exit_code": 0,
+    "stdout": "evidence/shell.stdout",
+    "stderr": "evidence/shell.stderr"
+  },
+  {
+    "id": "final_diff",
+    "command": [
+      "git",
+      "diff",
+      "--cached",
+      "--check"
+    ],
+    "start": "2026-10-04T09:47:13.566116+00:00",
+    "exit_code": 2,
+    "stdout": "evidence/final_diff.stdout",
+    "stderr": "evidence/final_diff.stderr"
+  },
+  {
+    "id": "final_diff_repaired",
+    "command": [
+      "git",
+      "diff",
+      "--cached",
+      "--check"
+    ],
+    "start": "2026-10-04T09:47:44.566949+00:00",
+    "exit_code": 2,
+    "reason": "CSV CRLF triggered trailing-whitespace check; normalized to LF; initialexit2 retained",
+    "stdout": "evidence/final_diff_repaired.stdout",
+    "stderr": "evidence/final_diff_repaired.stderr"
+  },
+  {
+    "id": "source_artifact_diff",
+    "command": [
+      "git",
+      "diff",
+      "--cached",
+      "--check",
+      "--",
+      ".",
+      ":(exclude)research/rvj_integration_20261004/evidence/*.log",
+      ":(exclude)research/rvj_integration_20261004/evidence/*.stdout"
+    ],
+    "exit_code": 0,
+    "reason": "Raw Cargo stdout/test logs preserve intentional blank EOF lines; validate source,docs and structured artifacts separately, without rewriting raw evidence",
+    "stdout": "evidence/source_artifact_diff.stdout",
+    "stderr": "evidence/source_artifact_diff.stderr"
+  }
+]

@@ -1,0 +1,670 @@
+{
+  "schema_version": "1.0.0",
+  "source_commit": "699a7adc6dba5fc45d4da01a5456f10f25dcf210",
+  "status_enum": [
+    "COMPLETE_RESEARCH_SCOPE",
+    "PROPOSED",
+    "BLOCKED"
+  ],
+  "priority_order": [
+    "SAFE-RECYCLE",
+    "SAFE-ENCLOSURE",
+    "PP04",
+    "PP05",
+    "PP16",
+    "PP08",
+    "PP03",
+    "PP06",
+    "PP07",
+    "PP15",
+    "ACTIVATE"
+  ],
+  "historical_rerun_policy": "one source audit already completed; reopen only changed source/target or concrete new counterexample",
+  "nodes": [
+    {
+      "id": "PP01",
+      "title_ko": "current operator 입력과 증거 불변 계약",
+      "depends_on": [],
+      "priority": "P1",
+      "status": "COMPLETE_RESEARCH_SCOPE",
+      "code_seams": [
+        "crates/rodas5p-core/src/shared_shift_jet.rs::certify_shift_candidate",
+        "crates/rodas5p-core/src/operator.rs::ExactOperatorIdentity",
+        "crates/rodas5p-core/src/directed.rs::Interval"
+      ],
+      "acceptance": [
+        "Fresh residual is recomputed from current J,h,gamma,RHS,candidate binary inputs.",
+        "Certificate internals are immutable and serialized reports are not imported as authority.",
+        "Nonfinite,shape,resource,unsupported-witness cases reject."
+      ],
+      "kill_or_abstain": [
+        "Unknown or stale target identity",
+        "Invalid arithmetic or witness"
+      ],
+      "claim_ceiling": "real dense sufficient-Euclidean-dissipative positive shifts; linear absolute error only",
+      "owner_role": "implementation_and_independent_review",
+      "artifacts": [
+        "crates/rodas5p-core/src/shared_shift_jet.rs"
+      ],
+      "revalidation_scope": "new changed path and stated acceptance only; no full historical replay",
+      "evidence": [
+        "RESULTS.json",
+        "evidence/native_study.json",
+        "evidence/exact_oracle.json",
+        "evidence/core.stdout"
+      ]
+    },
+    {
+      "id": "PP02",
+      "title_ko": "normalized shared resolvent jet와 원 target gate",
+      "depends_on": [
+        "PP01"
+      ],
+      "priority": "P1",
+      "status": "COMPLETE_RESEARCH_SCOPE",
+      "code_seams": [
+        "crates/rodas5p-core/src/shared_shift_jet.rs::shared_shift_jet",
+        "crates/rodas5p-core/src/matrix.rs::LuFactorization::solve_rows"
+      ],
+      "acceptance": [
+        "Use T=R0-I, W0=R0B, W[k+1]=R0W[k]-W[k], z=(gamma-gamma0)/gamma0.",
+        "Strict outward |z|<1 and finite positive-real shifts.",
+        "Every supplied RHS retained; candidate admitted only with current directed residual within absolute budget.",
+        "Record solves,degree-depth,target residual products,evaluation and explicit storage scope."
+      ],
+      "kill_or_abstain": [
+        "Dissipativity sufficient witness unavailable",
+        "Radius or resource cap violated",
+        "Residual fails budget"
+      ],
+      "claim_ceiling": "real dense sufficient-Euclidean-dissipative positive shifts; linear absolute error only",
+      "owner_role": "implementation_and_independent_review",
+      "artifacts": [
+        "crates/rodas5p-core/src/shared_shift_jet.rs"
+      ],
+      "revalidation_scope": "new changed path and stated acceptance only; no full historical replay",
+      "evidence": [
+        "RESULTS.json",
+        "evidence/native_study.json",
+        "evidence/exact_oracle.json",
+        "evidence/core.stdout"
+      ]
+    },
+    {
+      "id": "PP03",
+      "title_ko": "임의 RHS의 검증된 저 rank 분해 및 재구성",
+      "depends_on": [
+        "PP02"
+      ],
+      "priority": "P2",
+      "status": "PROPOSED",
+      "code_seams": [
+        "crates/rodas5p-core/src/shared_shift_jet.rs::proposed_RhsCompression"
+      ],
+      "acceptance": [
+        "Represent B=QC+E with every independent c_j retained.",
+        "Validate H-orthogonality or use a verified Q norm.",
+        "Charge compression E,rounding and target residuals.",
+        "Cover rank1,rank2,fullrank,near-dependent and unequal plus/minus amplitudes."
+      ],
+      "kill_or_abstain": [
+        "Drop a mode amplitude or silently replace all RHS by a common one",
+        "Full rank or compression setup consumes prospective saving"
+      ],
+      "claim_ceiling": "design_only_not_executed",
+      "owner_role": "implementation_and_independent_review",
+      "artifacts": [
+        "crates/rodas5p-core/src/shared_shift_jet.rs"
+      ],
+      "revalidation_scope": "new changed path and stated acceptance only; no full historical replay"
+    },
+    {
+      "id": "PP04",
+      "title_ko": "prospective cluster·degree·RHS rank 선택",
+      "depends_on": [
+        "PP02"
+      ],
+      "priority": "P2",
+      "status": "PROPOSED",
+      "code_seams": [
+        "crates/rodas5p-core/src/shared_shift_jet.rs::proposed_SharedActionPolicy",
+        "crates/rodas5p-core/src/work.rs"
+      ],
+      "acceptance": [
+        "Compare against common-shift LU reuse,individual shifted LU,and available Schur/multi-shift baselines.",
+        "Charge factorization,solves,rank discovery,subtractions,evaluation,reconstruction,residuals,allocations,dispatch,and failed attempts.",
+        "Split wide clusters; common-gamma inputs are not advertised as new factorization saving.",
+        "Uncompressed supplied-column baseline comes first; compression is optional, not a prerequisite."
+      ],
+      "kill_or_abstain": [
+        "No positive all-in prospective margin",
+        "Uncounted setup or output cost",
+        "Timing authority unavailable for a speed claim"
+      ],
+      "claim_ceiling": "design_only_not_executed",
+      "owner_role": "implementation_and_independent_review",
+      "artifacts": [
+        "crates/rodas5p-core/src/shared_shift_jet.rs"
+      ],
+      "revalidation_scope": "new changed path and stated acceptance only; no full historical replay",
+      "optional_dependencies": [
+        "PP03"
+      ]
+    },
+    {
+      "id": "PP05",
+      "title_ko": "실제 nonlinear Fourier client source-bound adapter",
+      "depends_on": [],
+      "priority": "P1",
+      "status": "PROPOSED",
+      "code_seams": [
+        "archive/stage10/code/fourier_volterra.py::{rhs,certificate,commit}",
+        "archive/stage11/code/fft_bridge.py::build_fft",
+        "crates/rodas5p-integrators/src/fourier_path_certificate.rs (proposed)"
+      ],
+      "acceptance": [
+        "Keep a_prime=iq*c*conj(a)*b and b_prime=i(q/2)*c*a*a.",
+        "Keep lambda=1 original physical target,model epoch,state generation,initial constants,phase witness and all amplitudes.",
+        "Preserve constant invariant q=sign*5/4 scope.",
+        "Do not reuse quadratic-only Q2CertificateSource as cubic complex certification.",
+        "First establish a real coupled semilinear action use case; existing scalar analytic-moment Fourier primitive does not automatically need a resolvent."
+      ],
+      "kill_or_abstain": [
+        "Independent-scalar replacement of coupled RHS",
+        "Certificate uses FFT roundtrip or predictor estimates instead of original target"
+      ],
+      "claim_ceiling": "design_only_not_executed",
+      "owner_role": "implementation_and_independent_review",
+      "artifacts": [
+        "archive/stage10/code/fourier_volterra.py"
+      ],
+      "revalidation_scope": "new changed path and stated acceptance only; no full historical replay"
+    },
+    {
+      "id": "PP06",
+      "title_ko": "native coefficient convolution 및 FFT 후보 이식",
+      "depends_on": [
+        "PP05"
+      ],
+      "priority": "P2",
+      "status": "PROPOSED",
+      "code_seams": [
+        "crates/rodas5p-integrators/src/fourier_path_candidate.rs (proposed)",
+        "archive/stage11/code/fft_bridge.py::{required_shape,fft_rhs}"
+      ],
+      "acceptance": [
+        "Conjugation maps (harmonic k,degree j) to (-k,j).",
+        "Full-product padding Nk>=2(3K+s)+1,Nj>=3p+q+1.",
+        "Native direct noncyclic convolution supplies a small-case comparator.",
+        "FFT candidates are frozen and independently certified against the same full target.",
+        "Preserve primitive start and high-degree contributions before truncation."
+      ],
+      "kill_or_abstain": [
+        "Cyclic alias accepted",
+        "Degree axis confused with physical time",
+        "Roundtrip-only correctness argument"
+      ],
+      "claim_ceiling": "design_only_not_executed",
+      "owner_role": "implementation_and_independent_review",
+      "artifacts": [
+        "crates/rodas5p-integrators/src/fourier_path_candidate.rs (proposed)"
+      ],
+      "revalidation_scope": "new changed path and stated acceptance only; no full historical replay"
+    },
+    {
+      "id": "PP07",
+      "title_ko": "실제 coupled Fourier correction과 shared action 결합",
+      "depends_on": [
+        "PP04",
+        "PP06"
+      ],
+      "priority": "P2",
+      "status": "PROPOSED",
+      "code_seams": [
+        "crates/rodas5p-integrators/src/fourier_path_candidate.rs::proposed_correction_adapter",
+        "crates/rodas5p-core/src/shared_shift_jet.rs"
+      ],
+      "acceptance": [
+        "Collect actual shifts and correction RHS from the client; measure rank.",
+        "Verify current dissipativity or use another valid inverse gain.",
+        "Retain nonlinear coupling and original physical target certificate.",
+        "Count current J refresh,failed support checks and fallback."
+      ],
+      "kill_or_abstain": [
+        "Client has no nearby distinct shifts",
+        "Current J lacks required witness",
+        "Common-shift or high-rank economics fail",
+        "Artificial 65-shift workload substituted for actual client"
+      ],
+      "claim_ceiling": "design_only_not_executed",
+      "owner_role": "implementation_and_independent_review",
+      "artifacts": [
+        "crates/rodas5p-integrators/src/fourier_path_candidate.rs"
+      ],
+      "revalidation_scope": "new changed path and stated acceptance only; no full historical replay"
+    },
+    {
+      "id": "PP08",
+      "title_ko": "Laguerre total-budget opt-in router",
+      "depends_on": [],
+      "priority": "P2",
+      "status": "PROPOSED",
+      "code_seams": [
+        "crates/rodas5p-core/src/polynomial_action.rs::{joint_phi_action,JointPhiReport::admit_laguerre_total}",
+        "crates/rodas5p-core/src/laguerre_adjoint.rs"
+      ],
+      "acceptance": [
+        "Preserve verified symmetric-nonpositive domain,degree128 cap and certified execution.",
+        "Use total bound,not truncation budget,for admission.",
+        "Run only new router boundary/negative tests unless original source changes.",
+        "Compare Chebyshev and Laguerre on same target with setup/cache/certificate costs."
+      ],
+      "kill_or_abstain": [
+        "Declared spectrum treated as verified",
+        "General nonnormal input admitted through symmetric theorem",
+        "Unbounded timing lane admitted"
+      ],
+      "claim_ceiling": "design_only_not_executed",
+      "owner_role": "implementation_and_independent_review",
+      "artifacts": [
+        "crates/rodas5p-core/src/polynomial_action.rs"
+      ],
+      "revalidation_scope": "new changed path and stated acceptance only; no full historical replay"
+    },
+    {
+      "id": "PP09",
+      "title_ko": "Laguerre stiff-regime bound tightening",
+      "depends_on": [
+        "PP08"
+      ],
+      "priority": "P2",
+      "status": "PROPOSED",
+      "code_seams": [
+        "crates/rodas5p-core/src/polynomial_action.rs::{laguerre_coefficient_enclosures,joint_phi_action_laguerre_scales,laguerre_scale_for_degree}",
+        "crates/rodas5p-core/src/laguerre_adjoint.rs"
+      ],
+      "acceptance": [
+        "Separate coefficient/tail exp(L_prime/2) bottleneck from recurrence-adjoint term.",
+        "Prove sharper finite-degree envelope or a certified scaling composition before admission.",
+        "Preserve RNEXT04 six large-h-rho budget rejections as historical results.",
+        "Cache key includes scale,operator,enclosure,degree,arithmetic and resource policy."
+      ],
+      "kill_or_abstain": [
+        "Numerically accurate candidate used in place of bound proof",
+        "New envelope is only sampled",
+        "Degree/resource or closure cost exceeds comparator"
+      ],
+      "claim_ceiling": "design_only_not_executed",
+      "owner_role": "implementation_and_independent_review",
+      "artifacts": [
+        "crates/rodas5p-core/src/polynomial_action.rs"
+      ],
+      "revalidation_scope": "new changed path and stated acceptance only; no full historical replay"
+    },
+    {
+      "id": "PP10",
+      "title_ko": "Newton–Leja 후보와 독립 witness",
+      "depends_on": [],
+      "priority": "P2",
+      "status": "PROPOSED",
+      "code_seams": [
+        "crates/rodas5p-core/src/leja_action.rs (proposed)",
+        "crates/rodas5p-core/src/operator.rs::LinearOperator::apply_rows",
+        "crates/rodas5p-integrators/src/exponential.rs::fused_phi_linear_combination"
+      ],
+      "acceptance": [
+        "Bind node/scale/degree selection to declared operator domain.",
+        "Track coefficients,recurrence,roundoff,normalization and matrix applications.",
+        "Use numerical-range/contour or original-target validation for nonnormal total error.",
+        "Maintain EstimateOnly until a complete total witness exists."
+      ],
+      "kill_or_abstain": [
+        "Spectrum-only certificate on nonnormal input",
+        "Claim outside Krylov vector space used as evidence of novelty",
+        "Action-only speed treated as solver speed"
+      ],
+      "claim_ceiling": "design_only_not_executed",
+      "owner_role": "implementation_and_independent_review",
+      "artifacts": [
+        "crates/rodas5p-core/src/leja_action.rs (proposed)"
+      ],
+      "revalidation_scope": "new changed path and stated acceptance only; no full historical replay"
+    },
+    {
+      "id": "PP11",
+      "title_ko": "scaled Taylor fused-phi total-target gap",
+      "depends_on": [],
+      "priority": "P2",
+      "status": "PROPOSED",
+      "code_seams": [
+        "crates/rodas5p-core/src/taylor_phi.rs::taylor_phi_action",
+        "crates/rodas5p-core/src/nonnormal_certificate.rs::{certify_exp_action,certify_exp_action_stepped}"
+      ],
+      "acceptance": [
+        "Separate exp(A)v target from augmented fused phi target.",
+        "Include hA construction rounding,normalization,subnormal terms and all products.",
+        "An exact-arithmetic tail for stored M is not total error for exact binary A,h,w."
+      ],
+      "kill_or_abstain": [
+        "Reuse exp-only certificate for a different fused target",
+        "Promote current tail-only Taylor report to Certified"
+      ],
+      "claim_ceiling": "design_only_not_executed",
+      "owner_role": "implementation_and_independent_review",
+      "artifacts": [
+        "crates/rodas5p-core/src/taylor_phi.rs"
+      ],
+      "revalidation_scope": "new changed path and stated acceptance only; no full historical replay"
+    },
+    {
+      "id": "PP12",
+      "title_ko": "nonnormal decay-aware physical error bound",
+      "depends_on": [
+        "SAFE-ENCLOSURE"
+      ],
+      "priority": "P2",
+      "status": "PROPOSED",
+      "code_seams": [
+        "crates/rodas5p-core/src/nonnormal_certificate.rs::{NumericalRangeBox,certify_exp_action_stepped}",
+        "verified symmetric-part spectral upper bound (proposed)"
+      ],
+      "acceptance": [
+        "Use directed inertia or another verified method to bound lambda_max((B+B*)/2).",
+        "Charge metric construction,physical norm transport and rounding.",
+        "Use physical absolute/WRMS and relative usefulness metrics separately.",
+        "Record new outcome without changing REV02 original FAIL."
+      ],
+      "kill_or_abstain": [
+        "Unverified numerical eigenvalue used as certificate",
+        "Hidden metric condition amplification",
+        "Strongly nonnormal transient growth makes bound useless"
+      ],
+      "claim_ceiling": "design_only_not_executed",
+      "owner_role": "implementation_and_independent_review",
+      "artifacts": [
+        "crates/rodas5p-core/src/nonnormal_certificate.rs"
+      ],
+      "revalidation_scope": "new changed path and stated acceptance only; no full historical replay",
+      "optional_dependencies": [
+        "PP11"
+      ]
+    },
+    {
+      "id": "PP13",
+      "title_ko": "INT06 후속 실제 비용과 dispatch 확인",
+      "depends_on": [],
+      "priority": "P2",
+      "status": "PROPOSED",
+      "code_seams": [
+        "crates/rodas5p-integrators/src/transactional_q1_q2.rs::{Q2Admission::PreparedStructuredCertificate,PreparedQ2Certificate::prepare}",
+        "crates/rodas5p-integrators/src/outward_certificate.rs::certify_stage_target_diagonal",
+        "docs/reviews/20261003_integrated_plan/Q2_ACTIVATION_DECISION.md"
+      ],
+      "acceptance": [
+        "Same state,h,target,physical output budget and preconditioned linear baseline.",
+        "Include witness/preflight,all q1/q2 attempts,finishing,radius failures,fallback,dispatch and allocations.",
+        "Calibrate directed-operation cost separately from plain floating operations.",
+        "Preserve derived decision and critical-review k=1..4 sensitivity; no default activation without new evidence."
+      ],
+      "kill_or_abstain": [
+        "No positive measured margin",
+        "Timing authority HOLD",
+        "Counter units not commensurate"
+      ],
+      "claim_ceiling": "design_only_not_executed",
+      "owner_role": "implementation_and_independent_review",
+      "artifacts": [
+        "crates/rodas5p-integrators/src/transactional_q1_q2.rs"
+      ],
+      "revalidation_scope": "new changed path and stated acceptance only; no full historical replay"
+    },
+    {
+      "id": "PP14",
+      "title_ko": "general Fourier closure 및 damping 확장",
+      "depends_on": [
+        "PP07"
+      ],
+      "priority": "P2",
+      "status": "PROPOSED",
+      "code_seams": [
+        "new explicit Fourier physical model",
+        "crates/rodas5p-integrators/src/fourier_path_certificate.rs (proposed)"
+      ],
+      "acceptance": [
+        "Replace invariant constant-q shortcut only with explicit varying q(t) model.",
+        "Certify closure tube,inverse/branch,phase,damping and full path residual.",
+        "Retain alias,phase,raw-RVJ and nonnormal negative controls."
+      ],
+      "kill_or_abstain": [
+        "Apply unchanged constant-leaf certificate to new closure",
+        "Endpoint-only evidence replaces whole-path error"
+      ],
+      "claim_ceiling": "design_only_not_executed",
+      "owner_role": "implementation_and_independent_review",
+      "artifacts": [
+        "new explicit Fourier physical model"
+      ],
+      "revalidation_scope": "new changed path and stated acceptance only; no full historical replay"
+    },
+    {
+      "id": "PP15",
+      "title_ko": "bounded native paired comparator campaign",
+      "depends_on": [
+        "PP07"
+      ],
+      "priority": "P2",
+      "status": "PROPOSED",
+      "code_seams": [
+        "source-pinned candidate and baseline harness",
+        "work ledger and paired timing authority"
+      ],
+      "acceptance": [
+        "Predeclare physical error,output semantics,cold/warm distinction,failures and inclusion rules.",
+        "Include all setup,target certificate,failed attempts,fallbacks and allocations.",
+        "Independent decision reviewer separates correctness promotion from speed promotion.",
+        "Use only newly changed paths; do not replay all published research.",
+        "Do not require every experimental arm before comparing the implemented client; include only domain-admissible arms and disclose omissions."
+      ],
+      "kill_or_abstain": [
+        "Unmatched target/error budget",
+        "Kernel-only timing or counter-only speed claim",
+        "Any omitted failed cost"
+      ],
+      "claim_ceiling": "design_only_not_executed",
+      "owner_role": "implementation_and_independent_review",
+      "artifacts": [
+        "source-pinned candidate and baseline harness"
+      ],
+      "revalidation_scope": "new changed path and stated acceptance only; no full historical replay",
+      "optional_dependencies": [
+        "PP08",
+        "PP10",
+        "PP11",
+        "PP13"
+      ]
+    },
+    {
+      "id": "PP16",
+      "title_ko": "기존 complex-shift gain 정리의 native directed 이식",
+      "depends_on": [
+        "PP02"
+      ],
+      "priority": "P2",
+      "status": "PROPOSED",
+      "code_seams": [
+        "archive/stage02/RESEARCH_NOTE_KO.md section10 T2.9",
+        "complex directed residual adapter (proposed)"
+      ],
+      "acceptance": [
+        "Reuse existing proof for Re(gamma)>0: inverse gain <= abs(gamma)/Re(gamma).",
+        "Enclose complex arithmetic and sum residue-weighted current residuals.",
+        "Add source-jet error terms and physical metric transport.",
+        "Reuse or compare actual RVJ three/six shift structure,without calling it a 65-shift family."
+      ],
+      "kill_or_abstain": [
+        "Use gain1 on arbitrary complex shift",
+        "Re(gamma)<=0",
+        "Source derivatives or residues not bounded",
+        "Confuse existing theorem with new mathematical result"
+      ],
+      "claim_ceiling": "design_only_not_executed",
+      "owner_role": "implementation_and_independent_review",
+      "artifacts": [
+        "archive/stage02/RESEARCH_NOTE_KO.md section10 T2.9"
+      ],
+      "revalidation_scope": "new changed path and stated acceptance only; no full historical replay"
+    },
+    {
+      "id": "SAFE-CHART",
+      "title_ko": "NaN/provider shape/시간 전진 경계 수리",
+      "priority": "P1",
+      "status": "COMPLETE_RESEARCH_SCOPE",
+      "depends_on": [],
+      "code_seams": [
+        "crates/rodas5p-integrators/src/stage_chart_candidate.rs",
+        "crates/rodas5p-integrators/src/chart_transport.rs"
+      ],
+      "acceptance": [
+        "No false Converged on nonfinite residual",
+        "Malformed provider returns error/status not panic",
+        "No physical advance before representable time progress"
+      ],
+      "kill_or_abstain": [
+        "Nonfinite target/provider data",
+        "Unrepresentable positive time progress"
+      ],
+      "evidence": [
+        "evidence/chart_boundaries_red.log",
+        "evidence/chart.stdout"
+      ],
+      "claim_ceiling": "input boundaries only; not closure of every historical chart arithmetic proof",
+      "owner_role": "next implementation owner plus independent reviewer",
+      "artifacts": [
+        "crates/rodas5p-integrators/src/stage_chart_candidate.rs",
+        "crates/rodas5p-integrators/src/chart_transport.rs"
+      ],
+      "revalidation_scope": "concrete changed path only"
+    },
+    {
+      "id": "SAFE-RECYCLE",
+      "title_ko": "GCRODR refresh repair를 실제 fast driver에 명시적으로 연결",
+      "priority": "P1",
+      "status": "PROPOSED",
+      "depends_on": [],
+      "code_seams": [
+        "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs",
+        "crates/rodas5p-krylov/src/gcrodr.rs::GcrodrSolveOptions"
+      ],
+      "acceptance": [
+        "Expose explicit refresh_after_update or choose cold mode for opted-in recycled GCRODR",
+        "Preserve old method identifier for reproducible comparison",
+        "Record refresh applications in WorkCounters",
+        "Only policy wiring/current-target residual tests; reuse REV01c attribution evidence"
+      ],
+      "kill_or_abstain": [
+        "Silent reuse of broken M^-1 A U=C pair",
+        "Uncharged refresh work",
+        "Default algorithm change without matched acceptance"
+      ],
+      "claim_ceiling": "correct policy integration; no recycling speed claim",
+      "owner_role": "next implementation owner plus independent reviewer",
+      "artifacts": [
+        "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs",
+        "crates/rodas5p-krylov/src/gcrodr.rs"
+      ],
+      "revalidation_scope": "concrete changed path only"
+    },
+    {
+      "id": "SAFE-ENCLOSURE",
+      "title_ko": "directed exp/time/midpoint 합성 경계의 국소 exact 감사",
+      "priority": "P1",
+      "status": "PROPOSED",
+      "depends_on": [],
+      "code_seams": [
+        "crates/rodas5p-integrators/src/chart_transport.rs::exp_neg_enclosure",
+        "crates/rodas5p-core/src/nonnormal_certificate.rs::certify_exp_action_stepped"
+      ],
+      "acceptance": [
+        "For decreasing exp(-x), enclose product lower and upper endpoints",
+        "When re_hi<0 multiply intervals with correct sign direction",
+        "Radius is max(mid-lo,hi-mid) outward around the actually rounded midpoint",
+        "Preserve first exact counterexample if found; do not claim one beforehand",
+        "Run only local boundary probes plus changed arithmetic consumers"
+      ],
+      "kill_or_abstain": [
+        "Sampled slack substituted for enclosure proof",
+        "Campaign PASS substituted for monotone interval composition"
+      ],
+      "claim_ceiling": "proof obligation currently unresolved, not demonstrated false certificate",
+      "owner_role": "next implementation owner plus independent reviewer",
+      "artifacts": [
+        "crates/rodas5p-integrators/src/chart_transport.rs",
+        "crates/rodas5p-core/src/nonnormal_certificate.rs"
+      ],
+      "revalidation_scope": "concrete changed path only"
+    },
+    {
+      "id": "STORAGE-RUNTIME",
+      "title_ko": "opaque LU workspace까지 포함하는 실제 자원 telemetry",
+      "priority": "P2",
+      "status": "PROPOSED",
+      "depends_on": [
+        "PP02"
+      ],
+      "code_seams": [
+        "crates/rodas5p-core/src/shared_shift_jet.rs::JetWork",
+        "crates/rodas5p-core/src/matrix.rs::LuFactorization"
+      ],
+      "acceptance": [
+        "Separate explicit scalar slots from allocator bytes and library scratch",
+        "Measure peak allocations on n,r,p,m sweep before using as hard resource cap",
+        "Keep overflow checks before allocations"
+      ],
+      "kill_or_abstain": [
+        "Present explicit scalar cap as total RSS cap"
+      ],
+      "claim_ceiling": "resource accounting; no timing authority",
+      "owner_role": "next implementation owner plus independent reviewer",
+      "artifacts": [
+        "crates/rodas5p-core/src/shared_shift_jet.rs",
+        "crates/rodas5p-core/src/matrix.rs"
+      ],
+      "revalidation_scope": "concrete changed path only"
+    },
+    {
+      "id": "ACTIVATE",
+      "title_ko": "실제 client 오차·비용·독립 판정 후 선택적 routing 승격",
+      "priority": "P3",
+      "status": "BLOCKED",
+      "depends_on": [
+        "SAFE-RECYCLE",
+        "SAFE-ENCLOSURE",
+        "PP15"
+      ],
+      "code_seams": [
+        "future explicit router; no default change in current branch"
+      ],
+      "acceptance": [
+        "Matched physical error and all-in prospective timing gate",
+        "Independent decision reviewer promotes supported domain only",
+        "Fallback and unsupported-domain behavior documented"
+      ],
+      "kill_or_abstain": [
+        "Timing authority HOLD",
+        "Generic raw RVJ order claim resurrected",
+        "Any false acceptance or missing failed-work cost"
+      ],
+      "blockers": [
+        "real coupled client not implemented",
+        "matched timing not evaluated"
+      ],
+      "claim_ceiling": "production activation forbidden until gates close",
+      "owner_role": "next implementation owner plus independent reviewer",
+      "artifacts": [
+        "future explicit router; no default change in current branch"
+      ],
+      "revalidation_scope": "concrete changed path only"
+    }
+  ],
+  "scientific_claim_ceiling": "no generic solver order or wall-clock performance promotion"
+}

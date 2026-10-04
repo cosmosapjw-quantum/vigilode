@@ -77,3 +77,16 @@ Stop after mandatory affected gates and review; no full historical rerun, no
 recursive reviews. Additional probes only resolve a concrete finding.
 
 ## Results (append only after execution)
+
+## Executed result — appended 2026-10-04
+
+Source commit `699a7adc6dba5fc45d4da01a5456f10f25dcf210` was published before the root combined verification.
+15 new cases / 591 target candidates / 1341 RHS-target rows; exact oracle enclosure
+failures0, certified1309/rejected32 RHS rows,11/11 negative controls rejected.
+Fixed holdout passed the original1e-10 absolute tolerance. New core6+chart9 and
+related existing8 tests all passed. All8 combined commands exited0.
+Chart RED six failures is preserved; resource-slot review correction is preserved.
+No historical full campaign replay, no default solver activation, no timing claim.
+See RESULTS.json and evidence/COMMANDS.jsonl. Independent decision and final
+artifact/process validation are recorded separately; CAS returned True with its
+pre-evaluation symbol warnings retained.

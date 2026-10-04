@@ -1,0 +1,122 @@
+{
+  "schema_version": "1.0",
+  "date_utc": "2026-10-04",
+  "status": "READY_METADATA_ONLY_NO_BUILD_OR_SCIENCE_EXECUTED",
+  "source_commit": "826fa05cc1fdaf7b1a0cf7ac45116596b4ddff65",
+  "worktree_head_at_metadata": "3e784982104274312027490d481de4929e4f3cf6",
+  "cargo_lock_sha256": "04c7d6c147bf19ebb1a627463705d9dcf27337a3ff228dd1169f19eb73c71400",
+  "env_script": "/workspace/scratch/0dc1e721cf82/runtime_integration/env.sh",
+  "cargo_home": "/workspace/scratch/0dc1e721cf82/runtime_integration/cargo_home",
+  "target_directory": "/workspace/scratch/0dc1e721cf82/runtime_integration/target",
+  "repository_config_changed": false,
+  "versions": {
+    "rustc": "rustc 1.94.1 (e408947bf 2026-03-25)\nbinary: rustc\ncommit-hash: e408947bfd200af42db322daf0fadfe7e26d3bd1\ncommit-date: 2026-03-25\nhost: x86_64-unknown-linux-gnu\nrelease: 1.94.1\nLLVM version: 21.1.8",
+    "cargo": "cargo 1.94.1 (29ea6fb6a 2026-03-24)",
+    "rustfmt": "rustfmt 1.8.0-stable (e408947bfd 2026-03-25)",
+    "clippy": "clippy 0.1.94 (e408947bfd 2026-03-25)",
+    "python": "3.12.14"
+  },
+  "input_archives_sha256": {
+    "06-rust-1.94.1-x86_64-unknown-linux-gnu.tar.xz": "294b3d81fa72e62581276290c60c81eb8b58498d333d422ca1dfc432877d0c40",
+    "15-GENERIC_VECTOR_JF_OFFLINE_CARGO_VENDOR_20260816-1-.zip": "9c7671ba5eef9f511560df402418f8cd46bed161e8743f0a5dd5696daf92fb8d",
+    "rust-offline-rodas5p-rs-20260806.tar.zst": "dc2b1ba76059b56042852975845578e51df67ebfdd59b29305106ad71b578be3"
+  },
+  "toolchain_signature_validation": "not performed; checksum recorded for supplied user artifact, not an upstream authenticity assertion",
+  "vendor": {
+    "source_commit": "826fa05cc1fdaf7b1a0cf7ac45116596b4ddff65",
+    "cargo_lock_sha256": "04c7d6c147bf19ebb1a627463705d9dcf27337a3ff228dd1169f19eb73c71400",
+    "registry_package_count": 118,
+    "vendor_package_count": 262,
+    "matched_package_count": 118,
+    "missing_packages": [],
+    "mismatched_package_checksums": [],
+    "mismatched_files": [],
+    "files_verified": 4382
+  },
+  "cargo_metadata": {
+    "command": "cargo metadata --offline --locked --format-version 1",
+    "exit_code": 0,
+    "packages": 123,
+    "workspace_members": 5,
+    "stdout": "intake/cargo_metadata.json",
+    "stderr": "intake/cargo_metadata.stderr"
+  },
+  "installed_files": [
+    {
+      "path": "rust/bin/rustc",
+      "bytes": 655616,
+      "sha256": "ef6d716e5d1c6c93def277c0afa037c21e7a74f7de3aed4ee0700646c3301b1d"
+    },
+    {
+      "path": "rust/bin/cargo",
+      "bytes": 41666064,
+      "sha256": "b7561ebe947acf816451536f19871ea4810f6be3f82fd252feab6ca7be8396f5"
+    },
+    {
+      "path": "rust/bin/rustfmt",
+      "bytes": 5348760,
+      "sha256": "6398b77b2f4a048c78e52c708b3eee365c89dd3773d42dd9dc161a538d181b5d"
+    },
+    {
+      "path": "rust/bin/cargo-clippy",
+      "bytes": 1259744,
+      "sha256": "fba9a6e5fa8c42eddbb81b986902df72ffcd57ba88283e7aad4272bbc0c90083"
+    },
+    {
+      "path": "rust/bin/clippy-driver",
+      "bytes": 20004056,
+      "sha256": "1a437e83cc2a03e5302f5bec88398b8e89574b998aa46faf8ce2f5ec588597c5"
+    },
+    {
+      "path": "rust/lib/librustc_driver-83018425804cb0fc.so",
+      "bytes": 153848240,
+      "sha256": "e51e2f6796ac2730a11744a0d3e126e6b1e60d43e2e602a091551b1ad1a9ba2f"
+    },
+    {
+      "path": "rust/lib/libLLVM.so.21.1-rust-1.94.1-stable",
+      "bytes": 186862176,
+      "sha256": "158c711c64147bb127a2a5174df22718d26b755560a1487945e7c788c947986f"
+    }
+  ],
+  "commands": [
+    "Inspect supplied rust_1_94_1_env.sh, bootstrap.sh, Rust install.sh and vendor README/verify_offline.sh; do not execute bootstrap or vendor verify script because they run unrelated tests.",
+    "Extract vendor tar from user ZIP and compare inner SHA256 with supplied SHA256SUMS.txt.",
+    "tar --no-same-owner -xJf <Rust distribution> -C runtime_integration/distribution <selected components>",
+    "bash <distribution>/install.sh --prefix=<runtime>/rust --components=rustc,rust-std-x86_64-unknown-linux-gnu,cargo,rustfmt-preview,clippy-preview --disable-ldconfig",
+    "After truncated GNU tar extraction: Python tarfile r|xz stream selected regular files with per-member declared/read/output-byte equality, SHA256 and mode; reinstall same local prefix.",
+    "tar --zstd --no-same-owner -xf <vendor tar> -C runtime_integration --wildcards */vendor/* plus README and verify script",
+    "Validate every required package version and package checksum vs pinned Cargo.lock, and every 4382 file checksum from required vendor .cargo-checksum.json.",
+    "source runtime_integration/env.sh; cargo metadata --offline --locked --format-version 1"
+  ],
+  "failures": [
+    {
+      "id": "ENV-001",
+      "stage": "initial discovery",
+      "observation": "No rustc or cargo on initial PATH",
+      "resolution": "Install supplied exact 1.94.1 toolchain locally."
+    },
+    {
+      "id": "ENV-002",
+      "stage": "initial GNU tar component extraction and install",
+      "observation": "GNU tar extraction exited 0 but two shared objects were shorter than declared archive members. rustc/rustfmt/clippy failed with cannot read file data; cargo alone worked. librustc_driver output was 63635456 vs declared 153848240 bytes; LLVM output was 137907200 vs declared 186862176 bytes. Underlying GNU tar shortening cause not established.",
+      "resolution": "Read selected archive files via Python streaming tarfile, assert complete declared byte counts, compute hashes, reinstall. Exact versions then succeeded.",
+      "evidence": [
+        "intake/rust_distribution_inspection.json",
+        "intake/rust_selected_members.json",
+        "intake/rust_install.log",
+        "intake/rust_reinstall.log"
+      ]
+    },
+    {
+      "id": "ENV-003",
+      "stage": "archive SHA256 logging",
+      "observation": "First hash-redirection used repository cwd, so intake/runtime_archive_hashes.txt directory did not exist; no artifact hash emitted.",
+      "resolution": "Reran from workspace cwd; hashes saved."
+    }
+  ],
+  "limits": [
+    "No cargo build, cargo test, solver execution, historical science rerun, timing or source modification was performed by this runtime preparation.",
+    "Cargo metadata verifies dependency resolution, not compilation or numerical correctness.",
+    "Current lock requires 118 registry packages and all are available; new dependencies require a fresh completeness check."
+  ]
+}

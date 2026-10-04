@@ -1,0 +1,773 @@
+{
+  "schema": "vigilode-polynomial-parallel-extension-v1",
+  "date": "2026-10-04",
+  "owner": "polynomial_parallel_research delegated reviewer",
+  "methodology": "physmath GPT-6 Astra v4.0.0; workflow binding only",
+  "model_identity": "not asserted",
+  "implementation_base_commit": "826fa05cc1fdaf7b1a0cf7ac45116596b4ddff65",
+  "archive_sha256": "de25f591272d1b06d5ff597a43cf73ca026959997baa87b05eceaa70d687f0ca",
+  "scope": "One-pass published evidence/source audit plus derived extension and concrete port DAG; no scientific replay by this subtask.",
+  "execution": {
+    "prior_campaigns_rerun": 0,
+    "new_scientific_experiments": 0,
+    "source_edits_by_this_subtask": 0,
+    "native_shared_jet_implementation": "root-owned work in progress; see final root receipt",
+    "new_work": "analytic derivation,source mapping,design and JSON validation"
+  },
+  "revalidation_policy": {
+    "default": "do not rerun already audited published studies",
+    "reopen_triggers": [
+      "changed source or target",
+      "new operator domain",
+      "new compression or rounding backend",
+      "concrete counterexample",
+      "required changed-path gate"
+    ]
+  },
+  "published_verdicts_preserved": [
+    {
+      "node": "RNEXT04",
+      "ledger": "L-0047",
+      "verdict": "PASS",
+      "ceiling": "verified symmetric nonpositive Laguerre degree<=128,conditional opt-in total; no speed"
+    },
+    {
+      "node": "INT05",
+      "ledger": "L-0056",
+      "verdict": "PASS",
+      "ceiling": "exp action bound on studied dense nonnormal inputs; not fused phi total"
+    },
+    {
+      "node": "REV02",
+      "ledger": "L-0060",
+      "verdict": "FAIL",
+      "failed_item": "relative stiff usefulness; 3/6 fail",
+      "retained_positive": "18 bounded stepped certificates enclosed references"
+    },
+    {
+      "node": "RNEXT06",
+      "ledger": "L-0050",
+      "verdict": "FAIL",
+      "failed_item": "missing 68n finishing work; post-hoc correction retained"
+    },
+    {
+      "node": "INT02",
+      "ledger": "L-0053",
+      "verdict": "FAIL",
+      "failed_item": "dense comparator slope1.76 below1.8; structured correctness/count results retained"
+    },
+    {
+      "node": "INT06",
+      "verdict": "NO_DEFAULT_ACTIVATION",
+      "evidence_kind": "derived decision; no new run",
+      "n16_mean_margin_derived": 0.63,
+      "directed_cost_multiplier_sensitivity": [
+        {
+          "k": 1,
+          "margin": 0.63
+        },
+        {
+          "k": 2,
+          "margin": 0.26
+        },
+        {
+          "k": 3,
+          "margin": -0.11
+        },
+        {
+          "k": 4,
+          "margin": -0.49
+        }
+      ]
+    },
+    {
+      "node": "Loop11",
+      "verdict": "HOLD",
+      "ceiling": "scoped derived/exact algebra/reference verification; no native speed or general coupled integration"
+    }
+  ],
+  "derived_claims": [
+    {
+      "id": "PP-C01",
+      "status": [
+        "derived"
+      ],
+      "claim": "Any degree-m polynomial p(A)v lies in K_(m+1)(A,v). Arnoldi-free recurrence differs algorithmically,not as a vector-space exclusion."
+    },
+    {
+      "id": "PP-C02",
+      "status": [
+        "derived",
+        "published_theorem_reused"
+      ],
+      "claim": "For B=QC+E,current H-dissipative J,positive-real shifts,rho<1,tail <= rho^(p+1)/(1-rho)*||R0Q||_(2->H)*||c_j||_2 + ||e_j||_H before arithmetic error."
+    },
+    {
+      "id": "PP-C03",
+      "status": [
+        "derived",
+        "published_theorem_reused"
+      ],
+      "claim": "Fresh directed current residual r_j=b_j-(I-gamma_j hJ)xhat_j gives ||error||_H<=||r_j||_H for positive-real shift; this includes compression and candidate arithmetic error."
+    },
+    {
+      "id": "PP-C04",
+      "status": [
+        "derived",
+        "root_native_design"
+      ],
+      "claim": "T=R0-I=gamma0*h*R0J and z=(gamma-gamma0)/gamma0 normalize the same resolvent jet; no J-actions in recurrence, but residual J work remains and cancellation is not automatically eliminated."
+    },
+    {
+      "id": "PP-C05",
+      "status": [
+        "published_theorem_reused"
+      ],
+      "claim": "Loop02 already proves complex inverse gain abs(gamma)/Re(gamma) for Re(gamma)>0 and H-dissipative J; missing piece is native directed complex application,not the theorem."
+    },
+    {
+      "id": "PP-C06",
+      "status": [
+        "implementation-inspected",
+        "derived"
+      ],
+      "claim": "A Gershgorin row bound for symmetric-part dissipativity is sufficient only and may reject valid dissipative matrices."
+    },
+    {
+      "id": "PP-C07",
+      "status": [
+        "derived"
+      ],
+      "claim": "Independent target/RHS evaluation can be parallel after shared recurrence; causal stage and recurrence-round dependencies remain."
+    }
+  ],
+  "cost_contract": {
+    "original_jet": "rank_cost+factor+(p+1)*r*solve+p*r*J_action+evaluation+reconstruction+current_residual+memory+dispatch",
+    "normalized_jet": "replace p*r*J_action in original by p*r vector subtractions",
+    "naive_distinct_single_rhs": "M factorizations + M solves",
+    "common_shift_single_rhs": "1 factorization + M solves",
+    "loop11_broadcast_rank2": "65 factorizations +130 scalar RHS solves baseline; jet1factorization+36scalar RHS solves",
+    "jet_storage_scalars": "n*r*(p+1)",
+    "arbitrary_rhs_output_scalars": "n*M",
+    "arbitrary_rhs_naive_evaluation_order": "O(M*n*r*(p+1))",
+    "excluded_speed_claims": [
+      "counters are not wall clock",
+      "common-gamma RODAS no new LU saving",
+      "degree recurrence remains sequential",
+      "residual/certificate/compression setup never free"
+    ]
+  },
+  "native_snapshot_scope": {
+    "file": "crates/rodas5p-core/src/shared_shift_jet.rs",
+    "api": [
+      "shared_shift_jet",
+      "certify_shift_candidate",
+      "SharedShiftJetConfig",
+      "SharedShiftJetReport"
+    ],
+    "snapshot_status": "working source read during implementation; root receipt determines final hash/tests",
+    "domain": "real current J with verified Euclidean row-Gershgorin dissipativity; gamma0,gamma>0; strict normalized radius<1",
+    "missing_after_first_slice": [
+      "RHS compression",
+      "native parallel dispatch",
+      "actual coupled Fourier client",
+      "complex shifts",
+      "general H metric",
+      "cost-based router"
+    ]
+  },
+  "sources": [
+    {
+      "root": "repository",
+      "path": "research/rnext04_laguerre_admission_20261003/PREREGISTRATION.md",
+      "sha256": "682f7e8c006977c9a5d6176c921f2aa1404628e8b66e1b951d14c83b7a236f61",
+      "read_scope": "relevant sections; not necessarily entire file"
+    },
+    {
+      "root": "repository",
+      "path": "research/rnext04_laguerre_admission_20261003/RESULTS.json",
+      "sha256": "77be64d79b52897accf1cc3766243455591b6588e5823e9b67c1b778fbb22aa7",
+      "read_scope": "relevant sections; not necessarily entire file"
+    },
+    {
+      "root": "repository",
+      "path": "research/int05_nonnormal_metric_bound_20261003/PREREGISTRATION.md",
+      "sha256": "8c5d86c75e016d1831f22ce0d8de2afae11cbc67a6626b98983e452791702bd6",
+      "read_scope": "relevant sections; not necessarily entire file"
+    },
+    {
+      "root": "repository",
+      "path": "research/rev02_nonnormal_stepping_20261003/PREREGISTRATION.md",
+      "sha256": "de462ab47af2ed5a118c7caef03c097d11090a9ef99eade31e0a75ede6f6e224",
+      "read_scope": "relevant sections; not necessarily entire file"
+    },
+    {
+      "root": "repository",
+      "path": "research/rnext06_homotopy_net_cost_20261003/PREREGISTRATION.md",
+      "sha256": "482e088b403cd50f05dcc1c109d6cbe39c4fe1a7b67470d206e8eb9f019c3644",
+      "read_scope": "relevant sections; not necessarily entire file"
+    },
+    {
+      "root": "repository",
+      "path": "research/int02_structural_certificate_20261003/PREREGISTRATION.md",
+      "sha256": "0f8bd90af334f70e622d62141afda4e10f0573121ad33f6498f864ae32e5a8ce",
+      "read_scope": "relevant sections; not necessarily entire file"
+    },
+    {
+      "root": "repository",
+      "path": "docs/reviews/20261003_integrated_plan/Q2_ACTIVATION_DECISION.md",
+      "sha256": "c3772cee9b878d48b2473565cb6703322f8ce458d52f7f8d0499275af7178699",
+      "read_scope": "relevant sections; not necessarily entire file"
+    },
+    {
+      "root": "repository",
+      "path": "docs/reviews/20261003_integrated_plan/CRITICAL_REVIEW.md",
+      "sha256": "733f5fe7fd895e71f705698bce21ae20ebd1370d52050614ddeab560aa0566df",
+      "read_scope": "relevant sections; not necessarily entire file"
+    },
+    {
+      "root": "repository",
+      "path": "crates/rodas5p-core/src/polynomial_action.rs",
+      "sha256": "3d553ada2249f9455cb964b3fb2ab89adbe0783a769613e38f1d55ee30e399e5",
+      "read_scope": "relevant sections; not necessarily entire file"
+    },
+    {
+      "root": "repository",
+      "path": "crates/rodas5p-core/src/taylor_phi.rs",
+      "sha256": "43d62a5e733af8564054c3afa52a7f26cf68c077f6abdb9773247ba460478f46",
+      "read_scope": "relevant sections; not necessarily entire file"
+    },
+    {
+      "root": "repository",
+      "path": "crates/rodas5p-core/src/nonnormal_certificate.rs",
+      "sha256": "e2cbeaa7f759316f2d53083229dedd565d54d9cd89e1074dd4c40ed92c51dd24",
+      "read_scope": "relevant sections; not necessarily entire file"
+    },
+    {
+      "root": "repository",
+      "path": "crates/rodas5p-integrators/src/transactional_q1_q2.rs",
+      "sha256": "72a9bf2405a181fefae2aa5e7483224ccd419046ede636a40416694b9d0fd7ad",
+      "read_scope": "relevant sections; not necessarily entire file"
+    },
+    {
+      "root": "repository",
+      "path": "crates/rodas5p-integrators/src/stage_chart_candidate.rs",
+      "sha256": "ed20ffaa02e1d00bebd94bebfdfa687c16e7b8e9823ed19f7c6b03e10ffb7e9f",
+      "read_scope": "relevant sections; not necessarily entire file"
+    },
+    {
+      "root": "repository",
+      "path": "crates/rodas5p-core/src/operator.rs",
+      "sha256": "d74f6e4b5ec2520d357345bb9e524bbbd6abdf924d9fb0e1661aaa048a281a4d",
+      "read_scope": "relevant sections; not necessarily entire file"
+    },
+    {
+      "root": "repository",
+      "path": "crates/rodas5p-core/src/matrix.rs",
+      "sha256": "7d700d734c4c9d38ad414ce1608552755c35fe996415bdfd42d86d1804f3afdf",
+      "read_scope": "relevant sections; not necessarily entire file"
+    },
+    {
+      "root": "offline_archive",
+      "path": "stages/02_rosenbrock_ag_loop2_20261002/files/RESEARCH_NOTE_KO.md",
+      "sha256": "62c52e0608ee9d4e2fc099e4d5f41b1e5a97ec054f41de0843c00dc79e86c893",
+      "read_scope": "relevant sections"
+    },
+    {
+      "root": "offline_archive",
+      "path": "stages/10_rvj_independent_loop10_20261004/files/code/fourier_volterra.py",
+      "sha256": "7a51c9a1c6a1f9c428bd1c941d1ec5c4f3649fe887ac368f702c0b6605d0dd28",
+      "read_scope": "relevant sections"
+    },
+    {
+      "root": "offline_archive",
+      "path": "stages/11_rvj_independent_loop11_20261004/files/RESEARCH_NOTE_KO.md",
+      "sha256": "a572a2923ec8ae026d1bd2537cebae18fb7a13a41f5c0a2e93df6b69a85815a6",
+      "read_scope": "relevant sections"
+    },
+    {
+      "root": "offline_archive",
+      "path": "stages/11_rvj_independent_loop11_20261004/files/code/fft_bridge.py",
+      "sha256": "48ca048acae868d728d72544a9822cd5472cc1c1004cc68fb24dff84d08611bc",
+      "read_scope": "relevant sections"
+    },
+    {
+      "root": "offline_archive",
+      "path": "stages/11_rvj_independent_loop11_20261004/files/code/shift_jet.py",
+      "sha256": "6dde74ed79252e962c065db2385b4cc8263be44aa230f1b5cc02c017239d50c0",
+      "read_scope": "relevant sections"
+    },
+    {
+      "root": "offline_archive",
+      "path": "stages/11_rvj_independent_loop11_20261004/files/evidence/WORK_ACCOUNTING_NOTES.json",
+      "sha256": "89f32d34590430411c5e0a579d5e58b7c39a285fbd5af24aa0b65a113925790a",
+      "read_scope": "relevant sections"
+    }
+  ],
+  "literature": [
+    {
+      "title": "Computing the Action of the Matrix Exponential, with an Application to Exponential Integrators",
+      "authors": [
+        "Al-Mohy",
+        "Higham"
+      ],
+      "year": 2011,
+      "url": "https://eprints.maths.manchester.ac.uk/1591/",
+      "doi": "10.1137/100788860",
+      "scope_read": "author repository abstract and metadata",
+      "supports": "Taylor action comparator and fused-phi augmentation",
+      "retrieved_ref": "turn45view0"
+    },
+    {
+      "title": "The Leja Method Revisited: Backward Error Analysis for the Matrix Exponential",
+      "authors": [
+        "Caliari",
+        "Kandolf",
+        "Ostermann",
+        "Rainer"
+      ],
+      "year": 2016,
+      "url": "https://arxiv.org/abs/1506.08665",
+      "doi": "10.1137/15M1027620",
+      "scope_read": "primary abstract and metadata",
+      "supports": "scale,node and degree co-selection",
+      "retrieved_ref": "turn45view1"
+    },
+    {
+      "title": "A comparison of Leja- and Krylov-based iterative schemes for Exponential Integrators",
+      "authors": [
+        "Deka",
+        "Tokman",
+        "Einkemmer"
+      ],
+      "year": 2022,
+      "url": "https://arxiv.org/abs/2211.08948",
+      "scope_read": "primary abstract",
+      "supports": "no universal backend winner across integrators",
+      "retrieved_ref": "turn45view2"
+    },
+    {
+      "title": "The Numerical Range is a (1+sqrt(2))-Spectral Set",
+      "authors": [
+        "Crouzeix",
+        "Palencia"
+      ],
+      "year": 2017,
+      "url": "https://epubs.siam.org/doi/10.1137/17M1116672",
+      "doi": "10.1137/17M1116672",
+      "scope_read": "publisher abstract and metadata",
+      "supports": "numerical-range matrix-function bound; not implementation certification",
+      "retrieved_ref": "turn45view3"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "PP01",
+      "title_ko": "current operator 입력과 증거 불변 계약",
+      "depends_on": [],
+      "priority": "P1",
+      "status": "IN_PROGRESS_IN_ROOT_NATIVE_SLICE",
+      "code_seams": [
+        "crates/rodas5p-core/src/shared_shift_jet.rs::certify_shift_candidate",
+        "crates/rodas5p-core/src/operator.rs::ExactOperatorIdentity",
+        "crates/rodas5p-core/src/directed.rs::Interval"
+      ],
+      "acceptance": [
+        "Fresh residual is recomputed from current J,h,gamma,RHS,candidate binary inputs.",
+        "Certificate internals are immutable and serialized reports are not imported as authority.",
+        "Nonfinite,shape,resource,unsupported-witness cases reject."
+      ],
+      "kill_or_abstain": [
+        "Unknown or stale target identity",
+        "Invalid arithmetic or witness"
+      ],
+      "claim_ceiling": "root_execution_receipt_required",
+      "owner_role": "implementation_and_independent_review"
+    },
+    {
+      "id": "PP02",
+      "title_ko": "normalized shared resolvent jet와 원 target gate",
+      "depends_on": [
+        "PP01"
+      ],
+      "priority": "P1",
+      "status": "IN_PROGRESS_IN_ROOT_NATIVE_SLICE",
+      "code_seams": [
+        "crates/rodas5p-core/src/shared_shift_jet.rs::shared_shift_jet",
+        "crates/rodas5p-core/src/matrix.rs::LuFactorization::solve_rows"
+      ],
+      "acceptance": [
+        "Use T=R0-I, W0=R0B, W[k+1]=R0W[k]-W[k], z=(gamma-gamma0)/gamma0.",
+        "Strict outward |z|<1 and finite positive-real shifts.",
+        "Every supplied RHS retained; candidate admitted only with current directed residual within absolute budget.",
+        "Record solves,degree-depth,target residual products,evaluation and explicit storage scope."
+      ],
+      "kill_or_abstain": [
+        "Dissipativity sufficient witness unavailable",
+        "Radius or resource cap violated",
+        "Residual fails budget"
+      ],
+      "claim_ceiling": "root_execution_receipt_required_no_integrator_or_speed_promotion",
+      "owner_role": "implementation_and_independent_review"
+    },
+    {
+      "id": "PP03",
+      "title_ko": "임의 RHS의 검증된 저 rank 분해 및 재구성",
+      "depends_on": [
+        "PP02"
+      ],
+      "priority": "P2",
+      "status": "PROPOSED",
+      "code_seams": [
+        "crates/rodas5p-core/src/shared_shift_jet.rs::proposed_RhsCompression"
+      ],
+      "acceptance": [
+        "Represent B=QC+E with every independent c_j retained.",
+        "Validate H-orthogonality or use a verified Q norm.",
+        "Charge compression E,rounding and target residuals.",
+        "Cover rank1,rank2,fullrank,near-dependent and unequal plus/minus amplitudes."
+      ],
+      "kill_or_abstain": [
+        "Drop a mode amplitude or silently replace all RHS by a common one",
+        "Full rank or compression setup consumes prospective saving"
+      ],
+      "claim_ceiling": "design_only_not_executed",
+      "owner_role": "implementation_and_independent_review"
+    },
+    {
+      "id": "PP04",
+      "title_ko": "prospective cluster·degree·RHS rank 선택",
+      "depends_on": [
+        "PP03"
+      ],
+      "priority": "P2",
+      "status": "PROPOSED",
+      "code_seams": [
+        "crates/rodas5p-core/src/shared_shift_jet.rs::proposed_SharedActionPolicy",
+        "crates/rodas5p-core/src/work.rs"
+      ],
+      "acceptance": [
+        "Compare against common-shift LU reuse,individual shifted LU,and available Schur/multi-shift baselines.",
+        "Charge factorization,solves,rank discovery,subtractions,evaluation,reconstruction,residuals,allocations,dispatch,and failed attempts.",
+        "Split wide clusters; common-gamma inputs are not advertised as new factorization saving."
+      ],
+      "kill_or_abstain": [
+        "No positive all-in prospective margin",
+        "Uncounted setup or output cost",
+        "Timing authority unavailable for a speed claim"
+      ],
+      "claim_ceiling": "design_only_not_executed",
+      "owner_role": "implementation_and_independent_review"
+    },
+    {
+      "id": "PP05",
+      "title_ko": "실제 nonlinear Fourier client source-bound adapter",
+      "depends_on": [],
+      "priority": "P1",
+      "status": "PROPOSED",
+      "code_seams": [
+        "archive/stage10/code/fourier_volterra.py::{rhs,certificate,commit}",
+        "archive/stage11/code/fft_bridge.py::build_fft",
+        "crates/rodas5p-integrators/src/fourier_path_certificate.rs (proposed)"
+      ],
+      "acceptance": [
+        "Keep a_prime=iq*c*conj(a)*b and b_prime=i(q/2)*c*a*a.",
+        "Keep lambda=1 original physical target,model epoch,state generation,initial constants,phase witness and all amplitudes.",
+        "Preserve constant invariant q=sign*5/4 scope.",
+        "Do not reuse quadratic-only Q2CertificateSource as cubic complex certification."
+      ],
+      "kill_or_abstain": [
+        "Independent-scalar replacement of coupled RHS",
+        "Certificate uses FFT roundtrip or predictor estimates instead of original target"
+      ],
+      "claim_ceiling": "design_only_not_executed",
+      "owner_role": "implementation_and_independent_review"
+    },
+    {
+      "id": "PP06",
+      "title_ko": "native coefficient convolution 및 FFT 후보 이식",
+      "depends_on": [
+        "PP05"
+      ],
+      "priority": "P2",
+      "status": "PROPOSED",
+      "code_seams": [
+        "crates/rodas5p-integrators/src/fourier_path_candidate.rs (proposed)",
+        "archive/stage11/code/fft_bridge.py::{required_shape,fft_rhs}"
+      ],
+      "acceptance": [
+        "Conjugation maps (harmonic k,degree j) to (-k,j).",
+        "Full-product padding Nk>=2(3K+s)+1,Nj>=3p+q+1.",
+        "Native direct noncyclic convolution supplies a small-case comparator.",
+        "FFT candidates are frozen and independently certified against the same full target.",
+        "Preserve primitive start and high-degree contributions before truncation."
+      ],
+      "kill_or_abstain": [
+        "Cyclic alias accepted",
+        "Degree axis confused with physical time",
+        "Roundtrip-only correctness argument"
+      ],
+      "claim_ceiling": "design_only_not_executed",
+      "owner_role": "implementation_and_independent_review"
+    },
+    {
+      "id": "PP07",
+      "title_ko": "실제 coupled Fourier correction과 shared action 결합",
+      "depends_on": [
+        "PP04",
+        "PP06"
+      ],
+      "priority": "P2",
+      "status": "PROPOSED",
+      "code_seams": [
+        "crates/rodas5p-integrators/src/fourier_path_candidate.rs::proposed_correction_adapter",
+        "crates/rodas5p-core/src/shared_shift_jet.rs"
+      ],
+      "acceptance": [
+        "Collect actual shifts and correction RHS from the client; measure rank.",
+        "Verify current dissipativity or use another valid inverse gain.",
+        "Retain nonlinear coupling and original physical target certificate.",
+        "Count current J refresh,failed support checks and fallback."
+      ],
+      "kill_or_abstain": [
+        "Client has no nearby distinct shifts",
+        "Current J lacks required witness",
+        "Common-shift or high-rank economics fail",
+        "Artificial 65-shift workload substituted for actual client"
+      ],
+      "claim_ceiling": "design_only_not_executed",
+      "owner_role": "implementation_and_independent_review"
+    },
+    {
+      "id": "PP08",
+      "title_ko": "Laguerre total-budget opt-in router",
+      "depends_on": [],
+      "priority": "P2",
+      "status": "PROPOSED",
+      "code_seams": [
+        "crates/rodas5p-core/src/polynomial_action.rs::{joint_phi_action,JointPhiReport::admit_laguerre_total}",
+        "crates/rodas5p-core/src/laguerre_adjoint.rs"
+      ],
+      "acceptance": [
+        "Preserve verified symmetric-nonpositive domain,degree128 cap and certified execution.",
+        "Use total bound,not truncation budget,for admission.",
+        "Run only new router boundary/negative tests unless original source changes.",
+        "Compare Chebyshev and Laguerre on same target with setup/cache/certificate costs."
+      ],
+      "kill_or_abstain": [
+        "Declared spectrum treated as verified",
+        "General nonnormal input admitted through symmetric theorem",
+        "Unbounded timing lane admitted"
+      ],
+      "claim_ceiling": "design_only_not_executed",
+      "owner_role": "implementation_and_independent_review"
+    },
+    {
+      "id": "PP09",
+      "title_ko": "Laguerre stiff-regime bound tightening",
+      "depends_on": [
+        "PP08"
+      ],
+      "priority": "P2",
+      "status": "PROPOSED",
+      "code_seams": [
+        "crates/rodas5p-core/src/polynomial_action.rs::{laguerre_coefficient_enclosures,joint_phi_action_laguerre_scales,laguerre_scale_for_degree}",
+        "crates/rodas5p-core/src/laguerre_adjoint.rs"
+      ],
+      "acceptance": [
+        "Separate coefficient/tail exp(L_prime/2) bottleneck from recurrence-adjoint term.",
+        "Prove sharper finite-degree envelope or a certified scaling composition before admission.",
+        "Preserve RNEXT04 six large-h-rho budget rejections as historical results.",
+        "Cache key includes scale,operator,enclosure,degree,arithmetic and resource policy."
+      ],
+      "kill_or_abstain": [
+        "Numerically accurate candidate used in place of bound proof",
+        "New envelope is only sampled",
+        "Degree/resource or closure cost exceeds comparator"
+      ],
+      "claim_ceiling": "design_only_not_executed",
+      "owner_role": "implementation_and_independent_review"
+    },
+    {
+      "id": "PP10",
+      "title_ko": "Newton–Leja 후보와 독립 witness",
+      "depends_on": [],
+      "priority": "P2",
+      "status": "PROPOSED",
+      "code_seams": [
+        "crates/rodas5p-core/src/leja_action.rs (proposed)",
+        "crates/rodas5p-core/src/operator.rs::LinearOperator::apply_rows",
+        "crates/rodas5p-integrators/src/exponential.rs::fused_phi_linear_combination"
+      ],
+      "acceptance": [
+        "Bind node/scale/degree selection to declared operator domain.",
+        "Track coefficients,recurrence,roundoff,normalization and matrix applications.",
+        "Use numerical-range/contour or original-target validation for nonnormal total error.",
+        "Maintain EstimateOnly until a complete total witness exists."
+      ],
+      "kill_or_abstain": [
+        "Spectrum-only certificate on nonnormal input",
+        "Claim outside Krylov vector space used as evidence of novelty",
+        "Action-only speed treated as solver speed"
+      ],
+      "claim_ceiling": "design_only_not_executed",
+      "owner_role": "implementation_and_independent_review"
+    },
+    {
+      "id": "PP11",
+      "title_ko": "scaled Taylor fused-phi total-target gap",
+      "depends_on": [],
+      "priority": "P2",
+      "status": "PROPOSED",
+      "code_seams": [
+        "crates/rodas5p-core/src/taylor_phi.rs::taylor_phi_action",
+        "crates/rodas5p-core/src/nonnormal_certificate.rs::{certify_exp_action,certify_exp_action_stepped}"
+      ],
+      "acceptance": [
+        "Separate exp(A)v target from augmented fused phi target.",
+        "Include hA construction rounding,normalization,subnormal terms and all products.",
+        "An exact-arithmetic tail for stored M is not total error for exact binary A,h,w."
+      ],
+      "kill_or_abstain": [
+        "Reuse exp-only certificate for a different fused target",
+        "Promote current tail-only Taylor report to Certified"
+      ],
+      "claim_ceiling": "design_only_not_executed",
+      "owner_role": "implementation_and_independent_review"
+    },
+    {
+      "id": "PP12",
+      "title_ko": "nonnormal decay-aware physical error bound",
+      "depends_on": [
+        "PP11"
+      ],
+      "priority": "P2",
+      "status": "PROPOSED",
+      "code_seams": [
+        "crates/rodas5p-core/src/nonnormal_certificate.rs::{NumericalRangeBox,certify_exp_action_stepped}",
+        "verified symmetric-part spectral upper bound (proposed)"
+      ],
+      "acceptance": [
+        "Use directed inertia or another verified method to bound lambda_max((B+B*)/2).",
+        "Charge metric construction,physical norm transport and rounding.",
+        "Use physical absolute/WRMS and relative usefulness metrics separately.",
+        "Record new outcome without changing REV02 original FAIL."
+      ],
+      "kill_or_abstain": [
+        "Unverified numerical eigenvalue used as certificate",
+        "Hidden metric condition amplification",
+        "Strongly nonnormal transient growth makes bound useless"
+      ],
+      "claim_ceiling": "design_only_not_executed",
+      "owner_role": "implementation_and_independent_review"
+    },
+    {
+      "id": "PP13",
+      "title_ko": "INT06 후속 실제 비용과 dispatch 확인",
+      "depends_on": [],
+      "priority": "P2",
+      "status": "PROPOSED",
+      "code_seams": [
+        "crates/rodas5p-integrators/src/transactional_q1_q2.rs::{Q2Admission::PreparedStructuredCertificate,PreparedQ2Certificate::prepare}",
+        "crates/rodas5p-integrators/src/outward_certificate.rs::certify_stage_target_diagonal",
+        "docs/reviews/20261003_integrated_plan/Q2_ACTIVATION_DECISION.md"
+      ],
+      "acceptance": [
+        "Same state,h,target,physical output budget and preconditioned linear baseline.",
+        "Include witness/preflight,all q1/q2 attempts,finishing,radius failures,fallback,dispatch and allocations.",
+        "Calibrate directed-operation cost separately from plain floating operations.",
+        "Preserve derived decision and critical-review k=1..4 sensitivity; no default activation without new evidence."
+      ],
+      "kill_or_abstain": [
+        "No positive measured margin",
+        "Timing authority HOLD",
+        "Counter units not commensurate"
+      ],
+      "claim_ceiling": "design_only_not_executed",
+      "owner_role": "implementation_and_independent_review"
+    },
+    {
+      "id": "PP14",
+      "title_ko": "general Fourier closure 및 damping 확장",
+      "depends_on": [
+        "PP07"
+      ],
+      "priority": "P2",
+      "status": "PROPOSED",
+      "code_seams": [
+        "new explicit Fourier physical model",
+        "crates/rodas5p-integrators/src/fourier_path_certificate.rs (proposed)"
+      ],
+      "acceptance": [
+        "Replace invariant constant-q shortcut only with explicit varying q(t) model.",
+        "Certify closure tube,inverse/branch,phase,damping and full path residual.",
+        "Retain alias,phase,raw-RVJ and nonnormal negative controls."
+      ],
+      "kill_or_abstain": [
+        "Apply unchanged constant-leaf certificate to new closure",
+        "Endpoint-only evidence replaces whole-path error"
+      ],
+      "claim_ceiling": "design_only_not_executed",
+      "owner_role": "implementation_and_independent_review"
+    },
+    {
+      "id": "PP15",
+      "title_ko": "bounded native paired comparator campaign",
+      "depends_on": [
+        "PP07",
+        "PP08",
+        "PP10",
+        "PP11",
+        "PP13"
+      ],
+      "priority": "P2",
+      "status": "PROPOSED",
+      "code_seams": [
+        "source-pinned candidate and baseline harness",
+        "work ledger and paired timing authority"
+      ],
+      "acceptance": [
+        "Predeclare physical error,output semantics,cold/warm distinction,failures and inclusion rules.",
+        "Include all setup,target certificate,failed attempts,fallbacks and allocations.",
+        "Independent decision reviewer separates correctness promotion from speed promotion.",
+        "Use only newly changed paths; do not replay all published research."
+      ],
+      "kill_or_abstain": [
+        "Unmatched target/error budget",
+        "Kernel-only timing or counter-only speed claim",
+        "Any omitted failed cost"
+      ],
+      "claim_ceiling": "design_only_not_executed",
+      "owner_role": "implementation_and_independent_review"
+    },
+    {
+      "id": "PP16",
+      "title_ko": "기존 complex-shift gain 정리의 native directed 이식",
+      "depends_on": [
+        "PP02"
+      ],
+      "priority": "P2",
+      "status": "PROPOSED",
+      "code_seams": [
+        "archive/stage02/RESEARCH_NOTE_KO.md section10 T2.9",
+        "complex directed residual adapter (proposed)"
+      ],
+      "acceptance": [
+        "Reuse existing proof for Re(gamma)>0: inverse gain <= abs(gamma)/Re(gamma).",
+        "Enclose complex arithmetic and sum residue-weighted current residuals.",
+        "Add source-jet error terms and physical metric transport.",
+        "Reuse or compare actual RVJ three/six shift structure,without calling it a 65-shift family."
+      ],
+      "kill_or_abstain": [
+        "Use gain1 on arbitrary complex shift",
+        "Re(gamma)<=0",
+        "Source derivatives or residues not bounded",
+        "Confuse existing theorem with new mathematical result"
+      ],
+      "claim_ceiling": "design_only_not_executed",
+      "owner_role": "implementation_and_independent_review"
+    }
+  ],
+  "decision": "HOLD_FOR_ROOT_INTEGRATION_AND_INDEPENDENT_DECISION",
+  "performance_claim": "NONE"
+}

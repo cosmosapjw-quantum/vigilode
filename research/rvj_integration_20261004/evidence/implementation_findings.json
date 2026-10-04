@@ -1,0 +1,141 @@
+{
+  "schema": "vigilode-native-intake-audit-v1",
+  "source_commit": "826fa05cc1fdaf7b1a0cf7ac45116596b4ddff65",
+  "comparison_commit": "5a8d7fe9ffc681bca98a98a2f9889a2a05505783",
+  "ancestry": "comparison is ancestor of source (git merge-base --is-ancestor exit 0)",
+  "mode": "read-only published-evidence audit followed by preregistered focused native boundary repair",
+  "findings": [
+    {
+      "id": "INTAKE-NATIVE-01",
+      "severity": "P2",
+      "title": "Stage chart can report Converged for a NaN residual",
+      "classification": "IMPLEMENTATION",
+      "status": "reproduced and repaired; focused regressions pass",
+      "path": "crates/rodas5p-integrators/src/stage_chart_candidate.rs",
+      "lines": [
+        150,
+        168,
+        171,
+        172,
+        208,
+        226
+      ],
+      "evidence": "check_shapes validates only dimensions; inf_norm folds f64::max, which ignores NaN; the convergence guard checks the resulting norm and K, not every residual entry. Identity chart, finite K and problem.q=[NaN] produce all-NaN R with computed inf_norm=0 and ChartStatus::Converged.",
+      "impact": "False convergence diagnostic for public research candidate API; the candidate carries no acceptance, so this does not establish false admission by the native certificate or default solver.",
+      "next_action": "Reject nonfinite target/problem values and every nonfinite residual/JVP before convergence; add focused regression.",
+      "rerun_reason": "New source boundary not covered by published INT-04 contract tests.",
+      "closure_evidence": [
+        "research/rvj_integration_20261004/evidence/chart_boundaries_red.log",
+        "research/rvj_integration_20261004/evidence/chart_boundaries_green.log",
+        "research/rvj_integration_20261004/evidence/chart_boundaries_final.log",
+        "crates/rodas5p-integrators/tests/rvj_integration_boundaries.rs"
+      ]
+    },
+    {
+      "id": "INTAKE-NATIVE-02",
+      "severity": "P2",
+      "title": "Chart integration advances physical state without representable time progress",
+      "classification": "IMPLEMENTATION",
+      "status": "reproduced and repaired; focused regressions pass",
+      "path": "crates/rodas5p-integrators/src/chart_transport.rs",
+      "lines": [
+        309,
+        369,
+        410,
+        418,
+        438,
+        461
+      ],
+      "evidence": "The loop computes tau=min(h,target-state.t), calls advance, and accepts/stores point.t=state.t+tau without requiring a strict representable increase. With t0=2^53, target=t0+2 and h=max_step=1, t0+1 rounds to t0. Every accepted iteration changes x,w and global enclosure at an unchanged time; no attempt cap exists.",
+      "impact": "Opt-in research chart path can return physically advanced states labelled with unchanged time, or perform a very large number of iterations. No default RODAS5P path impact inferred.",
+      "next_action": "Refuse nonprogress before advance and ensure finite times/configuration/output schedule; use bounded test x0=-1,kappa=40,eps=0,large finite tolerance,denominator_min=0.01 to limit accepted attempts.",
+      "rerun_reason": "New representable-clock boundary, not a rerun of the published small-time chart campaign.",
+      "closure_evidence": [
+        "research/rvj_integration_20261004/evidence/chart_boundaries_red.log",
+        "research/rvj_integration_20261004/evidence/chart_boundaries_green.log",
+        "research/rvj_integration_20261004/evidence/chart_boundaries_final.log",
+        "crates/rodas5p-integrators/tests/rvj_integration_boundaries.rs"
+      ]
+    },
+    {
+      "id": "INTAKE-NATIVE-03",
+      "severity": "P2",
+      "title": "Published GCRODR recycle repair is not connected to the fast driver",
+      "classification": "INTEGRATION_DEBT",
+      "status": "published evidence retained; source call-site verified; no scientific rerun",
+      "path": "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs",
+      "lines": [
+        390,
+        396,
+        410
+      ],
+      "related_path": "crates/rodas5p-krylov/src/gcrodr.rs",
+      "related_lines": [
+        460,
+        473,
+        648,
+        668,
+        1099
+      ],
+      "evidence": "REV-01c review states recycle updates break M^-1 A U=C and refresh repairs 85 prior failures; GcrodrSolveOptions derives Default, leaving refresh_after_update=false; solve_gcrodr_with_workspace reaches this default, and the fast driver calls it.",
+      "impact": "Opt-in recycled GCRODR fast-driver use still inherits published convergence failures and wasted work. True residual acceptance remains present; no false converged solution is alleged.",
+      "next_action": "Expose explicit safe recycle policy in the opt-in driver or select cold GMRES/GCRODR. Keep old algorithm identifier for comparison. Validate only policy wiring and charged work; do not rerun old attribution campaigns.",
+      "rerun_reason": null
+    }
+  ],
+  "observations": [
+    {
+      "id": "INTAKE-NATIVE-O1",
+      "path": "crates/rodas5p-integrators/src/stage_chart_candidate.rs",
+      "lines": [
+        242,
+        243
+      ],
+      "status": "reproduced panic, repaired, focused regression passes",
+      "observation": "StageChart::jvp output is not shape-checked before residual_jacobian_action indexes it; a short Ok(Vec) from a third-party provider panics instead of returning CoreError::Dimension. Add boundary validation together with NATIVE-01 if this adapter is reused."
+    },
+    {
+      "id": "INTAKE-NATIVE-O2",
+      "path": "crates/rodas5p-integrators/src/chart_transport.rs",
+      "lines": [
+        240
+      ],
+      "status": "proof obligation; not a demonstrated false enclosure",
+      "observation": "exp_neg_enclosure is evaluated only at mul_up(kappa,tau); because exp(-x) decreases, the exact-product upper endpoint requires the lower product endpoint. Current Taylor interval slack might cover tested inputs, but the compositional proof should pass a product interval or evaluate both directed endpoints. Do not label a false enclosure without a counterexample."
+    },
+    {
+      "id": "INTAKE-NATIVE-O3",
+      "path": "crates/rodas5p-core/src/nonnormal_certificate.rs",
+      "status": "proof obligation; not a demonstrated false certificate",
+      "observation": "In stepped decay, mul_up(count,h) is then multiplied by possibly negative re_hi; direction reverses. Interval midpoint radius is based on half-width rather than distance to the actually rounded midpoint. Existing safety factors may dominate particular errors; repair local enclosures before strengthening claims. No historical numerical campaign rerun authorized by this observation alone."
+    }
+  ],
+  "historical_revalidation_policy": "Published results read once, retained with original PASS/FAIL/HOLD; no suite or campaign replay.",
+  "preregistration_commit": "3e784982104274312027490d481de4929e4f3cf6",
+  "verification": {
+    "red": {
+      "exit": 101,
+      "passed": 2,
+      "failed": 6
+    },
+    "green": {
+      "exit": 0,
+      "passed": 16,
+      "failed": 0,
+      "composition": "8 new + 3 stage contracts + 5 transport contracts"
+    },
+    "final": {
+      "exit": 0,
+      "passed": 9,
+      "failed": 0,
+      "composition": "9 new including finite-input overflow guard"
+    },
+    "historical_campaigns_rerun": 0,
+    "further_gates": "owner integrated fmt/clippy and independent review pending"
+  },
+  "patched_source_sha256": {
+    "crates/rodas5p-integrators/src/chart_transport.rs": "9eb024451ec5b114c487c9e5382690709787a21192f0afa63343bac6e9916db4",
+    "crates/rodas5p-integrators/src/stage_chart_candidate.rs": "ed20ffaa02e1d00bebd94bebfdfa687c16e7b8e9823ed19f7c6b03e10ffb7e9f",
+    "crates/rodas5p-integrators/tests/rvj_integration_boundaries.rs": "ea256a478cfedf1d4fa7f3aebbfa2ad7e78c2440505a98786a4eef7124b830ea"
+  }
+}
