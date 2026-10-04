@@ -35,3 +35,31 @@ G3 Every F2 case and every holdout case: chosen bound `<= 1e-8
 Reported: metric chosen, transport factor of the metric, `mu_up`.
 
 ## Results (append only after the recorded run)
+
+### Executed result — 2026-10-04 (source `e698541`)
+
+Commands: `PP12B_CASES=research/pp12b_chain_symmetrizer_20261004/cases.json
+cargo test --release -p rodas5p-core --locked --test pp12b_chain_symmetrizer
+export -- --ignored --nocapture`, then `python3 tools/pp12b_chain_check.py
+--cases .../cases.json --output .../RESULTS.json`. Contract test
+`chain_symmetrizer_makes_pairs_equal` passes.
+
+**Verdict: FAIL (G3: 16 of 18 stiff cases); G1 and G2 PASS.**
+- G1: all 90 certificates (30 cases x 3 metrics) enclose the 50-digit
+  error. G2: every `mu_up` is at or above the 100-digit `lambda_max`.
+- G3: all six REV-02 F2 cases now meet `1e-8 ||exp(tau A) v||` (relative
+  1.7e-14 to 3.0e-11; the chain symmetrizer is chosen for Pe 50 at tau 0.1
+  and both Pe 200 cases, with `mu_up = -2/h^2` exactly as predicted), and
+  10 of the 12 holdout cases do (relative 4e-14 to 3.5e-10). The two that
+  fail are central differences with n = 48 at tau = 0.2 (Pe 100 and 400):
+  their exact solution norms are 6.2e-373 and 5.0e-414, below the binary64
+  range, so the binary64 candidate underflows and no binary64 result can
+  meet a relative criterion there. That is a defect of the holdout design
+  (decay was not checked against the representable range before fixing
+  it), not of the bound, which is still valid (absolute 2.4e-209 and
+  9.4e-156 with the chain metric, 1.8e-14 and 1.1e-14 with the identity).
+- Transport of the chain metric reaches 5.2e45 (n = 48, Pe 100, cell
+  Peclet near 1); it is charged in the bound.
+- F3 mu = 30 and the Jordan block mu = 100 are unchanged (useless bounds,
+  transient growth); no metric of the three helps there.
+REV-02's FAIL (L-0060) and PP12's FAIL (L-0075) stand as recorded.
