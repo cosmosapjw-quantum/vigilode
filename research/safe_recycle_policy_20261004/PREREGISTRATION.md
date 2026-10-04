@@ -79,3 +79,35 @@ refresh work, or a change of the default path is a FAIL regardless of G4.
 The REV-01c attribution campaign is not rerun.
 
 ## Results (append only after the recorded run)
+
+### Executed result — 2026-10-04 (source `65a16dd`)
+
+Command: `SAFE_RECYCLE_OUTPUT=research/safe_recycle_policy_20261004/RUNS.json
+cargo test --release -p rodas5p-integrators --locked --test
+safe_recycle_policy export_policies -- --ignored --nocapture
+--test-threads=1`, then `python3 .../summarize.py` (RESULTS.json). The
+contract tests `refreshed_stage_solve_equals_traced_rev01c_call` and
+`cold_stage_solve_leaves_carried_state` pass.
+
+**Verdict: PASS.** G1: the `Legacy` arm and the default entry point equal
+`BASE_LEGACY.json` in all 14 rows (bits, counters, attempts, messages).
+G2: every refresh row with recycle updates has
+`recycle_update_refreshes > 0` (equal to the number of updates), Legacy and
+Cold have 0; the driver's refreshed stage solve equals the REV-01c traced
+call bit for bit, counters and state included. G3: a cold stage solve
+leaves the carried state unchanged. G4: refresh failures <= legacy failures
+in every row and strictly fewer wherever legacy has any.
+
+| case | rtol | legacy: ok, attempts, lin. failures, operator apps | refresh | cold |
+|---|---|---|---|---|
+| brusselator-1d-50 | 1e-6 | no (attempt cap), 5000, 2453, 1,363,561 | yes, 92, 0, 32,925 | yes, 92, 0, 31,783 |
+| brusselator-1d-50 | 1e-8 | no (attempt cap), 5000, 2475, 1,376,525 | yes, 193, 0, 68,755 | yes, 193, 0, 66,076 |
+| brusselator-1d-160 | 1e-6 | yes, 320, 102, 121,099 | yes, 92, 0, 72,278 | yes, 92, 0, 58,383 |
+| brusselator-1d-160 | 1e-8 | yes, 420, 102, 147,204 | yes, 193, 0, 105,053 | yes, 193, 0, 80,986 |
+
+On the other five problems no arm has a linear-solve failure; refresh is
+within 1 % of legacy in charged shifted-operator applications (at most 0.9 %, robertson 1e-6), cold
+costs 1.3x to 2.6x more (e.g. hires 1e-8: 23,515 / 23,522 / 61,896).
+On the Brusselator sets cold is 4 % to 23 % cheaper than refresh. These
+are counted applications, not time; no recycling speed claim. The
+default policy stays `Legacy`; changing it is not part of this node.
