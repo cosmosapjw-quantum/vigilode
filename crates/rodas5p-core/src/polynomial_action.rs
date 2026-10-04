@@ -68,6 +68,12 @@ use crate::{
     transform_bound::ExpBound,
 };
 
+mod router;
+pub use router::{
+    ROUTER_INPUT_UNSUPPORTED, ROUTER_NOT_ADMITTED, ROUTER_TRUNCATION_FRACTION, RouteAttempt,
+    RouteChoice, RoutedPhi, route_admission, route_joint_phi,
+};
+
 pub const JOINT_PHI_SCHEMA: &str = "vigilode-joint-phi-polynomial-v1";
 /// Number of phi terms `w_0 .. w_4`.
 pub const JOINT_PHI_TERMS: usize = 5;
