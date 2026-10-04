@@ -78,3 +78,37 @@ then records "no positive all-in margin" for the jet in this domain).
 No timing, no speed claim, no default dispatch.
 
 ## Results (append only after the recorded run)
+
+### Executed result — 2026-10-04 (source `f01ce4a`)
+
+Commands: `PP04_CASES=research/pp04_shared_shift_policy_20261004/cases.json
+cargo test --release -p rodas5p-core --locked --test pp04_shared_shift_policy
+export_policy_study -- --ignored --nocapture`, then `python3
+tools/pp04_shared_shift_check.py --cases .../cases.json --output
+.../RESULTS.json`. Contract tests (Hessenberg reconstruction, all methods
+certify a small family, typed abstentions) pass.
+
+**Verdict: PASS.**
+- G1: 8,500 candidate columns on n = 8 (all four methods), all Certified,
+  every one enclosing the exact rational error (largest error / bound
+  0.30). No target of any method in any of the 90 configurations was
+  rejected, so the jet's fallback path was never taken (0 fallbacks).
+- G2: executed flops equal the independent Python formulas for every
+  method and configuration, and the planner's prediction for M1-M3.
+- G3: the selector chose a cheapest method in 87 of 90 configurations
+  (ties counted correct). The three misses are `two-cluster` with m = 3
+  (n = 32, r = 1; n = 96, r = 1 and 4): the `WideCluster` rule (two
+  clusters for three distinct shifts) made the jet abstain although it was
+  cheaper by 4 % to 34 %.
+
+Reported: the jet has a positive executed margin over the best of M1-M3 in
+49 of 90 configurations: all 17 narrow configurations except (8, 4, 3)
+(1.05x to 12.6x), 13 of 18 medium (1.1x to 8.2x), 14 of 18 two-cluster
+(1.04x to 6.1x), 5 of 18 wide (1.0x to 1.7x; the wide set needs several
+clusters) and none of the 18 all-equal (common-shift LU wins by
+construction). The margin grows with m and n and shrinks with r and with
+cluster width. Common-shift LU equals individual LU whenever shifts are
+distinct, and Hessenberg reuse never had the least count here (its
+reduction costs 7 LUs). These are counted flops with an opaque LU charged
+by its standard count; directed certificate work is the same for every
+method and excluded; no timing and no speed claim.
