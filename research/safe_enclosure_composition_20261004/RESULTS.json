@@ -1,0 +1,62 @@
+{
+ "schema": "vigilode-safe-enclosure-results-v1",
+ "probes": {
+  "c1": {
+   "rows": 20200,
+   "base_violations": 2,
+   "repaired_violations": 0
+  },
+  "c2": {
+   "rows": 20000,
+   "base_violations": 677,
+   "repaired_violations": 1
+  },
+  "c3": {
+   "rows": 20000,
+   "base_violations": 2660,
+   "repaired_violations": 0
+  }
+ },
+ "probe_max_base_under": {
+  "c1_relative": 4.745793578979514e-16,
+  "c2_relative": 0.0030316396690792534,
+  "c3_ulps": 0.5
+ },
+ "repaired_violations_verbatim": {
+  "c1": [],
+  "c2": [
+   {
+    "count": 1071,
+    "h": "3f5d28b01f11190b",
+    "a": "c0772ec0562e1c0f",
+    "upper": "0030000000000000",
+    "truth": "8.927359972662078166401205e-308",
+    "under_relative": 0.0030316396690792534
+   }
+  ],
+  "c3": []
+ },
+ "gate": {
+  "g1_repaired_zero_violations": false,
+  "g2_chart_check_verdict": "PASS",
+  "g2_rev02_enclosure": true,
+  "g2_rev02_directed_exponential": true,
+  "g3_published_rev02_enclosure_gate": true,
+  "g3_published_rnext05_verdict": "PASS"
+ },
+ "rev02_bound_change": {
+  "arms": 72,
+  "identical": 37,
+  "candidates_identical": 72,
+  "relative_increase_min": 0.10887755397970138,
+  "relative_increase_max": 0.99999899528976
+ },
+ "chart_bound_change": {
+  "points": 19652,
+  "y_identical": 19652,
+  "bound_identical": 10893,
+  "relative_increase_min": 1.1208625519791874e-16,
+  "relative_increase_max": 1.2133482097865796e-08
+ },
+ "verdict": "FAIL"
+}

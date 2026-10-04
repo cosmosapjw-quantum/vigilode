@@ -82,3 +82,50 @@ A sampled slack argument is not accepted as an enclosure proof; a
 campaign PASS is not accepted in place of the monotone composition.
 
 ## Results (append only after the recorded run)
+
+### Executed result — 2026-10-04 (source `4e5dc91`)
+
+Commands: `SAFE_ENCLOSURE_PROBES=.../probes.json cargo test --release -p
+rodas5p-core --locked --test safe_enclosure_probes -- --ignored`, then
+`python3 tools/safe_enclosure_check.py`, the R-NEXT-05 export and check and
+the REV-02 generator and check into this directory, and `summarize.py`
+(RESULTS.json). The probe test was lint-fixed after the recorded run
+(`% k == 0` to `is_multiple_of`, one needless `mut`, rustfmt); a re-export
+with the committed source is byte-identical to `probes.json`.
+
+**Verdict: FAIL (G1).** The repaired C2 has one violation in 20,000 rows:
+count 1071, h = 0x3f5d28b01f11190b, a = 0xc0772ec0562e1c0f, so
+`count h a = -707.01`; the reported upper is `2^-1020 = 8.9002e-308` and the
+truth is `8.9274e-308` (0.30 % under). The cause is not the repair but
+`directed::exp_interval` (REV-02): for every `x < -707` it returns
+`[0, 2^-1020]`, which is false on `(-707.0234, -707)` because
+`ln 2^-1020 = -707.0234`. The REV-02 grid of 251 points did not sample that
+window. This is an error in a published directed primitive; it is repaired
+in the follow-up node `safe_enclosure_exp_floor_20261004`, not here.
+
+Base local counterexamples (all recorded; first 50 verbatim per probe in
+PROBE_RESULTS.json):
+- C1 chart decay at the rounded-up product: 2 of 20,200, at most
+  4.7e-16 relative under the truth.
+- C2 stepped decay with the upward time: 677 of 20,000 (676 from the time
+  direction with `re_hi < 0`, at most about 4e-15 relative; 1 from the
+  `exp_interval` floor above).
+- C3 half width about the rounded midpoint: 2,660 of 20,000, at most
+  0.5 ulp of the midpoint under.
+
+Repaired C1 and C3: zero violations.
+
+G2: existing chart (INT-04, native re-audit, RVJ boundaries) and nonnormal
+(INT-05, REV-02, shared-shift) tests pass; the R-NEXT-05 rerun check is
+PASS with every box and physical bound enclosing the 50-digit reference
+(19,652 points, every `y` bit-identical to the published run, bounds larger
+by 1e-16 to 1.2e-8 relative); the REV-02 rerun has every bound enclosing
+the truth (enclosure gate true; its own stiff-usefulness gate stays false,
+L-0060 unchanged). 35 of 72 REV-02 bounds grew by 11 % to 100 %, all
+candidates bit-identical: where the rounding term dominates and a Horner
+interval is one or two ulps wide, the rounded midpoint sits on an endpoint
+and the distance is the full width, twice the half width the base used.
+
+G3: the published end-to-end results show no bound below the truth (REV-02
+enclosure gate true, R-NEXT-05 PASS). The base local under-coverage was
+covered there by other slack; no false end-to-end certificate is claimed.
