@@ -90,4 +90,15 @@ client.
    (omega, t, h) and the state with `a = p(0)` (so the source's equality
    check holds).
 
+3. Rotation enclosure (second amendment, still before any run). The
+   source's `rotate_interval` halves the angle to `|r| <= 1/8` and doubles
+   back; with 112+ working bits that is harmless, but in binary64 interval
+   arithmetic each doubling widened the enclosure by about 2.8, giving
+   widths near 1e-10 at `omega t = 5000` (a unit test showed it). The native
+   enclosure reduces modulo `2 pi` with a two-part Cody-Waite constant
+   (`2 pi = A + B + d`, `A` with 26 trailing zero bits, `0 < d < ulp(B)`,
+   checked at 60 digits by the node's check tool) and sums the Taylor series
+   of `e^{ir}` with the tail `2 |r|^(n+1)/(n+1)!` once `|r|/(n+2) <= 1/2`.
+   The enclosed quantity is the same.
+
 ## Results (append only after the recorded run)
