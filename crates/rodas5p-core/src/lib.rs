@@ -13,6 +13,7 @@ mod norms;
 mod operator;
 pub mod polynomial_action;
 pub mod shared_shift_jet;
+pub mod shared_shift_policy;
 mod solver_types;
 pub mod taylor_phi;
 pub mod transform_bound;
