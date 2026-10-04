@@ -1,0 +1,19 @@
+{
+ "command": "PP08_CASES=research/pp08_laguerre_router_20261004/cases.json cargo test --release -p rodas5p-core --locked --test pp08_laguerre_router_study -- --ignored --nocapture && python3 tools/pp08_laguerre_router_check.py --cases research/pp08_laguerre_router_20261004/cases.json --output research/pp08_laguerre_router_20261004/RESULTS.json",
+ "profile": "preregistered opt-in Chebyshev/Laguerre total-budget router (RVJ DAG node PP08); 79 native cases checked against a 50-digit mpmath eigendecomposition reference; source commit f97f3e5d792a886ef5ceb2ed595ec0e3103f5823",
+ "inputs": [
+  "crates/rodas5p-core/src/polynomial_action.rs",
+  "crates/rodas5p-core/src/polynomial_action/router.rs",
+  "crates/rodas5p-core/src/laguerre_adjoint.rs",
+  "crates/rodas5p-core/tests/pp08_laguerre_router_contracts.rs",
+  "crates/rodas5p-core/tests/pp08_laguerre_router_study.rs",
+  "tools/pp08_laguerre_router_check.py",
+  "research/pp08_laguerre_router_20261004/PREREGISTRATION.md"
+ ],
+ "outputs": [
+  "research/pp08_laguerre_router_20261004/cases.json",
+  "research/pp08_laguerre_router_20261004/RESULTS.json"
+ ],
+ "claim": "On 79 preregistered verified symmetric fixtures the opt-in router admits 76 results, all enclosing the 50-digit target (bound/error 4.3-3.0e3), never admits declared enclosures, the timing execution, Laguerre degree >128 or an over-budget bound, ends unmet budgets in Fallback, and charges exactly both attempts. It routes 0 cases to Laguerre: Laguerre is never cheaper in vector products (ratio 1.0-1.57) and only Chebyshev admits in 33 cases. No speed claim.",
+ "verdict": "PASS"
+}
