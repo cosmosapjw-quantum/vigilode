@@ -110,3 +110,5 @@ Deviations and disclosures (all fixed in the tool before the run unless stated):
    that. The verdict FAIL reflects this missing published data, not a failed enclosure. No result was tuned.
    The R-NEXT-04 test would need to export `column_errors` and `fused_summation` for the registered Part A. This
    node does not change it.
+
+Integration note (integrator, 2026-10-04): implemented by a delegated agent in a separate worktree on top of the pushed preregistration `a38f245` (source `a561e6f`), cherry-picked as `cf01fac`. The integrator re-ran the recorded run (`tools/pp09_laguerre_envelope.py`, and for PP11 also the exporter) and obtained identical outputs apart from timing and path metadata. Ledger row added by the integrator.

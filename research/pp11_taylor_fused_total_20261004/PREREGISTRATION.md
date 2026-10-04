@@ -130,3 +130,5 @@ Implementation choices the preregistration left open (fixed in the committed cod
 
 No deviation from the registered gates. Claim ceiling: dense `A` with n <= 16, `||hA||_1 <= 20`, the fixed stepping
 rule; no timing.
+
+Integration note (integrator, 2026-10-04): implemented by a delegated agent in a separate worktree on top of the pushed preregistration `a38f245` (source `764d3c2`), cherry-picked as `57ab6af`. The integrator re-ran the recorded run (`tools/pp11_taylor_fused_check.py`, and for PP11 also the exporter) and obtained identical outputs apart from timing and path metadata. Ledger row added by the integrator.
