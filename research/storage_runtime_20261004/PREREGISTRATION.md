@@ -63,3 +63,7 @@ verdict into RESULTS.json).
   at n = 4; 131 for the first n = 64, r = 1 measurement, an unexplained
   outlier, possibly first-use workspace in faer, not investigated);
   `P_total / S_explicit` is 1.14 to 2.24.
+
+Correction (same day): "n = 4 everywhere" above is inexact; the 22
+configurations are 16 of the 18 n = 4 ones (all but degree 0, m = 1) and
+the 6 n = 16, m = 65 ones.
