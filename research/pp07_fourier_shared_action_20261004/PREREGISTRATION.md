@@ -67,8 +67,8 @@ case).
   the jet at none of them.
 - Q3: the symmetric-part row witness fails at all 28 step starts (row bound
   0.056 to 0.115 > 0; the client is conservative on its leaf, so gain 1 is
-  never available); the alternative gain  is finite at
-  all 35 tried shifts (1.006 to 1.022, ).
+  never available); the alternative gain `1/(1 - h ||J||_2,up)` is finite at
+  all 35 tried shifts (1.006 to 1.022, with `||J||_2 <= 0.171`).
 - G2: no shared-jet evaluation was made, so none is uncertified.
 The shared action is therefore not connected to this client; a client with
 genuinely nearby distinct shifts is still needed for PP07's original
