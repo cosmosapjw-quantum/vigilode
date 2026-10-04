@@ -36,3 +36,36 @@ G3 An independent reviewer (a separate agent that did not write the code)
    from speed; its statement is stored.
 
 ## Results (append only after the recorded run)
+
+### Executed result — 2026-10-04 (source `675f55d`)
+
+Commands: `PP15_CASES=research/pp15_fourier_comparator_20261004/cases.json
+cargo test --release -p rodas5p-integrators --locked --test
+pp15_fourier_comparator export -- --ignored --nocapture`, then `python3
+tools/pp15_comparator_check.py --cases .../cases.json --output
+.../RESULTS.json`. Contract `jacobian_matches_finite_differences` passes.
+
+- G1 PASS: both client arms reach T = 1/2 in 4 steps for omega 1, 40 and
+  1e4 and their certified bounds enclose the actual final errors (bounds
+  2.2e-12 to 2.8e-11, actual 1.9e-13 to 2.9e-12; the FFT arm agrees with
+  the direct arm to 1e-15).
+- G2: RODAS5P is uncertified (an embedded estimate). Its actual final
+  errors are 4.2e-10 / 3.9e-12 (omega 1, tol 1e-8 / 1e-10), 3.5e-10 /
+  4.6e-12 (omega 40) and 9.3e-7 / 4.2e-10 (omega 1e4). The tolerance whose
+  actual error is closest to the client's certified bound is 1e-10 for
+  every omega. At omega 1e4 neither RODAS5P run reaches the client's
+  certified level (best actual 4.2e-10 against a client bound of 2.2e-12).
+- Counted work, each in its own unit and not comparable as cost: the
+  client used 8 candidate builds, 24 predictor convolutions and 8
+  certificates per run at every omega; RODAS5P at tol 1e-10 used 11, 72
+  and 6,315 attempts with 88, 568 and 49,177 right-side evaluations and
+  11, 72 and 6,315 LU factorizations of 4 x 4 matrices for omega 1, 40,
+  1e4. The client's work does not grow with omega here because the
+  Fourier path carries the carrier analytically; RODAS5P resolves it with
+  steps. A convolution of sparse coefficient sets and a 4 x 4 right-side
+  evaluation are different operations, so no work ratio or speed claim is
+  made (timing authority HOLD).
+- Scope: the client is the invariant-leaf model with constant q (PP05);
+  RODAS5P solved the same leaf model. This is not evidence about general
+  closures (PP14) or other problems.
+- G3: see REVIEW.md.
