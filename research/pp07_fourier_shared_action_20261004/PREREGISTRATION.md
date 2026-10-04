@@ -45,3 +45,31 @@ Verdict: PASS when G1 and G2 hold, whatever the decision (abstaining is a
 valid outcome).
 
 ## Results (append only after the recorded run)
+
+### Executed result — 2026-10-04 (source `f5a4403`)
+
+Command: `python3 tools/pp07_client_audit.py --pp05-cases
+research/pp05_fourier_client_20261004/cases.json --output
+research/pp07_fourier_shared_action_20261004/RESULTS.json` (the recorded
+PP05 runs: 28 committed steps over omega 0, 1, 40, -40, 1e4 and the tight
+case).
+
+**Verdict: PASS (G1, G2); decision: abstain.**
+- Q1: the native client (certificate, predictor, FFT candidate modules)
+  contains no linear-solver call of any kind (static scan for LU, Krylov,
+  operator and shared-jet entry points: none) and performs no shifted solve
+  in its runs. The DAG kill condition "client has no nearby distinct shifts"
+  holds for the client as it is.
+- Q2: a frozen-Jacobian Newton correction would see one shift per step
+  start, and more than one only at the 7 starts with step halvings (all in
+  the tight case); there the later shifts sit at normalized radius 1/2,
+  3/4, ... from the first, so the registered rule (all radii < 1/2) admits
+  the jet at none of them.
+- Q3: the symmetric-part row witness fails at all 28 step starts (row bound
+  0.056 to 0.115 > 0; the client is conservative on its leaf, so gain 1 is
+  never available); the alternative gain  is finite at
+  all 35 tried shifts (1.006 to 1.022, ).
+- G2: no shared-jet evaluation was made, so none is uncertified.
+The shared action is therefore not connected to this client; a client with
+genuinely nearby distinct shifts is still needed for PP07's original
+intent. No artificial workload was substituted.
