@@ -19,10 +19,16 @@ G1 Explicit accounting covers the non-LU part: `P_total - P_lu <=
    S_explicit + 64 * (vector headers allocated)` in every configuration,
    with the header count taken from the allocation count. A failure means
    the explicit slot formula misses a buffer and is a FAIL.
-G2 The budget refusal allocates nothing: with `max_stored_scalars` or
-   `max_work_units` one below the requirement, the call errors with zero
-   allocations during the call.
+G2 The budget refusal allocates nothing proportional to the problem: with
+   `max_stored_scalars` or `max_work_units` one below the requirement, the
+   call errors with at most one allocation during the call, of at most 256
+   bytes (the error message string).
 G3 Reported, not gated: `P_lu / (8 n^2)` and `P_total / S_explicit`; the
    documentation states that the explicit cap is not an RSS cap.
+
+Amendment before any run (2026-10-04): G2 originally said "zero
+allocations"; every refusal builds a `CoreError::InvalidInput` message
+`String`, so it was changed to "at most one allocation of at most 256
+bytes". No measurement had been made when this was changed.
 
 ## Results (append only after the recorded run)
