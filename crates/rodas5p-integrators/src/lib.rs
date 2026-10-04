@@ -24,6 +24,7 @@ mod common_w_gate;
 mod comparator_fidelity;
 mod dense_output_v2;
 mod exponential;
+pub mod fourier_path_candidate;
 pub mod fourier_path_certificate;
 mod g1_transactional_gate;
 mod g2_exponential_gate;
