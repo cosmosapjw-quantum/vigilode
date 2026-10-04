@@ -100,3 +100,5 @@ Implementation notes and disclosures (all fixed before the recorded run):
   compared quantity.
 - The checker treats a missing carrier (a failed Chebyshev action) as "not tested" rather than a G1 failure; it did
   not occur.
+
+Integration note (integrator, 2026-10-04): implemented by a delegated agent in a separate worktree on top of the pushed preregistration `a38f245` (source `0925f34`), cherry-picked as `088205f`. The integrator re-ran the exporter and `tools/pp10_leja_check.py`; cases.json is byte-identical and RESULTS.json equal. Ledger row added by the integrator.
