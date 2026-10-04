@@ -139,3 +139,5 @@ Deviations and disclosures:
   `pade_input` path field.
 - **Claim ceiling.** H = I only, dense `J` up to n = 24, and LU or jet candidates. No speed claims and no
   timings. The default solver is unchanged.
+
+Integration note (integrator, 2026-10-04): implemented by a delegated agent in a separate worktree on top of the pushed preregistration `ad49dda` (source `ba3dbbd`), cherry-picked onto this branch as `24270b6`. The integrator re-ran `tools/pp16_complex_shift_check.py` on the recorded `cases.json`; the output equals RESULTS.json exactly. Ledger row added by the integrator.

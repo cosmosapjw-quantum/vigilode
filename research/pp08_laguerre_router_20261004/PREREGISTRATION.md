@@ -109,3 +109,5 @@ Implementation notes and disclosures (all before the recorded run):
   Python check ran only once, as recorded above.
 - The degree-guard h (0.25) and the 1e-300 budget lie outside the main grid of the fixture paragraph; they are
   the boundary cases G2 requires.
+
+Integration note (integrator, 2026-10-04): implemented by a delegated agent in a separate worktree on top of the pushed preregistration `ad49dda` (source `f97f3e5`), cherry-picked onto this branch as `ddeeb41`. The integrator re-ran `tools/pp08_laguerre_router_check.py` on the recorded `cases.json`; the output equals RESULTS.json exactly. Ledger row added by the integrator.
