@@ -291,8 +291,10 @@ impl std::ops::Neg for Interval {
 /// two-part `ln 2`), `e^r` is the
 /// degree-20 Taylor sum in interval arithmetic plus the remainder
 /// `|r|^21 / 21! e^|r|` (`e^|r| <= 1.5` for `|r| <= 0.35`), scaled by `2^k`.
-/// An overflowing result is an error; a result below the normal range is
-/// enclosed by `[0, 2^-1020]`.
+/// An overflowing result is an error; for `x < -707` the result is
+/// enclosed by `[0, 2^-1019]` (`e^-707 < 2^-1019`; the earlier floor
+/// `2^-1020` was below `e^x` on `(-707.0234, -707)`, research node
+/// `research/safe_enclosure_exp_floor_20261004`).
 pub fn exp_interval(x: f64) -> CoreResult<Interval> {
     if x.is_nan() {
         return Err(CoreError::NonFinite("directed rounding: exp of NaN".into()));
@@ -303,7 +305,7 @@ pub fn exp_interval(x: f64) -> CoreResult<Interval> {
         ));
     }
     if x < -707.0 {
-        return Interval::new(0.0, f64::from_bits((1023_u64 - 1020) << 52));
+        return Interval::new(0.0, f64::from_bits((1023_u64 - 1019) << 52));
     }
     // Cody-Waite: ln 2 = LN2_HI + LN2_LO + d with 0 < d < ulp(LN2_LO)
     // (checked at 60 digits: d = 1.16e-26, ulp = 2.58e-26). LN2_HI has 21
