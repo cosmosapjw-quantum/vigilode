@@ -7,6 +7,7 @@ pub mod directed;
 mod error;
 mod hash;
 pub mod laguerre_adjoint;
+pub mod leja_action;
 mod matrix;
 mod matrix_functions;
 pub mod nonnormal_certificate;
