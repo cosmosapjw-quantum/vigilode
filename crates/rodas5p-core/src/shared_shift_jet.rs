@@ -192,7 +192,7 @@ fn validate_current_inputs(
     Ok(())
 }
 
-fn dissipativity_rows(j: &DenseMatrix) -> CoreResult<Vec<f64>> {
+pub(crate) fn dissipativity_rows(j: &DenseMatrix) -> CoreResult<Vec<f64>> {
     let mut rows = Vec::with_capacity(j.nrows());
     for i in 0..j.nrows() {
         let mut upper = j[(i, i)];

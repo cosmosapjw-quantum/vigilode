@@ -2,6 +2,7 @@
 
 mod binary_scaling;
 mod coefficients;
+pub mod complex_shift_jet;
 pub mod directed;
 mod error;
 mod hash;
