@@ -557,6 +557,16 @@ pub enum AutoMetric {
     Osborne,
 }
 
+/// Which metric a log-norm certificate used (PP12, PP12b).
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum LognormMetric {
+    Identity,
+    Osborne,
+    /// The tridiagonal chain symmetrizer (RVJ DAG node PP12b).
+    ChainSymmetrizer,
+}
+
 /// The automatic certificate of REV-02: the stepped certificate (degree
 /// 20, [`stepping_rule`]) under the identity and under
 /// [`osborne_metric`], the one with the smaller `error_upper` (both are
@@ -599,7 +609,7 @@ pub struct LognormCertificate {
     pub mu_source: &'static str,
     /// REV-02's propagation rate (numerical-range box), for comparison.
     pub gershgorin_re_hi: f64,
-    pub metric: AutoMetric,
+    pub metric: LognormMetric,
     pub steps: usize,
 }
 
@@ -749,6 +759,24 @@ pub fn certify_exp_action_lognorm(
     degree: usize,
     steps: usize,
 ) -> CoreResult<LognormCertificate> {
+    let label = if metric.is_some() {
+        LognormMetric::Osborne
+    } else {
+        LognormMetric::Identity
+    };
+    lognorm_labelled(a, v, tau, metric, degree, steps, label)
+}
+
+#[allow(clippy::too_many_arguments)]
+fn lognorm_labelled(
+    a: &[Vec<f64>],
+    v: &[f64],
+    tau: f64,
+    metric: Option<&[f64]>,
+    degree: usize,
+    steps: usize,
+    label: LognormMetric,
+) -> CoreResult<LognormCertificate> {
     let probe = certify_exp_action(a, v, 0.0, metric, degree, None)?;
     let ones = vec![1.0; v.len()];
     let b = metric_matrix(a, metric.unwrap_or(&ones))?;
@@ -759,11 +787,7 @@ pub fn certify_exp_action_lognorm(
         mu_up,
         mu_source,
         gershgorin_re_hi: probe.numerical_range.re_hi,
-        metric: if metric.is_some() {
-            AutoMetric::Osborne
-        } else {
-            AutoMetric::Identity
-        },
+        metric: label,
         steps,
     })
 }
@@ -790,4 +814,59 @@ pub fn certify_exp_action_lognorm_auto(
     } else {
         Ok((ident, osb))
     }
+}
+
+/// The chain symmetrizer of the tridiagonal part (RVJ DAG node PP12b,
+/// `research/pp12b_chain_symmetrizer_20261004`): `d_1 = 1` and `d_i =
+/// d_{i-1} sqrt(|a_{i-1,i}| / |a_{i,i-1}|)` when both are nonzero, else
+/// `d_{i-1}`. Then `|b_{i,i-1}| = |b_{i-1,i}|`, so opposite-sign pairs
+/// leave the symmetric part. Real valued; the certificate encloses
+/// `D A D^-1` in interval arithmetic.
+pub fn chain_symmetrizer_metric(a: &[Vec<f64>]) -> CoreResult<Vec<f64>> {
+    let n = a.len();
+    if n == 0 || a.iter().any(|row| row.len() != n) {
+        return Err(CoreError::Dimension(
+            "nonnormal certificate: A must be square".into(),
+        ));
+    }
+    let mut d = vec![1.0_f64; n];
+    for i in 1..n {
+        let (up, low) = (a[i - 1][i].abs(), a[i][i - 1].abs());
+        d[i] = if up > 0.0 && low > 0.0 {
+            d[i - 1] * (up / low).sqrt()
+        } else {
+            d[i - 1]
+        };
+        if !(d[i].is_finite() && d[i] > 0.0) {
+            return Err(invalid("chain symmetrizer out of range"));
+        }
+    }
+    Ok(d)
+}
+
+/// [`certify_exp_action_lognorm_auto`] with the chain symmetrizer as a
+/// third metric (PP12b): all three certificates, the smallest bound first.
+pub fn certify_exp_action_lognorm_auto3(
+    a: &[Vec<f64>],
+    v: &[f64],
+    tau: f64,
+) -> CoreResult<Vec<LognormCertificate>> {
+    let osborne = osborne_metric(a)?;
+    let chain = chain_symmetrizer_metric(a)?;
+    let mut out = Vec::new();
+    for (metric, label) in [
+        (None, LognormMetric::Identity),
+        (Some(osborne.as_slice()), LognormMetric::Osborne),
+        (Some(chain.as_slice()), LognormMetric::ChainSymmetrizer),
+    ] {
+        let probe = certify_exp_action(a, v, 0.0, metric, 20, None)?;
+        let steps = stepping_rule(probe.numerical_range, tau);
+        out.push(lognorm_labelled(a, v, tau, metric, 20, steps, label)?);
+    }
+    out.sort_by(|x, y| {
+        x.certificate
+            .error_upper
+            .total_cmp(&y.certificate.error_upper)
+    });
+    Ok(out)
 }
