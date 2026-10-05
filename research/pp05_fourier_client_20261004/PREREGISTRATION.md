@@ -140,3 +140,12 @@ records these results. The exporter ran once.
   certificate, but the registered control expected rejection and the
   control did not exercise aliasing at this step.
 - No bound in any run or control is below the actual error.
+
+Correction (after the independent review, same day): the bounds of this
+certificate are bounds of the complex **modulus** (maximum over the two
+amplitudes), not of `|re| + |im|` as the checker's docstring and G1 wording
+say; the 1-norm is not rotation invariant. G1 compared the actual error in
+the 1-norm (which is at least the modulus) with the bound and held, so it
+holds for the modulus as well; the verdict is unchanged. The module
+documentation was corrected, and `commit` now refuses an inexact `t + h`
+(a re-export with the change is byte-identical).

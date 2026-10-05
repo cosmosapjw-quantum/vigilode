@@ -494,11 +494,16 @@ impl HessenbergReuse {
         Self { q, hess, qt_rhs }
     }
 
-    fn solve(&self, h: f64, gamma: f64, work: &mut ShiftWork) -> CoreResult<Vec<Vec<f64>>> {
+    fn factor(&self, h: f64, gamma: f64, work: &mut ShiftWork) -> CoreResult<HessenbergLu> {
         let n = self.q.len() as u64;
         let lu = HessenbergLu::new(&self.hess, gamma * h)?;
         work.factorizations += 1;
         work.flops += 3 * n * n;
+        Ok(lu)
+    }
+
+    fn solve_with(&self, lu: &HessenbergLu, work: &mut ShiftWork) -> CoreResult<Vec<Vec<f64>>> {
+        let n = self.q.len() as u64;
         let mut out = Vec::with_capacity(self.qt_rhs.len());
         for c in &self.qt_rhs {
             let y = lu.solve(c);
@@ -511,6 +516,11 @@ impl HessenbergReuse {
         work.column_solves += self.qt_rhs.len() as u64;
         work.flops += self.qt_rhs.len() as u64 * 5 * n * n;
         Ok(out)
+    }
+
+    fn solve(&self, h: f64, gamma: f64, work: &mut ShiftWork) -> CoreResult<Vec<Vec<f64>>> {
+        let lu = self.factor(h, gamma, work)?;
+        self.solve_with(&lu, work)
     }
 }
 
@@ -559,20 +569,12 @@ pub fn solve_shift_family(
         ShiftMethod::HessenbergReuse => {
             let reuse = HessenbergReuse::new(j, rhs, &mut work);
             for gamma in distinct_shifts(gammas) {
-                let factor_flops = 3 * (j.nrows() * j.nrows()) as u64;
-                let mut first = true;
+                // One Hessenberg LU per distinct shift, reused (and charged
+                // once) for repeated targets; each target's solves charged.
+                let lu = reuse.factor(h, gamma, &mut work)?;
                 for (i, g) in gammas.iter().enumerate() {
                     if g.to_bits() == gamma.to_bits() {
-                        let mut local = ShiftWork::default();
-                        let x = reuse.solve(h, gamma, &mut local)?;
-                        // One Hessenberg LU per distinct shift is charged;
-                        // repeated targets reuse it.
-                        if !first {
-                            local.flops -= factor_flops;
-                            local.factorizations -= 1;
-                        }
-                        first = false;
-                        work.add(local);
+                        let x = reuse.solve_with(&lu, &mut work)?;
                         targets[i] =
                             Some(certify(j, h, gamma, rhs, x, tolerance, method, &mut work)?);
                     }

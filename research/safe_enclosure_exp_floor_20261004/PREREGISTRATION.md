@@ -42,3 +42,11 @@ violations (the floor one is gone, the 676 time-direction ones remain).
 G3: core lib, INT-05, REV-02, SAFE-ENCLOSURE tests and the chart tests
 (INT-04 contracts, native re-audit, RVJ boundaries, R-NEXT-05) pass; clippy
 on rodas5p-core clean.
+
+Correction (after the independent review, same day): `ln 2^-1020 =
+-707.010124`, so the false window was `(-707.0101, -707)`, not
+`(-707.0234, -707)` as written in the defect description above. The "64
+neighbours of ln 2^-1020" in the export used the wrong centre
+(-707.0234...); the window is still covered by the 20,001-point grid on
+[-709, -700] (spacing 4.5e-4, about 22 points inside the window), all
+without violation. Verdict unchanged.

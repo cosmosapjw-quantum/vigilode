@@ -17,7 +17,10 @@
 //! no caller phase) and charges any start mismatch. Two deviations from the
 //! source are registered in the node: the charged start mismatch (binary64
 //! cannot represent the source's exact start) and the internal phase witness
-//! (finding A-PORT-03). This is not the existing quadratic
+//! (finding A-PORT-03). Every bound (sup bound, defects, start mismatch,
+//! rounding, error) is in the complex modulus, the maximum over the two
+//! amplitudes; quantities computed as `|re| + |im|` are upper bounds of it
+//! (review after the PP05 run). This is not the existing quadratic
 //! `Q2CertificateSource` and does not use it.
 
 // `!(x <= bound)` is deliberate: a NaN must fail every acceptance test.
@@ -321,9 +324,12 @@ impl IPath {
         }
         Ok(Self { coeffs: c })
     }
-    /// `sup_{tau in [0,1]} |path(tau)|_1`: per harmonic the complex
-    /// Bernstein hull of the polynomial amplitude (degree not trimmed), then
-    /// the triangle inequality over harmonics, all rounded up.
+    /// Upper bound of `sup_{tau in [0,1]} |path(tau)|`, `|.|` the complex
+    /// modulus: per harmonic the complex Bernstein hull of the polynomial
+    /// amplitude (degree not trimmed), whose points bound the amplitude's
+    /// modulus by their `|re| + |im|`, then `|e^{i k a tau}| = 1` and the
+    /// triangle inequality over harmonics, all rounded up. It is not a bound
+    /// of the rotated path's `|re| + |im|` (that is not rotation invariant).
     fn sup_bound(&self) -> CoreResult<f64> {
         let mut by_k: BTreeMap<i32, Vec<(u32, CInterval)>> = BTreeMap::new();
         for (&(k, j), &v) in &self.coeffs {
@@ -605,7 +611,8 @@ struct TrialBinding {
 }
 
 /// The phase witness `P(tau)` and `phase_error >= sup |P - e^{i omega (t + h
-/// tau)}|_1`, built from the rotation enclosure of `omega t`: a degree-20
+/// tau)}|` (complex modulus; the 1-norm terms used are upper bounds of it),
+/// built from the rotation enclosure of `omega t`: a degree-20
 /// confluent Taylor polynomial of `e^{i omega h tau}` when `|omega h| <= 1`,
 /// otherwise the single harmonic `(1, 0)`.
 fn phase_witness(model: &FourierModel, t: f64, h: f64) -> CoreResult<(IPath, f64, &'static str)> {
@@ -819,6 +826,12 @@ pub fn commit(
     let t = state.t + trial.h;
     if t <= state.t {
         return Err(invalid("time does not advance"));
+    }
+    // The next phase witness uses omega t, so t must be the exact sum
+    // (TwoSum residual zero); an uncharged time error is refused.
+    let back = t - state.t;
+    if (state.t - (t - back)) + (trial.h - back) != 0.0 {
+        return Err(invalid("t + h is not exact in binary64"));
     }
     Ok(FourierState {
         t,

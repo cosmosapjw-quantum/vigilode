@@ -185,3 +185,16 @@ fn export_fourier_client() {
         println!("wrote {}", path.display());
     }
 }
+
+/// Review follow-up: a commit whose `t + h` rounds is refused (the next
+/// phase witness would use an uncharged time error).
+#[test]
+fn commit_refuses_inexact_time_sum() {
+    let model = FourierModel::new(1.0, 1).unwrap();
+    let state = FourierState::initial();
+    let first = build_trial(&state, 0.1, &model, 2, 4, 2, PredictorRhs::Coupled, None).unwrap();
+    let next = commit(&first, &state, &model, 1.0).unwrap();
+    let second = build_trial(&next, 0.2, &model, 2, 4, 2, PredictorRhs::Coupled, None).unwrap();
+    let err = commit(&second, &next, &model, 1.0).unwrap_err();
+    assert!(err.to_string().contains("not exact"));
+}

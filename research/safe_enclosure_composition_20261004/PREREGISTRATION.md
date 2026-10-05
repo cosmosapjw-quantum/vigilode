@@ -129,3 +129,8 @@ and the distance is the full width, twice the half width the base used.
 G3: the published end-to-end results show no bound below the truth (REV-02
 enclosure gate true, R-NEXT-05 PASS). The base local under-coverage was
 covered there by other slack; no false end-to-end certificate is claimed.
+
+Correction (after the independent review, same day): the false window of
+the old floor is `(-707.0101, -707)` (`ln 2^-1020 = -707.010124`), not
+`(-707.0234, -707)`; the recorded violation is at `count h a = -707.00709`
+(0.304 % under), described above as -707.01. Verdict unchanged.

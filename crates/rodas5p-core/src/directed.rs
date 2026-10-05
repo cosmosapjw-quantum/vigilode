@@ -293,7 +293,7 @@ impl std::ops::Neg for Interval {
 /// `|r|^21 / 21! e^|r|` (`e^|r| <= 1.5` for `|r| <= 0.35`), scaled by `2^k`.
 /// An overflowing result is an error; for `x < -707` the result is
 /// enclosed by `[0, 2^-1019]` (`e^-707 < 2^-1019`; the earlier floor
-/// `2^-1020` was below `e^x` on `(-707.0234, -707)`, research node
+/// `2^-1020` was below `e^x` on `(-707.0101, -707)`, research node
 /// `research/safe_enclosure_exp_floor_20261004`).
 pub fn exp_interval(x: f64) -> CoreResult<Interval> {
     if x.is_nan() {

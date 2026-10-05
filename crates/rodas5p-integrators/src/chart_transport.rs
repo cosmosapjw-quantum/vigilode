@@ -240,7 +240,9 @@ fn enclose_flow(
     // SAFE-ENCLOSURE: e^{-x} decreases, so enclose it over the whole product
     // interval of kappa tau, not only at the rounded-up product.
     let decay = rodas5p_core::polynomial_action::exp_neg_interval_enclosure(Interval::new(
-        mul_down(identity.kappa, tau)?,
+        // kappa, tau > 0: the product is nonnegative even when mul_down
+        // steps below zero on underflow.
+        mul_down(identity.kappa, tau)?.max(0.0),
         mul_up(identity.kappa, tau)?,
     )?)?;
     let kappa = Interval::point(identity.kappa)?;

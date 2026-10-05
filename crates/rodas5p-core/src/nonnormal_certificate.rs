@@ -851,17 +851,31 @@ pub fn certify_exp_action_lognorm_auto3(
     v: &[f64],
     tau: f64,
 ) -> CoreResult<Vec<LognormCertificate>> {
-    let osborne = osborne_metric(a)?;
-    let chain = chain_symmetrizer_metric(a)?;
+    // A metric that cannot be built or certified is skipped; the call fails
+    // only when no metric gives a certificate (review after PP12b).
+    let osborne = osborne_metric(a).ok();
+    let chain = chain_symmetrizer_metric(a).ok();
     let mut out = Vec::new();
+    let mut last_error = None;
     for (metric, label) in [
         (None, LognormMetric::Identity),
-        (Some(osborne.as_slice()), LognormMetric::Osborne),
-        (Some(chain.as_slice()), LognormMetric::ChainSymmetrizer),
+        (osborne.as_deref(), LognormMetric::Osborne),
+        (chain.as_deref(), LognormMetric::ChainSymmetrizer),
     ] {
-        let probe = certify_exp_action(a, v, 0.0, metric, 20, None)?;
-        let steps = stepping_rule(probe.numerical_range, tau);
-        out.push(lognorm_labelled(a, v, tau, metric, 20, steps, label)?);
+        if label != LognormMetric::Identity && metric.is_none() {
+            continue;
+        }
+        let attempt = certify_exp_action(a, v, 0.0, metric, 20, None).and_then(|probe| {
+            let steps = stepping_rule(probe.numerical_range, tau);
+            lognorm_labelled(a, v, tau, metric, 20, steps, label)
+        });
+        match attempt {
+            Ok(certificate) => out.push(certificate),
+            Err(error) => last_error = Some(error),
+        }
+    }
+    if out.is_empty() {
+        return Err(last_error.unwrap_or_else(|| invalid("no metric gave a certificate")));
     }
     out.sort_by(|x, y| {
         x.certificate

@@ -258,3 +258,33 @@ fn export_chain_cases() {
         println!("wrote {}", path.display());
     }
 }
+
+/// Review follow-up: an out-of-range chain metric is skipped, not fatal.
+#[test]
+fn auto3_skips_a_metric_that_cannot_be_built() {
+    let n = 4;
+    let a: Vec<Vec<f64>> = (0..n)
+        .map(|i| {
+            (0..n)
+                .map(|j| {
+                    if i == j {
+                        -1.0
+                    } else if j + 1 == i {
+                        1.0e-200
+                    } else if j == i + 1 {
+                        1.0e200
+                    } else {
+                        0.0
+                    }
+                })
+                .collect()
+        })
+        .collect();
+    assert!(chain_symmetrizer_metric(&a).is_err());
+    let certs = certify_exp_action_lognorm_auto3(&a, &[1.0; 4], 0.5).unwrap();
+    assert!(
+        certs
+            .iter()
+            .all(|c| c.metric != LognormMetric::ChainSymmetrizer)
+    );
+}
