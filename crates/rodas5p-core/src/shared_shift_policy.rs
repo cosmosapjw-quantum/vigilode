@@ -72,19 +72,6 @@ pub struct ShiftWork {
     pub fallback_targets: u64,
 }
 
-impl ShiftWork {
-    fn add(&mut self, other: ShiftWork) {
-        self.flops += other.flops;
-        self.directed += other.directed;
-        self.factorizations += other.factorizations;
-        self.hessenberg_reductions += other.hessenberg_reductions;
-        self.column_solves += other.column_solves;
-        self.qr_factorizations += other.qr_factorizations;
-        self.jet_levels += other.jet_levels;
-        self.fallback_targets += other.fallback_targets;
-    }
-}
-
 fn lu_flops(n: u64) -> u64 {
     2 * n * n * n / 3
 }
