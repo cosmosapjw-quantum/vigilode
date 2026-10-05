@@ -240,7 +240,11 @@ fn case(
 #[test]
 #[ignore = "exporter of research/pp08_laguerre_router_20261004; set PP08_CASES"]
 fn pp08_router_study_export() {
-    let output = std::env::var("PP08_CASES").expect("set PP08_CASES");
+    // Without PP08_CASES (the workspace's ignored-test run) nothing is written.
+    let Ok(output) = std::env::var("PP08_CASES") else {
+        println!("PP08_CASES not set: cases not written");
+        return;
+    };
     let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../..")
         .join(&output);

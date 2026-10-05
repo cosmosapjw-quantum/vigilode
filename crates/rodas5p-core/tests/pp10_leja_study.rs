@@ -276,7 +276,11 @@ fn case(
 #[test]
 #[ignore = "exporter of research/pp10_leja_candidate_20261004; set PP10_CASES"]
 fn pp10_leja_study_export() {
-    let output = std::env::var("PP10_CASES").expect("set PP10_CASES");
+    // Without PP10_CASES (the workspace's ignored-test run) nothing is written.
+    let Ok(output) = std::env::var("PP10_CASES") else {
+        println!("PP10_CASES not set: cases not written");
+        return;
+    };
     let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../..")
         .join(&output);
