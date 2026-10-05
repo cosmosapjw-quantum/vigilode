@@ -760,6 +760,41 @@ impl OutputCollector {
         Ok((landing.step, landing.shortened))
     }
 
+    /// [`Self::limit_step`] for a step `h` the driver has already landed
+    /// toward the span end with this collector's cap (`adaptive_end_step`
+    /// with the same `StepCap`): the re-landing toward the span end is
+    /// skipped, since on a landed or interior step it reproduces `h`
+    /// (speed research node SPD01; the property test in this module checks
+    /// the composition). An interior due time is still landed on.
+    pub(crate) fn limit_landed_step(&self, t: f64, h: f64) -> CoreResult<(f64, bool)> {
+        if !(t.is_finite() && h.is_finite() && h > 0.0) {
+            return Err(CoreError::InvalidInput(
+                "output-aware step limit requires finite time and positive step".into(),
+            ));
+        }
+        let Some(next) = self.due(self.next_index) else {
+            require_progress(t, h)?;
+            return Ok((h, false));
+        };
+        if next <= t {
+            return Err(CoreError::InvalidInput(
+                "output collector advanced past a requested time".into(),
+            ));
+        }
+        if next == self.end {
+            require_progress(t, h)?;
+            return Ok((h, false));
+        }
+        let landing = land_capped(t, h, next, self.max_step)?;
+        require_progress(t, landing.step)?;
+        Ok((landing.step, landing.shortened))
+    }
+
+    /// The cap this collector lands with.
+    pub(crate) fn max_step(&self) -> StepCap {
+        self.max_step
+    }
+
     /// The time at which request `index` is due: its own represented time
     /// (the last request is the span end exactly, [`OutputSchedule::validate_span`]).
     fn due(&self, index: usize) -> Option<f64> {
@@ -769,7 +804,18 @@ impl OutputCollector {
     }
 
     pub(crate) fn accept(&mut self, t: f64, y: &[f64], clipped: bool) -> CoreResult<()> {
-        if !t.is_finite() || !y.iter().all(|value| value.is_finite()) {
+        if !y.iter().all(|value| value.is_finite()) {
+            return Err(CoreError::NonFinite(
+                "accepted output state contains NaN/Inf".into(),
+            ));
+        }
+        self.accept_prechecked(t, y, clipped)
+    }
+
+    /// [`Self::accept`] for a state the driver has already checked to be
+    /// finite (speed research node SPD01): the scan of `y` is skipped.
+    pub(crate) fn accept_prechecked(&mut self, t: f64, y: &[f64], clipped: bool) -> CoreResult<()> {
+        if !t.is_finite() {
             return Err(CoreError::NonFinite(
                 "accepted output state contains NaN/Inf".into(),
             ));
@@ -872,5 +918,189 @@ impl OutputCollector {
     /// which enforces complete coverage of the requested schedule.
     pub(crate) fn finish_partial(self) -> (Vec<f64>, Vec<Vec<f64>>, usize) {
         (self.times, self.states, self.clipped_steps)
+    }
+}
+
+/// Property test of the fused landing of speed research node SPD01
+/// (`research/spd01_fast_driver_overhead_20261005`): the fused rule
+/// `limit_landed_step(t, h)` against the legacy composition
+/// `limit_step(t, h, tf)` on a step `h` that `adaptive_end_step` has already
+/// landed with the same cap. Discrepancies are classified: A (the step lands
+/// exactly on `tf`), B (an interior step), C (a step shortened by the
+/// post-rejection rule whose end lies within the residue of `tf`, which the
+/// legacy re-landing can extend back to `tf`).
+#[cfg(test)]
+mod spd01_landing_property {
+    use super::*;
+    use crate::AdaptiveControllerState;
+
+    struct SplitMix(u64);
+
+    impl SplitMix {
+        fn next(&mut self) -> u64 {
+            self.0 = self.0.wrapping_add(0x9E37_79B9_7F4A_7C15);
+            let mut z = self.0;
+            z = (z ^ (z >> 30)).wrapping_mul(0xBF58_476D_1CE4_E5B9);
+            z = (z ^ (z >> 27)).wrapping_mul(0x94D0_49BB_1331_11EB);
+            z ^ (z >> 31)
+        }
+        fn unit(&mut self) -> f64 {
+            (self.next() >> 11) as f64 * 2.0_f64.powi(-53)
+        }
+        fn uniform(&mut self, lo: f64, hi: f64) -> f64 {
+            lo + (hi - lo) * self.unit()
+        }
+    }
+
+    #[derive(Default, Debug)]
+    struct Counts {
+        samples: u64,
+        skipped: u64,
+        compared: u64,
+        interior_due: u64,
+        class_c_fired: u64,
+        discrepancy_a: u64,
+        discrepancy_b: u64,
+        discrepancy_c: u64,
+        discrepancy_a_tiny: u64,
+        discrepancy_b_tiny: u64,
+    }
+
+    fn same(a: &CoreResult<(f64, bool)>, b: &CoreResult<(f64, bool)>) -> bool {
+        match (a, b) {
+            (Ok((x, p)), Ok((y, q))) => x.to_bits() == y.to_bits() && p == q,
+            (Err(_), Err(_)) => true,
+            _ => false,
+        }
+    }
+
+    #[test]
+    fn fused_landing_equals_the_legacy_composition() {
+        let total: u64 = std::env::var("SPD01_PROPERTY_SAMPLES")
+            .ok()
+            .and_then(|s| s.parse().ok())
+            .unwrap_or(1_000_000);
+        let mut rng = SplitMix(0x5bd1_0105_2026_1005);
+        let mut counts = Counts::default();
+        let epochs = [0.0, 1.0e3, 1.0e6, 1.0e12, 1.0e100];
+        for _ in 0..total {
+            counts.samples += 1;
+            let t0 = epochs[(rng.next() % 5) as usize];
+            // The span length relative to the epoch's resolution: from a few
+            // ULPs of the epoch to a sizeable span.
+            let span = if t0 == 0.0 {
+                10.0_f64.powf(rng.uniform(-3.0, 3.0))
+            } else {
+                t0 * 10.0_f64.powf(rng.uniform(-15.0, 0.0))
+            };
+            let tf = t0 + span;
+            if tf <= t0 || !tf.is_finite() {
+                counts.skipped += 1;
+                continue;
+            }
+            let t = t0 + rng.unit() * (tf - t0);
+            if t >= tf {
+                counts.skipped += 1;
+                continue;
+            }
+            let h0 = (tf - t0) * 10.0_f64.powf(rng.uniform(-16.0, 0.0));
+            let cap = StepCap {
+                max: if rng.unit() < 0.5 {
+                    f64::INFINITY
+                } else {
+                    (tf - t0) * 10.0_f64.powf(rng.uniform(-6.0, 0.0))
+                },
+                policy: if rng.unit() < 0.5 {
+                    MaxStepPolicy::AllowClockResolutionSlack
+                } else {
+                    MaxStepPolicy::StrictRepresentedCap
+                },
+            };
+            let rejected = if rng.unit() < 0.3 {
+                Some(h0 * rng.uniform(0.5, 1.5))
+            } else {
+                None
+            };
+            let controller = AdaptiveControllerState::with_last_rejected_trial(rejected);
+            let Ok(Some(h)) = adaptive_end_step(t, h0, tf, cap, &controller) else {
+                counts.skipped += 1;
+                continue;
+            };
+            // Did the post-rejection shortening fire?
+            let shortened = rejected.is_some()
+                && end_step_capped(t, h0.min(cap.max), tf, cap)
+                    .map(|plain| h.to_bits() != plain.to_bits())
+                    .unwrap_or(false);
+            if shortened {
+                counts.class_c_fired += 1;
+            }
+            let interior = rng.unit() < 0.3;
+            let schedule = if interior {
+                let mid = t + rng.unit() * (tf - t);
+                if mid <= t || mid >= tf {
+                    counts.skipped += 1;
+                    continue;
+                }
+                OutputSchedule::new(vec![t0, mid, tf]).unwrap()
+            } else {
+                OutputSchedule::new(vec![t0, tf]).unwrap()
+            };
+            let collector = OutputCollector::new(&schedule, (t0, tf), &[1.0])
+                .unwrap()
+                .with_max_step(cap);
+            let legacy = collector.limit_step(t, h, tf);
+            let fused = collector.limit_landed_step(t, h);
+            counts.compared += 1;
+            if interior {
+                counts.interior_due += 1;
+            }
+            if same(&legacy, &fused) {
+                continue;
+            }
+            let tiny = h < 2.0_f64.powi(16) * f64::EPSILON * t.abs().max(tf.abs());
+            if shortened {
+                counts.discrepancy_c += 1;
+            } else if t + h == tf {
+                if tiny {
+                    counts.discrepancy_a_tiny += 1;
+                } else {
+                    counts.discrepancy_a += 1;
+                }
+            } else if tiny {
+                counts.discrepancy_b_tiny += 1;
+            } else {
+                counts.discrepancy_b += 1;
+            }
+        }
+        println!("{counts:?}");
+        if let Ok(path) = std::env::var("SPD01_PROPERTY") {
+            let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("../..")
+                .join(path);
+            assert!(
+                !path.exists(),
+                "immutable output exists: {}",
+                path.display()
+            );
+            let text = format!(
+                "{{\"schema\": \"vigilode-spd01-property-v1\", \"seed\": \"0x5bd1010520261005\", \
+                 \"samples\": {}, \"skipped\": {}, \"compared\": {}, \"interior_due\": {}, \
+                 \"class_c_fired\": {}, \"discrepancy_a\": {}, \"discrepancy_b\": {}, \
+                 \"discrepancy_c\": {}, \"discrepancy_a_tiny\": {}, \"discrepancy_b_tiny\": {}}}\n",
+                counts.samples,
+                counts.skipped,
+                counts.compared,
+                counts.interior_due,
+                counts.class_c_fired,
+                counts.discrepancy_a,
+                counts.discrepancy_b,
+                counts.discrepancy_c,
+                counts.discrepancy_a_tiny,
+                counts.discrepancy_b_tiny
+            );
+            std::fs::write(&path, text).unwrap();
+        }
+        assert_eq!(counts.discrepancy_a, 0, "class A discrepancies: {counts:?}");
+        assert_eq!(counts.discrepancy_b, 0, "class B discrepancies: {counts:?}");
     }
 }

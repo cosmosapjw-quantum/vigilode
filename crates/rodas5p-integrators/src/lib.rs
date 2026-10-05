@@ -350,13 +350,14 @@ pub use rhs_telemetry::{
 pub use rodas5p_fast::{
     BandedJacobian, BandedJacobianFn, BandedWork, RODAS5P_FAST_BANDED_DRIVER_ID,
     RODAS5P_FAST_DRIVER_ID, RODAS5P_FAST_SMALL_LU_MAX, RODAS5P_FAST_SPARSE_DENSITY_MAX,
-    Rodas5pFastBandedResult, Rodas5pFastLu, Rodas5pFastResult,
-    integrate_rodas5p_fast_banded_observed, integrate_rodas5p_fast_observed,
+    Rodas5pFastBandedResult, Rodas5pFastLu, Rodas5pFastOptions, Rodas5pFastResult,
+    integrate_rodas5p_fast_banded_observed, integrate_rodas5p_fast_banded_observed_with_options,
+    integrate_rodas5p_fast_observed, integrate_rodas5p_fast_observed_with_options,
     rodas5p_fast_banded_solve, rodas5p_fast_step,
 };
 pub use rodas5p_fast_small::{
     RODAS5P_FAST_SMALL_DRIVER_ID, Rodas5pFastSmallResult, SmallProblem,
-    integrate_rodas5p_fast_small_observed,
+    integrate_rodas5p_fast_small_observed, integrate_rodas5p_fast_small_observed_with_options,
 };
 pub use rodas5p_matrix_free_fast::{
     GcrodrRecyclePolicy, MfAttemptObserver, RODAS5P_MF_FAST_DRIVER_ID, Rodas5pMfFastResult,

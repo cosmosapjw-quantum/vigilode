@@ -16,7 +16,8 @@ use rodas5p_core::{CoreError, CoreResult, WorkCounters, rodas5p_coefficients};
 
 use crate::{
     AdaptiveControllerState, AdaptiveFailureKind, AdaptiveStepConfig, ObservedIntegrationResult,
-    OutputSchedule, output::OutputCollector, rodas_next_step_after_attempt,
+    OutputSchedule, adaptive::rodas_next_step_after_attempt_prevalidated, output::OutputCollector,
+    rodas_next_step_after_attempt, rodas5p_fast::Rodas5pFastOptions,
 };
 
 /// Identifier of this driver in research records.
@@ -337,6 +338,27 @@ pub fn integrate_rodas5p_fast_small_observed<const N: usize, P: SmallProblem<N>>
     adaptive: &AdaptiveStepConfig,
     output: &OutputSchedule,
 ) -> CoreResult<Rodas5pFastSmallResult> {
+    integrate_rodas5p_fast_small_observed_with_options(
+        problem,
+        t_span,
+        y0,
+        adaptive,
+        output,
+        Rodas5pFastOptions::default(),
+    )
+}
+
+/// [`integrate_rodas5p_fast_small_observed`] with opt-in
+/// [`Rodas5pFastOptions`] (speed research node SPD01); the default options
+/// give the same driver.
+pub fn integrate_rodas5p_fast_small_observed_with_options<const N: usize, P: SmallProblem<N>>(
+    problem: &P,
+    t_span: (f64, f64),
+    y0: &[f64; N],
+    adaptive: &AdaptiveStepConfig,
+    output: &OutputSchedule,
+    options: Rodas5pFastOptions,
+) -> CoreResult<Rodas5pFastSmallResult> {
     adaptive.validate()?;
     let (mut t, tf) = t_span;
     if tf < t || !y0.iter().all(|v| v.is_finite()) {
@@ -364,7 +386,13 @@ pub fn integrate_rodas5p_fast_small_observed<const N: usize, P: SmallProblem<N>>
         if (crate::output::below_min_step(t, h, adaptive.min_step) && t + h < tf) || t + h == t {
             break;
         }
-        let (trial_h, clipped) = collector.limit_step(t, h, tf)?;
+        let (trial_h, clipped) = if options.fused_landing {
+            // `h` was landed toward `tf` above with the collector's own cap.
+            debug_assert_eq!(collector.max_step(), adaptive.step_cap());
+            collector.limit_landed_step(t, h)?
+        } else {
+            collector.limit_step(t, h, tf)?
+        };
         attempts += 1;
         if fresh_state {
             reuses += 1;
@@ -396,7 +424,12 @@ pub fn integrate_rodas5p_fast_small_observed<const N: usize, P: SmallProblem<N>>
                 accepted_steps += 1;
                 t += trial_h;
                 y = work.y_new;
-                collector.accept(t, &y, clipped)?;
+                if options.fused_landing {
+                    // `y_new` was checked finite by the attempt.
+                    collector.accept_prechecked(t, &y, clipped)?;
+                } else {
+                    collector.accept(t, &y, clipped)?;
+                }
                 internal_steps += 1;
                 fresh_state = false;
             }
@@ -411,15 +444,27 @@ pub fn integrate_rodas5p_fast_small_observed<const N: usize, P: SmallProblem<N>>
                 }
             }
         }
-        h = rodas_next_step_after_attempt(
-            &mut controller,
-            adaptive,
-            h,
-            trial_h,
-            error,
-            failure.is_none(),
-            clipped,
-        )?;
+        h = if options.prevalidated_controller {
+            rodas_next_step_after_attempt_prevalidated(
+                &mut controller,
+                adaptive,
+                h,
+                trial_h,
+                error,
+                failure.is_none(),
+                clipped,
+            )?
+        } else {
+            rodas_next_step_after_attempt(
+                &mut controller,
+                adaptive,
+                h,
+                trial_h,
+                error,
+                failure.is_none(),
+                clipped,
+            )?
+        };
     }
     let success = t >= tf;
     let (times, states, output_clipped_steps) = if success {
@@ -445,6 +490,11 @@ pub fn integrate_rodas5p_fast_small_observed<const N: usize, P: SmallProblem<N>>
         accepted_steps,
         rejected_steps,
         jacobian_reuses: reuses,
-        driver: RODAS5P_FAST_SMALL_DRIVER_ID,
+        driver: match (options.prevalidated_controller, options.fused_landing) {
+            (false, false) => RODAS5P_FAST_SMALL_DRIVER_ID,
+            (true, false) => "rodas5p-fast-small-static-v1-val",
+            (false, true) => "rodas5p-fast-small-static-v1-land",
+            (true, true) => "rodas5p-fast-small-static-v1-ovh",
+        },
     })
 }

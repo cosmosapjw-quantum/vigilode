@@ -120,6 +120,59 @@ def _attribute(weights, categories):
     return cats
 
 
+CALL_WATCH = re.compile(r"rodas5p_integrators::(output|adaptive)::|validate|propose_factor|land_capped|step_to|limit_step|limit_landed_step|accept")
+
+
+def parse_calls(path: Path):
+    """Call counts by callee and by (caller, callee) from the `calls=` records of a
+    callgrind output (name compression resolved as in `parse_callgrind`)."""
+    names = {}
+    caller = "???"
+    callee = "???"
+    by_callee = collections.Counter()
+    by_pair = collections.Counter()
+
+    def resolve(value):
+        m = re.match(r"\((\d+)\)(?:\s+(.*))?$", value.strip())
+        if not m:
+            return value.strip()
+        if m.group(2) is not None:
+            names[m.group(1)] = m.group(2)
+        return names.get(m.group(1), "?")
+
+    with open(path) as handle:
+        for raw in handle:
+            line = raw.rstrip("\n")
+            if line.startswith("fn="):
+                caller = resolve(line[3:])
+            elif line.startswith("cfn="):
+                callee = resolve(line[4:])
+            elif line.startswith("calls="):
+                count = int(line.split()[0][6:])
+                by_callee[callee] += count
+                by_pair[(caller, callee)] += count
+    return by_callee, by_pair
+
+
+def call_difference(path2: Path, path1: Path, attempts: int):
+    """Calls per integration (2-rep minus 1-rep) and per attempt, for the watched
+    functions and the most-called callees."""
+    callee2, pair2 = parse_calls(path2)
+    callee1, pair1 = parse_calls(path1)
+    callee = collections.Counter(callee2)
+    callee.subtract(callee1)
+    pair = collections.Counter(pair2)
+    pair.subtract(pair1)
+    watched = {f: {"calls": c, "per_attempt": c / attempts}
+               for f, c in sorted(callee.items(), key=lambda kv: -kv[1]) if c != 0 and CALL_WATCH.search(f)}
+    top = [{"function": f, "calls": c, "per_attempt": c / attempts}
+           for f, c in sorted(callee.items(), key=lambda kv: -kv[1])[:40] if c != 0]
+    pairs = [{"caller": a, "callee": b, "calls": c, "per_attempt": c / attempts}
+             for (a, b), c in sorted(pair.items(), key=lambda kv: -kv[1])
+             if c != 0 and CALL_WATCH.search(b)]
+    return {"watched_callees": watched, "top_callees": top, "watched_pairs": pairs}
+
+
 def categorize(profile, repo_root: Path):
     """Two attributions: by source file of the innermost inlined frame and by outlined symbol."""
     by_file = collections.Counter()
@@ -187,6 +240,7 @@ def profile_arm(stiff, args, arm: str, problem: str, repo_root: Path) -> dict:
         "top_lines": [{"file": rel(f, repo_root), "line": ln, "ir": v, "share": v / ir}
                       for (f, ln), v in top_lines],
     }
+    entry["calls"] = call_difference(outs["2"], outs["1"], attempts)
     if args.cache_sim:
         t1, t2 = event_totals(outs["1"]), event_totals(outs["2"])
         entry["events_per_run"] = {e: t2[e] - t1[e] for e in t1}

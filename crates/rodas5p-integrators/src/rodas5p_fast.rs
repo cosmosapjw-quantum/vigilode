@@ -40,7 +40,8 @@ use serde::Serialize;
 
 use crate::{
     AdaptiveControllerState, AdaptiveFailureKind, AdaptiveStepConfig, ObservedIntegrationResult,
-    OdeProblem, OutputSchedule, output::OutputCollector, rodas_next_step_after_attempt,
+    OdeProblem, OutputSchedule, adaptive::rodas_next_step_after_attempt_prevalidated,
+    output::OutputCollector, rodas_next_step_after_attempt,
 };
 
 /// Identifier of this driver in benchmark and research records.
@@ -48,6 +49,38 @@ pub const RODAS5P_FAST_DRIVER_ID: &str = "rodas5p-fast-transformed-v2";
 
 /// Identifier of the banded pipeline (integrated DAG node INT-03).
 pub const RODAS5P_FAST_BANDED_DRIVER_ID: &str = "rodas5p-fast-banded-v1";
+
+/// Opt-in variants of the fast drivers (speed research node SPD01,
+/// `research/spd01_fast_driver_overhead_20261005`). The default is the
+/// recorded v2, banded and small-n behaviour, bit for bit; every existing
+/// entry point uses the default.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub struct Rodas5pFastOptions {
+    /// Skip the configuration check inside every controller update; the
+    /// driver validates the configuration once at entry.
+    pub prevalidated_controller: bool,
+    /// Land each step toward the span end once (in `adaptive_end_step`)
+    /// instead of re-landing it in the output collector, and skip the
+    /// collector's finiteness rescan of a state the driver has checked.
+    pub fused_landing: bool,
+}
+
+impl Rodas5pFastOptions {
+    /// The driver identifier of the dense (`banded == false`) or banded
+    /// pipeline under these options.
+    pub fn driver_id(&self, banded: bool) -> &'static str {
+        match (banded, self.prevalidated_controller, self.fused_landing) {
+            (false, false, false) => RODAS5P_FAST_DRIVER_ID,
+            (false, true, false) => "rodas5p-fast-transformed-v2-val",
+            (false, false, true) => "rodas5p-fast-transformed-v2-land",
+            (false, true, true) => "rodas5p-fast-transformed-v2-ovh",
+            (true, false, false) => RODAS5P_FAST_BANDED_DRIVER_ID,
+            (true, true, false) => "rodas5p-fast-banded-v1-val",
+            (true, false, true) => "rodas5p-fast-banded-v1-land",
+            (true, true, true) => "rodas5p-fast-banded-v1-ovh",
+        }
+    }
+}
 
 /// Writes the Jacobian's band at `(t, y)`: row `i`, column `j`
 /// (`i - lower <= j <= i + upper`) at `i (lower + upper + 1) + (j + lower - i)`.
@@ -708,7 +741,29 @@ pub fn integrate_rodas5p_fast_observed(
     adaptive: &AdaptiveStepConfig,
     output: &OutputSchedule,
 ) -> CoreResult<Rodas5pFastResult> {
-    integrate_fast(problem, None, t_span, y0, adaptive, output).map(|(result, _)| result)
+    integrate_fast(
+        problem,
+        None,
+        t_span,
+        y0,
+        adaptive,
+        output,
+        Rodas5pFastOptions::default(),
+    )
+    .map(|(result, _)| result)
+}
+
+/// [`integrate_rodas5p_fast_observed`] with opt-in [`Rodas5pFastOptions`]
+/// (speed research node SPD01); the default options give the same driver.
+pub fn integrate_rodas5p_fast_observed_with_options(
+    problem: &OdeProblem,
+    t_span: (f64, f64),
+    y0: &[f64],
+    adaptive: &AdaptiveStepConfig,
+    output: &OutputSchedule,
+    options: Rodas5pFastOptions,
+) -> CoreResult<Rodas5pFastResult> {
+    integrate_fast(problem, None, t_span, y0, adaptive, output, options).map(|(result, _)| result)
 }
 
 /// [`integrate_rodas5p_fast_observed`] with an explicit band structure
@@ -725,19 +780,43 @@ pub fn integrate_rodas5p_fast_banded_observed(
     adaptive: &AdaptiveStepConfig,
     output: &OutputSchedule,
 ) -> CoreResult<Rodas5pFastBandedResult> {
+    integrate_rodas5p_fast_banded_observed_with_options(
+        problem,
+        band,
+        t_span,
+        y0,
+        adaptive,
+        output,
+        Rodas5pFastOptions::default(),
+    )
+}
+
+/// [`integrate_rodas5p_fast_banded_observed`] with opt-in
+/// [`Rodas5pFastOptions`] (speed research node SPD01).
+#[allow(clippy::too_many_arguments)]
+pub fn integrate_rodas5p_fast_banded_observed_with_options(
+    problem: &OdeProblem,
+    band: &BandedJacobian,
+    t_span: (f64, f64),
+    y0: &[f64],
+    adaptive: &AdaptiveStepConfig,
+    output: &OutputSchedule,
+    options: Rodas5pFastOptions,
+) -> CoreResult<Rodas5pFastBandedResult> {
     let n = problem.dimension;
     if band.lower >= n.max(1) || band.upper >= n.max(1) {
         return Err(CoreError::InvalidInput(
             "the band of the RODAS5P fast banded driver must lie inside the matrix".into(),
         ));
     }
-    let (fast, work) = integrate_fast(problem, Some(band), t_span, y0, adaptive, output)?;
+    let (fast, work) = integrate_fast(problem, Some(band), t_span, y0, adaptive, output, options)?;
     Ok(Rodas5pFastBandedResult {
         fast,
         work: work.unwrap_or_default(),
     })
 }
 
+#[allow(clippy::too_many_arguments)]
 fn integrate_fast(
     problem: &OdeProblem,
     band: Option<&BandedJacobian>,
@@ -745,6 +824,7 @@ fn integrate_fast(
     y0: &[f64],
     adaptive: &AdaptiveStepConfig,
     output: &OutputSchedule,
+    options: Rodas5pFastOptions,
 ) -> CoreResult<(Rodas5pFastResult, Option<BandedWork>)> {
     adaptive.validate()?;
     let (mut t, tf) = t_span;
@@ -782,7 +862,13 @@ fn integrate_fast(
         if (crate::output::below_min_step(t, h, adaptive.min_step) && t + h < tf) || t + h == t {
             break;
         }
-        let (trial_h, clipped) = collector.limit_step(t, h, tf)?;
+        let (trial_h, clipped) = if options.fused_landing {
+            // `h` was landed toward `tf` above with the collector's own cap.
+            debug_assert_eq!(collector.max_step(), adaptive.step_cap());
+            collector.limit_landed_step(t, h)?
+        } else {
+            collector.limit_step(t, h, tf)?
+        };
         attempts += 1;
         if fresh_state {
             reuses += 1;
@@ -817,7 +903,12 @@ fn integrate_fast(
                 accepted_steps += 1;
                 t += trial_h;
                 y.copy_from_slice(&work.y_new);
-                collector.accept(t, &y, clipped)?;
+                if options.fused_landing {
+                    // `y_new` was checked finite by the attempt.
+                    collector.accept_prechecked(t, &y, clipped)?;
+                } else {
+                    collector.accept(t, &y, clipped)?;
+                }
                 internal_steps += 1;
                 fresh_state = false;
             }
@@ -832,15 +923,27 @@ fn integrate_fast(
                 }
             }
         }
-        h = rodas_next_step_after_attempt(
-            &mut controller,
-            adaptive,
-            h,
-            trial_h,
-            error,
-            failure.is_none(),
-            clipped,
-        )?;
+        h = if options.prevalidated_controller {
+            rodas_next_step_after_attempt_prevalidated(
+                &mut controller,
+                adaptive,
+                h,
+                trial_h,
+                error,
+                failure.is_none(),
+                clipped,
+            )?
+        } else {
+            rodas_next_step_after_attempt(
+                &mut controller,
+                adaptive,
+                h,
+                trial_h,
+                error,
+                failure.is_none(),
+                clipped,
+            )?
+        };
     }
     let success = t >= tf;
     let (times, states, output_clipped_steps) = if success {
@@ -868,11 +971,7 @@ fn integrate_fast(
         rejected_steps,
         jacobian_reuses: reuses,
         lu: work.lu_kind,
-        driver: if banded.is_some() {
-            RODAS5P_FAST_BANDED_DRIVER_ID
-        } else {
-            RODAS5P_FAST_DRIVER_ID
-        },
+        driver: options.driver_id(banded.is_some()),
     };
     Ok((result, banded))
 }

@@ -15,9 +15,11 @@ use rodas5p_core::{CoreResult, DenseMatrix, LinearMethod, LinearSolverConfig, Wo
 use rodas5p_integrators::{
     AdaptiveObservedIntegrationResult, AdaptiveRunDiagnostics, AdaptiveStepConfig, BdfConfig,
     IntegrationMethod, NewtonTolerancePolicy, OdeProblem, OutputSchedule, RadauConfig,
-    SmallProblem, integrate_adaptive_observed_with_config, integrate_bdf_adaptive_observed,
-    integrate_radau_adaptive_observed, integrate_rodas5p_fast_observed,
-    integrate_rodas5p_fast_small_observed, robertson_problem, stiff_van_der_pol_problem,
+    Rodas5pFastOptions, SmallProblem, integrate_adaptive_observed_with_config,
+    integrate_bdf_adaptive_observed, integrate_radau_adaptive_observed,
+    integrate_rodas5p_fast_observed, integrate_rodas5p_fast_observed_with_options,
+    integrate_rodas5p_fast_small_observed, integrate_rodas5p_fast_small_observed_with_options,
+    robertson_problem, stiff_van_der_pol_problem,
 };
 use serde_json::{Value, json};
 
@@ -28,8 +30,49 @@ pub const TOLERANCES: [f64; 7] = [1.0e-3, 1.0e-4, 1.0e-5, 1.0e-6, 1.0e-7, 1.0e-8
 pub const FAST_ARM: &str = "rodas5p-fast";
 
 fn known_arm(arm: &str) -> bool {
-    ARMS.contains(&arm) || arm == FAST_ARM || arm == SMALL_ARM
+    ARMS.contains(&arm) || arm == FAST_ARM || arm == SMALL_ARM || OPTION_ARMS.contains(&arm)
 }
+
+/// The opt-in option arms of speed research node SPD01
+/// (`research/spd01_fast_driver_overhead_20261005`): the dense fast driver
+/// and the small driver with a prevalidated controller (`-val`), a fused
+/// landing (`-land`) or both (`-ovh`). Not in [`ARMS`] and not in any
+/// default selection. Returns `(small driver, options)`.
+pub fn option_arm(arm: &str) -> Option<(bool, Rodas5pFastOptions)> {
+    let (small, suffix) = if let Some(rest) = arm.strip_prefix("rodas5p-fast-small-") {
+        (true, rest)
+    } else if let Some(rest) = arm.strip_prefix("rodas5p-fast-") {
+        (false, rest)
+    } else {
+        return None;
+    };
+    let options = match suffix {
+        "val" => Rodas5pFastOptions {
+            prevalidated_controller: true,
+            fused_landing: false,
+        },
+        "land" => Rodas5pFastOptions {
+            prevalidated_controller: false,
+            fused_landing: true,
+        },
+        "ovh" => Rodas5pFastOptions {
+            prevalidated_controller: true,
+            fused_landing: true,
+        },
+        _ => return None,
+    };
+    Some((small, options))
+}
+
+/// Every SPD01 option arm, dense then small.
+pub const OPTION_ARMS: [&str; 6] = [
+    "rodas5p-fast-val",
+    "rodas5p-fast-land",
+    "rodas5p-fast-ovh",
+    "rodas5p-fast-small-val",
+    "rodas5p-fast-small-land",
+    "rodas5p-fast-small-ovh",
+];
 
 pub const ARMS: [&str; 5] = [
     "rodas5p",
@@ -300,7 +343,7 @@ pub fn run_arm(
                 },
             })
         }
-        SMALL_ARM => run_small(problem, &adaptive, &output),
+        SMALL_ARM => run_small(problem, &adaptive, &output, Rodas5pFastOptions::default()),
         "repo-bdf2" => {
             integrate_bdf_adaptive_observed(p, span, y0, &BdfConfig::default(), &adaptive, &output)
         }
@@ -335,9 +378,26 @@ pub fn run_arm(
             &adaptive,
             &output,
         ),
-        other => Err(rodas5p_core::CoreError::InvalidInput(format!(
-            "unknown benchmark arm {other}"
-        ))),
+        other => match option_arm(other) {
+            Some((true, options)) => run_small(problem, &adaptive, &output, options),
+            Some((false, options)) => {
+                let fast = integrate_rodas5p_fast_observed_with_options(
+                    p, span, y0, &adaptive, &output, options,
+                )?;
+                Ok(AdaptiveObservedIntegrationResult {
+                    observed: fast.observed,
+                    diagnostics: AdaptiveRunDiagnostics {
+                        attempts: fast.attempts,
+                        accepted_macro_steps: fast.accepted_steps,
+                        rejected_macro_steps: fast.rejected_steps,
+                        ..AdaptiveRunDiagnostics::default()
+                    },
+                })
+            }
+            None => Err(rodas5p_core::CoreError::InvalidInput(format!(
+                "unknown benchmark arm {other}"
+            ))),
+        },
     }
 }
 
@@ -672,30 +732,44 @@ fn run_small(
     problem: &BenchmarkProblem,
     adaptive: &AdaptiveStepConfig,
     output: &OutputSchedule,
+    options: Rodas5pFastOptions,
 ) -> CoreResult<AdaptiveObservedIntegrationResult> {
+    run_small_full(problem, adaptive, output, options).map(small_result)
+}
+
+/// The small driver on one benchmark problem with the full result.
+fn run_small_full(
+    problem: &BenchmarkProblem,
+    adaptive: &AdaptiveStepConfig,
+    output: &OutputSchedule,
+    options: Rodas5pFastOptions,
+) -> CoreResult<rodas5p_integrators::Rodas5pFastSmallResult> {
     let span = problem.t_span;
     match problem.id {
-        "van-der-pol-mu1000" => Ok(small_result(integrate_rodas5p_fast_small_observed(
+        "van-der-pol-mu1000" => integrate_rodas5p_fast_small_observed_with_options(
             &SmallVanDerPol { mu: 1000.0 },
             span,
             &fixed::<2>(&problem.y0)?,
             adaptive,
             output,
-        )?)),
-        "robertson" => Ok(small_result(integrate_rodas5p_fast_small_observed(
+            options,
+        ),
+        "robertson" => integrate_rodas5p_fast_small_observed_with_options(
             &SmallRobertson,
             span,
             &fixed::<3>(&problem.y0)?,
             adaptive,
             output,
-        )?)),
-        "hires" => Ok(small_result(integrate_rodas5p_fast_small_observed(
+            options,
+        ),
+        "hires" => integrate_rodas5p_fast_small_observed_with_options(
             &SmallHires,
             span,
             &fixed::<8>(&problem.y0)?,
             adaptive,
             output,
-        )?)),
+            options,
+        ),
         other => Err(rodas5p_core::CoreError::InvalidInput(format!(
             "the small arm covers van der Pol, Robertson and HIRES, not {other}"
         ))),
@@ -825,5 +899,178 @@ mod tests {
                 result.observed.message
             );
         }
+    }
+}
+
+/// Identity export of speed research node SPD01
+/// (`research/spd01_fast_driver_overhead_20261005`): every option set of the
+/// dense and small fast drivers against the legacy driver on the benchmark
+/// problems at the seven tolerances, as IEEE bits.
+#[cfg(test)]
+mod spd01 {
+    use super::*;
+
+    fn hx(v: f64) -> String {
+        format!("{:016x}", v.to_bits())
+    }
+
+    fn row(
+        observed: &rodas5p_integrators::ObservedIntegrationResult,
+        attempts: usize,
+        accepted: usize,
+        rejected: usize,
+        reuses: usize,
+        driver: &str,
+    ) -> Value {
+        json!({
+            "driver": driver, "success": observed.success, "message": observed.message,
+            "t": observed.t.iter().map(|v| hx(*v)).collect::<Vec<_>>(),
+            "y": observed.y.iter().map(|s| s.iter().map(|v| hx(*v)).collect::<Vec<_>>()).collect::<Vec<_>>(),
+            "attempts": attempts, "accepted_steps": accepted, "rejected_steps": rejected,
+            "jacobian_reuses": reuses, "internal_steps": observed.internal_steps,
+            "output_clipped_steps": observed.output_clipped_steps,
+            "counters": serde_json::to_value(observed.counters).unwrap(),
+        })
+    }
+
+    const SETS: [(&str, Rodas5pFastOptions); 4] = [
+        (
+            "legacy",
+            Rodas5pFastOptions {
+                prevalidated_controller: false,
+                fused_landing: false,
+            },
+        ),
+        (
+            "val",
+            Rodas5pFastOptions {
+                prevalidated_controller: true,
+                fused_landing: false,
+            },
+        ),
+        (
+            "land",
+            Rodas5pFastOptions {
+                prevalidated_controller: false,
+                fused_landing: true,
+            },
+        ),
+        (
+            "ovh",
+            Rodas5pFastOptions {
+                prevalidated_controller: true,
+                fused_landing: true,
+            },
+        ),
+    ];
+
+    #[test]
+    #[ignore = "identity export of research/spd01_fast_driver_overhead_20261005; release build; set SPD01_IDENTITY"]
+    fn spd01_identity_export() {
+        let Ok(path) = std::env::var("SPD01_IDENTITY") else {
+            println!("SPD01_IDENTITY not set: nothing written");
+            return;
+        };
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../..")
+            .join(path);
+        assert!(
+            !path.exists(),
+            "immutable output exists: {}",
+            path.display()
+        );
+        let mut rows = Vec::new();
+        for problem in benchmark_problems().unwrap() {
+            for rtol in TOLERANCES {
+                let adaptive = adaptive_config(&problem, rtol);
+                let output = OutputSchedule::new(vec![problem.t_span.0, problem.t_span.1]).unwrap();
+                let mut entry =
+                    json!({"problem": problem.id, "rtol": rtol, "dense": {}, "small": {}});
+                for (name, options) in SETS {
+                    let fast = integrate_rodas5p_fast_observed_with_options(
+                        &problem.problem,
+                        problem.t_span,
+                        &problem.y0,
+                        &adaptive,
+                        &output,
+                        options,
+                    )
+                    .unwrap();
+                    entry["dense"][name] = row(
+                        &fast.observed,
+                        fast.attempts,
+                        fast.accepted_steps,
+                        fast.rejected_steps,
+                        fast.jacobian_reuses,
+                        fast.driver,
+                    );
+                    if ["van-der-pol-mu1000", "robertson", "hires"].contains(&problem.id) {
+                        let small = run_small_full(&problem, &adaptive, &output, options).unwrap();
+                        entry["small"][name] = row(
+                            &small.observed,
+                            small.attempts,
+                            small.accepted_steps,
+                            small.rejected_steps,
+                            small.jacobian_reuses,
+                            small.driver,
+                        );
+                    }
+                }
+                let same = |sets: &serde_json::Map<String, Value>| -> bool {
+                    sets.is_empty()
+                        || sets.values().all(|v| {
+                            let mut a = v.clone();
+                            let mut b = sets["legacy"].clone();
+                            a["driver"] = Value::Null;
+                            b["driver"] = Value::Null;
+                            a == b
+                        })
+                };
+                let dense_same = same(entry["dense"].as_object().unwrap());
+                let small_same = same(entry["small"].as_object().unwrap());
+                entry["dense_identical"] = json!(dense_same);
+                entry["small_identical"] = json!(small_same);
+                println!(
+                    "{} {:e}: dense identical {}, small identical {}",
+                    problem.id, rtol, entry["dense_identical"], entry["small_identical"]
+                );
+                rows.push(entry);
+            }
+        }
+        let out = json!({"schema": "vigilode-spd01-identity-v1", "rows": rows});
+        std::fs::write(&path, serde_json::to_string(&out).unwrap() + "\n").unwrap();
+        println!("wrote {}", path.display());
+    }
+
+    /// The option arms refuse an invalid configuration exactly as the legacy
+    /// arm does (the entry validation is kept).
+    #[test]
+    fn option_arms_keep_the_entry_validation() {
+        let problem = benchmark_problems()
+            .unwrap()
+            .into_iter()
+            .find(|p| p.id == "robertson")
+            .unwrap();
+        let output = OutputSchedule::new(vec![problem.t_span.0, problem.t_span.1]).unwrap();
+        let mut bad = adaptive_config(&problem, 1.0e-6);
+        bad.safety = f64::NAN;
+        for (_, options) in SETS {
+            let dense = integrate_rodas5p_fast_observed_with_options(
+                &problem.problem,
+                problem.t_span,
+                &problem.y0,
+                &bad,
+                &output,
+                options,
+            );
+            let small = run_small_full(&problem, &bad, &output, options);
+            assert!(dense.is_err() && small.is_err());
+        }
+        for arm in OPTION_ARMS {
+            assert!(known_arm(arm));
+            assert!(!ARMS.contains(&arm));
+        }
+        assert!(option_arm("rodas5p-fast").is_none());
+        assert!(option_arm("rodas5p-fast-small").is_none());
     }
 }

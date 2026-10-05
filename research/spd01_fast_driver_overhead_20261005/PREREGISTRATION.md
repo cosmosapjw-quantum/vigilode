@@ -135,3 +135,68 @@ its gates were reviewed by two independent reviewers before this registration (t
 removal thresholds instead of ratios, call-count gates instead of per-function Ir, the class-C disclosure, the
 scope restriction to drivers that land with the same cap). This node was registered before the synthesis of the
 full candidate set finished; it does not depend on that synthesis. No code of this node exists before this commit.
+
+## Amendment before the run (2026-10-05, before any measurement of this node)
+
+The CLI crate has no library target, so an integration test in `rodas5p-integrators` cannot reach the HIRES and
+Brusselator benchmark problems. The identity export of system 1 therefore lives in the CLI crate's unit tests
+(`crates/rodas5p-cli/src/stiff_benchmark.rs`, test `spd01::spd01_identity_export`, command
+`SPD01_IDENTITY=... cargo test --release -p rodas5p-cli --locked --bin rodas5p -- --ignored spd01_identity_export`),
+and `crates/rodas5p-integrators/tests/spd01_overhead.rs` covers the six INT-03 banded grid cases (export
+`SPD01_BANDED=...`). The property test writes its counts to `SPD01_PROPERTY=...` when run with that variable.
+`tools/spd01_overhead_check.py` takes `--banded` and `--property` for those two files. The gate items are
+unchanged. `tools/speed_profile.py` gained the `calls=` extraction (per-callee and per-pair call counts in the
+2-rep minus 1-rep difference) that gate items 3 and 4 need; the base export predates that addition and is used
+for gate item 2 only, as registered.
+
+---
+
+## Results (appended after the run; source commit recorded in the ledger row)
+
+Binary: release build with line tables, sha256 `4501744cebed74290e68e505fc5ec8cc4f6e2f7088c4ba646d3da2ac9987b931`, valgrind 3.22.0,
+`RAYON_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1`. Outputs: `IDENTITY.json` (35 dense + 21 small identity rows),
+`BANDED.json` (six INT-03 grid cases), `PROPERTY.json`, `PROFILE_DENSE.json`, `PROFILE_DENSE_B50.json`,
+`PROFILE_SMALL.json`, `RESULTS.json` (first checker run) and `RESULTS_CORRECTED.json` (see the disclosure).
+
+**Gate: PASS** (`RESULTS_CORRECTED.json`).
+
+| Gate item | Outcome |
+|---|---|
+| 1. Identity | **holds**: every option set equals the legacy driver bitwise on all 35 dense and 21 small points (all output states, step counts, reuses, clipped steps, counters, success) and on the six INT-03 banded grid cases (38-39 clipped landings each; `BandedWork` equal too) |
+| 2. Legacy reproduction | **holds**: the legacy arms reproduce the base export's work and final states on all eight (arm, problem) pairs; Ir per attempt within 0.0004-1.1 % (small HIRES 1.0108, the largest) |
+| 3. Controller prevalidated | **holds**: the `-val` arms hold exactly 1 `validate` call per integration (legacy: attempts + 1 = 470/46/211) and remove 170.6-171.2 Ir per attempt on every small problem in both drivers (predicted 160 + call overhead) |
+| 4. Fused landing | **holds**: the `-land` arms hold 1 `land_capped` and 2 `step_to` calls per attempt (legacy 3 and 6; call counts 469/938 vs 1407/2814 on van der Pol) and remove 629-678 Ir per attempt (predicted 615-690) |
+| 5. Property test | **holds**: 1,000,000 samples, 616,920 compared (184,565 with an interior due time), 0 class A and 0 class B discrepancies at any step size; 14 class C discrepancies out of 76,051 firings of the post-rejection shortening |
+
+Instructions per attempted step at rtol 1e-6 (same binary, legacy / `-val` / `-land` / `-ovh`):
+
+| Driver | Problem | legacy | `-val` | `-land` | `-ovh` | `-ovh` / legacy |
+|---|---|---|---|---|---|---|
+| small (n = 2) | van der Pol | 3,579.6 | 3,408.4 | 2,949.4 | **2,778.2** | 0.776 |
+| small (n = 3) | Robertson | 5,075.7 | 4,905.1 | 4,434.3 | **4,263.6** | 0.840 |
+| small (n = 8) | HIRES | 12,434.8 | 12,263.8 | 11,756.4 | **11,585.5** | 0.932 |
+| dense v2 | van der Pol | 9,134.7 | 8,963.5 | 8,505.5 | 8,334.3 | 0.912 |
+| dense v2 | Robertson | 11,435.4 | 11,264.7 | 10,794.9 | 10,624.1 | 0.929 |
+| dense v2 | HIRES | 20,567.2 | 20,396.3 | 19,889.9 | 19,718.9 | 0.959 |
+| dense v2 | Brusselator n = 100 | 395,271 | 395,101 | 394,028 | 393,857 | 0.996 |
+| dense v2 | Brusselator n = 400 | 3,811,738 | 3,811,567 | 3,808,623 | 3,808,452 | 0.999 |
+
+The two removals are additive to within a few instructions (`additive_check` in the results: the `-ovh` reduction equals
+the sum of the `-val` and `-land` reductions within 1 Ir per attempt). Cross-node, cross-binary comparison, not a gate:
+the small `-ovh` driver on van der Pol (2,778 Ir per attempt) is 0.943x the L-0030 count of Hairer's RODAS (2,947)
+and on HIRES (11,586) 1.265x (9,157).
+
+**Class C finding for the time-rule owners.** The 14 class C discrepancies are cases where the legacy composition
+re-extends a step that the post-rejection rule had shortened (the R4 rule: after a rejection the next represented
+step is strictly shorter) back to the span end because its end lay within the rounding residue of `tf`; the fused rule
+keeps the shortened step. The corpus never exercises this (`output_clipped_steps` and all trajectories identical), and
+it is not resolved here.
+
+**Disclosure.** The first checker run (`RESULTS.json`, verdict FAIL) failed gate items 2 and 4 for two reasons that
+were mine and not the measurement's: the dense profile command of this registration omitted `brusselator-1d-50`,
+which the base export contains, so item 2 found a missing row; and the checker counted the driver's one per-integration
+entry call of `step_to` as per-attempt work, which exceeded its 0.01 tolerance on Robertson's 45 attempts. The missing
+problem was then profiled with the same binary (`PROFILE_DENSE_B50.json`, four arms) and the checker was changed to
+compare integer call counts (`land_capped == attempts`, `step_to == 2 attempts + 1`) as the gate text says; no measured
+number changed and no threshold was moved. `RESULTS.json` is kept as written. Claim ceiling: counted instructions on
+these problems; no wall-time claim.

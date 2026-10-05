@@ -237,6 +237,16 @@ impl AdaptiveControllerState {
         self.last_rejected_trial
     }
 
+    /// A controller state after a rejected trial of `rejected`, for the
+    /// landing property test of speed research node SPD01.
+    #[cfg(test)]
+    pub(crate) fn with_last_rejected_trial(rejected: Option<f64>) -> Self {
+        Self {
+            last_rejected_trial: rejected,
+            ..Self::default()
+        }
+    }
+
     pub fn propose_factor(
         &self,
         config: &AdaptiveStepConfig,
@@ -245,6 +255,19 @@ impl AdaptiveControllerState {
         accepted: bool,
     ) -> CoreResult<f64> {
         config.validate()?;
+        self.propose_factor_prevalidated(config, error, estimator_order, accepted)
+    }
+
+    /// [`Self::propose_factor`] without the configuration check: the caller
+    /// must have validated `config` (speed research node SPD01; the fast
+    /// drivers validate once at entry). Same arithmetic, same result.
+    pub(crate) fn propose_factor_prevalidated(
+        &self,
+        config: &AdaptiveStepConfig,
+        error: f64,
+        estimator_order: usize,
+        accepted: bool,
+    ) -> CoreResult<f64> {
         if estimator_order == 0 {
             return Err(CoreError::InvalidInput(
                 "adaptive estimator order must be positive".into(),
@@ -328,9 +351,66 @@ pub fn adaptive_next_step_after_attempt(
     accepted: bool,
     forced_output_clipped: bool,
 ) -> CoreResult<f64> {
+    next_step_after_attempt_impl(
+        controller,
+        config,
+        requested_h,
+        trial_h,
+        error,
+        estimator_order,
+        accepted,
+        forced_output_clipped,
+        false,
+    )
+}
+
+/// [`adaptive_next_step_after_attempt`] for a caller that has validated
+/// `config` once (speed research node SPD01): the configuration check inside
+/// the factor proposal is skipped; the arithmetic is the same.
+#[allow(clippy::too_many_arguments)]
+pub(crate) fn adaptive_next_step_after_attempt_prevalidated(
+    controller: &mut AdaptiveControllerState,
+    config: &AdaptiveStepConfig,
+    requested_h: f64,
+    trial_h: f64,
+    error: f64,
+    estimator_order: usize,
+    accepted: bool,
+    forced_output_clipped: bool,
+) -> CoreResult<f64> {
+    next_step_after_attempt_impl(
+        controller,
+        config,
+        requested_h,
+        trial_h,
+        error,
+        estimator_order,
+        accepted,
+        forced_output_clipped,
+        true,
+    )
+}
+
+#[allow(clippy::too_many_arguments)]
+#[inline(always)]
+fn next_step_after_attempt_impl(
+    controller: &mut AdaptiveControllerState,
+    config: &AdaptiveStepConfig,
+    requested_h: f64,
+    trial_h: f64,
+    error: f64,
+    estimator_order: usize,
+    accepted: bool,
+    forced_output_clipped: bool,
+    prevalidated: bool,
+) -> CoreResult<f64> {
     controller.last_rejected_trial = (!accepted).then_some(trial_h);
     if accepted {
-        let factor = controller.propose_factor(config, error, estimator_order, true)?;
+        let factor = if prevalidated {
+            controller.propose_factor_prevalidated(config, error, estimator_order, true)?
+        } else {
+            controller.propose_factor(config, error, estimator_order, true)?
+        };
         if !forced_output_clipped {
             controller.record_acceptance(error)?;
             return Ok(trial_h * factor);
@@ -349,11 +429,43 @@ pub fn adaptive_next_step_after_attempt(
     }
     if error.is_finite() {
         controller.record_rejection(error)?;
-        Ok(trial_h
-            * controller.propose_factor(config, error.max(1.0e-16), estimator_order, false)?)
+        let factor = if prevalidated {
+            controller.propose_factor_prevalidated(
+                config,
+                error.max(1.0e-16),
+                estimator_order,
+                false,
+            )?
+        } else {
+            controller.propose_factor(config, error.max(1.0e-16), estimator_order, false)?
+        };
+        Ok(trial_h * factor)
     } else {
         Ok(trial_h * config.min_factor)
     }
+}
+
+/// [`rodas_next_step_after_attempt`] for a caller that has validated
+/// `config` once (speed research node SPD01).
+pub(crate) fn rodas_next_step_after_attempt_prevalidated(
+    controller: &mut AdaptiveControllerState,
+    config: &AdaptiveStepConfig,
+    requested_h: f64,
+    trial_h: f64,
+    error: f64,
+    accepted: bool,
+    forced_output_clipped: bool,
+) -> CoreResult<f64> {
+    adaptive_next_step_after_attempt_prevalidated(
+        controller,
+        config,
+        requested_h,
+        trial_h,
+        error,
+        RODAS5P_ADAPTIVE_METHOD.estimator.order,
+        accepted,
+        forced_output_clipped,
+    )
 }
 
 /// Compatibility wrapper for the protected RODAS5P embedded pair.
