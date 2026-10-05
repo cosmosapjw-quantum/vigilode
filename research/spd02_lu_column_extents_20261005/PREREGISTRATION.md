@@ -100,3 +100,46 @@ as one combined figure until the post-run attribution is measured. Two independe
 magnitude (1.4-1.65 M predicted at n = 400), required the swap-exercising contract set (the corpus never swaps
 rows on the Brusselators), the legacy-reproduction gate and the allocation guard. Registered before the full
 synthesis finished; depends on SPD01 only for the options struct. No code of this node exists before this commit.
+
+---
+
+## Results (appended after the run; source commit recorded in the ledger row)
+
+Binary: release build with line tables, sha256 `3fb97e4dd3f69879adbd85c08ab1dcc503732331d4eef939c770174de18e523c`, valgrind 3.22.0,
+`RAYON_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1`. Outputs: `IDENTITY.json` (35 rows), `PROFILE.json`, `RESULTS.json`.
+Contract tests `spd02_lu_column_extents` 2/2 (2,000 seeded matrices: banded 600, sparse 400, arrow 200, dense 200,
+forced swaps 200, degenerate 200, non-finite 200; 744 singular or non-finite outcomes, all equal in both variants),
+`rodas5p_fast_allocations` 2/2 (legacy 46 allocations per integration at both tolerances as recorded; column
+extents 47 = one `col_end` buffer per integration, step-independent).
+
+**Gate: FAIL** (items 4 and 5; items 1, 2, 3 and 6 hold; the kill condition on item 4 is met).
+
+| Gate item | Outcome |
+|---|---|
+| 1. Identity | **holds**: the column-extent LU equals the legacy driver bitwise on all 35 points (all output states, step counts, reuses, clipped steps, counters); both arms report the in-place LU on every problem |
+| 2. LU contract | **holds**: factors, pivots, extents, outcomes, error texts and solutions bitwise equal on all 2,000 matrices |
+| 3. Instructions | **holds**: colext / legacy = **0.517** at n = 400 (3,903,531 -> 2,018,884 Ir per attempt; gate <= 0.60, predicted 0.37-0.45) and **0.773** at n = 100 (403,214 -> 311,601; gate <= 0.80) |
+| 4. No small-problem regression | **fails**: 1.036 (van der Pol, n = 2), 1.048 (Robertson, n = 3), 1.062 (HIRES, n = 8) against <= 1.03 (predicted 0.99-1.02): the extent initialisation (two 8-wide scans per row plus the column-span update) and the `col_end` maintenance cost 330-1,300 Ir per attempt where the dense LU itself is cheap |
+| 5. Legacy reproduction | **fails at n = 400**: the legacy arm of the new binary reproduces the base export's work and final states on all five problems, but its Ir per attempt is 1.024x the base on `brusselator-1d-200` (3,903,531 vs 3,811,738; gate +-2 %); 1.020 at n = 100, 1.006-1.014 on the small problems. The legacy code path is unchanged; the policy match in `factor`/`solve` and the second variant of the LU changed the compiled legacy loops |
+| 6. Allocations | **holds** (see above) |
+
+Where the remaining 2.02 M instructions per attempt at n = 400 go (by-line attribution of the colext arm, kept in
+`RESULTS.json`): the `W = -J` copy (`rodas5p_fast.rs:450` and its zipped iterator lines, about 0.5 M), the two 8-wide
+extent scans (`:736`, `:750` and the `rchunks`/`chunks` iterator lines, about 0.5 M, i.e. the chunk test did not
+vectorize into fewer instructions than the plain scans), the stage work and the band-local LU; the two column scans
+that cost about 2.4 M in the legacy arm are gone (the pivot-search and zero-test lines fall from 8.3 % + 6.1 % + 4.1 %
+of 3.9 M to below 1 % of 2.0 M).
+
+What the FAIL means: the mechanism works where it was aimed (n = 400: 0.517x, bitwise identical, zero allocations per
+step), but the registered node also required no regression at n <= 8 and a legacy arm within 2 % of the base, and
+both were missed. The code stays opt-in behind `FastLuPolicy::ColumnExtents`; nothing was tuned after the run. Two
+follow-ups are preregisterable (not done here): a dimension or density threshold for the policy (the regression is
+confined to n <= 8, where the scans cost more than the loops they remove), and an attribution of the legacy arm's
++2.4 % to the policy branch versus code layout, which the by-line data in `RESULTS.json` can start.
+
+**Disclosure.** The LU contract test as first written compared the legacy row extents after factorization (updated
+by fill-in) with the column-extent variant's initial extents and failed on its first matrix; the comparison was
+corrected to the initial extents of both variants before the recorded run of the test (a test defect, not a code
+difference; the matrix in question is in the test's seed sequence). `tools/spd02_colext_check.py` was committed
+together with SPD01's recorded run before this node ran. Claim ceiling: counted instructions on these problems; no
+wall-time claim.

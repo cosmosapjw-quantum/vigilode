@@ -1,0 +1,750 @@
+{
+ "schema": "vigilode-spd02-check-v1",
+ "gate": {
+  "g1_identity": true,
+  "g2_lu_contract": true,
+  "g3_instructions": true,
+  "g4_small_problems": false,
+  "g5_legacy_reproduction": false,
+  "g6_allocations": true,
+  "kill": true
+ },
+ "ratios": {
+  "brusselator-1d-200": {
+   "legacy_ir_per_attempt": 3903530.695652174,
+   "colext_ir_per_attempt": 2018884.108695652,
+   "ratio": 0.5171943725059786,
+   "attempts": 92,
+   "same_work": true,
+   "deterministic": true
+  },
+  "brusselator-1d-50": {
+   "legacy_ir_per_attempt": 403213.97826086957,
+   "colext_ir_per_attempt": 311600.76086956525,
+   "ratio": 0.7727925559861597,
+   "attempts": 92,
+   "same_work": true,
+   "deterministic": true
+  },
+  "hires": {
+   "legacy_ir_per_attempt": 20861.8,
+   "colext_ir_per_attempt": 22158.314285714285,
+   "ratio": 1.0621477670054496,
+   "attempts": 210,
+   "same_work": true,
+   "deterministic": true
+  },
+  "van-der-pol-mu1000": {
+   "legacy_ir_per_attempt": 9186.091684434969,
+   "colext_ir_per_attempt": 9513.590618336886,
+   "ratio": 1.0356516073595081,
+   "attempts": 469,
+   "same_work": true,
+   "deterministic": true
+  },
+  "robertson": {
+   "legacy_ir_per_attempt": 11524.91111111111,
+   "colext_ir_per_attempt": 12077.977777777778,
+   "ratio": 1.0479888010705314,
+   "attempts": 45,
+   "same_work": true,
+   "deterministic": true
+  }
+ },
+ "g1_rows": [
+  {
+   "problem": "robertson",
+   "rtol": 0.001,
+   "identical": true
+  },
+  {
+   "problem": "robertson",
+   "rtol": 0.0001,
+   "identical": true
+  },
+  {
+   "problem": "robertson",
+   "rtol": 1e-05,
+   "identical": true
+  },
+  {
+   "problem": "robertson",
+   "rtol": 1e-06,
+   "identical": true
+  },
+  {
+   "problem": "robertson",
+   "rtol": 1e-07,
+   "identical": true
+  },
+  {
+   "problem": "robertson",
+   "rtol": 1e-08,
+   "identical": true
+  },
+  {
+   "problem": "robertson",
+   "rtol": 1e-09,
+   "identical": true
+  },
+  {
+   "problem": "hires",
+   "rtol": 0.001,
+   "identical": true
+  },
+  {
+   "problem": "hires",
+   "rtol": 0.0001,
+   "identical": true
+  },
+  {
+   "problem": "hires",
+   "rtol": 1e-05,
+   "identical": true
+  },
+  {
+   "problem": "hires",
+   "rtol": 1e-06,
+   "identical": true
+  },
+  {
+   "problem": "hires",
+   "rtol": 1e-07,
+   "identical": true
+  },
+  {
+   "problem": "hires",
+   "rtol": 1e-08,
+   "identical": true
+  },
+  {
+   "problem": "hires",
+   "rtol": 1e-09,
+   "identical": true
+  },
+  {
+   "problem": "van-der-pol-mu1000",
+   "rtol": 0.001,
+   "identical": true
+  },
+  {
+   "problem": "van-der-pol-mu1000",
+   "rtol": 0.0001,
+   "identical": true
+  },
+  {
+   "problem": "van-der-pol-mu1000",
+   "rtol": 1e-05,
+   "identical": true
+  },
+  {
+   "problem": "van-der-pol-mu1000",
+   "rtol": 1e-06,
+   "identical": true
+  },
+  {
+   "problem": "van-der-pol-mu1000",
+   "rtol": 1e-07,
+   "identical": true
+  },
+  {
+   "problem": "van-der-pol-mu1000",
+   "rtol": 1e-08,
+   "identical": true
+  },
+  {
+   "problem": "van-der-pol-mu1000",
+   "rtol": 1e-09,
+   "identical": true
+  },
+  {
+   "problem": "brusselator-1d-50",
+   "rtol": 0.001,
+   "identical": true
+  },
+  {
+   "problem": "brusselator-1d-50",
+   "rtol": 0.0001,
+   "identical": true
+  },
+  {
+   "problem": "brusselator-1d-50",
+   "rtol": 1e-05,
+   "identical": true
+  },
+  {
+   "problem": "brusselator-1d-50",
+   "rtol": 1e-06,
+   "identical": true
+  },
+  {
+   "problem": "brusselator-1d-50",
+   "rtol": 1e-07,
+   "identical": true
+  },
+  {
+   "problem": "brusselator-1d-50",
+   "rtol": 1e-08,
+   "identical": true
+  },
+  {
+   "problem": "brusselator-1d-50",
+   "rtol": 1e-09,
+   "identical": true
+  },
+  {
+   "problem": "brusselator-1d-200",
+   "rtol": 0.001,
+   "identical": true
+  },
+  {
+   "problem": "brusselator-1d-200",
+   "rtol": 0.0001,
+   "identical": true
+  },
+  {
+   "problem": "brusselator-1d-200",
+   "rtol": 1e-05,
+   "identical": true
+  },
+  {
+   "problem": "brusselator-1d-200",
+   "rtol": 1e-06,
+   "identical": true
+  },
+  {
+   "problem": "brusselator-1d-200",
+   "rtol": 1e-07,
+   "identical": true
+  },
+  {
+   "problem": "brusselator-1d-200",
+   "rtol": 1e-08,
+   "identical": true
+  },
+  {
+   "problem": "brusselator-1d-200",
+   "rtol": 1e-09,
+   "identical": true
+  }
+ ],
+ "g5_rows": [
+  {
+   "problem": "brusselator-1d-200",
+   "same_work": true,
+   "base_ir_per_attempt": 3812137.445652174,
+   "new_ir_per_attempt": 3903530.695652174,
+   "ratio": 1.0239742798634492,
+   "ok": false
+  },
+  {
+   "problem": "brusselator-1d-50",
+   "same_work": true,
+   "base_ir_per_attempt": 395370.72826086957,
+   "new_ir_per_attempt": 403213.97826086957,
+   "ratio": 1.0198377103800789,
+   "ok": true
+  },
+  {
+   "problem": "hires",
+   "same_work": true,
+   "base_ir_per_attempt": 20576.204761904763,
+   "new_ir_per_attempt": 20861.8,
+   "ratio": 1.0138798792780286,
+   "ok": true
+  },
+  {
+   "problem": "van-der-pol-mu1000",
+   "same_work": true,
+   "base_ir_per_attempt": 9134.880597014926,
+   "new_ir_per_attempt": 9186.091684434969,
+   "ratio": 1.005606103645928,
+   "ok": true
+  },
+  {
+   "problem": "robertson",
+   "same_work": true,
+   "base_ir_per_attempt": 11437.133333333333,
+   "new_ir_per_attempt": 11524.91111111111,
+   "ratio": 1.0076748058468419,
+   "ok": true
+  }
+ ],
+ "line_attribution_rodas5p_fast_rs": {
+  "brusselator-1d-200": {
+   "rodas5p-fast": [
+    {
+     "file": "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+     "line": 0,
+     "ir": 39812575,
+     "share": 0.11085999167799104
+    },
+    {
+     "file": "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+     "line": 682,
+     "ir": 29917112,
+     "share": 0.08330560852568632
+    },
+    {
+     "file": "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+     "line": 656,
+     "ir": 22024800,
+     "share": 0.06132909375265019
+    },
+    {
+     "file": "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+     "line": 655,
+     "ir": 14683200,
+     "share": 0.040886062501766796
+    },
+    {
+     "file": "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+     "line": 450,
+     "ir": 7360000,
+     "share": 0.020494266918178846
+    },
+    {
+     "file": "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+     "line": 459,
+     "ir": 7305076,
+     "share": 0.020341328451301936
+    },
+    {
+     "file": "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+     "line": 580,
+     "ir": 1545600,
+     "share": 0.004303796052817557
+    },
+    {
+     "file": "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+     "line": 595,
+     "ir": 1545600,
+     "share": 0.004303796052817557
+    },
+    {
+     "file": "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+     "line": 721,
+     "ir": 1485984,
+     "share": 0.004137792490780309
+    },
+    {
+     "file": "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+     "line": 722,
+     "ir": 1472000,
+     "share": 0.0040988533836357685
+    }
+   ],
+   "rodas5p-fast-colext": [
+    {
+     "file": "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+     "line": 450,
+     "ir": 7360000,
+     "share": 0.03962585056538282
+    },
+    {
+     "file": "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+     "line": 750,
+     "ir": 5576304,
+     "share": 0.030022525680862295
+    },
+    {
+     "file": "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+     "line": 736,
+     "ir": 5576304,
+     "share": 0.030022525680862295
+    },
+    {
+     "file": "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+     "line": 0,
+     "ir": 3656025,
+     "share": 0.019683845151264093
+    },
+    {
+     "file": "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+     "line": 751,
+     "ir": 1858768,
+     "share": 0.010007508560287431
+    },
+    {
+     "file": "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+     "line": 737,
+     "ir": 1858768,
+     "share": 0.010007508560287431
+    },
+    {
+     "file": "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+     "line": 580,
+     "ir": 1545600,
+     "share": 0.008321428618730392
+    },
+    {
+     "file": "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+     "line": 595,
+     "ir": 1545600,
+     "share": 0.008321428618730392
+    }
+   ]
+  },
+  "brusselator-1d-50": {
+   "rodas5p-fast": [
+    {
+     "file": "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+     "line": 0,
+     "ir": 3063175,
+     "share": 0.08257496572512502
+    },
+    {
+     "file": "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+     "line": 682,
+     "ir": 1958312,
+     "share": 0.05279082856157452
+    },
+    {
+     "file": "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+     "line": 656,
+     "ir": 1366200,
+     "share": 0.036829080341040196
+    },
+    {
+     "file": "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+     "line": 655,
+     "ir": 910800,
+     "share": 0.02455272022736013
+    },
+    {
+     "file": "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+     "line": 450,
+     "ir": 460000,
+     "share": 0.012400363751191985
+    },
+    {
+     "file": "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+     "line": 459,
+     "ir": 446476,
+     "share": 0.01203579305690694
+    },
+    {
+     "file": "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+     "line": 580,
+     "ir": 386400,
+     "share": 0.010416305551001268
+    },
+    {
+     "file": "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+     "line": 595,
+     "ir": 386400,
+     "share": 0.010416305551001268
+    },
+    {
+     "file": "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+     "line": 721,
+     "ir": 381984,
+     "share": 0.010297262058989825
+    },
+    {
+     "file": "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+     "line": 722,
+     "ir": 368000,
+     "share": 0.009920291000953587
+    }
+   ],
+   "rodas5p-fast-colext": [
+    {
+     "file": "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+     "line": 0,
+     "ir": 923625,
+     "share": 0.032218798650865604
+    },
+    {
+     "file": "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+     "line": 450,
+     "ir": 460000,
+     "share": 0.016046173911921157
+    },
+    {
+     "file": "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+     "line": 580,
+     "ir": 386400,
+     "share": 0.01347878608601377
+    },
+    {
+     "file": "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+     "line": 595,
+     "ir": 386400,
+     "share": 0.01347878608601377
+    },
+    {
+     "file": "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+     "line": 721,
+     "ir": 381984,
+     "share": 0.013324742816459328
+    },
+    {
+     "file": "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+     "line": 722,
+     "ir": 368000,
+     "share": 0.012836939129536925
+    },
+    {
+     "file": "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+     "line": 750,
+     "ir": 358800,
+     "share": 0.012516015651298501
+    },
+    {
+     "file": "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+     "line": 736,
+     "ir": 358800,
+     "share": 0.012516015651298501
+    },
+    {
+     "file": "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+     "line": 713,
+     "ir": 294400,
+     "share": 0.01026955130362954
+    }
+   ]
+  }
+ },
+ "categories_by_file": {
+  "brusselator-1d-200": {
+   "rodas5p-fast": {
+    "rust-std": {
+     "ir": 212940474,
+     "share": 0.5929427869347177
+    },
+    "driver-fast": {
+     "ir": 136820921,
+     "share": 0.38098430366373115
+    },
+    "problem-user-code": {
+     "ir": 8478920,
+     "share": 0.023609952399169153
+    },
+    "glibc-string": {
+     "ir": 734532,
+     "share": 0.002045338976622791
+    },
+    "output-and-clock": {
+     "ir": 71368,
+     "share": 0.00019872755997507987
+    },
+    "adaptive-control": {
+     "ir": 29169,
+     "share": 8.122245539896179e-05
+    },
+    "glibc-malloc": {
+     "ir": 19525,
+     "share": 5.4368282823022006e-05
+    },
+    "problem-wrapper": {
+     "ir": 15750,
+     "share": 4.385661738604848e-05
+    },
+    "glibc-libm": {
+     "ir": 11776,
+     "share": 3.2790827069086154e-05
+    },
+    "integrators-other": {
+     "ir": 1535,
+     "share": 4.274279853179963e-06
+    },
+    "core-matrix-operator": {
+     "ir": 418,
+     "share": 1.1639407026900486e-06
+    },
+    "other": {
+     "ir": 266,
+     "share": 7.406895380754854e-07
+    },
+    "glibc-other": {
+     "ir": 165,
+     "share": 4.5945027737765075e-07
+    },
+    "core-other": {
+     "ir": 5,
+     "share": 1.3922735678110629e-08
+    }
+   },
+   "rodas5p-fast-colext": {
+    "rust-std": {
+     "ir": 129460445,
+     "share": 0.6970081858285274
+    },
+    "driver-fast": {
+     "ir": 46613908,
+     "share": 0.2509668142223509
+    },
+    "problem-user-code": {
+     "ir": 8478933,
+     "share": 0.04565012663205069
+    },
+    "glibc-string": {
+     "ir": 1033733,
+     "share": 0.0055655637747968585
+    },
+    "output-and-clock": {
+     "ir": 71368,
+     "share": 0.00038424153575410884
+    },
+    "adaptive-control": {
+     "ir": 29169,
+     "share": 0.00015704435260076787
+    },
+    "glibc-malloc": {
+     "ir": 19854,
+     "share": 0.00010689288547895523
+    },
+    "problem-wrapper": {
+     "ir": 15750,
+     "share": 8.479716663108416e-05
+    },
+    "glibc-libm": {
+     "ir": 11776,
+     "share": 6.340136090461251e-05
+    },
+    "integrators-other": {
+     "ir": 1534,
+     "share": 8.258974832513212e-06
+    },
+    "core-matrix-operator": {
+     "ir": 418,
+     "share": 2.2504898826535353e-06
+    },
+    "other": {
+     "ir": 280,
+     "share": 1.5075051845526074e-06
+    },
+    "glibc-other": {
+     "ir": 165,
+     "share": 8.883512694685007e-07
+    },
+    "core-other": {
+     "ir": 5,
+     "share": 2.6919735438439414e-08
+    }
+   }
+  },
+  "brusselator-1d-50": {
+   "rodas5p-fast": {
+    "rust-std": {
+     "ir": 22308135,
+     "share": 0.6013673665449939
+    },
+    "driver-fast": {
+     "ir": 12193121,
+     "share": 0.3286937731789082
+    },
+    "problem-user-code": {
+     "ir": 2132720,
+     "share": 0.057492399520526455
+    },
+    "glibc-string": {
+     "ir": 315737,
+     "share": 0.008511420977630661
+    },
+    "output-and-clock": {
+     "ir": 71368,
+     "share": 0.001923889478684934
+    },
+    "adaptive-control": {
+     "ir": 29169,
+     "share": 0.0007863178483880849
+    },
+    "problem-wrapper": {
+     "ir": 15750,
+     "share": 0.0004245776719158125
+    },
+    "glibc-malloc": {
+     "ir": 15556,
+     "share": 0.00041934795329030985
+    },
+    "glibc-libm": {
+     "ir": 11776,
+     "share": 0.0003174493120305148
+    },
+    "integrators-other": {
+     "ir": 1535,
+     "share": 4.1379474691477604e-05
+    },
+    "core-matrix-operator": {
+     "ir": 418,
+     "share": 1.1268156626083152e-05
+    },
+    "other": {
+     "ir": 270,
+     "share": 7.278474375699643e-06
+    },
+    "glibc-other": {
+     "ir": 126,
+     "share": 3.3966213753265002e-06
+    },
+    "core-other": {
+     "ir": 5,
+     "share": 1.3478656251295635e-07
+    }
+   },
+   "rodas5p-fast-colext": {
+    "rust-std": {
+     "ir": 18840874,
+     "share": 0.6572259583838991
+    },
+    "driver-fast": {
+     "ir": 7226500,
+     "share": 0.25208190385760487
+    },
+    "problem-user-code": {
+     "ir": 2132733,
+     "share": 0.07439609701237683
+    },
+    "glibc-string": {
+     "ir": 320901,
+     "share": 0.011193985335890024
+    },
+    "output-and-clock": {
+     "ir": 71368,
+     "share": 0.0024895289994478023
+    },
+    "adaptive-control": {
+     "ir": 29169,
+     "share": 0.0010175018409496264
+    },
+    "glibc-malloc": {
+     "ir": 15832,
+     "share": 0.0005522674464642081
+    },
+    "problem-wrapper": {
+     "ir": 15750,
+     "share": 0.0005494070415494744
+    },
+    "glibc-libm": {
+     "ir": 11776,
+     "share": 0.0004107820521451816
+    },
+    "integrators-other": {
+     "ir": 1534,
+     "share": 5.351050169758055e-05
+    },
+    "core-matrix-operator": {
+     "ir": 418,
+     "share": 1.4581088467789224e-05
+    },
+    "other": {
+     "ir": 284,
+     "share": 9.906768241273061e-06
+    },
+    "glibc-other": {
+     "ir": 126,
+     "share": 4.395256332395795e-06
+    },
+    "core-other": {
+     "ir": 5,
+     "share": 1.7441493382522996e-07
+    }
+   }
+  }
+ },
+ "binary_sha256": "3fb97e4dd3f69879adbd85c08ab1dcc503732331d4eef939c770174de18e523c",
+ "valgrind": "valgrind-3.22.0",
+ "verdict": "FAIL"
+}

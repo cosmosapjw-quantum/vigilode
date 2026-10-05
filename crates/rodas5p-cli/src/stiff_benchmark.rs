@@ -14,8 +14,8 @@ use anyhow::Result;
 use rodas5p_core::{CoreResult, DenseMatrix, LinearMethod, LinearSolverConfig, WorkCounters};
 use rodas5p_integrators::{
     AdaptiveObservedIntegrationResult, AdaptiveRunDiagnostics, AdaptiveStepConfig, BdfConfig,
-    IntegrationMethod, NewtonTolerancePolicy, OdeProblem, OutputSchedule, RadauConfig,
-    Rodas5pFastOptions, SmallProblem, integrate_adaptive_observed_with_config,
+    FastLuPolicy, IntegrationMethod, NewtonTolerancePolicy, OdeProblem, OutputSchedule,
+    RadauConfig, Rodas5pFastOptions, SmallProblem, integrate_adaptive_observed_with_config,
     integrate_bdf_adaptive_observed, integrate_radau_adaptive_observed,
     integrate_rodas5p_fast_observed, integrate_rodas5p_fast_observed_with_options,
     integrate_rodas5p_fast_small_observed, integrate_rodas5p_fast_small_observed_with_options,
@@ -49,29 +49,37 @@ pub fn option_arm(arm: &str) -> Option<(bool, Rodas5pFastOptions)> {
     let options = match suffix {
         "val" => Rodas5pFastOptions {
             prevalidated_controller: true,
-            fused_landing: false,
+            ..Rodas5pFastOptions::default()
         },
         "land" => Rodas5pFastOptions {
-            prevalidated_controller: false,
             fused_landing: true,
+            ..Rodas5pFastOptions::default()
         },
         "ovh" => Rodas5pFastOptions {
             prevalidated_controller: true,
             fused_landing: true,
+            ..Rodas5pFastOptions::default()
+        },
+        // Speed research node SPD02: the column-extent LU of the dense
+        // driver (no small variant).
+        "colext" if !small => Rodas5pFastOptions {
+            lu_policy: FastLuPolicy::ColumnExtents,
+            ..Rodas5pFastOptions::default()
         },
         _ => return None,
     };
     Some((small, options))
 }
 
-/// Every SPD01 option arm, dense then small.
-pub const OPTION_ARMS: [&str; 6] = [
+/// Every option arm: SPD01's six (dense then small) and SPD02's one.
+pub const OPTION_ARMS: [&str; 7] = [
     "rodas5p-fast-val",
     "rodas5p-fast-land",
     "rodas5p-fast-ovh",
     "rodas5p-fast-small-val",
     "rodas5p-fast-small-land",
     "rodas5p-fast-small-ovh",
+    "rodas5p-fast-colext",
 ];
 
 pub const ARMS: [&str; 5] = [
@@ -939,6 +947,7 @@ mod spd01 {
             Rodas5pFastOptions {
                 prevalidated_controller: false,
                 fused_landing: false,
+                lu_policy: FastLuPolicy::Legacy,
             },
         ),
         (
@@ -946,6 +955,7 @@ mod spd01 {
             Rodas5pFastOptions {
                 prevalidated_controller: true,
                 fused_landing: false,
+                lu_policy: FastLuPolicy::Legacy,
             },
         ),
         (
@@ -953,6 +963,7 @@ mod spd01 {
             Rodas5pFastOptions {
                 prevalidated_controller: false,
                 fused_landing: true,
+                lu_policy: FastLuPolicy::Legacy,
             },
         ),
         (
@@ -960,6 +971,7 @@ mod spd01 {
             Rodas5pFastOptions {
                 prevalidated_controller: true,
                 fused_landing: true,
+                lu_policy: FastLuPolicy::Legacy,
             },
         ),
     ];
@@ -1072,5 +1084,87 @@ mod spd01 {
         }
         assert!(option_arm("rodas5p-fast").is_none());
         assert!(option_arm("rodas5p-fast-small").is_none());
+    }
+
+    /// Identity export of speed research node SPD02
+    /// (`research/spd02_lu_column_extents_20261005`): the column-extent LU
+    /// against the legacy dense driver on the five benchmark problems at
+    /// the seven tolerances.
+    #[test]
+    #[ignore = "identity export of research/spd02_lu_column_extents_20261005; release build; set SPD02_IDENTITY"]
+    fn spd02_identity_export() {
+        let Ok(path) = std::env::var("SPD02_IDENTITY") else {
+            println!("SPD02_IDENTITY not set: nothing written");
+            return;
+        };
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../..")
+            .join(path);
+        assert!(
+            !path.exists(),
+            "immutable output exists: {}",
+            path.display()
+        );
+        let colext = Rodas5pFastOptions {
+            lu_policy: FastLuPolicy::ColumnExtents,
+            ..Rodas5pFastOptions::default()
+        };
+        let mut rows = Vec::new();
+        for problem in benchmark_problems().unwrap() {
+            for rtol in TOLERANCES {
+                let adaptive = adaptive_config(&problem, rtol);
+                let output = OutputSchedule::new(vec![problem.t_span.0, problem.t_span.1]).unwrap();
+                let legacy = integrate_rodas5p_fast_observed(
+                    &problem.problem,
+                    problem.t_span,
+                    &problem.y0,
+                    &adaptive,
+                    &output,
+                )
+                .unwrap();
+                let fast = integrate_rodas5p_fast_observed_with_options(
+                    &problem.problem,
+                    problem.t_span,
+                    &problem.y0,
+                    &adaptive,
+                    &output,
+                    colext,
+                )
+                .unwrap();
+                let a = row(
+                    &legacy.observed,
+                    legacy.attempts,
+                    legacy.accepted_steps,
+                    legacy.rejected_steps,
+                    legacy.jacobian_reuses,
+                    legacy.driver,
+                );
+                let b = row(
+                    &fast.observed,
+                    fast.attempts,
+                    fast.accepted_steps,
+                    fast.rejected_steps,
+                    fast.jacobian_reuses,
+                    fast.driver,
+                );
+                let (mut a0, mut b0) = (a.clone(), b.clone());
+                a0["driver"] = Value::Null;
+                b0["driver"] = Value::Null;
+                let identical = a0 == b0;
+                println!(
+                    "{} {:e}: identical {identical}, lu {:?} / {:?}",
+                    problem.id, rtol, legacy.lu, fast.lu
+                );
+                rows.push(
+                    json!({"problem": problem.id, "rtol": rtol, "identical": identical,
+                                 "legacy_lu": format!("{:?}", legacy.lu),
+                                 "colext_lu": format!("{:?}", fast.lu),
+                                 "legacy": a, "colext": b}),
+                );
+            }
+        }
+        let out = json!({"schema": "vigilode-spd02-identity-v1", "rows": rows});
+        std::fs::write(&path, serde_json::to_string(&out).unwrap() + "\n").unwrap();
+        println!("wrote {}", path.display());
     }
 }

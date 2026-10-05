@@ -10,8 +10,9 @@ use std::cell::Cell;
 
 use rodas5p_core::{LinearMethod, LinearSolverConfig};
 use rodas5p_integrators::{
-    AdaptiveStepConfig, IntegrationMethod, OutputSchedule, integrate_adaptive_observed_with_config,
-    integrate_rodas5p_fast_observed, robertson_problem,
+    AdaptiveStepConfig, FastLuPolicy, IntegrationMethod, OutputSchedule, Rodas5pFastOptions,
+    integrate_adaptive_observed_with_config, integrate_rodas5p_fast_observed,
+    integrate_rodas5p_fast_observed_with_options, robertson_problem,
 };
 
 struct Counting;
@@ -113,4 +114,53 @@ fn a_fast_step_allocates_nothing() {
     eprintln!(
         "fast: {runs:?} (attempts, allocations); sequential: {sequential_rate:.1} per attempt"
     );
+}
+
+/// Speed research node SPD02: the column-extent LU allocates nothing per
+/// step either, and the legacy driver's count is unchanged by its presence.
+#[test]
+fn a_column_extent_step_allocates_nothing() {
+    let (problem, y0) = robertson_problem().unwrap();
+    let output = OutputSchedule::new(vec![0.0, 40.0]).unwrap();
+    let colext = Rodas5pFastOptions {
+        lu_policy: FastLuPolicy::ColumnExtents,
+        ..Rodas5pFastOptions::default()
+    };
+    integrate_rodas5p_fast_observed(&problem, (0.0, 40.0), &y0, &config(1.0e-6), &output).unwrap();
+    let mut legacy = Vec::new();
+    let mut extents = Vec::new();
+    for rtol in [1.0e-6, 1.0e-9] {
+        let (fast, allocations) = allocations_during(|| {
+            integrate_rodas5p_fast_observed(&problem, (0.0, 40.0), &y0, &config(rtol), &output)
+                .unwrap()
+        });
+        legacy.push((fast.attempts, allocations));
+        let (fast, allocations) = allocations_during(|| {
+            integrate_rodas5p_fast_observed_with_options(
+                &problem,
+                (0.0, 40.0),
+                &y0,
+                &config(rtol),
+                &output,
+                colext,
+            )
+            .unwrap()
+        });
+        extents.push((fast.attempts, allocations));
+    }
+    assert_eq!(
+        legacy[0].1, legacy[1].1,
+        "legacy allocations depend on the step count: {legacy:?}"
+    );
+    assert_eq!(
+        extents[0].1, extents[1].1,
+        "column-extent allocations depend on the step count: {extents:?}"
+    );
+    assert_eq!(legacy[0].0, extents[0].0);
+    assert_eq!(
+        extents[0].1,
+        legacy[0].1 + 1,
+        "one col_end buffer per integration: {legacy:?} {extents:?}"
+    );
+    eprintln!("legacy {legacy:?}, column extents {extents:?} (attempts, allocations)");
 }

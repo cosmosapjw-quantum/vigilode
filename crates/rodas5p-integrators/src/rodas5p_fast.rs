@@ -63,24 +63,52 @@ pub struct Rodas5pFastOptions {
     /// instead of re-landing it in the output collector, and skip the
     /// collector's finiteness rescan of a state the driver has checked.
     pub fused_landing: bool,
+    /// The LU of the dense-storage path (speed research node SPD02,
+    /// `research/spd02_lu_column_extents_20261005`); the banded and small
+    /// drivers ignore it.
+    pub lu_policy: FastLuPolicy,
+}
+
+/// The in-place LU variant of the dense-storage fast driver.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum FastLuPolicy {
+    /// v2: row extents and zero-multiplier skipping, full column scans.
+    #[default]
+    Legacy,
+    /// v2 plus exact column extents: the pivot search and the elimination
+    /// run over the rows that can hold a nonzero in the column.
+    ColumnExtents,
 }
 
 impl Rodas5pFastOptions {
     /// The driver identifier of the dense (`banded == false`) or banded
     /// pipeline under these options.
     pub fn driver_id(&self, banded: bool) -> &'static str {
-        match (banded, self.prevalidated_controller, self.fused_landing) {
-            (false, false, false) => RODAS5P_FAST_DRIVER_ID,
-            (false, true, false) => "rodas5p-fast-transformed-v2-val",
-            (false, false, true) => "rodas5p-fast-transformed-v2-land",
-            (false, true, true) => "rodas5p-fast-transformed-v2-ovh",
-            (true, false, false) => RODAS5P_FAST_BANDED_DRIVER_ID,
-            (true, true, false) => "rodas5p-fast-banded-v1-val",
-            (true, false, true) => "rodas5p-fast-banded-v1-land",
-            (true, true, true) => "rodas5p-fast-banded-v1-ovh",
+        let colext = !banded && self.lu_policy == FastLuPolicy::ColumnExtents;
+        match (
+            banded,
+            colext,
+            self.prevalidated_controller,
+            self.fused_landing,
+        ) {
+            (false, false, false, false) => RODAS5P_FAST_DRIVER_ID,
+            (false, false, true, false) => "rodas5p-fast-transformed-v2-val",
+            (false, false, false, true) => "rodas5p-fast-transformed-v2-land",
+            (false, false, true, true) => "rodas5p-fast-transformed-v2-ovh",
+            (false, true, false, false) => RODAS5P_FAST_COLEXT_DRIVER_ID,
+            (false, true, true, false) => "rodas5p-fast-transformed-v3-colext-val",
+            (false, true, false, true) => "rodas5p-fast-transformed-v3-colext-land",
+            (false, true, true, true) => "rodas5p-fast-transformed-v3-colext-ovh",
+            (true, _, false, false) => RODAS5P_FAST_BANDED_DRIVER_ID,
+            (true, _, true, false) => "rodas5p-fast-banded-v1-val",
+            (true, _, false, true) => "rodas5p-fast-banded-v1-land",
+            (true, _, true, true) => "rodas5p-fast-banded-v1-ovh",
         }
     }
 }
+
+/// Identifier of the dense-storage driver with column extents (SPD02).
+pub const RODAS5P_FAST_COLEXT_DRIVER_ID: &str = "rodas5p-fast-transformed-v3-colext";
 
 /// Writes the Jacobian's band at `(t, y)`: row `i`, column `j`
 /// (`i - lower <= j <= i + upper`) at `i (lower + upper + 1) + (j + lower - i)`.
@@ -232,6 +260,9 @@ pub enum Rodas5pFastLu {
     /// Row-major partial-pivoting LU in the workspace; zero multipliers skip
     /// their row update.
     InPlaceZeroSkipping,
+    /// [`Self::InPlaceZeroSkipping`] with exact column extents (speed
+    /// research node SPD02): the same factors, pivots and row extents.
+    InPlaceColumnExtents,
     /// faer's blocked partial-pivoting LU (one allocation per factorization).
     Faer,
     /// The banded pipeline of [`integrate_rodas5p_fast_banded_observed`].
@@ -266,6 +297,10 @@ struct Workspace {
     /// (U part) and the first stored multiplier (L part; `n` for none).
     row_end: Vec<usize>,
     l_start: Vec<usize>,
+    /// Per column of the in-place factors: the last row that can hold a
+    /// nonzero (SPD02; empty under the legacy policy).
+    col_end: Vec<usize>,
+    lu_policy: FastLuPolicy,
     /// Nonzero entries of the strictly lower `a` and `C` rows and of
     /// `b_code`, in ascending column order.
     a_nonzero: Vec<Vec<(usize, f64)>>,
@@ -310,8 +345,13 @@ impl Workspace {
         Ok(work)
     }
 
-    fn new(n: usize) -> CoreResult<Self> {
-        Self::with_dense_size(n, n)
+    fn new(n: usize, lu_policy: FastLuPolicy) -> CoreResult<Self> {
+        let mut work = Self::with_dense_size(n, n)?;
+        work.lu_policy = lu_policy;
+        if lu_policy == FastLuPolicy::ColumnExtents {
+            work.col_end = vec![0; n];
+        }
+        Ok(work)
     }
 
     /// `dense` is the order of the dense `W` and `J` buffers (0 for none).
@@ -336,6 +376,8 @@ impl Workspace {
         Ok(Self {
             row_end: vec![0; n],
             l_start: vec![n; n],
+            col_end: Vec::new(),
+            lu_policy: FastLuPolicy::Legacy,
             a_nonzero: (0..s).map(|i| nonzero_row(&coeffs.a, i)).collect(),
             c_nonzero: (0..s).map(|i| nonzero_row(&coeffs.c_matrix, i)).collect(),
             b_nonzero: coeffs
@@ -378,7 +420,10 @@ impl Workspace {
         let density = nonzero as f64 / (n * n) as f64;
         self.lu_kind =
             if n <= RODAS5P_FAST_SMALL_LU_MAX || density <= RODAS5P_FAST_SPARSE_DENSITY_MAX {
-                Rodas5pFastLu::InPlaceZeroSkipping
+                match self.lu_policy {
+                    FastLuPolicy::Legacy => Rodas5pFastLu::InPlaceZeroSkipping,
+                    FastLuPolicy::ColumnExtents => Rodas5pFastLu::InPlaceColumnExtents,
+                }
             } else {
                 self.w_dense = DenseMatrix::zeros(n, n);
                 Rodas5pFastLu::Faer
@@ -395,7 +440,9 @@ impl Workspace {
         }
         let jacobian = &self.jacobian;
         let target = match self.lu_kind {
-            Rodas5pFastLu::InPlaceZeroSkipping => self.w.as_mut_slice(),
+            Rodas5pFastLu::InPlaceZeroSkipping | Rodas5pFastLu::InPlaceColumnExtents => {
+                self.w.as_mut_slice()
+            }
             Rodas5pFastLu::Faer => self.w_dense.as_mut_slice(),
             Rodas5pFastLu::Banded => unreachable!("banded factors are formed above"),
         };
@@ -421,6 +468,23 @@ impl Workspace {
                     &mut self.l_start,
                 )
             }
+            Rodas5pFastLu::InPlaceColumnExtents => {
+                extents_of(
+                    &self.w,
+                    n,
+                    &mut self.row_end,
+                    &mut self.l_start,
+                    &mut self.col_end,
+                );
+                lu_in_place_col_extents(
+                    &mut self.w,
+                    n,
+                    &mut self.pivots,
+                    &mut self.row_end,
+                    &mut self.l_start,
+                    &mut self.col_end,
+                )
+            }
             Rodas5pFastLu::Faer => {
                 self.faer_lu = Some(LuFactorization::new(&self.w_dense)?);
                 Ok(())
@@ -434,7 +498,7 @@ impl Workspace {
         counters.linear_solves += 1;
         counters.direct_solve_calls += 1;
         match self.lu_kind {
-            Rodas5pFastLu::InPlaceZeroSkipping => {
+            Rodas5pFastLu::InPlaceZeroSkipping | Rodas5pFastLu::InPlaceColumnExtents => {
                 lu_solve_in_place(
                     &self.w,
                     self.n,
@@ -664,6 +728,188 @@ fn lu_solve_in_place(
     }
 }
 
+/// First index of a nonzero in `row`, tested eight entries at a time so
+/// the chunk test can vectorize; the index equals `row.iter().position(..)`.
+fn first_nonzero(row: &[f64]) -> Option<usize> {
+    let mut start = 0;
+    for chunk in row.chunks(8) {
+        let any = chunk.iter().fold(false, |a, v| a | (*v != 0.0));
+        if any {
+            return chunk.iter().position(|v| *v != 0.0).map(|p| start + p);
+        }
+        start += chunk.len();
+    }
+    None
+}
+
+/// Last index of a nonzero in `row` (as `row.iter().rposition(..)`), tested
+/// eight entries at a time from the end.
+fn last_nonzero(row: &[f64]) -> Option<usize> {
+    let mut end = row.len();
+    for chunk in row.rchunks(8) {
+        let any = chunk.iter().fold(false, |a, v| a | (*v != 0.0));
+        if any {
+            return chunk
+                .iter()
+                .rposition(|v| *v != 0.0)
+                .map(|p| end - chunk.len() + p);
+        }
+        end -= chunk.len();
+    }
+    None
+}
+
+/// The extents of an assembled `W` for [`lu_in_place_col_extents`]:
+/// `row_end[i]` as for [`lu_in_place`], `l_start[i] = n`, and `col_end[j]`
+/// the last row whose span `[first nonzero, row_end]` contains column `j`.
+fn extents_of(
+    a: &[f64],
+    n: usize,
+    row_end: &mut [usize],
+    l_start: &mut [usize],
+    col_end: &mut [usize],
+) {
+    col_end[..n].fill(0);
+    for (i, row) in a.chunks_exact(n).enumerate() {
+        let last = last_nonzero(row).unwrap_or(0).max(i);
+        row_end[i] = last;
+        l_start[i] = n;
+        let first = first_nonzero(row).unwrap_or(i).min(i);
+        for c in &mut col_end[first..=last] {
+            *c = (*c).max(i);
+        }
+    }
+}
+
+/// [`lu_in_place`] with exact column extents (speed research node SPD02):
+/// `col_end[j]` bounds the rows that can hold a nonzero in column `j`
+/// (from [`extents_of`] on entry; kept up to date under row swaps and
+/// fill-in), so the pivot search and the elimination visit rows
+/// `k + 1..=col_end[k]` only. Every skipped row holds an exact zero in
+/// column `k`: the strict `>` never selects it and the elimination skips
+/// it, so pivots, multipliers, extents and factors equal [`lu_in_place`]'s.
+fn lu_in_place_col_extents(
+    a: &mut [f64],
+    n: usize,
+    pivots: &mut [usize],
+    row_end: &mut [usize],
+    l_start: &mut [usize],
+    col_end: &mut [usize],
+) -> CoreResult<()> {
+    for k in 0..n {
+        let limit = col_end[k].min(n - 1);
+        let mut p = k;
+        let mut max = a[k * n + k].abs();
+        for i in k + 1..=limit {
+            let v = a[i * n + k].abs();
+            if v > max {
+                max = v;
+                p = i;
+            }
+        }
+        if !(max > 0.0 && max.is_finite()) {
+            return Err(CoreError::LinearSolve(format!(
+                "RODAS5P fast LU: singular or non-finite pivot at column {k}"
+            )));
+        }
+        pivots[k] = p;
+        if p != k {
+            let span = row_end[k].max(row_end[p]) + 1;
+            for j in 0..span {
+                a.swap(k * n + j, p * n + j);
+            }
+            row_end.swap(k, p);
+            l_start.swap(k, p);
+            // Row k's entries now sit in row p.
+            for c in &mut col_end[..span] {
+                *c = (*c).max(p);
+            }
+        }
+        if limit <= k {
+            continue;
+        }
+        let pivot_end = row_end[k];
+        let (top, bottom) = a.split_at_mut((k + 1) * n);
+        let pivot_row = &top[k * n + k..k * n + pivot_end + 1];
+        let pivot = pivot_row[0];
+        let mut touched = k;
+        for (offset, row) in bottom[..(limit - k) * n].chunks_exact_mut(n).enumerate() {
+            if row[k] == 0.0 {
+                continue;
+            }
+            let i = k + 1 + offset;
+            let l = row[k] / pivot;
+            row[k] = l;
+            l_start[i] = l_start[i].min(k);
+            for (x, r) in row[k + 1..=pivot_end].iter_mut().zip(&pivot_row[1..]) {
+                *x -= l * r;
+            }
+            row_end[i] = row_end[i].max(pivot_end);
+            touched = i;
+        }
+        if touched > k {
+            // Fill-in of the updated rows reaches column pivot_end.
+            for c in &mut col_end[k + 1..=pivot_end] {
+                *c = (*c).max(touched);
+            }
+        }
+    }
+    Ok(())
+}
+
+/// The in-place LU variants for the contract tests of speed research node
+/// SPD02. Research only.
+#[doc(hidden)]
+pub mod lu_research {
+    use rodas5p_core::CoreResult;
+
+    /// v2's LU ([`super::lu_in_place`]).
+    pub fn zero_skipping(
+        a: &mut [f64],
+        n: usize,
+        pivots: &mut [usize],
+        row_end: &mut [usize],
+        l_start: &mut [usize],
+    ) -> CoreResult<()> {
+        super::lu_in_place(a, n, pivots, row_end, l_start)
+    }
+
+    /// The column-extent LU ([`super::lu_in_place_col_extents`]).
+    pub fn column_extents(
+        a: &mut [f64],
+        n: usize,
+        pivots: &mut [usize],
+        row_end: &mut [usize],
+        l_start: &mut [usize],
+        col_end: &mut [usize],
+    ) -> CoreResult<()> {
+        super::lu_in_place_col_extents(a, n, pivots, row_end, l_start, col_end)
+    }
+
+    /// The extents of an assembled matrix ([`super::extents_of`]).
+    pub fn extents_of(
+        a: &[f64],
+        n: usize,
+        row_end: &mut [usize],
+        l_start: &mut [usize],
+        col_end: &mut [usize],
+    ) {
+        super::extents_of(a, n, row_end, l_start, col_end)
+    }
+
+    /// The solve with either variant's factors ([`super::lu_solve_in_place`]).
+    pub fn solve(
+        lu: &[f64],
+        n: usize,
+        pivots: &[usize],
+        row_end: &[usize],
+        l_start: &[usize],
+        b: &mut [f64],
+    ) {
+        super::lu_solve_in_place(lu, n, pivots, row_end, l_start, b)
+    }
+}
+
 /// Factor `W = I/(h gamma) - J` for a Jacobian band `jacobian` (layout of
 /// [`BandedJacobianFn`]) with the banded pipeline's LU and solve `W x = b`:
 /// the solution and the pivot row of each column. For contract tests of
@@ -717,7 +963,7 @@ pub fn rodas5p_fast_step(
             "invalid RODAS5P fast step input".into(),
         ));
     }
-    let mut work = Workspace::new(problem.dimension)?;
+    let mut work = Workspace::new(problem.dimension, FastLuPolicy::Legacy)?;
     let error = work.attempt(problem, t, y, h, true, atol, rtol, counters)?;
     Ok((work.y_new, error, work.lu_kind))
 }
@@ -840,7 +1086,7 @@ fn integrate_fast(
     }
     let mut work = match band {
         Some(band) => Workspace::new_banded(problem.dimension, band)?,
-        None => Workspace::new(problem.dimension)?,
+        None => Workspace::new(problem.dimension, options.lu_policy)?,
     };
     let mut y = y0.to_vec();
     let mut h = adaptive.initial_step.min(crate::output::step_to(t, tf)?);

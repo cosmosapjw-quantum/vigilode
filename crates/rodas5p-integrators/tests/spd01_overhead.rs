@@ -12,8 +12,8 @@ use std::sync::Arc;
 use common::{brusselator, write_output};
 use rodas5p_core::DenseMatrix;
 use rodas5p_integrators::{
-    AdaptiveStepConfig, BandedJacobian, OdeProblem, OutputSchedule, Rodas5pFastOptions,
-    Rodas5pFastResult, integrate_rodas5p_fast_banded_observed,
+    AdaptiveStepConfig, BandedJacobian, FastLuPolicy, OdeProblem, OutputSchedule,
+    Rodas5pFastOptions, Rodas5pFastResult, integrate_rodas5p_fast_banded_observed,
     integrate_rodas5p_fast_banded_observed_with_options, integrate_rodas5p_fast_observed,
     integrate_rodas5p_fast_observed_with_options,
 };
@@ -217,6 +217,7 @@ const SETS: [(&str, Rodas5pFastOptions); 3] = [
         Rodas5pFastOptions {
             prevalidated_controller: true,
             fused_landing: false,
+            lu_policy: FastLuPolicy::Legacy,
         },
     ),
     (
@@ -224,6 +225,7 @@ const SETS: [(&str, Rodas5pFastOptions); 3] = [
         Rodas5pFastOptions {
             prevalidated_controller: false,
             fused_landing: true,
+            lu_policy: FastLuPolicy::Legacy,
         },
     ),
     (
@@ -231,6 +233,7 @@ const SETS: [(&str, Rodas5pFastOptions); 3] = [
         Rodas5pFastOptions {
             prevalidated_controller: true,
             fused_landing: true,
+            lu_policy: FastLuPolicy::Legacy,
         },
     ),
 ];
