@@ -114,4 +114,27 @@ operation", and that L-0081..L-0083 match their recorded JSON.
 
 ## Validation
 
-(filled in after the matrix run)
+The full matrix ran on `a234aa3` (all three nodes recorded). Steps 1-9 passed. Step 10 was stopped by the 2-hour
+limit of the background job while two long recorded-run exporters were still running. The review fixes then
+produced `77005d2`. On that head:
+
+- re-run: fmt, the four clippy configurations, and the tests of the two changed crates (`rodas5p-integrators`,
+  `rodas5p-cli`, all targets: 541 passed, 0 failed);
+- run on their own: step 10 and steps 11-16.
+
+| Step | Head | Result |
+|---|---|---|
+| `cargo fmt --all -- --check` | `a234aa3`, `77005d2` | pass |
+| clippy `-D warnings`: workspace, `audit2-research`, `audit2-bateman-authority`, `audit2-stage-certificate` | `a234aa3`, `77005d2` | pass |
+| `cargo test --workspace --all-targets` | `a234aa3` | pass |
+| `cargo test -p rodas5p-integrators -p rodas5p-cli --all-targets` | `77005d2` | pass (541 tests) |
+| `cargo test -p rodas5p-integrators --all-targets`, three feature configurations | `a234aa3` | pass (not re-run after the review fixes) |
+| `cargo test --workspace --profile measurement -- --ignored` | `77005d2` | pass (50 ignored tests in 226 binaries) |
+| `tools/check-audit2-readiness.sh` | `77005d2` | pass |
+| `tools/check-research-node.py --base origin/audit/rvj-research-integration-20261004` | `77005d2` | pass (83 rows; 3 new nodes) |
+| `tools/check-authority-refs.py` | `77005d2` | pass |
+| `tools/check_ignored_tests_in_ci.py`, `tools/test_*.py`, `research/rvj_integration_20261004/validate_bundle.py` | `77005d2` | pass |
+
+The three feature-configuration test runs were not repeated after the review fixes. The fixes touch only the opt-in
+banded slices kernel, a doc comment, one input check and the CLI problem list, and the four clippy configurations
+compiled them under every feature set.
