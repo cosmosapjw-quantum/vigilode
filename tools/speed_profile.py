@@ -228,6 +228,7 @@ def profile_arm(stiff, args, arm: str, problem: str, repo_root: Path) -> dict:
         "arm": arm, "problem": problem, "rtol": args.rtol, "success": True,
         "attempts": attempts, "accepted_steps": work["accepted_steps"], "rejected_steps": work["rejected_steps"],
         "counters": work["counters"],
+        "banded_work": work.get("banded_work"),
         "final_state_sha256": hashlib.sha256(json.dumps(work["final_state"]).encode()).hexdigest(),
         "ir_run1": runs["1"]["total"], "ir_run2": runs["2"]["total"], "ir_run1_repeat": runs["1b"]["total"],
         "callgrind_deterministic": runs["1"]["total"] == runs["1b"]["total"],

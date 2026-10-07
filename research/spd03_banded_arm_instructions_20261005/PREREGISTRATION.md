@@ -95,3 +95,15 @@ prediction (0.25-0.40 instead of 0.15-0.30), moved the n = 100 ratio and part B 
 same-binary v2 numbers and full-state identity through the library. A PASS applies to problems with a declared
 band; the default benchmark set contains only `brusselator-1d-50`, where the gain is modest. Registered before
 the full synthesis finished. No code of this node exists before this commit.
+
+## Amendment before the run (2026-10-07, before any measurement of this node)
+
+As in SPD01, the CLI crate has no library target, so the 14-point CLI identity export lives in the CLI crate's unit
+tests (`crates/rodas5p-cli/src/stiff_benchmark.rs`, test `spd01::spd03_identity_export`, command
+`SPD03_IDENTITY=... cargo test --release -p rodas5p-cli --locked --bin rodas5p -- --ignored spd03_identity_export`),
+and the band-fill contract is the CLI unit test `spd01::spd03_band_fill_equals_dense_fill`.
+`crates/rodas5p-integrators/tests/spd03_banded_arm.rs` covers the six INT-03 cases, slices kernel against indexed
+kernel (export `SPD03_INT03=...`, file `INT03.json`). `tools/spd03_banded_check.py` takes `--int03` for that file and
+gates item 1 also on equal `BandedWork` of the two kernels on the 14 CLI points. The node shares
+`Rodas5pFastOptions` and the CLI with SPD01/SPD02, whose recorded runs precede this one; the legacy-reproduction item
+(5) compares against SPD01's `BASE_PROFILE.json` as registered. Gate items and thresholds are unchanged.

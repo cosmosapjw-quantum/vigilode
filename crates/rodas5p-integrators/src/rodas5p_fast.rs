@@ -107,6 +107,9 @@ impl Rodas5pFastOptions {
     }
 }
 
+/// Identifier of the banded pipeline with the slices kernel (SPD03).
+pub const RODAS5P_FAST_BANDED_SLICES_DRIVER_ID: &str = "rodas5p-fast-banded-v1-slices";
+
 /// Identifier of the dense-storage driver with column extents (SPD02).
 pub const RODAS5P_FAST_COLEXT_DRIVER_ID: &str = "rodas5p-fast-transformed-v3-colext";
 
@@ -125,6 +128,19 @@ pub struct BandedJacobian {
     pub lower: usize,
     pub upper: usize,
     pub fill: BandedJacobianFn,
+}
+
+/// The inner-loop form of the banded kernel (speed research node SPD03,
+/// `research/spd03_banded_arm_instructions_20261005`). Both perform the
+/// same floating-point operations in the same order.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum BandedKernel {
+    /// Every operand through `at(i, j)` (a width multiply and a bounds
+    /// check); the INT-03 kernel.
+    #[default]
+    Indexed,
+    /// The row update and the back substitution over row slices.
+    Slices,
 }
 
 /// Counted linear-algebra work and storage of a banded run.
@@ -156,6 +172,7 @@ struct BandState {
     factors: Vec<f64>,
     pivots: Vec<usize>,
     work: BandedWork,
+    kernel: BandedKernel,
 }
 
 impl BandState {
@@ -170,6 +187,9 @@ impl BandState {
     /// `W = I/(h gamma) - J` on the band, then the banded LU with partial
     /// pivoting over rows `k ..= k + l`.
     fn factor(&mut self, n: usize, inv: f64) -> CoreResult<()> {
+        if self.kernel == BandedKernel::Slices {
+            return self.factor_slices(n, inv);
+        }
         let (l, u, width) = (self.l, self.u, self.width());
         let jw = l + u + 1;
         self.factors.fill(0.0);
@@ -222,9 +242,101 @@ impl BandState {
         Ok(())
     }
 
+    /// [`Self::factor`] with the row update over row slices (SPD03): the
+    /// same assembly, pivot search and interchanges; the elimination zips
+    /// the slice of row `i` over columns `k..=last_col` with the pivot
+    /// row's, so every multiply-subtract happens in the same order.
+    fn factor_slices(&mut self, n: usize, inv: f64) -> CoreResult<()> {
+        let (l, u, width) = (self.l, self.u, self.width());
+        let jw = l + u + 1;
+        self.factors.fill(0.0);
+        for i in 0..n {
+            for d in 0..jw {
+                self.factors[i * width + d] = -self.jacobian[i * jw + d];
+            }
+            self.factors[i * width + l] += inv;
+        }
+        self.work.factor_operations += (n * jw) as u64;
+        let mut operations = 0_u64;
+        for k in 0..n {
+            let last_row = (k + l).min(n - 1);
+            let mut p = k;
+            let mut max = self.factors[self.at(k, k)].abs();
+            for i in k + 1..=last_row {
+                let v = self.factors[self.at(i, k)].abs();
+                if v > max {
+                    max = v;
+                    p = i;
+                }
+            }
+            if !(max > 0.0 && max.is_finite()) {
+                return Err(CoreError::LinearSolve(format!(
+                    "RODAS5P fast banded LU: singular or non-finite pivot at column {k}"
+                )));
+            }
+            self.pivots[k] = p;
+            let last_col = (k + u + l).min(n - 1);
+            if p != k {
+                for j in k..=last_col {
+                    let (a, b) = (self.at(k, j), self.at(p, j));
+                    self.factors.swap(a, b);
+                }
+            }
+            // Row k holds columns k..=last_col at offsets l..=l + span - 1;
+            // row i (below) holds them at k + l - i..
+            let span = last_col - k + 1;
+            let (top, bottom) = self.factors.split_at_mut((k + 1) * width);
+            let pivot_row = &top[k * width + l..k * width + l + span];
+            let pivot = pivot_row[0];
+            for i in k + 1..=last_row {
+                let start = (i - k - 1) * width + (k + l - i);
+                let row = &mut bottom[start..start + span];
+                if row[0] == 0.0 {
+                    continue;
+                }
+                let m = row[0] / pivot;
+                row[0] = m;
+                for (x, r) in row[1..].iter_mut().zip(&pivot_row[1..]) {
+                    *x -= m * r;
+                }
+                operations += 1 + 2 * (last_col - k) as u64;
+            }
+        }
+        self.work.factor_operations += operations;
+        Ok(())
+    }
+
+    /// [`Self::solve`] with the back substitution over row slices (SPD03).
+    #[allow(clippy::needless_range_loop)] // the band offsets index both arrays
+    fn solve_slices(&mut self, n: usize, b: &mut [f64]) {
+        let (l, u, width) = (self.l, self.u, self.width());
+        for k in 0..n {
+            b.swap(k, self.pivots[k]);
+            let bk = b[k];
+            let last_row = (k + l).min(n - 1);
+            for i in k + 1..=last_row {
+                b[i] -= self.factors[i * width + (k + l - i)] * bk;
+            }
+            self.work.solve_operations += 2 * (last_row - k) as u64;
+        }
+        for i in (0..n).rev() {
+            let last = (i + u + l).min(n - 1);
+            let row = &self.factors[i * width + l..i * width + l + (last - i) + 1];
+            let mut sum = b[i];
+            for (f, x) in row[1..].iter().zip(&b[i + 1..=last]) {
+                sum -= f * x;
+            }
+            b[i] = sum / row[0];
+            self.work.solve_operations += 1 + 2 * (last - i) as u64;
+        }
+    }
+
     /// Solve with the factors, applying the interchanges as it goes.
     #[allow(clippy::needless_range_loop)] // the band offsets index both arrays
     fn solve(&mut self, n: usize, b: &mut [f64]) {
+        if self.kernel == BandedKernel::Slices {
+            return self.solve_slices(n, b);
+        }
         let (l, u) = (self.l, self.u);
         for k in 0..n {
             b.swap(k, self.pivots[k]);
@@ -324,7 +436,7 @@ struct Workspace {
 
 impl Workspace {
     /// The banded workspace: no `n x n` storage.
-    fn new_banded(n: usize, band: &BandedJacobian) -> CoreResult<Self> {
+    fn new_banded(n: usize, band: &BandedJacobian, kernel: BandedKernel) -> CoreResult<Self> {
         let (l, u) = (band.lower, band.upper);
         let mut work = Self::with_dense_size(n, 0)?;
         let state = BandState {
@@ -338,6 +450,7 @@ impl Workspace {
                 stored_slots: n * (3 * l + 2 * u + 2),
                 ..BandedWork::default()
             },
+            kernel,
         };
         work.band = Some(state);
         work.lu_kind = Rodas5pFastLu::Banded;
@@ -938,6 +1051,7 @@ pub fn rodas5p_fast_banded_solve(
         factors: vec![0.0; n * (2 * lower + upper + 1)],
         pivots: vec![0; n],
         work: BandedWork::default(),
+        kernel: BandedKernel::Indexed,
     };
     state.factor(n, inv)?;
     let mut x = b.to_vec();
@@ -1055,7 +1169,63 @@ pub fn integrate_rodas5p_fast_banded_observed_with_options(
             "the band of the RODAS5P fast banded driver must lie inside the matrix".into(),
         ));
     }
-    let (fast, work) = integrate_fast(problem, Some(band), t_span, y0, adaptive, output, options)?;
+    integrate_banded(
+        problem,
+        band,
+        t_span,
+        y0,
+        adaptive,
+        output,
+        options,
+        BandedKernel::Indexed,
+    )
+}
+
+/// [`integrate_rodas5p_fast_banded_observed`] with an explicit
+/// [`BandedKernel`] (speed research node SPD03); `Indexed` is the existing
+/// driver.
+#[allow(clippy::too_many_arguments)]
+pub fn integrate_rodas5p_fast_banded_observed_with_kernel(
+    problem: &OdeProblem,
+    band: &BandedJacobian,
+    t_span: (f64, f64),
+    y0: &[f64],
+    adaptive: &AdaptiveStepConfig,
+    output: &OutputSchedule,
+    kernel: BandedKernel,
+) -> CoreResult<Rodas5pFastBandedResult> {
+    integrate_banded(
+        problem,
+        band,
+        t_span,
+        y0,
+        adaptive,
+        output,
+        Rodas5pFastOptions::default(),
+        kernel,
+    )
+}
+
+#[allow(clippy::too_many_arguments)]
+fn integrate_banded(
+    problem: &OdeProblem,
+    band: &BandedJacobian,
+    t_span: (f64, f64),
+    y0: &[f64],
+    adaptive: &AdaptiveStepConfig,
+    output: &OutputSchedule,
+    options: Rodas5pFastOptions,
+    kernel: BandedKernel,
+) -> CoreResult<Rodas5pFastBandedResult> {
+    let (fast, work) = integrate_fast(
+        problem,
+        Some((band, kernel)),
+        t_span,
+        y0,
+        adaptive,
+        output,
+        options,
+    )?;
     Ok(Rodas5pFastBandedResult {
         fast,
         work: work.unwrap_or_default(),
@@ -1065,7 +1235,7 @@ pub fn integrate_rodas5p_fast_banded_observed_with_options(
 #[allow(clippy::too_many_arguments)]
 fn integrate_fast(
     problem: &OdeProblem,
-    band: Option<&BandedJacobian>,
+    band: Option<(&BandedJacobian, BandedKernel)>,
     t_span: (f64, f64),
     y0: &[f64],
     adaptive: &AdaptiveStepConfig,
@@ -1085,7 +1255,7 @@ fn integrate_fast(
         ));
     }
     let mut work = match band {
-        Some(band) => Workspace::new_banded(problem.dimension, band)?,
+        Some((band, kernel)) => Workspace::new_banded(problem.dimension, band, kernel)?,
         None => Workspace::new(problem.dimension, options.lu_policy)?,
     };
     let mut y = y0.to_vec();
@@ -1217,7 +1387,10 @@ fn integrate_fast(
         rejected_steps,
         jacobian_reuses: reuses,
         lu: work.lu_kind,
-        driver: options.driver_id(banded.is_some()),
+        driver: match band {
+            Some((_, BandedKernel::Slices)) => RODAS5P_FAST_BANDED_SLICES_DRIVER_ID,
+            _ => options.driver_id(banded.is_some()),
+        },
     };
     Ok((result, banded))
 }

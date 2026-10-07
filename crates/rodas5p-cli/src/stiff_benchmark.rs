@@ -13,10 +13,11 @@ use std::{sync::Arc, time::Instant};
 use anyhow::Result;
 use rodas5p_core::{CoreResult, DenseMatrix, LinearMethod, LinearSolverConfig, WorkCounters};
 use rodas5p_integrators::{
-    AdaptiveObservedIntegrationResult, AdaptiveRunDiagnostics, AdaptiveStepConfig, BdfConfig,
-    FastLuPolicy, IntegrationMethod, NewtonTolerancePolicy, OdeProblem, OutputSchedule,
-    RadauConfig, Rodas5pFastOptions, SmallProblem, integrate_adaptive_observed_with_config,
-    integrate_bdf_adaptive_observed, integrate_radau_adaptive_observed,
+    AdaptiveObservedIntegrationResult, AdaptiveRunDiagnostics, AdaptiveStepConfig, BandedJacobian,
+    BandedKernel, BandedWork, BdfConfig, FastLuPolicy, IntegrationMethod, NewtonTolerancePolicy,
+    OdeProblem, OutputSchedule, RadauConfig, Rodas5pFastOptions, SmallProblem,
+    integrate_adaptive_observed_with_config, integrate_bdf_adaptive_observed,
+    integrate_radau_adaptive_observed, integrate_rodas5p_fast_banded_observed_with_kernel,
     integrate_rodas5p_fast_observed, integrate_rodas5p_fast_observed_with_options,
     integrate_rodas5p_fast_small_observed, integrate_rodas5p_fast_small_observed_with_options,
     robertson_problem, stiff_van_der_pol_problem,
@@ -30,7 +31,100 @@ pub const TOLERANCES: [f64; 7] = [1.0e-3, 1.0e-4, 1.0e-5, 1.0e-6, 1.0e-7, 1.0e-8
 pub const FAST_ARM: &str = "rodas5p-fast";
 
 fn known_arm(arm: &str) -> bool {
-    ARMS.contains(&arm) || arm == FAST_ARM || arm == SMALL_ARM || OPTION_ARMS.contains(&arm)
+    ARMS.contains(&arm)
+        || arm == FAST_ARM
+        || arm == SMALL_ARM
+        || OPTION_ARMS.contains(&arm)
+        || banded_kernel_arm(arm).is_some()
+}
+
+/// The INT-03 banded pipeline on the Brusselators (speed research node
+/// SPD03, `research/spd03_banded_arm_instructions_20261005`): the indexed
+/// kernel and the slices kernel. Not in [`ARMS`].
+pub const BANDED_ARM: &str = "rodas5p-fast-banded";
+pub const BANDED_SLICES_ARM: &str = "rodas5p-fast-banded-slices";
+
+pub fn banded_kernel_arm(arm: &str) -> Option<BandedKernel> {
+    match arm {
+        BANDED_ARM => Some(BandedKernel::Indexed),
+        BANDED_SLICES_ARM => Some(BandedKernel::Slices),
+        _ => None,
+    }
+}
+
+/// The number of cells of a `brusselator-1d-<cells>` benchmark problem.
+fn brusselator_cells(id: &str) -> Option<usize> {
+    id.strip_prefix("brusselator-1d-")?.parse().ok()
+}
+
+/// The band (`lower = upper = 2`) of the interleaved Brusselator, writing the
+/// same expressions as the dense fill of [`brusselator_problem`] at band
+/// offsets `j + 2 - i`: row `2i` holds columns `2i - 2, 2i, 2i + 1, 2i + 2`
+/// at offsets 0, 2, 3, 4 and row `2i + 1` columns `2i - 1, 2i, 2i + 1,
+/// 2i + 3` at offsets 0, 1, 2, 4.
+fn brusselator_band(cells: usize) -> BandedJacobian {
+    let c = (cells as f64 + 1.0).powi(2) / 50.0;
+    BandedJacobian {
+        lower: 2,
+        upper: 2,
+        fill: Arc::new(move |_t: f64, y: &[f64], band: &mut [f64]| {
+            for i in 0..cells {
+                let (u, v) = (y[2 * i], y[2 * i + 1]);
+                let (a, b) = (2 * i, 2 * i + 1);
+                band[a * 5 + 2] = 2.0 * u * v - 4.0 - 2.0 * c;
+                band[a * 5 + 3] = u * u;
+                band[b * 5 + 1] = 3.0 - 2.0 * u * v;
+                band[b * 5 + 2] = -u * u - 2.0 * c;
+                if i > 0 {
+                    band[a * 5] = c;
+                    band[b * 5] = c;
+                }
+                if i + 1 < cells {
+                    band[a * 5 + 4] = c;
+                    band[b * 5 + 4] = c;
+                }
+            }
+            Ok(())
+        }),
+    }
+}
+
+/// The banded pipeline on a Brusselator benchmark problem, with its counted
+/// banded work.
+fn run_banded(
+    problem: &BenchmarkProblem,
+    rtol: f64,
+    kernel: BandedKernel,
+) -> CoreResult<(AdaptiveObservedIntegrationResult, BandedWork)> {
+    let cells = brusselator_cells(problem.id).ok_or_else(|| {
+        rodas5p_core::CoreError::InvalidInput(format!(
+            "the banded arms cover the Brusselators, not {}",
+            problem.id
+        ))
+    })?;
+    let adaptive = adaptive_config(problem, rtol);
+    let output = OutputSchedule::new(vec![problem.t_span.0, problem.t_span.1])?;
+    let run = integrate_rodas5p_fast_banded_observed_with_kernel(
+        &problem.problem,
+        &brusselator_band(cells),
+        problem.t_span,
+        &problem.y0,
+        &adaptive,
+        &output,
+        kernel,
+    )?;
+    Ok((
+        AdaptiveObservedIntegrationResult {
+            observed: run.fast.observed,
+            diagnostics: AdaptiveRunDiagnostics {
+                attempts: run.fast.attempts,
+                accepted_macro_steps: run.fast.accepted_steps,
+                rejected_macro_steps: run.fast.rejected_steps,
+                ..AdaptiveRunDiagnostics::default()
+            },
+        },
+        run.work,
+    ))
 }
 
 /// The opt-in option arms of speed research node SPD01
@@ -262,6 +356,16 @@ pub fn benchmark_problems() -> CoreResult<Vec<BenchmarkProblem>> {
         t_span: (0.0, 10.0),
         atol_scale: 1.0,
     });
+    // n = 1000, for the slope of the banded arms (speed research node
+    // SPD03); never in a default selection.
+    let (larger, larger_y0) = brusselator_problem(500)?;
+    problems.push(BenchmarkProblem {
+        id: "brusselator-1d-500",
+        problem: larger,
+        y0: larger_y0,
+        t_span: (0.0, 10.0),
+        atol_scale: 1.0,
+    });
     Ok(problems)
 }
 
@@ -386,6 +490,9 @@ pub fn run_arm(
             &adaptive,
             &output,
         ),
+        other if banded_kernel_arm(other).is_some() => {
+            run_banded(problem, rtol, banded_kernel_arm(other).unwrap()).map(|(r, _)| r)
+        }
         other => match option_arm(other) {
             Some((true, options)) => run_small(problem, &adaptive, &output, options),
             Some((false, options)) => {
@@ -566,14 +673,24 @@ pub fn profile_run(problem_id: &str, arm: &str, rtol: f64, repetitions: usize) -
         .into_iter()
         .find(|p| p.id == problem_id)
         .ok_or_else(|| anyhow::anyhow!("unknown problem {problem_id}"))?;
-    let first = run_arm(arm, &problem, rtol)?;
+    let kernel = banded_kernel_arm(arm);
+    let run = |problem: &BenchmarkProblem| -> CoreResult<(
+        AdaptiveObservedIntegrationResult,
+        Option<BandedWork>,
+    )> {
+        match kernel {
+            Some(kernel) => run_banded(problem, rtol, kernel).map(|(r, w)| (r, Some(w))),
+            None => run_arm(arm, problem, rtol).map(|r| (r, None)),
+        }
+    };
+    let (first, work) = run(&problem)?;
     let mut deterministic = true;
     for _ in 1..repetitions {
-        let again = run_arm(arm, &problem, rtol)?;
+        let (again, _) = run(&problem)?;
         deterministic &= again.observed.y == first.observed.y;
     }
     let d = &first.diagnostics;
-    Ok(json!({
+    let mut out = json!({
         "problem": problem_id, "arm": arm, "rtol": rtol, "repetitions": repetitions,
         "success": first.observed.success,
         "attempts": d.attempts,
@@ -582,7 +699,15 @@ pub fn profile_run(problem_id: &str, arm: &str, rtol: f64, repetitions: usize) -
         "counters": counters_json(&first.observed.counters),
         "final_state": first.observed.y.last(),
         "deterministic": deterministic,
-    }))
+    });
+    if let Some(work) = work {
+        out["banded_work"] = json!({
+            "factor_operations": work.factor_operations,
+            "solve_operations": work.solve_operations,
+            "stored_slots": work.stored_slots,
+        });
+    }
+    Ok(out)
 }
 
 /// Median seconds of one dense LU factorization (faer partial pivoting, as
@@ -1164,6 +1289,142 @@ mod spd01 {
             }
         }
         let out = json!({"schema": "vigilode-spd02-identity-v1", "rows": rows});
+        std::fs::write(&path, serde_json::to_string(&out).unwrap() + "\n").unwrap();
+        println!("wrote {}", path.display());
+    }
+
+    /// Speed research node SPD03: the native band fill of the Brusselator
+    /// equals the dense fill entry for entry on the parity states.
+    #[test]
+    fn spd03_band_fill_equals_dense_fill() {
+        for problem in benchmark_problems().unwrap() {
+            let Some(cells) = brusselator_cells(problem.id) else {
+                continue;
+            };
+            let band = brusselator_band(cells);
+            let n = problem.problem.dimension;
+            let mut counters = WorkCounters::default();
+            for state in parity_states(&problem.y0) {
+                let mut dense = DenseMatrix::zeros(n, n);
+                problem
+                    .problem
+                    .dense_jacobian_into(0.0, &state, &mut dense, &mut counters)
+                    .unwrap();
+                let mut filled = vec![0.0; n * 5];
+                (band.fill)(0.0, &state, &mut filled).unwrap();
+                let mut entries = 0;
+                for i in 0..n {
+                    for j in 0..n {
+                        let d = dense[(i, j)];
+                        let b = if j + 2 >= i && j <= i + 2 {
+                            filled[i * 5 + (j + 2 - i)]
+                        } else {
+                            0.0
+                        };
+                        assert_eq!(d.to_bits(), b.to_bits(), "{} ({i}, {j})", problem.id);
+                        if d != 0.0 {
+                            entries += 1;
+                        }
+                    }
+                }
+                assert!(entries >= 4 * cells, "{}: {entries} nonzeros", problem.id);
+            }
+        }
+        for arm in [BANDED_ARM, BANDED_SLICES_ARM] {
+            assert!(known_arm(arm) && !ARMS.contains(&arm));
+        }
+        let hires = benchmark_problems()
+            .unwrap()
+            .into_iter()
+            .find(|p| p.id == "hires")
+            .unwrap();
+        assert!(run_banded(&hires, 1.0e-6, BandedKernel::Indexed).is_err());
+    }
+
+    /// Identity export of speed research node SPD03: both banded arms
+    /// against v2 on the CLI Brusselators at the seven tolerances.
+    #[test]
+    #[ignore = "identity export of research/spd03_banded_arm_instructions_20261005; release build; set SPD03_IDENTITY"]
+    fn spd03_identity_export() {
+        let Ok(path) = std::env::var("SPD03_IDENTITY") else {
+            println!("SPD03_IDENTITY not set: nothing written");
+            return;
+        };
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../..")
+            .join(path);
+        assert!(
+            !path.exists(),
+            "immutable output exists: {}",
+            path.display()
+        );
+        let mut rows = Vec::new();
+        for problem in benchmark_problems().unwrap() {
+            if !["brusselator-1d-50", "brusselator-1d-200"].contains(&problem.id) {
+                continue;
+            }
+            let cells = brusselator_cells(problem.id).unwrap();
+            for rtol in TOLERANCES {
+                let adaptive = adaptive_config(&problem, rtol);
+                let output = OutputSchedule::new(vec![problem.t_span.0, problem.t_span.1]).unwrap();
+                let v2 = integrate_rodas5p_fast_observed(
+                    &problem.problem,
+                    problem.t_span,
+                    &problem.y0,
+                    &adaptive,
+                    &output,
+                )
+                .unwrap();
+                let v2_row = row(
+                    &v2.observed,
+                    v2.attempts,
+                    v2.accepted_steps,
+                    v2.rejected_steps,
+                    v2.jacobian_reuses,
+                    "",
+                );
+                let mut entry = json!({"problem": problem.id, "rtol": rtol, "v2": v2_row.clone()});
+                let mut works = Vec::new();
+                for (name, kernel) in [
+                    ("banded", BandedKernel::Indexed),
+                    ("slices", BandedKernel::Slices),
+                ] {
+                    let run = integrate_rodas5p_fast_banded_observed_with_kernel(
+                        &problem.problem,
+                        &brusselator_band(cells),
+                        problem.t_span,
+                        &problem.y0,
+                        &adaptive,
+                        &output,
+                        kernel,
+                    )
+                    .unwrap();
+                    let r = row(
+                        &run.fast.observed,
+                        run.fast.attempts,
+                        run.fast.accepted_steps,
+                        run.fast.rejected_steps,
+                        run.fast.jacobian_reuses,
+                        "",
+                    );
+                    entry[format!("{name}_identical")] = json!(r == v2_row);
+                    entry[format!("{name}_driver")] = json!(run.fast.driver);
+                    entry[format!("{name}_work")] = serde_json::to_value(run.work).unwrap();
+                    works.push(run.work);
+                }
+                entry["work_equal"] = json!(works[0] == works[1]);
+                println!(
+                    "{} {:e}: banded {} slices {} work_equal {}",
+                    problem.id,
+                    rtol,
+                    entry["banded_identical"],
+                    entry["slices_identical"],
+                    entry["work_equal"]
+                );
+                rows.push(entry);
+            }
+        }
+        let out = json!({"schema": "vigilode-spd03-identity-v1", "cli_rows": rows});
         std::fs::write(&path, serde_json::to_string(&out).unwrap() + "\n").unwrap();
         println!("wrote {}", path.display());
     }

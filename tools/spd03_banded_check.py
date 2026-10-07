@@ -37,7 +37,8 @@ def main() -> int:
     parser.add_argument("--base", required=True, type=Path)
     parser.add_argument("--profile", required=True, type=Path)
     parser.add_argument("--n1000", required=True, type=Path)
-    parser.add_argument("--identity", required=True, type=Path)
+    parser.add_argument("--identity", required=True, type=Path, help="CLI identity export (cli_rows)")
+    parser.add_argument("--int03", required=True, type=Path, help="INT-03 slices-vs-indexed export (int03_rows)")
     parser.add_argument("--fill-passed", required=True, choices=["true", "false"])
     parser.add_argument("--output", required=True, type=Path)
     args = parser.parse_args()
@@ -50,8 +51,9 @@ def main() -> int:
     identity = json.loads(args.identity.read_text())
 
     cli_rows = identity["cli_rows"]
-    int03_rows = identity["int03_rows"]
-    g1 = (len(cli_rows) == 14 and all(r["banded_identical"] and r["slices_identical"] for r in cli_rows)
+    int03_rows = json.loads(args.int03.read_text())["int03_rows"]
+    g1 = (len(cli_rows) == 14
+          and all(r["banded_identical"] and r["slices_identical"] and r["work_equal"] for r in cli_rows)
           and len(int03_rows) == 6 and all(r["slices_equal_indexed"] for r in int03_rows))
     g2 = args.fill_passed == "true"
     table = {}
