@@ -167,6 +167,16 @@ pub struct Rodas5pMfFastWorkspace {
     gmres_into: bool,
     /// Research switch (SAFE-RECYCLE): the GCRO-DR recycle policy.
     gcrodr_policy: GcrodrRecyclePolicy,
+    /// Stages and step of the last accepted step, kept only for the
+    /// step-indexed initial guesses (research node
+    /// `research/spd07_mf_step_warm_start_20261007`); `step_h` is zero until
+    /// a step was accepted.
+    step_u: Vec<f64>,
+    step_h: f64,
+    x0_scaled: Vec<f64>,
+    /// GMRES-into restart cycles of all stage solves so far (reported by
+    /// research node SPD07; nothing reads it).
+    gmres_into_cycles: u64,
     f0: Vec<f64>,
     ft: Vec<f64>,
     u: Vec<f64>,
@@ -248,6 +258,10 @@ impl Rodas5pMfFastWorkspace {
             cached_epoch: None,
             gmres_into: false,
             gcrodr_policy: GcrodrRecyclePolicy::Legacy,
+            step_u: Vec::new(),
+            step_h: 0.0,
+            x0_scaled: Vec::new(),
+            gmres_into_cycles: 0,
             f0: vec![0.0; n],
             ft: vec![0.0; n],
             u: vec![0.0; s * n],
@@ -273,6 +287,22 @@ impl Rodas5pMfFastWorkspace {
 
     pub fn gcrodr_policy(&self) -> GcrodrRecyclePolicy {
         self.gcrodr_policy
+    }
+
+    /// Record the stages of the attempt just accepted with step `h`, the
+    /// start of the step-indexed initial guesses. A no-op for every other
+    /// initial guess, so the default runs neither copy nor allocate.
+    pub fn record_accepted_step(&mut self, h: f64) {
+        if self.config.x0_strategy.is_step_indexed() {
+            self.step_u.clone_from(&self.u);
+            self.step_h = h;
+        }
+    }
+
+    /// GMRES-into restart cycles (small least-squares solves) of all
+    /// stage solves of this workspace so far.
+    pub fn gmres_into_cycles(&self) -> u64 {
+        self.gmres_into_cycles
     }
 
     pub fn y_new(&self) -> &[f64] {
@@ -410,7 +440,23 @@ impl Rodas5pMfFastWorkspace {
                     *x += g * v;
                 }
             }
-            let previous = i > 0 && self.config.x0_strategy == InitialGuess::Previous;
+            // The step-indexed starts fall back to `Previous` until a step
+            // was accepted (`step_h` is zero before).
+            let step_start = self.config.x0_strategy.is_step_indexed() && self.step_h != 0.0;
+            let previous = i > 0
+                && !step_start
+                && matches!(
+                    self.config.x0_strategy,
+                    InitialGuess::Previous
+                        | InitialGuess::PreviousStep
+                        | InitialGuess::PreviousStepScaled
+                );
+            if step_start && self.config.x0_strategy == InitialGuess::PreviousStepScaled {
+                let ratio = h / self.step_h;
+                self.x0_scaled.clear();
+                self.x0_scaled
+                    .extend(self.step_u[i * n..(i + 1) * n].iter().map(|v| v * ratio));
+            }
             let gmres_config = GmresConfig {
                 restart: self.config.restart,
                 max_arnoldi: self.config.maxiter.max(self.config.restart),
@@ -420,11 +466,18 @@ impl Rodas5pMfFastWorkspace {
             if self.gmres_into && self.config.method == LinearMethod::Gmres {
                 let (done, rest) = self.u.split_at_mut(i * n);
                 let stage = &mut rest[..n];
-                solve_gmres_into(
+                let x0 = if !step_start {
+                    previous.then(|| &done[(i - 1) * n..])
+                } else if self.config.x0_strategy == InitialGuess::PreviousStepScaled {
+                    Some(&self.x0_scaled[..])
+                } else {
+                    Some(&self.step_u[i * n..(i + 1) * n])
+                };
+                let report = solve_gmres_into(
                     &shifted,
                     &self.preconditioner,
                     &self.stage_rhs,
-                    previous.then(|| &done[(i - 1) * n..]),
+                    x0,
                     &gmres_config,
                     None,
                     stage,
@@ -432,6 +485,7 @@ impl Rodas5pMfFastWorkspace {
                     GmresCapacity::unbounded(),
                     counters,
                 )?;
+                self.gmres_into_cycles += report.cycles;
                 if !stage.iter().all(|value| value.is_finite()) {
                     return Err(CoreError::NonFinite(
                         "RODAS5P U-form stage solve produced NaN/Inf".into(),
@@ -439,7 +493,13 @@ impl Rodas5pMfFastWorkspace {
                 }
                 continue;
             }
-            let x0 = previous.then(|| &self.u[(i - 1) * n..i * n]);
+            let x0 = if !step_start {
+                previous.then(|| &self.u[(i - 1) * n..i * n])
+            } else if self.config.x0_strategy == InitialGuess::PreviousStepScaled {
+                Some(&self.x0_scaled[..])
+            } else {
+                Some(&self.step_u[i * n..(i + 1) * n])
+            };
             let report = match self.config.method {
                 LinearMethod::Gmres => solve_gmres_with_workspace(
                     &shifted,
@@ -731,6 +791,7 @@ fn integrate_mf_fast_inner(
                 t += trial_h;
                 y.copy_from_slice(&work.y_new);
                 collector.accept(t, &y, clipped)?;
+                work.record_accepted_step(trial_h);
                 internal_steps += 1;
                 fresh_state = false;
             }

@@ -348,6 +348,12 @@ fn sequential_stages_refined(
     counters: &mut WorkCounters,
 ) -> CoreResult<InnerForcedStageSolveData> {
     config.validate().map_err(CoreError::InvalidInput)?;
+    if config.x0_strategy.is_step_indexed() {
+        return Err(CoreError::InvalidInput(
+            "step-indexed initial guesses are supported by the matrix-free U-form fast driver only"
+                .into(),
+        ));
+    }
     if outer_tolerances.is_some() && config.method == LinearMethod::Direct {
         return Err(CoreError::InvalidInput(
             "RODAS5P inner forcing requires a Krylov linear solver".into(),

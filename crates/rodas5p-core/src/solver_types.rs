@@ -17,6 +17,21 @@ pub enum PreconditionerKind {
 pub enum InitialGuess {
     Zero,
     Previous,
+    /// Stage `i` starts from stage `i` of the last accepted step (research
+    /// node `research/spd07_mf_step_warm_start_20261007`). Honoured only by
+    /// the matrix-free U-form fast driver; every other stage solver refuses
+    /// it. Before the first accepted step it acts as `Previous`.
+    PreviousStep,
+    /// [`InitialGuess::PreviousStep`] scaled by `h / h_prev` (same node,
+    /// reported only).
+    PreviousStepScaled,
+}
+
+impl InitialGuess {
+    /// Whether the start comes from the last accepted step's stages.
+    pub fn is_step_indexed(self) -> bool {
+        matches!(self, Self::PreviousStep | Self::PreviousStepScaled)
+    }
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

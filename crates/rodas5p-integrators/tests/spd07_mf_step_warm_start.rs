@@ -12,7 +12,8 @@ use rodas5p_core::{InitialGuess, LinearMethod, LinearSolverConfig};
 use rodas5p_integrators::{
     GcrodrRecyclePolicy, OdeProblem, OutputSchedule, Rodas5pMfFastResult,
     integrate_rodas5p_fast_observed, integrate_rodas5p_mf_fast_observed_gmres_into,
-    integrate_rodas5p_mf_fast_observed_with_gcrodr_policy,
+    integrate_rodas5p_mf_fast_observed_traced,
+    integrate_rodas5p_mf_fast_observed_with_gcrodr_policy, sequential_matrix_free_step,
 };
 use serde_json::{Value, json};
 
@@ -167,4 +168,129 @@ fn export_base() {
         }
     }
     write_output("SPD07_BASE", &json!({"rows": rows}));
+}
+
+/// GMRES `solve_into` through the traced entry point (the same driver call
+/// as [`gmres_into`]), with the restart cycles of all stage solves.
+fn gmres_into_traced(run: &Run, rtol: f64, x0: InitialGuess) -> Value {
+    let span = run.t_span.1 - run.t_span.0;
+    let schedule = OutputSchedule::new(vec![run.t_span.0, run.t_span.1]).unwrap();
+    let mut cycles = 0_u64;
+    let result = integrate_rodas5p_mf_fast_observed_traced(
+        &run.problem,
+        run.t_span,
+        &run.y0,
+        &config(LinearMethod::Gmres, x0),
+        &adaptive(rtol, run.atol_scale, span),
+        &schedule,
+        true,
+        &mut |_, _, _, _, work| cycles = work.gmres_into_cycles(),
+    );
+    let mut row = result_json(&result);
+    row["gmres_into_cycles"] = json!(cycles);
+    row
+}
+
+const GUESSES: [(&str, InitialGuess); 4] = [
+    ("zero", InitialGuess::Zero),
+    ("previous", InitialGuess::Previous),
+    ("previous_step", InitialGuess::PreviousStep),
+    ("previous_step_scaled", InitialGuess::PreviousStepScaled),
+];
+
+/// The recorded run: every initial guess for GMRES `solve_into` and
+/// GCRO-DR cold on the base cases.
+#[test]
+#[ignore = "recorded run of research/spd07_mf_step_warm_start_20261007; release build"]
+fn export_runs() {
+    let mut rows = Vec::new();
+    for run in runs() {
+        for rtol in RTOLS {
+            let mut row = json!({"case": run.id, "rtol": rtol, "dimension": run.y0.len()});
+            for (name, x0) in GUESSES {
+                row[format!("gmres_into_{name}")] = gmres_into_traced(&run, rtol, x0);
+                row[format!("gcrodr_cold_{name}")] = gcrodr_cold(&run, rtol, x0);
+            }
+            rows.push(row);
+        }
+    }
+    write_output("SPD07_RUNS", &json!({"rows": rows}));
+}
+
+fn base_rows() -> Vec<Value> {
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../research/spd07_mf_step_warm_start_20261007/BASE.json");
+    let base: Value = serde_json::from_str(&std::fs::read_to_string(path).unwrap()).unwrap();
+    base["rows"].as_array().unwrap().clone()
+}
+
+/// The unchanged initial guesses reproduce the base export on the two
+/// smallest cases (the recorded run checks all fourteen).
+#[test]
+fn default_guesses_reproduce_the_base_export() {
+    let base = base_rows();
+    for run in runs()
+        .into_iter()
+        .filter(|r| r.id == "quadratic-4" || r.id == "prothero-robinson-forced")
+    {
+        for rtol in RTOLS {
+            let row = base
+                .iter()
+                .find(|r| r["case"] == run.id && r["rtol"] == rtol)
+                .unwrap();
+            assert_eq!(
+                gmres_into(&run, rtol, InitialGuess::Zero),
+                row["gmres_into_zero"]
+            );
+            let mut traced = gmres_into_traced(&run, rtol, InitialGuess::Previous);
+            traced.as_object_mut().unwrap().remove("gmres_into_cycles");
+            assert_eq!(traced, row["gmres_into_previous"]);
+            assert_eq!(
+                gcrodr_cold(&run, rtol, InitialGuess::Previous),
+                row["gcrodr_cold_previous"]
+            );
+        }
+    }
+}
+
+/// The step-indexed starts change the Krylov work (they are used) and keep
+/// the run successful on a small case.
+#[test]
+fn step_indexed_starts_are_used() {
+    let run = runs().into_iter().find(|r| r.id == "quadratic-4").unwrap();
+    let previous = gmres_into_traced(&run, 1.0e-6, InitialGuess::Previous);
+    for x0 in [InitialGuess::PreviousStep, InitialGuess::PreviousStepScaled] {
+        let step = gmres_into_traced(&run, 1.0e-6, x0);
+        assert_eq!(step["success"], true);
+        assert_ne!(
+            step["counters"]["linear_matvecs"],
+            previous["counters"]["linear_matvecs"]
+        );
+    }
+}
+
+/// Every other stage solver refuses the step-indexed starts.
+#[test]
+fn sequential_step_refuses_step_indexed_starts() {
+    let run = runs().into_iter().find(|r| r.id == "quadratic-4").unwrap();
+    for x0 in [InitialGuess::PreviousStep, InitialGuess::PreviousStepScaled] {
+        let mut counters = rodas5p_core::WorkCounters::default();
+        let result = sequential_matrix_free_step(
+            &run.problem,
+            0.0,
+            &run.y0,
+            1.0e-3,
+            &config(LinearMethod::Gmres, x0),
+            None,
+            1.0e-6,
+            1.0e-6,
+            false,
+            &mut counters,
+        );
+        let error = match result {
+            Ok(_) => panic!("the sequential step accepted {x0:?}"),
+            Err(error) => error.to_string(),
+        };
+        assert!(error.contains("step-indexed"), "{error}");
+    }
 }
