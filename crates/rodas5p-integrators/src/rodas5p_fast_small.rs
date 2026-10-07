@@ -23,7 +23,7 @@ use crate::{
 /// Identifier of this driver in research records.
 pub const RODAS5P_FAST_SMALL_DRIVER_ID: &str = "rodas5p-fast-small-static-v1";
 
-const STAGES: usize = 8;
+pub(crate) const STAGES: usize = 8;
 
 /// An autonomous ODE (time is not passed) of fixed dimension `N` with an in-place Jacobian that
 /// writes a fixed sparsity pattern (as `OdeProblem::with_jacobian_into`).
@@ -42,11 +42,11 @@ pub struct Rodas5pFastSmallResult {
     pub driver: &'static str,
 }
 
-struct Workspace<const N: usize> {
-    gamma: f64,
-    a_nonzero: Vec<Vec<(usize, f64)>>,
-    c_nonzero: Vec<Vec<(usize, f64)>>,
-    b_nonzero: Vec<(usize, f64)>,
+pub(crate) struct Workspace<const N: usize> {
+    pub(crate) gamma: f64,
+    pub(crate) a_nonzero: Vec<Vec<(usize, f64)>>,
+    pub(crate) c_nonzero: Vec<Vec<(usize, f64)>>,
+    pub(crate) b_nonzero: Vec<(usize, f64)>,
     w: [[f64; N]; N],
     pivots: [usize; N],
     row_end: [usize; N],
@@ -76,7 +76,7 @@ fn rhs_counted<const N: usize, P: SmallProblem<N>>(
 }
 
 impl<const N: usize> Workspace<N> {
-    fn new() -> CoreResult<Self> {
+    pub(crate) fn new() -> CoreResult<Self> {
         let coeffs = rodas5p_coefficients()?;
         if coeffs.stages() != STAGES {
             return Err(CoreError::Coefficients("RODAS5P has eight stages".into()));
@@ -237,7 +237,7 @@ impl<const N: usize> Workspace<N> {
 
 /// v2's `lu_in_place` on `[[f64; N]; N]`, the same operations in the same
 /// order.
-fn lu_in_place<const N: usize>(
+pub(crate) fn lu_in_place<const N: usize>(
     a: &mut [[f64; N]; N],
     pivots: &mut [usize; N],
     row_end: &mut [usize; N],
@@ -291,7 +291,7 @@ fn lu_in_place<const N: usize>(
 }
 
 /// v2's `lu_solve_in_place` on fixed arrays.
-fn lu_solve_in_place<const N: usize>(
+pub(crate) fn lu_solve_in_place<const N: usize>(
     lu: &[[f64; N]; N],
     pivots: &[usize; N],
     row_end: &[usize; N],
@@ -320,7 +320,7 @@ fn lu_solve_in_place<const N: usize>(
     }
 }
 
-fn failure_kind(error: &CoreError) -> Option<AdaptiveFailureKind> {
+pub(crate) fn failure_kind(error: &CoreError) -> Option<AdaptiveFailureKind> {
     match error {
         CoreError::LinearSolve(_) => Some(AdaptiveFailureKind::LinearSolve),
         CoreError::NonlinearSolve(_) => Some(AdaptiveFailureKind::NonlinearSolve),
