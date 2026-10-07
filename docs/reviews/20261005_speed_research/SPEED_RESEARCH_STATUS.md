@@ -224,3 +224,24 @@ ls-once routine as the legacy loop without the per-column solve; that every defa
 operation order and tables check; SPD08's per-lane freshness, failure counters and reset; that no pre-existing test
 file was modified; that all registrations are append-only; checker thresholds; and that every ledger input matches its
 blob at the ledger commit.
+
+## Validation (cycle 2)
+
+The full matrix ran on `9aab6f3` (all six nodes recorded); the review fix and the corrections then produced
+`c087a59`, on which the changed crates' checks and the ignored step were re-run.
+
+| Step | Head | Result |
+|---|---|---|
+| `cargo fmt --all -- --check` | `9aab6f3`, `c087a59` | pass |
+| clippy `-D warnings`: workspace, `audit2-research`, `audit2-bateman-authority`, `audit2-stage-certificate` | `9aab6f3`, `c087a59` | pass |
+| `cargo test --workspace --all-targets` | `9aab6f3` | pass (874 tests) |
+| `cargo test -p rodas5p-integrators --all-targets`, three feature configurations | `9aab6f3` | pass (556, 562, 584 tests) |
+| `cargo test -p rodas5p-core -p rodas5p-integrators --all-targets` | `c087a59` | pass (627 tests) |
+| `cargo test --workspace --profile measurement -- --ignored` | `c087a59` | pass (56 ignored tests in 233 binaries) |
+| `tools/check-audit2-readiness.sh`, `tools/check-authority-refs.py`, `tools/test_*.py`, `research/rvj_integration_20261004/validate_bundle.py` | `9aab6f3` | pass |
+| `tools/check-research-node.py --base bdcc903` | `9aab6f3`, `c087a59` | pass (89 rows; 6 new nodes) |
+| `tools/check_ignored_tests_in_ci.py` | `9aab6f3`, `c087a59` | pass (56 ignored tests reachable) |
+
+The first attempt at the `c087a59` re-run failed in the linker with "No space left on device" (build caches had
+filled the disk); after freeing the caches the same steps passed. The `c087a59` changes touch only the opt-in
+matrix-free warm start, its test, documentation and research notes.
