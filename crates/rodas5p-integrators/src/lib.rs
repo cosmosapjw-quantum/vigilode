@@ -350,17 +350,18 @@ pub use rhs_telemetry::{
 pub use rodas5p_fast::{
     BandedJacobian, BandedJacobianFn, BandedKernel, BandedWork, FastLuPolicy,
     RODAS5P_FAST_BANDED_DRIVER_ID, RODAS5P_FAST_BANDED_SLICES_DRIVER_ID,
-    RODAS5P_FAST_COLEXT_DRIVER_ID, RODAS5P_FAST_DRIVER_ID, RODAS5P_FAST_SMALL_LU_MAX,
-    RODAS5P_FAST_SPARSE_DENSITY_MAX, Rodas5pFastBandedResult, Rodas5pFastLu, Rodas5pFastOptions,
-    Rodas5pFastResult, integrate_rodas5p_fast_banded_observed,
+    RODAS5P_FAST_COLEXT_DRIVER_ID, RODAS5P_FAST_COLEXT64_DRIVER_ID, RODAS5P_FAST_DRIVER_ID,
+    RODAS5P_FAST_SMALL_LU_MAX, RODAS5P_FAST_SPARSE_DENSITY_MAX, Rodas5pFastBandedResult,
+    Rodas5pFastLu, Rodas5pFastOptions, Rodas5pFastResult, integrate_rodas5p_fast_banded_observed,
     integrate_rodas5p_fast_banded_observed_with_kernel,
     integrate_rodas5p_fast_banded_observed_with_options, integrate_rodas5p_fast_observed,
     integrate_rodas5p_fast_observed_with_options, lu_research, rodas5p_fast_banded_solve,
     rodas5p_fast_step,
 };
 pub use rodas5p_fast_small::{
-    RODAS5P_FAST_SMALL_DRIVER_ID, Rodas5pFastSmallResult, SmallProblem,
+    RODAS5P_FAST_SMALL_DRIVER_ID, Rodas5pFastSmallOptions, Rodas5pFastSmallResult, SmallProblem,
     integrate_rodas5p_fast_small_observed, integrate_rodas5p_fast_small_observed_with_options,
+    integrate_rodas5p_fast_small_observed_with_small_options, rodas5p_fast_small_static_tables,
 };
 pub use rodas5p_matrix_free_fast::{
     GcrodrRecyclePolicy, MfAttemptObserver, RODAS5P_MF_FAST_DRIVER_ID, Rodas5pMfFastResult,
