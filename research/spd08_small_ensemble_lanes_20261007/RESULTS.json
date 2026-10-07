@@ -1,0 +1,115 @@
+{
+ "binary_sha256": "2416b7afc2db4b72abca908dab56055e18f7b087a4b45f83cb7a90fe6e6c7103",
+ "gate": {
+  "item1_members_identical": true,
+  "item2_checksum": true,
+  "item3_failure_masking": true,
+  "item4_instructions": false,
+  "item5_legacy_reproduction": false,
+  "kill": true
+ },
+ "inputs": {
+  "base": "research/spd08_small_ensemble_lanes_20261007/BASE_ENSEMBLE.json",
+  "base_sha256": "8148e36fa28969b195d713d816e5eb889728253e0af017ff5592846c85049aa8",
+  "profile": "research/spd08_small_ensemble_lanes_20261007/PROFILE.json",
+  "profile_sha256": "b4ddc0d65f550809591279e906bafe3fe58f6eed548e414d8e3170b6e3bd2e54"
+ },
+ "item1_rows": {
+  "rodas5p-fast-small-batch4": {
+   "difference": null,
+   "identical": true,
+   "members": 64
+  },
+  "rodas5p-fast-small-batch8": {
+   "difference": null,
+   "identical": true,
+   "members": 64
+  }
+ },
+ "item2_rows": {
+  "rodas5p-fast-small-batch4": {
+   "attempts": 20083,
+   "checksum": -47.78788524467381,
+   "checksum_bits": "c047e4d96c776fff",
+   "equal": true
+  },
+  "rodas5p-fast-small-batch8": {
+   "attempts": 20083,
+   "checksum": -47.78788524467381,
+   "checksum_bits": "c047e4d96c776fff",
+   "equal": true
+  }
+ },
+ "item3": {
+  "checks": {
+   "both_lane_counts": true,
+   "identical": true,
+   "nonfinite_rhs_in_one_lane": true,
+   "typed_linear_solve_failures": true
+  },
+  "outcome": {
+   "identical": true,
+   "lanes": [
+    4,
+    8
+   ],
+   "members_compared": 40,
+   "nonfinite_failures_other_lanes": 0,
+   "nonfinite_failures_poisoned_lane": 44,
+   "oversized_step_failing_lanes": 3,
+   "oversized_step_linear_solve_failures": 27,
+   "schema": "vigilode-spd08-contract-outcome-v1",
+   "singular_member_factorization_failures": 25,
+   "test": "injected_failures_are_masked_per_lane"
+  },
+  "sha256": "b1c1bb99010a549887efb93187c3b25dd47779152eea8fb347e3f3da62fb4519",
+  "source": "research/spd08_small_ensemble_lanes_20261007/CONTRACT.json"
+ },
+ "item4": {
+  "batch8_max": 0.8,
+  "deterministic": {
+   "rodas5p-fast-small": true,
+   "rodas5p-fast-small-batch4": true,
+   "rodas5p-fast-small-batch8": true
+  },
+  "ir_per_trajectory": {
+   "rodas5p-fast-small": 1224618.09375,
+   "rodas5p-fast-small-batch4": 1146923.03125,
+   "rodas5p-fast-small-batch8": 1131169.78125
+  },
+  "kill_above": 0.9,
+  "predicted_batch8": [
+   0.65,
+   0.75
+  ],
+  "ratio_to_scalar": {
+   "rodas5p-fast-small-batch4": 0.9365556797694505,
+   "rodas5p-fast-small-batch8": 0.923691873428193
+  },
+  "reported_members_difference_ratio_to_scalar": {
+   "rodas5p-fast-small-batch4": 0.9361587709702812,
+   "rodas5p-fast-small-batch8": 0.9216644346074813
+  }
+ },
+ "item5": {
+  "base_attempts": 20083,
+  "base_checksum": -47.78788524467381,
+  "base_ir_per_trajectory_members_difference": 1126013.46875,
+  "checks": {
+   "attempts_20083": true,
+   "checksum_exact": true,
+   "ir_within_2_percent": false
+  },
+  "new_ir_per_trajectory_members_difference": 1222712.5,
+  "ratio": 1.0858773308967136,
+  "tolerance": 0.02
+ },
+ "members": 64,
+ "rtol": "1e-6",
+ "scalar_attempts": 20083,
+ "scalar_checksum": -47.78788524467381,
+ "scalar_checksum_bits": "c047e4d96c776fff",
+ "schema": "vigilode-spd08-check-v1",
+ "valgrind": "valgrind-3.22.0",
+ "verdict": "FAIL"
+}

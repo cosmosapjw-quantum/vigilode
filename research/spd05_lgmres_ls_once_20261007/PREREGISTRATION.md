@@ -64,3 +64,27 @@ L-0061 (LGMRES-into, 0.94-0.99x allocations; the remainder traced to this loop),
 `gmres_into::cycle`). No driver calls `solve_lgmres_into` (the matrix-free driver's LGMRES path uses
 `solve_lgmres_with_workspace`); a PASS is an allocation result for the research entry point, and adopting it in the
 driver is a separate node. No code of this node exists before this commit.
+
+## Results (appended after the run; source commit recorded in the ledger row)
+
+Implementation: `f94d4ea` (merged as `fd998ca`); the run used `fd998ca`, release build. Outputs:
+`RESULTS_RAW.json`, `RESULTS.json` (`tools/spd05_ls_once_check.py`).
+
+**Gate: PASS.**
+
+| Gate item | Outcome |
+|---|---|
+| 1. Identity | **holds**: 1,216 solves and 344 failures as registered; the candidate equals the legacy path on every solve (outcome and solution bits, residual, iterations, matvecs, counters, state before and after); all 344 legacy failures are `true_residual_exceeds_threshold`, so the enumerated exception (intermediate non-finite least-squares solution) is empty, as predicted |
+| 2. Output and rollback | **holds**: on all 344 failures the output is unchanged and the state rolled back |
+| 3. Allocations | **holds**: allocations per solve after each sequence's first solve, control -> candidate: CDR-120 1,254.7-4,059.1 -> 37.3-110.4 (0.027-0.030), Brusselator-50 trajectory 455.7 -> 15.4 (0.034); forced-failure sets 333 -> 14.0 (0.042) and 411.5 -> 14.5 (0.035); gate <= 0.10, kill 0.5 |
+
+The predictions (CDR about 36-110, Brusselator about 15, failing about 14) held. Least-squares solves per sequence fall
+from one per Arnoldi column to one per cycle (e.g. CDR Pe0.5 tau1e-3: 5,436 -> 144 over 48 solves, 113.25 columns and
+3.0 cycles per solve), so the remaining candidate allocations are about 11 per cycle plus a few per solve. Reported,
+not gated: the candidate together with SPD04's least-squares workspace is also identical to legacy on every solve and
+allocates 3.0-4.7 per solve (0.002-0.009 of control).
+
+Deviations: `LgmresIntoReport::inner_iterations` equals `iterations` by construction (it counts Arnoldi columns
+including augmentation columns); cycles are derived from the solve count of the workspace arm. Claim ceiling:
+allocator events of the research entry point `solve_lgmres_into`, which no driver calls; no instruction or
+wall-time claim.

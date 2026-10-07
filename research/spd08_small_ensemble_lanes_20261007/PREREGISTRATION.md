@@ -72,3 +72,36 @@ on concurrent same-N trajectories; no client in the repository integrates such e
 ## Prior information
 
 L-0041 (small driver and the 64-member ensemble). No code of this node exists before this commit.
+
+## Results (appended after the run; source commit recorded in the ledger row)
+
+Implementation: `3b758ab`, merged with SPD06 in `364f9f8` and into the branch as `fd998ca`; the run used `fd998ca`.
+Binary: release build with line tables, sha256 `2416b7afc2db4b72abca908dab56055e18f7b087a4b45f83cb7a90fe6e6c7103`,
+valgrind 3.22.0. Outputs: `CONTRACT.json` (failure-masking outcome, written by the contract test after its
+assertions held; 4 tests passed), `PROFILE.json` with the three member dumps `PROFILE.members.*.json`, `RESULTS.json`.
+The profiler was run with `--dump-members`, which the registered command line omitted although gate item 1 needs the
+dumps (the flag existed in the profiler committed with the base).
+
+**Gate: FAIL (kill).**
+
+| Gate item | Outcome |
+|---|---|
+| 1. Members identical | **holds**: all 64 members of both batch arms equal the scalar arm (dumps compared field by field) |
+| 2. Checksum | **holds**: -47.78788524467381 (bits `c047e4d96c776fff`), attempts 20,083 in all arms |
+| 3. Failure masking | **holds**: B = 4 and 8; oversized step: 27 typed linear-solve failures in 3 lanes; a member whose factorizations all fail: 25 failures; a non-finite right-hand side in one lane: 44 failures there, 0 elsewhere; 40 members compared, all identical |
+| 4. Instructions | **fails, kill**: Ir per trajectory (2-minus-1 repetitions) batch8 / scalar = **0.924**, batch4 0.937 (gate <= 0.80; kill above 0.90 for both); 64-minus-32 cross-check 0.922 and 0.936 |
+| 5. Legacy reproduction | **fails**: the scalar arm costs 1,222,712 Ir per trajectory (64-minus-32) against 1,126,013 in `BASE_ENSEMBLE.json` (1.086; tolerance +-2 %); attempts and checksum exact |
+
+The prediction (0.65-0.75) was wrong by a wide margin. Batching the elementwise stage arithmetic over lanes saves
+about 78,000-93,000 Ir per trajectory (of 1.22 M), i.e. about 250-300 Ir per attempt (313.8 attempts per
+trajectory); per-lane control flow,
+LU, solves, controller and output clock dominate at N = 2. Against the base binary the batch8 arm (1,131,170 Ir per
+trajectory) is 1.005x the scalar small driver as recorded before any change: in absolute terms the batch arm only
+recovers the scalar arm's drift.
+
+The scalar arm drifted by 8.6 %: the small driver's legacy path is now one generic function shared with SPD06's
+static variants (SPD06 measured +5.2 % per attempt on van der Pol in its binary), and the ensemble runner now keeps
+every member's result until all finish (for the member-order checksum and dumps). Both changes leave the results
+bitwise unchanged. Item 5 is a validity failure of the comparison baseline; with item 4 failing in both binaries'
+terms, the direction (lane batching of the small driver at N = 2) is closed. Claim ceiling: counted instructions of
+a research ensemble driver; no wall-time claim.
