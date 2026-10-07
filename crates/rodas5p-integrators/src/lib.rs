@@ -53,6 +53,7 @@ mod raw_stage_target;
 mod rhs_telemetry;
 mod rodas5p_fast;
 mod rodas5p_fast_small;
+mod rodas5p_fast_small_batch;
 mod rodas5p_matrix_free_fast;
 mod sabr;
 mod scientific_corpus_v2;
@@ -362,6 +363,10 @@ pub use rodas5p_fast_small::{
     RODAS5P_FAST_SMALL_DRIVER_ID, Rodas5pFastSmallOptions, Rodas5pFastSmallResult, SmallProblem,
     integrate_rodas5p_fast_small_observed, integrate_rodas5p_fast_small_observed_with_options,
     integrate_rodas5p_fast_small_observed_with_small_options, rodas5p_fast_small_static_tables,
+};
+pub use rodas5p_fast_small_batch::{
+    BatchProblem, RODAS5P_FAST_SMALL_BATCH_DRIVER_ID, SmallBatchMember,
+    integrate_rodas5p_fast_small_batch,
 };
 pub use rodas5p_matrix_free_fast::{
     GcrodrRecyclePolicy, MfAttemptObserver, RODAS5P_MF_FAST_DRIVER_ID, Rodas5pMfFastResult,
