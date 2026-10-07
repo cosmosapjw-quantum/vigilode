@@ -308,6 +308,12 @@ impl Rodas5pMfFastWorkspace {
         }
     }
 
+    /// Forget the recorded step, so the next attempt starts as `Previous`
+    /// (the start of a new integration with a reused workspace).
+    pub fn clear_accepted_step(&mut self) {
+        self.step_h = 0.0;
+    }
+
     /// GMRES-into restart cycles (small least-squares solves) of all
     /// stage solves of this workspace so far.
     pub fn gmres_into_cycles(&self) -> u64 {
@@ -774,6 +780,7 @@ fn integrate_mf_fast_inner(
     work.set_gmres_into(gmres_into);
     work.set_gcrodr_policy(policy);
     work.set_ls_workspace(ls_workspace);
+    work.clear_accepted_step();
     let mut y = y0.to_vec();
     let mut h = adaptive.initial_step.min(crate::output::step_to(t, tf)?);
     let mut controller = AdaptiveControllerState::default();

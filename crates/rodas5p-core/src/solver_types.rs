@@ -19,8 +19,11 @@ pub enum InitialGuess {
     Previous,
     /// Stage `i` starts from stage `i` of the last accepted step (research
     /// node `research/spd07_mf_step_warm_start_20261007`). Honoured only by
-    /// the matrix-free U-form fast driver; every other stage solver refuses
-    /// it. Before the first accepted step it acts as `Previous`.
+    /// the matrix-free U-form fast driver, which records each accepted step
+    /// (`Rodas5pMfFastWorkspace::record_accepted_step`); a caller driving the
+    /// workspace's `attempt` itself must record accepted steps too, or the
+    /// start stays `Previous`. The sequential stage solver refuses it. Before
+    /// the first accepted step of an integration it acts as `Previous`.
     PreviousStep,
     /// [`InitialGuess::PreviousStep`] scaled by `h / h_prev` (same node,
     /// reported only).

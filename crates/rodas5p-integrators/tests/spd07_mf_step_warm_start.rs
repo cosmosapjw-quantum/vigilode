@@ -294,3 +294,62 @@ fn sequential_step_refuses_step_indexed_starts() {
         assert!(error.contains("step-indexed"), "{error}");
     }
 }
+
+/// Stage indexing and scaling of the step-indexed starts through the
+/// workspace: re-attempting the recorded step's system (same `t`, `y`, `h`)
+/// starts every stage from its own solution, so no stage needs a Krylov
+/// iteration; with `h` changed, the scaled start differs from the unscaled
+/// one; and after `clear_accepted_step` the start is `Previous` again.
+#[test]
+fn recorded_step_starts_each_stage_from_its_own_solution() {
+    use rodas5p_core::WorkCounters;
+    use rodas5p_integrators::Rodas5pMfFastWorkspace;
+    let run = runs().into_iter().find(|r| r.id == "quadratic-4").unwrap();
+    let (t, h, atol, rtol) = (0.0, 1.0e-2, 1.0e-8, 1.0e-8);
+    let attempt = |work: &mut Rodas5pMfFastWorkspace, h: f64| {
+        let mut counters = WorkCounters::default();
+        work.attempt(
+            &run.problem,
+            t,
+            &run.y0,
+            h,
+            true,
+            None,
+            atol,
+            rtol,
+            &mut counters,
+        )
+        .unwrap();
+        counters
+    };
+    for x0 in [InitialGuess::PreviousStep, InitialGuess::PreviousStepScaled] {
+        let mut work =
+            Rodas5pMfFastWorkspace::new(&run.problem, &config(LinearMethod::Gmres, x0)).unwrap();
+        let first = attempt(&mut work, h);
+        assert!(first.linear_iterations > 0);
+        let stages: Vec<Vec<f64>> = (0..8).map(|i| work.stage(i).to_vec()).collect();
+        work.record_accepted_step(h);
+        let again = attempt(&mut work, h);
+        assert_eq!(
+            again.linear_iterations, 0,
+            "{x0:?}: a stage started elsewhere"
+        );
+        for (i, stage) in stages.iter().enumerate() {
+            assert_eq!(work.stage(i), &stage[..], "{x0:?}: stage {i}");
+        }
+        work.clear_accepted_step();
+        let cleared = attempt(&mut work, h);
+        assert_eq!(cleared.linear_iterations, first.linear_iterations, "{x0:?}");
+    }
+    // A changed step: the scaled and unscaled starts differ.
+    let mut runs_at_half = Vec::new();
+    for x0 in [InitialGuess::PreviousStep, InitialGuess::PreviousStepScaled] {
+        let mut work =
+            Rodas5pMfFastWorkspace::new(&run.problem, &config(LinearMethod::Gmres, x0)).unwrap();
+        attempt(&mut work, h);
+        work.record_accepted_step(h);
+        let half = attempt(&mut work, 0.5 * h);
+        runs_at_half.push((half.linear_matvecs, work.stage(0).to_vec()));
+    }
+    assert_ne!(runs_at_half[0], runs_at_half[1]);
+}
