@@ -763,9 +763,18 @@ impl OutputCollector {
     /// [`Self::limit_step`] for a step `h` the driver has already landed
     /// toward the span end with this collector's cap (`adaptive_end_step`
     /// with the same `StepCap`): the re-landing toward the span end is
-    /// skipped, since on a landed or interior step it reproduces `h`
-    /// (speed research node SPD01; the property test in this module checks
-    /// the composition). An interior due time is still landed on.
+    /// skipped (speed research node SPD01). An interior due time is still
+    /// landed on.
+    ///
+    /// Not identical to `limit_step` in two cases: (1) a step shortened by
+    /// the post-rejection rule whose end lies within the rounding residue
+    /// of the span end, which the re-landing extends back to it; (2) a step
+    /// below `2^16 eps max(|t|, |tf|)`, where the residue is capped by
+    /// `h 2^-10` and the re-landing of the represented (slightly larger)
+    /// `h` can extend it to the span end while the first landing did not
+    /// (independent review of the speed cycle: t0 = 2^40, a unit step;
+    /// legacy one attempt, fused two). Opt-in only; not for promotion as
+    /// is.
     pub(crate) fn limit_landed_step(&self, t: f64, h: f64) -> CoreResult<(f64, bool)> {
         if !(t.is_finite() && h.is_finite() && h > 0.0) {
             return Err(CoreError::InvalidInput(

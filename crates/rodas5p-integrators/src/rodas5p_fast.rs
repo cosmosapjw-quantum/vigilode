@@ -257,7 +257,6 @@ impl BandState {
             self.factors[i * width + l] += inv;
         }
         self.work.factor_operations += (n * jw) as u64;
-        let mut operations = 0_u64;
         for k in 0..n {
             let last_row = (k + l).min(n - 1);
             let mut p = k;
@@ -299,10 +298,9 @@ impl BandState {
                 for (x, r) in row[1..].iter_mut().zip(&pivot_row[1..]) {
                     *x -= m * r;
                 }
-                operations += 1 + 2 * (last_col - k) as u64;
+                self.work.factor_operations += 1 + 2 * (last_col - k) as u64;
             }
         }
-        self.work.factor_operations += operations;
         Ok(())
     }
 
@@ -1194,6 +1192,12 @@ pub fn integrate_rodas5p_fast_banded_observed_with_kernel(
     output: &OutputSchedule,
     kernel: BandedKernel,
 ) -> CoreResult<Rodas5pFastBandedResult> {
+    let n = problem.dimension;
+    if band.lower >= n.max(1) || band.upper >= n.max(1) {
+        return Err(CoreError::InvalidInput(
+            "the band of the RODAS5P fast banded driver must lie inside the matrix".into(),
+        ));
+    }
     integrate_banded(
         problem,
         band,

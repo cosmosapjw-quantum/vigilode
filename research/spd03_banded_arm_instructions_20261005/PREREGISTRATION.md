@@ -141,3 +141,16 @@ zeroed before every factorization, `rodas5p_fast.rs:186`).
 Cross-node comparison, not a gate: at n = 400 the banded arm's 0.98 M instructions per attempt is 0.11x the L-0030 count
 of Hairer's RODAS (8.83 M, which factors the dense matrix). Claim ceiling: counted instructions on the 1-D Brusselator
 with a declared band; no wall-time claim.
+
+## Changes after the run (2026-10-07, from the independent review; appended)
+
+- `brusselator-1d-500` was added to `benchmark_problems()` for this node. That made the SPD01/SPD02 identity exports
+  and two existing Jacobian tests iterate the n = 1000 problem, so those exports could no longer be re-run with
+  their recorded results. It now lives in a separate `profile_problems()`, used only by `stiff-profile-run` and the
+  band-fill test. The recorded commands of this node are unchanged: `stiff-profile-run --problem brusselator-1d-500`
+  still finds the problem.
+- `factor_slices` now adds each column's operations to `BandedWork` as it goes, as the indexed kernel does. Before
+  the change, a factorization that failed partway dropped the operations of the earlier columns. No recorded case
+  fails a factorization, so the recorded `BandedWork` is unchanged.
+- `integrate_rodas5p_fast_banded_observed_with_kernel` now refuses a band outside the matrix, as the existing banded
+  entry does.

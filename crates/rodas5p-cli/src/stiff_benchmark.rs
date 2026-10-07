@@ -356,8 +356,15 @@ pub fn benchmark_problems() -> CoreResult<Vec<BenchmarkProblem>> {
         t_span: (0.0, 10.0),
         atol_scale: 1.0,
     });
-    // n = 1000, for the slope of the banded arms (speed research node
-    // SPD03); never in a default selection.
+    Ok(problems)
+}
+
+/// [`benchmark_problems`] plus `brusselator-1d-500` (n = 1000), for the
+/// slope of the banded arms of speed research node SPD03. Only
+/// `stiff-profile-run` and the SPD03 tests use it, so the benchmark, its
+/// tests and the SPD01/SPD02 identity exports keep their problem set.
+pub fn profile_problems() -> CoreResult<Vec<BenchmarkProblem>> {
+    let mut problems = benchmark_problems()?;
     let (larger, larger_y0) = brusselator_problem(500)?;
     problems.push(BenchmarkProblem {
         id: "brusselator-1d-500",
@@ -669,7 +676,7 @@ pub fn stiff_benchmark(
 pub fn profile_run(problem_id: &str, arm: &str, rtol: f64, repetitions: usize) -> Result<Value> {
     anyhow::ensure!(repetitions >= 1, "at least one repetition");
     anyhow::ensure!(known_arm(arm), "unknown arm {arm}");
-    let problem = benchmark_problems()?
+    let problem = profile_problems()?
         .into_iter()
         .find(|p| p.id == problem_id)
         .ok_or_else(|| anyhow::anyhow!("unknown problem {problem_id}"))?;
@@ -1297,7 +1304,7 @@ mod spd01 {
     /// equals the dense fill entry for entry on the parity states.
     #[test]
     fn spd03_band_fill_equals_dense_fill() {
-        for problem in benchmark_problems().unwrap() {
+        for problem in profile_problems().unwrap() {
             let Some(cells) = brusselator_cells(problem.id) else {
                 continue;
             };

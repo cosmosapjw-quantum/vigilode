@@ -200,3 +200,22 @@ problem was then profiled with the same binary (`PROFILE_DENSE_B50.json`, four a
 compare integer call counts (`land_capped == attempts`, `step_to == 2 attempts + 1`) as the gate text says; no measured
 number changed and no threshold was moved. `RESULTS.json` is kept as written. Claim ceiling: counted instructions on
 these problems; no wall-time claim.
+
+## Correction after the independent review (2026-10-07; appended, the results above are not edited)
+
+The results above say "0 class A and 0 class B discrepancies at any step size". That overstates a sampling outcome.
+The property test drew 616,920 compared samples and found no discrepancy, but the fused landing is **not** identical
+to the legacy composition for steps below `2^16 eps max(|t|, |tf|)`, the region the registered gate item 5 exempts.
+There the rounding residue is capped by `h 2^-10`: `adaptive_end_step` does not extend the nominal step, while the
+legacy re-landing of the represented (slightly larger) `h` does, so legacy lands on `tf` and the fused path takes
+one more sliver step. The independent reviewer constructed one: `t0 = 2^40`, `tf = t0 + 1 + 4 * 2^-12`, initial
+step `1 - 2^-14`, `y' = -1e-3 y`; legacy needs 1 attempt (final `3feff7cdd9ab9792`), fused needs 2 (final
+`3feff7cdd9ab9791`). Uniform sampling misses it because the failing window is narrower than one ULP.
+
+Effect on the verdict: none. Gate item 5 was registered as "no class A or B discrepancy with `h >= 2^16 eps max(|t|,
+|tf|)`", and the identity items 1 and 2 hold on the recorded corpus. Effect on the claim: `fused_landing` is identical
+on the corpus and above the stated step size only, and must not be promoted as is. The doc comment of
+`OutputCollector::limit_landed_step` now states both exceptions (the class C case and this one). The reviewer also
+noted that the test's classifier puts every discrepancy with a fired post-rejection shortening into class C without
+checking that the step ends within the residue of `tf`, and that the `*_tiny` counts are reported but not asserted.
+Neither changes the recorded counts.
