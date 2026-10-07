@@ -107,3 +107,37 @@ kernel (export `SPD03_INT03=...`, file `INT03.json`). `tools/spd03_banded_check.
 gates item 1 also on equal `BandedWork` of the two kernels on the 14 CLI points. The node shares
 `Rodas5pFastOptions` and the CLI with SPD01/SPD02, whose recorded runs precede this one; the legacy-reproduction item
 (5) compares against SPD01's `BASE_PROFILE.json` as registered. Gate items and thresholds are unchanged.
+
+---
+
+## Results (appended after the run; source commit recorded in the ledger row)
+
+Binary: release build with line tables, sha256 `2e6a119e5a61a84ddfb425bf9651f1d8052ca03a84e2b04a8c621cfc893cfe92`, valgrind 3.22.0,
+`RAYON_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1`. Outputs: `IDENTITY.json` (14 CLI rows), `INT03.json` (six cases),
+`PROFILE.json`, `PROFILE_N1000.json`, `RESULTS.json`. Band-fill contract (CLI unit test) passed.
+
+**Gate: PASS.**
+
+| Gate item | Outcome |
+|---|---|
+| 1. Identity | **holds**: both banded arms equal v2 bitwise on all 14 CLI points (all output states, step counts, reuses, clipped steps, counters, success) and the two kernels report equal `BandedWork` there; the slices kernel equals the indexed kernel bitwise (outputs and `BandedWork`) on all six INT-03 cases |
+| 2. Band fill | **holds**: the native fill equals the dense fill bit for bit on every parity state of both Brusselators and of n = 1000 |
+| 3. Instructions at n = 400 | **holds**: banded / v2 = **0.255** (3,836,518 -> 978,338 Ir per attempt; gate <= 0.40, predicted 0.25-0.40) |
+| 4. Counted operations | **holds**: log-log slope 1.011 between n = 100 and 400 (12,447 -> 50,547 banded operations per attempt) |
+| 5. Legacy reproduction | **holds**: v2 on this binary reproduces the base work and final states; Ir per attempt 1.0064x (n = 400) and 1.0154x (n = 100) of the base |
+
+Secondary, reported: n = 100 banded / v2 = 0.617 (stage work dominates there, as predicted 0.66-0.85; it came out
+lower); n = 1000: 2,438,632 Ir per attempt with 126,747 operations per attempt (operation slope 1.003 from n = 400,
+instruction slope about 1.0); **part B fails its secondary item**: the slices kernel is bitwise identical but costs
+1.012x (n = 400) and 1.017x (n = 100) the indexed kernel's instructions (gate <= 0.95). The `at(i, j)` indexing was not
+the cost: the rows are 2-5 entries long and slice setup costs as much as the bounds checks it removes.
+
+"Ir per counted operation" in `RESULTS.json` (19.4 at n = 400, 19.9 at n = 100) divides the whole attempt (stage
+right-hand sides, axpys, controller, assembly) by the banded LU and solve operations only; it is not the cost of a
+banded operation alone. Attribution of the banded arm at n = 400 (by file): Rust std iterator and indexing code 50 %,
+the driver body 36 %, the Brusselator right-hand side and band fill 9.6 %, `memset` 4.5 % (the factors buffer is
+zeroed before every factorization, `rodas5p_fast.rs:186`).
+
+Cross-node comparison, not a gate: at n = 400 the banded arm's 0.98 M instructions per attempt is 0.11x the L-0030 count
+of Hairer's RODAS (8.83 M, which factors the dense matrix). Claim ceiling: counted instructions on the 1-D Brusselator
+with a declared band; no wall-time claim.
