@@ -52,3 +52,30 @@ the second LU; this node does not re-gate it).
 ## Prior information
 
 L-0082 (SPD02). No code of this node exists before this commit.
+
+## Results (appended after the run; source commit recorded in the ledger row)
+
+Implementation: `00991a1`, merged as `bd62a8b`; the run used `bd62a8b` (the same binary as SPD06, sha256
+`5dffdc3e199c831a305f0900204b302cd89a51dc753b8d2ddeb592a147fe6be8`), valgrind 3.22.0. Outputs: `IDENTITY.json`,
+`PROFILE.json`, `RESULTS.json`. The non-ignored identity test passed; all callgrind runs were deterministic.
+
+**Gate: PASS.**
+
+| Gate item | Outcome |
+|---|---|
+| 1. Identity | **holds**: `rodas5p-fast-colext64` equals `rodas5p-fast` bitwise on all 37 points |
+| 2. No loss at or below n = 64 | **holds**: 1.0000 van der Pol, 1.0001 Robertson, 1.0000 HIRES, 1.0000 brusselator-1d-30 (n = 60); gate <= 1.005 |
+| 3. Gain above n = 64 | **holds**: **0.833** brusselator-1d-40 (n = 80; gate <= 0.85), **0.787** brusselator-1d-50 (n = 100; <= 0.80), **0.531** brusselator-1d-200 (n = 400; <= 0.60) |
+
+Reported, not gated:
+
+- The always-on `rodas5p-fast-colext` arm costs 1.036 / 1.050 / 1.066 at n = 2 / 3 / 8 (SPD02 measured 1.036-1.062)
+  but **0.888 at n = 60**: the crossover lies below n = 60, so the threshold 64, fixed before the run and not
+  fitted, leaves a gain of about 11 % at n = 60 unused. Where between n = 8 and 60 the crossover is was not measured.
+- Legacy drift of `rodas5p-fast` against `BASE_PROFILE.json` with equal work and final states: 1.014 (van der
+  Pol), 1.017 (Robertson), 1.022 (HIRES), 1.014 (n = 100), 1.006 (n = 400), from carrying the extra LU code paths
+  (SPD02 recorded +2.4 % at n = 400).
+- The colext64 driver id is reported also below the threshold, where the legacy LU runs; the result's `lu` field
+  says which LU ran.
+
+Claim ceiling: counted instructions of the dense-storage fast driver on the listed problems; no wall-time claim.
