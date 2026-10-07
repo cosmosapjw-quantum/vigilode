@@ -1,3 +1,4 @@
+use crate::small::LeastSquaresWorkspace;
 use rodas5p_core::{CoreResult, DenseMatrix};
 
 pub(crate) fn ensure_len(buffer: &mut Vec<f64>, len: usize) {
@@ -90,11 +91,48 @@ impl ArnoldiWorkspace {
 pub struct GmresWorkspace {
     pub(crate) common: CommonWorkspace,
     pub(crate) arnoldi: ArnoldiWorkspace,
+    /// Opt-in allocation-free small least squares of `solve_gmres_into`
+    /// (research node `research/spd04_ls_workspace_20261007`); `None` keeps
+    /// the allocating [`crate::small::least_squares`]. The other GMRES entry
+    /// points never use it.
+    pub(crate) least_squares: Option<Box<LeastSquaresWorkspace>>,
+    /// The least-squares solution when `least_squares` is used.
+    pub(crate) least_squares_solution: Vec<f64>,
 }
 
 impl GmresWorkspace {
     pub fn capacity_f64(&self) -> usize {
-        self.common.capacity_f64() + self.arnoldi.capacity_f64()
+        self.common.capacity_f64()
+            + self.arnoldi.capacity_f64()
+            + self.least_squares_solution.capacity()
+    }
+
+    /// A workspace whose `solve_gmres_into` solves the small least-squares
+    /// problem in a reused [`LeastSquaresWorkspace`] (research node
+    /// `research/spd04_ls_workspace_20261007`); bitwise the same results.
+    pub fn with_ls_workspace() -> Self {
+        let mut workspace = Self::default();
+        workspace.set_ls_workspace(true);
+        workspace
+    }
+
+    /// Turn the reused least-squares workspace of `solve_gmres_into` on or
+    /// off (off by default). Turning it off drops its buffers.
+    pub fn set_ls_workspace(&mut self, on: bool) {
+        match (on, self.least_squares.is_some()) {
+            (true, false) => self.least_squares = Some(Box::default()),
+            (false, true) => {
+                self.least_squares = None;
+                self.least_squares_solution = Vec::new();
+            }
+            _ => {}
+        }
+    }
+
+    /// The reused least-squares workspace, if on (its growth flag and
+    /// counters).
+    pub fn ls_workspace(&self) -> Option<&LeastSquaresWorkspace> {
+        self.least_squares.as_deref()
     }
 }
 

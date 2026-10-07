@@ -495,6 +495,13 @@ enum Command {
         members: usize,
         #[arg(long, default_value_t = 1.0e-6)]
         rtol: f64,
+        /// The whole ensemble is run this many times (speed research node
+        /// SPD08's repetition protocol); the report is one repetition's.
+        #[arg(long, default_value_t = 1)]
+        repetitions: usize,
+        /// Writes the per-member results (SPD08 identity gate) as JSON.
+        #[arg(long)]
+        dump_members: Option<PathBuf>,
     },
     R4Study {
         #[arg(long)]
@@ -3057,8 +3064,23 @@ fn main() -> Result<()> {
                 stiff_benchmark::profile_run(&problem, &arm, rtol, repetitions)?
             );
         }
-        Command::StiffEnsembleRun { arm, members, rtol } => {
-            println!("{}", stiff_benchmark::ensemble_run(&arm, members, rtol)?);
+        Command::StiffEnsembleRun {
+            arm,
+            members,
+            rtol,
+            repetitions,
+            dump_members,
+        } => {
+            println!(
+                "{}",
+                stiff_benchmark::ensemble_run(
+                    &arm,
+                    members,
+                    rtol,
+                    repetitions,
+                    dump_members.as_deref()
+                )?
+            );
         }
         Command::R4Study {
             study,

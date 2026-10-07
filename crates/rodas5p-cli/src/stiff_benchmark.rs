@@ -14,12 +14,14 @@ use anyhow::Result;
 use rodas5p_core::{CoreResult, DenseMatrix, LinearMethod, LinearSolverConfig, WorkCounters};
 use rodas5p_integrators::{
     AdaptiveObservedIntegrationResult, AdaptiveRunDiagnostics, AdaptiveStepConfig, BandedJacobian,
-    BandedKernel, BandedWork, BdfConfig, FastLuPolicy, IntegrationMethod, NewtonTolerancePolicy,
-    OdeProblem, OutputSchedule, RadauConfig, Rodas5pFastOptions, Rodas5pFastSmallOptions,
-    SmallProblem, integrate_adaptive_observed_with_config, integrate_bdf_adaptive_observed,
+    BandedKernel, BandedWork, BatchProblem, BdfConfig, FastLuPolicy, IntegrationMethod,
+    NewtonTolerancePolicy, OdeProblem, OutputSchedule, RadauConfig, Rodas5pFastOptions,
+    Rodas5pFastSmallOptions, Rodas5pFastSmallResult, SmallBatchMember, SmallProblem,
+    integrate_adaptive_observed_with_config, integrate_bdf_adaptive_observed,
     integrate_radau_adaptive_observed, integrate_rodas5p_fast_banded_observed_with_kernel,
     integrate_rodas5p_fast_observed, integrate_rodas5p_fast_observed_with_options,
-    integrate_rodas5p_fast_small_observed, integrate_rodas5p_fast_small_observed_with_options,
+    integrate_rodas5p_fast_small_batch, integrate_rodas5p_fast_small_observed,
+    integrate_rodas5p_fast_small_observed_with_options,
     integrate_rodas5p_fast_small_observed_with_small_options, robertson_problem,
     stiff_van_der_pol_problem,
 };
@@ -845,6 +847,28 @@ impl SmallProblem<2> for SmallVanDerPol {
     }
 }
 
+/// [`SmallVanDerPol`] on `B` lanes with the scalar expression order (speed
+/// research node `research/spd08_small_ensemble_lanes_20261007`); the lane
+/// data is `mu` per lane.
+impl<const B: usize> BatchProblem<2, B> for SmallVanDerPol {
+    type Lanes = [f64; B];
+    fn lanes(member: &Self) -> [f64; B] {
+        [member.mu; B]
+    }
+    fn set_lane(lanes: &mut [f64; B], lane: usize, member: &Self) {
+        lanes[lane] = member.mu;
+    }
+    fn rhs_batch(mu: &[f64; B], y: &[[f64; B]; 2], out: &mut [[f64; B]; 2]) {
+        let [y0, y1] = y;
+        let [out0, out1] = out;
+        for l in 0..B {
+            let mu = mu[l];
+            out0[l] = y1[l];
+            out1[l] = mu * (1.0 - y0[l] * y0[l]) * y1[l] - y0[l];
+        }
+    }
+}
+
 /// Robertson with the same operations as `robertson_problem`.
 struct SmallRobertson;
 
@@ -1018,71 +1042,184 @@ fn run_small_full(
     }
 }
 
-/// An ensemble of `members` van der Pol trajectories,
-/// `mu = 1000 (1 + k / members)`, run back to back with `arm`
-/// (`rodas5p-fast`, `rodas5p-fast-small` or SPD06's
-/// `rodas5p-fast-small-static`): the summed attempts and a checksum of the
-/// final states.
-pub fn ensemble_run(arm: &str, members: usize, rtol: f64) -> Result<Value> {
-    anyhow::ensure!(members >= 1, "at least one member");
+/// The lane-batched ensemble arms of speed research node SPD08
+/// (`research/spd08_small_ensemble_lanes_20261007`): the small driver's
+/// arithmetic on 4 or 8 lanes. Only in `stiff-ensemble-run`.
+pub const SMALL_BATCH4_ARM: &str = "rodas5p-fast-small-batch4";
+pub const SMALL_BATCH8_ARM: &str = "rodas5p-fast-small-batch8";
+
+/// The member results of one ensemble run with `arm`, in member order.
+fn ensemble_members(
+    arm: &str,
+    members: usize,
+    base: &BenchmarkProblem,
+    adaptive: &AdaptiveStepConfig,
+    output: &OutputSchedule,
+) -> Result<Vec<Rodas5pFastSmallResult>> {
+    let mu = |k: usize| 1000.0 * (1.0 + k as f64 / members as f64);
+    if arm == SMALL_BATCH4_ARM || arm == SMALL_BATCH8_ARM {
+        let y0 = fixed::<2>(&base.y0)?;
+        let batch: Vec<_> = (0..members)
+            .map(|k| SmallBatchMember {
+                problem: SmallVanDerPol { mu: mu(k) },
+                t_span: base.t_span,
+                y0,
+            })
+            .collect();
+        let runs = if arm == SMALL_BATCH4_ARM {
+            integrate_rodas5p_fast_small_batch::<2, 4, _>(&batch, adaptive, output)
+        } else {
+            integrate_rodas5p_fast_small_batch::<2, 8, _>(&batch, adaptive, output)
+        };
+        return Ok(runs.into_iter().collect::<CoreResult<Vec<_>>>()?);
+    }
     // Speed research node SPD06: the gated static arm runs the ensemble too.
     let small_static = (arm == SMALL_STATIC_ARMS[0]).then(|| small_static_arm(arm).unwrap());
-    anyhow::ensure!(
-        arm == FAST_ARM || arm == SMALL_ARM || small_static.is_some(),
-        "ensemble arms: {FAST_ARM}, {SMALL_ARM}, {}",
-        SMALL_STATIC_ARMS[0]
-    );
-    let base = benchmark_problems()?
-        .into_iter()
-        .find(|p| p.id == "van-der-pol-mu1000")
-        .expect("van der Pol is a benchmark problem");
-    let adaptive = adaptive_config(&base, rtol);
-    let output = OutputSchedule::new(vec![base.t_span.0, base.t_span.1])?;
-    let (mut attempts, mut checksum) = (0_usize, 0.0_f64);
+    let mut runs = Vec::with_capacity(members);
     for k in 0..members {
-        let mu = 1000.0 * (1.0 + k as f64 / members as f64);
+        let mu = mu(k);
         let run = if let Some(options) = small_static {
-            small_result(integrate_rodas5p_fast_small_observed_with_small_options(
+            integrate_rodas5p_fast_small_observed_with_small_options(
                 &SmallVanDerPol { mu },
                 base.t_span,
                 &fixed::<2>(&base.y0)?,
-                &adaptive,
-                &output,
+                adaptive,
+                output,
                 options,
-            )?)
+            )?
         } else if arm == SMALL_ARM {
-            small_result(integrate_rodas5p_fast_small_observed(
+            integrate_rodas5p_fast_small_observed(
                 &SmallVanDerPol { mu },
                 base.t_span,
                 &fixed::<2>(&base.y0)?,
-                &adaptive,
-                &output,
-            )?)
+                adaptive,
+                output,
+            )?
         } else {
             let (problem, _) = stiff_van_der_pol_problem(mu)?;
-            let fast = integrate_rodas5p_fast_observed(
-                &problem,
-                base.t_span,
-                &base.y0,
-                &adaptive,
-                &output,
-            )?;
-            small_result(rodas5p_integrators::Rodas5pFastSmallResult {
+            let fast =
+                integrate_rodas5p_fast_observed(&problem, base.t_span, &base.y0, adaptive, output)?;
+            Rodas5pFastSmallResult {
                 observed: fast.observed,
                 attempts: fast.attempts,
                 accepted_steps: fast.accepted_steps,
                 rejected_steps: fast.rejected_steps,
                 jacobian_reuses: fast.jacobian_reuses,
                 driver: fast.driver,
-            })
+            }
         };
-        anyhow::ensure!(run.observed.success, "member {k} failed");
-        attempts += run.diagnostics.attempts;
-        checksum += run.observed.y.last().unwrap().iter().sum::<f64>();
+        runs.push(run);
     }
-    Ok(
-        json!({"arm": arm, "members": members, "rtol": rtol, "attempts": attempts, "checksum": checksum}),
-    )
+    Ok(runs)
+}
+
+fn f64_bits_hex(v: f64) -> String {
+    format!("{:016x}", v.to_bits())
+}
+
+/// One member of a `--dump-members` file: everything the SPD08 identity gate
+/// compares, floats as IEEE bit patterns.
+fn member_dump(k: usize, run: &Rodas5pFastSmallResult) -> Value {
+    let observed = &run.observed;
+    json!({
+        "member": k,
+        "success": observed.success,
+        "attempts": run.attempts,
+        "accepted": run.accepted_steps,
+        "rejected": run.rejected_steps,
+        "reuses": run.jacobian_reuses,
+        "counters": observed.counters,
+        "internal_steps": observed.internal_steps,
+        "output_clipped_steps": observed.output_clipped_steps,
+        "output_times_bits": observed.t.iter().map(|t| f64_bits_hex(*t)).collect::<Vec<_>>(),
+        "output_states_bits": observed
+            .y
+            .iter()
+            .map(|y| y.iter().map(|v| f64_bits_hex(*v)).collect::<Vec<_>>())
+            .collect::<Vec<_>>(),
+        "final_state_bits": observed
+            .y
+            .last()
+            .map(|y| y.iter().map(|v| f64_bits_hex(*v)).collect::<Vec<_>>()),
+    })
+}
+
+/// An ensemble of `members` van der Pol trajectories,
+/// `mu = 1000 (1 + k / members)`, run back to back with `arm`
+/// (`rodas5p-fast`, `rodas5p-fast-small` or SPD06's
+/// `rodas5p-fast-small-static`) or on lanes
+/// (`rodas5p-fast-small-batch4`, `-batch8`, SPD08): the summed attempts and a
+/// checksum of the final states, accumulated in member order after all
+/// members finished. The whole ensemble runs `repetitions` times (SPD08's
+/// repetition protocol); every repetition must give the same attempts and
+/// checksum bits, and the report is one repetition's. `dump` receives the
+/// per-member results of the first repetition.
+pub fn ensemble_run(
+    arm: &str,
+    members: usize,
+    rtol: f64,
+    repetitions: usize,
+    dump: Option<&std::path::Path>,
+) -> Result<Value> {
+    anyhow::ensure!(members >= 1, "at least one member");
+    anyhow::ensure!(repetitions >= 1, "at least one repetition");
+    anyhow::ensure!(
+        arm == FAST_ARM
+            || arm == SMALL_ARM
+            || arm == SMALL_STATIC_ARMS[0]
+            || arm == SMALL_BATCH4_ARM
+            || arm == SMALL_BATCH8_ARM,
+        "ensemble arms: {FAST_ARM}, {SMALL_ARM}, {}, {SMALL_BATCH4_ARM}, {SMALL_BATCH8_ARM}",
+        SMALL_STATIC_ARMS[0]
+    );
+    // The setup is per process; a repetition integrates the whole ensemble.
+    let base = benchmark_problems()?
+        .into_iter()
+        .find(|p| p.id == "van-der-pol-mu1000")
+        .expect("van der Pol is a benchmark problem");
+    let adaptive = adaptive_config(&base, rtol);
+    let output = OutputSchedule::new(vec![base.t_span.0, base.t_span.1])?;
+    let mut report: Option<(usize, f64)> = None;
+    let mut first_runs = None;
+    for _ in 0..repetitions {
+        let runs = ensemble_members(arm, members, &base, &adaptive, &output)?;
+        let (mut attempts, mut checksum) = (0_usize, 0.0_f64);
+        for (k, run) in runs.iter().enumerate() {
+            anyhow::ensure!(run.observed.success, "member {k} failed");
+            attempts += run.attempts;
+            checksum += run.observed.y.last().unwrap().iter().sum::<f64>();
+        }
+        match report {
+            None => report = Some((attempts, checksum)),
+            Some((a, c)) => anyhow::ensure!(
+                a == attempts && c.to_bits() == checksum.to_bits(),
+                "repetitions differ: attempts {a} vs {attempts}, checksum {c} vs {checksum}"
+            ),
+        }
+        if dump.is_some() && first_runs.is_none() {
+            first_runs = Some(runs);
+        }
+    }
+    let (attempts, checksum) = report.expect("at least one repetition");
+    if let (Some(path), Some(runs)) = (dump, first_runs) {
+        let doc = json!({
+            "schema": "vigilode-spd08-ensemble-members-v1",
+            "arm": arm,
+            "members": members,
+            "rtol": rtol,
+            "results": runs.iter().enumerate().map(|(k, run)| member_dump(k, run)).collect::<Vec<_>>(),
+        });
+        std::fs::write(path, serde_json::to_string_pretty(&doc)? + "\n")?;
+    }
+    Ok(json!({
+        "arm": arm,
+        "members": members,
+        "rtol": rtol,
+        "repetitions": repetitions,
+        "attempts": attempts,
+        "checksum": checksum,
+        "checksum_bits": f64_bits_hex(checksum),
+    }))
 }
 
 #[cfg(test)]
@@ -1582,14 +1719,14 @@ mod spd06 {
             .find(|p| p.id == "brusselator-1d-50")
             .unwrap();
         assert!(run_arm(SMALL_STATIC_ARMS[0], brusselator, 1.0e-4).is_err());
-        let ensemble = |arm: &str| ensemble_run(arm, 4, 1.0e-4).unwrap();
+        let ensemble = |arm: &str| ensemble_run(arm, 4, 1.0e-4, 1, None).unwrap();
         let (a, b) = (ensemble(SMALL_ARM), ensemble(SMALL_STATIC_ARMS[0]));
         assert_eq!(a["attempts"], b["attempts"]);
         assert_eq!(
             a["checksum"].as_f64().unwrap().to_bits(),
             b["checksum"].as_f64().unwrap().to_bits()
         );
-        assert!(ensemble_run(SMALL_STATIC_ARMS[1], 4, 1.0e-4).is_err());
+        assert!(ensemble_run(SMALL_STATIC_ARMS[1], 4, 1.0e-4, 1, None).is_err());
     }
 }
 

@@ -4,7 +4,7 @@ use crate::{
         validate_residual_scale, validate_system, validate_tolerances,
     },
     kernels::{axpy, linear_combination_into, normalize, two_pass_mgs_into},
-    small::least_squares,
+    small::{LeastSquaresWorkspace, least_squares},
     workspace::{ArnoldiWorkspace, GmresWorkspace},
 };
 use rodas5p_core::{
@@ -183,6 +183,143 @@ pub(crate) fn arnoldi_augmented_with_workspace(
         &last_solution,
         &mut workspace.correction,
     )?;
+    Ok(ArnoldiResult { iterations: actual })
+}
+
+/// [`arnoldi_augmented_with_workspace`] with one small least-squares solve
+/// per call instead of one per column (research node
+/// `research/spd05_lgmres_ls_once_20261007`). The column loop is the legacy
+/// loop without the per-column prefix copy and solve; after it (normal end
+/// or happy breakdown) the final `(actual + 1) x actual` prefix is copied
+/// and solved once with the same right-hand side `[beta, 0, ...]`, which is
+/// the legacy loop's last solve, so the correction is bitwise the same. The
+/// one difference: an intermediate least-squares solution that would have
+/// been non-finite is never formed, so it cannot fail the call. With
+/// `least_squares` the solve uses the reused workspace of research node
+/// `research/spd04_ls_workspace_20261007` (bitwise the same solution).
+/// The legacy function is deliberately left untouched.
+#[allow(clippy::too_many_arguments)]
+pub(crate) fn arnoldi_augmented_ls_once_with_workspace(
+    op: &dyn LinearOperator,
+    pc: &dyn Preconditioner,
+    r_pre: &[f64],
+    beta: f64,
+    krylov_steps: usize,
+    augment_directions: &[Vec<f64>],
+    augment_images: &[Option<Vec<f64>>],
+    counters: &mut WorkCounters,
+    workspace: &mut ArnoldiWorkspace,
+    least_squares_workspace: Option<(&mut LeastSquaresWorkspace, &mut Vec<f64>)>,
+) -> CoreResult<ArnoldiResult> {
+    if augment_directions.len() != augment_images.len() {
+        return Err(CoreError::Dimension(
+            "Arnoldi augmentation direction/image mismatch".into(),
+        ));
+    }
+    let n = r_pre.len();
+    let total = krylov_steps + augment_directions.len();
+    workspace.prepare(n, total)?;
+    workspace.basis[0].copy_from_slice(r_pre);
+    if normalize(&mut workspace.basis[0])? == 0.0 {
+        return Err(CoreError::LinearSolve("zero Arnoldi residual".into()));
+    }
+
+    let mut actual = 0usize;
+    for j in 0..total {
+        if j < krylov_steps {
+            workspace.directions[j].copy_from_slice(&workspace.basis[j]);
+        } else {
+            workspace.directions[j].copy_from_slice(&augment_directions[j - krylov_steps]);
+        }
+
+        let (previous_basis, remaining_basis) = workspace.basis.split_at_mut(j + 1);
+        let w = &mut remaining_basis[0];
+        if j >= krylov_steps {
+            if let Some(image) = &augment_images[j - krylov_steps] {
+                w.copy_from_slice(image);
+            } else {
+                apply_left_with_raw(
+                    op,
+                    pc,
+                    &workspace.directions[j],
+                    w,
+                    &mut workspace.raw_operator_output,
+                    counters,
+                    ApplyCategory::Krylov,
+                )?;
+            }
+        } else {
+            apply_left_with_raw(
+                op,
+                pc,
+                &workspace.directions[j],
+                w,
+                &mut workspace.raw_operator_output,
+                counters,
+                ApplyCategory::Krylov,
+            )?;
+        }
+
+        two_pass_mgs_into(w, previous_basis, &mut workspace.h_column, counters)?;
+        for i in 0..previous_basis.len() {
+            workspace.hessenberg[(i, j)] = workspace.h_column[i];
+        }
+        let h_next = safe_l2(w);
+        workspace.hessenberg[(j + 1, j)] = h_next;
+        actual = j + 1;
+        let happy_breakdown =
+            arnoldi_happy_breakdown(&workspace.h_column[..previous_basis.len()], h_next)?;
+        if !happy_breakdown {
+            for value in w {
+                *value /= h_next;
+            }
+        } else {
+            w.fill(0.0);
+            break;
+        }
+    }
+
+    // The legacy loop's last solve: no column means no solve and an empty
+    // solution, as there.
+    if actual == 0 {
+        linear_combination_into(&workspace.directions[..0], &[], &mut workspace.correction)?;
+        return Ok(ArnoldiResult { iterations: 0 });
+    }
+    workspace
+        .hessenberg_prefix
+        .resize_zeros(actual + 1, actual)?;
+    for row in 0..actual + 1 {
+        for column in 0..actual {
+            workspace.hessenberg_prefix[(row, column)] = workspace.hessenberg[(row, column)];
+        }
+    }
+    workspace.rhs_small[..actual + 1].fill(0.0);
+    workspace.rhs_small[0] = beta;
+    match least_squares_workspace {
+        Some((small, solution)) => {
+            small.solve_into(
+                &workspace.hessenberg_prefix,
+                &workspace.rhs_small[..actual + 1],
+                solution,
+            )?;
+            linear_combination_into(
+                &workspace.directions[..actual],
+                solution,
+                &mut workspace.correction,
+            )?;
+        }
+        None => {
+            let solution = least_squares(
+                &workspace.hessenberg_prefix,
+                &workspace.rhs_small[..actual + 1],
+            )?;
+            linear_combination_into(
+                &workspace.directions[..actual],
+                &solution,
+                &mut workspace.correction,
+            )?;
+        }
+    }
     Ok(ArnoldiResult { iterations: actual })
 }
 

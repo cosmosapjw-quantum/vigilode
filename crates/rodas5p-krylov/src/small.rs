@@ -25,6 +25,290 @@ pub fn least_squares(a: &DenseMatrix, b: &[f64]) -> CoreResult<Vec<f64>> {
     }
 }
 
+/// Reused storage of [`LeastSquaresWorkspace::solve_into`] (research node
+/// `research/spd04_ls_workspace_20261007`).
+///
+/// [`least_squares`] allocates about eleven times per call (the faer copy of
+/// the matrix, the right-hand side, `ColPivQr::new`'s owned factor, both
+/// permutation vectors, the Householder coefficients, the factor and solve
+/// scratch, the split triangle, the solution and the output vector). This
+/// workspace calls the same faer kernels with the parameters `ColPivQr::new`
+/// and `solve_lstsq` use, on buffers it keeps, so the solution is bitwise
+/// the same. Each faer matrix is a view with the column stride and 64-byte
+/// alignment a freshly allocated `Mat` of that shape has (faer rounds the
+/// row capacity of `f64` matrices up to a multiple of 8 and aligns the
+/// allocation to 64 bytes), so no kernel can see a different layout. Every
+/// reused buffer is zeroed or fully overwritten before use, as the fresh
+/// `Mat::zeros` buffers of the allocating path are. Buffers grow only when a
+/// system needs more than every earlier one; growth is counted.
+pub struct LeastSquaresWorkspace {
+    /// Backing storage of the factored matrix (faer's `QR`, later the unit
+    /// lower Householder basis), one 64-byte aligned column.
+    qr: Mat<f64>,
+    /// Backing storage of the Householder coefficients `Q_coeff`.
+    q_coeff: Mat<f64>,
+    /// Backing storage of the upper triangle `R`.
+    r: Mat<f64>,
+    /// Backing storage of the right-hand side, solved in place.
+    rhs: Mat<f64>,
+    perm_forward: Vec<usize>,
+    perm_inverse: Vec<usize>,
+    scratch: Option<faer::dyn_stack::MemBuffer>,
+    scratch_req: Option<faer::dyn_stack::StackReq>,
+    last_grew: bool,
+    growth_events: u64,
+    solves: u64,
+}
+
+impl Default for LeastSquaresWorkspace {
+    fn default() -> Self {
+        Self {
+            qr: Mat::new(),
+            q_coeff: Mat::new(),
+            r: Mat::new(),
+            rhs: Mat::new(),
+            perm_forward: Vec::new(),
+            perm_inverse: Vec::new(),
+            scratch: None,
+            scratch_req: None,
+            last_grew: false,
+            growth_events: 0,
+            solves: 0,
+        }
+    }
+}
+
+impl Clone for LeastSquaresWorkspace {
+    /// A clone is an empty workspace: the buffers hold no state between
+    /// solves, so a clone regrows them on its first solve.
+    fn clone(&self) -> Self {
+        Self::default()
+    }
+}
+
+impl std::fmt::Debug for LeastSquaresWorkspace {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("LeastSquaresWorkspace")
+            .field("qr_len", &self.qr.nrows())
+            .field("q_coeff_len", &self.q_coeff.nrows())
+            .field("r_len", &self.r.nrows())
+            .field("rhs_len", &self.rhs.nrows())
+            .field("perm_len", &self.perm_forward.len())
+            .field(
+                "scratch_bytes",
+                &self.scratch_req.map_or(0, |req| req.size_bytes()),
+            )
+            .field("growth_events", &self.growth_events)
+            .field("solves", &self.solves)
+            .finish()
+    }
+}
+
+/// Column stride of a freshly allocated faer `Mat<f64>` with `rows` rows.
+fn faer_f64_stride(rows: usize) -> usize {
+    rows.next_multiple_of(8)
+}
+
+/// Grow the single-column backing `storage` to at least `len` entries.
+fn grow_backing(storage: &mut Mat<f64>, len: usize) -> bool {
+    if storage.nrows() >= len {
+        return false;
+    }
+    *storage = Mat::zeros(len, 1);
+    true
+}
+
+fn backing_slice(storage: &mut Mat<f64>) -> &mut [f64] {
+    storage
+        .col_mut(0)
+        .try_as_col_major_mut()
+        .expect("a single faer column is contiguous")
+        .as_slice_mut()
+}
+
+impl LeastSquaresWorkspace {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Whether the last [`Self::solve_into`] grew any buffer.
+    pub fn last_solve_grew(&self) -> bool {
+        self.last_grew
+    }
+
+    /// Solves that grew at least one buffer, since creation.
+    pub fn growth_events(&self) -> u64 {
+        self.growth_events
+    }
+
+    /// Solves that reached the factorization, since creation.
+    pub fn solves(&self) -> u64 {
+        self.solves
+    }
+
+    /// [`least_squares`] into `out` (cleared, then holding `a.ncols()`
+    /// values) with this workspace's buffers: the same solution bits, the
+    /// same errors. On an error `out`'s contents are unspecified. A matrix
+    /// with fewer rows than columns goes to [`least_squares`] unchanged (faer
+    /// refuses it there).
+    pub fn solve_into(&mut self, a: &DenseMatrix, b: &[f64], out: &mut Vec<f64>) -> CoreResult<()> {
+        use faer::dyn_stack::{MemBuffer, MemStack, StackReq};
+        use faer::linalg::qr::{col_pivoting, no_pivoting};
+        use faer::{Conj, MatMut};
+
+        self.last_grew = false;
+        out.clear();
+        if a.nrows() != b.len() {
+            return Err(CoreError::Dimension(
+                "least-squares RHS shape mismatch".into(),
+            ));
+        }
+        if a.ncols() == 0 {
+            return Ok(());
+        }
+        let (m, n) = (a.nrows(), a.ncols());
+        if m < n {
+            out.extend(least_squares(a, b)?);
+            return Ok(());
+        }
+        self.solves += 1;
+        // As `ColPivQr::new_imp` and `SolveLstsqCore for ColPivQr`.
+        let par = faer::get_global_parallelism();
+        let size = n;
+        let block_size = no_pivoting::factor::recommended_block_size::<f64>(m, n);
+        let factor_req = col_pivoting::factor::qr_in_place_scratch::<usize, f64>(
+            m,
+            n,
+            block_size,
+            par,
+            Default::default(),
+        );
+        let solve_req = col_pivoting::solve::solve_lstsq_in_place_scratch::<usize, f64>(
+            m, n, block_size, 1, par,
+        );
+        let req = StackReq::or(factor_req, solve_req);
+
+        let (qr_stride, coeff_stride, r_stride, rhs_stride) = (
+            faer_f64_stride(m),
+            faer_f64_stride(block_size),
+            faer_f64_stride(size),
+            faer_f64_stride(m),
+        );
+        let mut grew = grow_backing(&mut self.qr, qr_stride * n);
+        grew |= grow_backing(&mut self.q_coeff, coeff_stride * size);
+        grew |= grow_backing(&mut self.r, r_stride * size);
+        grew |= grow_backing(&mut self.rhs, rhs_stride);
+        if self.perm_forward.len() < n {
+            self.perm_forward.resize(n, 0);
+            self.perm_inverse.resize(n, 0);
+            grew = true;
+        }
+        let fits = self.scratch_req.is_some_and(|have| {
+            have.size_bytes() >= req.size_bytes() && have.align_bytes() >= req.align_bytes()
+        });
+        if !fits {
+            let grown = match self.scratch_req {
+                Some(have) => StackReq::or(have, req),
+                None => req,
+            };
+            self.scratch = Some(MemBuffer::new(grown));
+            self.scratch_req = Some(grown);
+            grew = true;
+        }
+        if grew {
+            self.growth_events += 1;
+            self.last_grew = true;
+        }
+
+        // `A.to_owned()`: every entry of the `m x n` view is written.
+        let mut qr = MatMut::from_column_major_slice_with_stride_mut(
+            backing_slice(&mut self.qr),
+            m,
+            n,
+            qr_stride,
+        );
+        for j in 0..n {
+            for i in 0..m {
+                qr[(i, j)] = a[(i, j)];
+            }
+        }
+        // `Mat::zeros(block_size, size)`.
+        let mut q_coeff = MatMut::from_column_major_slice_with_stride_mut(
+            backing_slice(&mut self.q_coeff),
+            block_size,
+            size,
+            coeff_stride,
+        );
+        q_coeff.fill(0.0);
+        // `vec![0usize; n]`, twice.
+        let perm_forward = &mut self.perm_forward[..n];
+        let perm_inverse = &mut self.perm_inverse[..n];
+        perm_forward.fill(0);
+        perm_inverse.fill(0);
+        let scratch = self
+            .scratch
+            .as_mut()
+            .expect("the scratch buffer was sized above");
+        let (_, perm) = col_pivoting::factor::qr_in_place(
+            qr.as_mut(),
+            q_coeff.as_mut(),
+            perm_forward,
+            perm_inverse,
+            par,
+            MemStack::new(scratch),
+            Default::default(),
+        );
+        // faer's private `split_LU` for `m >= n`: `R` is a zeroed `size x
+        // size` matrix receiving the upper triangle, then the factored
+        // matrix becomes the unit lower Householder basis.
+        let mut r = MatMut::from_column_major_slice_with_stride_mut(
+            backing_slice(&mut self.r),
+            size,
+            size,
+            r_stride,
+        );
+        r.fill(0.0);
+        r.copy_from_triangular_upper(qr.as_ref().get(..size, ..size));
+        for j in 0..n {
+            for i in 0..j.min(m) {
+                qr[(i, j)] = 0.0;
+            }
+        }
+        qr.as_mut().diagonal_mut().fill(1.0);
+        // `solve_lstsq`: a zeroed `m x 1` copy of the right-hand side,
+        // solved in place, then truncated to `n` rows.
+        let mut rhs = MatMut::from_column_major_slice_with_stride_mut(
+            backing_slice(&mut self.rhs),
+            m,
+            1,
+            rhs_stride,
+        );
+        for (i, value) in b.iter().enumerate() {
+            rhs[(i, 0)] = *value;
+        }
+        col_pivoting::solve::solve_lstsq_in_place_with_conj(
+            qr.as_ref(),
+            q_coeff.as_ref(),
+            r.as_ref(),
+            perm,
+            Conj::No,
+            rhs.as_mut(),
+            par,
+            MemStack::new(scratch),
+        );
+        out.extend((0..n).map(|i| rhs[(i, 0)]));
+        if out.iter().all(|v| v.is_finite()) {
+            Ok(())
+        } else {
+            Err(CoreError::LinearSolve(format!(
+                "least-squares solve produced NaN/Inf for {}x{} system",
+                a.nrows(),
+                a.ncols()
+            )))
+        }
+    }
+}
+
 pub fn generalized_eigen(
     a: &DenseMatrix,
     b: &DenseMatrix,

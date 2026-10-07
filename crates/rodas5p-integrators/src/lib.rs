@@ -53,6 +53,7 @@ mod raw_stage_target;
 mod rhs_telemetry;
 mod rodas5p_fast;
 mod rodas5p_fast_small;
+mod rodas5p_fast_small_batch;
 mod rodas5p_matrix_free_fast;
 mod sabr;
 mod scientific_corpus_v2;
@@ -363,10 +364,16 @@ pub use rodas5p_fast_small::{
     integrate_rodas5p_fast_small_observed, integrate_rodas5p_fast_small_observed_with_options,
     integrate_rodas5p_fast_small_observed_with_small_options, rodas5p_fast_small_static_tables,
 };
+pub use rodas5p_fast_small_batch::{
+    BatchProblem, RODAS5P_FAST_SMALL_BATCH_DRIVER_ID, SmallBatchMember,
+    integrate_rodas5p_fast_small_batch,
+};
 pub use rodas5p_matrix_free_fast::{
     GcrodrRecyclePolicy, MfAttemptObserver, RODAS5P_MF_FAST_DRIVER_ID, Rodas5pMfFastResult,
     Rodas5pMfFastWorkspace, gcrodr_stage_solve, integrate_rodas5p_mf_fast_observed,
-    integrate_rodas5p_mf_fast_observed_gmres_into, integrate_rodas5p_mf_fast_observed_traced,
+    integrate_rodas5p_mf_fast_observed_gmres_into,
+    integrate_rodas5p_mf_fast_observed_gmres_into_ls_workspace,
+    integrate_rodas5p_mf_fast_observed_traced,
     integrate_rodas5p_mf_fast_observed_with_gcrodr_policy,
 };
 pub use sabr::{PredictorKind, SabrConfig, StageHistory, sabr_step};

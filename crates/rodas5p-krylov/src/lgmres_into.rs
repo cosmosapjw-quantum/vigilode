@@ -14,9 +14,10 @@ use crate::{
         apply_left_with_raw, residual_threshold, selected_residual_norm, true_residual_into,
         validate_residual_scale, validate_system, validate_tolerances,
     },
-    gmres::arnoldi_augmented_with_workspace,
+    gmres::{arnoldi_augmented_ls_once_with_workspace, arnoldi_augmented_with_workspace},
     kernels::{axpy, normalize},
     lgmres::{LgmresConfig, LgmresState},
+    small::LeastSquaresWorkspace,
     workspace::LgmresWorkspace,
 };
 use rodas5p_core::{
@@ -32,6 +33,16 @@ pub struct LgmresIntoReport {
     pub iterations: u64,
     pub matvecs: u64,
     pub preconditioner_apps: u64,
+    /// Small least-squares solves: one per Arnoldi column by default, one
+    /// per outer cycle with [`LgmresIntoWorkspace::set_least_squares_once`]
+    /// (research node `research/spd05_lgmres_ls_once_20261007`; reported,
+    /// not part of any existing comparison).
+    pub least_squares_solves: u64,
+    /// Arnoldi columns formed (Krylov and augmentation columns, summed over
+    /// the outer cycles); equal to `iterations` by construction, reported
+    /// next to `least_squares_solves` so allocations per column are
+    /// derivable in either mode.
+    pub inner_iterations: u64,
 }
 
 /// Reused storage of [`solve_lgmres_into`]: the LGMRES workspace, the
@@ -41,6 +52,49 @@ pub struct LgmresIntoWorkspace {
     inner: LgmresWorkspace,
     snapshot: Snapshot,
     pool: Vec<Vec<f64>>,
+    /// Research switch (`research/spd05_lgmres_ls_once_20261007`): one
+    /// least-squares solve per outer cycle instead of one per column.
+    least_squares_once: bool,
+    /// Reused least-squares workspace (`research/spd04_ls_workspace_20261007`),
+    /// used only together with `least_squares_once`.
+    least_squares: Option<Box<LeastSquaresWorkspace>>,
+    least_squares_solution: Vec<f64>,
+}
+
+impl LgmresIntoWorkspace {
+    /// Solve the small least-squares problem once per outer cycle, after the
+    /// Arnoldi loop, instead of after every column (research node
+    /// `research/spd05_lgmres_ls_once_20261007`). Off by default. The
+    /// results are bitwise those of the default except where the default
+    /// fails on an intermediate non-finite least-squares solution, which is
+    /// never formed here.
+    pub fn set_least_squares_once(&mut self, on: bool) {
+        self.least_squares_once = on;
+    }
+
+    pub fn least_squares_once(&self) -> bool {
+        self.least_squares_once
+    }
+
+    /// Solve the once-per-cycle least-squares problem in a reused
+    /// [`LeastSquaresWorkspace`] (research node
+    /// `research/spd04_ls_workspace_20261007`). Off by default; effective
+    /// only together with [`Self::set_least_squares_once`].
+    pub fn set_ls_workspace(&mut self, on: bool) {
+        match (on, self.least_squares.is_some()) {
+            (true, false) => self.least_squares = Some(Box::default()),
+            (false, true) => {
+                self.least_squares = None;
+                self.least_squares_solution = Vec::new();
+            }
+            _ => {}
+        }
+    }
+
+    /// The reused least-squares workspace, if on.
+    pub fn ls_workspace(&self) -> Option<&LeastSquaresWorkspace> {
+        self.least_squares.as_deref()
+    }
 }
 
 #[derive(Debug, Default)]
@@ -181,7 +235,15 @@ pub fn solve_lgmres_into(
     let images_len_before = state.images.len();
     workspace.snapshot.save(state);
     let system_identity = exact_krylov_system_identity(op, pc);
-    let LgmresIntoWorkspace { inner, pool, .. } = workspace;
+    let LgmresIntoWorkspace {
+        inner,
+        pool,
+        least_squares_once,
+        least_squares,
+        least_squares_solution,
+        ..
+    } = workspace;
+    let least_squares_once = *least_squares_once;
     let result = (|| {
         let same_system =
             system_identity.is_some() && state.system_identity.as_ref() == system_identity.as_ref();
@@ -228,6 +290,7 @@ pub fn solve_lgmres_into(
             inner.common.x.copy_from_slice(initial);
         }
         let mut total = 0usize;
+        let mut least_squares_solves = 0u64;
         for _ in 0..config.max_outer {
             if inner.common.x.iter().all(|value| *value == 0.0) {
                 inner.common.residual.copy_from_slice(rhs);
@@ -272,17 +335,39 @@ pub fn solve_lgmres_into(
                     state.images[index] = Some(image);
                 }
             }
-            let arnoldi = arnoldi_augmented_with_workspace(
-                op,
-                pc,
-                &inner.common.preconditioned,
-                beta,
-                config.inner_m.min(n.max(1)),
-                &state.directions,
-                &state.images,
-                counters,
-                &mut inner.arnoldi,
-            )?;
+            let arnoldi = if least_squares_once {
+                let arnoldi = arnoldi_augmented_ls_once_with_workspace(
+                    op,
+                    pc,
+                    &inner.common.preconditioned,
+                    beta,
+                    config.inner_m.min(n.max(1)),
+                    &state.directions,
+                    &state.images,
+                    counters,
+                    &mut inner.arnoldi,
+                    least_squares
+                        .as_deref_mut()
+                        .map(|small| (small, &mut *least_squares_solution)),
+                )?;
+                least_squares_solves += u64::from(arnoldi.iterations > 0);
+                arnoldi
+            } else {
+                let arnoldi = arnoldi_augmented_with_workspace(
+                    op,
+                    pc,
+                    &inner.common.preconditioned,
+                    beta,
+                    config.inner_m.min(n.max(1)),
+                    &state.directions,
+                    &state.images,
+                    counters,
+                    &mut inner.arnoldi,
+                )?;
+                // The legacy loop solves after every column.
+                least_squares_solves += arnoldi.iterations as u64;
+                arnoldi
+            };
             let norm = normalize(&mut inner.arnoldi.correction)?;
             if norm > 0.0 {
                 apply_left_with_raw(
@@ -349,6 +434,8 @@ pub fn solve_lgmres_into(
             iterations: total as u64,
             matvecs: delta.linear_matvecs,
             preconditioner_apps: delta.preconditioner_apps,
+            least_squares_solves,
+            inner_iterations: total as u64,
         })
     })();
     if result.is_err() {
