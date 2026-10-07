@@ -11,6 +11,11 @@
 //! Only the storage (`[f64; N]`, `[[f64; N]; N]` on the stack) and the
 //! dispatch of the problem (a [`SmallProblem`] type parameter instead of
 //! `Arc<dyn Fn>` callbacks) differ, so its results equal v2's as values.
+//!
+//! Opt-in, through [`Rodas5pFastSmallOptions`] (speed research node SPD06,
+//! `research/spd06_small_static_stages_20261007`): a fixed stage structure on
+//! `[[f64; 8]; 8]` coefficient tables and index-loop triangular solves, both
+//! with the same operations in the same order (bitwise the same results).
 
 use rodas5p_core::{CoreError, CoreResult, WorkCounters, rodas5p_coefficients};
 
@@ -77,6 +82,13 @@ fn rhs_counted<const N: usize, P: SmallProblem<N>>(
 
 impl<const N: usize> Workspace<N> {
     fn new() -> CoreResult<Self> {
+        Self::with_lists(true)
+    }
+
+    /// `lists == false` leaves the heap coefficient lists empty: the fixed
+    /// stage structure of SPD06 reads [`StaticTables`] instead, so it makes
+    /// none of their allocations.
+    fn with_lists(lists: bool) -> CoreResult<Self> {
         let coeffs = rodas5p_coefficients()?;
         if coeffs.stages() != STAGES {
             return Err(CoreError::Coefficients("RODAS5P has eight stages".into()));
@@ -96,19 +108,28 @@ impl<const N: usize> Workspace<N> {
                 .map(|j| (j, m[(i, j)]))
                 .collect::<Vec<_>>()
         };
+        let (a_nonzero, c_nonzero, b_nonzero) = if lists {
+            (
+                (0..STAGES).map(|i| nonzero_row(&coeffs.a, i)).collect(),
+                (0..STAGES)
+                    .map(|i| nonzero_row(&coeffs.c_matrix, i))
+                    .collect(),
+                coeffs
+                    .b_code
+                    .iter()
+                    .enumerate()
+                    .filter(|(_, b)| **b != 0.0)
+                    .map(|(j, b)| (j, *b))
+                    .collect(),
+            )
+        } else {
+            (Vec::new(), Vec::new(), Vec::new())
+        };
         Ok(Self {
             gamma: coeffs.gamma,
-            a_nonzero: (0..STAGES).map(|i| nonzero_row(&coeffs.a, i)).collect(),
-            c_nonzero: (0..STAGES)
-                .map(|i| nonzero_row(&coeffs.c_matrix, i))
-                .collect(),
-            b_nonzero: coeffs
-                .b_code
-                .iter()
-                .enumerate()
-                .filter(|(_, b)| **b != 0.0)
-                .map(|(j, b)| (j, *b))
-                .collect(),
+            a_nonzero,
+            c_nonzero,
+            b_nonzero,
             w: [[0.0; N]; N],
             pivots: [0; N],
             row_end: [0; N],
@@ -148,16 +169,28 @@ impl<const N: usize> Workspace<N> {
         )
     }
 
-    fn solve(&mut self, counters: &mut WorkCounters) -> CoreResult<()> {
+    /// `INDEX_SOLVES` selects the index-loop triangular solves of SPD06
+    /// (the same operations in the same order).
+    fn solve<const INDEX_SOLVES: bool>(&mut self, counters: &mut WorkCounters) -> CoreResult<()> {
         counters.linear_solves += 1;
         counters.direct_solve_calls += 1;
-        lu_solve_in_place(
-            &self.w,
-            &self.pivots,
-            &self.row_end,
-            &self.l_start,
-            &mut self.stage_rhs,
-        );
+        if INDEX_SOLVES {
+            lu_solve_in_place_indexed(
+                &self.w,
+                &self.pivots,
+                &self.row_end,
+                &self.l_start,
+                &mut self.stage_rhs,
+            );
+        } else {
+            lu_solve_in_place(
+                &self.w,
+                &self.pivots,
+                &self.row_end,
+                &self.l_start,
+                &mut self.stage_rhs,
+            );
+        }
         if self.stage_rhs.iter().all(|v| v.is_finite()) {
             Ok(())
         } else {
@@ -168,7 +201,7 @@ impl<const N: usize> Workspace<N> {
     }
 
     #[allow(clippy::too_many_arguments)]
-    fn attempt<P: SmallProblem<N>>(
+    fn attempt<P: SmallProblem<N>, const INDEX_SOLVES: bool>(
         &mut self,
         problem: &P,
         y: &[f64; N],
@@ -206,7 +239,7 @@ impl<const N: usize> Workspace<N> {
                     }
                 }
             }
-            self.solve(counters)?;
+            self.solve::<INDEX_SOLVES>(counters)?;
             self.u[i] = self.stage_rhs;
         }
         self.y_new = *y;
@@ -233,6 +266,219 @@ impl<const N: usize> Workspace<N> {
             f64::INFINITY
         })
     }
+
+    /// Stage `I` of [`Self::attempt`] on the fixed tables (speed research
+    /// node SPD06, `research/spd06_small_static_stages_20261007`). Both
+    /// loops have constant trip counts. Each component is accumulated in a
+    /// register in the order of the legacy axpy sequence (`j` ascending, the
+    /// coefficient times the stage value, one rounding per product and per
+    /// sum), so every value is bitwise the legacy one: the tables hold
+    /// exactly the entries of the legacy lists (checked at construction,
+    /// [`StaticTables::new`]). The `c / h` quotients are computed once per
+    /// stage, and their `!= 0.0` guard is kept.
+    // Index loops with constant trip counts are the point of SPD06.
+    #[allow(clippy::needless_range_loop)]
+    #[inline(always)]
+    fn static_stage<P: SmallProblem<N>, const I: usize, const INDEX_SOLVES: bool>(
+        &mut self,
+        problem: &P,
+        tables: &StaticTables,
+        y: &[f64; N],
+        h: f64,
+        counters: &mut WorkCounters,
+    ) -> CoreResult<()> {
+        if I == 0 {
+            self.stage_rhs = self.f0;
+        } else {
+            let a = &tables.a[I];
+            let mut state = [0.0; N];
+            for (k, x) in state.iter_mut().enumerate() {
+                let mut sum = y[k];
+                for j in 0..I {
+                    sum += a[j] * self.u[j][k];
+                }
+                *x = sum;
+            }
+            rhs_counted(problem, &state, &mut self.stage_rhs, counters)?;
+            let mut quotients = [0.0; STAGES];
+            for j in 0..I {
+                quotients[j] = tables.c[I][j] / h;
+            }
+            for k in 0..N {
+                let mut sum = self.stage_rhs[k];
+                for j in 0..I {
+                    let cij = quotients[j];
+                    if cij != 0.0 {
+                        sum += cij * self.u[j][k];
+                    }
+                }
+                self.stage_rhs[k] = sum;
+            }
+        }
+        self.solve::<INDEX_SOLVES>(counters)?;
+        self.u[I] = self.stage_rhs;
+        Ok(())
+    }
+
+    /// [`Self::attempt`] with the fixed stage structure of SPD06: the same
+    /// operations in the same order, one stage function per stage index.
+    #[allow(clippy::too_many_arguments, clippy::needless_range_loop)]
+    fn attempt_static<P: SmallProblem<N>, const INDEX_SOLVES: bool>(
+        &mut self,
+        problem: &P,
+        tables: &StaticTables,
+        y: &[f64; N],
+        h: f64,
+        fresh: bool,
+        atol: f64,
+        rtol: f64,
+        counters: &mut WorkCounters,
+    ) -> CoreResult<f64> {
+        if fresh {
+            counters.jacobian_builds += 1;
+            problem.jacobian(y, &mut self.jacobian);
+            self.built = true;
+            rhs_counted(problem, y, &mut self.f0, counters)?;
+        }
+        self.factor(h, counters)?;
+        self.static_stage::<P, 0, INDEX_SOLVES>(problem, tables, y, h, counters)?;
+        self.static_stage::<P, 1, INDEX_SOLVES>(problem, tables, y, h, counters)?;
+        self.static_stage::<P, 2, INDEX_SOLVES>(problem, tables, y, h, counters)?;
+        self.static_stage::<P, 3, INDEX_SOLVES>(problem, tables, y, h, counters)?;
+        self.static_stage::<P, 4, INDEX_SOLVES>(problem, tables, y, h, counters)?;
+        self.static_stage::<P, 5, INDEX_SOLVES>(problem, tables, y, h, counters)?;
+        self.static_stage::<P, 6, INDEX_SOLVES>(problem, tables, y, h, counters)?;
+        self.static_stage::<P, 7, INDEX_SOLVES>(problem, tables, y, h, counters)?;
+        let b = &tables.b;
+        for k in 0..N {
+            let mut sum = y[k];
+            for j in 0..STAGES {
+                sum += b[j] * self.u[j][k];
+            }
+            self.y_new[k] = sum;
+        }
+        if !self.y_new.iter().all(|v| v.is_finite()) {
+            return Err(CoreError::NonFinite(
+                "RODAS5P fast step produced NaN/Inf".into(),
+            ));
+        }
+        let error = &self.u[STAGES - 1];
+        let mut sum = 0.0;
+        for ((e, a), b) in error.iter().zip(y).zip(&self.y_new) {
+            let z = e / (atol + rtol * a.abs().max(b.abs()));
+            sum += z * z;
+        }
+        let norm = (sum / N as f64).sqrt();
+        Ok(if norm.is_finite() {
+            norm
+        } else {
+            f64::INFINITY
+        })
+    }
+}
+
+/// The transformed RODAS5P coefficients as fixed tables (speed research
+/// node SPD06): `a[i][j]` and `c[i][j]` for `j < i` (zero elsewhere) and
+/// `b[j] = b_code[j]`, filled from [`rodas5p_coefficients`] (no literals).
+#[derive(Clone, Copy, Debug, PartialEq)]
+struct StaticTables {
+    a: [[f64; STAGES]; STAGES],
+    c: [[f64; STAGES]; STAGES],
+    b: [f64; STAGES],
+}
+
+impl StaticTables {
+    /// Filled from the coefficients and checked by [`Self::check`].
+    fn new() -> CoreResult<Self> {
+        let coeffs = rodas5p_coefficients()?;
+        let tables = Self::fill(coeffs)?;
+        tables.check(coeffs)?;
+        Ok(tables)
+    }
+
+    fn fill(coeffs: &rodas5p_core::Rodas5pCoefficients) -> CoreResult<Self> {
+        if coeffs.stages() != STAGES || coeffs.b_code.len() != STAGES {
+            return Err(CoreError::Coefficients("RODAS5P has eight stages".into()));
+        }
+        let mut tables = Self {
+            a: [[0.0; STAGES]; STAGES],
+            c: [[0.0; STAGES]; STAGES],
+            b: [0.0; STAGES],
+        };
+        for i in 0..STAGES {
+            for j in 0..i {
+                tables.a[i][j] = coeffs.a[(i, j)];
+                tables.c[i][j] = coeffs.c_matrix[(i, j)];
+            }
+            tables.b[i] = coeffs.b_code[i];
+        }
+        Ok(tables)
+    }
+
+    /// The construction-time check: every table entry equals its
+    /// coefficient bit for bit, and the legacy lists hold exactly these
+    /// entries, i.e. `A` and `C` are zero on and above the diagonal and
+    /// nonzero below it and `b_code` has no zero. Under these conditions the
+    /// fixed loops visit the same `(j, value)` sequence as the legacy lists;
+    /// otherwise the fixed structure would add operations, so it is refused.
+    fn check(&self, coeffs: &rodas5p_core::Rodas5pCoefficients) -> CoreResult<()> {
+        let mismatch = |what: &str, i: usize, j: usize| {
+            Err(CoreError::Coefficients(format!(
+                "SPD06 fixed table {what}[{i}][{j}] does not equal the RODAS5P coefficient bit for bit"
+            )))
+        };
+        if coeffs.stages() != STAGES || coeffs.b_code.len() != STAGES {
+            return Err(CoreError::Coefficients("RODAS5P has eight stages".into()));
+        }
+        for i in 0..STAGES {
+            for j in 0..STAGES {
+                let (a, c) = (coeffs.a[(i, j)], coeffs.c_matrix[(i, j)]);
+                if j < i {
+                    if self.a[i][j].to_bits() != a.to_bits() {
+                        return mismatch("a", i, j);
+                    }
+                    if self.c[i][j].to_bits() != c.to_bits() {
+                        return mismatch("c", i, j);
+                    }
+                    if a == 0.0 || c == 0.0 {
+                        return Err(CoreError::Coefficients(format!(
+                            "SPD06 fixed stages need a full strictly lower A and C; entry ({i}, {j}) is zero"
+                        )));
+                    }
+                } else if a != 0.0
+                    || c != 0.0
+                    || self.a[i][j].to_bits() != 0
+                    || self.c[i][j].to_bits() != 0
+                {
+                    return Err(CoreError::Coefficients(
+                        "RODAS5P transformed coefficients are not strictly lower triangular".into(),
+                    ));
+                }
+            }
+            if self.b[i].to_bits() != coeffs.b_code[i].to_bits() {
+                return mismatch("b", 0, i);
+            }
+            if coeffs.b_code[i] == 0.0 {
+                return Err(CoreError::Coefficients(format!(
+                    "SPD06 fixed stages need a full b_code; entry {i} is zero"
+                )));
+            }
+        }
+        Ok(())
+    }
+}
+
+/// The fixed tables of the SPD06 static stage structure (`a`, `c`, `b`), as
+/// the small driver builds them, after its construction-time check. For
+/// contract tests (`research/spd06_small_static_stages_20261007`).
+#[allow(clippy::type_complexity)]
+pub fn rodas5p_fast_small_static_tables() -> CoreResult<(
+    [[f64; STAGES]; STAGES],
+    [[f64; STAGES]; STAGES],
+    [f64; STAGES],
+)> {
+    let tables = StaticTables::new()?;
+    Ok((tables.a, tables.c, tables.b))
 }
 
 /// v2's `lu_in_place` on `[[f64; N]; N]`, the same operations in the same
@@ -320,6 +566,39 @@ fn lu_solve_in_place<const N: usize>(
     }
 }
 
+/// [`lu_solve_in_place`] with index loops instead of slice and zip
+/// constructions (speed research node SPD06, `static_solves`): the same
+/// operations in the same order (`sum -= lu[i][j] * b[j]` with `j`
+/// ascending, then the division by the diagonal).
+#[allow(clippy::needless_range_loop)]
+fn lu_solve_in_place_indexed<const N: usize>(
+    lu: &[[f64; N]; N],
+    pivots: &[usize; N],
+    row_end: &[usize; N],
+    l_start: &[usize; N],
+    b: &mut [f64; N],
+) {
+    for k in 0..N {
+        b.swap(k, pivots[k]);
+    }
+    for i in 0..N {
+        let start = l_start[i].min(i);
+        let mut sum = b[i];
+        for j in start..i {
+            sum -= lu[i][j] * b[j];
+        }
+        b[i] = sum;
+    }
+    for i in (0..N).rev() {
+        let end = row_end[i];
+        let mut sum = b[i];
+        for j in i + 1..=end {
+            sum -= lu[i][j] * b[j];
+        }
+        b[i] = sum / lu[i][i];
+    }
+}
+
 fn failure_kind(error: &CoreError) -> Option<AdaptiveFailureKind> {
     match error {
         CoreError::LinearSolve(_) => Some(AdaptiveFailureKind::LinearSolve),
@@ -350,7 +629,7 @@ pub fn integrate_rodas5p_fast_small_observed<const N: usize, P: SmallProblem<N>>
 
 /// [`integrate_rodas5p_fast_small_observed`] with opt-in
 /// [`Rodas5pFastOptions`] (speed research node SPD01); the default options
-/// give the same driver.
+/// give the same driver. `lu_policy` is ignored (the small driver has one LU).
 pub fn integrate_rodas5p_fast_small_observed_with_options<const N: usize, P: SmallProblem<N>>(
     problem: &P,
     t_span: (f64, f64),
@@ -359,6 +638,122 @@ pub fn integrate_rodas5p_fast_small_observed_with_options<const N: usize, P: Sma
     output: &OutputSchedule,
     options: Rodas5pFastOptions,
 ) -> CoreResult<Rodas5pFastSmallResult> {
+    integrate_small::<N, P, false, false>(
+        problem,
+        t_span,
+        y0,
+        adaptive,
+        output,
+        Rodas5pFastSmallOptions {
+            fast: options,
+            ..Rodas5pFastSmallOptions::default()
+        },
+    )
+}
+
+/// Opt-in variants of the small driver only (speed research node SPD06,
+/// `research/spd06_small_static_stages_20261007`). The default is the
+/// L-0041 driver with `fast`'s SPD01 options, bit for bit.
+///
+/// These switches live here and not in [`Rodas5pFastOptions`] because that
+/// struct is built with exhaustive literals by recorded test inputs of SPD01;
+/// a new field there would not compile them. The dense and banded drivers
+/// take [`Rodas5pFastOptions`] only, so they cannot be given these switches
+/// (nothing is silently ignored).
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub struct Rodas5pFastSmallOptions {
+    /// SPD01's options (and an ignored `lu_policy`).
+    pub fast: Rodas5pFastOptions,
+    /// Fixed `[[f64; 8]; 8]` coefficient tables and one stage function per
+    /// stage index with constant trip counts, instead of the heap lists.
+    pub static_stages: bool,
+    /// Index-loop triangular solves instead of slice and zip constructions.
+    pub static_solves: bool,
+}
+
+impl Rodas5pFastSmallOptions {
+    /// The driver identifier under these options: the L-0041 id, then
+    /// `-stages` / `-solves` / `-stages-solves` for SPD06, then SPD01's
+    /// `-val` / `-land` / `-ovh`.
+    pub fn driver_id(&self) -> &'static str {
+        const IDS: [[&str; 4]; 4] = [
+            [
+                RODAS5P_FAST_SMALL_DRIVER_ID,
+                "rodas5p-fast-small-static-v1-val",
+                "rodas5p-fast-small-static-v1-land",
+                "rodas5p-fast-small-static-v1-ovh",
+            ],
+            [
+                "rodas5p-fast-small-static-v1-stages",
+                "rodas5p-fast-small-static-v1-stages-val",
+                "rodas5p-fast-small-static-v1-stages-land",
+                "rodas5p-fast-small-static-v1-stages-ovh",
+            ],
+            [
+                "rodas5p-fast-small-static-v1-solves",
+                "rodas5p-fast-small-static-v1-solves-val",
+                "rodas5p-fast-small-static-v1-solves-land",
+                "rodas5p-fast-small-static-v1-solves-ovh",
+            ],
+            [
+                "rodas5p-fast-small-static-v1-stages-solves",
+                "rodas5p-fast-small-static-v1-stages-solves-val",
+                "rodas5p-fast-small-static-v1-stages-solves-land",
+                "rodas5p-fast-small-static-v1-stages-solves-ovh",
+            ],
+        ];
+        let structure = usize::from(self.static_stages) + 2 * usize::from(self.static_solves);
+        let overhead = usize::from(self.fast.prevalidated_controller)
+            + 2 * usize::from(self.fast.fused_landing);
+        IDS[structure][overhead]
+    }
+}
+
+/// [`integrate_rodas5p_fast_small_observed_with_options`] with the SPD06
+/// switches of [`Rodas5pFastSmallOptions`]; the default options give the
+/// L-0041 driver. Each combination is a separate monomorphization, so no
+/// variant pays a per-attempt branch on the switches.
+pub fn integrate_rodas5p_fast_small_observed_with_small_options<
+    const N: usize,
+    P: SmallProblem<N>,
+>(
+    problem: &P,
+    t_span: (f64, f64),
+    y0: &[f64; N],
+    adaptive: &AdaptiveStepConfig,
+    output: &OutputSchedule,
+    options: Rodas5pFastSmallOptions,
+) -> CoreResult<Rodas5pFastSmallResult> {
+    match (options.static_stages, options.static_solves) {
+        (false, false) => {
+            integrate_small::<N, P, false, false>(problem, t_span, y0, adaptive, output, options)
+        }
+        (true, false) => {
+            integrate_small::<N, P, true, false>(problem, t_span, y0, adaptive, output, options)
+        }
+        (false, true) => {
+            integrate_small::<N, P, false, true>(problem, t_span, y0, adaptive, output, options)
+        }
+        (true, true) => {
+            integrate_small::<N, P, true, true>(problem, t_span, y0, adaptive, output, options)
+        }
+    }
+}
+
+fn integrate_small<
+    const N: usize,
+    P: SmallProblem<N>,
+    const STATIC_STAGES: bool,
+    const INDEX_SOLVES: bool,
+>(
+    problem: &P,
+    t_span: (f64, f64),
+    y0: &[f64; N],
+    adaptive: &AdaptiveStepConfig,
+    output: &OutputSchedule,
+    small_options: Rodas5pFastSmallOptions,
+) -> CoreResult<Rodas5pFastSmallResult> {
+    let options = small_options.fast;
     adaptive.validate()?;
     let (mut t, tf) = t_span;
     if tf < t || !y0.iter().all(|v| v.is_finite()) {
@@ -366,7 +761,21 @@ pub fn integrate_rodas5p_fast_small_observed_with_options<const N: usize, P: Sma
             "invalid RODAS5P fast integration input".into(),
         ));
     }
-    let mut work = Workspace::<N>::new()?;
+    let mut work = if STATIC_STAGES {
+        Workspace::<N>::with_lists(false)?
+    } else {
+        Workspace::<N>::new()?
+    };
+    // Unused (and removed by the optimizer) unless `STATIC_STAGES`.
+    let tables = if STATIC_STAGES {
+        StaticTables::new()?
+    } else {
+        StaticTables {
+            a: [[0.0; STAGES]; STAGES],
+            c: [[0.0; STAGES]; STAGES],
+            b: [0.0; STAGES],
+        }
+    };
     let mut y = *y0;
     let mut h = adaptive.initial_step.min(crate::output::step_to(t, tf)?);
     let mut controller = AdaptiveControllerState::default();
@@ -397,15 +806,28 @@ pub fn integrate_rodas5p_fast_small_observed_with_options<const N: usize, P: Sma
         if fresh_state {
             reuses += 1;
         }
-        let outcome = work.attempt(
-            problem,
-            &y,
-            trial_h,
-            !fresh_state,
-            adaptive.atol,
-            adaptive.rtol,
-            &mut counters,
-        );
+        let outcome = if STATIC_STAGES {
+            work.attempt_static::<P, INDEX_SOLVES>(
+                problem,
+                &tables,
+                &y,
+                trial_h,
+                !fresh_state,
+                adaptive.atol,
+                adaptive.rtol,
+                &mut counters,
+            )
+        } else {
+            work.attempt::<P, INDEX_SOLVES>(
+                problem,
+                &y,
+                trial_h,
+                !fresh_state,
+                adaptive.atol,
+                adaptive.rtol,
+                &mut counters,
+            )
+        };
         fresh_state = work.built;
         let (error, failure) = match outcome {
             Ok(error) if error <= 1.0 => (error, None),
@@ -490,11 +912,79 @@ pub fn integrate_rodas5p_fast_small_observed_with_options<const N: usize, P: Sma
         accepted_steps,
         rejected_steps,
         jacobian_reuses: reuses,
-        driver: match (options.prevalidated_controller, options.fused_landing) {
-            (false, false) => RODAS5P_FAST_SMALL_DRIVER_ID,
-            (true, false) => "rodas5p-fast-small-static-v1-val",
-            (false, true) => "rodas5p-fast-small-static-v1-land",
-            (true, true) => "rodas5p-fast-small-static-v1-ovh",
-        },
+        driver: small_options.driver_id(),
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn the_construction_check_refuses_a_table_off_by_one_bit() {
+        let coeffs = rodas5p_coefficients().unwrap();
+        let tables = StaticTables::new().unwrap();
+        assert_eq!(tables, StaticTables::fill(coeffs).unwrap());
+        let mut a = tables;
+        a.a[5][2] = f64::from_bits(a.a[5][2].to_bits() + 1);
+        assert!(matches!(a.check(coeffs), Err(CoreError::Coefficients(_))));
+        let mut c = tables;
+        c.c[7][6] = f64::from_bits(c.c[7][6].to_bits() ^ 1);
+        assert!(matches!(c.check(coeffs), Err(CoreError::Coefficients(_))));
+        let mut b = tables;
+        b.b[0] = -b.b[0];
+        assert!(matches!(b.check(coeffs), Err(CoreError::Coefficients(_))));
+        let mut upper = tables;
+        upper.a[2][3] = -0.0;
+        assert!(matches!(
+            upper.check(coeffs),
+            Err(CoreError::Coefficients(_))
+        ));
+    }
+
+    #[test]
+    fn the_indexed_solve_equals_the_slice_solve_bitwise() {
+        // A pivoted 4 x 4 system through the small LU, solved both ways.
+        let mut w = [
+            [0.0, 2.0, 1.0, 0.0],
+            [3.0, 1.0, 0.0, 0.0],
+            [1.0, 0.0, 4.0, 1.0],
+            [0.0, 0.0, 1.0, 5.0],
+        ];
+        let mut row_end = [0; 4];
+        for (i, row) in w.iter().enumerate() {
+            row_end[i] = row.iter().rposition(|v| *v != 0.0).unwrap_or(0).max(i);
+        }
+        let (mut pivots, mut l_start) = ([0; 4], [4; 4]);
+        lu_in_place(&mut w, &mut pivots, &mut row_end, &mut l_start).unwrap();
+        for seed in 0..64_u64 {
+            let rhs: [f64; 4] =
+                std::array::from_fn(|i| ((seed * 7 + i as u64 * 13) as f64).sin() * 1.0e3);
+            let (mut x, mut z) = (rhs, rhs);
+            lu_solve_in_place(&w, &pivots, &row_end, &l_start, &mut x);
+            lu_solve_in_place_indexed(&w, &pivots, &row_end, &l_start, &mut z);
+            assert_eq!(x.map(f64::to_bits), z.map(f64::to_bits));
+        }
+    }
+
+    #[test]
+    fn every_small_option_set_has_its_own_driver_id() {
+        let mut ids = std::collections::BTreeSet::new();
+        for bits in 0..16_u8 {
+            let options = Rodas5pFastSmallOptions {
+                fast: Rodas5pFastOptions {
+                    prevalidated_controller: bits & 1 != 0,
+                    fused_landing: bits & 2 != 0,
+                    ..Rodas5pFastOptions::default()
+                },
+                static_stages: bits & 4 != 0,
+                static_solves: bits & 8 != 0,
+            };
+            assert!(ids.insert(options.driver_id()));
+        }
+        assert_eq!(
+            Rodas5pFastSmallOptions::default().driver_id(),
+            RODAS5P_FAST_SMALL_DRIVER_ID
+        );
+    }
 }

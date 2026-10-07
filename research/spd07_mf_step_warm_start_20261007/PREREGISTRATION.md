@@ -69,3 +69,37 @@ Predicted: 0.75-0.90x on the Brusselators, about 1.0x on the small problems.
 L-0066 (SAFE-RECYCLE policies), L-0045 (GMRES `solve_into`), audit F-013 (warm-start data 0.905x/0.94x). No code of
 this node exists before this commit; the base export test file is added in the commit after this one and runs on the
 unmodified solver source.
+
+## Results (appended after the run; source commit recorded in the ledger row)
+
+Base export: `BASE.json` from the registration commit's solver source (test file and export added in `2280537`,
+no solver source changed). Recorded run on `0c731b0`: `RUNS.json` (release build, `RAYON_NUM_THREADS=1
+OPENBLAS_NUM_THREADS=1`), `RESULTS.json` from `tools/spd07_warm_start_check.py`. Contract tests (3) passed.
+
+**Gate: FAIL.**
+
+| Gate item | Outcome |
+|---|---|
+| 1. Base reproduction | **holds**: GMRES-into `Zero` and `Previous` and GCRO-DR cold `Previous` equal `BASE.json` on all 14 cases (times, final state bits, attempts, counters) |
+| 2. Fewer matvecs on the Brusselators | **fails**: `PreviousStep` / `Previous` linear matvecs = 0.986 (bruss-50, 1e-6), 1.001 (bruss-50, 1e-8), 0.971 (bruss-160, 1e-6), 0.963 (bruss-160, 1e-8); gate <= 0.85. Against `Zero`: 1.025, 1.025, 1.035, 1.021; gate <= 0.90. Attempts equal, no linear-solve failures, final errors equal to 2 digits |
+| 3. No regression | **fails**: `PreviousStep` / `Previous` exceeds 1.02 on Robertson (1.040, 1.045), van der Pol (1.032, 1.032) and Prothero-Robinson at 1e-8 (1.029) |
+
+The prediction (0.75-0.90 on the Brusselators) was wrong. Iterations per stage solve fall by at most 4 % (bruss-160,
+1e-8: 50.6 -> 48.5; restart cycles 1,952 -> 1,873), so the last accepted step's stages are not a much better start than
+the previous stage of the same attempt. On the small problems a stage solve takes 1-7 iterations and the stage-0
+true-residual matvec of a nonzero start is a visible part of the cost.
+
+Reported, not gated (all from `RESULTS.json`):
+
+- `PreviousStepScaled` / `Previous`: 0.963-1.038, the same picture (bruss-160 0.973 and 0.963).
+- GCRO-DR cold: `PreviousStep` / `Previous` 0.962-1.062, the same picture.
+- **The default start `Previous` costs more matvecs than `Zero` in all 14 cases** of this driver with GMRES-into:
+  `Previous` / `Zero` = 1.024-1.066 on the Brusselators, 1.11 on HIRES, 1.22-1.29 on Robertson, van der Pol and
+  quadratic-4, 1.51-1.57 on Prothero-Robinson, with equal attempts and equal final errors to 2 digits. Zero is the
+  cheapest of the four starts everywhere. This was not a question of this node and is not a claim about any other
+  driver; switching the default would be its own node (with GCRO-DR and LGMRES, whose warm start interacts with the
+  recycle space, measured separately).
+
+Claim ceiling: counted Krylov work of the opt-in matrix-free U-form research driver on the 7 SAFE-RECYCLE problems at
+two tolerances; no wall-time claim. Per-stage iteration and `||r0|| / ||b||` records (suggested by the refuters, not
+registered) were not recorded; only per-trajectory counters and GMRES-into cycles are.
