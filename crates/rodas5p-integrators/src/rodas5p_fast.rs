@@ -64,7 +64,8 @@ pub struct Rodas5pFastOptions {
     /// collector's finiteness rescan of a state the driver has checked.
     pub fused_landing: bool,
     /// The LU of the dense-storage path (speed research node SPD02,
-    /// `research/spd02_lu_column_extents_20261005`); the banded and small
+    /// `research/spd02_lu_column_extents_20261005`, and SPD09,
+    /// `research/spd09_colext_threshold_20261007`); the banded and small
     /// drivers ignore it.
     pub lu_policy: FastLuPolicy,
 }
@@ -78,12 +79,39 @@ pub enum FastLuPolicy {
     /// v2 plus exact column extents: the pivot search and the elimination
     /// run over the rows that can hold a nonzero in the column.
     ColumnExtents,
+    /// [`Self::ColumnExtents`] when the dimension exceeds
+    /// [`RODAS5P_FAST_SMALL_LU_MAX`], [`Self::Legacy`] otherwise (speed
+    /// research node SPD09, `research/spd09_colext_threshold_20261007`; the
+    /// threshold is the existing constant, fixed before any measurement).
+    ColumnExtentsAbove64,
+}
+
+impl FastLuPolicy {
+    /// Whether a dense-storage `W` of dimension `n` is factored with column
+    /// extents under this policy.
+    pub fn column_extents_at(self, n: usize) -> bool {
+        match self {
+            Self::Legacy => false,
+            Self::ColumnExtents => true,
+            Self::ColumnExtentsAbove64 => n > RODAS5P_FAST_SMALL_LU_MAX,
+        }
+    }
 }
 
 impl Rodas5pFastOptions {
     /// The driver identifier of the dense (`banded == false`) or banded
     /// pipeline under these options.
     pub fn driver_id(&self, banded: bool) -> &'static str {
+        if !banded && self.lu_policy == FastLuPolicy::ColumnExtentsAbove64 {
+            // The policy names the driver whatever the dimension, so a run
+            // below the threshold (the legacy LU) is still recorded as SPD09's.
+            return match (self.prevalidated_controller, self.fused_landing) {
+                (false, false) => RODAS5P_FAST_COLEXT64_DRIVER_ID,
+                (true, false) => "rodas5p-fast-transformed-v3-colext64-val",
+                (false, true) => "rodas5p-fast-transformed-v3-colext64-land",
+                (true, true) => "rodas5p-fast-transformed-v3-colext64-ovh",
+            };
+        }
         let colext = !banded && self.lu_policy == FastLuPolicy::ColumnExtents;
         match (
             banded,
@@ -112,6 +140,10 @@ pub const RODAS5P_FAST_BANDED_SLICES_DRIVER_ID: &str = "rodas5p-fast-banded-v1-s
 
 /// Identifier of the dense-storage driver with column extents (SPD02).
 pub const RODAS5P_FAST_COLEXT_DRIVER_ID: &str = "rodas5p-fast-transformed-v3-colext";
+
+/// Identifier of the dense-storage driver with column extents above
+/// [`RODAS5P_FAST_SMALL_LU_MAX`] only (SPD09).
+pub const RODAS5P_FAST_COLEXT64_DRIVER_ID: &str = "rodas5p-fast-transformed-v3-colext64";
 
 /// Writes the Jacobian's band at `(t, y)`: row `i`, column `j`
 /// (`i - lower <= j <= i + upper`) at `i (lower + upper + 1) + (j + lower - i)`.
@@ -459,7 +491,9 @@ impl Workspace {
     fn new(n: usize, lu_policy: FastLuPolicy) -> CoreResult<Self> {
         let mut work = Self::with_dense_size(n, n)?;
         work.lu_policy = lu_policy;
-        if lu_policy == FastLuPolicy::ColumnExtents {
+        // Only a policy that uses the extents at this size allocates them, so
+        // SPD09 below its threshold keeps the legacy allocation count.
+        if lu_policy.column_extents_at(n) {
             work.col_end = vec![0; n];
         }
         Ok(work)
@@ -534,6 +568,10 @@ impl Workspace {
                 match self.lu_policy {
                     FastLuPolicy::Legacy => Rodas5pFastLu::InPlaceZeroSkipping,
                     FastLuPolicy::ColumnExtents => Rodas5pFastLu::InPlaceColumnExtents,
+                    FastLuPolicy::ColumnExtentsAbove64 if n > RODAS5P_FAST_SMALL_LU_MAX => {
+                        Rodas5pFastLu::InPlaceColumnExtents
+                    }
+                    FastLuPolicy::ColumnExtentsAbove64 => Rodas5pFastLu::InPlaceZeroSkipping,
                 }
             } else {
                 self.w_dense = DenseMatrix::zeros(n, n);

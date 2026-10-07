@@ -15,12 +15,13 @@ use rodas5p_core::{CoreResult, DenseMatrix, LinearMethod, LinearSolverConfig, Wo
 use rodas5p_integrators::{
     AdaptiveObservedIntegrationResult, AdaptiveRunDiagnostics, AdaptiveStepConfig, BandedJacobian,
     BandedKernel, BandedWork, BdfConfig, FastLuPolicy, IntegrationMethod, NewtonTolerancePolicy,
-    OdeProblem, OutputSchedule, RadauConfig, Rodas5pFastOptions, SmallProblem,
-    integrate_adaptive_observed_with_config, integrate_bdf_adaptive_observed,
+    OdeProblem, OutputSchedule, RadauConfig, Rodas5pFastOptions, Rodas5pFastSmallOptions,
+    SmallProblem, integrate_adaptive_observed_with_config, integrate_bdf_adaptive_observed,
     integrate_radau_adaptive_observed, integrate_rodas5p_fast_banded_observed_with_kernel,
     integrate_rodas5p_fast_observed, integrate_rodas5p_fast_observed_with_options,
     integrate_rodas5p_fast_small_observed, integrate_rodas5p_fast_small_observed_with_options,
-    robertson_problem, stiff_van_der_pol_problem,
+    integrate_rodas5p_fast_small_observed_with_small_options, robertson_problem,
+    stiff_van_der_pol_problem,
 };
 use serde_json::{Value, json};
 
@@ -35,6 +36,7 @@ fn known_arm(arm: &str) -> bool {
         || arm == FAST_ARM
         || arm == SMALL_ARM
         || OPTION_ARMS.contains(&arm)
+        || small_static_arm(arm).is_some()
         || banded_kernel_arm(arm).is_some()
 }
 
@@ -160,13 +162,20 @@ pub fn option_arm(arm: &str) -> Option<(bool, Rodas5pFastOptions)> {
             lu_policy: FastLuPolicy::ColumnExtents,
             ..Rodas5pFastOptions::default()
         },
+        // Speed research node SPD09 (`research/spd09_colext_threshold_20261007`):
+        // the column-extent LU above `RODAS5P_FAST_SMALL_LU_MAX` only.
+        "colext64" if !small => Rodas5pFastOptions {
+            lu_policy: FastLuPolicy::ColumnExtentsAbove64,
+            ..Rodas5pFastOptions::default()
+        },
         _ => return None,
     };
     Some((small, options))
 }
 
-/// Every option arm: SPD01's six (dense then small) and SPD02's one.
-pub const OPTION_ARMS: [&str; 7] = [
+/// Every option arm: SPD01's six (dense then small), SPD02's one and
+/// SPD09's one.
+pub const OPTION_ARMS: [&str; 8] = [
     "rodas5p-fast-val",
     "rodas5p-fast-land",
     "rodas5p-fast-ovh",
@@ -174,7 +183,44 @@ pub const OPTION_ARMS: [&str; 7] = [
     "rodas5p-fast-small-land",
     "rodas5p-fast-small-ovh",
     "rodas5p-fast-colext",
+    "rodas5p-fast-colext64",
 ];
+
+/// The arms of speed research node SPD06
+/// (`research/spd06_small_static_stages_20261007`): the small driver with
+/// the fixed stage structure and index-loop solves (the gated arm), the fixed
+/// stages only, and the gated arm with SPD01's two options. Not in [`ARMS`]
+/// and not in [`OPTION_ARMS`] (they take [`Rodas5pFastSmallOptions`]).
+pub const SMALL_STATIC_ARMS: [&str; 3] = [
+    "rodas5p-fast-small-static",
+    "rodas5p-fast-small-static-stages",
+    "rodas5p-fast-small-static-ovh",
+];
+
+/// The small-driver options of an SPD06 arm.
+pub fn small_static_arm(arm: &str) -> Option<Rodas5pFastSmallOptions> {
+    let fixed = Rodas5pFastSmallOptions {
+        static_stages: true,
+        static_solves: true,
+        ..Rodas5pFastSmallOptions::default()
+    };
+    match arm {
+        "rodas5p-fast-small-static" => Some(fixed),
+        "rodas5p-fast-small-static-stages" => Some(Rodas5pFastSmallOptions {
+            static_solves: false,
+            ..fixed
+        }),
+        "rodas5p-fast-small-static-ovh" => Some(Rodas5pFastSmallOptions {
+            fast: Rodas5pFastOptions {
+                prevalidated_controller: true,
+                fused_landing: true,
+                ..Rodas5pFastOptions::default()
+            },
+            ..fixed
+        }),
+        _ => None,
+    }
+}
 
 pub const ARMS: [&str; 5] = [
     "rodas5p",
@@ -360,19 +406,28 @@ pub fn benchmark_problems() -> CoreResult<Vec<BenchmarkProblem>> {
 }
 
 /// [`benchmark_problems`] plus `brusselator-1d-500` (n = 1000), for the
-/// slope of the banded arms of speed research node SPD03. Only
-/// `stiff-profile-run` and the SPD03 tests use it, so the benchmark, its
-/// tests and the SPD01/SPD02 identity exports keep their problem set.
+/// slope of the banded arms of speed research node SPD03, and
+/// `brusselator-1d-30` (n = 60) and `brusselator-1d-40` (n = 80), on either
+/// side of the column-extent threshold of speed research node SPD09
+/// (`research/spd09_colext_threshold_20261007`). Only `stiff-profile-run`
+/// and the SPD03/SPD09 tests use it, so the benchmark, its tests and the
+/// SPD01/SPD02 identity exports keep their problem set.
 pub fn profile_problems() -> CoreResult<Vec<BenchmarkProblem>> {
     let mut problems = benchmark_problems()?;
-    let (larger, larger_y0) = brusselator_problem(500)?;
-    problems.push(BenchmarkProblem {
-        id: "brusselator-1d-500",
-        problem: larger,
-        y0: larger_y0,
-        t_span: (0.0, 10.0),
-        atol_scale: 1.0,
-    });
+    for (id, cells) in [
+        ("brusselator-1d-500", 500),
+        ("brusselator-1d-30", 30),
+        ("brusselator-1d-40", 40),
+    ] {
+        let (problem, y0) = brusselator_problem(cells)?;
+        problems.push(BenchmarkProblem {
+            id,
+            problem,
+            y0,
+            t_span: (0.0, 10.0),
+            atol_scale: 1.0,
+        });
+    }
     Ok(problems)
 }
 
@@ -500,6 +555,13 @@ pub fn run_arm(
         other if banded_kernel_arm(other).is_some() => {
             run_banded(problem, rtol, banded_kernel_arm(other).unwrap()).map(|(r, _)| r)
         }
+        other if small_static_arm(other).is_some() => run_small_static_full(
+            problem,
+            &adaptive,
+            &output,
+            small_static_arm(other).unwrap(),
+        )
+        .map(small_result),
         other => match option_arm(other) {
             Some((true, options)) => run_small(problem, &adaptive, &output, options),
             Some((false, options)) => {
@@ -877,6 +939,46 @@ fn run_small(
     run_small_full(problem, adaptive, output, options).map(small_result)
 }
 
+/// The small driver with the SPD06 options on one benchmark problem, with
+/// the full result.
+fn run_small_static_full(
+    problem: &BenchmarkProblem,
+    adaptive: &AdaptiveStepConfig,
+    output: &OutputSchedule,
+    options: Rodas5pFastSmallOptions,
+) -> CoreResult<rodas5p_integrators::Rodas5pFastSmallResult> {
+    let span = problem.t_span;
+    match problem.id {
+        "van-der-pol-mu1000" => integrate_rodas5p_fast_small_observed_with_small_options(
+            &SmallVanDerPol { mu: 1000.0 },
+            span,
+            &fixed::<2>(&problem.y0)?,
+            adaptive,
+            output,
+            options,
+        ),
+        "robertson" => integrate_rodas5p_fast_small_observed_with_small_options(
+            &SmallRobertson,
+            span,
+            &fixed::<3>(&problem.y0)?,
+            adaptive,
+            output,
+            options,
+        ),
+        "hires" => integrate_rodas5p_fast_small_observed_with_small_options(
+            &SmallHires,
+            span,
+            &fixed::<8>(&problem.y0)?,
+            adaptive,
+            output,
+            options,
+        ),
+        other => Err(rodas5p_core::CoreError::InvalidInput(format!(
+            "the small arm covers van der Pol, Robertson and HIRES, not {other}"
+        ))),
+    }
+}
+
 /// The small driver on one benchmark problem with the full result.
 fn run_small_full(
     problem: &BenchmarkProblem,
@@ -918,13 +1020,17 @@ fn run_small_full(
 
 /// An ensemble of `members` van der Pol trajectories,
 /// `mu = 1000 (1 + k / members)`, run back to back with `arm`
-/// (`rodas5p-fast` or `rodas5p-fast-small`): the summed attempts and a
-/// checksum of the final states.
+/// (`rodas5p-fast`, `rodas5p-fast-small` or SPD06's
+/// `rodas5p-fast-small-static`): the summed attempts and a checksum of the
+/// final states.
 pub fn ensemble_run(arm: &str, members: usize, rtol: f64) -> Result<Value> {
     anyhow::ensure!(members >= 1, "at least one member");
+    // Speed research node SPD06: the gated static arm runs the ensemble too.
+    let small_static = (arm == SMALL_STATIC_ARMS[0]).then(|| small_static_arm(arm).unwrap());
     anyhow::ensure!(
-        arm == FAST_ARM || arm == SMALL_ARM,
-        "ensemble arms: {FAST_ARM}, {SMALL_ARM}"
+        arm == FAST_ARM || arm == SMALL_ARM || small_static.is_some(),
+        "ensemble arms: {FAST_ARM}, {SMALL_ARM}, {}",
+        SMALL_STATIC_ARMS[0]
     );
     let base = benchmark_problems()?
         .into_iter()
@@ -935,7 +1041,16 @@ pub fn ensemble_run(arm: &str, members: usize, rtol: f64) -> Result<Value> {
     let (mut attempts, mut checksum) = (0_usize, 0.0_f64);
     for k in 0..members {
         let mu = 1000.0 * (1.0 + k as f64 / members as f64);
-        let run = if arm == SMALL_ARM {
+        let run = if let Some(options) = small_static {
+            small_result(integrate_rodas5p_fast_small_observed_with_small_options(
+                &SmallVanDerPol { mu },
+                base.t_span,
+                &fixed::<2>(&base.y0)?,
+                &adaptive,
+                &output,
+                options,
+            )?)
+        } else if arm == SMALL_ARM {
             small_result(integrate_rodas5p_fast_small_observed(
                 &SmallVanDerPol { mu },
                 base.t_span,
@@ -1432,6 +1547,208 @@ mod spd01 {
             }
         }
         let out = json!({"schema": "vigilode-spd03-identity-v1", "cli_rows": rows});
+        std::fs::write(&path, serde_json::to_string(&out).unwrap() + "\n").unwrap();
+        println!("wrote {}", path.display());
+    }
+}
+
+/// Speed research node SPD06 (`research/spd06_small_static_stages_20261007`):
+/// the CLI arms of the fixed stage structure. The identity export is the
+/// library test `crates/rodas5p-integrators/tests/spd06_small_static_stages.rs`.
+#[cfg(test)]
+mod spd06 {
+    use super::*;
+
+    #[test]
+    fn the_static_arms_are_known_and_equal_the_small_arm() {
+        for arm in SMALL_STATIC_ARMS {
+            assert!(known_arm(arm) && !ARMS.contains(&arm) && !OPTION_ARMS.contains(&arm));
+            assert!(option_arm(arm).is_none());
+        }
+        assert!(small_static_arm(SMALL_ARM).is_none());
+        let problems = benchmark_problems().unwrap();
+        for id in ["van-der-pol-mu1000", "robertson", "hires"] {
+            let problem = problems.iter().find(|p| p.id == id).unwrap();
+            let legacy = run_arm(SMALL_ARM, problem, 1.0e-4).unwrap();
+            for arm in SMALL_STATIC_ARMS {
+                let run = run_arm(arm, problem, 1.0e-4).unwrap();
+                assert_eq!(run.observed.y, legacy.observed.y, "{arm} {id}");
+                assert_eq!(run.observed.counters, legacy.observed.counters);
+                assert_eq!(run.diagnostics.attempts, legacy.diagnostics.attempts);
+            }
+        }
+        let brusselator = problems
+            .iter()
+            .find(|p| p.id == "brusselator-1d-50")
+            .unwrap();
+        assert!(run_arm(SMALL_STATIC_ARMS[0], brusselator, 1.0e-4).is_err());
+        let ensemble = |arm: &str| ensemble_run(arm, 4, 1.0e-4).unwrap();
+        let (a, b) = (ensemble(SMALL_ARM), ensemble(SMALL_STATIC_ARMS[0]));
+        assert_eq!(a["attempts"], b["attempts"]);
+        assert_eq!(
+            a["checksum"].as_f64().unwrap().to_bits(),
+            b["checksum"].as_f64().unwrap().to_bits()
+        );
+        assert!(ensemble_run(SMALL_STATIC_ARMS[1], 4, 1.0e-4).is_err());
+    }
+}
+
+/// Speed research node SPD09 (`research/spd09_colext_threshold_20261007`):
+/// the column-extent LU above `RODAS5P_FAST_SMALL_LU_MAX` only, against the
+/// legacy dense driver.
+#[cfg(test)]
+mod spd09 {
+    use rodas5p_integrators::{
+        RODAS5P_FAST_COLEXT64_DRIVER_ID, RODAS5P_FAST_SMALL_LU_MAX, Rodas5pFastLu,
+        Rodas5pFastResult,
+    };
+
+    use super::*;
+
+    fn hx(v: f64) -> String {
+        format!("{:016x}", v.to_bits())
+    }
+
+    /// Everything a run reports, the floats as IEEE bits (no driver id).
+    fn row(r: &Rodas5pFastResult) -> Value {
+        let o = &r.observed;
+        json!({
+            "success": o.success, "message": o.message,
+            "t": o.t.iter().map(|v| hx(*v)).collect::<Vec<_>>(),
+            "y": o.y.iter().map(|s| s.iter().map(|v| hx(*v)).collect::<Vec<_>>()).collect::<Vec<_>>(),
+            "attempts": r.attempts, "accepted_steps": r.accepted_steps,
+            "rejected_steps": r.rejected_steps, "jacobian_reuses": r.jacobian_reuses,
+            "internal_steps": o.internal_steps, "output_clipped_steps": o.output_clipped_steps,
+            "counters": serde_json::to_value(o.counters).unwrap(),
+        })
+    }
+
+    fn colext64() -> Rodas5pFastOptions {
+        option_arm("rodas5p-fast-colext64").unwrap().1
+    }
+
+    /// `(legacy, colext64)` on one problem at one tolerance.
+    fn pair(problem: &BenchmarkProblem, rtol: f64) -> (Rodas5pFastResult, Rodas5pFastResult) {
+        let adaptive = adaptive_config(problem, rtol);
+        let output = OutputSchedule::new(vec![problem.t_span.0, problem.t_span.1]).unwrap();
+        let legacy = integrate_rodas5p_fast_observed(
+            &problem.problem,
+            problem.t_span,
+            &problem.y0,
+            &adaptive,
+            &output,
+        )
+        .unwrap();
+        let new = integrate_rodas5p_fast_observed_with_options(
+            &problem.problem,
+            problem.t_span,
+            &problem.y0,
+            &adaptive,
+            &output,
+            colext64(),
+        )
+        .unwrap();
+        (legacy, new)
+    }
+
+    /// The registered points: the five benchmark problems at the seven
+    /// tolerances, then `brusselator-1d-30` and `-40` at rtol 1e-6.
+    fn points() -> Vec<(BenchmarkProblem, Vec<f64>)> {
+        let mut out: Vec<_> = benchmark_problems()
+            .unwrap()
+            .into_iter()
+            .map(|p| (p, TOLERANCES.to_vec()))
+            .collect();
+        for problem in profile_problems().unwrap() {
+            if ["brusselator-1d-30", "brusselator-1d-40"].contains(&problem.id) {
+                out.push((problem, vec![1.0e-6]));
+            }
+        }
+        out
+    }
+
+    /// A small identity check (the export runs all 37 points): both sides of
+    /// the threshold, with the LU each side must choose.
+    #[test]
+    fn colext64_equals_the_legacy_driver_on_both_sides_of_the_threshold() {
+        assert!(known_arm("rodas5p-fast-colext64") && !ARMS.contains(&"rodas5p-fast-colext64"));
+        assert!(option_arm("rodas5p-fast-small-colext64").is_none());
+        let problems = profile_problems().unwrap();
+        for (id, lu) in [
+            ("van-der-pol-mu1000", Rodas5pFastLu::InPlaceZeroSkipping),
+            ("hires", Rodas5pFastLu::InPlaceZeroSkipping),
+            ("brusselator-1d-30", Rodas5pFastLu::InPlaceZeroSkipping),
+            ("brusselator-1d-40", Rodas5pFastLu::InPlaceColumnExtents),
+        ] {
+            let problem = problems.iter().find(|p| p.id == id).unwrap();
+            let n = problem.problem.dimension;
+            assert_eq!(
+                lu == Rodas5pFastLu::InPlaceColumnExtents,
+                n > RODAS5P_FAST_SMALL_LU_MAX
+            );
+            let (legacy, new) = pair(problem, 1.0e-3);
+            assert!(legacy.observed.success);
+            assert_eq!(row(&new), row(&legacy), "{id}");
+            assert_eq!(new.lu, lu, "{id}");
+            assert_eq!(legacy.lu, Rodas5pFastLu::InPlaceZeroSkipping);
+            assert_eq!(new.driver, RODAS5P_FAST_COLEXT64_DRIVER_ID);
+        }
+        // The benchmark keeps its five problems; the profile adds three.
+        assert_eq!(benchmark_problems().unwrap().len(), 5);
+        let dims: Vec<_> = problems
+            .iter()
+            .map(|p| (p.id, p.problem.dimension))
+            .collect();
+        assert!(
+            dims.contains(&("brusselator-1d-30", 60)) && dims.contains(&("brusselator-1d-40", 80))
+        );
+    }
+
+    /// Identity export of SPD09: 37 points, colext64 against the legacy
+    /// dense driver, as IEEE bits.
+    #[test]
+    #[ignore = "identity export of research/spd09_colext_threshold_20261007; release build; set SPD09_IDENTITY"]
+    fn spd09_identity_export() {
+        let Ok(path) = std::env::var("SPD09_IDENTITY") else {
+            println!("SPD09_IDENTITY not set: nothing written");
+            return;
+        };
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../..")
+            .join(path);
+        assert!(
+            !path.exists(),
+            "immutable output exists: {}",
+            path.display()
+        );
+        let mut rows = Vec::new();
+        for (problem, rtol) in points()
+            .iter()
+            .flat_map(|(p, tols)| tols.iter().map(move |&rtol| (p, rtol)))
+        {
+            let (legacy, new) = pair(problem, rtol);
+            let (a, b) = (row(&legacy), row(&new));
+            let identical = a == b;
+            println!(
+                "{} (n = {}) {:e}: identical {identical}, lu {:?} / {:?}",
+                problem.id, problem.problem.dimension, rtol, legacy.lu, new.lu
+            );
+            rows.push(json!({
+                "problem": problem.id, "dimension": problem.problem.dimension, "rtol": rtol,
+                "identical": identical,
+                "legacy_driver": legacy.driver, "colext64_driver": new.driver,
+                "legacy_lu": format!("{:?}", legacy.lu), "colext64_lu": format!("{:?}", new.lu),
+                "legacy": a, "colext64": if identical { Value::Null } else { b },
+            }));
+        }
+        let out = json!({
+            "schema": "vigilode-spd09-identity-v1",
+            "threshold": RODAS5P_FAST_SMALL_LU_MAX,
+            "rows": rows,
+        });
+        if let Some(parent) = path.parent() {
+            std::fs::create_dir_all(parent).unwrap();
+        }
         std::fs::write(&path, serde_json::to_string(&out).unwrap() + "\n").unwrap();
         println!("wrote {}", path.display());
     }
