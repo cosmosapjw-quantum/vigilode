@@ -271,7 +271,23 @@ fn cycle(
     }
     arnoldi.rhs_small[..actual + 1].fill(0.0);
     arnoldi.rhs_small[0] = beta;
-    let solution = least_squares(&arnoldi.hessenberg_prefix, &arnoldi.rhs_small[..actual + 1])?;
-    linear_combination_into(&arnoldi.basis[..actual], &solution, &mut arnoldi.correction)?;
+    match workspace.least_squares.as_deref_mut() {
+        // Research node `research/spd04_ls_workspace_20261007`: the same
+        // faer kernels on reused buffers, bitwise the same solution.
+        Some(small) => {
+            let solution = &mut workspace.least_squares_solution;
+            small.solve_into(
+                &arnoldi.hessenberg_prefix,
+                &arnoldi.rhs_small[..actual + 1],
+                solution,
+            )?;
+            linear_combination_into(&arnoldi.basis[..actual], solution, &mut arnoldi.correction)?;
+        }
+        None => {
+            let solution =
+                least_squares(&arnoldi.hessenberg_prefix, &arnoldi.rhs_small[..actual + 1])?;
+            linear_combination_into(&arnoldi.basis[..actual], &solution, &mut arnoldi.correction)?;
+        }
+    }
     Ok(actual)
 }

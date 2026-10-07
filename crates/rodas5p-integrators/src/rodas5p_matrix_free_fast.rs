@@ -265,6 +265,15 @@ impl Rodas5pMfFastWorkspace {
         self.gmres_into = on;
     }
 
+    /// Solve the small least-squares problem of the `gmres_into` stage
+    /// solves in a reused workspace (research node
+    /// `research/spd04_ls_workspace_20261007`); same results bit for bit.
+    /// Off by default; effective only together with
+    /// [`Self::set_gmres_into`] (the other stage solvers never use it).
+    pub fn set_ls_workspace(&mut self, on: bool) {
+        self.gmres.set_ls_workspace(on);
+    }
+
     /// Set the GCRO-DR recycle policy (research node
     /// `research/safe_recycle_policy_20261004`). `Legacy` by default.
     pub fn set_gcrodr_policy(&mut self, policy: GcrodrRecyclePolicy) {
@@ -595,6 +604,31 @@ pub fn integrate_rodas5p_mf_fast_observed_gmres_into(
     )
 }
 
+/// [`integrate_rodas5p_mf_fast_observed_gmres_into`] with
+/// [`Rodas5pMfFastWorkspace::set_ls_workspace`] on (research node
+/// `research/spd04_ls_workspace_20261007`).
+pub fn integrate_rodas5p_mf_fast_observed_gmres_into_ls_workspace(
+    problem: &OdeProblem,
+    t_span: (f64, f64),
+    y0: &[f64],
+    linear_config: &LinearSolverConfig,
+    adaptive: &AdaptiveStepConfig,
+    output: &OutputSchedule,
+) -> CoreResult<Rodas5pMfFastResult> {
+    integrate_mf_fast_inner(
+        problem,
+        t_span,
+        y0,
+        linear_config,
+        adaptive,
+        output,
+        true,
+        GcrodrRecyclePolicy::Legacy,
+        &mut |_, _, _, _, _| {},
+        true,
+    )
+}
+
 /// Called after every attempt with the attempt's `t`, `y` and step, its
 /// embedded error norm (`None` when the attempt failed) and the workspace
 /// (stages and `y_new`), before the step is accepted or rejected.
@@ -625,6 +659,7 @@ pub fn integrate_rodas5p_mf_fast_observed_traced(
         gmres_into,
         GcrodrRecyclePolicy::Legacy,
         observer,
+        false,
     )
 }
 
@@ -651,6 +686,7 @@ pub fn integrate_rodas5p_mf_fast_observed_with_gcrodr_policy(
         false,
         policy,
         &mut |_, _, _, _, _| {},
+        false,
     )
 }
 
@@ -665,6 +701,7 @@ fn integrate_mf_fast_inner(
     gmres_into: bool,
     policy: GcrodrRecyclePolicy,
     observer: MfAttemptObserver<'_>,
+    ls_workspace: bool,
 ) -> CoreResult<Rodas5pMfFastResult> {
     adaptive.validate()?;
     let (mut t, tf) = t_span;
@@ -676,6 +713,7 @@ fn integrate_mf_fast_inner(
     let mut work = Rodas5pMfFastWorkspace::new(problem, linear_config)?;
     work.set_gmres_into(gmres_into);
     work.set_gcrodr_policy(policy);
+    work.set_ls_workspace(ls_workspace);
     let mut y = y0.to_vec();
     let mut h = adaptive.initial_step.min(crate::output::step_to(t, tf)?);
     let mut controller = AdaptiveControllerState::default();
