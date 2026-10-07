@@ -111,3 +111,15 @@ static_solves }`, not of `Rodas5pFastOptions` (adding a field would break the ex
 `tests/spd01_overhead.rs`); the dense and banded drivers therefore cannot receive them at all. The checker also takes
 `--contract-passed` and requires 64 members and equal rtol in the ensemble files. Claim ceiling: counted
 instructions of the small-n research driver at N = 2, 3, 8; no wall-time claim.
+
+## Corrections after the run (2026-10-07, from the independent review; appended)
+
+The Results attribute the legacy arm's drift (1.052 van der Pol, 1.029 Robertson, 1.003 HIRES against
+`BASE_PROFILE.json`) to the small driver's legacy path now being one generic function shared with the static
+variants. That cause was not measured. In the same binary the dense `rodas5p-fast` arm, whose driver file SPD06 does
+not touch beyond one policy helper, drifted 1.014-1.022 as well (SPD09 `RESULTS.json`), so part of the drift has
+another source (code layout of the whole binary). The attribution is unverified. The gated same-binary ratios include
+the drift in their denominator; the cross-binary ratios against the base (0.882, 0.872, 0.737) are the conservative
+figures and also pass. The checker's gate item 2 relies on the `--contract-passed true` flag, which the run script
+set only after the contract test had passed (the script stops on a test failure); the checker cannot verify it.
+No verdict and no gated number changes.

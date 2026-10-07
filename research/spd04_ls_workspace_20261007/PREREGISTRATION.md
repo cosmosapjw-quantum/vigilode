@@ -99,3 +99,15 @@ empty least-squares workspace (faer's buffer is not `Clone`), which regrows on f
 established for faer 0.24.4 with this host's global parallelism setting; another faer version needs the contract
 re-run. Claim ceiling: allocator events of the opt-in GMRES-into path and the matrix-free research driver; no
 instruction or wall-time claim.
+
+## Corrections after the run (2026-10-07, from the independent review; appended)
+
+- The 16 exempt solves are the solves at indices 1 and 6 of each of the 8 Robertson families, not "the second stage".
+- `tools/spd04_ls_check.py` exempts a solve with growth from the equality check as a whole (when any of the
+  candidate, control or least-squares workspace grew), rather than allowing only the growth allocations. That is
+  looser than "except allocations of workspace growth"; the 392 other solves satisfy the exact equality. The
+  checker does not gate the contract's `growth_only_above_previous_maximum` that the Results cite; its recorded
+  value is true.
+- `GmresWorkspace::capacity_f64` counts the least-squares solution vector but not the `LeastSquaresWorkspace`
+  buffers; their growth is visible only through `ls_workspace()`.
+No verdict and no gated number changes.

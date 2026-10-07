@@ -138,3 +138,89 @@ produced `77005d2`. On that head:
 The three feature-configuration test runs were not repeated after the review fixes. The fixes touch only the opt-in
 banded slices kernel, a doc comment, one input check and the CLI problem list, and the four clippy configurations
 compiled them under every feature set.
+
+# Second cycle (2026-10-07): SPD04-SPD09
+
+The six candidates of the next-cycle DAG above were registered together (`6f504c0`, pushed before any code), with
+base exports recorded on the unmodified solver source for the two nodes that needed one (SPD07 `BASE.json`,
+SPD08 `BASE_ENSEMBLE.json`). Three implementers worked in separate worktrees (Krylov: SPD04/SPD05; fast drivers:
+SPD06/SPD09; ensemble: SPD08); SPD07 was implemented by the integrator. Each node was measured once on committed
+code; the same claim discipline applies (counted instructions, counters and allocator events only; no wall-time
+claim).
+
+## Executed nodes
+
+| Node | Ledger | Verdict | Result |
+|---|---|---|---|
+| SPD04 allocation-free least squares (`spd04_ls_workspace_20261007`) | L-0087 | **PASS** | A workspace-owned faer in-place column-pivoted QR with the high-level path's parameters is bitwise identical on 1,024 contract systems and 408 GMRES-into solves and removes exactly 11 allocations per least-squares solve; matrix-free driver allocations per attempt 0.018-0.096x on five problems (HIRES 0.48x: its JVP allocates) |
+| SPD05 one least-squares solve per LGMRES-into cycle (`spd05_lgmres_ls_once_20261007`) | L-0088 | **PASS** | Bitwise identical on all 1,216 rev04 solves (344 failures rolled back); allocations per solve 0.027-0.042x of L-0061 (CDR 4,059 -> 110, Brusselator 455.7 -> 15.4); with SPD04's workspace too, 3.0-4.7 per solve |
+| SPD06 fixed stage structure, small driver (`spd06_small_static_stages_20261007`) | L-0085 | **PASS** | Bitwise identical on 21 points and the ensemble; Ir per attempt **0.838x** (van der Pol), 0.848x (Robertson), **0.736x** (HIRES) of the legacy arm in the same binary; 0.882x / 0.872x / 0.737x of the base binary. The index-loop solves give most of the HIRES gain (stages alone 0.951x) |
+| SPD07 stage-indexed warm start, matrix-free driver (`spd07_mf_step_warm_start_20261007`) | L-0084 | **FAIL** | Starting stage i from stage i of the last accepted step: 0.963-1.001x the linear matvecs of the default start on the Brusselators (gate <= 0.85) and 1.03-1.05x on Robertson and van der Pol |
+| SPD08 lane-batched ensemble (`spd08_small_ensemble_lanes_20261007`) | L-0089 | **FAIL (kill)** | All 64 members bitwise identical, failures masked per lane, but 0.924x (B = 8) / 0.937x (B = 4) Ir per trajectory (gate <= 0.80, kill > 0.90); the scalar arm drifted +8.6 % from its base export |
+| SPD09 column extents above n = 64 (`spd09_colext_threshold_20261007`) | L-0086 | **PASS** | Bitwise identical on 37 points; 1.0000-1.0001x at n = 2, 3, 8, 60; **0.833x** (n = 80), 0.787x (n = 100), **0.531x** (n = 400) |
+
+Where the drivers stand now (cross-node, cross-binary; reported, never gated):
+
+| Problem | Before the speed research | After cycle 1 | After cycle 2 | Hairer RODAS (L-0030) |
+|---|---|---|---|---|
+| van der Pol (n = 2) | 3,569 (small driver) | 2,778 (SPD01 `-ovh`) | **2,348** (SPD06 `-static-ovh`; 2,955 for `-ovh` in the same binary) | 2,947 |
+| HIRES (n = 8) | 12,302 | 11,586 | **8,224** (SPD06 `-static-ovh`) | 9,157 |
+| Brusselator 1-D (n = 100, dense storage) | 395 k (v2) | 306 k (SPD02 colext, opt-in) | 316 k (SPD09 colext64, no small-n loss) | - |
+| Brusselator 1-D (n = 400) | 3.74-3.84 M (v2) | 0.98 M (banded arm) | 0.98 M (banded); 2.03 M dense storage (SPD09) | 8.83 M |
+
+## What did not work, and why
+
+- **Step-indexed warm start** (SPD07): iterations per stage solve fall by at most 4 % (Brusselator-160 at 1e-8:
+  50.6 -> 48.5), so the last step's stages are not a much better start than the previous stage of the same attempt,
+  and on the small problems the extra true-residual matvec of a nonzero stage-0 start dominates. Reported: the
+  driver's default `Previous` start costs 1.02-1.57x the matvecs of a zero start in all 14 cases; zero is the
+  cheapest start everywhere. Changing the default is a separate question (its own node, with GCRO-DR and LGMRES
+  measured separately).
+- **Lane batching at N = 2** (SPD08): batching the elementwise stage arithmetic saves about 250-300 Ir per attempt
+  out of about 3,900; the per-lane LU, solves, controller and output clock dominate. The predicted 0.65-0.75x was
+  wrong; the direction is closed for N = 2.
+- **The legacy arms drift**: carrying the new opt-in code moved the unchanged default paths by +0.3 to +5.2 %
+  (small driver) and +0.6 to +2.2 % (dense driver) in instructions per attempt, with bitwise identical results. The
+  cause is unverified (code layout of the whole binary; the dense arm drifted although its file barely changed).
+  Gates measured against the same binary carry this drift in their denominators; cross-binary figures are given
+  next to them.
+
+## Next steps (not preregistered)
+
+| Candidate | Why |
+|---|---|
+| Zero start as the matrix-free driver's default (GMRES-into) | SPD07's reported finding: 1.02-1.57x fewer matvecs than `Previous` in 14/14 cases with equal attempts and errors; needs its own registration and the LGMRES/GCRO-DR interaction measured |
+| Wire SPD04's workspace into the matrix-free driver by default, and SPD05 into a driver | Both are bitwise identical; the remaining question is adoption, not effect |
+| Column-extent threshold below 64 | SPD09 reports 0.888x at n = 60 for the always-on variant; the crossover between n = 8 and 60 is unmeasured |
+| Keep the legacy small-driver function separate from the static variants | Would test whether the +5.2 % drift of the default small driver is the shared generic function (unverified) |
+| Promote SPD06 + SPD01 options to the small driver's default | 2,348 Ir per attempt on van der Pol, below Hairer's RODAS (2,947, cross-binary); needs a promotion review (SPD01's fused landing has a documented exception below `h = 2^16 eps |t|`) |
+
+## What cannot be claimed (cycle 2)
+
+- Any wall-time effect (timing authority on HOLD). Allocation removal (SPD04/SPD05) is an allocator-event count, not
+  a time.
+- SPD05's result for any driver: no driver calls `solve_lgmres_into`.
+- SPD04's identity for a faer version other than 0.24.4, or another global parallelism setting.
+- That the batch driver (SPD08) or the static stages (SPD06) generalize beyond N = 2, 3, 8 and the van der Pol
+  ensemble.
+
+## Independent review (cycle 2)
+
+A separate agent that wrote none of the code reviewed `6f504c0..9aab6f3` read-only, ran the new non-ignored tests in
+its own worktree, and probed `LeastSquaresWorkspace` with 200 further tall and shrinking shapes in one reused
+workspace (all bitwise equal). **No blocking finding**; every default path keeps its results bit for bit; all six
+verdicts are supported by the recorded JSON.
+
+| # | Severity | Finding | Disposition |
+|---|---|---|---|
+| 1 | should-fix | SPD06/SPD08 state as fact that the legacy small arm's drift comes from the shared generic function; the dense arm drifted 1.4-2.2 % in the same binary, so the cause is unverified | Corrections appended to SPD06 and SPD08 |
+| 2 | should-fix | SPD07: the doc comment claimed every other stage solver refuses the step-indexed starts (only the sequential one does); a reused workspace kept the previous integration's stages; the test only checked that the work changes | Fixed in `c26a235` (record cleared per integration, contract stated, a test requiring zero iterations on the recorded system); recorded runs unaffected (fresh workspace per integration); correction appended |
+| 3 | should-fix | Three reported (not gated) numbers misstated: SPD07 scaled-arm minimum 0.958 (not 0.963), SPD05 workspace ratio minimum 0.0009 (not 0.002), SPD08 "batch8 1.005x of base" mixed two protocols (1.0008x with one protocol) | Corrections appended; the ledger rows are append-only and keep their text, the node files carry the corrected figures |
+| 4 | minor | SPD04 checker exempts whole solves with growth and does not gate the contract's growth flag; SPD06 gate item 2 relies on a `--contract-passed` flag; SPD05's reading of "non-failing sequence" undisclosed; SPD07 checker stricter on exclusions; L-0084 claim omits Prothero-Robinson 1e-8; no n = 64/65 boundary test in SPD09 | Disclosed in the corrections; no verdict depends on them (the SPD09 boundary is `n > 64` in both places, checked by reading) |
+
+Checked and found sound by the reviewer: the SPD04 bitwise argument against the faer 0.24.4 source (parameters,
+`split_LU`, `Mat` stride and alignment, zeroing of every reused buffer, monotone growth, error paths); SPD05's
+ls-once routine as the legacy loop without the per-column solve; that every default path is unchanged; SPD06's
+operation order and tables check; SPD08's per-lane freshness, failure counters and reset; that no pre-existing test
+file was modified; that all registrations are append-only; checker thresholds; and that every ledger input matches its
+blob at the ledger commit.

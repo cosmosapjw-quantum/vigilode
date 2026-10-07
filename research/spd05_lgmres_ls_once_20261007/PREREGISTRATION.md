@@ -88,3 +88,12 @@ Deviations: `LgmresIntoReport::inner_iterations` equals `iterations` by construc
 including augmentation columns); cycles are derived from the solve count of the workspace arm. Claim ceiling:
 allocator events of the research entry point `solve_lgmres_into`, which no driver calls; no instruction or
 wall-time claim.
+
+## Corrections after the run (2026-10-07, from the independent review; appended)
+
+- The candidate with SPD04's least-squares workspace allocates 0.0009-0.009 of control per solve, not 0.002-0.009
+  (minimum: CDR Pe50 tau4e-3, 3.64 against 4,059.1).
+- The checker reads "non-failing sequence" in gate item 3 as "sequence of the regular (not forced-failure)
+  configuration"; the docstring says so, the Results did not. Every sequence of either configuration is at most
+  0.042, so the reading changes nothing.
+No verdict and no gated number changes.

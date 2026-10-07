@@ -105,3 +105,13 @@ every member's result until all finish (for the member-order checksum and dumps)
 bitwise unchanged. Item 5 is a validity failure of the comparison baseline; with item 4 failing in both binaries'
 terms, the direction (lane batching of the small driver at N = 2) is closed. Claim ceiling: counted instructions of
 a research ensemble driver; no wall-time claim.
+
+## Corrections after the run (2026-10-07, from the independent review; appended)
+
+- "Against the base binary the batch8 arm is 1.005x" (also in the ledger claim of L-0089) divided the 2-minus-1
+  repetitions figure (1,131,170) by the base's 64-minus-32 figure (1,126,013). With the same protocol on both sides
+  it is 1,126,931 / 1,126,013 = **1.0008x**. The conclusion stands: in absolute terms the batch arm only recovers the
+  scalar arm's drift.
+- The drift's attribution to SPD06's shared generic function and to the ensemble runner keeping all member results
+  is unverified (see the SPD06 correction: the dense arm drifted 1.4-2.2 % in SPD06/SPD09's binary too).
+No verdict and no gated number changes.

@@ -103,3 +103,20 @@ Reported, not gated (all from `RESULTS.json`):
 Claim ceiling: counted Krylov work of the opt-in matrix-free U-form research driver on the 7 SAFE-RECYCLE problems at
 two tolerances; no wall-time claim. Per-stage iteration and `||r0|| / ||b||` records (suggested by the refuters, not
 registered) were not recorded; only per-trajectory counters and GMRES-into cycles are.
+
+## Corrections and changes after the run (2026-10-07, from the independent review; appended)
+
+- `PreviousStepScaled` / `Previous` ranges 0.958-1.038, not 0.963-1.038 (minimum: Prothero-Robinson at 1e-6).
+- The ledger claim (L-0084) names the regressions on Robertson and van der Pol; Prothero-Robinson at 1e-8 (1.029)
+  also exceeds 1.02, as the gate table above says.
+- The checker fails gate item 2 if any Brusselator case were excluded, while the registration says to exclude and
+  report it; stricter than registered, and no case was excluded.
+- Code (after the run, `c26a235`): the doc comment of `InitialGuess::PreviousStep` claimed every other stage
+  solver refuses it; in fact the sequential stage solver refuses it and the matrix-free workspace honours it only
+  when accepted steps are recorded, which its driver does and a caller of `attempt` must do itself. A reused
+  workspace also kept the previous integration's stages; the driver now clears the record at the start of each
+  integration (`clear_accepted_step`). The recorded runs build a fresh workspace per integration and are unaffected.
+  The test `step_indexed_starts_are_used` only asserted that the work changes; a new contract test re-attempts the
+  recorded system and requires zero Krylov iterations with every stage unchanged (a wrong stage index fails it),
+  checks that clearing restores the `Previous` start and that the scaled start differs after a step change.
+No verdict and no gated number changes.
