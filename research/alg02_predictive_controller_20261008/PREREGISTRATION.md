@@ -238,3 +238,12 @@ predict the Robertson cheapest-run edge or the van der Pol 5.6e-7 calibration ce
   `benchmark_problems()` has no JVP and no 160-cell problem.
 - **Matrix-free linear configuration:** SPD07's `gmres_into` `Zero` arm (GMRES, rtol 1e-10, atol 1e-14, restart 40,
   maxiter 200, no preconditioner). Adaptive configuration as the dense cells, atol scale 1.
+
+## Correction after the independent review (appended 2026-10-08; no number or verdict changes)
+
+An independent reviewer re-ran the checker; its output equals the committed RESULTS.json, and the verdict stays **FAIL**. Two behaviours of `PredictiveCapped` are literal readings of the registration that a follow-up node should change:
+
+- **err = 0 bypasses the cap.** An accepted step with err = 0 right after a rejection still gets the maximum factor 5, because the registration keeps err = 0 unchanged. This is exactly the F-078 growth case, and the pilot's controller capped it.
+- **A sliver landing consumes the rejection flag.** After a rejection, an accepted sliver landing clears the "previous attempt rejected" flag, so the next full step can grow (2.26x in the reviewer's probe). This matches Hairer's REJECT reset.
+
+The factorial reading ("PREDcap beats I725 on HIRES only") depends on `I725` also scaling rejection proposals by 0.725, which is disclosed above. The pilot applied 0.725 to accepted steps only.

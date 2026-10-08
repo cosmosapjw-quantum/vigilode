@@ -225,3 +225,31 @@ Base export 96 s, recorded run 169 s. Contract tests: `cargo test -p rodas5p-kry
   `rodas5p-core`; the dense driver at 1e-13 agrees to 4.7e-12 (s = 0) and 4.0e-13 (s = 1).
 - The exports run only when their output variable is set, because the registered filter `export_base` (and
   `export_runs`) also matches `export_base_alg03` (`export_runs_alg03`).
+
+## Correction after the independent review (appended 2026-10-08; no number or verdict changes)
+
+An independent reviewer who wrote none of the code re-ran the checkers and found nothing blocking. The verdict stays **FAIL**. Four corrections apply to the text above and to ledger row L-0090, which is superseded by L-0093 with the corrected claim.
+
+1. **The nu-guard rule is a deviation, not an interpretation.**
+   - The registration computes nu "at the first projected exit".
+   - The implementation instead re-evaluates nu at every later would-be exit outside the confirmation gap (`used >= next_check` in `gmres_staged.rs`) and keeps the running maximum.
+   - The pilot evaluated it at every column where the projected residual met the threshold, so the implementation is neither the registered rule nor exactly the pilot's.
+   - The guard tightened the threshold in 208,051 of 247,617 CoupledGuarded solves.
+2. **The small-n work passes of item 5 are not a coupled-target effect.**
+   - On HIRES, Robertson and van der Pol, ProjL2 (production target, in-cycle exit) matches or beats CoupledGuarded in JVPs per accepted step:
+
+     | Problem | ProjL2 | CoupledGuarded |
+     |---|---|---|
+     | van der Pol | 0.746 / 0.744 | 0.751 / 0.748 |
+     | Robertson | 0.684 / 0.656 | 0.702 / 0.680 |
+     | HIRES | 0.760 / 0.599 | 0.741 / 0.711 |
+
+   - The saving comes from the staged solver omitting production's diagnostic final residual. The coupled target's own gain shows only on the Brusselators: ProjL2 0.467 / 0.296 (Brusselator-50) and 0.731 / 0.618 (Brusselator-160), against CoupledGuarded 0.31 / 0.26 and 0.45 / 0.51.
+   - The nu-guard's SVD flops are reported only in `stage_statistics.nu_flops` and are not in the counters. Counted, orthogonalization plus SVD flops are 1.0-1.6x Legacy on the small-n cells (van der Pol 1.61, Prothero-Robinson 1.6, HIRES 1.19) and 0.08-0.38x on the Brusselators.
+3. **The checker was committed with the run.** `tools/alg01_coupled_target_check.py` first appears in `0df3ede`, together with RUNS.json and RESULTS.json, so the interpretations listed above cannot be shown from git to predate the run. BASE (`61126ee`) already held the pilot-budget ladder rows. Only one interpretation flips an item: the ladder budget, item 3. It does not flip the verdict, which item 2 already decides.
+4. **Item 3 was infeasible at the registered budget for every GMRES arm.** Legacy also exhausts 200 columns on diagpr128 k = 3-5 and semilin128 k = 3. This item's FAIL is therefore a registration defect and carries no information about the coupled target. At the pilot's budget of 20,000 the coupled target is 0.997-1.001x LU on every rung (reported).
+
+Minor points:
+- "Coupled (no guard) fails item 2" also includes vigb-k10 at 1e-4 (1.85x).
+- The Legacy path is bitwise unchanged but does run trivial new code: workspace field initialisation, a per-stage `staged` flag test, and a statistics copy.
+- Nothing was re-run at the merge commit. The Legacy and Integral paths are bitwise unchanged, and every source input at the ledger commit equals the merged head's.

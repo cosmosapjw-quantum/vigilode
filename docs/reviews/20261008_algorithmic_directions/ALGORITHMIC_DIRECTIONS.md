@@ -418,3 +418,66 @@ Two decisions belong to the owner, not to a node:
 
 No new arm (proj-stop, coupled target, predictive controller, guard, ROCK4, PEXPRB54S4 at its own step, linear-part
 preconditioner) has Rust counters yet.
+
+# Tier-1 execution (2026-10-08): ALG01-ALG03
+
+The user approved the plan of section 4. Nodes N1-N3 became ALG01-ALG03. Each followed the same order:
+
+1. registration, pushed before any code (`b0d5ea3`);
+2. a test-only commit and base exports recorded on the unmodified solver source;
+3. implementation, all of it opt-in;
+4. one recorded run per node with the registered command, gated by a checker.
+
+**All three verdicts are FAIL.** Every default path is bitwise unchanged:
+- `Integral` reproduces its base export on 276 of 276 dense cells.
+- `Legacy` reproduces its base export on 65 adaptive cells and 18 ladder rungs, and SPD07's rows on 14 of 14.
+
+| Node | Ledger | Verdict | Passed | Failed |
+|---|---|---|---|---|
+| ALG01 tolerance-coupled stage target with in-cycle exit, nu-guard and production fallback (`research/alg01_coupled_stage_target_20261008`) | L-0090, corrected by L-0093 | **FAIL** (items 2, 3) | Brusselator JVPs per accepted step: 0.31 / 0.26 (Bruss-50, inner products 0.11 / 0.07) and 0.45 / 0.51 (Bruss-160), against ProjL2's 0.47 / 0.30 and 0.73 / 0.62. Error within 1.5x of the dense twin on 29 of 31 cells, including HIRES and Robertson at 1e-9 and the guarded 32-block VIG k = 20 (1.00, 1.01 and 0.55x). Robustness item passes on 52 cells | Single-block VIG k = 20 is 37.1x the twin at 1e-4 and 4.4x at 1e-8. The fixed-step ladders cannot finish within the registered 200-column budget, and Legacy fails the same rungs (a registration defect). At the pilot's budget of 20,000 every rung is 1.00x LU |
+| ALG02 predictive controller with post-rejection cap (`research/alg02_predictive_controller_20261008`) | L-0091 | **FAIL** (items 3, 5) | van der Pol attempts at matched accuracy 0.68-0.84x the Integral controller (5 of 5 E). Rejections 28.5 % -> 7.0 %. HIRES and Brusselator-50 never worse than 1.01x on the frontier. Matrix-free Brusselator-160 0.90x in JVPs, with linear failures 144 -> 81 | Robertson cheapest-run ratio 1.160 at E = 3.16e-9 (frontier 1.025; an error-threshold effect at one E). van der Pol at rtol 5.62e-7 exceeds the calibration bound on all 3 seeds (err/rtol 2.55-2.57 against 2.05-2.28) |
+| ALG03 2,000-column budget with stagnation guard and production fallback (`research/alg03_stage_budget_guard_20261008`) | L-0092 | **FAIL** (item 4) | Bitwise neutral on 14 of 14 SPD07 cells. Completes Robertson to 4e10 at all three rtols, where the guard without fallback livelocks. 0 linear failures on Brusselator-160 and -300. Brusselator-300 1e-4: 0.655x B0's JVPs and 0.418x Rbig's, per trajectory | Robertson to 4e10 at rtol 1e-5 ends at 3.32x the twin's error (budget 2,000 without the guard: 5.77x) |
+
+## What the Rust runs established
+
+- **The Brusselator work cut of the coupled target reproduces the pilot** almost exactly (pilot 0.31 / 0.26 / 0.45 / 0.51). The gain on n <= 8 does not come from the target: it comes from not computing production's duplicate diagnostic residual, which is a programming-level change (L-0093).
+- **The nonnormality guard is not enough for a single strongly nonnormal block.** It repairs the 32-block VIG k = 20 operator but not the single 2x2 block, where ||W^-1|| is about 5e5. A residual target needs a better residual-to-error bound there, or a fallback to over-solving.
+- **The predictive controller is a robust work and rejection gain on van der Pol.** It fails only on two narrowly registered items. One is a cheapest-run threshold artefact at one E; the other is a real calibration shift on van der Pol at the tightest rung. Before adoption it needs an err = 0 cap and a calibration rule.
+- **The production fallback is what makes a stagnation guard safe.** It removes the livelock. The remaining Robertson-4e10 error comes from accepting fallback iterates. With the guard off, budget 2,000 alone is worse (5.77x).
+
+## Independent review
+
+A reviewer who wrote none of the code checked the diff `b0d5ea3..4f423b2`, re-ran all three checkers (their outputs equal the committed RESULTS.json), ran a randomized probe of the staged solver (400 systems x 12 configurations), and verified every ledger hash. **No blocking finding.**
+
+Four should-fix findings, all about attribution and disclosure. Each was answered by a correction appended to the node file, plus L-0093 for the ledger claim:
+1. The nu-guard re-evaluates at later exits, which is a deviation from the registration.
+2. The small-n passes are solver mechanics, not the target.
+3. The ALG01/ALG03 checkers were committed together with their runs.
+4. ALG01 item 3 was infeasible at the registered budget for every arm.
+
+Minor findings, recorded in the node files and to be fixed in any follow-up node:
+- the err = 0 cap bypass and the sliver rejection-flag reset in `PredictiveCapped`;
+- the guard's overrun prediction uses the nominal cycle length;
+- `I725` scales rejection proposals too.
+
+## Validation (head `4f423b2`)
+
+| Step | Result |
+|---|---|
+| `cargo fmt --all -- --check` | pass |
+| clippy `-D warnings`: workspace, `audit2-research`, `audit2-bateman-authority`, `audit2-stage-certificate` | pass |
+| `cargo test --workspace --all-targets` | pass (911 tests) |
+| `cargo test -p rodas5p-integrators --all-targets --features audit2-research` | pass (575 tests) |
+| `cargo test --workspace --profile measurement -- --ignored` | pass (66 tests) |
+| `tools/check-audit2-readiness.sh`, `tools/test_*.py` | pass |
+| `tools/check-research-node.py --base a793ecd` | pass (92 rows, 3 new nodes) |
+| `tools/check-authority-refs.py` | pass |
+| `tools/check_ignored_tests_in_ci.py` | pass (62 ignored tests reachable) |
+
+The correction commit after this run changes only the node files, the ledger (L-0093) and this document.
+
+## Next (not registered)
+
+1. **A coupled-target node without the registration defects.** Ladder budget 20,000, nu computed as registered, the duplicate residual removed as its own arm, and the single-block VIG cell with a sharper residual-to-error rule or an over-solve fallback.
+2. **A controller node with an err = 0 cap and a calibration rule**, scored only by the frontier at E inside the measured range.
+3. **The guard's overrun prediction with the effective cycle length**, and fallback acceptance limited to iterates whose unscaled residual also meets the coupled target's error budget.

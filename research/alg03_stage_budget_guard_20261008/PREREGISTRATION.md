@@ -148,3 +148,11 @@ continuation (a contract test shows it changes nothing in a run).
   difference of 3.5e-10, admissible at all three rtols).
 - The shared interpretations of the staged solver (confirmation gap, nu-guard evaluation, fallback rule) are listed
   under ALG01's results.
+
+## Correction after the independent review (appended 2026-10-08; no number or verdict changes)
+
+An independent reviewer re-ran the checker; its output equals the committed RESULTS.json, and the verdict stays **FAIL**. Three corrections:
+
+- **The checker was committed with the run.** `tools/alg03_budget_guard_check.py` first appears in `0df3ede`, together with RUNS.json and RESULTS.json, so git cannot show that the listed interpretations predate the run.
+- **Item 5 depends on the per-trajectory reading.** Per trajectory, as the item is worded, `B2` uses 0.655x `B0`'s JVPs and 0.418x `Rbig`'s. Per accepted step, `B2`/`B0` is 1.09x, which would fail. `B0`'s 36 linear failures give it 70 accepted steps against `B2`'s 42, so the saving on Brusselator-300 comes from removing failures, not from cheaper solves.
+- **The overrun prediction uses the nominal cycle length.** The stagnation guard predicts the remaining columns with `config.restart` (40), not with the effective cycle length `min(restart, n, budget - used)`. For Robertson (n = 3) it therefore overestimates by about 13x. Robertson to 4e10 had 1, 15 and 49 overrun aborts, all accepted by the fallback. This matches the registration and the pilot, and a follow-up should use the effective cycle length.
