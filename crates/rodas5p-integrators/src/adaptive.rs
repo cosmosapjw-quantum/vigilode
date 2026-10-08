@@ -9,7 +9,32 @@ pub enum ControllerKind {
     #[default]
     Integral,
     Pi,
+    /// Hairer's predictive (Gustafsson) controller, research node ALG02
+    /// (`research/alg02_predictive_controller_20261008`). On an accepted,
+    /// non-clipped step with `err > 0` it takes
+    /// `min(f_I, f_P)` with `f_I = clamp(safety err^(-1/k))` and
+    /// `f_P = clamp(safety (h / h_acc) (max(1e-2, err_prev) / err^2)^(1/k))`
+    /// once a previous accepted step exists, and remembers `(h, err)`.
+    /// `err = 0`, rejections and failures follow the production rule. The
+    /// predictive term needs the step sizes, so it is applied only by the
+    /// shared update [`adaptive_next_step_after_attempt`]; the history-free
+    /// [`AdaptiveControllerState::propose_factor`] gives `f_I`. Opt-in.
+    Predictive,
+    /// [`ControllerKind::Predictive`] that does not grow the step (factor at
+    /// most one) on the first acceptance after a rejected or failed attempt
+    /// (Hairer's RODAS; audit F-078). Opt-in.
+    PredictiveCapped,
 }
+
+impl ControllerKind {
+    fn is_predictive(self) -> bool {
+        matches!(self, Self::Predictive | Self::PredictiveCapped)
+    }
+}
+
+/// The floor of the previous accepted error in the predictive term
+/// (`err_acc = max(1e-2, err_prev)`, Hairer's RODAS/RADAU5).
+pub const PREDICTIVE_ERROR_FLOOR: f64 = 1.0e-2;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct AdaptiveEstimatorMetadata {
@@ -226,6 +251,11 @@ pub struct AdaptiveControllerState {
     /// be strictly shorter, see [`crate::output::adaptive_end_step`].
     #[serde(skip)]
     last_rejected_trial: Option<f64>,
+    /// The trial step of the last accepted attempt that entered the history
+    /// (`h_acc` of the predictive kinds; research node ALG02). Kept only by
+    /// the predictive kinds and never serialized.
+    #[serde(skip)]
+    last_accepted_step: Option<f64>,
 }
 
 impl AdaptiveControllerState {
@@ -235,6 +265,12 @@ impl AdaptiveControllerState {
 
     pub fn last_rejected_trial(&self) -> Option<f64> {
         self.last_rejected_trial
+    }
+
+    /// `h_acc` of the predictive kinds: the trial step of the last accepted
+    /// attempt that entered the history (research node ALG02).
+    pub fn last_accepted_step(&self) -> Option<f64> {
+        self.last_accepted_step
     }
 
     /// A controller state after a rejected trial of `rejected`, for the
@@ -302,6 +338,48 @@ impl AdaptiveControllerState {
         } else {
             raw.clamp(config.min_factor, config.reject_max_factor)
         })
+    }
+
+    /// The accepted-step factor of the predictive kinds (research node
+    /// ALG02) for the accepted trial step `h`; `previous_failed` is whether
+    /// the attempt before this one was rejected or failed. Must be called
+    /// before the step enters the history. `f_I` is the production
+    /// accepted-step factor (including `err = 0 -> max_factor`).
+    fn predictive_factor(
+        &self,
+        config: &AdaptiveStepConfig,
+        h: f64,
+        error: f64,
+        estimator_order: usize,
+        previous_failed: bool,
+        prevalidated: bool,
+    ) -> CoreResult<f64> {
+        let integral = if prevalidated {
+            self.propose_factor_prevalidated(config, error, estimator_order, true)?
+        } else {
+            self.propose_factor(config, error, estimator_order, true)?
+        };
+        if error == 0.0 {
+            return Ok(integral);
+        }
+        let order = estimator_order as f64;
+        let mut factor = integral;
+        if let (Some(h_acc), Some(err_prev)) =
+            (self.last_accepted_step, self.previous_accepted_error)
+        {
+            let err_acc = err_prev.max(PREDICTIVE_ERROR_FLOOR);
+            let raw = config.safety * (h / h_acc) * (err_acc / (error * error)).powf(1.0 / order);
+            if raw.is_nan() || raw <= 0.0 {
+                return Err(CoreError::NonFinite(
+                    "adaptive predictive controller produced an invalid factor".into(),
+                ));
+            }
+            factor = factor.min(raw.clamp(config.min_factor, config.max_factor));
+        }
+        if config.controller == ControllerKind::PredictiveCapped && previous_failed {
+            factor = factor.min(1.0);
+        }
+        Ok(factor)
     }
 
     pub fn record_acceptance(&mut self, error: f64) -> CoreResult<()> {
@@ -404,15 +482,29 @@ fn next_step_after_attempt_impl(
     forced_output_clipped: bool,
     prevalidated: bool,
 ) -> CoreResult<f64> {
+    let previous_failed = controller.last_rejected_trial.is_some();
     controller.last_rejected_trial = (!accepted).then_some(trial_h);
     if accepted {
-        let factor = if prevalidated {
+        let predictive = config.controller.is_predictive();
+        let factor = if predictive {
+            controller.predictive_factor(
+                config,
+                trial_h,
+                error,
+                estimator_order,
+                previous_failed,
+                prevalidated,
+            )?
+        } else if prevalidated {
             controller.propose_factor_prevalidated(config, error, estimator_order, true)?
         } else {
             controller.propose_factor(config, error, estimator_order, true)?
         };
         if !forced_output_clipped {
             controller.record_acceptance(error)?;
+            if predictive {
+                controller.last_accepted_step = Some(trial_h);
+            }
             return Ok(trial_h * factor);
         }
         let ratio = trial_h / requested_h;
@@ -420,6 +512,9 @@ fn next_step_after_attempt_impl(
             return Ok(requested_h);
         }
         controller.record_acceptance(error)?;
+        if predictive {
+            controller.last_accepted_step = Some(trial_h);
+        }
         let candidate = trial_h * factor;
         let predicted = error * ratio.powf(-(estimator_order as f64));
         if predicted > 1.0 {
@@ -807,5 +902,291 @@ mod method_metadata_tests {
             RODAS5P_ESTIMATOR_ORDER,
             RODAS5P_ADAPTIVE_METHOD.estimator.order
         );
+    }
+}
+
+/// Research node ALG02 (`research/alg02_predictive_controller_20261008`):
+/// the predictive kinds on hand-computed cases, and the production kinds
+/// unchanged.
+#[cfg(test)]
+mod predictive_controller_tests {
+    use super::*;
+
+    const ORDER: usize = RODAS5P_ESTIMATOR_ORDER;
+
+    fn config(controller: ControllerKind) -> AdaptiveStepConfig {
+        AdaptiveStepConfig {
+            controller,
+            ..AdaptiveStepConfig::default()
+        }
+    }
+
+    /// One attempt through the shared update; `requested == trial` unless
+    /// the step was clipped.
+    fn step(
+        state: &mut AdaptiveControllerState,
+        config: &AdaptiveStepConfig,
+        requested: f64,
+        trial: f64,
+        error: f64,
+        accepted: bool,
+        clipped: bool,
+    ) -> f64 {
+        adaptive_next_step_after_attempt(
+            state, config, requested, trial, error, ORDER, accepted, clipped,
+        )
+        .unwrap()
+    }
+
+    fn close(a: f64, b: f64) -> bool {
+        (a - b).abs() <= 1.0e-14 * b.abs()
+    }
+
+    /// The pre-ALG02 arithmetic of the shared update without clipping,
+    /// written out: accepted `clamp(s err^(-1/k))` (PI: `s err^(-0.7/k)
+    /// prev^(0.4/k)`), `err = 0 -> max_factor`, rejected `clamp(s
+    /// max(err, 1e-16)^(-1/k), min, reject_max)`, non-finite `min_factor`.
+    fn production(
+        kind: ControllerKind,
+        previous: Option<f64>,
+        trial: f64,
+        error: f64,
+        accepted: bool,
+    ) -> f64 {
+        let c = config(kind);
+        let k = ORDER as f64;
+        if !error.is_finite() {
+            return trial * c.min_factor;
+        }
+        let e = if accepted { error } else { error.max(1.0e-16) };
+        if e == 0.0 {
+            return trial * c.max_factor;
+        }
+        let raw = match (kind, accepted, previous) {
+            (ControllerKind::Pi, true, Some(p)) if p > 0.0 => {
+                c.safety * e.powf(-0.7 / k) * p.powf(0.4 / k)
+            }
+            _ => c.safety * e.powf(-1.0 / k),
+        };
+        let cap = if accepted {
+            c.max_factor
+        } else {
+            c.reject_max_factor
+        };
+        trial * raw.clamp(c.min_factor, cap)
+    }
+
+    /// A fixed attempt sequence: (trial, error, accepted).
+    const SEQUENCE: [(f64, f64, bool); 9] = [
+        (1.0e-3, 0.5, true),
+        (1.1e-3, 3.0, false),
+        (0.8e-3, 0.02, true),
+        (2.0e-3, f64::INFINITY, false),
+        (0.4e-3, 0.0, true),
+        (2.0e-3, 0.9, true),
+        (2.1e-3, 1.0e-7, true),
+        (1.0e-2, 40.0, false),
+        (2.0e-3, 0.3, true),
+    ];
+
+    #[test]
+    fn integral_and_pi_are_unchanged_bit_for_bit() {
+        for kind in [ControllerKind::Integral, ControllerKind::Pi] {
+            let c = config(kind);
+            let mut state = AdaptiveControllerState::default();
+            let mut previous: Option<f64> = None;
+            for (trial, error, accepted) in SEQUENCE {
+                let expected = production(kind, previous, trial, error, accepted);
+                let next = step(&mut state, &c, trial, trial, error, accepted, false);
+                assert_eq!(
+                    next.to_bits(),
+                    expected.to_bits(),
+                    "{kind:?} {trial} {error}"
+                );
+                if accepted {
+                    previous = Some(error.max(1.0e-16));
+                }
+                assert_eq!(state.previous_accepted_error(), previous);
+                assert_eq!(state.last_accepted_step(), None);
+            }
+            assert_eq!(
+                serde_json::to_value(&state).unwrap(),
+                serde_json::json!({"previous_accepted_error": previous.unwrap()})
+            );
+        }
+    }
+
+    #[test]
+    fn predictive_kinds_serialize_like_the_production_state() {
+        for kind in [ControllerKind::Predictive, ControllerKind::PredictiveCapped] {
+            let c = config(kind);
+            let mut state = AdaptiveControllerState::default();
+            for (trial, error, accepted) in SEQUENCE {
+                step(&mut state, &c, trial, trial, error, accepted, false);
+            }
+            assert_eq!(state.last_accepted_step(), Some(2.0e-3));
+            assert_eq!(
+                serde_json::to_value(&state).unwrap(),
+                serde_json::json!({"previous_accepted_error": 0.3})
+            );
+        }
+        assert_eq!(
+            serde_json::to_value(ControllerKind::Predictive).unwrap(),
+            serde_json::json!("predictive")
+        );
+        assert_eq!(
+            serde_json::to_value(ControllerKind::PredictiveCapped).unwrap(),
+            serde_json::json!("predictive-capped")
+        );
+    }
+
+    #[test]
+    fn first_acceptance_is_the_integral_factor() {
+        let mut state = AdaptiveControllerState::default();
+        let next = step(
+            &mut state,
+            &config(ControllerKind::Predictive),
+            0.1,
+            0.1,
+            0.5,
+            true,
+            false,
+        );
+        // 0.9 * 0.5^(-1/5)
+        assert!(close(next, 0.1 * 1.033_828_519_497_331_6), "{next}");
+        assert_eq!(
+            next.to_bits(),
+            production(ControllerKind::Integral, None, 0.1, 0.5, true).to_bits()
+        );
+        assert_eq!(state.last_accepted_step(), Some(0.1));
+        assert_eq!(state.previous_accepted_error(), Some(0.5));
+    }
+
+    #[test]
+    fn predictive_factor_on_hand_computed_cases() {
+        let c = config(ControllerKind::Predictive);
+        // (h_acc, err_prev, h, err, expected factor)
+        let cases = [
+            // f_I = 0.9 * 0.25^(-1/5) = 1.18756 < f_P = 0.9 * 2 * 8^(1/5) = 2.72829.
+            (0.1, 0.5, 0.2, 0.25, 1.187_557_119_695_604_7),
+            // f_P = 0.9 * (0.05 / 0.25)^(1/5) = 0.65230 < f_I = 1.03383.
+            (0.1, 0.05, 0.1, 0.5, 0.652_301_697_309_926),
+            // err_acc floored at 1e-2: 0.9 * (0.01 / 0.25)^(1/5) = 0.47278
+            // (without the floor 0.9 * 0.0004^(1/5) = 0.188 -> 0.2).
+            (0.1, 1.0e-4, 0.1, 0.5, 0.472_775_004_792_678_1),
+            // f_P = 0.9 * 0.1 * (1 / 0.25)^(1/5) = 0.1188 clamps to 0.2.
+            (1.0, 1.0, 0.1, 0.5, 0.2),
+            // Both terms clamp at 5: 0.9 * 1e-8^(-1/5) = 35.8, f_P larger.
+            (0.1, 0.5, 0.1, 1.0e-8, 5.0),
+        ];
+        for (h_acc, err_prev, h, err, expected) in cases {
+            let mut state = AdaptiveControllerState::default();
+            step(&mut state, &c, h_acc, h_acc, err_prev, true, false);
+            assert_eq!(state.last_accepted_step(), Some(h_acc));
+            let next = step(&mut state, &c, h, h, err, true, false);
+            assert!(
+                close(next / h, expected),
+                "{h_acc} {err_prev} {h} {err}: {}",
+                next / h
+            );
+            assert_eq!(state.last_accepted_step(), Some(h));
+            assert_eq!(state.previous_accepted_error(), Some(err));
+        }
+    }
+
+    #[test]
+    fn rejections_failures_and_zero_error_follow_the_production_rule() {
+        for kind in [ControllerKind::Predictive, ControllerKind::PredictiveCapped] {
+            let c = config(kind);
+            let mut state = AdaptiveControllerState::default();
+            step(&mut state, &c, 0.1, 0.1, 0.5, true, false);
+            for (trial, error) in [(0.12, 3.0), (0.05, 1.0e3), (0.02, f64::INFINITY)] {
+                let next = step(&mut state, &c, trial, trial, error, false, false);
+                let expected = production(ControllerKind::Integral, None, trial, error, false);
+                assert_eq!(next.to_bits(), expected.to_bits());
+                // Rejections leave (h_acc, err_acc) alone.
+                assert_eq!(state.last_accepted_step(), Some(0.1));
+                assert_eq!(state.previous_accepted_error(), Some(0.5));
+            }
+            // err = 0 after a failure: max_factor, also for the capped kind.
+            let next = step(&mut state, &c, 0.01, 0.01, 0.0, true, false);
+            assert_eq!(next, 0.01 * c.max_factor);
+            assert_eq!(state.last_accepted_step(), Some(0.01));
+            assert_eq!(state.previous_accepted_error(), Some(1.0e-16));
+        }
+    }
+
+    #[test]
+    fn the_cap_holds_the_first_acceptance_after_a_rejection_or_failure() {
+        // After accepting (h 0.1, err 0.5): at h = 0.05 with err = 0.01,
+        // f_I = 0.9 * 0.01^(-1/5) = 2.26070 and f_P = 0.45 * 5000^(1/5) =
+        // 2.47176, so the uncapped factor is 2.26070.
+        for failure in [3.0, f64::INFINITY] {
+            for kind in [ControllerKind::Predictive, ControllerKind::PredictiveCapped] {
+                let c = config(kind);
+                let mut state = AdaptiveControllerState::default();
+                step(&mut state, &c, 0.1, 0.1, 0.5, true, false);
+                step(&mut state, &c, 0.11, 0.11, failure, false, false);
+                let next = step(&mut state, &c, 0.05, 0.05, 0.01, true, false);
+                let expected = if kind == ControllerKind::PredictiveCapped {
+                    1.0
+                } else {
+                    2.260_697_788_358_622_3
+                };
+                assert!(close(next / 0.05, expected), "{kind:?} {failure}: {next}");
+                // The cap binds only the first acceptance after the failure.
+                let after = step(&mut state, &c, next, next, 0.01, true, false);
+                let f_i = 2.260_697_788_358_622_3;
+                // f_P = 0.9 * (h / h_acc) * (0.01 / 1e-4)^(1/5) > f_I here.
+                assert!(close(after / next, f_i), "{kind:?}: {}", after / next);
+            }
+        }
+        // Without a preceding rejection the capped kind may grow.
+        let c = config(ControllerKind::PredictiveCapped);
+        let mut state = AdaptiveControllerState::default();
+        let next = step(&mut state, &c, 0.1, 0.1, 0.01, true, false);
+        assert!(close(next / 0.1, 2.260_697_788_358_622_3));
+    }
+
+    #[test]
+    fn clipped_samples_update_the_history_only_when_informative() {
+        let c = config(ControllerKind::PredictiveCapped);
+        // A sliver (trial < 0.5 request): the request comes back and
+        // neither h_acc nor err_acc moves.
+        let mut state = AdaptiveControllerState::default();
+        step(&mut state, &c, 0.1, 0.1, 0.5, true, false);
+        let next = step(&mut state, &c, 0.4, 0.01, 0.2, true, true);
+        assert_eq!(next, 0.4);
+        assert_eq!(state.last_accepted_step(), Some(0.1));
+        assert_eq!(state.previous_accepted_error(), Some(0.5));
+        // An informative clipped sample enters the history with its trial.
+        let next = step(&mut state, &c, 0.4, 0.3, 0.2, true, true);
+        assert_eq!(state.last_accepted_step(), Some(0.3));
+        assert_eq!(state.previous_accepted_error(), Some(0.2));
+        // f_I = 0.9 * 0.2^(-1/5) = 1.24177, f_P = 0.9 * 3 * (0.5 / 0.04)^(1/5)
+        // = 4.40585; candidate 0.3 * 1.24177 = 0.37253 < request 0.4 and the
+        // sample predicts 0.2 * (0.75)^(-5) = 0.843 <= 1: the request stays.
+        assert_eq!(next, 0.4);
+        // The clipped trial is not a rejection: no cap on the next step.
+        let after = step(&mut state, &c, 0.4, 0.4, 0.2, true, false);
+        // f_I = 1.24177, f_P = 0.9 * (0.4 / 0.3) * (0.2 / 0.04)^(1/5) = 1.65569.
+        assert!(close(after / 0.4, 0.9 * 0.2_f64.powf(-0.2)), "{after}");
+    }
+
+    #[test]
+    fn history_free_proposal_of_the_predictive_kinds_is_the_integral_factor() {
+        let mut state = AdaptiveControllerState::default();
+        state.record_acceptance(0.05).unwrap();
+        for kind in [ControllerKind::Predictive, ControllerKind::PredictiveCapped] {
+            for accepted in [true, false] {
+                let p = state
+                    .propose_factor(&config(kind), 0.5, ORDER, accepted)
+                    .unwrap();
+                let i = state
+                    .propose_factor(&config(ControllerKind::Integral), 0.5, ORDER, accepted)
+                    .unwrap();
+                assert_eq!(p.to_bits(), i.to_bits());
+            }
+        }
     }
 }
