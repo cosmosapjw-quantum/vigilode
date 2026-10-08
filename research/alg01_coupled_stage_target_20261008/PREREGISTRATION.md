@@ -153,3 +153,75 @@ Everything else is **FAIL**, with every ratio preserved.
 - SPD07 (L-0084) and its `BASE.json`.
 - L-0045 (GMRES into); the Givens research kernel `gmres_givens.rs` (never wired; not reused bit for bit).
 - No code of this node exists before this commit.
+
+## Results (appended after the recorded run; the registered text above is unchanged)
+
+**Recorded commits.** Base export harness `168e951` (test only; the solver source is the registration commit's),
+`BASE.json` committed in `61126ee`. Implementation: staged solver `d9a4b5b` (`rodas5p-krylov/src/gmres_staged.rs`),
+stage-target policies, entry point `integrate_rodas5p_mf_fast_observed_with_stage_target` and the RUNS exports
+`ea99664`. `RUNS.json` was produced on `ea99664` (clean tree), `RESULTS.json` by `tools/alg01_coupled_target_check.py`.
+
+**Commands** (release, `RAYON_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1`, `CARGO_INCREMENTAL=0`): the registered
+`export_base` and `export_runs` commands, then
+
+    python3 tools/alg01_coupled_target_check.py --base research/alg01_coupled_stage_target_20261008/BASE.json --runs research/alg01_coupled_stage_target_20261008/RUNS.json --output research/alg01_coupled_stage_target_20261008/RESULTS.json
+
+Base export 96 s, recorded run 169 s. Contract tests: `cargo test -p rodas5p-krylov -p rodas5p-integrators
+--all-targets --locked` passes; clippy `-D warnings` clean with and without `audit2-research`.
+
+**Gate (arm `CoupledGuarded`): FAIL.**
+
+| Item | Result | Numbers |
+|---|---|---|
+| 1. Base reproduction | PASS | `Legacy` in RUNS equals BASE on all 65 adaptive cells and 18 ladder rungs (also at the pilot budget); BASE C1 equals SPD07 `gmres_into_zero` 14/14; the twins and LU rungs reproduce too |
+| 2. Accuracy (<= 1.5x twin) | **FAIL** | 31 cells evaluated, 29 pass (C1 0.93-1.00x, C2 0.88-1.00x, E-05 0.02-1.04x, vigb-k10 1.00x, vigb-k20 0.55-1.01x). Fails: `vig1b-k20` 1e-4 **37.14x**, 1e-8 **4.36x** (1e-6: 0.50x). Excluded: HIRES 1e-10 and Robertson 1e-10 (reference uncertainty 3.7e-12 and 3.0e-12 > 0.1x twin error 1.1e-11 and 1.9e-11; the arm is 0.955x and 1.00x there), HIRES 1e-11 (twin fails at 5,000 attempts), Robertson 1e-11 (registered report-only) |
+| 3. Ladders (budget 200) | **FAIL** | diagpr128 k = 3, 4, 5 and semilin128 k = 3: the stage solve exhausts the 200-column budget and the fallback does not accept (Legacy fails the same rungs). semilin128 k = 4, 5: 1.00x LU. semilin64 1e-6 observed slopes 5.15, 5.13 (pass) |
+| 4. Robustness | PASS | 52 cells (C1, C2 without Robertson 1e-11, C3, C4 rungs): succeeds wherever Legacy succeeds, failures <= Legacy's everywhere (E-05 1e-4: 27 vs 53 and 30 vs 31) |
+| 5. Work (JVP per accepted step vs Legacy) | PASS | Bruss-50 0.312 / 0.258 (inner products 0.108 / 0.071); Bruss-160 0.448 / 0.512; HIRES 0.741 / 0.711; Robertson 0.702 / 0.680; van der Pol 0.751 / 0.748 (1e-6 / 1e-8) |
+
+**Reported, not gated.**
+- Pilot ladder budget 20,000 (the pilot's `ladders.py` value): `CoupledGuarded` is 0.997-1.001x LU at every rung
+  of diagpr128 and semilin128 and passes the semilin64 slope item; `Coupled` the same. Legacy is 18-330x LU on
+  diagpr128, `ProjL2` 27-796x, `L2Coupled` 33-987x.
+- `ProjL2` fails item 2 on HIRES 1e-9 (1.70x; 1e-10 is 101.8x but excluded by the reference rule), also HIRES 1e-8
+  (2.48x), E-05 s = 0 1e-6, vigb-k10 (12-423x) and does not complete vigb-k20; it also fails item 5.
+- `Coupled` (no guard) fails item 2 on vigb-k20 (97x, 205x, and fails to complete at 1e-8) and vig1b-k20; the
+  nonnormality guard restores vigb-k20 (1.00x, 1.01x, 0.55x) but not the single-block vig1b-k20, where the
+  pilot's unguarded coupled arm (`C3G`, critic `tables.txt`) shows the same 37.17x at 1e-4.
+- `L2Coupled` fails the semilin64 slope item (slopes 5.18, 4.06, then -0.71, -1.24, -0.80) and item 2 on VIG cells.
+- `CoupledGuarded` / `Coupled` JVPs outside the VIG cells: at most 1.032x (prediction <= 1.03x).
+- C5 frontiers, JVP ratio against Legacy (regression frontier / cheapest-run rule): Bruss-50 `CoupledGuarded` 0.274 /
+  0.283, `L2Coupled` 0.298 / 0.311, `ProjL2` 0.351 / 0.423; HIRES `CoupledGuarded` 0.734 / 0.806, `L2Coupled`
+  0.712 / 0.894, `ProjL2` 0.799 / 0.886.
+- Stage statistics over all cells, `CoupledGuarded`: 247,617 solves, 11,776 stall acceptances, 27 fallback
+  acceptances, 57 failed solves (all budget exhaustion, all in the E-05 1e-4 cells; adaptive cells only), 208,051 solves with
+  the threshold tightened by nu (max nu 2.05e6, on vigb-k20), 61,254 failed confirmations in 295,932.
+- Finite-difference-JVP Brusselator-50: Legacy and `CoupledGuarded` both stop at 5,000 attempts with 2,498 failures
+  at both rtols (the pilot's "every arm livelocks as calibrated").
+- Predictions (Coupled vs Legacy JVP per accepted step): Bruss-50 0.311 / 0.258 (pred. 0.31 / 0.26), Bruss-160
+  0.448 / 0.512 (0.45 / 0.51), HIRES 0.741 / 0.710 (0.74), Robertson 0.702 / 0.680 (0.55-0.72), van der Pol
+  0.751 / 0.748 (about 0.75).
+
+**Interpretations fixed before the recorded run, and deviations.**
+- Ladders: run with the registered budget 200 ("All runs use ... maxit 200"); the pilot's budget 20,000 is
+  recorded as a reported supplement only. Ladder atol = 1e-2 rtol (the contract ladders and the pilot), rtol 1e-6
+  for diagpr128 and semilin128, span [0, 1], `e_hat` = the previous step's embedded error (pilot `rep.py`).
+- Observed slope: `log2(e_k / e_(k+1))` of the relative max-norm error, counted only when `e_(k+1) > 1e-12` (the
+  pilot's floor in `final.py`); "two consecutive" = two adjacent observed slopes.
+- Item 4 covers C1, C2 (without Robertson 1e-11), C3 and the C4 rungs; C5 is registered as not gated. Item 5's
+  inner-product ratio is per accepted step, like the JVP ratio.
+- Nonnormality guard: evaluated whenever the projected test would pass (the first evaluation is at the first
+  projected exit; later ones where an exit would otherwise be taken), running maximum per solve, as in the pilot;
+  `sigma_min` from a dense SVD of the `j x j` Givens factor (faer), charged in the report as `4 j^3` flops.
+- Confirmation gap: starts at 1 column, doubles after each failed confirmation of a solve, and is not reset at a
+  restart (each new cycle may confirm from its first column).
+- The production fallback uses the configured production rule `max(raw_absolute_residual_budget(1e-14, gamma),
+  1e-10 ||b||_2)`, which is the registered `max(gamma 1e-14, 1e-10 ||b||_2)` (up to the directed rounding of
+  `gamma 1e-14`). `ProjL2` and `L2Coupled` have no stall rule (pilot `make_arm`).
+- The transfer constants are computed from the coefficient snapshot when a coupled policy is set on the workspace
+  (before any attempt), not in `Rodas5pMfFastWorkspace::new`, so the default path runs no new code; they match the
+  pilot table within 6e-4 (unit test).
+- The E-05 exact endpoint is `phi(T) + expm(T A) e` with the Pade-13 scaling-and-squaring kernel of
+  `rodas5p-core`; the dense driver at 1e-13 agrees to 4.7e-12 (s = 0) and 4.0e-13 (s = 1).
+- The exports run only when their output variable is set, because the registered filter `export_base` (and
+  `export_runs`) also matches `export_base_alg03` (`export_runs_alg03`).

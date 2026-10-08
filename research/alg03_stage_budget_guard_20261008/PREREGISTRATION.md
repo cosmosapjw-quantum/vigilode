@@ -101,3 +101,50 @@ Everything else is **FAIL**, with every ratio preserved.
 - Pilot: `docs/reviews/20261008_algorithmic_directions/pilot/phase3_reports/{stack,critic}.md`.
 - L-0066 (failure cascades); KRY-BUDGET-PREDICT in `pilot/phase2_candidates/`.
 - No code of this node exists before this commit.
+
+## Results (appended after the recorded run; the registered text above is unchanged)
+
+**Recorded commits.** As ALG01: base harness `168e951`, `BASE.json` in `61126ee`, staged solver `d9a4b5b`, policies
+and exports `ea99664`; `RUNS.json` produced on `ea99664` (clean tree), `RESULTS.json` by
+`tools/alg03_budget_guard_check.py`.
+
+**Commands** (release, `RAYON_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1`): the registered `export_base_alg03` and
+`export_runs_alg03` commands, then
+
+    python3 tools/alg03_budget_guard_check.py --base research/alg03_stage_budget_guard_20261008/BASE.json --runs research/alg03_stage_budget_guard_20261008/RUNS.json --output research/alg03_stage_budget_guard_20261008/RESULTS.json
+
+Base export 40 s, recorded run 72 s. Guard aborts of B2 and B2nf were classified by the uncounted shadow
+continuation (a contract test shows it changes nothing in a run).
+
+**Gate (arm `B2`): FAIL.**
+
+| Item | Result | Numbers |
+|---|---|---|
+| 1. Neutral where the budget never binds | PASS | 14 of 14 D5 cells eligible (B0 never exhausts the budget and never fails); B2 equals B0 bit for bit on all 14 |
+| 2. No livelock | PASS | B2 completes all 10 D1-D4 cells, Robertson to 4e10 at all three rtols included |
+| 3. Failures | PASS | B2 <= B0 in all 24 cells; 0 on Bruss-160 1e-4 and Bruss-300 1e-4 / 1e-6 (B0: 0, 36, 0; Legacy 200: 13, 118, 57) |
+| 4. Accuracy (<= 1.5x twin) | **FAIL** | Robertson to 4e10 at 1e-5: **3.32x**; all other cells 0.94-1.01x (Robertson 4e10 1e-7 1.01x, 1e-9 0.98x) |
+| 5. Work, Bruss-300 1e-4 | PASS | B2 35,883 JVPs: 0.655x B0 (54,811), 0.418x Rbig (85,778) |
+
+**Reported, not gated.**
+- B2nf livelocks Robertson to 4e10 at all three rtols (50,000 attempts, about 24,900 failures each; prediction
+  confirmed). Its guard aborts there: 24,972 / 24,939 / 24,797 failed solves, of which 12,733 / 17,104 / 12,066
+  were false (the shadow continuation converged within 2,000 columns).
+- B2 on Robertson to 4e10: 79 / 429 / 1,306 guard aborts (mostly `q >= 0.98`), every one accepted by the
+  production fallback; 49-60 JVPs per accepted step against Rbig's 36-45. B1 (no guard) is 5.77x the twin at
+  1e-5 and needs 1,206-3,494 JVPs per accepted step; B0 is 0.24x at 1e-5.
+- The guard never fires on D1 (prediction confirmed); stosc (omega = 1e4) B2 / Rbig JVPs 1.04, 1.00, 1.02
+  (prediction 0.97-1.11); E-05 s = 10: no guard activity, 0.45x Rbig's JVPs.
+- B0 (budget 200) on stosc: 637 failures and 1,281 attempts at every rtol (the same step sequence as Legacy 200).
+- Rbig in RUNS equals BASE's Legacy-2000 on all D1-D4 cells, and the twins reproduce.
+
+**Interpretations fixed before the recorded run.**
+- Item 1 eligibility: B0's `budget_exhausted == 0` (no stage solve reached its 200 columns, whether then accepted
+  by the fallback or failed) and `linear_solve_failures == 0`; equality compares the SPD07 record (output times and
+  final state bits, attempts, counters).
+- Item 5 compares JVPs per trajectory (`jvp_vectors`), as worded; per accepted step B2 / B0 is 1.09 and
+  B2 / Rbig 0.42.
+- References, error metric and reference admissibility as in ALG01 (Robertson to 4e10: dense 1e-13 with a 1e-12
+  difference of 3.5e-10, admissible at all three rtols).
+- The shared interpretations of the staged solver (confirmation gap, nu-guard evaluation, fallback rule) are listed
+  under ALG01's results.
