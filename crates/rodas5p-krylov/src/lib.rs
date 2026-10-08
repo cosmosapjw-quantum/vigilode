@@ -6,6 +6,7 @@ mod gcrodr;
 mod gmres;
 mod gmres_givens;
 mod gmres_into;
+mod gmres_staged;
 mod kernels;
 mod lgmres;
 mod lgmres_into;
@@ -33,6 +34,11 @@ pub use gmres_givens::{
     solve_gmres_givens_with_workspace_and_residual_scale,
 };
 pub use gmres_into::{CapacityGrowth, GmresCapacity, GmresIntoReport, solve_gmres_into};
+pub use gmres_staged::{
+    STAGED_GUARD_Q_ABORT, STAGED_STALL_CONTRACTION, STAGED_STALL_FACTOR, StagedGmresConfig,
+    StagedGmresFailure, StagedGmresFallback, StagedGmresOutcome, StagedGmresReport,
+    StagedGmresWorkspace, StagedGuardAbort, solve_staged_gmres,
+};
 pub use lgmres::{
     LgmresConfig, LgmresState, solve_lgmres, solve_lgmres_with_residual_scale,
     solve_lgmres_with_workspace, solve_lgmres_with_workspace_and_residual_scale,
