@@ -13,14 +13,25 @@
 //!
 //! `export_base` runs arm `I` on every dense cell and was run on the
 //! registration commit's solver source before any source change.
+//! `export_runs` runs arms `I`, `I725`, `PRED` and `PREDcap` on every dense
+//! cell, and the reported matrix-free cells: the U-form driver through the
+//! existing `gmres_into` entry point (the Legacy stage target: GMRES, linear
+//! rtol 1e-10, atol 1e-14, zero start) on the JVP Brusselators of
+//! `rnext_common` with 50 and 160 cells, half-decade ladder 1e-3 to 1e-7,
+//! arms `I` and `PREDcap`, references from the dense fast driver at rtol
+//! 1e-13.
 
 #[path = "../src/stiff_benchmark.rs"]
 #[allow(dead_code, unused_imports)]
 mod stiff_benchmark;
 
-use rodas5p_core::WorkCounters;
+#[path = "../../rodas5p-integrators/tests/rnext_common/mod.rs"]
+mod common;
+
+use rodas5p_core::{InitialGuess, LinearMethod, LinearSolverConfig, WorkCounters};
 use rodas5p_integrators::{
-    AdaptiveStepConfig, OutputSchedule, Rodas5pFastResult, integrate_rodas5p_fast_observed,
+    AdaptiveStepConfig, ControllerKind, OdeProblem, OutputSchedule, Rodas5pFastResult,
+    integrate_rodas5p_fast_observed, integrate_rodas5p_mf_fast_observed_gmres_into,
 };
 use serde_json::{Value, json};
 use stiff_benchmark::{BenchmarkProblem, benchmark_problems};
@@ -135,6 +146,18 @@ fn base_config(problem: &BenchmarkProblem, rtol: f64, seed: f64) -> AdaptiveStep
 fn arm_config(arm: &str, base: AdaptiveStepConfig) -> AdaptiveStepConfig {
     match arm {
         "I" => base,
+        "I725" => AdaptiveStepConfig {
+            safety: 0.725,
+            ..base
+        },
+        "PRED" => AdaptiveStepConfig {
+            controller: ControllerKind::Predictive,
+            ..base
+        },
+        "PREDcap" => AdaptiveStepConfig {
+            controller: ControllerKind::PredictiveCapped,
+            ..base
+        },
         other => panic!("unknown arm {other}"),
     }
 }
@@ -277,6 +300,218 @@ fn export_base() {
             "seeds": SEEDS,
             "error_metric": "max_i |y_i - r_i| / max(|r_i|, 1e-10) against NATIVE.json references",
             "rows": rows,
+        }),
+    );
+}
+
+/// The dense arms of `export_runs`.
+const ARMS: [&str; 4] = ["I", "I725", "PRED", "PREDcap"];
+/// The arms of the reported matrix-free cells.
+const MF_ARMS: [&str; 2] = ["I", "PREDcap"];
+/// The reported matrix-free problems (cells of the JVP Brusselator).
+const MF_CELLS: [usize; 2] = [50, 160];
+/// The Legacy stage target of the U-form driver (SPD07's `gmres_into`
+/// `Zero` arm).
+const MF_LINEAR_RTOL: f64 = 1.0e-10;
+const MF_REFERENCE_RTOL: f64 = 1.0e-13;
+
+/// The half-decade matrix-free ladder, 1e-3 to 1e-7 (9 points).
+fn mf_ladder() -> Vec<f64> {
+    (12..=28).step_by(2).map(quarter_decade).collect()
+}
+
+struct MfProblem {
+    id: String,
+    /// JVP-only clone for the U-form driver.
+    jvp_only: OdeProblem,
+    /// With the explicit Jacobian, for the dense reference.
+    full: OdeProblem,
+    y0: Vec<f64>,
+    t_span: (f64, f64),
+}
+
+fn mf_problem(cells: usize) -> MfProblem {
+    let (full, y0) = common::brusselator(cells).unwrap();
+    MfProblem {
+        id: format!("brusselator-1d-{cells}"),
+        jvp_only: full.jvp_only_clone().unwrap(),
+        full,
+        y0,
+        t_span: (0.0, 10.0),
+    }
+}
+
+/// The benchmark's adaptive configuration (atol scale 1) for the
+/// matrix-free cells.
+fn mf_config(p: &MfProblem, rtol: f64, seed: f64) -> AdaptiveStepConfig {
+    AdaptiveStepConfig {
+        atol: rtol,
+        rtol,
+        initial_step: seed,
+        min_step: 1.0e-14,
+        max_step: p.t_span.1 - p.t_span.0,
+        max_attempts: MAX_ATTEMPTS,
+        ..AdaptiveStepConfig::default()
+    }
+}
+
+/// The dense fast driver at rtol 1e-13 (initial step 1e-6).
+fn mf_reference(p: &MfProblem) -> (Vec<f64>, Value) {
+    let schedule = OutputSchedule::new(vec![p.t_span.0, p.t_span.1]).unwrap();
+    let r = integrate_rodas5p_fast_observed(
+        &p.full,
+        p.t_span,
+        &p.y0,
+        &mf_config(p, MF_REFERENCE_RTOL, 1.0e-6),
+        &schedule,
+    )
+    .unwrap();
+    assert!(r.observed.success, "reference run of {} failed", p.id);
+    let y = r.observed.y.last().unwrap().clone();
+    let record = json!({
+        "kind": "dense-fast-rtol-1e-13",
+        "rtol": MF_REFERENCE_RTOL,
+        "atol": MF_REFERENCE_RTOL,
+        "initial_step": 1.0e-6,
+        "attempts": r.attempts,
+        "rejected": r.rejected_steps,
+        "final_state": hexes(&y),
+    });
+    (y, record)
+}
+
+fn mf_run(p: &MfProblem, arm: &str, rtol: f64, seed: f64, reference: &[f64]) -> Value {
+    let config = arm_config(arm, mf_config(p, rtol, seed));
+    let schedule = OutputSchedule::new(vec![p.t_span.0, p.t_span.1]).unwrap();
+    let linear = LinearSolverConfig {
+        x0_strategy: InitialGuess::Zero,
+        ..common::linear_config(LinearMethod::Gmres, MF_LINEAR_RTOL)
+    };
+    let result = integrate_rodas5p_mf_fast_observed_gmres_into(
+        &p.jvp_only,
+        p.t_span,
+        &p.y0,
+        &linear,
+        &config,
+        &schedule,
+    );
+    let mut row = serde_json::Map::new();
+    row.insert("problem".into(), json!(p.id));
+    row.insert("arm".into(), json!(arm));
+    row.insert("rtol".into(), json!(rtol));
+    row.insert("atol".into(), json!(config.atol));
+    row.insert("seed".into(), json!(seed));
+    let value = match &result {
+        Ok(r) => {
+            let y = r.observed.y.last().unwrap();
+            let complete = r.observed.success;
+            let c = &r.observed.counters;
+            json!({
+                "ok": true,
+                "success": complete,
+                "message": r.observed.message,
+                "attempts": r.attempts,
+                "accepted": r.accepted_steps,
+                "rejected": r.rejected_steps,
+                "state_reuses": r.state_reuses,
+                "internal_steps": r.observed.internal_steps,
+                "output_clipped_steps": r.observed.output_clipped_steps,
+                "rhs_evaluations": c.rhs_evaluations,
+                "jvp_vectors": c.jvp_vectors,
+                "linear_matvecs": c.linear_matvecs,
+                "linear_iterations": c.linear_iterations,
+                "orthogonalization_inner_products": c.orthogonalization_inner_products,
+                "linear_solve_failures": c.linear_solve_failures,
+                "nonfinite_step_failures": c.nonfinite_step_failures,
+                "counters": counters_json(c),
+                "t_last": hexes(&[*r.observed.t.last().unwrap()]),
+                "final_state": hexes(y),
+                "error": if complete { json!(endpoint_error(y, reference)) } else { Value::Null },
+            })
+        }
+        Err(e) => json!({"ok": false, "success": false, "error_message": e.to_string()}),
+    };
+    if let Value::Object(map) = value {
+        row.extend(map);
+    }
+    Value::Object(row)
+}
+
+#[test]
+fn the_arms_differ_only_in_the_registered_field() {
+    let problem = &dense_problems()[0];
+    let base = base_config(problem, 1.0e-5, 1.0e-4);
+    assert_eq!(arm_config("I", base.clone()), base);
+    let i725 = arm_config("I725", base.clone());
+    assert_eq!(i725.safety, 0.725);
+    assert_eq!(
+        AdaptiveStepConfig {
+            safety: base.safety,
+            ..i725
+        },
+        base
+    );
+    for (arm, kind) in [
+        ("PRED", ControllerKind::Predictive),
+        ("PREDcap", ControllerKind::PredictiveCapped),
+    ] {
+        let config = arm_config(arm, base.clone());
+        assert_eq!(config.controller, kind);
+        assert_eq!(
+            AdaptiveStepConfig {
+                controller: ControllerKind::Integral,
+                ..config
+            },
+            base
+        );
+    }
+    assert_eq!(mf_ladder().len(), 9);
+    assert_eq!(mf_ladder()[0], 1.0e-3);
+    assert_eq!(mf_ladder()[8], 1.0e-7);
+}
+
+/// All arms on every dense cell, and the reported matrix-free cells.
+#[test]
+#[ignore = "run export of research/alg02_predictive_controller_20261008; release build; set ALG02_RUNS"]
+fn export_runs() {
+    let mut dense = Vec::new();
+    for arm in ARMS {
+        dense.extend(dense_rows(arm));
+    }
+    assert_eq!(dense.len(), 4 * 276);
+    let mut mf_rows = Vec::new();
+    let mut references = serde_json::Map::new();
+    for cells in MF_CELLS {
+        let p = mf_problem(cells);
+        let (reference, record) = mf_reference(&p);
+        references.insert(p.id.clone(), record);
+        for arm in MF_ARMS {
+            for seed in SEEDS {
+                for rtol in mf_ladder() {
+                    let row = mf_run(&p, arm, rtol, seed, &reference);
+                    eprintln!(
+                        "{} {arm} seed={seed:e} rtol={rtol:e}: attempts {} rejected {} jvp {} error {}",
+                        p.id, row["attempts"], row["rejected"], row["jvp_vectors"], row["error"]
+                    );
+                    mf_rows.push(row);
+                }
+            }
+        }
+    }
+    write_output(
+        "ALG02_RUNS",
+        &json!({
+            "schema": "vigilode-alg02-runs-v1",
+            "driver": "integrate_rodas5p_fast_observed",
+            "mf_driver": "integrate_rodas5p_mf_fast_observed_gmres_into",
+            "mf_linear": {"method": "gmres", "rtol": MF_LINEAR_RTOL, "atol": 1.0e-14, "x0": "zero"},
+            "max_attempts": MAX_ATTEMPTS,
+            "seeds": SEEDS,
+            "arms": ARMS,
+            "error_metric": "max_i |y_i - r_i| / max(|r_i|, 1e-10) against NATIVE.json references (dense) or the dense fast driver at rtol 1e-13 (matrix-free)",
+            "dense_rows": dense,
+            "mf_references": references,
+            "mf_rows": mf_rows,
         }),
     );
 }
