@@ -854,6 +854,20 @@ pub fn ladder_mf(
     setup: &mut dyn FnMut(&mut Rodas5pMfFastWorkspace),
     after_step: &mut dyn FnMut(&mut Rodas5pMfFastWorkspace, f64),
 ) -> Value {
+    ladder_mf_finish(p, rtol, k, budget, setup, after_step, &mut |_, _| {})
+}
+
+/// [`ladder_mf`] with `finish(work, record)` called on the rung's record
+/// (after the last step or the failed one).
+pub fn ladder_mf_finish(
+    p: &Problem,
+    rtol: f64,
+    k: u32,
+    budget: usize,
+    setup: &mut dyn FnMut(&mut Rodas5pMfFastWorkspace),
+    after_step: &mut dyn FnMut(&mut Rodas5pMfFastWorkspace, f64),
+    finish: &mut dyn FnMut(&Rodas5pMfFastWorkspace, &mut Value),
+) -> Value {
     let atol = p.atol_scale * rtol;
     let mut work = Rodas5pMfFastWorkspace::new(&p.problem, &gmres_config(budget)).unwrap();
     work.set_gmres_into(true);
@@ -880,7 +894,7 @@ pub fn ladder_mf(
                 after_step(&mut work, err);
             }
             Err(e) => {
-                return ladder_json(
+                let mut record = ladder_json(
                     p,
                     k,
                     &y,
@@ -888,10 +902,14 @@ pub fn ladder_mf(
                     Some((step, e.to_string())),
                     Some(&counters),
                 );
+                finish(&work, &mut record);
+                return record;
             }
         }
     }
-    ladder_json(p, k, &y, &errors, None, Some(&counters))
+    let mut record = ladder_json(p, k, &y, &errors, None, Some(&counters));
+    finish(&work, &mut record);
+    record
 }
 
 /// The C5 / frontier tolerances: 1e-3 to 1e-10 in half decades.
@@ -905,4 +923,64 @@ pub fn half_decades() -> Vec<f64> {
             }
         })
         .collect()
+}
+
+/// Brusselator-1d-`cells` whose JVP is a forward difference
+/// `(f(t, y + s v) - f(t, y)) / s`, `s = sqrt(eps) (1 + ||y||_2) / ||v||_2`
+/// (the in-repo `semilinear_f033_ablation.rs` formula, uncached base RHS;
+/// the RHS calls inside the JVP are not counted). Reported variant only.
+pub fn brusselator_fd_problem(cells: usize) -> Problem {
+    let base = brusselator_problem(cells);
+    let f = base.full.clone();
+    let n = base.y0.len();
+    let rhs = {
+        let f = f.clone();
+        Arc::new(move |t: f64, y: &[f64], out: &mut [f64]| {
+            let mut c = WorkCounters::default();
+            f.eval_rhs_into(t, y, out, &mut c)
+        })
+    };
+    let jvp = {
+        let f = f.clone();
+        Arc::new(move |t: f64, y: &[f64], v: &[f64], out: &mut [f64]| {
+            let mut c = WorkCounters::default();
+            let vn = rodas5p_core::safe_l2(v);
+            if vn == 0.0 {
+                out.fill(0.0);
+                return Ok(());
+            }
+            let s = f64::EPSILON.sqrt() * (1.0 + rodas5p_core::safe_l2(y)) / vn;
+            let shifted: Vec<f64> = y.iter().zip(v).map(|(a, b)| a + s * b).collect();
+            let f0 = f.eval_rhs(t, y, &mut c)?;
+            f.eval_rhs_into(t, &shifted, out, &mut c)?;
+            for (o, a) in out.iter_mut().zip(&f0) {
+                *o = (*o - a) / s;
+            }
+            Ok(())
+        })
+    };
+    let problem = OdeProblem::new(
+        format!("brusselator-1d-{cells}-fd"),
+        n,
+        rhs,
+        None,
+        None,
+        Some(jvp),
+        None,
+        true,
+        None,
+        None,
+    )
+    .unwrap();
+    Problem {
+        id: format!("brusselator-1d-{cells}-fd"),
+        problem,
+        full: f,
+        exact: None,
+        exact_kind: "exact",
+        y0: base.y0,
+        t_span: base.t_span,
+        atol_scale: base.atol_scale,
+        max_attempts: base.max_attempts,
+    }
 }
