@@ -1,0 +1,24 @@
+== heatsw (WRMS tol units; pooled over h0 seeds 1e-6/1e-5/1e-4 x rtol)
+  A0   n=21 median 0.26 gmean 0.407 p90 3.14 max 3.9
+  S    n=21 median 0.784 gmean 0.547 p90 3.66 max 5.24
+  C3G  n=21 median 0.418 gmean 0.363 p90 1.95 max 2.56
+  LU   n=21 median 0.594 gmean 0.41 p90 2.43 max 3.2
+  LUP  n=21 median 0.25 gmean 0.37 p90 1.57 max 3.78
+  S/A0: cells 21 gmean 1.34 median 2.04 >1.5x in 11 max 28.87 min 0.007 | JVP ratio gmean 0.53 [0.35-0.86]
+  S/LUP: cells 21 gmean 1.48 median 1.00 >1.5x in 9 max 28.60 min 0.084
+  C3G/LU: cells 21 gmean 0.89 median 0.84 >1.5x in 7 max 50.23 min 0.005
+  LUP/LU: cells 21 gmean 0.90 median 0.95 >1.5x in 8 max 64.55 min 0.031
+/tmp/claude-0/-home-user-vigilode/28b4ddd9-6979-5dcc-9dc3-5b21a0db99cc/scratchpad/algo/probe/critic/dist.py:32: RuntimeWarning: divide by zero encountered in log
+  if jr: s += f' | JVP ratio gmean {math.exp(np.mean(np.log(jr))):.2f} [{min(jr):.2f}-{max(jr):.2f}]'
+  LU/A0: cells 21 gmean 1.01 median 1.05 >1.5x in 10 max 44.14 min 0.013 | JVP ratio gmean 0.00 [0.00-0.00]
+== brusw (cw rel/rtol; pooled over h0 seeds 1e-6/1e-5/1e-4 x rtol)
+  A0   n=21 median 36.3 gmean 27.1 p90 68.5 max 72.6
+  S    n=21 median 39 gmean 30.3 p90 66 max 83.5
+  C3G  n=21 median 25.1 gmean 19.4 p90 68.6 max 99.4
+  LU   n=21 median 25.6 gmean 24.6 p90 72.5 max 109
+  LUP  n=21 median 33.8 gmean 26.5 p90 64.1 max 158
+  S/A0: cells 21 gmean 1.12 median 1.09 >1.5x in 8 max 7.47 min 0.148 | JVP ratio gmean 0.23 [0.18-0.37]
+  S/LUP: cells 21 gmean 1.14 median 1.13 >1.5x in 7 max 6.48 min 0.244
+  C3G/LU: cells 21 gmean 0.79 median 0.96 >1.5x in 7 max 17.39 min 0.003
+  LUP/LU: cells 21 gmean 1.08 median 1.02 >1.5x in 9 max 13.76 min 0.131
+  LU/A0: cells 21 gmean 0.91 median 1.00 >1.5x in 2 max 2.41 min 0.206 | JVP ratio gmean 0.00 [0.00-0.00]
