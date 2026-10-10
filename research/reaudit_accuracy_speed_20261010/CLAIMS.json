@@ -1,0 +1,147 @@
+{
+  "schema_version": "1.0",
+  "artifact": "claim_ledger",
+  "claims": [
+    {
+      "id": "C01",
+      "claim": "native local represented-2x2 enclosure",
+      "evidence_level": "IMPLEMENTATION_VERIFIED_AND_EXACT_NUMERICAL_CHECKED",
+      "decision": "PASS",
+      "evidence_paths": [
+        "NATIVE.json",
+        "RESULTS.json",
+        "evidence/independent_exact_checks.json"
+      ],
+      "scope": "30 cells incl4fixedholdout;12invalid controls",
+      "claim_ceiling": "Generic matrices, W formation, JVP, nonlinear/global accuracy and speed excluded"
+    },
+    {
+      "id": "C02",
+      "claim": "new public controller underflow",
+      "evidence_level": "CONFIRMED_PUBLIC_API",
+      "decision": "FAIL_BEHAVIOR",
+      "evidence_paths": [
+        "NATIVE.json",
+        "evidence/WOLFRAM_CHECK.json"
+      ],
+      "scope": "factor5vs0.2 on fixed positive inputs",
+      "claim_ceiling": "No trajectory failure prevalence inference"
+    },
+    {
+      "id": "C03",
+      "claim": "copied fallback predicate accepts overflow",
+      "evidence_level": "CONFIRMED_CALLBACK_SEAM_AND_SOURCE",
+      "decision": "FAIL_BEHAVIOR",
+      "evidence_paths": [
+        "NATIVE.json"
+      ],
+      "scope": "relative residual sqrt(3)/2 versus1e-10",
+      "claim_ceiling": "No full-driver end-to-end execution"
+    },
+    {
+      "id": "C04",
+      "claim": "malformed copied evidence passes checker",
+      "evidence_level": "CONFIRMED_EXECUTION",
+      "decision": "FAIL_VALIDATION",
+      "evidence_paths": [
+        "CHECKER_PROBES.json"
+      ],
+      "scope": "4copies; originals unchanged",
+      "claim_ceiling": "Not evidence of historical corruption"
+    },
+    {
+      "id": "C05",
+      "claim": "ALG04 native coupled target",
+      "evidence_level": "REUSED_REGISTERED_NATIVE",
+      "decision": "HOLD",
+      "evidence_paths": [
+        "../alg04_coupled_target_v2_20261010/RESULTS.json",
+        "REUSED_RESULTS.json"
+      ],
+      "scope": "registered FAIL; tight vig1b-k20 4.18x twin",
+      "claim_ceiling": "No universal nonnormal accuracy"
+    },
+    {
+      "id": "C06",
+      "claim": "ALG05 work reduction",
+      "evidence_level": "REUSED_REGISTERED_NATIVE",
+      "decision": "HOLD",
+      "evidence_paths": [
+        "../alg05_predictive_controller_v2_20261010/RESULTS.json",
+        "REUSED_RESULTS.json"
+      ],
+      "scope": "registered FAIL; baseline shared calibration outlier",
+      "claim_ceiling": "No retrospective re-scoring asPASS"
+    },
+    {
+      "id": "C07",
+      "claim": "ALG06 registered PASS",
+      "evidence_level": "REUSED_NATIVE_AND_REVIEW_NARRATIVE",
+      "decision": "HOLD",
+      "evidence_paths": [
+        "../alg06_guard_v2_20261010/RESULTS.json",
+        "REUSED_RESULTS.json"
+      ],
+      "scope": "Registered PASS retained; robust accuracy unestablished",
+      "claim_ceiling": "Narrative sensitivity raw absent"
+    },
+    {
+      "id": "C08",
+      "claim": "Laguerre/Chebyshev/Leja status",
+      "evidence_level": "REUSED_REGISTERED_NATIVE",
+      "decision": "HOLD_FOR_NEW_PROMOTION",
+      "evidence_paths": [
+        "REUSED_RESULTS.json"
+      ],
+      "scope": "PP08Laguerre0selections;PP09missingcomponents;PP10EstimateOnly",
+      "claim_ceiling": "No basis replacement or speed inference"
+    },
+    {
+      "id": "C09",
+      "claim": "whole-chain recurrence proposal",
+      "evidence_level": "DERIVED_SUFFICIENT_CONDITION",
+      "decision": "PROPOSED",
+      "evidence_paths": [
+        "../../docs/reviews/20261010_accuracy_speed/MATHEMATICS_PORTING_KO.md"
+      ],
+      "scope": "Frozen metric, verified gain,Lipschitz tube and assembly bound",
+      "claim_ceiling": "Not currently implemented or useful bound claim"
+    },
+    {
+      "id": "C10",
+      "claim": "homotopy parallel plan",
+      "evidence_level": "DESIGN_WITH_REUSED_NEGATIVE_EVIDENCE",
+      "decision": "HOLD",
+      "evidence_paths": [
+        "REUSED_RESULTS.json",
+        "NEXT_DEVELOPMENT_DAG.json"
+      ],
+      "scope": "Independent work within rounds; real client required;PP07ABSTAIN",
+      "claim_ceiling": "No parallel wall-time result"
+    },
+    {
+      "id": "C11",
+      "claim": "wall-time speedup",
+      "evidence_level": "NOT_MEASURED",
+      "decision": "HOLD",
+      "evidence_paths": [
+        "NEXT_DEVELOPMENT_DAG.json"
+      ],
+      "scope": "Timing authority unresolved",
+      "claim_ceiling": "No seconds/speedupratio reported"
+    },
+    {
+      "id": "C12",
+      "claim": "first failed negative control",
+      "evidence_level": "PRESERVED_EXECUTION_AND_DIAGNOSIS",
+      "decision": "CORRECTED_FIXTURE",
+      "evidence_paths": [
+        "NATIVE_FIRST.json",
+        "RESULTS_FIRST.json",
+        "FIRST_FAILURE.md"
+      ],
+      "scope": "Identity+positive subnormal scale is valid;offdiag1 exercises overflow",
+      "claim_ceiling": "Positive/holdout/gate/certificate algorithm unchanged"
+    }
+  ]
+}

@@ -1,0 +1,463 @@
+{
+  "schema": "vigilode-reaudit-checker-malformed-probes-v1",
+  "study_status": "COMPLETED",
+  "historical_results_policy": "Original inputs/results unchanged; no solver study rerun or verdict replacement.",
+  "source_hashes": {
+    "tools/alg04_coupled_target_v2_check.py": "915b8bc65edcc77a121fb108926973eb637b4f0680e75bdf9e8b275a5c2b10dc",
+    "tools/alg05_controller_v2_check.py": "a4e0117dbb9961182eca542fa796d34fc3608756c17574d2b51dd25dcb457497",
+    "tools/alg06_guard_v2_check.py": "57c52ee84c077f50536ec69d944490d5cf26ae1c25409584d05de5420e7b41ed",
+    "research/alg03_stage_budget_guard_20261008/BASE.json": "bb920b759ab787e1b40552e13643e2994a1640f9d2874f98b4fc9f9c1e98cc7b",
+    "research/alg06_guard_v2_20261010/RUNS.json": "26aaa444f06149335e904558805797067c0fdcc53c976b92ea1ee3fe56e67432",
+    "research/alg06_guard_v2_20261010/RESULTS.json": "af43d6f602d2fde24fdd567d693e4cdc3e738b49ebc441470f32d53bae891899"
+  },
+  "source_hashes_unchanged": true,
+  "published_alg06_verdict_read_only": "PASS",
+  "helper_probes": [
+    {
+      "scope": "helper_only",
+      "checker": "ALG04",
+      "case": "valid_control",
+      "state_bits": [
+        "0000000000000000",
+        "3ff0000000000000"
+      ],
+      "reference_bits": [
+        "0000000000000000",
+        "3ff0000000000000"
+      ],
+      "conclusion_ceiling": "Metric behavior only; no full-checker verdict inferred.",
+      "outcome": "returned_finite",
+      "value": 0.0,
+      "expected_from_static_review": "returned_finite",
+      "expectation_matched": true,
+      "missing_input_rejection_observed": false
+    },
+    {
+      "scope": "helper_only",
+      "checker": "ALG04",
+      "case": "empty",
+      "state_bits": [],
+      "reference_bits": [],
+      "conclusion_ceiling": "Metric behavior only; no full-checker verdict inferred.",
+      "outcome": "raised",
+      "exception_type": "ValueError",
+      "message": "max() iterable argument is empty",
+      "expected_from_static_review": "raised",
+      "expectation_matched": true,
+      "missing_input_rejection_observed": false
+    },
+    {
+      "scope": "helper_only",
+      "checker": "ALG04",
+      "case": "truncated",
+      "state_bits": [
+        "0000000000000000"
+      ],
+      "reference_bits": [
+        "0000000000000000",
+        "3ff0000000000000"
+      ],
+      "conclusion_ceiling": "Metric behavior only; no full-checker verdict inferred.",
+      "outcome": "returned_finite",
+      "value": 0.0,
+      "expected_from_static_review": "returned_finite",
+      "expectation_matched": true,
+      "missing_input_rejection_observed": true
+    },
+    {
+      "scope": "helper_only",
+      "checker": "ALG04",
+      "case": "nan_second",
+      "state_bits": [
+        "0000000000000000",
+        "7ff8000000000000"
+      ],
+      "reference_bits": [
+        "0000000000000000",
+        "0000000000000000"
+      ],
+      "conclusion_ceiling": "Metric behavior only; no full-checker verdict inferred.",
+      "outcome": "returned_finite",
+      "value": 0.0,
+      "expected_from_static_review": "returned_finite",
+      "expectation_matched": true,
+      "missing_input_rejection_observed": true
+    },
+    {
+      "scope": "helper_only",
+      "checker": "ALG04",
+      "case": "infinity_second",
+      "state_bits": [
+        "0000000000000000",
+        "7ff0000000000000"
+      ],
+      "reference_bits": [
+        "0000000000000000",
+        "0000000000000000"
+      ],
+      "conclusion_ceiling": "Metric behavior only; no full-checker verdict inferred.",
+      "outcome": "returned_nonfinite",
+      "value": "+Infinity",
+      "expected_from_static_review": "returned_nonfinite",
+      "expectation_matched": true,
+      "missing_input_rejection_observed": false
+    },
+    {
+      "scope": "helper_only",
+      "checker": "ALG05",
+      "case": "valid_control",
+      "state_bits": [
+        "0000000000000000",
+        "3ff0000000000000"
+      ],
+      "reference_bits": [
+        "0000000000000000",
+        "3ff0000000000000"
+      ],
+      "conclusion_ceiling": "Metric behavior only; no full-checker verdict inferred.",
+      "outcome": "returned_finite",
+      "value": 0.0,
+      "expected_from_static_review": "returned_finite",
+      "expectation_matched": true,
+      "missing_input_rejection_observed": false
+    },
+    {
+      "scope": "helper_only",
+      "checker": "ALG05",
+      "case": "empty",
+      "state_bits": [],
+      "reference_bits": [],
+      "conclusion_ceiling": "Metric behavior only; no full-checker verdict inferred.",
+      "outcome": "raised",
+      "exception_type": "ValueError",
+      "message": "max() iterable argument is empty",
+      "expected_from_static_review": "raised",
+      "expectation_matched": true,
+      "missing_input_rejection_observed": false
+    },
+    {
+      "scope": "helper_only",
+      "checker": "ALG05",
+      "case": "truncated",
+      "state_bits": [
+        "0000000000000000"
+      ],
+      "reference_bits": [
+        "0000000000000000",
+        "3ff0000000000000"
+      ],
+      "conclusion_ceiling": "Metric behavior only; no full-checker verdict inferred.",
+      "outcome": "raised",
+      "exception_type": "AssertionError",
+      "message": "",
+      "expected_from_static_review": "raised",
+      "expectation_matched": true,
+      "missing_input_rejection_observed": false
+    },
+    {
+      "scope": "helper_only",
+      "checker": "ALG05",
+      "case": "nan_second",
+      "state_bits": [
+        "0000000000000000",
+        "7ff8000000000000"
+      ],
+      "reference_bits": [
+        "0000000000000000",
+        "0000000000000000"
+      ],
+      "conclusion_ceiling": "Metric behavior only; no full-checker verdict inferred.",
+      "outcome": "returned_finite",
+      "value": 0.0,
+      "expected_from_static_review": "returned_finite",
+      "expectation_matched": true,
+      "missing_input_rejection_observed": true
+    },
+    {
+      "scope": "helper_only",
+      "checker": "ALG05",
+      "case": "infinity_second",
+      "state_bits": [
+        "0000000000000000",
+        "7ff0000000000000"
+      ],
+      "reference_bits": [
+        "0000000000000000",
+        "0000000000000000"
+      ],
+      "conclusion_ceiling": "Metric behavior only; no full-checker verdict inferred.",
+      "outcome": "returned_nonfinite",
+      "value": "+Infinity",
+      "expected_from_static_review": "returned_nonfinite",
+      "expectation_matched": true,
+      "missing_input_rejection_observed": false
+    },
+    {
+      "scope": "helper_only",
+      "checker": "ALG06",
+      "case": "valid_control",
+      "state_bits": [
+        "0000000000000000",
+        "3ff0000000000000"
+      ],
+      "reference_bits": [
+        "0000000000000000",
+        "3ff0000000000000"
+      ],
+      "conclusion_ceiling": "Metric behavior only; no full-checker verdict inferred.",
+      "outcome": "returned_finite",
+      "value": 0.0,
+      "expected_from_static_review": "returned_finite",
+      "expectation_matched": true,
+      "missing_input_rejection_observed": false
+    },
+    {
+      "scope": "helper_only",
+      "checker": "ALG06",
+      "case": "empty",
+      "state_bits": [],
+      "reference_bits": [],
+      "conclusion_ceiling": "Metric behavior only; no full-checker verdict inferred.",
+      "outcome": "raised",
+      "exception_type": "ValueError",
+      "message": "max() iterable argument is empty",
+      "expected_from_static_review": "raised",
+      "expectation_matched": true,
+      "missing_input_rejection_observed": false
+    },
+    {
+      "scope": "helper_only",
+      "checker": "ALG06",
+      "case": "truncated",
+      "state_bits": [
+        "0000000000000000"
+      ],
+      "reference_bits": [
+        "0000000000000000",
+        "3ff0000000000000"
+      ],
+      "conclusion_ceiling": "Metric behavior only; no full-checker verdict inferred.",
+      "outcome": "returned_finite",
+      "value": 0.0,
+      "expected_from_static_review": "returned_finite",
+      "expectation_matched": true,
+      "missing_input_rejection_observed": true
+    },
+    {
+      "scope": "helper_only",
+      "checker": "ALG06",
+      "case": "nan_second",
+      "state_bits": [
+        "0000000000000000",
+        "7ff8000000000000"
+      ],
+      "reference_bits": [
+        "0000000000000000",
+        "0000000000000000"
+      ],
+      "conclusion_ceiling": "Metric behavior only; no full-checker verdict inferred.",
+      "outcome": "returned_finite",
+      "value": 0.0,
+      "expected_from_static_review": "returned_finite",
+      "expectation_matched": true,
+      "missing_input_rejection_observed": true
+    },
+    {
+      "scope": "helper_only",
+      "checker": "ALG06",
+      "case": "infinity_second",
+      "state_bits": [
+        "0000000000000000",
+        "7ff0000000000000"
+      ],
+      "reference_bits": [
+        "0000000000000000",
+        "0000000000000000"
+      ],
+      "conclusion_ceiling": "Metric behavior only; no full-checker verdict inferred.",
+      "outcome": "returned_nonfinite",
+      "value": "+Infinity",
+      "expected_from_static_review": "returned_nonfinite",
+      "expectation_matched": true,
+      "missing_input_rejection_observed": false
+    }
+  ],
+  "end_to_end_probes": [
+    {
+      "scope": "full_checker_on_malformed_copy",
+      "checker": "ALG06",
+      "mutation": {
+        "case": "truncated_candidate",
+        "cell": [
+          "D1",
+          "brusselator-1d-160",
+          0.0001
+        ],
+        "retained_components": 1,
+        "declared_dimension": 320
+      },
+      "copied_runs_sha256": "58f484ab262107b1b8018b7964ab48a5766d27feca0111f143aba29c9cf09f68",
+      "returncode": 0,
+      "checker_result": {
+        "verdict": "PASS",
+        "gate": {
+          "1_identity": true,
+          "2_no_livelock": true,
+          "3_failures": true,
+          "4_accuracy": true,
+          "5_work": true
+        },
+        "canonical_cells": 24,
+        "twins_reproduced": true,
+        "affected_cell": [
+          "D1",
+          "brusselator-1d-160",
+          0.0001
+        ],
+        "affected_b3_error": 0.0,
+        "affected_twin_error": 4.2544098493395505e-05,
+        "affected_twin_equals_base": true
+      },
+      "stdout": "verdict: PASS\n  1_identity: PASS\n  2_no_livelock: PASS\n  3_failures: PASS\n  4_accuracy: PASS\n  5_work: PASS\n  identity: rbig True d5 eligible 12 failing []\n  accuracy: ['D1', 'brusselator-1d-160', 0.0001] 0.0 PASS\n  accuracy: ['D1', 'brusselator-1d-300', 0.0001] 0.9796557850750537 PASS\n  accuracy: ['D1', 'brusselator-1d-300', 1e-06] 0.9946370108108817 PASS\n  accuracy: ['D2', 'robertson-4e10', 1e-05] 0.5438493287834877 PASS\n  accuracy: ['D2', 'robertson-4e10', 1e-07] 0.9942908637491087 PASS\n  accuracy: ['D2', 'robertson-4e10', 1e-09] 1.0014442453772137 PASS\n  accuracy: ['D3', 'stosc-w1e4', 0.0001] 1.0000452109037374 PASS\n  accuracy: ['D3', 'stosc-w1e4', 1e-06] 1.0000008078792548 PASS\n  accuracy: ['D3', 'stosc-w1e4', 1e-08] 0.9995786551836391 PASS\n  accuracy: ['D4', 'e05-s10', 0.0001] 0.9386112852114964 PASS\n  work: {'ratio_vs_rbig': 0.4183240457926275, 'per_accepted_ratio_vs_rbig': 0.4183240457926275, 'pass': True}\n  b2 would pass: {'2_no_livelock': True, '3_failures': True, '4_accuracy': True, '5_work': True} {'1e-05': 1.4115928527014159, '1e-07': 1.0239275069899039, '1e-09': 0.972299490487036}\n  b3a would pass: {'2_no_livelock': True, '3_failures': True, '4_accuracy': False, '5_work': True} {'1e-05': 1.8718236778822748, '1e-07': 1.0119061274326182, '1e-09': 1.0071333377717997}\n  b3b would pass: {'2_no_livelock': True, '3_failures': True, '4_accuracy': True, '5_work': True} {'1e-05': 1.4918850330531648, '1e-07': 1.0018469566444177, '1e-09': 1.0416247855811165}\n",
+      "stderr": "",
+      "expected_from_static_review": "PASS despite this malformed evidence",
+      "expectation_matched": true,
+      "malformed_copy_passed": true,
+      "conclusion_ceiling": "Checker validation gap on a synthetic copy; not a defect in the historical run or a false acceptance by the ODE solver."
+    },
+    {
+      "scope": "full_checker_on_malformed_copy",
+      "checker": "ALG06",
+      "mutation": {
+        "case": "nan_candidate",
+        "cell": [
+          "D1",
+          "brusselator-1d-160",
+          0.0001
+        ],
+        "nan_component": 1,
+        "other_components": "reference bits"
+      },
+      "copied_runs_sha256": "2f8404c4a8c70b19d78718dee9b1508aeea1e131eae1643595eef2af297366d5",
+      "returncode": 0,
+      "checker_result": {
+        "verdict": "PASS",
+        "gate": {
+          "1_identity": true,
+          "2_no_livelock": true,
+          "3_failures": true,
+          "4_accuracy": true,
+          "5_work": true
+        },
+        "canonical_cells": 24,
+        "twins_reproduced": true,
+        "affected_cell": [
+          "D1",
+          "brusselator-1d-160",
+          0.0001
+        ],
+        "affected_b3_error": 0.0,
+        "affected_twin_error": 4.2544098493395505e-05,
+        "affected_twin_equals_base": true
+      },
+      "stdout": "verdict: PASS\n  1_identity: PASS\n  2_no_livelock: PASS\n  3_failures: PASS\n  4_accuracy: PASS\n  5_work: PASS\n  identity: rbig True d5 eligible 12 failing []\n  accuracy: ['D1', 'brusselator-1d-160', 0.0001] 0.0 PASS\n  accuracy: ['D1', 'brusselator-1d-300', 0.0001] 0.9796557850750537 PASS\n  accuracy: ['D1', 'brusselator-1d-300', 1e-06] 0.9946370108108817 PASS\n  accuracy: ['D2', 'robertson-4e10', 1e-05] 0.5438493287834877 PASS\n  accuracy: ['D2', 'robertson-4e10', 1e-07] 0.9942908637491087 PASS\n  accuracy: ['D2', 'robertson-4e10', 1e-09] 1.0014442453772137 PASS\n  accuracy: ['D3', 'stosc-w1e4', 0.0001] 1.0000452109037374 PASS\n  accuracy: ['D3', 'stosc-w1e4', 1e-06] 1.0000008078792548 PASS\n  accuracy: ['D3', 'stosc-w1e4', 1e-08] 0.9995786551836391 PASS\n  accuracy: ['D4', 'e05-s10', 0.0001] 0.9386112852114964 PASS\n  work: {'ratio_vs_rbig': 0.4183240457926275, 'per_accepted_ratio_vs_rbig': 0.4183240457926275, 'pass': True}\n  b2 would pass: {'2_no_livelock': True, '3_failures': True, '4_accuracy': True, '5_work': True} {'1e-05': 1.4115928527014159, '1e-07': 1.0239275069899039, '1e-09': 0.972299490487036}\n  b3a would pass: {'2_no_livelock': True, '3_failures': True, '4_accuracy': False, '5_work': True} {'1e-05': 1.8718236778822748, '1e-07': 1.0119061274326182, '1e-09': 1.0071333377717997}\n  b3b would pass: {'2_no_livelock': True, '3_failures': True, '4_accuracy': True, '5_work': True} {'1e-05': 1.4918850330531648, '1e-07': 1.0018469566444177, '1e-09': 1.0416247855811165}\n",
+      "stderr": "",
+      "expected_from_static_review": "PASS despite this malformed evidence",
+      "expectation_matched": true,
+      "malformed_copy_passed": true,
+      "conclusion_ceiling": "Checker validation gap on a synthetic copy; not a defect in the historical run or a false acceptance by the ODE solver."
+    },
+    {
+      "scope": "full_checker_on_malformed_copy",
+      "checker": "ALG06",
+      "mutation": {
+        "case": "wrong_twin",
+        "cell": [
+          "D2",
+          "robertson-4e10",
+          1e-05
+        ],
+        "component": 0,
+        "before": "3e6bf64843d8f0a6",
+        "after": "0000000000000000"
+      },
+      "copied_runs_sha256": "3468f0877bd0d5d179002c58425d3c1bf30e1c225c4f321aa0fa495006ab7e33",
+      "returncode": 0,
+      "checker_result": {
+        "verdict": "PASS",
+        "gate": {
+          "1_identity": true,
+          "2_no_livelock": true,
+          "3_failures": true,
+          "4_accuracy": true,
+          "5_work": true
+        },
+        "canonical_cells": 24,
+        "twins_reproduced": false,
+        "affected_cell": [
+          "D2",
+          "robertson-4e10",
+          1e-05
+        ],
+        "affected_b3_error": 9.738918062865811e-07,
+        "affected_twin_error": 1.0,
+        "affected_twin_equals_base": false
+      },
+      "stdout": "verdict: PASS\n  1_identity: PASS\n  2_no_livelock: PASS\n  3_failures: PASS\n  4_accuracy: PASS\n  5_work: PASS\n  identity: rbig True d5 eligible 12 failing []\n  accuracy: ['D1', 'brusselator-1d-160', 0.0001] 0.9894550525788435 PASS\n  accuracy: ['D1', 'brusselator-1d-300', 0.0001] 0.9796557850750537 PASS\n  accuracy: ['D1', 'brusselator-1d-300', 1e-06] 0.9946370108108817 PASS\n  accuracy: ['D2', 'robertson-4e10', 1e-05] 9.738918062865811e-07 PASS\n  accuracy: ['D2', 'robertson-4e10', 1e-07] 0.9942908637491087 PASS\n  accuracy: ['D2', 'robertson-4e10', 1e-09] 1.0014442453772137 PASS\n  accuracy: ['D3', 'stosc-w1e4', 0.0001] 1.0000452109037374 PASS\n  accuracy: ['D3', 'stosc-w1e4', 1e-06] 1.0000008078792548 PASS\n  accuracy: ['D3', 'stosc-w1e4', 1e-08] 0.9995786551836391 PASS\n  accuracy: ['D4', 'e05-s10', 0.0001] 0.9386112852114964 PASS\n  work: {'ratio_vs_rbig': 0.4183240457926275, 'per_accepted_ratio_vs_rbig': 0.4183240457926275, 'pass': True}\n  b2 would pass: {'2_no_livelock': True, '3_failures': True, '4_accuracy': True, '5_work': True} {'1e-05': 2.527793343302825e-06, '1e-07': 1.0239275069899039, '1e-09': 0.972299490487036}\n  b3a would pass: {'2_no_livelock': True, '3_failures': True, '4_accuracy': True, '5_work': True} {'1e-05': 3.3519462950895686e-06, '1e-07': 1.0119061274326182, '1e-09': 1.0071333377717997}\n  b3b would pass: {'2_no_livelock': True, '3_failures': True, '4_accuracy': True, '5_work': True} {'1e-05': 2.6715756234581865e-06, '1e-07': 1.0018469566444177, '1e-09': 1.0416247855811165}\n",
+      "stderr": "",
+      "expected_from_static_review": "PASS despite this malformed evidence",
+      "expectation_matched": true,
+      "malformed_copy_passed": true,
+      "conclusion_ceiling": "Checker validation gap on a synthetic copy; not a defect in the historical run or a false acceptance by the ODE solver."
+    },
+    {
+      "scope": "full_checker_on_malformed_copy",
+      "checker": "ALG06",
+      "mutation": {
+        "case": "duplicate_row",
+        "cell": [
+          "D1",
+          "brusselator-1d-160",
+          0.0001
+        ],
+        "raw_rows_before": 24,
+        "raw_rows_after": 25
+      },
+      "copied_runs_sha256": "8e7f23cd77b222907e03be8e4d98a6dd2b4e27b9f6394eae4d4fb55579f3e648",
+      "returncode": 0,
+      "checker_result": {
+        "verdict": "PASS",
+        "gate": {
+          "1_identity": true,
+          "2_no_livelock": true,
+          "3_failures": true,
+          "4_accuracy": true,
+          "5_work": true
+        },
+        "canonical_cells": 24,
+        "twins_reproduced": true,
+        "affected_cell": [
+          "D1",
+          "brusselator-1d-160",
+          0.0001
+        ],
+        "affected_b3_error": 4.2095473211702146e-05,
+        "affected_twin_error": 4.2544098493395505e-05,
+        "affected_twin_equals_base": true
+      },
+      "stdout": "verdict: PASS\n  1_identity: PASS\n  2_no_livelock: PASS\n  3_failures: PASS\n  4_accuracy: PASS\n  5_work: PASS\n  identity: rbig True d5 eligible 12 failing []\n  accuracy: ['D1', 'brusselator-1d-160', 0.0001] 0.9894550525788435 PASS\n  accuracy: ['D1', 'brusselator-1d-300', 0.0001] 0.9796557850750537 PASS\n  accuracy: ['D1', 'brusselator-1d-300', 1e-06] 0.9946370108108817 PASS\n  accuracy: ['D2', 'robertson-4e10', 1e-05] 0.5438493287834877 PASS\n  accuracy: ['D2', 'robertson-4e10', 1e-07] 0.9942908637491087 PASS\n  accuracy: ['D2', 'robertson-4e10', 1e-09] 1.0014442453772137 PASS\n  accuracy: ['D3', 'stosc-w1e4', 0.0001] 1.0000452109037374 PASS\n  accuracy: ['D3', 'stosc-w1e4', 1e-06] 1.0000008078792548 PASS\n  accuracy: ['D3', 'stosc-w1e4', 1e-08] 0.9995786551836391 PASS\n  accuracy: ['D4', 'e05-s10', 0.0001] 0.9386112852114964 PASS\n  work: {'ratio_vs_rbig': 0.4183240457926275, 'per_accepted_ratio_vs_rbig': 0.4183240457926275, 'pass': True}\n  b2 would pass: {'2_no_livelock': True, '3_failures': True, '4_accuracy': True, '5_work': True} {'1e-05': 1.4115928527014159, '1e-07': 1.0239275069899039, '1e-09': 0.972299490487036}\n  b3a would pass: {'2_no_livelock': True, '3_failures': True, '4_accuracy': False, '5_work': True} {'1e-05': 1.8718236778822748, '1e-07': 1.0119061274326182, '1e-09': 1.0071333377717997}\n  b3b would pass: {'2_no_livelock': True, '3_failures': True, '4_accuracy': True, '5_work': True} {'1e-05': 1.4918850330531648, '1e-07': 1.0018469566444177, '1e-09': 1.0416247855811165}\n",
+      "stderr": "",
+      "expected_from_static_review": "PASS despite this malformed evidence",
+      "expectation_matched": true,
+      "malformed_copy_passed": true,
+      "conclusion_ceiling": "Checker validation gap on a synthetic copy; not a defect in the historical run or a false acceptance by the ODE solver."
+    }
+  ],
+  "expectations_matched": true,
+  "checker_authority": "NEEDS_HARDENING",
+  "no_claims": [
+    "historical data corruption",
+    "false ODE solution acceptance",
+    "production solver regression"
+  ]
+}

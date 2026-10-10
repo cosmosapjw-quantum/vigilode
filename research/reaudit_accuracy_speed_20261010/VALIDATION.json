@@ -1,0 +1,82 @@
+{
+  "schema_version": "1.0",
+  "audit_source": "cfed140bf127f5aa8fcf4fe4c16689d7de062b87",
+  "native_source": "95d589e862c35c675fac3bee7ebdb962415a97de",
+  "actual_model": "UNKNOWN",
+  "commands": [
+    {
+      "command": "cargo metadata --offline --locked --format-version 1",
+      "exit_code": 0,
+      "purpose": "offline dependency preflight",
+      "evidence": "evidence/runtime.json"
+    },
+    {
+      "command": "cargo build --offline --locked --release -p rodas5p-integrators",
+      "exit_code": 0,
+      "purpose": "native build availability;not science"
+    },
+    {
+      "command": "cargo run --offline --locked --release -p rodas5p-integrators --example reaudit_20261010 -- research/reaudit_accuracy_speed_20261010/NATIVE.json",
+      "exit_code": 0,
+      "source": "a6c6ebfc8342dc7f8726ff0d6f76e031c1d55bca",
+      "output_preserved_as": "NATIVE_FIRST.json",
+      "stderr": "evidence/native_stderr.txt"
+    },
+    {
+      "command": "python3 research/reaudit_accuracy_speed_20261010/check.py",
+      "checker_exit_code": 1,
+      "source": "a6c6ebfc8342dc7f8726ff0d6f76e031c1d55bca",
+      "result_preserved_as": "RESULTS_FIRST.json",
+      "note": "FirstFAIL; the shell inspection batch continued afterward; see FIRST_FAILURE.md."
+    },
+    {
+      "command": "python3 research/reaudit_accuracy_speed_20261010/checker_probes.py",
+      "exit_code": 0,
+      "source": "a6c6ebfc8342dc7f8726ff0d6f76e031c1d55bca",
+      "evidence": "CHECKER_PROBES.json",
+      "counts": {
+        "helpers": 15,
+        "full_malformed_copies": 4
+      }
+    },
+    {
+      "command": "cargo run --offline --locked --release -p rodas5p-integrators --example reaudit_20261010 -- research/reaudit_accuracy_speed_20261010/NATIVE.json",
+      "exit_code": 0,
+      "source": "95d589e862c35c675fac3bee7ebdb962415a97de",
+      "evidence": "NATIVE.json",
+      "stderr": "evidence/native_stderr_final.txt"
+    },
+    {
+      "command": "python3 research/reaudit_accuracy_speed_20261010/check.py",
+      "exit_code": 0,
+      "source": "95d589e862c35c675fac3bee7ebdb962415a97de",
+      "evidence": "RESULTS.json"
+    },
+    {
+      "command": "cargo fmt --all -- --check",
+      "exit_code": 0,
+      "stderr": "evidence/fmt_stderr.txt"
+    },
+    {
+      "command": "cargo clippy --offline --locked --release -p rodas5p-integrators --example reaudit_20261010 -- -D warnings",
+      "exit_code": 0,
+      "stderr": "evidence/clippy_stderr.txt"
+    },
+    {
+      "command": "python3 research/reaudit_accuracy_speed_20261010/evidence/independent_checks.py",
+      "exit_code": 0,
+      "executor": "independent reviewer",
+      "evidence": "evidence/independent_exact_checks.json"
+    }
+  ],
+  "not_run": [
+    "publishedALG01-06exports",
+    "publishedSPD01-09campaigns",
+    "oldpolynomial/homotopycampaigns",
+    "fullworkspacehistoricalscience",
+    "walltimebenchmark"
+  ],
+  "production_diff": "No production source/dependency/default changes; one new native example includes research-only module.",
+  "independent_decision": "evidence/independent_decision.json",
+  "process_checks": "Final process command results are written separately to evidence/process_checks.json."
+}

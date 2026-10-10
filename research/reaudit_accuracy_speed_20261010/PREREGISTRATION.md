@@ -96,3 +96,28 @@ homotopy parallel work, updated from PP01–PP13/SPD/ALG evidence. Require a fin
 independent reviewer who did not design B before a bounded prototype decision.
 Methodology: GPT-6 Astra v4.0.0 research/coding harness packages; actual runtime
 model identity UNKNOWN, harness-model performance NOT_EVALUATED.
+
+## Results appended after execution (registration above unchanged)
+
+The initial source checkpoint was
+`a6c6ebfc8342dc7f8726ff0d6f76e031c1d55bca`. First result: 30/30 positive enclosures,
+11/12 expected negative rejections, hence FAIL. The identity/subnormal-scale
+negative fixture was valid under this contract; `FIRST_FAILURE.md` explains the
+correction. `NATIVE_FIRST.json` and `RESULTS_FIRST.json` preserve that execution.
+
+Final native source `95d589e862c35c675fac3bee7ebdb962415a97de` changes only the
+off-diagonal entry of the intended scale-overflow negative fixture. Final result:
+30/30 exact-rational enclosures including four fixed holdout, 12/12 invalid
+rejections. Certificate arithmetic, positive/holdout inputs and numerical gates
+are unchanged. Bounds are sometimes very loose and three discovery perturbations
+round away; no usefulness threshold was added after seeing them.
+
+Public controller updates expose the underflow factor reversal (5 versus 0.2).
+The copied private-driver fallback predicate accepts at relative residual about
+0.866 through the public staged callback seam; no full ODE trajectory is claimed.
+Three tiny cases exhibit floor/stall above-target acceptance. Four malformed
+ALG06 input copies still PASS the existing checker; historical hashes unchanged.
+These findings are scoped in FINDINGS.json and the Korean report. Independent
+review accepts only the bounded represented-2x2 research seam; production,
+global accuracy, speed and default promotion remain HOLD. No published scientific
+campaign was rerun.

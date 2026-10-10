@@ -1,0 +1,30 @@
+{
+  "schema_version": "1.0",
+  "source_checkpoint": "95d589e862c35c675fac3bee7ebdb962415a97de",
+  "scope": "Final staged audit artifacts, ledger and linked remote source authority before final publication; these are process checks, not repeated science.",
+  "results": [
+    {
+      "id": "research_process",
+      "command": "python3 tools/check-research-node.py --base cfed140bf127f5aa8fcf4fe4c16689d7de062b87",
+      "exit_code": 0,
+      "output": "check-research-node: PASS (99 ledger rows, base=cfed140bf127f5aa8fcf4fe4c16689d7de062b87, new nodes=['reaudit_accuracy_speed_20261010'])\n"
+    },
+    {
+      "id": "authority",
+      "command": "python3 tools/check-authority-refs.py --paths research/reaudit_accuracy_speed_20261010 docs/reviews/20261010_accuracy_speed",
+      "exit_code": 0,
+      "output": "check-authority-refs: PASS (76 citations, 35 distinct SHAs: reachable=35)\n"
+    },
+    {
+      "id": "artifact_semantics",
+      "command": "python3 research/reaudit_accuracy_speed_20261010/validate_artifacts.py",
+      "exit_code": 0,
+      "output": "{\"status\": \"PASS\", \"json_files\": 18, \"dag_nodes\": 22, \"findings\": 8, \"claims\": 12, \"topological_order\": [\"AS01\", \"AS02\", \"AS03\", \"HT01\", \"AS04\", \"AS05\", \"CT01\", \"EX01\", \"HT02\", \"ME01\", \"PY01\", \"PY03\", \"PY04\", \"PY05\", \"SP01\", \"SP02\", \"SP03\", \"SP04\", \"AS06\", \"PC01\", \"PY02\", \"AS07\"]}\n"
+    }
+  ],
+  "whitespace_check": {
+    "command": "git diff --cached --check",
+    "exit_code": 0
+  },
+  "latest_implementation_ref_rechecked": "cfed140bf127f5aa8fcf4fe4c16689d7de062b87"
+}
