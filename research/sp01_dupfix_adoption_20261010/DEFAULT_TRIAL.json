@@ -1,0 +1,105 @@
+{
+ "node": "sp01_dupfix_adoption_20261010",
+ "trial": "Decision rule of the registration: every pre-existing non-ignored test run with ResidualAccounting::ReuseConfirmed as the default of both GMRES kernels (crates/rodas5p-krylov/src/accounting.rs: `pub const DEFAULT: Self = Self::ReuseConfirmed;`, the only difference from the tree below). Debug test profile, RAYON_NUM_THREADS=1.",
+ "tree": "base 0283c1f7f2752d2b6b6b3b56847e73284a6dd67f plus the SP01 implementation commit that adds this receipt (crates, tests, example), with ResidualAccounting::DEFAULT = ReuseConfirmed instead of RecomputeFinal",
+ "commands": [
+  "cargo test --workspace --all-targets --locked --no-fail-fast",
+  "cargo test --workspace --doc --locked --no-fail-fast",
+  "cargo test -p rodas5p-integrators --features audit2-research --locked --no-fail-fast",
+  "cargo test -p rodas5p-integrators --features audit2-bateman-authority --locked --no-fail-fast",
+  "cargo test -p rodas5p-integrators --features audit2-stage-certificate --locked --no-fail-fast"
+ ],
+ "steps": [
+  {
+   "step": "test-workspace",
+   "command": "cargo test --workspace --all-targets --locked --no-fail-fast",
+   "exit": 101,
+   "passed": 966,
+   "failed": 9,
+   "ignored": 75,
+   "failing_tests": [
+    "tests/a1_committed_trace_regression.rs [a1_committed_trace_regression]::historical_external_digest_is_preserved_while_v2_trace_has_its_own_baseline",
+    "tests/alg01_coupled_stage_target.rs [alg01_coupled_stage_target]::staged_policies_integrate_small_cases_without_a_duplicate_residual",
+    "tests/alg01_coupled_stage_target.rs [alg01_coupled_stage_target]::legacy_rows_reproduce_the_base_export_on_small_cases",
+    "tests/alg04_alg06.rs [alg04_alg06]::dup_fix_is_legacy_without_the_diagnostic_residual",
+    "tests/alg04_alg06.rs [alg04_alg06]::legacy_ladder_at_the_alg04_budget_reproduces_the_alg01_base",
+    "tests/frozen_full_e_shadow_contracts.rs [frozen_full_e_shadow_contracts]::retained_level2_shadow_is_complete_charged_safe_and_rjf_identical",
+    "tests/spd07_mf_step_warm_start.rs [spd07_mf_step_warm_start]::default_guesses_reproduce_the_base_export",
+    "tests/alg04_dup_fix_contracts.rs [alg04_dup_fix_contracts]::skipping_the_final_residual_changes_only_the_diagnostic_counters",
+    "tests/krylov_contracts.rs [krylov_contracts]::restarted_gmres_matches_direct_solution_and_certifies_true_residual"
+   ]
+  },
+  {
+   "step": "test-doc",
+   "command": "cargo test --workspace --doc --locked --no-fail-fast",
+   "exit": 0,
+   "passed": 3,
+   "failed": 0,
+   "ignored": 0,
+   "failing_tests": []
+  },
+  {
+   "step": "test-research",
+   "command": "cargo test -p rodas5p-integrators --features audit2-research --locked --no-fail-fast",
+   "exit": 101,
+   "passed": 599,
+   "failed": 7,
+   "ignored": 44,
+   "failing_tests": [
+    "tests/a1_committed_trace_regression.rs [a1_committed_trace_regression]::historical_external_digest_is_preserved_while_v2_trace_has_its_own_baseline",
+    "tests/alg01_coupled_stage_target.rs [alg01_coupled_stage_target]::staged_policies_integrate_small_cases_without_a_duplicate_residual",
+    "tests/alg01_coupled_stage_target.rs [alg01_coupled_stage_target]::legacy_rows_reproduce_the_base_export_on_small_cases",
+    "tests/alg04_alg06.rs [alg04_alg06]::dup_fix_is_legacy_without_the_diagnostic_residual",
+    "tests/alg04_alg06.rs [alg04_alg06]::legacy_ladder_at_the_alg04_budget_reproduces_the_alg01_base",
+    "tests/frozen_full_e_shadow_contracts.rs [frozen_full_e_shadow_contracts]::retained_level2_shadow_is_complete_charged_safe_and_rjf_identical",
+    "tests/spd07_mf_step_warm_start.rs [spd07_mf_step_warm_start]::default_guesses_reproduce_the_base_export"
+   ]
+  },
+  {
+   "step": "test-bateman",
+   "command": "cargo test -p rodas5p-integrators --features audit2-bateman-authority --locked --no-fail-fast",
+   "exit": 101,
+   "passed": 605,
+   "failed": 7,
+   "ignored": 44,
+   "failing_tests": [
+    "tests/a1_committed_trace_regression.rs [a1_committed_trace_regression]::historical_external_digest_is_preserved_while_v2_trace_has_its_own_baseline",
+    "tests/alg01_coupled_stage_target.rs [alg01_coupled_stage_target]::legacy_rows_reproduce_the_base_export_on_small_cases",
+    "tests/alg01_coupled_stage_target.rs [alg01_coupled_stage_target]::staged_policies_integrate_small_cases_without_a_duplicate_residual",
+    "tests/alg04_alg06.rs [alg04_alg06]::dup_fix_is_legacy_without_the_diagnostic_residual",
+    "tests/alg04_alg06.rs [alg04_alg06]::legacy_ladder_at_the_alg04_budget_reproduces_the_alg01_base",
+    "tests/frozen_full_e_shadow_contracts.rs [frozen_full_e_shadow_contracts]::retained_level2_shadow_is_complete_charged_safe_and_rjf_identical",
+    "tests/spd07_mf_step_warm_start.rs [spd07_mf_step_warm_start]::default_guesses_reproduce_the_base_export"
+   ]
+  },
+  {
+   "step": "test-stagecert",
+   "command": "cargo test -p rodas5p-integrators --features audit2-stage-certificate --locked --no-fail-fast",
+   "exit": 101,
+   "passed": 627,
+   "failed": 7,
+   "ignored": 44,
+   "failing_tests": [
+    "tests/a1_committed_trace_regression.rs [a1_committed_trace_regression]::historical_external_digest_is_preserved_while_v2_trace_has_its_own_baseline",
+    "tests/alg01_coupled_stage_target.rs [alg01_coupled_stage_target]::staged_policies_integrate_small_cases_without_a_duplicate_residual",
+    "tests/alg01_coupled_stage_target.rs [alg01_coupled_stage_target]::legacy_rows_reproduce_the_base_export_on_small_cases",
+    "tests/alg04_alg06.rs [alg04_alg06]::dup_fix_is_legacy_without_the_diagnostic_residual",
+    "tests/alg04_alg06.rs [alg04_alg06]::legacy_ladder_at_the_alg04_budget_reproduces_the_alg01_base",
+    "tests/frozen_full_e_shadow_contracts.rs [frozen_full_e_shadow_contracts]::retained_level2_shadow_is_complete_charged_safe_and_rjf_identical",
+    "tests/spd07_mf_step_warm_start.rs [spd07_mf_step_warm_start]::default_guesses_reproduce_the_base_export"
+   ]
+  }
+ ],
+ "failing_pre_existing_tests": [
+  "tests/a1_committed_trace_regression.rs [a1_committed_trace_regression]::historical_external_digest_is_preserved_while_v2_trace_has_its_own_baseline",
+  "tests/alg01_coupled_stage_target.rs [alg01_coupled_stage_target]::legacy_rows_reproduce_the_base_export_on_small_cases",
+  "tests/alg01_coupled_stage_target.rs [alg01_coupled_stage_target]::staged_policies_integrate_small_cases_without_a_duplicate_residual",
+  "tests/alg04_alg06.rs [alg04_alg06]::dup_fix_is_legacy_without_the_diagnostic_residual",
+  "tests/alg04_alg06.rs [alg04_alg06]::legacy_ladder_at_the_alg04_budget_reproduces_the_alg01_base",
+  "tests/alg04_dup_fix_contracts.rs [alg04_dup_fix_contracts]::skipping_the_final_residual_changes_only_the_diagnostic_counters",
+  "tests/frozen_full_e_shadow_contracts.rs [frozen_full_e_shadow_contracts]::retained_level2_shadow_is_complete_charged_safe_and_rjf_identical",
+  "tests/krylov_contracts.rs [krylov_contracts]::restarted_gmres_matches_direct_solution_and_certifies_true_residual",
+  "tests/spd07_mf_step_warm_start.rs [spd07_mf_step_warm_start]::default_guesses_reproduce_the_base_export"
+ ],
+ "outcome": "versioned"
+}

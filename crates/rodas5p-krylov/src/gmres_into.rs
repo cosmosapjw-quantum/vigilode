@@ -14,6 +14,7 @@
 //! one and the final true-residual check are unchanged.
 
 use crate::{
+    accounting::{LoopExit, ResidualAccounting, reuse_final_residual},
     common::{
         apply_left_with_raw, residual_threshold, selected_residual_norm, true_residual_into,
         validate_residual_scale, validate_system,
@@ -101,6 +102,13 @@ pub struct GmresIntoOptions {
     /// no solution bit, only the counters (one diagnostic operator
     /// application per successful solve). The report then carries the
     /// loop's residual norm.
+    ///
+    /// SP01 (`research/sp01_dupfix_adoption_20261010`) keeps this switch
+    /// unchanged as the ALG04 research arm: it reuses the loop's residual at
+    /// every exit (zero iterate and no-cycle exits included) and overrides
+    /// the [`ResidualAccounting`] of [`solve_gmres_into_with_accounting`].
+    /// The versioned contract is [`ResidualAccounting::ReuseConfirmed`],
+    /// which reuses only a confirmed residual after at least one cycle.
     pub skip_final_residual: bool,
 }
 
@@ -135,7 +143,8 @@ pub fn solve_gmres_into(
     )
 }
 
-/// [`solve_gmres_into`] with [`GmresIntoOptions`].
+/// [`solve_gmres_into`] with [`GmresIntoOptions`] (and the default
+/// [`ResidualAccounting`]).
 #[allow(clippy::too_many_arguments)]
 pub fn solve_gmres_into_with_options(
     op: &dyn LinearOperator,
@@ -148,6 +157,41 @@ pub fn solve_gmres_into_with_options(
     workspace: &mut GmresWorkspace,
     capacity: GmresCapacity,
     options: GmresIntoOptions,
+    counters: &mut WorkCounters,
+) -> CoreResult<GmresIntoReport> {
+    solve_gmres_into_with_accounting(
+        op,
+        pc,
+        rhs,
+        x0,
+        config,
+        residual_scale,
+        output,
+        workspace,
+        capacity,
+        options,
+        ResidualAccounting::DEFAULT,
+        counters,
+    )
+}
+
+/// [`solve_gmres_into_with_options`] with an explicit [`ResidualAccounting`]
+/// (research node `research/sp01_dupfix_adoption_20261010`). The solution,
+/// the outcome and every report field are the same under both accountings.
+/// `options.skip_final_residual` (ALG04) overrides the accounting.
+#[allow(clippy::too_many_arguments)]
+pub fn solve_gmres_into_with_accounting(
+    op: &dyn LinearOperator,
+    pc: &dyn Preconditioner,
+    rhs: &[f64],
+    x0: Option<&[f64]>,
+    config: &GmresConfig,
+    residual_scale: Option<&[f64]>,
+    output: &mut [f64],
+    workspace: &mut GmresWorkspace,
+    capacity: GmresCapacity,
+    options: GmresIntoOptions,
+    accounting: ResidualAccounting,
     counters: &mut WorkCounters,
 ) -> CoreResult<GmresIntoReport> {
     config.validate()?;
@@ -178,9 +222,10 @@ pub fn solve_gmres_into_with_options(
     }
 
     let (mut total, mut cycles) = (0usize, 0u64);
-    let loop_residual_norm = loop {
-        if workspace.common.x.iter().all(|value| *value == 0.0) {
+    let exit = loop {
+        let operator_residual = if workspace.common.x.iter().all(|value| *value == 0.0) {
             workspace.common.residual.copy_from_slice(rhs);
+            false
         } else {
             true_residual_into(
                 op,
@@ -191,10 +236,14 @@ pub fn solve_gmres_into_with_options(
                 counters,
                 ApplyCategory::Krylov,
             )?;
-        }
+            true
+        };
         let residual_norm = selected_residual_norm(&workspace.common.residual, residual_scale)?;
         if residual_norm <= threshold {
-            break residual_norm;
+            break LoopExit {
+                residual_norm,
+                confirmed: operator_residual && cycles > 0,
+            };
         }
         if total >= config.max_arnoldi {
             return Err(CoreError::LinearSolve(format!(
@@ -227,8 +276,8 @@ pub fn solve_gmres_into_with_options(
         counters.linear_iterations += iterations as u64;
     };
 
-    let residual_norm = if options.skip_final_residual {
-        loop_residual_norm
+    let residual_norm = if reuse_final_residual(accounting, exit, options.skip_final_residual) {
+        exit.residual_norm
     } else {
         true_residual_into(
             op,

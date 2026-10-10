@@ -3,11 +3,12 @@ use crate::{
     AdaptiveControllerState, AdaptiveFailureKind, AdaptiveObservedIntegrationResult,
     AdaptiveRunDiagnostics, AdaptiveStepConfig, HomotopyStepConfig, KrylovState,
     ObservedIntegrationResult, OdeProblem, OutputSchedule, RODAS5P_ESTIMATOR_ORDER, SabrConfig,
-    StageHistory, StepResult, TransactionalQ1Q2Config, TransactionalQ1Q2RunDiagnostics,
-    homotopy_step, rodas_next_step_after_attempt, sabr_step,
-    sequential_matrix_free_step_with_inner_forcing, sequential_step,
+    StageHistory, StageSolveAccounting, StageSolveLogEntry, StepResult, TransactionalQ1Q2Config,
+    TransactionalQ1Q2RunDiagnostics, homotopy_step, rodas_next_step_after_attempt, sabr_step,
+    sequential_matrix_free_step_with_inner_forcing_and_residual_accounting, sequential_step,
 };
 use rodas5p_core::{CoreError, CoreResult, LinearSolverConfig, WorkCounters};
+use rodas5p_krylov::ResidualAccounting;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum IntegrationMethod {
@@ -763,6 +764,72 @@ pub fn integrate_sequential_matrix_free_adaptive_observed(
     adaptive: &AdaptiveStepConfig,
     output: &OutputSchedule,
 ) -> CoreResult<AdaptiveObservedIntegrationResult> {
+    sequential_matrix_free_adaptive_inner(
+        problem,
+        t_span,
+        y0,
+        linear_config,
+        adaptive,
+        output,
+        ResidualAccounting::DEFAULT,
+        None,
+    )
+}
+
+/// A run of
+/// [`integrate_sequential_matrix_free_adaptive_observed_with_residual_accounting`].
+#[derive(Clone, Debug)]
+pub struct SequentialAccountingResult {
+    pub result: AdaptiveObservedIntegrationResult,
+    pub accounting: ResidualAccounting,
+    /// Every successful stage solve's report, in order (all attempts and
+    /// refinement passes).
+    pub solve_log: Vec<StageSolveLogEntry>,
+}
+
+/// [`integrate_sequential_matrix_free_adaptive_observed`] (the protected
+/// matrix-free K-form driver with WRMS inner forcing) with an explicit GMRES
+/// residual accounting and the stage solves' reports logged (research node
+/// `research/sp01_dupfix_adoption_20261010`). With the kernels' default
+/// accounting it is that driver bit for bit.
+pub fn integrate_sequential_matrix_free_adaptive_observed_with_residual_accounting(
+    problem: &OdeProblem,
+    t_span: (f64, f64),
+    y0: &[f64],
+    linear_config: &LinearSolverConfig,
+    adaptive: &AdaptiveStepConfig,
+    output: &OutputSchedule,
+    accounting: ResidualAccounting,
+) -> CoreResult<SequentialAccountingResult> {
+    let mut solve_log = Vec::new();
+    let result = sequential_matrix_free_adaptive_inner(
+        problem,
+        t_span,
+        y0,
+        linear_config,
+        adaptive,
+        output,
+        accounting,
+        Some(&mut solve_log),
+    )?;
+    Ok(SequentialAccountingResult {
+        result,
+        accounting,
+        solve_log,
+    })
+}
+
+#[allow(clippy::too_many_arguments)]
+fn sequential_matrix_free_adaptive_inner(
+    problem: &OdeProblem,
+    t_span: (f64, f64),
+    y0: &[f64],
+    linear_config: &LinearSolverConfig,
+    adaptive: &AdaptiveStepConfig,
+    output: &OutputSchedule,
+    accounting: ResidualAccounting,
+    mut solve_log: Option<&mut Vec<StageSolveLogEntry>>,
+) -> CoreResult<AdaptiveObservedIntegrationResult> {
     adaptive.validate()?;
     let (mut t, tf) = t_span;
     if y0.len() != problem.dimension || tf < t {
@@ -804,7 +871,7 @@ pub fn integrate_sequential_matrix_free_adaptive_observed(
             }
         };
         let recycle_snapshot = recycle.clone();
-        let trial = sequential_matrix_free_step_with_inner_forcing(
+        let trial = sequential_matrix_free_step_with_inner_forcing_and_residual_accounting(
             problem,
             t,
             &y,
@@ -814,6 +881,10 @@ pub fn integrate_sequential_matrix_free_adaptive_observed(
             adaptive.atol,
             adaptive.rtol,
             false,
+            StageSolveAccounting {
+                accounting,
+                solve_log: solve_log.as_deref_mut(),
+            },
             &mut counters,
         )
         .map(|report| report.step);

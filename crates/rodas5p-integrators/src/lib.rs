@@ -288,10 +288,11 @@ pub use homotopy_order_policy::{
 };
 pub use homotopy_policy::{OutputBudgetDecision, OutputBudgetPolicy};
 pub use integrate::{
-    IntegrationMethod, IntegrationResult, TransactionalQ1Q2AdaptiveResult, integrate_adaptive,
-    integrate_adaptive_observed, integrate_adaptive_observed_with_config, integrate_fixed,
-    integrate_fixed_observed, integrate_homotopy_adaptive_observed,
-    integrate_sequential_matrix_free_adaptive_observed,
+    IntegrationMethod, IntegrationResult, SequentialAccountingResult,
+    TransactionalQ1Q2AdaptiveResult, integrate_adaptive, integrate_adaptive_observed,
+    integrate_adaptive_observed_with_config, integrate_fixed, integrate_fixed_observed,
+    integrate_homotopy_adaptive_observed, integrate_sequential_matrix_free_adaptive_observed,
+    integrate_sequential_matrix_free_adaptive_observed_with_residual_accounting,
     integrate_transactional_q1_q2_adaptive_observed,
     integrate_transactional_q1_q2_adaptive_observed_with_admission,
 };
@@ -372,13 +373,15 @@ pub use rodas5p_matrix_free_fast::{
     AttemptCharge, COUPLED_TARGET_ERROR_REFERENCE, COUPLED_TARGET_INITIAL_ERROR,
     COUPLED_TARGET_ORDER_EXPONENT, COUPLED_TARGET_ROUNDOFF, COUPLED_TARGET_THETA,
     COUPLED_TARGET_U8_FRACTION, GcrodrRecyclePolicy, L2_COUPLED_FACTOR, L2_COUPLED_RTOL_CAP,
-    MfAttemptObserver, ProductionFallbackRule, RODAS5P_MF_FAST_DRIVER_ID, Rodas5pMfFastResult,
-    Rodas5pMfFastWorkspace, Rodas5pMfStageTargetResult, StageSolveStatistics, StageTargetOptions,
+    MfAttemptObserver, ProductionFallbackRule, RODAS5P_MF_FAST_DRIVER_ID,
+    Rodas5pMfAccountingResult, Rodas5pMfFastResult, Rodas5pMfFastWorkspace,
+    Rodas5pMfStageTargetResult, StageSolveLogEntry, StageSolveStatistics, StageTargetOptions,
     StageTargetPolicy, StageTransferConstants, coupled_target_u8_cap, gcrodr_stage_solve,
     integrate_rodas5p_mf_fast_observed, integrate_rodas5p_mf_fast_observed_gmres_into,
     integrate_rodas5p_mf_fast_observed_gmres_into_ls_workspace,
     integrate_rodas5p_mf_fast_observed_traced,
     integrate_rodas5p_mf_fast_observed_with_gcrodr_policy,
+    integrate_rodas5p_mf_fast_observed_with_residual_accounting,
     integrate_rodas5p_mf_fast_observed_with_stage_target, rodas5p_stage_transfer_constants,
 };
 pub use sabr::{PredictorKind, SabrConfig, StageHistory, sabr_step};
@@ -397,10 +400,13 @@ pub use scientific_validity_v2_gate::{
 };
 pub use sequential::{
     InnerForcedStageSolveData, InnerForcedStepResult, InnerForcingResolution, KrylovState,
-    StageInnerForcingReport, StageSolveData, StepCertificate, StepContext, StepResult,
-    build_step_context, build_step_context_matrix_free, finish_step, sequential_matrix_free_step,
-    sequential_matrix_free_step_with_inner_forcing, sequential_stages,
+    StageInnerForcingReport, StageSolveAccounting, StageSolveData, StepCertificate, StepContext,
+    StepResult, build_step_context, build_step_context_matrix_free, finish_step,
+    sequential_matrix_free_step, sequential_matrix_free_step_with_inner_forcing,
+    sequential_matrix_free_step_with_inner_forcing_and_residual_accounting,
+    sequential_matrix_free_step_with_residual_accounting, sequential_stages,
     sequential_stages_with_inner_forcing, sequential_step,
+    sequential_step_with_residual_accounting,
 };
 pub use stage_batch::{
     StageBatchFeasibilityCase, StageBatchFeasibilityProfile, StageBatchFeasibilityReport,

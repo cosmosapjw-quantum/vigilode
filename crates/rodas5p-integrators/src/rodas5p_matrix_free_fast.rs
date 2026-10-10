@@ -47,11 +47,11 @@ use rodas5p_core::{
 };
 use rodas5p_krylov::{
     GcrodrConfig, GcrodrSolveOptions, GcrodrState, GcrodrWorkspace, GmresCapacity, GmresConfig,
-    GmresIntoOptions, GmresWorkspace, LgmresConfig, LgmresWorkspace, StagedGmresConfig,
-    StagedGmresFailure, StagedGmresOutcome, StagedGmresReport, StagedGmresWorkspace,
-    StagedGuardAbort, solve_gcrodr_with_workspace, solve_gcrodr_with_workspace_and_options,
-    solve_gmres_into_with_options, solve_gmres_with_workspace, solve_lgmres_with_workspace,
-    solve_staged_gmres,
+    GmresIntoOptions, GmresWorkspace, LgmresConfig, LgmresWorkspace, ResidualAccounting,
+    StagedGmresConfig, StagedGmresFailure, StagedGmresOutcome, StagedGmresReport,
+    StagedGmresWorkspace, StagedGuardAbort, solve_gcrodr_with_workspace,
+    solve_gcrodr_with_workspace_and_options, solve_gmres_into_with_accounting,
+    solve_gmres_with_workspace_and_accounting, solve_lgmres_with_workspace, solve_staged_gmres,
 };
 use serde::Serialize;
 
@@ -736,6 +736,33 @@ pub struct Rodas5pMfFastWorkspace {
     staged_rhs: Vec<f64>,
     staged_z: Vec<f64>,
     stage_statistics: StageSolveStatistics,
+    /// Research switch (SP01): the residual accounting of the GMRES stage
+    /// solves (both the GMRES-into and the default path).
+    residual_accounting: ResidualAccounting,
+    /// Research record (SP01): one [`StageSolveLogEntry`] per successful
+    /// non-staged Krylov stage solve, when switched on. Nothing reads it.
+    solve_log: Option<Vec<StageSolveLogEntry>>,
+}
+
+/// One successful Krylov stage solve's report, as recorded by
+/// [`Rodas5pMfFastWorkspace::set_solve_log`] (research node
+/// `research/sp01_dupfix_adoption_20261010`): the bits of the reported
+/// residual norm and relative residual, and the iterations.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub struct StageSolveLogEntry {
+    pub residual_norm_bits: u64,
+    pub relative_residual_bits: u64,
+    pub iterations: u64,
+}
+
+impl StageSolveLogEntry {
+    pub fn new(residual_norm: f64, relative_residual: f64, iterations: u64) -> Self {
+        Self {
+            residual_norm_bits: residual_norm.to_bits(),
+            relative_residual_bits: relative_residual.to_bits(),
+            iterations,
+        }
+    }
 }
 
 fn validate_strict(problem: &OdeProblem, config: &LinearSolverConfig) -> CoreResult<()> {
@@ -836,7 +863,32 @@ impl Rodas5pMfFastWorkspace {
             staged_rhs: Vec::new(),
             staged_z: Vec::new(),
             stage_statistics: StageSolveStatistics::default(),
+            residual_accounting: ResidualAccounting::DEFAULT,
+            solve_log: None,
         })
+    }
+
+    /// Set the residual accounting of the GMRES stage solves (research node
+    /// `research/sp01_dupfix_adoption_20261010`), on the GMRES-into and the
+    /// default path; the kernels' default otherwise. The `DupFix` stage
+    /// target keeps ALG04's skip, which overrides it.
+    pub fn set_residual_accounting(&mut self, accounting: ResidualAccounting) {
+        self.residual_accounting = accounting;
+    }
+
+    pub fn residual_accounting(&self) -> ResidualAccounting {
+        self.residual_accounting
+    }
+
+    /// Record every successful non-staged Krylov stage solve's report
+    /// (research record; changes nothing). Switching it on clears the log.
+    pub fn set_solve_log(&mut self, on: bool) {
+        self.solve_log = on.then(Vec::new);
+    }
+
+    /// The recorded stage solves, if recording is on.
+    pub fn solve_log(&self) -> Option<&[StageSolveLogEntry]> {
+        self.solve_log.as_deref()
     }
 
     /// Set the stage-target policy (research nodes ALG01/ALG03). `Legacy`
@@ -1317,7 +1369,7 @@ impl Rodas5pMfFastWorkspace {
                 } else {
                     Some(&self.step_u[i * n..(i + 1) * n])
                 };
-                let report = solve_gmres_into_with_options(
+                let report = solve_gmres_into_with_accounting(
                     &shifted,
                     &self.preconditioner,
                     &self.stage_rhs,
@@ -1330,12 +1382,20 @@ impl Rodas5pMfFastWorkspace {
                     GmresIntoOptions {
                         skip_final_residual: dup_fix,
                     },
+                    self.residual_accounting,
                     counters,
                 )?;
                 self.gmres_into_cycles += report.cycles;
                 if !stage.iter().all(|value| value.is_finite()) {
                     return Err(CoreError::NonFinite(
                         "RODAS5P U-form stage solve produced NaN/Inf".into(),
+                    ));
+                }
+                if let Some(log) = self.solve_log.as_mut() {
+                    log.push(StageSolveLogEntry::new(
+                        report.residual_norm,
+                        report.relative_residual,
+                        report.iterations,
                     ));
                 }
                 continue;
@@ -1348,13 +1408,15 @@ impl Rodas5pMfFastWorkspace {
                 Some(&self.step_u[i * n..(i + 1) * n])
             };
             let report = match self.config.method {
-                LinearMethod::Gmres => solve_gmres_with_workspace(
+                LinearMethod::Gmres => solve_gmres_with_workspace_and_accounting(
                     &shifted,
                     &self.preconditioner,
                     &self.stage_rhs,
                     x0,
                     &gmres_config,
+                    None,
                     &mut self.gmres,
+                    self.residual_accounting,
                     counters,
                 )?,
                 LinearMethod::Lgmres => {
@@ -1410,6 +1472,13 @@ impl Rodas5pMfFastWorkspace {
             if !report.x.iter().all(|value| value.is_finite()) {
                 return Err(CoreError::NonFinite(
                     "RODAS5P U-form stage solve produced NaN/Inf".into(),
+                ));
+            }
+            if let Some(log) = self.solve_log.as_mut() {
+                log.push(StageSolveLogEntry::new(
+                    report.residual_norm,
+                    report.relative_residual,
+                    report.iterations,
                 ));
             }
             self.u[i * n..(i + 1) * n].copy_from_slice(&report.x);
@@ -1550,8 +1619,9 @@ pub fn integrate_rodas5p_mf_fast_observed_gmres_into_ls_workspace(
         &mut |_, _, _, _, _| {},
         true,
         StageTargetOptions::default(),
+        AccountingRun::DEFAULT,
     )
-    .map(|(result, _, _)| result)
+    .map(|(result, ..)| result)
 }
 
 /// Called after every attempt with the attempt's `t`, `y` and step, its
@@ -1586,8 +1656,9 @@ pub fn integrate_rodas5p_mf_fast_observed_traced(
         observer,
         false,
         StageTargetOptions::default(),
+        AccountingRun::DEFAULT,
     )
-    .map(|(result, _, _)| result)
+    .map(|(result, ..)| result)
 }
 
 /// [`integrate_rodas5p_mf_fast_observed`] with an explicit GCRO-DR recycle
@@ -1615,8 +1686,9 @@ pub fn integrate_rodas5p_mf_fast_observed_with_gcrodr_policy(
         &mut |_, _, _, _, _| {},
         false,
         StageTargetOptions::default(),
+        AccountingRun::DEFAULT,
     )
-    .map(|(result, _, _)| result)
+    .map(|(result, ..)| result)
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -1632,11 +1704,8 @@ fn integrate_mf_fast_inner(
     observer: MfAttemptObserver<'_>,
     ls_workspace: bool,
     stage_target: StageTargetOptions,
-) -> CoreResult<(
-    Rodas5pMfFastResult,
-    StageSolveStatistics,
-    Vec<AttemptCharge>,
-)> {
+    accounting: AccountingRun,
+) -> CoreResult<MfFastInnerRun> {
     adaptive.validate()?;
     let (mut t, tf) = t_span;
     if tf < t || y0.len() != problem.dimension {
@@ -1648,6 +1717,8 @@ fn integrate_mf_fast_inner(
     work.set_gmres_into(gmres_into);
     work.set_gcrodr_policy(policy);
     work.set_ls_workspace(ls_workspace);
+    work.set_residual_accounting(accounting.accounting);
+    work.set_solve_log(accounting.solve_log);
     work.clear_accepted_step();
     let staged = stage_target.policy != StageTargetPolicy::Legacy;
     if staged {
@@ -1769,8 +1840,32 @@ fn integrate_mf_fast_inner(
         gcrodr_policy: policy.id(),
     };
     let charges = std::mem::take(&mut work.charge_log);
-    Ok((result, work.stage_statistics(), charges))
+    let solve_log = work.solve_log.take();
+    Ok((result, work.stage_statistics(), charges, solve_log))
 }
+
+/// The residual accounting of one [`integrate_mf_fast_inner`] run and
+/// whether its stage solves are logged (research node SP01).
+#[derive(Clone, Copy, Debug)]
+struct AccountingRun {
+    accounting: ResidualAccounting,
+    solve_log: bool,
+}
+
+impl AccountingRun {
+    /// The kernels' default accounting, no log: every pre-SP01 entry point.
+    const DEFAULT: Self = Self {
+        accounting: ResidualAccounting::DEFAULT,
+        solve_log: false,
+    };
+}
+
+type MfFastInnerRun = (
+    Rodas5pMfFastResult,
+    StageSolveStatistics,
+    Vec<AttemptCharge>,
+    Option<Vec<StageSolveLogEntry>>,
+);
 
 /// A run of [`integrate_rodas5p_mf_fast_observed_with_stage_target`].
 #[derive(Clone, Debug)]
@@ -1804,7 +1899,7 @@ pub fn integrate_rodas5p_mf_fast_observed_with_stage_target(
     output: &OutputSchedule,
     options: StageTargetOptions,
 ) -> CoreResult<Rodas5pMfStageTargetResult> {
-    let (result, statistics, charges) = integrate_mf_fast_inner(
+    let (result, statistics, charges, _) = integrate_mf_fast_inner(
         problem,
         t_span,
         y0,
@@ -1816,11 +1911,70 @@ pub fn integrate_rodas5p_mf_fast_observed_with_stage_target(
         &mut |_, _, _, _, _| {},
         false,
         options,
+        AccountingRun::DEFAULT,
     )?;
     Ok(Rodas5pMfStageTargetResult {
         result,
         options,
         statistics,
         charges,
+    })
+}
+
+/// A run of [`integrate_rodas5p_mf_fast_observed_with_residual_accounting`].
+#[derive(Clone, Debug)]
+pub struct Rodas5pMfAccountingResult {
+    pub result: Rodas5pMfFastResult,
+    pub accounting: ResidualAccounting,
+    /// Every successful stage solve's report, in order.
+    pub solve_log: Vec<StageSolveLogEntry>,
+}
+
+/// The U-form driver with an explicit GMRES residual accounting (research
+/// node `research/sp01_dupfix_adoption_20261010`), on the GMRES-into path
+/// (`gmres_into`) or the default path, with the stage solves' reports
+/// logged. `stage_target` is `Legacy` or ALG04's `DupFix` (GMRES into
+/// only, whose skip overrides the accounting). With the kernels' default
+/// accounting and `Legacy` this is
+/// [`integrate_rodas5p_mf_fast_observed_gmres_into`] (`gmres_into`) or
+/// [`integrate_rodas5p_mf_fast_observed`] bit for bit.
+#[allow(clippy::too_many_arguments)]
+pub fn integrate_rodas5p_mf_fast_observed_with_residual_accounting(
+    problem: &OdeProblem,
+    t_span: (f64, f64),
+    y0: &[f64],
+    linear_config: &LinearSolverConfig,
+    adaptive: &AdaptiveStepConfig,
+    output: &OutputSchedule,
+    gmres_into: bool,
+    stage_target: StageTargetPolicy,
+    accounting: ResidualAccounting,
+) -> CoreResult<Rodas5pMfAccountingResult> {
+    if stage_target.is_staged() {
+        return Err(CoreError::InvalidInput(
+            "the residual-accounting entry point takes the Legacy or DupFix stage target".into(),
+        ));
+    }
+    let (result, _, _, solve_log) = integrate_mf_fast_inner(
+        problem,
+        t_span,
+        y0,
+        linear_config,
+        adaptive,
+        output,
+        gmres_into,
+        GcrodrRecyclePolicy::Legacy,
+        &mut |_, _, _, _, _| {},
+        false,
+        StageTargetOptions::new(stage_target),
+        AccountingRun {
+            accounting,
+            solve_log: true,
+        },
+    )?;
+    Ok(Rodas5pMfAccountingResult {
+        result,
+        accounting,
+        solve_log: solve_log.unwrap_or_default(),
     })
 }

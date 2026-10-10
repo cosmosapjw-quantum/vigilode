@@ -1,5 +1,6 @@
 #![forbid(unsafe_code)]
 
+mod accounting;
 mod block_gmres;
 mod common;
 mod gcrodr;
@@ -13,6 +14,7 @@ mod lgmres_into;
 mod small;
 mod workspace;
 
+pub use accounting::ResidualAccounting;
 pub use block_gmres::{
     BlockGmresConfig, BlockLinearSolveReport, SeededGmresConfig, solve_block_gmres,
     solve_seeded_gmres,
@@ -25,8 +27,8 @@ pub use gcrodr::{
 };
 pub use gmres::{
     GmresConfig, GmresPrefixPrediction, GmresPrefixSession, solve_gmres, solve_gmres_incremental,
-    solve_gmres_with_residual_scale, solve_gmres_with_workspace,
-    solve_gmres_with_workspace_and_residual_scale,
+    solve_gmres_with_accounting, solve_gmres_with_residual_scale, solve_gmres_with_workspace,
+    solve_gmres_with_workspace_and_accounting, solve_gmres_with_workspace_and_residual_scale,
 };
 pub use gmres_givens::{
     GmresGivensStatistics, GmresGivensWorkspace, solve_gmres_givens,
@@ -35,7 +37,7 @@ pub use gmres_givens::{
 };
 pub use gmres_into::{
     CapacityGrowth, GmresCapacity, GmresIntoOptions, GmresIntoReport, solve_gmres_into,
-    solve_gmres_into_with_options,
+    solve_gmres_into_with_accounting, solve_gmres_into_with_options,
 };
 pub use gmres_staged::{
     STAGED_EXHAUSTION_FLOOR, STAGED_GUARD_Q_ABORT, STAGED_STALL_CONTRACTION, STAGED_STALL_FACTOR,
