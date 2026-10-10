@@ -24,11 +24,29 @@ pub enum ControllerKind {
     /// most one) on the first acceptance after a rejected or failed attempt
     /// (Hairer's RODAS; audit F-078). Opt-in.
     PredictiveCapped,
+    /// [`ControllerKind::PredictiveCapped`] with the two gaps of ALG02's
+    /// literal reading closed, research node ALG05
+    /// (`research/alg05_predictive_controller_v2_20261010`):
+    /// - the cap also binds `err = 0`: an accepted step with `err = 0`
+    ///   while a rejection or failure is pending gets
+    ///   `min(max_factor, 1) = 1`;
+    /// - the pending rejection survives sliver landings: it is cleared only
+    ///   by an accepted non-sliver step (a non-clipped trial, or a clipped
+    ///   trial of at least [`CLIPPED_SAMPLE_INFORMATIVE_RATIO`] times the
+    ///   request).
+    ///
+    /// Everything else (the `f_I`/`f_P` formula, the clipped-sample history
+    /// rule, rejections and failures) is [`ControllerKind::PredictiveCapped`].
+    /// Opt-in.
+    PredictiveCapped2,
 }
 
 impl ControllerKind {
     fn is_predictive(self) -> bool {
-        matches!(self, Self::Predictive | Self::PredictiveCapped)
+        matches!(
+            self,
+            Self::Predictive | Self::PredictiveCapped | Self::PredictiveCapped2
+        )
     }
 }
 
@@ -256,6 +274,12 @@ pub struct AdaptiveControllerState {
     /// the predictive kinds and never serialized.
     #[serde(skip)]
     last_accepted_step: Option<f64>,
+    /// Whether a rejected or failed attempt is pending, for
+    /// [`ControllerKind::PredictiveCapped2`] (research node ALG05): set by
+    /// every rejected or failed attempt, cleared only by an accepted
+    /// non-sliver step. Kept only by that kind and never serialized.
+    #[serde(skip)]
+    rejection_pending: bool,
 }
 
 impl AdaptiveControllerState {
@@ -271,6 +295,13 @@ impl AdaptiveControllerState {
     /// attempt that entered the history (research node ALG02).
     pub fn last_accepted_step(&self) -> Option<f64> {
         self.last_accepted_step
+    }
+
+    /// Whether a rejected or failed attempt is pending for
+    /// [`ControllerKind::PredictiveCapped2`] (research node ALG05); always
+    /// `false` under the other kinds.
+    pub fn rejection_pending(&self) -> bool {
+        self.rejection_pending
     }
 
     /// A controller state after a rejected trial of `rejected`, for the
@@ -342,9 +373,11 @@ impl AdaptiveControllerState {
 
     /// The accepted-step factor of the predictive kinds (research node
     /// ALG02) for the accepted trial step `h`; `previous_failed` is whether
-    /// the attempt before this one was rejected or failed. Must be called
-    /// before the step enters the history. `f_I` is the production
-    /// accepted-step factor (including `err = 0 -> max_factor`).
+    /// the attempt before this one was rejected or failed (for
+    /// [`ControllerKind::PredictiveCapped2`]: whether a rejection is
+    /// pending). Must be called before the step enters the history. `f_I` is
+    /// the production accepted-step factor (including `err = 0 ->
+    /// max_factor`); `PredictiveCapped2` caps `err = 0` too (ALG05).
     fn predictive_factor(
         &self,
         config: &AdaptiveStepConfig,
@@ -360,6 +393,9 @@ impl AdaptiveControllerState {
             self.propose_factor(config, error, estimator_order, true)?
         };
         if error == 0.0 {
+            if config.controller == ControllerKind::PredictiveCapped2 && previous_failed {
+                return Ok(integral.min(1.0));
+            }
             return Ok(integral);
         }
         let order = estimator_order as f64;
@@ -376,7 +412,11 @@ impl AdaptiveControllerState {
             }
             factor = factor.min(raw.clamp(config.min_factor, config.max_factor));
         }
-        if config.controller == ControllerKind::PredictiveCapped && previous_failed {
+        if matches!(
+            config.controller,
+            ControllerKind::PredictiveCapped | ControllerKind::PredictiveCapped2
+        ) && previous_failed
+        {
             factor = factor.min(1.0);
         }
         Ok(factor)
@@ -484,15 +524,27 @@ fn next_step_after_attempt_impl(
 ) -> CoreResult<f64> {
     let previous_failed = controller.last_rejected_trial.is_some();
     controller.last_rejected_trial = (!accepted).then_some(trial_h);
+    // ALG05: the pending rejection of `PredictiveCapped2` is set by every
+    // rejected or failed attempt and cleared only by an accepted non-sliver
+    // step below.
+    let pending_kind = config.controller == ControllerKind::PredictiveCapped2;
+    if pending_kind && !accepted {
+        controller.rejection_pending = true;
+    }
     if accepted {
         let predictive = config.controller.is_predictive();
         let factor = if predictive {
+            let capped_by = if pending_kind {
+                controller.rejection_pending
+            } else {
+                previous_failed
+            };
             controller.predictive_factor(
                 config,
                 trial_h,
                 error,
                 estimator_order,
-                previous_failed,
+                capped_by,
                 prevalidated,
             )?
         } else if prevalidated {
@@ -505,15 +557,22 @@ fn next_step_after_attempt_impl(
             if predictive {
                 controller.last_accepted_step = Some(trial_h);
             }
+            if pending_kind {
+                controller.rejection_pending = false;
+            }
             return Ok(trial_h * factor);
         }
         let ratio = trial_h / requested_h;
         if ratio < CLIPPED_SAMPLE_INFORMATIVE_RATIO {
+            // A sliver: the history and any pending rejection stay.
             return Ok(requested_h);
         }
         controller.record_acceptance(error)?;
         if predictive {
             controller.last_accepted_step = Some(trial_h);
+        }
+        if pending_kind {
+            controller.rejection_pending = false;
         }
         let candidate = trial_h * factor;
         let predicted = error * ratio.powf(-(estimator_order as f64));
