@@ -28,6 +28,7 @@
 
 use rodas5p_core::{
     CoreError, InitialGuess, LinearMethod, LinearSolverConfig, PreconditionerKind, WorkCounters,
+    safe_l2,
 };
 use serde::Serialize;
 
@@ -290,10 +291,6 @@ fn seeded_vector(n: usize, state: &mut u64) -> Vec<f64> {
         .collect()
 }
 
-fn norm2(v: &[f64]) -> f64 {
-    v.iter().map(|x| x * x).sum::<f64>().sqrt()
-}
-
 /// Verify the declared band of `problem` at `(t0, y0)` (rule 1's
 /// precondition). Errors with a typed [`StructureError`] when no band is
 /// declared, a callback fails or produces a non-finite value, or the
@@ -389,14 +386,28 @@ pub fn verify_declared_band(
         if !banded.iter().chain(&exact).all(|x| x.is_finite()) {
             return Err(failed(format!("non-finite product for vector {k}")));
         }
-        let diff = banded
-            .iter()
-            .zip(&exact)
-            .map(|(a, b)| (a - b) * (a - b))
-            .sum::<f64>()
-            .sqrt();
-        let reference_norm = norm2(&exact);
-        if diff > BAND_VERIFICATION_TOLERANCE * reference_norm {
+        // Scaled norms: a plain sum of squares overflows to Inf (or underflows
+        // to 0) on both sides for entries beyond about 1e154 (below about
+        // 1e-154), and `Inf > tol * Inf` / `0 > 0` then accepted a wrong band
+        // (the F102 pattern; wave-1 review S1). A difference that is not
+        // representable, or a nonzero difference against a zero reference,
+        // rejects.
+        let delta: Vec<f64> = banded.iter().zip(&exact).map(|(a, b)| a - b).collect();
+        let diff = safe_l2(&delta);
+        let reference_norm = safe_l2(&exact);
+        if !reference_norm.is_finite() {
+            return Err(failed(format!(
+                "reference norm is not representable for vector {k}"
+            )));
+        }
+        let relative = if diff == 0.0 {
+            0.0
+        } else if reference_norm == 0.0 {
+            f64::INFINITY
+        } else {
+            diff / reference_norm
+        };
+        if relative.is_nan() || relative > BAND_VERIFICATION_TOLERANCE {
             return Err(StructureError::BandVerificationMismatch {
                 vector: k,
                 mismatch: diff,
@@ -404,11 +415,7 @@ pub fn verify_declared_band(
                 tolerance: BAND_VERIFICATION_TOLERANCE,
             });
         }
-        record.relative_mismatch.push(if diff == 0.0 {
-            0.0
-        } else {
-            diff / reference_norm
-        });
+        record.relative_mismatch.push(relative);
     }
     record.charged = charged;
     Ok(record)
