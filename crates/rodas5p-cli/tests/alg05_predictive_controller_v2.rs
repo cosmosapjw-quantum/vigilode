@@ -16,6 +16,8 @@
 //!
 //! `export_base` runs arm `I` on every cell and was run on the test-only
 //! commit's solver source, before any source change of this node.
+//! `export_runs` runs arms `I`, `PREDcap` (`PredictiveCapped`, ALG02's rule,
+//! reported) and `PREDcap2` (`PredictiveCapped2`, gated) on every cell.
 
 #[path = "../src/stiff_benchmark.rs"]
 #[allow(dead_code, unused_imports)]
@@ -141,6 +143,10 @@ fn arm_config(arm: &str, base: AdaptiveStepConfig) -> AdaptiveStepConfig {
         "I" => base,
         "PREDcap" => AdaptiveStepConfig {
             controller: ControllerKind::PredictiveCapped,
+            ..base
+        },
+        "PREDcap2" => AdaptiveStepConfig {
+            controller: ControllerKind::PredictiveCapped2,
             ..base
         },
         other => panic!("unknown arm {other}"),
@@ -277,6 +283,53 @@ fn export_base() {
             "seeds": SEEDS,
             "error_metric": "max_i |y_i - r_i| / max(|r_i|, 1e-10) against NATIVE.json references",
             "rows": rows,
+        }),
+    );
+}
+
+/// The arms of `export_runs`.
+const ARMS: [&str; 3] = ["I", "PREDcap", "PREDcap2"];
+
+#[test]
+fn the_arms_differ_only_in_the_controller() {
+    let problem = &problems()[0];
+    let base = base_config(problem, 1.0e-5, SEEDS[1]);
+    assert_eq!(arm_config("I", base.clone()), base);
+    for (arm, kind) in [
+        ("PREDcap", ControllerKind::PredictiveCapped),
+        ("PREDcap2", ControllerKind::PredictiveCapped2),
+    ] {
+        let config = arm_config(arm, base.clone());
+        assert_eq!(config.controller, kind);
+        assert_eq!(
+            AdaptiveStepConfig {
+                controller: ControllerKind::Integral,
+                ..config
+            },
+            base
+        );
+    }
+}
+
+/// All arms on every cell.
+#[test]
+#[ignore = "run export of research/alg05_predictive_controller_v2_20261010; release build; set ALG05_RUNS"]
+fn export_runs() {
+    let mut all = Vec::new();
+    for arm in ARMS {
+        all.extend(rows(arm));
+    }
+    assert_eq!(all.len(), ARMS.len() * 276);
+    write_output(
+        "ALG05_RUNS",
+        &json!({
+            "schema": "vigilode-alg05-runs-v1",
+            "driver": "integrate_rodas5p_fast_observed",
+            "max_attempts": MAX_ATTEMPTS,
+            "seeds": SEEDS,
+            "arms": ARMS,
+            "error_metric": "max_i |y_i - r_i| / max(|r_i|, 1e-10) against NATIVE.json references",
+            "rows": all,
         }),
     );
 }
