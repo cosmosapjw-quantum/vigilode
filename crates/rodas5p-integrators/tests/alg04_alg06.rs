@@ -9,6 +9,10 @@
 //! `alg01_common` (shared with `alg01_coupled_stage_target.rs`, which is not
 //! changed). The cell lists below transcribe the ALG01 and ALG03 lists; the
 //! contract tests check them against the two base exports.
+//!
+//! The recorded runs (`export_runs_alg04`, `export_runs_alg06`) run only
+//! when `ALG04_RUNS` / `ALG06_RUNS` is set; the gates are evaluated by
+//! `tools/alg04_coupled_target_v2_check.py` and `tools/alg06_guard_v2_check.py`.
 
 // (The exports use `write_output`, re-exported by the shared module.)
 #[allow(unused_imports)]
@@ -669,5 +673,280 @@ fn classifying_accepted_guard_aborts_does_not_change_the_run() {
             ..s
         },
         plain.statistics
+    );
+}
+
+// ------------------------------------------------------------------ RUNS
+
+use serde_json::{Map, json};
+
+fn timed<T>(label: &str, f: impl FnOnce() -> T) -> T {
+    let start = std::time::Instant::now();
+    let value = f();
+    println!("{label}: {:.1} s", start.elapsed().as_secs_f64());
+    value
+}
+
+/// The `Legacy` stage target: the unchanged GMRES-into driver (SPD07's
+/// `gmres_into` arm, ALG01's base) with Krylov budget `budget`.
+fn legacy_run(p: &Problem, rtol: f64, budget: usize) -> Value {
+    result_json(
+        &rodas5p_integrators::integrate_rodas5p_mf_fast_observed_gmres_into(
+            &p.problem,
+            p.t_span,
+            &p.y0,
+            &gmres_config(budget),
+            &p.adaptive(rtol),
+            &p.schedule(),
+        ),
+    )
+}
+
+/// One run of the stage-target entry point: the SPD07 record, plus the
+/// staged solves' statistics and the attempts with a fallback-accepted
+/// stage for every staged policy. `Legacy` runs through the GMRES-into
+/// driver, exactly as ALG01's base export.
+fn staged_run(p: &Problem, rtol: f64, options: StageTargetOptions, budget: usize) -> Value {
+    if options.policy == StageTargetPolicy::Legacy {
+        return legacy_run(p, rtol, budget);
+    }
+    let run = integrate_rodas5p_mf_fast_observed_with_stage_target(
+        &p.problem,
+        p.t_span,
+        &p.y0,
+        &gmres_config(budget),
+        &p.adaptive(rtol),
+        &p.schedule(),
+        options,
+    );
+    match run {
+        Ok(r) => {
+            let mut record = result_json(&Ok(r.result));
+            if options.policy.is_staged() {
+                record["stage_statistics"] = serde_json::to_value(r.statistics).unwrap();
+                record["charges"] = json!(
+                    r.charges
+                        .iter()
+                        .map(|c| json!([c.t, c.h, c.error, c.charge, c.stages, c.charged]))
+                        .collect::<Vec<_>>()
+                );
+            }
+            record
+        }
+        Err(e) => result_json(&Err(e)),
+    }
+}
+
+/// A rung with a stage-target policy (span 1, `e_hat` = the previous
+/// step's embedded error, every step accepted); `Legacy` is ALG01's rung.
+fn staged_ladder_run(
+    p: &Problem,
+    rtol: f64,
+    k: u32,
+    budget: usize,
+    options: StageTargetOptions,
+) -> Value {
+    if options.policy == StageTargetPolicy::Legacy {
+        return ladder_mf(p, rtol, k, budget, &mut |_| {}, &mut |_, _| {});
+    }
+    let span = p.span();
+    ladder_mf_finish(
+        p,
+        rtol,
+        k,
+        budget,
+        &mut |work| {
+            work.set_stage_target(options).unwrap();
+            work.set_stage_target_span(span);
+            work.clear_accepted_error();
+        },
+        &mut |work, err| work.record_accepted_error(err),
+        &mut |work, record| {
+            if options.policy.is_staged() {
+                record["stage_statistics"] = serde_json::to_value(work.stage_statistics()).unwrap();
+            }
+        },
+    )
+}
+
+/// The ALG04 arms (registered order); `coupled_guarded2` is gated.
+fn alg04_arms() -> Vec<(&'static str, StageTargetOptions)> {
+    [
+        ("legacy", StageTargetPolicy::Legacy),
+        ("dup_fix", StageTargetPolicy::DupFix),
+        ("proj_l2", StageTargetPolicy::ProjL2),
+        ("l2_coupled", StageTargetPolicy::L2Coupled),
+        ("coupled_guarded", StageTargetPolicy::CoupledGuarded),
+        ("coupled_guarded2", StageTargetPolicy::CoupledGuarded2),
+    ]
+    .into_iter()
+    .map(|(name, policy)| (name, StageTargetOptions::new(policy)))
+    .collect()
+}
+
+/// ALG04 recorded run: every arm on every adaptive cell (budget 200) and on
+/// every ladder rung (budget 20,000), the dense twins and LU rungs again,
+/// and `Legacy` on the rungs at budget 200 (ALG01's base `legacy` rows).
+#[test]
+#[ignore = "recorded run of research/alg04_coupled_target_v2_20261010; release build"]
+fn export_runs_alg04() {
+    if std::env::var("ALG04_RUNS").is_err() {
+        println!("ALG04_RUNS is not set; export skipped");
+        return;
+    }
+    let (problems, cells) = alg04_cells();
+    let mut rows = Vec::new();
+    for cell in &cells {
+        let p = &problems[cell.problem];
+        let label = format!("{} {} {:e}", cell.group, p.id, cell.rtol);
+        let mut arms = Map::new();
+        for (name, options) in alg04_arms() {
+            arms.insert(
+                name.into(),
+                timed(&format!("{label} {name}"), || {
+                    staged_run(p, cell.rtol, options, BUDGET)
+                }),
+            );
+        }
+        rows.push(json!({
+            "group": cell.group,
+            "case": p.id,
+            "rtol": cell.rtol,
+            "dimension": p.y0.len(),
+            "arms": arms,
+            "twin": timed(&format!("{label} twin"), || twin(p, cell.rtol)),
+        }));
+    }
+    let mut ladder_rows = Vec::new();
+    for ladder in ladders() {
+        let p = &ladder.problem;
+        for &rtol in &ladder.rtols {
+            for &k in &ladder.rungs {
+                let label = format!("C4 {} {rtol:e} k={k}", ladder.id);
+                let mut arms = Map::new();
+                for (name, options) in alg04_arms() {
+                    arms.insert(
+                        name.into(),
+                        timed(&format!("{label} {name} {ALG04_LADDER_BUDGET}"), || {
+                            staged_ladder_run(p, rtol, k, ALG04_LADDER_BUDGET, options)
+                        }),
+                    );
+                }
+                ladder_rows.push(json!({
+                    "ladder": ladder.id,
+                    "rtol": rtol,
+                    "k": k,
+                    "dimension": p.y0.len(),
+                    "lu": ladder_lu(p, rtol, k),
+                    "arms": arms,
+                    "legacy_budget_200": timed(&format!("{label} legacy {BUDGET}"), || {
+                        staged_ladder_run(p, rtol, k, BUDGET, StageTargetOptions::default())
+                    }),
+                }));
+            }
+        }
+    }
+    write_output(
+        "ALG04_RUNS",
+        &json!({
+            "node": "alg04_coupled_target_v2_20261010",
+            "export": "export_runs_alg04",
+            "budget": BUDGET,
+            "ladder_budget": ALG04_LADDER_BUDGET,
+            "arms": alg04_arms().iter().map(|(name, o)| json!({"arm": name, "options": o})).collect::<Vec<_>>(),
+            "rows": rows,
+            "ladders": ladder_rows,
+        }),
+    );
+}
+
+/// The ALG06 arms: name, options and Krylov budget. `b2`..`b3` are
+/// cumulative on the `CoupledGuarded2` target with the stagnation guard and
+/// the production fallback; every guard abort is classified by the
+/// uncounted shadow continuation. `rbig` is the rival.
+fn alg06_arms() -> Vec<(&'static str, StageTargetOptions, usize)> {
+    vec![
+        ("b2", alg06_options(false, false, false), BIG_BUDGET),
+        ("b3a", alg06_options(true, false, false), BIG_BUDGET),
+        ("b3b", alg06_options(true, true, false), BIG_BUDGET),
+        ("b3", alg06_options(true, true, true), BIG_BUDGET),
+        (
+            "rbig",
+            StageTargetOptions::new(StageTargetPolicy::Legacy),
+            BIG_BUDGET,
+        ),
+    ]
+}
+
+/// ALG06 recorded run: B2, B3a, B3b, B3 and Rbig on D1-D5, the
+/// `CoupledGuarded2` run at budget 200 on D5 (identity item), and the dense
+/// twins of D1-D4 again.
+#[test]
+#[ignore = "recorded run of research/alg06_guard_v2_20261010; release build"]
+fn export_runs_alg06() {
+    if std::env::var("ALG06_RUNS").is_err() {
+        println!("ALG06_RUNS is not set; export skipped");
+        return;
+    }
+    let (problems, cells) = alg06_cells();
+    let mut rows = Vec::new();
+    for cell in &cells {
+        let p = &problems[cell.problem];
+        let rtol = cell.rtol;
+        let label = format!("{} {} {rtol:e}", cell.group, p.id);
+        let mut arms = Map::new();
+        for (name, options, budget) in alg06_arms() {
+            arms.insert(
+                name.into(),
+                timed(&format!("{label} {name}"), || {
+                    staged_run(p, rtol, options, budget)
+                }),
+            );
+        }
+        if cell.group == "D5" {
+            arms.insert(
+                "coupled_guarded2_200".into(),
+                timed(&format!("{label} coupled_guarded2_200"), || {
+                    staged_run(
+                        p,
+                        rtol,
+                        StageTargetOptions::new(StageTargetPolicy::CoupledGuarded2),
+                        BUDGET,
+                    )
+                }),
+            );
+        }
+        let mut row = json!({
+            "group": cell.group,
+            "case": p.id,
+            "rtol": rtol,
+            "dimension": p.y0.len(),
+            "max_attempts": p.max_attempts,
+            "arms": arms,
+        });
+        if cell.group != "D5" {
+            row["twin"] = timed(&format!("{label} twin"), || twin(p, rtol));
+        }
+        rows.push(row);
+    }
+    let mut arms_meta: Vec<Value> = alg06_arms()
+        .iter()
+        .map(|(name, o, b)| json!({"arm": name, "options": o, "budget": b}))
+        .collect();
+    arms_meta.push(json!({
+        "arm": "coupled_guarded2_200",
+        "options": StageTargetOptions::new(StageTargetPolicy::CoupledGuarded2),
+        "budget": BUDGET,
+        "cells": "D5",
+    }));
+    write_output(
+        "ALG06_RUNS",
+        &json!({
+            "node": "alg06_guard_v2_20261010",
+            "export": "export_runs_alg06",
+            "charge_columns": ["t", "h", "error", "charge", "stages", "charged"],
+            "arms": arms_meta,
+            "rows": rows,
+        }),
     );
 }
