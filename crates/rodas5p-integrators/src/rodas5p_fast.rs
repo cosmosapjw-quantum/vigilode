@@ -39,9 +39,10 @@ use rodas5p_core::{
 use serde::Serialize;
 
 use crate::{
-    AdaptiveControllerState, AdaptiveFailureKind, AdaptiveStepConfig, ObservedIntegrationResult,
-    OdeProblem, OutputSchedule, adaptive::rodas_next_step_after_attempt_prevalidated,
-    output::OutputCollector, rodas_next_step_after_attempt,
+    AdaptiveControllerState, AdaptiveFailureKind, AdaptiveStepConfig, ControllerDecision,
+    ControllerTelemetry, ObservedIntegrationResult, OdeProblem, OutputSchedule,
+    adaptive::rodas_next_step_after_attempt_prevalidated, output::OutputCollector,
+    rodas_next_step_after_attempt,
 };
 
 /// Identifier of this driver in benchmark and research records.
@@ -1145,8 +1146,35 @@ pub fn integrate_rodas5p_fast_observed(
         adaptive,
         output,
         Rodas5pFastOptions::default(),
+        None,
     )
     .map(|(result, _)| result)
+}
+
+/// [`integrate_rodas5p_fast_observed`] with opt-in controller telemetry
+/// (research node CT01): the same run, bit for bit, and the counts of the
+/// registered controller events ([`ControllerTelemetry`]). Pass
+/// [`ControllerTelemetry::with_trace`] to also record every controller
+/// update.
+pub fn integrate_rodas5p_fast_observed_with_telemetry(
+    problem: &OdeProblem,
+    t_span: (f64, f64),
+    y0: &[f64],
+    adaptive: &AdaptiveStepConfig,
+    output: &OutputSchedule,
+    mut telemetry: ControllerTelemetry,
+) -> CoreResult<(Rodas5pFastResult, ControllerTelemetry)> {
+    integrate_fast(
+        problem,
+        None,
+        t_span,
+        y0,
+        adaptive,
+        output,
+        Rodas5pFastOptions::default(),
+        Some(&mut telemetry),
+    )
+    .map(|(result, _)| (result, telemetry))
 }
 
 /// [`integrate_rodas5p_fast_observed`] with opt-in [`Rodas5pFastOptions`]
@@ -1159,7 +1187,8 @@ pub fn integrate_rodas5p_fast_observed_with_options(
     output: &OutputSchedule,
     options: Rodas5pFastOptions,
 ) -> CoreResult<Rodas5pFastResult> {
-    integrate_fast(problem, None, t_span, y0, adaptive, output, options).map(|(result, _)| result)
+    integrate_fast(problem, None, t_span, y0, adaptive, output, options, None)
+        .map(|(result, _)| result)
 }
 
 /// [`integrate_rodas5p_fast_observed`] with an explicit band structure
@@ -1267,6 +1296,7 @@ fn integrate_banded(
         adaptive,
         output,
         options,
+        None,
     )?;
     Ok(Rodas5pFastBandedResult {
         fast,
@@ -1283,6 +1313,7 @@ fn integrate_fast(
     adaptive: &AdaptiveStepConfig,
     output: &OutputSchedule,
     options: Rodas5pFastOptions,
+    mut telemetry: Option<&mut ControllerTelemetry>,
 ) -> CoreResult<(Rodas5pFastResult, Option<BandedWork>)> {
     adaptive.validate()?;
     let (mut t, tf) = t_span;
@@ -1381,6 +1412,7 @@ fn integrate_fast(
                 }
             }
         }
+        let requested_h = h;
         h = if options.prevalidated_controller {
             rodas_next_step_after_attempt_prevalidated(
                 &mut controller,
@@ -1402,6 +1434,17 @@ fn integrate_fast(
                 clipped,
             )?
         };
+        // CT01 telemetry: an observer of the update only (nothing is fed back).
+        if let Some(telemetry) = telemetry.as_deref_mut() {
+            telemetry.observe(ControllerDecision {
+                requested_h,
+                trial_h,
+                error,
+                accepted: failure.is_none(),
+                clipped,
+                next_h: h,
+            });
+        }
     }
     let success = t >= tf;
     let (times, states, output_clipped_steps) = if success {

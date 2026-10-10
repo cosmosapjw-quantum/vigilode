@@ -22,6 +22,7 @@ mod certification;
 mod certified_budget;
 mod common_w_gate;
 mod comparator_fidelity;
+mod controller_telemetry;
 mod dense_output_v2;
 mod exponential;
 pub mod fourier_path_candidate;
@@ -171,6 +172,7 @@ pub use comparator_fidelity::{
     ComparativeReading, ComparatorFidelity, RelativePerformanceVerdict,
     relative_performance_verdict,
 };
+pub use controller_telemetry::{ControllerDecision, ControllerEvents, ControllerTelemetry};
 pub use dense_output_v2::{
     DenseErrorControl, DenseErrorReport, DenseErrorSample, DenseOutputError, DenseOutputResult,
     InterpolantAudit, InterpolantAuditSample, bdf_dense_output,
@@ -361,8 +363,8 @@ pub use rodas5p_fast::{
     Rodas5pFastLu, Rodas5pFastOptions, Rodas5pFastResult, integrate_rodas5p_fast_banded_observed,
     integrate_rodas5p_fast_banded_observed_with_kernel,
     integrate_rodas5p_fast_banded_observed_with_options, integrate_rodas5p_fast_observed,
-    integrate_rodas5p_fast_observed_with_options, lu_research, rodas5p_fast_banded_solve,
-    rodas5p_fast_step,
+    integrate_rodas5p_fast_observed_with_options, integrate_rodas5p_fast_observed_with_telemetry,
+    lu_research, rodas5p_fast_banded_solve, rodas5p_fast_step,
 };
 pub use rodas5p_fast_small::{
     RODAS5P_FAST_SMALL_DRIVER_ID, Rodas5pFastSmallOptions, Rodas5pFastSmallResult, SmallProblem,
