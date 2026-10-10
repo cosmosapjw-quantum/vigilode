@@ -1,0 +1,1813 @@
+{
+ "schema": "vigilode-sp03-routing-check-v1",
+ "evidence_schema": "vigilode-evidence-schema-v2",
+ "evidence_kind": "SP03",
+ "verdict": "FAIL",
+ "inputs": {
+  "runs": {
+   "path": "research/sp03_declared_structure_routing_20261010/RUNS.json",
+   "sha256": "7c71add3a5012c2ee3cfa2b7670cb1ea4316d86c33b813d890889908f2b7496e"
+  },
+  "profile": {
+   "path": "research/sp03_declared_structure_routing_20261010/PROFILE.json",
+   "sha256": "bc03ba2da61a251bcf3cf4b72d3686d5e954e4df4a85d97c6f8a3f19b0d47a75"
+  },
+  "native": {
+   "path": "/home/user/wt-sp03/research/stiff_native_benchmark_20261001/NATIVE.json",
+   "sha256": "5064b638b411fb46089b336a351325a4dbc12acfeacdff2edb226aa80e8fd1ec"
+  }
+ },
+ "profile_commit": "f3a5a8a7122378de64c9f9060da27eb74e72eb66",
+ "binary_sha256": "c623ee253fe83ff64edcbe97fa94b85f0d025f1459b3fc98e81a1d0074fea047",
+ "thresholds": {
+  "g3_n400": 0.6,
+  "g3_n100_n320": 1.0,
+  "g3_legacy": 0.05,
+  "g4_slope": 1.15,
+  "g5_overhead": 1.02
+ },
+ "gate": {
+  "1_validation": {
+   "item": "validation: malformed declarations refused with their typed error before any step; correct declarations accepted",
+   "cases": [
+    {
+     "case": "band-outside-matrix-lower",
+     "registered": true,
+     "expected": "BandOutsideMatrix",
+     "observed": "BandOutsideMatrix",
+     "stage": "declaration",
+     "rhs_calls": 0,
+     "message": "band (lower 100, upper 2) lies outside the 100 x 100 matrix",
+     "holds": true
+    },
+    {
+     "case": "band-outside-matrix-upper",
+     "registered": true,
+     "expected": "BandOutsideMatrix",
+     "observed": "BandOutsideMatrix",
+     "stage": "declaration",
+     "rhs_calls": 0,
+     "message": "band (lower 2, upper 100) lies outside the 100 x 100 matrix",
+     "holds": true
+    },
+    {
+     "case": "narrow-band-dense-reference",
+     "registered": true,
+     "expected": "BandVerificationMismatch",
+     "observed": "BandVerificationMismatch",
+     "stage": "verification",
+     "rhs_calls": 0,
+     "message": "band verification rejected the declaration: vector 0, mismatch 4.227824728235144e2 > 1e-12 x reference norm 8.128026605169948e2",
+     "holds": true
+    },
+    {
+     "case": "narrow-band-jvp-reference",
+     "registered": true,
+     "expected": "BandVerificationMismatch",
+     "observed": "BandVerificationMismatch",
+     "stage": "verification",
+     "rhs_calls": 0,
+     "message": "band verification rejected the declaration: vector 0, mismatch 4.227824728235144e2 > 1e-12 x reference norm 8.128026605169948e2",
+     "holds": true
+    },
+    {
+     "case": "missing-band-callback",
+     "registered": true,
+     "expected": "MissingBandCallback",
+     "observed": "MissingBandCallback",
+     "stage": "declaration",
+     "rhs_calls": 0,
+     "message": "a banded declaration needs a band Jacobian callback",
+     "holds": true
+    },
+    {
+     "case": "dimension-mismatch-band",
+     "registered": true,
+     "expected": "DimensionMismatch",
+     "observed": "DimensionMismatch",
+     "stage": "declaration",
+     "rhs_calls": 0,
+     "message": "structure declared for dimension 102, problem has dimension 100",
+     "holds": true
+    },
+    {
+     "case": "dimension-mismatch-dense",
+     "registered": true,
+     "expected": "DimensionMismatch",
+     "observed": "DimensionMismatch",
+     "stage": "declaration",
+     "rhs_calls": 0,
+     "message": "structure declared for dimension 99, problem has dimension 100",
+     "holds": true
+    },
+    {
+     "case": "dense-without-explicit-jacobian",
+     "registered": false,
+     "expected": "DenseWithoutExplicitJacobian",
+     "observed": "DenseWithoutExplicitJacobian",
+     "stage": "declaration",
+     "rhs_calls": 0,
+     "message": "a dense declaration needs an explicit Jacobian",
+     "holds": true
+    },
+    {
+     "case": "callback-without-band",
+     "registered": false,
+     "expected": "UnexpectedBandCallback",
+     "observed": "UnexpectedBandCallback",
+     "stage": "declaration",
+     "rhs_calls": 0,
+     "message": "a band Jacobian callback was given for a non-banded declaration",
+     "holds": true
+    },
+    {
+     "case": "wrong-value-inside-band",
+     "registered": false,
+     "expected": "BandVerificationMismatch",
+     "observed": "BandVerificationMismatch",
+     "stage": "verification",
+     "rhs_calls": 0,
+     "message": "band verification rejected the declaration: vector 0, mismatch 4.110837892312702e-8 > 1e-12 x reference norm 8.128026605169948e2",
+     "holds": true
+    },
+    {
+     "case": "correct-band-dense-reference",
+     "registered": true,
+     "expected": "accepted",
+     "observed": "accepted",
+     "stage": "integration",
+     "rhs_calls": 726,
+     "message": "success",
+     "holds": true
+    },
+    {
+     "case": "correct-band-jvp-reference",
+     "registered": true,
+     "expected": "accepted",
+     "observed": "accepted",
+     "stage": "integration",
+     "rhs_calls": 726,
+     "message": "success",
+     "holds": true
+    },
+    {
+     "case": "correct-dense-small",
+     "registered": true,
+     "expected": "accepted",
+     "observed": "accepted",
+     "stage": "integration",
+     "rhs_calls": 0,
+     "message": "success",
+     "holds": true
+    }
+   ],
+   "pass": true
+  },
+  "2_parity": {
+   "item": "parity: routed bitwise equal to its target driver (counters after the verification charge); banded bitwise equal to dense on the Brusselators",
+   "cells": [
+    {
+     "problem": "brusselator-1d-160",
+     "rtol": 1e-08,
+     "declared": "banded",
+     "target": "banded",
+     "routed_vs_target_differences": [],
+     "banded_vs_dense_differences": [],
+     "holds": true
+    },
+    {
+     "problem": "brusselator-1d-160",
+     "rtol": 1e-06,
+     "declared": "banded",
+     "target": "banded",
+     "routed_vs_target_differences": [],
+     "banded_vs_dense_differences": [],
+     "holds": true
+    },
+    {
+     "problem": "brusselator-1d-200",
+     "rtol": 1e-08,
+     "declared": "banded",
+     "target": "banded",
+     "routed_vs_target_differences": [],
+     "banded_vs_dense_differences": [],
+     "holds": true
+    },
+    {
+     "problem": "brusselator-1d-200",
+     "rtol": 1e-06,
+     "declared": "banded",
+     "target": "banded",
+     "routed_vs_target_differences": [],
+     "banded_vs_dense_differences": [],
+     "holds": true
+    },
+    {
+     "problem": "brusselator-1d-50",
+     "rtol": 1e-08,
+     "declared": "banded",
+     "target": "banded",
+     "routed_vs_target_differences": [],
+     "banded_vs_dense_differences": [],
+     "holds": true
+    },
+    {
+     "problem": "brusselator-1d-50",
+     "rtol": 1e-06,
+     "declared": "banded",
+     "target": "banded",
+     "routed_vs_target_differences": [],
+     "banded_vs_dense_differences": [],
+     "holds": true
+    },
+    {
+     "problem": "brusselator-1d-500",
+     "rtol": 1e-08,
+     "declared": "banded",
+     "target": "banded",
+     "routed_vs_target_differences": [],
+     "banded_vs_dense_differences": [],
+     "holds": true
+    },
+    {
+     "problem": "brusselator-1d-500",
+     "rtol": 1e-06,
+     "declared": "banded",
+     "target": "banded",
+     "routed_vs_target_differences": [],
+     "banded_vs_dense_differences": [],
+     "holds": true
+    },
+    {
+     "problem": "hires",
+     "rtol": 1e-08,
+     "declared": "dense",
+     "target": "dense",
+     "routed_vs_target_differences": [],
+     "banded_vs_dense_differences": null,
+     "holds": true
+    },
+    {
+     "problem": "hires",
+     "rtol": 1e-06,
+     "declared": "dense",
+     "target": "dense",
+     "routed_vs_target_differences": [],
+     "banded_vs_dense_differences": null,
+     "holds": true
+    },
+    {
+     "problem": "robertson",
+     "rtol": 1e-08,
+     "declared": "dense",
+     "target": "dense",
+     "routed_vs_target_differences": [],
+     "banded_vs_dense_differences": null,
+     "holds": true
+    },
+    {
+     "problem": "robertson",
+     "rtol": 1e-06,
+     "declared": "dense",
+     "target": "dense",
+     "routed_vs_target_differences": [],
+     "banded_vs_dense_differences": null,
+     "holds": true
+    },
+    {
+     "problem": "van-der-pol-mu1000",
+     "rtol": 1e-08,
+     "declared": "dense",
+     "target": "dense",
+     "routed_vs_target_differences": [],
+     "banded_vs_dense_differences": null,
+     "holds": true
+    },
+    {
+     "problem": "van-der-pol-mu1000",
+     "rtol": 1e-06,
+     "declared": "dense",
+     "target": "dense",
+     "routed_vs_target_differences": [],
+     "banded_vs_dense_differences": null,
+     "holds": true
+    },
+    {
+     "problem": "brusselator-1d-160",
+     "rtol": 1e-06,
+     "declared": "none",
+     "target": "legacy",
+     "routed_vs_target_differences": [],
+     "banded_vs_dense_differences": null,
+     "holds": true
+    }
+   ],
+   "pass": true
+  },
+  "3_strongest_arm": {
+   "item": "strongest applicable arm: routed/min(dense, colext64) <= 0.60 at n = 400, <= 1.00 at n = 100 and 320; routed/legacy <= 0.05 on every Brusselator cell (Ir per trajectory)",
+   "cells": [
+    {
+     "problem": "brusselator-1d-50",
+     "n": 100,
+     "rtol": 1e-06,
+     "ir_routed": 22937896,
+     "ir_dense": 36864091,
+     "ir_dense_colext64": 29020252,
+     "ir_legacy": 1502434094,
+     "routed_over_min_dense": 0.7904099523325986,
+     "bound_min_dense": 1.0,
+     "routed_over_legacy": 0.015267156204457111,
+     "bound_legacy": 0.05,
+     "holds": true
+    },
+    {
+     "problem": "brusselator-1d-50",
+     "n": 100,
+     "rtol": 1e-08,
+     "ir_routed": 48026962,
+     "ir_dense": 77262974,
+     "ir_dense_colext64": 60807442,
+     "ir_legacy": 3163253523,
+     "routed_over_min_dense": 0.7898204630939746,
+     "bound_min_dense": 1.0,
+     "routed_over_legacy": 0.015182773574990498,
+     "bound_legacy": 0.05,
+     "holds": true
+    },
+    {
+     "problem": "brusselator-1d-160",
+     "n": 320,
+     "rtol": 1e-06,
+     "ir_routed": 72837124,
+     "ir_dense": 238083491,
+     "ir_dense_colext64": 134356392,
+     "ir_legacy": 7501176628,
+     "routed_over_min_dense": 0.5421187850891381,
+     "bound_min_dense": 1.0,
+     "routed_over_legacy": 0.009710093177664606,
+     "bound_legacy": 0.05,
+     "holds": true
+    },
+    {
+     "problem": "brusselator-1d-160",
+     "n": 320,
+     "rtol": 1e-08,
+     "ir_routed": 152221604,
+     "ir_dense": 499414503,
+     "ir_dense_colext64": 281809702,
+     "ir_legacy": 10283961309,
+     "routed_over_min_dense": 0.5401574286466546,
+     "bound_min_dense": 1.0,
+     "routed_over_legacy": 0.014801845264313022,
+     "bound_legacy": 0.05,
+     "holds": true
+    },
+    {
+     "problem": "brusselator-1d-200",
+     "n": 400,
+     "rtol": 1e-06,
+     "ir_routed": 91184749,
+     "ir_dense": 352687666,
+     "ir_dense_colext64": 187155835,
+     "ir_legacy": 10762740337,
+     "routed_over_min_dense": 0.48721296346437715,
+     "bound_min_dense": 0.6,
+     "routed_over_legacy": 0.008472261352113673,
+     "bound_legacy": 0.05,
+     "holds": true
+    },
+    {
+     "problem": "brusselator-1d-200",
+     "n": 400,
+     "rtol": 1e-08,
+     "ir_routed": 191230573,
+     "ir_dense": 743592070,
+     "ir_dense_colext64": 394531027,
+     "ir_legacy": 14219940121,
+     "routed_over_min_dense": 0.4847035085025138,
+     "bound_min_dense": 0.6,
+     "routed_over_legacy": 0.013448057542632742,
+     "bound_legacy": 0.05,
+     "holds": true
+    },
+    {
+     "problem": "brusselator-1d-500",
+     "n": 1000,
+     "rtol": 1e-06,
+     "ir_routed": 240119801,
+     "ir_dense": 1932882216,
+     "ir_dense_colext64": 846356719,
+     "ir_legacy": 168056687219,
+     "routed_over_min_dense": 0.28370992468011585,
+     "bound_min_dense": null,
+     "routed_over_legacy": 0.0014288024176454953,
+     "bound_legacy": 0.05,
+     "holds": true
+    },
+    {
+     "problem": "brusselator-1d-500",
+     "n": 1000,
+     "rtol": 1e-08,
+     "ir_routed": 491922709,
+     "ir_dense": 4077485502,
+     "ir_dense_colext64": 1774514143,
+     "ir_legacy": 130666807426,
+     "routed_over_min_dense": 0.2772154343996119,
+     "bound_min_dense": null,
+     "routed_over_legacy": 0.0037647105541978483,
+     "bound_legacy": 0.05,
+     "holds": true
+    }
+   ],
+   "pass": true
+  },
+  "4_no_hidden_quadratic": {
+   "item": "no hidden O(n^2): routed Ir per accepted step slope n = 400 -> 1000 <= 1.15",
+   "rtols": [
+    {
+     "rtol": 1e-06,
+     "ir_per_accepted_step_n400": 1112009.1341463414,
+     "ir_per_accepted_step_n1000": 2928290.2560975607,
+     "slope": 1.056706434682898,
+     "bound": 1.15,
+     "holds": true
+    },
+    {
+     "rtol": 1e-08,
+     "ir_per_accepted_step_n400": 1006476.7,
+     "ir_per_accepted_step_n1000": 2589066.889473684,
+     "slope": 1.0311593114429216,
+     "bound": 1.15,
+     "holds": true
+    }
+   ],
+   "pass": true
+  },
+  "5_routing_overhead": {
+   "item": "routing overhead: routed Ir per trajectory <= 1.02 x its direct target, verification included",
+   "cells": [
+    {
+     "problem": "brusselator-1d-50",
+     "rtol": 1e-06,
+     "declared": "banded",
+     "routed_arm": "rodas5p-routed",
+     "target_arm": "rodas5p-fast-banded",
+     "ir_routed": 22937896,
+     "ir_target": 22721719,
+     "difference": 216177,
+     "ratio": 1.0095141129066862,
+     "bound": 1.02,
+     "holds": true
+    },
+    {
+     "problem": "brusselator-1d-50",
+     "rtol": 1e-08,
+     "declared": "banded",
+     "routed_arm": "rodas5p-routed",
+     "target_arm": "rodas5p-fast-banded",
+     "ir_routed": 48026962,
+     "ir_target": 47805735,
+     "difference": 221227,
+     "ratio": 1.0046276246981665,
+     "bound": 1.02,
+     "holds": true
+    },
+    {
+     "problem": "brusselator-1d-160",
+     "rtol": 1e-06,
+     "declared": "banded",
+     "routed_arm": "rodas5p-routed",
+     "target_arm": "rodas5p-fast-banded",
+     "ir_routed": 72837124,
+     "ir_target": 71856418,
+     "difference": 980706,
+     "ratio": 1.0136481336990664,
+     "bound": 1.02,
+     "holds": true
+    },
+    {
+     "problem": "brusselator-1d-160",
+     "rtol": 1e-08,
+     "declared": "banded",
+     "routed_arm": "rodas5p-routed",
+     "target_arm": "rodas5p-fast-banded",
+     "ir_routed": 152221604,
+     "ir_target": 151240898,
+     "difference": 980706,
+     "ratio": 1.0064843968329253,
+     "bound": 1.02,
+     "holds": true
+    },
+    {
+     "problem": "brusselator-1d-200",
+     "rtol": 1e-06,
+     "declared": "banded",
+     "routed_arm": "rodas5p-routed",
+     "target_arm": "rodas5p-fast-banded",
+     "ir_routed": 91184749,
+     "ir_target": 89704352,
+     "difference": 1480397,
+     "ratio": 1.0165030677664335,
+     "bound": 1.02,
+     "holds": true
+    },
+    {
+     "problem": "brusselator-1d-200",
+     "rtol": 1e-08,
+     "declared": "banded",
+     "routed_arm": "rodas5p-routed",
+     "target_arm": "rodas5p-fast-banded",
+     "ir_routed": 191230573,
+     "ir_target": 189750176,
+     "difference": 1480397,
+     "ratio": 1.0078018214855304,
+     "bound": 1.02,
+     "holds": true
+    },
+    {
+     "problem": "brusselator-1d-500",
+     "rtol": 1e-06,
+     "declared": "banded",
+     "routed_arm": "rodas5p-routed",
+     "target_arm": "rodas5p-fast-banded",
+     "ir_routed": 240119801,
+     "ir_target": 223618404,
+     "difference": 16501397,
+     "ratio": 1.0737926606434416,
+     "bound": 1.02,
+     "holds": false
+    },
+    {
+     "problem": "brusselator-1d-500",
+     "rtol": 1e-08,
+     "declared": "banded",
+     "routed_arm": "rodas5p-routed",
+     "target_arm": "rodas5p-fast-banded",
+     "ir_routed": 491922709,
+     "ir_target": 475421312,
+     "difference": 16501397,
+     "ratio": 1.0347089972272845,
+     "bound": 1.02,
+     "holds": false
+    },
+    {
+     "problem": "robertson",
+     "rtol": 1e-06,
+     "declared": "dense",
+     "routed_arm": "rodas5p-routed",
+     "target_arm": "rodas5p-fast",
+     "ir_routed": 525518,
+     "ir_target": 524267,
+     "difference": 1251,
+     "ratio": 1.002386188716818,
+     "bound": 1.02,
+     "holds": true
+    },
+    {
+     "problem": "robertson",
+     "rtol": 1e-08,
+     "declared": "dense",
+     "routed_arm": "rodas5p-routed",
+     "target_arm": "rodas5p-fast",
+     "ir_routed": 1177800,
+     "ir_target": 1176549,
+     "difference": 1251,
+     "ratio": 1.0010632791324459,
+     "bound": 1.02,
+     "holds": true
+    },
+    {
+     "problem": "hires",
+     "rtol": 1e-06,
+     "declared": "dense",
+     "routed_arm": "rodas5p-routed",
+     "target_arm": "rodas5p-fast",
+     "ir_routed": 4420629,
+     "ir_target": 4419435,
+     "difference": 1194,
+     "ratio": 1.0002701702819479,
+     "bound": 1.02,
+     "holds": true
+    },
+    {
+     "problem": "hires",
+     "rtol": 1e-08,
+     "declared": "dense",
+     "routed_arm": "rodas5p-routed",
+     "target_arm": "rodas5p-fast",
+     "ir_routed": 16460793,
+     "ir_target": 16459599,
+     "difference": 1194,
+     "ratio": 1.0000725412569285,
+     "bound": 1.02,
+     "holds": true
+    },
+    {
+     "problem": "van-der-pol-mu1000",
+     "rtol": 1e-06,
+     "declared": "dense",
+     "routed_arm": "rodas5p-routed",
+     "target_arm": "rodas5p-fast",
+     "ir_routed": 4353189,
+     "ir_target": 4351945,
+     "difference": 1244,
+     "ratio": 1.0002858492007596,
+     "bound": 1.02,
+     "holds": true
+    },
+    {
+     "problem": "van-der-pol-mu1000",
+     "rtol": 1e-08,
+     "declared": "dense",
+     "routed_arm": "rodas5p-routed",
+     "target_arm": "rodas5p-fast",
+     "ir_routed": 8811421,
+     "ir_target": 8810177,
+     "difference": 1244,
+     "ratio": 1.0001412003413779,
+     "bound": 1.02,
+     "holds": true
+    },
+    {
+     "problem": "brusselator-1d-160",
+     "rtol": 1e-06,
+     "declared": "none",
+     "routed_arm": "rodas5p-routed-undeclared",
+     "target_arm": "rodas5p-mf-legacy",
+     "ir_routed": 7501180190,
+     "ir_target": 7501176628,
+     "difference": 3562,
+     "ratio": 1.0000004748588358,
+     "bound": 1.02,
+     "holds": true
+    }
+   ],
+   "pass": false
+  }
+ },
+ "reported": {
+  "routing": [
+   {
+    "problem": "brusselator-1d-160",
+    "rtol": 1e-08,
+    "declared": "banded",
+    "reason": "declared-band",
+    "driver": "banded",
+    "driver_id": "rodas5p-fast-banded-v1",
+    "fallback": null,
+    "verification": {
+     "reference": "dense-jacobian",
+     "relative_mismatch": [
+      0.0,
+      0.0
+     ],
+     "band_fills": 1,
+     "band_products": 2,
+     "jvp_products": 0,
+     "dense_jacobian_builds": 1,
+     "dense_products": 2,
+     "charged_nonzero": {
+      "jacobian_builds": 2,
+      "jacobian_matvecs": 4
+     }
+    }
+   },
+   {
+    "problem": "brusselator-1d-160",
+    "rtol": 1e-06,
+    "declared": "banded",
+    "reason": "declared-band",
+    "driver": "banded",
+    "driver_id": "rodas5p-fast-banded-v1",
+    "fallback": null,
+    "verification": {
+     "reference": "dense-jacobian",
+     "relative_mismatch": [
+      0.0,
+      0.0
+     ],
+     "band_fills": 1,
+     "band_products": 2,
+     "jvp_products": 0,
+     "dense_jacobian_builds": 1,
+     "dense_products": 2,
+     "charged_nonzero": {
+      "jacobian_builds": 2,
+      "jacobian_matvecs": 4
+     }
+    }
+   },
+   {
+    "problem": "brusselator-1d-200",
+    "rtol": 1e-08,
+    "declared": "banded",
+    "reason": "declared-band",
+    "driver": "banded",
+    "driver_id": "rodas5p-fast-banded-v1",
+    "fallback": null,
+    "verification": {
+     "reference": "dense-jacobian",
+     "relative_mismatch": [
+      0.0,
+      0.0
+     ],
+     "band_fills": 1,
+     "band_products": 2,
+     "jvp_products": 0,
+     "dense_jacobian_builds": 1,
+     "dense_products": 2,
+     "charged_nonzero": {
+      "jacobian_builds": 2,
+      "jacobian_matvecs": 4
+     }
+    }
+   },
+   {
+    "problem": "brusselator-1d-200",
+    "rtol": 1e-06,
+    "declared": "banded",
+    "reason": "declared-band",
+    "driver": "banded",
+    "driver_id": "rodas5p-fast-banded-v1",
+    "fallback": null,
+    "verification": {
+     "reference": "dense-jacobian",
+     "relative_mismatch": [
+      0.0,
+      0.0
+     ],
+     "band_fills": 1,
+     "band_products": 2,
+     "jvp_products": 0,
+     "dense_jacobian_builds": 1,
+     "dense_products": 2,
+     "charged_nonzero": {
+      "jacobian_builds": 2,
+      "jacobian_matvecs": 4
+     }
+    }
+   },
+   {
+    "problem": "brusselator-1d-50",
+    "rtol": 1e-08,
+    "declared": "banded",
+    "reason": "declared-band",
+    "driver": "banded",
+    "driver_id": "rodas5p-fast-banded-v1",
+    "fallback": null,
+    "verification": {
+     "reference": "dense-jacobian",
+     "relative_mismatch": [
+      0.0,
+      0.0
+     ],
+     "band_fills": 1,
+     "band_products": 2,
+     "jvp_products": 0,
+     "dense_jacobian_builds": 1,
+     "dense_products": 2,
+     "charged_nonzero": {
+      "jacobian_builds": 2,
+      "jacobian_matvecs": 4
+     }
+    }
+   },
+   {
+    "problem": "brusselator-1d-50",
+    "rtol": 1e-06,
+    "declared": "banded",
+    "reason": "declared-band",
+    "driver": "banded",
+    "driver_id": "rodas5p-fast-banded-v1",
+    "fallback": null,
+    "verification": {
+     "reference": "dense-jacobian",
+     "relative_mismatch": [
+      0.0,
+      0.0
+     ],
+     "band_fills": 1,
+     "band_products": 2,
+     "jvp_products": 0,
+     "dense_jacobian_builds": 1,
+     "dense_products": 2,
+     "charged_nonzero": {
+      "jacobian_builds": 2,
+      "jacobian_matvecs": 4
+     }
+    }
+   },
+   {
+    "problem": "brusselator-1d-500",
+    "rtol": 1e-08,
+    "declared": "banded",
+    "reason": "declared-band",
+    "driver": "banded",
+    "driver_id": "rodas5p-fast-banded-v1",
+    "fallback": null,
+    "verification": {
+     "reference": "dense-jacobian",
+     "relative_mismatch": [
+      0.0,
+      0.0
+     ],
+     "band_fills": 1,
+     "band_products": 2,
+     "jvp_products": 0,
+     "dense_jacobian_builds": 1,
+     "dense_products": 2,
+     "charged_nonzero": {
+      "jacobian_builds": 2,
+      "jacobian_matvecs": 4
+     }
+    }
+   },
+   {
+    "problem": "brusselator-1d-500",
+    "rtol": 1e-06,
+    "declared": "banded",
+    "reason": "declared-band",
+    "driver": "banded",
+    "driver_id": "rodas5p-fast-banded-v1",
+    "fallback": null,
+    "verification": {
+     "reference": "dense-jacobian",
+     "relative_mismatch": [
+      0.0,
+      0.0
+     ],
+     "band_fills": 1,
+     "band_products": 2,
+     "jvp_products": 0,
+     "dense_jacobian_builds": 1,
+     "dense_products": 2,
+     "charged_nonzero": {
+      "jacobian_builds": 2,
+      "jacobian_matvecs": 4
+     }
+    }
+   },
+   {
+    "problem": "hires",
+    "rtol": 1e-08,
+    "declared": "dense",
+    "reason": "declared-dense-small",
+    "driver": "dense",
+    "driver_id": "rodas5p-fast-transformed-v2",
+    "fallback": null,
+    "verification": null
+   },
+   {
+    "problem": "hires",
+    "rtol": 1e-06,
+    "declared": "dense",
+    "reason": "declared-dense-small",
+    "driver": "dense",
+    "driver_id": "rodas5p-fast-transformed-v2",
+    "fallback": null,
+    "verification": null
+   },
+   {
+    "problem": "robertson",
+    "rtol": 1e-08,
+    "declared": "dense",
+    "reason": "declared-dense-small",
+    "driver": "dense",
+    "driver_id": "rodas5p-fast-transformed-v2",
+    "fallback": null,
+    "verification": null
+   },
+   {
+    "problem": "robertson",
+    "rtol": 1e-06,
+    "declared": "dense",
+    "reason": "declared-dense-small",
+    "driver": "dense",
+    "driver_id": "rodas5p-fast-transformed-v2",
+    "fallback": null,
+    "verification": null
+   },
+   {
+    "problem": "van-der-pol-mu1000",
+    "rtol": 1e-08,
+    "declared": "dense",
+    "reason": "declared-dense-small",
+    "driver": "dense",
+    "driver_id": "rodas5p-fast-transformed-v2",
+    "fallback": null,
+    "verification": null
+   },
+   {
+    "problem": "van-der-pol-mu1000",
+    "rtol": 1e-06,
+    "declared": "dense",
+    "reason": "declared-dense-small",
+    "driver": "dense",
+    "driver_id": "rodas5p-fast-transformed-v2",
+    "fallback": null,
+    "verification": null
+   },
+   {
+    "problem": "brusselator-1d-160",
+    "rtol": 1e-06,
+    "declared": "none",
+    "reason": "unstructured-jvp",
+    "driver": "matrix-free",
+    "driver_id": "rodas5p-mf-fast-transformed-v1",
+    "fallback": null,
+    "verification": null
+   }
+  ],
+  "endpoint_errors": [
+   {
+    "problem": "brusselator-1d-160",
+    "rtol": 1e-08,
+    "declared": "banded",
+    "error": {
+     "banded": 2.1718738443264924e-08,
+     "dense": 2.1718738443264924e-08,
+     "dense-colext64": 2.1718738443264924e-08,
+     "legacy": 2.1713140684558167e-08,
+     "routed": 2.1718738443264924e-08
+    },
+    "accepted": {
+     "banded": 190,
+     "dense": 190,
+     "dense-colext64": 190,
+     "legacy": 190,
+     "routed": 190
+    }
+   },
+   {
+    "problem": "brusselator-1d-160",
+    "rtol": 1e-06,
+    "declared": "banded",
+    "error": {
+     "banded": 2.1358389978991376e-06,
+     "dense": 2.1358389978991376e-06,
+     "dense-colext64": 2.1358389978991376e-06,
+     "legacy": 2.1358731241423635e-06,
+     "routed": 2.1358389978991376e-06
+    },
+    "accepted": {
+     "banded": 82,
+     "dense": 82,
+     "dense-colext64": 82,
+     "legacy": 82,
+     "routed": 82
+    }
+   },
+   {
+    "problem": "brusselator-1d-200",
+    "rtol": 1e-08,
+    "declared": "banded",
+    "error": {
+     "banded": 2.181407227059616e-08,
+     "dense": 2.181407227059616e-08,
+     "dense-colext64": 2.181407227059616e-08,
+     "legacy": 2.1800618327833238e-08,
+     "routed": 2.181407227059616e-08
+    },
+    "accepted": {
+     "banded": 190,
+     "dense": 190,
+     "dense-colext64": 190,
+     "legacy": 190,
+     "routed": 190
+    }
+   },
+   {
+    "problem": "brusselator-1d-200",
+    "rtol": 1e-06,
+    "declared": "banded",
+    "error": {
+     "banded": 2.135315998861335e-06,
+     "dense": 2.135315998861335e-06,
+     "dense-colext64": 2.135315998861335e-06,
+     "legacy": 2.135329015919745e-06,
+     "routed": 2.135315998861335e-06
+    },
+    "accepted": {
+     "banded": 82,
+     "dense": 82,
+     "dense-colext64": 82,
+     "legacy": 82,
+     "routed": 82
+    }
+   },
+   {
+    "problem": "brusselator-1d-50",
+    "rtol": 1e-08,
+    "declared": "banded",
+    "error": {
+     "banded": 2.1646030560208103e-08,
+     "dense": 2.1646030560208103e-08,
+     "dense-colext64": 2.1646030560208103e-08,
+     "legacy": 2.1646035497113372e-08,
+     "routed": 2.1646030560208103e-08
+    },
+    "accepted": {
+     "banded": 189,
+     "dense": 189,
+     "dense-colext64": 189,
+     "legacy": 189,
+     "routed": 189
+    }
+   },
+   {
+    "problem": "brusselator-1d-50",
+    "rtol": 1e-06,
+    "declared": "banded",
+    "error": {
+     "banded": 2.1429724883295456e-06,
+     "dense": 2.1429724883295456e-06,
+     "dense-colext64": 2.1429724883295456e-06,
+     "legacy": 2.1429724000673123e-06,
+     "routed": 2.1429724883295456e-06
+    },
+    "accepted": {
+     "banded": 82,
+     "dense": 82,
+     "dense-colext64": 82,
+     "legacy": 82,
+     "routed": 82
+    }
+   },
+   {
+    "problem": "brusselator-1d-500",
+    "rtol": 1e-08,
+    "declared": "banded",
+    "error": {
+     "banded": 2.187779611625016e-08,
+     "dense": 2.187779611625016e-08,
+     "dense-colext64": 2.187779611625016e-08,
+     "legacy": 1.4207045643510063e-08,
+     "routed": 2.187779611625016e-08
+    },
+    "accepted": {
+     "banded": 190,
+     "dense": 190,
+     "dense-colext64": 190,
+     "legacy": 288,
+     "routed": 190
+    }
+   },
+   {
+    "problem": "brusselator-1d-500",
+    "rtol": 1e-06,
+    "declared": "banded",
+    "error": {
+     "banded": 2.137748176776738e-06,
+     "dense": 2.137748176776738e-06,
+     "dense-colext64": 2.137748176776738e-06,
+     "legacy": 1.0782444114239637e-07,
+     "routed": 2.137748176776738e-06
+    },
+    "accepted": {
+     "banded": 82,
+     "dense": 82,
+     "dense-colext64": 82,
+     "legacy": 321,
+     "routed": 82
+    }
+   },
+   {
+    "problem": "hires",
+    "rtol": 1e-08,
+    "declared": "dense",
+    "error": {
+     "dense": 1.0421331718568954e-09,
+     "dense-colext64": 1.0421331718568954e-09,
+     "routed": 1.0421331718568954e-09
+    },
+    "accepted": {
+     "dense": 778,
+     "dense-colext64": 778,
+     "routed": 778
+    }
+   },
+   {
+    "problem": "hires",
+    "rtol": 1e-06,
+    "declared": "dense",
+    "error": {
+     "dense": 2.6280229863842146e-07,
+     "dense-colext64": 2.6280229863842146e-07,
+     "routed": 2.6280229863842146e-07
+    },
+    "accepted": {
+     "dense": 204,
+     "dense-colext64": 204,
+     "routed": 204
+    }
+   },
+   {
+    "problem": "robertson",
+    "rtol": 1e-08,
+    "declared": "dense",
+    "error": {
+     "dense": 6.219388933210067e-09,
+     "dense-colext64": 6.219388933210067e-09,
+     "routed": 6.219388933210067e-09
+    },
+    "accepted": {
+     "dense": 99,
+     "dense-colext64": 99,
+     "routed": 99
+    }
+   },
+   {
+    "problem": "robertson",
+    "rtol": 1e-06,
+    "declared": "dense",
+    "error": {
+     "dense": 1.1004666373268631e-06,
+     "dense-colext64": 1.1004666373268631e-06,
+     "routed": 1.1004666373268631e-06
+    },
+    "accepted": {
+     "dense": 43,
+     "dense-colext64": 43,
+     "routed": 43
+    }
+   },
+   {
+    "problem": "van-der-pol-mu1000",
+    "rtol": 1e-08,
+    "declared": "dense",
+    "error": {
+     "dense": 4.431520475523985e-08,
+     "dense-colext64": 4.431520475523985e-08,
+     "routed": 4.431520475523985e-08
+    },
+    "accepted": {
+     "dense": 915,
+     "dense-colext64": 915,
+     "routed": 915
+    }
+   },
+   {
+    "problem": "van-der-pol-mu1000",
+    "rtol": 1e-06,
+    "declared": "dense",
+    "error": {
+     "dense": 1.557779227509105e-06,
+     "dense-colext64": 1.557779227509105e-06,
+     "routed": 1.557779227509105e-06
+    },
+    "accepted": {
+     "dense": 351,
+     "dense-colext64": 351,
+     "routed": 351
+    }
+   },
+   {
+    "problem": "brusselator-1d-160",
+    "rtol": 1e-06,
+    "declared": "none",
+    "error": {
+     "legacy": 2.1358731241423635e-06,
+     "routed": 2.1358731241423635e-06
+    },
+    "accepted": {
+     "legacy": 82,
+     "routed": 82
+    }
+   }
+  ],
+  "verification_and_routing_ir": [
+   {
+    "problem": "brusselator-1d-50",
+    "rtol": 1e-06,
+    "ir_routed_minus_banded": 216177,
+    "fraction_of_banded": 0.00951411290668633
+   },
+   {
+    "problem": "brusselator-1d-50",
+    "rtol": 1e-08,
+    "ir_routed_minus_banded": 221227,
+    "fraction_of_banded": 0.004627624698166444
+   },
+   {
+    "problem": "brusselator-1d-160",
+    "rtol": 1e-06,
+    "ir_routed_minus_banded": 980706,
+    "fraction_of_banded": 0.01364813369906638
+   },
+   {
+    "problem": "brusselator-1d-160",
+    "rtol": 1e-08,
+    "ir_routed_minus_banded": 980706,
+    "fraction_of_banded": 0.006484396832925443
+   },
+   {
+    "problem": "brusselator-1d-200",
+    "rtol": 1e-06,
+    "ir_routed_minus_banded": 1480397,
+    "fraction_of_banded": 0.01650306776643345
+   },
+   {
+    "problem": "brusselator-1d-200",
+    "rtol": 1e-08,
+    "ir_routed_minus_banded": 1480397,
+    "fraction_of_banded": 0.007801821485530533
+   },
+   {
+    "problem": "brusselator-1d-500",
+    "rtol": 1e-06,
+    "ir_routed_minus_banded": 16501397,
+    "fraction_of_banded": 0.07379266064344149
+   },
+   {
+    "problem": "brusselator-1d-500",
+    "rtol": 1e-08,
+    "ir_routed_minus_banded": 16501397,
+    "fraction_of_banded": 0.034708997227284585
+   }
+  ],
+  "small_problem_cells": [
+   {
+    "problem": "robertson",
+    "rtol": 1e-06,
+    "ir_routed": 525518,
+    "ir_dense": 524267,
+    "difference": 1251,
+    "ratio": 1.002386188716818
+   },
+   {
+    "problem": "robertson",
+    "rtol": 1e-08,
+    "ir_routed": 1177800,
+    "ir_dense": 1176549,
+    "difference": 1251,
+    "ratio": 1.0010632791324459
+   },
+   {
+    "problem": "hires",
+    "rtol": 1e-06,
+    "ir_routed": 4420629,
+    "ir_dense": 4419435,
+    "difference": 1194,
+    "ratio": 1.0002701702819479
+   },
+   {
+    "problem": "hires",
+    "rtol": 1e-08,
+    "ir_routed": 16460793,
+    "ir_dense": 16459599,
+    "difference": 1194,
+    "ratio": 1.0000725412569285
+   },
+   {
+    "problem": "van-der-pol-mu1000",
+    "rtol": 1e-06,
+    "ir_routed": 4353189,
+    "ir_dense": 4351945,
+    "difference": 1244,
+    "ratio": 1.0002858492007596
+   },
+   {
+    "problem": "van-der-pol-mu1000",
+    "rtol": 1e-08,
+    "ir_routed": 8811421,
+    "ir_dense": 8810177,
+    "difference": 1244,
+    "ratio": 1.0001412003413779
+   }
+  ],
+  "profile_table": [
+   {
+    "arm": "rodas5p-fast",
+    "problem": "brusselator-1d-160",
+    "rtol": 1e-08,
+    "attempts": 193,
+    "accepted": 190,
+    "ir_per_run": 499414503,
+    "ir_per_attempt": 2587639.9119170983,
+    "ir_per_accepted_step": 2628497.3842105265
+   },
+   {
+    "arm": "rodas5p-fast",
+    "problem": "brusselator-1d-160",
+    "rtol": 1e-06,
+    "attempts": 92,
+    "accepted": 82,
+    "ir_per_run": 238083491,
+    "ir_per_attempt": 2587864.032608696,
+    "ir_per_accepted_step": 2903457.2073170734
+   },
+   {
+    "arm": "rodas5p-fast",
+    "problem": "brusselator-1d-200",
+    "rtol": 1e-08,
+    "attempts": 194,
+    "accepted": 190,
+    "ir_per_run": 743592070,
+    "ir_per_attempt": 3832948.81443299,
+    "ir_per_accepted_step": 3913642.4736842103
+   },
+   {
+    "arm": "rodas5p-fast",
+    "problem": "brusselator-1d-200",
+    "rtol": 1e-06,
+    "attempts": 92,
+    "accepted": 82,
+    "ir_per_run": 352687666,
+    "ir_per_attempt": 3833561.586956522,
+    "ir_per_accepted_step": 4301069.097560976
+   },
+   {
+    "arm": "rodas5p-fast",
+    "problem": "brusselator-1d-50",
+    "rtol": 1e-08,
+    "attempts": 193,
+    "accepted": 189,
+    "ir_per_run": 77262974,
+    "ir_per_attempt": 400326.2901554404,
+    "ir_per_accepted_step": 408798.8042328042
+   },
+   {
+    "arm": "rodas5p-fast",
+    "problem": "brusselator-1d-50",
+    "rtol": 1e-06,
+    "attempts": 92,
+    "accepted": 82,
+    "ir_per_run": 36864091,
+    "ir_per_attempt": 400696.64130434784,
+    "ir_per_accepted_step": 449562.0853658537
+   },
+   {
+    "arm": "rodas5p-fast",
+    "problem": "brusselator-1d-500",
+    "rtol": 1e-08,
+    "attempts": 195,
+    "accepted": 190,
+    "ir_per_run": 4077485502,
+    "ir_per_attempt": 20910182.06153846,
+    "ir_per_accepted_step": 21460450.010526314
+   },
+   {
+    "arm": "rodas5p-fast",
+    "problem": "brusselator-1d-500",
+    "rtol": 1e-06,
+    "attempts": 92,
+    "accepted": 82,
+    "ir_per_run": 1932882216,
+    "ir_per_attempt": 21009589.304347824,
+    "ir_per_accepted_step": 23571734.341463413
+   },
+   {
+    "arm": "rodas5p-fast",
+    "problem": "hires",
+    "rtol": 1e-08,
+    "attempts": 784,
+    "accepted": 778,
+    "ir_per_run": 16459599,
+    "ir_per_attempt": 20994.386479591838,
+    "ir_per_accepted_step": 21156.296915167095
+   },
+   {
+    "arm": "rodas5p-fast",
+    "problem": "hires",
+    "rtol": 1e-06,
+    "attempts": 210,
+    "accepted": 204,
+    "ir_per_run": 4419435,
+    "ir_per_attempt": 21044.928571428572,
+    "ir_per_accepted_step": 21663.897058823528
+   },
+   {
+    "arm": "rodas5p-fast",
+    "problem": "robertson",
+    "rtol": 1e-08,
+    "attempts": 103,
+    "accepted": 99,
+    "ir_per_run": 1176549,
+    "ir_per_attempt": 11422.805825242718,
+    "ir_per_accepted_step": 11884.333333333334
+   },
+   {
+    "arm": "rodas5p-fast",
+    "problem": "robertson",
+    "rtol": 1e-06,
+    "attempts": 45,
+    "accepted": 43,
+    "ir_per_run": 524267,
+    "ir_per_attempt": 11650.377777777778,
+    "ir_per_accepted_step": 12192.255813953489
+   },
+   {
+    "arm": "rodas5p-fast",
+    "problem": "van-der-pol-mu1000",
+    "rtol": 1e-08,
+    "attempts": 947,
+    "accepted": 915,
+    "ir_per_run": 8810177,
+    "ir_per_attempt": 9303.249208025343,
+    "ir_per_accepted_step": 9628.6087431694
+   },
+   {
+    "arm": "rodas5p-fast",
+    "problem": "van-der-pol-mu1000",
+    "rtol": 1e-06,
+    "attempts": 469,
+    "accepted": 351,
+    "ir_per_run": 4351945,
+    "ir_per_attempt": 9279.200426439233,
+    "ir_per_accepted_step": 12398.703703703704
+   },
+   {
+    "arm": "rodas5p-fast-banded",
+    "problem": "brusselator-1d-160",
+    "rtol": 1e-08,
+    "attempts": 193,
+    "accepted": 190,
+    "ir_per_run": 151240898,
+    "ir_per_attempt": 783631.5958549223,
+    "ir_per_accepted_step": 796004.7263157895
+   },
+   {
+    "arm": "rodas5p-fast-banded",
+    "problem": "brusselator-1d-160",
+    "rtol": 1e-06,
+    "attempts": 92,
+    "accepted": 82,
+    "ir_per_run": 71856418,
+    "ir_per_attempt": 781048.0217391305,
+    "ir_per_accepted_step": 876297.7804878049
+   },
+   {
+    "arm": "rodas5p-fast-banded",
+    "problem": "brusselator-1d-200",
+    "rtol": 1e-08,
+    "attempts": 194,
+    "accepted": 190,
+    "ir_per_run": 189750176,
+    "ir_per_attempt": 978093.6907216494,
+    "ir_per_accepted_step": 998685.1368421053
+   },
+   {
+    "arm": "rodas5p-fast-banded",
+    "problem": "brusselator-1d-200",
+    "rtol": 1e-06,
+    "attempts": 92,
+    "accepted": 82,
+    "ir_per_run": 89704352,
+    "ir_per_attempt": 975047.304347826,
+    "ir_per_accepted_step": 1093955.512195122
+   },
+   {
+    "arm": "rodas5p-fast-banded",
+    "problem": "brusselator-1d-50",
+    "rtol": 1e-08,
+    "attempts": 193,
+    "accepted": 189,
+    "ir_per_run": 47805735,
+    "ir_per_attempt": 247698.10880829016,
+    "ir_per_accepted_step": 252940.39682539683
+   },
+   {
+    "arm": "rodas5p-fast-banded",
+    "problem": "brusselator-1d-50",
+    "rtol": 1e-06,
+    "attempts": 92,
+    "accepted": 82,
+    "ir_per_run": 22721719,
+    "ir_per_attempt": 246975.20652173914,
+    "ir_per_accepted_step": 277094.1341463415
+   },
+   {
+    "arm": "rodas5p-fast-banded",
+    "problem": "brusselator-1d-500",
+    "rtol": 1e-08,
+    "attempts": 195,
+    "accepted": 190,
+    "ir_per_run": 475421312,
+    "ir_per_attempt": 2438058.01025641,
+    "ir_per_accepted_step": 2502217.431578947
+   },
+   {
+    "arm": "rodas5p-fast-banded",
+    "problem": "brusselator-1d-500",
+    "rtol": 1e-06,
+    "attempts": 92,
+    "accepted": 82,
+    "ir_per_run": 223618404,
+    "ir_per_attempt": 2430634.8260869565,
+    "ir_per_accepted_step": 2727053.7073170734
+   },
+   {
+    "arm": "rodas5p-fast-colext64",
+    "problem": "brusselator-1d-160",
+    "rtol": 1e-08,
+    "attempts": 193,
+    "accepted": 190,
+    "ir_per_run": 281809702,
+    "ir_per_attempt": 1460153.896373057,
+    "ir_per_accepted_step": 1483208.957894737
+   },
+   {
+    "arm": "rodas5p-fast-colext64",
+    "problem": "brusselator-1d-160",
+    "rtol": 1e-06,
+    "attempts": 92,
+    "accepted": 82,
+    "ir_per_run": 134356392,
+    "ir_per_attempt": 1460395.5652173914,
+    "ir_per_accepted_step": 1638492.5853658537
+   },
+   {
+    "arm": "rodas5p-fast-colext64",
+    "problem": "brusselator-1d-200",
+    "rtol": 1e-08,
+    "attempts": 194,
+    "accepted": 190,
+    "ir_per_run": 394531027,
+    "ir_per_attempt": 2033665.087628866,
+    "ir_per_accepted_step": 2076479.0894736843
+   },
+   {
+    "arm": "rodas5p-fast-colext64",
+    "problem": "brusselator-1d-200",
+    "rtol": 1e-06,
+    "attempts": 92,
+    "accepted": 82,
+    "ir_per_run": 187155835,
+    "ir_per_attempt": 2034302.5543478262,
+    "ir_per_accepted_step": 2282388.2317073173
+   },
+   {
+    "arm": "rodas5p-fast-colext64",
+    "problem": "brusselator-1d-50",
+    "rtol": 1e-08,
+    "attempts": 193,
+    "accepted": 189,
+    "ir_per_run": 60807442,
+    "ir_per_attempt": 315064.4663212435,
+    "ir_per_accepted_step": 321732.4973544974
+   },
+   {
+    "arm": "rodas5p-fast-colext64",
+    "problem": "brusselator-1d-50",
+    "rtol": 1e-06,
+    "attempts": 92,
+    "accepted": 82,
+    "ir_per_run": 29020252,
+    "ir_per_attempt": 315437.52173913043,
+    "ir_per_accepted_step": 353905.51219512196
+   },
+   {
+    "arm": "rodas5p-fast-colext64",
+    "problem": "brusselator-1d-500",
+    "rtol": 1e-08,
+    "attempts": 195,
+    "accepted": 190,
+    "ir_per_run": 1774514143,
+    "ir_per_attempt": 9100072.528205128,
+    "ir_per_accepted_step": 9339548.121052632
+   },
+   {
+    "arm": "rodas5p-fast-colext64",
+    "problem": "brusselator-1d-500",
+    "rtol": 1e-06,
+    "attempts": 92,
+    "accepted": 82,
+    "ir_per_run": 846356719,
+    "ir_per_attempt": 9199529.554347826,
+    "ir_per_accepted_step": 10321423.402439024
+   },
+   {
+    "arm": "rodas5p-mf-legacy",
+    "problem": "brusselator-1d-160",
+    "rtol": 1e-08,
+    "attempts": 193,
+    "accepted": 190,
+    "ir_per_run": 10283961309,
+    "ir_per_attempt": 53284773.62176166,
+    "ir_per_accepted_step": 54126112.15263158
+   },
+   {
+    "arm": "rodas5p-mf-legacy",
+    "problem": "brusselator-1d-160",
+    "rtol": 1e-06,
+    "attempts": 92,
+    "accepted": 82,
+    "ir_per_run": 7501176628,
+    "ir_per_attempt": 81534528.56521739,
+    "ir_per_accepted_step": 91477763.75609756
+   },
+   {
+    "arm": "rodas5p-mf-legacy",
+    "problem": "brusselator-1d-200",
+    "rtol": 1e-08,
+    "attempts": 194,
+    "accepted": 190,
+    "ir_per_run": 14219940121,
+    "ir_per_attempt": 73298660.41752577,
+    "ir_per_accepted_step": 74841790.11052631
+   },
+   {
+    "arm": "rodas5p-mf-legacy",
+    "problem": "brusselator-1d-200",
+    "rtol": 1e-06,
+    "attempts": 92,
+    "accepted": 82,
+    "ir_per_run": 10762740337,
+    "ir_per_attempt": 116986308.01086956,
+    "ir_per_accepted_step": 131252930.93902439
+   },
+   {
+    "arm": "rodas5p-mf-legacy",
+    "problem": "brusselator-1d-50",
+    "rtol": 1e-08,
+    "attempts": 193,
+    "accepted": 189,
+    "ir_per_run": 3163253523,
+    "ir_per_attempt": 16389914.626943005,
+    "ir_per_accepted_step": 16736791.126984127
+   },
+   {
+    "arm": "rodas5p-mf-legacy",
+    "problem": "brusselator-1d-50",
+    "rtol": 1e-06,
+    "attempts": 92,
+    "accepted": 82,
+    "ir_per_run": 1502434094,
+    "ir_per_attempt": 16330805.369565217,
+    "ir_per_accepted_step": 18322367.0
+   },
+   {
+    "arm": "rodas5p-mf-legacy",
+    "problem": "brusselator-1d-500",
+    "rtol": 1e-08,
+    "attempts": 411,
+    "accepted": 288,
+    "ir_per_run": 130666807426,
+    "ir_per_attempt": 317924105.6593674,
+    "ir_per_accepted_step": 453704192.4513889
+   },
+   {
+    "arm": "rodas5p-mf-legacy",
+    "problem": "brusselator-1d-500",
+    "rtol": 1e-06,
+    "attempts": 606,
+    "accepted": 321,
+    "ir_per_run": 168056687219,
+    "ir_per_attempt": 277321266.0379538,
+    "ir_per_accepted_step": 523541081.67912775
+   },
+   {
+    "arm": "rodas5p-routed",
+    "problem": "brusselator-1d-160",
+    "rtol": 1e-08,
+    "attempts": 193,
+    "accepted": 190,
+    "ir_per_run": 152221604,
+    "ir_per_attempt": 788712.9740932642,
+    "ir_per_accepted_step": 801166.3368421053
+   },
+   {
+    "arm": "rodas5p-routed",
+    "problem": "brusselator-1d-160",
+    "rtol": 1e-06,
+    "attempts": 92,
+    "accepted": 82,
+    "ir_per_run": 72837124,
+    "ir_per_attempt": 791707.8695652174,
+    "ir_per_accepted_step": 888257.6097560975
+   },
+   {
+    "arm": "rodas5p-routed",
+    "problem": "brusselator-1d-200",
+    "rtol": 1e-08,
+    "attempts": 194,
+    "accepted": 190,
+    "ir_per_run": 191230573,
+    "ir_per_attempt": 985724.6030927835,
+    "ir_per_accepted_step": 1006476.7
+   },
+   {
+    "arm": "rodas5p-routed",
+    "problem": "brusselator-1d-200",
+    "rtol": 1e-06,
+    "attempts": 92,
+    "accepted": 82,
+    "ir_per_run": 91184749,
+    "ir_per_attempt": 991138.5760869565,
+    "ir_per_accepted_step": 1112009.1341463414
+   },
+   {
+    "arm": "rodas5p-routed",
+    "problem": "brusselator-1d-50",
+    "rtol": 1e-08,
+    "attempts": 193,
+    "accepted": 189,
+    "ir_per_run": 48026962,
+    "ir_per_attempt": 248844.3626943005,
+    "ir_per_accepted_step": 254110.91005291004
+   },
+   {
+    "arm": "rodas5p-routed",
+    "problem": "brusselator-1d-50",
+    "rtol": 1e-06,
+    "attempts": 92,
+    "accepted": 82,
+    "ir_per_run": 22937896,
+    "ir_per_attempt": 249324.95652173914,
+    "ir_per_accepted_step": 279730.43902439025
+   },
+   {
+    "arm": "rodas5p-routed",
+    "problem": "brusselator-1d-500",
+    "rtol": 1e-08,
+    "attempts": 195,
+    "accepted": 190,
+    "ir_per_run": 491922709,
+    "ir_per_attempt": 2522680.558974359,
+    "ir_per_accepted_step": 2589066.889473684
+   },
+   {
+    "arm": "rodas5p-routed",
+    "problem": "brusselator-1d-500",
+    "rtol": 1e-06,
+    "attempts": 92,
+    "accepted": 82,
+    "ir_per_run": 240119801,
+    "ir_per_attempt": 2609997.836956522,
+    "ir_per_accepted_step": 2928290.2560975607
+   },
+   {
+    "arm": "rodas5p-routed",
+    "problem": "hires",
+    "rtol": 1e-08,
+    "attempts": 784,
+    "accepted": 778,
+    "ir_per_run": 16460793,
+    "ir_per_attempt": 20995.90943877551,
+    "ir_per_accepted_step": 21157.831619537275
+   },
+   {
+    "arm": "rodas5p-routed",
+    "problem": "hires",
+    "rtol": 1e-06,
+    "attempts": 210,
+    "accepted": 204,
+    "ir_per_run": 4420629,
+    "ir_per_attempt": 21050.614285714284,
+    "ir_per_accepted_step": 21669.75
+   },
+   {
+    "arm": "rodas5p-routed",
+    "problem": "robertson",
+    "rtol": 1e-08,
+    "attempts": 103,
+    "accepted": 99,
+    "ir_per_run": 1177800,
+    "ir_per_attempt": 11434.95145631068,
+    "ir_per_accepted_step": 11896.969696969696
+   },
+   {
+    "arm": "rodas5p-routed",
+    "problem": "robertson",
+    "rtol": 1e-06,
+    "attempts": 45,
+    "accepted": 43,
+    "ir_per_run": 525518,
+    "ir_per_attempt": 11678.177777777777,
+    "ir_per_accepted_step": 12221.348837209302
+   },
+   {
+    "arm": "rodas5p-routed",
+    "problem": "van-der-pol-mu1000",
+    "rtol": 1e-08,
+    "attempts": 947,
+    "accepted": 915,
+    "ir_per_run": 8811421,
+    "ir_per_attempt": 9304.56282998944,
+    "ir_per_accepted_step": 9629.96830601093
+   },
+   {
+    "arm": "rodas5p-routed",
+    "problem": "van-der-pol-mu1000",
+    "rtol": 1e-06,
+    "attempts": 469,
+    "accepted": 351,
+    "ir_per_run": 4353189,
+    "ir_per_attempt": 9281.852878464819,
+    "ir_per_accepted_step": 12402.247863247863
+   },
+   {
+    "arm": "rodas5p-routed-undeclared",
+    "problem": "brusselator-1d-160",
+    "rtol": 1e-06,
+    "attempts": 92,
+    "accepted": 82,
+    "ir_per_run": 7501180190,
+    "ir_per_attempt": 81534567.2826087,
+    "ir_per_accepted_step": 91477807.19512194
+   }
+  ]
+ },
+ "claim_scope": "Same-binary callgrind instructions and counted work of the opt-in router on the registered cells; no wall-time claim; the banded path is not a general sparse LU."
+}

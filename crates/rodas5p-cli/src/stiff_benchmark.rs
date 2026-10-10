@@ -16,14 +16,16 @@ use rodas5p_integrators::{
     AdaptiveObservedIntegrationResult, AdaptiveRunDiagnostics, AdaptiveStepConfig, BandedJacobian,
     BandedKernel, BandedWork, BatchProblem, BdfConfig, FastLuPolicy, IntegrationMethod,
     NewtonTolerancePolicy, OdeProblem, OutputSchedule, RadauConfig, Rodas5pFastOptions,
-    Rodas5pFastSmallOptions, Rodas5pFastSmallResult, SmallBatchMember, SmallProblem,
+    Rodas5pFastSmallOptions, Rodas5pFastSmallResult, RoutedResult, RoutedRun, RoutingOptions,
+    RoutingRecord, SmallBatchMember, SmallProblem, StructureDeclaration,
     integrate_adaptive_observed_with_config, integrate_bdf_adaptive_observed,
     integrate_radau_adaptive_observed, integrate_rodas5p_fast_banded_observed_with_kernel,
     integrate_rodas5p_fast_observed, integrate_rodas5p_fast_observed_with_options,
     integrate_rodas5p_fast_small_batch, integrate_rodas5p_fast_small_observed,
     integrate_rodas5p_fast_small_observed_with_options,
-    integrate_rodas5p_fast_small_observed_with_small_options, robertson_problem,
-    stiff_van_der_pol_problem,
+    integrate_rodas5p_fast_small_observed_with_small_options,
+    integrate_rodas5p_mf_fast_observed_gmres_into, integrate_rodas5p_routed_observed,
+    robertson_problem, stiff_van_der_pol_problem,
 };
 use serde_json::{Value, json};
 
@@ -40,6 +42,7 @@ fn known_arm(arm: &str) -> bool {
         || OPTION_ARMS.contains(&arm)
         || small_static_arm(arm).is_some()
         || banded_kernel_arm(arm).is_some()
+        || SP03_ARMS.contains(&arm)
 }
 
 /// The INT-03 banded pipeline on the Brusselators (speed research node
@@ -128,6 +131,175 @@ fn run_banded(
             },
         },
         run.work,
+    ))
+}
+
+/// The arms of research node SP03
+/// (`research/sp03_declared_structure_routing_20261010`), not in [`ARMS`]:
+///
+/// * `rodas5p-routed`: the opt-in router
+///   ([`integrate_rodas5p_routed_observed`]) with the registered
+///   declarations: the band of [`brusselator_band`] on the Brusselators,
+///   `Dense` on robertson, hires and van-der-pol-mu1000;
+/// * `rodas5p-routed-undeclared`: the router on the JVP-only Brusselator
+///   ([`brusselator_jvp_only_problem`]) with no declaration (the
+///   matrix-free route);
+/// * `rodas5p-mf-legacy`: the U-form matrix-free driver with the `Legacy`
+///   stage target (GMRES into, the router's matrix-free configuration) on the
+///   JVP-only Brusselator, called directly.
+pub const ROUTED_ARM: &str = "rodas5p-routed";
+pub const ROUTED_UNDECLARED_ARM: &str = "rodas5p-routed-undeclared";
+pub const MF_LEGACY_ARM: &str = "rodas5p-mf-legacy";
+pub const SP03_ARMS: [&str; 3] = [ROUTED_ARM, ROUTED_UNDECLARED_ARM, MF_LEGACY_ARM];
+
+/// The SP03 problems with a `Dense` declaration.
+const SP03_DENSE_PROBLEMS: [&str; 3] = ["robertson", "hires", "van-der-pol-mu1000"];
+
+/// The Brusselator of [`brusselator_problem`] (the same right-hand side) with
+/// a JVP and no explicit Jacobian: the matrix-free problem of SP03. The JVP
+/// is the one of `rodas5p-integrators/tests/rnext_common` (ALG01-ALG06).
+pub fn brusselator_jvp_only_problem(cells: usize) -> CoreResult<OdeProblem> {
+    let c = (cells as f64 + 1.0).powi(2) / 50.0;
+    let rhs = Arc::new(move |_t: f64, y: &[f64], out: &mut [f64]| {
+        for i in 0..cells {
+            let (u, v) = (y[2 * i], y[2 * i + 1]);
+            let (ul, vl) = if i == 0 {
+                (1.0, 3.0)
+            } else {
+                (y[2 * i - 2], y[2 * i - 1])
+            };
+            let (ur, vr) = if i + 1 == cells {
+                (1.0, 3.0)
+            } else {
+                (y[2 * i + 2], y[2 * i + 3])
+            };
+            out[2 * i] = 1.0 + u * u * v - 4.0 * u + c * (ul - 2.0 * u + ur);
+            out[2 * i + 1] = 3.0 * u - u * u * v + c * (vl - 2.0 * v + vr);
+        }
+        Ok(())
+    });
+    let jvp = Arc::new(move |_t: f64, y: &[f64], w: &[f64], out: &mut [f64]| {
+        for i in 0..cells {
+            let (u, v) = (y[2 * i], y[2 * i + 1]);
+            let (du, dv) = (w[2 * i], w[2 * i + 1]);
+            let (dul, dvl) = if i == 0 {
+                (0.0, 0.0)
+            } else {
+                (w[2 * i - 2], w[2 * i - 1])
+            };
+            let (dur, dvr) = if i + 1 == cells {
+                (0.0, 0.0)
+            } else {
+                (w[2 * i + 2], w[2 * i + 3])
+            };
+            out[2 * i] = (2.0 * u * v - 4.0) * du + u * u * dv + c * (dul - 2.0 * du + dur);
+            out[2 * i + 1] = (3.0 - 2.0 * u * v) * du - u * u * dv + c * (dvl - 2.0 * dv + dvr);
+        }
+        Ok(())
+    });
+    OdeProblem::new(
+        format!("brusselator-1d-{cells}-jvp"),
+        2 * cells,
+        rhs,
+        None,
+        None,
+        Some(jvp),
+        None,
+        true,
+        None,
+        None,
+    )
+}
+
+/// The problem of an SP03 arm with its registered declaration.
+fn sp03_problem(arm: &str, problem: &BenchmarkProblem) -> CoreResult<OdeProblem> {
+    let n = problem.problem.dimension;
+    let invalid = |message: String| rodas5p_core::CoreError::InvalidInput(message);
+    let cells = brusselator_cells(problem.id);
+    match (arm, cells) {
+        (ROUTED_ARM, Some(cells)) => {
+            let band = brusselator_band(cells);
+            problem
+                .problem
+                .clone()
+                .with_declared_structure(StructureDeclaration::banded(
+                    n, band.lower, band.upper, band.fill,
+                ))
+                .map_err(|e| invalid(e.to_string()))
+        }
+        (ROUTED_ARM, None) if SP03_DENSE_PROBLEMS.contains(&problem.id) => problem
+            .problem
+            .clone()
+            .with_declared_structure(StructureDeclaration::dense(n))
+            .map_err(|e| invalid(e.to_string())),
+        (ROUTED_UNDECLARED_ARM | MF_LEGACY_ARM, Some(cells)) => brusselator_jvp_only_problem(cells),
+        _ => Err(invalid(format!(
+            "the SP03 arm {arm} has no registered declaration for {}",
+            problem.id
+        ))),
+    }
+}
+
+/// An SP03 arm on a benchmark problem: the run, the routing record (routed
+/// arms) and the banded work (banded route).
+fn run_sp03(
+    arm: &str,
+    problem: &BenchmarkProblem,
+    rtol: f64,
+) -> CoreResult<(
+    AdaptiveObservedIntegrationResult,
+    Option<RoutingRecord>,
+    Option<BandedWork>,
+)> {
+    let adaptive = adaptive_config(problem, rtol);
+    let output = OutputSchedule::new(vec![problem.t_span.0, problem.t_span.1])?;
+    let p = sp03_problem(arm, problem)?;
+    let wrap = |observed, attempts, accepted, rejected| AdaptiveObservedIntegrationResult {
+        observed,
+        diagnostics: AdaptiveRunDiagnostics {
+            attempts,
+            accepted_macro_steps: accepted,
+            rejected_macro_steps: rejected,
+            ..AdaptiveRunDiagnostics::default()
+        },
+    };
+    if arm == MF_LEGACY_ARM {
+        let run = integrate_rodas5p_mf_fast_observed_gmres_into(
+            &p,
+            problem.t_span,
+            &problem.y0,
+            &RoutingOptions::default().matrix_free,
+            &adaptive,
+            &output,
+        )?;
+        return Ok((
+            wrap(
+                run.observed,
+                run.attempts,
+                run.accepted_steps,
+                run.rejected_steps,
+            ),
+            None,
+            None,
+        ));
+    }
+    let RoutedResult { run, routing } =
+        integrate_rodas5p_routed_observed(&p, problem.t_span, &problem.y0, &adaptive, &output)
+            .map_err(|e| match e {
+                rodas5p_integrators::RoutingError::Integration(e) => e,
+                other => rodas5p_core::CoreError::InvalidInput(other.to_string()),
+            })?;
+    let (attempts, accepted, rejected) =
+        (run.attempts(), run.accepted_steps(), run.rejected_steps());
+    let (observed, work) = match run {
+        RoutedRun::Banded(r) => (r.fast.observed, Some(r.work)),
+        RoutedRun::Dense(r) => (r.observed, None),
+        RoutedRun::MatrixFree(r) => (r.observed, None),
+    };
+    Ok((
+        wrap(observed, attempts, accepted, rejected),
+        Some(routing),
+        work,
     ))
 }
 
@@ -433,6 +605,21 @@ pub fn profile_problems() -> CoreResult<Vec<BenchmarkProblem>> {
     Ok(problems)
 }
 
+/// `brusselator-1d-160` (n = 320), the one SP03 size neither
+/// [`benchmark_problems`] nor [`profile_problems`] has. Only
+/// `stiff-profile-run` reads it, after [`profile_problems`], so no existing
+/// problem set changes.
+pub fn routing_profile_problems() -> CoreResult<Vec<BenchmarkProblem>> {
+    let (problem, y0) = brusselator_problem(160)?;
+    Ok(vec![BenchmarkProblem {
+        id: "brusselator-1d-160",
+        problem,
+        y0,
+        t_span: (0.0, 10.0),
+        atol_scale: 1.0,
+    }])
+}
+
 fn default_problems() -> CoreResult<Vec<BenchmarkProblem>> {
     let (robertson, robertson_y0) = robertson_problem()?;
     let (hires, hires_y0) = hires_problem()?;
@@ -557,6 +744,7 @@ pub fn run_arm(
         other if banded_kernel_arm(other).is_some() => {
             run_banded(problem, rtol, banded_kernel_arm(other).unwrap()).map(|(r, _)| r)
         }
+        other if SP03_ARMS.contains(&other) => run_sp03(other, problem, rtol).map(|(r, _, _)| r),
         other if small_static_arm(other).is_some() => run_small_static_full(
             problem,
             &adaptive,
@@ -740,24 +928,30 @@ pub fn stiff_benchmark(
 pub fn profile_run(problem_id: &str, arm: &str, rtol: f64, repetitions: usize) -> Result<Value> {
     anyhow::ensure!(repetitions >= 1, "at least one repetition");
     anyhow::ensure!(known_arm(arm), "unknown arm {arm}");
-    let problem = profile_problems()?
-        .into_iter()
-        .find(|p| p.id == problem_id)
-        .ok_or_else(|| anyhow::anyhow!("unknown problem {problem_id}"))?;
+    let problem = match profile_problems()?.into_iter().find(|p| p.id == problem_id) {
+        Some(problem) => problem,
+        None => routing_profile_problems()?
+            .into_iter()
+            .find(|p| p.id == problem_id)
+            .ok_or_else(|| anyhow::anyhow!("unknown problem {problem_id}"))?,
+    };
     let kernel = banded_kernel_arm(arm);
+    let sp03 = SP03_ARMS.contains(&arm);
     let run = |problem: &BenchmarkProblem| -> CoreResult<(
         AdaptiveObservedIntegrationResult,
         Option<BandedWork>,
+        Option<RoutingRecord>,
     )> {
         match kernel {
-            Some(kernel) => run_banded(problem, rtol, kernel).map(|(r, w)| (r, Some(w))),
-            None => run_arm(arm, problem, rtol).map(|r| (r, None)),
+            Some(kernel) => run_banded(problem, rtol, kernel).map(|(r, w)| (r, Some(w), None)),
+            None if sp03 => run_sp03(arm, problem, rtol).map(|(r, routing, w)| (r, w, routing)),
+            None => run_arm(arm, problem, rtol).map(|r| (r, None, None)),
         }
     };
-    let (first, work) = run(&problem)?;
+    let (first, work, routing) = run(&problem)?;
     let mut deterministic = true;
     for _ in 1..repetitions {
-        let (again, _) = run(&problem)?;
+        let (again, _, _) = run(&problem)?;
         deterministic &= again.observed.y == first.observed.y;
     }
     let d = &first.diagnostics;
@@ -771,6 +965,15 @@ pub fn profile_run(problem_id: &str, arm: &str, rtol: f64, repetitions: usize) -
         "final_state": first.observed.y.last(),
         "deterministic": deterministic,
     });
+    if let Some(routing) = routing {
+        // Serialized once, outside the repeated integrations.
+        out["routing"] = serde_json::to_value(&routing)?;
+    }
+    if sp03 {
+        // SP03 records every counter (the verification charges
+        // `jacobian_matvecs` and `jvp_calls`).
+        out["counters_full"] = serde_json::to_value(first.observed.counters)?;
+    }
     if let Some(work) = work {
         out["banded_work"] = json!({
             "factor_operations": work.factor_operations,
@@ -1888,5 +2091,130 @@ mod spd09 {
         }
         std::fs::write(&path, serde_json::to_string(&out).unwrap() + "\n").unwrap();
         println!("wrote {}", path.display());
+    }
+}
+
+/// Research node SP03 (`research/sp03_declared_structure_routing_20261010`):
+/// the routed, undeclared and matrix-free legacy arms.
+#[cfg(test)]
+mod sp03 {
+    use super::*;
+
+    fn problem(id: &str) -> BenchmarkProblem {
+        profile_problems()
+            .unwrap()
+            .into_iter()
+            .chain(routing_profile_problems().unwrap())
+            .find(|p| p.id == id)
+            .unwrap()
+    }
+
+    #[test]
+    fn the_sp03_arms_are_known_and_opt_in() {
+        for arm in SP03_ARMS {
+            assert!(known_arm(arm) && !ARMS.contains(&arm) && !OPTION_ARMS.contains(&arm));
+        }
+        assert_eq!(
+            routing_profile_problems().unwrap()[0].problem.dimension,
+            320
+        );
+        assert!(
+            !profile_problems()
+                .unwrap()
+                .iter()
+                .any(|p| p.id == "brusselator-1d-160")
+        );
+    }
+
+    #[test]
+    fn the_routed_arm_equals_its_target_arm() {
+        for (id, target, reason) in [
+            ("brusselator-1d-50", BANDED_ARM, "declared-band"),
+            ("hires", FAST_ARM, "declared-dense-small"),
+            ("robertson", FAST_ARM, "declared-dense-small"),
+            ("van-der-pol-mu1000", FAST_ARM, "declared-dense-small"),
+        ] {
+            let p = problem(id);
+            let (routed, record, _) = run_sp03(ROUTED_ARM, &p, 1.0e-4).unwrap();
+            let direct = run_arm(target, &p, 1.0e-4).unwrap();
+            assert_eq!(routed.observed.y, direct.observed.y, "{id}");
+            assert_eq!(routed.observed.t, direct.observed.t, "{id}");
+            assert_eq!(
+                routed.diagnostics.attempts, direct.diagnostics.attempts,
+                "{id}"
+            );
+            let record = record.unwrap();
+            let charged = record
+                .verification
+                .as_ref()
+                .map(|v| v.charged)
+                .unwrap_or_default();
+            assert_eq!(
+                routed.observed.counters.delta(charged),
+                direct.observed.counters,
+                "{id}"
+            );
+            assert_eq!(serde_json::to_value(record.reason).unwrap(), reason);
+        }
+        // The undeclared Brusselator takes the matrix-free route and equals
+        // the legacy arm.
+        let p = problem("brusselator-1d-30");
+        let (routed, record, _) = run_sp03(ROUTED_UNDECLARED_ARM, &p, 1.0e-3).unwrap();
+        let (legacy, none, _) = run_sp03(MF_LEGACY_ARM, &p, 1.0e-3).unwrap();
+        assert!(none.is_none());
+        assert_eq!(routed.observed.y, legacy.observed.y);
+        assert_eq!(routed.observed.counters, legacy.observed.counters);
+        assert_eq!(
+            serde_json::to_value(record.unwrap().reason).unwrap(),
+            "unstructured-jvp"
+        );
+        // No registered declaration elsewhere.
+        assert!(run_sp03(MF_LEGACY_ARM, &problem("hires"), 1.0e-3).is_err());
+    }
+
+    #[test]
+    fn the_jvp_only_brusselator_matches_the_benchmark_problem() {
+        for cells in [50, 160] {
+            let full = if cells == 160 {
+                problem("brusselator-1d-160")
+            } else {
+                problem("brusselator-1d-50")
+            };
+            let jvp = brusselator_jvp_only_problem(cells).unwrap();
+            assert!(!jvp.has_explicit_jacobian() && jvp.has_jvp());
+            let n = 2 * cells;
+            let mut counters = WorkCounters::default();
+            for state in parity_states(&full.y0) {
+                let a = full.problem.eval_rhs(0.0, &state, &mut counters).unwrap();
+                let b = jvp.eval_rhs(0.0, &state, &mut counters).unwrap();
+                assert_eq!(a, b);
+                let dense = full
+                    .problem
+                    .dense_jacobian(0.0, &state, &mut counters)
+                    .unwrap();
+                let v: Vec<f64> = (0..n).map(|i| ((i + 1) as f64).sin()).collect();
+                let op = jvp.linearize_matrix_free(0.0, &state).unwrap();
+                let mut jv = vec![0.0; n];
+                op.apply(&v, &mut jv).unwrap();
+                for (i, x) in jv.iter().enumerate() {
+                    let exact: f64 = (0..n).map(|j| dense[(i, j)] * v[j]).sum();
+                    assert!((x - exact).abs() <= 1e-12 * exact.abs().max(1.0) * 1e3);
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn profile_run_reports_the_routing() {
+        let out = profile_run("brusselator-1d-50", ROUTED_ARM, 1.0e-3, 1).unwrap();
+        assert_eq!(out["routing"]["reason"], "declared-band");
+        assert_eq!(
+            out["routing"]["verification"]["reference"],
+            "dense-jacobian"
+        );
+        assert!(out["banded_work"].is_object());
+        assert_eq!(out["counters_full"]["jacobian_matvecs"], 4);
+        let out = profile_run("brusselator-1d-160", ROUTED_UNDECLARED_ARM, 1.0e-3, 1).unwrap();
+        assert_eq!(out["routing"]["driver"], "matrix-free");
     }
 }
