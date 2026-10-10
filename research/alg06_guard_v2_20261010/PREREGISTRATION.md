@@ -199,3 +199,32 @@ within 2,000 columns) and 807 true. `B2`: 765 false, 1,055 true.
 - **Item 5** is per trajectory.
 
 **Deviations.** None.
+
+## Correction after the independent review (appended 2026-10-10)
+
+The registered verdict stays **PASS** by the letter of the rules. **Item 4 is not robust, and this pass must not be cited as evidence for G1-G3.** Ledger row L-0096 is superseded by L-0097.
+
+**What the reviewer did.** An independent reviewer reran the registered export at the merge head and got a RUNS.json byte-identical to the committed one; the checker reproduces RESULTS.json. The reviewer then ran an unregistered post-hoc experiment, in their own worktree and not committed: Robertson to 4e10 again, with the initial step h0 multiplied by (1 + k 1e-9) for k = 0..23. k = 0 reproduces the recorded run exactly. At rtol 1e-5:
+
+| Run | Error against the twin |
+|---|---|
+| Dense twin | unchanged: 1.791e-6 in every run |
+| `Rbig` | 0.95-1.06x |
+| `B3` (gated) | 0.011-5.70x, median 2.39x; **15 of 24 runs above 1.5x** |
+| `B3a` | median 1.60x; 14 of 24 above 1.5x |
+| `B3b` | median 1.67x; 13 of 24 above 1.5x |
+
+At 1e-7 and 1e-9 every arm is stable (0.94-1.09x).
+
+**Reading.**
+- The gated arm's typical error at this cell is about 2.4x the twin. The recorded 0.544x was a favourable draw.
+- G3 could hardly have acted. The fallback accepts at production's 1e-10 relative rule, so `tau_e ||r||_WRMS` stays at most 3.4e-7 (rtol 1e-5) and 2.7e-3 (1e-9) against a local-error budget of 1, and no charge crossed 1. The ALG03 shortfall was against the coupled target's per-unit-step budget, not the local error, so G3 as registered had no realistic route to act.
+- A follow-up must gate accuracy over several h0 perturbations (median or quantile), not over one trajectory.
+
+**Wording corrections to the Results above.**
+- "Every arm took the same steps" means the same *numbers* of attempts, accepted and rejected steps. The step sequences differ: the B3 and B3b charge logs diverge after t = 767.39.
+- "The pass at 1e-5 is real but not robust" should read "not robust".
+
+**Minor.**
+- The G3 rejection branch is never exercised. The contract test does not assert a crossing, and no recorded run had one.
+- G3's WRMS weights use |y_n|, while the embedded error norm uses max(|y_n|, |y_new|).

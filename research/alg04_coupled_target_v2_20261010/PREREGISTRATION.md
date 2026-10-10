@@ -186,3 +186,7 @@ rodas5p-integrators --all-targets --locked` passes. Clippy `-D warnings` is clea
     `RESULTS_FIRST.json`.
   - No gate item, ratio or verdict changed; the two files differ only in that block and the schema id.
 - **No other deviation.**
+
+## Correction after the independent review (appended 2026-10-10)
+
+The verdict stays **FAIL** (item 2: `vig1b-k20` at 1e-8 is 4.18x the twin, where Legacy is already 1.73x). The review reran the export at the merge head and got a byte-identical RUNS.json; the checker reproduces RESULTS.json and the code matches the registration. One disclosed edge case: the exhaustion rule's "cycle's last column" is a partial Krylov space when the remaining budget is below n in a later cycle.

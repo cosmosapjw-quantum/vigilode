@@ -218,3 +218,7 @@ not anticipate the `I` cell at err/rtol 65.
   `Integral`, `Pi`, `Predictive` and `PredictiveCapped` on 16,000 generated attempts each (rejections, failures,
   err = 0, slivers and informative clipped samples).
 - **No matrix-free cells**; none were registered.
+
+## Correction after the independent review (appended 2026-10-10)
+
+The verdict stays **FAIL**. The review reran the export at the merge head and got a byte-identical RUNS.json; the checker reproduces RESULTS.json. One wording correction applies to ledger row L-0095, which is superseded by L-0098: the claim that the absolute single-cell bound of 10 "was mis-specified" is a post-hoc judgement. The correct statement is factual: the reference arm I also violates the bound in the same cell (65.04 against 65.17). That was foreseeable at registration, because I's maximum in ALG02 was 14.7, while the registration disclosed only PREDcap's maximum of 7.9. Gate item 6 rests on unit tests alone, since the two fixes never acted on these cells.

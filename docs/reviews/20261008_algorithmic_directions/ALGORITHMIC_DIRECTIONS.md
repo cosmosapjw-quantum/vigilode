@@ -481,3 +481,81 @@ The correction commit after this run changes only the node files, the ledger (L-
 1. **A coupled-target node without the registration defects.** Ladder budget 20,000, nu computed as registered, the duplicate residual removed as its own arm, and the single-block VIG cell with a sharper residual-to-error rule or an over-solve fallback.
 2. **A controller node with an err = 0 cap and a calibration rule**, scored only by the frontier at E inside the measured range.
 3. **The guard's overrun prediction with the effective cycle length**, and fallback acceptance limited to iterates whose unscaled residual also meets the coupled target's error budget.
+
+# Second tests (2026-10-10): ALG04-ALG06
+
+The user approved registering the three follow-ups of the Tier-1 section. All three were registered before any code
+(`b8964fc`), with the checkers committed before the recorded runs. ALG04 and ALG06 reuse the base exports of ALG01 and
+ALG03. ALG05 recorded a new base on fresh initial-step seeds.
+
+| Node | Ledger | Verdict | What held | What failed or is not robust |
+|---|---|---|---|---|
+| ALG04: coupled target with small-system exhaustion, a DupFix attribution arm, ladder budget 20,000 | L-0094 | **FAIL** (item 2) | `vig1b-k20` at 1e-4 went from 37.1x to 1.00x the twin. Ladders 0.997-1.001x LU. The target's own work gain over ProjL2 on the Brusselators is a geometric mean of 0.738 (cells 0.61-0.87). Small n is within 0.91-1.006x DupFix | `vig1b-k20` at 1e-8 is 4.18x the twin; Legacy is 1.73x there |
+| ALG05: predictive controller with the err = 0 cap and sliver-flag fixes, fresh seeds, frontier-only scoring | L-0095, corrected by L-0098 | **FAIL** (item 5, single-cell bound) | van der Pol 0.685-0.834 at 5 of 5 E. Worst frontier ratios 1.015, 1.033 and 0.969 on HIRES, Robertson and Brusselator-50. Rejections 28.3 % -> 6.8 %. Calibration fit ratios at most 1.56 | One van der Pol cell has err/rtol 65.17, where the reference arm I has 65.04. The two fixes never acted, because these cells have no interior output points |
+| ALG06: guard with effective cycle length (G1), attainable-accuracy floor (G2) and fallback charge (G3) | L-0096, corrected by L-0097 | **PASS by the registered rule; item 4 not robust** | Every stress cell completes, with 0 linear failures. Brusselator-300 uses 0.418x Rbig's JVPs. G1 removed every Robertson overrun abort. G2 cut JVPs 19-26 % on Robertson | Under 1e-9 perturbations of h0 (unregistered reviewer reruns, 24 runs), B3 at Robertson-4e10 1e-5 is a median 2.39x the twin, and 15 of 24 runs are above 1.5x. G3 never acted |
+
+## What the second tests established
+
+- **DupFix attribution.** Omitting the duplicate diagnostic residual alone gives 0.63-0.89x Legacy's JVPs on small
+  problems and about 0.98x on the Brusselators, with bitwise the same trajectory. This is a programming-level change.
+  It can be adopted on its own, through its own promotion review.
+- **The coupled target's own gain over the in-cycle exit is real on the Brusselators** (geometric mean 0.74). Its
+  accuracy still fails on one strongly nonnormal single block at tight tolerance, a cell where every iterative arm,
+  Legacy included, is above the twin.
+- **The predictive controller replicated on fresh seeds** in work and rejections. Its calibration on the ladder fit is
+  within 1.56x. The only failing item rests on an outlier that the reference controller shares.
+- **The guard stack's accuracy on long badly scaled runs is not established.** The registered pass rests on one
+  favourable trajectory. Any further guard test must gate accuracy over several h0 perturbations.
+
+## Independent review
+
+A reviewer who wrote none of the code reran all three registered exports at the merge head. The RUNS files came out
+byte-identical, and the checkers reproduced the RESULTS files. The reviewer also confirmed:
+
+- the git order (checkers committed before runs; ALG05 base before its source change);
+- the bitwise reproduction of every earlier arm;
+- the ledger hashes.
+
+There was one blocking-for-claims finding: ALG06 item 4 passes by chance. It was answered with L-0097 and a correction
+in the node file; the registered verdict is kept. There were three should-fix wording findings: the step sequences
+differ, the word "real" is dropped, and L-0095's "mis-specified" became a factual statement in L-0098.
+
+## Validation (head `d031a70`)
+
+| Step | Result |
+|---|---|
+| `cargo fmt --all -- --check` | pass |
+| clippy `-D warnings`: workspace, `audit2-research`, `audit2-bateman-authority`, `audit2-stage-certificate` | pass |
+| `cargo test --workspace --all-targets` | pass (950 tests) |
+| `cargo test -p rodas5p-integrators --all-targets --features audit2-research` | pass (595 tests) |
+| `cargo test --workspace --profile measurement -- --ignored` | pass (74 tests) |
+| `tools/check-audit2-readiness.sh`, `tools/test_*.py`, `tools/check-research-node.py --base b8964fc`, `tools/check-authority-refs.py`, `tools/check_ignored_tests_in_ci.py` | pass |
+
+The correction commit after this run changes only the node files, the ledger (L-0097, L-0098) and this document.
+
+## Where the method-level program stands
+
+Of the robustness-and-speed levers, these replicated in Rust:
+
+| Lever | Result |
+|---|---|
+| Predictive controller | van der Pol 0.68-0.84x, rejections 4x fewer, in two independent seed sets |
+| Coupled target on PDE-like matrix-free problems | 0.26-0.51x JVPs against Legacy; 0.74x against the in-cycle exit alone |
+| Larger budget with fallback | removes failure cascades: Brusselator-300 0.42x Rbig |
+| Duplicate-residual removal | 0.63-0.89x on small n, bitwise the same trajectory |
+
+None is yet promotable as a default, for three reasons:
+
+- **Nonnormal accuracy.** The coupled target's accuracy on strongly nonnormal operators at tight tolerance is not
+  resolved. A residual-based target needs a residual-to-error bound that the Krylov space does not reveal.
+- **Single-cell bounds.** The controller's single-cell bounds are noise-limited. A distributional calibration gate
+  would decide it.
+- **Long badly scaled runs.** The guard stack's accuracy there is trajectory-sensitive.
+
+Proposed next steps, not registered:
+
+1. A promotion review of the duplicate-residual removal alone.
+2. A controller node with a calibration gate relative to the reference arm, and output grids with interior points so
+   the two fixes are exercised.
+3. A coupled-target node whose accuracy item is gated over h0 perturbations, with an over-solve fallback when the stage
+   residual stagnates relative to its own history.
