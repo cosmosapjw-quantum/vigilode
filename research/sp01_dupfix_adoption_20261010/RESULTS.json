@@ -1,0 +1,3153 @@
+{
+ "claim_scope": "Counted work (WorkCounters) and same-binary callgrind instructions only; no wall-time claim; adoption means the registered decision rule, not a global accuracy or speed claim.",
+ "decision_rule_outcome": {
+  "kernel_default": "RecomputeFinal",
+  "pass": true,
+  "rule_default": "RecomputeFinal",
+  "runs_default_accounting": "gmres-residual-accounting-recompute-final-v1",
+  "trial_failing_pre_existing_tests": 9,
+  "trial_outcome": "versioned"
+ },
+ "evidence_schema": "vigilode-evidence-schema-v2",
+ "gate": {
+  "1_parity": {
+   "pass": true
+  },
+  "2_exact_accounting": {
+   "pass": true
+  },
+  "3_no_instruction_regression": {
+   "pass": true
+  },
+  "4_contract": {
+   "pass": true
+  }
+ },
+ "head": "3ea305cc4756a5ec6092c9e3deabcea9226c0ae6",
+ "inputs": {
+  "alg04_runs": {
+   "path": "/home/user/wt-sp01/research/alg04_coupled_target_v2_20261010/RUNS.json",
+   "sha256": "0512f858f6c1cba4a5940452e383e1f0f565bee1e9c25e83264d10b8cf14ff44"
+  },
+  "profile": {
+   "path": "research/sp01_dupfix_adoption_20261010/PROFILE.json",
+   "sha256": "729fc53b4909ce7ce12233fe132a8ca9ec893be6303755198b0d532cae5706c0"
+  },
+  "runs": {
+   "path": "research/sp01_dupfix_adoption_20261010/RUNS.json",
+   "sha256": "d38f20092cc6381849111cf811bfe22a3900436880679022394d9b92ad5c4152"
+  },
+  "trial": {
+   "path": "/home/user/wt-sp01/research/sp01_dupfix_adoption_20261010/DEFAULT_TRIAL.json",
+   "sha256": "dcd64d8c1d403a4cc4c094ed1245506ae0ffc460cbc8fc804517dd2e67a5e84f"
+  }
+ },
+ "items": {
+  "1_parity": {
+   "cells": [
+    {
+     "attempts": 45,
+     "cell": [
+      "uform_into",
+      "robertson",
+      1e-06
+     ],
+     "differing": [],
+     "pass": true,
+     "solve_log": {
+      "count": 360,
+      "iterations": 813,
+      "sha256": "b6ba7b8ddaac52d94a04a13a66093e99907d104c5fb90bbb4087843474827fd2"
+     }
+    },
+    {
+     "attempts": 103,
+     "cell": [
+      "uform_into",
+      "robertson",
+      1e-08
+     ],
+     "differing": [],
+     "pass": true,
+     "solve_log": {
+      "count": 824,
+      "iterations": 1983,
+      "sha256": "b833eee9ff8c87d5d4ea485a2a291948a8796b34d663ded63cac904cf1615c28"
+     }
+    },
+    {
+     "attempts": 469,
+     "cell": [
+      "uform_into",
+      "van-der-pol-mu1000",
+      1e-06
+     ],
+     "differing": [],
+     "pass": true,
+     "solve_log": {
+      "count": 3752,
+      "iterations": 7496,
+      "sha256": "b00d6d0cdea9ae1f975ae1bbd77e76c83a6d9b9b2b0ba571d89634ef4c93ed6c"
+     }
+    },
+    {
+     "attempts": 947,
+     "cell": [
+      "uform_into",
+      "van-der-pol-mu1000",
+      1e-08
+     ],
+     "differing": [],
+     "pass": true,
+     "solve_log": {
+      "count": 7576,
+      "iterations": 15144,
+      "sha256": "8c17ca822f3ee58769a19804cec5be12c17ea7f8695c7ee025508cd6d9547d47"
+     }
+    },
+    {
+     "attempts": 210,
+     "cell": [
+      "uform_into",
+      "hires",
+      1e-06
+     ],
+     "differing": [],
+     "pass": true,
+     "solve_log": {
+      "count": 1680,
+      "iterations": 11683,
+      "sha256": "d61d28a1cfb59096aff4596b3001d73554639e61ce102f2eafe5616d2836f867"
+     }
+    },
+    {
+     "attempts": 784,
+     "cell": [
+      "uform_into",
+      "hires",
+      1e-08
+     ],
+     "differing": [],
+     "pass": true,
+     "solve_log": {
+      "count": 6272,
+      "iterations": 43841,
+      "sha256": "be7f0667a999609f16dc988798c2b13a40a36e2d73a3317fe72ceabeb97b774f"
+     }
+    },
+    {
+     "attempts": 92,
+     "cell": [
+      "uform_into",
+      "brusselator-1d-50",
+      1e-06
+     ],
+     "differing": [],
+     "pass": true,
+     "solve_log": {
+      "count": 736,
+      "iterations": 29200,
+      "sha256": "5cddd63bb1d0cfb95af06dc18fe4bd95376da5361ea19f303c78dd32e1573fa7"
+     }
+    },
+    {
+     "attempts": 193,
+     "cell": [
+      "uform_into",
+      "brusselator-1d-50",
+      1e-08
+     ],
+     "differing": [],
+     "pass": true,
+     "solve_log": {
+      "count": 1544,
+      "iterations": 61480,
+      "sha256": "0bfaed0d46084e9e76e6057141dbaca2d5eb19ca5c546edb6e230484568c6b4f"
+     }
+    },
+    {
+     "attempts": 12,
+     "cell": [
+      "uform_into",
+      "prothero-robinson-forced",
+      1e-06
+     ],
+     "differing": [],
+     "pass": true,
+     "solve_log": {
+      "count": 96,
+      "iterations": 83,
+      "sha256": "051e5a964c0759b5dfeacb69e4fe3590f1b2c4b56704d25b776fc5dbb74ccc76"
+     }
+    },
+    {
+     "attempts": 19,
+     "cell": [
+      "uform_into",
+      "prothero-robinson-forced",
+      1e-08
+     ],
+     "differing": [],
+     "pass": true,
+     "solve_log": {
+      "count": 152,
+      "iterations": 139,
+      "sha256": "c127ed12a37182839e418b8a6ac1a51f6d238da14f340e47d01f1f38b5046475"
+     }
+    },
+    {
+     "attempts": 13,
+     "cell": [
+      "uform_into",
+      "quadratic-4",
+      1e-06
+     ],
+     "differing": [],
+     "pass": true,
+     "solve_log": {
+      "count": 104,
+      "iterations": 380,
+      "sha256": "bbe1b499c0060554a51e56ed29bd863ef09535263396350444799ca4ca079a3a"
+     }
+    },
+    {
+     "attempts": 21,
+     "cell": [
+      "uform_into",
+      "quadratic-4",
+      1e-08
+     ],
+     "differing": [],
+     "pass": true,
+     "solve_log": {
+      "count": 168,
+      "iterations": 636,
+      "sha256": "0821f151f66170cd2a2f7128e830d061815e9bc53dd978747a02bd5ef32a9d24"
+     }
+    },
+    {
+     "attempts": 92,
+     "cell": [
+      "uform_into",
+      "brusselator-1d-160",
+      1e-06
+     ],
+     "differing": [],
+     "pass": true,
+     "solve_log": {
+      "count": 736,
+      "iterations": 54800,
+      "sha256": "fc05358a8827b07d7f0676fe51288d34f860082639dc72f0d6d6f957ff6763d7"
+     }
+    },
+    {
+     "attempts": 193,
+     "cell": [
+      "uform_into",
+      "brusselator-1d-160",
+      1e-08
+     ],
+     "differing": [],
+     "pass": true,
+     "solve_log": {
+      "count": 1544,
+      "iterations": 74840,
+      "sha256": "43d79e16f2358e92f0c118833505cffc11a2ed5e698b47d5d7e490d9182e344b"
+     }
+    },
+    {
+     "attempts": 45,
+     "cell": [
+      "uform_default",
+      "robertson",
+      1e-06
+     ],
+     "differing": [],
+     "pass": true,
+     "solve_log": {
+      "count": 360,
+      "iterations": 813,
+      "sha256": "b6ba7b8ddaac52d94a04a13a66093e99907d104c5fb90bbb4087843474827fd2"
+     }
+    },
+    {
+     "attempts": 103,
+     "cell": [
+      "uform_default",
+      "robertson",
+      1e-08
+     ],
+     "differing": [],
+     "pass": true,
+     "solve_log": {
+      "count": 824,
+      "iterations": 1983,
+      "sha256": "b833eee9ff8c87d5d4ea485a2a291948a8796b34d663ded63cac904cf1615c28"
+     }
+    },
+    {
+     "attempts": 469,
+     "cell": [
+      "uform_default",
+      "van-der-pol-mu1000",
+      1e-06
+     ],
+     "differing": [],
+     "pass": true,
+     "solve_log": {
+      "count": 3752,
+      "iterations": 7496,
+      "sha256": "b00d6d0cdea9ae1f975ae1bbd77e76c83a6d9b9b2b0ba571d89634ef4c93ed6c"
+     }
+    },
+    {
+     "attempts": 947,
+     "cell": [
+      "uform_default",
+      "van-der-pol-mu1000",
+      1e-08
+     ],
+     "differing": [],
+     "pass": true,
+     "solve_log": {
+      "count": 7576,
+      "iterations": 15144,
+      "sha256": "8c17ca822f3ee58769a19804cec5be12c17ea7f8695c7ee025508cd6d9547d47"
+     }
+    },
+    {
+     "attempts": 210,
+     "cell": [
+      "uform_default",
+      "hires",
+      1e-06
+     ],
+     "differing": [],
+     "pass": true,
+     "solve_log": {
+      "count": 1680,
+      "iterations": 11683,
+      "sha256": "d61d28a1cfb59096aff4596b3001d73554639e61ce102f2eafe5616d2836f867"
+     }
+    },
+    {
+     "attempts": 784,
+     "cell": [
+      "uform_default",
+      "hires",
+      1e-08
+     ],
+     "differing": [],
+     "pass": true,
+     "solve_log": {
+      "count": 6272,
+      "iterations": 43841,
+      "sha256": "be7f0667a999609f16dc988798c2b13a40a36e2d73a3317fe72ceabeb97b774f"
+     }
+    },
+    {
+     "attempts": 92,
+     "cell": [
+      "uform_default",
+      "brusselator-1d-50",
+      1e-06
+     ],
+     "differing": [],
+     "pass": true,
+     "solve_log": {
+      "count": 736,
+      "iterations": 29200,
+      "sha256": "5cddd63bb1d0cfb95af06dc18fe4bd95376da5361ea19f303c78dd32e1573fa7"
+     }
+    },
+    {
+     "attempts": 193,
+     "cell": [
+      "uform_default",
+      "brusselator-1d-50",
+      1e-08
+     ],
+     "differing": [],
+     "pass": true,
+     "solve_log": {
+      "count": 1544,
+      "iterations": 61480,
+      "sha256": "0bfaed0d46084e9e76e6057141dbaca2d5eb19ca5c546edb6e230484568c6b4f"
+     }
+    },
+    {
+     "attempts": 12,
+     "cell": [
+      "uform_default",
+      "prothero-robinson-forced",
+      1e-06
+     ],
+     "differing": [],
+     "pass": true,
+     "solve_log": {
+      "count": 96,
+      "iterations": 83,
+      "sha256": "051e5a964c0759b5dfeacb69e4fe3590f1b2c4b56704d25b776fc5dbb74ccc76"
+     }
+    },
+    {
+     "attempts": 19,
+     "cell": [
+      "uform_default",
+      "prothero-robinson-forced",
+      1e-08
+     ],
+     "differing": [],
+     "pass": true,
+     "solve_log": {
+      "count": 152,
+      "iterations": 139,
+      "sha256": "c127ed12a37182839e418b8a6ac1a51f6d238da14f340e47d01f1f38b5046475"
+     }
+    },
+    {
+     "attempts": 13,
+     "cell": [
+      "uform_default",
+      "quadratic-4",
+      1e-06
+     ],
+     "differing": [],
+     "pass": true,
+     "solve_log": {
+      "count": 104,
+      "iterations": 380,
+      "sha256": "bbe1b499c0060554a51e56ed29bd863ef09535263396350444799ca4ca079a3a"
+     }
+    },
+    {
+     "attempts": 21,
+     "cell": [
+      "uform_default",
+      "quadratic-4",
+      1e-08
+     ],
+     "differing": [],
+     "pass": true,
+     "solve_log": {
+      "count": 168,
+      "iterations": 636,
+      "sha256": "0821f151f66170cd2a2f7128e830d061815e9bc53dd978747a02bd5ef32a9d24"
+     }
+    },
+    {
+     "attempts": 92,
+     "cell": [
+      "uform_default",
+      "brusselator-1d-160",
+      1e-06
+     ],
+     "differing": [],
+     "pass": true,
+     "solve_log": {
+      "count": 736,
+      "iterations": 54800,
+      "sha256": "fc05358a8827b07d7f0676fe51288d34f860082639dc72f0d6d6f957ff6763d7"
+     }
+    },
+    {
+     "attempts": 193,
+     "cell": [
+      "uform_default",
+      "brusselator-1d-160",
+      1e-08
+     ],
+     "differing": [],
+     "pass": true,
+     "solve_log": {
+      "count": 1544,
+      "iterations": 74840,
+      "sha256": "43d79e16f2358e92f0c118833505cffc11a2ed5e698b47d5d7e490d9182e344b"
+     }
+    },
+    {
+     "attempts": 45,
+     "cell": [
+      "kform_integrate",
+      "robertson",
+      1e-06
+     ],
+     "differing": [],
+     "pass": true,
+     "solve_log": {
+      "count": 424,
+      "iterations": 831,
+      "sha256": "4b89c9e87689569b4dd8a24bb2976dcdf935a07a1c21983f7a88a7b3e9cbed2d"
+     }
+    },
+    {
+     "attempts": 103,
+     "cell": [
+      "kform_integrate",
+      "robertson",
+      1e-08
+     ],
+     "differing": [],
+     "pass": true,
+     "solve_log": {
+      "count": 872,
+      "iterations": 1867,
+      "sha256": "d7be99277eed878fb0f3e1cd6a2ac7f19f14c9094614fac385df5a80388f21c4"
+     }
+    },
+    {
+     "attempts": 469,
+     "cell": [
+      "kform_integrate",
+      "van-der-pol-mu1000",
+      1e-06
+     ],
+     "differing": [],
+     "pass": true,
+     "solve_log": {
+      "count": 3952,
+      "iterations": 7552,
+      "sha256": "d02714e8bd66214af7cc1605c1c6aa4ea75a0bbcb5b19e575ec5b1a9f554a5f2"
+     }
+    },
+    {
+     "attempts": 947,
+     "cell": [
+      "kform_integrate",
+      "van-der-pol-mu1000",
+      1e-08
+     ],
+     "differing": [],
+     "pass": true,
+     "solve_log": {
+      "count": 7864,
+      "iterations": 15113,
+      "sha256": "0e76ede38bf8d9aad3e48d8c53faf8e6b4e2f911ecb3a3f0822bb79c4037e165"
+     }
+    },
+    {
+     "attempts": 210,
+     "cell": [
+      "kform_integrate",
+      "hires",
+      1e-06
+     ],
+     "differing": [],
+     "pass": true,
+     "solve_log": {
+      "count": 1728,
+      "iterations": 11732,
+      "sha256": "53a9a0c38a368db67d7f794168d3037ce371e85de8586fab0a50d48afac13323"
+     }
+    },
+    {
+     "attempts": 784,
+     "cell": [
+      "kform_integrate",
+      "hires",
+      1e-08
+     ],
+     "differing": [],
+     "pass": true,
+     "solve_log": {
+      "count": 6304,
+      "iterations": 43799,
+      "sha256": "85d8eb5be9bc7367b0dbe7d3c2d319d92daab362453061c0c79e04e98c6b0b33"
+     }
+    },
+    {
+     "attempts": 92,
+     "cell": [
+      "kform_integrate",
+      "brusselator-1d-50",
+      1e-06
+     ],
+     "differing": [],
+     "pass": true,
+     "solve_log": {
+      "count": 800,
+      "iterations": 30000,
+      "sha256": "e91a65159dc89c66baa6455d4e58bc39dfd42f39b878f0657d1a4b37c1b71e11"
+     }
+    },
+    {
+     "attempts": 193,
+     "cell": [
+      "kform_integrate",
+      "brusselator-1d-50",
+      1e-08
+     ],
+     "differing": [],
+     "pass": true,
+     "solve_log": {
+      "count": 1616,
+      "iterations": 62000,
+      "sha256": "de42b715b3a882b98f10af3234a029d04750afa42f6d0b50b9729e46821d0b6d"
+     }
+    },
+    {
+     "attempts": 45,
+     "cell": [
+      "kform_step",
+      "robertson",
+      1e-06
+     ],
+     "differing": [],
+     "pass": true,
+     "solve_log": {
+      "count": 360,
+      "iterations": 770,
+      "sha256": "51034a5ed2c0bb1d9f83bff7c3acad401df93b8343829167104df8f4efe2c866"
+     }
+    },
+    {
+     "attempts": 103,
+     "cell": [
+      "kform_step",
+      "robertson",
+      1e-08
+     ],
+     "differing": [],
+     "pass": true,
+     "solve_log": {
+      "count": 824,
+      "iterations": 1825,
+      "sha256": "2bcf6fba2873d7eefd55cd5684f14c1def3158e0bf7087884480fb030813f084"
+     }
+    },
+    {
+     "attempts": 469,
+     "cell": [
+      "kform_step",
+      "van-der-pol-mu1000",
+      1e-06
+     ],
+     "differing": [],
+     "pass": true,
+     "solve_log": {
+      "count": 3752,
+      "iterations": 7488,
+      "sha256": "baf982475ab2d96bf6111558cfadec905dbc6953c2d079c2686755ce7f060531"
+     }
+    },
+    {
+     "attempts": 947,
+     "cell": [
+      "kform_step",
+      "van-der-pol-mu1000",
+      1e-08
+     ],
+     "differing": [],
+     "pass": true,
+     "solve_log": {
+      "count": 7576,
+      "iterations": 15124,
+      "sha256": "59abc601ed04e4c8b1565ccd74e5e15983786782f7fcce22b2b2aeae2f87f7d1"
+     }
+    },
+    {
+     "attempts": 213,
+     "cell": [
+      "kform_step",
+      "hires",
+      1e-06
+     ],
+     "differing": [],
+     "pass": true,
+     "solve_log": {
+      "count": 1704,
+      "iterations": 11795,
+      "sha256": "121fdf3c221024968cdff32f8b4fc7b9652adc9b7099f95baa9df3b34e5ec463"
+     }
+    },
+    {
+     "attempts": 784,
+     "cell": [
+      "kform_step",
+      "hires",
+      1e-08
+     ],
+     "differing": [],
+     "pass": true,
+     "solve_log": {
+      "count": 6272,
+      "iterations": 43771,
+      "sha256": "77b7268c8707046a30ac3805140b34ce9aecbb0f74a2a58f42fe86f91674c64d"
+     }
+    },
+    {
+     "attempts": 92,
+     "cell": [
+      "kform_step",
+      "brusselator-1d-50",
+      1e-06
+     ],
+     "differing": [],
+     "pass": true,
+     "solve_log": {
+      "count": 736,
+      "iterations": 29000,
+      "sha256": "99c9270bdd815f628fb9e438d5f41b65ccd6b3705d0b9d1be226cc21694d93db"
+     }
+    },
+    {
+     "attempts": 193,
+     "cell": [
+      "kform_step",
+      "brusselator-1d-50",
+      1e-08
+     ],
+     "differing": [],
+     "pass": true,
+     "solve_log": {
+      "count": 1544,
+      "iterations": 61320,
+      "sha256": "ac363882ce3cee5c80ae3c274de985d4055f531756c984118db44e23fbc6c05e"
+     }
+    }
+   ],
+   "cells_checked": 44,
+   "failing_cells": [],
+   "kernel_boundary_contract": {
+    "command": "cargo test --locked -p rodas5p-krylov --test dupfix_promotion_contract",
+    "exit": 0,
+    "failed": 0,
+    "failing_tests": [],
+    "ignored": 0,
+    "pass": true,
+    "passed": 10
+   },
+   "pass": true
+  },
+  "2_exact_accounting": {
+   "cells": [
+    {
+     "cell": [
+      "uform_into",
+      "robertson",
+      1e-06
+     ],
+     "confirmed_exits": 355,
+     "delta": {
+      "diagnostic_matvecs": 355,
+      "jvp_calls": 355,
+      "jvp_vectors": 355,
+      "linear_matvec_vectors": 355
+     },
+     "diagnostic_v1": 360,
+     "diagnostic_v2": 5,
+     "jvp_ratio_v2_over_v1": 0.7676701570680629,
+     "jvp_v1": 1528,
+     "jvp_v2": 1173,
+     "observer_v1": {
+      "confirmed_exits": 355,
+      "jvp_applications": 1528,
+      "other_events": 358,
+      "unconfirmed_duplicates": 0,
+      "zero_inputs": 5
+     },
+     "observer_v2": {
+      "confirmed_exits": 0,
+      "jvp_applications": 1173,
+      "other_events": 358,
+      "unconfirmed_duplicates": 0,
+      "zero_inputs": 5
+     },
+     "pass": true,
+     "reasons": [],
+     "v1_final_residuals_decomposed": true
+    },
+    {
+     "cell": [
+      "uform_into",
+      "robertson",
+      1e-08
+     ],
+     "confirmed_exits": 819,
+     "delta": {
+      "diagnostic_matvecs": 819,
+      "jvp_calls": 819,
+      "jvp_vectors": 819,
+      "linear_matvec_vectors": 819
+     },
+     "diagnostic_v1": 824,
+     "diagnostic_v2": 5,
+     "jvp_ratio_v2_over_v1": 0.7741312741312741,
+     "jvp_v1": 3626,
+     "jvp_v2": 2807,
+     "observer_v1": {
+      "confirmed_exits": 819,
+      "jvp_applications": 3626,
+      "other_events": 820,
+      "unconfirmed_duplicates": 0,
+      "zero_inputs": 5
+     },
+     "observer_v2": {
+      "confirmed_exits": 0,
+      "jvp_applications": 2807,
+      "other_events": 820,
+      "unconfirmed_duplicates": 0,
+      "zero_inputs": 5
+     },
+     "pass": true,
+     "reasons": [],
+     "v1_final_residuals_decomposed": true
+    },
+    {
+     "cell": [
+      "uform_into",
+      "van-der-pol-mu1000",
+      1e-06
+     ],
+     "confirmed_exits": 3748,
+     "delta": {
+      "diagnostic_matvecs": 3748,
+      "jvp_calls": 3748,
+      "jvp_vectors": 3748,
+      "linear_matvec_vectors": 3748
+     },
+     "diagnostic_v1": 3752,
+     "diagnostic_v2": 4,
+     "jvp_ratio_v2_over_v1": 0.7500666844491864,
+     "jvp_v1": 14996,
+     "jvp_v2": 11248,
+     "observer_v1": {
+      "confirmed_exits": 3748,
+      "jvp_applications": 14996,
+      "other_events": 3634,
+      "unconfirmed_duplicates": 0,
+      "zero_inputs": 4
+     },
+     "observer_v2": {
+      "confirmed_exits": 0,
+      "jvp_applications": 11248,
+      "other_events": 3634,
+      "unconfirmed_duplicates": 0,
+      "zero_inputs": 4
+     },
+     "pass": true,
+     "reasons": [],
+     "v1_final_residuals_decomposed": true
+    },
+    {
+     "cell": [
+      "uform_into",
+      "van-der-pol-mu1000",
+      1e-08
+     ],
+     "confirmed_exits": 7572,
+     "delta": {
+      "diagnostic_matvecs": 7572,
+      "jvp_calls": 7572,
+      "jvp_vectors": 7572,
+      "linear_matvec_vectors": 7572
+     },
+     "diagnostic_v1": 7576,
+     "diagnostic_v2": 4,
+     "jvp_ratio_v2_over_v1": 0.750033012016374,
+     "jvp_v1": 30292,
+     "jvp_v2": 22720,
+     "observer_v1": {
+      "confirmed_exits": 7572,
+      "jvp_applications": 30292,
+      "other_events": 7544,
+      "unconfirmed_duplicates": 0,
+      "zero_inputs": 4
+     },
+     "observer_v2": {
+      "confirmed_exits": 0,
+      "jvp_applications": 22720,
+      "other_events": 7544,
+      "unconfirmed_duplicates": 0,
+      "zero_inputs": 4
+     },
+     "pass": true,
+     "reasons": [],
+     "v1_final_residuals_decomposed": true
+    },
+    {
+     "cell": [
+      "uform_into",
+      "hires",
+      1e-06
+     ],
+     "confirmed_exits": 1669,
+     "delta": {
+      "diagnostic_matvecs": 1669,
+      "jvp_calls": 1669,
+      "jvp_vectors": 1669,
+      "linear_matvec_vectors": 1669
+     },
+     "diagnostic_v1": 1680,
+     "diagnostic_v2": 11,
+     "jvp_ratio_v2_over_v1": 0.8889701969132517,
+     "jvp_v1": 15032,
+     "jvp_v2": 13363,
+     "observer_v1": {
+      "confirmed_exits": 1669,
+      "jvp_applications": 15032,
+      "other_events": 1674,
+      "unconfirmed_duplicates": 0,
+      "zero_inputs": 11
+     },
+     "observer_v2": {
+      "confirmed_exits": 0,
+      "jvp_applications": 13363,
+      "other_events": 1674,
+      "unconfirmed_duplicates": 0,
+      "zero_inputs": 11
+     },
+     "pass": true,
+     "reasons": [],
+     "v1_final_residuals_decomposed": true
+    },
+    {
+     "cell": [
+      "uform_into",
+      "hires",
+      1e-08
+     ],
+     "confirmed_exits": 6263,
+     "delta": {
+      "diagnostic_matvecs": 6263,
+      "jvp_calls": 6263,
+      "jvp_vectors": 6263,
+      "linear_matvec_vectors": 6263
+     },
+     "diagnostic_v1": 6272,
+     "diagnostic_v2": 9,
+     "jvp_ratio_v2_over_v1": 0.8889066269334469,
+     "jvp_v1": 56376,
+     "jvp_v2": 50113,
+     "observer_v1": {
+      "confirmed_exits": 6263,
+      "jvp_applications": 56376,
+      "other_events": 6267,
+      "unconfirmed_duplicates": 0,
+      "zero_inputs": 9
+     },
+     "observer_v2": {
+      "confirmed_exits": 0,
+      "jvp_applications": 50113,
+      "other_events": 6267,
+      "unconfirmed_duplicates": 0,
+      "zero_inputs": 9
+     },
+     "pass": true,
+     "reasons": [],
+     "v1_final_residuals_decomposed": true
+    },
+    {
+     "cell": [
+      "uform_into",
+      "brusselator-1d-50",
+      1e-06
+     ],
+     "confirmed_exits": 729,
+     "delta": {
+      "diagnostic_matvecs": 729,
+      "jvp_calls": 729,
+      "jvp_vectors": 729,
+      "linear_matvec_vectors": 729
+     },
+     "diagnostic_v1": 736,
+     "diagnostic_v2": 7,
+     "jvp_ratio_v2_over_v1": 0.9762277440813931,
+     "jvp_v1": 30666,
+     "jvp_v2": 29937,
+     "observer_v1": {
+      "confirmed_exits": 729,
+      "jvp_applications": 30666,
+      "other_events": 726,
+      "unconfirmed_duplicates": 0,
+      "zero_inputs": 7
+     },
+     "observer_v2": {
+      "confirmed_exits": 0,
+      "jvp_applications": 29937,
+      "other_events": 726,
+      "unconfirmed_duplicates": 0,
+      "zero_inputs": 7
+     },
+     "pass": true,
+     "reasons": [],
+     "v1_final_residuals_decomposed": true
+    },
+    {
+     "cell": [
+      "uform_into",
+      "brusselator-1d-50",
+      1e-08
+     ],
+     "confirmed_exits": 1537,
+     "delta": {
+      "diagnostic_matvecs": 1537,
+      "jvp_calls": 1537,
+      "jvp_vectors": 1537,
+      "linear_matvec_vectors": 1537
+     },
+     "diagnostic_v1": 1544,
+     "diagnostic_v2": 7,
+     "jvp_ratio_v2_over_v1": 0.97619305772835,
+     "jvp_v1": 64561,
+     "jvp_v2": 63024,
+     "observer_v1": {
+      "confirmed_exits": 1537,
+      "jvp_applications": 64561,
+      "other_events": 1540,
+      "unconfirmed_duplicates": 0,
+      "zero_inputs": 7
+     },
+     "observer_v2": {
+      "confirmed_exits": 0,
+      "jvp_applications": 63024,
+      "other_events": 1540,
+      "unconfirmed_duplicates": 0,
+      "zero_inputs": 7
+     },
+     "pass": true,
+     "reasons": [],
+     "v1_final_residuals_decomposed": true
+    },
+    {
+     "cell": [
+      "uform_into",
+      "prothero-robinson-forced",
+      1e-06
+     ],
+     "confirmed_exits": 83,
+     "delta": {
+      "diagnostic_matvecs": 83,
+      "jvp_calls": 83,
+      "jvp_vectors": 83,
+      "linear_matvec_vectors": 83
+     },
+     "diagnostic_v1": 96,
+     "diagnostic_v2": 13,
+     "jvp_ratio_v2_over_v1": 0.683206106870229,
+     "jvp_v1": 262,
+     "jvp_v2": 179,
+     "observer_v1": {
+      "confirmed_exits": 83,
+      "jvp_applications": 262,
+      "other_events": 108,
+      "unconfirmed_duplicates": 0,
+      "zero_inputs": 13
+     },
+     "observer_v2": {
+      "confirmed_exits": 0,
+      "jvp_applications": 179,
+      "other_events": 108,
+      "unconfirmed_duplicates": 0,
+      "zero_inputs": 13
+     },
+     "pass": true,
+     "reasons": [],
+     "v1_final_residuals_decomposed": true
+    },
+    {
+     "cell": [
+      "uform_into",
+      "prothero-robinson-forced",
+      1e-08
+     ],
+     "confirmed_exits": 139,
+     "delta": {
+      "diagnostic_matvecs": 139,
+      "jvp_calls": 139,
+      "jvp_vectors": 139,
+      "linear_matvec_vectors": 139
+     },
+     "diagnostic_v1": 152,
+     "diagnostic_v2": 13,
+     "jvp_ratio_v2_over_v1": 0.6767441860465117,
+     "jvp_v1": 430,
+     "jvp_v2": 291,
+     "observer_v1": {
+      "confirmed_exits": 139,
+      "jvp_applications": 430,
+      "other_events": 171,
+      "unconfirmed_duplicates": 0,
+      "zero_inputs": 13
+     },
+     "observer_v2": {
+      "confirmed_exits": 0,
+      "jvp_applications": 291,
+      "other_events": 171,
+      "unconfirmed_duplicates": 0,
+      "zero_inputs": 13
+     },
+     "pass": true,
+     "reasons": [],
+     "v1_final_residuals_decomposed": true
+    },
+    {
+     "cell": [
+      "uform_into",
+      "quadratic-4",
+      1e-06
+     ],
+     "confirmed_exits": 95,
+     "delta": {
+      "diagnostic_matvecs": 95,
+      "jvp_calls": 95,
+      "jvp_vectors": 95,
+      "linear_matvec_vectors": 95
+     },
+     "diagnostic_v1": 104,
+     "diagnostic_v2": 9,
+     "jvp_ratio_v2_over_v1": 0.8359240069084629,
+     "jvp_v1": 579,
+     "jvp_v2": 484,
+     "observer_v1": {
+      "confirmed_exits": 95,
+      "jvp_applications": 579,
+      "other_events": 104,
+      "unconfirmed_duplicates": 0,
+      "zero_inputs": 9
+     },
+     "observer_v2": {
+      "confirmed_exits": 0,
+      "jvp_applications": 484,
+      "other_events": 104,
+      "unconfirmed_duplicates": 0,
+      "zero_inputs": 9
+     },
+     "pass": true,
+     "reasons": [],
+     "v1_final_residuals_decomposed": true
+    },
+    {
+     "cell": [
+      "uform_into",
+      "quadratic-4",
+      1e-08
+     ],
+     "confirmed_exits": 159,
+     "delta": {
+      "diagnostic_matvecs": 159,
+      "jvp_calls": 159,
+      "jvp_vectors": 159,
+      "linear_matvec_vectors": 159
+     },
+     "diagnostic_v1": 168,
+     "diagnostic_v2": 9,
+     "jvp_ratio_v2_over_v1": 0.8348909657320872,
+     "jvp_v1": 963,
+     "jvp_v2": 804,
+     "observer_v1": {
+      "confirmed_exits": 159,
+      "jvp_applications": 963,
+      "other_events": 168,
+      "unconfirmed_duplicates": 0,
+      "zero_inputs": 9
+     },
+     "observer_v2": {
+      "confirmed_exits": 0,
+      "jvp_applications": 804,
+      "other_events": 168,
+      "unconfirmed_duplicates": 0,
+      "zero_inputs": 9
+     },
+     "pass": true,
+     "reasons": [],
+     "v1_final_residuals_decomposed": true
+    },
+    {
+     "cell": [
+      "uform_into",
+      "brusselator-1d-160",
+      1e-06
+     ],
+     "confirmed_exits": 730,
+     "delta": {
+      "diagnostic_matvecs": 730,
+      "jvp_calls": 730,
+      "jvp_vectors": 730,
+      "linear_matvec_vectors": 730
+     },
+     "diagnostic_v1": 736,
+     "diagnostic_v2": 6,
+     "jvp_ratio_v2_over_v1": 0.9871718272238428,
+     "jvp_v1": 56906,
+     "jvp_v2": 56176,
+     "observer_v1": {
+      "confirmed_exits": 730,
+      "jvp_applications": 56906,
+      "other_events": 726,
+      "unconfirmed_duplicates": 0,
+      "zero_inputs": 6
+     },
+     "observer_v2": {
+      "confirmed_exits": 0,
+      "jvp_applications": 56176,
+      "other_events": 726,
+      "unconfirmed_duplicates": 0,
+      "zero_inputs": 6
+     },
+     "pass": true,
+     "reasons": [],
+     "v1_final_residuals_decomposed": true
+    },
+    {
+     "cell": [
+      "uform_into",
+      "brusselator-1d-160",
+      1e-08
+     ],
+     "confirmed_exits": 1537,
+     "delta": {
+      "diagnostic_matvecs": 1537,
+      "jvp_calls": 1537,
+      "jvp_vectors": 1537,
+      "linear_matvec_vectors": 1537
+     },
+     "diagnostic_v1": 1544,
+     "diagnostic_v2": 7,
+     "jvp_ratio_v2_over_v1": 0.9803590824867421,
+     "jvp_v1": 78255,
+     "jvp_v2": 76718,
+     "observer_v1": {
+      "confirmed_exits": 1537,
+      "jvp_applications": 78255,
+      "other_events": 1541,
+      "unconfirmed_duplicates": 0,
+      "zero_inputs": 7
+     },
+     "observer_v2": {
+      "confirmed_exits": 0,
+      "jvp_applications": 76718,
+      "other_events": 1541,
+      "unconfirmed_duplicates": 0,
+      "zero_inputs": 7
+     },
+     "pass": true,
+     "reasons": [],
+     "v1_final_residuals_decomposed": true
+    },
+    {
+     "cell": [
+      "uform_default",
+      "robertson",
+      1e-06
+     ],
+     "confirmed_exits": 355,
+     "delta": {
+      "diagnostic_matvecs": 355,
+      "jvp_calls": 355,
+      "jvp_vectors": 355,
+      "linear_matvec_vectors": 355
+     },
+     "diagnostic_v1": 360,
+     "diagnostic_v2": 5,
+     "jvp_ratio_v2_over_v1": 0.7676701570680629,
+     "jvp_v1": 1528,
+     "jvp_v2": 1173,
+     "observer_v1": {
+      "confirmed_exits": 355,
+      "jvp_applications": 1528,
+      "other_events": 358,
+      "unconfirmed_duplicates": 0,
+      "zero_inputs": 5
+     },
+     "observer_v2": {
+      "confirmed_exits": 0,
+      "jvp_applications": 1173,
+      "other_events": 358,
+      "unconfirmed_duplicates": 0,
+      "zero_inputs": 5
+     },
+     "pass": true,
+     "reasons": [],
+     "v1_final_residuals_decomposed": true
+    },
+    {
+     "cell": [
+      "uform_default",
+      "robertson",
+      1e-08
+     ],
+     "confirmed_exits": 819,
+     "delta": {
+      "diagnostic_matvecs": 819,
+      "jvp_calls": 819,
+      "jvp_vectors": 819,
+      "linear_matvec_vectors": 819
+     },
+     "diagnostic_v1": 824,
+     "diagnostic_v2": 5,
+     "jvp_ratio_v2_over_v1": 0.7741312741312741,
+     "jvp_v1": 3626,
+     "jvp_v2": 2807,
+     "observer_v1": {
+      "confirmed_exits": 819,
+      "jvp_applications": 3626,
+      "other_events": 820,
+      "unconfirmed_duplicates": 0,
+      "zero_inputs": 5
+     },
+     "observer_v2": {
+      "confirmed_exits": 0,
+      "jvp_applications": 2807,
+      "other_events": 820,
+      "unconfirmed_duplicates": 0,
+      "zero_inputs": 5
+     },
+     "pass": true,
+     "reasons": [],
+     "v1_final_residuals_decomposed": true
+    },
+    {
+     "cell": [
+      "uform_default",
+      "van-der-pol-mu1000",
+      1e-06
+     ],
+     "confirmed_exits": 3748,
+     "delta": {
+      "diagnostic_matvecs": 3748,
+      "jvp_calls": 3748,
+      "jvp_vectors": 3748,
+      "linear_matvec_vectors": 3748
+     },
+     "diagnostic_v1": 3752,
+     "diagnostic_v2": 4,
+     "jvp_ratio_v2_over_v1": 0.7500666844491864,
+     "jvp_v1": 14996,
+     "jvp_v2": 11248,
+     "observer_v1": {
+      "confirmed_exits": 3748,
+      "jvp_applications": 14996,
+      "other_events": 3634,
+      "unconfirmed_duplicates": 0,
+      "zero_inputs": 4
+     },
+     "observer_v2": {
+      "confirmed_exits": 0,
+      "jvp_applications": 11248,
+      "other_events": 3634,
+      "unconfirmed_duplicates": 0,
+      "zero_inputs": 4
+     },
+     "pass": true,
+     "reasons": [],
+     "v1_final_residuals_decomposed": true
+    },
+    {
+     "cell": [
+      "uform_default",
+      "van-der-pol-mu1000",
+      1e-08
+     ],
+     "confirmed_exits": 7572,
+     "delta": {
+      "diagnostic_matvecs": 7572,
+      "jvp_calls": 7572,
+      "jvp_vectors": 7572,
+      "linear_matvec_vectors": 7572
+     },
+     "diagnostic_v1": 7576,
+     "diagnostic_v2": 4,
+     "jvp_ratio_v2_over_v1": 0.750033012016374,
+     "jvp_v1": 30292,
+     "jvp_v2": 22720,
+     "observer_v1": {
+      "confirmed_exits": 7572,
+      "jvp_applications": 30292,
+      "other_events": 7544,
+      "unconfirmed_duplicates": 0,
+      "zero_inputs": 4
+     },
+     "observer_v2": {
+      "confirmed_exits": 0,
+      "jvp_applications": 22720,
+      "other_events": 7544,
+      "unconfirmed_duplicates": 0,
+      "zero_inputs": 4
+     },
+     "pass": true,
+     "reasons": [],
+     "v1_final_residuals_decomposed": true
+    },
+    {
+     "cell": [
+      "uform_default",
+      "hires",
+      1e-06
+     ],
+     "confirmed_exits": 1669,
+     "delta": {
+      "diagnostic_matvecs": 1669,
+      "jvp_calls": 1669,
+      "jvp_vectors": 1669,
+      "linear_matvec_vectors": 1669
+     },
+     "diagnostic_v1": 1680,
+     "diagnostic_v2": 11,
+     "jvp_ratio_v2_over_v1": 0.8889701969132517,
+     "jvp_v1": 15032,
+     "jvp_v2": 13363,
+     "observer_v1": {
+      "confirmed_exits": 1669,
+      "jvp_applications": 15032,
+      "other_events": 1674,
+      "unconfirmed_duplicates": 0,
+      "zero_inputs": 11
+     },
+     "observer_v2": {
+      "confirmed_exits": 0,
+      "jvp_applications": 13363,
+      "other_events": 1674,
+      "unconfirmed_duplicates": 0,
+      "zero_inputs": 11
+     },
+     "pass": true,
+     "reasons": [],
+     "v1_final_residuals_decomposed": true
+    },
+    {
+     "cell": [
+      "uform_default",
+      "hires",
+      1e-08
+     ],
+     "confirmed_exits": 6263,
+     "delta": {
+      "diagnostic_matvecs": 6263,
+      "jvp_calls": 6263,
+      "jvp_vectors": 6263,
+      "linear_matvec_vectors": 6263
+     },
+     "diagnostic_v1": 6272,
+     "diagnostic_v2": 9,
+     "jvp_ratio_v2_over_v1": 0.8889066269334469,
+     "jvp_v1": 56376,
+     "jvp_v2": 50113,
+     "observer_v1": {
+      "confirmed_exits": 6263,
+      "jvp_applications": 56376,
+      "other_events": 6267,
+      "unconfirmed_duplicates": 0,
+      "zero_inputs": 9
+     },
+     "observer_v2": {
+      "confirmed_exits": 0,
+      "jvp_applications": 50113,
+      "other_events": 6267,
+      "unconfirmed_duplicates": 0,
+      "zero_inputs": 9
+     },
+     "pass": true,
+     "reasons": [],
+     "v1_final_residuals_decomposed": true
+    },
+    {
+     "cell": [
+      "uform_default",
+      "brusselator-1d-50",
+      1e-06
+     ],
+     "confirmed_exits": 729,
+     "delta": {
+      "diagnostic_matvecs": 729,
+      "jvp_calls": 729,
+      "jvp_vectors": 729,
+      "linear_matvec_vectors": 729
+     },
+     "diagnostic_v1": 736,
+     "diagnostic_v2": 7,
+     "jvp_ratio_v2_over_v1": 0.9762277440813931,
+     "jvp_v1": 30666,
+     "jvp_v2": 29937,
+     "observer_v1": {
+      "confirmed_exits": 729,
+      "jvp_applications": 30666,
+      "other_events": 726,
+      "unconfirmed_duplicates": 0,
+      "zero_inputs": 7
+     },
+     "observer_v2": {
+      "confirmed_exits": 0,
+      "jvp_applications": 29937,
+      "other_events": 726,
+      "unconfirmed_duplicates": 0,
+      "zero_inputs": 7
+     },
+     "pass": true,
+     "reasons": [],
+     "v1_final_residuals_decomposed": true
+    },
+    {
+     "cell": [
+      "uform_default",
+      "brusselator-1d-50",
+      1e-08
+     ],
+     "confirmed_exits": 1537,
+     "delta": {
+      "diagnostic_matvecs": 1537,
+      "jvp_calls": 1537,
+      "jvp_vectors": 1537,
+      "linear_matvec_vectors": 1537
+     },
+     "diagnostic_v1": 1544,
+     "diagnostic_v2": 7,
+     "jvp_ratio_v2_over_v1": 0.97619305772835,
+     "jvp_v1": 64561,
+     "jvp_v2": 63024,
+     "observer_v1": {
+      "confirmed_exits": 1537,
+      "jvp_applications": 64561,
+      "other_events": 1540,
+      "unconfirmed_duplicates": 0,
+      "zero_inputs": 7
+     },
+     "observer_v2": {
+      "confirmed_exits": 0,
+      "jvp_applications": 63024,
+      "other_events": 1540,
+      "unconfirmed_duplicates": 0,
+      "zero_inputs": 7
+     },
+     "pass": true,
+     "reasons": [],
+     "v1_final_residuals_decomposed": true
+    },
+    {
+     "cell": [
+      "uform_default",
+      "prothero-robinson-forced",
+      1e-06
+     ],
+     "confirmed_exits": 83,
+     "delta": {
+      "diagnostic_matvecs": 83,
+      "jvp_calls": 83,
+      "jvp_vectors": 83,
+      "linear_matvec_vectors": 83
+     },
+     "diagnostic_v1": 96,
+     "diagnostic_v2": 13,
+     "jvp_ratio_v2_over_v1": 0.683206106870229,
+     "jvp_v1": 262,
+     "jvp_v2": 179,
+     "observer_v1": {
+      "confirmed_exits": 83,
+      "jvp_applications": 262,
+      "other_events": 108,
+      "unconfirmed_duplicates": 0,
+      "zero_inputs": 13
+     },
+     "observer_v2": {
+      "confirmed_exits": 0,
+      "jvp_applications": 179,
+      "other_events": 108,
+      "unconfirmed_duplicates": 0,
+      "zero_inputs": 13
+     },
+     "pass": true,
+     "reasons": [],
+     "v1_final_residuals_decomposed": true
+    },
+    {
+     "cell": [
+      "uform_default",
+      "prothero-robinson-forced",
+      1e-08
+     ],
+     "confirmed_exits": 139,
+     "delta": {
+      "diagnostic_matvecs": 139,
+      "jvp_calls": 139,
+      "jvp_vectors": 139,
+      "linear_matvec_vectors": 139
+     },
+     "diagnostic_v1": 152,
+     "diagnostic_v2": 13,
+     "jvp_ratio_v2_over_v1": 0.6767441860465117,
+     "jvp_v1": 430,
+     "jvp_v2": 291,
+     "observer_v1": {
+      "confirmed_exits": 139,
+      "jvp_applications": 430,
+      "other_events": 171,
+      "unconfirmed_duplicates": 0,
+      "zero_inputs": 13
+     },
+     "observer_v2": {
+      "confirmed_exits": 0,
+      "jvp_applications": 291,
+      "other_events": 171,
+      "unconfirmed_duplicates": 0,
+      "zero_inputs": 13
+     },
+     "pass": true,
+     "reasons": [],
+     "v1_final_residuals_decomposed": true
+    },
+    {
+     "cell": [
+      "uform_default",
+      "quadratic-4",
+      1e-06
+     ],
+     "confirmed_exits": 95,
+     "delta": {
+      "diagnostic_matvecs": 95,
+      "jvp_calls": 95,
+      "jvp_vectors": 95,
+      "linear_matvec_vectors": 95
+     },
+     "diagnostic_v1": 104,
+     "diagnostic_v2": 9,
+     "jvp_ratio_v2_over_v1": 0.8359240069084629,
+     "jvp_v1": 579,
+     "jvp_v2": 484,
+     "observer_v1": {
+      "confirmed_exits": 95,
+      "jvp_applications": 579,
+      "other_events": 104,
+      "unconfirmed_duplicates": 0,
+      "zero_inputs": 9
+     },
+     "observer_v2": {
+      "confirmed_exits": 0,
+      "jvp_applications": 484,
+      "other_events": 104,
+      "unconfirmed_duplicates": 0,
+      "zero_inputs": 9
+     },
+     "pass": true,
+     "reasons": [],
+     "v1_final_residuals_decomposed": true
+    },
+    {
+     "cell": [
+      "uform_default",
+      "quadratic-4",
+      1e-08
+     ],
+     "confirmed_exits": 159,
+     "delta": {
+      "diagnostic_matvecs": 159,
+      "jvp_calls": 159,
+      "jvp_vectors": 159,
+      "linear_matvec_vectors": 159
+     },
+     "diagnostic_v1": 168,
+     "diagnostic_v2": 9,
+     "jvp_ratio_v2_over_v1": 0.8348909657320872,
+     "jvp_v1": 963,
+     "jvp_v2": 804,
+     "observer_v1": {
+      "confirmed_exits": 159,
+      "jvp_applications": 963,
+      "other_events": 168,
+      "unconfirmed_duplicates": 0,
+      "zero_inputs": 9
+     },
+     "observer_v2": {
+      "confirmed_exits": 0,
+      "jvp_applications": 804,
+      "other_events": 168,
+      "unconfirmed_duplicates": 0,
+      "zero_inputs": 9
+     },
+     "pass": true,
+     "reasons": [],
+     "v1_final_residuals_decomposed": true
+    },
+    {
+     "cell": [
+      "uform_default",
+      "brusselator-1d-160",
+      1e-06
+     ],
+     "confirmed_exits": 730,
+     "delta": {
+      "diagnostic_matvecs": 730,
+      "jvp_calls": 730,
+      "jvp_vectors": 730,
+      "linear_matvec_vectors": 730
+     },
+     "diagnostic_v1": 736,
+     "diagnostic_v2": 6,
+     "jvp_ratio_v2_over_v1": 0.9871718272238428,
+     "jvp_v1": 56906,
+     "jvp_v2": 56176,
+     "observer_v1": {
+      "confirmed_exits": 730,
+      "jvp_applications": 56906,
+      "other_events": 726,
+      "unconfirmed_duplicates": 0,
+      "zero_inputs": 6
+     },
+     "observer_v2": {
+      "confirmed_exits": 0,
+      "jvp_applications": 56176,
+      "other_events": 726,
+      "unconfirmed_duplicates": 0,
+      "zero_inputs": 6
+     },
+     "pass": true,
+     "reasons": [],
+     "v1_final_residuals_decomposed": true
+    },
+    {
+     "cell": [
+      "uform_default",
+      "brusselator-1d-160",
+      1e-08
+     ],
+     "confirmed_exits": 1537,
+     "delta": {
+      "diagnostic_matvecs": 1537,
+      "jvp_calls": 1537,
+      "jvp_vectors": 1537,
+      "linear_matvec_vectors": 1537
+     },
+     "diagnostic_v1": 1544,
+     "diagnostic_v2": 7,
+     "jvp_ratio_v2_over_v1": 0.9803590824867421,
+     "jvp_v1": 78255,
+     "jvp_v2": 76718,
+     "observer_v1": {
+      "confirmed_exits": 1537,
+      "jvp_applications": 78255,
+      "other_events": 1541,
+      "unconfirmed_duplicates": 0,
+      "zero_inputs": 7
+     },
+     "observer_v2": {
+      "confirmed_exits": 0,
+      "jvp_applications": 76718,
+      "other_events": 1541,
+      "unconfirmed_duplicates": 0,
+      "zero_inputs": 7
+     },
+     "pass": true,
+     "reasons": [],
+     "v1_final_residuals_decomposed": true
+    },
+    {
+     "cell": [
+      "kform_integrate",
+      "robertson",
+      1e-06
+     ],
+     "confirmed_exits": 374,
+     "delta": {
+      "diagnostic_matvecs": 374,
+      "jvp_calls": 374,
+      "jvp_vectors": 374,
+      "linear_matvec_vectors": 374
+     },
+     "diagnostic_v1": 424,
+     "diagnostic_v2": 50,
+     "jvp_ratio_v2_over_v1": 0.842791088692728,
+     "jvp_v1": 2379,
+     "jvp_v2": 2005,
+     "observer_v1": {
+      "confirmed_exits": 374,
+      "jvp_applications": 2379,
+      "other_events": 416,
+      "unconfirmed_duplicates": 49,
+      "zero_inputs": 0
+     },
+     "observer_v2": {
+      "confirmed_exits": 0,
+      "jvp_applications": 2005,
+      "other_events": 416,
+      "unconfirmed_duplicates": 49,
+      "zero_inputs": 0
+     },
+     "pass": true,
+     "reasons": [],
+     "v1_final_residuals_decomposed": false
+    },
+    {
+     "cell": [
+      "kform_integrate",
+      "robertson",
+      1e-08
+     ],
+     "confirmed_exits": 830,
+     "delta": {
+      "diagnostic_matvecs": 830,
+      "jvp_calls": 830,
+      "jvp_vectors": 830,
+      "linear_matvec_vectors": 830
+     },
+     "diagnostic_v1": 872,
+     "diagnostic_v2": 42,
+     "jvp_ratio_v2_over_v1": 0.8372868065085277,
+     "jvp_v1": 5101,
+     "jvp_v2": 4271,
+     "observer_v1": {
+      "confirmed_exits": 830,
+      "jvp_applications": 5101,
+      "other_events": 866,
+      "unconfirmed_duplicates": 42,
+      "zero_inputs": 0
+     },
+     "observer_v2": {
+      "confirmed_exits": 0,
+      "jvp_applications": 4271,
+      "other_events": 866,
+      "unconfirmed_duplicates": 42,
+      "zero_inputs": 0
+     },
+     "pass": true,
+     "reasons": [],
+     "v1_final_residuals_decomposed": true
+    },
+    {
+     "cell": [
+      "kform_integrate",
+      "van-der-pol-mu1000",
+      1e-06
+     ],
+     "confirmed_exits": 3778,
+     "delta": {
+      "diagnostic_matvecs": 3778,
+      "jvp_calls": 3778,
+      "jvp_vectors": 3778,
+      "linear_matvec_vectors": 3778
+     },
+     "diagnostic_v1": 3952,
+     "diagnostic_v2": 174,
+     "jvp_ratio_v2_over_v1": 0.829995950141745,
+     "jvp_v1": 22223,
+     "jvp_v2": 18445,
+     "observer_v1": {
+      "confirmed_exits": 3778,
+      "jvp_applications": 22223,
+      "other_events": 3927,
+      "unconfirmed_duplicates": 173,
+      "zero_inputs": 0
+     },
+     "observer_v2": {
+      "confirmed_exits": 0,
+      "jvp_applications": 18445,
+      "other_events": 3927,
+      "unconfirmed_duplicates": 173,
+      "zero_inputs": 0
+     },
+     "pass": true,
+     "reasons": [],
+     "v1_final_residuals_decomposed": false
+    },
+    {
+     "cell": [
+      "kform_integrate",
+      "van-der-pol-mu1000",
+      1e-08
+     ],
+     "confirmed_exits": 7558,
+     "delta": {
+      "diagnostic_matvecs": 7558,
+      "jvp_calls": 7558,
+      "jvp_vectors": 7558,
+      "linear_matvec_vectors": 7558
+     },
+     "diagnostic_v1": 7864,
+     "diagnostic_v2": 306,
+     "jvp_ratio_v2_over_v1": 0.829517515169287,
+     "jvp_v1": 44333,
+     "jvp_v2": 36775,
+     "observer_v1": {
+      "confirmed_exits": 7558,
+      "jvp_applications": 44333,
+      "other_events": 7828,
+      "unconfirmed_duplicates": 306,
+      "zero_inputs": 0
+     },
+     "observer_v2": {
+      "confirmed_exits": 0,
+      "jvp_applications": 36775,
+      "other_events": 7828,
+      "unconfirmed_duplicates": 306,
+      "zero_inputs": 0
+     },
+     "pass": true,
+     "reasons": [],
+     "v1_final_residuals_decomposed": true
+    },
+    {
+     "cell": [
+      "kform_integrate",
+      "hires",
+      1e-06
+     ],
+     "confirmed_exits": 1676,
+     "delta": {
+      "diagnostic_matvecs": 1676,
+      "jvp_calls": 1676,
+      "jvp_vectors": 1676,
+      "linear_matvec_vectors": 1676
+     },
+     "diagnostic_v1": 1728,
+     "diagnostic_v2": 52,
+     "jvp_ratio_v2_over_v1": 0.9077397335682044,
+     "jvp_v1": 18166,
+     "jvp_v2": 16490,
+     "observer_v1": {
+      "confirmed_exits": 1676,
+      "jvp_applications": 18166,
+      "other_events": 1722,
+      "unconfirmed_duplicates": 52,
+      "zero_inputs": 0
+     },
+     "observer_v2": {
+      "confirmed_exits": 0,
+      "jvp_applications": 16490,
+      "other_events": 1722,
+      "unconfirmed_duplicates": 52,
+      "zero_inputs": 0
+     },
+     "pass": true,
+     "reasons": [],
+     "v1_final_residuals_decomposed": true
+    },
+    {
+     "cell": [
+      "kform_integrate",
+      "hires",
+      1e-08
+     ],
+     "confirmed_exits": 6257,
+     "delta": {
+      "diagnostic_matvecs": 6257,
+      "jvp_calls": 6257,
+      "jvp_vectors": 6257,
+      "linear_matvec_vectors": 6257
+     },
+     "diagnostic_v1": 6304,
+     "diagnostic_v2": 47,
+     "jvp_ratio_v2_over_v1": 0.9071606623538488,
+     "jvp_v1": 67396,
+     "jvp_v2": 61139,
+     "observer_v1": {
+      "confirmed_exits": 6257,
+      "jvp_applications": 67396,
+      "other_events": 6300,
+      "unconfirmed_duplicates": 47,
+      "zero_inputs": 0
+     },
+     "observer_v2": {
+      "confirmed_exits": 0,
+      "jvp_applications": 61139,
+      "other_events": 6300,
+      "unconfirmed_duplicates": 47,
+      "zero_inputs": 0
+     },
+     "pass": true,
+     "reasons": [],
+     "v1_final_residuals_decomposed": true
+    },
+    {
+     "cell": [
+      "kform_integrate",
+      "brusselator-1d-50",
+      1e-06
+     ],
+     "confirmed_exits": 750,
+     "delta": {
+      "diagnostic_matvecs": 750,
+      "jvp_calls": 750,
+      "jvp_vectors": 750,
+      "linear_matvec_vectors": 750
+     },
+     "diagnostic_v1": 800,
+     "diagnostic_v2": 50,
+     "jvp_ratio_v2_over_v1": 0.9772437647915528,
+     "jvp_v1": 32958,
+     "jvp_v2": 32208,
+     "observer_v1": {
+      "confirmed_exits": 750,
+      "jvp_applications": 32958,
+      "other_events": 792,
+      "unconfirmed_duplicates": 47,
+      "zero_inputs": 0
+     },
+     "observer_v2": {
+      "confirmed_exits": 0,
+      "jvp_applications": 32208,
+      "other_events": 792,
+      "unconfirmed_duplicates": 47,
+      "zero_inputs": 0
+     },
+     "pass": true,
+     "reasons": [],
+     "v1_final_residuals_decomposed": false
+    },
+    {
+     "cell": [
+      "kform_integrate",
+      "brusselator-1d-50",
+      1e-08
+     ],
+     "confirmed_exits": 1550,
+     "delta": {
+      "diagnostic_matvecs": 1550,
+      "jvp_calls": 1550,
+      "jvp_vectors": 1550,
+      "linear_matvec_vectors": 1550
+     },
+     "diagnostic_v1": 1616,
+     "diagnostic_v2": 66,
+     "jvp_ratio_v2_over_v1": 0.9772068879314147,
+     "jvp_v1": 68003,
+     "jvp_v2": 66453,
+     "observer_v1": {
+      "confirmed_exits": 1550,
+      "jvp_applications": 68003,
+      "other_events": 1607,
+      "unconfirmed_duplicates": 64,
+      "zero_inputs": 0
+     },
+     "observer_v2": {
+      "confirmed_exits": 0,
+      "jvp_applications": 66453,
+      "other_events": 1607,
+      "unconfirmed_duplicates": 64,
+      "zero_inputs": 0
+     },
+     "pass": true,
+     "reasons": [],
+     "v1_final_residuals_decomposed": false
+    },
+    {
+     "cell": [
+      "kform_step",
+      "robertson",
+      1e-06
+     ],
+     "confirmed_exits": 350,
+     "delta": {
+      "diagnostic_matvecs": 350,
+      "jvp_calls": 350,
+      "jvp_vectors": 350,
+      "linear_matvec_vectors": 350
+     },
+     "diagnostic_v1": 360,
+     "diagnostic_v2": 10,
+     "jvp_ratio_v2_over_v1": 0.8341232227488151,
+     "jvp_v1": 2110,
+     "jvp_v2": 1760,
+     "observer_v1": {
+      "confirmed_exits": 350,
+      "jvp_applications": 2110,
+      "other_events": 360,
+      "unconfirmed_duplicates": 10,
+      "zero_inputs": 0
+     },
+     "observer_v2": {
+      "confirmed_exits": 0,
+      "jvp_applications": 1760,
+      "other_events": 360,
+      "unconfirmed_duplicates": 10,
+      "zero_inputs": 0
+     },
+     "pass": true,
+     "reasons": [],
+     "v1_final_residuals_decomposed": true
+    },
+    {
+     "cell": [
+      "kform_step",
+      "robertson",
+      1e-08
+     ],
+     "confirmed_exits": 812,
+     "delta": {
+      "diagnostic_matvecs": 812,
+      "jvp_calls": 812,
+      "jvp_vectors": 812,
+      "linear_matvec_vectors": 812
+     },
+     "diagnostic_v1": 824,
+     "diagnostic_v2": 12,
+     "jvp_ratio_v2_over_v1": 0.8343871099326943,
+     "jvp_v1": 4903,
+     "jvp_v2": 4091,
+     "observer_v1": {
+      "confirmed_exits": 812,
+      "jvp_applications": 4903,
+      "other_events": 824,
+      "unconfirmed_duplicates": 12,
+      "zero_inputs": 0
+     },
+     "observer_v2": {
+      "confirmed_exits": 0,
+      "jvp_applications": 4091,
+      "other_events": 824,
+      "unconfirmed_duplicates": 12,
+      "zero_inputs": 0
+     },
+     "pass": true,
+     "reasons": [],
+     "v1_final_residuals_decomposed": true
+    },
+    {
+     "cell": [
+      "kform_step",
+      "van-der-pol-mu1000",
+      1e-06
+     ],
+     "confirmed_exits": 3744,
+     "delta": {
+      "diagnostic_matvecs": 3744,
+      "jvp_calls": 3744,
+      "jvp_vectors": 3744,
+      "linear_matvec_vectors": 3744
+     },
+     "diagnostic_v1": 3752,
+     "diagnostic_v2": 8,
+     "jvp_ratio_v2_over_v1": 0.8262645011600928,
+     "jvp_v1": 21550,
+     "jvp_v2": 17806,
+     "observer_v1": {
+      "confirmed_exits": 3744,
+      "jvp_applications": 21550,
+      "other_events": 3752,
+      "unconfirmed_duplicates": 8,
+      "zero_inputs": 0
+     },
+     "observer_v2": {
+      "confirmed_exits": 0,
+      "jvp_applications": 17806,
+      "other_events": 3752,
+      "unconfirmed_duplicates": 8,
+      "zero_inputs": 0
+     },
+     "pass": true,
+     "reasons": [],
+     "v1_final_residuals_decomposed": true
+    },
+    {
+     "cell": [
+      "kform_step",
+      "van-der-pol-mu1000",
+      1e-08
+     ],
+     "confirmed_exits": 7562,
+     "delta": {
+      "diagnostic_matvecs": 7562,
+      "jvp_calls": 7562,
+      "jvp_vectors": 7562,
+      "linear_matvec_vectors": 7562
+     },
+     "diagnostic_v1": 7576,
+     "diagnostic_v2": 14,
+     "jvp_ratio_v2_over_v1": 0.8262408088235295,
+     "jvp_v1": 43520,
+     "jvp_v2": 35958,
+     "observer_v1": {
+      "confirmed_exits": 7562,
+      "jvp_applications": 43520,
+      "other_events": 7576,
+      "unconfirmed_duplicates": 14,
+      "zero_inputs": 0
+     },
+     "observer_v2": {
+      "confirmed_exits": 0,
+      "jvp_applications": 35958,
+      "other_events": 7576,
+      "unconfirmed_duplicates": 14,
+      "zero_inputs": 0
+     },
+     "pass": true,
+     "reasons": [],
+     "v1_final_residuals_decomposed": true
+    },
+    {
+     "cell": [
+      "kform_step",
+      "hires",
+      1e-06
+     ],
+     "confirmed_exits": 1685,
+     "delta": {
+      "diagnostic_matvecs": 1685,
+      "jvp_calls": 1685,
+      "jvp_vectors": 1685,
+      "linear_matvec_vectors": 1685
+     },
+     "diagnostic_v1": 1704,
+     "diagnostic_v2": 19,
+     "jvp_ratio_v2_over_v1": 0.9072443025432126,
+     "jvp_v1": 18166,
+     "jvp_v2": 16481,
+     "observer_v1": {
+      "confirmed_exits": 1685,
+      "jvp_applications": 18166,
+      "other_events": 1704,
+      "unconfirmed_duplicates": 19,
+      "zero_inputs": 0
+     },
+     "observer_v2": {
+      "confirmed_exits": 0,
+      "jvp_applications": 16481,
+      "other_events": 1704,
+      "unconfirmed_duplicates": 19,
+      "zero_inputs": 0
+     },
+     "pass": true,
+     "reasons": [],
+     "v1_final_residuals_decomposed": true
+    },
+    {
+     "cell": [
+      "kform_step",
+      "hires",
+      1e-08
+     ],
+     "confirmed_exits": 6253,
+     "delta": {
+      "diagnostic_matvecs": 6253,
+      "jvp_calls": 6253,
+      "jvp_vectors": 6253,
+      "linear_matvec_vectors": 6253
+     },
+     "diagnostic_v1": 6272,
+     "diagnostic_v2": 19,
+     "jvp_ratio_v2_over_v1": 0.9070489951242716,
+     "jvp_v1": 67272,
+     "jvp_v2": 61019,
+     "observer_v1": {
+      "confirmed_exits": 6253,
+      "jvp_applications": 67272,
+      "other_events": 6272,
+      "unconfirmed_duplicates": 19,
+      "zero_inputs": 0
+     },
+     "observer_v2": {
+      "confirmed_exits": 0,
+      "jvp_applications": 61019,
+      "other_events": 6272,
+      "unconfirmed_duplicates": 19,
+      "zero_inputs": 0
+     },
+     "pass": true,
+     "reasons": [],
+     "v1_final_residuals_decomposed": true
+    },
+    {
+     "cell": [
+      "kform_step",
+      "brusselator-1d-50",
+      1e-06
+     ],
+     "confirmed_exits": 725,
+     "delta": {
+      "diagnostic_matvecs": 725,
+      "jvp_calls": 725,
+      "jvp_vectors": 725,
+      "linear_matvec_vectors": 725
+     },
+     "diagnostic_v1": 736,
+     "diagnostic_v2": 11,
+     "jvp_ratio_v2_over_v1": 0.9771646351066176,
+     "jvp_v1": 31749,
+     "jvp_v2": 31024,
+     "observer_v1": {
+      "confirmed_exits": 725,
+      "jvp_applications": 31749,
+      "other_events": 736,
+      "unconfirmed_duplicates": 11,
+      "zero_inputs": 0
+     },
+     "observer_v2": {
+      "confirmed_exits": 0,
+      "jvp_applications": 31024,
+      "other_events": 736,
+      "unconfirmed_duplicates": 11,
+      "zero_inputs": 0
+     },
+     "pass": true,
+     "reasons": [],
+     "v1_final_residuals_decomposed": true
+    },
+    {
+     "cell": [
+      "kform_step",
+      "brusselator-1d-50",
+      1e-08
+     ],
+     "confirmed_exits": 1533,
+     "delta": {
+      "diagnostic_matvecs": 1533,
+      "jvp_calls": 1533,
+      "jvp_vectors": 1533,
+      "linear_matvec_vectors": 1533
+     },
+     "diagnostic_v1": 1544,
+     "diagnostic_v2": 11,
+     "jvp_ratio_v2_over_v1": 0.9771531617460767,
+     "jvp_v1": 67099,
+     "jvp_v2": 65566,
+     "observer_v1": {
+      "confirmed_exits": 1533,
+      "jvp_applications": 67099,
+      "other_events": 1544,
+      "unconfirmed_duplicates": 11,
+      "zero_inputs": 0
+     },
+     "observer_v2": {
+      "confirmed_exits": 0,
+      "jvp_applications": 65566,
+      "other_events": 1544,
+      "unconfirmed_duplicates": 11,
+      "zero_inputs": 0
+     },
+     "pass": true,
+     "reasons": [],
+     "v1_final_residuals_decomposed": true
+    }
+   ],
+   "cells_checked": 44,
+   "failing_cells": [],
+   "pass": true
+  },
+  "3_no_instruction_regression": {
+   "binary_sha256": "424f3b71ecfcc1b73c2ed2f6598e9fd7e062094a612445d8084b6576eab85679",
+   "cells": [
+    {
+     "attempts": 469,
+     "cell": [
+      "uform_into",
+      "van-der-pol-mu1000",
+      1e-06
+     ],
+     "ir_per_trajectory_v1": 50134761,
+     "ir_per_trajectory_v2": 48755333,
+     "ir_ratio_v2_over_v1": 0.9724855973682611,
+     "ir_saved_per_trajectory": 1379428,
+     "pass": true,
+     "reasons": [],
+     "within_predicted_0.80_1.00": true
+    },
+    {
+     "attempts": 210,
+     "cell": [
+      "uform_into",
+      "hires",
+      1e-06
+     ],
+     "ir_per_trajectory_v1": 86012628,
+     "ir_per_trajectory_v2": 82742993,
+     "ir_ratio_v2_over_v1": 0.961986570158047,
+     "ir_saved_per_trajectory": 3269635,
+     "pass": true,
+     "reasons": [],
+     "within_predicted_0.80_1.00": true
+    },
+    {
+     "attempts": 92,
+     "cell": [
+      "uform_into",
+      "brusselator-1d-50",
+      1e-06
+     ],
+     "ir_per_trajectory_v1": 1501579527,
+     "ir_per_trajectory_v2": 1495920300,
+     "ir_ratio_v2_over_v1": 0.9962311506661878,
+     "ir_saved_per_trajectory": 5659227,
+     "pass": true,
+     "reasons": [],
+     "within_predicted_0.80_1.00": true
+    },
+    {
+     "attempts": 210,
+     "cell": [
+      "kform_integrate",
+      "hires",
+      1e-06
+     ],
+     "ir_per_trajectory_v1": 253672699,
+     "ir_per_trajectory_v2": 250881934,
+     "ir_ratio_v2_over_v1": 0.9889985599120384,
+     "ir_saved_per_trajectory": 2790765,
+     "pass": true,
+     "reasons": [],
+     "within_predicted_0.80_1.00": true
+    },
+    {
+     "attempts": 213,
+     "cell": [
+      "kform_step",
+      "hires",
+      1e-06
+     ],
+     "ir_per_trajectory_v1": 246654017,
+     "ir_per_trajectory_v2": 245005293,
+     "ir_ratio_v2_over_v1": 0.9933156409935947,
+     "ir_saved_per_trajectory": 1648724,
+     "pass": true,
+     "reasons": [],
+     "within_predicted_0.80_1.00": true
+    }
+   ],
+   "failing_cells": [],
+   "limit": 1.0,
+   "pass": true,
+   "profile_commit": "3ea305cc4756a5ec6092c9e3deabcea9226c0ae6",
+   "profile_tree_clean": true,
+   "valgrind": "valgrind-3.22.0"
+  },
+  "4_contract": {
+   "decision_rule": {
+    "kernel_default": "RecomputeFinal",
+    "pass": true,
+    "rule_default": "RecomputeFinal",
+    "runs_default_accounting": "gmres-residual-accounting-recompute-final-v1",
+    "trial_failing_pre_existing_tests": 9,
+    "trial_outcome": "versioned"
+   },
+   "pass": true,
+   "suites": [
+    {
+     "command": "cargo test --workspace --all-targets --locked --no-fail-fast",
+     "exit": 0,
+     "failed": 0,
+     "failing_tests": [],
+     "ignored": 75,
+     "passed": 975,
+     "step": "test-workspace"
+    },
+    {
+     "command": "cargo test --workspace --doc --locked --no-fail-fast",
+     "exit": 0,
+     "failed": 0,
+     "failing_tests": [],
+     "ignored": 0,
+     "passed": 3,
+     "step": "test-doc"
+    },
+    {
+     "command": "cargo test -p rodas5p-integrators --features audit2-research --locked --no-fail-fast",
+     "exit": 0,
+     "failed": 0,
+     "failing_tests": [],
+     "ignored": 44,
+     "passed": 606,
+     "step": "test-research"
+    },
+    {
+     "command": "cargo test -p rodas5p-integrators --features audit2-bateman-authority --locked --no-fail-fast",
+     "exit": 0,
+     "failed": 0,
+     "failing_tests": [],
+     "ignored": 44,
+     "passed": 612,
+     "step": "test-bateman"
+    },
+    {
+     "command": "cargo test -p rodas5p-integrators --features audit2-stage-certificate --locked --no-fail-fast",
+     "exit": 0,
+     "failed": 0,
+     "failing_tests": [],
+     "ignored": 44,
+     "passed": 634,
+     "step": "test-stagecert"
+    },
+    {
+     "command": "python3 -m unittest discover -s tools -p test_*.py",
+     "exit": 0,
+     "failed": 0,
+     "failing_tests": [],
+     "ignored": 0,
+     "passed": 249,
+     "step": "python-tools"
+    }
+   ],
+   "suites_pass": true,
+   "test_file_audit": {
+    "added_test_files": [
+     "crates/rodas5p-integrators/tests/sp01_dupfix_adoption.rs",
+     "crates/rodas5p-krylov/tests/dupfix_promotion_contract.rs"
+    ],
+    "base": "0283c1f7f2752d2b6b6b3b56847e73284a6dd67f",
+    "pass": true,
+    "violations": []
+   }
+  }
+ },
+ "node": "sp01_dupfix_adoption_20261010",
+ "reported": {
+  "alg04_reproduction": [
+   {
+    "cell": [
+     "robertson",
+     1e-06
+    ],
+    "dup_fix_equals_alg04_dup_fix": true,
+    "present": true,
+    "recompute_final_equals_alg04_legacy": true
+   },
+   {
+    "cell": [
+     "robertson",
+     1e-08
+    ],
+    "dup_fix_equals_alg04_dup_fix": true,
+    "present": true,
+    "recompute_final_equals_alg04_legacy": true
+   },
+   {
+    "cell": [
+     "van-der-pol-mu1000",
+     1e-06
+    ],
+    "dup_fix_equals_alg04_dup_fix": true,
+    "present": true,
+    "recompute_final_equals_alg04_legacy": true
+   },
+   {
+    "cell": [
+     "van-der-pol-mu1000",
+     1e-08
+    ],
+    "dup_fix_equals_alg04_dup_fix": true,
+    "present": true,
+    "recompute_final_equals_alg04_legacy": true
+   },
+   {
+    "cell": [
+     "hires",
+     1e-06
+    ],
+    "dup_fix_equals_alg04_dup_fix": true,
+    "present": true,
+    "recompute_final_equals_alg04_legacy": true
+   },
+   {
+    "cell": [
+     "hires",
+     1e-08
+    ],
+    "dup_fix_equals_alg04_dup_fix": true,
+    "present": true,
+    "recompute_final_equals_alg04_legacy": true
+   },
+   {
+    "cell": [
+     "brusselator-1d-50",
+     1e-06
+    ],
+    "dup_fix_equals_alg04_dup_fix": true,
+    "present": true,
+    "recompute_final_equals_alg04_legacy": true
+   },
+   {
+    "cell": [
+     "brusselator-1d-50",
+     1e-08
+    ],
+    "dup_fix_equals_alg04_dup_fix": true,
+    "present": true,
+    "recompute_final_equals_alg04_legacy": true
+   },
+   {
+    "cell": [
+     "prothero-robinson-forced",
+     1e-06
+    ],
+    "dup_fix_equals_alg04_dup_fix": true,
+    "present": true,
+    "recompute_final_equals_alg04_legacy": true
+   },
+   {
+    "cell": [
+     "prothero-robinson-forced",
+     1e-08
+    ],
+    "dup_fix_equals_alg04_dup_fix": true,
+    "present": true,
+    "recompute_final_equals_alg04_legacy": true
+   },
+   {
+    "cell": [
+     "quadratic-4",
+     1e-06
+    ],
+    "dup_fix_equals_alg04_dup_fix": true,
+    "present": true,
+    "recompute_final_equals_alg04_legacy": true
+   },
+   {
+    "cell": [
+     "quadratic-4",
+     1e-08
+    ],
+    "dup_fix_equals_alg04_dup_fix": true,
+    "present": true,
+    "recompute_final_equals_alg04_legacy": true
+   },
+   {
+    "cell": [
+     "brusselator-1d-160",
+     1e-06
+    ],
+    "dup_fix_equals_alg04_dup_fix": true,
+    "present": true,
+    "recompute_final_equals_alg04_legacy": true
+   },
+   {
+    "cell": [
+     "brusselator-1d-160",
+     1e-08
+    ],
+    "dup_fix_equals_alg04_dup_fix": true,
+    "present": true,
+    "recompute_final_equals_alg04_legacy": true
+   }
+  ],
+  "dup_fix_against_v2": [
+   {
+    "cell": [
+     "robertson",
+     1e-06
+    ],
+    "diagnostic_v2": 5,
+    "jvp_dup_fix": 1168,
+    "jvp_v2": 1173,
+    "trajectory_equal": true
+   },
+   {
+    "cell": [
+     "robertson",
+     1e-08
+    ],
+    "diagnostic_v2": 5,
+    "jvp_dup_fix": 2802,
+    "jvp_v2": 2807,
+    "trajectory_equal": true
+   },
+   {
+    "cell": [
+     "van-der-pol-mu1000",
+     1e-06
+    ],
+    "diagnostic_v2": 4,
+    "jvp_dup_fix": 11244,
+    "jvp_v2": 11248,
+    "trajectory_equal": true
+   },
+   {
+    "cell": [
+     "van-der-pol-mu1000",
+     1e-08
+    ],
+    "diagnostic_v2": 4,
+    "jvp_dup_fix": 22716,
+    "jvp_v2": 22720,
+    "trajectory_equal": true
+   },
+   {
+    "cell": [
+     "hires",
+     1e-06
+    ],
+    "diagnostic_v2": 11,
+    "jvp_dup_fix": 13352,
+    "jvp_v2": 13363,
+    "trajectory_equal": true
+   },
+   {
+    "cell": [
+     "hires",
+     1e-08
+    ],
+    "diagnostic_v2": 9,
+    "jvp_dup_fix": 50104,
+    "jvp_v2": 50113,
+    "trajectory_equal": true
+   },
+   {
+    "cell": [
+     "brusselator-1d-50",
+     1e-06
+    ],
+    "diagnostic_v2": 7,
+    "jvp_dup_fix": 29930,
+    "jvp_v2": 29937,
+    "trajectory_equal": true
+   },
+   {
+    "cell": [
+     "brusselator-1d-50",
+     1e-08
+    ],
+    "diagnostic_v2": 7,
+    "jvp_dup_fix": 63017,
+    "jvp_v2": 63024,
+    "trajectory_equal": true
+   },
+   {
+    "cell": [
+     "prothero-robinson-forced",
+     1e-06
+    ],
+    "diagnostic_v2": 13,
+    "jvp_dup_fix": 166,
+    "jvp_v2": 179,
+    "trajectory_equal": true
+   },
+   {
+    "cell": [
+     "prothero-robinson-forced",
+     1e-08
+    ],
+    "diagnostic_v2": 13,
+    "jvp_dup_fix": 278,
+    "jvp_v2": 291,
+    "trajectory_equal": true
+   },
+   {
+    "cell": [
+     "quadratic-4",
+     1e-06
+    ],
+    "diagnostic_v2": 9,
+    "jvp_dup_fix": 475,
+    "jvp_v2": 484,
+    "trajectory_equal": true
+   },
+   {
+    "cell": [
+     "quadratic-4",
+     1e-08
+    ],
+    "diagnostic_v2": 9,
+    "jvp_dup_fix": 795,
+    "jvp_v2": 804,
+    "trajectory_equal": true
+   },
+   {
+    "cell": [
+     "brusselator-1d-160",
+     1e-06
+    ],
+    "diagnostic_v2": 6,
+    "jvp_dup_fix": 56170,
+    "jvp_v2": 56176,
+    "trajectory_equal": true
+   },
+   {
+    "cell": [
+     "brusselator-1d-160",
+     1e-08
+    ],
+    "diagnostic_v2": 7,
+    "jvp_dup_fix": 76711,
+    "jvp_v2": 76718,
+    "trajectory_equal": true
+   }
+  ],
+  "jvp_ratio_v2_over_v1": {
+   "kform_integrate|brusselator-1d-50|1e-06": 0.9772437647915528,
+   "kform_integrate|brusselator-1d-50|1e-08": 0.9772068879314147,
+   "kform_integrate|hires|1e-06": 0.9077397335682044,
+   "kform_integrate|hires|1e-08": 0.9071606623538488,
+   "kform_integrate|robertson|1e-06": 0.842791088692728,
+   "kform_integrate|robertson|1e-08": 0.8372868065085277,
+   "kform_integrate|van-der-pol-mu1000|1e-06": 0.829995950141745,
+   "kform_integrate|van-der-pol-mu1000|1e-08": 0.829517515169287,
+   "kform_step|brusselator-1d-50|1e-06": 0.9771646351066176,
+   "kform_step|brusselator-1d-50|1e-08": 0.9771531617460767,
+   "kform_step|hires|1e-06": 0.9072443025432126,
+   "kform_step|hires|1e-08": 0.9070489951242716,
+   "kform_step|robertson|1e-06": 0.8341232227488151,
+   "kform_step|robertson|1e-08": 0.8343871099326943,
+   "kform_step|van-der-pol-mu1000|1e-06": 0.8262645011600928,
+   "kform_step|van-der-pol-mu1000|1e-08": 0.8262408088235295,
+   "uform_default|brusselator-1d-160|1e-06": 0.9871718272238428,
+   "uform_default|brusselator-1d-160|1e-08": 0.9803590824867421,
+   "uform_default|brusselator-1d-50|1e-06": 0.9762277440813931,
+   "uform_default|brusselator-1d-50|1e-08": 0.97619305772835,
+   "uform_default|hires|1e-06": 0.8889701969132517,
+   "uform_default|hires|1e-08": 0.8889066269334469,
+   "uform_default|prothero-robinson-forced|1e-06": 0.683206106870229,
+   "uform_default|prothero-robinson-forced|1e-08": 0.6767441860465117,
+   "uform_default|quadratic-4|1e-06": 0.8359240069084629,
+   "uform_default|quadratic-4|1e-08": 0.8348909657320872,
+   "uform_default|robertson|1e-06": 0.7676701570680629,
+   "uform_default|robertson|1e-08": 0.7741312741312741,
+   "uform_default|van-der-pol-mu1000|1e-06": 0.7500666844491864,
+   "uform_default|van-der-pol-mu1000|1e-08": 0.750033012016374,
+   "uform_into|brusselator-1d-160|1e-06": 0.9871718272238428,
+   "uform_into|brusselator-1d-160|1e-08": 0.9803590824867421,
+   "uform_into|brusselator-1d-50|1e-06": 0.9762277440813931,
+   "uform_into|brusselator-1d-50|1e-08": 0.97619305772835,
+   "uform_into|hires|1e-06": 0.8889701969132517,
+   "uform_into|hires|1e-08": 0.8889066269334469,
+   "uform_into|prothero-robinson-forced|1e-06": 0.683206106870229,
+   "uform_into|prothero-robinson-forced|1e-08": 0.6767441860465117,
+   "uform_into|quadratic-4|1e-06": 0.8359240069084629,
+   "uform_into|quadratic-4|1e-08": 0.8348909657320872,
+   "uform_into|robertson|1e-06": 0.7676701570680629,
+   "uform_into|robertson|1e-08": 0.7741312741312741,
+   "uform_into|van-der-pol-mu1000|1e-06": 0.7500666844491864,
+   "uform_into|van-der-pol-mu1000|1e-08": 0.750033012016374
+  },
+  "predictions": [
+   {
+    "cell": [
+     "uform_into",
+     "robertson",
+     1e-06
+    ],
+    "predicted": [
+     0.77,
+     0.77
+    ],
+    "ratio": 0.7676701570680629
+   },
+   {
+    "cell": [
+     "uform_into",
+     "robertson",
+     1e-08
+    ],
+    "predicted": [
+     0.77,
+     0.77
+    ],
+    "ratio": 0.7741312741312741
+   },
+   {
+    "cell": [
+     "uform_into",
+     "van-der-pol-mu1000",
+     1e-06
+    ],
+    "predicted": [
+     0.75,
+     0.75
+    ],
+    "ratio": 0.7500666844491864
+   },
+   {
+    "cell": [
+     "uform_into",
+     "van-der-pol-mu1000",
+     1e-08
+    ],
+    "predicted": [
+     0.75,
+     0.75
+    ],
+    "ratio": 0.750033012016374
+   },
+   {
+    "cell": [
+     "uform_into",
+     "hires",
+     1e-06
+    ],
+    "predicted": [
+     0.89,
+     0.89
+    ],
+    "ratio": 0.8889701969132517
+   },
+   {
+    "cell": [
+     "uform_into",
+     "hires",
+     1e-08
+    ],
+    "predicted": [
+     0.89,
+     0.89
+    ],
+    "ratio": 0.8889066269334469
+   },
+   {
+    "cell": [
+     "uform_into",
+     "brusselator-1d-50",
+     1e-06
+    ],
+    "predicted": [
+     0.98,
+     0.98
+    ],
+    "ratio": 0.9762277440813931
+   },
+   {
+    "cell": [
+     "uform_into",
+     "brusselator-1d-50",
+     1e-08
+    ],
+    "predicted": [
+     0.98,
+     0.98
+    ],
+    "ratio": 0.97619305772835
+   },
+   {
+    "cell": [
+     "uform_into",
+     "prothero-robinson-forced",
+     1e-06
+    ],
+    "predicted": [
+     0.63,
+     0.65
+    ],
+    "ratio": 0.683206106870229
+   },
+   {
+    "cell": [
+     "uform_into",
+     "prothero-robinson-forced",
+     1e-08
+    ],
+    "predicted": [
+     0.63,
+     0.65
+    ],
+    "ratio": 0.6767441860465117
+   },
+   {
+    "cell": [
+     "uform_into",
+     "brusselator-1d-160",
+     1e-06
+    ],
+    "predicted": [
+     0.98,
+     0.98
+    ],
+    "ratio": 0.9871718272238428
+   },
+   {
+    "cell": [
+     "uform_into",
+     "brusselator-1d-160",
+     1e-08
+    ],
+    "predicted": [
+     0.98,
+     0.98
+    ],
+    "ratio": 0.9803590824867421
+   },
+   {
+    "cell": [
+     "kform_integrate",
+     "robertson",
+     1e-06
+    ],
+    "predicted": [
+     0.8,
+     0.95
+    ],
+    "ratio": 0.842791088692728,
+    "within": true
+   },
+   {
+    "cell": [
+     "kform_integrate",
+     "robertson",
+     1e-08
+    ],
+    "predicted": [
+     0.8,
+     0.95
+    ],
+    "ratio": 0.8372868065085277,
+    "within": true
+   },
+   {
+    "cell": [
+     "kform_integrate",
+     "van-der-pol-mu1000",
+     1e-06
+    ],
+    "predicted": [
+     0.8,
+     0.95
+    ],
+    "ratio": 0.829995950141745,
+    "within": true
+   },
+   {
+    "cell": [
+     "kform_integrate",
+     "van-der-pol-mu1000",
+     1e-08
+    ],
+    "predicted": [
+     0.8,
+     0.95
+    ],
+    "ratio": 0.829517515169287,
+    "within": true
+   },
+   {
+    "cell": [
+     "kform_integrate",
+     "hires",
+     1e-06
+    ],
+    "predicted": [
+     0.8,
+     0.95
+    ],
+    "ratio": 0.9077397335682044,
+    "within": true
+   },
+   {
+    "cell": [
+     "kform_integrate",
+     "hires",
+     1e-08
+    ],
+    "predicted": [
+     0.8,
+     0.95
+    ],
+    "ratio": 0.9071606623538488,
+    "within": true
+   },
+   {
+    "cell": [
+     "kform_integrate",
+     "brusselator-1d-50",
+     1e-06
+    ],
+    "predicted": [
+     0.8,
+     0.95
+    ],
+    "ratio": 0.9772437647915528,
+    "within": false
+   },
+   {
+    "cell": [
+     "kform_integrate",
+     "brusselator-1d-50",
+     1e-08
+    ],
+    "predicted": [
+     0.8,
+     0.95
+    ],
+    "ratio": 0.9772068879314147,
+    "within": false
+   },
+   {
+    "cell": [
+     "kform_step",
+     "robertson",
+     1e-06
+    ],
+    "predicted": [
+     0.8,
+     0.95
+    ],
+    "ratio": 0.8341232227488151,
+    "within": true
+   },
+   {
+    "cell": [
+     "kform_step",
+     "robertson",
+     1e-08
+    ],
+    "predicted": [
+     0.8,
+     0.95
+    ],
+    "ratio": 0.8343871099326943,
+    "within": true
+   },
+   {
+    "cell": [
+     "kform_step",
+     "van-der-pol-mu1000",
+     1e-06
+    ],
+    "predicted": [
+     0.8,
+     0.95
+    ],
+    "ratio": 0.8262645011600928,
+    "within": true
+   },
+   {
+    "cell": [
+     "kform_step",
+     "van-der-pol-mu1000",
+     1e-08
+    ],
+    "predicted": [
+     0.8,
+     0.95
+    ],
+    "ratio": 0.8262408088235295,
+    "within": true
+   },
+   {
+    "cell": [
+     "kform_step",
+     "hires",
+     1e-06
+    ],
+    "predicted": [
+     0.8,
+     0.95
+    ],
+    "ratio": 0.9072443025432126,
+    "within": true
+   },
+   {
+    "cell": [
+     "kform_step",
+     "hires",
+     1e-08
+    ],
+    "predicted": [
+     0.8,
+     0.95
+    ],
+    "ratio": 0.9070489951242716,
+    "within": true
+   },
+   {
+    "cell": [
+     "kform_step",
+     "brusselator-1d-50",
+     1e-06
+    ],
+    "predicted": [
+     0.8,
+     0.95
+    ],
+    "ratio": 0.9771646351066176,
+    "within": false
+   },
+   {
+    "cell": [
+     "kform_step",
+     "brusselator-1d-50",
+     1e-08
+    ],
+    "predicted": [
+     0.8,
+     0.95
+    ],
+    "ratio": 0.9771531617460767,
+    "within": false
+   }
+  ]
+ },
+ "schema": "vigilode-sp01-dupfix-check-v1",
+ "tree_clean": true,
+ "verdict": "PASS"
+}
