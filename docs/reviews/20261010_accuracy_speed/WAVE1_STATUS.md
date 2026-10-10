@@ -145,7 +145,12 @@ was merged, these checks were re-run on the merged head:
 - the `rodas5p-integrators` tests, with and without `audit2-research`;
 - the node and reference checks.
 
-All passed; see the commit that records this section.
+All passed on `8738fa9`:
+- fmt and both clippy runs are clean;
+- `rodas5p-integrators`: 575 passed, 0 failed;
+- `rodas5p-integrators` with `audit2-research`: 633 passed, 0 failed;
+- `check-research-node.py`: PASS;
+- `check-authority-refs.py`: PASS.
 
 ## Next nodes unblocked
 
