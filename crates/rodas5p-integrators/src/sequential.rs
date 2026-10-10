@@ -8,15 +8,36 @@ use rodas5p_core::{
     safe_l2, wrms,
 };
 use rodas5p_krylov::{
-    GcrodrConfig, GcrodrState, GmresConfig, LgmresConfig, LgmresState, solve_gcrodr,
-    solve_gcrodr_with_residual_scale, solve_gmres, solve_gmres_with_residual_scale, solve_lgmres,
+    GcrodrConfig, GcrodrState, GmresConfig, LgmresConfig, LgmresState, ResidualAccounting,
+    solve_gcrodr, solve_gcrodr_with_residual_scale, solve_gmres_with_accounting, solve_lgmres,
     solve_lgmres_with_residual_scale,
 };
 
 use crate::{
     OdeProblem, RODAS5P_INNER_FORCING_ETA_MAX, RODAS5P_INNER_FORCING_FLOOR,
     rodas5p_inner_forcing_error_limit, rodas5p_inner_forcing_target,
+    rodas5p_matrix_free_fast::StageSolveLogEntry,
 };
+
+/// The GMRES residual accounting of the sequential stage solves and an
+/// optional log of their reports (research node
+/// `research/sp01_dupfix_adoption_20261010`). The default is the kernels'
+/// default accounting and no log, which every pre-SP01 entry point uses.
+#[derive(Debug, Default)]
+pub struct StageSolveAccounting<'a> {
+    pub accounting: ResidualAccounting,
+    /// One entry per successful stage solve, appended in order.
+    pub solve_log: Option<&'a mut Vec<StageSolveLogEntry>>,
+}
+
+impl StageSolveAccounting<'_> {
+    fn reborrow(&mut self) -> StageSolveAccounting<'_> {
+        StageSolveAccounting {
+            accounting: self.accounting,
+            solve_log: self.solve_log.as_deref_mut(),
+        }
+    }
+}
 
 /// Stage-solve passes per inner-forced step: the first pass plus at most two
 /// refinements against the step's own embedded error estimate.
@@ -334,9 +355,18 @@ fn sequential_stages_impl(
     config: &LinearSolverConfig,
     recycle: Option<&mut KrylovState>,
     outer_tolerances: Option<(f64, f64)>,
+    accounting: StageSolveAccounting<'_>,
     counters: &mut WorkCounters,
 ) -> CoreResult<InnerForcedStageSolveData> {
-    sequential_stages_refined(context, config, recycle, outer_tolerances, None, counters)
+    sequential_stages_refined(
+        context,
+        config,
+        recycle,
+        outer_tolerances,
+        None,
+        accounting,
+        counters,
+    )
 }
 
 fn sequential_stages_refined(
@@ -345,6 +375,7 @@ fn sequential_stages_refined(
     mut recycle: Option<&mut KrylovState>,
     outer_tolerances: Option<(f64, f64)>,
     refinement: Option<&InnerForcingRefinement<'_>>,
+    mut accounting: StageSolveAccounting<'_>,
     counters: &mut WorkCounters,
 ) -> CoreResult<InnerForcedStageSolveData> {
     config.validate().map_err(CoreError::InvalidInput)?;
@@ -477,18 +508,18 @@ fn sequential_stages_refined(
                     rtol: linear_rtol,
                     atol: linear_atol,
                 };
-                match residual_scale {
-                    Some(scale) => solve_gmres_with_residual_scale(
-                        &context.shifted,
-                        pc.as_ref(),
-                        &rhs,
-                        x0,
-                        &gmres,
-                        Some(scale),
-                        counters,
-                    )?,
-                    None => solve_gmres(&context.shifted, pc.as_ref(), &rhs, x0, &gmres, counters)?,
-                }
+                // `solve_gmres` is this call with no scale and the default
+                // accounting.
+                solve_gmres_with_accounting(
+                    &context.shifted,
+                    pc.as_ref(),
+                    &rhs,
+                    x0,
+                    &gmres,
+                    residual_scale,
+                    accounting.accounting,
+                    counters,
+                )?
             }
             LinearMethod::Lgmres => {
                 let st = match state.as_deref_mut() {
@@ -576,6 +607,13 @@ fn sequential_stages_refined(
                 }
             }
         };
+        if let Some(log) = accounting.solve_log.as_deref_mut() {
+            log.push(StageSolveLogEntry::new(
+                report.residual_norm,
+                report.relative_residual,
+                report.iterations,
+            ));
+        }
         if let Some((_, flow_wrms, rhs_wrms, target)) = forcing {
             if report.residual_norm > target.tau {
                 return Err(CoreError::LinearSolve(format!(
@@ -618,7 +656,15 @@ pub fn sequential_stages(
     recycle: Option<&mut KrylovState>,
     counters: &mut WorkCounters,
 ) -> CoreResult<StageSolveData> {
-    sequential_stages_impl(context, config, recycle, None, counters).map(|data| data.stage_data)
+    sequential_stages_impl(
+        context,
+        config,
+        recycle,
+        None,
+        StageSolveAccounting::default(),
+        counters,
+    )
+    .map(|data| data.stage_data)
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -635,6 +681,7 @@ pub fn sequential_stages_with_inner_forcing(
         config,
         recycle,
         Some((outer_atol, outer_rtol)),
+        StageSolveAccounting::default(),
         counters,
     )
 }
@@ -680,6 +727,7 @@ fn inner_forced_stages_with_error_refinement(
     mut recycle: Option<&mut KrylovState>,
     outer_atol: f64,
     outer_rtol: f64,
+    mut accounting: StageSolveAccounting<'_>,
     counters: &mut WorkCounters,
 ) -> CoreResult<InnerForcedStageSolveData> {
     let tolerances = Some((outer_atol, outer_rtol));
@@ -695,6 +743,7 @@ fn inner_forced_stages_with_error_refinement(
         recycle.as_deref_mut(),
         tolerances,
         None,
+        accounting.reborrow(),
         counters,
     )?;
     let mut resolution = InnerForcingResolution::Underresolved;
@@ -723,6 +772,7 @@ fn inner_forced_stages_with_error_refinement(
                 warm_start: &warm_start,
                 pass,
             }),
+            accounting.reborrow(),
             counters,
         )?;
     }
@@ -775,17 +825,57 @@ pub fn sequential_step(
     y: &[f64],
     h: f64,
     config: &LinearSolverConfig,
+    recycle: Option<&mut KrylovState>,
+    atol: f64,
+    rtol: f64,
+    force_accept: bool,
+    counters: &mut WorkCounters,
+) -> CoreResult<StepResult> {
+    sequential_step_with_residual_accounting(
+        problem,
+        t,
+        y,
+        h,
+        config,
+        recycle,
+        atol,
+        rtol,
+        force_accept,
+        StageSolveAccounting::default(),
+        counters,
+    )
+}
+
+/// [`sequential_step`] with an explicit GMRES residual accounting and an
+/// optional stage-solve log (research node
+/// `research/sp01_dupfix_adoption_20261010`).
+#[allow(clippy::too_many_arguments)]
+pub fn sequential_step_with_residual_accounting(
+    problem: &OdeProblem,
+    t: f64,
+    y: &[f64],
+    h: f64,
+    config: &LinearSolverConfig,
     mut recycle: Option<&mut KrylovState>,
     atol: f64,
     rtol: f64,
     force_accept: bool,
+    accounting: StageSolveAccounting<'_>,
     counters: &mut WorkCounters,
 ) -> CoreResult<StepResult> {
     let before = *counters;
     let snapshot = recycle.as_deref().cloned();
     let result = (|| {
         let context = build_step_context(problem, t, y, h, counters)?;
-        let data = sequential_stages(&context, config, recycle.as_deref_mut(), counters)?;
+        let data = sequential_stages_impl(
+            &context,
+            config,
+            recycle.as_deref_mut(),
+            None,
+            accounting,
+            counters,
+        )?
+        .stage_data;
         let mut r = finish_step(
             &context,
             data.stages,
@@ -825,10 +915,42 @@ pub fn sequential_matrix_free_step(
     y: &[f64],
     h: f64,
     config: &LinearSolverConfig,
+    recycle: Option<&mut KrylovState>,
+    atol: f64,
+    rtol: f64,
+    force_accept: bool,
+    counters: &mut WorkCounters,
+) -> CoreResult<StepResult> {
+    sequential_matrix_free_step_with_residual_accounting(
+        problem,
+        t,
+        y,
+        h,
+        config,
+        recycle,
+        atol,
+        rtol,
+        force_accept,
+        StageSolveAccounting::default(),
+        counters,
+    )
+}
+
+/// [`sequential_matrix_free_step`] with an explicit GMRES residual
+/// accounting and an optional stage-solve log (research node
+/// `research/sp01_dupfix_adoption_20261010`).
+#[allow(clippy::too_many_arguments)]
+pub fn sequential_matrix_free_step_with_residual_accounting(
+    problem: &OdeProblem,
+    t: f64,
+    y: &[f64],
+    h: f64,
+    config: &LinearSolverConfig,
     mut recycle: Option<&mut KrylovState>,
     atol: f64,
     rtol: f64,
     force_accept: bool,
+    accounting: StageSolveAccounting<'_>,
     counters: &mut WorkCounters,
 ) -> CoreResult<StepResult> {
     if config.method == LinearMethod::Direct || config.preconditioner == PreconditionerKind::Direct
@@ -841,7 +963,15 @@ pub fn sequential_matrix_free_step(
     let snapshot = recycle.as_deref().cloned();
     let result = (|| {
         let context = build_step_context_matrix_free(problem, t, y, h, counters)?;
-        let data = sequential_stages(&context, config, recycle.as_deref_mut(), counters)?;
+        let data = sequential_stages_impl(
+            &context,
+            config,
+            recycle.as_deref_mut(),
+            None,
+            accounting,
+            counters,
+        )?
+        .stage_data;
         let mut report = finish_step(
             &context,
             data.stages,
@@ -879,10 +1009,43 @@ pub fn sequential_matrix_free_step_with_inner_forcing(
     y: &[f64],
     h: f64,
     config: &LinearSolverConfig,
+    recycle: Option<&mut KrylovState>,
+    atol: f64,
+    rtol: f64,
+    force_accept: bool,
+    counters: &mut WorkCounters,
+) -> CoreResult<InnerForcedStepResult> {
+    sequential_matrix_free_step_with_inner_forcing_and_residual_accounting(
+        problem,
+        t,
+        y,
+        h,
+        config,
+        recycle,
+        atol,
+        rtol,
+        force_accept,
+        StageSolveAccounting::default(),
+        counters,
+    )
+}
+
+/// [`sequential_matrix_free_step_with_inner_forcing`] (the protected
+/// forcing path) with an explicit GMRES residual accounting and an optional
+/// stage-solve log covering every refinement pass (research node
+/// `research/sp01_dupfix_adoption_20261010`).
+#[allow(clippy::too_many_arguments)]
+pub fn sequential_matrix_free_step_with_inner_forcing_and_residual_accounting(
+    problem: &OdeProblem,
+    t: f64,
+    y: &[f64],
+    h: f64,
+    config: &LinearSolverConfig,
     mut recycle: Option<&mut KrylovState>,
     atol: f64,
     rtol: f64,
     force_accept: bool,
+    accounting: StageSolveAccounting<'_>,
     counters: &mut WorkCounters,
 ) -> CoreResult<InnerForcedStepResult> {
     if config.method == LinearMethod::Direct || config.preconditioner == PreconditionerKind::Direct
@@ -901,6 +1064,7 @@ pub fn sequential_matrix_free_step_with_inner_forcing(
             recycle.as_deref_mut(),
             atol,
             rtol,
+            accounting,
             counters,
         )?;
         let mut step = finish_step(

@@ -1,4 +1,5 @@
 use crate::{
+    accounting::{LoopExit, ResidualAccounting, reuse_final_residual},
     common::{
         apply_left_with_raw, residual_threshold, selected_residual_norm, true_residual_into,
         validate_residual_scale, validate_system, validate_tolerances,
@@ -334,6 +335,38 @@ pub fn solve_gmres_with_workspace_and_residual_scale(
     workspace: &mut GmresWorkspace,
     counters: &mut WorkCounters,
 ) -> CoreResult<LinearSolveReport> {
+    solve_gmres_with_workspace_and_accounting(
+        op,
+        pc,
+        rhs,
+        x0,
+        config,
+        residual_scale,
+        workspace,
+        ResidualAccounting::DEFAULT,
+        counters,
+    )
+}
+
+/// [`solve_gmres_with_workspace_and_residual_scale`] with an explicit
+/// [`ResidualAccounting`] (research node
+/// `research/sp01_dupfix_adoption_20261010`). The solution, the outcome and
+/// every report field are the same under both accountings; with
+/// [`ResidualAccounting::ReuseConfirmed`] a solve that left its loop on a
+/// confirmed true residual after at least one cycle makes no final
+/// diagnostic operator application.
+#[allow(clippy::too_many_arguments)]
+pub fn solve_gmres_with_workspace_and_accounting(
+    op: &dyn LinearOperator,
+    pc: &dyn Preconditioner,
+    rhs: &[f64],
+    x0: Option<&[f64]>,
+    config: &GmresConfig,
+    residual_scale: Option<&[f64]>,
+    workspace: &mut GmresWorkspace,
+    accounting: ResidualAccounting,
+    counters: &mut WorkCounters,
+) -> CoreResult<LinearSolveReport> {
     config.validate()?;
     let n = validate_system(op, pc, rhs, x0)?;
     validate_residual_scale(residual_scale, n)?;
@@ -346,9 +379,11 @@ pub fn solve_gmres_with_workspace_and_residual_scale(
     }
 
     let mut total = 0usize;
-    loop {
-        if workspace.common.x.iter().all(|value| *value == 0.0) {
+    let mut cycles = 0usize;
+    let exit = loop {
+        let operator_residual = if workspace.common.x.iter().all(|value| *value == 0.0) {
             workspace.common.residual.copy_from_slice(rhs);
+            false
         } else {
             true_residual_into(
                 op,
@@ -359,10 +394,14 @@ pub fn solve_gmres_with_workspace_and_residual_scale(
                 counters,
                 ApplyCategory::Krylov,
             )?;
-        }
+            true
+        };
         let residual_norm = selected_residual_norm(&workspace.common.residual, residual_scale)?;
         if residual_norm <= threshold {
-            break;
+            break LoopExit {
+                residual_norm,
+                confirmed: operator_residual && cycles > 0,
+            };
         }
         if total >= config.max_arnoldi {
             return Err(CoreError::LinearSolve(format!(
@@ -401,19 +440,24 @@ pub fn solve_gmres_with_workspace_and_residual_scale(
             counters,
         )?;
         total += arnoldi.iterations;
+        cycles += 1;
         counters.linear_iterations += arnoldi.iterations as u64;
-    }
+    };
 
-    true_residual_into(
-        op,
-        rhs,
-        &workspace.common.x,
-        &mut workspace.common.operator_output,
-        &mut workspace.common.residual,
-        counters,
-        ApplyCategory::Diagnostic,
-    )?;
-    let residual_norm = selected_residual_norm(&workspace.common.residual, residual_scale)?;
+    let residual_norm = if reuse_final_residual(accounting, exit, false) {
+        exit.residual_norm
+    } else {
+        true_residual_into(
+            op,
+            rhs,
+            &workspace.common.x,
+            &mut workspace.common.operator_output,
+            &mut workspace.common.residual,
+            counters,
+            ApplyCategory::Diagnostic,
+        )?;
+        selected_residual_norm(&workspace.common.residual, residual_scale)?
+    };
     if !residual_norm.is_finite() || residual_norm > threshold {
         return Err(CoreError::LinearSolve(format!(
             "GMRES true residual {residual_norm:.3e} exceeds {threshold:.3e}"
@@ -463,6 +507,32 @@ pub fn solve_gmres(
         x0,
         config,
         &mut GmresWorkspace::default(),
+        counters,
+    )
+}
+
+/// [`solve_gmres_with_residual_scale`] with an explicit
+/// [`ResidualAccounting`] and a fresh workspace.
+#[allow(clippy::too_many_arguments)]
+pub fn solve_gmres_with_accounting(
+    op: &dyn LinearOperator,
+    pc: &dyn Preconditioner,
+    rhs: &[f64],
+    x0: Option<&[f64]>,
+    config: &GmresConfig,
+    residual_scale: Option<&[f64]>,
+    accounting: ResidualAccounting,
+    counters: &mut WorkCounters,
+) -> CoreResult<LinearSolveReport> {
+    solve_gmres_with_workspace_and_accounting(
+        op,
+        pc,
+        rhs,
+        x0,
+        config,
+        residual_scale,
+        &mut GmresWorkspace::default(),
+        accounting,
         counters,
     )
 }
