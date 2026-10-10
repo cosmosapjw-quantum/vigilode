@@ -1,0 +1,276 @@
+//! Research nodes `research/alg04_coupled_target_v2_20261010` (ALG04: the
+//! coupled stage target, second test) and
+//! `research/alg06_guard_v2_20261010` (ALG06: the stage budget guard, second
+//! test).
+//!
+//! Neither node has a base export of its own: ALG04 reuses ALG01's
+//! `BASE.json` and ALG06 reuses ALG03's, both recorded on the unmodified
+//! solver source. The cells, references, twins and error metric are those of
+//! `alg01_common` (shared with `alg01_coupled_stage_target.rs`, which is not
+//! changed). The cell lists below transcribe the ALG01 and ALG03 lists; the
+//! contract tests check them against the two base exports.
+
+// (The exports use `write_output`, re-exported by the shared module.)
+#[allow(unused_imports)]
+mod alg01_common;
+
+use alg01_common::*;
+use serde_json::Value;
+
+/// C1 rtols (ALG01 C1, ALG03 D5).
+const C1_RTOLS: [f64; 2] = [1.0e-6, 1.0e-8];
+/// C2 rtols (HIRES and Robertson).
+const C2_RTOLS: [f64; 3] = [1.0e-9, 1.0e-10, 1.0e-11];
+/// C3 rtols (stress cells).
+const C3_RTOLS: [f64; 3] = [1.0e-4, 1.0e-6, 1.0e-8];
+
+/// ALG04's ladder budget for every arm (the ALG01 registration defect
+/// removed); adaptive cells keep [`BUDGET`].
+const ALG04_LADDER_BUDGET: usize = PILOT_LADDER_BUDGET;
+
+/// One adaptive cell: group, problem index, rtol.
+#[derive(Clone, Copy, Debug)]
+struct CellSpec {
+    group: &'static str,
+    problem: usize,
+    rtol: f64,
+}
+
+/// The ALG04 adaptive cells: ALG01's C1, C2, C3 and C5, in ALG01's order.
+fn alg04_cells() -> (Vec<Problem>, Vec<CellSpec>) {
+    let mut problems = spd07_problems();
+    let mut cells = Vec::new();
+    for (i, _) in problems.iter().enumerate() {
+        for rtol in C1_RTOLS {
+            cells.push(CellSpec {
+                group: "C1",
+                problem: i,
+                rtol,
+            });
+        }
+    }
+    let index = |problems: &[Problem], id: &str| problems.iter().position(|p| p.id == id).unwrap();
+    for id in ["hires", "robertson"] {
+        let i = index(&problems, id);
+        for rtol in C2_RTOLS {
+            cells.push(CellSpec {
+                group: "C2",
+                problem: i,
+                rtol,
+            });
+        }
+    }
+    let first_stress = problems.len();
+    problems.extend(stress_problems());
+    for i in first_stress..problems.len() {
+        for rtol in C3_RTOLS {
+            cells.push(CellSpec {
+                group: "C3",
+                problem: i,
+                rtol,
+            });
+        }
+    }
+    for id in ["brusselator-1d-50", "hires"] {
+        let i = index(&problems, id);
+        for rtol in half_decades() {
+            cells.push(CellSpec {
+                group: "C5",
+                problem: i,
+                rtol,
+            });
+        }
+    }
+    (problems, cells)
+}
+
+/// The ALG06 cells: ALG03's D1-D4 and the 14 D5 (SPD07) cells.
+fn alg06_cells() -> (Vec<Problem>, Vec<CellSpec>) {
+    let mut problems = vec![
+        brusselator_problem(160),
+        brusselator_problem(300),
+        robertson_long(),
+        stosc(1.0e4),
+        e05("e05-s10", 10.0, 0.1, 20.0),
+    ];
+    let specs = [
+        ("D1", 0, 1.0e-4),
+        ("D1", 1, 1.0e-4),
+        ("D1", 1, 1.0e-6),
+        ("D2", 2, 1.0e-5),
+        ("D2", 2, 1.0e-7),
+        ("D2", 2, 1.0e-9),
+        ("D3", 3, 1.0e-4),
+        ("D3", 3, 1.0e-6),
+        ("D3", 3, 1.0e-8),
+        ("D4", 4, 1.0e-4),
+    ];
+    let mut cells: Vec<CellSpec> = specs
+        .into_iter()
+        .map(|(group, problem, rtol)| CellSpec {
+            group,
+            problem,
+            rtol,
+        })
+        .collect();
+    let first = problems.len();
+    problems.extend(spd07_problems());
+    for i in first..problems.len() {
+        for rtol in C1_RTOLS {
+            cells.push(CellSpec {
+                group: "D5",
+                problem: i,
+                rtol,
+            });
+        }
+    }
+    (problems, cells)
+}
+
+fn read_json(relative: &str) -> Value {
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../..")
+        .join(relative);
+    serde_json::from_str(&std::fs::read_to_string(path).unwrap()).unwrap()
+}
+
+const ALG01_BASE: &str = "research/alg01_coupled_stage_target_20261008/BASE.json";
+const ALG03_BASE: &str = "research/alg03_stage_budget_guard_20261008/BASE.json";
+
+type CellKey = (String, String, u64, usize);
+
+fn cell_keys(problems: &[Problem], cells: &[CellSpec]) -> Vec<CellKey> {
+    cells
+        .iter()
+        .map(|c| {
+            let p = &problems[c.problem];
+            (
+                c.group.to_string(),
+                p.id.clone(),
+                c.rtol.to_bits(),
+                p.y0.len(),
+            )
+        })
+        .collect()
+}
+
+fn base_keys(rows: &Value) -> Vec<CellKey> {
+    rows.as_array()
+        .unwrap()
+        .iter()
+        .map(|r| {
+            (
+                r["group"].as_str().unwrap().to_string(),
+                r["case"].as_str().unwrap().to_string(),
+                r["rtol"].as_f64().unwrap().to_bits(),
+                r["dimension"].as_u64().unwrap() as usize,
+            )
+        })
+        .collect()
+}
+
+// ------------------------------------------------------- contract tests
+
+/// ALG04's adaptive cells are ALG01's base cells, in the same order, and its
+/// ladders are ALG01's.
+#[test]
+fn alg04_cells_are_the_alg01_base_cells() {
+    let base = read_json(ALG01_BASE);
+    let (problems, cells) = alg04_cells();
+    assert_eq!(cells.len(), 65);
+    assert_eq!(cell_keys(&problems, &cells), base_keys(&base["rows"]));
+    let mut rungs = Vec::new();
+    for ladder in ladders() {
+        for &rtol in &ladder.rtols {
+            for &k in &ladder.rungs {
+                rungs.push((
+                    ladder.id.to_string(),
+                    rtol.to_bits(),
+                    u64::from(k),
+                    ladder.problem.y0.len(),
+                ));
+            }
+        }
+    }
+    let base_rungs: Vec<_> = base["ladders"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|r| {
+            (
+                r["ladder"].as_str().unwrap().to_string(),
+                r["rtol"].as_f64().unwrap().to_bits(),
+                r["k"].as_u64().unwrap(),
+                r["dimension"].as_u64().unwrap() as usize,
+            )
+        })
+        .collect();
+    assert_eq!(rungs, base_rungs);
+    assert_eq!(base["pilot_ladder_budget"], ALG04_LADDER_BUDGET);
+    assert_eq!(base["budget"], BUDGET);
+}
+
+/// ALG06's D1-D4 cells are ALG03's base cells; D5 is ALG01's C1.
+#[test]
+fn alg06_cells_are_the_alg03_base_cells_and_the_spd07_set() {
+    let base = read_json(ALG03_BASE);
+    let (problems, cells) = alg06_cells();
+    let keys = cell_keys(&problems, &cells);
+    assert_eq!(keys.len(), 24);
+    assert_eq!(keys[..10].to_vec(), base_keys(&base["rows"]));
+    let (p01, c01) = alg04_cells();
+    let c1: Vec<CellKey> = cell_keys(&p01, &c01)
+        .into_iter()
+        .filter(|k| k.0 == "C1")
+        .map(|(_, case, rtol, n)| ("D5".to_string(), case, rtol, n))
+        .collect();
+    assert_eq!(keys[10..].to_vec(), c1);
+    for (cell, row) in cells.iter().zip(base["rows"].as_array().unwrap()) {
+        assert_eq!(
+            row["max_attempts"].as_u64().unwrap() as usize,
+            problems[cell.problem].max_attempts
+        );
+    }
+}
+
+/// The base references are present for every ALG04 and ALG06 problem.
+#[test]
+fn base_references_cover_every_problem() {
+    let alg01 = read_json(ALG01_BASE);
+    let (problems, _) = alg04_cells();
+    for p in &problems {
+        assert!(alg01["references"].get(&p.id).is_some(), "{}", p.id);
+    }
+    let alg03 = read_json(ALG03_BASE);
+    let (problems, cells) = alg06_cells();
+    for c in cells.iter().filter(|c| c.group != "D5") {
+        let id = &problems[c.problem].id;
+        assert!(alg03["references"].get(id).is_some(), "{id}");
+    }
+}
+
+/// `Legacy` on a ladder rung at the ALG04 ladder budget reproduces ALG01's
+/// base row at the pilot budget (the same budget), on the unmodified
+/// source; the rung is cheap enough for a debug build.
+#[test]
+fn legacy_ladder_at_the_alg04_budget_reproduces_the_alg01_base() {
+    let base = read_json(ALG01_BASE);
+    let ladder = ladders().into_iter().find(|l| l.id == "semilin64").unwrap();
+    let (rtol, k) = (1.0e-4, 3u32);
+    let row = base["ladders"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|r| r["ladder"] == "semilin64" && r["rtol"] == rtol && r["k"] == k)
+        .unwrap();
+    let run = ladder_mf(
+        &ladder.problem,
+        rtol,
+        k,
+        ALG04_LADDER_BUDGET,
+        &mut |_| {},
+        &mut |_, _| {},
+    );
+    assert_eq!(run, row["legacy_pilot_budget"]);
+    assert_eq!(ladder_lu(&ladder.problem, rtol, k), row["lu"]);
+}
