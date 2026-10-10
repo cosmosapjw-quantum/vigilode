@@ -471,3 +471,36 @@ These were fixed in commits A and B, before the run, unless stated otherwise.
 7. **Seeds.** The seeds are a fixed deterministic corpus. The per-seed spread is narrow; for example, the van der Pol
    per-seed frontier ratios lie within 0.79–0.87 at the in-range E. This describes the corpus only and is not a
    population estimate.
+
+## Correction after the independent review (appended 2026-10-10)
+
+The verdict stays **PASS**, and no number changes. The registered text and the Results above are kept as written.
+
+- **Interpretation 2 is wrong about item 5.**
+  - The sentence "item 5's failure clause still covers it" does not describe the committed checker.
+  - `tools/controller_grid_check.py` drops a reference-limited cell for every arm before any gate (`scoring_rows`), and
+    item 5 loops only over the remaining cells. `reference_limited` also takes its minimum over successful arms only.
+  - So a cell where `PREDcap2` fails while `I` succeeds with a grid error below 100 u would be excluded, and its
+    failure would not reach item 5.
+  - This has no effect on this run: all 1932 runs succeeded, and the 12 excluded cells (HIRES, rtol 1e-10 and
+    1.78e-10) have no failure in any arm.
+  - The checker is not changed after the recorded run. A later checker should apply the failure clause before the
+    reference-limited exclusion and test that case.
+- **Scope of "structurally impossible".** On the dense fast driver, the first accepted step after a rejection or
+  failure is never a clipped landing:
+  - `t` and the next output point are unchanged after a rejection.
+  - The retry is strictly shorter (`adaptive_end_step`).
+  - A residue extension, or a re-landing onto tf, is not flagged as clipped (`output.rs`).
+
+  So "sliver while pending" and "informative clipped landing after a rejection" cannot occur on this driver for any
+  valid configuration. The only reachable difference between `PREDcap2` and `PREDcap` is an accepted err = 0 step while
+  a rejection is pending, and that is only empirically absent here (0 of 644 cells).
+- **Ledger.** L-0102 omitted two inputs:
+  - `tools/alg05_controller_v2_check.py`, whose scoring the checker imports;
+  - `crates/rodas5p-cli/src/stiff_benchmark.rs`, the problem definitions included through `#[path]`.
+
+  It also omitted the `RAYON_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1` environment from its command. L-0103 supersedes it
+  with the complete inputs and the same claim and verdict.
+- **Unverifiable provenance.** `RUNS.json` carries no commit or tree identifier. The claim that the recorded run was
+  produced at `088187b` on a clean tree rests on the commit order (`088187b` before `51948a9`) and on the
+  byte-identical second export reported in the Results; it is not machine-checkable from the file.
