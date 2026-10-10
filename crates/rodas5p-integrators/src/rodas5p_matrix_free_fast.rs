@@ -47,10 +47,11 @@ use rodas5p_core::{
 };
 use rodas5p_krylov::{
     GcrodrConfig, GcrodrSolveOptions, GcrodrState, GcrodrWorkspace, GmresCapacity, GmresConfig,
-    GmresWorkspace, LgmresConfig, LgmresWorkspace, StagedGmresConfig, StagedGmresFailure,
-    StagedGmresOutcome, StagedGmresReport, StagedGmresWorkspace, StagedGuardAbort,
-    solve_gcrodr_with_workspace, solve_gcrodr_with_workspace_and_options, solve_gmres_into,
-    solve_gmres_with_workspace, solve_lgmres_with_workspace, solve_staged_gmres,
+    GmresIntoOptions, GmresWorkspace, LgmresConfig, LgmresWorkspace, StagedGmresConfig,
+    StagedGmresFailure, StagedGmresOutcome, StagedGmresReport, StagedGmresWorkspace,
+    StagedGuardAbort, solve_gcrodr_with_workspace, solve_gcrodr_with_workspace_and_options,
+    solve_gmres_into_with_options, solve_gmres_with_workspace, solve_lgmres_with_workspace,
+    solve_staged_gmres,
 };
 use serde::Serialize;
 
@@ -133,11 +134,13 @@ pub fn gcrodr_stage_solve(
 }
 
 /// The stage-target policy of the U-form driver's GMRES stage solves
-/// (research node `research/alg01_coupled_stage_target_20261008`, ALG01).
-/// `Legacy` is the default and the solve the driver always made; every
-/// other policy uses the staged solver [`solve_staged_gmres`] (zero start,
-/// in-cycle projected exit confirmed by one true residual, no duplicate final
-/// residual) and needs GMRES without a preconditioner.
+/// (research nodes `research/alg01_coupled_stage_target_20261008`, ALG01,
+/// and `research/alg04_coupled_target_v2_20261010`, ALG04). `Legacy` is the
+/// default and the solve the driver always made; `DupFix` is that solve
+/// without its final diagnostic residual; every other policy uses the staged
+/// solver [`solve_staged_gmres`] (zero start, in-cycle projected exit
+/// confirmed by one true residual, no duplicate final residual) and needs
+/// GMRES without a preconditioner.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize)]
 pub enum StageTargetPolicy {
     /// Today's solver and arithmetic, bit for bit.
@@ -153,6 +156,17 @@ pub enum StageTargetPolicy {
     Coupled,
     /// `Coupled` plus the nonnormality guard and the production fallback.
     CoupledGuarded,
+    /// ALG04: the `Legacy` stage solve (GMRES into, which the driver then
+    /// requires) without the final diagnostic true residual. Same solution
+    /// and trajectory bit for bit; one diagnostic operator application fewer
+    /// per successful stage solve.
+    DupFix,
+    /// ALG04: `CoupledGuarded` plus small-system exhaustion (with
+    /// `n <= restart` every stage solve confirms only at the end of the
+    /// Krylov space: happy breakdown, the round-off floor `16 eps ||D b||`
+    /// or the cycle's last column). The nonnormality guard is ALG01's rule.
+    /// For `n > restart` it is `CoupledGuarded` bit for bit.
+    CoupledGuarded2,
 }
 
 impl StageTargetPolicy {
@@ -164,11 +178,27 @@ impl StageTargetPolicy {
             Self::L2Coupled => "stage-target-l2-coupled-v1",
             Self::Coupled => "stage-target-coupled-v1",
             Self::CoupledGuarded => "stage-target-coupled-guarded-v1",
+            Self::DupFix => "stage-target-dup-fix-v1",
+            Self::CoupledGuarded2 => "stage-target-coupled-guarded2-v1",
         }
     }
 
     fn is_coupled(self) -> bool {
-        matches!(self, Self::Coupled | Self::CoupledGuarded)
+        matches!(
+            self,
+            Self::Coupled | Self::CoupledGuarded | Self::CoupledGuarded2
+        )
+    }
+
+    /// The policy solves its stages with the staged solver (every policy
+    /// but `Legacy` and `DupFix`).
+    pub fn is_staged(self) -> bool {
+        !matches!(self, Self::Legacy | Self::DupFix)
+    }
+
+    /// The nonnormality guard and, by default, the production fallback.
+    fn is_guarded(self) -> bool {
+        matches!(self, Self::CoupledGuarded | Self::CoupledGuarded2)
     }
 }
 
@@ -187,17 +217,36 @@ pub struct StageTargetOptions {
     /// Classify guard aborts by an uncounted shadow continuation (reported
     /// only; it changes nothing in the run).
     pub classify_guard_aborts: bool,
+    /// ALG06 reporting: also classify the guard aborts the production
+    /// fallback accepted (with `classify_guard_aborts`; changes nothing).
+    pub classify_accepted_guard_aborts: bool,
+    /// ALG06 `G1`: the overrun prediction uses the effective cycle length
+    /// `min(restart, n, budget - used)`.
+    pub effective_cycle_overrun: bool,
+    /// ALG06 `G2`: accept the attainable-accuracy floor
+    /// `1024 eps (||D b|| + ||D x|| + ||D (x - W x)||)` at every true
+    /// residual.
+    pub floor_at_confirmations: bool,
+    /// ALG06 `G3` (coupled policies): add `tau_e,i ||r_i||_WRMS` of every
+    /// fallback-accepted stage `i` to the attempt's embedded error before
+    /// the accept/reject decision.
+    pub charge_fallback_residual: bool,
 }
 
 impl StageTargetOptions {
     /// `policy` as registered: the production fallback is part of
-    /// `CoupledGuarded` only; no stagnation guard.
+    /// `CoupledGuarded` and `CoupledGuarded2` only; no stagnation guard and
+    /// none of the ALG06 switches.
     pub fn new(policy: StageTargetPolicy) -> Self {
         Self {
             policy,
             stagnation_guard: false,
-            production_fallback: policy == StageTargetPolicy::CoupledGuarded,
+            production_fallback: policy.is_guarded(),
             classify_guard_aborts: false,
+            classify_accepted_guard_aborts: false,
+            effective_cycle_overrun: false,
+            floor_at_confirmations: false,
+            charge_fallback_residual: false,
         }
     }
 }
@@ -283,6 +332,8 @@ pub struct StageSolveStatistics {
     pub solves: u64,
     pub converged: u64,
     pub stall_accepted: u64,
+    /// ALG06 `G2`: accepted by the attainable-accuracy floor.
+    pub floor_accepted: u64,
     pub fallback_accepted: u64,
     /// Fallback acceptances after a guard abort (the rest followed budget
     /// exhaustion).
@@ -301,6 +352,12 @@ pub struct StageSolveStatistics {
     /// or not (true).
     pub guard_false: u64,
     pub guard_true: u64,
+    /// Classified guard aborts the fallback accepted (ALG06 reporting):
+    /// false (the shadow continuation converged) or true.
+    pub guard_accepted_false: u64,
+    pub guard_accepted_true: u64,
+    /// Solves with small-system exhaustion active (ALG04).
+    pub exhaustion_solves: u64,
     pub columns: u64,
     pub max_columns: u64,
     pub cycles: u64,
@@ -315,6 +372,16 @@ pub struct StageSolveStatistics {
     /// Coupled solves whose threshold was the round-off guard
     /// `16 eps ||D b||` rather than `eps_i sqrt(n)`.
     pub roundoff_floor_binds: u64,
+    /// ALG06 `G3` bookkeeping (coupled policies; computed whether or not
+    /// the charge is applied): attempts that completed with at least one
+    /// fallback-accepted stage, the sum and maximum of their charges
+    /// `sum_i tau_e,i ||r_i||_WRMS`, and the attempts whose embedded error
+    /// was at most 1 and exceeds 1 once charged (with `G3` on, rejections
+    /// caused by the charge).
+    pub charged_attempts: u64,
+    pub charge_sum: f64,
+    pub charge_max: f64,
+    pub charge_crosses_one: u64,
 }
 
 impl StageSolveStatistics {
@@ -323,6 +390,7 @@ impl StageSolveStatistics {
         match report.outcome {
             StagedGmresOutcome::Converged => self.converged += 1,
             StagedGmresOutcome::StallAccepted => self.stall_accepted += 1,
+            StagedGmresOutcome::FloorAccepted => self.floor_accepted += 1,
             StagedGmresOutcome::FallbackAccepted => {
                 self.fallback_accepted += 1;
                 if report.guard_abort.is_some() {
@@ -348,10 +416,16 @@ impl StageSolveStatistics {
             Some(StagedGuardAbort::Overrun) => self.guard_overrun += 1,
             None => {}
         }
-        match report.shadow_converged {
-            Some(true) => self.guard_false += 1,
-            Some(false) => self.guard_true += 1,
-            None => {}
+        let accepted_abort = report.outcome == StagedGmresOutcome::FallbackAccepted;
+        match (report.shadow_converged, accepted_abort) {
+            (Some(true), false) => self.guard_false += 1,
+            (Some(false), false) => self.guard_true += 1,
+            (Some(true), true) => self.guard_accepted_false += 1,
+            (Some(false), true) => self.guard_accepted_true += 1,
+            (None, _) => {}
+        }
+        if report.exhaustion {
+            self.exhaustion_solves += 1;
         }
         self.columns += report.columns;
         self.max_columns = self.max_columns.max(report.columns);
@@ -366,6 +440,20 @@ impl StageSolveStatistics {
         self.nu_max = self.nu_max.max(report.nu_max);
         self.nu_flops += report.nu_flops;
     }
+}
+
+/// One attempt that completed with at least one fallback-accepted stage
+/// (ALG06 `G3` reporting): its time and step, the embedded error before the
+/// charge, the charge `sum_i tau_e,i ||r_i||_WRMS` over those stages, their
+/// number, and whether the charge was added to the returned error.
+#[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+pub struct AttemptCharge {
+    pub t: f64,
+    pub h: f64,
+    pub error: f64,
+    pub charge: f64,
+    pub stages: u32,
+    pub charged: bool,
 }
 
 /// `D W D^-1` with `D = diag(weight)` and `D^-1 = diag(scale)`
@@ -472,6 +560,14 @@ pub struct Rodas5pMfFastWorkspace {
     stage_target: StageTargetOptions,
     /// `max(tau_y,i, tau_e,i)` per stage (coupled policies).
     stage_tau: Vec<f64>,
+    /// `tau_e,i` per stage (coupled policies; the ALG06 `G3` charge).
+    stage_tau_e: Vec<f64>,
+    /// `sum_i tau_e,i ||r_i||_WRMS` over the fallback-accepted stages of the
+    /// current attempt, and their number.
+    attempt_charge: f64,
+    attempt_fallback_stages: u32,
+    /// Every attempt with a fallback-accepted stage (ALG06 reporting).
+    charge_log: Vec<AttemptCharge>,
     /// The integration span `T` of the coupled target.
     stage_span: f64,
     /// `e_hat`: the embedded error of the last accepted step.
@@ -570,6 +666,10 @@ impl Rodas5pMfFastWorkspace {
             y_new: vec![0.0; n],
             stage_target: StageTargetOptions::default(),
             stage_tau: Vec::new(),
+            stage_tau_e: Vec::new(),
+            attempt_charge: 0.0,
+            attempt_fallback_stages: 0,
+            charge_log: Vec::new(),
             stage_span: 0.0,
             last_accepted_error: None,
             staged: StagedGmresWorkspace::default(),
@@ -587,7 +687,18 @@ impl Rodas5pMfFastWorkspace {
     /// the coupled ones compute the transfer constants here, from the
     /// coefficient snapshot, and need [`Self::set_stage_target_span`].
     pub fn set_stage_target(&mut self, options: StageTargetOptions) -> CoreResult<()> {
-        if options.policy != StageTargetPolicy::Legacy {
+        if options.policy == StageTargetPolicy::DupFix && self.config.method != LinearMethod::Gmres
+        {
+            return Err(CoreError::InvalidInput(
+                "the DupFix stage target needs GMRES (through GMRES into)".into(),
+            ));
+        }
+        if options.charge_fallback_residual && !options.policy.is_coupled() {
+            return Err(CoreError::InvalidInput(
+                "charging the fallback residual needs a coupled stage target".into(),
+            ));
+        }
+        if options.policy.is_staged() {
             if self.config.method != LinearMethod::Gmres
                 || self.config.preconditioner != PreconditionerKind::None
             {
@@ -603,10 +714,23 @@ impl Rodas5pMfFastWorkspace {
                     .zip(&tau.tau_e)
                     .map(|(a, b)| a.max(*b))
                     .collect();
+                self.stage_tau_e = tau.tau_e;
             }
         }
         self.stage_target = options;
         Ok(())
+    }
+
+    /// The attempts with a fallback-accepted stage so far (ALG06 `G3`
+    /// reporting; coupled policies).
+    pub fn charge_log(&self) -> &[AttemptCharge] {
+        &self.charge_log
+    }
+
+    /// The charge `sum_i tau_e,i ||r_i||_WRMS` of the last attempt's
+    /// fallback-accepted stages (zero without one).
+    pub fn last_attempt_charge(&self) -> f64 {
+        self.attempt_charge
     }
 
     pub fn stage_target(&self) -> StageTargetOptions {
@@ -688,6 +812,9 @@ impl Rodas5pMfFastWorkspace {
         let mut config = StagedGmresConfig {
             stagnation_guard: options.stagnation_guard,
             classify_guard_aborts: options.classify_guard_aborts,
+            classify_accepted_guard_aborts: options.classify_accepted_guard_aborts,
+            effective_cycle_overrun: options.effective_cycle_overrun,
+            floor_at_confirmations: options.floor_at_confirmations,
             ..StagedGmresConfig::new(self.config.restart, budget, production_rtol, linear_atol)
         };
         let stage = &mut self.u[i * n..(i + 1) * n];
@@ -696,7 +823,8 @@ impl Rodas5pMfFastWorkspace {
             config.atol = eps * (n as f64).sqrt();
             config.rtol = COUPLED_TARGET_ROUNDOFF;
             config.stall_rule = true;
-            config.nu_guard = options.policy == StageTargetPolicy::CoupledGuarded;
+            config.nu_guard = options.policy.is_guarded();
+            config.small_system_exhaustion = options.policy == StageTargetPolicy::CoupledGuarded2;
             for ((d, w), b) in self
                 .staged_rhs
                 .iter_mut()
@@ -738,6 +866,12 @@ impl Rodas5pMfFastWorkspace {
                 for ((x, z), sc) in stage.iter_mut().zip(&self.staged_z).zip(scale) {
                     *x = z * sc;
                 }
+            }
+            if report.outcome == StagedGmresOutcome::FallbackAccepted {
+                // ||r||_WRMS = ||D r||_2 / sqrt(n) of the scaled residual.
+                let wrms = report.residual_norm / (n as f64).sqrt();
+                self.attempt_charge += self.stage_tau_e[i] * wrms;
+                self.attempt_fallback_stages += 1;
             }
             report
         } else {
@@ -927,8 +1061,16 @@ impl Rodas5pMfFastWorkspace {
         };
         let mut state = state;
         let hg = h * gamma;
-        let staged = self.stage_target.policy != StageTargetPolicy::Legacy;
+        let staged = self.stage_target.policy.is_staged();
+        let dup_fix = self.stage_target.policy == StageTargetPolicy::DupFix;
+        if dup_fix && !(self.gmres_into && self.config.method == LinearMethod::Gmres) {
+            return Err(CoreError::InvalidInput(
+                "the DupFix stage target needs GMRES into".into(),
+            ));
+        }
         if staged {
+            self.attempt_charge = 0.0;
+            self.attempt_fallback_stages = 0;
             self.stage_eps.clear();
             if self.stage_target.policy.is_coupled() {
                 self.coupled_eps(h)?;
@@ -1020,7 +1162,7 @@ impl Rodas5pMfFastWorkspace {
                 } else {
                     Some(&self.step_u[i * n..(i + 1) * n])
                 };
-                let report = solve_gmres_into(
+                let report = solve_gmres_into_with_options(
                     &shifted,
                     &self.preconditioner,
                     &self.stage_rhs,
@@ -1030,6 +1172,9 @@ impl Rodas5pMfFastWorkspace {
                     stage,
                     &mut self.gmres,
                     GmresCapacity::unbounded(),
+                    GmresIntoOptions {
+                        skip_final_residual: dup_fix,
+                    },
                     counters,
                 )?;
                 self.gmres_into_cycles += report.cycles;
@@ -1139,11 +1284,36 @@ impl Rodas5pMfFastWorkspace {
             sum += z * z;
         }
         let norm = (sum / n as f64).sqrt();
-        Ok(if norm.is_finite() {
+        let norm = if norm.is_finite() {
             norm
         } else {
             f64::INFINITY
-        })
+        };
+        if staged && self.attempt_fallback_stages > 0 {
+            let charge = self.attempt_charge;
+            let charged = self.stage_target.charge_fallback_residual;
+            let statistics = &mut self.stage_statistics;
+            statistics.charged_attempts += 1;
+            statistics.charge_sum += charge;
+            statistics.charge_max = statistics.charge_max.max(charge);
+            if norm <= 1.0 && norm + charge > 1.0 {
+                statistics.charge_crosses_one += 1;
+            }
+            self.charge_log.push(AttemptCharge {
+                t,
+                h,
+                error: norm,
+                charge,
+                stages: self.attempt_fallback_stages,
+                charged,
+            });
+            if charged {
+                // ALG06 G3: the charged error decides accept/reject through
+                // the ordinary local-error path.
+                return Ok(norm + charge);
+            }
+        }
+        Ok(norm)
     }
 }
 
@@ -1226,7 +1396,7 @@ pub fn integrate_rodas5p_mf_fast_observed_gmres_into_ls_workspace(
         true,
         StageTargetOptions::default(),
     )
-    .map(|(result, _)| result)
+    .map(|(result, _, _)| result)
 }
 
 /// Called after every attempt with the attempt's `t`, `y` and step, its
@@ -1262,7 +1432,7 @@ pub fn integrate_rodas5p_mf_fast_observed_traced(
         false,
         StageTargetOptions::default(),
     )
-    .map(|(result, _)| result)
+    .map(|(result, _, _)| result)
 }
 
 /// [`integrate_rodas5p_mf_fast_observed`] with an explicit GCRO-DR recycle
@@ -1291,7 +1461,7 @@ pub fn integrate_rodas5p_mf_fast_observed_with_gcrodr_policy(
         false,
         StageTargetOptions::default(),
     )
-    .map(|(result, _)| result)
+    .map(|(result, _, _)| result)
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -1307,7 +1477,11 @@ fn integrate_mf_fast_inner(
     observer: MfAttemptObserver<'_>,
     ls_workspace: bool,
     stage_target: StageTargetOptions,
-) -> CoreResult<(Rodas5pMfFastResult, StageSolveStatistics)> {
+) -> CoreResult<(
+    Rodas5pMfFastResult,
+    StageSolveStatistics,
+    Vec<AttemptCharge>,
+)> {
     adaptive.validate()?;
     let (mut t, tf) = t_span;
     if tf < t || y0.len() != problem.dimension {
@@ -1322,6 +1496,7 @@ fn integrate_mf_fast_inner(
     work.clear_accepted_step();
     let staged = stage_target.policy != StageTargetPolicy::Legacy;
     if staged {
+        // (DupFix included: it only selects the GMRES-into options.)
         work.set_stage_target(stage_target)?;
         work.set_stage_target_span(tf - t);
         work.clear_accepted_error();
@@ -1438,7 +1613,8 @@ fn integrate_mf_fast_inner(
         driver: RODAS5P_MF_FAST_DRIVER_ID,
         gcrodr_policy: policy.id(),
     };
-    Ok((result, work.stage_statistics()))
+    let charges = std::mem::take(&mut work.charge_log);
+    Ok((result, work.stage_statistics(), charges))
 }
 
 /// A run of [`integrate_rodas5p_mf_fast_observed_with_stage_target`].
@@ -1446,18 +1622,24 @@ fn integrate_mf_fast_inner(
 pub struct Rodas5pMfStageTargetResult {
     pub result: Rodas5pMfFastResult,
     pub options: StageTargetOptions,
-    /// All zero for `Legacy`.
+    /// All zero for `Legacy` and `DupFix`.
     pub statistics: StageSolveStatistics,
+    /// Every attempt with a fallback-accepted stage (coupled policies; the
+    /// ALG06 `G3` charge, applied or not).
+    pub charges: Vec<AttemptCharge>,
 }
 
 /// The U-form driver with a stage-target policy (research nodes
-/// `research/alg01_coupled_stage_target_20261008` and
-/// `research/alg03_stage_budget_guard_20261008`). With
-/// `StageTargetPolicy::Legacy` this is
-/// [`integrate_rodas5p_mf_fast_observed_gmres_into`] bit for bit; the staged
-/// policies need GMRES without a preconditioner, solve every stage from a
-/// zero start and get the span `T = t_end - t_0` and the last accepted
-/// error from the driver. The Krylov budget is `linear_config.maxiter`.
+/// `research/alg01_coupled_stage_target_20261008`,
+/// `research/alg03_stage_budget_guard_20261008`,
+/// `research/alg04_coupled_target_v2_20261010` and
+/// `research/alg06_guard_v2_20261010`). With `StageTargetPolicy::Legacy`
+/// this is [`integrate_rodas5p_mf_fast_observed_gmres_into`] bit for bit,
+/// and `DupFix` has the same trajectory; the staged policies need GMRES
+/// without a preconditioner, solve every stage from a zero start and get the
+/// span `T = t_end - t_0` and the last accepted error (with `G3`, the
+/// charged error) from the driver. The Krylov budget is
+/// `linear_config.maxiter`.
 pub fn integrate_rodas5p_mf_fast_observed_with_stage_target(
     problem: &OdeProblem,
     t_span: (f64, f64),
@@ -1467,7 +1649,7 @@ pub fn integrate_rodas5p_mf_fast_observed_with_stage_target(
     output: &OutputSchedule,
     options: StageTargetOptions,
 ) -> CoreResult<Rodas5pMfStageTargetResult> {
-    let (result, statistics) = integrate_mf_fast_inner(
+    let (result, statistics, charges) = integrate_mf_fast_inner(
         problem,
         t_span,
         y0,
@@ -1484,5 +1666,6 @@ pub fn integrate_rodas5p_mf_fast_observed_with_stage_target(
         result,
         options,
         statistics,
+        charges,
     })
 }

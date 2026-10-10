@@ -89,6 +89,21 @@ impl GmresWorkspace {
     }
 }
 
+/// Options of [`solve_gmres_into_with_options`]. The default is
+/// [`solve_gmres_into`] exactly.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub struct GmresIntoOptions {
+    /// Skip the final diagnostic true residual (research node
+    /// `research/alg04_coupled_target_v2_20261010`, arm `DupFix`). The loop
+    /// leaves only after a true residual of the same iterate met the
+    /// threshold (computed in the Krylov category, or `rhs` itself for a
+    /// zero iterate), so the final residual repeats it: skipping it changes
+    /// no solution bit, only the counters (one diagnostic operator
+    /// application per successful solve). The report then carries the
+    /// loop's residual norm.
+    pub skip_final_residual: bool,
+}
+
 /// GMRES into caller storage; see the module documentation. `output` is
 /// written only when the solve succeeds. Rust's borrow rules keep `output`
 /// from aliasing `rhs`, `x0` or the workspace.
@@ -103,6 +118,36 @@ pub fn solve_gmres_into(
     output: &mut [f64],
     workspace: &mut GmresWorkspace,
     capacity: GmresCapacity,
+    counters: &mut WorkCounters,
+) -> CoreResult<GmresIntoReport> {
+    solve_gmres_into_with_options(
+        op,
+        pc,
+        rhs,
+        x0,
+        config,
+        residual_scale,
+        output,
+        workspace,
+        capacity,
+        GmresIntoOptions::default(),
+        counters,
+    )
+}
+
+/// [`solve_gmres_into`] with [`GmresIntoOptions`].
+#[allow(clippy::too_many_arguments)]
+pub fn solve_gmres_into_with_options(
+    op: &dyn LinearOperator,
+    pc: &dyn Preconditioner,
+    rhs: &[f64],
+    x0: Option<&[f64]>,
+    config: &GmresConfig,
+    residual_scale: Option<&[f64]>,
+    output: &mut [f64],
+    workspace: &mut GmresWorkspace,
+    capacity: GmresCapacity,
+    options: GmresIntoOptions,
     counters: &mut WorkCounters,
 ) -> CoreResult<GmresIntoReport> {
     config.validate()?;
@@ -133,7 +178,7 @@ pub fn solve_gmres_into(
     }
 
     let (mut total, mut cycles) = (0usize, 0u64);
-    loop {
+    let loop_residual_norm = loop {
         if workspace.common.x.iter().all(|value| *value == 0.0) {
             workspace.common.residual.copy_from_slice(rhs);
         } else {
@@ -149,7 +194,7 @@ pub fn solve_gmres_into(
         }
         let residual_norm = selected_residual_norm(&workspace.common.residual, residual_scale)?;
         if residual_norm <= threshold {
-            break;
+            break residual_norm;
         }
         if total >= config.max_arnoldi {
             return Err(CoreError::LinearSolve(format!(
@@ -180,18 +225,22 @@ pub fn solve_gmres_into(
         total += iterations;
         cycles += 1;
         counters.linear_iterations += iterations as u64;
-    }
+    };
 
-    true_residual_into(
-        op,
-        rhs,
-        &workspace.common.x,
-        &mut workspace.common.operator_output,
-        &mut workspace.common.residual,
-        counters,
-        ApplyCategory::Diagnostic,
-    )?;
-    let residual_norm = selected_residual_norm(&workspace.common.residual, residual_scale)?;
+    let residual_norm = if options.skip_final_residual {
+        loop_residual_norm
+    } else {
+        true_residual_into(
+            op,
+            rhs,
+            &workspace.common.x,
+            &mut workspace.common.operator_output,
+            &mut workspace.common.residual,
+            counters,
+            ApplyCategory::Diagnostic,
+        )?;
+        selected_residual_norm(&workspace.common.residual, residual_scale)?
+    };
     if !residual_norm.is_finite() || residual_norm > threshold {
         return Err(CoreError::LinearSolve(format!(
             "GMRES true residual {residual_norm:.3e} exceeds {threshold:.3e}"

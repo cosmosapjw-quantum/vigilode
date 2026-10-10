@@ -274,3 +274,400 @@ fn legacy_ladder_at_the_alg04_budget_reproduces_the_alg01_base() {
     assert_eq!(run, row["legacy_pilot_budget"]);
     assert_eq!(ladder_lu(&ladder.problem, rtol, k), row["lu"]);
 }
+
+// ------------------------------------------- implementation contracts
+
+use rodas5p_core::{LinearSolverConfig, WorkCounters};
+use rodas5p_integrators::{
+    Rodas5pMfFastWorkspace, Rodas5pMfStageTargetResult, StageTargetOptions, StageTargetPolicy,
+    integrate_rodas5p_mf_fast_observed_with_stage_target, rodas5p_stage_transfer_constants,
+};
+
+fn run_with(
+    p: &Problem,
+    rtol: f64,
+    config: &LinearSolverConfig,
+    options: StageTargetOptions,
+) -> Rodas5pMfStageTargetResult {
+    integrate_rodas5p_mf_fast_observed_with_stage_target(
+        &p.problem,
+        p.t_span,
+        &p.y0,
+        config,
+        &p.adaptive(rtol),
+        &p.schedule(),
+        options,
+    )
+    .unwrap()
+}
+
+fn record(run: &Rodas5pMfStageTargetResult) -> Value {
+    result_json(&Ok(run.result.clone()))
+}
+
+/// The counters `DupFix` changes: the diagnostic applications and the JVP
+/// work they charge.
+const DIAGNOSTIC_KEYS: [&str; 4] = [
+    "diagnostic_matvecs",
+    "jvp_calls",
+    "jvp_vectors",
+    "linear_matvec_vectors",
+];
+
+/// `DupFix` is `Legacy` bit for bit in states, attempts, accepted and
+/// rejected steps; its JVPs are `Legacy`'s minus exactly the diagnostic
+/// residuals counted, and no other counter changes.
+#[test]
+fn dup_fix_is_legacy_without_the_diagnostic_residual() {
+    for id in [
+        "quadratic-4",
+        "prothero-robinson-forced",
+        "robertson",
+        "hires",
+    ] {
+        let p = spd07_problem(id);
+        for rtol in C1_RTOLS {
+            let config = gmres_config(BUDGET);
+            let legacy = run_with(
+                &p,
+                rtol,
+                &config,
+                StageTargetOptions::new(StageTargetPolicy::Legacy),
+            );
+            let dup_fix = run_with(
+                &p,
+                rtol,
+                &config,
+                StageTargetOptions::new(StageTargetPolicy::DupFix),
+            );
+            let (l, d) = (record(&legacy), record(&dup_fix));
+            for key in [
+                "ok",
+                "success",
+                "t",
+                "y_last",
+                "attempts",
+                "accepted",
+                "rejected",
+                "state_reuses",
+            ] {
+                assert_eq!(l[key], d[key], "{id} {rtol:e} {key}");
+            }
+            let (lc, dc) = (&l["counters"], &d["counters"]);
+            let diagnostic = lc["diagnostic_matvecs"].as_u64().unwrap();
+            assert!(diagnostic > 0);
+            assert_eq!(dc["diagnostic_matvecs"], 0);
+            assert_eq!(
+                dc["jvp_vectors"].as_u64().unwrap(),
+                lc["jvp_vectors"].as_u64().unwrap() - diagnostic,
+                "{id} {rtol:e}"
+            );
+            assert_eq!(
+                diagnostic,
+                lc["linear_solves"].as_u64().unwrap(),
+                "one diagnostic residual per successful stage solve"
+            );
+            for (key, value) in lc.as_object().unwrap() {
+                if !DIAGNOSTIC_KEYS.contains(&key.as_str()) {
+                    assert_eq!(&dc[key], value, "{id} {rtol:e} {key}");
+                }
+            }
+            assert_eq!(dup_fix.statistics, Default::default());
+        }
+    }
+}
+
+#[test]
+fn dup_fix_needs_gmres_into() {
+    let p = spd07_problem("quadratic-4");
+    let config = LinearSolverConfig {
+        method: rodas5p_core::LinearMethod::Lgmres,
+        ..gmres_config(BUDGET)
+    };
+    let mut work = Rodas5pMfFastWorkspace::new(&p.problem, &config).unwrap();
+    assert!(
+        work.set_stage_target(StageTargetOptions::new(StageTargetPolicy::DupFix))
+            .is_err()
+    );
+    // GMRES without GMRES into: refused at the attempt.
+    let mut work = Rodas5pMfFastWorkspace::new(&p.problem, &gmres_config(BUDGET)).unwrap();
+    work.set_stage_target(StageTargetOptions::new(StageTargetPolicy::DupFix))
+        .unwrap();
+    let mut counters = WorkCounters::default();
+    assert!(
+        work.attempt(
+            &p.problem,
+            0.0,
+            &p.y0,
+            1.0e-3,
+            true,
+            None,
+            1.0e-8,
+            1.0e-6,
+            &mut counters
+        )
+        .is_err()
+    );
+}
+
+/// Above the restart length `CoupledGuarded2` is `CoupledGuarded` bit for
+/// bit (exhaustion never applies); at or below it every stage solve is
+/// exhausted.
+#[test]
+fn coupled_guarded2_is_coupled_guarded_above_the_restart_length() {
+    let mut p = brusselator_problem(30);
+    p.t_span = (0.0, 1.0);
+    assert!(p.y0.len() > 40);
+    let config = gmres_config(BUDGET);
+    for rtol in C1_RTOLS {
+        let cg = run_with(
+            &p,
+            rtol,
+            &config,
+            StageTargetOptions::new(StageTargetPolicy::CoupledGuarded),
+        );
+        let cg2 = run_with(
+            &p,
+            rtol,
+            &config,
+            StageTargetOptions::new(StageTargetPolicy::CoupledGuarded2),
+        );
+        assert_eq!(record(&cg2), record(&cg));
+        assert_eq!(cg2.statistics, cg.statistics);
+        assert_eq!(cg2.statistics.exhaustion_solves, 0);
+    }
+    for id in ["quadratic-4", "prothero-robinson-forced", "robertson"] {
+        let p = spd07_problem(id);
+        let run = run_with(
+            &p,
+            1.0e-6,
+            &config,
+            StageTargetOptions::new(StageTargetPolicy::CoupledGuarded2),
+        );
+        assert!(run.result.observed.success, "{id}");
+        let s = run.statistics;
+        assert!(s.solves > 0);
+        assert_eq!(s.exhaustion_solves, s.solves, "{id}");
+        assert_eq!(s.failed, 0, "{id}");
+        assert!(s.max_columns <= 2 * p.y0.len() as u64, "{id} {s:?}");
+        assert_eq!(run.result.observed.counters.diagnostic_matvecs, 0);
+        if let Some(exact) = &p.exact {
+            let y = run.result.observed.y.last().unwrap();
+            assert!(
+                relative_max_norm(y, &exact(p.t_span.1)) < 100.0 * 1.0e-6,
+                "{id}"
+            );
+        }
+    }
+}
+
+/// The ALG06 arms, cumulative on the `CoupledGuarded2` target.
+fn alg06_options(g1: bool, g2: bool, g3: bool) -> StageTargetOptions {
+    StageTargetOptions {
+        stagnation_guard: true,
+        classify_guard_aborts: true,
+        classify_accepted_guard_aborts: true,
+        effective_cycle_overrun: g1,
+        floor_at_confirmations: g2,
+        charge_fallback_residual: g3,
+        ..StageTargetOptions::new(StageTargetPolicy::CoupledGuarded2)
+    }
+}
+
+/// Where neither the guard, the fallback nor the floor fires, `B3` at
+/// budget 2,000 is `CoupledGuarded2` at budget 200 bit for bit.
+#[test]
+fn b3_is_coupled_guarded2_where_nothing_fires() {
+    for id in ["quadratic-4", "prothero-robinson-forced"] {
+        let p = spd07_problem(id);
+        let rtol = 1.0e-6;
+        let b3 = run_with(
+            &p,
+            rtol,
+            &gmres_config(BIG_BUDGET),
+            alg06_options(true, true, true),
+        );
+        let s = b3.statistics;
+        assert_eq!(
+            s.guard_contraction + s.guard_overrun + s.fallback_accepted + s.floor_accepted,
+            0,
+            "{id}"
+        );
+        let cg2 = run_with(
+            &p,
+            rtol,
+            &gmres_config(BUDGET),
+            StageTargetOptions::new(StageTargetPolicy::CoupledGuarded2),
+        );
+        assert_eq!(record(&b3), record(&cg2), "{id}");
+        assert!(b3.charges.is_empty());
+    }
+}
+
+/// A small Brusselator with restart 4 and budget 8: guard aborts that the
+/// production fallback accepts.
+fn fallback_case() -> (Problem, LinearSolverConfig, f64) {
+    let mut p = brusselator_problem(30);
+    p.t_span = (0.0, 1.0);
+    let config = LinearSolverConfig {
+        restart: 4,
+        ..gmres_config(8)
+    };
+    (p, config, 1.0e-6)
+}
+
+/// An `e_hat` that makes the coupled targets far tighter than the
+/// production rule, so the guard aborts and the fallback accepts.
+const E_HAT_TIGHT: f64 = 1.0e-12;
+
+/// `G3`: an attempt's returned error is its embedded error plus
+/// `sum_i tau_e,i ||r_i||_WRMS` over its fallback-accepted stages; without
+/// `G3` the same charge is only recorded and the stage solves are the same.
+/// Two workspaces step in lockstep along one fixed-step trajectory, with
+/// the same tight `e_hat` and the floor `G2` off.
+#[test]
+fn g3_charges_the_fallback_residual_to_the_attempt_error() {
+    let (p, config, rtol) = fallback_case();
+    let atol = p.atol_scale * rtol;
+    let tau_e = rodas5p_stage_transfer_constants().unwrap().tau_e;
+    let mut works: Vec<Rodas5pMfFastWorkspace> = [false, true]
+        .into_iter()
+        .map(|g3| {
+            let mut work = Rodas5pMfFastWorkspace::new(&p.problem, &config).unwrap();
+            work.set_gmres_into(true);
+            work.set_stage_target(alg06_options(true, false, g3))
+                .unwrap();
+            work.set_stage_target_span(p.span());
+            work.record_accepted_error(E_HAT_TIGHT);
+            work
+        })
+        .collect();
+    let steps = 20;
+    let h = 5.0e-3;
+    let mut y = p.y0.clone();
+    let mut charged_attempts = 0;
+    for step in 0..steps {
+        let t = p.t_span.0 + step as f64 * h;
+        let mut outcomes = Vec::new();
+        for work in works.iter_mut() {
+            let mut counters = WorkCounters::default();
+            outcomes.push(
+                work.attempt(&p.problem, t, &y, h, true, None, atol, rtol, &mut counters)
+                    .ok(),
+            );
+        }
+        // A failed stage solve fails both attempts alike; the lockstep ends.
+        assert_eq!(outcomes[0].is_some(), outcomes[1].is_some(), "step {step}");
+        let Some(errors) = outcomes.iter().copied().collect::<Option<Vec<f64>>>() else {
+            break;
+        };
+        let (off, on) = (&works[0], &works[1]);
+        assert_eq!(off.y_new(), on.y_new(), "step {step}");
+        assert_eq!(
+            off.last_attempt_charge().to_bits(),
+            on.last_attempt_charge().to_bits()
+        );
+        let (s_off, s_on) = (off.stage_statistics(), on.stage_statistics());
+        assert_eq!(s_off.fallback_accepted, s_on.fallback_accepted);
+        let charge = on.last_attempt_charge();
+        if on.charge_log().len() > charged_attempts {
+            charged_attempts += 1;
+            assert_eq!(on.charge_log().len(), charged_attempts);
+            assert_eq!(off.charge_log().len(), charged_attempts);
+            let (l_off, l_on) = (
+                off.charge_log().last().unwrap(),
+                on.charge_log().last().unwrap(),
+            );
+            assert!(l_on.charged && !l_off.charged);
+            assert!(charge > 0.0);
+            assert!(charge <= tau_e.iter().sum::<f64>() * f64::from(l_on.stages));
+            assert_eq!(l_on.error, errors[0]);
+            assert_eq!(l_on.charge, charge);
+            assert_eq!(errors[1], errors[0] + charge, "step {step}");
+        } else {
+            assert_eq!(charge, 0.0);
+            assert_eq!(errors[1].to_bits(), errors[0].to_bits(), "step {step}");
+        }
+        y.copy_from_slice(works[0].y_new());
+        for work in works.iter_mut() {
+            work.record_accepted_error(E_HAT_TIGHT);
+        }
+    }
+    assert!(charged_attempts > 0, "the fallback accepted a stage");
+}
+
+/// With `G3` an attempt whose charged error exceeds 1 is rejected through
+/// the local-error path: every charge that crosses 1 is a local-error
+/// failure, never a linear-solve failure.
+#[test]
+fn g3_rejections_take_the_local_error_path() {
+    let (p, config, rtol) = fallback_case();
+    let b3 = run_with(&p, rtol, &config, alg06_options(true, true, true));
+    let b3b = run_with(&p, rtol, &config, alg06_options(true, true, false));
+    for run in [&b3, &b3b] {
+        assert_eq!(run.statistics.charged_attempts, run.charges.len() as u64);
+        let sum: f64 = run.charges.iter().map(|c| c.charge).sum();
+        assert!((sum - run.statistics.charge_sum).abs() <= 1.0e-12 * sum.max(1.0));
+    }
+    assert!(b3.statistics.charged_attempts > 0);
+    assert!(b3.charges.iter().all(|c| c.charged));
+    assert!(b3b.charges.iter().all(|c| !c.charged));
+    let crossing = b3
+        .charges
+        .iter()
+        .filter(|c| c.error <= 1.0 && c.error + c.charge > 1.0)
+        .count() as u64;
+    assert_eq!(crossing, b3.statistics.charge_crosses_one);
+    let counters = b3.result.observed.counters;
+    assert!(counters.local_error_failures >= crossing);
+    // The charge never turns into a linear-solve failure.
+    let failed_solve_attempts = b3.statistics.failed;
+    assert!(counters.linear_solve_failures <= failed_solve_attempts);
+}
+
+#[test]
+fn g3_needs_a_coupled_target() {
+    let p = spd07_problem("quadratic-4");
+    let mut work = Rodas5pMfFastWorkspace::new(&p.problem, &gmres_config(BUDGET)).unwrap();
+    let options = StageTargetOptions {
+        charge_fallback_residual: true,
+        ..StageTargetOptions::new(StageTargetPolicy::ProjL2)
+    };
+    assert!(work.set_stage_target(options).is_err());
+}
+
+/// Classifying the guard aborts the fallback accepted (ALG06 reporting)
+/// changes nothing in a run in which the guard fires (the accepted-abort
+/// shadow itself is checked on a single solve in
+/// `rodas5p-krylov/tests/alg04_alg06_staged_contracts.rs`).
+#[test]
+fn classifying_accepted_guard_aborts_does_not_change_the_run() {
+    let (p, config, rtol) = fallback_case();
+    let classified = run_with(&p, rtol, &config, alg06_options(true, true, true));
+    let plain = run_with(
+        &p,
+        rtol,
+        &config,
+        StageTargetOptions {
+            classify_accepted_guard_aborts: false,
+            ..alg06_options(true, true, true)
+        },
+    );
+    let s = classified.statistics;
+    assert!(s.guard_contraction + s.guard_overrun > 0, "{s:?}");
+    assert_eq!(
+        s.guard_accepted_false + s.guard_accepted_true,
+        s.fallback_after_guard
+    );
+    assert_eq!(s.guard_false + s.guard_true, s.failed_guard);
+    assert_eq!(record(&classified), record(&plain));
+    assert_eq!(classified.charges, plain.charges);
+    assert_eq!(
+        rodas5p_integrators::StageSolveStatistics {
+            guard_accepted_false: 0,
+            guard_accepted_true: 0,
+            ..s
+        },
+        plain.statistics
+    );
+}

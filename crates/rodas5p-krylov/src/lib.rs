@@ -33,11 +33,15 @@ pub use gmres_givens::{
     solve_gmres_givens_with_residual_scale, solve_gmres_givens_with_workspace,
     solve_gmres_givens_with_workspace_and_residual_scale,
 };
-pub use gmres_into::{CapacityGrowth, GmresCapacity, GmresIntoReport, solve_gmres_into};
+pub use gmres_into::{
+    CapacityGrowth, GmresCapacity, GmresIntoOptions, GmresIntoReport, solve_gmres_into,
+    solve_gmres_into_with_options,
+};
 pub use gmres_staged::{
-    STAGED_GUARD_Q_ABORT, STAGED_STALL_CONTRACTION, STAGED_STALL_FACTOR, StagedGmresConfig,
-    StagedGmresFailure, StagedGmresFallback, StagedGmresOutcome, StagedGmresReport,
-    StagedGmresWorkspace, StagedGuardAbort, solve_staged_gmres,
+    STAGED_EXHAUSTION_FLOOR, STAGED_GUARD_Q_ABORT, STAGED_STALL_CONTRACTION, STAGED_STALL_FACTOR,
+    StagedGmresConfig, StagedGmresFailure, StagedGmresFallback, StagedGmresOutcome,
+    StagedGmresReport, StagedGmresWorkspace, StagedGuardAbort, solve_staged_gmres,
+    staged_guard_test,
 };
 pub use lgmres::{
     LgmresConfig, LgmresState, solve_lgmres, solve_lgmres_with_residual_scale,

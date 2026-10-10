@@ -1,7 +1,9 @@
 //! Staged GMRES: restarted GMRES with an in-cycle projected exit (research
-//! nodes `research/alg01_coupled_stage_target_20261008`, ALG01, and
-//! `research/alg03_stage_budget_guard_20261008`, ALG03). Research only; no
-//! existing solver calls it.
+//! nodes `research/alg01_coupled_stage_target_20261008`, ALG01,
+//! `research/alg03_stage_budget_guard_20261008`, ALG03, and their second
+//! tests `research/alg04_coupled_target_v2_20261010`, ALG04, and
+//! `research/alg06_guard_v2_20261010`, ALG06). Research only; no existing
+//! solver calls it.
 //!
 //! Zero start, no preconditioner, two-pass modified Gram-Schmidt
 //! ([`crate::kernels::two_pass_mgs_into`], counted as in production) and an
@@ -45,7 +47,29 @@
 //!   abort that the fallback does not accept, the solve continues without the
 //!   guard on scratch counters until it would converge (a false abort) or
 //!   exhausts the budget (a true abort). Nothing of the continuation is
-//!   counted, returned or written; the solve still fails.
+//!   counted, returned or written; the solve still fails. With
+//!   `classify_accepted_guard_aborts` (ALG06 reporting) the aborts the
+//!   fallback accepted are classified the same way, after the accepted
+//!   iterate was written to the output.
+//! * **Small-system exhaustion** (optional, ALG04). When the dimension is at
+//!   most `restart`, an in-cycle confirmation is taken only at a column that
+//!   ends the Krylov space: a happy breakdown, the round-off floor
+//!   `16 eps ||rhs||` of the projected residual, or the cycle's last column.
+//!   Every other part of the column test is unchanged, the nonnormality
+//!   guard included: `nu` is still evaluated at every column whose projected
+//!   residual meets the (tightened) threshold outside the confirmation gap
+//!   (`used >= next_check`), keeping the running maximum, exactly as in
+//!   ALG01; only the confirmation waits for the end of the space.
+//! * **Effective cycle length** (optional, ALG06 `G1`). The overrun
+//!   prediction uses `m_eff = min(restart, n, budget - used)` in place of
+//!   `restart`.
+//! * **Attainable-accuracy floor at every confirmation** (optional, ALG06
+//!   `G2`). Every true residual (an in-cycle confirmation or a restart
+//!   boundary) that misses the threshold is accepted when
+//!   `||r|| <= 1024 eps (||rhs|| + ||x|| + ||x - A x||)` (the stall rule's
+//!   floor, without its slow-cycle condition). At a restart boundary the
+//!   stall rule is tested first, so the floor labels only the acceptances
+//!   the stall rule would not make.
 //!
 //! Counters are charged as in production GMRES: every operator application
 //! through [`apply_counted`] (Krylov category, so the operator's own work,
@@ -72,6 +96,9 @@ pub const STAGED_STALL_CONTRACTION: f64 = 0.25;
 pub const STAGED_STALL_FACTOR: f64 = 1024.0 * f64::EPSILON;
 /// The stagnation guard's restart contraction limit.
 pub const STAGED_GUARD_Q_ABORT: f64 = 0.98;
+/// The small-system exhaustion's round-off floor of the projected residual,
+/// relative to `||rhs||_2` (ALG04).
+pub const STAGED_EXHAUSTION_FLOOR: f64 = 16.0 * f64::EPSILON;
 
 /// Configuration of [`solve_staged_gmres`].
 #[derive(Clone, Debug, PartialEq)]
@@ -88,6 +115,17 @@ pub struct StagedGmresConfig {
     pub stagnation_guard: bool,
     /// Classify guard aborts by an uncounted shadow continuation.
     pub classify_guard_aborts: bool,
+    /// Small-system exhaustion (ALG04): with `n <= restart`, confirm only at
+    /// the end of the Krylov space.
+    pub small_system_exhaustion: bool,
+    /// ALG06 `G1`: the overrun prediction uses the effective cycle length.
+    pub effective_cycle_overrun: bool,
+    /// ALG06 `G2`: accept the attainable-accuracy floor at every true
+    /// residual.
+    pub floor_at_confirmations: bool,
+    /// ALG06 reporting: also classify the guard aborts the fallback
+    /// accepted (needs `classify_guard_aborts`).
+    pub classify_accepted_guard_aborts: bool,
 }
 
 impl StagedGmresConfig {
@@ -102,6 +140,10 @@ impl StagedGmresConfig {
             nu_guard: false,
             stagnation_guard: false,
             classify_guard_aborts: false,
+            small_system_exhaustion: false,
+            effective_cycle_overrun: false,
+            floor_at_confirmations: false,
+            classify_accepted_guard_aborts: false,
         }
     }
 
@@ -125,6 +167,9 @@ pub enum StagedGmresOutcome {
     /// Accepted by the caller's fallback after a guard abort or with the
     /// budget exhausted.
     FallbackAccepted,
+    /// Accepted by the attainable-accuracy floor (`G2`) where neither the
+    /// threshold nor the stall rule accepted.
+    FloorAccepted,
     /// Not accepted; see [`StagedGmresReport::failure`].
     Failed,
 }
@@ -160,9 +205,12 @@ pub struct StagedGmresReport {
     /// accepted by the fallback or failed).
     pub guard_abort: Option<StagedGuardAbort>,
     /// With classification on, after a guard abort the fallback did not
-    /// accept: whether the uncounted continuation converged within the
-    /// budget (a false abort).
+    /// accept (or, with `classify_accepted_guard_aborts`, any guard abort):
+    /// whether the uncounted continuation converged within the budget (a
+    /// false abort).
     pub shadow_converged: Option<bool>,
+    /// Small-system exhaustion was active (`n <= restart`).
+    pub exhaustion: bool,
     /// The column budget was reached at a restart boundary.
     pub budget_exhausted: bool,
     pub right_norm: f64,
@@ -271,6 +319,7 @@ struct Progress {
 enum End {
     Converged,
     Stall,
+    Floor,
     Guard(StagedGuardAbort),
     Budget,
     NonFinite,
@@ -314,6 +363,38 @@ fn correction_into(ws: &mut StagedGmresWorkspace, columns: usize, k: usize) {
     }
 }
 
+/// `1024 eps (||rhs|| + ||x|| + ||x - A x||)` (`scratch` receives
+/// `x - A x`).
+fn attainable_floor(right_norm: f64, x: &[f64], image: &[f64], scratch: &mut [f64]) -> f64 {
+    let x_norm = safe_l2(x);
+    for ((c, xi), a) in scratch.iter_mut().zip(x).zip(image) {
+        *c = xi - a;
+    }
+    STAGED_STALL_FACTOR * (right_norm + x_norm + safe_l2(scratch))
+}
+
+/// The stagnation guard at a restart boundary: `q = rn / prev`, abort when
+/// `q >= 0.98` or when `total + cycle * ceil(log(thr / rn) / log q)`
+/// exceeds `max_columns` (`cycle` is `restart`, or `m_eff` with `G1`).
+pub fn staged_guard_test(
+    rn: f64,
+    prev: f64,
+    thr: f64,
+    total: usize,
+    cycle: usize,
+    max_columns: usize,
+) -> Option<StagedGuardAbort> {
+    let q = rn / prev;
+    if q >= STAGED_GUARD_Q_ABORT {
+        return Some(StagedGuardAbort::Contraction);
+    }
+    let need = ((thr / rn).ln() / q.ln()).ceil();
+    if total as f64 + cycle as f64 * need > max_columns as f64 {
+        return Some(StagedGuardAbort::Overrun);
+    }
+    None
+}
+
 /// `residual = rhs - output`, with `output = A x` applied and counted.
 fn true_residual(
     op: &dyn LinearOperator,
@@ -343,6 +424,8 @@ fn iterate(
     columns: usize,
     counters: &mut WorkCounters,
 ) -> CoreResult<End> {
+    let exhaust = exhaustion_active(config, rhs.len());
+    let exhaustion_floor = STAGED_EXHAUSTION_FLOOR * right_norm;
     loop {
         let rn = p.rn;
         if !rn.is_finite() {
@@ -363,14 +446,22 @@ fn iterate(
                 return Ok(End::Stall);
             }
         }
+        if config.floor_at_confirmations
+            && p.has_image
+            && rn <= attainable_floor(right_norm, &ws.x, &ws.operator_output, &mut ws.candidate)
+        {
+            return Ok(End::Floor);
+        }
         if let (true, true, Some(prev)) = (guard, p.has_image, p.rn_prev) {
-            let q = rn / prev;
-            if q >= STAGED_GUARD_Q_ABORT {
-                return Ok(End::Guard(StagedGuardAbort::Contraction));
-            }
-            let need = ((p.thr / rn).ln() / q.ln()).ceil();
-            if p.total as f64 + config.restart as f64 * need > config.max_columns as f64 {
-                return Ok(End::Guard(StagedGuardAbort::Overrun));
+            let cycle = if config.effective_cycle_overrun {
+                columns.min(config.max_columns - p.total)
+            } else {
+                config.restart
+            };
+            if let Some(abort) =
+                staged_guard_test(rn, prev, p.thr, p.total, cycle, config.max_columns)
+            {
+                return Ok(End::Guard(abort));
             }
         }
         p.rn_prev = Some(rn);
@@ -429,7 +520,9 @@ fn iterate(
                         p.nu_max = p.nu_max.max(p.nu_hat);
                     }
                 }
-                if projected <= p.thr {
+                let end_of_space =
+                    !exhaust || breakdown || projected <= exhaustion_floor || used == steps;
+                if projected <= p.thr && end_of_space {
                     correction_into(ws, columns, used);
                     ws.candidate.copy_from_slice(&ws.x);
                     axpy(1.0, &ws.correction, &mut ws.candidate, counters)?;
@@ -453,6 +546,26 @@ fn iterate(
                         p.cycles += 1;
                         counters.linear_iterations += used as u64;
                         return Ok(End::Converged);
+                    }
+                    if config.floor_at_confirmations
+                        && rc.is_finite()
+                        && rc
+                            <= attainable_floor(
+                                right_norm,
+                                &ws.candidate,
+                                &ws.candidate_output,
+                                &mut ws.correction,
+                            )
+                    {
+                        std::mem::swap(&mut ws.x, &mut ws.candidate);
+                        std::mem::swap(&mut ws.residual, &mut ws.candidate_residual);
+                        std::mem::swap(&mut ws.operator_output, &mut ws.candidate_output);
+                        p.rn = rc;
+                        p.has_image = true;
+                        p.projected = projected;
+                        p.cycles += 1;
+                        counters.linear_iterations += used as u64;
+                        return Ok(End::Floor);
                     }
                     p.failed_confirmations += 1;
                     p.gap = p.gap.saturating_mul(2);
@@ -495,6 +608,11 @@ fn iterate(
         }
         p.has_image = true;
     }
+}
+
+/// Small-system exhaustion applies (`n <= restart`).
+fn exhaustion_active(config: &StagedGmresConfig, n: usize) -> bool {
+    config.small_system_exhaustion && n <= config.restart
 }
 
 fn fallback_accepts(
@@ -570,9 +688,11 @@ pub fn solve_staged_gmres(
     let mut guard_abort = None;
     let mut shadow_converged = None;
     let mut budget_exhausted = false;
+    let mut output_written = false;
     let (outcome, failure) = match end {
         End::Converged => (StagedGmresOutcome::Converged, None),
         End::Stall => (StagedGmresOutcome::StallAccepted, None),
+        End::Floor => (StagedGmresOutcome::FloorAccepted, None),
         End::NonFinite => (
             StagedGmresOutcome::Failed,
             Some(StagedGmresFailure::NonFinite),
@@ -594,24 +714,38 @@ pub fn solve_staged_gmres(
         }
         End::Guard(kind) => {
             guard_abort = Some(kind);
+            // The uncounted shadow continuation without the guard; it
+            // overwrites the workspace, so it runs after the output was
+            // written (accepted) or on a failed solve.
+            let classify = |ws: &mut StagedGmresWorkspace| {
+                let mut shadow = p;
+                let mut scratch = WorkCounters::default();
+                let continued = iterate(
+                    op,
+                    rhs,
+                    config,
+                    false,
+                    right_norm,
+                    &mut shadow,
+                    ws,
+                    columns,
+                    &mut scratch,
+                );
+                Some(matches!(
+                    continued,
+                    Ok(End::Converged | End::Stall | End::Floor)
+                ))
+            };
             if fallback_accepts(&mut fallback, ws) {
+                if config.classify_guard_aborts && config.classify_accepted_guard_aborts {
+                    output.copy_from_slice(&ws.x);
+                    output_written = true;
+                    shadow_converged = classify(ws);
+                }
                 (StagedGmresOutcome::FallbackAccepted, None)
             } else {
                 if config.classify_guard_aborts {
-                    let mut shadow = p;
-                    let mut scratch = WorkCounters::default();
-                    let continued = iterate(
-                        op,
-                        rhs,
-                        config,
-                        false,
-                        right_norm,
-                        &mut shadow,
-                        ws,
-                        columns,
-                        &mut scratch,
-                    );
-                    shadow_converged = Some(matches!(continued, Ok(End::Converged | End::Stall)));
+                    shadow_converged = classify(ws);
                 }
                 let failure = match kind {
                     StagedGuardAbort::Contraction => StagedGmresFailure::GuardContraction,
@@ -623,7 +757,9 @@ pub fn solve_staged_gmres(
     };
     if outcome != StagedGmresOutcome::Failed {
         counters.linear_solves += 1;
-        output.copy_from_slice(&ws.x);
+        if !output_written {
+            output.copy_from_slice(&ws.x);
+        }
     }
     let delta = counters.delta(before);
     Ok(StagedGmresReport {
@@ -631,6 +767,7 @@ pub fn solve_staged_gmres(
         failure,
         guard_abort,
         shadow_converged,
+        exhaustion: exhaustion_active(config, n),
         budget_exhausted,
         right_norm,
         threshold,
