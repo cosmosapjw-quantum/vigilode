@@ -470,7 +470,10 @@ pub fn study() -> Value {
         case(
             "invalid_scale_gain_overflow",
             "invalid",
-            identity,
+            // With identity the scale cancels in S^-1 W^-1 S: the original
+            // negative control was actually valid.  A nonzero off-diagonal
+            // makes this inverse gain exceed binary64 for the stated scales.
+            [[1.0, 1.0], [0.0, 1.0]],
             unit,
             unit,
             [f64::from_bits(1), 1.0],
