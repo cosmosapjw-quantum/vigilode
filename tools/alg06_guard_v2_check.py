@@ -49,6 +49,11 @@ uncounted continuation without the guard converged within the budget), for abort
 attempt (RUNS `charges`: t, h, error, charge, stages, charged) summarised per cell; the predictions; and the
 reproduction of ALG03's RUNS (rbig, and b2 against ALG03's b2 where n > 40, where CoupledGuarded2 is
 CoupledGuarded). Counted work and endpoint accuracy only; no wall-time claim. The output file is immutable.
+
+Evidence validation (re-audit AS03, finding F104; added after the recorded run, gates unchanged): before any gate
+the inputs pass tools/evidence_schema_v2.py (strict JSON, exact key/row/arm sets, unique raw keys, equal nonempty
+vector lengths, finite correctly typed numbers, immutable base and twins bound to it). Rejected evidence is written
+with verdict INVALID and its reasons, and the checker exits with status 2; INVALID is neither PASS nor FAIL.
 """
 
 from __future__ import annotations
@@ -58,6 +63,12 @@ import hashlib
 import json
 import struct
 from pathlib import Path
+import sys
+
+sys.dont_write_bytecode = True  # keep the historical tools directory free of __pycache__
+if str(Path(__file__).resolve().parent) not in sys.path:
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+import evidence_schema_v2 as evidence  # noqa: E402  (fail-closed evidence validation, re-audit AS03)
 
 SCHEMA = "vigilode-alg06-guard-v2-check-v1"
 GATED = "b3"
@@ -86,6 +97,7 @@ def vec(hexes: list[str]) -> list[float]:
 
 
 def componentwise(y: list[float], ref: list[float]) -> float:
+    evidence.require_metric_pair(y, ref)  # equal nonempty lengths, finite: never a truncated or NaN-skipping max
     return max(abs(a - b) / max(abs(b), 1e-10) for a, b in zip(y, ref))
 
 
@@ -135,9 +147,16 @@ def main():
     args = parser.parse_args()
     if args.output.exists():
         raise SystemExit(f"immutable output exists: {args.output}")
-    base = json.loads(args.base.read_text())
-    runs = json.loads(args.runs.read_text())
-    alg03 = json.loads(args.alg03_runs.read_text()) if args.alg03_runs.exists() else None
+    # Evidence validation before any gate: malformed or unbound evidence is INVALID, never PASS/FAIL.
+    try:
+        validated = evidence.validate_alg06(args.base, args.runs, args.alg03_runs)
+    except evidence.ValidationError as exc:
+        raise SystemExit(evidence.emit_invalid(args.output, SCHEMA, exc, {
+            "base": args.base, "runs": args.runs,
+            "alg03_runs": args.alg03_runs if args.alg03_runs.exists() else None}))
+    base = validated.docs["base"]
+    runs = validated.docs["runs"]
+    alg03 = validated.docs.get("alg03_runs")
     refs = {}
     for case, r in base["references"].items():
         y = vec(r["y"])
@@ -328,8 +347,8 @@ def main():
     }
     report = {
         "schema": SCHEMA,
-        "inputs": {str(args.base): sha256(args.base), str(args.runs): sha256(args.runs),
-                   **({str(args.alg03_runs): sha256(args.alg03_runs)} if alg03 is not None else {})},
+        "inputs": {str(args.base): validated.sha256["base"], str(args.runs): validated.sha256["runs"],
+                   **({str(args.alg03_runs): validated.sha256["alg03_runs"]} if alg03 is not None else {})},
         "gated_arm": GATED,
         "gate": gate,
         "verdict": verdict,

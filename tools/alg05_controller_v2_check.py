@@ -30,6 +30,12 @@ Gate (arm PREDcap2 against I), PASS iff all hold:
 
 Everything else is FAIL, with every ratio preserved. Counted work only; no wall-time claim. The
 output file is immutable.
+
+Evidence validation (re-audit AS03, finding F104; added after the recorded run, gates unchanged): before any
+gate the inputs pass tools/evidence_schema_v2.py (strict JSON, exact key/row/arm sets, unique raw keys, equal
+nonempty vector lengths, finite correctly typed numbers, immutable base and NATIVE references, recorded errors
+bound to the recomputed metric). Rejected evidence is written with verdict INVALID and its reasons, and the
+checker exits with status 2; INVALID is neither PASS nor FAIL.
 """
 
 from __future__ import annotations
@@ -43,6 +49,12 @@ import statistics
 import struct
 from collections import defaultdict
 from pathlib import Path
+import sys
+
+sys.dont_write_bytecode = True  # keep the historical tools directory free of __pycache__
+if str(Path(__file__).resolve().parent) not in sys.path:
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+import evidence_schema_v2 as evidence  # noqa: E402  (fail-closed evidence validation, re-audit AS03)
 
 SCHEMA = "vigilode-alg05-controller-v2-check-v1"
 ERROR_FLOOR = 1.0e-10
@@ -72,7 +84,8 @@ def value(hex_bits: str) -> float:
 
 def endpoint_error(state_hex: list[str], reference: list[float]) -> float:
     y = [value(x) for x in state_hex]
-    assert len(y) == len(reference)
+    # Typed check (not an assert, which python -O strips): equal nonempty lengths and finite components.
+    evidence.require_metric_pair(y, reference)
     return max(abs(a - r) / max(abs(r), ERROR_FLOOR) for a, r in zip(y, reference))
 
 
@@ -331,9 +344,15 @@ def main():
     if args.output.exists():
         raise SystemExit(f"immutable output exists: {args.output}")
     repo_root = Path(__file__).resolve().parent.parent
-    base = json.loads(args.base.read_text())
-    runs = json.loads(args.runs.read_text())
-    native = json.loads(args.native.read_text())["references"]
+    # Evidence validation before any gate: malformed or unbound evidence is INVALID, never PASS/FAIL.
+    try:
+        validated = evidence.validate_alg05(args.base, args.runs, args.native)
+    except evidence.ValidationError as exc:
+        raise SystemExit(evidence.emit_invalid(args.output, SCHEMA, exc,
+                                               {"base": args.base, "runs": args.runs, "native": args.native}))
+    base = validated.docs["base"]
+    runs = validated.docs["runs"]
+    native = validated.docs["native"]["references"]
     dense = runs["rows"]
 
     # Recompute every endpoint error from the state bits and the NATIVE reference.
@@ -444,9 +463,9 @@ def main():
 
     out = {
         "schema": SCHEMA,
-        "inputs": {"base": {"path": str(args.base), "sha256": sha256(args.base)},
-                   "runs": {"path": str(args.runs), "sha256": sha256(args.runs)},
-                   "native": {"path": str(args.native), "sha256": sha256(args.native)}},
+        "inputs": {"base": {"path": str(args.base), "sha256": validated.sha256["base"]},
+                   "runs": {"path": str(args.runs), "sha256": validated.sha256["runs"]},
+                   "native": {"path": str(args.native), "sha256": validated.sha256["native"]}},
         "gated_arm": GATED, "reference_arm": REFERENCE, "seeds": SEEDS,
         "rows": len(dense), "complete": complete, "failed_runs": failures,
         "error_recomputation_mismatches": error_mismatches,
