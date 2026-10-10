@@ -212,7 +212,8 @@ pub struct StageTargetOptions {
     pub stagnation_guard: bool,
     /// Accept, on a guard abort or budget exhaustion, an iterate whose
     /// unscaled true residual meets the production rule
-    /// `||b - W x||_2 <= max(|gamma| atol_lin, rtol_lin ||b||_2)`.
+    /// `||b - W x||_2 <= max(|gamma| atol_lin, rtol_lin ||b||_2)`
+    /// ([`ProductionFallbackRule`]: finite norms and thresholds only).
     pub production_fallback: bool,
     /// Classify guard aborts by an uncounted shadow continuation (reported
     /// only; it changes nothing in the run).
@@ -247,6 +248,162 @@ impl StageTargetOptions {
             effective_cycle_overrun: false,
             floor_at_confirmations: false,
             charge_fallback_residual: false,
+        }
+    }
+}
+
+/// The production fallback rule of the staged stage solves:
+/// `||b - W x||_2 <= max(atol_lin, rtol_lin ||b||_2)` on the unscaled
+/// (physical) right-hand side `b`, residual `r = b - W x` and candidate `x`
+/// (re-audit node AS01, finding F102).
+///
+/// * When `||b||_2` and the threshold are finite, the rule is that literal
+///   comparison, with the same decision as before AS01 for every finite
+///   candidate. (A residual whose norm is not representable was already
+///   rejected there: `Inf <= threshold` is false for a finite threshold.)
+/// * When `||b||_2` or `rtol_lin ||b||_2` overflows, the literal threshold
+///   is infinite and `Inf <= Inf` accepted any residual (F102). The rule is
+///   then evaluated homogeneously, with the power of two `s` of
+///   `max_i |b_i|`: accept iff `||r / s||_2 <= rtol_lin ||b / s||_2` (both
+///   sides finite) or `||r||_2 <= atol_lin` (the absolute floor in its own,
+///   physical, units). Scaling by a power of two is exact away from
+///   underflow, so this is the same comparison wherever both forms are
+///   representable, and a uniform rescaling by a power of two cannot turn
+///   a rejection into an acceptance.
+/// * A non-finite right-hand side, physical residual component or physical
+///   candidate component, or a homogeneous threshold that is still not
+///   representable, rejects: no claim is made that every large finite
+///   system is solvable.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct ProductionFallbackRule {
+    atol: f64,
+    threshold: ProductionFallbackThreshold,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+enum ProductionFallbackThreshold {
+    /// The literal threshold `max(atol_lin, rtol_lin ||b||_2)` (finite).
+    Literal(f64),
+    /// `1 / s` (a power of two) and the finite `rtol_lin ||b / s||_2`.
+    Homogeneous { inverse_scale: f64, relative: f64 },
+    /// No representable threshold: every candidate is rejected.
+    Unrepresentable,
+}
+
+/// `2^k` for `-1074 <= k <= 1023`, exact (built from its bits).
+fn power_of_two(k: i32) -> f64 {
+    debug_assert!((-1074..=1023).contains(&k));
+    if k >= -1022 {
+        f64::from_bits(((k + 1023) as u64) << 52)
+    } else {
+        f64::from_bits(1_u64 << (k + 1074))
+    }
+}
+
+impl ProductionFallbackRule {
+    /// The rule for the physical right-hand side `rhs` with the linear
+    /// tolerances `rtol` and `atol` (the driver passes `rtol_lin` and
+    /// `atol_lin = |gamma| atol`). `||rhs||_2` and the threshold are checked
+    /// here, before any fallback is built.
+    pub fn new(rhs: &[f64], rtol: f64, atol: f64) -> Self {
+        let rhs_norm = safe_l2(rhs);
+        let literal = atol.max(rtol * rhs_norm);
+        let threshold = if rhs_norm.is_finite() && literal.is_finite() {
+            ProductionFallbackThreshold::Literal(literal)
+        } else {
+            Self::homogeneous(rhs, rtol)
+        };
+        Self { atol, threshold }
+    }
+
+    fn homogeneous(rhs: &[f64], rtol: f64) -> ProductionFallbackThreshold {
+        let mut max = 0.0_f64;
+        for value in rhs {
+            let a = value.abs();
+            if !a.is_finite() {
+                return ProductionFallbackThreshold::Unrepresentable;
+            }
+            max = max.max(a);
+        }
+        if max == 0.0 {
+            // (`||b||_2 = 0` takes the literal branch.)
+            return ProductionFallbackThreshold::Unrepresentable;
+        }
+        // The unbiased exponent of `max` (subnormals as -1022), so that
+        // `max / s` lies in [1, 2) for a normal `max`.
+        let biased = ((max.to_bits() >> 52) & 0x7ff) as i32;
+        let exponent = (biased - 1023).max(-1022);
+        let inverse_scale = power_of_two(-exponent);
+        let scaled: Vec<f64> = rhs.iter().map(|b| b * inverse_scale).collect();
+        let relative = rtol * safe_l2(&scaled);
+        if relative.is_finite() {
+            ProductionFallbackThreshold::Homogeneous {
+                inverse_scale,
+                relative,
+            }
+        } else {
+            ProductionFallbackThreshold::Unrepresentable
+        }
+    }
+
+    /// The literal threshold `max(atol_lin, rtol_lin ||b||_2)` when it is
+    /// representable (`None` on the homogeneous or rejecting branch).
+    pub fn literal_threshold(&self) -> Option<f64> {
+        match self.threshold {
+            ProductionFallbackThreshold::Literal(threshold) => Some(threshold),
+            _ => None,
+        }
+    }
+
+    /// Whether some threshold (literal or homogeneous) is representable;
+    /// without one every candidate is rejected.
+    pub fn is_representable(&self) -> bool {
+        self.threshold != ProductionFallbackThreshold::Unrepresentable
+    }
+
+    /// Accept the candidate `x` with true residual `r = b - W x`. With
+    /// `scale = Some(d)` both are given in the scaled variables of the
+    /// coupled target (physical `x = d z`, `r = d r_scaled` componentwise);
+    /// with `None` they are physical.
+    pub fn accepts(&self, candidate: &[f64], residual: &[f64], scale: Option<&[f64]>) -> bool {
+        let unscaled: std::borrow::Cow<'_, [f64]> = match scale {
+            Some(scale) => {
+                if scale.len() != residual.len()
+                    || scale.len() != candidate.len()
+                    || !candidate
+                        .iter()
+                        .zip(scale)
+                        .all(|(z, sc)| (z * sc).is_finite())
+                {
+                    return false;
+                }
+                residual.iter().zip(scale).map(|(r, sc)| r * sc).collect()
+            }
+            None => {
+                if !candidate.iter().all(|x| x.is_finite()) {
+                    return false;
+                }
+                residual.into()
+            }
+        };
+        if !unscaled.iter().all(|r| r.is_finite()) {
+            return false;
+        }
+        let norm = safe_l2(&unscaled);
+        match self.threshold {
+            ProductionFallbackThreshold::Literal(threshold) => norm <= threshold,
+            ProductionFallbackThreshold::Homogeneous {
+                inverse_scale,
+                relative,
+            } => {
+                if norm <= self.atol {
+                    return true;
+                }
+                let scaled: Vec<f64> = unscaled.iter().map(|r| r * inverse_scale).collect();
+                let scaled_norm = safe_l2(&scaled);
+                scaled_norm.is_finite() && scaled_norm <= relative
+            }
+            ProductionFallbackThreshold::Unrepresentable => false,
         }
     }
 }
@@ -807,8 +964,11 @@ impl Rodas5pMfFastWorkspace {
         let options = self.stage_target;
         let budget = self.config.maxiter.max(self.config.restart);
         let production_rtol = self.config.rtol;
-        let rhs_norm = safe_l2(&self.stage_rhs);
-        let production_threshold = linear_atol.max(production_rtol * rhs_norm);
+        // The physical norm and threshold are checked before the fallback
+        // is built (AS01): an overflowing literal threshold is evaluated
+        // homogeneously, never as `Inf <= Inf`.
+        let production_rule =
+            ProductionFallbackRule::new(&self.stage_rhs, production_rtol, linear_atol);
         let mut config = StagedGmresConfig {
             stagnation_guard: options.stagnation_guard,
             classify_guard_aborts: options.classify_guard_aborts,
@@ -840,13 +1000,8 @@ impl Rodas5pMfFastWorkspace {
                 scratch: Mutex::new(vec![0.0; n]),
             };
             let scale = &self.staged_scale;
-            let mut fallback = |_z: &[f64], scaled_residual: &[f64]| {
-                let unscaled: Vec<f64> = scaled_residual
-                    .iter()
-                    .zip(scale)
-                    .map(|(r, sc)| r * sc)
-                    .collect();
-                safe_l2(&unscaled) <= production_threshold
+            let mut fallback = |z: &[f64], scaled_residual: &[f64]| {
+                production_rule.accepts(z, scaled_residual, Some(scale))
             };
             let report = solve_staged_gmres(
                 &scaled,
@@ -880,7 +1035,7 @@ impl Rodas5pMfFastWorkspace {
                 config.atol = self.gamma.abs() * L2_COUPLED_FACTOR * atol;
             }
             let mut fallback =
-                |_x: &[f64], residual: &[f64]| safe_l2(residual) <= production_threshold;
+                |x: &[f64], residual: &[f64]| production_rule.accepts(x, residual, None);
             solve_staged_gmres(
                 shifted,
                 &self.stage_rhs,
