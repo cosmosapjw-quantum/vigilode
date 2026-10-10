@@ -60,7 +60,7 @@ import math
 import struct
 from pathlib import Path
 
-SCHEMA = "vigilode-alg04-coupled-target-v2-check-v1"
+SCHEMA = "vigilode-alg04-coupled-target-v2-check-v2"
 GATED = "coupled_guarded2"
 ARMS = ("legacy", "dup_fix", "proj_l2", "l2_coupled", "coupled_guarded", "coupled_guarded2")
 NON_LEGACY = ARMS[1:]
@@ -500,19 +500,22 @@ def main():
         return out
 
     def nu_flops_vs_counted() -> list:
-        """Orthogonalization inner products + vector updates (+ nu-guard SVD flops for the guarded arms), per
-        accepted step, against legacy, on the C1 cells (the ALG01 correction's flop comparison)."""
+        """Orthogonalization flops (2n per counted inner product and per vector update) plus the nu-guard SVD
+        flops (already flops) of the guarded arms, per accepted step, against legacy, on the C1 cells (the ALG01
+        correction's flop comparison). The first recorded RESULTS (RESULTS_FIRST.json) added the counts of inner
+        products and vector updates to the SVD flops without the 2n factor (mixed units); corrected here."""
         out = []
         for c in cells:
             if c["group"] != "C1":
                 continue
+            n = c["dimension"]
             l = c["arms"]["legacy"]
-            lf = (l["inner_products"] or 0) + (l["vector_updates"] or 0)
+            lf = 2 * n * ((l["inner_products"] or 0) + (l["vector_updates"] or 0))
             row = {"case": c["case"], "rtol": c["rtol"]}
             for arm in ("dup_fix", "proj_l2", "coupled_guarded", "coupled_guarded2"):
                 a = c["arms"][arm]
                 s = a["stage_statistics"] or {}
-                f = (a["inner_products"] or 0) + (a["vector_updates"] or 0) + s.get("nu_flops", 0)
+                f = 2 * n * ((a["inner_products"] or 0) + (a["vector_updates"] or 0)) + s.get("nu_flops", 0)
                 row[arm] = ratio(ratio(f, a["accepted"]), ratio(lf, l["accepted"]))
             out.append(row)
         return out
