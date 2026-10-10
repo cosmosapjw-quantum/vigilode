@@ -15,6 +15,9 @@ pub enum ControllerKind {
     /// `min(f_I, f_P)` with `f_I = clamp(safety err^(-1/k))` and
     /// `f_P = clamp(safety (h / h_acc) (max(1e-2, err_prev) / err^2)^(1/k))`
     /// once a previous accepted step exists, and remembers `(h, err)`.
+    /// `f_P` is the ALG02 expression bit for bit while its intermediates are
+    /// normal numbers and is evaluated in the log domain, clamped before
+    /// `exp`, otherwise (re-audit 2026-10-10 F101, node AS02).
     /// `err = 0`, rejections and failures follow the production rule. The
     /// predictive term needs the step sizes, so it is applied only by the
     /// shared update [`adaptive_next_step_after_attempt`]; the history-free
@@ -23,6 +26,18 @@ pub enum ControllerKind {
     /// [`ControllerKind::Predictive`] that does not grow the step (factor at
     /// most one) on the first acceptance after a rejected or failed attempt
     /// (Hairer's RODAS; audit F-078). Opt-in.
+    ///
+    /// The cap is a *factor* policy, "factor <= 1": it bounds the controller
+    /// factor applied to the actual trial step. It is not the distinct
+    /// policy "no step increase after the actual trial" (`next_h <=
+    /// trial_h`), which no kind implements. The two differ on an informative
+    /// clipped landing (re-audit 2026-10-10, policy note next to F101): the
+    /// shared update restores the remembered request when the sample does
+    /// not predict its rejection, `next_h = max(requested_h, trial_h *
+    /// factor)`, so after a rejection an accepted clipped trial of `0.75`
+    /// with request `1` gives `next_h = 1` (`next_h / trial_h = 4/3`) with a
+    /// factor of at most one. This request restoration is the registered
+    /// ALG02/ALG05 policy (see [`adaptive_next_step_after_attempt`]).
     PredictiveCapped,
     /// [`ControllerKind::PredictiveCapped`] with the two gaps of ALG02's
     /// literal reading closed, research node ALG05
@@ -36,8 +51,10 @@ pub enum ControllerKind {
     ///   request).
     ///
     /// Everything else (the `f_I`/`f_P` formula, the clipped-sample history
-    /// rule, rejections and failures) is [`ControllerKind::PredictiveCapped`].
-    /// Opt-in.
+    /// rule and request restoration, rejections and failures) is
+    /// [`ControllerKind::PredictiveCapped`]; in particular its cap is the
+    /// same "factor <= 1" policy, not "no step increase after the actual
+    /// trial". Opt-in.
     PredictiveCapped2,
 }
 
@@ -404,13 +421,8 @@ impl AdaptiveControllerState {
             (self.last_accepted_step, self.previous_accepted_error)
         {
             let err_acc = err_prev.max(PREDICTIVE_ERROR_FLOOR);
-            let raw = config.safety * (h / h_acc) * (err_acc / (error * error)).powf(1.0 / order);
-            if raw.is_nan() || raw <= 0.0 {
-                return Err(CoreError::NonFinite(
-                    "adaptive predictive controller produced an invalid factor".into(),
-                ));
-            }
-            factor = factor.min(raw.clamp(config.min_factor, config.max_factor));
+            let predictive = predictive_term(config, h, h_acc, err_acc, error, order)?;
+            factor = factor.min(predictive);
         }
         if matches!(
             config.controller,
@@ -442,6 +454,85 @@ impl AdaptiveControllerState {
     }
 }
 
+/// The clamped predictive term `f_P` of the predictive kinds (research
+/// nodes ALG02, AS02) for `err_acc = max(err_prev, PREDICTIVE_ERROR_FLOOR)`
+/// and an `error > 0`:
+/// `clamp(safety (h / h_acc) (err_acc / error^2)^(1/order), min_factor,
+/// max_factor)`.
+///
+/// Direct path: the ALG02 expression
+/// `safety * (h / h_acc) * (err_acc / (error * error)).powf(1 / order)`,
+/// operation for operation, whenever every intermediate of it
+/// (`h / h_acc`, `safety * (h / h_acc)`, `error * error`,
+/// `err_acc / (error * error)`, its power and the product) is a normal
+/// binary64 number (`f64::is_normal`: finite, nonzero, not subnormal) and
+/// the product is positive. The result is then bit for bit the ALG02
+/// factor.
+///
+/// Log path (re-audit 2026-10-10 F101, node AS02): otherwise, for positive
+/// finite `h`, `h_acc` (subnormal included), the exponent
+/// `ln safety + ln h - ln h_acc + (ln err_acc - 2 ln error) / order` is
+/// clamped to `[ln min_factor, ln max_factor]` before `exp`, with the bounds
+/// returned exactly. No `error * error` or `h / h_acc` is formed, so a tiny
+/// error can no longer underflow `error^2` to zero and flip the clamp to
+/// `max_factor` (F101: `h_acc = 1`, `err_prev = 0.5`, `h = 1e-100`,
+/// `error = 1e-200`, order 5 has the exact factor `7.83e-21` and must give
+/// `min_factor = 0.2`; ALG02 gave `5.0`), and `0 * inf` can no longer turn
+/// into a NaN error. Inside the clamp range the log path differs from the
+/// exact factor by rounding only; there the direct path could not be used.
+/// A trial step or `h_acc` that is not positive and finite fails closed on
+/// the log path (ALG02 failed when its product was zero, negative or NaN,
+/// and returned `max_factor` for an infinite trial step).
+fn predictive_term(
+    config: &AdaptiveStepConfig,
+    h: f64,
+    h_acc: f64,
+    err_acc: f64,
+    error: f64,
+    order: f64,
+) -> CoreResult<f64> {
+    let ratio = h / h_acc;
+    let scaled = config.safety * ratio;
+    let squared = error * error;
+    let quotient = err_acc / squared;
+    let power = quotient.powf(1.0 / order);
+    let raw = scaled * power;
+    if raw > 0.0
+        && ratio.is_normal()
+        && scaled.is_normal()
+        && squared.is_normal()
+        && quotient.is_normal()
+        && power.is_normal()
+        && raw.is_normal()
+    {
+        return Ok(raw.clamp(config.min_factor, config.max_factor));
+    }
+    let positive_finite = |x: f64| x > 0.0 && x.is_finite();
+    if !(positive_finite(h)
+        && positive_finite(h_acc)
+        && positive_finite(err_acc)
+        && positive_finite(error))
+    {
+        return Err(CoreError::NonFinite(
+            "adaptive predictive controller produced an invalid factor".into(),
+        ));
+    }
+    let log_raw =
+        config.safety.ln() + h.ln() - h_acc.ln() + (err_acc.ln() - 2.0 * error.ln()) / order;
+    if log_raw.is_nan() {
+        return Err(CoreError::NonFinite(
+            "adaptive predictive controller produced an invalid factor".into(),
+        ));
+    }
+    if log_raw <= config.min_factor.ln() {
+        return Ok(config.min_factor);
+    }
+    if log_raw >= config.max_factor.ln() {
+        return Ok(config.max_factor);
+    }
+    Ok(log_raw.exp().clamp(config.min_factor, config.max_factor))
+}
+
 /// A clipped trial at least this fraction of the remembered request is an
 /// informative error sample; a shorter landing (a sliver) is not.
 pub const CLIPPED_SAMPLE_INFORMATIVE_RATIO: f64 = 0.5;
@@ -458,6 +549,18 @@ pub const CLIPPED_SAMPLE_INFORMATIVE_RATIO: f64 = 0.5;
 /// the remembered request it lowers the request, never below the accepted
 /// trial, and otherwise it may only raise it.  Rejections always scale the
 /// actual trial.
+///
+/// Two step-growth policies are distinct here (re-audit 2026-10-10, policy
+/// note next to F101). The post-rejection cap of
+/// [`ControllerKind::PredictiveCapped`] and
+/// [`ControllerKind::PredictiveCapped2`] is "factor <= 1": the factor applied
+/// to the actual trial. The informative-clipping rule above is request
+/// restoration: when the sample does not predict rejection, the next step is
+/// `max(requested_h, trial_h * factor)`, so it may exceed the actual trial
+/// even right after a rejection (trial `0.75`, request `1`: next step `1`).
+/// "No step increase after the actual trial" (`next_h <= trial_h`) is a
+/// different policy and is not implemented; the registered ALG02/ALG05
+/// contract is request restoration.
 #[allow(clippy::too_many_arguments)]
 pub fn adaptive_next_step_after_attempt(
     controller: &mut AdaptiveControllerState,
