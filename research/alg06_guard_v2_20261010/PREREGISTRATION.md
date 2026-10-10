@@ -90,3 +90,112 @@ Everything else is **FAIL**, with every ratio preserved.
 
 - ALG03 RUNS/RESULTS and its correction.
 - No code of this node exists before this commit.
+
+## Results (appended after the recorded run; the registered text above is unchanged)
+
+**Recorded commits** (branch `alg/alg04-alg06`, from `b8964fc`).
+- `90ac0b1`: test-only harness `crates/rodas5p-integrators/tests/alg04_alg06.rs` with the D1-D5 cell lists.
+- `b7f1cb3`: implementation, with contract tests.
+  - `StagedGmresConfig::effective_cycle_overrun` (G1) and `floor_at_confirmations` (G2).
+  - `StageTargetOptions::charge_fallback_residual` (G3), on the `CoupledGuarded2` target of ALG04.
+  - Classification of fallback-accepted guard aborts.
+- `19dfa96`: `export_runs_alg06` and `tools/alg06_guard_v2_check.py`, committed before any run.
+- `896a32a`: `RUNS.json` (produced on `19dfa96`, clean tree) and `RESULTS.json`.
+
+**Commands** (release, `RAYON_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1`, `CARGO_INCREMENTAL=0`): the registered ones,
+unchanged.
+
+    ALG06_RUNS=research/alg06_guard_v2_20261010/RUNS.json cargo test --release -p rodas5p-integrators --locked --test alg04_alg06 -- --ignored --nocapture --test-threads=1 export_runs_alg06
+    python3 tools/alg06_guard_v2_check.py --base research/alg03_stage_budget_guard_20261008/BASE.json --runs research/alg06_guard_v2_20261010/RUNS.json --output research/alg06_guard_v2_20261010/RESULTS.json
+
+The recorded run took 33 s. Contract tests: `cargo test -p rodas5p-krylov -p rodas5p-integrators --all-targets
+--locked` passes. Clippy `-D warnings` is clean with and without `audit2-research`.
+
+**Gate (arm `B3`): PASS.**
+
+| Item | Result | Numbers |
+|---|---|---|
+| 1. Identity | PASS | `Rbig` equals ALG03 BASE's `legacy_2000` on all 10 D1-D4 cells. D5: 12 of 14 cells eligible, and `B3` equals `CoupledGuarded2` at budget 200 bit for bit on all 12. Van der Pol at both rtols is not eligible, because the G2 floor accepted 15 solves |
+| 2. No livelock | PASS | `B3` completes all 10 D1-D4 cells, including Robertson to 4e10 at 1e-5, 1e-7 and 1e-9 (144, 313 and 784 attempts) |
+| 3. Failures | PASS | 0 linear-solve failures in all 24 cells (`Rbig` 0 as well), including Bruss-160 1e-4 and Bruss-300 |
+| 4. Accuracy (<= 1.5x twin) | PASS | Bruss 0.980-0.995x, stosc 1.000x, E-05 s = 10 0.939x. Robertson to 4e10: 1e-5 **0.544x**, 1e-7 0.994x, 1e-9 1.001x. All 10 references admissible |
+| 5. Work, Bruss-300 1e-4 | PASS | 35,883 JVPs against `Rbig`'s 85,778: **0.418x** (42 accepted steps each) |
+
+**Reported, not gated.**
+
+**Robertson to 4e10, error against the twin by arm (1e-5 / 1e-7 / 1e-9).**
+
+| Arm | Error / twin | Note |
+|---|---|---|
+| `B2` | 1.412 / 1.024 / 0.972 | ALG03's B2 on the `CoupledGuarded` target was 3.32x at 1e-5 |
+| `B3a` | **1.872** / 1.012 / 1.007 | would fail item 4 |
+| `B3b` | 1.492 / 1.002 / 1.042 | |
+| `B3` | 0.544 / 0.994 / 1.001 | |
+| `Rbig` | 1.037 / 0.997 / 0.831 | |
+
+**How fragile the item-4 pass is.**
+- **G3 rejected nothing.** The charges are small:
+  - at 1e-5, 42 charged attempts with a maximum charge of 3.4e-7;
+  - at 1e-9, a maximum of 2.7e-3;
+  - no charged error crossed 1 in any cell.
+- **Every arm took the same steps.** Attempts, accepted steps and rejected steps on Robertson to 4e10 are the same in
+  all five arms, `Rbig` included (144 / 143 / 1, 313 / 309 / 4, 784 / 780 / 4).
+- **So the registered mechanism did not operate.** The registration expected G3 to reject the contaminated attempts.
+  That never happened.
+- **What spreads the 1e-5 results** (0.54x to 1.87x across arms that take the same steps) is how sensitive the end
+  point is to small perturbations of the stage solutions and of the error that feeds the controller. G3 adds a
+  charge of at most 3.4e-7 to that error.
+- **The pass at 1e-5 is real but not robust.**
+  - `B3b`, which lacks only the charge, is at 1.49x, just inside the limit.
+  - The `CoupledGuarded2` target alone (`B2`) already moves 3.32x to 1.41x. This is the small-system exhaustion on
+    n = 3, the ALG04 change.
+
+**G1 (effective cycle length).** Overrun aborts on Robertson to 4e10 went from 2 / 13 / 47 (`B2`) to 0 / 0 / 0
+(`B3a`); ALG03 had 1 / 15 / 49. This confirms the prediction. Contraction aborts were 73 / 432 / 1,253 (`B2`) and
+76 / 444 / 1,316 (`B3a`).
+
+**G2 (floor at every confirmation).**
+- `B3` floor acceptances: 241 / 647 / 2,138 on Robertson to 4e10, 29 / 27 / 36 on stosc, and 15 / 15 on van der Pol
+  (D5).
+- Over D1-D4, contraction aborts fell from 1,836 (`B3a`) to 1,189 (`B3b`) and stall acceptances from 1,981 to 24.
+- On Robertson, `B3b` uses 19-26% fewer JVPs than `B3a`.
+
+**Guard aborts.** All guard aborts in every guarded arm were accepted by the production fallback (0 failed solves).
+Their shadow classification, `B3` on D1-D4: 442 false (the uncounted continuation without the guard converged
+within 2,000 columns) and 807 true. `B2`: 765 false, 1,055 true.
+
+**Work, `B3` / `Rbig` JVPs.**
+- Robertson to 4e10: 0.91 / 1.11 / 1.21.
+- stosc: 0.97 / 0.95 / 1.00.
+- E-05 s = 10: 0.45.
+- Bruss-160 1e-4: 0.39. Bruss-300: 0.418 (1e-4) and 0.505 (1e-6).
+
+**Reproduction of ALG03's RUNS.**
+- `Rbig` equals ALG03's `rbig` on all 24 cells.
+- `B2` equals ALG03's `b2` on all 11 cells with n > 40, where `CoupledGuarded2` is `CoupledGuarded`.
+- On the cells with n <= 40, `B2` differs from ALG03's `b2` on 11 of 13 (the exhaustion; Prothero-Robinson, n = 1,
+  is equal). The twins reproduce ALG03's BASE.
+
+**Predictions.**
+- Items 1-3 and 5: confirmed (Bruss-300 0.418, predicted about 0.42).
+- Item 4 (uncertain): passed, but not by the predicted mechanism (see above).
+- G1 removes the overrun aborts: confirmed (all of them).
+
+**Interpretations fixed before the run** (checker docstring, committed in `19dfa96` before the run).
+- **`B2`.** It is ALG03's switch set on the `CoupledGuarded2` target ("all on the CoupledGuarded2 target").
+- **G1.** It replaces `restart` in the overrun prediction only.
+- **G2.** The floor is tested at every true residual that misses the threshold, both in-cycle confirmations and
+  restart boundaries. At a restart boundary it comes after the stall rule; the stall rule keeps its label.
+- **G3.**
+  - `||r_i||_WRMS = ||D r_i||_2 / sqrt(n)`, with the coupled target's weights `D = diag(1 / (atol + rtol |y_n|))`.
+  - The stage charges of an attempt are summed linearly.
+  - The charged error is the attempt's error everywhere downstream: accept/reject, the controller and `e_hat`.
+- **Classification.** Every guard abort is shadow-classified, including the aborts the fallback accepted. A contract
+  test shows the classification changes nothing in a run.
+- **Item 1b eligibility.** It uses `B3`'s `guard_contraction + guard_overrun`, `fallback_accepted` and
+  `floor_accepted`.
+- **Item 3** covers all 24 cells against `Rbig`.
+- **Item 4** uses ALG03's admissibility rule.
+- **Item 5** is per trajectory.
+
+**Deviations.** None.
