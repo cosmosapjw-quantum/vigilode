@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use crate::parallel::ParallelExecution;
+use crate::rodas5p_fast::{BandedJacobian, BandedJacobianFn};
 
 use rodas5p_core::{
     ClosureOperator, CoreError, CoreResult, DenseMatrix, DenseOperator, LinearOperator,
@@ -29,6 +30,99 @@ pub type ExactFn = Arc<dyn Fn(f64) -> Vec<f64> + Send + Sync>;
 /// A client-owned model generation counter; see [`OdeProblem::with_model_epoch`].
 pub type ModelEpochFn = Arc<dyn Fn() -> u64 + Send + Sync>;
 
+/// The linear-algebra structure a caller declares for its problem (research
+/// node SP03, `research/sp03_declared_structure_routing_20261010`). Only the
+/// opt-in router [`crate::integrate_rodas5p_routed_observed`] reads it; no
+/// other entry point changes with it. Attach it with
+/// [`OdeProblem::with_declared_structure`], which validates it.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, serde::Serialize)]
+#[serde(rename_all = "kebab-case", tag = "kind")]
+pub enum ProblemStructure {
+    /// Nothing is declared (the default of every problem).
+    #[default]
+    Unstructured,
+    /// A small problem with an explicit Jacobian, for the dense direct driver.
+    Dense,
+    /// The Jacobian is zero outside `lower` diagonals below and `upper`
+    /// diagonals above the main diagonal, and a band Jacobian callback in the
+    /// layout of [`BandedJacobianFn`] writes it.
+    Banded { lower: usize, upper: usize },
+}
+
+/// A structure declaration: the dimension it was written for, the
+/// structure, and the band Jacobian callback (required for
+/// [`ProblemStructure::Banded`], refused otherwise).
+#[derive(Clone)]
+pub struct StructureDeclaration {
+    pub dimension: usize,
+    pub structure: ProblemStructure,
+    pub band_jacobian: Option<BandedJacobianFn>,
+}
+
+impl StructureDeclaration {
+    /// No declaration (what every problem carries by default).
+    pub fn unstructured(dimension: usize) -> Self {
+        Self {
+            dimension,
+            structure: ProblemStructure::Unstructured,
+            band_jacobian: None,
+        }
+    }
+
+    /// A dense declaration; the problem must have an explicit Jacobian.
+    pub fn dense(dimension: usize) -> Self {
+        Self {
+            dimension,
+            structure: ProblemStructure::Dense,
+            band_jacobian: None,
+        }
+    }
+
+    /// A band declaration with its band Jacobian callback.
+    pub fn banded(dimension: usize, lower: usize, upper: usize, fill: BandedJacobianFn) -> Self {
+        Self {
+            dimension,
+            structure: ProblemStructure::Banded { lower, upper },
+            band_jacobian: Some(fill),
+        }
+    }
+}
+
+/// Why a structure declaration was refused. Every variant is raised before
+/// any integration step: the declaration-time variants by
+/// [`OdeProblem::with_declared_structure`], the band-verification variants
+/// by the router at `(t0, y0)`.
+#[derive(Clone, Debug, PartialEq, thiserror::Error)]
+pub enum StructureError {
+    #[error("structure declared for dimension {declared}, problem has dimension {problem}")]
+    DimensionMismatch { declared: usize, problem: usize },
+    #[error(
+        "band (lower {lower}, upper {upper}) lies outside the {dimension} x {dimension} matrix"
+    )]
+    BandOutsideMatrix {
+        lower: usize,
+        upper: usize,
+        dimension: usize,
+    },
+    #[error("a banded declaration needs a band Jacobian callback")]
+    MissingBandCallback,
+    #[error("a band Jacobian callback was given for a non-banded declaration")]
+    UnexpectedBandCallback,
+    #[error("a dense declaration needs an explicit Jacobian")]
+    DenseWithoutExplicitJacobian,
+    #[error(
+        "band verification rejected the declaration: vector {vector}, mismatch {mismatch:e} > {tolerance:e} x reference norm {reference_norm:e}"
+    )]
+    BandVerificationMismatch {
+        vector: usize,
+        mismatch: f64,
+        reference_norm: f64,
+        tolerance: f64,
+    },
+    #[error("band verification could not evaluate the declaration: {0}")]
+    BandVerificationFailed(String),
+}
+
 #[derive(Clone)]
 pub struct OdeProblem {
     pub name: String,
@@ -43,6 +137,10 @@ pub struct OdeProblem {
     pub mass_matrix: Option<DenseMatrix>,
     exact_solution: Option<ExactFn>,
     model_epoch: Option<ModelEpochFn>,
+    /// Declared structure (SP03); `Unstructured` unless validated by
+    /// [`Self::with_declared_structure`].
+    structure: ProblemStructure,
+    band_jacobian: Option<BandedJacobianFn>,
 }
 
 /// Retained callback identities for a frozen matrix-free state. This is an
@@ -147,7 +245,87 @@ impl OdeProblem {
             mass_matrix,
             exact_solution,
             model_epoch: None,
+            structure: ProblemStructure::Unstructured,
+            band_jacobian: None,
         })
+    }
+
+    /// Attach a validated structure declaration (research node SP03). The
+    /// declaration must name this problem's dimension; a band must lie
+    /// inside the matrix (`lower, upper < n`) and come with its band
+    /// Jacobian callback; a dense declaration needs an explicit Jacobian; a
+    /// callback without a band is refused. Whether the band callback agrees
+    /// with the problem's Jacobian is checked by the router at `(t0, y0)`.
+    /// Only [`crate::integrate_rodas5p_routed_observed`] reads the
+    /// declaration.
+    pub fn with_declared_structure(
+        mut self,
+        declaration: StructureDeclaration,
+    ) -> Result<Self, StructureError> {
+        let n = self.dimension;
+        if declaration.dimension != n {
+            return Err(StructureError::DimensionMismatch {
+                declared: declaration.dimension,
+                problem: n,
+            });
+        }
+        match declaration.structure {
+            ProblemStructure::Banded { lower, upper } => {
+                if lower >= n || upper >= n {
+                    return Err(StructureError::BandOutsideMatrix {
+                        lower,
+                        upper,
+                        dimension: n,
+                    });
+                }
+                if declaration.band_jacobian.is_none() {
+                    return Err(StructureError::MissingBandCallback);
+                }
+            }
+            ProblemStructure::Dense => {
+                if declaration.band_jacobian.is_some() {
+                    return Err(StructureError::UnexpectedBandCallback);
+                }
+                if !self.has_explicit_jacobian_callback() {
+                    return Err(StructureError::DenseWithoutExplicitJacobian);
+                }
+            }
+            ProblemStructure::Unstructured => {
+                if declaration.band_jacobian.is_some() {
+                    return Err(StructureError::UnexpectedBandCallback);
+                }
+            }
+        }
+        self.structure = declaration.structure;
+        self.band_jacobian = declaration.band_jacobian;
+        Ok(self)
+    }
+
+    /// The declared structure (`Unstructured` unless one was attached).
+    pub fn declared_structure(&self) -> ProblemStructure {
+        self.structure
+    }
+
+    /// The declared band and its callback, if a band was declared.
+    pub fn declared_band(&self) -> Option<BandedJacobian> {
+        match (self.structure, &self.band_jacobian) {
+            (ProblemStructure::Banded { lower, upper }, Some(fill)) => Some(BandedJacobian {
+                lower,
+                upper,
+                fill: fill.clone(),
+            }),
+            _ => None,
+        }
+    }
+
+    /// An explicit Jacobian callback (allocating or in place) is present.
+    pub(crate) fn has_explicit_jacobian_callback(&self) -> bool {
+        self.jacobian.is_some() || self.jacobian_into.is_some()
+    }
+
+    /// The JVP callback, if any (band verification of SP03).
+    pub(crate) fn jvp_callback(&self) -> Option<&JvpFn> {
+        self.jvp.as_ref()
     }
 
     fn eval_rhs_uncounted(&self, t: f64, y: &[f64]) -> CoreResult<Vec<f64>> {
@@ -439,6 +617,10 @@ impl OdeProblem {
         let mut cloned = self.clone();
         cloned.jacobian = None;
         cloned.jacobian_into = None;
+        // A declared structure is an explicit-matrix provider: the strict
+        // matrix-free clone carries none (SP03).
+        cloned.structure = ProblemStructure::Unstructured;
+        cloned.band_jacobian = None;
         Ok(cloned)
     }
 

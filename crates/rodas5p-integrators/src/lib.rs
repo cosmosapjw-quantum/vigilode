@@ -55,6 +55,7 @@ mod rodas5p_fast;
 mod rodas5p_fast_small;
 mod rodas5p_fast_small_batch;
 mod rodas5p_matrix_free_fast;
+mod routing;
 mod sabr;
 mod scientific_corpus_v2;
 mod scientific_validity_v2_gate;
@@ -323,7 +324,10 @@ pub use path_controller::{
     PathControllerRow, PathControllerScheduleSummary, PathControllerSummary,
     run_path_controller_screen,
 };
-pub use problem::{JacobianIntoFn, ModelEpochFn, OdeProblem};
+pub use problem::{
+    JacobianIntoFn, ModelEpochFn, OdeProblem, ProblemStructure, StructureDeclaration,
+    StructureError,
+};
 pub use problems::{
     complex_dahlquist_problem, constant_affine_mass_problem, manufactured_mass_nonlinear_problem,
     manufactured_vector_problem, oscillatory_prothero_robinson_problem, prothero_robinson_problem,
@@ -380,6 +384,13 @@ pub use rodas5p_matrix_free_fast::{
     integrate_rodas5p_mf_fast_observed_traced,
     integrate_rodas5p_mf_fast_observed_with_gcrodr_policy,
     integrate_rodas5p_mf_fast_observed_with_stage_target, rodas5p_stage_transfer_constants,
+};
+pub use routing::{
+    BAND_VERIFICATION_SEED, BAND_VERIFICATION_TOLERANCE, BAND_VERIFICATION_VECTORS, BandReference,
+    BandVerification, ROUTER_DENSE_SMALL_MAX, RoutedDriver, RoutedResult, RoutedRun, RoutingError,
+    RoutingFallback, RoutingOptions, RoutingReason, RoutingRecord,
+    integrate_rodas5p_routed_observed, integrate_rodas5p_routed_observed_with_options,
+    route_problem, verify_declared_band,
 };
 pub use sabr::{PredictorKind, SabrConfig, StageHistory, sabr_step};
 pub use scientific_corpus_v2::{
