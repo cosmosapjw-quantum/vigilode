@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "VigilODE Loop12 theorem index",
+  "type": "object",
+  "required": [
+    "schema",
+    "path_basis",
+    "claims",
+    "parent_results"
+  ],
+  "properties": {
+    "schema": {
+      "const": "vigilode-loop12-theorems-v1"
+    },
+    "path_basis": {
+      "const": "repository root"
+    },
+    "claims": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "origin",
+          "decision",
+          "evidence_status",
+          "scope",
+          "proof_path",
+          "proof_sha256",
+          "review_path"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "origin": {
+            "enum": [
+              "attachment",
+              "integration_correction",
+              "new_extension"
+            ]
+          },
+          "decision": {
+            "enum": [
+              "PROMOTE",
+              "HOLD",
+              "REJECT"
+            ]
+          },
+          "evidence_status": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "scope": {
+            "type": "string"
+          },
+          "proof_path": {
+            "type": "string"
+          },
+          "proof_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "review_path": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

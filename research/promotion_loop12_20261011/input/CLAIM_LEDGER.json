@@ -1,0 +1,73 @@
+{
+  "schema": "rvj-loop12-claims-v1",
+  "claims": [
+    {
+      "id": "A",
+      "claim": "Exact collective/transverse reconstruction",
+      "status": "derived and literature-supported",
+      "assumptions": "common A,B and nonlinear mean feedback, exact current model and retained initial data",
+      "proof_in_note": "Sections3-4",
+      "evidence": "evidence/SYMBOLIC_CHECKS.json"
+    },
+    {
+      "id": "B",
+      "claim": "Heterogeneous packet mean and individual mode error bounds",
+      "status": "derived and exact-reference-verified",
+      "assumptions": "positive normalized weights, |xi|<=1, weighted unit energy, candidate within unit disk, known common carrier; code kappa0",
+      "proof_in_note": "Sections5-6",
+      "evidence": "evidence/MAIN_RESULTS.json"
+    },
+    {
+      "id": "C",
+      "claim": "Exact n-fold reduction of kernel contraction terms for identical unrounded waveform map",
+      "status": "derived and implementation-verified",
+      "assumptions": "same kernel/degree/sweeps; dense coefficient-contraction schedule; preprocessing and output charged separately",
+      "proof_in_note": "Section7",
+      "evidence": "evidence/EXACT_COST_PARITY.json"
+    },
+    {
+      "id": "D",
+      "claim": "Constructive logarithmic p,D,S and arithmetic upper bound",
+      "status": "derived and exact-reference-verified",
+      "assumptions": "fixed analytic margin(E1), explicit restricted family, precision sufficient for rounding; not generic whole-window stability",
+      "proof_in_note": "Section8",
+      "evidence": "evidence/CONSTRUCTIVE_CONVERGENCE.json"
+    },
+    {
+      "id": "E",
+      "claim": "Online J/JVP/VJP/directional finite difference/Krylov/factorization calls zero",
+      "status": "implementation-verified",
+      "assumptions": "std-lib scalar polynomial/moment reference; symbolic offline audit allowed; model structure supplied",
+      "proof_in_note": "Sections7-9",
+      "evidence": "tests/test_packet.py"
+    },
+    {
+      "id": "F",
+      "claim": "Old shifted resolvent can remove explicit hJ multiplication",
+      "status": "derived and exact-algebra-checked",
+      "assumptions": "center inverse R0 available; JVPs inside inverse oracle are not eliminated by this identity",
+      "proof_in_note": "Section11",
+      "evidence": "evidence/SYMBOLIC_CHECKS.json"
+    },
+    {
+      "id": "G",
+      "claim": "retained degree and sweep counts selected prospectively satisfy the mode error target in the explicit analytic ball",
+      "status": "derived and exact-reference-verified",
+      "proof_in_note": "Section8",
+      "evidence": "evidence/CONSTRUCTIVE_CONVERGENCE.json"
+    }
+  ],
+  "promotion": "HOLD",
+  "independent_review": "UNAVAILABLE",
+  "owner_self_review": true,
+  "new_math_scope": "constructive scoped theorems, no priority/novelty assertion",
+  "excluded_claims": [
+    "generic black-box derivative-free stiff solver",
+    "universal wall-clock speedup",
+    "all independent state dimensions erased",
+    "native Rust build",
+    "nonzero damping implemented",
+    "generic varying closure",
+    "all historical numerical campaigns rerun"
+  ]
+}

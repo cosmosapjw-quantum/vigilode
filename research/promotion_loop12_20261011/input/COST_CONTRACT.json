@@ -1,0 +1,33 @@
+{
+  "schema": "rvj-loop12-cost-v1",
+  "counting_unit": "arithmetic operations / explicit scalar coefficient multiply-add loops",
+  "same_map_baseline": "full per-mode truncated-kernel polynomial waveform iteration, already sharing its collective nonlinear RHS",
+  "exact_equivalence": "weighted mean equals compressed mean in exact unrounded arithmetic at every sweep",
+  "per_sweep_kernel_cost": "full n*(p+1)*(d_force+1); packet (p+1)*(d_force+1)",
+  "full_output": "O(pD) shared coefficient construction plus O(np) evaluation per requested full state",
+  "preprocessing": "O(np), all independent initial amplitudes and frequencies retained",
+  "generic_candidate_cost": "O(np+S*(D^2+pD)+R_out*(np+pD))",
+  "explicit_restricted_accuracy_class": "p,D,S=O(log(1/epsilon)), yielding O(n log(1/epsilon)+log^3(1/epsilon)+R_out n log(1/epsilon))",
+  "storage": "O(n+p+D), excluding retained evidence/repeated study outputs",
+  "precision": "coefficient roundoff included in exact candidate residual; arithmetic bound not automatically bit-complexity or hardware timing bound",
+  "online_derivative_calls": {
+    "Jacobian": 0,
+    "JVP": 0,
+    "VJP": 0,
+    "directional_finite_difference": 0,
+    "Krylov": 0,
+    "factorization": 0
+  },
+  "counts_not_complete_flops": [
+    "Fraction integer cost",
+    "metadata hashes",
+    "certificate output tuple construction",
+    "memory traffic",
+    "parallel reduction/communication",
+    "phase precision"
+  ],
+  "exact_comparison_evidence": "evidence/EXACT_COST_PARITY.json",
+  "state_output_each_step_has_linear_n_cost": true,
+  "versus_optimal_existing_solver_claim": false,
+  "constructive_convergence_theorem_kappa": 0
+}
