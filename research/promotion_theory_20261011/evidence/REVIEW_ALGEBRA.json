@@ -1,0 +1,298 @@
+{
+  "schema_version": "1.0",
+  "report_type": "independent_decision_review",
+  "date": "2026-10-11",
+  "reviewer": "/root/review_algebra",
+  "reviewer_independence": {
+    "generated_candidates": false,
+    "designed_validation": false,
+    "edited_candidate_files": false,
+    "edited_production": false,
+    "reviewed_reviews_recursively": false
+  },
+  "baseline_commit": "8ce9bda0d72d308facd615ac42ec137560fd68c6",
+  "status": "PROMOTE_BOUNDED_CONDITIONAL_THEOREMS",
+  "identity_is_not_validity": true,
+  "inputs": [
+    {
+      "path": "theory_work/CERTIFICATE_ATLAS.md",
+      "sha256": "aae1c59b50201aa4c2003c5e1c280f8513ea80cc59d0fdcc021a68f63a922d20",
+      "read_scope": "full"
+    },
+    {
+      "path": "theory_work/POLYNOMIAL.md",
+      "sha256": "ffd2650a60c006734c87088d3518474f339a72624e1b6bfefc58efefd3a139a1",
+      "read_scope": "full"
+    },
+    {
+      "path": "theory_work/POLYNOMIAL_CLAIMS.json",
+      "sha256": "e311dde8f422f8a1583bc504413a2b329875fd71d8c7463e70ff42c7a051c94f",
+      "read_scope": "full"
+    },
+    {
+      "path": "theory_work/POLYNOMIAL_EXACT_CHECK.py",
+      "sha256": "1b5b2bd7b96bc8b6a7f854605a7413b03938d06427678f8d7bf099c7ba61f99b",
+      "read_scope": "full"
+    },
+    {
+      "path": "theory_work/POLYNOMIAL_EXACT_CHECK.json",
+      "sha256": "bc4280f2bb0ab5b338a35fac497eb7306504d37e281b697865554860683021f3",
+      "read_scope": "full"
+    },
+    {
+      "path": "vigilode/research/promotion_theory_20261011/check_exact.py",
+      "sha256": "465c329d2a677c20ca13f447fb2521a161d4b618a92f309a7d97c67d676d1683",
+      "read_scope": "full"
+    },
+    {
+      "path": "vigilode/research/promotion_theory_20261011/EXACT_RESULTS.json",
+      "sha256": "9b8a390e93b40ec78eb8efbd34eecdd7dd0848eead42335de6c2b5cb4d089768",
+      "read_scope": "full"
+    }
+  ],
+  "source_read_scope": [
+    {
+      "path": "crates/rodas5p-integrators/src/routing.rs",
+      "scope": "verify_declared_band JVP versus dense-reference selection and product loop"
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/outward_certificate.rs",
+      "scope": "InverseWitness::approximate full-space QuadraticStageProblem witness"
+    },
+    {
+      "path": "crates/rodas5p-core/src/polynomial_action.rs",
+      "scope": "public entry points and TotalErrorStatus authority distinction"
+    },
+    {
+      "path": "research/py01_laguerre_component_export_20261011/PREREGISTRATION.md",
+      "scope": "existing API and unpublished exporter boundary"
+    }
+  ],
+  "decisions": [
+    {
+      "id": "A1",
+      "decision": "PROMOTE",
+      "promotion_scope": "conditional_full_space_certificate_theorem",
+      "evidence_status": [
+        "derived"
+      ],
+      "proof": "CERTIFICATE_ATLAS.md A1",
+      "required_assumptions": [
+        "fixed finite-dimensional subordinate norm and metric",
+        "square fixed P and polynomial current target B(theta)",
+        "theta interval contained in declared box",
+        "verified complete Bernstein coefficient enclosures with q<1",
+        "current true residual enclosure",
+        "assembly and all actual rounding terms accounted exactly once"
+      ],
+      "approved_conclusion": "Uniform inverse and correction bound; inexact correction geometric-convolution bound.",
+      "not_implied": [
+        "projected Hessenberg authority",
+        "arbitrary approximate JVP bound",
+        "native implementation verified"
+      ]
+    },
+    {
+      "id": "A2",
+      "decision": "PROMOTE",
+      "promotion_scope": "conditional_total_arithmetic_work_improvement",
+      "evidence_status": [
+        "derived"
+      ],
+      "proof": "CERTIFICATE_ATLAS.md A2",
+      "required_assumptions": [
+        "same certificate/model/metric/cell contract reused N times",
+        "C_full>C_member",
+        "setup, proof replay, membership and failures charged",
+        "N>(C_compile+C_extra)/(C_full-C_member)"
+      ],
+      "approved_conclusion": "New total modeled work is strictly below repeated full verification work.",
+      "not_implied": [
+        "wall time speedup",
+        "speculative future amortization",
+        "generic certificate compilation polynomial complexity"
+      ]
+    },
+    {
+      "id": "A3",
+      "decision": "PROMOTE",
+      "promotion_scope": "exact_nonempty_structured_family",
+      "evidence_status": [
+        "derived"
+      ],
+      "proof": "CERTIFICATE_ATLAS.md A3",
+      "required_assumptions": [
+        "B(s)=[[5/4,-s/4],[0,3/2]], s in [0,2]",
+        "P=diag(4/5,2/3)",
+        "exact arithmetic for finite termination"
+      ],
+      "approved_conclusion": "q=2/5, norm inverse<=4/3, E^2=0, two correction sweeps terminate.",
+      "not_implied": [
+        "faster than direct triangular solve",
+        "rounded finite termination"
+      ]
+    },
+    {
+      "id": "A4",
+      "decision": "PROMOTE",
+      "promotion_scope": "conditional_structural_setup_complexity_reduction",
+      "evidence_status": [
+        "derived"
+      ],
+      "proof": "CERTIFICATE_ATLAS.md A4",
+      "required_assumptions": [
+        "same sealed differentiable expression graph generates f and J",
+        "verified primitive domain semantics",
+        "row-local support and AD kernel",
+        "total circuit length L; bounded local stencil L_i=O(b)",
+        "comparator actually materializes dense n*n Jacobian",
+        "support/contract processing charged with bounded local cost"
+      ],
+      "approved_conclusion": "Whole-domain band identity; derivatives O(L+nb); fixed-band structure setup quadratic to linear versus dense-reference comparator.",
+      "not_implied": [
+        "improvement over existing cheap JVP comparator",
+        "generic shared graph AD O(nb)",
+        "automatic stable band solve",
+        "time integration accuracy"
+      ]
+    },
+    {
+      "id": "P1",
+      "decision": "PROMOTE",
+      "promotion_scope": "conditional_phi_action_error_and_product_count",
+      "evidence_status": [
+        "derived"
+      ],
+      "proof": "POLYNOMIAL.md section 2",
+      "required_assumptions": [
+        "k is a nonnegative integer",
+        "X Hermitian with spectrum in [-1,1]",
+        "A=cI+sX, s>0, c+s<=0, h>=0",
+        "monic degree-d q with real nodes in [-1,1] and Hermite multiplicities",
+        "current full-space norm(q(X))<=delta witness",
+        "verified input rank or charged factorization residual",
+        "outward scalar coefficients and complete Horner/output defect enclosures"
+      ],
+      "approved_conclusion": "norm(phi_k(hA)-r_k(X))<=delta*(h*s)^d/(d+k)!; r*(d-1) products and stated finite-precision total bound.",
+      "not_implied": [
+        "nonnormal real-spectrum extension",
+        "unbounded callback authority",
+        "ODE global error"
+      ]
+    },
+    {
+      "id": "P2",
+      "decision": "PROMOTE",
+      "promotion_scope": "conditional_quotient_compilation_and_near_bound",
+      "evidence_status": [
+        "derived"
+      ],
+      "proof": "POLYNOMIAL.md section 3",
+      "required_assumptions": [
+        "monic degree-d q",
+        "stored polynomial coefficients define exact target",
+        "full-space q(X)=0 or norm(q(X))<=delta",
+        "near bound requires Hermitian normalized X or verified norm(a_j(X))<=A_j",
+        "finite precision scalar and vector errors enclosed"
+      ],
+      "approved_conclusion": "Exact quotient identity; O(m*d) scalar arithmetic and d-1 vector products; stated near-annihilator majorant.",
+      "not_implied": [
+        "bounded-bit complexity",
+        "Laguerre dominance",
+        "old recurrence rounding disappears without new rounding certificate"
+      ]
+    },
+    {
+      "id": "P3",
+      "decision": "PROMOTE",
+      "promotion_scope": "conditional_nonnormal_finite_jet_inverse",
+      "evidence_status": [
+        "derived"
+      ],
+      "proof": "POLYNOMIAL.md section 4",
+      "required_assumptions": [
+        "A=-kappa*I+N",
+        "b=1+a*kappa nonzero",
+        "full-space nilpotence N^d=0 or verified eta=(abs(a)/abs(b))^d*norm(N^d)<1",
+        "finite outward gain and residual/assembly/evaluation bounds"
+      ],
+      "approved_conclusion": "Finite resolvent polynomial and near-nilpotent inverse/correction error bounds without norm((a/b)*N)<1.",
+      "not_implied": [
+        "small nonnormal gain",
+        "useful binary64 error at arbitrary scales",
+        "advantage over direct structured solve"
+      ]
+    },
+    {
+      "id": "P-cost",
+      "decision": "PROMOTE",
+      "promotion_scope": "conditional_total_modeled_work_improvement",
+      "evidence_status": [
+        "derived"
+      ],
+      "proof": "POLYNOMIAL.md section 7",
+      "required_assumptions": [
+        "identical target,input,operator epoch,accuracy",
+        "baseline r*m products versus new r*(d-1)",
+        "same constant modeled C_X; otherwise separate old lower/new upper costs",
+        "all setup, coefficient, vector, certification, dispatch, failures and fallback charged",
+        "guaranteed or realized M reuse count",
+        "overhead < r*(m-d+1)*C_X under common-cost model"
+      ],
+      "approved_conclusion": "New total modeled work strictly below baseline operator-only lower bound.",
+      "not_implied": [
+        "measured wall time",
+        "improvement over analytic projector formula",
+        "global black-box improvement"
+      ]
+    }
+  ],
+  "scope_decisions": {
+    "derived_conditional_theorems": "PROMOTE",
+    "conditional_operator_product_reduction": "PROMOTE",
+    "conditional_total_modeled_work_gate": "PROMOTE",
+    "current_native_production": "HOLD",
+    "current_executable_global_ode_accuracy": "HOLD",
+    "measured_wall_time_speed": "HOLD",
+    "academic_novelty": "NOT_CLAIMED",
+    "universal_black_box_speedup": "REJECT",
+    "laguerre_basis_dominance": "REJECT"
+  },
+  "corrections": [
+    {
+      "id": "RA-C1",
+      "kind": "source_scope",
+      "location": "CERTIFICATE_ATLAS.md A4",
+      "original_problem": "Dense reference setup described without conditioning on absent JVP callback",
+      "resolution": "Corrected to JVP branch when present, dense-reference O(n^2) comparator otherwise",
+      "status": "RESOLVED"
+    },
+    {
+      "id": "RA-C2",
+      "kind": "machine_readable_assumption",
+      "location": "POLYNOMIAL_CLAIMS.json P2",
+      "original_problem": "Near-bound omitted normalized Hermitian or separate operator norm hypothesis",
+      "resolution": "Near-bound required norm(a_j(X))<=A_j explicitly; exact quotient identity remains broader",
+      "status": "RESOLVED"
+    },
+    {
+      "id": "RA-C3",
+      "kind": "cost_scope_clarification",
+      "location": "POLYNOMIAL_CLAIMS.json P-cost",
+      "original_problem": "Common operator cost versus distinct cost bounds needed explicit separation",
+      "resolution": "Shared constant modeled C_X and distinct bound replacement recorded",
+      "status": "RESOLVED"
+    }
+  ],
+  "fatal_blockers": [],
+  "nonblocking_limits": [
+    "A4 general variable-bandwidth support union implementation cost must be charged; fixed bounded local kernels support stated linear regime.",
+    "Full-space Neumann inverse-defect witnesses already exist for QuadraticStageProblem; new claim is cell reuse/general binding, not invention of Neumann certification.",
+    "No fresh native implementation or matched performance observations were produced by this reviewer.",
+    "Universal theorem proofs were evaluated independently from diagnostic fixtures; recorded examples were code/readback inspected, not reviewer-rerun."
+  ],
+  "historical_campaigns_rerun": 0,
+  "diagnostic_execution_by_reviewer": false,
+  "theorem_validation_method": "Independent mathematical derivation and quantifier/target/rounding/cost audit; static inspection of provided exact diagnostic programs and outputs.",
+  "report": "REVIEW_ALGEBRA.md"
+}

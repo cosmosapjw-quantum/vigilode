@@ -1,0 +1,1613 @@
+{
+  "schema": "vigilode-theory-to-native-porting-dag-v1",
+  "title_ko": "증명된 조건을 native 정확도·작업량 승격으로 연결하는10단계 개발 계획",
+  "summary_ko": "먼저 generated-model 구조와 current-operator inverse witness를 만들고, whole-stage 영향도 및 전역 오차 ledger를 연결한다. 그 기반 위에서 residual 예산 최적화, quotient polynomial, nilpotent resolvent, affine 축소와 homotopy 병렬화를 서로 독립된 후보로 검증한다. 이미 수정된 AS01–03는 다시 열지 않고, 공개된14개 remaining preregistration은 미실행 상태로 보존한다. 모든 node는 계획이며 새 native 실험 전에 별도 preregistration을 커밋해야 한다.",
+  "created_date": "2026-10-11",
+  "status": "PROPOSED_NOT_EXECUTED",
+  "source_binding": {
+    "repository": "https://github.com/cosmosapjw-quantum/vigilode",
+    "source_commit": "8ce9bda0d72d308facd615ac42ec137560fd68c6",
+    "source_branch": "audit/rvj-reaudit-remaining-20261011",
+    "source_identity_status": "READ_FROM_LOCAL_CHECKOUT_OF_PUBLISHED_REF",
+    "identity_is_not_scientific_authority": true,
+    "existing_fixed_findings": [
+      "F101_AS02",
+      "F102_AS01",
+      "F104_AS03"
+    ],
+    "remaining_registered_nodes_status": "14_PREREGISTRATIONS_ONLY_NO_RESULTS_AT_BASELINE",
+    "prior_ledger_effective_tip": "L-0103 supersedes L-0102",
+    "represented_k_causality": {
+      "status": "NOT_EXACT_CAUSAL_BY_DEFAULT",
+      "published_evidence": "research/adversarial_reaudit_20261001_r3/homotopy/coefficient_structure.json",
+      "observation": "Published upper/diagonal alpha/L leakage approximately 5.58e-16 and 3.77e-16 with nonzero eighth powers; source uses generic coefficient inversion/matmul and all-entry stage_mix. Evidence reused, not a new numerical measurement.",
+      "required_resolution": "Exact structural witness OR H5 near-causal mismatch certificate with ||SE||<1; no silent masking.",
+      "u_form": "Explicit j<i U-form assembly is a separate unaffected contract."
+    }
+  },
+  "input_theory_documents": [
+    "POLYNOMIAL.md",
+    "THEORY_GLOBAL.md",
+    "HOMOTOPY.md",
+    "CERTIFICATE_ATLAS.md"
+  ],
+  "theory_decision_binding": {
+    "status": "SEE_FINAL_INDEPENDENT_DECISION",
+    "path": "research/promotion_theory_20261011/DECISION.json",
+    "this_dag_assigns_promote": false,
+    "rule": "Theory PROMOTE never supplies missing native premises or run evidence."
+  },
+  "global_invariants": [
+    "No production code/default/dependency changes executed by this planning artifact.",
+    "No published preregistration, raw output or ledger row rewritten.",
+    "NEW_PREREGISTRATION is mandatory before a new native campaign or an extension outside an existing registered scope.",
+    "Do not rerun published scientific campaigns solely to repeat accepted claims; reuse immutable sources, rerun only justified changed-code regression contracts.",
+    "Authority constructors are private and validated; telemetry/JSON cannot deserialize directly into authority.",
+    "Actual target, model epoch, metric, coefficient bits, uncertainty and arithmetic mode are bound to every certificate.",
+    "Accuracy, useful bound, counted work, parallel span and elapsed time are separate decisions.",
+    "Native represented K-form causality is not assumed from intended tableau; all coefficient leakage is preserved and source-bound or explicitly enclosed. No silent masking."
+  ],
+  "promotion_layers": [
+    "SOURCE_BINDING",
+    "THEORY_PROOF",
+    "IMPLEMENTATION_CONTRACT",
+    "FINITE_GLOBAL_TRAJECTORY",
+    "COUNTED_WORK_OR_SPAN",
+    "MEASURED_WALL_TIME",
+    "PRODUCTION_DEFAULT"
+  ],
+  "execution_waves": [
+    {
+      "wave": 1,
+      "nodes": [
+        "TP01",
+        "TP02"
+      ],
+      "purpose_ko": "구조 및 inverse witness를 먼저 확보"
+    },
+    {
+      "wave": 2,
+      "nodes": [
+        "TP03",
+        "TP04"
+      ],
+      "purpose_ko": "stage와 전역 오차의 연결을 native 계약으로 고정"
+    },
+    {
+      "wave": 3,
+      "nodes": [
+        "TP05",
+        "TP06",
+        "TP07",
+        "TP09"
+      ],
+      "purpose_ko": "정확도 예산 안에서 실제 작업량을 줄이는 독립 후보들"
+    },
+    {
+      "wave": 4,
+      "nodes": [
+        "TP08"
+      ],
+      "purpose_ko": "실제 expensive client 및 양의 span 여유가 있을 때 병렬 후보"
+    },
+    {
+      "wave": "per_candidate",
+      "nodes": [
+        "TP10"
+      ],
+      "purpose_ko": "각 후보 완료 시 필요한 prerequisite만 묶어 독립적으로 승격 판정"
+    }
+  ],
+  "integration_prerequisites": {
+    "TP10": {
+      "run_per_selected_candidate": true,
+      "candidate_routes": {
+        "generated_structure": [
+          "TP01"
+        ],
+        "atlas_reuse": [
+          "TP01",
+          "TP02"
+        ],
+        "residual_allocator": [
+          "TP01",
+          "TP02",
+          "TP03",
+          "TP04",
+          "TP05"
+        ],
+        "quotient_action": [
+          "TP01",
+          "TP06"
+        ],
+        "nilpotent_solve": [
+          "TP01",
+          "TP02",
+          "TP07"
+        ],
+        "causal_parallel": [
+          "TP01",
+          "TP02",
+          "TP03",
+          "TP08"
+        ],
+        "affine_reduction": [
+          "TP01",
+          "TP02",
+          "TP03",
+          "TP04",
+          "TP09"
+        ]
+      },
+      "global_trajectory_claim_always_adds": [
+        "TP04"
+      ],
+      "native_runs_require": "NEW_PREREGISTRATION"
+    }
+  },
+  "nodes": [
+    {
+      "id": "TP01",
+      "title_ko": "선언 모델 식 그래프에서 whole-domain 구조·미분 증명 생성",
+      "status": "PROPOSED_NOT_EXECUTED",
+      "priority": "P0",
+      "registration_requirement": "NEW_PREREGISTRATION_BEFORE_NATIVE_EXPERIMENTS",
+      "theorem_ids": [
+        "A4"
+      ],
+      "prior_node_mapping": [
+        {
+          "node": "SP03",
+          "effective_status": "IMPLEMENTED_FAIL_OVERHEAD_ITEM5",
+          "change": "Add a new sealed generated-model route; preserve existing arbitrary-callback validation and scaled-norm repair."
+        },
+        {
+          "node": "AS03",
+          "effective_status": "IMPLEMENTED",
+          "change": "Reuse fail-closed schema; do not reopen F104."
+        }
+      ],
+      "current_source_seams": [
+        {
+          "path": "crates/rodas5p-integrators/src/problem.rs",
+          "symbols": [
+            "ProblemStructure",
+            "StructureDeclaration",
+            "OdeProblem"
+          ],
+          "status": "EXISTS_AT_BASELINE"
+        },
+        {
+          "path": "crates/rodas5p-integrators/src/routing.rs",
+          "symbols": [
+            "route_problem",
+            "verify_declared_band",
+            "integrate_rodas5p_routed_observed"
+          ],
+          "status": "EXISTS_AT_BASELINE"
+        },
+        {
+          "path": "crates/rodas5p-core/src/model_expression.rs",
+          "symbols": [
+            "ModelExpressionId",
+            "StructuralJacobianWitness"
+          ],
+          "status": "PROPOSED_NEW_FILE"
+        }
+      ],
+      "planned_implementation_steps": [
+        "Implement a sealed scalar straight-line graph with primitive domain rules and explicit row-local variable supports.",
+        "Generate f and band Jacobian from the same graph semantics; validate primitive derivatives, support union and domain assumptions in a small replay kernel.",
+        "Emit immutable model/epoch/domain/row-support/cost witnesses; externally supplied hashes or callback IDs alone cannot construct authority.",
+        "Add opt-in generated-band dispatch using existing banded solver; avoid dense n-by-n fill and reference products on this route.",
+        "Export actual graph traversal, derivative and storage counts; leave arbitrary callbacks on the protected current router."
+      ],
+      "required_tests": {
+        "all_tests_status": "PLANNED_NOT_EXECUTED",
+        "positive": [
+          {
+            "id": "TP01-P1",
+            "fixture": "Local rational-coefficient stencil f_i=a_i(t)y_(i-1)+b_i(t)y_i+c_i(t)y_(i+1)+y_i^3 with boundary truncation; independent symbolic derivative.",
+            "expected": "Exact tridiagonal support and every generated derivative match the symbolic expression over the declared domain."
+          },
+          {
+            "id": "TP01-P2",
+            "fixture": "n in {64,128,256,512,1024}, fixed bandwidth b=3 and row graph length bounded independently of n.",
+            "expected": "Counted graph/Jacobian production is O(n b), no n^2 buffer or dense fallback on admitted path; full step target matches direct banded arm."
+          },
+          {
+            "id": "TP01-P3",
+            "fixture": "Graph division primitive with denominator interval [2,3], then two disjoint state tubes in this domain.",
+            "expected": "Both tubes share the same valid support proof; domain-bound derivatives enclose independent interval oracle."
+          }
+        ],
+        "negative": [
+          {
+            "id": "TP01-N1",
+            "fixture": "Replace generated f or J with another callback retaining the same textual model ID; inject hidden off-band y_(i+3) coupling.",
+            "expected": "Typed binding mismatch/refusal before driver work; external ID cannot forge a witness."
+          },
+          {
+            "id": "TP01-N2",
+            "fixture": "Division denominator interval containing zero, unsupported primitive derivative, stale model epoch, malformed support index.",
+            "expected": "Fail closed with no Verified structural witness."
+          },
+          {
+            "id": "TP01-N3",
+            "fixture": "Shared whole-model graph reused by every row with O(nL) traversals.",
+            "expected": "Counter reflects actual O(nL); checker refuses O(nb) claim unless row-local complexity premise is established."
+          }
+        ],
+        "common_rules": [
+          "Freeze new fixture corpus, independent oracle, checker, exact gate and strongest baseline before the first native campaign.",
+          "Use fresh disjoint native holdout parameters; retained published fixtures are immutable identity anchors, not a new scientific replication campaign.",
+          "Run only affected meaningful contracts plus required integration gates; preserve first failure and corrections.",
+          "The final checker must validate exact finite dimensions, unique complete cells, source/checker identity and counters; malformed evidence is INVALID, scientific failure is FAIL."
+        ]
+      },
+      "accuracy_gate": [
+        "Generated f/J equality is semantic, not a two-vector sample claim.",
+        "Accepted direct-band trajectory has the same target and arithmetic contract as the existing direct-band route; numerical parity is checked on fresh cases."
+      ],
+      "cost_gate": [
+        "Strict setup reduction: W_generated < W_existing_dense_reference on gated fresh n, with primitive checks and proof replay included.",
+        "Asymptotic claim requires recorded L=O(nb), output O(nb), and actual counted traversal; do not claim full solver acceleration from setup alone."
+      ],
+      "minimal_strongest_baseline": {
+        "correctness": "Existing direct banded solver with independent analytic band fill.",
+        "performance": [
+          "SP03 dense-reference validation for the setup claim",
+          "Existing direct banded entry point for total integration cost"
+        ],
+        "excluded_weak_comparator": "Dense LU alone when direct banded structure is already available."
+      },
+      "allowed_claims_if_pass": [
+        "Whole-domain band-support authority on generated models.",
+        "Quadratic-to-linear structure setup reduction for fixed-width local graphs; total work only if separately gated."
+      ],
+      "promotion_ceiling": {
+        "theory": "Requires separate independent proof decision; this plan confers no PROMOTE.",
+        "implementation": "Only the explicitly implemented contract and admitted domain after native validation.",
+        "global_trajectory": "Only when TP04 certifies the complete finite accepted trajectory, including candidate-specific changes.",
+        "counted_work": "Only exact common-unit counts or proved upper-vs-lower work/span inequality with all overhead.",
+        "measured_wall_time": "NOT_MEASURED; never inferred from count/span theorem.",
+        "production_default": "UNCHANGED; separate explicit release decision required."
+      },
+      "depends_on": [],
+      "external_prerequisites": [],
+      "design_section_refs": [
+        "CERTIFICATE_ATLAS_KO.md A5 (API design, not a separately promoted theorem)"
+      ]
+    },
+    {
+      "id": "TP02",
+      "title_ko": "매개변수 셀별 inverse-defect atlas와 현재 residual correction",
+      "status": "PROPOSED_NOT_EXECUTED",
+      "priority": "P0",
+      "registration_requirement": "NEW_PREREGISTRATION_BEFORE_NATIVE_EXPERIMENTS",
+      "theorem_ids": [
+        "A1",
+        "A2",
+        "A3"
+      ],
+      "prior_node_mapping": [
+        {
+          "node": "AS05",
+          "effective_status": "PREREGISTERED_NOT_EXECUTED",
+          "change": "General q<1 approximate-inverse route is explicitly excluded from AS05; implement as a newly registered extension, preserving AS05 scope."
+        },
+        {
+          "node": "PC01",
+          "effective_status": "PREREGISTERED_NOT_EXECUTED",
+          "change": "Provides future current-target right-preconditioner witness; no assumption that sparse/right native path exists."
+        }
+      ],
+      "current_source_seams": [
+        {
+          "path": "crates/rodas5p-core/src/directed.rs",
+          "symbols": [
+            "Interval"
+          ],
+          "status": "EXISTS_AT_BASELINE"
+        },
+        {
+          "path": "crates/rodas5p-core/src/nonnormal_certificate.rs",
+          "symbols": [
+            "symmetric_part_upper"
+          ],
+          "status": "EXISTS_AT_BASELINE"
+        },
+        {
+          "path": "crates/rodas5p-core/src/residual_gain.rs",
+          "symbols": [
+            "ResidualGainWitness",
+            "LinearTargetId"
+          ],
+          "status": "PREREGISTERED_FILE_ABSENT_AT_BASELINE"
+        },
+        {
+          "path": "crates/rodas5p-core/src/parameter_cell.rs",
+          "symbols": [
+            "ParameterCellWitness",
+            "CurrentCellBinding"
+          ],
+          "status": "PROPOSED_NEW_FILE"
+        }
+      ],
+      "planned_implementation_steps": [
+        "Fix a supported subordinate metric and a low-dimensional polynomial B(theta) generated by TP01.",
+        "Compile I-PB into exact or outward Bernstein coefficient matrices; compute full-space q upper bound and assembly inflation q_total.",
+        "Construct private witness only when finite q_total<1 and all primitive/model/metric/current-parameter bindings are valid.",
+        "Recompute the current residual and outward P action on each call; distinguish represented operator and exact shifted target.",
+        "Reuse gain only through rigorous interval cell membership; record compile, membership, residual, failed lookup and fallback costs."
+      ],
+      "required_tests": {
+        "all_tests_status": "PLANNED_NOT_EXECUTED",
+        "positive": [
+          {
+            "id": "TP02-P1",
+            "fixture": "Independent rational family B(s)=[[5/4,-s/4],[0,3/2]], P=diag(4/5,2/3), s in [0,2], plus block diagonal sums.",
+            "expected": "q=2/5; current residual correction bound encloses exact inverse error at endpoints and fresh rational interior s. Exact two-sweep termination is checked only on the nilpotent family."
+          },
+          {
+            "id": "TP02-P2",
+            "fixture": "Fresh polynomial cells with interval assembly uncertainty delta_B and certified q+||P||delta_B<1.",
+            "expected": "Whole-cell bounds enclose independent exact corner/interior examples; algebraic coefficient proof, not finite samples, supplies uniform authority."
+          },
+          {
+            "id": "TP02-P3",
+            "fixture": "N repeated same-cell RHS calls crossing the exact measured compile-amortization threshold.",
+            "expected": "Every current residual is recomputed; counted savings begin only where N(C_full-C_member)>C_compile+C_extra."
+          }
+        ],
+        "negative": [
+          {
+            "id": "TP02-N1",
+            "fixture": "q_total equal to 1 or greater, NaN/Inf bound, nonpositive metric, interval parameter crossing cell boundary.",
+            "expected": "No Verified result; boundary membership is interval containment, not midpoint membership."
+          },
+          {
+            "id": "TP02-N2",
+            "fixture": "Change one coefficient bit, P, metric, assembly uncertainty, epoch or target kind without rebinding.",
+            "expected": "Typed mismatch or proof-replay rejection."
+          },
+          {
+            "id": "TP02-N3",
+            "fixture": "JVP-only callback without assembly bound; projected Hessenberg nu substituted for q.",
+            "expected": "Estimated/Unavailable, never full-space Verified."
+          }
+        ],
+        "common_rules": [
+          "Freeze new fixture corpus, independent oracle, checker, exact gate and strongest baseline before the first native campaign.",
+          "Use fresh disjoint native holdout parameters; retained published fixtures are immutable identity anchors, not a new scientific replication campaign.",
+          "Run only affected meaningful contracts plus required integration gates; preserve first failure and corrections.",
+          "The final checker must validate exact finite dimensions, unique complete cells, source/checker identity and counters; malformed evidence is INVALID, scientific failure is FAIL."
+        ]
+      },
+      "accuracy_gate": [
+        "All accepted correction enclosures contain exact represented/shifted oracle errors under their bound target; one counterexample fails the node.",
+        "Nonlinear stage/global authority is not created by this linear witness."
+      ],
+      "cost_gate": [
+        "Cold M=1 cost and repeated N-call cost both exported.",
+        "Amortized work promotion requires exact realized N or a guaranteed remaining-call lower bound; include compilation, rejected cells and storage."
+      ],
+      "minimal_strongest_baseline": {
+        "correctness": "Independent Fraction inverse for small dense cells; certified current-operator residual reference.",
+        "performance": [
+          "Per-call full inverse-gain verification under the same target/metric",
+          "Best existing declared-structure direct solve for the complete solve claim"
+        ],
+        "excluded_weak_comparator": "Repeated fresh dense LU when a reusable direct or band factorization is applicable."
+      },
+      "allowed_claims_if_pass": [
+        "Verified current linear residual-to-forward-error bound on admitted cells.",
+        "Strict amortized gain-verification work decrease where A2 inequality is met."
+      ],
+      "promotion_ceiling": {
+        "theory": "Requires separate independent proof decision; this plan confers no PROMOTE.",
+        "implementation": "Only the explicitly implemented contract and admitted domain after native validation.",
+        "global_trajectory": "Only when TP04 certifies the complete finite accepted trajectory, including candidate-specific changes.",
+        "counted_work": "Only exact common-unit counts or proved upper-vs-lower work/span inequality with all overhead.",
+        "measured_wall_time": "NOT_MEASURED; never inferred from count/span theorem.",
+        "production_default": "UNCHANGED; separate explicit release decision required."
+      },
+      "depends_on": [
+        "TP01"
+      ],
+      "external_prerequisites": []
+    },
+    {
+      "id": "TP03",
+      "title_ko": "모든 accepted stage의 오염 상계와 adjoint 영향도 연결",
+      "status": "PROPOSED_NOT_EXECUTED",
+      "priority": "P0",
+      "registration_requirement": "NEW_PREREGISTRATION_BEFORE_NATIVE_EXPERIMENTS",
+      "theorem_ids": [
+        "G1",
+        "H2a"
+      ],
+      "prior_node_mapping": [
+        {
+          "node": "AS04",
+          "effective_status": "PREREGISTERED_NOT_EXECUTED",
+          "change": "Require every accepted outcome residual, including floor/stall/fallback, as telemetry input."
+        },
+        {
+          "node": "AS06",
+          "effective_status": "PROPOSED_NOT_EXECUTED",
+          "change": "New whole-stage proof implementation with full-space gain and tube self-consistency."
+        },
+        {
+          "node": "L-0037/L-0062",
+          "effective_status": "PUBLISHED_REUSED",
+          "change": "Reuse reviewed K/U transport and one-sided budget scope; do not rerun old campaigns."
+        }
+      ],
+      "current_source_seams": [
+        {
+          "path": "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs",
+          "symbols": [
+            "U-form stage RHS",
+            "accepted stage outcome"
+          ],
+          "status": "EXISTS_AT_BASELINE"
+        },
+        {
+          "path": "crates/rodas5p-integrators/src/causal_majorant.rs",
+          "symbols": [
+            "causal majorant operations"
+          ],
+          "status": "EXISTS_AT_BASELINE"
+        },
+        {
+          "path": "crates/rodas5p-integrators/src/outward_certificate.rs",
+          "symbols": [
+            "blocked_box_certificate_with_execution"
+          ],
+          "status": "EXISTS_AT_BASELINE"
+        },
+        {
+          "path": "crates/rodas5p-integrators/src/certified_budget.rs",
+          "symbols": [
+            "CertifiedBudget"
+          ],
+          "status": "EXISTS_AT_BASELINE"
+        }
+      ],
+      "planned_implementation_steps": [
+        "Add opt-in StageTransferWitness bound to actual U-form coefficients, W/J/h/time/ft, frozen metric and model epoch.",
+        "Compute rho, RHS assembly xi and operator mismatch omega separately; exclude double counting.",
+        "Build nonnegative strict-lower A and verify candidate-to-exact stage-state tubes by causal induction.",
+        "Compute stage bounds by forward substitution and output influence weights by backward substitution in O(stage edges).",
+        "Debit all accepted solver outcomes through the same bound; telemetry remains distinct from authority."
+      ],
+      "required_tests": {
+        "all_tests_status": "PLANNED_NOT_EXECUTED",
+        "positive": [
+          {
+            "id": "TP03-P1",
+            "fixture": "Fresh 3-stage and 8-stage rational triangular linear/quadratic declared models with exact independent stage roots.",
+            "expected": "Componentwise stage error and output error are enclosed; direct finite path sum equals forward/backward sweep."
+          },
+          {
+            "id": "TP03-P2",
+            "fixture": "Strict-lower A with ||A||>1 but finite causal tube closure.",
+            "expected": "Certificate may admit without an artificial contraction restriction; A^s=0 and all path contributions are accounted."
+          },
+          {
+            "id": "TP03-P3",
+            "fixture": "Success, FloorAccepted, StallAccepted and FallbackAccepted candidates with controlled nonzero residuals and assembly perturbations.",
+            "expected": "Every accepted outcome contributes its actual current-target residual and mismatch exactly once."
+          }
+        ],
+        "negative": [
+          {
+            "id": "TP03-N1",
+            "fixture": "Use residual-direction-only inverse gain for a nonlinear coupling outside that direction.",
+            "expected": "Refuse unless a common invariant subspace for all defect/coupling terms is proved."
+          },
+          {
+            "id": "TP03-N2",
+            "fixture": "K/U coefficient interchange, stale W/epoch/metric, omitted ft or time-rounding term.",
+            "expected": "Binding or accounting contract rejects."
+          },
+          {
+            "id": "TP03-N3",
+            "fixture": "Candidate defect fits budget but exact-stage radius exits declared tube; A has nonzero diagonal.",
+            "expected": "No certified acceptance. Strict-lower contract enforced."
+          }
+        ],
+        "common_rules": [
+          "Freeze new fixture corpus, independent oracle, checker, exact gate and strongest baseline before the first native campaign.",
+          "Use fresh disjoint native holdout parameters; retained published fixtures are immutable identity anchors, not a new scientific replication campaign.",
+          "Run only affected meaningful contracts plus required integration gates; preserve first failure and corrections.",
+          "The final checker must validate exact finite dimensions, unique complete cells, source/checker identity and counters; malformed evidence is INVALID, scientific failure is FAIL."
+        ]
+      },
+      "accuracy_gate": [
+        "Full-space gain valid for sum of defect and all coupling differences.",
+        "Tube inclusion passes before using Lipschitz constants; outward output bound >= exact target-step error.",
+        "No use of sampled imaginary-axis transfer maxima as certified whole-domain constants.",
+        "G1 here binds the explicit U-form j<i assembly. Do not import K-form exact-causality from ideal coefficient identities; represented K leakage has a separate H5 obligation."
+      ],
+      "cost_gate": [
+        "Transfer construction and sweeps cost O(s+edges), no dense (sn)^2 certificate reconstruction.",
+        "Report full added work; this foundational node has no mandatory speed claim."
+      ],
+      "minimal_strongest_baseline": {
+        "correctness": "Independent exact stage solve and exact path-sum oracle.",
+        "performance": [
+          "Existing causal/action-first certificate on its overlapping domain",
+          "Same driver with uniform true-residual target for later work comparison"
+        ],
+        "excluded_weak_comparator": "Generic dense inverse of the entire stage system."
+      },
+      "allowed_claims_if_pass": [
+        "Certified candidate-to-exact-target stage/output contamination on declared tubes.",
+        "Linear edge-count transfer overhead; no ODE truncation/global certificate yet."
+      ],
+      "promotion_ceiling": {
+        "theory": "Requires separate independent proof decision; this plan confers no PROMOTE.",
+        "implementation": "Only the explicitly implemented contract and admitted domain after native validation.",
+        "global_trajectory": "Only when TP04 certifies the complete finite accepted trajectory, including candidate-specific changes.",
+        "counted_work": "Only exact common-unit counts or proved upper-vs-lower work/span inequality with all overhead.",
+        "measured_wall_time": "NOT_MEASURED; never inferred from count/span theorem.",
+        "production_default": "UNCHANGED; separate explicit release decision required."
+      },
+      "depends_on": [
+        "TP02"
+      ],
+      "external_prerequisites": [
+        {
+          "id": "AS04_ALL_ACCEPTED_RESIDUAL_TELEMETRY",
+          "status": "PREREGISTERED_NOT_EXECUTED",
+          "requirement": "Implement or complete same-scope telemetry prerequisite before native all-outcome campaign."
+        }
+      ]
+    },
+    {
+      "id": "TP04",
+      "title_ko": "검증된 truncation과 metric transport를 갖는 전역 정확도 ledger",
+      "status": "PROPOSED_NOT_EXECUTED",
+      "priority": "P0",
+      "registration_requirement": "NEW_PREREGISTRATION_BEFORE_NATIVE_EXPERIMENTS",
+      "theorem_ids": [
+        "G2",
+        "G3"
+      ],
+      "prior_node_mapping": [
+        {
+          "node": "AS07",
+          "effective_status": "PROPOSED_NOT_EXECUTED",
+          "change": "Prospective finite trajectory holdout with full error ledger."
+        },
+        {
+          "node": "EX01",
+          "effective_status": "PREREGISTERED_NOT_EXECUTED",
+          "change": "Reuse its need for certified defect integral; Simpson value is not authority."
+        },
+        {
+          "node": "L-0048",
+          "effective_status": "PUBLISHED_REUSED_ONE_MODEL",
+          "change": "Generalize declared physical certificate beyond prior one-model result, without rerunning it."
+        }
+      ],
+      "current_source_seams": [
+        {
+          "path": "crates/rodas5p-integrators/src/chart_transport.rs",
+          "symbols": [
+            "certify_reconstruction",
+            "chart_integrate"
+          ],
+          "status": "EXISTS_AT_BASELINE"
+        },
+        {
+          "path": "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+          "symbols": [
+            "accepted step loop"
+          ],
+          "status": "EXISTS_AT_BASELINE"
+        },
+        {
+          "path": "crates/rodas5p-core/src/coefficients.rs",
+          "symbols": [
+            "stored RODAS5P coefficients"
+          ],
+          "status": "EXISTS_AT_BASELINE"
+        },
+        {
+          "path": "crates/rodas5p-integrators/src/global_accuracy.rs",
+          "symbols": [
+            "GlobalAccuracyLedger"
+          ],
+          "status": "PROPOSED_NEW_FILE"
+        }
+      ],
+      "planned_implementation_steps": [
+        "Select one registered authority route: actual-tableau Taylor defect or reconstruction defect integral; implement the other only as a separate node.",
+        "Generate derivative/Lie-jet or defect envelopes on verified flow/stage tubes, retaining stored binary64 coefficient perturbations.",
+        "Compute exact-flow lognorm Lambda, metric ratio kappa and finite-time transport outward.",
+        "Maintain initial-data, time-grid, truncation, stage contamination and arithmetic terms in a single accepted-only ledger.",
+        "Expose private CertifiedGlobalError only for finite trajectories whose complete bound is <= requested global budget; include dense outputs only with separately certified reconstruction."
+      ],
+      "required_tests": {
+        "all_tests_status": "PLANNED_NOT_EXECUTED",
+        "positive": [
+          {
+            "id": "TP04-P1",
+            "fixture": "Fresh autonomous polynomial model with analytic exact solution and exact initial interval; nonuniform accepted h and changing diagonal scales.",
+            "expected": "Online recurrence equals independent product-sum formula and encloses true finite-trajectory error in the final physical metric."
+          },
+          {
+            "id": "TP04-P2",
+            "fixture": "Stored binary64 tableau with exact rational d_j calculation for j=1..5 and independent interval remainder.",
+            "expected": "Nonzero lower-order coefficient defects are retained; ideal-tableau order conditions are not silently inherited."
+          },
+          {
+            "id": "TP04-P3",
+            "fixture": "Polynomial defect d(u)=sum d_k u^k with mu<=0 and separately mu>0 constant; scalar rational/interval exp-phi oracle.",
+            "expected": "Verified integral encloses exact formula and produces valid global accumulation; no quadrature remainder omitted."
+          },
+          {
+            "id": "TP04-P4",
+            "fixture": "Flow first-exit tube E_n+hM<R and finite arithmetic endpoint time displacement.",
+            "expected": "Tube existence and time mismatch charge are satisfied; finite-trajectory admission follows only below requested budget."
+          }
+        ],
+        "negative": [
+          {
+            "id": "TP04-N1",
+            "fixture": "Embedded estimate zero but constructed true reconstruction defect nonzero; floating Simpson under-resolution.",
+            "expected": "Neither is accepted as truncation upper bound."
+          },
+          {
+            "id": "TP04-N2",
+            "fixture": "Omit metric kappa, initial error or final time displacement; true flow leaves tube.",
+            "expected": "Global authority refused or independently recomputed ledger fails."
+          },
+          {
+            "id": "TP04-N3",
+            "fixture": "Reconstruction endpoint already certifies full computed candidate, then stage contamination added as if independent.",
+            "expected": "Accounting mode detects double counting and labels the selected route unambiguously."
+          },
+          {
+            "id": "TP04-N4",
+            "fixture": "Claim stiffness-uniform fifth order while C or mu bound depends on stiffness.",
+            "expected": "Claim validator refuses uniform label; finite bound may still be valid."
+          }
+        ],
+        "common_rules": [
+          "Freeze new fixture corpus, independent oracle, checker, exact gate and strongest baseline before the first native campaign.",
+          "Use fresh disjoint native holdout parameters; retained published fixtures are immutable identity anchors, not a new scientific replication campaign.",
+          "Run only affected meaningful contracts plus required integration gates; preserve first failure and corrections.",
+          "The final checker must validate exact finite dimensions, unique complete cells, source/checker identity and counters; malformed evidence is INVALID, scientific failure is FAIL."
+        ]
+      },
+      "accuracy_gate": [
+        "Every admitted final error bound encloses independent exact or interval-reference error and is <= global user budget.",
+        "All actual accepted nodes, rejected-work accounting and output/time semantics are complete; no endpoint-only samples as path proof.",
+        "Fifth-order theorem label allowed only with explicit d_j=0 or accounted perturbation, C and mu conditions."
+      ],
+      "cost_gate": [
+        "Report derivative/interval/tube/ledger overhead separately; accuracy PASS may coexist with usefulness/work FAIL.",
+        "For performance study, compare at matched certified physical error, not equal rtol."
+      ],
+      "minimal_strongest_baseline": {
+        "correctness": "Exact solution or independently certified high-precision trajectory with explicit reference uncertainty.",
+        "performance": [
+          "Strongest applicable direct banded/sparse or dense solver at matched physical error",
+          "Existing one-model chart path only on its actual overlapping class"
+        ],
+        "excluded_weak_comparator": "Uncertified embedded estimate alone."
+      },
+      "allowed_claims_if_pass": [
+        "Certified global error for a specifically bound finite accepted trajectory.",
+        "Conditional fifth-order bound only where its coefficient/stability assumptions are proved."
+      ],
+      "promotion_ceiling": {
+        "theory": "Requires separate independent proof decision; this plan confers no PROMOTE.",
+        "implementation": "Only the explicitly implemented contract and admitted domain after native validation.",
+        "global_trajectory": "Only when TP04 certifies the complete finite accepted trajectory, including candidate-specific changes.",
+        "counted_work": "Only exact common-unit counts or proved upper-vs-lower work/span inequality with all overhead.",
+        "measured_wall_time": "NOT_MEASURED; never inferred from count/span theorem.",
+        "production_default": "UNCHANGED; separate explicit release decision required."
+      },
+      "depends_on": [
+        "TP01",
+        "TP03"
+      ],
+      "external_prerequisites": [
+        {
+          "id": "INDEPENDENT_CERTIFIED_REFERENCE",
+          "status": "REQUIRED_NOT_EXECUTED",
+          "requirement": "Freeze exact or interval reference rule and uncertainty before native trajectory campaign."
+        }
+      ]
+    },
+    {
+      "id": "TP05",
+      "title_ko": "영향도 기반 residual allocation으로 보장된 반복 작업 감소",
+      "status": "PROPOSED_NOT_EXECUTED",
+      "priority": "P1",
+      "registration_requirement": "NEW_PREREGISTRATION_BEFORE_NATIVE_EXPERIMENTS",
+      "theorem_ids": [
+        "G4"
+      ],
+      "prior_node_mapping": [
+        {
+          "node": "ALG04/ALG06",
+          "effective_status": "PUBLISHED_ACCURACY_LIMITED",
+          "change": "Do not promote empirical projected-nu controller; replace heuristic allocation only on witnessed backend/domain."
+        },
+        {
+          "node": "AS06/AS07",
+          "effective_status": "PROPOSED_NOT_EXECUTED",
+          "change": "Consume proved transfer/global budgets rather than sampled sensitivities."
+        }
+      ],
+      "current_source_seams": [
+        {
+          "path": "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs",
+          "symbols": [
+            "stage tolerance selection"
+          ],
+          "status": "EXISTS_AT_BASELINE"
+        },
+        {
+          "path": "crates/rodas5p-core/src/residual_allocation.rs",
+          "symbols": [
+            "ResidualAllocation"
+          ],
+          "status": "PROPOSED_NEW_FILE"
+        },
+        {
+          "path": "crates/rodas5p-core/src/residual_gain.rs",
+          "symbols": [
+            "certified contraction route"
+          ],
+          "status": "PREREGISTERED_FILE_ABSENT_AT_BASELINE"
+        }
+      ],
+      "planned_implementation_steps": [
+        "Implement a backend with proved rho(k)<=R q^k+eta, initially weighted-SPD Richardson or a certified polynomial cycle.",
+        "Subtract initial/truncation/assembly/output/floor contributions before residual allocation; require positive remaining budget.",
+        "Compute influence weights from TP03 and prospective TP04 future bounds or a declared finite window, never future observed values.",
+        "Solve capped convex water-filling allocation with outward-safe integer scheduling; verify final weighted residual sum independently.",
+        "Route only when exact scheduled work saving exceeds allocator/certificate overhead; preserve baseline when not advantageous."
+      ],
+      "required_tests": {
+        "all_tests_status": "PLANNED_NOT_EXECUTED",
+        "positive": [
+          {
+            "id": "TP05-P1",
+            "fixture": "Rational fixture a=(4096,1,1,1), R=c=1, q=1/2, eta=0, B=1/16.",
+            "expected": "Best common threshold costs68iterations; allocation k=(18,6,6,6) costs36 and weighted residual sum exactly1/16."
+          },
+          {
+            "id": "TP05-P2",
+            "fixture": "Fresh capped cases with a_i=0, B>=sum aR, active/inactive caps, mandatory prefix, positive iteration floors.",
+            "expected": "Independent small exhaustive integer search verifies feasibility and stated relaxation/rounding guarantees; no claim of universal integer optimum."
+          },
+          {
+            "id": "TP05-P3",
+            "fixture": "SPD diagonal/rational matrices with exact spectral interval and finite precision perturbation bound.",
+            "expected": "Observed residual stays below proved envelope; every scheduled output remains within the same global/tube budget."
+          },
+          {
+            "id": "TP05-P4",
+            "fixture": "m=2^r family, a=(2^L,1,...,1), B=2^-b, L>=r.",
+            "expected": "Counts match m(L+b+1) and L+m(r+b); exponent/weight-processing work explicitly charged."
+          }
+        ],
+        "negative": [
+          {
+            "id": "TP05-N1",
+            "fixture": "Fit q from GMRES observed history, q>=1, underestimated floor, nonpositive remaining budget.",
+            "expected": "No certified scheduling authority."
+          },
+          {
+            "id": "TP05-N2",
+            "fixture": "Near-integer log ratio for k, future beta replaced by retrospectively observed beta, allocation-induced tube exit.",
+            "expected": "Exact power/interval check repairs ceil or refuses; causality/tube gate fails as appropriate."
+          },
+          {
+            "id": "TP05-N3",
+            "fixture": "Uniform adaptive backend exits earlier than its worst-case scheduled upper bound.",
+            "expected": "No actual-speed inference from upper-bound comparison; report only scheduled count theorem unless work equality is demonstrated."
+          }
+        ],
+        "common_rules": [
+          "Freeze new fixture corpus, independent oracle, checker, exact gate and strongest baseline before the first native campaign.",
+          "Use fresh disjoint native holdout parameters; retained published fixtures are immutable identity anchors, not a new scientific replication campaign.",
+          "Run only affected meaningful contracts plus required integration gates; preserve first failure and corrections.",
+          "The final checker must validate exact finite dimensions, unique complete cells, source/checker identity and counters; malformed evidence is INVALID, scientific failure is FAIL."
+        ]
+      },
+      "accuracy_gate": [
+        "Outward sum a_i(R_i q_i^k_i+eta_i) plus nonreducible terms <= reserved budget.",
+        "Candidate-dependent tube bounds remain valid under the allocated targets."
+      ],
+      "cost_gate": [
+        "Scheduled exact work_uniform - work_alloc > C_extra, same witnessed backend and target.",
+        "Native actual-work promotion additionally requires complete measured counters beating strongest applicable common-threshold/direct baseline at matched error."
+      ],
+      "minimal_strongest_baseline": {
+        "correctness": "Independent exact capped convex/finite integer oracle for small fixtures.",
+        "performance": [
+          "Best feasible common residual threshold on same scheduled backend",
+          "Adaptive uniform backend reported separately",
+          "Direct structured solve when applicable"
+        ],
+        "excluded_weak_comparator": "Worst-case upper bound of an early-exiting solver treated as its measured cost."
+      },
+      "allowed_claims_if_pass": [
+        "Optimal continuous residual budget and bounded integer overhead.",
+        "Strict scheduled-count savings where full overhead inequality holds; finite trajectory accuracy via TP04."
+      ],
+      "promotion_ceiling": {
+        "theory": "Requires separate independent proof decision; this plan confers no PROMOTE.",
+        "implementation": "Only the explicitly implemented contract and admitted domain after native validation.",
+        "global_trajectory": "Only when TP04 certifies the complete finite accepted trajectory, including candidate-specific changes.",
+        "counted_work": "Only exact common-unit counts or proved upper-vs-lower work/span inequality with all overhead.",
+        "measured_wall_time": "NOT_MEASURED; never inferred from count/span theorem.",
+        "production_default": "UNCHANGED; separate explicit release decision required."
+      },
+      "depends_on": [
+        "TP02",
+        "TP03",
+        "TP04"
+      ],
+      "external_prerequisites": []
+    },
+    {
+      "id": "TP06",
+      "title_ko": "finite quotient algebra로 Laguerre·Chebyshev·Leja action 차수 축약",
+      "status": "PROPOSED_NOT_EXECUTED",
+      "priority": "P1",
+      "registration_requirement": "NEW_PREREGISTRATION_BEFORE_NATIVE_EXPERIMENTS",
+      "theorem_ids": [
+        "P1",
+        "P2",
+        "P-cost"
+      ],
+      "prior_node_mapping": [
+        {
+          "node": "PY01/PY02/PY03/PY05",
+          "effective_status": "PREREGISTERED_NOT_EXECUTED",
+          "change": "New algorithmic route, not retrospective improvement of old component gates; preserve PY02 abstention and PY03 cache contract."
+        },
+        {
+          "node": "L-0039/L-0047/L-0071/L-0077/L-0080",
+          "effective_status": "PUBLISHED_REUSED",
+          "change": "Reuse adjoint/total-admission semantics; do not repeat m-step recurrence envelope optimization as new benefit."
+        }
+      ],
+      "current_source_seams": [
+        {
+          "path": "crates/rodas5p-core/src/polynomial_action.rs",
+          "symbols": [
+            "SymmetricNonpositiveOperator",
+            "JointPhiReport",
+            "TotalErrorAdmission",
+            "joint_phi_action"
+          ],
+          "status": "EXISTS_AT_BASELINE"
+        },
+        {
+          "path": "crates/rodas5p-core/src/laguerre_adjoint.rs",
+          "symbols": [
+            "EnvelopeKey",
+            "LaguerreEnvelopeCache"
+          ],
+          "status": "EXISTS_AT_BASELINE"
+        },
+        {
+          "path": "crates/rodas5p-core/src/operator_algebra.rs",
+          "symbols": [
+            "BoundOperatorAlgebra",
+            "CompiledAction"
+          ],
+          "status": "PROPOSED_NEW_FILE"
+        }
+      ],
+      "planned_implementation_steps": [
+        "Construct full-space exact/near-annihilator witness from generated structure, preserving multiplicities and operator normalization.",
+        "Implement interval Hermite coefficients for phi0..phi4 and streaming O(md) quotient compilation of stored Laguerre coefficients.",
+        "Evaluate reduced degree<d polynomial with d-1 current-operator products per independent input channel.",
+        "Replace only the unexecuted old m-step recurrence contribution by new scalar-compilation/short-evaluation defects; retain truncation/input-rank/output-sum/normalization errors.",
+        "Add prospective cheap planner: direct structured formula, Chebyshev and compiled route; exact same-vector compression only unless residual of input factorization is certified."
+      ],
+      "required_tests": {
+        "all_tests_status": "PLANNED_NOT_EXECUTED",
+        "positive": [
+          {
+            "id": "TP06-P1",
+            "fixture": "Rational symmetric projector P=I-11^T/n for fresh n; X=I-2P, q=X^2-I=0; phi0..phi4.",
+            "expected": "Independent exact/scalar-interval target equals degree1 formula; one shared projector application for same-vector joint input."
+          },
+          {
+            "id": "TP06-P2",
+            "fixture": "Degree m in {16,32,64,96} stored-coefficient Laguerre polynomial modulo exact q of degree d in {2,3,4}.",
+            "expected": "Independent Fraction quotient identity and d-1 vector application count; O(md) scalar work and actual bit/allocation cost exported."
+          },
+          {
+            "id": "TP06-P3",
+            "fixture": "Hermitian near-annihilator with certified nonzero delta and repeated Hermite nodes.",
+            "expected": "Total bounds include delta(hs)^d/(d+k)! and contain independent phi action error."
+          },
+          {
+            "id": "TP06-P4",
+            "fixture": "Independent RHS with certified rank-factorization residual and extreme but representable power-of-two normalization.",
+            "expected": "Input residual transported with 1/k! gain; columns remain distinct and rounding included."
+          }
+        ],
+        "negative": [
+          {
+            "id": "TP06-N1",
+            "fixture": "Nonnormal matrix with real spectrum passed as Hermitian; q observed small on a few vectors only.",
+            "expected": "Reject full-space P1 authority."
+          },
+          {
+            "id": "TP06-N2",
+            "fixture": "Drop repeated-root derivative data, merge distinct nearby roots without approximation bound, change coefficient/cache bit or operator epoch.",
+            "expected": "Reject or recompute; no stale compiled action."
+          },
+          {
+            "id": "TP06-N3",
+            "fixture": "Coefficient explosion/overflow, impossible target below arithmetic floor, arbitrary low-rank truncation.",
+            "expected": "No certified admission; setup and failed candidate cost still charged."
+          },
+          {
+            "id": "TP06-N4",
+            "fixture": "Generic polynomial route compared only with m-step recurrence although direct projector formula exists.",
+            "expected": "Strongest-baseline gate prevents invented superiority."
+          }
+        ],
+        "common_rules": [
+          "Freeze new fixture corpus, independent oracle, checker, exact gate and strongest baseline before the first native campaign.",
+          "Use fresh disjoint native holdout parameters; retained published fixtures are immutable identity anchors, not a new scientific replication campaign.",
+          "Run only affected meaningful contracts plus required integration gates; preserve first failure and corrections.",
+          "The final checker must validate exact finite dimensions, unique complete cells, source/checker identity and counters; malformed evidence is INVALID, scientific failure is FAIL."
+        ]
+      },
+      "accuracy_gate": [
+        "Every admitted total bound contains error under exact current target, including algebraic defect, scalar coefficient and short-evaluation rounding.",
+        "No generic ODE/global label from action certificate."
+      ],
+      "cost_gate": [
+        "Products saved exactly r(m-d+1); complete work saving only if S_alg/M+S_coeff+V_new+F_new < r(m-d+1)C_X and best direct structured baseline also beaten.",
+        "Cold M=1 and actual amortized M reported; do not assume future reuse."
+      ],
+      "minimal_strongest_baseline": {
+        "correctness": "Independent Fraction polynomial quotient and independently enclosed scalar matrix-function values.",
+        "performance": [
+          "Direct projector/finite-jet structured formula",
+          "Existing certified Chebyshev single backend",
+          "Existing admitted Laguerre route where applicable"
+        ],
+        "excluded_weak_comparator": "Arnoldi alone or double-executed router when cheaper direct/single-backend route exists."
+      },
+      "allowed_claims_if_pass": [
+        "Current-operator action certificate with degree reduced from m to d-1 on bound algebra.",
+        "Counted product/work reduction under explicit full-cost gate; no assertion that Laguerre universally wins."
+      ],
+      "promotion_ceiling": {
+        "theory": "Requires separate independent proof decision; this plan confers no PROMOTE.",
+        "implementation": "Only the explicitly implemented contract and admitted domain after native validation.",
+        "global_trajectory": "Only when TP04 certifies the complete finite accepted trajectory, including candidate-specific changes.",
+        "counted_work": "Only exact common-unit counts or proved upper-vs-lower work/span inequality with all overhead.",
+        "measured_wall_time": "NOT_MEASURED; never inferred from count/span theorem.",
+        "production_default": "UNCHANGED; separate explicit release decision required."
+      },
+      "depends_on": [
+        "TP01"
+      ],
+      "external_prerequisites": [],
+      "formula_refs": [
+        "P1-FP",
+        "P2-near"
+      ]
+    },
+    {
+      "id": "TP07",
+      "title_ko": "nonnormal nilpotent jet resolvent의 유한 solve와 defect 보정",
+      "status": "PROPOSED_NOT_EXECUTED",
+      "priority": "P1",
+      "registration_requirement": "NEW_PREREGISTRATION_BEFORE_NATIVE_EXPERIMENTS",
+      "theorem_ids": [
+        "P3"
+      ],
+      "prior_node_mapping": [
+        {
+          "node": "AS05",
+          "effective_status": "PREREGISTERED_NOT_EXECUTED",
+          "change": "New nilpotent/full-space gain route outside original isolated1/2-block scope."
+        },
+        {
+          "node": "PP02/PP03/PP16",
+          "effective_status": "PUBLISHED_REUSED",
+          "change": "Reuse current-target identity and independent-RHS semantics; different from existing normalized shifted jet."
+        }
+      ],
+      "current_source_seams": [
+        {
+          "path": "crates/rodas5p-core/src/shared_shift_jet.rs",
+          "symbols": [
+            "certify_shift_candidate"
+          ],
+          "status": "EXISTS_AT_BASELINE"
+        },
+        {
+          "path": "crates/rodas5p-core/src/complex_shift_jet.rs",
+          "symbols": [
+            "certify_complex_shift_candidate"
+          ],
+          "status": "EXISTS_AT_BASELINE"
+        },
+        {
+          "path": "crates/rodas5p-core/src/nilpotent_resolvent.rs",
+          "symbols": [
+            "FiniteJetResolventWitness"
+          ],
+          "status": "PROPOSED_NEW_FILE"
+        }
+      ],
+      "planned_implementation_steps": [
+        "Support generated A=-kappa I+N with exact N^d=0 first; add near-nilpotence only after separate declared delta_N proof.",
+        "Build finite polynomial R using b=1+a kappa and interval coefficient/evaluation arithmetic; count d-1 N products.",
+        "Recompute residual of the exact current shifted target; use finite full-space gain or eta<1 defect correction with TP02 types.",
+        "Use direct triangular/banded route whenever its full counted cost is lower; never label nilpotence as generic nonnormal bound."
+      ],
+      "required_tests": {
+        "all_tests_status": "PLANNED_NOT_EXECUTED",
+        "positive": [
+          {
+            "id": "TP07-P1",
+            "fixture": "Fresh rational strictly upper block matrices with d in {2,3,5}, ||N|| large and exact N^d=0.",
+            "expected": "Exact R(I-aA)=I despite ||aN/b||>1; finite precision residual bound encloses forward error."
+          },
+          {
+            "id": "TP07-P2",
+            "fixture": "N=N0+E, N0^d=0, outward delta_N from noncommuting telescoping with eta<1.",
+            "expected": "Exact rational inverse error contained by ||R||eta/(1-eta) plus evaluation uncertainty."
+          },
+          {
+            "id": "TP07-P3",
+            "fixture": "Same operator/shift with multiple independent RHS and varying requested budgets.",
+            "expected": "Current residual checked per RHS; factor/input distinction preserved; costs include all certificate actions."
+          }
+        ],
+        "negative": [
+          {
+            "id": "TP07-N1",
+            "fixture": "b interval contains zero, eta>=1, unsigned/underestimated delta_N or operator epoch mismatch.",
+            "expected": "No certified finite-jet solve."
+          },
+          {
+            "id": "TP07-N2",
+            "fixture": "N^d test passes only on sampled RHS or metric hides off-block coupling.",
+            "expected": "Structural authority refused."
+          },
+          {
+            "id": "TP07-N3",
+            "fixture": "Huge norm gain or subnormal tolerance below representable evaluation floor.",
+            "expected": "Soundness may hold, usefulness gate fails; no false relative-accuracy promise."
+          }
+        ],
+        "common_rules": [
+          "Freeze new fixture corpus, independent oracle, checker, exact gate and strongest baseline before the first native campaign.",
+          "Use fresh disjoint native holdout parameters; retained published fixtures are immutable identity anchors, not a new scientific replication campaign.",
+          "Run only affected meaningful contracts plus required integration gates; preserve first failure and corrections.",
+          "The final checker must validate exact finite dimensions, unique complete cells, source/checker identity and counters; malformed evidence is INVALID, scientific failure is FAIL."
+        ]
+      },
+      "accuracy_gate": [
+        "All accepted true-residual forward bounds enclose independent inverse error and meet requested absolute/physical metric budget."
+      ],
+      "cost_gate": [
+        "d-1 N products must reduce full charged solve cost versus direct structured solver; eta-refinement/certificate overhead included.",
+        "A finite-termination proof is not automatically a speed proof."
+      ],
+      "minimal_strongest_baseline": {
+        "correctness": "Independent exact rational inverse for small/full structured instances.",
+        "performance": [
+          "Direct triangular or banded solve",
+          "Best applicable shared-shift/current-operator solve",
+          "Krylov only when structurally appropriate"
+        ],
+        "excluded_weak_comparator": "Fresh dense LU per RHS for an explicitly triangular matrix."
+      },
+      "allowed_claims_if_pass": [
+        "Finite polynomial resolvent and whole-space nonnormal gain on witnessed nilpotent/near-nilpotent domain.",
+        "Strict complete solve-count savings only on routes with a positive strongest-baseline margin."
+      ],
+      "promotion_ceiling": {
+        "theory": "Requires separate independent proof decision; this plan confers no PROMOTE.",
+        "implementation": "Only the explicitly implemented contract and admitted domain after native validation.",
+        "global_trajectory": "Only when TP04 certifies the complete finite accepted trajectory, including candidate-specific changes.",
+        "counted_work": "Only exact common-unit counts or proved upper-vs-lower work/span inequality with all overhead.",
+        "measured_wall_time": "NOT_MEASURED; never inferred from count/span theorem.",
+        "production_default": "UNCHANGED; separate explicit release decision required."
+      },
+      "depends_on": [
+        "TP01",
+        "TP02"
+      ],
+      "external_prerequisites": []
+    },
+    {
+      "id": "TP08",
+      "title_ko": "causal stage homotopy의 독립 window와 병렬 correction wave",
+      "status": "PROPOSED_NOT_EXECUTED",
+      "priority": "P2",
+      "registration_requirement": "NEW_PREREGISTRATION_BEFORE_NATIVE_EXPERIMENTS",
+      "theorem_ids": [
+        "H1",
+        "H2a",
+        "H2b",
+        "H3ab",
+        "H3c",
+        "H5"
+      ],
+      "prior_node_mapping": [
+        {
+          "node": "HT01/HT02",
+          "effective_status": "PREREGISTERED_NOT_EXECUTED_CONDITIONAL",
+          "change": "Requires real-client selection and new supplementary registration; independent endpoint windows are an extension, not permission to waive HT01."
+        },
+        {
+          "node": "L-0035/L-0036/L-0050",
+          "effective_status": "PUBLISHED_REUSED",
+          "change": "Reuse causal/action-first bound; old net-cost FAIL remains."
+        }
+      ],
+      "current_source_seams": [
+        {
+          "path": "crates/rodas5p-integrators/src/block.rs",
+          "symbols": [
+            "StructuredBlockSystem",
+            "target_jacobian_matrix"
+          ],
+          "status": "EXISTS_AT_BASELINE"
+        },
+        {
+          "path": "crates/rodas5p-integrators/src/homotopy.rs",
+          "symbols": [
+            "PartialCouplingParameters",
+            "HomotopyRoundSpec",
+            "HomotopyWorkLedger",
+            "run_scheduled_homotopy_path"
+          ],
+          "status": "EXISTS_AT_BASELINE"
+        },
+        {
+          "path": "crates/rodas5p-integrators/src/parallel.rs",
+          "symbols": [
+            "ParallelExecution"
+          ],
+          "status": "EXISTS_AT_BASELINE"
+        },
+        {
+          "path": "crates/rodas5p-integrators/src/transactional_q1_q2.rs",
+          "symbols": [
+            "original-target admission"
+          ],
+          "status": "EXISTS_AT_BASELINE"
+        }
+      ],
+      "planned_implementation_steps": [
+        "First bind actual represented K-form alpha/L coefficient arrays and all-entry stage reads. Published R3 evidence reports upper/diagonal leakage and nonzero eighth powers; do not classify current native K target as exactly causal.",
+        "For an exact-causal reference expose an immutable strict-lower contract. To certify current represented K target, retain coefficient leakage as near-causal E, form finite causal preconditioner S, and prove full-space ||S E||<1 with all nonlinear tube/roundoff and target-mismatch terms. H5 is a required new witness, not a measured fact in this run. Never silently zero coefficient entries.",
+        "Build endpoint predictor with declared jet/analytic proof or existing bounded predictor; charge its entire sequential setup.",
+        "Use frozen-previous-round Jacobi updates and TP03/H2 outward tube/roundoff bound; stop at smallest certified m or declared cap.",
+        "For a single target evaluate lambda=1 only; multiple windows require actual client demand, not synthetic fan-out.",
+        "Admit only at unchanged lambda=1 target; export per-task max-load span, work, barriers, failed preflights, fallback, setup and memory."
+      ],
+      "required_tests": {
+        "all_tests_status": "PLANNED_NOT_EXECUTED",
+        "positive": [
+          {
+            "id": "TP08-P0",
+            "fixture": "Actual source coefficient bits and exact-rational structural analysis, plus an independently declared exactly-causal tableau and near-causal perturbation fixture.",
+            "expected": "Precisely separate exact-causal reference from represented native target; nonzero native upper/diagonal entries retained. H5 correction encloses original-target mismatch where ||SE||<1 is proved."
+          },
+          {
+            "id": "TP08-P1",
+            "fixture": "Fresh rational 3-stage triangular polynomial target and independent symbolic elimination.",
+            "expected": "det D_KH=det(W)^s, unique same endpoint root, independent lambda windows agree with direct causal root."
+          },
+          {
+            "id": "TP08-P2",
+            "fixture": "s=8 fixture ||B||<=1/4, E0<=32epsilon, round floor/(1-q)<=epsilon/2.",
+            "expected": "m=3 bound <=epsilon; positive rounding convolution included; no claim of exact root in finite precision."
+          },
+          {
+            "id": "TP08-P3",
+            "fixture": "Frozen-round execution at workers1/2/4/8 and two declared task partitions.",
+            "expected": "Candidate/certificate contracts deterministic as registered; full work and actual task max-load reconcile."
+          },
+          {
+            "id": "TP08-P4",
+            "fixture": "Selected expensive real client with common setup plus3wave+certification+overhead <=5t and strongest causal sequential lower bound>=8t.",
+            "expected": "Strict modeled span ratio<=5/8 only if all premises are proven for the real client."
+          }
+        ],
+        "negative": [
+          {
+            "id": "TP08-N1",
+            "fixture": "Self-coupled stage remainder, singular W, undeclared closure branch, callback domain exit.",
+            "expected": "H1/H2 contract refusal; no generic branch-free promise."
+          },
+          {
+            "id": "TP08-N2",
+            "fixture": "In-place asynchronous writes, noncertified jet provider, intermediate lambda acceptance.",
+            "expected": "No theorem-backed admission."
+          },
+          {
+            "id": "TP08-N3",
+            "fixture": "Predictor produced by full serial continuation charged as zero, ignored failed-window/fallback costs, unnecessary extra lambda windows.",
+            "expected": "Full-cost gate fails."
+          },
+          {
+            "id": "TP08-N4",
+            "fixture": "Direct/affine simplification reduces baseline below alleged8t.",
+            "expected": "Recompute strongest baseline; do not retain manufactured span gain."
+          },
+          {
+            "id": "TP08-N5",
+            "fixture": "Mask native upper/diagonal leakage to zero, assume B^8=0 from intended tableau, or use sampled q as ||SE|| proof.",
+            "expected": "Reject current-target authority. No direct-native H1/H2 promotion without structural witness or H5 mismatch closure."
+          }
+        ],
+        "common_rules": [
+          "Freeze new fixture corpus, independent oracle, checker, exact gate and strongest baseline before the first native campaign.",
+          "Use fresh disjoint native holdout parameters; retained published fixtures are immutable identity anchors, not a new scientific replication campaign.",
+          "Run only affected meaningful contracts plus required integration gates; preserve first failure and corrections.",
+          "The final checker must validate exact finite dimensions, unique complete cells, source/checker identity and counters; malformed evidence is INVALID, scientific failure is FAIL."
+        ]
+      },
+      "accuracy_gate": [
+        "Current represented native K target may be near-causal, not exact-causal. Exact H1/H2 apply only to proved causal reference; current-target acceptance additionally requires H5 full-space leakage/mismatch closure.",
+        "Current lambda=1 target output bound within identical physical budget; global label only with TP04.",
+        "All iterates and exact root lie in certified tubes; floating round errors included."
+      ],
+      "cost_gate": [
+        "A+m L_p+C+F+R_f+D < T_seq_lower in declared cost units; actual max-load, not work/p.",
+        "Work and span separate:24stage tasks vs8 may reduce span while increasing work.",
+        "ABSTAIN if no real expensive client or no positive worst-case total margin."
+      ],
+      "minimal_strongest_baseline": {
+        "correctness": "Exact causal stage solve / independent original-target certificate.",
+        "performance": [
+          "Strongest sequential direct causal driver with reuse",
+          "Affine/reduced/direct special structure when available"
+        ],
+        "excluded_weak_comparator": "Sequential continuation with needless intermediate windows."
+      },
+      "allowed_claims_if_pass": [
+        "Branch-independent endpoint candidate construction on a proved exactly causal fixed-W reference; current represented K target only after independently verified H5 mismatch closure.",
+        "Strict counted span reduction under full cost inequality; no work or wall-time inference."
+      ],
+      "promotion_ceiling": {
+        "theory": "Requires separate independent proof decision; this plan confers no PROMOTE.",
+        "implementation": "Only the explicitly implemented contract and admitted domain after native validation.",
+        "global_trajectory": "Only when TP04 certifies the complete finite accepted trajectory, including candidate-specific changes.",
+        "counted_work": "Only exact common-unit counts or proved upper-vs-lower work/span inequality with all overhead.",
+        "measured_wall_time": "NOT_MEASURED; never inferred from count/span theorem.",
+        "production_default": "UNCHANGED; separate explicit release decision required."
+      },
+      "depends_on": [
+        "TP01",
+        "TP02",
+        "TP03"
+      ],
+      "external_prerequisites": [
+        {
+          "id": "H5_ACTUAL_REPRESENTED_K_SOURCE_BINDING",
+          "status": "REQUIRED_NOT_EXECUTED",
+          "requirement": "Inspect actual coefficient arrays and stage reads; native K alpha/L are not automatically exactly strict-lower. Use exact structural proof OR retain leakage as a verified perturbation; no silent masking."
+        },
+        {
+          "id": "HT01_REAL_CLIENT_SELECTION",
+          "status": "PREREGISTERED_NOT_EXECUTED",
+          "requirement": "Selected expensive real client and supplementary new registration before native implementation campaign."
+        }
+      ]
+    },
+    {
+      "id": "TP09",
+      "title_ko": "정확 affine invariant quotient에서 n차원 stage를 r차원으로 축소",
+      "status": "PROPOSED_NOT_EXECUTED",
+      "priority": "P1",
+      "registration_requirement": "NEW_PREREGISTRATION_BEFORE_NATIVE_EXPERIMENTS",
+      "theorem_ids": [
+        "H4",
+        "G3"
+      ],
+      "prior_node_mapping": [
+        {
+          "node": "Loop03-08 charts/L-0048",
+          "effective_status": "PUBLISHED_REUSED",
+          "change": "Affine discrete-target equality is distinct from nonlinear coordinate solver equivalence."
+        },
+        {
+          "node": "PC01",
+          "effective_status": "PREREGISTERED_NOT_EXECUTED",
+          "change": "Reduced direct client may remove large transverse factorization; do not assume native sparse kernel exists."
+        }
+      ],
+      "current_source_seams": [
+        {
+          "path": "crates/rodas5p-integrators/src/problem.rs",
+          "symbols": [
+            "OdeProblem"
+          ],
+          "status": "EXISTS_AT_BASELINE"
+        },
+        {
+          "path": "crates/rodas5p-integrators/src/block.rs",
+          "symbols": [
+            "stage target assembly"
+          ],
+          "status": "EXISTS_AT_BASELINE"
+        },
+        {
+          "path": "crates/rodas5p-integrators/src/chart_transport.rs",
+          "symbols": [
+            "physical reconstruction certificate"
+          ],
+          "status": "EXISTS_AT_BASELINE"
+        },
+        {
+          "path": "crates/rodas5p-integrators/src/affine_invariant.rs",
+          "symbols": [
+            "AffineInvariantModel"
+          ],
+          "status": "PROPOSED_NEW_FILE"
+        }
+      ],
+      "planned_implementation_steps": [
+        "Generate exact affine manifold y_ref+Uz and direct reduced g/Jr/Mr/gt from declared model; prove full-rank U and f/M/J/ft intertwining over the needed domain.",
+        "Reject arbitrary off-manifold initial data rather than projecting away fast transverse modes.",
+        "Run same tableau and step in reduced dimension; lift stages/output with certified physical metric gain and rounding.",
+        "Bind U/model/epoch to full current target; connect reduced full-path/global ledger to TP04.",
+        "Measure one-time verification and per-step lift/certificate cost against best available structured full/reduced baseline."
+      ],
+      "required_tests": {
+        "all_tests_status": "PLANNED_NOT_EXECUTED",
+        "positive": [
+          {
+            "id": "TP09-P1",
+            "fixture": "U=[I_r;L], f(z,w)=(g(z),L g(z)-A_perp(w-Lz)), rational L, polynomial g, stiff A_perp, exact w0=Lz0.",
+            "expected": "Exact full and reduced stages coincide after lift at every lambda; full transverse stiffness is preserved in model but not redundantly factored."
+          },
+          {
+            "id": "TP09-P2",
+            "fixture": "Nonidentity mass with MU=UMr, exact J and ft intertwining.",
+            "expected": "Same-target equality and physical lift bound verified against independent exact stage oracle."
+          },
+          {
+            "id": "TP09-P3",
+            "fixture": "Fresh n ladder with fixed r, direct reduced callback and certified generated identity.",
+            "expected": "Actual costs follow declared verification plus online O(nr+r^3) model; full physical trajectory meets TP04 budget."
+          }
+        ],
+        "negative": [
+          {
+            "id": "TP09-N1",
+            "fixture": "Nonzero transverse initial data, hidden non-invariant J/M/ft, stale U or epoch.",
+            "expected": "Typed refusal; no discarded initial impulse."
+          },
+          {
+            "id": "TP09-N2",
+            "fixture": "Replace affine lift by nonlinear psi but reuse equality theorem.",
+            "expected": "Refuse H4 authority; nonlinear coordinate methods need separate truncation analysis."
+          },
+          {
+            "id": "TP09-N3",
+            "fixture": "Ill-conditioned large U or tiny physical scales, lift overflow.",
+            "expected": "Transport and arithmetic bound increases or rejects; reduced rtol numeric equality is not physical accuracy."
+          },
+          {
+            "id": "TP09-N4",
+            "fixture": "Reduced callback internally computes full f/J; baseline already has exact reduced formula.",
+            "expected": "Cost advantage not claimed; all hidden work charged."
+          }
+        ],
+        "common_rules": [
+          "Freeze new fixture corpus, independent oracle, checker, exact gate and strongest baseline before the first native campaign.",
+          "Use fresh disjoint native holdout parameters; retained published fixtures are immutable identity anchors, not a new scientific replication campaign.",
+          "Run only affected meaningful contracts plus required integration gates; preserve first failure and corrections.",
+          "The final checker must validate exact finite dimensions, unique complete cells, source/checker identity and counters; malformed evidence is INVALID, scientific failure is FAIL."
+        ]
+      },
+      "accuracy_gate": [
+        "Exact target equality under affine identities; finite arithmetic lift and metric error enclosed.",
+        "Finite global physical bound <= requested budget via TP04.",
+        "H4 target equality must use all actual represented coefficients on full and reduced sides. If uniqueness is justified through causal H1, bind an exact-causal reference or close actual K leakage through H5; do not zero coefficients."
+      ],
+      "cost_gate": [
+        "V+N_steps(F_r+sS_r+sG_r+L_nr+C_r) < strongest applicable full cost lower bound.",
+        "Asymptotic dense-factor comparison restricted to cases genuinely requiring full dense factorization; report strongest direct reduced route separately."
+      ],
+      "minimal_strongest_baseline": {
+        "correctness": "Independent full exact target solve with same tableau/current operator.",
+        "performance": [
+          "Best structure-aware full solver",
+          "Direct reduced implementation with same certified lift",
+          "No reduction when non-invariant data supplied"
+        ],
+        "excluded_weak_comparator": "Dense full solver when block elimination or pre-existing reduced path is available."
+      },
+      "allowed_claims_if_pass": [
+        "Exact discrete target preservation under affine reduction.",
+        "Full arithmetic dimension reduction and finite physical global accuracy on bound invariant class."
+      ],
+      "promotion_ceiling": {
+        "theory": "Requires separate independent proof decision; this plan confers no PROMOTE.",
+        "implementation": "Only the explicitly implemented contract and admitted domain after native validation.",
+        "global_trajectory": "Only when TP04 certifies the complete finite accepted trajectory, including candidate-specific changes.",
+        "counted_work": "Only exact common-unit counts or proved upper-vs-lower work/span inequality with all overhead.",
+        "measured_wall_time": "NOT_MEASURED; never inferred from count/span theorem.",
+        "production_default": "UNCHANGED; separate explicit release decision required."
+      },
+      "depends_on": [
+        "TP01",
+        "TP03",
+        "TP04"
+      ],
+      "external_prerequisites": []
+    },
+    {
+      "id": "TP10",
+      "title_ko": "route별 native 증거와 실제 승격을 분리하는 통합 acceptance",
+      "status": "PROPOSED_NOT_EXECUTED",
+      "priority": "P0",
+      "registration_requirement": "NEW_PREREGISTRATION_BEFORE_NATIVE_EXPERIMENTS",
+      "theorem_ids": [
+        "A2",
+        "G3",
+        "G4",
+        "P-cost",
+        "H3ab",
+        "H3c",
+        "H4"
+      ],
+      "prior_node_mapping": [
+        {
+          "node": "ME01",
+          "effective_status": "PREREGISTERED_NOT_EXECUTED",
+          "change": "New candidate-specific full-cost evidence; preserve previous timing authority HOLD."
+        },
+        {
+          "node": "AS03/SP01/CT01",
+          "effective_status": "IMPLEMENTED_OR_PUBLISHED",
+          "change": "Reuse fail-closed schema and current versioned options; no F101/F102/F104 reopening or old campaign rerun."
+        }
+      ],
+      "current_source_seams": [
+        {
+          "path": "tools/evidence_schema_v2.py",
+          "symbols": [
+            "strict evidence validation"
+          ],
+          "status": "EXISTS_AT_BASELINE"
+        },
+        {
+          "path": "research/LEDGER.jsonl",
+          "symbols": [
+            "append-only published authority"
+          ],
+          "status": "EXISTS_AT_BASELINE"
+        },
+        {
+          "path": "tools/check-research-node.py",
+          "symbols": [
+            "new registered numeric nodes"
+          ],
+          "status": "EXISTS_AT_BASELINE"
+        },
+        {
+          "path": "tools/check-authority-refs.py",
+          "symbols": [
+            "published source identity"
+          ],
+          "status": "EXISTS_AT_BASELINE"
+        }
+      ],
+      "planned_implementation_steps": [
+        "For each selected route require its prerequisite nodes to finish; other routes may remain explicit NOT_EXECUTED or ABSTAIN without blocking that route.",
+        "Before native runs, commit a fresh preregistration with source/checker/fixture identity, mathematical domain, strongest baseline, exact gate and holdout.",
+        "Produce candidate-specific raw bits, certificate components, counts, actual source/ref identity and failures; no source hash presented as scientific proof.",
+        "Obtain independent implementation/decision review with separate theory, implementation, finite-global-trajectory and cost labels.",
+        "Publish only the bounded successful claim; production-default and measured-wall-time remain separate release gates."
+      ],
+      "required_tests": {
+        "all_tests_status": "PLANNED_NOT_EXECUTED",
+        "positive": [
+          {
+            "id": "TP10-P1",
+            "fixture": "A selected route with all required authority witnesses, complete raw cells and positive/negative controls; archived prior scientific evidence referenced unchanged.",
+            "expected": "Validator and independent reviewer recover the same finite claim and source binding; append-only ledger records registered gate."
+          },
+          {
+            "id": "TP10-P2",
+            "fixture": "Candidate has sound certificate but too-loose bound or nonpositive total-cost margin.",
+            "expected": "Accuracy-soundness may PASS while usefulness/cost FAIL or ABSTAIN; no blanket promotion."
+          },
+          {
+            "id": "TP10-P3",
+            "fixture": "One route succeeds while another is unimplemented/abstains.",
+            "expected": "Only successful route scope is admitted; no conjunction-wide fake PASS."
+          }
+        ],
+        "negative": [
+          {
+            "id": "TP10-N1",
+            "fixture": "Duplicate/missing cells, bool-as-number, NaN/Inf, dimension truncation, changed reference or post-run checker mutation.",
+            "expected": "INVALID before science gate."
+          },
+          {
+            "id": "TP10-N2",
+            "fixture": "Theory PROMOTE copied into native/global/wall-time fields, counts interpreted as seconds, retrospective threshold revision.",
+            "expected": "Promotion rejected with explicit unsupported layer."
+          },
+          {
+            "id": "TP10-N3",
+            "fixture": "Old unresolved published row erased or old failed gate rescored, same fixed holdout silently called fresh.",
+            "expected": "Append-only/provenance failure; keep original negative result visible."
+          }
+        ],
+        "common_rules": [
+          "Freeze new fixture corpus, independent oracle, checker, exact gate and strongest baseline before the first native campaign.",
+          "Use fresh disjoint native holdout parameters; retained published fixtures are immutable identity anchors, not a new scientific replication campaign.",
+          "Run only affected meaningful contracts plus required integration gates; preserve first failure and corrections.",
+          "The final checker must validate exact finite dimensions, unique complete cells, source/checker identity and counters; malformed evidence is INVALID, scientific failure is FAIL."
+        ]
+      },
+      "accuracy_gate": [
+        "Route-specific theorem assumptions are enforced by executable constructors and current target binding.",
+        "Global trajectory promotion additionally requires TP04 for that exact candidate/trajectory, not just a reference arm."
+      ],
+      "cost_gate": [
+        "Matched physical error, full setup/validation/rejected/fallback work, strongest applicable baseline.",
+        "Count-work/span promotion independent of elapsed time; measured wall-time requires separately registered repeated-session authority and fresh data."
+      ],
+      "minimal_strongest_baseline": {
+        "correctness": "Independent oracle/validator and actual independent reviewer for selected route.",
+        "performance": [
+          "Strongest route-specific baseline listed in each node",
+          "Current production/default path when user-facing comparison is requested"
+        ],
+        "excluded_weak_comparator": "A weaker baseline selected after observing candidate results."
+      },
+      "allowed_claims_if_pass": [
+        "Candidate-specific implementation/finite-trajectory/count-work decision only after corresponding evidence exists.",
+        "No automatic production-default or wall-time promotion."
+      ],
+      "promotion_ceiling": {
+        "theory": "Requires separate independent proof decision; this plan confers no PROMOTE.",
+        "implementation": "Only the explicitly implemented contract and admitted domain after native validation.",
+        "global_trajectory": "Only when TP04 certifies the complete finite accepted trajectory, including candidate-specific changes.",
+        "counted_work": "Only exact common-unit counts or proved upper-vs-lower work/span inequality with all overhead.",
+        "measured_wall_time": "NOT_MEASURED; never inferred from count/span theorem.",
+        "production_default": "UNCHANGED; separate explicit release decision required."
+      },
+      "depends_on": [],
+      "external_prerequisites": []
+    }
+  ],
+  "validation": {
+    "node_count": 10,
+    "unique_ids": true,
+    "acyclic": true,
+    "all_nodes_proposed_not_executed": true,
+    "all_new_native_experiments_require_new_preregistration": true,
+    "validation_kind": "STATIC_PLAN_CONSISTENCY_NOT_SCIENTIFIC_EXECUTION",
+    "all_depends_on_ids_internal": true
+  },
+  "delivery_normalization": {
+    "note": "Subsection/formula references normalized to independent decision IDs; API A5 kept as design reference; no proposed tests or gates weakened."
+  }
+}

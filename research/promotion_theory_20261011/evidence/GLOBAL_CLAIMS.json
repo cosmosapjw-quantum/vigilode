@@ -1,0 +1,63 @@
+{
+  "schema": "vigilode.theory-claims.v1",
+  "author_role": "theory_global_candidate_author",
+  "independent_decision": "PENDING_PARENT_REVIEW",
+  "production_changes": false,
+  "published_campaigns_rerun": false,
+  "claims": [
+    {
+      "id": "TG1",
+      "title": "Causal nonlinear whole-stage error and adjoint residual influence",
+      "status": ["derived", "numerically_checked_exact_fraction_example"],
+      "theorem": "q=(I-A)^(-1)G delta; output_error <= w^T delta + e_out; w=G(I-A)^(-T)|b|",
+      "assumptions": ["fixed exact reference W and U-form target", "verified full-space inverse bound G", "nonlinear Lipschitz tube contains candidate-exact stage segments", "outward residual/assembly/operator/output arithmetic bounds"],
+      "constructive_conclusion": "O(s+stage_edges) scalar backward sweep obtains all influence weights; no contraction norm condition on nilpotent A and no dense inverse required",
+      "proof": "THEORY_GLOBAL.md#3",
+      "checks": "GLOBAL_EXACT_CHECKS.json#/adjoint_identity",
+      "limits": ["not an existing native witness implementation", "projected Hessenberg inverse norms do not satisfy full-space assumption"]
+    },
+    {
+      "id": "TG2",
+      "title": "Coefficient-aware non-estimator local truncation certificate",
+      "status": ["derived"],
+      "theorem": "actual_local_truncation_error <= tau, where tau is the outward upper value of sum_{j=1}^5 d_j h^j + (M_flow6+M_method6)h^6/720; alternatively tau is epsilon_end plus a verified upper bound for the weighted defect integral",
+      "assumptions": ["C6 flow and reference method on full step tube", "verified derivative and resolvent enclosures", "stored tableau order-condition defects retained", "quadrature remainder enclosed for defect route"],
+      "constructive_conclusion": "Polynomial/Taylor-jet model supplies computable truncation authority without embedded estimator",
+      "proof": "THEORY_GLOBAL.md#4",
+      "limits": ["derivative enclosure native backend not yet supplied", "no automatic stiffness-uniform constant", "actual stored binary64 coefficients are not presumed to satisfy exact order conditions"]
+    },
+    {
+      "id": "TG3",
+      "title": "Global ODE error including metric transport and all accepted residuals",
+      "status": ["derived"],
+      "theorem": "E_N <= prod S E_0 + sum_n beta_n[tau_n+e_out_n+w_n^T(rho_n+xi_n+omega_n)]",
+      "assumptions": ["verified exact-flow logarithmic norm on enclosing trajectory tubes", "metric transport kappa_n=max_j s_nj/s_(n+1)j", "TG1 and TG2 hypotheses at every accepted step", "time arithmetic mismatch enclosed"],
+      "constructive_conclusion": "If bound <= requested global budget, finite trajectory global error is certified; fixed dissipative metric and tau<=C h^6 imply E<=E0+CT hmax^5+linear_budget+arithmetic_budget",
+      "proof": "THEORY_GLOBAL.md#5",
+      "limits": ["the theorem is not a native trajectory certificate", "future adjoint weights must be bounded prospectively for online use"]
+    },
+    {
+      "id": "TG4",
+      "title": "Globally weighted optimal residual allocation",
+      "status": ["derived", "numerically_checked_exact_fraction_example", "wolfram_exact_checked"],
+      "theorem": "For rho_i(k)<=R_i q_i^k+eta_i, minimize sum p_i log(R_i/r_i) subject to sum a_i r_i<=B; optimum r_i=min(R_i,p_i/(lambda a_i)), p_i=c_i/(-log q_i)",
+      "assumptions": ["positive verified q_i<1 contraction witnesses", "iteration floors precharged", "fixed influence weights bound actual regime", "all setup/certificate/candidate/fallback cost charged for total-work claim"],
+      "constructive_conclusion": "Optimal continuous scheduled-work budget; integer ceiling overhead <= sum c_i; strict total-work saving when exact schedule difference exceeds extra certificate cost",
+      "exact_example": {"a": [4096,1,1,1], "R": [1,1,1,1], "q": "1/2", "B": "1/16", "uniform_work": 68, "allocated_work": 36, "extra_cost_must_be_below_iteration_units": 32},
+      "proof": "THEORY_GLOBAL.md#6",
+      "checks": "GLOBAL_EXACT_CHECKS.json#/allocation_example",
+      "limits": ["best common threshold of same backend, not strongest solver", "scheduled-count comparison does not automatically compare realized early-stop times", "GMRES fitted convergence rate is not a contraction witness"]
+    },
+    {
+      "id": "TG5",
+      "title": "Positive parametric arithmetic complexity reduction",
+      "status": ["derived", "numerically_checked_exact_fraction_examples"],
+      "theorem": "m=2^r, B=2^-b, a=(2^L,1,...,1), R=c=1, q=1/2, L>=r: W_uniform=m(L+b+1), W_alloc=L+m(r+b)",
+      "assumptions": ["same TG4 contraction/backend model", "influence heterogeneity family is applicable", "allocator overhead separately bounded"],
+      "constructive_conclusion": "At fixed b and L>>m log m, Theta(mL) scheduled work becomes O(L+m log m)",
+      "proof": "THEORY_GLOBAL.md#6.3",
+      "checks": "GLOBAL_EXACT_CHECKS.json#/complexity_family_checks",
+      "limits": ["fixed eight-stage RODAS itself does not make m asymptotic", "this is not a universal ODE complexity lower-bound improvement", "bit-cost and future weight availability need separate accounting"]
+    }
+  ]
+}

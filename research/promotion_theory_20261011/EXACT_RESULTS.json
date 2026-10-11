@@ -1,0 +1,82 @@
+{
+  "schema_version": "1.0",
+  "status": "PASS",
+  "arithmetic": "fractions.Fraction",
+  "test_type": "new_theory_illustrative_exact_checks",
+  "historical_campaigns_rerun": 0,
+  "native_production_execution": false,
+  "generic_theorems_proved_by_this_script": false,
+  "checks": [
+    {
+      "id": "atlas_s_0",
+      "status": "PASS",
+      "exact_inverse_norm": "4/5"
+    },
+    {
+      "id": "atlas_s_1/7",
+      "status": "PASS",
+      "exact_inverse_norm": "86/105"
+    },
+    {
+      "id": "atlas_s_1",
+      "status": "PASS",
+      "exact_inverse_norm": "14/15"
+    },
+    {
+      "id": "atlas_s_2",
+      "status": "PASS",
+      "exact_inverse_norm": "16/15"
+    },
+    {
+      "id": "laguerre64_quotient_identity",
+      "status": "PASS",
+      "original_operator_applications_per_rhs": 64,
+      "reduced_operator_applications_per_rhs": 1,
+      "scope": "exact arithmetic; coefficient compilation and witness cost excluded from these counts but required by total-cost gate",
+      "remainder_coefficients_exact": [
+        "36868417542979678906529911579410846805645721447798508433001746282217370426457280860479458820097/126886932185884164103433389335161480802865516174545192198801894375214704230400000000000000",
+        "-529475745197927145082870147471300863039507065119547638063318902982384792881233851923004751/1822250289893786823636164254009097552890416994694180724362389337879347200000000000000"
+      ]
+    },
+    {
+      "id": "influence_budget_discrete_work",
+      "status": "PASS",
+      "uniform_iterations": 68,
+      "weighted_iterations": 36,
+      "per_target_iterations": [
+        18,
+        6,
+        6,
+        6
+      ],
+      "error_bound": "1/16",
+      "budget": "1/16",
+      "scope": "fixed certified weights and q=1/2, equal unit correction costs; not a VigilODE trajectory"
+    },
+    {
+      "id": "causal_two_round_error",
+      "status": "PASS",
+      "stages": 8,
+      "nilpotence_index_upper": 8,
+      "predictor_error": "1/4096",
+      "rounds": 2,
+      "remaining_error_upper": "1/65536",
+      "scope": "same target; predictor construction, roundoff and cost are separate obligations"
+    },
+    {
+      "id": "cell_amortization",
+      "status": "PASS",
+      "first_profitable_reuse_count": 11,
+      "old_gain_verification_work": 100000,
+      "new_gain_verification_work": 11000,
+      "scope": "explicit arithmetic cost model; common solve/residual work cancels; no wall-time observation"
+    },
+    {
+      "id": "nonnormal_nilpotent_inverse",
+      "status": "PASS",
+      "nilpotent_norm": "1024",
+      "inverse_norm": "1030/9",
+      "scope": "annihilator, not spectrum-only or norm(N)<1, controls exact termination"
+    }
+  ]
+}

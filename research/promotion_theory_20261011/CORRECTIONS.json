@@ -1,0 +1,79 @@
+{
+  "schema_version": "1.0",
+  "review_findings": [
+    {
+      "id": "RA-C1",
+      "kind": "source_scope",
+      "location": "CERTIFICATE_ATLAS.md A4",
+      "original_problem": "Dense reference setup described without conditioning on absent JVP callback",
+      "resolution": "Corrected to JVP branch when present, dense-reference O(n^2) comparator otherwise",
+      "status": "RESOLVED"
+    },
+    {
+      "id": "RA-C2",
+      "kind": "machine_readable_assumption",
+      "location": "POLYNOMIAL_CLAIMS.json P2",
+      "original_problem": "Near-bound omitted normalized Hermitian or separate operator norm hypothesis",
+      "resolution": "Near-bound required norm(a_j(X))<=A_j explicitly; exact quotient identity remains broader",
+      "status": "RESOLVED"
+    },
+    {
+      "id": "RA-C3",
+      "kind": "cost_scope_clarification",
+      "location": "POLYNOMIAL_CLAIMS.json P-cost",
+      "original_problem": "Common operator cost versus distinct cost bounds needed explicit separation",
+      "resolution": "Shared constant modeled C_X and distinct bound replacement recorded",
+      "status": "RESOLVED"
+    },
+    {
+      "id": "RD01",
+      "status": "CORRECTED",
+      "issue": "Direction-specific inverse gain was allowed for complete propagated stage error.",
+      "resolution": "Full-space gain or proved containing invariant error subspace required."
+    },
+    {
+      "id": "RD02",
+      "status": "CORRECTED",
+      "issue": "Truncation tau inequality direction obscured certificate authority.",
+      "resolution": "Actual error<=tau; tau is outward evaluated upper bound."
+    },
+    {
+      "id": "RD03",
+      "status": "CORRECTED_SCOPE_APPLICATION_STILL_HOLD",
+      "issue": "Automatic strict-causal native K target conflicted with prior represented-coefficient leakage evidence.",
+      "resolution": "Initial claim explicitly withdrawn; H1/H2 restricted to exact causal targets; H5 positive actual-target rescue supplied conditionally, not executed."
+    },
+    {
+      "id": "RD04",
+      "status": "CORRECTED",
+      "issue": "Frozen JVP did not establish a linear operator and stage epsilon did not directly equal output budget.",
+      "resolution": "Reference W plus mismatch authority and output coefficient/roundoff transfer explicit."
+    },
+    {
+      "id": "RD05",
+      "status": "CORRECTED",
+      "issue": "H5 q-bound notation, zero-log edge, and H4 lifted-root tube membership were incomplete.",
+      "resolution": "0<=norm(T)<=q<1; zero cases handled; lifted reduced root inclusion required."
+    },
+    {
+      "id": "RD06",
+      "status": "CORRECTED",
+      "issue": "Richardson q=0 edge and earlier model-specific global certificate reuse needed explicit treatment.",
+      "resolution": "One-step/floor special case and L0048 reuse/novelty limit explicit."
+    }
+  ],
+  "homotopy_material_correction": {
+    "record_type": "INDEPENDENT_REVIEW_CORRECTION",
+    "reviewer": "/root/review_dynamics",
+    "classification": "SOURCE_BINDING_ERROR_NOT_CONDITIONAL_THEOREM_COUNTEREXAMPLE",
+    "original_claim": "current native K target automatically has exact causal structure, det(W)^s, no fold, exact s-round termination",
+    "evidence": "published coefficient_structure.json and unchanged generic inverse/current all-entry stage_mix",
+    "correction": "withdraw blanket native claim; H1/H2 exact causal only; H3 actual windows require H5 uniform tube or verified connectivity; H4 root uniqueness conditional; add constructive H5 without coefficient projection",
+    "original_published_experiment_rerun": false,
+    "actual_B_E_q_evaluated": false,
+    "first_exact_diagnostic_results_preserved": true,
+    "status": "CORRECTION_APPLIED_AWAITING_REVIEWER_READBACK"
+  },
+  "preserve_first_failure": true,
+  "historical_reruns": 0
+}

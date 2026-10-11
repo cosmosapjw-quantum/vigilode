@@ -1,0 +1,456 @@
+{
+  "schema_version": "1.0",
+  "baseline_commit": "8ce9bda0d72d308facd615ac42ec137560fd68c6",
+  "scope": "DERIVED_CONDITIONAL_THEOREMS_NOT_NATIVE_PROMOTION",
+  "claims": [
+    {
+      "id": "A1",
+      "decision": "PROMOTE",
+      "promotion_scope": "conditional_full_space_certificate_theorem",
+      "assumptions": [
+        "fixed finite-dimensional subordinate norm and metric",
+        "square fixed P and polynomial current target B(theta)",
+        "theta interval contained in declared box",
+        "verified complete Bernstein coefficient enclosures with q<1",
+        "current true residual enclosure",
+        "assembly and all actual rounding terms accounted exactly once"
+      ],
+      "conclusion": "Uniform inverse and correction bound; inexact correction geometric-convolution bound.",
+      "proof": {
+        "path": "docs/reviews/20261011_promotion_theory/CERTIFICATE_ATLAS_KO.md",
+        "section": "CERTIFICATE_ATLAS.md A1"
+      },
+      "independent_review": "research/promotion_theory_20261011/evidence/REVIEW_ALGEBRA.json",
+      "evidence_status": [
+        "derived"
+      ],
+      "limits": [
+        "projected Hessenberg authority",
+        "arbitrary approximate JVP bound",
+        "native implementation verified"
+      ]
+    },
+    {
+      "id": "A2",
+      "decision": "PROMOTE",
+      "promotion_scope": "conditional_total_arithmetic_work_improvement",
+      "assumptions": [
+        "same certificate/model/metric/cell contract reused N times",
+        "C_full>C_member",
+        "setup, proof replay, membership and failures charged",
+        "N>(C_compile+C_extra)/(C_full-C_member)"
+      ],
+      "conclusion": "New total modeled work is strictly below repeated full verification work.",
+      "proof": {
+        "path": "docs/reviews/20261011_promotion_theory/CERTIFICATE_ATLAS_KO.md",
+        "section": "CERTIFICATE_ATLAS.md A2"
+      },
+      "independent_review": "research/promotion_theory_20261011/evidence/REVIEW_ALGEBRA.json",
+      "evidence_status": [
+        "derived"
+      ],
+      "limits": [
+        "wall time speedup",
+        "speculative future amortization",
+        "generic certificate compilation polynomial complexity"
+      ]
+    },
+    {
+      "id": "A3",
+      "decision": "PROMOTE",
+      "promotion_scope": "exact_nonempty_structured_family",
+      "assumptions": [
+        "B(s)=[[5/4,-s/4],[0,3/2]], s in [0,2]",
+        "P=diag(4/5,2/3)",
+        "exact arithmetic for finite termination"
+      ],
+      "conclusion": "q=2/5, norm inverse<=4/3, E^2=0, two correction sweeps terminate.",
+      "proof": {
+        "path": "docs/reviews/20261011_promotion_theory/CERTIFICATE_ATLAS_KO.md",
+        "section": "CERTIFICATE_ATLAS.md A3"
+      },
+      "independent_review": "research/promotion_theory_20261011/evidence/REVIEW_ALGEBRA.json",
+      "evidence_status": [
+        "derived"
+      ],
+      "limits": [
+        "faster than direct triangular solve",
+        "rounded finite termination"
+      ]
+    },
+    {
+      "id": "A4",
+      "decision": "PROMOTE",
+      "promotion_scope": "conditional_structural_setup_complexity_reduction",
+      "assumptions": [
+        "same sealed differentiable expression graph generates f and J",
+        "verified primitive domain semantics",
+        "row-local support and AD kernel",
+        "total circuit length L; bounded local stencil L_i=O(b)",
+        "comparator actually materializes dense n*n Jacobian",
+        "support/contract processing charged with bounded local cost"
+      ],
+      "conclusion": "Whole-domain band identity; derivatives O(L+nb); fixed-band structure setup quadratic to linear versus dense-reference comparator.",
+      "proof": {
+        "path": "docs/reviews/20261011_promotion_theory/CERTIFICATE_ATLAS_KO.md",
+        "section": "CERTIFICATE_ATLAS.md A4"
+      },
+      "independent_review": "research/promotion_theory_20261011/evidence/REVIEW_ALGEBRA.json",
+      "evidence_status": [
+        "derived"
+      ],
+      "limits": [
+        "improvement over existing cheap JVP comparator",
+        "generic shared graph AD O(nb)",
+        "automatic stable band solve",
+        "time integration accuracy"
+      ]
+    },
+    {
+      "id": "P1",
+      "decision": "PROMOTE",
+      "promotion_scope": "conditional_phi_action_error_and_product_count",
+      "assumptions": [
+        "k is a nonnegative integer",
+        "X Hermitian with spectrum in [-1,1]",
+        "A=cI+sX, s>0, c+s<=0, h>=0",
+        "monic degree-d q with real nodes in [-1,1] and Hermite multiplicities",
+        "current full-space norm(q(X))<=delta witness",
+        "verified input rank or charged factorization residual",
+        "outward scalar coefficients and complete Horner/output defect enclosures"
+      ],
+      "conclusion": "norm(phi_k(hA)-r_k(X))<=delta*(h*s)^d/(d+k)!; r*(d-1) products and stated finite-precision total bound.",
+      "proof": {
+        "path": "docs/reviews/20261011_promotion_theory/POLYNOMIAL_KO.md",
+        "section": "POLYNOMIAL.md section 2"
+      },
+      "independent_review": "research/promotion_theory_20261011/evidence/REVIEW_ALGEBRA.json",
+      "evidence_status": [
+        "derived"
+      ],
+      "limits": [
+        "nonnormal real-spectrum extension",
+        "unbounded callback authority",
+        "ODE global error"
+      ]
+    },
+    {
+      "id": "P2",
+      "decision": "PROMOTE",
+      "promotion_scope": "conditional_quotient_compilation_and_near_bound",
+      "assumptions": [
+        "monic degree-d q",
+        "stored polynomial coefficients define exact target",
+        "full-space q(X)=0 or norm(q(X))<=delta",
+        "near bound requires Hermitian normalized X or verified norm(a_j(X))<=A_j",
+        "finite precision scalar and vector errors enclosed"
+      ],
+      "conclusion": "Exact quotient identity; O(m*d) scalar arithmetic and d-1 vector products; stated near-annihilator majorant.",
+      "proof": {
+        "path": "docs/reviews/20261011_promotion_theory/POLYNOMIAL_KO.md",
+        "section": "POLYNOMIAL.md section 3"
+      },
+      "independent_review": "research/promotion_theory_20261011/evidence/REVIEW_ALGEBRA.json",
+      "evidence_status": [
+        "derived"
+      ],
+      "limits": [
+        "bounded-bit complexity",
+        "Laguerre dominance",
+        "old recurrence rounding disappears without new rounding certificate"
+      ]
+    },
+    {
+      "id": "P3",
+      "decision": "PROMOTE",
+      "promotion_scope": "conditional_nonnormal_finite_jet_inverse",
+      "assumptions": [
+        "A=-kappa*I+N",
+        "b=1+a*kappa nonzero",
+        "full-space nilpotence N^d=0 or verified eta=(abs(a)/abs(b))^d*norm(N^d)<1",
+        "finite outward gain and residual/assembly/evaluation bounds"
+      ],
+      "conclusion": "Finite resolvent polynomial and near-nilpotent inverse/correction error bounds without norm((a/b)*N)<1.",
+      "proof": {
+        "path": "docs/reviews/20261011_promotion_theory/POLYNOMIAL_KO.md",
+        "section": "POLYNOMIAL.md section 4"
+      },
+      "independent_review": "research/promotion_theory_20261011/evidence/REVIEW_ALGEBRA.json",
+      "evidence_status": [
+        "derived"
+      ],
+      "limits": [
+        "small nonnormal gain",
+        "useful binary64 error at arbitrary scales",
+        "advantage over direct structured solve"
+      ]
+    },
+    {
+      "id": "P-cost",
+      "decision": "PROMOTE",
+      "promotion_scope": "conditional_total_modeled_work_improvement",
+      "assumptions": [
+        "identical target,input,operator epoch,accuracy",
+        "baseline r*m products versus new r*(d-1)",
+        "same constant modeled C_X; otherwise separate old lower/new upper costs",
+        "all setup, coefficient, vector, certification, dispatch, failures and fallback charged",
+        "guaranteed or realized M reuse count",
+        "overhead < r*(m-d+1)*C_X under common-cost model"
+      ],
+      "conclusion": "New total modeled work strictly below baseline operator-only lower bound.",
+      "proof": {
+        "path": "docs/reviews/20261011_promotion_theory/POLYNOMIAL_KO.md",
+        "section": "POLYNOMIAL.md section 7"
+      },
+      "independent_review": "research/promotion_theory_20261011/evidence/REVIEW_ALGEBRA.json",
+      "evidence_status": [
+        "derived"
+      ],
+      "limits": [
+        "measured wall time",
+        "improvement over analytic projector formula",
+        "global black-box improvement"
+      ]
+    },
+    {
+      "id": "H1",
+      "decision": "PROMOTE",
+      "promotion_scope": "CONDITIONAL_DERIVED_THEOREM_AND_IMPLEMENTATION_CONTRACT",
+      "assumptions": [
+        "Exactly causal declared/reference target; common frozen invertible linear W; C^k callbacks on every recursive state; fixed theta."
+      ],
+      "conclusion": "Unique regular triangular root graph and no fold",
+      "proof": {
+        "path": "docs/reviews/20261011_promotion_theory/HOMOTOPY_KO.md",
+        "section": "HOMOTOPY.md#H1"
+      },
+      "independent_review": "research/promotion_theory_20261011/evidence/REVIEW_DYNAMICS.json",
+      "evidence_status": [
+        "derived"
+      ],
+      "limits": [
+        "Not automatic for represented K coefficients; arbitrary finite-difference JVP is not a linear matrix."
+      ]
+    },
+    {
+      "id": "H2a",
+      "decision": "PROMOTE",
+      "promotion_scope": "CONDITIONAL_DERIVED_THEOREM_AND_IMPLEMENTATION_CONTRACT",
+      "assumptions": [
+        "Nonnegative strictly lower B valid on same product tube; actual candidate defect d; d+B r<=r and finite callback domain."
+      ],
+      "conclusion": "Finite causal majorant certificate without norm contraction",
+      "proof": {
+        "path": "docs/reviews/20261011_promotion_theory/HOMOTOPY_KO.md",
+        "section": "HOMOTOPY.md#H2a"
+      },
+      "independent_review": "research/promotion_theory_20261011/evidence/REVIEW_DYNAMICS.json",
+      "evidence_status": [
+        "derived"
+      ],
+      "limits": [
+        "Nilpotent spectral radius zero does not imply small path-weight bounds."
+      ]
+    },
+    {
+      "id": "H2b",
+      "decision": "PROMOTE",
+      "promotion_scope": "CONDITIONAL_DERIVED_THEOREM_AND_IMPLEMENTATION_CONTRACT",
+      "assumptions": [
+        "Exactly causal map; each round reads only previous iterate; root and all iterates inside fixed tube; round errors enclosed."
+      ],
+      "conclusion": "At most s exact rounds and inexact error convolution",
+      "proof": {
+        "path": "docs/reviews/20261011_promotion_theory/HOMOTOPY_KO.md",
+        "section": "HOMOTOPY.md#H2b"
+      },
+      "independent_review": "research/promotion_theory_20261011/evidence/REVIEW_DYNAMICS.json",
+      "evidence_status": [
+        "derived"
+      ],
+      "limits": [
+        "No exact-s claim for near-causal actual map; output weights and assembly rounding remain necessary."
+      ]
+    },
+    {
+      "id": "H3ab",
+      "decision": "PROMOTE",
+      "promotion_scope": "CONDITIONAL_DERIVED_THEOREM_AND_IMPLEMENTATION_CONTRACT",
+      "assumptions": [
+        "Common predictor independent of preceding corrected roots; exact-causal branch identity or uniform actual-map root witness; R>1 holomorphic ball with uniform Rb<1 and invariant radius."
+      ],
+      "conclusion": "Independent windows and analytic jet predictor",
+      "proof": {
+        "path": "docs/reviews/20261011_promotion_theory/HOMOTOPY_KO.md",
+        "section": "HOMOTOPY.md#H3"
+      },
+      "independent_review": "research/promotion_theory_20261011/evidence/REVIEW_DYNAMICS.json",
+      "evidence_status": [
+        "derived"
+      ],
+      "limits": [
+        "Independent local unique roots need not be same branch; coefficient orders/jet convolution costs are not parallel-free."
+      ]
+    },
+    {
+      "id": "H3c",
+      "decision": "PROMOTE",
+      "promotion_scope": "CONDITIONAL_DERIVED_THEOREM_AND_IMPLEMENTATION_CONTRACT",
+      "assumptions": [
+        "Same target and output budget; upper bounds include setup, wave schedule, certificate, dispatch, failures and fallback; independently established comparator lower cost exceeds sum."
+      ],
+      "conclusion": "Strict counted-cost span reduction",
+      "proof": {
+        "path": "docs/reviews/20261011_promotion_theory/HOMOTOPY_KO.md",
+        "section": "HOMOTOPY.md#H3c"
+      },
+      "independent_review": "research/promotion_theory_20261011/evidence/REVIEW_DYNAMICS.json",
+      "evidence_status": [
+        "derived"
+      ],
+      "limits": [
+        "Eight-stage three-wave example is span reduction, not work reduction or measured speed."
+      ]
+    },
+    {
+      "id": "H4",
+      "decision": "PROMOTE",
+      "promotion_scope": "CONDITIONAL_DERIVED_THEOREM_AND_IMPLEMENTATION_CONTRACT",
+      "assumptions": [
+        "Exact RHS, J, mass and f_t intertwining; full-column-rank U; invertible W; causal uniqueness or H5 uniqueness plus lifted reduced root inside full tube; physical lift metric and costs included."
+      ],
+      "conclusion": "Exact affine invariant dimension reduction",
+      "proof": {
+        "path": "docs/reviews/20261011_promotion_theory/HOMOTOPY_KO.md",
+        "section": "HOMOTOPY.md#H4"
+      },
+      "independent_review": "research/promotion_theory_20261011/evidence/REVIEW_DYNAMICS.json",
+      "evidence_status": [
+        "derived"
+      ],
+      "limits": [
+        "Nonlinear coordinates, near-invariance, off-manifold projection and strongest-solver asymptotic claims excluded."
+      ]
+    },
+    {
+      "id": "H5",
+      "decision": "PROMOTE",
+      "promotion_scope": "CONDITIONAL_DERIVED_THEOREM_AND_IMPLEMENTATION_CONTRACT",
+      "assumptions": [
+        "A=B+E>=0 bounds actual full-map Lipschitz terms on closed tube; B strict lower; S=(I-B)^-1; 0<=norm(S E)<=q<1; verified radius closure; uniform common tube for branch claim."
+      ],
+      "conclusion": "Actual-target near-causal root certificate and geometric rate",
+      "proof": {
+        "path": "docs/reviews/20261011_promotion_theory/HOMOTOPY_KO.md",
+        "section": "HOMOTOPY.md#H5"
+      },
+      "independent_review": "research/promotion_theory_20261011/evidence/REVIEW_DYNAMICS.json",
+      "evidence_status": [
+        "derived"
+      ],
+      "limits": [
+        "Actual current B/E/q and radius not evaluated; positive certificate-action tail and actual A-power iteration are distinct."
+      ]
+    },
+    {
+      "id": "G1",
+      "decision": "PROMOTE",
+      "promotion_scope": "CONDITIONAL_DERIVED_THEOREM_AND_IMPLEMENTATION_CONTRACT",
+      "assumptions": [
+        "Full-space inverse gain or proved invariant error input subspace; actual U target; Lipschitz stage tubes; residual/operator/RHS/output uncertainty outward bounded."
+      ],
+      "conclusion": "Whole-stage nonlinear contamination and adjoint influence",
+      "proof": {
+        "path": "docs/reviews/20261011_promotion_theory/GLOBAL_ACCURACY_KO.md",
+        "section": "THEORY_GLOBAL.md#3"
+      },
+      "independent_review": "research/promotion_theory_20261011/evidence/REVIEW_DYNAMICS.json",
+      "evidence_status": [
+        "derived"
+      ],
+      "limits": [
+        "A gain on one observed residual direction cannot certify coupling-generated directions."
+      ]
+    },
+    {
+      "id": "G2",
+      "decision": "PROMOTE",
+      "promotion_scope": "CONDITIONAL_DERIVED_THEOREM_AND_IMPLEMENTATION_CONTRACT",
+      "assumptions": [
+        "Actual coefficient Taylor defects d1..d5 and full-step C6 remainder/resolvent bound, or rigorous reconstruction defect integral including quadrature remainder."
+      ],
+      "conclusion": "Local truncation upper bound independent of embedded estimator",
+      "proof": {
+        "path": "docs/reviews/20261011_promotion_theory/GLOBAL_ACCURACY_KO.md",
+        "section": "THEORY_GLOBAL.md#4"
+      },
+      "independent_review": "research/promotion_theory_20261011/evidence/REVIEW_DYNAMICS.json",
+      "evidence_status": [
+        "derived"
+      ],
+      "limits": [
+        "No sampling-only derivative/quadrature authority; no implicit exact order condition for stored binary64 coefficients."
+      ]
+    },
+    {
+      "id": "G3",
+      "decision": "PROMOTE",
+      "promotion_scope": "CONDITIONAL_DERIVED_THEOREM_AND_IMPLEMENTATION_CONTRACT",
+      "assumptions": [
+        "G1/G2 for every accepted step; certified initial/time uncertainty; exact-flow logarithmic norm over valid full trajectory tube; positive scales and outward metric ratios."
+      ],
+      "conclusion": "Finite-trajectory global error with metric/time transport",
+      "proof": {
+        "path": "docs/reviews/20261011_promotion_theory/GLOBAL_ACCURACY_KO.md",
+        "section": "THEORY_GLOBAL.md#5"
+      },
+      "independent_review": "research/promotion_theory_20261011/evidence/REVIEW_DYNAMICS.json",
+      "evidence_status": [
+        "derived"
+      ],
+      "limits": [
+        "No current native trajectory certificate; stiffness-independent order constant and online future weights require extra premises."
+      ]
+    },
+    {
+      "id": "G4",
+      "decision": "PROMOTE",
+      "promotion_scope": "CONDITIONAL_DERIVED_THEOREM_AND_IMPLEMENTATION_CONTRACT",
+      "assumptions": [
+        "Fixed valid influences; rho(k)<=R q^k+eta with certified 0<q<1; precharged floors/mandatory costs; B>0; same backend scheduled comparator; all extra costs counted."
+      ],
+      "conclusion": "Optimal continuous residual allocation and discrete sufficient work saving",
+      "proof": {
+        "path": "docs/reviews/20261011_promotion_theory/GLOBAL_ACCURACY_KO.md",
+        "section": "THEORY_GLOBAL.md#6"
+      },
+      "independent_review": "research/promotion_theory_20261011/evidence/REVIEW_DYNAMICS.json",
+      "evidence_status": [
+        "derived"
+      ],
+      "limits": [
+        "Not generic integer optimum after ceiling except exact integer cases; not universal early-stop speedup; q=0 handled separately."
+      ]
+    },
+    {
+      "id": "TG5",
+      "decision": "PROMOTE",
+      "promotion_scope": "CONDITIONAL_DERIVED_THEOREM_AND_IMPLEMENTATION_CONTRACT",
+      "assumptions": [
+        "m=2^r, L>=r, b>=1, fixed q=1/2,R=c=1 and weights (2^L,1,...,1); equal certified budget and full overhead condition."
+      ],
+      "conclusion": "Positive parametric scheduled-work complexity reduction",
+      "proof": {
+        "path": "docs/reviews/20261011_promotion_theory/GLOBAL_ACCURACY_KO.md",
+        "section": "THEORY_GLOBAL.md#6.3"
+      },
+      "independent_review": "research/promotion_theory_20261011/evidence/REVIEW_DYNAMICS.json",
+      "evidence_status": [
+        "derived"
+      ],
+      "limits": [
+        "Not spatial-n scaling of fixed eight-stage RODAS; bit cost and future global weights not free."
+      ]
+    }
+  ]
+}
