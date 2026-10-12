@@ -3235,6 +3235,189 @@ pub fn laguerre_preflight_terms(
     Ok(total)
 }
 
+// ---------------------------------------------------------------------------
+// Plan-only degree comparison (research node PY02, admission item A3)
+// ---------------------------------------------------------------------------
+
+/// One basis of [`plan_only_comparison`]: [`choose_transform`]'s degree and
+/// Laguerre scale for the action's own weight factor and truncation budget,
+/// and the vector products its recurrence would need (degree x block width).
+#[derive(Clone, Debug, PartialEq)]
+pub struct PlanOnlyBasis {
+    pub basis: PolynomialBasis,
+    pub degree: usize,
+    pub laguerre_scale: Option<f64>,
+    /// The tail factor times the weight factor, rounded up: the truncation
+    /// bound the action would report before scaling back (at most
+    /// `core_budget`).
+    pub truncation_bound: f64,
+    pub vector_products: u64,
+    /// Tail evaluations of the degree search (counted on this thread).
+    pub tail_evaluations: u64,
+}
+
+/// What [`plan_only_comparison`] found for both bases.
+#[derive(Clone, Debug, PartialEq)]
+pub struct PlanOnlyComparison {
+    /// The caller's truncation budget.
+    pub truncation_budget: f64,
+    /// The budget the degree search saw (scaled with the input out of the
+    /// normalization window, as in the action).
+    pub core_budget: f64,
+    pub normalization_shift: i64,
+    pub width: usize,
+    pub weight_factor: f64,
+    pub branch: PlanBranch,
+    /// `None` without a recurrence (scalar branch or zero input); the error
+    /// text of a failed degree search otherwise.
+    pub chebyshev: Option<Result<PlanOnlyBasis, String>>,
+    pub laguerre: Option<Result<PlanOnlyBasis, String>>,
+}
+
+/// The degree plans of both bases for `sum_k phi_k(h A) w_k` at one
+/// truncation budget, without executing anything (research node PY02,
+/// admission item A3): the action's normalization, checks and weight
+/// factor, then [`choose_transform`] for Chebyshev and for Laguerre (scales
+/// [`LAGUERRE_SCALES`]). No recurrence, coefficient table, envelope or
+/// admission is computed and no work counter changes. It is independent of
+/// [`plan_joint_phi`] (research node PY03), with which it should agree.
+pub fn plan_only_comparison(
+    op: &SymmetricNonpositiveOperator,
+    h: f64,
+    input: JointPhiInput<'_>,
+    truncation_budget: f64,
+) -> CoreResult<PlanOnlyComparison> {
+    let n = op.dimension();
+    // The normalization of joint_phi_action_impl_captured.
+    let entries: Vec<f64> = match input {
+        JointPhiInput::Distinct(vectors) => vectors.iter().flatten().copied().collect(),
+        JointPhiInput::SameVector { vector, .. } => vector.to_vec(),
+    };
+    let max = entries.iter().fold(0.0_f64, |acc, x| acc.max(x.abs()));
+    let mut shift = if max.is_finite() && max > 0.0 {
+        crate::binary_split(max).1
+    } else {
+        0
+    };
+    let mut budget = truncation_budget;
+    if shift.abs() <= NORMALIZATION_WINDOW
+        || !(truncation_budget.is_finite() && truncation_budget > 0.0)
+        || !(h.is_finite() && h >= 0.0)
+    {
+        shift = 0;
+    } else {
+        budget = scale_pow2(truncation_budget, -shift);
+        if budget.is_finite() && scale_pow2(budget, shift) > truncation_budget {
+            budget = budget.next_down();
+        }
+        if budget == f64::INFINITY {
+            budget = f64::MAX;
+        }
+        if budget.is_nan() || budget <= 0.0 {
+            return Err(CoreError::NonFinite(format!(
+                "{POLYNOMIAL_RANGE_UNSUPPORTED}: the truncation budget outside the binary64 range after scaling by 2^{shift}"
+            )));
+        }
+    }
+    // The checks and the weight factor of joint_phi_action_core.
+    if !(h.is_finite() && h >= 0.0) {
+        return Err(unsupported(format!(
+            "step h = {h:e} must be finite and >= 0"
+        )));
+    }
+    if !(budget.is_finite() && budget > 0.0) {
+        return Err(unsupported("truncation budget must be positive"));
+    }
+    let scaled =
+        |vector: &[f64]| -> Vec<f64> { vector.iter().map(|x| scale_pow2(*x, -shift)).collect() };
+    let (block, scales): (Vec<Vec<f64>>, [f64; JOINT_PHI_TERMS]) = match input {
+        JointPhiInput::Distinct(vectors) => {
+            if vectors.iter().any(|w| w.len() != n) {
+                return Err(unsupported("every w_k must have the operator dimension"));
+            }
+            (
+                vectors.iter().map(|w| scaled(w)).collect(),
+                [1.0; JOINT_PHI_TERMS],
+            )
+        }
+        JointPhiInput::SameVector { vector, scales } => {
+            if vector.len() != n {
+                return Err(unsupported("vector must have the operator dimension"));
+            }
+            (vec![scaled(vector)], scales)
+        }
+    };
+    if !block.iter().flatten().chain(&scales).all(|x| x.is_finite()) {
+        return Err(CoreError::NonFinite(
+            "joint phi input contains NaN/Inf".into(),
+        ));
+    }
+    let width = block.len();
+    let norms = (0..JOINT_PHI_TERMS)
+        .map(|k| {
+            if width == 1 {
+                mul_up(scales[k].abs(), norm_up(block[0].iter().copied())?)
+            } else {
+                norm_up(block[k].iter().copied())
+            }
+        })
+        .collect::<CoreResult<Vec<_>>>()?;
+    let weight_factor = norms.iter().enumerate().try_fold(0.0, |acc, (k, norm)| {
+        add_up(acc, div_up(*norm, factorial(k))?)
+    })?;
+    let SpectralEnclosure { lambda, rho, .. } = op.enclosure.clone();
+    let scalar_branch = h == 0.0 || rho == 0.0 || lambda == rho;
+    if lambda == rho && rho > 0.0 {
+        let scalar =
+            (0..n).all(|i| (0..n).all(|j| op.matrix[(i, j)] == if i == j { -lambda } else { 0.0 }));
+        if !scalar {
+            return Err(unsupported("a degenerate enclosure needs A = -lambda I"));
+        }
+    }
+    if rho == 0.0 && op.matrix.as_slice().iter().any(|x| *x != 0.0) {
+        return Err(unsupported("the enclosure [0, 0] needs A = 0"));
+    }
+    let branch = if weight_factor == 0.0 {
+        PlanBranch::ZeroInput
+    } else if scalar_branch {
+        PlanBranch::Scalar
+    } else {
+        PlanBranch::Recurrence
+    };
+    let plan = |basis: PolynomialBasis| -> Option<Result<PlanOnlyBasis, String>> {
+        if branch != PlanBranch::Recurrence {
+            return None;
+        }
+        let before = tally::tail_evaluations();
+        let chosen = choose_transform(op, h, basis, weight_factor, budget, &LAGUERRE_SCALES);
+        let tail_evaluations = tally::tail_evaluations().wrapping_sub(before);
+        Some(
+            chosen
+                .and_then(|transform| {
+                    Ok(PlanOnlyBasis {
+                        basis,
+                        degree: transform.degree,
+                        laguerre_scale: transform.laguerre_scale,
+                        truncation_bound: mul_up(transform.tail_factor, weight_factor)?,
+                        vector_products: (transform.degree as u64) * width as u64,
+                        tail_evaluations,
+                    })
+                })
+                .map_err(|error| error.to_string()),
+        )
+    };
+    Ok(PlanOnlyComparison {
+        truncation_budget,
+        core_budget: budget,
+        normalization_shift: shift,
+        width,
+        weight_factor,
+        branch,
+        chebyshev: plan(PolynomialBasis::Chebyshev),
+        laguerre: plan(PolynomialBasis::Laguerre),
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
