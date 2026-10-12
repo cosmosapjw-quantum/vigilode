@@ -1541,7 +1541,14 @@ fn positives_and_routes() {
 #[test]
 #[ignore]
 fn export_runs() {
-    let path = std::env::var("AS05_RUNS").expect("set AS05_RUNS");
+    // A relative path is taken from the repository root (cargo runs the test
+    // binary in the package directory).
+    let given = std::path::PathBuf::from(std::env::var("AS05_RUNS").expect("set AS05_RUNS"));
+    let path = if given.is_absolute() {
+        given
+    } else {
+        std::path::Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/../..")).join(given)
+    };
     let commit = git(&["rev-parse", "HEAD"]).trim().to_string();
     let tree_status = git(&["status", "--porcelain"]);
     let study = build();
@@ -1560,5 +1567,9 @@ fn export_runs() {
     });
     let text = serde_json::to_string(&doc).expect("json") + "\n";
     std::fs::write(&path, text).expect("write RUNS.json");
-    println!("wrote {path}: {} cases at {commit}", study.cases.len());
+    println!(
+        "wrote {}: {} cases at {commit}",
+        path.display(),
+        study.cases.len()
+    );
 }
