@@ -71,6 +71,16 @@
 //!   stall rule is tested first, so the floor labels only the acceptances
 //!   the stall rule would not make.
 //!
+//! * **Telemetry** (AS04, `research/as04_stage_residual_telemetry_20261011`).
+//!   [`solve_staged_gmres_observed`] also fills a [`StagedSolveTelemetry`]:
+//!   the requested, raised and tightened targets, the actual residual (2-norm
+//!   and infinity norm of the returned iterate's true residual), the
+//!   acceptance reason, the attainment of the requested target, the
+//!   heuristic gain, an always unavailable verified bound and the solve's
+//!   work. It is not an error certificate and changes nothing:
+//!   [`solve_staged_gmres`] is the observed solve with the telemetry
+//!   discarded.
+//!
 //! Counters are charged as in production GMRES: every operator application
 //! through [`apply_counted`] (Krylov category, so the operator's own work,
 //! for example one JVP, is charged), the orthogonalization through the
@@ -244,6 +254,162 @@ impl StagedGmresReport {
     }
 }
 
+/// How a staged solve ended, uniformly over the four acceptances (AS04
+/// telemetry; [`StagedGmresOutcome`] with the same variants).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum StagedAcceptanceReason {
+    Converged,
+    StallAccepted,
+    FloorAccepted,
+    FallbackAccepted,
+    Failed,
+}
+
+impl From<StagedGmresOutcome> for StagedAcceptanceReason {
+    fn from(outcome: StagedGmresOutcome) -> Self {
+        match outcome {
+            StagedGmresOutcome::Converged => Self::Converged,
+            StagedGmresOutcome::StallAccepted => Self::StallAccepted,
+            StagedGmresOutcome::FloorAccepted => Self::FloorAccepted,
+            StagedGmresOutcome::FallbackAccepted => Self::FallbackAccepted,
+            StagedGmresOutcome::Failed => Self::Failed,
+        }
+    }
+}
+
+/// Whether the actual residual met the caller's requested target. This is
+/// bookkeeping, not an error statement: `Met` is no forward-error bound.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TargetAttainment {
+    /// `actual_residual <= requested_target`.
+    Met,
+    /// Both finite and `actual_residual > requested_target`.
+    BudgetExceeded,
+    /// Either is non-finite (or was not computed).
+    Unverified,
+}
+
+impl TargetAttainment {
+    /// The attainment of `actual` against `requested`.
+    pub fn classify(actual: f64, requested: f64) -> Self {
+        if !(actual.is_finite() && requested.is_finite()) {
+            Self::Unverified
+        } else if actual <= requested {
+            Self::Met
+        } else {
+            Self::BudgetExceeded
+        }
+    }
+}
+
+/// The heuristic gain of a solve: the nonnormality guard's running maximum
+/// `nu_max = max(1, 1 / sigma_min(R_j))` and its evaluations. Heuristic,
+/// never a bound.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct HeuristicGain {
+    pub nu_max: f64,
+    pub nu_evaluations: u64,
+}
+
+/// A verified bound on the solve's error. AS04 never produces one.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum VerifiedBound {
+    Unavailable,
+}
+
+/// Telemetry of one staged solve (AS04). Scalars only (`Copy`), written by
+/// [`solve_staged_gmres_observed`]; nothing in the solve reads it.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct StagedSolveTelemetry {
+    pub reason: StagedAcceptanceReason,
+    /// The caller's requested target (input; `NaN` when not given).
+    pub requested_target: f64,
+    /// The raised target `max(atol, rtol ||rhs||)` (the report's
+    /// `threshold`).
+    pub raised_target: f64,
+    /// The target after the nonnormality guard (the report's
+    /// `final_threshold`).
+    pub tightened_target: f64,
+    /// The floor value that admitted a stall or floor acceptance (`NaN`
+    /// otherwise).
+    pub attainable_floor: f64,
+    /// True residual 2-norm of the returned (or last) iterate (the report's
+    /// `residual_norm`).
+    pub actual_residual: f64,
+    /// Infinity norm of the same residual vector (read in place; `NaN` if a
+    /// component is `NaN`).
+    pub actual_residual_inf: f64,
+    pub attainment: TargetAttainment,
+    /// Labelled heuristic.
+    pub heuristic_gain: HeuristicGain,
+    pub verified_bound: VerifiedBound,
+    /// Arnoldi operator applications (the columns plus a zero column that
+    /// ended a cycle).
+    pub arnoldi_jvps: u64,
+    /// True residuals (each one counted operator application).
+    pub residual_jvps: u64,
+    /// Calls of the caller's fallback (0 or 1).
+    pub fallback_evaluations: u64,
+    /// Length-n copies made by the fallback predicate. The solver leaves it
+    /// 0; the caller that supplied the fallback adds its predicate's copies.
+    pub acceptance_vector_copies: u64,
+    pub nu_flops: u64,
+    /// Operator applications of the shadow classification on its scratch
+    /// counters; reported, never added to the work counters.
+    pub uncounted_shadow_matvecs: u64,
+    /// The report's `columns`, `matvecs`, `guard_abort` and
+    /// `budget_exhausted` (for the consistency of the record).
+    pub columns: u64,
+    pub matvecs: u64,
+    pub guard_abort: Option<StagedGuardAbort>,
+    pub budget_exhausted: bool,
+}
+
+impl Default for StagedSolveTelemetry {
+    fn default() -> Self {
+        Self {
+            reason: StagedAcceptanceReason::Failed,
+            requested_target: f64::NAN,
+            raised_target: f64::NAN,
+            tightened_target: f64::NAN,
+            attainable_floor: f64::NAN,
+            actual_residual: f64::NAN,
+            actual_residual_inf: f64::NAN,
+            attainment: TargetAttainment::Unverified,
+            heuristic_gain: HeuristicGain {
+                nu_max: f64::NAN,
+                nu_evaluations: 0,
+            },
+            verified_bound: VerifiedBound::Unavailable,
+            arnoldi_jvps: 0,
+            residual_jvps: 0,
+            fallback_evaluations: 0,
+            acceptance_vector_copies: 0,
+            nu_flops: 0,
+            uncounted_shadow_matvecs: 0,
+            columns: 0,
+            matvecs: 0,
+            guard_abort: None,
+            budget_exhausted: false,
+        }
+    }
+}
+
+/// Infinity norm that propagates `NaN`.
+fn inf_norm(v: &[f64]) -> f64 {
+    let mut m = 0.0_f64;
+    for x in v {
+        let a = x.abs();
+        if a.is_nan() {
+            return f64::NAN;
+        }
+        if a > m {
+            m = a;
+        }
+    }
+    m
+}
+
 /// A fallback test: `(iterate, true residual) -> accept`.
 pub type StagedGmresFallback<'a> = &'a mut dyn FnMut(&[f64], &[f64]) -> bool;
 
@@ -314,12 +480,16 @@ struct Progress {
     nu_flops: u64,
     nu_max: f64,
     projected: f64,
+    /// Arnoldi operator applications (telemetry only).
+    arnoldi_applications: u64,
 }
 
+/// The floor value that admitted an acceptance rides with `Stall`/`Floor`
+/// (telemetry only).
 enum End {
     Converged,
-    Stall,
-    Floor,
+    Stall(f64),
+    Floor(f64),
     Guard(StagedGuardAbort),
     Budget,
     NonFinite,
@@ -442,15 +612,16 @@ fn iterate(
                 *c = x - a;
             }
             let defect = safe_l2(&ws.candidate);
-            if rn <= STAGED_STALL_FACTOR * (right_norm + x_norm + defect) {
-                return Ok(End::Stall);
+            let floor = STAGED_STALL_FACTOR * (right_norm + x_norm + defect);
+            if rn <= floor {
+                return Ok(End::Stall(floor));
             }
         }
-        if config.floor_at_confirmations
-            && p.has_image
-            && rn <= attainable_floor(right_norm, &ws.x, &ws.operator_output, &mut ws.candidate)
-        {
-            return Ok(End::Floor);
+        if config.floor_at_confirmations && p.has_image {
+            let floor = attainable_floor(right_norm, &ws.x, &ws.operator_output, &mut ws.candidate);
+            if rn <= floor {
+                return Ok(End::Floor(floor));
+            }
         }
         if let (true, true, Some(prev)) = (guard, p.has_image, p.rn_prev) {
             let cycle = if config.effective_cycle_overrun {
@@ -480,6 +651,7 @@ fn iterate(
         let mut candidate_norm = f64::NAN;
         for j in 0..steps {
             apply_counted(op, &ws.basis[j], &mut ws.w, counters, ApplyCategory::Krylov)?;
+            p.arnoldi_applications += 1;
             two_pass_mgs_into(&mut ws.w, &ws.basis[..=j], &mut ws.h_column, counters)?;
             let h_next = safe_l2(&ws.w);
             let breakdown = arnoldi_happy_breakdown(&ws.h_column[..=j], h_next)?;
@@ -547,25 +719,24 @@ fn iterate(
                         counters.linear_iterations += used as u64;
                         return Ok(End::Converged);
                     }
-                    if config.floor_at_confirmations
-                        && rc.is_finite()
-                        && rc
-                            <= attainable_floor(
-                                right_norm,
-                                &ws.candidate,
-                                &ws.candidate_output,
-                                &mut ws.correction,
-                            )
-                    {
-                        std::mem::swap(&mut ws.x, &mut ws.candidate);
-                        std::mem::swap(&mut ws.residual, &mut ws.candidate_residual);
-                        std::mem::swap(&mut ws.operator_output, &mut ws.candidate_output);
-                        p.rn = rc;
-                        p.has_image = true;
-                        p.projected = projected;
-                        p.cycles += 1;
-                        counters.linear_iterations += used as u64;
-                        return Ok(End::Floor);
+                    if config.floor_at_confirmations && rc.is_finite() {
+                        let floor = attainable_floor(
+                            right_norm,
+                            &ws.candidate,
+                            &ws.candidate_output,
+                            &mut ws.correction,
+                        );
+                        if rc <= floor {
+                            std::mem::swap(&mut ws.x, &mut ws.candidate);
+                            std::mem::swap(&mut ws.residual, &mut ws.candidate_residual);
+                            std::mem::swap(&mut ws.operator_output, &mut ws.candidate_output);
+                            p.rn = rc;
+                            p.has_image = true;
+                            p.projected = projected;
+                            p.cycles += 1;
+                            counters.linear_iterations += used as u64;
+                            return Ok(End::Floor(floor));
+                        }
                     }
                     p.failed_confirmations += 1;
                     p.gap = p.gap.saturating_mul(2);
@@ -627,7 +798,37 @@ fn fallback_accepts(
 
 /// Staged GMRES on `A x = rhs` from a zero start; see the module
 /// documentation. `output` is written only when the solve is accepted.
+/// This is [`solve_staged_gmres_observed`] with the telemetry discarded.
 pub fn solve_staged_gmres(
+    op: &dyn LinearOperator,
+    rhs: &[f64],
+    config: &StagedGmresConfig,
+    fallback: Option<StagedGmresFallback<'_>>,
+    output: &mut [f64],
+    workspace: &mut StagedGmresWorkspace,
+    counters: &mut WorkCounters,
+) -> CoreResult<StagedGmresReport> {
+    let mut telemetry = StagedSolveTelemetry::default();
+    solve_staged_gmres_observed(
+        op,
+        rhs,
+        config,
+        fallback,
+        output,
+        workspace,
+        counters,
+        f64::NAN,
+        &mut telemetry,
+    )
+}
+
+/// [`solve_staged_gmres`] that also fills `telemetry` (AS04); the solve,
+/// its report, output and counters are the same bit for bit.
+/// `requested_target` is the caller's target for the attainment (it
+/// changes no decision). On an error return `telemetry` holds only
+/// `requested_target` (everything else at its default).
+#[allow(clippy::too_many_arguments)]
+pub fn solve_staged_gmres_observed(
     op: &dyn LinearOperator,
     rhs: &[f64],
     config: &StagedGmresConfig,
@@ -635,7 +836,13 @@ pub fn solve_staged_gmres(
     output: &mut [f64],
     workspace: &mut StagedGmresWorkspace,
     counters: &mut WorkCounters,
+    requested_target: f64,
+    telemetry: &mut StagedSolveTelemetry,
 ) -> CoreResult<StagedGmresReport> {
+    *telemetry = StagedSolveTelemetry {
+        requested_target,
+        ..StagedSolveTelemetry::default()
+    };
     config.validate()?;
     let n = op.dimension();
     if rhs.len() != n || output.len() != n {
@@ -673,6 +880,7 @@ pub fn solve_staged_gmres(
         nu_flops: 0,
         nu_max: 1.0,
         projected: f64::NAN,
+        arnoldi_applications: 0,
     };
     let end = iterate(
         op,
@@ -685,14 +893,26 @@ pub fn solve_staged_gmres(
         columns,
         counters,
     )?;
+    // Telemetry: the residual of the returned iterate, read before any
+    // shadow continuation overwrites the workspace.
+    let residual_inf = inf_norm(&ws.residual);
+    let mut accepting_floor = f64::NAN;
+    let mut fallback_evaluations = 0_u64;
+    let mut shadow_matvecs = 0_u64;
     let mut guard_abort = None;
     let mut shadow_converged = None;
     let mut budget_exhausted = false;
     let mut output_written = false;
     let (outcome, failure) = match end {
         End::Converged => (StagedGmresOutcome::Converged, None),
-        End::Stall => (StagedGmresOutcome::StallAccepted, None),
-        End::Floor => (StagedGmresOutcome::FloorAccepted, None),
+        End::Stall(floor) => {
+            accepting_floor = floor;
+            (StagedGmresOutcome::StallAccepted, None)
+        }
+        End::Floor(floor) => {
+            accepting_floor = floor;
+            (StagedGmresOutcome::FloorAccepted, None)
+        }
         End::NonFinite => (
             StagedGmresOutcome::Failed,
             Some(StagedGmresFailure::NonFinite),
@@ -703,6 +923,7 @@ pub fn solve_staged_gmres(
         ),
         End::Budget => {
             budget_exhausted = true;
+            fallback_evaluations += u64::from(fallback.is_some());
             if fallback_accepts(&mut fallback, ws) {
                 (StagedGmresOutcome::FallbackAccepted, None)
             } else {
@@ -717,7 +938,7 @@ pub fn solve_staged_gmres(
             // The uncounted shadow continuation without the guard; it
             // overwrites the workspace, so it runs after the output was
             // written (accepted) or on a failed solve.
-            let classify = |ws: &mut StagedGmresWorkspace| {
+            let classify = |ws: &mut StagedGmresWorkspace, shadow_matvecs: &mut u64| {
                 let mut shadow = p;
                 let mut scratch = WorkCounters::default();
                 let continued = iterate(
@@ -731,21 +952,23 @@ pub fn solve_staged_gmres(
                     columns,
                     &mut scratch,
                 );
+                *shadow_matvecs = scratch.linear_matvecs;
                 Some(matches!(
                     continued,
-                    Ok(End::Converged | End::Stall | End::Floor)
+                    Ok(End::Converged | End::Stall(_) | End::Floor(_))
                 ))
             };
+            fallback_evaluations += u64::from(fallback.is_some());
             if fallback_accepts(&mut fallback, ws) {
                 if config.classify_guard_aborts && config.classify_accepted_guard_aborts {
                     output.copy_from_slice(&ws.x);
                     output_written = true;
-                    shadow_converged = classify(ws);
+                    shadow_converged = classify(ws, &mut shadow_matvecs);
                 }
                 (StagedGmresOutcome::FallbackAccepted, None)
             } else {
                 if config.classify_guard_aborts {
-                    shadow_converged = classify(ws);
+                    shadow_converged = classify(ws, &mut shadow_matvecs);
                 }
                 let failure = match kind {
                     StagedGuardAbort::Contraction => StagedGmresFailure::GuardContraction,
@@ -762,6 +985,31 @@ pub fn solve_staged_gmres(
         }
     }
     let delta = counters.delta(before);
+    *telemetry = StagedSolveTelemetry {
+        reason: outcome.into(),
+        requested_target,
+        raised_target: threshold,
+        tightened_target: p.thr,
+        attainable_floor: accepting_floor,
+        actual_residual: p.rn,
+        actual_residual_inf: residual_inf,
+        attainment: TargetAttainment::classify(p.rn, requested_target),
+        heuristic_gain: HeuristicGain {
+            nu_max: p.nu_max,
+            nu_evaluations: p.nu_evaluations,
+        },
+        verified_bound: VerifiedBound::Unavailable,
+        arnoldi_jvps: p.arnoldi_applications,
+        residual_jvps: p.true_residuals,
+        fallback_evaluations,
+        acceptance_vector_copies: 0,
+        nu_flops: p.nu_flops,
+        uncounted_shadow_matvecs: shadow_matvecs,
+        columns: p.total as u64,
+        matvecs: delta.linear_matvecs,
+        guard_abort,
+        budget_exhausted,
+    };
     Ok(StagedGmresReport {
         outcome,
         failure,

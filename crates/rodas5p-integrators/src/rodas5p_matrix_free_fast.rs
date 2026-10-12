@@ -48,10 +48,11 @@ use rodas5p_core::{
 use rodas5p_krylov::{
     GcrodrConfig, GcrodrSolveOptions, GcrodrState, GcrodrWorkspace, GmresCapacity, GmresConfig,
     GmresIntoOptions, GmresWorkspace, LgmresConfig, LgmresWorkspace, ResidualAccounting,
-    StagedGmresConfig, StagedGmresFailure, StagedGmresOutcome, StagedGmresReport,
-    StagedGmresWorkspace, StagedGuardAbort, solve_gcrodr_with_workspace,
-    solve_gcrodr_with_workspace_and_options, solve_gmres_into_with_accounting,
-    solve_gmres_with_workspace_and_accounting, solve_lgmres_with_workspace, solve_staged_gmres,
+    StagedAcceptanceReason, StagedGmresConfig, StagedGmresFailure, StagedGmresOutcome,
+    StagedGmresReport, StagedGmresWorkspace, StagedGuardAbort, StagedSolveTelemetry,
+    TargetAttainment, solve_gcrodr_with_workspace, solve_gcrodr_with_workspace_and_options,
+    solve_gmres_into_with_accounting, solve_gmres_with_workspace_and_accounting,
+    solve_lgmres_with_workspace, solve_staged_gmres_observed,
 };
 use serde::Serialize;
 
@@ -364,8 +365,29 @@ impl ProductionFallbackRule {
     /// Accept the candidate `x` with true residual `r = b - W x`. With
     /// `scale = Some(d)` both are given in the scaled variables of the
     /// coupled target (physical `x = d z`, `r = d r_scaled` componentwise);
-    /// with `None` they are physical.
+    /// with `None` they are physical. (The decision of
+    /// [`Self::evaluate`].)
     pub fn accepts(&self, candidate: &[f64], residual: &[f64], scale: Option<&[f64]>) -> bool {
+        self.evaluate(candidate, residual, scale).accepted
+    }
+
+    /// [`Self::accepts`] with the branch it took and the length-n vectors
+    /// it copied (AS04 telemetry). The copies are counted where they are
+    /// made: the physical residual `d r_scaled` on the scaled branches, and
+    /// the homogeneous rescaling `r / s` when `||r|| > atol_lin`.
+    pub fn evaluate(
+        &self,
+        candidate: &[f64],
+        residual: &[f64],
+        scale: Option<&[f64]>,
+    ) -> FallbackEvaluation {
+        let mut evaluation = FallbackEvaluation {
+            branch: FallbackBranch::of(scale.is_some(), self.threshold),
+            exit: FallbackExit::Compared,
+            r_le_atol: None,
+            vector_copies: 0,
+            accepted: false,
+        };
         let unscaled: std::borrow::Cow<'_, [f64]> = match scale {
             Some(scale) => {
                 if scale.len() != residual.len()
@@ -375,37 +397,94 @@ impl ProductionFallbackRule {
                         .zip(scale)
                         .all(|(z, sc)| (z * sc).is_finite())
                 {
-                    return false;
+                    evaluation.exit = FallbackExit::CandidateRejected;
+                    return evaluation;
                 }
+                evaluation.vector_copies += 1;
                 residual.iter().zip(scale).map(|(r, sc)| r * sc).collect()
             }
             None => {
                 if !candidate.iter().all(|x| x.is_finite()) {
-                    return false;
+                    evaluation.exit = FallbackExit::CandidateRejected;
+                    return evaluation;
                 }
                 residual.into()
             }
         };
         if !unscaled.iter().all(|r| r.is_finite()) {
-            return false;
+            evaluation.exit = FallbackExit::ResidualRejected;
+            return evaluation;
         }
         let norm = safe_l2(&unscaled);
-        match self.threshold {
+        evaluation.r_le_atol = Some(norm <= self.atol);
+        evaluation.accepted = match self.threshold {
             ProductionFallbackThreshold::Literal(threshold) => norm <= threshold,
             ProductionFallbackThreshold::Homogeneous {
                 inverse_scale,
                 relative,
             } => {
                 if norm <= self.atol {
-                    return true;
+                    true
+                } else {
+                    evaluation.vector_copies += 1;
+                    let scaled: Vec<f64> = unscaled.iter().map(|r| r * inverse_scale).collect();
+                    let scaled_norm = safe_l2(&scaled);
+                    scaled_norm.is_finite() && scaled_norm <= relative
                 }
-                let scaled: Vec<f64> = unscaled.iter().map(|r| r * inverse_scale).collect();
-                let scaled_norm = safe_l2(&scaled);
-                scaled_norm.is_finite() && scaled_norm <= relative
             }
             ProductionFallbackThreshold::Unrepresentable => false,
+        };
+        evaluation
+    }
+}
+
+/// The branch of one [`ProductionFallbackRule::evaluate`]: scaled
+/// (coupled targets) or unscaled residual, and the rule's threshold kind.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum FallbackBranch {
+    ScaledLiteral,
+    ScaledHomogeneous,
+    ScaledUnrepresentable,
+    UnscaledLiteral,
+    UnscaledHomogeneous,
+    UnscaledUnrepresentable,
+}
+
+impl FallbackBranch {
+    fn of(scaled: bool, threshold: ProductionFallbackThreshold) -> Self {
+        match (scaled, threshold) {
+            (true, ProductionFallbackThreshold::Literal(_)) => Self::ScaledLiteral,
+            (true, ProductionFallbackThreshold::Homogeneous { .. }) => Self::ScaledHomogeneous,
+            (true, ProductionFallbackThreshold::Unrepresentable) => Self::ScaledUnrepresentable,
+            (false, ProductionFallbackThreshold::Literal(_)) => Self::UnscaledLiteral,
+            (false, ProductionFallbackThreshold::Homogeneous { .. }) => Self::UnscaledHomogeneous,
+            (false, ProductionFallbackThreshold::Unrepresentable) => Self::UnscaledUnrepresentable,
         }
     }
+}
+
+/// Where a [`ProductionFallbackRule::evaluate`] ended.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum FallbackExit {
+    /// Rejected before the residual was formed (shape or non-finite
+    /// physical candidate).
+    CandidateRejected,
+    /// Rejected on a non-finite physical residual component.
+    ResidualRejected,
+    /// The residual norm was compared with the threshold.
+    Compared,
+}
+
+/// One fallback evaluation (AS04 telemetry): its branch, exit, whether
+/// `||r||_2 <= atol_lin` held (`None` when the norm was not formed), the
+/// length-n copies made and the decision.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct FallbackEvaluation {
+    pub branch: FallbackBranch,
+    pub exit: FallbackExit,
+    pub r_le_atol: Option<bool>,
+    pub vector_copies: u32,
+    pub accepted: bool,
 }
 
 /// Global contamination budget `Theta` of the coupled target.
@@ -613,6 +692,276 @@ pub struct AttemptCharge {
     pub charged: bool,
 }
 
+/// The metric of a stage solve's residual (AS04 telemetry): the coupled
+/// targets' scaled WRMS (weights `1 / (atol + rtol |y_n|)`, identified by
+/// the tolerance bits and a digest of `y_n`) or the unscaled L2 norm.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum ResidualMetric {
+    ScaledWrms {
+        atol_bits: u64,
+        rtol_bits: u64,
+        /// FNV-1a (64 bit) of the little-endian bits of `y_n`, computed once
+        /// per attempt, only with the telemetry on.
+        state_digest: u64,
+    },
+    UnscaledL2,
+}
+
+/// The operator a stage solve used: the model epoch it was built under and
+/// the workspace's linearization generation (incremented at every
+/// re-linearization).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct OperatorEpoch {
+    pub model_epoch: Option<u64>,
+    pub generation: u64,
+}
+
+/// One staged stage solve (AS04 telemetry).
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct StageResidualRecord {
+    /// Attempt index of the run (0-based) and stage index.
+    pub attempt: u64,
+    pub stage: u32,
+    pub solver: StagedSolveTelemetry,
+    pub metric: ResidualMetric,
+    pub operator_epoch: OperatorEpoch,
+    pub h_bits: u64,
+    pub gamma_bits: u64,
+    /// `tau_e,i` and the heuristic debit `tau_e,i ||r_i||_WRMS` with
+    /// `||r_i||_WRMS = actual_residual / sqrt(n)` (coupled policies; `NaN`
+    /// otherwise). Heuristic, never a bound.
+    pub tau_e: f64,
+    pub debit: f64,
+    /// The production fallback's evaluation, if it was consulted.
+    pub fallback: Option<FallbackEvaluation>,
+    /// `jvp_calls` charged during the solve.
+    pub jvp_calls: u64,
+}
+
+/// How an attempt ended in the driver.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum AttemptOutcome {
+    Committed,
+    RejectedError,
+    FailedLinear,
+    FailedOther,
+}
+
+/// Work of an attempt (counter deltas and sums over its stage records).
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub struct AttemptWork {
+    pub jvp_calls: u64,
+    pub linear_matvecs: u64,
+    pub rhs_calls: u64,
+    pub krylov_columns: u64,
+    pub arnoldi_jvps: u64,
+    pub residual_jvps: u64,
+    pub shadow_matvecs: u64,
+    pub vector_copies: u64,
+}
+
+impl AttemptWork {
+    fn add(&mut self, other: &Self) {
+        self.jvp_calls += other.jvp_calls;
+        self.linear_matvecs += other.linear_matvecs;
+        self.rhs_calls += other.rhs_calls;
+        self.krylov_columns += other.krylov_columns;
+        self.arnoldi_jvps += other.arnoldi_jvps;
+        self.residual_jvps += other.residual_jvps;
+        self.shadow_matvecs += other.shadow_matvecs;
+        self.vector_copies += other.vector_copies;
+    }
+}
+
+/// One attempt (AS04 telemetry).
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct AttemptResidualRecord {
+    pub attempt: u64,
+    pub t: f64,
+    pub h: f64,
+    pub outcome: AttemptOutcome,
+    pub operator_epoch: OperatorEpoch,
+    /// The attempt rebuilt `f(t, y)`, `f_t` and the operator.
+    pub relinearized: bool,
+    /// Stage records of the attempt, by reason, and the accepted ones whose
+    /// attainment is `BudgetExceeded`.
+    pub stages: u32,
+    pub converged: u32,
+    pub stall_accepted: u32,
+    pub floor_accepted: u32,
+    pub fallback_accepted: u32,
+    pub failed: u32,
+    pub budget_exceeded: u32,
+    /// Maximum of `actual / requested` over the accepted stages (`NaN`
+    /// without one).
+    pub max_actual_over_requested: f64,
+    /// The debit summed over every accepted coupled stage that is not
+    /// `Met`, in stage order (0 without one).
+    pub debit_all: f64,
+    /// The ALG06 `G3` charge of the attempt (fallback-accepted stages).
+    pub debit_fallback_only: f64,
+    /// The embedded error norm before any charge (`NaN` if not computed).
+    pub error_norm: f64,
+    pub work: AttemptWork,
+}
+
+/// The per-attempt state while an attempt runs.
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
+struct PendingAttempt {
+    first_stage: usize,
+    h: f64,
+    state_digest: u64,
+    relinearized: bool,
+    error_norm: f64,
+    debit_fallback_only: f64,
+}
+
+/// The residual and budget telemetry of a run (AS04,
+/// `research/as04_stage_residual_telemetry_20261011`): one record per
+/// staged stage solve and one per attempt. Opt-in
+/// ([`Rodas5pMfFastWorkspace::set_stage_telemetry`]); nothing reads it.
+/// Telemetry only, not an error certificate. The attempt records are closed
+/// by the driver loop; [`Rodas5pMfFastWorkspace::attempt`] called directly
+/// records stage records only.
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct StageResidualTelemetry {
+    pub stages: Vec<StageResidualRecord>,
+    pub attempts: Vec<AttemptResidualRecord>,
+    /// `debit_all` summed over the `Committed` attempts, in order.
+    pub committed_debit: f64,
+    /// The work of every attempt (committed, rejected and failed).
+    pub work_all_attempts: AttemptWork,
+    /// `jvp_calls` charged between attempts (before the first, between two
+    /// and after the last), measured from the counters.
+    pub jvp_outside_attempts: u64,
+    pending: PendingAttempt,
+    /// `jvp_calls` at the end of the last attempt.
+    last_jvp_calls: u64,
+}
+
+// The record types are `Copy` (registered compile-time assertion).
+const _: fn() = || {
+    fn assert_copy<T: Copy>() {}
+    assert_copy::<StageResidualRecord>();
+    assert_copy::<AttemptResidualRecord>();
+    assert_copy::<StagedSolveTelemetry>();
+    assert_copy::<FallbackEvaluation>();
+};
+
+/// FNV-1a (64 bit) of the little-endian bits of `y`.
+fn state_digest(y: &[f64]) -> u64 {
+    let mut hash = 0xcbf2_9ce4_8422_2325_u64;
+    for v in y {
+        for byte in v.to_bits().to_le_bytes() {
+            hash ^= u64::from(byte);
+            hash = hash.wrapping_mul(0x0000_0100_0000_01b3);
+        }
+    }
+    hash
+}
+
+impl StageResidualTelemetry {
+    /// The start of an attempt with step `h` (before any callback).
+    fn open(&mut self, h: f64, jvp_calls: u64) {
+        self.jvp_outside_attempts += jvp_calls.saturating_sub(self.last_jvp_calls);
+        self.pending = PendingAttempt {
+            first_stage: self.stages.len(),
+            h,
+            state_digest: 0,
+            relinearized: false,
+            error_norm: f64::NAN,
+            debit_fallback_only: 0.0,
+        };
+    }
+
+    /// The attempt index of the next stage record.
+    fn attempt_index(&self) -> u64 {
+        self.attempts.len() as u64
+    }
+
+    /// The end of the attempt, with the driver's outcome and the attempt's
+    /// counter delta.
+    fn close(
+        &mut self,
+        t: f64,
+        outcome: AttemptOutcome,
+        epoch: OperatorEpoch,
+        delta: WorkCounters,
+        jvp_calls: u64,
+    ) {
+        let pending = self.pending;
+        let mut record = AttemptResidualRecord {
+            attempt: self.attempt_index(),
+            t,
+            h: pending.h,
+            outcome,
+            operator_epoch: epoch,
+            relinearized: pending.relinearized,
+            stages: 0,
+            converged: 0,
+            stall_accepted: 0,
+            floor_accepted: 0,
+            fallback_accepted: 0,
+            failed: 0,
+            budget_exceeded: 0,
+            max_actual_over_requested: f64::NAN,
+            debit_all: 0.0,
+            debit_fallback_only: pending.debit_fallback_only,
+            error_norm: pending.error_norm,
+            work: AttemptWork {
+                jvp_calls: delta.jvp_calls,
+                linear_matvecs: delta.linear_matvecs,
+                rhs_calls: delta.rhs_calls,
+                ..AttemptWork::default()
+            },
+        };
+        for stage in &self.stages[pending.first_stage..] {
+            let solver = &stage.solver;
+            record.stages += 1;
+            match solver.reason {
+                StagedAcceptanceReason::Converged => record.converged += 1,
+                StagedAcceptanceReason::StallAccepted => record.stall_accepted += 1,
+                StagedAcceptanceReason::FloorAccepted => record.floor_accepted += 1,
+                StagedAcceptanceReason::FallbackAccepted => record.fallback_accepted += 1,
+                StagedAcceptanceReason::Failed => record.failed += 1,
+            }
+            record.work.krylov_columns += solver.columns;
+            record.work.arnoldi_jvps += solver.arnoldi_jvps;
+            record.work.residual_jvps += solver.residual_jvps;
+            record.work.shadow_matvecs += solver.uncounted_shadow_matvecs;
+            record.work.vector_copies += solver.acceptance_vector_copies;
+            if solver.reason == StagedAcceptanceReason::Failed {
+                continue;
+            }
+            if solver.attainment == TargetAttainment::BudgetExceeded {
+                record.budget_exceeded += 1;
+            }
+            let ratio = solver.actual_residual / solver.requested_target;
+            if record.max_actual_over_requested.is_nan() || ratio > record.max_actual_over_requested
+            {
+                record.max_actual_over_requested = ratio;
+            }
+            if matches!(stage.metric, ResidualMetric::ScaledWrms { .. })
+                && solver.attainment != TargetAttainment::Met
+            {
+                record.debit_all += stage.debit;
+            }
+        }
+        if outcome == AttemptOutcome::Committed {
+            self.committed_debit += record.debit_all;
+        }
+        self.work_all_attempts.add(&record.work);
+        self.attempts.push(record);
+        self.last_jvp_calls = jvp_calls;
+    }
+
+    /// The end of the run (`jvp_calls` of the run's counters).
+    fn finish(&mut self, jvp_calls: u64) {
+        self.jvp_outside_attempts += jvp_calls.saturating_sub(self.last_jvp_calls);
+        self.last_jvp_calls = jvp_calls;
+    }
+}
+
 /// `D W D^-1` with `D = diag(weight)` and `D^-1 = diag(scale)`
 /// (`scale_i = atol + rtol |y_i|`, `weight_i = 1 / scale_i`). One
 /// application is one application of `W` (charged by `W` itself, for
@@ -742,6 +1091,12 @@ pub struct Rodas5pMfFastWorkspace {
     /// Research record (SP01): one [`StageSolveLogEntry`] per successful
     /// non-staged Krylov stage solve, when switched on. Nothing reads it.
     solve_log: Option<Vec<StageSolveLogEntry>>,
+    /// Research record (AS04): the stage residual telemetry, when switched
+    /// on. Nothing reads it.
+    stage_telemetry: Option<StageResidualTelemetry>,
+    /// Linearizations built by this workspace (AS04 telemetry's operator
+    /// generation; nothing reads it).
+    operator_generation: u64,
 }
 
 /// One successful Krylov stage solve's report, as recorded by
@@ -865,7 +1220,29 @@ impl Rodas5pMfFastWorkspace {
             stage_statistics: StageSolveStatistics::default(),
             residual_accounting: ResidualAccounting::DEFAULT,
             solve_log: None,
+            stage_telemetry: None,
+            operator_generation: 0,
         })
+    }
+
+    /// Record the residual and budget telemetry of every staged stage solve
+    /// and every attempt (research node AS04; changes nothing). Switching it
+    /// on clears the records.
+    pub fn set_stage_telemetry(&mut self, on: bool) {
+        self.stage_telemetry = on.then(StageResidualTelemetry::default);
+    }
+
+    /// The telemetry so far, if it is on.
+    pub fn stage_telemetry(&self) -> Option<&StageResidualTelemetry> {
+        self.stage_telemetry.as_ref()
+    }
+
+    /// The operator the workspace holds: model epoch and generation.
+    fn operator_epoch(&self) -> OperatorEpoch {
+        OperatorEpoch {
+            model_epoch: self.cached_epoch,
+            generation: self.operator_generation,
+        }
     }
 
     /// Set the residual accounting of the GMRES stage solves (research node
@@ -1029,6 +1406,11 @@ impl Rodas5pMfFastWorkspace {
             floor_at_confirmations: options.floor_at_confirmations,
             ..StagedGmresConfig::new(self.config.restart, budget, production_rtol, linear_atol)
         };
+        // AS04 telemetry (opt-in; read by nothing in the solve).
+        let telemetry_on = self.stage_telemetry.is_some();
+        let solve_before = telemetry_on.then_some(*counters);
+        let mut solver_telemetry = StagedSolveTelemetry::default();
+        let mut evaluation: Option<FallbackEvaluation> = None;
         let stage = &mut self.u[i * n..(i + 1) * n];
         let report = if options.policy.is_coupled() {
             let eps = self.stage_eps[i];
@@ -1053,9 +1435,13 @@ impl Rodas5pMfFastWorkspace {
             };
             let scale = &self.staged_scale;
             let mut fallback = |z: &[f64], scaled_residual: &[f64]| {
-                production_rule.accepts(z, scaled_residual, Some(scale))
+                let e = production_rule.evaluate(z, scaled_residual, Some(scale));
+                evaluation = Some(e);
+                e.accepted
             };
-            let report = solve_staged_gmres(
+            // The requested target `eps_i sqrt(n)` (scaled L2).
+            let requested = if telemetry_on { config.atol } else { f64::NAN };
+            let report = solve_staged_gmres_observed(
                 &scaled,
                 &self.staged_rhs,
                 &config,
@@ -1065,6 +1451,8 @@ impl Rodas5pMfFastWorkspace {
                 &mut self.staged_z,
                 &mut self.staged,
                 counters,
+                requested,
+                &mut solver_telemetry,
             )?;
             if report.threshold > config.atol {
                 self.stage_statistics.roundoff_floor_binds += 1;
@@ -1086,9 +1474,18 @@ impl Rodas5pMfFastWorkspace {
                 config.rtol = L2_COUPLED_RTOL_CAP.min(L2_COUPLED_FACTOR * rtol);
                 config.atol = self.gamma.abs() * L2_COUPLED_FACTOR * atol;
             }
-            let mut fallback =
-                |x: &[f64], residual: &[f64]| production_rule.accepts(x, residual, None);
-            solve_staged_gmres(
+            let mut fallback = |x: &[f64], residual: &[f64]| {
+                let e = production_rule.evaluate(x, residual, None);
+                evaluation = Some(e);
+                e.accepted
+            };
+            // The requested target `max(atol_lin, rtol_lin ||b||)`.
+            let requested = if telemetry_on {
+                config.atol.max(config.rtol * safe_l2(&self.stage_rhs))
+            } else {
+                f64::NAN
+            };
+            solve_staged_gmres_observed(
                 shifted,
                 &self.stage_rhs,
                 &config,
@@ -1098,8 +1495,48 @@ impl Rodas5pMfFastWorkspace {
                 stage,
                 &mut self.staged,
                 counters,
+                requested,
+                &mut solver_telemetry,
             )?
         };
+        if let Some(before) = solve_before {
+            solver_telemetry.acceptance_vector_copies =
+                evaluation.map_or(0, |e| u64::from(e.vector_copies));
+            let coupled = options.policy.is_coupled();
+            let (tau_e, debit) = if coupled {
+                let tau_e = self.stage_tau_e[i];
+                (tau_e, tau_e * (report.residual_norm / (n as f64).sqrt()))
+            } else {
+                (f64::NAN, f64::NAN)
+            };
+            let epoch = self.operator_epoch();
+            let (gamma, charge) = (self.gamma, self.attempt_charge);
+            if let Some(telemetry) = self.stage_telemetry.as_mut() {
+                let metric = if coupled {
+                    ResidualMetric::ScaledWrms {
+                        atol_bits: atol.to_bits(),
+                        rtol_bits: rtol.to_bits(),
+                        state_digest: telemetry.pending.state_digest,
+                    }
+                } else {
+                    ResidualMetric::UnscaledL2
+                };
+                telemetry.stages.push(StageResidualRecord {
+                    attempt: telemetry.attempt_index(),
+                    stage: i as u32,
+                    solver: solver_telemetry,
+                    metric,
+                    operator_epoch: epoch,
+                    h_bits: telemetry.pending.h.to_bits(),
+                    gamma_bits: gamma.to_bits(),
+                    tau_e,
+                    debit,
+                    fallback: evaluation,
+                    jvp_calls: counters.jvp_calls - before.jvp_calls,
+                });
+                telemetry.pending.debit_fallback_only = charge;
+            }
+        }
         self.stage_statistics.record(&report);
         if !report.accepted() {
             return Err(CoreError::LinearSolve(format!(
@@ -1203,6 +1640,9 @@ impl Rodas5pMfFastWorkspace {
         counters: &mut WorkCounters,
     ) -> CoreResult<f64> {
         let (n, s, gamma) = (self.n, self.s, self.gamma);
+        if let Some(telemetry) = self.stage_telemetry.as_mut() {
+            telemetry.open(h, counters.jvp_calls);
+        }
         validate_strict(problem, &self.config)?;
         if problem.dimension != n {
             return Err(CoreError::Dimension(
@@ -1252,6 +1692,10 @@ impl Rodas5pMfFastWorkspace {
             self.cached_epoch = epoch;
             self.cached_callbacks = Some(problem.matrix_free_callback_identity());
             self.jvp = Some(jvp);
+            self.operator_generation += 1;
+            if let Some(telemetry) = self.stage_telemetry.as_mut() {
+                telemetry.pending.relinearized = true;
+            }
         }
         let jvp = self.jvp.clone().expect("linearized above");
         let shifted = ShiftedOperator::new_counted_jvp(None, jvp, h, gamma)?;
@@ -1295,6 +1739,9 @@ impl Rodas5pMfFastWorkspace {
                 }
                 self.staged_rhs.resize(n, 0.0);
                 self.staged_z.resize(n, 0.0);
+                if let Some(telemetry) = self.stage_telemetry.as_mut() {
+                    telemetry.pending.state_digest = state_digest(y);
+                }
             }
         }
         for i in 0..s {
@@ -1513,6 +1960,9 @@ impl Rodas5pMfFastWorkspace {
         } else {
             f64::INFINITY
         };
+        if let Some(telemetry) = self.stage_telemetry.as_mut() {
+            telemetry.pending.error_norm = norm;
+        }
         if staged && self.attempt_fallback_stages > 0 {
             let charge = self.attempt_charge;
             let charged = self.stage_target.charge_fallback_residual;
@@ -1620,6 +2070,7 @@ pub fn integrate_rodas5p_mf_fast_observed_gmres_into_ls_workspace(
         true,
         StageTargetOptions::default(),
         AccountingRun::DEFAULT,
+        false,
     )
     .map(|(result, ..)| result)
 }
@@ -1657,6 +2108,7 @@ pub fn integrate_rodas5p_mf_fast_observed_traced(
         false,
         StageTargetOptions::default(),
         AccountingRun::DEFAULT,
+        false,
     )
     .map(|(result, ..)| result)
 }
@@ -1687,6 +2139,7 @@ pub fn integrate_rodas5p_mf_fast_observed_with_gcrodr_policy(
         false,
         StageTargetOptions::default(),
         AccountingRun::DEFAULT,
+        false,
     )
     .map(|(result, ..)| result)
 }
@@ -1705,6 +2158,7 @@ fn integrate_mf_fast_inner(
     ls_workspace: bool,
     stage_target: StageTargetOptions,
     accounting: AccountingRun,
+    stage_telemetry: bool,
 ) -> CoreResult<MfFastInnerRun> {
     adaptive.validate()?;
     let (mut t, tf) = t_span;
@@ -1719,6 +2173,7 @@ fn integrate_mf_fast_inner(
     work.set_ls_workspace(ls_workspace);
     work.set_residual_accounting(accounting.accounting);
     work.set_solve_log(accounting.solve_log);
+    work.set_stage_telemetry(stage_telemetry);
     work.clear_accepted_step();
     let staged = stage_target.policy != StageTargetPolicy::Legacy;
     if staged {
@@ -1754,6 +2209,7 @@ fn integrate_mf_fast_inner(
             reuses += 1;
         }
         let snapshot = recycle.clone();
+        let telemetry_before = stage_telemetry.then_some(counters);
         let outcome = work.attempt(
             problem,
             t,
@@ -1775,6 +2231,24 @@ fn integrate_mf_fast_inner(
                 None => return Err(error),
             },
         };
+        if let Some(before) = telemetry_before {
+            let attempt_outcome = match failure {
+                None => AttemptOutcome::Committed,
+                Some(AdaptiveFailureKind::LocalError) => AttemptOutcome::RejectedError,
+                Some(AdaptiveFailureKind::LinearSolve) => AttemptOutcome::FailedLinear,
+                Some(_) => AttemptOutcome::FailedOther,
+            };
+            let epoch = work.operator_epoch();
+            if let Some(telemetry) = work.stage_telemetry.as_mut() {
+                telemetry.close(
+                    t,
+                    attempt_outcome,
+                    epoch,
+                    counters.delta(before),
+                    counters.jvp_calls,
+                );
+            }
+        }
         match failure {
             None => {
                 counters.accepted_steps += 1;
@@ -1841,7 +2315,17 @@ fn integrate_mf_fast_inner(
     };
     let charges = std::mem::take(&mut work.charge_log);
     let solve_log = work.solve_log.take();
-    Ok((result, work.stage_statistics(), charges, solve_log))
+    let mut telemetry = work.stage_telemetry.take();
+    if let Some(telemetry) = telemetry.as_mut() {
+        telemetry.finish(result.observed.counters.jvp_calls);
+    }
+    Ok((
+        result,
+        work.stage_statistics(),
+        charges,
+        solve_log,
+        telemetry,
+    ))
 }
 
 /// The residual accounting of one [`integrate_mf_fast_inner`] run and
@@ -1865,6 +2349,7 @@ type MfFastInnerRun = (
     StageSolveStatistics,
     Vec<AttemptCharge>,
     Option<Vec<StageSolveLogEntry>>,
+    Option<StageResidualTelemetry>,
 );
 
 /// A run of [`integrate_rodas5p_mf_fast_observed_with_stage_target`].
@@ -1899,7 +2384,7 @@ pub fn integrate_rodas5p_mf_fast_observed_with_stage_target(
     output: &OutputSchedule,
     options: StageTargetOptions,
 ) -> CoreResult<Rodas5pMfStageTargetResult> {
-    let (result, statistics, charges, _) = integrate_mf_fast_inner(
+    let (result, statistics, charges, ..) = integrate_mf_fast_inner(
         problem,
         t_span,
         y0,
@@ -1912,12 +2397,61 @@ pub fn integrate_rodas5p_mf_fast_observed_with_stage_target(
         false,
         options,
         AccountingRun::DEFAULT,
+        false,
     )?;
     Ok(Rodas5pMfStageTargetResult {
         result,
         options,
         statistics,
         charges,
+    })
+}
+
+/// A run of [`integrate_rodas5p_mf_fast_observed_with_stage_telemetry`]:
+/// the stage-target run and its telemetry.
+#[derive(Clone, Debug)]
+pub struct Rodas5pMfStageTelemetryResult {
+    pub run: Rodas5pMfStageTargetResult,
+    pub telemetry: StageResidualTelemetry,
+}
+
+/// [`integrate_rodas5p_mf_fast_observed_with_stage_target`] with
+/// [`Rodas5pMfFastWorkspace::set_stage_telemetry`] on (research node
+/// `research/as04_stage_residual_telemetry_20261011`, AS04). The run is the
+/// same bit for bit; this entry point exists only to return the records.
+/// Telemetry only: no record is an error certificate.
+pub fn integrate_rodas5p_mf_fast_observed_with_stage_telemetry(
+    problem: &OdeProblem,
+    t_span: (f64, f64),
+    y0: &[f64],
+    linear_config: &LinearSolverConfig,
+    adaptive: &AdaptiveStepConfig,
+    output: &OutputSchedule,
+    options: StageTargetOptions,
+) -> CoreResult<Rodas5pMfStageTelemetryResult> {
+    let (result, statistics, charges, _, telemetry) = integrate_mf_fast_inner(
+        problem,
+        t_span,
+        y0,
+        linear_config,
+        adaptive,
+        output,
+        true,
+        GcrodrRecyclePolicy::Legacy,
+        &mut |_, _, _, _, _| {},
+        false,
+        options,
+        AccountingRun::DEFAULT,
+        true,
+    )?;
+    Ok(Rodas5pMfStageTelemetryResult {
+        run: Rodas5pMfStageTargetResult {
+            result,
+            options,
+            statistics,
+            charges,
+        },
+        telemetry: telemetry.unwrap_or_default(),
     })
 }
 
@@ -1955,7 +2489,7 @@ pub fn integrate_rodas5p_mf_fast_observed_with_residual_accounting(
             "the residual-accounting entry point takes the Legacy or DupFix stage target".into(),
         ));
     }
-    let (result, _, _, solve_log) = integrate_mf_fast_inner(
+    let (result, _, _, solve_log, _) = integrate_mf_fast_inner(
         problem,
         t_span,
         y0,
@@ -1971,6 +2505,7 @@ pub fn integrate_rodas5p_mf_fast_observed_with_residual_accounting(
             accounting,
             solve_log: true,
         },
+        false,
     )?;
     Ok(Rodas5pMfAccountingResult {
         result,
