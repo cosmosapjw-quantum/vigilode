@@ -1,0 +1,207 @@
+{
+ "schema": "vigilode-ht02-parallel-check-v1",
+ "evidence_schema": "vigilode-evidence-schema-v2",
+ "branch": "A",
+ "decision": "ABSTAIN_NOT_RUN",
+ "verdict": "INCONCLUSIVE",
+ "ledger_verdict": "INCONCLUSIVE",
+ "ledger_note": "ABSTAIN, not run; no evidence about homotopy parallelism",
+ "ledger_order_rule": "HT02's first ledger row must follow immediately a node whose ledger row is a numeric PASS or FAIL, never another INCONCLUSIVE node (tools/check-research-node.py rule (d))",
+ "inputs": {
+  "ht01_results": {
+   "path": "research/ht01_homotopy_client_contract_20261011/RESULTS.json",
+   "sha256": "255670b231af2db9649935d8cbb2dddc6dfdcec6004d03b0695da79a06f64434"
+  }
+ },
+ "provenance": {
+  "source_commit": "52a52057138b8f1bf2e6902b5d9f96582e05d8fc",
+  "tree_status": "",
+  "checker_blob_at_head": "f2b8f24dc7fe95d88d43dc29516a4e139cb829cb"
+ },
+ "ht01": {
+  "path": "research/ht01_homotopy_client_contract_20261011/RESULTS.json",
+  "sha256": "255670b231af2db9649935d8cbb2dddc6dfdcec6004d03b0695da79a06f64434",
+  "verdict": "PASS",
+  "decision": "ABSTAIN",
+  "leads": [],
+  "source_commit": "0ca751f5f910493f273eddd68f5f3971aea6f7d8"
+ },
+ "failing_criteria": {
+  "K1": {
+   "criteria_not_met": [
+    "S1",
+    "S2",
+    "S3",
+    "S4"
+   ],
+   "reasons": {
+    "S1": [
+     "no_expensive_client_declaration"
+    ],
+    "S2": [
+     "pp07_q1_solves_zero"
+    ],
+    "S3": [
+     "no_applicable_arm"
+    ],
+    "S4": [
+     "no_q2_certificate_source"
+    ]
+   },
+   "f_min": null,
+   "f_status": "unmeasured"
+  },
+  "K2": {
+   "criteria_not_met": [
+    "S1",
+    "S3"
+   ],
+   "reasons": {
+    "S1": [
+     "no_expensive_client_declaration"
+    ],
+    "S3": [
+     "no_measured_applicable_arm",
+     "jf_gmres_only_where_direct_applies"
+    ]
+   },
+   "f_min": null,
+   "f_status": "unmeasured"
+  },
+  "K3": {
+   "criteria_not_met": [
+    "S1",
+    "S2",
+    "S3",
+    "S4"
+   ],
+   "reasons": {
+    "S1": [
+     "no_expensive_client_declaration"
+    ],
+    "S2": [
+     "no_committed_counters"
+    ],
+    "S3": [
+     "no_measured_applicable_arm"
+    ],
+    "S4": [
+     "no_q2_certificate_source"
+    ]
+   },
+   "f_min": null,
+   "f_status": "unmeasured"
+  },
+  "K4": {
+   "criteria_not_met": [
+    "S1",
+    "S2",
+    "S3",
+    "S4"
+   ],
+   "reasons": {
+    "S1": [
+     "no_expensive_client_declaration"
+    ],
+    "S2": [
+     "no_committed_counters"
+    ],
+    "S3": [
+     "no_measured_applicable_arm"
+    ],
+    "S4": [
+     "no_q2_certificate_source"
+    ]
+   },
+   "f_min": null,
+   "f_status": "unmeasured"
+  },
+  "K5": {
+   "criteria_not_met": [
+    "S1",
+    "S4"
+   ],
+   "reasons": {
+    "S1": [
+     "no_expensive_client_declaration",
+     "f_below_f_min"
+    ],
+    "S4": [
+     "no_q2_certificate_source"
+    ]
+   },
+   "f_min": 0.03988828012777325,
+   "f_status": "measured"
+  },
+  "K6": {
+   "criteria_not_met": [
+    "S1",
+    "S4"
+   ],
+   "reasons": {
+    "S1": [
+     "no_expensive_client_declaration",
+     "f_below_f_min"
+    ],
+    "S4": [
+     "no_q2_certificate_source"
+    ]
+   },
+   "f_min": 0.07060785467888495,
+   "f_status": "measured"
+  },
+  "K7": {
+   "criteria_not_met": [
+    "S1",
+    "S2",
+    "S3",
+    "S4"
+   ],
+   "reasons": {
+    "S1": [
+     "no_expensive_client_declaration"
+    ],
+    "S2": [
+     "no_committed_counters"
+    ],
+    "S3": [
+     "no_measured_applicable_arm"
+    ],
+    "S4": [
+     "no_q2_certificate_source"
+    ]
+   },
+   "f_min": null,
+   "f_status": "unmeasured"
+  },
+  "K8": {
+   "criteria_not_met": [
+    "S1",
+    "S2",
+    "S3",
+    "S4"
+   ],
+   "reasons": {
+    "S1": [
+     "no_expensive_client_declaration"
+    ],
+    "S2": [
+     "no_committed_counters"
+    ],
+    "S3": [
+     "no_measured_applicable_arm"
+    ],
+    "S4": [
+     "no_q2_certificate_source"
+    ]
+   },
+   "f_min": null,
+   "f_status": "unmeasured"
+  }
+ },
+ "runs": 0,
+ "wall_time_speedup": null,
+ "built": [],
+ "executed": [],
+ "claim_scope": "Not run: HT01 selected no client, so no homotopy code was built or run. No evidence about homotopy parallelism, work, span or wall time; no default promotion."
+}

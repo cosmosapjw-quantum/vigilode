@@ -164,3 +164,64 @@ retuned after the run.
 ## Results
 
 Appended after the recorded run. Nothing above this heading changes.
+
+Everything above this heading is the registered text, unchanged. Executed on branch `node/ht01`, after HT01's
+recorded run; the registered text names `audit/rvj-reaudit-remaining-20261011` as the branch.
+
+**Outcome: Branch A, decision `ABSTAIN_NOT_RUN`.** Ledger verdict: **INCONCLUSIVE** ("ABSTAIN, not run; no evidence
+about homotopy parallelism"). HT01 (`f372026`; its `RESULTS.json` verdict is PASS, decision ABSTAIN, no lead) selected
+no client, so nothing was built or run.
+- There is no HT02b, no Branch-B code, no Rust change and no cargo command.
+- `runs = 0` and `wall_time_speedup = null`.
+
+### Record
+
+| Item | Commit | SHA-256 |
+|---|---|---|
+| Registration (text above) | `8ce9bda` | — |
+| HT01 input: `research/ht01_homotopy_client_contract_20261011/RESULTS.json` (recorded at `d443431`) | `d443431` | `255670b231af2db9649935d8cbb2dddc6dfdcec6004d03b0695da79a06f64434` (pinned in the checker) |
+| Checker and synthetic tests (before the run) | `52a5205` | `ht02_parallel_check.py` `9b570c52a7a72acdbf0c15b57d0046aa6d9af2975076aa07526c4da57f98f373`; `test_ht02_parallel_check.py` `832be15c015303b281cfe9db5f495eae797ee8f67f73fcf6675ab87c88cd1f66` |
+| Recorded run at `52a5205` (clean tree) | this commit | `RESULTS.json` `c76d621663c949e4fb0929d4e5ff5d54b1729fde1f012e9128e91cecc37746d6` (4,057 bytes) |
+
+The registered Branch-A command was run with `RAYON_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1` and Python 3.11.15, and
+exited 0:
+
+    python3 tools/ht02_parallel_check.py --ht01 research/ht01_homotopy_client_contract_20261011/RESULTS.json --abstain-only --output research/ht02_homotopy_parallel_pilot_20261011/RESULTS.json
+
+`RESULTS.json` records:
+- the source commit `52a52057138b8f1bf2e6902b5d9f96582e05d8fc`, an empty tree status, and the checker blob `f2b8f24d`;
+- HT01's verdict, decision, leads and source commit, and the criteria each candidate failed.
+
+The synthetic tests ran 14 of 14 OK at `52a5205`.
+
+### HT01 decision and failing criteria
+
+| candidate | criteria not met (HT01) |
+|---|---|
+| K1 Fourier | S1, S2 (PP07 `q1_solves = 0`), S3 (no applicable arm), S4 |
+| K2 quadratic family | S1 (no declaration), S3 (no measured direct arm; L-0008 comparator JF-GMRES only) |
+| K3 Bateman | S1, S2, S3, S4 |
+| K4 Darboux chart | S1, S2, S3, S4 |
+| K5 robertson/hires/vdp | S1 (no declaration; f = 0.040 < 0.348), S4 |
+| K6 brusselator-1d-N | S1 (no declaration; f = 0.071 < 0.348), S4 |
+| K7 corpus v2 | S1, S2, S3, S4 |
+| K8 `problems.rs` fixtures | S1, S2, S3, S4 |
+
+### Prediction check
+
+Branch A (`ABSTAIN_NOT_RUN`) was predicted with high confidence, and that is the outcome. The stage-0 and stage-1
+predictions of Branch B are not tested.
+
+### Interpretations and deviations
+
+These were fixed before the run, in the checker's docstring.
+- **Exit code.** The registration lists exit codes for INVALID (2), FAIL (1) and PASS (0) only. A Branch-A run on valid
+  evidence has no gate to fail, so it exits 0. It records and prints the verdict INCONCLUSIVE, which is not PASS.
+- **Branch B.** Branch B is not implemented. Invoking the checker without `--abstain-only` is refused as INVALID: HT02b
+  must exist before any Branch-B code (registered).
+- **Validity rules.** The checker applies the AS03 primitives to the HT01 fields it reads. It also requires a PASS
+  verdict and an ABSTAIN decision from HT01, the pinned SHA-256, a clean tree, and the checker committed unchanged at
+  HEAD.
+
+**Ledger order (registered).** HT02's first ledger row must come immediately after a node whose ledger row is a
+numeric PASS or FAIL, never after another INCONCLUSIVE row (rule (d) of `tools/check-research-node.py`).
