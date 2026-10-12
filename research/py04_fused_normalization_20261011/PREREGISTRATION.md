@@ -265,8 +265,9 @@ Per family (bound for F_hat; e is sigma's exponent):
   S3, where the bound is a few subnormal quanta (S2 6.7e-8 to 6.9e-7 relative, S3 up to 0.18). This is where the
   registered relative-only gate is infeasible.
 - **Taylor caller candidate** (Taylor on the original w): accepted in S1, S2, S3, S7 (s = 1 and 2^-600), 80 cases;
-  rejected in S4, S5, S6 and S7 (2^600) (`||M||_1` above the Taylor limit). All 80 caller bounds enclose; mixed-useful
-  80/80, relative-useful 48/80 (0/16 in S2 and S3).
+  rejected in S4 and S7 (2^600) (`||M||_1` above the Taylor limit 64), S5 (the norm sum overflows) and S6 (no degree
+  <= 60 meets the absolute budget 1e-13 with ||w_0|| ~ 2^1000). All 80 caller bounds enclose; mixed-useful 80/80,
+  relative-useful 48/80 (0/16 in S2 and S3).
 - **Unnormalized baseline** (`certify_fused_phi_total`, PP11 candidate rule): Bounded and enclosing in S1, S2, S3
   (16 each) but never useful there (absolute floor ~1e-15 as in PP11); S4 8/16 Bounded and useful (the h = 0.25 cases,
   zero perturbation) and 8 Unbounded (7 perturbation overflow, 1 no stepped bound); S5 and S6 16/16 Unbounded (no
@@ -274,8 +275,8 @@ Per family (bound for F_hat; e is sigma's exponent):
   and not useful.
 - **Dominant term**: up(sigma E) in S1, S4-S7 (128 cases), R in S2 and S3 (32). Inside E: the perturbation for
   h = 0.3 and the stepped error for h = 0.25 (64 each), and the stepped error in all 16 S6 cases.
-- **L in S6** is 1.2e-24 x (growth/factorial sum) scale against ||F|| ~ 1e300: loose (L / actual ~ 4e299, since the
-  bound uses half a quantum for an entry that underflowed far below it) and negligible (S6 bound / budget <= 0.003).
+- **L in S6** is 1.2e-24 to 1.9e-24 against ||F|| ~ 1e300: loose (L / actual ~ 4e299, since the bound charges half
+  a quantum for entries that underflowed far below it) and negligible (S6 bound / budget <= 0.003).
 - **Normalization work** (counted, not timed): per case 31-38 scaled entries and 31-83 stages at n = 5, 73-87 entries
   and 73-188 stages at n = 12 (5n inputs, n candidate entries, 1-15 bound scalings); every stage factor is at most
   2^1000 in magnitude.
