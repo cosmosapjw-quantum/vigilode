@@ -1,0 +1,981 @@
+{
+ "anchor": "reproduced",
+ "evidence_schema": "vigilode-evidence-schema-v2",
+ "hold_rule": "not triggered",
+ "inputs": {
+  "alg06": "research/alg06_guard_v2_20261010/RUNS.json",
+  "native": "research/reaudit_accuracy_speed_20261010/NATIVE.json",
+  "runs": "research/as04_stage_residual_telemetry_20261011/RUNS.json"
+ },
+ "items": {
+  "1a": {
+   "failure_count": 0,
+   "failures": [],
+   "numbers": {
+    "test_file_audit": {
+     "added_test_files": [
+      "A crates/rodas5p-integrators/tests/stage_residual_telemetry.rs",
+      "A crates/rodas5p-krylov/tests/staged_solve_telemetry.rs"
+     ],
+     "changed_test_tails": [],
+     "modified_test_files": [],
+     "ok": true
+    },
+    "test_suites": {
+     "binaries": 179,
+     "command": "cargo test --offline --locked -p rodas5p-krylov -p rodas5p-integrators --all-targets",
+     "exit_code": 0,
+     "failed": 0,
+     "ok": true,
+     "passed": 701
+    },
+    "twins_identical": "9/9"
+   },
+   "pass": true
+  },
+  "1b": {
+   "failure_count": 0,
+   "failures": [],
+   "numbers": {
+    "anchors": 6,
+    "counters_not_in_alg06": {
+     "brusselator-1d-50/1e-6 B3": {},
+     "robertson-4e10/1e-5 B3": {},
+     "robertson-4e10/1e-5 B3b": {},
+     "robertson-4e10/1e-9 B3": {},
+     "stosc-w1e4/1e-4 B3": {},
+     "van-der-pol-mu1000/1e-6 B3": {}
+    }
+   },
+   "pass": true
+  },
+  "2": {
+   "failure_count": 0,
+   "failures": [],
+   "numbers": {
+    "S3/contraction_classified/shadow_matvecs": 99,
+    "S3/contraction_unclassified/shadow_matvecs": 0,
+    "jvp_closure": {
+     "D1/as01-cyclic-4-overflow/Coupled+fallback": {
+      "outside_attempts": 0,
+      "per_solve_jvp_equals_matvecs": true,
+      "run": 2,
+      "unattributed": 0
+     },
+     "D2/as04-d2-linear-2/CoupledGuarded2": {
+      "outside_attempts": 0,
+      "per_solve_jvp_equals_matvecs": true,
+      "run": 922,
+      "unattributed": 0
+     },
+     "R/brusselator-1d-50/1e-6/B3": {
+      "outside_attempts": 0,
+      "per_solve_jvp_equals_matvecs": true,
+      "run": 9560,
+      "unattributed": 0
+     },
+     "R/brusselator-1d-50/1e-6/ProjL2+fallback": {
+      "outside_attempts": 0,
+      "per_solve_jvp_equals_matvecs": true,
+      "run": 14331,
+      "unattributed": 0
+     },
+     "R/robertson-4e10/1e-5/B3": {
+      "outside_attempts": 0,
+      "per_solve_jvp_equals_matvecs": true,
+      "run": 5845,
+      "unattributed": 0
+     },
+     "R/robertson-4e10/1e-5/B3b": {
+      "outside_attempts": 0,
+      "per_solve_jvp_equals_matvecs": true,
+      "run": 5771,
+      "unattributed": 0
+     },
+     "R/robertson-4e10/1e-9/B3": {
+      "outside_attempts": 0,
+      "per_solve_jvp_equals_matvecs": true,
+      "run": 34514,
+      "unattributed": 0
+     },
+     "R/stosc-w1e4/1e-4/B3": {
+      "outside_attempts": 0,
+      "per_solve_jvp_equals_matvecs": true,
+      "run": 12194,
+      "unattributed": 0
+     },
+     "R/van-der-pol-mu1000/1e-6/B3": {
+      "outside_attempts": 0,
+      "per_solve_jvp_equals_matvecs": true,
+      "run": 11276,
+      "unattributed": 0
+     }
+    },
+    "solves_checked": 14220
+   },
+   "pass": true
+  },
+  "3": {
+   "failure_count": 0,
+   "failures": [],
+   "numbers": {
+    "accepted_above_requested": 5776
+   },
+   "pass": true
+  },
+  "4": {
+   "failure_count": 0,
+   "failures": [],
+   "numbers": {},
+   "pass": true
+  },
+  "5": {
+   "failure_count": 8,
+   "failures": [
+    "('R', 'robertson-4e10/1e-9', 'B3') attempt 715: debit_all 0.0002679820360468656 < debit_fallback_only 0.0002764503499307247",
+    "('R', 'robertson-4e10/1e-9', 'B3') attempt 734: debit_all 0.0007308326499265624 < debit_fallback_only 0.0007441081513941301",
+    "('R', 'robertson-4e10/1e-9', 'B3') attempt 737: debit_all 0.0008331132535543719 < debit_fallback_only 0.0008667090555590146",
+    "('R', 'robertson-4e10/1e-9', 'B3') attempt 739: debit_all 0.0005363709701109935 < debit_fallback_only 0.0005749505801251428",
+    "('R', 'robertson-4e10/1e-9', 'B3') attempt 757: debit_all 0.0010825381995760233 < debit_fallback_only 0.0011325439455426285",
+    "('R', 'robertson-4e10/1e-9', 'B3') attempt 760: debit_all 0.00033560455734118555 < debit_fallback_only 0.00040656128990239343",
+    "('R', 'robertson-4e10/1e-9', 'B3') attempt 764: debit_all 0.0 < debit_fallback_only 9.213611218890613e-05",
+    "('R', 'robertson-4e10/1e-9', 'B3') attempt 769: debit_all 0.001019169515483406 < debit_fallback_only 0.001156209315413878"
+   ],
+   "numbers": {
+    "d1_failed_attempts_with_jvps": 1
+   },
+   "pass": false
+  },
+  "6": {
+   "failure_count": 0,
+   "failures": [],
+   "numbers": {
+    "d2_attempts": 39,
+    "d2_model_epochs": [
+     1,
+     1,
+     1,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2
+    ],
+    "d2_outcomes": [
+     "RejectedError",
+     "RejectedError",
+     "RejectedError",
+     "RejectedError",
+     "RejectedError",
+     "Committed",
+     "Committed",
+     "Committed",
+     "Committed",
+     "Committed",
+     "Committed",
+     "Committed",
+     "Committed",
+     "Committed",
+     "Committed",
+     "Committed",
+     "Committed",
+     "Committed",
+     "Committed",
+     "Committed",
+     "Committed",
+     "Committed",
+     "Committed",
+     "Committed",
+     "Committed",
+     "Committed",
+     "Committed",
+     "Committed",
+     "Committed",
+     "Committed",
+     "Committed",
+     "Committed",
+     "Committed",
+     "Committed",
+     "Committed",
+     "Committed",
+     "Committed",
+     "Committed",
+     "Committed"
+    ],
+    "d2_relinearized": [
+     true,
+     false,
+     false,
+     true,
+     false,
+     false,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true
+    ],
+    "projl2_unscaled_records": 736
+   },
+   "pass": true
+  }
+ },
+ "kill_rule": "not triggered",
+ "node": "as04_stage_residual_telemetry_20261011",
+ "predictions": {
+  "items_1_6_hold": false,
+  "robertson_1e-5_B3_converged_budget_exceeded": {
+   "observed": 211,
+   "predicted": "1..443"
+  },
+  "robertson_1e-5_B3_non_converged_acceptances": {
+   "observed": 302,
+   "predicted": 302
+  },
+  "robertson_1e-5_no_crossing": {
+   "observed": 0,
+   "predicted": 0
+  },
+  "robertson_1e-9_crossing": {
+   "observed": 0,
+   "predicted": "uncertain"
+  },
+  "robertson_debit_all_exceeds_g3_charge": {
+   "observed_1e-5": true,
+   "observed_1e-9": true,
+   "predicted": true
+  }
+ },
+ "provenance": {
+  "checker_blob": "b48d3f9a60b6b7816d603c905b67275d0d4d0bcd",
+  "head": "bf92e67c02f92be2e64fee1b37e487c8352e5f8f",
+  "source_commit": "bf92e67c02f92be2e64fee1b37e487c8352e5f8f",
+  "tree_clean": true
+ },
+ "reported": {
+  "D1/as01-cyclic-4-overflow/Coupled+fallback": {
+   "actual_over_requested": {
+    "count": 0
+   },
+   "attainments": {
+    "BudgetExceeded": 1,
+    "Met": 0,
+    "Unverified": 0
+   },
+   "attempt_records": 1,
+   "attempts_norm_plus_debit_all_cross_1": 0,
+   "charged_attempts": 0,
+   "committed_debit": 0.0,
+   "converged_budget_exceeded": 0,
+   "crossing_attempts": [],
+   "g3_charge_max": 0.0,
+   "g3_charge_sum": 0.0,
+   "jvp_outside_attempts": 0,
+   "max_debit_all": 0.0,
+   "memory_bytes": 432,
+   "non_converged_acceptances": 0,
+   "reason_attainment": {
+    "Failed/BudgetExceeded": 1
+   },
+   "reasons": {
+    "Converged": 0,
+    "Failed": 1,
+    "FallbackAccepted": 0,
+    "FloorAccepted": 0,
+    "StallAccepted": 0
+   },
+   "roundoff_floor_binds": 1,
+   "stage_records": 1,
+   "work_all_attempts": {
+    "arnoldi_jvps": 1,
+    "jvp_calls": 2,
+    "krylov_columns": 1,
+    "linear_matvecs": 2,
+    "residual_jvps": 1,
+    "rhs_calls": 1,
+    "shadow_matvecs": 0,
+    "vector_copies": 2
+   }
+  },
+  "D2/as04-d2-linear-2/CoupledGuarded2": {
+   "actual_over_requested": {
+    "count": 312,
+    "max": 433.89355846318637,
+    "median": 4.27763821575682e-08,
+    "min": 0.0,
+    "p90": 0.404689882409958,
+    "p99": 227.53617473172338
+   },
+   "attainments": {
+    "BudgetExceeded": 27,
+    "Met": 285,
+    "Unverified": 0
+   },
+   "attempt_records": 39,
+   "attempts_norm_plus_debit_all_cross_1": 0,
+   "charged_attempts": 0,
+   "committed_debit": 1.5108149126713578e-10,
+   "converged_budget_exceeded": 27,
+   "crossing_attempts": [],
+   "g3_charge_max": 0.0,
+   "g3_charge_sum": 0.0,
+   "jvp_outside_attempts": 0,
+   "max_debit_all": 2.6434696303985497e-07,
+   "memory_bytes": 86736,
+   "non_converged_acceptances": 0,
+   "reason_attainment": {
+    "Converged/BudgetExceeded": 27,
+    "Converged/Met": 285
+   },
+   "reasons": {
+    "Converged": 312,
+    "Failed": 0,
+    "FallbackAccepted": 0,
+    "FloorAccepted": 0,
+    "StallAccepted": 0
+   },
+   "roundoff_floor_binds": 44,
+   "stage_records": 312,
+   "work_all_attempts": {
+    "arnoldi_jvps": 610,
+    "jvp_calls": 922,
+    "krylov_columns": 610,
+    "linear_matvecs": 922,
+    "residual_jvps": 312,
+    "rhs_calls": 308,
+    "shadow_matvecs": 0,
+    "vector_copies": 0
+   }
+  },
+  "R/brusselator-1d-50/1e-6/B3": {
+   "actual_over_requested": {
+    "count": 736,
+    "max": 375621326781.1263,
+    "median": 0.6447509966933915,
+    "min": 0.00020435565867464876,
+    "p90": 0.9292732942687623,
+    "p99": 1388834515.865518
+   },
+   "attainments": {
+    "BudgetExceeded": 34,
+    "Met": 702,
+    "Unverified": 0
+   },
+   "attempt_records": 92,
+   "attempts_norm_plus_debit_all_cross_1": 0,
+   "charged_attempts": 0,
+   "committed_debit": 1.0430042377998438e-10,
+   "converged_budget_exceeded": 34,
+   "crossing_attempts": [],
+   "g3_charge_max": 0.0,
+   "g3_charge_sum": 0.0,
+   "jvp_outside_attempts": 0,
+   "max_debit_all": 8.648501080974232e-11,
+   "memory_bytes": 204608,
+   "non_converged_acceptances": 0,
+   "reason_attainment": {
+    "Converged/BudgetExceeded": 34,
+    "Converged/Met": 702
+   },
+   "reasons": {
+    "Converged": 736,
+    "Failed": 0,
+    "FallbackAccepted": 0,
+    "FloorAccepted": 0,
+    "StallAccepted": 0
+   },
+   "roundoff_floor_binds": 38,
+   "stage_records": 736,
+   "work_all_attempts": {
+    "arnoldi_jvps": 8824,
+    "jvp_calls": 9560,
+    "krylov_columns": 8824,
+    "linear_matvecs": 9560,
+    "residual_jvps": 736,
+    "rhs_calls": 726,
+    "shadow_matvecs": 0,
+    "vector_copies": 0
+   }
+  },
+  "R/brusselator-1d-50/1e-6/ProjL2+fallback": {
+   "actual_over_requested": {
+    "count": 736,
+    "max": 0.9980505080025106,
+    "median": 0.6438242381869913,
+    "min": 0.00017844963502815017,
+    "p90": 0.9120065134250256,
+    "p99": 0.9874336183255427
+   },
+   "attainments": {
+    "BudgetExceeded": 0,
+    "Met": 736,
+    "Unverified": 0
+   },
+   "attempt_records": 92,
+   "attempts_norm_plus_debit_all_cross_1": 0,
+   "charged_attempts": 0,
+   "committed_debit": 0.0,
+   "converged_budget_exceeded": 0,
+   "crossing_attempts": [],
+   "g3_charge_max": 0.0,
+   "g3_charge_sum": 0.0,
+   "jvp_outside_attempts": 0,
+   "max_debit_all": 0.0,
+   "memory_bytes": 204608,
+   "non_converged_acceptances": 0,
+   "reason_attainment": {
+    "Converged/Met": 736
+   },
+   "reasons": {
+    "Converged": 736,
+    "Failed": 0,
+    "FallbackAccepted": 0,
+    "FloorAccepted": 0,
+    "StallAccepted": 0
+   },
+   "roundoff_floor_binds": 0,
+   "stage_records": 736,
+   "work_all_attempts": {
+    "arnoldi_jvps": 13599,
+    "jvp_calls": 14331,
+    "krylov_columns": 13599,
+    "linear_matvecs": 14331,
+    "residual_jvps": 732,
+    "rhs_calls": 726,
+    "shadow_matvecs": 0,
+    "vector_copies": 0
+   }
+  },
+  "R/robertson-4e10/1e-5/B3": {
+   "actual_over_requested": {
+    "count": 1152,
+    "max": 2.0275850766396342e+20,
+    "median": 0.5457521284257281,
+    "min": 0.0,
+    "p90": 6373.085623751686,
+    "p99": 457017109816.5707
+   },
+   "attainments": {
+    "BudgetExceeded": 513,
+    "Met": 639,
+    "Unverified": 0
+   },
+   "attempt_records": 144,
+   "attempts_norm_plus_debit_all_cross_1": 0,
+   "charged_attempts": 42,
+   "committed_debit": 1.0792064299456646e-05,
+   "converged_budget_exceeded": 211,
+   "crossing_attempts": [],
+   "g3_charge_max": 3.395176175250257e-07,
+   "g3_charge_sum": 3.901067449792027e-06,
+   "jvp_outside_attempts": 0,
+   "max_debit_all": 5.151969348368172e-07,
+   "memory_bytes": 320256,
+   "non_converged_acceptances": 302,
+   "reason_attainment": {
+    "Converged/BudgetExceeded": 211,
+    "Converged/Met": 639,
+    "FallbackAccepted/BudgetExceeded": 58,
+    "FloorAccepted/BudgetExceeded": 241,
+    "StallAccepted/BudgetExceeded": 3
+   },
+   "reasons": {
+    "Converged": 850,
+    "Failed": 0,
+    "FallbackAccepted": 58,
+    "FloorAccepted": 241,
+    "StallAccepted": 3
+   },
+   "roundoff_floor_binds": 443,
+   "stage_records": 1152,
+   "work_all_attempts": {
+    "arnoldi_jvps": 3842,
+    "jvp_calls": 5845,
+    "krylov_columns": 3842,
+    "linear_matvecs": 5845,
+    "residual_jvps": 2003,
+    "rhs_calls": 1151,
+    "shadow_matvecs": 136620,
+    "vector_copies": 58
+   }
+  },
+  "R/robertson-4e10/1e-5/B3b": {
+   "actual_over_requested": {
+    "count": 1152,
+    "max": 2.0275850766396342e+20,
+    "median": 0.4987458275834977,
+    "min": 0.0,
+    "p90": 6026.043526007967,
+    "p99": 457017109816.5707
+   },
+   "attainments": {
+    "BudgetExceeded": 502,
+    "Met": 650,
+    "Unverified": 0
+   },
+   "attempt_records": 144,
+   "attempts_norm_plus_debit_all_cross_1": 0,
+   "charged_attempts": 39,
+   "committed_debit": 9.221626823400551e-06,
+   "converged_budget_exceeded": 216,
+   "crossing_attempts": [],
+   "g3_charge_max": 4.0071581039153706e-07,
+   "g3_charge_sum": 3.546425748833407e-06,
+   "jvp_outside_attempts": 0,
+   "max_debit_all": 4.800431508065981e-07,
+   "memory_bytes": 320256,
+   "non_converged_acceptances": 286,
+   "reason_attainment": {
+    "Converged/BudgetExceeded": 216,
+    "Converged/Met": 650,
+    "FallbackAccepted/BudgetExceeded": 51,
+    "FloorAccepted/BudgetExceeded": 231,
+    "StallAccepted/BudgetExceeded": 4
+   },
+   "reasons": {
+    "Converged": 866,
+    "Failed": 0,
+    "FallbackAccepted": 51,
+    "FloorAccepted": 231,
+    "StallAccepted": 4
+   },
+   "roundoff_floor_binds": 443,
+   "stage_records": 1152,
+   "work_all_attempts": {
+    "arnoldi_jvps": 3797,
+    "jvp_calls": 5771,
+    "krylov_columns": 3797,
+    "linear_matvecs": 5771,
+    "residual_jvps": 1974,
+    "rhs_calls": 1151,
+    "shadow_matvecs": 118990,
+    "vector_copies": 51
+   }
+  },
+  "R/robertson-4e10/1e-9/B3": {
+   "actual_over_requested": {
+    "count": 6272,
+    "max": 6.705062628878626e+18,
+    "median": 152.93207424132848,
+    "min": 0.0,
+    "p90": 983950.6524259353,
+    "p99": 697000497.2653704
+   },
+   "attainments": {
+    "BudgetExceeded": 4571,
+    "Met": 1701,
+    "Unverified": 0
+   },
+   "attempt_records": 784,
+   "attempts_norm_plus_debit_all_cross_1": 0,
+   "charged_attempts": 320,
+   "committed_debit": 0.08041656484143496,
+   "converged_budget_exceeded": 1574,
+   "crossing_attempts": [],
+   "g3_charge_max": 0.0027216752597072937,
+   "g3_charge_sum": 0.06989852300056038,
+   "jvp_outside_attempts": 0,
+   "max_debit_all": 0.0027216752597072937,
+   "memory_bytes": 1743616,
+   "non_converged_acceptances": 3008,
+   "reason_attainment": {
+    "Converged/BudgetExceeded": 1574,
+    "Converged/Met": 1690,
+    "FallbackAccepted/BudgetExceeded": 848,
+    "FallbackAccepted/Met": 8,
+    "FloorAccepted/BudgetExceeded": 2135,
+    "FloorAccepted/Met": 3,
+    "StallAccepted/BudgetExceeded": 14
+   },
+   "reasons": {
+    "Converged": 3264,
+    "Failed": 0,
+    "FallbackAccepted": 856,
+    "FloorAccepted": 2138,
+    "StallAccepted": 14
+   },
+   "roundoff_floor_binds": 3921,
+   "stage_records": 6272,
+   "work_all_attempts": {
+    "arnoldi_jvps": 22810,
+    "jvp_calls": 34514,
+    "krylov_columns": 22810,
+    "linear_matvecs": 34514,
+    "residual_jvps": 11704,
+    "rhs_calls": 6268,
+    "shadow_matvecs": 2032682,
+    "vector_copies": 856
+   }
+  },
+  "R/stosc-w1e4/1e-4/B3": {
+   "actual_over_requested": {
+    "count": 88,
+    "max": 126948015.42252699,
+    "median": 1.948633659960758,
+    "min": 0.0017781841707629267,
+    "p90": 4240257.486762472,
+    "p99": 102773439.45157887
+   },
+   "attainments": {
+    "BudgetExceeded": 47,
+    "Met": 41,
+    "Unverified": 0
+   },
+   "attempt_records": 11,
+   "attempts_norm_plus_debit_all_cross_1": 0,
+   "charged_attempts": 0,
+   "committed_debit": 5.998335012752046e-07,
+   "converged_budget_exceeded": 18,
+   "crossing_attempts": [],
+   "g3_charge_max": 0.0,
+   "g3_charge_sum": 0.0,
+   "jvp_outside_attempts": 0,
+   "max_debit_all": 5.751163253904543e-07,
+   "memory_bytes": 24464,
+   "non_converged_acceptances": 29,
+   "reason_attainment": {
+    "Converged/BudgetExceeded": 18,
+    "Converged/Met": 41,
+    "FloorAccepted/BudgetExceeded": 29
+   },
+   "reasons": {
+    "Converged": 59,
+    "Failed": 0,
+    "FallbackAccepted": 0,
+    "FloorAccepted": 29,
+    "StallAccepted": 0
+   },
+   "roundoff_floor_binds": 43,
+   "stage_records": 88,
+   "work_all_attempts": {
+    "arnoldi_jvps": 11864,
+    "jvp_calls": 12194,
+    "krylov_columns": 11864,
+    "linear_matvecs": 12194,
+    "residual_jvps": 330,
+    "rhs_calls": 88,
+    "shadow_matvecs": 0,
+    "vector_copies": 0
+   }
+  },
+  "R/van-der-pol-mu1000/1e-6/B3": {
+   "actual_over_requested": {
+    "count": 3752,
+    "max": 3210261135831.828,
+    "median": 1.8669427741594643e-06,
+    "min": 0.0,
+    "p90": 0.035338959509007575,
+    "p99": 37.46609915245974
+   },
+   "attainments": {
+    "BudgetExceeded": 74,
+    "Met": 3678,
+    "Unverified": 0
+   },
+   "attempt_records": 469,
+   "attempts_norm_plus_debit_all_cross_1": 0,
+   "charged_attempts": 0,
+   "committed_debit": 1.3905283055191911e-08,
+   "converged_budget_exceeded": 59,
+   "crossing_attempts": [],
+   "g3_charge_max": 0.0,
+   "g3_charge_sum": 0.0,
+   "jvp_outside_attempts": 0,
+   "max_debit_all": 5.880082093095924e-09,
+   "memory_bytes": 1043056,
+   "non_converged_acceptances": 15,
+   "reason_attainment": {
+    "Converged/BudgetExceeded": 59,
+    "Converged/Met": 3678,
+    "FloorAccepted/BudgetExceeded": 15
+   },
+   "reasons": {
+    "Converged": 3737,
+    "Failed": 0,
+    "FallbackAccepted": 0,
+    "FloorAccepted": 15,
+    "StallAccepted": 0
+   },
+   "roundoff_floor_binds": 404,
+   "stage_records": 3752,
+   "work_all_attempts": {
+    "arnoldi_jvps": 7517,
+    "jvp_calls": 11276,
+    "krylov_columns": 7517,
+    "linear_matvecs": 11276,
+    "residual_jvps": 3759,
+    "rhs_calls": 3634,
+    "shadow_matvecs": 0,
+    "vector_copies": 0
+   }
+  },
+  "solver_cells": {
+   "S1/identity2_floor": {
+    "actual": 0.0,
+    "attainment": "Met",
+    "copies": 0,
+    "evaluations": [],
+    "reason": "Converged",
+    "requested": 1e-30
+   },
+   "S1/identity2_stall": {
+    "actual": 0.0,
+    "attainment": "Met",
+    "copies": 0,
+    "evaluations": [],
+    "reason": "Converged",
+    "requested": 1e-30
+   },
+   "S1/identity2_strict": {
+    "actual": 0.0,
+    "attainment": "Met",
+    "copies": 0,
+    "evaluations": [],
+    "reason": "Converged",
+    "requested": 1e-30
+   },
+   "S1/triangular2_floor": {
+    "actual": 7.850462293418876e-17,
+    "attainment": "BudgetExceeded",
+    "copies": 0,
+    "evaluations": [],
+    "reason": "FloorAccepted",
+    "requested": 3.1780497164141403e-31
+   },
+   "S1/triangular2_stall": {
+    "actual": 2.7755575615628914e-17,
+    "attainment": "BudgetExceeded",
+    "copies": 0,
+    "evaluations": [],
+    "reason": "StallAccepted",
+    "requested": 3.1780497164141403e-31
+   },
+   "S1/triangular2_strict": {
+    "actual": 0.0,
+    "attainment": "Met",
+    "copies": 0,
+    "evaluations": [],
+    "reason": "Converged",
+    "requested": 3.1780497164141403e-31
+   },
+   "S1/triangular4_floor": {
+    "actual": 6.684427777288335e-16,
+    "attainment": "BudgetExceeded",
+    "copies": 0,
+    "evaluations": [],
+    "reason": "FloorAccepted",
+    "requested": 1.61245154965971e-30
+   },
+   "S1/triangular4_stall": {
+    "actual": 0.0,
+    "attainment": "Met",
+    "copies": 0,
+    "evaluations": [],
+    "reason": "Converged",
+    "requested": 1.61245154965971e-30
+   },
+   "S1/triangular4_strict": {
+    "actual": 0.0,
+    "attainment": "Met",
+    "copies": 0,
+    "evaluations": [],
+    "reason": "Converged",
+    "requested": 1.61245154965971e-30
+   },
+   "S2/finite_norm_control": {
+    "actual": 1.8371173070873834,
+    "attainment": "BudgetExceeded",
+    "copies": 1,
+    "evaluations": [
+     {
+      "accepted": false,
+      "branch": "ScaledLiteral",
+      "exit": "Compared",
+      "r_le_atol": false,
+      "vector_copies": 1
+     }
+    ],
+    "reason": "Failed",
+    "requested": 2.121320343559643e-14
+   },
+   "S2/loose_finite": {
+    "actual": 1.8371173070873834,
+    "attainment": "BudgetExceeded",
+    "copies": 1,
+    "evaluations": [
+     {
+      "accepted": true,
+      "branch": "ScaledLiteral",
+      "exit": "Compared",
+      "r_le_atol": false,
+      "vector_copies": 1
+     }
+    ],
+    "reason": "FallbackAccepted",
+    "requested": 2.121320343559643e-14
+   },
+   "S2/loose_homogeneous": {
+    "actual": 1.8371173070873834,
+    "attainment": "BudgetExceeded",
+    "copies": 2,
+    "evaluations": [
+     {
+      "accepted": true,
+      "branch": "ScaledHomogeneous",
+      "exit": "Compared",
+      "r_le_atol": false,
+      "vector_copies": 2
+     }
+    ],
+    "reason": "FallbackAccepted",
+    "requested": 2.121320343559643e-14
+   },
+   "S2/overflowing_norms": {
+    "actual": 1.8371173070873834,
+    "attainment": "BudgetExceeded",
+    "copies": 2,
+    "evaluations": [
+     {
+      "accepted": false,
+      "branch": "ScaledHomogeneous",
+      "exit": "Compared",
+      "r_le_atol": false,
+      "vector_copies": 2
+     }
+    ],
+    "reason": "Failed",
+    "requested": 2.121320343559643e-14
+   },
+   "S3/contraction_classified": {
+    "actual": 1.0,
+    "attainment": "BudgetExceeded",
+    "copies": 0,
+    "evaluations": [
+     {
+      "accepted": true,
+      "branch": "UnscaledLiteral",
+      "exit": "Compared",
+      "r_le_atol": false,
+      "vector_copies": 0
+     }
+    ],
+    "reason": "FallbackAccepted",
+    "requested": 1e-10
+   },
+   "S3/contraction_unclassified": {
+    "actual": 1.0,
+    "attainment": "BudgetExceeded",
+    "copies": 0,
+    "evaluations": [
+     {
+      "accepted": true,
+      "branch": "UnscaledLiteral",
+      "exit": "Compared",
+      "r_le_atol": false,
+      "vector_copies": 0
+     }
+    ],
+    "reason": "FallbackAccepted",
+    "requested": 1e-10
+   },
+   "S4/raised_target": {
+    "actual": 0.447213595499958,
+    "attainment": "BudgetExceeded",
+    "copies": 0,
+    "evaluations": [],
+    "reason": "Converged",
+    "requested": 1e-30
+   },
+   "S5/breakdown": {
+    "actual": 3.741657386773941,
+    "attainment": "BudgetExceeded",
+    "copies": 0,
+    "evaluations": [],
+    "reason": "Failed",
+    "requested": 3.741657386773941e-10
+   },
+   "S5/budget_exhausted": {
+    "actual": 1.8371173070873834,
+    "attainment": "BudgetExceeded",
+    "copies": 0,
+    "evaluations": [],
+    "reason": "Failed",
+    "requested": 2.121320343559643e-14
+   },
+   "S5/nonfinite": {
+    "actual": Infinity,
+    "attainment": "Unverified",
+    "copies": 0,
+    "evaluations": [],
+    "reason": "Failed",
+    "requested": 2.304886114323222e-14
+   }
+  }
+ },
+ "schema": "vigilode-as04-stage-telemetry-check-v1",
+ "sha256": {
+  "alg06_runs": "26aaa444f06149335e904558805797067c0fdcc53c976b92ea1ee3fe56e67432",
+  "native": "b9404714af837dfb099db564550e88127ff52a0c9341758862529261b85bd364",
+  "runs": "e42c7be23ea01e2869bd8bbe1c6ad069a5b1f83b9b076ad63799c6306ea2c218"
+ },
+ "verdict": "FAIL"
+}
