@@ -14,6 +14,7 @@ pub mod nonnormal_certificate;
 mod norms;
 mod operator;
 pub mod polynomial_action;
+pub mod residual_gain;
 pub mod shared_shift_jet;
 pub mod shared_shift_policy;
 mod solver_types;
