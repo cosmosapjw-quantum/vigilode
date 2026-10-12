@@ -1,0 +1,282 @@
+{
+ "schema": "vigilode-ht01-selection-check-v1",
+ "evidence_schema": "vigilode-evidence-schema-v2",
+ "inputs": {
+  "screen": {
+   "path": "research/ht01_homotopy_client_contract_20261011/SCREEN.json",
+   "sha256": "46d06cd39d3b35dd1d133fd9b2e95665e0cd972c5c0eb075881cf1bb3d8c325e"
+  }
+ },
+ "checker_tree_status": "",
+ "claim_scope": "Design screen and client selection only: static scans and committed files, no solver run, no timing, no speed or span claim; a SELECTED client is a client worth piloting, not evidence that parallel homotopy helps it; no default promotion.",
+ "gates": {
+  "1_rows": {
+   "pass": true,
+   "candidates": [
+    "K1",
+    "K2",
+    "K3",
+    "K4",
+    "K5",
+    "K6",
+    "K7",
+    "K8"
+   ]
+  },
+  "2_recomputed": {
+   "pass": true,
+   "differences": [],
+   "differences_total": 0
+  },
+  "3_k1_and_no_artificial_workload": {
+   "pass": true,
+   "k1_q1_solves": 0,
+   "k1_note": "PP07 ABSTAIN preserved",
+   "executed_commands_git_only": true,
+   "solver_runs": 0,
+   "artificial_workloads": [],
+   "reruns": []
+  },
+  "4_decision_rule_and_contract": {
+   "pass": true,
+   "screen_decision": {
+    "outcome": "ABSTAIN",
+    "selected": null,
+    "meeting_all": [],
+    "leads": []
+   },
+   "rule_decision": {
+    "outcome": "ABSTAIN",
+    "selected": null,
+    "meeting_all": [],
+    "leads": []
+   },
+   "contract_at_source_commit": true
+  }
+ },
+ "verdict": "PASS",
+ "decision": "ABSTAIN",
+ "leads": [],
+ "candidates": [
+  {
+   "id": "K1",
+   "S1": false,
+   "S2": false,
+   "S3": false,
+   "S4": false,
+   "f_min": null,
+   "f_min_function_view": null,
+   "f_status": "unmeasured",
+   "lead": false,
+   "reasons": {
+    "S1": [
+     "no_expensive_client_declaration"
+    ],
+    "S2": [
+     "pp07_q1_solves_zero"
+    ],
+    "S3": [
+     "no_applicable_arm"
+    ],
+    "S4": [
+     "no_q2_certificate_source"
+    ]
+   },
+   "comparators": []
+  },
+  {
+   "id": "K2",
+   "S1": false,
+   "S2": true,
+   "S3": false,
+   "S4": true,
+   "f_min": null,
+   "f_min_function_view": null,
+   "f_status": "unmeasured",
+   "lead": false,
+   "reasons": {
+    "S1": [
+     "no_expensive_client_declaration"
+    ],
+    "S2": [],
+    "S3": [
+     "no_measured_applicable_arm",
+     "jf_gmres_only_where_direct_applies"
+    ],
+    "S4": []
+   },
+   "comparators": []
+  },
+  {
+   "id": "K3",
+   "S1": false,
+   "S2": false,
+   "S3": false,
+   "S4": false,
+   "f_min": null,
+   "f_min_function_view": null,
+   "f_status": "unmeasured",
+   "lead": false,
+   "reasons": {
+    "S1": [
+     "no_expensive_client_declaration"
+    ],
+    "S2": [
+     "no_committed_counters"
+    ],
+    "S3": [
+     "no_measured_applicable_arm"
+    ],
+    "S4": [
+     "no_q2_certificate_source"
+    ]
+   },
+   "comparators": []
+  },
+  {
+   "id": "K4",
+   "S1": false,
+   "S2": false,
+   "S3": false,
+   "S4": false,
+   "f_min": null,
+   "f_min_function_view": null,
+   "f_status": "unmeasured",
+   "lead": false,
+   "reasons": {
+    "S1": [
+     "no_expensive_client_declaration"
+    ],
+    "S2": [
+     "no_committed_counters"
+    ],
+    "S3": [
+     "no_measured_applicable_arm"
+    ],
+    "S4": [
+     "no_q2_certificate_source"
+    ]
+   },
+   "comparators": []
+  },
+  {
+   "id": "K5",
+   "S1": false,
+   "S2": true,
+   "S3": true,
+   "S4": false,
+   "f_min": 0.03988828012777325,
+   "f_min_function_view": 8.453413297219116e-05,
+   "f_status": "measured",
+   "lead": false,
+   "reasons": {
+    "S1": [
+     "no_expensive_client_declaration",
+     "f_below_f_min"
+    ],
+    "S2": [],
+    "S3": [],
+    "S4": [
+     "no_q2_certificate_source"
+    ]
+   },
+   "comparators": [
+    "rodas5p-fast-small-static-ovh"
+   ]
+  },
+  {
+   "id": "K6",
+   "S1": false,
+   "S2": true,
+   "S3": true,
+   "S4": false,
+   "f_min": 0.07060785467888495,
+   "f_min_function_view": 0.07696904172991569,
+   "f_status": "measured",
+   "lead": false,
+   "reasons": {
+    "S1": [
+     "no_expensive_client_declaration",
+     "f_below_f_min"
+    ],
+    "S2": [],
+    "S3": [],
+    "S4": [
+     "no_q2_certificate_source"
+    ]
+   },
+   "comparators": [
+    "rodas5p-fast",
+    "rodas5p-fast-banded",
+    "rodas5p-fast-colext64"
+   ]
+  },
+  {
+   "id": "K7",
+   "S1": false,
+   "S2": false,
+   "S3": false,
+   "S4": false,
+   "f_min": null,
+   "f_min_function_view": null,
+   "f_status": "unmeasured",
+   "lead": false,
+   "reasons": {
+    "S1": [
+     "no_expensive_client_declaration"
+    ],
+    "S2": [
+     "no_committed_counters"
+    ],
+    "S3": [
+     "no_measured_applicable_arm"
+    ],
+    "S4": [
+     "no_q2_certificate_source"
+    ]
+   },
+   "comparators": []
+  },
+  {
+   "id": "K8",
+   "S1": false,
+   "S2": false,
+   "S3": false,
+   "S4": false,
+   "f_min": null,
+   "f_min_function_view": null,
+   "f_status": "unmeasured",
+   "lead": false,
+   "reasons": {
+    "S1": [
+     "no_expensive_client_declaration"
+    ],
+    "S2": [
+     "no_committed_counters"
+    ],
+    "S3": [
+     "no_measured_applicable_arm"
+    ],
+    "S4": [
+     "no_q2_certificate_source"
+    ]
+   },
+   "comparators": []
+  }
+ ],
+ "f_min_threshold": 0.348,
+ "source_commit": "0ca751f5f910493f273eddd68f5f3971aea6f7d8",
+ "ht02_obligations": [
+  "max_task_per_round",
+  "barriers",
+  "rejected_candidates",
+  "fallback",
+  "peak_bytes"
+ ],
+ "reported": {
+  "max_share_file_all_applicable_entries": 0.10769070385353306,
+  "max_share_function_all_applicable_entries": 0.8761563650996097,
+  "entries_function_view_at_or_above_f_min": 8,
+  "l0008_rhs_multiplier_median": 5.00531914893617
+ }
+}

@@ -1,0 +1,4766 @@
+{
+ "schema": "vigilode-ht01-screen-v1",
+ "node": "HT01",
+ "provenance": {
+  "source_commit": "0ca751f5f910493f273eddd68f5f3971aea6f7d8",
+  "tree_status": "",
+  "screen_path": "tools/ht01_client_screen.py",
+  "screen_blob": "3709cb26d292c253b99e4e7f1f15b4b3c28737d0",
+  "checker_path": "tools/ht01_selection_check.py",
+  "checker_blob": "dec7570004a0f7cbc66d65d316a3b988a548ffd3",
+  "executed_commands": [
+   [
+    "git",
+    "rev-parse",
+    "HEAD"
+   ],
+   [
+    "git",
+    "status",
+    "--porcelain",
+    "--untracked-files=all"
+   ],
+   [
+    "git",
+    "ls-tree",
+    "-r",
+    "--name-only",
+    "0ca751f5f910493f273eddd68f5f3971aea6f7d8"
+   ],
+   [
+    "git",
+    "cat-file",
+    "--batch"
+   ],
+   [
+    "git",
+    "rev-parse",
+    "0ca751f5f910493f273eddd68f5f3971aea6f7d8:tools/ht01_client_screen.py"
+   ],
+   [
+    "git",
+    "rev-parse",
+    "0ca751f5f910493f273eddd68f5f3971aea6f7d8:tools/ht01_selection_check.py"
+   ]
+  ],
+  "solver_runs": 0,
+  "python": "3.11.15"
+ },
+ "constants": {
+  "f_min": 0.348,
+  "f_min_unrounded": 0.3478260869565215,
+  "rhs_multiplier_r": 5,
+  "threads_P": 8,
+  "required_speedup": 1.15,
+  "min_solves_per_attempt": 2.0,
+  "category": "problem-user-code",
+  "f_view": "categories_by_file"
+ },
+ "inputs": [
+  {
+   "role": "candidate-source",
+   "path": "crates/rodas5p-cli/src/stiff_benchmark.rs",
+   "sha256": "1ddd94ede2f67d53b9b8f0c98716ccf9e9c874d67bfa2c6ce979a0e508ec5098"
+  },
+  {
+   "role": "stated-limit",
+   "path": "crates/rodas5p-core/src/shared_shift_jet.rs",
+   "sha256": "d96b00329a6bff5db8fe767cad5838045f4b3933a1577aec09cf512227b19773"
+  },
+  {
+   "role": "candidate-source",
+   "path": "crates/rodas5p-integrators/src/audit2_bateman_real_client_research.rs",
+   "sha256": "86350491df33d9074024f869372a99489a25e93fb9cbefab2a170251e9c60603"
+  },
+  {
+   "role": "stated-limit",
+   "path": "crates/rodas5p-integrators/src/chart_transport.rs",
+   "sha256": "645bd6438f29e3ae4fcf318b046f1d87bb43a0925db4d12979b17b25dc21a765"
+  },
+  {
+   "role": "candidate-source",
+   "path": "crates/rodas5p-integrators/src/fourier_path_candidate.rs",
+   "sha256": "130d9593f34d93637cd1af7de0b73375a5ac9540ece9910a68c052a2c56efeb3"
+  },
+  {
+   "role": "candidate-source",
+   "path": "crates/rodas5p-integrators/src/fourier_path_certificate.rs",
+   "sha256": "bfa329099f5503c9472f8d63120db740e54531dff0188dbb55e21b94aa31edb2"
+  },
+  {
+   "role": "work-ledger-source",
+   "path": "crates/rodas5p-integrators/src/homotopy.rs",
+   "sha256": "8eaeebd2420df1d3de413f2a913ffeac4761efdad50d1dff22dd0dec994c1c25"
+  },
+  {
+   "role": "candidate-source",
+   "path": "crates/rodas5p-integrators/src/problems.rs",
+   "sha256": "26279ee48dd78dd80266467ff7e6ef413f82aafa8be60c9177e799a5b96aa6bd"
+  },
+  {
+   "role": "candidate-source",
+   "path": "crates/rodas5p-integrators/src/scientific_corpus_v2.rs",
+   "sha256": "619d329afc667ff8a09fececf0982222abf306ee3a4a39610560860defafb5bd"
+  },
+  {
+   "role": "certificate-source",
+   "path": "crates/rodas5p-integrators/src/transactional_q1_q2.rs",
+   "sha256": "72a9bf2405a181fefae2aa5e7483224ccd419046ede636a40416694b9d0fd7ad"
+  },
+  {
+   "role": "contract",
+   "path": "docs/HOMOTOPY_EXPENSIVE_CLIENT_CONTRACT.md",
+   "sha256": "d045dafdedd3a46b183256e9c19f7790af8517aaedb979ab5238c2c783f909c5"
+  },
+  {
+   "role": "ledger",
+   "path": "research/LEDGER.jsonl",
+   "sha256": "4e1fff932cffdc796996f52569464bd75ac0ab834a379bdf65e2631859182fb2"
+  },
+  {
+   "role": "registration",
+   "path": "research/ht01_homotopy_client_contract_20261011/PREREGISTRATION.md",
+   "sha256": "d3fa620c41b2c66953d4f2de03ece200cf67f08b82ca8aa6915160e25f6389a6"
+  },
+  {
+   "role": "pp07-results",
+   "path": "research/pp07_fourier_shared_action_20261004/RESULTS.json",
+   "sha256": "b4b745c0f1cc96d2074f2a6ed27b823dbeab2fbfe205d36fed7453b10a8ac3cc"
+  },
+  {
+   "role": "l0008-campaign",
+   "path": "research/r3_matched_accuracy_hom06_20261001/VERIFY.json",
+   "sha256": "cdaf676814fe216237137b60455cd4754bc8578c63ffe31fc4874a50143eff45"
+  },
+  {
+   "role": "profile",
+   "path": "research/sp01_dupfix_adoption_20261010/PROFILE.json",
+   "sha256": "729fc53b4909ce7ce12233fe132a8ca9ec893be6303755198b0d532cae5706c0"
+  },
+  {
+   "role": "profile",
+   "path": "research/sp03_declared_structure_routing_20261010/PROFILE.json",
+   "sha256": "bc03ba2da61a251bcf3cf4b72d3686d5e954e4df4a85d97c6f8a3f19b0d47a75"
+  },
+  {
+   "role": "accuracy-evidence",
+   "path": "research/sp03_declared_structure_routing_20261010/RESULTS.json",
+   "sha256": "3e6a49f8c6f5e9d0ce8ee04386d2e21328248bc1ef3dfb5c921e9bceca25b31b"
+  },
+  {
+   "role": "profile",
+   "path": "research/spd01_fast_driver_overhead_20261005/PROFILE_DENSE.json",
+   "sha256": "0a3b4b41244a7db68a4244017ca6001f41dd4dfe8a1dfc1edfba3f950e4377ad"
+  },
+  {
+   "role": "profile",
+   "path": "research/spd01_fast_driver_overhead_20261005/PROFILE_DENSE_B50.json",
+   "sha256": "e0a8721cada091500a0fa939fbb9da8a805c2eb5be4d520776dbf799779cfadf"
+  },
+  {
+   "role": "profile",
+   "path": "research/spd01_fast_driver_overhead_20261005/PROFILE_SMALL.json",
+   "sha256": "9afacda763f9af25ad932566f0a0786e986e78ec2c6d762b428de1c845474314"
+  },
+  {
+   "role": "profile",
+   "path": "research/spd02_lu_column_extents_20261005/PROFILE.json",
+   "sha256": "68fb05600cf88b0bfbe97eab63b09a7bffdfe0ba9f9012100ca327655ee55edf"
+  },
+  {
+   "role": "profile",
+   "path": "research/spd03_banded_arm_instructions_20261005/PROFILE.json",
+   "sha256": "9359e287c3818bb0e10fe17ce53d1618390b191d720307c6d3aadf6ba9dd7bf8"
+  },
+  {
+   "role": "profile",
+   "path": "research/spd03_banded_arm_instructions_20261005/PROFILE_N1000.json",
+   "sha256": "62333e5e92a21daef7210006fc14686af9ce58112f184e27d582c389afdd5a43"
+  },
+  {
+   "role": "accuracy-evidence",
+   "path": "research/spd06_small_static_stages_20261007/ENSEMBLE_SMALL.json",
+   "sha256": "64046f2c705334758dcd3f8c2624e54f821f3a71f1eb8e140e4a50781ba375f3"
+  },
+  {
+   "role": "accuracy-evidence",
+   "path": "research/spd06_small_static_stages_20261007/ENSEMBLE_STATIC.json",
+   "sha256": "57369fd346885f3c8217c9abc6c26bab366cc4e941ec0da4f7b6ee659133806f"
+  },
+  {
+   "role": "accuracy-evidence",
+   "path": "research/spd06_small_static_stages_20261007/IDENTITY.json",
+   "sha256": "380b756a47df367dbbd2c7ee2ed4bc0abdd5a6f646ca8b132260e8435320d16c"
+  },
+  {
+   "role": "profile",
+   "path": "research/spd06_small_static_stages_20261007/PROFILE.json",
+   "sha256": "b9ba35ea51fd9e25673b3f8a4f844823d6c60792cdb88d4402432491dc917ec0"
+  },
+  {
+   "role": "profile",
+   "path": "research/spd06_small_static_stages_20261007/PROFILE_ROB8.json",
+   "sha256": "20df44c0b63bbdfc3337613e8383441b6d398acaba2110ebd38266fde19ba69b"
+  },
+  {
+   "role": "profile",
+   "path": "research/spd08_small_ensemble_lanes_20261007/PROFILE.json",
+   "sha256": "b4ddc0d65f550809591279e906bafe3fe58f6eed548e414d8e3170b6e3bd2e54"
+  },
+  {
+   "role": "profile",
+   "path": "research/spd08_small_ensemble_lanes_20261007/PROFILE.members.rodas5p-fast-small-batch4.json",
+   "sha256": "43f0690844e8a6c55f0936c1eb99a75d7062a7bb21d0c2252b1e9074585f888c"
+  },
+  {
+   "role": "profile",
+   "path": "research/spd08_small_ensemble_lanes_20261007/PROFILE.members.rodas5p-fast-small-batch8.json",
+   "sha256": "58b31c87e5d2ca5c1345ad3c7ca0b5cb027b5d6e0afd5b81ce4747c3b877c7e5"
+  },
+  {
+   "role": "profile",
+   "path": "research/spd08_small_ensemble_lanes_20261007/PROFILE.members.rodas5p-fast-small.json",
+   "sha256": "9b16538a242874cb6dd179230ba2ee8d6cd7417c8863a3c0ba3ec2bbae7d9bfa"
+  },
+  {
+   "role": "accuracy-evidence",
+   "path": "research/spd09_colext_threshold_20261007/IDENTITY.json",
+   "sha256": "4c21fbc64b7a6b32ea2e1943e1ee5107dcd8e02c261123cc4586578df623f603"
+  },
+  {
+   "role": "profile",
+   "path": "research/spd09_colext_threshold_20261007/PROFILE.json",
+   "sha256": "9b79ace0bd4392fa0dc1a0ace24b4019cffb5ea4b6387ad224444d3d17fcffdf"
+  },
+  {
+   "role": "profile",
+   "path": "research/stiff_rodas5p_profile_20261002/PROFILE.json",
+   "sha256": "961a157f8b6d1698b5611085bd8ccb6a7b20be77a289d2f2081a87ca664f0ab7"
+  }
+ ],
+ "rust_sources": [
+  [
+   "crates/rodas5p-cli/src/bin/allocation_audit.rs",
+   "4152e28e0b668f433b0d4e3998e7183e22769ceddeb00460e9c3676256f08be6"
+  ],
+  [
+   "crates/rodas5p-cli/src/main.rs",
+   "3568172e015c0d5ce5bd5dc285c1684d68e0dd781aaad29ff5ffae89090266bf"
+  ],
+  [
+   "crates/rodas5p-cli/src/r3_campaigns.rs",
+   "8dd1c5e3a06aaad5c4e812823682caf45571d66689ed2db1f97d8d718a185b95"
+  ],
+  [
+   "crates/rodas5p-cli/src/r4_studies.rs",
+   "2625c09dc3f093f54d8b70b8156518140ed9abc27a4339c84878a51735efbedf"
+  ],
+  [
+   "crates/rodas5p-cli/src/stiff_benchmark.rs",
+   "1ddd94ede2f67d53b9b8f0c98716ccf9e9c874d67bfa2c6ce979a0e508ec5098"
+  ],
+  [
+   "crates/rodas5p-cli/tests/a1_tolerance_receipt_cli_contracts.rs",
+   "91efc69dc6e97e8662978e64ac9cf9484669877da6dc9ff6a2caef80b1b5529d"
+  ],
+  [
+   "crates/rodas5p-cli/tests/alg02_predictive_controller.rs",
+   "c0a9264c5c7d08c6061c96003c199e4423f00bb2c5cc03a343f3fbc3991357db"
+  ],
+  [
+   "crates/rodas5p-cli/tests/alg05_predictive_controller_v2.rs",
+   "e1dcb9d5bb408c74e7f1cba51f6600b54dcd738e92954de2a68db0e8f279b3ec"
+  ],
+  [
+   "crates/rodas5p-cli/tests/allocation_cli_contracts.rs",
+   "4c0e957316930b3d349c820230c8b17d6bd698055a5038952663090eede8d5fc"
+  ],
+  [
+   "crates/rodas5p-cli/tests/cli_contracts.rs",
+   "9dece01434045c232e3f9188015fe50bf5a9c7171a31985906d75b3630f9dbc7"
+  ],
+  [
+   "crates/rodas5p-cli/tests/controller_grid_holdout.rs",
+   "45604652f93e3ad156dfd34577338e868296db17677f81b836f0b399c9e7c5f1"
+  ],
+  [
+   "crates/rodas5p-cli/tests/ct01_controller_telemetry_parity.rs",
+   "7278d3f8f2c65f7775db98aeaf4a39a6de9abca146226403a859c545d05c4d1f"
+  ],
+  [
+   "crates/rodas5p-cli/tests/frozen_full_e_shadow_cli_contracts.rs",
+   "0177105645d861d43f64130fcb7bac329f39ac9d08364b56c3f6bc3c358768d5"
+  ],
+  [
+   "crates/rodas5p-cli/tests/holdout_hygiene_cli_contracts.rs",
+   "457d470da2444bee5e48f9d405081890f809561e954d3d9b7b334d46134f8011"
+  ],
+  [
+   "crates/rodas5p-cli/tests/paired_timing_campaign_cli_contracts.rs",
+   "bf056704e14a338ca86fbb6491b7c2eb241bb599aac899872dac95ab0c54ab4e"
+  ],
+  [
+   "crates/rodas5p-cli/tests/scientific_validity_v2_cli_contracts.rs",
+   "5b72c3e603b12d76de3d58f29c13ccf89b9cad967b30cc31a7262265acf1adb2"
+  ],
+  [
+   "crates/rodas5p-cli/tests/v37_continuation_transaction_cli_contracts.rs",
+   "a2ffc33a80f09788a58b4c40f7236ca512916914e20568f99e3fdbb94ad8ba3f"
+  ],
+  [
+   "crates/rodas5p-core/examples/shared_shift_jet_study.rs",
+   "c6fae8b1454efbf55c43a430ca3d076bb15895e7edd0c2d4faa3b236978d2bb9"
+  ],
+  [
+   "crates/rodas5p-core/src/binary_scaling.rs",
+   "a5d6e4a71cf79ca6fc9ce4362e4307f0c7c9ca82d066ed888086f566e2f75eb6"
+  ],
+  [
+   "crates/rodas5p-core/src/coefficients.rs",
+   "fe6417d0e696a836e91d2058dc015d0bcb4e0b6af3f58f648694be1de0d90f73"
+  ],
+  [
+   "crates/rodas5p-core/src/complex_shift_jet.rs",
+   "f6581a7239b6ecaf43884afb59f29367b914cffe68ff1ec2b4c4cb454d750b0e"
+  ],
+  [
+   "crates/rodas5p-core/src/directed.rs",
+   "0227b1c605b1ad399d8a9675d3bab7c665b25d3de9c9da8577a537e57183b045"
+  ],
+  [
+   "crates/rodas5p-core/src/error.rs",
+   "b8a216d3374eca967bc9b982d93d84610cd877300417111ed78be8b213af3e4b"
+  ],
+  [
+   "crates/rodas5p-core/src/hash.rs",
+   "98287f78563d6e3e40986c275cdd9c8004d25f822636ef076f6e7ff548ce225c"
+  ],
+  [
+   "crates/rodas5p-core/src/laguerre_adjoint.rs",
+   "5a4ddcb51828eaaa9174765c60dec94ff2e0eba05aa6a282c688ae244be2ac6c"
+  ],
+  [
+   "crates/rodas5p-core/src/leja_action.rs",
+   "a54e96642540db3d012f9ec71086ab9d462cb94347251c87b9043ac728851e8f"
+  ],
+  [
+   "crates/rodas5p-core/src/lib.rs",
+   "2a61c9983bc5837f08f33735fd07fe20a35b20fa6a48f066197008372f053561"
+  ],
+  [
+   "crates/rodas5p-core/src/matrix.rs",
+   "7d700d734c4c9d38ad414ce1608552755c35fe996415bdfd42d86d1804f3afdf"
+  ],
+  [
+   "crates/rodas5p-core/src/matrix_functions.rs",
+   "15695f33cee4b1a36e48a6d77b25e7d4f6953ffd2b3919cf48ab425a7fc6e975"
+  ],
+  [
+   "crates/rodas5p-core/src/nonnormal_certificate.rs",
+   "608c2a463443889dcbfdb0ba4f38aa33391886e5c6f5bdc04659100dcf753ba6"
+  ],
+  [
+   "crates/rodas5p-core/src/norms.rs",
+   "e68734cd288b07c095afa0e289dd587fa4ccf0ef837376e4a17639f0a20c8694"
+  ],
+  [
+   "crates/rodas5p-core/src/operator.rs",
+   "d74f6e4b5ec2520d357345bb9e524bbbd6abdf924d9fb0e1661aaa048a281a4d"
+  ],
+  [
+   "crates/rodas5p-core/src/polynomial_action.rs",
+   "a4ee9654df6009f4d7910fd079528016b5f8293d96fe6975e53ad3680041caf9"
+  ],
+  [
+   "crates/rodas5p-core/src/polynomial_action/router.rs",
+   "f0c538bacf19f4868f5f5c129e7805d57a8100ad00bf36f14241a0f15b29ca06"
+  ],
+  [
+   "crates/rodas5p-core/src/shared_shift_jet.rs",
+   "d96b00329a6bff5db8fe767cad5838045f4b3933a1577aec09cf512227b19773"
+  ],
+  [
+   "crates/rodas5p-core/src/shared_shift_policy.rs",
+   "9da81353850f1e2010aa8d28b7f73ccb89555986c78f53759e6c469936c7e0a2"
+  ],
+  [
+   "crates/rodas5p-core/src/solver_types.rs",
+   "c52a2811689a2bfe733e6149a156f5ca6e4c3cef1b64f5e480d9a3cfbfb38fb8"
+  ],
+  [
+   "crates/rodas5p-core/src/taylor_phi.rs",
+   "43d62a5e733af8564054c3afa52a7f26cf68c077f6abdb9773247ba460478f46"
+  ],
+  [
+   "crates/rodas5p-core/src/taylor_phi_total.rs",
+   "649ae0a18b64b4cf1f9ae387d4d516e86ec44e99f3b15ef4b700425816ffed03"
+  ],
+  [
+   "crates/rodas5p-core/src/transform_bound.rs",
+   "27704c516c9fc6c8c9d43be4a43652307f8a29123fe47d03ad971253c4064b99"
+  ],
+  [
+   "crates/rodas5p-core/src/work.rs",
+   "8e45d23ac8d07bf2d7fa857a94e57453807c6832711363b627c8376ea0f899f0"
+  ],
+  [
+   "crates/rodas5p-core/tests/allocation_contracts.rs",
+   "7fec5381fb3bc8782d86986e1c62dc4ac0edadce52c94f448fab6ce1c839ac9d"
+  ],
+  [
+   "crates/rodas5p-core/tests/core_contracts.rs",
+   "2ba318d9f9d6bb3325075df7a912a0131453db4e440c5a209f41a27d1a6292c0"
+  ],
+  [
+   "crates/rodas5p-core/tests/fused_phi_contracts.rs",
+   "3806e31505a550ddc5903a37ecaa91d6e8bbb1e4c0daaed5dc85ec10333cffaf"
+  ],
+  [
+   "crates/rodas5p-core/tests/int05_nonnormal_contracts.rs",
+   "ee8aa7c745fa85735596cb8a0dc5cf316e1da44fae26e8dd76ead84215d0c6ea"
+  ],
+  [
+   "crates/rodas5p-core/tests/int05_nonnormal_metric_bound.rs",
+   "7b09553be564d40e08ac0d3ba471fdfa464e6eb4a4e86516bd2b2df895000ee2"
+  ],
+  [
+   "crates/rodas5p-core/tests/matrix_function_contracts.rs",
+   "3c68e42df7a8ab7c3cc256f21523b68e950b528286befc9c9a86d8893700970f"
+  ],
+  [
+   "crates/rodas5p-core/tests/native_reaudit_laguerre_contracts.rs",
+   "b1cc41d2ef1546cfe8caca85563ebd996dc6172d94344b39f0332c6c535b1982"
+  ],
+  [
+   "crates/rodas5p-core/tests/pp03_rhs_compression.rs",
+   "247a050a426a5adc0c7a4b66452fb4e61d1cca2185daea09f33277a871c52c93"
+  ],
+  [
+   "crates/rodas5p-core/tests/pp04_shared_shift_policy.rs",
+   "a7ff4115a4a74a795b3931a156992d51b364663b4b8769972425e6568ac739ce"
+  ],
+  [
+   "crates/rodas5p-core/tests/pp08_laguerre_router_contracts.rs",
+   "f426d34474a43ae19b71b59472707b9f23be476b6fd931c420828d04466c732d"
+  ],
+  [
+   "crates/rodas5p-core/tests/pp08_laguerre_router_study.rs",
+   "3358eba95f6936eb9494531427ccd02678095868bb90315f13d5a6d20b956af7"
+  ],
+  [
+   "crates/rodas5p-core/tests/pp10_leja_contracts.rs",
+   "4fb1d5abf3a461a7ad47cac71585334d09d66cc46ea297a69c529a5fecfb695d"
+  ],
+  [
+   "crates/rodas5p-core/tests/pp10_leja_study.rs",
+   "624c331a924583c1e946da1ab2e44f19da2834bacf9d34f35ef4780ea25a6dd1"
+  ],
+  [
+   "crates/rodas5p-core/tests/pp11_taylor_fused_total_contracts.rs",
+   "5bf8859f5318c39c5bd37bb68e8b13e7653b849920a9b37b66a1012b44af75a0"
+  ],
+  [
+   "crates/rodas5p-core/tests/pp11_taylor_fused_total_study.rs",
+   "d6e23d86717d633a85f771af9d3d7bf4e6f9b905403d3e4cc9def808c3d54889"
+  ],
+  [
+   "crates/rodas5p-core/tests/pp12_lognorm_decay.rs",
+   "3e9ee2fcbe8bda46e88c80c82b79cbf5890a98e42248f4383f225aba2b8b8726"
+  ],
+  [
+   "crates/rodas5p-core/tests/pp12b_chain_symmetrizer.rs",
+   "f4e332b1beb8ce4b60aa06bc144ceb9f686539d05bea619af2ba0787bb15ef44"
+  ],
+  [
+   "crates/rodas5p-core/tests/pp16_complex_shift_contracts.rs",
+   "670bfc8eecf6319e2f652a45c23c6c3ad27c01ace6e582739488d974e34660c0"
+  ],
+  [
+   "crates/rodas5p-core/tests/pp16_complex_shift_study.rs",
+   "0536c8909853e9d6e5ab30a5a64b9846a011872a9e01bc2b99fe080ea9625fbf"
+  ],
+  [
+   "crates/rodas5p-core/tests/r3_polynomial_action_contracts.rs",
+   "1177a41dc3cf5f189d807a451318877beee2a5cee36d98a3db04658eee5258b6"
+  ],
+  [
+   "crates/rodas5p-core/tests/r4_polynomial_contracts.rs",
+   "22eba1265c983627a0c5e82359c14bdd03ebd50a4db2d1ed880f17a0c372f0dd"
+  ],
+  [
+   "crates/rodas5p-core/tests/r4_taylor_phi_contracts.rs",
+   "73f05cdd9f49a540bf9659d1d00b0c3e50236de0be6aea1cc7a5e2fcb8731c98"
+  ],
+  [
+   "crates/rodas5p-core/tests/r4_transform_bound_contracts.rs",
+   "3df85f430f79af08d1439a71af4986679de52ea8bfe1e21fe18a6d3681d3f2e2"
+  ],
+  [
+   "crates/rodas5p-core/tests/rev02_nonnormal_contracts.rs",
+   "52bf5868a737b9e5d7aa0148359f1868440f686c3d2ac0ba2c4251580177d45c"
+  ],
+  [
+   "crates/rodas5p-core/tests/rev02_nonnormal_stepping.rs",
+   "a95269cd4d14d00be27eca0eced33727eb10f6305ed196299cc2818c2bd4867c"
+  ],
+  [
+   "crates/rodas5p-core/tests/rnext04_laguerre_admission.rs",
+   "6cd39feaccb95fb503bfc2fea578c5f92e67ad83b582bd0eb4269cc15e865f4f"
+  ],
+  [
+   "crates/rodas5p-core/tests/safe_enclosure_exp_floor.rs",
+   "a1ec4e317264f02525eb7587463416905c1343ce0732fa5a1e8ac5d8c65d5234"
+  ],
+  [
+   "crates/rodas5p-core/tests/safe_enclosure_probes.rs",
+   "a983a6aa35ffdecb8d963a4ad44ca04ce91b70ec7de646099e2076d0c53f38a1"
+  ],
+  [
+   "crates/rodas5p-core/tests/shared_shift_jet_contracts.rs",
+   "c0ec1e177f7b47d442202389a1ab1de7c32745856bdc17ce492c9fd57c2422d9"
+  ],
+  [
+   "crates/rodas5p-core/tests/storage_runtime.rs",
+   "513dbb9e9d3f5e77e2c2ab4bb312e115a167a92cf812fae9408c5d41088d9c4d"
+  ],
+  [
+   "crates/rodas5p-core/tests/thread_transfer_laguerre_adjoint.rs",
+   "4447064900156d87ec2925cf04a0c71e33d584b9c88d5384f55a8af8e4b2c547"
+  ],
+  [
+   "crates/rodas5p-core/tests/thread_transfer_laguerre_cache.rs",
+   "d41f830be4f6784866888cb13e762b6e4cb12138cd985e6ef28b5e37010b9448"
+  ],
+  [
+   "crates/rodas5p-core/tests/transform_bound_contracts.rs",
+   "0b63638f6885eec02f5cb51a24802f6699244410b54d7fadb1a59528a5fd89eb"
+  ],
+  [
+   "crates/rodas5p-core/tests/work_counter_contracts.rs",
+   "54f78df79dd2abbff36e620f2a098c2c911c90122309d21b83bed78d40a50a33"
+  ],
+  [
+   "crates/rodas5p-core/tests/work_unit_contracts.rs",
+   "92ad57925848677e4c070e3489f226d164039ef7de2feca0eb05a188dd04d596"
+  ],
+  [
+   "crates/rodas5p-fair-ab/build.rs",
+   "5633024956ccb35b76546a6e0508c18cca4079d8ea07115cf2827efee8b32484"
+  ],
+  [
+   "crates/rodas5p-fair-ab/examples/semilinear_f033_ablation.rs",
+   "8dd4599b218a020b5427797d0226980a0f41402178096be18c9682cb9cf91d61"
+  ],
+  [
+   "crates/rodas5p-fair-ab/examples/semilinear_fixed_h_order.rs",
+   "1beb691c7aa655099eaddc7dbe27b96498bb6d2b29469b14552af280b2a7b3e5"
+  ],
+  [
+   "crates/rodas5p-fair-ab/examples/two_arm_v3_calibration96.rs",
+   "ffe2b8741df386a24671a2e0367f5720e6f5a89665122c4191a48224037a5876"
+  ],
+  [
+   "crates/rodas5p-fair-ab/src/adapters.rs",
+   "24f73d2c4eb2be97778d5cc36b4291665723f9b5dd206af97f1b7f6646d7e2e9"
+  ],
+  [
+   "crates/rodas5p-fair-ab/src/adaptive_global_error.rs",
+   "e5a2d9c43183b3e61992bf000569fb1db8569308bec1e5e4377811a834c374c3"
+  ],
+  [
+   "crates/rodas5p-fair-ab/src/budget.rs",
+   "de15e98a9ffa3d8a83eb328908abe8493d1885a4a219447a2e75bde92c4a944f"
+  ],
+  [
+   "crates/rodas5p-fair-ab/src/contracts.rs",
+   "7a7be721ad4bc4837773feb7c90af75c8a6ec0a9de8d3dbddfaa66d71690c7b2"
+  ],
+  [
+   "crates/rodas5p-fair-ab/src/error.rs",
+   "d2cb5ba1d40d9df080efdc3220ac6ae0cb39734e8fbab82c48bc154bc8c3f942"
+  ],
+  [
+   "crates/rodas5p-fair-ab/src/external_comparators.rs",
+   "65926a51738bdc0a9f3b749e23f741bdec15deb3cba1854c4dddf2d7a7714ab1"
+  ],
+  [
+   "crates/rodas5p-fair-ab/src/global_error.rs",
+   "659afebd734842e9a2ef1514c5aa4d2a397c47703bdb2aba75fae406b8b967cd"
+  ],
+  [
+   "crates/rodas5p-fair-ab/src/lib.rs",
+   "36a705a133df2b2a875d2e4141c7c7c32a77778ad01c5e3097a60534d4935f49"
+  ],
+  [
+   "crates/rodas5p-fair-ab/src/numerical_reference.rs",
+   "42d76280fa4cd0a89decd5d643eaae002a72c1ab60fff503541b3759933b8414"
+  ],
+  [
+   "crates/rodas5p-fair-ab/src/output_accuracy.rs",
+   "478cf9e2b3f13f6f061f3d53855a734c83ab8a6f8d2eb85d989b62c1bdd0b776"
+  ],
+  [
+   "crates/rodas5p-fair-ab/src/output_admissibility.rs",
+   "963ba86d8b5bfca480110635e2c014bc907da3665c988c7892178ced977cf7c1"
+  ],
+  [
+   "crates/rodas5p-fair-ab/src/paired_receipt.rs",
+   "980893057fe6e4439ce3106afb78db2d59de0b2f6774636d60e7e3769cd7d356"
+  ],
+  [
+   "crates/rodas5p-fair-ab/src/paired_timing.rs",
+   "3978924ea5f6527fb4335bd04e52650e5f117af50404cdae4d5f5e1ec8df1520"
+  ],
+  [
+   "crates/rodas5p-fair-ab/src/runner.rs",
+   "0aeb0e30820f8ea2267157f5d17806ea9d425819010b91d62fe39863063e39b6"
+  ],
+  [
+   "crates/rodas5p-fair-ab/src/scenarios.rs",
+   "7e84ec581cde6f15fe521a434c254edfae3a37e1437e9fd8fbc2257961207740"
+  ],
+  [
+   "crates/rodas5p-fair-ab/src/scientific_validity_v2_campaign.rs",
+   "50d25e98c2aa12b94257054e9da8139b290f03a9cdd88136cd7f675344a556a0"
+  ],
+  [
+   "crates/rodas5p-fair-ab/src/session.rs",
+   "75690f19ebc2c7fb61d160074dc50d08907dbb7d2f315ad369fb8d0b95885b2b"
+  ],
+  [
+   "crates/rodas5p-fair-ab/src/session_median.rs",
+   "7618bd655d85f19ff556bf633d1a84e36c9a0e4907915fdadff80eee3bd1a12f"
+  ],
+  [
+   "crates/rodas5p-fair-ab/src/session_median_study.rs",
+   "fd50ec8dab9d7858224030fd868d3cea859fceb639b7078d45d94114f9cfce97"
+  ],
+  [
+   "crates/rodas5p-fair-ab/src/timing_authority.rs",
+   "ee5d2eb5f9b882b56c9cff5e484339c0ad45fe8fecaa8053004340b4c2a1f415"
+  ],
+  [
+   "crates/rodas5p-fair-ab/src/timing_design.rs",
+   "312301ef4c358631e46f658280a09e80f7350e7a9eb5de2e8b4c629aff05f041"
+  ],
+  [
+   "crates/rodas5p-fair-ab/src/two_arm_campaign_v3.rs",
+   "e105f02874418ee9e4cc935d90ceb5df8b3ffd293ed015b7c29801aec3cd87e4"
+  ],
+  [
+   "crates/rodas5p-fair-ab/tests/adaptive_global_error_contracts.rs",
+   "b9db7ea2dae384ab56dc26fed38dbfddd1e0bbe4397051403deeba08b16356e5"
+  ],
+  [
+   "crates/rodas5p-fair-ab/tests/external_comparator_contracts.rs",
+   "a325634fd38c303487412e71c63dbcb27cf8e574472d656117dc562a53b64015"
+  ],
+  [
+   "crates/rodas5p-fair-ab/tests/fair_ab_contracts.rs",
+   "eb7c7bbcdaa9905d5feb357ad3f58f77dc27b4bf175b95eeba945b75bb6e027e"
+  ],
+  [
+   "crates/rodas5p-fair-ab/tests/global_error_contracts.rs",
+   "c8a9697cb17e98a23cf55f66c12a9000f60d28565818e7d9ec79311b74ca093b"
+  ],
+  [
+   "crates/rodas5p-fair-ab/tests/numerical_reference_contracts.rs",
+   "046bc841f88c123d61cbb5ccb9eb5c8582c13116dc9840dd394361656d439936"
+  ],
+  [
+   "crates/rodas5p-fair-ab/tests/numerical_reference_v2_contracts.rs",
+   "bcf77b21a44a6141fd8eb1379645cd3fc169a223b53146fbdd8bcef2c891dda0"
+  ],
+  [
+   "crates/rodas5p-fair-ab/tests/output_accuracy_assessment_contracts.rs",
+   "c431af50fc029890629d6cde9191b4df382cc2867262a275d5bf0819d498c3fc"
+  ],
+  [
+   "crates/rodas5p-fair-ab/tests/paired_timing_contracts.rs",
+   "51267457d69e2745074ea67fe83fbb61de5f53451c61fa8666514f2e51b8394f"
+  ],
+  [
+   "crates/rodas5p-fair-ab/tests/r2_timing_authority_contracts.rs",
+   "5dedc13e25b89751ba9c7338523db1031333a04bca7be7bbbcceaa733dbc57b1"
+  ],
+  [
+   "crates/rodas5p-fair-ab/tests/r2_work_coverage_consumer_contracts.rs",
+   "c2c5ca979335315025b304918297dd60883ac913ab7d75104432f63db6e4026e"
+  ],
+  [
+   "crates/rodas5p-fair-ab/tests/r3_aa_batch_contracts.rs",
+   "bbce276fd546b33b50621c21520f485ac49455a5f29aa242330e03ebbdc8de30"
+  ],
+  [
+   "crates/rodas5p-fair-ab/tests/r3_monte_carlo_gate_contracts.rs",
+   "b66f4171111adf610b7b6151e2bddf26395c97a63620c17c9701300f0f760767"
+  ],
+  [
+   "crates/rodas5p-fair-ab/tests/r3_raw_protocol_admission_contracts.rs",
+   "960f98829d14aafdf47c41e19d8a3dc4aa9d0e90ae693231c9defe4e9898ca41"
+  ],
+  [
+   "crates/rodas5p-fair-ab/tests/r3_timing_design_contracts.rs",
+   "221670543902882e2224b1d057f562b2c8b3c624a6ab9c6144cdc56fb30698f3"
+  ],
+  [
+   "crates/rodas5p-fair-ab/tests/r4_statistics_contracts.rs",
+   "45068277fc9e6c54ecad83c45ad5522f66b1fde0a3594a03e016419bd9da8d38"
+  ],
+  [
+   "crates/rodas5p-fair-ab/tests/scientific_validity_v2_campaign_contracts.rs",
+   "b1eb010f8f9c82931286877fc2962eb98496c7926586dd6082c876284d8a0494"
+  ],
+  [
+   "crates/rodas5p-fair-ab/tests/two_arm_admissibility_contracts.rs",
+   "5144c7405e3a334b3533cb0dc6b6ebe9dfbddafb7aa4e3ad453b7512a681982e"
+  ],
+  [
+   "crates/rodas5p-fair-ab/tests/two_arm_v3_campaign_contracts.rs",
+   "bd5c0dbce1f2e601e3050e3b7c020e3aa94ac1174391f2e41c8350df8e2523fe"
+  ],
+  [
+   "crates/rodas5p-integrators/build.rs",
+   "a212e1bd0d2d4c6286cbd8015fa01e317111788d535efecd41c37c408bac5f7e"
+  ],
+  [
+   "crates/rodas5p-integrators/examples/audit2_bateman_local_six_case.rs",
+   "0873ed8189a7e0f77ebd4eef05ce6067f84958e7f118aa3e686654e7dc3c48f9"
+  ],
+  [
+   "crates/rodas5p-integrators/examples/reaudit_20261010.rs",
+   "a808f6c49a8c0f1c58d07a5d8d3ea30b466a073781631181ecb0905fee4dacfc"
+  ],
+  [
+   "crates/rodas5p-integrators/examples/solve_stiff.rs",
+   "b54b8539d38ed9504d1df3a93c34dac70733b727003b36e7dffb3de183c81e7e"
+  ],
+  [
+   "crates/rodas5p-integrators/examples/sp01_dupfix_profile.rs",
+   "ae23ff4c874258c97a0987f719f7eda572f3dc552e84fd8d9645e4c0903f7e7f"
+  ],
+  [
+   "crates/rodas5p-integrators/src/a1_two_arm_receipt.rs",
+   "76dda8c4d9f3bd0e5623278c01a775592a876b936553ae84190acdfb63fc9cb1"
+  ],
+  [
+   "crates/rodas5p-integrators/src/adaptive.rs",
+   "3a04609dc5a7141d6bdfe6ebccec441d1d2c8a9960305ea58873914e10703c40"
+  ],
+  [
+   "crates/rodas5p-integrators/src/adaptive_exponential.rs",
+   "da57d524881b8a988dcf3b652f4d03568ad62ba6d363d4c33415fc18f2aef93f"
+  ],
+  [
+   "crates/rodas5p-integrators/src/audit2_bateman_real_client_research.rs",
+   "86350491df33d9074024f869372a99489a25e93fb9cbefab2a170251e9c60603"
+  ],
+  [
+   "crates/rodas5p-integrators/src/audit2_matrix_free_research.rs",
+   "b6205f8eb5d8ef99b160e5317ef06614be984588701e54666acc4854b259394a"
+  ],
+  [
+   "crates/rodas5p-integrators/src/audit2_research.rs",
+   "a6add466f2d67eb9f2111a660a007a0027be1a157e7ef97a10c030f2ff2d272e"
+  ],
+  [
+   "crates/rodas5p-integrators/src/audit2_reusable_transaction_research.rs",
+   "1b1439e1b2a4f5df95bbb0cdce60c5adae33948d0b10746e02c43ce17d792abd"
+  ],
+  [
+   "crates/rodas5p-integrators/src/audit2_stage_certificate_research.rs",
+   "d0b49d654f6a4b149e4071576aaf19a95e45993c94abe1907f899496bfe16511"
+  ],
+  [
+   "crates/rodas5p-integrators/src/bdf.rs",
+   "9c8d121fac92c7a99591ebd2620b34f11e34d8ea0ec7c275cf57676401a94522"
+  ],
+  [
+   "crates/rodas5p-integrators/src/block.rs",
+   "458470ae275582741eae1346d8bfbe25e9335aa503db8759bf8d05b4a926a8db"
+  ],
+  [
+   "crates/rodas5p-integrators/src/candidates.rs",
+   "d54dea3159cdf8a34d61e920e838152d1ec2074b29fcb5835f829841fbb6562b"
+  ],
+  [
+   "crates/rodas5p-integrators/src/causal_majorant.rs",
+   "765e27db9f0ab5839ce0d213ad82f940a9e06394e2211fd678b51dc401649b91"
+  ],
+  [
+   "crates/rodas5p-integrators/src/certification.rs",
+   "2157da3586768d3d3c8d3876f08c589178759fd9841799a13bebccbf7e5c74d4"
+  ],
+  [
+   "crates/rodas5p-integrators/src/certified_budget.rs",
+   "d7acdc14951e47adc94aefaad8a29b18501a3411e63ede32d07220197a50c663"
+  ],
+  [
+   "crates/rodas5p-integrators/src/chart_transport.rs",
+   "645bd6438f29e3ae4fcf318b046f1d87bb43a0925db4d12979b17b25dc21a765"
+  ],
+  [
+   "crates/rodas5p-integrators/src/common_w_gate.rs",
+   "c87bf5270a04d303c96eb32b6118d6ffdbe8aa88d6e89f161b1c257c9a3a30e7"
+  ],
+  [
+   "crates/rodas5p-integrators/src/comparator_fidelity.rs",
+   "b08c2bf95e878824263ee07c015e87e9ee6c03f92b9dbe073a3f6cd509a728b5"
+  ],
+  [
+   "crates/rodas5p-integrators/src/controller_telemetry.rs",
+   "fd343d09556c16bc3fe0868adae7702301002ee9b705ee3209e046d15610749d"
+  ],
+  [
+   "crates/rodas5p-integrators/src/dense_output_v2.rs",
+   "1b3a177be7e42e4776be5e5e08e1ac7771f3744a65465c8355a4e73bd9c3eba7"
+  ],
+  [
+   "crates/rodas5p-integrators/src/exponential.rs",
+   "da84a475c085d76d1275fea88b8099c807754a38a93afa1e2d02848c69df7f80"
+  ],
+  [
+   "crates/rodas5p-integrators/src/fourier_path_candidate.rs",
+   "130d9593f34d93637cd1af7de0b73375a5ac9540ece9910a68c052a2c56efeb3"
+  ],
+  [
+   "crates/rodas5p-integrators/src/fourier_path_certificate.rs",
+   "bfa329099f5503c9472f8d63120db740e54531dff0188dbb55e21b94aa31edb2"
+  ],
+  [
+   "crates/rodas5p-integrators/src/g1_transactional_gate.rs",
+   "e4086ce08e309f8bd6856cd387854dd40e687967d88091bc6a54528c6fecf09d"
+  ],
+  [
+   "crates/rodas5p-integrators/src/g2_exponential_gate.rs",
+   "3e166433bacab80199bb1e6c26bd2bedbe82a20bbdf56f07e548204548b4bea5"
+  ],
+  [
+   "crates/rodas5p-integrators/src/g3_fused_adaptive_gate.rs",
+   "aacf4dd8d7378a031aba32688c7f9c75f5e012bdafa55d45c9af64e85f377fff"
+  ],
+  [
+   "crates/rodas5p-integrators/src/g4_prefix_kernel_gate.rs",
+   "40236fd49adfd84c1d53dfef81ae2b84e359d77765d629c95bdb1d363a38479c"
+  ],
+  [
+   "crates/rodas5p-integrators/src/g4_s5b0_inner_tolerance.rs",
+   "cc9eaf7b2e45f8349117c626c297b677086c21420266536095a2e8e948d3f82d"
+  ],
+  [
+   "crates/rodas5p-integrators/src/g4_s5b0_regime_atlas.rs",
+   "f638940aeec5f9bf36895bfe103c1f032be7d2b8d32e6f58f96bd1990e8451d8"
+  ],
+  [
+   "crates/rodas5p-integrators/src/g4_s5b0_trace_authority.rs",
+   "80f45a88f2650f0d7777143255d99b9897fde495141c68f101bef52bbea4a8b7"
+  ],
+  [
+   "crates/rodas5p-integrators/src/g4_s5b3_attempt_geometry.rs",
+   "fea5e62f66d4146c4d9325da4c9e25a15749469f3a2e37d20f76820767dabe9e"
+  ],
+  [
+   "crates/rodas5p-integrators/src/homotopy.rs",
+   "8eaeebd2420df1d3de413f2a913ffeac4761efdad50d1dff22dd0dec994c1c25"
+  ],
+  [
+   "crates/rodas5p-integrators/src/homotopy_experiments.rs",
+   "5eaba4a34eb6ba74c50e6c986e6844f1b11c575140740c8d3bfd7a45d68c2dac"
+  ],
+  [
+   "crates/rodas5p-integrators/src/homotopy_order_policy.rs",
+   "a3d5306b310a60909971a1da896816f7528607a7d48f827d3c47f295a2e8e13d"
+  ],
+  [
+   "crates/rodas5p-integrators/src/homotopy_policy.rs",
+   "730bd10b1c81bf56a890ce950b0fa681ff360545198c0a440605f2f1cb7ebc64"
+  ],
+  [
+   "crates/rodas5p-integrators/src/integrate.rs",
+   "10bb6988866951a506141f362b4323f48a164c6e96101de52ce06c6e47efafb6"
+  ],
+  [
+   "crates/rodas5p-integrators/src/lib.rs",
+   "6e57dacb3f4449faf56cbb1d2db0b4ba10985135d282df95fe730390e96f3c48"
+  ],
+  [
+   "crates/rodas5p-integrators/src/native_gates.rs",
+   "6bad42e5c2cf0ad9f4a98148bc477b059890e86e87bdfe3694036f58cac4308e"
+  ],
+  [
+   "crates/rodas5p-integrators/src/nonlinear.rs",
+   "87168d9f6688841171ee11420240e65c72935fff4c5cc8d494f07d0f6582a244"
+  ],
+  [
+   "crates/rodas5p-integrators/src/output.rs",
+   "7d4204bd45482aa8bc9769f888ce0fc51e170b9727984856fe5f367828da9195"
+  ],
+  [
+   "crates/rodas5p-integrators/src/outward_certificate.rs",
+   "c4253050a2cc9a7e67528aba62610e4a4aa257f93636adfdec9e9ca53f0d0bb9"
+  ],
+  [
+   "crates/rodas5p-integrators/src/parallel.rs",
+   "b1216fcb5a5352a0f51422d089caa9343cda1d13fefbf94146b1b171b8431d92"
+  ],
+  [
+   "crates/rodas5p-integrators/src/path_controller.rs",
+   "223a788547b772751006f4c616e35cca83840fa5c4b1c508b170c3126f7b951b"
+  ],
+  [
+   "crates/rodas5p-integrators/src/policy_redesign_v25.rs",
+   "c6ec285705d7095a9dc2ccf45b62392013065bae4a95ea69f954917cef8f08aa"
+  ],
+  [
+   "crates/rodas5p-integrators/src/problem.rs",
+   "097afeb2f2c05bcba68acf684cdefa015e29fd92082b18feb92fba780d0e0f44"
+  ],
+  [
+   "crates/rodas5p-integrators/src/problems.rs",
+   "26279ee48dd78dd80266467ff7e6ef413f82aafa8be60c9177e799a5b96aa6bd"
+  ],
+  [
+   "crates/rodas5p-integrators/src/radau.rs",
+   "6894cdacb1738ae18e93e4272819efc071a07f01113b252c72b6bbd391fc1337"
+  ],
+  [
+   "crates/rodas5p-integrators/src/raw_stage_target.rs",
+   "0c2de0fd7e1d51025594e50576f4adad9500919eee529a776c87575307826d40"
+  ],
+  [
+   "crates/rodas5p-integrators/src/rhs_telemetry.rs",
+   "4a19dfffd8199ab67bc62d1bc9eca88cfefdc039e1fb4bb6324d822ee526f511"
+  ],
+  [
+   "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+   "911a740b89b9558ec124fa3d5da851ab02ee4d144b523a9279d0ff772c254651"
+  ],
+  [
+   "crates/rodas5p-integrators/src/rodas5p_fast_small.rs",
+   "028ced2ddcbecb0058b32e51333abc0fbabf6c2888efdc4c9017511089c34b4f"
+  ],
+  [
+   "crates/rodas5p-integrators/src/rodas5p_fast_small_batch.rs",
+   "ed0f904feb3e05025de41d8822b6bb8feea61a94ea56b569a18338eb1bf8edf9"
+  ],
+  [
+   "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs",
+   "e381136a8f7760f08988dfae7207902743ad825b67f2d5aae7abf8bfea196155"
+  ],
+  [
+   "crates/rodas5p-integrators/src/routing.rs",
+   "0660ec28082159cf93e0ea319b83388d391f23bbb2278b24e6b99584785a429c"
+  ],
+  [
+   "crates/rodas5p-integrators/src/sabr.rs",
+   "f48a0adc782b768a203834c06d47c69fd46b5014dd7bdd9182eff1b91ea4a5c7"
+  ],
+  [
+   "crates/rodas5p-integrators/src/scientific_corpus_v2.rs",
+   "619d329afc667ff8a09fececf0982222abf306ee3a4a39610560860defafb5bd"
+  ],
+  [
+   "crates/rodas5p-integrators/src/scientific_validity_v2_gate.rs",
+   "5b391f75ed9fd87c00f46cbdd07d5b1770ff04f2815a74e36b820bd40410ad45"
+  ],
+  [
+   "crates/rodas5p-integrators/src/sequential.rs",
+   "829cc8b27ad21c358b9e3a713ecbc61b99f7523272d06388e8d48e1dee938bc0"
+  ],
+  [
+   "crates/rodas5p-integrators/src/stage_batch.rs",
+   "346ad20402584d9646dd3e66110dcca14497780f086206d7925ee29b66e4682a"
+  ],
+  [
+   "crates/rodas5p-integrators/src/stage_chart_candidate.rs",
+   "ed20ffaa02e1d00bebd94bebfdfa687c16e7b8e9823ed19f7c6b03e10ffb7e9f"
+  ],
+  [
+   "crates/rodas5p-integrators/src/stage_target.rs",
+   "124d40230dd89512c88dadab8ea05b404eec1805d14712c0d1e25dbf7fcea745"
+  ],
+  [
+   "crates/rodas5p-integrators/src/transactional_q1_q2.rs",
+   "72a9bf2405a181fefae2aa5e7483224ccd419046ede636a40416694b9d0fd7ad"
+  ],
+  [
+   "crates/rodas5p-integrators/src/unified_gates.rs",
+   "9c1fd12cc033cb4570f9e2c4f746350c06a02b182387225b173c1d3bfd60492a"
+  ],
+  [
+   "crates/rodas5p-integrators/src/unified_screen.rs",
+   "66010dd9345a7dc4b3a816f3aa87e03f125d9f60bd53cb8152a4283b909fba5a"
+  ],
+  [
+   "crates/rodas5p-integrators/src/v38d_performance_tournament.rs",
+   "7b2690cbfc42928a6696df50bccd1667ba1a6b9248640eabb894430823fa1e0d"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/a1_committed_trace_regression.rs",
+   "175887a5a3b6359d91c28dd43835885d8afca6e0ae5ac99fed9f55cc314702de"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/a1_inner_tolerance_parity_contracts.rs",
+   "d032b646e4aac026778c6ee14fdd16ae182eb3bc4c359e10145a110aa688b512"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/a1_two_arm_receipt_contracts.rs",
+   "f99b41ae23bf46a5ecad0ee6192331b76898b3cb8ef31765021b1263e3d26b70"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/adaptive_bdf_contracts.rs",
+   "31c1ab5c8ba86e9cdd4667dc211d9a79553470a06299af9f910d5552f2bcd6b3"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/adaptive_controller_contracts.rs",
+   "08f3d7f71bf57ca78da9b6aa02befa1c366e7254d97c98b56763b257936552e2"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/adaptive_fused_exponential_contracts.rs",
+   "219b0ffb7c08c546f90e59e7316bceb7546a261e1ebff83094164145c56b692d"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/adaptive_homotopy_contracts.rs",
+   "cc8692b91b937ceb1ffbf9260a15c201dd31b9eed22ddc21383331c1bdfaca4c"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/adaptive_radau_contracts.rs",
+   "9bf5224edcdbb478f645c9a79f94573fee3007236c1a2423d82e4871ac5af600"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/adaptive_rodas_contracts.rs",
+   "e09b57a465b9416e2085de53d4831956ae532c664b4bc8be8b9f0c1ab3a46577"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/alg01_common/mod.rs",
+   "365a3bb21b21b416b3bf4b485f784dee1729be1efd2448ecdc5f5007bdc7f09f"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/alg01_coupled_stage_target.rs",
+   "ca214320736493518c0a8d813df8a58181168af1b523dc9cb57013f79cf2e459"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/alg04_alg06.rs",
+   "4b0cec62e462fde155f7f68ce042aaa88f13f9890cd7b253fdd33b35a38af79d"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/alg05_predictive_capped2.rs",
+   "a962caf0759a54559af0889e8d5cf75e954f8f77bd17521b1d07de2f56d4c80f"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/audit0930_accounting_contracts.rs",
+   "71c83c3aef615dc2c7f28c3a74ccbaf6749cadfa81af81726457cf8856edd6de"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/audit0930_reuse_certificate_contracts.rs",
+   "603cb91bcbf4cb0533f7f41bbfea3e05912904657fd9edc034c57d5a8fd2f32c"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/audit0930_validation_contracts.rs",
+   "8af1b0222f7419067d87d3a19f0128f70e0b083bd626d286d4f3ae670ca065a7"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/audit2_matrix_free_common_w_contracts.rs",
+   "60a03eea43073220eb11721158c85ec676c41f39b30c9c98d34355461dd3b9ac"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/audit2_real_client_authority_contracts.rs",
+   "b5f775f0386662ed5f70d1d3859e9302d2478a5bba466d8531090bd921ebf08f"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/audit2_reusable_preconditioner_transaction_contracts.rs",
+   "b83611102ede293067a8ff40e2b49ef72dd6657c29222564939af0855fc93169"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/audit2_stage_certificate_contracts.rs",
+   "421c824d5d5b631df1a4853b4bb55634d9c23baeb7b972521f1d62e50edf32df"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/audit2_structured_correction_contracts.rs",
+   "4597bd127f176f2e836b602532ce48124809537954a43235ef278c38941784c7"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/band_verification_range.rs",
+   "1cf5fca7801ce556f710cff666126604c30dd9dac7fcbf105b088ce929d06478"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/block_vector_unit_contracts.rs",
+   "1834afc3fd7f4c5048f4b22a212c3d6be59c2a24942b11b7005ccf971f487f18"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/clipped_controller_contracts.rs",
+   "93f798de27327bcb97d881d7c238b6865452c960ba52deb3acdd20d1d1ffc423"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/coefficient_structural_contracts.rs",
+   "31aedc1e835c55c68575a9a7133fd8801c44dd5ba8db3e857ac1df32af76b905"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/common_w_gate_contracts.rs",
+   "086c6c0d745b7ba86398d104692f807cdb8b8ab72d1e603032802faa77c60052"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/comparator_tier_a_contracts.rs",
+   "48bb64c9984c943435c658a9176ee2059300e4e778531520d719659a9d1b6992"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/constants_provenance_contracts.rs",
+   "e782e104c3c87cca09fa3e3f6acbd8dbdbbe12317fc1a27889c81965d3a55225"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/declared_structure_routing.rs",
+   "d3c808d8069293c08d1daa5e099c8ad9a826e4d73af30466ec6b23bd0649c929"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/dense_error_control_contracts.rs",
+   "0b8b0919796d71dee29f47284a1194a7b6de3e381cd09737c24a1d076a15aa4d"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/dense_output_v2_contracts.rs",
+   "c8b32216c01fa35aaad0b78e2a24aa6e34bd074ca1cdc4c07d0dcaa09201a81e"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/early_flow_defect_contracts.rs",
+   "3760609ed4dd027a098fd21a63538a44ab31cac5ec8154254f1c5b40150937e8"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/enforced_prefix_budget_contracts.rs",
+   "de2f4b9dbb803116614b9250f12c1953c4d8b2824f91dceb9498c5109d3f278f"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/enforced_prefix_budget_runner_contracts.rs",
+   "fcb9893206e02520f86ae7ac4349773cc8077c70af8d98500831acc8e3a5d9c0"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/exponential_contracts.rs",
+   "f0aa39f12cd3af571f535484c5c51731317fe3439a418202a24aec14dd643172"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/exponential_order_contracts.rs",
+   "637f13ed3ef6950bde76a63fb9d17aa458ea02ea9746da29236c4173837f6653"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/fixed_step_order_contracts.rs",
+   "45cdfbd2b20fa398e7dcfa0db20a0994d58b5dd49a8aee687e2c6a9c6cdf2641"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/frozen_full_e_shadow_contracts.rs",
+   "1e4de81a51ab405d2b2dc83fc8880611ef87c3d8afee6f717538ec92d1ff38ad"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/fused_exponential_contracts.rs",
+   "1c00ff9a8b35f71262da2f6f01b11a9a3144cadb35fdb41f326b4675e34d0dc6"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/fused_phi_krylov_contracts.rs",
+   "b93b8384871bc9b1b3c3499cf4030a9e39f2e7d0bc2cadda08d01feb2ee1f095"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/fused_phi_scaling_contracts.rs",
+   "52761d04490df5f981f36e44608b7373b7e21827f3b245d4a13721b5d3928dca"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/g1_transactional_gate.rs",
+   "10bf8bb378134cdb1f8be64203cb6cd0d1e8f61c45cdef15c82c0dca87c10588"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/g2_exponential_gate_contracts.rs",
+   "f8e003f0c295dcc8102ad5fe2e46f6b02a651178663529d6c08d289c2680ca6e"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/g3_fused_adaptive_gate_contracts.rs",
+   "7f6493201a986d7b3a025b97264f29dc0a56ea3a24c7757ca4643da74fe31c6a"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/g4_prefix_kernel_gate_contracts.rs",
+   "9840afc1d9b2b428926607adb5c7c784416c5b8a4c700f2d51a2f39c0e5e9b27"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/g4_s5b0_regime_atlas_contracts.rs",
+   "92d1298d68ca4da0959f71c455eeacfbfb7ddabe30673d9904a18d2d02311625"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/g4_s5b3_attempt_geometry_contracts.rs",
+   "620f8cb62137d4f36a473f3beddd49a47f14f752d8e78d60169b0aac1a162817"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/generic_problem_contracts.rs",
+   "ec1d78ab99448f620e8e111f98d2bbaa98797879aefc4474b42560f86ab8f8f3"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/generic_scope_contracts.rs",
+   "d4b64f3c7bf1a7e0a37fa71899c21ef14b7f128384411f8a4621977f72103b6e"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/homotopy_numerical_contracts.rs",
+   "abb4072e5d144bb70eefc2cef6088ce4bc6de4e21bfb50d17763579c77cb7ba1"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/homotopy_path_controller_contracts.rs",
+   "5e3acdd5d239605cdfb8b8f3f4a04ddac0a1ee0251bc8d886b0cb658b33eebca"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/homotopy_policy_contracts.rs",
+   "72871d633b7c616330083047903ee3bc56179ddda641eb1fe837d0dd13c43d0e"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/homotopy_research_contracts.rs",
+   "58ba4b2293c7655313e61e50624cd717d282b37c08a4cc08ea2462492d76972c"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/inner_forcing_fixed_step_ladder_contracts.rs",
+   "6dba9af1d9cc9211c8921f77aa72e09d5b2bd1810b4fb594d00cb9f491fefce1"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/inner_forcing_resolution_contracts.rs",
+   "30aa2b149a74aed4603aabe144dab82d014c9218ba079f1ad02222592fb34202"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/inner_forcing_v2_contracts.rs",
+   "2bcd8132d795bd3862f90887502a385a3aa0d8f1148082682610e4ecd44c9307"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/int01_gcrodr_verified_reuse.rs",
+   "b5f9cef47d3b22765476ae4b34968571e5558cdda602501789d5df2d12edb148"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/int01_posthoc_tolerance.rs",
+   "e1e80e73fe23392ffcb855393fa0c37179dc465216caeffd8e3f93ba06fb49a1"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/int02_structural_certificate.rs",
+   "6f654a0b1aae22025b8abe0f0e9cb354b9a64361cc98e1cee7e144bffab1c318"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/int02_structural_certificate_contracts.rs",
+   "c6968da1779ecb634e41e4652ad81e10997d3d348e263d779cbe1cac9a7e8501"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/int03_banded_fast.rs",
+   "927353dbce4b7020e01acc1427d9e8061ab88dff03981bc1295046b912dc5f5c"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/int03_banded_fast_contracts.rs",
+   "2f52c19cccdc5c7a5588b289bfcfd97d266b5e496ede4686ad764e18f82c3e7f"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/int04_common/mod.rs",
+   "61921aa01fa913faf973274c8af7b554a4895057f20a66d9dd4bc60003c6cb31"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/int04_stage_chart.rs",
+   "8468c5b74821eae3cc60bdeb65e61295ac6acbbb448acacbe433638791262b4c"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/int04_stage_chart_contracts.rs",
+   "961001b2c9c83f7310cbc06103bb43856dccab6ad6d42513d5d07aea89bd5dbe"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/integrator_contracts.rs",
+   "0ed1f2db59a00bd80b4e0a99f7dde50d6f61bcbeefa537b66965546d0325fa18"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/interpolant_audit_contracts.rs",
+   "54f2be2ac56acc60d5118e27537e97af0ab5ed66efb8afd0a47d413ac23794d9"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/linearized_certificate_contracts.rs",
+   "2e0acfeacee6069cde92c2b6690ac562d7cb843f013b4439c124a7746a886094"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/matrix_free_problem_contracts.rs",
+   "e8e3797189d499f6f858b6a09abd201db73942f8a0e06a35c572927f4ad6781c"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/native_candidate_contracts.rs",
+   "f09120e14e62a262d0a1f846b41f3069f21deb90077db164b45a4aac3b6c7e08"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/native_implicit_contracts.rs",
+   "e30fcddab4ddcd80987d8ef741de2616a723e4eee96f28da631ba0d43bde59cf"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/native_reaudit_cache_contracts.rs",
+   "1cf1fbfdaa2c27cd01f99d1e8af15ede7b1a93d09c4f63bd2c43db153199e194"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/native_reaudit_chart_transport.rs",
+   "77c7a2a8452c0324df459770f31d5fc9e231443964694510af1f94b4c8558def"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/native_reaudit_radius_contracts.rs",
+   "861435068b5a2e83d442495c8f3cffb3d6e5ee2f28befcfcf9529245bc4a86b5"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/operator_accounting_contracts.rs",
+   "bbfb45b205d2ec9ef09af6f65a88ca127095aa864085552dc97d8bc35828d95c"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/output_observer_contracts.rs",
+   "2529068b42ed97438ad7a89531ca31fa4edc53fd337e55119e2207965ce4247f"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/output_time_covariance_contracts.rs",
+   "4a0ff1b1bbcab2daa3b5f7a804e10ed863986154de72d3374599ff2b808dd101"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/outward_certificate_contracts.rs",
+   "b5f17a781f385c1c02f9ee5bff1553a49f9eea4729c8eeab7e9eaf52c5c99317"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/p1_00_tolerance_scaled_attempt_geometry_contracts.rs",
+   "337c2825dd2bc9484508a04a65ecfcfca68f3da3b6bc8f1f58e91c4aa7b2e37e"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/pexprb_continuation_budget_contracts.rs",
+   "644a31a40f82c5975e619b09c67823e417e3f566a7ee034f66319a46b3cfccbb"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/pexprb_level1_prefix_contracts.rs",
+   "8a1499142252f8bb75b5a950f3bdacd7110fcfe0d8f68edc4239fbdf7a778df9"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/pexprb_level2_continuation_accounting.rs",
+   "3858e657c5cb82a3c31954a4e3e21ff7cb602a4df0ac96c2d587c52d5946b89c"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/pexprb_level2_prefix_contracts.rs",
+   "3cfdb1ed35eaaa062f441433f396296e915b8a1920f316be3a1afb9f5cd5f54e"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/phi_action_certificate_contracts.rs",
+   "744467e52121222fdea9fd15e2fa70510eeeccb780dd5b3399d839d04b63f755"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/phi_nonnormal_breakdown_contracts.rs",
+   "a93c3c02a1d3c0505c7d05ea69feeea0bb7b116d86af7da267fd204e4a0bf1b7"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/phi_normalized_augmentation_contracts.rs",
+   "160cf78d1dac5b8814905ae8e05b72f77944bc65d0b9e451e27b26f397c29722"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/policy_redesign_v25_contracts.rs",
+   "4a74b4329d822cf409ac42ae211b6b7d51ec822779c88e27fd392b46288eb336"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/pp05_fourier_client.rs",
+   "1ce3a97188b9b5d3f9c8732bbe92add8fdcf545774ef91cedc89bb57a051f85c"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/pp06_fourier_fft.rs",
+   "85017b8bb0fe000211a90e0479afd4f1854068b761ac97aaa02c8373ce3aec1b"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/pp15_fourier_comparator.rs",
+   "08275bf0a69c358fbe9e19133f946fb544d84a1d728b1509d235a5d0cfc63c4a"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/predictive_extreme_contract.rs",
+   "616f43d23707d9bf9069aa758171e32d754e556f57b510b898e0ff915ceda091"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/prefix_phi_contracts.rs",
+   "bf6842c45180f5bd7e645487e84bef1e751a65c4cf9c3e05b6422c66bcff4d76"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/q2_diagnostic_replacement_contracts.rs",
+   "28c49193f315e0f83d80939267c656f9df2def51093c2ccb98b7e18ce57adafd"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/quadratic_remainder_drift_contracts.rs",
+   "165d4b8facde47c3d2c834cbefc01e32d22ad633ee65dc6182de5a7b04ae82b5"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/r2_output_budget_contracts.rs",
+   "58b0fcc27c465c86bb4917ce5e4011476a698e2244f183c6c2b982d178070269"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/r2_output_time_identity_contracts.rs",
+   "ee3be042b373987dcd6896f1511c411f788e55c4762071d5672f1e76bf8e04a0"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/r2_phi_range_contracts.rs",
+   "e8a0ed6cc868a93cfaf9abe4d4bed14211291557d2e3533cece1b98bd0b46419"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/r3_certified_budget_contracts.rs",
+   "1f067d2d2b3e79222607a75fee31e4b24635f2d9d49b374f2f43b624f31cbe81"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/r3_phi_transform_authority_contracts.rs",
+   "ffeea6b334ca7c9a827fc833064b48bffc38b48a5e1296c5c131f8177acf978c"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/r3_represented_clock_contracts.rs",
+   "df353af9a7cf87d9904f2e19f365ca614948151b96b7237ebb7bfcab5e25bb51"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/r4_homotopy_contracts.rs",
+   "d04bc0bbd431a7812a278c3ee23527d2a715acf5555a1f9eb9f9d41eed8473dd"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/r4_time_contracts.rs",
+   "5897c10b334beddcc13818d170fd8b9903fdf44cb69a8320508d01595772fca0"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/residual_acceptance_contract.rs",
+   "967ed39c72a3c6a3a6fd89c9fa47e2d714435fcaa15782f9e2d9733b32db72d6"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/rev01_calibration.rs",
+   "b791d3730f44319a800a24d6ef2dd44cae617c44183d4d57bb75c9ff60da9ee4"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/rev01_common/mod.rs",
+   "0fcf84d2708c9c36da9cf451672dee704e222165186191dabfcc50558219c99c"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/rev01_gcrodr_start_projection.rs",
+   "b9f3f6e609112a57e806941371b7498fecb1c65502d567489e96326e96a3faf9"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/rev01b_calibration.rs",
+   "3202ae7745168fe6e5c6e4c010dddef15cbdcc91fb54706e2836955031e31203"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/rev01b_gcrodr_recycle_reorthogonalization.rs",
+   "3878e0ebea551985198a31a17d35786dccfef44c308cec6c50d206aa6dbd260a"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/rev01b_posthoc_breakdown.rs",
+   "b48ed63c82eee12577f16779776cd74f1062a5f874f3da5347be88cd3436e245"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/rev01c_calibration.rs",
+   "fb018bc8c2cf0cebfc83d665de9a2eb514673495ee97eba3847ffe3f7a6c9a54"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/rev01c_gcrodr_refreshed_update.rs",
+   "1d9b133b473bc58501bdeb0433f7d35887a05b96a8a4b46df26ad87befb73f9d"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/rev03_export.rs",
+   "7c6b0a7d1263744a295ff395c00ab40afcf489fe0572daaab68fd9b363cd37e4"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/rev04_lgmres_into.rs",
+   "3be379f7a759144b9ee4fa218aaaec48cb089ee15f2ce98c8ad2a4c26a825e3e"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/rhs_telemetry_contracts.rs",
+   "595cdbb16f2854872b0dfb6b5df56e53479b1b9e4b52db6a2770df617d1f1679"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/rnext01_residual_output.rs",
+   "7c4f4072183e603ec30948043275dad5ce44f8828fa2d726b31c3c1d9d7259d9"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/rnext02_gmres_into_study.rs",
+   "123ccf60384221cf484bc92a5ff3588ceaac454d40fd33cff965f854705fc3fb"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/rnext03_gcrodr_attribution.rs",
+   "8733917e150becfa3890d13f87e9c265d05cca6b7d5ddbbde5e28a8e37d2055b"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/rnext03_posthoc_invariant.rs",
+   "4075c3e3815167af502c8853de7094d2dbe334d1d09c65a6df0b9351e334585e"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/rnext05_chart_provider.rs",
+   "2adb85056dc1cb641aa83888de88bdd130e31c235ec4b05721664522b32fa35b"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/rnext06_homotopy_net_cost.rs",
+   "006a372e135636b5bd4951aab14d41007c7daf0844d61375bce8992a582da8e1"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/rnext07_model_epoch.rs",
+   "ee306dff4ee076c89b68074faef23c33b80f5277ffdae8e6fa383aefe1099f8b"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/rnext_common/mod.rs",
+   "5177cbd6134321246552064ef55e5d635c71d83f13f44500fc9762089d5e9a79"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/rodas5p_fast_allocations.rs",
+   "0468682e6a55837958a8b08887eb9ab08074f6765a1ef28077eb4cc4130d1146"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/rodas5p_fast_contracts.rs",
+   "bcc9e0338ee97d47b5ae5deb23ab8ffadfce95cffa05c7984b753336ec9cdfb4"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/rvj_integration_boundaries.rs",
+   "ea256a478cfedf1d4fa7f3aebbfa2ad7e78c2440505a98786a4eef7124b830ea"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/safe_recycle_policy.rs",
+   "6c4fe0d6b8475c80fb30bb3f94b815c75c961d4b9320fa021e56f890b608dea0"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/scientific_corpus_v2_1_calibration_oracle.rs",
+   "be2164c6c6ebf9ac663060c8725e70c16c8de3d8736cd6ffe3f5c8996e361515"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/scientific_corpus_v2_1_pde_contracts.rs",
+   "b19ea7ffc947b6cf971097343d005f5662fa0cf18720dc3a8cbeb21b1b80ff40"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/scientific_corpus_v2_contracts.rs",
+   "d62f40f475f26768d3d81b42c650bd51c583097d389c03ff3aca4d3c71f7a379"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/scientific_corpus_v2_spectral_contracts.rs",
+   "2049dbc387a4400d3256af693de3c3d88b7efcef9c2041dbfaf5191a1bc68743"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/scientific_validity_v2_gates.rs",
+   "d7b00f5056f7b25001051007278a566dcf75493396e57f07a72ec975cf664733"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/sp01_dupfix_adoption.rs",
+   "2b72e16b7188fd12b2eb9f292fa8e16f0db358cf8ba328b20481aec560f7e281"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/spd01_overhead.rs",
+   "a3dac3882612a1737f03a46f9855cf3bf334372b6fde41191ce3eadfe48184c4"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/spd02_lu_column_extents.rs",
+   "211562d920bdc1a383e791613f7582836e0e9e026cd09da75a524037d4e3460f"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/spd03_banded_arm.rs",
+   "175861c4e54916ba7b47a4f5805ea8aa22e27416a17ecd92a4540fbbb8eda3fd"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/spd04_ls_workspace_study.rs",
+   "3e09953985d2a84c40b9f17a44ce2329fdd941ba5ff118d0587eaeede232938c"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/spd05_lgmres_ls_once.rs",
+   "f9716594a25360778ac381f7663e80bd046d1fefb330939bdeb1deaf87b1ac5b"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/spd06_small_static_stages.rs",
+   "89b5ab0133981e6e46b9254fc445c06b6b25ddf54e33b505194694d3da9c3115"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/spd07_mf_step_warm_start.rs",
+   "42cd6c638ee76b92d37f62c38770e57f5ced991b57d61558e226b94043d3f81b"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/spd08_small_ensemble_lanes.rs",
+   "dc18489de578f93579a6716bc6e2595e5185ca06618838d674a9c173a8edf6c4"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/stage_batch_contracts.rs",
+   "c5f08ccea8d52ba60459a168f655702a608eba3929d52ea412d2e8d786a1c461"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/thread_transfer_common/mod.rs",
+   "df6dcb3e9eaba67c8fe1a820a67e37b47f3d35d7bc1d5bba0c7de7343dd5f56c"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/thread_transfer_mf_workspace.rs",
+   "7bfb02806f0868f68682632db71b2604ea12bb39730c7cba66509570f57a4627"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/thread_transfer_negative_controls.rs",
+   "ee3d25f194f1dbe993c67792eb08de00da69a453de901f270235b9d9b90a8c4f"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/thread_transfer_path_action.rs",
+   "950aaca7cd27f0aaa13174fa6e28ea841c8391933031bce7fa79dcbdce79ced3"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/thread_transfer_radius.rs",
+   "ab49aef1adec26735ef23501426ee23ed0b17e0088e8efe8c0387b67206beb19"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/thread_transfer_radius_policy.rs",
+   "fd0f97e29a954f0fc1efbf8b9cd6f72231ddb3dee891c9f6e201043aba0130e6"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/thread_transfer_raw_target.rs",
+   "c3d1d82e345073ecc81f7adb7b93e2964358973861ceeacc30c493830bafc839"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/thread_transfer_smalln.rs",
+   "9fe413dc8e3b096ba2bb8c78ad157d5b5e6f7e0363eec71315552647262602a9"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/tolerance_scaled_early_defect_contracts.rs",
+   "aca533e5eab540e1f78afb70155882f59f2bb797158c8eb311994e3accc690d6"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/transactional_q1_q2_adaptive.rs",
+   "f14ea099a4723fc514d8f40ef50ce23b167b827e7e78e6331083e9b0cd349029"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/transactional_q1_q2_contracts.rs",
+   "875ed581c7f94a04bf87229e5b4a2d200cfaacc69ff4ff9bd57d42024518f0b2"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/unified_candidate_contracts.rs",
+   "4229c08c483ce777c61772e8af0319c2e56d7b1c7d48db91720ac3c001f0d277"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/v33_zeta34_calibration_contracts.rs",
+   "26c790776264f2746f37825a89d890da1f6cb8333b529da13bf0ac2be9f6ce32"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/v37_continuation_transaction_contracts.rs",
+   "d36aedc100fdbfee908b4638f8ca63accf0127174207cc365891529bbcb1ad5b"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/v38d_performance_probe_contracts.rs",
+   "4c8fcb318400c88fce92f5107988a287324cab92d4454745652363c1063a5faa"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/vector_remainder_geometry_contracts.rs",
+   "8393a90929a394cca984eb919553470270e972c95c48889b42de8d240f8943d1"
+  ],
+  [
+   "crates/rodas5p-integrators/tests/work_counter_lane_contracts.rs",
+   "f331b63363f2359c98a932b22a9542a3b5a3137238470390d6fd7712ced142c9"
+  ],
+  [
+   "crates/rodas5p-krylov/src/accounting.rs",
+   "0dc0deeb9b393e32a3660d0ebff969255c5a8ac26d91fef29bc864f62d60e9cd"
+  ],
+  [
+   "crates/rodas5p-krylov/src/block_gmres.rs",
+   "086b6b888f23a8435027c56f421de33f77d50cd97fe9a5cae2adc00830fea01d"
+  ],
+  [
+   "crates/rodas5p-krylov/src/common.rs",
+   "b8a03ade17035487c9e92734d3e4c31dd6b94b43f0d16809fb5178a5e26238a8"
+  ],
+  [
+   "crates/rodas5p-krylov/src/gcrodr.rs",
+   "8d94d9a6df09e21fc69f67fba6f5a5a26fdff1aa2047a63dc43f5d80ab30971a"
+  ],
+  [
+   "crates/rodas5p-krylov/src/gmres.rs",
+   "254f421a3e6325e5492c71597053bb8787a5e3153d5e1563f0b745b73889905e"
+  ],
+  [
+   "crates/rodas5p-krylov/src/gmres_givens.rs",
+   "b8afd9796f5663951413a1ced085be627f58e2a29ceb377a63759faa6ae6b130"
+  ],
+  [
+   "crates/rodas5p-krylov/src/gmres_into.rs",
+   "cceec1ce575a2c3211d54adbaa3daeb98fd989432f4988e1a2a88d6cb9f63498"
+  ],
+  [
+   "crates/rodas5p-krylov/src/gmres_staged.rs",
+   "5e18bdb668dda62ed41fb29dd7d7b15c01aab064c77c7b87d9d885b8facaf98d"
+  ],
+  [
+   "crates/rodas5p-krylov/src/kernels.rs",
+   "4af9acb562e4072ef3526279c495444fbfcfb5147336cb778992fb82db7ad9e3"
+  ],
+  [
+   "crates/rodas5p-krylov/src/lgmres.rs",
+   "e63ac894fbc95a256237da4d90fcaad50dfa67f1032131e61aeea475e7d5b66f"
+  ],
+  [
+   "crates/rodas5p-krylov/src/lgmres_into.rs",
+   "4855572844156044fb8047aa8f6b359bf65b3ff03cc28cc6c3215a4e19f7492c"
+  ],
+  [
+   "crates/rodas5p-krylov/src/lib.rs",
+   "cc61c85fcc50329d6fba116b4c7f9645ef5977cb8da3680b7e1168a232e49cc8"
+  ],
+  [
+   "crates/rodas5p-krylov/src/small.rs",
+   "bb2448beb571a016dc453fbde9aceebf67f80581663f2975c46fd48bb34b6bff"
+  ],
+  [
+   "crates/rodas5p-krylov/src/workspace.rs",
+   "08ccd275272d4549f2938889696458d51902e32dbdb776c012e7b81ed92b42c4"
+  ],
+  [
+   "crates/rodas5p-krylov/tests/alg04_alg06_staged_contracts.rs",
+   "364ed5857f33f71e425cc5d7b74bd149b3ce2d2a0afa8a2332198272756badd9"
+  ],
+  [
+   "crates/rodas5p-krylov/tests/alg04_dup_fix_contracts.rs",
+   "5b0be18dc9aa3da820f4a1636cbe42961820357228f99a2ca15a63a332141492"
+  ],
+  [
+   "crates/rodas5p-krylov/tests/block_gmres_contracts.rs",
+   "fbb578aec82581e0ccc03c70c3df1b52d0548cd7fced05ef2a094a23b4cde463"
+  ],
+  [
+   "crates/rodas5p-krylov/tests/dupfix_promotion_contract.rs",
+   "cfa4ce989b858cce5acfa5de854482603d64e9f2c390b954fe33cb075d6f4a88"
+  ],
+  [
+   "crates/rodas5p-krylov/tests/gcrodr_state_validity_contracts.rs",
+   "b85e73e2bc6bab20621174c9d8ef080937f7c86fcc15f5b535f45970e300c63d"
+  ],
+  [
+   "crates/rodas5p-krylov/tests/givens_gmres_contracts.rs",
+   "6e79e9cf856ac60d29f5174c21d8ef32609e31559637e62c1af07bdd729460d8"
+  ],
+  [
+   "crates/rodas5p-krylov/tests/givens_production_differential_contracts.rs",
+   "1ea9e9c1e90bb3208bdc914b39a81b8d1474818818ee3c6bb82021ffe05ac007"
+  ],
+  [
+   "crates/rodas5p-krylov/tests/int01_gcrodr_policy_contracts.rs",
+   "5fa0a3135295768f10dd65f2fabc6ea709a7c20bc39f0d9dfd6078f3227abe46"
+  ],
+  [
+   "crates/rodas5p-krylov/tests/krylov_contracts.rs",
+   "73818283396848e4707941831094dc4fcf517eb46b369373af0e92ac01f1ae13"
+  ],
+  [
+   "crates/rodas5p-krylov/tests/nonfinite_operator_contracts.rs",
+   "309ddadfedb161b31d9f7f8b7af948ef5397693180bb18b99dee1a19ad01d931"
+  ],
+  [
+   "crates/rodas5p-krylov/tests/prefix_contracts.rs",
+   "aa9057eabba19ce2f55e1e2f9f28e8335a862234c86684cf808a09cacc181b86"
+  ],
+  [
+   "crates/rodas5p-krylov/tests/rev01_gcrodr_options_contracts.rs",
+   "daa1969a73dac8298442c9d629e01c95eacd9c515bbe4c6cd61645ba500d5031"
+  ],
+  [
+   "crates/rodas5p-krylov/tests/rev01b_gcrodr_reorthogonalization_contracts.rs",
+   "781518886bc4a26e378174886e833547a69de704471c505d5fd0381dabe931f7"
+  ],
+  [
+   "crates/rodas5p-krylov/tests/rev01c_gcrodr_refresh_contracts.rs",
+   "5c2d120644957d769fd0b18d23be2ae5f81081585666c11dbc2b48f33e976cd4"
+  ],
+  [
+   "crates/rodas5p-krylov/tests/rev04_lgmres_into_contracts.rs",
+   "c665c87ab4e7ad7d857e59bf996d054b9eda67ae6c2402744d727580c085e760"
+  ],
+  [
+   "crates/rodas5p-krylov/tests/rnext02_gmres_into_contracts.rs",
+   "763318ce201a3e0928674fe93f6e66e0d4b63bb8901081062049b05dd667b8db"
+  ],
+  [
+   "crates/rodas5p-krylov/tests/rnext03_gcrodr_trace_contracts.rs",
+   "821cfc246370d996bf0502514a1307796d6f09efd9649dde183031abf78de617"
+  ],
+  [
+   "crates/rodas5p-krylov/tests/spd04_ls_workspace.rs",
+   "1b0bed8b918f10d2e429b0d69fbaa24283def918fa8688e25bfca7b851e550c5"
+  ],
+  [
+   "crates/rodas5p-krylov/tests/spd05_lgmres_ls_once_contracts.rs",
+   "da31f14137b3cbdec6a9ff49c0e47366e171c233a888c68dad6cf70ca39cb755"
+  ],
+  [
+   "crates/rodas5p-krylov/tests/tolerance_validation_contracts.rs",
+   "6f65efbb0dc06439fe179d3a97e0435d1d48ff9d3c09327507decc1ada3e690b"
+  ],
+  [
+   "crates/rodas5p-krylov/tests/weighted_residual_contracts.rs",
+   "b50873279a455f80f3877a7dee827b2522f33f2d59f557b0b406c52949ae53fc"
+  ],
+  [
+   "crates/rodas5p-krylov/tests/workspace_allocation_contracts.rs",
+   "40c82a27c3b116b02df7f4e99cdaeb430e7cc831bb9fb520c14f859e6cc06cf9"
+  ],
+  [
+   "crates/rodas5p-krylov/tests/workspace_contracts.rs",
+   "a409956dd3f11389d85c5b78e71608c3c3ff02493727c9c5871a8053418044f8"
+  ]
+ ],
+ "profiles": [
+  {
+   "path": "research/sp01_dupfix_adoption_20261010/PROFILE.json",
+   "sha256": "729fc53b4909ce7ce12233fe132a8ca9ec893be6303755198b0d532cae5706c0",
+   "ledger_ids": [
+    "L-0100"
+   ],
+   "binary_sha256": "424f3b71ecfcc1b73c2ed2f6598e9fd7e062094a612445d8084b6576eab85679",
+   "node_date": "20261010",
+   "usable": false,
+   "reason": "entries without per-entry arm/categories/counters (schema vigilode-sp01-dupfix-profile-v1)",
+   "usable_entries": 0
+  },
+  {
+   "path": "research/sp03_declared_structure_routing_20261010/PROFILE.json",
+   "sha256": "bc03ba2da61a251bcf3cf4b72d3686d5e954e4df4a85d97c6f8a3f19b0d47a75",
+   "ledger_ids": [
+    "L-0101"
+   ],
+   "binary_sha256": "c623ee253fe83ff64edcbe97fa94b85f0d025f1459b3fc98e81a1d0074fea047",
+   "node_date": "20261010",
+   "usable": true,
+   "reason": null,
+   "usable_entries": 53
+  },
+  {
+   "path": "research/spd01_fast_driver_overhead_20261005/PROFILE_DENSE.json",
+   "sha256": "0a3b4b41244a7db68a4244017ca6001f41dd4dfe8a1dfc1edfba3f950e4377ad",
+   "ledger_ids": [
+    "L-0081"
+   ],
+   "binary_sha256": "1806150d909ccb0cc0f1815c50cf8af16fc33e5d24372becd5ddd6758376bbb0",
+   "node_date": "20261005",
+   "usable": true,
+   "reason": null,
+   "usable_entries": 16
+  },
+  {
+   "path": "research/spd01_fast_driver_overhead_20261005/PROFILE_DENSE_B50.json",
+   "sha256": "e0a8721cada091500a0fa939fbb9da8a805c2eb5be4d520776dbf799779cfadf",
+   "ledger_ids": [
+    "L-0081"
+   ],
+   "binary_sha256": "1806150d909ccb0cc0f1815c50cf8af16fc33e5d24372becd5ddd6758376bbb0",
+   "node_date": "20261005",
+   "usable": true,
+   "reason": null,
+   "usable_entries": 4
+  },
+  {
+   "path": "research/spd01_fast_driver_overhead_20261005/PROFILE_SMALL.json",
+   "sha256": "9afacda763f9af25ad932566f0a0786e986e78ec2c6d762b428de1c845474314",
+   "ledger_ids": [
+    "L-0081"
+   ],
+   "binary_sha256": "1806150d909ccb0cc0f1815c50cf8af16fc33e5d24372becd5ddd6758376bbb0",
+   "node_date": "20261005",
+   "usable": true,
+   "reason": null,
+   "usable_entries": 12
+  },
+  {
+   "path": "research/spd02_lu_column_extents_20261005/PROFILE.json",
+   "sha256": "68fb05600cf88b0bfbe97eab63b09a7bffdfe0ba9f9012100ca327655ee55edf",
+   "ledger_ids": [
+    "L-0082"
+   ],
+   "binary_sha256": "3fb97e4dd3f69879adbd85c08ab1dcc503732331d4eef939c770174de18e523c",
+   "node_date": "20261005",
+   "usable": true,
+   "reason": null,
+   "usable_entries": 10
+  },
+  {
+   "path": "research/spd03_banded_arm_instructions_20261005/PROFILE.json",
+   "sha256": "9359e287c3818bb0e10fe17ce53d1618390b191d720307c6d3aadf6ba9dd7bf8",
+   "ledger_ids": [
+    "L-0083"
+   ],
+   "binary_sha256": "2e6a119e5a61a84ddfb425bf9651f1d8052ca03a84e2b04a8c621cfc893cfe92",
+   "node_date": "20261005",
+   "usable": true,
+   "reason": null,
+   "usable_entries": 6
+  },
+  {
+   "path": "research/spd03_banded_arm_instructions_20261005/PROFILE_N1000.json",
+   "sha256": "62333e5e92a21daef7210006fc14686af9ce58112f184e27d582c389afdd5a43",
+   "ledger_ids": [
+    "L-0083"
+   ],
+   "binary_sha256": "2e6a119e5a61a84ddfb425bf9651f1d8052ca03a84e2b04a8c621cfc893cfe92",
+   "node_date": "20261005",
+   "usable": true,
+   "reason": null,
+   "usable_entries": 2
+  },
+  {
+   "path": "research/spd06_small_static_stages_20261007/PROFILE.json",
+   "sha256": "b9ba35ea51fd9e25673b3f8a4f844823d6c60792cdb88d4402432491dc917ec0",
+   "ledger_ids": [
+    "L-0085"
+   ],
+   "binary_sha256": "5dffdc3e199c831a305f0900204b302cd89a51dc753b8d2ddeb592a147fe6be8",
+   "node_date": "20261007",
+   "usable": true,
+   "reason": null,
+   "usable_entries": 15
+  },
+  {
+   "path": "research/spd06_small_static_stages_20261007/PROFILE_ROB8.json",
+   "sha256": "20df44c0b63bbdfc3337613e8383441b6d398acaba2110ebd38266fde19ba69b",
+   "ledger_ids": [
+    "L-0085"
+   ],
+   "binary_sha256": "5dffdc3e199c831a305f0900204b302cd89a51dc753b8d2ddeb592a147fe6be8",
+   "node_date": "20261007",
+   "usable": true,
+   "reason": null,
+   "usable_entries": 5
+  },
+  {
+   "path": "research/spd08_small_ensemble_lanes_20261007/PROFILE.json",
+   "sha256": "b4ddc0d65f550809591279e906bafe3fe58f6eed548e414d8e3170b6e3bd2e54",
+   "ledger_ids": [
+    "L-0089"
+   ],
+   "binary_sha256": "2416b7afc2db4b72abca908dab56055e18f7b087a4b45f83cb7a90fe6e6c7103",
+   "node_date": "20261007",
+   "usable": false,
+   "reason": "entries without per-entry arm/categories/counters (schema vigilode-spd08-ensemble-profile-v1)",
+   "usable_entries": 0
+  },
+  {
+   "path": "research/spd08_small_ensemble_lanes_20261007/PROFILE.members.rodas5p-fast-small-batch4.json",
+   "sha256": "43f0690844e8a6c55f0936c1eb99a75d7062a7bb21d0c2252b1e9074585f888c",
+   "ledger_ids": [
+    "L-0089"
+   ],
+   "binary_sha256": null,
+   "node_date": "20261007",
+   "usable": false,
+   "reason": "no binary_sha256 (schema vigilode-spd08-ensemble-members-v1)",
+   "usable_entries": 0
+  },
+  {
+   "path": "research/spd08_small_ensemble_lanes_20261007/PROFILE.members.rodas5p-fast-small-batch8.json",
+   "sha256": "58b31c87e5d2ca5c1345ad3c7ca0b5cb027b5d6e0afd5b81ce4747c3b877c7e5",
+   "ledger_ids": [
+    "L-0089"
+   ],
+   "binary_sha256": null,
+   "node_date": "20261007",
+   "usable": false,
+   "reason": "no binary_sha256 (schema vigilode-spd08-ensemble-members-v1)",
+   "usable_entries": 0
+  },
+  {
+   "path": "research/spd08_small_ensemble_lanes_20261007/PROFILE.members.rodas5p-fast-small.json",
+   "sha256": "9b16538a242874cb6dd179230ba2ee8d6cd7417c8863a3c0ba3ec2bbae7d9bfa",
+   "ledger_ids": [
+    "L-0089"
+   ],
+   "binary_sha256": null,
+   "node_date": "20261007",
+   "usable": false,
+   "reason": "no binary_sha256 (schema vigilode-spd08-ensemble-members-v1)",
+   "usable_entries": 0
+  },
+  {
+   "path": "research/spd09_colext_threshold_20261007/PROFILE.json",
+   "sha256": "9b79ace0bd4392fa0dc1a0ace24b4019cffb5ea4b6387ad224444d3d17fcffdf",
+   "ledger_ids": [
+    "L-0086"
+   ],
+   "binary_sha256": "5dffdc3e199c831a305f0900204b302cd89a51dc753b8d2ddeb592a147fe6be8",
+   "node_date": "20261007",
+   "usable": true,
+   "reason": null,
+   "usable_entries": 21
+  },
+  {
+   "path": "research/stiff_rodas5p_profile_20261002/PROFILE.json",
+   "sha256": "961a157f8b6d1698b5611085bd8ccb6a7b20be77a289d2f2081a87ca664f0ab7",
+   "ledger_ids": [
+    "L-0030"
+   ],
+   "binary_sha256": null,
+   "node_date": "20261002",
+   "usable": false,
+   "reason": "no binary_sha256 (schema vigilode-stiff-rodas5p-profile-v1)",
+   "usable_entries": 0
+  }
+ ],
+ "declaration_scan": {
+  "pattern": "\\bExpensiveClientDeclaration\\b",
+  "matches": []
+ },
+ "work_ledger": {
+  "source": "crates/rodas5p-integrators/src/homotopy.rs",
+  "fields": [
+   "path_rounds",
+   "correction_rounds",
+   "tangent_evaluations",
+   "nonlinear_snapshots",
+   "coupling_actions",
+   "w_factorizations",
+   "w_solve_batches",
+   "w_solve_vectors",
+   "certificate_attempts",
+   "certificate_operations",
+   "pool_creations"
+  ],
+  "terms": {
+   "setup": [
+    "w_factorizations",
+    "pool_creations"
+   ],
+   "rounds": [
+    "path_rounds",
+    "correction_rounds"
+   ],
+   "max_task_per_round": [],
+   "barriers": [],
+   "certificate": [
+    "certificate_attempts",
+    "certificate_operations"
+   ],
+   "rejected_candidates": [],
+   "fallback": [],
+   "dispatch": [
+    "w_solve_batches",
+    "pool_creations"
+   ],
+   "peak_bytes": []
+  },
+  "missing_terms": [
+   "max_task_per_round",
+   "barriers",
+   "rejected_candidates",
+   "fallback",
+   "peak_bytes"
+  ]
+ },
+ "default_witness": {
+  "diagonal_branch": true,
+  "small_branch": true,
+  "small_limit_message": "small witness needs n <= 2"
+ },
+ "stated_limits": {
+  "crates/rodas5p-integrators/src/chart_transport.rs": true,
+  "crates/rodas5p-core/src/shared_shift_jet.rs": true
+ },
+ "pp07": {
+  "q1_solves": 0,
+  "q2_multi_shift_starts": 7,
+  "q2_jet_admissible_starts": 0,
+  "verdict": "PASS"
+ },
+ "l0008": {
+  "rhs_multiplier_p8_over_sequential": {
+   "scalar-linear": 4.860724233983287,
+   "scalar-quadratic": 5.00531914893617,
+   "diagonal-quadratic-8": 5.546995377503852,
+   "coupled-linear-6": 5.9655172413793105,
+   "nonsymmetric-linear-2": 3.082051282051282
+  },
+  "rhs_multiplier_median": 5.00531914893617,
+  "p8_certificates": {
+   "scalar-linear": {
+    "certificate_attempts": 34,
+    "certificate_admissions": 32
+   },
+   "scalar-quadratic": {
+    "certificate_attempts": 37,
+    "certificate_admissions": 36
+   },
+   "diagonal-quadratic-8": {
+    "certificate_attempts": 75,
+    "certificate_admissions": 75
+   },
+   "coupled-linear-6": {
+    "certificate_attempts": 41,
+    "certificate_admissions": 0
+   },
+   "nonsymmetric-linear-2": {
+    "certificate_attempts": 11,
+    "certificate_admissions": 10
+   }
+  },
+  "reference_arm": "sequential-jf-gmres"
+ },
+ "candidates": [
+  {
+   "id": "K1",
+   "client": "Fourier path client (PP05/PP06)",
+   "sources": [
+    "crates/rodas5p-integrators/src/fourier_path_candidate.rs",
+    "crates/rodas5p-integrators/src/fourier_path_certificate.rs"
+   ],
+   "cases": [
+    {
+     "case": "fast",
+     "dimension": 4,
+     "structure": "dense"
+    },
+    {
+     "case": "forty",
+     "dimension": 4,
+     "structure": "dense"
+    },
+    {
+     "case": "forty_tight",
+     "dimension": 4,
+     "structure": "dense"
+    },
+    {
+     "case": "negative",
+     "dimension": 4,
+     "structure": "dense"
+    },
+    {
+     "case": "resonance",
+     "dimension": 4,
+     "structure": "dense"
+    },
+    {
+     "case": "unit",
+     "dimension": 4,
+     "structure": "dense"
+    }
+   ],
+   "S1": {
+    "declaration_matches": [],
+    "batch_rhs_references": 0,
+    "a": false,
+    "f_status": "unmeasured",
+    "f_values": [],
+    "f_min": null,
+    "f_min_function_view": null,
+    "b": null,
+    "pass": false,
+    "reasons": [
+     "no_expensive_client_declaration"
+    ]
+   },
+   "S2": {
+    "source": "pp07",
+    "rows": [],
+    "q1_solves": 0,
+    "pp07": "PP07 ABSTAIN preserved",
+    "static_solver_tokens": [],
+    "pass": false,
+    "reasons": [
+     "pp07_q1_solves_zero"
+    ]
+   },
+   "S3": {
+    "applicable_arms": [],
+    "arms": [],
+    "per_case": [],
+    "cases_without_comparator": [],
+    "l0008_reference_arm": null,
+    "pass": false,
+    "reasons": [
+     "no_applicable_arm"
+    ]
+   },
+   "S4": {
+    "impls": [],
+    "client_type": null,
+    "binding": null,
+    "capabilities": [
+     {
+      "case": "fast",
+      "capability": null
+     },
+     {
+      "case": "forty",
+      "capability": null
+     },
+     {
+      "case": "forty_tight",
+      "capability": null
+     },
+     {
+      "case": "negative",
+      "capability": null
+     },
+     {
+      "case": "resonance",
+      "capability": null
+     },
+     {
+      "case": "unit",
+      "capability": null
+     }
+    ],
+    "capability_evidence": null,
+    "a": false,
+    "b": true,
+    "obligations": [
+     "max_task_per_round",
+     "barriers",
+     "rejected_candidates",
+     "fallback",
+     "peak_bytes"
+    ],
+    "pass": false,
+    "reasons": [
+     "no_q2_certificate_source"
+    ]
+   },
+   "meets": {
+    "S1": false,
+    "S2": false,
+    "S3": false,
+    "S4": false
+   },
+   "all": false,
+   "lead": false
+  },
+  {
+   "id": "K2",
+   "client": "R4 / HOM-06 / R-NEXT-06 quadratic family (QuadraticModel)",
+   "sources": [
+    "crates/rodas5p-integrators/src/transactional_q1_q2.rs"
+   ],
+   "cases": [
+    {
+     "case": "diagonal-quadratic-n1",
+     "dimension": 1,
+     "structure": "diagonal"
+    },
+    {
+     "case": "diagonal-quadratic-n2",
+     "dimension": 2,
+     "structure": "diagonal"
+    },
+    {
+     "case": "diagonal-quadratic-n4",
+     "dimension": 4,
+     "structure": "diagonal"
+    },
+    {
+     "case": "diagonal-quadratic-n8",
+     "dimension": 8,
+     "structure": "diagonal"
+    },
+    {
+     "case": "diagonal-quadratic-n16",
+     "dimension": 16,
+     "structure": "diagonal"
+    }
+   ],
+   "S1": {
+    "declaration_matches": [],
+    "batch_rhs_references": 0,
+    "a": false,
+    "f_status": "unmeasured",
+    "f_values": [],
+    "f_min": null,
+    "f_min_function_view": null,
+    "b": null,
+    "pass": false,
+    "reasons": [
+     "no_expensive_client_declaration"
+    ]
+   },
+   "S2": {
+    "source": "l0008",
+    "rows": [
+     {
+      "case": "scalar-linear",
+      "arm": "sequential-jf-gmres",
+      "file": "research/r3_matched_accuracy_hom06_20261001/VERIFY.json",
+      "index": null,
+      "rtol": null,
+      "attempts": 37,
+      "linear_solves": 368,
+      "solves_per_attempt": 9.945945945945946
+     },
+     {
+      "case": "scalar-quadratic",
+      "arm": "sequential-jf-gmres",
+      "file": "research/r3_matched_accuracy_hom06_20261001/VERIFY.json",
+      "index": null,
+      "rtol": null,
+      "attempts": 40,
+      "linear_solves": 384,
+      "solves_per_attempt": 9.6
+     },
+     {
+      "case": "diagonal-quadratic-8",
+      "arm": "sequential-jf-gmres",
+      "file": "research/r3_matched_accuracy_hom06_20261001/VERIFY.json",
+      "index": null,
+      "rtol": null,
+      "attempts": 75,
+      "linear_solves": 656,
+      "solves_per_attempt": 8.746666666666666
+     },
+     {
+      "case": "coupled-linear-6",
+      "arm": "sequential-jf-gmres",
+      "file": "research/r3_matched_accuracy_hom06_20261001/VERIFY.json",
+      "index": null,
+      "rtol": null,
+      "attempts": 41,
+      "linear_solves": 384,
+      "solves_per_attempt": 9.365853658536585
+     },
+     {
+      "case": "nonsymmetric-linear-2",
+      "arm": "sequential-jf-gmres",
+      "file": "research/r3_matched_accuracy_hom06_20261001/VERIFY.json",
+      "index": null,
+      "rtol": null,
+      "attempts": 13,
+      "linear_solves": 208,
+      "solves_per_attempt": 16.0
+     }
+    ],
+    "q1_solves": null,
+    "pp07": null,
+    "static_solver_tokens": [
+     "solve_rows",
+     "solve_gmres",
+     "LinearOperator"
+    ],
+    "pass": true,
+    "reasons": []
+   },
+   "S3": {
+    "applicable_arms": [
+     "small",
+     "dense v2",
+     "matrix-free U-form"
+    ],
+    "arms": [
+     {
+      "arm": "small",
+      "condition": "n<=8",
+      "status": "unmeasured",
+      "reason": "no_committed_profile"
+     },
+     {
+      "arm": "dense v2",
+      "condition": null,
+      "status": "unmeasured",
+      "reason": "no_committed_profile"
+     },
+     {
+      "arm": "matrix-free U-form",
+      "condition": null,
+      "status": "unmeasured",
+      "reason": "no_committed_profile"
+     }
+    ],
+    "per_case": [],
+    "cases_without_comparator": [
+     "diagonal-quadratic-n1",
+     "diagonal-quadratic-n16",
+     "diagonal-quadratic-n2",
+     "diagonal-quadratic-n4",
+     "diagonal-quadratic-n8"
+    ],
+    "l0008_reference_arm": "sequential-jf-gmres",
+    "pass": false,
+    "reasons": [
+     "no_measured_applicable_arm",
+     "jf_gmres_only_where_direct_applies"
+    ]
+   },
+   "S4": {
+    "impls": [
+     {
+      "type": "QuadraticModel",
+      "binding": "GeneratedFromModel"
+     },
+     {
+      "type": "DiagonalQuadraticModel",
+      "binding": "delegated"
+     }
+    ],
+    "client_type": "QuadraticModel",
+    "binding": "GeneratedFromModel",
+    "capabilities": [
+     {
+      "case": "diagonal-quadratic-n1",
+      "capability": "Available"
+     },
+     {
+      "case": "diagonal-quadratic-n2",
+      "capability": "Available"
+     },
+     {
+      "case": "diagonal-quadratic-n4",
+      "capability": "Available"
+     },
+     {
+      "case": "diagonal-quadratic-n8",
+      "capability": "Available"
+     },
+     {
+      "case": "diagonal-quadratic-n16",
+      "capability": "Available"
+     }
+    ],
+    "capability_evidence": {
+     "source": "research/r3_matched_accuracy_hom06_20261001/VERIFY.json",
+     "p8_certificates": {
+      "scalar-linear": {
+       "certificate_attempts": 34,
+       "certificate_admissions": 32
+      },
+      "scalar-quadratic": {
+       "certificate_attempts": 37,
+       "certificate_admissions": 36
+      },
+      "diagonal-quadratic-8": {
+       "certificate_attempts": 75,
+       "certificate_admissions": 75
+      },
+      "coupled-linear-6": {
+       "certificate_attempts": 41,
+       "certificate_admissions": 0
+      },
+      "nonsymmetric-linear-2": {
+       "certificate_attempts": 11,
+       "certificate_admissions": 10
+      }
+     }
+    },
+    "a": true,
+    "b": true,
+    "obligations": [
+     "max_task_per_round",
+     "barriers",
+     "rejected_candidates",
+     "fallback",
+     "peak_bytes"
+    ],
+    "pass": true,
+    "reasons": []
+   },
+   "meets": {
+    "S1": false,
+    "S2": true,
+    "S3": false,
+    "S4": true
+   },
+   "all": false,
+   "lead": false
+  },
+  {
+   "id": "K3",
+   "client": "Bateman two-timescale real client (feature audit2-bateman-authority)",
+   "sources": [
+    "crates/rodas5p-integrators/src/audit2_bateman_real_client_research.rs"
+   ],
+   "cases": [
+    {
+     "case": "bateman-two-timescale-parent-stable-daughter-v1",
+     "dimension": 4,
+     "structure": "dense"
+    }
+   ],
+   "S1": {
+    "declaration_matches": [],
+    "batch_rhs_references": 0,
+    "a": false,
+    "f_status": "unmeasured",
+    "f_values": [],
+    "f_min": null,
+    "f_min_function_view": null,
+    "b": null,
+    "pass": false,
+    "reasons": [
+     "no_expensive_client_declaration"
+    ]
+   },
+   "S2": {
+    "source": "none",
+    "rows": [],
+    "q1_solves": null,
+    "pp07": null,
+    "static_solver_tokens": [],
+    "pass": false,
+    "reasons": [
+     "no_committed_counters"
+    ]
+   },
+   "S3": {
+    "applicable_arms": [
+     "small",
+     "dense v2"
+    ],
+    "arms": [
+     {
+      "arm": "small",
+      "condition": "n<=8",
+      "status": "unmeasured",
+      "reason": "no_committed_profile"
+     },
+     {
+      "arm": "dense v2",
+      "condition": null,
+      "status": "unmeasured",
+      "reason": "no_committed_profile"
+     }
+    ],
+    "per_case": [],
+    "cases_without_comparator": [
+     "bateman-two-timescale-parent-stable-daughter-v1"
+    ],
+    "l0008_reference_arm": null,
+    "pass": false,
+    "reasons": [
+     "no_measured_applicable_arm"
+    ]
+   },
+   "S4": {
+    "impls": [],
+    "client_type": null,
+    "binding": null,
+    "capabilities": [
+     {
+      "case": "bateman-two-timescale-parent-stable-daughter-v1",
+      "capability": null
+     }
+    ],
+    "capability_evidence": null,
+    "a": false,
+    "b": true,
+    "obligations": [
+     "max_task_per_round",
+     "barriers",
+     "rejected_candidates",
+     "fallback",
+     "peak_bytes"
+    ],
+    "pass": false,
+    "reasons": [
+     "no_q2_certificate_source"
+    ]
+   },
+   "meets": {
+    "S1": false,
+    "S2": false,
+    "S3": false,
+    "S4": false
+   },
+   "all": false,
+   "lead": false
+  },
+  {
+   "id": "K4",
+   "client": "Darboux chart client y = x^2 (w + 1/kappa) (L-0043, L-0048)",
+   "sources": [
+    "crates/rodas5p-integrators/src/chart_transport.rs"
+   ],
+   "cases": [
+    {
+     "case": "darboux-chart",
+     "dimension": 1,
+     "structure": "scalar"
+    }
+   ],
+   "S1": {
+    "declaration_matches": [],
+    "batch_rhs_references": 0,
+    "a": false,
+    "f_status": "unmeasured",
+    "f_values": [],
+    "f_min": null,
+    "f_min_function_view": null,
+    "b": null,
+    "pass": false,
+    "reasons": [
+     "no_expensive_client_declaration"
+    ]
+   },
+   "S2": {
+    "source": "none",
+    "rows": [],
+    "q1_solves": null,
+    "pp07": null,
+    "static_solver_tokens": [],
+    "pass": false,
+    "reasons": [
+     "no_committed_counters"
+    ]
+   },
+   "S3": {
+    "applicable_arms": [
+     "small",
+     "dense v2"
+    ],
+    "arms": [
+     {
+      "arm": "small",
+      "condition": "n==1",
+      "status": "unmeasured",
+      "reason": "no_committed_profile"
+     },
+     {
+      "arm": "dense v2",
+      "condition": null,
+      "status": "unmeasured",
+      "reason": "no_committed_profile"
+     }
+    ],
+    "per_case": [],
+    "cases_without_comparator": [
+     "darboux-chart"
+    ],
+    "l0008_reference_arm": null,
+    "pass": false,
+    "reasons": [
+     "no_measured_applicable_arm"
+    ]
+   },
+   "S4": {
+    "impls": [],
+    "client_type": null,
+    "binding": null,
+    "capabilities": [
+     {
+      "case": "darboux-chart",
+      "capability": null
+     }
+    ],
+    "capability_evidence": null,
+    "a": false,
+    "b": true,
+    "obligations": [
+     "max_task_per_round",
+     "barriers",
+     "rejected_candidates",
+     "fallback",
+     "peak_bytes"
+    ],
+    "pass": false,
+    "reasons": [
+     "no_q2_certificate_source"
+    ]
+   },
+   "meets": {
+    "S1": false,
+    "S2": false,
+    "S3": false,
+    "S4": false
+   },
+   "all": false,
+   "lead": false
+  },
+  {
+   "id": "K5",
+   "client": "robertson, hires, van-der-pol-mu1000 (stiff_benchmark)",
+   "sources": [
+    "crates/rodas5p-cli/src/stiff_benchmark.rs"
+   ],
+   "cases": [
+    {
+     "case": "robertson",
+     "dimension": 3,
+     "structure": "dense"
+    },
+    {
+     "case": "hires",
+     "dimension": 8,
+     "structure": "dense"
+    },
+    {
+     "case": "van-der-pol-mu1000",
+     "dimension": 2,
+     "structure": "dense"
+    }
+   ],
+   "S1": {
+    "declaration_matches": [],
+    "batch_rhs_references": 1,
+    "a": false,
+    "f_status": "measured",
+    "f_values": [
+     {
+      "case": "hires",
+      "config": "rodas5p-fast-small-static-ovh",
+      "file": "research/spd06_small_static_stages_20261007/PROFILE.json",
+      "index": 14,
+      "rtol": 1e-06,
+      "share_file": 0.06510865241591025,
+      "share_function": 8.453413297219116e-05
+     },
+     {
+      "case": "robertson",
+      "config": "rodas5p-fast-small-static-ovh",
+      "file": "research/spd06_small_static_stages_20261007/PROFILE.json",
+      "index": 13,
+      "rtol": 1e-06,
+      "share_file": 0.04641339757961626,
+      "share_function": 0.0008856573063631071
+     },
+     {
+      "case": "robertson",
+      "config": "rodas5p-fast-small-static-ovh",
+      "file": "research/spd06_small_static_stages_20261007/PROFILE_ROB8.json",
+      "index": 4,
+      "rtol": 1e-08,
+      "share_file": 0.04714216195890199,
+      "share_function": 0.0003953858744940167
+     },
+     {
+      "case": "van-der-pol-mu1000",
+      "config": "rodas5p-fast-small-static-ovh",
+      "file": "research/spd06_small_static_stages_20261007/PROFILE.json",
+      "index": 12,
+      "rtol": 1e-06,
+      "share_file": 0.03988828012777325,
+      "share_function": 0.00013347546503033616
+     }
+    ],
+    "f_min": 0.03988828012777325,
+    "f_min_function_view": 8.453413297219116e-05,
+    "b": false,
+    "pass": false,
+    "reasons": [
+     "no_expensive_client_declaration",
+     "f_below_f_min"
+    ]
+   },
+   "S2": {
+    "source": "profiles",
+    "rows": [
+     {
+      "case": "robertson",
+      "arm": "rodas5p-fast-small-static-ovh",
+      "file": "research/spd06_small_static_stages_20261007/PROFILE.json",
+      "index": 13,
+      "rtol": 1e-06,
+      "attempts": 45,
+      "linear_solves": 360,
+      "solves_per_attempt": 8.0
+     },
+     {
+      "case": "robertson",
+      "arm": "rodas5p-fast-small-static-ovh",
+      "file": "research/spd06_small_static_stages_20261007/PROFILE_ROB8.json",
+      "index": 4,
+      "rtol": 1e-08,
+      "attempts": 103,
+      "linear_solves": 824,
+      "solves_per_attempt": 8.0
+     },
+     {
+      "case": "hires",
+      "arm": "rodas5p-fast-small-static-ovh",
+      "file": "research/spd06_small_static_stages_20261007/PROFILE.json",
+      "index": 14,
+      "rtol": 1e-06,
+      "attempts": 210,
+      "linear_solves": 1680,
+      "solves_per_attempt": 8.0
+     },
+     {
+      "case": "van-der-pol-mu1000",
+      "arm": "rodas5p-fast-small-static-ovh",
+      "file": "research/spd06_small_static_stages_20261007/PROFILE.json",
+      "index": 12,
+      "rtol": 1e-06,
+      "attempts": 469,
+      "linear_solves": 3752,
+      "solves_per_attempt": 8.0
+     }
+    ],
+    "q1_solves": null,
+    "pp07": null,
+    "static_solver_tokens": [
+     "LuFactorization",
+     "direct_solve"
+    ],
+    "pass": true,
+    "reasons": []
+   },
+   "S3": {
+    "applicable_arms": [
+     "small",
+     "dense v2",
+     "matrix-free U-form"
+    ],
+    "arms": [
+     {
+      "arm": "small",
+      "condition": null,
+      "status": "measured",
+      "reason": null
+     },
+     {
+      "arm": "dense v2",
+      "condition": null,
+      "status": "measured",
+      "reason": null
+     },
+     {
+      "arm": "matrix-free U-form",
+      "condition": null,
+      "status": "unmeasured",
+      "reason": "no_committed_profile"
+     }
+    ],
+    "per_case": [
+     {
+      "case": "robertson",
+      "binary": "5dffdc3e199c831a305f0900204b302cd89a51dc753b8d2ddeb592a147fe6be8",
+      "binary_arms": [
+       "dense v2",
+       "small"
+      ],
+      "rtols": [
+       {
+        "rtol": 1e-06,
+        "ranking": [
+         {
+          "config": "rodas5p-fast-small-static-ovh",
+          "arm": "small",
+          "ir_per_run": 161462,
+          "file": "research/spd06_small_static_stages_20261007/PROFILE.json",
+          "index": 13,
+          "ledger_id": "L-0085",
+          "accuracy_evidence": {
+           "ledger_id": "L-0085",
+           "path": "research/spd06_small_static_stages_20261007/IDENTITY.json",
+           "sha256": "380b756a47df367dbbd2c7ee2ed4bc0abdd5a6f646ca8b132260e8435320d16c"
+          }
+         },
+         {
+          "config": "rodas5p-fast-small-ovh",
+          "arm": "small",
+          "ir_per_run": 197183,
+          "file": "research/spd06_small_static_stages_20261007/PROFILE.json",
+          "index": 10,
+          "ledger_id": "L-0085",
+          "accuracy_evidence": {
+           "ledger_id": "L-0085",
+           "path": "research/spd06_small_static_stages_20261007/IDENTITY.json",
+           "sha256": "380b756a47df367dbbd2c7ee2ed4bc0abdd5a6f646ca8b132260e8435320d16c"
+          }
+         },
+         {
+          "config": "rodas5p-fast-small-static",
+          "arm": "small",
+          "ir_per_run": 198128,
+          "file": "research/spd06_small_static_stages_20261007/PROFILE.json",
+          "index": 4,
+          "ledger_id": "L-0085",
+          "accuracy_evidence": {
+           "ledger_id": "L-0085",
+           "path": "research/spd06_small_static_stages_20261007/IDENTITY.json",
+           "sha256": "380b756a47df367dbbd2c7ee2ed4bc0abdd5a6f646ca8b132260e8435320d16c"
+          }
+         },
+         {
+          "config": "rodas5p-fast-small-static-stages",
+          "arm": "small",
+          "ir_per_run": 199475,
+          "file": "research/spd06_small_static_stages_20261007/PROFILE.json",
+          "index": 7,
+          "ledger_id": "L-0085",
+          "accuracy_evidence": {
+           "ledger_id": "L-0085",
+           "path": "research/spd06_small_static_stages_20261007/IDENTITY.json",
+           "sha256": "380b756a47df367dbbd2c7ee2ed4bc0abdd5a6f646ca8b132260e8435320d16c"
+          }
+         },
+         {
+          "config": "rodas5p-fast-small",
+          "arm": "small",
+          "ir_per_run": 233670,
+          "file": "research/spd06_small_static_stages_20261007/PROFILE.json",
+          "index": 1,
+          "ledger_id": "L-0085",
+          "accuracy_evidence": {
+           "ledger_id": "L-0085",
+           "path": "research/spd06_small_static_stages_20261007/IDENTITY.json",
+           "sha256": "380b756a47df367dbbd2c7ee2ed4bc0abdd5a6f646ca8b132260e8435320d16c"
+          }
+         },
+         {
+          "config": "rodas5p-fast",
+          "arm": "dense v2",
+          "ir_per_run": 523302,
+          "file": "research/spd09_colext_threshold_20261007/PROFILE.json",
+          "index": 1,
+          "ledger_id": "L-0086",
+          "accuracy_evidence": {
+           "ledger_id": "L-0086",
+           "path": "research/spd09_colext_threshold_20261007/IDENTITY.json",
+           "sha256": "4c21fbc64b7a6b32ea2e1943e1ee5107dcd8e02c261123cc4586578df623f603"
+          }
+         }
+        ],
+        "comparator": {
+         "config": "rodas5p-fast-small-static-ovh",
+         "arm": "small",
+         "file": "research/spd06_small_static_stages_20261007/PROFILE.json",
+         "index": 13
+        }
+       },
+       {
+        "rtol": 1e-08,
+        "ranking": [
+         {
+          "config": "rodas5p-fast-small-static-ovh",
+          "arm": "small",
+          "ir_per_run": 361672,
+          "file": "research/spd06_small_static_stages_20261007/PROFILE_ROB8.json",
+          "index": 4,
+          "ledger_id": "L-0085",
+          "accuracy_evidence": {
+           "ledger_id": "L-0085",
+           "path": "research/spd06_small_static_stages_20261007/IDENTITY.json",
+           "sha256": "380b756a47df367dbbd2c7ee2ed4bc0abdd5a6f646ca8b132260e8435320d16c"
+          }
+         },
+         {
+          "config": "rodas5p-fast-small-ovh",
+          "arm": "small",
+          "ir_per_run": 433527,
+          "file": "research/spd06_small_static_stages_20261007/PROFILE_ROB8.json",
+          "index": 3,
+          "ledger_id": "L-0085",
+          "accuracy_evidence": {
+           "ledger_id": "L-0085",
+           "path": "research/spd06_small_static_stages_20261007/IDENTITY.json",
+           "sha256": "380b756a47df367dbbd2c7ee2ed4bc0abdd5a6f646ca8b132260e8435320d16c"
+          }
+         },
+         {
+          "config": "rodas5p-fast-small-static",
+          "arm": "small",
+          "ir_per_run": 445606,
+          "file": "research/spd06_small_static_stages_20261007/PROFILE_ROB8.json",
+          "index": 1,
+          "ledger_id": "L-0085",
+          "accuracy_evidence": {
+           "ledger_id": "L-0085",
+           "path": "research/spd06_small_static_stages_20261007/IDENTITY.json",
+           "sha256": "380b756a47df367dbbd2c7ee2ed4bc0abdd5a6f646ca8b132260e8435320d16c"
+          }
+         },
+         {
+          "config": "rodas5p-fast-small-static-stages",
+          "arm": "small",
+          "ir_per_run": 448519,
+          "file": "research/spd06_small_static_stages_20261007/PROFILE_ROB8.json",
+          "index": 2,
+          "ledger_id": "L-0085",
+          "accuracy_evidence": {
+           "ledger_id": "L-0085",
+           "path": "research/spd06_small_static_stages_20261007/IDENTITY.json",
+           "sha256": "380b756a47df367dbbd2c7ee2ed4bc0abdd5a6f646ca8b132260e8435320d16c"
+          }
+         },
+         {
+          "config": "rodas5p-fast-small",
+          "arm": "small",
+          "ir_per_run": 517110,
+          "file": "research/spd06_small_static_stages_20261007/PROFILE_ROB8.json",
+          "index": 0,
+          "ledger_id": "L-0085",
+          "accuracy_evidence": {
+           "ledger_id": "L-0085",
+           "path": "research/spd06_small_static_stages_20261007/IDENTITY.json",
+           "sha256": "380b756a47df367dbbd2c7ee2ed4bc0abdd5a6f646ca8b132260e8435320d16c"
+          }
+         }
+        ],
+        "comparator": {
+         "config": "rodas5p-fast-small-static-ovh",
+         "arm": "small",
+         "file": "research/spd06_small_static_stages_20261007/PROFILE_ROB8.json",
+         "index": 4
+        }
+       }
+      ]
+     },
+     {
+      "case": "hires",
+      "binary": "5dffdc3e199c831a305f0900204b302cd89a51dc753b8d2ddeb592a147fe6be8",
+      "binary_arms": [
+       "dense v2",
+       "small"
+      ],
+      "rtols": [
+       {
+        "rtol": 1e-06,
+        "ranking": [
+         {
+          "config": "rodas5p-fast-small-static-ovh",
+          "arm": "small",
+          "ir_per_run": 1727113,
+          "file": "research/spd06_small_static_stages_20261007/PROFILE.json",
+          "index": 14,
+          "ledger_id": "L-0085",
+          "accuracy_evidence": {
+           "ledger_id": "L-0085",
+           "path": "research/spd06_small_static_stages_20261007/IDENTITY.json",
+           "sha256": "380b756a47df367dbbd2c7ee2ed4bc0abdd5a6f646ca8b132260e8435320d16c"
+          }
+         },
+         {
+          "config": "rodas5p-fast-small-static",
+          "arm": "small",
+          "ir_per_run": 1905275,
+          "file": "research/spd06_small_static_stages_20261007/PROFILE.json",
+          "index": 5,
+          "ledger_id": "L-0085",
+          "accuracy_evidence": {
+           "ledger_id": "L-0085",
+           "path": "research/spd06_small_static_stages_20261007/IDENTITY.json",
+           "sha256": "380b756a47df367dbbd2c7ee2ed4bc0abdd5a6f646ca8b132260e8435320d16c"
+          }
+         },
+         {
+          "config": "rodas5p-fast-small-ovh",
+          "arm": "small",
+          "ir_per_run": 2411461,
+          "file": "research/spd06_small_static_stages_20261007/PROFILE.json",
+          "index": 11,
+          "ledger_id": "L-0085",
+          "accuracy_evidence": {
+           "ledger_id": "L-0085",
+           "path": "research/spd06_small_static_stages_20261007/IDENTITY.json",
+           "sha256": "380b756a47df367dbbd2c7ee2ed4bc0abdd5a6f646ca8b132260e8435320d16c"
+          }
+         },
+         {
+          "config": "rodas5p-fast-small-static-stages",
+          "arm": "small",
+          "ir_per_run": 2462932,
+          "file": "research/spd06_small_static_stages_20261007/PROFILE.json",
+          "index": 8,
+          "ledger_id": "L-0085",
+          "accuracy_evidence": {
+           "ledger_id": "L-0085",
+           "path": "research/spd06_small_static_stages_20261007/IDENTITY.json",
+           "sha256": "380b756a47df367dbbd2c7ee2ed4bc0abdd5a6f646ca8b132260e8435320d16c"
+          }
+         },
+         {
+          "config": "rodas5p-fast-small",
+          "arm": "small",
+          "ir_per_run": 2590006,
+          "file": "research/spd06_small_static_stages_20261007/PROFILE.json",
+          "index": 2,
+          "ledger_id": "L-0085",
+          "accuracy_evidence": {
+           "ledger_id": "L-0085",
+           "path": "research/spd06_small_static_stages_20261007/IDENTITY.json",
+           "sha256": "380b756a47df367dbbd2c7ee2ed4bc0abdd5a6f646ca8b132260e8435320d16c"
+          }
+         },
+         {
+          "config": "rodas5p-fast",
+          "arm": "dense v2",
+          "ir_per_run": 4415723,
+          "file": "research/spd09_colext_threshold_20261007/PROFILE.json",
+          "index": 2,
+          "ledger_id": "L-0086",
+          "accuracy_evidence": {
+           "ledger_id": "L-0086",
+           "path": "research/spd09_colext_threshold_20261007/IDENTITY.json",
+           "sha256": "4c21fbc64b7a6b32ea2e1943e1ee5107dcd8e02c261123cc4586578df623f603"
+          }
+         }
+        ],
+        "comparator": {
+         "config": "rodas5p-fast-small-static-ovh",
+         "arm": "small",
+         "file": "research/spd06_small_static_stages_20261007/PROFILE.json",
+         "index": 14
+        }
+       }
+      ]
+     },
+     {
+      "case": "van-der-pol-mu1000",
+      "binary": "5dffdc3e199c831a305f0900204b302cd89a51dc753b8d2ddeb592a147fe6be8",
+      "binary_arms": [
+       "dense v2",
+       "small"
+      ],
+      "rtols": [
+       {
+        "rtol": 1e-06,
+        "ranking": [
+         {
+          "config": "rodas5p-fast-small-static-ovh",
+          "arm": "small",
+          "ir_per_run": 1101326,
+          "file": "research/spd06_small_static_stages_20261007/PROFILE.json",
+          "index": 12,
+          "ledger_id": "L-0085",
+          "accuracy_evidence": {
+           "ledger_id": "L-0085",
+           "path": "research/spd06_small_static_stages_20261007/IDENTITY.json",
+           "sha256": "380b756a47df367dbbd2c7ee2ed4bc0abdd5a6f646ca8b132260e8435320d16c"
+          }
+         },
+         {
+          "config": "rodas5p-fast-small-ovh",
+          "arm": "small",
+          "ir_per_run": 1385996,
+          "file": "research/spd06_small_static_stages_20261007/PROFILE.json",
+          "index": 9,
+          "ledger_id": "L-0085",
+          "accuracy_evidence": {
+           "ledger_id": "L-0085",
+           "path": "research/spd06_small_static_stages_20261007/IDENTITY.json",
+           "sha256": "380b756a47df367dbbd2c7ee2ed4bc0abdd5a6f646ca8b132260e8435320d16c"
+          }
+         },
+         {
+          "config": "rodas5p-fast-small-static",
+          "arm": "small",
+          "ir_per_run": 1476750,
+          "file": "research/spd06_small_static_stages_20261007/PROFILE.json",
+          "index": 3,
+          "ledger_id": "L-0085",
+          "accuracy_evidence": {
+           "ledger_id": "L-0085",
+           "path": "research/spd06_small_static_stages_20261007/IDENTITY.json",
+           "sha256": "380b756a47df367dbbd2c7ee2ed4bc0abdd5a6f646ca8b132260e8435320d16c"
+          }
+         },
+         {
+          "config": "rodas5p-fast-small-static-stages",
+          "arm": "small",
+          "ir_per_run": 1484719,
+          "file": "research/spd06_small_static_stages_20261007/PROFILE.json",
+          "index": 6,
+          "ledger_id": "L-0085",
+          "accuracy_evidence": {
+           "ledger_id": "L-0085",
+           "path": "research/spd06_small_static_stages_20261007/IDENTITY.json",
+           "sha256": "380b756a47df367dbbd2c7ee2ed4bc0abdd5a6f646ca8b132260e8435320d16c"
+          }
+         },
+         {
+          "config": "rodas5p-fast-small",
+          "arm": "small",
+          "ir_per_run": 1761374,
+          "file": "research/spd06_small_static_stages_20261007/PROFILE.json",
+          "index": 0,
+          "ledger_id": "L-0085",
+          "accuracy_evidence": {
+           "ledger_id": "L-0085",
+           "path": "research/spd06_small_static_stages_20261007/IDENTITY.json",
+           "sha256": "380b756a47df367dbbd2c7ee2ed4bc0abdd5a6f646ca8b132260e8435320d16c"
+          }
+         },
+         {
+          "config": "rodas5p-fast",
+          "arm": "dense v2",
+          "ir_per_run": 4345986,
+          "file": "research/spd09_colext_threshold_20261007/PROFILE.json",
+          "index": 0,
+          "ledger_id": "L-0086",
+          "accuracy_evidence": {
+           "ledger_id": "L-0086",
+           "path": "research/spd09_colext_threshold_20261007/IDENTITY.json",
+           "sha256": "4c21fbc64b7a6b32ea2e1943e1ee5107dcd8e02c261123cc4586578df623f603"
+          }
+         }
+        ],
+        "comparator": {
+         "config": "rodas5p-fast-small-static-ovh",
+         "arm": "small",
+         "file": "research/spd06_small_static_stages_20261007/PROFILE.json",
+         "index": 12
+        }
+       }
+      ]
+     }
+    ],
+    "cases_without_comparator": [],
+    "l0008_reference_arm": null,
+    "pass": true,
+    "reasons": []
+   },
+   "S4": {
+    "impls": [],
+    "client_type": null,
+    "binding": null,
+    "capabilities": [
+     {
+      "case": "robertson",
+      "capability": null
+     },
+     {
+      "case": "hires",
+      "capability": null
+     },
+     {
+      "case": "van-der-pol-mu1000",
+      "capability": null
+     }
+    ],
+    "capability_evidence": null,
+    "a": false,
+    "b": true,
+    "obligations": [
+     "max_task_per_round",
+     "barriers",
+     "rejected_candidates",
+     "fallback",
+     "peak_bytes"
+    ],
+    "pass": false,
+    "reasons": [
+     "no_q2_certificate_source"
+    ]
+   },
+   "meets": {
+    "S1": false,
+    "S2": true,
+    "S3": true,
+    "S4": false
+   },
+   "all": false,
+   "lead": false
+  },
+  {
+   "id": "K6",
+   "client": "brusselator-1d-N (stiff_benchmark)",
+   "sources": [
+    "crates/rodas5p-cli/src/stiff_benchmark.rs"
+   ],
+   "cases": [
+    {
+     "case": "brusselator-1d-30",
+     "dimension": 60,
+     "structure": "banded"
+    },
+    {
+     "case": "brusselator-1d-40",
+     "dimension": 80,
+     "structure": "banded"
+    },
+    {
+     "case": "brusselator-1d-50",
+     "dimension": 100,
+     "structure": "banded"
+    },
+    {
+     "case": "brusselator-1d-160",
+     "dimension": 320,
+     "structure": "banded"
+    },
+    {
+     "case": "brusselator-1d-200",
+     "dimension": 400,
+     "structure": "banded"
+    },
+    {
+     "case": "brusselator-1d-500",
+     "dimension": 1000,
+     "structure": "banded"
+    }
+   ],
+   "S1": {
+    "declaration_matches": [],
+    "batch_rhs_references": 1,
+    "a": false,
+    "f_status": "measured",
+    "f_values": [
+     {
+      "case": "brusselator-1d-160",
+      "config": "rodas5p-fast-banded",
+      "file": "research/sp03_declared_structure_routing_20261010/PROFILE.json",
+      "index": 11,
+      "rtol": 1e-06,
+      "share_file": 0.09645439047629677,
+      "share_function": 0.09946442083990327
+     },
+     {
+      "case": "brusselator-1d-160",
+      "config": "rodas5p-fast-banded",
+      "file": "research/sp03_declared_structure_routing_20261010/PROFILE.json",
+      "index": 16,
+      "rtol": 1e-08,
+      "share_file": 0.0979474877225339,
+      "share_function": 0.10106891854080369
+     },
+     {
+      "case": "brusselator-1d-200",
+      "config": "rodas5p-fast-banded",
+      "file": "research/sp03_declared_structure_routing_20261010/PROFILE.json",
+      "index": 21,
+      "rtol": 1e-06,
+      "share_file": 0.09653118056078261,
+      "share_function": 0.09953449081266424
+     },
+     {
+      "case": "brusselator-1d-200",
+      "config": "rodas5p-fast-banded",
+      "file": "research/sp03_declared_structure_routing_20261010/PROFILE.json",
+      "index": 26,
+      "rtol": 1e-08,
+      "share_file": 0.0979446416956156,
+      "share_function": 0.10105115791829358
+     },
+     {
+      "case": "brusselator-1d-200",
+      "config": "rodas5p-fast-banded",
+      "file": "research/spd03_banded_arm_instructions_20261005/PROFILE.json",
+      "index": 3,
+      "rtol": 1e-06,
+      "share_file": 0.09620629157281854,
+      "share_function": 0.09913594843288412
+     },
+     {
+      "case": "brusselator-1d-30",
+      "config": "rodas5p-fast",
+      "file": "research/spd09_colext_threshold_20261007/PROFILE.json",
+      "index": 3,
+      "rtol": 1e-06,
+      "share_file": 0.07060785467888495,
+      "share_function": 0.07696904172991569
+     },
+     {
+      "case": "brusselator-1d-40",
+      "config": "rodas5p-fast-colext64",
+      "file": "research/spd09_colext_threshold_20261007/PROFILE.json",
+      "index": 18,
+      "rtol": 1e-06,
+      "share_file": 0.07649465557812177,
+      "share_function": 0.08343844876821653
+     },
+     {
+      "case": "brusselator-1d-50",
+      "config": "rodas5p-fast-banded",
+      "file": "research/sp03_declared_structure_routing_20261010/PROFILE.json",
+      "index": 1,
+      "rtol": 1e-06,
+      "share_file": 0.09584516910890413,
+      "share_function": 0.09893472408491628
+     },
+     {
+      "case": "brusselator-1d-50",
+      "config": "rodas5p-fast-banded",
+      "file": "research/sp03_declared_structure_routing_20261010/PROFILE.json",
+      "index": 6,
+      "rtol": 1e-08,
+      "share_file": 0.09726494112055803,
+      "share_function": 0.10046037363508792
+     },
+     {
+      "case": "brusselator-1d-50",
+      "config": "rodas5p-fast-banded",
+      "file": "research/spd03_banded_arm_instructions_20261005/PROFILE.json",
+      "index": 2,
+      "rtol": 1e-06,
+      "share_file": 0.0955467762628462,
+      "share_function": 0.0985600452639686
+     },
+     {
+      "case": "brusselator-1d-500",
+      "config": "rodas5p-fast-banded",
+      "file": "research/sp03_declared_structure_routing_20261010/PROFILE.json",
+      "index": 31,
+      "rtol": 1e-06,
+      "share_file": 0.0966926988710643,
+      "share_function": 0.09967908097582165
+     },
+     {
+      "case": "brusselator-1d-500",
+      "config": "rodas5p-fast-banded",
+      "file": "research/sp03_declared_structure_routing_20261010/PROFILE.json",
+      "index": 36,
+      "rtol": 1e-08,
+      "share_file": 0.09801760843232875,
+      "share_function": 0.10109861461153849
+     },
+     {
+      "case": "brusselator-1d-500",
+      "config": "rodas5p-fast-banded",
+      "file": "research/spd03_banded_arm_instructions_20261005/PROFILE_N1000.json",
+      "index": 0,
+      "rtol": 1e-06,
+      "share_file": 0.09637552852649636,
+      "share_function": 0.09928918059393528
+     }
+    ],
+    "f_min": 0.07060785467888495,
+    "f_min_function_view": 0.07696904172991569,
+    "b": false,
+    "pass": false,
+    "reasons": [
+     "no_expensive_client_declaration",
+     "f_below_f_min"
+    ]
+   },
+   "S2": {
+    "source": "profiles",
+    "rows": [
+     {
+      "case": "brusselator-1d-30",
+      "arm": "rodas5p-fast",
+      "file": "research/spd09_colext_threshold_20261007/PROFILE.json",
+      "index": 3,
+      "rtol": 1e-06,
+      "attempts": 93,
+      "linear_solves": 744,
+      "solves_per_attempt": 8.0
+     },
+     {
+      "case": "brusselator-1d-40",
+      "arm": "rodas5p-fast-colext64",
+      "file": "research/spd09_colext_threshold_20261007/PROFILE.json",
+      "index": 18,
+      "rtol": 1e-06,
+      "attempts": 92,
+      "linear_solves": 736,
+      "solves_per_attempt": 8.0
+     },
+     {
+      "case": "brusselator-1d-50",
+      "arm": "rodas5p-fast-banded",
+      "file": "research/sp03_declared_structure_routing_20261010/PROFILE.json",
+      "index": 1,
+      "rtol": 1e-06,
+      "attempts": 92,
+      "linear_solves": 736,
+      "solves_per_attempt": 8.0
+     },
+     {
+      "case": "brusselator-1d-50",
+      "arm": "rodas5p-fast-banded",
+      "file": "research/sp03_declared_structure_routing_20261010/PROFILE.json",
+      "index": 6,
+      "rtol": 1e-08,
+      "attempts": 193,
+      "linear_solves": 1544,
+      "solves_per_attempt": 8.0
+     },
+     {
+      "case": "brusselator-1d-160",
+      "arm": "rodas5p-fast-banded",
+      "file": "research/sp03_declared_structure_routing_20261010/PROFILE.json",
+      "index": 11,
+      "rtol": 1e-06,
+      "attempts": 92,
+      "linear_solves": 736,
+      "solves_per_attempt": 8.0
+     },
+     {
+      "case": "brusselator-1d-160",
+      "arm": "rodas5p-fast-banded",
+      "file": "research/sp03_declared_structure_routing_20261010/PROFILE.json",
+      "index": 16,
+      "rtol": 1e-08,
+      "attempts": 193,
+      "linear_solves": 1544,
+      "solves_per_attempt": 8.0
+     },
+     {
+      "case": "brusselator-1d-200",
+      "arm": "rodas5p-fast-banded",
+      "file": "research/sp03_declared_structure_routing_20261010/PROFILE.json",
+      "index": 21,
+      "rtol": 1e-06,
+      "attempts": 92,
+      "linear_solves": 736,
+      "solves_per_attempt": 8.0
+     },
+     {
+      "case": "brusselator-1d-200",
+      "arm": "rodas5p-fast-banded",
+      "file": "research/sp03_declared_structure_routing_20261010/PROFILE.json",
+      "index": 26,
+      "rtol": 1e-08,
+      "attempts": 194,
+      "linear_solves": 1552,
+      "solves_per_attempt": 8.0
+     },
+     {
+      "case": "brusselator-1d-500",
+      "arm": "rodas5p-fast-banded",
+      "file": "research/sp03_declared_structure_routing_20261010/PROFILE.json",
+      "index": 31,
+      "rtol": 1e-06,
+      "attempts": 92,
+      "linear_solves": 736,
+      "solves_per_attempt": 8.0
+     },
+     {
+      "case": "brusselator-1d-500",
+      "arm": "rodas5p-fast-banded",
+      "file": "research/sp03_declared_structure_routing_20261010/PROFILE.json",
+      "index": 36,
+      "rtol": 1e-08,
+      "attempts": 195,
+      "linear_solves": 1560,
+      "solves_per_attempt": 8.0
+     }
+    ],
+    "q1_solves": null,
+    "pp07": null,
+    "static_solver_tokens": [
+     "LuFactorization",
+     "direct_solve"
+    ],
+    "pass": true,
+    "reasons": []
+   },
+   "S3": {
+    "applicable_arms": [
+     "dense v2",
+     "colext64",
+     "banded",
+     "matrix-free U-form"
+    ],
+    "arms": [
+     {
+      "arm": "dense v2",
+      "condition": null,
+      "status": "measured",
+      "reason": null
+     },
+     {
+      "arm": "colext64",
+      "condition": "n>64",
+      "status": "measured",
+      "reason": null
+     },
+     {
+      "arm": "banded",
+      "condition": null,
+      "status": "measured",
+      "reason": null
+     },
+     {
+      "arm": "matrix-free U-form",
+      "condition": null,
+      "status": "measured",
+      "reason": null
+     }
+    ],
+    "per_case": [
+     {
+      "case": "brusselator-1d-30",
+      "binary": "5dffdc3e199c831a305f0900204b302cd89a51dc753b8d2ddeb592a147fe6be8",
+      "binary_arms": [
+       "dense v2"
+      ],
+      "rtols": [
+       {
+        "rtol": 1e-06,
+        "ranking": [
+         {
+          "config": "rodas5p-fast",
+          "arm": "dense v2",
+          "ir_per_run": 18386977,
+          "file": "research/spd09_colext_threshold_20261007/PROFILE.json",
+          "index": 3,
+          "ledger_id": "L-0086",
+          "accuracy_evidence": {
+           "ledger_id": "L-0086",
+           "path": "research/spd09_colext_threshold_20261007/IDENTITY.json",
+           "sha256": "4c21fbc64b7a6b32ea2e1943e1ee5107dcd8e02c261123cc4586578df623f603"
+          }
+         }
+        ],
+        "comparator": {
+         "config": "rodas5p-fast",
+         "arm": "dense v2",
+         "file": "research/spd09_colext_threshold_20261007/PROFILE.json",
+         "index": 3
+        }
+       }
+      ]
+     },
+     {
+      "case": "brusselator-1d-40",
+      "binary": "5dffdc3e199c831a305f0900204b302cd89a51dc753b8d2ddeb592a147fe6be8",
+      "binary_arms": [
+       "colext64",
+       "dense v2"
+      ],
+      "rtols": [
+       {
+        "rtol": 1e-06,
+        "ranking": [
+         {
+          "config": "rodas5p-fast-colext64",
+          "arm": "colext64",
+          "ir_per_run": 22350032,
+          "file": "research/spd09_colext_threshold_20261007/PROFILE.json",
+          "index": 18,
+          "ledger_id": "L-0086",
+          "accuracy_evidence": {
+           "ledger_id": "L-0086",
+           "path": "research/spd09_colext_threshold_20261007/IDENTITY.json",
+           "sha256": "4c21fbc64b7a6b32ea2e1943e1ee5107dcd8e02c261123cc4586578df623f603"
+          }
+         },
+         {
+          "config": "rodas5p-fast",
+          "arm": "dense v2",
+          "ir_per_run": 26835589,
+          "file": "research/spd09_colext_threshold_20261007/PROFILE.json",
+          "index": 4,
+          "ledger_id": "L-0086",
+          "accuracy_evidence": {
+           "ledger_id": "L-0086",
+           "path": "research/spd09_colext_threshold_20261007/IDENTITY.json",
+           "sha256": "4c21fbc64b7a6b32ea2e1943e1ee5107dcd8e02c261123cc4586578df623f603"
+          }
+         }
+        ],
+        "comparator": {
+         "config": "rodas5p-fast-colext64",
+         "arm": "colext64",
+         "file": "research/spd09_colext_threshold_20261007/PROFILE.json",
+         "index": 18
+        }
+       }
+      ]
+     },
+     {
+      "case": "brusselator-1d-50",
+      "binary": "c623ee253fe83ff64edcbe97fa94b85f0d025f1459b3fc98e81a1d0074fea047",
+      "binary_arms": [
+       "banded",
+       "colext64",
+       "dense v2",
+       "matrix-free U-form"
+      ],
+      "rtols": [
+       {
+        "rtol": 1e-06,
+        "ranking": [
+         {
+          "config": "rodas5p-fast-banded",
+          "arm": "banded",
+          "ir_per_run": 22721719,
+          "file": "research/sp03_declared_structure_routing_20261010/PROFILE.json",
+          "index": 1,
+          "ledger_id": "L-0101",
+          "accuracy_evidence": {
+           "ledger_id": "L-0101",
+           "path": "research/sp03_declared_structure_routing_20261010/RESULTS.json",
+           "sha256": "3e6a49f8c6f5e9d0ce8ee04386d2e21328248bc1ef3dfb5c921e9bceca25b31b"
+          }
+         },
+         {
+          "config": "rodas5p-fast-colext64",
+          "arm": "colext64",
+          "ir_per_run": 29020252,
+          "file": "research/sp03_declared_structure_routing_20261010/PROFILE.json",
+          "index": 3,
+          "ledger_id": "L-0101",
+          "accuracy_evidence": {
+           "ledger_id": "L-0101",
+           "path": "research/sp03_declared_structure_routing_20261010/RESULTS.json",
+           "sha256": "3e6a49f8c6f5e9d0ce8ee04386d2e21328248bc1ef3dfb5c921e9bceca25b31b"
+          }
+         },
+         {
+          "config": "rodas5p-fast",
+          "arm": "dense v2",
+          "ir_per_run": 36864091,
+          "file": "research/sp03_declared_structure_routing_20261010/PROFILE.json",
+          "index": 2,
+          "ledger_id": "L-0101",
+          "accuracy_evidence": {
+           "ledger_id": "L-0101",
+           "path": "research/sp03_declared_structure_routing_20261010/RESULTS.json",
+           "sha256": "3e6a49f8c6f5e9d0ce8ee04386d2e21328248bc1ef3dfb5c921e9bceca25b31b"
+          }
+         },
+         {
+          "config": "rodas5p-mf-legacy",
+          "arm": "matrix-free U-form",
+          "ir_per_run": 1502434094,
+          "file": "research/sp03_declared_structure_routing_20261010/PROFILE.json",
+          "index": 4,
+          "ledger_id": "L-0101",
+          "accuracy_evidence": {
+           "ledger_id": "L-0101",
+           "path": "research/sp03_declared_structure_routing_20261010/RESULTS.json",
+           "sha256": "3e6a49f8c6f5e9d0ce8ee04386d2e21328248bc1ef3dfb5c921e9bceca25b31b"
+          }
+         }
+        ],
+        "comparator": {
+         "config": "rodas5p-fast-banded",
+         "arm": "banded",
+         "file": "research/sp03_declared_structure_routing_20261010/PROFILE.json",
+         "index": 1
+        }
+       },
+       {
+        "rtol": 1e-08,
+        "ranking": [
+         {
+          "config": "rodas5p-fast-banded",
+          "arm": "banded",
+          "ir_per_run": 47805735,
+          "file": "research/sp03_declared_structure_routing_20261010/PROFILE.json",
+          "index": 6,
+          "ledger_id": "L-0101",
+          "accuracy_evidence": {
+           "ledger_id": "L-0101",
+           "path": "research/sp03_declared_structure_routing_20261010/RESULTS.json",
+           "sha256": "3e6a49f8c6f5e9d0ce8ee04386d2e21328248bc1ef3dfb5c921e9bceca25b31b"
+          }
+         },
+         {
+          "config": "rodas5p-fast-colext64",
+          "arm": "colext64",
+          "ir_per_run": 60807442,
+          "file": "research/sp03_declared_structure_routing_20261010/PROFILE.json",
+          "index": 8,
+          "ledger_id": "L-0101",
+          "accuracy_evidence": {
+           "ledger_id": "L-0101",
+           "path": "research/sp03_declared_structure_routing_20261010/RESULTS.json",
+           "sha256": "3e6a49f8c6f5e9d0ce8ee04386d2e21328248bc1ef3dfb5c921e9bceca25b31b"
+          }
+         },
+         {
+          "config": "rodas5p-fast",
+          "arm": "dense v2",
+          "ir_per_run": 77262974,
+          "file": "research/sp03_declared_structure_routing_20261010/PROFILE.json",
+          "index": 7,
+          "ledger_id": "L-0101",
+          "accuracy_evidence": {
+           "ledger_id": "L-0101",
+           "path": "research/sp03_declared_structure_routing_20261010/RESULTS.json",
+           "sha256": "3e6a49f8c6f5e9d0ce8ee04386d2e21328248bc1ef3dfb5c921e9bceca25b31b"
+          }
+         },
+         {
+          "config": "rodas5p-mf-legacy",
+          "arm": "matrix-free U-form",
+          "ir_per_run": 3163253523,
+          "file": "research/sp03_declared_structure_routing_20261010/PROFILE.json",
+          "index": 9,
+          "ledger_id": "L-0101",
+          "accuracy_evidence": {
+           "ledger_id": "L-0101",
+           "path": "research/sp03_declared_structure_routing_20261010/RESULTS.json",
+           "sha256": "3e6a49f8c6f5e9d0ce8ee04386d2e21328248bc1ef3dfb5c921e9bceca25b31b"
+          }
+         }
+        ],
+        "comparator": {
+         "config": "rodas5p-fast-banded",
+         "arm": "banded",
+         "file": "research/sp03_declared_structure_routing_20261010/PROFILE.json",
+         "index": 6
+        }
+       }
+      ]
+     },
+     {
+      "case": "brusselator-1d-160",
+      "binary": "c623ee253fe83ff64edcbe97fa94b85f0d025f1459b3fc98e81a1d0074fea047",
+      "binary_arms": [
+       "banded",
+       "colext64",
+       "dense v2",
+       "matrix-free U-form"
+      ],
+      "rtols": [
+       {
+        "rtol": 1e-06,
+        "ranking": [
+         {
+          "config": "rodas5p-fast-banded",
+          "arm": "banded",
+          "ir_per_run": 71856418,
+          "file": "research/sp03_declared_structure_routing_20261010/PROFILE.json",
+          "index": 11,
+          "ledger_id": "L-0101",
+          "accuracy_evidence": {
+           "ledger_id": "L-0101",
+           "path": "research/sp03_declared_structure_routing_20261010/RESULTS.json",
+           "sha256": "3e6a49f8c6f5e9d0ce8ee04386d2e21328248bc1ef3dfb5c921e9bceca25b31b"
+          }
+         },
+         {
+          "config": "rodas5p-fast-colext64",
+          "arm": "colext64",
+          "ir_per_run": 134356392,
+          "file": "research/sp03_declared_structure_routing_20261010/PROFILE.json",
+          "index": 13,
+          "ledger_id": "L-0101",
+          "accuracy_evidence": {
+           "ledger_id": "L-0101",
+           "path": "research/sp03_declared_structure_routing_20261010/RESULTS.json",
+           "sha256": "3e6a49f8c6f5e9d0ce8ee04386d2e21328248bc1ef3dfb5c921e9bceca25b31b"
+          }
+         },
+         {
+          "config": "rodas5p-fast",
+          "arm": "dense v2",
+          "ir_per_run": 238083491,
+          "file": "research/sp03_declared_structure_routing_20261010/PROFILE.json",
+          "index": 12,
+          "ledger_id": "L-0101",
+          "accuracy_evidence": {
+           "ledger_id": "L-0101",
+           "path": "research/sp03_declared_structure_routing_20261010/RESULTS.json",
+           "sha256": "3e6a49f8c6f5e9d0ce8ee04386d2e21328248bc1ef3dfb5c921e9bceca25b31b"
+          }
+         },
+         {
+          "config": "rodas5p-mf-legacy",
+          "arm": "matrix-free U-form",
+          "ir_per_run": 7501176628,
+          "file": "research/sp03_declared_structure_routing_20261010/PROFILE.json",
+          "index": 14,
+          "ledger_id": "L-0101",
+          "accuracy_evidence": {
+           "ledger_id": "L-0101",
+           "path": "research/sp03_declared_structure_routing_20261010/RESULTS.json",
+           "sha256": "3e6a49f8c6f5e9d0ce8ee04386d2e21328248bc1ef3dfb5c921e9bceca25b31b"
+          }
+         }
+        ],
+        "comparator": {
+         "config": "rodas5p-fast-banded",
+         "arm": "banded",
+         "file": "research/sp03_declared_structure_routing_20261010/PROFILE.json",
+         "index": 11
+        }
+       },
+       {
+        "rtol": 1e-08,
+        "ranking": [
+         {
+          "config": "rodas5p-fast-banded",
+          "arm": "banded",
+          "ir_per_run": 151240898,
+          "file": "research/sp03_declared_structure_routing_20261010/PROFILE.json",
+          "index": 16,
+          "ledger_id": "L-0101",
+          "accuracy_evidence": {
+           "ledger_id": "L-0101",
+           "path": "research/sp03_declared_structure_routing_20261010/RESULTS.json",
+           "sha256": "3e6a49f8c6f5e9d0ce8ee04386d2e21328248bc1ef3dfb5c921e9bceca25b31b"
+          }
+         },
+         {
+          "config": "rodas5p-fast-colext64",
+          "arm": "colext64",
+          "ir_per_run": 281809702,
+          "file": "research/sp03_declared_structure_routing_20261010/PROFILE.json",
+          "index": 18,
+          "ledger_id": "L-0101",
+          "accuracy_evidence": {
+           "ledger_id": "L-0101",
+           "path": "research/sp03_declared_structure_routing_20261010/RESULTS.json",
+           "sha256": "3e6a49f8c6f5e9d0ce8ee04386d2e21328248bc1ef3dfb5c921e9bceca25b31b"
+          }
+         },
+         {
+          "config": "rodas5p-fast",
+          "arm": "dense v2",
+          "ir_per_run": 499414503,
+          "file": "research/sp03_declared_structure_routing_20261010/PROFILE.json",
+          "index": 17,
+          "ledger_id": "L-0101",
+          "accuracy_evidence": {
+           "ledger_id": "L-0101",
+           "path": "research/sp03_declared_structure_routing_20261010/RESULTS.json",
+           "sha256": "3e6a49f8c6f5e9d0ce8ee04386d2e21328248bc1ef3dfb5c921e9bceca25b31b"
+          }
+         },
+         {
+          "config": "rodas5p-mf-legacy",
+          "arm": "matrix-free U-form",
+          "ir_per_run": 10283961309,
+          "file": "research/sp03_declared_structure_routing_20261010/PROFILE.json",
+          "index": 19,
+          "ledger_id": "L-0101",
+          "accuracy_evidence": {
+           "ledger_id": "L-0101",
+           "path": "research/sp03_declared_structure_routing_20261010/RESULTS.json",
+           "sha256": "3e6a49f8c6f5e9d0ce8ee04386d2e21328248bc1ef3dfb5c921e9bceca25b31b"
+          }
+         }
+        ],
+        "comparator": {
+         "config": "rodas5p-fast-banded",
+         "arm": "banded",
+         "file": "research/sp03_declared_structure_routing_20261010/PROFILE.json",
+         "index": 16
+        }
+       }
+      ]
+     },
+     {
+      "case": "brusselator-1d-200",
+      "binary": "c623ee253fe83ff64edcbe97fa94b85f0d025f1459b3fc98e81a1d0074fea047",
+      "binary_arms": [
+       "banded",
+       "colext64",
+       "dense v2",
+       "matrix-free U-form"
+      ],
+      "rtols": [
+       {
+        "rtol": 1e-06,
+        "ranking": [
+         {
+          "config": "rodas5p-fast-banded",
+          "arm": "banded",
+          "ir_per_run": 89704352,
+          "file": "research/sp03_declared_structure_routing_20261010/PROFILE.json",
+          "index": 21,
+          "ledger_id": "L-0101",
+          "accuracy_evidence": {
+           "ledger_id": "L-0101",
+           "path": "research/sp03_declared_structure_routing_20261010/RESULTS.json",
+           "sha256": "3e6a49f8c6f5e9d0ce8ee04386d2e21328248bc1ef3dfb5c921e9bceca25b31b"
+          }
+         },
+         {
+          "config": "rodas5p-fast-colext64",
+          "arm": "colext64",
+          "ir_per_run": 187155835,
+          "file": "research/sp03_declared_structure_routing_20261010/PROFILE.json",
+          "index": 23,
+          "ledger_id": "L-0101",
+          "accuracy_evidence": {
+           "ledger_id": "L-0101",
+           "path": "research/sp03_declared_structure_routing_20261010/RESULTS.json",
+           "sha256": "3e6a49f8c6f5e9d0ce8ee04386d2e21328248bc1ef3dfb5c921e9bceca25b31b"
+          }
+         },
+         {
+          "config": "rodas5p-fast",
+          "arm": "dense v2",
+          "ir_per_run": 352687666,
+          "file": "research/sp03_declared_structure_routing_20261010/PROFILE.json",
+          "index": 22,
+          "ledger_id": "L-0101",
+          "accuracy_evidence": {
+           "ledger_id": "L-0101",
+           "path": "research/sp03_declared_structure_routing_20261010/RESULTS.json",
+           "sha256": "3e6a49f8c6f5e9d0ce8ee04386d2e21328248bc1ef3dfb5c921e9bceca25b31b"
+          }
+         },
+         {
+          "config": "rodas5p-mf-legacy",
+          "arm": "matrix-free U-form",
+          "ir_per_run": 10762740337,
+          "file": "research/sp03_declared_structure_routing_20261010/PROFILE.json",
+          "index": 24,
+          "ledger_id": "L-0101",
+          "accuracy_evidence": {
+           "ledger_id": "L-0101",
+           "path": "research/sp03_declared_structure_routing_20261010/RESULTS.json",
+           "sha256": "3e6a49f8c6f5e9d0ce8ee04386d2e21328248bc1ef3dfb5c921e9bceca25b31b"
+          }
+         }
+        ],
+        "comparator": {
+         "config": "rodas5p-fast-banded",
+         "arm": "banded",
+         "file": "research/sp03_declared_structure_routing_20261010/PROFILE.json",
+         "index": 21
+        }
+       },
+       {
+        "rtol": 1e-08,
+        "ranking": [
+         {
+          "config": "rodas5p-fast-banded",
+          "arm": "banded",
+          "ir_per_run": 189750176,
+          "file": "research/sp03_declared_structure_routing_20261010/PROFILE.json",
+          "index": 26,
+          "ledger_id": "L-0101",
+          "accuracy_evidence": {
+           "ledger_id": "L-0101",
+           "path": "research/sp03_declared_structure_routing_20261010/RESULTS.json",
+           "sha256": "3e6a49f8c6f5e9d0ce8ee04386d2e21328248bc1ef3dfb5c921e9bceca25b31b"
+          }
+         },
+         {
+          "config": "rodas5p-fast-colext64",
+          "arm": "colext64",
+          "ir_per_run": 394531027,
+          "file": "research/sp03_declared_structure_routing_20261010/PROFILE.json",
+          "index": 28,
+          "ledger_id": "L-0101",
+          "accuracy_evidence": {
+           "ledger_id": "L-0101",
+           "path": "research/sp03_declared_structure_routing_20261010/RESULTS.json",
+           "sha256": "3e6a49f8c6f5e9d0ce8ee04386d2e21328248bc1ef3dfb5c921e9bceca25b31b"
+          }
+         },
+         {
+          "config": "rodas5p-fast",
+          "arm": "dense v2",
+          "ir_per_run": 743592070,
+          "file": "research/sp03_declared_structure_routing_20261010/PROFILE.json",
+          "index": 27,
+          "ledger_id": "L-0101",
+          "accuracy_evidence": {
+           "ledger_id": "L-0101",
+           "path": "research/sp03_declared_structure_routing_20261010/RESULTS.json",
+           "sha256": "3e6a49f8c6f5e9d0ce8ee04386d2e21328248bc1ef3dfb5c921e9bceca25b31b"
+          }
+         },
+         {
+          "config": "rodas5p-mf-legacy",
+          "arm": "matrix-free U-form",
+          "ir_per_run": 14219940121,
+          "file": "research/sp03_declared_structure_routing_20261010/PROFILE.json",
+          "index": 29,
+          "ledger_id": "L-0101",
+          "accuracy_evidence": {
+           "ledger_id": "L-0101",
+           "path": "research/sp03_declared_structure_routing_20261010/RESULTS.json",
+           "sha256": "3e6a49f8c6f5e9d0ce8ee04386d2e21328248bc1ef3dfb5c921e9bceca25b31b"
+          }
+         }
+        ],
+        "comparator": {
+         "config": "rodas5p-fast-banded",
+         "arm": "banded",
+         "file": "research/sp03_declared_structure_routing_20261010/PROFILE.json",
+         "index": 26
+        }
+       }
+      ]
+     },
+     {
+      "case": "brusselator-1d-500",
+      "binary": "c623ee253fe83ff64edcbe97fa94b85f0d025f1459b3fc98e81a1d0074fea047",
+      "binary_arms": [
+       "banded",
+       "colext64",
+       "dense v2",
+       "matrix-free U-form"
+      ],
+      "rtols": [
+       {
+        "rtol": 1e-06,
+        "ranking": [
+         {
+          "config": "rodas5p-fast-banded",
+          "arm": "banded",
+          "ir_per_run": 223618404,
+          "file": "research/sp03_declared_structure_routing_20261010/PROFILE.json",
+          "index": 31,
+          "ledger_id": "L-0101",
+          "accuracy_evidence": {
+           "ledger_id": "L-0101",
+           "path": "research/sp03_declared_structure_routing_20261010/RESULTS.json",
+           "sha256": "3e6a49f8c6f5e9d0ce8ee04386d2e21328248bc1ef3dfb5c921e9bceca25b31b"
+          }
+         },
+         {
+          "config": "rodas5p-fast-colext64",
+          "arm": "colext64",
+          "ir_per_run": 846356719,
+          "file": "research/sp03_declared_structure_routing_20261010/PROFILE.json",
+          "index": 33,
+          "ledger_id": "L-0101",
+          "accuracy_evidence": {
+           "ledger_id": "L-0101",
+           "path": "research/sp03_declared_structure_routing_20261010/RESULTS.json",
+           "sha256": "3e6a49f8c6f5e9d0ce8ee04386d2e21328248bc1ef3dfb5c921e9bceca25b31b"
+          }
+         },
+         {
+          "config": "rodas5p-fast",
+          "arm": "dense v2",
+          "ir_per_run": 1932882216,
+          "file": "research/sp03_declared_structure_routing_20261010/PROFILE.json",
+          "index": 32,
+          "ledger_id": "L-0101",
+          "accuracy_evidence": {
+           "ledger_id": "L-0101",
+           "path": "research/sp03_declared_structure_routing_20261010/RESULTS.json",
+           "sha256": "3e6a49f8c6f5e9d0ce8ee04386d2e21328248bc1ef3dfb5c921e9bceca25b31b"
+          }
+         },
+         {
+          "config": "rodas5p-mf-legacy",
+          "arm": "matrix-free U-form",
+          "ir_per_run": 168056687219,
+          "file": "research/sp03_declared_structure_routing_20261010/PROFILE.json",
+          "index": 34,
+          "ledger_id": "L-0101",
+          "accuracy_evidence": {
+           "ledger_id": "L-0101",
+           "path": "research/sp03_declared_structure_routing_20261010/RESULTS.json",
+           "sha256": "3e6a49f8c6f5e9d0ce8ee04386d2e21328248bc1ef3dfb5c921e9bceca25b31b"
+          }
+         }
+        ],
+        "comparator": {
+         "config": "rodas5p-fast-banded",
+         "arm": "banded",
+         "file": "research/sp03_declared_structure_routing_20261010/PROFILE.json",
+         "index": 31
+        }
+       },
+       {
+        "rtol": 1e-08,
+        "ranking": [
+         {
+          "config": "rodas5p-fast-banded",
+          "arm": "banded",
+          "ir_per_run": 475421312,
+          "file": "research/sp03_declared_structure_routing_20261010/PROFILE.json",
+          "index": 36,
+          "ledger_id": "L-0101",
+          "accuracy_evidence": {
+           "ledger_id": "L-0101",
+           "path": "research/sp03_declared_structure_routing_20261010/RESULTS.json",
+           "sha256": "3e6a49f8c6f5e9d0ce8ee04386d2e21328248bc1ef3dfb5c921e9bceca25b31b"
+          }
+         },
+         {
+          "config": "rodas5p-fast-colext64",
+          "arm": "colext64",
+          "ir_per_run": 1774514143,
+          "file": "research/sp03_declared_structure_routing_20261010/PROFILE.json",
+          "index": 38,
+          "ledger_id": "L-0101",
+          "accuracy_evidence": {
+           "ledger_id": "L-0101",
+           "path": "research/sp03_declared_structure_routing_20261010/RESULTS.json",
+           "sha256": "3e6a49f8c6f5e9d0ce8ee04386d2e21328248bc1ef3dfb5c921e9bceca25b31b"
+          }
+         },
+         {
+          "config": "rodas5p-fast",
+          "arm": "dense v2",
+          "ir_per_run": 4077485502,
+          "file": "research/sp03_declared_structure_routing_20261010/PROFILE.json",
+          "index": 37,
+          "ledger_id": "L-0101",
+          "accuracy_evidence": {
+           "ledger_id": "L-0101",
+           "path": "research/sp03_declared_structure_routing_20261010/RESULTS.json",
+           "sha256": "3e6a49f8c6f5e9d0ce8ee04386d2e21328248bc1ef3dfb5c921e9bceca25b31b"
+          }
+         },
+         {
+          "config": "rodas5p-mf-legacy",
+          "arm": "matrix-free U-form",
+          "ir_per_run": 130666807426,
+          "file": "research/sp03_declared_structure_routing_20261010/PROFILE.json",
+          "index": 39,
+          "ledger_id": "L-0101",
+          "accuracy_evidence": {
+           "ledger_id": "L-0101",
+           "path": "research/sp03_declared_structure_routing_20261010/RESULTS.json",
+           "sha256": "3e6a49f8c6f5e9d0ce8ee04386d2e21328248bc1ef3dfb5c921e9bceca25b31b"
+          }
+         }
+        ],
+        "comparator": {
+         "config": "rodas5p-fast-banded",
+         "arm": "banded",
+         "file": "research/sp03_declared_structure_routing_20261010/PROFILE.json",
+         "index": 36
+        }
+       }
+      ]
+     }
+    ],
+    "cases_without_comparator": [],
+    "l0008_reference_arm": null,
+    "pass": true,
+    "reasons": []
+   },
+   "S4": {
+    "impls": [],
+    "client_type": null,
+    "binding": null,
+    "capabilities": [
+     {
+      "case": "brusselator-1d-30",
+      "capability": null
+     },
+     {
+      "case": "brusselator-1d-40",
+      "capability": null
+     },
+     {
+      "case": "brusselator-1d-50",
+      "capability": null
+     },
+     {
+      "case": "brusselator-1d-160",
+      "capability": null
+     },
+     {
+      "case": "brusselator-1d-200",
+      "capability": null
+     },
+     {
+      "case": "brusselator-1d-500",
+      "capability": null
+     }
+    ],
+    "capability_evidence": null,
+    "a": false,
+    "b": true,
+    "obligations": [
+     "max_task_per_round",
+     "barriers",
+     "rejected_candidates",
+     "fallback",
+     "peak_bytes"
+    ],
+    "pass": false,
+    "reasons": [
+     "no_q2_certificate_source"
+    ]
+   },
+   "meets": {
+    "S1": false,
+    "S2": true,
+    "S3": true,
+    "S4": false
+   },
+   "all": false,
+   "lead": false
+  },
+  {
+   "id": "K7",
+   "client": "scientific corpus v2 calibration (6 families x n in {96, 384, 1536})",
+   "sources": [
+    "crates/rodas5p-integrators/src/scientific_corpus_v2.rs"
+   ],
+   "cases": [
+    {
+     "case": "robertson-ramped-n96",
+     "dimension": 96,
+     "structure": "dense"
+    },
+    {
+     "case": "robertson-ramped-n384",
+     "dimension": 384,
+     "structure": "dense"
+    },
+    {
+     "case": "robertson-ramped-n1536",
+     "dimension": 1536,
+     "structure": "dense"
+    },
+    {
+     "case": "hires-ramped-n96",
+     "dimension": 96,
+     "structure": "dense"
+    },
+    {
+     "case": "hires-ramped-n384",
+     "dimension": 384,
+     "structure": "dense"
+    },
+    {
+     "case": "hires-ramped-n1536",
+     "dimension": 1536,
+     "structure": "dense"
+    },
+    {
+     "case": "van-der-pol-ramped-n96",
+     "dimension": 96,
+     "structure": "dense"
+    },
+    {
+     "case": "van-der-pol-ramped-n384",
+     "dimension": 384,
+     "structure": "dense"
+    },
+    {
+     "case": "van-der-pol-ramped-n1536",
+     "dimension": 1536,
+     "structure": "dense"
+    },
+    {
+     "case": "rotating-nonnormal-n96",
+     "dimension": 96,
+     "structure": "dense"
+    },
+    {
+     "case": "rotating-nonnormal-n384",
+     "dimension": 384,
+     "structure": "dense"
+    },
+    {
+     "case": "rotating-nonnormal-n1536",
+     "dimension": 1536,
+     "structure": "dense"
+    },
+    {
+     "case": "nonautonomous-stiff-forcing-n96",
+     "dimension": 96,
+     "structure": "dense"
+    },
+    {
+     "case": "nonautonomous-stiff-forcing-n384",
+     "dimension": 384,
+     "structure": "dense"
+    },
+    {
+     "case": "nonautonomous-stiff-forcing-n1536",
+     "dimension": 1536,
+     "structure": "dense"
+    },
+    {
+     "case": "semilinear-advection-diffusion-ramped-n96",
+     "dimension": 96,
+     "structure": "dense"
+    },
+    {
+     "case": "semilinear-advection-diffusion-ramped-n384",
+     "dimension": 384,
+     "structure": "dense"
+    },
+    {
+     "case": "semilinear-advection-diffusion-ramped-n1536",
+     "dimension": 1536,
+     "structure": "dense"
+    }
+   ],
+   "S1": {
+    "declaration_matches": [],
+    "batch_rhs_references": 0,
+    "a": false,
+    "f_status": "unmeasured",
+    "f_values": [],
+    "f_min": null,
+    "f_min_function_view": null,
+    "b": null,
+    "pass": false,
+    "reasons": [
+     "no_expensive_client_declaration"
+    ]
+   },
+   "S2": {
+    "source": "none",
+    "rows": [],
+    "q1_solves": null,
+    "pp07": null,
+    "static_solver_tokens": [],
+    "pass": false,
+    "reasons": [
+     "no_committed_counters"
+    ]
+   },
+   "S3": {
+    "applicable_arms": [
+     "dense v2",
+     "colext64",
+     "banded",
+     "matrix-free U-form"
+    ],
+    "arms": [
+     {
+      "arm": "dense v2",
+      "condition": null,
+      "status": "unmeasured",
+      "reason": "no_committed_profile"
+     },
+     {
+      "arm": "colext64",
+      "condition": null,
+      "status": "unmeasured",
+      "reason": "no_committed_profile"
+     },
+     {
+      "arm": "banded",
+      "condition": null,
+      "status": "unmeasured",
+      "reason": "no_committed_profile"
+     },
+     {
+      "arm": "matrix-free U-form",
+      "condition": null,
+      "status": "unmeasured",
+      "reason": "no_committed_profile"
+     }
+    ],
+    "per_case": [],
+    "cases_without_comparator": [
+     "hires-ramped-n1536",
+     "hires-ramped-n384",
+     "hires-ramped-n96",
+     "nonautonomous-stiff-forcing-n1536",
+     "nonautonomous-stiff-forcing-n384",
+     "nonautonomous-stiff-forcing-n96",
+     "robertson-ramped-n1536",
+     "robertson-ramped-n384",
+     "robertson-ramped-n96",
+     "rotating-nonnormal-n1536",
+     "rotating-nonnormal-n384",
+     "rotating-nonnormal-n96",
+     "semilinear-advection-diffusion-ramped-n1536",
+     "semilinear-advection-diffusion-ramped-n384",
+     "semilinear-advection-diffusion-ramped-n96",
+     "van-der-pol-ramped-n1536",
+     "van-der-pol-ramped-n384",
+     "van-der-pol-ramped-n96"
+    ],
+    "l0008_reference_arm": null,
+    "pass": false,
+    "reasons": [
+     "no_measured_applicable_arm"
+    ]
+   },
+   "S4": {
+    "impls": [],
+    "client_type": null,
+    "binding": null,
+    "capabilities": [
+     {
+      "case": "robertson-ramped-n96",
+      "capability": null
+     },
+     {
+      "case": "robertson-ramped-n384",
+      "capability": null
+     },
+     {
+      "case": "robertson-ramped-n1536",
+      "capability": null
+     },
+     {
+      "case": "hires-ramped-n96",
+      "capability": null
+     },
+     {
+      "case": "hires-ramped-n384",
+      "capability": null
+     },
+     {
+      "case": "hires-ramped-n1536",
+      "capability": null
+     },
+     {
+      "case": "van-der-pol-ramped-n96",
+      "capability": null
+     },
+     {
+      "case": "van-der-pol-ramped-n384",
+      "capability": null
+     },
+     {
+      "case": "van-der-pol-ramped-n1536",
+      "capability": null
+     },
+     {
+      "case": "rotating-nonnormal-n96",
+      "capability": null
+     },
+     {
+      "case": "rotating-nonnormal-n384",
+      "capability": null
+     },
+     {
+      "case": "rotating-nonnormal-n1536",
+      "capability": null
+     },
+     {
+      "case": "nonautonomous-stiff-forcing-n96",
+      "capability": null
+     },
+     {
+      "case": "nonautonomous-stiff-forcing-n384",
+      "capability": null
+     },
+     {
+      "case": "nonautonomous-stiff-forcing-n1536",
+      "capability": null
+     },
+     {
+      "case": "semilinear-advection-diffusion-ramped-n96",
+      "capability": null
+     },
+     {
+      "case": "semilinear-advection-diffusion-ramped-n384",
+      "capability": null
+     },
+     {
+      "case": "semilinear-advection-diffusion-ramped-n1536",
+      "capability": null
+     }
+    ],
+    "capability_evidence": null,
+    "a": false,
+    "b": true,
+    "obligations": [
+     "max_task_per_round",
+     "barriers",
+     "rejected_candidates",
+     "fallback",
+     "peak_bytes"
+    ],
+    "pass": false,
+    "reasons": [
+     "no_q2_certificate_source"
+    ]
+   },
+   "meets": {
+    "S1": false,
+    "S2": false,
+    "S3": false,
+    "S4": false
+   },
+   "all": false,
+   "lead": false
+  },
+  {
+   "id": "K8",
+   "client": "problems.rs fixtures",
+   "sources": [
+    "crates/rodas5p-integrators/src/problems.rs"
+   ],
+   "cases": [
+    {
+     "case": "scalar_linear_problem",
+     "dimension": null,
+     "structure": "fixture"
+    },
+    {
+     "case": "prothero_robinson_problem",
+     "dimension": null,
+     "structure": "fixture"
+    },
+    {
+     "case": "oscillatory_prothero_robinson_problem",
+     "dimension": null,
+     "structure": "fixture"
+    },
+    {
+     "case": "manufactured_vector_problem",
+     "dimension": null,
+     "structure": "fixture"
+    },
+    {
+     "case": "constant_affine_mass_problem",
+     "dimension": null,
+     "structure": "fixture"
+    },
+    {
+     "case": "manufactured_mass_nonlinear_problem",
+     "dimension": null,
+     "structure": "fixture"
+    },
+    {
+     "case": "complex_dahlquist_problem",
+     "dimension": null,
+     "structure": "fixture"
+    },
+    {
+     "case": "semilinear_advection_diffusion_problem",
+     "dimension": null,
+     "structure": "fixture"
+    }
+   ],
+   "S1": {
+    "declaration_matches": [],
+    "batch_rhs_references": 0,
+    "a": false,
+    "f_status": "unmeasured",
+    "f_values": [],
+    "f_min": null,
+    "f_min_function_view": null,
+    "b": null,
+    "pass": false,
+    "reasons": [
+     "no_expensive_client_declaration"
+    ]
+   },
+   "S2": {
+    "source": "none",
+    "rows": [],
+    "q1_solves": null,
+    "pp07": null,
+    "static_solver_tokens": [],
+    "pass": false,
+    "reasons": [
+     "no_committed_counters"
+    ]
+   },
+   "S3": {
+    "applicable_arms": [
+     "small",
+     "dense v2"
+    ],
+    "arms": [
+     {
+      "arm": "small",
+      "condition": "n<=8",
+      "status": "unmeasured",
+      "reason": "no_committed_profile"
+     },
+     {
+      "arm": "dense v2",
+      "condition": null,
+      "status": "unmeasured",
+      "reason": "no_committed_profile"
+     }
+    ],
+    "per_case": [],
+    "cases_without_comparator": [
+     "complex_dahlquist_problem",
+     "constant_affine_mass_problem",
+     "manufactured_mass_nonlinear_problem",
+     "manufactured_vector_problem",
+     "oscillatory_prothero_robinson_problem",
+     "prothero_robinson_problem",
+     "scalar_linear_problem",
+     "semilinear_advection_diffusion_problem"
+    ],
+    "l0008_reference_arm": null,
+    "pass": false,
+    "reasons": [
+     "no_measured_applicable_arm"
+    ]
+   },
+   "S4": {
+    "impls": [],
+    "client_type": null,
+    "binding": null,
+    "capabilities": [
+     {
+      "case": "scalar_linear_problem",
+      "capability": null
+     },
+     {
+      "case": "prothero_robinson_problem",
+      "capability": null
+     },
+     {
+      "case": "oscillatory_prothero_robinson_problem",
+      "capability": null
+     },
+     {
+      "case": "manufactured_vector_problem",
+      "capability": null
+     },
+     {
+      "case": "constant_affine_mass_problem",
+      "capability": null
+     },
+     {
+      "case": "manufactured_mass_nonlinear_problem",
+      "capability": null
+     },
+     {
+      "case": "complex_dahlquist_problem",
+      "capability": null
+     },
+     {
+      "case": "semilinear_advection_diffusion_problem",
+      "capability": null
+     }
+    ],
+    "capability_evidence": null,
+    "a": false,
+    "b": true,
+    "obligations": [
+     "max_task_per_round",
+     "barriers",
+     "rejected_candidates",
+     "fallback",
+     "peak_bytes"
+    ],
+    "pass": false,
+    "reasons": [
+     "no_q2_certificate_source"
+    ]
+   },
+   "meets": {
+    "S1": false,
+    "S2": false,
+    "S3": false,
+    "S4": false
+   },
+   "all": false,
+   "lead": false
+  }
+ ],
+ "decision": {
+  "outcome": "ABSTAIN",
+  "selected": null,
+  "meeting_all": [],
+  "leads": []
+ },
+ "reported": {
+  "max_share_file_all_applicable_entries": 0.10769070385353306,
+  "max_share_function_all_applicable_entries": 0.8761563650996097,
+  "entries_function_view_at_or_above_f_min": [
+   {
+    "file": "research/spd01_fast_driver_overhead_20261005/PROFILE_SMALL.json",
+    "index": 1,
+    "config": "rodas5p-fast-small",
+    "problem": "robertson",
+    "rtol": 1e-06,
+    "share_function": 0.6481384189695633,
+    "share_file": 0.0308439284088123
+   },
+   {
+    "file": "research/spd01_fast_driver_overhead_20261005/PROFILE_SMALL.json",
+    "index": 2,
+    "config": "rodas5p-fast-small",
+    "problem": "hires",
+    "rtol": 1e-06,
+    "share_function": 0.8160646236763792,
+    "share_file": 0.04306547344371756
+   },
+   {
+    "file": "research/spd01_fast_driver_overhead_20261005/PROFILE_SMALL.json",
+    "index": 4,
+    "config": "rodas5p-fast-small-val",
+    "problem": "robertson",
+    "rtol": 1e-06,
+    "share_function": 0.6711774566212114,
+    "share_file": 0.031953064830335706
+   },
+   {
+    "file": "research/spd01_fast_driver_overhead_20261005/PROFILE_SMALL.json",
+    "index": 5,
+    "config": "rodas5p-fast-small-val",
+    "problem": "hires",
+    "rtol": 1e-06,
+    "share_function": 0.8276142039736086,
+    "share_file": 0.0436690802798176
+   },
+   {
+    "file": "research/spd01_fast_driver_overhead_20261005/PROFILE_SMALL.json",
+    "index": 7,
+    "config": "rodas5p-fast-small-land",
+    "problem": "robertson",
+    "rtol": 1e-06,
+    "share_function": 0.7421734445864341,
+    "share_file": 0.035350422210528955
+   },
+   {
+    "file": "research/spd01_fast_driver_overhead_20261005/PROFILE_SMALL.json",
+    "index": 8,
+    "config": "rodas5p-fast-small-land",
+    "problem": "hires",
+    "rtol": 1e-06,
+    "share_function": 0.863239620374012,
+    "share_file": 0.04555398442433342
+   },
+   {
+    "file": "research/spd01_fast_driver_overhead_20261005/PROFILE_SMALL.json",
+    "index": 10,
+    "config": "rodas5p-fast-small-ovh",
+    "problem": "robertson",
+    "rtol": 1e-06,
+    "share_function": 0.7724330240800584,
+    "share_file": 0.03677160429479829
+   },
+   {
+    "file": "research/spd01_fast_driver_overhead_20261005/PROFILE_SMALL.json",
+    "index": 11,
+    "config": "rodas5p-fast-small-ovh",
+    "problem": "hires",
+    "rtol": 1e-06,
+    "share_function": 0.8761563650996097,
+    "share_file": 0.04622665434142215
+   }
+  ],
+  "function_view_note": "tools/speed_profile.py: a generic driver monomorphized into a CLI function (e.g. rodas5p::stiff_benchmark::run_small_full) is charged to that CLI function in the function view; the file view charges it to the driver's source file",
+  "artificial_workloads": [],
+  "reruns": []
+ }
+}
