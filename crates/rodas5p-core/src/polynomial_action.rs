@@ -70,8 +70,12 @@ use crate::{
 
 mod router;
 pub use router::{
-    ROUTER_INPUT_UNSUPPORTED, ROUTER_NOT_ADMITTED, ROUTER_TRUNCATION_FRACTION, RouteAttempt,
-    RouteChoice, RoutedPhi, route_admission, route_joint_phi,
+    PREFLIGHT_CHEBYSHEV_PLAN_FAILED, PREFLIGHT_DEGREE_ABOVE_LIMIT, PREFLIGHT_LAGUERRE_PLAN_FAILED,
+    PREFLIGHT_PRODUCTS_NOT_FEWER, PREFLIGHT_TERMS_ABOVE_BUDGET, Preflight,
+    ROUTER_ENCLOSURE_NOT_VERIFIED, ROUTER_INPUT_UNSUPPORTED, ROUTER_NOT_ADMITTED,
+    ROUTER_NOT_ATTEMPTED, ROUTER_PLAN_FAILED, ROUTER_TRUNCATION_FRACTION, RouteAttempt,
+    RouteChoice, RouteCost, RoutePolicy, RoutedPhi, SingleExecution, SinglePlan, SingleRoutedPhi,
+    route_admission, route_joint_phi, route_joint_phi_single,
 };
 
 pub const JOINT_PHI_SCHEMA: &str = "vigilode-joint-phi-polynomial-v1";
@@ -97,6 +101,37 @@ pub const MAX_POLYNOMIAL_DEGREE: usize = 4096;
 const MAX_SERIES_TERMS: usize = 200_000;
 /// Stop a positive series once the tail is below this fraction of the sum.
 const SERIES_RELATIVE_TAIL: f64 = 1.0 / (1u64 << 60) as f64;
+
+/// Thread-local counts of the leaf loops the plan/execute split of research
+/// node PY03 charges (`research/py03_single_backend_router_20261011`): every
+/// term of a positive series (exponential, 1F1, 2F1, the Bessel sum of the
+/// Chebyshev coefficients) and every tail evaluation of the degree search.
+/// Only differences taken around a call on the same thread are read; the
+/// counts never change a value.
+mod tally {
+    use std::cell::Cell;
+
+    thread_local! {
+        static SERIES_TERMS: Cell<u64> = const { Cell::new(0) };
+        static TAIL_EVALUATIONS: Cell<u64> = const { Cell::new(0) };
+    }
+
+    pub(super) fn series_term() {
+        SERIES_TERMS.with(|c| c.set(c.get().wrapping_add(1)));
+    }
+
+    pub(super) fn tail_evaluation() {
+        TAIL_EVALUATIONS.with(|c| c.set(c.get().wrapping_add(1)));
+    }
+
+    pub(super) fn series_terms() -> u64 {
+        SERIES_TERMS.with(Cell::get)
+    }
+
+    pub(super) fn tail_evaluations() -> u64 {
+        TAIL_EVALUATIONS.with(Cell::get)
+    }
+}
 
 fn unsupported(reason: impl std::fmt::Display) -> CoreError {
     CoreError::InvalidInput(format!("{POLYNOMIAL_DOMAIN_UNSUPPORTED}: {reason}"))
@@ -124,6 +159,7 @@ fn exp_nonneg(x: f64, upward: bool) -> CoreResult<f64> {
     let mut sum = 1.0;
     let mut term = 1.0;
     for i in 1..MAX_SERIES_TERMS {
+        tally::series_term();
         let step = i as f64;
         term = if upward {
             div_up(mul_up(term, x)?, step)?
@@ -195,6 +231,7 @@ fn hyp1f1_nonneg(k: usize, c: usize, x: f64, upward: bool) -> CoreResult<f64> {
     let mut sum = 1.0;
     let mut term = 1.0;
     for i in 0..MAX_SERIES_TERMS {
+        tally::series_term();
         let numerator = (k + i) as f64;
         let denominator = ((c + i) as f64) * ((i + 1) as f64);
         term = if upward {
@@ -229,6 +266,7 @@ fn hyp2f1_laguerre(n: usize, k: usize, q: f64, upward: bool) -> CoreResult<f64> 
     let mut sum = 1.0;
     let mut term = 1.0;
     for i in 0..MAX_SERIES_TERMS {
+        tally::series_term();
         let numerator = ((n + 1 + i) as f64) * ((k + i) as f64);
         let denominator = ((n + k + 1 + i) as f64) * ((i + 1) as f64);
         term = if upward {
@@ -321,6 +359,7 @@ fn chebyshev_coefficients(
         let mut term = leading;
         let mut closed = false;
         for j in 0..MAX_SERIES_TERMS {
+            tally::series_term();
             let p = 2 * j + n;
             let hyp_row = hyp(p)?;
             let mut contributions = [0.0; JOINT_PHI_TERMS];
@@ -1051,6 +1090,7 @@ fn laguerre_majorant(local: &[f64], extent: f64) -> CoreResult<Vec<f64>> {
     Ok(bounds)
 }
 
+#[derive(Clone, Debug)]
 struct Transform {
     basis: PolynomialBasis,
     /// Chebyshev: `X = (A + shift I) / half_width`; Laguerre: `X = -A / beta`.
@@ -1096,6 +1136,7 @@ fn choose_transform(
             let b = Interval::new(mul_down(h, half_width)?, mul_up(h, half_width)?)?;
             let a_plus_b = add_up(a.hi, b.hi)?;
             for degree in 0..=MAX_POLYNOMIAL_DEGREE {
+                tally::tail_evaluation();
                 let tail = chebyshev_tail(b.hi, a_plus_b, eta, degree)?;
                 if meets_budget(tail, weight_factor, budget) {
                     return Ok(Transform {
@@ -1138,6 +1179,7 @@ fn choose_transform(
                     if degree > 0 {
                         power = mul_up(power, q_hi)?;
                     }
+                    tally::tail_evaluation();
                     let tail = mul_up(norm, power)?;
                     if meets_budget(tail, weight_factor, budget) {
                         best = Some(Transform {
@@ -1498,11 +1540,14 @@ fn joint_phi_action_impl(
         bounds,
         laguerre_scales,
         None,
+        None,
     )
 }
 
 /// [`joint_phi_action_impl`] that also copies the Laguerre adjoint
 /// variables into `capture` (research node PY01); the report is the same.
+/// With `staging` (research node PY03) the action runs a planned transform
+/// and counts its work; the report is again the same.
 #[allow(clippy::too_many_arguments)]
 fn joint_phi_action_impl_captured(
     op: &SymmetricNonpositiveOperator,
@@ -1515,6 +1560,7 @@ fn joint_phi_action_impl_captured(
     bounds: bool,
     laguerre_scales: &[f64],
     capture: Option<&mut LaguerreCapture>,
+    staging: Option<&mut Staging<'_>>,
 ) -> CoreResult<JointPhiReport> {
     let entries: Vec<f64> = match input {
         JointPhiInput::Distinct(vectors) => vectors.iter().flatten().copied().collect(),
@@ -1541,6 +1587,7 @@ fn joint_phi_action_impl_captured(
             bounds,
             laguerre_scales,
             capture,
+            staging,
         );
     }
     let range = |what: &str| {
@@ -1609,6 +1656,7 @@ fn joint_phi_action_impl_captured(
         bounds,
         laguerre_scales,
         capture,
+        staging,
     )?;
     // Scale back; count entries rounded into the subnormal range.
     let unscale = |values: &mut Vec<f64>| -> CoreResult<usize> {
@@ -1717,6 +1765,7 @@ fn joint_phi_action_core(
     bounds: bool,
     laguerre_scales: &[f64],
     mut capture: Option<&mut LaguerreCapture>,
+    mut staging: Option<&mut Staging<'_>>,
 ) -> CoreResult<JointPhiReport> {
     let n = op.dimension();
     if !(h.is_finite() && h >= 0.0) {
@@ -1786,7 +1835,11 @@ fn joint_phi_action_core(
         // Every w_k is zero.
     } else if scalar_branch {
         let z = Interval::new(-mul_up(h, lambda)?, -mul_down(h, lambda)?)?;
+        let series_before = tally::series_terms();
         let phi = scalar_phi(z)?;
+        if let Some(staging) = staging.as_deref_mut() {
+            staging.counts.series_terms += tally::series_terms().wrapping_sub(series_before);
+        }
         for k in 0..JOINT_PHI_TERMS {
             let source = if width == 1 { &block[0] } else { &block[k] };
             let factor = Interval::point(scales[k])?.mul(phi[k])?;
@@ -1799,7 +1852,10 @@ fn joint_phi_action_core(
             column_errors[k].summation = norm_up(errors)?;
         }
     } else {
-        let transform = choose_transform(op, h, basis, weight_factor, budget, laguerre_scales)?;
+        let transform = match staging.as_deref_mut() {
+            Some(staging) => staging.planned_transform(basis, weight_factor, budget)?,
+            None => choose_transform(op, h, basis, weight_factor, budget, laguerre_scales)?,
+        };
         if let Some(capture) = capture.as_deref_mut() {
             capture.beta = Some(transform.beta);
             capture.extent = Some(transform.laguerre_extent);
@@ -1818,6 +1874,7 @@ fn joint_phi_action_core(
             PolynomialBasis::Chebyshev => chebyshev_coefficients(transform.a, transform.b, degree),
             PolynomialBasis::Laguerre => laguerre_coefficients(transform.a, degree),
         };
+        let series_before = tally::series_terms();
         let coefficients = match cache {
             Some(cache) => {
                 if let Some(table) = cache.tables.get(&key) {
@@ -1836,6 +1893,14 @@ fn joint_phi_action_core(
                 build()?
             }
         };
+        if let Some(staging) = staging.as_deref_mut() {
+            if cache_hit {
+                staging.counts.coefficient_cache_hits += 1;
+            } else {
+                staging.counts.coefficient_setups += 1;
+            }
+            staging.counts.series_terms += tally::series_terms().wrapping_sub(series_before);
+        }
         let chosen = coefficients
             .iter()
             .map(|row| row.map(midpoint))
@@ -1917,9 +1982,11 @@ fn joint_phi_action_core(
                 PolynomialBasis::Chebyshev => {
                     // ||t_n - T_n w|| <= sum_{j<n} (n-j) e^{(n-1-j) eta} eps_j.
                     let mut total = 0.0;
+                    let mut terms = 0_u64;
                     for (index, row) in chosen.iter().enumerate().take(degree + 1).skip(1) {
                         let mut propagated = 0.0;
                         for (j, eps) in local[column].iter().enumerate().take(index) {
+                            terms += 1;
                             let gain = mul_up(
                                 (index - j) as f64,
                                 exp_up(mul_up((index - 1 - j) as f64, transform.eta)?)?,
@@ -1927,6 +1994,9 @@ fn joint_phi_action_core(
                             propagated = add_up(propagated, mul_up(gain, *eps)?)?;
                         }
                         total = add_up(total, mul_up(row[k].abs(), propagated)?)?;
+                    }
+                    if let Some(staging) = staging.as_deref_mut() {
+                        staging.counts.propagation_terms += terms;
                     }
                     Some(total)
                 }
@@ -1951,13 +2021,20 @@ fn joint_phi_action_core(
                     if degree <= crate::laguerre_adjoint::LAGUERRE_ADJOINT_DEGREE_LIMIT =>
                 {
                     let stored = chosen.iter().map(|row| row[k]).collect::<Vec<_>>();
-                    let (bound, envelopes) =
-                        crate::laguerre_adjoint::laguerre_adjoint_recurrence_bound_with_envelopes(
+                    let (bound, envelopes) = match staging.as_deref_mut() {
+                        Some(staging) => staging.adjoint_bound(
                             &stored,
                             transform.laguerre_extent,
                             &local[column],
                             crate::laguerre_adjoint::LAGUERRE_ADJOINT_DEPTH,
-                        )?;
+                        )?,
+                        None => crate::laguerre_adjoint::laguerre_adjoint_recurrence_bound_with_envelopes(
+                            &stored,
+                            transform.laguerre_extent,
+                            &local[column],
+                            crate::laguerre_adjoint::LAGUERRE_ADJOINT_DEPTH,
+                        )?,
+                    };
                     if let Some(capture) = capture.as_deref_mut() {
                         capture.columns[k] = Some(AdjointCapture {
                             stored,
@@ -2342,6 +2419,7 @@ pub fn joint_phi_action_laguerre_components(
         true,
         &LAGUERRE_SCALES,
         Some(&mut capture),
+        None,
     )?;
     if report.branch != "recurrence" || report.execution != EXECUTION_CERTIFIED {
         return Err(refuse(format!(
@@ -2474,6 +2552,687 @@ pub fn joint_phi_action_laguerre_components(
         adjoint,
     };
     Ok((report, export))
+}
+
+// ---------------------------------------------------------------------------
+// Planning and execution (research node PY03)
+// ---------------------------------------------------------------------------
+
+/// A plan executed with another operator, step, input or budget than it
+/// was made for, or an execution that did not follow its plan (research
+/// node `research/py03_single_backend_router_20261011`).
+pub const PLAN_MISMATCH: &str = "POLYNOMIAL_PLAN_MISMATCH";
+
+fn plan_mismatch(reason: impl std::fmt::Display) -> CoreError {
+    CoreError::InvalidInput(format!("{PLAN_MISMATCH}: {reason}"))
+}
+
+/// The coefficient tables and the Laguerre adjoint envelopes an execution
+/// may reuse (research node PY03). Each entry is keyed by everything it
+/// depends on ([`CoefficientKey`], [`crate::laguerre_adjoint::EnvelopeKey`]),
+/// so a reused entry is bitwise the entry a fresh computation would give.
+#[derive(Clone, Debug, Default)]
+pub struct PolynomialCaches {
+    pub coefficients: CoefficientCache,
+    pub envelopes: crate::laguerre_adjoint::LaguerreEnvelopeCache,
+}
+
+impl CoefficientCache {
+    /// Whether the table of `key` is cached (a lookup: no work, no count).
+    pub fn contains(&self, key: &CoefficientKey) -> bool {
+        self.tables.contains_key(key)
+    }
+}
+
+/// The work of one staged execution, counted where it is done.
+#[derive(Clone, Copy, Debug, Default)]
+struct StagedCounts {
+    coefficient_setups: u64,
+    coefficient_cache_hits: u64,
+    series_terms: u64,
+    propagation_terms: u64,
+    envelope_operations: u64,
+    envelope_hits: u64,
+    envelope_misses: u64,
+    adjoint_terms: u64,
+}
+
+/// The transform a plan chose, with the action inputs it was chosen for.
+struct PlannedTransform {
+    transform: Transform,
+    basis: PolynomialBasis,
+    weight_factor_bits: u64,
+    budget_bits: u64,
+}
+
+/// What [`execute_joint_phi`] hands the action: the planned transform
+/// (used instead of a new degree search), the envelope cache and the counts.
+struct Staging<'a> {
+    planned: Option<PlannedTransform>,
+    envelopes: Option<&'a mut crate::laguerre_adjoint::LaguerreEnvelopeCache>,
+    counts: StagedCounts,
+}
+
+impl Staging<'_> {
+    /// The planned transform, when it was chosen for exactly this basis,
+    /// weight factor and budget (the action's own values, bit for bit).
+    fn planned_transform(
+        &mut self,
+        basis: PolynomialBasis,
+        weight_factor: f64,
+        budget: f64,
+    ) -> CoreResult<Transform> {
+        let Some(planned) = self.planned.take() else {
+            return Err(plan_mismatch(
+                "the action reached a recurrence the plan does not have",
+            ));
+        };
+        if planned.basis != basis
+            || planned.weight_factor_bits != weight_factor.to_bits()
+            || planned.budget_bits != budget.to_bits()
+        {
+            return Err(plan_mismatch(
+                "the planned transform was chosen for another basis, input or budget",
+            ));
+        }
+        Ok(planned.transform)
+    }
+
+    /// [`crate::laguerre_adjoint::laguerre_adjoint_recurrence_bound_with_envelopes`]
+    /// with the envelopes from the cache (or the counted path without one):
+    /// the same checks, the same envelopes and the same upward sum, bit for
+    /// bit, with the interval operations and the sum's terms counted.
+    fn adjoint_bound(
+        &mut self,
+        stored: &[f64],
+        extent: f64,
+        local: &[f64],
+        depth: usize,
+    ) -> CoreResult<(f64, Vec<f64>)> {
+        if local.len() + 1 != stored.len() || !local.iter().all(|e| e.is_finite() && *e >= 0.0) {
+            return Err(CoreError::InvalidInput(
+                "LAGUERRE_ADJOINT_UNSUPPORTED: one finite nonnegative residual per step".into(),
+            ));
+        }
+        let envelopes = match self.envelopes.as_deref_mut() {
+            Some(cache) => {
+                let points = stored
+                    .iter()
+                    .map(|c| {
+                        if c.is_finite() {
+                            Interval::point(*c)
+                        } else {
+                            Err(CoreError::InvalidInput(
+                                "LAGUERRE_ADJOINT_UNSUPPORTED: the coefficients must be finite"
+                                    .into(),
+                            ))
+                        }
+                    })
+                    .collect::<CoreResult<Vec<_>>>()?;
+                let (envelopes, hit, operations) = cache.envelopes(&points, extent, depth)?;
+                if hit {
+                    self.counts.envelope_hits += 1;
+                } else {
+                    self.counts.envelope_misses += 1;
+                }
+                self.counts.envelope_operations += operations;
+                envelopes
+            }
+            None => {
+                let (envelopes, operations) =
+                    crate::laguerre_adjoint::laguerre_adjoint_envelopes_counted(
+                        stored, extent, depth,
+                    )?;
+                self.counts.envelope_operations += operations;
+                envelopes
+            }
+        };
+        let mut total = 0.0;
+        for (beta, eps) in envelopes[1..].iter().zip(local) {
+            self.counts.adjoint_terms += 1;
+            total = add_up(total, mul_up(*beta, *eps)?)?;
+        }
+        Ok((total, envelopes))
+    }
+}
+
+/// How a plan's execution will go.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum PlanBranch {
+    /// A Chebyshev or Laguerre recurrence of the planned degree.
+    Recurrence,
+    /// The scalar branch (`h = 0`, `A = 0` or `A = -lambda I`): no recurrence.
+    Scalar,
+    /// Every `w_k` is zero: no work.
+    ZeroInput,
+}
+
+/// The degree and coefficient plan of one basis (research node PY03):
+/// [`choose_transform`]'s degree, Laguerre scale, `beta` and `L'` for the
+/// action's own weight factor and truncation budget, and the predicted
+/// vector products (degree x block width). No coefficient table is built
+/// and nothing is admitted: **a plan is not a certificate**.
+#[derive(Clone, Debug)]
+pub struct ActionPlan {
+    basis: PolynomialBasis,
+    operator_fingerprint: String,
+    h_bits: u64,
+    input_digest: String,
+    truncation_budget: f64,
+    width: usize,
+    normalization_shift: i64,
+    branch: PlanBranch,
+    scalar_branch: bool,
+    transform: Option<Transform>,
+    weight_factor: f64,
+    core_budget: f64,
+    norms: [f64; JOINT_PHI_TERMS],
+    source_norms: [f64; JOINT_PHI_TERMS],
+    scales_abs: [f64; JOINT_PHI_TERMS],
+    tail_evaluations: u64,
+    coefficients_cached: bool,
+}
+
+/// The serializable summary of an [`ActionPlan`].
+#[derive(Clone, Debug, PartialEq, Serialize)]
+pub struct PlanRecord {
+    pub basis: PolynomialBasis,
+    pub branch: PlanBranch,
+    pub degree: usize,
+    pub width: usize,
+    pub laguerre_scale: Option<f64>,
+    pub beta: Option<f64>,
+    pub laguerre_extent: Option<f64>,
+    pub predicted_vector_products: u64,
+    pub predicted_block_products: u64,
+    pub tail_evaluations: u64,
+    pub normalization_shift: i64,
+    pub coefficients_cached: bool,
+    pub truncation_budget: f64,
+}
+
+impl ActionPlan {
+    pub fn basis(&self) -> PolynomialBasis {
+        self.basis
+    }
+
+    pub fn branch(&self) -> PlanBranch {
+        self.branch
+    }
+
+    /// The planned degree (0 without a recurrence).
+    pub fn degree(&self) -> usize {
+        self.transform.as_ref().map_or(0, |t| t.degree)
+    }
+
+    /// The block width: 5 for distinct vectors, 1 for the same vector.
+    pub fn width(&self) -> usize {
+        self.width
+    }
+
+    pub fn laguerre_scale(&self) -> Option<f64> {
+        self.transform.as_ref().and_then(|t| t.laguerre_scale)
+    }
+
+    /// Laguerre: `beta = rho / L`.
+    pub fn beta(&self) -> Option<f64> {
+        self.transform
+            .as_ref()
+            .filter(|t| t.basis == PolynomialBasis::Laguerre)
+            .map(|t| t.beta)
+    }
+
+    /// Laguerre: `L' >= rho / beta`.
+    pub fn laguerre_extent(&self) -> Option<f64> {
+        self.transform
+            .as_ref()
+            .filter(|t| t.basis == PolynomialBasis::Laguerre)
+            .map(|t| t.laguerre_extent)
+    }
+
+    /// Operator vector products the execution will make: degree x width.
+    pub fn predicted_vector_products(&self) -> u64 {
+        (self.degree() * self.width) as u64
+    }
+
+    /// Block products the execution will make: the degree.
+    pub fn predicted_block_products(&self) -> u64 {
+        self.degree() as u64
+    }
+
+    /// Tail evaluations of the degree search.
+    pub fn tail_evaluations(&self) -> u64 {
+        self.tail_evaluations
+    }
+
+    pub fn truncation_budget(&self) -> f64 {
+        self.truncation_budget
+    }
+
+    pub fn normalization_shift(&self) -> i64 {
+        self.normalization_shift
+    }
+
+    /// Whether the coefficient table was cached when the plan was made.
+    pub fn coefficients_cached(&self) -> bool {
+        self.coefficients_cached
+    }
+
+    pub fn record(&self) -> PlanRecord {
+        PlanRecord {
+            basis: self.basis,
+            branch: self.branch,
+            degree: self.degree(),
+            width: self.width,
+            laguerre_scale: self.laguerre_scale(),
+            beta: self.beta(),
+            laguerre_extent: self.laguerre_extent(),
+            predicted_vector_products: self.predicted_vector_products(),
+            predicted_block_products: self.predicted_block_products(),
+            tail_evaluations: self.tail_evaluations,
+            normalization_shift: self.normalization_shift,
+            coefficients_cached: self.coefficients_cached,
+            truncation_budget: self.truncation_budget,
+        }
+    }
+
+    fn coefficient_key(&self) -> Option<CoefficientKey> {
+        self.transform.as_ref().map(|t| CoefficientKey {
+            basis: self.basis,
+            operator_fingerprint: self.operator_fingerprint.clone(),
+            h_bits: self.h_bits,
+            degree: t.degree,
+            laguerre_scale_bits: t.laguerre_scale.unwrap_or(0.0).to_bits(),
+        })
+    }
+
+    /// The plan belongs to this operator, step and input.
+    fn check_call(
+        &self,
+        op: &SymmetricNonpositiveOperator,
+        h: f64,
+        input: JointPhiInput<'_>,
+    ) -> CoreResult<()> {
+        if op.fingerprint != self.operator_fingerprint
+            || h.to_bits() != self.h_bits
+            || input_digest(input) != self.input_digest
+        {
+            return Err(plan_mismatch(
+                "the plan was made for another operator, step or input",
+            ));
+        }
+        Ok(())
+    }
+}
+
+/// SHA-256 of the input kind, the bits of every entry and the scales.
+fn input_digest(input: JointPhiInput<'_>) -> String {
+    let mut bytes = Vec::new();
+    match input {
+        JointPhiInput::Distinct(vectors) => {
+            bytes.push(0_u8);
+            for vector in vectors {
+                bytes.extend_from_slice(&(vector.len() as u64).to_le_bytes());
+                for x in vector {
+                    bytes.extend_from_slice(&x.to_bits().to_le_bytes());
+                }
+            }
+        }
+        JointPhiInput::SameVector { vector, scales } => {
+            bytes.push(1_u8);
+            bytes.extend_from_slice(&(vector.len() as u64).to_le_bytes());
+            for x in vector.iter().chain(&scales) {
+                bytes.extend_from_slice(&x.to_bits().to_le_bytes());
+            }
+        }
+    }
+    sha256_hex(&bytes)
+}
+
+/// Plan `sum_k phi_k(h A) w_k` in `basis` for the truncation budget
+/// (research node PY03): the action's normalization and weight factor,
+/// then [`choose_transform`] (the degree search, whose tail evaluations are
+/// charged to `cost` even when it fails). `caches` is only looked up (the
+/// plan records whether the coefficient table is cached); no table is built.
+/// The errors are the action's own: an invalid step, budget or input, a
+/// degenerate enclosure that does not fit the matrix, a degree or range
+/// failure.
+pub fn plan_joint_phi(
+    op: &SymmetricNonpositiveOperator,
+    h: f64,
+    input: JointPhiInput<'_>,
+    basis: PolynomialBasis,
+    truncation_budget: f64,
+    caches: &PolynomialCaches,
+    cost: &mut RouteCost,
+) -> CoreResult<ActionPlan> {
+    let n = op.dimension();
+    // The normalization of joint_phi_action_impl_captured.
+    let entries: Vec<f64> = match input {
+        JointPhiInput::Distinct(vectors) => vectors.iter().flatten().copied().collect(),
+        JointPhiInput::SameVector { vector, .. } => vector.to_vec(),
+    };
+    let max = entries.iter().fold(0.0_f64, |acc, x| acc.max(x.abs()));
+    let shift = if max.is_finite() && max > 0.0 {
+        crate::binary_split(max).1
+    } else {
+        0
+    };
+    let in_window = shift.abs() <= NORMALIZATION_WINDOW
+        || !(truncation_budget.is_finite() && truncation_budget > 0.0)
+        || !(h.is_finite() && h >= 0.0);
+    let (shift, budget) = if in_window {
+        (0, truncation_budget)
+    } else {
+        let mut scaled = scale_pow2(truncation_budget, -shift);
+        if scaled.is_finite() && scale_pow2(scaled, shift) > truncation_budget {
+            scaled = scaled.next_down();
+        }
+        if scaled == f64::INFINITY {
+            scaled = f64::MAX;
+        }
+        if scaled.is_nan() || scaled <= 0.0 {
+            return Err(CoreError::NonFinite(format!(
+                "{POLYNOMIAL_RANGE_UNSUPPORTED}: the truncation budget outside the binary64 range after scaling by 2^{shift}"
+            )));
+        }
+        (shift, scaled)
+    };
+    // The checks and the weight factor of joint_phi_action_core.
+    if !(h.is_finite() && h >= 0.0) {
+        return Err(unsupported(format!(
+            "step h = {h:e} must be finite and >= 0"
+        )));
+    }
+    if !(budget.is_finite() && budget > 0.0) {
+        return Err(unsupported("truncation budget must be positive"));
+    }
+    let scaled =
+        |vector: &[f64]| -> Vec<f64> { vector.iter().map(|x| scale_pow2(*x, -shift)).collect() };
+    let (block, scales): (Vec<Vec<f64>>, [f64; JOINT_PHI_TERMS]) = match input {
+        JointPhiInput::Distinct(vectors) => {
+            if vectors.iter().any(|w| w.len() != n) {
+                return Err(unsupported("every w_k must have the operator dimension"));
+            }
+            (
+                vectors.iter().map(|w| scaled(w)).collect(),
+                [1.0; JOINT_PHI_TERMS],
+            )
+        }
+        JointPhiInput::SameVector { vector, scales } => {
+            if vector.len() != n {
+                return Err(unsupported("vector must have the operator dimension"));
+            }
+            (vec![scaled(vector)], scales)
+        }
+    };
+    if !block.iter().flatten().chain(&scales).all(|x| x.is_finite()) {
+        return Err(CoreError::NonFinite(
+            "joint phi input contains NaN/Inf".into(),
+        ));
+    }
+    let width = block.len();
+    let mut norms = [0.0; JOINT_PHI_TERMS];
+    let mut source_norms = [0.0; JOINT_PHI_TERMS];
+    for k in 0..JOINT_PHI_TERMS {
+        let column = if width == 1 { 0 } else { k };
+        source_norms[k] = norm_up(block[column].iter().copied())?;
+        norms[k] = if width == 1 {
+            mul_up(scales[k].abs(), source_norms[k])?
+        } else {
+            source_norms[k]
+        };
+    }
+    let weight_factor = norms.iter().enumerate().try_fold(0.0, |acc, (k, norm)| {
+        add_up(acc, div_up(*norm, factorial(k))?)
+    })?;
+    let SpectralEnclosure { lambda, rho, .. } = op.enclosure.clone();
+    let scalar_branch = h == 0.0 || rho == 0.0 || lambda == rho;
+    if lambda == rho && rho > 0.0 {
+        let scalar =
+            (0..n).all(|i| (0..n).all(|j| op.matrix[(i, j)] == if i == j { -lambda } else { 0.0 }));
+        if !scalar {
+            return Err(unsupported("a degenerate enclosure needs A = -lambda I"));
+        }
+    }
+    if rho == 0.0 && op.matrix.as_slice().iter().any(|x| *x != 0.0) {
+        return Err(unsupported("the enclosure [0, 0] needs A = 0"));
+    }
+    let (branch, transform, tail_evaluations) = if weight_factor == 0.0 {
+        (PlanBranch::ZeroInput, None, 0)
+    } else if scalar_branch {
+        (PlanBranch::Scalar, None, 0)
+    } else {
+        let before = tally::tail_evaluations();
+        let chosen = choose_transform(op, h, basis, weight_factor, budget, &LAGUERRE_SCALES);
+        let evaluations = tally::tail_evaluations().wrapping_sub(before);
+        cost.plan_tail_evaluations += evaluations;
+        (PlanBranch::Recurrence, Some(chosen?), evaluations)
+    };
+    let mut plan = ActionPlan {
+        basis,
+        operator_fingerprint: op.fingerprint.clone(),
+        h_bits: h.to_bits(),
+        input_digest: input_digest(input),
+        truncation_budget,
+        width,
+        normalization_shift: shift,
+        branch,
+        scalar_branch,
+        transform,
+        weight_factor,
+        core_budget: budget,
+        norms,
+        source_norms,
+        scales_abs: scales.map(f64::abs),
+        tail_evaluations,
+        coefficients_cached: false,
+    };
+    plan.coefficients_cached = plan
+        .coefficient_key()
+        .is_some_and(|key| caches.coefficients.contains(&key));
+    Ok(plan)
+}
+
+/// Execute a plan (research node PY03): the action with the planned
+/// transform instead of a new degree search, the coefficient table from
+/// `caches.coefficients` (built on a miss) and the Laguerre adjoint
+/// envelopes from `caches.envelopes`. The report and the counters are
+/// bitwise those of `joint_phi_action(op, h, input, plan.basis(),
+/// plan.truncation_budget(), Some(&mut caches.coefficients), work)`. A plan
+/// made for another operator, step or input is refused with
+/// [`PLAN_MISMATCH`] before any work.
+pub fn execute_joint_phi(
+    plan: &ActionPlan,
+    op: &SymmetricNonpositiveOperator,
+    h: f64,
+    input: JointPhiInput<'_>,
+    caches: &mut PolynomialCaches,
+    work: &mut WorkCounters,
+) -> CoreResult<JointPhiReport> {
+    execute_joint_phi_counted(plan, op, h, input, caches, work, &mut RouteCost::default())
+}
+
+/// [`execute_joint_phi`] that also charges its work to `cost`: one
+/// executed backend; the vector and block products (degree x width and the
+/// degree; on an action error, the counters' change); the coefficient setup
+/// or cache hit and the series terms of the table (or of the scalar
+/// branch); the certification operations (Chebyshev propagation-loop terms,
+/// envelope interval operations and cache hits/misses, adjoint-sum terms).
+pub fn execute_joint_phi_counted(
+    plan: &ActionPlan,
+    op: &SymmetricNonpositiveOperator,
+    h: f64,
+    input: JointPhiInput<'_>,
+    caches: &mut PolynomialCaches,
+    work: &mut WorkCounters,
+    cost: &mut RouteCost,
+) -> CoreResult<JointPhiReport> {
+    execute_plan(plan, op, h, input, caches, work, cost, true)
+}
+
+/// [`execute_joint_phi`] in plain binary64 for timing: bitwise the report
+/// of [`joint_phi_action_unbounded`] with the same cache, never certified.
+pub fn execute_joint_phi_unbounded(
+    plan: &ActionPlan,
+    op: &SymmetricNonpositiveOperator,
+    h: f64,
+    input: JointPhiInput<'_>,
+    caches: &mut PolynomialCaches,
+    work: &mut WorkCounters,
+) -> CoreResult<JointPhiReport> {
+    execute_plan(
+        plan,
+        op,
+        h,
+        input,
+        caches,
+        work,
+        &mut RouteCost::default(),
+        false,
+    )
+}
+
+#[allow(clippy::too_many_arguments)]
+fn execute_plan(
+    plan: &ActionPlan,
+    op: &SymmetricNonpositiveOperator,
+    h: f64,
+    input: JointPhiInput<'_>,
+    caches: &mut PolynomialCaches,
+    work: &mut WorkCounters,
+    cost: &mut RouteCost,
+    bounds: bool,
+) -> CoreResult<JointPhiReport> {
+    plan.check_call(op, h, input)?;
+    let before = *work;
+    let mut staging = Staging {
+        planned: plan.transform.clone().map(|transform| PlannedTransform {
+            transform,
+            basis: plan.basis,
+            weight_factor_bits: plan.weight_factor.to_bits(),
+            budget_bits: plan.core_budget.to_bits(),
+        }),
+        envelopes: Some(&mut caches.envelopes),
+        counts: StagedCounts::default(),
+    };
+    let result = joint_phi_action_impl_captured(
+        op,
+        h,
+        input,
+        plan.basis,
+        plan.truncation_budget,
+        Some(&mut caches.coefficients),
+        work,
+        bounds,
+        &LAGUERRE_SCALES,
+        None,
+        Some(&mut staging),
+    );
+    let counts = staging.counts;
+    let unused_plan = staging.planned.is_some();
+    cost.executed_backends += 1;
+    cost.coefficient_series_terms += counts.series_terms;
+    cost.chebyshev_propagation_terms += counts.propagation_terms;
+    cost.envelope_interval_operations += counts.envelope_operations;
+    cost.envelope_cache_hits += counts.envelope_hits;
+    cost.envelope_cache_misses += counts.envelope_misses;
+    cost.adjoint_sum_terms += counts.adjoint_terms;
+    match result {
+        Ok(report) => {
+            cost.coefficient_setups += counts.coefficient_setups;
+            cost.coefficient_cache_hits += counts.coefficient_cache_hits;
+            let width = plan.width as u64;
+            cost.vector_products += report.degree as u64 * width;
+            cost.block_products += report.degree as u64;
+            let branch = if plan.scalar_branch {
+                "scalar"
+            } else {
+                "recurrence"
+            };
+            if unused_plan
+                || report.degree != plan.degree()
+                || report.branch != branch
+                || report.normalization_shift != plan.normalization_shift
+            {
+                return Err(plan_mismatch(format!(
+                    "the execution ran degree {} on the {} branch, the plan {} on the {branch} branch",
+                    report.degree,
+                    report.branch,
+                    plan.degree()
+                )));
+            }
+            Ok(report)
+        }
+        Err(error) => {
+            // The action stopped part way: charge what the counters saw.
+            let delta = work.checked_delta(before).unwrap_or_default();
+            cost.coefficient_setups += delta.poly_coefficient_setups;
+            cost.coefficient_cache_hits += delta.poly_coefficient_reuses;
+            cost.vector_products += delta.poly_vector_products;
+            cost.block_products += delta.poly_block_products;
+            Err(error)
+        }
+    }
+}
+
+/// The preflight's vector-independent terms of a Laguerre plan (research
+/// node PY03): the truncation term plus the coefficient term built from the
+/// coefficient radii, rounded upward in the action's arithmetic (per column
+/// `k`: `tail * ||w_k|| / k!` and `|s_k| ||w_col|| sum_n rad(c_{n,k})
+/// e^{L'/2}`), and out of the normalization window scaled back by
+/// `2^shift`. Both are components of the Laguerre total, so a sum above the
+/// total budget cannot be admitted. The coefficient table is read from
+/// `caches.coefficients` or built and inserted there; its setup (or cache
+/// hit) is charged to `work` and `cost` with its series terms, and the
+/// execution then reads the same table.
+pub fn laguerre_preflight_terms(
+    plan: &ActionPlan,
+    op: &SymmetricNonpositiveOperator,
+    caches: &mut PolynomialCaches,
+    work: &mut WorkCounters,
+    cost: &mut RouteCost,
+) -> CoreResult<f64> {
+    if plan.basis != PolynomialBasis::Laguerre || op.fingerprint != plan.operator_fingerprint {
+        return Err(plan_mismatch(
+            "the preflight needs a Laguerre plan of this operator",
+        ));
+    }
+    let (Some(transform), Some(key)) = (plan.transform.as_ref(), plan.coefficient_key()) else {
+        return Err(plan_mismatch("the plan has no recurrence"));
+    };
+    let table = if let Some(table) = caches.coefficients.tables.get(&key) {
+        work.poly_coefficient_reuses += 1;
+        cost.coefficient_cache_hits += 1;
+        table.clone()
+    } else {
+        work.poly_coefficient_setups += 1;
+        cost.coefficient_setups += 1;
+        let before = tally::series_terms();
+        let built = laguerre_coefficients(transform.a, transform.degree);
+        cost.coefficient_series_terms += tally::series_terms().wrapping_sub(before);
+        let table = built?;
+        caches.coefficients.tables.insert(key, table.clone());
+        table
+    };
+    let mut total = 0.0;
+    for k in 0..JOINT_PHI_TERMS {
+        let truncation = mul_up(transform.tail_factor, div_up(plan.norms[k], factorial(k))?)?;
+        let mut coefficient = 0.0;
+        for row in &table {
+            let radius = distance_up(midpoint(row[k]), row[k])?;
+            coefficient = add_up(coefficient, mul_up(radius, transform.laguerre_norm)?)?;
+        }
+        coefficient = mul_up(coefficient, plan.source_norms[k])?;
+        coefficient = mul_up(plan.scales_abs[k], coefficient)?;
+        total = add_up(total, truncation)?;
+        total = add_up(total, coefficient)?;
+    }
+    if plan.normalization_shift != 0 {
+        total = scale_bound_up(total, plan.normalization_shift)?;
+    }
+    Ok(total)
 }
 
 #[cfg(test)]
