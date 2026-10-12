@@ -178,3 +178,132 @@ confirms that no PY04 helper name duplicates or shadows an existing or AS05-adde
 - **S5:** mostly Bounded. A refusal is expected only where ||F|| or the bound exceeds `f64::MAX`.
 - **Baseline:** the unnormalized baseline is Unbounded in S4/S5 and not useful in S1-S3.
 - **Overall:** probably PASS, with S3 the main risk.
+
+## Results
+
+Everything above this heading is the registered text, unchanged (last changed at `8ce9bda`). Executed on branch
+`node/py04` from `28c067c` (AS05 and PY01 merged); the registered text names `audit/rvj-reaudit-remaining-20261011`
+as the registration branch. Only the branch differs.
+
+**Verdict: PASS** (evidence VALID). All 144 normalized certificates are Bounded and enclose the 50-digit error of
+F_hat, and of the Taylor caller candidate in the 80 cases where Taylor accepted the original w. The six gate items
+hold with zero violations. Claim boundary as registered: mixed absolute-relative budget only, no relative-only claim,
+no PP11 rerun (the PP11 PASS and the PP12b FAIL stand unedited), opt-in entry point, `certify_fused_phi_total`
+unchanged, no default promotion, no wall-time claim.
+
+### Record
+
+| Item | Commit | SHA-256 |
+|---|---|---|
+| Registration (text above) | `8ce9bda` | — |
+| A: `directed.rs` helpers, `certify_fused_phi_total_normalized`, contract tests and exporter | `2dd3ba2` | `directed.rs` `f49d7ca9b90f8b976acf4c23bd41bffdfb35640ee34d1b3dbe5335ba938b3f34`; `taylor_phi_total.rs` `982a06a11857dcdf6833a4f64a3cf5dc655af612b8b2446b5614add2976b5f96`; `tests/fused_normalization_contract.rs` `cddbb0ce951c21f567e2fdec071ee1c3da1a0ee979731040bccc97e1eaca52e8` |
+| B: checker and synthetic checker tests (before the run) | `b3e1d93` | `py04_fused_normalization_check.py` `1581bc5ebb619b24649a6704c297ab5286f7ae59f85a88c9ae86a6cf624583a1`; `test_py04_fused_normalization_check.py` `34c20686ab296c372cb7bc1a6d5f7b0304048f0e03fe39c777f7baba86f0f945` |
+| C: recorded run at `b3e1d93` (clean tree) | `9ed58d9` | `cases.json` `f2e83b223d24379595243222c0cbf6f34dbbd6b0df372ba75ca655e4443f4db8` (1,103,711 bytes, compact JSON); `RESULTS.json` `c701467b3f19923da0405e0ad1687462a6686db57b81bd58a33fbc72d2b6e75c` (292,730 bytes) |
+| Unchanged input | — | `tools/evidence_schema_v2.py` `1d2bfe9276252b2079914e4fa958612ed06ffb04d1fecf9016bd4f370206ff10` |
+
+**How the run was made.** The three registered commands were run once each, in order, from a clean tree at
+`b3e1d93`, with `RAYON_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1`, rustc/cargo 1.94.1, Python 3.11, mpmath 1.3.0.
+- Command 1 (debug): 7 passed, 1 ignored (`export_cases`), exit 0.
+- Command 2 (release): `export_cases` passed and wrote `cases.json` (144 cases, 72 table rows). Its recorded
+  `source_commit` is `b3e1d93c5b84a191a83a1b986e3afef6819a6248` and its `tree_status` (`git status --porcelain`,
+  untracked files included) is empty.
+- Command 3: exit 0. The checker recorded HEAD `b3e1d93…` and an empty `git status --porcelain --untracked-files=no`;
+  its blob at the source commit equals the checker that ran.
+
+**Tests.** At A: `cargo fmt --check` and `cargo clippy --workspace --all-targets --locked -- -D warnings` clean;
+`cargo test -p rodas5p-core --all-targets` passed (41 result groups, 0 failures, PP11's contract tests included) and
+`cargo test -p rodas5p-core --doc` passed (7, including the two new `compile_fail` type-separation doctests and the
+PP11 one). At B: `python3 -m unittest discover -s tools -p test_py04_fused_normalization_check.py` passed 32 tests,
+normally and with `-O` (a PASS fixture; 14 INVALID tests: duplicate key, NaN, missing and duplicate cases, extra key,
+non-canonical hex, an unbound input bit, a wrong family rule, a caller candidate not equal to the Taylor output, an
+unbound table input, dirty export and checker trees, a checker-blob mismatch, 50/70-digit disagreement; 13 FAIL tests
+covering each of the six items; arithmetic and closed-form reference tests). Before B, the checker's regeneration of
+the 144 inputs and 72 table inputs was compared bit for bit with the Rust generator compiled standalone (inputs only;
+no certificate was computed), and its matrix generator with PP11's committed `cases.json` (72/72).
+
+**Coordination (directed.rs).** The PY04 additions are additive: `PowerOfTwo`, `POW2_STAGE_LIMIT`, `Pow2Scaling`,
+`scale_pow2_staged`, `scale_pow2_nearest`, `scale_pow2_up`, `scale_pow2_down`, `scale_pow2_is_exact` (public) and
+`POW2_EXPONENT_CLAMP`, `floor_log2`, `pow2_stage` (private). None of these names occurs anywhere in `crates/` at
+`28c067c` (after the AS05 merge); `git diff 28c067c -- directed.rs` removes no line. The only existing item with a
+similar name, `polynomial_action`'s private `fn scale_pow2`, is not glob-imported anywhere, so nothing is shadowed.
+In `taylor_phi_total.rs` the only removed line is the `use crate::directed::{…}` list, replaced by a longer one.
+
+### Validity
+
+All conditions hold. AS03 rules pass (strict JSON, exact key sets, canonical hex, exactly the 144 registered labels
+and 72 table rows). Every A, base w_k and input w (s x base, rounded once) and every table input equals the
+checker's regeneration bit for bit; both Taylor budgets are 1e-13; every caller candidate is the exported Taylor
+output on the original w. The worst 50/70-digit reference difference is 2.5e-51 relative (tolerance 1e-45 relative
+plus 2^-1100); the S6 L references agree likewise. Provenance and both tree statuses are clean.
+
+### Gate
+
+| Item | Result | Numbers |
+|---|---|---|
+| 1 Enclosure | holds | 144/144 F_hat bounds and 80/80 caller bounds enclose error + reference difference; bound/error min 2.56 (S3), caller bound/error min 1.29 |
+| 2 Homogeneity | holds | 16/16 triples: v, z, E, perturbation, stepped error, normalized distance bitwise identical; all 16 triples exact (R = L = 0, sigma E normal) and bound_s = s bound_1 exactly in all 16 |
+| 3 Accounting | holds | L > 0 in exactly the 16 S6 cases (w_4 / sigma underflows), = 0 in all others; R > 0 in 37 cases (5 S1, 16 S2, 16 S3), every R^2 >= the exact squared rescale error (min ratio R/actual 1.71); no Bounded certificate has a null value |
+| 4 Directed scaling | holds | 72/72 rows (68 finite: down <= exact <= up, nearest correctly rounded, exact flag right; 4 overflow rows at e = 1022/1023 refused); largest stage 2^1000 |
+| 5 Usefulness (mixed budget) | holds | S1, S2, S3, S4, S6: 80/80 Bounded and useful; bound / budget max 0.048 (S1, S4), 0.085 (S2, S3), 0.003 (S6) |
+| 6 Overflow boundary | holds | S5: 16/16 Bounded and valid, 0 refused (largest ||F||_2 = 2.40e308 > f64::MAX, every entry finite) |
+
+Per family (bound for F_hat; e is sigma's exponent):
+
+| Family | e | Bounded | relative bound min..max | bound/error min..max | dominant term |
+|---|---|---|---|---|---|
+| S1 (2^-1016) | -1017 | 16 | 2.3e-15 .. 4.8e-12 | 3.14 .. 1.8e4 | up(sigma E) 16 |
+| S2 (2^-1050) | -1051 | 16 | 6.7e-8 .. 6.9e-7 | 2.79 .. 5.92 | R 16 |
+| S3 (2^-1068) | -1069, -1068 | 16 | 0.018 .. 0.18 (at most 3.04 x 2^-1074) | 2.56 .. 8.26 | R 16 |
+| S4 (2^1018) | 1017 | 16 | 2.3e-15 .. 4.8e-12 | 3.14 .. 1.8e4 | up(sigma E) 16 |
+| S5 (2^1023) | 1022 | 16 | 2.3e-15 .. 4.8e-12 | 3.14 .. 1.8e4 | up(sigma E) 16 |
+| S6 (mixed) | 999 | 16 | 2.7e-15 .. 3.0e-13 | 6.52 .. 577 | up(sigma E) 16 |
+| S7 (1, 2^600, 2^-600) | -1, 599, -601 | 48 | 2.3e-15 .. 4.8e-12 | 3.14 .. 1.8e4 | up(sigma E) 48 |
+
+### Reported, not gated
+
+- **Relative-only usefulness** (bound <= 1e-10 ||F||): 16/16 in S1, S4, S5, S6 and each S7 member; 0/16 in S2 and
+  S3, where the bound is a few subnormal quanta (S2 6.7e-8 to 6.9e-7 relative, S3 up to 0.18). This is where the
+  registered relative-only gate is infeasible.
+- **Taylor caller candidate** (Taylor on the original w): accepted in S1, S2, S3, S7 (s = 1 and 2^-600), 80 cases;
+  rejected in S4, S5, S6 and S7 (2^600) (`||M||_1` above the Taylor limit). All 80 caller bounds enclose; mixed-useful
+  80/80, relative-useful 48/80 (0/16 in S2 and S3).
+- **Unnormalized baseline** (`certify_fused_phi_total`, PP11 candidate rule): Bounded and enclosing in S1, S2, S3
+  (16 each) but never useful there (absolute floor ~1e-15 as in PP11); S4 8/16 Bounded and useful (the h = 0.25 cases,
+  zero perturbation) and 8 Unbounded (7 perturbation overflow, 1 no stepped bound); S5 and S6 16/16 Unbounded (no
+  stepped bound); S7: s = 1 16/16 Bounded and useful, s = 2^600 8/16 Bounded and useful, s = 2^-600 16/16 Bounded
+  and not useful.
+- **Dominant term**: up(sigma E) in S1, S4-S7 (128 cases), R in S2 and S3 (32). Inside E: the perturbation for
+  h = 0.3 and the stepped error for h = 0.25 (64 each), and the stepped error in all 16 S6 cases.
+- **L in S6** is 1.2e-24 x (growth/factorial sum) scale against ||F|| ~ 1e300: loose (L / actual ~ 4e299, since the
+  bound uses half a quantum for an entry that underflowed far below it) and negligible (S6 bound / budget <= 0.003).
+- **Normalization work** (counted, not timed): per case 31-38 scaled entries and 31-83 stages at n = 5, 73-87 entries
+  and 73-188 stages at n = 12 (5n inputs, n candidate entries, 1-15 bound scalings); every stage factor is at most
+  2^1000 in magnitude.
+- **Candidate source**: Taylor accepted the normalized data in all 144 cases (no stepped-top fallback).
+
+### Prediction check
+
+- Items 1-4 and 6 hold: as predicted.
+- Item 5 (S1-S4, S6 useful): as predicted. R dominates in S2 and S3 rather than sigma E (predicted ~1e-15 relative);
+  S3, the predicted main risk, has bounds of at most 3.04 quanta against a budget of 35.8-55.4 quanta.
+- S5 mostly Bounded: all 16 Bounded, no refusal (no rescaled entry reached 2^1024; the refusal path is exercised by
+  the contract test only).
+- Baseline Unbounded in S4/S5: **partly wrong**. S5 16/16 Unbounded, but S4 has 8 Bounded and useful baseline
+  certificates (power-of-two h, where the perturbation term is exactly 0 and no e^omega product is formed).
+  Baseline not useful in S1-S3: as predicted.
+- Overall PASS: as predicted.
+
+### Interpretations and deviations
+
+Fixed before the recorded run in the checker docstring (items 1-10): one seed per matrix 41000 + index, base w_k drawn
+after the matrix, table seed 41016; Taylor budget 1e-13 for both Taylor calls (PP11's; the registration names none);
+R and L count only the inexact entries; item 1 gates the normalized certificates (the baseline is reported); items 1
+and 3 apply to Bounded certificates; norms in mpmath at 50 digits plus the 50/70 difference; L's enclosure checked
+against the mpmath reference of sigma F(A, h, w/sigma - v); the `compile_fail` doctests run under
+`cargo test -p rodas5p-core --doc`, not under the registered `--test` command; non-finite values exported as null; an
+Unbounded normalized-level certificate gives an Unbounded result, not a refusal.
+
+After the run (reported field only, nothing re-run): the reported consistency flag `v_is_nearest` is false in 5 cases
+(3 S3, 2 S6). In each, one input entry is -0.0 (a negative base entry that underflowed); the exporter's v is -0.0, and
+the checker's fractions comparison yields +0.0, which differs only in the sign of zero. The values are equal. The gated
+exactness test (item 3) compares values, not bits, so no gate is affected. There is no `*_FIRST` file.
