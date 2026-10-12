@@ -332,6 +332,238 @@ pub fn exp_interval(x: f64) -> CoreResult<Interval> {
     Interval::new(mul_down(sum.lo, scale)?, mul_up(sum.hi, scale)?)
 }
 
+/// A power of two `sigma = 2^exponent`, held by its exponent only (research
+/// node PY04, `research/py04_fused_normalization_20261011`). `2^exponent` is
+/// never formed as a binary64 here; scaling by it goes through the staged
+/// [`scale_pow2_staged`], so `|exponent| > 1022` (where `2^exponent` or its
+/// reciprocal is not a normal binary64) never overflows or underflows a
+/// factor.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct PowerOfTwo {
+    pub exponent: i64,
+}
+
+impl PowerOfTwo {
+    pub const ONE: Self = Self { exponent: 0 };
+
+    pub fn new(exponent: i64) -> Self {
+        Self { exponent }
+    }
+
+    /// `sigma^-1`: the exponent's negation (saturating). No reciprocal is
+    /// computed, so it never overflows.
+    pub fn inverse(self) -> Self {
+        Self {
+            exponent: self.exponent.saturating_neg(),
+        }
+    }
+
+    /// The largest power of two not above `|x|` (`floor(log2 |x|)` as the
+    /// exponent, subnormal `x` included); `None` for zero or non-finite `x`.
+    pub fn floor_of(x: f64) -> Option<Self> {
+        if x == 0.0 || !x.is_finite() {
+            return None;
+        }
+        Some(Self {
+            exponent: floor_log2(x),
+        })
+    }
+}
+
+/// The largest stage factor of [`scale_pow2_staged`] is `2^1000` in
+/// magnitude (`2^+-1000` are normal binary64 numbers).
+pub const POW2_STAGE_LIMIT: i64 = 1000;
+
+/// Exponents beyond this magnitude give the same result as the clamped one
+/// for every finite `x` (`2^-1074 2^4096` overflows, `f64::MAX 2^-4096`
+/// rounds to zero), so they are clamped before staging.
+const POW2_EXPONENT_CLAMP: i64 = 4096;
+
+/// One staged scaling `x 2^e` of a finite `x` (see [`scale_pow2_staged`]).
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Pow2Scaling {
+    /// `x 2^e` rounded to nearest (ties to even); `+-inf` on overflow.
+    pub nearest: f64,
+    /// The exact `x 2^e` compared with `nearest` (`Equal` iff exact).
+    pub exact_vs_nearest: std::cmp::Ordering,
+    /// `|x 2^e| >= 2^1024`: no binary64 encloses it from both sides.
+    pub overflow: bool,
+    /// Multiplications by a stage factor.
+    pub stages: u32,
+    /// The largest `|k|` of the stage factors `2^k` used (at most
+    /// [`POW2_STAGE_LIMIT`]).
+    pub largest_stage: u32,
+}
+
+impl Pow2Scaling {
+    /// Upper bound on the exact `x 2^e`: `nearest`, one step up when the
+    /// exact value lies above it. An overflow is an error.
+    pub fn up(&self) -> CoreResult<f64> {
+        if self.overflow {
+            return Err(CoreError::NonFinite(
+                "directed rounding: power-of-two scaling overflows".into(),
+            ));
+        }
+        Ok(if self.exact_vs_nearest == std::cmp::Ordering::Greater {
+            self.nearest.next_up()
+        } else {
+            self.nearest
+        })
+    }
+
+    /// Lower bound on the exact `x 2^e` (see [`Pow2Scaling::up`]).
+    pub fn down(&self) -> CoreResult<f64> {
+        if self.overflow {
+            return Err(CoreError::NonFinite(
+                "directed rounding: power-of-two scaling overflows".into(),
+            ));
+        }
+        Ok(if self.exact_vs_nearest == std::cmp::Ordering::Less {
+            self.nearest.next_down()
+        } else {
+            self.nearest
+        })
+    }
+
+    /// No overflow and no rounding.
+    pub fn is_exact(&self) -> bool {
+        !self.overflow && self.exact_vs_nearest == std::cmp::Ordering::Equal
+    }
+}
+
+/// `floor(log2 |x|)` for finite nonzero `x`.
+fn floor_log2(x: f64) -> i64 {
+    let bits = x.abs().to_bits();
+    let biased = (bits >> 52) as i64;
+    if biased == 0 {
+        let mantissa = bits & ((1_u64 << 52) - 1);
+        -1074 + (63 - i64::from(mantissa.leading_zeros()))
+    } else {
+        biased - 1023
+    }
+}
+
+/// `2^k` for `|k| <= POW2_STAGE_LIMIT` (a normal binary64, exact).
+fn pow2_stage(k: i64) -> f64 {
+    debug_assert!(k.abs() <= POW2_STAGE_LIMIT);
+    f64::from_bits(((k + 1023) as u64) << 52)
+}
+
+/// `x 2^e` by staged multiplications with factors `2^k`, `|k| <= 1000`.
+///
+/// - `e > 0`: every stage is exact until the value overflows (a power-of-two
+///   product of a finite binary64 is exact unless it reaches `2^1024`).
+/// - `e < 0`: the value is first scaled exactly while it stays at or above
+///   `2^-1022` (normal); the one remaining stage, into the subnormal range,
+///   rounds once (IEEE multiplication rounds correctly, subnormal results
+///   included). Staging stops when that stage gives zero: every further
+///   factor would leave zero unchanged and keep the exact value's sign.
+///
+/// The rounding direction is read back exactly: the rounded value times
+/// `2^-k` (a subnormal or zero scaled up by at most `2^1000`) is exact and is
+/// compared with the value before the stage. A non-finite `x` is an error.
+pub fn scale_pow2_staged(x: f64, e: i64) -> CoreResult<Pow2Scaling> {
+    use std::cmp::Ordering;
+    let x = finite(x, "scaled value")?;
+    let mut out = Pow2Scaling {
+        nearest: x,
+        exact_vs_nearest: Ordering::Equal,
+        overflow: false,
+        stages: 0,
+        largest_stage: 0,
+    };
+    if x == 0.0 || e == 0 {
+        return Ok(out);
+    }
+    let e = e.clamp(-POW2_EXPONENT_CLAMP, POW2_EXPONENT_CLAMP);
+    let mut stage = |y: f64, k: i64| {
+        out.stages += 1;
+        out.largest_stage = out.largest_stage.max(k.unsigned_abs() as u32);
+        y * pow2_stage(k)
+    };
+    let mut y = x;
+    if e > 0 {
+        let mut rest = e;
+        while rest > 0 {
+            let k = rest.min(POW2_STAGE_LIMIT);
+            y = stage(y, k);
+            rest -= k;
+            if !y.is_finite() {
+                break;
+            }
+        }
+        out.nearest = y;
+        if !y.is_finite() {
+            out.overflow = true;
+            // The exact value is finite: below +inf, above -inf.
+            out.exact_vs_nearest = if x > 0.0 {
+                Ordering::Less
+            } else {
+                Ordering::Greater
+            };
+        }
+        return Ok(out);
+    }
+    let top = floor_log2(x);
+    // The exact part: down to the exponent -1022 at most (all of e when the
+    // result is normal).
+    let exact_part = if top + e >= -1022 {
+        e
+    } else {
+        -(top + 1022).max(0)
+    };
+    let mut rest = exact_part;
+    while rest < 0 {
+        let k = rest.max(-POW2_STAGE_LIMIT);
+        y = stage(y, k);
+        rest -= k;
+    }
+    let mut rest = e - exact_part;
+    while rest < 0 {
+        let k = rest.max(-POW2_STAGE_LIMIT);
+        let before = y;
+        y = stage(y, k);
+        rest -= k;
+        // Exact read-back: |y| <= 2^-1022, so |y 2^-k| <= 2^-22.
+        let back = y * pow2_stage(-k);
+        out.exact_vs_nearest = before
+            .partial_cmp(&back)
+            .expect("finite values are ordered");
+        if y == 0.0 {
+            break;
+        }
+        // A nonzero result here is the final one: before >= 2^-1022 > |y|
+        // means this stage reached the subnormal range, which only the last
+        // stage does (rest is then 0).
+        debug_assert_eq!(rest, 0);
+    }
+    out.nearest = y;
+    Ok(out)
+}
+
+/// `x 2^e` rounded to nearest by staged scaling ([`scale_pow2_staged`]);
+/// `+-inf` when it overflows; a non-finite `x` is returned unchanged.
+pub fn scale_pow2_nearest(x: f64, e: i64) -> f64 {
+    scale_pow2_staged(x, e).map_or(x, |s| s.nearest)
+}
+
+/// Upper bound on `x 2^e`: the nearest value, one step up when the exact
+/// value lies above it. An overflow or a non-finite `x` is an error.
+pub fn scale_pow2_up(x: f64, e: i64) -> CoreResult<f64> {
+    scale_pow2_staged(x, e)?.up()
+}
+
+/// Lower bound on `x 2^e` (see [`scale_pow2_up`]).
+pub fn scale_pow2_down(x: f64, e: i64) -> CoreResult<f64> {
+    scale_pow2_staged(x, e)?.down()
+}
+
+/// Whether `x 2^e` is a binary64 number (finite `x`, no overflow, no
+/// rounding).
+pub fn scale_pow2_is_exact(x: f64, e: i64) -> bool {
+    scale_pow2_staged(x, e).is_ok_and(|s| s.is_exact())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
