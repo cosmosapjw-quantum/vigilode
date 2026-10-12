@@ -363,6 +363,30 @@ pub fn laguerre_adjoint_recurrence_bound(
     Ok(total)
 }
 
+/// [`laguerre_adjoint_recurrence_bound`] together with the envelopes
+/// `beta_0 .. beta_m` the sum was formed from, so that a caller can export
+/// the variables the bound used (research node
+/// `research/py01_laguerre_component_export_20261011`). The same checks and
+/// the same upward sum, bit for bit.
+pub fn laguerre_adjoint_recurrence_bound_with_envelopes(
+    stored: &[f64],
+    extent: f64,
+    local: &[f64],
+    depth: usize,
+) -> CoreResult<(f64, Vec<f64>)> {
+    if local.len() + 1 != stored.len() || !local.iter().all(|e| e.is_finite() && *e >= 0.0) {
+        return Err(CoreError::InvalidInput(
+            "LAGUERRE_ADJOINT_UNSUPPORTED: one finite nonnegative residual per step".into(),
+        ));
+    }
+    let envelopes = laguerre_adjoint_envelopes(stored, extent, depth)?;
+    let mut total = 0.0;
+    for (beta, eps) in envelopes[1..].iter().zip(local) {
+        total = add_up(total, mul_up(*beta, *eps)?)?;
+    }
+    Ok((total, envelopes))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
