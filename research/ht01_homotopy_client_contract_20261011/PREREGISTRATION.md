@@ -153,3 +153,109 @@ Everything else is **FAIL**. Ledger: PASS with "decision: SELECTED(k)" or "decis
 ## Results
 
 Appended after the recorded run. Nothing above this heading changes.
+
+Everything above this heading is the registered text, unchanged. Executed on branch `node/ht01` from `8ce9bda` (the
+registration commit); the registered text names `audit/rvj-reaudit-remaining-20261011` as the branch. Only the branch
+name differs.
+
+**Verdict: PASS** (evidence VALID), **decision: ABSTAIN.** No candidate meets S1-S4; no lead. Every candidate fails S1a:
+no `ExpensiveClientDeclaration` exists anywhere in `crates/**/*.rs` (384 files scanned, 0 matches). The measured
+callback shares of the strongest sequential arms are 0.040 (K5) and 0.071 (K6), far below `f_min = 0.348`. This is a
+design screen: no solver was run, no profile was taken, and there is no timing, speed or span claim. HT02 records
+ABSTAIN without running (its Branch A).
+
+### Record
+
+| Item | Commit | SHA-256 |
+|---|---|---|
+| Registration (text above) | `8ce9bda` | — |
+| A: contract `docs/HOMOTOPY_EXPENSIVE_CLIENT_CONTRACT.md` | `a280a32` | `d045dafdedd3a46b183256e9c19f7790af8517aaedb979ab5238c2c783f909c5` |
+| B: screen, checker, synthetic tests (before the run) | `0ca751f` | `ht01_client_screen.py` `69bb326ecdbc6a9cf3eb997b24797cab686d2d26bd6a259953e82bace3701c36`; `ht01_selection_check.py` `23df0dc532e381826f7686ab6cae9e88b4a510bfbe47edd6c835eec47df9a84e`; `test_ht01_selection_check.py` `60a4b91a600f279631b01c5ffce7ce7ea8a51b62b70a3ac3d7ce93059b93b782` |
+| C: recorded run at `0ca751f` (clean tree) | `d443431` | `SCREEN.json` `46d06cd39d3b35dd1d133fd9b2e95665e0cd972c5c0eb075881cf1bb3d8c325e` (145,492 bytes); `RESULTS.json` `255670b231af2db9649935d8cbb2dddc6dfdcec6004d03b0695da79a06f64434` (5,437 bytes) |
+| Inputs, unchanged | — | PP07 `RESULTS.json` `b4b745c0…8ac3cc` (L-0074); L-0008 `VERIFY.json` `cdaf6768…3eff45`; `LEDGER.jsonl` at `0ca751f` `4e1fff93…182fb2`; `evidence_schema_v2.py` `1d2bfe92…06ff10` |
+
+`SCREEN.json` pins all 36 inputs it reads and the 384 scanned Rust sources by SHA-256, records the source commit
+`0ca751f5f910493f273eddd68f5f3971aea6f7d8`, an empty tree status, the screen blob `3709cb26` and checker blob `dec75700`,
+and the commands it executed. Those were git commands only (`rev-parse`, `status`, `ls-tree`, `cat-file --batch`); no
+solver ran.
+
+**How the run was made.** The three registered commands were run in order with `RAYON_NUM_THREADS=1
+OPENBLAS_NUM_THREADS=1`, using Python 3.11.15. The screen exited 0 and the checker exited 0. `checker_tree_status` is
+empty: only the two output paths are ignored. The synthetic tests ran 37 of 37 OK at `0ca751f` and again after the run.
+No cargo command was run by this node. The registration needs no build, and nothing in the repository's Rust sources
+changed.
+
+### Gate
+
+| Item | Result | Numbers |
+|---|---|---|
+| Validity (AS03 primitives, pins, closed arm lists, checker blob, tree status) | VALID | 36 inputs + 384 sources pinned; PP07 and VERIFY at their registered digests; arm lists equal the closed lists |
+| 1. Rows K1-K8, S1-S4 values or typed reasons | pass | 8 rows, in order |
+| 2. Every number recomputed from pinned files | pass | the checker's own derivation equals the screen in every field: 0 differences |
+| 3. K1 cites `q1_solves = 0`, "PP07 ABSTAIN preserved"; no artificial workload, no rerun | pass | `q1_solves = 0`; git-only commands; `solver_runs = 0`; no artificial workload; no rerun |
+| 4. Decision equals the rule; contract exists at the run commit | pass | rule: ABSTAIN (meeting all: none; leads: none); contract present at `0ca751f` |
+
+### Rows
+
+| id | S1a | f (file view; min over cases and rtols) | S1 | S2 | S3 comparator | S4 | typed reasons |
+|---|---|---|---|---|---|---|---|
+| K1 Fourier | no | unmeasured | no | no: PP07 `q1_solves = 0`, PP07 ABSTAIN preserved | none: `no_applicable_arm` | no | `no_q2_certificate_source` (the Fourier certificate does not use `Q2CertificateSource`) |
+| K2 quadratic family | no | unmeasured | no | yes: 8.7-16.0 solves/attempt (L-0008 sequential arm, 5 cases) | no: small, dense v2, U-form unmeasured; L-0008 reference is JF-GMRES only | **yes**: `QuadraticModel`, `GeneratedFromModel`, Available (diagonal J at n in {1,2,4,8,16}) | S1 `no_expensive_client_declaration`; S3 `no_measured_applicable_arm`, `jf_gmres_only_where_direct_applies` |
+| K3 Bateman | no | unmeasured | no | no: `no_committed_counters` | no | no | `no_q2_certificate_source` |
+| K4 Darboux chart | no | unmeasured | no | no: `no_committed_counters`, and no solver token in `chart_transport.rs` | no | no | `no_q2_certificate_source` |
+| K5 robertson/hires/vdp | no | **0.0399** (vdp); robertson 0.0464, hires 0.0651 | no | yes: 8.0 solves/attempt | `rodas5p-fast-small-static-ovh` (small, SPD06 binary, L-0085) | no | `f_below_f_min`, `no_q2_certificate_source` |
+| K6 brusselator-1d-N | no | **0.0706** (N = 30, dense v2); N = 40: 0.0765 (colext64); N = 50-500: 0.0955-0.0980 (banded) | no | yes: 8.0 solves/attempt | dense v2 (N = 30), colext64 (N = 40), banded (N = 50-500, SP03 binary, L-0101) | no | `f_below_f_min`, `no_q2_certificate_source` |
+| K7 corpus v2 calibration | no | unmeasured | no | no: `no_committed_counters` | no | no | `no_q2_certificate_source` |
+| K8 `problems.rs` fixtures | no | unmeasured | no | no: `no_committed_counters` | no | no | `no_q2_certificate_source` |
+
+- **S4b**, all candidates: `HomotopyWorkLedger` carries rounds, setup, certificate and dispatch fields. It lacks
+  `max_task_per_round`, `barriers`, `rejected_candidates`, `fallback` and `peak_bytes`. These are the HT02 F4
+  obligations, exactly the registered list.
+- **K2 reported:** the L-0008 RHS multiplier (p8 / sequential) is 3.08-5.97, median 5.01. This is consistent with the
+  registered `r = 5`. HOM-06's `coupled-linear-6` (n = 6, non-diagonal) had 0 certificate admissions in 41 attempts.
+  It lies outside the declared diagonal family (dimension cutoff of the default witness), and it does not enter the
+  rows.
+- **Shares across all applicable profile entries, reported only.**
+  - File view: the largest is 0.1077, MF Legacy on brusselator-1d-500 at 1e-8. It is not a comparator.
+  - Function view: 8 entries reach 0.648-0.876 (SPD01 small arms, robertson and hires). This is the attribution
+    artifact documented in `tools/speed_profile.py`: the monomorphized driver `rodas5p::stiff_benchmark::run_small_full`
+    is charged to the CLI function, which accounts for 81.6% of hires.
+  - In the same view, K5's comparator gives 0.00008-0.00089, and K6's minimum is 0.077. So neither view yields a lead.
+
+### Prediction check
+
+- **Decision ABSTAIN:** as predicted.
+- **S1a fails everywhere:** as predicted.
+- **S1b fails everywhere measured:** as predicted. The comparators' shares are 0.040-0.098. The predicted "largest
+  share 0.108" is the maximum over all applicable entries, attained by a non-comparator arm (0.1077).
+- **K2 is the only S4 pass:** as predicted.
+- **K1 fails S2, and K4 fails S2 and S4:** as predicted.
+- **Gate PASS, no leads:** as predicted.
+
+### Interpretations and deviations
+
+All of these were fixed before the recorded run in the docstrings of the screen and the checker (I1-I8 there).
+- **I1, profiles.** Usable profiles are those with per-entry arm, counters and both category views, ledgered with the
+  same SHA-256. Unusable: SP01's profile (no categories; it holds the only U-form entries for K5), SPD08's ensemble
+  files, and the 2026-10-02 `stiff_rodas5p_profile` (no binary hash; arm `rodas5p` is outside every closed list).
+  Each is recorded with its reason in `SCREEN.json`.
+- **I2, f.** f is the `problem-user-code` share in `categories_by_file`, the view of the registration's disclosed
+  prior shares. The function view is reported only.
+- **I3, arms.** Each arm is a driver family including its committed opt-in configurations. For example, small includes
+  `-static-ovh` (L-0081, L-0085: bitwise identical to the legacy small driver). This makes the comparator the
+  strongest committed configuration.
+- **I4, I5, comparator.** The comparison is same-binary, choosing per case the binary that covers the most applicable
+  arms. Accuracy evidence is a membership check: another output of the profile's ledger row, with matching SHA-256,
+  that names the problem (an IDENTITY or RESULTS file). It is not a re-verification of accuracy.
+- **I6, f per case.** f is the minimum over every committed entry of the comparator configuration, at any rtol.
+- **I7, S2.** The registered ">= 2 independent stage-solve tasks in a round" is read as >= 2 W solves per attempt.
+  The stage solves of one attempt become the independent tasks of a homotopy Jacobi round.
+  - For K2, the only committed sequential counters are L-0008's JF-GMRES arm, which covers HOM-06's five cases
+    (n = 1, 1, 2, 6, 8) rather than R-NEXT-06's n in {1, 2, 4, 8, 16}.
+  - Candidates without committed counters do not meet S2. This is conservative: it can only prevent a selection.
+- **I8, S4a.** S4a is decided statically, without building or running `capability()`. Inputs: the impl of the
+  registered client type (`QuadraticModel`), its literal `ModelBinding::GeneratedFromModel`, and the default witness's
+  diagonal and `n <= 2` branches. `DiagonalQuadraticModel` delegates `binding()` and is reported as `delegated`.
+  L-0008's certificate admissions (75/75 on `diagonal-quadratic-8`) are recorded as supporting evidence.
+- **Scope.** Holdouts were not read (`HOLDOUT_HYGIENE.md` rules 2 and 4): only `scientific_corpus_v2.rs` source text
+  was scanned for K7. The older v36 generic runtime receipts are outside the registered evidence set and were not used.
