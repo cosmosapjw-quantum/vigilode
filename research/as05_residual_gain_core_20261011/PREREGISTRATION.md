@@ -250,3 +250,142 @@ confirms that no new helper name duplicates or shadows an existing or sibling-ad
 - Route (d) diffusion: `mu_up <= 0`, `G <= 1`, and bound/error 1 to 100. Peclet 10 is looser.
 - Cost: setup flops at n = 2 are at least 10x the nominal LU flops. No speed use is expected.
 - Most likely FAIL: item 2 at a subnormal or near-overflow endpoint, where the two roundings differ.
+
+## Results
+
+Everything above this heading is the registered text, unchanged. Executed on branch `node/as05` from `8ce9bda` (the
+registration commit); the registered text names `audit/rvj-reaudit-remaining-20261011` on top of `0ce7c32`. Only the
+branch name differs; `8ce9bda` is the registration commit on top of `0ce7c32`.
+
+**Verdict: PASS** (evidence VALID; checker exit 0). Items 1-6 all hold. This is a soundness result for the
+registered routes and sizes only: one linear solve, a frozen diagonal metric, the bound target. It is not a stage,
+local or global ODE error claim, not a matrix-free certificate, and there is no driver caller, default change or
+wall-time claim. The re-audit's 30-cell PASS and `FIRST_FAILURE.md` are not edited or re-scored.
+
+### Record
+
+| Item | Commit | SHA-256 |
+|---|---|---|
+| Registration (text above) | `8ce9bda` | — |
+| A: `residual_gain.rs`, `lib.rs` export, contract test + export | `b128350` | `residual_gain.rs` `c8d08e64a758630e3da7ea8e053739d9b589bb025eab8e1f59975b75c45539f6`; `lib.rs` `86ecf16460114a517f97e68b08c458e39f15cce467fe2d9b630034bfb9828298` |
+| B: checker, receipts tool, synthetic checker tests (before any recorded run) | `e474409` | `as05_residual_gain_check.py` `432eaba932e122dc0ef549ca29ed218157021a4506c2e9cc7d47bc0df1a6a794`; `test_as05_residual_gain_check.py` `5baec32eca875f5e6ba3f37376ed1fb092d60e51e0c87a2e406aea4f341beae6`; `as05_receipts.py` `952d80efbc2c041d9bf8faecec67fcdac3ae1585fbed6723d68ed032604a530e` |
+| First recorded attempt at `e474409`, preserved | `0e4ab5d` | `RESULTS_FIRST.json` `b50d9eba57cc710ae8c029fa1522d7c64109faa7814b66311c75de79b6b73472` (INVALID: no RUNS.json); `RECEIPTS_FIRST.json` `5e78d5695f7e969dd4bac486b3ffd0f313bd04ed394f64eb1bb9ca44b959484c` |
+| Export path fix (test file only) | `6cbca8f` | `residual_gain_contract.rs` `fbf992b0ecebb27f3f844dc9dba9ec373a9894838685449aa1d5610dace4e3e7` |
+| C: recorded run at `6cbca8f` (clean tree) | `e998826` | `RUNS.json` `9217decce7e42c0b37de33e0b51335de204e5c7aac79977b54f4a5611756339a` (422,588 bytes, compact JSON); `RECEIPTS.json` `aa01945caae741ca1f5ee55a087ce492ed2b4fb77a52879408bd2b822e13efee`; `RESULTS.json` `3a1d0408185b8d6ae7f021e666e48177a50bae41e9ba2199f0190e3aa9ba863c` |
+| Inputs, unchanged (pins) | — | `NATIVE.json` `b9404714…bd364`; `gain_witness.rs` `22c97719…e5c89`; `check.py` `238d52a2…b89`; re-audit `RESULTS.json` `20a6cb32…0e21`; `evidence_schema_v2.py` `1d2bfe92…06ff10` |
+
+`directed.rs` and `nonnormal_certificate.rs` are byte-identical to `8ce9bda`: no helper was needed
+(`symmetric_part_upper` is already `pub`), so there is nothing for PY04 to merge against in those files.
+
+**First attempt (preserved, not a scientific result).** At `e474409` the registered export command
+(`AS05_RUNS=research/.../RUNS.json`, a path relative to the repository root) failed: cargo runs the test binary in the
+package directory, so `std::fs::write` found no such directory and no `RUNS.json` was written. The checker, run next,
+returned INVALID because `RUNS.json` was missing (`RESULTS_FIRST.json`); the receipts of that commit (`RECEIPTS_FIRST.json`)
+are all exit 0 on a clean tree. Commit `6cbca8f` changes only the export's path handling (a relative path is joined to
+the repository root). No case, input, witness, checker or gate changed. The run was then repeated once at `6cbca8f`.
+
+**How the run was made** (rustc/cargo 1.94.1, Python 3.11.15, `RAYON_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1`, clean
+tree at `6cbca8f`):
+1. `python3 -B tools/as05_receipts.py --output <scratch>/RECEIPTS.json` ran registered commands 1 and 2 and
+   `cargo test --offline --locked -p rodas5p-core --all-targets`, all exit 0, clean tree before and after (I10).
+2. Registered command 3 (release) wrote `RUNS.json`: 307 cases, `source.tree_status` empty.
+3. The receipts were copied next to `RUNS.json`; registered command 4 (the checker) printed PASS and exited 0.
+
+A second export from the same commit to a scratch path is identical to `RUNS.json` except `source.tree_status`, which
+lists the then-untracked outputs.
+
+**Tests at commit A.** `cargo fmt`; `cargo clippy --workspace --all-targets --locked -- -D warnings` clean;
+`cargo test -p rodas5p-core --all-targets` passed (37 test binaries, 0 failures, including `residual_gain_contract`
+6 passed, 1 ignored); `cargo test -p rodas5p-core --doc` passed (5 `residual_gain` doc tests: 1 run, 4 compile-fail).
+**Tests at commit B.** `python3 -m unittest discover -s tools -p test_as05_residual_gain_check.py` passed 39 tests,
+normally and with `-O`: 1 valid PASS fixture, 1 immutable-output test, 19 INVALID fixtures, 18 FAIL fixtures (every
+item 1-6, plus the overlap-exception-Unavailable pass case).
+
+### Validity
+
+All registered conditions hold: the AS03 rules pass (strict JSON; NATIVE pin); 307 of 307 case IDs, no duplicate,
+every group count as registered; every input hex equals the input regenerated by the checker (NATIVE.json, the
+snapshot gamma `0.21193756319429014`, the registration; route (d) `s_k` within one faithful rounding of `sin k`); all
+four pins match; the research reference intervals of the 30 cells equal NATIVE.json bit for bit; the checker blob at
+`6cbca8f` is the checker that ran; RUNS and RECEIPTS name the same commit and every recorded tree status is empty.
+W-formation: **16 of 16** members discriminate under the exact rule (the export's flags agree); the fixtures are the
+first four, `wf_h0.1_k0`, `wf_h0.1_k1024`, `wf_h0.3_k0`, `wf_h0.3_k1024`.
+
+### Gate
+
+| Item | Rule | Measured | Result |
+|---|---|---|---|
+| 1 | 30 cells A Verified and enclosing (components, WRMS, infinity, gain); 11/12 invalid Unavailable with the mapped class; overlap exception Verified-and-enclosing or Unavailable | 30/30 Verified and enclosing; 11/11 classes as mapped; `invalid_determinant_overlap` Verified (`wrms_upper` 2, exact WRMS error 0.7071, components, infinity and gain enclose) | holds |
+| 2 | every core residual/correction/weighted interval inside the research interval; core `wrms_upper` <= research; core gain <= research | 30/30; core/research `wrms_upper` from 0 (3 exact-zero cells) to 0.99999952 | holds |
+| 3 | no C case Verified, each with its class; assembly and nu Estimated; route (d) negatives | TargetMismatch 4/4, MetricMismatch 60/60, StaleEpoch 60/60, OperatorMismatch 24/24, OffBlockCoupling 24/24, UndeclaredStructure 1/1, Estimated(UndeclaredAssembly) 4/4, Estimated(ProjectedNu) 2/2, NegativeShift 1/1, NonpositiveDenominator 1/1 | holds |
+| 4 | every Verified result of D encloses the exact error in its stated metric (16 corners for delta) and is bound to its target | 81 Verified checked: route (c) exact 4/4, route (c) delta 2 cases x 16 corners = 32 corner checks, transported 60/60, route (b) 4/4, route (d) 11/11; 0 violations | holds |
+| 5 | compile-fail doc tests present and passing; no Deserialize, no pub field on the authority types | 4/4 present and passed (`from_str::<VerifiedCorrection>`, three struct literals); 0 Deserialize, 0 pub fields | holds |
+| 6 | pre-existing suite passes; no pre-existing test file modified; no reference outside rodas5p-core | 37 binaries ok, 0 failed (pp12, pp12b, int05_*, rev02_*, safe_enclosure_* present); test dir diff = `A residual_gain_contract.rs` only; `residual_gain` (whole word) in `.rs`/`Cargo.toml` only under `crates/rodas5p-core` | holds |
+
+### Reported, not gated
+
+- **Bound/error, cells A:** 1.414 in 26 cells, `control_symmetric` 1.4143, `control_near_singular` 3.80e8; 3 exact-zero
+  errors (null). The research prototype ranged 1.414 to 1.39e15 on the same cells.
+- **Core/research `wrms_upper`:** 14 cells in [0.99927, 0.99999952]; 16 cells below 0.99, down to 1.0e-15 and three
+  exact zeros (`grid_k1048576_s{0,1,2}_p0`, where the perturbation rounds away and the directed residual is exactly 0).
+  The research prototype's unconditional one-ulp widening of every operation is what the core removes.
+- **W-formation (route (c), Exact):** bound/error 4.18, 5.91, 6.80, 9.61 on the 4 fixtures (exact shifted errors
+  6.4e7, 2.2e21, 4.0e7, 4.0e21 in WRMS). The represented research enclosures are about 1e-4 wide for `K = 0` and they
+  miss these errors by 11 or more orders of magnitude.
+- **Route (c), EntrywiseAbs(`delta = 2^-60 max|J|`):** `K = 0` fixtures Verified, all 16 corners enclosed, bound/worst
+  corner error 6.09 and 9.71. The `K = 1024` fixtures give `Unavailable(DeterminantContainsZero)`: the interval
+  `W_01 W_10` term (`|h gamma 1024| x h gamma delta`, about 1e-16) exceeds `det W` (about 2^-80). Their corner checks are
+  **vacuous** (reported, not passed).
+- **Route (b):** bound/error 1.414 (n = 4), 2.449 (n = 6), 2.828 (n = 8), 1.732 (n = 3).
+- **Route (d):** all 11 Verified use `interval-cholesky`. `mu_up` is -48.7 (n = 3) and -23.9 (n = 4) for both Peclet
+  numbers, -0.038 (n = 8, Pe 0) and +40.6 (n = 8, Pe 10). `1 - a mu_up` lower bound is 0.959 to 9.56. Bound/error is
+  1.15 to 48.1 (Pe 10 looser). `lognorm_n8_pe10_a1e-1` is `Unavailable(NonpositiveDenominator)`: `1 - 0.1 x 40.6 < 0`
+  in the metric `s_k = 1 + |sin k|`. No certificate; reported.
+- **Projected nu (F105):** both estimates are 0.7071 (`nu = 1`, breakdown after one Arnoldi step), against exact WRMS
+  errors 724.1 (`K = 1024`) and 741455 (`K = 2^20`): underestimates by about 1e3 and 1e6. Both are `Estimated`.
+- **LU comparator (`||c/s||_inf` of faer's LU on `fl(W)`):** it equals the Verified infinity bound on route (b) (ratio
+  1), is 0.02 to 0.87 of it on route (d), and is **0** on all 8 W-formation cases: the candidate is the rounded exact
+  solution of the represented `fl(W)`, so the comparator residual vanishes and it cannot see the W-formation error that
+  route (c) encloses.
+- **Counted flops:** setup / nominal LU (`2/3 n^3 + 2 n^2`) at n = 2 is 9.15 (route (a), 122 calls) to 13.35 (route
+  (c) with delta, 178 calls); verification 92 calls at n = 2. At n = 8, route (b) 488 setup / 368 verification, route
+  (d) 1681 / 725 (excluding the `symmetric_part_upper` search) against 469 nominal LU flops. No speed use is implied.
+- **Transport:** 60/60 transported certificates enclose; the transported gain (reported) encloses the exact gain in the
+  new metric in every case.
+
+### Prediction check
+
+- Items 1-6 pass; 30/30; 11/12 rejections plus the exception Verified: **as predicted**.
+- Parity "equal or slightly tighter, ratio >= 0.99 in every cell": **not borne out**. Containment holds everywhere,
+  but 16 of 30 cells are much tighter (down to 1e-15, three exact zeros).
+- W formation: `K = 0` as predicted (route (c) encloses; the represented bound misses by many orders). The `K = 1024`
+  members **do** discriminate (16/16), contrary to the hedge that interval dependency might stop them; instead the
+  `K = 1024` delta enclosure is the one that fails to be nonsingular (vacuous corners).
+- Route (d) diffusion: `mu_up <= 0` and `1/(1 - a mu_up) <= 1` as predicted; bound/error 1.15 to 23.0 for Pe 0, inside
+  1 to 100. Peclet 10 is looser as predicted, and at n = 8 its `mu_up` is positive (one registered positive is refused),
+  which was not predicted.
+- Cost "setup at n = 2 at least 10x LU": **partly**. Route (c) is 12.75x and 13.35x, route (a) 9.15x.
+- The most likely FAIL (item 2 at a subnormal or near-overflow endpoint) did not occur.
+
+### Interpretations and deviations
+
+All were fixed in the checker docstring (I1-I17) at commit B, before the recorded run:
+- I1-I7 fix the unspecified inputs: b = (1, 1), unit metric and epoch 7 for the W-formation family; the weighted
+  research enclosure decides discrimination; next_up for one-ulp changes; off-block and route (b) bases from the first
+  discovery cells; route (d) with `h = a`, `gamma = 1`, the upwind form, b = ones, `k = 1..n`, first-coordinate additive
+  perturbation; nu with r = e2, start e1.
+- I8-I9: the target constructors are part of the witness API; the approximate-inverse route is a function returning
+  `Unavailable(RouteNotImplemented)`; `directed.rs` and `nonnormal_certificate.rs` are unchanged.
+- I10-I11: the receipts tool; item 6 scope is Rust sources and Cargo manifests (whole word `residual_gain`).
+- I12-I16: gain added to item 2; binding checked in items 1 and 4; vacuous corners and refused route (d) positives
+  reported; overlap exception may be Unavailable with any class; flop-count convention.
+- I17 (disclosure): before commit B, a development export (scratch path, from the tree that became commit A) and
+  development receipts were used to debug the export and the checker's parsing. They are not recorded evidence, and no
+  case, input, threshold or gate was changed after them. The only checker change was the whole-word match in I11.
+- The DAG lists `gain_witness.rs` as an edit target; as registered it stays byte-identical and is included by path.
+- The first attempt failed on the export path (above); `*_FIRST.json` are kept.
+
+**Kill and hold.** No false certificate, no Verified result from nu, an undeclared assembly or an undeclared
+structure: the core API is not put on HOLD by a kill rule, and AS06 is not blocked by this node. Usefulness is not
+gated. The counted setup cost is 9x to 13x nominal LU at n = 2, and route (d) refuses one registered stiff convective
+positive. So any speed use stays on HOLD, as in PP12/PP12b. There is no default promotion.
