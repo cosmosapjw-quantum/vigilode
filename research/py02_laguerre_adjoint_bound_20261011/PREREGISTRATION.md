@@ -168,3 +168,144 @@ digest, and PY03's cache-key tests must pass unchanged after PY02 is merged.
 - **A3 fails.** At h rho = 8-48 the Chebyshev degree is well below the Laguerre degree (PP08: 30-37 against 87-115 at
   h rho = 40), so the count is predicted to be 0.
 - **Most likely outcome: ABSTAIN (A3).** If admitted, S1-S2 are expected to hold, and S3/S4 are uncertain.
+
+---
+
+## Results
+
+Everything above this heading is the registered text, unchanged. Executed on branch `node/py02` from `965530f`
+(PY01 and PY03 merged); the registered text names `audit/rvj-reaudit-remaining-20261011` as the registration branch.
+
+**Decision: ABSTAIN (A3)** (evidence VALID). A1 and A2 hold on PY01's evidence. A3 fails: on none of the 32
+registered stage-2 cases does the Laguerre plan need fewer vector products than the Chebyshev plan (count 0, threshold
+8). Stage 2 is therefore not implemented or run. **Ledger mapping (as registered): verdict PASS, claim "decision
+ABSTAIN (A3)"**, covering the numeric `ADMISSION.json`. Claim boundary as registered: this ABSTAIN is not a negative
+result about Laguerre in general. It records that the stage-2 gate (S4 in particular) is unreachable on these cases
+whatever the adjoint bound. No bound, admission, `TotalErrorStatus`, routing or default changed; no wall-time claim.
+
+### Record
+
+| Item | Commit | SHA-256 |
+|---|---|---|
+| A: plan-only helper `plan_only_comparison`, contract tests, `plan_only` export | `935fb3e` | `polynomial_action.rs` `0f8fc10db0fd3f9ce6ee499f9eda7ac5ad44fe2b349bdb2c5d792eaccfa86a02` (was `941b9640…c33bd2c` at `965530f`); `tests/laguerre_adjoint_holdout.rs` `cf7ebdf81a84ee8ccd235f7706164b72535594361080118e450e98cee2545b3a` |
+| B: checker and synthetic checker tests (before the run) | `2692d72` | `py02_laguerre_admission.py` `126c6297ee94358746cb068c9af78df66261888ed76d446089ef78ecf4e286fb`; `test_py02_laguerre_admission.py` `f60441277c994e94d16a7030b7b58dd21a91d5acddbd5d9079a08cbcf48094af` |
+| C: recorded run at `2692d72` (clean tree) | `dd20b4e` | `PLANS.json` `8252bd8d7ba0b3c6e549b970b7e44f824c6aea48b245a53a79f2c3264a75e6be` (147,734 bytes, compact JSON); `ADMISSION.json` `f4f3dec5ae9a48e52424859b411ca5de7fdf900c57401992cd3b1f71ca1e61f9` (37,875 bytes) |
+| Inputs, unchanged | — | PY01 `RESULTS.json` `235dcd5c5266b33c8324d33f7987ee55ac21aa6d3e589f8ffcec103765555b18` (pinned); `evidence_schema_v2.py` `1d2bfe9276252b2079914e4fa958612ed06ffb04d1fecf9016bd4f370206ff10`; `laguerre_adjoint.rs` `26b58115e8ad5fbe34ac549161661fec05006bb924ff5461efe89a31b925cb28` (not edited) |
+
+**How the run was made.** The two stage-1 commands were run once each, in order, from a clean tree at `2692d72`
+(`git status --porcelain` empty, untracked files included), with `RAYON_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1`,
+rustc/cargo 1.94.1, Python 3.11.15, mpmath 1.3.0.
+- Command 1 (release): `plan_only` passed (0.04 s test time) and wrote `PLANS.json`; its recorded `source_commit` is
+  `2692d72259f1f686a46744f3dad6713ab171017f` and its `tree_status` is empty.
+- Command 2: exit 0 in 1.8 s wall clock. The checker recorded its HEAD `2692d72…` and an empty
+  `git status --porcelain --untracked-files=no`; its blob at the plans' source commit equals the checker that ran.
+- Stage-2 commands 3 and 4: not run (not admitted).
+
+**Tests.** At A: `cargo fmt` and `cargo clippy --workspace --all-targets --locked -- -D warnings` clean;
+`cargo test -p rodas5p-core --all-targets` passed (42 test-result groups ok, 0 failures), including PY01's
+`laguerre_component_export` (`report_parity_on_fresh_fixtures`), PY03's `polynomial_single_backend_router` (7 tests),
+the thread-transfer Laguerre adjoint and cache tests and the five new contract tests (helper = action degree, scale,
+truncation bound and vector products on 14 fresh fixtures including both normalization amplitudes; helper = PY03's
+`plan_joint_phi`; refusals; the generator reproduces R-NEXT-04's first two cases bit for bit; the registered grid).
+At B: `python3 -m unittest discover -s tools -p test_py02_laguerre_admission.py` passed 23 tests, normally and with
+`-O` (decisions ABSTAIN (A1/A2/A3), ADMIT at 8 and not at 7, ties and failed plans not counted, no component evidence
+-> INCONCLUSIVE; 9 INVALID groups covering the pin, strict JSON, keys and types, the case set, input binding, budgets
+and the 50/70-digit reference, plan consistency and weight factor, provenance; helpers).
+
+No bug was found after the recorded run; there is no `*_FIRST` file and nothing was re-run.
+
+### Validity
+
+All conditions hold: AS03 rules (strict JSON, the PY01 pin, exact key sets, canonical hex, typed numbers); exactly
+the 32 registered labels in order, (n, rho, h) disjoint from R-NEXT-04, PP08 and PY03; every A, w_k and enclosure
+equal to the R-NEXT-04 generator for seeds 9001-9008 bit for bit, every enclosure Gershgorin-verified; the budgets
+equal factor x max(norm_f, 1) and its quarter bit for bit; norm_f agrees with the 50-digit ||F|| to 3e-16 - 2.5e-15
+relative (all ||F|| are 0.024 - 0.887, so every total budget is exactly 1e-6 or 1e-8); 50- and 70-digit references
+agree far inside 1e-40 ||F||; every plan is a recurrence plan without normalization, with width 5 or 1, products =
+degree x width, truncation bound <= budget, weight factor in [W, W (1 + 1e-12)]; provenance and both tree statuses
+clean. PY01's evidence: verdict PASS, completeness true.
+
+### Admission
+
+| Item | Rule | Outcome |
+|---|---|---|
+| A1 Dominance | recurrence_adjoint / S >= 0.9 in all six gated cases | **holds**: lower bound of the share 0.99999999998 in every case (from 12-digit decimals, rounding margin 1e-11) |
+| A2 Closability | F <= admission budget in at least one case | **holds** in 6/6: F = 1.31e-10 to 2.59e-10, F / budget(1e-6) = 1.31e-4 to 2.59e-4 |
+| A3 Work feasibility | Laguerre products < Chebyshev products at total_budget / 4 in >= 8 of 32 | **fails**: count **0** |
+
+A3 per (n, rho, h), distinct input, degrees Chebyshev / Laguerre (Laguerre scale L = 16 in all 32 cases); the
+same-vector cases differ by at most 3 in the Laguerre degree and 1 in the Chebyshev degree, with width 1 instead
+of 5:
+
+| n, rho, h (h rho) | b = 1e-6 | b = 1e-8 |
+|---|---|---|
+| 7, 100, 0.08 (8) | 15 / 24 | 17 / 29 |
+| 7, 100, 0.16 (16) | 20 / 40 | 23 / 48 |
+| 7, 300, 0.08 (24) | 24 / 56 | 27 / 66 |
+| 7, 300, 0.16 (48) | 32 / 100 | 37 / 119 |
+| 14, 100, 0.08 (8) | 15 / 25 | 17 / 30 |
+| 14, 100, 0.16 (16) | 20 / 41 | 23 / 48 |
+| 14, 300, 0.08 (24) | 24 / 56 | 27 / 67 |
+| 14, 300, 0.16 (48) | 33 / 101 | 37 / 120 |
+
+Laguerre / Chebyshev vector products: 1.60 to 3.24 (rising with h rho). No Laguerre degree exceeds 128; no plan
+failed.
+
+### Reported, not gated
+
+- **PY03 parity.** PY03's `plan_joint_phi` gives the same degree, scale, products and tail evaluations as the local
+  helper in 32/32 cases (both bases).
+- **Emulation.** An exact-arithmetic emulation of both degree rules at 50 digits (Chebyshev tail with
+  t = asinh(r/b), eta = 0; Laguerre e^{L/2} q^{m+1} over L in {1, 2, 4, 8, 16}) reproduces every native degree and
+  scale (32/32).
+- With F / budget near 2e-4, A2 shows that a sharper envelope of the same z_j could in principle close PY01's total;
+  A3 shows that on these fresh cases such a bound would still leave Laguerre doing 1.6x to 3.2x the vector products
+  of Chebyshev, so S4 could not pass. This agrees with PY03 (on its 96 grid cases the Laguerre plan never needed
+  fewer products) and PP08.
+
+### Prediction check
+
+| Prediction | Outcome |
+|---|---|
+| A1 holds | held (share 1 - O(1e-11) from the rounded decimals) |
+| A2 uncertain | held in 6/6 (F / budget <= 2.6e-4) |
+| A3 fails, count predicted 0 | held: count 0 |
+| Most likely outcome ABSTAIN (A3) | held |
+| PP08 degrees at h rho = 40 (Chebyshev 30-37 against Laguerre 87-115) | consistent: at h rho = 48, 32-37 against 98-120 |
+
+### Interpretations and deviations
+
+Fixed in the checker docstring at commit B, before the run:
+1. **Helper.** `polynomial_action::plan_only_comparison` repeats the action's normalization, checks and weight factor
+   and calls `choose_transform` for both bases (scales {1, 2, 4, 8, 16}); it is written independently of PY03's
+   `plan_joint_phi`, whose parity is reported only. It executes no recurrence, table, envelope or admission and
+   changes no counter.
+2. **||F|| in the budget.** R-NEXT-04 took ||F|| from the executed action; the plan-only export may not execute a
+   recurrence, so norm_f is the binary64 norm of the dense augmented exponential (`dense_phi_combination`), bound by
+   the checker to the 50-digit ||F|| (relative 1e-10 on max(||F||, 1)). All ||F|| < 1, so the budgets are exactly
+   1e-6 and 1e-8.
+3. **Seeds.** R-NEXT-04 conventions with the first operator seed 9001: one seed per (n, rho, h) in grid order
+   (9001-9008), distinct input from seed + 9, same vector from seed + 5 with s = (1, -0.5, 0.25, 2, -1); both budget
+   factors share the inputs.
+4. **A3 counting.** Both plans must exist and the Laguerre products be strictly fewer; a failed plan never counts (none
+   failed). Degrees above 128 would be counted by products alone (none occurred).
+5. **A1, A2 from rounded decimals.** PY01 records terms_exact, S and F as 12-digit decimals; A1 uses a lower bound of
+   the share and A2 an upper bound of F (margin 1e-11). The margins are irrelevant to the outcome.
+6. **PY01 inputs.** Only PY01's `RESULTS.json` is read, as registered (not `COMPONENTS.json`).
+7. **Tree status.** The export records `git status --porcelain` with untracked files; the checker its own status
+   without untracked files (PLANS.json is untracked when it runs). Both were empty.
+
+Further disclosures:
+- **Stage 2 not implemented.** `laguerre_adjoint.rs` is not edited: there is no `laguerre-adjoint-adaptive-v2`, no
+  new `EnvelopeKey` field and no refined total or admission. The v1 key encoding and digests are therefore bitwise
+  unchanged, and PY03's cache-key tests pass unchanged.
+- **Beyond the DAG.** The only source edit is the plan-only helper (with its two result types) appended to
+  `polynomial_action.rs`, a DAG edit target. No existing function or value changed.
+- **Before the run.** Two unregistered checks ran on fresh fixtures, never on a registered case: the ignored test
+  `fixture_format_plans` (n = 5, rho = 100, h = 0.08, seed 70001), written to a scratch path, to check the checker's
+  key sets on the native format; and one timing call of the checker's reference and emulation on a fresh n = 14,
+  rho = 300 matrix (seed 70001, emulated degrees 37 / 120). Neither changed the registered gate, which was fixed
+  in the registration.
+- The test file has two ignored tests (`plan_only`, `fixture_format_plans`); both write only when their path
+  variable is set, so the CI run of every ignored test writes nothing. `plan_only` is matched by the registered
+  filter alone (the fixture test's name does not contain it).
