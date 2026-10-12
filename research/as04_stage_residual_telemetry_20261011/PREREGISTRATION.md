@@ -253,3 +253,106 @@ SP04 and PC01.
   roundoff raise; the count is unknown, between 1 and 443.
 - `debit_all` exceeds the G3 charge on Robertson, but no attempt's `norm + debit_all` crosses 1 at 1e-5 (uncertain at
   1e-9).
+
+## Results (appended after the recorded run; the registered text above is unchanged)
+
+**Verdict: FAIL** (item 5). Items 1a, 1b, 2, 3, 4 and 6 pass. The kill rule (item 1a) is not triggered, the ALG06
+anchor reproduces (item 1b), and the HOLD rule (items 3-4) is not triggered.
+
+**Recorded commits** (branch `node/as04`, from `8ce9bda`).
+
+| Commit | Content |
+|---|---|
+| `dd9f9ff` | Implementation and new tests: `solve_staged_gmres_observed` / `StagedSolveTelemetry` (gmres_staged.rs), `ProductionFallbackRule::evaluate`, `set_stage_telemetry`, `StageResidualRecord` / `AttemptResidualRecord`, `integrate_rodas5p_mf_fast_observed_with_stage_telemetry` (rodas5p_matrix_free_fast.rs); `crates/rodas5p-krylov/tests/staged_solve_telemetry.rs`, `crates/rodas5p-integrators/tests/stage_residual_telemetry.rs` (contracts and the ignored `export_runs`) |
+| `bf92e67` | Checker `tools/as04_stage_telemetry_check.py` and `tools/test_as04_stage_telemetry_check.py` (35 synthetic/mutation tests), before any recorded run |
+| `2fb627e` | `RUNS.json` (produced on `bf92e67`, clean tree, recorded tree status empty before and after) and `RESULTS.json` |
+
+| File | Bytes | SHA-256 |
+|---|---|---|
+| `RUNS.json` | 14,500,815 | `e42c7be23ea01e2869bd8bbe1c6ad069a5b1f83b9b076ad63799c6306ea2c218` |
+| `RESULTS.json` | 23,601 | `8227be57005df82a21379c4e936a442d0b7a00d7b750426d02be78bc2efab3bf` |
+| `tools/as04_stage_telemetry_check.py` (blob `b48d3f9`) | | `94bf6a975c00c8f6a3a34dcd818a70217bd51fa65d49e018a78942edcbc7c9a3` |
+| NATIVE.json (input, pinned) | | `b9404714af837dfb099db564550e88127ff52a0c9341758862529261b85bd364` |
+| ALG06 RUNS.json (input, pinned) | | `26aaa444f06149335e904558805797067c0fdcc53c976b92ea1ee3fe56e67432` |
+
+RUNS.json is below 20 MB and is not compressed.
+
+**Commands.** The registered ones, with `RAYON_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 CARGO_INCREMENTAL=0`. The export
+took 4.9 s. The checker took 28 min, almost all of it the pre-existing test suites of item 1a, which it runs itself
+(`cargo test --offline --locked -p rodas5p-krylov -p rodas5p-integrators --all-targets`: exit 0, 701 passed, 0
+failed). `cargo fmt --check` and `cargo clippy --workspace --all-targets --locked -- -D warnings` are clean.
+
+**Gate.**
+
+| Item | Result | Numbers |
+|---|---|---|
+| 1a. On/off bitwise | PASS | 9/9 R and D twins identical (all output states, steps, every counter, StageSolveStatistics, charge log). No pre-existing test file modified (2 test files added; `#[cfg(test)]` tail of gmres_staged.rs unchanged). Touched crates' suites: 701 passed, 0 failed |
+| 1b. Off = ALG06 | PASS | All 6 B3/B3b rows reproduce ALG06 RUNS bitwise (states, steps, counters, stage statistics, charges) |
+| 2. No hidden JVP/copy | PASS | Every solve: Arnoldi + residual applications = Krylov matvec delta. Every run: attempt JVPs + 0 outside = run jvp_calls. S3 shadow: 99 uncounted matvecs = wrapper count; 0 without classification. Copies equal the documented table on every evaluation |
+| 3. Excess visible | PASS | Every accepted record above its requested target is `BudgetExceeded`; per-attempt counts match. S1: exactly triangular2_stall, triangular2_floor, triangular4_floor `BudgetExceeded` with NATIVE's residual bits; six `Met`. S4: `Converged` + `BudgetExceeded` |
+| 4. Complete records | PASS | Records = StageSolveStatistics in all 9 on-runs; one attempt record per attempt; target order and reason implications hold; S1 reports = NATIVE bitwise; `verified_bound` always `Unavailable`; registered S2/S3/S5 outcomes |
+| 5. Ledgers | **FAIL** | committed_debit, debit, debit_all, debit_fallback_only and work ledgers recompute bitwise; D1 has 1 FailedLinear attempt with 2 JVPs; debit_fallback_only = charge-log charge on every charged attempt. **`debit_all >= debit_fallback_only` fails on 8 of 784 attempts of Robertson-4e10 1e-9 `B3`** (attempts 715, 734, 737, 739, 757, 760, 764, 769) |
+| 6. Epoch and metric | PASS | D2: 39 attempts, generation increments exactly at the re-linearizations (rhs_calls = 7 + relinearized in every attempt), model_epoch 1,1,1,2,... (changes at the fourth attempt, which re-linearizes although the second and third attempts reused the state). ScaledWrms in all coupled runs, UnscaledL2 in all 736 ProjL2 records |
+
+**Why item 5 fails.** On Robertson-4e10 1e-9, 8 of the 856 `FallbackAccepted` stages have
+`tightened < actual <= requested`: the nonnormality guard (nu_max about 1.37) tightened the threshold below the
+requested target `eps_i sqrt(n)`, the stagnation guard aborted (contraction), and the production fallback accepted an
+iterate that meets the requested target. Such a stage is `Met`, so the registered `debit_all` (accepted stages that
+are not `Met`) leaves it out, while ALG06's G3 charge (`debit_fallback_only`) includes every fallback-accepted stage.
+The registered inequality `debit_all >= debit_fallback_only` therefore does not hold by construction once a
+fallback-accepted stage is `Met`. The telemetry itself is consistent and complete (items 2-4); the failure is a
+conflict between the two registered debit definitions, not a hidden residual. No decision change is involved.
+
+**Reported, not gated.**
+
+| Run | Stages (Conv / Stall / Floor / Fallback / Failed) | Met / BudgetExceeded | Conv. BudgetExceeded | committed_debit | G3 charge sum | crossings | memory |
+|---|---|---|---|---|---|---|---|
+| Robertson 1e-5 B3 | 850 / 3 / 241 / 58 / 0 | 639 / 513 | 211 | 1.08e-5 | 3.90e-6 | 0 | 320 KB |
+| Robertson 1e-9 B3 | 3,264 / 14 / 2,138 / 856 / 0 | 1,701 / 4,571 | 1,574 | 8.04e-2 | 6.99e-2 | 0 | 1.74 MB |
+| stosc 1e-4 B3 | 59 / 0 / 29 / 0 / 0 | 41 / 47 | 18 | 6.0e-7 | 0 | 0 | 24 KB |
+| van der Pol 1e-6 B3 | 3,737 / 0 / 15 / 0 / 0 | 3,678 / 74 | 59 | 1.4e-8 | 0 | 0 | 1.04 MB |
+| Brusselator-50 1e-6 B3 | 736 / 0 / 0 / 0 / 0 | 702 / 34 | 34 | 1.0e-10 | 0 | 0 | 205 KB |
+| Robertson 1e-5 B3b | 866 / 4 / 231 / 51 / 0 | 650 / 502 | 216 | 9.22e-6 | 3.55e-6 | 0 | 320 KB |
+| Brusselator-50 1e-6 ProjL2 | 736 / 0 / 0 / 0 / 0 | 736 / 0 | 0 | 0 | 0 | 0 | 205 KB |
+| D1 | 0 / 0 / 0 / 0 / 1 | 0 / 1 (failed) | 0 | 0 | 0 | 0 | 0.4 KB |
+| D2 | 312 / 0 / 0 / 0 / 0 | 285 / 27 | 27 | 1.5e-10 | 0 | 0 | 87 KB |
+
+"crossings" counts attempts with error norm <= 1 and norm + debit_all > 1. No `Unverified` record occurs in any
+driver run. actual/requested over accepted stages: median 0.55 and p90 6.4e3 on Robertson 1e-5; median 153 and p90
+9.8e5 on Robertson 1e-9 (the roundoff raise `16 eps ||D b||` dominates the tiny coupled targets). jvp_outside_attempts
+is 0 in every run.
+
+**Predictions.**
+- Items 1-6 hold: **not confirmed** (item 5 fails; items 1-4 and 6 hold).
+- Most likely FAIL source item 2's JVP closure: not confirmed (item 2 passes; the failure is item 5).
+- Robertson 1e-5 B3: 302 non-`Converged` acceptances: **confirmed exactly** (3 + 241 + 58). `Converged` stages
+  `BudgetExceeded` through the roundoff raise, predicted 1-443: 211.
+- `debit_all` exceeds the G3 charge on Robertson: confirmed at both rtols (committed_debit 1.08e-5 vs 3.90e-6; 8.04e-2
+  vs 6.99e-2). No attempt crosses 1 at 1e-5 (confirmed) nor at 1e-9 (was uncertain).
+
+**Interpretations and deviations** (fixed in the checker docstring at `bf92e67`, before the run).
+- Requested targets: coupled `eps_i sqrt(n)`; other staged policies and the solver cells (except S4)
+  `max(atol, rtol ||b||_2)` of the solve's configuration (S1: the recorded threshold, bitwise); S4 `atol`.
+- Copies table applied literally to evaluations that compared the residual norm (unscaled-homogeneous counts 1 even
+  when `r_le_atol`, where the code makes 0; no registered cell reaches it). Exits before the comparison and
+  unrepresentable thresholds are documented from the code (candidate rejected 0; residual rejected or unrepresentable
+  1 scaled, 0 unscaled). The record also carries the evaluation's exit.
+- S2 uses `ProductionFallbackRule` (overflowing 1e308 and control 1e100 at production rtol 1e-10; loose rtol 1.0 at
+  scale 1 and 1e308). S3's fallback is the unscaled production rule with rtol 2. The registered solver-cell outcomes
+  are gated under item 4.
+- NATIVE's `"NaN"` matches any NaN. ALG06 floats compared as binary64 bits; counters on ALG06's key set.
+- ProjL2 + fallback uses budget 200 (ALG04's); B3/B3b budget 2,000 (ALG06's).
+- The per-attempt `BudgetExceeded` count is checked on every attempt (registered: committed ones).
+- `debit_fallback_only` is the attempt's G3 charge (0 for non-coupled policies); charged attempts follow the ALG06
+  charge-log rule (a fallback-accepted stage and a computed error norm).
+- D2: `CoupledGuarded2`, budget 200, `y' = A y`, `A = [[-1, 1], [0, -1000]]`, `y0 = [1, 1]`, T = 1, atol 1e-8,
+  rtol 1e-6, h0 0.5; the epoch closure returns 1 for its first three reads and 2 afterwards (read once per attempt;
+  each twin has its own closure).
+- The solver telemetry also carries the report's columns, matvecs, guard abort and budget flag; the stage record
+  carries the per-solve `jvp_calls` delta; the attempt record carries `relinearized`, `error_norm` and `rhs_calls`.
+- A schema smoke export (`export_fixture_smoke`, S and D cells only, no R cells) was run before the recorded run to
+  exercise the checker on real-format data; it is not a recorded run and was not committed.
+- No deviation from the registered change, cells, commands or gate.
+
+**Claim boundary.** Telemetry only: no record is an error certificate, and a `Met` target is no forward-error
+statement. Default off; no decision reads it. No wall-time claim.
