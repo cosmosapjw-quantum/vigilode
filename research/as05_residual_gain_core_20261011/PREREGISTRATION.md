@@ -291,11 +291,16 @@ tree at `6cbca8f`):
 2. Registered command 3 (release) wrote `RUNS.json`: 307 cases, `source.tree_status` empty.
 3. The receipts were copied next to `RUNS.json`; registered command 4 (the checker) printed PASS and exited 0.
 
+Checker limitation (found while writing these results, not changed): the suite table in `RESULTS.json` is keyed by
+target name, so the two groups named `unittests` (`src/lib.rs` and the `shared_shift_jet_study` example) appear as one
+row (37 names for 38 groups). The receipt itself has 38 `test result: ok` lines with 0 failed, and the checker also
+requires every command's exit code to be 0, so no failure could be hidden.
+
 A second export from the same commit to a scratch path is identical to `RUNS.json` except `source.tree_status`, which
 lists the then-untracked outputs.
 
 **Tests at commit A.** `cargo fmt`; `cargo clippy --workspace --all-targets --locked -- -D warnings` clean;
-`cargo test -p rodas5p-core --all-targets` passed (37 test binaries, 0 failures, including `residual_gain_contract`
+`cargo test -p rodas5p-core --all-targets` passed (38 test-result groups, 0 failures, including `residual_gain_contract`
 6 passed, 1 ignored); `cargo test -p rodas5p-core --doc` passed (5 `residual_gain` doc tests: 1 run, 4 compile-fail).
 **Tests at commit B.** `python3 -m unittest discover -s tools -p test_as05_residual_gain_check.py` passed 39 tests,
 normally and with `-O`: 1 valid PASS fixture, 1 immutable-output test, 19 INVALID fixtures, 18 FAIL fixtures (every
@@ -320,7 +325,7 @@ first four, `wf_h0.1_k0`, `wf_h0.1_k1024`, `wf_h0.3_k0`, `wf_h0.3_k1024`.
 | 3 | no C case Verified, each with its class; assembly and nu Estimated; route (d) negatives | TargetMismatch 4/4, MetricMismatch 60/60, StaleEpoch 60/60, OperatorMismatch 24/24, OffBlockCoupling 24/24, UndeclaredStructure 1/1, Estimated(UndeclaredAssembly) 4/4, Estimated(ProjectedNu) 2/2, NegativeShift 1/1, NonpositiveDenominator 1/1 | holds |
 | 4 | every Verified result of D encloses the exact error in its stated metric (16 corners for delta) and is bound to its target | 81 Verified checked: route (c) exact 4/4, route (c) delta 2 cases x 16 corners = 32 corner checks, transported 60/60, route (b) 4/4, route (d) 11/11; 0 violations | holds |
 | 5 | compile-fail doc tests present and passing; no Deserialize, no pub field on the authority types | 4/4 present and passed (`from_str::<VerifiedCorrection>`, three struct literals); 0 Deserialize, 0 pub fields | holds |
-| 6 | pre-existing suite passes; no pre-existing test file modified; no reference outside rodas5p-core | 37 binaries ok, 0 failed (pp12, pp12b, int05_*, rev02_*, safe_enclosure_* present); test dir diff = `A residual_gain_contract.rs` only; `residual_gain` (whole word) in `.rs`/`Cargo.toml` only under `crates/rodas5p-core` | holds |
+| 6 | pre-existing suite passes; no pre-existing test file modified; no reference outside rodas5p-core | 38 test-result groups ok, 0 failed, exit 0 (pp12, pp12b, int05_*, rev02_*, safe_enclosure_* present); test dir diff = `A residual_gain_contract.rs` only; `residual_gain` (whole word) in `.rs`/`Cargo.toml` only under `crates/rodas5p-core` | holds |
 
 ### Reported, not gated
 
