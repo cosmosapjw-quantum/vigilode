@@ -172,3 +172,91 @@ must not change any v1 digest, and this node's cache-key contract tests must pas
   - Against `pp08`: about 0.25-0.50x the vector products. This is Chebyshev / (Chebyshev + Laguerre), with the
     Laguerre / Chebyshev product ratio between 1.0 and about 3 (PP08: 1.0-1.57 where both admit, up to 2.9 at
     h rho = 40).
+
+## Results
+
+**Verdict: FAIL** (gate item 5, "niche empty": |N| = 0 < 6). Items 1-4 PASS. This is the registered prediction and
+the DAG kill rule: no Laguerre routing benefit is claimed, no dispatch link is made, and no basis enters any default.
+
+### Record
+
+| Step | Commit | Content |
+|---|---|---|
+| A | `ec42c61e81bbcc5315c849a20a78790a1f0114c0` | plan/execute split (`polynomial_action.rs`), router and `RouteCost` (`polynomial_action/router.rs`), contract tests and exporter (`tests/polynomial_single_backend_router.rs`) |
+| B | `a5d5f2711ee30ec59b747b71a23e114a27d6b547` | checker `tools/py03_single_backend_router_check.py` and its synthetic tests, committed before the run |
+| C | `358e0db161bcf44e329c03ab3448b9c2f4a3214d` | the recorded run: `cases.json` (export at B, clean tree) and `RESULTS.json` |
+
+| File | SHA-256 | Size |
+|---|---|---|
+| `cases.json` (compact JSON, not gzipped) | `8a8d620e3af427b41798d97cd55a903643a7ea8c657557bf995054d6ef4a1add` | 5,505,784 B |
+| `RESULTS.json` | `a6cc95b45aee7c0e66f72ccf82a2e6f220df55aa16aa79b49a0482cfcbd711cc` | 96,105 B |
+| `tools/py03_single_backend_router_check.py` (blob at B) | `85079194df38c5a9be88ac166b432d48de8f9e6932ee6ab4687be1d371b593cb` | |
+
+The export ran once (`RAYON_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1`, release, 4.7 s): `source_commit` = B, recorded
+`git status --porcelain` empty. The checker ran at B (`checker_head` = B, `--untracked-files=no` status empty;
+python 3.11.15, mpmath 1.3.0, 50 and 70 digits, evidence schema `vigilode-evidence-schema-v2`), exit 1 (FAIL). Every
+validity rule held (no INVALID): 103 cases (96 grid, 5 boundary, 2 ForceLaguerreFirst), 624 records, the 50/70-digit
+references agree within 1e-40 ||F||, every recorded cost equals the sum of its plan, preflight and execution costs.
+
+### Gate
+
+| Item | Result | Numbers |
+|---|---|---|
+| 1 Certification | PASS | 208 admitted `single`/`force_laguerre_first` results, every bound <= total budget and >= the 50-digit error (bound / error 13.3 - 191.8, median 25.9); no declared enclosure, timing execution, Laguerre degree > 128 or estimate-only total admitted in any record of any arm; the declared and zero-budget cases end in Fallback in every record |
+| 2 Parity | PASS | 418 executions (router arms and the two timing executions) bitwise equal to `joint_phi_action` / `joint_phi_action_unbounded` on a cache in the same state (report, counters, fused bits, candidate total); wherever `single` selects Chebyshev its fused bits and bound equal `cheb`'s |
+| 3 Accounting | PASS | 624 records: caller counters = preflight work + every execution; cost products, block products, setups and cache hits = the counters (total and per execution); each execution's products = its plan's prediction; both ForceLaguerreFirst cases charge the rejected Laguerre recurrence, then execute Chebyshev |
+| 4 One execution | PASS | every admitted first execution is the only recurrence; `single` <= `pp08` products everywhere and < in all 202 (case, cache state) pairs where both PP08 attempts made products |
+| 5 Niche benefit | **FAIL** | N = {} (no grid case's cold preflight preselects Laguerre): niche empty |
+
+### Reported (not gated)
+
+- **Preflight.** On all 96 grid cases the Laguerre plan needs at least as many vector products as the Chebyshev plan
+  (Laguerre / Chebyshev 1.00 - 1.76, 11 ties): 202 abstentions `PRODUCTS_NOT_FEWER` (grid and verified boundary
+  records of `single`), 2 `LAGUERRE_PLAN_FAILED` (zero budget), 2 router refusals `ENCLOSURE_NOT_VERIFIED` (declared).
+  The Laguerre table was never built by the preflight.
+- **Costs.** `single` = `cheb` in vector products, coefficient-series terms and certification operations in every
+  grid case and cache state; its only overhead is the Laguerre plan's tail evaluations (18 - 482 per call on the
+  grid; up to 3439 on the boundary cases). `single` / `pp08` vector products 0.36 - 0.50 on the grid (total 4580 /
+  10942 = 0.42).
+- **Admitted by one basis only (PP08 attempts):** 3 cases, all Chebyshev only (the degree-above-limit case and the
+  two ForceLaguerreFirst cases). PP08 admitted both bases on all 96 grid cases.
+- **ForceLaguerreFirst selection.** No grid case had a rejected Laguerre total of degree <= 128, so both cases came
+  from the registered fallback: n = 8, rho = 64, h = 0.12, distinct input, total budget 1e-13 (the first of
+  1e-13, 1e-15, 1e-17).
+- **Degree above 128:** h = 1 (Laguerre plan degree 151); the forced Laguerre execution is rejected, Chebyshev admits.
+
+### Prediction check
+
+| Prediction | Outcome |
+|---|---|
+| Items 1-4 hold | held |
+| Item 5: \|N\| = 0, FAIL "niche empty" | held (\|N\| = 0) |
+| `single` = `cheb` in vector products on every grid case | held |
+| Overhead = Laguerre plan tail evaluations, no Laguerre table | held |
+| `single` / `pp08` about 0.25 - 0.50 | held (0.36 - 0.50) |
+
+### Interpretations and deviations
+
+Fixed in the checker docstring at B, before the run (items 1-15 there). In short:
+1. The plan/execute code sits in `polynomial_action.rs`, the router in `router.rs`; the action core gained one trailing
+   `staging` parameter (as PY01 added `capture`), and series terms and tail evaluations are counted by a thread-local
+   tally in the leaf loops. No value changes; PP08's `route_joint_phi` and every default path are bitwise unchanged
+   (all pre-existing tests pass, PY01's `report_parity_on_fresh_fixtures` included).
+2. `plan_joint_phi` takes `&PolynomialCaches` (lookup only), `execute_joint_phi` `&mut PolynomialCaches` (tables and
+   envelopes); `route_joint_phi_single` returns `CoreResult` (invalid inputs are errors before any work, as PP08).
+3. `cheb` is the same router with `RoutePolicy::ChebyshevOnly`.
+4. On a declared enclosure the router executes nothing (`route_admission` could not admit any report) and returns
+   Fallback; this is a refusal, never an admission.
+5. ForceLaguerreFirst runs as an extra arm `force_laguerre_first` (also on the degree-above-limit case), never as
+   `single`; item 1 gates both, item 4 compares `single` only.
+6. A non-registered, ignored format check (`export_fixture_format`, fresh n = 5 fixtures) was run before B to align
+   the export's key sets with the checker; it found that `WorkCounters` serialization skips zero fields, so the
+   export writes every counter field. No registered case was executed before the recorded run.
+
+### Coordination
+
+Merge order PY01 -> PY03 -> PY02 -> PY05. The PY03 change to the shared core is one trailing parameter of
+`joint_phi_action_impl_captured` / `joint_phi_action_core` (callers pass `None`) and counting lines at the
+coefficient build, the Chebyshev propagation loop and the adjoint site (which, under staging, takes the envelopes
+from `LaguerreEnvelopeCache` through `EnvelopeKey::new` with the v1 proof version). The cache-key contract test
+(`cache_keys_separate_what_the_entries_depend_on`) uses only hits and misses, not key encodings.
