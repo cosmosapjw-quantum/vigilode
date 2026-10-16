@@ -209,3 +209,21 @@ design choices made without prior data. No code of this node exists before this 
 - Item 5: GMRES 0.85-1.00; LGMRES 0.3-0.9 on van der Pol and HIRES (per-column least squares dominate), uncertain on
   Brusselator-50.
 - Least certain: whether the Prothero-Robinson GMRES cell stays below 0.10. Overall: probably PASS.
+
+## Results (appended after the recorded run; the registered text above is unchanged)
+
+**Verdict: PASS** (all five gate items). The explicit driver option `KrylovWorkspaceOptions` (`krylov-ws-ls-workspace-v1`, `krylov-ws-lgmres-into-v1`, `krylov-ws-ls-and-lgmres-into-v1`) is adopted as an opt-in field on `Rodas5pMfFastWorkspace`; all existing defaults (`krylov-ws-legacy-v1`) remain bitwise unchanged.
+
+**Commits** (branch `pr/sp02-krylov-workspace-caller`, from `0ce7c32`).
+- `e736894` (`e7368946c7f2f47ab19545d5436832515722fe68`): implementation, adversarial review fixes, `tools/sp02_workspace_profile.py`, `tools/sp02_workspace_check.py`, `tools/test_sp02_workspace_check.py`, `crates/rodas5p-krylov/tests/sp02_workspace_charge.rs`, `crates/rodas5p-integrators/tests/krylov_workspace_driver_contract.rs`, and `crates/rodas5p-integrators/examples/sp02_workspace_profile.rs`, committed and pushed before the recorded run.
+
+**Gate.**
+
+| Item | Result | Numbers |
+|---|---|---|
+| 1. Parity | PASS | 56/56 gated runs (14 cells x 2 methods x 2 arms). Every record field matches bitwise: output times, final state bits, attempts, accepted and rejected steps, all `WorkCounters` fields, failure kinds, and the SHA-256 of the stage-solve log. Exception list is empty (0 solves). GMRES `{ls_workspace: true}` also matches `integrate_rodas5p_mf_fast_observed_gmres_into_ls_workspace` bit-for-bit in all 14 cells |
+| 2. Caller contracts | PASS | `krylov_workspace_driver_contract` (8/8 tests pass, including warmed zero-allocation solve + rollback and negative control for `copy_system_identity`) and `sp02_workspace_charge` (3/3 tests pass); `Cargo.lock` pins `faer 0.24.4` |
+| 3. Full-trajectory allocations | PASS | Non-HIRES candidate/control allocator event ratios are all `<= 0.10x` (`0.0009x` to `0.0967x`): GMRES `0.0176x`-`0.0967x` (Prothero-Robinson 1e-6 at `0.0967x`), LGMRES `0.0009x`-`0.0635x` (`brusselator-1d-160` 1e-8 reduced from `1,079,822` to `1,216` events, `0.0011x`). On HIRES, candidate events are strictly fewer (`0.4793x`-`0.4807x` GMRES, `0.1055x`-`0.1190x` LGMRES) |
+| 4. Peak memory is charged | PASS | In all 28 (problem, rtol, method) cells, `candidate_peak_bytes <= control_peak_bytes + candidate_option_added_bytes`. In `sp02_workspace_charge`, charged bytes are never below heap bytes released on drop and exceed them by at most 128 bytes per faer-owned buffer |
+| 5. Instructions | PASS | Across all 12 callgrind profiles (`van-der-pol-mu1000`, `hires`, `brusselator-1d-50` at `rtol = 1e-6`, GMRES and LGMRES), repeated 1-integration runs are deterministic (`callgrind_deterministic = true`, `records_match_native = true`) and candidate/control `Ir` ratios are all `<= 1.000x`: GMRES `0.7133x` (vdP), `0.9216x` (HIRES), `0.9931x` (Bruss-50); LGMRES `0.4527x` (vdP), `0.3877x` (HIRES), `0.2972x` (Bruss-50) |
+
