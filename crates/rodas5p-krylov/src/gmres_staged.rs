@@ -291,6 +291,27 @@ impl StagedGmresWorkspace {
         ensure_len(&mut self.g, columns + 1);
         ensure_len(&mut self.y, columns);
     }
+
+    /// Retained heap bytes of this workspace.
+    pub fn retained_bytes(&self) -> usize {
+        self.basis.capacity() * std::mem::size_of::<Vec<f64>>()
+            + self.basis.iter().map(|v| v.capacity() * 8).sum::<usize>()
+            + (self.w.capacity()
+                + self.h_column.capacity()
+                + self.r.capacity()
+                + self.cs.capacity()
+                + self.sn.capacity()
+                + self.g.capacity()
+                + self.y.capacity()
+                + self.x.capacity()
+                + self.residual.capacity()
+                + self.operator_output.capacity()
+                + self.candidate.capacity()
+                + self.candidate_residual.capacity()
+                + self.candidate_output.capacity()
+                + self.correction.capacity())
+                * 8
+    }
 }
 
 /// The state carried across restart boundaries (cloned for the shadow

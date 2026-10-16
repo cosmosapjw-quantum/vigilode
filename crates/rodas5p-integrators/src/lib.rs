@@ -376,10 +376,11 @@ pub use rodas5p_fast_small_batch::{
     integrate_rodas5p_fast_small_batch,
 };
 pub use rodas5p_matrix_free_fast::{
-    AttemptCharge, COUPLED_TARGET_ERROR_REFERENCE, COUPLED_TARGET_INITIAL_ERROR,
-    COUPLED_TARGET_ORDER_EXPONENT, COUPLED_TARGET_ROUNDOFF, COUPLED_TARGET_THETA,
-    COUPLED_TARGET_U8_FRACTION, GcrodrRecyclePolicy, L2_COUPLED_FACTOR, L2_COUPLED_RTOL_CAP,
-    MfAttemptObserver, ProductionFallbackRule, RODAS5P_MF_FAST_DRIVER_ID,
+    AttemptCharge, AttemptLgmresSnapshot, COUPLED_TARGET_ERROR_REFERENCE,
+    COUPLED_TARGET_INITIAL_ERROR, COUPLED_TARGET_ORDER_EXPONENT, COUPLED_TARGET_ROUNDOFF,
+    COUPLED_TARGET_THETA, COUPLED_TARGET_U8_FRACTION, GcrodrRecyclePolicy, KrylovWorkspaceBytes,
+    KrylovWorkspaceGrowth, KrylovWorkspaceOptions, L2_COUPLED_FACTOR, L2_COUPLED_RTOL_CAP,
+    MfAttemptObserver, MfFastInnerRun, ProductionFallbackRule, RODAS5P_MF_FAST_DRIVER_ID,
     Rodas5pMfAccountingResult, Rodas5pMfFastResult, Rodas5pMfFastWorkspace,
     Rodas5pMfStageTargetResult, StageSolveLogEntry, StageSolveStatistics, StageTargetOptions,
     StageTargetPolicy, StageTransferConstants, coupled_target_u8_cap, gcrodr_stage_solve,

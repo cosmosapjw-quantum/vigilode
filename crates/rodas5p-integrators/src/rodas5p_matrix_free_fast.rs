@@ -41,17 +41,18 @@ use faer::c64;
 use rodas5p_core::LinearSolveReport;
 use rodas5p_core::Preconditioner;
 use rodas5p_core::{
-    CoreError, CoreResult, IdentityPreconditioner, InitialGuess, LinearMethod, LinearOperator,
-    LinearSolverConfig, OperatorApplicationWork, PreconditionerKind, ShiftedOperator, WorkCounters,
-    rodas5p_coefficients, safe_l2,
+    CoreError, CoreResult, IdentityPreconditioner, InitialGuess, KrylovSystemIdentity,
+    LinearMethod, LinearOperator, LinearSolverConfig, OperatorApplicationWork, PreconditionerKind,
+    ShiftedOperator, WorkCounters, rodas5p_coefficients, safe_l2,
 };
 use rodas5p_krylov::{
     GcrodrConfig, GcrodrSolveOptions, GcrodrState, GcrodrWorkspace, GmresCapacity, GmresConfig,
-    GmresIntoOptions, GmresWorkspace, LgmresConfig, LgmresWorkspace, ResidualAccounting,
-    StagedGmresConfig, StagedGmresFailure, StagedGmresOutcome, StagedGmresReport,
-    StagedGmresWorkspace, StagedGuardAbort, solve_gcrodr_with_workspace,
-    solve_gcrodr_with_workspace_and_options, solve_gmres_into_with_accounting,
-    solve_gmres_with_workspace_and_accounting, solve_lgmres_with_workspace, solve_staged_gmres,
+    GmresIntoOptions, GmresWorkspace, LgmresConfig, LgmresIntoWorkspace, LgmresState,
+    LgmresWorkspace, ResidualAccounting, StagedGmresConfig, StagedGmresFailure, StagedGmresOutcome,
+    StagedGmresReport, StagedGmresWorkspace, StagedGuardAbort, copy_system_identity,
+    solve_gcrodr_with_workspace, solve_gcrodr_with_workspace_and_options,
+    solve_gmres_into_with_accounting, solve_gmres_with_workspace_and_accounting, solve_lgmres_into,
+    solve_lgmres_with_workspace, solve_staged_gmres,
 };
 use serde::Serialize;
 
@@ -657,6 +658,272 @@ impl LinearOperator for DiagonalScaledOperator<'_> {
     }
 }
 
+/// Explicit driver option for Krylov workspace reuse and LGMRES-into
+/// (research node `research/sp02_krylov_workspace_caller_20261011`).
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize)]
+pub struct KrylovWorkspaceOptions {
+    pub ls_workspace: bool,
+    pub lgmres_into: bool,
+}
+
+impl KrylovWorkspaceOptions {
+    pub const fn none() -> Self {
+        Self {
+            ls_workspace: false,
+            lgmres_into: false,
+        }
+    }
+
+    pub const fn ls_workspace() -> Self {
+        Self {
+            ls_workspace: true,
+            lgmres_into: false,
+        }
+    }
+
+    pub const fn lgmres_into() -> Self {
+        Self {
+            ls_workspace: false,
+            lgmres_into: true,
+        }
+    }
+
+    pub const fn all() -> Self {
+        Self {
+            ls_workspace: true,
+            lgmres_into: true,
+        }
+    }
+
+    pub fn id(self) -> &'static str {
+        match (self.ls_workspace, self.lgmres_into) {
+            (false, false) => "krylov-ws-legacy-v1",
+            (true, false) => "krylov-ws-ls-workspace-v1",
+            (false, true) => "krylov-ws-lgmres-into-v1",
+            (true, true) => "krylov-ws-ls-and-lgmres-into-v1",
+        }
+    }
+}
+
+/// Retained heap bytes by component of the Krylov workspaces and driver scratch
+/// (research node `research/sp02_krylov_workspace_caller_20261011`).
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize)]
+pub struct KrylovWorkspaceBytes {
+    pub gmres_bytes: usize,
+    pub lgmres_bytes: usize,
+    pub gcrodr_bytes: usize,
+    pub staged_bytes: usize,
+    pub lgmres_into_bytes: usize,
+    pub attempt_snapshot_bytes: usize,
+    pub driver_scratch_bytes: usize,
+    pub cached_state_bytes: usize,
+    pub least_squares_bytes: usize,
+}
+
+impl KrylovWorkspaceBytes {
+    pub fn total(&self) -> usize {
+        self.gmres_bytes
+            + self.least_squares_bytes
+            + self.lgmres_bytes
+            + self.lgmres_into_bytes
+            + self.attempt_snapshot_bytes
+            + self.gcrodr_bytes
+    }
+
+    /// Bytes retained by the components the driver option adds
+    /// (least-squares workspace, LGMRES-into snapshot and pool, attempt snapshot).
+    pub fn option_added_bytes(&self) -> usize {
+        if self.lgmres_into_bytes > 0 || self.attempt_snapshot_bytes > 0 {
+            self.least_squares_bytes + self.lgmres_into_bytes + self.attempt_snapshot_bytes
+        } else {
+            self.least_squares_bytes
+        }
+    }
+}
+
+/// Growth events by Krylov workspace component across an integration trajectory
+/// (research node `research/sp02_krylov_workspace_caller_20261011`).
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize)]
+pub struct KrylovWorkspaceGrowth {
+    pub gmres_growth: u64,
+    pub least_squares_growth: u64,
+    pub lgmres_into_inner_growth: u64,
+    pub lgmres_into_snapshot_growth: u64,
+    pub lgmres_into_pool_growth: u64,
+    pub attempt_snapshot_growth: u64,
+}
+
+impl KrylovWorkspaceGrowth {
+    pub fn total(&self) -> u64 {
+        self.gmres_growth
+            + self.least_squares_growth
+            + self.lgmres_into_inner_growth
+            + self.lgmres_into_snapshot_growth
+            + self.lgmres_into_pool_growth
+            + self.attempt_snapshot_growth
+    }
+}
+
+/// Rollback snapshot for LGMRES carried state across attempts.
+/// Under `krylov_workspace.lgmres_into`, avoids per-attempt cloning of `LgmresState`
+/// by copying directions, images, and previous solution into reusable buffers.
+#[derive(Clone, Debug, Default)]
+pub struct AttemptLgmresSnapshot {
+    directions: Vec<Vec<f64>>,
+    direction_count: usize,
+    images: Vec<Vec<f64>>,
+    image_present: Vec<bool>,
+    image_count: usize,
+    operator_token: Option<u64>,
+    system_identity: Option<KrylovSystemIdentity>,
+    previous_solution: Vec<f64>,
+    previous_present: bool,
+    generation: u64,
+    pool: Vec<Vec<f64>>,
+    growth_events: u64,
+}
+
+impl AttemptLgmresSnapshot {
+    /// Save `state` into the reused snapshot buffers.
+    pub fn save(&mut self, state: &LgmresState) {
+        let before_bytes = self.retained_bytes();
+        let count = state.directions.len();
+        while self.directions.len() < count {
+            self.directions.push(Vec::new());
+        }
+        for (i, dir) in state.directions.iter().enumerate() {
+            self.directions[i].clear();
+            self.directions[i].extend_from_slice(dir);
+        }
+        self.direction_count = count;
+
+        let img_count = state.images.len();
+        while self.images.len() < img_count {
+            self.images.push(Vec::new());
+        }
+        self.image_present.clear();
+        for (i, img) in state.images.iter().enumerate() {
+            match img {
+                Some(v) => {
+                    self.images[i].clear();
+                    self.images[i].extend_from_slice(v);
+                    self.image_present.push(true);
+                }
+                None => {
+                    self.image_present.push(false);
+                }
+            }
+        }
+        self.image_count = img_count;
+
+        self.operator_token = state.operator_token;
+        copy_system_identity(&mut self.system_identity, &state.system_identity);
+        self.previous_present = state.previous_solution.is_some();
+        if let Some(prev) = &state.previous_solution {
+            self.previous_solution.clear();
+            self.previous_solution.extend_from_slice(prev);
+        }
+        self.generation = state.generation;
+
+        if self.retained_bytes() > before_bytes {
+            self.growth_events += 1;
+        }
+    }
+
+    /// Restore `state` from the snapshot buffers with zero heap allocations once warmed.
+    pub fn restore(&mut self, state: &mut LgmresState) {
+        let before_bytes = self.retained_bytes();
+        while state.directions.len() > self.direction_count {
+            if let Some(buf) = state.directions.pop() {
+                self.pool.push(buf);
+            }
+        }
+        while state.directions.len() < self.direction_count {
+            let buf = self.pool.pop().unwrap_or_default();
+            state.directions.push(buf);
+        }
+        for (i, dir) in self.directions[..self.direction_count].iter().enumerate() {
+            state.directions[i].clear();
+            state.directions[i].extend_from_slice(dir);
+        }
+
+        while state.images.len() > self.image_count {
+            if let Some(Some(buf)) = state.images.pop() {
+                self.pool.push(buf);
+            }
+        }
+        while state.images.len() < self.image_count {
+            state.images.push(None);
+        }
+        for i in 0..self.image_count {
+            if self.image_present[i] {
+                let src = &self.images[i];
+                match &mut state.images[i] {
+                    Some(dst) => {
+                        dst.clear();
+                        dst.extend_from_slice(src);
+                    }
+                    slot @ None => {
+                        let mut buf = self.pool.pop().unwrap_or_default();
+                        buf.clear();
+                        buf.extend_from_slice(src);
+                        *slot = Some(buf);
+                    }
+                }
+            } else if let Some(buf) = state.images[i].take() {
+                self.pool.push(buf);
+            }
+        }
+
+        state.operator_token = self.operator_token;
+        copy_system_identity(&mut state.system_identity, &self.system_identity);
+        if self.previous_present {
+            match &mut state.previous_solution {
+                Some(dst) => {
+                    dst.clear();
+                    dst.extend_from_slice(&self.previous_solution);
+                }
+                slot @ None => {
+                    let mut buf = self.pool.pop().unwrap_or_default();
+                    buf.clear();
+                    buf.extend_from_slice(&self.previous_solution);
+                    *slot = Some(buf);
+                }
+            }
+        } else if let Some(buf) = state.previous_solution.take() {
+            self.pool.push(buf);
+        }
+        state.generation = self.generation;
+        if self.retained_bytes() > before_bytes {
+            self.growth_events += 1;
+        }
+    }
+
+    /// Retained heap bytes of this snapshot.
+    pub fn retained_bytes(&self) -> usize {
+        self.directions.capacity() * std::mem::size_of::<Vec<f64>>()
+            + self
+                .directions
+                .iter()
+                .map(|v| v.capacity() * 8)
+                .sum::<usize>()
+            + self.images.capacity() * std::mem::size_of::<Vec<f64>>()
+            + self.images.iter().map(|v| v.capacity() * 8).sum::<usize>()
+            + self.image_present.capacity() * std::mem::size_of::<bool>()
+            + self.previous_solution.capacity() * 8
+            + self.pool.capacity() * std::mem::size_of::<Vec<f64>>()
+            + self.pool.iter().map(|v| v.capacity() * 8).sum::<usize>()
+    }
+
+    pub fn growth_events(&self) -> u64 {
+        self.growth_events
+    }
+
+    pub fn reset_growth_events(&mut self) {
+        self.growth_events = 0;
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct Rodas5pMfFastResult {
     pub observed: ObservedIntegrationResult,
@@ -669,6 +936,8 @@ pub struct Rodas5pMfFastResult {
     pub driver: &'static str,
     /// [`GcrodrRecyclePolicy::id`] of the run (meaningful for GCRO-DR).
     pub gcrodr_policy: &'static str,
+    /// [`KrylovWorkspaceOptions::id`] of the run (research node SP02).
+    pub krylov_workspace: &'static str,
 }
 
 /// The stage arithmetic and Krylov workspaces of one integration.
@@ -742,6 +1011,14 @@ pub struct Rodas5pMfFastWorkspace {
     /// Research record (SP01): one [`StageSolveLogEntry`] per successful
     /// non-staged Krylov stage solve, when switched on. Nothing reads it.
     solve_log: Option<Vec<StageSolveLogEntry>>,
+    /// Research switch (SP02): Krylov workspace options.
+    krylov_workspace: KrylovWorkspaceOptions,
+    /// Reusable LGMRES-into workspace for stage solves under `krylov_workspace.lgmres_into`.
+    lgmres_into: LgmresIntoWorkspace,
+    /// Rollback snapshot for LGMRES carried state across attempts.
+    attempt_snapshot: AttemptLgmresSnapshot,
+    /// GMRES growth events count.
+    gmres_growth_events: u64,
 }
 
 /// One successful Krylov stage solve's report, as recorded by
@@ -764,6 +1041,13 @@ impl StageSolveLogEntry {
         }
     }
 }
+
+pub type MfFastInnerRun = (
+    Rodas5pMfFastResult,
+    StageSolveStatistics,
+    Vec<AttemptCharge>,
+    Option<Vec<StageSolveLogEntry>>,
+);
 
 fn validate_strict(problem: &OdeProblem, config: &LinearSolverConfig) -> CoreResult<()> {
     config.validate().map_err(CoreError::InvalidInput)?;
@@ -788,6 +1072,67 @@ fn validate_strict(problem: &OdeProblem, config: &LinearSolverConfig) -> CoreRes
         ));
     }
     Ok(())
+}
+
+/// A clone preserves config and options while starting with empty
+/// least-squares and snapshot buffers and zeroed growth counters, which
+/// regrow on first solve to produce bitwise-identical results.
+impl Clone for Rodas5pMfFastWorkspace {
+    fn clone(&self) -> Self {
+        Self {
+            n: self.n,
+            s: self.s,
+            gamma: self.gamma,
+            c: self.c.clone(),
+            gamma_rows: self.gamma_rows.clone(),
+            a_nonzero: self.a_nonzero.clone(),
+            c_nonzero: self.c_nonzero.clone(),
+            b_nonzero: self.b_nonzero.clone(),
+            config: self.config.clone(),
+            preconditioner: IdentityPreconditioner::new(self.n),
+            gmres: self.gmres.clone(),
+            lgmres: self.lgmres.clone(),
+            gcrodr: self.gcrodr.clone(),
+            jvp: self.jvp.clone(),
+            cached_callbacks: self.cached_callbacks.clone(),
+            cached_t_bits: self.cached_t_bits,
+            cached_y: self.cached_y.clone(),
+            cached_epoch: self.cached_epoch,
+            gmres_into: self.gmres_into,
+            gcrodr_policy: self.gcrodr_policy,
+            step_u: self.step_u.clone(),
+            step_h: self.step_h,
+            x0_scaled: self.x0_scaled.clone(),
+            gmres_into_cycles: self.gmres_into_cycles,
+            f0: self.f0.clone(),
+            ft: self.ft.clone(),
+            u: self.u.clone(),
+            stage_state: self.stage_state.clone(),
+            stage_rhs: self.stage_rhs.clone(),
+            y_new: self.y_new.clone(),
+            stage_target: self.stage_target,
+            stage_tau: self.stage_tau.clone(),
+            stage_tau_e: self.stage_tau_e.clone(),
+            attempt_charge: self.attempt_charge,
+            attempt_fallback_stages: self.attempt_fallback_stages,
+            charge_log: self.charge_log.clone(),
+            stage_span: self.stage_span,
+            last_accepted_error: self.last_accepted_error,
+            staged: self.staged.clone(),
+            stage_eps: self.stage_eps.clone(),
+            staged_scale: self.staged_scale.clone(),
+            staged_weight: self.staged_weight.clone(),
+            staged_rhs: self.staged_rhs.clone(),
+            staged_z: self.staged_z.clone(),
+            stage_statistics: self.stage_statistics,
+            residual_accounting: self.residual_accounting,
+            solve_log: self.solve_log.clone(),
+            krylov_workspace: self.krylov_workspace,
+            lgmres_into: self.lgmres_into.clone(),
+            attempt_snapshot: AttemptLgmresSnapshot::default(),
+            gmres_growth_events: 0,
+        }
+    }
 }
 
 impl Rodas5pMfFastWorkspace {
@@ -865,6 +1210,10 @@ impl Rodas5pMfFastWorkspace {
             stage_statistics: StageSolveStatistics::default(),
             residual_accounting: ResidualAccounting::DEFAULT,
             solve_log: None,
+            krylov_workspace: KrylovWorkspaceOptions::default(),
+            lgmres_into: LgmresIntoWorkspace::default(),
+            attempt_snapshot: AttemptLgmresSnapshot::default(),
+            gmres_growth_events: 0,
         })
     }
 
@@ -1136,6 +1485,314 @@ impl Rodas5pMfFastWorkspace {
         self.gmres.set_ls_workspace(on);
     }
 
+    /// Explicit driver option for Krylov workspace reuse and LGMRES-into
+    /// (research node `research/sp02_krylov_workspace_caller_20261011`).
+    pub fn set_krylov_workspace(&mut self, options: KrylovWorkspaceOptions) -> CoreResult<()> {
+        if (options.ls_workspace || options.lgmres_into)
+            && !matches!(
+                self.config.method,
+                LinearMethod::Gmres | LinearMethod::Lgmres
+            )
+        {
+            return Err(CoreError::InvalidInput(
+                "Krylov workspace options only supported for GMRES and LGMRES methods".into(),
+            ));
+        }
+        if options.lgmres_into && self.config.method != LinearMethod::Lgmres {
+            return Err(CoreError::InvalidInput(
+                "lgmres_into requires LinearMethod::Lgmres".into(),
+            ));
+        }
+        if options.ls_workspace
+            && self.config.method == LinearMethod::Lgmres
+            && !options.lgmres_into
+        {
+            return Err(CoreError::InvalidInput(
+                "ls_workspace on LGMRES requires lgmres_into".into(),
+            ));
+        }
+        self.krylov_workspace = options;
+        if self.config.method == LinearMethod::Gmres {
+            if options.ls_workspace {
+                self.gmres_into = true;
+                self.gmres.set_ls_workspace(true);
+            } else {
+                self.gmres.set_ls_workspace(false);
+            }
+        } else if self.config.method == LinearMethod::Lgmres && options.lgmres_into {
+            self.lgmres_into.set_least_squares_once(true);
+            self.lgmres_into.set_ls_workspace(options.ls_workspace);
+        }
+        Ok(())
+    }
+
+    /// The active Krylov workspace options.
+    pub fn krylov_workspace(&self) -> KrylovWorkspaceOptions {
+        self.krylov_workspace
+    }
+
+    /// Mutable reference to the attempt snapshot.
+    pub fn attempt_snapshot_mut(&mut self) -> &mut AttemptLgmresSnapshot {
+        &mut self.attempt_snapshot
+    }
+
+    /// Reference to the attempt snapshot.
+    pub fn attempt_snapshot(&self) -> &AttemptLgmresSnapshot {
+        &self.attempt_snapshot
+    }
+
+    /// Retained heap bytes of all Krylov workspace components and driver scratch.
+    pub fn krylov_workspace_bytes(&self) -> KrylovWorkspaceBytes {
+        let driver_scratch_bytes = (self.u.capacity()
+            + self.f0.capacity()
+            + self.ft.capacity()
+            + self.stage_state.capacity()
+            + self.stage_rhs.capacity()
+            + self.y_new.capacity()
+            + self.x0_scaled.capacity()
+            + self.step_u.capacity()
+            + self.stage_eps.capacity()
+            + self.staged_scale.capacity()
+            + self.staged_weight.capacity()
+            + self.staged_rhs.capacity()
+            + self.staged_z.capacity())
+            * std::mem::size_of::<f64>()
+            + self.c.capacity() * std::mem::size_of::<f64>()
+            + self.gamma_rows.capacity() * std::mem::size_of::<f64>();
+        let cached_state_bytes = self.cached_y.capacity() * std::mem::size_of::<f64>();
+        let least_squares_bytes =
+            self.gmres.least_squares_bytes() + self.lgmres_into.least_squares_bytes();
+        let gmres_bytes = self
+            .gmres
+            .retained_bytes()
+            .saturating_sub(self.gmres.least_squares_bytes());
+        let lgmres_into_bytes = self
+            .lgmres_into
+            .retained_bytes()
+            .saturating_sub(self.lgmres_into.least_squares_bytes());
+        KrylovWorkspaceBytes {
+            gmres_bytes,
+            lgmres_bytes: self.lgmres.retained_bytes(),
+            gcrodr_bytes: self.gcrodr.retained_bytes(),
+            staged_bytes: self.staged.retained_bytes(),
+            lgmres_into_bytes,
+            attempt_snapshot_bytes: self.attempt_snapshot.retained_bytes(),
+            driver_scratch_bytes,
+            cached_state_bytes,
+            least_squares_bytes,
+        }
+    }
+
+    /// Growth events of the Krylov workspaces across an integration trajectory.
+    pub fn krylov_workspace_growth(&self) -> KrylovWorkspaceGrowth {
+        let least_squares_growth = self.gmres.ls_workspace().map_or(0, |ls| ls.growth_events())
+            + self.lgmres_into.ls_growth_events();
+        KrylovWorkspaceGrowth {
+            gmres_growth: self.gmres_growth_events,
+            least_squares_growth,
+            lgmres_into_inner_growth: self.lgmres_into.inner_growth_events(),
+            lgmres_into_snapshot_growth: self.lgmres_into.snapshot_growth_events(),
+            lgmres_into_pool_growth: self.lgmres_into.pool_growth_events(),
+            attempt_snapshot_growth: self.attempt_snapshot.growth_events(),
+        }
+    }
+
+    /// Reset growth event counters across all Krylov components.
+    pub fn reset_krylov_workspace_growth(&mut self) {
+        self.gmres_growth_events = 0;
+        self.gmres.reset_growth_events();
+        self.lgmres_into.reset_growth_events();
+        self.attempt_snapshot.reset_growth_events();
+    }
+
+    /// Integrate an ODE problem using this workspace with default (no-op) observer.
+    pub fn integrate_observed(
+        &mut self,
+        problem: &OdeProblem,
+        t_span: (f64, f64),
+        y0: &[f64],
+        adaptive: &AdaptiveStepConfig,
+        output: &OutputSchedule,
+    ) -> CoreResult<Rodas5pMfFastResult> {
+        self.integrate_observed_with_observer(
+            problem,
+            t_span,
+            y0,
+            adaptive,
+            output,
+            &mut |_, _, _, _, _| {},
+        )
+        .map(|(result, ..)| result)
+    }
+
+    /// Integrate an ODE problem with an attempt observer.
+    pub fn integrate_observed_with_observer(
+        &mut self,
+        problem: &OdeProblem,
+        t_span: (f64, f64),
+        y0: &[f64],
+        adaptive: &AdaptiveStepConfig,
+        output: &OutputSchedule,
+        observer: MfAttemptObserver<'_>,
+    ) -> CoreResult<MfFastInnerRun> {
+        adaptive.validate()?;
+        let (mut t, tf) = t_span;
+        if tf < t || y0.len() != problem.dimension {
+            return Err(CoreError::InvalidInput(
+                "invalid RODAS5P matrix-free U-form integration input".into(),
+            ));
+        }
+        self.clear_accepted_step();
+        self.jvp = None;
+        self.cached_callbacks = None;
+        self.cached_t_bits = 0;
+        self.cached_epoch = None;
+        let staged = self.stage_target.policy != StageTargetPolicy::Legacy;
+        if staged {
+            self.set_stage_target_span(tf - t);
+            self.clear_accepted_error();
+        }
+        let mut y = y0.to_vec();
+        let mut h = adaptive.initial_step.min(crate::output::step_to(t, tf)?);
+        let mut controller = AdaptiveControllerState::default();
+        let mut counters = WorkCounters::default();
+        let mut recycle = KrylovState::for_method(self.config.method);
+        let mut collector =
+            OutputCollector::new(output, t_span, y0)?.with_max_step(adaptive.step_cap());
+        let (mut attempts, mut accepted_steps, mut rejected_steps, mut reuses) = (0, 0, 0, 0);
+        let mut internal_steps = 0_usize;
+        // Whether f(t, y), f_t and the JVP in the workspace belong to (t, y).
+        let mut fresh_state = false;
+        while t < tf && attempts < adaptive.max_attempts {
+            let Some(next_h) =
+                crate::output::adaptive_end_step(t, h, tf, adaptive.step_cap(), &controller)?
+            else {
+                break;
+            };
+            h = next_h;
+            if (crate::output::below_min_step(t, h, adaptive.min_step) && t + h < tf) || t + h == t
+            {
+                break;
+            }
+            let (trial_h, clipped) = collector.limit_step(t, h, tf)?;
+            attempts += 1;
+            if fresh_state {
+                reuses += 1;
+            }
+            let legacy_snapshot = if self.krylov_workspace.lgmres_into {
+                None
+            } else {
+                Some(recycle.clone())
+            };
+            if self.krylov_workspace.lgmres_into
+                && let Some(KrylovState::Lgmres(st)) = recycle.as_mut()
+            {
+                self.attempt_snapshot.save(st);
+            }
+            let outcome = self.attempt(
+                problem,
+                t,
+                &y,
+                trial_h,
+                !fresh_state,
+                recycle.as_mut(),
+                adaptive.atol,
+                adaptive.rtol,
+                &mut counters,
+            );
+            fresh_state = self.jvp.is_some();
+            observer(t, &y, trial_h, outcome.as_ref().ok().copied(), self);
+            let (error, failure) = match outcome {
+                Ok(error) if error <= 1.0 => (error, None),
+                Ok(error) => (error, Some(AdaptiveFailureKind::LocalError)),
+                Err(error) => match failure_kind(&error) {
+                    Some(kind) => (f64::INFINITY, Some(kind)),
+                    None => return Err(error),
+                },
+            };
+            match failure {
+                None => {
+                    counters.accepted_steps += 1;
+                    accepted_steps += 1;
+                    t += trial_h;
+                    y.copy_from_slice(&self.y_new);
+                    collector.accept(t, &y, clipped)?;
+                    self.record_accepted_step(trial_h);
+                    if staged {
+                        self.record_accepted_error(error);
+                    }
+                    internal_steps += 1;
+                    fresh_state = false;
+                }
+                Some(kind) => {
+                    // A rejected attempt leaves no trace in the recycle state.
+                    if self.krylov_workspace.lgmres_into {
+                        if let Some(KrylovState::Lgmres(st)) = recycle.as_mut() {
+                            self.attempt_snapshot.restore(st);
+                        }
+                    } else {
+                        recycle = legacy_snapshot.expect("saved when lgmres_into is false");
+                    }
+                    counters.rejected_steps += 1;
+                    rejected_steps += 1;
+                    match kind {
+                        AdaptiveFailureKind::LocalError => counters.local_error_failures += 1,
+                        AdaptiveFailureKind::LinearSolve => counters.linear_solve_failures += 1,
+                        AdaptiveFailureKind::NonlinearSolve => {
+                            counters.nonlinear_solve_failures += 1
+                        }
+                        AdaptiveFailureKind::NonFinite => counters.nonfinite_step_failures += 1,
+                    }
+                }
+            }
+            h = rodas_next_step_after_attempt(
+                &mut controller,
+                adaptive,
+                h,
+                trial_h,
+                error,
+                failure.is_none(),
+                clipped,
+            )?;
+        }
+        let success = t >= tf;
+        let (times, states, output_clipped_steps) = if success {
+            collector.finish()?
+        } else {
+            collector.finish_partial()
+        };
+        let result = Rodas5pMfFastResult {
+            observed: ObservedIntegrationResult {
+                t: times,
+                y: states,
+                success,
+                message: if success {
+                    "success".into()
+                } else {
+                    "maximum step count or minimum step reached".into()
+                },
+                counters,
+                internal_steps,
+                output_clipped_steps,
+            },
+            attempts,
+            accepted_steps,
+            rejected_steps,
+            state_reuses: reuses,
+            driver: RODAS5P_MF_FAST_DRIVER_ID,
+            gcrodr_policy: self.gcrodr_policy.id(),
+            krylov_workspace: self.krylov_workspace.id(),
+        };
+        if self.krylov_workspace.lgmres_into
+            && let Some(KrylovState::Lgmres(st)) = recycle.as_mut()
+        {
+            self.lgmres_into.harvest_state(st);
+        }
+        let charges = std::mem::take(&mut self.charge_log);
+        let solve_log = self.solve_log.take();
+        Ok((result, self.stage_statistics(), charges, solve_log))
+    }
+
     /// Set the GCRO-DR recycle policy (research node
     /// `research/safe_recycle_policy_20261004`). `Legacy` by default.
     pub fn set_gcrodr_policy(&mut self, policy: GcrodrRecyclePolicy) {
@@ -1385,6 +2042,9 @@ impl Rodas5pMfFastWorkspace {
                     self.residual_accounting,
                     counters,
                 )?;
+                if report.workspace_grew {
+                    self.gmres_growth_events += 1;
+                }
                 self.gmres_into_cycles += report.cycles;
                 if !stage.iter().all(|value| value.is_finite()) {
                     return Err(CoreError::NonFinite(
@@ -1425,18 +2085,55 @@ impl Rodas5pMfFastWorkspace {
                             "LGMRES needs an LGMRES recycle state".into(),
                         ));
                     };
+                    let lgmres_config = LgmresConfig {
+                        inner_m: self.config.inner_m,
+                        max_outer: self.config.maxiter,
+                        outer_k: self.config.outer_k,
+                        rtol: self.config.rtol,
+                        atol: linear_atol,
+                    };
+                    if self.krylov_workspace.lgmres_into {
+                        let (done, rest) = self.u.split_at_mut(i * n);
+                        let stage = &mut rest[..n];
+                        let x0 = if !step_start {
+                            previous.then(|| &done[(i - 1) * n..])
+                        } else if self.config.x0_strategy == InitialGuess::PreviousStepScaled {
+                            Some(&self.x0_scaled[..])
+                        } else {
+                            Some(&self.step_u[i * n..(i + 1) * n])
+                        };
+                        let report = solve_lgmres_into(
+                            &shifted,
+                            &self.preconditioner,
+                            &self.stage_rhs,
+                            x0,
+                            &lgmres_config,
+                            st,
+                            None,
+                            stage,
+                            &mut self.lgmres_into,
+                            counters,
+                        )?;
+                        if !stage.iter().all(|value| value.is_finite()) {
+                            return Err(CoreError::NonFinite(
+                                "RODAS5P U-form stage solve produced NaN/Inf".into(),
+                            ));
+                        }
+                        if let Some(log) = self.solve_log.as_mut() {
+                            log.push(StageSolveLogEntry::new(
+                                report.residual_norm,
+                                report.relative_residual,
+                                report.iterations,
+                            ));
+                        }
+                        continue;
+                    }
                     solve_lgmres_with_workspace(
                         &shifted,
                         &self.preconditioner,
                         &self.stage_rhs,
                         x0,
-                        &LgmresConfig {
-                            inner_m: self.config.inner_m,
-                            max_outer: self.config.maxiter,
-                            outer_k: self.config.outer_k,
-                            rtol: self.config.rtol,
-                            atol: linear_atol,
-                        },
+                        &lgmres_config,
                         st,
                         &mut self.lgmres,
                         counters,
@@ -1706,142 +2403,22 @@ fn integrate_mf_fast_inner(
     stage_target: StageTargetOptions,
     accounting: AccountingRun,
 ) -> CoreResult<MfFastInnerRun> {
-    adaptive.validate()?;
-    let (mut t, tf) = t_span;
-    if tf < t || y0.len() != problem.dimension {
-        return Err(CoreError::InvalidInput(
-            "invalid RODAS5P matrix-free U-form integration input".into(),
-        ));
-    }
     let mut work = Rodas5pMfFastWorkspace::new(problem, linear_config)?;
     work.set_gmres_into(gmres_into);
     work.set_gcrodr_policy(policy);
     work.set_ls_workspace(ls_workspace);
     work.set_residual_accounting(accounting.accounting);
     work.set_solve_log(accounting.solve_log);
-    work.clear_accepted_step();
+    if ls_workspace && linear_config.method == LinearMethod::Gmres {
+        work.set_krylov_workspace(KrylovWorkspaceOptions::ls_workspace())?;
+    }
     let staged = stage_target.policy != StageTargetPolicy::Legacy;
     if staged {
-        // (DupFix included: it only selects the GMRES-into options.)
         work.set_stage_target(stage_target)?;
-        work.set_stage_target_span(tf - t);
+        work.set_stage_target_span(t_span.1 - t_span.0);
         work.clear_accepted_error();
     }
-    let mut y = y0.to_vec();
-    let mut h = adaptive.initial_step.min(crate::output::step_to(t, tf)?);
-    let mut controller = AdaptiveControllerState::default();
-    let mut counters = WorkCounters::default();
-    let mut recycle = KrylovState::for_method(linear_config.method);
-    let mut collector =
-        OutputCollector::new(output, t_span, y0)?.with_max_step(adaptive.step_cap());
-    let (mut attempts, mut accepted_steps, mut rejected_steps, mut reuses) = (0, 0, 0, 0);
-    let mut internal_steps = 0_usize;
-    // Whether f(t, y), f_t and the JVP in the workspace belong to (t, y).
-    let mut fresh_state = false;
-    while t < tf && attempts < adaptive.max_attempts {
-        let Some(next_h) =
-            crate::output::adaptive_end_step(t, h, tf, adaptive.step_cap(), &controller)?
-        else {
-            break;
-        };
-        h = next_h;
-        if (crate::output::below_min_step(t, h, adaptive.min_step) && t + h < tf) || t + h == t {
-            break;
-        }
-        let (trial_h, clipped) = collector.limit_step(t, h, tf)?;
-        attempts += 1;
-        if fresh_state {
-            reuses += 1;
-        }
-        let snapshot = recycle.clone();
-        let outcome = work.attempt(
-            problem,
-            t,
-            &y,
-            trial_h,
-            !fresh_state,
-            recycle.as_mut(),
-            adaptive.atol,
-            adaptive.rtol,
-            &mut counters,
-        );
-        fresh_state = work.jvp.is_some();
-        observer(t, &y, trial_h, outcome.as_ref().ok().copied(), &work);
-        let (error, failure) = match outcome {
-            Ok(error) if error <= 1.0 => (error, None),
-            Ok(error) => (error, Some(AdaptiveFailureKind::LocalError)),
-            Err(error) => match failure_kind(&error) {
-                Some(kind) => (f64::INFINITY, Some(kind)),
-                None => return Err(error),
-            },
-        };
-        match failure {
-            None => {
-                counters.accepted_steps += 1;
-                accepted_steps += 1;
-                t += trial_h;
-                y.copy_from_slice(&work.y_new);
-                collector.accept(t, &y, clipped)?;
-                work.record_accepted_step(trial_h);
-                if staged {
-                    work.record_accepted_error(error);
-                }
-                internal_steps += 1;
-                fresh_state = false;
-            }
-            Some(kind) => {
-                // A rejected attempt leaves no trace in the recycle state.
-                recycle = snapshot;
-                counters.rejected_steps += 1;
-                rejected_steps += 1;
-                match kind {
-                    AdaptiveFailureKind::LocalError => counters.local_error_failures += 1,
-                    AdaptiveFailureKind::LinearSolve => counters.linear_solve_failures += 1,
-                    AdaptiveFailureKind::NonlinearSolve => counters.nonlinear_solve_failures += 1,
-                    AdaptiveFailureKind::NonFinite => counters.nonfinite_step_failures += 1,
-                }
-            }
-        }
-        h = rodas_next_step_after_attempt(
-            &mut controller,
-            adaptive,
-            h,
-            trial_h,
-            error,
-            failure.is_none(),
-            clipped,
-        )?;
-    }
-    let success = t >= tf;
-    let (times, states, output_clipped_steps) = if success {
-        collector.finish()?
-    } else {
-        collector.finish_partial()
-    };
-    let result = Rodas5pMfFastResult {
-        observed: ObservedIntegrationResult {
-            t: times,
-            y: states,
-            success,
-            message: if success {
-                "success".into()
-            } else {
-                "maximum step count or minimum step reached".into()
-            },
-            counters,
-            internal_steps,
-            output_clipped_steps,
-        },
-        attempts,
-        accepted_steps,
-        rejected_steps,
-        state_reuses: reuses,
-        driver: RODAS5P_MF_FAST_DRIVER_ID,
-        gcrodr_policy: policy.id(),
-    };
-    let charges = std::mem::take(&mut work.charge_log);
-    let solve_log = work.solve_log.take();
-    Ok((result, work.stage_statistics(), charges, solve_log))
+    work.integrate_observed_with_observer(problem, t_span, y0, adaptive, output, observer)
 }
 
 /// The residual accounting of one [`integrate_mf_fast_inner`] run and
@@ -1859,13 +2436,6 @@ impl AccountingRun {
         solve_log: false,
     };
 }
-
-type MfFastInnerRun = (
-    Rodas5pMfFastResult,
-    StageSolveStatistics,
-    Vec<AttemptCharge>,
-    Option<Vec<StageSolveLogEntry>>,
-);
 
 /// A run of [`integrate_rodas5p_mf_fast_observed_with_stage_target`].
 #[derive(Clone, Debug)]

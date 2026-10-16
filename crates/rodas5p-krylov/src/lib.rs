@@ -49,7 +49,9 @@ pub use lgmres::{
     LgmresConfig, LgmresState, solve_lgmres, solve_lgmres_with_residual_scale,
     solve_lgmres_with_workspace, solve_lgmres_with_workspace_and_residual_scale,
 };
-pub use lgmres_into::{LgmresIntoReport, LgmresIntoWorkspace, solve_lgmres_into};
+pub use lgmres_into::{
+    LgmresIntoReport, LgmresIntoWorkspace, copy_system_identity, solve_lgmres_into,
+};
 /// `least_squares` is exported as the bitwise reference of
 /// `LeastSquaresWorkspace` (research node `research/spd04_ls_workspace_20261007`).
 pub use small::{LeastSquaresWorkspace, least_squares};

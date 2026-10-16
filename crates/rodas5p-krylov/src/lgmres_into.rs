@@ -21,8 +21,9 @@ use crate::{
     workspace::LgmresWorkspace,
 };
 use rodas5p_core::{
-    ApplyCategory, CoreError, CoreResult, KrylovSystemIdentity, LinearOperator, Preconditioner,
-    WorkCounters, apply_preconditioner, exact_krylov_system_identity, safe_l2,
+    ApplyCategory, CoreError, CoreResult, ExactOperatorIdentity, KrylovSystemIdentity,
+    LinearOperator, Preconditioner, WorkCounters, apply_preconditioner,
+    exact_krylov_system_identity, safe_l2,
 };
 
 /// A solve's report without the solution (which is in the caller's output).
@@ -59,6 +60,25 @@ pub struct LgmresIntoWorkspace {
     /// used only together with `least_squares_once`.
     least_squares: Option<Box<LeastSquaresWorkspace>>,
     least_squares_solution: Vec<f64>,
+    inner_growth_events: u64,
+    snapshot_growth_events: u64,
+    pool_growth_events: u64,
+}
+
+impl Clone for LgmresIntoWorkspace {
+    fn clone(&self) -> Self {
+        Self {
+            inner: LgmresWorkspace::default(),
+            snapshot: Snapshot::default(),
+            pool: Vec::new(),
+            least_squares_once: self.least_squares_once,
+            least_squares: self.least_squares.as_ref().map(|_| Box::default()),
+            least_squares_solution: Vec::new(),
+            inner_growth_events: 0,
+            snapshot_growth_events: 0,
+            pool_growth_events: 0,
+        }
+    }
 }
 
 impl LgmresIntoWorkspace {
@@ -95,6 +115,83 @@ impl LgmresIntoWorkspace {
     pub fn ls_workspace(&self) -> Option<&LeastSquaresWorkspace> {
         self.least_squares.as_deref()
     }
+
+    /// Retained bytes of the inner LGMRES workspace.
+    pub fn inner_bytes(&self) -> usize {
+        self.inner.retained_bytes()
+    }
+
+    /// Retained bytes of the rollback snapshot.
+    pub fn snapshot_bytes(&self) -> usize {
+        self.snapshot.retained_bytes()
+    }
+
+    /// Retained bytes of the spare vector pool.
+    pub fn pool_bytes(&self) -> usize {
+        self.pool.capacity() * std::mem::size_of::<Vec<f64>>()
+            + self.pool.iter().map(|v| v.capacity() * 8).sum::<usize>()
+    }
+
+    /// Retained bytes of the least-squares workspace and solution buffer.
+    pub fn least_squares_bytes(&self) -> usize {
+        self.least_squares.as_ref().map_or(0, |ls| {
+            let retained = ls.retained_bytes();
+            if retained == 0 {
+                0
+            } else {
+                std::mem::size_of::<LeastSquaresWorkspace>() + retained
+            }
+        }) + self.least_squares_solution.capacity() * 8
+    }
+
+    /// Total retained heap bytes across all components.
+    pub fn retained_bytes(&self) -> usize {
+        self.inner_bytes() + self.snapshot_bytes() + self.pool_bytes() + self.least_squares_bytes()
+    }
+
+    pub fn inner_growth_events(&self) -> u64 {
+        self.inner_growth_events
+    }
+
+    pub fn snapshot_growth_events(&self) -> u64 {
+        self.snapshot_growth_events
+    }
+
+    pub fn pool_growth_events(&self) -> u64 {
+        self.pool_growth_events
+    }
+
+    pub fn ls_growth_events(&self) -> u64 {
+        self.least_squares
+            .as_ref()
+            .map_or(0, |ls| ls.growth_events())
+    }
+
+    pub fn reset_growth_events(&mut self) {
+        self.inner_growth_events = 0;
+        self.snapshot_growth_events = 0;
+        self.pool_growth_events = 0;
+        if let Some(ls) = self.least_squares.as_mut() {
+            ls.reset_growth_events();
+        }
+    }
+
+    /// Return all vector allocations from `state` into the spare buffer pool
+    /// so they can be reused without reallocation across integrations.
+    pub fn harvest_state(&mut self, state: &mut LgmresState) {
+        for mut dir in state.directions.drain(..) {
+            dir.clear();
+            self.pool.push(dir);
+        }
+        for mut img in state.images.drain(..).flatten() {
+            img.clear();
+            self.pool.push(img);
+        }
+        if let Some(mut prev) = state.previous_solution.take() {
+            prev.clear();
+            self.pool.push(prev);
+        }
+    }
 }
 
 #[derive(Debug, Default)]
@@ -110,19 +207,94 @@ struct Snapshot {
     generation: u64,
 }
 
+/// Copy `source` into `target` in place without heap allocations when
+/// both are already structured identities.
+pub fn copy_system_identity(
+    target: &mut Option<KrylovSystemIdentity>,
+    source: &Option<KrylovSystemIdentity>,
+) {
+    if let (Some(t), Some(s)) = (target.as_mut(), source.as_ref()) {
+        match (&mut t.operator, &s.operator) {
+            (ExactOperatorIdentity::Instance(t_id), ExactOperatorIdentity::Instance(s_id)) => {
+                *t_id = *s_id;
+            }
+            (
+                ExactOperatorIdentity::Shifted {
+                    jacobian: t_jac,
+                    mass: None,
+                    h_gamma_bits: t_hgb,
+                },
+                ExactOperatorIdentity::Shifted {
+                    jacobian: s_jac,
+                    mass: None,
+                    h_gamma_bits: s_hgb,
+                },
+            ) => {
+                *t_hgb = *s_hgb;
+                match (&mut **t_jac, &**s_jac) {
+                    (
+                        ExactOperatorIdentity::Instance(t_id),
+                        ExactOperatorIdentity::Instance(s_id),
+                    ) => *t_id = *s_id,
+                    (t_other, s_other) if t_other != s_other => t_other.clone_from(s_other),
+                    _ => {}
+                }
+            }
+            (t_other, s_other) if t_other != s_other => t_other.clone_from(s_other),
+            _ => {}
+        }
+        if t.preconditioner != s.preconditioner {
+            t.preconditioner.clone_from(&s.preconditioner);
+        }
+    } else {
+        *target = source.clone();
+    }
+}
+
 fn copy_into(target: &mut Vec<f64>, source: &[f64]) {
     target.clear();
     target.extend_from_slice(source);
 }
 
-fn take_buffer(pool: &mut Vec<Vec<f64>>, source: &[f64]) -> Vec<f64> {
+fn take_buffer(pool: &mut Vec<Vec<f64>>, source: &[f64], pool_growth: &mut u64) -> Vec<f64> {
+    let mut buffer = match pool.pop() {
+        Some(b) => {
+            if b.capacity() < source.len() {
+                *pool_growth += 1;
+            }
+            b
+        }
+        None => {
+            *pool_growth += 1;
+            Vec::new()
+        }
+    };
+    copy_into(&mut buffer, source);
+    buffer
+}
+
+fn take_buffer_raw(pool: &mut Vec<Vec<f64>>, source: &[f64]) -> Vec<f64> {
     let mut buffer = pool.pop().unwrap_or_default();
     copy_into(&mut buffer, source);
     buffer
 }
 
 impl Snapshot {
-    fn save(&mut self, state: &LgmresState) {
+    fn retained_bytes(&self) -> usize {
+        self.directions.capacity() * std::mem::size_of::<Vec<f64>>()
+            + self
+                .directions
+                .iter()
+                .map(|v| v.capacity() * 8)
+                .sum::<usize>()
+            + self.images.capacity() * std::mem::size_of::<Vec<f64>>()
+            + self.images.iter().map(|v| v.capacity() * 8).sum::<usize>()
+            + self.image_present.capacity() * std::mem::size_of::<bool>()
+            + self.previous_solution.capacity() * 8
+    }
+
+    fn save(&mut self, state: &LgmresState, growth: &mut u64) {
+        let before_bytes = self.retained_bytes();
         let count = state.directions.len();
         while self.directions.len() < count {
             self.directions.push(Vec::new());
@@ -145,12 +317,15 @@ impl Snapshot {
         }
         self.direction_count = count;
         self.operator_token = state.operator_token;
-        self.system_identity = state.system_identity.clone();
+        copy_system_identity(&mut self.system_identity, &state.system_identity);
         self.previous_present = state.previous_solution.is_some();
         if let Some(previous) = &state.previous_solution {
             copy_into(&mut self.previous_solution, previous);
         }
         self.generation = state.generation;
+        if self.retained_bytes() > before_bytes {
+            *growth += 1;
+        }
     }
 
     fn restore(&self, state: &mut LgmresState, pool: &mut Vec<Vec<f64>>, images_len: usize) {
@@ -176,7 +351,7 @@ impl Snapshot {
             match (&mut state.images[index], present) {
                 (Some(image), true) => copy_into(image, &self.images[index]),
                 (slot @ None, true) => {
-                    *slot = Some(take_buffer(pool, &self.images[index]));
+                    *slot = Some(take_buffer_raw(pool, &self.images[index]));
                 }
                 (slot @ Some(_), false) => {
                     if let Some(image) = slot.take() {
@@ -187,10 +362,10 @@ impl Snapshot {
             }
         }
         state.operator_token = self.operator_token;
-        state.system_identity = self.system_identity.clone();
+        copy_system_identity(&mut state.system_identity, &self.system_identity);
         match (&mut state.previous_solution, self.previous_present) {
             (Some(previous), true) => copy_into(previous, &self.previous_solution),
-            (slot @ None, true) => *slot = Some(take_buffer(pool, &self.previous_solution)),
+            (slot @ None, true) => *slot = Some(take_buffer_raw(pool, &self.previous_solution)),
             (slot @ Some(_), false) => {
                 if let Some(previous) = slot.take() {
                     pool.push(previous);
@@ -233,20 +408,25 @@ pub fn solve_lgmres_into(
     let threshold = residual_threshold("LGMRES", config.rtol, config.atol, right_norm)?;
     let before = *counters;
     let images_len_before = state.images.len();
-    workspace.snapshot.save(state);
+    workspace
+        .snapshot
+        .save(state, &mut workspace.snapshot_growth_events);
+    let token = op.token();
     let system_identity = exact_krylov_system_identity(op, pc);
+    let same_system =
+        system_identity.is_some() && state.system_identity.as_ref() == system_identity.as_ref();
+    let inner_cap_before = workspace.inner.capacity_f64();
     let LgmresIntoWorkspace {
         inner,
         pool,
         least_squares_once,
         least_squares,
         least_squares_solution,
+        pool_growth_events,
         ..
     } = workspace;
     let least_squares_once = *least_squares_once;
     let result = (|| {
-        let same_system =
-            system_identity.is_some() && state.system_identity.as_ref() == system_identity.as_ref();
         if !same_system {
             for image in &mut state.images {
                 if let Some(old) = image.take() {
@@ -256,8 +436,8 @@ pub fn solve_lgmres_into(
             if let Some(old) = state.previous_solution.take() {
                 pool.push(old);
             }
-            state.operator_token = Some(op.token());
-            state.system_identity = system_identity.clone();
+            state.operator_token = Some(token);
+            copy_system_identity(&mut state.system_identity, &system_identity);
         }
         // As the existing solve: retain the directions of length n, then
         // truncate the images to their count (the removed vectors return to
@@ -320,7 +500,18 @@ pub fn solve_lgmres_into(
             }
             for index in 0..state.directions.len() {
                 if state.images[index].is_none() {
-                    let mut image = pool.pop().unwrap_or_default();
+                    let mut image = match pool.pop() {
+                        Some(b) => {
+                            if b.capacity() < n {
+                                *pool_growth_events += 1;
+                            }
+                            b
+                        }
+                        None => {
+                            *pool_growth_events += 1;
+                            Vec::new()
+                        }
+                    };
                     image.clear();
                     image.resize(n, 0.0);
                     apply_left_with_raw(
@@ -379,8 +570,8 @@ pub fn solve_lgmres_into(
                     counters,
                     ApplyCategory::Refresh,
                 )?;
-                let direction = take_buffer(pool, &inner.arnoldi.correction);
-                let image = take_buffer(pool, &inner.common.scratch_a);
+                let direction = take_buffer(pool, &inner.arnoldi.correction, pool_growth_events);
+                let image = take_buffer(pool, &inner.common.scratch_a, pool_growth_events);
                 state.directions.push(direction);
                 state.images.push(Some(image));
                 while state.directions.len() > config.outer_k {
@@ -420,10 +611,10 @@ pub fn solve_lgmres_into(
         }
         match &mut state.previous_solution {
             Some(previous) => copy_into(previous, &inner.common.x),
-            slot @ None => *slot = Some(take_buffer(pool, &inner.common.x)),
+            slot @ None => *slot = Some(take_buffer(pool, &inner.common.x, pool_growth_events)),
         }
-        state.operator_token = Some(op.token());
-        state.system_identity = system_identity.clone();
+        state.operator_token = Some(token);
+        copy_system_identity(&mut state.system_identity, &system_identity);
         state.generation += 1;
         counters.linear_solves += 1;
         let delta = counters.delta(before);
@@ -442,6 +633,9 @@ pub fn solve_lgmres_into(
         workspace
             .snapshot
             .restore(state, &mut workspace.pool, images_len_before);
+    }
+    if workspace.inner.capacity_f64() > inner_cap_before {
+        workspace.inner_growth_events += 1;
     }
     result
 }

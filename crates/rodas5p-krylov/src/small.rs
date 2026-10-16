@@ -146,6 +146,38 @@ impl LeastSquaresWorkspace {
         self.solves
     }
 
+    /// Reset growth counters.
+    pub fn reset_growth_events(&mut self) {
+        self.growth_events = 0;
+        self.last_grew = false;
+    }
+
+    /// Retained heap bytes of this workspace.
+    pub fn retained_bytes(&self) -> usize {
+        let faer_mat_bytes = |mat: &Mat<f64>| -> usize {
+            if mat.nrows() > 0 && mat.ncols() > 0 {
+                let row_capacity = mat.col_stride() as usize;
+                let col_capacity = mat.ncols();
+                (row_capacity * col_capacity * std::mem::size_of::<f64>()) + 64
+            } else {
+                0
+            }
+        };
+        let mat_bytes = faer_mat_bytes(&self.qr)
+            + faer_mat_bytes(&self.q_coeff)
+            + faer_mat_bytes(&self.r)
+            + faer_mat_bytes(&self.rhs);
+        let perm_bytes = self.perm_forward.capacity() * std::mem::size_of::<usize>()
+            + self.perm_inverse.capacity() * std::mem::size_of::<usize>();
+        let scratch_bytes = if self.scratch.is_some() {
+            self.scratch_req
+                .map_or(0, |req| req.size_bytes() + req.align_bytes())
+        } else {
+            0
+        };
+        mat_bytes + perm_bytes + scratch_bytes
+    }
+
     /// [`least_squares`] into `out` (cleared, then holding `a.ncols()`
     /// values) with this workspace's buffers: the same solution bits, the
     /// same errors. On an error `out`'s contents are unspecified. A matrix
