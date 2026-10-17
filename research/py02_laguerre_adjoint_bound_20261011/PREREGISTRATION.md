@@ -168,3 +168,17 @@ digest, and PY03's cache-key tests must pass unchanged after PY02 is merged.
 - **A3 fails.** At h rho = 8-48 the Chebyshev degree is well below the Laguerre degree (PP08: 30-37 against 87-115 at
   h rho = 40), so the count is predicted to be 0.
 - **Most likely outcome: ABSTAIN (A3).** If admitted, S1-S2 are expected to hold, and S3/S4 are uncertain.
+
+## Results (2026-10-17)
+
+- **Execution commit (`EXEC_SHA`)**: `a8565bd7cdcc9904015ca3423d4f9704a756a812`
+- **Stage 1 Admission Verdict**: **ABSTAIN** (`decision ABSTAIN (A3)`)
+- **Ledger verdict**: **PASS** (recorded per preregistration contract: Stage 1 `ABSTAIN` from failed `A3` is recorded as `PASS` with claim `"decision ABSTAIN (A3)"`)
+- **Stage 1 Criteria**:
+  - **A1 Dominance**: `true` — `recurrence_adjoint` share is `1.000000e+00 >= 0.9` on all `6 / 6` gated PY01 cases (`n{6,12,20}-rho400-h0.1-{distinct,same}`).
+  - **A2 Closability**: `true` — closability floor `F <= budget` holds on `6 / 6` cases (`F` in `[1.300e-10, 2.558e-10] <= 1.0e-6`).
+  - **A3 Work Feasibility**: `false` — `0 / 32` stage-2 cases (`< 8` required) have Laguerre vector products strictly fewer than Chebyshev vector products at truncation budget `total_budget / 4` (Chebyshev vector products `15..185` vs Laguerre vector products `25..600`).
+- **Stage 2 Action**: Not implemented (gated on `A1 && A2 && A3` per preregistration).
+- **Artifacts**:
+  - `research/py02_laguerre_adjoint_bound_20261011/PLANS.json` (`4e66a322e44df31baaa8e168e1e7a5c71b4e93c55ee3836f12ee4d9010496949`)
+  - `research/py02_laguerre_adjoint_bound_20261011/ADMISSION.json` (`d6e23379081414697a343b330cfbf0a250e09449c406414f16a3497651a23f25`)
