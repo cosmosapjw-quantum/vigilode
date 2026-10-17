@@ -1115,11 +1115,46 @@ struct LaguerreExportIntermediate {
     columns: [LaguerreAdjointColumnInternal; JOINT_PHI_TERMS],
 }
 
+/// Execution branch for joint phi action basis planning (PY02).
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum BasisPlanBranch {
+    Scalar,
+    Recurrence,
+}
+
+impl BasisPlanBranch {
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            Self::Scalar => "scalar",
+            Self::Recurrence => "recurrence",
+        }
+    }
+}
+
+impl std::fmt::Display for BasisPlanBranch {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+
+impl PartialEq<str> for BasisPlanBranch {
+    fn eq(&self, other: &str) -> bool {
+        self.as_str() == other
+    }
+}
+
+impl PartialEq<&str> for BasisPlanBranch {
+    fn eq(&self, other: &&str) -> bool {
+        self.as_str() == *other
+    }
+}
+
 /// Plan-only basis selection metadata for joint phi action (PY02).
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 pub struct LocalBasisPlan {
     pub basis: PolynomialBasis,
-    pub branch: &'static str,
+    pub branch: BasisPlanBranch,
     pub degree: usize,
     pub block_width: usize,
     pub vector_products: usize,
@@ -1129,7 +1164,7 @@ pub struct LocalBasisPlan {
     pub tail_factor: f64,
     pub weight_factor: f64,
     pub truncation_bound: f64,
-    pub normalization_shift: i32,
+    pub normalization_shift: i64,
 }
 
 /// Upper bound on the Euclidean norm, formed on a power-of-two scale
@@ -1791,11 +1826,69 @@ pub fn joint_phi_action_laguerre_components(
     Ok((report, export))
 }
 
+#[inline]
+fn norm_up_scaled(slice: &[f64], shift: i64) -> CoreResult<f64> {
+    if shift == 0 {
+        let bound = ExpBound::l2_norm_upper(slice)?.to_f64_up();
+        if bound.is_finite() {
+            Ok(bound)
+        } else {
+            Err(CoreError::NonFinite(format!(
+                "{POLYNOMIAL_RANGE_UNSUPPORTED}: a norm exceeds the binary64 range"
+            )))
+        }
+    } else {
+        let mut max = 0.0_f64;
+        for &x in slice {
+            let sx = scale_pow2(x, -shift);
+            if !sx.is_finite() {
+                return Err(CoreError::NonFinite(
+                    "ExpBound norm of a non-finite value".into(),
+                ));
+            }
+            max = max.max(sx.abs());
+        }
+        if max == 0.0 {
+            return Ok(0.0);
+        }
+        let (_, e) = crate::binary_split(max);
+        let mut sum = 0.0;
+        for &x in slice {
+            let sx = scale_pow2(x, -shift);
+            let ax = sx.abs();
+            if ax == 0.0 {
+                continue;
+            }
+            let (m, xe) = crate::binary_split(ax);
+            let y = crate::binary_scale(m, xe - e);
+            let y = if crate::binary_scale(y, e) == ax {
+                y
+            } else {
+                y.next_up()
+            };
+            sum = add_up(sum, mul_up(y, y)?)?;
+        }
+        let root = ExpBound::exact(crate::directed::sqrt_up(sum)?)?;
+        let bound = (ExpBound {
+            mantissa: root.mantissa,
+            exponent: root.exponent + e,
+        })
+        .to_f64_up();
+        if bound.is_finite() {
+            Ok(bound)
+        } else {
+            Err(CoreError::NonFinite(format!(
+                "{POLYNOMIAL_RANGE_UNSUPPORTED}: a norm exceeds the binary64 range"
+            )))
+        }
+    }
+}
+
 /// Plan-only local transform and degree selection helper for joint phi action (PY02).
 ///
 /// Computes degree, scale, block width, vector products, and truncation bound
 /// without evaluating any polynomial recurrence, building coefficient tables,
-/// or running admission.
+/// or running admission. Adheres strictly to the Argon zero-allocation contract.
 pub fn plan_joint_phi_local(
     op: &SymmetricNonpositiveOperator,
     h: f64,
@@ -1812,52 +1905,66 @@ pub fn plan_joint_phi_local(
     if !(truncation_budget.is_finite() && truncation_budget > 0.0) {
         return Err(unsupported("truncation budget must be positive"));
     }
-    let (block, scales, width): (Vec<Vec<f64>>, [f64; JOINT_PHI_TERMS], usize) = match input {
+
+    let mut max = 0.0_f64;
+    let width: usize;
+    let scales: [f64; JOINT_PHI_TERMS];
+    match input {
         JointPhiInput::Distinct(vectors) => {
-            if vectors.iter().any(|w| w.len() != n) {
-                return Err(unsupported("every w_k must have the operator dimension"));
+            if vectors.len() != JOINT_PHI_TERMS {
+                return Err(unsupported(format!(
+                    "JointPhiInput::Distinct needs {JOINT_PHI_TERMS} vectors, got {}",
+                    vectors.len()
+                )));
             }
-            (vectors.to_vec(), [1.0; JOINT_PHI_TERMS], vectors.len())
+            for w in vectors {
+                if w.len() != n {
+                    return Err(unsupported("every w_k must have the operator dimension"));
+                }
+                for &x in w {
+                    if !x.is_finite() {
+                        return Err(CoreError::NonFinite(
+                            "joint phi input contains NaN/Inf".into(),
+                        ));
+                    }
+                    max = max.max(x.abs());
+                }
+            }
+            width = JOINT_PHI_TERMS;
+            scales = [1.0; JOINT_PHI_TERMS];
         }
-        JointPhiInput::SameVector { vector, scales } => {
+        JointPhiInput::SameVector { vector, scales: s } => {
             if vector.len() != n {
                 return Err(unsupported("vector must have the operator dimension"));
             }
-            (vec![vector.to_vec()], scales, 1)
+            for &x in vector {
+                if !x.is_finite() {
+                    return Err(CoreError::NonFinite(
+                        "joint phi input contains NaN/Inf".into(),
+                    ));
+                }
+                max = max.max(x.abs());
+            }
+            for &sc in &s {
+                if !sc.is_finite() {
+                    return Err(CoreError::NonFinite(
+                        "joint phi input contains NaN/Inf".into(),
+                    ));
+                }
+            }
+            width = 1;
+            scales = s;
         }
-    };
-    if !block.iter().flatten().chain(&scales).all(|x| x.is_finite()) {
-        return Err(CoreError::NonFinite(
-            "joint phi input contains NaN/Inf".into(),
-        ));
     }
 
-    let SpectralEnclosure { lambda, rho, .. } = op.enclosure.clone();
-    let scalar_branch = h == 0.0 || rho == 0.0 || lambda == rho;
-    if lambda == rho && rho > 0.0 {
-        let scalar =
-            (0..n).all(|i| (0..n).all(|j| op.matrix[(i, j)] == if i == j { -lambda } else { 0.0 }));
-        if !scalar {
-            return Err(unsupported("a degenerate enclosure needs A = -lambda I"));
-        }
-    }
-    if rho == 0.0 && op.matrix.as_slice().iter().any(|x| *x != 0.0) {
-        return Err(unsupported("the enclosure [0, 0] needs A = 0"));
-    }
-
-    // Power-of-two normalization check
-    let max = block
-        .iter()
-        .flatten()
-        .fold(0.0_f64, |acc, x| acc.max(x.abs()));
     let raw_shift = if max.is_finite() && max > 0.0 {
         crate::binary_split(max).1
     } else {
         0
     };
 
-    let (shift, budget_scaled, scaled_block) = if raw_shift.abs() <= NORMALIZATION_WINDOW {
-        (0_i64, truncation_budget, block)
+    let (shift, budget_scaled) = if raw_shift.abs() <= NORMALIZATION_WINDOW {
+        (0_i64, truncation_budget)
     } else {
         let range = |what: &str| {
             CoreError::NonFinite(format!(
@@ -1874,34 +1981,48 @@ pub fn plan_joint_phi_local(
         if b_scaled.is_nan() || b_scaled <= 0.0 {
             return Err(range("the truncation budget"));
         }
-        let scaled = block
-            .into_iter()
-            .map(|vec| {
-                vec.into_iter()
-                    .map(|x| scale_pow2(x, -raw_shift))
-                    .collect::<Vec<_>>()
-            })
-            .collect();
-        (raw_shift, b_scaled, scaled)
+        (raw_shift, b_scaled)
     };
 
-    let norms = (0..JOINT_PHI_TERMS)
-        .map(|k| {
-            if width == 1 {
-                mul_up(scales[k].abs(), norm_up(scaled_block[0].iter().copied())?)
-            } else {
-                norm_up(scaled_block[k].iter().copied())
+    let mut norms = [0.0_f64; JOINT_PHI_TERMS];
+    match input {
+        JointPhiInput::Distinct(vectors) => {
+            for k in 0..JOINT_PHI_TERMS {
+                norms[k] = norm_up_scaled(&vectors[k], shift)?;
             }
-        })
-        .collect::<CoreResult<Vec<_>>>()?;
-    let weight_factor = norms.iter().enumerate().try_fold(0.0, |acc, (k, norm)| {
-        add_up(acc, div_up(*norm, factorial(k))?)
-    })?;
+        }
+        JointPhiInput::SameVector { vector, .. } => {
+            let v_norm = norm_up_scaled(vector, shift)?;
+            for k in 0..JOINT_PHI_TERMS {
+                norms[k] = mul_up(scales[k].abs(), v_norm)?;
+            }
+        }
+    }
 
-    let branch = if scalar_branch {
-        "scalar"
+    let mut weight_factor = 0.0;
+    for (k, &norm) in norms.iter().enumerate() {
+        weight_factor = add_up(weight_factor, div_up(norm, factorial(k))?)?;
+    }
+
+    let SpectralEnclosure { lambda, rho, .. } = &op.enclosure;
+    let lambda = *lambda;
+    let rho = *rho;
+    let scalar_branch = h == 0.0 || rho == 0.0 || lambda == rho;
+    if lambda == rho && rho > 0.0 {
+        let scalar =
+            (0..n).all(|i| (0..n).all(|j| op.matrix[(i, j)] == if i == j { -lambda } else { 0.0 }));
+        if !scalar {
+            return Err(unsupported("a degenerate enclosure needs A = -lambda I"));
+        }
+    }
+    if rho == 0.0 && op.matrix.as_slice().iter().any(|x| *x != 0.0) {
+        return Err(unsupported("the enclosure [0, 0] needs A = 0"));
+    }
+
+    let branch = if scalar_branch || weight_factor == 0.0 {
+        BasisPlanBranch::Scalar
     } else {
-        "recurrence"
+        BasisPlanBranch::Recurrence
     };
 
     if weight_factor == 0.0 || scalar_branch {
@@ -1917,7 +2038,7 @@ pub fn plan_joint_phi_local(
             tail_factor: 0.0,
             weight_factor,
             truncation_bound: 0.0,
-            normalization_shift: shift as i32,
+            normalization_shift: shift,
         });
     }
 
@@ -1926,7 +2047,7 @@ pub fn plan_joint_phi_local(
         && transform.degree > crate::laguerre_adjoint::LAGUERRE_ADJOINT_DEGREE_LIMIT
     {
         return Err(CoreError::InvalidInput(format!(
-            "LAGUERRE_COMPONENTS_UNSUPPORTED: degree {} exceeds adjoint limit {}",
+            "{LAGUERRE_COMPONENTS_UNSUPPORTED}: degree {} exceeds adjoint limit {}",
             transform.degree,
             crate::laguerre_adjoint::LAGUERRE_ADJOINT_DEGREE_LIMIT,
         )));
@@ -1951,7 +2072,7 @@ pub fn plan_joint_phi_local(
         tail_factor: transform.tail_factor,
         weight_factor,
         truncation_bound,
-        normalization_shift: shift as i32,
+        normalization_shift: shift,
     })
 }
 
