@@ -23,9 +23,14 @@ References:
      are speculative candidate-generation devices and NEVER an acceptance proof.
 
 2. **Interval Tube and Enclosure:**
+   - Define the parameterized family of stage equations:
+     $$H_{\theta,\lambda}(K) = (\mathcal{D} - \eta \mathcal{C}) K - b_0 - \lambda h N(K) = 0$$
+     where $\eta \in [0, 1]$ parameterizes stage coupling and $\lambda \in [0, 1]$ parameterizes nonlinear defect.
+     Accepted outputs MUST be certified against the full endpoint $(\eta, \lambda) = (1, 1)$.
    - An invariant tube $\mathcal{T}$ and contracting ratio:
      $$q_\lambda \ge \|\mathcal{D}^{-1}\| \left( \eta \|\mathcal{C}\| + |\lambda h| L_N \right) < 1$$
-     must be certified using directed outward interval arithmetic (`rodas5p_core::directed`).
+     must be certified using directed outward interval arithmetic (`rodas5p_core::directed`), where
+     $L_N$ is an outward upper bound on the Lipschitz constant of $N(K)$ rigorously enclosed over $\mathcal{T}$.
    - For candidate $\widehat{K}$ with preconditioned defect $\delta_\lambda = \|\mathcal{D}^{-1} H_{\theta,\lambda}(\widehat{K})\|$,
      the candidate-centered ball of radius $r$ satisfying $\delta_\lambda + q_\lambda r \le r$ must lie entirely within $\mathcal{T}$.
 
@@ -156,9 +161,10 @@ A candidate client must satisfy all four criteria to be eligible for parallel ho
 
 ## 6. Decision Rule
 
-1. **`SELECTED(k)`**: Exactly one candidate meets all criteria S1, S2, S3, and S4. If multiple candidates qualify,
-   the candidate with the largest minimum measured $f$ is selected.
-2. **`ABSTAIN`**: No candidate meets all criteria S1 – S4.
+1. **`SELECTED(k)`**: At least one candidate meets all criteria S1, S2, S3, and S4 with measured $f \ge 0.348$.
+   If multiple candidates qualify, the candidate with the largest minimum measured $f$ is selected.
+   Candidates without measured $f$ cannot be SELECTED; they remain leads only.
+2. **`ABSTAIN`**: No candidate meets all criteria S1 – S4 with measured $f \ge 0.348$.
 3. **Leads:** Any candidate with $f \ge 0.348$ but lacking an `ExpensiveClientDeclaration` is recorded as a lead for
    future registration, but cannot be selected in this node.
 

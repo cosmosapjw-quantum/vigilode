@@ -194,9 +194,9 @@ def main() -> int:
         if has_decl is not False:
             return emit_fail(f"Candidate {cid} claims has_declaration={has_decl}, but no source carries ExpensiveClientDeclaration")
 
-        measured_f = s1.get("measured_f_max")
-        if measured_f is not None and measured_f >= F_MIN:
-            return emit_fail(f"Candidate {cid} measured_f={measured_f} >= {F_MIN}")
+        measured_f_min = s1.get("measured_f_min")
+        if measured_f_min is not None and measured_f_min >= F_MIN:
+            return emit_fail(f"Candidate {cid} measured_f_min={measured_f_min} >= {F_MIN}")
 
         # S1 pass must be false
         if s1.get("pass_s1") is not False:
@@ -207,8 +207,9 @@ def main() -> int:
     k2_s4 = k2_row.get("s4_accounting_certificate", {})
     if k2_s4.get("model_binding") != "GeneratedFromModel":
         return emit_fail("K2 model_binding must be GeneratedFromModel")
-    if k2_s4.get("capability") != "Available":
-        return emit_fail("K2 capability must be Available")
+    cap = k2_s4.get("capability")
+    if not isinstance(cap, dict) or cap.get("n_le_2_or_diagonal") != "Available":
+        return emit_fail("K2 capability must provide Available for n <= 2 or diagonal")
 
     # Check all other candidates have S4(a) == False
     for c in candidates:
@@ -216,6 +217,14 @@ def main() -> int:
             s4 = c.get("s4_accounting_certificate", {})
             if s4.get("pass_s4_a") is not False:
                 return emit_fail(f"Candidate {c['id']} pass_s4_a must be False (SampledAgreement is not a proof)")
+
+    # Check S4(b) obligations status
+    for c in candidates:
+        s4 = c.get("s4_accounting_certificate", {})
+        if s4.get("s4_b_status") != "PASS_WITH_HT02_OBLIGATIONS":
+            return emit_fail(f"Candidate {c['id']} s4_b_status must be 'PASS_WITH_HT02_OBLIGATIONS'")
+        if s4.get("no_speedup_claim_permitted") is not True:
+            return emit_fail(f"Candidate {c['id']} must enforce no_speedup_claim_permitted=True")
 
     # Recompute decision rule
     meeting_criteria = []
@@ -225,11 +234,21 @@ def main() -> int:
         s2_ok = c.get("s2_shifted_solves", {}).get("pass_s2", False)
         s3_ok = c.get("s3_strong_comparator", {}).get("pass_s3", False)
         s4_ok = c.get("s4_accounting_certificate", {}).get("pass_s4", False)
-        if s1_ok and s2_ok and s3_ok and s4_ok:
+        f_min_val = c.get("s1_declared_expensive", {}).get("measured_f_min")
+        # Candidate must have measured f >= F_MIN to be SELECTED; otherwise remains lead only
+        if s1_ok and s2_ok and s3_ok and s4_ok and f_min_val is not None and f_min_val >= F_MIN:
             meeting_criteria.append(cid)
 
     if len(meeting_criteria) == 1:
         recomputed_decision = f"SELECTED({meeting_criteria[0]})"
+    elif len(meeting_criteria) > 1:
+        best = max(
+            meeting_criteria,
+            key=lambda cid: next(
+                c["s1_declared_expensive"]["measured_f_min"] for c in candidates if c["id"] == cid
+            ),
+        )
+        recomputed_decision = f"SELECTED({best})"
     else:
         recomputed_decision = "ABSTAIN"
 

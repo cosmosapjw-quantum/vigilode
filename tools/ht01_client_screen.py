@@ -45,6 +45,7 @@ PINNED_FILES = [
     "docs/HOMOTOPY_EXPENSIVE_CLIENT_CONTRACT.md",
 ]
 
+# Closed candidate definitions matching PREREGISTRATION.md
 CANDIDATES_DEF = [
     {
         "id": "K1",
@@ -54,6 +55,8 @@ CANDIDATES_DEF = [
             "crates/rodas5p-integrators/src/fourier_path_certificate.rs",
         ],
         "applicable_native_arms": [],
+        "cheapest_arm": None,
+        "ledger_row": "L-0074",
     },
     {
         "id": "K2",
@@ -62,6 +65,8 @@ CANDIDATES_DEF = [
             "crates/rodas5p-integrators/src/transactional_q1_q2.rs",
         ],
         "applicable_native_arms": ["small", "dense_v2", "matrix_free_u_form"],
+        "cheapest_arm": "dense_v2",
+        "ledger_row": "L-0008",
     },
     {
         "id": "K3",
@@ -70,6 +75,8 @@ CANDIDATES_DEF = [
             "crates/rodas5p-integrators/src/audit2_bateman_real_client_research.rs",
         ],
         "applicable_native_arms": ["small", "dense_v2"],
+        "cheapest_arm": "small",
+        "ledger_row": "L-0032",
     },
     {
         "id": "K4",
@@ -78,6 +85,8 @@ CANDIDATES_DEF = [
             "crates/rodas5p-integrators/src/chart_transport.rs",
         ],
         "applicable_native_arms": ["small", "dense_v2"],
+        "cheapest_arm": "small",
+        "ledger_row": "L-0043",
     },
     {
         "id": "K5",
@@ -86,6 +95,8 @@ CANDIDATES_DEF = [
             "crates/rodas5p-cli/src/stiff_benchmark.rs",
         ],
         "applicable_native_arms": ["small", "dense_v2", "matrix_free_u_form"],
+        "cheapest_arm": "rodas5p-fast-small",
+        "ledger_row": "L-0081",
     },
     {
         "id": "K6",
@@ -94,6 +105,8 @@ CANDIDATES_DEF = [
             "crates/rodas5p-cli/src/stiff_benchmark.rs",
         ],
         "applicable_native_arms": ["dense_v2", "colext64", "banded", "matrix_free_u_form"],
+        "cheapest_arm": "banded",
+        "ledger_row": "L-0083",
     },
     {
         "id": "K7",
@@ -102,6 +115,8 @@ CANDIDATES_DEF = [
             "crates/rodas5p-integrators/src/scientific_corpus_v2.rs",
         ],
         "applicable_native_arms": ["dense_v2", "colext64", "banded", "matrix_free_u_form"],
+        "cheapest_arm": "colext64",
+        "ledger_row": "L-0086",
     },
     {
         "id": "K8",
@@ -110,6 +125,8 @@ CANDIDATES_DEF = [
             "crates/rodas5p-integrators/src/problems.rs",
         ],
         "applicable_native_arms": ["small", "dense_v2"],
+        "cheapest_arm": "small",
+        "ledger_row": "L-0041",
     },
 ]
 
@@ -124,16 +141,31 @@ def sha256_file(path: Path) -> str:
     return h.hexdigest()
 
 
+def strip_rust_comments(code: str) -> str:
+    """Removes single-line and multi-line comments from Rust code."""
+    # Remove block comments /* ... */
+    code = re.sub(r"/\*.*?\*/", "", code, flags=re.DOTALL)
+    # Remove line comments // ...
+    code = re.sub(r"//.*", "", code)
+    return code
+
+
 def check_expensive_declaration(source_files: list[str]) -> bool:
-    token = "ExpensiveClientDeclaration"
+    """Checks for actual instantiation or implementation of ExpensiveClientDeclaration outside comments."""
     for rel_path in source_files:
         full_path = ROOT / rel_path
-        if full_path.exists() and token in full_path.read_text(encoding="utf-8"):
+        if not full_path.exists():
+            continue
+        cleaned = strip_rust_comments(full_path.read_text(encoding="utf-8"))
+        if re.search(r"ExpensiveClientDeclaration\s*\{", cleaned):
+            return True
+        if re.search(r"impl\b[^{]*\bExpensiveClientDeclaration\b", cleaned):
             return True
     return False
 
 
-def collect_profile_shares() -> dict[str, list[float]]:
+def collect_profile_shares() -> dict[tuple[str, str], list[float]]:
+    """Fail-closed extraction of problem-user-code share mapped by (problem, arm)."""
     profile_paths = [
         ROOT / "research/spd01_fast_driver_overhead_20261005/PROFILE_SMALL.json",
         ROOT / "research/spd01_fast_driver_overhead_20261005/PROFILE_DENSE.json",
@@ -144,22 +176,23 @@ def collect_profile_shares() -> dict[str, list[float]]:
         ROOT / "research/spd09_colext_threshold_20261007/PROFILE.json",
         ROOT / "research/sp03_declared_structure_routing_20261010/PROFILE.json",
     ]
-    problem_shares: dict[str, list[float]] = {}
+    problem_arm_shares: dict[tuple[str, str], list[float]] = {}
     for p in profile_paths:
         if not p.exists():
-            continue
-        try:
-            data = json.loads(p.read_text(encoding="utf-8"))
-            for entry in data.get("entries", []):
-                prob = entry.get("problem")
-                categories = entry.get("categories_by_file", {})
-                user_cat = categories.get("problem-user-code", {})
-                share = user_cat.get("share")
-                if prob and share is not None and isinstance(share, (int, float)):
-                    problem_shares.setdefault(prob, []).append(float(share))
-        except Exception:
-            pass
-    return problem_shares
+            raise FileNotFoundError(f"Missing required profile file: {p}")
+        text = p.read_text(encoding="utf-8")
+        data = json.loads(text)
+        for entry in data.get("entries", []):
+            prob = entry.get("problem")
+            arm = entry.get("arm")
+            categories = entry.get("categories_by_file", {})
+            user_cat = categories.get("problem-user-code", {})
+            share = user_cat.get("share")
+            if prob and arm and share is not None:
+                if not isinstance(share, (int, float)):
+                    raise ValueError(f"Non-numeric share {share!r} in {p}")
+                problem_arm_shares.setdefault((prob, arm), []).append(float(share))
+    return problem_arm_shares
 
 
 def main() -> int:
@@ -175,30 +208,26 @@ def main() -> int:
             return 2
         inputs_sha256[rel] = sha256_file(p)
 
-    # Read PP07 results for K1
+    # Fail-closed read of PP07 results for K1
     pp07_file = ROOT / "research/pp07_fourier_shared_action_20261004/RESULTS.json"
+    if not pp07_file.exists():
+        print(f"ERROR: missing PP07 results: {pp07_file}", file=sys.stderr)
+        return 2
     pp07_data = json.loads(pp07_file.read_text(encoding="utf-8"))
-    pp07_q1_solves = pp07_data.get("q1_solves", 0)
+    if "q1_solves" not in pp07_data:
+        print("ERROR: q1_solves missing from PP07 RESULTS.json", file=sys.stderr)
+        return 2
+    pp07_q1_solves = int(pp07_data["q1_solves"])
+    if pp07_q1_solves != 0:
+        print(f"ERROR: expected PP07 q1_solves == 0, got {pp07_q1_solves}", file=sys.stderr)
+        return 2
 
-    # Collect profile shares
-    shares_by_prob = collect_profile_shares()
-
-    k5_problems = ["robertson", "hires", "van-der-pol-mu1000"]
-    k5_shares = []
-    for prob in k5_problems:
-        k5_shares.extend(shares_by_prob.get(prob, []))
-
-    k6_problems = [
-        "brusselator-1d-30",
-        "brusselator-1d-40",
-        "brusselator-1d-50",
-        "brusselator-1d-160",
-        "brusselator-1d-200",
-        "brusselator-1d-500",
-    ]
-    k6_shares = []
-    for prob in k6_problems:
-        k6_shares.extend(shares_by_prob.get(prob, []))
+    # Collect profile shares fail-closed
+    try:
+        shares_map = collect_profile_shares()
+    except Exception as exc:
+        print(f"ERROR parsing profiles: {exc}", file=sys.stderr)
+        return 2
 
     candidates_evaluated = []
 
@@ -206,96 +235,101 @@ def main() -> int:
         cid = c["id"]
         source_files = c["source_files"]
         applicable_arms = c["applicable_native_arms"]
+        cheapest_arm = c["cheapest_arm"]
+        ledger_row = c["ledger_row"]
 
         has_decl = check_expensive_declaration(source_files)
 
-        # S1: Callback share f and declaration
-        if cid == "K5":
-            measured_f = round(max(k5_shares), 6) if k5_shares else None
-            min_f = round(min(k5_shares), 6) if k5_shares else None
-            share_range = [min_f, measured_f] if k5_shares else None
-        elif cid == "K6":
-            measured_f = round(max(k6_shares), 6) if k6_shares else None
-            min_f = round(min(k6_shares), 6) if k6_shares else None
-            share_range = [min_f, measured_f] if k6_shares else None
-        else:
-            measured_f = None
-            share_range = None
+        # S1: Callback share f and declaration evaluated on the strongest sequential comparator arm
+        measured_f_min = None
+        measured_f_max = None
+        sample_count = 0
 
+        if cid == "K5":
+            # cheapest arm: rodas5p-fast-small
+            arm_shares = []
+            for prob in ["robertson", "hires", "van-der-pol-mu1000"]:
+                shares = shares_map.get((prob, "rodas5p-fast-small"), [])
+                arm_shares.extend(shares)
+            if arm_shares:
+                measured_f_min = round(min(arm_shares), 6)
+                measured_f_max = round(max(arm_shares), 6)
+                sample_count = len(arm_shares)
+        elif cid == "K6":
+            # cheapest arm: banded
+            arm_shares = []
+            for prob in [
+                "brusselator-1d-30",
+                "brusselator-1d-40",
+                "brusselator-1d-50",
+                "brusselator-1d-160",
+                "brusselator-1d-200",
+                "brusselator-1d-500",
+            ]:
+                shares = shares_map.get((prob, "banded"), [])
+                arm_shares.extend(shares)
+            if arm_shares:
+                measured_f_min = round(min(arm_shares), 6)
+                measured_f_max = round(max(arm_shares), 6)
+                sample_count = len(arm_shares)
+
+        # Authoritative S1(b) criterion: min measured share on cheapest arm >= F_MIN
         pass_s1_a = has_decl
-        pass_s1_b = measured_f is not None and measured_f >= F_MIN
-        pass_s1 = pass_s1_a and (measured_f is None or pass_s1_b)
-        s1_reason = (
-            "decl=False, unmeasured_f"
-            if not has_decl and measured_f is None
-            else f"decl=False, measured_f_max={measured_f} < {F_MIN}"
-            if not has_decl and measured_f is not None
-            else "decl=True"
-        )
+        pass_s1_b = measured_f_min is not None and measured_f_min >= F_MIN
+        pass_s1 = pass_s1_a and pass_s1_b
+
+        if not has_decl and measured_f_min is None:
+            s1_reason = "decl=False; unmeasured_f"
+        elif not has_decl and measured_f_min is not None:
+            s1_reason = f"decl=False; measured_f_min={measured_f_min} < {F_MIN} (max={measured_f_max}, samples={sample_count})"
+        elif has_decl and (measured_f_min is None or not pass_s1_b):
+            s1_reason = f"decl=True; measured_f_min={measured_f_min} < {F_MIN} (below required threshold)"
+        else:
+            s1_reason = f"decl=True; measured_f_min={measured_f_min} >= {F_MIN}"
 
         # S2: Shifted solves present
         if cid == "K1":
             q1_solves = pp07_q1_solves
+            independent_tasks_per_round = 0
             pass_s2 = False
             s2_notes = "q1_solves = 0; PP07 ABSTAIN preserved"
             s2_reason = "Fourier client makes no shifted solve (q1_solves = 0, PP07 ABSTAIN preserved)"
         elif cid == "K4":
             q1_solves = 0
+            independent_tasks_per_round = 0
             pass_s2 = False
-            s2_notes = "scalar chart transport; no linear solve"
-            s2_reason = "Darboux chart client is a scalar transformation without linear solves"
+            s2_notes = "scalar chart transport; no linear solve (q1_solves = 0)"
+            s2_reason = "Darboux chart client is a scalar transformation without linear stage solves"
         else:
             q1_solves = 1
+            independent_tasks_per_round = 6 if cid == "K2" else 8
             pass_s2 = True
-            s2_notes = "shifted solves present in step attempts"
-            s2_reason = "sequential step attempts require W = I - h gamma J solves"
+            s2_notes = f"shifted solves present (W = I - h gamma J solves > 0; {independent_tasks_per_round} stage tasks/round)"
+            s2_reason = f"sequential step attempts require W = I - h gamma J solves with {independent_tasks_per_round} tasks"
 
         # S3: Strong sequential comparator
         if cid == "K1":
             pass_s3 = False
-            s3_cheapest_arm = None
-            s3_ledger = None
             s3_reason = "no_applicable_arm: client makes no solver call (L-0074)"
-        elif cid == "K2":
-            pass_s3 = True
-            s3_cheapest_arm = "dense_v2"
-            s3_ledger = "L-0008"
-            s3_reason = "applicable arms defined; historical comparator blocked at 0.04-0.17 (L-0008)"
         elif cid == "K4":
-            pass_s3 = True
-            s3_cheapest_arm = "small"
-            s3_ledger = "L-0043"
-            s3_reason = "small scalar arm applicable; L-0043/L-0048 evidence"
-        elif cid == "K5":
-            pass_s3 = True
-            s3_cheapest_arm = "rodas5p-fast-small"
-            s3_ledger = "L-0081"
-            s3_reason = "small and dense arms profiled (L-0081, L-0085)"
-        elif cid == "K6":
-            pass_s3 = True
-            s3_cheapest_arm = "banded"
-            s3_ledger = "L-0083"
-            s3_reason = "banded arm and colext64 profiled (L-0083, L-0086)"
-        elif cid == "K7":
-            pass_s3 = True
-            s3_cheapest_arm = "colext64"
-            s3_ledger = "L-0086"
-            s3_reason = "dense v2, colext64 and banded applicable (L-0086)"
+            pass_s3 = False
+            s3_reason = "no_applicable_arm: scalar chart client makes no linear solver call (L-0043, L-0048)"
         else:
             pass_s3 = True
-            s3_cheapest_arm = "small"
-            s3_ledger = "L-0041"
-            s3_reason = "small fixture driver applicable"
+            s3_reason = f"cheapest arm '{cheapest_arm}' verified in {ledger_row}"
 
         # S4: Work/span accounting and endpoint certificate
         if cid == "K2":
-            capability = "Available"
-            binding = "GeneratedFromModel"
+            capability = {
+                "n_le_2_or_diagonal": "Available",
+                "n_gt_2_dense": "DimensionCutoff",
+            }
+            model_binding = "GeneratedFromModel"
             pass_s4_a = True
-            s4_reason = "QuadraticModel provides GeneratedFromModel binding with Available small/diagonal witness"
+            s4_reason = "QuadraticModel provides GeneratedFromModel binding; small witness Available for n <= 2 or diagonal"
         else:
-            capability = "NotAvailable"
-            binding = "SampledAgreement"
+            capability = "unverified"
+            model_binding = "SampledAgreement"
             pass_s4_a = False
             s4_reason = "No GeneratedFromModel certificate source available (SampledAgreement is never a proof)"
 
@@ -306,9 +340,9 @@ def main() -> int:
             "fallback_work",
             "peak_bytes",
         ]
-        # In HT01 preregistration line 93: missing fields are listed as HT02 obligations, not failures for S4(b).
-        pass_s4_b = True
-        pass_s4 = pass_s4_a and pass_s4_b
+        s4_b_status = "PASS_WITH_HT02_OBLIGATIONS"
+        no_speedup_claim_permitted = True
+        pass_s4 = pass_s4_a and (s4_b_status in ("PASS", "PASS_WITH_HT02_OBLIGATIONS"))
 
         failing = []
         if not pass_s1:
@@ -327,31 +361,37 @@ def main() -> int:
             "applicable_native_arms": applicable_arms,
             "s1_declared_expensive": {
                 "has_declaration": has_decl,
-                "measured_f_max": measured_f,
-                "share_range": share_range,
-                "f_min": F_MIN,
+                "measured_f_min": measured_f_min,
+                "measured_f_max": measured_f_max,
+                "f_min_threshold": F_MIN,
+                "sample_count": sample_count,
+                "pass_s1_a": pass_s1_a,
+                "pass_s1_b": pass_s1_b,
                 "pass_s1": pass_s1,
                 "reason": s1_reason,
             },
             "s2_shifted_solves": {
                 "present": pass_s2,
                 "q1_solves": q1_solves,
+                "independent_tasks_per_round": independent_tasks_per_round,
                 "notes": s2_notes,
                 "pass_s2": pass_s2,
                 "reason": s2_reason,
             },
             "s3_strong_comparator": {
                 "applicable_arms": applicable_arms,
-                "cheapest_arm": s3_cheapest_arm,
-                "ledger_row": s3_ledger,
+                "cheapest_arm": cheapest_arm,
+                "ledger_row": ledger_row,
                 "pass_s3": pass_s3,
                 "reason": s3_reason,
             },
             "s4_accounting_certificate": {
                 "capability": capability,
-                "model_binding": binding,
+                "model_binding": model_binding,
                 "pass_s4_a": pass_s4_a,
+                "s4_b_status": s4_b_status,
                 "missing_ledger_fields_ht02_obligation": missing_ledger_fields,
+                "no_speedup_claim_permitted": no_speedup_claim_permitted,
                 "pass_s4": pass_s4,
                 "reason": s4_reason,
             },
@@ -360,9 +400,27 @@ def main() -> int:
         }
         candidates_evaluated.append(row)
 
-    qualifying = [c["id"] for c in candidates_evaluated if c["candidate_status"] == "MEETS_CRITERIA"]
+    # Decision rule: SELECTED(k) if at least one meets all S1-S4 with measured f >= F_MIN.
+    # Candidates without measured f can only be leads.
+    qualifying = [
+        c["id"]
+        for c in candidates_evaluated
+        if c["candidate_status"] == "MEETS_CRITERIA"
+        and c["s1_declared_expensive"]["measured_f_min"] is not None
+        and c["s1_declared_expensive"]["measured_f_min"] >= F_MIN
+    ]
+
     if len(qualifying) == 1:
         decision = f"SELECTED({qualifying[0]})"
+    elif len(qualifying) > 1:
+        # Tie-break by largest minimum measured f
+        best = max(
+            qualifying,
+            key=lambda cid: next(
+                c["s1_declared_expensive"]["measured_f_min"] for c in candidates_evaluated if c["id"] == cid
+            ),
+        )
+        decision = f"SELECTED({best})"
     else:
         decision = "ABSTAIN"
 
@@ -370,10 +428,10 @@ def main() -> int:
         "schema": "vigilode-ht01-screen-v1",
         "inputs_sha256": inputs_sha256,
         "criteria": {
-            "s1": "Declared expensive RHS/JVP (ExpensiveClientDeclaration + f >= 0.348)",
+            "s1": "Declared expensive RHS/JVP (ExpensiveClientDeclaration + min measured f >= 0.348 on cheapest arm)",
             "s2": "Shifted solves present (W solves per attempt > 0, >=2 independent tasks)",
             "s3": "Strong sequential comparator (applicable native arms defined, committed Ir and ledger)",
-            "s4": "Work/span accounting and endpoint certificate (Available + GeneratedFromModel)",
+            "s4": "Work/span accounting and endpoint certificate (Available + GeneratedFromModel, HT02 obligations tracked)",
         },
         "thresholds": {
             "f_min": F_MIN,

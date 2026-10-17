@@ -178,6 +178,45 @@ class TestHt01SelectionCheck(unittest.TestCase):
         proc = self.run_check(scr, out)
         self.assertEqual(proc.returncode, 1, f"Expected 1 on false pass_s4_a, got {proc.returncode}")
 
+    def test_fail_s4_b_status_mutation(self):
+        mutant = copy.deepcopy(self.valid_screen_data)
+        for c in mutant["candidates"]:
+            if c["id"] == "K2":
+                c["s4_accounting_certificate"]["s4_b_status"] = "PASS"
+        scr = self.td / "SCREEN_s4_b_mut.json"
+        out = self.td / "RESULTS_s4_b_mut.json"
+        scr.write_text(json.dumps(mutant), encoding="utf-8")
+        proc = self.run_check(scr, out)
+        self.assertEqual(proc.returncode, 1, f"Expected 1 on S4(b) status mutation, got {proc.returncode}")
+
+    def test_generator_determinism(self):
+        run1 = self.td / "SCREEN_det1.json"
+        run2 = self.td / "SCREEN_det2.json"
+        subprocess.run([sys.executable, str(SCREEN_GEN), "--output", str(run1)], cwd=ROOT, check=True)
+        subprocess.run([sys.executable, str(SCREEN_GEN), "--output", str(run2)], cwd=ROOT, check=True)
+        import hashlib
+        h1 = hashlib.sha256(run1.read_bytes()).hexdigest()
+        h2 = hashlib.sha256(run2.read_bytes()).hexdigest()
+        self.assertEqual(h1, h2, "SCREEN generator must be bitwise deterministic across runs")
+
+    def test_generator_comment_rejection(self):
+        import ht01_client_screen as screen_mod
+        temp_rs = self.td / "test_comments.rs"
+        temp_rs.write_text(
+            "// TODO: ExpensiveClientDeclaration { declared_rhs_ir: 100 }\n"
+            "/*\n"
+            "ExpensiveClientDeclaration {\n"
+            "    declared_rhs_ir: 200\n"
+            "}\n"
+            "*/\n"
+            "fn dummy() {}\n"
+        )
+        self.assertFalse(
+            screen_mod.check_expensive_declaration([str(temp_rs.relative_to(ROOT) if temp_rs.is_relative_to(ROOT) else temp_rs)]),
+            "ExpensiveClientDeclaration inside comments must not be recognized as a valid declaration",
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
+
