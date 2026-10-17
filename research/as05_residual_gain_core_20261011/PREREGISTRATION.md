@@ -250,3 +250,16 @@ confirms that no new helper name duplicates or shadows an existing or sibling-ad
 - Route (d) diffusion: `mu_up <= 0`, `G <= 1`, and bound/error 1 to 100. Peclet 10 is looser.
 - Cost: setup flops at n = 2 are at least 10x the nominal LU flops. No speed use is expected.
 - Most likely FAIL: item 2 at a subnormal or near-overflow endpoint, where the two roundings differ.
+
+## Results
+
+- **Execution commit**: `44a491ec908cf345a65177eda4c9c05180f4ecb8` (`tree_clean: true`).
+- **Artifacts**: `RUNS.json` (`bf173142743c256a472ecb320fa0cbc4ff7394bd97c1ab2550a349feb7b15d1a`), `RESULTS.json` (`b0a1f899e67e43a09b9fe8cdc9aa58effd31c564514b5d68426d15d298b6c91a`).
+- **Gate verdict**: **PASS** (`307/307` cases passed, `0` failures, ledger entry `L-0107`).
+  - **Item 1 (Retained oracle)**: PASS — all 30 study cells A are `Verified` and enclose the exact `Fraction` oracle error; 11 of 12 invalid controls are `Unavailable` with their mapped class, and the registered exception `invalid_determinant_overlap` (exact determinant $2^{-52}$) is `Verified` and encloses its exact oracle error.
+  - **Item 2 (Parity)**: PASS — on all 30 cells A, every core interval is contained in the research interval endpoint by endpoint and `core.wrms_upper <= research.wrms_upper`.
+  - **Item 3 (Negatives refused)**: PASS — all 175 negative cases C and route (d) negatives return their registered rejection or `Estimated` class (`TargetMismatch`, `MetricMismatch`, `StaleEpoch`, `OperatorMismatch`, `OffBlockCoupling`, `UndeclaredStructure`, `NegativeShift`, `NonpositiveDenominator`, `UndeclaredAssembly`, `ProjectedNu`); zero `Verified` certificates are issued on any negative.
+  - **Item 4 (No false certificate)**: PASS — every `Verified` result of D encloses the exact `Fraction` Gaussian elimination error across the 4 exact W-formation fixtures, all 16 sign corners of `EntrywiseAbs(delta)` ($\delta = 2^{-60}\max|J|$), the 60 transported certificates (`transport_to` with two-sided operator gain scaling $\kappa \cdot \kappa_{\text{rev}}$), route (b) `IsolatedBlocks` ($n \in \{3,4,6,8\}$), and route (d) `Lognorm` ($n \in \{3,4,8\}$).
+  - **Item 5 (Authority types)**: PASS — `LinearTargetId`, `FrozenMetric`, `VerifiedCorrection`, and `ResidualGainWitness` have private fields, no `Deserialize`, are `Send + Sync`, and pass 8 compile-fail doc tests.
+  - **Item 6 (Non-regression and isolation)**: PASS — all pre-existing `rodas5p-core` suites pass, `gain_witness.rs` is byte-identical (`22c97719...`), and `certify` / `transport_to` execute with 0 heap allocations.
+
