@@ -31,6 +31,9 @@ pub use coefficients::{
     RODAS5P_COEFFICIENT_SNAPSHOT_SHA256, Rodas5pCoefficientProvenance, Rodas5pCoefficients,
     load_rodas5p_coefficients, rodas5p_coefficients,
 };
+pub use directed::{
+    PowerOfTwo, scale_pow2_down, scale_pow2_is_exact, scale_pow2_nearest, scale_pow2_up,
+};
 pub use error::{CoreError, CoreResult};
 pub use hash::{sha256_f64_slice_bytes, sha256_hex};
 pub use matrix::{DenseMatrix, LuFactorization, direct_solve, inverse};
@@ -61,5 +64,9 @@ pub use residual_gain::{
 };
 pub use solver_types::{
     InitialGuess, LinearMethod, LinearSolveReport, LinearSolverConfig, PreconditionerKind,
+};
+pub use taylor_phi_total::{
+    FUSED_PHI_RANGE_UNSUPPORTED, NORMALIZED_FUSED_PHI_SCHEMA, NormalizedFusedPhiCertificate,
+    certify_fused_phi_total_normalized,
 };
 pub use work::WorkCounters;

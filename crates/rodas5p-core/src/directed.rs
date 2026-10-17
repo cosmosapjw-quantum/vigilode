@@ -349,6 +349,153 @@ pub fn exp_interval(x: f64) -> CoreResult<Interval> {
     Interval::new(mul_down(sum.lo, scale)?, mul_up(sum.hi, scale)?)
 }
 
+/// An exact power of two `2^exponent` represented only by its signed integer
+/// exponent (RVJ DAG node PY04).
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct PowerOfTwo {
+    pub exponent: i64,
+}
+
+impl PowerOfTwo {
+    #[inline]
+    pub const fn new(exponent: i64) -> Self {
+        Self { exponent }
+    }
+
+    #[inline]
+    pub const fn inverse(self) -> Self {
+        Self {
+            exponent: -self.exponent,
+        }
+    }
+}
+
+/// Checks whether `x * 2^e` is exactly representable in binary64.
+///
+/// Returns `true` if `x * 2^e` is exact, `false` if it rounds (or overflows to
+/// infinity). Non-finite `x` returns `false`, and `x == 0.0` or `e == 0` returns
+/// `true`.
+#[inline]
+pub fn scale_pow2_is_exact(x: f64, e: i64) -> bool {
+    if !x.is_finite() {
+        return false;
+    }
+    if x == 0.0 || e == 0 {
+        return true;
+    }
+    let bits = x.to_bits();
+    let exp_bits = ((bits >> 52) & 0x7ff) as i64;
+    let mantissa = bits & 0x000f_ffff_ffff_ffff;
+    let (full_mantissa, p, e_unbiased) = if exp_bits > 0 {
+        ((1_u64 << 52) | mantissa, exp_bits - 1075, exp_bits - 1023)
+    } else {
+        let msb = 63 - mantissa.leading_zeros() as i64;
+        (mantissa, -1074, -1074 + msb)
+    };
+
+    if e_unbiased + e > 1023 {
+        // Overflows binary64 finite range
+        return false;
+    }
+    if e_unbiased + e >= -1022 {
+        // Fits in normal binary64 range: always exact
+        return true;
+    }
+    // In subnormal range: exact if and only if no fractional bits below 2^-1074
+    let q = p + e + 1074;
+    q + (full_mantissa.trailing_zeros() as i64) >= 0
+}
+
+/// Computes `fl(x * 2^e)` using staged `scalbn` by factors of at most `2^1000`.
+///
+/// Intermediate stages remain in the normal range and are 100% exact; only the
+/// final stage rounds (into subnormal, underflow, or overflow).
+#[inline]
+pub fn scale_pow2_nearest(x: f64, e: i64) -> f64 {
+    if x == 0.0 || !x.is_finite() || e == 0 {
+        return x;
+    }
+    if e > 0 {
+        let mut val = x;
+        let mut rem = e;
+        while rem > 1000 {
+            val *= f64::from_bits(((1000 + 1023) as u64) << 52);
+            rem -= 1000;
+        }
+        val * f64::from_bits(((rem + 1023) as u64) << 52)
+    } else {
+        let abs_e = -e;
+        if abs_e <= 1000 {
+            x * f64::from_bits(((e + 1023) as u64) << 52)
+        } else {
+            let bits = x.to_bits();
+            let exp_bits = ((bits >> 52) & 0x7ff) as i64;
+            let e_unbiased = if exp_bits > 0 {
+                exp_bits - 1023
+            } else {
+                let mantissa = bits & 0x000f_ffff_ffff_ffff;
+                let msb = 63 - mantissa.leading_zeros() as i64;
+                -1074 + msb
+            };
+            if e_unbiased + 1022 <= 0 {
+                // Already subnormal and |e| > 1000: product < 2^-2022, rounds to 0.0
+                0.0_f64.copysign(x)
+            } else {
+                let mut val = x;
+                let mut rem = abs_e;
+                let mut cur_e = e_unbiased;
+                while rem > 1000 {
+                    let safe_step = 1000.min((cur_e + 1022).max(1));
+                    val *= f64::from_bits((((-safe_step) + 1023) as u64) << 52);
+                    cur_e -= safe_step;
+                    rem -= safe_step;
+                }
+                val * f64::from_bits((((-rem) + 1023) as u64) << 52)
+            }
+        }
+    }
+}
+
+/// Upper bound on `x * 2^e`.
+///
+/// Steps outward (`next_up`) by 1 ULP if and only if the scaling is inexact,
+/// returning an error if the result overflows to infinity.
+#[inline]
+pub fn scale_pow2_up(x: f64, e: i64) -> CoreResult<f64> {
+    if !x.is_finite() {
+        return finite(x, "scale_pow2_up");
+    }
+    if x == 0.0 {
+        return Ok(x);
+    }
+    let nearest = finite(scale_pow2_nearest(x, e), "scale_pow2_up")?;
+    if scale_pow2_is_exact(x, e) {
+        Ok(nearest)
+    } else {
+        finite(nearest.next_up(), "scale_pow2_up")
+    }
+}
+
+/// Lower bound on `x * 2^e`.
+///
+/// Steps outward (`next_down`) by 1 ULP if and only if the scaling is inexact,
+/// returning an error if the result overflows to infinity.
+#[inline]
+pub fn scale_pow2_down(x: f64, e: i64) -> CoreResult<f64> {
+    if !x.is_finite() {
+        return finite(x, "scale_pow2_down");
+    }
+    if x == 0.0 {
+        return Ok(x);
+    }
+    let nearest = finite(scale_pow2_nearest(x, e), "scale_pow2_down")?;
+    if scale_pow2_is_exact(x, e) {
+        Ok(nearest)
+    } else {
+        finite(nearest.next_down(), "scale_pow2_down")
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

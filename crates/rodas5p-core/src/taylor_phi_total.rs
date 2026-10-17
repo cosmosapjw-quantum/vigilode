@@ -58,15 +58,22 @@
 
 use serde::Serialize;
 
-use crate::directed::{Interval, add_up, exp_interval, mul_down, mul_up, sqrt_up, sub_up};
+use crate::directed::{
+    Interval, add_up, div_up, exp_interval, mul_down, mul_up, scale_pow2_is_exact,
+    scale_pow2_nearest, scale_pow2_up, sqrt_up, sub_up, sum_up,
+};
+use crate::matrix::DenseMatrix;
 use crate::nonnormal_certificate::{
     AutoMetric, NonnormalBoundStatus, NonnormalExpCertificate, certify_exp_action,
     certify_exp_action_stepped, osborne_metric, stepping_rule,
 };
 use crate::polynomial_action::JOINT_PHI_TERMS;
+use crate::taylor_phi::taylor_phi_action;
 use crate::{CoreError, CoreResult};
 
 pub const FUSED_PHI_TOTAL_SCHEMA: &str = "vigilode-fused-phi-total-v1";
+pub const FUSED_PHI_RANGE_UNSUPPORTED: &str = "FUSED_PHI_RANGE_UNSUPPORTED";
+pub const NORMALIZED_FUSED_PHI_SCHEMA: &str = "vigilode-normalized-fused-phi-total-v1";
 
 /// The degree of the automatic stepped certificate (the value
 /// `certify_exp_action_auto` uses).
@@ -510,6 +517,378 @@ fn distance_upper(u: &[f64], y: &[f64]) -> f64 {
         add_up(acc, mul_up(gap, gap)?)
     });
     sum.and_then(sqrt_up).unwrap_or(f64::INFINITY)
+}
+
+/// A certified upper bound on `||candidate - sum_{k=0}^{4} phi_k(hA) w_k||_2`
+/// produced by power-of-two normalization of the vectors `w_k` (RVJ DAG node
+/// PY04, `research/py04_fused_normalization_20261011`).
+///
+/// # Type separation
+///
+/// [`NormalizedFusedPhiCertificate`] is a separate type with private fields and
+/// no conversion from [`FusedPhiCertificate`]:
+///
+/// ```compile_fail
+/// use rodas5p_core::taylor_phi_total::{FusedPhiCertificate, NormalizedFusedPhiCertificate};
+/// fn needs_normalized(_: &NormalizedFusedPhiCertificate) {}
+/// fn misuse(unnormalized: &FusedPhiCertificate) {
+///     needs_normalized(unnormalized);
+/// }
+/// ```
+///
+/// And conversely:
+///
+/// ```compile_fail
+/// use rodas5p_core::taylor_phi_total::{FusedPhiCertificate, NormalizedFusedPhiCertificate};
+/// fn needs_unnormalized(_: &FusedPhiCertificate) {}
+/// fn misuse(norm: &NormalizedFusedPhiCertificate) {
+///     needs_unnormalized(norm);
+/// }
+/// ```
+#[derive(Clone, Debug, PartialEq, Serialize)]
+pub struct NormalizedFusedPhiCertificate {
+    schema: &'static str,
+    status: FusedPhiStatus,
+    dimension: usize,
+    h: f64,
+    exponent: i64,
+    candidate: Vec<f64>,
+    f_hat: Vec<f64>,
+    bound: f64,
+    f_hat_bound: f64,
+    caller_distance: f64,
+    normalized_bound: f64,
+    rescaled_bound: f64,
+    r_term: f64,
+    l_term: f64,
+    mu: f64,
+    v: [Vec<f64>; JOINT_PHI_TERMS],
+    z: Vec<f64>,
+    stepped_error: f64,
+    perturbation: f64,
+    normalized_distance: f64,
+    work_entries_scaled: usize,
+    work_stages: usize,
+    dominant: FusedPhiTerm,
+    normalized_certificate: FusedPhiCertificate,
+}
+
+impl NormalizedFusedPhiCertificate {
+    pub fn schema(&self) -> &'static str {
+        self.schema
+    }
+    pub fn status(&self) -> FusedPhiStatus {
+        self.status
+    }
+    pub fn dimension(&self) -> usize {
+        self.dimension
+    }
+    pub fn h(&self) -> f64 {
+        self.h
+    }
+    pub fn exponent(&self) -> i64 {
+        self.exponent
+    }
+    pub fn candidate(&self) -> &[f64] {
+        &self.candidate
+    }
+    pub fn f_hat(&self) -> &[f64] {
+        &self.f_hat
+    }
+    pub fn bound(&self) -> f64 {
+        self.bound
+    }
+    pub fn f_hat_bound(&self) -> f64 {
+        self.f_hat_bound
+    }
+    pub fn caller_distance(&self) -> f64 {
+        self.caller_distance
+    }
+    pub fn normalized_bound(&self) -> f64 {
+        self.normalized_bound
+    }
+    pub fn rescaled_bound(&self) -> f64 {
+        self.rescaled_bound
+    }
+    pub fn r_term(&self) -> f64 {
+        self.r_term
+    }
+    pub fn l_term(&self) -> f64 {
+        self.l_term
+    }
+    pub fn mu(&self) -> f64 {
+        self.mu
+    }
+    pub fn v(&self) -> &[Vec<f64>; JOINT_PHI_TERMS] {
+        &self.v
+    }
+    pub fn z(&self) -> &[f64] {
+        &self.z
+    }
+    pub fn stepped_error(&self) -> f64 {
+        self.stepped_error
+    }
+    pub fn perturbation(&self) -> f64 {
+        self.perturbation
+    }
+    pub fn normalized_distance(&self) -> f64 {
+        self.normalized_distance
+    }
+    pub fn work_entries_scaled(&self) -> usize {
+        self.work_entries_scaled
+    }
+    pub fn work_stages(&self) -> usize {
+        self.work_stages
+    }
+    pub fn dominant(&self) -> FusedPhiTerm {
+        self.dominant
+    }
+    pub fn normalized_certificate(&self) -> &FusedPhiCertificate {
+        &self.normalized_certificate
+    }
+}
+
+/// Certifies `||candidate - sum_{k=0}^4 phi_k(hA) w_k||_2` using common
+/// power-of-two normalization of the vectors `w_k`.
+///
+/// Any non-finite candidate or bound (`> f64::MAX` or `is_infinite()` / `is_nan()`)
+/// returns `Err(CoreError::InvalidInput(FUSED_PHI_RANGE_UNSUPPORTED.into()))`.
+#[allow(clippy::needless_range_loop)]
+pub fn certify_fused_phi_total_normalized(
+    a: &[Vec<f64>],
+    h: f64,
+    w: &[Vec<f64>; JOINT_PHI_TERMS],
+    caller_candidate: Option<&[f64]>,
+) -> CoreResult<NormalizedFusedPhiCertificate> {
+    let n = a.len();
+    if n == 0 || a.iter().any(|row| row.len() != n) {
+        return Err(CoreError::Dimension(
+            "normalized fused phi: A must be a nonempty n x n matrix".into(),
+        ));
+    }
+    if w.iter().any(|wk| wk.len() != n) {
+        return Err(CoreError::Dimension(
+            "normalized fused phi: every w_k must have length n".into(),
+        ));
+    }
+    if caller_candidate.is_some_and(|cand| cand.len() != n) {
+        return Err(CoreError::Dimension(
+            "normalized fused phi: caller candidate must have length n".into(),
+        ));
+    }
+    if !(h.is_finite() && h >= 0.0) {
+        return Err(invalid("h must be finite and nonnegative"));
+    }
+    if !a
+        .iter()
+        .flatten()
+        .chain(w.iter().flatten())
+        .chain(caller_candidate.into_iter().flatten())
+        .all(|x| x.is_finite())
+    {
+        return Err(invalid("non-finite A, w_k or caller candidate"));
+    }
+
+    // 1. Normalize: find binary exponent e of the largest |w_{k,i}|
+    let mut largest = 0.0_f64;
+    for wk in w {
+        for &x in wk {
+            let ax = x.abs();
+            if ax > largest {
+                largest = ax;
+            }
+        }
+    }
+
+    let e = if largest > 0.0 {
+        let bits = largest.to_bits();
+        let exp_bits = ((bits >> 52) & 0x7ff) as i64;
+        if exp_bits > 0 {
+            exp_bits - 1023
+        } else {
+            let mantissa = bits & 0x000f_ffff_ffff_ffff;
+            let msb = 63 - mantissa.leading_zeros() as i64;
+            -1074 + msb
+        }
+    } else {
+        0
+    };
+
+    let stages_per_entry = if e == 0 {
+        0
+    } else {
+        ((e.abs() + 999) / 1000) as usize
+    };
+
+    let mut v: [Vec<f64>; JOINT_PHI_TERMS] = std::array::from_fn(|_| Vec::with_capacity(n));
+    for (k, wk) in w.iter().enumerate() {
+        for &x in wk {
+            v[k].push(scale_pow2_nearest(x, -e));
+        }
+    }
+    let mut work_entries_scaled = 5 * n;
+    let mut work_stages = 5 * n * stages_per_entry;
+
+    // 2. Certify on v:
+    let rows: Vec<&[f64]> = a.iter().map(Vec::as_slice).collect();
+    let dense = DenseMatrix::from_rows(&rows)?;
+    const TAYLOR_BUDGET: f64 = 1e-13;
+    let taylor = taylor_phi_action(&dense, h, &v, TAYLOR_BUDGET);
+    let z = match taylor {
+        Ok(report) => report.fused,
+        Err(_) => {
+            let probe = certify_fused_phi_total(a, h, &v, &vec![0.0; n])?;
+            let top = probe.stepped_top();
+            if !top.iter().all(|x| x.is_finite()) {
+                return Err(CoreError::InvalidInput(FUSED_PHI_RANGE_UNSUPPORTED.into()));
+            }
+            top.to_vec()
+        }
+    };
+
+    let norm_cert = certify_fused_phi_total(a, h, &v, &z)?;
+    if norm_cert.status() != FusedPhiStatus::Bounded {
+        return Err(CoreError::InvalidInput(FUSED_PHI_RANGE_UNSUPPORTED.into()));
+    }
+    let norm_bound = norm_cert.bound();
+    let stepped_error = norm_cert.stepped_error();
+    let perturbation = norm_cert.perturbation();
+    let normalized_distance = norm_cert.candidate_distance();
+
+    // 3. Rescale candidate:
+    let mut f_hat = Vec::with_capacity(n);
+    for &zi in &z {
+        let fhi = scale_pow2_nearest(zi, e);
+        if !fhi.is_finite() {
+            return Err(CoreError::InvalidInput(FUSED_PHI_RANGE_UNSUPPORTED.into()));
+        }
+        f_hat.push(fhi);
+    }
+    work_entries_scaled += n;
+    work_stages += n * stages_per_entry;
+
+    // 4. Bound:
+    let rescaled_bound = match scale_pow2_up(norm_bound, e) {
+        Ok(b) if b.is_finite() && b <= f64::MAX => b,
+        _ => return Err(CoreError::InvalidInput(FUSED_PHI_RANGE_UNSUPPORTED.into())),
+    };
+
+    // R: ||fl(sigma z) - sigma z||_2
+    let r_exact = z.iter().all(|&zi| scale_pow2_is_exact(zi, e));
+    let r_term = if r_exact {
+        0.0
+    } else {
+        mul_up(sqrt_up(n as f64)?, f64::from_bits(1))?
+    };
+
+    // L: sigma * sum_k (e^{max(mu, 0)} / k!) ||w_k / sigma - v_k||_2
+    let w_exact = w
+        .iter()
+        .all(|wk| wk.iter().all(|&x| scale_pow2_is_exact(x, -e)));
+    let (l_term, mu) = if w_exact {
+        (0.0, 0.0)
+    } else {
+        // Compute mu on hA:
+        let mut ha = vec![vec![Interval::point(0.0)?; n]; n];
+        for i in 0..n {
+            for j in 0..n {
+                ha[i][j] = Interval::new(mul_down(h, a[i][j])?, mul_up(h, a[i][j])?)?;
+            }
+        }
+        let half = Interval::point(0.5)?;
+        let mut mu_val = f64::NEG_INFINITY;
+        for i in 0..n {
+            let mut off = 0.0;
+            for j in 0..n {
+                if j != i {
+                    let sym_ij = ha[i][j].add(ha[j][i])?.mul(half)?;
+                    off = add_up(off, sym_ij.mag())?;
+                }
+            }
+            mu_val = mu_val.max(add_up(ha[i][i].hi, off)?);
+        }
+        let mu_max = mu_val.max(0.0);
+        let growth = exp_interval(mu_max)?.hi;
+
+        let mut terms = Vec::with_capacity(5);
+        for (k, wk) in w.iter().enumerate() {
+            let c_k = wk.iter().filter(|&&x| !scale_pow2_is_exact(x, -e)).count();
+            if c_k == 0 {
+                continue;
+            }
+            let norm_diff = mul_up(sqrt_up(c_k as f64)?, f64::from_bits(1))?;
+            let scaled_diff = match scale_pow2_up(norm_diff, e) {
+                Ok(sd) if sd.is_finite() => sd,
+                _ => return Err(CoreError::InvalidInput(FUSED_PHI_RANGE_UNSUPPORTED.into())),
+            };
+            let k_fact = match k {
+                0 | 1 => 1.0,
+                2 => 2.0,
+                3 => 6.0,
+                4 => 24.0,
+                _ => 1.0,
+            };
+            let coeff = div_up(growth, k_fact)?;
+            let term = mul_up(coeff, scaled_diff)?;
+            terms.push(term);
+        }
+        let l_val = sum_up(terms)?;
+        if !l_val.is_finite() || l_val > f64::MAX {
+            return Err(CoreError::InvalidInput(FUSED_PHI_RANGE_UNSUPPORTED.into()));
+        }
+        (l_val, mu_val)
+    };
+
+    let f_hat_bound = add_up(add_up(rescaled_bound, r_term)?, l_term)?;
+    if !f_hat_bound.is_finite() || f_hat_bound > f64::MAX {
+        return Err(CoreError::InvalidInput(FUSED_PHI_RANGE_UNSUPPORTED.into()));
+    }
+
+    // 5. Caller candidate:
+    let (candidate, caller_distance, bound) = match caller_candidate {
+        Some(u) => {
+            let dist = distance_upper(u, &f_hat);
+            let b = add_up(dist, f_hat_bound)?;
+            if !b.is_finite() || b > f64::MAX {
+                return Err(CoreError::InvalidInput(FUSED_PHI_RANGE_UNSUPPORTED.into()));
+            }
+            (u.to_vec(), dist, b)
+        }
+        None => (f_hat.clone(), 0.0, f_hat_bound),
+    };
+
+    let dominant = if caller_distance > f_hat_bound {
+        FusedPhiTerm::CandidateDistance
+    } else {
+        norm_cert.dominant()
+    };
+
+    Ok(NormalizedFusedPhiCertificate {
+        schema: NORMALIZED_FUSED_PHI_SCHEMA,
+        status: FusedPhiStatus::Bounded,
+        dimension: n,
+        h,
+        exponent: e,
+        candidate,
+        f_hat,
+        bound,
+        f_hat_bound,
+        caller_distance,
+        normalized_bound: norm_bound,
+        rescaled_bound,
+        r_term,
+        l_term,
+        mu,
+        v,
+        z,
+        stepped_error,
+        perturbation,
+        normalized_distance,
+        work_entries_scaled,
+        work_stages,
+        dominant,
+        normalized_certificate: norm_cert,
+    })
 }
 
 #[cfg(test)]
