@@ -58,3 +58,15 @@ Can the native fair benchmark module in `crates/rodas5p-fair-ab/src/packet_bench
 cargo test --offline --locked -p rodas5p-fair-ab --test packet_benchmark_contracts -- --test-threads=1
 python3 tools/lp09_stage0_check.py --output research/lp09_packet_benchmark_20261011/STAGE0.json
 ```
+
+## Results
+
+Executed 2026-10-18 under commit `48269ce27ff5187a92f59337f6722ad437ab1a8f` (ledger `L-0122`).
+
+### 1. Stage 0 Feasibility Outcome
+- **VG-1 (Zero online solver counters on candidate):** Multi-window packet candidate eliminates all online Jacobian evaluations (0 vs positive), LU factorizations (0 vs positive), and linear stage solves (0 vs positive). `met = true`.
+- **VG-2 (Matched physical accuracy):** Collective mean error agreement between multi-window packet candidate and direct Rosenbrock baseline (`rodas5p_fast`) matches within physical tolerance $< 10^{-4}$. `met = true`.
+- **VG-3 (Fairness & Hoisting verification):** Direct baseline ODE problem confirmed to use hoisted $O(N)$ collective evaluation structure; unfair unhoisted comparison requests strictly refused; timing authority strictly marked diagnostic only (`"timing_authority": "diagnostic_only"`). `met = true`.
+- **Negative parameter gates:** Reversed interval and non-positive tolerance strictly rejected with typed `CoreError::InvalidInput`. `met = true`.
+- **Decision:** `FEASIBLE`.
+- **Verdict:** `PASS`.
