@@ -157,3 +157,16 @@ the per-column `EnvelopeKey` digests this node exports) or PY03's cache-key test
   - `recurrence_adjoint` is >= 0.999999 of S in all six gated cases.
 - **Not predicted.** The adjoint sum is carried by large depth-3 Bernstein envelopes beta_j. The size of beta_j / l_j,
   and whether F falls below the 1e-6 budget in any gated case, are not predicted: they are what PY02 needs.
+
+
+## Results
+
+- **Source commit (`EXEC_SHA`)**: `451cb9b978c7a474efe8ac640cac914adbbe4ccd` (`tree_clean: true`).
+- **Artifacts**:
+  - `COMPONENTS.json`: `5a91b4c24a6ddea13de888d1c4d0209dcf13081055f24a7469e3be9c8fc725a3`
+  - `RESULTS.json`: `8357bcc9fc0bc58bc997a45ca568402657cf5d9bb73cedd13f29bd04acd6f033`
+- **Verdict**: **PASS** (`1_completeness: true`, `2_enclosure: true`, `3_source_binding: true`, `gate_failures: []`).
+- **Summary of findings**:
+  - All 9 registered cases (`n6-rho400-h0.1-distinct`, `n6-rho400-h0.1-same`, `n12-rho400-h0.1-distinct`, `n12-rho400-h0.1-same`, `n20-rho400-h0.1-distinct`, `n20-rho400-h0.1-same`, `n6-rho400-h0.01-distinct`, `subnormal-1e-310`, `large-1e300`) match the published `cases.json` bitwise (`degree`, `laguerre_scale`, `normalization_shift`, `fused`, `laguerre_adjoint_total`).
+  - In all 6 gated cases, `recurrence_adjoint` accounts for `1.000000e+00` of `S`, `truncation` and `coefficient` match PP09's derived values to all printed digits, and `summation + fused_summation` is `< 1e-12` of `S`.
+  - Outward-rounded column rebuilds `mul_up(|s_k|, sum_{j=1..m} mul_up(beta_j, eps_{j-1}))` (with `scale_bound_up` when `normalization_shift != 0`) match `columns[k].recurrence_adjoint` bit-for-bit across all 45 columns (`9 cases x 5 columns`).
