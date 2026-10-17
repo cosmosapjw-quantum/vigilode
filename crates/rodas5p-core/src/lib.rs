@@ -3,6 +3,7 @@
 mod binary_scaling;
 mod coefficients;
 pub mod complex_shift_jet;
+pub mod damped_moments;
 pub mod directed;
 mod error;
 mod hash;
@@ -31,6 +32,9 @@ pub use coefficients::{
     CoefficientPrecisionAvailability, RODAS5P_COEFFICIENT_SNAPSHOT_SCHEMA_VERSION,
     RODAS5P_COEFFICIENT_SNAPSHOT_SHA256, Rodas5pCoefficientProvenance, Rodas5pCoefficients,
     load_rodas5p_coefficients, rodas5p_coefficients,
+};
+pub use damped_moments::{
+    DampedMomentTable, DampedMomentsConfig, compute_damped_moment, compute_normalized_damped_moment,
 };
 pub use directed::{
     PowerOfTwo, scale_pow2_down, scale_pow2_is_exact, scale_pow2_nearest,
