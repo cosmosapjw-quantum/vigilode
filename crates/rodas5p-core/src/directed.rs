@@ -273,6 +273,23 @@ impl Interval {
     pub fn scale(self, factor: f64) -> CoreResult<Self> {
         self.mul(Self::point(factor)?)
     }
+
+    pub fn as_pair(self) -> [f64; 2] {
+        [self.lo, self.hi]
+    }
+
+    pub fn dot(a: &[Interval], b: &[Interval]) -> CoreResult<Self> {
+        if a.len() != b.len() {
+            return Err(CoreError::InvalidInput(
+                "interval dot: length mismatch".into(),
+            ));
+        }
+        let mut sum = Interval::point(0.0)?;
+        for (&x, &y) in a.iter().zip(b) {
+            sum = sum.add(x.mul(y)?)?;
+        }
+        Ok(sum)
+    }
 }
 
 impl std::ops::Neg for Interval {

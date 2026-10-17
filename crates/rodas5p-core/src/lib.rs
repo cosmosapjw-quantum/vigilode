@@ -14,6 +14,7 @@ pub mod nonnormal_certificate;
 mod norms;
 mod operator;
 pub mod polynomial_action;
+pub mod residual_gain;
 pub mod shared_shift_jet;
 pub mod shared_shift_policy;
 mod solver_types;
@@ -44,6 +45,11 @@ pub use operator::{
     JacobiPreconditioner, KrylovSystemIdentity, LinearOperator, OperatorApplicationWork,
     Preconditioner, ShiftedOperator, apply_counted, apply_jvp_counted, apply_preconditioner,
     apply_rows_counted, exact_krylov_system_identity,
+};
+pub use residual_gain::{
+    AssemblyUncertainty, DeclaredStructure, EstimateSource, EstimatedCorrection, FrozenMetric,
+    GainEvidence, LinearTargetId, OperatorKind, ResidualGainWitness, VerifiedCorrection,
+    WitnessRejection, dense_lu_comparator, projected_nu_estimate,
 };
 pub use solver_types::{
     InitialGuess, LinearMethod, LinearSolveReport, LinearSolverConfig, PreconditionerKind,

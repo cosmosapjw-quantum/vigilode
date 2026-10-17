@@ -614,7 +614,7 @@ pub struct LognormCertificate {
 }
 
 #[allow(clippy::needless_range_loop, clippy::neg_cmp_op_on_partial_ord)]
-fn metric_matrix(a: &[Vec<f64>], d: &[f64]) -> CoreResult<Vec<Vec<Interval>>> {
+pub(crate) fn metric_matrix(a: &[Vec<f64>], d: &[f64]) -> CoreResult<Vec<Vec<Interval>>> {
     let n = a.len();
     let mut b = vec![vec![Interval::point(0.0)?; n]; n];
     for i in 0..n {
