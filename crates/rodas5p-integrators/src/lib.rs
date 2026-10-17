@@ -46,6 +46,7 @@ mod native_gates;
 mod nonlinear;
 mod output;
 mod outward_certificate;
+pub mod packet_trajectory;
 pub mod packet_window;
 pub mod packet_work;
 mod parallel;
@@ -328,6 +329,9 @@ pub use outward_certificate::{
     candidate_digest, certificate_binding, certify_stage_target, certify_stage_target_diagonal,
     doubling_certificate, doubling_certificate_with_execution, doubling_levels,
     predict_state_radius,
+};
+pub use packet_trajectory::{
+    OutputPolicy, PacketTrajectoryResult, TrajectoryConfig, TrajectoryStep, run_packet_trajectory,
 };
 pub use packet_window::{
     CausalWeights, CompiledPacket, PacketCandidate, PacketCertificate, PacketError, compile_packet,
