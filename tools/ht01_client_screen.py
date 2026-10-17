@@ -95,8 +95,8 @@ CANDIDATES_DEF = [
             "crates/rodas5p-cli/src/stiff_benchmark.rs",
         ],
         "applicable_native_arms": ["small", "dense_v2", "matrix_free_u_form"],
-        "cheapest_arm": "rodas5p-fast-small",
-        "ledger_row": "L-0081",
+        "cheapest_arm": "small",
+        "ledger_row": "L-0085",
     },
     {
         "id": "K6",

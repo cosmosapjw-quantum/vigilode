@@ -186,6 +186,24 @@ def main() -> int:
     if "no_applicable_arm" not in k1_s3.get("reason", ""):
         return emit_fail("K1 row S3 reason must record 'no_applicable_arm'")
 
+    k4_row = next(c for c in candidates if c["id"] == "K4")
+    k4_s3 = k4_row.get("s3_strong_comparator", {})
+    if k4_s3.get("pass_s3") is not False or "no_applicable_arm" not in k4_s3.get("reason", ""):
+        return emit_fail("K4 row S3 must fail with reason citing 'no_applicable_arm'")
+
+    ledger_text = (ROOT / "research/LEDGER.jsonl").read_text(encoding="utf-8")
+    for c in candidates:
+        cid = c["id"]
+        s3 = c.get("s3_strong_comparator", {})
+        if s3.get("pass_s3"):
+            cheapest = s3.get("cheapest_arm")
+            applicable = c.get("applicable_native_arms", [])
+            if cheapest not in applicable:
+                return emit_fail(f"Candidate {cid} cheapest arm '{cheapest}' not in applicable arms {applicable}")
+            l_row = s3.get("ledger_row")
+            if not l_row or f'"{l_row}"' not in ledger_text:
+                return emit_fail(f"Candidate {cid} ledger row '{l_row}' not found in LEDGER.jsonl")
+
     # 2. Check callgrind profile shares for K5 and K6
     for c in candidates:
         cid = c["id"]
