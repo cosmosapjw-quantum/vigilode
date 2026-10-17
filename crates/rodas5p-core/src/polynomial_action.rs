@@ -71,7 +71,8 @@ use crate::{
 mod router;
 pub use router::{
     ROUTER_INPUT_UNSUPPORTED, ROUTER_NOT_ADMITTED, ROUTER_TRUNCATION_FRACTION, RouteAttempt,
-    RouteChoice, RoutedPhi, route_admission, route_joint_phi,
+    RouteChoice, RouteCost, RoutePolicy, RoutedPhi, RouterCaches, SingleRoutedPhi, route_admission,
+    route_joint_phi, route_joint_phi_single,
 };
 
 pub const JOINT_PHI_SCHEMA: &str = "vigilode-joint-phi-polynomial-v1";
@@ -190,12 +191,24 @@ pub(crate) fn exp_up(x: f64) -> CoreResult<f64> {
 /// `1F1(k; c; x) = sum_i (k)_i / (c)_i x^i / i!` for `0 <= k <= c`, `x >= 0`,
 /// rounded down or up. Term ratios are at most `x / (i + 1)`.
 fn hyp1f1_nonneg(k: usize, c: usize, x: f64, upward: bool) -> CoreResult<f64> {
+    let mut dummy = 0;
+    hyp1f1_nonneg_counted(k, c, x, upward, &mut dummy)
+}
+
+fn hyp1f1_nonneg_counted(
+    k: usize,
+    c: usize,
+    x: f64,
+    upward: bool,
+    series_terms: &mut u64,
+) -> CoreResult<f64> {
     if k == 0 || x == 0.0 {
         return Ok(1.0);
     }
     let mut sum = 1.0;
     let mut term = 1.0;
     for i in 0..MAX_SERIES_TERMS {
+        *series_terms += 1;
         let numerator = (k + i) as f64;
         let denominator = ((c + i) as f64) * ((i + 1) as f64);
         term = if upward {
@@ -223,13 +236,26 @@ fn hyp1f1_nonneg(k: usize, c: usize, x: f64, upward: bool) -> CoreResult<f64> {
 /// `2F1(n+1, k; n+k+1; q) = sum_i (n+1)_i (k)_i / ((n+k+1)_i i!) q^i` for
 /// `k >= 1`, `0 <= q < 1`; term ratios after term `i` are at most
 /// `q (k+i) / (i+1)`, which decreases in `i`.
+#[allow(dead_code)]
 fn hyp2f1_laguerre(n: usize, k: usize, q: f64, upward: bool) -> CoreResult<f64> {
+    let mut dummy = 0;
+    hyp2f1_laguerre_counted(n, k, q, upward, &mut dummy)
+}
+
+fn hyp2f1_laguerre_counted(
+    n: usize,
+    k: usize,
+    q: f64,
+    upward: bool,
+    series_terms: &mut u64,
+) -> CoreResult<f64> {
     if q == 0.0 {
         return Ok(1.0);
     }
     let mut sum = 1.0;
     let mut term = 1.0;
     for i in 0..MAX_SERIES_TERMS {
+        *series_terms += 1;
         let numerator = ((n + 1 + i) as f64) * ((k + i) as f64);
         let denominator = ((n + k + 1 + i) as f64) * ((i + 1) as f64);
         term = if upward {
@@ -279,6 +305,16 @@ fn chebyshev_coefficients(
     b: Interval,
     degree: usize,
 ) -> CoreResult<Vec<[Interval; JOINT_PHI_TERMS]>> {
+    let mut dummy = 0;
+    chebyshev_coefficients_counted(a, b, degree, &mut dummy)
+}
+
+fn chebyshev_coefficients_counted(
+    a: Interval,
+    b: Interval,
+    degree: usize,
+    series_terms: &mut u64,
+) -> CoreResult<Vec<[Interval; JOINT_PHI_TERMS]>> {
     let abs_a = Interval::new(-a.hi, -a.lo)?;
     if abs_a.lo < 0.0 || b.lo < 0.0 {
         return Err(unsupported("Chebyshev coefficients need a <= 0 <= b"));
@@ -294,14 +330,14 @@ fn chebyshev_coefficients(
     let quarter = positive_mul(half_b, half_b)?;
     // 1F1(k; p+k+1; |a|) by p, computed on demand.
     let mut hypergeometric: Vec<[Interval; JOINT_PHI_TERMS]> = Vec::new();
-    let mut hyp = |p: usize| -> CoreResult<[Interval; JOINT_PHI_TERMS]> {
+    let mut hyp = |p: usize, terms: &mut u64| -> CoreResult<[Interval; JOINT_PHI_TERMS]> {
         while hypergeometric.len() <= p {
             let q = hypergeometric.len();
             let mut row = [Interval::point(1.0)?; JOINT_PHI_TERMS];
             for (k, value) in row.iter_mut().enumerate().skip(1) {
                 *value = Interval::new(
-                    hyp1f1_nonneg(k, q + k + 1, abs_a.lo, false)?,
-                    hyp1f1_nonneg(k, q + k + 1, abs_a.hi, true)?,
+                    hyp1f1_nonneg_counted(k, q + k + 1, abs_a.lo, false, terms)?,
+                    hyp1f1_nonneg_counted(k, q + k + 1, abs_a.hi, true, terms)?,
                 )?;
             }
             hypergeometric.push(row);
@@ -322,8 +358,9 @@ fn chebyshev_coefficients(
         let mut term = leading;
         let mut closed = false;
         for j in 0..MAX_SERIES_TERMS {
+            *series_terms += 1;
             let p = 2 * j + n;
-            let hyp_row = hyp(p)?;
+            let hyp_row = hyp(p, series_terms)?;
             let mut contributions = [0.0; JOINT_PHI_TERMS];
             for k in 0..JOINT_PHI_TERMS {
                 let factor = positive_mul(inverse_rising(p, k)?, hyp_row[k])?;
@@ -375,6 +412,15 @@ fn laguerre_coefficients(
     a: Interval,
     degree: usize,
 ) -> CoreResult<Vec<[Interval; JOINT_PHI_TERMS]>> {
+    let mut dummy = 0;
+    laguerre_coefficients_counted(a, degree, &mut dummy)
+}
+
+fn laguerre_coefficients_counted(
+    a: Interval,
+    degree: usize,
+    series_terms: &mut u64,
+) -> CoreResult<Vec<[Interval; JOINT_PHI_TERMS]>> {
     if a.lo < 0.0 {
         return Err(unsupported("Laguerre coefficients need h beta >= 0"));
     }
@@ -399,14 +445,28 @@ fn laguerre_coefficients(
         let mut row = [base; JOINT_PHI_TERMS];
         for (k, value) in row.iter_mut().enumerate().skip(1) {
             let series = Interval::new(
-                hyp2f1_laguerre(n, k, q.lo, false)?,
-                hyp2f1_laguerre(n, k, q.hi, true)?,
+                hyp2f1_laguerre_counted(n, k, q.lo, false, series_terms)?,
+                hyp2f1_laguerre_counted(n, k, q.hi, true, series_terms)?,
             )?;
             *value = positive_mul(positive_mul(base, inverse_rising(n, k)?)?, series)?;
         }
         out.push(row);
     }
     Ok(out)
+}
+
+/// Evaluates and counts the series terms spent computing Chebyshev coefficients.
+pub fn count_chebyshev_series_terms(a: Interval, b: Interval, degree: usize) -> CoreResult<u64> {
+    let mut terms = 0;
+    let _ = chebyshev_coefficients_counted(a, b, degree, &mut terms)?;
+    Ok(terms)
+}
+
+/// Evaluates and counts the series terms spent computing Laguerre coefficients.
+pub fn count_laguerre_series_terms(a: Interval, degree: usize) -> CoreResult<u64> {
+    let mut terms = 0;
+    let _ = laguerre_coefficients_counted(a, degree, &mut terms)?;
+    Ok(terms)
 }
 
 /// Chebyshev coefficient enclosures for `h` and the enclosure
@@ -1312,6 +1372,27 @@ fn choose_transform(
     budget: f64,
     laguerre_scales: &[f64],
 ) -> CoreResult<Transform> {
+    let mut tail_evaluations = 0;
+    choose_transform_counted(
+        op,
+        h,
+        basis,
+        weight_factor,
+        budget,
+        laguerre_scales,
+        &mut tail_evaluations,
+    )
+}
+
+fn choose_transform_counted(
+    op: &SymmetricNonpositiveOperator,
+    h: f64,
+    basis: PolynomialBasis,
+    weight_factor: f64,
+    budget: f64,
+    laguerre_scales: &[f64],
+    tail_evaluations: &mut u64,
+) -> CoreResult<Transform> {
     let SpectralEnclosure { lambda, rho, .. } = op.enclosure;
     match basis {
         PolynomialBasis::Chebyshev => {
@@ -1330,6 +1411,7 @@ fn choose_transform(
             let b = Interval::new(mul_down(h, half_width)?, mul_up(h, half_width)?)?;
             let a_plus_b = add_up(a.hi, b.hi)?;
             for degree in 0..=MAX_POLYNOMIAL_DEGREE {
+                *tail_evaluations += 1;
                 let tail = chebyshev_tail(b.hi, a_plus_b, eta, degree)?;
                 if meets_budget(tail, weight_factor, budget) {
                     return Ok(Transform {
@@ -1369,6 +1451,7 @@ fn choose_transform(
                 // Tail e^{L'/2} q^{m+1}, with the power kept incrementally.
                 let mut power = q_hi;
                 for degree in 0..=limit {
+                    *tail_evaluations += 1;
                     if degree > 0 {
                         power = mul_up(power, q_hi)?;
                     }
@@ -1606,6 +1689,198 @@ pub fn joint_phi_action(
         input,
         basis,
         budget,
+        cache,
+        work,
+        true,
+        &LAGUERRE_SCALES,
+    )
+}
+
+/// A planned joint-phi polynomial action (RVJ DAG node PY03).
+/// Separates degree and coefficient planning from execution.
+#[derive(Clone, Debug, PartialEq, Serialize)]
+pub struct ActionPlan {
+    pub(crate) basis: PolynomialBasis,
+    pub(crate) degree: usize,
+    pub(crate) laguerre_scale: Option<f64>,
+    pub(crate) predicted_vector_products: u64,
+    pub(crate) predicted_block_products: u64,
+    pub(crate) truncation_bound: f64,
+    pub(crate) truncation_budget: f64,
+    #[serde(skip)]
+    pub(crate) a: Interval,
+    #[serde(skip)]
+    pub(crate) b: Interval,
+    pub(crate) beta: f64,
+    pub(crate) laguerre_extent: f64,
+    pub(crate) laguerre_norm: f64,
+    pub(crate) eta: f64,
+}
+
+impl ActionPlan {
+    pub fn basis(&self) -> PolynomialBasis {
+        self.basis
+    }
+
+    pub fn degree(&self) -> usize {
+        self.degree
+    }
+
+    pub fn laguerre_scale(&self) -> Option<f64> {
+        self.laguerre_scale
+    }
+
+    pub fn predicted_vector_products(&self) -> u64 {
+        self.predicted_vector_products
+    }
+
+    pub fn predicted_block_products(&self) -> u64 {
+        self.predicted_block_products
+    }
+
+    pub fn truncation_bound(&self) -> f64 {
+        self.truncation_bound
+    }
+
+    pub fn truncation_budget(&self) -> f64 {
+        self.truncation_budget
+    }
+}
+
+/// Plan `sum_k phi_k(h A) w_k` for a given basis and truncation budget (RVJ DAG node PY03).
+///
+/// Runs degree selection and predicts vector products without allocating heap memory.
+pub fn plan_joint_phi(
+    op: &SymmetricNonpositiveOperator,
+    h: f64,
+    input: JointPhiInput<'_>,
+    basis: PolynomialBasis,
+    truncation_budget: f64,
+    _caches: Option<&router::RouterCaches>,
+    cost: &mut router::RouteCost,
+) -> CoreResult<ActionPlan> {
+    let n = op.dimension();
+    if !(h.is_finite() && h >= 0.0) {
+        return Err(unsupported(format!(
+            "step h = {h:e} must be finite and >= 0"
+        )));
+    }
+    if !(truncation_budget.is_finite() && truncation_budget > 0.0) {
+        return Err(unsupported("truncation budget must be positive"));
+    }
+    let (width, norms) = match input {
+        JointPhiInput::Distinct(vectors) => {
+            if vectors.iter().any(|w| w.len() != n) {
+                return Err(unsupported("every w_k must have the operator dimension"));
+            }
+            if !vectors.iter().flatten().all(|x| x.is_finite()) {
+                return Err(CoreError::NonFinite(
+                    "joint phi input contains NaN/Inf".into(),
+                ));
+            }
+            let mut norms = [0.0; JOINT_PHI_TERMS];
+            for (k, v) in vectors.iter().enumerate() {
+                norms[k] = norm_up_scaled(v, 0)?;
+            }
+            (JOINT_PHI_TERMS, norms)
+        }
+        JointPhiInput::SameVector { vector, scales } => {
+            if vector.len() != n {
+                return Err(unsupported("vector must have the operator dimension"));
+            }
+            if !vector.iter().chain(&scales).all(|x| x.is_finite()) {
+                return Err(CoreError::NonFinite(
+                    "joint phi input contains NaN/Inf".into(),
+                ));
+            }
+            let base_norm = norm_up_scaled(vector, 0)?;
+            let mut norms = [0.0; JOINT_PHI_TERMS];
+            for (k, &s) in scales.iter().enumerate() {
+                norms[k] = mul_up(s.abs(), base_norm)?;
+            }
+            (1, norms)
+        }
+    };
+    let mut weight_factor = 0.0;
+    for (k, &norm) in norms.iter().enumerate() {
+        weight_factor = add_up(weight_factor, div_up(norm, factorial(k))?)?;
+    }
+    let SpectralEnclosure { lambda, rho, .. } = op.enclosure;
+    let scalar_branch = h == 0.0 || rho == 0.0 || lambda == rho;
+    if lambda == rho && rho > 0.0 {
+        let scalar =
+            (0..n).all(|i| (0..n).all(|j| op.matrix[(i, j)] == if i == j { -lambda } else { 0.0 }));
+        if !scalar {
+            return Err(unsupported("a degenerate enclosure needs A = -lambda I"));
+        }
+    }
+    if rho == 0.0 && op.matrix.as_slice().iter().any(|x| *x != 0.0) {
+        return Err(unsupported("the enclosure [0, 0] needs A = 0"));
+    }
+    if weight_factor == 0.0 || scalar_branch {
+        return Ok(ActionPlan {
+            basis,
+            degree: 0,
+            laguerre_scale: None,
+            predicted_vector_products: 0,
+            predicted_block_products: 0,
+            truncation_bound: 0.0,
+            truncation_budget,
+            a: Interval::point(0.0)?,
+            b: Interval::point(0.0)?,
+            beta: 0.0,
+            laguerre_extent: 0.0,
+            laguerre_norm: 1.0,
+            eta: 0.0,
+        });
+    }
+    let transform = choose_transform_counted(
+        op,
+        h,
+        basis,
+        weight_factor,
+        truncation_budget,
+        &LAGUERRE_SCALES,
+        &mut cost.plan_tail_evaluations,
+    )?;
+    let degree = transform.degree;
+    let truncation_bound = mul_up(transform.tail_factor, weight_factor)?;
+    let predicted_block_products = degree as u64;
+    let predicted_vector_products = degree as u64 * (width as u64);
+    Ok(ActionPlan {
+        basis,
+        degree,
+        laguerre_scale: transform.laguerre_scale,
+        predicted_vector_products,
+        predicted_block_products,
+        truncation_bound,
+        truncation_budget,
+        a: transform.a,
+        b: transform.b,
+        beta: transform.beta,
+        laguerre_extent: transform.laguerre_extent,
+        laguerre_norm: transform.laguerre_norm,
+        eta: transform.eta,
+    })
+}
+
+/// Execute a planned joint-phi polynomial action (RVJ DAG node PY03).
+///
+/// Guaranteed bitwise parity with [`joint_phi_action`].
+pub fn execute_joint_phi(
+    plan: &ActionPlan,
+    op: &SymmetricNonpositiveOperator,
+    h: f64,
+    input: JointPhiInput<'_>,
+    cache: Option<&mut CoefficientCache>,
+    work: &mut WorkCounters,
+) -> CoreResult<JointPhiReport> {
+    joint_phi_action_impl(
+        op,
+        h,
+        input,
+        plan.basis(),
+        plan.truncation_budget(),
         cache,
         work,
         true,

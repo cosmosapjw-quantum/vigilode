@@ -47,10 +47,12 @@ pub use operator::{
     apply_rows_counted, exact_krylov_system_identity,
 };
 pub use polynomial_action::{
-    BasisPlanBranch, EnclosureIdentity, LAGUERRE_COMPONENTS_UNSUPPORTED,
+    ActionPlan, BasisPlanBranch, EnclosureIdentity, LAGUERRE_COMPONENTS_UNSUPPORTED,
     LaguerreAdjointColumnExport, LaguerreAssemblyExport, LaguerreColumnTermExport,
-    LaguerreComponentExport, LaguerreExportIdentity, LocalBasisPlan,
-    joint_phi_action_laguerre_components, plan_joint_phi_local, scale_bound_up,
+    LaguerreComponentExport, LaguerreExportIdentity, LocalBasisPlan, RouteCost, RoutePolicy,
+    RouterCaches, SingleRoutedPhi, count_chebyshev_series_terms, count_laguerre_series_terms,
+    execute_joint_phi, joint_phi_action_laguerre_components, plan_joint_phi, plan_joint_phi_local,
+    route_joint_phi_single, scale_bound_up,
 };
 pub use residual_gain::{
     AssemblyUncertainty, DeclaredStructure, EstimateSource, EstimatedCorrection, FrozenMetric,

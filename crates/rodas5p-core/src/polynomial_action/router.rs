@@ -348,3 +348,572 @@ pub fn route_joint_phi(
         bound,
     })
 }
+
+/// Routing policy for [`route_joint_phi_single`] (RVJ DAG node PY03).
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Default, Serialize)]
+pub enum RoutePolicy {
+    /// Preflight compares vector products, degree limit, and vector-independent error before executing.
+    #[default]
+    ChebyshevFirstPreflight,
+    /// Force execution of Laguerre first (for testing failed preflight).
+    ForceLaguerreFirst,
+}
+
+/// Detailed router-local work accounting (RVJ DAG node PY03).
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize)]
+pub struct RouteCost {
+    pub plan_tail_evaluations: u64,
+    pub coefficient_setups: u64,
+    pub coefficient_cache_hits: u64,
+    pub coefficient_series_terms: u64,
+    pub executed_backends: u64,
+    pub failed_executions: u64,
+    pub vector_products: u64,
+    pub block_products: u64,
+    pub certification_operations: u64,
+}
+
+impl RouteCost {
+    pub fn accumulate(&mut self, other: RouteCost) {
+        self.plan_tail_evaluations += other.plan_tail_evaluations;
+        self.coefficient_setups += other.coefficient_setups;
+        self.coefficient_cache_hits += other.coefficient_cache_hits;
+        self.coefficient_series_terms += other.coefficient_series_terms;
+        self.executed_backends += other.executed_backends;
+        self.failed_executions += other.failed_executions;
+        self.vector_products += other.vector_products;
+        self.block_products += other.block_products;
+        self.certification_operations += other.certification_operations;
+    }
+}
+
+/// Combined caches for the single backend router (RVJ DAG node PY03).
+#[derive(Clone, Debug, Default)]
+pub struct RouterCaches {
+    pub coefficient: super::CoefficientCache,
+    pub envelope: crate::laguerre_adjoint::LaguerreEnvelopeCache,
+}
+
+impl RouterCaches {
+    pub fn clear(&mut self) {
+        self.coefficient.tables.clear();
+        self.envelope = crate::laguerre_adjoint::LaguerreEnvelopeCache::default();
+    }
+}
+
+/// The outcome of [`route_joint_phi_single`] (RVJ DAG node PY03).
+#[derive(Clone, Debug, PartialEq, Serialize)]
+pub struct SingleRoutedPhi {
+    choice: RouteChoice,
+    policy: RoutePolicy,
+    total_budget: f64,
+    truncation_budget: f64,
+    chebyshev_plan: Option<super::ActionPlan>,
+    laguerre_plan: Option<super::ActionPlan>,
+    plan_cost: RouteCost,
+    execution_costs: Vec<RouteCost>,
+    cost: RouteCost,
+    fused: Option<Vec<f64>>,
+    bound: Option<f64>,
+    report: Option<JointPhiReport>,
+    work: WorkCounters,
+    first_attempt: Option<RouteAttempt>,
+    second_attempt: Option<RouteAttempt>,
+}
+
+impl SingleRoutedPhi {
+    pub fn choice(&self) -> &RouteChoice {
+        &self.choice
+    }
+
+    pub fn policy(&self) -> RoutePolicy {
+        self.policy
+    }
+
+    pub fn basis(&self) -> Option<PolynomialBasis> {
+        match self.choice {
+            RouteChoice::Chebyshev => Some(PolynomialBasis::Chebyshev),
+            RouteChoice::Laguerre => Some(PolynomialBasis::Laguerre),
+            RouteChoice::Fallback { .. } => None,
+        }
+    }
+
+    pub fn is_fallback(&self) -> bool {
+        matches!(self.choice, RouteChoice::Fallback { .. })
+    }
+
+    pub fn total_budget(&self) -> f64 {
+        self.total_budget
+    }
+
+    pub fn truncation_budget(&self) -> f64 {
+        self.truncation_budget
+    }
+
+    pub fn chebyshev_plan(&self) -> Option<&super::ActionPlan> {
+        self.chebyshev_plan.as_ref()
+    }
+
+    pub fn laguerre_plan(&self) -> Option<&super::ActionPlan> {
+        self.laguerre_plan.as_ref()
+    }
+
+    pub fn plan_cost(&self) -> RouteCost {
+        self.plan_cost
+    }
+
+    pub fn execution_costs(&self) -> &[RouteCost] {
+        &self.execution_costs
+    }
+
+    pub fn fused(&self) -> Option<&[f64]> {
+        self.fused.as_deref()
+    }
+
+    pub fn bound(&self) -> Option<f64> {
+        self.bound
+    }
+
+    pub fn report(&self) -> Option<&JointPhiReport> {
+        self.report.as_ref()
+    }
+
+    pub fn cost(&self) -> RouteCost {
+        self.cost
+    }
+
+    pub fn work(&self) -> WorkCounters {
+        self.work
+    }
+
+    pub fn first_attempt(&self) -> Option<&RouteAttempt> {
+        self.first_attempt.as_ref()
+    }
+
+    pub fn second_attempt(&self) -> Option<&RouteAttempt> {
+        self.second_attempt.as_ref()
+    }
+}
+
+#[allow(clippy::too_many_arguments)]
+fn execute_one_basis(
+    op: &SymmetricNonpositiveOperator,
+    h: f64,
+    input: JointPhiInput<'_>,
+    basis: PolynomialBasis,
+    plan: Option<&super::ActionPlan>,
+    truncation_budget: f64,
+    total_budget: f64,
+    caches: &mut RouterCaches,
+    work: &mut WorkCounters,
+) -> CoreResult<(RouteAttempt, RouteCost)> {
+    let before_work = *work;
+    let mut exec_cost = RouteCost {
+        executed_backends: 1,
+        ..RouteCost::default()
+    };
+    let report_result = match plan {
+        Some(p) => super::execute_joint_phi(p, op, h, input, Some(&mut caches.coefficient), work),
+        None => super::joint_phi_action(
+            op,
+            h,
+            input,
+            basis,
+            truncation_budget,
+            Some(&mut caches.coefficient),
+            work,
+        ),
+    };
+    let delta = work
+        .checked_delta(before_work)
+        .ok_or_else(|| invalid("work decreased during execution"))?;
+    exec_cost.vector_products += delta.poly_vector_products;
+    exec_cost.block_products += delta.poly_block_products;
+    exec_cost.coefficient_setups += delta.poly_coefficient_setups;
+    exec_cost.coefficient_cache_hits += delta.poly_coefficient_reuses;
+
+    match report_result {
+        Ok(report) => {
+            let deg = report.degree;
+            if delta.poly_coefficient_setups > 0 {
+                match basis {
+                    PolynomialBasis::Chebyshev => {
+                        let shift = 0.5 * (op.enclosure.rho + op.enclosure.lambda);
+                        let half_width = 0.5 * (op.enclosure.rho - op.enclosure.lambda);
+                        let a = super::Interval::new(
+                            -super::mul_up(h, shift)?,
+                            -super::mul_down(h, shift)?,
+                        )?;
+                        let b = super::Interval::new(
+                            super::mul_down(h, half_width)?,
+                            super::mul_up(h, half_width)?,
+                        )?;
+                        let terms = super::count_chebyshev_series_terms(a, b, deg)?;
+                        exec_cost.coefficient_series_terms += terms;
+                    }
+                    PolynomialBasis::Laguerre => {
+                        if let Some(scale) = report.laguerre_scale {
+                            let beta = op.enclosure.rho / scale;
+                            let a = super::Interval::new(
+                                super::mul_down(h, beta)?,
+                                super::mul_up(h, beta)?,
+                            )?;
+                            let terms = super::count_laguerre_series_terms(a, deg)?;
+                            exec_cost.coefficient_series_terms += terms;
+                        }
+                    }
+                }
+            }
+            match basis {
+                PolynomialBasis::Chebyshev => {
+                    let cert_ops = 5 * ((deg * (deg + 1)) / 2) as u64;
+                    exec_cost.certification_operations += cert_ops;
+                }
+                PolynomialBasis::Laguerre => {
+                    let mut env_ops = 0;
+                    if let Some(scale) = report
+                        .laguerre_scale
+                        .filter(|_| deg <= crate::laguerre_adjoint::LAGUERRE_ADJOINT_DEGREE_LIMIT)
+                    {
+                        let beta = op.enclosure.rho / scale;
+                        let extent = super::div_up(op.enclosure.rho, beta)?;
+                        let a = super::Interval::new(
+                            super::mul_down(h, beta)?,
+                            super::mul_up(h, beta)?,
+                        )?;
+                        let table = super::laguerre_coefficients(a, deg)?;
+                        for k in 0..super::JOINT_PHI_TERMS {
+                            let intervals: Vec<super::Interval> =
+                                table.iter().map(|row| row[k]).collect();
+                            let (_, _, ops) = caches.envelope.envelopes(
+                                &intervals,
+                                extent,
+                                crate::laguerre_adjoint::LAGUERRE_ADJOINT_DEPTH,
+                            )?;
+                            env_ops += ops;
+                        }
+                    }
+                    let cert_ops = env_ops + 5 * deg as u64;
+                    exec_cost.certification_operations += cert_ops;
+                }
+            }
+            let admission = route_admission(&report, total_budget);
+            if !matches!(admission, TotalErrorAdmission::Admitted { .. }) {
+                exec_cost.failed_executions += 1;
+            }
+            Ok((
+                RouteAttempt {
+                    basis,
+                    degree: Some(report.degree),
+                    laguerre_scale: report.laguerre_scale,
+                    admission,
+                    vector_products: delta.poly_vector_products,
+                    coefficient_setups: delta.poly_coefficient_setups,
+                    work: delta,
+                    report: Some(report),
+                },
+                exec_cost,
+            ))
+        }
+        Err(err) => {
+            exec_cost.failed_executions += 1;
+            Ok((
+                RouteAttempt {
+                    basis,
+                    degree: None,
+                    laguerre_scale: None,
+                    admission: TotalErrorAdmission::Rejected {
+                        reason: format!("{ROUTER_NOT_ADMITTED}: action failed: {err}"),
+                    },
+                    vector_products: delta.poly_vector_products,
+                    coefficient_setups: delta.poly_coefficient_setups,
+                    work: delta,
+                    report: None,
+                },
+                exec_cost,
+            ))
+        }
+    }
+}
+
+/// Route `sum_k phi_k(h A) w_k` by planning first and executing one backend (RVJ DAG node PY03).
+pub fn route_joint_phi_single(
+    op: &SymmetricNonpositiveOperator,
+    h: f64,
+    input: JointPhiInput<'_>,
+    total_budget: f64,
+    policy: RoutePolicy,
+    caches: Option<&mut RouterCaches>,
+    work: &mut WorkCounters,
+) -> CoreResult<SingleRoutedPhi> {
+    if !(total_budget.is_finite() && total_budget >= 0.0) {
+        return Err(invalid(format!(
+            "total budget {total_budget:e} outside [0, inf)"
+        )));
+    }
+    if !(h.is_finite() && h >= 0.0) {
+        return Err(invalid(format!("step h = {h:e} must be finite and >= 0")));
+    }
+    let n = op.dimension();
+    let finite_input = match input {
+        JointPhiInput::Distinct(vectors) => {
+            vectors.iter().all(|w| w.len() == n) && vectors.iter().flatten().all(|x| x.is_finite())
+        }
+        JointPhiInput::SameVector { vector, scales } => {
+            vector.len() == n && vector.iter().chain(&scales).all(|x| x.is_finite())
+        }
+    };
+    if !finite_input {
+        return Err(invalid(
+            "every input vector needs the operator dimension and finite entries",
+        ));
+    }
+    if total_budget == 0.0 {
+        return Ok(SingleRoutedPhi {
+            choice: RouteChoice::Fallback {
+                chebyshev_reason: format!(
+                    "{ROUTER_NOT_ADMITTED}: plan failed: truncation budget must be positive"
+                ),
+                laguerre_reason: format!(
+                    "{ROUTER_NOT_ADMITTED}: plan failed: truncation budget must be positive"
+                ),
+            },
+            policy,
+            total_budget: 0.0,
+            truncation_budget: 0.0,
+            chebyshev_plan: None,
+            laguerre_plan: None,
+            plan_cost: RouteCost::default(),
+            execution_costs: Vec::new(),
+            cost: RouteCost::default(),
+            fused: None,
+            bound: None,
+            report: None,
+            work: WorkCounters::default(),
+            first_attempt: None,
+            second_attempt: None,
+        });
+    }
+
+    let mut local_caches = RouterCaches::default();
+    let caches = match caches {
+        Some(c) => c,
+        None => &mut local_caches,
+    };
+
+    let truncation_budget = total_budget * ROUTER_TRUNCATION_FRACTION;
+    let mut plan_cost = RouteCost::default();
+
+    let cheb_plan_res = super::plan_joint_phi(
+        op,
+        h,
+        input,
+        PolynomialBasis::Chebyshev,
+        truncation_budget,
+        Some(caches),
+        &mut plan_cost,
+    );
+    let lag_plan_res = super::plan_joint_phi(
+        op,
+        h,
+        input,
+        PolynomialBasis::Laguerre,
+        truncation_budget,
+        Some(caches),
+        &mut plan_cost,
+    );
+
+    let preselect_laguerre = match policy {
+        RoutePolicy::ForceLaguerreFirst => true,
+        RoutePolicy::ChebyshevFirstPreflight => match (&cheb_plan_res, &lag_plan_res) {
+            (Ok(cheb), Ok(lag)) => {
+                if lag.predicted_vector_products >= cheb.predicted_vector_products
+                    || lag.degree > crate::laguerre_adjoint::LAGUERRE_ADJOINT_DEGREE_LIMIT
+                {
+                    false
+                } else {
+                    let key = super::CoefficientKey {
+                        basis: PolynomialBasis::Laguerre,
+                        operator_fingerprint: op.fingerprint.clone(),
+                        h_bits: h.to_bits(),
+                        degree: lag.degree,
+                        laguerre_scale_bits: lag.laguerre_scale.unwrap_or(0.0).to_bits(),
+                    };
+                    let (table, is_hit) = if let Some(t) = caches.coefficient.tables.get(&key) {
+                        (t.clone(), true)
+                    } else {
+                        let mut terms = 0;
+                        let t =
+                            super::laguerre_coefficients_counted(lag.a, lag.degree, &mut terms)?;
+                        plan_cost.coefficient_setups += 1;
+                        plan_cost.coefficient_series_terms += terms;
+                        caches.coefficient.tables.insert(key, t.clone());
+                        (t, false)
+                    };
+                    if is_hit {
+                        plan_cost.coefficient_cache_hits += 1;
+                    }
+                    let scales = match input {
+                        JointPhiInput::Distinct(_) => [1.0; super::JOINT_PHI_TERMS],
+                        JointPhiInput::SameVector { scales, .. } => scales,
+                    };
+                    let mut total_coeff_bound = 0.0;
+                    for k in 0..super::JOINT_PHI_TERMS {
+                        let source_norm = match input {
+                            JointPhiInput::Distinct(w) => super::norm_up_scaled(&w[k], 0)?,
+                            JointPhiInput::SameVector { vector, .. } => {
+                                super::norm_up_scaled(vector, 0)?
+                            }
+                        };
+                        let mut coeff_err = 0.0;
+                        for row in &table {
+                            let chosen_val = super::midpoint(row[k]);
+                            let radius = super::distance_up(chosen_val, row[k])?;
+                            coeff_err = super::add_up(
+                                coeff_err,
+                                super::mul_up(radius, lag.laguerre_norm)?,
+                            )?;
+                        }
+                        coeff_err = super::mul_up(coeff_err, source_norm)?;
+                        total_coeff_bound = super::add_up(
+                            total_coeff_bound,
+                            super::mul_up(scales[k].abs(), coeff_err)?,
+                        )?;
+                    }
+                    let vector_independent_terms =
+                        super::add_up(lag.truncation_bound, total_coeff_bound)?;
+                    vector_independent_terms <= total_budget
+                }
+            }
+            _ => false,
+        },
+    };
+
+    let first_basis = if preselect_laguerre {
+        PolynomialBasis::Laguerre
+    } else {
+        PolynomialBasis::Chebyshev
+    };
+    let second_basis = match first_basis {
+        PolynomialBasis::Chebyshev => PolynomialBasis::Laguerre,
+        PolynomialBasis::Laguerre => PolynomialBasis::Chebyshev,
+    };
+
+    let first_plan = match first_basis {
+        PolynomialBasis::Chebyshev => cheb_plan_res.as_ref().ok(),
+        PolynomialBasis::Laguerre => lag_plan_res.as_ref().ok(),
+    };
+    let mut execution_costs = Vec::new();
+    let (first_attempt, first_cost) = execute_one_basis(
+        op,
+        h,
+        input,
+        first_basis,
+        first_plan,
+        truncation_budget,
+        total_budget,
+        caches,
+        work,
+    )?;
+    execution_costs.push(first_cost);
+
+    let (choice, attempts) = if first_attempt.is_admitted() {
+        let ch = match first_basis {
+            PolynomialBasis::Chebyshev => RouteChoice::Chebyshev,
+            PolynomialBasis::Laguerre => RouteChoice::Laguerre,
+        };
+        (ch, vec![first_attempt])
+    } else {
+        let second_plan = match second_basis {
+            PolynomialBasis::Chebyshev => cheb_plan_res.as_ref().ok(),
+            PolynomialBasis::Laguerre => lag_plan_res.as_ref().ok(),
+        };
+        let (second_attempt, second_cost) = execute_one_basis(
+            op,
+            h,
+            input,
+            second_basis,
+            second_plan,
+            truncation_budget,
+            total_budget,
+            caches,
+            work,
+        )?;
+        execution_costs.push(second_cost);
+        let ch = if second_attempt.is_admitted() {
+            match second_basis {
+                PolynomialBasis::Chebyshev => RouteChoice::Chebyshev,
+                PolynomialBasis::Laguerre => RouteChoice::Laguerre,
+            }
+        } else {
+            let (cheb_reason, lag_reason) = match first_basis {
+                PolynomialBasis::Chebyshev => (
+                    first_attempt
+                        .rejection_reason()
+                        .unwrap_or_default()
+                        .to_string(),
+                    second_attempt
+                        .rejection_reason()
+                        .unwrap_or_default()
+                        .to_string(),
+                ),
+                PolynomialBasis::Laguerre => (
+                    second_attempt
+                        .rejection_reason()
+                        .unwrap_or_default()
+                        .to_string(),
+                    first_attempt
+                        .rejection_reason()
+                        .unwrap_or_default()
+                        .to_string(),
+                ),
+            };
+            RouteChoice::Fallback {
+                chebyshev_reason: cheb_reason,
+                laguerre_reason: lag_reason,
+            }
+        };
+        (ch, vec![first_attempt, second_attempt])
+    };
+
+    let chosen_attempt = match choice {
+        RouteChoice::Chebyshev => attempts
+            .iter()
+            .find(|a| a.basis() == PolynomialBasis::Chebyshev),
+        RouteChoice::Laguerre => attempts
+            .iter()
+            .find(|a| a.basis() == PolynomialBasis::Laguerre),
+        RouteChoice::Fallback { .. } => None,
+    };
+
+    let fused = chosen_attempt.and_then(|a| a.report().map(|r| r.fused.clone()));
+    let bound = chosen_attempt.and_then(RouteAttempt::bound);
+    let report = chosen_attempt.and_then(|a| a.report().cloned());
+    let total_work = attempts.iter().fold(WorkCounters::default(), |mut acc, a| {
+        acc.accumulate(a.work());
+        acc
+    });
+
+    let mut total_cost = plan_cost;
+    for c in &execution_costs {
+        total_cost.accumulate(*c);
+    }
+
+    Ok(SingleRoutedPhi {
+        choice,
+        policy,
+        total_budget,
+        truncation_budget,
+        chebyshev_plan: cheb_plan_res.ok(),
+        laguerre_plan: lag_plan_res.ok(),
+        plan_cost,
+        execution_costs,
+        cost: total_cost,
+        fused,
+        bound,
+        report,
+        work: total_work,
+        first_attempt: attempts.first().cloned(),
+        second_attempt: attempts.get(1).cloned(),
+    })
+}
