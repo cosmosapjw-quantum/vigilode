@@ -4,7 +4,40 @@ use rodas5p_krylov::{
     StagedGmresOutcome, StagedGmresWorkspace, StagedGuardAbort, StagedSolveTelemetry,
     TargetAttainment, VerifiedBound, solve_staged_gmres_observed,
 };
-use std::sync::atomic::{AtomicU64, Ordering};
+use std::{
+    alloc::{GlobalAlloc, Layout, System},
+    sync::atomic::{AtomicBool, AtomicU64, Ordering},
+};
+
+struct CountingAllocator;
+static TRACK: AtomicBool = AtomicBool::new(false);
+static ALLOCATIONS: AtomicU64 = AtomicU64::new(0);
+
+#[global_allocator]
+static ALLOCATOR: CountingAllocator = CountingAllocator;
+
+unsafe impl GlobalAlloc for CountingAllocator {
+    unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
+        let pointer = unsafe { System.alloc(layout) };
+        if !pointer.is_null() && TRACK.load(Ordering::Relaxed) {
+            ALLOCATIONS.fetch_add(1, Ordering::Relaxed);
+        }
+        pointer
+    }
+
+    unsafe fn dealloc(&self, pointer: *mut u8, layout: Layout) {
+        unsafe { System.dealloc(pointer, layout) };
+    }
+}
+
+fn allocation_count<T>(operation: impl FnOnce() -> T) -> (T, u64) {
+    TRACK.store(false, Ordering::SeqCst);
+    ALLOCATIONS.store(0, Ordering::Relaxed);
+    TRACK.store(true, Ordering::SeqCst);
+    let result = operation();
+    TRACK.store(false, Ordering::SeqCst);
+    (result, ALLOCATIONS.load(Ordering::Relaxed))
+}
 
 const PRODUCTION_RTOL: f64 = 1.0e-10;
 const PRODUCTION_ATOL: f64 = 1.0e-14;
@@ -649,4 +682,64 @@ fn s5_failures() {
         assert_eq!(report.failure, Some(StagedGmresFailure::BudgetExhausted));
         assert_eq!(tel.reason, StagedAcceptanceReason::Failed);
     }
+}
+
+// ---------------------------------------------------------------------------
+// VG-1: Zero-Allocation Contract Test for Warmed Staged Solve Observed
+// ---------------------------------------------------------------------------
+
+#[test]
+fn warmed_staged_solve_observed_allocates_zero() {
+    let n = 20;
+    let mut matrix = DenseMatrix::zeros(n, n);
+    for i in 0..n {
+        matrix[(i, i)] = 2.0;
+        if i + 1 < n {
+            matrix[(i, i + 1)] = 0.5;
+        }
+    }
+    let op = DenseOperator::new(matrix).unwrap();
+    let b = vec![1.0; n];
+    let config = StagedGmresConfig::new(n, 20, 1.0e-10, 0.0);
+    let mut ws = StagedGmresWorkspace::default();
+    let mut output = vec![0.0; n];
+    let mut counters = WorkCounters::default();
+    let requested_target = 1.0e-10;
+    let mut tel = init_tel(requested_target);
+
+    // Warm the workspace on this system without nu_guard
+    let report_warm = solve_staged_gmres_observed(
+        &op,
+        &b,
+        &config,
+        None,
+        &mut output,
+        &mut ws,
+        &mut counters,
+        requested_target,
+        &mut tel,
+    )
+    .expect("warmup solve succeeds");
+    assert_eq!(report_warm.outcome, StagedGmresOutcome::Converged);
+
+    // Count allocations on second solve
+    let (report, allocs) = allocation_count(|| {
+        solve_staged_gmres_observed(
+            &op,
+            &b,
+            &config,
+            None,
+            &mut output,
+            &mut ws,
+            &mut counters,
+            requested_target,
+            &mut tel,
+        )
+    });
+    let report = report.expect("observed solve succeeds");
+    assert_eq!(report.outcome, StagedGmresOutcome::Converged);
+    assert_eq!(
+        allocs, 0,
+        "warmed solve_staged_gmres_observed must perform 0 heap allocations"
+    );
 }

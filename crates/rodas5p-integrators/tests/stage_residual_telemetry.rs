@@ -629,6 +629,101 @@ fn report_to_json(r: &StagedGmresReport) -> Value {
     })
 }
 
+#[test]
+fn test_telemetry_off_and_reserved_capacity_contract() {
+    let cells = r_cells();
+    let cell = &cells[0]; // robertson-4e10 at 1e-5
+    let p = &cell.problem;
+    let linear = gmres_config(cell.budget);
+    let adaptive = p.adaptive(cell.rtol);
+    let schedule = p.schedule();
+
+    // (a) Telemetry off: stage_telemetry() is None throughout
+    {
+        let mut work = Rodas5pMfFastWorkspace::new(&p.problem, &linear).unwrap();
+        work.set_stage_telemetry(false);
+        assert!(work.stage_telemetry().is_none());
+        let _ = work
+            .integrate_observed_with_observer(
+                &p.problem,
+                p.t_span,
+                &p.y0,
+                &adaptive,
+                &schedule,
+                &mut |_, _, _, _, _| {},
+            )
+            .unwrap();
+        assert!(work.stage_telemetry().is_none());
+    }
+
+    // (b) Telemetry on with reserve_stage_telemetry: capacities do not grow during the run
+    {
+        let mut work = Rodas5pMfFastWorkspace::new(&p.problem, &linear).unwrap();
+        work.set_gmres_into(true);
+        let (res_attempts, res_stages, res_fallbacks) = (2000, 10000, 500);
+        work.reserve_stage_telemetry(res_attempts, res_stages, res_fallbacks);
+        assert!(work.stage_telemetry().is_some());
+
+        let initial_cap_attempts = work.stage_telemetry().unwrap().attempt_records.capacity();
+        let initial_cap_stages = work.stage_telemetry().unwrap().stage_records.capacity();
+        let initial_cap_fallbacks = work
+            .stage_telemetry()
+            .unwrap()
+            .fallback_evaluations
+            .capacity();
+
+        assert!(initial_cap_attempts >= res_attempts);
+        assert!(initial_cap_stages >= res_stages);
+        assert!(initial_cap_fallbacks >= res_fallbacks);
+
+        work.set_stage_target(cell.options).unwrap();
+        work.set_stage_target_span(p.t_span.1 - p.t_span.0);
+        work.clear_accepted_error();
+
+        let _ = work
+            .integrate_observed_with_observer(
+                &p.problem,
+                p.t_span,
+                &p.y0,
+                &adaptive,
+                &schedule,
+                &mut |_, _, _, _, _| {},
+            )
+            .unwrap();
+
+        let tel = work.stage_telemetry().unwrap();
+        assert!(!tel.attempt_records.is_empty());
+        assert!(!tel.stage_records.is_empty());
+        assert_eq!(tel.attempt_records.capacity(), initial_cap_attempts);
+        assert_eq!(tel.stage_records.capacity(), initial_cap_stages);
+        assert_eq!(tel.fallback_evaluations.capacity(), initial_cap_fallbacks);
+    }
+}
+
+#[test]
+fn test_workspace_clone_telemetry_isolation() {
+    let cells = r_cells();
+    let cell = &cells[0];
+    let p = &cell.problem;
+    let linear = gmres_config(cell.budget);
+    let mut work = Rodas5pMfFastWorkspace::new(&p.problem, &linear).unwrap();
+    work.set_stage_telemetry(true);
+
+    let cloned = work.clone();
+    assert!(cloned.stage_telemetry().is_some());
+    assert_eq!(cloned.stage_telemetry().unwrap().stage_records.len(), 0);
+    assert_eq!(cloned.stage_telemetry().unwrap().attempt_records.len(), 0);
+    assert_eq!(
+        cloned.stage_telemetry().unwrap().fallback_evaluations.len(),
+        0
+    );
+
+    let mut work_off = Rodas5pMfFastWorkspace::new(&p.problem, &linear).unwrap();
+    work_off.set_stage_telemetry(false);
+    let cloned_off = work_off.clone();
+    assert!(cloned_off.stage_telemetry().is_none());
+}
+
 struct CountingOp<T: LinearOperator> {
     inner: T,
     calls: AtomicU64,

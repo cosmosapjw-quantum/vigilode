@@ -582,6 +582,17 @@ pub struct StageResidualTelemetry {
     pub jvp_outside_attempts: u64,
 }
 
+impl StageResidualTelemetry {
+    pub fn clear(&mut self) {
+        self.stage_records.clear();
+        self.attempt_records.clear();
+        self.fallback_evaluations.clear();
+        self.committed_debit = 0.0;
+        self.work_all_attempts = AttemptWorkTotals::default();
+        self.jvp_outside_attempts = 0;
+    }
+}
+
 const _: fn() = || {
     fn assert_copy<T: Copy>() {}
     assert_copy::<StageResidualRecord>();
@@ -1323,10 +1334,13 @@ impl Clone for Rodas5pMfFastWorkspace {
             lgmres_into: self.lgmres_into.clone(),
             attempt_snapshot: AttemptLgmresSnapshot::default(),
             gmres_growth_events: 0,
-            operator_generation: self.operator_generation,
-            stage_telemetry: self.stage_telemetry.clone(),
-            current_attempt_index: self.current_attempt_index,
-            current_attempt_metric: self.current_attempt_metric,
+            operator_generation: 0,
+            stage_telemetry: self
+                .stage_telemetry
+                .as_ref()
+                .map(|_| StageResidualTelemetry::default()),
+            current_attempt_index: 0,
+            current_attempt_metric: ResidualMetric::UnscaledL2,
         }
     }
 }
@@ -1420,6 +1434,17 @@ impl Rodas5pMfFastWorkspace {
     /// Set opt-in stage and attempt residual telemetry (research node AS04).
     pub fn set_stage_telemetry(&mut self, on: bool) {
         self.stage_telemetry = on.then(StageResidualTelemetry::default);
+    }
+
+    /// Reserve capacity for opt-in stage and attempt residual telemetry.
+    /// Enables `stage_telemetry` if not already enabled.
+    pub fn reserve_stage_telemetry(&mut self, attempts: usize, stages: usize, fallbacks: usize) {
+        let telemetry = self
+            .stage_telemetry
+            .get_or_insert_with(StageResidualTelemetry::default);
+        telemetry.attempt_records.reserve(attempts);
+        telemetry.stage_records.reserve(stages);
+        telemetry.fallback_evaluations.reserve(fallbacks);
     }
 
     /// Read recorded stage and attempt residual telemetry, when enabled.
@@ -1614,11 +1639,11 @@ impl Rodas5pMfFastWorkspace {
             };
             let scale = &self.staged_scale;
             let report = if let Some(telemetry) = &mut self.stage_telemetry {
-                let mut recorded_eval = None;
+                let fallback_start = telemetry.fallback_evaluations.len();
                 let mut fallback = |z: &[f64], scaled_residual: &[f64]| {
                     let (acc, eval) =
                         production_rule.accepts_observed(z, scaled_residual, Some(scale));
-                    recorded_eval = Some(eval);
+                    telemetry.fallback_evaluations.push(eval);
                     acc
                 };
                 let mut tel = StagedSolveTelemetry {
@@ -1652,15 +1677,15 @@ impl Rodas5pMfFastWorkspace {
                     requested_target,
                     &mut tel,
                 )?;
-                if let Some(eval) = recorded_eval {
-                    tel.acceptance_vector_copies = eval.vector_copies();
-                    telemetry.fallback_evaluations.push(eval);
+                for eval in &telemetry.fallback_evaluations[fallback_start..] {
+                    tel.acceptance_vector_copies += eval.vector_copies();
                 }
-                let heuristic_debit = if report.accepted() {
-                    self.stage_tau_e[i] * (report.residual_norm / (n as f64).sqrt())
-                } else {
-                    0.0
-                };
+                let heuristic_debit =
+                    if report.accepted() && n > 0 && report.residual_norm.is_finite() {
+                        self.stage_tau_e[i] * (report.residual_norm / (n as f64).sqrt())
+                    } else {
+                        0.0
+                    };
                 telemetry.stage_records.push(StageResidualRecord {
                     attempt: self.current_attempt_index,
                     stage: i,
@@ -1702,7 +1727,11 @@ impl Rodas5pMfFastWorkspace {
             }
             if report.outcome == StagedGmresOutcome::FallbackAccepted {
                 // ||r||_WRMS = ||D r||_2 / sqrt(n) of the scaled residual.
-                let wrms = report.residual_norm / (n as f64).sqrt();
+                let wrms = if n > 0 && report.residual_norm.is_finite() {
+                    report.residual_norm / (n as f64).sqrt()
+                } else {
+                    0.0
+                };
                 self.attempt_charge += self.stage_tau_e[i] * wrms;
                 self.attempt_fallback_stages += 1;
             }
@@ -1714,10 +1743,10 @@ impl Rodas5pMfFastWorkspace {
             }
             let requested_target = config.atol.max(config.rtol * safe_l2(&self.stage_rhs));
             if let Some(telemetry) = &mut self.stage_telemetry {
-                let mut recorded_eval = None;
+                let fallback_start = telemetry.fallback_evaluations.len();
                 let mut fallback = |x: &[f64], residual: &[f64]| {
                     let (acc, eval) = production_rule.accepts_observed(x, residual, None);
-                    recorded_eval = Some(eval);
+                    telemetry.fallback_evaluations.push(eval);
                     acc
                 };
                 let mut tel = StagedSolveTelemetry {
@@ -1751,9 +1780,8 @@ impl Rodas5pMfFastWorkspace {
                     requested_target,
                     &mut tel,
                 )?;
-                if let Some(eval) = recorded_eval {
-                    tel.acceptance_vector_copies = eval.vector_copies();
-                    telemetry.fallback_evaluations.push(eval);
+                for eval in &telemetry.fallback_evaluations[fallback_start..] {
+                    tel.acceptance_vector_copies += eval.vector_copies();
                 }
                 telemetry.stage_records.push(StageResidualRecord {
                     attempt: self.current_attempt_index,
@@ -1987,7 +2015,7 @@ impl Rodas5pMfFastWorkspace {
         self.operator_generation = 0;
         self.current_attempt_index = 0;
         if let Some(tel) = self.stage_telemetry.as_mut() {
-            *tel = StageResidualTelemetry::default();
+            tel.clear();
         }
         let staged = self.stage_target.policy != StageTargetPolicy::Legacy;
         if staged {
