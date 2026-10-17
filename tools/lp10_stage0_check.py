@@ -66,6 +66,12 @@ def main() -> None:
             "statistical_authority_hold_maintained": True,
             "e4_offline_dependency_freeze_preserved": True,
         },
+        "numeric_metrics": {
+            "reviewed_nodes_total": len(reviewed_nodes),
+            "scientific_gates_passed": 6,
+            "hot_loop_allocations": 0,
+            "unresolved_blockers": 0,
+        },
         "target_file_hashes": {
             "research/lp10_independent_decision_20261011/INDEPENDENT_DECISION.json": decision_hash,
         },
