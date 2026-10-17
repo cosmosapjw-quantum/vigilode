@@ -300,6 +300,25 @@ impl EnvelopeKey {
             max_depth: LAGUERRE_ADJOINT_MAX_DEPTH,
         }
     }
+
+    /// Canonical SHA-256 digest of this key: hashes `proof_version:coefficients_sha256:extent_bits:depth`.
+    pub fn canonical_digest(&self) -> String {
+        let text = format!(
+            "{}:{}:{:016x}:{}",
+            self.proof_version, self.coefficients_sha256, self.extent_bits, self.depth as u32
+        );
+        crate::sha256_hex(text.as_bytes())
+    }
+
+    /// Canonical SHA-256 digest directly from stored binary64 coefficients, extent, and depth.
+    pub fn digest_from_f64(stored: &[f64], extent: f64, depth: usize) -> CoreResult<String> {
+        let intervals = stored
+            .iter()
+            .map(|&c| Interval::point(c))
+            .collect::<CoreResult<Vec<_>>>()?;
+        let key = Self::new(&intervals, extent, depth, LAGUERRE_ADJOINT_PROOF_VERSION);
+        Ok(key.canonical_digest())
+    }
 }
 
 /// A cache of envelopes keyed by [`EnvelopeKey`], with hit and miss counts.
@@ -361,6 +380,31 @@ pub fn laguerre_adjoint_recurrence_bound(
         total = add_up(total, mul_up(*beta, *eps)?)?;
     }
     Ok(total)
+}
+
+/// Recurrence bound, the envelope vector `beta_0..=beta_m`, and the envelope key.
+pub fn laguerre_adjoint_recurrence_with_envelopes(
+    stored: &[f64],
+    extent: f64,
+    local: &[f64],
+    depth: usize,
+) -> CoreResult<(f64, Vec<f64>, EnvelopeKey)> {
+    if local.len() + 1 != stored.len() || !local.iter().all(|e| e.is_finite() && *e >= 0.0) {
+        return Err(CoreError::InvalidInput(
+            "LAGUERRE_ADJOINT_UNSUPPORTED: one finite nonnegative residual per step".into(),
+        ));
+    }
+    let intervals = stored
+        .iter()
+        .map(|&c| Interval::point(c))
+        .collect::<CoreResult<Vec<_>>>()?;
+    let key = EnvelopeKey::new(&intervals, extent, depth, LAGUERRE_ADJOINT_PROOF_VERSION);
+    let envelopes = laguerre_adjoint_envelopes(stored, extent, depth)?;
+    let mut total = 0.0;
+    for (beta, eps) in envelopes[1..].iter().zip(local) {
+        total = add_up(total, mul_up(*beta, *eps)?)?;
+    }
+    Ok((total, envelopes, key))
 }
 
 #[cfg(test)]

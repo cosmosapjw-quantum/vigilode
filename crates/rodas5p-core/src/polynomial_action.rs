@@ -535,6 +535,31 @@ impl SymmetricNonpositiveOperator {
         ))
     }
 
+    /// An operator with a declared (unverified) enclosure.
+    pub fn with_declared_enclosure(
+        matrix: DenseMatrix,
+        lambda: f64,
+        rho: f64,
+        source: impl Into<String>,
+    ) -> CoreResult<Self> {
+        Self::check_matrix(&matrix)?;
+        if !(lambda.is_finite() && rho.is_finite() && 0.0 <= lambda && lambda <= rho) {
+            return Err(unsupported(format!(
+                "enclosure needs 0 <= lambda <= rho, got [{lambda:e}, {rho:e}]"
+            )));
+        }
+        Ok(Self::with_enclosure(
+            matrix,
+            SpectralEnclosure {
+                lambda,
+                rho,
+                evidence: EnclosureEvidence::Declared {
+                    source: source.into(),
+                },
+            },
+        ))
+    }
+
     /// The enclosure from the Gershgorin discs; an error when they do not
     /// show `A <= 0` (no spectral witness).
     pub fn gershgorin(matrix: DenseMatrix) -> CoreResult<Self> {
@@ -931,6 +956,149 @@ impl JointPhiReport {
             condition_proxy: self.condition_proxy,
         }
     }
+}
+
+pub const LAGUERRE_COMPONENT_EXPORT_SCHEMA: &str = "vigilode-py01-laguerre-component-export-v1";
+
+fn f64_to_hex(v: f64) -> String {
+    format!("{:016x}", v.to_bits())
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct EnclosureIdentity {
+    pub lambda: String,
+    pub rho: String,
+    pub evidence: String,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct LaguerreExportIdentity {
+    pub basis: String,
+    pub branch: String,
+    pub execution: String,
+    pub input_kind: String,
+    pub degree: usize,
+    pub laguerre_scale: String,
+    pub beta: String,
+    pub laguerre_extent: String,
+    pub h: String,
+    pub truncation_budget: String,
+    pub enclosure: EnclosureIdentity,
+    pub operator_fingerprint: String,
+    pub normalization_shift: i64,
+    pub adjoint_proof_version: String,
+    pub adjoint_depth: usize,
+    pub envelope_key_digests: [String; JOINT_PHI_TERMS],
+    pub identity_sha256: String,
+}
+
+impl LaguerreExportIdentity {
+    pub fn compute_sha256(&self) -> String {
+        Self::canonical_sha256(
+            &self.basis,
+            &self.branch,
+            &self.execution,
+            &self.input_kind,
+            self.degree,
+            &self.laguerre_scale,
+            &self.beta,
+            &self.laguerre_extent,
+            &self.h,
+            &self.truncation_budget,
+            &self.enclosure.lambda,
+            &self.enclosure.rho,
+            &self.enclosure.evidence,
+            &self.operator_fingerprint,
+            self.normalization_shift,
+            &self.adjoint_proof_version,
+            self.adjoint_depth,
+            &self.envelope_key_digests,
+        )
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    pub fn canonical_sha256(
+        basis: &str,
+        branch: &str,
+        execution: &str,
+        input_kind: &str,
+        degree: usize,
+        laguerre_scale: &str,
+        beta: &str,
+        laguerre_extent: &str,
+        h: &str,
+        truncation_budget: &str,
+        lambda: &str,
+        rho: &str,
+        evidence: &str,
+        operator_fingerprint: &str,
+        normalization_shift: i64,
+        adjoint_proof_version: &str,
+        adjoint_depth: usize,
+        envelope_key_digests: &[String; JOINT_PHI_TERMS],
+    ) -> String {
+        let canonical = format!(
+            "{basis}:{branch}:{execution}:{input_kind}:{degree}:{laguerre_scale}:{beta}:{laguerre_extent}:{h}:{truncation_budget}:{lambda}:{rho}:{evidence}:{operator_fingerprint}:{normalization_shift}:{adjoint_proof_version}:{adjoint_depth}:{}",
+            envelope_key_digests.join(",")
+        );
+        crate::sha256_hex(canonical.as_bytes())
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct LaguerreColumnTermExport {
+    pub column: usize,
+    pub identity_sha256: String,
+    pub truncation: String,
+    pub coefficient: String,
+    pub recurrence_adjoint: String,
+    pub summation: String,
+    pub normalization: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub recurrence_majorant: Option<String>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct LaguerreAssemblyExport {
+    pub identity_sha256: String,
+    pub fused_summation: String,
+    pub total_upper: String,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct LaguerreAdjointColumnExport {
+    pub column: usize,
+    pub identity_sha256: String,
+    pub abs_scale: String,
+    pub coefficients: Vec<String>,
+    pub envelopes: Vec<String>,
+    pub local_residuals: Vec<String>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct LaguerreComponentExport {
+    pub schema: String,
+    pub identity: LaguerreExportIdentity,
+    pub columns: [LaguerreColumnTermExport; JOINT_PHI_TERMS],
+    pub assembly: LaguerreAssemblyExport,
+    pub adjoint_columns: [LaguerreAdjointColumnExport; JOINT_PHI_TERMS],
+}
+
+#[derive(Clone, Debug)]
+struct LaguerreAdjointColumnInternal {
+    stored: Vec<f64>,
+    envelopes: Vec<f64>,
+    key_digest: String,
+    local: Vec<f64>,
+    abs_scale: f64,
+}
+
+#[derive(Clone, Debug)]
+struct LaguerreExportIntermediate {
+    beta: f64,
+    laguerre_extent: f64,
+    laguerre_scale: f64,
+    columns: [LaguerreAdjointColumnInternal; JOINT_PHI_TERMS],
 }
 
 /// Upper bound on the Euclidean norm, formed on a power-of-two scale
@@ -1413,6 +1581,168 @@ pub fn joint_phi_action_laguerre_scales(
     )
 }
 
+/// Opt-in component-level error decomposition of the Laguerre joint phi action
+/// (research node `research/py01_laguerre_component_export_20261011`).
+///
+/// Refuses with [`CoreError::InvalidInput`] if:
+/// - the spectral enclosure is declared (unverified),
+/// - the degree exceeds [`crate::laguerre_adjoint::LAGUERRE_ADJOINT_DEGREE_LIMIT`],
+/// - or the action runs on the scalar branch where `laguerre_adjoint_total` is `None`.
+///
+/// The returned [`JointPhiReport`] and [`WorkCounters`] are bitwise identical to
+/// `joint_phi_action(op, h, input, PolynomialBasis::Laguerre, budget, None, work)`.
+pub fn joint_phi_action_laguerre_components(
+    op: &SymmetricNonpositiveOperator,
+    h: f64,
+    input: JointPhiInput<'_>,
+    budget: f64,
+    work: &mut WorkCounters,
+) -> CoreResult<(JointPhiReport, LaguerreComponentExport)> {
+    if matches!(op.enclosure.evidence, EnclosureEvidence::Declared { .. }) {
+        return Err(CoreError::InvalidInput(
+            "LAGUERRE_COMPONENTS_UNSUPPORTED: declared enclosure is not verified".into(),
+        ));
+    }
+    let mut intermediate: Option<LaguerreExportIntermediate> = None;
+    let report = joint_phi_action_impl_with_export(
+        op,
+        h,
+        input,
+        PolynomialBasis::Laguerre,
+        budget,
+        None,
+        work,
+        true,
+        &LAGUERRE_SCALES,
+        Some(&mut intermediate),
+    )?;
+
+    if report.branch == "scalar" {
+        return Err(CoreError::InvalidInput(
+            "LAGUERRE_COMPONENTS_UNSUPPORTED: scalar branch has no adjoint total".into(),
+        ));
+    }
+    if report.degree > crate::laguerre_adjoint::LAGUERRE_ADJOINT_DEGREE_LIMIT {
+        return Err(CoreError::InvalidInput(format!(
+            "LAGUERRE_COMPONENTS_UNSUPPORTED: degree {} exceeds adjoint limit {}",
+            report.degree,
+            crate::laguerre_adjoint::LAGUERRE_ADJOINT_DEGREE_LIMIT,
+        )));
+    }
+    let total_upper = match report.laguerre_adjoint_total {
+        Some(t) => t,
+        None => {
+            return Err(CoreError::InvalidInput(
+                "LAGUERRE_COMPONENTS_UNSUPPORTED: missing laguerre_adjoint_total".into(),
+            ));
+        }
+    };
+    let intermediate = intermediate.ok_or_else(|| {
+        CoreError::InvalidInput(
+            "LAGUERRE_COMPONENTS_UNSUPPORTED: intermediate recurrence data was not produced".into(),
+        )
+    })?;
+
+    let input_kind = match input {
+        JointPhiInput::Distinct(_) => "distinct",
+        JointPhiInput::SameVector { .. } => "same-vector",
+    };
+    let evidence_str = match &op.enclosure.evidence {
+        EnclosureEvidence::Gershgorin => "Gershgorin",
+        EnclosureEvidence::Declared { source } => source.as_str(),
+    };
+    let envelope_key_digests: [String; JOINT_PHI_TERMS] =
+        std::array::from_fn(|k| intermediate.columns[k].key_digest.clone());
+
+    let identity_sha256 = LaguerreExportIdentity::canonical_sha256(
+        "Laguerre",
+        &report.branch,
+        &report.execution,
+        input_kind,
+        report.degree,
+        &f64_to_hex(intermediate.laguerre_scale),
+        &f64_to_hex(intermediate.beta),
+        &f64_to_hex(intermediate.laguerre_extent),
+        &f64_to_hex(h),
+        &f64_to_hex(budget),
+        &f64_to_hex(op.enclosure.lambda),
+        &f64_to_hex(op.enclosure.rho),
+        evidence_str,
+        op.fingerprint(),
+        report.normalization_shift,
+        crate::laguerre_adjoint::LAGUERRE_ADJOINT_PROOF_VERSION,
+        crate::laguerre_adjoint::LAGUERRE_ADJOINT_DEPTH,
+        &envelope_key_digests,
+    );
+
+    let identity = LaguerreExportIdentity {
+        basis: "Laguerre".into(),
+        branch: report.branch.clone(),
+        execution: report.execution.clone(),
+        input_kind: input_kind.into(),
+        degree: report.degree,
+        laguerre_scale: f64_to_hex(intermediate.laguerre_scale),
+        beta: f64_to_hex(intermediate.beta),
+        laguerre_extent: f64_to_hex(intermediate.laguerre_extent),
+        h: f64_to_hex(h),
+        truncation_budget: f64_to_hex(budget),
+        enclosure: EnclosureIdentity {
+            lambda: f64_to_hex(op.enclosure.lambda),
+            rho: f64_to_hex(op.enclosure.rho),
+            evidence: evidence_str.into(),
+        },
+        operator_fingerprint: op.fingerprint().into(),
+        normalization_shift: report.normalization_shift,
+        adjoint_proof_version: crate::laguerre_adjoint::LAGUERRE_ADJOINT_PROOF_VERSION.into(),
+        adjoint_depth: crate::laguerre_adjoint::LAGUERRE_ADJOINT_DEPTH,
+        envelope_key_digests,
+        identity_sha256: identity_sha256.clone(),
+    };
+
+    let columns: [LaguerreColumnTermExport; JOINT_PHI_TERMS] = std::array::from_fn(|k| {
+        let err = &report.column_errors[k];
+        LaguerreColumnTermExport {
+            column: k,
+            identity_sha256: identity_sha256.clone(),
+            truncation: f64_to_hex(err.truncation),
+            coefficient: f64_to_hex(err.coefficient),
+            recurrence_adjoint: f64_to_hex(err.recurrence_adjoint.unwrap_or(0.0)),
+            summation: f64_to_hex(err.summation),
+            normalization: f64_to_hex(err.normalization),
+            recurrence_majorant: err.recurrence_majorant.map(f64_to_hex),
+        }
+    });
+
+    let assembly = LaguerreAssemblyExport {
+        identity_sha256: identity_sha256.clone(),
+        fused_summation: f64_to_hex(report.fused_summation),
+        total_upper: f64_to_hex(total_upper),
+    };
+
+    let adjoint_columns: [LaguerreAdjointColumnExport; JOINT_PHI_TERMS] =
+        std::array::from_fn(|k| {
+            let col = &intermediate.columns[k];
+            LaguerreAdjointColumnExport {
+                column: k,
+                identity_sha256: identity_sha256.clone(),
+                abs_scale: f64_to_hex(col.abs_scale),
+                coefficients: col.stored.iter().map(|&c| f64_to_hex(c)).collect(),
+                envelopes: col.envelopes.iter().map(|&b| f64_to_hex(b)).collect(),
+                local_residuals: col.local.iter().map(|&eps| f64_to_hex(eps)).collect(),
+            }
+        });
+
+    let export = LaguerreComponentExport {
+        schema: LAGUERRE_COMPONENT_EXPORT_SCHEMA.into(),
+        identity,
+        columns,
+        assembly,
+        adjoint_columns,
+    };
+
+    Ok((report, export))
+}
+
 /// The continuous Laguerre scale of re-audit R4 (R4-POLY-DEV-05) for a
 /// fixed degree `m`: the exact-arithmetic tail `T(beta) = W exp(rho / (2
 /// beta)) [h beta / (1 + h beta)]^(m+1)` has `d log T / d beta = -rho / (2
@@ -1487,6 +1817,33 @@ fn joint_phi_action_impl(
     bounds: bool,
     laguerre_scales: &[f64],
 ) -> CoreResult<JointPhiReport> {
+    joint_phi_action_impl_with_export(
+        op,
+        h,
+        input,
+        basis,
+        budget,
+        cache,
+        work,
+        bounds,
+        laguerre_scales,
+        None,
+    )
+}
+
+#[allow(clippy::too_many_arguments)]
+fn joint_phi_action_impl_with_export(
+    op: &SymmetricNonpositiveOperator,
+    h: f64,
+    input: JointPhiInput<'_>,
+    basis: PolynomialBasis,
+    budget: f64,
+    cache: Option<&mut CoefficientCache>,
+    work: &mut WorkCounters,
+    bounds: bool,
+    laguerre_scales: &[f64],
+    export_intermediate: Option<&mut Option<LaguerreExportIntermediate>>,
+) -> CoreResult<JointPhiReport> {
     let entries: Vec<f64> = match input {
         JointPhiInput::Distinct(vectors) => vectors.iter().flatten().copied().collect(),
         JointPhiInput::SameVector { vector, .. } => vector.to_vec(),
@@ -1511,6 +1868,7 @@ fn joint_phi_action_impl(
             work,
             bounds,
             laguerre_scales,
+            export_intermediate,
         );
     }
     let range = |what: &str| {
@@ -1578,6 +1936,7 @@ fn joint_phi_action_impl(
         work,
         bounds,
         laguerre_scales,
+        export_intermediate,
     )?;
     // Scale back; count entries rounded into the subnormal range.
     let unscale = |values: &mut Vec<f64>| -> CoreResult<usize> {
@@ -1685,6 +2044,7 @@ fn joint_phi_action_core(
     work: &mut WorkCounters,
     bounds: bool,
     laguerre_scales: &[f64],
+    mut export_intermediate: Option<&mut Option<LaguerreExportIntermediate>>,
 ) -> CoreResult<JointPhiReport> {
     let n = op.dimension();
     if !(h.is_finite() && h >= 0.0) {
@@ -1915,13 +2275,48 @@ fn joint_phi_action_core(
                     if degree <= crate::laguerre_adjoint::LAGUERRE_ADJOINT_DEGREE_LIMIT =>
                 {
                     let stored = chosen.iter().map(|row| row[k]).collect::<Vec<_>>();
-                    let bound = crate::laguerre_adjoint::laguerre_adjoint_recurrence_bound(
-                        &stored,
-                        transform.laguerre_extent,
-                        &local[column],
-                        crate::laguerre_adjoint::LAGUERRE_ADJOINT_DEPTH,
-                    )?;
-                    Some(mul_up(scales[k].abs(), bound)?)
+                    if let Some(ref mut coll) = export_intermediate {
+                        let (bound, envs, key) =
+                            crate::laguerre_adjoint::laguerre_adjoint_recurrence_with_envelopes(
+                                &stored,
+                                transform.laguerre_extent,
+                                &local[column],
+                                crate::laguerre_adjoint::LAGUERRE_ADJOINT_DEPTH,
+                            )?;
+                        let key_digest = key.canonical_digest();
+                        if coll.is_none() {
+                            **coll = Some(LaguerreExportIntermediate {
+                                beta: transform.beta,
+                                laguerre_extent: transform.laguerre_extent,
+                                laguerre_scale: transform.laguerre_scale.unwrap_or(1.0),
+                                columns: std::array::from_fn(|_| LaguerreAdjointColumnInternal {
+                                    stored: Vec::new(),
+                                    envelopes: Vec::new(),
+                                    key_digest: String::new(),
+                                    local: Vec::new(),
+                                    abs_scale: 0.0,
+                                }),
+                            });
+                        }
+                        if let Some(ref mut data) = **coll {
+                            data.columns[k] = LaguerreAdjointColumnInternal {
+                                stored,
+                                envelopes: envs,
+                                key_digest,
+                                local: local[column].clone(),
+                                abs_scale: scales[k].abs(),
+                            };
+                        }
+                        Some(mul_up(scales[k].abs(), bound)?)
+                    } else {
+                        let bound = crate::laguerre_adjoint::laguerre_adjoint_recurrence_bound(
+                            &stored,
+                            transform.laguerre_extent,
+                            &local[column],
+                            crate::laguerre_adjoint::LAGUERRE_ADJOINT_DEPTH,
+                        )?;
+                        Some(mul_up(scales[k].abs(), bound)?)
+                    }
                 }
                 _ => None,
             };

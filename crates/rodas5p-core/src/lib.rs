@@ -46,6 +46,11 @@ pub use operator::{
     Preconditioner, ShiftedOperator, apply_counted, apply_jvp_counted, apply_preconditioner,
     apply_rows_counted, exact_krylov_system_identity,
 };
+pub use polynomial_action::{
+    EnclosureIdentity, LaguerreAdjointColumnExport, LaguerreAssemblyExport,
+    LaguerreColumnTermExport, LaguerreComponentExport, LaguerreExportIdentity,
+    joint_phi_action_laguerre_components,
+};
 pub use residual_gain::{
     AssemblyUncertainty, DeclaredStructure, EstimateSource, EstimatedCorrection, FrozenMetric,
     GainEvidence, LinearTargetId, OperatorKind, ResidualGainWitness, VerifiedCorrection,
