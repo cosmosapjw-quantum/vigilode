@@ -873,6 +873,103 @@ def validate_alg05(base_path: Path, runs_path: Path, native_path: Path,
     return Evidence("ALG05", docs, digests, paths)
 
 
+# -------------------------------------------------------------------------------------------- PY05
+PY05_NODE = "research/py05_leja_total_certificate_20261011"
+PY05_STAGE0_SCHEMA = "vigilode-py05-stage0-cases-v1"
+PY05_STAGE1_SCHEMA = "vigilode-py05-stage1-cases-v1"
+PY05_RUNS_SCHEMA = "vigilode-py05-runs-v1"
+PY05_PROFILE_SCHEMA = "vigilode-py05-profile-v1"
+PY05_ARMS = frozenset(("leja-cert", "cheb-cert", "leja-est", "router"))
+PY05_CACHE_STATES = frozenset(("cold", "warm"))
+
+
+def validate_py05(cases_path: Path, runs_path: Path | None = None,
+                  profile_path: Path | None = None) -> Evidence:
+    """PY05: Newton-Leja total certificate evidence validation."""
+    specs: list[tuple[str, Path | None, str | None]] = [("cases", cases_path, None)]
+    if runs_path is not None:
+        specs.append(("runs", runs_path, None))
+    if profile_path is not None:
+        specs.append(("profile", profile_path, None))
+    docs, digests, paths = _load_all(specs)
+    cases = docs["cases"]
+    c = _Checks()
+    if not c.dict_("cases", cases):
+        c.done()
+
+    cases_schema = cases.get("schema")
+    if cases_schema not in (PY05_STAGE0_SCHEMA, PY05_STAGE1_SCHEMA):
+        c.fail("cases.schema", f"expected {PY05_STAGE0_SCHEMA!r} or {PY05_STAGE1_SCHEMA!r}, got {cases_schema!r}")
+    c.equal("cases.node", cases.get("node"), PY05_NODE)
+
+    if cases_schema == PY05_STAGE0_SCHEMA:
+        if c.list_("cases.cases", cases.get("cases"), nonempty=True):
+            if len(cases["cases"]) != 60:
+                c.fail("cases.cases", f"expected 60 stage0 fixtures, got {len(cases['cases'])}")
+            for i, fixture in enumerate(cases["cases"]):
+                p = f"cases.cases[{i}]"
+                c.str_(f"{p}.label", fixture.get("label"))
+                c.int_(f"{p}.n", fixture.get("n"), minimum=1)
+                c.str_(f"{p}.h_hex", fixture.get("h_hex"))
+                c.str_(f"{p}.tolerance_hex", fixture.get("tolerance_hex"))
+    elif cases_schema == PY05_STAGE1_SCHEMA:
+        if c.list_("cases.cells", cases.get("cells"), nonempty=True):
+            if len(cases["cells"]) != 40:
+                c.fail("cases.cells", f"expected 40 registered cells, got {len(cases['cells'])}")
+            cell_ids = set()
+            for i, cell in enumerate(cases["cells"]):
+                p = f"cases.cells[{i}]"
+                cid = cell.get("cell_id")
+                if c.str_(f"{p}.cell_id", cid):
+                    if cid in cell_ids:
+                        c.fail(f"{p}.cell_id", f"duplicate cell_id {cid!r}")
+                    cell_ids.add(cid)
+                if cell.get("n") not in (8, 32):
+                    c.fail(f"{p}.n", f"expected n in (8, 32), got {cell.get('n')}")
+                if cell.get("hrho") not in (10, 20, 40, 80, 160):
+                    c.fail(f"{p}.hrho", f"expected hrho in (10, 20, 40, 80, 160), got {cell.get('hrho')}")
+                if cell.get("input") not in ("distinct", "same"):
+                    c.fail(f"{p}.input", f"expected input in ('distinct', 'same'), got {cell.get('input')}")
+
+    if "runs" in docs:
+        runs = docs["runs"]
+        if c.dict_("runs", runs):
+            c.equal("runs.schema", runs.get("schema"), PY05_RUNS_SCHEMA)
+            c.equal("runs.node", runs.get("node"), PY05_NODE)
+            c.str_("runs.source_commit", runs.get("source_commit"))
+            c.bool_("runs.tree_clean", runs.get("tree_clean"))
+            if c.list_("runs.rows", runs.get("rows"), nonempty=True):
+                if len(runs["rows"]) != 320:
+                    c.fail("runs.rows", f"expected 320 rows (40 cells * 4 arms * 2 cache states), got {len(runs['rows'])}")
+                row_keys = set()
+                for i, r in enumerate(runs["rows"]):
+                    p = f"runs.rows[{i}]"
+                    cid = r.get("cell_id")
+                    arm = r.get("arm")
+                    cs = r.get("cache_state")
+                    key = (cid, arm, cs)
+                    if key in row_keys:
+                        c.fail(p, f"duplicate row key {key!r}")
+                    row_keys.add(key)
+                    if arm not in PY05_ARMS:
+                        c.fail(f"{p}.arm", f"unregistered arm {arm!r}")
+                    if cs not in PY05_CACHE_STATES:
+                        c.fail(f"{p}.cache_state", f"unregistered cache_state {cs!r}")
+                    c.bool_(f"{p}.admitted", r.get("admitted"))
+                    c.str_(f"{p}.status", r.get("status"))
+                    c.int_(f"{p}.vector_products", r.get("vector_products"), minimum=0)
+                    c.int_(f"{p}.complete_cost", r.get("complete_cost"), minimum=0)
+
+    if "profile" in docs:
+        profile = docs["profile"]
+        if c.dict_("profile", profile):
+            c.equal("profile.schema", profile.get("schema"), PY05_PROFILE_SCHEMA)
+            c.equal("profile.node", profile.get("node"), PY05_NODE)
+
+    c.done()
+    return Evidence("py05", docs, digests, paths)
+
+
 # ------------------------------------------------------------------------------------- INVALID output
 def invalid_report(checker_schema: str, error: ValidationError, inputs: Mapping[str, Path | None]) -> dict:
     """The checker output for rejected evidence: no gate is evaluated, so no gate result is reported."""

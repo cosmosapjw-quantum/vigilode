@@ -37,6 +37,13 @@ pub use directed::{
 };
 pub use error::{CoreError, CoreResult};
 pub use hash::{sha256_f64_slice_bytes, sha256_hex};
+pub use leja_action::{
+    CertifiedLejaCoeffCache, CertifiedLejaReport, LEJA_CERTIFIED_SCHEMA, LEJA_DEGREE_CAP,
+    LEJA_RANGE_LIMIT, LEJA_SCHEMA, LEJA_TOTAL_NOT_CERTIFIED, LejaReport, leja_divided_differences,
+    leja_divided_differences_certified, leja_node_bounds, leja_node_polynomial_bound,
+    leja_phi_action, leja_phi_action_capped, leja_phi_action_certified,
+    leja_phi_action_certified_capped, leja_phi_action_certified_with_cache, leja_points,
+};
 pub use matrix::{DenseMatrix, LuFactorization, direct_solve, inverse};
 pub use matrix_functions::{
     DensePhiCombinationReport, dense_fused_phi_action, dense_fused_phi_action_report,

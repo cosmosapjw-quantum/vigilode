@@ -72,17 +72,22 @@
 //! divided-difference table is one `poly_coefficient_setups` (also in the
 //! scalar branch). No other counter changes.
 
+use std::collections::HashMap;
 use std::sync::OnceLock;
 
 use serde::Serialize;
 
 use crate::{
     CoreError, CoreResult, DenseOperator, LinearOperator, WorkCounters,
-    directed::{mul_down, mul_up},
+    directed::{
+        Interval, add_down, add_up, div_down, div_up, exp_interval, mul_down, mul_up, sub_down,
+        sub_up, sum_up,
+    },
     polynomial_action::{
         EnclosureEvidence, JOINT_PHI_TERMS, JointPhiInput, SpectralEnclosure,
         SymmetricNonpositiveOperator, TotalErrorStatus,
     },
+    safe_l2,
 };
 
 pub const LEJA_SCHEMA: &str = "vigilode-leja-phi-action-v1";
@@ -501,6 +506,680 @@ pub fn leja_phi_action_capped(
         vector_products,
         block_products,
         coefficient_setups,
+    })
+}
+
+// -----------------------------------------------------------------------------
+// Certified Leja Phi Action (RVJ DAG node PY05)
+// -----------------------------------------------------------------------------
+
+pub const LEJA_CERTIFIED_SCHEMA: &str = "vigilode-leja-certified-v1";
+
+/// The precomputed node-polynomial bounds `M_{m+1} >= max_{xi in [-2, 2]} prod_{j=0}^m |xi - xi_j|`
+/// for all degrees `m = 0 ..= LEJA_DEGREE_CAP`.
+pub fn leja_node_bounds() -> &'static [f64] {
+    static BOUNDS: OnceLock<Vec<f64>> = OnceLock::new();
+    BOUNDS.get_or_init(|| {
+        let xi = leja_points();
+        (0..=LEJA_DEGREE_CAP)
+            .map(|m| leja_node_polynomial_bound(m, xi))
+            .collect()
+    })
+}
+
+/// Computes an outward interval upper bound on `max_{xi in [-2, 2]} prod_{j=0}^m |xi - xi_j|`
+/// by evaluating over uniform subintervals of `[-2, 2]` using directed interval arithmetic.
+///
+/// Guaranteed zero heap allocations on the evaluation path.
+pub fn leja_node_polynomial_bound(m: usize, xi: &[f64]) -> f64 {
+    if m >= xi.len() {
+        return f64::INFINITY;
+    }
+    const SUBDIVISIONS: usize = 128;
+    const H_SUB: f64 = 4.0 / (SUBDIVISIONS as f64);
+    let mut max_val = 0.0_f64;
+
+    for p in 0..SUBDIVISIONS {
+        let lo = -2.0 + (p as f64) * H_SUB;
+        let hi = -2.0 + ((p + 1) as f64) * H_SUB;
+        let int_p = Interval::new(lo, hi).unwrap_or_else(|_| Interval::point(0.0).unwrap());
+
+        let mut acc = Interval::point(1.0).unwrap();
+        for &node in &xi[..=m] {
+            let diff = Interval::new(
+                sub_down(int_p.lo, node).unwrap_or(f64::NEG_INFINITY),
+                sub_up(int_p.hi, node).unwrap_or(f64::INFINITY),
+            )
+            .unwrap_or_else(|_| Interval::point(0.0).unwrap());
+            acc = acc
+                .mul(diff)
+                .unwrap_or_else(|_| Interval::point(f64::INFINITY).unwrap());
+        }
+        let mag = acc.mag();
+        if mag > max_val {
+            max_val = mag;
+        }
+    }
+    max_val
+}
+
+/// Certified Taylor series for lower bidiagonal matrix exponential columns,
+/// returning lower and upper bounds componentwise: `(columns_lo, columns_hi)`.
+#[allow(clippy::type_complexity)]
+fn exp_bidiagonal_columns_certified(
+    diagonal: &[f64],
+    subdiagonal: &[f64],
+) -> CoreResult<(Vec<Vec<f64>>, Vec<Vec<f64>>)> {
+    let size = diagonal.len();
+    debug_assert_eq!(subdiagonal.len() + 1, size);
+    if diagonal
+        .iter()
+        .chain(subdiagonal)
+        .any(|x| !(x.is_finite() && *x >= 0.0))
+    {
+        return Err(unsupported(
+            "divided-difference matrix needs a finite nonnegative diagonal and subdiagonal",
+        ));
+    }
+    let max_entry = diagonal.iter().fold(0.0_f64, |m, x| m.max(*x))
+        + subdiagonal.iter().fold(0.0_f64, |m, x| m.max(*x));
+    let min_terms = (size as f64).max(2.0 * max_entry);
+    let mut columns_lo = Vec::with_capacity(ZERO_NODES + 1);
+    let mut columns_hi = Vec::with_capacity(ZERO_NODES + 1);
+
+    for col in 0..=ZERO_NODES.min(size - 1) {
+        let mut term_lo = vec![0.0; size];
+        let mut term_hi = vec![0.0; size];
+        term_lo[col] = 1.0;
+        term_hi[col] = 1.0;
+        let mut sum_lo = term_lo.clone();
+        let mut sum_hi = term_hi.clone();
+        let mut converged = false;
+
+        for n in 1..=MAX_TAYLOR_TERMS {
+            let inv_lo = div_down(1.0, n as f64)?;
+            let inv_hi = div_up(1.0, n as f64)?;
+            for i in (col..size).rev() {
+                let below_lo = if i > col {
+                    mul_down(subdiagonal[i - 1], term_lo[i - 1])?
+                } else {
+                    0.0
+                };
+                let below_hi = if i > col {
+                    mul_up(subdiagonal[i - 1], term_hi[i - 1])?
+                } else {
+                    0.0
+                };
+                term_lo[i] = mul_down(
+                    add_down(mul_down(diagonal[i], term_lo[i])?, below_lo)?,
+                    inv_lo,
+                )?;
+                term_hi[i] = mul_up(add_up(mul_up(diagonal[i], term_hi[i])?, below_hi)?, inv_hi)?;
+            }
+            let mut small = true;
+            for i in col..size {
+                sum_lo[i] = add_down(sum_lo[i], term_lo[i])?;
+                sum_hi[i] = add_up(sum_hi[i], term_hi[i])?;
+                if term_hi[i] > mul_up(TAYLOR_RELATIVE_TAIL, sum_hi[i])? {
+                    small = false;
+                }
+            }
+            if !sum_hi.iter().all(|x| x.is_finite()) {
+                return Err(CoreError::NonFinite(
+                    "Leja divided-difference series left the binary64 range".into(),
+                ));
+            }
+            if small && n as f64 > min_terms {
+                let ratio = div_up(max_entry, (n + 1) as f64)?;
+                if ratio < 1.0 {
+                    let geom = div_up(ratio, sub_down(1.0, ratio)?)?;
+                    for i in col..size {
+                        let tail_i = mul_up(term_hi[i], geom)?;
+                        sum_hi[i] = add_up(sum_hi[i], tail_i)?;
+                    }
+                    converged = true;
+                    break;
+                }
+            }
+        }
+        if !converged {
+            return Err(unsupported(
+                "Leja divided-difference series did not converge",
+            ));
+        }
+        columns_lo.push(sum_lo);
+        columns_hi.push(sum_hi);
+    }
+    Ok((columns_lo, columns_hi))
+}
+
+/// Certified scaled Newton divided differences `(d, d_rad)`:
+/// `d[j][k] = gamma^j phi_k[x_0..x_j]` with outward radius `d_rad[j][k]`
+/// enclosing the exact divided difference: `|d_exact - d| <= d_rad`.
+#[allow(clippy::type_complexity)]
+pub fn leja_divided_differences_certified(
+    c: f64,
+    gamma: f64,
+    xi: &[f64],
+) -> CoreResult<(Vec<[f64; JOINT_PHI_TERMS]>, Vec<[f64; JOINT_PHI_TERMS]>)> {
+    if xi.is_empty() || !(c.is_finite() && gamma.is_finite() && c <= 0.0 && gamma >= 0.0) {
+        return Err(unsupported(
+            "divided differences need nodes, a finite center c <= 0 and a scale gamma >= 0",
+        ));
+    }
+    if gamma == 0.0 && xi.len() > 1 {
+        return Err(unsupported("a zero scale admits a single node"));
+    }
+    if xi.iter().any(|x| !(-2.0..=2.0).contains(x)) {
+        return Err(unsupported("Leja points must lie in [-2, 2]"));
+    }
+    let shift = c - 2.0 * gamma;
+    if shift < -LEJA_RANGE_LIMIT - 1.0 {
+        return Err(unsupported(format!(
+            "interval left end {shift:e} beyond -{LEJA_RANGE_LIMIT}"
+        )));
+    }
+    let zero_node = -shift;
+    let mut diagonal = vec![zero_node; ZERO_NODES];
+    diagonal.extend(xi.iter().map(|x| gamma * (x + 2.0)));
+    let mut subdiagonal = vec![1.0; ZERO_NODES];
+    subdiagonal.extend(std::iter::repeat_n(gamma, xi.len() - 1));
+
+    let exp_s = exp_interval(shift)?;
+    let (cols_lo, cols_hi) = exp_bidiagonal_columns_certified(&diagonal, &subdiagonal)?;
+
+    let mut d = Vec::with_capacity(xi.len());
+    let mut d_rad = Vec::with_capacity(xi.len());
+
+    for j in 0..xi.len() {
+        let mut mid_row = [0.0; JOINT_PHI_TERMS];
+        let mut rad_row = [0.0; JOINT_PHI_TERMS];
+        for k in 0..JOINT_PHI_TERMS {
+            let col = ZERO_NODES - k;
+            let row = ZERO_NODES + j;
+            let lo_entry = cols_lo[col][row];
+            let hi_entry = cols_hi[col][row];
+            let val_lo = mul_down(lo_entry, exp_s.lo)?.max(0.0);
+            let val_hi = mul_up(hi_entry, exp_s.hi)?;
+            let mid = 0.5 * (val_lo + val_hi);
+            let rad = div_up(sub_up(val_hi, val_lo)?, 2.0)?;
+            mid_row[k] = mid;
+            rad_row[k] = rad;
+        }
+        d.push(mid_row);
+        d_rad.push(rad_row);
+    }
+    Ok((d, d_rad))
+}
+
+/// Optional coefficient cache for certified Leja runs.
+///
+/// Separate from `CoefficientCache` and `LaguerreEnvelopeCache`.
+#[derive(Clone, Debug, Default)]
+pub struct CertifiedLejaCoeffCache {
+    entries: HashMap<(u64, u64, usize), CachedCertifiedLeja>,
+}
+
+#[derive(Clone, Debug)]
+struct CachedCertifiedLeja {
+    d: Vec<[f64; JOINT_PHI_TERMS]>,
+    d_rad: Vec<[f64; JOINT_PHI_TERMS]>,
+}
+
+impl CertifiedLejaCoeffCache {
+    pub fn new() -> Self {
+        Self {
+            entries: HashMap::new(),
+        }
+    }
+
+    pub fn clear(&mut self) {
+        self.entries.clear();
+    }
+
+    pub fn len(&self) -> usize {
+        self.entries.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.entries.is_empty()
+    }
+}
+
+/// A certified Newton-Leja phi action report carrying a total error bound.
+#[derive(Clone, Debug, PartialEq, Serialize)]
+pub struct CertifiedLejaReport {
+    pub schema: String,
+    pub input: String,
+    pub branch: String,
+    pub dimension: usize,
+    pub degree: usize,
+    pub degree_cap: usize,
+    pub converged: bool,
+    pub interval: [f64; 2],
+    pub center: f64,
+    pub scale: f64,
+    pub total_budget: f64,
+    pub total_bound: f64,
+    pub truncation_bound: f64,
+    pub divided_difference_bound: f64,
+    pub recurrence_bound: f64,
+    pub summation_bound: f64,
+    pub columns: Vec<Vec<f64>>,
+    pub fused: Vec<f64>,
+    total_error: TotalErrorStatus,
+    pub evidence: EnclosureEvidence,
+    pub vector_products: u64,
+    pub block_products: u64,
+    pub coefficient_setups: u64,
+    pub certification_ops: u64,
+}
+
+impl CertifiedLejaReport {
+    pub fn total_error(&self) -> &TotalErrorStatus {
+        &self.total_error
+    }
+    pub fn total_bound(&self) -> f64 {
+        self.total_bound
+    }
+    pub fn truncation_bound(&self) -> f64 {
+        self.truncation_bound
+    }
+    pub fn divided_difference_bound(&self) -> f64 {
+        self.divided_difference_bound
+    }
+    pub fn recurrence_bound(&self) -> f64 {
+        self.recurrence_bound
+    }
+    pub fn summation_bound(&self) -> f64 {
+        self.summation_bound
+    }
+}
+
+/// [`leja_phi_action_certified_capped`] with the cap [`LEJA_DEGREE_CAP`].
+pub fn leja_phi_action_certified(
+    op: &SymmetricNonpositiveOperator,
+    h: f64,
+    input: JointPhiInput<'_>,
+    total_budget: f64,
+    work: &mut WorkCounters,
+) -> CoreResult<CertifiedLejaReport> {
+    leja_phi_action_certified_with_cache(op, h, input, total_budget, LEJA_DEGREE_CAP, None, work)
+}
+
+/// Certified Leja phi action with a degree cap in `1 ..= LEJA_DEGREE_CAP`.
+pub fn leja_phi_action_certified_capped(
+    op: &SymmetricNonpositiveOperator,
+    h: f64,
+    input: JointPhiInput<'_>,
+    total_budget: f64,
+    degree_cap: usize,
+    work: &mut WorkCounters,
+) -> CoreResult<CertifiedLejaReport> {
+    leja_phi_action_certified_with_cache(op, h, input, total_budget, degree_cap, None, work)
+}
+
+/// Certified Leja phi action with an optional coefficient cache.
+#[allow(clippy::needless_range_loop)]
+pub fn leja_phi_action_certified_with_cache(
+    op: &SymmetricNonpositiveOperator,
+    h: f64,
+    input: JointPhiInput<'_>,
+    total_budget: f64,
+    degree_cap: usize,
+    mut cache: Option<&mut CertifiedLejaCoeffCache>,
+    work: &mut WorkCounters,
+) -> CoreResult<CertifiedLejaReport> {
+    let n = op.dimension();
+    if !(h.is_finite() && h >= 0.0) {
+        return Err(unsupported(format!(
+            "step h = {h:e} must be finite and >= 0"
+        )));
+    }
+    if !(total_budget.is_finite() && total_budget > 0.0) {
+        return Err(unsupported(format!(
+            "total budget {total_budget:e} must be finite and positive"
+        )));
+    }
+    if !(1..=LEJA_DEGREE_CAP).contains(&degree_cap) {
+        return Err(unsupported(format!(
+            "degree cap {degree_cap} outside 1..={LEJA_DEGREE_CAP}"
+        )));
+    }
+    let SpectralEnclosure {
+        lambda,
+        rho,
+        evidence,
+    } = op.enclosure().clone();
+    if !matches!(evidence, EnclosureEvidence::Gershgorin) {
+        return Err(unsupported(
+            "the spectral enclosure is not Gershgorin-verified",
+        ));
+    }
+    let (block, scales, input_name): (Vec<Vec<f64>>, [f64; JOINT_PHI_TERMS], &str) = match input {
+        JointPhiInput::Distinct(vectors) => {
+            if vectors.iter().any(|w| w.len() != n) {
+                return Err(unsupported("every w_k must have the operator dimension"));
+            }
+            (vectors.to_vec(), [1.0; JOINT_PHI_TERMS], "distinct")
+        }
+        JointPhiInput::SameVector { vector, scales } => {
+            if vector.len() != n {
+                return Err(unsupported("vector must have the operator dimension"));
+            }
+            (vec![vector.to_vec()], scales, "same-vector")
+        }
+    };
+    if !block.iter().flatten().chain(&scales).all(|x| x.is_finite()) {
+        return Err(CoreError::NonFinite("Leja input contains NaN/Inf".into()));
+    }
+    let a = -mul_up(h, rho)?;
+    let b = -mul_down(h, lambda)?;
+    if -a > LEJA_RANGE_LIMIT {
+        return Err(unsupported(format!(
+            "h rho = {:e} above {LEJA_RANGE_LIMIT}",
+            -a
+        )));
+    }
+    let width = block.len();
+    let column_of = |k: usize| if width == 1 { 0 } else { k };
+    let zero_input = (0..JOINT_PHI_TERMS)
+        .all(|k| scales[k] == 0.0 || block[column_of(k)].iter().all(|x| *x == 0.0));
+    let scalar = h == 0.0 || rho == 0.0 || lambda == rho;
+
+    let mut sums = vec![vec![0.0; n]; JOINT_PHI_TERMS];
+    let mut degree = 0;
+    let mut converged = false;
+    let mut total_bound = 0.0;
+    let mut truncation_bound = 0.0;
+    let mut divided_difference_bound = 0.0;
+    let mut recurrence_bound = 0.0;
+    let mut summation_bound = 0.0;
+    let mut vector_products = 0;
+    let mut block_products = 0;
+    let mut coefficient_setups = 0;
+    let mut certification_ops = 0_u64;
+
+    let (center, scale, branch);
+    if zero_input {
+        center = 0.5 * (a + b);
+        scale = 0.25 * (b - a);
+        branch = "zero-input";
+        converged = true;
+    } else if scalar {
+        center = if h == 0.0 || rho == 0.0 { 0.0 } else { b };
+        scale = 0.0;
+        branch = "scalar";
+        let (d, d_rad) = leja_divided_differences_certified(center, 0.0, &[2.0])?;
+        coefficient_setups += 1;
+        for (k, sum) in sums.iter_mut().enumerate() {
+            let col = column_of(k);
+            for (out, w) in sum.iter_mut().zip(&block[col]) {
+                *out = d[0][k] * w;
+            }
+        }
+        let mut diff_terms = Vec::with_capacity(JOINT_PHI_TERMS);
+        let mut sum_terms = Vec::with_capacity(JOINT_PHI_TERMS);
+        let mut p_norms = [0.0; JOINT_PHI_TERMS];
+        for k in 0..JOINT_PHI_TERMS {
+            let col = column_of(k);
+            let w_norm = safe_l2(&block[col]);
+            p_norms[k] = safe_l2(&sums[k]);
+            diff_terms.push(mul_up(scales[k].abs(), mul_up(d_rad[0][k], w_norm)?)?);
+            sum_terms.push(mul_up(scales[k].abs(), mul_up(f64::EPSILON, p_norms[k])?)?);
+        }
+        divided_difference_bound = sum_up(diff_terms)?;
+        let fused_err = mul_up(
+            4.0 * f64::EPSILON,
+            sum_up(
+                (0..JOINT_PHI_TERMS)
+                    .map(|k| mul_up(scales[k].abs(), p_norms[k]))
+                    .collect::<Result<Vec<_>, _>>()?,
+            )?,
+        )?;
+        summation_bound = add_up(sum_up(sum_terms)?, fused_err)?;
+        total_bound = add_up(divided_difference_bound, summation_bound)?;
+        certification_ops += 20;
+        converged = total_bound <= total_budget;
+    } else {
+        center = 0.5 * (a + b);
+        scale = 0.25 * (b - a);
+        branch = "newton";
+        let xi = &leja_points()[..=degree_cap];
+        let node_bounds = leja_node_bounds();
+
+        let cache_key = (center.to_bits(), scale.to_bits(), degree_cap);
+        let (d, d_rad) = if let Some(ref c) = cache {
+            if let Some(entry) = c.entries.get(&cache_key) {
+                (entry.d.clone(), entry.d_rad.clone())
+            } else {
+                let (d_calc, dr_calc) = leja_divided_differences_certified(center, scale, xi)?;
+                coefficient_setups += 1;
+                (d_calc, dr_calc)
+            }
+        } else {
+            let (d_calc, dr_calc) = leja_divided_differences_certified(center, scale, xi)?;
+            coefficient_setups += 1;
+            (d_calc, dr_calc)
+        };
+
+        if let Some(ref mut c) = cache {
+            c.entries
+                .entry(cache_key)
+                .or_insert_with(|| CachedCertifiedLeja {
+                    d: d.clone(),
+                    d_rad: d_rad.clone(),
+                });
+        }
+
+        let dense = DenseOperator::new(op.matrix().clone())?;
+        let mut current = block.clone();
+        let mut product = vec![vec![0.0; n]; width];
+        let mut residuals = [[0.0_f64; 5]; LEJA_DEGREE_CAP];
+        let mut r_norms: Vec<Vec<f64>> = Vec::with_capacity(degree_cap + 1);
+        r_norms.push((0..width).map(|col| safe_l2(&current[col])).collect());
+
+        for (k, sum) in sums.iter_mut().enumerate() {
+            let col = column_of(k);
+            let coeff = d[0][k];
+            for (out, x) in sum.iter_mut().zip(&current[col]) {
+                *out += coeff * x;
+            }
+        }
+
+        let u = f64::EPSILON;
+        let gamma_n = div_up((n as f64) * u, sub_down(1.0, (n as f64) * u)?)?;
+
+        for j in 1..=degree_cap {
+            dense.apply_rows(&current, &mut product)?;
+            block_products += 1;
+            vector_products += width as u64;
+
+            let node = xi[j - 1];
+            for (r, y) in current.iter_mut().zip(&product) {
+                for (ri, yi) in r.iter_mut().zip(y) {
+                    *ri = (h * *yi - center * *ri) / scale - node * *ri;
+                }
+            }
+
+            if !current.iter().flatten().all(|x| x.is_finite()) {
+                work.poly_block_products += block_products;
+                work.poly_vector_products += vector_products;
+                work.poly_coefficient_setups += coefficient_setups;
+                return Err(CoreError::NonFinite(
+                    "Newton-Leja recurrence produced NaN/Inf".into(),
+                ));
+            }
+
+            let mut current_norms = Vec::with_capacity(width);
+            for col in 0..width {
+                let r_norm = safe_l2(&current[col]);
+                current_norms.push(r_norm);
+                let prev_norm = r_norms[j - 1][col];
+                let term_mv = mul_up(div_up(h, scale)?, mul_up(mul_up(gamma_n, rho)?, prev_norm)?)?;
+                let term_scalar = mul_up(6.0 * u, r_norm)?;
+                let factor_pre = add_up(
+                    div_up(add_up(mul_up(h, rho)?, center.abs())?, scale)?,
+                    node.abs(),
+                )?;
+                let term_pre = mul_up(4.0 * u, mul_up(factor_pre, prev_norm)?)?;
+                residuals[j - 1][col] = add_up(term_mv, add_up(term_scalar, term_pre)?)?;
+            }
+            r_norms.push(current_norms);
+
+            for (k, sum) in sums.iter_mut().enumerate() {
+                let col = column_of(k);
+                let coeff = d[j][k];
+                for (out, x) in sum.iter_mut().zip(&current[col]) {
+                    *out += coeff * x;
+                }
+            }
+
+            // Certified bounds evaluation at degree j
+            let m_val = node_bounds[j];
+            let mut t1_terms = Vec::with_capacity(JOINT_PHI_TERMS);
+            for k in 0..JOINT_PHI_TERMS {
+                let col = column_of(k);
+                let mut coeff_k = 1.0_f64;
+                for p in 1..=(j + 1 + k) {
+                    let numer = if p <= j + 1 { scale } else { 1.0 };
+                    coeff_k = div_up(mul_up(coeff_k, numer)?, p as f64)?;
+                }
+                let term_k = mul_up(
+                    scales[k].abs(),
+                    mul_up(r_norms[0][col], mul_up(m_val, coeff_k)?)?,
+                )?;
+                t1_terms.push(term_k);
+            }
+            let cur_t1 = sum_up(t1_terms)?;
+
+            let mut t2_terms = Vec::with_capacity(JOINT_PHI_TERMS);
+            for k in 0..JOINT_PHI_TERMS {
+                let col = column_of(k);
+                let mut col_sum = 0.0_f64;
+                for step_i in 0..=j {
+                    col_sum = add_up(col_sum, mul_up(d_rad[step_i][k], r_norms[step_i][col])?)?;
+                }
+                t2_terms.push(mul_up(scales[k].abs(), col_sum)?);
+            }
+            let cur_t2 = sum_up(t2_terms)?;
+
+            let mut t3_terms = Vec::with_capacity(JOINT_PHI_TERMS);
+            for k in 0..JOINT_PHI_TERMS {
+                let col = column_of(k);
+                let mut col_sum = 0.0_f64;
+                for step_i in 0..j {
+                    let mut t_poly = 0.0_f64;
+                    for l in (step_i + 1)..=j {
+                        let deg_diff = l - step_i - 1;
+                        let m_sub = if deg_diff == 0 {
+                            1.0
+                        } else {
+                            node_bounds[deg_diff - 1]
+                        };
+                        t_poly = add_up(t_poly, mul_up(d[l][k].abs(), m_sub)?)?;
+                    }
+                    col_sum = add_up(col_sum, mul_up(t_poly, residuals[step_i][col])?)?;
+                }
+                t3_terms.push(mul_up(scales[k].abs(), col_sum)?);
+            }
+            let cur_t3 = sum_up(t3_terms)?;
+
+            let factor_running = div_up((j + 1) as f64 * u, sub_down(1.0, (j + 1) as f64 * u)?)?;
+            let mut p_norms = [0.0; JOINT_PHI_TERMS];
+            let mut t4_terms = Vec::with_capacity(JOINT_PHI_TERMS);
+            for k in 0..JOINT_PHI_TERMS {
+                p_norms[k] = safe_l2(&sums[k]);
+                let col = column_of(k);
+                let mut sum_r = 0.0_f64;
+                for step_i in 0..=j {
+                    sum_r = add_up(sum_r, mul_up(d[step_i][k].abs(), r_norms[step_i][col])?)?;
+                }
+                let term_running = mul_up(factor_running, sum_r)?;
+                let term_scale = mul_up(u, mul_up(scales[k].abs(), p_norms[k])?)?;
+                t4_terms.push(add_up(mul_up(scales[k].abs(), term_running)?, term_scale)?);
+            }
+            let fused_err = mul_up(
+                4.0 * u,
+                sum_up(
+                    (0..JOINT_PHI_TERMS)
+                        .map(|k| mul_up(scales[k].abs(), p_norms[k]))
+                        .collect::<Result<Vec<_>, _>>()?,
+                )?,
+            )?;
+            let cur_t4 = add_up(sum_up(t4_terms)?, fused_err)?;
+
+            let cur_total = add_up(cur_t1, add_up(cur_t2, add_up(cur_t3, cur_t4)?)?)?;
+            certification_ops = certification_ops.saturating_add((25 + 5 * j) as u64);
+
+            degree = j;
+            truncation_bound = cur_t1;
+            divided_difference_bound = cur_t2;
+            recurrence_bound = cur_t3;
+            summation_bound = cur_t4;
+            total_bound = cur_total;
+
+            if cur_total <= total_budget {
+                converged = true;
+                break;
+            }
+        }
+    }
+
+    work.poly_block_products += block_products;
+    work.poly_vector_products += vector_products;
+    work.poly_coefficient_setups += coefficient_setups;
+
+    let columns: Vec<Vec<f64>> = sums
+        .into_iter()
+        .enumerate()
+        .map(|(k, sum)| sum.into_iter().map(|x| scales[k] * x).collect())
+        .collect();
+    let fused: Vec<f64> = (0..n)
+        .map(|i| columns.iter().fold(0.0, |acc, column| acc + column[i]))
+        .collect();
+    if !fused.iter().all(|x| x.is_finite()) {
+        return Err(CoreError::NonFinite(
+            "Newton-Leja action produced NaN/Inf".into(),
+        ));
+    }
+
+    let total_error = if converged {
+        TotalErrorStatus::Certified { bound: total_bound }
+    } else {
+        TotalErrorStatus::EstimateOnly {
+            reason: format!(
+                "{LEJA_TOTAL_NOT_CERTIFIED}: degree cap {degree_cap} reached without meeting budget {total_budget:e}"
+            ),
+            bounded_components: total_bound,
+        }
+    };
+
+    Ok(CertifiedLejaReport {
+        schema: LEJA_CERTIFIED_SCHEMA.into(),
+        input: input_name.into(),
+        branch: branch.into(),
+        dimension: n,
+        degree,
+        degree_cap,
+        converged,
+        interval: [a, b],
+        center,
+        scale,
+        total_budget,
+        total_bound,
+        truncation_bound,
+        divided_difference_bound,
+        recurrence_bound,
+        summation_bound,
+        columns,
+        fused,
+        total_error,
+        evidence,
+        vector_products,
+        block_products,
+        coefficient_setups,
+        certification_ops,
     })
 }
 
