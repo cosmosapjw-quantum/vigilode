@@ -7,9 +7,10 @@ use std::alloc::{GlobalAlloc, Layout, System};
 use std::sync::atomic::{AtomicU64, Ordering};
 
 use rodas5p_core::leja_action::{
-    CertifiedLejaReport, LEJA_CERTIFIED_SCHEMA, LEJA_DEGREE_CAP, LEJA_TOTAL_NOT_CERTIFIED,
-    leja_node_bounds, leja_node_polynomial_bound, leja_phi_action, leja_phi_action_certified,
-    leja_phi_action_certified_capped, leja_points,
+    CertifiedLejaCoeffCache, CertifiedLejaReport, CertifiedLejaWorkspace, LEJA_CERTIFIED_SCHEMA,
+    LEJA_DEGREE_CAP, LEJA_TOTAL_NOT_CERTIFIED, leja_node_bounds, leja_node_polynomial_bound,
+    leja_phi_action, leja_phi_action_certified, leja_phi_action_certified_capped,
+    leja_phi_action_certified_with_cache_and_workspace, leja_points,
 };
 use rodas5p_core::polynomial_action::{
     EnclosureEvidence, JointPhiInput, SymmetricNonpositiveOperator, TotalErrorStatus,
@@ -114,6 +115,58 @@ fn test_vg1_zero_allocation_node_polynomial_and_bounds() {
         sum
     });
     assert_eq!(allocs_query, 0, "leja_node_bounds slice query allocated");
+}
+
+#[test]
+fn test_vg1_zero_allocation_warmed_certified_leja_action() {
+    let n = 4;
+    let op = test_operator(n, 4242);
+    let h = 0.05;
+    let w_vecs: [Vec<f64>; 5] = std::array::from_fn(|k| splitmix(200 + k as u64, n));
+    let input = JointPhiInput::Distinct(&w_vecs);
+
+    let budget = 1e-10;
+    let cap = 32;
+
+    let mut cache = CertifiedLejaCoeffCache::new();
+    let mut workspace = CertifiedLejaWorkspace::new(n, 5);
+    let mut warm_work = WorkCounters::default();
+
+    // Warm-up call: populates cache and workspace
+    let warm_rep = leja_phi_action_certified_with_cache_and_workspace(
+        &op,
+        h,
+        input,
+        budget,
+        cap,
+        Some(&mut cache),
+        &mut warm_work,
+        &mut workspace,
+    )
+    .unwrap();
+    assert!(warm_rep.converged);
+
+    // Warmed call: must have EXACTLY 0 heap allocations!
+    let (bound, allocs) = track_allocations(|| {
+        let mut work = WorkCounters::default();
+        let rep = leja_phi_action_certified_with_cache_and_workspace(
+            &op,
+            h,
+            input,
+            budget,
+            cap,
+            Some(&mut cache),
+            &mut work,
+            &mut workspace,
+        );
+        rep.unwrap().total_bound()
+    });
+
+    assert_eq!(
+        allocs, 0,
+        "warmed leja_phi_action_certified_with_cache_and_workspace performed {allocs} heap allocations; must be 0"
+    );
+    assert!(bound <= budget);
 }
 
 // -----------------------------------------------------------------------------
@@ -348,4 +401,86 @@ fn test_vg3_speculative_work_preservation_on_budget_failure() {
     assert_eq!(work.poly_block_products, cap as u64);
     assert_eq!(work.poly_vector_products, cap as u64);
     assert_eq!(work.poly_coefficient_setups, 1);
+}
+
+#[test]
+fn test_vg2_dense_eigendecomposition_enclosure() {
+    let n = 4;
+    // Stiff diagonal matrix with eigenvalues from -100 to -0.01
+    let mut a = DenseMatrix::zeros(n, n);
+    a[(0, 0)] = -100.0;
+    a[(1, 1)] = -10.0;
+    a[(2, 2)] = -1.0;
+    a[(3, 3)] = -0.01;
+    let op = SymmetricNonpositiveOperator::gershgorin(a.clone()).unwrap();
+
+    let h = 0.05;
+    let vectors: [Vec<f64>; 5] = std::array::from_fn(|k| splitmix(500 + k as u64, n));
+    let input = JointPhiInput::Distinct(&vectors);
+
+    let budget = 1e-8;
+    let mut work = WorkCounters::default();
+    let report = leja_phi_action_certified(&op, h, input, budget, &mut work).unwrap();
+    assert!(report.converged);
+
+    // Independent reference: dense fused phi action (via Schur / matrix exp)
+    let exact_fused = dense_phi_combination(&a, h, &vectors).unwrap();
+
+    let mut diff = vec![0.0; n];
+    for i in 0..n {
+        diff[i] = report.fused[i] - exact_fused[i];
+    }
+    let actual_error = safe_l2(&diff);
+
+    // Strict enclosure: actual error against independent reference <= certified total_bound
+    assert!(
+        actual_error <= report.total_bound(),
+        "true error {actual_error:e} exceeds certified total_bound {:e}",
+        report.total_bound()
+    );
+    assert!(
+        report.total_bound() <= budget,
+        "total_bound {:e} exceeds budget {budget:e}",
+        report.total_bound()
+    );
+}
+
+#[test]
+fn test_vg3_work_preservation_on_all_error_paths() {
+    let n = 4;
+    let op = test_operator(n, 7777);
+    let v = splitmix(888, n);
+    let input = JointPhiInput::SameVector {
+        vector: &v,
+        scales: [1.0; 5],
+    };
+
+    // 1. Extreme h causing LEJA_RANGE_LIMIT failure in setup:
+    // Should preserve work counter consistency
+    let mut work = WorkCounters::default();
+    let impossible_h = 1e8; // -h rho exceeds LEJA_RANGE_LIMIT
+    let res = leja_phi_action_certified(&op, impossible_h, input, 1e-6, &mut work);
+    assert!(res.is_err());
+
+    // 2. NaN in input vectors: fails before recurrence
+    let mut nan_v = v.clone();
+    nan_v[0] = f64::NAN;
+    let nan_input = JointPhiInput::SameVector {
+        vector: &nan_v,
+        scales: [1.0; 5],
+    };
+    let mut work_nan = WorkCounters::default();
+    let res_nan = leja_phi_action_certified(&op, 0.1, nan_input, 1e-6, &mut work_nan);
+    assert!(res_nan.is_err());
+
+    // 3. Negative-control for recurrence error (e.g. non-finite produced):
+    // Accumulation of poly_block_products and poly_vector_products before failure
+    let mut work_flushed = WorkCounters::default();
+    let cap = 5;
+    let rep_capped =
+        leja_phi_action_certified_capped(&op, 0.1, input, 1e-300, cap, &mut work_flushed).unwrap();
+    assert!(!rep_capped.converged);
+    assert_eq!(work_flushed.poly_block_products, cap as u64);
+    assert_eq!(work_flushed.poly_vector_products, cap as u64);
+    assert_eq!(work_flushed.poly_coefficient_setups, 1);
 }

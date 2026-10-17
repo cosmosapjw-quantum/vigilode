@@ -115,11 +115,17 @@ where the vector inequality holds componentwise because $L \ge 0$ is lower trian
 
 ### Rigorous Interval Arithmetic Enclosure
 We compute:
-1. Lower partial sum $S_N^{lo}$ using downward directed rounding (`add_down`, `mul_down`).
-2. Upper partial sum $S_N^{hi}$ using upward directed rounding (`add_up`, `mul_up`) plus the geometric tail term $\frac{\|L\|_1}{N + 1 - \|L\|_1} v_N^{hi}$.
-3. Outward scaling by $e^s$: using `directed::exp_interval(s)` which provides $[e^s_{lo}, e^s_{hi}]$.
-The resulting interval $[d_{j,k}^{lo}, d_{j,k}^{hi}]$ is guaranteed to contain the exact value $d_{j,k}$.
-Letting the midpoint be $\hat{d}_{j,k} = \frac{1}{2}(d_{j,k}^{lo} + d_{j,k}^{hi})$ and the radius be $\text{rad}(d_{j,k}) = \frac{1}{2}(d_{j,k}^{hi} - d_{j,k}^{lo})$, the divided difference error propagated to the polynomial action is bounded by:
+1. Shift interval: $s_{lo} = \text{sub\_down}(c, \text{mul\_up}(2.0, \gamma))$, $s_{hi} = \text{sub\_up}(c, \text{mul\_down}(2.0, \gamma))$, with diagonal and subdiagonal carried as outward intervals $L_{lo} \le L \le L_{hi}$.
+2. Lower partial sum $S_N^{lo}$ using downward directed rounding (`add_down`, `mul_down`) with lower bidiagonal entries.
+3. Upper partial sum $S_N^{hi}$ using upward directed rounding (`add_up`, `mul_up`) with upper bidiagonal entries, plus the infinity-norm geometric tail term:
+   $$t_\infty = \max_{i \in [col, size)} v_{N, i}^{hi}, \quad \text{tail} = \text{mul\_up}\left(t_\infty, \frac{\|L\|_\infty}{N + 1 - \|L\|_\infty}\right)$$
+   added componentwise across all components $i \in [col, size)$.
+4. Outward scaling by $e^s$: using `directed::exp_interval` evaluated on $[s_{lo}, s_{hi}]$, with $e^s_{hi}$ strictly guarded against underflow ($e^s_{hi} \ge 0.0\text{.next\_up}()$).
+The resulting interval $[d_{j,k}^{lo}, d_{j,k}^{hi}]$ is guaranteed to strictly contain the exact value $d_{j,k}$.
+Letting the computed midpoint be $\hat{d}_{j,k} = 0.5 \times (d_{j,k}^{lo} + d_{j,k}^{hi})$, the radius is computed via directed distances:
+$$\text{rad}(d_{j,k}) = \max(\text{sub\_up}(d_{j,k}^{hi}, \hat{d}_{j,k}), \text{sub\_up}(\hat{d}_{j,k}, d_{j,k}^{lo}))$$
+guaranteeing that $|d_{\text{exact}} - \hat{d}_{j,k}| \le \text{rad}(d_{j,k})$ strictly holds even under floating-point rounding.
+The divided difference error propagated to the polynomial action is bounded by:
 $$E_{T2} = \sum_{k=0}^4 |s_k| \sum_{j=0}^m \text{rad}(d_{j,k}) \|r_j\|_2$$
 evaluated outward with directed rounding.
 

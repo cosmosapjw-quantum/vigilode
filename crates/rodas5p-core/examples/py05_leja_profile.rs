@@ -2,8 +2,17 @@
 //!
 //! Takes: `<target_component> <repetitions>`
 
-use rodas5p_core::leja_action::{
-    CertifiedLejaCoeffCache, leja_divided_differences_certified, leja_points,
+use rodas5p_core::{
+    DenseMatrix, WorkCounters,
+    leja_action::{
+        CertifiedLejaCoeffCache, CertifiedLejaWorkspace, leja_divided_differences,
+        leja_divided_differences_certified, leja_phi_action_certified_with_cache_and_workspace,
+        leja_points,
+    },
+    polynomial_action::{
+        CoefficientCache, JointPhiInput, PolynomialBasis, SymmetricNonpositiveOperator,
+        chebyshev_coefficient_enclosures, joint_phi_action,
+    },
 };
 
 fn main() {
@@ -20,8 +29,32 @@ fn main() {
     let m = 32;
     let xi = &leja_points()[..=m];
 
-    let cache = CertifiedLejaCoeffCache::new();
-    let _ = leja_divided_differences_certified(c, gamma, xi);
+    let mat = DenseMatrix::from_rows(&[&[-20.0]]).unwrap();
+    let op = SymmetricNonpositiveOperator::gershgorin(mat).unwrap();
+    let w = [vec![1.0], vec![1.0], vec![1.0], vec![1.0], vec![1.0]];
+    let input = JointPhiInput::Distinct(&w);
+    let h = 1.0;
+    let lambda = 20.0;
+    let rho = 20.0;
+
+    let mut leja_cache = CertifiedLejaCoeffCache::new();
+    let (d_calc, dr_calc) = leja_divided_differences_certified(c, gamma, xi).unwrap();
+    leja_cache.insert_certified(c, gamma, m, d_calc, dr_calc);
+
+    let mut cheb_cache = CoefficientCache::default();
+    let mut cheb_work = WorkCounters::default();
+    let _ = joint_phi_action(
+        &op,
+        h,
+        input,
+        PolynomialBasis::Chebyshev,
+        1e-10,
+        Some(&mut cheb_cache),
+        &mut cheb_work,
+    );
+
+    let mut leja_work = WorkCounters::default();
+    let mut workspace = CertifiedLejaWorkspace::new(1, 5);
 
     for _ in 0..repetitions {
         match component.as_str() {
@@ -30,41 +63,54 @@ fn main() {
                 std::hint::black_box(res).unwrap();
             }
             "leja-cert-setup-warm" => {
-                // Cache hit check
-                std::hint::black_box(cache.len());
+                let res = leja_cache.get_certified(c, gamma, m);
+                std::hint::black_box(res).unwrap();
             }
             "leja-cert-certification" => {
-                // Node bounds query + Horner tail polynomial bound
-                let bounds = rodas5p_core::leja_action::leja_node_bounds();
-                let mut sum = 0.0_f64;
-                for b in bounds.iter().take(m) {
-                    sum += b * 1.0e-16;
-                }
-                std::hint::black_box(sum);
+                let rep = leja_phi_action_certified_with_cache_and_workspace(
+                    &op,
+                    h,
+                    input,
+                    1e-10,
+                    m,
+                    Some(&mut leja_cache),
+                    &mut leja_work,
+                    &mut workspace,
+                );
+                std::hint::black_box(rep).unwrap();
             }
             "cheb-cert-setup-cold" => {
-                // Chebyshev coefficient computation for degree m
-                let mut sum = 0.0_f64;
-                for j in 0..m {
-                    sum += (j as f64).sin();
-                }
-                std::hint::black_box(sum);
+                let res = chebyshev_coefficient_enclosures(h, lambda, rho, m);
+                std::hint::black_box(res).unwrap();
             }
             "cheb-cert-setup-warm" => {
-                let sum = 42;
-                std::hint::black_box(sum);
+                let mut w = WorkCounters::default();
+                let rep = joint_phi_action(
+                    &op,
+                    h,
+                    input,
+                    PolynomialBasis::Chebyshev,
+                    1e-10,
+                    Some(&mut cheb_cache),
+                    &mut w,
+                );
+                std::hint::black_box(rep).unwrap();
             }
             "cheb-cert-certification" => {
-                // (k+1) * e^{k eta} propagation
-                let eta = 1.05_f64;
-                let mut sum = 0.0_f64;
-                for k in 0..5 {
-                    sum += (k as f64 + 1.0) * (k as f64 * eta).exp();
-                }
-                std::hint::black_box(sum);
+                let mut w = WorkCounters::default();
+                let rep = joint_phi_action(
+                    &op,
+                    h,
+                    input,
+                    PolynomialBasis::Chebyshev,
+                    1e-10,
+                    Some(&mut cheb_cache),
+                    &mut w,
+                );
+                std::hint::black_box(rep).unwrap();
             }
             "leja-est-setup" => {
-                let res = rodas5p_core::leja_action::leja_divided_differences(c, gamma, xi);
+                let res = leja_divided_differences(c, gamma, xi);
                 std::hint::black_box(res).unwrap();
             }
             "router-setup" => {
