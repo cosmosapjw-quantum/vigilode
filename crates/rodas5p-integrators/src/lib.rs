@@ -20,6 +20,7 @@ mod candidates;
 mod causal_majorant;
 mod certification;
 mod certified_budget;
+pub mod collective_model;
 mod common_w_gate;
 mod comparator_fidelity;
 mod controller_telemetry;
@@ -164,6 +165,9 @@ pub use certification::{
 };
 pub use certified_budget::{
     CertifiedBudget, CertifiedBudgetDecision, CertifiedBudgetStatus, step_power_enclosure,
+};
+pub use collective_model::{
+    CollectiveAdmissionError, CollectiveModel, verify_collective_admission,
 };
 pub use common_w_gate::{
     MatrixFreeCommonWCase, MatrixFreeCommonWProfile, MatrixFreeCommonWReport, MatrixFreeCommonWRow,
