@@ -46,6 +46,8 @@ mod native_gates;
 mod nonlinear;
 mod output;
 mod outward_certificate;
+pub mod packet_window;
+pub mod packet_work;
 mod parallel;
 mod path_controller;
 mod policy_redesign_v25;
@@ -327,6 +329,11 @@ pub use outward_certificate::{
     doubling_certificate, doubling_certificate_with_execution, doubling_levels,
     predict_state_radius,
 };
+pub use packet_window::{
+    CausalWeights, CompiledPacket, PacketCandidate, PacketCertificate, PacketError, compile_packet,
+    compute_certificate, evaluate_mode_at, generate_candidate, reconstruct_modes,
+};
+pub use packet_work::PacketWorkCounters;
 pub use parallel::ParallelExecution;
 pub use path_controller::{
     PathControllerCase, PathControllerControlRow, PathControllerProfile, PathControllerReport,
