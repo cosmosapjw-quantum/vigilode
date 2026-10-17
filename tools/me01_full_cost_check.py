@@ -114,8 +114,8 @@ def main():
             print("  ", r)
         return evidence.emit_invalid(args.output, SCHEMA, e, {"profile": args.profile, "allocations": args.allocations, "ledger": args.ledger})
 
-    profile_doc = ev.documents["profile"]
-    alloc_doc = ev.documents["allocations"]
+    profile_doc = ev.docs["profile"]
+    alloc_doc = ev.docs["allocations"]
     profile_binary_sha256 = profile_doc["binary_sha256"]
     alloc_binary_sha256 = alloc_doc["binary_sha256"]
 

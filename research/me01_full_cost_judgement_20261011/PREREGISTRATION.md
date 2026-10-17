@@ -208,3 +208,12 @@ Prior figures (per attempt, earlier binaries):
 ## Results
 
 Appended after the recorded run. Nothing above this heading changes.
+
+Executed at commit `2e4866c3005f276038d5692081e68da6a7b1beec`.
+All 6 scientific gate items pass:
+1. **Completeness**: 160 profile cells and 160 allocation cells evaluated. 16 closed-list not-entered ledger rows documented with typed reasons.
+2. **Same-binary attribution**: Single binary SHA-256 for Callgrind instruction profiling (`target/release/rodas5p`: `9d1ca55c36ce29ad0c9cfd29579d80a1f200aed579148b15e6f746f1ea28d987`) and single binary SHA-256 for allocation audit (`target/release/allocation_audit`: `d21f323895f44923009313913bf22124a3a5088eb4f9e754f49543ec38927fed`).
+3. **Own counters**: Every operation claim in RESULTS cites a counter of its own unit.
+4. **Timing held**: `wall_time_speedup = null` and `status = HOLD` across all candidates. Registry verified (`TimingAuthorityStatus::Hold` across all 3 entries).
+5. **Rules applied**: All classifications (GAIN / NEUTRAL / LOSS / MIXED; DOMINATED / COMPETITIVE) recomputed.
+6. **Identity holds**: Bit-for-bit final-state identity and exact counter equality confirmed across all identity candidate pairs (E1, E3, E4, E5, E6, E7, E8).

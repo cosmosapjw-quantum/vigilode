@@ -979,32 +979,17 @@ ME01_NODE = "me01"
 
 def validate_me01(profile_path: Path, allocations_path: Path, ledger_path: Path) -> Evidence:
     """Validate ME01 full-cost evidence before running scientific gates."""
-    paths = {
-        "profile": Path(profile_path),
-        "allocations": Path(allocations_path),
-        "ledger": Path(ledger_path),
-    }
-    docs: dict[str, Any] = {}
-    digests: dict[str, str] = {}
-    reasons: list[str] = []
-    c = _Collector(reasons)
-
-    for role, path in (("profile", paths["profile"]), ("allocations", paths["allocations"])):
-        if not path.is_file():
-            c.fail(role, f"file not found: {path}")
-            continue
-        try:
-            raw = path.read_bytes()
-            digests[role] = _sha256(raw)
-            docs[role] = _parse_strict(raw, role, c)
-        except Exception as e:
-            c.fail(role, f"failed to read or parse: {e}")
-
+    specs = [
+        ("profile", Path(profile_path), None),
+        ("allocations", Path(allocations_path), None),
+    ]
+    docs, digests, paths = _load_all(specs)
+    paths["ledger"] = Path(ledger_path)
     if not paths["ledger"].is_file():
-        c.fail("ledger", f"file not found: {paths['ledger']}")
-    else:
-        digests["ledger"] = _sha256(paths["ledger"].read_bytes())
+        raise ValidationError([f"ledger file not found: {paths['ledger']}"])
+    digests["ledger"] = _sha256(paths["ledger"].read_bytes())
 
+    c = _Checks()
     profile = docs.get("profile")
     if c.dict_("profile", profile):
         c.equal("profile.schema", profile.get("schema"), ME01_PROFILE_SCHEMA)
