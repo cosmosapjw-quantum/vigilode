@@ -77,6 +77,25 @@ impl KrylovState {
     }
 }
 
+pub(crate) fn validate_problem_linear_config(
+    problem: &OdeProblem,
+    config: &LinearSolverConfig,
+) -> CoreResult<()> {
+    config.validate().map_err(CoreError::InvalidInput)?;
+    if !problem.has_explicit_jacobian()
+        && (config.method == LinearMethod::Direct
+            || matches!(
+                config.preconditioner,
+                PreconditionerKind::Direct | PreconditionerKind::Jacobi
+            ))
+    {
+        return Err(CoreError::InvalidInput(
+            "direct linear solver or explicit preconditioner requires an explicit Jacobian".into(),
+        ));
+    }
+    Ok(())
+}
+
 pub struct StepContext<'a> {
     pub problem: &'a OdeProblem,
     pub t: f64,
@@ -293,13 +312,13 @@ fn make_pc(
         PreconditionerKind::None => Ok(Box::new(IdentityPreconditioner::new(n))),
         PreconditionerKind::Jacobi => {
             let w = context.shifted.explicit().ok_or_else(|| {
-                CoreError::LinearSolve("Jacobi preconditioner needs explicit W".into())
+                CoreError::InvalidInput("Jacobi preconditioner needs explicit W".into())
             })?;
             Ok(Box::new(JacobiPreconditioner::from_matrix(w)?))
         }
         PreconditionerKind::Direct => {
             let f = factor.clone().ok_or_else(|| {
-                CoreError::LinearSolve("direct preconditioner needs explicit W".into())
+                CoreError::InvalidInput("direct preconditioner needs explicit W".into())
             })?;
             Ok(Box::new(FactorPreconditioner { factor: f }))
         }
@@ -407,7 +426,7 @@ fn sequential_stages_refined(
         || config.preconditioner == PreconditionerKind::Direct;
     let factor = if need_factor {
         let w = context.shifted.explicit().ok_or_else(|| {
-            CoreError::LinearSolve("direct action needs explicit shifted matrix".into())
+            CoreError::InvalidInput("direct action needs explicit shifted matrix".into())
         })?;
         counters.direct_factorizations += 1;
         Some(LuFactorization::new(w)?)
@@ -863,6 +882,7 @@ pub fn sequential_step_with_residual_accounting(
     accounting: StageSolveAccounting<'_>,
     counters: &mut WorkCounters,
 ) -> CoreResult<StepResult> {
+    validate_problem_linear_config(problem, config)?;
     let before = *counters;
     let snapshot = recycle.as_deref().cloned();
     let result = (|| {
@@ -953,10 +973,19 @@ pub fn sequential_matrix_free_step_with_residual_accounting(
     accounting: StageSolveAccounting<'_>,
     counters: &mut WorkCounters,
 ) -> CoreResult<StepResult> {
-    if config.method == LinearMethod::Direct || config.preconditioner == PreconditionerKind::Direct
-    {
+    config.validate().map_err(CoreError::InvalidInput)?;
+    if config.method == LinearMethod::Direct {
         return Err(CoreError::InvalidInput(
             "strict matrix-free sequential RODAS5P forbids direct factorization".into(),
+        ));
+    }
+    if matches!(
+        config.preconditioner,
+        PreconditionerKind::Direct | PreconditionerKind::Jacobi
+    ) {
+        return Err(CoreError::InvalidInput(
+            "strict matrix-free sequential RODAS5P forbids explicit shifted-matrix preconditioner"
+                .into(),
         ));
     }
     let before = *counters;
@@ -1048,10 +1077,19 @@ pub fn sequential_matrix_free_step_with_inner_forcing_and_residual_accounting(
     accounting: StageSolveAccounting<'_>,
     counters: &mut WorkCounters,
 ) -> CoreResult<InnerForcedStepResult> {
-    if config.method == LinearMethod::Direct || config.preconditioner == PreconditionerKind::Direct
-    {
+    config.validate().map_err(CoreError::InvalidInput)?;
+    if config.method == LinearMethod::Direct {
         return Err(CoreError::InvalidInput(
             "strict matrix-free sequential RODAS5P forbids direct factorization".into(),
+        ));
+    }
+    if matches!(
+        config.preconditioner,
+        PreconditionerKind::Direct | PreconditionerKind::Jacobi
+    ) {
+        return Err(CoreError::InvalidInput(
+            "strict matrix-free sequential RODAS5P forbids explicit shifted-matrix preconditioner"
+                .into(),
         ));
     }
     let before = *counters;

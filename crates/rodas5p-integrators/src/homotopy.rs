@@ -1203,6 +1203,9 @@ pub fn homotopy_step(
     force_accept: bool,
     counters: &mut WorkCounters,
 ) -> CoreResult<HomotopyStepReport> {
+    if let Some(fb) = fallback_config {
+        crate::sequential::validate_problem_linear_config(problem, fb)?;
+    }
     let before = *counters;
     let recycle_snapshot = recycle.as_deref().cloned();
     let context = build_step_context(problem, t, y, h, counters)?;

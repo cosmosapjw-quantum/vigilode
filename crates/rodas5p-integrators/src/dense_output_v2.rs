@@ -423,6 +423,16 @@ pub fn integrate_fixed_dense_observed(
         return Err(CoreError::InvalidInput("invalid fixed-step interval".into()).into());
     }
     let config = linear_config.cloned().unwrap_or_default();
+    match method {
+        IntegrationMethod::Sequential => {
+            crate::sequential::validate_problem_linear_config(problem, &config)?;
+        }
+        IntegrationMethod::Sabr => {
+            if let Some(cfg) = linear_config {
+                crate::sequential::validate_problem_linear_config(problem, cfg)?;
+            }
+        }
+    }
     let mut counters = WorkCounters::default();
     let mut history = StageHistory::default();
     let mut recycle = KrylovState::for_method(config.method);
@@ -545,6 +555,16 @@ pub fn integrate_adaptive_dense_observed_with_dense_error_control(
         );
     }
     let config = linear_config.cloned().unwrap_or_default();
+    match method {
+        IntegrationMethod::Sequential => {
+            crate::sequential::validate_problem_linear_config(problem, &config)?;
+        }
+        IntegrationMethod::Sabr => {
+            if let Some(cfg) = linear_config {
+                crate::sequential::validate_problem_linear_config(problem, cfg)?;
+            }
+        }
+    }
     let mut state = y0.to_vec();
     let mut h = adaptive.initial_step.min(crate::output::step_to(t, tf)?);
     let mut controller = AdaptiveControllerState::default();
@@ -1256,6 +1276,9 @@ pub fn integrate_homotopy_adaptive_dense_observed(
             "invalid adaptive dense Homotopy integration input".into(),
         )
         .into());
+    }
+    if let Some(cfg) = fallback_config {
+        crate::sequential::validate_problem_linear_config(problem, cfg)?;
     }
     let mut state = y0.to_vec();
     let mut h = adaptive.initial_step.min(crate::output::step_to(t, tf)?);
