@@ -1,5 +1,13 @@
 //! Holdout tests and data export for research node SP04
 //! (`research/sp04_zero_start_recycling_20261011`).
+//!
+//! # Filename Contract & Holdout Hygiene
+//! The filename `zero_start_policy_holdout.rs` is preregistered and locked by
+//! `PREREGISTRATION.md` and `NEXT_DEVELOPMENT_DAG.json`. It runs solely against
+//! the prospective 3-problem corpus (`E-normal`, `E-nonnormal`, `E-nonnormal-strong`),
+//! never loads or references any reference holdout artifacts (e.g. `holdout-512` or
+//! `tools/reference_v2/artifacts/*-holdout-v2.json`), and exports datasets only via
+//! explicit `#[ignore]` tests (`export_base`, `export_runs`).
 
 use rodas5p_core::{
     InitialGuess, LinearMethod, LinearSolverConfig, PreconditionerKind, WorkCounters,
@@ -533,6 +541,7 @@ fn separation_contract_and_telemetry_parity() {
     assert!(res_rz.observed.counters.linear_solves > 0);
     assert_eq!(tel.zero_starts, res_rz.observed.counters.linear_solves);
     assert_eq!(tel.previous_stage_starts, 0);
+    assert_eq!(tel.previous_step_starts, 0);
     assert_eq!(tel.solver_carried_starts, 0);
 
     // 2. ExplicitZero with GMRES-into equals G-Z bitwise
@@ -588,6 +597,254 @@ fn separation_contract_and_telemetry_parity() {
     assert_eq!(res_rz.accepted_steps, res_rz_notel.accepted_steps);
     assert_eq!(res_rz.rejected_steps, res_rz_notel.rejected_steps);
     assert_eq!(res_rz.observed.counters, res_rz_notel.observed.counters);
+
+    // 5. Configured policy with PreviousStep tracks previous_step_starts without inflating zero_starts
+    let linear_prev_step = make_linear_config(LinearMethod::Gmres, InitialGuess::PreviousStep);
+    let mut work_step = Rodas5pMfFastWorkspace::new(&prob, &linear_prev_step).expect("workspace");
+    work_step.set_gmres_into(true);
+    work_step.set_start_telemetry_enabled(true);
+    let res_step = work_step
+        .integrate_observed(&prob, T_SPAN, &y0, &adaptive, &schedule)
+        .expect("PreviousStep run");
+    let tel_step = work_step.start_telemetry();
+    assert!(res_step.accepted_steps > 1);
+    assert!(
+        tel_step.previous_step_starts > 0,
+        "previous_step_starts must be recorded"
+    );
+}
+
+#[test]
+fn first_stage_solve_zero_start_parity() {
+    use rodas5p_core::{IdentityPreconditioner, ShiftedOperator};
+    use rodas5p_krylov::{
+        GcrodrConfig, GcrodrSolveOptions, GcrodrState, GcrodrTrace, GcrodrWorkspace, GmresCapacity,
+        GmresConfig, GmresIntoOptions, GmresWorkspace, ResidualAccounting,
+        solve_gcrodr_with_options, solve_gmres_into_with_accounting,
+    };
+
+    let (prob, y0) =
+        rodas5p_integrators::robertson_problem().expect("robertson_problem construction");
+    let jvp = prob.linearize_matrix_free(0.0, &y0).expect("jvp");
+    let shifted = ShiftedOperator::new_counted_jvp(None, jvp, 1.0e-6, 0.25).expect("shifted");
+    let pc = IdentityPreconditioner::new(3);
+    let rhs = vec![1.0, 2.0, 3.0];
+    let zero_x0 = vec![0.0, 0.0, 0.0];
+
+    // 1. GCRO-DR: verify Some(&zero_x0) vs None on empty basis charges identical matvecs
+    let mut c1 = WorkCounters::default();
+    let mut c2 = WorkCounters::default();
+    let mut st1 = GcrodrState::default();
+    let mut st2 = GcrodrState::default();
+    let mut ws1 = GcrodrWorkspace::default();
+    let mut ws2 = GcrodrWorkspace::default();
+    let mut tr1 = GcrodrTrace::default();
+    let mut tr2 = GcrodrTrace::default();
+    let gcrodr_cfg = GcrodrConfig::default();
+    let opts = GcrodrSolveOptions::default();
+
+    let r1 = solve_gcrodr_with_options(
+        &shifted,
+        &pc,
+        &rhs,
+        Some(&zero_x0),
+        &gcrodr_cfg,
+        &mut st1,
+        None,
+        &mut ws1,
+        opts,
+        &mut tr1,
+        &mut c1,
+    )
+    .expect("gcrodr Some(&zero_x0)");
+    let r2 = solve_gcrodr_with_options(
+        &shifted,
+        &pc,
+        &rhs,
+        None,
+        &gcrodr_cfg,
+        &mut st2,
+        None,
+        &mut ws2,
+        opts,
+        &mut tr2,
+        &mut c2,
+    )
+    .expect("gcrodr None");
+
+    assert_eq!(r1.residual_norm, r2.residual_norm);
+    assert_eq!(c1.linear_matvecs, c2.linear_matvecs);
+    assert_eq!(c1.jvp_vectors, c2.jvp_vectors);
+
+    // 2. GMRES-into: verify Some(&zero_x0) vs None charges identical matvecs
+    let mut c_gmres1 = WorkCounters::default();
+    let mut c_gmres2 = WorkCounters::default();
+    let mut ws_gmres1 = GmresWorkspace::default();
+    let mut ws_gmres2 = GmresWorkspace::default();
+    let mut out1 = vec![0.0; 3];
+    let mut out2 = vec![0.0; 3];
+    let gmres_cfg = GmresConfig::default();
+    let gmres_opts = GmresIntoOptions::default();
+
+    solve_gmres_into_with_accounting(
+        &shifted,
+        &pc,
+        &rhs,
+        Some(&zero_x0),
+        &gmres_cfg,
+        None,
+        &mut out1,
+        &mut ws_gmres1,
+        GmresCapacity::unbounded(),
+        gmres_opts,
+        ResidualAccounting::ReuseConfirmed,
+        &mut c_gmres1,
+    )
+    .expect("gmres-into Some(&zero_x0)");
+    solve_gmres_into_with_accounting(
+        &shifted,
+        &pc,
+        &rhs,
+        None,
+        &gmres_cfg,
+        None,
+        &mut out2,
+        &mut ws_gmres2,
+        GmresCapacity::unbounded(),
+        gmres_opts,
+        ResidualAccounting::ReuseConfirmed,
+        &mut c_gmres2,
+    )
+    .expect("gmres-into None");
+
+    assert_eq!(out1, out2);
+    assert_eq!(c_gmres1.linear_matvecs, c_gmres2.linear_matvecs);
+    assert_eq!(c_gmres1.jvp_vectors, c_gmres2.jvp_vectors);
+}
+
+#[test]
+fn current_w_preserves_buffer_capacity() {
+    // Under CurrentW, clearing KrylovState::Gcrodr and KrylovState::Lgmres must preserve
+    // outer vector capacities without dropping or reallocating them.
+    use rodas5p_integrators::KrylovState;
+
+    let mut gcrodr_state = KrylovState::for_method(LinearMethod::Gcrodr);
+    if let Some(KrylovState::Gcrodr(ref mut st)) = gcrodr_state {
+        st.basis.reserve(16);
+        st.image.reserve(16);
+        st.basis.push(vec![1.0; 10]);
+        st.image.push(vec![2.0; 10]);
+        assert_eq!(st.basis.len(), 1);
+        assert!(st.basis.capacity() >= 16);
+        assert!(st.image.capacity() >= 16);
+
+        let cap_basis = st.basis.capacity();
+        let cap_image = st.image.capacity();
+
+        // Simulate CurrentW reset
+        st.basis.clear();
+        st.image.clear();
+        st.operator_token = None;
+        st.system_identity = None;
+        st.previous_solution = None;
+        st.generation = 0;
+
+        assert_eq!(st.basis.len(), 0);
+        assert_eq!(st.image.len(), 0);
+        assert_eq!(st.basis.capacity(), cap_basis);
+        assert_eq!(st.image.capacity(), cap_image);
+    } else {
+        panic!("expected Gcrodr state");
+    }
+
+    let mut lgmres_state = KrylovState::for_method(LinearMethod::Lgmres);
+    if let Some(KrylovState::Lgmres(ref mut st)) = lgmres_state {
+        st.directions.reserve(16);
+        st.images.reserve(16);
+        st.directions.push(vec![1.0; 10]);
+        st.images.push(Some(vec![2.0; 10]));
+        assert_eq!(st.directions.len(), 1);
+        assert!(st.directions.capacity() >= 16);
+        assert!(st.images.capacity() >= 16);
+
+        let cap_dir = st.directions.capacity();
+        let cap_img = st.images.capacity();
+
+        st.directions.clear();
+        st.images.clear();
+        st.operator_token = None;
+        st.system_identity = None;
+        st.previous_solution = None;
+        st.generation = 0;
+
+        assert_eq!(st.directions.len(), 0);
+        assert_eq!(st.images.len(), 0);
+        assert_eq!(st.directions.capacity(), cap_dir);
+        assert_eq!(st.images.capacity(), cap_img);
+    } else {
+        panic!("expected Lgmres state");
+    }
+}
+
+#[test]
+fn vg3_base_json_bitwise_anchor() {
+    use sha2::{Digest, Sha256};
+
+    let base_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("../../research/sp04_zero_start_recycling_20261011/BASE.json");
+    let content = std::fs::read_to_string(&base_path).expect("read BASE.json");
+
+    // Verify SHA-256 of BASE.json
+    let mut hasher = Sha256::new();
+    hasher.update(content.as_bytes());
+    let hash = format!("{:x}", hasher.finalize());
+    assert_eq!(
+        hash, "e4afecdab62a83e194da3b52499bcfc5e23c293cc274132c67023f5d757985b5",
+        "BASE.json SHA-256 mismatch"
+    );
+
+    let doc: Value = serde_json::from_str(&content).expect("parse BASE.json");
+    let rows = doc["rows"].as_array().expect("rows array");
+
+    let p = &PROBLEMS[0]; // E-normal
+    let (prob, y0, y_exact) = make_problem(p);
+
+    // Anchor on E-normal at rtol 1e-6 across comparator arms (G-Z, G-P, C-Z)
+    for &target_arm in &["G-Z", "G-P", "C-Z"] {
+        let base_row = rows
+            .iter()
+            .find(|r| {
+                r["problem"].as_str() == Some(p.name)
+                    && (r["rtol"].as_f64().unwrap() - 1.0e-6).abs() < 1.0e-12
+                    && r["arm"].as_str() == Some(target_arm)
+            })
+            .unwrap_or_else(|| panic!("row for {target_arm} not found in BASE.json"));
+
+        let row = make_row(p, target_arm, 1.0e-6, &prob, &y0, &y_exact);
+        assert_eq!(row["ok"], true);
+        assert_eq!(row["success"], true);
+        assert_eq!(
+            row["attempts"], base_row["attempts"],
+            "attempts mismatch for {target_arm}"
+        );
+        assert_eq!(
+            row["accepted"], base_row["accepted"],
+            "accepted mismatch for {target_arm}"
+        );
+        assert_eq!(
+            row["rejected"], base_row["rejected"],
+            "rejected mismatch for {target_arm}"
+        );
+        assert_eq!(row["t"], base_row["t"], "t mismatch for {target_arm}");
+        assert_eq!(
+            row["y_last"], base_row["y_last"],
+            "y_last mismatch for {target_arm}"
+        );
+        assert_eq!(
+            row["counters"], base_row["counters"],
+            "counters mismatch for {target_arm}"
+        );
+    }
 }
 
 #[test]
@@ -733,6 +990,24 @@ fn zero_allocation_in_explicit_zero_hot_loop() {
     assert_eq!(
         allocs, 0,
         "explicit zero hot loop attempt must perform 0 heap allocations, got {allocs}"
+    );
+
+    // Arm 2: GMRES + ExplicitZero + CurrentW
+    let mut work_gw = Rodas5pMfFastWorkspace::new(&prob, &linear).expect("workspace new");
+    work_gw.set_explicit_zero(true);
+    work_gw.set_current_w(true);
+    work_gw.set_gmres_into(true);
+    work_gw.set_ls_workspace(true);
+    let warm_gw = work_gw.attempt(&prob, t, &y0, h, true, None, atol, rtol, &mut counters);
+    assert!(warm_gw.is_ok(), "warm CurrentW attempt should succeed");
+
+    let (hot_gw, allocs_gw) = allocations_during(|| {
+        work_gw.attempt(&prob, t, &y0, h, false, None, atol, rtol, &mut counters)
+    });
+    assert!(hot_gw.is_ok(), "hot CurrentW attempt should succeed");
+    assert_eq!(
+        allocs_gw, 0,
+        "GMRES explicit zero CurrentW hot loop attempt must perform 0 heap allocations, got {allocs_gw}"
     );
 }
 

@@ -147,6 +147,7 @@ impl RecycleScope {
 pub enum StageStartKind {
     Zero,
     PreviousStage,
+    PreviousStep,
     SolverCarried,
 }
 
@@ -155,6 +156,7 @@ pub enum StageStartKind {
 pub struct KrylovStartTelemetry {
     pub zero_starts: u64,
     pub previous_stage_starts: u64,
+    pub previous_step_starts: u64,
     pub solver_carried_starts: u64,
     pub cross_system_basis_starts: u64,
 }
@@ -2153,7 +2155,12 @@ impl Rodas5pMfFastWorkspace {
             if self.recycle_scope == RecycleScope::CurrentW {
                 match recycle.as_mut() {
                     Some(KrylovState::Gcrodr(st)) => {
-                        st.clear();
+                        st.basis.clear();
+                        st.image.clear();
+                        st.operator_token = None;
+                        st.system_identity = None;
+                        st.previous_solution = None;
+                        st.generation = 0;
                     }
                     Some(KrylovState::Lgmres(st)) => {
                         st.directions.clear();
@@ -2341,11 +2348,21 @@ impl Rodas5pMfFastWorkspace {
     }
 
     /// Enable or disable opt-in Krylov start telemetry (research node SP04).
+    ///
+    /// Start telemetry is strictly opt-in and diagnostic-only; it is disabled
+    /// by default. Runs with start telemetry enabled are excluded from VG-1
+    /// zero-allocation and wall-clock benchmarks because system identity
+    /// hashing performs allocations.
     pub fn set_start_telemetry_enabled(&mut self, enabled: bool) {
         self.start_telemetry_enabled = enabled;
         if !enabled {
             self.start_telemetry = KrylovStartTelemetry::default();
         }
+    }
+
+    /// Alias for [`set_start_telemetry_enabled`].
+    pub fn set_start_telemetry(&mut self, enabled: bool) {
+        self.set_start_telemetry_enabled(enabled);
     }
 
     pub fn start_telemetry_enabled(&self) -> bool {
@@ -2659,6 +2676,11 @@ impl Rodas5pMfFastWorkspace {
                 self.staged_z.resize(n, 0.0);
             }
         }
+        let telemetry_sys_id = if self.start_telemetry_enabled {
+            exact_krylov_system_identity(&shifted, &self.preconditioner)
+        } else {
+            None
+        };
         for i in 0..s {
             if i == 0 {
                 self.stage_rhs.copy_from_slice(&self.f0);
@@ -2722,17 +2744,16 @@ impl Rodas5pMfFastWorkspace {
                 atol: linear_atol,
             };
             if self.start_telemetry_enabled {
-                let current_sys_id = exact_krylov_system_identity(&shifted, &self.preconditioner);
                 let cross_system = match state.as_deref() {
                     Some(KrylovState::Gcrodr(st)) => {
                         !st.basis.is_empty()
-                            && (current_sys_id.is_none()
-                                || st.system_identity.as_ref() != current_sys_id.as_ref())
+                            && (telemetry_sys_id.is_none()
+                                || st.system_identity.as_ref() != telemetry_sys_id.as_ref())
                     }
                     Some(KrylovState::Lgmres(st)) => {
                         !st.directions.is_empty()
-                            && (current_sys_id.is_none()
-                                || st.system_identity.as_ref() != current_sys_id.as_ref())
+                            && (telemetry_sys_id.is_none()
+                                || st.system_identity.as_ref() != telemetry_sys_id.as_ref())
                     }
                     _ => false,
                 };
@@ -2742,7 +2763,9 @@ impl Rodas5pMfFastWorkspace {
                 let kind = match self.start_policy {
                     KrylovStartPolicy::ExplicitZero => StageStartKind::Zero,
                     KrylovStartPolicy::Configured => {
-                        if previous {
+                        if step_start {
+                            StageStartKind::PreviousStep
+                        } else if previous {
                             StageStartKind::PreviousStage
                         } else {
                             match state.as_deref() {
@@ -2765,6 +2788,7 @@ impl Rodas5pMfFastWorkspace {
                     StageStartKind::PreviousStage => {
                         self.start_telemetry.previous_stage_starts += 1
                     }
+                    StageStartKind::PreviousStep => self.start_telemetry.previous_step_starts += 1,
                     StageStartKind::SolverCarried => {
                         self.start_telemetry.solver_carried_starts += 1
                     }
