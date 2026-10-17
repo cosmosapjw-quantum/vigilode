@@ -208,3 +208,17 @@ are unknown, and no code or run of this node exists before this commit.
   expected to be repaid at n = 256. A gain, if any, is likeliest on `E-normal`; extra iterations are likeliest on
   `E-nonnormal-strong`.
 - `R-Zw` near `C-Z`; `L-Z` below `L-P`. Overall: FAIL more likely than PASS.
+
+## Results
+
+- **Execution commit**: `b34d07d45618371a68f797bedbaa942904482d1b` (`tree_clean: true`).
+- **Artifacts**: `BASE.json` (`e4afecdab62a83e194da3b52499bcfc5e23c293cc274132c67023f5d757985b5`), `RUNS.json` (`6e0cc630d4ace53d82bc0bfe64edf2b4523a05397a9201d76af7e1be61b1a276`), `PROFILE.json` (`18b6a74909576dcd625d846879f41c385f262441f4ec71c760d64b92ab87b72e`), `RESULTS.json` (`b4cc92a6e1259b1d1a2f93f686c28d32e366bfcad7bf73e91876de3948067886`).
+- **Gate verdict**: **FAIL** (ledger entry `L-0106`), matching the preregistered prediction.
+  - **Item 1 (Existing arms unchanged)**: PASS — all 8 comparator arms in `RUNS.json` match `BASE.json` bitwise across all 6 cells (`48/48` rows), and the default entry point matches `G-P` bitwise.
+  - **Item 2 (Separation contract)**: PASS — under `ExplicitZero`, `zero_starts == linear_solves` with zero previous-stage, previous-step, and solver-carried starts; `ExplicitZero` with GMRES-into equals `G-Z` bitwise and with GCRO-DR `Cold` equals `C-Z` bitwise; telemetry-on equals telemetry-off bitwise.
+  - **Item 3 (Current-W contract)**: PASS — carried GCRO-DR pairs recompute images against new $W$ charged to `recycle_refresh_matvecs`; `CurrentW` empties the carried subspace at every attempt start while preserving vector capacity; `recycle_update_refreshes == recycle_updates` in every `R-Z` row.
+  - **Item 4 (Equal accuracy and failures)**: FAIL — `R-Z` matches `S*` attempts and accuracy on `E-normal` (`1e-6`, `1e-8`) and at `1e-8` on `E-nonnormal` / `E-nonnormal-strong`, but incurs linear-solve failures and extra attempts (`71` vs `15` and `73` vs `15`) at `1e-6` on `E-nonnormal` and `E-nonnormal-strong`.
+  - **Item 5 (Total work gain `C(R-Z) <= 0.90 C(S*)`)**: FAIL — `C(R-Z)/C(S*)` achieves `0.7217` on `(E-normal, 1e-8)` (`S* = Lg-P`), but is `1.0076` on `(E-normal, 1e-6)` (`S* = R-P`) and `1.7397`–`2.1590` on the four nonnormal cells (`S* = L-P`).
+  - **Item 6 (No hidden cost `Ir(R-Z) <= 1.00 Ir(S*)`)**: FAIL — callgrind 2-minus-1 `Ir(R-Z)/Ir(S*)` at `1e-6` is `1.0190` on `E-normal`, `3.0180` on `E-nonnormal`, and `2.8316` on `E-nonnormal-strong`.
+- **Disposition**: Software separation of `KrylovStartPolicy` and `RecycleScope` with opt-in `KrylovStartTelemetry` is retained with all defaults unchanged (`Configured`, `Carried`, telemetry off); `R-Z` is not promoted.
+
