@@ -50,5 +50,5 @@ process blocks and an A/A control.
 
 ## Status
 
-No external adapter exists in the tree beyond the SciPy reference path; no
-comparison has been run.
+- SciPy reference path: active for numerical validation control.
+- Diffsol (`diffsol-0.16.1`): An exhaustive empirical and architectural benchmark against Diffsol (covering BDF 1-5, ESDIRK34, and TR-BDF2 with `faer` and `nalgebra` backends across Robertson, van der Pol $\mu=1000$, HIRES, and Brusselator 1D) has been completed. Full findings and Pareto trade-off analyses are documented in [DIFFSOL_BENCHMARK_REPORT.md](DIFFSOL_BENCHMARK_REPORT.md).
