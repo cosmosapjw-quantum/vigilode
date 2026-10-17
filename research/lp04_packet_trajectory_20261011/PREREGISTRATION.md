@@ -65,4 +65,13 @@ python3 tools/lp04_stage0_check.py --output research/lp04_packet_trajectory_2026
 
 ## Results
 
-Appended after the recorded run. Nothing above this heading changes.
+Executed 2026-10-18 under commit `e9f32326953d6caf1973cd53f314dd8e0e4a4bd0` (ledger `L-0121`).
+
+### 1. Stage 0 Feasibility Outcome
+- **VG-1 (Zero online solver counters):** Online Jacobian calls = 0, JVP calls = 0, Krylov iterations = 0, linear solves = 0 across multi-window trajectory. Moment terms, polynomial multiply terms, Volterra terms, and nonlinear evaluations strictly tracked and positive. `met = true`.
+- **VG-2 (Multi-window convergence & linear limit):** Multi-window trajectory advances continuously; matches exact decoupled harmonic oscillator modes within certified mode bounds to $< 10^{-12}$. `met = true`.
+- **VG-3 (Transactional atomicity & uncertainty transfer):** Rejected attempts strictly preserve accepted state and time unmodified; work counters accumulate monotonically during retries; clean separation between `OutputPolicy::MeanOnly` and `OutputPolicy::AllModes`; inherited radii propagation rigorously verified. `met = true`.
+- **Negative admission gate:** Strictly refuses reversed time interval ($t_{\text{end}} \le t_{\text{start}}$), non-positive step/tolerances, radii dimension mismatches, and step underflows below $\text{min\_h}$. `met = true`.
+- **Decision:** `FEASIBLE`.
+- **Verdict:** `PASS`.
+
