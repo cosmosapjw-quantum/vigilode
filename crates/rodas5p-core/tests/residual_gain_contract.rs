@@ -555,7 +555,14 @@ fn export_runs() {
         .unwrap();
     let default_out = repo_root.join("research/as05_residual_gain_core_20261011/RUNS.json");
     let out_path = std::env::var("AS05_RUNS")
-        .map(std::path::PathBuf::from)
+        .map(|p| {
+            let pb = std::path::PathBuf::from(p);
+            if pb.is_relative() {
+                repo_root.join(pb)
+            } else {
+                pb
+            }
+        })
         .unwrap_or(default_out);
     if let Some(parent) = out_path.parent() {
         std::fs::create_dir_all(parent).unwrap();
