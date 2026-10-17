@@ -49,7 +49,8 @@ pub use operator::{
 pub use polynomial_action::{
     EnclosureIdentity, LAGUERRE_COMPONENTS_UNSUPPORTED, LaguerreAdjointColumnExport,
     LaguerreAssemblyExport, LaguerreColumnTermExport, LaguerreComponentExport,
-    LaguerreExportIdentity, joint_phi_action_laguerre_components, scale_bound_up,
+    LaguerreExportIdentity, LocalBasisPlan, joint_phi_action_laguerre_components,
+    plan_joint_phi_local, scale_bound_up,
 };
 pub use residual_gain::{
     AssemblyUncertainty, DeclaredStructure, EstimateSource, EstimatedCorrection, FrozenMetric,

@@ -1115,6 +1115,23 @@ struct LaguerreExportIntermediate {
     columns: [LaguerreAdjointColumnInternal; JOINT_PHI_TERMS],
 }
 
+/// Plan-only basis selection metadata for joint phi action (PY02).
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct LocalBasisPlan {
+    pub basis: PolynomialBasis,
+    pub branch: &'static str,
+    pub degree: usize,
+    pub block_width: usize,
+    pub vector_products: usize,
+    pub laguerre_scale: Option<f64>,
+    pub beta: f64,
+    pub laguerre_extent: f64,
+    pub tail_factor: f64,
+    pub weight_factor: f64,
+    pub truncation_bound: f64,
+    pub normalization_shift: i32,
+}
+
 /// Upper bound on the Euclidean norm, formed on a power-of-two scale
 /// ([`ExpBound::l2_norm_upper`], re-audit R4 POLY-DEV-01): the squares of
 /// `1e300` no longer overflow and those of `1e-300` no longer round up to a
@@ -1772,6 +1789,170 @@ pub fn joint_phi_action_laguerre_components(
     };
 
     Ok((report, export))
+}
+
+/// Plan-only local transform and degree selection helper for joint phi action (PY02).
+///
+/// Computes degree, scale, block width, vector products, and truncation bound
+/// without evaluating any polynomial recurrence, building coefficient tables,
+/// or running admission.
+pub fn plan_joint_phi_local(
+    op: &SymmetricNonpositiveOperator,
+    h: f64,
+    input: JointPhiInput<'_>,
+    basis: PolynomialBasis,
+    truncation_budget: f64,
+) -> CoreResult<LocalBasisPlan> {
+    let n = op.dimension();
+    if !(h.is_finite() && h >= 0.0) {
+        return Err(unsupported(format!(
+            "step h = {h:e} must be finite and >= 0"
+        )));
+    }
+    if !(truncation_budget.is_finite() && truncation_budget > 0.0) {
+        return Err(unsupported("truncation budget must be positive"));
+    }
+    let (block, scales, width): (Vec<Vec<f64>>, [f64; JOINT_PHI_TERMS], usize) = match input {
+        JointPhiInput::Distinct(vectors) => {
+            if vectors.iter().any(|w| w.len() != n) {
+                return Err(unsupported("every w_k must have the operator dimension"));
+            }
+            (vectors.to_vec(), [1.0; JOINT_PHI_TERMS], vectors.len())
+        }
+        JointPhiInput::SameVector { vector, scales } => {
+            if vector.len() != n {
+                return Err(unsupported("vector must have the operator dimension"));
+            }
+            (vec![vector.to_vec()], scales, 1)
+        }
+    };
+    if !block.iter().flatten().chain(&scales).all(|x| x.is_finite()) {
+        return Err(CoreError::NonFinite(
+            "joint phi input contains NaN/Inf".into(),
+        ));
+    }
+
+    let SpectralEnclosure { lambda, rho, .. } = op.enclosure.clone();
+    let scalar_branch = h == 0.0 || rho == 0.0 || lambda == rho;
+    if lambda == rho && rho > 0.0 {
+        let scalar =
+            (0..n).all(|i| (0..n).all(|j| op.matrix[(i, j)] == if i == j { -lambda } else { 0.0 }));
+        if !scalar {
+            return Err(unsupported("a degenerate enclosure needs A = -lambda I"));
+        }
+    }
+    if rho == 0.0 && op.matrix.as_slice().iter().any(|x| *x != 0.0) {
+        return Err(unsupported("the enclosure [0, 0] needs A = 0"));
+    }
+
+    // Power-of-two normalization check
+    let max = block
+        .iter()
+        .flatten()
+        .fold(0.0_f64, |acc, x| acc.max(x.abs()));
+    let raw_shift = if max.is_finite() && max > 0.0 {
+        crate::binary_split(max).1
+    } else {
+        0
+    };
+
+    let (shift, budget_scaled, scaled_block) = if raw_shift.abs() <= NORMALIZATION_WINDOW {
+        (0_i64, truncation_budget, block)
+    } else {
+        let range = |what: &str| {
+            CoreError::NonFinite(format!(
+                "{POLYNOMIAL_RANGE_UNSUPPORTED}: {what} outside the binary64 range after scaling by 2^{raw_shift}"
+            ))
+        };
+        let mut b_scaled = scale_pow2(truncation_budget, -raw_shift);
+        if b_scaled.is_finite() && scale_pow2(b_scaled, raw_shift) > truncation_budget {
+            b_scaled = b_scaled.next_down();
+        }
+        if b_scaled == f64::INFINITY {
+            b_scaled = f64::MAX;
+        }
+        if b_scaled.is_nan() || b_scaled <= 0.0 {
+            return Err(range("the truncation budget"));
+        }
+        let scaled = block
+            .into_iter()
+            .map(|vec| {
+                vec.into_iter()
+                    .map(|x| scale_pow2(x, -raw_shift))
+                    .collect::<Vec<_>>()
+            })
+            .collect();
+        (raw_shift, b_scaled, scaled)
+    };
+
+    let norms = (0..JOINT_PHI_TERMS)
+        .map(|k| {
+            if width == 1 {
+                mul_up(scales[k].abs(), norm_up(scaled_block[0].iter().copied())?)
+            } else {
+                norm_up(scaled_block[k].iter().copied())
+            }
+        })
+        .collect::<CoreResult<Vec<_>>>()?;
+    let weight_factor = norms.iter().enumerate().try_fold(0.0, |acc, (k, norm)| {
+        add_up(acc, div_up(*norm, factorial(k))?)
+    })?;
+
+    let branch = if scalar_branch {
+        "scalar"
+    } else {
+        "recurrence"
+    };
+
+    if weight_factor == 0.0 || scalar_branch {
+        return Ok(LocalBasisPlan {
+            basis,
+            branch,
+            degree: 0,
+            block_width: width,
+            vector_products: 0,
+            laguerre_scale: None,
+            beta: 0.0,
+            laguerre_extent: 0.0,
+            tail_factor: 0.0,
+            weight_factor,
+            truncation_bound: 0.0,
+            normalization_shift: shift as i32,
+        });
+    }
+
+    let transform = choose_transform(op, h, basis, weight_factor, budget_scaled, &LAGUERRE_SCALES)?;
+    if basis == PolynomialBasis::Laguerre
+        && transform.degree > crate::laguerre_adjoint::LAGUERRE_ADJOINT_DEGREE_LIMIT
+    {
+        return Err(CoreError::InvalidInput(format!(
+            "LAGUERRE_COMPONENTS_UNSUPPORTED: degree {} exceeds adjoint limit {}",
+            transform.degree,
+            crate::laguerre_adjoint::LAGUERRE_ADJOINT_DEGREE_LIMIT,
+        )));
+    }
+
+    let unscaled_truncation = mul_up(transform.tail_factor, weight_factor)?;
+    let truncation_bound = if shift != 0 {
+        scale_bound_up(unscaled_truncation, shift)?
+    } else {
+        unscaled_truncation
+    };
+
+    Ok(LocalBasisPlan {
+        basis,
+        branch,
+        degree: transform.degree,
+        block_width: width,
+        vector_products: transform.degree * width,
+        laguerre_scale: transform.laguerre_scale,
+        beta: transform.beta,
+        laguerre_extent: transform.laguerre_extent,
+        tail_factor: transform.tail_factor,
+        weight_factor,
+        truncation_bound,
+        normalization_shift: shift as i32,
+    })
 }
 
 /// The continuous Laguerre scale of re-audit R4 (R4-POLY-DEV-05) for a
