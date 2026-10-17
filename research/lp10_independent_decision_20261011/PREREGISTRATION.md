@@ -44,3 +44,21 @@ Can the independent decision review for LP10:
 ```bash
 python3 tools/lp10_stage0_check.py --output research/lp10_independent_decision_20261011/STAGE0.json
 ```
+
+## Results
+
+Executed 2026-10-18 under commit `43baf0073c5cf01e9821329e7357a8c3b50e0264` (ledger `L-0123`).
+
+### 1. Stage 0 Feasibility Outcome
+- **Scope of finished routes:** Track A recommended first path (`LP01` collective model, `LP02` single-window packet, `LP03` damped moments, `LP04` adaptive multi-window trajectory, `LP09` fair benchmark) is 100% verified, tested, ledgered, and audited.
+- **Dispositions of remaining DAG nodes:**
+  - `LP05` (Rank-r & multiple clusters): `DEFERRED_OPTIONAL_BRANCH`.
+  - `LP06` (Real nonlinear client): `EXISTING_NONLINEAR_REAL_CLIENT` strictly retained as `NOT_ESTABLISHED` (scientific hygiene preserved; no fabricated clients).
+  - `LP07` (Implicit closure atlas): `DEFERRED_OPTIONAL_BRANCH`.
+  - `LP08` (FFT acceleration): `DEFERRED_OPTIONAL_BRANCH`.
+  - `LP11` (Shared-shift jet): `SOURCE_VERIFIED_ALREADY_PRESENT` (`shared_shift_jet.rs:363-375`).
+  - `LP12` (Missing input recovery): `BLOCKED_EXTERNAL_SOURCE`.
+- **Promotion Decision:** `PROMOTE_SPECIALIZED_MODULE_RETAIN_PRODUCTION_DEFAULT`. The collective packet solver is promoted as a certified domain-specialized high-performance subsystem for oscillatory collective systems, while `rodas5p_fast` / `rodas5p_mf_fast` is retained as the production default for general initial value problems.
+- **Timing authority:** Strictly maintained on hold as `"timing_authority": "diagnostic_only"` under R2-STAT-01 and R4-STAT-DEV-01.
+- **Decision:** `PROMOTE_SPECIALIZED_MODULE_RETAIN_PRODUCTION_DEFAULT`.
+- **Verdict:** `PASS`.
