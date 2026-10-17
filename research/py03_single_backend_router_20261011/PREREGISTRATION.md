@@ -172,3 +172,17 @@ must not change any v1 digest, and this node's cache-key contract tests must pas
   - Against `pp08`: about 0.25-0.50x the vector products. This is Chebyshev / (Chebyshev + Laguerre), with the
     Laguerre / Chebyshev product ratio between 1.0 and about 3 (PP08: 1.0-1.57 where both admit, up to 2.9 at
     h rho = 40).
+
+## Results (2026-10-17)
+
+- **Execution commit (`EXEC_SHA`)**: `af238965c073366a7740b7baed1367d88ec739af`
+- **Verdict**: **FAIL** (Gate items 1–4 `PASS`, Gate item 5 `FAIL` as `"niche empty"` with `|N| = 0 < 6`, matching the preregistered prediction)
+- **Gate Breakdown**:
+  - **Item 1 Certification**: `true` — every admitted `single` result has `bound <= total_budget` and `bound >= 50-digit error`; declared enclosure, unbounded timing execution, Laguerre degree `> 128`, and unmet budgets (`budget = 0`) are never admitted.
+  - **Item 2 Parity**: `true` — `execute_joint_phi` equals `joint_phi_action` bitwise across all executed backends, and `single` matches `cheb` bitwise wherever Chebyshev is selected.
+  - **Item 3 Accounting**: `true` — `RouteCost` and caller `WorkCounters` equal plan work plus every executed backend (`0` plan tail evaluations during `execute_joint_phi`, direct `coefficient_series_terms` and `certification_operations` accounting without table recomputation; failed Laguerre preflights under `ForceLaguerreFirst` are charged before Chebyshev executes).
+  - **Item 4 One Execution**: `true` — wherever the first executed backend is admitted, exactly one recurrence runs, reducing vector products vs `pp08` across all 96 grid cases.
+  - **Item 5 Niche Benefit**: `false` (`"niche empty"`) — `|N| = 0 < 6` grid cases preselect Laguerre in cold preflight because Chebyshev predicted vector products are strictly below Laguerre on all 96 grid cases (consistent with `PY02` `ABSTAIN (A3)`). Per kill rule, no Laguerre routing benefit is claimed and no default dispatch changes.
+- **Artifacts**:
+  - `research/py03_single_backend_router_20261011/cases.json` (`f46f5650f77b23ac1aa6b0881c317b4684828e326bc1fe288e89a58338529961`)
+  - `research/py03_single_backend_router_20261011/RESULTS.json` (`43779641d2269e45f9b346f0ec4c33e0353b9770df85433d3ef4a54c490db610`)
