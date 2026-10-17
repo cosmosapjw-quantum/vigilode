@@ -163,4 +163,14 @@ retuned after the run.
 
 ## Results
 
-Appended after the recorded run. Nothing above this heading changes.
+Executed 2026-10-17 under commit `c84eecd3fe30ffeb72653f99a5a4f7fd47f02e85` (ledger `L-0114`).
+
+### 1. Branch A Execution
+- HT01 decided `ABSTAIN` (no candidate client qualified under criteria S1-S4).
+- In accordance with registered Branch A, nothing was built or run.
+- **Command:** `python3 tools/ht02_parallel_check.py --ht01 research/ht01_homotopy_client_contract_20261011/RESULTS.json --abstain-only --output research/ht02_homotopy_parallel_pilot_20261011/RESULTS.json`
+- **Output:** `research/ht02_homotopy_parallel_pilot_20261011/RESULTS.json`
+- **Decision:** ABSTAIN_NOT_RUN
+- **Verdict:** INCONCLUSIVE
+- **Runs:** 0
+- **Wall time speedup:** null
