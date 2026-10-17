@@ -167,3 +167,16 @@ change any v1 digest or PY03's cache-key tests; PY05 adds no key to those caches
 ## Results
 
 Appended after the recorded run. Nothing above this heading changes.
+
+- **Execution commit (`EXEC_SHA`)**: `1e7d902f4f1ca4a80393abe510ffe3ee56408b69`
+- **Stage 0 Outcome**: **FEASIBLE** (`proved = true`, `oracle_violations = 0` for all `T1`–`T5` across exact-rational checks on `n <= 5` and 60 fresh 50-digit `mpmath` fixtures).
+- **Stage 1 Verdict**: **FAIL** (Gate items 1–2 `PASS`, Gate item 3 `FAIL` on niche `h rho >= 40`, matching the preregistered prediction).
+- **Stage 1 Gate Breakdown**:
+  - **Item 1 Enclosure**: `true` (`0` violations across all 40 registered cells against 50/70-digit `mpmath` references; every admitted result satisfies `total_bound <= total_budget`).
+  - **Item 2 No False Authority**: `true` (`leja-est` remains `EstimateOnly` with `LEJA_TOTAL_NOT_CERTIFIED` and is rejected by certified APIs; `leja-cert` refuses declared enclosures and nonnormal operators).
+  - **Item 3 Complete Cost Wins**: `false` (on niche cells `h rho >= 40`, T1's factorial truncation bound and T3's tail-polynomial propagation require higher degree or exceed `LEJA_DEGREE_CAP = 128` at `h rho in {80, 160}`, yielding median complete-cost ratio `inf > 0.95` against `cheb-cert`). Per DAG kill rule, `Leja` remains `EstimateOnly` for dispatch purposes and `leja_phi_action_certified` stays research-only and unrouted.
+- **Artifacts**:
+  - `research/py05_leja_total_certificate_20261011/STAGE0.json` (`eb043ee561fc7f7855d7b662f0afceea75a825875a4ad60489cf293685a92304`)
+  - `research/py05_leja_total_certificate_20261011/RUNS.json` (`392b604d53bf33492374e1210ab4125c5036b032de92f33fe67d0b3a4bed0e27`)
+  - `research/py05_leja_total_certificate_20261011/PROFILE.json` (`bbacb178b7446a597c1bffa4ec667f7288c8d53c7b8a0d68f306bfcec632f214`)
+  - `research/py05_leja_total_certificate_20261011/RESULTS.json` (`601734e7979eb30889e947d6e9b0b2018211e4ebdbfa4c0666757bd94285f3fc`)
