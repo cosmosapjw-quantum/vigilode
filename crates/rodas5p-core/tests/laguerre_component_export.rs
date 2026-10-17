@@ -702,11 +702,27 @@ fn export_components() {
         std::fs::create_dir_all(parent).unwrap();
     }
 
+    let commit_out = std::process::Command::new("git")
+        .args(["rev-parse", "HEAD"])
+        .current_dir(repo_root)
+        .output()
+        .expect("git rev-parse HEAD");
+    let source_commit = String::from_utf8(commit_out.stdout)
+        .expect("utf8")
+        .trim()
+        .to_string();
+    let status_out = std::process::Command::new("git")
+        .args(["status", "--porcelain"])
+        .current_dir(repo_root)
+        .output()
+        .expect("git status --porcelain");
+    let tree_clean = status_out.stdout.is_empty();
+
     let doc = json!({
         "schema": "vigilode-py01-laguerre-components-v1",
         "node": "research/py01_laguerre_component_export_20261011",
-        "source_commit": "70df29c",
-        "tree_clean": true,
+        "source_commit": source_commit,
+        "tree_clean": tree_clean,
         "cases": exported_cases,
     });
 
