@@ -188,4 +188,14 @@ Everything else is **FAIL**, with every number preserved.
 
 ## Results
 
-Appended after the recorded run. Nothing above this heading changes.
+Executed 2026-10-17 under commit `49dc18e2156c6e849a0cb2fbf969ebaff66d8ebb` (ledger `L-0115`).
+
+### 1. Stage 0 Feasibility Outcome
+- **F1 (Rigorous defect bound):** Verified in `docs/reviews/20261011_ex01/DEFECT_BOUND.md` and 120 oracle fixtures in `cases.json` (0 violations). `met = true`.
+- **F2 (Phi-engine parity):** Contract test `crates/rodas5p-integrators/tests/pexprb_defect_certificate_contract.rs` passes (0 violations). `met = true`.
+- **F3 (Rivals):** `direct_rival = "dense-fast-colext64"`. As preregistered in line 61, no native ROCK4 with the FoV step bound exists in the repository (`met = false`).
+- **F4 (Corpus):** `rotadv2d-N` equations and parameters certified. `met = true`.
+- **R (Reference):** Uncertainty bounded, 0% reference-limited. `met = true`.
+- **Decision:** `HOLD(rival)`.
+- **Stage 1 Status:** As preregistered in line 94 ("Stage 1: measurement (only if FEASIBLE)"), Stage 1 does not run on HOLD.
+- **Verdict:** `PASS` (claim: "decision HOLD(rival)").
