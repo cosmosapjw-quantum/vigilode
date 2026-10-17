@@ -1,0 +1,727 @@
+{
+  "schema_version": 1,
+  "workflow_version": "1.0.0",
+  "task": "both",
+  "unit_id": "production-audit-20261018",
+  "objective": "Audit latest VigilODE production readiness; construct and review accuracy/cost improvements and targeted repairs.",
+  "scope": "Current audit/research unit including publishable report completed. Future production implementation obligations remain explicit.",
+  "status": "complete",
+  "dependencies": [
+    {
+      "id": "D0",
+      "identity": "2fc61b944fe431d40ba455c373579bce00b0c39a",
+      "description": "latest audited source"
+    },
+    {
+      "id": "D1",
+      "identity": "bbb8ef42ad4e9b49704b165a54a26c435c575ae3",
+      "description": "unchanged prior Loop12 evidence"
+    },
+    {
+      "id": "D2",
+      "identity": "SOURCE_IDENTITY.json final_changed_files",
+      "description": "final content hashes"
+    }
+  ],
+  "evidence": [
+    {
+      "id": "E0",
+      "kind": "artifact",
+      "locator": "SOURCE_IDENTITY.json",
+      "scope": "source identities",
+      "dependency_ids": [
+        "D0",
+        "D2"
+      ]
+    },
+    {
+      "id": "E1",
+      "kind": "review",
+      "locator": "evidence/packet_audit.json",
+      "scope": "packet counterexamples",
+      "dependency_ids": [
+        "D0",
+        "D2"
+      ]
+    },
+    {
+      "id": "E2",
+      "kind": "review",
+      "locator": "evidence/solver_audit.json",
+      "scope": "Leja/sparse audit",
+      "dependency_ids": [
+        "D0",
+        "D2"
+      ]
+    },
+    {
+      "id": "E3",
+      "kind": "review",
+      "locator": "evidence/performance_audit.json",
+      "scope": "data/source benchmark audit",
+      "dependency_ids": [
+        "D0",
+        "D2"
+      ]
+    },
+    {
+      "id": "E4",
+      "kind": "calculation",
+      "locator": "../../docs/reviews/20261018_production_audit/THEORY_KO.md",
+      "scope": "constructive T1-T3 proofs",
+      "dependency_ids": [
+        "D0",
+        "D2"
+      ]
+    },
+    {
+      "id": "E5",
+      "kind": "review",
+      "locator": "evidence/independent_review.json",
+      "scope": "independent proof/source review",
+      "dependency_ids": [
+        "D0",
+        "D2"
+      ]
+    },
+    {
+      "id": "E6",
+      "kind": "implementation",
+      "locator": "VALIDATION.json",
+      "scope": "actual execution and repairs",
+      "dependency_ids": [
+        "D0",
+        "D2"
+      ]
+    },
+    {
+      "id": "E7",
+      "kind": "decision",
+      "locator": "DECISION.json",
+      "scope": "current scope decision",
+      "dependency_ids": [
+        "D0",
+        "D2"
+      ]
+    },
+    {
+      "id": "E8",
+      "kind": "artifact",
+      "locator": "NEXT_STEPS.json",
+      "scope": "concrete development DAG",
+      "dependency_ids": [
+        "D0",
+        "D2"
+      ]
+    },
+    {
+      "id": "E9",
+      "kind": "calculation",
+      "locator": "WOODBURY_THEORY.md",
+      "scope": "rank2 algebra and costs",
+      "dependency_ids": [
+        "D0",
+        "D2"
+      ]
+    },
+    {
+      "id": "E10",
+      "kind": "artifact",
+      "locator": "../../docs/reviews/20261018_production_audit/REPORT_KO.md",
+      "scope": "report/handoff",
+      "dependency_ids": [
+        "D0",
+        "D2"
+      ]
+    }
+  ],
+  "stages": [
+    {
+      "id": "R1",
+      "status": "complete",
+      "evidence_refs": [
+        "E0"
+      ],
+      "dependency_ids": [
+        "D0",
+        "D2"
+      ],
+      "reason": "Current audit/research scope complete; future production obligations separately held.",
+      "reuse": null
+    },
+    {
+      "id": "R2",
+      "status": "complete",
+      "evidence_refs": [
+        "E0",
+        "E1",
+        "E2"
+      ],
+      "dependency_ids": [
+        "D0",
+        "D2"
+      ],
+      "reason": "Current audit/research scope complete; future production obligations separately held.",
+      "reuse": null
+    },
+    {
+      "id": "R3",
+      "status": "complete",
+      "evidence_refs": [
+        "E1",
+        "E2",
+        "E3"
+      ],
+      "dependency_ids": [
+        "D0",
+        "D2"
+      ],
+      "reason": "Current audit/research scope complete; future production obligations separately held.",
+      "reuse": null
+    },
+    {
+      "id": "R4",
+      "status": "complete",
+      "evidence_refs": [
+        "E4",
+        "E9"
+      ],
+      "dependency_ids": [
+        "D0",
+        "D2"
+      ],
+      "reason": "Current audit/research scope complete; future production obligations separately held.",
+      "reuse": null
+    },
+    {
+      "id": "R5",
+      "status": "complete",
+      "evidence_refs": [
+        "E4",
+        "E9"
+      ],
+      "dependency_ids": [
+        "D0",
+        "D2"
+      ],
+      "reason": "Current audit/research scope complete; future production obligations separately held.",
+      "reuse": null
+    },
+    {
+      "id": "R6",
+      "status": "complete",
+      "evidence_refs": [
+        "E5"
+      ],
+      "dependency_ids": [
+        "D0",
+        "D2"
+      ],
+      "reason": "Current audit/research scope complete; future production obligations separately held.",
+      "reuse": null
+    },
+    {
+      "id": "R7",
+      "status": "complete",
+      "evidence_refs": [
+        "E6"
+      ],
+      "dependency_ids": [
+        "D0",
+        "D2"
+      ],
+      "reason": "Current audit/research scope complete; future production obligations separately held.",
+      "reuse": null
+    },
+    {
+      "id": "R8",
+      "status": "complete",
+      "evidence_refs": [
+        "E7"
+      ],
+      "dependency_ids": [
+        "D0",
+        "D2"
+      ],
+      "reason": "Current audit/research scope complete; future production obligations separately held.",
+      "reuse": null
+    },
+    {
+      "id": "R9",
+      "status": "complete",
+      "evidence_refs": [
+        "E4",
+        "E8"
+      ],
+      "dependency_ids": [
+        "D0",
+        "D2"
+      ],
+      "reason": "Current audit/research scope complete; future production obligations separately held.",
+      "reuse": null
+    },
+    {
+      "id": "R10",
+      "status": "complete",
+      "evidence_refs": [
+        "E10",
+        "E8"
+      ],
+      "dependency_ids": [
+        "D0",
+        "D2"
+      ],
+      "reason": "Current audit/research scope complete; future production obligations separately held.",
+      "reuse": null
+    },
+    {
+      "id": "C1",
+      "status": "complete",
+      "evidence_refs": [
+        "E0"
+      ],
+      "dependency_ids": [
+        "D0",
+        "D2"
+      ],
+      "reason": "Current audit/research scope complete; future production obligations separately held.",
+      "reuse": null
+    },
+    {
+      "id": "C2",
+      "status": "complete",
+      "evidence_refs": [
+        "E1",
+        "E2"
+      ],
+      "dependency_ids": [
+        "D0",
+        "D2"
+      ],
+      "reason": "Current audit/research scope complete; future production obligations separately held.",
+      "reuse": null
+    },
+    {
+      "id": "C3",
+      "status": "complete",
+      "evidence_refs": [
+        "E4"
+      ],
+      "dependency_ids": [
+        "D0",
+        "D2"
+      ],
+      "reason": "Current audit/research scope complete; future production obligations separately held.",
+      "reuse": null
+    },
+    {
+      "id": "C4",
+      "status": "complete",
+      "evidence_refs": [
+        "E8",
+        "E6"
+      ],
+      "dependency_ids": [
+        "D0",
+        "D2"
+      ],
+      "reason": "Current audit/research scope complete; future production obligations separately held.",
+      "reuse": null
+    },
+    {
+      "id": "C5",
+      "status": "complete",
+      "evidence_refs": [
+        "E0",
+        "E6"
+      ],
+      "dependency_ids": [
+        "D0",
+        "D2"
+      ],
+      "reason": "Current audit/research scope complete; future production obligations separately held.",
+      "reuse": null
+    },
+    {
+      "id": "C6",
+      "status": "complete",
+      "evidence_refs": [
+        "E6"
+      ],
+      "dependency_ids": [
+        "D0",
+        "D2"
+      ],
+      "reason": "Current audit/research scope complete; future production obligations separately held.",
+      "reuse": null
+    },
+    {
+      "id": "C7",
+      "status": "complete",
+      "evidence_refs": [
+        "E1",
+        "E4",
+        "E6"
+      ],
+      "dependency_ids": [
+        "D0",
+        "D2"
+      ],
+      "reason": "Current audit/research scope complete; future production obligations separately held.",
+      "reuse": null
+    },
+    {
+      "id": "C8",
+      "status": "complete",
+      "evidence_refs": [
+        "E3",
+        "E6"
+      ],
+      "dependency_ids": [
+        "D0",
+        "D2"
+      ],
+      "reason": "Current audit/research scope complete; future production obligations separately held.",
+      "reuse": null
+    },
+    {
+      "id": "C9",
+      "status": "complete",
+      "evidence_refs": [
+        "E5"
+      ],
+      "dependency_ids": [
+        "D0",
+        "D2"
+      ],
+      "reason": "Current audit/research scope complete; future production obligations separately held.",
+      "reuse": null
+    },
+    {
+      "id": "C10",
+      "status": "complete",
+      "evidence_refs": [
+        "E10",
+        "E8",
+        "E7"
+      ],
+      "dependency_ids": [
+        "D0",
+        "D2"
+      ],
+      "reason": "Current audit/research scope complete; future production obligations separately held.",
+      "reuse": null
+    }
+  ],
+  "claims": [
+    {
+      "id": "C_PRODUCTION",
+      "statement": "Combined optimizations lack complete production/global-output/speed evidence",
+      "scope": "DECISION.json",
+      "basis": [
+        "implementation-verified",
+        "derived"
+      ],
+      "evidence_refs": [
+        "E1",
+        "E2",
+        "E3",
+        "E5",
+        "E6",
+        "E7"
+      ],
+      "obligations": [
+        "B01",
+        "B02",
+        "B03",
+        "B04",
+        "B05"
+      ]
+    },
+    {
+      "id": "C_THEORY",
+      "statement": "T1-T3/WB1-WB2 established under stated premises",
+      "scope": "THEOREMS.json",
+      "basis": [
+        "derived",
+        "numerically checked"
+      ],
+      "evidence_refs": [
+        "E4",
+        "E5",
+        "E9",
+        "E6"
+      ],
+      "obligations": [
+        "Complete native contract-only applications before promotion."
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "id": "Q_MATH",
+      "domain": "math",
+      "result": "pass_scoped",
+      "evidence_refs": [
+        "E4",
+        "E5",
+        "E9"
+      ],
+      "reason": "conditional independent proof review",
+      "execution_ref": null
+    },
+    {
+      "id": "Q_NATIVE",
+      "domain": "implementation",
+      "result": "pass_scoped",
+      "evidence_refs": [
+        "E6"
+      ],
+      "reason": "targeted repaired contracts and all-target compile",
+      "execution_ref": "X09"
+    }
+  ],
+  "executions": [
+    {
+      "id": "X01",
+      "status": "failed",
+      "command": "cargo test --locked --offline -p rodas5p-integrators --test production_audit_packet",
+      "environment": "Rust1.94.1 offline vendor or specified exact/symbolic tool",
+      "evidence_refs": [
+        "E6"
+      ],
+      "exit_code": 101,
+      "reason": "Baseline6 adversarial cases fail; resolved X02"
+    },
+    {
+      "id": "X02",
+      "status": "completed",
+      "command": "cargo test --locked --offline -p rodas5p-integrators --test packet_window_contracts --test packet_trajectory_contracts --test production_audit_packet --test production_audit_split",
+      "environment": "Rust1.94.1 offline vendor or specified exact/symbolic tool",
+      "evidence_refs": [
+        "E6"
+      ],
+      "exit_code": 0,
+      "reason": "24passed:6window+6trajectory+8packet+4split"
+    },
+    {
+      "id": "X03",
+      "status": "failed",
+      "command": "cargo test --locked --offline -p rodas5p-core --test leja_total_contract --test damped_moment_contracts --test damped_moment_enclosure_regressions --test production_audit_sparse",
+      "environment": "Rust1.94.1 offline vendor or specified exact/symbolic tool",
+      "evidence_refs": [
+        "E6"
+      ],
+      "exit_code": 101,
+      "reason": "11damped passed,Leja9pass1fail allocation; remaining target not reached; fixed X04"
+    },
+    {
+      "id": "X04",
+      "status": "completed",
+      "command": "cargo test --locked --offline -p rodas5p-core --test leja_total_contract",
+      "environment": "Rust1.94.1 offline vendor or specified exact/symbolic tool",
+      "evidence_refs": [
+        "E6"
+      ],
+      "exit_code": 0,
+      "reason": "10passed after preowned reason buffer reuse; allocation criterion unchanged"
+    },
+    {
+      "id": "X05",
+      "status": "completed",
+      "command": "cargo test --locked --offline -p rodas5p-core --test production_audit_sparse",
+      "environment": "Rust1.94.1 offline vendor or specified exact/symbolic tool",
+      "evidence_refs": [
+        "E6"
+      ],
+      "exit_code": 0,
+      "reason": "3sparse passed; log also contains focused Leja/split checks"
+    },
+    {
+      "id": "X06",
+      "status": "completed",
+      "command": "See evidence/solver_audit.json and log for exact unit/doc filtered invocations",
+      "environment": "Rust1.94.1 offline vendor or specified exact/symbolic tool",
+      "evidence_refs": [
+        "E6"
+      ],
+      "exit_code": 0,
+      "reason": "3Leja unit+1compile-fail passed; filtered0-test invocation not counted"
+    },
+    {
+      "id": "X07",
+      "status": "completed",
+      "command": "cargo test --offline --locked -p rodas5p-fair-ab --test packet_benchmark_contracts -- --test-threads=1",
+      "environment": "Rust1.94.1 offline vendor or specified exact/symbolic tool",
+      "evidence_refs": [
+        "E6"
+      ],
+      "exit_code": 0,
+      "reason": "5reporting contracts; independent physical reference not supplied"
+    },
+    {
+      "id": "X08",
+      "status": "completed",
+      "command": "python3 research/production_audit_20261018/woodbury_reference.py --output research/production_audit_20261018/evidence/woodbury_checks.json",
+      "environment": "Rust1.94.1 offline vendor or specified exact/symbolic tool",
+      "evidence_refs": [
+        "E6"
+      ],
+      "exit_code": 0,
+      "reason": "64exact RHS plus invertible outside small-gain and singular refusal"
+    },
+    {
+      "id": "X09",
+      "status": "completed",
+      "command": "cargo check --locked --offline --workspace --all-targets",
+      "environment": "Rust1.94.1 offline vendor or specified exact/symbolic tool",
+      "evidence_refs": [
+        "E6"
+      ],
+      "exit_code": 0,
+      "reason": "default-feature all-target compile; no all-features execution claim"
+    },
+    {
+      "id": "X10",
+      "status": "completed",
+      "command": "Exact solve_stiff and linked PR probe commands in evidence/default_path_audit.json",
+      "environment": "Rust1.94.1 offline vendor or specified exact/symbolic tool",
+      "evidence_refs": [
+        "E6"
+      ],
+      "exit_code": 0,
+      "reason": "API diagnostics include intentionally unmet global accuracy criterion"
+    },
+    {
+      "id": "X11",
+      "status": "completed",
+      "command": "Wolfram Jacobian symmetric polynomial and damping integral",
+      "environment": "Rust1.94.1 offline vendor or specified exact/symbolic tool",
+      "evidence_refs": [
+        "E6"
+      ],
+      "exit_code": 0,
+      "reason": "symbolic identity only"
+    }
+  ],
+  "decisions": [
+    {
+      "decision": "HOLD_UNQUALIFIED_PRODUCTION",
+      "evidence_refs": [
+        "E7"
+      ]
+    },
+    {
+      "decision": "ACCEPT_TARGETED_REPAIRS_AND_CONDITIONAL_THEORY",
+      "evidence_refs": [
+        "E5",
+        "E6"
+      ]
+    }
+  ],
+  "overrides": [],
+  "failures": [
+    {
+      "evidence_refs": [
+        "E1",
+        "E2",
+        "E6"
+      ],
+      "next_action": "Counterexamples corrected in scoped patch; B01-B05 remain.",
+      "class": "implementation"
+    },
+    {
+      "evidence_refs": [
+        "E6"
+      ],
+      "next_action": "Warmed allocation failure fixed;10-case contract passes.",
+      "class": "implementation"
+    }
+  ],
+  "next_actions": [
+    {
+      "id": "A01",
+      "action": "Introduce immutable generated descriptor; interval moments, candidate/force/residual, all-mode reconstruction and scalar bounds; use actual S and max|xi|.",
+      "evidence_refs": [
+        "E8"
+      ]
+    },
+    {
+      "id": "A02",
+      "action": "Implement T1 verified E+, true/candidate mean tube and continuous output residual; tie each returned center to its radius; transport inherited radii transactionally.",
+      "evidence_refs": [
+        "E8"
+      ]
+    },
+    {
+      "id": "A03",
+      "action": "Connect e^(-2κt) nonlinear forcing, interval damped moments, explicit rotating/lab frame and carrier enclosure; width gate and stable alternate scalar kernel.",
+      "evidence_refs": [
+        "E8"
+      ]
+    },
+    {
+      "id": "A04",
+      "action": "Close matrix product, recurrence, coefficient, summation additive underflow and norm enclosures; bind operator structure; then selectively restore certified status.",
+      "evidence_refs": [
+        "E8"
+      ]
+    },
+    {
+      "id": "A05",
+      "action": "Construct continuous reconstruction defect and verified full tube one-sided gain; use it to control all requested outputs; add failed-callback work charges and zero-span config validation.",
+      "evidence_refs": [
+        "E8"
+      ]
+    },
+    {
+      "id": "A06",
+      "action": "Port exact Woodbury prototype to preallocated native factors, 2×2 Schur enclosure and residual witness; use carrier0 for current rotating-frame model.",
+      "evidence_refs": [
+        "E8"
+      ]
+    },
+    {
+      "id": "A07",
+      "action": "Same equation, atol vector, output grid, setup boundary and independent reference; allocator-based measured counts; retain failed arms; pin external Cargo.lock; generate Markdown from validated JSON.",
+      "evidence_refs": [
+        "E8"
+      ]
+    },
+    {
+      "id": "A08",
+      "action": "Reuse Laguerre quotient/near-annihilator and PY02 conditions; compare complete cost and error to existing Krylov/Leja on the same admitted operator class.",
+      "evidence_refs": [
+        "E8"
+      ]
+    },
+    {
+      "id": "A09",
+      "action": "Use real nonlinear client, certified branch/endpoint residual and H5 perturbation witness for represented floating K; parallelize independent work with explicit span/work.",
+      "evidence_refs": [
+        "E8"
+      ]
+    },
+    {
+      "id": "A10",
+      "action": "Use T2 convex-hull bounds only when cheap coefficient bound fails; outward basis transform and dyadic de Casteljau with monotone min.",
+      "evidence_refs": [
+        "E8"
+      ]
+    },
+    {
+      "id": "A11",
+      "action": "Replace generic maxdiag shortcut by full μ2 upper on tube; GrayScott reaction2×2 eigenvalue formula plus contractive diffusion yields O(N) bound.",
+      "evidence_refs": [
+        "E8"
+      ]
+    },
+    {
+      "id": "A12",
+      "action": "Independent review of completed scope, actual nonlinear client and declared deployment/error/output domain; leave other routes separately held.",
+      "evidence_refs": [
+        "E8"
+      ]
+    }
+  ]
+}

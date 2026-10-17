@@ -1,5 +1,14 @@
 # Empirical & Architectural Benchmark: VigilODE vs. Diffsol (`0.16.1`)
 
+> **Superseded interpretation — 2026-10-18:** Keep the following report as the
+> original experimental record. Its headline speed, zero-allocation, and
+> production recommendations are not admitted by the subsequent
+> [independent audit](reviews/20261018_production_audit/REPORT_KO.md).
+> The audit found mismatched report/JSON timing values, unmatched output/setup
+> work, estimated or hard-coded allocation fields, and dropped failed arms.
+> See the [current decision](../research/production_audit_20261018/DECISION.json)
+> and corrected benchmark requirements before citing comparative conclusions.
+
 **Author**: Antigravity Orchestrator & Benchmark Suite  
 **Date**: October 18, 2026  
 **Environment**: x86_64 Linux, Rust 1.80+ (Release profile, `--offline`, locked dependencies)  

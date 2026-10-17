@@ -38,8 +38,7 @@ fn main() {
     let rho = 20.0;
 
     let mut leja_cache = CertifiedLejaCoeffCache::new();
-    let (d_calc, dr_calc) = leja_divided_differences_certified(c, gamma, xi).unwrap();
-    leja_cache.insert_certified(c, gamma, m, d_calc, dr_calc);
+    leja_cache.precompute_certified(c, gamma, m).unwrap();
 
     let mut cheb_cache = CoefficientCache::default();
     let mut cheb_work = WorkCounters::default();

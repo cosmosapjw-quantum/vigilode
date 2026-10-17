@@ -1,8 +1,8 @@
-//! Contract tests for Native Fair Benchmark (LP09).
+//! Contract tests for the diagnostic packet comparison (LP09).
 //!
 //! Validates:
 //! - VG-1: Zero online solver counters on packet candidate arm vs positive solver counters on baseline.
-//! - VG-2: Matched accuracy between packet candidate and direct Rosenbrock baseline.
+//! - Agreement diagnostics are distinct from independent physical accuracy evidence.
 //! - VG-3: Proper hoisting verification; refusal of unhoisted unfair comparisons; negative gates.
 
 use rodas5p_core::WorkCounters;
@@ -54,7 +54,7 @@ fn test_vg1_zero_online_solver_counters_on_candidate() {
 }
 
 #[test]
-fn test_vg2_matched_accuracy_between_candidate_and_direct_baseline() {
+fn test_nominal_tolerance_and_agreement_do_not_promote_physical_accuracy() {
     let model = create_test_model();
     let config = PacketBenchmarkConfig {
         t_start: 0.0,
@@ -68,13 +68,37 @@ fn test_vg2_matched_accuracy_between_candidate_and_direct_baseline() {
 
     let report = run_packet_benchmark(&model, &config).expect("benchmark run succeeds");
 
-    // Agreement between packet and direct solver within tight tolerance
-    assert!(
-        report.direct_baseline.error_vs_reference < 1e-4,
-        "Mean discrepancy {} should be < 1e-4",
-        report.direct_baseline.error_vs_reference
+    let packet = report.packet_candidate.final_mean;
+    let direct = report.direct_baseline.final_mean;
+    let expected_discrepancy =
+        ((packet.0 - direct.0).powi(2) + (packet.1 - direct.1).powi(2)).sqrt();
+    assert_eq!(report.mean_discrepancy_diagnostic, expected_discrepancy);
+    assert!(report.mean_discrepancy_diagnostic.is_finite());
+    assert!(report.packet_candidate.reported_mean_radius.is_some());
+    assert!(report.direct_baseline.reported_mean_radius.is_none());
+    assert!(report.packet_candidate.error_vs_reference.is_none());
+    assert!(report.direct_baseline.error_vs_reference.is_none());
+    assert_eq!(
+        report.physical_accuracy_status,
+        "UNVERIFIED_NO_INDEPENDENT_REFERENCE"
     );
-    assert_eq!(report.verdict, "PASS");
+    assert!(!report.fairness_verified);
+    assert_eq!(report.verdict, "DIAGNOSTIC_ONLY");
+
+    // Unmeasured data must survive serialization as null, rather than numeric zero.
+    let json = serde_json::to_value(&report).expect("serialize diagnostic report");
+    for arm in ["packet_candidate", "direct_baseline"] {
+        assert!(json[arm]["hot_loop_allocations"].is_null());
+        assert!(json[arm]["error_vs_reference"].is_null());
+    }
+    assert_eq!(
+        report.packet_candidate.work_counters_authority,
+        "structural_zero_not_instrumented"
+    );
+    assert_eq!(
+        report.direct_baseline.work_counters_authority,
+        "instrumented"
+    );
 }
 
 #[test]

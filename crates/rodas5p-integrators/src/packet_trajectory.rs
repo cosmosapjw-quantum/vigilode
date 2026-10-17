@@ -12,6 +12,9 @@
 //! 2. Strict transactional atomicity: rejected trials reduce step size but cannot mutate accepted
 //!    time, state, or error bounds; all work counters accumulate monotonically across attempts.
 //! 3. Output policy separating mean-only and full-mode trajectory records.
+//!
+//! Radii are analytic estimates evaluated in ordinary binary64. The returned
+//! `roundoff_enclosed = false` keeps production certification explicitly open.
 
 use serde::{Deserialize, Serialize};
 
@@ -20,12 +23,13 @@ use crate::packet_window::{
     CausalWeights, compile_packet, compute_certificate, generate_candidate, reconstruct_modes,
 };
 use crate::packet_work::PacketWorkCounters;
+use rodas5p_core::directed::{add_up, mul_up, sqrt_up};
 use rodas5p_core::{CoreError, CoreResult};
 
 /// Output reporting policy.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum OutputPolicy {
-    /// Records time, mean, and certified mean radius.
+    /// Records time, mean, and diagnostic mean radius.
     MeanOnly,
     /// Records time, mean, mean radius, plus all microscopic modes and mode radii.
     AllModes,
@@ -110,6 +114,8 @@ impl TrajectoryConfig {
 /// Outcome of a full trajectory integration.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct PacketTrajectoryResult {
+    /// False: the current packet arithmetic does not enclose floating-point error.
+    pub roundoff_enclosed: bool,
     pub final_t: f64,
     pub final_mean: (f64, f64),
     pub final_mean_radius: f64,
@@ -138,6 +144,33 @@ pub fn run_packet_trajectory(
     config: &TrajectoryConfig,
     work: &mut PacketWorkCounters,
 ) -> CoreResult<PacketTrajectoryResult> {
+    // Config is public and deserializable, so constructor checks alone do not
+    // establish the contract at this execution boundary.
+    TrajectoryConfig::new(
+        config.t_start,
+        config.t_end,
+        config.initial_h,
+        config.mean_tolerance,
+        config.mode_tolerance,
+    )?;
+    if !config.min_h.is_finite()
+        || config.min_h <= 0.0
+        || !config.max_h.is_finite()
+        || config.max_h < config.min_h
+        || config.degree < config.order
+        || config.sweeps == 0
+        || config.max_steps == 0
+        || config.degree.checked_mul(3).is_none()
+    {
+        return Err(CoreError::InvalidInput(
+            "packet_trajectory: invalid step bounds, degree, sweeps or step limit".into(),
+        ));
+    }
+    if model.kappa() != 0.0 {
+        return Err(CoreError::InvalidInput(
+            "packet_trajectory: kappa > 0 requires an implemented damped packet route".into(),
+        ));
+    }
     let num_modes = model.num_modes();
 
     // Validate initial radii if provided
@@ -160,11 +193,37 @@ pub fn run_packet_trajectory(
         vec![0.0; num_modes]
     };
 
+    // Energy conservation and |mean|^2 <= (sum weights) * energy prove the
+    // true mean stays in the unit disk for every permitted initial state.
+    // Enclose the energy of the product of complex uncertainty disks outward.
+    let mut initial_energy_upper = 0.0;
+    let mut weight_sum_upper = 0.0;
+    for ((&w, &(re, im)), &radius) in model
+        .weights()
+        .iter()
+        .zip(model.initial_amplitudes())
+        .zip(&current_radii)
+    {
+        weight_sum_upper = add_up(weight_sum_upper, w)?;
+        let magnitude = sqrt_up(add_up(mul_up(re, re)?, mul_up(im, im)?)?)?;
+        let outer_radius = add_up(magnitude, radius)?;
+        initial_energy_upper = add_up(
+            initial_energy_upper,
+            mul_up(w, mul_up(outer_radius, outer_radius)?)?,
+        )?;
+    }
+    let initial_mean_squared_upper = mul_up(weight_sum_upper, initial_energy_upper)?;
+    if initial_mean_squared_upper > 1.0 {
+        return Err(CoreError::InvalidInput(format!(
+            "packet_trajectory: initial uncertainty mean-squared upper bound {initial_mean_squared_upper} exceeds proved unit domain"
+        )));
+    }
+
     let weights_table = CausalWeights::compile(config.order, 3 * config.degree);
 
     let mut t = config.t_start;
     let mut current_model = model.clone();
-    let mut h = config.initial_h.min(config.t_end - t);
+    let mut h = config.initial_h.min(config.max_h).min(config.t_end - t);
 
     let mut steps = Vec::new();
     let mut accepted_steps = 0;
@@ -196,7 +255,7 @@ pub fn run_packet_trajectory(
         total_mean_bound: initial_mean_radius,
     });
 
-    while t < config.t_end - 1e-14 {
+    while t < config.t_end {
         if accepted_steps + rejected_steps >= config.max_steps {
             return Err(CoreError::NonlinearSolve(format!(
                 "packet_trajectory: exceeded max_steps limit {}",
@@ -206,6 +265,11 @@ pub fn run_packet_trajectory(
 
         // Clamp step to not overshoot t_end
         let step_h = h.min(config.t_end - t);
+        if t + step_h <= t || !(t + step_h).is_finite() {
+            return Err(CoreError::InvalidInput(
+                "packet_trajectory: step cannot advance representable time".into(),
+            ));
+        }
         if step_h < config.min_h {
             return Err(CoreError::NonlinearSolve(format!(
                 "packet_trajectory: step size {step_h:e} fell below min_h {:e} at t={t}",
@@ -260,32 +324,18 @@ pub fn run_packet_trajectory(
             continue;
         }
 
-        let a0: f64 = current_model
-            .weights()
-            .iter()
-            .zip(current_model.initial_amplitudes().iter())
-            .map(|(&w, &z)| w * (z.0 * z.0 + z.1 * z.1).sqrt())
-            .sum();
-
-        let num = cert.volterra_defect
-            + cert.tail * (a0 + step_h * cert.kernel_model / ((config.order + 2) as f64))
-            + inherited_mean_radius;
+        // kernel_model already equals tau * (A0 + h*G/(p+2)).
+        // Add it once; it is not the force magnitude G.
+        let num = cert.volterra_defect + cert.kernel_model + inherited_mean_radius;
         let total_mean_bound = num / denom;
 
         // Transfer theorem: mode bounds
         let mut new_mode_radii = Vec::with_capacity(num_modes);
         let mut max_mode_bound: f64 = 0.0;
 
-        for (&z, &prev_r) in current_model
-            .initial_amplitudes()
-            .iter()
-            .zip(current_radii.iter())
-        {
-            let z_mag = (z.0 * z.0 + z.1 * z.1).sqrt();
-            let mode_b = cert.tail
-                * (z_mag + step_h * cert.kernel_model / ((config.order + 2) as f64))
-                + step_h * cert.lipschitz_l * total_mean_bound
-                + prev_r;
+        for (&local_bound, &prev_r) in cert.mode_bounds.iter().zip(&current_radii) {
+            let mode_b =
+                local_bound + step_h * cert.lipschitz_l * inherited_mean_radius / denom + prev_r;
             max_mode_bound = max_mode_bound.max(mode_b);
             new_mode_radii.push(mode_b);
         }
@@ -362,6 +412,7 @@ pub fn run_packet_trajectory(
     }
 
     Ok(PacketTrajectoryResult {
+        roundoff_enclosed: false,
         final_t: t,
         final_mean,
         final_mean_radius,

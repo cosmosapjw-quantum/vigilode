@@ -18,12 +18,13 @@
 //! J_{j, k}(0) = B(j + 1, k + 1) = \frac{j! k!}{(j + k + 1)!}
 //! \]
 //!
-//! For all \(z \ge 0\), rigorous outward bounds using [`Interval`] arithmetic enclose the exact value,
-//! completely avoiding subtractive cancellation and numerical instability.
+//! Successful evaluations enclose the exact real value of the supplied binary64 inputs,
+//! including the product \(z=\kappa h\). Intermediate overflow is refused. The large-z
+//! backward recurrence can produce wide enclosures; callers must check the returned width.
 
 use serde::{Deserialize, Serialize};
 
-use crate::directed::Interval;
+use crate::directed::{Interval, exp_interval};
 use crate::{CoreError, CoreResult};
 
 /// Maximum moment order supported by the table.
@@ -75,9 +76,16 @@ pub struct DampedMomentTable {
 impl DampedMomentTable {
     /// Compiles a damped moment table up to orders `(max_j, max_k)`.
     pub fn compile(config: DampedMomentsConfig) -> CoreResult<Self> {
+        // Fields are public/serializable: constructors are not an admission boundary.
+        let config = DampedMomentsConfig::new(
+            config.kappa,
+            config.horizon,
+            config.max_j,
+            config.max_k,
+        )?;
         let max_j = config.max_j;
         let max_k = config.max_k;
-        let z = config.kappa * config.horizon;
+        let z = damping_product(config.kappa, config.horizon)?;
 
         let num_elements = (max_j + 1) * (max_k + 1);
         let mut normalized = Vec::with_capacity(num_elements);
@@ -139,7 +147,7 @@ impl DampedMomentTable {
 /// Standalone function to compute the unscaled moment \(I_{j, k}(h, \kappa)\).
 pub fn compute_damped_moment(kappa: f64, horizon: f64, j: usize, k: usize) -> CoreResult<Interval> {
     let config = DampedMomentsConfig::new(kappa, horizon, j, k)?;
-    let norm = compute_normalized_moment(kappa * horizon, j, k)?;
+    let norm = compute_normalized_moment(damping_product(kappa, horizon)?, j, k)?;
     scale_by_h_power(norm, config.horizon, j + k + 1)
 }
 
@@ -151,7 +159,7 @@ pub fn compute_normalized_damped_moment(
     k: usize,
 ) -> CoreResult<Interval> {
     let _config = DampedMomentsConfig::new(kappa, horizon, j, k)?;
-    compute_normalized_moment(kappa * horizon, j, k)
+    compute_normalized_moment(damping_product(kappa, horizon)?, j, k)
 }
 
 // ---------------------------------------------------------------------------
@@ -159,13 +167,19 @@ pub fn compute_normalized_damped_moment(
 // ---------------------------------------------------------------------------
 
 fn beta_interval(j: usize, k: usize) -> CoreResult<Interval> {
-    let mut val = Interval::new(1.0 / ((j + 1) as f64), 1.0 / ((j + 1) as f64))?;
+    let mut val = Interval::point(1.0)?.div(Interval::point((j + 1) as f64)?)?;
     for step in 1..=k {
         let num = Interval::new(step as f64, step as f64)?;
         let den = Interval::new((j + step + 1) as f64, (j + step + 1) as f64)?;
         val = val.mul(num)?.div(den)?;
     }
     Ok(val)
+}
+
+fn damping_product(kappa: f64, horizon: f64) -> CoreResult<Interval> {
+    let z = Interval::point(kappa)?.mul(Interval::point(horizon)?)?;
+    // The directed underflow fallback may extend below zero; positivity is exact.
+    Interval::new(z.lo.max(0.0), z.hi)
 }
 
 fn scale_by_h_power(interval: Interval, h: f64, power: usize) -> CoreResult<Interval> {
@@ -178,22 +192,22 @@ fn scale_by_h_power(interval: Interval, h: f64, power: usize) -> CoreResult<Inte
 }
 
 /// Computes J_{j, k}(z) = \int_0^1 e^{-z(1 - u)} (1 - u)^j u^k du
-fn compute_normalized_moment(z: f64, j: usize, k: usize) -> CoreResult<Interval> {
-    if !z.is_finite() || z < 0.0 {
+fn compute_normalized_moment(z: Interval, j: usize, k: usize) -> CoreResult<Interval> {
+    if z.lo < 0.0 {
         return Err(CoreError::InvalidInput(format!(
-            "damped_moments: z must be non-negative finite, got {z}"
+            "damped_moments: z must be non-negative finite, got {z:?}"
         )));
     }
 
     let b_jk = beta_interval(j, k)?;
 
     // Branch 1: Exactly zero damping
-    if z == 0.0 {
+    if z.hi == 0.0 {
         return Ok(b_jk);
     }
 
     // Branch 2: Small z <= 1.0 (Taylor series expansion with certified remainder)
-    if z <= 1.0 {
+    if z.hi <= 1.0 {
         return compute_small_z_taylor(z, j, k, b_jk);
     }
 
@@ -202,16 +216,16 @@ fn compute_normalized_moment(z: f64, j: usize, k: usize) -> CoreResult<Interval>
 }
 
 /// Taylor expansion: e^{-z(1 - u)} = sum_{n=0}^{N-1} (-z)^n / n! (1 - u)^n + R_N
-fn compute_small_z_taylor(z: f64, j: usize, k: usize, b_jk: Interval) -> CoreResult<Interval> {
+fn compute_small_z_taylor(z: Interval, j: usize, k: usize, b_jk: Interval) -> CoreResult<Interval> {
     let n_terms = 28;
     let mut sum = Interval::point(0.0)?;
 
-    let z_int = Interval::point(z)?;
+    let z_int = z;
     let mut z_pow = Interval::point(1.0)?;
     let mut n_fact = Interval::point(1.0)?;
+    let mut b = b_jk;
 
     for n in 0..n_terms {
-        let b = beta_interval(j + n, k)?;
         let term = z_pow.div(n_fact)?.mul(b)?;
 
         if n % 2 == 0 {
@@ -223,33 +237,34 @@ fn compute_small_z_taylor(z: f64, j: usize, k: usize, b_jk: Interval) -> CoreRes
         let next_n = (n + 1) as f64;
         z_pow = z_pow.mul(z_int)?;
         n_fact = n_fact.mul(Interval::point(next_n)?)?;
+        // B(j+n+2,k+1) = B(j+n+1,k+1) * (j+n+1)/(j+k+n+2).
+        // Reuse the prefix in O(k + n_terms), rather than rebuilding O(k) each term.
+        b = b
+            .mul(Interval::point((j + n + 1) as f64)?)?
+            .div(Interval::point((j + k + n + 2) as f64)?)?;
     }
 
     // Certified outward remainder: |R_N| <= (z^N / N!) * B(j + N + 1, k + 1)
-    let rem_b = beta_interval(j + n_terms, k)?;
-    let rem_bound = z_pow.div(n_fact)?.mul(rem_b)?;
+    let rem_bound = z_pow.div(n_fact)?.mul(b)?;
 
-    let lo = (sum.lo - rem_bound.hi).max(0.0);
-    let hi = (sum.hi + rem_bound.hi).min(b_jk.hi);
+    let enclosed = sum.add(Interval::new(-rem_bound.hi, rem_bound.hi)?)?;
+    let lo = enclosed.lo.max(0.0);
+    let hi = enclosed.hi.min(b_jk.hi);
 
     Interval::new(lo, hi)
 }
 
 /// Backward recurrence for E_m(z) = \int_0^1 e^{-z v} v^m dv, v = 1 - u
 /// z E_m = m E_{m-1} - e^{-z}  =>  E_{m-1} = (z E_m + e^{-z}) / m
-fn compute_large_z_backward(z: f64, j: usize, k: usize, b_jk: Interval) -> CoreResult<Interval> {
+fn compute_large_z_backward(z: Interval, j: usize, k: usize, b_jk: Interval) -> CoreResult<Interval> {
     let top = j + k + 45;
-    let exp_neg_z = (-z).exp();
-
-    // Outward enclosure of exp(-z)
-    let exp_int = Interval::new(
-        (exp_neg_z * (1.0 - 1e-15)).max(0.0),
-        exp_neg_z * (1.0 + 1e-15),
-    )?;
-    let z_int = Interval::point(z)?;
+    // Monotonicity encloses exp(-z) over the entire rounded-product interval.
+    let exp_int = Interval::new(exp_interval(-z.hi)?.lo, exp_interval(-z.lo)?.hi)?;
+    let z_int = z;
 
     // At top: 0 <= E_top <= 1 / (top + 1)
-    let mut e_m = Interval::new(0.0, 1.0 / ((top + 1) as f64))?;
+    let top_bound = Interval::point(1.0)?.div(Interval::point((top + 1) as f64)?)?;
+    let mut e_m = Interval::new(0.0, top_bound.hi)?;
 
     // Store E_0 .. E_{j + k}
     let mut e_table = vec![Interval::point(0.0)?; j + k + 1];
@@ -270,13 +285,15 @@ fn compute_large_z_backward(z: f64, j: usize, k: usize, b_jk: Interval) -> CoreR
     // Binomial expansion of (1 - v)^k:
     // J_{j, k} = sum_{l=0}^k (-1)^l binom(k, l) E_{j + l}(z)
     let mut res = Interval::point(0.0)?;
-    let mut binom = 1.0;
+    let mut binom = Interval::point(1.0)?;
 
     for l in 0..=k {
         if l > 0 {
-            binom *= ((k - l + 1) as f64) / (l as f64);
+            binom = binom
+                .mul(Interval::point((k - l + 1) as f64)?)?
+                .div(Interval::point(l as f64)?)?;
         }
-        let term = Interval::point(binom)?.mul(e_table[j + l])?;
+        let term = binom.mul(e_table[j + l])?;
 
         if l % 2 == 0 {
             res = res.add(term)?;

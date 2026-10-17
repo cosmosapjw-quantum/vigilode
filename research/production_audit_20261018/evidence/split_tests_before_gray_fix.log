@@ -1,0 +1,24 @@
+   Compiling rodas5p-core v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-core)
+   Compiling rodas5p-krylov v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-krylov)
+   Compiling rodas5p-integrators v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-integrators)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.29s
+     Running tests/production_audit_split.rs (target/debug/deps/production_audit_split-d078fa7b7d0d2cfe)
+
+running 4 tests
+test sparse_matvec_rejects_short_vectors ... ok
+test split_nan_callback_fails_closed ... ok
+
+thread 'periodic_gray_scott_two_cell_linear_split_matches_full_rhs' (782) panicked at crates/rodas5p-integrators/tests/production_audit_split.rs:29:62:
+called `Result::unwrap()` on an `Err` value: BandVerificationMismatch { vector: 0, mismatch: 0.03199997018677811, reference_norm: 1.0, tolerance: 1e-12 }
+test sparse_descriptor_is_checked_after_public_field_mutation ... note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+ok
+test periodic_gray_scott_two_cell_linear_split_matches_full_rhs ... FAILED
+
+failures:
+
+failures:
+    periodic_gray_scott_two_cell_linear_split_matches_full_rhs
+
+test result: FAILED. 3 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p rodas5p-integrators --test production_audit_split`

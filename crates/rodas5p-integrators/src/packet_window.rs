@@ -7,7 +7,9 @@
 //!
 //! Provides moment prefix compilation, polynomial waveform Picard iteration,
 //! exact causal factorial convolution via precomputed beta weights,
-//! and original-model total error certification for the mean and all modes.
+//! and original-model analytic error estimates for the mean and all modes.
+//! Floating-point coefficient and reconstruction errors are not yet enclosed;
+//! these estimates have diagnostic authority, not production certification.
 
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
@@ -20,6 +22,12 @@ use crate::packet_work::PacketWorkCounters;
 /// Errors arising during causal packet compilation, candidate iteration, or certification.
 #[derive(Clone, Debug, PartialEq, Error)]
 pub enum PacketError {
+    #[error(
+        "the polynomial packet implements kappa = 0; damping {0} requires the damped packet route"
+    )]
+    UnsupportedDamping(f64),
+    #[error("non-finite value in packet {0}")]
+    NonFinite(&'static str),
     #[error("horizon must be strictly positive, got {0}")]
     InvalidHorizon(f64),
     #[error("degree {degree} must be >= kernel order {order}")]
@@ -233,6 +241,9 @@ pub fn compile_packet(
     order: usize,
     work: &mut PacketWorkCounters,
 ) -> Result<CompiledPacket, PacketError> {
+    if model.kappa() != 0.0 {
+        return Err(PacketError::UnsupportedDamping(model.kappa()));
+    }
     if horizon <= 0.0 || !horizon.is_finite() {
         return Err(PacketError::InvalidHorizon(horizon));
     }
@@ -337,9 +348,13 @@ pub fn generate_candidate(
 // Native Total Certificate
 // ---------------------------------------------------------------------------
 
-/// Total error bounds certificate for the candidate on [0, h].
+/// Analytic error estimate for the candidate on [0, h].
+///
+/// `roundoff_enclosed` is false until the whole coefficient, residual, norm,
+/// tail and reconstruction calculation uses verified outward arithmetic.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct PacketCertificate {
+    pub roundoff_enclosed: bool,
     pub mean_bound: f64,
     pub mode_bounds: Vec<f64>,
     pub volterra_defect: f64,
@@ -360,16 +375,35 @@ fn factorial(n: usize) -> f64 {
     f
 }
 
-/// Computes the native total error certificate enclosing tail, rounding, and reconstruction.
+/// Computes the continuous-model tail and defect estimate in ordinary binary64.
+/// The result explicitly reports `roundoff_enclosed = false`.
 pub fn compute_certificate(
     cand: &PacketCandidate,
     packet: &CompiledPacket,
     table: &CausalWeights,
     work: &mut PacketWorkCounters,
 ) -> Result<PacketCertificate, PacketError> {
+    if packet.model.kappa() != 0.0 {
+        return Err(PacketError::UnsupportedDamping(packet.model.kappa()));
+    }
+    if !packet.horizon.is_finite() || packet.horizon <= 0.0 {
+        return Err(PacketError::InvalidHorizon(packet.horizon));
+    }
+    if cand
+        .mean
+        .iter()
+        .chain(packet.free.iter())
+        .chain(packet.kernel.iter())
+        .any(|&(re, im)| !re.is_finite() || !im.is_finite())
+    {
+        return Err(PacketError::NonFinite("coefficient"));
+    }
     let h = packet.horizon;
     let bound_mean = poly_bound(&cand.mean);
-    if bound_mean > 1.0 + 1e-12 {
+    if !bound_mean.is_finite() {
+        return Err(PacketError::NonFinite("candidate domain bound"));
+    }
+    if bound_mean > 1.0 {
         return Err(PacketError::DomainExceeded { bound: bound_mean });
     }
 
@@ -414,7 +448,16 @@ pub fn compute_certificate(
         mode_bounds.push(emode);
     }
 
+    if [defect, tau, kernel_model, mean_bound, l, g]
+        .iter()
+        .any(|x| !x.is_finite())
+        || mode_bounds.iter().any(|x| !x.is_finite())
+    {
+        return Err(PacketError::NonFinite("error estimate"));
+    }
+
     Ok(PacketCertificate {
+        roundoff_enclosed: false,
         mean_bound,
         mode_bounds,
         volterra_defect: defect,
@@ -508,7 +551,7 @@ pub fn evaluate_mode_at(
             packet.model.num_modes()
         )));
     }
-    if !(0.0..=1.0 + 1e-14).contains(&tau) {
+    if !(0.0..=1.0).contains(&tau) {
         return Err(CoreError::InvalidInput(format!(
             "evaluate_mode_at: tau {tau} out of range [0, 1]"
         )));
@@ -519,6 +562,14 @@ pub fn evaluate_mode_at(
 
     let h = packet.horizon * tau;
     let sub_packet = compile_packet(&packet.model, h, packet.order, work)?;
-    let modes = reconstruct_modes(cand, &sub_packet, work);
+    // For the shorter normalized coordinate s, the old waveform is P(tau*s).
+    // Restrict coefficients before applying the nonlinear force and convolution.
+    let mut restricted = cand.clone();
+    let mut scale = 1.0;
+    for coefficient in &mut restricted.mean {
+        *coefficient = c_scale(*coefficient, scale);
+        scale *= tau;
+    }
+    let modes = reconstruct_modes(&restricted, &sub_packet, work);
     Ok(modes[mode_idx])
 }

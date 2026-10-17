@@ -12,6 +12,9 @@ use crate::{CoreError, CoreResult, WorkCounters};
 pub struct SparseDirectSolver {
     dimension: usize,
     nnz_a: usize,
+    col_ptr: Vec<usize>,
+    row_idx: Vec<usize>,
+    numeric_ready: bool,
     symbolic: SymbolicLu<usize>,
     numeric: NumericLu<usize, f64>,
     numeric_scratch: MemBuffer,
@@ -28,17 +31,30 @@ impl SparseDirectSolver {
         col_ptr: &[usize],
         row_idx: &[usize],
     ) -> CoreResult<Self> {
-        if col_ptr.len() != dimension + 1 {
+        if dimension == 0 || col_ptr.len() != dimension.saturating_add(1) {
             return Err(CoreError::Dimension(format!(
                 "col_ptr length {} does not match dimension + 1 ({})",
                 col_ptr.len(),
-                dimension + 1
+                dimension.saturating_add(1)
             )));
         }
         if col_ptr[0] != 0 || col_ptr[dimension] != row_idx.len() {
             return Err(CoreError::InvalidInput(
                 "col_ptr must start at 0 and end at row_idx.len()".into(),
             ));
+        }
+        if col_ptr.windows(2).any(|p| p[0] > p[1]) {
+            return Err(CoreError::InvalidInput(
+                "CSC column pointers must be monotone".into(),
+            ));
+        }
+        for col in 0..dimension {
+            let rows = &row_idx[col_ptr[col]..col_ptr[col + 1]];
+            if rows.iter().any(|&row| row >= dimension) || rows.windows(2).any(|p| p[0] >= p[1]) {
+                return Err(CoreError::InvalidInput(
+                    "CSC rows must be in range and strictly increasing in each column".into(),
+                ));
+            }
         }
 
         let sym_mat =
@@ -57,6 +73,9 @@ impl SparseDirectSolver {
         Ok(Self {
             dimension,
             nnz_a: row_idx.len(),
+            col_ptr: col_ptr.to_vec(),
+            row_idx: row_idx.to_vec(),
+            numeric_ready: false,
             symbolic,
             numeric: NumericLu::new(),
             numeric_scratch,
@@ -85,12 +104,20 @@ impl SparseDirectSolver {
         values: &[f64],
         counters: &mut WorkCounters,
     ) -> CoreResult<()> {
+        // A failed attempt must never leave a previously factored matrix usable
+        // as though it represented this new request.
+        self.numeric_ready = false;
         if col_ptr.len() != self.dimension + 1
             || row_idx.len() != self.nnz_a
             || values.len() != self.nnz_a
         {
             return Err(CoreError::Dimension(
                 "Sparse matrix structure mismatch with symbolic factorization".into(),
+            ));
+        }
+        if col_ptr != self.col_ptr || row_idx != self.row_idx {
+            return Err(CoreError::InvalidInput(
+                "CSC pattern differs from the retained symbolic factorization".into(),
             ));
         }
         if !values.iter().all(|x| x.is_finite()) {
@@ -115,6 +142,7 @@ impl SparseDirectSolver {
             .map_err(|e| CoreError::LinearSolve(format!("Numeric LU refactorize failed: {e:?}")))?;
 
         self.factorizations += 1;
+        self.numeric_ready = true;
         counters.direct_factorizations += 1;
         Ok(())
     }
@@ -125,12 +153,22 @@ impl SparseDirectSolver {
         rhs: &mut [f64],
         counters: &mut WorkCounters,
     ) -> CoreResult<()> {
+        if !self.numeric_ready {
+            return Err(CoreError::LinearSolve(
+                "sparse solve requires a successful current numeric factorization".into(),
+            ));
+        }
         if rhs.len() != self.dimension {
             return Err(CoreError::Dimension(format!(
                 "RHS dimension {} does not match system dimension {}",
                 rhs.len(),
                 self.dimension
             )));
+        }
+        if !rhs.iter().all(|x| x.is_finite()) {
+            return Err(CoreError::NonFinite(
+                "Sparse RHS contains NaN or Inf".into(),
+            ));
         }
 
         let par = Par::Seq;
@@ -143,6 +181,11 @@ impl SparseDirectSolver {
         self.solves += 1;
         self.solve_operations += (2 * self.nnz_a) as u64;
         counters.direct_solve_calls += 1;
+        if !rhs.iter().all(|x| x.is_finite()) {
+            return Err(CoreError::NonFinite(
+                "Sparse solve produced NaN or Inf".into(),
+            ));
+        }
         Ok(())
     }
 

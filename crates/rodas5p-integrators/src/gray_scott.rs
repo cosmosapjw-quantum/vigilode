@@ -137,23 +137,21 @@ pub fn gray_scott_2d(n_grid: usize) -> CoreResult<(OdeProblem, Vec<f64>)> {
             let off_val = D_U * inv_dx2;
 
             entries.push((col, diag_val));
-            if i_left != col {
-                entries.push((i_left + j * n_grid, off_val));
-            }
-            if i_right != col && i_right != i_left {
-                entries.push((i_right + j * n_grid, off_val));
-            }
-            if j_down != j {
-                entries.push((i + j_down * n_grid, off_val));
-            }
-            if j_up != j && j_up != j_down {
-                entries.push((i + j_up * n_grid, off_val));
-            }
+            // Coincident periodic neighbors (N=2) contribute twice.
+            entries.push((i_left + j * n_grid, off_val));
+            entries.push((i_right + j * n_grid, off_val));
+            entries.push((i + j_down * n_grid, off_val));
+            entries.push((i + j_up * n_grid, off_val));
 
             entries.sort_by_key(|&(r, _)| r);
+            let column_start = row_idx.len();
             for (r, v) in entries {
-                row_idx.push(r);
-                values.push(v);
+                if row_idx.len() > column_start && row_idx.last() == Some(&r) {
+                    *values.last_mut().expect("entry in current column") += v;
+                } else {
+                    row_idx.push(r);
+                    values.push(v);
+                }
             }
             col_ptr.push(row_idx.len());
         }
@@ -173,23 +171,21 @@ pub fn gray_scott_2d(n_grid: usize) -> CoreResult<(OdeProblem, Vec<f64>)> {
             let off_val = D_V * inv_dx2;
 
             entries.push((n2 + col, diag_val));
-            if i_left != col {
-                entries.push((n2 + i_left + j * n_grid, off_val));
-            }
-            if i_right != col && i_right != i_left {
-                entries.push((n2 + i_right + j * n_grid, off_val));
-            }
-            if j_down != j {
-                entries.push((n2 + i + j_down * n_grid, off_val));
-            }
-            if j_up != j && j_up != j_down {
-                entries.push((n2 + i + j_up * n_grid, off_val));
-            }
+            // Coincident periodic neighbors (N=2) contribute twice.
+            entries.push((n2 + i_left + j * n_grid, off_val));
+            entries.push((n2 + i_right + j * n_grid, off_val));
+            entries.push((n2 + i + j_down * n_grid, off_val));
+            entries.push((n2 + i + j_up * n_grid, off_val));
 
             entries.sort_by_key(|&(r, _)| r);
+            let column_start = row_idx.len();
             for (r, v) in entries {
-                row_idx.push(r);
-                values.push(v);
+                if row_idx.len() > column_start && row_idx.last() == Some(&r) {
+                    *values.last_mut().expect("entry in current column") += v;
+                } else {
+                    row_idx.push(r);
+                    values.push(v);
+                }
             }
             col_ptr.push(row_idx.len());
         }

@@ -1,0 +1,103 @@
+{
+  "schema_version": 1,
+  "status": "PASS_SCOPED_AFTER_REPAIRS",
+  "scope": "Targeted source/build/contract checks and independent mathematics; not production promotion",
+  "compiler": "rustc1.94.1",
+  "dependency_mode": "locked offline supplied vendor",
+  "historical_campaign_reruns": 0,
+  "native_timing_promotion_runs": 0,
+  "executions": [
+    {
+      "id": "X01",
+      "exit_code": 101,
+      "status": "failed",
+      "evidence": "evidence/packet_audit_baseline/tests_before.log",
+      "command": "cargo test --locked --offline -p rodas5p-integrators --test production_audit_packet",
+      "scope": "Baseline6 adversarial cases fail; resolved X02"
+    },
+    {
+      "id": "X02",
+      "exit_code": 0,
+      "status": "completed",
+      "evidence": "evidence/integrator_regressions.log",
+      "command": "cargo test --locked --offline -p rodas5p-integrators --test packet_window_contracts --test packet_trajectory_contracts --test production_audit_packet --test production_audit_split",
+      "scope": "24passed:6window+6trajectory+8packet+4split"
+    },
+    {
+      "id": "X03",
+      "exit_code": 101,
+      "status": "failed",
+      "evidence": "evidence/core_regressions.log",
+      "command": "cargo test --locked --offline -p rodas5p-core --test leja_total_contract --test damped_moment_contracts --test damped_moment_enclosure_regressions --test production_audit_sparse",
+      "scope": "11damped passed,Leja9pass1fail allocation; remaining target not reached; fixed X04"
+    },
+    {
+      "id": "X04",
+      "exit_code": 0,
+      "status": "completed",
+      "evidence": "evidence/leja_contract_final.log",
+      "command": "cargo test --locked --offline -p rodas5p-core --test leja_total_contract",
+      "scope": "10passed after preowned reason buffer reuse; allocation criterion unchanged"
+    },
+    {
+      "id": "X05",
+      "exit_code": 0,
+      "status": "completed",
+      "evidence": "evidence/solver_tests_after.log",
+      "command": "cargo test --locked --offline -p rodas5p-core --test production_audit_sparse",
+      "scope": "3sparse passed; log also contains focused Leja/split checks"
+    },
+    {
+      "id": "X06",
+      "exit_code": 0,
+      "status": "completed",
+      "evidence": "evidence/solver_final_tests.log",
+      "command": "See evidence/solver_audit.json and log for exact unit/doc filtered invocations",
+      "scope": "3Leja unit+1compile-fail passed; filtered0-test invocation not counted"
+    },
+    {
+      "id": "X07",
+      "exit_code": 0,
+      "status": "completed",
+      "evidence": "evidence/lp09_reporting_check.json",
+      "command": "cargo test --offline --locked -p rodas5p-fair-ab --test packet_benchmark_contracts -- --test-threads=1",
+      "scope": "5reporting contracts; independent physical reference not supplied"
+    },
+    {
+      "id": "X08",
+      "exit_code": 0,
+      "status": "completed",
+      "evidence": "evidence/woodbury_checks.json",
+      "command": "python3 research/production_audit_20261018/woodbury_reference.py --output research/production_audit_20261018/evidence/woodbury_checks.json",
+      "scope": "64exact RHS plus invertible outside small-gain and singular refusal"
+    },
+    {
+      "id": "X09",
+      "exit_code": 0,
+      "status": "completed",
+      "evidence": "evidence/workspace_check.log",
+      "command": "cargo check --locked --offline --workspace --all-targets",
+      "scope": "default-feature all-target compile; no all-features execution claim"
+    },
+    {
+      "id": "X10",
+      "exit_code": 0,
+      "status": "completed",
+      "evidence": "evidence/default_path_audit.json",
+      "command": "Exact solve_stiff and linked PR probe commands in evidence/default_path_audit.json",
+      "scope": "API diagnostics include intentionally unmet global accuracy criterion"
+    },
+    {
+      "id": "X11",
+      "exit_code": 0,
+      "status": "completed",
+      "evidence": "evidence/wolfram_sharp_gain.json",
+      "command": "Wolfram Jacobian symmetric polynomial and damping integral",
+      "scope": "symbolic identity only"
+    }
+  ],
+  "remaining_scientific_obligations": "DECISION.json remaining_blockers",
+  "formal_proof_assistant": "NOT_RUN",
+  "entire_workspace_tests": "NOT_RUN; scoped regressions and all-target compile only",
+  "publication": "Prepared content; remote commit/ref acknowledgement supplied at publication"
+}

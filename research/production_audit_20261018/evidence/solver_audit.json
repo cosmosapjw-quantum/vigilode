@@ -1,0 +1,114 @@
+{
+  "schema": "vigilode-independent-nonpacket-audit-v1",
+  "baseline": "76e59c691845851274cf27b26678cdb128daa408",
+  "source_head": "2fc61b944fe431d40ba455c373579bce00b0c39a",
+  "decision": "HOLD_GENERAL_PRODUCTION_AND_GLOBAL_CERTIFICATE",
+  "findings": [
+    {
+      "id": "SA-01",
+      "severity": "critical",
+      "claim": "Leja arbitrary cache authorizes false Certified",
+      "status": "FIXED_PRIVATE_CACHE_AND_HOLD"
+    },
+    {
+      "id": "SA-02",
+      "severity": "high",
+      "claim": "Newton prefix substituted for suffix, coefficient-radius cross term",
+      "status": "FIXED_COMPONENT_BOUND_TOTAL_AUTHORITY_HOLD"
+    },
+    {
+      "id": "SA-03",
+      "severity": "high",
+      "claim": "Sparse CSC pattern and numeric state validation",
+      "status": "FIXED"
+    },
+    {
+      "id": "SA-04",
+      "severity": "high",
+      "claim": "Nonfinite split verification fails open",
+      "status": "FIXED"
+    },
+    {
+      "id": "SA-05",
+      "severity": "high",
+      "claim": "N=2 periodic duplicate coefficients omitted",
+      "status": "FIXED"
+    },
+    {
+      "id": "SA-06",
+      "severity": "high",
+      "claim": "EX01 max-diagonal substitution invalid for generic Jacobian",
+      "status": "THEOREM_CORRECTED_NATIVE_IMPLEMENTATION_PENDING"
+    }
+  ],
+  "reused": {
+    "SP02": "opt-in workspace allocation and instruction result retained",
+    "AS04": "accounting telemetry only retained",
+    "AS05": "restricted linear solve error bounds retained",
+    "SP04": "speed promotion failed retained",
+    "PY02": "ABSTAIN retained",
+    "PY03": "speed niche failed retained",
+    "PY05": "prior speed failed retained; new authority findings supersede universal no-false-authority claim",
+    "HT01": "ABSTAIN retained",
+    "HT02": "NOT_RUN retained",
+    "EX01": "rival HOLD retained; additional F1 mathematical premise correction"
+  },
+  "new_native_checks": {
+    "sparse_tests": 3,
+    "split_tests": 4,
+    "leja_unit_tests": 3,
+    "cache_compile_fail_tests": 1,
+    "historical_campaign_reruns": 0,
+    "changed_risk_regressions": {
+      "warmed_allocations": "PASS_ZERO_ALLOCATION",
+      "estimate_only_authority": "PASS"
+    }
+  },
+  "theorems": [
+    {
+      "id": "S-T1",
+      "status": "CONDITIONAL_PROVED_COMPONENT_BOUND",
+      "work_before": "5*m*(m+1)*(m+2)/6 coefficient-tail terms",
+      "work_after": "5*m*(m+1)/2 coefficient-tail terms",
+      "additional_cost": "O(128*m^2) one-time interval-product table and O(m^2) retained memory; outward norms and other costs remain",
+      "native_total_authority": "ESTIMATE_ONLY_UNDERFLOW_OBLIGATION"
+    },
+    {
+      "id": "S-T2",
+      "status": "CONDITIONAL_PROVED_STANDARD_COMPARISON_SPECIALIZED_TO_CLIENT",
+      "precondition": "verified full tube and logarithmic norm upper omega",
+      "client_contribution": "GrayScott 2x2 reaction blocks + contractive diffusion yield O(n) fullspace lognorm upper bound",
+      "native_status": "NOT_IMPLEMENTED"
+    }
+  ],
+  "source_hashes": {
+    "crates/rodas5p-core/src/leja_action.rs": "bc1a17443b3692799f432614468e13d3ddd336d364d665cb75f2b70d0bc5a572",
+    "crates/rodas5p-core/src/sparse_direct.rs": "75d5c6403fe18025cfe86295bf1c0b60880ac26d6ead7a8b658f9295ad8a85c7",
+    "crates/rodas5p-integrators/src/problem.rs": "dd2baf2de74ca3d20c4bce50713a4595a06391ee36faf08a936eb57ba67dcf38",
+    "crates/rodas5p-integrators/src/gray_scott.rs": "95cce4a1bd0561ee1da506a8486c79f192556a2757b06685806f90b822860d45",
+    "crates/rodas5p-core/examples/py05_leja_profile.rs": "6520528ba27f3bb1a6f4a0d179318aa0d73318379a05d271ee0b6b5ebfd2adbf",
+    "crates/rodas5p-core/tests/production_audit_sparse.rs": "d531d387ca7af6b20daf6c016e393801d3d454c9e7e95bbf13a403d55846ec17",
+    "crates/rodas5p-integrators/tests/production_audit_split.rs": "887de22ab56708efcef5e2af4f72ebff5d6991bf6be2312700e4b54f5dbaec25"
+  },
+  "baseline_evidence": [
+    "solver_baseline.log",
+    "split_baseline.log",
+    "split_tests_before_gray_fix.log",
+    "solver_audit_baseline/audit_solver_baseline.rs",
+    "solver_audit_baseline/audit_split_baseline.rs",
+    "solver_audit_baseline/ex01_counterexample.json"
+  ],
+  "new_evidence": [
+    "solver_tests_after.log",
+    "solver_final_tests.log",
+    "leja_warm_regression.log"
+  ],
+  "notes": [
+    "This is a scoped independent source/reproduction audit, not complete proof of every solver module.",
+    "Retained original result files must not be overwritten.",
+    "S-T1 lower coefficient-tail update count does not assert measured runtime speedup."
+  ],
+  "implementation_findings_closed": [
+    "HOLD reason String allocation introduced during patch was detected by original warmed contract; fixed using preowned buffer and verified without relaxing test."
+  ]
+}

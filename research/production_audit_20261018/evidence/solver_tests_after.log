@@ -1,0 +1,41 @@
+   Compiling rodas5p-core v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.67s
+     Running tests/production_audit_sparse.rs (target/debug/deps/production_audit_sparse-63dee973873c1f6c)
+
+running 3 tests
+test malformed_csc_is_rejected_without_panicking ... ok
+test nonfinite_rhs_is_rejected ... ok
+test numeric_state_is_invalidated_until_exact_pattern_refactor_succeeds ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Compiling rodas5p-core v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.71s
+     Running unittests src/lib.rs (target/debug/deps/rodas5p_core-0d792e112be9ec0a)
+
+running 2 tests
+test leja_action::production_audit_suffix::suffix_bound_covers_the_actual_suffix_not_a_prefix ... ok
+test leja_action::production_audit_suffix::trusted_prewarm_matches_cold_and_encloses_diagonal_exponential ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 9 filtered out; finished in 1.17s
+
+error[E0689]: can't call method `max` on ambiguous numeric type `{float}`
+   --> crates/rodas5p-core/src/leja_action.rs:552:61
+    |
+552 |                     bounds[start][end] = bounds[start][end].max(product.mag());
+    |                                                             ^^^
+
+For more information about this error, try `rustc --explain E0689`.
+   Compiling rodas5p-krylov v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-krylov)
+   Compiling rodas5p-integrators v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-integrators)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.13s
+     Running tests/production_audit_split.rs (target/debug/deps/production_audit_split-d078fa7b7d0d2cfe)
+
+running 4 tests
+test sparse_descriptor_is_checked_after_public_field_mutation ... ok
+test sparse_matvec_rejects_short_vectors ... ok
+test periodic_gray_scott_two_cell_linear_split_matches_full_rhs ... ok
+test split_nan_callback_fails_closed ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

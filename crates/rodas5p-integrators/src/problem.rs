@@ -69,7 +69,7 @@ impl SparseLinearPart {
         row_idx: Vec<usize>,
         values: Vec<f64>,
     ) -> CoreResult<Self> {
-        if col_ptr.len() != ncols + 1 {
+        if nrows == 0 || ncols == 0 || col_ptr.len() != ncols.saturating_add(1) {
             return Err(CoreError::Dimension(
                 "SparseLinearPart: col_ptr length != ncols + 1".into(),
             ));
@@ -79,16 +79,59 @@ impl SparseLinearPart {
                 "SparseLinearPart: inconsistent col_ptr or values length".into(),
             ));
         }
-        Ok(Self {
+        let result = Self {
             nrows,
             ncols,
             col_ptr,
             row_idx,
             values,
-        })
+        };
+        result.validate()?;
+        Ok(result)
     }
 
-    pub fn matvec(&self, x: &[f64], y: &mut [f64]) {
+    /// Validate even literal/modified public descriptors before using indices.
+    pub fn validate(&self) -> CoreResult<()> {
+        if self.nrows == 0
+            || self.ncols == 0
+            || self.col_ptr.len() != self.ncols.saturating_add(1)
+            || self.col_ptr.first() != Some(&0)
+            || self.col_ptr.last() != Some(&self.row_idx.len())
+            || self.values.len() != self.row_idx.len()
+            || self.col_ptr.windows(2).any(|p| p[0] > p[1])
+        {
+            return Err(CoreError::InvalidInput(
+                "invalid sparse linear CSC shape".into(),
+            ));
+        }
+        for col in 0..self.ncols {
+            let rows = &self.row_idx[self.col_ptr[col]..self.col_ptr[col + 1]];
+            if rows.iter().any(|&row| row >= self.nrows) || rows.windows(2).any(|p| p[0] >= p[1]) {
+                return Err(CoreError::InvalidInput(
+                    "sparse linear rows must be canonical and in range".into(),
+                ));
+            }
+        }
+        if !self.values.iter().all(|v| v.is_finite()) {
+            return Err(CoreError::NonFinite(
+                "sparse linear coefficients contain NaN/Inf".into(),
+            ));
+        }
+        Ok(())
+    }
+
+    pub fn matvec(&self, x: &[f64], y: &mut [f64]) -> CoreResult<()> {
+        self.validate()?;
+        if x.len() != self.ncols || y.len() != self.nrows {
+            return Err(CoreError::Dimension(
+                "sparse linear matvec shape mismatch".into(),
+            ));
+        }
+        if !x.iter().all(|v| v.is_finite()) {
+            return Err(CoreError::NonFinite(
+                "sparse linear input contains NaN/Inf".into(),
+            ));
+        }
         y.fill(0.0);
         for (j, &xj) in x.iter().enumerate().take(self.ncols) {
             for k in self.col_ptr[j]..self.col_ptr[j + 1] {
@@ -96,6 +139,12 @@ impl SparseLinearPart {
                 y[i] += self.values[k] * xj;
             }
         }
+        if !y.iter().all(|v| v.is_finite()) {
+            return Err(CoreError::NonFinite(
+                "sparse linear product contains NaN/Inf".into(),
+            ));
+        }
+        Ok(())
     }
 }
 
@@ -376,6 +425,7 @@ impl OdeProblem {
         sparse_a: SparseLinearPart,
         nonlinear_n: NonlinearFn,
     ) -> CoreResult<Self> {
+        sparse_a.validate()?;
         if sparse_a.nrows != self.dimension || sparse_a.ncols != self.dimension {
             return Err(CoreError::Dimension(format!(
                 "Sparse linear part dimension {}x{} != problem dimension {}",
@@ -412,6 +462,11 @@ impl OdeProblem {
         y0: &[f64],
         counters: &mut WorkCounters,
     ) -> Result<(), StructureError> {
+        if !t0.is_finite() || y0.len() != self.dimension || !y0.iter().all(|v| v.is_finite()) {
+            return Err(StructureError::BandVerificationFailed(
+                "invalid linear-part verification input".into(),
+            ));
+        }
         if let ProblemStructure::LinearPart { .. } = self.structure {
             let lp = self.linear_part.as_ref().ok_or_else(|| {
                 StructureError::BandVerificationFailed("missing linear part".into())
@@ -427,7 +482,8 @@ impl OdeProblem {
             // 1. Check at (t0, y0)
             self.eval_rhs_into(t0, y0, &mut f_val, counters)
                 .map_err(|e| StructureError::BandVerificationFailed(e.to_string()))?;
-            lp.matvec(y0, &mut ay);
+            lp.matvec(y0, &mut ay)
+                .map_err(|e| StructureError::BandVerificationFailed(e.to_string()))?;
             (n_fn)(t0, y0, &mut ny)
                 .map_err(|e| StructureError::BandVerificationFailed(e.to_string()))?;
             let mut diff = vec![0.0f64; n];
@@ -437,7 +493,7 @@ impl OdeProblem {
             let norm_diff0 = rodas5p_core::safe_l2(&diff);
             let norm_f0 = rodas5p_core::safe_l2(&f_val).max(1.0);
             let rel_err0 = norm_diff0 / norm_f0;
-            if rel_err0 > 1.0e-12 {
+            if !rel_err0.is_finite() || rel_err0 > 1.0e-12 {
                 return Err(StructureError::BandVerificationMismatch {
                     vector: 0,
                     mismatch: rel_err0,
@@ -454,7 +510,8 @@ impl OdeProblem {
             }
             self.eval_rhs_into(t0, &y_pert, &mut f_val, counters)
                 .map_err(|e| StructureError::BandVerificationFailed(e.to_string()))?;
-            lp.matvec(&y_pert, &mut ay);
+            lp.matvec(&y_pert, &mut ay)
+                .map_err(|e| StructureError::BandVerificationFailed(e.to_string()))?;
             (n_fn)(t0, &y_pert, &mut ny)
                 .map_err(|e| StructureError::BandVerificationFailed(e.to_string()))?;
             for i in 0..n {
@@ -463,7 +520,7 @@ impl OdeProblem {
             let norm_diff1 = rodas5p_core::safe_l2(&diff);
             let norm_f1 = rodas5p_core::safe_l2(&f_val).max(1.0);
             let rel_err1 = norm_diff1 / norm_f1;
-            if rel_err1 > 1.0e-12 {
+            if !rel_err1.is_finite() || rel_err1 > 1.0e-12 {
                 return Err(StructureError::BandVerificationMismatch {
                     vector: 1,
                     mismatch: rel_err1,

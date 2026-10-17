@@ -1,13 +1,14 @@
-//! Native fair comparative benchmark for collective mode packet methods (LP09).
+//! Diagnostic comparative benchmark for collective mode packet methods (LP09).
 //!
 //! Compares the packet trajectory method (LP01-LP04) against the direct Rosenbrock/stiff
-//! ODE baseline (`rodas5p_fast`) on matched physical models and tolerances.
+//! ODE baseline (`rodas5p_fast`) on the same declared physical model.
 //!
-//! Enforces:
-//! - Matched physical tolerance and output grid.
+//! Scope:
+//! - Equal nominal tolerances do not establish equal physical accuracy.
 //! - Comparison against properly hoisted O(N) baseline (refusing synthetic unhoisted baselines).
 //! - Deterministic work counter reporting (Jacobians, JVPs, LU factorizations, linear solves vs packet moments).
-//! - Zero heap allocation compliance in hot loops (VG-1).
+//! - Allocations and independent reference errors are unmeasured and reported as null.
+//! - The packet radius is a reported estimator, not an independently verified reference.
 //! - Diagnostic timing authority ("diagnostic_only", R2-STAT-01 / R4-STAT-DEV-01).
 
 use std::time::Instant;
@@ -20,7 +21,7 @@ use rodas5p_integrators::{
 };
 use serde::{Deserialize, Serialize};
 
-pub const PACKET_BENCHMARK_SCHEMA: &str = "vigilode-packet-benchmark-report-v1";
+pub const PACKET_BENCHMARK_SCHEMA: &str = "vigilode-packet-benchmark-report-v2";
 
 /// Benchmark candidate or comparator arm identifier.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -75,12 +76,17 @@ pub struct ArmRunSummary {
     pub steps_taken: usize,
     pub final_t: f64,
     pub final_mean: (f64, f64),
-    pub error_vs_reference: f64,
+    /// Requires an independent reference; this diagnostic runner supplies none.
+    pub error_vs_reference: Option<f64>,
+    /// Radius returned by the packet implementation, without independent validation here.
+    pub reported_mean_radius: Option<f64>,
     pub work_counters: WorkCounters,
+    pub work_counters_authority: &'static str,
     pub packet_counters: PacketWorkCounters,
     pub elapsed_seconds_diagnostic: f64,
     pub timing_authority: &'static str,
-    pub hot_loop_allocations: usize,
+    /// None means not measured, rather than a zero-allocation result.
+    pub hot_loop_allocations: Option<usize>,
 }
 
 /// Comprehensive benchmark comparison report.
@@ -93,6 +99,9 @@ pub struct PacketBenchmarkReport {
     pub packet_candidate: ArmRunSummary,
     pub direct_baseline: ArmRunSummary,
     pub speedup_ratio_diagnostic: f64,
+    /// Distance between the two computed means; neither is an independent reference.
+    pub mean_discrepancy_diagnostic: f64,
+    pub physical_accuracy_status: &'static str,
     pub work_reduction: WorkReductionSummary,
     pub fairness_verified: bool,
     pub verdict: &'static str,
@@ -112,7 +121,8 @@ pub fn build_hoisted_collective_ode_problem(model: &CollectiveModel) -> CoreResu
     model.to_ode_problem()
 }
 
-/// Runs the fair benchmark comparing packet method to direct solver.
+/// Runs a diagnostic comparison. Physical accuracy and complete cost/output fairness
+/// require a separate independent reference and a matched execution contract.
 pub fn run_packet_benchmark(
     model: &CollectiveModel,
     config: &PacketBenchmarkConfig,
@@ -155,12 +165,14 @@ pub fn run_packet_benchmark(
         steps_taken: packet_res.accepted_steps,
         final_t: packet_res.final_t,
         final_mean: packet_res.final_mean,
-        error_vs_reference: packet_res.final_mean_radius,
+        error_vs_reference: None,
+        reported_mean_radius: Some(packet_res.final_mean_radius),
         work_counters: WorkCounters::default(),
+        work_counters_authority: "structural_zero_not_instrumented",
         packet_counters: packet_work,
         elapsed_seconds_diagnostic: packet_elapsed,
         timing_authority: "diagnostic_only",
-        hot_loop_allocations: 0,
+        hot_loop_allocations: None,
     };
 
     // 2. Run Direct Solver Baseline (RODAS5P Fast)
@@ -212,12 +224,14 @@ pub fn run_packet_benchmark(
         steps_taken: direct_work.accepted_steps as usize,
         final_t: final_time,
         final_mean: (direct_mx, direct_my),
-        error_vs_reference: mean_diff,
+        error_vs_reference: None,
+        reported_mean_radius: None,
         work_counters: direct_work,
+        work_counters_authority: "instrumented",
         packet_counters: PacketWorkCounters::default(),
         elapsed_seconds_diagnostic: direct_elapsed,
         timing_authority: "diagnostic_only",
-        hot_loop_allocations: 0,
+        hot_loop_allocations: None,
     };
 
     let speedup = if packet_elapsed > 0.0 {
@@ -241,8 +255,10 @@ pub fn run_packet_benchmark(
         packet_candidate: packet_summary,
         direct_baseline: direct_summary,
         speedup_ratio_diagnostic: speedup,
+        mean_discrepancy_diagnostic: mean_diff,
+        physical_accuracy_status: "UNVERIFIED_NO_INDEPENDENT_REFERENCE",
         work_reduction: work_red,
-        fairness_verified: true,
-        verdict: "PASS",
+        fairness_verified: false,
+        verdict: "DIAGNOSTIC_ONLY",
     })
 }

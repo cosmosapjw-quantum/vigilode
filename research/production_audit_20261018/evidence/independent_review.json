@@ -1,0 +1,137 @@
+{
+  "schema": "vigilode-independent-technical-review-v1",
+  "reviewer": "independent_review",
+  "base_commit": "2fc61b944fe431d40ba455c373579bce00b0c39a",
+  "date": "2026-10-18",
+  "methods": [
+    "independent real-Hilbert quadratic-form derivation",
+    "Bernstein control-polygon proof",
+    "interval inclusion induction",
+    "Leja recurrence-error decomposition",
+    "source diff and API review"
+  ],
+  "historical_campaign_reruns": 0,
+  "reviewer_native_test_executions": 0,
+  "execution_evidence_owner": "root final targeted logs; not duplicated by reviewer",
+  "claims": {
+    "T1": {
+      "proof_decision": "PROMOTE_CONDITIONAL",
+      "native_status": "CONTRACT_ONLY"
+    },
+    "T2": {
+      "proof_decision": "PROMOTE_CONDITIONAL",
+      "native_status": "CONTRACT_ONLY"
+    },
+    "T3": {
+      "proof_decision": "PROMOTE_CONDITIONAL",
+      "native_status": "IMPLEMENTED_INCLUSION_AND_PREFIX_REPAIR"
+    },
+    "WB1": {
+      "proof_decision": "PROMOTE_CONDITIONAL",
+      "native_status": "EXACT_FRACTION_REFERENCE_ONLY"
+    },
+    "WB2": {
+      "proof_decision": "PROMOTE_CONDITIONAL",
+      "native_status": "EXACT_FRACTION_REFERENCE_ONLY"
+    }
+  },
+  "production_decision": {
+    "packet": "HOLD",
+    "leja_total_error": "HOLD_ADDITIVE_UNDERFLOW",
+    "matched_accuracy_wall_time": "HOLD"
+  },
+  "patch_decision": "ACCEPT_TARGETED_REPAIRS_WITH_EXPLICIT_REMAINING_AUTHORITY_HOLD",
+  "findings": [
+    {
+      "id": "IR-01",
+      "severity": "HIGH",
+      "issue": "Leja coefficient-radius times recurrence-error interaction omitted",
+      "status": "CLOSED",
+      "repair": "T3 propagates abs(d_mid)+d_rad"
+    },
+    {
+      "id": "IR-02",
+      "severity": "HIGH",
+      "issue": "Ordinary norm used as upper certificate factor",
+      "status": "CLOSED",
+      "repair": "scaled outward norm; total additive-underflow obligation remains HOLD"
+    },
+    {
+      "id": "IR-03",
+      "severity": "MEDIUM",
+      "issue": "Unit energy guard omitted actual weight sum S",
+      "status": "CLOSED",
+      "repair": "outward S_upper*E_upper <=1 guard"
+    },
+    {
+      "id": "IR-04",
+      "severity": "HIGH",
+      "issue": "T1c initial curve value not bound to uncertainty center",
+      "status": "CLOSED",
+      "repair": "explicit Y(0)=hat a(0) premise"
+    },
+    {
+      "id": "IR-05",
+      "severity": "LOW",
+      "issue": "T2 constant polynomial/outward dominance and T3 mixed division-count labels",
+      "status": "CLOSED",
+      "repair": "d0 convention, minimum of valid bounds, ordinary/interval cost split"
+    },
+    {
+      "id": "IR-06",
+      "severity": "MEDIUM",
+      "issue": "Woodbury source adapter initially included stored carrier absent from native rotating-frame RHS/JVP",
+      "status": "CLOSED",
+      "repair": "native carrier0 contract explicit; nonzero carrier cases labeled extension;16 native-shaped nonlinear RHS added"
+    }
+  ],
+  "reviewed_source_sha256": {
+    "crates/rodas5p-core/src/damped_moments.rs": "65c321de7c0c46ed8f9663b092f24606af88274f31f08feecaef118b65356339",
+    "crates/rodas5p-core/src/leja_action.rs": "bc1a17443b3692799f432614468e13d3ddd336d364d665cb75f2b70d0bc5a572",
+    "crates/rodas5p-core/src/sparse_direct.rs": "75d5c6403fe18025cfe86295bf1c0b60880ac26d6ead7a8b658f9295ad8a85c7",
+    "crates/rodas5p-integrators/src/packet_trajectory.rs": "b179d27685b91a1c55ff89dc311a2c2362f70e6aa1e25808e44ef68bf4106f04",
+    "crates/rodas5p-integrators/src/packet_window.rs": "200ab82fd72bc3a4e95eedb91242b047ef6168795a2a7c86369e16d26fd9c242",
+    "crates/rodas5p-integrators/src/problem.rs": "dd2baf2de74ca3d20c4bce50713a4595a06391ee36faf08a936eb57ba67dcf38",
+    "crates/rodas5p-integrators/src/gray_scott.rs": "95cce4a1bd0561ee1da506a8486c79f192556a2757b06685806f90b822860d45",
+    "crates/rodas5p-fair-ab/src/packet_benchmark.rs": "f9c0fb2f4e2e36f3e94322caaba89db89958b8d905bbe37caad0a03e086bf063",
+    "crates/rodas5p-fair-ab/tests/packet_benchmark_contracts.rs": "c9552ac6806c65dcd4366c3a929d1d1bcdc0aa9216f3fabde53a68858365282a",
+    "crates/rodas5p-core/tests/damped_moment_enclosure_regressions.rs": "854ccb6dd1cf2f5734ebe7673107cbf3c0eed6b1aa20cf0b7562aed73f931af0",
+    "crates/rodas5p-core/tests/production_audit_sparse.rs": "d531d387ca7af6b20daf6c016e393801d3d454c9e7e95bbf13a403d55846ec17",
+    "crates/rodas5p-integrators/tests/production_audit_packet.rs": "43ba0df3805788abbeba39c0eeecc9b8f1bc7a3ee30bfbc85224ec60ee3443db",
+    "crates/rodas5p-integrators/tests/production_audit_split.rs": "887de22ab56708efcef5e2af4f72ebff5d6991bf6be2312700e4b54f5dbaec25",
+    "research/production_audit_20261018/WOODBURY_THEORY.md": "4748deb03df0f4b8eeb82bd5cf7b42347cebf12a935e40c1cc8c4be469df9d64",
+    "research/production_audit_20261018/woodbury_reference.py": "ef4d69cd341b04acb073cf18cce54564dff2ae2e9a1481a6c7336edc598c3c06",
+    "research/production_audit_20261018/evidence/woodbury_checks.json": "f610d0b6f626d5eeacfe4d2f65becf7e917fd34225c1bd95a691118de8a34fa8",
+    "docs/reviews/20261018_production_audit/REPORT_KO.md": "1b79803b8cd362f5fe47e94d56c0eba81c99585368f9b28e525d946de1eb4e79",
+    "crates/rodas5p-integrators/src/collective_model.rs": "1cbcd3bfb6f1251e3f8dfcf3559d9db373610da89bebd7dab0432265a51a3a56"
+  },
+  "reviewed_proof_and_report_sha256": {
+    "theory_research.md": "f3d974fc48492e00ba625bb8232d62d84373cdb8aa81169b52a765173d5ca4ea",
+    "theory_research.json": "22ec3824ba102bb94623ee3268ec27f614c6c29e39b7db59eaa840404016ce9e",
+    "packet_audit.md": "c20524f28e3705e35455fa3350212d2bf61c8c9a1aa3c870e6fbcd810a77d22d",
+    "performance_audit.md": "b945b859ccc9c0522db5b50c045a187e89cfca3dc0140802f25e8c80c495f2b4",
+    "performance_audit.json": "2bff53ffe00a40fb6dfdbb67ea5693512a4c30457f35d9f797f0ad02a611593a"
+  },
+  "scope_notes": [
+    "Directed arithmetic primitive and prior published theorem contracts reused; not newly formally proved",
+    "Leja suffix and O(m^2) update require Hermitian mapped operator spectrum in [-2,2]",
+    "Packet transfer formula requires support/weight/tube premises; PK10 remains open",
+    "No elapsed-speed or full-trajectory certification granted",
+    "Author derivation records may retain pending status; this file is the independent decision"
+  ],
+  "woodbury_evidence_review": {
+    "source_identity": "PASS",
+    "cases": 16,
+    "exact_solve_count": 64,
+    "rhs_operation_formula": "18*N+14",
+    "setup_operation_formula_for_recorded_small_gain_cases": "19*N+51",
+    "count_reconciliation": "PASS",
+    "reviewer_repeat_execution": false,
+    "initial_identity_reconciliation": "Source changed concurrently; superseded by completed final identity reconciliation"
+  },
+  "narrow_followup_reviews": [
+    "Leja status-string buffer reuse reviewed: preserves EstimateOnly reason and bound; no new mathematical formula",
+    "Woodbury native carrier convention corrected and64 exact source-bound solves reconciled",
+    "Root integrated report current scientific scope consistent"
+  ]
+}

@@ -1,5 +1,15 @@
 # VigilODE
 
+> **2026-10-18 production audit:** The latest packet and polynomial optimizations
+> remain research features. The LP10 certified-packet promotion and the Diffsol
+> headline performance/allocation claims are superseded by the
+> [production readiness audit](docs/reviews/20261018_production_audit/REPORT_KO.md)
+> and its [machine-readable decision](research/production_audit_20261018/DECISION.json).
+> Targeted correctness repairs are included on this audit branch; a complete
+> floating-point packet enclosure and an equivalent-work performance comparison
+> remain open. Existing problem-specific validation of the generic RODAS5P path
+> retains its original scope.
+
 **Causal, Budgeted Jacobian-Free Polyalgorithms for Stiff and Oscillatory ODEs**
 
 VigilODE is a research platform for generic stiff and oscillatory ordinary differential equations. The project studies evidence-gated polyalgorithm design that combines a protected matrix-free Rosenbrock path with guarded exponential-Rosenbrock candidates while preserving complete speculative-work accounting.
