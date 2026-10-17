@@ -194,4 +194,14 @@ cells, so the right-preconditioner side leaves the GMRES-into paths of both node
 
 ## Results
 
-Appended after the recorded run. Nothing above this heading changes.
+Executed 2026-10-18 under commit `e68130e4317ce4acb4081f04a0858f292addf87b` (ledger `L-0117`).
+
+### 1. Stage 0 Feasibility Outcome
+- **F1 (Sparse direct kernel):** Verified in `crates/rodas5p-core/tests/sparse_direct_contract.rs` (200 random sparse matrices backward error <= 1e-13, Brusselator-1D agreement with dense LU <= 1e-12). `met = true`.
+- **F2 (Right preconditioner GMRES-into):** Verified in `crates/rodas5p-integrators/tests/right_preconditioner_contract.rs` (true unpreconditioned residual <= 1e-12, left-preconditioned path bitwise identical, GCRO-DR/LGMRES/LGMRES-into return typed InvalidInput refusals). `met = true`.
+- **F3 (Declared linear part):** Verified in `crates/rodas5p-integrators/tests/right_preconditioner_contract.rs` (`verify_linear_part` matches to 1e-12, perturbation detected with `BandVerificationMismatch`). `met = true`.
+- **F4 (Gray-Scott 2D):** Verified in `crates/rodas5p-integrators/tests/right_preconditioner_contract.rs` (parameter and invariant conservation, analytic JVP agreement <= 1e-12). `met = true`.
+- **R (Reference prerequisite):** Reference solution generation at N in {128, 256} exceeds budget / reference-limited count 6 of 6 gated cells (100% > 5% threshold). `met = false`.
+- **Decision:** `HOLD(reference)`.
+- **Stage 1 Status:** As preregistered in line 121 ("# stage 1 only if STAGE0.json is FEASIBLE:"), Stage 1 does not run on HOLD.
+- **Verdict:** `PASS` (claim: "decision HOLD(reference)").
