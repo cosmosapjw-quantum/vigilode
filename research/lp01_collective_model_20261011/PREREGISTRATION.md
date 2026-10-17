@@ -71,4 +71,12 @@ python3 tools/lp01_stage0_check.py --output research/lp01_collective_model_20261
 
 ## Results
 
-Appended after the recorded run. Nothing above this heading changes.
+Executed 2026-10-18 under commit `254fe0f45eefc3ef0f178fa2d407465c0035f0cc` (ledger `L-0118`).
+
+### 1. Stage 0 Feasibility Outcome
+- **VG-1 (Zero-allocation):** Hot loops for `rhs` and `jvp` allocate exactly 0 heap bytes (`CountingAlloc == 0`). `met = true`.
+- **VG-2 (Analytic consistency):** Analytic JVP matches finite difference to $< 10^{-6}$; Dahlquist linear boundary ($\chi = 0$) matches exact decoupled harmonic oscillators to $< 10^{-14}$. `met = true`.
+- **VG-3 (Invariant & moment preservation):** Continuous energy derivative $\dot{E} = 0$ ($< 10^{-14}$); odd and even spectral moments $\mu_k$ and weighted moments $\nu_k$ preserved. `met = true`.
+- **Negative admission gate:** Strictly refuses empty modes, dimension mismatches, $\xi \notin [-1, 1]$, non-positive weights, unnormalized weights, initial energy $> 1$, non-finite parameters, negative width/damping, and generic unadmitted ODE callbacks. `met = true`.
+- **Decision:** `FEASIBLE`.
+- **Verdict:** `PASS`.
