@@ -43,7 +43,8 @@ use rodas5p_core::Preconditioner;
 use rodas5p_core::{
     CoreError, CoreResult, IdentityPreconditioner, InitialGuess, KrylovSystemIdentity,
     LinearMethod, LinearOperator, LinearSolverConfig, OperatorApplicationWork, PreconditionerKind,
-    ShiftedOperator, WorkCounters, rodas5p_coefficients, safe_l2, sha256_f64_slice_bytes,
+    ShiftedOperator, WorkCounters, exact_krylov_system_identity, rodas5p_coefficients, safe_l2,
+    sha256_f64_slice_bytes,
 };
 use rodas5p_krylov::{
     GcrodrConfig, GcrodrSolveOptions, GcrodrState, GcrodrWorkspace, GmresCapacity, GmresConfig,
@@ -93,6 +94,69 @@ impl GcrodrRecyclePolicy {
             Self::Cold => "gcrodr-cold-v1",
         }
     }
+}
+
+/// How the U-form driver supplies the initial guess `x0` to each stage solve
+/// (research node `research/sp04_zero_start_recycling_20261011`, node SP04).
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize)]
+pub enum KrylovStartPolicy {
+    /// Today's behaviour (the default): `x0` is supplied according to `config.x0_strategy`.
+    /// For LGMRES and GCRO-DR, if `x0` is not given by previous stage, the solver's
+    /// carried `previous_solution` is used.
+    #[default]
+    Configured,
+    /// Hands every stage solve an explicit zero vector (`zero_x0`) owned by the workspace.
+    /// `previous_solution` is never used as a start, for any method.
+    ExplicitZero,
+}
+
+impl KrylovStartPolicy {
+    /// Stable identifier for research records.
+    pub fn id(self) -> &'static str {
+        match self {
+            Self::Configured => "krylov-start-configured-v1",
+            Self::ExplicitZero => "krylov-start-explicit-zero-v1",
+        }
+    }
+}
+
+/// The lifetime of the carried recycle or augmentation subspace for GCRO-DR
+/// and LGMRES (research node `research/sp04_zero_start_recycling_20261011`, node SP04).
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize)]
+pub enum RecycleScope {
+    /// Carried across steps and attempts (the pre-existing behaviour and default).
+    #[default]
+    Carried,
+    /// Empties the carried subspace at the start of each attempt, so recycled
+    /// vectors live only across the s stages of one W.
+    CurrentW,
+}
+
+impl RecycleScope {
+    /// Stable identifier for research records.
+    pub fn id(self) -> &'static str {
+        match self {
+            Self::Carried => "recycle-scope-carried-v1",
+            Self::CurrentW => "recycle-scope-current-w-v1",
+        }
+    }
+}
+
+/// The kind of start of one stage solve (research node SP04).
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub enum StageStartKind {
+    Zero,
+    PreviousStage,
+    SolverCarried,
+}
+
+/// Opt-in start telemetry for Krylov stage solves (research node SP04).
+#[derive(Clone, Debug, Default, PartialEq, Eq, Serialize)]
+pub struct KrylovStartTelemetry {
+    pub zero_starts: u64,
+    pub previous_stage_starts: u64,
+    pub solver_carried_starts: u64,
+    pub cross_system_basis_starts: u64,
 }
 
 /// One GCRO-DR stage solve under `policy`, exactly as the U-form driver
@@ -1133,6 +1197,12 @@ pub struct Rodas5pMfFastResult {
     pub gcrodr_policy: &'static str,
     /// [`KrylovWorkspaceOptions::id`] of the run (research node SP02).
     pub krylov_workspace: &'static str,
+    /// [`KrylovStartPolicy::id`] of the run (research node SP04).
+    pub start_policy: &'static str,
+    /// [`RecycleScope::id`] of the run (research node SP04).
+    pub recycle_scope: &'static str,
+    /// Opt-in start telemetry (research node SP04).
+    pub start_telemetry: Option<KrylovStartTelemetry>,
 }
 
 /// The stage arithmetic and Krylov workspaces of one integration.
@@ -1222,6 +1292,16 @@ pub struct Rodas5pMfFastWorkspace {
     current_attempt_index: usize,
     /// Residual metric of current attempt.
     current_attempt_metric: ResidualMetric,
+    /// Start policy for stage solves (research node SP04).
+    start_policy: KrylovStartPolicy,
+    /// Recycle scope for carried subspaces (research node SP04).
+    recycle_scope: RecycleScope,
+    /// Immutable zero vector for explicit zero starts (research node SP04).
+    zero_x0: Vec<f64>,
+    /// Whether start telemetry is enabled (research node SP04).
+    start_telemetry_enabled: bool,
+    /// Opt-in start telemetry accumulator (research node SP04).
+    start_telemetry: KrylovStartTelemetry,
 }
 
 /// One successful Krylov stage solve's report, as recorded by
@@ -1341,6 +1421,11 @@ impl Clone for Rodas5pMfFastWorkspace {
                 .map(|_| StageResidualTelemetry::default()),
             current_attempt_index: 0,
             current_attempt_metric: ResidualMetric::UnscaledL2,
+            start_policy: self.start_policy,
+            recycle_scope: self.recycle_scope,
+            zero_x0: self.zero_x0.clone(),
+            start_telemetry_enabled: self.start_telemetry_enabled,
+            start_telemetry: self.start_telemetry.clone(),
         }
     }
 }
@@ -1428,6 +1513,11 @@ impl Rodas5pMfFastWorkspace {
             stage_telemetry: None,
             current_attempt_index: 0,
             current_attempt_metric: ResidualMetric::UnscaledL2,
+            start_policy: KrylovStartPolicy::Configured,
+            recycle_scope: RecycleScope::Carried,
+            zero_x0: vec![0.0; n],
+            start_telemetry_enabled: false,
+            start_telemetry: KrylovStartTelemetry::default(),
         })
     }
 
@@ -2017,6 +2107,7 @@ impl Rodas5pMfFastWorkspace {
         if let Some(tel) = self.stage_telemetry.as_mut() {
             tel.clear();
         }
+        self.start_telemetry = KrylovStartTelemetry::default();
         let staged = self.stage_target.policy != StageTargetPolicy::Legacy;
         if staged {
             self.set_stage_target_span(tf - t);
@@ -2058,6 +2149,22 @@ impl Rodas5pMfFastWorkspace {
                 && let Some(KrylovState::Lgmres(st)) = recycle.as_mut()
             {
                 self.attempt_snapshot.save(st);
+            }
+            if self.recycle_scope == RecycleScope::CurrentW {
+                match recycle.as_mut() {
+                    Some(KrylovState::Gcrodr(st)) => {
+                        st.clear();
+                    }
+                    Some(KrylovState::Lgmres(st)) => {
+                        st.directions.clear();
+                        st.images.clear();
+                        st.operator_token = None;
+                        st.system_identity = None;
+                        st.previous_solution = None;
+                        st.generation = 0;
+                    }
+                    _ => {}
+                }
             }
             let outcome = self.attempt(
                 problem,
@@ -2152,6 +2259,11 @@ impl Rodas5pMfFastWorkspace {
             driver: RODAS5P_MF_FAST_DRIVER_ID,
             gcrodr_policy: self.gcrodr_policy.id(),
             krylov_workspace: self.krylov_workspace.id(),
+            start_policy: self.start_policy.id(),
+            recycle_scope: self.recycle_scope.id(),
+            start_telemetry: self
+                .start_telemetry_enabled
+                .then(|| self.start_telemetry.clone()),
         };
         if self.krylov_workspace.lgmres_into
             && let Some(KrylovState::Lgmres(st)) = recycle.as_mut()
@@ -2176,6 +2288,72 @@ impl Rodas5pMfFastWorkspace {
 
     pub fn gcrodr_policy(&self) -> GcrodrRecyclePolicy {
         self.gcrodr_policy
+    }
+
+    /// Set the Krylov start policy (research node SP04). `Configured` by default.
+    pub fn set_start_policy(&mut self, policy: KrylovStartPolicy) {
+        self.start_policy = policy;
+    }
+
+    pub fn start_policy(&self) -> KrylovStartPolicy {
+        self.start_policy
+    }
+
+    /// Set the recycle scope for GCRO-DR and LGMRES (research node SP04). `Carried` by default.
+    pub fn set_recycle_scope(&mut self, scope: RecycleScope) {
+        self.recycle_scope = scope;
+    }
+
+    pub fn recycle_scope(&self) -> RecycleScope {
+        self.recycle_scope
+    }
+
+    pub fn start_policy_configured() -> KrylovStartPolicy {
+        KrylovStartPolicy::Configured
+    }
+
+    pub fn start_policy_explicit_zero() -> KrylovStartPolicy {
+        KrylovStartPolicy::ExplicitZero
+    }
+
+    pub fn recycle_scope_carried() -> RecycleScope {
+        RecycleScope::Carried
+    }
+
+    pub fn recycle_scope_current_w() -> RecycleScope {
+        RecycleScope::CurrentW
+    }
+
+    pub fn set_explicit_zero(&mut self, on: bool) {
+        self.start_policy = if on {
+            KrylovStartPolicy::ExplicitZero
+        } else {
+            KrylovStartPolicy::Configured
+        };
+    }
+
+    pub fn set_current_w(&mut self, on: bool) {
+        self.recycle_scope = if on {
+            RecycleScope::CurrentW
+        } else {
+            RecycleScope::Carried
+        };
+    }
+
+    /// Enable or disable opt-in Krylov start telemetry (research node SP04).
+    pub fn set_start_telemetry_enabled(&mut self, enabled: bool) {
+        self.start_telemetry_enabled = enabled;
+        if !enabled {
+            self.start_telemetry = KrylovStartTelemetry::default();
+        }
+    }
+
+    pub fn start_telemetry_enabled(&self) -> bool {
+        self.start_telemetry_enabled
+    }
+
+    pub fn start_telemetry(&self) -> &KrylovStartTelemetry {
+        &self.start_telemetry
     }
 
     /// Record the stages of the attempt just accepted with step `h`, the
@@ -2543,15 +2721,69 @@ impl Rodas5pMfFastWorkspace {
                 rtol: self.config.rtol,
                 atol: linear_atol,
             };
+            if self.start_telemetry_enabled {
+                let current_sys_id = exact_krylov_system_identity(&shifted, &self.preconditioner);
+                let cross_system = match state.as_deref() {
+                    Some(KrylovState::Gcrodr(st)) => {
+                        !st.basis.is_empty()
+                            && (current_sys_id.is_none()
+                                || st.system_identity.as_ref() != current_sys_id.as_ref())
+                    }
+                    Some(KrylovState::Lgmres(st)) => {
+                        !st.directions.is_empty()
+                            && (current_sys_id.is_none()
+                                || st.system_identity.as_ref() != current_sys_id.as_ref())
+                    }
+                    _ => false,
+                };
+                if cross_system {
+                    self.start_telemetry.cross_system_basis_starts += 1;
+                }
+                let kind = match self.start_policy {
+                    KrylovStartPolicy::ExplicitZero => StageStartKind::Zero,
+                    KrylovStartPolicy::Configured => {
+                        if previous {
+                            StageStartKind::PreviousStage
+                        } else {
+                            match state.as_deref() {
+                                Some(KrylovState::Gcrodr(st))
+                                    if st.previous_solution.is_some()
+                                        && self.gcrodr_policy != GcrodrRecyclePolicy::Cold =>
+                                {
+                                    StageStartKind::SolverCarried
+                                }
+                                Some(KrylovState::Lgmres(st)) if st.previous_solution.is_some() => {
+                                    StageStartKind::SolverCarried
+                                }
+                                _ => StageStartKind::Zero,
+                            }
+                        }
+                    }
+                };
+                match kind {
+                    StageStartKind::Zero => self.start_telemetry.zero_starts += 1,
+                    StageStartKind::PreviousStage => {
+                        self.start_telemetry.previous_stage_starts += 1
+                    }
+                    StageStartKind::SolverCarried => {
+                        self.start_telemetry.solver_carried_starts += 1
+                    }
+                }
+            }
             if self.gmres_into && self.config.method == LinearMethod::Gmres {
                 let (done, rest) = self.u.split_at_mut(i * n);
                 let stage = &mut rest[..n];
-                let x0 = if !step_start {
-                    previous.then(|| &done[(i - 1) * n..])
-                } else if self.config.x0_strategy == InitialGuess::PreviousStepScaled {
-                    Some(&self.x0_scaled[..])
-                } else {
-                    Some(&self.step_u[i * n..(i + 1) * n])
+                let x0 = match self.start_policy {
+                    KrylovStartPolicy::ExplicitZero => Some(&self.zero_x0[..]),
+                    KrylovStartPolicy::Configured => {
+                        if !step_start {
+                            previous.then(|| &done[(i - 1) * n..])
+                        } else if self.config.x0_strategy == InitialGuess::PreviousStepScaled {
+                            Some(&self.x0_scaled[..])
+                        } else {
+                            Some(&self.step_u[i * n..(i + 1) * n])
+                        }
+                    }
                 };
                 let report = solve_gmres_into_with_accounting(
                     &shifted,
@@ -2587,12 +2819,17 @@ impl Rodas5pMfFastWorkspace {
                 }
                 continue;
             }
-            let x0 = if !step_start {
-                previous.then(|| &self.u[(i - 1) * n..i * n])
-            } else if self.config.x0_strategy == InitialGuess::PreviousStepScaled {
-                Some(&self.x0_scaled[..])
-            } else {
-                Some(&self.step_u[i * n..(i + 1) * n])
+            let x0 = match self.start_policy {
+                KrylovStartPolicy::ExplicitZero => Some(&self.zero_x0[..]),
+                KrylovStartPolicy::Configured => {
+                    if !step_start {
+                        previous.then(|| &self.u[(i - 1) * n..i * n])
+                    } else if self.config.x0_strategy == InitialGuess::PreviousStepScaled {
+                        Some(&self.x0_scaled[..])
+                    } else {
+                        Some(&self.step_u[i * n..(i + 1) * n])
+                    }
+                }
             };
             let report = match self.config.method {
                 LinearMethod::Gmres => solve_gmres_with_workspace_and_accounting(
@@ -2622,12 +2859,19 @@ impl Rodas5pMfFastWorkspace {
                     if self.krylov_workspace.lgmres_into {
                         let (done, rest) = self.u.split_at_mut(i * n);
                         let stage = &mut rest[..n];
-                        let x0 = if !step_start {
-                            previous.then(|| &done[(i - 1) * n..])
-                        } else if self.config.x0_strategy == InitialGuess::PreviousStepScaled {
-                            Some(&self.x0_scaled[..])
-                        } else {
-                            Some(&self.step_u[i * n..(i + 1) * n])
+                        let x0 = match self.start_policy {
+                            KrylovStartPolicy::ExplicitZero => Some(&self.zero_x0[..]),
+                            KrylovStartPolicy::Configured => {
+                                if !step_start {
+                                    previous.then(|| &done[(i - 1) * n..])
+                                } else if self.config.x0_strategy
+                                    == InitialGuess::PreviousStepScaled
+                                {
+                                    Some(&self.x0_scaled[..])
+                                } else {
+                                    Some(&self.step_u[i * n..(i + 1) * n])
+                                }
+                            }
                         };
                         let report = solve_lgmres_into(
                             &shifted,

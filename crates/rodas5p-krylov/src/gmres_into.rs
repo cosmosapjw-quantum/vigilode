@@ -73,6 +73,8 @@ pub struct GmresIntoReport {
     /// The workspace's capacity grew during this solve.
     pub workspace_grew: bool,
     pub method: &'static str,
+    /// The initial residual norm ||b - A x_0|| before any Krylov cycle.
+    pub initial_residual_norm: f64,
 }
 
 impl GmresWorkspace {
@@ -222,6 +224,7 @@ pub fn solve_gmres_into_with_accounting(
     }
 
     let (mut total, mut cycles) = (0usize, 0u64);
+    let mut initial_residual_norm = None;
     let exit = loop {
         let operator_residual = if workspace.common.x.iter().all(|value| *value == 0.0) {
             workspace.common.residual.copy_from_slice(rhs);
@@ -239,6 +242,9 @@ pub fn solve_gmres_into_with_accounting(
             true
         };
         let residual_norm = selected_residual_norm(&workspace.common.residual, residual_scale)?;
+        if initial_residual_norm.is_none() {
+            initial_residual_norm = Some(residual_norm);
+        }
         if residual_norm <= threshold {
             break LoopExit {
                 residual_norm,
@@ -308,6 +314,7 @@ pub fn solve_gmres_into_with_accounting(
         least_squares_solves: cycles,
         workspace_grew: workspace.capacity_f64() > capacity_before,
         method: "gmres-into",
+        initial_residual_norm: initial_residual_norm.unwrap_or(residual_norm),
     })
 }
 
