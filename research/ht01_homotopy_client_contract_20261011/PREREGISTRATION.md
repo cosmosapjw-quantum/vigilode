@@ -152,4 +152,27 @@ Everything else is **FAIL**. Ledger: PASS with "decision: SELECTED(k)" or "decis
 
 ## Results
 
-Appended after the recorded run. Nothing above this heading changes.
+Executed 2026-10-17 under commit `05d6c7cc7b77815970f76c4a57c83b816fd587fd` (ledger `L-0113`).
+
+### 1. Screening Execution and Gate Status
+- **Commands:**
+  - `python3 tools/ht01_client_screen.py --output research/ht01_homotopy_client_contract_20261011/SCREEN.json`
+  - `python3 tools/ht01_selection_check.py --screen research/ht01_homotopy_client_contract_20261011/SCREEN.json --output research/ht01_homotopy_client_contract_20261011/RESULTS.json`
+  - `python3 tools/test_ht01_selection_check.py` (13/13 unit and mutation tests passed)
+- **Gate:** PASS.
+- **Decision:** ABSTAIN.
+- **Selected candidate:** None.
+- **Leads:** None.
+
+### 2. Candidate Evaluation Summary
+- **K1 (Fourier path client):** Fails S1 (no declaration), S2 (`q1_solves = 0`, cites PP07 `RESULTS.json`, PP07 ABSTAIN preserved), S3 (`no_applicable_arm`), S4 (no `GeneratedFromModel` certificate).
+- **K2 (Quadratic family n in {1, 2, 4, 8, 16}):** Meets S2, S3 (`dense_v2`, `L-0008`), S4 (`GeneratedFromModel` Available for n <= 2/diagonal; S4(b) `PASS_WITH_HT02_OBLIGATIONS`). Fails S1 (no declaration).
+- **K3 (Bateman two-timescale):** Meets S2, S3 (`small`, `L-0032`). Fails S1 (no declaration), S4 (unverified).
+- **K4 (Darboux chart client):** Fails S1 (no declaration), S2 (scalar chart, no linear solve), S3 (`no_applicable_arm`), S4 (unverified).
+- **K5 (Robertson, HIRES, Van der Pol):** Meets S2, S3 (`small`, `L-0085`). Fails S1 (no declaration, measured callback share min $f = 0.0198 < 0.348$, max $f = 0.0651 < 0.348$), S4 (unverified).
+- **K6 (Brusselator-1D N=30..500):** Meets S2, S3 (`banded`, `L-0083`). Fails S1 (no declaration, measured callback share min $f = 0.0577 < 0.348$, max $f = 0.0984 < 0.348$), S4 (unverified).
+- **K7 (Scientific corpus v2):** Meets S2, S3 (`colext64`, `L-0086`). Fails S1 (no declaration), S4 (unverified).
+- **K8 (problems.rs fixtures):** Meets S2, S3 (`small`, `L-0041`). Fails S1 (no declaration), S4 (unverified).
+
+### 3. Impact on HT02
+In accordance with Branch A of `research/ht02_homotopy_parallel_pilot_20261011/PREREGISTRATION.md`, the outcome of HT01 being ABSTAIN directs HT02 to record `ABSTAIN_NOT_RUN` with verdict `INCONCLUSIVE` without executing any parallel homotopy runs.

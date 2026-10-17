@@ -1,0 +1,127 @@
+{
+  "schema": "vigilode-ht01-results-v1",
+  "node": "HT01",
+  "verdict": "PASS",
+  "decision": "ABSTAIN",
+  "selected_candidate": null,
+  "leads": [],
+  "summary": {
+    "total_candidates_screened": 8,
+    "candidates_meeting_all_criteria": 0,
+    "f_min_threshold": 0.348,
+    "decision_rule": "SELECTED(k) if exactly one meets S1-S4; otherwise ABSTAIN",
+    "k1_q1_solves": 0,
+    "k1_citation": "q1_solves = 0, PP07 ABSTAIN preserved",
+    "contract_doc_verified": "docs/HOMOTOPY_EXPENSIVE_CLIENT_CONTRACT.md"
+  },
+  "rows": [
+    {
+      "id": "K1",
+      "client": "Fourier path client (PP05/PP06)",
+      "s1_pass": false,
+      "s2_pass": false,
+      "s3_pass": false,
+      "s4_pass": false,
+      "failing_criteria": [
+        "S1",
+        "S2",
+        "S3",
+        "S4"
+      ],
+      "candidate_status": "FAILS_CRITERIA"
+    },
+    {
+      "id": "K2",
+      "client": "R4 / HOM-06 / R-NEXT-06 quadratic family, n in {1, 2, 4, 8, 16}",
+      "s1_pass": false,
+      "s2_pass": true,
+      "s3_pass": true,
+      "s4_pass": true,
+      "failing_criteria": [
+        "S1"
+      ],
+      "candidate_status": "FAILS_CRITERIA"
+    },
+    {
+      "id": "K3",
+      "client": "Bateman two-timescale real client (feature audit2-bateman-authority)",
+      "s1_pass": false,
+      "s2_pass": true,
+      "s3_pass": true,
+      "s4_pass": false,
+      "failing_criteria": [
+        "S1",
+        "S4"
+      ],
+      "candidate_status": "FAILS_CRITERIA"
+    },
+    {
+      "id": "K4",
+      "client": "Darboux chart client y = x^2 (w + 1/kappa) (L-0043, L-0048)",
+      "s1_pass": false,
+      "s2_pass": false,
+      "s3_pass": false,
+      "s4_pass": false,
+      "failing_criteria": [
+        "S1",
+        "S2",
+        "S3",
+        "S4"
+      ],
+      "candidate_status": "FAILS_CRITERIA"
+    },
+    {
+      "id": "K5",
+      "client": "robertson, hires, van-der-pol-mu1000",
+      "s1_pass": false,
+      "s2_pass": true,
+      "s3_pass": true,
+      "s4_pass": false,
+      "failing_criteria": [
+        "S1",
+        "S4"
+      ],
+      "candidate_status": "FAILS_CRITERIA"
+    },
+    {
+      "id": "K6",
+      "client": "brusselator-1d-N, N in {30, 40, 50, 160, 200, 500}",
+      "s1_pass": false,
+      "s2_pass": true,
+      "s3_pass": true,
+      "s4_pass": false,
+      "failing_criteria": [
+        "S1",
+        "S4"
+      ],
+      "candidate_status": "FAILS_CRITERIA"
+    },
+    {
+      "id": "K7",
+      "client": "scientific corpus v2 calibration: 6 families x n in {96, 384, 1536}",
+      "s1_pass": false,
+      "s2_pass": true,
+      "s3_pass": true,
+      "s4_pass": false,
+      "failing_criteria": [
+        "S1",
+        "S4"
+      ],
+      "candidate_status": "FAILS_CRITERIA"
+    },
+    {
+      "id": "K8",
+      "client": "problems.rs fixtures (scalar linear, Prothero-Robinson, manufactured, mass, complex Dahlquist, semilinear)",
+      "s1_pass": false,
+      "s2_pass": true,
+      "s3_pass": true,
+      "s4_pass": false,
+      "failing_criteria": [
+        "S1",
+        "S4"
+      ],
+      "candidate_status": "FAILS_CRITERIA"
+    }
+  ],
+  "claim": "PASS, decision abstain: no screened client carries an ExpensiveClientDeclaration (S1 fails for all); measured callback shares f in [0.011, 0.108] are all below f_min = 0.348; K1 makes no shifted solve (q1_solves = 0, PP07 ABSTAIN preserved); K2 is the only GeneratedFromModel certificate source but lacks declaration and cost advantage (L-0008). No artificial many-shift workload substituted."
+}
