@@ -9,12 +9,13 @@ use std::sync::atomic::{AtomicU64, Ordering};
 
 use rodas5p_core::DenseMatrix;
 use rodas5p_core::directed::{
-    PowerOfTwo, scale_pow2_down, scale_pow2_is_exact, scale_pow2_nearest, scale_pow2_up,
+    PowerOfTwo, scale_pow2_down, scale_pow2_is_exact, scale_pow2_nearest,
+    scale_pow2_nearest_counted, scale_pow2_up,
 };
 use rodas5p_core::taylor_phi::taylor_phi_action;
 use rodas5p_core::taylor_phi_total::{
     FUSED_PHI_RANGE_UNSUPPORTED, FusedPhiCertificate, NormalizedFusedPhiCertificate,
-    certify_fused_phi_total, certify_fused_phi_total_normalized,
+    NormalizedFusedPhiWork, certify_fused_phi_total, certify_fused_phi_total_normalized,
 };
 use serde_json::{Value, json};
 
@@ -153,7 +154,7 @@ fn record_normalized(cert: &NormalizedFusedPhiCertificate) -> Value {
         "rescaled_bound": hex(cert.rescaled_bound()),
         "r_term": hex(cert.r_term()),
         "l_term": hex(cert.l_term()),
-        "mu": hex(cert.mu()),
+        "mu": cert.mu().map(hex),
         "v": cert.v().iter().map(|vk| hexes(vk)).collect::<Vec<_>>(),
         "z": hexes(cert.z()),
         "stepped_error": hex(cert.stepped_error()),
@@ -161,6 +162,8 @@ fn record_normalized(cert: &NormalizedFusedPhiCertificate) -> Value {
         "normalized_distance": hex(cert.normalized_distance()),
         "work_entries_scaled": cert.work_entries_scaled(),
         "work_stages": cert.work_stages(),
+        "work_total": cert.work_total(),
+        "work": cert.work(),
         "dominant": cert.dominant(),
         "normalized_certificate": record_unnormalized(cert.normalized_certificate()),
     })
@@ -225,6 +228,73 @@ fn test_staged_scaling_at_extreme_exponents() {
     let p = PowerOfTwo::new(1050);
     assert_eq!(p.inverse().exponent, -1050);
     assert_eq!(p.inverse().inverse().exponent, 1050);
+}
+
+#[test]
+fn test_extreme_i64_exponents_regression() {
+    let extreme_exponents = [
+        i64::MIN,
+        i64::MIN + 1,
+        -1_000_000_000_000_i64,
+        -100_000_i64,
+        100_000_i64,
+        1_000_000_000_000_i64,
+        i64::MAX - 1,
+        i64::MAX,
+    ];
+
+    for &e in &extreme_exponents {
+        // Zero always stays exact zero with 0 stages and zero allocations
+        let ((val_zero, stages_zero), allocs_zero) =
+            track_allocations(|| scale_pow2_nearest_counted(0.0, e));
+        assert_eq!(allocs_zero, 0);
+        assert_eq!(val_zero, 0.0);
+        assert_eq!(stages_zero, 0);
+        assert!(scale_pow2_is_exact(0.0, e));
+
+        let (val_neg_zero, stages_neg_zero) = scale_pow2_nearest_counted(-0.0, e);
+        assert_eq!(val_neg_zero, -0.0);
+        assert_eq!(stages_neg_zero, 0);
+        assert!(scale_pow2_is_exact(-0.0, e));
+
+        if e < 0 {
+            // Negative extreme exponent -> underflows without hang, panic, or allocations
+            let ((v_pos, st_pos), allocs_pos) =
+                track_allocations(|| scale_pow2_nearest_counted(1.0, e));
+            assert_eq!(allocs_pos, 0);
+            assert_eq!(v_pos, 0.0);
+            assert_eq!(st_pos, 1);
+            assert!(!scale_pow2_is_exact(1.0, e));
+
+            let (v_neg, st_neg) = scale_pow2_nearest_counted(-1.0, e);
+            assert_eq!(v_neg, -0.0);
+            assert_eq!(st_neg, 1);
+            assert!(!scale_pow2_is_exact(-1.0, e));
+
+            let up = scale_pow2_up(1.0, e).unwrap();
+            assert_eq!(up, f64::from_bits(1));
+            let down = scale_pow2_down(-1.0, e).unwrap();
+            assert_eq!(down, -f64::from_bits(1));
+        } else {
+            // Positive extreme exponent -> overflows to infinity without hang, panic, or allocations
+            let ((v_pos, st_pos), allocs_pos) =
+                track_allocations(|| scale_pow2_nearest_counted(1.0, e));
+            assert_eq!(allocs_pos, 0);
+            assert_eq!(v_pos, f64::INFINITY);
+            assert_eq!(st_pos, 1);
+            assert!(!scale_pow2_is_exact(1.0, e));
+
+            let (v_neg, st_neg) = scale_pow2_nearest_counted(-1.0, e);
+            assert_eq!(v_neg, f64::NEG_INFINITY);
+            assert_eq!(st_neg, 1);
+            assert!(!scale_pow2_is_exact(-1.0, e));
+
+            assert!(scale_pow2_up(1.0, e).is_err());
+            assert!(scale_pow2_down(1.0, e).is_err());
+            assert!(scale_pow2_up(-1.0, e).is_err());
+            assert!(scale_pow2_down(-1.0, e).is_err());
+        }
+    }
 }
 
 // -----------------------------------------------------------------------------
@@ -338,6 +408,65 @@ fn test_normalization_accounting_l_and_r() {
     assert!(
         cert_s6.l_term() > 0.0,
         "L term must be positive for S6 mixed"
+    );
+}
+
+#[test]
+fn test_taylor_rejection_speculative_work_preserved() {
+    let n = 2;
+    // ||hA||_1 = 70.0 > TAYLOR_NORM_LIMIT (64.0), forcing Taylor action rejection
+    // Stable negative diagonal ensures the stepped exp certificate succeeds
+    let a = vec![vec![-70.0, 0.0], vec![0.0, -70.0]];
+    let h = 1.0;
+    let w: [Vec<f64>; 5] = std::array::from_fn(|_| vec![1.0, 0.5]);
+
+    let cert = certify_fused_phi_total_normalized(&a, h, &w, None)
+        .expect("normalized certification should succeed via fallback probe");
+
+    // Speculative work accounting contract assertions
+    let work: &NormalizedFusedPhiWork = cert.work();
+    assert!(work.taylor_attempted);
+    assert!(!cert.taylor_accepted());
+    assert_eq!(cert.work().taylor_vector_products, 0);
+    assert_eq!(cert.work().taylor_witness_entries, (n * n) as u64);
+
+    assert!(cert.fallback_probe_used());
+    let probe_steps = cert.work().fallback_probe_steps;
+    assert!(probe_steps > 0, "fallback probe must record nonzero steps");
+    let cert_steps = cert.work().certificate_steps;
+    assert!(
+        cert_steps > 0,
+        "final certificate must record nonzero steps"
+    );
+
+    let min_expected_work = (probe_steps as u64)
+        .saturating_mul(20)
+        .saturating_add((cert_steps as u64).saturating_mul(20));
+    assert!(
+        cert.work_total() >= min_expected_work,
+        "work_total ({}) must be >= probe_steps * 20 + cert_steps * 20 ({})",
+        cert.work_total(),
+        min_expected_work
+    );
+}
+
+#[test]
+fn test_range_refusal_l_term_overflow() {
+    let _n = 2;
+    // Extremely large positive diagonal causes mu_max to overflow in exp_interval
+    let a = vec![vec![1000.0, 0.0], vec![0.0, 1000.0]];
+    let h = 1.0;
+    let mut w: [Vec<f64>; 5] = std::array::from_fn(|_| vec![1.0, 1.0]);
+    // Set w_0 to large power of two, w_4 to tiny so w scaling underflows into subnormal
+    w[0][0] = scale_pow2_nearest(1.0, 1000);
+    w[4][0] = scale_pow2_nearest(1.0, -1070);
+
+    let res = certify_fused_phi_total_normalized(&a, h, &w, None);
+    assert!(res.is_err(), "must refuse when L term growth overflows");
+    let err = res.unwrap_err();
+    assert!(
+        err.to_string().contains(FUSED_PHI_RANGE_UNSUPPORTED),
+        "error must be FUSED_PHI_RANGE_UNSUPPORTED, got: {err}"
     );
 }
 

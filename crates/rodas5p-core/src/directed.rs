@@ -393,17 +393,84 @@ pub fn scale_pow2_is_exact(x: f64, e: i64) -> bool {
         (mantissa, -1074, -1074 + msb)
     };
 
-    if e_unbiased + e > 1023 {
-        // Overflows binary64 finite range
+    let eff_e = e_unbiased.saturating_add(e);
+    if !(-1075..=1023).contains(&eff_e) {
+        // Overflows binary64 finite range or underflows below subnormal floor
         return false;
     }
-    if e_unbiased + e >= -1022 {
+    if eff_e >= -1022 {
         // Fits in normal binary64 range: always exact
         return true;
     }
     // In subnormal range: exact if and only if no fractional bits below 2^-1074
-    let q = p + e + 1074;
+    let q = p.saturating_add(e).saturating_add(1074);
+    if q < -64 {
+        return false;
+    }
     q + (full_mantissa.trailing_zeros() as i64) >= 0
+}
+
+/// Computes `fl(x * 2^e)` using staged `scalbn` by factors of at most `2^1000`,
+/// returning the rounded result and the actual number of scaling stages performed.
+#[inline]
+pub fn scale_pow2_nearest_counted(x: f64, e: i64) -> (f64, u64) {
+    if x == 0.0 || !x.is_finite() || e == 0 {
+        return (x, 0);
+    }
+    let bits = x.to_bits();
+    let exp_bits = ((bits >> 52) & 0x7ff) as i64;
+    let e_unbiased = if exp_bits > 0 {
+        exp_bits - 1023
+    } else {
+        let mantissa = bits & 0x000f_ffff_ffff_ffff;
+        let msb = 63 - mantissa.leading_zeros() as i64;
+        -1074 + msb
+    };
+
+    let eff_e = e_unbiased.saturating_add(e);
+    if eff_e > 1023 {
+        return (f64::INFINITY.copysign(x), 1);
+    }
+    if eff_e < -1075 {
+        return (0.0_f64.copysign(x), 1);
+    }
+
+    if e > 0 {
+        let mut val = x;
+        let mut rem = e;
+        let mut stages = 0_u64;
+        while rem > 1000 {
+            val *= f64::from_bits(((1000 + 1023) as u64) << 52);
+            rem -= 1000;
+            stages = stages.saturating_add(1);
+        }
+        val *= f64::from_bits(((rem + 1023) as u64) << 52);
+        stages = stages.saturating_add(1);
+        (val, stages)
+    } else {
+        let abs_e = -e; // Guaranteed no overflow since e >= -2098
+        if abs_e <= 1000 {
+            (x * f64::from_bits(((e + 1023) as u64) << 52), 1)
+        } else if e_unbiased + 1022 <= 0 {
+            // Already subnormal and |e| > 1000: product < 2^-2022, rounds to 0.0
+            (0.0_f64.copysign(x), 1)
+        } else {
+            let mut val = x;
+            let mut rem = abs_e;
+            let mut cur_e = e_unbiased;
+            let mut stages = 0_u64;
+            while rem > 1000 {
+                let safe_step = 1000.min((cur_e + 1022).max(1));
+                val *= f64::from_bits((((-safe_step) + 1023) as u64) << 52);
+                cur_e -= safe_step;
+                rem -= safe_step;
+                stages = stages.saturating_add(1);
+            }
+            val *= f64::from_bits((((-rem) + 1023) as u64) << 52);
+            stages = stages.saturating_add(1);
+            (val, stages)
+        }
+    }
 }
 
 /// Computes `fl(x * 2^e)` using staged `scalbn` by factors of at most `2^1000`.
@@ -412,48 +479,7 @@ pub fn scale_pow2_is_exact(x: f64, e: i64) -> bool {
 /// final stage rounds (into subnormal, underflow, or overflow).
 #[inline]
 pub fn scale_pow2_nearest(x: f64, e: i64) -> f64 {
-    if x == 0.0 || !x.is_finite() || e == 0 {
-        return x;
-    }
-    if e > 0 {
-        let mut val = x;
-        let mut rem = e;
-        while rem > 1000 {
-            val *= f64::from_bits(((1000 + 1023) as u64) << 52);
-            rem -= 1000;
-        }
-        val * f64::from_bits(((rem + 1023) as u64) << 52)
-    } else {
-        let abs_e = -e;
-        if abs_e <= 1000 {
-            x * f64::from_bits(((e + 1023) as u64) << 52)
-        } else {
-            let bits = x.to_bits();
-            let exp_bits = ((bits >> 52) & 0x7ff) as i64;
-            let e_unbiased = if exp_bits > 0 {
-                exp_bits - 1023
-            } else {
-                let mantissa = bits & 0x000f_ffff_ffff_ffff;
-                let msb = 63 - mantissa.leading_zeros() as i64;
-                -1074 + msb
-            };
-            if e_unbiased + 1022 <= 0 {
-                // Already subnormal and |e| > 1000: product < 2^-2022, rounds to 0.0
-                0.0_f64.copysign(x)
-            } else {
-                let mut val = x;
-                let mut rem = abs_e;
-                let mut cur_e = e_unbiased;
-                while rem > 1000 {
-                    let safe_step = 1000.min((cur_e + 1022).max(1));
-                    val *= f64::from_bits((((-safe_step) + 1023) as u64) << 52);
-                    cur_e -= safe_step;
-                    rem -= safe_step;
-                }
-                val * f64::from_bits((((-rem) + 1023) as u64) << 52)
-            }
-        }
-    }
+    scale_pow2_nearest_counted(x, e).0
 }
 
 /// Upper bound on `x * 2^e`.

@@ -60,7 +60,7 @@ use serde::Serialize;
 
 use crate::directed::{
     Interval, add_up, div_up, exp_interval, mul_down, mul_up, scale_pow2_is_exact,
-    scale_pow2_nearest, scale_pow2_up, sqrt_up, sub_up, sum_up,
+    scale_pow2_nearest_counted, scale_pow2_up, sqrt_up, sub_up, sum_up,
 };
 use crate::matrix::DenseMatrix;
 use crate::nonnormal_certificate::{
@@ -545,6 +545,25 @@ fn distance_upper(u: &[f64], y: &[f64]) -> f64 {
 ///     needs_unnormalized(norm);
 /// }
 /// ```
+/// Speculative, candidate, fallback and verification work recorded across the
+/// whole normalized certificate pipeline (RVJ DAG node PY04).
+#[derive(Clone, Debug, Default, PartialEq, Eq, Serialize)]
+pub struct NormalizedFusedPhiWork {
+    pub entries_scaled: usize,
+    pub scaling_stages: usize,
+    pub exactness_checks: usize,
+    pub taylor_attempted: bool,
+    pub taylor_accepted: bool,
+    pub taylor_vector_products: u64,
+    pub taylor_multiply_adds: u64,
+    pub taylor_witness_entries: u64,
+    pub fallback_probe_used: bool,
+    pub fallback_probe_steps: usize,
+    pub certificate_steps: usize,
+    pub gershgorin_evaluations: usize,
+    pub total_work_units: u64,
+}
+
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct NormalizedFusedPhiCertificate {
     schema: &'static str,
@@ -561,14 +580,13 @@ pub struct NormalizedFusedPhiCertificate {
     rescaled_bound: f64,
     r_term: f64,
     l_term: f64,
-    mu: f64,
+    mu: Option<f64>,
     v: [Vec<f64>; JOINT_PHI_TERMS],
     z: Vec<f64>,
     stepped_error: f64,
     perturbation: f64,
     normalized_distance: f64,
-    work_entries_scaled: usize,
-    work_stages: usize,
+    work: NormalizedFusedPhiWork,
     dominant: FusedPhiTerm,
     normalized_certificate: FusedPhiCertificate,
 }
@@ -616,7 +634,7 @@ impl NormalizedFusedPhiCertificate {
     pub fn l_term(&self) -> f64 {
         self.l_term
     }
-    pub fn mu(&self) -> f64 {
+    pub fn mu(&self) -> Option<f64> {
         self.mu
     }
     pub fn v(&self) -> &[Vec<f64>; JOINT_PHI_TERMS] {
@@ -634,11 +652,23 @@ impl NormalizedFusedPhiCertificate {
     pub fn normalized_distance(&self) -> f64 {
         self.normalized_distance
     }
+    pub fn work(&self) -> &NormalizedFusedPhiWork {
+        &self.work
+    }
     pub fn work_entries_scaled(&self) -> usize {
-        self.work_entries_scaled
+        self.work.entries_scaled
     }
     pub fn work_stages(&self) -> usize {
-        self.work_stages
+        self.work.scaling_stages
+    }
+    pub fn work_total(&self) -> u64 {
+        self.work.total_work_units
+    }
+    pub fn fallback_probe_used(&self) -> bool {
+        self.work.fallback_probe_used
+    }
+    pub fn taylor_accepted(&self) -> bool {
+        self.work.taylor_accepted
     }
     pub fn dominant(&self) -> FusedPhiTerm {
         self.dominant
@@ -714,30 +744,47 @@ pub fn certify_fused_phi_total_normalized(
         0
     };
 
-    let stages_per_entry = if e == 0 {
-        0
-    } else {
-        ((e.abs() + 999) / 1000) as usize
-    };
-
     let mut v: [Vec<f64>; JOINT_PHI_TERMS] = std::array::from_fn(|_| Vec::with_capacity(n));
+    let mut norm_stages = 0_u64;
     for (k, wk) in w.iter().enumerate() {
         for &x in wk {
-            v[k].push(scale_pow2_nearest(x, -e));
+            let (scaled_val, st) = scale_pow2_nearest_counted(x, -e);
+            v[k].push(scaled_val);
+            norm_stages = norm_stages.saturating_add(st);
         }
     }
-    let mut work_entries_scaled = 5 * n;
-    let mut work_stages = 5 * n * stages_per_entry;
+    let norm_entries_scaled = 5 * n;
 
     // 2. Certify on v:
     let rows: Vec<&[f64]> = a.iter().map(Vec::as_slice).collect();
     let dense = DenseMatrix::from_rows(&rows)?;
     const TAYLOR_BUDGET: f64 = 1e-13;
     let taylor = taylor_phi_action(&dense, h, &v, TAYLOR_BUDGET);
+
+    let taylor_attempted = true;
+    let mut taylor_accepted = false;
+    let mut taylor_vp = 0_u64;
+    let mut taylor_fma = 0_u64;
+    let mut taylor_witness = (n * n) as u64;
+    let mut fallback_probe_used = false;
+    let mut fallback_probe_steps = 0_usize;
+
     let z = match taylor {
-        Ok(report) => report.fused,
+        Ok(report) => {
+            taylor_accepted = true;
+            taylor_vp = report.work.augmented_vector_products;
+            taylor_fma = report.work.multiply_adds;
+            taylor_witness = report.work.witness_entries;
+            report.fused
+        }
         Err(_) => {
-            let probe = certify_fused_phi_total(a, h, &v, &vec![0.0; n])?;
+            fallback_probe_used = true;
+            let probe = certify_fused_phi_total(a, h, &v, &vec![0.0; n])
+                .map_err(|_| CoreError::InvalidInput(FUSED_PHI_RANGE_UNSUPPORTED.into()))?;
+            for att in probe.attempts() {
+                fallback_probe_steps =
+                    fallback_probe_steps.saturating_add(att.steps().unwrap_or(0));
+            }
             let top = probe.stepped_top();
             if !top.iter().all(|x| x.is_finite()) {
                 return Err(CoreError::InvalidInput(FUSED_PHI_RANGE_UNSUPPORTED.into()));
@@ -746,10 +793,16 @@ pub fn certify_fused_phi_total_normalized(
         }
     };
 
-    let norm_cert = certify_fused_phi_total(a, h, &v, &z)?;
+    let norm_cert = certify_fused_phi_total(a, h, &v, &z)
+        .map_err(|_| CoreError::InvalidInput(FUSED_PHI_RANGE_UNSUPPORTED.into()))?;
     if norm_cert.status() != FusedPhiStatus::Bounded {
         return Err(CoreError::InvalidInput(FUSED_PHI_RANGE_UNSUPPORTED.into()));
     }
+    let mut certificate_steps = 0_usize;
+    for att in norm_cert.attempts() {
+        certificate_steps = certificate_steps.saturating_add(att.steps().unwrap_or(0));
+    }
+
     let norm_bound = norm_cert.bound();
     let stepped_error = norm_cert.stepped_error();
     let perturbation = norm_cert.perturbation();
@@ -757,15 +810,17 @@ pub fn certify_fused_phi_total_normalized(
 
     // 3. Rescale candidate:
     let mut f_hat = Vec::with_capacity(n);
+    let mut rescale_stages = 0_u64;
     for &zi in &z {
-        let fhi = scale_pow2_nearest(zi, e);
+        let (fhi, st) = scale_pow2_nearest_counted(zi, e);
         if !fhi.is_finite() {
             return Err(CoreError::InvalidInput(FUSED_PHI_RANGE_UNSUPPORTED.into()));
         }
         f_hat.push(fhi);
+        rescale_stages = rescale_stages.saturating_add(st);
     }
-    work_entries_scaled += n;
-    work_stages += n * stages_per_entry;
+    let total_entries_scaled = norm_entries_scaled.saturating_add(n);
+    let total_scaling_stages = (norm_stages.saturating_add(rescale_stages)) as usize;
 
     // 4. Bound:
     let rescaled_bound = match scale_pow2_up(norm_bound, e) {
@@ -774,53 +829,105 @@ pub fn certify_fused_phi_total_normalized(
     };
 
     // R: ||fl(sigma z) - sigma z||_2
-    let r_exact = z.iter().all(|&zi| scale_pow2_is_exact(zi, e));
+    let mut exactness_checks = 0_usize;
+    let mut r_exact = true;
+    for &zi in &z {
+        exactness_checks = exactness_checks.saturating_add(1);
+        if !scale_pow2_is_exact(zi, e) {
+            r_exact = false;
+        }
+    }
     let r_term = if r_exact {
         0.0
     } else {
-        mul_up(sqrt_up(n as f64)?, f64::from_bits(1))?
+        mul_up(
+            sqrt_up(n as f64)
+                .map_err(|_| CoreError::InvalidInput(FUSED_PHI_RANGE_UNSUPPORTED.into()))?,
+            f64::from_bits(1),
+        )
+        .map_err(|_| CoreError::InvalidInput(FUSED_PHI_RANGE_UNSUPPORTED.into()))?
     };
 
     // L: sigma * sum_k (e^{max(mu, 0)} / k!) ||w_k / sigma - v_k||_2
-    let w_exact = w
-        .iter()
-        .all(|wk| wk.iter().all(|&x| scale_pow2_is_exact(x, -e)));
-    let (l_term, mu) = if w_exact {
-        (0.0, 0.0)
-    } else {
-        // Compute mu on hA:
-        let mut ha = vec![vec![Interval::point(0.0)?; n]; n];
-        for i in 0..n {
-            for j in 0..n {
-                ha[i][j] = Interval::new(mul_down(h, a[i][j])?, mul_up(h, a[i][j])?)?;
+    let mut w_exact = true;
+    let mut inexact_per_k = [0_usize; 5];
+    for (k, wk) in w.iter().enumerate() {
+        for &x in wk {
+            exactness_checks = exactness_checks.saturating_add(1);
+            if !scale_pow2_is_exact(x, -e) {
+                w_exact = false;
+                inexact_per_k[k] = inexact_per_k[k].saturating_add(1);
             }
         }
-        let half = Interval::point(0.5)?;
+    }
+
+    let (l_term, mu, gershgorin_evaluations) = if w_exact {
+        (0.0, None, 0_usize)
+    } else {
+        // Compute mu on hA:
+        let mut ha = vec![
+            vec![
+                Interval::point(0.0).map_err(|_| CoreError::InvalidInput(
+                    FUSED_PHI_RANGE_UNSUPPORTED.into()
+                ))?;
+                n
+            ];
+            n
+        ];
+        for i in 0..n {
+            for j in 0..n {
+                ha[i][j] = Interval::new(
+                    mul_down(h, a[i][j])
+                        .map_err(|_| CoreError::InvalidInput(FUSED_PHI_RANGE_UNSUPPORTED.into()))?,
+                    mul_up(h, a[i][j])
+                        .map_err(|_| CoreError::InvalidInput(FUSED_PHI_RANGE_UNSUPPORTED.into()))?,
+                )
+                .map_err(|_| CoreError::InvalidInput(FUSED_PHI_RANGE_UNSUPPORTED.into()))?;
+            }
+        }
+        let half = Interval::point(0.5)
+            .map_err(|_| CoreError::InvalidInput(FUSED_PHI_RANGE_UNSUPPORTED.into()))?;
         let mut mu_val = f64::NEG_INFINITY;
         for i in 0..n {
             let mut off = 0.0;
             for j in 0..n {
                 if j != i {
-                    let sym_ij = ha[i][j].add(ha[j][i])?.mul(half)?;
-                    off = add_up(off, sym_ij.mag())?;
+                    let sym_ij = ha[i][j]
+                        .add(ha[j][i])
+                        .map_err(|_| CoreError::InvalidInput(FUSED_PHI_RANGE_UNSUPPORTED.into()))?
+                        .mul(half)
+                        .map_err(|_| CoreError::InvalidInput(FUSED_PHI_RANGE_UNSUPPORTED.into()))?;
+                    off = add_up(off, sym_ij.mag())
+                        .map_err(|_| CoreError::InvalidInput(FUSED_PHI_RANGE_UNSUPPORTED.into()))?;
                 }
             }
-            mu_val = mu_val.max(add_up(ha[i][i].hi, off)?);
+            mu_val =
+                mu_val
+                    .max(add_up(ha[i][i].hi, off).map_err(|_| {
+                        CoreError::InvalidInput(FUSED_PHI_RANGE_UNSUPPORTED.into())
+                    })?);
         }
         let mu_max = mu_val.max(0.0);
-        let growth = exp_interval(mu_max)?.hi;
+        let growth = exp_interval(mu_max)
+            .map_err(|_| CoreError::InvalidInput(FUSED_PHI_RANGE_UNSUPPORTED.into()))?
+            .hi;
 
         let mut terms = Vec::with_capacity(5);
-        for (k, wk) in w.iter().enumerate() {
-            let c_k = wk.iter().filter(|&&x| !scale_pow2_is_exact(x, -e)).count();
+        for (k, &c_k) in inexact_per_k.iter().enumerate() {
             if c_k == 0 {
                 continue;
             }
-            let norm_diff = mul_up(sqrt_up(c_k as f64)?, f64::from_bits(1))?;
-            let scaled_diff = match scale_pow2_up(norm_diff, e) {
-                Ok(sd) if sd.is_finite() => sd,
-                _ => return Err(CoreError::InvalidInput(FUSED_PHI_RANGE_UNSUPPORTED.into())),
-            };
+            let norm_diff = mul_up(
+                sqrt_up(c_k as f64)
+                    .map_err(|_| CoreError::InvalidInput(FUSED_PHI_RANGE_UNSUPPORTED.into()))?,
+                f64::from_bits(1),
+            )
+            .map_err(|_| CoreError::InvalidInput(FUSED_PHI_RANGE_UNSUPPORTED.into()))?;
+            let scaled_diff = scale_pow2_up(norm_diff, e)
+                .map_err(|_| CoreError::InvalidInput(FUSED_PHI_RANGE_UNSUPPORTED.into()))?;
+            if !scaled_diff.is_finite() || scaled_diff > f64::MAX {
+                return Err(CoreError::InvalidInput(FUSED_PHI_RANGE_UNSUPPORTED.into()));
+            }
             let k_fact = match k {
                 0 | 1 => 1.0,
                 2 => 2.0,
@@ -828,18 +935,26 @@ pub fn certify_fused_phi_total_normalized(
                 4 => 24.0,
                 _ => 1.0,
             };
-            let coeff = div_up(growth, k_fact)?;
-            let term = mul_up(coeff, scaled_diff)?;
+            let coeff = div_up(growth, k_fact)
+                .map_err(|_| CoreError::InvalidInput(FUSED_PHI_RANGE_UNSUPPORTED.into()))?;
+            let term = mul_up(coeff, scaled_diff)
+                .map_err(|_| CoreError::InvalidInput(FUSED_PHI_RANGE_UNSUPPORTED.into()))?;
             terms.push(term);
         }
-        let l_val = sum_up(terms)?;
+        let l_val = sum_up(terms)
+            .map_err(|_| CoreError::InvalidInput(FUSED_PHI_RANGE_UNSUPPORTED.into()))?;
         if !l_val.is_finite() || l_val > f64::MAX {
             return Err(CoreError::InvalidInput(FUSED_PHI_RANGE_UNSUPPORTED.into()));
         }
-        (l_val, mu_val)
+        (l_val, Some(mu_val), n * n)
     };
 
-    let f_hat_bound = add_up(add_up(rescaled_bound, r_term)?, l_term)?;
+    let f_hat_bound = add_up(
+        add_up(rescaled_bound, r_term)
+            .map_err(|_| CoreError::InvalidInput(FUSED_PHI_RANGE_UNSUPPORTED.into()))?,
+        l_term,
+    )
+    .map_err(|_| CoreError::InvalidInput(FUSED_PHI_RANGE_UNSUPPORTED.into()))?;
     if !f_hat_bound.is_finite() || f_hat_bound > f64::MAX {
         return Err(CoreError::InvalidInput(FUSED_PHI_RANGE_UNSUPPORTED.into()));
     }
@@ -848,7 +963,8 @@ pub fn certify_fused_phi_total_normalized(
     let (candidate, caller_distance, bound) = match caller_candidate {
         Some(u) => {
             let dist = distance_upper(u, &f_hat);
-            let b = add_up(dist, f_hat_bound)?;
+            let b = add_up(dist, f_hat_bound)
+                .map_err(|_| CoreError::InvalidInput(FUSED_PHI_RANGE_UNSUPPORTED.into()))?;
             if !b.is_finite() || b > f64::MAX {
                 return Err(CoreError::InvalidInput(FUSED_PHI_RANGE_UNSUPPORTED.into()));
             }
@@ -861,6 +977,30 @@ pub fn certify_fused_phi_total_normalized(
         FusedPhiTerm::CandidateDistance
     } else {
         norm_cert.dominant()
+    };
+
+    let total_work_units = (total_scaling_stages as u64)
+        .saturating_add(exactness_checks as u64)
+        .saturating_add(taylor_vp)
+        .saturating_add(taylor_witness)
+        .saturating_add((fallback_probe_steps as u64).saturating_mul(20))
+        .saturating_add((certificate_steps as u64).saturating_mul(20))
+        .saturating_add(gershgorin_evaluations as u64);
+
+    let work = NormalizedFusedPhiWork {
+        entries_scaled: total_entries_scaled,
+        scaling_stages: total_scaling_stages,
+        exactness_checks,
+        taylor_attempted,
+        taylor_accepted,
+        taylor_vector_products: taylor_vp,
+        taylor_multiply_adds: taylor_fma,
+        taylor_witness_entries: taylor_witness,
+        fallback_probe_used,
+        fallback_probe_steps,
+        certificate_steps,
+        gershgorin_evaluations,
+        total_work_units,
     };
 
     Ok(NormalizedFusedPhiCertificate {
@@ -884,8 +1024,7 @@ pub fn certify_fused_phi_total_normalized(
         stepped_error,
         perturbation,
         normalized_distance,
-        work_entries_scaled,
-        work_stages,
+        work,
         dominant,
         normalized_certificate: norm_cert,
     })

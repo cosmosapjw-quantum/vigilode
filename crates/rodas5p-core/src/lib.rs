@@ -32,7 +32,8 @@ pub use coefficients::{
     load_rodas5p_coefficients, rodas5p_coefficients,
 };
 pub use directed::{
-    PowerOfTwo, scale_pow2_down, scale_pow2_is_exact, scale_pow2_nearest, scale_pow2_up,
+    PowerOfTwo, scale_pow2_down, scale_pow2_is_exact, scale_pow2_nearest,
+    scale_pow2_nearest_counted, scale_pow2_up,
 };
 pub use error::{CoreError, CoreResult};
 pub use hash::{sha256_f64_slice_bytes, sha256_hex};
@@ -67,6 +68,6 @@ pub use solver_types::{
 };
 pub use taylor_phi_total::{
     FUSED_PHI_RANGE_UNSUPPORTED, NORMALIZED_FUSED_PHI_SCHEMA, NormalizedFusedPhiCertificate,
-    certify_fused_phi_total_normalized,
+    NormalizedFusedPhiWork, certify_fused_phi_total_normalized,
 };
 pub use work::WorkCounters;
