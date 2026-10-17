@@ -253,3 +253,17 @@ SP04 and PC01.
   roundoff raise; the count is unknown, between 1 and 443.
 - `debit_all` exceeds the G3 charge on Robertson, but no attempt's `norm + debit_all` crosses 1 at 1e-5 (uncertain at
   1e-9).
+
+## Results
+
+- **Execution commit**: `07307a98910e5725bd23dcbcd0d7ea9de48a0966` (`tree_clean: true`).
+- **Artifacts**: `RUNS.json` (`2ca11b5408b400f507e2acbffcef2ffe324c4a77c0267768b3259ac27d858f89`), `RESULTS.json` (`63d247f10163a4b646c6ffa2ce556da584e291ee4b9c0be663aa6bea269e92be`).
+- **Gate verdict**: **PASS** (`failures: []`, ledger entry `L-0105`).
+  - **Gate 1a (No behaviour change, telemetry on/off bitwise)**: PASS — bitwise identical states at every output time, attempts/accepted/rejected steps, `WorkCounters`, serialized `StageSolveStatistics`, and charge logs across all R and D runs.
+  - **Gate 1b (ALG06 RUNS anchor bitwise identity)**: PASS — telemetry-off `B3`/`B3b` rows match `research/alg06_guard_v2_20261010/RUNS.json` bitwise.
+  - **Gate 2 (No hidden JVP or copy)**: PASS — per-solve `arnoldi_jvps + residual_jvps` equals Krylov matvec delta; attempt `jvp_calls` plus `jvp_outside_attempts` sum to run `jvp_calls` with zero unattributed; `uncounted_shadow_matvecs` matches independent wrapper count in S3 and is 0 when classification is off; `acceptance_vector_copies` matches documented fallback evaluation copies.
+  - **Gate 3 (Accepted residual above target visible)**: PASS — all non-`Failed` solves with `actual_residual > requested_target` are marked `BudgetExceeded`, including S1 (`triangular2_stall`, `triangular2_floor`, `triangular4_floor`) and S4 (`Converged` + `BudgetExceeded`).
+  - **Gate 4 (Complete and consistent records)**: PASS — stage records match `StageSolveStatistics`, one attempt record per attempt, threshold inequalities and S1 `NATIVE.json` bitwise parity hold, and `verified_bound` is `Unavailable` in every record.
+  - **Gate 5 (Ledgers)**: PASS — `committed_debit` sums `debit_all` over `Committed` attempts only, `work_all_attempts` preserves rejected/failed attempts (including D1), and `debit_fallback_only` matches the G3 charge log bitwise.
+  - **Gate 6 (Epoch and metric)**: PASS — `generation` and `model_epoch` transitions in D2 and `ScaledWrms` vs `UnscaledL2` metric tags hold exactly.
+
