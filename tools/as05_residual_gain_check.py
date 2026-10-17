@@ -442,6 +442,46 @@ def verify_runs_file(runs_path: Path, retained_path: Path) -> dict:
                 if not (wrms >= 0 and inf_u >= 0 and math.isfinite(wrms) and math.isfinite(inf_u)):
                     passed = False
                     err_msg = f"Invalid transport norm bounds: wrms={wrms}, inf={inf_u}"
+                else:
+                    inputs = case.get("inputs", {})
+                    if "W_hex" in inputs and "rhs_hex" in inputs and "candidate_hex" in inputs:
+                        w_hex = inputs["W_hex"]
+                        b_hex = inputs["rhs_hex"]
+                        x_hex = inputs["candidate_hex"]
+                        new_s_hex = inputs["new_scales_hex"]
+
+                        W_frac = [[hex_to_fraction(w_hex[i][j]) for j in range(2)] for i in range(2)]
+                        b_frac = [hex_to_fraction(b_hex[i]) for i in range(2)]
+                        x_frac = [hex_to_fraction(x_hex[i]) for i in range(2)]
+                        s_new_frac = [hex_to_fraction(new_s_hex[i]) for i in range(2)]
+
+                        x_exact = solve_fraction_system(W_frac, b_frac)
+                        weighted_err = [(x_exact[i] - x_frac[i]) / s_new_frac[i] for i in range(2)]
+
+                        inf_err = max(abs(e) for e in weighted_err)
+                        wrms_err_sq = sum(e * e for e in weighted_err) / F(2)
+
+                        if F(inf_u) < inf_err:
+                            passed = False
+                            err_msg = f"Transport inf bound violation: true={float(inf_err)}, bound={inf_u}"
+                        elif F(wrms) * F(wrms) < wrms_err_sq:
+                            passed = False
+                            err_msg = f"Transport wrms bound violation: true_sq={float(wrms_err_sq)}, bound={wrms}"
+
+                        # If scaled residual gain is present, verify exact operator gain bound
+                        gain_upper = case.get("scaled_residual_gain_inf_upper")
+                        if gain_upper is not None and math.isfinite(gain_upper):
+                            det = W_frac[0][0] * W_frac[1][1] - W_frac[0][1] * W_frac[1][0]
+                            inv_W = [
+                                [W_frac[1][1] / det, -W_frac[0][1] / det],
+                                [-W_frac[1][0] / det, W_frac[0][0] / det],
+                            ]
+                            row0 = abs(inv_W[0][0] * s_new_frac[0] / s_new_frac[0]) + abs(inv_W[0][1] * s_new_frac[1] / s_new_frac[0])
+                            row1 = abs(inv_W[1][0] * s_new_frac[0] / s_new_frac[1]) + abs(inv_W[1][1] * s_new_frac[1] / s_new_frac[1])
+                            true_scaled_gain = max(row0, row1)
+                            if F(gain_upper) < true_scaled_gain:
+                                passed = False
+                                err_msg = f"Transport scaled gain bound violation: true={float(true_scaled_gain)}, bound={gain_upper}"
 
         elif cat == "case_d_isolated_blocks":
             if ev_kind != "verified":

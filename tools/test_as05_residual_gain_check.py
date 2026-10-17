@@ -165,6 +165,27 @@ pub struct LinearTargetId {
             report = verify_runs_file(Path(tf.name), retained_path)
             self.assertEqual(report["verdict"], "INVALID")
 
+    def test_mutation_tampered_transport_gain_fails(self):
+        """Negative control: tampering transported gain bound below true gain must cause FAIL."""
+        runs_path = REPO_ROOT / "research/as05_residual_gain_core_20261011/RUNS.json"
+        retained_path = REPO_ROOT / "research/reaudit_accuracy_speed_20261010/NATIVE.json"
+        with open(runs_path) as f:
+            data = json.load(f)
+
+        # Find a transport case and set scaled_residual_gain_inf_upper to 0.001
+        for c in data["cases"]:
+            if c.get("category") == "case_d_transport":
+                c["scaled_residual_gain_inf_upper"] = 0.0001
+                break
+
+        with tempfile.NamedTemporaryFile("w+", suffix=".json") as tf:
+            json.dump(data, tf)
+            tf.flush()
+            report = verify_runs_file(Path(tf.name), retained_path)
+            self.assertEqual(report["verdict"], "FAIL")
+            self.assertGreater(report["failed_cases"], 0)
+
 
 if __name__ == "__main__":
     unittest.main()
+

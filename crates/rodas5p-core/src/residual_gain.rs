@@ -16,7 +16,7 @@
     clippy::neg_cmp_op_on_partial_ord
 )]
 
-use std::{cell::Cell, sync::Arc};
+use std::sync::Arc;
 
 use serde::ser::{Serialize, SerializeStruct, Serializer};
 
@@ -118,18 +118,28 @@ pub enum OperatorKind {
     },
 }
 
-#[derive(Clone, Debug, PartialEq, serde::Serialize)]
-struct FrozenMetricInner {
-    scales: Vec<f64>,
-    digest: [u8; 32],
-}
-
 /// Frozen diagonal metric `s` with all entries finite and strictly positive.
 ///
 /// Fields are private to prevent untracked metric modification.
-#[derive(Clone, Debug, PartialEq)]
+/// Fixed capacity (up to 8 dimensions) stack buffer ensures zero heap allocations
+/// during hot-path transport.
+///
+/// ```compile_fail
+/// fn require_deserialize<'de, T: serde::Deserialize<'de>>() {}
+/// require_deserialize::<rodas5p_core::residual_gain::FrozenMetric>();
+/// ```
+/// ```compile_fail
+/// let _ = rodas5p_core::residual_gain::FrozenMetric {
+///     scales: [0.0; 8],
+///     len: 0,
+///     digest: [0; 32],
+/// };
+/// ```
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct FrozenMetric {
-    inner: Arc<FrozenMetricInner>,
+    scales: [f64; 8],
+    len: usize,
+    digest: [u8; 32],
 }
 
 impl Serialize for FrozenMetric {
@@ -137,46 +147,52 @@ impl Serialize for FrozenMetric {
     where
         S: Serializer,
     {
-        self.inner.serialize(serializer)
+        let mut state = serializer.serialize_struct("FrozenMetric", 2)?;
+        state.serialize_field("scales", &self.scales[..self.len])?;
+        state.serialize_field("digest", &self.digest)?;
+        state.end()
     }
 }
 
 impl FrozenMetric {
     pub fn new(scales: &[f64]) -> Result<Self, WitnessRejection> {
-        if scales.is_empty() || scales.iter().any(|&s| !s.is_finite() || s <= 0.0) {
+        if scales.is_empty()
+            || scales.len() > 8
+            || scales.iter().any(|&s| !s.is_finite() || s <= 0.0)
+        {
             return Err(WitnessRejection::InvalidScale);
         }
+        let mut buf = [0.0; 8];
+        buf[..scales.len()].copy_from_slice(scales);
         let digest = sha256_f64_slice_bytes(scales);
         Ok(Self {
-            inner: Arc::new(FrozenMetricInner {
-                scales: scales.to_vec(),
-                digest,
-            }),
+            scales: buf,
+            len: scales.len(),
+            digest,
         })
     }
 
     pub fn scales(&self) -> &[f64] {
-        &self.inner.scales
+        &self.scales[..self.len]
     }
 
     pub fn len(&self) -> usize {
-        self.inner.scales.len()
+        self.len
     }
 
     pub fn is_empty(&self) -> bool {
-        self.inner.scales.is_empty()
+        self.len == 0
     }
 
     pub fn digest(&self) -> [u8; 32] {
-        self.inner.digest
+        self.digest
     }
 }
 
 #[derive(Clone, Debug, PartialEq, serde::Serialize)]
-struct LinearTargetIdInner {
+struct OperatorDescriptor {
     operator_kind: OperatorKind,
     operator_digest: [u8; 32],
-    metric: FrozenMetric,
     model_epoch: Option<u64>,
     assembly_uncertainty: AssemblyUncertainty,
     declared_structure: DeclaredStructure,
@@ -186,18 +202,19 @@ struct LinearTargetIdInner {
 /// model epoch, declared assembly uncertainty, and declared structure.
 ///
 /// ```compile_fail
+/// fn require_deserialize<'de, T: serde::Deserialize<'de>>() {}
+/// require_deserialize::<rodas5p_core::residual_gain::LinearTargetId>();
+/// ```
+/// ```compile_fail
 /// let _ = rodas5p_core::residual_gain::LinearTargetId {
-///     operator_kind: todo!(),
-///     operator_digest: [0; 32],
+///     operator: todo!(),
 ///     metric: todo!(),
-///     model_epoch: None,
-///     assembly_uncertainty: todo!(),
-///     declared_structure: todo!(),
 /// };
 /// ```
 #[derive(Clone, Debug, PartialEq)]
 pub struct LinearTargetId {
-    inner: Arc<LinearTargetIdInner>,
+    operator: Arc<OperatorDescriptor>,
+    metric: FrozenMetric,
 }
 
 impl Serialize for LinearTargetId {
@@ -205,7 +222,14 @@ impl Serialize for LinearTargetId {
     where
         S: Serializer,
     {
-        self.inner.serialize(serializer)
+        let mut state = serializer.serialize_struct("LinearTargetId", 6)?;
+        state.serialize_field("operator_kind", &self.operator.operator_kind)?;
+        state.serialize_field("operator_digest", &self.operator.operator_digest)?;
+        state.serialize_field("metric", &self.metric)?;
+        state.serialize_field("model_epoch", &self.operator.model_epoch)?;
+        state.serialize_field("assembly_uncertainty", &self.operator.assembly_uncertainty)?;
+        state.serialize_field("declared_structure", &self.operator.declared_structure)?;
+        state.end()
     }
 }
 
@@ -224,22 +248,30 @@ impl LinearTargetId {
         if matrix.iter().flatten().any(|x| !x.is_finite()) {
             return Err(WitnessRejection::NonfiniteMatrix);
         }
+        if let AssemblyUncertainty::EntrywiseAbs(delta) = assembly_uncertainty {
+            if !delta.is_finite() {
+                return Err(WitnessRejection::NonfiniteMatrix);
+            }
+            if delta < 0.0 {
+                return Err(WitnessRejection::InvalidScale);
+            }
+        }
         let mut flat = Vec::with_capacity(n * n);
         for row in matrix {
             flat.extend_from_slice(row);
         }
         let operator_digest = sha256_f64_slice_bytes(&flat);
         Ok(Self {
-            inner: Arc::new(LinearTargetIdInner {
+            operator: Arc::new(OperatorDescriptor {
                 operator_kind: OperatorKind::Represented {
                     matrix: matrix.to_vec(),
                 },
                 operator_digest,
-                metric,
                 model_epoch,
                 assembly_uncertainty,
                 declared_structure,
             }),
+            metric,
         })
     }
 
@@ -260,6 +292,14 @@ impl LinearTargetId {
         {
             return Err(WitnessRejection::NonfiniteMatrix);
         }
+        if let AssemblyUncertainty::EntrywiseAbs(delta) = assembly_uncertainty {
+            if !delta.is_finite() {
+                return Err(WitnessRejection::NonfiniteMatrix);
+            }
+            if delta < 0.0 {
+                return Err(WitnessRejection::InvalidScale);
+            }
+        }
         let mut flat = Vec::with_capacity(n * n + 2);
         for row in jacobian {
             flat.extend_from_slice(row);
@@ -268,47 +308,47 @@ impl LinearTargetId {
         flat.push(gamma);
         let operator_digest = sha256_f64_slice_bytes(&flat);
         Ok(Self {
-            inner: Arc::new(LinearTargetIdInner {
+            operator: Arc::new(OperatorDescriptor {
                 operator_kind: OperatorKind::Shifted {
                     jacobian: jacobian.to_vec(),
                     h,
                     gamma,
                 },
                 operator_digest,
-                metric,
                 model_epoch,
                 assembly_uncertainty,
                 declared_structure,
             }),
+            metric,
         })
     }
 
     pub fn operator_kind(&self) -> &OperatorKind {
-        &self.inner.operator_kind
+        &self.operator.operator_kind
     }
 
     pub fn operator_digest(&self) -> &[u8; 32] {
-        &self.inner.operator_digest
+        &self.operator.operator_digest
     }
 
     pub fn metric(&self) -> &FrozenMetric {
-        &self.inner.metric
+        &self.metric
     }
 
     pub fn model_epoch(&self) -> Option<u64> {
-        self.inner.model_epoch
+        self.operator.model_epoch
     }
 
     pub fn assembly_uncertainty(&self) -> AssemblyUncertainty {
-        self.inner.assembly_uncertainty
+        self.operator.assembly_uncertainty
     }
 
     pub fn declared_structure(&self) -> &DeclaredStructure {
-        &self.inner.declared_structure
+        &self.operator.declared_structure
     }
 
     pub fn dim(&self) -> usize {
-        self.inner.metric.len()
+        self.metric.len()
     }
 }
 
@@ -317,8 +357,8 @@ impl LinearTargetId {
 /// Authority struct with private fields and zero deserialization.
 ///
 /// ```compile_fail
-/// let _: rodas5p_core::residual_gain::VerifiedCorrection =
-///     serde_json::from_str("{}").unwrap();
+/// fn require_deserialize<'de, T: serde::Deserialize<'de>>() {}
+/// require_deserialize::<rodas5p_core::residual_gain::VerifiedCorrection>();
 /// ```
 /// ```compile_fail
 /// let _ = rodas5p_core::residual_gain::VerifiedCorrection {
@@ -422,7 +462,8 @@ impl VerifiedCorrection {
 
     /// Transports this certificate to a new diagonal metric `new_metric`.
     ///
-    /// Multiplies bounds by `kappa = max_k (s_old,k / s_new,k)` computed outward.
+    /// Multiplies bounds by `kappa = max_k (s_old,k / s_new,k)` and
+    /// `kappa_rev = max_k (s_new,k / s_old,k)` computed outward.
     pub fn transport_to(&self, new_metric: &FrozenMetric) -> Result<Self, WitnessRejection> {
         if new_metric.len() != self.len {
             return Err(WitnessRejection::MetricMismatch);
@@ -432,14 +473,19 @@ impl VerifiedCorrection {
 
         let mut flops = 0u64;
         let mut kappa = 0.0_f64;
+        let mut kappa_rev = 0.0_f64;
         let mut new_weighted = [Interval { lo: 0.0, hi: 0.0 }; 8];
-        let mut new_inf = 0.0_f64;
+        let mut direct_inf = 0.0_f64;
+        let mut sum_sq_up = 0.0_f64;
 
         for k in 0..self.len {
             let ratio = div_up(old_scales[k], new_scales[k])
                 .map_err(|_| WitnessRejection::ArithmeticOverflow)?;
-            flops += 1;
+            let ratio_rev = div_up(new_scales[k], old_scales[k])
+                .map_err(|_| WitnessRejection::ArithmeticOverflow)?;
+            flops += 2;
             kappa = kappa.max(ratio);
+            kappa_rev = kappa_rev.max(ratio_rev);
 
             let s_new_int =
                 Interval::point(new_scales[k]).map_err(|_| WitnessRejection::ArithmeticOverflow)?;
@@ -447,9 +493,22 @@ impl VerifiedCorrection {
                 .div(s_new_int)
                 .map_err(|_| WitnessRejection::ArithmeticOverflow)?;
             flops += 4;
-            new_inf = new_inf.max(comp.mag());
+            let comp_mag = comp.mag();
+            direct_inf = direct_inf.max(comp_mag);
             new_weighted[k] = comp;
+
+            let sq =
+                mul_up(comp_mag, comp_mag).map_err(|_| WitnessRejection::ArithmeticOverflow)?;
+            sum_sq_up = add_up(sum_sq_up, sq).map_err(|_| WitnessRejection::ArithmeticOverflow)?;
+            flops += 2;
         }
+
+        let sqrt_sum = sqrt_up(sum_sq_up).map_err(|_| WitnessRejection::ArithmeticOverflow)?;
+        let sqrt_n_down =
+            sqrt_down(self.len as f64).map_err(|_| WitnessRejection::ArithmeticOverflow)?;
+        let direct_wrms =
+            div_up(sqrt_sum, sqrt_n_down).map_err(|_| WitnessRejection::ArithmeticOverflow)?;
+        flops += 3;
 
         let transported_inf = mul_up(self.weighted_inf_upper, kappa)
             .map_err(|_| WitnessRejection::ArithmeticOverflow)?;
@@ -458,16 +517,24 @@ impl VerifiedCorrection {
             mul_up(self.wrms_upper, kappa).map_err(|_| WitnessRejection::ArithmeticOverflow)?;
         flops += 1;
 
-        let new_inner = LinearTargetIdInner {
-            operator_kind: self.target_id.inner.operator_kind.clone(),
-            operator_digest: self.target_id.inner.operator_digest,
-            metric: new_metric.clone(),
-            model_epoch: self.target_id.inner.model_epoch,
-            assembly_uncertainty: self.target_id.inner.assembly_uncertainty,
-            declared_structure: self.target_id.inner.declared_structure.clone(),
+        let final_inf = transported_inf.min(direct_inf);
+        let final_wrms = transported_wrms.min(direct_wrms);
+
+        let transported_gain = match self.scaled_residual_gain_inf_upper {
+            Some(g) => {
+                let scaled_once =
+                    mul_up(g, kappa).map_err(|_| WitnessRejection::ArithmeticOverflow)?;
+                let scaled_twice = mul_up(scaled_once, kappa_rev)
+                    .map_err(|_| WitnessRejection::ArithmeticOverflow)?;
+                flops += 2;
+                Some(scaled_twice)
+            }
+            None => None,
         };
+
         let new_target = LinearTargetId {
-            inner: Arc::new(new_inner),
+            operator: Arc::clone(&self.target_id.operator),
+            metric: *new_metric,
         };
 
         Ok(Self {
@@ -476,11 +543,9 @@ impl VerifiedCorrection {
             correction_intervals: self.correction_intervals,
             weighted_correction_intervals: new_weighted,
             len: self.len,
-            weighted_inf_upper: transported_inf.max(new_inf),
-            wrms_upper: transported_wrms,
-            scaled_residual_gain_inf_upper: self
-                .scaled_residual_gain_inf_upper
-                .map(|g| mul_up(g, kappa).unwrap_or(f64::INFINITY)),
+            weighted_inf_upper: final_inf,
+            wrms_upper: final_wrms,
+            scaled_residual_gain_inf_upper: transported_gain,
             verification_flops: self.verification_flops + flops,
         })
     }
@@ -544,10 +609,13 @@ struct LognormPrecomputed {
 /// Authority struct with private fields and zero deserialization.
 ///
 /// ```compile_fail
+/// fn require_deserialize<'de, T: serde::Deserialize<'de>>() {}
+/// require_deserialize::<rodas5p_core::residual_gain::ResidualGainWitness>();
+/// ```
+/// ```compile_fail
 /// let _ = rodas5p_core::residual_gain::ResidualGainWitness {
 ///     target: todo!(),
 ///     setup_flops: 0,
-///     last_verification_flops: todo!(),
 ///     inverse_2x2: None,
 ///     determinant_2x2: None,
 ///     scaled_residual_gain_inf_upper: None,
@@ -559,7 +627,6 @@ struct LognormPrecomputed {
 pub struct ResidualGainWitness {
     target: LinearTargetId,
     setup_flops: u64,
-    last_verification_flops: Cell<u64>,
     inverse_2x2: Option<[[Interval; 2]; 2]>,
     determinant_2x2: Option<Interval>,
     scaled_residual_gain_inf_upper: Option<f64>,
@@ -572,13 +639,9 @@ impl Serialize for ResidualGainWitness {
     where
         S: Serializer,
     {
-        let mut state = serializer.serialize_struct("ResidualGainWitness", 4)?;
+        let mut state = serializer.serialize_struct("ResidualGainWitness", 3)?;
         state.serialize_field("target", &self.target)?;
         state.serialize_field("setup_flops", &self.setup_flops)?;
-        state.serialize_field(
-            "last_verification_flops",
-            &self.last_verification_flops.get(),
-        )?;
         state.serialize_field(
             "scaled_residual_gain_inf_upper",
             &self.scaled_residual_gain_inf_upper,
@@ -599,7 +662,6 @@ impl ResidualGainWitness {
             return Ok(Self {
                 target,
                 setup_flops: 0,
-                last_verification_flops: Cell::new(0),
                 inverse_2x2: None,
                 determinant_2x2: None,
                 scaled_residual_gain_inf_upper: None,
@@ -620,8 +682,11 @@ impl ResidualGainWitness {
                 if n == 2 {
                     match target.operator_kind() {
                         OperatorKind::Represented { matrix } => {
-                            let (inv, det, gain, f) =
-                                setup_represented_2x2(matrix, target.metric().scales())?;
+                            let (inv, det, gain, f) = setup_represented_2x2(
+                                matrix,
+                                target.metric().scales(),
+                                target.assembly_uncertainty(),
+                            )?;
                             flops += f;
                             inverse_2x2 = Some(inv);
                             determinant_2x2 = Some(det);
@@ -679,7 +744,6 @@ impl ResidualGainWitness {
         Ok(Self {
             target,
             setup_flops: flops,
-            last_verification_flops: Cell::new(0),
             inverse_2x2,
             determinant_2x2,
             scaled_residual_gain_inf_upper,
@@ -694,10 +758,6 @@ impl ResidualGainWitness {
 
     pub fn setup_flops(&self) -> u64 {
         self.setup_flops
-    }
-
-    pub fn last_verification_flops(&self) -> u64 {
-        self.last_verification_flops.get()
     }
 
     pub fn determinant_2x2(&self) -> Option<Interval> {
@@ -795,7 +855,6 @@ impl ResidualGainWitness {
             ),
         };
 
-        self.last_verification_flops.set(flops);
         match result {
             Ok(cert) => GainEvidence::Verified(cert),
             Err(rej) => GainEvidence::Unavailable(rej),
@@ -876,12 +935,31 @@ impl ResidualGainWitness {
 fn setup_represented_2x2(
     matrix: &[Vec<f64>],
     scales: &[f64],
+    uncertainty: AssemblyUncertainty,
 ) -> Result<([[Interval; 2]; 2], Interval, f64, u64), WitnessRejection> {
     let mut flops = 0u64;
-    let a = Interval::point(matrix[0][0]).map_err(|_| WitnessRejection::ArithmeticOverflow)?;
-    let b = Interval::point(matrix[0][1]).map_err(|_| WitnessRejection::ArithmeticOverflow)?;
-    let c = Interval::point(matrix[1][0]).map_err(|_| WitnessRejection::ArithmeticOverflow)?;
-    let d = Interval::point(matrix[1][1]).map_err(|_| WitnessRejection::ArithmeticOverflow)?;
+    let delta = match uncertainty {
+        AssemblyUncertainty::Exact => 0.0,
+        AssemblyUncertainty::EntrywiseAbs(d) => d,
+        AssemblyUncertainty::Undeclared => return Err(WitnessRejection::TargetMismatch),
+    };
+
+    let make_int = |v: f64| -> Result<Interval, WitnessRejection> {
+        if delta == 0.0 {
+            Interval::point(v).map_err(|_| WitnessRejection::ArithmeticOverflow)
+        } else {
+            Interval::new(
+                sub_down(v, delta).map_err(|_| WitnessRejection::ArithmeticOverflow)?,
+                add_up(v, delta).map_err(|_| WitnessRejection::ArithmeticOverflow)?,
+            )
+            .map_err(|_| WitnessRejection::ArithmeticOverflow)
+        }
+    };
+
+    let a = make_int(matrix[0][0])?;
+    let b = make_int(matrix[0][1])?;
+    let c = make_int(matrix[1][0])?;
+    let d = make_int(matrix[1][1])?;
 
     let ad = a.mul(d).map_err(|_| WitnessRejection::ArithmeticOverflow)?;
     let bc = b.mul(c).map_err(|_| WitnessRejection::ArithmeticOverflow)?;
@@ -1023,14 +1101,26 @@ fn setup_block_2x2(
 ) -> Result<[[Interval; 2]; 2], WitnessRejection> {
     match op {
         OperatorKind::Represented { matrix } => {
-            let a = Interval::point(matrix[start][start])
-                .map_err(|_| WitnessRejection::ArithmeticOverflow)?;
-            let b = Interval::point(matrix[start][start + 1])
-                .map_err(|_| WitnessRejection::ArithmeticOverflow)?;
-            let c = Interval::point(matrix[start + 1][start])
-                .map_err(|_| WitnessRejection::ArithmeticOverflow)?;
-            let d = Interval::point(matrix[start + 1][start + 1])
-                .map_err(|_| WitnessRejection::ArithmeticOverflow)?;
+            let delta = match uncertainty {
+                AssemblyUncertainty::Exact => 0.0,
+                AssemblyUncertainty::EntrywiseAbs(d) => d,
+                AssemblyUncertainty::Undeclared => return Err(WitnessRejection::TargetMismatch),
+            };
+            let make_int = |v: f64| -> Result<Interval, WitnessRejection> {
+                if delta == 0.0 {
+                    Interval::point(v).map_err(|_| WitnessRejection::ArithmeticOverflow)
+                } else {
+                    Interval::new(
+                        sub_down(v, delta).map_err(|_| WitnessRejection::ArithmeticOverflow)?,
+                        add_up(v, delta).map_err(|_| WitnessRejection::ArithmeticOverflow)?,
+                    )
+                    .map_err(|_| WitnessRejection::ArithmeticOverflow)
+                }
+            };
+            let a = make_int(matrix[start][start])?;
+            let b = make_int(matrix[start][start + 1])?;
+            let c = make_int(matrix[start + 1][start])?;
+            let d = make_int(matrix[start + 1][start + 1])?;
 
             let ad = a.mul(d).map_err(|_| WitnessRejection::ArithmeticOverflow)?;
             let bc = b.mul(c).map_err(|_| WitnessRejection::ArithmeticOverflow)?;
@@ -1237,14 +1327,26 @@ fn certify_dense_2x2(
 
     match target.operator_kind() {
         OperatorKind::Represented { matrix } => {
-            let w00 =
-                Interval::point(matrix[0][0]).map_err(|_| WitnessRejection::ArithmeticOverflow)?;
-            let w01 =
-                Interval::point(matrix[0][1]).map_err(|_| WitnessRejection::ArithmeticOverflow)?;
-            let w10 =
-                Interval::point(matrix[1][0]).map_err(|_| WitnessRejection::ArithmeticOverflow)?;
-            let w11 =
-                Interval::point(matrix[1][1]).map_err(|_| WitnessRejection::ArithmeticOverflow)?;
+            let delta = match target.assembly_uncertainty() {
+                AssemblyUncertainty::Exact => 0.0,
+                AssemblyUncertainty::EntrywiseAbs(d) => d,
+                AssemblyUncertainty::Undeclared => return Err(WitnessRejection::TargetMismatch),
+            };
+            let make_int = |v: f64| -> Result<Interval, WitnessRejection> {
+                if delta == 0.0 {
+                    Interval::point(v).map_err(|_| WitnessRejection::ArithmeticOverflow)
+                } else {
+                    Interval::new(
+                        sub_down(v, delta).map_err(|_| WitnessRejection::ArithmeticOverflow)?,
+                        add_up(v, delta).map_err(|_| WitnessRejection::ArithmeticOverflow)?,
+                    )
+                    .map_err(|_| WitnessRejection::ArithmeticOverflow)
+                }
+            };
+            let w00 = make_int(matrix[0][0])?;
+            let w01 = make_int(matrix[0][1])?;
+            let w10 = make_int(matrix[1][0])?;
+            let w11 = make_int(matrix[1][1])?;
 
             let dot0 = w00
                 .mul(x0)
@@ -1413,8 +1515,27 @@ fn certify_isolated_blocks(
             let xi =
                 Interval::point(candidate[i]).map_err(|_| WitnessRejection::ArithmeticOverflow)?;
             let w_ii = match target.operator_kind() {
-                OperatorKind::Represented { matrix } => Interval::point(matrix[i][i])
-                    .map_err(|_| WitnessRejection::ArithmeticOverflow)?,
+                OperatorKind::Represented { matrix } => {
+                    let delta = match target.assembly_uncertainty() {
+                        AssemblyUncertainty::Exact => 0.0,
+                        AssemblyUncertainty::EntrywiseAbs(d) => d,
+                        AssemblyUncertainty::Undeclared => {
+                            return Err(WitnessRejection::TargetMismatch);
+                        }
+                    };
+                    if delta == 0.0 {
+                        Interval::point(matrix[i][i])
+                            .map_err(|_| WitnessRejection::ArithmeticOverflow)?
+                    } else {
+                        Interval::new(
+                            sub_down(matrix[i][i], delta)
+                                .map_err(|_| WitnessRejection::ArithmeticOverflow)?,
+                            add_up(matrix[i][i], delta)
+                                .map_err(|_| WitnessRejection::ArithmeticOverflow)?,
+                        )
+                        .map_err(|_| WitnessRejection::ArithmeticOverflow)?
+                    }
+                }
                 OperatorKind::Shifted { jacobian, h, gamma } => {
                     let a = Interval::point(*h)
                         .map_err(|_| WitnessRejection::ArithmeticOverflow)?
@@ -1470,16 +1591,34 @@ fn certify_isolated_blocks(
                 .map_err(|_| WitnessRejection::ArithmeticOverflow)?;
 
             let (w00, w01, w10, w11) = match target.operator_kind() {
-                OperatorKind::Represented { matrix } => (
-                    Interval::point(matrix[start][start])
-                        .map_err(|_| WitnessRejection::ArithmeticOverflow)?,
-                    Interval::point(matrix[start][start + 1])
-                        .map_err(|_| WitnessRejection::ArithmeticOverflow)?,
-                    Interval::point(matrix[start + 1][start])
-                        .map_err(|_| WitnessRejection::ArithmeticOverflow)?,
-                    Interval::point(matrix[start + 1][start + 1])
-                        .map_err(|_| WitnessRejection::ArithmeticOverflow)?,
-                ),
+                OperatorKind::Represented { matrix } => {
+                    let delta = match target.assembly_uncertainty() {
+                        AssemblyUncertainty::Exact => 0.0,
+                        AssemblyUncertainty::EntrywiseAbs(d) => d,
+                        AssemblyUncertainty::Undeclared => {
+                            return Err(WitnessRejection::TargetMismatch);
+                        }
+                    };
+                    let make_int = |v: f64| -> Result<Interval, WitnessRejection> {
+                        if delta == 0.0 {
+                            Interval::point(v).map_err(|_| WitnessRejection::ArithmeticOverflow)
+                        } else {
+                            Interval::new(
+                                sub_down(v, delta)
+                                    .map_err(|_| WitnessRejection::ArithmeticOverflow)?,
+                                add_up(v, delta)
+                                    .map_err(|_| WitnessRejection::ArithmeticOverflow)?,
+                            )
+                            .map_err(|_| WitnessRejection::ArithmeticOverflow)
+                        }
+                    };
+                    (
+                        make_int(matrix[start][start])?,
+                        make_int(matrix[start][start + 1])?,
+                        make_int(matrix[start + 1][start])?,
+                        make_int(matrix[start + 1][start + 1])?,
+                    )
+                }
                 OperatorKind::Shifted { jacobian, h, gamma } => {
                     let a = Interval::point(*h)
                         .map_err(|_| WitnessRejection::ArithmeticOverflow)?
@@ -1771,3 +1910,15 @@ pub fn projected_nu_estimate(nu: f64) -> EstimatedCorrection {
         source: EstimateSource::ProjectedNu,
     }
 }
+
+#[allow(dead_code)]
+const _: () = {
+    fn assert_send_sync<T: Send + Sync>() {}
+    fn check() {
+        assert_send_sync::<LinearTargetId>();
+        assert_send_sync::<FrozenMetric>();
+        assert_send_sync::<VerifiedCorrection>();
+        assert_send_sync::<ResidualGainWitness>();
+        assert_send_sync::<GainEvidence>();
+    }
+};

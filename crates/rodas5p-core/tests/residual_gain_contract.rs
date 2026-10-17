@@ -78,33 +78,218 @@ fn f64_to_hex(x: f64) -> String {
 
 #[test]
 fn test_vg1_zero_allocation_hot_path() {
-    let w = vec![vec![1.0, 2.0], vec![3.0, 4.0]];
-    let scales = vec![1.0, 1.0];
-    let metric = FrozenMetric::new(&scales).unwrap();
+    // 1. Route (a): Represented 2x2
+    let w_a = vec![vec![1.0, 2.0], vec![3.0, 4.0]];
+    let metric_a = FrozenMetric::new(&[1.0, 1.0]).unwrap();
+    let target_a = LinearTargetId::represented(
+        &w_a,
+        metric_a,
+        None,
+        AssemblyUncertainty::Exact,
+        DeclaredStructure::Dense,
+    )
+    .unwrap();
+    let witness_a = ResidualGainWitness::new(target_a.clone()).unwrap();
+    let rhs_2 = [1.0, 2.0];
+    let cand_2 = [0.1, 0.2];
+
+    // Warm-up
+    let _ = witness_a.certify(&target_a, &rhs_2, &cand_2);
+    let (ev_a, allocs_a, bytes_a) =
+        count_allocations(|| witness_a.certify(&target_a, &rhs_2, &cand_2));
+    assert!(ev_a.is_verified(), "route (a) verification failed");
+    assert_eq!(allocs_a, 0, "VG-1 route (a) allocs was {allocs_a}");
+    assert_eq!(bytes_a, 0, "VG-1 route (a) bytes was {bytes_a}");
+
+    // 2. Transport to new metric (must also be strictly zero-allocation)
+    let cert_a = ev_a.as_verified().unwrap();
+    let new_metric = FrozenMetric::new(&[2.0, 0.5]).unwrap();
+    let _ = cert_a.transport_to(&new_metric);
+    let (trans, allocs_trans, bytes_trans) = count_allocations(|| cert_a.transport_to(&new_metric));
+    assert!(trans.is_ok(), "transport failed");
+    assert_eq!(allocs_trans, 0, "VG-1 transport allocs was {allocs_trans}");
+    assert_eq!(bytes_trans, 0, "VG-1 transport bytes was {bytes_trans}");
+
+    // 3. Route (b): Isolated blocks 4x4
+    let w_b = vec![
+        vec![2.0, 1.0, 0.0, 0.0],
+        vec![1.0, 3.0, 0.0, 0.0],
+        vec![0.0, 0.0, 4.0, 1.0],
+        vec![0.0, 0.0, 1.0, 5.0],
+    ];
+    let target_b = LinearTargetId::represented(
+        &w_b,
+        FrozenMetric::new(&[1.0; 4]).unwrap(),
+        None,
+        AssemblyUncertainty::Exact,
+        DeclaredStructure::IsolatedBlocks(vec![(0, 2), (2, 4)]),
+    )
+    .unwrap();
+    let witness_b = ResidualGainWitness::new(target_b.clone()).unwrap();
+    let rhs_4 = [1.0, 2.0, 3.0, 4.0];
+    let cand_4 = [0.1, 0.2, 0.3, 0.4];
+    let _ = witness_b.certify(&target_b, &rhs_4, &cand_4);
+    let (ev_b, allocs_b, bytes_b) =
+        count_allocations(|| witness_b.certify(&target_b, &rhs_4, &cand_4));
+    assert!(ev_b.is_verified(), "route (b) verification failed");
+    assert_eq!(allocs_b, 0, "VG-1 route (b) allocs was {allocs_b}");
+    assert_eq!(bytes_b, 0, "VG-1 route (b) bytes was {bytes_b}");
+
+    // 4. Route (c): Shifted 2x2
+    let j_c = vec![vec![1.0, 2.0], vec![0.0, 1.0]];
+    let target_c = LinearTargetId::shifted(
+        &j_c,
+        0.1,
+        0.5,
+        FrozenMetric::new(&[1.0, 1.0]).unwrap(),
+        None,
+        AssemblyUncertainty::Exact,
+        DeclaredStructure::Dense,
+    )
+    .unwrap();
+    let witness_c = ResidualGainWitness::new(target_c.clone()).unwrap();
+    let _ = witness_c.certify(&target_c, &rhs_2, &cand_2);
+    let (ev_c, allocs_c, bytes_c) =
+        count_allocations(|| witness_c.certify(&target_c, &rhs_2, &cand_2));
+    assert!(ev_c.is_verified(), "route (c) verification failed");
+    assert_eq!(allocs_c, 0, "VG-1 route (c) allocs was {allocs_c}");
+    assert_eq!(bytes_c, 0, "VG-1 route (c) bytes was {bytes_c}");
+
+    // 5. Route (d): Lognorm dense 3x3
+    let j_d = vec![
+        vec![-200.0, 100.0, 0.0],
+        vec![100.0, -200.0, 100.0],
+        vec![0.0, 100.0, -200.0],
+    ];
+    let target_d = LinearTargetId::shifted(
+        &j_d,
+        0.001,
+        0.5,
+        FrozenMetric::new(&[1.0; 3]).unwrap(),
+        None,
+        AssemblyUncertainty::Exact,
+        DeclaredStructure::Dense,
+    )
+    .unwrap();
+    let witness_d = ResidualGainWitness::new(target_d.clone()).unwrap();
+    let rhs_3 = [1.0, 1.0, 1.0];
+    let cand_3 = [0.01, 0.01, 0.01];
+    let _ = witness_d.certify(&target_d, &rhs_3, &cand_3);
+    let (ev_d, allocs_d, bytes_d) =
+        count_allocations(|| witness_d.certify(&target_d, &rhs_3, &cand_3));
+    assert!(ev_d.is_verified(), "route (d) verification failed");
+    assert_eq!(allocs_d, 0, "VG-1 route (d) allocs was {allocs_d}");
+    assert_eq!(bytes_d, 0, "VG-1 route (d) bytes was {bytes_d}");
+}
+
+#[test]
+fn test_assembly_uncertainty_validation() {
+    let w = vec![vec![1.0, 0.0], vec![0.0, 1.0]];
+    let m = FrozenMetric::new(&[1.0, 1.0]).unwrap();
+
+    // Negative delta must be rejected with InvalidScale
+    let res_neg = LinearTargetId::represented(
+        &w,
+        m,
+        None,
+        AssemblyUncertainty::EntrywiseAbs(-1e-6),
+        DeclaredStructure::Dense,
+    );
+    assert_eq!(res_neg.unwrap_err(), WitnessRejection::InvalidScale);
+
+    let res_neg_s = LinearTargetId::shifted(
+        &w,
+        0.1,
+        0.5,
+        m,
+        None,
+        AssemblyUncertainty::EntrywiseAbs(-1e-6),
+        DeclaredStructure::Dense,
+    );
+    assert_eq!(res_neg_s.unwrap_err(), WitnessRejection::InvalidScale);
+
+    // NaN / Inf delta must be rejected with NonfiniteMatrix
+    let res_nan = LinearTargetId::represented(
+        &w,
+        m,
+        None,
+        AssemblyUncertainty::EntrywiseAbs(f64::NAN),
+        DeclaredStructure::Dense,
+    );
+    assert_eq!(res_nan.unwrap_err(), WitnessRejection::NonfiniteMatrix);
+
+    let res_inf = LinearTargetId::shifted(
+        &w,
+        0.1,
+        0.5,
+        m,
+        None,
+        AssemblyUncertainty::EntrywiseAbs(f64::INFINITY),
+        DeclaredStructure::Dense,
+    );
+    assert_eq!(res_inf.unwrap_err(), WitnessRejection::NonfiniteMatrix);
+
+    // delta > 0 on represented 2x2 widens the enclosure compared to exact
+    let target_exact = LinearTargetId::represented(
+        &w,
+        m,
+        None,
+        AssemblyUncertainty::Exact,
+        DeclaredStructure::Dense,
+    )
+    .unwrap();
+    let witness_exact = ResidualGainWitness::new(target_exact.clone()).unwrap();
+    let ev_exact = witness_exact.certify(&target_exact, &[1.0, 1.0], &[0.9, 0.9]);
+    let cert_exact = ev_exact.as_verified().unwrap();
+
+    let target_delta = LinearTargetId::represented(
+        &w,
+        m,
+        None,
+        AssemblyUncertainty::EntrywiseAbs(0.01),
+        DeclaredStructure::Dense,
+    )
+    .unwrap();
+    let witness_delta = ResidualGainWitness::new(target_delta.clone()).unwrap();
+    let ev_delta = witness_delta.certify(&target_delta, &[1.0, 1.0], &[0.9, 0.9]);
+    let cert_delta = ev_delta.as_verified().unwrap();
+
+    assert!(
+        cert_delta.weighted_inf_upper() > cert_exact.weighted_inf_upper(),
+        "delta > 0 must produce wider upper bound than delta == 0"
+    );
+}
+
+#[test]
+fn test_transport_two_sided_gain_scaling() {
+    let w = vec![vec![2.0, 0.0], vec![0.0, 3.0]];
+    let m_old = FrozenMetric::new(&[1.0, 2.0]).unwrap();
     let target = LinearTargetId::represented(
         &w,
-        metric,
+        m_old,
         None,
         AssemblyUncertainty::Exact,
         DeclaredStructure::Dense,
     )
     .unwrap();
     let witness = ResidualGainWitness::new(target.clone()).unwrap();
+    let ev = witness.certify(&target, &[1.0, 1.0], &[0.5, 0.33]);
+    let cert = ev.as_verified().unwrap();
 
-    let rhs = [1.0, 2.0];
-    let cand = [0.1, 0.2];
+    let base_gain = cert.scaled_residual_gain_inf_upper().unwrap();
 
-    // Warm-up
-    let _ = witness.certify(&target, &rhs, &cand);
+    // New metric with mixed scaling: s_new[0] = 2.0 (> s_old[0]), s_new[1] = 1.0 (< s_old[1])
+    // kappa = max(1/2, 2/1) = 2.0
+    // kappa_rev = max(2/1, 1/2) = 2.0
+    let m_new = FrozenMetric::new(&[2.0, 1.0]).unwrap();
+    let transported = cert.transport_to(&m_new).unwrap();
+    let trans_gain = transported.scaled_residual_gain_inf_upper().unwrap();
 
-    // Assert zero allocations in certify()
-    let (evidence, allocs, bytes) = count_allocations(|| witness.certify(&target, &rhs, &cand));
-    assert!(evidence.is_verified(), "expected verified result");
-    assert_eq!(
-        allocs, 0,
-        "VG-1 violation: allocations in certify() was {allocs}"
+    // transported gain must be scaled by kappa * kappa_rev = 4.0
+    assert!(
+        trans_gain >= base_gain * 3.99999999,
+        "transported gain {trans_gain} must be scaled by kappa * kappa_rev >= 4 * {base_gain}"
     );
-    assert_eq!(bytes, 0, "VG-1 violation: allocated bytes was {bytes}");
 }
 
 #[test]
@@ -302,8 +487,9 @@ fn test_case_d_positives() {
     let cert = ev.as_verified().unwrap();
     let new_m = FrozenMetric::new(&[2.0, 2.0, 0.5, 0.5]).unwrap();
     let transported = cert.transport_to(&new_m).unwrap();
-    assert_eq!(transported.len(), 4);
-    assert!(transported.wrms_upper() >= cert.wrms_upper());
+    assert!(transported.wrms_upper() > 0.0 && transported.wrms_upper().is_finite());
+    assert!(transported.weighted_inf_upper() > 0.0 && transported.weighted_inf_upper().is_finite());
+    assert!(transported.wrms_upper() <= transported.weighted_inf_upper() * (1.0 + 1e-12));
 }
 
 // -----------------------------------------------------------------------------
@@ -362,9 +548,15 @@ fn parse_json_num(v: &Value) -> f64 {
 #[test]
 #[ignore]
 fn export_runs() {
-    let out_path_str = std::env::var("AS05_RUNS")
-        .unwrap_or_else(|_| "research/as05_residual_gain_core_20261011/RUNS.json".into());
-    let out_path = Path::new(&out_path_str);
+    let repo_root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .unwrap()
+        .parent()
+        .unwrap();
+    let default_out = repo_root.join("research/as05_residual_gain_core_20261011/RUNS.json");
+    let out_path = std::env::var("AS05_RUNS")
+        .map(std::path::PathBuf::from)
+        .unwrap_or(default_out);
     if let Some(parent) = out_path.parent() {
         std::fs::create_dir_all(parent).unwrap();
     }
@@ -555,7 +747,7 @@ fn export_runs() {
         let metric = FrozenMetric::new(&[1.0, 1.0]).unwrap();
         let target_rep = LinearTargetId::represented(
             &w_rep,
-            metric.clone(),
+            metric,
             None,
             AssemblyUncertainty::Exact,
             DeclaredStructure::Dense,
@@ -707,7 +899,7 @@ fn export_runs() {
         let metric = FrozenMetric::new(&s).unwrap();
         let t_epoch7 = LinearTargetId::represented(
             &w,
-            metric.clone(),
+            metric,
             Some(7),
             AssemblyUncertainty::Exact,
             DeclaredStructure::Dense,
@@ -717,7 +909,7 @@ fn export_runs() {
 
         let t_epoch8 = LinearTargetId::represented(
             &w,
-            metric.clone(),
+            metric,
             Some(8),
             AssemblyUncertainty::Exact,
             DeclaredStructure::Dense,
@@ -760,7 +952,7 @@ fn export_runs() {
             &j_base,
             h,
             gamma,
-            metric.clone(),
+            metric,
             Some(7),
             AssemblyUncertainty::Exact,
             DeclaredStructure::Dense,
@@ -777,7 +969,7 @@ fn export_runs() {
                 &j_mod,
                 h,
                 gamma,
-                metric.clone(),
+                metric,
                 Some(7),
                 AssemblyUncertainty::Exact,
                 DeclaredStructure::Dense,
@@ -797,7 +989,7 @@ fn export_runs() {
             &j_base,
             h.next_up(),
             gamma,
-            metric.clone(),
+            metric,
             Some(7),
             AssemblyUncertainty::Exact,
             DeclaredStructure::Dense,
@@ -816,7 +1008,7 @@ fn export_runs() {
             &j_base,
             h,
             gamma.next_up(),
-            metric.clone(),
+            metric,
             Some(7),
             AssemblyUncertainty::Exact,
             DeclaredStructure::Dense,
@@ -833,7 +1025,7 @@ fn export_runs() {
     }
 
     // Off-block coupling (8 positions x 3 values = 24 cases)
-    let off_values = [2.0_f64.powi(-1074), 1e-300, 1.0];
+    let off_values = [f64::from_bits(1), 1e-300, 1.0];
     let off_positions = [
         (0, 2),
         (0, 3),
@@ -1111,12 +1303,17 @@ fn export_runs() {
             "category": "case_d_transport",
             "dimension": 2,
             "inputs": {
+                "W_hex": [[f64_to_hex(w[0][0]), f64_to_hex(w[0][1])],
+                          [f64_to_hex(w[1][0]), f64_to_hex(w[1][1])]],
+                "rhs_hex": [f64_to_hex(b[0]), f64_to_hex(b[1])],
+                "candidate_hex": [f64_to_hex(x[0]), f64_to_hex(x[1])],
                 "scales_hex": [f64_to_hex(s[0]), f64_to_hex(s[1])],
                 "new_scales_hex": [f64_to_hex(s_new1[0]), f64_to_hex(s_new1[1])],
             },
             "evidence_kind": "verified",
             "weighted_inf_upper": trans1.weighted_inf_upper(),
             "wrms_upper": trans1.wrms_upper(),
+            "scaled_residual_gain_inf_upper": trans1.scaled_residual_gain_inf_upper(),
         }));
 
         let s_new2 = [s[0].next_up(), s[1]];
@@ -1127,12 +1324,17 @@ fn export_runs() {
             "category": "case_d_transport",
             "dimension": 2,
             "inputs": {
+                "W_hex": [[f64_to_hex(w[0][0]), f64_to_hex(w[0][1])],
+                          [f64_to_hex(w[1][0]), f64_to_hex(w[1][1])]],
+                "rhs_hex": [f64_to_hex(b[0]), f64_to_hex(b[1])],
+                "candidate_hex": [f64_to_hex(x[0]), f64_to_hex(x[1])],
                 "scales_hex": [f64_to_hex(s[0]), f64_to_hex(s[1])],
                 "new_scales_hex": [f64_to_hex(s_new2[0]), f64_to_hex(s_new2[1])],
             },
             "evidence_kind": "verified",
             "weighted_inf_upper": trans2.weighted_inf_upper(),
             "wrms_upper": trans2.wrms_upper(),
+            "scaled_residual_gain_inf_upper": trans2.scaled_residual_gain_inf_upper(),
         }));
     }
 
@@ -1438,7 +1640,7 @@ fn export_runs() {
         "cases": cases
     });
 
-    let mut file = File::create(out_path).unwrap();
+    let mut file = File::create(&out_path).unwrap();
     file.write_all(serde_json::to_string_pretty(&runs_doc).unwrap().as_bytes())
         .unwrap();
     println!("Exported {} cases to {}", cases.len(), out_path.display());
