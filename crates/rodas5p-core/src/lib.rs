@@ -51,8 +51,8 @@ pub use polynomial_action::{
     LaguerreAdjointColumnExport, LaguerreAssemblyExport, LaguerreColumnTermExport,
     LaguerreComponentExport, LaguerreExportIdentity, LocalBasisPlan, RouteCost, RoutePolicy,
     RouterCaches, SingleRoutedPhi, count_chebyshev_series_terms, count_laguerre_series_terms,
-    execute_joint_phi, joint_phi_action_laguerre_components, plan_joint_phi, plan_joint_phi_local,
-    route_joint_phi_single, scale_bound_up,
+    execute_joint_phi, execute_joint_phi_with_cost, joint_phi_action_laguerre_components,
+    plan_joint_phi, plan_joint_phi_local, route_joint_phi_single, scale_bound_up,
 };
 pub use residual_gain::{
     AssemblyUncertainty, DeclaredStructure, EstimateSource, EstimatedCorrection, FrozenMetric,

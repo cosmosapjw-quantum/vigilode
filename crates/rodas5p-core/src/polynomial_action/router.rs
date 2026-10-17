@@ -351,11 +351,13 @@ pub fn route_joint_phi(
 
 /// Routing policy for [`route_joint_phi_single`] (RVJ DAG node PY03).
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Default, Serialize)]
+#[allow(clippy::manual_non_exhaustive)]
 pub enum RoutePolicy {
     /// Preflight compares vector products, degree limit, and vector-independent error before executing.
     #[default]
     ChebyshevFirstPreflight,
     /// Force execution of Laguerre first (for testing failed preflight).
+    #[doc(hidden)]
     ForceLaguerreFirst,
 }
 
@@ -375,15 +377,29 @@ pub struct RouteCost {
 
 impl RouteCost {
     pub fn accumulate(&mut self, other: RouteCost) {
-        self.plan_tail_evaluations += other.plan_tail_evaluations;
-        self.coefficient_setups += other.coefficient_setups;
-        self.coefficient_cache_hits += other.coefficient_cache_hits;
-        self.coefficient_series_terms += other.coefficient_series_terms;
-        self.executed_backends += other.executed_backends;
-        self.failed_executions += other.failed_executions;
-        self.vector_products += other.vector_products;
-        self.block_products += other.block_products;
-        self.certification_operations += other.certification_operations;
+        self.plan_tail_evaluations = self
+            .plan_tail_evaluations
+            .saturating_add(other.plan_tail_evaluations);
+        self.coefficient_setups = self
+            .coefficient_setups
+            .saturating_add(other.coefficient_setups);
+        self.coefficient_cache_hits = self
+            .coefficient_cache_hits
+            .saturating_add(other.coefficient_cache_hits);
+        self.coefficient_series_terms = self
+            .coefficient_series_terms
+            .saturating_add(other.coefficient_series_terms);
+        self.executed_backends = self
+            .executed_backends
+            .saturating_add(other.executed_backends);
+        self.failed_executions = self
+            .failed_executions
+            .saturating_add(other.failed_executions);
+        self.vector_products = self.vector_products.saturating_add(other.vector_products);
+        self.block_products = self.block_products.saturating_add(other.block_products);
+        self.certification_operations = self
+            .certification_operations
+            .saturating_add(other.certification_operations);
     }
 }
 
@@ -513,93 +529,42 @@ fn execute_one_basis(
         ..RouteCost::default()
     };
     let report_result = match plan {
-        Some(p) => super::execute_joint_phi(p, op, h, input, Some(&mut caches.coefficient), work),
-        None => super::joint_phi_action(
+        Some(p) => super::execute_joint_phi_with_cost(
+            p,
+            op,
+            h,
+            input,
+            Some(caches),
+            None,
+            work,
+            &mut exec_cost,
+        ),
+        None => super::joint_phi_action_with_cost(
             op,
             h,
             input,
             basis,
             truncation_budget,
-            Some(&mut caches.coefficient),
+            Some(caches),
             work,
+            &mut exec_cost,
         ),
     };
     let delta = work
         .checked_delta(before_work)
         .ok_or_else(|| invalid("work decreased during execution"))?;
-    exec_cost.vector_products += delta.poly_vector_products;
-    exec_cost.block_products += delta.poly_block_products;
-    exec_cost.coefficient_setups += delta.poly_coefficient_setups;
-    exec_cost.coefficient_cache_hits += delta.poly_coefficient_reuses;
+    exec_cost.vector_products = exec_cost
+        .vector_products
+        .saturating_add(delta.poly_vector_products);
+    exec_cost.block_products = exec_cost
+        .block_products
+        .saturating_add(delta.poly_block_products);
 
     match report_result {
         Ok(report) => {
-            let deg = report.degree;
-            if delta.poly_coefficient_setups > 0 {
-                match basis {
-                    PolynomialBasis::Chebyshev => {
-                        let shift = 0.5 * (op.enclosure.rho + op.enclosure.lambda);
-                        let half_width = 0.5 * (op.enclosure.rho - op.enclosure.lambda);
-                        let a = super::Interval::new(
-                            -super::mul_up(h, shift)?,
-                            -super::mul_down(h, shift)?,
-                        )?;
-                        let b = super::Interval::new(
-                            super::mul_down(h, half_width)?,
-                            super::mul_up(h, half_width)?,
-                        )?;
-                        let terms = super::count_chebyshev_series_terms(a, b, deg)?;
-                        exec_cost.coefficient_series_terms += terms;
-                    }
-                    PolynomialBasis::Laguerre => {
-                        if let Some(scale) = report.laguerre_scale {
-                            let beta = op.enclosure.rho / scale;
-                            let a = super::Interval::new(
-                                super::mul_down(h, beta)?,
-                                super::mul_up(h, beta)?,
-                            )?;
-                            let terms = super::count_laguerre_series_terms(a, deg)?;
-                            exec_cost.coefficient_series_terms += terms;
-                        }
-                    }
-                }
-            }
-            match basis {
-                PolynomialBasis::Chebyshev => {
-                    let cert_ops = 5 * ((deg * (deg + 1)) / 2) as u64;
-                    exec_cost.certification_operations += cert_ops;
-                }
-                PolynomialBasis::Laguerre => {
-                    let mut env_ops = 0;
-                    if let Some(scale) = report
-                        .laguerre_scale
-                        .filter(|_| deg <= crate::laguerre_adjoint::LAGUERRE_ADJOINT_DEGREE_LIMIT)
-                    {
-                        let beta = op.enclosure.rho / scale;
-                        let extent = super::div_up(op.enclosure.rho, beta)?;
-                        let a = super::Interval::new(
-                            super::mul_down(h, beta)?,
-                            super::mul_up(h, beta)?,
-                        )?;
-                        let table = super::laguerre_coefficients(a, deg)?;
-                        for k in 0..super::JOINT_PHI_TERMS {
-                            let intervals: Vec<super::Interval> =
-                                table.iter().map(|row| row[k]).collect();
-                            let (_, _, ops) = caches.envelope.envelopes(
-                                &intervals,
-                                extent,
-                                crate::laguerre_adjoint::LAGUERRE_ADJOINT_DEPTH,
-                            )?;
-                            env_ops += ops;
-                        }
-                    }
-                    let cert_ops = env_ops + 5 * deg as u64;
-                    exec_cost.certification_operations += cert_ops;
-                }
-            }
             let admission = route_admission(&report, total_budget);
             if !matches!(admission, TotalErrorAdmission::Admitted { .. }) {
-                exec_cost.failed_executions += 1;
+                exec_cost.failed_executions = exec_cost.failed_executions.saturating_add(1);
             }
             Ok((
                 RouteAttempt {
@@ -616,7 +581,7 @@ fn execute_one_basis(
             ))
         }
         Err(err) => {
-            exec_cost.failed_executions += 1;
+            exec_cost.failed_executions = exec_cost.failed_executions.saturating_add(1);
             Ok((
                 RouteAttempt {
                     basis,
@@ -727,8 +692,8 @@ pub fn route_joint_phi_single(
         RoutePolicy::ForceLaguerreFirst => true,
         RoutePolicy::ChebyshevFirstPreflight => match (&cheb_plan_res, &lag_plan_res) {
             (Ok(cheb), Ok(lag)) => {
-                if lag.predicted_vector_products >= cheb.predicted_vector_products
-                    || lag.degree > crate::laguerre_adjoint::LAGUERRE_ADJOINT_DEGREE_LIMIT
+                if lag.predicted_vector_products() >= cheb.predicted_vector_products()
+                    || lag.degree() > crate::laguerre_adjoint::LAGUERRE_ADJOINT_DEGREE_LIMIT
                 {
                     false
                 } else {
@@ -736,28 +701,37 @@ pub fn route_joint_phi_single(
                         basis: PolynomialBasis::Laguerre,
                         operator_fingerprint: op.fingerprint.clone(),
                         h_bits: h.to_bits(),
-                        degree: lag.degree,
-                        laguerre_scale_bits: lag.laguerre_scale.unwrap_or(0.0).to_bits(),
+                        degree: lag.degree(),
+                        laguerre_scale_bits: lag.laguerre_scale().unwrap_or(0.0).to_bits(),
                     };
                     let (table, is_hit) = if let Some(t) = caches.coefficient.tables.get(&key) {
                         (t.clone(), true)
                     } else {
                         let mut terms = 0;
-                        let t =
-                            super::laguerre_coefficients_counted(lag.a, lag.degree, &mut terms)?;
-                        plan_cost.coefficient_setups += 1;
-                        plan_cost.coefficient_series_terms += terms;
+                        let a = lag.a().ok_or_else(|| {
+                            super::unsupported("Laguerre plan missing interval a")
+                        })?;
+                        let t = super::laguerre_coefficients_counted(a, lag.degree(), &mut terms)?;
+                        plan_cost.coefficient_setups =
+                            plan_cost.coefficient_setups.saturating_add(1);
+                        plan_cost.coefficient_series_terms =
+                            plan_cost.coefficient_series_terms.saturating_add(terms);
+                        work.poly_coefficient_setups += 1;
                         caches.coefficient.tables.insert(key, t.clone());
                         (t, false)
                     };
                     if is_hit {
-                        plan_cost.coefficient_cache_hits += 1;
+                        plan_cost.coefficient_cache_hits =
+                            plan_cost.coefficient_cache_hits.saturating_add(1);
                     }
                     let scales = match input {
                         JointPhiInput::Distinct(_) => [1.0; super::JOINT_PHI_TERMS],
                         JointPhiInput::SameVector { scales, .. } => scales,
                     };
                     let mut total_coeff_bound = 0.0;
+                    let lag_norm = lag
+                        .laguerre_norm()
+                        .ok_or_else(|| super::unsupported("Laguerre plan missing laguerre_norm"))?;
                     for k in 0..super::JOINT_PHI_TERMS {
                         let source_norm = match input {
                             JointPhiInput::Distinct(w) => super::norm_up_scaled(&w[k], 0)?,
@@ -769,10 +743,7 @@ pub fn route_joint_phi_single(
                         for row in &table {
                             let chosen_val = super::midpoint(row[k]);
                             let radius = super::distance_up(chosen_val, row[k])?;
-                            coeff_err = super::add_up(
-                                coeff_err,
-                                super::mul_up(radius, lag.laguerre_norm)?,
-                            )?;
+                            coeff_err = super::add_up(coeff_err, super::mul_up(radius, lag_norm)?)?;
                         }
                         coeff_err = super::mul_up(coeff_err, source_norm)?;
                         total_coeff_bound = super::add_up(
@@ -781,7 +752,7 @@ pub fn route_joint_phi_single(
                         )?;
                     }
                     let vector_independent_terms =
-                        super::add_up(lag.truncation_bound, total_coeff_bound)?;
+                        super::add_up(lag.truncation_bound(), total_coeff_bound)?;
                     vector_independent_terms <= total_budget
                 }
             }

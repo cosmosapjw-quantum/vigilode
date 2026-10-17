@@ -391,6 +391,7 @@ fn test_bitwise_parity_execute_joint_phi() {
     .unwrap();
 
     assert_eq!(report_exec.degree, report_direct.degree);
+    assert_eq!(report_exec.degree, plan.degree());
     assert_eq!(
         report_exec
             .fused
@@ -408,6 +409,54 @@ fn test_bitwise_parity_execute_joint_phi() {
         report_direct.truncation_bound_exact_arithmetic.to_bits()
     );
     assert_eq!(work1, work2);
+    assert_eq!(work1.poly_vector_products, plan.predicted_vector_products());
+
+    // Verify execute_joint_phi_with_cost incurs 0 tail evaluations
+    let mut exec_cost = RouteCost::default();
+    let mut work_cost = WorkCounters::default();
+    let mut cache_cost = rodas5p_core::polynomial_action::CoefficientCache::default();
+    let report_with_cost = rodas5p_core::polynomial_action::execute_joint_phi_with_cost(
+        &plan,
+        &op,
+        0.05,
+        input.as_input(),
+        None,
+        Some(&mut cache_cost),
+        &mut work_cost,
+        &mut exec_cost,
+    )
+    .unwrap();
+    assert_eq!(exec_cost.plan_tail_evaluations, 0);
+    assert_eq!(report_with_cost.degree, plan.degree());
+
+    // Fail-fast checks on input mismatches
+    let (a_other, _) = spectral_matrix(8, 9.0, 7201);
+    let op_other = SymmetricNonpositiveOperator::gershgorin(a_other).unwrap();
+    let err_op = execute_joint_phi(&plan, &op_other, 0.05, input.as_input(), None, &mut work1);
+    assert!(matches!(
+        err_op,
+        Err(rodas5p_core::CoreError::InvalidInput(_))
+    ));
+
+    let err_h = execute_joint_phi(&plan, &op, 0.10, input.as_input(), None, &mut work1);
+    assert!(matches!(
+        err_h,
+        Err(rodas5p_core::CoreError::InvalidInput(_))
+    ));
+
+    let input_mismatch = TestCaseInput::same(8, 9999);
+    let err_in = execute_joint_phi(
+        &plan,
+        &op,
+        0.05,
+        input_mismatch.as_input(),
+        None,
+        &mut work1,
+    );
+    assert!(matches!(
+        err_in,
+        Err(rodas5p_core::CoreError::InvalidInput(_))
+    ));
 }
 
 #[test]
@@ -786,7 +835,14 @@ fn export_cases() {
         println!("PY03_CASES not set: export skipped");
         return;
     };
-    let path = Path::new(&output);
+    let raw_path = Path::new(&output);
+    let path = if raw_path.is_absolute() {
+        raw_path.to_path_buf()
+    } else {
+        Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../..")
+            .join(raw_path)
+    };
     assert!(!path.exists(), "immutable output already exists: {output}");
 
     let mut cases = Vec::new();

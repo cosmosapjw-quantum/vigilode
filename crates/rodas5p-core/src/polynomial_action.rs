@@ -1168,7 +1168,7 @@ struct LaguerreAdjointColumnInternal {
 }
 
 #[derive(Clone, Debug)]
-struct LaguerreExportIntermediate {
+pub(crate) struct LaguerreExportIntermediate {
     beta: f64,
     laguerre_extent: f64,
     laguerre_scale: f64,
@@ -1345,23 +1345,24 @@ fn laguerre_majorant(local: &[f64], extent: f64) -> CoreResult<Vec<f64>> {
     Ok(bounds)
 }
 
-struct Transform {
-    basis: PolynomialBasis,
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub(crate) struct Transform {
+    pub(crate) basis: PolynomialBasis,
     /// Chebyshev: `X = (A + shift I) / half_width`; Laguerre: `X = -A / beta`.
-    shift: f64,
-    half_width: f64,
-    beta: f64,
-    degree: usize,
-    laguerre_scale: Option<f64>,
-    tail_factor: f64,
+    pub(crate) shift: f64,
+    pub(crate) half_width: f64,
+    pub(crate) beta: f64,
+    pub(crate) degree: usize,
+    pub(crate) laguerre_scale: Option<f64>,
+    pub(crate) tail_factor: f64,
     /// Chebyshev: `||T_n(X)|| <= e^{n eta}`.
-    eta: f64,
+    pub(crate) eta: f64,
     /// Laguerre: `||L_n(X)|| <= e^{L'/2}`.
-    laguerre_norm: f64,
+    pub(crate) laguerre_norm: f64,
     /// Laguerre: `L' >= rho / beta`, so `spec(X) in [0, L']`.
-    laguerre_extent: f64,
-    a: Interval,
-    b: Interval,
+    pub(crate) laguerre_extent: f64,
+    pub(crate) a: Interval,
+    pub(crate) b: Interval,
 }
 
 fn choose_transform(
@@ -1696,6 +1697,157 @@ pub fn joint_phi_action(
     )
 }
 
+#[allow(dead_code)]
+pub(crate) struct JointPhiInputAnalysis {
+    pub(crate) width: usize,
+    pub(crate) scales: [f64; JOINT_PHI_TERMS],
+    pub(crate) normalization_shift: i64,
+    pub(crate) budget_scaled: f64,
+    pub(crate) norms: [f64; JOINT_PHI_TERMS],
+    pub(crate) weight_factor: f64,
+    pub(crate) scalar_branch: bool,
+}
+
+pub(crate) fn analyze_joint_phi_input(
+    op: &SymmetricNonpositiveOperator,
+    h: f64,
+    input: JointPhiInput<'_>,
+    budget: f64,
+) -> CoreResult<JointPhiInputAnalysis> {
+    let n = op.dimension();
+    if !(h.is_finite() && h >= 0.0) {
+        return Err(unsupported(format!(
+            "step h = {h:e} must be finite and >= 0"
+        )));
+    }
+    if !(budget.is_finite() && budget > 0.0) {
+        return Err(unsupported("truncation budget must be positive"));
+    }
+    let mut max = 0.0_f64;
+    let (width, scales) = match input {
+        JointPhiInput::Distinct(vectors) => {
+            if vectors.len() != JOINT_PHI_TERMS {
+                return Err(unsupported(format!(
+                    "JointPhiInput::Distinct needs {JOINT_PHI_TERMS} vectors, got {}",
+                    vectors.len()
+                )));
+            }
+            if vectors.iter().any(|w| w.len() != n) {
+                return Err(unsupported("every w_k must have the operator dimension"));
+            }
+            for v in vectors {
+                for &x in v {
+                    if !x.is_finite() {
+                        return Err(CoreError::NonFinite(
+                            "joint phi input contains NaN/Inf".into(),
+                        ));
+                    }
+                    max = max.max(x.abs());
+                }
+            }
+            (JOINT_PHI_TERMS, [1.0; JOINT_PHI_TERMS])
+        }
+        JointPhiInput::SameVector { vector, scales } => {
+            if vector.len() != n {
+                return Err(unsupported("vector must have the operator dimension"));
+            }
+            for &x in vector {
+                if !x.is_finite() {
+                    return Err(CoreError::NonFinite(
+                        "joint phi input contains NaN/Inf".into(),
+                    ));
+                }
+                max = max.max(x.abs());
+            }
+            for &sc in &scales {
+                if !sc.is_finite() {
+                    return Err(CoreError::NonFinite(
+                        "joint phi input contains NaN/Inf".into(),
+                    ));
+                }
+            }
+            (1, scales)
+        }
+    };
+
+    let raw_shift = if max.is_finite() && max > 0.0 {
+        crate::binary_split(max).1
+    } else {
+        0
+    };
+
+    let (normalization_shift, budget_scaled) = if raw_shift.abs() <= NORMALIZATION_WINDOW {
+        (0_i64, budget)
+    } else {
+        let range = |what: &str| {
+            CoreError::NonFinite(format!(
+                "{POLYNOMIAL_RANGE_UNSUPPORTED}: {what} outside the binary64 range after scaling by 2^{raw_shift}"
+            ))
+        };
+        let mut b_scaled = scale_pow2(budget, -raw_shift);
+        if b_scaled.is_finite() && scale_pow2(b_scaled, raw_shift) > budget {
+            b_scaled = b_scaled.next_down();
+        }
+        if b_scaled == f64::INFINITY {
+            b_scaled = f64::MAX;
+        }
+        if b_scaled.is_nan() || b_scaled <= 0.0 {
+            return Err(range("the truncation budget"));
+        }
+        (raw_shift, b_scaled)
+    };
+
+    let mut norms = [0.0_f64; JOINT_PHI_TERMS];
+    match input {
+        JointPhiInput::Distinct(vectors) => {
+            for k in 0..JOINT_PHI_TERMS {
+                norms[k] = norm_up_scaled(&vectors[k], normalization_shift)?;
+            }
+        }
+        JointPhiInput::SameVector { vector, .. } => {
+            let v_norm = norm_up_scaled(vector, normalization_shift)?;
+            for k in 0..JOINT_PHI_TERMS {
+                norms[k] = mul_up(scales[k].abs(), v_norm)?;
+            }
+        }
+    }
+
+    let mut weight_factor = 0.0;
+    for (k, &norm) in norms.iter().enumerate() {
+        weight_factor = add_up(weight_factor, div_up(norm, factorial(k))?)?;
+    }
+
+    let SpectralEnclosure { lambda, rho, .. } = op.enclosure;
+    let scalar_branch = h == 0.0 || rho == 0.0 || lambda == rho;
+    if lambda == rho && rho > 0.0 {
+        let scalar =
+            (0..n).all(|i| (0..n).all(|j| op.matrix[(i, j)] == if i == j { -lambda } else { 0.0 }));
+        if !scalar {
+            return Err(unsupported("a degenerate enclosure needs A = -lambda I"));
+        }
+    }
+    if rho == 0.0 && op.matrix.as_slice().iter().any(|x| *x != 0.0) {
+        return Err(unsupported("the enclosure [0, 0] needs A = 0"));
+    }
+
+    Ok(JointPhiInputAnalysis {
+        width,
+        scales,
+        normalization_shift,
+        budget_scaled,
+        norms,
+        weight_factor,
+        scalar_branch: scalar_branch || weight_factor == 0.0,
+    })
+}
+
+fn fingerprint_bytes(s: &str) -> [u8; 64] {
+    let mut bytes = [0u8; 64];
+    let len = s.len().min(64);
+    bytes[..len].copy_from_slice(&s.as_bytes()[..len]);
+    bytes
+}
+
 /// A planned joint-phi polynomial action (RVJ DAG node PY03).
 /// Separates degree and coefficient planning from execution.
 #[derive(Clone, Debug, PartialEq, Serialize)]
@@ -1708,13 +1860,14 @@ pub struct ActionPlan {
     pub(crate) truncation_bound: f64,
     pub(crate) truncation_budget: f64,
     #[serde(skip)]
-    pub(crate) a: Interval,
+    pub(crate) transform: Option<Transform>,
     #[serde(skip)]
-    pub(crate) b: Interval,
-    pub(crate) beta: f64,
-    pub(crate) laguerre_extent: f64,
-    pub(crate) laguerre_norm: f64,
-    pub(crate) eta: f64,
+    pub(crate) operator_fingerprint: [u8; 64],
+    pub(crate) h_bits: u64,
+    pub(crate) width: usize,
+    pub(crate) weight_factor_bits: u64,
+    pub(crate) shift: i64,
+    pub(crate) scalar_branch: bool,
 }
 
 impl ActionPlan {
@@ -1745,6 +1898,48 @@ impl ActionPlan {
     pub fn truncation_budget(&self) -> f64 {
         self.truncation_budget
     }
+
+    pub(crate) fn transform(&self) -> Option<&Transform> {
+        self.transform.as_ref()
+    }
+
+    pub fn a(&self) -> Option<Interval> {
+        self.transform.as_ref().map(|t| t.a)
+    }
+
+    pub fn b(&self) -> Option<Interval> {
+        self.transform.as_ref().map(|t| t.b)
+    }
+
+    pub fn beta(&self) -> Option<f64> {
+        self.transform.as_ref().map(|t| t.beta)
+    }
+
+    pub fn laguerre_norm(&self) -> Option<f64> {
+        self.transform.as_ref().map(|t| t.laguerre_norm)
+    }
+
+    pub fn laguerre_extent(&self) -> Option<f64> {
+        self.transform.as_ref().map(|t| t.laguerre_extent)
+    }
+
+    pub fn eta(&self) -> Option<f64> {
+        self.transform.as_ref().map(|t| t.eta)
+    }
+
+    pub fn shift(&self) -> i64 {
+        self.shift
+    }
+
+    pub fn scalar_branch(&self) -> bool {
+        self.scalar_branch
+    }
+
+    pub fn operator_fingerprint(&self) -> &str {
+        std::str::from_utf8(&self.operator_fingerprint)
+            .unwrap_or("")
+            .trim_end_matches('\0')
+    }
 }
 
 /// Plan `sum_k phi_k(h A) w_k` for a given basis and truncation budget (RVJ DAG node PY03).
@@ -1759,65 +1954,8 @@ pub fn plan_joint_phi(
     _caches: Option<&router::RouterCaches>,
     cost: &mut router::RouteCost,
 ) -> CoreResult<ActionPlan> {
-    let n = op.dimension();
-    if !(h.is_finite() && h >= 0.0) {
-        return Err(unsupported(format!(
-            "step h = {h:e} must be finite and >= 0"
-        )));
-    }
-    if !(truncation_budget.is_finite() && truncation_budget > 0.0) {
-        return Err(unsupported("truncation budget must be positive"));
-    }
-    let (width, norms) = match input {
-        JointPhiInput::Distinct(vectors) => {
-            if vectors.iter().any(|w| w.len() != n) {
-                return Err(unsupported("every w_k must have the operator dimension"));
-            }
-            if !vectors.iter().flatten().all(|x| x.is_finite()) {
-                return Err(CoreError::NonFinite(
-                    "joint phi input contains NaN/Inf".into(),
-                ));
-            }
-            let mut norms = [0.0; JOINT_PHI_TERMS];
-            for (k, v) in vectors.iter().enumerate() {
-                norms[k] = norm_up_scaled(v, 0)?;
-            }
-            (JOINT_PHI_TERMS, norms)
-        }
-        JointPhiInput::SameVector { vector, scales } => {
-            if vector.len() != n {
-                return Err(unsupported("vector must have the operator dimension"));
-            }
-            if !vector.iter().chain(&scales).all(|x| x.is_finite()) {
-                return Err(CoreError::NonFinite(
-                    "joint phi input contains NaN/Inf".into(),
-                ));
-            }
-            let base_norm = norm_up_scaled(vector, 0)?;
-            let mut norms = [0.0; JOINT_PHI_TERMS];
-            for (k, &s) in scales.iter().enumerate() {
-                norms[k] = mul_up(s.abs(), base_norm)?;
-            }
-            (1, norms)
-        }
-    };
-    let mut weight_factor = 0.0;
-    for (k, &norm) in norms.iter().enumerate() {
-        weight_factor = add_up(weight_factor, div_up(norm, factorial(k))?)?;
-    }
-    let SpectralEnclosure { lambda, rho, .. } = op.enclosure;
-    let scalar_branch = h == 0.0 || rho == 0.0 || lambda == rho;
-    if lambda == rho && rho > 0.0 {
-        let scalar =
-            (0..n).all(|i| (0..n).all(|j| op.matrix[(i, j)] == if i == j { -lambda } else { 0.0 }));
-        if !scalar {
-            return Err(unsupported("a degenerate enclosure needs A = -lambda I"));
-        }
-    }
-    if rho == 0.0 && op.matrix.as_slice().iter().any(|x| *x != 0.0) {
-        return Err(unsupported("the enclosure [0, 0] needs A = 0"));
-    }
-    if weight_factor == 0.0 || scalar_branch {
+    let analysis = analyze_joint_phi_input(op, h, input, truncation_budget)?;
+    if analysis.scalar_branch {
         return Ok(ActionPlan {
             basis,
             degree: 0,
@@ -1826,27 +1964,36 @@ pub fn plan_joint_phi(
             predicted_block_products: 0,
             truncation_bound: 0.0,
             truncation_budget,
-            a: Interval::point(0.0)?,
-            b: Interval::point(0.0)?,
-            beta: 0.0,
-            laguerre_extent: 0.0,
-            laguerre_norm: 1.0,
-            eta: 0.0,
+            transform: None,
+            operator_fingerprint: fingerprint_bytes(&op.fingerprint),
+            h_bits: h.to_bits(),
+            width: analysis.width,
+            weight_factor_bits: analysis.weight_factor.to_bits(),
+            shift: analysis.normalization_shift,
+            scalar_branch: true,
         });
     }
+
     let transform = choose_transform_counted(
         op,
         h,
         basis,
-        weight_factor,
-        truncation_budget,
+        analysis.weight_factor,
+        analysis.budget_scaled,
         &LAGUERRE_SCALES,
         &mut cost.plan_tail_evaluations,
     )?;
+
     let degree = transform.degree;
-    let truncation_bound = mul_up(transform.tail_factor, weight_factor)?;
+    let unscaled_truncation = mul_up(transform.tail_factor, analysis.weight_factor)?;
+    let truncation_bound = if analysis.normalization_shift != 0 {
+        scale_bound_up(unscaled_truncation, analysis.normalization_shift)?
+    } else {
+        unscaled_truncation
+    };
     let predicted_block_products = degree as u64;
-    let predicted_vector_products = degree as u64 * (width as u64);
+    let predicted_vector_products = degree as u64 * (analysis.width as u64);
+
     Ok(ActionPlan {
         basis,
         degree,
@@ -1855,12 +2002,13 @@ pub fn plan_joint_phi(
         predicted_block_products,
         truncation_bound,
         truncation_budget,
-        a: transform.a,
-        b: transform.b,
-        beta: transform.beta,
-        laguerre_extent: transform.laguerre_extent,
-        laguerre_norm: transform.laguerre_norm,
-        eta: transform.eta,
+        transform: Some(transform),
+        operator_fingerprint: fingerprint_bytes(&op.fingerprint),
+        h_bits: h.to_bits(),
+        width: analysis.width,
+        weight_factor_bits: analysis.weight_factor.to_bits(),
+        shift: analysis.normalization_shift,
+        scalar_branch: false,
     })
 }
 
@@ -1875,16 +2023,84 @@ pub fn execute_joint_phi(
     cache: Option<&mut CoefficientCache>,
     work: &mut WorkCounters,
 ) -> CoreResult<JointPhiReport> {
-    joint_phi_action_impl(
+    let mut dummy_cost = router::RouteCost::default();
+    execute_joint_phi_with_cost(plan, op, h, input, None, cache, work, &mut dummy_cost)
+}
+
+#[allow(clippy::too_many_arguments)]
+pub fn execute_joint_phi_with_cost(
+    plan: &ActionPlan,
+    op: &SymmetricNonpositiveOperator,
+    h: f64,
+    input: JointPhiInput<'_>,
+    caches: Option<&mut router::RouterCaches>,
+    coeff_cache: Option<&mut CoefficientCache>,
+    work: &mut WorkCounters,
+    cost: &mut router::RouteCost,
+) -> CoreResult<JointPhiReport> {
+    if fingerprint_bytes(&op.fingerprint) != plan.operator_fingerprint {
+        return Err(CoreError::InvalidInput(
+            "execute_joint_phi: operator fingerprint does not match plan".into(),
+        ));
+    }
+    if h.to_bits() != plan.h_bits {
+        return Err(CoreError::InvalidInput(
+            "execute_joint_phi: step h does not match plan".into(),
+        ));
+    }
+    let analysis = analyze_joint_phi_input(op, h, input, plan.truncation_budget)?;
+    if analysis.width != plan.width
+        || analysis.weight_factor.to_bits() != plan.weight_factor_bits
+        || analysis.normalization_shift != plan.shift
+        || analysis.scalar_branch != plan.scalar_branch
+    {
+        return Err(CoreError::InvalidInput(
+            "execute_joint_phi: input parameters do not match plan".into(),
+        ));
+    }
+
+    joint_phi_action_core_dispatch(
         op,
         h,
         input,
         plan.basis(),
         plan.truncation_budget(),
-        cache,
+        caches,
+        coeff_cache,
         work,
         true,
         &LAGUERRE_SCALES,
+        None,
+        Some(plan),
+        Some(cost),
+    )
+}
+
+#[allow(clippy::too_many_arguments)]
+pub(crate) fn joint_phi_action_with_cost(
+    op: &SymmetricNonpositiveOperator,
+    h: f64,
+    input: JointPhiInput<'_>,
+    basis: PolynomialBasis,
+    budget: f64,
+    caches: Option<&mut router::RouterCaches>,
+    work: &mut WorkCounters,
+    cost: &mut router::RouteCost,
+) -> CoreResult<JointPhiReport> {
+    joint_phi_action_core_dispatch(
+        op,
+        h,
+        input,
+        basis,
+        budget,
+        caches,
+        None,
+        work,
+        true,
+        &LAGUERRE_SCALES,
+        None,
+        None,
+        Some(cost),
     )
 }
 
@@ -2452,6 +2668,39 @@ fn joint_phi_action_impl_with_export(
     laguerre_scales: &[f64],
     export_intermediate: Option<&mut Option<LaguerreExportIntermediate>>,
 ) -> CoreResult<JointPhiReport> {
+    joint_phi_action_core_dispatch(
+        op,
+        h,
+        input,
+        basis,
+        budget,
+        None,
+        cache,
+        work,
+        bounds,
+        laguerre_scales,
+        export_intermediate,
+        None,
+        None,
+    )
+}
+
+#[allow(clippy::too_many_arguments)]
+pub(crate) fn joint_phi_action_core_dispatch(
+    op: &SymmetricNonpositiveOperator,
+    h: f64,
+    input: JointPhiInput<'_>,
+    basis: PolynomialBasis,
+    budget: f64,
+    caches: Option<&mut router::RouterCaches>,
+    coeff_cache: Option<&mut CoefficientCache>,
+    work: &mut WorkCounters,
+    bounds: bool,
+    laguerre_scales: &[f64],
+    export_intermediate: Option<&mut Option<LaguerreExportIntermediate>>,
+    plan: Option<&ActionPlan>,
+    cost: Option<&mut router::RouteCost>,
+) -> CoreResult<JointPhiReport> {
     let entries: Vec<f64> = match input {
         JointPhiInput::Distinct(vectors) => vectors.iter().flatten().copied().collect(),
         JointPhiInput::SameVector { vector, .. } => vector.to_vec(),
@@ -2472,11 +2721,14 @@ fn joint_phi_action_impl_with_export(
             input,
             basis,
             budget,
-            cache,
+            caches,
+            coeff_cache,
             work,
             bounds,
             laguerre_scales,
             export_intermediate,
+            plan,
+            cost,
         );
     }
     let range = |what: &str| {
@@ -2540,11 +2792,14 @@ fn joint_phi_action_impl_with_export(
         scaled_input,
         basis,
         budget_scaled,
-        cache,
+        caches,
+        coeff_cache,
         work,
         bounds,
         laguerre_scales,
         export_intermediate,
+        plan,
+        cost,
     )?;
     // Scale back; count entries rounded into the subnormal range.
     let unscale = |values: &mut Vec<f64>| -> CoreResult<usize> {
@@ -2648,11 +2903,14 @@ fn joint_phi_action_core(
     input: JointPhiInput<'_>,
     basis: PolynomialBasis,
     budget: f64,
-    cache: Option<&mut CoefficientCache>,
+    mut caches: Option<&mut router::RouterCaches>,
+    coeff_cache: Option<&mut CoefficientCache>,
     work: &mut WorkCounters,
     bounds: bool,
     laguerre_scales: &[f64],
     mut export_intermediate: Option<&mut Option<LaguerreExportIntermediate>>,
+    plan: Option<&ActionPlan>,
+    mut cost: Option<&mut router::RouteCost>,
 ) -> CoreResult<JointPhiReport> {
     let n = op.dimension();
     if !(h.is_finite() && h >= 0.0) {
@@ -2735,7 +2993,21 @@ fn joint_phi_action_core(
             column_errors[k].summation = norm_up(errors)?;
         }
     } else {
-        let transform = choose_transform(op, h, basis, weight_factor, budget, laguerre_scales)?;
+        let transform = match plan.and_then(|p| p.transform()) {
+            Some(t) => *t,
+            None => match cost.as_deref_mut() {
+                Some(c) => choose_transform_counted(
+                    op,
+                    h,
+                    basis,
+                    weight_factor,
+                    budget,
+                    laguerre_scales,
+                    &mut c.plan_tail_evaluations,
+                )?,
+                None => choose_transform(op, h, basis, weight_factor, budget, laguerre_scales)?,
+            },
+        };
         degree = transform.degree;
         laguerre_scale = transform.laguerre_scale;
         truncation = mul_up(transform.tail_factor, weight_factor)?;
@@ -2746,28 +3018,63 @@ fn joint_phi_action_core(
             degree,
             laguerre_scale_bits: laguerre_scale.unwrap_or(0.0).to_bits(),
         };
-        let build = || match basis {
-            PolynomialBasis::Chebyshev => chebyshev_coefficients(transform.a, transform.b, degree),
-            PolynomialBasis::Laguerre => laguerre_coefficients(transform.a, degree),
+        let coeff_target: Option<&mut CoefficientCache> = match caches.as_mut() {
+            Some(c) => Some(&mut c.coefficient),
+            None => coeff_cache,
         };
-        let coefficients = match cache {
+        let mut built_series_terms: u64 = 0;
+        let mut is_hit = false;
+        let coefficients = match coeff_target {
             Some(cache) => {
                 if let Some(table) = cache.tables.get(&key) {
-                    cache_hit = true;
-                    work.poly_coefficient_reuses += 1;
+                    is_hit = true;
                     table.clone()
                 } else {
-                    work.poly_coefficient_setups += 1;
-                    let table = build()?;
+                    let table = match basis {
+                        PolynomialBasis::Chebyshev => chebyshev_coefficients_counted(
+                            transform.a,
+                            transform.b,
+                            degree,
+                            &mut built_series_terms,
+                        )?,
+                        PolynomialBasis::Laguerre => laguerre_coefficients_counted(
+                            transform.a,
+                            degree,
+                            &mut built_series_terms,
+                        )?,
+                    };
                     cache.tables.insert(key, table.clone());
                     table
                 }
             }
-            None => {
-                work.poly_coefficient_setups += 1;
-                build()?
-            }
+            None => match basis {
+                PolynomialBasis::Chebyshev => chebyshev_coefficients_counted(
+                    transform.a,
+                    transform.b,
+                    degree,
+                    &mut built_series_terms,
+                )?,
+                PolynomialBasis::Laguerre => {
+                    laguerre_coefficients_counted(transform.a, degree, &mut built_series_terms)?
+                }
+            },
         };
+
+        if is_hit {
+            cache_hit = true;
+            work.poly_coefficient_reuses += 1;
+            if let Some(ref mut c) = cost {
+                c.coefficient_cache_hits = c.coefficient_cache_hits.saturating_add(1);
+            }
+        } else {
+            work.poly_coefficient_setups += 1;
+            if let Some(ref mut c) = cost {
+                c.coefficient_setups = c.coefficient_setups.saturating_add(1);
+                c.coefficient_series_terms = c
+                    .coefficient_series_terms
+                    .saturating_add(built_series_terms);
+            }
+        }
         let chosen = coefficients
             .iter()
             .map(|row| row.map(midpoint))
@@ -2860,6 +3167,13 @@ fn joint_phi_action_core(
                         }
                         total = add_up(total, mul_up(row[k].abs(), propagated)?)?;
                     }
+                    if let Some(ref mut c) = cost
+                        && k == 0
+                    {
+                        let cert_ops = 5 * ((degree * (degree + 1)) / 2) as u64;
+                        c.certification_operations =
+                            c.certification_operations.saturating_add(cert_ops);
+                    }
                     Some(total)
                 }
                 PolynomialBasis::Laguerre => {
@@ -2921,7 +3235,29 @@ fn joint_phi_action_core(
                                 abs_scale: scales[k].abs(),
                             };
                         }
+                        if let Some(ref mut c) = cost {
+                            c.certification_operations =
+                                c.certification_operations.saturating_add(5 * degree as u64);
+                        }
                         Some(mul_up(scales[k].abs(), bound)?)
+                    } else if let Some(ref mut rc) = caches {
+                        let intervals: Vec<Interval> =
+                            coefficients.iter().map(|row| row[k]).collect();
+                        let (envs, _is_hit, ops) = rc.envelope.envelopes(
+                            &intervals,
+                            transform.laguerre_extent,
+                            crate::laguerre_adjoint::LAGUERRE_ADJOINT_DEPTH,
+                        )?;
+                        let mut total = 0.0;
+                        for (beta, eps) in envs[1..].iter().zip(&local[column]) {
+                            total = add_up(total, mul_up(*beta, *eps)?)?;
+                        }
+                        if let Some(ref mut c) = cost {
+                            let cert_ops = ops.saturating_add(local[column].len() as u64);
+                            c.certification_operations =
+                                c.certification_operations.saturating_add(cert_ops);
+                        }
+                        Some(mul_up(scales[k].abs(), total)?)
                     } else {
                         let bound = crate::laguerre_adjoint::laguerre_adjoint_recurrence_bound(
                             &stored,
@@ -2929,6 +3265,10 @@ fn joint_phi_action_core(
                             &local[column],
                             crate::laguerre_adjoint::LAGUERRE_ADJOINT_DEPTH,
                         )?;
+                        if let Some(ref mut c) = cost {
+                            c.certification_operations =
+                                c.certification_operations.saturating_add(5 * degree as u64);
+                        }
                         Some(mul_up(scales[k].abs(), bound)?)
                     }
                 }
