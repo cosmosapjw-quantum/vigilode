@@ -79,4 +79,13 @@ python3 tools/lp02_stage0_check.py --output research/lp02_packet_window_20261011
 
 ## Results
 
-Appended after the recorded run. Nothing above this heading changes.
+Executed 2026-10-18 under commit `0b830d3d547bc44aae46f0e29e6d248cbf981c5d` (ledger `L-0119`).
+
+### 1. Stage 0 Feasibility Outcome
+- **VG-1 (Zero online solver counters):** Online Jacobian calls = 0, JVP calls = 0, Krylov iterations = 0, linear solves = 0. Moment terms, polynomial multiply terms, Volterra terms, and nonlinear evaluations strictly tracked and positive. `met = true`.
+- **VG-2 (Picard convergence & Dahlquist limit):** Picard iteration defect decreases monotonically with sweeps; when $\chi = 0$, Volterra defect equals 0 to machine precision. `met = true`.
+- **VG-3 (Native certificate & mode reconstruction):** Volterra defect, tail bound, mean bound, and mode bounds validly enclose numerical discrepancies; mode reconstruction at $\tau = 0$ matches initial amplitudes bit-for-bit. `met = true`.
+- **Negative admission gate:** Strictly refuses zero/negative horizon, order $p=0$, order $p > 64$, Gronwall condition violation ($h L \ge 1$), mode indices out of bounds, and normalized time $\tau \notin [0, 1]$. `met = true`.
+- **Decision:** `FEASIBLE`.
+- **Verdict:** `PASS`.
+
