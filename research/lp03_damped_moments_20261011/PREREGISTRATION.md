@@ -51,4 +51,13 @@ python3 tools/lp03_stage0_check.py --output research/lp03_damped_moments_2026101
 
 ## Results
 
-Appended after the recorded run. Nothing above this heading changes.
+Executed 2026-10-18 under commit `deb1eff80f43f71b08f3aed9d04dccb34c8db317` (ledger `L-0120`).
+
+### 1. Stage 0 Feasibility Outcome
+- **VG-1 (Zero-allocation):** Compiled table lookups for normalized moments and unscaled physical moments allocate 0 heap bytes. `met = true`.
+- **VG-2 (Mathematical limits):** When $\kappa = 0$, normalized moments reduce to exact beta weights $B(j+1, k+1)$ within machine precision; monotonic damping reduction strictly confirmed across varying $\kappa$. `met = true`.
+- **VG-3 (Interval enclosure & branch continuity):** Outward intervals rigorously satisfy $0 \le \text{lo} \le \text{hi} \le B(j+1, k+1)$ across all damping levels; continuity jump across $z = 1.0$ is $< 10^{-5}$; unscaled scaling identity $I_{j, k} = h^{j+k+1} J_{j, k}$ matches to relative error $< 10^{-12}$. `met = true`.
+- **Negative admission gate:** Strictly refuses negative $\kappa$, non-positive horizon, non-finite parameters, orders $> 64$, and out-of-bounds indexing. `met = true`.
+- **Decision:** `FEASIBLE`.
+- **Verdict:** `PASS`.
+
