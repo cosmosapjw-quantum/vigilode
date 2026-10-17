@@ -178,3 +178,18 @@ confirms that no PY04 helper name duplicates or shadows an existing or AS05-adde
 - **S5:** mostly Bounded. A refusal is expected only where ||F|| or the bound exceeds `f64::MAX`.
 - **Baseline:** the unnormalized baseline is Unbounded in S4/S5 and not useful in S1-S3.
 - **Overall:** probably PASS, with S3 the main risk.
+
+## Results (2026-10-17)
+
+- **Execution commit (`EXEC_SHA`)**: `f29819aa2db8cc260231038ffc09f871cf3b55de`
+- **Verdict**: **PASS** (`6 / 6` scientific gates passed across `144 / 144` registered cases and the directed-scaling table)
+- **Gate Breakdown**:
+  - **Item 1 Enclosure**: `true` (`0` violations across all Bounded certificates for both `F_hat` and Taylor caller candidates against 50/70-digit `mpmath.expm` references).
+  - **Item 2 Homogeneity**: `true` (S7 triples `s in {1, 2^600, 2^-600}` have bitwise-identical normalized internals `v, z, E, perturbation, stepped_error, normalized_distance` and exact `bound_s = s * bound_1`).
+  - **Item 3 Normalization Accounting**: `true` (`L = 0` iff every `w_k / sigma` is exact; `R = 0` iff every `sigma z` is exact; all nonzero `L` and `R` are `> 0` and enclosed; all speculative Taylor and fallback probe work is preserved in `NormalizedFusedPhiWork`).
+  - **Item 4 Directed Scaling**: `true` (`down <= exact <= up`, `nearest` equals correctly rounded value, and `scale_pow2_is_exact` matches `fractions.Fraction` across all table exponents `{-1074, -1073, -1023, -1022, -1021, 0, 1021, 1022, 1023}`).
+  - **Item 5 Usefulness at the New Extremes**: `true` (every case in S1, S2, S3, S4, and S6 is Bounded and useful under the declared mixed budget `bound <= 1e-10 ||F||_2 + 16 sqrt(n) 2^-1074`).
+  - **Item 6 Overflow Boundary**: `true` (every S5 case is either Bounded and valid or refused with typed `FUSED_PHI_RANGE_UNSUPPORTED`).
+- **Artifacts**:
+  - `research/py04_fused_normalization_20261011/cases.json` (`ed8cc5fa4c801595728eedc6cd3c0c1cb65f12498c01f9e87fde423cf9625e84`)
+  - `research/py04_fused_normalization_20261011/RESULTS.json` (`b9ec113ed728363f90d4e7f60a4c549ba9ac8d4aeabf9bc0ec2fd42852fc528a`)
