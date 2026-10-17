@@ -93,6 +93,7 @@ pub const COEFFICIENT_RANGE_LIMIT: f64 = 600.0;
 pub const LAGUERRE_SCALES: [f64; 5] = [1.0, 2.0, 4.0, 8.0, 16.0];
 /// The largest Laguerre scale `L = rho / beta` any selection may use.
 pub const LAGUERRE_SCALE_CAP: f64 = 16.0;
+pub const LAGUERRE_COMPONENTS_UNSUPPORTED: &str = "LAGUERRE_COMPONENTS_UNSUPPORTED";
 pub const MAX_POLYNOMIAL_DEGREE: usize = 4096;
 const MAX_SERIES_TERMS: usize = 200_000;
 /// Stop a positive series once the tail is below this fraction of the sum.
@@ -535,7 +536,11 @@ impl SymmetricNonpositiveOperator {
         ))
     }
 
-    /// An operator with a declared (unverified) enclosure.
+    /// An operator with a declared (uncertified) enclosure.
+    ///
+    /// Internal test helper for verifying refusal of uncertified declared enclosures.
+    /// Does not certify bounds.
+    #[doc(hidden)]
     pub fn with_declared_enclosure(
         matrix: DenseMatrix,
         lambda: f64,
@@ -1065,6 +1070,15 @@ pub struct LaguerreAssemblyExport {
     pub total_upper: String,
 }
 
+/// Recurrence adjoint inputs and intermediate envelopes for column `k` ($w_k$).
+///
+/// Domain convention: `coefficients`, `envelopes`, `local_residuals`, and `abs_scale`
+/// are captured in the normalized evaluation domain. When `identity.normalization_shift != 0`,
+/// scaling the outward-rounded column sum:
+///
+/// `mul_up(abs_scale, sum_{j=1..m} mul_up(envelopes[j], local_residuals[j-1]))`
+///
+/// by `scale_bound_up(..., shift)` reproduces `columns[k].recurrence_adjoint` bit-for-bit.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct LaguerreAdjointColumnExport {
     pub column: usize,
@@ -1129,7 +1143,7 @@ fn scale_pow2(x: f64, shift: i64) -> f64 {
 }
 
 /// Upper bound in binary64 on `bound 2^shift` for `bound >= 0`.
-fn scale_bound_up(bound: f64, shift: i64) -> CoreResult<f64> {
+pub fn scale_bound_up(bound: f64, shift: i64) -> CoreResult<f64> {
     Ok(ExpBound::exact(bound)?.scaled_pow2(shift).to_f64_up())
 }
 
@@ -1643,6 +1657,20 @@ pub fn joint_phi_action_laguerre_components(
         )
     })?;
 
+    for k in 0..JOINT_PHI_TERMS {
+        let col = &intermediate.columns[k];
+        if col.stored.len() != report.degree + 1
+            || col.envelopes.len() != report.degree + 1
+            || col.local.len() != report.degree
+            || col.key_digest.is_empty()
+            || report.column_errors[k].recurrence_adjoint.is_none()
+        {
+            return Err(CoreError::InvalidInput(
+                LAGUERRE_COMPONENTS_UNSUPPORTED.to_string(),
+            ));
+        }
+    }
+
     let input_kind = match input {
         JointPhiInput::Distinct(_) => "distinct",
         JointPhiInput::SameVector { .. } => "same-vector",
@@ -1701,12 +1729,15 @@ pub fn joint_phi_action_laguerre_components(
 
     let columns: [LaguerreColumnTermExport; JOINT_PHI_TERMS] = std::array::from_fn(|k| {
         let err = &report.column_errors[k];
+        let recurrence_adjoint = err
+            .recurrence_adjoint
+            .expect("validated recurrence_adjoint is some");
         LaguerreColumnTermExport {
             column: k,
             identity_sha256: identity_sha256.clone(),
             truncation: f64_to_hex(err.truncation),
             coefficient: f64_to_hex(err.coefficient),
-            recurrence_adjoint: f64_to_hex(err.recurrence_adjoint.unwrap_or(0.0)),
+            recurrence_adjoint: f64_to_hex(recurrence_adjoint),
             summation: f64_to_hex(err.summation),
             normalization: f64_to_hex(err.normalization),
             recurrence_majorant: err.recurrence_majorant.map(f64_to_hex),
@@ -2284,11 +2315,14 @@ fn joint_phi_action_core(
                                 crate::laguerre_adjoint::LAGUERRE_ADJOINT_DEPTH,
                             )?;
                         let key_digest = key.canonical_digest();
+                        let laguerre_scale = transform.laguerre_scale.ok_or_else(|| {
+                            CoreError::InvalidInput(LAGUERRE_COMPONENTS_UNSUPPORTED.to_string())
+                        })?;
                         if coll.is_none() {
                             **coll = Some(LaguerreExportIntermediate {
                                 beta: transform.beta,
                                 laguerre_extent: transform.laguerre_extent,
-                                laguerre_scale: transform.laguerre_scale.unwrap_or(1.0),
+                                laguerre_scale,
                                 columns: std::array::from_fn(|_| LaguerreAdjointColumnInternal {
                                     stored: Vec::new(),
                                     envelopes: Vec::new(),
@@ -2299,6 +2333,9 @@ fn joint_phi_action_core(
                             });
                         }
                         if let Some(ref mut data) = **coll {
+                            data.beta = transform.beta;
+                            data.laguerre_extent = transform.laguerre_extent;
+                            data.laguerre_scale = laguerre_scale;
                             data.columns[k] = LaguerreAdjointColumnInternal {
                                 stored,
                                 envelopes: envs,

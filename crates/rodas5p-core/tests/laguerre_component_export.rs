@@ -12,7 +12,7 @@ use rodas5p_core::{
     laguerre_adjoint::{EnvelopeKey, LAGUERRE_ADJOINT_DEPTH},
     polynomial_action::{
         JointPhiInput, PolynomialBasis, SymmetricNonpositiveOperator, joint_phi_action,
-        joint_phi_action_laguerre_components,
+        joint_phi_action_laguerre_components, scale_bound_up,
     },
 };
 use serde_json::{Value, json};
@@ -390,12 +390,10 @@ fn vg1_zero_allocation_in_recurrence_and_directed_primitives() {
 }
 
 // -----------------------------------------------------------------------------
-// Exporter: Rebuilds exactly the 9 registered cases from cases.json
+// Published Cases Loader
 // -----------------------------------------------------------------------------
 
-#[test]
-#[ignore]
-fn export_components() {
+fn load_published_case(target_label: &str) -> (DenseMatrix, [Vec<f64>; 5], f64, f64, f64, Value) {
     let repo_root = Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
         .unwrap()
@@ -410,7 +408,189 @@ fn export_components() {
     let cases_bytes = std::fs::read(&cases_path).expect("read cases.json");
     let cases_val: Value = serde_json::from_slice(&cases_bytes).expect("parse cases.json");
     let all_cases = cases_val["cases"].as_array().expect("cases array");
+    let pub_case = all_cases
+        .iter()
+        .find(|c| c["label"].as_str() == Some(target_label))
+        .unwrap_or_else(|| panic!("Target case {target_label} not found in cases.json"));
 
+    let n = pub_case["n"].as_u64().unwrap() as usize;
+    let h_bits = pub_case["h"].as_str().unwrap();
+    let h = f64_from_hex(h_bits);
+
+    // Rebuild A matrix from hex bits.
+    let a_json = pub_case["a"].as_array().unwrap();
+    let mut a = DenseMatrix::zeros(n, n);
+    for i in 0..n {
+        let row = a_json[i].as_array().unwrap();
+        for j in 0..n {
+            a[(i, j)] = f64_from_hex(row[j].as_str().unwrap());
+        }
+    }
+
+    // Rebuild w vectors from hex bits.
+    let w_json = pub_case["w"].as_array().unwrap();
+    let mut w: [Vec<f64>; 5] = std::array::from_fn(|_| Vec::with_capacity(n));
+    for k in 0..5 {
+        let col = w_json[k].as_array().unwrap();
+        for item in col {
+            w[k].push(f64_from_hex(item.as_str().unwrap()));
+        }
+    }
+
+    // Determine nominal rho and input style.
+    let (rho, trunc_budget) = if target_label == "subnormal-1e-310" {
+        (50.0, 1.0e-10 * 1.0e-310)
+    } else if target_label == "large-1e300" {
+        (50.0, 1.0e-10 * 1.0e300)
+    } else {
+        (400.0, 1.0e-10)
+    };
+
+    (a, w, h, rho, trunc_budget, pub_case.clone())
+}
+
+// -----------------------------------------------------------------------------
+// VG-2 Outward Rebuild and Monotonicity Tests
+// -----------------------------------------------------------------------------
+
+#[test]
+fn vg2_outward_rebuild_and_nonzero_normalization_shift() {
+    let test_cases = ["n6-rho400-h0.1-distinct", "subnormal-1e-310", "large-1e300"];
+    for label in test_cases {
+        let (a, w, h, rho, trunc_budget, _) = load_published_case(label);
+        let op =
+            SymmetricNonpositiveOperator::new(a, 0.0, 1.2 * rho * (1.0 + 1e-12), "test").unwrap();
+        let mut work = WorkCounters::default();
+        let (_report, export) = joint_phi_action_laguerre_components(
+            &op,
+            h,
+            JointPhiInput::Distinct(&w),
+            trunc_budget,
+            &mut work,
+        )
+        .unwrap();
+
+        let shift = export.identity.normalization_shift;
+        if label == "n6-rho400-h0.1-distinct" {
+            assert_eq!(shift, 0, "n6 case must be in-window (shift == 0)");
+        } else {
+            assert_ne!(
+                shift, 0,
+                "subnormal/large case must have nonzero normalization_shift"
+            );
+        }
+
+        // Using ONLY the exported hex fields, rebuild each column's adjoint bound.
+        for k in 0..5 {
+            let adj_col = &export.adjoint_columns[k];
+            let abs_scale = f64_from_hex(&adj_col.abs_scale);
+            let envelopes: Vec<f64> = adj_col.envelopes.iter().map(|s| f64_from_hex(s)).collect();
+            let residuals: Vec<f64> = adj_col
+                .local_residuals
+                .iter()
+                .map(|s| f64_from_hex(s))
+                .collect();
+
+            let m = export.identity.degree;
+            let mut col_sum = 0.0;
+            for j in 1..=m {
+                let term = mul_up(envelopes[j], residuals[j - 1]).unwrap();
+                col_sum = add_up(col_sum, term).unwrap();
+            }
+            let mut col_bound = mul_up(abs_scale, col_sum).unwrap();
+            if shift != 0 {
+                col_bound = scale_bound_up(col_bound, shift).unwrap();
+            }
+
+            let exported_adj = f64_from_hex(&export.columns[k].recurrence_adjoint);
+            assert_eq!(
+                col_bound.to_bits(),
+                exported_adj.to_bits(),
+                "case {label} column {k} bit-for-bit rebuild mismatch: {col_bound} vs {exported_adj}"
+            );
+        }
+
+        // Verify upward assembly sum against assembly.total_upper.
+        let fused_sum = f64_from_hex(&export.assembly.fused_summation);
+        let mut upward_sum = fused_sum;
+        for col in &export.columns {
+            upward_sum = add_up(upward_sum, f64_from_hex(&col.truncation)).unwrap();
+            upward_sum = add_up(upward_sum, f64_from_hex(&col.coefficient)).unwrap();
+            upward_sum = add_up(upward_sum, f64_from_hex(&col.summation)).unwrap();
+        }
+        for col in &export.columns {
+            upward_sum = add_up(upward_sum, f64_from_hex(&col.recurrence_adjoint)).unwrap();
+        }
+        for col in &export.columns {
+            upward_sum = add_up(upward_sum, f64_from_hex(&col.normalization)).unwrap();
+        }
+
+        let total_upper = f64_from_hex(&export.assembly.total_upper);
+        assert!(
+            upward_sum >= total_upper,
+            "case {label}: upward sum {upward_sum} must enclose total_upper {total_upper}"
+        );
+        if shift == 0 {
+            assert_eq!(
+                upward_sum.to_bits(),
+                total_upper.to_bits(),
+                "case {label}: in-window upward sum must match total_upper bit-for-bit"
+            );
+        } else {
+            let rel_diff = (upward_sum - total_upper) / total_upper;
+            assert!(
+                rel_diff < 0.05,
+                "case {label}: out-of-window upward sum {upward_sum} exceeds total_upper {total_upper} by {rel_diff}"
+            );
+        }
+    }
+}
+
+#[test]
+fn vg2_degree_budget_sweep_monotone_truncation() {
+    let (a, w, h, rho, _, _) = load_published_case("n6-rho400-h0.1-distinct");
+    let op = SymmetricNonpositiveOperator::new(a, 0.0, 1.2 * rho * (1.0 + 1e-12), "test").unwrap();
+
+    let budgets = [1.0e-3, 1.0e-5, 1.0e-7, 1.0e-9, 1.0e-10];
+    let mut prev_degree = 0;
+    let mut prev_truncations = [f64::INFINITY; 5];
+
+    for &budget in &budgets {
+        let mut work = WorkCounters::default();
+        let (_report, export) = joint_phi_action_laguerre_components(
+            &op,
+            h,
+            JointPhiInput::Distinct(&w),
+            budget,
+            &mut work,
+        )
+        .unwrap();
+
+        let m = export.identity.degree;
+        assert!(
+            m > prev_degree,
+            "Degree must strictly increase as budget tightens: got {m} <= prev {prev_degree}"
+        );
+        prev_degree = m;
+
+        for (k, prev_trunc) in prev_truncations.iter_mut().enumerate() {
+            let trunc = f64_from_hex(&export.columns[k].truncation);
+            assert!(
+                trunc < *prev_trunc,
+                "Per-column truncation bound must decrease monotonically with increasing degree: col {k} had {trunc} >= prev {prev_trunc}",
+            );
+            *prev_trunc = trunc;
+        }
+    }
+}
+
+// -----------------------------------------------------------------------------
+// Exporter: Rebuilds exactly the 9 registered cases from cases.json
+// -----------------------------------------------------------------------------
+
+#[test]
+#[ignore]
+fn export_components() {
     let target_labels = [
         "n6-rho400-h0.1-distinct",
         "n6-rho400-h0.1-same",
@@ -427,43 +607,8 @@ fn export_components() {
     let mut exported_cases = Vec::new();
 
     for &target_label in &target_labels {
-        let pub_case = all_cases
-            .iter()
-            .find(|c| c["label"].as_str() == Some(target_label))
-            .unwrap_or_else(|| panic!("Target case {target_label} not found in cases.json"));
-
-        let n = pub_case["n"].as_u64().unwrap() as usize;
-        let h_bits = pub_case["h"].as_str().unwrap();
-        let h = f64_from_hex(h_bits);
-
-        // Rebuild A matrix from hex bits.
-        let a_json = pub_case["a"].as_array().unwrap();
-        let mut a = DenseMatrix::zeros(n, n);
-        for i in 0..n {
-            let row = a_json[i].as_array().unwrap();
-            for j in 0..n {
-                a[(i, j)] = f64_from_hex(row[j].as_str().unwrap());
-            }
-        }
-
-        // Rebuild w vectors from hex bits.
-        let w_json = pub_case["w"].as_array().unwrap();
-        let mut w: [Vec<f64>; 5] = std::array::from_fn(|_| Vec::with_capacity(n));
-        for k in 0..5 {
-            let col = w_json[k].as_array().unwrap();
-            for item in col {
-                w[k].push(f64_from_hex(item.as_str().unwrap()));
-            }
-        }
-
-        // Determine nominal rho and input style.
-        let (rho, trunc_budget) = if target_label == "subnormal-1e-310" {
-            (50.0, 1.0e-10 * 1.0e-310)
-        } else if target_label == "large-1e300" {
-            (50.0, 1.0e-10 * 1.0e300)
-        } else {
-            (400.0, 1.0e-10)
-        };
+        let (a, w, h, rho, trunc_budget, pub_case) = load_published_case(target_label);
+        let n = a.nrows();
 
         let op =
             SymmetricNonpositiveOperator::new(a.clone(), 0.0, 1.2 * rho * (1.0 + 1e-12), "test")
@@ -542,6 +687,11 @@ fn export_components() {
     let output_rel = std::env::var("PY01_COMPONENTS").unwrap_or_else(|_| {
         "research/py01_laguerre_component_export_20261011/COMPONENTS.json".into()
     });
+    let repo_root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .unwrap()
+        .parent()
+        .unwrap();
     let output_path = if Path::new(&output_rel).is_absolute() {
         std::path::PathBuf::from(output_rel)
     } else {

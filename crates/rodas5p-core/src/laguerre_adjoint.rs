@@ -361,6 +361,46 @@ impl LaguerreEnvelopeCache {
     }
 }
 
+struct RecurrenceCore {
+    total: f64,
+    extra: Option<(Vec<f64>, EnvelopeKey)>,
+}
+
+fn laguerre_adjoint_recurrence_core(
+    stored: &[f64],
+    extent: f64,
+    local: &[f64],
+    depth: usize,
+    want_key: bool,
+) -> CoreResult<RecurrenceCore> {
+    if local.len() + 1 != stored.len() || !local.iter().all(|e| e.is_finite() && *e >= 0.0) {
+        return Err(CoreError::InvalidInput(
+            "LAGUERRE_ADJOINT_UNSUPPORTED: one finite nonnegative residual per step".into(),
+        ));
+    }
+    let key = if want_key {
+        let intervals = stored
+            .iter()
+            .map(|&c| Interval::point(c))
+            .collect::<CoreResult<Vec<_>>>()?;
+        Some(EnvelopeKey::new(
+            &intervals,
+            extent,
+            depth,
+            LAGUERRE_ADJOINT_PROOF_VERSION,
+        ))
+    } else {
+        None
+    };
+    let envelopes = laguerre_adjoint_envelopes(stored, extent, depth)?;
+    let mut total = 0.0;
+    for (beta, eps) in envelopes[1..].iter().zip(local) {
+        total = add_up(total, mul_up(*beta, *eps)?)?;
+    }
+    let extra = key.map(|k| (envelopes, k));
+    Ok(RecurrenceCore { total, extra })
+}
+
 /// `sum_{j=1}^m beta_j eps_(j-1)`, rounded upward, where `local[n]` bounds
 /// the exact local residual of the step that produced `t_hat_(n+1)`.
 pub fn laguerre_adjoint_recurrence_bound(
@@ -369,17 +409,8 @@ pub fn laguerre_adjoint_recurrence_bound(
     local: &[f64],
     depth: usize,
 ) -> CoreResult<f64> {
-    if local.len() + 1 != stored.len() || !local.iter().all(|e| e.is_finite() && *e >= 0.0) {
-        return Err(CoreError::InvalidInput(
-            "LAGUERRE_ADJOINT_UNSUPPORTED: one finite nonnegative residual per step".into(),
-        ));
-    }
-    let envelopes = laguerre_adjoint_envelopes(stored, extent, depth)?;
-    let mut total = 0.0;
-    for (beta, eps) in envelopes[1..].iter().zip(local) {
-        total = add_up(total, mul_up(*beta, *eps)?)?;
-    }
-    Ok(total)
+    let core = laguerre_adjoint_recurrence_core(stored, extent, local, depth, false)?;
+    Ok(core.total)
 }
 
 /// Recurrence bound, the envelope vector `beta_0..=beta_m`, and the envelope key.
@@ -389,22 +420,9 @@ pub fn laguerre_adjoint_recurrence_with_envelopes(
     local: &[f64],
     depth: usize,
 ) -> CoreResult<(f64, Vec<f64>, EnvelopeKey)> {
-    if local.len() + 1 != stored.len() || !local.iter().all(|e| e.is_finite() && *e >= 0.0) {
-        return Err(CoreError::InvalidInput(
-            "LAGUERRE_ADJOINT_UNSUPPORTED: one finite nonnegative residual per step".into(),
-        ));
-    }
-    let intervals = stored
-        .iter()
-        .map(|&c| Interval::point(c))
-        .collect::<CoreResult<Vec<_>>>()?;
-    let key = EnvelopeKey::new(&intervals, extent, depth, LAGUERRE_ADJOINT_PROOF_VERSION);
-    let envelopes = laguerre_adjoint_envelopes(stored, extent, depth)?;
-    let mut total = 0.0;
-    for (beta, eps) in envelopes[1..].iter().zip(local) {
-        total = add_up(total, mul_up(*beta, *eps)?)?;
-    }
-    Ok((total, envelopes, key))
+    let core = laguerre_adjoint_recurrence_core(stored, extent, local, depth, true)?;
+    let (envelopes, key) = core.extra.expect("extra present when want_key is true");
+    Ok((core.total, envelopes, key))
 }
 
 #[cfg(test)]
