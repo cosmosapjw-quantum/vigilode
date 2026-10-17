@@ -161,3 +161,9 @@ pub use output_accuracy::{
     AccuracyBudgetVerdict, ErrorBudgetAssessment, OutputAccuracyAssessment,
     ReferenceUncertaintyTreatment, assess_error_budget, assess_output_accuracy,
 };
+
+pub mod packet_benchmark;
+pub use packet_benchmark::{
+    ArmRunSummary, BenchmarkArm, PacketBenchmarkConfig, PacketBenchmarkReport,
+    WorkReductionSummary, build_hoisted_collective_ode_problem, run_packet_benchmark,
+};
