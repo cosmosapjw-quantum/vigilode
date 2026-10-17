@@ -101,3 +101,11 @@ A decision is authoritative only under a design for which that study passed.
    verdict is recorded, with the same frozen protocol.
 4. Append the numeric result and a `research/LEDGER.jsonl` row with verdict `PASS` or
    `FAIL`.
+
+## Operation-count judgements (ME01)
+
+Research node `research/me01_full_cost_judgement_20261011` (ME01): full-cost candidate judgement of accuracy-passed candidates E1–E8.
+
+1. **Unit separation.** Instructions (callgrind Ir per trajectory, warm 2-minus-1 and cold 1-minus-0), allocation events and allocated bytes are separate units with separate authorities. No conversion between them, and no flop count or wall-time speedup figure may be derived from them.
+2. **Timing authority.** Wall-time speedup is strictly held (`wall_time_speedup = null`, `status = HOLD`) until the timing authority registry (`rodas5p_fair_ab::timing_authority_registry`) reports `Admissible` for the campaign design. Single-process wall-time figures are diagnostics only (`timing_authority: diagnostic_only`).
+

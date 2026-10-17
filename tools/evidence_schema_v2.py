@@ -970,6 +970,84 @@ def validate_py05(cases_path: Path, runs_path: Path | None = None,
     return Evidence("py05", docs, digests, paths)
 
 
+# ------------------------------------------------------------------------------------- ME01
+ME01_SCHEMA = "vigilode-me01-results-v1"
+ME01_PROFILE_SCHEMA = "vigilode-me01-profile-v1"
+ME01_ALLOCATIONS_SCHEMA = "rodas5p-stiff-allocations-v1"
+ME01_NODE = "me01"
+
+
+def validate_me01(profile_path: Path, allocations_path: Path, ledger_path: Path) -> Evidence:
+    """Validate ME01 full-cost evidence before running scientific gates."""
+    paths = {
+        "profile": Path(profile_path),
+        "allocations": Path(allocations_path),
+        "ledger": Path(ledger_path),
+    }
+    docs: dict[str, Any] = {}
+    digests: dict[str, str] = {}
+    reasons: list[str] = []
+    c = _Collector(reasons)
+
+    for role, path in (("profile", paths["profile"]), ("allocations", paths["allocations"])):
+        if not path.is_file():
+            c.fail(role, f"file not found: {path}")
+            continue
+        try:
+            raw = path.read_bytes()
+            digests[role] = _sha256(raw)
+            docs[role] = _parse_strict(raw, role, c)
+        except Exception as e:
+            c.fail(role, f"failed to read or parse: {e}")
+
+    if not paths["ledger"].is_file():
+        c.fail("ledger", f"file not found: {paths['ledger']}")
+    else:
+        digests["ledger"] = _sha256(paths["ledger"].read_bytes())
+
+    profile = docs.get("profile")
+    if c.dict_("profile", profile):
+        c.equal("profile.schema", profile.get("schema"), ME01_PROFILE_SCHEMA)
+        c.equal("profile.node", profile.get("node"), ME01_NODE)
+        c.bool_("profile.tree_clean", profile.get("tree_clean"))
+        c.str_("profile.source_commit", profile.get("source_commit"))
+        c.str_("profile.binary_sha256", profile.get("binary_sha256"))
+        if c.list_("profile.rows", profile.get("rows"), nonempty=True):
+            seen_profile = set()
+            for i, r in enumerate(profile["rows"]):
+                p = f"profile.rows[{i}]"
+                prob = r.get("problem")
+                arm = r.get("arm")
+                rtol = r.get("rtol")
+                key = (prob, arm, rtol)
+                if key in seen_profile:
+                    c.fail(p, f"duplicate cell {key!r}")
+                seen_profile.add(key)
+                if r.get("callgrind_deterministic") is not True:
+                    c.fail(p, f"callgrind determinism check failed for {key!r}")
+                if r.get("grid_states") and r.get("grid_error") is not None:
+                    c.float_(f"{p}.grid_error", r.get("grid_error"), positive=True)
+
+    allocations = docs.get("allocations")
+    if c.dict_("allocations", allocations):
+        c.equal("allocations.schema", allocations.get("schema"), ME01_ALLOCATIONS_SCHEMA)
+        c.str_("allocations.binary_sha256", allocations.get("binary_sha256"))
+        if c.list_("allocations.entries", allocations.get("entries"), nonempty=True):
+            seen_alloc = set()
+            for i, entry in enumerate(allocations["entries"]):
+                p = f"allocations.entries[{i}]"
+                prob = entry.get("problem")
+                arm = entry.get("arm")
+                rtol = entry.get("rtol")
+                key = (prob, arm, rtol)
+                if key in seen_alloc:
+                    c.fail(p, f"duplicate cell {key!r}")
+                seen_alloc.add(key)
+
+    c.done()
+    return Evidence("me01", docs, digests, paths)
+
+
 # ------------------------------------------------------------------------------------- INVALID output
 def invalid_report(checker_schema: str, error: ValidationError, inputs: Mapping[str, Path | None]) -> dict:
     """The checker output for rejected evidence: no gate is evaluated, so no gate result is reported."""

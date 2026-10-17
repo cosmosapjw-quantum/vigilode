@@ -14,19 +14,22 @@ use anyhow::Result;
 use rodas5p_core::{CoreResult, DenseMatrix, LinearMethod, LinearSolverConfig, WorkCounters};
 use rodas5p_integrators::{
     AdaptiveObservedIntegrationResult, AdaptiveRunDiagnostics, AdaptiveStepConfig, BandedJacobian,
-    BandedKernel, BandedWork, BatchProblem, BdfConfig, FastLuPolicy, IntegrationMethod,
-    NewtonTolerancePolicy, OdeProblem, OutputSchedule, RadauConfig, Rodas5pFastOptions,
-    Rodas5pFastSmallOptions, Rodas5pFastSmallResult, RoutedResult, RoutedRun, RoutingOptions,
-    RoutingRecord, SmallBatchMember, SmallProblem, StructureDeclaration,
-    integrate_adaptive_observed_with_config, integrate_bdf_adaptive_observed,
+    BandedKernel, BandedWork, BatchProblem, BdfConfig, ControllerKind, FastLuPolicy,
+    IntegrationMethod, NewtonTolerancePolicy, OdeProblem, OutputSchedule, RadauConfig,
+    Rodas5pFastOptions, Rodas5pFastSmallOptions, Rodas5pFastSmallResult, RoutedResult, RoutedRun,
+    RoutingOptions, RoutingRecord, SmallBatchMember, SmallProblem, StageTargetPolicy,
+    StructureDeclaration, integrate_adaptive_observed_with_config, integrate_bdf_adaptive_observed,
     integrate_radau_adaptive_observed, integrate_rodas5p_fast_banded_observed_with_kernel,
     integrate_rodas5p_fast_observed, integrate_rodas5p_fast_observed_with_options,
     integrate_rodas5p_fast_small_batch, integrate_rodas5p_fast_small_observed,
     integrate_rodas5p_fast_small_observed_with_options,
-    integrate_rodas5p_fast_small_observed_with_small_options,
-    integrate_rodas5p_mf_fast_observed_gmres_into, integrate_rodas5p_routed_observed,
+    integrate_rodas5p_fast_small_observed_with_small_options, integrate_rodas5p_mf_fast_observed,
+    integrate_rodas5p_mf_fast_observed_gmres_into,
+    integrate_rodas5p_mf_fast_observed_gmres_into_ls_workspace,
+    integrate_rodas5p_mf_fast_observed_with_residual_accounting, integrate_rodas5p_routed_observed,
     robertson_problem, stiff_van_der_pol_problem,
 };
+use rodas5p_krylov::ResidualAccounting;
 use serde_json::{Value, json};
 
 pub const SCHEMA: &str = "vigilode-stiff-bdf-radau-benchmark-v1";
@@ -34,6 +37,22 @@ pub const TOLERANCES: [f64; 7] = [1.0e-3, 1.0e-4, 1.0e-5, 1.0e-6, 1.0e-7, 1.0e-8
 /// The lean RODAS5P driver (`research/stiff_rodas5p_fast_20261002`). Not in
 /// [`ARMS`], so the default selection of the earlier nodes is unchanged.
 pub const FAST_ARM: &str = "rodas5p-fast";
+
+pub const MF_LEGACY_V2_ARM: &str = "rodas5p-mf-legacy-v2";
+pub const FAST_PRED2_ARM: &str = "rodas5p-fast-pred2";
+pub const FAST_INT_GRID_ARM: &str = "rodas5p-fast-int-grid";
+pub const MF_LS_WS_ARM: &str = "rodas5p-mf-ls-ws";
+pub const MF_INTO_ARM: &str = "rodas5p-mf-into";
+pub const MF_ARM: &str = "rodas5p-mf";
+
+pub const ME01_ARMS: [&str; 6] = [
+    MF_LEGACY_V2_ARM,
+    FAST_PRED2_ARM,
+    FAST_INT_GRID_ARM,
+    MF_LS_WS_ARM,
+    MF_INTO_ARM,
+    MF_ARM,
+];
 
 fn known_arm(arm: &str) -> bool {
     ARMS.contains(&arm)
@@ -43,6 +62,7 @@ fn known_arm(arm: &str) -> bool {
         || small_static_arm(arm).is_some()
         || banded_kernel_arm(arm).is_some()
         || SP03_ARMS.contains(&arm)
+        || ME01_ARMS.contains(&arm)
 }
 
 /// The INT-03 banded pipeline on the Brusselators (speed research node
@@ -232,7 +252,15 @@ fn sp03_problem(arm: &str, problem: &BenchmarkProblem) -> CoreResult<OdeProblem>
             .clone()
             .with_declared_structure(StructureDeclaration::dense(n))
             .map_err(|e| invalid(e.to_string())),
-        (ROUTED_UNDECLARED_ARM | MF_LEGACY_ARM, Some(cells)) => brusselator_jvp_only_problem(cells),
+        (
+            ROUTED_UNDECLARED_ARM
+            | MF_LEGACY_ARM
+            | MF_LEGACY_V2_ARM
+            | MF_LS_WS_ARM
+            | MF_INTO_ARM
+            | MF_ARM,
+            Some(cells),
+        ) => brusselator_jvp_only_problem(cells),
         _ => Err(invalid(format!(
             "the SP03 arm {arm} has no registered declaration for {}",
             problem.id
@@ -263,7 +291,7 @@ fn run_sp03(
             ..AdaptiveRunDiagnostics::default()
         },
     };
-    if arm == MF_LEGACY_ARM {
+    if arm == MF_LEGACY_ARM || arm == MF_INTO_ARM {
         let run = integrate_rodas5p_mf_fast_observed_gmres_into(
             &p,
             problem.t_span,
@@ -278,6 +306,69 @@ fn run_sp03(
                 run.attempts,
                 run.accepted_steps,
                 run.rejected_steps,
+            ),
+            None,
+            None,
+        ));
+    }
+    if arm == MF_ARM {
+        let run = integrate_rodas5p_mf_fast_observed(
+            &p,
+            problem.t_span,
+            &problem.y0,
+            &RoutingOptions::default().matrix_free,
+            &adaptive,
+            &output,
+        )?;
+        return Ok((
+            wrap(
+                run.observed,
+                run.attempts,
+                run.accepted_steps,
+                run.rejected_steps,
+            ),
+            None,
+            None,
+        ));
+    }
+    if arm == MF_LS_WS_ARM {
+        let run = integrate_rodas5p_mf_fast_observed_gmres_into_ls_workspace(
+            &p,
+            problem.t_span,
+            &problem.y0,
+            &RoutingOptions::default().matrix_free,
+            &adaptive,
+            &output,
+        )?;
+        return Ok((
+            wrap(
+                run.observed,
+                run.attempts,
+                run.accepted_steps,
+                run.rejected_steps,
+            ),
+            None,
+            None,
+        ));
+    }
+    if arm == MF_LEGACY_V2_ARM {
+        let run = integrate_rodas5p_mf_fast_observed_with_residual_accounting(
+            &p,
+            problem.t_span,
+            &problem.y0,
+            &RoutingOptions::default().matrix_free,
+            &adaptive,
+            &output,
+            true,
+            StageTargetPolicy::Legacy,
+            ResidualAccounting::ReuseConfirmed,
+        )?;
+        return Ok((
+            wrap(
+                run.result.observed,
+                run.result.attempts,
+                run.result.accepted_steps,
+                run.result.rejected_steps,
             ),
             None,
             None,
@@ -921,13 +1012,62 @@ pub fn stiff_benchmark(
     }))
 }
 
+fn run_ct01_grid_arm(
+    arm: &str,
+    problem: &BenchmarkProblem,
+    rtol: f64,
+) -> CoreResult<AdaptiveObservedIntegrationResult> {
+    let mut adaptive = adaptive_config(problem, rtol);
+    adaptive.initial_step = 2.0e-5;
+    if arm == FAST_PRED2_ARM {
+        adaptive.controller = ControllerKind::PredictiveCapped2;
+    } else if arm == FAST_INT_GRID_ARM {
+        adaptive.controller = ControllerKind::Integral;
+    } else {
+        return Err(rodas5p_core::CoreError::InvalidInput(format!(
+            "unknown CT01 arm {arm}"
+        )));
+    }
+    let (t0, tf) = problem.t_span;
+    let mut points = vec![t0];
+    points.extend((1..=40).map(|k| t0 + (k as f64) * (tf - t0) / 40.0));
+    let output = OutputSchedule::new(points)?;
+    let run = integrate_rodas5p_fast_observed(
+        &problem.problem,
+        problem.t_span,
+        &problem.y0,
+        &adaptive,
+        &output,
+    )?;
+    Ok(AdaptiveObservedIntegrationResult {
+        observed: run.observed,
+        diagnostics: AdaptiveRunDiagnostics {
+            attempts: run.attempts,
+            accepted_macro_steps: run.accepted_steps,
+            rejected_macro_steps: run.rejected_steps,
+            ..AdaptiveRunDiagnostics::default()
+        },
+    })
+}
+
 /// Run one arm on one problem `repetitions` times and nothing else: the
 /// workload of the profiling node (`research/stiff_rodas5p_profile_20261002`).
 /// Reports the work of one run and checks that every repetition ends in the
 /// same state.
 pub fn profile_run(problem_id: &str, arm: &str, rtol: f64, repetitions: usize) -> Result<Value> {
-    anyhow::ensure!(repetitions >= 1, "at least one repetition");
     anyhow::ensure!(known_arm(arm), "unknown arm {arm}");
+    if repetitions == 0 {
+        return Ok(json!({
+            "problem": problem_id, "arm": arm, "rtol": rtol, "repetitions": 0,
+            "success": true,
+            "attempts": 0,
+            "accepted_steps": 0,
+            "rejected_steps": 0,
+            "counters": counters_json(&WorkCounters::default()),
+            "final_state": null,
+            "deterministic": true,
+        }));
+    }
     let problem = match profile_problems()?.into_iter().find(|p| p.id == problem_id) {
         Some(problem) => problem,
         None => routing_profile_problems()?
@@ -936,7 +1076,7 @@ pub fn profile_run(problem_id: &str, arm: &str, rtol: f64, repetitions: usize) -
             .ok_or_else(|| anyhow::anyhow!("unknown problem {problem_id}"))?,
     };
     let kernel = banded_kernel_arm(arm);
-    let sp03 = SP03_ARMS.contains(&arm);
+    let sp03 = SP03_ARMS.contains(&arm) || ME01_ARMS.contains(&arm);
     let run = |problem: &BenchmarkProblem| -> CoreResult<(
         AdaptiveObservedIntegrationResult,
         Option<BandedWork>,
@@ -944,6 +1084,9 @@ pub fn profile_run(problem_id: &str, arm: &str, rtol: f64, repetitions: usize) -
     )> {
         match kernel {
             Some(kernel) => run_banded(problem, rtol, kernel).map(|(r, w)| (r, Some(w), None)),
+            None if arm == FAST_PRED2_ARM || arm == FAST_INT_GRID_ARM => {
+                run_ct01_grid_arm(arm, problem, rtol).map(|r| (r, None, None))
+            }
             None if sp03 => run_sp03(arm, problem, rtol).map(|(r, routing, w)| (r, w, routing)),
             None => run_arm(arm, problem, rtol).map(|r| (r, None, None)),
         }
@@ -965,6 +1108,9 @@ pub fn profile_run(problem_id: &str, arm: &str, rtol: f64, repetitions: usize) -
         "final_state": first.observed.y.last(),
         "deterministic": deterministic,
     });
+    if arm == FAST_PRED2_ARM || arm == FAST_INT_GRID_ARM {
+        out["grid_states"] = serde_json::to_value(&first.observed.y)?;
+    }
     if let Some(routing) = routing {
         // Serialized once, outside the repeated integrations.
         out["routing"] = serde_json::to_value(&routing)?;
@@ -982,6 +1128,33 @@ pub fn profile_run(problem_id: &str, arm: &str, rtol: f64, repetitions: usize) -
         });
     }
     Ok(out)
+}
+
+#[allow(dead_code)]
+pub fn run_stiff_integration(
+    problem_id: &str,
+    arm: &str,
+    rtol: f64,
+) -> Result<AdaptiveObservedIntegrationResult> {
+    anyhow::ensure!(known_arm(arm), "unknown arm {arm}");
+    let problem = match profile_problems()?.into_iter().find(|p| p.id == problem_id) {
+        Some(problem) => problem,
+        None => routing_profile_problems()?
+            .into_iter()
+            .find(|p| p.id == problem_id)
+            .ok_or_else(|| anyhow::anyhow!("unknown problem {problem_id}"))?,
+    };
+    let kernel = banded_kernel_arm(arm);
+    let sp03 = SP03_ARMS.contains(&arm) || ME01_ARMS.contains(&arm);
+    let result = match kernel {
+        Some(kernel) => run_banded(&problem, rtol, kernel).map(|(r, _)| r),
+        None if arm == FAST_PRED2_ARM || arm == FAST_INT_GRID_ARM => {
+            run_ct01_grid_arm(arm, &problem, rtol)
+        }
+        None if sp03 => run_sp03(arm, &problem, rtol).map(|(r, _, _)| r),
+        None => run_arm(arm, &problem, rtol),
+    }?;
+    Ok(result)
 }
 
 /// Median seconds of one dense LU factorization (faer partial pivoting, as
