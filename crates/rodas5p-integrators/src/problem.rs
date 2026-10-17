@@ -47,11 +47,62 @@ pub enum ProblemStructure {
     /// diagonals above the main diagonal, and a band Jacobian callback in the
     /// layout of [`BandedJacobianFn`] writes it.
     Banded { lower: usize, upper: usize },
+    /// Declared sparse linear part A and nonlinear callback N (PC01 F3).
+    LinearPart { nnz: usize },
 }
 
+/// A sparse matrix in CSC representation for declared linear parts.
+#[derive(Clone, Debug, PartialEq)]
+pub struct SparseLinearPart {
+    pub nrows: usize,
+    pub ncols: usize,
+    pub col_ptr: Vec<usize>,
+    pub row_idx: Vec<usize>,
+    pub values: Vec<f64>,
+}
+
+impl SparseLinearPart {
+    pub fn new(
+        nrows: usize,
+        ncols: usize,
+        col_ptr: Vec<usize>,
+        row_idx: Vec<usize>,
+        values: Vec<f64>,
+    ) -> CoreResult<Self> {
+        if col_ptr.len() != ncols + 1 {
+            return Err(CoreError::Dimension(
+                "SparseLinearPart: col_ptr length != ncols + 1".into(),
+            ));
+        }
+        if col_ptr[0] != 0 || col_ptr[ncols] != row_idx.len() || values.len() != row_idx.len() {
+            return Err(CoreError::InvalidInput(
+                "SparseLinearPart: inconsistent col_ptr or values length".into(),
+            ));
+        }
+        Ok(Self {
+            nrows,
+            ncols,
+            col_ptr,
+            row_idx,
+            values,
+        })
+    }
+
+    pub fn matvec(&self, x: &[f64], y: &mut [f64]) {
+        y.fill(0.0);
+        for (j, &xj) in x.iter().enumerate().take(self.ncols) {
+            for k in self.col_ptr[j]..self.col_ptr[j + 1] {
+                let i = self.row_idx[k];
+                y[i] += self.values[k] * xj;
+            }
+        }
+    }
+}
+
+pub type NonlinearFn = Arc<dyn Fn(f64, &[f64], &mut [f64]) -> CoreResult<()> + Send + Sync>;
+
 /// A structure declaration: the dimension it was written for, the
-/// structure, and the band Jacobian callback (required for
-/// [`ProblemStructure::Banded`], refused otherwise).
+/// structure, and optional callbacks.
 #[derive(Clone)]
 pub struct StructureDeclaration {
     pub dimension: usize,
@@ -84,6 +135,15 @@ impl StructureDeclaration {
             dimension,
             structure: ProblemStructure::Banded { lower, upper },
             band_jacobian: Some(fill),
+        }
+    }
+
+    /// A declared linear part (PC01 F3).
+    pub fn linear_part(dimension: usize, nnz: usize) -> Self {
+        Self {
+            dimension,
+            structure: ProblemStructure::LinearPart { nnz },
+            band_jacobian: None,
         }
     }
 }
@@ -141,6 +201,8 @@ pub struct OdeProblem {
     /// [`Self::with_declared_structure`].
     structure: ProblemStructure,
     band_jacobian: Option<BandedJacobianFn>,
+    linear_part: Option<Arc<SparseLinearPart>>,
+    nonlinear_callback: Option<NonlinearFn>,
 }
 
 /// Retained callback identities for a frozen matrix-free state. This is an
@@ -247,6 +309,8 @@ impl OdeProblem {
             model_epoch: None,
             structure: ProblemStructure::Unstructured,
             band_jacobian: None,
+            linear_part: None,
+            nonlinear_callback: None,
         })
     }
 
@@ -269,12 +333,12 @@ impl OdeProblem {
                 problem: n,
             });
         }
-        match declaration.structure {
+        match &declaration.structure {
             ProblemStructure::Banded { lower, upper } => {
-                if lower >= n || upper >= n {
+                if *lower >= n || *upper >= n {
                     return Err(StructureError::BandOutsideMatrix {
-                        lower,
-                        upper,
+                        lower: *lower,
+                        upper: *upper,
                         dimension: n,
                     });
                 }
@@ -295,15 +359,120 @@ impl OdeProblem {
                     return Err(StructureError::UnexpectedBandCallback);
                 }
             }
+            ProblemStructure::LinearPart { .. } => {
+                if declaration.band_jacobian.is_some() {
+                    return Err(StructureError::UnexpectedBandCallback);
+                }
+            }
         }
         self.structure = declaration.structure;
         self.band_jacobian = declaration.band_jacobian;
         Ok(self)
     }
 
+    /// Attach a declared linear part and nonlinear callback (PC01 F3).
+    pub fn with_linear_part(
+        mut self,
+        sparse_a: SparseLinearPart,
+        nonlinear_n: NonlinearFn,
+    ) -> CoreResult<Self> {
+        if sparse_a.nrows != self.dimension || sparse_a.ncols != self.dimension {
+            return Err(CoreError::Dimension(format!(
+                "Sparse linear part dimension {}x{} != problem dimension {}",
+                sparse_a.nrows, sparse_a.ncols, self.dimension
+            )));
+        }
+        let nnz = sparse_a.values.len();
+        self.structure = ProblemStructure::LinearPart { nnz };
+        self.linear_part = Some(Arc::new(sparse_a));
+        self.nonlinear_callback = Some(nonlinear_n);
+        Ok(self)
+    }
+
     /// The declared structure (`Unstructured` unless one was attached).
     pub fn declared_structure(&self) -> ProblemStructure {
         self.structure
+    }
+
+    /// The declared linear part, if one was attached.
+    pub fn declared_linear_part(&self) -> Option<Arc<SparseLinearPart>> {
+        self.linear_part.clone()
+    }
+
+    /// The declared nonlinear callback, if one was attached.
+    pub fn declared_nonlinear_callback(&self) -> Option<NonlinearFn> {
+        self.nonlinear_callback.clone()
+    }
+
+    /// Verify the declared linear part at (t0, y0) and one seeded perturbation
+    /// to relative 1e-12 using SP03 scaled norms (`safe_l2`). The verification work is charged.
+    pub fn verify_linear_part(
+        &self,
+        t0: f64,
+        y0: &[f64],
+        counters: &mut WorkCounters,
+    ) -> Result<(), StructureError> {
+        if let ProblemStructure::LinearPart { .. } = self.structure {
+            let lp = self.linear_part.as_ref().ok_or_else(|| {
+                StructureError::BandVerificationFailed("missing linear part".into())
+            })?;
+            let n_fn = self.nonlinear_callback.as_ref().ok_or_else(|| {
+                StructureError::BandVerificationFailed("missing nonlinear callback".into())
+            })?;
+            let n = self.dimension;
+            let mut f_val = vec![0.0f64; n];
+            let mut ay = vec![0.0f64; n];
+            let mut ny = vec![0.0f64; n];
+
+            // 1. Check at (t0, y0)
+            self.eval_rhs_into(t0, y0, &mut f_val, counters)
+                .map_err(|e| StructureError::BandVerificationFailed(e.to_string()))?;
+            lp.matvec(y0, &mut ay);
+            (n_fn)(t0, y0, &mut ny)
+                .map_err(|e| StructureError::BandVerificationFailed(e.to_string()))?;
+            let mut diff = vec![0.0f64; n];
+            for i in 0..n {
+                diff[i] = f_val[i] - (ay[i] + ny[i]);
+            }
+            let norm_diff0 = rodas5p_core::safe_l2(&diff);
+            let norm_f0 = rodas5p_core::safe_l2(&f_val).max(1.0);
+            let rel_err0 = norm_diff0 / norm_f0;
+            if rel_err0 > 1.0e-12 {
+                return Err(StructureError::BandVerificationMismatch {
+                    vector: 0,
+                    mismatch: rel_err0,
+                    reference_norm: norm_f0,
+                    tolerance: 1.0e-12,
+                });
+            }
+
+            // 2. Check at seeded perturbation y0 + delta
+            let mut y_pert = y0.to_vec();
+            for (i, val) in y_pert.iter_mut().enumerate() {
+                let delta = 1.0e-4 * ((i + 1) as f64).sin();
+                *val += delta;
+            }
+            self.eval_rhs_into(t0, &y_pert, &mut f_val, counters)
+                .map_err(|e| StructureError::BandVerificationFailed(e.to_string()))?;
+            lp.matvec(&y_pert, &mut ay);
+            (n_fn)(t0, &y_pert, &mut ny)
+                .map_err(|e| StructureError::BandVerificationFailed(e.to_string()))?;
+            for i in 0..n {
+                diff[i] = f_val[i] - (ay[i] + ny[i]);
+            }
+            let norm_diff1 = rodas5p_core::safe_l2(&diff);
+            let norm_f1 = rodas5p_core::safe_l2(&f_val).max(1.0);
+            let rel_err1 = norm_diff1 / norm_f1;
+            if rel_err1 > 1.0e-12 {
+                return Err(StructureError::BandVerificationMismatch {
+                    vector: 1,
+                    mismatch: rel_err1,
+                    reference_norm: norm_f1,
+                    tolerance: 1.0e-12,
+                });
+            }
+        }
+        Ok(())
     }
 
     /// The declared band and its callback, if a band was declared.
@@ -324,7 +493,7 @@ impl OdeProblem {
     }
 
     /// The JVP callback, if any (band verification of SP03).
-    pub(crate) fn jvp_callback(&self) -> Option<&JvpFn> {
+    pub fn jvp_callback(&self) -> Option<&JvpFn> {
         self.jvp.as_ref()
     }
 

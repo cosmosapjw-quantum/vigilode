@@ -347,7 +347,17 @@ pub fn apply_jvp_counted(
     Ok(())
 }
 
-/// A left preconditioner.  Implementations are not assumed nonsingular: every
+/// Side on which a preconditioner acts in a Krylov solver.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+pub enum PreconditionerSide {
+    /// Left preconditioning: solves M^-1 A x = M^-1 b.
+    #[default]
+    Left,
+    /// Right preconditioning: solves A P^-1 u = b, then x = P^-1 u.
+    Right,
+}
+
+/// A preconditioner (left or right). Implementations are not assumed nonsingular: every
 /// Krylov kernel certifies convergence on the unpreconditioned true residual.
 pub trait Preconditioner: Send + Sync {
     fn dimension(&self) -> usize;
@@ -355,7 +365,7 @@ pub trait Preconditioner: Send + Sync {
     fn is_identity(&self) -> bool {
         false
     }
-    /// Exact identity of the represented left preconditioner. Unknown custom
+    /// Exact identity of the represented preconditioner. Unknown custom
     /// implementations return `None`, which forces recycle-image refresh.
     fn exact_identity(&self) -> Option<ExactPreconditionerIdentity> {
         None
@@ -364,6 +374,10 @@ pub trait Preconditioner: Send + Sync {
     /// preconditioner over s stages (audit F-051).
     fn application_vectors(&self) -> u64 {
         1
+    }
+    /// Whether this preconditioner is applied on the left or on the right.
+    fn side(&self) -> PreconditionerSide {
+        PreconditionerSide::Left
     }
 }
 

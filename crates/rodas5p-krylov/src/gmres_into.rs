@@ -25,8 +25,8 @@ use crate::{
     workspace::GmresWorkspace,
 };
 use rodas5p_core::{
-    ApplyCategory, CoreError, CoreResult, LinearOperator, Preconditioner, WorkCounters,
-    apply_preconditioner, safe_l2,
+    ApplyCategory, CoreError, CoreResult, LinearOperator, Preconditioner, PreconditionerSide,
+    WorkCounters, apply_counted, apply_preconditioner, safe_l2,
 };
 
 /// What a solve may do when the workspace is smaller than it needs.
@@ -257,29 +257,59 @@ pub fn solve_gmres_into_with_accounting(
                 config.max_arnoldi
             )));
         }
-        apply_preconditioner(
-            pc,
-            &workspace.common.residual,
-            &mut workspace.common.preconditioned,
-            counters,
-        )?;
-        let beta = safe_l2(&workspace.common.preconditioned);
-        if !(beta > f64::MIN_POSITIVE && beta.is_finite()) {
-            return Err(CoreError::LinearSolve(
-                "GMRES preconditioned residual breakdown".into(),
-            ));
+        if pc.side() == PreconditionerSide::Right {
+            workspace
+                .common
+                .preconditioned
+                .copy_from_slice(&workspace.common.residual);
+            let beta = safe_l2(&workspace.common.preconditioned);
+            if !(beta > f64::MIN_POSITIVE && beta.is_finite()) {
+                return Err(CoreError::LinearSolve(
+                    "GMRES right-preconditioned residual breakdown".into(),
+                ));
+            }
+            let steps = config.restart.min(config.max_arnoldi - total).min(n.max(1));
+            let iterations = cycle_right(op, pc, beta, steps, workspace, counters)?;
+            apply_preconditioner(
+                pc,
+                &workspace.arnoldi.correction,
+                &mut workspace.common.scratch_a,
+                counters,
+            )?;
+            axpy(
+                1.0,
+                &workspace.common.scratch_a,
+                &mut workspace.common.x,
+                counters,
+            )?;
+            total += iterations;
+            cycles += 1;
+            counters.linear_iterations += iterations as u64;
+        } else {
+            apply_preconditioner(
+                pc,
+                &workspace.common.residual,
+                &mut workspace.common.preconditioned,
+                counters,
+            )?;
+            let beta = safe_l2(&workspace.common.preconditioned);
+            if !(beta > f64::MIN_POSITIVE && beta.is_finite()) {
+                return Err(CoreError::LinearSolve(
+                    "GMRES preconditioned residual breakdown".into(),
+                ));
+            }
+            let steps = config.restart.min(config.max_arnoldi - total).min(n.max(1));
+            let iterations = cycle(op, pc, beta, steps, workspace, counters)?;
+            axpy(
+                1.0,
+                &workspace.arnoldi.correction,
+                &mut workspace.common.x,
+                counters,
+            )?;
+            total += iterations;
+            cycles += 1;
+            counters.linear_iterations += iterations as u64;
         }
-        let steps = config.restart.min(config.max_arnoldi - total).min(n.max(1));
-        let iterations = cycle(op, pc, beta, steps, workspace, counters)?;
-        axpy(
-            1.0,
-            &workspace.arnoldi.correction,
-            &mut workspace.common.x,
-            counters,
-        )?;
-        total += iterations;
-        cycles += 1;
-        counters.linear_iterations += iterations as u64;
     };
 
     let residual_norm = if reuse_final_residual(accounting, exit, options.skip_final_residual) {
@@ -379,6 +409,87 @@ fn cycle(
     match workspace.least_squares.as_deref_mut() {
         // Research node `research/spd04_ls_workspace_20261007`: the same
         // faer kernels on reused buffers, bitwise the same solution.
+        Some(small) => {
+            let solution = &mut workspace.least_squares_solution;
+            small.solve_into(
+                &arnoldi.hessenberg_prefix,
+                &arnoldi.rhs_small[..actual + 1],
+                solution,
+            )?;
+            linear_combination_into(&arnoldi.basis[..actual], solution, &mut arnoldi.correction)?;
+        }
+        None => {
+            let solution =
+                least_squares(&arnoldi.hessenberg_prefix, &arnoldi.rhs_small[..actual + 1])?;
+            linear_combination_into(&arnoldi.basis[..actual], &solution, &mut arnoldi.correction)?;
+        }
+    }
+    Ok(actual)
+}
+
+/// One Arnoldi cycle under right preconditioning from the true residual in
+/// `workspace.common.preconditioned` (norm `beta`). The correction $\Delta u$
+/// is computed in `workspace.arnoldi.correction` where $W P^{-1} u = b$,
+/// and later converted to $\Delta x = P^{-1} \Delta u$ by the caller.
+fn cycle_right(
+    op: &dyn LinearOperator,
+    pc: &dyn Preconditioner,
+    beta: f64,
+    steps: usize,
+    workspace: &mut GmresWorkspace,
+    counters: &mut WorkCounters,
+) -> CoreResult<usize> {
+    let arnoldi = &mut workspace.arnoldi;
+    let n = workspace.common.preconditioned.len();
+    arnoldi.prepare(n, steps)?;
+    arnoldi.basis[0].copy_from_slice(&workspace.common.preconditioned);
+    if normalize(&mut arnoldi.basis[0])? == 0.0 {
+        return Err(CoreError::LinearSolve("zero Arnoldi residual".into()));
+    }
+    let mut actual = 0usize;
+    for j in 0..steps {
+        let (previous_basis, remaining_basis) = arnoldi.basis.split_at_mut(j + 1);
+        let w = &mut remaining_basis[0];
+        // Right preconditioning: apply P^-1 to basis vector, then apply W
+        apply_preconditioner(
+            pc,
+            &previous_basis[j],
+            &mut arnoldi.raw_operator_output,
+            counters,
+        )?;
+        apply_counted(
+            op,
+            &arnoldi.raw_operator_output,
+            w,
+            counters,
+            ApplyCategory::Krylov,
+        )?;
+        two_pass_mgs_into(w, previous_basis, &mut arnoldi.h_column, counters)?;
+        for i in 0..previous_basis.len() {
+            arnoldi.hessenberg[(i, j)] = arnoldi.h_column[i];
+        }
+        let h_next = safe_l2(w);
+        arnoldi.hessenberg[(j + 1, j)] = h_next;
+        actual = j + 1;
+        let happy_breakdown =
+            arnoldi_happy_breakdown(&arnoldi.h_column[..previous_basis.len()], h_next)?;
+        if happy_breakdown {
+            w.fill(0.0);
+            break;
+        }
+        for value in w {
+            *value /= h_next;
+        }
+    }
+    arnoldi.hessenberg_prefix.resize_zeros(actual + 1, actual)?;
+    for row in 0..actual + 1 {
+        for column in 0..actual {
+            arnoldi.hessenberg_prefix[(row, column)] = arnoldi.hessenberg[(row, column)];
+        }
+    }
+    arnoldi.rhs_small[..actual + 1].fill(0.0);
+    arnoldi.rhs_small[0] = beta;
+    match workspace.least_squares.as_deref_mut() {
         Some(small) => {
             let solution = &mut workspace.least_squares_solution;
             small.solve_into(

@@ -22,7 +22,7 @@ use crate::{
 };
 use rodas5p_core::{
     ApplyCategory, CoreError, CoreResult, ExactOperatorIdentity, KrylovSystemIdentity,
-    LinearOperator, Preconditioner, WorkCounters, apply_preconditioner,
+    LinearOperator, Preconditioner, PreconditionerSide, WorkCounters, apply_preconditioner,
     exact_krylov_system_identity, safe_l2,
 };
 
@@ -400,6 +400,11 @@ pub fn solve_lgmres_into(
     }
     validate_tolerances("LGMRES", config.rtol, config.atol)?;
     let n = validate_system(op, pc, rhs, x0)?;
+    if pc.side() == PreconditionerSide::Right {
+        return Err(CoreError::InvalidInput(
+            "LGMRES into does not support right preconditioning (PC01 F2 contract)".into(),
+        ));
+    }
     if output.len() != n {
         return Err(CoreError::Dimension("LGMRES into: output length".into()));
     }

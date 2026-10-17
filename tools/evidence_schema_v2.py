@@ -1033,6 +1033,39 @@ def validate_me01(profile_path: Path, allocations_path: Path, ledger_path: Path)
     return Evidence("me01", docs, digests, paths)
 
 
+# ------------------------------------------------------------------------------------- PC01
+PC01_STAGE0_CONTRACTS_SCHEMA = "vigilode-pc01-stage0-contracts-v1"
+PC01_STAGE0_SCHEMA = "vigilode-pc01-stage0-v1"
+PC01_NODE = "research/pc01_right_preconditioner_20261011"
+PC01_PREREQUISITES = ("F1", "F2", "F3", "F4", "R")
+
+
+def validate_pc01_stage0(contracts_path: Path) -> Evidence:
+    """Validate PC01 Stage 0 contracts evidence before evaluating Stage 0 outcome."""
+    specs = [("contracts", Path(contracts_path), None)]
+    docs, digests, paths = _load_all(specs)
+    contracts = docs.get("contracts")
+    c = _Checks()
+    if c.dict_("contracts", contracts):
+        c.equal("contracts.schema", contracts.get("schema"), PC01_STAGE0_CONTRACTS_SCHEMA)
+        c.equal("contracts.node", contracts.get("node"), PC01_NODE)
+        prereqs = contracts.get("prerequisites")
+        if c.dict_("contracts.prerequisites", prereqs):
+            for key in PC01_PREREQUISITES:
+                if key not in prereqs:
+                    c.fail("contracts.prerequisites", f"missing prerequisite {key!r}")
+                else:
+                    item = prereqs[key]
+                    p = f"contracts.prerequisites[{key}]"
+                    if c.dict_(p, item):
+                        c.str_(f"{p}.description", item.get("description"))
+                        c.str_(f"{p}.test", item.get("test"))
+                        c.bool_(f"{p}.passed", item.get("passed"))
+                        c.dict_(f"{p}.details", item.get("details"))
+    c.done()
+    return Evidence("pc01", docs, digests, paths)
+
+
 # ------------------------------------------------------------------------------------- INVALID output
 def invalid_report(checker_schema: str, error: ValidationError, inputs: Mapping[str, Path | None]) -> dict:
     """The checker output for rejected evidence: no gate is evaluated, so no gate result is reported."""

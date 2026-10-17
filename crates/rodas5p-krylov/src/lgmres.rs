@@ -9,7 +9,8 @@ use crate::{
 };
 use rodas5p_core::{
     ApplyCategory, CoreError, CoreResult, KrylovSystemIdentity, LinearOperator, LinearSolveReport,
-    Preconditioner, WorkCounters, apply_preconditioner, exact_krylov_system_identity, safe_l2,
+    Preconditioner, PreconditionerSide, WorkCounters, apply_preconditioner,
+    exact_krylov_system_identity, safe_l2,
 };
 use serde::{Deserialize, Serialize};
 
@@ -62,6 +63,11 @@ pub fn solve_lgmres_with_workspace_and_residual_scale(
     }
     validate_tolerances("LGMRES", config.rtol, config.atol)?;
     let n = validate_system(op, pc, rhs, x0)?;
+    if pc.side() == PreconditionerSide::Right {
+        return Err(CoreError::InvalidInput(
+            "LGMRES does not support right preconditioning (PC01 F2 contract)".into(),
+        ));
+    }
     validate_residual_scale(residual_scale, n)?;
     let right_norm = selected_residual_norm(rhs, residual_scale)?;
     let threshold = residual_threshold("LGMRES", config.rtol, config.atol, right_norm)?;

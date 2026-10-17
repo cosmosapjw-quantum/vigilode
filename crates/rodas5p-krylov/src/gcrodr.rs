@@ -11,8 +11,8 @@ use crate::{
 use faer::{Mat, c64};
 use rodas5p_core::{
     ApplyCategory, CoreError, CoreResult, DenseMatrix, KrylovSystemIdentity, LinearOperator,
-    LinearSolveReport, LuFactorization, Preconditioner, WorkCounters, exact_krylov_system_identity,
-    safe_l2,
+    LinearSolveReport, LuFactorization, Preconditioner, PreconditionerSide, WorkCounters,
+    exact_krylov_system_identity, safe_l2,
 };
 use serde::{Deserialize, Serialize};
 
@@ -741,6 +741,11 @@ fn solve_gcrodr_inner(
         ));
     }
     let n = validate_system(op, pc, rhs, x0)?;
+    if pc.side() == PreconditionerSide::Right {
+        return Err(CoreError::InvalidInput(
+            "GCRO-DR recycling does not support right preconditioning (PC01 F2 contract)".into(),
+        ));
+    }
     validate_residual_scale(residual_scale, n)?;
     let right_norm = selected_residual_norm(rhs, residual_scale)?;
     let threshold = residual_threshold("GCRO-DR", config.rtol, config.atol, right_norm)?;

@@ -18,6 +18,7 @@ pub mod residual_gain;
 pub mod shared_shift_jet;
 pub mod shared_shift_policy;
 mod solver_types;
+pub mod sparse_direct;
 pub mod taylor_phi;
 pub mod taylor_phi_total;
 pub mod transform_bound;
@@ -55,8 +56,8 @@ pub use operator::{
     ApplyCategory, ClosureOperator, DenseOperator, DirectPreconditioner, ExactDenseMatrixIdentity,
     ExactOperatorIdentity, ExactPreconditionerIdentity, IdentityPreconditioner,
     JacobiPreconditioner, KrylovSystemIdentity, LinearOperator, OperatorApplicationWork,
-    Preconditioner, ShiftedOperator, apply_counted, apply_jvp_counted, apply_preconditioner,
-    apply_rows_counted, exact_krylov_system_identity,
+    Preconditioner, PreconditionerSide, ShiftedOperator, apply_counted, apply_jvp_counted,
+    apply_preconditioner, apply_rows_counted, exact_krylov_system_identity,
 };
 pub use polynomial_action::{
     ActionPlan, BasisPlanBranch, EnclosureIdentity, LAGUERRE_COMPONENTS_UNSUPPORTED,
@@ -74,6 +75,7 @@ pub use residual_gain::{
 pub use solver_types::{
     InitialGuess, LinearMethod, LinearSolveReport, LinearSolverConfig, PreconditionerKind,
 };
+pub use sparse_direct::SparseDirectSolver;
 pub use taylor_phi_total::{
     FUSED_PHI_RANGE_UNSUPPORTED, NORMALIZED_FUSED_PHI_SCHEMA, NormalizedFusedPhiCertificate,
     NormalizedFusedPhiWork, certify_fused_phi_total_normalized,

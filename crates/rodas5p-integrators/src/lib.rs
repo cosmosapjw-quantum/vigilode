@@ -35,6 +35,7 @@ mod g4_s5b0_inner_tolerance;
 mod g4_s5b0_regime_atlas;
 mod g4_s5b0_trace_authority;
 mod g4_s5b3_attempt_geometry;
+pub mod gray_scott;
 mod homotopy;
 mod homotopy_experiments;
 mod homotopy_order_policy;
@@ -270,6 +271,7 @@ pub use g4_s5b3_attempt_geometry::{
     G4S5B3OverheadArm, G4S5B3OverheadPair, G4S5B3OverheadReport, G4S5B3Profile,
     G4S5B3TrajectorySummary, run_g4_s5b3_attempt_geometry, run_p1_00_tolerance_scaled_early_defect,
 };
+pub use gray_scott::gray_scott_2d;
 pub use homotopy::{
     AffineOutputCertificate, AffinePartialCouplingOracle, HomotopyDesignCheckReport,
     HomotopyPathConfig, HomotopyPathPoint, HomotopyPathReport, HomotopyPredictor,
@@ -328,8 +330,8 @@ pub use path_controller::{
     run_path_controller_screen,
 };
 pub use problem::{
-    JacobianIntoFn, ModelEpochFn, OdeProblem, ProblemStructure, StructureDeclaration,
-    StructureError,
+    JacobianIntoFn, ModelEpochFn, OdeProblem, ProblemStructure, SparseLinearPart,
+    StructureDeclaration, StructureError,
 };
 pub use problems::{
     complex_dahlquist_problem, constant_affine_mass_problem, manufactured_mass_nonlinear_problem,
