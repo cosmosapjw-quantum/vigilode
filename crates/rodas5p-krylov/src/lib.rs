@@ -40,10 +40,11 @@ pub use gmres_into::{
     solve_gmres_into_with_accounting, solve_gmres_into_with_options,
 };
 pub use gmres_staged::{
-    STAGED_EXHAUSTION_FLOOR, STAGED_GUARD_Q_ABORT, STAGED_STALL_CONTRACTION, STAGED_STALL_FACTOR,
-    StagedGmresConfig, StagedGmresFailure, StagedGmresFallback, StagedGmresOutcome,
-    StagedGmresReport, StagedGmresWorkspace, StagedGuardAbort, solve_staged_gmres,
-    staged_guard_test,
+    HeuristicGain, STAGED_EXHAUSTION_FLOOR, STAGED_GUARD_Q_ABORT, STAGED_STALL_CONTRACTION,
+    STAGED_STALL_FACTOR, StagedAcceptanceReason, StagedGmresConfig, StagedGmresFailure,
+    StagedGmresFallback, StagedGmresOutcome, StagedGmresReport, StagedGmresWorkspace,
+    StagedGuardAbort, StagedSolveTelemetry, TargetAttainment, VerifiedBound, solve_staged_gmres,
+    solve_staged_gmres_observed, staged_guard_test,
 };
 pub use lgmres::{
     LgmresConfig, LgmresState, solve_lgmres, solve_lgmres_with_residual_scale,

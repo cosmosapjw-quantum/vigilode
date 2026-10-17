@@ -244,6 +244,76 @@ impl StagedGmresReport {
     }
 }
 
+/// Acceptance reason of a staged solve.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize)]
+pub enum StagedAcceptanceReason {
+    Converged,
+    StallAccepted,
+    FloorAccepted,
+    FallbackAccepted,
+    Failed,
+}
+
+/// Target attainment status relative to requested target.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize)]
+pub enum TargetAttainment {
+    Met,
+    BudgetExceeded,
+    Unverified,
+}
+
+/// Heuristic gain record (labelled heuristic).
+#[derive(Clone, Copy, Debug, PartialEq, serde::Serialize)]
+pub struct HeuristicGain {
+    pub nu_max: f64,
+    pub nu_evaluations: u64,
+}
+
+impl Default for HeuristicGain {
+    fn default() -> Self {
+        Self {
+            nu_max: 1.0,
+            nu_evaluations: 0,
+        }
+    }
+}
+
+/// Verified bound status. In AS04, this is always Unavailable (not an error certificate).
+#[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize)]
+pub enum VerifiedBound {
+    Unavailable,
+}
+
+/// Scalar `Copy` telemetry record of a single staged GMRES solve.
+#[derive(Clone, Copy, Debug, PartialEq, serde::Serialize)]
+pub struct StagedSolveTelemetry {
+    pub reason: StagedAcceptanceReason,
+    pub requested_target: f64,
+    pub raised_target: f64,
+    pub tightened_target: f64,
+    pub attainable_floor: f64,
+    pub actual_residual: f64,
+    pub actual_residual_inf: f64,
+    pub attainment: TargetAttainment,
+    pub heuristic_gain: HeuristicGain,
+    pub verified_bound: VerifiedBound,
+    pub arnoldi_jvps: u64,
+    pub residual_jvps: u64,
+    pub fallback_evaluations: u64,
+    pub acceptance_vector_copies: u64,
+    pub nu_flops: u64,
+    pub uncounted_shadow_matvecs: u64,
+}
+
+const _: fn() = || {
+    fn assert_copy<T: Copy>() {}
+    assert_copy::<StagedSolveTelemetry>();
+    assert_copy::<StagedAcceptanceReason>();
+    assert_copy::<TargetAttainment>();
+    assert_copy::<HeuristicGain>();
+    assert_copy::<VerifiedBound>();
+};
+
 /// A fallback test: `(iterate, true residual) -> accept`.
 pub type StagedGmresFallback<'a> = &'a mut dyn FnMut(&[f64], &[f64]) -> bool;
 
@@ -339,12 +409,29 @@ struct Progress {
 
 enum End {
     Converged,
-    Stall,
-    Floor,
+    Stall(f64),
+    Floor(f64),
     Guard(StagedGuardAbort),
     Budget,
     NonFinite,
     Breakdown,
+}
+
+fn safe_inf_norm(x: &[f64]) -> f64 {
+    if x.is_empty() {
+        return 0.0;
+    }
+    let mut m = 0.0_f64;
+    for &v in x {
+        let a = v.abs();
+        if a.is_nan() {
+            return f64::NAN;
+        }
+        if a > m {
+            m = a;
+        }
+    }
+    m
 }
 
 /// Column `j` of the triangular factor, row `i`.
@@ -463,15 +550,17 @@ fn iterate(
                 *c = x - a;
             }
             let defect = safe_l2(&ws.candidate);
-            if rn <= STAGED_STALL_FACTOR * (right_norm + x_norm + defect) {
-                return Ok(End::Stall);
+            let floor_val = STAGED_STALL_FACTOR * (right_norm + x_norm + defect);
+            if rn <= floor_val {
+                return Ok(End::Stall(floor_val));
             }
         }
-        if config.floor_at_confirmations
-            && p.has_image
-            && rn <= attainable_floor(right_norm, &ws.x, &ws.operator_output, &mut ws.candidate)
-        {
-            return Ok(End::Floor);
+        if config.floor_at_confirmations && p.has_image {
+            let floor_val =
+                attainable_floor(right_norm, &ws.x, &ws.operator_output, &mut ws.candidate);
+            if rn <= floor_val {
+                return Ok(End::Floor(floor_val));
+            }
         }
         if let (true, true, Some(prev)) = (guard, p.has_image, p.rn_prev) {
             let cycle = if config.effective_cycle_overrun {
@@ -568,29 +657,28 @@ fn iterate(
                         counters.linear_iterations += used as u64;
                         return Ok(End::Converged);
                     }
-                    if config.floor_at_confirmations
-                        && rc.is_finite()
-                        && rc
-                            <= attainable_floor(
-                                right_norm,
-                                &ws.candidate,
-                                &ws.candidate_output,
-                                &mut ws.correction,
-                            )
-                    {
-                        std::mem::swap(&mut ws.x, &mut ws.candidate);
-                        std::mem::swap(&mut ws.residual, &mut ws.candidate_residual);
-                        std::mem::swap(&mut ws.operator_output, &mut ws.candidate_output);
-                        p.rn = rc;
-                        p.has_image = true;
-                        p.projected = projected;
-                        p.cycles += 1;
-                        counters.linear_iterations += used as u64;
-                        return Ok(End::Floor);
+                    if config.floor_at_confirmations && rc.is_finite() {
+                        let floor_val = attainable_floor(
+                            right_norm,
+                            &ws.candidate,
+                            &ws.candidate_output,
+                            &mut ws.correction,
+                        );
+                        if rc <= floor_val {
+                            std::mem::swap(&mut ws.x, &mut ws.candidate);
+                            std::mem::swap(&mut ws.residual, &mut ws.candidate_residual);
+                            std::mem::swap(&mut ws.operator_output, &mut ws.candidate_output);
+                            p.rn = rc;
+                            p.has_image = true;
+                            p.projected = projected;
+                            p.cycles += 1;
+                            counters.linear_iterations += used as u64;
+                            return Ok(End::Floor(floor_val));
+                        }
                     }
                     p.failed_confirmations += 1;
                     p.gap = p.gap.saturating_mul(2);
-                    next_check = used + p.gap;
+                    next_check = used.saturating_add(p.gap);
                     candidate_current = true;
                     candidate_norm = rc;
                 }
@@ -646,9 +734,10 @@ fn fallback_accepts(
     }
 }
 
-/// Staged GMRES on `A x = rhs` from a zero start; see the module
-/// documentation. `output` is written only when the solve is accepted.
-pub fn solve_staged_gmres(
+/// Staged GMRES on `A x = rhs` from a zero start, writing solver telemetry into
+/// `telemetry`. `output` is written only when the solve is accepted.
+#[allow(clippy::too_many_arguments)]
+pub fn solve_staged_gmres_observed(
     op: &dyn LinearOperator,
     rhs: &[f64],
     config: &StagedGmresConfig,
@@ -656,6 +745,8 @@ pub fn solve_staged_gmres(
     output: &mut [f64],
     workspace: &mut StagedGmresWorkspace,
     counters: &mut WorkCounters,
+    requested_target: f64,
+    telemetry: &mut StagedSolveTelemetry,
 ) -> CoreResult<StagedGmresReport> {
     config.validate()?;
     let n = op.dimension();
@@ -706,14 +797,28 @@ pub fn solve_staged_gmres(
         columns,
         counters,
     )?;
+
+    // Infinity norm of residual vector right after iterate returns and BEFORE classify runs
+    let actual_residual_inf = safe_inf_norm(&ws.residual);
+
     let mut guard_abort = None;
     let mut shadow_converged = None;
     let mut budget_exhausted = false;
     let mut output_written = false;
+    let mut fallback_called = false;
+    let mut uncounted_shadow_matvecs = 0u64;
+    let mut admitted_floor = f64::NAN;
+
     let (outcome, failure) = match end {
         End::Converged => (StagedGmresOutcome::Converged, None),
-        End::Stall => (StagedGmresOutcome::StallAccepted, None),
-        End::Floor => (StagedGmresOutcome::FloorAccepted, None),
+        End::Stall(fl) => {
+            admitted_floor = fl;
+            (StagedGmresOutcome::StallAccepted, None)
+        }
+        End::Floor(fl) => {
+            admitted_floor = fl;
+            (StagedGmresOutcome::FloorAccepted, None)
+        }
         End::NonFinite => (
             StagedGmresOutcome::Failed,
             Some(StagedGmresFailure::NonFinite),
@@ -724,6 +829,7 @@ pub fn solve_staged_gmres(
         ),
         End::Budget => {
             budget_exhausted = true;
+            fallback_called = fallback.is_some();
             if fallback_accepts(&mut fallback, ws) {
                 (StagedGmresOutcome::FallbackAccepted, None)
             } else {
@@ -735,10 +841,11 @@ pub fn solve_staged_gmres(
         }
         End::Guard(kind) => {
             guard_abort = Some(kind);
+            fallback_called = fallback.is_some();
             // The uncounted shadow continuation without the guard; it
             // overwrites the workspace, so it runs after the output was
             // written (accepted) or on a failed solve.
-            let classify = |ws: &mut StagedGmresWorkspace| {
+            let mut classify = |ws: &mut StagedGmresWorkspace| {
                 let mut shadow = p;
                 let mut scratch = WorkCounters::default();
                 let continued = iterate(
@@ -752,9 +859,10 @@ pub fn solve_staged_gmres(
                     columns,
                     &mut scratch,
                 );
+                uncounted_shadow_matvecs = scratch.linear_matvecs;
                 Some(matches!(
                     continued,
-                    Ok(End::Converged | End::Stall | End::Floor)
+                    Ok(End::Converged | End::Stall(_) | End::Floor(_))
                 ))
             };
             if fallback_accepts(&mut fallback, ws) {
@@ -783,6 +891,51 @@ pub fn solve_staged_gmres(
         }
     }
     let delta = counters.delta(before);
+
+    let reason = match outcome {
+        StagedGmresOutcome::Converged => StagedAcceptanceReason::Converged,
+        StagedGmresOutcome::StallAccepted => StagedAcceptanceReason::StallAccepted,
+        StagedGmresOutcome::FloorAccepted => StagedAcceptanceReason::FloorAccepted,
+        StagedGmresOutcome::FallbackAccepted => StagedAcceptanceReason::FallbackAccepted,
+        StagedGmresOutcome::Failed => StagedAcceptanceReason::Failed,
+    };
+
+    let actual_residual = p.rn;
+
+    let attainment = if (reason == StagedAcceptanceReason::Failed
+        && failure == Some(StagedGmresFailure::Breakdown))
+        || !actual_residual.is_finite()
+        || !requested_target.is_finite()
+    {
+        TargetAttainment::Unverified
+    } else if actual_residual <= requested_target {
+        TargetAttainment::Met
+    } else {
+        TargetAttainment::BudgetExceeded
+    };
+
+    *telemetry = StagedSolveTelemetry {
+        reason,
+        requested_target,
+        raised_target: threshold,
+        tightened_target: p.thr,
+        attainable_floor: admitted_floor,
+        actual_residual,
+        actual_residual_inf,
+        attainment,
+        heuristic_gain: HeuristicGain {
+            nu_max: p.nu_max,
+            nu_evaluations: p.nu_evaluations,
+        },
+        verified_bound: VerifiedBound::Unavailable,
+        arnoldi_jvps: p.total as u64,
+        residual_jvps: p.true_residuals,
+        fallback_evaluations: if fallback_called { 1 } else { 0 },
+        acceptance_vector_copies: 0,
+        nu_flops: p.nu_flops,
+        uncounted_shadow_matvecs,
+    };
+
     Ok(StagedGmresReport {
         outcome,
         failure,
@@ -805,6 +958,48 @@ pub fn solve_staged_gmres(
         nu_flops: p.nu_flops,
         matvecs: delta.linear_matvecs,
     })
+}
+
+/// Staged GMRES on `A x = rhs` from a zero start; see the module
+/// documentation. `output` is written only when the solve is accepted.
+pub fn solve_staged_gmres(
+    op: &dyn LinearOperator,
+    rhs: &[f64],
+    config: &StagedGmresConfig,
+    fallback: Option<StagedGmresFallback<'_>>,
+    output: &mut [f64],
+    workspace: &mut StagedGmresWorkspace,
+    counters: &mut WorkCounters,
+) -> CoreResult<StagedGmresReport> {
+    let mut dummy_telemetry = StagedSolveTelemetry {
+        reason: StagedAcceptanceReason::Failed,
+        requested_target: f64::NAN,
+        raised_target: f64::NAN,
+        tightened_target: f64::NAN,
+        attainable_floor: f64::NAN,
+        actual_residual: f64::NAN,
+        actual_residual_inf: f64::NAN,
+        attainment: TargetAttainment::Unverified,
+        heuristic_gain: HeuristicGain::default(),
+        verified_bound: VerifiedBound::Unavailable,
+        arnoldi_jvps: 0,
+        residual_jvps: 0,
+        fallback_evaluations: 0,
+        acceptance_vector_copies: 0,
+        nu_flops: 0,
+        uncounted_shadow_matvecs: 0,
+    };
+    solve_staged_gmres_observed(
+        op,
+        rhs,
+        config,
+        fallback,
+        output,
+        workspace,
+        counters,
+        f64::NAN,
+        &mut dummy_telemetry,
+    )
 }
 
 #[cfg(test)]

@@ -31,7 +31,7 @@ pub use coefficients::{
     load_rodas5p_coefficients, rodas5p_coefficients,
 };
 pub use error::{CoreError, CoreResult};
-pub use hash::sha256_hex;
+pub use hash::{sha256_f64_slice_bytes, sha256_hex};
 pub use matrix::{DenseMatrix, LuFactorization, direct_solve, inverse};
 pub use matrix_functions::{
     DensePhiCombinationReport, dense_fused_phi_action, dense_fused_phi_action_report,
