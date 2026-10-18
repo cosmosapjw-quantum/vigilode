@@ -609,6 +609,27 @@ fn matvec_interval_into(
     Ok(())
 }
 
+/// Outward replay of one Newton-Leja recurrence update. `product` encloses
+/// the exact represented matrix action before multiplication by `h`; the
+/// returned interval therefore includes additive underflow in both the
+/// operator action and each recurrence operation.
+fn recurrence_interval_next(
+    h: f64,
+    product: Interval,
+    center: f64,
+    old: f64,
+    scale: f64,
+    node: f64,
+    ops: &mut u64,
+) -> CoreResult<Interval> {
+    *ops = ops.saturating_add(48);
+    Interval::point(h)?
+        .mul(product)?
+        .sub(Interval::point(center)?.mul(Interval::point(old)?)?)?
+        .div(Interval::point(scale)?)?
+        .sub(Interval::point(node)?.mul(Interval::point(old)?)?)
+}
+
 #[inline]
 fn interval_distance_upper(value: f64, interval: Interval) -> CoreResult<f64> {
     let to_lo = if value >= interval.lo {
@@ -1731,15 +1752,18 @@ pub fn leja_phi_action_certified_with_cache_and_workspace<'a>(
                     for i in 0..n {
                         let old = cur[i];
                         cur[i] = (h * prod[i] - center * old) / scale - node * old;
-                        certification_ops = certification_ops.saturating_add(48);
-                        let exact_next = Interval::point(h)?
-                            .mul(Interval::new(
+                        let exact_next = recurrence_interval_next(
+                            h,
+                            Interval::new(
                                 workspace.product_lo[col][i],
                                 workspace.product_hi[col][i],
-                            )?)?
-                            .sub(Interval::point(center)?.mul(Interval::point(old)?)?)?
-                            .div(Interval::point(scale)?)?
-                            .sub(Interval::point(node)?.mul(Interval::point(old)?)?)?;
+                            )?,
+                            center,
+                            old,
+                            scale,
+                            node,
+                            &mut certification_ops,
+                        )?;
                         workspace.local_defect[i] = interval_distance_upper(cur[i], exact_next)?;
                     }
                     workspace.residuals[j - 1][col] =
@@ -2162,6 +2186,31 @@ mod production_audit_suffix {
         assert_eq!(actual[0], 0.0);
         matvec_interval_into(&matrix, &x, &mut lo, &mut hi, &mut ops).unwrap();
         assert!(Interval::new(lo[0], hi[0]).unwrap().contains(1.0));
+        assert!(ops > 0);
+    }
+
+    #[test]
+    fn recurrence_interval_replay_covers_subnormal_additive_underflow() {
+        let tiny = f64::from_bits(1);
+        let rounded = (tiny * 1.0 - 0.0) / 2.0 - 0.0;
+        assert_eq!(rounded, 0.0);
+
+        let mut ops = 0;
+        let exact_next = recurrence_interval_next(
+            tiny,
+            Interval::point(1.0).unwrap(),
+            0.0,
+            1.0,
+            2.0,
+            0.0,
+            &mut ops,
+        )
+        .unwrap();
+        let additive_defect = interval_distance_upper(rounded, exact_next).unwrap();
+        let old_relative_only_bound = 8.0 * f64::EPSILON * rounded.abs();
+        assert!(old_relative_only_bound < additive_defect);
+        assert!(exact_next.contains(0.0));
+        assert!(exact_next.lo <= 0.0 && exact_next.hi >= tiny);
         assert!(ops > 0);
     }
 
