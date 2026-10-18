@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "unit": "A04-PROOF-ORACLE-01",
+  "exec_sha": "9e35f12c85abff34d85185f866180b616a8ba208",
+  "source_identity_matches": true,
+  "native_execution": {
+    "exit_code": 0,
+    "tests_passed": 1,
+    "record": "rust_run_record.json",
+    "log": "rust_test_absolute.log"
+  },
+  "first_attempt": {
+    "exit_code": 101,
+    "record": "rust_run_record.json",
+    "log": "rust_test.log",
+    "classification": "relative output path resolved from crate root; no source or scientific input change"
+  },
+  "fraction_oracle": {
+    "exit_code": 0,
+    "record": "fraction_run_record.json",
+    "log": "fraction_oracle.log",
+    "status": "PASS_SCOPED_FIXTURES",
+    "numeric_comparisons": 218,
+    "allocation_positive_control": 3,
+    "allocation_verdict": "ZERO_ALLOCATION_PASS_SCOPED",
+    "allocation_rows": [
+      {
+        "id": "A04-F02-SCALAR-DISTINCT",
+        "status": "ZERO_ALLOCATION_PASS_SCOPED",
+        "allocations": 0
+      },
+      {
+        "id": "A04-F03-NEWTON-DISTINCT",
+        "status": "ZERO_ALLOCATION_PASS_SCOPED",
+        "allocations": 0
+      },
+      {
+        "id": "A04-F04-NEWTON-SAME-SIGNED",
+        "status": "ZERO_ALLOCATION_PASS_SCOPED",
+        "allocations": 0
+      }
+    ]
+  },
+  "authority": "EstimateOnly",
+  "full_A04": "HOLD",
+  "inputs_sha256_at_exec_sha": {
+    "crates/rodas5p-core/tests/production_audit_leja_arithmetic_oracle.rs": "83662ace89060db0e48583b7a0d1352ba837a3ede3347f590deefae990d5aaad",
+    "crates/rodas5p-core/tests/leja_fraction_oracle.py": "f23a88d9c668a3ea311d4e2959b89166d1d390f12496763d34254f9deb69c0fb",
+    "research/production_audit_20261018/evidence/continuation_a04/arithmetic_research_01/PREREGISTRATION.md": "74813eb6f6c5b80032347cb100cebd93048d1469861a93e410c7bc64c0f0eabc",
+    "research/production_audit_20261018/evidence/continuation_a04/arithmetic_research_01/DERIVATION_KO.md": "49ba350e384620468c65167f4978124aed5dff3ad0bb7163691439daa5f01270",
+    "research/production_audit_20261018/evidence/continuation_a04/arithmetic_research_01/RESEARCH_DECISION.json": "66a5b37122818f3dbe1163544b3ba7f850fe035eb9f081c729959d22f37a53d1",
+    "crates/rodas5p-core/src/leja_action.rs": "25904301d40f11d6a5fee1d27aac7454ca02874a9e995634e7909af2e4ae97e8",
+    "crates/rodas5p-core/src/directed.rs": "2adadb6a5d77073e0a7d3d60aedfbf37e124d15a586a880d7d5a8c8d5307a814",
+    "crates/rodas5p-core/src/leja_setup_work.rs": "b8dd7b8d74339209448ea512427b7813d63c49f2bda2f82d6e423f3135249baf",
+    "crates/rodas5p-core/src/polynomial_action.rs": "656d494fd74783090676e1d3a18aaaa5dbd5df99c0541745979aeb6e26394a48",
+    "Cargo.toml": "86e27546665f923265a8addd3c464ac6017fe35558ab95fe0af7248cd99fb73b",
+    "Cargo.lock": "04c7d6c147bf19ebb1a627463705d9dcf27337a3ff228dd1169f19eb73c71400"
+  }
+}

@@ -2,61 +2,114 @@
   "schema_version": 1,
   "project": "VigilODE",
   "continuation": "production-audit-20261018-continuation",
+  "continuation_policy": {
+    "ref": "research/production_audit_20261018/CONTINUATION_POLICY_KO.md",
+    "root_cause": "A completed local-validation subtask was mistakenly treated as the end of the active thread while the production DAG still had running, HOLD, and blocked nodes. The post-result READY/RUNNING refresh was skipped.",
+    "stop_condition": "Do not end DAG execution while any node is READY or RUNNING. Recompute after every scoped result; HOLD blocks only its descendants; finish only after no safe READY action remains and all remaining open nodes have explicit evidence-backed HOLD/BLOCKED decisions."
+  },
   "source_identity": {
     "branch": "audit/production-readiness-20261018",
-    "exec_sha": "b38a1212f1d6e6566c0ca40cc67e7eee26717435",
+    "exec_sha": "7e2873887ed6038b47b667c976435810851c5dba",
     "remote_ref": "origin/audit/production-readiness-20261018",
-    "remote_ref_sha": "b38a1212f1d6e6566c0ca40cc67e7eee26717435",
+    "remote_ref_sha": "7e2873887ed6038b47b667c976435810851c5dba",
     "starting_audit_commit": "6c067105f0b9e16cbfd397b2d5316673e698e00e",
     "audited_source_commit": "2fc61b944fe431d40ba455c373579bce00b0c39a",
-    "tested_source_sha": "b38a1212f1d6e6566c0ca40cc67e7eee26717435"
+    "tested_source_sha": "7e2873887ed6038b47b667c976435810851c5dba"
   },
   "nodes": [
     {
       "id": "A01",
       "depends_on": [],
       "status": "HOLD",
-      "decision": "Local reconstruction and represented-curve source identity evidence remain bounded to their reviewed source identities. New same-curve T1 output-radius subunit is independently SCOPED_PASS at b38a121: immutable result view; physical-time residual; lambda+=S|chi|max(S E+, M_Y+^2); radii enclose returned centers with 29N+23 counted operations; exact-rational disk oracle. Full A01 remains HOLD for unequal-frequency independent reference and remaining packet arithmetic/certificate duties; roundoff_enclosed=false. The M_Y^2>S E branch is exercised but lacks a counterfactual energy-only negative assertion (nonblocking for reviewed subunit)."
+      "decision": "A01-UFREF-01 remains PASS_SCOPED at d087dab. A01-LCERT-01 is independently PASS_SCOPED at 6b722a9, with its weighted_radius semantics documentation independently verified at 7e28738: \u03ba=0 rotating-frame frozen represented-window solution inclusion only. Full A01 remains HOLD because legacy compute_certificate arithmetic/authority remains unresolved; no global trajectory, damping or production claim is implied."
     },
     {
       "id": "A02",
       "depends_on": [
-        "A01"
+        "A01-LCERT-01"
       ],
-      "status": "BLOCKED",
-      "decision": "No verified A01 center/radius output or continuous reconstructed-curve residual/P-to-M_Y proof. No trajectory implementation was admitted."
+      "status": "REVIEW_READY_PENDING_CONTRACT_SYNC",
+      "decision": "Supplement_02 independent delta review is READY_FOR_BOUNDED_IMPLEMENTATION with zero remaining contract blockers. Synchronize the current A02 contract/decision to v2 and freeze it before dispatch; implementation and numerical validation remain not run.",
+      "subtasks": [
+        {
+          "id": "A02-CONTRACT-01",
+          "status": "READY_FOR_BOUNDED_IMPLEMENTATION",
+          "evidence": "evidence/continuation_a02_research/supplement_02/INDEPENDENT_DELTA_REVIEW.json",
+          "implementation_approved": false
+        }
+      ]
+    },
+    {
+      "id": "A01-LCERT-01",
+      "depends_on": [],
+      "status": "PASS_SCOPED",
+      "decision": "Independent review at 6b722a9 and documentation-only verification at 7e28738 close \u03ba=0 rotating-frame frozen represented-window local solution inclusion. This is reusable by A02 but does not promote legacy compute_certificate, global trajectory, damped packet or production. Evidence: evidence/continuation_a01_lcert/INDEPENDENT_REVIEW_KO.md and documentation_followup/source_identity.json."
     },
     {
       "id": "A03",
       "depends_on": [
         "A01"
       ],
-      "status": "BLOCKED",
-      "decision": "A01 is HOLD. Existing damped scalar moment authority does not supply exp(-2κt) packet forcing, carrier/output convention and multiwindow verified reconstruction."
+      "status": "RUNNING_INDEPENDENT_REVIEW",
+      "decision": "Bounded scalar-rate source/tests are prepared but unexecuted; independent read-only review is active. Preserve no-numerical-admission ceiling until review, source/prereg freeze, execution, oracle and existing damped regressions finish.",
+      "subtasks": [
+        {
+          "id": "A03-LOCAL-DAMPED-CONTRACT-01",
+          "status": "RESEARCH_COMPLETE_PENDING_INDEPENDENT_REVIEW",
+          "evidence_target": "evidence/continuation_a03_research/",
+          "evidence": "evidence/continuation_a03_research/RESEARCH_DECISION.json"
+        },
+        {
+          "id": "A03-SCALAR-RATE-01",
+          "status": "RUNNING_IMPLEMENTATION_NO_EXECUTION",
+          "contract": "evidence/continuation_a03_research/PREREGISTRATION.md",
+          "review": "evidence/continuation_a03_research/INDEPENDENT_REVIEW_01.json",
+          "implementation_approved": true,
+          "execution_authorized_after_EXEC_SHA": true
+        }
+      ]
     },
     {
       "id": "A04",
       "depends_on": [],
       "status": "SCOPED_PASS_WITH_HOLD",
-      "decision": "Report sealing and setup-cost receipt subunits independently SCOPED_PASS: immutable report slot preserved; cold/warm setup receipt, dependency coverage, attempted-work parity and counted zero-allocation gates reviewed. Full Leja total-error authority remains HOLD/EstimateOnly due additive-underflow/operator/output arithmetic oracle obligations."
+      "decision": "A04-PROOF-ORACLE-01 at EXEC_SHA 9e35f12 passed 12 action fixtures and 218 exact Fraction comparisons at M=64; independent review accepts only the scoped receipt. Full Leja authority remains EstimateOnly/HOLD. Historical tail correction review remains scoped.",
+      "subtasks": [
+        {
+          "id": "A04-TAIL-LEMMA-01",
+          "status": "PASS_SCOPED",
+          "evidence": "evidence/continuation_a04/arithmetic_research_review_01/INDEPENDENT_REVIEW.json"
+        },
+        {
+          "id": "A04-PROOF-ORACLE-01-CONTRACT",
+          "status": "READY_FOR_BOUNDED_IMPLEMENTATION",
+          "evidence": "evidence/continuation_a04/arithmetic_research_01/CONTRACT_INDEPENDENT_REVIEW_01.json"
+        },
+        {
+          "id": "A04-PROOF-ORACLE-01-IMPLEMENTATION",
+          "status": "PASS_SCOPED",
+          "evidence_target": "new frozen A04 oracle tests and Fraction oracle only",
+          "evidence": "evidence/continuation_a04/proof_oracle_01/INDEPENDENT_REVIEW_01.json; evidence/continuation_a04/proof_oracle_01/post_exec_9e35f12/INDEPENDENT_REVIEW.json; ledger L-0136"
+        }
+      ]
     },
     {
       "id": "A05",
       "depends_on": [],
       "status": "HOLD",
-      "decision": "Local PR101 formula/model identity/privacy and rational quartic checks pass conditionally, but the one authorized repair still has deterministic work-ledger over/undercharges and grouped charges before fallible calls; reviewer declined a second repair episode. Keep this implementation slice HOLD. No driver/global output or speed authority."
+      "decision": "Cumulative repair 2 was independently reviewed HOLD. The 9 tests, Fraction oracle, positive allocation controls, all-target check and 6 doctests pass, but provider deltas 707/704 include four pure validation guards and should be 703/700 under the frozen per-arithmetic-call accounting contract. The first compile-failure raw log was overwritten; its actual status is recorded as not preserved, distinct from the successful first_test.log. No third code repair was authorized. Generic global output/trajectory/speed remain HOLD."
     },
     {
       "id": "A06",
       "depends_on": [],
       "status": "SCOPED_PASS_WITH_HOLD",
-      "decision": "Native O(N) Woodbury and the sequential first-stage RHS map have scoped review/test evidence. Full all-stage/backend integration, measured complete cost, trajectory and speed remain HOLD."
+      "decision": "The fixed first-stage RHS correspondence remains independently SCOPED_PASS at current audit HEAD d087dab, reusing 6/6 post-EXEC checks bound to f5de5b2. Exact scope: r0=h*f(y0) is passed to A solve_into in the fixed fixture; the extra-s negative control leaves (1-s)r0 residual. No general stage-RHS capture/API rejection claim. Full nonlinear all-stage integration, dispatch identity, complete cost, trajectory/output and overall zero-allocation remain HOLD."
     },
     {
       "id": "A07",
       "depends_on": [],
       "status": "HOLD",
-      "decision": "The retained Robertson campaign already uses the owner-confirmed common physical tolerances rtol=1e-8, atol=[1e-11,1e-11,1e-11]. Diffsol normalized error gate is false (3.302699...), so no same-accuracy speed claim; campaign was not rerun. Timing remains DIAGNOSTIC_ONLY."
+      "decision": "The retained campaign/report integrity is PASS_WITH_SCOPE, with user-confirmed common physical rtol=1e-8 and atol=[1e-11,1e-11,1e-11]. Manifest/RUN_RECORD/report identities and independent reporting review match. 20 cold paired, 160 warm and 2 allocator rows are retained. Native max-grid normalized WRMS=0.3375300715 passes the empirical gate; Diffsol=3.3026992501 fails with gate upper=3.3037774058, so same-accuracy speed is HOLD. Timing remains diagnostic_only; no campaigns were rerun."
     },
     {
       "id": "A08",
@@ -88,7 +141,7 @@
       "id": "A11",
       "depends_on": [],
       "status": "SCOPED_PASS_WITH_HOLD",
-      "decision": "Analytic Gray-Scott semidiscrete μ2 upper bound on supplied componentwise boxes is reviewed and tested. Constructing trajectory boxes, callback-roundoff enclosure and global defect remain outside scope."
+      "decision": "Analytic Gray-Scott semidiscrete \u03bc2 upper bound on supplied componentwise boxes is reviewed and tested. Constructing trajectory boxes, callback-roundoff enclosure and global defect remain outside scope."
     },
     {
       "id": "A12",
@@ -129,10 +182,24 @@
     "matched_accuracy_speed": "HOLD",
     "existing_generic_rodas5p": "SCOPED_USE_REMAINS_ALLOWED"
   },
-  "next_executable_transition": "Continue A01 unequal-frequency independent high-precision reference and remaining local packet certificate duties; only after full A01 closure start A02 global trajectory. A04 setup receipt is checkpointed SCOPED_PASS_WITH_HOLD. A05 remains HOLD pending a separately authorized future repair; A03/A10 wait on full A01, A08/A09 remain blocked by A04/A07, and A12 keeps scope decisions unchanged.",
+  "active_work": [
+    {
+      "id": "A03-SCALAR-RATE-01-implementation",
+      "status": "RUNNING_NO_TESTS_BEFORE_EXEC_SHA",
+      "evidence_target": "evidence/continuation_a03_research/scalar_rate_01/",
+      "constraint": "Reviewed scalar-only scope; tolerance unchanged; no native candidate/trajectory implementation."
+    },
+    {
+      "id": "A02-supplement-02-independent-delta-review",
+      "status": "RUNNING",
+      "evidence": "evidence/continuation_a02_research/supplement_02/DECISION.json",
+      "constraint": "Review only; no solver tests or A02 implementation until READY."
+    }
+  ],
+  "next_executable_transition": "Checkpoint the independently reviewed A04 post-EXEC evidence and continuation policy. Then synchronize/freeze A02 supplement_02 for bounded implementation; continue A03 read-only review in parallel and do not run A03 before its review and EXEC_SHA freeze.",
   "checkpoint": {
     "date": "2026-10-18",
-    "head": "b38a1212f1d6e6566c0ca40cc67e7eee26717435",
+    "head": "59d95eb7404882f024eb8bd3856f2ce4f1f830c9",
     "remote_verified": true,
     "remote_ref": "origin/audit/production-readiness-20261018",
     "notes": [
@@ -140,8 +207,15 @@
       "A04 Leja report immutability commit 5a1ff2b is pushed and independently reviewed scoped pass.",
       "A01/A04/A05/A07 overall scope decisions remain HOLD as documented per node.",
       "Evidence checkpoint itself is 5780792; tested executable source commit remains 5a1ff2b.",
-      "A01 same-curve T1 output-radius subunit SCOPED_PASS, independently reviewed and pushed in b38a121; full A01 remains HOLD."
+      "A01 same-curve T1 output-radius subunit SCOPED_PASS, independently reviewed and pushed in b38a121; full A01 remains HOLD.",
+      "A01 unequal-frequency exact-rational reference subunit independently reviewed PASS_SCOPED; source and dirty overlay identities recorded in evidence/continuation_a01_unequal_reference/EXECUTION.json.",
+      "A01-LCERT-01 is independently PASS_SCOPED at 6b722a9; weighted_radius semantics documentation is independently verified at 7e28738; full A01 remains HOLD.",
+      "A04 historical T2 counterexample and current uniform-tail correction are independently reviewed PASS_SCOPED; overall Leja authority remains EstimateOnly/HOLD.",
+      "A04-PROOF-ORACLE-01 independent post-EXEC review READY_SCOPED; L-0136 output hashes verified; full A04 remains HOLD.",
+      "A02 supplement_02 delta review READY_FOR_BOUNDED_IMPLEMENTATION; root contract/decision synchronization and source freeze remain.",
+      "A03 scalar-rate code prepared but not executed; read-only independent implementation review active."
     ],
-    "evidence_commit": "b38a1212f1d6e6566c0ca40cc67e7eee26717435"
+    "evidence_commit": "6b722a918deb0ab178b8e77090cac1280dbb3051",
+    "remote_ref_sha": "59d95eb7404882f024eb8bd3856f2ce4f1f830c9"
   }
 }

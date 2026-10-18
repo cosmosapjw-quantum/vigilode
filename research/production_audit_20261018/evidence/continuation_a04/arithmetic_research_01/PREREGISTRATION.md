@@ -114,3 +114,15 @@ This revision leaves Leja source, thresholds and total authority unchanged.
 The full A04 decision remains `EstimateOnly/HOLD`; the next step is the
 bounded oracle implementation and its recorded execution, followed by an
 independent scope-matched decision.
+
+
+## Recorded A04-PROOF-ORACLE-01 result
+
+Execution commit (`EXEC_SHA`): `9e35f12c85abff34d85185f866180b616a8ba208`. The contract and harness were committed before this rerun. The first post-EXEC attempt used a relative output path and failed with exit 101 because the Rust test process resolves it from the crate root; the raw log is `research/production_audit_20261018/evidence/continuation_a04/proof_oracle_01/post_exec_9e35f12/rust_test.log`. The same frozen command with an absolute output path passed (exit 0, 1 Rust test), followed by the Fraction oracle (exit 0, 218 exact comparisons PASS at M=64).
+
+The allocation positive control observed 3 allocations before the warmed F02/F03/F04 observations of 0 each. This is scoped only to those successful calls. Total A04 authority remains `EstimateOnly/HOLD`.
+
+The frozen `inputs_sha256` at EXEC_SHA and recorded `outputs_sha256` are in `research/production_audit_20261018/evidence/continuation_a04/proof_oracle_01/post_exec_9e35f12/EXECUTION_IDENTITY.json`.
+
+
+Independent read-only receipt review returned `READY_SCOPED` for this post-EXEC run and L-0136 only. It confirmed 11 EXEC_SHA input hashes, 9 output hashes, 218 exact comparisons, and allocation 3 then warmed 0/0/0. The reviewer recorded the initial relative-output-path literal as unavailable in its first record and did not infer it; the first failure classification and successful absolute-path retry remain preserved. Full A04 remains EstimateOnly/HOLD. Review artifact: `evidence/continuation_a04/proof_oracle_01/post_exec_9e35f12/INDEPENDENT_REVIEW.json`.
