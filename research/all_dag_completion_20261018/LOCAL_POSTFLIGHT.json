@@ -52,5 +52,26 @@
       "classification": "missing historical commit 40a36d922e915e1d1c296adc136b7e5b7676eb67; ordinary advertised branch fetch cannot recover it",
       "logs": "local_validation_01/check_authority_refs*.{stdout,stderr,exit_code}"
     }
+  },
+  "published_postflight": {
+    "branch": "research/all-dag-completion-20261018",
+    "published_head_at_check": "7a59f535b0c1f6ce72cef041727f6a28bcc88da8",
+    "check_research_node": {
+      "exit_code": 1,
+      "remaining_errors": [
+        "L-0124 two historical output SHA mismatches",
+        "L-0138 historical output SHA mismatch",
+        "L-0140 historical verdict/supersedes schema errors"
+      ],
+      "new_rows_clean": [
+        "L-0141",
+        "L-0142"
+      ]
+    },
+    "check_authority_refs": {
+      "exit_code": 1,
+      "counts": "1748 citations, 308 distinct SHAs; missing=1 (40a36d922e915e1d1c296adc136b7e5b7676eb67), missing+allowlisted=26, non-commit=53, reachable=227, unreachable+allowlisted=1",
+      "new_published_commits_reachable": true
+    }
   }
 }
