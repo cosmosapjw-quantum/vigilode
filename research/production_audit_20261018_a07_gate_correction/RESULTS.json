@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "exec_sha": "314981e283ff9ae9961f2ec3fb220226c8b8dbab",
+  "parent_campaign_exec_sha": "01c5b93357ec4318e06e36d938deedf1b2db4a3f",
+  "campaign_rerun": false,
+  "contract": {
+    "problem": "Robertson",
+    "span": [
+      0,
+      40
+    ],
+    "rtol": 1e-08,
+    "atol": [
+      1e-11,
+      1e-11,
+      1e-11
+    ],
+    "output_points": 101,
+    "metric": "max over grid of component WRMS normalized by atol+rtol*abs(reference)"
+  },
+  "thresholds": {
+    "reference_spread_max": 0.05,
+    "per_arm_accuracy_max": 1.0,
+    "require_all_rows_successful": true,
+    "require_empirical_interval_overlap_for_combined_comparison": true
+  },
+  "reference": {
+    "spreads": {
+      "fine_vs_lsoda_max_grid_wrms": 0.0010781557032515283,
+      "fine_vs_previous_radau_max_grid_wrms": 1.0253688066238993e-05
+    },
+    "max_spread": 0.0010781557032515283,
+    "gate": true,
+    "rigorous_enclosure": false
+  },
+  "arms": {
+    "diffsol": {
+      "rows": 91,
+      "successful_complete_rows": 91,
+      "failed_rows": 0,
+      "max_grid_wrms_distance_to_fine_radau": 3.3026992500504733,
+      "empirical_interval": [
+        3.301621094347222,
+        3.3037774057537246
+      ],
+      "accuracy_gate": false
+    },
+    "native": {
+      "rows": 91,
+      "successful_complete_rows": 91,
+      "failed_rows": 0,
+      "max_grid_wrms_distance_to_fine_radau": 0.33753007149457903,
+      "empirical_interval": [
+        0.3364519157913275,
+        0.33860822719783057
+      ],
+      "accuracy_gate": true
+    }
+  },
+  "arm_intervals_overlap": false,
+  "combined_accuracy_gate": false,
+  "timing_authority": "diagnostic_only",
+  "matched_accuracy_speed": "HOLD_accuracy_gate_failed_and_intervals_disjoint",
+  "decision": "A07 integrity and reference-spread gate PASS; native arm accuracy PASS; Diffsol arm accuracy FAIL; combined matched-accuracy comparison HOLD. No campaign rerun and no tolerance change."
+}
