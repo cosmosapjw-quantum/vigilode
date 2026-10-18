@@ -4,7 +4,6 @@
 //! Preregistration: `research/py05_leja_total_certificate_20261011/PREREGISTRATION.md`
 
 use std::alloc::{GlobalAlloc, Layout, System};
-use std::sync::atomic::{AtomicU64, Ordering};
 
 use rodas5p_core::leja_action::{
     CertifiedLejaCoeffCache, CertifiedLejaReport, CertifiedLejaWorkspace, LEJA_CERTIFIED_SCHEMA,
@@ -26,8 +25,8 @@ struct CountingAllocator;
 
 thread_local! {
     static TRACK: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+    static ALLOCATIONS: std::cell::Cell<u64> = const { std::cell::Cell::new(0) };
 }
-static ALLOCATIONS: AtomicU64 = AtomicU64::new(0);
 
 #[global_allocator]
 static ALLOCATOR: CountingAllocator = CountingAllocator;
@@ -36,7 +35,7 @@ unsafe impl GlobalAlloc for CountingAllocator {
     unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
         let pointer = unsafe { System.alloc(layout) };
         if !pointer.is_null() && TRACK.with(|t| t.get()) {
-            ALLOCATIONS.fetch_add(1, Ordering::Relaxed);
+            ALLOCATIONS.with(|count| count.set(count.get().saturating_add(1)));
         }
         pointer
     }
@@ -47,12 +46,22 @@ unsafe impl GlobalAlloc for CountingAllocator {
 }
 
 fn track_allocations<R>(f: impl FnOnce() -> R) -> (R, u64) {
-    ALLOCATIONS.store(0, Ordering::SeqCst);
+    ALLOCATIONS.with(|count| count.set(0));
     TRACK.with(|t| t.set(true));
     let result = f();
     TRACK.with(|t| t.set(false));
-    let count = ALLOCATIONS.load(Ordering::SeqCst);
+    let count = ALLOCATIONS.with(std::cell::Cell::get);
     (result, count)
+}
+
+#[test]
+fn allocation_tracker_counts_each_thread_independently() {
+    std::thread::scope(|scope| {
+        let a = scope.spawn(|| track_allocations(|| std::hint::black_box(vec![1_u8])).1);
+        let b = scope.spawn(|| track_allocations(|| std::hint::black_box(vec![2_u8])).1);
+        assert_eq!(a.join().unwrap(), 1);
+        assert_eq!(b.join().unwrap(), 1);
+    });
 }
 
 fn splitmix(seed: u64, n: usize) -> Vec<f64> {
@@ -168,6 +177,75 @@ fn test_vg1_zero_allocation_warmed_certified_leja_action() {
         "warmed leja_phi_action_certified_with_cache_and_workspace performed {allocs} heap allocations; must be 0"
     );
     assert!(bound <= budget);
+}
+
+#[test]
+fn test_a04_warmed_scalar_branch_zero_allocation() {
+    let mut a = DenseMatrix::zeros(1, 1);
+    a[(0, 0)] = -1.0;
+    let op = SymmetricNonpositiveOperator::gershgorin(a).unwrap();
+    let v = [0.75];
+    let scales = [1.0, 0.5, -0.25, 2.0, -1.0];
+    let input = JointPhiInput::SameVector { vector: &v, scales };
+    let mut cache = CertifiedLejaCoeffCache::new();
+    let mut workspace = CertifiedLejaWorkspace::new(1, 1);
+    let mut work = WorkCounters::default();
+    let warm = leja_phi_action_certified_with_cache_and_workspace(
+        &op,
+        0.0,
+        input,
+        1e-8,
+        8,
+        Some(&mut cache),
+        &mut work,
+        &mut workspace,
+    )
+    .unwrap();
+    let vectors: [Vec<f64>; 5] = std::array::from_fn(|k| vec![scales[k] * v[0]]);
+    let reference = dense_phi_combination(op.matrix(), 0.0, &vectors).unwrap();
+    assert!((warm.fused[0] - reference[0]).abs() <= 2.0 * f64::EPSILON);
+    let (result, allocations) = track_allocations(|| {
+        leja_phi_action_certified_with_cache_and_workspace(
+            &op,
+            0.0,
+            input,
+            1e-8,
+            8,
+            Some(&mut cache),
+            &mut work,
+            &mut workspace,
+        )
+    });
+    result.unwrap();
+    assert_eq!(
+        allocations, 0,
+        "warmed scalar Leja action allocated {allocations} times"
+    );
+}
+
+#[test]
+fn test_a04_scalar_interval_coefficients_match_reference_at_nonzero_center() {
+    let mut a = DenseMatrix::zeros(1, 1);
+    a[(0, 0)] = -1.0;
+    let op = SymmetricNonpositiveOperator::gershgorin(a).unwrap();
+    let v = [0.75];
+    let scales = [1.0, 0.5, -0.25, 2.0, -1.0];
+    let vectors: [Vec<f64>; 5] = std::array::from_fn(|k| vec![scales[k] * v[0]]);
+    let reference = dense_phi_combination(op.matrix(), 0.25, &vectors).unwrap();
+    let input = JointPhiInput::SameVector { vector: &v, scales };
+    let mut work = WorkCounters::default();
+    let report = leja_phi_action_certified(&op, 0.25, input, 1e-8, &mut work).unwrap();
+    assert!(
+        (report.fused[0] - reference[0]).abs() <= 1e-14,
+        "actual={} reference={} diff={:e}",
+        report.fused[0],
+        reference[0],
+        (report.fused[0] - reference[0]).abs()
+    );
+    assert!(matches!(
+        report.total_error(),
+        TotalErrorStatus::EstimateOnly { .. }
+    ));
 }
 
 // -----------------------------------------------------------------------------

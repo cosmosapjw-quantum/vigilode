@@ -95,7 +95,7 @@ pub const LEJA_SCHEMA: &str = "vigilode-leja-phi-action-v1";
 pub const LEJA_TOTAL_NOT_CERTIFIED: &str = "LEJA_TOTAL_NOT_CERTIFIED";
 /// The total rounding derivation must account for additive underflow before
 /// unrestricted binary64 inputs can carry certificate authority.
-pub const LEJA_ARITHMETIC_HOLD: &str = "LEJA_ARITHMETIC_HOLD: no complete additive-underflow enclosure for operator products, recurrence, coefficient generation, coefficient-radius products, norm evaluation, and final output scaling/fusion";
+pub const LEJA_ARITHMETIC_HOLD: &str = "LEJA_ARITHMETIC_HOLD: no complete additive-underflow model connecting operator products, recurrence, coefficient-weighted sums, and final output scaling/fusion";
 /// Prefix of every input or domain error of this module.
 pub const LEJA_INPUT_UNSUPPORTED: &str = "LEJA_INPUT_UNSUPPORTED";
 /// The largest Newton degree (operator products per block column).
@@ -579,6 +579,60 @@ fn certificate_l2_upper(x: &[f64], ops: &mut u64) -> CoreResult<f64> {
     }
     *ops = ops.saturating_add(2);
     mul_up(scale, sqrt_up(sum)?)
+}
+
+/// Allocation-free directed coefficients `phi_k(c)` for the zero-width
+/// scalar branch. This computes only the one-node table required by that
+/// branch; it deliberately does not grant total-error authority.
+fn scalar_phi_coefficients(c: f64) -> CoreResult<([f64; JOINT_PHI_TERMS], [f64; JOINT_PHI_TERMS])> {
+    let mut intervals = [Interval::point(0.0)?; JOINT_PHI_TERMS];
+    if c == 0.0 {
+        intervals = [
+            Interval::point(1.0)?,
+            Interval::point(1.0)?,
+            Interval::point(0.5)?,
+            Interval::point(1.0 / 6.0)?,
+            Interval::point(1.0 / 24.0)?,
+        ];
+    } else {
+        intervals[0] = exp_interval(c)?;
+        if c.abs() <= 1.0 {
+            let factorials = [1.0, 1.0, 2.0, 6.0, 24.0];
+            let ci = Interval::point(c)?;
+            for k in 1..JOINT_PHI_TERMS {
+                let mut term =
+                    Interval::new(div_down(1.0, factorials[k])?, div_up(1.0, factorials[k])?)?;
+                let mut sum = term;
+                for order in 1..=64 {
+                    term = term.mul(ci)?.div(Interval::point((order + k) as f64)?)?;
+                    sum = sum.add(term)?;
+                }
+                let next = term.mul(ci)?.div(Interval::point((65 + k) as f64)?)?;
+                let ratio = div_up(c.abs(), (66 + k) as f64)?;
+                let tail = div_up(next.mag(), sub_down(1.0, ratio)?)?;
+                intervals[k] = Interval::new(sub_down(sum.lo, tail)?, add_up(sum.hi, tail)?)?;
+            }
+        } else {
+            let factorials = [1.0, 1.0, 2.0, 6.0];
+            let ci = Interval::point(c)?;
+            for k in 1..JOINT_PHI_TERMS {
+                let f = factorials[k - 1];
+                let reciprocal = Interval::new(div_down(1.0, f)?, div_up(1.0, f)?)?;
+                intervals[k] = intervals[k - 1].sub(reciprocal)?.div(ci)?;
+            }
+        }
+    }
+    let mut values = [0.0; JOINT_PHI_TERMS];
+    let mut radii = [0.0; JOINT_PHI_TERMS];
+    for k in 0..JOINT_PHI_TERMS {
+        let iv = intervals[k];
+        // For c <= 0, all phi_k(c) are nonnegative; this midpoint expression
+        // avoids an overflowing endpoint sum.
+        let mid = iv.lo * 0.5 + iv.hi * 0.5;
+        values[k] = mid;
+        radii[k] = sub_up(iv.hi, mid)?.max(sub_up(mid, iv.lo)?);
+    }
+    Ok((values, radii))
 }
 
 fn update_leja_total_status(
@@ -1292,12 +1346,12 @@ pub fn leja_phi_action_certified_with_cache_and_workspace<'a>(
             branch = "scalar";
             verified_interval = [a, b];
             local_coefficient_setups += 1;
-            let (d, d_rad) = leja_divided_differences_certified(center, 0.0, &[2.0])?;
+            let (d, d_rad) = scalar_phi_coefficients(center)?;
             for (k, sum) in workspace.sums[..JOINT_PHI_TERMS].iter_mut().enumerate() {
                 let col = column_of(k);
                 let w = &workspace.current[col][..n];
                 for (out, wi) in sum[..n].iter_mut().zip(w) {
-                    *out = d[0][k] * *wi;
+                    *out = d[k] * *wi;
                 }
             }
             let mut diff_terms = [0.0; JOINT_PHI_TERMS];
@@ -1311,7 +1365,7 @@ pub fn leja_phi_action_certified_with_cache_and_workspace<'a>(
                 let w_norm =
                     certificate_l2_upper(&workspace.current[col][..n], &mut certification_ops)?;
                 p_norms[k] = certificate_l2_upper(&workspace.sums[k][..n], &mut certification_ops)?;
-                let d_err = mul_up(d_rad[0][k], w_norm)?;
+                let d_err = mul_up(d_rad[k], w_norm)?;
                 let fact = match k {
                     0 => 1.0,
                     1 => 2.0,
