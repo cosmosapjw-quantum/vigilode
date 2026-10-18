@@ -77,12 +77,8 @@ impl DampedMomentTable {
     /// Compiles a damped moment table up to orders `(max_j, max_k)`.
     pub fn compile(config: DampedMomentsConfig) -> CoreResult<Self> {
         // Fields are public/serializable: constructors are not an admission boundary.
-        let config = DampedMomentsConfig::new(
-            config.kappa,
-            config.horizon,
-            config.max_j,
-            config.max_k,
-        )?;
+        let config =
+            DampedMomentsConfig::new(config.kappa, config.horizon, config.max_j, config.max_k)?;
         let max_j = config.max_j;
         let max_k = config.max_k;
         let z = damping_product(config.kappa, config.horizon)?;
@@ -256,7 +252,12 @@ fn compute_small_z_taylor(z: Interval, j: usize, k: usize, b_jk: Interval) -> Co
 
 /// Backward recurrence for E_m(z) = \int_0^1 e^{-z v} v^m dv, v = 1 - u
 /// z E_m = m E_{m-1} - e^{-z}  =>  E_{m-1} = (z E_m + e^{-z}) / m
-fn compute_large_z_backward(z: Interval, j: usize, k: usize, b_jk: Interval) -> CoreResult<Interval> {
+fn compute_large_z_backward(
+    z: Interval,
+    j: usize,
+    k: usize,
+    b_jk: Interval,
+) -> CoreResult<Interval> {
     let top = j + k + 45;
     // Monotonicity encloses exp(-z) over the entire rounded-product interval.
     let exp_int = Interval::new(exp_interval(-z.hi)?.lo, exp_interval(-z.lo)?.hi)?;

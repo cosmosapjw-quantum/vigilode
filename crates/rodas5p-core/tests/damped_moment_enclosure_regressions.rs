@@ -29,8 +29,14 @@ fn input_product_and_both_branches_enclose_independent_decimal_oracles() {
     ];
     for (kappa, horizon, j, k, lo_bits, hi_bits) in fixtures {
         let result = compute_normalized_damped_moment(kappa, horizon, j, k).unwrap();
-        assert!(result.lo <= f64::from_bits(lo_bits), "lower endpoint: {kappa}, {horizon}, {j}, {k}: {result:?}");
-        assert!(result.hi >= f64::from_bits(hi_bits), "upper endpoint: {kappa}, {horizon}, {j}, {k}: {result:?}");
+        assert!(
+            result.lo <= f64::from_bits(lo_bits),
+            "lower endpoint: {kappa}, {horizon}, {j}, {k}: {result:?}"
+        );
+        assert!(
+            result.hi >= f64::from_bits(hi_bits),
+            "upper endpoint: {kappa}, {horizon}, {j}, {k}: {result:?}"
+        );
     }
 }
 
