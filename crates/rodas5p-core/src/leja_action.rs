@@ -591,8 +591,8 @@ fn scalar_phi_coefficients(c: f64) -> CoreResult<([f64; JOINT_PHI_TERMS], [f64; 
             Interval::point(1.0)?,
             Interval::point(1.0)?,
             Interval::point(0.5)?,
-            Interval::point(1.0 / 6.0)?,
-            Interval::point(1.0 / 24.0)?,
+            Interval::new(div_down(1.0, 6.0)?, div_up(1.0, 6.0)?)?,
+            Interval::new(div_down(1.0, 24.0)?, div_up(1.0, 24.0)?)?,
         ];
     } else {
         intervals[0] = exp_interval(c)?;
@@ -1222,7 +1222,10 @@ pub fn leja_phi_action_certified_with_cache(
 /// Leja candidate with preallocated workspace and optional coefficient cache.
 /// The returned total remains EstimateOnly under [`LEJA_ARITHMETIC_HOLD`].
 ///
-/// Guaranteed zero heap allocations on warmed calls where workspace and cache entries are pre-warmed.
+/// The preallocated route can be allocation-free after warm-up when dimensions,
+/// degree cap, cache state, and report-string capacity are unchanged and the
+/// call succeeds. A changed convergence reason can grow the report `String`;
+/// higher-level wrappers allocate a workspace and clone the report.
 #[allow(clippy::too_many_arguments, clippy::needless_range_loop)]
 pub fn leja_phi_action_certified_with_cache_and_workspace<'a>(
     op: &SymmetricNonpositiveOperator,
@@ -1747,6 +1750,26 @@ pub fn leja_phi_action_certified_with_cache_and_workspace<'a>(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn zero_center_scalar_phi_radii_enclose_nonbinary_factorials() {
+        let (values, radii) = scalar_phi_coefficients(0.0).unwrap();
+        for k in 0..3 {
+            assert_eq!(radii[k], 0.0);
+        }
+        for (k, lower_floor, upper_ceil) in [
+            (3, 0x3fc5_5555_5555_5555, 0x3fc5_5555_5555_5556),
+            (4, 0x3fa5_5555_5555_5555, 0x3fa5_5555_5555_5556),
+        ] {
+            assert!(radii[k] > 0.0, "phi_{k} needs a nonzero radius");
+            let lower = sub_down(values[k], radii[k]).unwrap();
+            let upper = add_up(values[k], radii[k]).unwrap();
+            assert!(lower.to_bits() <= lower_floor);
+            assert!(upper.to_bits() >= upper_ceil);
+            // Exact rational ordering check: the chosen floor/ceil are the
+            // adjacent binary64 values around 1/6 and 1/24, respectively.
+        }
+    }
 
     #[test]
     fn leja_points_start_at_the_ends_and_stay_distinct() {
