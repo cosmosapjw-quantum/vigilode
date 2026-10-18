@@ -16,6 +16,7 @@ mod adaptive;
 mod adaptive_exponential;
 mod bdf;
 mod block;
+mod bound_collective;
 mod candidates;
 mod causal_majorant;
 mod certification;
@@ -153,6 +154,7 @@ pub use block::{
     BlockMethod, BlockPreconditioner, BlockSolveReport, NonlinearRemainderSnapshot,
     StructuredBlockSystem, flatten, unflatten,
 };
+pub use bound_collective::BoundCollectiveProblem;
 pub use candidates::{
     CandidateCatalog, CandidateExecution, CandidateFamily, CandidateRecycleLifetime, CandidateSpec,
     CandidateStatus, HomotopyPredictorVariant, SabrBlockVariant, SabrPredictorVariant,

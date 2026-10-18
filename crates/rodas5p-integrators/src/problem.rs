@@ -284,6 +284,16 @@ impl MatrixFreeCallbackIdentity {
 }
 
 impl OdeProblem {
+    /// Generic point-callback problems do not carry the private immutable
+    /// model/provider owner required for continuous residual authority.
+    /// Construct a supported pair through a model-specific factory instead.
+    pub fn request_continuous_residual_authority(
+        &self,
+    ) -> Result<(), crate::dense_output_v2::DenseOutputError> {
+        let _ = self;
+        Err(crate::dense_output_v2::DenseOutputError::UnsupportedUnboundModel)
+    }
+
     pub(crate) fn matrix_free_callback_identity(&self) -> MatrixFreeCallbackIdentity {
         MatrixFreeCallbackIdentity {
             rhs: self.rhs.clone(),

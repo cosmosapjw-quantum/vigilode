@@ -30,6 +30,10 @@ pub enum DenseOutputError {
     InvalidSegment(&'static str),
     #[error("dense segment identity no longer matches its generated coefficients")]
     ModifiedSegment,
+    #[error("continuous residual verification requires a supported immutable model binding")]
+    UnsupportedUnboundModel,
+    #[error("ODE problem no longer matches its immutable continuous-model binding")]
+    BoundModelMismatch,
     #[error(
         "continuous residual/global authority is unavailable: OdeProblem supplies only point RHS/log-norm callbacks"
     )]
