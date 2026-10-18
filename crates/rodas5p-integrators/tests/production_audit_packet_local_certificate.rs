@@ -106,9 +106,30 @@ fn frozen_unequal_frequency_fraction_reference() {
         let mut workspace = owner.workspace(&mut work).unwrap();
         let mut outputs = Vec::with_capacity(times.len());
         for &time in &times {
-            let before = work.curve_output_certificate_ops;
+            let before = work;
             let view = owner.enclose_at(time, &mut workspace, &mut work).unwrap();
-            assert_eq!(work.curve_output_certificate_ops - before, 110);
+            assert_eq!(
+                work.curve_output_certificate_ops - before.curve_output_certificate_ops,
+                110
+            );
+            assert_eq!(
+                work.curve_frozen_query_attempts - before.curve_frozen_query_attempts,
+                1
+            );
+            assert_eq!(
+                work.curve_frozen_query_refusals - before.curve_frozen_query_refusals,
+                0
+            );
+            if arm_index == 0 && time == 0.0 {
+                println!(
+                    "first_success_work_before={}",
+                    serde_json::to_string(&before).unwrap()
+                );
+                println!(
+                    "first_success_work_after={}",
+                    serde_json::to_string(&work).unwrap()
+                );
+            }
             outputs.push(serde_json::json!({
                 "time": view.time(), "modes": view.modes(), "mode_radii": view.mode_radii(),
                 "mean": view.mean(), "mean_radius": view.mean_radius(),
@@ -213,14 +234,42 @@ fn frozen_one_mode_exact_fraction_and_typed_refusals() {
         work.curve_frozen_query_refusals - before_overflow.curve_frozen_query_refusals,
         1
     );
-    assert!(work.curve_output_certificate_ops > before_overflow.curve_output_certificate_ops);
+    assert_eq!(
+        work.curve_frozen_query_attempts - before_overflow.curve_frozen_query_attempts,
+        1
+    );
+    assert_eq!(
+        work.curve_output_certificate_ops - before_overflow.curve_output_certificate_ops,
+        7
+    );
+    println!(
+        "overflow_work_before={}",
+        serde_json::to_string(&before_overflow).unwrap()
+    );
+    println!(
+        "overflow_work_after={}",
+        serde_json::to_string(&work).unwrap()
+    );
     let subnormal_owner =
         PacketFrozenOutput::new(curve.clone(), &[f64::from_bits(1)], &mut work).unwrap();
     let mut subnormal_workspace = subnormal_owner.workspace(&mut work).unwrap();
-    assert!(matches!(
-        subnormal_owner.enclose_at(f64::from_bits(1), &mut subnormal_workspace, &mut work),
-        Ok(_) | Err(PacketError::OutwardRefusal(_))
-    ));
+    let before_subnormal = work;
+    let subnormal_result =
+        subnormal_owner.enclose_at(f64::from_bits(1), &mut subnormal_workspace, &mut work);
+    let subnormal_outcome = match subnormal_result {
+        Ok(_) => "included",
+        Err(PacketError::OutwardRefusal(_)) => "typed_refusal",
+        Err(other) => panic!("unexpected subnormal error: {other:?}"),
+    };
+    println!("subnormal_outcome={subnormal_outcome}");
+    println!(
+        "subnormal_work_before={}",
+        serde_json::to_string(&before_subnormal).unwrap()
+    );
+    println!(
+        "subnormal_work_after={}",
+        serde_json::to_string(&work).unwrap()
+    );
     let owner = PacketFrozenOutput::new(curve, &[1.0e-7], &mut work).unwrap();
     assert_eq!(
         work.curve_frozen_allocation_requests - before_constructor.curve_frozen_allocation_requests,
@@ -252,6 +301,18 @@ fn frozen_one_mode_exact_fraction_and_typed_refusals() {
         owner.enclose_at(0.101, &mut workspace, &mut work),
         Err(PacketError::OutwardRefusal(_))
     ));
+    assert_eq!(
+        work.curve_frozen_query_attempts - before_refusal.curve_frozen_query_attempts,
+        2
+    );
+    assert_eq!(
+        work.curve_frozen_query_refusals - before_refusal.curve_frozen_query_refusals,
+        2
+    );
+    assert_eq!(
+        work.curve_output_certificate_ops,
+        before_refusal.curve_output_certificate_ops
+    );
     let mut cases = Vec::new();
     for &time in &[0.0, 0.05, 0.1] {
         let view = owner.enclose_at(time, &mut workspace, &mut work).unwrap();
