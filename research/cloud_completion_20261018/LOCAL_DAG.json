@@ -185,7 +185,7 @@
     {
       "id": "PUBLISH_REPLAY_F522",
       "name": "Publish latest replay evidence and verify remote ref",
-      "status": "PENDING",
+      "status": "PASS_FAST_FORWARD_VERIFIED",
       "dependencies": [
         "REPLAY_F522"
       ],
@@ -193,8 +193,14 @@
         "research/LEDGER.jsonl",
         "git ls-remote origin refs/heads/research/cloud-completion-20261018",
         "research/LEDGER.jsonl",
-        "evidence/local_codex_replay_20261018/POSTFLIGHT_CHECKS.json"
-      ]
+        "evidence/local_codex_replay_20261018/POSTFLIGHT_CHECKS.json",
+        "commit 714a6d7df704806e52f084647a4ae653d61c581c",
+        "remote ref verified by git ls-remote"
+      ],
+      "payload_commit": "714a6d7df704806e52f084647a4ae653d61c581c",
+      "remote_ref": "refs/heads/research/cloud-completion-20261018",
+      "remote_ref_sha_at_verification": "714a6d7df704806e52f084647a4ae653d61c581c",
+      "fast_forward": true
     }
   ],
   "scope_decisions": {
@@ -226,6 +232,7 @@
     ],
     "rule": "Do not rewrite historical ledger/report bytes to conceal mismatches."
   },
-  "next_action": "Append/hash the latest replay receipt, verify applicable publication checks, and fast-forward push; keep overall production and speed promotion HOLD.",
-  "latest_checkout_commit": "f522eacb2d433d8628da194fb128cf7a84fc2e1e"
+  "next_action": "Local replay is recorded and published. Overall production and measured speed remain HOLD; any further work must target separately scoped open development.",
+  "latest_checkout_commit": "714a6d7df704806e52f084647a4ae653d61c581c",
+  "latest_execution_commit": "f522eacb2d433d8628da194fb128cf7a84fc2e1e"
 }
