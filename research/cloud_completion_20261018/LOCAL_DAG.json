@@ -1,0 +1,138 @@
+{
+  "schema_version": 1,
+  "task": "cloud-completion local validation",
+  "source_commit": "4cb795d2b4d3d1cc43ac1ede37d48e4f4daaac3b",
+  "nodes": [
+    {
+      "id": "SRC",
+      "name": "Checkout and immutable source binding",
+      "status": "PASS",
+      "dependencies": [],
+      "evidence": [
+        "environment.json",
+        "SOURCE_IDENTITY.json"
+      ]
+    },
+    {
+      "id": "CHECK",
+      "name": "Offline compile and focused contracts",
+      "status": "PASS",
+      "dependencies": [
+        "SRC"
+      ],
+      "evidence": [
+        "evidence/local_runs/check/RESULT.json",
+        "evidence/local_runs/check/*.stdout",
+        "evidence/local_runs/check/*.stderr"
+      ]
+    },
+    {
+      "id": "SMOKE",
+      "name": "Packet and PR101 executable smoke",
+      "status": "PASS",
+      "dependencies": [
+        "CHECK"
+      ],
+      "evidence": [
+        "evidence/local_runs/smoke/RESULT.json",
+        "evidence/local_runs/smoke/*.stdout",
+        "evidence/local_runs/smoke/*.stderr"
+      ]
+    },
+    {
+      "id": "BENCH",
+      "name": "32-mode matched tolerance diagnostic bench",
+      "status": "PASS_DIAGNOSTIC_ONLY",
+      "dependencies": [
+        "CHECK",
+        "SMOKE"
+      ],
+      "evidence": [
+        "evidence/local_runs/bench/RESULT.json",
+        "evidence/local_runs/bench/structured_comparison.stdout"
+      ]
+    },
+    {
+      "id": "REPORT",
+      "name": "Evidence aggregation and claim classification",
+      "status": "PASS",
+      "dependencies": [
+        "CHECK",
+        "SMOKE",
+        "BENCH"
+      ],
+      "evidence": [
+        "executions.json",
+        "RESULT.json",
+        "LOCAL_REPORT_KO.md"
+      ]
+    },
+    {
+      "id": "REVIEW",
+      "name": "Independent read-only local evidence review",
+      "status": "PASS_FINDINGS_RESOLVED",
+      "dependencies": [
+        "REPORT"
+      ],
+      "evidence": [
+        "read-only review result in current session; corrected executions.json and LOCAL_REPORT_KO.md"
+      ]
+    },
+    {
+      "id": "RESEARCH_NODE_CHECK",
+      "name": "Postflight ledger and authority-reference checks",
+      "status": "KNOWN_INHERITED_HASH_MISMATCH_ONLY",
+      "dependencies": [
+        "REPORT"
+      ],
+      "evidence": [
+        "evidence/local_checks/postflight_checks.json",
+        "evidence/publication_checks.json"
+      ]
+    },
+    {
+      "id": "AUTHORITY_REFS",
+      "name": "Authority reference validation",
+      "status": "PASS",
+      "dependencies": [
+        "REPORT"
+      ],
+      "evidence": [
+        "evidence/local_checks/postflight_checks.json"
+      ]
+    },
+    {
+      "id": "PUBLISH",
+      "name": "Fast-forward commit and remote ref verification",
+      "status": "READY",
+      "dependencies": [
+        "REVIEW",
+        "RESEARCH_NODE_CHECK",
+        "AUTHORITY_REFS"
+      ],
+      "evidence": [
+        "git commit",
+        "git push",
+        "git ls-remote"
+      ]
+    }
+  ],
+  "scope_decisions": {
+    "check": "PASS",
+    "smoke": "PASS",
+    "bench": "PASS_DIAGNOSTIC_ONLY",
+    "allocation_warmed_step_scope": "PASS_AFTER_POSITIVE_CONTROL",
+    "overall_production": "HOLD",
+    "measured_speed_promotion": "HOLD",
+    "research_node_check": "KNOWN_INHERITED_HASH_MISMATCH_ONLY; new cloud node reported without errors",
+    "authority_refs_check": "PASS"
+  },
+  "open_inherited_issue": {
+    "id": "L-0124_report_hash_mismatch",
+    "status": "INHERITED_UNCHANGED",
+    "blocks_numerical_validation": false,
+    "evidence": "evidence/publication_checks.json",
+    "current_recheck": "evidence/local_checks/postflight_checks.json"
+  },
+  "next_action": "Commit local receipts and appended ledger row on research/cloud-completion-20261018, push fast-forward, verify remote ref, then mark PUBLISH complete."
+}
