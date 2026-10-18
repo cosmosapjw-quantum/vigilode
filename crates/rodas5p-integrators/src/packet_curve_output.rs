@@ -51,6 +51,10 @@ impl PacketCertifiedView<'_> {
     pub fn mean_radius(&self) -> f64 {
         self.inner.mean_radius()
     }
+    /// Base T1 radius `B_w` around the exact frozen polynomial. It excludes
+    /// displacement from evaluating the returned binary64 centers; use the
+    /// mode radii for returned-center enclosures. It is not a weighted ball
+    /// around `modes()`.
     pub fn weighted_radius(&self) -> f64 {
         self.inner.weighted_radius()
     }
@@ -164,6 +168,10 @@ impl PacketCurveOutputView<'_> {
     pub fn mean_radius(&self) -> f64 {
         self.mean_radius
     }
+    /// Base T1 radius `B_w` around the exact frozen polynomial. It excludes
+    /// displacement from evaluating the returned binary64 centers; use the
+    /// mode radii for returned-center enclosures. It is not a weighted ball
+    /// around `modes()`.
     pub fn weighted_radius(&self) -> f64 {
         self.weighted_radius
     }
