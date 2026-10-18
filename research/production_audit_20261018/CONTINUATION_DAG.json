@@ -1,93 +1,132 @@
 {
   "schema_version": 1,
-  "continuation_id": "production-audit-20261018-a01-identity",
-  "base_commit": "6c067105f0b9e16cbfd397b2d5316673e698e00e",
-  "base_tree": "8a99f23d9dd855d4e4101c20f56eb1f94a73b63d",
-  "source_branch": "audit/production-readiness-20261018",
-  "current_source_sha256": {
-    "crates/rodas5p-integrators/src/packet_window.rs": "9a2a3e7d730e9544a0af744ca537b18c1766d1da284e1d313917baecee0c0c09",
-    "crates/rodas5p-integrators/src/packet_trajectory.rs": "6edb6269f3eefd6dfc290ccbdc917204e62ded985ca52a93ada2eeb90e256adc",
-    "crates/rodas5p-integrators/tests/production_audit_packet.rs": "a13f8983cfb80daa7e9d965ef402bce0cbe3829199552271feffe787050865ba",
-    "crates/rodas5p-integrators/tests/packet_window_contracts.rs": "77175f51cfa262fe173fe408e5db76ad1a6f9e88494068ccd0c804121fdd6ba2"
-  },
-  "continuation_artifacts_sha256": {
-    "docs/reviews/20261018_production_audit/CONTINUATION_A01_KO.md": "eb4013eca8ebaba0b2be8be5dc949da91586accc1852125c6c65589592a5314c",
-    "research/production_audit_20261018/evidence/continuation_a01/targeted_tests.log": "3263f3bfd9c7339b6be1cb0af47190dbfa02334918116b5961d9c5131dabad39",
-    "research/production_audit_20261018/evidence/continuation_a01/workspace_check.log": "8d4a885c5737b32caac4e81f911a25ce85dfa8ef09e7ee3bb9246c86a37b2d95"
-  },
-  "scope_decision": {
-    "packet_certificate": "HOLD_OUTWARD_ARITHMETIC",
-    "global_trajectory": "HOLD_DEPENDS_ON_A01",
-    "global_accuracy": "HOLD",
-    "matched_accuracy_speed": "HOLD"
+  "project": "VigilODE",
+  "continuation": "production-audit-20261018-continuation",
+  "source_identity": {
+    "branch": "audit/production-readiness-20261018",
+    "exec_sha": "bbb9bb4aaa9e8748109cee7b439ea2828015de8b",
+    "remote_ref": "origin/audit/production-readiness-20261018",
+    "remote_ref_sha": "bbb9bb4aaa9e8748109cee7b439ea2828015de8b",
+    "starting_audit_commit": "6c067105f0b9e16cbfd397b2d5316673e698e00e",
+    "audited_source_commit": "2fc61b944fe431d40ba455c373579bce00b0c39a"
   },
   "nodes": [
     {
       "id": "A01",
-      "status": "IN_PROGRESS",
       "depends_on": [],
-      "completed_slice": "Immutable construction snapshot binding for CompiledPacket and PacketCandidate; typed refusal for edited packet descriptors and candidates reused with a different packet; reconstruction APIs return errors.",
-      "observed_cost": "Snapshot creation/copy costs O(N+p) storage/work; each identity check compares O(N+p) values without a temporary allocation. PacketWorkCounters does not yet charge either cost, so this is not a performance or zero-allocation result.",
-      "remaining": [
-        "Outward moment, coefficient, nonlinear force, Volterra residual, tail, and reconstruction arithmetic",
-        "Bind actual stored weight sum and spectral support into the complete error proof",
-        "Bind mutable candidate waveform, certificate, reconstructed center, and returned radius as one immutable result",
-        "Return centers paired with outward radii that include rounding of the returned center",
-        "Instrument coefficient/setup/certificate/output cost",
-        "Return directly matchable typed refusal variants from reconstruction APIs",
-        "Independent exact one-mode and high-precision multi-mode enclosure fixtures, including subnormal/overflow cases"
-      ],
-      "acceptance": "The A01 contract in NEXT_STEPS.json remains authoritative and is not met by this continuation slice."
+      "status": "HOLD",
+      "decision": "Diagnostic tail and S<1 scaling, identity checks, independent high-precision multi-mode reference and typed refusal regressions accepted. Ordinary rounded complex coefficient/force/residual/tail/reconstruction arithmetic and center-radius identity-bound API remain absent; roundoff_enclosed=false."
     },
     {
       "id": "A02",
-      "status": "BLOCKED_BY_DEPENDENCY",
-      "depends_on": ["A01"],
-      "next_action": "Resume after A01 outward center/radius interface is implemented and independently checked; then implement continuous reconstructed-curve residual and T1 inherited uncertainty transport transactionally."
+      "depends_on": [
+        "A01"
+      ],
+      "status": "BLOCKED",
+      "decision": "No verified A01 center/radius output or continuous reconstructed-curve residual/P-to-M_Y proof. No trajectory implementation was admitted."
     },
-    {"id":"A03","status":"PENDING","depends_on":["A01"]},
-    {"id":"A04","status":"PENDING","depends_on":[]},
-    {"id":"A05","status":"PENDING","depends_on":[]},
-    {"id":"A06","status":"PENDING","depends_on":[]},
-    {"id":"A07","status":"PENDING","depends_on":[]},
-    {"id":"A08","status":"PENDING","depends_on":["A04","A07"]},
-    {"id":"A09","status":"PENDING","depends_on":["A04","A07"]},
-    {"id":"A10","status":"PENDING","depends_on":["A01"]},
-    {"id":"A11","status":"PENDING","depends_on":[]},
-    {"id":"A12","status":"PENDING","depends_on":[]}
-  ],
-  "finding_updates": [
-    {"id":"PK-08","status":"PARTIALLY_FIXED","detail":"Packet now retains an immutable source-model and generated-array snapshot. Full outward certificate binding remains open."},
-    {"id":"PK-10","status":"PARTIALLY_FIXED","detail":"Public packet mutation and candidate cross-packet reuse are refused. Softened model admission assumptions and complete certificate arithmetic remain open."},
-    {"id":"PK-02","status":"OPEN","detail":"No arithmetic-total outward certificate is claimed."},
-    {"id":"PK-09","status":"OPEN","detail":"Setup, certificate, and output work-cost accounting remains incomplete."}
-  ],
-  "verification": {
-    "targeted_tests": {
-      "command": "cargo test --locked --offline -p rodas5p-integrators --test packet_window_contracts --test packet_trajectory_contracts --test production_audit_packet --test production_audit_split",
-      "exit_code": 0,
-      "result": "27 passed",
-      "evidence": "evidence/continuation_a01/targeted_tests.log"
+    {
+      "id": "A03",
+      "depends_on": [
+        "A01"
+      ],
+      "status": "BLOCKED",
+      "decision": "A01 is HOLD. Existing damped scalar moment authority does not supply exp(-2κt) packet forcing, carrier/output convention and multiwindow verified reconstruction."
     },
-    "all_target_compile": {
-      "command": "cargo check --locked --offline --workspace --all-targets",
-      "exit_code": 0,
-      "result": "passed",
-      "run_after_implementation": true
+    {
+      "id": "A04",
+      "depends_on": [],
+      "status": "HOLD",
+      "decision": "Scalar warmed allocation repair, thread-local allocator isolation, directed c=0 factorial intervals and direct enclosure regression pass. Full Leja arithmetic is EstimateOnly because additive-underflow bounds remain missing for operator action, recurrence, coefficient sums and output scaling/fusion."
     },
-    "changed_files_rustfmt": {
-      "command": "rustfmt --edition 2024 --check crates/rodas5p-integrators/src/packet_window.rs crates/rodas5p-integrators/src/packet_trajectory.rs crates/rodas5p-integrators/tests/production_audit_packet.rs crates/rodas5p-integrators/tests/packet_window_contracts.rs",
-      "exit_code": 0
+    {
+      "id": "A05",
+      "depends_on": [],
+      "status": "HOLD",
+      "decision": "Attempted callback accounting after shape validation and zero-span config guards pass. Continuous residual and verified one-sided full-tube gain are absent; requested-grid/global-output claim is HOLD."
     },
-    "workspace_rustfmt": {
-      "command": "cargo fmt --all -- --check",
-      "exit_code": 1,
-      "result": "Pre-existing formatting differences also reported in damped_moments.rs and damped_moment_enclosure_regressions.rs; those unrelated files were left unchanged."
+    {
+      "id": "A06",
+      "depends_on": [],
+      "status": "SCOPED_PASS_WITH_HOLD",
+      "decision": "Native rotating-frame, carrier-zero rank-two Woodbury solve; frozen model/state identity, 2x2 Schur refusal, exact RHS and outward residual/error witness pass independent review. Measured complete cost, end-to-end trajectory integration and speed claim remain HOLD."
     },
-    "independent_review": {
-      "scope": "Read-only review of identity binding and reconstruction API",
-      "result": "Scoped PASS for packet/source identity and candidate packet-origin checks after bitwise model identity repair. A01 overall remains HOLD. Review confirmed open waveform/certificate/output binding, uncharged O(N+p) copy/comparison work, and reconstruction error variant stringification. Reviewer did not execute tests."
+    {
+      "id": "A07",
+      "depends_on": [],
+      "status": "HOLD",
+      "decision": "Generic Diffsol matched comparison was not rerun; the previous campaign remains invalid for speed/fairness due timing/report and physical-accuracy mismatch. Packet strong baseline sub-scope lacks end-to-end A06 integration and allocator measurement."
+    },
+    {
+      "id": "A08",
+      "depends_on": [
+        "A04",
+        "A07"
+      ],
+      "status": "BLOCKED",
+      "decision": "Both total arithmetic authority and matched comparison prerequisites remain HOLD; no polynomial route selector is justified."
+    },
+    {
+      "id": "A09",
+      "depends_on": [
+        "A04",
+        "A07"
+      ],
+      "status": "BLOCKED",
+      "decision": "Both prerequisites remain HOLD; no real nonlinear-client endpoint/branch perturbation evidence was added."
+    },
+    {
+      "id": "A10",
+      "depends_on": [
+        "A01"
+      ],
+      "status": "BLOCKED",
+      "decision": "A01 supplies no outward candidate coefficient/residual interval for Bernstein transformation or subdivision."
+    },
+    {
+      "id": "A11",
+      "depends_on": [],
+      "status": "SCOPED_PASS_WITH_HOLD",
+      "decision": "Analytic Gray-Scott semidiscrete μ2 upper bound on supplied componentwise boxes is reviewed and tested. Constructing trajectory boxes, callback-roundoff enclosure and global defect remain outside scope."
+    },
+    {
+      "id": "A12",
+      "depends_on": [],
+      "status": "HOLD",
+      "decision": "Scope decisions issued below; no overall or broad production promotion because required trajectory, Leja, global-output and fair-speed gates remain open."
     }
+  ],
+  "scope_dependencies": {
+    "A07.packet_strong_baseline": [
+      "A06"
+    ],
+    "A07.generic_diffsol_comparison": [],
+    "A12.packet_kappa0": [
+      "A01",
+      "A02"
+    ],
+    "A12.packet_damped": [
+      "A01",
+      "A02",
+      "A03"
+    ],
+    "A12.leja_total": [
+      "A04"
+    ],
+    "A12.generic_global_outputs": [
+      "A05"
+    ],
+    "A12.matched_accuracy_speed": [
+      "A07"
+    ]
   },
-  "next_executable_action": "Finish A01 outward residual and reconstruction enclosure; do not start A02 before its center/radius contract is available."
+  "scope_decisions": {
+    "packet_kappa0": "HOLD",
+    "packet_damped": "HOLD",
+    "leja_total": "HOLD",
+    "generic_global_outputs": "HOLD",
+    "matched_accuracy_speed": "HOLD",
+    "existing_generic_rodas5p": "SCOPED_USE_REMAINS_ALLOWED"
+  },
+  "next_executable_transition": "A01 bounded outward coefficient/residual/reconstruction arithmetic design and reviewed implementation; A04 additive-underflow arithmetic enclosure. A02/A03/A10 and A08/A09 remain dependency-blocked; A05 requires interval extension plus full-tube gain witness; A07 requires a new frozen matched campaign."
 }

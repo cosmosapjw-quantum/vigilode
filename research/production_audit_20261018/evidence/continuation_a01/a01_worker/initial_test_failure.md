@@ -1,0 +1,2 @@
+First targeted test attempt: exit 101.
+The new `certificate_uses_actual_weight_sum_and_spectral_support_and_charges_work` assertion expected reconstruction work without invoking reconstruction. 11 tests passed and that assertion failed. The fixture was corrected to call `reconstruct_modes` before inspecting its counter. The subsequent targeted run passed all 12 tests; no tolerance or production threshold changed.

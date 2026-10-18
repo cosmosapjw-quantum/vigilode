@@ -1,0 +1,25 @@
+   Compiling rodas5p-krylov v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-krylov)
+   Compiling rodas5p-integrators v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-integrators)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 11.30s
+     Running tests/a05_dense_global_output.rs (target/debug/deps/a05_dense_global_output-e259d7a60d25c1b8)
+
+running 4 tests
+
+thread 'invalid_scalar_rhs_shapes_do_not_charge_or_enter_callbacks' (2461316) panicked at crates/rodas5p-integrators/tests/a05_dense_global_output.rs:79:5:
+assertion `left == right` failed
+  left: (1, 1)
+ right: (0, 0)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test scalar_rhs_attempts_are_counted_on_err_and_nonfinite_output ... ok
+test batch_callback_failure_success_and_scalar_fallback_are_accounted ... ok
+test invalid_scalar_rhs_shapes_do_not_charge_or_enter_callbacks ... FAILED
+test zero_span_dense_entry_rejects_invalid_adaptive_and_linear_config ... ok
+
+failures:
+
+failures:
+    invalid_scalar_rhs_shapes_do_not_charge_or_enter_callbacks
+
+test result: FAILED. 3 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p rodas5p-integrators --test a05_dense_global_output`

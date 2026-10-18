@@ -1,0 +1,30 @@
+   Compiling rodas5p-core v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-core)
+error[E0425]: cannot find function `leja_phi_action_certified_with_cache` in this scope
+    --> crates/rodas5p-core/tests/leja_total_contract.rs:350:18
+     |
+ 350 |       let report = leja_phi_action_certified_with_cache(
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+    ::: crates/rodas5p-core/src/leja_action.rs:1129:1
+     |
+1129 | / pub fn leja_phi_action_certified_capped(
+1130 | |     op: &SymmetricNonpositiveOperator,
+1131 | |     h: f64,
+1132 | |     input: JointPhiInput<'_>,
+...    |
+1135 | |     work: &mut WorkCounters,
+1136 | | ) -> CoreResult<CertifiedLejaReport> {
+     | |____________________________________- similarly named function `leja_phi_action_certified_capped` defined here
+     |
+help: a function with a similar name exists
+     |
+ 350 -     let report = leja_phi_action_certified_with_cache(
+ 350 +     let report = leja_phi_action_certified_capped(
+     |
+help: consider importing this function
+     |
+   6 + use rodas5p_core::leja_phi_action_certified_with_cache;
+     |
+
+For more information about this error, try `rustc --explain E0425`.
+error: could not compile `rodas5p-core` (test "leja_total_contract") due to 1 previous error

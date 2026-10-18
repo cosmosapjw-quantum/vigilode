@@ -29,3 +29,14 @@ After the implementation checkpoint is reachable remotely, rerun the affected fo
 ## Stopping rules
 
 Classify mathematical, numerical, implementation, input, and environment failures separately. If a required enclosure primitive, physical convention, or immutable source identity is absent, record the exact dependency and HOLD that node. Do not set certified authority from a diagnostic estimate, component PASS, benchmark timing, or publication event.
+
+
+## Continuation results (EXEC_SHA bbb9bb4aaa9e8748109cee7b439ea2828015de8b)
+
+- Source execution commit `bbb9bb4aaa9e8748109cee7b439ea2828015de8b` was pushed to `origin/audit/production-readiness-20261018` before final A04 scoped validation; fetched remote SHA matched.
+- Focused integrator targets: 44 passed, 0 failed; core damped/Leja targets: 18 passed, 0 failed (the pre-final A04 EXEC `e9748019152b7a4063bc59d1ece3af1673bdbbaa`).
+- Final A04 EXEC: Leja contract 14/14, direct zero-center coefficient radius 1/1, doc tests 13/13 (including caller-forged-cache compile-fail 1/1), workspace all-target check and rustfmt check exit 0. No full workspace `cargo test` was run.
+- Independent read-only reviews: A01 overall HOLD with scoped diagnostic repair accepted; A04 scoped PASS with total-error HOLD; A05 callback-accounting scoped PASS with global-output HOLD; A06 Woodbury residual/scoped math PASS with cost/performance HOLD; A11 supplied-box logarithmic-norm scoped PASS with trajectory HOLD.
+- Scope decision: packet kappa=0 HOLD; damped packet HOLD; Leja total error HOLD; generic all-output accuracy HOLD; matched accuracy/speed HOLD; existing generic RODAS5P use remains restricted to previously validated problem-specific scope.
+- Machine results, source/input identity, output hashes, and detailed report: `CONTINUATION_RESULTS.json`, `CONTINUATION_DAG.json`, `CONTINUATION_DECISION.json`, `CONTINUATION_FINDINGS.json`, `CONTINUATION_INDEPENDENT_REVIEW.json`, and `CONTINUATION_OUTPUT_HASHES.json`.
+- Claim ceiling: PASS refers only to bounded implementation/contract validation and reviewed component scopes. It does not establish full scientific or production promotion.
