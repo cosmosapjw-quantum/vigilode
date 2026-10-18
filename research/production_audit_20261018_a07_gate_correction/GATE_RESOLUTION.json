@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "failed_attempts": [
+    {
+      "id": "ledger_output_path_01",
+      "exit_code": 1,
+      "log": "research/production_audit_20261018_a07_gate_correction/check_research_node.log",
+      "cause": "L-0128 recorded node-local basename output paths; checker resolves from repository root."
+    },
+    {
+      "id": "ledger_output_hash_02",
+      "exit_code": 1,
+      "log": "captured in active tool transcript",
+      "cause": "After adding root aliases, two changed outputs no longer matched original L-0128 hashes."
+    }
+  ],
+  "repair": "Preserved append-only L-0128 bytes by adding repository-root compatibility symlinks; for the two subsequently edited outputs, aliases point to immutable snapshots captured from commit 5362552. L-0129 records the corrected full repository-relative paths and current hashes, superseding L-0128.",
+  "final_check": {
+    "command": "python3 tools/check-research-node.py --base origin/audit/production-readiness-20261018",
+    "exit_code": 0,
+    "log": "research/production_audit_20261018_a07_gate_correction/check_research_node_final.log"
+  },
+  "scientific_effect": "none"
+}

@@ -16,5 +16,11 @@
     "log": "verify_gate_contract_inline_first.log",
     "exit_code": 0,
     "disposition": "superseded by hash-bound script run; retained"
+  },
+  "ledger_gate_first_attempt": {
+    "command": "python3 tools/check-research-node.py --base origin/audit/production-readiness-20261018",
+    "exit_code": 1,
+    "log": "check_research_node.log",
+    "classification": "ledger output references were node-local instead of repository-relative"
   }
 }
