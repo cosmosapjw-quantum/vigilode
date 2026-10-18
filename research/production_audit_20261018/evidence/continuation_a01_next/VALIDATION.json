@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "exec_sha": "244da1b4211964cff47f1a08793c883e29eb1e7d",
+  "runs": [
+    {
+      "id": "post_exec_packet_regressions",
+      "command": "cargo test --locked --offline -p rodas5p-integrators --test production_audit_packet",
+      "exit_code": 0,
+      "passed": 38,
+      "failed": 0,
+      "log": "research/production_audit_20261018/evidence/continuation_a01_next/a01_packet_postexec_final.log.gz"
+    },
+    {
+      "id": "independent_review",
+      "result": "SCOPED_PASS",
+      "log": "research/production_audit_20261018/evidence/continuation_a01_next/INDEPENDENT_REVIEW.md"
+    }
+  ],
+  "authority": "roundoff_enclosed=false",
+  "full_node": "HOLD"
+}
