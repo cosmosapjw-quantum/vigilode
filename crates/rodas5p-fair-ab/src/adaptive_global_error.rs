@@ -474,6 +474,12 @@ fn dense_core<T>(result: Result<T, DenseOutputError>) -> Result<T, CoreError> {
         DenseOutputError::ContinuousResidualProviderUnavailable => CoreError::InvalidInput(
             DenseOutputError::ContinuousResidualProviderUnavailable.to_string(),
         ),
+        DenseOutputError::UnsupportedUnboundModel => {
+            CoreError::InvalidInput(DenseOutputError::UnsupportedUnboundModel.to_string())
+        }
+        DenseOutputError::BoundModelMismatch => {
+            CoreError::InvalidInput(DenseOutputError::BoundModelMismatch.to_string())
+        }
     })
 }
 
@@ -1350,6 +1356,14 @@ mod tests {
             (
                 DenseOutputError::ContinuousResidualProviderUnavailable,
                 "continuous residual/global authority is unavailable: OdeProblem supplies only point RHS/log-norm callbacks",
+            ),
+            (
+                DenseOutputError::UnsupportedUnboundModel,
+                "continuous residual verification requires a supported immutable model binding",
+            ),
+            (
+                DenseOutputError::BoundModelMismatch,
+                "ODE problem no longer matches its immutable continuous-model binding",
             ),
         ];
 
