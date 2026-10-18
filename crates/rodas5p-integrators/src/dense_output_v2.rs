@@ -637,48 +637,44 @@ impl Rodas5pQuarticSegment {
         let theta_start = self.normalize_time(time_start, work)?;
         let theta_end = self.normalize_time(time_end, work)?;
         let theta = Interval::new(theta_start.lo, theta_end.hi)?;
-        let one_minus_theta = dense_op!(
-            work.interval_value_operations,
-            Interval::point(1.0)?.sub(theta)
-        )?;
+        // Expand endpoint cancellation before interval evaluation. The original
+        // blend (1-theta)y0+theta*y1 has O(|y0|) dependency width even as
+        // h -> 0; this power form has O(h) width for a smooth candidate.
         for (i, value) in output.iter_mut().enumerate() {
-            let a = dense_op!(
-                work.interval_value_operations,
-                theta.mul(Interval::point(self.d2[i])?)
-            )?;
-            let b = dense_op!(
-                work.interval_value_operations,
-                Interval::point(self.d1[i])?.add(a)
-            )?;
-            let c = dense_op!(work.interval_value_operations, theta.mul(b))?;
-            let q = dense_op!(
-                work.interval_value_operations,
-                Interval::point(self.d0[i])?.add(c)
-            )?;
-            let left = dense_op!(
-                work.interval_value_operations,
-                one_minus_theta.mul(Interval::point(self.y_old[i])?)
-            )?;
-            let inner = dense_op!(work.interval_value_operations, one_minus_theta.mul(q))?;
-            let inner = dense_op!(
-                work.interval_value_operations,
-                Interval::point(self.y_new[i])?.add(inner)
-            )?;
-            let right = dense_op!(work.interval_value_operations, theta.mul(inner))?;
-            *value = dense_op!(work.interval_value_operations, left.add(right))?;
+            let coefficients = self.power_coefficients(i, &mut work.interval_value_operations)?;
+            let mut acc = coefficients[4];
+            for k in (0..4).rev() {
+                acc = dense_op!(work.interval_value_operations, theta.mul(acc))?;
+                acc = dense_op!(work.interval_value_operations, coefficients[k].add(acc))?;
+            }
+            *value = acc;
         }
         Ok(())
     }
 
+    fn power_coefficients(
+        &self,
+        component: usize,
+        operations: &mut u64,
+    ) -> DenseOutputResult<[Interval; 5]> {
+        let y0 = Interval::point(self.y_old[component])?;
+        let y1 = Interval::point(self.y_new[component])?;
+        let d0 = Interval::point(self.d0[component])?;
+        let d1 = Interval::point(self.d1[component])?;
+        let d2 = Interval::point(self.d2[component])?;
+        let a = dense_op!(*operations, y1.sub(y0))?;
+        let a = dense_op!(*operations, a.add(d0))?;
+        let b = dense_op!(*operations, d1.sub(d0))?;
+        let c = dense_op!(*operations, d2.sub(d1))?;
+        Ok([y0, a, b, c, -d2])
+    }
+
     /// Encloses the continuous defect `u'(t) - f(t,u(t))` on this represented
     /// segment and checks a caller-sized candidate-centered error tube. The
-    /// returned radius is valid for this segment only. The adaptive driver
-    /// does not yet call this verifier on each trial before its accept/reject
-    /// transaction, restore its controller/history on a tube refusal, or
-    /// retain this segment identity for all requested outputs. It does not
-    /// connect adjacent segments or certify trajectory outputs across a run.
-    /// Those integration steps are required before this helper can control a
-    /// global-output API.
+    /// returned radius is valid for this segment only. The capability-bound
+    /// `integrate_verified_residual` driver performs inheritance, complete
+    /// output preparation and verification before committing each segment.
+    /// Calling this low-level helper alone does not certify a full trajectory.
     pub fn verify_continuous_residual_tube<P: ContinuousResidualProvider>(
         &self,
         provider: &P,
@@ -905,7 +901,27 @@ impl Rodas5pQuarticSegment {
         let theta_start = self.normalize_time(time_start, work)?;
         let theta_end = self.normalize_time(time_end, work)?;
         let theta = Interval::new(theta_start.lo, theta_end.hi)?;
-        self.write_physical_derivative(theta, output, work)
+        for (i, value) in output.iter_mut().enumerate() {
+            let coefficients =
+                self.power_coefficients(i, &mut work.interval_derivative_operations)?;
+            let mut acc = dense_op!(
+                work.interval_derivative_operations,
+                coefficients[4].scale(4.0)
+            )?;
+            for k in (1..4).rev() {
+                acc = dense_op!(work.interval_derivative_operations, theta.mul(acc))?;
+                let coefficient = dense_op!(
+                    work.interval_derivative_operations,
+                    coefficients[k].scale(k as f64)
+                )?;
+                acc = dense_op!(work.interval_derivative_operations, coefficient.add(acc))?;
+            }
+            *value = dense_op!(
+                work.interval_derivative_operations,
+                acc.div(self.delta_exact)
+            )?;
+        }
+        Ok(())
     }
 
     /// Requests a residual/global authority provider. The current generic ODE
@@ -1094,6 +1110,10 @@ pub enum DenseErrorControl {
     /// As `Report`, and reject such a step when its estimate exceeds one
     /// tolerance unit.
     Enforce,
+    /// Full continuous residual acceptance requires an immutable model owner.
+    /// Use `integrate_verified_residual` with `VerifiedContinuousProblem`.
+    /// The arbitrary `OdeProblem` entry point returns a typed unsupported error.
+    VerifiedResidual,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -1496,6 +1516,9 @@ pub fn integrate_adaptive_dense_observed_with_dense_error_control(
     };
     let output_times = sampling.output().times().to_vec();
     adaptive.validate()?;
+    if control == DenseErrorControl::VerifiedResidual {
+        return Err(DenseOutputError::UnsupportedUnboundModel);
+    }
     let (mut t, tf) = t_span;
     if y0.len() != problem.dimension || tf < t {
         return Err(

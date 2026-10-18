@@ -10,7 +10,9 @@ use rodas5p_core::{
     CoreError, CoreResult, Rodas5pCoefficients, WorkCounters, rodas5p_coefficients, wrms,
 };
 
-use crate::collective_direct::{CollectiveDirectWork, CollectiveStageFactors};
+use crate::collective_direct::{
+    CollectiveDirectWork, CollectiveResidualWitness, CollectiveStageFactors,
+};
 use crate::collective_model::CollectiveModel;
 use crate::output::OutputCollector;
 use crate::{
@@ -37,6 +39,7 @@ pub struct CollectiveRodas5pWorkspace {
     scale: Vec<f64>,
     has_result: bool,
     linear_work: CollectiveDirectWork,
+    stage_witnesses: Vec<Option<CollectiveResidualWitness>>,
 }
 
 impl CollectiveRodas5pWorkspace {
@@ -63,6 +66,7 @@ impl CollectiveRodas5pWorkspace {
             scale: vec![0.0; n],
             has_result: false,
             linear_work,
+            stage_witnesses: vec![None; coeffs.stages()],
         })
     }
 
@@ -84,6 +88,16 @@ impl CollectiveRodas5pWorkspace {
         self.has_result.then_some(self.embedded.as_slice())
     }
 
+    /// Last successful certified attempt's exact frozen-system witness.
+    /// Plain `step_into` and every failed attempt hide all stale witnesses.
+    pub fn stage_residual_witness(&self, i: usize) -> Option<CollectiveResidualWitness> {
+        if self.has_result {
+            self.stage_witnesses.get(i).copied().flatten()
+        } else {
+            None
+        }
+    }
+
     /// A complete attempt; writes `out` only on success and returns the native
     /// embedded WRMS estimate. A successful attempt is not automatically an
     /// accepted adaptive step. The caller accepts iff this estimate is <=1.
@@ -98,7 +112,41 @@ impl CollectiveRodas5pWorkspace {
         out: &mut [f64],
         counters: &mut WorkCounters,
     ) -> CoreResult<f64> {
+        self.step_impl(t, y, h, atol, rtol, out, counters, false)
+    }
+
+    /// Execute the same eight stages and additionally enclose every frozen
+    /// linear solve's residual and weighted solution error. This performs one
+    /// O(N) interval residual pass per stage, charged to `linear_work`.
+    /// It does not turn the embedded estimate into a global ODE certificate.
+    #[allow(clippy::too_many_arguments)]
+    pub fn step_into_with_residual_witnesses(
+        &mut self,
+        t: f64,
+        y: &[f64],
+        h: f64,
+        atol: f64,
+        rtol: f64,
+        out: &mut [f64],
+        counters: &mut WorkCounters,
+    ) -> CoreResult<f64> {
+        self.step_impl(t, y, h, atol, rtol, out, counters, true)
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn step_impl(
+        &mut self,
+        t: f64,
+        y: &[f64],
+        h: f64,
+        atol: f64,
+        rtol: f64,
+        out: &mut [f64],
+        counters: &mut WorkCounters,
+        certify_residuals: bool,
+    ) -> CoreResult<f64> {
         self.has_result = false;
+        self.stage_witnesses.fill(None);
         let n = self.model.dimension();
         if y.len() != n || out.len() != n {
             return Err(CoreError::Dimension(
@@ -165,6 +213,15 @@ impl CollectiveRodas5pWorkspace {
                 &mut self.stages[i * n..(i + 1) * n],
                 &mut self.linear_work,
             )?;
+            if certify_residuals {
+                self.stage_witnesses[i] = Some(self.factors.residual_witness(
+                    &self.model,
+                    y,
+                    &self.rhs,
+                    &self.stages[i * n..(i + 1) * n],
+                    &mut self.linear_work,
+                )?);
+            }
         }
         self.candidate.fill(0.0);
         self.embedded.fill(0.0);

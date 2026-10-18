@@ -82,4 +82,24 @@ fn calibrated_complete_attempts_allocate_nothing_after_construction() {
     assert_eq!(ALLOCATIONS.with(Cell::get) - before, 0);
     assert_eq!(counters.direct_solve_calls, 80);
     assert_eq!(workspace.linear_work().setup_allocations, 3);
+
+    // The opt-in interval audit reuses the same buffers and fixed witnesses.
+    let before = ALLOCATIONS.with(Cell::get);
+    for i in 0..10 {
+        workspace
+            .step_into_with_residual_witnesses(
+                0.1 + i as f64 * 0.01,
+                &y,
+                0.01,
+                1e-10,
+                1e-7,
+                &mut out,
+                &mut counters,
+            )
+            .unwrap();
+        std::mem::swap(&mut y, &mut out);
+    }
+    assert_eq!(ALLOCATIONS.with(Cell::get) - before, 0);
+    assert_eq!(counters.direct_solve_calls, 160);
+    assert_eq!(workspace.linear_work().residual_witness_calls, 80);
 }

@@ -1,0 +1,165 @@
+{
+  "schema_version": 1,
+  "node": "A05",
+  "title": "Generic dense-output residual controller",
+  "baseline_commit": "40a36d922e915e1d1c296adc136b7e5b7676eb67",
+  "status": "IMPLEMENTED_SCOPED_VALIDATION_AND_INDEPENDENT_REVIEW_PASSED",
+  "source_sha256": {
+    "crates/rodas5p-integrators/src/generic_verified.rs": "0a014a6d55fcb494524b3105547eeb21fd2ab1b1557c1bf14838f7def14b7e17",
+    "crates/rodas5p-integrators/src/dense_output_v2.rs": "1a46db7831523e3ba3e44169f6456061ee716b4f1073d2076d9c0ef1e0a26bae",
+    "crates/rodas5p-integrators/src/bound_collective.rs": "d85fcfd962f3075ce5630a640adfca1e487f9a2968f2ee6962ba8f2b2f8d5103",
+    "crates/rodas5p-integrators/src/bound_pr101.rs": "16a42eb8135387488fe2a9e43d0cc92793f08ae8f8d0cbed11febfd54d6e6f2d",
+    "crates/rodas5p-integrators/tests/all_dag_a05_verified.rs": "67b99a5a52406a45731dbbcb0bdd0c8144de03b75941d86383233e0d9b881973",
+    "crates/rodas5p-integrators/examples/verified_residual_compare.rs": "eea8e24244c80a744f2d68994eb42b77c45c9780ed41cc960cca6a4c9631a695"
+  },
+  "implementation": {
+    "entry": "integrate_verified_residual",
+    "owner": "VerifiedContinuousProblem",
+    "admitted_factories": [
+      "from_pr101",
+      "from_collective"
+    ],
+    "generic_provider_trait": "crate-private VerifiedModelProvider",
+    "transaction": "candidate, full tube, all due outputs staged before state/radius/output commit",
+    "unsupported": "DenseErrorControl::VerifiedResidual with arbitrary OdeProblem -> DenseOutputError::UnsupportedUnboundModel",
+    "candidate_linear_solver": "Direct for owner with explicit Jacobian; otherwise nonrecycled GMRES",
+    "global_error_contract": "Euclidean continuous curve error <= atol/2 and returned center L2 radius <= atol",
+    "verified_relative_scale": false,
+    "unmodified_legacy_pr101_algorithm": true,
+    "interval_dependency_repair": "full interval value and derivative power coefficients with outward Horner"
+  },
+  "claims": [
+    {
+      "id": "A05-C1",
+      "basis": [
+        "derived",
+        "implementation-verified"
+      ],
+      "statement": "All committed intervals have continuous inherited L2 error bounds under immutable owner and provider premises."
+    },
+    {
+      "id": "A05-C2",
+      "basis": [
+        "derived",
+        "implementation-verified"
+      ],
+      "statement": "Returned binary64 centers include actual polynomial evaluation displacement at exact requested times."
+    },
+    {
+      "id": "A05-C3",
+      "basis": [
+        "derived",
+        "implementation-verified"
+      ],
+      "statement": "Interval power form removes the O(state offset) dependency width for affine curves; unchanged damping witness now completes."
+    }
+  ],
+  "tests": [
+    {
+      "command": "cargo test --offline -p rodas5p-integrators --test all_dag_a05_verified -- --nocapture",
+      "exit_code": 0,
+      "passed": 7,
+      "log": "evidence/focused_final.log"
+    },
+    {
+      "command": "cargo test --offline -p rodas5p-integrators --test all_dag_a05_verified --test a05_dense_global_output --test production_audit_pr101_cloud -- --nocapture",
+      "exit_code": 0,
+      "passed": 27,
+      "new_tests_in_that_run": 5,
+      "reused_regressions": 22,
+      "log": "evidence/focused_04.log"
+    },
+    {
+      "command": "cargo run --offline -p rodas5p-integrators --example verified_residual_compare",
+      "exit_code": 0,
+      "result": "evidence/compare.jsonl",
+      "stderr": "evidence/compare_stderr.log"
+    }
+  ],
+  "unique_targeted_tests_passed": 29,
+  "regressions": {
+    "pr101": {
+      "outputs": 101,
+      "accepted": 492,
+      "rejected": 292,
+      "rhs_evaluations": 6272,
+      "verification_operations": 575551,
+      "max_sampled_abs_error": 8.382183835919932e-15,
+      "atol": 1e-11,
+      "rtol": 1e-08
+    },
+    "collective_damping": {
+      "accepted": 30,
+      "rejected": 20,
+      "provider_operations": 1750,
+      "atol": 0.001,
+      "span": [
+        0,
+        0.125
+      ]
+    },
+    "collective_cubic": "unit-circle exact phase0.75t checked",
+    "large_offset_affine": "y0=1e8,y1=1e8-1/8,h=1/8; range width<0.126,derivative width<1e-12"
+  },
+  "comparison": [
+    {
+      "arm": "Off",
+      "success": true,
+      "seconds": 0.002731505,
+      "sampled_max_abs": 2.7907809729832422e-08,
+      "sampled_max_normalized": 5.382925682160066,
+      "continuous_authority": false
+    },
+    {
+      "arm": "Enforce",
+      "success": true,
+      "seconds": 0.005227566,
+      "sampled_max_abs": 8.348219227016784e-09,
+      "sampled_max_normalized": 1.9606145098553904,
+      "continuous_authority": false
+    },
+    {
+      "arm": "VerifiedResidual",
+      "success": true,
+      "seconds": 0.307949579,
+      "sampled_max_abs": 8.382183835919932e-15,
+      "max_certified_radius": 4.514198597243331e-12,
+      "continuous_authority": true
+    }
+  ],
+  "measured_speed_promoted": false,
+  "allocation_claim": null,
+  "failure_history": [
+    {
+      "class": "integration",
+      "log": "evidence/first_focused.log",
+      "reason": "Parallel homotopy module imports awaiting root exports",
+      "resolution": "Root repaired"
+    },
+    {
+      "class": "implementation",
+      "log": "evidence/focused_02.log",
+      "reason": "Collective owner is JVP-only, direct stage solver refused",
+      "resolution": "Candidate solver capability dispatch"
+    },
+    {
+      "class": "numerical",
+      "log": "evidence/focused_03.log",
+      "reason": "Natural blend interval dependency prevents diminishing residual budget",
+      "resolution": "Outward power-Horner extension; unchanged witness passes"
+    }
+  ],
+  "local_next": [
+    "Run optimized example for environment-specific cost; no new algorithm implementation required for admitted owners.",
+    "Only add new model providers when a broader model scope is requested; candidate callback alone has no certification authority."
+  ],
+  "review": "pending separate agent review",
+  "push_performed_by_this_node_agent": false,
+  "author_checkpoint_status": "implementation_verified_independent_review_pending",
+  "integrated_execution": {
+    "record": "research/all_dag_completion_20261018/FINAL_EXECUTION.json",
+    "source_authority": "research/all_dag_completion_20261018/SOURCE_MANIFEST.json",
+    "independent_review": "research/all_dag_completion_20261018/nodes/A12/REVIEW.json",
+    "broad_production": "HOLD"
+  }
+}

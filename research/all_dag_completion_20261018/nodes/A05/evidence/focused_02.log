@@ -1,0 +1,116 @@
+    Blocking waiting for file lock on artifact directory
+   Compiling rodas5p-integrators v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode-readonly/crates/rodas5p-integrators)
+warning: struct `VerifiedPacketState` is never constructed
+   --> crates/rodas5p-integrators/src/packet_verified_trajectory.rs:269:12
+    |
+269 | pub struct VerifiedPacketState {
+    |            ^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: multiple associated items are never used
+   --> crates/rodas5p-integrators/src/packet_verified_trajectory.rs:282:12
+    |
+281 | impl VerifiedPacketState {
+    | ------------------------ associated items in this implementation
+282 |     pub fn new(
+    |            ^^^
+...
+344 |     pub fn source_model(&self) -> &CollectiveModel {
+    |            ^^^^^^^^^^^^
+...
+347 |     pub fn time(&self) -> f64 {
+    |            ^^^^
+...
+350 |     pub fn modes(&self) -> &[(f64, f64)] {
+    |            ^^^^^
+...
+353 |     pub fn weighted_radius(&self) -> f64 {
+    |            ^^^^^^^^^^^^^^^
+...
+356 |     pub fn config(&self) -> VerifiedPacketConfig {
+    |            ^^^^^^
+...
+359 |     pub fn accepted_windows(&self) -> usize {
+    |            ^^^^^^^^^^^^^^^^
+
+warning: struct `VerifiedPacketAttempt` is never constructed
+   --> crates/rodas5p-integrators/src/packet_verified_trajectory.rs:368:12
+    |
+368 | pub struct VerifiedPacketAttempt {
+    |            ^^^^^^^^^^^^^^^^^^^^^
+
+warning: struct `VerifiedPacketDiagnostics` is never constructed
+   --> crates/rodas5p-integrators/src/packet_verified_trajectory.rs:379:12
+    |
+379 | pub struct VerifiedPacketDiagnostics {
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: methods `attempts`, `accepted`, and `rejected` are never used
+   --> crates/rodas5p-integrators/src/packet_verified_trajectory.rs:384:12
+    |
+383 | impl VerifiedPacketDiagnostics {
+    | ------------------------------ methods in this implementation
+384 |     pub fn attempts(&self) -> &[VerifiedPacketAttempt] {
+    |            ^^^^^^^^
+...
+387 |     pub fn accepted(&self) -> usize {
+    |            ^^^^^^^^
+...
+390 |     pub fn rejected(&self) -> usize {
+    |            ^^^^^^^^
+
+warning: function `advance_verified_packet` is never used
+   --> crates/rodas5p-integrators/src/packet_verified_trajectory.rs:401:8
+    |
+401 | pub fn advance_verified_packet(
+    |        ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `prepare_verified_advance` is never used
+   --> crates/rodas5p-integrators/src/packet_verified_trajectory.rs:437:4
+    |
+437 | fn prepare_verified_advance(
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: struct `VerifiedPacketAdaptiveConfig` is never constructed
+   --> crates/rodas5p-integrators/src/packet_verified_trajectory.rs:497:12
+    |
+497 | pub struct VerifiedPacketAdaptiveConfig {
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `integrate_verified_packet_adaptive` is never used
+   --> crates/rodas5p-integrators/src/packet_verified_trajectory.rs:515:8
+    |
+515 | pub fn integrate_verified_packet_adaptive(
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `is_refinable` is never used
+   --> crates/rodas5p-integrators/src/packet_verified_trajectory.rs:593:4
+    |
+593 | fn is_refinable(error: &VerifiedPacketError) -> bool {
+    |    ^^^^^^^^^^^^
+
+warning: `rodas5p-integrators` (lib) generated 10 warnings
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 12.14s
+     Running tests/all_dag_a05_verified.rs (/workspace/scratch/0dc1e721cf82/runtime/all-dag-target/debug/deps/all_dag_a05_verified-1ca488de4868d921)
+
+running 5 tests
+
+thread 'collective_two_components_use_same_generic_verified_driver' (334) panicked at crates/rodas5p-integrators/tests/all_dag_a05_verified.rs:111:91:
+called `Result::unwrap()` on an `Err` value: Core(InvalidInput("direct linear solver or explicit preconditioner requires an explicit Jacobian"))
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test generic_zero_span_still_validates_configuration_and_model_domain ... ok
+test collective_two_components_use_same_generic_verified_driver ... FAILED
+test unbound_point_problem_cannot_request_verified_authority ... ok
+test one_failed_trial_exposes_only_initial_committed_output ... ok
+A05_GENERIC_PR101 outputs=101 accepted=492 rejected=292 rhs=6272 dense_ops=567711 max_error=8.382183835919932e-15
+test generic_pr101_original_101_point_witness_and_continuous_inheritance ... ok
+
+failures:
+
+failures:
+    collective_two_components_use_same_generic_verified_driver
+
+test result: FAILED. 4 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.24s
+
+error: test failed, to rerun pass `-p rodas5p-integrators --test all_dag_a05_verified`

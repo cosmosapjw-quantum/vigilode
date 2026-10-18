@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "source_manifest_sha256": "5a461ee10fc178e188631e242705d992978d68292d4a10f0ee3f856854cea916",
+  "dag_sha256": "38f2d5c2a5ba44dcf93120bbd0c9a1c98937d20767f74065a5e2372003c68063",
+  "final_native": {
+    "passed": true,
+    "identity_unchanged": true,
+    "native_tests": 65,
+    "compile_fail_doctests": 2,
+    "python_hostile_contracts": 12,
+    "record": "evidence/final_native/RESULT.json"
+  },
+  "late_legacy_oracle": {
+    "native_tests": 1,
+    "numeric_comparisons": 218,
+    "record": "evidence/latest_leja/oracle.json"
+  },
+  "clippy": {
+    "exit_code": 0,
+    "record": "nodes/A09/clippy-final.log",
+    "scope": "core/integrator compiled libraries, new A09 tests/examples; prior node-specific evidence retained"
+  },
+  "a07": {
+    "rows": 36,
+    "schema_valid": true,
+    "source_bound": true,
+    "achieved_error_matched": true,
+    "speed_promotion": "HOLD",
+    "record": "nodes/A07/native_smoke/VALIDATED.json"
+  },
+  "source_whitespace_check": "PASS for *.rs/*.py/*.md/*.toml; raw captured logs preserve trailing blank lines",
+  "publication_scope": "all12 nodes collectively; no default branch change",
+  "broad_production": "HOLD",
+  "speed": "HOLD"
+}

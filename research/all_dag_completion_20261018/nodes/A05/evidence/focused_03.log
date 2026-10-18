@@ -1,0 +1,25 @@
+    Blocking waiting for file lock on artifact directory
+   Compiling rodas5p-integrators v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode-readonly/crates/rodas5p-integrators)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 21.26s
+     Running tests/all_dag_a05_verified.rs (/workspace/scratch/0dc1e721cf82/runtime/all-dag-target/debug/deps/all_dag_a05_verified-1ca488de4868d921)
+
+running 5 tests
+test generic_zero_span_still_validates_configuration_and_model_domain ... ok
+test unbound_point_problem_cannot_request_verified_authority ... ok
+test one_failed_trial_exposes_only_initial_committed_output ... ok
+
+thread 'collective_two_components_use_same_generic_verified_driver' (76) panicked at crates/rodas5p-integrators/tests/all_dag_a05_verified.rs:112:5:
+Some("verified driver minimum step reached") 43
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test collective_two_components_use_same_generic_verified_driver ... FAILED
+A05_GENERIC_PR101 outputs=101 accepted=492 rejected=292 rhs=6272 dense_ops=567711 max_error=8.382183835919932e-15
+test generic_pr101_original_101_point_witness_and_continuous_inheritance ... ok
+
+failures:
+
+failures:
+    collective_two_components_use_same_generic_verified_driver
+
+test result: FAILED. 4 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.28s
+
+error: test failed, to rerun pass `-p rodas5p-integrators --test all_dag_a05_verified`

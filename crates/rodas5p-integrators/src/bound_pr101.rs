@@ -237,7 +237,7 @@ impl Pr101Model {
         Ok(Self { lambda, eta })
     }
 
-    fn candidate_problem(&self) -> Result<OdeProblem, Pr101Error> {
+    pub(crate) fn candidate_problem(&self) -> Result<OdeProblem, Pr101Error> {
         let (lambda, eta) = (self.lambda, self.eta);
         Ok(OdeProblem::new(
             "sealed-pr101",

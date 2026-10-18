@@ -41,6 +41,21 @@ impl GrayScottLogNorm {
         u_tube: &[Interval],
         v_tube: &[Interval],
     ) -> CoreResult<f64> {
+        self.verified_log_norm_upper_counted(u_tube, v_tube, &mut 0)
+    }
+
+    pub(crate) fn verified_log_norm_upper_counted(
+        self,
+        u_tube: &[Interval],
+        v_tube: &[Interval],
+        operations: &mut u64,
+    ) -> CoreResult<f64> {
+        macro_rules! op {
+            ($value:expr) => {{
+                *operations = operations.saturating_add(1);
+                $value
+            }};
+        }
         let cells = self
             .n_grid
             .checked_mul(self.n_grid)
@@ -51,30 +66,34 @@ impl GrayScottLogNorm {
             ));
         }
 
-        let f = Interval::point(0.04)?;
-        let fk = Interval::point(0.04 + 0.06)?;
-        let half = Interval::point(0.5)?;
+        let f = op!(Interval::point(0.04))?;
+        let fk = op!(Interval::point(0.04 + 0.06))?;
+        let half = op!(Interval::point(0.5))?;
+        let zero = op!(Interval::point(0.0))?;
         let mut upper = f64::NEG_INFINITY;
         for (&u_raw, &v_raw) in u_tube.iter().zip(v_tube) {
-            // Interval fields are public, so reconstruct to reject forged
-            // NaN, infinite, or reversed bounds before arithmetic.
-            let u = Interval::new(u_raw.lo, u_raw.hi)?;
-            let v = Interval::new(v_raw.lo, v_raw.hi)?;
-            let v2 = v.mul(v)?;
-            let uv = u.mul(v)?;
-            let a = Interval::point(0.0)?.sub(v2)?.sub(f)?;
-            let d = uv.scale(2.0)?.sub(fk)?;
-            let trace_half_upper = a.add(d)?.mul(half)?.hi;
-            let delta_half = a.sub(d)?.mul(half)?;
-            let offdiag_half = v2.sub(uv.scale(2.0)?)?.mul(half)?;
-            let delta_mag = delta_half.mag();
-            let offdiag_mag = offdiag_half.mag();
-            let radicand_upper = add_up(
-                mul_up(delta_mag, delta_mag)?,
-                mul_up(offdiag_mag, offdiag_mag)?,
-            )?;
-            let block_upper = add_up(trace_half_upper, sqrt_up(radicand_upper)?)?;
-            upper = upper.max(block_upper);
+            let u = op!(Interval::new(u_raw.lo, u_raw.hi))?;
+            let v = op!(Interval::new(v_raw.lo, v_raw.hi))?;
+            let v2 = op!(v.mul(v))?;
+            let uv = op!(u.mul(v))?;
+            let a = op!(zero.sub(v2))?;
+            let a = op!(a.sub(f))?;
+            let twice_uv = op!(uv.scale(2.0))?;
+            let d = op!(twice_uv.sub(fk))?;
+            let trace = op!(a.add(d))?;
+            let trace_half_upper = op!(trace.mul(half))?.hi;
+            let delta = op!(a.sub(d))?;
+            let delta_half = op!(delta.mul(half))?;
+            let offdiag = op!(v2.sub(twice_uv))?;
+            let offdiag_half = op!(offdiag.mul(half))?;
+            let delta_mag = op!(delta_half.mag());
+            let offdiag_mag = op!(offdiag_half.mag());
+            let delta_sq = op!(mul_up(delta_mag, delta_mag))?;
+            let offdiag_sq = op!(mul_up(offdiag_mag, offdiag_mag))?;
+            let radicand_upper = op!(add_up(delta_sq, offdiag_sq))?;
+            let root = op!(sqrt_up(radicand_upper))?;
+            let block_upper = op!(add_up(trace_half_upper, root))?;
+            upper = op!(upper.max(block_upper));
         }
         if upper.is_finite() {
             Ok(upper)
@@ -96,8 +115,15 @@ pub fn gray_scott_2d_with_log_norm(
             "gray-scott-2d requires grid size >= 2".into(),
         ));
     }
-    let n2 = n_grid * n_grid;
-    let n = 2 * n2;
+    let n2 = n_grid
+        .checked_mul(n_grid)
+        .ok_or_else(|| CoreError::Dimension("Gray-Scott grid size overflow".into()))?;
+    let n = n2
+        .checked_mul(2)
+        .ok_or_else(|| CoreError::Dimension("Gray-Scott state dimension overflow".into()))?;
+    n.checked_mul(10)
+        .and_then(|_| n.checked_add(1))
+        .ok_or_else(|| CoreError::Dimension("Gray-Scott sparse storage size overflow".into()))?;
     let dx = 1.0 / (n_grid as f64);
     let inv_dx2 = 1.0 / (dx * dx);
 
@@ -122,67 +148,53 @@ pub fn gray_scott_2d_with_log_norm(
         }
     }
 
-    // Helper to evaluate 5-point Laplacian on periodic grid
-    let laplacian = move |vals: &[f64], out: &mut [f64]| {
-        for j in 0..n_grid {
-            let j_up = if j + 1 < n_grid { j + 1 } else { 0 };
-            let j_down = if j > 0 { j - 1 } else { n_grid - 1 };
-            for i in 0..n_grid {
-                let i_right = if i + 1 < n_grid { i + 1 } else { 0 };
-                let i_left = if i > 0 { i - 1 } else { n_grid - 1 };
-                let idx = i + j * n_grid;
-                let c = vals[idx];
-                let l = vals[i_left + j * n_grid];
-                let r = vals[i_right + j * n_grid];
-                let u = vals[i + j_up * n_grid];
-                let d = vals[i + j_down * n_grid];
-                out[idx] = (l + r + u + d - 4.0 * c) * inv_dx2;
-            }
-        }
+    // Evaluate each stencil directly in its output loop. This preserves the
+    // previous l+r+u+d-4*c arithmetic order and removes the two temporary
+    // Laplacian vectors per RHS/JVP call (four allocations per callback pair).
+    let stencil = move |vals: &[f64], idx: usize| {
+        let i = idx % n_grid;
+        let j = idx / n_grid;
+        let left = if i > 0 { i - 1 } else { n_grid - 1 } + j * n_grid;
+        let right = if i + 1 < n_grid { i + 1 } else { 0 } + j * n_grid;
+        let up = i + if j + 1 < n_grid { j + 1 } else { 0 } * n_grid;
+        let down = i + if j > 0 { j - 1 } else { n_grid - 1 } * n_grid;
+        (vals[left] + vals[right] + vals[up] + vals[down] - 4.0 * vals[idx]) * inv_dx2
     };
 
-    // Full RHS callback
-    let rhs_lap = laplacian;
     let rhs = Arc::new(move |_t: f64, y: &[f64], out: &mut [f64]| {
+        if y.len() != n || out.len() != n {
+            return Err(CoreError::Dimension(
+                "Gray-Scott RHS dimension mismatch".into(),
+            ));
+        }
         let (u, v) = y.split_at(n2);
         let (out_u, out_v) = out.split_at_mut(n2);
-
-        let mut lap_u = vec![0.0f64; n2];
-        let mut lap_v = vec![0.0f64; n2];
-        rhs_lap(u, &mut lap_u);
-        rhs_lap(v, &mut lap_v);
-
         for i in 0..n2 {
             let ui = u[i];
             let vi = v[i];
             let uv2 = ui * vi * vi;
-            out_u[i] = D_U * lap_u[i] - uv2 + F * (1.0 - ui);
-            out_v[i] = D_V * lap_v[i] + uv2 - (F + K) * vi;
+            out_u[i] = D_U * stencil(u, i) - uv2 + F * (1.0 - ui);
+            out_v[i] = D_V * stencil(v, i) + uv2 - (F + K) * vi;
         }
         Ok(())
     });
 
-    // JVP callback
-    let jvp_lap = laplacian;
     let jvp = Arc::new(move |_t: f64, y: &[f64], delta: &[f64], out: &mut [f64]| {
+        if y.len() != n || delta.len() != n || out.len() != n {
+            return Err(CoreError::Dimension(
+                "Gray-Scott JVP dimension mismatch".into(),
+            ));
+        }
         let (u, v) = y.split_at(n2);
         let (du, dv) = delta.split_at(n2);
         let (out_u, out_v) = out.split_at_mut(n2);
-
-        let mut lap_du = vec![0.0f64; n2];
-        let mut lap_dv = vec![0.0f64; n2];
-        jvp_lap(du, &mut lap_du);
-        jvp_lap(dv, &mut lap_dv);
-
         for i in 0..n2 {
             let ui = u[i];
             let vi = v[i];
             let dui = du[i];
             let dvi = dv[i];
-            // d/d(u,v) [-u v^2 + F(1-u)] * (du, dv) = -v^2 du - 2 u v dv - F du
-            out_u[i] = D_U * lap_du[i] - vi * vi * dui - 2.0 * ui * vi * dvi - F * dui;
-            // d/d(u,v) [u v^2 - (F+k)v] * (du, dv) = v^2 du + 2 u v dv - (F+k) dv
-            out_v[i] = D_V * lap_dv[i] + vi * vi * dui + 2.0 * ui * vi * dvi - (F + K) * dvi;
+            out_u[i] = D_U * stencil(du, i) - vi * vi * dui - 2.0 * ui * vi * dvi - F * dui;
+            out_v[i] = D_V * stencil(dv, i) + vi * vi * dui + 2.0 * ui * vi * dvi - (F + K) * dvi;
         }
         Ok(())
     });

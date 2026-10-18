@@ -42,6 +42,22 @@ pub struct PacketWorkCounters {
     pub bernstein_transform_terms: u64,
     /// Complex control-point averages in dyadic de Casteljau subdivision.
     pub bernstein_refinement_terms: u64,
+    /// Valid Bernstein scalar queries, including exhausted refinements.
+    pub bernstein_queries: u64,
+    /// Queries completed by the cheap coefficient gate.
+    pub bernstein_cheap_accepts: u64,
+    /// Queries whose finite refinement budget was exhausted.
+    pub bernstein_budget_exhaustions: u64,
+    /// Fallible Bernstein buffer reservation attempts, including failures.
+    pub bernstein_allocation_requests: u64,
+    /// Complex interval items requested in Bernstein buffer reservations.
+    pub bernstein_reserved_items: u64,
+    /// Complex interval control points copied to temporary polygons.
+    pub bernstein_copy_items: u64,
+    /// Verified residual refinement queries that bypassed the cheap gate.
+    pub bernstein_residual_attempts: u64,
+    /// Residual queries meeting their unchanged threshold after refinement.
+    pub bernstein_residual_false_rejections_saved: u64,
     /// Scalar arithmetic terms used to build reconstruction polynomials.
     pub reconstruction_terms: u64,
     /// Number of scalar spectral/weighted moment accumulations.
@@ -83,6 +99,14 @@ pub struct PacketWorkCounters {
     pub curve_output_certificate_ops: u64,
     /// Fallible preallocation attempts for the represented-curve output workspace.
     pub curve_output_allocation_requests: u64,
+    /// Frozen local-output constructor reservation attempts.
+    pub curve_frozen_allocation_requests: u64,
+    /// Initial uncertainty scalars copied into a frozen local-output owner.
+    pub curve_frozen_radius_items: u64,
+    /// Calls attempted on the frozen local-output owner, including refusals.
+    pub curve_frozen_query_attempts: u64,
+    /// Typed refusals returned by the frozen local-output owner.
+    pub curve_frozen_query_refusals: u64,
 }
 
 impl PacketWorkCounters {
@@ -101,6 +125,14 @@ impl PacketWorkCounters {
             outward_spectral_power_terms: 0,
             bernstein_transform_terms: 0,
             bernstein_refinement_terms: 0,
+            bernstein_queries: 0,
+            bernstein_cheap_accepts: 0,
+            bernstein_budget_exhaustions: 0,
+            bernstein_allocation_requests: 0,
+            bernstein_reserved_items: 0,
+            bernstein_copy_items: 0,
+            bernstein_residual_attempts: 0,
+            bernstein_residual_false_rejections_saved: 0,
             reconstruction_terms: 0,
             moment_terms: 0,
             poly_multiply_terms: 0,
@@ -116,6 +148,10 @@ impl PacketWorkCounters {
             curve_model_constructor_arithmetic_ops: 0,
             curve_output_certificate_ops: 0,
             curve_output_allocation_requests: 0,
+            curve_frozen_allocation_requests: 0,
+            curve_frozen_radius_items: 0,
+            curve_frozen_query_attempts: 0,
+            curve_frozen_query_refusals: 0,
         }
     }
 
@@ -139,6 +175,14 @@ impl PacketWorkCounters {
             + self.outward_spectral_power_terms
             + self.bernstein_transform_terms
             + self.bernstein_refinement_terms
+            + self.bernstein_queries
+            + self.bernstein_cheap_accepts
+            + self.bernstein_budget_exhaustions
+            + self.bernstein_allocation_requests
+            + self.bernstein_reserved_items
+            + self.bernstein_copy_items
+            + self.bernstein_residual_attempts
+            + self.bernstein_residual_false_rejections_saved
             + self.reconstruction_terms
             + self.poly_multiply_terms
             + self.volterra_terms
@@ -153,6 +197,10 @@ impl PacketWorkCounters {
             + self.curve_model_constructor_arithmetic_ops
             + self.curve_output_certificate_ops
             + self.curve_output_allocation_requests
+            + self.curve_frozen_allocation_requests
+            + self.curve_frozen_radius_items
+            + self.curve_frozen_query_attempts
+            + self.curve_frozen_query_refusals
     }
 
     /// Explicitly zero by design (no online Jacobian construction).
@@ -189,6 +237,15 @@ impl PacketWorkCounters {
         self.outward_spectral_power_terms += other.outward_spectral_power_terms;
         self.bernstein_transform_terms += other.bernstein_transform_terms;
         self.bernstein_refinement_terms += other.bernstein_refinement_terms;
+        self.bernstein_queries += other.bernstein_queries;
+        self.bernstein_cheap_accepts += other.bernstein_cheap_accepts;
+        self.bernstein_budget_exhaustions += other.bernstein_budget_exhaustions;
+        self.bernstein_allocation_requests += other.bernstein_allocation_requests;
+        self.bernstein_reserved_items += other.bernstein_reserved_items;
+        self.bernstein_copy_items += other.bernstein_copy_items;
+        self.bernstein_residual_attempts += other.bernstein_residual_attempts;
+        self.bernstein_residual_false_rejections_saved +=
+            other.bernstein_residual_false_rejections_saved;
         self.reconstruction_terms += other.reconstruction_terms;
         self.moment_terms += other.moment_terms;
         self.poly_multiply_terms += other.poly_multiply_terms;
@@ -204,5 +261,9 @@ impl PacketWorkCounters {
         self.curve_model_constructor_arithmetic_ops += other.curve_model_constructor_arithmetic_ops;
         self.curve_output_certificate_ops += other.curve_output_certificate_ops;
         self.curve_output_allocation_requests += other.curve_output_allocation_requests;
+        self.curve_frozen_allocation_requests += other.curve_frozen_allocation_requests;
+        self.curve_frozen_radius_items += other.curve_frozen_radius_items;
+        self.curve_frozen_query_attempts += other.curve_frozen_query_attempts;
+        self.curve_frozen_query_refusals += other.curve_frozen_query_refusals;
     }
 }

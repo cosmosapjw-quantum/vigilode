@@ -1,0 +1,173 @@
+{
+  "schema_version": 1,
+  "node": "A02",
+  "title": "Weighted global trajectory",
+  "scope": "Native undamped zero-carrier collective cubic; exact represented requested mesh; immutable positive absolute mean/mode tolerances",
+  "base_commit": "40a36d922e915e1d1c296adc136b7e5b7676eb67",
+  "implementation_status": "implementation-verified",
+  "proof_status": "derived; A01 T1 reused; independent AT1/AT2 implementation review pass_scoped",
+  "summary": [
+    "Transactional advance freezes incoming weighted ball and commits only after all output gates and next-center admission succeed.",
+    "Adaptive bounded exact dyadic subdivision preserves requested mesh and full original initial ball.",
+    "Rejected numerical candidates retain reason and work snapshots; complete success requires every requested output.",
+    "Elapsed-time headroom reserves capacity after first actual run exposed budget starvation."
+  ],
+  "new_native_tests": 5,
+  "regression_native_tests": 3,
+  "new_exact_rational_containments": 30,
+  "regression_exact_rational_containments": 120,
+  "adaptive_fixture": {
+    "mean_tolerance": 0.0001,
+    "mode_tolerance": 0.0001,
+    "requested_mesh": [
+      0,
+      0.0625,
+      0.125
+    ],
+    "initial_radii": [
+      1e-09,
+      1e-09,
+      1e-09
+    ],
+    "accepted": 16,
+    "rejected": 14,
+    "max_mean_radius": 2.178607416139314e-05,
+    "max_mode_radius": 4.8715142787641056e-05,
+    "max_reference_coordinate_remainder": 3.300031538479502e-17
+  },
+  "commands": [
+    {
+      "command": "cargo test -p rodas5p-integrators --test production_audit_packet_adaptive --test production_audit_packet_verified --locked --offline -- --nocapture",
+      "status": "completed",
+      "exit_code": 0,
+      "evidence": "native_with_bernstein_final.log"
+    },
+    {
+      "command": "cargo run -p rodas5p-integrators --example packet_adaptive_run --locked --offline",
+      "status": "completed",
+      "exit_code": 0,
+      "evidence": "adaptive_final.json"
+    },
+    {
+      "command": "cargo run -p rodas5p-integrators --example packet_adaptive_run --locked --offline -- 2",
+      "status": "completed",
+      "exit_code": 0,
+      "evidence": "adaptive_bernstein.json"
+    },
+    {
+      "command": "cargo clippy -p rodas5p-integrators --test production_audit_packet_adaptive --example packet_adaptive_run --locked --offline -- -D warnings",
+      "status": "completed",
+      "exit_code": 0,
+      "evidence": "clippy_with_bernstein.log"
+    }
+  ],
+  "failures_preserved": [
+    {
+      "class": "numerics",
+      "evidence": "native_attempt1.log",
+      "exit_code": 101,
+      "cause": "Budget starvation with only endpoint hard gates; later requested interval reached max depth.",
+      "repair": "Stricter elapsed-time headroom schedule; same original fixture, mesh and tolerance.",
+      "status": "resolved"
+    },
+    {
+      "class": "implementation",
+      "evidence": "clippy_attempt1.log",
+      "cause": "collapsible_if lint under -D warnings",
+      "repair": "Equivalent let-chain guard",
+      "status": "resolved"
+    },
+    {
+      "class": "implementation",
+      "evidence": "native_final.log",
+      "cause": "Concurrent A10 export referenced PacketResidualRefinement before its definition was written; no tests started.",
+      "repair": "Waited for A10 source-stable notification.",
+      "status": "resolved"
+    },
+    {
+      "class": "implementation",
+      "evidence": "native_with_bernstein.log",
+      "cause": "Two test config literals lacked newly added optional Bernstein-depth field.",
+      "repair": "Added explicit None to the two fixtures.",
+      "status": "resolved"
+    }
+  ],
+  "source_sha256": {
+    "crates/rodas5p-integrators/src/packet_verified_trajectory.rs": "72189a94cc28fd5bd2ebd0245de9f8a9fe7f4d51792ea8973e4654867253e1a0",
+    "crates/rodas5p-integrators/tests/production_audit_packet_adaptive.rs": "392aaa3c6fe8994c441f922680e2508edf38c05b6cb1e76d3d018649b974135f",
+    "crates/rodas5p-integrators/examples/packet_adaptive_run.rs": "1bd59876b676487099396d465c8d15f8ac6d3032d58b93d86254fe03e532306d",
+    "crates/rodas5p-integrators/tests/packet_unequal_frequency_oracle.py": "cb33f0e15f8cd274b53d85e09ab35637789c4ac4e6bbfe0cd65851600678b734",
+    "research/cloud_completion_20261018/PACKET.md": "3a3dbbacbb5ce7ff837667f7fa326bfc09a26377c4fbb2cdb64b294cb40fae63",
+    "Cargo.lock": "04c7d6c147bf19ebb1a627463705d9dcf27337a3ff228dd1169f19eb73c71400"
+  },
+  "nonclaims": [
+    "No measured speedup or zero-allocation authority.",
+    "No universal success at arbitrary tolerance; bounded typed refusal is supported.",
+    "No damped path or dense-output query API added by this node."
+  ],
+  "local_commands": [
+    "cargo test -p rodas5p-integrators --test production_audit_packet_adaptive --test production_audit_packet_verified --locked --offline -- --nocapture",
+    "cargo run --profile measurement -p rodas5p-integrators --example packet_adaptive_run --locked --offline"
+  ],
+  "independent_review": {
+    "reviewer": "/root/dag_a12_independent",
+    "result": "pass_scoped",
+    "scope": "AT1/AT2, transactional commit, exact midpoint durations, immutable weighted owner, stricter heuristic headroom, same-curve A10 replay",
+    "findings": [],
+    "receipt": "Review message received; overall A12 source-hash binding is maintained by the independent reviewer."
+  },
+  "a10_connection": {
+    "configuration": "bernstein_max_depth: Option<usize>",
+    "heuristic_threshold": "half previous residual upper",
+    "same_curve_initial_ball_and_physical_gates": true,
+    "refinement_depth_fixture": 2,
+    "fixture_pre_refinement_refusals_retained": 14,
+    "fixture_bernstein_transform_terms": 3808,
+    "actual_accepted_window_savings_in_this_fixture": 0,
+    "cost_authority": "Selected structural counters only"
+  },
+  "artifact_sha256": {
+    "THEORY_AND_IMPLEMENTATION.md": "8b1a957ed03119219ab1f4683cfdb3cb2b7e31c49df802acdbe84328002bc8c1",
+    "adaptive_bernstein.json": "7887c876dd82a27f94896b0a7bdcd5a0918cda56380b758c437cf4eef46751c7",
+    "adaptive_final.json": "7888b00b6433f49ecea5812b618410fe1c85cf341da8e52b2f62f6a05df98bdb",
+    "adaptive_result.json": "0179fc6c4e5c4f7b40aef62ffe58248ceef891c80d2ae24160aa3947acb85a47",
+    "clippy_attempt1.log": "aa5aea3d3081781cbad0d0b067b2c2e9219f7237ee3ab2759e1f7e42898c8d34",
+    "clippy_final.log": "7974d3c89e0ecce06faebc02ecf27dd733c51d095bd2cb2e1e64729c618701b4",
+    "clippy_with_bernstein.log": "ba6da40d7208b3f5f71d0364d0eeedede32a58a79ca8d631c1579e979d00a4d3",
+    "example.log": "977a4851649aaa465c3a0987a72a23091c726f2a00c3a9fd3f81ed9e3f9e5c57",
+    "example_bernstein.log": "aef6041c8affc2fae60ab71edb34a9839841d6336448b270ebfe82bcfc03c8fe",
+    "example_final.log": "662bab5faee0b16f3459369986423b834856efbe8b3753ecce969cee67224833",
+    "native_attempt1.log": "6c183e51594f1b43223b0f201e192dde8413626d76796c6da76f14b1e4cadf53",
+    "native_attempt2.log": "340a9a11ba00f7f4fd62562e46dddbd5fea185297ee4579e99c4be6c5268965d",
+    "native_final.log": "7a566101f71035db1505c2921d9cf0b965b29b91fb5c987ecf47853e8625557e",
+    "native_with_bernstein.log": "06143b12e03e8ece7e4afd9f224370c27a5162e4013462a2c0df8b1dfc05891d",
+    "native_with_bernstein_final.log": "849ef06951bf4db2b6f7f7209cbfb934f415d0ced640c022a2886368b3c4fc9b",
+    "rustc.txt": "a834181975ab3494d51a1a01e4a9d4321fecd674a52e3db3cf93b3b84b6fc2c1"
+  },
+  "remaining_local_work": [
+    "Compile and execute packaged tests/examples on local normal toolchain as part of the all-node handoff.",
+    "Optional matched-accuracy performance measurement; this node has no elapsed speed promotion."
+  ],
+  "stages": {
+    "R1": "reused original A02 scope",
+    "R2": "reused original weighted T1 proof",
+    "R3": "AT1/AT2 assumptions explicit",
+    "R4": "selected transaction plus exact dyadic retry",
+    "R5": "AT1 global inclusion and AT2 bounded refinement derived",
+    "R6": "independent A12 review pass_scoped",
+    "R7": "30 new exact rational containments and boundary tests pass",
+    "R8": "scoped implementation accepted",
+    "R9": "native APIs and runnable JSON example complete",
+    "R10": "source/evidence hashes and local commands captured",
+    "C1": "baseline read",
+    "C2": "same original model and immutable owner traced",
+    "C3": "hard physical gates plus stricter reserve",
+    "C4": "A01/A10 dependency coordination",
+    "C5": "native code complete",
+    "C6": "5 new tests pass",
+    "C7": "exact nonlinear ODE oracle pass",
+    "C8": "refusal retention, input overflow, subnormal time tested",
+    "C9": "independent review pass_scoped",
+    "C10": "local execution commands packaged; publication owned by root"
+  }
+}

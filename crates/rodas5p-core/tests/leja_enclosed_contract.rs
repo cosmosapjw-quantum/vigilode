@@ -3,7 +3,8 @@
 //! research/cloud_completion_20261018/leja_fraction_oracle.py checks them using
 //! exact Fraction intervals and spectral projectors, independently of Leja.
 use rodas5p_core::leja_action::{
-    CertifiedLejaWorkspace, LEJA_ENCLOSED_SCHEMA, leja_phi_action_certified_capped,
+    CertifiedLejaCoeffCache, CertifiedLejaWorkspace, LEJA_ENCLOSED_SCHEMA, LejaAdmissionError,
+    leja_phi_action_certified_capped,
     leja_phi_action_enclosed_with_workspace,
 };
 use rodas5p_core::polynomial_action::{
@@ -256,4 +257,215 @@ fn explicit_enclosure_rejects_declared_domain_and_keeps_success_transaction() {
         .is_err()
     );
     assert_eq!(workspace.report().unwrap(), &committed);
+}
+
+#[test]
+fn admitted_fused_output_keeps_bound_budget_and_owner_together() {
+    let mut a = DenseMatrix::zeros(2, 2);
+    a[(0, 0)] = -1.0;
+    a[(1, 1)] = -8.0;
+    let operator = SymmetricNonpositiveOperator::gershgorin(a).unwrap();
+    let input = JointPhiInput::SameVector {
+        vector: &[1.0, -2.0],
+        scales: [1.0, 0.0, 0.0, 0.0, 0.0],
+    };
+    let mut workspace = CertifiedLejaWorkspace::new(2, 1);
+    let report = leja_phi_action_enclosed_with_workspace(
+        &operator,
+        0.5,
+        input,
+        1e-20,
+        1,
+        None,
+        &mut WorkCounters::default(),
+        &mut workspace,
+        None,
+    )
+    .unwrap();
+    assert!(!report.converged());
+    assert!(matches!(
+        report.admit_requested_budget(),
+        Err(LejaAdmissionError::BoundExceedsBudget { .. })
+    ));
+    let original_budget = report.total_budget();
+    let bound = report.total_bound();
+    let token = report.admit_enclosed_fused(bound).unwrap();
+    assert_eq!(token.bound(), bound);
+    assert_eq!(token.budget(), bound);
+    assert_eq!(token.fused().as_ptr(), report.fused().as_ptr());
+    assert_eq!(report.total_budget(), original_budget);
+    assert!(!report.converged());
+    let smaller = f64::from_bits(bound.to_bits() - 1);
+    assert!(matches!(
+        report.admit_enclosed_fused(smaller),
+        Err(LejaAdmissionError::BoundExceedsBudget { .. })
+    ));
+}
+
+#[test]
+fn admission_refuses_legacy_initial_workspace_and_invalid_budgets() {
+    let initial_workspace = CertifiedLejaWorkspace::new(1, 1);
+    assert!(matches!(
+        initial_workspace.report().unwrap().admit_enclosed_fused(1.0),
+        Err(LejaAdmissionError::Uncertified)
+    ));
+    let mut a = DenseMatrix::zeros(1, 1);
+    a[(0, 0)] = -1.0;
+    let operator = SymmetricNonpositiveOperator::gershgorin(a).unwrap();
+    let input = JointPhiInput::SameVector {
+        vector: &[1.0],
+        scales: [1.0, 0.0, 0.0, 0.0, 0.0],
+    };
+    let legacy = leja_phi_action_certified_capped(
+        &operator,
+        1.0,
+        input,
+        1e-8,
+        8,
+        &mut WorkCounters::default(),
+    )
+    .unwrap();
+    assert!(legacy.converged());
+    assert!(matches!(
+        legacy.admit_enclosed_fused(f64::MAX),
+        Err(LejaAdmissionError::Uncertified)
+    ));
+    let mut workspace = CertifiedLejaWorkspace::new(1, 1);
+    let report = leja_phi_action_enclosed_with_workspace(
+        &operator,
+        1.0,
+        input,
+        1e-8,
+        8,
+        None,
+        &mut WorkCounters::default(),
+        &mut workspace,
+        None,
+    )
+    .unwrap();
+    assert!(report.admit_requested_budget().is_ok());
+    for invalid in [-1.0, f64::NEG_INFINITY, f64::INFINITY, f64::NAN] {
+        assert!(matches!(
+            report.admit_enclosed_fused(invalid),
+            Err(LejaAdmissionError::InvalidBudget { .. })
+        ));
+    }
+}
+
+#[test]
+fn coefficient_cache_reuse_does_not_reuse_another_operators_output() {
+    // The operators have identical Gershgorin enclosures and coefficient
+    // cache keys, but opposite off-diagonal signs and different actions.
+    let operators: Vec<_> = [1.0, -1.0]
+        .into_iter()
+        .map(|off| {
+            let mut a = DenseMatrix::zeros(2, 2);
+            a[(0, 0)] = -3.0;
+            a[(1, 1)] = -3.0;
+            a[(0, 1)] = off;
+            a[(1, 0)] = off;
+            SymmetricNonpositiveOperator::gershgorin(a).unwrap()
+        })
+        .collect();
+    let input = JointPhiInput::SameVector {
+        vector: &[1.0, 0.0],
+        scales: [1.0, 0.0, 0.0, 0.0, 0.0],
+    };
+    let mut cache = CertifiedLejaCoeffCache::new();
+    let mut workspace = CertifiedLejaWorkspace::new(2, 1);
+    let mut first = Vec::new();
+    for (i, operator) in operators.iter().enumerate() {
+        let report = leja_phi_action_enclosed_with_workspace(
+            operator,
+            0.125,
+            input,
+            1e-8,
+            32,
+            Some(&mut cache),
+            &mut WorkCounters::default(),
+            &mut workspace,
+            None,
+        )
+        .unwrap();
+        let admitted = report.admit_requested_budget().unwrap();
+        if i == 0 {
+            assert_eq!(report.coefficient_setups(), 1);
+            assert!(admitted.fused()[1] > admitted.bound());
+            first = admitted.fused().to_vec();
+        } else {
+            assert_eq!(report.coefficient_setups(), 0);
+            assert!(admitted.fused()[1] < -admitted.bound());
+            assert_eq!(admitted.fused()[0], first[0]);
+            assert_eq!(admitted.fused()[1], -first[1]);
+        }
+    }
+}
+
+#[test]
+fn refused_overflow_attempt_does_not_change_admissible_report() {
+    let mut a = DenseMatrix::zeros(1, 1);
+    a[(0, 0)] = -1.0;
+    let operator = SymmetricNonpositiveOperator::gershgorin(a).unwrap();
+    let mut workspace = CertifiedLejaWorkspace::new(1, 1);
+    let mut work = WorkCounters::default();
+    let committed = leja_phi_action_enclosed_with_workspace(
+        &operator,
+        0.0,
+        JointPhiInput::SameVector {
+            vector: &[1.0],
+            scales: [1.0, 0.0, 0.0, 0.0, 0.0],
+        },
+        1e-8,
+        8,
+        None,
+        &mut work,
+        &mut workspace,
+        None,
+    )
+    .unwrap()
+    .clone();
+    assert!(committed.admit_requested_budget().is_ok());
+    let result = leja_phi_action_enclosed_with_workspace(
+        &operator,
+        0.0,
+        JointPhiInput::SameVector {
+            vector: &[f64::MAX],
+            scales: [2.0, 0.0, 0.0, 0.0, 0.0],
+        },
+        1e-8,
+        8,
+        None,
+        &mut work,
+        &mut workspace,
+        None,
+    );
+    assert!(result.is_err());
+    assert_eq!(workspace.report(), Some(&committed));
+    assert!(workspace.report().unwrap().admit_requested_budget().is_ok());
+}
+
+#[test]
+fn exact_zero_fused_action_can_be_admitted_at_zero_budget() {
+    let mut a = DenseMatrix::zeros(1, 1);
+    a[(0, 0)] = -1.0;
+    let operator = SymmetricNonpositiveOperator::gershgorin(a).unwrap();
+    let mut workspace = CertifiedLejaWorkspace::new(1, 1);
+    let report = leja_phi_action_enclosed_with_workspace(
+        &operator,
+        0.5,
+        JointPhiInput::SameVector {
+            vector: &[0.0],
+            scales: [1.0; 5],
+        },
+        1e-8,
+        8,
+        None,
+        &mut WorkCounters::default(),
+        &mut workspace,
+        None,
+    )
+    .unwrap();
+    let token = report.admit_enclosed_fused(0.0).unwrap();
+    assert_eq!(token.bound(), 0.0);
+    assert_eq!(token.fused(), &[0.0]);
 }

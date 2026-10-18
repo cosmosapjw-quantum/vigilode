@@ -1595,7 +1595,94 @@ pub struct CertifiedLejaReport {
     certification_ops: u64,
 }
 
+/// Why a represented fused action cannot be consumed at an absolute budget.
+/// These decisions do not alter the report or perform a new action.
+#[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+#[serde(rename_all = "kebab-case", tag = "reason")]
+pub enum LejaAdmissionError {
+    InvalidBudget { budget: f64 },
+    /// The report was produced by a legacy candidate API or has no complete
+    /// represented dense-symmetric enclosure authority.
+    Uncertified,
+    BoundExceedsBudget { bound: f64, budget: f64 },
+}
+
+/// Borrowed, budget-admitted **fused** output of the explicit enclosed API.
+///
+/// Construction is private, so downstream dispatch cannot accidentally admit a
+/// legacy candidate, detached status, or merely converged truncation estimate.
+/// The lifetime retains the immutable report that owns the actual output.
+/// Admission performs O(1) work, borrows the vector and allocates no memory.
+///
+/// ```compile_fail
+/// use rodas5p_core::leja_action::AdmittedLejaFused;
+/// fn forge(report: &rodas5p_core::leja_action::CertifiedLejaReport) {
+///     let _ = AdmittedLejaFused { report, bound: 0.0, budget: 1.0 };
+/// }
+/// ```
+#[derive(Clone, Copy, Debug)]
+pub struct AdmittedLejaFused<'a> {
+    report: &'a CertifiedLejaReport,
+    bound: f64,
+    budget: f64,
+}
+
+impl<'a> AdmittedLejaFused<'a> {
+    pub fn fused(&self) -> &'a [f64] {
+        self.report.fused()
+    }
+    pub const fn bound(&self) -> f64 {
+        self.bound
+    }
+    pub const fn budget(&self) -> f64 {
+        self.budget
+    }
+}
+
 impl CertifiedLejaReport {
+    /// Admit this stored fused result at a finite nonnegative absolute budget.
+    /// The result encloses the same represented action as the owning report.
+    ///
+    /// A finite `Certified` bound remains valid if the degree cap prevented
+    /// convergence. Such a report is admitted at a new budget only when its
+    /// complete bound fits that budget. The original `total_budget()` and
+    /// `converged()` values are preserved; this does not relax an existing
+    /// caller's tolerance. Use [`Self::admit_requested_budget`] when enforcing
+    /// the original action request.
+    pub fn admit_enclosed_fused(
+        &self,
+        budget: f64,
+    ) -> Result<AdmittedLejaFused<'_>, LejaAdmissionError> {
+        if !(budget.is_finite() && budget >= 0.0) {
+            return Err(LejaAdmissionError::InvalidBudget { budget });
+        }
+        let bound = match self.total_error {
+            TotalErrorStatus::Certified { bound }
+                if self.schema == LEJA_ENCLOSED_SCHEMA
+                    && matches!(self.evidence, EnclosureEvidence::Gershgorin)
+                    && bound.is_finite()
+                    && bound >= 0.0
+                    && bound == self.total_bound =>
+            {
+                bound
+            }
+            _ => return Err(LejaAdmissionError::Uncertified),
+        };
+        if bound > budget {
+            return Err(LejaAdmissionError::BoundExceedsBudget { bound, budget });
+        }
+        Ok(AdmittedLejaFused {
+            report: self,
+            bound,
+            budget,
+        })
+    }
+
+    /// Admit the fused output at the original request's unchanged budget.
+    pub fn admit_requested_budget(&self) -> Result<AdmittedLejaFused<'_>, LejaAdmissionError> {
+        self.admit_enclosed_fused(self.total_budget)
+    }
+
     pub fn schema(&self) -> &str {
         &self.schema
     }
@@ -1982,8 +2069,10 @@ pub fn leja_phi_action_certified_with_setup_work<'a>(
 ///
 /// The certificate covers `report.fused()`, not separate column errors, model
 /// uncertainty or ODE trajectory error. `Certified { bound }` records an
-/// enclosing bound even when `converged()` is false; callers must additionally
-/// check convergence when enforcing `total_budget`.
+/// enclosing bound even when `converged()` is false. Call
+/// [`CertifiedLejaReport::admit_requested_budget`] to consume a fused result
+/// satisfying the original `total_budget`, or `admit_enclosed_fused(budget)`
+/// for a separately specified absolute budget.
 ///
 /// After warm-up, fixed dimensions/cap and a populated coefficient cache allow
 /// an allocation-free successful call. `setup_work` optionally records static

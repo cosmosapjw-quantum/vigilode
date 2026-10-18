@@ -1,0 +1,698 @@
+{
+  "schema": "vigilode-a04-arithmetic-research-decision-v1",
+  "research_execution": "COMPLETED_BOUNDED_EXACT_DERIVATION",
+  "requested_research_profile": "gpt-6.1-sol/xhigh",
+  "observed_runtime_identity": "NOT_INDEPENDENTLY_OBSERVED",
+  "a04_total_authority": "EstimateOnly",
+  "a04_total_decision": "HOLD",
+  "claims": [
+    {
+      "id": "A04-T2-HISTORICAL-COMPONENTWISE",
+      "status": "SUPERSEDED",
+      "historical_source": "docs/reviews/20261011_py05/LEJA_TOTAL_BOUND.md:110-114",
+      "source_sha256": "a6bfee9ed0283d5a0fc24629ab6e0495b38ba7236670d5f343a3a1884c438613",
+      "reason": "An induced-norm geometric estimate does not imply the same componentwise estimate scaled by the individual component of v_N.",
+      "exact_counterexample": "L=4x4 lower shift, v0=e0, N=2: tail[3]=1/6 > historical bound[3]=0.",
+      "evidence": "first_run.stdout.json"
+    },
+    {
+      "id": "A04-T2-CURRENT-UNIFORM-TAIL",
+      "status": "DERIVED_AND_EXACT_WITNESS_CHECKED",
+      "source": "crates/rodas5p-core/src/leja_action.rs:1156-1163",
+      "source_sha256": "25904301d40f11d6a5fee1d27aac7454ca02874a9e995634e7909af2e4ae97e8",
+      "formula": "Each nonnegative tail component is bounded by max_i(v_N_hi[i]) * q_hi / (1-q_hi), with q_hi>=||L||_inf/(N+1), q_hi<1, using outward arithmetic.",
+      "exact_counterexample_uniform_bound": "1/4 >= 1/6",
+      "admission": "No independent total-path admission is implied."
+    },
+    {
+      "id": "A04-STALE-MISSING-REPLAY-WORDING",
+      "status": "SUPERSEDED_AS_CURRENT_CODE_DESCRIPTION",
+      "reason": "Current source already has interval matrix-action, recurrence, represented coefficient accumulation, scaling/fusion and scaled outward norm replay. Remaining work is source-matched total-path proof/oracle/admission, not reimplementation of those helpers."
+    }
+  ],
+  "existing_evidence_reusable": [
+    "The current Leja, setup-work and Leja-contract hashes equal setup_repair_review.json source hashes.",
+    "The recurrence additive-underflow slice has an existing independent SCOPED_PASS.",
+    "Immutable report/cache boundary and separate cold/warm setup receipts remain reusable under identical relevant source."
+  ],
+  "next_action": {
+    "id": "A04-PROOF-ORACLE-01",
+    "status": "READY_FOR_BOUNDED_PROOF_ORACLE_REPAIR",
+    "implementation_paths": [
+      "new crates/rodas5p-core/tests/production_audit_leja_arithmetic_oracle.rs",
+      "new crates/rodas5p-core/tests/leja_fraction_oracle.py",
+      "new A04 preregistration and evidence only"
+    ],
+    "initial_leja_production_edits": "NONE",
+    "complete_contract": "DERIVATION_KO.md: remaining duties and exact reference formulas",
+    "required_cases": [
+      "coefficient table against complete-homogeneous-polynomial Fraction series with rigorous remainder",
+      "actual fused returned output against independent Fraction matrix-phi Taylor series with rigorous remainder",
+      "normal/subnormal, cancellation, signed SameVector and Distinct input paths",
+      "zero/scalar/newton branches, Ok(converged=false) degree-cap report and typed nonfinite/overflow Err",
+      "same-region allocator positive control followed by unchanged warmed zero-allocation contract"
+    ],
+    "repair_trigger": "Only an actual FALSIFIED coefficient/output inclusion result can trigger a separately bounded code repair; INCONCLUSIVE refines only oracle order.",
+    "post_execution": "Independent reviewer decides only the completely closed source-bound scope; EstimateOnly persists meanwhile.",
+    "frozen_oracle_contract": {
+      "status": "FROZEN_CONTRACT_ONLY_NOT_EXECUTED",
+      "binary64_encoding": "IEEE-754 u64 hex bit strings; decode bits directly. Shared arrays are immutable fixture inputs. No decimal reparsing.",
+      "shared_input_bit_arrays": {
+        "A_DIAG2": [
+          [
+            "0xbff0000000000000",
+            "0x0000000000000000"
+          ],
+          [
+            "0x0000000000000000",
+            "0xc000000000000000"
+          ]
+        ],
+        "A_NEG_ID2": [
+          [
+            "0xbff0000000000000",
+            "0x0000000000000000"
+          ],
+          [
+            "0x0000000000000000",
+            "0xbff0000000000000"
+          ]
+        ],
+        "A_COUPLED2": [
+          [
+            "0xbff0000000000000",
+            "0x3fd0000000000000"
+          ],
+          [
+            "0x3fd0000000000000",
+            "0xc000000000000000"
+          ]
+        ],
+        "A_SUBNORMAL2": [
+          [
+            "0x8000000000000001",
+            "0x0000000000000000"
+          ],
+          [
+            "0x0000000000000000",
+            "0x8000000000000002"
+          ]
+        ],
+        "A_OVERFLOW2": [
+          [
+            "0xc059000000000000",
+            "0x0000000000000000"
+          ],
+          [
+            "0x0000000000000000",
+            "0xc056800000000000"
+          ]
+        ],
+        "A_ZERO1": [
+          [
+            "0x0000000000000000"
+          ]
+        ],
+        "W_DISTINCT2": [
+          [
+            "0x3ff0000000000000",
+            "0xbff0000000000000"
+          ],
+          [
+            "0x3fe0000000000000",
+            "0x3fd0000000000000"
+          ],
+          [
+            "0xbfd0000000000000",
+            "0x3fe0000000000000"
+          ],
+          [
+            "0x3fc0000000000000",
+            "0xbfc0000000000000"
+          ],
+          [
+            "0x0000000000000000",
+            "0x3ff0000000000000"
+          ]
+        ],
+        "W_ZERO2": [
+          [
+            "0x0000000000000000",
+            "0x0000000000000000"
+          ],
+          [
+            "0x0000000000000000",
+            "0x0000000000000000"
+          ],
+          [
+            "0x0000000000000000",
+            "0x0000000000000000"
+          ],
+          [
+            "0x0000000000000000",
+            "0x0000000000000000"
+          ],
+          [
+            "0x0000000000000000",
+            "0x0000000000000000"
+          ]
+        ],
+        "W_CANCEL1": [
+          [
+            "0x4350000000000000"
+          ],
+          [
+            "0x3ff0000000000000"
+          ],
+          [
+            "0xc360000000000000"
+          ],
+          [
+            "0x0000000000000000"
+          ],
+          [
+            "0x0000000000000000"
+          ]
+        ],
+        "V_SIGNED2": [
+          "0x3ff0000000000000",
+          "0xbff0000000000000"
+        ],
+        "V_TINY2": [
+          "0x0000000000000001",
+          "0x0000000000000001"
+        ],
+        "V_SUBOP2": [
+          "0x3fe0000000000000",
+          "0x3ff0000000000000"
+        ],
+        "V_OVERFLOW2": [
+          "0x7fefffffffffffff",
+          "0x7fefffffffffffff"
+        ],
+        "V_NAN2": [
+          "0x7ff8000000000000",
+          "0x3ff0000000000000"
+        ],
+        "V_INF2": [
+          "0x7ff0000000000000",
+          "0x3ff0000000000000"
+        ],
+        "S_SIGNED": [
+          "0x3ff0000000000000",
+          "0xbfe0000000000000",
+          "0x3fd0000000000000",
+          "0x4000000000000000",
+          "0xbff0000000000000"
+        ],
+        "S_ALL1": [
+          "0x3ff0000000000000",
+          "0x3ff0000000000000",
+          "0x3ff0000000000000",
+          "0x3ff0000000000000",
+          "0x3ff0000000000000"
+        ],
+        "S_EXP_ONLY": [
+          "0x3ff0000000000000",
+          "0x0000000000000000",
+          "0x0000000000000000",
+          "0x0000000000000000",
+          "0x0000000000000000"
+        ],
+        "S_INF": [
+          "0x7ff0000000000000",
+          "0x0000000000000000",
+          "0x0000000000000000",
+          "0x0000000000000000",
+          "0x0000000000000000"
+        ]
+      },
+      "action_fixtures": [
+        {
+          "id": "A04-F01-ZERO-DISTINCT",
+          "operator_bits_ref": "A_DIAG2",
+          "constructor": "SymmetricNonpositiveOperator::gershgorin",
+          "input": {
+            "kind": "Distinct",
+            "vectors_bits_ref": "W_ZERO2",
+            "effective_scales_bits": [
+              "0x3ff0000000000000",
+              "0x3ff0000000000000",
+              "0x3ff0000000000000",
+              "0x3ff0000000000000",
+              "0x3ff0000000000000"
+            ]
+          },
+          "h_bits": "0x3ff0000000000000",
+          "total_budget_bits": "0x3e45798ee2308c3a",
+          "degree_cap": 16,
+          "expected": {
+            "return": "Ok",
+            "branch": "zero-input",
+            "converged": true,
+            "authority": "EstimateOnly"
+          },
+          "numeric_oracle": "FUSED_TAYLOR_INTERVAL_TRIAGE"
+        },
+        {
+          "id": "A04-F02-SCALAR-DISTINCT",
+          "operator_bits_ref": "A_NEG_ID2",
+          "constructor": "SymmetricNonpositiveOperator::gershgorin",
+          "input": {
+            "kind": "Distinct",
+            "vectors_bits_ref": "W_DISTINCT2",
+            "effective_scales_bits": [
+              "0x3ff0000000000000",
+              "0x3ff0000000000000",
+              "0x3ff0000000000000",
+              "0x3ff0000000000000",
+              "0x3ff0000000000000"
+            ]
+          },
+          "h_bits": "0x3fe0000000000000",
+          "total_budget_bits": "0x3e45798ee2308c3a",
+          "degree_cap": 16,
+          "expected": {
+            "return": "Ok",
+            "branch": "scalar",
+            "converged": true,
+            "authority": "EstimateOnly"
+          },
+          "numeric_oracle": "FUSED_TAYLOR_INTERVAL_TRIAGE"
+        },
+        {
+          "id": "A04-F03-NEWTON-DISTINCT",
+          "operator_bits_ref": "A_COUPLED2",
+          "constructor": "SymmetricNonpositiveOperator::gershgorin",
+          "input": {
+            "kind": "Distinct",
+            "vectors_bits_ref": "W_DISTINCT2",
+            "effective_scales_bits": [
+              "0x3ff0000000000000",
+              "0x3ff0000000000000",
+              "0x3ff0000000000000",
+              "0x3ff0000000000000",
+              "0x3ff0000000000000"
+            ]
+          },
+          "h_bits": "0x3fe0000000000000",
+          "total_budget_bits": "0x3e45798ee2308c3a",
+          "degree_cap": 16,
+          "expected": {
+            "return": "Ok",
+            "branch": "newton",
+            "converged": true,
+            "authority": "EstimateOnly"
+          },
+          "numeric_oracle": "FUSED_TAYLOR_INTERVAL_TRIAGE"
+        },
+        {
+          "id": "A04-F04-NEWTON-SAME-SIGNED",
+          "operator_bits_ref": "A_COUPLED2",
+          "constructor": "SymmetricNonpositiveOperator::gershgorin",
+          "input": {
+            "kind": "SameVector",
+            "vector_bits_ref": "V_SIGNED2",
+            "scales_bits_ref": "S_SIGNED"
+          },
+          "h_bits": "0x3fe0000000000000",
+          "total_budget_bits": "0x3e45798ee2308c3a",
+          "degree_cap": 16,
+          "expected": {
+            "return": "Ok",
+            "branch": "newton",
+            "converged": true,
+            "authority": "EstimateOnly"
+          },
+          "numeric_oracle": "FUSED_TAYLOR_INTERVAL_TRIAGE"
+        },
+        {
+          "id": "A04-F05-SUBNORMAL-INPUT",
+          "operator_bits_ref": "A_DIAG2",
+          "constructor": "SymmetricNonpositiveOperator::gershgorin",
+          "input": {
+            "kind": "SameVector",
+            "vector_bits_ref": "V_TINY2",
+            "scales_bits_ref": "S_ALL1"
+          },
+          "h_bits": "0x3fd0000000000000",
+          "total_budget_bits": "0x3e45798ee2308c3a",
+          "degree_cap": 8,
+          "expected": {
+            "return": "Ok",
+            "branch": "newton",
+            "converged": true,
+            "authority": "EstimateOnly"
+          },
+          "numeric_oracle": "FUSED_TAYLOR_INTERVAL_TRIAGE"
+        },
+        {
+          "id": "A04-F06-SUBNORMAL-OPERATOR",
+          "operator_bits_ref": "A_SUBNORMAL2",
+          "constructor": "SymmetricNonpositiveOperator::gershgorin",
+          "input": {
+            "kind": "SameVector",
+            "vector_bits_ref": "V_SUBOP2",
+            "scales_bits_ref": "S_EXP_ONLY"
+          },
+          "h_bits": "0x3fe0000000000000",
+          "total_budget_bits": "0x3e45798ee2308c3a",
+          "degree_cap": 8,
+          "expected": {
+            "return": "Ok",
+            "branch": "newton",
+            "converged": true,
+            "authority": "EstimateOnly"
+          },
+          "numeric_oracle": "FUSED_TAYLOR_INTERVAL_TRIAGE"
+        },
+        {
+          "id": "A04-F07-CANCELLATION-SCALAR",
+          "operator_bits_ref": "A_ZERO1",
+          "constructor": "SymmetricNonpositiveOperator::gershgorin",
+          "input": {
+            "kind": "Distinct",
+            "vectors_bits_ref": "W_CANCEL1",
+            "effective_scales_bits": [
+              "0x3ff0000000000000",
+              "0x3ff0000000000000",
+              "0x3ff0000000000000",
+              "0x3ff0000000000000",
+              "0x3ff0000000000000"
+            ]
+          },
+          "h_bits": "0x3ff0000000000000",
+          "total_budget_bits": "0x3e45798ee2308c3a",
+          "degree_cap": 16,
+          "expected": {
+            "return": "Ok",
+            "branch": "scalar",
+            "converged": false,
+            "authority": "EstimateOnly"
+          },
+          "numeric_oracle": "FUSED_TAYLOR_INTERVAL_TRIAGE"
+        },
+        {
+          "id": "A04-F08-DEGREE-CAP",
+          "operator_bits_ref": "A_COUPLED2",
+          "constructor": "SymmetricNonpositiveOperator::gershgorin",
+          "input": {
+            "kind": "Distinct",
+            "vectors_bits_ref": "W_DISTINCT2",
+            "effective_scales_bits": [
+              "0x3ff0000000000000",
+              "0x3ff0000000000000",
+              "0x3ff0000000000000",
+              "0x3ff0000000000000",
+              "0x3ff0000000000000"
+            ]
+          },
+          "h_bits": "0x3fe0000000000000",
+          "total_budget_bits": "0x3d719799812dea11",
+          "degree_cap": 1,
+          "expected": {
+            "return": "Ok",
+            "branch": "newton",
+            "converged": false,
+            "authority": "EstimateOnly"
+          },
+          "numeric_oracle": "FUSED_TAYLOR_INTERVAL_TRIAGE"
+        },
+        {
+          "id": "A04-F09-MATVEC-OVERFLOW",
+          "operator_bits_ref": "A_OVERFLOW2",
+          "constructor": "SymmetricNonpositiveOperator::gershgorin",
+          "input": {
+            "kind": "SameVector",
+            "vector_bits_ref": "V_OVERFLOW2",
+            "scales_bits_ref": "S_EXP_ONLY"
+          },
+          "h_bits": "0x3ff0000000000000",
+          "total_budget_bits": "0x3e45798ee2308c3a",
+          "degree_cap": 8,
+          "expected": {
+            "return": "Err",
+            "error_family": "CoreError::NonFinite"
+          },
+          "numeric_oracle": "NOT_APPLICABLE_TYPED_REFUSAL"
+        },
+        {
+          "id": "A04-F10-NAN-INPUT",
+          "operator_bits_ref": "A_DIAG2",
+          "constructor": "SymmetricNonpositiveOperator::gershgorin",
+          "input": {
+            "kind": "SameVector",
+            "vector_bits_ref": "V_NAN2",
+            "scales_bits_ref": "S_ALL1"
+          },
+          "h_bits": "0x3fd0000000000000",
+          "total_budget_bits": "0x3e45798ee2308c3a",
+          "degree_cap": 8,
+          "expected": {
+            "return": "Err",
+            "error_family": "CoreError::NonFinite"
+          },
+          "numeric_oracle": "NOT_APPLICABLE_TYPED_REFUSAL"
+        },
+        {
+          "id": "A04-F11-INF-INPUT",
+          "operator_bits_ref": "A_DIAG2",
+          "constructor": "SymmetricNonpositiveOperator::gershgorin",
+          "input": {
+            "kind": "SameVector",
+            "vector_bits_ref": "V_INF2",
+            "scales_bits_ref": "S_ALL1"
+          },
+          "h_bits": "0x3fd0000000000000",
+          "total_budget_bits": "0x3e45798ee2308c3a",
+          "degree_cap": 8,
+          "expected": {
+            "return": "Err",
+            "error_family": "CoreError::NonFinite"
+          },
+          "numeric_oracle": "NOT_APPLICABLE_TYPED_REFUSAL"
+        },
+        {
+          "id": "A04-F12-INF-SCALE",
+          "operator_bits_ref": "A_DIAG2",
+          "constructor": "SymmetricNonpositiveOperator::gershgorin",
+          "input": {
+            "kind": "SameVector",
+            "vector_bits_ref": "V_SIGNED2",
+            "scales_bits_ref": "S_INF"
+          },
+          "h_bits": "0x3fd0000000000000",
+          "total_budget_bits": "0x3e45798ee2308c3a",
+          "degree_cap": 8,
+          "expected": {
+            "return": "Err",
+            "error_family": "CoreError::NonFinite"
+          },
+          "numeric_oracle": "NOT_APPLICABLE_TYPED_REFUSAL"
+        }
+      ],
+      "coefficient_fixtures": [
+        {
+          "id": "A04-C01-NORMAL",
+          "c_bits": "0xbff8000000000000",
+          "gamma_bits": "0x3fd0000000000000",
+          "xi_bits": [
+            "0x4000000000000000",
+            "0xc000000000000000",
+            "0x0000000000000000",
+            "0x3ff0000000000000",
+            "0xbff0000000000000",
+            "0x3fe0000000000000",
+            "0xbfe0000000000000",
+            "0x3fd0000000000000",
+            "0xbfd0000000000000"
+          ],
+          "degree_cap": 8,
+          "native_api": "leja_divided_differences_certified",
+          "k_values": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "j_values": "0..degree_cap inclusive",
+          "expected": {
+            "return": "Ok",
+            "coefficient_and_radius": "finite; radius>=0"
+          },
+          "reference_nodes": "Decode c/gamma/xi bits separately to exact rationals, then x_i=Q(c)+Q(gamma)*Q(xi_i); no intermediate f64 rounding."
+        },
+        {
+          "id": "A04-C02-SUBNORMAL",
+          "c_bits": "0x8000000000000001",
+          "gamma_bits": "0x0000000000000001",
+          "xi_bits": [
+            "0x4000000000000000",
+            "0xc000000000000000",
+            "0x0000000000000000"
+          ],
+          "degree_cap": 2,
+          "native_api": "leja_divided_differences_certified",
+          "k_values": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "j_values": "0..degree_cap inclusive",
+          "expected": {
+            "return": "Ok",
+            "coefficient_and_radius": "finite; radius>=0"
+          },
+          "reference_nodes": "Decode c/gamma/xi bits separately to exact rationals, then x_i=Q(c)+Q(gamma)*Q(xi_i); no intermediate f64 rounding."
+        },
+        {
+          "id": "A04-C03-CONFLUENT",
+          "c_bits": "0xbfe0000000000000",
+          "gamma_bits": "0x3fd0000000000000",
+          "xi_bits": [
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000"
+          ],
+          "degree_cap": 3,
+          "native_api": "leja_divided_differences_certified",
+          "k_values": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "j_values": "0..degree_cap inclusive",
+          "expected": {
+            "return": "Ok",
+            "coefficient_and_radius": "finite; radius>=0"
+          },
+          "reference_nodes": "Decode c/gamma/xi bits separately to exact rationals, then x_i=Q(c)+Q(gamma)*Q(xi_i); no intermediate f64 rounding."
+        },
+        {
+          "id": "A04-C04-ZERO-SCALE",
+          "c_bits": "0xbfe0000000000000",
+          "gamma_bits": "0x0000000000000000",
+          "xi_bits": [
+            "0x0000000000000000"
+          ],
+          "degree_cap": 0,
+          "native_api": "leja_divided_differences_certified",
+          "k_values": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "j_values": "0..degree_cap inclusive",
+          "expected": {
+            "return": "Ok",
+            "coefficient_and_radius": "finite; radius>=0"
+          },
+          "reference_nodes": "Decode c/gamma/xi bits separately to exact rationals, then x_i=Q(c)+Q(gamma)*Q(xi_i); no intermediate f64 rounding."
+        }
+      ],
+      "budgets": {
+        "existing_1e-8_bits": "0x3e45798ee2308c3a",
+        "existing_1e-12_bits": "0x3d719799812dea11"
+      },
+      "fraction_orders": {
+        "initial": 64,
+        "refinement_schedule": [
+          128,
+          256,
+          512,
+          1024
+        ],
+        "hard_cap": 1024,
+        "refinement_trigger": "INCONCLUSIVE or ORACLE_DOMAIN_UNMET only; preserve every earlier order result.",
+        "fixed_during_refinement": [
+          "input bits",
+          "native degree cap",
+          "budget bits",
+          "native returned center/radius",
+          "authority and acceptance conditions"
+        ]
+      },
+      "coefficient_reference": {
+        "series": "gamma^j * sum_{r=0}^M h_r(x_0,...,x_j)/(r+j+k)!",
+        "remainder": "abs(gamma)^j * binom(M+1+j,j)*R^(M+1)/(M+1+j+k)! /(1-R/(M+2))",
+        "assert_before_remainder": "M+2>R, exact Fraction comparison",
+        "R": "max_i abs(Q(c)+Q(gamma)*Q(xi_i))",
+        "midpoint_radius": "Decode actual returned midpoint/radius bits exactly; use dimension-one interval triage."
+      },
+      "fused_reference": {
+        "series": "sum_k Q(s_k) * sum_{q=0}^M (Q(h)*Q(A))^q Q(w_k)/(q+k)!",
+        "B": "induced infinity norm of exact rational Q(h)*Q(A)",
+        "active_k": "abs(Q(s_k))*norm_inf(Q(w_k))>0",
+        "assert_before_remainder": "For EVERY active k, assert M+2+k>B using exact Fraction arithmetic.",
+        "remainder": "sum_active_k abs(Q(s_k))*W_k*B^(M+1)/(M+1+k)! /(1-B/(M+2+k))",
+        "ratio_derivation": "Starting with omitted order M+1, every subsequent absolute term ratio <= B/(M+2+k)<1.",
+        "zero_B": "For B=0 and M>=0, tail is exactly zero; do not form 0^0.",
+        "same_vector": "Do not round scales*vector into a temporary Distinct input; preserve the exact represented product."
+      },
+      "interval_triage": {
+        "upper_squared_distance": "U=sum_i max(abs(l_i-y_i),abs(u_i-y_i))^2",
+        "lower_squared_distance": "L=sum_i max(0,l_i-y_i,y_i-u_i)^2",
+        "PASS": "U<=b^2",
+        "FALSIFIED": "L>b^2",
+        "INCONCLUSIVE": "L<=b^2<U; refine only independent oracle order, up to frozen cap",
+        "invalid_report": "Nonfinite/negative native bound is INVALID_REPORT, never PASS.",
+        "at_cap": "INCONCLUSIVE or unmet domain remains HOLD; no tolerance/fixture/degree-cap adjustment."
+      },
+      "native_outcome_rules": {
+        "degree_cap": "Ok(report), converged=false; retain numeric oracle triage for finite report. Not a typed refusal.",
+        "nonfinite_overflow": "Err(CoreError::NonFinite); verify exact frozen error family, prior successful report preservation and attempted-work accounting. No numeric inclusion PASS.",
+        "unexpected_return_branch_convergence": "CONTRACT_FAILURE; retain raw result and investigate; do not relabel as oracle INCONCLUSIVE.",
+        "derived_action_nodes": "Exporter records raw c/gamma/xi bits actually used; reconstruct rational x_i exactly. Derived fields are not independent fixture choices."
+      },
+      "allocator": {
+        "calibration": "In same thread/allocator measurement machinery, clone three independent nonempty Vec values and observe at least 3 allocations before warmed-zero checks.",
+        "calibration_failure": "ALLOCATION_UNAVAILABLE; cannot issue zero-allocation PASS.",
+        "warmed_fixture_ids": [
+          "A04-F02-SCALAR-DISTINCT",
+          "A04-F03-NEWTON-DISTINCT",
+          "A04-F04-NEWTON-SAME-SIGNED"
+        ],
+        "warmup": "Cache/workspace/report fully warmed outside measured region, identical capacity on measured success; preserve separate setup/warmup/calibration work.",
+        "pass": "Positive control succeeded AND each scoped warmed successful action records exactly 0 allocations: ZERO_ALLOCATION_PASS_SCOPED.",
+        "nonzero": "ALLOCATION_NONZERO",
+        "claim_boundary": "No zero-allocation claim for error-string/refusal paths, changed capacity, or uncalibrated instrumentation."
+      },
+      "code_repair_trigger": "Actual mathematical FALSIFIED result only; INCONCLUSIVE refines only oracle and stays HOLD if cap is reached. No production edit is authorized by this contract-only revision.",
+      "full_A04": "EstimateOnly/HOLD pending actual execution and independent total-path admission."
+    }
+  },
+  "unexecuted": [
+    "Rust tests",
+    "new coefficient/full-output oracle",
+    "allocation measurement",
+    "benchmark",
+    "independent full-A04 admission",
+    "commit/push of this research unit"
+  ],
+  "historical_files_modified": false,
+  "leja_code_modified": false,
+  "tolerances_modified": false,
+  "raw_execution_record": "RUN_RECORD.json",
+  "contract_only_revision": {
+    "status": "FROZEN_NOT_EXECUTED",
+    "allowed_edited_files": [
+      "DERIVATION_KO.md",
+      "PREREGISTRATION.md",
+      "RESEARCH_DECISION.json"
+    ],
+    "tests_run": "NONE",
+    "leja_source_changes": "NONE",
+    "authority_changes": "NONE",
+    "historical_exact_tail_run_preregistration_sha256": "e5982b97e0086242e8bd28941dca7f4478363864278afc369533073dbf139155",
+    "historical_preregistration_prefix_sha256": "e5982b97e0086242e8bd28941dca7f4478363864278afc369533073dbf139155",
+    "historical_run_artifacts": "Retained unchanged; the current preregistration appends this contract revision."
+  }
+}

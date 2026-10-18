@@ -1,0 +1,28 @@
+    Checking rodas5p-core v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode-readonly/crates/rodas5p-core)
+    Checking rodas5p-krylov v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode-readonly/crates/rodas5p-krylov)
+    Checking rodas5p-integrators v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode-readonly/crates/rodas5p-integrators)
+error: this `if` statement can be collapsed
+   --> crates/rodas5p-integrators/src/packet_verified_trajectory.rs:495:5
+    |
+495 | /     if let Some(limit) = weighted_limit {
+496 | |         if radius > limit {
+497 | |             return Err(VerifiedPacketError::HeadroomExceeded {
+498 | |                 index,
+...   |
+503 | |     }
+    | |_____^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#collapsible_if
+    = note: `-D clippy::collapsible-if` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::collapsible_if)]`
+help: collapse nested if block
+    |
+495 ~     if let Some(limit) = weighted_limit
+496 ~         && radius > limit {
+497 |             return Err(VerifiedPacketError::HeadroomExceeded {
+...
+501 |             });
+502 ~         }
+    |
+
+error: could not compile `rodas5p-integrators` (lib) due to 1 previous error

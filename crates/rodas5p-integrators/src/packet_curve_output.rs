@@ -11,6 +11,181 @@ pub struct PacketCurveOutput {
     curve: RepresentedPacketCurve,
 }
 
+/// Owns one represented curve and a copied, immutable initial tube.
+/// A query can only use the component disks or weighted ball supplied at construction.
+///
+/// ```compile_fail
+/// use rodas5p_integrators::packet_window::PacketFrozenOutput;
+/// fn alter(owner: &mut PacketFrozenOutput) { owner.initial_radii[0] = 0.0; }
+/// ```
+pub struct PacketFrozenOutput {
+    output: PacketCurveOutput,
+    initial_radii: Vec<f64>,
+    initial_weighted_radius: Option<f64>,
+}
+
+/// Immutable enclosure returned only from a frozen local packet owner.
+/// This certifies inclusion at the requested time; it does not assert that
+/// any requested application tolerance has been met.
+///
+/// ```compile_fail
+/// use rodas5p_integrators::packet_window::PacketCertifiedView;
+/// fn alter(view: &mut PacketCertifiedView<'_>) { view.inner = panic!(); }
+/// ```
+pub struct PacketCertifiedView<'a> {
+    inner: PacketCurveOutputView<'a>,
+}
+
+impl PacketCertifiedView<'_> {
+    pub fn time(&self) -> f64 {
+        self.inner.time()
+    }
+    pub fn modes(&self) -> &[(f64, f64)] {
+        self.inner.modes()
+    }
+    pub fn mode_radii(&self) -> &[f64] {
+        self.inner.mode_radii()
+    }
+    pub fn mean(&self) -> (f64, f64) {
+        self.inner.mean()
+    }
+    pub fn mean_radius(&self) -> f64 {
+        self.inner.mean_radius()
+    }
+    /// Base T1 radius `B_w` around the exact frozen polynomial. It excludes
+    /// displacement from evaluating the returned binary64 centers; use the
+    /// mode radii for returned-center enclosures. It is not a weighted ball
+    /// around `modes()`.
+    pub fn weighted_radius(&self) -> f64 {
+        self.inner.weighted_radius()
+    }
+    /// Weighted ball about the returned binary64 centers, including their
+    /// evaluation displacement. Present only for a weighted-ball owner.
+    pub fn centered_weighted_radius(&self) -> Option<f64> {
+        self.inner.centered_weighted_radius()
+    }
+}
+
+impl PacketFrozenOutput {
+    /// Replace only this owner's continuous residual bound by a tighter
+    /// outward Bernstein enclosure. The frozen curve and initial tube remain
+    /// owned here; query again and apply the unchanged physical output gate.
+    pub fn with_bernstein_residual_bound(
+        self,
+        threshold: f64,
+        max_depth: usize,
+        work: &mut PacketWorkCounters,
+    ) -> Result<(Self, super::PacketResidualRefinement), PacketError> {
+        let (curve, report) = self
+            .output
+            .curve
+            .with_bernstein_residual_bound(threshold, max_depth, work)?;
+        Ok((
+            Self {
+                output: PacketCurveOutput::new(curve),
+                initial_radii: self.initial_radii,
+                initial_weighted_radius: self.initial_weighted_radius,
+            },
+            report,
+        ))
+    }
+
+    /// The current valid weighted continuous residual upper bound.
+    pub fn residual_sup_upper(&self) -> f64 {
+        self.output.curve.residual_bound.weighted_residual_sup.hi
+    }
+
+    /// Copy the caller's uncertainty into the owner. The represented curve
+    /// already owns its source model, coefficients, horizon, and residual.
+    pub fn new(
+        curve: RepresentedPacketCurve,
+        initial_radii: &[f64],
+        work: &mut PacketWorkCounters,
+    ) -> Result<Self, PacketError> {
+        let n = curve.mode_count();
+        if initial_radii.len() != n {
+            return Err(PacketError::OutwardRefusal(
+                "frozen output initial radius shape mismatch",
+            ));
+        }
+        if initial_radii.iter().any(|&x| !x.is_finite() || x < 0.0) {
+            return Err(PacketError::OutwardRefusal("frozen output initial radius"));
+        }
+        if n > isize::MAX as usize / std::mem::size_of::<f64>() {
+            return Err(PacketError::SizeOverflow("frozen output initial radii"));
+        }
+        work.curve_frozen_allocation_requests += 1;
+        let mut frozen = Vec::new();
+        frozen
+            .try_reserve_exact(n)
+            .map_err(|_| PacketError::SizeOverflow("frozen output initial radii"))?;
+        for &radius in initial_radii {
+            work.curve_frozen_radius_items += 1;
+            frozen.push(radius);
+        }
+        Ok(Self {
+            output: PacketCurveOutput::new(curve),
+            initial_radii: frozen,
+            initial_weighted_radius: None,
+        })
+    }
+
+    /// Freeze a weighted-ball initial tube without expanding it into mode
+    /// disks. For `r = initial_radius`, the admitted initial states satisfy
+    /// `sum_j w_j |a_j(0) - Y_j(0)|^2 <= r^2`.
+    ///
+    /// This copies one scalar and allocates no tube buffer. The returned view's
+    /// `centered_weighted_radius` includes evaluation displacement and can be
+    /// carried into another frozen weighted owner. The base `weighted_radius`
+    /// does not include that displacement.
+    pub fn from_weighted_radius(
+        curve: RepresentedPacketCurve,
+        initial_radius: f64,
+        work: &mut PacketWorkCounters,
+    ) -> Result<Self, PacketError> {
+        if !initial_radius.is_finite() || initial_radius < 0.0 {
+            return Err(PacketError::OutwardRefusal(
+                "frozen weighted output initial radius",
+            ));
+        }
+        work.curve_frozen_radius_items += 1;
+        Ok(Self {
+            output: PacketCurveOutput::new(curve),
+            initial_radii: Vec::new(),
+            initial_weighted_radius: Some(initial_radius),
+        })
+    }
+
+    pub fn workspace(
+        &self,
+        work: &mut PacketWorkCounters,
+    ) -> Result<PacketCurveOutputWorkspace, PacketError> {
+        self.output.workspace(work)
+    }
+
+    /// Evaluate the frozen curve and initial tube at one physical time.
+    pub fn enclose_at<'a>(
+        &'a self,
+        time: f64,
+        workspace: &'a mut PacketCurveOutputWorkspace,
+        work: &mut PacketWorkCounters,
+    ) -> Result<PacketCertifiedView<'a>, PacketError> {
+        work.curve_frozen_query_attempts += 1;
+        let result = match self.initial_weighted_radius {
+            Some(radius) => self
+                .output
+                .enclose_at_weighted(time, radius, workspace, work),
+            None => self
+                .output
+                .enclose_at(time, &self.initial_radii, workspace, work),
+        };
+        if result.is_err() {
+            work.curve_frozen_query_refusals += 1;
+        }
+        result.map(|inner| PacketCertifiedView { inner })
+    }
+}
+
 /// Caller-owned storage. Allocate once before evaluating requested times.
 pub struct PacketCurveOutputWorkspace {
     centers: Vec<(f64, f64)>,
@@ -61,7 +236,10 @@ impl PacketCurveOutputView<'_> {
     pub fn mean_radius(&self) -> f64 {
         self.mean_radius
     }
-    /// Weighted flow-to-exact-curve radius; evaluation displacement is separate.
+    /// Base T1 radius `B_w` around the exact frozen polynomial. It excludes
+    /// displacement from evaluating the returned binary64 centers; use the
+    /// mode radii for returned-center enclosures. It is not a weighted ball
+    /// around `modes()`.
     pub fn weighted_radius(&self) -> f64 {
         self.weighted_radius
     }

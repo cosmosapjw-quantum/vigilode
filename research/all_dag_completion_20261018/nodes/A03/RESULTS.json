@@ -1,0 +1,104 @@
+{
+  "schema_version": 1,
+  "node": "A03",
+  "status": "IMPLEMENTED_SCOPED_VALIDATION_AND_INDEPENDENT_REVIEW_PASSED",
+  "scope": "Immutable rotating-frame common-damping collective packet; requested mesh and weighted inherited ball; fixed mean/mode budgets.",
+  "method": "Exact damping frame, enclosed averaged cubic coefficient, polynomial packet plus explicitly charged coefficient-variation model error; bounded dyadic retries.",
+  "native_tests": {
+    "passed": 8,
+    "failed": 0,
+    "log": "research/all_dag_completion_20261018/nodes/A03/evidence/native_confirmed.log"
+  },
+  "independent_reference": {
+    "method": "Fraction Taylor + analytic Cauchy remainder",
+    "results": [
+      {
+        "containments": 15,
+        "max_reference_coordinate_remainder": 3.367838656103195e-11,
+        "degree": 48
+      }
+    ]
+  },
+  "fixture": {
+    "requested_points": 3,
+    "mode_count": 3,
+    "mode_tolerance": 1e-06,
+    "mean_tolerance": 1e-06,
+    "max_mean_radius": 4.664373027753387e-07,
+    "max_mode_radius": 9.328746054396551e-07,
+    "accepted_subwindows": [
+      8,
+      16,
+      128
+    ],
+    "work": {
+      "moment_fallback_attempts": 0,
+      "rejected_windows": 14,
+      "scalar_operations": 42156,
+      "subwindow_attempts": 301,
+      "window_attempts": 17
+    }
+  },
+  "failure_receipts": [
+    "research/all_dag_completion_20261018/nodes/A03/evidence/first_native.log",
+    "research/all_dag_completion_20261018/nodes/A03/evidence/native_retry.log"
+  ],
+  "first_failure_class": "INTEGRATION_TRANSIENT: A09 sibling imports while concurrent implementation; fixed by A09 owner, first logs retained.",
+  "limitations": [
+    "Nonzero carrier explicitly refused; source RHS currently ignores stored carrier.",
+    "General unequal-frequency coefficient-variation bound is conservative first order; many subwindows may be needed.",
+    "No measured speed or allocation claim.",
+    "Only bounded configured subwindow count; unattained unchanged budget returns typed refusal."
+  ],
+  "source_sha256": {
+    "crates/rodas5p-integrators/src/damped_packet.rs": "a26ba94036207c45cbbdde358e6231c7ed0c0db842efec2f105ff39272981e5c",
+    "crates/rodas5p-integrators/tests/production_audit_damped_packet.rs": "74b3ab834fe08b1316ca2b3ccea1a49b98661954f404f84a1ad55a0a275227ef",
+    "crates/rodas5p-integrators/examples/damped_packet_run.rs": "23b93d3bd267a6d5b8cdd94b4b26a6de37d5cae3d88f091f2ba0180d632ed3c1",
+    "research/all_dag_completion_20261018/nodes/A03/PROOF.md": "68dfc96fbf4439a0c57f5cb013799a0b2a92a2b0fad4f03bd2f6b2cb3b2996d0",
+    "research/all_dag_completion_20261018/nodes/A03/damped_fraction_oracle.py": "973d9b14b66583f09425c470388e73314c62d5cd158aab135fe21fa7f2cee471"
+  },
+  "validation": {
+    "native_targeted": {
+      "exit_code": 0,
+      "passed": 8,
+      "failed": 0,
+      "log": "research/all_dag_completion_20261018/nodes/A03/evidence/native_confirmed.log"
+    },
+    "clippy": {
+      "exit_code": 0,
+      "warnings_as_errors": true,
+      "log": "research/all_dag_completion_20261018/nodes/A03/evidence/clippy.log",
+      "command": "cargo clippy -p rodas5p-integrators --test production_audit_damped_packet --example damped_packet_run --locked --offline -- -D warnings"
+    },
+    "rustfmt": {
+      "exit_code": 0,
+      "scope": "three A03 Rust files"
+    },
+    "example": {
+      "exit_code": 0,
+      "output": "research/all_dag_completion_20261018/nodes/A03/evidence/damped_packet_run.json"
+    },
+    "fraction_reference": {
+      "exit_code": 0,
+      "output": "research/all_dag_completion_20261018/nodes/A03/evidence/fraction_oracle.json"
+    }
+  },
+  "evidence_sha256": {
+    "research/all_dag_completion_20261018/nodes/A03/evidence/clippy.log": "44f42f3d2ac022a2fd240ee6b47da069f23a4759cbcc6be58256d61c88f31c30",
+    "research/all_dag_completion_20261018/nodes/A03/evidence/damped_packet_run.json": "5e9b92e02ba137adf3cb81c36aab3bbb2c6bdb8103d6b1177fe463f5d5edb756",
+    "research/all_dag_completion_20261018/nodes/A03/evidence/example.log": "0b1355a08622650d49b3cc0b0d57b4f2d3aadcdf3ec8797a22570a25b10e48cb",
+    "research/all_dag_completion_20261018/nodes/A03/evidence/first_native.log": "26a9a4666b8a25a5084dac8c781c854ea26e5d638bfd8b8238b5710a8d39009a",
+    "research/all_dag_completion_20261018/nodes/A03/evidence/fraction_oracle.json": "c51e94e013367a1c3fe11f89246959981e9e3dfe987ab71259a804cf281b6f07",
+    "research/all_dag_completion_20261018/nodes/A03/evidence/native_confirmed.log": "9b94cb8d1ab0b0fe9dadc69fb95112355be871e94dc0321b38e21c1c4a49438c",
+    "research/all_dag_completion_20261018/nodes/A03/evidence/native_eight.log": "f8e2d02793586b5fed95b6c1e0fece1c9d18131afcbd31f8b5107bac965b2e51",
+    "research/all_dag_completion_20261018/nodes/A03/evidence/native_final.log": "ac2e4f16a4e97da5620f901fd9fbb98df79ac0c91ba2fe1610182118007c8d32",
+    "research/all_dag_completion_20261018/nodes/A03/evidence/native_retry.log": "8be1e2664b3109ba4a69f345f3053d5cb9f34f3e7d00cd45bcb3249e9cc151fe"
+  },
+  "author_checkpoint_status": "IMPLEMENTED_TARGETED_VALIDATION_PASSED_REVIEW_PENDING",
+  "integrated_execution": {
+    "record": "research/all_dag_completion_20261018/FINAL_EXECUTION.json",
+    "source_authority": "research/all_dag_completion_20261018/SOURCE_MANIFEST.json",
+    "independent_review": "research/all_dag_completion_20261018/nodes/A12/REVIEW.json",
+    "broad_production": "HOLD"
+  }
+}

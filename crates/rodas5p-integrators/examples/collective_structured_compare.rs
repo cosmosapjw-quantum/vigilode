@@ -196,9 +196,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 let calls = CALLS.with(Cell::get);
                 let bytes = BYTES.with(Cell::get);
                 let now = Instant::now();
+                let mut structured_work = None;
                 let result: CoreResult<ObservedIntegrationResult> = if arm == "structured" {
                     integrate_collective_rodas5p_observed(&model, (0.0, 1.0), &y, &config, &output)
-                        .map(|r| r.observed)
+                        .map(|r| {
+                            structured_work = Some(r.linear_work);
+                            r.observed
+                        })
                 } else {
                     dense_problem(&model).and_then(|p| {
                         integrate_rodas5p_fast_observed(&p, (0.0, 1.0), &y, &config, &output)
@@ -216,6 +220,17 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     "reference":"independent_classical_rk4_10240_steps","reference_refinement_max_abs":reference_delta,"reference_refinement_max_grid_wrms":reference_refinement_wrms,"reference_authority":"empirical_two_resolution",
                     "promotion":"DIAGNOSTIC_ONLY"});
                 let mut row = common;
+                row["structured_linear_work"] = structured_work.map_or(serde_json::Value::Null, |w| {
+                    json!({"arithmetic_kind":"conservative_structural_proxies_not_measured_flops",
+                        "setup_ops":w.setup_ops,"setup_allocations_proxy":w.setup_allocations,
+                        "setup_bytes_proxy":w.setup_bytes,"identity_check_ops":w.identity_check_ops,
+                        "schur_certificate_ops":w.schur_certificate_ops,"inverse_certificate_ops":w.inverse_certificate_ops,
+                        "rhs_ops":w.rhs_ops,"reconstruction_ops":w.reconstruction_ops,
+                        "residual_witness_calls":w.residual_witness_calls})
+                });
+                row["stage_residual_certification"] = json!(
+                    "disabled_for_this_numerical_baseline; opt_in_workspace_method_available"
+                );
                 match result {
                     Ok(r) => {
                         row["success"] = json!(r.success);

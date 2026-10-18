@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "scope": "A04-PROOF-ORACLE-01 frozen oracle implementation contract only",
+  "verdict": "READY_FOR_BOUNDED_ORACLE_IMPLEMENTATION",
+  "reviewer_identity": "a01_unequal_reference_review",
+  "runtime_identity": "NOT_INDEPENDENTLY_OBSERVED",
+  "read_only": true,
+  "source_identity": {
+    "derivation_sha256": "49ba350e384620468c65167f4978124aed5dff3ad0bb7163691439daa5f01270",
+    "preregistration_sha256": "74813eb6f6c5b80032347cb100cebd93048d1469861a93e410c7bc64c0f0eabc",
+    "decision_sha256": "66a5b37122818f3dbe1163544b3ba7f850fe035eb9f081c729959d22f37a53d1",
+    "leja_action_sha256": "25904301d40f11d6a5fee1d27aac7454ca02874a9e995634e7909af2e4ae97e8",
+    "directed_sha256": "2adadb6a5d77073e0a7d3d60aedfbf37e124d15a586a880d7d5a8c8d5307a814",
+    "polynomial_action_sha256": "656d494fd74783090676e1d3a18aaaa5dbd5df99c0541745979aeb6e26394a48"
+  },
+  "verified": [
+    "active fused k exact remainder-domain assertion M+2+k>B and geometric ratio derivation",
+    "squared interval triage U<=b^2 PASS, L>b^2 FALSIFIED, otherwise INCONCLUSIVE; fixed-order refinement and cap behavior",
+    "12 action and 4 coefficient fixture IDs, input bits, budgets, caps, expected branches/refusals, and oracle degree order",
+    "degree-cap Ok(converged=false) distinct from typed nonfinite/overflow Err",
+    "allocation positive control precedes warmed zero claim; calibration failure is ALLOCATION_UNAVAILABLE"
+  ],
+  "nonblocking_scope_caveat": {
+    "fixture": "A04-F09-MATVEC-OVERFLOW",
+    "finding": "[MAX,MAX] overflows during initial outward L2 norm before matvec; this fixture proves finite-input arithmetic overflow refusal, not matvec-path overflow.",
+    "use": "Do not report this fixture as exercising matvec overflow."
+  },
+  "not_reviewed_or_promoted": [
+    "implementation",
+    "oracle execution",
+    "full A04 authority",
+    "Leja production code changes"
+  ],
+  "next_action": "Implement frozen new Rust oracle contract test and Fraction oracle only; stop before production code changes on a FALSIFIED result or implementation defect."
+}

@@ -18,6 +18,8 @@ pub struct CollectiveDirectWork {
     pub setup_bytes: u64,
     pub identity_check_ops: u64,
     pub schur_certificate_ops: u64,
+    pub inverse_certificate_ops: u64,
+    pub residual_witness_calls: u64,
     pub rhs_ops: u64,
     pub reconstruction_ops: u64,
 }
@@ -176,7 +178,7 @@ impl CollectiveStageFactors {
             -s * (h[2] * c[0] + h[3] * c[2]),
             1.0 - s * (h[2] * c[1] + h[3] * c[3]),
         ];
-        let (si, det_i) = schur_interval(model, y, s, &self.blocks, weights)?;
+        let (schur_i, det_i) = schur_interval(model, y, s, weights)?;
         if det_i.contains_zero() {
             return Err(CoreError::InvalidInput(
                 "collective direct Schur determinant interval contains zero".into(),
@@ -194,6 +196,17 @@ impl CollectiveStageFactors {
             -schur[2] / det,
             schur[0] / det,
         ];
+        if inv.iter().any(|v| !v.is_finite()) {
+            return Err(CoreError::NonFinite(
+                "collective direct Schur inverse overflow".into(),
+            ));
+        }
+        // For P=D^-1, U repeats a two-vector and W is the weighted mean:
+        // A^-1 = P + s P U C S^-1 W P. Exact sum(weights)=1 implies
+        // ||U||_w=||W||_w=1, ||P||_w <= 1/a and ||C||_2 <= 3|chi||m||².
+        // The interval Schur adjugate gives a finite bound even when the
+        // sufficient Neumann condition s||C||<a is unavailable.
+        work.inverse_certificate_ops += 32;
         let (mean_i, _) = certified_mean(model, y)?;
         let r2 = add_up(
             mul_up(mean_i[0].mag(), mean_i[0].mag())?,
@@ -203,17 +216,25 @@ impl CollectiveStageFactors {
         let ai =
             Interval::point(1.0)?.add(Interval::point(s)?.mul(Interval::point(model.kappa())?)?)?;
         let sl = mul_up(s, l)?;
-        if !matches!(sl.partial_cmp(&ai.lo), Some(std::cmp::Ordering::Less)) {
-            return Err(CoreError::InvalidInput(
-                "collective direct WB2 inverse bound unavailable (q* >= 1)".into(),
-            ));
-        }
-        let inverse_norm_upper = div_up(1.0, sub_down(ai.lo, sl)?)?;
+        let inverse_norm_upper = if sl < ai.lo {
+            // Preserve the established cheap path and its arithmetic result.
+            div_up(1.0, sub_down(ai.lo, sl)?)?
+        } else {
+            work.inverse_certificate_ops += 16;
+            let p_bound = div_up(1.0, ai.lo)?;
+            let schur_norm2 = schur_i
+                .iter()
+                .try_fold(0.0, |sum, x| add_up(sum, mul_up(x.mag(), x.mag())?))?;
+            let det_lower = if det_i.lo > 0.0 { det_i.lo } else { -det_i.hi };
+            let schur_inverse_bound = div_up(sqrt_up(schur_norm2)?, det_lower)?;
+            let correction = mul_up(mul_up(sl, schur_inverse_bound)?, mul_up(p_bound, p_bound)?)?;
+            add_up(p_bound, correction)?
+        };
         self.n = n;
         self.s = s;
         self.c = c;
         self.schur_inverse = inv;
-        self.schur_det_interval = si;
+        self.schur_det_interval = det_i;
         self.inverse_norm_upper = inverse_norm_upper;
         self.valid = true;
         Ok(())
@@ -292,7 +313,9 @@ impl CollectiveStageFactors {
         Ok(())
     }
 
-    /// Outward enclosure of the weighted residual and WB2 solution error.
+    /// Outward enclosure of the weighted residual and solution error, using
+    /// the Neumann bound when available, otherwise the enclosed Woodbury bound. This certifies
+    /// the exact frozen mathematical Jacobian, not a trajectory error.
     pub fn residual_witness(
         &self,
         model: &CollectiveModel,
@@ -323,6 +346,7 @@ impl CollectiveStageFactors {
                     .into(),
             ));
         }
+        work.residual_witness_calls += 1;
         work.reconstruction_ops += 20 * self.n as u64 + 16;
         let (mean_y, _) = certified_mean(model, y)?;
         let (mean_x, _) = certified_mean(model, x)?;
@@ -435,9 +459,8 @@ fn schur_interval(
     model: &CollectiveModel,
     y: &[f64],
     s: f64,
-    blocks: &[Block],
     weights: &[f64],
-) -> CoreResult<(Interval, Interval)> {
+) -> CoreResult<([Interval; 4], Interval)> {
     let (m, _) = certified_mean(model, y)?;
     let (u, v) = (m[0], m[1]);
     let ch = point(model.chi())?;
@@ -466,8 +489,7 @@ fn schur_interval(
         point(1.0)?.sub(point(s)?.mul(h[2].mul(c[1])?.add(h[3].mul(c[3])?)?)?)?,
     ];
     let det = sc[0].mul(sc[3])?.sub(sc[1].mul(sc[2])?)?;
-    let _ = blocks;
-    Ok((det, det))
+    Ok((sc, det))
 }
 
 fn certified_mean(model: &CollectiveModel, y: &[f64]) -> CoreResult<([Interval; 2], f64)> {

@@ -1,0 +1,167 @@
+{
+  "schema_version": 1,
+  "node": "A12",
+  "reviewer": "/root/dag_a12_independent",
+  "implementation_authored_by_reviewer": false,
+  "status": "PASS_SCOPED_SOURCE_REVIEW",
+  "base_merge_commit": "40a36d922e915e1d1c296adc136b7e5b7676eb67",
+  "original_nodes": [
+    "A01",
+    "A02",
+    "A03",
+    "A04",
+    "A05",
+    "A06",
+    "A07",
+    "A08",
+    "A09",
+    "A10",
+    "A11",
+    "A12"
+  ],
+  "all_original_nodes_represented": true,
+  "original_dag_sha256": "597a25c1a062b1448f9b78f24f059a87506215b9d40eff50e24d7a0319635406",
+  "source_sha256": {
+    "crates/rodas5p-integrators/src/packet_curve.rs": "955bdf313d02fee67151b05c0eabce5b9e87c63a444e6db321bcac2ee8d324f5",
+    "crates/rodas5p-integrators/src/packet_curve_output.rs": "2e49d892c31ca72925c6e2fc4a5051492f5ceff7df552bd63e9cfbf7ec1036c5",
+    "crates/rodas5p-integrators/src/packet_verified_trajectory.rs": "72189a94cc28fd5bd2ebd0245de9f8a9fe7f4d51792ea8973e4654867253e1a0",
+    "crates/rodas5p-integrators/src/packet_window.rs": "0eb7359dafc437436e0589a12ffc5bea2097a5bd176c422cdbeb0c6495696c80",
+    "crates/rodas5p-integrators/src/packet_work.rs": "e0960416af726c0110359bc03971cc5379186eb06673ee7cee4aff012bce5353",
+    "crates/rodas5p-integrators/src/damped_packet.rs": "a26ba94036207c45cbbdde358e6231c7ed0c0db842efec2f105ff39272981e5c",
+    "crates/rodas5p-integrators/src/collective_direct.rs": "388a1c6144a7e57327bf63be8e5bfd0a0815e8d9feaea90ed1972d1575040f49",
+    "crates/rodas5p-integrators/src/collective_rodas5p.rs": "9e84ec5cd53496c2951a91c418b76069384fbfb48d0e3bc5a94fcb5d0aadd7b3",
+    "crates/rodas5p-integrators/src/nonlinear_homotopy.rs": "0e0885bfe17660f2ac644759167033f8f8544a30eabb24b6390e9cb97e3717e7",
+    "crates/rodas5p-integrators/src/actual_k_homotopy.rs": "33b6b946c3939c59a60c62622d1b0eb52ff3bd4cc39a879d80cc91bd59fb9242",
+    "tools/all_dag_benchmark.py": "7c953f73a365863d1956f31e70ef94e82dd41ace3f5650abe8c002fe94e8cdd5",
+    "tools/validate_all_dag_completion.py": "ee3306a3ab404b38f2fbaa70b52b5ba1b002eae3ff7f7563e581214158a8f9d4",
+    "tools/tests/test_all_dag_handoff.py": "882a5c5ba540f0e51a568af20d5fe97e5fb066b5084fb20c3cdd01d272b67da6",
+    "crates/rodas5p-integrators/tests/all_dag_a01_packet.rs": "4a1786bc2f68ee8d543d57591c47233abc84594f4a969621e3e9ccfd77dc2fca",
+    "crates/rodas5p-integrators/tests/production_audit_packet_adaptive.rs": "392aaa3c6fe8994c441f922680e2508edf38c05b6cb1e76d3d018649b974135f",
+    "crates/rodas5p-integrators/tests/production_audit_damped_packet.rs": "74b3ab834fe08b1316ca2b3ccea1a49b98661954f404f84a1ad55a0a275227ef",
+    "crates/rodas5p-integrators/tests/all_dag_a06_direct.rs": "bbb4095c9c825f7896200200c09914680685509a2cc22e246d102278c698f18f",
+    "crates/rodas5p-integrators/tests/nonlinear_homotopy_contracts.rs": "a9fbfdf7f518eedd8c6158a6376dd627e1d1ffd3c387d3d2dea581e5272dd1a0",
+    "crates/rodas5p-integrators/tests/actual_k_homotopy_contracts.rs": "80800ded09667065c55977c6a1ecf0d6f29296b03e52d2392a2d318edab31212",
+    "crates/rodas5p-integrators/tests/all_dag_a10_bernstein.rs": "5001dfbaaacc6cc8021aaaa5b91d469c32da901713a9539f758f7fae8f787183"
+  },
+  "proof_sha256": {
+    "research/all_dag_completion_20261018/nodes/A02/THEORY_AND_IMPLEMENTATION.md": "8b1a957ed03119219ab1f4683cfdb3cb2b7e31c49df802acdbe84328002bc8c1",
+    "research/all_dag_completion_20261018/nodes/A03/PROOF.md": "68dfc96fbf4439a0c57f5cb013799a0b2a92a2b0fad4f03bd2f6b2cb3b2996d0",
+    "research/all_dag_completion_20261018/nodes/A06/REPORT_KO.md": "1973c5e4e14bcb77e0b3edbdde5e0d35eda55b0be932a0957acc5eebd6e18054",
+    "research/all_dag_completion_20261018/nodes/A09/ACTUAL_K_H5.md": "104d40ffda4eb7775f6ae6fb9ddb87073311f06e659a7087f570fae125389381",
+    "research/all_dag_completion_20261018/nodes/A09/theory/flow.md": "ab3807989b4aa3b35bbed37c70f5b25a69588998a08f9ecd454844ac343ba7dc",
+    "research/all_dag_completion_20261018/nodes/A09/theory/parallel.md": "fbafa78417bdc31266004188b7151a1c1f0792995821afff00796b689726952e",
+    "research/all_dag_completion_20261018/nodes/A10/REPORT_KO.md": "e8ba26ea39362a65d2c5bc95c5408ab57585d220a55ba1cbe1f53ed6ab0cbd39"
+  },
+  "incorporated_independent_reviews": [
+    "research/all_dag_completion_20261018/reviews/DENSE_INDEPENDENT.json",
+    "research/all_dag_completion_20261018/reviews/ROOT_A04_A07_A08.json"
+  ],
+  "findings": [
+    {
+      "id": "R-A10-01",
+      "severity": "documentation",
+      "status": "CLOSED",
+      "issue": "An O(d²) headline could omit depth recomputation work.",
+      "resolution": "Explicit O(d²(1+D2^D)) work and O(d) live storage, d<=1024,D<=8; residual-threshold counter distinguished from physical acceptance."
+    },
+    {
+      "id": "R-A09-01",
+      "severity": "validation",
+      "status": "CLOSED",
+      "issue": "Overlap checks alone reuse the same stage certificate and do not independently discriminate full represented target fidelity.",
+      "resolution": "Exact full16×16 Fraction beta-system fixture with 18 stage/output containments, 27 noncausal beta entries; nonlinear90-digit oracle164 containments and exactFraction8 radius closures. Numerical reference remains distinct from proof."
+    },
+    {
+      "id": "R-A07-01",
+      "severity": "medium",
+      "status": "CLOSED_INDEPENDENTLY",
+      "issue": "Original campaign source identity omitted literal embedded coefficient snapshot.",
+      "resolution": "Actual literal include_str/include_bytes assets now hashed; source inventory and9 hostile contract log inspected. Current one-pass source asset discovery is not a general Rust dependency parser."
+    },
+    {
+      "id": "R-A12-01",
+      "severity": "medium",
+      "status": "CLOSED",
+      "issue": "Runner independently validated before/after manifests without equality, allowing source+manifest replacement to pass.",
+      "resolution": "Final pass now requires source_manifest_sha256 and dag_sha256 equality. Three real child-process hostile tests pass, including source+manifest replacement and valid DAG replacement."
+    }
+  ],
+  "blocking_findings": [],
+  "execution_evidence": [
+    {
+      "path": "research/all_dag_completion_20261018/nodes/A01/evidence/native.log",
+      "sha256": "87dcfad1b9310a918984c757ac4a24757cecfcf7f3e55edc345339f74b4f2880",
+      "observed": "2 native tests,80 Fraction disk checks"
+    },
+    {
+      "path": "research/all_dag_completion_20261018/nodes/A02/native_with_bernstein_final.log",
+      "sha256": "849ef06951bf4db2b6f7f7209cbfb934f415d0ced640c022a2886368b3c4fc9b",
+      "observed": "5 new+3 regression native tests,150 Fraction containments"
+    },
+    {
+      "path": "research/all_dag_completion_20261018/nodes/A03/evidence/native_confirmed.log",
+      "sha256": "9b94cb8d1ab0b0fe9dadc69fb95112355be871e94dc0321b38e21c1c4a49438c",
+      "observed": "8 native tests"
+    },
+    {
+      "path": "research/all_dag_completion_20261018/nodes/A03/evidence/fraction_oracle.json",
+      "sha256": "c51e94e013367a1c3fe11f89246959981e9e3dfe987ab71259a804cf281b6f07",
+      "observed": "15 independent Fraction/Taylor containments"
+    },
+    {
+      "path": "research/all_dag_completion_20261018/nodes/A06/evidence/native_tests.log",
+      "sha256": "18a9963d3a6ee068ae05498a50e99b9614ac7fe74caae5acf69ec3ef04c239cd",
+      "observed": "14 numerical contracts"
+    },
+    {
+      "path": "research/all_dag_completion_20261018/nodes/A06/evidence/allocation_test.log",
+      "sha256": "59801be54a701c22abd23f3469c92e33ab681829a2ec0e358722283494672e3a",
+      "observed": "1 calibrated plain/certified zero-warmed-allocation gate"
+    },
+    {
+      "path": "research/all_dag_completion_20261018/nodes/A09/test-final.log",
+      "sha256": "2fc0ded9af44efef2cfccacd5a78a833bf5e75ac2439aae167db42393870df25",
+      "observed": "3 actualK+7 nonlinear-window tests"
+    },
+    {
+      "path": "research/all_dag_completion_20261018/nodes/A09/unit.log",
+      "sha256": "46025d0ac275c68e3a0668d756170a041cbe3cbb7e38058770007b8a97417aa8",
+      "observed": "2 prefix/projection unit tests"
+    },
+    {
+      "path": "research/all_dag_completion_20261018/nodes/A09/actual-k-fraction-final.json",
+      "sha256": "5863f9293f2351cd3ba6fb11ab3b0283eeb64fdc58db10b7eedf36c6b830e9d9",
+      "observed": "18 exact full represented-beta stage/output containments"
+    },
+    {
+      "path": "research/all_dag_completion_20261018/nodes/A09/actual-k-reference-final.json",
+      "sha256": "a87651ef145082fecd608e2c6c52cee4bc333d0b65e7ba7e527503de5f6438aa",
+      "observed": "164 high-precision numerical containments and8 exactFraction radius closures"
+    },
+    {
+      "path": "research/all_dag_completion_20261018/nodes/A10/evidence/native.log",
+      "sha256": "01a78823278419c09cc23603dcdcd388b76847c0fabde414d01b7914e5ae20c7",
+      "observed": "4 new tests,42 Fraction disk containments"
+    },
+    {
+      "path": "research/all_dag_completion_20261018/nodes/A10/evidence/changed_kernel_regression.log",
+      "sha256": "b10941ff378acbfb022297e0d89acdbcaaa3555279d542b3dda12064f60df369",
+      "observed": "8 changed-kernel tests"
+    },
+    {
+      "path": "research/all_dag_completion_20261018/evidence/handoff_contracts.log",
+      "sha256": "6af32f4d015b6d7f6ddf0b14818c82e7cfbc78120701b1e933b699c1aa449d3b",
+      "observed": "3 hostile handoff identity tests"
+    },
+    {
+      "path": "research/all_dag_completion_20261018/nodes/A07/python_contract_tests_final.log",
+      "sha256": "8f0cfed06fd0f611f39cfaaaa04c0f9e0bd274719fdd3b8c2811a97c277fb380",
+      "observed": "9 hostile benchmark/schema/asset identity tests"
+    }
+  ],
+  "new_native_runs_by_reviewer": 0,
+  "review_method": "Independent derivation/source review and inspection of actual author test code/raw logs. A05/A11 separately delegated; root A04/A07/A08 review incorporated; root-authored provenance fixes independently checked. No unchanged campaign replay.",
+  "publication_gate": "Root must bind final aggregate source manifest and complete integrated validation; any semantic source change requires delta review.",
+  "broad_production_promotion": false,
+  "measured_speed_promotion": false
+}

@@ -1,0 +1,161 @@
+{
+  "schema_version": 1,
+  "verification_before": {
+    "schema_version": 1,
+    "node_count": 12,
+    "source_files_checked": 414,
+    "source_manifest_sha256": "5a461ee10fc178e188631e242705d992978d68292d4a10f0ee3f856854cea916",
+    "dag_sha256": "38f2d5c2a5ba44dcf93120bbd0c9a1c98937d20767f74065a5e2372003c68063",
+    "errors": [],
+    "passed": true,
+    "production_promotion": false,
+    "speed_promotion": false
+  },
+  "verification_after": {
+    "schema_version": 1,
+    "node_count": 12,
+    "source_files_checked": 414,
+    "source_manifest_sha256": "5a461ee10fc178e188631e242705d992978d68292d4a10f0ee3f856854cea916",
+    "dag_sha256": "38f2d5c2a5ba44dcf93120bbd0c9a1c98937d20767f74065a5e2372003c68063",
+    "errors": [],
+    "passed": true,
+    "production_promotion": false,
+    "speed_promotion": false
+  },
+  "source_and_dag_unchanged": true,
+  "commands": [
+    {
+      "id": "core_contracts",
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-p",
+        "rodas5p-core",
+        "--test",
+        "leja_enclosed_contract",
+        "--test",
+        "guarded_polynomial_router",
+        "--",
+        "--test-threads=1"
+      ],
+      "exit_code": 0,
+      "wall_seconds": 2.5445574830000623,
+      "log": "core_contracts.log",
+      "log_sha256": "5ebf8b463059b7624de8c37d4d129b87872b2a05c30dab5adad434efd69d8825"
+    },
+    {
+      "id": "integrator_contracts",
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-p",
+        "rodas5p-integrators",
+        "--test",
+        "all_dag_a01_packet",
+        "--test",
+        "production_audit_packet_adaptive",
+        "--test",
+        "production_audit_packet_verified",
+        "--test",
+        "production_audit_damped_packet",
+        "--test",
+        "all_dag_a05_verified",
+        "--test",
+        "all_dag_a06_direct",
+        "--test",
+        "collective_rodas5p_allocation_contract",
+        "--test",
+        "nonlinear_homotopy_contracts",
+        "--test",
+        "actual_k_homotopy_contracts",
+        "--test",
+        "all_dag_a10_bernstein",
+        "--test",
+        "all_dag_a11_verified",
+        "--",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "exit_code": 0,
+      "wall_seconds": 97.46926120700027,
+      "log": "integrator_contracts.log",
+      "log_sha256": "7773f0e17c5a7acaf7d0c38321436bc024fdc1432ea8e3acd3bbe86aa347b7fc"
+    },
+    {
+      "id": "homotopy_unit",
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-p",
+        "rodas5p-integrators",
+        "--lib",
+        "nonlinear_homotopy::tests"
+      ],
+      "exit_code": 0,
+      "wall_seconds": 11.45528066299994,
+      "log": "homotopy_unit.log",
+      "log_sha256": "91291ce6c2abd636e4232a3e4c1fa4e4fe0c0fde37aa80aaeb7cae2281703aff"
+    },
+    {
+      "id": "leja_token_doc",
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-p",
+        "rodas5p-core",
+        "--doc",
+        "AdmittedLejaFused"
+      ],
+      "exit_code": 0,
+      "wall_seconds": 0.8305910629997015,
+      "log": "leja_token_doc.log",
+      "log_sha256": "ae9c8b0a0ac9f1e9aaad159eb4b2cd9a47770a1ee20b2c80fe7833cb64d70801"
+    },
+    {
+      "id": "polynomial_token_doc",
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-p",
+        "rodas5p-core",
+        "--doc",
+        "GuardedPolynomialAction"
+      ],
+      "exit_code": 0,
+      "wall_seconds": 0.7841253320002579,
+      "log": "polynomial_token_doc.log",
+      "log_sha256": "f12cfb4816991158b01e0ebb1e1b417cd01b208b151ec1ce3dd2e60ffbb4a825"
+    },
+    {
+      "id": "tool_contracts",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tools/tests",
+        "-p",
+        "test_all_dag_*.py",
+        "-v"
+      ],
+      "exit_code": 0,
+      "wall_seconds": 0.24036911399980454,
+      "log": "tool_contracts.log",
+      "log_sha256": "bd5a51d8fd8208cee8cdadfa5de78f13807bb12c43b14481f5177a412fcdb86d"
+    }
+  ],
+  "passed": true,
+  "production_promotion": false,
+  "speed_promotion": false
+}

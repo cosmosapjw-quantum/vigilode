@@ -37,6 +37,10 @@ pub struct BoundCollectiveProblem {
 }
 
 impl BoundCollectiveProblem {
+    pub(crate) fn candidate_problem(&self) -> &OdeProblem {
+        &self.problem
+    }
+
     /// Dimension of the private generated problem/provider pair.
     pub fn dimension(&self) -> usize {
         self.problem.dimension

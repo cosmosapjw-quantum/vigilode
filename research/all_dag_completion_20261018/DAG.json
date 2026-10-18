@@ -1,0 +1,377 @@
+{
+  "schema_version": 1,
+  "schema": "vigilode-all-original-dag-completion-v1",
+  "canonical_for_this_delivery": true,
+  "branch": "research/all-dag-completion-20261018",
+  "original_dag": "ORIGINAL_DAG.json",
+  "baseline_parents": [
+    "ac89a9ac5600e631120da480eee7f67bb16f9ea0",
+    "7e2873887ed6038b47b667c976435810851c5dba"
+  ],
+  "local_integration_commit": "40a36d922e915e1d1c296adc136b7e5b7676eb67",
+  "integrated_latest_heads": [
+    "86afb40adcb0eda00c017c44b3553a8479c6c640",
+    "59d95eb7404882f024eb8bd3856f2ce4f1f830c9"
+  ],
+  "publication_policy": "collective all-node tree; no default branch mutation",
+  "global_production": "HOLD",
+  "global_speed": "HOLD",
+  "nodes": [
+    {
+      "id": "A01",
+      "title": "Certified undamped packet window",
+      "owner": "/root/dag_a01_packet",
+      "depends_on": [],
+      "original_acceptance": "Independent exact one-mode solutions plus high precision adversarial multi-mode fixtures enclosed at every requested output; NaN/Inf/forged input refused; no missing arithmetic terms.",
+      "original_scope_dependencies": {},
+      "status": "IMPLEMENTED_SCOPED_VALIDATION_COMPLETE",
+      "delivered": [
+        "불변 weighted initial-tube owner와 반환 중심의 radius 결합"
+      ],
+      "apis": [
+        "PacketFrozenOutput::from_weighted_radius",
+        "PacketCertifiedView::centered_weighted_radius"
+      ],
+      "validation_summary": "2 native; 80 independent Fraction disk checks",
+      "scope": "kappa=0, carrier=0 collective packet; 실제 양의 weight sum 사용",
+      "limits": [
+        "전역 임의 모델 또는 allocator 주장으로 확장하지 않음"
+      ],
+      "evidence": [
+        "research/all_dag_completion_20261018/nodes/A01/RESULT.json"
+      ],
+      "production_promotion": "NOT_INFERRED_FROM_IMPLEMENTATION",
+      "speed_promotion": "HOLD"
+    },
+    {
+      "id": "A02",
+      "title": "Weighted global trajectory",
+      "owner": "/root/dag_a02_trajectory",
+      "depends_on": [
+        "A01"
+      ],
+      "original_acceptance": "Independent full trajectory inclusion for mean/all modes, nonzero initial radii and rejected windows; fixed requested physical tolerance not relaxed.",
+      "original_scope_dependencies": {},
+      "status": "IMPLEMENTED_SCOPED_VALIDATION_COMPLETE",
+      "delivered": [
+        "Transactional adaptive trajectory, headroom 예약, A10 선택적 재검증"
+      ],
+      "apis": [
+        "VerifiedPacketState",
+        "advance_verified_packet",
+        "integrate_verified_packet_adaptive"
+      ],
+      "validation_summary": "5 new + 3 regression; 30+120 Fraction checks",
+      "scope": "원래 출력 mesh/허용오차/초기 불확실성 보존",
+      "limits": [
+        "자원 한도 내 완료가 불가능하면 원래 budget을 유지하고 typed refusal"
+      ],
+      "evidence": [
+        "research/all_dag_completion_20261018/nodes/A02/RESULT.json"
+      ],
+      "production_promotion": "NOT_INFERRED_FROM_IMPLEMENTATION",
+      "speed_promotion": "HOLD"
+    },
+    {
+      "id": "A03",
+      "title": "Native common-damping packet",
+      "owner": "/root/nonlinear_flow_theory",
+      "depends_on": [
+        "A01"
+      ],
+      "original_acceptance": "κ=0 confluent limit; exact damped linear and one-mode cubic cases; large κh finite inclusion or explicit refusal; full multiwindow test after A02.",
+      "original_scope_dependencies": {},
+      "status": "IMPLEMENTED_SCOPED_VALIDATION_COMPLETE",
+      "delivered": [
+        "감쇠 frame, damped moment 평균 계수와 시간변동 오차를 결합한 native packet"
+      ],
+      "apis": [
+        "DampedPacketDescriptor",
+        "verify_damped_packet_window",
+        "integrate_verified_damped_packet"
+      ],
+      "validation_summary": "8 native; 15 Fraction containments",
+      "scope": "공통 kappa>=0, carrier=0, 실제 S; 다중 window 초기 radius 전달",
+      "limits": [
+        "일반 비동일 주파수에서는 보수적 1차 model-error bound; 속도 승격 없음"
+      ],
+      "evidence": [
+        "research/all_dag_completion_20261018/nodes/A03/RESULTS.json",
+        "research/all_dag_completion_20261018/nodes/A03/PROOF.md"
+      ],
+      "production_promotion": "NOT_INFERRED_FROM_IMPLEMENTATION",
+      "speed_promotion": "HOLD"
+    },
+    {
+      "id": "A04",
+      "title": "Leja full arithmetic authority",
+      "owner": "/root/dag_a04_leja",
+      "depends_on": [],
+      "original_acceptance": "Independent high precision cases across subnormal/normal/overflow and adversarial forged caches; component terms include coefficient-radius cross term; warmed zero allocations unchanged.",
+      "original_scope_dependencies": {},
+      "status": "IMPLEMENTED_SCOPED_VALIDATION_COMPLETE",
+      "delivered": [
+        "기존 complete arithmetic certificate에 원래 budget을 강제하는 immutable token"
+      ],
+      "apis": [
+        "CertifiedLejaReport::admit_requested_budget",
+        "AdmittedLejaFused"
+      ],
+      "validation_summary": "7 native; 1 compile-fail doc",
+      "scope": "검증된 represented dense symmetric operator의 fused action",
+      "limits": [
+        "기존 arithmetic kernel은 동일 증거 재사용; 임의 nonsymmetric/Krylov 인증 아님"
+      ],
+      "evidence": [
+        "research/all_dag_completion_20261018/nodes/A04/RESULT.json"
+      ],
+      "production_promotion": "NOT_INFERRED_FROM_IMPLEMENTATION",
+      "speed_promotion": "HOLD"
+    },
+    {
+      "id": "A05",
+      "title": "Generic dense-output residual controller",
+      "owner": "/root/dag_a05_dense",
+      "depends_on": [],
+      "original_acceptance": "New PR101-point witness must satisfy unchanged normalized tolerance at all outputs; rigorous interval residual establishes between-point coverage; count added JVP/LU work.",
+      "original_scope_dependencies": {},
+      "status": "IMPLEMENTED_SCOPED_VALIDATION_COMPLETE",
+      "delivered": [
+        "모델 capability 기반 generic continuous-residual controller와 interval Horner 개선"
+      ],
+      "apis": [
+        "VerifiedContinuousProblem",
+        "integrate_verified_residual",
+        "DenseErrorControl::VerifiedResidual"
+      ],
+      "validation_summary": "7 new + 15 A05 + 7 PR101; original 101 outputs",
+      "scope": "PR101/collective/A11 GrayScott generated model owners, 절대 L2 budget",
+      "limits": [
+        "임의 callback은 typed unsupported; 추가 임의 시각 evaluate는 호출자가 budget 검사"
+      ],
+      "evidence": [
+        "research/all_dag_completion_20261018/nodes/A05/RESULT.json"
+      ],
+      "production_promotion": "NOT_INFERRED_FROM_IMPLEMENTATION",
+      "speed_promotion": "HOLD"
+    },
+    {
+      "id": "A06",
+      "title": "Strong rank-two direct baseline",
+      "owner": "/root/dag_a06_direct",
+      "depends_on": [],
+      "original_acceptance": "Same frozen Jacobian/stage RHS as dense route; verify full residual and nonsingular/singular Schur cases; n1,2,4,8 and larger native sizes.",
+      "original_scope_dependencies": {},
+      "status": "IMPLEMENTED_SCOPED_VALIDATION_COMPLETE",
+      "delivered": [
+        "Schur inverse fallback과 모든 stage의 선택적 residual witness"
+      ],
+      "apis": [
+        "CollectiveStageFactors",
+        "CollectiveRodas5pWorkspace certified step"
+      ],
+      "validation_summary": "14 numerical; 1 calibrated allocation contract",
+      "scope": "exact represented weight sum=1, carrier=0; nonsingular interval Schur",
+      "limits": [
+        "일반 크기/모델 speed 우위는 별도 실측; singular Schur 거절 유지"
+      ],
+      "evidence": [
+        "research/all_dag_completion_20261018/nodes/A06/RESULT.json"
+      ],
+      "production_promotion": "NOT_INFERRED_FROM_IMPLEMENTATION",
+      "speed_promotion": "HOLD"
+    },
+    {
+      "id": "A07",
+      "title": "Comparable benchmark and generated report",
+      "owner": "/root/nonlinear_discriminating_checks",
+      "depends_on": [],
+      "original_acceptance": "All rows schema-valid; zero report/data discrepancies; no speed decision without same physical error/output and declared timing protocol.",
+      "original_scope_dependencies": {
+        "packet_strong_baseline": [
+          "A06"
+        ],
+        "generic_diffsol_comparison": []
+      },
+      "status": "IMPLEMENTED_SCOPED_VALIDATION_COMPLETE",
+      "delivered": [
+        "실패를 보존하는 source-bound campaign, achieved-error gate, process bootstrap"
+      ],
+      "apis": [
+        "tools/all_dag_benchmark.py"
+      ],
+      "validation_summary": "9 hostile tool tests; 36 fresh matched-error rows; retained collective30 + Robertson182 reused",
+      "scope": "동일 equation/tolerance/output/cost boundary의 diagnostic comparison",
+      "limits": [
+        "empirical reference와 allocator-instrumented timing; broad speed HOLD"
+      ],
+      "evidence": [
+        "research/all_dag_completion_20261018/nodes/A07/STATUS.json",
+        "research/all_dag_completion_20261018/nodes/A07/REPORT.md"
+      ],
+      "production_promotion": "NOT_INFERRED_FROM_IMPLEMENTATION",
+      "speed_promotion": "HOLD"
+    },
+    {
+      "id": "A08",
+      "title": "Polynomial route choice",
+      "owner": "/root/dag_a08_polynomial",
+      "depends_on": [
+        "A04",
+        "A07"
+      ],
+      "original_acceptance": "Verified spectrum/structure and total-error conditions; same outputs; all setup and basis conversion retained; candidate can abstain.",
+      "original_scope_dependencies": {},
+      "status": "IMPLEMENTED_SCOPED_VALIDATION_COMPLETE",
+      "delivered": [
+        "Leja/Laguerre/Chebyshev shared-target guarded selector"
+      ],
+      "apis": [
+        "guarded_polynomial_action",
+        "GuardedPolynomialAction"
+      ],
+      "validation_summary": "6 native; 18 exact Fraction containments",
+      "scope": "dense symmetric nonpositive Gershgorin operator, unchanged absolute budget",
+      "limits": [
+        "Krylov complete-error authority 없음; PY02 ABSTAIN 그대로; 자동 speed ranking 없음"
+      ],
+      "evidence": [
+        "research/all_dag_completion_20261018/nodes/A08.json",
+        "research/all_dag_completion_20261018/nodes/A08.md"
+      ],
+      "production_promotion": "NOT_INFERRED_FROM_IMPLEMENTATION",
+      "speed_promotion": "HOLD"
+    },
+    {
+      "id": "A09",
+      "title": "Homotopy parallel target preservation",
+      "owner": "/root/nonlinear_parallel_theory",
+      "depends_on": [
+        "A04",
+        "A07"
+      ],
+      "original_acceptance": "Same target and output tolerance as sequential baseline; preserve all initial states; do not assume floating K nilpotent; count barriers/warmup/fallback.",
+      "original_scope_dependencies": {},
+      "status": "IMPLEMENTED_SCOPED_VALIDATION_COMPLETE",
+      "delivered": [
+        "원래 actual-K H5 stage certificate와 별도 nonlinear window homotopy client 모두 구현"
+      ],
+      "apis": [
+        "certify_collective_actual_k_homotopy",
+        "integrate_nonlinear_homotopy"
+      ],
+      "validation_summary": "3 actual-K + 7 window + 2 unit; 18 Fraction + 164 high-precision containments",
+      "scope": "actual floating alpha/beta 전체 유지; window 결과는 원래 ODE의 요청 endpoint 인증",
+      "limits": [
+        "stage H5는 ODE truncation 인증이 아님; window endpoint는 continuous dense certificate 아님; speed HOLD"
+      ],
+      "evidence": [
+        "research/all_dag_completion_20261018/nodes/A09/RESULT.json"
+      ],
+      "production_promotion": "NOT_INFERRED_FROM_IMPLEMENTATION",
+      "speed_promotion": "HOLD"
+    },
+    {
+      "id": "A10",
+      "title": "Adaptive Bernstein enclosure",
+      "owner": "/root/dag_a10_bernstein",
+      "depends_on": [
+        "A01"
+      ],
+      "original_acceptance": "Exact (1−τ)^d family plus complex/vector cases; full inclusion and refinement stopping; original tail-model preserved.",
+      "original_scope_dependencies": {},
+      "status": "IMPLEMENTED_SCOPED_VALIDATION_COMPLETE",
+      "delivered": [
+        "인증된 continuous residual에 bounded outward Bernstein 재검증 연결"
+      ],
+      "apis": [
+        "RepresentedPacketCurve::with_bernstein_residual_bound",
+        "VerifiedPacketAdaptiveConfig::bernstein_max_depth"
+      ],
+      "validation_summary": "4 new + 8 regression; 42 Fraction containments",
+      "scope": "동일 frozen polynomial/source/initial tube 및 tail model; 원래 physical gate 유지",
+      "limits": [
+        "post-selected budget의 구성적 refuse-to-accept 예제; 일반 시간 향상 주장 없음"
+      ],
+      "evidence": [
+        "research/all_dag_completion_20261018/nodes/A10/RESULT.json"
+      ],
+      "production_promotion": "NOT_INFERRED_FROM_IMPLEMENTATION",
+      "speed_promotion": "HOLD"
+    },
+    {
+      "id": "A11",
+      "title": "EX01 full Jacobian symmetric-part bound",
+      "owner": "/root/dag_a11_grayscott",
+      "depends_on": [],
+      "original_acceptance": "Reject offdiagonal counterexample J=[[-1,100],[0,-1]] for maxdiag shortcut; bound all tube reaction blocks outward.",
+      "original_scope_dependencies": {},
+      "status": "IMPLEMENTED_SCOPED_VALIDATION_COMPLETE",
+      "delivered": [
+        "실제 GrayScott 궤적 tube provider, full symmetric Jacobian bound, callback allocation 제거"
+      ],
+      "apis": [
+        "BoundGrayScottProblem",
+        "gray_scott_2d_verified"
+      ],
+      "validation_summary": "7 new + 3 regression + 1 compile-fail; nonlinear 11 outputs",
+      "scope": "원래 periodic GrayScott model와 generated provider의 L2 tube",
+      "limits": [
+        "target grid/horizon resource와 wall-time은 하드웨어 실행 필요"
+      ],
+      "evidence": [
+        "research/all_dag_completion_20261018/nodes/A11/RESULT.json"
+      ],
+      "production_promotion": "NOT_INFERRED_FROM_IMPLEMENTATION",
+      "speed_promotion": "HOLD"
+    },
+    {
+      "id": "A12",
+      "title": "Scoped production decision",
+      "owner": "/root/dag_a12_independent",
+      "depends_on": [],
+      "original_acceptance": "Close only the dependencies of the selected scope; independent scopes may promote separately. Preserve original tolerance, actual source identity and failed attempts.",
+      "original_scope_dependencies": {
+        "packet_kappa0": [
+          "A01",
+          "A02"
+        ],
+        "packet_damped": [
+          "A01",
+          "A02",
+          "A03"
+        ],
+        "leja_total": [
+          "A04"
+        ],
+        "generic_global_outputs": [
+          "A05"
+        ],
+        "matched_accuracy_speed": [
+          "A07"
+        ]
+      },
+      "status": "IMPLEMENTED_SCOPED_VALIDATION_COMPLETE",
+      "delivered": [
+        "전체 original DAG scope별 독립 심사와 promotion 분리"
+      ],
+      "apis": [
+        "nodes/A12/REVIEW.json",
+        "nodes/A12/DECISION.json"
+      ],
+      "validation_summary": "independent proof/source review + evidence identity gates",
+      "scope": "이번 추가분과 재사용 증거의 선언된 계약만 판정",
+      "limits": [
+        "broad production 및 universal speed promotion은 HOLD"
+      ],
+      "evidence": [
+        "research/all_dag_completion_20261018/nodes/A12/REVIEW.json",
+        "research/all_dag_completion_20261018/nodes/A12/DECISION.json"
+      ],
+      "production_promotion": "NOT_INFERRED_FROM_IMPLEMENTATION",
+      "speed_promotion": "HOLD"
+    }
+  ],
+  "final_execution": "evidence/final_native/RESULT.json",
+  "independent_decision": "nodes/A12/DECISION.json"
+}

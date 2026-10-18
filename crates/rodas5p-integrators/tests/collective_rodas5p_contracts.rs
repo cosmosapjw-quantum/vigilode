@@ -126,8 +126,9 @@ fn refactorization_reuses_storage_and_failure_invalidates_old_factors() {
         factors.solve_into(&rhs, &mut out, &mut work).unwrap();
     }
     assert_eq!(work.setup_allocations, 3);
-    let high = model(4, 1e6, 0.1);
-    assert!(factors.refactor(&high, &y, 1.0, &mut work).is_err());
+    // High chi may now be admitted by the enclosed Schur inverse bound.
+    // An invalid scale must still poison the previous factors transactionally.
+    assert!(factors.refactor(&m, &y, -1.0, &mut work).is_err());
     assert!(!factors.is_valid());
     assert!(factors.schur_determinant_enclosure().is_err());
     assert!(factors.solve_into(&rhs, &mut out, &mut work).is_err());

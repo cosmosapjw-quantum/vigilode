@@ -1,0 +1,45 @@
+{
+  "schema": "vigilode-all-dag-node-v1",
+  "node": "A08",
+  "status": "IMPLEMENTED_SCOPED_NATIVE_AND_EXACT_ORACLE_PASS",
+  "scientific_claim_status": "implementation-verified",
+  "source_base": "40a36d922e915e1d1c296adc136b7e5b7676eb67",
+  "native_contracts": {
+    "passed": 6,
+    "failed": 0,
+    "log": "research/all_dag_completion_20261018/nodes/A08_evidence/first_native.log"
+  },
+  "exact_fraction_oracle": {
+    "passed": 18,
+    "failed": 0,
+    "artifact": "research/all_dag_completion_20261018/nodes/A08_evidence/fraction_check.json"
+  },
+  "api": "rodas5p_core::polynomial_router::guarded_polynomial_action",
+  "backends": [
+    "enclosed_leja",
+    "laguerre_signed_adjoint",
+    "chebyshev"
+  ],
+  "common_target": "sum_{k=0}^4 phi_k(hA) w_k",
+  "domain": "finite represented dense symmetric nonpositive Gershgorin-verified operator; h>=0; unchanged finite positive absolute 2-norm budget",
+  "production_global": "HOLD",
+  "measured_speed": "NOT_CLAIMED",
+  "measured_allocation_bytes": null,
+  "krylov_comparator": "ESTIMATE_ONLY_UNADMITTED_NO_SPEED_CLAIM",
+  "historical_py02": "ABSTAIN_A3_UNCHANGED",
+  "failure_preserved": {
+    "log": "research/all_dag_completion_20261018/nodes/A08_evidence/export_native.log",
+    "classification": "execution_relative_output_path",
+    "repair": "absolute output path; identical compiled native test binary"
+  },
+  "source_sha256": {
+    "crates/rodas5p-core/src/polynomial_router.rs": "d2591d77f58b6c295e5e880ad78b2f3d72cbfab7985bb71d19606bd6cce4e4ec",
+    "crates/rodas5p-core/tests/guarded_polynomial_router.rs": "b5a61b7d64201af898b3669f4fe40c420c7b7494d2a8505de3356a7a8e173568",
+    "research/all_dag_completion_20261018/nodes/A08.md": "17682a06f06b84029a73358d14c01f2f6c168d382335efff161a14a595b19959"
+  },
+  "remaining": [
+    "independent all-DAG source review",
+    "matched repeated hardware timing including operator setup and allocation calibration",
+    "opt-in integration into an integrator with its own trajectory error ownership"
+  ]
+}

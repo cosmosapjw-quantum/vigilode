@@ -1,0 +1,232 @@
+{
+  "schema_version": 1,
+  "ordering": "lower priority number first; edges are actual dependencies, optional nodes do not block undamped local work",
+  "nodes": [
+    {
+      "id": "A01",
+      "priority": 0,
+      "status": "pending",
+      "depends_on": [],
+      "addresses": [
+        "B01"
+      ],
+      "title": "Certified undamped packet window",
+      "source": "crates/rodas5p-integrators/src/packet_window.rs",
+      "implementation": "Introduce immutable generated descriptor; interval moments, candidate/force/residual, all-mode reconstruction and scalar bounds; use actual S and max|xi|.",
+      "interface": "local_window_verified(model,h,tol) -> centers, outward radii, source identity, work",
+      "acceptance": "Independent exact one-mode solutions plus high precision adversarial multi-mode fixtures enclosed at every requested output; NaN/Inf/forged input refused; no missing arithmetic terms.",
+      "cost_contract": "O(Np)+polynomial and enclosure cost; instrument all setup/output terms.",
+      "reuse": "LP01,LP02,Loop12/DW-D"
+    },
+    {
+      "id": "A02",
+      "priority": 0,
+      "status": "pending",
+      "depends_on": [
+        "A01"
+      ],
+      "addresses": [
+        "B01",
+        "B04"
+      ],
+      "title": "Weighted global trajectory",
+      "source": "crates/rodas5p-integrators/src/packet_trajectory.rs",
+      "implementation": "Implement T1 verified E+, true/candidate mean tube and continuous output residual; tie each returned center to its radius; transport inherited radii transactionally.",
+      "interface": "advance_verified(state,window) -> committed state or typed rejection with retained work",
+      "acceptance": "Independent full trajectory inclusion for mean/all modes, nonzero initial radii and rejected windows; fixed requested physical tolerance not relaxed.",
+      "cost_contract": "O(N) tube/transport plus O(1) gain per window; compare rejection count at same certificate.",
+      "reuse": "LP04,DW-E,T1"
+    },
+    {
+      "id": "A03",
+      "priority": 1,
+      "status": "pending",
+      "depends_on": [
+        "A01"
+      ],
+      "addresses": [
+        "B02"
+      ],
+      "title": "Native common-damping packet",
+      "source": "crates/rodas5p-core/src/damped_moments.rs; crates/rodas5p-integrators/src/packet_window.rs",
+      "implementation": "Connect e^(-2κt) nonlinear forcing, interval damped moments, explicit rotating/lab frame and carrier enclosure; width gate and stable alternate scalar kernel.",
+      "interface": "DampedPacketDescriptor and verified reconstruct_into",
+      "acceptance": "κ=0 confluent limit; exact damped linear and one-mode cubic cases; large κh finite inclusion or explicit refusal; full multiwindow test after A02.",
+      "cost_contract": "Charge scalar kernel precision/setup and all requested outputs.",
+      "reuse": "LP03,DW-A..F,T3"
+    },
+    {
+      "id": "A04",
+      "priority": 0,
+      "status": "pending",
+      "depends_on": [],
+      "addresses": [
+        "B03"
+      ],
+      "title": "Leja full arithmetic authority",
+      "source": "crates/rodas5p-core/src/leja_action.rs",
+      "implementation": "Close matrix product, recurrence, coefficient, summation additive underflow and norm enclosures; bind operator structure; then selectively restore certified status.",
+      "interface": "CertifiedAction requires complete arithmetic-domain witness",
+      "acceptance": "Independent high precision cases across subnormal/normal/overflow and adversarial forged caches; component terms include coefficient-radius cross term; warmed zero allocations unchanged.",
+      "cost_contract": "One-time suffix setup O(128m²), storage O(m²), coefficient tails O(m²); measure cold/warm separately.",
+      "reuse": "PY05,S-T1"
+    },
+    {
+      "id": "A05",
+      "priority": 0,
+      "status": "pending",
+      "depends_on": [],
+      "addresses": [
+        "B04"
+      ],
+      "title": "Generic dense-output residual controller",
+      "source": "crates/rodas5p-integrators/src/dense_output_v2.rs",
+      "implementation": "Construct continuous reconstruction defect and verified full tube one-sided gain; use it to control all requested outputs; add failed-callback work charges and zero-span config validation.",
+      "interface": "DenseErrorControl::VerifiedResidual with typed unsupported fallback",
+      "acceptance": "New PR101-point witness must satisfy unchanged normalized tolerance at all outputs; rigorous interval residual establishes between-point coverage; count added JVP/LU work.",
+      "cost_contract": "Compare existing Off/Enforce/verified routes at fixed output and error; do not omit dense validation cost.",
+      "reuse": "AS04,AS05,prior GLOBAL_ACCURACY,T1 generic comparison"
+    },
+    {
+      "id": "A06",
+      "priority": 1,
+      "status": "pending",
+      "depends_on": [],
+      "addresses": [
+        "B05"
+      ],
+      "title": "Strong rank-two direct baseline",
+      "source": "crates/rodas5p-integrators/src/collective_model.rs",
+      "implementation": "Port exact Woodbury prototype to preallocated native factors, 2×2 Schur enclosure and residual witness; use carrier0 for current rotating-frame model.",
+      "interface": "CollectiveStageFactors::factorize / solve_into",
+      "acceptance": "Same frozen Jacobian/stage RHS as dense route; verify full residual and nonsingular/singular Schur cases; n1,2,4,8 and larger native sizes.",
+      "cost_contract": "O(N) setup, O(N) each RHS; all reconstruction and Schur certification counted.",
+      "reuse": "LP09,WB1,WB2"
+    },
+    {
+      "id": "A07",
+      "priority": 0,
+      "status": "pending",
+      "depends_on": [],
+      "addresses": [
+        "B05"
+      ],
+      "title": "Comparable benchmark and generated report",
+      "source": "crates/rodas5p-fair-ab/src/packet_benchmark.rs; tools/benchmarks/diffsol/main.rs",
+      "implementation": "Same equation, atol vector, output grid, setup boundary and independent reference; allocator-based measured counts; retain failed arms; pin external Cargo.lock; generate Markdown from validated JSON.",
+      "interface": "BenchmarkRow includes measured/error kinds, failure status and exact source/build/config",
+      "acceptance": "All rows schema-valid; zero report/data discrepancies; no speed decision without same physical error/output and declared timing protocol.",
+      "cost_contract": "Include cold/warm setup, reference excluded consistently, output and certification cost; independent timing uncertainty.",
+      "reuse": "LP09,LP10,ME01,PA01..07",
+      "scope_dependencies": {
+        "packet_strong_baseline": [
+          "A06"
+        ],
+        "generic_diffsol_comparison": []
+      }
+    },
+    {
+      "id": "A08",
+      "priority": 2,
+      "status": "pending",
+      "depends_on": [
+        "A04",
+        "A07"
+      ],
+      "addresses": [],
+      "title": "Polynomial route choice",
+      "source": "crates/rodas5p-core/src/polynomial_action.rs; crates/rodas5p-core/src/leja_action.rs",
+      "implementation": "Reuse Laguerre quotient/near-annihilator and PY02 conditions; compare complete cost and error to existing Krylov/Leja on the same admitted operator class.",
+      "interface": "Guarded polynomial backend selector",
+      "acceptance": "Verified spectrum/structure and total-error conditions; same outputs; all setup and basis conversion retained; candidate can abstain.",
+      "cost_contract": "Operator products, memory, scalar setup and certificate costs; avoid equating degree reduction with elapsed speed.",
+      "reuse": "TP01/PY01..05,prior POLYNOMIAL_KO"
+    },
+    {
+      "id": "A09",
+      "priority": 2,
+      "status": "pending",
+      "depends_on": [
+        "A04",
+        "A07"
+      ],
+      "addresses": [],
+      "title": "Homotopy parallel target preservation",
+      "source": "crates/rodas5p-integrators/src/homotopy.rs",
+      "implementation": "Use real nonlinear client, certified branch/endpoint residual and H5 perturbation witness for represented floating K; parallelize independent work with explicit span/work.",
+      "interface": "AdmittedHomotopyClient plus endpoint-certified parallel schedule",
+      "acceptance": "Same target and output tolerance as sequential baseline; preserve all initial states; do not assume floating K nilpotent; count barriers/warmup/fallback.",
+      "cost_contract": "Total work vs parallel span including iteration dependency; finite Picard rounds only under proved exact causality.",
+      "reuse": "HT01 ABSTAIN,HT02 NOT_RUN,prior H5/Loop12R4"
+    },
+    {
+      "id": "A10",
+      "priority": 1,
+      "status": "pending",
+      "depends_on": [
+        "A01"
+      ],
+      "addresses": [],
+      "title": "Adaptive Bernstein enclosure",
+      "source": "crates/rodas5p-integrators/src/packet_window.rs",
+      "implementation": "Use T2 convex-hull bounds only when cheap coefficient bound fails; outward basis transform and dyadic de Casteljau with monotone min.",
+      "interface": "polynomial_sup_bound(candidate_or_residual, budget)",
+      "acceptance": "Exact (1−τ)^d family plus complex/vector cases; full inclusion and refinement stopping; original tail-model preserved.",
+      "cost_contract": "O(d²) transform/subdivision, streaming O(d); instrument false-rejection savings.",
+      "reuse": "T2,LP02"
+    },
+    {
+      "id": "A11",
+      "priority": 1,
+      "status": "pending",
+      "depends_on": [],
+      "addresses": [],
+      "title": "EX01 full Jacobian symmetric-part bound",
+      "source": "crates/rodas5p-integrators/src/gray_scott.rs",
+      "implementation": "Replace generic maxdiag shortcut by full μ2 upper on tube; GrayScott reaction2×2 eigenvalue formula plus contractive diffusion yields O(N) bound.",
+      "interface": "verified_log_norm_upper(tube)",
+      "acceptance": "Reject offdiagonal counterexample J=[[-1,100],[0,-1]] for maxdiag shortcut; bound all tube reaction blocks outward.",
+      "cost_contract": "O(N) local block bounds instead of dense symmetric eigensolve.",
+      "reuse": "EX01,S-T2"
+    },
+    {
+      "id": "A12",
+      "priority": 0,
+      "status": "pending",
+      "depends_on": [],
+      "addresses": [
+        "B01",
+        "B03",
+        "B04",
+        "B05"
+      ],
+      "title": "Scoped production decision",
+      "source": "research/production_audit_20261018/DECISION.json",
+      "implementation": "Independent review of completed scope, actual nonlinear client and declared deployment/error/output domain; leave other routes separately held.",
+      "interface": "Decision with source/test/config identities",
+      "acceptance": "Close only the dependencies of the selected scope; independent scopes may promote separately. Preserve original tolerance, actual source identity and failed attempts.",
+      "cost_contract": "No additional unchanged historical campaign rerun; validate changed dependencies only.",
+      "reuse": "LP10 replacement",
+      "scope_dependencies": {
+        "packet_kappa0": [
+          "A01",
+          "A02"
+        ],
+        "packet_damped": [
+          "A01",
+          "A02",
+          "A03"
+        ],
+        "leja_total": [
+          "A04"
+        ],
+        "generic_global_outputs": [
+          "A05"
+        ],
+        "matched_accuracy_speed": [
+          "A07"
+        ]
+      }
+    }
+  ]
+}

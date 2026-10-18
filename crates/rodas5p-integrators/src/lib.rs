@@ -503,3 +503,24 @@ pub use policy_redesign_v25::{
 /// Optional model-specific physical error transport; not a default solver path.
 #[cfg(feature = "audit2-research")]
 pub mod chart_transport;
+pub mod nonlinear_homotopy;
+pub use nonlinear_homotopy::{
+    NonlinearHomotopyConfig, NonlinearHomotopyError, NonlinearHomotopyWork, VerifiedHomotopyPoint,
+    VerifiedNonlinearHomotopy, integrate_nonlinear_homotopy,
+};
+pub mod damped_packet;
+
+mod generic_verified;
+pub use generic_verified::{
+    VerifiedContinuousProblem, VerifiedResidualDiagnostics, VerifiedResidualError,
+    VerifiedResidualOutput, VerifiedResidualRun, VerifiedResidualSegment,
+    integrate_verified_residual,
+};
+
+pub mod gray_scott_verified;
+
+pub mod actual_k_homotopy;
+pub use actual_k_homotopy::{
+    ActualKHomotopyConfig, ActualKHomotopyError, ActualKHomotopyWork, CertifiedActualKHomotopy,
+    certify_collective_actual_k_homotopy,
+};
