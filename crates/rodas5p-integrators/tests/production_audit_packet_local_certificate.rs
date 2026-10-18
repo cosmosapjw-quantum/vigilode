@@ -363,3 +363,53 @@ fn frozen_one_mode_exact_fraction_and_typed_refusals() {
         String::from_utf8_lossy(&result.stderr)
     );
 }
+
+#[test]
+fn subnormal_initial_amplitude_is_enclosed_or_typed_refused() {
+    // For width=chi=0 the exact one-mode solution is the initial binary64
+    // subnormal itself at every physical time.
+    let tiny = f64::from_bits(1);
+    let model =
+        CollectiveModel::new(vec![0.0], vec![1.0], vec![(tiny, 0.0)], 0.0, 0.0, 0.0, 0.0).unwrap();
+    let mut work = PacketWorkCounters::default();
+    let packet = compile_packet(&model, 0.125, 4, &mut work).unwrap();
+    let table = CausalWeights::compile(4, 12);
+    let candidate = generate_candidate(&packet, 4, 2, &table, &mut work).unwrap();
+    let curve = RepresentedPacketCurve::freeze(&candidate, &packet, &mut work).unwrap();
+    let owner = PacketFrozenOutput::new(curve, &[0.0], &mut work).unwrap();
+    let mut workspace = owner.workspace(&mut work).unwrap();
+    for &time in &[0.0, 0.0625, 0.125] {
+        let before = work;
+        match owner.enclose_at(time, &mut workspace, &mut work) {
+            Ok(view) => {
+                let mode_delta = (view.modes()[0].0 - tiny).abs();
+                let mean_delta = (view.mean().0 - tiny).abs();
+                assert!(view.mode_radii()[0] >= mode_delta);
+                assert!(view.mean_radius() >= mean_delta);
+                assert!(view.mode_radii()[0] >= view.modes()[0].1.abs());
+                assert!(view.mean_radius() >= view.mean().1.abs());
+                println!("subnormal_initial_time={time} outcome=included");
+            }
+            Err(PacketError::OutwardRefusal(reason)) => {
+                println!("subnormal_initial_time={time} outcome=typed_refusal reason={reason}");
+                assert_eq!(
+                    work.curve_frozen_query_refusals - before.curve_frozen_query_refusals,
+                    1
+                );
+            }
+            Err(other) => panic!("unexpected subnormal initial error: {other:?}"),
+        }
+        assert_eq!(
+            work.curve_frozen_query_attempts - before.curve_frozen_query_attempts,
+            1
+        );
+        println!(
+            "subnormal_initial_work_before={}",
+            serde_json::to_string(&before).unwrap()
+        );
+        println!(
+            "subnormal_initial_work_after={}",
+            serde_json::to_string(&work).unwrap()
+        );
+    }
+}
