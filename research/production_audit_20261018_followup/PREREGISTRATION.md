@@ -30,3 +30,7 @@ Preserve the raw first failure before repair. Run only dependency-relevant focus
 ## Stop and claim rules
 
 Classify proof, arithmetic, implementation, input and environment failures separately. Typed HOLD nodes block descendants; independent READY nodes continue. Component PASS closes only its reviewed scope. Overall production promotion, global all-time accuracy and same-accuracy speed remain separate decisions.
+
+## Registered results (appended after EXEC and frozen inputs)
+
+See `INPUTS_SHA256.json` and `RESULTS.json` for source/input identity, exact commands, environment, scope decisions, and numeric campaign outcomes. The registered final runs produced 28/28 core, 76/76 integrator, and 1/1 fair-ab focused tests; workspace all-target check, fmt, and clippy each exited 0. The retained A07 Robertson campaign uses rtol=1e-8, atol=[1e-11,1e-11,1e-11], 101 outputs on [0,40]. Diffsol max-grid WRMS 3.3026992500504733 exceeds the frozen 0.05 accuracy gate; timing remains diagnostic_only and no speed claim is made. Broad production promotion, nonlinear packet trajectory certification, generic all-output accuracy, total Leja arithmetic authority, and matched-accuracy speed remain HOLD.

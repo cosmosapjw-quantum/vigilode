@@ -1,0 +1,30 @@
+   Compiling rodas5p-core v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.15s
+     Running tests/damped_forcing_moment_consumer.rs (target/debug/deps/damped_forcing_moment_consumer-048279d0aa5d6a0b)
+
+running 8 tests
+test invalid_parameters_and_orders_refuse_before_kernel_and_retain_validation_work ... ok
+test absolute_width_gate_refuses_narrow_limit_and_keeps_attempted_work ... ok
+test kernel_refusal_retains_attempt_without_claiming_width_check ... 
+thread 'subnormal_damping_product_is_not_treated_as_exact_zero' (3111691) panicked at crates/rodas5p-core/tests/damped_forcing_moment_consumer.rs:90:5:
+assertion `left == right` failed
+  left: -5e-324
+ right: 0.0
+oknote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+test large_rate_width_refusal_keeps_validation_kernel_and_width_work ... ok
+test zero_damping_confluent_limit_is_admitted_by_the_consumer ... ok
+test forcing_index_mapping_is_q_rd_to_i_dr ... ok
+test subnormal_damping_product_is_not_treated_as_exact_zero ... FAILED
+boundary interval bits: 401948ea1e23ea6f 401948ea1e23ea8c
+test rounded_product_branch_boundary_matches_frozen_kernel_interval ... ok
+
+failures:
+
+failures:
+    subnormal_damping_product_is_not_treated_as_exact_zero
+
+test result: FAILED. 7 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p rodas5p-core --test damped_forcing_moment_consumer`
+EXIT_CODE=101

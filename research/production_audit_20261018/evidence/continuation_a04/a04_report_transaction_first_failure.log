@@ -1,0 +1,23 @@
+    Blocking waiting for file lock on artifact directory
+   Compiling rodas5p-core v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 14.39s
+     Running tests/leja_total_contract.rs (target/debug/deps/leja_total_contract-60f684bbb8a2ea0f)
+
+running 1 test
+
+thread 'test_a04_failed_dimension_change_preserves_last_successful_report' (3090042) panicked at crates/rodas5p-core/tests/leja_total_contract.rs:337:5:
+assertion `left == right` failed
+  left: CertifiedLejaReport { schema: "vigilode-leja-certified-v1", input: "distinct", branch: "scalar", dimension: 2, degree: 0, degree_cap: 8, converged: true, interval: [-0.0, -0.0], center: 0.0, scale: 0.0, total_budget: 1e-8, total_bound: 1.822358439219013e-16, truncation_bound: 0.0, divided_difference_bound: 2.5226598053523777e-17, recurrence_bound: 0.0, summation_bound: 1.5700924586837752e-16, columns: [[-0.9317953466620097], [-0.12631816939347607], [0.30330174425994516], [0.11951899651250594], [-0.016398065111592235]], fused: [-0.6516908403946269], total_error: EstimateOnly { reason: "LEJA_ARITHMETIC_HOLD: outward replay implementation awaits independent review of arithmetic-domain and coefficient-tail premises", bounded_components: 1.822358439219013e-16 }, evidence: Gershgorin, vector_products: 0, block_products: 0, coefficient_setups: 1, certification_ops: 0 }
+ right: CertifiedLejaReport { schema: "vigilode-leja-certified-v1", input: "distinct", branch: "scalar", dimension: 2, degree: 0, degree_cap: 8, converged: true, interval: [-0.0, -0.0], center: 0.0, scale: 0.0, total_budget: 1e-8, total_bound: 1.822358439219013e-16, truncation_bound: 0.0, divided_difference_bound: 2.5226598053523777e-17, recurrence_bound: 0.0, summation_bound: 1.5700924586837752e-16, columns: [[-0.9317953466620097, -0.24756572303867497], [-0.12631816939347607, -0.1463052025357554], [0.30330174425994516, -0.3312427726573858], [0.11951899651250594, -0.03574185643614037], [-0.016398065111592235, -0.021111473863111695]], fused: [-0.6516908403946269, -0.7819670285310683], total_error: EstimateOnly { reason: "LEJA_ARITHMETIC_HOLD: outward replay implementation awaits independent review of arithmetic-domain and coefficient-tail premises", bounded_components: 1.822358439219013e-16 }, evidence: Gershgorin, vector_products: 0, block_products: 0, coefficient_setups: 1, certification_ops: 433 }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test test_a04_failed_dimension_change_preserves_last_successful_report ... FAILED
+
+failures:
+
+failures:
+    test_a04_failed_dimension_change_preserves_last_successful_report
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 15 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p rodas5p-core --test leja_total_contract`
+EXIT_CODE=101

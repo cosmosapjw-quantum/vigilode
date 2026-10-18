@@ -1,0 +1,24 @@
+    Blocking waiting for file lock on artifact directory
+   Compiling rodas5p-krylov v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-krylov)
+   Compiling rodas5p-integrators v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-integrators)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1m 09s
+     Running tests/production_audit_packet.rs (target/debug/deps/production_audit_packet-1678bd1aadabbee6)
+
+running 1 test
+test bernstein_rejects_public_invalid_interval_before_work ... FAILED
+
+failures:
+
+---- bernstein_rejects_public_invalid_interval_before_work stdout ----
+
+thread 'bernstein_rejects_public_invalid_interval_before_work' (3083697) panicked at crates/rodas5p-integrators/tests/production_audit_packet.rs:130:5:
+assertion failed: matches!(result, Err(PacketError::OutwardRefusal(_)))
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    bernstein_rejects_public_invalid_interval_before_work
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 36 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p rodas5p-integrators --test production_audit_packet`

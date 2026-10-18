@@ -1,0 +1,72 @@
+{
+  "unit": "A02_LINEAR_ONLY",
+  "cwd": "/home/cosmosapjw/vigilode",
+  "branch": "audit/production-readiness-20261018",
+  "head": "c3036c63da02ca9b04cd39ccf580cd67d00ccb0c",
+  "rustc": "rustc 1.94.1 (e408947bf 2026-03-25)",
+  "cargo": "cargo 1.94.1 (29ea6fb6a 2026-03-24)",
+  "sources": {
+    "crates/rodas5p-integrators/src/packet_trajectory.rs": "ebda34827c909d4d55a19b1ef545b97ddebbf9991b126869ef60c2ef35aa2479",
+    "crates/rodas5p-integrators/tests/packet_trajectory_contracts.rs": "71a1fc7f666a8a8a410cb4871534e31b36f03f09819e6c2ca565c7dd1d2da490",
+    "crates/rodas5p-integrators/src/packet_window.rs": "0e527d45aa4676f95f7dc781d4805df837b3c3072fff016602bd36b0c8f22b90"
+  },
+  "logs": [
+    {
+      "path": "research/production_audit_20261018/evidence/continuation_a02/contract_first.log",
+      "sha256": "f16658e157435c12d7d4423da91f473a188410349c053a2472e2718972d195c2",
+      "command": "cargo test --locked --offline -p rodas5p-integrators --test packet_trajectory_contracts",
+      "exit_code": 0,
+      "copied_exactly_from": "/tmp/vigilode_a02_contract_first.log"
+    },
+    {
+      "path": "research/production_audit_20261018/evidence/continuation_a02/rejection_first.log",
+      "sha256": "8dd64c286c12d513df68e3b452b56f12be40fb7a5f70d95f374453ae499bef89",
+      "command": "cargo test --locked --offline -p rodas5p-integrators --test packet_trajectory_contracts linear_outward_rejected_trial_does_not_shift_accepted_center -- --nocapture",
+      "exit_code": 0,
+      "copied_exactly_from": "/tmp/vigilode_a02_rejection_first.log"
+    },
+    {
+      "path": "research/production_audit_20261018/evidence/continuation_a02/nonexact_first_failure.log",
+      "sha256": "9c2822e85bffbf0b156d4374b2d038f81b5522440aa26d7b4d9606b55e25b8a2",
+      "command": "cargo test --locked --offline -p rodas5p-integrators --test packet_trajectory_contracts linear_outward_rejections_preserve_attempted_work_and_return_typed_refusal",
+      "exit_code": 101,
+      "copied_exactly_from": "/tmp/vigilode_a02_nonexact_first.log"
+    },
+    {
+      "path": "research/production_audit_20261018/evidence/continuation_a02/nonexact_final.log",
+      "sha256": "4115002826392a094b928f27d33da66c2e74ce0485088aab64e0423ec867a2be",
+      "command": "cargo test --locked --offline -p rodas5p-integrators --test packet_trajectory_contracts linear_outward_rejections_preserve_attempted_work_and_return_typed_refusal",
+      "exit_code": 0,
+      "copied_exactly_from": "/tmp/vigilode_a02_nonexact_final.log"
+    },
+    {
+      "path": "research/production_audit_20261018/evidence/continuation_a02/contract_frozen.log",
+      "sha256": "eb10641c0c9b66cd3d059a811cb25aa9d7009687f63e90234d2ed32617879573",
+      "command": "cargo test --locked --offline -p rodas5p-integrators --test packet_trajectory_contracts",
+      "exit_code": 0,
+      "copied_exactly_from": "/tmp/vigilode_a02_contract_frozen.log"
+    },
+    {
+      "path": "research/production_audit_20261018/evidence/continuation_a02/clippy_frozen.log",
+      "sha256": "50993af03fc863b917d58b6a3ba9484980a60b496e27f78b127ad6064a5ba4f9",
+      "command": "cargo clippy --locked --offline -p rodas5p-integrators --lib --test packet_trajectory_contracts -- -D warnings",
+      "exit_code": 0,
+      "copied_exactly_from": "/tmp/vigilode_a02_clippy_frozen.log"
+    },
+    {
+      "path": "research/production_audit_20261018/evidence/continuation_a02/fmt_frozen.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "command": "cargo fmt --all -- --check",
+      "exit_code": 0,
+      "copied_exactly_from": "/tmp/vigilode_a02_fmt_frozen.log"
+    }
+  ],
+  "decision": "LINEAR_SUBSCOPE_REVIEW_PENDING; FULL_A02_HOLD",
+  "limits": [
+    "roundoff_enclosed=false pending independent review",
+    "nonlinear reconstructed curve continuous residual and mean tube absent",
+    "zero-allocation VG-1 not established",
+    "CausalWeights setup cost not represented in PacketWorkCounters",
+    "analytic linear test uses ordinary binary64 trigonometric evaluation as diagnostic reference"
+  ]
+}

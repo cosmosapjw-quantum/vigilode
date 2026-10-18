@@ -1,0 +1,24 @@
+   Compiling rodas5p-integrators v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-integrators)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.02s
+     Running tests/packet_trajectory_contracts.rs (target/debug/deps/packet_trajectory_contracts-b2b63b4d95d00dce)
+
+running 1 test
+test linear_outward_rejections_preserve_attempted_work_and_return_typed_refusal ... FAILED
+
+failures:
+
+---- linear_outward_rejections_preserve_attempted_work_and_return_typed_refusal stdout ----
+
+thread 'linear_outward_rejections_preserve_attempted_work_and_return_typed_refusal' (3027544) panicked at crates/rodas5p-integrators/tests/packet_trajectory_contracts.rs:331:5:
+assertion `left == right` failed
+  left: Ok(LinearOutwardTrajectory { roundoff_enclosed: false, observations: [LinearOutwardPoint { t: 0.0, mean: (0.25, 0.0), mean_radius: 1.3523338972197877e-18, modes: None, mode_radii: None }, LinearOutwardPoint { t: 0.15, mean: (0.24929720452805185, 0.018732426818185585), mean_radius: 2.0920265989520867e-16, modes: None, mode_radii: None }, LinearOutwardPoint { t: 0.3, mean: (0.2471927694840106, 0.037359533118399804), mean_radius: 3.390527830914795e-16, modes: None, mode_radii: None }], endpoints: [LinearOutwardPoint { t: 0.0, mean: (0.25, 0.0), mean_radius: 1.3523338972197877e-18, modes: None, mode_radii: None }, LinearOutwardPoint { t: 0.1, mean: (0.24968756509874157, 0.012494792317669583), mean_radius: 8.982323117203696e-17, modes: None, mode_radii: None }, LinearOutwardPoint { t: 0.2, mean: (0.24875104131950646, 0.02495835416170704), mean_radius: 2.1267210684716228e-16, modes: None, mode_radii: None }, LinearOutwardPoint { t: 0.3, mean: (0.2471927694840106, 0.037359533118399804), mean_radius: 3.390527830914795e-16, modes: None, mode_radii: None }], accepted_steps: 3, rejected_steps: 0, work: PacketWorkCounters { identity_snapshot_items: 930, identity_comparison_items: 876, model_copy_items: 54, model_bounds_snapshot_items: 12, model_bounds_comparison_items: 24, output_copy_items: 242, output_value_items: 22, output_restriction_multiplies: 363, certificate_items: 26380, reconstruction_terms: 99, moment_terms: 108, poly_multiply_terms: 12320, volterra_terms: 6696, nonlinear_evaluations: 35, output_horner_terms: 0 } })
+ right: Err(NonExactTimeGrid)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    linear_outward_rejections_preserve_attempted_work_and_return_typed_refusal
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 9 filtered out; finished in 0.14s
+
+error: test failed, to rerun pass `-p rodas5p-integrators --test packet_trajectory_contracts`

@@ -1,0 +1,737 @@
+vigilode-a07 v0.1.0 (/home/cosmosapjw/vigilode/tools/benchmarks/diffsol/a07)
+├── diffsol feature "faer"
+│   ├── diffsol v0.16.1
+│   │   ├── diffsol-la feature "faer"
+│   │   │   └── diffsol-la v0.1.0
+│   │   │       ├── faer feature "npy"
+│   │   │       │   ├── faer v0.24.4
+│   │   │       │   │   ├── faer-traits v0.24.0
+│   │   │       │   │   │   ├── libm v0.2.16
+│   │   │       │   │   │   ├── num-complex v0.4.6
+│   │   │       │   │   │   │   ├── rand v0.8.7
+│   │   │       │   │   │   │   │   └── rand_core feature "default"
+│   │   │       │   │   │   │   │       └── rand_core v0.6.4
+│   │   │       │   │   │   │   ├── bytemuck feature "default"
+│   │   │       │   │   │   │   │   └── bytemuck v1.25.2
+│   │   │       │   │   │   │   └── num-traits feature "i128"
+│   │   │       │   │   │   │       └── num-traits v0.2.19
+│   │   │       │   │   │   │           └── libm feature "default"
+│   │   │       │   │   │   │               ├── libm v0.2.16
+│   │   │       │   │   │   │               └── libm feature "arch"
+│   │   │       │   │   │   │                   └── libm v0.2.16
+│   │   │       │   │   │   │           [build-dependencies]
+│   │   │       │   │   │   │           └── autocfg feature "default"
+│   │   │       │   │   │   │               └── autocfg v1.5.1
+│   │   │       │   │   │   ├── num-traits v0.2.19 (*)
+│   │   │       │   │   │   ├── pulp v0.22.3
+│   │   │       │   │   │   │   ├── libm v0.2.16
+│   │   │       │   │   │   │   ├── pulp-wasm-simd-flag v0.1.1
+│   │   │       │   │   │   │   ├── raw-cpuid v11.6.0
+│   │   │       │   │   │   │   │   └── bitflags feature "default"
+│   │   │       │   │   │   │   │       └── bitflags v2.13.1
+│   │   │       │   │   │   │   ├── bytemuck feature "aarch64_simd"
+│   │   │       │   │   │   │   │   └── bytemuck v1.25.2
+│   │   │       │   │   │   │   ├── bytemuck feature "default" (*)
+│   │   │       │   │   │   │   ├── bytemuck feature "wasm_simd"
+│   │   │       │   │   │   │   │   └── bytemuck v1.25.2
+│   │   │       │   │   │   │   ├── num-complex feature "bytemuck"
+│   │   │       │   │   │   │   │   └── num-complex v0.4.6 (*)
+│   │   │       │   │   │   │   ├── cfg-if feature "default"
+│   │   │       │   │   │   │   │   └── cfg-if v1.0.4
+│   │   │       │   │   │   │   ├── paste feature "default"
+│   │   │       │   │   │   │   │   └── paste v1.0.15 (proc-macro)
+│   │   │       │   │   │   │   └── reborrow feature "default"
+│   │   │       │   │   │   │       └── reborrow v0.5.5
+│   │   │       │   │   │   │   [build-dependencies]
+│   │   │       │   │   │   │   └── version_check feature "default"
+│   │   │       │   │   │   │       └── version_check v0.9.5
+│   │   │       │   │   │   ├── qd v0.8.0
+│   │   │       │   │   │   │   ├── bytemuck v1.25.2
+│   │   │       │   │   │   │   ├── num-traits v0.2.19 (*)
+│   │   │       │   │   │   │   ├── pulp v0.22.3 (*)
+│   │   │       │   │   │   │   └── libm feature "default" (*)
+│   │   │       │   │   │   ├── bytemuck feature "default" (*)
+│   │   │       │   │   │   ├── dyn-stack feature "alloc"
+│   │   │       │   │   │   │   └── dyn-stack v0.13.2
+│   │   │       │   │   │   │       ├── bytemuck feature "default" (*)
+│   │   │       │   │   │   │       └── dyn-stack-macros feature "default"
+│   │   │       │   │   │   │           └── dyn-stack-macros v0.1.3 (proc-macro)
+│   │   │       │   │   │   ├── dyn-stack feature "core-error"
+│   │   │       │   │   │   │   └── dyn-stack v0.13.2 (*)
+│   │   │       │   │   │   ├── generativity feature "default"
+│   │   │       │   │   │   │   └── generativity v1.2.1
+│   │   │       │   │   │   └── reborrow feature "default" (*)
+│   │   │       │   │   ├── gemm v0.19.0
+│   │   │       │   │   │   ├── gemm-c32 v0.19.0
+│   │   │       │   │   │   │   ├── gemm-common v0.19.0
+│   │   │       │   │   │   │   │   ├── num-complex v0.4.6 (*)
+│   │   │       │   │   │   │   │   ├── num-traits v0.2.19 (*)
+│   │   │       │   │   │   │   │   ├── pulp v0.22.3 (*)
+│   │   │       │   │   │   │   │   ├── raw-cpuid v11.6.0 (*)
+│   │   │       │   │   │   │   │   ├── bytemuck feature "default" (*)
+│   │   │       │   │   │   │   │   ├── dyn-stack feature "alloc" (*)
+│   │   │       │   │   │   │   │   ├── libm feature "default" (*)
+│   │   │       │   │   │   │   │   ├── paste feature "default" (*)
+│   │   │       │   │   │   │   │   ├── once_cell feature "alloc"
+│   │   │       │   │   │   │   │   │   ├── once_cell v1.21.4
+│   │   │       │   │   │   │   │   │   └── once_cell feature "race"
+│   │   │       │   │   │   │   │   │       └── once_cell v1.21.4
+│   │   │       │   │   │   │   │   ├── once_cell feature "race" (*)
+│   │   │       │   │   │   │   │   ├── rayon feature "default"
+│   │   │       │   │   │   │   │   │   └── rayon v1.12.0
+│   │   │       │   │   │   │   │   │       ├── either v1.17.0
+│   │   │       │   │   │   │   │   │       └── rayon-core feature "default"
+│   │   │       │   │   │   │   │   │           └── rayon-core v1.13.0
+│   │   │       │   │   │   │   │   │               ├── crossbeam-deque feature "default"
+│   │   │       │   │   │   │   │   │               │   ├── crossbeam-deque v0.8.7
+│   │   │       │   │   │   │   │   │               │   │   ├── crossbeam-epoch v0.9.20
+│   │   │       │   │   │   │   │   │               │   │   │   └── crossbeam-utils v0.8.22
+│   │   │       │   │   │   │   │   │               │   │   └── crossbeam-utils v0.8.22
+│   │   │       │   │   │   │   │   │               │   └── crossbeam-deque feature "std"
+│   │   │       │   │   │   │   │   │               │       ├── crossbeam-deque v0.8.7 (*)
+│   │   │       │   │   │   │   │   │               │       ├── crossbeam-epoch feature "std"
+│   │   │       │   │   │   │   │   │               │       │   ├── crossbeam-epoch v0.9.20 (*)
+│   │   │       │   │   │   │   │   │               │       │   ├── crossbeam-epoch feature "alloc"
+│   │   │       │   │   │   │   │   │               │       │   │   └── crossbeam-epoch v0.9.20 (*)
+│   │   │       │   │   │   │   │   │               │       │   └── crossbeam-utils feature "std"
+│   │   │       │   │   │   │   │   │               │       │       └── crossbeam-utils v0.8.22
+│   │   │       │   │   │   │   │   │               │       └── crossbeam-utils feature "std" (*)
+│   │   │       │   │   │   │   │   │               └── crossbeam-utils feature "default"
+│   │   │       │   │   │   │   │   │                   ├── crossbeam-utils v0.8.22
+│   │   │       │   │   │   │   │   │                   └── crossbeam-utils feature "std" (*)
+│   │   │       │   │   │   │   │   └── seq-macro feature "default"
+│   │   │       │   │   │   │   │       └── seq-macro v0.3.6 (proc-macro)
+│   │   │       │   │   │   │   ├── num-complex v0.4.6 (*)
+│   │   │       │   │   │   │   ├── num-traits v0.2.19 (*)
+│   │   │       │   │   │   │   ├── raw-cpuid v11.6.0 (*)
+│   │   │       │   │   │   │   ├── dyn-stack feature "alloc" (*)
+│   │   │       │   │   │   │   ├── paste feature "default" (*)
+│   │   │       │   │   │   │   └── seq-macro feature "default" (*)
+│   │   │       │   │   │   ├── gemm-c64 v0.19.0
+│   │   │       │   │   │   │   ├── gemm-common v0.19.0 (*)
+│   │   │       │   │   │   │   ├── num-complex v0.4.6 (*)
+│   │   │       │   │   │   │   ├── num-traits v0.2.19 (*)
+│   │   │       │   │   │   │   ├── raw-cpuid v11.6.0 (*)
+│   │   │       │   │   │   │   ├── dyn-stack feature "alloc" (*)
+│   │   │       │   │   │   │   ├── paste feature "default" (*)
+│   │   │       │   │   │   │   └── seq-macro feature "default" (*)
+│   │   │       │   │   │   ├── gemm-common v0.19.0 (*)
+│   │   │       │   │   │   ├── gemm-f32 v0.19.0
+│   │   │       │   │   │   │   ├── gemm-common v0.19.0 (*)
+│   │   │       │   │   │   │   ├── num-complex v0.4.6 (*)
+│   │   │       │   │   │   │   ├── num-traits v0.2.19 (*)
+│   │   │       │   │   │   │   ├── raw-cpuid v11.6.0 (*)
+│   │   │       │   │   │   │   ├── dyn-stack feature "alloc" (*)
+│   │   │       │   │   │   │   ├── paste feature "default" (*)
+│   │   │       │   │   │   │   └── seq-macro feature "default" (*)
+│   │   │       │   │   │   ├── gemm-f64 v0.19.0
+│   │   │       │   │   │   │   ├── gemm-common v0.19.0 (*)
+│   │   │       │   │   │   │   ├── num-complex v0.4.6 (*)
+│   │   │       │   │   │   │   ├── num-traits v0.2.19 (*)
+│   │   │       │   │   │   │   ├── raw-cpuid v11.6.0 (*)
+│   │   │       │   │   │   │   ├── dyn-stack feature "alloc" (*)
+│   │   │       │   │   │   │   ├── paste feature "default" (*)
+│   │   │       │   │   │   │   └── seq-macro feature "default" (*)
+│   │   │       │   │   │   ├── num-complex v0.4.6 (*)
+│   │   │       │   │   │   ├── num-traits v0.2.19 (*)
+│   │   │       │   │   │   ├── raw-cpuid v11.6.0 (*)
+│   │   │       │   │   │   ├── dyn-stack feature "alloc" (*)
+│   │   │       │   │   │   ├── paste feature "default" (*)
+│   │   │       │   │   │   └── seq-macro feature "default" (*)
+│   │   │       │   │   ├── libm v0.2.16
+│   │   │       │   │   ├── nano-gemm v0.2.2
+│   │   │       │   │   │   ├── nano-gemm-c32 v0.2.1
+│   │   │       │   │   │   │   ├── num-complex v0.4.6 (*)
+│   │   │       │   │   │   │   └── nano-gemm-core feature "default"
+│   │   │       │   │   │   │       └── nano-gemm-core v0.2.1
+│   │   │       │   │   │   │   [build-dependencies]
+│   │   │       │   │   │   │   └── nano-gemm-codegen feature "default"
+│   │   │       │   │   │   │       └── nano-gemm-codegen v0.2.1
+│   │   │       │   │   │   ├── nano-gemm-c64 v0.2.1
+│   │   │       │   │   │   │   ├── num-complex v0.4.6 (*)
+│   │   │       │   │   │   │   └── nano-gemm-core feature "default" (*)
+│   │   │       │   │   │   │   [build-dependencies]
+│   │   │       │   │   │   │   └── nano-gemm-codegen feature "default" (*)
+│   │   │       │   │   │   ├── nano-gemm-f32 v0.2.1
+│   │   │       │   │   │   │   └── nano-gemm-core feature "default" (*)
+│   │   │       │   │   │   │   [build-dependencies]
+│   │   │       │   │   │   │   └── nano-gemm-codegen feature "default" (*)
+│   │   │       │   │   │   ├── nano-gemm-f64 v0.2.1
+│   │   │       │   │   │   │   └── nano-gemm-core feature "default" (*)
+│   │   │       │   │   │   │   [build-dependencies]
+│   │   │       │   │   │   │   └── nano-gemm-codegen feature "default" (*)
+│   │   │       │   │   │   ├── num-complex v0.4.6 (*)
+│   │   │       │   │   │   ├── equator feature "default"
+│   │   │       │   │   │   │   └── equator v0.2.2
+│   │   │       │   │   │   │       └── equator-macro feature "default"
+│   │   │       │   │   │   │           └── equator-macro v0.2.1 (proc-macro)
+│   │   │       │   │   │   │               ├── proc-macro2 feature "default"
+│   │   │       │   │   │   │               │   ├── proc-macro2 v1.0.107
+│   │   │       │   │   │   │               │   │   └── unicode-ident feature "default"
+│   │   │       │   │   │   │               │   │       └── unicode-ident v1.0.24
+│   │   │       │   │   │   │               │   └── proc-macro2 feature "proc-macro"
+│   │   │       │   │   │   │               │       └── proc-macro2 v1.0.107 (*)
+│   │   │       │   │   │   │               ├── quote feature "default"
+│   │   │       │   │   │   │               │   ├── quote v1.0.47
+│   │   │       │   │   │   │               │   │   └── proc-macro2 v1.0.107 (*)
+│   │   │       │   │   │   │               │   └── quote feature "proc-macro"
+│   │   │       │   │   │   │               │       ├── quote v1.0.47 (*)
+│   │   │       │   │   │   │               │       └── proc-macro2 feature "proc-macro" (*)
+│   │   │       │   │   │   │               ├── syn feature "default"
+│   │   │       │   │   │   │               │   ├── syn v2.0.119
+│   │   │       │   │   │   │               │   │   ├── proc-macro2 v1.0.107 (*)
+│   │   │       │   │   │   │               │   │   ├── quote v1.0.47 (*)
+│   │   │       │   │   │   │               │   │   └── unicode-ident feature "default" (*)
+│   │   │       │   │   │   │               │   ├── syn feature "clone-impls"
+│   │   │       │   │   │   │               │   │   └── syn v2.0.119 (*)
+│   │   │       │   │   │   │               │   ├── syn feature "derive"
+│   │   │       │   │   │   │               │   │   └── syn v2.0.119 (*)
+│   │   │       │   │   │   │               │   ├── syn feature "parsing"
+│   │   │       │   │   │   │               │   │   └── syn v2.0.119 (*)
+│   │   │       │   │   │   │               │   ├── syn feature "printing"
+│   │   │       │   │   │   │               │   │   └── syn v2.0.119 (*)
+│   │   │       │   │   │   │               │   └── syn feature "proc-macro"
+│   │   │       │   │   │   │               │       ├── syn v2.0.119 (*)
+│   │   │       │   │   │   │               │       ├── proc-macro2 feature "proc-macro" (*)
+│   │   │       │   │   │   │               │       └── quote feature "proc-macro" (*)
+│   │   │       │   │   │   │               └── syn feature "full"
+│   │   │       │   │   │   │                   └── syn v2.0.119 (*)
+│   │   │       │   │   │   └── nano-gemm-core feature "default" (*)
+│   │   │       │   │   │   [build-dependencies]
+│   │   │       │   │   │   └── nano-gemm-codegen feature "default" (*)
+│   │   │       │   │   ├── npyz v0.8.4
+│   │   │       │   │   │   ├── byteorder feature "default"
+│   │   │       │   │   │   │   ├── byteorder v1.5.0
+│   │   │       │   │   │   │   └── byteorder feature "std"
+│   │   │       │   │   │   │       └── byteorder v1.5.0
+│   │   │       │   │   │   ├── num-bigint feature "default"
+│   │   │       │   │   │   │   ├── num-bigint v0.4.8
+│   │   │       │   │   │   │   │   ├── num-traits feature "i128" (*)
+│   │   │       │   │   │   │   │   └── num-integer feature "i128"
+│   │   │       │   │   │   │   │       └── num-integer v0.1.46
+│   │   │       │   │   │   │   │           └── num-traits feature "i128" (*)
+│   │   │       │   │   │   │   └── num-bigint feature "std"
+│   │   │       │   │   │   │       ├── num-bigint v0.4.8 (*)
+│   │   │       │   │   │   │       ├── num-traits feature "std"
+│   │   │       │   │   │   │       │   └── num-traits v0.2.19 (*)
+│   │   │       │   │   │   │       └── num-integer feature "std"
+│   │   │       │   │   │   │           ├── num-integer v0.1.46 (*)
+│   │   │       │   │   │   │           └── num-traits feature "std" (*)
+│   │   │       │   │   │   └── py_literal feature "default"
+│   │   │       │   │   │       └── py_literal v0.4.0
+│   │   │       │   │   │           ├── num-bigint v0.4.8 (*)
+│   │   │       │   │   │           ├── num-complex v0.4.6 (*)
+│   │   │       │   │   │           ├── num-traits v0.2.19 (*)
+│   │   │       │   │   │           ├── pest feature "default"
+│   │   │       │   │   │           │   ├── pest v2.8.8
+│   │   │       │   │   │           │   │   ├── ucd-trie v0.1.7
+│   │   │       │   │   │           │   │   └── memchr feature "default"
+│   │   │       │   │   │           │   │       ├── memchr v2.8.3
+│   │   │       │   │   │           │   │       └── memchr feature "std"
+│   │   │       │   │   │           │   │           ├── memchr v2.8.3
+│   │   │       │   │   │           │   │           └── memchr feature "alloc"
+│   │   │       │   │   │           │   │               └── memchr v2.8.3
+│   │   │       │   │   │           │   ├── pest feature "memchr"
+│   │   │       │   │   │           │   │   └── pest v2.8.8 (*)
+│   │   │       │   │   │           │   └── pest feature "std"
+│   │   │       │   │   │           │       ├── pest v2.8.8 (*)
+│   │   │       │   │   │           │       └── ucd-trie feature "std"
+│   │   │       │   │   │           │           └── ucd-trie v0.1.7
+│   │   │       │   │   │           └── pest_derive feature "default"
+│   │   │       │   │   │               ├── pest_derive v2.8.8 (proc-macro)
+│   │   │       │   │   │               │   ├── pest v2.8.8 (*)
+│   │   │       │   │   │               │   └── pest_generator v2.8.8
+│   │   │       │   │   │               │       ├── pest v2.8.8 (*)
+│   │   │       │   │   │               │       ├── proc-macro2 feature "default" (*)
+│   │   │       │   │   │               │       ├── quote feature "default" (*)
+│   │   │       │   │   │               │       ├── syn feature "default" (*)
+│   │   │       │   │   │               │       └── pest_meta feature "default"
+│   │   │       │   │   │               │           └── pest_meta v2.8.8
+│   │   │       │   │   │               │               └── pest feature "default" (*)
+│   │   │       │   │   │               └── pest_derive feature "std"
+│   │   │       │   │   │                   ├── pest_derive v2.8.8 (proc-macro) (*)
+│   │   │       │   │   │                   ├── pest feature "std" (*)
+│   │   │       │   │   │                   └── pest_generator feature "std"
+│   │   │       │   │   │                       ├── pest_generator v2.8.8 (*)
+│   │   │       │   │   │                       └── pest feature "std" (*)
+│   │   │       │   │   ├── num-complex v0.4.6 (*)
+│   │   │       │   │   ├── num-traits v0.2.19 (*)
+│   │   │       │   │   ├── private-gemm-x86 v0.1.20
+│   │   │       │   │   │   ├── raw-cpuid feature "default"
+│   │   │       │   │   │   │   └── raw-cpuid v11.6.0 (*)
+│   │   │       │   │   │   ├── rayon feature "default" (*)
+│   │   │       │   │   │   ├── crossbeam feature "default"
+│   │   │       │   │   │   │   ├── crossbeam v0.8.4
+│   │   │       │   │   │   │   │   ├── crossbeam-channel v0.5.16
+│   │   │       │   │   │   │   │   │   └── crossbeam-utils v0.8.22
+│   │   │       │   │   │   │   │   ├── crossbeam-deque v0.8.7 (*)
+│   │   │       │   │   │   │   │   ├── crossbeam-epoch v0.9.20 (*)
+│   │   │       │   │   │   │   │   ├── crossbeam-queue v0.3.13
+│   │   │       │   │   │   │   │   │   └── crossbeam-utils v0.8.22
+│   │   │       │   │   │   │   │   └── crossbeam-utils v0.8.22
+│   │   │       │   │   │   │   └── crossbeam feature "std"
+│   │   │       │   │   │   │       ├── crossbeam v0.8.4 (*)
+│   │   │       │   │   │   │       ├── crossbeam-deque feature "std" (*)
+│   │   │       │   │   │   │       ├── crossbeam-epoch feature "std" (*)
+│   │   │       │   │   │   │       ├── crossbeam-utils feature "std" (*)
+│   │   │       │   │   │   │       ├── crossbeam feature "alloc"
+│   │   │       │   │   │   │       │   ├── crossbeam v0.8.4 (*)
+│   │   │       │   │   │   │       │   ├── crossbeam-epoch feature "alloc" (*)
+│   │   │       │   │   │   │       │   ├── crossbeam feature "crossbeam-epoch"
+│   │   │       │   │   │   │       │   │   └── crossbeam v0.8.4 (*)
+│   │   │       │   │   │   │       │   ├── crossbeam feature "crossbeam-queue"
+│   │   │       │   │   │   │       │   │   └── crossbeam v0.8.4 (*)
+│   │   │       │   │   │   │       │   └── crossbeam-queue feature "alloc"
+│   │   │       │   │   │   │       │       └── crossbeam-queue v0.3.13 (*)
+│   │   │       │   │   │   │       ├── crossbeam feature "crossbeam-channel"
+│   │   │       │   │   │   │       │   └── crossbeam v0.8.4 (*)
+│   │   │       │   │   │   │       ├── crossbeam feature "crossbeam-deque"
+│   │   │       │   │   │   │       │   └── crossbeam v0.8.4 (*)
+│   │   │       │   │   │   │       ├── crossbeam feature "crossbeam-epoch" (*)
+│   │   │       │   │   │   │       ├── crossbeam feature "crossbeam-queue" (*)
+│   │   │       │   │   │   │       ├── crossbeam-channel feature "std"
+│   │   │       │   │   │   │       │   ├── crossbeam-channel v0.5.16 (*)
+│   │   │       │   │   │   │       │   └── crossbeam-utils feature "std" (*)
+│   │   │       │   │   │   │       └── crossbeam-queue feature "std"
+│   │   │       │   │   │   │           ├── crossbeam-queue v0.3.13 (*)
+│   │   │       │   │   │   │           ├── crossbeam-utils feature "std" (*)
+│   │   │       │   │   │   │           └── crossbeam-queue feature "alloc" (*)
+│   │   │       │   │   │   ├── num_cpus feature "default"
+│   │   │       │   │   │   │   └── num_cpus v1.17.0
+│   │   │       │   │   │   │       └── libc feature "default"
+│   │   │       │   │   │   │           ├── libc v0.2.189
+│   │   │       │   │   │   │           └── libc feature "std"
+│   │   │       │   │   │   │               └── libc v0.2.189
+│   │   │       │   │   │   └── spindle feature "default"
+│   │   │       │   │   │       └── spindle v0.2.6
+│   │   │       │   │   │           ├── rayon feature "default" (*)
+│   │   │       │   │   │           ├── crossbeam feature "default" (*)
+│   │   │       │   │   │           ├── atomic-wait feature "default"
+│   │   │       │   │   │           │   └── atomic-wait v1.1.0
+│   │   │       │   │   │           │       └── libc feature "default" (*)
+│   │   │       │   │   │           └── equator feature "default"
+│   │   │       │   │   │               └── equator v0.4.2
+│   │   │       │   │   │                   └── equator-macro feature "default"
+│   │   │       │   │   │                       └── equator-macro v0.4.2 (proc-macro)
+│   │   │       │   │   │                           ├── proc-macro2 feature "default" (*)
+│   │   │       │   │   │                           ├── quote feature "default" (*)
+│   │   │       │   │   │                           ├── syn feature "default" (*)
+│   │   │       │   │   │                           └── syn feature "full" (*)
+│   │   │       │   │   │   [build-dependencies]
+│   │   │       │   │   │   ├── defer feature "default"
+│   │   │       │   │   │   │   └── defer v0.2.1
+│   │   │       │   │   │   └── interpol feature "default"
+│   │   │       │   │   │       └── interpol v0.2.1 (proc-macro)
+│   │   │       │   │   │           ├── proc-macro2 feature "default" (*)
+│   │   │       │   │   │           ├── quote feature "default" (*)
+│   │   │       │   │   │           ├── syn feature "default"
+│   │   │       │   │   │           │   ├── syn v1.0.109
+│   │   │       │   │   │           │   │   ├── proc-macro2 v1.0.107 (*)
+│   │   │       │   │   │           │   │   ├── quote v1.0.47 (*)
+│   │   │       │   │   │           │   │   └── unicode-ident feature "default" (*)
+│   │   │       │   │   │           │   ├── syn feature "clone-impls"
+│   │   │       │   │   │           │   │   └── syn v1.0.109 (*)
+│   │   │       │   │   │           │   ├── syn feature "derive"
+│   │   │       │   │   │           │   │   └── syn v1.0.109 (*)
+│   │   │       │   │   │           │   ├── syn feature "parsing"
+│   │   │       │   │   │           │   │   └── syn v1.0.109 (*)
+│   │   │       │   │   │           │   ├── syn feature "printing"
+│   │   │       │   │   │           │   │   ├── syn v1.0.109 (*)
+│   │   │       │   │   │           │   │   └── syn feature "quote"
+│   │   │       │   │   │           │   │       └── syn v1.0.109 (*)
+│   │   │       │   │   │           │   └── syn feature "proc-macro"
+│   │   │       │   │   │           │       ├── syn v1.0.109 (*)
+│   │   │       │   │   │           │       ├── proc-macro2 feature "proc-macro" (*)
+│   │   │       │   │   │           │       ├── quote feature "proc-macro" (*)
+│   │   │       │   │   │           │       └── syn feature "quote" (*)
+│   │   │       │   │   │           └── syn feature "full"
+│   │   │       │   │   │               └── syn v1.0.109 (*)
+│   │   │       │   │   ├── bytemuck feature "default" (*)
+│   │   │       │   │   ├── dyn-stack feature "alloc" (*)
+│   │   │       │   │   ├── dyn-stack feature "core-error" (*)
+│   │   │       │   │   ├── equator feature "default"
+│   │   │       │   │   │   └── equator v0.6.0
+│   │   │       │   │   │       └── equator-macro feature "default"
+│   │   │       │   │   │           └── equator-macro v0.6.0 (proc-macro)
+│   │   │       │   │   ├── generativity feature "default" (*)
+│   │   │       │   │   ├── pulp feature "x86-v3"
+│   │   │       │   │   │   └── pulp v0.22.3 (*)
+│   │   │       │   │   ├── reborrow feature "default" (*)
+│   │   │       │   │   ├── rayon feature "default" (*)
+│   │   │       │   │   ├── spindle feature "default" (*)
+│   │   │       │   │   ├── rand feature "default"
+│   │   │       │   │   │   ├── rand v0.9.5
+│   │   │       │   │   │   │   ├── rand_chacha v0.9.0
+│   │   │       │   │   │   │   │   ├── ppv-lite86 feature "simd"
+│   │   │       │   │   │   │   │   │   └── ppv-lite86 v0.2.21
+│   │   │       │   │   │   │   │   │       ├── zerocopy feature "default"
+│   │   │       │   │   │   │   │   │       │   └── zerocopy v0.8.56
+│   │   │       │   │   │   │   │   │       └── zerocopy feature "simd"
+│   │   │       │   │   │   │   │   │           └── zerocopy v0.8.56
+│   │   │       │   │   │   │   │   └── rand_core feature "default"
+│   │   │       │   │   │   │   │       └── rand_core v0.9.5
+│   │   │       │   │   │   │   │           └── getrandom feature "default"
+│   │   │       │   │   │   │   │               └── getrandom v0.3.4
+│   │   │       │   │   │   │   │                   ├── libc v0.2.189
+│   │   │       │   │   │   │   │                   └── cfg-if feature "default" (*)
+│   │   │       │   │   │   │   └── rand_core v0.9.5 (*)
+│   │   │       │   │   │   ├── rand feature "os_rng"
+│   │   │       │   │   │   │   ├── rand v0.9.5 (*)
+│   │   │       │   │   │   │   └── rand_core feature "os_rng"
+│   │   │       │   │   │   │       └── rand_core v0.9.5 (*)
+│   │   │       │   │   │   ├── rand feature "small_rng"
+│   │   │       │   │   │   │   └── rand v0.9.5 (*)
+│   │   │       │   │   │   ├── rand feature "std"
+│   │   │       │   │   │   │   ├── rand v0.9.5 (*)
+│   │   │       │   │   │   │   ├── rand feature "alloc"
+│   │   │       │   │   │   │   │   └── rand v0.9.5 (*)
+│   │   │       │   │   │   │   ├── rand_chacha feature "std"
+│   │   │       │   │   │   │   │   ├── rand_chacha v0.9.0 (*)
+│   │   │       │   │   │   │   │   ├── ppv-lite86 feature "std"
+│   │   │       │   │   │   │   │   │   └── ppv-lite86 v0.2.21 (*)
+│   │   │       │   │   │   │   │   └── rand_core feature "std"
+│   │   │       │   │   │   │   │       ├── rand_core v0.9.5 (*)
+│   │   │       │   │   │   │   │       └── getrandom feature "std"
+│   │   │       │   │   │   │   │           └── getrandom v0.3.4 (*)
+│   │   │       │   │   │   │   └── rand_core feature "std" (*)
+│   │   │       │   │   │   ├── rand feature "std_rng"
+│   │   │       │   │   │   │   └── rand v0.9.5 (*)
+│   │   │       │   │   │   └── rand feature "thread_rng"
+│   │   │       │   │   │       ├── rand v0.9.5 (*)
+│   │   │       │   │   │       ├── rand feature "os_rng" (*)
+│   │   │       │   │   │       ├── rand feature "std" (*)
+│   │   │       │   │   │       └── rand feature "std_rng" (*)
+│   │   │       │   │   └── rand_distr feature "default"
+│   │   │       │   │       ├── rand_distr v0.5.1
+│   │   │       │   │       │   ├── rand v0.9.5 (*)
+│   │   │       │   │       │   └── num-traits feature "libm"
+│   │   │       │   │       │       └── num-traits v0.2.19 (*)
+│   │   │       │   │       └── rand_distr feature "std"
+│   │   │       │   │           ├── rand_distr v0.5.1 (*)
+│   │   │       │   │           ├── rand feature "std" (*)
+│   │   │       │   │           └── rand_distr feature "alloc"
+│   │   │       │   │               ├── rand_distr v0.5.1 (*)
+│   │   │       │   │               └── rand feature "alloc" (*)
+│   │   │       │   └── faer feature "std"
+│   │   │       │       ├── faer v0.24.4 (*)
+│   │   │       │       ├── faer-traits feature "std"
+│   │   │       │       │   ├── faer-traits v0.24.0 (*)
+│   │   │       │       │   ├── libm feature "arch" (*)
+│   │   │       │       │   ├── num-complex feature "std"
+│   │   │       │       │   │   ├── num-complex v0.4.6 (*)
+│   │   │       │       │   │   └── num-traits feature "std" (*)
+│   │   │       │       │   ├── num-traits feature "std" (*)
+│   │   │       │       │   ├── pulp feature "std"
+│   │   │       │       │   │   └── pulp v0.22.3 (*)
+│   │   │       │       │   └── qd feature "std"
+│   │   │       │       │       ├── qd v0.8.0 (*)
+│   │   │       │       │       ├── num-traits feature "std" (*)
+│   │   │       │       │       └── pulp feature "std" (*)
+│   │   │       │       ├── libm feature "arch" (*)
+│   │   │       │       ├── pulp feature "std" (*)
+│   │   │       │       ├── gemm feature "std"
+│   │   │       │       │   ├── gemm v0.19.0 (*)
+│   │   │       │       │   ├── dyn-stack feature "std"
+│   │   │       │       │   │   └── dyn-stack v0.13.2 (*)
+│   │   │       │       │   ├── gemm-c32 feature "std"
+│   │   │       │       │   │   ├── gemm-c32 v0.19.0 (*)
+│   │   │       │       │   │   ├── dyn-stack feature "std" (*)
+│   │   │       │       │   │   └── gemm-common feature "std"
+│   │   │       │       │   │       ├── gemm-common v0.19.0 (*)
+│   │   │       │       │   │       ├── dyn-stack feature "std" (*)
+│   │   │       │       │   │       ├── pulp feature "std" (*)
+│   │   │       │       │   │       ├── gemm-common feature "sysctl"
+│   │   │       │       │   │       │   └── gemm-common v0.19.0 (*)
+│   │   │       │       │   │       └── once_cell feature "std"
+│   │   │       │       │   │           ├── once_cell v1.21.4
+│   │   │       │       │   │           └── once_cell feature "alloc" (*)
+│   │   │       │       │   ├── gemm-common feature "std" (*)
+│   │   │       │       │   ├── gemm-c64 feature "std"
+│   │   │       │       │   │   ├── gemm-c64 v0.19.0 (*)
+│   │   │       │       │   │   ├── dyn-stack feature "std" (*)
+│   │   │       │       │   │   └── gemm-common feature "std" (*)
+│   │   │       │       │   ├── gemm-f32 feature "std"
+│   │   │       │       │   │   ├── gemm-f32 v0.19.0 (*)
+│   │   │       │       │   │   ├── dyn-stack feature "std" (*)
+│   │   │       │       │   │   └── gemm-common feature "std" (*)
+│   │   │       │       │   └── gemm-f64 feature "std"
+│   │   │       │       │       ├── gemm-f64 v0.19.0 (*)
+│   │   │       │       │       ├── dyn-stack feature "std" (*)
+│   │   │       │       │       └── gemm-common feature "std" (*)
+│   │   │       │       └── nano-gemm feature "std"
+│   │   │       │           └── nano-gemm v0.2.2 (*)
+│   │   │       ├── faer feature "rand"
+│   │   │       │   ├── faer v0.24.4 (*)
+│   │   │       │   └── num-complex feature "rand"
+│   │   │       │       └── num-complex v0.4.6 (*)
+│   │   │       ├── faer feature "rayon"
+│   │   │       │   ├── faer v0.24.4 (*)
+│   │   │       │   ├── gemm feature "rayon"
+│   │   │       │   │   ├── gemm v0.19.0 (*)
+│   │   │       │   │   ├── gemm feature "std" (*)
+│   │   │       │   │   ├── gemm-c32 feature "rayon"
+│   │   │       │   │   │   ├── gemm-c32 v0.19.0 (*)
+│   │   │       │   │   │   ├── gemm-c32 feature "std" (*)
+│   │   │       │   │   │   └── gemm-common feature "rayon"
+│   │   │       │   │   │       ├── gemm-common v0.19.0 (*)
+│   │   │       │   │   │       └── gemm-common feature "std" (*)
+│   │   │       │   │   ├── gemm-common feature "rayon" (*)
+│   │   │       │   │   ├── gemm-c64 feature "rayon"
+│   │   │       │   │   │   ├── gemm-c64 v0.19.0 (*)
+│   │   │       │   │   │   ├── gemm-common feature "rayon" (*)
+│   │   │       │   │   │   └── gemm-c64 feature "std" (*)
+│   │   │       │   │   ├── gemm-f32 feature "rayon"
+│   │   │       │   │   │   ├── gemm-f32 v0.19.0 (*)
+│   │   │       │   │   │   ├── gemm-common feature "rayon" (*)
+│   │   │       │   │   │   └── gemm-f32 feature "std" (*)
+│   │   │       │   │   └── gemm-f64 feature "rayon"
+│   │   │       │   │       ├── gemm-f64 v0.19.0 (*)
+│   │   │       │   │       ├── gemm-common feature "rayon" (*)
+│   │   │       │   │       └── gemm-f64 feature "std" (*)
+│   │   │       │   └── private-gemm-x86 feature "rayon"
+│   │   │       │       ├── private-gemm-x86 v0.1.20 (*)
+│   │   │       │       └── private-gemm-x86 feature "std"
+│   │   │       │           └── private-gemm-x86 v0.1.20 (*)
+│   │   │       ├── faer feature "sparse-linalg"
+│   │   │       │   ├── faer v0.24.4 (*)
+│   │   │       │   ├── faer feature "linalg"
+│   │   │       │   │   └── faer v0.24.4 (*)
+│   │   │       │   └── faer feature "sparse"
+│   │   │       │       └── faer v0.24.4 (*)
+│   │   │       ├── faer feature "std" (*)
+│   │   │       ├── faer-traits feature "default"
+│   │   │       │   ├── faer-traits v0.24.0 (*)
+│   │   │       │   └── faer-traits feature "std" (*)
+│   │   │       ├── num-traits feature "default"
+│   │   │       │   ├── num-traits v0.2.19 (*)
+│   │   │       │   └── num-traits feature "std" (*)
+│   │   │       ├── nalgebra feature "default"
+│   │   │       │   ├── nalgebra v0.35.0
+│   │   │       │   │   ├── approx v0.5.1
+│   │   │       │   │   │   └── num-traits v0.2.19 (*)
+│   │   │       │   │   ├── num-complex v0.4.6 (*)
+│   │   │       │   │   ├── num-rational v0.4.2
+│   │   │       │   │   │   ├── num-traits feature "i128" (*)
+│   │   │       │   │   │   └── num-integer feature "i128" (*)
+│   │   │       │   │   ├── num-traits v0.2.19 (*)
+│   │   │       │   │   ├── simba v0.10.0
+│   │   │       │   │   │   ├── approx v0.5.1 (*)
+│   │   │       │   │   │   ├── num-complex v0.4.6 (*)
+│   │   │       │   │   │   ├── num-traits v0.2.19 (*)
+│   │   │       │   │   │   └── wide v1.5.0
+│   │   │       │   │   │       ├── bytemuck feature "default" (*)
+│   │   │       │   │   │       ├── safe_arch feature "bytemuck"
+│   │   │       │   │   │       │   └── safe_arch v1.1.0
+│   │   │       │   │   │       │       └── bytemuck feature "default" (*)
+│   │   │       │   │   │       └── safe_arch feature "default"
+│   │   │       │   │   │           └── safe_arch v1.1.0 (*)
+│   │   │       │   │   ├── matrixmultiply feature "default"
+│   │   │       │   │   │   ├── matrixmultiply v0.3.11
+│   │   │       │   │   │   │   └── rawpointer feature "default"
+│   │   │       │   │   │   │       └── rawpointer v0.2.1
+│   │   │       │   │   │   │   [build-dependencies]
+│   │   │       │   │   │   │   └── autocfg feature "default" (*)
+│   │   │       │   │   │   ├── matrixmultiply feature "avx512"
+│   │   │       │   │   │   │   └── matrixmultiply v0.3.11 (*)
+│   │   │       │   │   │   └── matrixmultiply feature "std"
+│   │   │       │   │   │       └── matrixmultiply v0.3.11 (*)
+│   │   │       │   │   ├── nalgebra-macros feature "default"
+│   │   │       │   │   │   └── nalgebra-macros v0.3.0 (proc-macro)
+│   │   │       │   │   │       ├── proc-macro2 feature "default" (*)
+│   │   │       │   │   │       ├── quote feature "default" (*)
+│   │   │       │   │   │       ├── syn feature "default" (*)
+│   │   │       │   │   │       └── syn feature "full" (*)
+│   │   │       │   │   └── typenum feature "default"
+│   │   │       │   │       └── typenum v1.20.1
+│   │   │       │   ├── nalgebra feature "macros"
+│   │   │       │   │   ├── nalgebra v0.35.0 (*)
+│   │   │       │   │   └── nalgebra feature "nalgebra-macros"
+│   │   │       │   │       └── nalgebra v0.35.0 (*)
+│   │   │       │   └── nalgebra feature "std"
+│   │   │       │       ├── nalgebra v0.35.0 (*)
+│   │   │       │       ├── num-complex feature "std" (*)
+│   │   │       │       ├── num-traits feature "std" (*)
+│   │   │       │       ├── nalgebra feature "matrixmultiply"
+│   │   │       │       │   └── nalgebra v0.35.0 (*)
+│   │   │       │       ├── approx feature "std"
+│   │   │       │       │   └── approx v0.5.1 (*)
+│   │   │       │       ├── num-rational feature "std"
+│   │   │       │       │   ├── num-rational v0.4.2 (*)
+│   │   │       │       │   ├── num-traits feature "std" (*)
+│   │   │       │       │   └── num-integer feature "std" (*)
+│   │   │       │       └── simba feature "std"
+│   │   │       │           ├── simba v0.10.0 (*)
+│   │   │       │           ├── simba feature "wide"
+│   │   │       │           │   └── simba v0.10.0 (*)
+│   │   │       │           └── wide feature "std"
+│   │   │       │               └── wide v1.5.0 (*)
+│   │   │       └── thiserror feature "default"
+│   │   │           ├── thiserror v2.0.19
+│   │   │           │   └── thiserror-impl feature "default"
+│   │   │           │       └── thiserror-impl v2.0.19 (proc-macro)
+│   │   │           │           ├── proc-macro2 feature "default" (*)
+│   │   │           │           ├── quote feature "default" (*)
+│   │   │           │           └── syn feature "default"
+│   │   │           │               ├── syn v3.0.3
+│   │   │           │               │   ├── proc-macro2 v1.0.107 (*)
+│   │   │           │               │   ├── quote v1.0.47 (*)
+│   │   │           │               │   └── unicode-ident feature "default" (*)
+│   │   │           │               ├── syn feature "clone-impls"
+│   │   │           │               │   └── syn v3.0.3 (*)
+│   │   │           │               ├── syn feature "derive"
+│   │   │           │               │   └── syn v3.0.3 (*)
+│   │   │           │               ├── syn feature "parsing"
+│   │   │           │               │   └── syn v3.0.3 (*)
+│   │   │           │               ├── syn feature "printing"
+│   │   │           │               │   └── syn v3.0.3 (*)
+│   │   │           │               └── syn feature "proc-macro"
+│   │   │           │                   ├── syn v3.0.3 (*)
+│   │   │           │                   ├── proc-macro2 feature "proc-macro" (*)
+│   │   │           │                   └── quote feature "proc-macro" (*)
+│   │   │           └── thiserror feature "std"
+│   │   │               └── thiserror v2.0.19 (*)
+│   │   ├── diffsol-la feature "nalgebra"
+│   │   │   └── diffsol-la v0.1.0 (*)
+│   │   ├── num-traits feature "default" (*)
+│   │   ├── thiserror feature "default" (*)
+│   │   ├── diffsol-nl feature "faer"
+│   │   │   ├── diffsol-nl v0.1.0
+│   │   │   │   ├── diffsol-la v0.1.0 (*)
+│   │   │   │   ├── num-traits feature "default" (*)
+│   │   │   │   ├── thiserror feature "default" (*)
+│   │   │   │   └── log feature "default"
+│   │   │   │       └── log v0.4.33
+│   │   │   └── diffsol-la feature "faer" (*)
+│   │   ├── diffsol-nl feature "nalgebra"
+│   │   │   ├── diffsol-nl v0.1.0 (*)
+│   │   │   └── diffsol-la feature "nalgebra" (*)
+│   │   ├── log feature "default" (*)
+│   │   ├── petgraph feature "default"
+│   │   │   ├── petgraph v0.8.3
+│   │   │   │   ├── fixedbitset v0.5.7
+│   │   │   │   ├── indexmap v2.14.0
+│   │   │   │   │   ├── equivalent v1.0.2
+│   │   │   │   │   └── hashbrown v0.17.1
+│   │   │   │   ├── hashbrown feature "default-hasher"
+│   │   │   │   │   └── hashbrown v0.15.5
+│   │   │   │   │       └── foldhash v0.1.5
+│   │   │   │   └── hashbrown feature "inline-more"
+│   │   │   │       └── hashbrown v0.15.5 (*)
+│   │   │   ├── petgraph feature "graphmap"
+│   │   │   │   └── petgraph v0.8.3 (*)
+│   │   │   ├── petgraph feature "matrix_graph"
+│   │   │   │   └── petgraph v0.8.3 (*)
+│   │   │   ├── petgraph feature "stable_graph"
+│   │   │   │   └── petgraph v0.8.3 (*)
+│   │   │   └── petgraph feature "std"
+│   │   │       ├── petgraph v0.8.3 (*)
+│   │   │       └── indexmap feature "std"
+│   │   │           └── indexmap v2.14.0 (*)
+│   │   ├── serde feature "default"
+│   │   │   ├── serde v1.0.229
+│   │   │   │   ├── serde_core feature "result"
+│   │   │   │   │   └── serde_core v1.0.229
+│   │   │   │   └── serde_derive feature "default"
+│   │   │   │       └── serde_derive v1.0.229 (proc-macro)
+│   │   │   │           ├── proc-macro2 feature "proc-macro" (*)
+│   │   │   │           ├── quote feature "proc-macro" (*)
+│   │   │   │           ├── syn feature "clone-impls" (*)
+│   │   │   │           ├── syn feature "derive" (*)
+│   │   │   │           ├── syn feature "parsing" (*)
+│   │   │   │           ├── syn feature "printing" (*)
+│   │   │   │           └── syn feature "proc-macro" (*)
+│   │   │   └── serde feature "std"
+│   │   │       ├── serde v1.0.229 (*)
+│   │   │       └── serde_core feature "std"
+│   │   │           └── serde_core v1.0.229
+│   │   ├── serde feature "derive"
+│   │   │   ├── serde v1.0.229 (*)
+│   │   │   └── serde feature "serde_derive"
+│   │   │       └── serde v1.0.229 (*)
+│   │   └── serde_json feature "default"
+│   │       ├── serde_json v1.0.151
+│   │       │   ├── memchr v2.8.3
+│   │       │   ├── serde_core v1.0.229
+│   │       │   ├── itoa feature "default"
+│   │       │   │   └── itoa v1.0.18
+│   │       │   └── zmij feature "default"
+│   │       │       └── zmij v1.0.23
+│   │       └── serde_json feature "std"
+│   │           ├── serde_json v1.0.151 (*)
+│   │           ├── memchr feature "std" (*)
+│   │           └── serde_core feature "std" (*)
+│   ├── diffsol-la feature "faer" (*)
+│   └── diffsol-nl feature "faer" (*)
+├── serde feature "default" (*)
+├── serde feature "derive" (*)
+├── serde_json feature "default" (*)
+├── serde_json feature "float_roundtrip"
+│   └── serde_json v1.0.151 (*)
+├── rodas5p-core feature "default"
+│   └── rodas5p-core v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-core)
+│       ├── faer feature "linalg" (*)
+│       ├── faer feature "sparse-linalg" (*)
+│       ├── faer feature "std" (*)
+│       ├── thiserror feature "default" (*)
+│       ├── serde feature "default" (*)
+│       ├── serde feature "derive" (*)
+│       ├── serde_json feature "default" (*)
+│       ├── serde_json feature "float_roundtrip" (*)
+│       ├── hex feature "default"
+│       │   ├── hex v0.4.3
+│       │   └── hex feature "std"
+│       │       ├── hex v0.4.3
+│       │       └── hex feature "alloc"
+│       │           └── hex v0.4.3
+│       └── sha2 feature "default"
+│           ├── sha2 v0.10.9
+│           │   ├── cfg-if feature "default" (*)
+│           │   ├── cpufeatures feature "default"
+│           │   │   └── cpufeatures v0.2.17
+│           │   └── digest feature "default"
+│           │       ├── digest v0.10.7
+│           │       │   ├── block-buffer feature "default"
+│           │       │   │   └── block-buffer v0.10.4
+│           │       │   │       └── generic-array feature "default"
+│           │       │   │           └── generic-array v0.14.7
+│           │       │   │               └── typenum feature "default" (*)
+│           │       │   │               [build-dependencies]
+│           │       │   │               └── version_check feature "default" (*)
+│           │       │   └── crypto-common feature "default"
+│           │       │       └── crypto-common v0.1.7
+│           │       │           ├── typenum feature "default" (*)
+│           │       │           ├── generic-array feature "default" (*)
+│           │       │           └── generic-array feature "more_lengths"
+│           │       │               └── generic-array v0.14.7 (*)
+│           │       └── digest feature "core-api"
+│           │           ├── digest v0.10.7 (*)
+│           │           └── digest feature "block-buffer"
+│           │               └── digest v0.10.7 (*)
+│           └── sha2 feature "std"
+│               ├── sha2 v0.10.9 (*)
+│               └── digest feature "std"
+│                   ├── digest v0.10.7 (*)
+│                   ├── digest feature "alloc"
+│                   │   └── digest v0.10.7 (*)
+│                   └── crypto-common feature "std"
+│                       └── crypto-common v0.1.7 (*)
+├── sha2 feature "default" (*)
+└── rodas5p-integrators feature "default"
+    └── rodas5p-integrators v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-integrators)
+        ├── faer feature "linalg" (*)
+        ├── faer feature "sparse-linalg" (*)
+        ├── faer feature "std" (*)
+        ├── rayon feature "default" (*)
+        ├── thiserror feature "default" (*)
+        ├── serde feature "default" (*)
+        ├── serde feature "derive" (*)
+        ├── rodas5p-core feature "default" (*)
+        └── rodas5p-krylov feature "default"
+            └── rodas5p-krylov v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-krylov)
+                ├── faer feature "linalg" (*)
+                ├── faer feature "sparse-linalg" (*)
+                ├── faer feature "std" (*)
+                ├── thiserror feature "default" (*)
+                ├── serde feature "default" (*)
+                ├── serde feature "derive" (*)
+                └── rodas5p-core feature "default" (*)
