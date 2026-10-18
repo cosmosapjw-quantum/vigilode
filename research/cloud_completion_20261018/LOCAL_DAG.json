@@ -120,6 +120,20 @@
       "remote_ref": "refs/heads/research/cloud-completion-20261018",
       "remote_ref_sha_at_verification": "78ed1c7953adbf4c05f55d717386e4b42fc1806b",
       "fast_forward": true
+    },
+    {
+      "id": "RERUN_LATEST_HEAD",
+      "name": "Fresh check, smoke, and calibrated diagnostic bench on fetched remote HEAD",
+      "status": "PASS_DIAGNOSTIC_ONLY",
+      "dependencies": [
+        "SRC"
+      ],
+      "evidence": [
+        "evidence/local_codex_rerun_20261018/LOCAL_RERUN_20261018.json",
+        "evidence/local_codex_rerun_20261018/check/RESULT.json",
+        "evidence/local_codex_rerun_20261018/smoke/RESULT.json",
+        "evidence/local_codex_rerun_20261018/bench/RESULT.json"
+      ]
     }
   ],
   "scope_decisions": {
@@ -130,7 +144,9 @@
     "overall_production": "HOLD",
     "measured_speed_promotion": "HOLD",
     "research_node_check": "KNOWN_INHERITED_HASH_MISMATCH_ONLY; new cloud node reported without errors",
-    "authority_refs_check": "PASS"
+    "authority_refs_check": "PASS",
+    "fresh_rerun_latest_head": "PASS_DIAGNOSTIC_ONLY",
+    "fresh_rerun_allocation": "PASS_AFTER_POSITIVE_CONTROL_FOR_MEASURED_RUNS_ONLY"
   },
   "open_inherited_issue": {
     "id": "L-0124_report_hash_mismatch",
@@ -139,5 +155,6 @@
     "evidence": "evidence/publication_checks.json",
     "current_recheck": "evidence/local_checks/postflight_checks.json"
   },
-  "next_action": "Local validation DAG complete; final check is confirming this closeout commit is the remote branch tip."
+  "next_action": "Commit and fast-forward push the local rerun evidence/report/DAG; verify fetched remote ref. Scientific production and speed promotion remain HOLD.",
+  "latest_checkout_commit": "412856893c3451917ea19c38ec2965f8790d3a1c"
 }

@@ -29,3 +29,13 @@
 - 이번 실행에서 신규 수치/컴파일 실패 없음. 미실행: 다른 modes, 다른 feature 조합, full workspace test campaign, ledger checker 재실행.
 
 원시 로그 및 JSON: `evidence/local_runs/{check,smoke,bench}/`. 상세 명령·exit code: `executions.json`. Machine DAG: `LOCAL_DAG.json`.
+
+## 최신 HEAD 재실행 — 2026-10-18
+
+- 새 checkout: `412856893c3451917ea19c38ec2965f8790d3a1c` (fetch한 전달 브랜치 tip). 인계 commit `4cb795d…` 이후 게시 source `b237965…` 및 기록 commit이 반영되어 있었다. SOURCE_IDENTITY의 31개 코드·검토 항목 hash가 모두 일치했고 Cargo.lock hash도 기록과 같다.
+- Rust/Cargo 1.94.1, Python 3.12.3, `--locked --offline`; `LD_LIBRARY_PATH`는 현 Rust sysroot lib 경로 설정 상태였다. Cargo.toml/Cargo.lock 및 solver 소스 변경은 없다.
+- 새 raw evidence는 `evidence/local_codex_rerun_20261018/{check,smoke,bench}/`에 보존했다. check 7개 command, smoke 2개, bench build/run 2개가 모두 exit 0이다. Bench는 30행(각 arm 3 tolerance × 5회), 모두 성공하고 empirical accuracy gate가 통과했다.
+- Allocator positive control은 bench 행마다 library clone 3회를 관측해 통과했다. warmed attempt allocation counter는 structured 37, dense_fast 70 calls였다. 이 값은 해당 비교 실행에 한정한다.
+- Profile `measurement`, 32 modes, output 11개, 같은 입력/grid/tolerance. 각 5회 median (structured / dense_fast): `rtol=1e-6, atol=1e-9`: 329854 / 527790 ns; `1e-8, 1e-11`: 573487 / 902671 ns; `1e-10, 1e-13`: 1329028 / 2115698 ns. 최대 normalized empirical WRMS는 각 tolerance에서 두 arm 모두 1 미만이다. 독립 RK4 두 해상도는 경험적 기준이며 timing은 DIAGNOSTIC_ONLY, speed promotion HOLD다.
+- 전체 production은 계속 HOLD. 이전 L-0124 report-hash mismatch는 이 재실행에서 새 ledger checker를 돌려 고치지 않았으며, 원 과거 자료를 수정하지 않았다. 미실행: 다른 mode 수, 다른 feature 조합, 전체 workspace test, certified accuracy/performance campaign.
+- 재실행 machine record: `evidence/local_codex_rerun_20261018/LOCAL_RERUN_20261018.json`.
