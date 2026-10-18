@@ -78,6 +78,11 @@ use std::sync::OnceLock;
 
 use serde::Serialize;
 
+use crate::leja_setup_work::{
+    CountedStaticTable, LejaSetupWork, LejaSetupWorkSubtotal, SetupCoverage, StaticLejaTable,
+    get_or_init_static,
+};
+
 use crate::{
     CoreError, CoreResult, DenseMatrix, DenseOperator, LinearOperator, WorkCounters,
     directed::{
@@ -111,41 +116,79 @@ const TAYLOR_RELATIVE_TAIL: f64 = 1.0 / (1u64 << 60) as f64;
 /// Confluent zero nodes in front of the Leja nodes (`phi_1 .. phi_4`).
 const ZERO_NODES: usize = JOINT_PHI_TERMS - 1;
 
+macro_rules! setup_kernel {
+    ($work:ident, $operation:expr) => {{
+        if let Some(counter) = $work.as_deref_mut() {
+            counter.interval_kernel_invocation();
+        }
+        $operation
+    }};
+}
+
 fn unsupported(reason: impl std::fmt::Display) -> CoreError {
     CoreError::InvalidInput(format!("{LEJA_INPUT_UNSUPPORTED}: {reason}"))
 }
 
 /// The first [`LEJA_DEGREE_CAP`]` + 1` discrete Leja points of `[-2, 2]`.
 pub fn leja_points() -> &'static [f64] {
-    static POINTS: OnceLock<Vec<f64>> = OnceLock::new();
-    POINTS.get_or_init(|| {
-        let mut grid: Vec<f64> = (0..=LEJA_GRID_INTERVALS)
-            .map(|i| 2.0 * (std::f64::consts::PI * i as f64 / LEJA_GRID_INTERVALS as f64).cos())
-            .collect();
-        grid[0] = 2.0;
-        grid[LEJA_GRID_INTERVALS] = -2.0;
-        let mut log_product = vec![0.0_f64; grid.len()];
-        let mut taken = vec![false; grid.len()];
-        let mut points = Vec::with_capacity(LEJA_DEGREE_CAP + 1);
-        let mut next = 0;
-        for _ in 0..=LEJA_DEGREE_CAP {
-            let xi = grid[next];
-            points.push(xi);
-            taken[next] = true;
-            let mut best = f64::NEG_INFINITY;
-            for (i, g) in grid.iter().enumerate() {
-                if taken[i] {
-                    continue;
-                }
-                log_product[i] += (g - xi).abs().ln();
-                if log_product[i] > best {
-                    best = log_product[i];
-                    next = i;
-                }
+    leja_points_with_setup(None)
+}
+
+/// Leja points with a separate cold-setup receipt accumulator.
+pub fn leja_points_with_setup_work(work: &mut LejaSetupWork) -> &'static [f64] {
+    leja_points_with_setup(Some(work))
+}
+
+fn leja_points_with_setup(work: Option<&mut LejaSetupWork>) -> &'static [f64] {
+    static POINTS: OnceLock<CountedStaticTable<Vec<f64>>> = OnceLock::new();
+    &get_or_init_static(&POINTS, StaticLejaTable::Points, work, build_leja_points)[..]
+}
+
+fn build_leja_points(mut work: Option<&mut LejaSetupWork>) -> Vec<f64> {
+    const GRID_LEN: u64 = (LEJA_GRID_INTERVALS + 1) as u64;
+    if let Some(work) = work.as_deref_mut() {
+        // Four vector allocations: grid, log products, taken flags, output.
+        work.allocation_request(GRID_LEN);
+        work.allocation_request(GRID_LEN);
+        work.allocation_request(GRID_LEN);
+        work.allocation_request((LEJA_DEGREE_CAP + 1) as u64);
+    }
+    let mut grid: Vec<f64> = (0..=LEJA_GRID_INTERVALS)
+        .map(|i| {
+            if let Some(work) = work.as_deref_mut() {
+                // Source-level scalar proxies: multiply, divide, cosine, multiply.
+                work.scalar_proxy_units(4);
+            }
+            2.0 * (std::f64::consts::PI * i as f64 / LEJA_GRID_INTERVALS as f64).cos()
+        })
+        .collect();
+    grid[0] = 2.0;
+    grid[LEJA_GRID_INTERVALS] = -2.0;
+    let mut log_product = vec![0.0_f64; grid.len()];
+    let mut taken = vec![false; grid.len()];
+    let mut points = Vec::with_capacity(LEJA_DEGREE_CAP + 1);
+    let mut next = 0;
+    for _ in 0..=LEJA_DEGREE_CAP {
+        let xi = grid[next];
+        points.push(xi);
+        taken[next] = true;
+        let mut best = f64::NEG_INFINITY;
+        for (i, g) in grid.iter().enumerate() {
+            if taken[i] {
+                continue;
+            }
+            if let Some(work) = work.as_deref_mut() {
+                // subtraction, absolute value, logarithm, accumulation, comparison
+                work.scalar_proxy_units(5);
+            }
+            log_product[i] += (g - xi).abs().ln();
+            if log_product[i] > best {
+                best = log_product[i];
+                next = i;
             }
         }
-        points
-    })
+    }
+    points
 }
 
 /// Columns `0 ..= ZERO_NODES` of `exp(L)` for the lower bidiagonal `L` with
@@ -521,39 +564,86 @@ pub const LEJA_CERTIFIED_SCHEMA: &str = "vigilode-leja-certified-v1";
 /// The precomputed node-polynomial bounds `M_{m+1} >= max_{xi in [-2, 2]} prod_{j=0}^m |xi - xi_j|`
 /// for all degrees `m = 0 ..= LEJA_DEGREE_CAP`.
 pub fn leja_node_bounds() -> &'static [f64] {
-    static BOUNDS: OnceLock<Vec<f64>> = OnceLock::new();
-    BOUNDS.get_or_init(|| {
-        let xi = leja_points();
-        (0..=LEJA_DEGREE_CAP)
-            .map(|m| leja_node_polynomial_bound(m, xi))
-            .collect()
-    })
+    leja_node_bounds_with_setup(None)
+}
+
+/// Node-polynomial prefix bounds with a separate cold-setup receipt.
+pub fn leja_node_bounds_with_setup_work(work: &mut LejaSetupWork) -> &'static [f64] {
+    leja_node_bounds_with_setup(Some(work))
+}
+
+fn leja_node_bounds_with_setup(work: Option<&mut LejaSetupWork>) -> &'static [f64] {
+    static BOUNDS: OnceLock<CountedStaticTable<Vec<f64>>> = OnceLock::new();
+    &get_or_init_static(&BOUNDS, StaticLejaTable::NodeBounds, work, |mut work| {
+        let xi = leja_points_with_setup(work.as_deref_mut());
+        if let Some(work) = work.as_deref_mut() {
+            work.allocation_request((LEJA_DEGREE_CAP + 1) as u64);
+        }
+        let bounds: Vec<f64> = (0..=LEJA_DEGREE_CAP)
+            .map(|m| leja_node_polynomial_bound_counted(m, xi, work.as_deref_mut()))
+            .collect();
+        bounds
+    })[..]
 }
 
 /// Outward bounds for every contiguous Newton suffix: entry `[start][end]`
 /// bounds `prod_{i=start}^{end-1} |x-xi_i|` on `[-2,2]`.
 /// Prefix bounds cannot be substituted: the first two nodes have maximum 4,
 /// while nodes 1 and 2 have product nearly 8 at x=2.
+#[cfg(test)]
 fn leja_suffix_bounds() -> &'static Vec<Vec<f64>> {
-    static BOUNDS: OnceLock<Vec<Vec<f64>>> = OnceLock::new();
-    BOUNDS.get_or_init(|| {
-        let xi = leja_points();
+    leja_suffix_bounds_with_setup(None)
+}
+
+/// Contiguous Newton suffix bounds with a separate cold-setup receipt.
+pub fn leja_suffix_bounds_with_setup_work(work: &mut LejaSetupWork) -> &'static Vec<Vec<f64>> {
+    leja_suffix_bounds_with_setup(Some(work))
+}
+
+fn leja_suffix_bounds_with_setup(work: Option<&mut LejaSetupWork>) -> &'static Vec<Vec<f64>> {
+    static BOUNDS: OnceLock<CountedStaticTable<Vec<Vec<f64>>>> = OnceLock::new();
+    get_or_init_static(&BOUNDS, StaticLejaTable::SuffixBounds, work, |mut work| {
+        let xi = leja_points_with_setup(work.as_deref_mut());
         let size = xi.len();
+        if let Some(work) = work.as_deref_mut() {
+            // One outer allocation and one row allocation for each start index.
+            work.allocation_request(size as u64);
+            for _ in 0..size {
+                work.allocation_request((size + 1) as u64);
+            }
+        }
         let mut bounds: Vec<Vec<f64>> = vec![vec![0.0; size + 1]; size];
         for (start, row) in bounds.iter_mut().enumerate() {
             row[start] = 1.0;
             for part in 0..128 {
+                if let Some(work) = work.as_deref_mut() {
+                    work.scalar_proxy_units(3); // interval endpoints: one division and two adds
+                    work.interval_kernel_invocation(); // Interval::point(1)
+                }
                 let lo = -2.0 + part as f64 / 32.0;
                 let hi = lo + 1.0 / 32.0;
                 let mut product = Interval::point(1.0).expect("finite exact constant");
                 for end in start + 1..=size {
-                    let factor = Interval::new(
-                        sub_down(lo, xi[end - 1]).expect("finite Leja nodes"),
-                        sub_up(hi, xi[end - 1]).expect("finite Leja nodes"),
-                    )
-                    .expect("ordered endpoints");
+                    if let Some(work) = work.as_deref_mut() {
+                        work.interval_kernel_invocation(); // sub_down
+                    }
+                    let factor_lo = sub_down(lo, xi[end - 1]).expect("finite Leja nodes");
+                    if let Some(work) = work.as_deref_mut() {
+                        work.interval_kernel_invocation(); // sub_up
+                    }
+                    let factor_hi = sub_up(hi, xi[end - 1]).expect("finite Leja nodes");
+                    if let Some(work) = work.as_deref_mut() {
+                        work.interval_kernel_invocation(); // interval construction
+                    }
+                    let factor = Interval::new(factor_lo, factor_hi).expect("ordered endpoints");
+                    if let Some(work) = work.as_deref_mut() {
+                        work.interval_kernel_invocation(); // interval multiplication
+                    }
                     product = product.mul(factor).expect("bounded degree Leja product");
                     row[end] = row[end].max(product.mag());
+                    if let Some(work) = work.as_deref_mut() {
+                        work.scalar_proxy_units(3); // magnitude and maximum comparisons
+                    }
                 }
             }
         }
@@ -772,41 +862,69 @@ fn replay_scaled_fusion(
 /// Allocation-free directed coefficients `phi_k(c)` for the zero-width
 /// scalar branch. This computes only the one-node table required by that
 /// branch; it deliberately does not grant total-error authority.
+#[cfg(test)]
 fn scalar_phi_coefficients(c: f64) -> CoreResult<([f64; JOINT_PHI_TERMS], [f64; JOINT_PHI_TERMS])> {
-    let mut intervals = [Interval::point(0.0)?; JOINT_PHI_TERMS];
+    scalar_phi_coefficients_counted(c, None)
+}
+
+fn scalar_phi_coefficients_counted(
+    c: f64,
+    mut work: Option<&mut LejaSetupWork>,
+) -> CoreResult<([f64; JOINT_PHI_TERMS], [f64; JOINT_PHI_TERMS])> {
+    let zero = setup_kernel!(work, Interval::point(0.0))?;
+    let mut intervals = [zero; JOINT_PHI_TERMS];
     if c == 0.0 {
         intervals = [
-            Interval::point(1.0)?,
-            Interval::point(1.0)?,
-            Interval::point(0.5)?,
-            Interval::new(div_down(1.0, 6.0)?, div_up(1.0, 6.0)?)?,
-            Interval::new(div_down(1.0, 24.0)?, div_up(1.0, 24.0)?)?,
+            setup_kernel!(work, Interval::point(1.0))?,
+            setup_kernel!(work, Interval::point(1.0))?,
+            setup_kernel!(work, Interval::point(0.5))?,
+            {
+                let lo = setup_kernel!(work, div_down(1.0, 6.0))?;
+                let hi = setup_kernel!(work, div_up(1.0, 6.0))?;
+                setup_kernel!(work, Interval::new(lo, hi))?
+            },
+            {
+                let lo = setup_kernel!(work, div_down(1.0, 24.0))?;
+                let hi = setup_kernel!(work, div_up(1.0, 24.0))?;
+                setup_kernel!(work, Interval::new(lo, hi))?
+            },
         ];
     } else {
-        intervals[0] = exp_interval(c)?;
+        intervals[0] = setup_kernel!(work, exp_interval(c))?;
         if c.abs() <= 1.0 {
             let factorials = [1.0, 1.0, 2.0, 6.0, 24.0];
-            let ci = Interval::point(c)?;
+            let ci = setup_kernel!(work, Interval::point(c))?;
             for k in 1..JOINT_PHI_TERMS {
-                let mut term =
-                    Interval::new(div_down(1.0, factorials[k])?, div_up(1.0, factorials[k])?)?;
+                let reciprocal_lo = setup_kernel!(work, div_down(1.0, factorials[k]))?;
+                let reciprocal_hi = setup_kernel!(work, div_up(1.0, factorials[k]))?;
+                let mut term = setup_kernel!(work, Interval::new(reciprocal_lo, reciprocal_hi))?;
                 let mut sum = term;
                 for order in 1..=64 {
-                    term = term.mul(ci)?.div(Interval::point((order + k) as f64)?)?;
-                    sum = sum.add(term)?;
+                    term = setup_kernel!(work, term.mul(ci))?;
+                    let divisor = setup_kernel!(work, Interval::point((order + k) as f64))?;
+                    term = setup_kernel!(work, term.div(divisor))?;
+                    sum = setup_kernel!(work, sum.add(term))?;
                 }
-                let next = term.mul(ci)?.div(Interval::point((65 + k) as f64)?)?;
-                let ratio = div_up(c.abs(), (66 + k) as f64)?;
-                let tail = div_up(next.mag(), sub_down(1.0, ratio)?)?;
-                intervals[k] = Interval::new(sub_down(sum.lo, tail)?, add_up(sum.hi, tail)?)?;
+                let next = setup_kernel!(work, term.mul(ci))?;
+                let divisor = setup_kernel!(work, Interval::point((65 + k) as f64))?;
+                let next = setup_kernel!(work, next.div(divisor))?;
+                let ratio = setup_kernel!(work, div_up(c.abs(), (66 + k) as f64))?;
+                let one_minus_ratio = setup_kernel!(work, sub_down(1.0, ratio))?;
+                let tail = setup_kernel!(work, div_up(next.mag(), one_minus_ratio))?;
+                let lo = setup_kernel!(work, sub_down(sum.lo, tail))?;
+                let hi = setup_kernel!(work, add_up(sum.hi, tail))?;
+                intervals[k] = setup_kernel!(work, Interval::new(lo, hi))?;
             }
         } else {
             let factorials = [1.0, 1.0, 2.0, 6.0];
-            let ci = Interval::point(c)?;
+            let ci = setup_kernel!(work, Interval::point(c))?;
             for k in 1..JOINT_PHI_TERMS {
                 let f = factorials[k - 1];
-                let reciprocal = Interval::new(div_down(1.0, f)?, div_up(1.0, f)?)?;
-                intervals[k] = intervals[k - 1].sub(reciprocal)?.div(ci)?;
+                let reciprocal_lo = setup_kernel!(work, div_down(1.0, f))?;
+                let reciprocal_hi = setup_kernel!(work, div_up(1.0, f))?;
+                let reciprocal = setup_kernel!(work, Interval::new(reciprocal_lo, reciprocal_hi))?;
+                let difference = setup_kernel!(work, intervals[k - 1].sub(reciprocal))?;
+                intervals[k] = setup_kernel!(work, difference.div(ci))?;
             }
         }
     }
@@ -818,7 +936,9 @@ fn scalar_phi_coefficients(c: f64) -> CoreResult<([f64; JOINT_PHI_TERMS], [f64; 
         // avoids an overflowing endpoint sum.
         let mid = iv.lo * 0.5 + iv.hi * 0.5;
         values[k] = mid;
-        radii[k] = sub_up(iv.hi, mid)?.max(sub_up(mid, iv.lo)?);
+        let upper_radius = setup_kernel!(work, sub_up(iv.hi, mid))?;
+        let lower_radius = setup_kernel!(work, sub_up(mid, iv.lo))?;
+        radii[k] = upper_radius.max(lower_radius);
     }
     Ok((values, radii))
 }
@@ -856,6 +976,14 @@ fn update_leja_total_status(
 ///
 /// Guaranteed zero heap allocations on the evaluation path.
 pub fn leja_node_polynomial_bound(m: usize, xi: &[f64]) -> f64 {
+    leja_node_polynomial_bound_counted(m, xi, None)
+}
+
+fn leja_node_polynomial_bound_counted(
+    m: usize,
+    xi: &[f64],
+    mut work: Option<&mut LejaSetupWork>,
+) -> f64 {
     if m >= xi.len() {
         return f64::INFINITY;
     }
@@ -864,8 +992,17 @@ pub fn leja_node_polynomial_bound(m: usize, xi: &[f64]) -> f64 {
     let mut max_val = 0.0_f64;
 
     for p in 0..SUBDIVISIONS {
+        if let Some(work) = work.as_deref_mut() {
+            work.scalar_proxy_units(7); // endpoint arithmetic and max/magnitude comparisons
+            work.interval_kernel_invocation(); // Interval::point(1)
+        }
         let lo = -2.0 + (p as f64) * H_SUB;
         let hi = -2.0 + ((p + 1) as f64) * H_SUB;
+        if let Some(work) = work.as_deref_mut() {
+            // Count the interval construction separately from the initial
+            // point interval and the factor interval below.
+            work.interval_kernel_invocation();
+        }
         let int_p = match Interval::new(lo, hi) {
             Ok(int) => int,
             Err(_) => return f64::INFINITY,
@@ -876,18 +1013,30 @@ pub fn leja_node_polynomial_bound(m: usize, xi: &[f64]) -> f64 {
             Err(_) => return f64::INFINITY,
         };
         for &node in &xi[..=m] {
+            if let Some(work) = work.as_deref_mut() {
+                work.interval_kernel_invocation(); // sub_down
+            }
             let diff_lo = match sub_down(int_p.lo, node) {
                 Ok(v) => v,
                 Err(_) => return f64::INFINITY,
             };
+            if let Some(work) = work.as_deref_mut() {
+                work.interval_kernel_invocation(); // sub_up
+            }
             let diff_hi = match sub_up(int_p.hi, node) {
                 Ok(v) => v,
                 Err(_) => return f64::INFINITY,
             };
+            if let Some(work) = work.as_deref_mut() {
+                work.interval_kernel_invocation(); // interval construction
+            }
             let diff = match Interval::new(diff_lo, diff_hi) {
                 Ok(int) => int,
                 Err(_) => return f64::INFINITY,
             };
+            if let Some(work) = work.as_deref_mut() {
+                work.interval_kernel_invocation(); // interval multiplication
+            }
             acc = match acc.mul(diff) {
                 Ok(res) => res,
                 Err(_) => return f64::INFINITY,
@@ -918,6 +1067,7 @@ fn exp_bidiagonal_columns_certified(
     diagonal_hi: &[f64],
     subdiagonal_lo: &[f64],
     subdiagonal_hi: &[f64],
+    mut work: Option<&mut LejaSetupWork>,
 ) -> CoreResult<(Vec<Vec<f64>>, Vec<Vec<f64>>)> {
     let size = diagonal_lo.len();
     if diagonal_hi.len() != size
@@ -941,16 +1091,25 @@ fn exp_bidiagonal_columns_certified(
     }
     let mut max_entry = diagonal_hi[0];
     for i in 1..size {
-        let row_sum = add_up(diagonal_hi[i], subdiagonal_hi[i - 1])?;
+        let row_sum = setup_kernel!(work, add_up(diagonal_hi[i], subdiagonal_hi[i - 1]))?;
         if row_sum > max_entry {
             max_entry = row_sum;
         }
     }
-    let min_terms = (size as f64).max(mul_up(2.0, max_entry)?);
+    let min_terms = (size as f64).max(setup_kernel!(work, mul_up(2.0, max_entry))?);
+    if let Some(work) = work.as_deref_mut() {
+        work.allocation_request((ZERO_NODES + 1) as u64);
+        work.allocation_request((ZERO_NODES + 1) as u64);
+    }
     let mut columns_lo = Vec::with_capacity(ZERO_NODES + 1);
     let mut columns_hi = Vec::with_capacity(ZERO_NODES + 1);
 
     for col in 0..=ZERO_NODES.min(size - 1) {
+        if let Some(work) = work.as_deref_mut() {
+            for _ in 0..4 {
+                work.allocation_request(size as u64);
+            }
+        }
         let mut term_lo = vec![0.0; size];
         let mut term_hi = vec![0.0; size];
         term_lo[col] = 1.0;
@@ -960,33 +1119,31 @@ fn exp_bidiagonal_columns_certified(
         let mut converged = false;
 
         for n in 1..=MAX_TAYLOR_TERMS {
-            let inv_lo = div_down(1.0, n as f64)?;
-            let inv_hi = div_up(1.0, n as f64)?;
+            let inv_lo = setup_kernel!(work, div_down(1.0, n as f64))?;
+            let inv_hi = setup_kernel!(work, div_up(1.0, n as f64))?;
             for i in (col..size).rev() {
                 let below_lo = if i > col {
-                    mul_down(subdiagonal_lo[i - 1], term_lo[i - 1])?
+                    setup_kernel!(work, mul_down(subdiagonal_lo[i - 1], term_lo[i - 1]))?
                 } else {
                     0.0
                 };
                 let below_hi = if i > col {
-                    mul_up(subdiagonal_hi[i - 1], term_hi[i - 1])?
+                    setup_kernel!(work, mul_up(subdiagonal_hi[i - 1], term_hi[i - 1]))?
                 } else {
                     0.0
                 };
-                term_lo[i] = mul_down(
-                    add_down(mul_down(diagonal_lo[i], term_lo[i])?, below_lo)?,
-                    inv_lo,
-                )?;
-                term_hi[i] = mul_up(
-                    add_up(mul_up(diagonal_hi[i], term_hi[i])?, below_hi)?,
-                    inv_hi,
-                )?;
+                let diagonal_term_lo = setup_kernel!(work, mul_down(diagonal_lo[i], term_lo[i]))?;
+                let numerator_lo = setup_kernel!(work, add_down(diagonal_term_lo, below_lo))?;
+                term_lo[i] = setup_kernel!(work, mul_down(numerator_lo, inv_lo))?;
+                let diagonal_term_hi = setup_kernel!(work, mul_up(diagonal_hi[i], term_hi[i]))?;
+                let numerator_hi = setup_kernel!(work, add_up(diagonal_term_hi, below_hi))?;
+                term_hi[i] = setup_kernel!(work, mul_up(numerator_hi, inv_hi))?;
             }
             let mut small = true;
             for i in col..size {
-                sum_lo[i] = add_down(sum_lo[i], term_lo[i])?;
-                sum_hi[i] = add_up(sum_hi[i], term_hi[i])?;
-                if term_hi[i] > mul_up(TAYLOR_RELATIVE_TAIL, sum_hi[i])? {
+                sum_lo[i] = setup_kernel!(work, add_down(sum_lo[i], term_lo[i]))?;
+                sum_hi[i] = setup_kernel!(work, add_up(sum_hi[i], term_hi[i]))?;
+                if term_hi[i] > setup_kernel!(work, mul_up(TAYLOR_RELATIVE_TAIL, sum_hi[i]))? {
                     small = false;
                 }
             }
@@ -996,13 +1153,14 @@ fn exp_bidiagonal_columns_certified(
                 ));
             }
             if small && n as f64 > min_terms {
-                let ratio = div_up(max_entry, (n + 1) as f64)?;
+                let ratio = setup_kernel!(work, div_up(max_entry, (n + 1) as f64))?;
                 if ratio < 1.0 {
-                    let geom = div_up(ratio, sub_down(1.0, ratio)?)?;
+                    let one_minus_ratio = setup_kernel!(work, sub_down(1.0, ratio))?;
+                    let geom = setup_kernel!(work, div_up(ratio, one_minus_ratio))?;
                     let t_inf = term_hi[col..size].iter().copied().fold(0.0_f64, f64::max);
-                    let tail = mul_up(t_inf, geom)?;
+                    let tail = setup_kernel!(work, mul_up(t_inf, geom))?;
                     for i in col..size {
-                        sum_hi[i] = add_up(sum_hi[i], tail)?;
+                        sum_hi[i] = setup_kernel!(work, add_up(sum_hi[i], tail))?;
                     }
                     converged = true;
                     break;
@@ -1029,6 +1187,16 @@ pub fn leja_divided_differences_certified(
     gamma: f64,
     xi: &[f64],
 ) -> CoreResult<(Vec<[f64; JOINT_PHI_TERMS]>, Vec<[f64; JOINT_PHI_TERMS]>)> {
+    leja_divided_differences_certified_counted(c, gamma, xi, None)
+}
+
+#[allow(clippy::type_complexity)]
+fn leja_divided_differences_certified_counted(
+    c: f64,
+    gamma: f64,
+    xi: &[f64],
+    mut work: Option<&mut LejaSetupWork>,
+) -> CoreResult<(Vec<[f64; JOINT_PHI_TERMS]>, Vec<[f64; JOINT_PHI_TERMS]>)> {
     if xi.is_empty() || !(c.is_finite() && gamma.is_finite() && c <= 0.0 && gamma >= 0.0) {
         return Err(unsupported(
             "divided differences need nodes, a finite center c <= 0 and a scale gamma >= 0",
@@ -1040,33 +1208,52 @@ pub fn leja_divided_differences_certified(
     if xi.iter().any(|x| !(-2.0..=2.0).contains(x)) {
         return Err(unsupported("Leja points must lie in [-2, 2]"));
     }
-    let shift_lo = sub_down(c, mul_up(2.0, gamma)?)?;
-    let shift_hi = sub_up(c, mul_down(2.0, gamma)?)?;
+    let two_gamma_hi = setup_kernel!(work, mul_up(2.0, gamma))?;
+    let shift_lo = setup_kernel!(work, sub_down(c, two_gamma_hi))?;
+    let two_gamma_lo = setup_kernel!(work, mul_down(2.0, gamma))?;
+    let shift_hi = setup_kernel!(work, sub_up(c, two_gamma_lo))?;
     if shift_lo < -LEJA_RANGE_LIMIT - 1.0 {
         return Err(unsupported(format!(
             "interval left end {shift_lo:e} beyond -{LEJA_RANGE_LIMIT}"
         )));
     }
-    let exp_s_lo = exp_interval(shift_lo)?.lo;
-    let mut exp_s_hi = exp_interval(shift_hi)?.hi;
+    let exp_s_lo = setup_kernel!(work, exp_interval(shift_lo))?.lo;
+    let mut exp_s_hi = setup_kernel!(work, exp_interval(shift_hi))?.hi;
     if exp_s_hi <= 0.0 {
         exp_s_hi = 0.0_f64.next_up();
     }
-    let exp_s = Interval::new(exp_s_lo, exp_s_hi)?;
+    let exp_s = setup_kernel!(work, Interval::new(exp_s_lo, exp_s_hi))?;
 
     let zero_node_lo = (-shift_hi).max(0.0);
     let zero_node_hi = (-shift_lo).max(0.0);
-    let mut diagonal_lo = vec![zero_node_lo; ZERO_NODES];
-    let mut diagonal_hi = vec![zero_node_hi; ZERO_NODES];
-    for &x in xi {
-        let x2_lo = add_down(x, 2.0)?;
-        let x2_hi = add_up(x, 2.0)?;
-        diagonal_lo.push(mul_down(gamma, x2_lo)?.max(0.0));
-        diagonal_hi.push(mul_up(gamma, x2_hi)?);
+    let size = ZERO_NODES + xi.len();
+    if let Some(work) = work.as_deref_mut() {
+        // Two diagonal and two subdiagonal allocations happen before the
+        // exponential. Result vectors are charged only after it succeeds.
+        for items in [
+            size as u64,
+            size as u64,
+            (size - 1) as u64,
+            (size - 1) as u64,
+        ] {
+            work.allocation_request(items);
+        }
     }
-    let mut subdiagonal_lo = vec![1.0; ZERO_NODES];
+    let mut diagonal_lo = Vec::with_capacity(size);
+    diagonal_lo.resize(ZERO_NODES, zero_node_lo);
+    let mut diagonal_hi = Vec::with_capacity(size);
+    diagonal_hi.resize(ZERO_NODES, zero_node_hi);
+    for &x in xi {
+        let x2_lo = setup_kernel!(work, add_down(x, 2.0))?;
+        let x2_hi = setup_kernel!(work, add_up(x, 2.0))?;
+        diagonal_lo.push(setup_kernel!(work, mul_down(gamma, x2_lo))?.max(0.0));
+        diagonal_hi.push(setup_kernel!(work, mul_up(gamma, x2_hi))?);
+    }
+    let mut subdiagonal_lo = Vec::with_capacity(size - 1);
+    subdiagonal_lo.resize(ZERO_NODES, 1.0);
     subdiagonal_lo.extend(std::iter::repeat_n(gamma, xi.len() - 1));
-    let mut subdiagonal_hi = vec![1.0; ZERO_NODES];
+    let mut subdiagonal_hi = Vec::with_capacity(size - 1);
+    subdiagonal_hi.resize(ZERO_NODES, 1.0);
     subdiagonal_hi.extend(std::iter::repeat_n(gamma, xi.len() - 1));
 
     let (cols_lo, cols_hi) = exp_bidiagonal_columns_certified(
@@ -1074,8 +1261,13 @@ pub fn leja_divided_differences_certified(
         &diagonal_hi,
         &subdiagonal_lo,
         &subdiagonal_hi,
+        work.as_deref_mut(),
     )?;
 
+    if let Some(work) = work.as_deref_mut() {
+        work.allocation_request(xi.len() as u64);
+        work.allocation_request(xi.len() as u64);
+    }
     let mut d = Vec::with_capacity(xi.len());
     let mut d_rad = Vec::with_capacity(xi.len());
 
@@ -1087,11 +1279,11 @@ pub fn leja_divided_differences_certified(
             let row = ZERO_NODES + j;
             let lo_entry = cols_lo[col][row];
             let hi_entry = cols_hi[col][row];
-            let val_lo = mul_down(lo_entry, exp_s.lo)?.max(0.0);
-            let val_hi = mul_up(hi_entry, exp_s.hi)?;
+            let val_lo = setup_kernel!(work, mul_down(lo_entry, exp_s.lo))?.max(0.0);
+            let val_hi = setup_kernel!(work, mul_up(hi_entry, exp_s.hi))?;
             let mid = 0.5 * (val_lo + val_hi);
-            let dist_hi = sub_up(val_hi, mid)?;
-            let dist_lo = sub_up(mid, val_lo)?;
+            let dist_hi = setup_kernel!(work, sub_up(val_hi, mid))?;
+            let dist_lo = setup_kernel!(work, sub_up(mid, val_lo))?;
             let rad = dist_hi.max(dist_lo).max(0.0);
             mid_row[k] = mid;
             rad_row[k] = rad;
@@ -1114,6 +1306,8 @@ pub struct CertifiedLejaCoeffCache {
 struct CachedCertifiedLeja {
     d: Vec<[f64; JOINT_PHI_TERMS]>,
     d_rad: Vec<[f64; JOINT_PHI_TERMS]>,
+    setup_receipt: Option<LejaSetupWorkSubtotal>,
+    setup_coverage: SetupCoverage,
 }
 
 impl CertifiedLejaCoeffCache {
@@ -1162,17 +1356,109 @@ impl CertifiedLejaCoeffCache {
         scale: f64,
         degree_cap: usize,
     ) -> CoreResult<()> {
+        self.precompute_certified_inner(center, scale, degree_cap, None, None)
+            .map(|_| ())
+    }
+
+    /// Trusted coefficient-table preparation with a separate immutable setup
+    /// receipt. Failed calls retain the work attempted up to the refusal.
+    pub fn precompute_certified_with_setup_work(
+        &mut self,
+        center: f64,
+        scale: f64,
+        degree_cap: usize,
+        work: &mut LejaSetupWork,
+    ) -> CoreResult<()> {
+        self.precompute_certified_inner(center, scale, degree_cap, Some(work), None)
+            .map(|_| ())
+    }
+
+    fn precompute_certified_inner(
+        &mut self,
+        center: f64,
+        scale: f64,
+        degree_cap: usize,
+        mut work: Option<&mut LejaSetupWork>,
+        coefficient_setup_attempts: Option<&mut u64>,
+    ) -> CoreResult<bool> {
+        if let Some(work) = work.as_deref_mut() {
+            work.cache_api_attempt();
+        }
         if !(1..=LEJA_DEGREE_CAP).contains(&degree_cap) {
             return Err(unsupported(
                 "certified cache degree outside supported range",
             ));
         }
-        if self.get_certified(center, scale, degree_cap).is_none() {
-            let (d, d_rad) =
-                leja_divided_differences_certified(center, scale, &leja_points()[..=degree_cap])?;
-            self.insert_certified(center, scale, degree_cap, d, d_rad);
+        let key = (center.to_bits(), scale.to_bits(), degree_cap);
+        let cached_entry = self.entries.get(&key);
+        let cached = cached_entry.is_some();
+        if let Some(work) = work.as_deref_mut() {
+            work.cache_lookup(cached);
+            if let Some(entry) = cached_entry {
+                work.record_coefficient_cache_entry(
+                    [key.0, key.1, key.2 as u64],
+                    false,
+                    entry.setup_receipt,
+                    Some(entry.setup_coverage),
+                );
+            }
         }
-        Ok(())
+        if !cached {
+            let setup_start = work.as_deref().map(LejaSetupWork::current_subtotal);
+            if let Some(attempts) = coefficient_setup_attempts {
+                *attempts = attempts.saturating_add(1);
+            }
+            if let Some(work) = work.as_deref_mut() {
+                work.coefficient_table_attempt();
+            }
+            let xi = leja_points_with_setup(work.as_deref_mut());
+            let (d, d_rad) = leja_divided_differences_certified_counted(
+                center,
+                scale,
+                &xi[..=degree_cap],
+                work.as_deref_mut(),
+            )?;
+            if let Some(work) = work.as_deref_mut() {
+                work.coefficient_table_complete();
+                work.cache_insert_attempt();
+                if self.entries.len() == self.entries.capacity() {
+                    work.allocation_request(1);
+                }
+            }
+            self.entries
+                .try_reserve(1)
+                .map_err(|err| unsupported(format!("certified cache allocation refused: {err}")))?;
+            if let Some(work) = work.as_deref_mut() {
+                work.cache_insert_complete();
+            }
+            let setup_receipt = match (work.as_deref(), setup_start) {
+                (Some(work), Some(start)) => work.delta_since(start),
+                _ => None,
+            };
+            let setup_coverage = work
+                .as_deref()
+                .map(LejaSetupWork::current_coverage)
+                .unwrap_or(SetupCoverage::PartialUnattributed);
+            if let Some(work) = work {
+                work.record_coefficient_cache_entry(
+                    [key.0, key.1, key.2 as u64],
+                    true,
+                    setup_receipt,
+                    Some(setup_coverage),
+                );
+            }
+            self.insert_certified_with_setup_receipt(
+                center,
+                scale,
+                degree_cap,
+                d,
+                d_rad,
+                setup_receipt,
+                setup_coverage,
+            );
+            return Ok(true);
+        }
+        Ok(false)
     }
 
     fn insert_certified(
@@ -1184,7 +1470,38 @@ impl CertifiedLejaCoeffCache {
         d_rad: Vec<[f64; JOINT_PHI_TERMS]>,
     ) {
         let key = (center.to_bits(), scale.to_bits(), degree_cap);
-        self.entries.insert(key, CachedCertifiedLeja { d, d_rad });
+        self.entries.insert(
+            key,
+            CachedCertifiedLeja {
+                d,
+                d_rad,
+                setup_receipt: None,
+                setup_coverage: SetupCoverage::PartialUnattributed,
+            },
+        );
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn insert_certified_with_setup_receipt(
+        &mut self,
+        center: f64,
+        scale: f64,
+        degree_cap: usize,
+        d: Vec<[f64; JOINT_PHI_TERMS]>,
+        d_rad: Vec<[f64; JOINT_PHI_TERMS]>,
+        setup_receipt: Option<LejaSetupWorkSubtotal>,
+        setup_coverage: SetupCoverage,
+    ) {
+        let key = (center.to_bits(), scale.to_bits(), degree_cap);
+        self.entries.insert(
+            key,
+            CachedCertifiedLeja {
+                d,
+                d_rad,
+                setup_receipt,
+                setup_coverage,
+            },
+        );
     }
 }
 
@@ -1566,9 +1883,62 @@ pub fn leja_phi_action_certified_with_cache_and_workspace<'a>(
     input: JointPhiInput<'_>,
     total_budget: f64,
     degree_cap: usize,
+    cache: Option<&mut CertifiedLejaCoeffCache>,
+    work: &mut WorkCounters,
+    workspace: &'a mut CertifiedLejaWorkspace,
+) -> CoreResult<&'a CertifiedLejaReport> {
+    leja_phi_action_certified_with_cache_and_workspace_inner(
+        op,
+        h,
+        input,
+        total_budget,
+        degree_cap,
+        cache,
+        work,
+        workspace,
+        None,
+    )
+}
+
+/// Same preallocated candidate path while recording cold table and coefficient
+/// setup in a separate v1 receipt accumulator. Historical `WorkCounters` and
+/// report serialization remain unchanged.
+#[allow(clippy::too_many_arguments, clippy::needless_range_loop)]
+pub fn leja_phi_action_certified_with_setup_work<'a>(
+    op: &SymmetricNonpositiveOperator,
+    h: f64,
+    input: JointPhiInput<'_>,
+    total_budget: f64,
+    degree_cap: usize,
+    cache: Option<&mut CertifiedLejaCoeffCache>,
+    work: &mut WorkCounters,
+    workspace: &'a mut CertifiedLejaWorkspace,
+    setup_work: &mut LejaSetupWork,
+) -> CoreResult<&'a CertifiedLejaReport> {
+    leja_phi_action_certified_with_cache_and_workspace_inner(
+        op,
+        h,
+        input,
+        total_budget,
+        degree_cap,
+        cache,
+        work,
+        workspace,
+        Some(setup_work),
+    )
+}
+
+#[allow(clippy::too_many_arguments, clippy::needless_range_loop)]
+fn leja_phi_action_certified_with_cache_and_workspace_inner<'a>(
+    op: &SymmetricNonpositiveOperator,
+    h: f64,
+    input: JointPhiInput<'_>,
+    total_budget: f64,
+    degree_cap: usize,
     mut cache: Option<&mut CertifiedLejaCoeffCache>,
     work: &mut WorkCounters,
     workspace: &'a mut CertifiedLejaWorkspace,
+    mut setup_work: Option<&mut LejaSetupWork>,
 ) -> CoreResult<&'a CertifiedLejaReport> {
     workspace.last_certification_ops = 0;
     let n = op.dimension();
@@ -1688,7 +2058,13 @@ pub fn leja_phi_action_certified_with_cache_and_workspace<'a>(
             branch = "scalar";
             verified_interval = [a, b];
             local_coefficient_setups += 1;
-            let (d, d_rad) = scalar_phi_coefficients(center)?;
+            if let Some(setup) = setup_work.as_deref_mut() {
+                setup.coefficient_table_attempt();
+            }
+            let (d, d_rad) = scalar_phi_coefficients_counted(center, setup_work.as_deref_mut())?;
+            if let Some(setup) = setup_work.as_deref_mut() {
+                setup.coefficient_table_complete();
+            }
             for (k, sum) in workspace.sums[..JOINT_PHI_TERMS].iter_mut().enumerate() {
                 let col = column_of(k);
                 let w = &workspace.current[col][..n];
@@ -1772,15 +2148,24 @@ pub fn leja_phi_action_certified_with_cache_and_workspace<'a>(
             verified_interval[1] = verified_interval[1].max(support_hi);
             let derivative_exp = exp_interval(verified_interval[1].max(0.0))?.hi;
             branch = "newton";
-            let xi = &leja_points()[..=degree_cap];
-            let node_bounds = leja_node_bounds();
-            let suffix_bounds = leja_suffix_bounds();
+            let xi = &leja_points_with_setup(setup_work.as_deref_mut())[..=degree_cap];
+            let node_bounds = leja_node_bounds_with_setup(setup_work.as_deref_mut());
+            let suffix_bounds = leja_suffix_bounds_with_setup(setup_work.as_deref_mut());
             let mut tail_bounds = [[0.0; JOINT_PHI_TERMS]; LEJA_DEGREE_CAP];
 
             let (d_calc, dr_calc);
             let (d, d_rad): (&[[f64; JOINT_PHI_TERMS]], &[[f64; JOINT_PHI_TERMS]]) =
                 if let Some(ref mut c) = cache {
-                    if c.get_certified(center, scale, degree_cap).is_none() {
+                    if let Some(setup) = setup_work.as_deref_mut() {
+                        c.precompute_certified_inner(
+                            center,
+                            scale,
+                            degree_cap,
+                            Some(setup),
+                            Some(&mut local_coefficient_setups),
+                        )?;
+                        setup.cache_lookup(true); // coefficient-slice retrieval below
+                    } else if c.get_certified(center, scale, degree_cap).is_none() {
                         local_coefficient_setups += 1;
                         let (d_val, dr_val) =
                             leja_divided_differences_certified(center, scale, xi)?;
@@ -1789,7 +2174,18 @@ pub fn leja_phi_action_certified_with_cache_and_workspace<'a>(
                     c.get_certified(center, scale, degree_cap).unwrap()
                 } else {
                     local_coefficient_setups += 1;
-                    let res = leja_divided_differences_certified(center, scale, xi)?;
+                    if let Some(setup) = setup_work.as_deref_mut() {
+                        setup.coefficient_table_attempt();
+                    }
+                    let res = leja_divided_differences_certified_counted(
+                        center,
+                        scale,
+                        xi,
+                        setup_work.as_deref_mut(),
+                    )?;
+                    if let Some(setup) = setup_work.as_deref_mut() {
+                        setup.coefficient_table_complete();
+                    }
                     d_calc = res.0;
                     dr_calc = res.1;
                     (&d_calc, &dr_calc)
@@ -2150,6 +2546,94 @@ mod tests {
         let mut sorted = xi.to_vec();
         sorted.sort_by(f64::total_cmp);
         assert!(sorted.windows(2).all(|w| w[0] < w[1]));
+    }
+
+    #[test]
+    fn counted_node_prefix_includes_interval_domain_construction() {
+        let xi = [0.0];
+        let mut setup = LejaSetupWork::new();
+        let bound = leja_node_polynomial_bound_counted(0, &xi, Some(&mut setup));
+        assert!(bound.is_finite() && bound >= 2.0);
+        // Per subdivision: one point, one domain Interval::new, then
+        // sub_down/sub_up, factor Interval::new, and interval multiplication.
+        assert_eq!(
+            setup.snapshot().subtotal().interval_kernel_invocations(),
+            6 * 128
+        );
+    }
+
+    #[test]
+    fn actual_leja_points_initializer_has_cold_and_warm_receipts() {
+        let cell: OnceLock<CountedStaticTable<Vec<f64>>> = OnceLock::new();
+        let mut cold_work = LejaSetupWork::new();
+        let cold_points = get_or_init_static(
+            &cell,
+            StaticLejaTable::Points,
+            Some(&mut cold_work),
+            build_leja_points,
+        );
+        assert_eq!(cold_points.len(), LEJA_DEGREE_CAP + 1);
+        let cold = cold_work.snapshot();
+        assert_eq!(
+            cold.leja_points_observation(),
+            crate::leja_setup_work::OnceLockObservation::InitializedByThisCall
+        );
+        assert_eq!(cold.subtotal().allocation_requests(), 4);
+        assert!(cold.subtotal().scalar_proxy_units() > 0);
+
+        let mut warm_work = LejaSetupWork::new();
+        let warm_points = get_or_init_static(
+            &cell,
+            StaticLejaTable::Points,
+            Some(&mut warm_work),
+            build_leja_points,
+        );
+        assert_eq!(warm_points, cold_points);
+        let warm = warm_work.snapshot();
+        assert_eq!(
+            warm.leja_points_observation(),
+            crate::leja_setup_work::OnceLockObservation::WarmCountedInitializer
+        );
+        assert_eq!(warm.subtotal().allocation_requests(), 0);
+        assert_eq!(warm.subtotal().scalar_proxy_units(), 0);
+        assert_eq!(warm.leja_points_history(), Some(cold.subtotal()));
+    }
+
+    #[test]
+    fn failed_counted_cache_miss_retains_historical_coefficient_setup_attempt() {
+        let mut cache = CertifiedLejaCoeffCache::new();
+        let mut setup = LejaSetupWork::new();
+        let mut coefficient_setups = 0;
+        let result = cache.precompute_certified_inner(
+            -1.0e10,
+            0.0,
+            8,
+            Some(&mut setup),
+            Some(&mut coefficient_setups),
+        );
+        assert!(result.is_err());
+        assert_eq!(coefficient_setups, 1);
+        let receipt = setup.snapshot();
+        assert_eq!(receipt.subtotal().coefficient_tables_attempted(), 1);
+        assert_eq!(receipt.subtotal().coefficient_tables_completed(), 0);
+        assert_eq!(cache.len(), 0);
+    }
+
+    #[test]
+    fn failed_exponential_does_not_charge_unattempted_result_vectors() {
+        let mut setup = LejaSetupWork::new();
+        let result =
+            leja_divided_differences_certified_counted(0.0, 300.0, &[2.0], Some(&mut setup));
+        assert!(result.is_err());
+        // Four input diagonals/subdiagonals, two exponential output vectors,
+        // and four work vectors for the first column, where overflow occurs.
+        // Final d/d_rad vectors are never attempted.
+        assert_eq!(setup.snapshot().subtotal().allocation_requests(), 10);
+        assert_eq!(setup.snapshot().subtotal().allocation_items_requested(), 48);
+        assert_eq!(
+            setup.snapshot().subtotal().coefficient_tables_attempted(),
+            0
+        );
     }
 
     #[test]

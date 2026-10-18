@@ -9,6 +9,7 @@ mod error;
 mod hash;
 pub mod laguerre_adjoint;
 pub mod leja_action;
+pub mod leja_setup_work;
 mod matrix;
 mod matrix_functions;
 pub mod nonnormal_certificate;
@@ -46,9 +47,15 @@ pub use leja_action::{
     CertifiedLejaCoeffCache, CertifiedLejaReport, CertifiedLejaWorkspace, LEJA_CERTIFIED_SCHEMA,
     LEJA_DEGREE_CAP, LEJA_RANGE_LIMIT, LEJA_SCHEMA, LEJA_TOTAL_NOT_CERTIFIED, LejaReport,
     leja_divided_differences, leja_divided_differences_certified, leja_node_bounds,
-    leja_node_polynomial_bound, leja_phi_action, leja_phi_action_capped, leja_phi_action_certified,
-    leja_phi_action_certified_capped, leja_phi_action_certified_with_cache,
-    leja_phi_action_certified_with_cache_and_workspace, leja_points,
+    leja_node_bounds_with_setup_work, leja_node_polynomial_bound, leja_phi_action,
+    leja_phi_action_capped, leja_phi_action_certified, leja_phi_action_certified_capped,
+    leja_phi_action_certified_with_cache, leja_phi_action_certified_with_cache_and_workspace,
+    leja_phi_action_certified_with_setup_work, leja_points, leja_points_with_setup_work,
+    leja_suffix_bounds_with_setup_work,
+};
+pub use leja_setup_work::{
+    CoefficientCacheObservation, LEJA_SETUP_RECEIPT_SCHEMA_V1, LejaSetupReceiptV1, LejaSetupWork,
+    LejaSetupWorkSubtotal, OnceLockObservation, SetupCoverage,
 };
 pub use matrix::{DenseMatrix, LuFactorization, direct_solve, inverse};
 pub use matrix_functions::{

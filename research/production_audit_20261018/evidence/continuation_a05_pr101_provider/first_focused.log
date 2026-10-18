@@ -1,0 +1,284 @@
+    Blocking waiting for file lock on artifact directory
+   Compiling rodas5p-krylov v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-krylov)
+   Compiling rodas5p-integrators v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-integrators)
+error[E0277]: `?` couldn't convert the error to `Pr101Error`
+   --> crates/rodas5p-integrators/src/bound_pr101.rs:93:29
+    |
+ 93 |         validate_owner(self)?;
+    |         --------------------^ the trait `From<CoreError>` is not implemented for `Pr101Error`
+    |         |
+    |         this can't be annotated with `?` because it has type `Result<_, CoreError>`
+    |
+note: `Pr101Error` needs to implement `From<CoreError>`
+   --> crates/rodas5p-integrators/src/bound_pr101.rs:331:1
+    |
+331 | pub enum Pr101Error {
+    | ^^^^^^^^^^^^^^^^^^^
+    = note: the question mark operation (`?`) implicitly performs a conversion on the error value using the `From` trait
+help: the trait `From<CoreError>` is not implemented for `Pr101Error`
+      but trait `From<DenseOutputError>` is implemented for it
+   --> crates/rodas5p-integrators/src/bound_pr101.rs:333:19
+    |
+333 |     DenseOutput(#[from] DenseOutputError),
+    |                   ^^^^
+    = help: for that trait implementation, expected `DenseOutputError`, found `CoreError`
+
+error[E0277]: `?` couldn't convert the error to `Pr101Error`
+   --> crates/rodas5p-integrators/src/bound_pr101.rs:102:47
+    |
+102 |         let time = Interval::new(t_old, t_new)?;
+    |                    ---------------------------^ the trait `From<CoreError>` is not implemented for `Pr101Error`
+    |                    |
+    |                    this can't be annotated with `?` because it has type `Result<_, CoreError>`
+    |
+note: `Pr101Error` needs to implement `From<CoreError>`
+   --> crates/rodas5p-integrators/src/bound_pr101.rs:331:1
+    |
+331 | pub enum Pr101Error {
+    | ^^^^^^^^^^^^^^^^^^^
+    = note: the question mark operation (`?`) implicitly performs a conversion on the error value using the `From` trait
+help: the trait `From<CoreError>` is not implemented for `Pr101Error`
+      but trait `From<DenseOutputError>` is implemented for it
+   --> crates/rodas5p-integrators/src/bound_pr101.rs:333:19
+    |
+333 |     DenseOutput(#[from] DenseOutputError),
+    |                   ^^^^
+    = help: for that trait implementation, expected `DenseOutputError`, found `CoreError`
+
+error[E0277]: `?` couldn't convert the error to `Pr101Error`
+   --> crates/rodas5p-integrators/src/bound_pr101.rs:115:77
+    |
+115 |             error_poly[degree] = q_coefficient.sub(sin_coefficients[degree])?;
+    |                                                -----------------------------^ the trait `From<CoreError>` is not implemented for `Pr101Error`
+    |                                                |
+    |                                                this can't be annotated with `?` because it has type `Result<_, CoreError>`
+    |
+note: `Pr101Error` needs to implement `From<CoreError>`
+   --> crates/rodas5p-integrators/src/bound_pr101.rs:331:1
+    |
+331 | pub enum Pr101Error {
+    | ^^^^^^^^^^^^^^^^^^^
+    = note: the question mark operation (`?`) implicitly performs a conversion on the error value using the `From` trait
+help: the trait `From<CoreError>` is not implemented for `Pr101Error`
+      but trait `From<DenseOutputError>` is implemented for it
+   --> crates/rodas5p-integrators/src/bound_pr101.rs:333:19
+    |
+333 |     DenseOutput(#[from] DenseOutputError),
+    |                   ^^^^
+    = help: for that trait implementation, expected `DenseOutputError`, found `CoreError`
+
+error[E0277]: `?` couldn't convert the error to `Pr101Error`
+   --> crates/rodas5p-integrators/src/bound_pr101.rs:153:69
+    |
+153 |         let log_norm_upper = add_up(-LINEAR_RATE, nonlinear_lognorm)?;
+    |                              ---------------------------------------^ the trait `From<CoreError>` is not implemented for `Pr101Error`
+    |                              |
+    |                              this can't be annotated with `?` because it has type `Result<_, CoreError>`
+    |
+note: `Pr101Error` needs to implement `From<CoreError>`
+   --> crates/rodas5p-integrators/src/bound_pr101.rs:331:1
+    |
+331 | pub enum Pr101Error {
+    | ^^^^^^^^^^^^^^^^^^^
+    = note: the question mark operation (`?`) implicitly performs a conversion on the error value using the `From` trait
+help: the trait `From<CoreError>` is not implemented for `Pr101Error`
+      but trait `From<DenseOutputError>` is implemented for it
+   --> crates/rodas5p-integrators/src/bound_pr101.rs:333:19
+    |
+333 |     DenseOutput(#[from] DenseOutputError),
+    |                   ^^^^
+    = help: for that trait implementation, expected `DenseOutputError`, found `CoreError`
+
+error[E0277]: `?` couldn't convert the error to `Pr101Error`
+   --> crates/rodas5p-integrators/src/bound_pr101.rs:210:56
+    |
+210 |         let elapsed = Interval::exact_sum(time, -t_old)?;
+    |                       ---------------------------------^ the trait `From<CoreError>` is not implemented for `Pr101Error`
+    |                       |
+    |                       this can't be annotated with `?` because it has type `Result<_, CoreError>`
+    |
+note: `Pr101Error` needs to implement `From<CoreError>`
+   --> crates/rodas5p-integrators/src/bound_pr101.rs:331:1
+    |
+331 | pub enum Pr101Error {
+    | ^^^^^^^^^^^^^^^^^^^
+    = note: the question mark operation (`?`) implicitly performs a conversion on the error value using the `From` trait
+help: the trait `From<CoreError>` is not implemented for `Pr101Error`
+      but trait `From<DenseOutputError>` is implemented for it
+   --> crates/rodas5p-integrators/src/bound_pr101.rs:333:19
+    |
+333 |     DenseOutput(#[from] DenseOutputError),
+    |                   ^^^^
+    = help: for that trait implementation, expected `DenseOutputError`, found `CoreError`
+
+error[E0277]: `?` couldn't convert the error to `Pr101Error`
+   --> crates/rodas5p-integrators/src/bound_pr101.rs:219:64
+    |
+219 |         let magnitude_lower = sub_down(center[0].abs(), radius)?.max(0.0);
+    |                               ---------------------------------^ the trait `From<CoreError>` is not implemented for `Pr101Error`
+    |                               |
+    |                               this can't be annotated with `?` because it has type `Result<_, CoreError>`
+    |
+note: `Pr101Error` needs to implement `From<CoreError>`
+   --> crates/rodas5p-integrators/src/bound_pr101.rs:331:1
+    |
+331 | pub enum Pr101Error {
+    | ^^^^^^^^^^^^^^^^^^^
+    = note: the question mark operation (`?`) implicitly performs a conversion on the error value using the `From` trait
+help: the trait `From<CoreError>` is not implemented for `Pr101Error`
+      but trait `From<DenseOutputError>` is implemented for it
+   --> crates/rodas5p-integrators/src/bound_pr101.rs:333:19
+    |
+333 |     DenseOutput(#[from] DenseOutputError),
+    |                   ^^^^
+    = help: for that trait implementation, expected `DenseOutputError`, found `CoreError`
+
+error[E0277]: `?` couldn't convert the error to `Pr101Error`
+   --> crates/rodas5p-integrators/src/bound_pr101.rs:221:77
+    |
+221 |         let tolerance_lower = add_down(ATOL, mul_down(RTOL, magnitude_lower)?)?;
+    |                                              -------------------------------^ the trait `From<CoreError>` is not implemented for `Pr101Error`
+    |                                              |
+    |                                              this can't be annotated with `?` because it has type `Result<_, CoreError>`
+    |
+note: `Pr101Error` needs to implement `From<CoreError>`
+   --> crates/rodas5p-integrators/src/bound_pr101.rs:331:1
+    |
+331 | pub enum Pr101Error {
+    | ^^^^^^^^^^^^^^^^^^^
+    = note: the question mark operation (`?`) implicitly performs a conversion on the error value using the `From` trait
+help: the trait `From<CoreError>` is not implemented for `Pr101Error`
+      but trait `From<DenseOutputError>` is implemented for it
+   --> crates/rodas5p-integrators/src/bound_pr101.rs:333:19
+    |
+333 |     DenseOutput(#[from] DenseOutputError),
+    |                   ^^^^
+    = help: for that trait implementation, expected `DenseOutputError`, found `CoreError`
+
+error[E0277]: `?` couldn't convert the error to `Pr101Error`
+   --> crates/rodas5p-integrators/src/bound_pr101.rs:221:79
+    |
+221 |         let tolerance_lower = add_down(ATOL, mul_down(RTOL, magnitude_lower)?)?;
+    |                               ------------------------------------------------^ the trait `From<CoreError>` is not implemented for `Pr101Error`
+    |                               |
+    |                               this can't be annotated with `?` because it has type `Result<_, CoreError>`
+    |
+note: `Pr101Error` needs to implement `From<CoreError>`
+   --> crates/rodas5p-integrators/src/bound_pr101.rs:331:1
+    |
+331 | pub enum Pr101Error {
+    | ^^^^^^^^^^^^^^^^^^^
+    = note: the question mark operation (`?`) implicitly performs a conversion on the error value using the `From` trait
+help: the trait `From<CoreError>` is not implemented for `Pr101Error`
+      but trait `From<DenseOutputError>` is implemented for it
+   --> crates/rodas5p-integrators/src/bound_pr101.rs:333:19
+    |
+333 |     DenseOutput(#[from] DenseOutputError),
+    |                   ^^^^
+    = help: for that trait implementation, expected `DenseOutputError`, found `CoreError`
+
+error[E0631]: type mismatch in function arguments
+   --> crates/rodas5p-integrators/src/bound_pr101.rs:240:38
+    |
+240 |         validate_owner(self).map_err(pr101_dense_error)?;
+    |                              ------- ^^^^^^^^^^^^^^^^^ expected due to this
+    |                              |
+    |                              required by a bound introduced by this call
+...
+708 | fn pr101_dense_error(error: Pr101Error) -> DenseOutputError {
+    | ----------------------------------------------------------- found signature defined here
+    |
+    = note: expected function signature `fn(CoreError) -> _`
+               found function signature `fn(Pr101Error) -> _`
+note: required by a bound in `Result::<T, E>::map_err`
+   --> /home/cosmosapjw/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:964:12
+    |
+962 |     pub const fn map_err<F, O>(self, op: O) -> Result<T, F>
+    |                  ------- required by a bound in this associated function
+963 |     where
+964 |         O: [const] FnOnce(E) -> F + [const] Destruct,
+    |            ^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `Result::<T, E>::map_err`
+help: consider wrapping the function in a closure
+    |
+240 |         validate_owner(self).map_err(|arg0: CoreError| pr101_dense_error(/* Pr101Error */))?;
+    |                                      +++++++++++++++++                  ++++++++++++++++++
+
+error[E0631]: type mismatch in function arguments
+   --> crates/rodas5p-integrators/src/bound_pr101.rs:266:38
+    |
+266 |         validate_owner(self).map_err(pr101_dense_error)?;
+    |                              ------- ^^^^^^^^^^^^^^^^^ expected due to this
+    |                              |
+    |                              required by a bound introduced by this call
+...
+708 | fn pr101_dense_error(error: Pr101Error) -> DenseOutputError {
+    | ----------------------------------------------------------- found signature defined here
+    |
+    = note: expected function signature `fn(CoreError) -> _`
+               found function signature `fn(Pr101Error) -> _`
+note: required by a bound in `Result::<T, E>::map_err`
+   --> /home/cosmosapjw/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:964:12
+    |
+962 |     pub const fn map_err<F, O>(self, op: O) -> Result<T, F>
+    |                  ------- required by a bound in this associated function
+963 |     where
+964 |         O: [const] FnOnce(E) -> F + [const] Destruct,
+    |            ^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `Result::<T, E>::map_err`
+help: consider wrapping the function in a closure
+    |
+266 |         validate_owner(self).map_err(|arg0: CoreError| pr101_dense_error(/* Pr101Error */))?;
+    |                                      +++++++++++++++++                  ++++++++++++++++++
+
+error[E0308]: mismatched types
+   --> crates/rodas5p-integrators/src/bound_pr101.rs:280:9
+    |
+265 |     ) -> DenseOutputResult<f64> {
+    |          ---------------------- expected `Result<f64, DenseOutputError>` because of return type
+...
+280 |         add_up(-LINEAR_RATE, nonlinear_upper)
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `Result<f64, DenseOutputError>`, found `Result<f64, CoreError>`
+    |
+    = note: expected enum `Result<_, DenseOutputError>`
+               found enum `Result<_, CoreError>`
+help: use `?` to coerce and return an appropriate `Err`, and wrap the resulting value in `Ok` so the expression remains of type `Result`
+    |
+280 |         Ok(add_up(-LINEAR_RATE, nonlinear_upper)?)
+    |         +++                                     ++
+
+error[E0689]: can't call method `saturating_sub` on ambiguous numeric type `{integer}`
+   --> crates/rodas5p-integrators/src/bound_pr101.rs:570:40
+    |
+569 |     for degree in 0..5 {
+    |         ------ you must specify a type for this binding, like `i32`
+570 |         let derivative_degree = degree.saturating_sub(1);
+    |                                        ^^^^^^^^^^^^^^
+
+error[E0277]: `?` couldn't convert the error to `Pr101Error`
+   --> crates/rodas5p-integrators/src/bound_pr101.rs:630:44
+    |
+629 | ) -> Result<f64, Pr101Error> {
+    |      ----------------------- expected `Pr101Error` because of this
+630 |     let interval = Interval::point(elapsed)?;
+    |                    ------------------------^ the trait `From<CoreError>` is not implemented for `Pr101Error`
+    |                    |
+    |                    this can't be annotated with `?` because it has type `Result<_, CoreError>`
+    |
+note: `Pr101Error` needs to implement `From<CoreError>`
+   --> crates/rodas5p-integrators/src/bound_pr101.rs:331:1
+    |
+331 | pub enum Pr101Error {
+    | ^^^^^^^^^^^^^^^^^^^
+    = note: the question mark operation (`?`) implicitly performs a conversion on the error value using the `From` trait
+help: the trait `From<CoreError>` is not implemented for `Pr101Error`
+      but trait `From<DenseOutputError>` is implemented for it
+   --> crates/rodas5p-integrators/src/bound_pr101.rs:333:19
+    |
+333 |     DenseOutput(#[from] DenseOutputError),
+    |                   ^^^^
+    = help: for that trait implementation, expected `DenseOutputError`, found `CoreError`
+
+Some errors have detailed explanations: E0277, E0308, E0631, E0689.
+For more information about an error, try `rustc --explain E0277`.
+error: could not compile `rodas5p-integrators` (lib) due to 13 previous errors
+
+EXIT_CODE=101

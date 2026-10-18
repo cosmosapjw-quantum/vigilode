@@ -4,19 +4,19 @@
   "continuation": "production-audit-20261018-continuation",
   "source_identity": {
     "branch": "audit/production-readiness-20261018",
-    "exec_sha": "5a1ff2b9ed1d63c928ea2577aaa60b4af64d6476",
+    "exec_sha": "b38a1212f1d6e6566c0ca40cc67e7eee26717435",
     "remote_ref": "origin/audit/production-readiness-20261018",
-    "remote_ref_sha": "578079280fe17926a8b83147ec8c2c87087236dc",
+    "remote_ref_sha": "b38a1212f1d6e6566c0ca40cc67e7eee26717435",
     "starting_audit_commit": "6c067105f0b9e16cbfd397b2d5316673e698e00e",
     "audited_source_commit": "2fc61b944fe431d40ba455c373579bce00b0c39a",
-    "tested_source_sha": "5a1ff2b9ed1d63c928ea2577aaa60b4af64d6476"
+    "tested_source_sha": "b38a1212f1d6e6566c0ca40cc67e7eee26717435"
   },
   "nodes": [
     {
       "id": "A01",
       "depends_on": [],
       "status": "HOLD",
-      "decision": "Local outward reconstruction is independently accepted only at its older bound source identity; the newer RepresentedPacketCurve residual/work slice has execution evidence, and R2 degree/setup accounting is reviewed. Full node remains HOLD: the new curve residual is not yet transported into radii around the same returned centers; curve-output T1 slice is authorized and next. roundoff_enclosed=false."
+      "decision": "Local reconstruction and represented-curve source identity evidence remain bounded to their reviewed source identities. New same-curve T1 output-radius subunit is independently SCOPED_PASS at b38a121: immutable result view; physical-time residual; lambda+=S|chi|max(S E+, M_Y+^2); radii enclose returned centers with 29N+23 counted operations; exact-rational disk oracle. Full A01 remains HOLD for unequal-frequency independent reference and remaining packet arithmetic/certificate duties; roundoff_enclosed=false. The M_Y^2>S E branch is exercised but lacks a counterfactual energy-only negative assertion (nonblocking for reviewed subunit)."
     },
     {
       "id": "A02",
@@ -37,14 +37,14 @@
     {
       "id": "A04",
       "depends_on": [],
-      "status": "HOLD",
-      "decision": "Full total-error authority remains HOLD/EstimateOnly. New report sealing is SCOPED_PASS and committed at 5a1ff2b: all report payload/status fields and workspace report slot are immutable; serde shape and prior-report transaction preserved. Separate setup receipt/counter episode is authorized and in progress; additive-underflow/operator/coefficient arithmetic oracle obligations remain."
+      "status": "SCOPED_PASS_WITH_HOLD",
+      "decision": "Report sealing and setup-cost receipt subunits independently SCOPED_PASS: immutable report slot preserved; cold/warm setup receipt, dependency coverage, attempted-work parity and counted zero-allocation gates reviewed. Full Leja total-error authority remains HOLD/EstimateOnly due additive-underflow/operator/output arithmetic oracle obligations."
     },
     {
       "id": "A05",
       "depends_on": [],
       "status": "HOLD",
-      "decision": "Full generic global-output node remains HOLD. Existing continuous helper/output transaction and sealed CollectiveModel provider are scoped only. A sealed fixed PR101 provider with outward trig and correlated same-quartic residual is authorized/in progress; driver transaction and all-101-output proof remain pending. No tolerance or campaign change."
+      "decision": "Local PR101 formula/model identity/privacy and rational quartic checks pass conditionally, but the one authorized repair still has deterministic work-ledger over/undercharges and grouped charges before fallible calls; reviewer declined a second repair episode. Keep this implementation slice HOLD. No driver/global output or speed authority."
     },
     {
       "id": "A06",
@@ -129,18 +129,19 @@
     "matched_accuracy_speed": "HOLD",
     "existing_generic_rodas5p": "SCOPED_USE_REMAINS_ALLOWED"
   },
-  "next_executable_transition": "Continue the authorized A04 setup receipt/cost unit and A05 PR101 sealed-provider/residual unit (independent READY work). Then implement/review A01 same-curve residual-to-center/radius T1 enclosure. A02 waits for whole A01; A03/A10 wait for A01; A08/A09 wait for A04 plus A07 gates. Keep all authority flags and scope decisions unchanged.",
+  "next_executable_transition": "Continue A01 unequal-frequency independent high-precision reference and remaining local packet certificate duties; only after full A01 closure start A02 global trajectory. A04 setup receipt is checkpointed SCOPED_PASS_WITH_HOLD. A05 remains HOLD pending a separately authorized future repair; A03/A10 wait on full A01, A08/A09 remain blocked by A04/A07, and A12 keeps scope decisions unchanged.",
   "checkpoint": {
     "date": "2026-10-18",
-    "head": "578079280fe17926a8b83147ec8c2c87087236dc",
+    "head": "b38a1212f1d6e6566c0ca40cc67e7eee26717435",
     "remote_verified": true,
     "remote_ref": "origin/audit/production-readiness-20261018",
     "notes": [
       "A05 enum integration repair commit 3e9b28b is pushed and independently reviewed scoped pass.",
       "A04 Leja report immutability commit 5a1ff2b is pushed and independently reviewed scoped pass.",
       "A01/A04/A05/A07 overall scope decisions remain HOLD as documented per node.",
-      "Evidence checkpoint itself is 5780792; tested executable source commit remains 5a1ff2b."
+      "Evidence checkpoint itself is 5780792; tested executable source commit remains 5a1ff2b.",
+      "A01 same-curve T1 output-radius subunit SCOPED_PASS, independently reviewed and pushed in b38a121; full A01 remains HOLD."
     ],
-    "evidence_commit": "578079280fe17926a8b83147ec8c2c87087236dc"
+    "evidence_commit": "b38a1212f1d6e6566c0ca40cc67e7eee26717435"
   }
 }

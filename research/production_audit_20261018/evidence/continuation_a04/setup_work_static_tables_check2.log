@@ -1,0 +1,29 @@
+    Checking rodas5p-core v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-core)
+warning: methods `coefficient_table_attempt`, `coefficient_table_complete`, `cache_api_attempt`, `cache_lookup`, `cache_insert_attempt`, and `cache_insert_complete` are never used
+   --> crates/rodas5p-core/src/leja_setup_work.rs:326:19
+    |
+253 | impl LejaSetupWork {
+    | ------------------ methods in this implementation
+...
+326 |     pub(crate) fn coefficient_table_attempt(&mut self) {
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+330 |     pub(crate) fn coefficient_table_complete(&mut self) {
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+334 |     pub(crate) fn cache_api_attempt(&mut self) {
+    |                   ^^^^^^^^^^^^^^^^^
+...
+338 |     pub(crate) fn cache_lookup(&mut self, hit: bool) {
+    |                   ^^^^^^^^^^^^
+...
+347 |     pub(crate) fn cache_insert_attempt(&mut self) {
+    |                   ^^^^^^^^^^^^^^^^^^^^
+...
+351 |     pub(crate) fn cache_insert_complete(&mut self) {
+    |                   ^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rodas5p-core` (lib) generated 1 warning
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.96s

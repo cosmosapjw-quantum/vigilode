@@ -34,3 +34,19 @@
 3. A05는 실제 연속 residual과 검증된 one-sided tube gain API를 먼저 설계/검토하고 새 101-output PR witness를 전 시각/연속구간에서 검증.
 4. A07은 이전 campaign을 반복하지 말고 방정식·atol vector·output grid·independent reference·setup/cold/warm 경계·실제 allocator·실패 arm·build/source identity를 사전 동결한 새 matched campaign을 만든다. A08/A09는 A04+A07이 통과할 때만 진행.
 5. 연구 ledger 7개 게시 게이트 결과를 아래에 기록한다. 게시 성공은 과학적 production 승격과 별도다.
+
+## A01 동일 곡선 출력 반경 하위 단위 checkpoint
+
+`b38a1212f1d6e6566c0ca40cc67e7eee26717435`에서 A01의 제한된 동일 곡선 출력 반경 단위를 구현·검증·독립 검토했다. 입력 곡선과 동일한 실제 출력 중심을 기준으로 물리 시간 residual을 수송하고, `lambda+=S|chi|max(S E+, M_Y+^2)`를 사용한다. 출력 view 필드는 비공개이며 owner/workspace borrow로 결과 생명주기를 묶는다. 한 번의 성공 query에서 연산 카운터는 `29N+23`(N=1:52, N=2:81), 최초 overflow 예는 7회 시도 연산으로 독립 확인됐다.
+
+선형/3차 한 모드와 비대칭 동주파수 다중 모드 fixture는 binary64 입력을 정확 유리수로 복원하고 Taylor remainder로 삼각함수 구간을 구성했다. squared complex-disk 포함을 허용오차 slack 없이 확인했다. 집중 회귀 5/5, privacy compile-fail doctest 2/2, 포맷 검사가 통과했고 independent review는 이 하위 단위만 `SCOPED_PASS`로 판정했다. `M_Y^2>S E` 영역은 실행했지만 energy-only 회귀로 잘못 대체했을 때 반드시 실패하는 negative assertion은 아직 없다.
+
+이 결과는 A01 전체를 닫지 않는다. 서로 다른 주파수의 독립 고정밀 참조와 전체 local packet 산술·인증은 남았고 `roundoff_enclosed=false` 유지, A02 trajectory는 계속 BLOCKED다. 검토 메타데이터는 `evidence/continuation_a01/A01_OUTPUT_SLICE_REVIEW.json`에 기록했다.
+
+## A04 setup receipt과 A05 PR101 provider 판정
+
+A04 setup-cost receipt 하위 단위는 독립 `SCOPED_PASS`를 받았다. 실제 Leja point initializer의 cold/warm 계측, prefix interval 호출 6회 단위, cache history의 `PartialUnattributed` 전달, 실패한 coefficient setup의 기존 `WorkCounters` 누적, counted 경로 warmed allocation 0 및 legacy 경로와 report/counter parity를 확인했다. Core 27/27, setup contract 5/5, fresh-process legacy coverage 1/1, clippy all-targets와 formatting 검사가 통과했다. frozen 전체 workspace `cargo check --locked --offline --workspace --all-targets`도 exit 0이다. 상세 reviewer/postexec receipt는 `evidence/continuation_a04/setup_repair_review.json`과 `setup_repair_postexec.json`이다. 전체 Leja total-error는 계속 `EstimateOnly/HOLD`다.
+
+A05 PR101 local provider의 수식, 모델 결속, 출력 봉인, 직접 scalar JVP와 비영 시작시각 genuine-quartic Fraction oracle은 조건부로 통과했다. 그러나 reviewer가 결정적 work-accounting 과다/누락과 fallible 호출 묶음 선계상을 확인했다. 한 번 승인된 repair 이후 두 번째 repair episode는 승인되지 않았으므로 이 구현 slice의 판정은 `HOLD`다. 원시 로그와 현재 source SHA를 보존했으며 코드를 production authority로 채택하지 않았다. 전역 driver·trajectory 인증은 계속 HOLD다.
+
+A07 owner가 지정한 `rtol=1e-8`, `atol=[1e-11,1e-11,1e-11]` 기준 캠페인은 기존 validated artifact만 사용했다. 91/91 행이 완료됐고 보고서는 validated JSON 182행에서 생성됐다. report/campaign integrity는 `PASS_WITH_SCOPE`; Diffsol max-grid WRMS `3.3026992500504733`가 empirical reference upper `3.3037774057537246`을 넘어서 accuracy overlap gate는 false다. timing은 `diagnostic_only`; 동등 정확도 속도 우위는 주장하지 않는다. 원본 49/52 report/JSON 불일치는 옛 캠페인 재실행으로 덮지 않았다.

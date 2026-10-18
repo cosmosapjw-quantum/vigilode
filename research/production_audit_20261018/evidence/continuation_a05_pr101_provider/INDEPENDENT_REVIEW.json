@@ -1,0 +1,36 @@
+{
+  "schema":"vigilode-a05-pr101-provider-review-v1",
+  "decision":"HOLD",
+  "reviewed_head":"b38a1212f1d6e6566c0ca40cc67e7eee26717435",
+  "reviewer":{"requested_profile":"research-review/Astra-xhigh","observed_runtime":"NOT_INDEPENDENTLY_OBSERVED"},
+  "source_sha256":{
+    "crates/rodas5p-integrators/src/bound_pr101.rs":"c7a80e6d9984bcd92ce3063e2895f8d6ebdcc30341e482402567e8e4244ab8ee",
+    "crates/rodas5p-integrators/src/dense_output_v2.rs":"ffae5416d4dbe3e026665e25e32c64d2ce7a61cb5a731ab2f50f21b93fc22be3",
+    "crates/rodas5p-integrators/tests/production_audit_pr101_provider.rs":"4d711d8bae5106b5a77af364147ec7d41e319778178db35c38ee060330dda3cf",
+    "crates/rodas5p-integrators/tests/pr101_fraction_oracle.py":"6085e648fd9cd0c898fe000e1c6aff017f0999577a8a8ffa99a67e6369b18d50"
+  },
+  "accepted_conditional_scope":[
+    "provider model identity and opaque owner",
+    "sealed output enclosure and direct scalar point JVP",
+    "residual signs, trig remainder, tube mu and center displacement",
+    "nonzero-start quartic Fraction oracle checks 49 residual coefficients, RHS/output inclusion and cancellation control",
+    "mismatch/refusal, inherited radius and warmed verify/output zero-allocation tests"
+  ],
+  "blocking_work_accounting_findings":[
+    {"path":"bound_pr101.rs:117","issue":"one Interval::sub charged 3 instead of 1; repeated loop overcharges by 50"},
+    {"path":"bound_pr101.rs:269-270","issue":"two adds charged twice"},
+    {"path":"bound_pr101.rs:570,572","issue":"Interval::new and two adds charged 5 instead of 3, with add calls double charged"},
+    {"path":"bound_pr101.rs:772,774","issue":"positive-mu division charged twice"},
+    {"path":"bound_pr101.rs:654 and related convolution/comparison/tolerance/factorial/signed-integral paths","issue":"grouped precharge includes operations that may not execute after an earlier fallible operation"},
+    {"path":"dense_output_v2.rs:453","issue":"construction_items += 15 unit is unexplained; the shown block is 7 Interval API calls"}
+  ],
+  "repair_episode":"One authorized repair was reviewed and remains incomplete; reviewer explicitly did not authorize a second repair episode.",
+  "validation":{
+    "focused_provider":{"passed":8,"failed":0,"exit_code":0,"log":"repair_focused_final.log","sha256":"6881e0c146293d09850a0db9aad54310e0c9999684dd6c9d18a656faaf6f6fa4"},
+    "unit_tests":{"passed":2,"failed":0,"exit_code":0,"log":"repair_provider_unit_tests_final.log","sha256":"99a4b699224ed709c77fc3a3e07a142f7f7e7605346d2be2be8101ced9833dc9"},
+    "doctests":{"passed":6,"failed":0,"exit_code":0,"log":"repair_owner_compile_fail_doctests_final.log","sha256":"8cb73dbd2774efc7144722dabfe795890f07409e7bf7d5d7335a59dc3bdf460f"},
+    "fraction_oracle":{"exit_code":0,"log":"repair_fraction_final.log","sha256":"03a3ca4974fd71b27826a2c64b756e27b4d8d22a23178ef53b2ffe86fe0518ee"},
+    "static_checks":{"exit_code":0,"log":"repair_static_checks_final.log","sha256":"ba8c68bf7ed328493976b7d04262960ce1ebff02a7aff9e8e7bdaeaa6c101cf9"}
+  },
+  "claim_ceiling":"Local provider math is conditional and accepted by source review; inaccurate attempted-work accounting prevents subunit implementation admission. Full A05 driver/global output/speed remain HOLD."
+}

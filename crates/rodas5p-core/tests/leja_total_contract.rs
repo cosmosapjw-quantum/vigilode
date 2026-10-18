@@ -16,7 +16,7 @@ use rodas5p_core::polynomial_action::{
     EnclosureEvidence, JOINT_PHI_TERMS, JointPhiInput, SymmetricNonpositiveOperator,
     TotalErrorStatus,
 };
-use rodas5p_core::{DenseMatrix, WorkCounters, dense_phi_combination, safe_l2};
+use rodas5p_core::{DenseMatrix, LejaSetupWork, WorkCounters, dense_phi_combination, safe_l2};
 
 // -----------------------------------------------------------------------------
 // VG-1 Zero-Allocation Allocator
@@ -222,6 +222,51 @@ fn test_a04_warmed_scalar_branch_zero_allocation() {
         allocations, 0,
         "warmed scalar Leja action allocated {allocations} times"
     );
+}
+
+#[test]
+fn test_a04_counted_warmed_certified_leja_action_zero_allocation() {
+    let n = 2;
+    let matrix = DenseMatrix::from_rows(&[&[-1.0, 0.0], &[0.0, -2.0]]).unwrap();
+    let op = SymmetricNonpositiveOperator::gershgorin(matrix).unwrap();
+    let vector = [0.75, -0.25];
+    let input = JointPhiInput::SameVector {
+        vector: &vector,
+        scales: [1.0, -0.5, 0.25, 0.0, 0.0],
+    };
+    let mut cache = CertifiedLejaCoeffCache::new();
+    let mut workspace = CertifiedLejaWorkspace::new(n, 1);
+    let mut work = WorkCounters::default();
+    let mut setup = LejaSetupWork::new();
+    rodas5p_core::leja_action::leja_phi_action_certified_with_setup_work(
+        &op,
+        0.125,
+        input,
+        1.0,
+        8,
+        Some(&mut cache),
+        &mut work,
+        &mut workspace,
+        &mut setup,
+    )
+    .unwrap();
+
+    let (result, allocations) = track_allocations(|| {
+        rodas5p_core::leja_action::leja_phi_action_certified_with_setup_work(
+            &op,
+            0.125,
+            input,
+            1.0,
+            8,
+            Some(&mut cache),
+            &mut work,
+            &mut workspace,
+            &mut setup,
+        )
+        .map(|report| report.total_bound())
+    });
+    result.unwrap();
+    assert_eq!(allocations, 0, "warmed counted Leja route allocated");
 }
 
 #[test]
