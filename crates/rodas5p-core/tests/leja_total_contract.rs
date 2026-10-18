@@ -155,7 +155,7 @@ fn test_vg1_zero_allocation_warmed_certified_leja_action() {
         &mut workspace,
     )
     .unwrap();
-    assert!(warm_rep.converged);
+    assert!(warm_rep.converged());
 
     // Warmed call: must have EXACTLY 0 heap allocations!
     let (bound, allocs) = track_allocations(|| {
@@ -204,7 +204,7 @@ fn test_a04_warmed_scalar_branch_zero_allocation() {
     .unwrap();
     let vectors: [Vec<f64>; 5] = std::array::from_fn(|k| vec![scales[k] * v[0]]);
     let reference = dense_phi_combination(op.matrix(), 0.0, &vectors).unwrap();
-    assert!((warm.fused[0] - reference[0]).abs() <= 2.0 * f64::EPSILON);
+    assert!((warm.fused()[0] - reference[0]).abs() <= 2.0 * f64::EPSILON);
     let (result, allocations) = track_allocations(|| {
         leja_phi_action_certified_with_cache_and_workspace(
             &op,
@@ -248,10 +248,10 @@ fn test_a04_workspace_report_buffers_follow_dimension_growth_and_shrink() {
         &mut workspace,
     )
     .unwrap();
-    assert_eq!(report.dimension, 1);
-    assert_eq!(report.fused.len(), 1);
-    assert_eq!(report.columns.len(), 5);
-    assert!(report.columns.iter().all(|column| column.len() == 1));
+    assert_eq!(report.dimension(), 1);
+    assert_eq!(report.fused().len(), 1);
+    assert_eq!(report.columns().len(), 5);
+    assert!(report.columns().iter().all(|column| column.len() == 1));
 
     // Grow to two dimensions and then shrink back. Report slices must track
     // the active dimension in both directions, independently of capacity.
@@ -268,9 +268,9 @@ fn test_a04_workspace_report_buffers_follow_dimension_growth_and_shrink() {
         &mut workspace,
     )
     .unwrap();
-    assert_eq!(report.dimension, 2);
-    assert_eq!(report.fused.len(), 2);
-    assert!(report.columns.iter().all(|column| column.len() == 2));
+    assert_eq!(report.dimension(), 2);
+    assert_eq!(report.fused().len(), 2);
+    assert!(report.columns().iter().all(|column| column.len() == 2));
 
     let report = leja_phi_action_certified_with_cache_and_workspace(
         &op1,
@@ -286,10 +286,10 @@ fn test_a04_workspace_report_buffers_follow_dimension_growth_and_shrink() {
         &mut workspace,
     )
     .unwrap();
-    assert_eq!(report.dimension, 1);
-    assert_eq!(report.fused.len(), 1);
-    assert_eq!(report.columns.len(), 5);
-    assert!(report.columns.iter().all(|column| column.len() == 1));
+    assert_eq!(report.dimension(), 1);
+    assert_eq!(report.fused().len(), 1);
+    assert_eq!(report.columns().len(), 5);
+    assert!(report.columns().iter().all(|column| column.len() == 1));
 }
 
 #[test]
@@ -310,10 +310,10 @@ fn test_a04_failed_dimension_change_preserves_last_successful_report() {
         &mut workspace,
     )
     .unwrap();
-    let committed = workspace.report.as_ref().unwrap().clone();
-    assert_eq!(committed.dimension, 2);
-    assert_eq!(committed.columns.len(), JOINT_PHI_TERMS);
-    assert_eq!(committed.fused.len(), 2);
+    let committed = workspace.report().unwrap().clone();
+    assert_eq!(committed.dimension(), 2);
+    assert_eq!(committed.columns().len(), JOINT_PHI_TERMS);
+    assert_eq!(committed.fused().len(), 2);
 
     // The new operator has dimension one, but the candidate input is still
     // dimension two. This fails after workspace scratch is resized and must
@@ -334,7 +334,7 @@ fn test_a04_failed_dimension_change_preserves_last_successful_report() {
         &mut workspace,
     );
     assert!(err.is_err());
-    assert_eq!(workspace.report.as_ref().unwrap(), &committed);
+    assert_eq!(workspace.report().unwrap(), &committed);
 
     // A call rejected before any dimension-dependent work has the same
     // transactional guarantee, including status and attempted-work report.
@@ -352,7 +352,7 @@ fn test_a04_failed_dimension_change_preserves_last_successful_report() {
         &mut workspace,
     );
     assert!(err.is_err());
-    assert_eq!(workspace.report.as_ref().unwrap(), &committed);
+    assert_eq!(workspace.report().unwrap(), &committed);
 }
 
 #[test]
@@ -368,16 +368,70 @@ fn test_a04_scalar_interval_coefficients_match_reference_at_nonzero_center() {
     let mut work = WorkCounters::default();
     let report = leja_phi_action_certified(&op, 0.25, input, 1e-8, &mut work).unwrap();
     assert!(
-        (report.fused[0] - reference[0]).abs() <= 1e-14,
+        (report.fused()[0] - reference[0]).abs() <= 1e-14,
         "actual={} reference={} diff={:e}",
-        report.fused[0],
+        report.fused()[0],
         reference[0],
-        (report.fused[0] - reference[0]).abs()
+        (report.fused()[0] - reference[0]).abs()
     );
     assert!(matches!(
         report.total_error(),
         TotalErrorStatus::EstimateOnly { .. }
     ));
+}
+
+#[test]
+fn test_a04_report_serialization_preserves_exact_schema_and_estimate_status() {
+    let mut matrix = DenseMatrix::zeros(1, 1);
+    matrix[(0, 0)] = -1.0;
+    let op = SymmetricNonpositiveOperator::gershgorin(matrix).unwrap();
+    let vector = [0.25];
+    let scales = [1.0, 0.5, -0.25, 2.0, -1.0];
+    let input = JointPhiInput::SameVector {
+        vector: &vector,
+        scales,
+    };
+    let mut work = WorkCounters::default();
+    let report = leja_phi_action_certified(&op, 0.0, input, 1.0, &mut work).unwrap();
+
+    let total_error = match report.total_error() {
+        TotalErrorStatus::EstimateOnly {
+            reason,
+            bounded_components,
+        } => serde_json::json!({
+            "status": "estimate-only",
+            "reason": reason,
+            "bounded_components": bounded_components,
+        }),
+        TotalErrorStatus::Certified { .. } => panic!("Leja total authority must remain held"),
+    };
+    let expected = serde_json::json!({
+        "schema": report.schema(),
+        "input": report.input(),
+        "branch": report.branch(),
+        "dimension": report.dimension(),
+        "degree": report.degree(),
+        "degree_cap": report.degree_cap(),
+        "converged": report.converged(),
+        "interval": report.interval(),
+        "center": report.center(),
+        "scale": report.scale(),
+        "total_budget": report.total_budget(),
+        "total_bound": report.total_bound(),
+        "truncation_bound": report.truncation_bound(),
+        "divided_difference_bound": report.divided_difference_bound(),
+        "recurrence_bound": report.recurrence_bound(),
+        "summation_bound": report.summation_bound(),
+        "columns": report.columns(),
+        "fused": report.fused(),
+        "total_error": total_error,
+        "evidence": report.evidence(),
+        "vector_products": report.vector_products(),
+        "block_products": report.block_products(),
+        "coefficient_setups": report.coefficient_setups(),
+        "certification_ops": report.certification_ops(),
+    });
+    assert_eq!(serde_json::to_value(&report).unwrap(), expected);
 }
 
 // -----------------------------------------------------------------------------
@@ -397,32 +451,32 @@ fn test_vg2_zero_slack_budget_and_enclosure_distinct() {
     let report: CertifiedLejaReport =
         leja_phi_action_certified(&op, h, input, budget, &mut work).unwrap();
 
-    assert_eq!(report.schema, LEJA_CERTIFIED_SCHEMA);
-    assert!(report.converged, "must converge under 1e-8 budget");
+    assert_eq!(report.schema(), LEJA_CERTIFIED_SCHEMA);
+    assert!(report.converged(), "must converge under 1e-8 budget");
 
     // Zero slack assertion: total_bound <= budget
     assert!(
-        report.total_bound <= budget,
+        report.total_bound() <= budget,
         "zero slack violation: total_bound {} > budget {}",
-        report.total_bound,
+        report.total_bound(),
         budget
     );
 
-    // Verified enclosure: ||report.fused - reference||_2 <= total_bound
+    // Verified enclosure: ||report.fused() - reference||_2 <= total_bound
     let dense_ref = dense_phi_combination(op.matrix(), h, &w_vecs).unwrap();
     let actual_diff = safe_l2(
         &report
-            .fused
+            .fused()
             .iter()
             .zip(&dense_ref)
             .map(|(a, b)| a - b)
             .collect::<Vec<_>>(),
     );
     assert!(
-        actual_diff <= report.total_bound,
+        actual_diff <= report.total_bound(),
         "enclosure violation: actual error {} > certified bound {}",
         actual_diff,
-        report.total_bound
+        report.total_bound()
     );
 }
 
@@ -440,11 +494,11 @@ fn test_vg2_zero_slack_budget_and_enclosure_same_vector() {
     let report: CertifiedLejaReport =
         leja_phi_action_certified(&op, h, input, budget, &mut work).unwrap();
 
-    assert!(report.converged, "must converge under 1e-9 budget");
+    assert!(report.converged(), "must converge under 1e-9 budget");
     assert!(
-        report.total_bound <= budget,
+        report.total_bound() <= budget,
         "zero slack violation: total_bound {} > budget {}",
-        report.total_bound,
+        report.total_bound(),
         budget
     );
 
@@ -454,17 +508,17 @@ fn test_vg2_zero_slack_budget_and_enclosure_same_vector() {
     let dense_ref = dense_phi_combination(op.matrix(), h, &distinct_w).unwrap();
     let actual_diff = safe_l2(
         &report
-            .fused
+            .fused()
             .iter()
             .zip(&dense_ref)
             .map(|(a, b)| a - b)
             .collect::<Vec<_>>(),
     );
     assert!(
-        actual_diff <= report.total_bound,
+        actual_diff <= report.total_bound(),
         "enclosure violation for same-vector: actual error {} > certified bound {}",
         actual_diff,
-        report.total_bound
+        report.total_bound()
     );
 }
 
@@ -636,18 +690,18 @@ fn test_vg3_speculative_work_preservation_on_budget_failure() {
     let report =
         leja_phi_action_certified_capped(&op, h, input, impossible_budget, cap, &mut work).unwrap();
 
-    assert!(!report.converged, "must not converge under budget 1e-300");
-    assert_eq!(report.degree, cap);
+    assert!(!report.converged(), "must not converge under budget 1e-300");
+    assert_eq!(report.degree(), cap);
     assert!(matches!(
         report.total_error(),
         TotalErrorStatus::EstimateOnly { .. }
     ));
 
     // Speculative work must be recorded in full in WorkCounters and report
-    assert_eq!(report.degree, cap);
-    assert_eq!(report.block_products, cap as u64);
-    assert_eq!(report.vector_products, cap as u64); // width = 1 for SameVector
-    assert_eq!(report.coefficient_setups, 1);
+    assert_eq!(report.degree(), cap);
+    assert_eq!(report.block_products(), cap as u64);
+    assert_eq!(report.vector_products(), cap as u64); // width = 1 for SameVector
+    assert_eq!(report.coefficient_setups(), 1);
 
     assert_eq!(work.poly_block_products, cap as u64);
     assert_eq!(work.poly_vector_products, cap as u64);
@@ -672,14 +726,14 @@ fn test_vg2_dense_eigendecomposition_enclosure() {
     let budget = 1e-8;
     let mut work = WorkCounters::default();
     let report = leja_phi_action_certified(&op, h, input, budget, &mut work).unwrap();
-    assert!(report.converged);
+    assert!(report.converged());
 
     // Independent reference: dense fused phi action (via Schur / matrix exp)
     let exact_fused = dense_phi_combination(&a, h, &vectors).unwrap();
 
     let mut diff = vec![0.0; n];
     for i in 0..n {
-        diff[i] = report.fused[i] - exact_fused[i];
+        diff[i] = report.fused()[i] - exact_fused[i];
     }
     let actual_error = safe_l2(&diff);
 
@@ -730,7 +784,7 @@ fn test_vg3_work_preservation_on_all_error_paths() {
     let cap = 5;
     let rep_capped =
         leja_phi_action_certified_capped(&op, 0.1, input, 1e-300, cap, &mut work_flushed).unwrap();
-    assert!(!rep_capped.converged);
+    assert!(!rep_capped.converged());
     assert_eq!(work_flushed.poly_block_products, cap as u64);
     assert_eq!(work_flushed.poly_vector_products, cap as u64);
     assert_eq!(work_flushed.poly_coefficient_setups, 1);

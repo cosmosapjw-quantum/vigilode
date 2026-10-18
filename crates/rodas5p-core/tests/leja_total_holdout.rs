@@ -61,9 +61,9 @@ fn test_leja_holdout_smoke() {
     let mut work_cert = WorkCounters::default();
     let rep_cert = leja_phi_action_certified(&op, h, input, budget, &mut work_cert)
         .expect("certified action succeeds");
-    assert!(rep_cert.converged);
-    assert!(rep_cert.total_bound <= budget);
-    assert_eq!(rep_cert.fused.len(), n);
+    assert!(rep_cert.converged());
+    assert!(rep_cert.total_bound() <= budget);
+    assert_eq!(rep_cert.fused().len(), n);
 
     let mut work_cheb = WorkCounters::default();
     let rep_cheb = joint_phi_action(
@@ -268,14 +268,17 @@ fn export_runs() {
                         };
                         match res {
                             Ok(rep) => {
-                                let adm = rep.converged && rep.total_bound <= budget;
+                                let adm = rep.converged() && rep.total_bound() <= budget;
                                 (
                                     adm,
                                     "certified",
-                                    rep.fused,
-                                    Some(rep.total_bound),
-                                    rep.degree,
-                                    rep.vector_products as usize,
+                                    // This holdout harness owns a row snapshot; copying the
+                                    // immutable report slice is diagnostic setup work, not a
+                                    // solver hot-loop or performance-parity measurement.
+                                    rep.fused().to_vec(),
+                                    Some(rep.total_bound()),
+                                    rep.degree(),
+                                    rep.vector_products() as usize,
                                     if adm { 0 } else { 1 },
                                 )
                             }

@@ -1191,35 +1191,87 @@ impl CertifiedLejaCoeffCache {
 /// Newton-Leja diagnostic report retaining the historical API name.
 /// `total_error()` is EstimateOnly while the total arithmetic proof is on hold;
 /// convergence means the computed component sum met the budget.
+///
+/// The report is immutable through the public API so its payload cannot become
+/// detached from a future total-error authority status. Serialization retains
+/// the historical field names and values.
+///
+/// ```compile_fail
+/// use rodas5p_core::leja_action::CertifiedLejaReport;
+/// fn mutate_payload(report: &mut CertifiedLejaReport) {
+///     report.total_bound = 0.0;
+///     report.fused[0] = 0.0;
+/// }
+/// ```
+///
+/// ```compile_fail
+/// use rodas5p_core::leja_action::CertifiedLejaReport;
+/// fn mutate_status(report: &mut CertifiedLejaReport) {
+///     report.total_error = unimplemented!();
+/// }
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct CertifiedLejaReport {
-    pub schema: String,
-    pub input: String,
-    pub branch: String,
-    pub dimension: usize,
-    pub degree: usize,
-    pub degree_cap: usize,
-    pub converged: bool,
-    pub interval: [f64; 2],
-    pub center: f64,
-    pub scale: f64,
-    pub total_budget: f64,
-    pub total_bound: f64,
-    pub truncation_bound: f64,
-    pub divided_difference_bound: f64,
-    pub recurrence_bound: f64,
-    pub summation_bound: f64,
-    pub columns: Vec<Vec<f64>>,
-    pub fused: Vec<f64>,
+    schema: String,
+    input: String,
+    branch: String,
+    dimension: usize,
+    degree: usize,
+    degree_cap: usize,
+    converged: bool,
+    interval: [f64; 2],
+    center: f64,
+    scale: f64,
+    total_budget: f64,
+    total_bound: f64,
+    truncation_bound: f64,
+    divided_difference_bound: f64,
+    recurrence_bound: f64,
+    summation_bound: f64,
+    columns: Vec<Vec<f64>>,
+    fused: Vec<f64>,
     total_error: TotalErrorStatus,
-    pub evidence: EnclosureEvidence,
-    pub vector_products: u64,
-    pub block_products: u64,
-    pub coefficient_setups: u64,
-    pub certification_ops: u64,
+    evidence: EnclosureEvidence,
+    vector_products: u64,
+    block_products: u64,
+    coefficient_setups: u64,
+    certification_ops: u64,
 }
 
 impl CertifiedLejaReport {
+    pub fn schema(&self) -> &str {
+        &self.schema
+    }
+    pub fn input(&self) -> &str {
+        &self.input
+    }
+    pub fn branch(&self) -> &str {
+        &self.branch
+    }
+    pub const fn dimension(&self) -> usize {
+        self.dimension
+    }
+    pub const fn degree(&self) -> usize {
+        self.degree
+    }
+    pub const fn degree_cap(&self) -> usize {
+        self.degree_cap
+    }
+    pub const fn converged(&self) -> bool {
+        self.converged
+    }
+    pub const fn interval(&self) -> [f64; 2] {
+        self.interval
+    }
+    pub const fn center(&self) -> f64 {
+        self.center
+    }
+    pub const fn scale(&self) -> f64 {
+        self.scale
+    }
+    pub const fn total_budget(&self) -> f64 {
+        self.total_budget
+    }
     pub fn total_error(&self) -> &TotalErrorStatus {
         &self.total_error
     }
@@ -1238,11 +1290,40 @@ impl CertifiedLejaReport {
     pub fn summation_bound(&self) -> f64 {
         self.summation_bound
     }
+    pub fn columns(&self) -> &[Vec<f64>] {
+        &self.columns
+    }
+    pub fn fused(&self) -> &[f64] {
+        &self.fused
+    }
+    pub fn evidence(&self) -> &EnclosureEvidence {
+        &self.evidence
+    }
+    pub const fn vector_products(&self) -> u64 {
+        self.vector_products
+    }
+    pub const fn block_products(&self) -> u64 {
+        self.block_products
+    }
+    pub const fn coefficient_setups(&self) -> u64 {
+        self.coefficient_setups
+    }
+    pub const fn certification_ops(&self) -> u64 {
+        self.certification_ops
+    }
 }
 
 /// Pre-allocated workspace for certified Leja phi action.
 ///
 /// Ensures zero heap allocations in the degree/recurrence inner loops.
+/// Its last successful report is exposed through an immutable getter only.
+///
+/// ```compile_fail
+/// use rodas5p_core::leja_action::CertifiedLejaWorkspace;
+/// fn replace_report(workspace: &mut CertifiedLejaWorkspace) {
+///     workspace.report = None;
+/// }
+/// ```
 #[derive(Clone, Debug)]
 pub struct CertifiedLejaWorkspace {
     pub current: Vec<Vec<f64>>,
@@ -1259,7 +1340,7 @@ pub struct CertifiedLejaWorkspace {
     local_defect: Vec<f64>,
     pub r_norms: [[f64; JOINT_PHI_TERMS]; LEJA_DEGREE_CAP + 1],
     pub residuals: [[f64; JOINT_PHI_TERMS]; LEJA_DEGREE_CAP],
-    pub report: Option<CertifiedLejaReport>,
+    report: Option<CertifiedLejaReport>,
     last_certification_ops: u64,
 }
 
@@ -1410,6 +1491,11 @@ impl CertifiedLejaWorkspace {
     /// including attempts refused after certificate work has begun.
     pub fn last_certification_ops(&self) -> u64 {
         self.last_certification_ops
+    }
+
+    /// Returns the last successfully committed report without mutable access.
+    pub fn report(&self) -> Option<&CertifiedLejaReport> {
+        self.report.as_ref()
     }
 }
 
