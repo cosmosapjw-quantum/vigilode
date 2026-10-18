@@ -20,11 +20,13 @@ use serde::{Deserialize, Serialize};
 
 use crate::collective_model::CollectiveModel;
 use crate::packet_window::{
-    CausalWeights, compile_packet, compute_certificate, generate_candidate, reconstruct_modes,
+    CausalWeights, OutwardPacketRequest, PacketError, compile_packet, compute_certificate,
+    generate_candidate, reconstruct_modes, reconstruct_outward_at_times,
 };
 use crate::packet_work::PacketWorkCounters;
-use rodas5p_core::directed::{add_up, mul_up, sqrt_up};
+use rodas5p_core::directed::{Interval, add_up, mul_up, sqrt_up};
 use rodas5p_core::{CoreError, CoreResult};
+use thiserror::Error;
 
 /// Output reporting policy.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -125,6 +127,324 @@ pub struct PacketTrajectoryResult {
     pub accepted_steps: usize,
     pub rejected_steps: usize,
     pub work: PacketWorkCounters,
+}
+
+/// A provisional point on the linear outward trajectory. Its radii are
+/// computed around the returned centers and transport initial uncertainty,
+/// but have no certified authority while `roundoff_enclosed` is false.
+#[derive(Clone, Debug, PartialEq)]
+pub struct LinearOutwardPoint {
+    pub t: f64,
+    pub mean: (f64, f64),
+    pub mean_radius: f64,
+    pub modes: Option<Vec<(f64, f64)>>,
+    pub mode_radii: Option<Vec<f64>>,
+}
+
+/// Scoped result for the linear member of the packet family. Authority stays
+/// false until the local outward primitive and its composition are reviewed.
+#[derive(Clone, Debug, PartialEq)]
+pub struct LinearOutwardTrajectory {
+    pub roundoff_enclosed: bool,
+    pub observations: Vec<LinearOutwardPoint>,
+    pub endpoints: Vec<LinearOutwardPoint>,
+    pub accepted_steps: usize,
+    pub rejected_steps: usize,
+    pub work: PacketWorkCounters,
+}
+
+/// Typed refusal for unsupported models, time grids, and adaptive exhaustion.
+#[derive(Clone, Debug, PartialEq, Error)]
+pub enum LinearTrajectoryRefusal {
+    #[error("linear outward trajectory requires chi = kappa = 0")]
+    UnsupportedModel,
+    #[error("invalid linear outward trajectory request: {0}")]
+    InvalidInput(&'static str),
+    #[error("requested times do not admit exact binary64 local offsets")]
+    NonExactTimeGrid,
+    #[error("linear outward packet refused: {0}")]
+    Packet(#[from] PacketError),
+    #[error("adaptive linear outward trajectory exhausted its step limit")]
+    StepLimit,
+    #[error("adaptive linear outward trajectory reached its minimum step")]
+    MinimumStep,
+}
+
+fn exact_offset(t: f64, origin: f64) -> Result<f64, LinearTrajectoryRefusal> {
+    let offset = t - origin;
+    let exact = Interval::point(t)
+        .and_then(|a| a.sub(Interval::point(origin)?))
+        .map_err(|_| LinearTrajectoryRefusal::NonExactTimeGrid)?;
+    if !offset.is_finite() || exact.lo != offset || exact.hi != offset {
+        return Err(LinearTrajectoryRefusal::NonExactTimeGrid);
+    }
+    Ok(offset)
+}
+
+fn outward_point(
+    output: &crate::packet_window::OutwardPacketOutput,
+    index: usize,
+    t: f64,
+    n: usize,
+    policy: OutputPolicy,
+) -> Result<LinearOutwardPoint, LinearTrajectoryRefusal> {
+    let start = index
+        .checked_mul(n)
+        .ok_or(LinearTrajectoryRefusal::InvalidInput(
+            "output index overflow",
+        ))?;
+    let end = start
+        .checked_add(n)
+        .ok_or(LinearTrajectoryRefusal::InvalidInput(
+            "output index overflow",
+        ))?;
+    let modes = output
+        .modes
+        .get(start..end)
+        .ok_or(LinearTrajectoryRefusal::InvalidInput(
+            "outward output shape",
+        ))?;
+    let radii = output
+        .mode_radii
+        .get(start..end)
+        .ok_or(LinearTrajectoryRefusal::InvalidInput(
+            "outward radius shape",
+        ))?;
+    let mean = *output
+        .means
+        .get(index)
+        .ok_or(LinearTrajectoryRefusal::InvalidInput("outward mean shape"))?;
+    let mean_radius =
+        *output
+            .mean_radii
+            .get(index)
+            .ok_or(LinearTrajectoryRefusal::InvalidInput(
+                "outward mean radius shape",
+            ))?;
+    Ok(LinearOutwardPoint {
+        t,
+        mean,
+        mean_radius,
+        modes: (policy == OutputPolicy::AllModes).then(|| modes.to_vec()),
+        mode_radii: (policy == OutputPolicy::AllModes).then(|| radii.to_vec()),
+    })
+}
+
+/// Composes A01's local pointwise outward enclosures for the exactly linear
+/// family. The exact time-offset gate avoids silently relabeling a local
+/// enclosure at a rounded time as one at the requested global time. A rejected
+/// trial commits no state or output; its packet work remains in `work`.
+pub fn run_linear_outward_trajectory(
+    model: &CollectiveModel,
+    initial_radii: Option<&[f64]>,
+    config: &TrajectoryConfig,
+    requested_times: &[f64],
+    work: &mut PacketWorkCounters,
+) -> Result<LinearOutwardTrajectory, LinearTrajectoryRefusal> {
+    if model.chi() != 0.0 || model.kappa() != 0.0 {
+        return Err(LinearTrajectoryRefusal::UnsupportedModel);
+    }
+    TrajectoryConfig::new(
+        config.t_start,
+        config.t_end,
+        config.initial_h,
+        config.mean_tolerance,
+        config.mode_tolerance,
+    )
+    .map_err(|_| LinearTrajectoryRefusal::InvalidInput("nonfinite time, step or tolerance"))?;
+    if !config.min_h.is_finite()
+        || config.min_h <= 0.0
+        || !config.max_h.is_finite()
+        || config.max_h < config.min_h
+        || config.degree < config.order
+        || config.sweeps == 0
+        || config.max_steps == 0
+        || config.degree.checked_mul(3).is_none()
+        || config.order.checked_add(1).is_none()
+        || config.degree.checked_add(1).is_none()
+        || config
+            .degree
+            .checked_mul(3)
+            .and_then(|n| n.checked_add(1))
+            .is_none()
+    {
+        return Err(LinearTrajectoryRefusal::InvalidInput(
+            "invalid packet configuration",
+        ));
+    }
+    if requested_times
+        .iter()
+        .any(|t| !t.is_finite() || *t < config.t_start || *t > config.t_end)
+        || requested_times.windows(2).any(|pair| pair[0] >= pair[1])
+    {
+        return Err(LinearTrajectoryRefusal::InvalidInput(
+            "requested times must be finite, ordered and in range",
+        ));
+    }
+    let n = model.num_modes();
+    let mut radii = match initial_radii {
+        Some(input) if input.len() == n && input.iter().all(|r| r.is_finite() && *r >= 0.0) => {
+            input.to_vec()
+        }
+        Some(_) => {
+            return Err(LinearTrajectoryRefusal::InvalidInput(
+                "invalid initial radii",
+            ));
+        }
+        None => vec![0.0; n],
+    };
+    let table = CausalWeights::compile(config.order, 3 * config.degree);
+    let mut current = model.clone();
+    let mut t = config.t_start;
+    let mut h = config.initial_h.min(config.max_h);
+    let mut observations = Vec::with_capacity(requested_times.len() + 2);
+    let mut endpoints = Vec::new();
+    let mut next_request = 0;
+    let mut accepted_steps = 0;
+    let mut rejected_steps = 0;
+    let mut last_packet_error = None;
+    while t < config.t_end {
+        if accepted_steps + rejected_steps >= config.max_steps {
+            return Err(LinearTrajectoryRefusal::StepLimit);
+        }
+        let remaining = exact_offset(config.t_end, t)?;
+        let step_h = h.min(remaining);
+        if step_h < config.min_h || t + step_h <= t {
+            return Err(last_packet_error
+                .map(LinearTrajectoryRefusal::Packet)
+                .unwrap_or(LinearTrajectoryRefusal::MinimumStep));
+        }
+        let next_t = t + step_h;
+        let exact_next = Interval::exact_sum(t, step_h)
+            .map_err(|_| LinearTrajectoryRefusal::NonExactTimeGrid)?;
+        if exact_next.lo != next_t || exact_next.hi != next_t {
+            return Err(LinearTrajectoryRefusal::NonExactTimeGrid);
+        }
+        let mut local_times = Vec::new();
+        let first = endpoints.is_empty();
+        if first {
+            local_times.push(0.0);
+        }
+        let mut count_request = 0;
+        while next_request + count_request < requested_times.len()
+            && requested_times[next_request + count_request] < next_t
+        {
+            let requested = requested_times[next_request + count_request];
+            if requested > t {
+                local_times.push(exact_offset(requested, t)?);
+            }
+            count_request += 1;
+        }
+        local_times.push(step_h);
+        let attempt = (|| -> Result<_, PacketError> {
+            let packet = compile_packet(&current, step_h, config.order, work)?;
+            let candidate =
+                generate_candidate(&packet, config.degree, config.sweeps, &table, work)?;
+            reconstruct_outward_at_times(
+                &candidate,
+                &packet,
+                OutwardPacketRequest {
+                    times: &local_times,
+                    initial_radii: &radii,
+                },
+                work,
+            )
+        })();
+        let output = match attempt {
+            Ok(output) => output,
+            Err(error) => {
+                last_packet_error = Some(error);
+                rejected_steps += 1;
+                h = step_h * 0.5;
+                continue;
+            }
+        };
+        last_packet_error = None;
+        let last = local_times.len() - 1;
+        let start = last * n;
+        let endpoint_radii = output.mode_radii.get(start..start + n).ok_or(
+            LinearTrajectoryRefusal::InvalidInput("outward endpoint shape"),
+        )?;
+        let endpoint_mean_radius =
+            output
+                .mean_radii
+                .get(last)
+                .ok_or(LinearTrajectoryRefusal::InvalidInput(
+                    "outward endpoint mean shape",
+                ))?;
+        if *endpoint_mean_radius > config.mean_tolerance
+            || endpoint_radii.iter().any(|r| *r > config.mode_tolerance)
+        {
+            rejected_steps += 1;
+            h = step_h * 0.5;
+            continue;
+        }
+        let endpoint_modes =
+            output
+                .modes
+                .get(start..start + n)
+                .ok_or(LinearTrajectoryRefusal::InvalidInput(
+                    "outward endpoint shape",
+                ))?;
+        let next_model = match CollectiveModel::new(
+            current.xi().to_vec(),
+            current.weights().to_vec(),
+            endpoint_modes.to_vec(),
+            current.width(),
+            current.chi(),
+            current.carrier(),
+            current.kappa(),
+        ) {
+            Ok(next) => next,
+            Err(_) => {
+                rejected_steps += 1;
+                h = step_h * 0.5;
+                continue;
+            }
+        };
+        let mut index = 0;
+        if first {
+            let initial = outward_point(&output, 0, t, n, config.output_policy)?;
+            observations.push(initial.clone());
+            endpoints.push(initial);
+            index += 1;
+        }
+        for requested in &requested_times[next_request..next_request + count_request] {
+            if *requested > t {
+                observations.push(outward_point(
+                    &output,
+                    index,
+                    *requested,
+                    n,
+                    config.output_policy,
+                )?);
+                index += 1;
+            }
+        }
+        let endpoint = outward_point(&output, last, next_t, n, config.output_policy)?;
+        if requested_times.get(next_request + count_request) == Some(&next_t) {
+            observations.push(endpoint.clone());
+            count_request += 1;
+        }
+        endpoints.push(endpoint.clone());
+        if next_t == config.t_end && observations.last().map(|p| p.t) != Some(next_t) {
+            observations.push(endpoint);
+        }
+        next_request += count_request;
+        t = next_t;
+        current = next_model;
+        radii.copy_from_slice(endpoint_radii);
+        accepted_steps += 1;
+        h = step_h;
+    }
+    Ok(LinearOutwardTrajectory {
+        roundoff_enclosed: false,
+        observations,
+        endpoints,
+        accepted_steps,
+        rejected_steps,
+        work: *work,
+    })
 }
 
 fn complex_mean(weights: &[f64], z: &[(f64, f64)]) -> (f64, f64) {

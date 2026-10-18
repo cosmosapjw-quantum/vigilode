@@ -79,7 +79,7 @@ use std::sync::OnceLock;
 use serde::Serialize;
 
 use crate::{
-    CoreError, CoreResult, DenseOperator, LinearOperator, WorkCounters,
+    CoreError, CoreResult, DenseMatrix, DenseOperator, LinearOperator, WorkCounters,
     directed::{
         Interval, add_down, add_up, div_down, div_up, exp_interval, mul_down, mul_up, sqrt_up,
         sub_down, sub_up,
@@ -93,9 +93,9 @@ use crate::{
 pub const LEJA_SCHEMA: &str = "vigilode-leja-phi-action-v1";
 /// The reason of every Leja total: an estimate, never a certificate.
 pub const LEJA_TOTAL_NOT_CERTIFIED: &str = "LEJA_TOTAL_NOT_CERTIFIED";
-/// The total rounding derivation must account for additive underflow before
-/// unrestricted binary64 inputs can carry certificate authority.
-pub const LEJA_ARITHMETIC_HOLD: &str = "LEJA_ARITHMETIC_HOLD: no complete additive-underflow model connecting operator products, recurrence, coefficient-weighted sums, and final output scaling/fusion";
+/// Total authority remains held until independent review accepts the interval
+/// replay and its complete finite-domain/coefficient-tail premises.
+pub const LEJA_ARITHMETIC_HOLD: &str = "LEJA_ARITHMETIC_HOLD: outward replay implementation awaits independent review of arithmetic-domain and coefficient-tail premises";
 /// Prefix of every input or domain error of this module.
 pub const LEJA_INPUT_UNSUPPORTED: &str = "LEJA_INPUT_UNSUPPORTED";
 /// The largest Newton degree (operator products per block column).
@@ -573,12 +573,179 @@ fn certificate_l2_upper(x: &[f64], ops: &mut u64) -> CoreResult<f64> {
     }
     let mut sum = 0.0;
     for &value in x {
+        *ops = ops.saturating_add(3);
         let normalized = div_up(value.abs(), scale)?;
         sum = add_up(sum, mul_up(normalized, normalized)?)?;
-        *ops = ops.saturating_add(3);
     }
     *ops = ops.saturating_add(2);
     mul_up(scale, sqrt_up(sum)?)
+}
+
+/// Enclose the exact matrix-vector product of the represented matrix and vector.
+/// This is deliberately replayed independently of `DenseMatrix::matvec_into`:
+/// its interval result lets the caller bound the actual local arithmetic defect,
+/// including additive underflow and cancellation.
+fn matvec_interval_into(
+    matrix: &DenseMatrix,
+    x: &[f64],
+    lo: &mut [f64],
+    hi: &mut [f64],
+    ops: &mut u64,
+) -> CoreResult<()> {
+    if matrix.ncols() != x.len() || lo.len() != matrix.nrows() || hi.len() != matrix.nrows() {
+        return Err(CoreError::Dimension(
+            "Leja interval matvec shape mismatch".into(),
+        ));
+    }
+    for i in 0..matrix.nrows() {
+        let mut acc = Interval::point(0.0)?;
+        for (&a, &xj) in matrix.row(i).iter().zip(x) {
+            *ops = ops.saturating_add(16);
+            acc = acc.add(Interval::point(a)?.mul(Interval::point(xj)?)?)?;
+        }
+        lo[i] = acc.lo;
+        hi[i] = acc.hi;
+    }
+    Ok(())
+}
+
+#[inline]
+fn interval_distance_upper(value: f64, interval: Interval) -> CoreResult<f64> {
+    let to_lo = if value >= interval.lo {
+        sub_up(value, interval.lo)?
+    } else {
+        sub_up(interval.lo, value)?
+    };
+    let to_hi = if value >= interval.hi {
+        sub_up(value, interval.hi)?
+    } else {
+        sub_up(interval.hi, value)?
+    };
+    Ok(to_lo.max(to_hi))
+}
+
+fn normalized_spectral_support(a: f64, b: f64, center: f64, scale: f64) -> CoreResult<Interval> {
+    if !(scale.is_finite() && scale > 0.0) {
+        return Err(unsupported(
+            "normalized spectral support requires a positive finite scale",
+        ));
+    }
+    Interval::new(a, b)?
+        .sub(Interval::point(center)?)?
+        .div(Interval::point(scale)?)
+}
+
+fn enlarge_scale_for_normalized_support(
+    a: f64,
+    b: f64,
+    center: f64,
+    mut scale: f64,
+    ops: &mut u64,
+) -> CoreResult<(f64, Interval)> {
+    for _ in 0..64 {
+        *ops = ops.saturating_add(18);
+        let support = normalized_spectral_support(a, b, center, scale)?;
+        if support.lo >= -2.0 && support.hi <= 2.0 {
+            return Ok((scale, support));
+        }
+        *ops = ops.saturating_add(12);
+        let centered = Interval::new(a, b)?.sub(Interval::point(center)?)?;
+        let required = div_up(centered.mag(), 2.0)?;
+        let enlarged = scale.max(required).next_up();
+        if !enlarged.is_finite() || enlarged <= scale {
+            break;
+        }
+        scale = enlarged;
+    }
+    Err(unsupported(
+        "outward normalized spectral support cannot be enclosed in [-2, 2]",
+    ))
+}
+
+/// Update an ordinary coefficient sum and its exact outward replay in parallel.
+/// The interval encloses the real sum of the represented coefficient and the
+/// represented basis vector values; its distance from `sum` is the local
+/// additive summation/product defect, including underflow.
+fn accumulate_coefficient_term(
+    sum: &mut [f64],
+    sum_lo: &mut [f64],
+    sum_hi: &mut [f64],
+    coefficient: f64,
+    basis: &[f64],
+    ops: &mut u64,
+) -> CoreResult<()> {
+    if sum.len() != basis.len() || sum_lo.len() != sum.len() || sum_hi.len() != sum.len() {
+        return Err(CoreError::Dimension(
+            "Leja coefficient accumulation shape mismatch".into(),
+        ));
+    }
+    *ops = ops.saturating_add(1);
+    let coeff = Interval::point(coefficient)?;
+    for i in 0..sum.len() {
+        *ops = ops.saturating_add(16);
+        let exact_term = coeff.mul(Interval::point(basis[i])?)?;
+        let exact_sum = Interval::new(sum_lo[i], sum_hi[i])?.add(exact_term)?;
+        sum[i] += coefficient * basis[i];
+        if !sum[i].is_finite() {
+            return Err(CoreError::NonFinite(
+                "Leja coefficient accumulation produced NaN/Inf".into(),
+            ));
+        }
+        sum_lo[i] = exact_sum.lo;
+        sum_hi[i] = exact_sum.hi;
+    }
+    Ok(())
+}
+
+/// Replay column scaling and final fusion in interval arithmetic while writing
+/// the same rounded output arrays returned by the action. The returned norm
+/// encloses the complete computed-output minus exact represented-sum defect.
+#[allow(clippy::too_many_arguments)]
+fn replay_scaled_fusion(
+    scales: &[f64; JOINT_PHI_TERMS],
+    sums: &[Vec<f64>],
+    sums_lo: &[Vec<f64>],
+    sums_hi: &[Vec<f64>],
+    columns: &mut [Vec<f64>],
+    fused: &mut [f64],
+    out_lo: &mut [f64],
+    out_hi: &mut [f64],
+    defects: &mut [f64],
+    n: usize,
+    ops: &mut u64,
+) -> CoreResult<f64> {
+    fused[..n].fill(0.0);
+    out_lo[..n].fill(0.0);
+    out_hi[..n].fill(0.0);
+    for k in 0..JOINT_PHI_TERMS {
+        let scale = scales[k];
+        for i in 0..n {
+            *ops = ops.saturating_add(16);
+            let rounded_column = scale * sums[k][i];
+            if !rounded_column.is_finite() {
+                return Err(CoreError::NonFinite(
+                    "Leja output scaling produced NaN/Inf".into(),
+                ));
+            }
+            columns[k][i] = rounded_column;
+            fused[i] += rounded_column;
+            let exact_column =
+                Interval::new(sums_lo[k][i], sums_hi[k][i])?.mul(Interval::point(scale)?)?;
+            let exact_fused = Interval::new(out_lo[i], out_hi[i])?.add(exact_column)?;
+            out_lo[i] = exact_fused.lo;
+            out_hi[i] = exact_fused.hi;
+        }
+    }
+    for i in 0..n {
+        *ops = ops.saturating_add(4);
+        if !fused[i].is_finite() {
+            return Err(CoreError::NonFinite(
+                "Leja output fusion produced NaN/Inf".into(),
+            ));
+        }
+        defects[i] = interval_distance_upper(fused[i], Interval::new(out_lo[i], out_hi[i])?)?;
+    }
+    certificate_l2_upper(&defects[..n], ops)
 }
 
 /// Allocation-free directed coefficients `phi_k(c)` for the zero-width
@@ -1059,12 +1226,20 @@ impl CertifiedLejaReport {
 pub struct CertifiedLejaWorkspace {
     pub current: Vec<Vec<f64>>,
     pub product: Vec<Vec<f64>>,
+    product_lo: Vec<Vec<f64>>,
+    product_hi: Vec<Vec<f64>>,
     pub sums: Vec<Vec<f64>>,
+    sums_lo: Vec<Vec<f64>>,
+    sums_hi: Vec<Vec<f64>>,
     pub columns: Vec<Vec<f64>>,
     pub fused: Vec<f64>,
+    output_lo: Vec<f64>,
+    output_hi: Vec<f64>,
+    local_defect: Vec<f64>,
     pub r_norms: [[f64; JOINT_PHI_TERMS]; LEJA_DEGREE_CAP + 1],
     pub residuals: [[f64; JOINT_PHI_TERMS]; LEJA_DEGREE_CAP],
     pub report: Option<CertifiedLejaReport>,
+    last_certification_ops: u64,
 }
 
 impl Default for CertifiedLejaWorkspace {
@@ -1072,12 +1247,20 @@ impl Default for CertifiedLejaWorkspace {
         Self {
             current: Vec::new(),
             product: Vec::new(),
+            product_lo: Vec::new(),
+            product_hi: Vec::new(),
             sums: Vec::new(),
+            sums_lo: Vec::new(),
+            sums_hi: Vec::new(),
             columns: Vec::new(),
             fused: Vec::new(),
+            output_lo: Vec::new(),
+            output_hi: Vec::new(),
+            local_defect: Vec::new(),
             r_norms: [[0.0; JOINT_PHI_TERMS]; LEJA_DEGREE_CAP + 1],
             residuals: [[0.0; JOINT_PHI_TERMS]; LEJA_DEGREE_CAP],
             report: None,
+            last_certification_ops: 0,
         }
     }
 }
@@ -1118,12 +1301,20 @@ impl CertifiedLejaWorkspace {
         Self {
             current: vec![vec![0.0; dimension]; width],
             product: vec![vec![0.0; dimension]; width],
+            product_lo: vec![vec![0.0; dimension]; width],
+            product_hi: vec![vec![0.0; dimension]; width],
             sums: vec![vec![0.0; dimension]; JOINT_PHI_TERMS],
+            sums_lo: vec![vec![0.0; dimension]; JOINT_PHI_TERMS],
+            sums_hi: vec![vec![0.0; dimension]; JOINT_PHI_TERMS],
             columns,
             fused,
+            output_lo: vec![0.0; dimension],
+            output_hi: vec![0.0; dimension],
+            local_defect: vec![0.0; dimension],
             r_norms: [[0.0; JOINT_PHI_TERMS]; LEJA_DEGREE_CAP + 1],
             residuals: [[0.0; JOINT_PHI_TERMS]; LEJA_DEGREE_CAP],
             report: Some(report),
+            last_certification_ops: 0,
         }
     }
 
@@ -1144,12 +1335,32 @@ impl CertifiedLejaWorkspace {
                 v.resize(dimension, 0.0);
             }
         }
+        for buffers in [&mut self.product_lo, &mut self.product_hi] {
+            if buffers.len() < width {
+                buffers.resize_with(width, Vec::new);
+            }
+            for v in buffers.iter_mut().take(width) {
+                if v.len() < dimension {
+                    v.resize(dimension, 0.0);
+                }
+            }
+        }
         if self.sums.len() < JOINT_PHI_TERMS {
             self.sums.resize_with(JOINT_PHI_TERMS, Vec::new);
         }
         for v in self.sums.iter_mut() {
             if v.len() < dimension {
                 v.resize(dimension, 0.0);
+            }
+        }
+        for buffers in [&mut self.sums_lo, &mut self.sums_hi] {
+            if buffers.len() < JOINT_PHI_TERMS {
+                buffers.resize_with(JOINT_PHI_TERMS, Vec::new);
+            }
+            for v in buffers.iter_mut() {
+                if v.len() < dimension {
+                    v.resize(dimension, 0.0);
+                }
             }
         }
         if self.columns.len() < JOINT_PHI_TERMS {
@@ -1163,6 +1374,21 @@ impl CertifiedLejaWorkspace {
         if self.fused.len() < dimension {
             self.fused.resize(dimension, 0.0);
         }
+        for buffer in [
+            &mut self.output_lo,
+            &mut self.output_hi,
+            &mut self.local_defect,
+        ] {
+            if buffer.len() < dimension {
+                buffer.resize(dimension, 0.0);
+            }
+        }
+    }
+
+    /// Arithmetic-accounting proxy for the most recent action attempt,
+    /// including attempts refused after certificate work has begun.
+    pub fn last_certification_ops(&self) -> u64 {
+        self.last_certification_ops
     }
 }
 
@@ -1237,6 +1463,7 @@ pub fn leja_phi_action_certified_with_cache_and_workspace<'a>(
     work: &mut WorkCounters,
     workspace: &'a mut CertifiedLejaWorkspace,
 ) -> CoreResult<&'a CertifiedLejaReport> {
+    workspace.last_certification_ops = 0;
     let n = op.dimension();
     if !(h.is_finite() && h >= 0.0) {
         return Err(unsupported(format!(
@@ -1317,6 +1544,12 @@ pub fn leja_phi_action_certified_with_cache_and_workspace<'a>(
     for sum in workspace.sums[..JOINT_PHI_TERMS].iter_mut() {
         sum[..n].fill(0.0);
     }
+    for sum in workspace.sums_lo[..JOINT_PHI_TERMS].iter_mut() {
+        sum[..n].fill(0.0);
+    }
+    for sum in workspace.sums_hi[..JOINT_PHI_TERMS].iter_mut() {
+        sum[..n].fill(0.0);
+    }
 
     let mut degree = 0;
     let mut converged = false;
@@ -1335,7 +1568,6 @@ pub fn leja_phi_action_certified_with_cache_and_workspace<'a>(
     let mut scale = 0.0_f64;
     let mut branch = "zero-input";
     let mut verified_interval = [a, b];
-
     let mut run_action = || -> CoreResult<()> {
         if zero_input {
             center = 0.5 * (a + b);
@@ -1353,21 +1585,25 @@ pub fn leja_phi_action_certified_with_cache_and_workspace<'a>(
             for (k, sum) in workspace.sums[..JOINT_PHI_TERMS].iter_mut().enumerate() {
                 let col = column_of(k);
                 let w = &workspace.current[col][..n];
-                for (out, wi) in sum[..n].iter_mut().zip(w) {
-                    *out = d[k] * *wi;
-                }
+                accumulate_coefficient_term(
+                    &mut sum[..n],
+                    &mut workspace.sums_lo[k][..n],
+                    &mut workspace.sums_hi[k][..n],
+                    d[k],
+                    w,
+                    &mut certification_ops,
+                )?;
             }
             let mut diff_terms = [0.0; JOINT_PHI_TERMS];
-            let mut sum_terms = [0.0; JOINT_PHI_TERMS];
-            let mut p_norms = [0.0; JOINT_PHI_TERMS];
             let interval_width = sub_up(b, a)?;
+            let support_hi = add_up(center, mul_up(2.0, scale)?)?;
+            let derivative_exp = exp_interval(verified_interval[1].max(support_hi).max(0.0))?.hi;
             certification_ops = certification_ops.saturating_add(1);
 
             for k in 0..JOINT_PHI_TERMS {
                 let col = column_of(k);
                 let w_norm =
                     certificate_l2_upper(&workspace.current[col][..n], &mut certification_ops)?;
-                p_norms[k] = certificate_l2_upper(&workspace.sums[k][..n], &mut certification_ops)?;
                 let d_err = mul_up(d_rad[k], w_norm)?;
                 let fact = match k {
                     0 => 1.0,
@@ -1376,19 +1612,28 @@ pub fn leja_phi_action_certified_with_cache_and_workspace<'a>(
                     3 => 24.0,
                     _ => 120.0,
                 };
-                let width_err = mul_up(div_up(interval_width, fact)?, w_norm)?;
+                let width_err = mul_up(
+                    derivative_exp,
+                    mul_up(div_up(interval_width, fact)?, w_norm)?,
+                )?;
                 let total_d_err = add_up(d_err, width_err)?;
                 diff_terms[k] = mul_up(scales[k].abs(), total_d_err)?;
-                sum_terms[k] = mul_up(scales[k].abs(), mul_up(f64::EPSILON, p_norms[k])?)?;
                 certification_ops = certification_ops.saturating_add(7);
             }
             divided_difference_bound = sum_up_slice(&diff_terms)?;
-            let mut fused_terms = [0.0; JOINT_PHI_TERMS];
-            for k in 0..JOINT_PHI_TERMS {
-                fused_terms[k] = mul_up(scales[k].abs(), p_norms[k])?;
-            }
-            let fused_err = mul_up(4.0 * f64::EPSILON, sum_up_slice(&fused_terms)?)?;
-            summation_bound = add_up(sum_up_slice(&sum_terms)?, fused_err)?;
+            summation_bound = replay_scaled_fusion(
+                &scales,
+                &workspace.sums,
+                &workspace.sums_lo,
+                &workspace.sums_hi,
+                &mut workspace.columns,
+                &mut workspace.fused,
+                &mut workspace.output_lo,
+                &mut workspace.output_hi,
+                &mut workspace.local_defect,
+                n,
+                &mut certification_ops,
+            )?;
             total_bound = add_up(divided_difference_bound, summation_bound)?;
             certification_ops = certification_ops.saturating_add(16);
             converged = total_bound <= total_budget;
@@ -1407,6 +1652,18 @@ pub fn leja_phi_action_certified_with_cache_and_workspace<'a>(
                 sub_down(center, mul_up(2.0, scale)?)?,
                 add_up(center, mul_up(2.0, scale)?)?,
             ];
+            let (normalized_scale, _normalized_support) =
+                enlarge_scale_for_normalized_support(a, b, center, scale, &mut certification_ops)?;
+            if normalized_scale != scale {
+                scale = normalized_scale;
+                verified_interval = [
+                    sub_down(center, mul_up(2.0, scale)?)?,
+                    add_up(center, mul_up(2.0, scale)?)?,
+                ];
+            }
+            let support_hi = add_up(center, mul_up(2.0, scale)?)?;
+            verified_interval[1] = verified_interval[1].max(support_hi);
+            let derivative_exp = exp_interval(verified_interval[1].max(0.0))?.hi;
             branch = "newton";
             let xi = &leja_points()[..=degree_cap];
             let node_bounds = leja_node_bounds();
@@ -1440,39 +1697,53 @@ pub fn leja_phi_action_certified_with_cache_and_workspace<'a>(
                 let col = column_of(k);
                 let coeff = d[0][k];
                 let cur = &workspace.current[col][..n];
-                for (out, x) in sum[..n].iter_mut().zip(cur) {
-                    *out += coeff * *x;
-                }
+                accumulate_coefficient_term(
+                    &mut sum[..n],
+                    &mut workspace.sums_lo[k][..n],
+                    &mut workspace.sums_hi[k][..n],
+                    coeff,
+                    cur,
+                    &mut certification_ops,
+                )?;
             }
-
-            let u = f64::EPSILON;
-            let nu = mul_up(n as f64, u)?;
-            let denom = sub_down(1.0, nu)?;
-            if denom <= 0.0 {
-                return Err(CoreError::InvalidInput(format!(
-                    "dimension n = {n} exceeds precision threshold for rounding error bound (n*u >= 1)"
-                )));
-            }
-            let gamma_n = div_up(nu, denom)?;
-            certification_ops = certification_ops.saturating_add(3);
 
             for j in 1..=degree_cap {
+                local_block_products += 1;
                 for col in 0..width {
+                    local_vector_products += 1;
                     op.matrix().matvec_into(
                         &workspace.current[col][..n],
                         &mut workspace.product[col][..n],
                     )?;
+                    matvec_interval_into(
+                        op.matrix(),
+                        &workspace.current[col][..n],
+                        &mut workspace.product_lo[col][..n],
+                        &mut workspace.product_hi[col][..n],
+                        &mut certification_ops,
+                    )?;
                 }
-                local_block_products += 1;
-                local_vector_products += width as u64;
 
                 let node = xi[j - 1];
                 for col in 0..width {
                     let cur = &mut workspace.current[col][..n];
                     let prod = &workspace.product[col][..n];
-                    for (ri, yi) in cur.iter_mut().zip(prod) {
-                        *ri = (h * *yi - center * *ri) / scale - node * *ri;
+                    for i in 0..n {
+                        let old = cur[i];
+                        cur[i] = (h * prod[i] - center * old) / scale - node * old;
+                        certification_ops = certification_ops.saturating_add(48);
+                        let exact_next = Interval::point(h)?
+                            .mul(Interval::new(
+                                workspace.product_lo[col][i],
+                                workspace.product_hi[col][i],
+                            )?)?
+                            .sub(Interval::point(center)?.mul(Interval::point(old)?)?)?
+                            .div(Interval::point(scale)?)?
+                            .sub(Interval::point(node)?.mul(Interval::point(old)?)?)?;
+                        workspace.local_defect[i] = interval_distance_upper(cur[i], exact_next)?;
                     }
+                    workspace.residuals[j - 1][col] =
+                        certificate_l2_upper(&workspace.local_defect[..n], &mut certification_ops)?;
                 }
 
                 for col in 0..width {
@@ -1487,27 +1758,20 @@ pub fn leja_phi_action_certified_with_cache_and_workspace<'a>(
                     let r_norm =
                         certificate_l2_upper(&workspace.current[col][..n], &mut certification_ops)?;
                     workspace.r_norms[j][col] = r_norm;
-                    let prev_norm = workspace.r_norms[j - 1][col];
-                    let term_mv =
-                        mul_up(div_up(h, scale)?, mul_up(mul_up(gamma_n, rho)?, prev_norm)?)?;
-                    let term_scalar = mul_up(6.0 * u, r_norm)?;
-                    let factor_pre = add_up(
-                        div_up(add_up(mul_up(h, rho)?, center.abs())?, scale)?,
-                        node.abs(),
-                    )?;
-                    let term_pre = mul_up(4.0 * u, mul_up(factor_pre, prev_norm)?)?;
-                    workspace.residuals[j - 1][col] =
-                        add_up(term_mv, add_up(term_scalar, term_pre)?)?;
-                    certification_ops = certification_ops.saturating_add(13);
                 }
 
                 for (k, sum) in workspace.sums[..JOINT_PHI_TERMS].iter_mut().enumerate() {
                     let col = column_of(k);
                     let coeff = d[j][k];
                     let cur = &workspace.current[col][..n];
-                    for (out, x) in sum[..n].iter_mut().zip(cur) {
-                        *out += coeff * *x;
-                    }
+                    accumulate_coefficient_term(
+                        &mut sum[..n],
+                        &mut workspace.sums_lo[k][..n],
+                        &mut workspace.sums_hi[k][..n],
+                        coeff,
+                        cur,
+                        &mut certification_ops,
+                    )?;
                 }
 
                 // Certified bounds evaluation at degree j:
@@ -1524,7 +1788,10 @@ pub fn leja_phi_action_certified_with_cache_and_workspace<'a>(
                     }
                     t1_terms[k] = mul_up(
                         scales[k].abs(),
-                        mul_up(workspace.r_norms[0][col], mul_up(m_val, coeff_k)?)?,
+                        mul_up(
+                            derivative_exp,
+                            mul_up(workspace.r_norms[0][col], mul_up(m_val, coeff_k)?)?,
+                        )?,
                     )?;
                     certification_ops = certification_ops.saturating_add(3);
                 }
@@ -1578,43 +1845,21 @@ pub fn leja_phi_action_certified_with_cache_and_workspace<'a>(
                 let cur_t3 = sum_up_slice(&t3_terms)?;
                 certification_ops = certification_ops.saturating_add(4);
 
-                let ju = mul_up((j + 1) as f64, u)?;
-                let denom_j = sub_down(1.0, ju)?;
-                if denom_j <= 0.0 {
-                    return Err(CoreError::InvalidInput(format!(
-                        "degree j = {j} exceeds precision threshold (j*u >= 1)"
-                    )));
-                }
-                let factor_running = div_up(ju, denom_j)?;
-                certification_ops = certification_ops.saturating_add(3);
-
-                // Summation and fused rounding bounds:
-                let mut p_norms = [0.0; JOINT_PHI_TERMS];
-                let mut t4_terms = [0.0_f64; JOINT_PHI_TERMS];
-                for k in 0..JOINT_PHI_TERMS {
-                    p_norms[k] =
-                        certificate_l2_upper(&workspace.sums[k][..n], &mut certification_ops)?;
-                    let col = column_of(k);
-                    let mut sum_r = 0.0_f64;
-                    for step_i in 0..=j {
-                        sum_r = add_up(
-                            sum_r,
-                            mul_up(d[step_i][k].abs(), workspace.r_norms[step_i][col])?,
-                        )?;
-                        certification_ops = certification_ops.saturating_add(2);
-                    }
-                    let term_running = mul_up(factor_running, sum_r)?;
-                    let term_scale = mul_up(u, mul_up(scales[k].abs(), p_norms[k])?)?;
-                    t4_terms[k] = add_up(mul_up(scales[k].abs(), term_running)?, term_scale)?;
-                    certification_ops = certification_ops.saturating_add(5);
-                }
-                let mut fused_terms = [0.0; JOINT_PHI_TERMS];
-                for k in 0..JOINT_PHI_TERMS {
-                    fused_terms[k] = mul_up(scales[k].abs(), p_norms[k])?;
-                }
-                let fused_err = mul_up(4.0 * u, sum_up_slice(&fused_terms)?)?;
-                let cur_t4 = add_up(sum_up_slice(&t4_terms)?, fused_err)?;
-                certification_ops = certification_ops.saturating_add(11);
+                // Outward replay covers coefficient products/sums, column
+                // scaling and final fusion without a relative-only model.
+                let cur_t4 = replay_scaled_fusion(
+                    &scales,
+                    &workspace.sums,
+                    &workspace.sums_lo,
+                    &workspace.sums_hi,
+                    &mut workspace.columns,
+                    &mut workspace.fused,
+                    &mut workspace.output_lo,
+                    &mut workspace.output_hi,
+                    &mut workspace.local_defect,
+                    n,
+                    &mut certification_ops,
+                )?;
 
                 let cur_total = add_up(cur_t1, add_up(cur_t2, add_up(cur_t3, cur_t4)?)?)?;
                 certification_ops = certification_ops.saturating_add(3);
@@ -1642,31 +1887,45 @@ pub fn leja_phi_action_certified_with_cache_and_workspace<'a>(
     work.poly_vector_products += local_vector_products;
     work.poly_coefficient_setups += local_coefficient_setups;
 
+    workspace.last_certification_ops = certification_ops;
     outcome?;
 
-    for k in 0..JOINT_PHI_TERMS {
-        let scale_k = scales[k];
-        let sum_k = &workspace.sums[k][..n];
-        let col_k = &mut workspace.columns[k][..n];
-        for (dst, src) in col_k.iter_mut().zip(sum_k) {
-            *dst = scale_k * *src;
+    let output_result = (|| -> CoreResult<()> {
+        if zero_input {
+            summation_bound = replay_scaled_fusion(
+                &scales,
+                &workspace.sums,
+                &workspace.sums_lo,
+                &workspace.sums_hi,
+                &mut workspace.columns,
+                &mut workspace.fused,
+                &mut workspace.output_lo,
+                &mut workspace.output_hi,
+                &mut workspace.local_defect,
+                n,
+                &mut certification_ops,
+            )?;
+            total_bound = summation_bound;
         }
-    }
-    let fused_slice = &mut workspace.fused[..n];
-    fused_slice.fill(0.0);
-    for k in 0..JOINT_PHI_TERMS {
-        let col_k = &workspace.columns[k][..n];
-        for (f, c) in fused_slice.iter_mut().zip(col_k) {
-            *f += *c;
+        if !workspace.fused[..n].iter().all(|x| x.is_finite()) {
+            return Err(CoreError::NonFinite(
+                "Newton-Leja action produced NaN/Inf".into(),
+            ));
         }
-    }
-    if !fused_slice.iter().all(|x| x.is_finite()) {
-        return Err(CoreError::NonFinite(
-            "Newton-Leja action produced NaN/Inf".into(),
-        ));
-    }
+        Ok(())
+    })();
+    workspace.last_certification_ops = certification_ops;
+    output_result?;
 
     if let Some(ref mut rep) = workspace.report {
+        if rep.columns.len() < JOINT_PHI_TERMS {
+            rep.columns.resize_with(JOINT_PHI_TERMS, Vec::new);
+        }
+        rep.columns.truncate(JOINT_PHI_TERMS);
+        for column in &mut rep.columns {
+            column.resize(n, 0.0);
+        }
+        rep.fused.resize(n, 0.0);
         rep.schema.clear();
         rep.schema.push_str(LEJA_CERTIFIED_SCHEMA);
         rep.input.clear();
@@ -1878,5 +2137,228 @@ mod production_audit_suffix {
         assert!(certificate_l2_upper(&[tiny, tiny], &mut ops).unwrap() >= 2.0 * tiny);
         assert!(certificate_l2_upper(&[f64::NAN], &mut ops).is_err());
         assert!(ops > 0);
+    }
+
+    #[test]
+    fn interval_matvec_replay_covers_underflow_and_cancellation() {
+        let tiny = f64::from_bits(1);
+        let matrix = DenseMatrix::from_rows(&[&[tiny]]).unwrap();
+        let x = [0.5];
+        let actual = matrix.matvec(&x).unwrap();
+        assert_eq!(actual[0], 0.0);
+        let mut lo = [0.0];
+        let mut hi = [0.0];
+        let mut ops = 0;
+        matvec_interval_into(&matrix, &x, &mut lo, &mut hi, &mut ops).unwrap();
+        assert!(lo[0] <= 0.0 && hi[0] >= 0.0);
+        assert!(lo[0] < 0.0 && hi[0] > 0.0);
+        assert!(
+            interval_distance_upper(actual[0], Interval::new(lo[0], hi[0]).unwrap()).unwrap() > 0.0
+        );
+
+        let matrix = DenseMatrix::from_rows(&[&[1.0, 1.0, 1.0]]).unwrap();
+        let x = [1.0e16, 1.0, -1.0e16];
+        let actual = matrix.matvec(&x).unwrap();
+        assert_eq!(actual[0], 0.0);
+        matvec_interval_into(&matrix, &x, &mut lo, &mut hi, &mut ops).unwrap();
+        assert!(Interval::new(lo[0], hi[0]).unwrap().contains(1.0));
+        assert!(ops > 0);
+    }
+
+    #[test]
+    fn coefficient_sum_and_output_replay_cover_additive_underflow() {
+        let mut sum = [0.0];
+        let mut sum_lo = [0.0];
+        let mut sum_hi = [0.0];
+        let mut ops = 0;
+        for value in [1.0e16, 1.0, -1.0e16] {
+            accumulate_coefficient_term(
+                &mut sum,
+                &mut sum_lo,
+                &mut sum_hi,
+                1.0,
+                &[value],
+                &mut ops,
+            )
+            .unwrap();
+        }
+        assert_eq!(sum[0], 0.0);
+        let exact_sum = Interval::new(sum_lo[0], sum_hi[0]).unwrap();
+        assert!(exact_sum.contains(1.0));
+        assert!(interval_distance_upper(sum[0], exact_sum).unwrap() >= 1.0);
+
+        let tiny = f64::from_bits(1);
+        let scales = [0.5, 0.0, 0.0, 0.0, 0.0];
+        let sums = vec![vec![tiny]; JOINT_PHI_TERMS];
+        let sums_lo = sums.clone();
+        let sums_hi = sums.clone();
+        let mut columns = vec![vec![0.0]; JOINT_PHI_TERMS];
+        let mut fused = [0.0];
+        let mut out_lo = [0.0];
+        let mut out_hi = [0.0];
+        let mut defects = [0.0];
+        let bound = replay_scaled_fusion(
+            &scales,
+            &sums,
+            &sums_lo,
+            &sums_hi,
+            &mut columns,
+            &mut fused,
+            &mut out_lo,
+            &mut out_hi,
+            &mut defects,
+            1,
+            &mut ops,
+        )
+        .unwrap();
+        assert_eq!(fused[0], 0.0);
+        assert!(bound > 0.0);
+        assert!(Interval::new(out_lo[0], out_hi[0]).unwrap().contains(0.0));
+        assert!(ops > 0);
+    }
+
+    #[test]
+    fn interval_replay_refuses_nonfinite_action_and_checks_normalized_boundary() {
+        let matrix = DenseMatrix::from_rows(&[&[f64::MAX]]).unwrap();
+        let mut lo = [0.0];
+        let mut hi = [0.0];
+        let mut ops = 0;
+        assert!(matvec_interval_into(&matrix, &[2.0], &mut lo, &mut hi, &mut ops).is_err());
+        assert!(
+            ops > 0,
+            "refused interval products must retain attempted work"
+        );
+
+        let a = -7.769_021_559_909_74e-98;
+        let b = -7.769_021_559_909_737e-98;
+        let center = 0.5 * (a + b);
+        let initial_scale = div_up(sub_up(b, a).unwrap(), 4.0).unwrap();
+        let initial_support = normalized_spectral_support(a, b, center, initial_scale).unwrap();
+        assert!(initial_support.lo < -2.0 || initial_support.hi > 2.0);
+        let (scale, support) =
+            enlarge_scale_for_normalized_support(a, b, center, initial_scale, &mut ops).unwrap();
+        assert!(scale > initial_scale);
+        assert!(support.lo >= -2.0 && support.hi <= 2.0);
+        assert!(support.lo <= (a - center) / scale);
+        assert!(support.hi >= (b - center) / scale);
+    }
+
+    #[test]
+    fn positive_outward_support_increases_t1_exponential_factor() {
+        let tiny = f64::from_bits(1);
+        let matrix = DenseMatrix::from_rows(&[&[-tiny, 0.0], &[0.0, -2.0 * tiny]]).unwrap();
+        let op = SymmetricNonpositiveOperator::gershgorin(matrix).unwrap();
+        let input = JointPhiInput::SameVector {
+            vector: &[1.0, -0.5],
+            scales: [1.0, 0.0, 0.0, 0.0, 0.0],
+        };
+        let mut work = WorkCounters::default();
+        let report = leja_phi_action_certified_capped(&op, 0.5, input, 1.0, 8, &mut work).unwrap();
+        assert_eq!(report.branch, "newton");
+        assert!(report.interval[1] > 0.0, "support={:?}", report.interval);
+        let b = -mul_down(0.5, op.enclosure().lambda).unwrap();
+        assert!(
+            report.interval[1] > b,
+            "expanded support upper {} must exceed spectral b {b}",
+            report.interval[1]
+        );
+        let factor = exp_interval(report.interval[1].max(0.0)).unwrap().hi;
+        assert!(factor > 1.0);
+        assert!(matches!(
+            report.total_error(),
+            TotalErrorStatus::EstimateOnly { .. }
+        ));
+    }
+
+    #[test]
+    fn refused_output_preserves_certificate_work_accounting() {
+        let matrix = DenseMatrix::from_rows(&[&[-1.0]]).unwrap();
+        let op = SymmetricNonpositiveOperator::gershgorin(matrix).unwrap();
+        let mut cache = CertifiedLejaCoeffCache::new();
+        let mut workspace = CertifiedLejaWorkspace::new(1, 1);
+        let mut work = WorkCounters::default();
+        let good_vector = [0.25];
+        let good_input = JointPhiInput::SameVector {
+            vector: &good_vector,
+            scales: [1.0, 0.0, 0.0, 0.0, 0.0],
+        };
+        leja_phi_action_certified_with_cache_and_workspace(
+            &op,
+            0.0,
+            good_input,
+            1.0,
+            8,
+            Some(&mut cache),
+            &mut work,
+            &mut workspace,
+        )
+        .unwrap();
+        let committed = workspace.report.as_ref().unwrap().clone();
+
+        let vector = [1.0e308];
+        let input = JointPhiInput::SameVector {
+            vector: &vector,
+            scales: [1.0e308, 0.0, 0.0, 0.0, 0.0],
+        };
+        let result = leja_phi_action_certified_with_cache_and_workspace(
+            &op,
+            0.0,
+            input,
+            1.0,
+            8,
+            Some(&mut cache),
+            &mut work,
+            &mut workspace,
+        );
+        assert!(result.is_err());
+        drop(result);
+        assert!(workspace.last_certification_ops() > 0);
+        assert_eq!(workspace.report.as_ref().unwrap(), &committed);
+    }
+
+    #[test]
+    fn interval_matvec_overflow_refusal_preserves_workspace_work() {
+        let matrix = DenseMatrix::from_rows(&[&[-100.0, 0.0], &[0.0, -90.0]]).unwrap();
+        let op = SymmetricNonpositiveOperator::gershgorin(matrix).unwrap();
+        let vector = [1.0e308, 0.0];
+        let input = JointPhiInput::SameVector {
+            vector: &vector,
+            scales: [1.0, 0.0, 0.0, 0.0, 0.0],
+        };
+        let mut cache = CertifiedLejaCoeffCache::new();
+        let mut workspace = CertifiedLejaWorkspace::new(2, 2);
+        let mut work = WorkCounters::default();
+        let good_vector = [0.25, -0.5];
+        leja_phi_action_certified_with_cache_and_workspace(
+            &op,
+            0.0,
+            JointPhiInput::SameVector {
+                vector: &good_vector,
+                scales: [1.0, 0.0, 0.0, 0.0, 0.0],
+            },
+            1.0,
+            8,
+            Some(&mut cache),
+            &mut work,
+            &mut workspace,
+        )
+        .unwrap();
+        let committed = workspace.report.as_ref().unwrap().clone();
+        let result = leja_phi_action_certified_with_cache_and_workspace(
+            &op,
+            1.0,
+            input,
+            1.0,
+            8,
+            Some(&mut cache),
+            &mut work,
+            &mut workspace,
+        );
+        assert!(result.is_err());
+        drop(result);
+        assert!(workspace.last_certification_ops() > 0);
+        assert_eq!(workspace.report.as_ref().unwrap(), &committed);
+        assert!(work.poly_block_products > 0);
+        assert!(work.poly_vector_products > 0);
     }
 }

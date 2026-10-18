@@ -184,8 +184,8 @@ pub use comparator_fidelity::{
 pub use controller_telemetry::{ControllerDecision, ControllerEvents, ControllerTelemetry};
 pub use dense_output_v2::{
     DenseErrorControl, DenseErrorReport, DenseErrorSample, DenseOutputError, DenseOutputResult,
-    InterpolantAudit, InterpolantAuditSample, bdf_dense_output,
-    integrate_adaptive_dense_observed_with_config,
+    DenseSegmentWork, InterpolantAudit, InterpolantAuditSample, Rodas5pQuarticSegment,
+    bdf_dense_output, integrate_adaptive_dense_observed_with_config,
     integrate_adaptive_dense_observed_with_dense_error_control,
     integrate_bdf_adaptive_dense_observed, integrate_bdf_fixed_dense_observed,
     integrate_fixed_dense_observed, integrate_homotopy_adaptive_dense_observed,
@@ -335,8 +335,9 @@ pub use packet_trajectory::{
     OutputPolicy, PacketTrajectoryResult, TrajectoryConfig, TrajectoryStep, run_packet_trajectory,
 };
 pub use packet_window::{
-    CausalWeights, CompiledPacket, PacketCandidate, PacketCertificate, PacketError, compile_packet,
-    compute_certificate, evaluate_mode_at, generate_candidate, reconstruct_modes,
+    CausalWeights, CompiledPacket, OutwardPacketOutput, OutwardPacketRequest, PacketCandidate,
+    PacketCertificate, PacketError, compile_packet, compute_certificate, evaluate_mode_at,
+    generate_candidate, reconstruct_modes, reconstruct_outward_at_times,
 };
 pub use packet_work::PacketWorkCounters;
 pub use parallel::ParallelExecution;

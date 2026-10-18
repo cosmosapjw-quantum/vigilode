@@ -13,7 +13,8 @@ use rodas5p_core::leja_action::{
     leja_points,
 };
 use rodas5p_core::polynomial_action::{
-    EnclosureEvidence, JointPhiInput, SymmetricNonpositiveOperator, TotalErrorStatus,
+    EnclosureEvidence, JOINT_PHI_TERMS, JointPhiInput, SymmetricNonpositiveOperator,
+    TotalErrorStatus,
 };
 use rodas5p_core::{DenseMatrix, WorkCounters, dense_phi_combination, safe_l2};
 
@@ -221,6 +222,137 @@ fn test_a04_warmed_scalar_branch_zero_allocation() {
         allocations, 0,
         "warmed scalar Leja action allocated {allocations} times"
     );
+}
+
+#[test]
+fn test_a04_workspace_report_buffers_follow_dimension_growth_and_shrink() {
+    let mut workspace = CertifiedLejaWorkspace::new(0, 1);
+    let mut cache = CertifiedLejaCoeffCache::new();
+    let mut work = WorkCounters::default();
+
+    // Reproduce a zero-sized constructor followed by the first 1D report.
+    let op1 = test_operator(1, 701);
+    let v1 = [0.25];
+    let scales = [1.0, -0.5, 0.25, 2.0, -1.0];
+    let report = leja_phi_action_certified_with_cache_and_workspace(
+        &op1,
+        0.0,
+        JointPhiInput::SameVector {
+            vector: &v1,
+            scales,
+        },
+        1e-8,
+        8,
+        Some(&mut cache),
+        &mut work,
+        &mut workspace,
+    )
+    .unwrap();
+    assert_eq!(report.dimension, 1);
+    assert_eq!(report.fused.len(), 1);
+    assert_eq!(report.columns.len(), 5);
+    assert!(report.columns.iter().all(|column| column.len() == 1));
+
+    // Grow to two dimensions and then shrink back. Report slices must track
+    // the active dimension in both directions, independently of capacity.
+    let op2 = test_operator(2, 702);
+    let vectors: [Vec<f64>; 5] = std::array::from_fn(|k| splitmix(703 + k as u64, 2));
+    let report = leja_phi_action_certified_with_cache_and_workspace(
+        &op2,
+        0.0,
+        JointPhiInput::Distinct(&vectors),
+        1e-8,
+        8,
+        Some(&mut cache),
+        &mut work,
+        &mut workspace,
+    )
+    .unwrap();
+    assert_eq!(report.dimension, 2);
+    assert_eq!(report.fused.len(), 2);
+    assert!(report.columns.iter().all(|column| column.len() == 2));
+
+    let report = leja_phi_action_certified_with_cache_and_workspace(
+        &op1,
+        0.0,
+        JointPhiInput::SameVector {
+            vector: &v1,
+            scales,
+        },
+        1e-8,
+        8,
+        Some(&mut cache),
+        &mut work,
+        &mut workspace,
+    )
+    .unwrap();
+    assert_eq!(report.dimension, 1);
+    assert_eq!(report.fused.len(), 1);
+    assert_eq!(report.columns.len(), 5);
+    assert!(report.columns.iter().all(|column| column.len() == 1));
+}
+
+#[test]
+fn test_a04_failed_dimension_change_preserves_last_successful_report() {
+    let mut workspace = CertifiedLejaWorkspace::new(2, JOINT_PHI_TERMS);
+    let mut cache = CertifiedLejaCoeffCache::new();
+    let mut work = WorkCounters::default();
+    let op2 = test_operator(2, 704);
+    let vectors: [Vec<f64>; 5] = std::array::from_fn(|k| splitmix(705 + k as u64, 2));
+    leja_phi_action_certified_with_cache_and_workspace(
+        &op2,
+        0.0,
+        JointPhiInput::Distinct(&vectors),
+        1e-8,
+        8,
+        Some(&mut cache),
+        &mut work,
+        &mut workspace,
+    )
+    .unwrap();
+    let committed = workspace.report.as_ref().unwrap().clone();
+    assert_eq!(committed.dimension, 2);
+    assert_eq!(committed.columns.len(), JOINT_PHI_TERMS);
+    assert_eq!(committed.fused.len(), 2);
+
+    // The new operator has dimension one, but the candidate input is still
+    // dimension two. This fails after workspace scratch is resized and must
+    // leave the last successful public report transaction intact.
+    let op1 = test_operator(1, 706);
+    let wrong_dimension = [0.25, -0.5];
+    let err = leja_phi_action_certified_with_cache_and_workspace(
+        &op1,
+        0.0,
+        JointPhiInput::SameVector {
+            vector: &wrong_dimension,
+            scales: [1.0; JOINT_PHI_TERMS],
+        },
+        1e-8,
+        8,
+        Some(&mut cache),
+        &mut work,
+        &mut workspace,
+    );
+    assert!(err.is_err());
+    assert_eq!(workspace.report.as_ref().unwrap(), &committed);
+
+    // A call rejected before any dimension-dependent work has the same
+    // transactional guarantee, including status and attempted-work report.
+    let err = leja_phi_action_certified_with_cache_and_workspace(
+        &op1,
+        f64::NAN,
+        JointPhiInput::SameVector {
+            vector: &[0.25],
+            scales: [1.0; JOINT_PHI_TERMS],
+        },
+        1e-8,
+        8,
+        Some(&mut cache),
+        &mut work,
+        &mut workspace,
+    );
+    assert!(err.is_err());
+    assert_eq!(workspace.report.as_ref().unwrap(), &committed);
 }
 
 #[test]
@@ -432,8 +564,8 @@ fn test_a04_subnormal_domain_keeps_total_authority_on_hold() {
     match report.total_error() {
         TotalErrorStatus::EstimateOnly { reason, .. } => {
             assert!(reason.contains("LEJA_ARITHMETIC_HOLD"));
-            assert!(reason.contains("operator products"));
-            assert!(reason.contains("final output scaling/fusion"));
+            assert!(reason.contains("independent review"));
+            assert!(reason.contains("coefficient-tail premises"));
         }
         TotalErrorStatus::Certified { .. } => {
             panic!("Leja must not issue total certificate authority")

@@ -16,7 +16,7 @@ fn test_vg1_zero_online_solver_counters_contract() {
     let mut work = PacketWorkCounters::new();
 
     let packet = compile_packet(&model, 0.2, 6, &mut work).expect("compile packet");
-    let table = CausalWeights::compile(packet.order, 10);
+    let table = CausalWeights::compile(packet.order(), 10);
     let candidate =
         generate_candidate(&packet, 10, 4, &table, &mut work).expect("generate candidate");
     let cert = compute_certificate(&candidate, &packet, &table, &mut work).expect("compute cert");
@@ -55,7 +55,7 @@ fn test_vg2_picard_sweeps_convergence_and_defect_reduction() {
     let model = sample_packet_model();
     let mut work = PacketWorkCounters::new();
     let packet = compile_packet(&model, 0.15, 6, &mut work).expect("compile packet");
-    let table = CausalWeights::compile(packet.order, 12);
+    let table = CausalWeights::compile(packet.order(), 12);
 
     let mut prev_defect = f64::INFINITY;
     for sweeps in 1..=5 {
@@ -83,7 +83,7 @@ fn test_vg2_dahlquist_linear_boundary_zero_defect() {
 
     let mut work = PacketWorkCounters::new();
     let packet = compile_packet(&model, 0.2, 4, &mut work).unwrap();
-    let table = CausalWeights::compile(packet.order, 8);
+    let table = CausalWeights::compile(packet.order(), 8);
 
     let cand = generate_candidate(&packet, 8, 2, &table, &mut work).unwrap();
     let cert = compute_certificate(&cand, &packet, &table, &mut work).unwrap();
@@ -101,7 +101,7 @@ fn test_vg3_reconstruction_initial_state_consistency() {
     let model = sample_packet_model();
     let mut work = PacketWorkCounters::new();
     let packet = compile_packet(&model, 0.2, 6, &mut work).unwrap();
-    let table = CausalWeights::compile(packet.order, 10);
+    let table = CausalWeights::compile(packet.order(), 10);
     let cand = generate_candidate(&packet, 10, 4, &table, &mut work).unwrap();
 
     // At tau = 0, evaluate_mode_at must match initial amplitudes z_j exactly
@@ -121,7 +121,7 @@ fn test_vg3_certificate_mode_bounds_enclosure_consistency() {
     let model = sample_packet_model();
     let mut work = PacketWorkCounters::new();
     let packet = compile_packet(&model, 0.1, 6, &mut work).unwrap();
-    let table = CausalWeights::compile(packet.order, 10);
+    let table = CausalWeights::compile(packet.order(), 10);
     let cand = generate_candidate(&packet, 10, 4, &table, &mut work).unwrap();
     let cert = compute_certificate(&cand, &packet, &table, &mut work).unwrap();
 
@@ -154,7 +154,7 @@ fn test_negative_refusal_contracts() {
 
     // 2. Degree < order
     let packet = compile_packet(&model, 0.1, 6, &mut work).unwrap();
-    let table = CausalWeights::compile(packet.order, 10);
+    let table = CausalWeights::compile(packet.order(), 10);
     let res = generate_candidate(&packet, 4, 3, &table, &mut work);
     assert!(matches!(res, Err(PacketError::DegreeLessThanOrder { .. })));
 
@@ -165,7 +165,7 @@ fn test_negative_refusal_contracts() {
     // 4. Gronwall condition violated: h * L >= 1.0
     // With chi = 0.2, L = 0.6. Choose h = 2.0 -> h * L = 1.2 >= 1.0.
     let packet_large_h = compile_packet(&model, 2.0, 4, &mut work).unwrap();
-    let table_large = CausalWeights::compile(packet_large_h.order, 10);
+    let table_large = CausalWeights::compile(packet_large_h.order(), 10);
     let cand = generate_candidate(&packet_large_h, 8, 2, &table_large, &mut work).unwrap();
     let res = compute_certificate(&cand, &packet_large_h, &table_large, &mut work);
     assert!(matches!(

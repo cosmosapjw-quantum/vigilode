@@ -465,6 +465,15 @@ struct CandidateExecution {
 fn dense_core<T>(result: Result<T, DenseOutputError>) -> Result<T, CoreError> {
     result.map_err(|error| match error {
         DenseOutputError::Core(error) => error,
+        DenseOutputError::InvalidSegment(reason) => {
+            CoreError::InvalidInput(format!("dense segment is malformed: {reason}"))
+        }
+        DenseOutputError::ModifiedSegment => {
+            CoreError::InvalidInput(DenseOutputError::ModifiedSegment.to_string())
+        }
+        DenseOutputError::ContinuousResidualProviderUnavailable => CoreError::InvalidInput(
+            DenseOutputError::ContinuousResidualProviderUnavailable.to_string(),
+        ),
     })
 }
 
@@ -1326,6 +1335,32 @@ pub fn run_g1_adaptive_global_error_screen(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn dense_core_preserves_dense_error_reason_as_invalid_input() {
+        let cases = [
+            (
+                DenseOutputError::InvalidSegment("bad test segment"),
+                "dense segment is malformed: bad test segment",
+            ),
+            (
+                DenseOutputError::ModifiedSegment,
+                "dense segment identity no longer matches its generated coefficients",
+            ),
+            (
+                DenseOutputError::ContinuousResidualProviderUnavailable,
+                "continuous residual/global authority is unavailable: OdeProblem supplies only point RHS/log-norm callbacks",
+            ),
+        ];
+
+        for (error, expected_message) in cases {
+            let result: Result<(), CoreError> = dense_core(Err(error));
+            match result {
+                Err(CoreError::InvalidInput(message)) => assert_eq!(message, expected_message),
+                other => panic!("dense error must remain an InvalidInput failure: {other:?}"),
+            }
+        }
+    }
 
     #[test]
     fn adaptive_max_step_is_independent_of_output_spacing() {

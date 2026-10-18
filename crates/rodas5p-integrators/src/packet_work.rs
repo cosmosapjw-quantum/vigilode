@@ -11,6 +11,7 @@ use serde::{Deserialize, Serialize};
 
 /// Work counters recording operations performed by the causal packet pipeline.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(default)]
 pub struct PacketWorkCounters {
     /// Binary64 payload items copied into packet/candidate identity snapshots.
     pub identity_snapshot_items: u64,
@@ -19,6 +20,12 @@ pub struct PacketWorkCounters {
     pub identity_comparison_items: u64,
     /// Binary64 payload items copied while cloning the model into a packet.
     pub model_copy_items: u64,
+    /// Stored weight/support scalar inputs reduced while constructing a packet
+    /// model-bounds snapshot.
+    pub model_bounds_snapshot_items: u64,
+    /// Stored weight/support scalar inputs re-read while validating the
+    /// model-bounds snapshot before certificate or output use.
+    pub model_bounds_comparison_items: u64,
     /// Binary64 payload items copied while restricting a candidate for output.
     pub output_copy_items: u64,
     /// Binary64 scalar values written into returned reconstructed modes.
@@ -27,6 +34,11 @@ pub struct PacketWorkCounters {
     pub output_restriction_multiplies: u64,
     /// Scalar coefficient/mode items visited by certificate setup and bounds.
     pub certificate_items: u64,
+    /// Interval coefficient-ratio and accumulation terms in an adaptive
+    /// Bernstein transform. Zero when the cheap coefficient gate passes.
+    pub bernstein_transform_terms: u64,
+    /// Complex control-point averages in dyadic de Casteljau subdivision.
+    pub bernstein_refinement_terms: u64,
     /// Scalar arithmetic terms used to build reconstruction polynomials.
     pub reconstruction_terms: u64,
     /// Number of scalar spectral/weighted moment accumulations.
@@ -48,10 +60,14 @@ impl PacketWorkCounters {
             identity_snapshot_items: 0,
             identity_comparison_items: 0,
             model_copy_items: 0,
+            model_bounds_snapshot_items: 0,
+            model_bounds_comparison_items: 0,
             output_copy_items: 0,
             output_value_items: 0,
             output_restriction_multiplies: 0,
             certificate_items: 0,
+            bernstein_transform_terms: 0,
+            bernstein_refinement_terms: 0,
             reconstruction_terms: 0,
             moment_terms: 0,
             poly_multiply_terms: 0,
@@ -72,10 +88,14 @@ impl PacketWorkCounters {
             + self.identity_snapshot_items
             + self.identity_comparison_items
             + self.model_copy_items
+            + self.model_bounds_snapshot_items
+            + self.model_bounds_comparison_items
             + self.output_copy_items
             + self.output_value_items
             + self.output_restriction_multiplies
             + self.certificate_items
+            + self.bernstein_transform_terms
+            + self.bernstein_refinement_terms
             + self.reconstruction_terms
             + self.poly_multiply_terms
             + self.volterra_terms
@@ -108,10 +128,14 @@ impl PacketWorkCounters {
         self.identity_snapshot_items += other.identity_snapshot_items;
         self.identity_comparison_items += other.identity_comparison_items;
         self.model_copy_items += other.model_copy_items;
+        self.model_bounds_snapshot_items += other.model_bounds_snapshot_items;
+        self.model_bounds_comparison_items += other.model_bounds_comparison_items;
         self.output_copy_items += other.output_copy_items;
         self.output_value_items += other.output_value_items;
         self.output_restriction_multiplies += other.output_restriction_multiplies;
         self.certificate_items += other.certificate_items;
+        self.bernstein_transform_terms += other.bernstein_transform_terms;
+        self.bernstein_refinement_terms += other.bernstein_refinement_terms;
         self.reconstruction_terms += other.reconstruction_terms;
         self.moment_terms += other.moment_terms;
         self.poly_multiply_terms += other.poly_multiply_terms;

@@ -1,3 +1,4 @@
+use rodas5p_core::directed::Interval;
 use rodas5p_core::{
     CoreError, CoreResult, LinearSolverConfig, LuFactorization, WorkCounters, error_scale,
     rodas5p_coefficients, wrms,
@@ -23,6 +24,14 @@ use crate::{bdf::adaptive_bdf_trial, radau::adaptive_radau_trial};
 pub enum DenseOutputError {
     #[error(transparent)]
     Core(#[from] CoreError),
+    #[error("dense segment is malformed: {0}")]
+    InvalidSegment(&'static str),
+    #[error("dense segment identity no longer matches its generated coefficients")]
+    ModifiedSegment,
+    #[error(
+        "continuous residual/global authority is unavailable: OdeProblem supplies only point RHS/log-norm callbacks"
+    )]
+    ContinuousResidualProviderUnavailable,
 }
 
 pub type DenseOutputResult<T> = Result<T, DenseOutputError>;
@@ -30,6 +39,523 @@ pub type DenseOutputResult<T> = Result<T, DenseOutputError>;
 fn dense_output_core_error(error: DenseOutputError) -> CoreError {
     match error {
         DenseOutputError::Core(error) => error,
+        other => CoreError::InvalidInput(other.to_string()),
+    }
+}
+
+/// Work local to immutable dense-segment construction and evaluation.
+///
+/// These counters deliberately do not contribute to RHS, JVP, linear-solver,
+/// or controller counters. The arithmetic fields count attempted represented
+/// curve operations: an operation remains charged when its directed interval
+/// primitive refuses on overflow or another non-finite result.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct DenseSegmentWork {
+    pub construction_items: u64,
+    pub validation_operations: u64,
+    pub identity_comparison_items: u64,
+    pub normalization_operations: u64,
+    pub center_operations: u64,
+    pub interval_value_operations: u64,
+    pub interval_derivative_operations: u64,
+    pub provider_unavailable_requests: u64,
+}
+
+impl DenseSegmentWork {
+    pub const fn total_operations(self) -> u64 {
+        self.construction_items
+            + self.validation_operations
+            + self.identity_comparison_items
+            + self.normalization_operations
+            + self.center_operations
+            + self.interval_value_operations
+            + self.interval_derivative_operations
+            + self.provider_unavailable_requests
+    }
+}
+
+/// Immutable bit snapshot of every represented input to a dense segment.
+#[derive(Clone, Debug, PartialEq)]
+struct DenseSegmentIdentity {
+    t_old: u64,
+    t_new: u64,
+    h: u64,
+    delta_center: u64,
+    delta_exact_lo: u64,
+    delta_exact_hi: u64,
+    y_old: Vec<u64>,
+    y_new: Vec<u64>,
+    d0: Vec<u64>,
+    d1: Vec<u64>,
+    d2: Vec<u64>,
+}
+
+impl DenseSegmentIdentity {
+    fn new(segment: &Rodas5pQuarticSegment) -> Self {
+        Self {
+            t_old: segment.t_old.to_bits(),
+            t_new: segment.t_new.to_bits(),
+            h: segment.h.to_bits(),
+            delta_center: segment.delta_center.to_bits(),
+            delta_exact_lo: segment.delta_exact.lo.to_bits(),
+            delta_exact_hi: segment.delta_exact.hi.to_bits(),
+            y_old: segment.y_old.iter().map(|value| value.to_bits()).collect(),
+            y_new: segment.y_new.iter().map(|value| value.to_bits()).collect(),
+            d0: segment.d0.iter().map(|value| value.to_bits()).collect(),
+            d1: segment.d1.iter().map(|value| value.to_bits()).collect(),
+            d2: segment.d2.iter().map(|value| value.to_bits()).collect(),
+        }
+    }
+
+    fn items(&self) -> u64 {
+        6 + (self.y_old.len() + self.y_new.len() + self.d0.len() + self.d1.len() + self.d2.len())
+            as u64
+    }
+
+    fn matches(&self, segment: &Rodas5pQuarticSegment) -> bool {
+        self.t_old == segment.t_old.to_bits()
+            && self.t_new == segment.t_new.to_bits()
+            && self.h == segment.h.to_bits()
+            && self.delta_center == segment.delta_center.to_bits()
+            && self.delta_exact_lo == segment.delta_exact.lo.to_bits()
+            && self.delta_exact_hi == segment.delta_exact.hi.to_bits()
+            && self.y_old.len() == segment.y_old.len()
+            && self.y_new.len() == segment.y_new.len()
+            && self.d0.len() == segment.d0.len()
+            && self.d1.len() == segment.d1.len()
+            && self.d2.len() == segment.d2.len()
+            && self
+                .y_old
+                .iter()
+                .zip(&segment.y_old)
+                .all(|(&saved, &value)| saved == value.to_bits())
+            && self
+                .y_new
+                .iter()
+                .zip(&segment.y_new)
+                .all(|(&saved, &value)| saved == value.to_bits())
+            && self
+                .d0
+                .iter()
+                .zip(&segment.d0)
+                .all(|(&saved, &value)| saved == value.to_bits())
+            && self
+                .d1
+                .iter()
+                .zip(&segment.d1)
+                .all(|(&saved, &value)| saved == value.to_bits())
+            && self
+                .d2
+                .iter()
+                .zip(&segment.d2)
+                .all(|(&saved, &value)| saved == value.to_bits())
+    }
+}
+
+/// One immutable represented RODAS5P quartic continuous-extension segment.
+///
+/// Its interval methods enclose the polynomial defined by the stored binary64
+/// endpoints and `d0,d1,d2`; they do not enclose an ODE residual or a global
+/// trajectory error because [`OdeProblem`] has no interval RHS/log-norm API.
+#[derive(Clone, Debug, PartialEq)]
+pub struct Rodas5pQuarticSegment {
+    t_old: f64,
+    t_new: f64,
+    /// Original step metadata, bound for provenance but never substituted for
+    /// the represented clock interval below.
+    h: f64,
+    /// The accepted represented interval length. Construction accepts only
+    /// cases where this is the exact real difference, so center and interval
+    /// paths define the same curve.
+    delta_center: f64,
+    /// Degenerate outward interval equal to `delta_center` after admission.
+    delta_exact: Interval,
+    y_old: Vec<f64>,
+    y_new: Vec<f64>,
+    d0: Vec<f64>,
+    d1: Vec<f64>,
+    d2: Vec<f64>,
+    identity: DenseSegmentIdentity,
+}
+
+impl Rodas5pQuarticSegment {
+    /// Copies and binds the actual dense coefficients generated for `step`.
+    pub fn from_step(step: &StepResult, work: &mut DenseSegmentWork) -> DenseOutputResult<Self> {
+        work.validation_operations += 1;
+        let dimension = step.y_old.len();
+        if dimension == 0
+            || step.y_new.len() != dimension
+            || step.stages.len() != 8
+            || step.stages.iter().any(|row| row.len() != dimension)
+        {
+            return Err(DenseOutputError::InvalidSegment("RODAS5P stage shape"));
+        }
+        if !(step.t_old.is_finite()
+            && step.t_new.is_finite()
+            && step.h.is_finite()
+            && step.h > 0.0
+            && step.t_new > step.t_old)
+        {
+            return Err(DenseOutputError::InvalidSegment(
+                "non-finite or non-increasing time span",
+            ));
+        }
+        work.construction_items += 4;
+        let delta_center = step.t_new - step.t_old;
+        let delta_exact = Interval::exact_sum(step.t_new, -step.t_old)?;
+        if !(delta_center.is_finite()
+            && delta_center.is_normal()
+            && delta_center > 0.0
+            && delta_exact.lo.to_bits() == delta_center.to_bits()
+            && delta_exact.hi.to_bits() == delta_center.to_bits())
+        {
+            return Err(DenseOutputError::InvalidSegment(
+                "represented time span is not an exact positive normal binary64",
+            ));
+        }
+        if step
+            .y_old
+            .iter()
+            .chain(&step.y_new)
+            .chain(step.stages.iter().flatten())
+            .any(|value| !value.is_finite())
+        {
+            return Err(DenseOutputError::InvalidSegment(
+                "non-finite state or stage",
+            ));
+        }
+        let coefficients = rodas5p_coefficients()?;
+        if coefficients.dense_d.nrows() != 3 || coefficients.dense_d.ncols() != step.stages.len() {
+            return Err(DenseOutputError::InvalidSegment(
+                "RODAS5P dense coefficient shape",
+            ));
+        }
+        let mut d0 = vec![0.0; dimension];
+        let mut d1 = vec![0.0; dimension];
+        let mut d2 = vec![0.0; dimension];
+        for component in 0..dimension {
+            for (coefficient, stage) in coefficients.dense_d.row(0).iter().zip(&step.stages) {
+                work.construction_items += 2;
+                d0[component] += coefficient * stage[component];
+            }
+            for (coefficient, stage) in coefficients.dense_d.row(1).iter().zip(&step.stages) {
+                work.construction_items += 2;
+                d1[component] += coefficient * stage[component];
+            }
+            for (coefficient, stage) in coefficients.dense_d.row(2).iter().zip(&step.stages) {
+                work.construction_items += 2;
+                d2[component] += coefficient * stage[component];
+            }
+        }
+        if d0
+            .iter()
+            .chain(&d1)
+            .chain(&d2)
+            .any(|value| !value.is_finite())
+        {
+            return Err(DenseOutputError::InvalidSegment(
+                "non-finite dense coefficient",
+            ));
+        }
+        let mut segment = Self {
+            t_old: step.t_old,
+            t_new: step.t_new,
+            h: step.h,
+            delta_center,
+            delta_exact,
+            y_old: step.y_old.clone(),
+            y_new: step.y_new.clone(),
+            d0,
+            d1,
+            d2,
+            identity: DenseSegmentIdentity {
+                t_old: 0,
+                t_new: 0,
+                h: 0,
+                delta_center: 0,
+                delta_exact_lo: 0,
+                delta_exact_hi: 0,
+                y_old: Vec::new(),
+                y_new: Vec::new(),
+                d0: Vec::new(),
+                d1: Vec::new(),
+                d2: Vec::new(),
+            },
+        };
+        segment.identity = DenseSegmentIdentity::new(&segment);
+        work.construction_items += segment.identity.items();
+        Ok(segment)
+    }
+
+    fn validate_identity(&self, work: &mut DenseSegmentWork) -> DenseOutputResult<()> {
+        work.identity_comparison_items += self.identity.items();
+        if self.identity.matches(self) {
+            Ok(())
+        } else {
+            Err(DenseOutputError::ModifiedSegment)
+        }
+    }
+
+    fn normalize_time(
+        &self,
+        time: f64,
+        work: &mut DenseSegmentWork,
+    ) -> DenseOutputResult<Interval> {
+        self.validate_identity(work)?;
+        work.normalization_operations += 3;
+        if !(time.is_finite() && time >= self.t_old && time <= self.t_new) {
+            return Err(DenseOutputError::InvalidSegment(
+                "output time outside represented segment",
+            ));
+        }
+        if time == self.t_old {
+            return Interval::point(0.0).map_err(DenseOutputError::from);
+        }
+        if time == self.t_new {
+            return Interval::point(1.0).map_err(DenseOutputError::from);
+        }
+        let numerator = Interval::exact_sum(time, -self.t_old)?;
+        let theta = numerator.div(self.delta_exact)?;
+        let theta = Interval::new(theta.lo.max(0.0), theta.hi.min(1.0))?;
+        if theta.lo > theta.hi {
+            return Err(DenseOutputError::InvalidSegment(
+                "output time normalization escaped [0, 1]",
+            ));
+        }
+        Ok(theta)
+    }
+
+    fn validate_output(&self, output: &[Interval]) -> DenseOutputResult<()> {
+        if output.len() != self.y_old.len() {
+            return Err(DenseOutputError::InvalidSegment(
+                "output buffer dimension mismatch",
+            ));
+        }
+        Ok(())
+    }
+
+    /// Writes the ordinary binary64 center of the represented quartic.
+    pub fn evaluate_center_at_into(
+        &self,
+        time: f64,
+        output: &mut [f64],
+        work: &mut DenseSegmentWork,
+    ) -> DenseOutputResult<()> {
+        work.validation_operations += 1;
+        self.validate_identity(work)?;
+        if output.len() != self.y_old.len()
+            || !(time.is_finite() && time >= self.t_old && time <= self.t_new)
+        {
+            return Err(DenseOutputError::InvalidSegment(
+                "center output time or buffer",
+            ));
+        }
+        work.normalization_operations += 1;
+        let theta = (time - self.t_old) / self.delta_center;
+        if !(theta.is_finite() && (0.0..=1.0).contains(&theta)) {
+            return Err(DenseOutputError::InvalidSegment(
+                "center time normalization escaped [0, 1]",
+            ));
+        }
+        if time == self.t_old {
+            output.copy_from_slice(&self.y_old);
+            return Ok(());
+        }
+        if time == self.t_new {
+            output.copy_from_slice(&self.y_new);
+            return Ok(());
+        }
+        work.center_operations += 1;
+        let complement = 1.0 - theta;
+        for (i, value) in output.iter_mut().enumerate() {
+            work.center_operations += 9;
+            let q = self.d0[i] + theta * (self.d1[i] + theta * self.d2[i]);
+            *value = complement * self.y_old[i] + theta * (self.y_new[i] + complement * q);
+        }
+        if output.iter().any(|value| !value.is_finite()) {
+            return Err(DenseOutputError::InvalidSegment("non-finite center output"));
+        }
+        Ok(())
+    }
+
+    /// Writes an outward interval enclosure of the represented quartic value.
+    pub fn evaluate_value_at_into(
+        &self,
+        time: f64,
+        output: &mut [Interval],
+        work: &mut DenseSegmentWork,
+    ) -> DenseOutputResult<()> {
+        work.validation_operations += 1;
+        self.validate_output(output)?;
+        let theta = self.normalize_time(time, work)?;
+        if time == self.t_old {
+            for (out, &value) in output.iter_mut().zip(&self.y_old) {
+                *out = Interval::point(value)?;
+            }
+            return Ok(());
+        }
+        if time == self.t_new {
+            for (out, &value) in output.iter_mut().zip(&self.y_new) {
+                *out = Interval::point(value)?;
+            }
+            return Ok(());
+        }
+        // The shared complement subtraction is an attempted interval
+        // operation even when its directed primitive refuses.
+        work.interval_value_operations += 1;
+        let one_minus_theta = Interval::point(1.0)?.sub(theta)?;
+        for (i, value) in output.iter_mut().enumerate() {
+            // Charge all per-component interval arithmetic before its first
+            // fallible directed primitive (q and the outer reconstruction).
+            work.interval_value_operations += 9;
+            let q = Interval::point(self.d0[i])?.add(theta.mul(
+                Interval::point(self.d1[i])?.add(theta.mul(Interval::point(self.d2[i])?)?)?,
+            )?)?;
+            *value = one_minus_theta
+                .mul(Interval::point(self.y_old[i])?)?
+                .add(theta.mul(Interval::point(self.y_new[i])?.add(one_minus_theta.mul(q)?)?)?)?;
+        }
+        Ok(())
+    }
+
+    /// Writes an outward enclosure of the represented quartic's physical-time derivative.
+    pub fn evaluate_physical_derivative_at_into(
+        &self,
+        time: f64,
+        output: &mut [Interval],
+        work: &mut DenseSegmentWork,
+    ) -> DenseOutputResult<()> {
+        work.validation_operations += 1;
+        self.validate_output(output)?;
+        let theta = self.normalize_time(time, work)?;
+        self.write_physical_derivative(theta, output, work)
+    }
+
+    fn write_physical_derivative(
+        &self,
+        theta: Interval,
+        output: &mut [Interval],
+        work: &mut DenseSegmentWork,
+    ) -> DenseOutputResult<()> {
+        // Both shared interval operations are attempted before any fallible
+        // directed primitive is entered.
+        work.interval_derivative_operations += 2;
+        let one_minus_theta = Interval::point(1.0)?.sub(theta)?;
+        let two_theta = theta.scale(2.0)?;
+        let delta = self.delta_exact;
+        for (i, value) in output.iter_mut().enumerate() {
+            // Four q operations, two q' operations, two first-term
+            // operations, three second-term operations, and three final
+            // quotient/sum operations.
+            work.interval_derivative_operations += 14;
+            let q = Interval::point(self.d0[i])?.add(theta.mul(
+                Interval::point(self.d1[i])?.add(theta.mul(Interval::point(self.d2[i])?)?)?,
+            )?)?;
+            let q_prime =
+                Interval::point(self.d1[i])?.add(two_theta.mul(Interval::point(self.d2[i])?)?)?;
+            let first = Interval::point(self.y_new[i])?.add(one_minus_theta.mul(q)?)?;
+            let second = theta.mul((-q).add(one_minus_theta.mul(q_prime)?)?)?;
+            *value = (-Interval::point(self.y_old[i])?)
+                .add(first)?
+                .add(second)?
+                .div(delta)?;
+        }
+        Ok(())
+    }
+
+    /// Encloses the represented curve derivative throughout a physical-time
+    /// subinterval. This is a curve property only; it is not an ODE residual
+    /// because no interval RHS/log-norm provider is available.
+    pub fn enclose_physical_derivative_on_interval(
+        &self,
+        time_start: f64,
+        time_end: f64,
+        output: &mut [Interval],
+        work: &mut DenseSegmentWork,
+    ) -> DenseOutputResult<()> {
+        work.validation_operations += 1;
+        self.validate_output(output)?;
+        if !(time_start.is_finite() && time_end.is_finite() && time_start <= time_end) {
+            return Err(DenseOutputError::InvalidSegment(
+                "invalid derivative time interval",
+            ));
+        }
+        let theta_start = self.normalize_time(time_start, work)?;
+        let theta_end = self.normalize_time(time_end, work)?;
+        let theta = Interval::new(theta_start.lo, theta_end.hi)?;
+        self.write_physical_derivative(theta, output, work)
+    }
+
+    /// Requests a residual/global authority provider. The current generic ODE
+    /// interface has only point callbacks, so this fails closed with a typed
+    /// status rather than manufacturing interval RHS or log-norm data.
+    pub fn request_continuous_residual_provider(
+        &self,
+        work: &mut DenseSegmentWork,
+    ) -> DenseOutputResult<()> {
+        work.validation_operations += 1;
+        self.validate_identity(work)?;
+        work.provider_unavailable_requests += 1;
+        Err(DenseOutputError::ContinuousResidualProviderUnavailable)
+    }
+}
+
+#[cfg(test)]
+mod dense_segment_tests {
+    use super::*;
+
+    fn represented_quartic() -> Rodas5pQuarticSegment {
+        let mut segment = Rodas5pQuarticSegment {
+            t_old: 0.0,
+            t_new: 1.0,
+            h: 1.0,
+            delta_center: 1.0,
+            delta_exact: Interval::point(1.0).unwrap(),
+            y_old: vec![0.0],
+            y_new: vec![0.0],
+            // u(theta) = theta (1-theta) q(theta), q=theta(1-theta).
+            d0: vec![0.0],
+            d1: vec![1.0],
+            d2: vec![-1.0],
+            identity: DenseSegmentIdentity {
+                t_old: 0,
+                t_new: 0,
+                h: 0,
+                delta_center: 0,
+                delta_exact_lo: 0,
+                delta_exact_hi: 0,
+                y_old: Vec::new(),
+                y_new: Vec::new(),
+                d0: Vec::new(),
+                d1: Vec::new(),
+                d2: Vec::new(),
+            },
+        };
+        segment.identity = DenseSegmentIdentity::new(&segment);
+        segment
+    }
+
+    #[test]
+    fn curve_derivative_enclosure_falsifies_endpoint_midpoint_only_sampling() {
+        // With a point RHS f=0, y(theta)=theta^2(1-theta)^2 has derivative
+        // zero at both endpoints and theta=1/2. Its curve derivative is
+        // +3/(16 delta) at theta=1/4 and -3/(16 delta) at theta=3/4.
+        // This remains a curve-only enclosure, not an ODE residual witness.
+        let segment = represented_quartic();
+        let mut work = DenseSegmentWork::default();
+        let mut point = [Interval::point(0.0).unwrap()];
+        for time in [0.0, 0.5, 1.0] {
+            segment
+                .evaluate_physical_derivative_at_into(time, &mut point, &mut work)
+                .unwrap();
+            assert!(point[0].contains(0.0));
+        }
+        let mut whole = [Interval::point(0.0).unwrap()];
+        segment
+            .enclose_physical_derivative_on_interval(0.0, 1.0, &mut whole, &mut work)
+            .unwrap();
+        assert!(whole[0].contains(3.0 / 16.0));
+        assert!(whole[0].contains(-3.0 / 16.0));
     }
 }
 

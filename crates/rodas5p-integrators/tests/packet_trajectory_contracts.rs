@@ -1,7 +1,9 @@
 use rodas5p_core::CoreError;
+use rodas5p_core::directed::{Interval, add_up};
 use rodas5p_integrators::collective_model::CollectiveModel;
 use rodas5p_integrators::packet_trajectory::{
-    OutputPolicy, TrajectoryConfig, run_packet_trajectory,
+    LinearTrajectoryRefusal, OutputPolicy, TrajectoryConfig, run_linear_outward_trajectory,
+    run_packet_trajectory,
 };
 use rodas5p_integrators::packet_work::PacketWorkCounters;
 
@@ -208,4 +210,191 @@ fn test_negative_admission_gates() {
     let mut work = PacketWorkCounters::default();
     let res = run_packet_trajectory(&model, Some(&wrong_radii), &config, &mut work);
     assert!(matches!(res, Err(CoreError::InvalidInput(_))));
+}
+
+#[test]
+fn linear_outward_fixed_grid_encloses_independent_exact_modes_and_mean() {
+    let weights = vec![0.25, 0.5, 0.25];
+    let xi = vec![-0.5, 0.0, 0.5];
+    let z = vec![(0.25, -0.125), (0.125, 0.0625), (-0.0625, 0.25)];
+    let model = CollectiveModel::new(xi.clone(), weights.clone(), z.clone(), 1.0, 0.0, 0.0, 0.0)
+        .expect("linear model");
+    let mut config = TrajectoryConfig::new(0.0, 0.25, 0.0625, 1e-5, 1e-5).unwrap();
+    config.output_policy = OutputPolicy::AllModes;
+    let times = [0.03125, 0.09375, 0.15625, 0.25];
+    let mut work = PacketWorkCounters::default();
+    let result = run_linear_outward_trajectory(&model, None, &config, &times, &mut work)
+        .expect("linear outward trajectory");
+    assert!(!result.roundoff_enclosed);
+    assert_eq!(result.observations.len(), times.len() + 1);
+    assert_eq!(result.endpoints.last().unwrap().t, 0.25);
+    // Frozen 120-digit analytic oracle. Each real/imaginary component is
+    // bracketed by adjacent binary64 values, so the check includes oracle
+    // conversion error rather than relying on ordinary sin/cos evaluation.
+    let oracle: serde_json::Value = serde_json::from_str(include_str!(
+        "../../../research/production_audit_20261018/evidence/continuation_a02/linear_oracle_mpmath.json"
+    ))
+    .unwrap();
+    let input = &oracle["input_bits"];
+    assert_eq!(input["width"].as_u64().unwrap(), 1.0_f64.to_bits());
+    for j in 0..xi.len() {
+        assert_eq!(input["xi"][j].as_u64().unwrap(), xi[j].to_bits());
+        assert_eq!(input["weights"][j].as_u64().unwrap(), weights[j].to_bits());
+        assert_eq!(input["z"][j][0].as_u64().unwrap(), z[j].0.to_bits());
+        assert_eq!(input["z"][j][1].as_u64().unwrap(), z[j].1.to_bits());
+    }
+    let rows = oracle["rows"].as_array().unwrap();
+    assert_eq!(rows.len(), result.observations.len());
+    for (point, row) in result.observations.iter().zip(rows) {
+        assert_eq!(row["t_bits"].as_u64().unwrap(), point.t.to_bits());
+        for j in 0..xi.len() {
+            let re = Interval::new(
+                row["modes"][j][0][0].as_f64().unwrap(),
+                row["modes"][j][0][1].as_f64().unwrap(),
+            )
+            .unwrap();
+            let im = Interval::new(
+                row["modes"][j][1][0].as_f64().unwrap(),
+                row["modes"][j][1][1].as_f64().unwrap(),
+            )
+            .unwrap();
+            let center = point.modes.as_ref().unwrap()[j];
+            let re_error = re.sub(Interval::point(center.0).unwrap()).unwrap().mag();
+            let im_error = im.sub(Interval::point(center.1).unwrap()).unwrap().mag();
+            let error = add_up(re_error, im_error).unwrap();
+            assert!(
+                error <= point.mode_radii.as_ref().unwrap()[j],
+                "t={} j={j} error={error:e} radius={:e}",
+                point.t,
+                point.mode_radii.as_ref().unwrap()[j]
+            );
+        }
+        let mean_re = Interval::new(
+            row["mean"][0][0].as_f64().unwrap(),
+            row["mean"][0][1].as_f64().unwrap(),
+        )
+        .unwrap();
+        let mean_im = Interval::new(
+            row["mean"][1][0].as_f64().unwrap(),
+            row["mean"][1][1].as_f64().unwrap(),
+        )
+        .unwrap();
+        let mean_re_error = mean_re
+            .sub(Interval::point(point.mean.0).unwrap())
+            .unwrap()
+            .mag();
+        let mean_im_error = mean_im
+            .sub(Interval::point(point.mean.1).unwrap())
+            .unwrap()
+            .mag();
+        let mean_error = add_up(mean_re_error, mean_im_error).unwrap();
+        assert!(
+            mean_error <= point.mean_radius,
+            "t={} mean error={mean_error:e} radius={:e}",
+            point.t,
+            point.mean_radius
+        );
+    }
+    assert!(work.output_value_items > 0);
+}
+
+#[test]
+fn linear_outward_transports_nonzero_initial_disks() {
+    let model = CollectiveModel::new(
+        vec![-0.5, 0.5],
+        vec![0.5, 0.5],
+        vec![(0.25, 0.0), (0.0, 0.125)],
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+    )
+    .unwrap();
+    let initial = [1e-6, 2e-6];
+    let mut config = TrajectoryConfig::new(0.0, 0.125, 0.0625, 1e-4, 1e-4).unwrap();
+    config.output_policy = OutputPolicy::AllModes;
+    let mut work = PacketWorkCounters::default();
+    let result = run_linear_outward_trajectory(
+        &model,
+        Some(&initial),
+        &config,
+        &[0.03125, 0.125],
+        &mut work,
+    )
+    .unwrap();
+    for point in &result.observations {
+        for (radius, inherited) in point.mode_radii.as_ref().unwrap().iter().zip(initial) {
+            assert!(*radius >= inherited);
+        }
+        assert!(point.mean_radius >= 1.5e-6);
+    }
+}
+
+#[test]
+fn linear_outward_rejections_preserve_attempted_work_and_return_typed_refusal() {
+    let model = make_test_model();
+    let mut work = PacketWorkCounters::default();
+    let config = TrajectoryConfig::new(0.0, 0.125, 0.0625, 1e-5, 1e-5).unwrap();
+    assert_eq!(
+        run_linear_outward_trajectory(&model, None, &config, &[], &mut work),
+        Err(LinearTrajectoryRefusal::UnsupportedModel)
+    );
+    assert_eq!(work.total_packet_terms(), 0);
+    let linear =
+        CollectiveModel::new(vec![0.5], vec![1.0], vec![(0.25, 0.0)], 1.0, 0.0, 0.0, 0.0).unwrap();
+    let mut tight = config.clone();
+    tight.mean_tolerance = 1e-16;
+    tight.mode_tolerance = 1e-16;
+    tight.min_h = 0.015625;
+    tight.max_steps = 8;
+    let result = run_linear_outward_trajectory(&linear, Some(&[1e-4]), &tight, &[], &mut work);
+    assert!(matches!(
+        result,
+        Err(LinearTrajectoryRefusal::MinimumStep | LinearTrajectoryRefusal::StepLimit)
+    ));
+    assert!(
+        work.total_packet_terms() > 0,
+        "rejected packet work is retained"
+    );
+    let before = work.total_packet_terms();
+    let mut invalid = config;
+    invalid.initial_h = f64::NAN;
+    assert!(matches!(
+        run_linear_outward_trajectory(&linear, None, &invalid, &[], &mut work),
+        Err(LinearTrajectoryRefusal::InvalidInput(_))
+    ));
+    assert!(matches!(
+        run_linear_outward_trajectory(&linear, None, &tight, &[f64::INFINITY], &mut work),
+        Err(LinearTrajectoryRefusal::InvalidInput(_))
+    ));
+    assert_eq!(work.total_packet_terms(), before);
+    let nonexact = TrajectoryConfig::new(0.0, 1.0, 0.1, 1e-3, 1e-3).unwrap();
+    assert_eq!(
+        run_linear_outward_trajectory(&linear, None, &nonexact, &[0.9], &mut work),
+        Err(LinearTrajectoryRefusal::NonExactTimeGrid)
+    );
+}
+
+#[test]
+fn linear_outward_rejected_trial_does_not_shift_accepted_center() {
+    let model =
+        CollectiveModel::new(vec![1.0], vec![1.0], vec![(0.25, 0.0)], 1.0, 0.0, 0.0, 0.0).unwrap();
+    let mut config = TrajectoryConfig::new(0.0, 0.25, 0.25, 2e-4, 2e-4).unwrap();
+    config.order = 2;
+    config.degree = 3;
+    config.min_h = 0.015625;
+    config.output_policy = OutputPolicy::AllModes;
+    let mut work = PacketWorkCounters::default();
+    let result =
+        run_linear_outward_trajectory(&model, None, &config, &[0.125, 0.25], &mut work).unwrap();
+    assert!(result.rejected_steps > 0, "large trial must be rejected");
+    assert!(result.accepted_steps >= 2);
+    assert_eq!(result.work, work);
+    let endpoint = result.endpoints.last().unwrap();
+    let exact = (0.25 * 0.25_f64.cos(), 0.25 * 0.25_f64.sin());
+    let center = endpoint.modes.as_ref().unwrap()[0];
+    assert!(
+        (exact.0 - center.0).hypot(exact.1 - center.1) <= endpoint.mode_radii.as_ref().unwrap()[0]
+    );
+    assert_eq!(model.initial_amplitudes()[0], (0.25, 0.0));
 }

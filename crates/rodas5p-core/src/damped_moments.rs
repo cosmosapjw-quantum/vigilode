@@ -24,8 +24,9 @@
 
 use serde::{Deserialize, Serialize};
 
-use crate::directed::{Interval, exp_interval};
+use crate::directed::{Interval, exp_interval, sub_up};
 use crate::{CoreError, CoreResult};
+use thiserror::Error;
 
 /// Maximum moment order supported by the table.
 pub const MAX_MOMENT_ORDER: usize = 64;
@@ -145,6 +146,94 @@ pub fn compute_damped_moment(kappa: f64, horizon: f64, j: usize, k: usize) -> Co
     let config = DampedMomentsConfig::new(kappa, horizon, j, k)?;
     let norm = compute_normalized_moment(damping_product(kappa, horizon)?, j, k)?;
     scale_by_h_power(norm, config.horizon, j + k + 1)
+}
+
+/// Work attempted by the checked forcing-moment consumer.
+///
+/// Counts are separate coarse-grained attempts, not arithmetic instruction
+/// counts. They are charged before entering the corresponding fallible work.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub struct DampedForcingMomentWork {
+    pub validation_attempts: u64,
+    pub kernel_attempts: u64,
+    pub width_checks: u64,
+}
+
+/// A damped forcing moment admitted by an outward absolute-width gate.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct DampedForcingMomentResult {
+    /// Enclosure of (Q_{r,d}(a,h)=I_{d,r}(a,h)).
+    pub interval: Interval,
+    /// Outward upper bound on `interval.hi - interval.lo`.
+    pub width_upper: f64,
+}
+
+/// Typed refusal from the forcing-moment consumer boundary.
+#[derive(Debug, Error)]
+pub enum DampedForcingMomentRefusal {
+    #[error("invalid forcing-moment input: {0}")]
+    InvalidInput(&'static str),
+    #[error("damped-moment kernel refused: {0}")]
+    Kernel(#[from] CoreError),
+    #[error("outward width arithmetic refused: {0}")]
+    WidthArithmetic(CoreError),
+    #[error("forcing-moment interval width {width_upper:e} exceeds limit {max_width:e}")]
+    WidthExceeded { width_upper: f64, max_width: f64 },
+}
+
+/// Computes the forcing moment (Q_{r,d}(a,h)=I_{d,r}(a,h)), then admits it
+/// only if its outward absolute interval width is at most `max_width`.
+///
+/// This is a checked scalar-kernel consumer only. It does not admit a damped
+/// packet solver or assert a packet/output convention. Attempt counters are
+/// retained on all typed refusal paths.
+pub fn compute_damped_forcing_moment(
+    a: f64,
+    h: f64,
+    d: usize,
+    r: usize,
+    max_width: f64,
+    work: &mut DampedForcingMomentWork,
+) -> Result<DampedForcingMomentResult, DampedForcingMomentRefusal> {
+    work.validation_attempts = work.validation_attempts.saturating_add(1);
+    if !a.is_finite() || a < 0.0 {
+        return Err(DampedForcingMomentRefusal::InvalidInput(
+            "damping rate must be nonnegative and finite",
+        ));
+    }
+    if !h.is_finite() || h <= 0.0 {
+        return Err(DampedForcingMomentRefusal::InvalidInput(
+            "horizon must be positive and finite",
+        ));
+    }
+    if d > MAX_MOMENT_ORDER || r > MAX_MOMENT_ORDER {
+        return Err(DampedForcingMomentRefusal::InvalidInput(
+            "moment order exceeds supported maximum",
+        ));
+    }
+    if !max_width.is_finite() || max_width < 0.0 {
+        return Err(DampedForcingMomentRefusal::InvalidInput(
+            "absolute width limit must be nonnegative and finite",
+        ));
+    }
+
+    work.kernel_attempts = work.kernel_attempts.saturating_add(1);
+    let interval = compute_damped_moment(a, h, d, r)?;
+
+    work.width_checks = work.width_checks.saturating_add(1);
+    let width_upper =
+        sub_up(interval.hi, interval.lo).map_err(DampedForcingMomentRefusal::WidthArithmetic)?;
+    if width_upper > max_width {
+        return Err(DampedForcingMomentRefusal::WidthExceeded {
+            width_upper,
+            max_width,
+        });
+    }
+
+    Ok(DampedForcingMomentResult {
+        interval,
+        width_upper,
+    })
 }
 
 /// Standalone function to compute the normalized moment \(J_{j, k}(\kappa h)\).

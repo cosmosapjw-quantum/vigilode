@@ -5,11 +5,13 @@
 use std::sync::Arc;
 use std::sync::atomic::{AtomicUsize, Ordering};
 
+use rodas5p_core::directed::Interval;
 use rodas5p_core::{CoreError, DenseMatrix, LinearMethod, LinearSolverConfig, WorkCounters};
 use rodas5p_integrators::{
-    AdaptiveStepConfig, DenseErrorControl, IntegrationMethod, OdeProblem, OutputSamplingPlan,
-    OutputSchedule, integrate_adaptive_dense_observed_with_dense_error_control,
-    prothero_robinson_problem,
+    AdaptiveStepConfig, DenseErrorControl, DenseOutputError, DenseSegmentWork, IntegrationMethod,
+    OdeProblem, OutputSamplingPlan, OutputSchedule, Rodas5pQuarticSegment, StepResult,
+    integrate_adaptive_dense_observed_with_dense_error_control, prothero_robinson_problem,
+    rodas5p_dense_output,
 };
 
 type TestBatchRhs =
@@ -229,4 +231,237 @@ fn zero_span_dense_entry_rejects_invalid_adaptive_and_linear_config() {
         )
         .is_err()
     );
+}
+
+fn dense_step(t_old: f64, t_new: f64, h: f64) -> StepResult {
+    StepResult {
+        t_old,
+        t_new,
+        y_old: vec![0.25],
+        y_new: vec![0.75],
+        h,
+        // A nonzero transformed-stage row makes the stored continuous
+        // extension genuinely quartic when the dense table has d2 != 0.
+        stages: vec![
+            vec![1.0],
+            vec![0.0],
+            vec![0.0],
+            vec![0.0],
+            vec![0.0],
+            vec![0.0],
+            vec![0.0],
+            vec![0.0],
+        ],
+        error_vector: vec![0.0],
+        error_norm: 0.0,
+        accepted: true,
+        method: "a05-dense-segment".into(),
+        used_fallback: false,
+        certificate: None,
+        counters: WorkCounters::default(),
+    }
+}
+
+#[test]
+fn immutable_quartic_segment_encloses_its_endpoint_and_interior_centers() {
+    let step = dense_step(1.0, 2.0, 1.0);
+    let mut work = DenseSegmentWork::default();
+    let segment = Rodas5pQuarticSegment::from_step(&step, &mut work).unwrap();
+    let mut center = [0.0];
+    let mut value = [Interval::point(0.0).unwrap()];
+    let mut derivative = [Interval::point(0.0).unwrap()];
+
+    let observations: [(f64, f64); 3] = [(1.0, 0.25), (1.5, 0.0), (2.0, 0.75)];
+    for (time, expected) in observations {
+        segment
+            .evaluate_center_at_into(time, &mut center, &mut work)
+            .unwrap();
+        segment
+            .evaluate_value_at_into(time, &mut value, &mut work)
+            .unwrap();
+        segment
+            .evaluate_physical_derivative_at_into(time, &mut derivative, &mut work)
+            .unwrap();
+        assert!(
+            value[0].contains(center[0]),
+            "time={time}, center={:?}, interval={:?}",
+            center[0],
+            value[0]
+        );
+        assert!(derivative[0].lo <= derivative[0].hi);
+        if time != 1.5 {
+            assert_eq!(center[0].to_bits(), expected.to_bits());
+        } else {
+            // A point RHS that happened to return f=0 at this midpoint would
+            // miss this nonzero curve derivative. The segment exposes the
+            // derivative enclosure, while residual authority remains typed
+            // unavailable without an interval provider.
+            assert!(!derivative[0].contains_zero());
+        }
+    }
+    assert!(work.construction_items > 0);
+    assert!(work.identity_comparison_items > 0);
+    assert!(work.normalization_operations > 0);
+    assert!(work.interval_value_operations > 0);
+    assert!(work.interval_derivative_operations > 0);
+}
+
+#[test]
+fn dense_segment_arithmetic_counters_match_attempted_scalar_operations() {
+    const N: usize = 3;
+    let mut step = dense_step(0.0, 1.0, 1.0);
+    step.y_old = vec![0.25, -0.5, 0.75];
+    step.y_new = vec![0.75, 0.25, -0.125];
+    step.error_vector = vec![0.0; N];
+    for row in &mut step.stages {
+        row.resize(N, 0.0);
+    }
+    let mut construction = DenseSegmentWork::default();
+    let segment = Rodas5pQuarticSegment::from_step(&step, &mut construction).unwrap();
+
+    let mut centers = [0.0; N];
+    let mut center_work = DenseSegmentWork::default();
+    segment
+        .evaluate_center_at_into(0.5, &mut centers, &mut center_work)
+        .unwrap();
+    assert_eq!(center_work.center_operations, 1 + 9 * N as u64);
+    let center_before_endpoint = center_work.center_operations;
+    segment
+        .evaluate_center_at_into(0.0, &mut centers, &mut center_work)
+        .unwrap();
+    assert_eq!(center_work.center_operations, center_before_endpoint);
+
+    let mut values = [Interval::point(0.0).unwrap(); N];
+    let mut value_work = DenseSegmentWork::default();
+    segment
+        .evaluate_value_at_into(0.5, &mut values, &mut value_work)
+        .unwrap();
+    assert_eq!(value_work.interval_value_operations, 1 + 9 * N as u64);
+    let value_before_endpoint = value_work.interval_value_operations;
+    segment
+        .evaluate_value_at_into(0.0, &mut values, &mut value_work)
+        .unwrap();
+    assert_eq!(value_work.interval_value_operations, value_before_endpoint);
+
+    let mut derivatives = [Interval::point(0.0).unwrap(); N];
+    let mut derivative_work = DenseSegmentWork::default();
+    segment
+        .evaluate_physical_derivative_at_into(0.5, &mut derivatives, &mut derivative_work)
+        .unwrap();
+    assert_eq!(
+        derivative_work.interval_derivative_operations,
+        2 + 14 * N as u64
+    );
+    let derivative_before_endpoint = derivative_work.interval_derivative_operations;
+    segment
+        .evaluate_physical_derivative_at_into(0.0, &mut derivatives, &mut derivative_work)
+        .unwrap();
+    assert_eq!(
+        derivative_work.interval_derivative_operations - derivative_before_endpoint,
+        2 + 14 * N as u64
+    );
+}
+
+#[test]
+fn represented_clock_delta_controls_normalization_not_step_metadata() {
+    let t_old = 2_f64.powi(53);
+    let step = dense_step(t_old, t_old + 3.0, 3.0);
+    assert_eq!(
+        step.t_new - step.t_old,
+        4.0,
+        "represented span differs from h"
+    );
+    let mut work = DenseSegmentWork::default();
+    let segment = Rodas5pQuarticSegment::from_step(&step, &mut work).unwrap();
+    let mut center = [0.0];
+    let mut value = [Interval::point(0.0).unwrap()];
+    segment
+        .evaluate_center_at_into(t_old + 2.0, &mut center, &mut work)
+        .unwrap();
+    segment
+        .evaluate_value_at_into(t_old + 2.0, &mut value, &mut work)
+        .unwrap();
+    assert!(value[0].contains(center[0]));
+}
+
+#[test]
+fn immutable_segment_center_matches_the_existing_public_dense_convention() {
+    let step = dense_step(0.0, 1.0, 1.0);
+    let mut work = DenseSegmentWork::default();
+    let segment = Rodas5pQuarticSegment::from_step(&step, &mut work).unwrap();
+    let mut center = [0.0];
+    let mut interval = [Interval::point(0.0).unwrap()];
+    for theta in [0.0, 0.25, 0.5, 0.75, 1.0] {
+        let existing = rodas5p_dense_output(&step, theta).unwrap();
+        segment
+            .evaluate_center_at_into(theta, &mut center, &mut work)
+            .unwrap();
+        segment
+            .evaluate_value_at_into(theta, &mut interval, &mut work)
+            .unwrap();
+        assert_eq!(center[0].to_bits(), existing[0].to_bits(), "theta={theta}");
+        assert!(interval[0].contains(existing[0]), "theta={theta}");
+    }
+}
+
+#[test]
+fn dense_segment_refuses_bad_spans_and_unavailable_residual_provider() {
+    let mut work = DenseSegmentWork::default();
+    let nonfinite = dense_step(f64::NAN, 1.0, 1.0);
+    assert!(matches!(
+        Rodas5pQuarticSegment::from_step(&nonfinite, &mut work),
+        Err(DenseOutputError::InvalidSegment(_))
+    ));
+    let subnormal = dense_step(0.0, f64::from_bits(1), f64::from_bits(1));
+    assert!(matches!(
+        Rodas5pQuarticSegment::from_step(&subnormal, &mut work),
+        Err(DenseOutputError::InvalidSegment(_))
+    ));
+    // The exact real span is 1 + 2^-54, but ordinary subtraction rounds it
+    // to 1. Refuse rather than let center and interval paths define curves
+    // with different normalizations.
+    let inexact_delta = dense_step(-2_f64.powi(-54), 1.0, 1.0);
+    assert!(matches!(
+        Rodas5pQuarticSegment::from_step(&inexact_delta, &mut work),
+        Err(DenseOutputError::InvalidSegment(_))
+    ));
+
+    let segment = Rodas5pQuarticSegment::from_step(&dense_step(0.0, 1.0, 1.0), &mut work).unwrap();
+    let mut value = [Interval::point(0.0).unwrap()];
+    assert!(matches!(
+        segment.evaluate_value_at_into(f64::NAN, &mut value, &mut work),
+        Err(DenseOutputError::InvalidSegment(_))
+    ));
+    assert!(matches!(
+        segment.request_continuous_residual_provider(&mut work),
+        Err(DenseOutputError::ContinuousResidualProviderUnavailable)
+    ));
+    assert!(work.provider_unavailable_requests > 0);
+    assert!(work.total_operations() > 0);
+}
+
+#[test]
+fn derivative_refusal_charges_attempted_interval_work_before_overflow() {
+    let mut step = dense_step(0.0, 1.0, 1.0);
+    step.y_old[0] = f64::MAX;
+    step.y_new[0] = -f64::MAX;
+    step.stages = vec![vec![0.0]; 8];
+    let mut work = DenseSegmentWork::default();
+    let segment = Rodas5pQuarticSegment::from_step(&step, &mut work).unwrap();
+    let before = work.interval_derivative_operations;
+    let mut output = [Interval::point(0.0).unwrap()];
+    assert!(
+        segment
+            .evaluate_physical_derivative_at_into(0.5, &mut output, &mut work)
+            .is_err()
+    );
+    assert!(work.interval_derivative_operations > before);
+}
+
+#[test]
+fn construction_refusal_charges_attempted_span_work_before_exact_sum_overflow() {
+    let step = dense_step(-f64::MAX, f64::MAX, 1.0);
+    let mut work = DenseSegmentWork::default();
+    assert!(Rodas5pQuarticSegment::from_step(&step, &mut work).is_err());
+    assert!(work.construction_items > 0);
 }
