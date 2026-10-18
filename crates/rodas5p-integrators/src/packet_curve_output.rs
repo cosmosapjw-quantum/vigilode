@@ -19,6 +19,7 @@ pub struct PacketCurveOutputWorkspace {
     mean_center: (f64, f64),
     mean_radius: f64,
     weighted_radius: f64,
+    centered_weighted_radius: Option<f64>,
     time: f64,
 }
 
@@ -40,6 +41,7 @@ pub struct PacketCurveOutputView<'a> {
     mean: (f64, f64),
     mean_radius: f64,
     weighted_radius: f64,
+    centered_weighted_radius: Option<f64>,
     _curve: &'a PacketCurveOutput,
 }
 
@@ -59,8 +61,14 @@ impl PacketCurveOutputView<'_> {
     pub fn mean_radius(&self) -> f64 {
         self.mean_radius
     }
+    /// Weighted flow-to-exact-curve radius; evaluation displacement is separate.
     pub fn weighted_radius(&self) -> f64 {
         self.weighted_radius
+    }
+    /// Weighted radius around returned binary64 centers. Present for the
+    /// weighted-ball entry point, including evaluation displacement.
+    pub fn centered_weighted_radius(&self) -> Option<f64> {
+        self.centered_weighted_radius
     }
 }
 
@@ -90,6 +98,7 @@ impl PacketCurveOutput {
             mean_center: (0.0, 0.0),
             mean_radius: 0.0,
             weighted_radius: 0.0,
+            centered_weighted_radius: None,
             time: 0.0,
         })
     }
@@ -153,6 +162,76 @@ impl PacketCurveOutput {
             work,
             "represented output initial error",
         )?;
+        self.enclose_prepared(time, s, energy, e0, false, workspace, work)
+    }
+
+    /// Enclose a true initial condition in a weighted ball about the frozen
+    /// center: sum_j w_j |a_j(0)-Y_j(0)|^2 <= initial_radius^2.
+    /// The returned centered weighted radius is suitable for a subsequent
+    /// window without converting the ball to N independent component disks.
+    pub fn enclose_at_weighted<'a>(
+        &'a self,
+        time: f64,
+        initial_radius: f64,
+        workspace: &'a mut PacketCurveOutputWorkspace,
+        work: &mut PacketWorkCounters,
+    ) -> Result<PacketCurveOutputView<'a>, PacketError> {
+        let model = &self.curve.source_identity.model;
+        let n = model.num_modes();
+        if !initial_radius.is_finite()
+            || initial_radius < 0.0
+            || !time.is_finite()
+            || time < 0.0
+            || time > self.curve.horizon()
+            || workspace.centers.len() != n
+            || workspace.boxes.len() != n
+            || workspace.radii.len() != n
+        {
+            return Err(PacketError::OutwardRefusal(
+                "represented weighted output input",
+            ));
+        }
+        let mut s = 0.0;
+        let mut center_energy = 0.0;
+        for (j, &w) in model.weights().iter().enumerate() {
+            s = add(s, w, work, "represented weighted output weight sum")?;
+            let z = model.initial_amplitudes()[j];
+            let re2 = mul(z.0, z.0, work, "represented weighted output energy")?;
+            let im2 = mul(z.1, z.1, work, "represented weighted output energy")?;
+            let square = add(re2, im2, work, "represented weighted output energy")?;
+            let weighted = mul(w, square, work, "represented weighted output energy")?;
+            center_energy = add(
+                center_energy,
+                weighted,
+                work,
+                "represented weighted output energy",
+            )?;
+        }
+        let center_norm = sqrt_upper(center_energy, work, "represented weighted output energy")?;
+        let norm = add(
+            center_norm,
+            initial_radius,
+            work,
+            "represented weighted output energy",
+        )?;
+        let energy = mul(norm, norm, work, "represented weighted output energy")?;
+        self.enclose_prepared(time, s, energy, initial_radius, true, workspace, work)
+    }
+
+    // Keep the four scalar proof premises explicit at the two call sites.
+    #[allow(clippy::too_many_arguments)]
+    fn enclose_prepared<'a>(
+        &'a self,
+        time: f64,
+        s: f64,
+        energy: f64,
+        e0: f64,
+        weighted_carry: bool,
+        workspace: &'a mut PacketCurveOutputWorkspace,
+        work: &mut PacketWorkCounters,
+    ) -> Result<PacketCurveOutputView<'a>, PacketError> {
+        let model = &self.curve.source_identity.model;
+        let weights = model.weights();
         let m_y = self.curve.residual_bound.mean_magnitude_sup.hi;
         let rho = self.curve.residual_bound.weighted_residual_sup.hi;
         let se = mul(s, energy, work, "represented output gain")?;
@@ -174,9 +253,10 @@ impl PacketCurveOutput {
             .evaluate_modes_at_into(time, &mut workspace.centers, work)?;
         self.curve
             .enclose_modes_at_into(time, &mut workspace.boxes, work)?;
-        for j in 0..n {
+        let mut evaluation_square = 0.0;
+        for (j, &weight) in weights.iter().enumerate() {
             work.curve_output_certificate_ops += 1; // sqrt_down
-            let denominator = sqrt_down(weights[j])
+            let denominator = sqrt_down(weight)
                 .map_err(|_| PacketError::OutwardRefusal("represented output weight root"))?;
             if denominator <= 0.0 {
                 return Err(PacketError::OutwardRefusal(
@@ -191,6 +271,16 @@ impl PacketCurveOutput {
             )?;
             let delta = displacement(workspace.centers[j], workspace.boxes[j], work)?;
             workspace.radii[j] = add(flow, delta, work, "represented output mode radius")?;
+            if weighted_carry {
+                let square = mul(delta, delta, work, "represented weighted evaluation")?;
+                let term = mul(weights[j], square, work, "represented weighted evaluation")?;
+                evaluation_square = add(
+                    evaluation_square,
+                    term,
+                    work,
+                    "represented weighted evaluation",
+                )?;
+            }
         }
 
         let mut mean = (0.0, 0.0);
@@ -239,6 +329,17 @@ impl PacketCurveOutput {
             work,
             "represented output mean radius",
         )?;
+        workspace.centered_weighted_radius = if weighted_carry {
+            let delta = sqrt_upper(evaluation_square, work, "represented weighted evaluation")?;
+            Some(add(
+                weighted_radius,
+                delta,
+                work,
+                "represented weighted radius",
+            )?)
+        } else {
+            None
+        };
         workspace.mean_center = mean;
         workspace.mean_radius = mean_radius;
         workspace.weighted_radius = weighted_radius;
@@ -250,6 +351,7 @@ impl PacketCurveOutput {
             mean: workspace.mean_center,
             mean_radius: workspace.mean_radius,
             weighted_radius: workspace.weighted_radius,
+            centered_weighted_radius: workspace.centered_weighted_radius,
             _curve: self,
         })
     }

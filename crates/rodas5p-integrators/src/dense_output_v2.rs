@@ -42,6 +42,15 @@ pub enum DenseOutputError {
 
 pub type DenseOutputResult<T> = Result<T, DenseOutputError>;
 
+// Count the arithmetic primitive actually attempted. Arguments are prepared
+// first; no later primitive is charged when an earlier operation refuses.
+macro_rules! dense_op {
+    ($counter:expr, $operation:expr) => {{
+        $counter = $counter.saturating_add(1);
+        $operation
+    }};
+}
+
 fn dense_output_core_error(error: DenseOutputError) -> CoreError {
     match error {
         DenseOutputError::Core(error) => error,
@@ -54,7 +63,11 @@ fn dense_output_core_error(error: DenseOutputError) -> CoreError {
 /// These counters deliberately do not contribute to RHS, JVP, linear-solver,
 /// or controller counters. The arithmetic fields count attempted represented
 /// curve operations: an operation remains charged when its directed interval
-/// primitive refuses on overflow or another non-finite result.
+/// primitive refuses on overflow or another non-finite result. Interval value
+/// and derivative counters count arithmetic API calls (add/sub/mul/scale/div),
+/// excluding exact point construction; normalization counts subtraction and
+/// division. Construction additionally counts copied identity items. The sum
+/// is a structural work ledger, not a FLOP or CPU-instruction measurement.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct DenseSegmentWork {
     pub construction_items: u64,
@@ -310,6 +323,32 @@ pub struct Rodas5pQuarticSegment {
 }
 
 impl Rodas5pQuarticSegment {
+    /// Exact represented time span for sealed model verifiers.
+    pub(crate) fn scalar_span_and_power(
+        &self,
+        work: &mut DenseSegmentWork,
+    ) -> DenseOutputResult<(f64, f64, f64, [Interval; 5])> {
+        self.validate_identity(work)?;
+        if self.y_old.len() != 1 {
+            return Err(DenseOutputError::InvalidSegment("scalar model dimension"));
+        }
+        let y0 = Interval::point(self.y_old[0])?;
+        let y1 = Interval::point(self.y_new[0])?;
+        let d0 = Interval::point(self.d0[0])?;
+        let d1 = Interval::point(self.d1[0])?;
+        let d2 = Interval::point(self.d2[0])?;
+        let a = dense_op!(work.construction_items, y1.sub(y0))?;
+        let a = dense_op!(work.construction_items, a.add(d0))?;
+        let b = dense_op!(work.construction_items, d1.sub(d0))?;
+        let c = dense_op!(work.construction_items, d2.sub(d1))?;
+        Ok((
+            self.t_old,
+            self.t_new,
+            self.delta_center,
+            [y0, a, b, c, -d2],
+        ))
+    }
+
     /// Copies and binds the actual dense coefficients generated for `step`.
     pub fn from_step(step: &StepResult, work: &mut DenseSegmentWork) -> DenseOutputResult<Self> {
         work.validation_operations += 1;
@@ -331,9 +370,12 @@ impl Rodas5pQuarticSegment {
                 "non-finite or non-increasing time span",
             ));
         }
-        work.construction_items += 4;
+        work.construction_items += 1;
         let delta_center = step.t_new - step.t_old;
-        let delta_exact = Interval::exact_sum(step.t_new, -step.t_old)?;
+        let delta_exact = dense_op!(
+            work.construction_items,
+            Interval::exact_sum(step.t_new, -step.t_old)
+        )?;
         if !(delta_center.is_finite()
             && delta_center.is_normal()
             && delta_center > 0.0
@@ -433,7 +475,6 @@ impl Rodas5pQuarticSegment {
         work: &mut DenseSegmentWork,
     ) -> DenseOutputResult<Interval> {
         self.validate_identity(work)?;
-        work.normalization_operations += 3;
         if !(time.is_finite() && time >= self.t_old && time <= self.t_new) {
             return Err(DenseOutputError::InvalidSegment(
                 "output time outside represented segment",
@@ -445,8 +486,14 @@ impl Rodas5pQuarticSegment {
         if time == self.t_new {
             return Interval::point(1.0).map_err(DenseOutputError::from);
         }
-        let numerator = Interval::exact_sum(time, -self.t_old)?;
-        let theta = numerator.div(self.delta_exact)?;
+        let numerator = dense_op!(
+            work.normalization_operations,
+            Interval::exact_sum(time, -self.t_old)
+        )?;
+        let theta = dense_op!(
+            work.normalization_operations,
+            numerator.div(self.delta_exact)
+        )?;
         let theta = Interval::new(theta.lo.max(0.0), theta.hi.min(1.0))?;
         if theta.lo > theta.hi {
             return Err(DenseOutputError::InvalidSegment(
@@ -481,7 +528,7 @@ impl Rodas5pQuarticSegment {
                 "center output time or buffer",
             ));
         }
-        work.normalization_operations += 1;
+        work.normalization_operations += 2;
         let theta = (time - self.t_old) / self.delta_center;
         if !(theta.is_finite() && (0.0..=1.0).contains(&theta)) {
             return Err(DenseOutputError::InvalidSegment(
@@ -531,20 +578,35 @@ impl Rodas5pQuarticSegment {
             }
             return Ok(());
         }
-        // The shared complement subtraction is an attempted interval
-        // operation even when its directed primitive refuses.
-        work.interval_value_operations += 1;
-        let one_minus_theta = Interval::point(1.0)?.sub(theta)?;
+        let one_minus_theta = dense_op!(
+            work.interval_value_operations,
+            Interval::point(1.0)?.sub(theta)
+        )?;
         for (i, value) in output.iter_mut().enumerate() {
-            // Charge all per-component interval arithmetic before its first
-            // fallible directed primitive (q and the outer reconstruction).
-            work.interval_value_operations += 9;
-            let q = Interval::point(self.d0[i])?.add(theta.mul(
-                Interval::point(self.d1[i])?.add(theta.mul(Interval::point(self.d2[i])?)?)?,
-            )?)?;
-            *value = one_minus_theta
-                .mul(Interval::point(self.y_old[i])?)?
-                .add(theta.mul(Interval::point(self.y_new[i])?.add(one_minus_theta.mul(q)?)?)?)?;
+            let a = dense_op!(
+                work.interval_value_operations,
+                theta.mul(Interval::point(self.d2[i])?)
+            )?;
+            let b = dense_op!(
+                work.interval_value_operations,
+                Interval::point(self.d1[i])?.add(a)
+            )?;
+            let c = dense_op!(work.interval_value_operations, theta.mul(b))?;
+            let q = dense_op!(
+                work.interval_value_operations,
+                Interval::point(self.d0[i])?.add(c)
+            )?;
+            let left = dense_op!(
+                work.interval_value_operations,
+                one_minus_theta.mul(Interval::point(self.y_old[i])?)
+            )?;
+            let inner = dense_op!(work.interval_value_operations, one_minus_theta.mul(q))?;
+            let inner = dense_op!(
+                work.interval_value_operations,
+                Interval::point(self.y_new[i])?.add(inner)
+            )?;
+            let right = dense_op!(work.interval_value_operations, theta.mul(inner))?;
+            *value = dense_op!(work.interval_value_operations, left.add(right))?;
         }
         Ok(())
     }
@@ -575,16 +637,35 @@ impl Rodas5pQuarticSegment {
         let theta_start = self.normalize_time(time_start, work)?;
         let theta_end = self.normalize_time(time_end, work)?;
         let theta = Interval::new(theta_start.lo, theta_end.hi)?;
-        work.interval_value_operations += 1;
-        let one_minus_theta = Interval::point(1.0)?.sub(theta)?;
+        let one_minus_theta = dense_op!(
+            work.interval_value_operations,
+            Interval::point(1.0)?.sub(theta)
+        )?;
         for (i, value) in output.iter_mut().enumerate() {
-            work.interval_value_operations += 9;
-            let q = Interval::point(self.d0[i])?.add(theta.mul(
-                Interval::point(self.d1[i])?.add(theta.mul(Interval::point(self.d2[i])?)?)?,
-            )?)?;
-            *value = one_minus_theta
-                .mul(Interval::point(self.y_old[i])?)?
-                .add(theta.mul(Interval::point(self.y_new[i])?.add(one_minus_theta.mul(q)?)?)?)?;
+            let a = dense_op!(
+                work.interval_value_operations,
+                theta.mul(Interval::point(self.d2[i])?)
+            )?;
+            let b = dense_op!(
+                work.interval_value_operations,
+                Interval::point(self.d1[i])?.add(a)
+            )?;
+            let c = dense_op!(work.interval_value_operations, theta.mul(b))?;
+            let q = dense_op!(
+                work.interval_value_operations,
+                Interval::point(self.d0[i])?.add(c)
+            )?;
+            let left = dense_op!(
+                work.interval_value_operations,
+                one_minus_theta.mul(Interval::point(self.y_old[i])?)
+            )?;
+            let inner = dense_op!(work.interval_value_operations, one_minus_theta.mul(q))?;
+            let inner = dense_op!(
+                work.interval_value_operations,
+                Interval::point(self.y_new[i])?.add(inner)
+            )?;
+            let right = dense_op!(work.interval_value_operations, theta.mul(inner))?;
+            *value = dense_op!(work.interval_value_operations, left.add(right))?;
         }
         Ok(())
     }
@@ -636,12 +717,10 @@ impl Rodas5pQuarticSegment {
         )?;
 
         for i in 0..n {
-            work.residual_operations = work.residual_operations.saturating_add(2);
             let state = workspace.curve[i];
-            workspace.tube[i] = Interval::new(
-                sub_down(state.lo, tube_radius)?,
-                add_up(state.hi, tube_radius)?,
-            )?;
+            let lo = dense_op!(work.residual_operations, sub_down(state.lo, tube_radius))?;
+            let hi = dense_op!(work.residual_operations, add_up(state.hi, tube_radius))?;
+            workspace.tube[i] = Interval::new(lo, hi)?;
         }
 
         work.residual_operations = work.residual_operations.saturating_add(1);
@@ -653,10 +732,16 @@ impl Rodas5pQuarticSegment {
 
         let mut residual_squared_upper = 0.0_f64;
         for i in 0..n {
-            work.residual_operations = work.residual_operations.saturating_add(4);
-            workspace.residual[i] = workspace.derivative[i].sub(workspace.rhs[i])?;
-            let magnitude = workspace.residual[i].mag();
-            residual_squared_upper = add_up(residual_squared_upper, mul_up(magnitude, magnitude)?)?;
+            workspace.residual[i] = dense_op!(
+                work.residual_operations,
+                workspace.derivative[i].sub(workspace.rhs[i])
+            )?;
+            let magnitude = dense_op!(work.residual_operations, workspace.residual[i].mag());
+            let square = dense_op!(work.residual_operations, mul_up(magnitude, magnitude))?;
+            residual_squared_upper = dense_op!(
+                work.residual_operations,
+                add_up(residual_squared_upper, square)
+            )?;
         }
         work.residual_operations = work.residual_operations.saturating_add(1);
         let residual_l2_upper = sqrt_up(residual_squared_upper)?;
@@ -751,28 +836,51 @@ impl Rodas5pQuarticSegment {
         output: &mut [Interval],
         work: &mut DenseSegmentWork,
     ) -> DenseOutputResult<()> {
-        // Both shared interval operations are attempted before any fallible
-        // directed primitive is entered.
-        work.interval_derivative_operations += 2;
-        let one_minus_theta = Interval::point(1.0)?.sub(theta)?;
-        let two_theta = theta.scale(2.0)?;
+        let one_minus_theta = dense_op!(
+            work.interval_derivative_operations,
+            Interval::point(1.0)?.sub(theta)
+        )?;
+        let two_theta = dense_op!(work.interval_derivative_operations, theta.scale(2.0))?;
         let delta = self.delta_exact;
         for (i, value) in output.iter_mut().enumerate() {
-            // Four q operations, two q' operations, two first-term
-            // operations, three second-term operations, and three final
-            // quotient/sum operations.
-            work.interval_derivative_operations += 14;
-            let q = Interval::point(self.d0[i])?.add(theta.mul(
-                Interval::point(self.d1[i])?.add(theta.mul(Interval::point(self.d2[i])?)?)?,
-            )?)?;
-            let q_prime =
-                Interval::point(self.d1[i])?.add(two_theta.mul(Interval::point(self.d2[i])?)?)?;
-            let first = Interval::point(self.y_new[i])?.add(one_minus_theta.mul(q)?)?;
-            let second = theta.mul((-q).add(one_minus_theta.mul(q_prime)?)?)?;
-            *value = (-Interval::point(self.y_old[i])?)
-                .add(first)?
-                .add(second)?
-                .div(delta)?;
+            let a = dense_op!(
+                work.interval_derivative_operations,
+                theta.mul(Interval::point(self.d2[i])?)
+            )?;
+            let b = dense_op!(
+                work.interval_derivative_operations,
+                Interval::point(self.d1[i])?.add(a)
+            )?;
+            let c = dense_op!(work.interval_derivative_operations, theta.mul(b))?;
+            let q = dense_op!(
+                work.interval_derivative_operations,
+                Interval::point(self.d0[i])?.add(c)
+            )?;
+            let a = dense_op!(
+                work.interval_derivative_operations,
+                two_theta.mul(Interval::point(self.d2[i])?)
+            )?;
+            let q_prime = dense_op!(
+                work.interval_derivative_operations,
+                Interval::point(self.d1[i])?.add(a)
+            )?;
+            let a = dense_op!(work.interval_derivative_operations, one_minus_theta.mul(q))?;
+            let first = dense_op!(
+                work.interval_derivative_operations,
+                Interval::point(self.y_new[i])?.add(a)
+            )?;
+            let a = dense_op!(
+                work.interval_derivative_operations,
+                one_minus_theta.mul(q_prime)
+            )?;
+            let b = dense_op!(work.interval_derivative_operations, (-q).add(a))?;
+            let second = dense_op!(work.interval_derivative_operations, theta.mul(b))?;
+            let a = dense_op!(
+                work.interval_derivative_operations,
+                (-Interval::point(self.y_old[i])?).add(first)
+            )?;
+            let b = dense_op!(work.interval_derivative_operations, a.add(second))?;
+            *value = dense_op!(work.interval_derivative_operations, b.div(delta))?;
         }
         Ok(())
     }

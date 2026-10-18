@@ -1,7 +1,8 @@
-//! Newton-Leja phi actions with an estimate-only total (RVJ DAG node PP10,
-//! `research/pp10_leja_candidate_20261004`). Opt-in research candidate: no
-//! integrator, router or default dispatch calls it, and no result of it is
-//! a certificate.
+//! Newton-Leja phi actions (RVJ DAG node PP10 and subsequent A04 closure).
+//! The historical estimate/candidate APIs retain their status. The explicit
+//! [`leja_phi_action_enclosed_with_workspace`] API encloses the complete
+//! represented dense symmetric action. No integrator, router or default
+//! dispatch calls these opt-in APIs.
 //!
 //! The action is `F = sum_{k=0}^{4} phi_k(h A) w_k` for given vectors `w_k`
 //! (`phi_0 = exp`), the same target as
@@ -54,7 +55,7 @@
 //! of the fused sum. The recurrence stops when the estimate is at most the
 //! requested absolute tolerance or the degree reaches the cap
 //! ([`LEJA_DEGREE_CAP`]); then [`LejaReport::converged`] is false. The total
-//! error is **always** [`TotalErrorStatus::EstimateOnly`] with the reason
+//! error of this historical estimate API is [`TotalErrorStatus::EstimateOnly`] with the reason
 //! [`LEJA_TOTAL_NOT_CERTIFIED`]: the estimate is a heuristic, and neither
 //! the truncation nor the rounding is bounded. [`LejaReport`] is a separate
 //! type, so it cannot be passed to
@@ -62,6 +63,10 @@
 //! [`crate::polynomial_action::JointPhiReport::admit_laguerre_total`] or
 //! [`crate::polynomial_action::route_joint_phi`], and its status would be
 //! rejected by them.
+//!
+//! The stopping paragraph above describes [`leja_phi_action`]. The explicit
+//! enclosed route uses outward coefficient, operator, recurrence and output
+//! replay; its complete proof is `research/cloud_completion_20261018/LEJA.md`.
 //!
 //! # Work
 //!
@@ -96,11 +101,11 @@ use crate::{
 };
 
 pub const LEJA_SCHEMA: &str = "vigilode-leja-phi-action-v1";
-/// The reason of every Leja total: an estimate, never a certificate.
+/// The reason attached to the historical last-two-term estimate API.
 pub const LEJA_TOTAL_NOT_CERTIFIED: &str = "LEJA_TOTAL_NOT_CERTIFIED";
-/// Total authority remains held until independent review accepts the interval
-/// replay and its complete finite-domain/coefficient-tail premises.
-pub const LEJA_ARITHMETIC_HOLD: &str = "LEJA_ARITHMETIC_HOLD: outward replay implementation awaits independent review of arithmetic-domain and coefficient-tail premises";
+/// Historical candidate-API reason retained for compatibility. The separately
+/// reviewed explicit enclosed API does not use this legacy status.
+pub const LEJA_ARITHMETIC_HOLD: &str = "LEJA_ARITHMETIC_HOLD: legacy candidate API retains EstimateOnly; use the explicit scoped enclosed API for the reviewed total bound";
 /// Prefix of every input or domain error of this module.
 pub const LEJA_INPUT_UNSUPPORTED: &str = "LEJA_INPUT_UNSUPPORTED";
 /// The largest Newton degree (operator products per block column).
@@ -560,6 +565,8 @@ pub fn leja_phi_action_capped(
 // -----------------------------------------------------------------------------
 
 pub const LEJA_CERTIFIED_SCHEMA: &str = "vigilode-leja-certified-v1";
+/// Scope of the explicitly enclosed represented dense symmetric action.
+pub const LEJA_ENCLOSED_SCHEMA: &str = "vigilode-leja-enclosed-dense-symmetric-v1";
 
 /// The precomputed node-polynomial bounds `M_{m+1} >= max_{xi in [-2, 2]} prod_{j=0}^m |xi - xi_j|`
 /// for all degrees `m = 0 ..= LEJA_DEGREE_CAP`.
@@ -579,9 +586,31 @@ fn leja_node_bounds_with_setup(work: Option<&mut LejaSetupWork>) -> &'static [f6
         if let Some(work) = work.as_deref_mut() {
             work.allocation_request((LEJA_DEGREE_CAP + 1) as u64);
         }
-        let bounds: Vec<f64> = (0..=LEJA_DEGREE_CAP)
-            .map(|m| leja_node_polynomial_bound_counted(m, xi, work.as_deref_mut()))
-            .collect();
+        // One prefix sweep per dyadic cell reuses every preceding product.
+        // All entries are bitwise equal to separately evaluating each prefix,
+        // while interval products decrease from 128*q*(q+1)/2 to 128*q.
+        let mut bounds = vec![0.0_f64; xi.len()];
+        for part in 0..128 {
+            if let Some(work) = work.as_deref_mut() {
+                work.scalar_proxy_units(3);
+                work.interval_kernel_invocation();
+            }
+            let lo = -2.0 + part as f64 / 32.0;
+            let hi = lo + 1.0 / 32.0;
+            let mut product = Interval::point(1.0).expect("finite exact constant");
+            for (j, &node) in xi.iter().enumerate() {
+                let factor_lo = setup_kernel!(work, sub_down(lo, node)).expect("finite Leja nodes");
+                let factor_hi = setup_kernel!(work, sub_up(hi, node)).expect("finite Leja nodes");
+                let factor = setup_kernel!(work, Interval::new(factor_lo, factor_hi))
+                    .expect("ordered endpoints");
+                product =
+                    setup_kernel!(work, product.mul(factor)).expect("bounded degree Leja product");
+                bounds[j] = bounds[j].max(product.mag());
+                if let Some(work) = work.as_deref_mut() {
+                    work.scalar_proxy_units(3);
+                }
+            }
+        }
         bounds
     })[..]
 }
@@ -949,7 +978,14 @@ fn update_leja_total_status(
     degree_cap: usize,
     total_budget: f64,
     total_bound: f64,
+    certify_total: bool,
 ) {
+    if certify_total {
+        // A finite enclosing bound is valid even if it exceeds the requested
+        // budget; convergence remains a separate report field.
+        *status = TotalErrorStatus::Certified { bound: total_bound };
+        return;
+    }
     if !matches!(status, TotalErrorStatus::EstimateOnly { .. }) {
         *status = TotalErrorStatus::EstimateOnly {
             reason: String::with_capacity(256),
@@ -1134,7 +1170,10 @@ fn exp_bidiagonal_columns_certified(
                 };
                 let diagonal_term_lo = setup_kernel!(work, mul_down(diagonal_lo[i], term_lo[i]))?;
                 let numerator_lo = setup_kernel!(work, add_down(diagonal_term_lo, below_lo))?;
-                term_lo[i] = setup_kernel!(work, mul_down(numerator_lo, inv_lo))?;
+                // The exact Taylor term is nonnegative. Intersecting with
+                // that domain keeps tiny outward underflow values from
+                // becoming artificial negative inputs in later steps.
+                term_lo[i] = setup_kernel!(work, mul_down(numerator_lo, inv_lo))?.max(0.0);
                 let diagonal_term_hi = setup_kernel!(work, mul_up(diagonal_hi[i], term_hi[i]))?;
                 let numerator_hi = setup_kernel!(work, add_up(diagonal_term_hi, below_hi))?;
                 term_hi[i] = setup_kernel!(work, mul_up(numerator_hi, inv_hi))?;
@@ -1505,12 +1544,13 @@ impl CertifiedLejaCoeffCache {
     }
 }
 
-/// Newton-Leja diagnostic report retaining the historical API name.
-/// `total_error()` is EstimateOnly while the total arithmetic proof is on hold;
-/// convergence means the computed component sum met the budget.
+/// Immutable Newton-Leja report retaining its historical type name.
+/// Historical candidate APIs return EstimateOnly. The explicit enclosed API
+/// returns a Certified bound for the represented dense symmetric fused action.
+/// Convergence separately means that bound met the requested budget.
 ///
 /// The report is immutable through the public API so its payload cannot become
-/// detached from a future total-error authority status. Serialization retains
+/// detached from its total-error authority status. Serialization retains
 /// the historical field names and values.
 ///
 /// ```compile_fail
@@ -1897,6 +1937,7 @@ pub fn leja_phi_action_certified_with_cache_and_workspace<'a>(
         work,
         workspace,
         None,
+        false,
     )
 }
 
@@ -1925,6 +1966,52 @@ pub fn leja_phi_action_certified_with_setup_work<'a>(
         work,
         workspace,
         Some(setup_work),
+        false,
+    )
+}
+
+/// Complete outward enclosure of `sum_k s_k phi_k(h A) w_k` for the exact
+/// binary64 matrix and input values represented by the arguments.
+///
+/// The domain is the immutable dense, exactly symmetric operator with an
+/// outward Gershgorin-verified nonpositive spectrum. The algorithm replays
+/// every matrix action, recurrence, coefficient sum and output operation with
+/// outward intervals, including additive subnormal underflow. Overflow and
+/// unsupported ranges return errors. This contract assumes the same IEEE-754
+/// gradual-underflow arithmetic contract as `crate::directed`.
+///
+/// The certificate covers `report.fused()`, not separate column errors, model
+/// uncertainty or ODE trajectory error. `Certified { bound }` records an
+/// enclosing bound even when `converged()` is false; callers must additionally
+/// check convergence when enforcing `total_budget`.
+///
+/// After warm-up, fixed dimensions/cap and a populated coefficient cache allow
+/// an allocation-free successful call. `setup_work` optionally records static
+/// and coefficient setup separately from action work. Legacy candidate APIs
+/// retain EstimateOnly and share exactly the same numerical implementation.
+#[allow(clippy::too_many_arguments)]
+pub fn leja_phi_action_enclosed_with_workspace<'a>(
+    op: &SymmetricNonpositiveOperator,
+    h: f64,
+    input: JointPhiInput<'_>,
+    total_budget: f64,
+    degree_cap: usize,
+    cache: Option<&mut CertifiedLejaCoeffCache>,
+    work: &mut WorkCounters,
+    workspace: &'a mut CertifiedLejaWorkspace,
+    setup_work: Option<&mut LejaSetupWork>,
+) -> CoreResult<&'a CertifiedLejaReport> {
+    leja_phi_action_certified_with_cache_and_workspace_inner(
+        op,
+        h,
+        input,
+        total_budget,
+        degree_cap,
+        cache,
+        work,
+        workspace,
+        setup_work,
+        true,
     )
 }
 
@@ -1939,7 +2026,13 @@ fn leja_phi_action_certified_with_cache_and_workspace_inner<'a>(
     work: &mut WorkCounters,
     workspace: &'a mut CertifiedLejaWorkspace,
     mut setup_work: Option<&mut LejaSetupWork>,
+    certify_total: bool,
 ) -> CoreResult<&'a CertifiedLejaReport> {
+    let schema = if certify_total {
+        LEJA_ENCLOSED_SCHEMA
+    } else {
+        LEJA_CERTIFIED_SCHEMA
+    };
     workspace.last_certification_ops = 0;
     let n = op.dimension();
     if !(h.is_finite() && h >= 0.0) {
@@ -2210,6 +2303,19 @@ fn leja_phi_action_certified_with_cache_and_workspace_inner<'a>(
                 )?;
             }
 
+            // C_{r,k} = scale^r / (r+k)!, initialized at r=1.
+            // Advancing r costs one product and division per phi column,
+            // instead of rebuilding every factorial through every degree.
+            let factorials = [1.0, 2.0, 6.0, 24.0, 120.0];
+            let mut remainder_coefficients = [0.0; JOINT_PHI_TERMS];
+            let mut coefficient_radius_sums = [0.0; JOINT_PHI_TERMS];
+            for k in 0..JOINT_PHI_TERMS {
+                remainder_coefficients[k] = div_up(scale, factorials[k])?;
+                coefficient_radius_sums[k] =
+                    mul_up(d_rad[0][k], workspace.r_norms[0][column_of(k)])?;
+                certification_ops = certification_ops.saturating_add(2);
+            }
+
             for j in 1..=degree_cap {
                 local_block_products += 1;
                 for col in 0..width {
@@ -2286,12 +2392,12 @@ fn leja_phi_action_certified_with_cache_and_workspace_inner<'a>(
                 let mut t1_terms = [0.0_f64; JOINT_PHI_TERMS];
                 for k in 0..JOINT_PHI_TERMS {
                     let col = column_of(k);
-                    let mut coeff_k = 1.0_f64;
-                    for p in 1..=(j + 1 + k) {
-                        let numer = if p <= j + 1 { scale } else { 1.0 };
-                        coeff_k = div_up(mul_up(coeff_k, numer)?, p as f64)?;
-                        certification_ops = certification_ops.saturating_add(2);
-                    }
+                    remainder_coefficients[k] = div_up(
+                        mul_up(remainder_coefficients[k], scale)?,
+                        (j + 1 + k) as f64,
+                    )?;
+                    let coeff_k = remainder_coefficients[k];
+                    certification_ops = certification_ops.saturating_add(2);
                     t1_terms[k] = mul_up(
                         scales[k].abs(),
                         mul_up(
@@ -2308,15 +2414,12 @@ fn leja_phi_action_certified_with_cache_and_workspace_inner<'a>(
                 let mut t2_terms = [0.0_f64; JOINT_PHI_TERMS];
                 for k in 0..JOINT_PHI_TERMS {
                     let col = column_of(k);
-                    let mut col_sum = 0.0_f64;
-                    for step_i in 0..=j {
-                        col_sum = add_up(
-                            col_sum,
-                            mul_up(d_rad[step_i][k], workspace.r_norms[step_i][col])?,
-                        )?;
-                        certification_ops = certification_ops.saturating_add(2);
-                    }
-                    t2_terms[k] = mul_up(scales[k].abs(), col_sum)?;
+                    coefficient_radius_sums[k] = add_up(
+                        coefficient_radius_sums[k],
+                        mul_up(d_rad[j][k], workspace.r_norms[j][col])?,
+                    )?;
+                    certification_ops = certification_ops.saturating_add(2);
+                    t2_terms[k] = mul_up(scales[k].abs(), coefficient_radius_sums[k])?;
                     certification_ops = certification_ops.saturating_add(1);
                 }
                 let cur_t2 = sum_up_slice(&t2_terms)?;
@@ -2433,7 +2536,7 @@ fn leja_phi_action_certified_with_cache_and_workspace_inner<'a>(
         }
         rep.fused.resize(n, 0.0);
         rep.schema.clear();
-        rep.schema.push_str(LEJA_CERTIFIED_SCHEMA);
+        rep.schema.push_str(schema);
         rep.input.clear();
         rep.input.push_str(input_name);
         rep.branch.clear();
@@ -2461,6 +2564,7 @@ fn leja_phi_action_certified_with_cache_and_workspace_inner<'a>(
             degree_cap,
             total_budget,
             total_bound,
+            certify_total,
         );
         rep.evidence = evidence;
         rep.vector_products = local_vector_products;
@@ -2478,9 +2582,10 @@ fn leja_phi_action_certified_with_cache_and_workspace_inner<'a>(
             degree_cap,
             total_budget,
             total_bound,
+            certify_total,
         );
         workspace.report = Some(CertifiedLejaReport {
-            schema: LEJA_CERTIFIED_SCHEMA.into(),
+            schema: schema.into(),
             input: input_name.into(),
             branch: branch.into(),
             dimension: n,
@@ -2515,6 +2620,30 @@ fn leja_phi_action_certified_with_cache_and_workspace_inner<'a>(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn cloud_prefix_sweep_matches_separate_prefixes_bitwise() {
+        let points = leja_points();
+        let swept = leja_node_bounds();
+        for (degree, &bound) in swept.iter().enumerate() {
+            assert_eq!(
+                bound.to_bits(),
+                leja_node_polynomial_bound(degree, points).to_bits(),
+                "prefix {degree}",
+            );
+        }
+    }
+
+    #[test]
+    fn cloud_taylor_lower_bounds_stay_nonnegative_under_underflow() {
+        let tiny = f64::from_bits(1);
+        let (lo, hi) =
+            exp_bidiagonal_columns_certified(&[tiny, tiny], &[tiny, tiny], &[tiny], &[tiny], None)
+                .unwrap();
+        assert!(lo.iter().flatten().all(|x| *x >= 0.0));
+        assert!(lo[0][0] <= 1.0 && hi[0][0] >= 1.0);
+        assert!(lo[0][1] <= tiny && hi[0][1] >= tiny);
+    }
 
     #[test]
     fn zero_center_scalar_phi_radii_enclose_nonbinary_factorials() {

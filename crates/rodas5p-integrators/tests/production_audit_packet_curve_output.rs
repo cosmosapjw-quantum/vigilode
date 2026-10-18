@@ -225,10 +225,11 @@ fn refusal_preserves_work_and_warmed_evaluation_does_not_allocate() {
         Err(PacketError::OutwardRefusal(_))
     ));
     assert_eq!(work.curve_output_certificate_ops - before_overflow, 7);
-    assert!(matches!(
-        output.enclose_at(0.0, &[f64::from_bits(1)], &mut workspace, &mut work),
-        Ok(_)
-    ));
+    assert!(
+        output
+            .enclose_at(0.0, &[f64::from_bits(1)], &mut workspace, &mut work)
+            .is_ok()
+    );
     output
         .enclose_at(0.05, &[0.0], &mut workspace, &mut work)
         .unwrap();

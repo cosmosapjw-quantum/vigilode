@@ -1,0 +1,154 @@
+    Blocking waiting for file lock on build directory
+    Checking rodas5p-integrators v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-integrators)
+   Compiling rodas5p-fair-ab v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-fair-ab)
+error: this function has too many arguments (8/7)
+   --> crates/rodas5p-integrators/src/packet_curve_output.rs:221:5
+    |
+221 | /     fn enclose_prepared<'a>(
+222 | |         &'a self,
+223 | |         time: f64,
+224 | |         s: f64,
+...   |
+229 | |         work: &mut PacketWorkCounters,
+230 | |     ) -> Result<PacketCurveOutputView<'a>, PacketError> {
+    | |_______________________________________________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#too_many_arguments
+    = note: `-D clippy::too-many-arguments` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::too_many_arguments)]`
+
+error: the loop variable `j` is used to index `weights`
+   --> crates/rodas5p-integrators/src/packet_curve_output.rs:256:18
+    |
+256 |         for j in 0..n {
+    |                  ^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#needless_range_loop
+    = note: `-D clippy::needless-range-loop` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::needless_range_loop)]`
+help: consider using an iterator and enumerate()
+    |
+256 -         for j in 0..n {
+256 +         for (j, <item>) in weights.iter().enumerate().take(n) {
+    |
+
+error: items after a test module
+   --> crates/rodas5p-integrators/src/packet_curve.rs:596:1
+    |
+596 |   mod degree_tests {
+    |   ^^^^^^^^^^^^^^^^
+...
+618 | / fn rounded_candidate_force(
+619 | |     candidate: &[(f64, f64)],
+620 | |     chi: f64,
+621 | |     work: &mut PacketWorkCounters,
+622 | | ) -> Result<Vec<(f64, f64)>, PacketError> {
+    | |_________________________________________^
+...
+655 | / fn rounded_product(
+656 | |     left: &[(f64, f64)],
+657 | |     right: &[(f64, f64)],
+658 | |     output_len: usize,
+659 | |     work: &mut PacketWorkCounters,
+660 | | ) -> Result<Vec<(f64, f64)>, PacketError> {
+    | |_________________________________________^
+...
+687 | / fn interval_complex_add(
+688 | |     a: IComplex,
+689 | |     b: IComplex,
+690 | |     work: &mut PacketWorkCounters,
+691 | | ) -> Result<IComplex, PacketError> {
+    | |__________________________________^
+...
+705 | / fn interval_complex_sub(
+706 | |     a: IComplex,
+707 | |     b: IComplex,
+708 | |     work: &mut PacketWorkCounters,
+709 | | ) -> Result<IComplex, PacketError> {
+    | |__________________________________^
+...
+723 | / fn interval_complex_mul(
+724 | |     a: IComplex,
+725 | |     b: IComplex,
+726 | |     work: &mut PacketWorkCounters,
+727 | | ) -> Result<IComplex, PacketError> {
+    | |__________________________________^
+...
+732 | / fn interval_complex_scale(
+733 | |     a: IComplex,
+734 | |     scale: Interval,
+735 | |     work: &mut PacketWorkCounters,
+736 | | ) -> Result<IComplex, PacketError> {
+    | |__________________________________^
+...
+741 | / fn interval_i_omega_y(
+742 | |     y: IComplex,
+743 | |     omega: Interval,
+744 | |     work: &mut PacketWorkCounters,
+745 | | ) -> Result<IComplex, PacketError> {
+    | |__________________________________^
+...
+754 | / fn conjugate_coefficients(
+755 | |     polynomial: &[IComplex],
+756 | |     work: &mut PacketWorkCounters,
+757 | | ) -> Result<Vec<IComplex>, PacketError> {
+    | |_______________________________________^
+...
+771 | / fn interval_polynomial_product(
+772 | |     left: &[IComplex],
+773 | |     right: &[IComplex],
+774 | |     work: &mut PacketWorkCounters,
+775 | | ) -> Result<Vec<IComplex>, PacketError> {
+    | |_______________________________________^
+...
+797 | / fn rotate_and_scale_i_chi(
+798 | |     polynomial: &[IComplex],
+799 | |     chi: f64,
+800 | |     output_len: usize,
+801 | |     work: &mut PacketWorkCounters,
+802 | | ) -> Result<Vec<IComplex>, PacketError> {
+    | |_______________________________________^
+...
+825 | / fn counted_capacity<T>(
+826 | |     len: usize,
+827 | |     label: &'static str,
+828 | |     work: &mut PacketWorkCounters,
+829 | | ) -> Result<Vec<T>, PacketError> {
+    | |________________________________^
+...
+836 | / fn copied_slice<T: Copy>(
+837 | |     source: &[T],
+838 | |     label: &'static str,
+839 | |     work: &mut PacketWorkCounters,
+840 | | ) -> Result<Vec<T>, PacketError> {
+    | |________________________________^
+...
+848 | / fn copy_identity(
+849 | |     source: &PacketIdentity,
+850 | |     work: &mut PacketWorkCounters,
+851 | | ) -> Result<PacketIdentity, PacketError> {
+    | |________________________________________^
+...
+905 | / fn complex_magnitude_upper(
+906 | |     value: PacketComplexInterval,
+907 | |     work: &mut PacketWorkCounters,
+908 | | ) -> Result<f64, PacketError> {
+    | |_____________________________^
+...
+924 | / fn coefficient_sum_bound(
+925 | |     mean: &[PacketComplexInterval],
+926 | |     residual: &[PacketComplexInterval],
+927 | |     modes: usize,
+...   |
+930 | |     work: &mut PacketWorkCounters,
+931 | | ) -> Result<ContinuousPacketResidualBound, PacketError> {
+    | |_______________________________________________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#items_after_test_module
+    = note: `-D clippy::items-after-test-module` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::items_after_test_module)]`
+    = help: move the items to before the test module was defined
+
+error: could not compile `rodas5p-integrators` (lib) due to 2 previous errors
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `rodas5p-integrators` (lib test) due to 3 previous errors

@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "reviewer": "structured_driver",
+  "author": "dense_completion",
+  "decision": "PASS_SCOPED",
+  "scope": "sealed scalar PR101 continuous verification on [0,1], immutable target, inherited uncertainty and transactional requested outputs",
+  "basis": [
+    "independent_algebraic_reconstruction",
+    "source_inspection",
+    "independent_native_test"
+  ],
+  "source_sha256": {
+    "crates/rodas5p-integrators/src/bound_pr101.rs": "075884554caf4af3941efff089c5be5841a79ef15e29ab4b1f7d863adb5a672c",
+    "crates/rodas5p-integrators/src/dense_output_v2.rs": "ebced52f15502a62bfb2c333e12ad12e8d0fbaaa51154809f10d80b604f8c33e",
+    "crates/rodas5p-integrators/tests/production_audit_pr101_cloud.rs": "5d80e873849db3376dbebecace6861d9f764f456ae1569e8fa4e0be5f4ae84e0",
+    "crates/rodas5p-integrators/tests/independent_pr101_review.rs": "e83728d1f5181c2d37fef2bd4fe3957a836096c52c571e4c36a73cb5cd430d68"
+  },
+  "findings": [
+    {
+      "id": "DR01",
+      "classification": "implementation_accounting",
+      "status": "corrected",
+      "description": "Candidate dispositions could be classified again by outer rejection; snapshot before candidate and assign exactly one outer disposition while preserving executed work."
+    }
+  ],
+  "evidence": [
+    "REVIEW_DENSE.md",
+    "evidence/independent_pr101_review.log",
+    "evidence/pr101_cloud_final.log",
+    "evidence/structured_scoped_numerics.log",
+    "REVIEW_DENSE_TRANSPORT.md"
+  ],
+  "remaining_scope_exclusions": [
+    "generic callbacks",
+    "global default solver promotion",
+    "measured speed",
+    "allocator calibration"
+  ],
+  "reviewed_deltas": [
+    "before-candidate disposition snapshot",
+    "progressive per-trial tube within fixed global budget",
+    "upper-triangular scalar convolution with doubled off-diagonal outward products"
+  ]
+}

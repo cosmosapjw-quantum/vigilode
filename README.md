@@ -1,5 +1,14 @@
 # VigilODE
 
+> **Cloud completion (2026-10-18):** New opt-in requested-mesh packet,
+> represented dense-symmetric Leja, and sealed PR101 routes have scoped
+> verification. The complete collective eight-stage backend and reusable
+> parallel error scan are implemented. See the
+> [current report](research/cloud_completion_20261018/REPORT_KO.md),
+> [scope decisions](research/cloud_completion_20261018/DECISION.json), and
+> [local Codex handoff](research/cloud_completion_20261018/HANDOFF_CODEX_KO.md).
+> General production and measured speed/allocation promotion remain open.
+
 > **2026-10-18 production audit:** The latest packet and polynomial optimizations
 > remain research features. The LP10 certified-packet promotion and the Diffsol
 > headline performance/allocation claims are superseded by the

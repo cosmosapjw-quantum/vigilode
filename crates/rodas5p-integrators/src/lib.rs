@@ -14,15 +14,21 @@ pub mod audit2_stage_certificate_research;
 mod a1_two_arm_receipt;
 mod adaptive;
 mod adaptive_exponential;
+pub mod affine_transport;
 mod bdf;
 mod block;
 mod bound_collective;
+mod bound_pr101;
+pub use bound_pr101::{
+    Pr101Bound, Pr101Error, Pr101Model, Pr101Output, Pr101Run, Pr101VerifiedSegment,
+};
 mod candidates;
 mod causal_majorant;
 mod certification;
 mod certified_budget;
 pub mod collective_direct;
 pub mod collective_model;
+pub mod collective_rodas5p;
 mod common_w_gate;
 mod comparator_fidelity;
 mod controller_telemetry;

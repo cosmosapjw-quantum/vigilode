@@ -1,0 +1,224 @@
+{
+  "schema": "vigilode-dense-transport-independent-review-v1",
+  "date_utc": "2026-10-18",
+  "baseline_commit": "c513f478f952068b91e3da368fb2cb156d942b28",
+  "reviewer": "/root/independent_review/dense_transport_review",
+  "role": "independent reviewer; did not edit production author source",
+  "scope": "new PR101 verifier/dense extraction/counters, affine transport, PT1/PT2 proof and scoped tests only",
+  "methods": [
+    "independent continuous residual and scalar Dini comparison derivation",
+    "direct native ownership/transaction/source inspection",
+    "independent recursive work/span and prefix correctness induction",
+    "independent rederivation of 214 exact rational affine prefix values plus 6 initials",
+    "read and reused new native execution logs; no historical campaign rerun"
+  ],
+  "findings": [
+    {
+      "id": "DTR01",
+      "severity": "high-claim-scope",
+      "status": "CLOSED_CORRECTED",
+      "original": "Levelwise Rayon loops plus serial temporary initialization did not justify claimed logarithmic native fork-join span.",
+      "correction": "Recursive disjoint preorder tree with reusable workspace; allocation separated as serial O(N) setup.",
+      "verified_result": "evaluate has O(N) work and O(log N) ideal fork-join span; exactly 3N-2 compositions for N>0."
+    },
+    {
+      "id": "DTR02",
+      "severity": "low-boundary",
+      "status": "CLOSED_CORRECTED",
+      "original": "PT2 iteration formula omitted q=0.",
+      "correction": "q=0 needs one exact iteration when D>epsilon, otherwise zero; executable approximate residual adds eta."
+    },
+    {
+      "id": "DTR03",
+      "severity": "low-accounting",
+      "status": "CLOSED_CORRECTED",
+      "original": "Identity.apply validation added one unreported bound evaluation.",
+      "correction": "Direct finite/nonnegative initial-radius validation now leaves exactly N bound evaluations."
+    },
+    {
+      "id": "DTR04",
+      "severity": "medium-usability",
+      "status": "CLOSED_SCOPED_REPAIR",
+      "original": "Reviewer-requested nonzero Riccati orbit exposed early full-tube budget starvation and eventual minimum-step refusal.",
+      "correction": "Elapsed-time headroom schedule bounded by same atol/2; failure log retained; actual nonzero expanding orbit completes.",
+      "remaining": "Completion for arbitrary coefficients is not asserted; allocation is a scheduling heuristic."
+    },
+    {
+      "id": "DTR05",
+      "severity": "low-evidence",
+      "status": "CLOSED_CORRECTED",
+      "original": "Initial fraction-oracle test label had only libm comparisons.",
+      "correction": "Exact Fraction sine/cosine oracle now supplies 131 checks and monotonic whole-interval error proof for q(t)=t."
+    }
+  ],
+  "verdicts": [
+    {
+      "scope": "PT1 outward arithmetic prefix native kernel",
+      "verdict": "PROMOTE_SCOPED",
+      "conditions": [
+        "caller-established nonnegative affine local error majorants",
+        "existing directed-primitive arithmetic contracts",
+        "finite successful operations"
+      ],
+      "guarantee": "all prefixes enclose exact recurrence; preallocated evaluate O(N) work/O(log N) fork-join span; convenience allocation O(N) serial setup"
+    },
+    {
+      "scope": "PT2 homotopy parallel shooting",
+      "verdict": "PROMOTE_CONDITIONAL_THEORY",
+      "conditions": [
+        "closed invariant product of balls",
+        "uniform q<1",
+        "fine/coarse map error bounds",
+        "full cost inequality before speed adoption"
+      ],
+      "guarantee": "unique fixed points, continuation Delta/(1-q) bound, explicit finite iteration bound and eta floor",
+      "native_client": "NOT_IMPLEMENTED_IN_THIS_SCOPE"
+    },
+    {
+      "scope": "PR101 sealed continuous verifier and opt-in transaction",
+      "verdict": "PROMOTE_SCOPED",
+      "conditions": [
+        "identity-mass immutable PR101 scalar target on [0,1]",
+        "supplied initial ball contains mathematical initial value",
+        "admitted exact positive normal represented clock",
+        "existing directed-primitive contracts"
+      ],
+      "guarantee": "continuous same-curve error, inherited global endpoint error, outward output rounding, verify-before-commit; requested outputs bounded by unchanged atol"
+    },
+    {
+      "scope": "generic production solver and measured runtime speed",
+      "verdict": "NOT_ESTABLISHED_BY_THIS_SCOPE",
+      "next": "additional real-model interval providers and driver transactions; same-accuracy full-cost native benchmarks"
+    }
+  ],
+  "evidence": {
+    "affine_rational_rederivations": 214,
+    "affine_initial_checks": 6,
+    "affine_native_tests_read": 3,
+    "pr101_native_tests_read": 7,
+    "pr101_ledger_tests_read": 3,
+    "dense_contract_tests_read": 15,
+    "pr101_fraction_checks_read": 131,
+    "pr101_stiff_witness": {
+      "outputs": 101,
+      "accepted": 492,
+      "rejected": 292,
+      "rhs_evaluations": 6272,
+      "structural_verification_operations": 574094,
+      "max_sampled_reference_error": 8.382183835919932e-15,
+      "atol": 1e-11,
+      "rtol": 1e-08
+    },
+    "new_nonzero_nonlinear_orbit": {
+      "lambda": 0,
+      "eta": 1,
+      "initial_center": "1/16",
+      "interval": [
+        0,
+        0.25
+      ],
+      "outputs": 17,
+      "exact_reference": "sin(t)+1/(16-t)",
+      "status": "PASS_RECORDED_NATIVE_TEST",
+      "reference_numeric_check": "libm plus binary64 rational evaluation; proof authority comes from continuous verifier"
+    },
+    "native_campaigns_rerun_by_reviewer": 0,
+    "formal_proof_assistant": "NOT_USED"
+  },
+  "source_bindings": [
+    {
+      "path": "crates/rodas5p-integrators/src/affine_transport.rs",
+      "sha256": "4d8687c8c536850d7f5616192a864c839c63ab8e0ddc778678ffd6eba1a9e178"
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/bound_pr101.rs",
+      "sha256": "075884554caf4af3941efff089c5be5841a79ef15e29ab4b1f7d863adb5a672c"
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/dense_output_v2.rs",
+      "sha256": "ebced52f15502a62bfb2c333e12ad12e8d0fbaaa51154809f10d80b604f8c33e"
+    },
+    {
+      "path": "crates/rodas5p-integrators/tests/affine_transport_contract.rs",
+      "sha256": "2405d2a3be9c78fcf3ec69447b33be477d3941d09ce02fa8359220fcbfdf688b"
+    },
+    {
+      "path": "crates/rodas5p-integrators/tests/production_audit_pr101_cloud.rs",
+      "sha256": "5d80e873849db3376dbebecace6861d9f764f456ae1569e8fa4e0be5f4ae84e0"
+    },
+    {
+      "path": "crates/rodas5p-integrators/tests/pr101_cloud_fraction_oracle.py",
+      "sha256": "45d47564f9db42ce233c5e67dd67afec2b4ff7582a5afc016f26f57e7a5aab95"
+    },
+    {
+      "path": "crates/rodas5p-integrators/tests/a05_dense_global_output.rs",
+      "sha256": "93ae703e47d1502b1966cf2ed4bc8833887043c1d7917c5c77d1358dab46a14e"
+    },
+    {
+      "path": "crates/rodas5p-integrators/examples/pr101_verified_run.rs",
+      "sha256": "823b040d0bbf50d3e6c6ac1bfbdf2a6d5ce9abf44bca8308297b8a7d27c0326a"
+    },
+    {
+      "path": "research/cloud_completion_20261018/DENSE.md",
+      "sha256": "ff2a8a76445b1001c0577496430d99cae9d603b7db4b68936289909a0bfe71c5"
+    },
+    {
+      "path": "research/cloud_completion_20261018/PARALLEL_THEORY.md",
+      "sha256": "009dc12b12cab0f42ed8991d3f678d2295c17c0653edaf64cc7c17854ea7ac11"
+    },
+    {
+      "path": "research/cloud_completion_20261018/affine_oracle.py",
+      "sha256": "b079c437f7f47ca7d563050db049ae604e494934c0b65815ddc08599e4265751"
+    },
+    {
+      "path": "research/cloud_completion_20261018/evidence/affine_oracles.json",
+      "sha256": "437a307ca73a5a89caec30b9ca98c3da0b7dfc9adb7ba209898922dc1f274d52"
+    },
+    {
+      "path": "research/cloud_completion_20261018/evidence/affine_test_recursive.log",
+      "sha256": "1135248a1049d7fefd6df8fb813cb4e394fa380b1a915c58155665ad56af0c63"
+    },
+    {
+      "path": "research/cloud_completion_20261018/evidence/pr101_cloud_final.log",
+      "sha256": "efac39881760bab0dc5e7cfab9c88ed939c88b9ac38eb31b3be4ea2b8ae4a993"
+    },
+    {
+      "path": "research/cloud_completion_20261018/evidence/pr101_fraction.json",
+      "sha256": "9650e25cec726bddf0abe8712fe8b94faa2fa439ac9e9941ccba7bec6ad270c9"
+    },
+    {
+      "path": "research/cloud_completion_20261018/evidence/pr101_ledger.log",
+      "sha256": "ac0d582c550509f926105a2af46acfea6c9400749e29f09d3acd3879489f0136"
+    },
+    {
+      "path": "research/cloud_completion_20261018/evidence/pr101_positive_orbit_failure.log",
+      "sha256": "ccecaa5efc2075e888d87ae0363ee94dac4f78e3d26f29a84507b7a1e3e00608"
+    },
+    {
+      "path": "research/cloud_completion_20261018/evidence/pr101_run.json",
+      "sha256": "590ee7e733ff078497f80a4efadf6c878e9eea59105bd62eda45f1e1676c5bc5"
+    },
+    {
+      "path": "research/cloud_completion_20261018/evidence/a05_dense_cloud.log",
+      "sha256": "f837a92f1168421708043fff0efb56a4e86d4266a06f2f35ebd3d8135283e64a"
+    }
+  ],
+  "next_constructive_step": "Recover stable-regime efficiency using a certified future nonexpansive envelope to select full-tube allocation; retain expanding-regime headroom and full output accuracy. Current acceptance increase 394->492 is a documented tradeoff, not a speed gain.",
+  "revision": 2,
+  "superseded_review_sha256": "888aefeb8d959b639e0c44a05726916ff31dda85afa9895cb18812bc477c9f26",
+  "delta_review": "Root-authorized symmetry reduction of the scalar nonlinear square; newly changed source/tests/docs/evidence reviewed without repeating prior campaigns.",
+  "positive_cost_result": {
+    "scope": "successful contracting PR101 verification arithmetic API operations",
+    "identity": "sum_(i,j) z_i z_j = sum_i z_i^2 + 2 sum_(i<j) z_i z_j",
+    "old_nonlinear_convolution_calls": 507,
+    "new_nonlinear_convolution_calls": 351,
+    "old_full_provider_calls": 795,
+    "new_full_provider_calls": 639,
+    "guaranteed_saved_provider_calls_per_success": 156,
+    "recorded_attempts": 784,
+    "recorded_structural_total_before": 696398,
+    "recorded_structural_total_after": 574094,
+    "recorded_total_saved": 122304,
+    "qualification": "directed interval doubling preserves enclosure; no universal narrower-radius or wall-clock ratio claim"
+  }
+}

@@ -130,7 +130,7 @@ fn woodbury_solve_matches_dense_frozen_stage_and_residual_witness() {
         let mut out = vec![0.0; dim];
         let mut work = CollectiveDirectWork::default();
         let factors = CollectiveStageFactors::factorize(&m, &y, s, &mut work).unwrap();
-        let det = factors.schur_determinant_enclosure();
+        let det = factors.schur_determinant_enclosure().unwrap();
         assert!(
             det[1] < 0.0 || det[0] > 0.0,
             "N={n} Schur determinant enclosure contains zero: {det:?}"

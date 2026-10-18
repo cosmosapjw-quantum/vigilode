@@ -16,6 +16,12 @@ use super::{
 #[path = "packet_curve_output.rs"]
 mod output;
 pub use output::{PacketCurveOutput, PacketCurveOutputView, PacketCurveOutputWorkspace};
+#[path = "packet_verified_trajectory.rs"]
+mod verified_trajectory;
+pub use verified_trajectory::{
+    VerifiedPacketConfig, VerifiedPacketError, VerifiedPacketPoint, VerifiedPacketTrajectory,
+    integrate_verified_packet,
+};
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct PacketComplexInterval {
@@ -586,29 +592,6 @@ fn checked_maximum_degree(order: usize, candidate_degree: usize) -> Result<usize
     Ok(degree)
 }
 
-#[cfg(test)]
-mod degree_tests {
-    use super::checked_maximum_degree;
-    use crate::packet_window::PacketError;
-
-    #[test]
-    #[cfg(target_pointer_width = "64")]
-    fn maximum_degree_guard_checks_binary64_integer_domain_without_allocation() {
-        let exact_limit = (1_u64 << 53) as usize;
-        assert_eq!(checked_maximum_degree(exact_limit - 1, 0), Ok(exact_limit));
-        assert!(matches!(
-            checked_maximum_degree(exact_limit, 0),
-            Err(PacketError::OutwardRefusal(
-                "represented maximum degree exceeds exact binary64 integer range"
-            ))
-        ));
-        assert!(matches!(
-            checked_maximum_degree(usize::MAX, 1),
-            Err(PacketError::SizeOverflow("represented maximum degree"))
-        ));
-    }
-}
-
 fn rounded_candidate_force(
     candidate: &[(f64, f64)],
     chi: f64,
@@ -971,4 +954,27 @@ fn coefficient_sum_bound(
         mean_magnitude_sup: Interval::new(0.0, mean_sup)
             .map_err(|_| PacketError::OutwardRefusal("represented mean magnitude bound"))?,
     })
+}
+
+#[cfg(test)]
+mod degree_tests {
+    use super::checked_maximum_degree;
+    use crate::packet_window::PacketError;
+
+    #[test]
+    #[cfg(target_pointer_width = "64")]
+    fn maximum_degree_guard_checks_binary64_integer_domain_without_allocation() {
+        let exact_limit = (1_u64 << 53) as usize;
+        assert_eq!(checked_maximum_degree(exact_limit - 1, 0), Ok(exact_limit));
+        assert!(matches!(
+            checked_maximum_degree(exact_limit, 0),
+            Err(PacketError::OutwardRefusal(
+                "represented maximum degree exceeds exact binary64 integer range"
+            ))
+        ));
+        assert!(matches!(
+            checked_maximum_degree(usize::MAX, 1),
+            Err(PacketError::SizeOverflow("represented maximum degree"))
+        ));
+    }
 }

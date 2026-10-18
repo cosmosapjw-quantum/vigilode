@@ -27,7 +27,8 @@ use crate::packet_work::PacketWorkCounters;
 mod packet_curve;
 pub use packet_curve::{
     ContinuousPacketResidualBound, PacketComplexInterval, PacketCurveOutput, PacketCurveOutputView,
-    PacketCurveOutputWorkspace, RepresentedPacketCurve,
+    PacketCurveOutputWorkspace, RepresentedPacketCurve, VerifiedPacketConfig, VerifiedPacketError,
+    VerifiedPacketPoint, VerifiedPacketTrajectory, integrate_verified_packet,
 };
 
 /// Errors arising during causal packet compilation, candidate iteration, or certification.

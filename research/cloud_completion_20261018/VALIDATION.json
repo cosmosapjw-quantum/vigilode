@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "native_execution": "completed",
+  "compiler": "rustc 1.94.1 (e408947bf 2026-03-25)",
+  "all_target_default_features_check": "PASS",
+  "targeted_native_passes": {
+    "core_contracts": 26,
+    "leja_unit": 2,
+    "integrator_contracts": 38
+  },
+  "targeted_native_total": 66,
+  "leja_fraction_cases": 18,
+  "packet_fraction_containments": 120,
+  "pr101_fraction_checks": 131,
+  "affine_exact_prefixes_including_initials": 220,
+  "runner_check": {
+    "overall_exit_code": 1,
+    "nonallocation_commands_success": true,
+    "allocation_probe_exit_code": 101,
+    "classification": "positive_control_measurement_failure",
+    "receipt": "evidence/runner_check_final/RESULT.json"
+  },
+  "smoke_success": true,
+  "workspace_clippy": "PASS",
+  "workspace_clippy_log": "evidence/clippy_completion.log",
+  "full_workspace_tests_executed": false,
+  "all_feature_execution_claimed": false,
+  "proof_assistant_run": false,
+  "source_identity": "SOURCE_IDENTITY.json",
+  "independent_review": "REVIEW.json",
+  "initial_failures_retained": true,
+  "environment_corrections": [
+    "restored complete standard-library metadata",
+    "LD_LIBRARY_PATH corrected for proc-macro libstd loader"
+  ],
+  "runner_correction": "first PR101 oracle invocation omitted log argument; corrected runner and reran all nonallocation commands successfully"
+}
