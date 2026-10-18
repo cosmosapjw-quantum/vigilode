@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "success": true,
+  "nonallocation_commands_success": true,
+  "executions": [
+    {
+      "name": "comparison_build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--offline",
+        "--profile",
+        "measurement",
+        "-p",
+        "rodas5p-integrators",
+        "--example",
+        "collective_structured_compare"
+      ],
+      "exit_code": 0,
+      "wall_seconds": 0.6092758979648352,
+      "stdout": "comparison_build.stdout",
+      "stderr": "comparison_build.stderr"
+    },
+    {
+      "name": "structured_comparison",
+      "command": [
+        "cargo",
+        "run",
+        "--locked",
+        "--offline",
+        "--profile",
+        "measurement",
+        "-p",
+        "rodas5p-integrators",
+        "--example",
+        "collective_structured_compare",
+        "--",
+        "32",
+        "5"
+      ],
+      "exit_code": 0,
+      "wall_seconds": 0.14996404701378196,
+      "stdout": "structured_comparison.stdout",
+      "stderr": "structured_comparison.stderr"
+    }
+  ],
+  "scientific_scope": "See DECISION.json; successful process alone does not establish accuracy or speed.",
+  "return_to_review": [
+    "environment.json",
+    "executions.json",
+    "*.stdout",
+    "*.stderr",
+    "*.json"
+  ]
+}

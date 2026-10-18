@@ -1,0 +1,42 @@
+{
+  "check_research_node": {
+    "command": [
+      "python3",
+      "tools/check-research-node.py"
+    ],
+    "exit_code": 1,
+    "stdout": "FAIL: research/LEDGER.jsonl:124: L-0124 output research/production_audit_20261018/CONTINUATION_DAG.json sha256 mismatch\nFAIL: research/LEDGER.jsonl:124: L-0124 output research/production_audit_20261018/CONTINUATION_FINDINGS.json sha256 mismatch\nFAIL: research/LEDGER.jsonl:138: L-0138 output research/cloud_completion_20261018/LOCAL_REPORT_KO.md sha256 mismatch\ncheck-research-node: FAIL (139 ledger rows)\n",
+    "stderr": ""
+  },
+  "check_authority_refs": {
+    "command": [
+      "python3",
+      "tools/check-authority-refs.py"
+    ],
+    "exit_code": 0,
+    "stdout": "check-authority-refs: PASS (1677 citations, 297 distinct SHAs: missing+allowlisted=26, non-commit=50, reachable=220, unreachable+allowlisted=1)\n",
+    "stderr": ""
+  },
+  "classification": {
+    "check_research_node": "FAIL_INHERITED_HASH_MISMATCHES_ONLY",
+    "mismatches": [
+      {
+        "ledger_id": "L-0124",
+        "paths": [
+          "research/production_audit_20261018/CONTINUATION_DAG.json",
+          "research/production_audit_20261018/CONTINUATION_FINDINGS.json"
+        ],
+        "classification": "known inherited historical generated-output hash mismatch; original files and ledger entry preserved"
+      },
+      {
+        "ledger_id": "L-0138",
+        "paths": [
+          "research/cloud_completion_20261018/LOCAL_REPORT_KO.md"
+        ],
+        "classification": "present on fetched base ac89a9a before this replay; expected hash matches 78ed1c7 while report changed in 161a27a"
+      }
+    ],
+    "check_authority_refs": "PASS",
+    "new_ledger_row_L0139": "input/output hashes verified"
+  }
+}

@@ -81,13 +81,14 @@
     {
       "id": "RESEARCH_NODE_CHECK",
       "name": "Postflight ledger and authority-reference checks",
-      "status": "KNOWN_INHERITED_HASH_MISMATCH_ONLY",
+      "status": "KNOWN_INHERITED_HASH_MISMATCHES_L0124_L0138",
       "dependencies": [
         "REPORT"
       ],
       "evidence": [
         "evidence/local_checks/postflight_checks.json",
-        "evidence/publication_checks.json"
+        "evidence/publication_checks.json",
+        "evidence/local_codex_replay_20261018/POSTFLIGHT_CHECKS.json"
       ]
     },
     {
@@ -152,6 +153,48 @@
       "remote_ref": "refs/heads/research/cloud-completion-20261018",
       "remote_ref_sha_at_verification": "161a27a5cf720683da0a124f407a78e864c257e3",
       "fast_forward": true
+    },
+    {
+      "id": "RACE_TRIAGE_AC89",
+      "name": "First fresh check failure classification",
+      "status": "RESOLVED_TEST_HARNESS_RACE",
+      "dependencies": [
+        "SRC"
+      ],
+      "evidence": [
+        "evidence/local_codex_replay_20261018/first_attempt_race/core_contracts.stdout",
+        "evidence/local_codex_replay_20261018/first_attempt_race/core_contracts.stderr",
+        "evidence/local_codex_replay_20261018/PREREGISTRATION.json"
+      ],
+      "resolution": "core Leja test suite serialized; isolated and serial contract reruns passed"
+    },
+    {
+      "id": "REPLAY_F522",
+      "name": "Clean check, smoke, and calibrated diagnostic bench after runner fix",
+      "status": "PASS_DIAGNOSTIC_ONLY",
+      "dependencies": [
+        "RACE_TRIAGE_AC89"
+      ],
+      "evidence": [
+        "evidence/local_codex_replay_20261018/EXECUTION_RECORD.json",
+        "evidence/local_codex_replay_20261018/check/RESULT.json",
+        "evidence/local_codex_replay_20261018/smoke/RESULT.json",
+        "evidence/local_codex_replay_20261018/bench/RESULT.json"
+      ]
+    },
+    {
+      "id": "PUBLISH_REPLAY_F522",
+      "name": "Publish latest replay evidence and verify remote ref",
+      "status": "PENDING",
+      "dependencies": [
+        "REPLAY_F522"
+      ],
+      "evidence": [
+        "research/LEDGER.jsonl",
+        "git ls-remote origin refs/heads/research/cloud-completion-20261018",
+        "research/LEDGER.jsonl",
+        "evidence/local_codex_replay_20261018/POSTFLIGHT_CHECKS.json"
+      ]
     }
   ],
   "scope_decisions": {
@@ -161,18 +204,28 @@
     "allocation_warmed_step_scope": "PASS_AFTER_POSITIVE_CONTROL",
     "overall_production": "HOLD",
     "measured_speed_promotion": "HOLD",
-    "research_node_check": "KNOWN_INHERITED_HASH_MISMATCH_ONLY; new cloud node reported without errors",
+    "research_node_check": "KNOWN_INHERITED_HASH_MISMATCHES_L0124_L0138; L-0139 validated",
     "authority_refs_check": "PASS",
     "fresh_rerun_latest_head": "PASS_DIAGNOSTIC_ONLY",
-    "fresh_rerun_allocation": "PASS_AFTER_POSITIVE_CONTROL_FOR_MEASURED_RUNS_ONLY"
+    "fresh_rerun_allocation": "PASS_AFTER_POSITIVE_CONTROL_FOR_MEASURED_RUNS_ONLY",
+    "latest_replay_check": "PASS",
+    "latest_replay_smoke": "PASS",
+    "latest_replay_bench": "PASS_DIAGNOSTIC_ONLY",
+    "latest_replay_allocation": "PASS_AFTER_POSITIVE_CONTROL_FOR_MEASURED_SCOPE_ONLY"
   },
   "open_inherited_issue": {
-    "id": "L-0124_report_hash_mismatch",
+    "ids": [
+      "L-0124_report_hash_mismatch",
+      "L-0138_report_hash_mismatch"
+    ],
     "status": "INHERITED_UNCHANGED",
     "blocks_numerical_validation": false,
-    "evidence": "evidence/publication_checks.json",
-    "current_recheck": "evidence/local_checks/postflight_checks.json"
+    "evidence": [
+      "evidence/publication_checks.json",
+      "evidence/local_codex_replay_20261018/POSTFLIGHT_CHECKS.json"
+    ],
+    "rule": "Do not rewrite historical ledger/report bytes to conceal mismatches."
   },
-  "next_action": "Fresh local check/smoke/bench complete and published. Overall production and measured speed remain HOLD; next work must target separately scoped open development.",
-  "latest_checkout_commit": "412856893c3451917ea19c38ec2965f8790d3a1c"
+  "next_action": "Append/hash the latest replay receipt, verify applicable publication checks, and fast-forward push; keep overall production and speed promotion HOLD.",
+  "latest_checkout_commit": "f522eacb2d433d8628da194fb128cf7a84fc2e1e"
 }
