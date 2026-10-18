@@ -8,10 +8,11 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use rodas5p_core::directed::Interval;
 use rodas5p_core::{CoreError, DenseMatrix, LinearMethod, LinearSolverConfig, WorkCounters};
 use rodas5p_integrators::{
-    AdaptiveStepConfig, DenseErrorControl, DenseOutputError, DenseSegmentWork, IntegrationMethod,
-    OdeProblem, OutputSamplingPlan, OutputSchedule, Rodas5pQuarticSegment, StepResult,
-    integrate_adaptive_dense_observed_with_dense_error_control, prothero_robinson_problem,
-    rodas5p_dense_output,
+    AdaptiveStepConfig, ContinuousResidualProvider, ContinuousResidualVerificationError,
+    ContinuousResidualWorkspace, DenseErrorControl, DenseOutputError, DenseOutputResult,
+    DenseSegmentWork, IntegrationMethod, OdeProblem, OutputSamplingPlan, OutputSchedule,
+    Rodas5pQuarticSegment, StepResult, integrate_adaptive_dense_observed_with_dense_error_control,
+    prothero_robinson_problem, rodas5p_dense_output,
 };
 
 type TestBatchRhs =
@@ -438,6 +439,311 @@ fn dense_segment_refuses_bad_spans_and_unavailable_residual_provider() {
     ));
     assert!(work.provider_unavailable_requests > 0);
     assert!(work.total_operations() > 0);
+}
+
+struct ConstantIntervalField(f64);
+
+impl ContinuousResidualProvider for ConstantIntervalField {
+    fn enclose_rhs(
+        &self,
+        _time: Interval,
+        _state: &[Interval],
+        rhs: &mut [Interval],
+        work: &mut DenseSegmentWork,
+    ) -> DenseOutputResult<()> {
+        work.charge_provider_operations(rhs.len() as u64);
+        rhs.fill(Interval::point(0.0)?);
+        Ok(())
+    }
+
+    fn one_sided_log_norm_upper(
+        &self,
+        _time: Interval,
+        tube: &[Interval],
+        work: &mut DenseSegmentWork,
+    ) -> DenseOutputResult<f64> {
+        work.charge_provider_operations(tube.len() as u64);
+        Ok(self.0)
+    }
+}
+
+struct AffineIntervalField {
+    forcing: f64,
+    mu: f64,
+}
+
+impl ContinuousResidualProvider for AffineIntervalField {
+    fn enclose_rhs(
+        &self,
+        _time: Interval,
+        state: &[Interval],
+        rhs: &mut [Interval],
+        work: &mut DenseSegmentWork,
+    ) -> DenseOutputResult<()> {
+        assert_eq!(state.len(), rhs.len());
+        for (state_i, rhs_i) in state.iter().zip(rhs.iter_mut()) {
+            work.charge_provider_operations(2);
+            *rhs_i = Interval::point(self.mu)?
+                .mul(*state_i)?
+                .add(Interval::point(self.forcing)?)?;
+        }
+        Ok(())
+    }
+
+    fn one_sided_log_norm_upper(
+        &self,
+        _time: Interval,
+        tube: &[Interval],
+        work: &mut DenseSegmentWork,
+    ) -> DenseOutputResult<f64> {
+        work.charge_provider_operations(tube.len() as u64);
+        Ok(self.mu)
+    }
+}
+
+struct RefusingIntervalField;
+
+impl ContinuousResidualProvider for RefusingIntervalField {
+    fn enclose_rhs(
+        &self,
+        _time: Interval,
+        _state: &[Interval],
+        _rhs: &mut [Interval],
+        work: &mut DenseSegmentWork,
+    ) -> DenseOutputResult<()> {
+        work.charge_provider_operations(7);
+        Err(CoreError::InvalidInput("synthetic interval RHS refusal".into()).into())
+    }
+
+    fn one_sided_log_norm_upper(
+        &self,
+        _time: Interval,
+        _tube: &[Interval],
+        _work: &mut DenseSegmentWork,
+    ) -> DenseOutputResult<f64> {
+        Ok(0.0)
+    }
+}
+
+#[test]
+fn continuous_segment_residual_checks_interval_curve_and_fixed_tube() {
+    let mut step = dense_step(0.0, 1.0, 1.0);
+    step.y_old[0] = 0.0;
+    step.y_new[0] = 1.0;
+    step.stages = vec![vec![0.0]; 8];
+    let mut work = DenseSegmentWork::default();
+    let segment = Rodas5pQuarticSegment::from_step(&step, &mut work).unwrap();
+    let mut workspace = ContinuousResidualWorkspace::new(1, &mut work).unwrap();
+
+    let mut curve = [Interval::point(0.0).unwrap()];
+    segment
+        .enclose_value_on_interval(0.0, 1.0, &mut curve, &mut work)
+        .unwrap();
+    assert!(curve[0].contains(0.25));
+    assert!(curve[0].contains(0.5));
+
+    let bound = segment
+        .verify_continuous_residual_tube(
+            &ConstantIntervalField(0.0),
+            0.125,
+            2.0,
+            &mut workspace,
+            &mut work,
+        )
+        .unwrap();
+    assert!(bound.residual_l2_upper >= 1.0);
+    assert!(bound.flow_gain_upper >= 1.0);
+    assert!(bound.transported_initial_radius_upper >= 0.125);
+    assert!(bound.residual_transport_upper > 0.0);
+    assert!(bound.error_radius_upper <= bound.tube_radius);
+    assert_eq!(work.interval_rhs_requests, 1);
+    assert_eq!(work.one_sided_log_norm_requests, 1);
+    assert!(work.provider_operations >= 2);
+
+    let refusal = segment.verify_continuous_residual_tube(
+        &ConstantIntervalField(0.0),
+        0.0,
+        0.0,
+        &mut workspace,
+        &mut work,
+    );
+    assert!(matches!(
+        refusal,
+        Err(ContinuousResidualVerificationError::TubeNotVerified { .. })
+    ));
+    assert_eq!(work.interval_rhs_requests, 2);
+    assert_eq!(work.one_sided_log_norm_requests, 2);
+    assert!(work.residual_operations > 0 && work.gain_operations > 0);
+}
+
+#[test]
+fn signed_one_sided_gain_uses_outward_residual_integral_and_refuses_overflow() {
+    let mut step = dense_step(0.0, 1.0, 1.0);
+    step.y_old[0] = 0.0;
+    step.y_new[0] = 0.0;
+    step.stages = vec![vec![0.0]; 8];
+    let mut work = DenseSegmentWork::default();
+    let segment = Rodas5pQuarticSegment::from_step(&step, &mut work).unwrap();
+    let mut workspace = ContinuousResidualWorkspace::new(1, &mut work).unwrap();
+
+    let before_zero_gain = work.gain_operations;
+    let zero_rate = segment
+        .verify_continuous_residual_tube(
+            &AffineIntervalField {
+                forcing: 1.0,
+                mu: 0.0,
+            },
+            0.25,
+            2.0,
+            &mut workspace,
+            &mut work,
+        )
+        .unwrap();
+    assert_eq!(work.gain_operations - before_zero_gain, 3);
+    assert!(zero_rate.residual_l2_upper >= 1.0);
+
+    let before_contracting_gain = work.gain_operations;
+    let contracting = segment
+        .verify_continuous_residual_tube(
+            &AffineIntervalField {
+                forcing: 1.0,
+                mu: -1.0,
+            },
+            0.25,
+            2.0,
+            &mut workspace,
+            &mut work,
+        )
+        .unwrap();
+    assert_eq!(work.gain_operations - before_contracting_gain, 8);
+    assert!(contracting.flow_gain_upper < 1.0);
+    assert!(contracting.residual_transport_upper > 0.6);
+    assert!(contracting.residual_transport_upper < 0.7);
+
+    let before_expanding_gain = work.gain_operations;
+    let expanding = segment
+        .verify_continuous_residual_tube(
+            &AffineIntervalField {
+                forcing: 1.0,
+                mu: 1.0,
+            },
+            0.25,
+            10.0,
+            &mut workspace,
+            &mut work,
+        )
+        .unwrap();
+    assert_eq!(work.gain_operations - before_expanding_gain, 8);
+    assert!(expanding.flow_gain_upper > 2.7);
+    assert!(expanding.residual_transport_upper > 1.7);
+
+    let subnormal_rate = segment
+        .verify_continuous_residual_tube(
+            &AffineIntervalField {
+                forcing: 1.0,
+                mu: -f64::from_bits(1),
+            },
+            0.0,
+            10.0,
+            &mut workspace,
+            &mut work,
+        )
+        .unwrap();
+    assert!(subnormal_rate.flow_gain_upper.is_finite());
+    assert!(subnormal_rate.residual_transport_upper.is_finite());
+    assert!(subnormal_rate.residual_transport_upper > 0.0);
+
+    let subnormal_expansion = segment
+        .verify_continuous_residual_tube(
+            &AffineIntervalField {
+                forcing: 1.0,
+                mu: f64::from_bits(1),
+            },
+            0.0,
+            10.0,
+            &mut workspace,
+            &mut work,
+        )
+        .unwrap();
+    assert!(subnormal_expansion.flow_gain_upper.is_finite());
+    assert!(subnormal_expansion.residual_transport_upper.is_finite());
+    assert!(subnormal_expansion.residual_transport_upper > 0.0);
+
+    let before_gain_work = work.gain_operations;
+    let overflow_refusal = segment.verify_continuous_residual_tube(
+        &AffineIntervalField {
+            forcing: 1.0,
+            mu: 710.0,
+        },
+        0.0,
+        1.0,
+        &mut workspace,
+        &mut work,
+    );
+    assert!(
+        matches!(
+            overflow_refusal,
+            Err(ContinuousResidualVerificationError::Core(
+                CoreError::NonFinite(_)
+            ))
+        ),
+        "unexpected overflow refusal: {overflow_refusal:?}"
+    );
+    assert_eq!(work.gain_operations - before_gain_work, 2);
+}
+
+#[test]
+fn nonfinite_log_norm_and_workspace_capacity_refusals_keep_attempted_work() {
+    let mut step = dense_step(0.0, 1.0, 1.0);
+    step.y_old[0] = 0.0;
+    step.y_new[0] = 0.0;
+    step.stages = vec![vec![0.0]; 8];
+    let mut work = DenseSegmentWork::default();
+    let segment = Rodas5pQuarticSegment::from_step(&step, &mut work).unwrap();
+    let mut workspace = ContinuousResidualWorkspace::new(1, &mut work).unwrap();
+
+    assert!(matches!(
+        segment.verify_continuous_residual_tube(
+            &ConstantIntervalField(f64::NAN),
+            0.0,
+            1.0,
+            &mut workspace,
+            &mut work,
+        ),
+        Err(ContinuousResidualVerificationError::NonFiniteLogNorm)
+    ));
+    assert_eq!(work.one_sided_log_norm_requests, 1);
+    assert!(work.provider_operations > 0);
+
+    let before = work.workspace_items;
+    assert!(ContinuousResidualWorkspace::new(usize::MAX, &mut work).is_err());
+    assert!(work.workspace_items > before);
+}
+
+#[test]
+fn continuous_provider_refusal_preserves_attempted_work() {
+    let mut step = dense_step(0.0, 1.0, 1.0);
+    step.y_old[0] = 0.0;
+    step.y_new[0] = 1.0;
+    step.stages = vec![vec![0.0]; 8];
+    let mut work = DenseSegmentWork::default();
+    let segment = Rodas5pQuarticSegment::from_step(&step, &mut work).unwrap();
+    let mut workspace = ContinuousResidualWorkspace::new(1, &mut work).unwrap();
+
+    assert!(
+        segment
+            .verify_continuous_residual_tube(
+                &RefusingIntervalField,
+                0.0,
+                1.0,
+                &mut workspace,
+                &mut work,
+            )
+            .is_err()
+    );
+    assert_eq!(work.interval_rhs_requests, 1);
+    assert_eq!(work.one_sided_log_norm_requests, 0);
+    assert_eq!(work.provider_operations, 7);
 }
 
 #[test]

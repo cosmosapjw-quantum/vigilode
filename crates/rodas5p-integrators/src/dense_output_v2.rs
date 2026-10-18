@@ -1,4 +1,6 @@
-use rodas5p_core::directed::Interval;
+use rodas5p_core::directed::{
+    Interval, add_up, div_up, exp_interval, mul_up, sqrt_up, sub_down, sub_up,
+};
 use rodas5p_core::{
     CoreError, CoreResult, LinearSolverConfig, LuFactorization, WorkCounters, error_scale,
     rodas5p_coefficients, wrms,
@@ -59,6 +61,13 @@ pub struct DenseSegmentWork {
     pub interval_value_operations: u64,
     pub interval_derivative_operations: u64,
     pub provider_unavailable_requests: u64,
+    pub interval_rhs_requests: u64,
+    pub one_sided_log_norm_requests: u64,
+    pub provider_component_items: u64,
+    pub provider_operations: u64,
+    pub residual_operations: u64,
+    pub gain_operations: u64,
+    pub workspace_items: u64,
 }
 
 impl DenseSegmentWork {
@@ -71,6 +80,124 @@ impl DenseSegmentWork {
             + self.interval_value_operations
             + self.interval_derivative_operations
             + self.provider_unavailable_requests
+            + self.interval_rhs_requests
+            + self.one_sided_log_norm_requests
+            + self.provider_component_items
+            + self.provider_operations
+            + self.residual_operations
+            + self.gain_operations
+            + self.workspace_items
+    }
+
+    /// Lets an interval provider retain its attempted scalar work, including
+    /// the operations performed before a typed refusal.
+    pub fn charge_provider_operations(&mut self, attempted: u64) {
+        self.provider_operations = self.provider_operations.saturating_add(attempted);
+    }
+}
+
+/// Caller-supplied interval dynamics for a continuous segment residual.
+///
+/// Implementations must outwardly enclose every exact `f(t,y)` for all
+/// `(t,y)` in the supplied boxes and return a Euclidean logarithmic norm upper
+/// bound for every `D_y f(t,y)` in the tube. The field must be continuously
+/// differentiable in state on the tube. The current verifier assumes an
+/// identity mass matrix. Callers must bind the provider to the same ODE and
+/// model state that generated the segment; this API has no `OdeProblem` model
+/// identity. A callback must charge attempted internal scalar work through
+/// [`DenseSegmentWork::charge_provider_operations`] before each fallible
+/// operation. The trait records these assumptions but cannot prove that an
+/// implementation satisfies them.
+pub trait ContinuousResidualProvider {
+    fn enclose_rhs(
+        &self,
+        time: Interval,
+        state: &[Interval],
+        rhs: &mut [Interval],
+        work: &mut DenseSegmentWork,
+    ) -> DenseOutputResult<()>;
+
+    fn one_sided_log_norm_upper(
+        &self,
+        time: Interval,
+        tube: &[Interval],
+        work: &mut DenseSegmentWork,
+    ) -> DenseOutputResult<f64>;
+}
+
+#[derive(Debug, Error)]
+pub enum ContinuousResidualVerificationError {
+    #[error(transparent)]
+    DenseOutput(#[from] DenseOutputError),
+    #[error(transparent)]
+    Core(#[from] CoreError),
+    #[error("initial and tube radii must be finite and nonnegative")]
+    InvalidRadius,
+    #[error("interval provider returned a non-finite one-sided log-norm bound")]
+    NonFiniteLogNorm,
+    #[error(
+        "continuous residual bound {error_radius_upper:e} exceeds fixed tube radius {tube_radius:e}"
+    )]
+    TubeNotVerified {
+        error_radius_upper: f64,
+        tube_radius: f64,
+    },
+}
+
+pub type ContinuousResidualVerificationResult<T> = Result<T, ContinuousResidualVerificationError>;
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct ContinuousSegmentErrorBound {
+    pub residual_l2_upper: f64,
+    pub one_sided_log_norm_upper: f64,
+    pub flow_gain_upper: f64,
+    pub transported_initial_radius_upper: f64,
+    pub residual_transport_upper: f64,
+    pub error_radius_upper: f64,
+    pub tube_radius: f64,
+}
+
+/// Preallocated interval boxes for a continuous segment check. Construct this
+/// once per state dimension and reuse it if checking multiple segments.
+pub struct ContinuousResidualWorkspace {
+    curve: Vec<Interval>,
+    derivative: Vec<Interval>,
+    rhs: Vec<Interval>,
+    residual: Vec<Interval>,
+    tube: Vec<Interval>,
+}
+
+impl ContinuousResidualWorkspace {
+    pub fn new(dimension: usize, work: &mut DenseSegmentWork) -> DenseOutputResult<Self> {
+        if dimension == 0 {
+            return Err(DenseOutputError::InvalidSegment(
+                "continuous residual workspace dimension",
+            ));
+        }
+        let zero = Interval::point(0.0)?;
+        let mut allocate = || -> DenseOutputResult<Vec<Interval>> {
+            // Charge before the fallible allocator call. `try_reserve_exact`
+            // also turns capacity overflow/OOM into a typed refusal instead
+            // of aborting through `vec![..]`.
+            work.workspace_items = work
+                .workspace_items
+                .saturating_add(u64::try_from(dimension).unwrap_or(u64::MAX));
+            let mut values = Vec::new();
+            values.try_reserve_exact(dimension).map_err(|_| {
+                DenseOutputError::Core(CoreError::InvalidInput(
+                    "continuous residual workspace allocation refused".to_owned(),
+                ))
+            })?;
+            values.resize(dimension, zero);
+            Ok(values)
+        };
+        Ok(Self {
+            curve: allocate()?,
+            derivative: allocate()?,
+            rhs: allocate()?,
+            residual: allocate()?,
+            tube: allocate()?,
+        })
     }
 }
 
@@ -416,6 +543,189 @@ impl Rodas5pQuarticSegment {
                 .add(theta.mul(Interval::point(self.y_new[i])?.add(one_minus_theta.mul(q)?)?)?)?;
         }
         Ok(())
+    }
+
+    /// Encloses every represented quartic value over the closed physical-time
+    /// interval `[time_start, time_end]`. Natural interval extension can be
+    /// conservative, but it covers the entire curve, including extrema between
+    /// requested output points.
+    pub fn enclose_value_on_interval(
+        &self,
+        time_start: f64,
+        time_end: f64,
+        output: &mut [Interval],
+        work: &mut DenseSegmentWork,
+    ) -> DenseOutputResult<()> {
+        work.validation_operations += 1;
+        self.validate_output(output)?;
+        if !(time_start.is_finite()
+            && time_end.is_finite()
+            && time_start <= time_end
+            && time_start >= self.t_old
+            && time_end <= self.t_new)
+        {
+            return Err(DenseOutputError::InvalidSegment(
+                "value enclosure interval outside represented segment",
+            ));
+        }
+        let theta_start = self.normalize_time(time_start, work)?;
+        let theta_end = self.normalize_time(time_end, work)?;
+        let theta = Interval::new(theta_start.lo, theta_end.hi)?;
+        work.interval_value_operations += 1;
+        let one_minus_theta = Interval::point(1.0)?.sub(theta)?;
+        for (i, value) in output.iter_mut().enumerate() {
+            work.interval_value_operations += 9;
+            let q = Interval::point(self.d0[i])?.add(theta.mul(
+                Interval::point(self.d1[i])?.add(theta.mul(Interval::point(self.d2[i])?)?)?,
+            )?)?;
+            *value = one_minus_theta
+                .mul(Interval::point(self.y_old[i])?)?
+                .add(theta.mul(Interval::point(self.y_new[i])?.add(one_minus_theta.mul(q)?)?)?)?;
+        }
+        Ok(())
+    }
+
+    /// Encloses the continuous defect `u'(t) - f(t,u(t))` on this represented
+    /// segment and checks a caller-sized candidate-centered error tube. The
+    /// returned radius is valid for this segment only. The adaptive driver
+    /// does not yet call this verifier on each trial before its accept/reject
+    /// transaction, restore its controller/history on a tube refusal, or
+    /// retain this segment identity for all requested outputs. It does not
+    /// connect adjacent segments or certify trajectory outputs across a run.
+    /// Those integration steps are required before this helper can control a
+    /// global-output API.
+    pub fn verify_continuous_residual_tube<P: ContinuousResidualProvider>(
+        &self,
+        provider: &P,
+        initial_error_radius: f64,
+        tube_radius: f64,
+        workspace: &mut ContinuousResidualWorkspace,
+        work: &mut DenseSegmentWork,
+    ) -> ContinuousResidualVerificationResult<ContinuousSegmentErrorBound> {
+        work.validation_operations = work.validation_operations.saturating_add(1);
+        if !(initial_error_radius.is_finite()
+            && initial_error_radius >= 0.0
+            && tube_radius.is_finite()
+            && tube_radius >= 0.0)
+        {
+            return Err(ContinuousResidualVerificationError::InvalidRadius);
+        }
+        let n = self.y_old.len();
+        if workspace.curve.len() != n
+            || workspace.derivative.len() != n
+            || workspace.rhs.len() != n
+            || workspace.residual.len() != n
+            || workspace.tube.len() != n
+        {
+            return Err(DenseOutputError::InvalidSegment(
+                "continuous residual workspace dimension mismatch",
+            )
+            .into());
+        }
+
+        self.enclose_value_on_interval(self.t_old, self.t_new, &mut workspace.curve, work)?;
+        self.enclose_physical_derivative_on_interval(
+            self.t_old,
+            self.t_new,
+            &mut workspace.derivative,
+            work,
+        )?;
+
+        for i in 0..n {
+            work.residual_operations = work.residual_operations.saturating_add(2);
+            let state = workspace.curve[i];
+            workspace.tube[i] = Interval::new(
+                sub_down(state.lo, tube_radius)?,
+                add_up(state.hi, tube_radius)?,
+            )?;
+        }
+
+        work.residual_operations = work.residual_operations.saturating_add(1);
+        let time = Interval::new(self.t_old, self.t_new)?;
+        work.interval_rhs_requests = work.interval_rhs_requests.saturating_add(1);
+        work.provider_component_items = work.provider_component_items.saturating_add(n as u64);
+        workspace.rhs.fill(Interval::point(0.0)?);
+        provider.enclose_rhs(time, &workspace.curve, &mut workspace.rhs, work)?;
+
+        let mut residual_squared_upper = 0.0_f64;
+        for i in 0..n {
+            work.residual_operations = work.residual_operations.saturating_add(4);
+            workspace.residual[i] = workspace.derivative[i].sub(workspace.rhs[i])?;
+            let magnitude = workspace.residual[i].mag();
+            residual_squared_upper = add_up(residual_squared_upper, mul_up(magnitude, magnitude)?)?;
+        }
+        work.residual_operations = work.residual_operations.saturating_add(1);
+        let residual_l2_upper = sqrt_up(residual_squared_upper)?;
+
+        work.one_sided_log_norm_requests = work.one_sided_log_norm_requests.saturating_add(1);
+        work.provider_component_items = work.provider_component_items.saturating_add(n as u64);
+        let mu = provider.one_sided_log_norm_upper(time, &workspace.tube, work)?;
+        if !mu.is_finite() {
+            return Err(ContinuousResidualVerificationError::NonFiniteLogNorm);
+        }
+
+        // Enclose x=mu*h. For constant mu and a uniform residual bound, the
+        // comparison solution has endpoint gain exp(x) and residual response
+        // (exp(x)-1)/mu. The signed branches below avoid cancellation and use
+        // directed endpoints. Its maximum on the segment is attained at an
+        // endpoint because it moves monotonically toward its equilibrium.
+        let h = self.delta_exact.hi;
+        let (flow_gain_upper, residual_integral_upper) = if mu == 0.0 {
+            (1.0, h)
+        } else {
+            work.gain_operations = work.gain_operations.saturating_add(1);
+            let exponent = Interval::point(mu)?.mul(self.delta_exact)?;
+            work.gain_operations = work.gain_operations.saturating_add(1);
+            let gain_interval = exp_interval(exponent.hi)?;
+            let gain = gain_interval.hi;
+            let integral = if mu < 0.0 {
+                work.gain_operations = work.gain_operations.saturating_add(1);
+                let exp_lower = exp_interval(exponent.lo)?.lo;
+                // The signed quotient is sharp away from zero. If its
+                // numerator rounding dominates a tiny |mu|, the exact
+                // integral is still bounded by h for a contracting field.
+                work.gain_operations = work.gain_operations.saturating_add(1);
+                let numerator = sub_up(1.0, exp_lower)?;
+                work.gain_operations = work.gain_operations.saturating_add(1);
+                let signed = div_up(numerator, -mu);
+                signed.unwrap_or(h).min(h)
+            } else {
+                // For expansion, integral_0^h exp(mu*s) ds <= h*exp(mu*h).
+                // This stable bound handles subnormal mu when exp(mu*h)-1
+                // loses its significant bits.
+                work.gain_operations = work.gain_operations.saturating_add(1);
+                let coarse = mul_up(h, gain)?;
+                work.gain_operations = work.gain_operations.saturating_add(1);
+                let numerator = sub_up(gain_interval.hi, 1.0)?;
+                work.gain_operations = work.gain_operations.saturating_add(1);
+                let signed = div_up(numerator, mu);
+                signed.unwrap_or(coarse).min(coarse)
+            };
+            (gain, integral)
+        };
+        work.gain_operations = work.gain_operations.saturating_add(1);
+        let transported_initial_radius_upper = mul_up(flow_gain_upper, initial_error_radius)?;
+        work.gain_operations = work.gain_operations.saturating_add(1);
+        let residual_transport_upper = mul_up(residual_integral_upper, residual_l2_upper)?;
+        work.gain_operations = work.gain_operations.saturating_add(1);
+        let end_error_radius_upper =
+            add_up(transported_initial_radius_upper, residual_transport_upper)?;
+        let error_radius_upper = initial_error_radius.max(end_error_radius_upper);
+        if error_radius_upper > tube_radius {
+            return Err(ContinuousResidualVerificationError::TubeNotVerified {
+                error_radius_upper,
+                tube_radius,
+            });
+        }
+        Ok(ContinuousSegmentErrorBound {
+            residual_l2_upper,
+            one_sided_log_norm_upper: mu,
+            flow_gain_upper,
+            transported_initial_radius_upper,
+            residual_transport_upper,
+            error_radius_upper,
+            tube_radius,
+        })
     }
 
     /// Writes an outward enclosure of the represented quartic's physical-time derivative.

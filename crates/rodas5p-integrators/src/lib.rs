@@ -183,6 +183,8 @@ pub use comparator_fidelity::{
 };
 pub use controller_telemetry::{ControllerDecision, ControllerEvents, ControllerTelemetry};
 pub use dense_output_v2::{
+    ContinuousResidualProvider, ContinuousResidualVerificationError,
+    ContinuousResidualVerificationResult, ContinuousResidualWorkspace, ContinuousSegmentErrorBound,
     DenseErrorControl, DenseErrorReport, DenseErrorSample, DenseOutputError, DenseOutputResult,
     DenseSegmentWork, InterpolantAudit, InterpolantAuditSample, Rodas5pQuarticSegment,
     bdf_dense_output, integrate_adaptive_dense_observed_with_config,
