@@ -83,6 +83,14 @@ pub struct PacketWorkCounters {
     pub curve_output_certificate_ops: u64,
     /// Fallible preallocation attempts for the represented-curve output workspace.
     pub curve_output_allocation_requests: u64,
+    /// Frozen local-output constructor reservation attempts.
+    pub curve_frozen_allocation_requests: u64,
+    /// Initial uncertainty scalars copied into a frozen local-output owner.
+    pub curve_frozen_radius_items: u64,
+    /// Calls attempted on the frozen local-output owner, including refusals.
+    pub curve_frozen_query_attempts: u64,
+    /// Typed refusals returned by the frozen local-output owner.
+    pub curve_frozen_query_refusals: u64,
 }
 
 impl PacketWorkCounters {
@@ -116,6 +124,10 @@ impl PacketWorkCounters {
             curve_model_constructor_arithmetic_ops: 0,
             curve_output_certificate_ops: 0,
             curve_output_allocation_requests: 0,
+            curve_frozen_allocation_requests: 0,
+            curve_frozen_radius_items: 0,
+            curve_frozen_query_attempts: 0,
+            curve_frozen_query_refusals: 0,
         }
     }
 
@@ -153,6 +165,10 @@ impl PacketWorkCounters {
             + self.curve_model_constructor_arithmetic_ops
             + self.curve_output_certificate_ops
             + self.curve_output_allocation_requests
+            + self.curve_frozen_allocation_requests
+            + self.curve_frozen_radius_items
+            + self.curve_frozen_query_attempts
+            + self.curve_frozen_query_refusals
     }
 
     /// Explicitly zero by design (no online Jacobian construction).
@@ -204,5 +220,9 @@ impl PacketWorkCounters {
         self.curve_model_constructor_arithmetic_ops += other.curve_model_constructor_arithmetic_ops;
         self.curve_output_certificate_ops += other.curve_output_certificate_ops;
         self.curve_output_allocation_requests += other.curve_output_allocation_requests;
+        self.curve_frozen_allocation_requests += other.curve_frozen_allocation_requests;
+        self.curve_frozen_radius_items += other.curve_frozen_radius_items;
+        self.curve_frozen_query_attempts += other.curve_frozen_query_attempts;
+        self.curve_frozen_query_refusals += other.curve_frozen_query_refusals;
     }
 }

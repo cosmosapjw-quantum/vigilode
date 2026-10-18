@@ -11,6 +11,111 @@ pub struct PacketCurveOutput {
     curve: RepresentedPacketCurve,
 }
 
+/// Owns one represented curve and a copied, immutable initial mode tube.
+/// A query can only use the uncertainty supplied at construction.
+///
+/// ```compile_fail
+/// use rodas5p_integrators::packet_window::PacketFrozenOutput;
+/// fn alter(owner: &mut PacketFrozenOutput) { owner.initial_radii[0] = 0.0; }
+/// ```
+pub struct PacketFrozenOutput {
+    output: PacketCurveOutput,
+    initial_radii: Vec<f64>,
+}
+
+/// Immutable enclosure returned only from a frozen local packet owner.
+/// This certifies inclusion at the requested time; it does not assert that
+/// any requested application tolerance has been met.
+///
+/// ```compile_fail
+/// use rodas5p_integrators::packet_window::PacketCertifiedView;
+/// fn alter(view: &mut PacketCertifiedView<'_>) { view.inner = panic!(); }
+/// ```
+pub struct PacketCertifiedView<'a> {
+    inner: PacketCurveOutputView<'a>,
+}
+
+impl PacketCertifiedView<'_> {
+    pub fn time(&self) -> f64 {
+        self.inner.time()
+    }
+    pub fn modes(&self) -> &[(f64, f64)] {
+        self.inner.modes()
+    }
+    pub fn mode_radii(&self) -> &[f64] {
+        self.inner.mode_radii()
+    }
+    pub fn mean(&self) -> (f64, f64) {
+        self.inner.mean()
+    }
+    pub fn mean_radius(&self) -> f64 {
+        self.inner.mean_radius()
+    }
+    pub fn weighted_radius(&self) -> f64 {
+        self.inner.weighted_radius()
+    }
+}
+
+impl PacketFrozenOutput {
+    /// Copy the caller's uncertainty into the owner. The represented curve
+    /// already owns its source model, coefficients, horizon, and residual.
+    pub fn new(
+        curve: RepresentedPacketCurve,
+        initial_radii: &[f64],
+        work: &mut PacketWorkCounters,
+    ) -> Result<Self, PacketError> {
+        let n = curve.mode_count();
+        if initial_radii.len() != n {
+            return Err(PacketError::OutwardRefusal(
+                "frozen output initial radius shape mismatch",
+            ));
+        }
+        if initial_radii.iter().any(|&x| !x.is_finite() || x < 0.0) {
+            return Err(PacketError::OutwardRefusal("frozen output initial radius"));
+        }
+        if n > isize::MAX as usize / std::mem::size_of::<f64>() {
+            return Err(PacketError::SizeOverflow("frozen output initial radii"));
+        }
+        work.curve_frozen_allocation_requests += 1;
+        let mut frozen = Vec::new();
+        frozen
+            .try_reserve_exact(n)
+            .map_err(|_| PacketError::SizeOverflow("frozen output initial radii"))?;
+        for &radius in initial_radii {
+            work.curve_frozen_radius_items += 1;
+            frozen.push(radius);
+        }
+        Ok(Self {
+            output: PacketCurveOutput::new(curve),
+            initial_radii: frozen,
+        })
+    }
+
+    pub fn workspace(
+        &self,
+        work: &mut PacketWorkCounters,
+    ) -> Result<PacketCurveOutputWorkspace, PacketError> {
+        self.output.workspace(work)
+    }
+
+    /// Evaluate the frozen curve and initial tube at one physical time.
+    pub fn enclose_at<'a>(
+        &'a self,
+        time: f64,
+        workspace: &'a mut PacketCurveOutputWorkspace,
+        work: &mut PacketWorkCounters,
+    ) -> Result<PacketCertifiedView<'a>, PacketError> {
+        work.curve_frozen_query_attempts += 1;
+        let result = self
+            .output
+            .enclose_at(time, &self.initial_radii, workspace, work);
+        if result.is_err() {
+            work.curve_frozen_query_refusals += 1;
+        }
+        result.map(|inner| PacketCertifiedView { inner })
+    }
+}
+
 /// Caller-owned storage. Allocate once before evaluating requested times.
 pub struct PacketCurveOutputWorkspace {
     centers: Vec<(f64, f64)>,

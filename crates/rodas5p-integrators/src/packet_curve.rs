@@ -15,7 +15,10 @@ use super::{
 
 #[path = "packet_curve_output.rs"]
 mod output;
-pub use output::{PacketCurveOutput, PacketCurveOutputView, PacketCurveOutputWorkspace};
+pub use output::{
+    PacketCertifiedView, PacketCurveOutput, PacketCurveOutputView, PacketCurveOutputWorkspace,
+    PacketFrozenOutput,
+};
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct PacketComplexInterval {

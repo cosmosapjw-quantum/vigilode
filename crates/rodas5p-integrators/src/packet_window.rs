@@ -26,8 +26,8 @@ use crate::packet_work::PacketWorkCounters;
 #[path = "packet_curve.rs"]
 mod packet_curve;
 pub use packet_curve::{
-    ContinuousPacketResidualBound, PacketComplexInterval, PacketCurveOutput, PacketCurveOutputView,
-    PacketCurveOutputWorkspace, RepresentedPacketCurve,
+    ContinuousPacketResidualBound, PacketCertifiedView, PacketComplexInterval, PacketCurveOutput,
+    PacketCurveOutputView, PacketCurveOutputWorkspace, PacketFrozenOutput, RepresentedPacketCurve,
 };
 
 /// Errors arising during causal packet compilation, candidate iteration, or certification.
