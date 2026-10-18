@@ -10,7 +10,7 @@
  \qquad \omega_j=\Omega+\Delta\xi_j
 \]
 
-를 고정된 상태에서 선형화한다. 현재 native `CollectiveModel::rhs/jvp`는 carrier를 메타데이터로 보관하고 실제 회전 좌표의 주파수는 **ω_j=Δξ_j**를 사용한다. 따라서 현재 adapter와 직접 연결할 때 이 reference의 carrier는0이어야 한다. Ω≠0인 reference cases는 물리 좌표 확장 검산이며 현재 source와의 동일성 검사로 세지 않는다. \(\pi_j>0,\sum\pi_j=1\), \(\kappa\ge0\), \(\chi,\omega_j\in\mathbb R\), stage shift \(s\ge0\)를 가정한다. 이 문서는 \(A=I-sJ\)의 정확한 직접해법이다. 프로젝트의 \(W=I/(\gamma h)-J\)에는 \(s=\gamma h\), \(A x=s b\)로 연결한다.
+를 고정된 상태에서 선형화한다. 현재 native `CollectiveModel::rhs/jvp`는 carrier를 메타데이터로 보관하고 실제 회전 좌표의 주파수는 **ω_j=Δξ_j**를 사용한다. 따라서 현재 adapter와 직접 연결할 때 이 reference의 carrier는0이어야 한다. Ω≠0인 reference cases는 물리 좌표 확장 검산이며 현재 source와의 동일성 검사로 세지 않는다. \(\pi_j>0,\sum\pi_j=1\), \(\kappa\ge0\), \(\chi,\omega_j\in\mathbb R\), stage shift \(s\ge0\)를 가정한다. 이 문서는 \(A=I-sJ\)의 정확한 직접해법이다. 현재 `ShiftedOperator::new`와 sequential stage 구현의 행렬은 identity mass에서 **\(W=I-\gamma hJ=A\)**이며 \(s=\gamma h\)다. 실제 stage 우변 \(r_i\)는 그대로 `CollectiveStageFactors::solve_into`에 전달해 \(Ax=r_i\)를 푼다. 우변에 \(s\)를 다시 곱하면 다른 선형계를 푸는 오류다.
 
 **정리 WB1.** 아래2×2 Schur matrix가 가역이면, \(A\)의 setup과 각 우변 해법은 O(N) scalar arithmetic, O(N) storage로 수행된다. R개의 우변을 모두 복원하는 비용은 O(N+RN)이다. 일반 dense LU의 O(N³) setup과 O(RN²) triangular solves를 이 모델에서 제거한다. 이 주장은 구조가 주어진 해당 stage 행렬에 대한 것으로, 이미 구조를 활용하는 다른 방법과의 우열이나 native runtime 속도비를 포함하지 않는다.
 
@@ -87,6 +87,7 @@ q*≥1에서도 S가 가역일 수 있다. 이 경우 다음 native 구현은 S�
 - 독립 확인: 별도로 좌표 미분식으로 dense A를 작성하고 pivoted Gaussian elimination의 exact 답 및 A·x=b를 비교한다.
 - 실행: `python3 research/production_audit_20261018/woodbury_reference.py --output research/production_audit_20261018/evidence/woodbury_checks.json`.
 - N=1,2,4,8에서 native 회전 좌표(carrier0, nonlinear), 무감쇠/비영 carrier, 감쇠/음의χ, zero width/linear 네 family,64개 우변을 검산했다. 모든 계수·답·residual은 exact equality다.
+- 실제 sequential stage 우변 대응의 최소 회귀는 N=1, κ=1, χ=0, Ω=Δ=0, y=(1/2,0), h=1/4를 사용한다. `build_step_context_matrix_free`와 JVP GMRES의 첫 stage는 \(r_0=h f(y)=(-1/8,0)\)을 풀며, Woodbury의 \(A=I-sJ\), \(s=h\gamma\) 해와 비교한다. 잘못된 \(s r_0\) 입력의 원래 행렬에 대한 residual은 \((1-s)r_0\ne0\)임을 별도 부정 대조군으로 확인한다. 이는 첫 stage의 행렬/RHS 규약 검증이며 전체 trajectory 연결이나 속도 측정은 아니다.
 - 추가 경계: q*=3이고 det(S)=4인 가역 case 및 det(S)=0인 singular case를 확인했다. 충분조건을 필요조건으로 혼동하지 않는다.
 - 구현에 실제 삽입된 카운터는 모든 setup의 평균/Jacobian/Schur/bound 연산과 각 우변의 모든 모드 복원을 포함한다. 각 우변은 **18N+14** rational operations이다. unary sign, 입력 검증·파싱·할당·loop overhead는 카운터 단위 밖이며 wall time으로 환산하지 않는다.
 

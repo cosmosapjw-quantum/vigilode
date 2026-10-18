@@ -1,5 +1,7 @@
+use rodas5p_core::{LinearMethod, LinearOperator, LinearSolverConfig, WorkCounters};
 use rodas5p_integrators::collective_direct::{CollectiveDirectWork, CollectiveStageFactors};
 use rodas5p_integrators::collective_model::CollectiveModel;
+use rodas5p_integrators::{build_step_context_matrix_free, sequential_stages};
 
 fn model(n: usize, chi: f64) -> CollectiveModel {
     let weights = vec![1.0 / n as f64; n];
@@ -16,6 +18,63 @@ fn model(n: usize, chi: f64) -> CollectiveModel {
         .map(|j| (0.15 + 0.01 * j as f64, -0.08 + 0.005 * j as f64))
         .collect();
     CollectiveModel::new(xi, weights, z, 0.7, chi, 0.0, 0.12).unwrap()
+}
+
+#[test]
+fn woodbury_uses_actual_sequential_first_stage_rhs_without_shift_scaling() {
+    // For this autonomous scalar damping member, f(y0)=(-1/2,0), J=-I,
+    // r0=h*f(y0)=(-1/8,0), and W=I-h*gamma*J=(1+s)I.
+    let model =
+        CollectiveModel::new(vec![0.0], vec![1.0], vec![(0.5, 0.0)], 0.0, 0.0, 0.0, 1.0).unwrap();
+    let problem = model.to_ode_problem().unwrap();
+    let y0 = [0.5, 0.0];
+    let h = 0.25;
+    let mut stage_work = WorkCounters::default();
+    let context = build_step_context_matrix_free(&problem, 0.0, &y0, h, &mut stage_work).unwrap();
+    assert_eq!(context.f0, vec![-0.5, 0.0]);
+    assert_eq!(context.ft0, vec![0.0, 0.0]);
+    let config = LinearSolverConfig {
+        method: LinearMethod::Gmres,
+        ..LinearSolverConfig::default()
+    };
+    let sequential = sequential_stages(&context, &config, None, &mut stage_work).unwrap();
+    let first_rhs = [h * context.f0[0], h * context.f0[1]];
+    assert_eq!(first_rhs, [-0.125, 0.0]);
+    let s = context.shifted.h_gamma();
+    assert!(s > 0.0 && s < 1.0);
+    let mut direct_work = CollectiveDirectWork::default();
+    let factors = CollectiveStageFactors::factorize(&model, &y0, s, &mut direct_work).unwrap();
+    let mut direct = [0.0; 2];
+    factors
+        .solve_into(&first_rhs, &mut direct, &mut direct_work)
+        .unwrap();
+    for (a, b) in direct.iter().zip(&sequential.stages[0]) {
+        assert!(
+            (a - b).abs() < 1e-13,
+            "stage/direct mismatch {a:e} vs {b:e}"
+        );
+    }
+    let mut image = [0.0; 2];
+    context.shifted.apply(&direct, &mut image).unwrap();
+    assert!((image[0] - first_rhs[0]).abs() < 1e-14);
+    assert!((image[1] - first_rhs[1]).abs() < 1e-14);
+
+    // The mistaken W=I/(h gamma)-J convention would send s*r0. That solve
+    // must fail the residual gate for the actual shifted operator.
+    let wrong_rhs = [s * first_rhs[0], s * first_rhs[1]];
+    let mut wrong = [0.0; 2];
+    factors
+        .solve_into(&wrong_rhs, &mut wrong, &mut direct_work)
+        .unwrap();
+    context.shifted.apply(&wrong, &mut image).unwrap();
+    let wrong_residual = first_rhs[0] - image[0];
+    assert!((wrong_residual - (1.0 - s) * first_rhs[0]).abs() < 1e-14);
+    assert!(wrong_residual.abs() > 0.1);
+    let witness = factors
+        .residual_witness(&model, &y0, &first_rhs, &wrong, &mut direct_work)
+        .unwrap();
+    assert!(witness.weighted_residual_upper >= wrong_residual.abs());
+    assert!(direct_work.setup_ops > 0 && direct_work.rhs_ops > 0);
 }
 
 fn solve_dense(mut a: Vec<Vec<f64>>, mut b: Vec<f64>) -> Vec<f64> {
