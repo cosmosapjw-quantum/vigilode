@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "node": "A04",
+  "unit": "immutable certified Leja report output sealing",
+  "source_commit": "5a1ff2b9ed1d63c928ea2577aaa60b4af64d6476",
+  "source_identity": {
+    "crates/rodas5p-core/src/leja_action.rs": "36923cb5126a2431d5ae1f13350f419584aabfc5bd263adb84e84f02729eaf2b",
+    "crates/rodas5p-core/tests/leja_total_contract.rs": "cf59d48775b1edac88dd672d2196e6bd5f9fa8fcf4f0b7628b8dc8965d90b5b2",
+    "crates/rodas5p-core/tests/leja_total_holdout.rs": "b32e55eed87c56ad35dacf0e5441fe0c4f8b34ccabb4131c4fe269e5985a302f"
+  },
+  "change": "All CertifiedLejaReport fields and CertifiedLejaWorkspace.report are private; read-only getters preserve serialized field names and values. The report replacement/mutation paths are closed. Holdout test reads were mechanically migrated, with an owned diagnostic fused-vector copy explicitly noted.",
+  "validation": [
+    {
+      "command": "cargo test --locked --offline -p rodas5p-core --test leja_total_contract -- --test-threads=1",
+      "exit_code": 0,
+      "result": "17 passed",
+      "log": "report_sealing_contract_final.log",
+      "log_sha256": "55bc976d1543aa8d63868223304a01d32c5e52deac0176aca42ef3f2c4c07614"
+    },
+    {
+      "command": "cargo test --locked --offline -p rodas5p-core --doc",
+      "exit_code": 0,
+      "result": "1 ordinary + 15 compile-fail doctests passed; includes 3 new privacy failures",
+      "log": "report_sealing_doctest.log",
+      "log_sha256": "cdc0731c321bb722682d6c25c7969b648777991422faceddf9b66e3f37efd32c"
+    },
+    {
+      "command": "cargo check --locked --offline -p rodas5p-core --all-targets",
+      "exit_code": 0,
+      "result": "passed; compile-only, holdout was not executed",
+      "log": "report_sealing_check_final.log",
+      "log_sha256": "eebed94149803d75d15b9f80468eff510ff3e34d62c4f98e5d0d6a512f4d274c"
+    },
+    {
+      "command": "cargo check --locked --offline --workspace --all-targets",
+      "exit_code": 0,
+      "result": "passed after commit; compile-only",
+      "log": "../continuation_workspace_check_a04_sealing.log",
+      "log_sha256": "d2db45d51047059d2bb1bca5d10204d0ce83c21c3c2e45326c3143af49ddea0b"
+    }
+  ],
+  "independent_review": {
+    "verdict": "SCOPED_PASS",
+    "review_scope": "output/status immutability and serialization preservation only",
+    "reviewer_runtime": "NOT_INDEPENDENTLY_OBSERVED",
+    "result": "No arithmetic, counter, threshold, authority, or report transaction logic changed. EstimateOnly remains."
+  },
+  "full_node_status": "HOLD",
+  "remaining": [
+    "cold full setup accounting with initializer provenance",
+    "additive-underflow closure for operator action, recurrence, coefficients, summation and fused output",
+    "independent rigorous coefficient-table oracle",
+    "full Leja total error authority remains EstimateOnly"
+  ]
+}

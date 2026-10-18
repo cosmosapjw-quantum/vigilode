@@ -1,0 +1,18 @@
+$ cargo test --locked --offline -p rodas5p-integrators --test production_audit_bound_collective -- --nocapture
+warning: unused A05 output staging fields/methods were emitted by the library build.
+
+running 5 tests
+test euclidean_log_norm_bounds_two_mode_jacobian_and_uses_full_tube ... ok
+test fraction_dyadic_nonuniform_weights_rhs_is_outward_enclosed ... ok
+test generic_same_name_and_dimension_problem_is_unbound ... ok
+test provider_fails_closed_on_bad_shape_nan_and_overflow_and_charges_attempts ... ok
+thread 'warmed_interval_rhs_and_log_norm_make_no_heap_allocations' panicked at crates/rodas5p-integrators/tests/production_audit_bound_collective.rs:415:5:
+assertion `left == right` failed
+  left: 2
+ right: 0
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test warmed_interval_rhs_and_log_norm_make_no_heap_allocations ... FAILED
+
+test result: FAILED. 4 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out
+error: test failed, to rerun pass `-p rodas5p-integrators --test production_audit_bound_collective`
+exit_code=101

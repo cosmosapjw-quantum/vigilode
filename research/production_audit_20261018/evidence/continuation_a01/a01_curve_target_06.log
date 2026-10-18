@@ -1,0 +1,106 @@
+    Blocking waiting for file lock on artifact directory
+   Compiling rodas5p-integrators v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-integrators)
+warning: unused import: `ContinuousResidualVerificationError`
+  --> crates/rodas5p-integrators/src/bound_collective.rs:12:33
+   |
+12 |     ContinuousResidualProvider, ContinuousResidualVerificationError,
+   |                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: fields `prepared_centers`, `prepared_radii`, `prepared_times`, `prepared_count`, `radii`, and `prepared_valid` are never read
+   --> crates/rodas5p-integrators/src/output.rs:706:5
+    |
+698 | pub(crate) struct OutputCollector {
+    |                   --------------- fields in this struct
+...
+706 |     prepared_centers: Vec<Vec<f64>>,
+    |     ^^^^^^^^^^^^^^^^
+707 |     prepared_radii: Vec<Vec<f64>>,
+    |     ^^^^^^^^^^^^^^
+708 |     prepared_times: Vec<f64>,
+    |     ^^^^^^^^^^^^^^
+709 |     prepared_count: usize,
+    |     ^^^^^^^^^^^^^^
+710 |     radii: Vec<Vec<f64>>,
+    |     ^^^^^
+711 |     prepared_valid: bool,
+    |     ^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: struct `DenseOutputPreparationWork` is never constructed
+   --> crates/rodas5p-integrators/src/output.rs:716:19
+    |
+716 | pub(crate) struct DenseOutputPreparationWork {
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: methods `with_verified_radii`, `prepare_dense_interval_with_radii`, `prepare_dense_interval_inner`, `commit_prepared_dense_interval`, `prepared_dense_radii`, and `committed_output_radii` are never used
+    --> crates/rodas5p-integrators/src/output.rs:766:19
+     |
+ 722 | impl OutputCollector {
+     | -------------------- methods in this implementation
+...
+ 766 |     pub(crate) fn with_verified_radii(mut self, initial_radius: &[f64]) -> CoreResult<Self> {
+     |                   ^^^^^^^^^^^^^^^^^^^
+...
+1035 |     pub(crate) fn prepare_dense_interval_with_radii<C, R>(
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+1070 |     fn prepare_dense_interval_inner<C, R>(
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+1162 |     pub(crate) fn commit_prepared_dense_interval(&mut self) {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+1176 |     pub(crate) fn prepared_dense_radii(&self) -> &[Vec<f64>] {
+     |                   ^^^^^^^^^^^^^^^^^^^^
+...
+1180 |     pub(crate) fn committed_output_radii(&self) -> &[Vec<f64>] {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `rodas5p-integrators` (lib) generated 4 warnings (run `cargo fix --lib -p rodas5p-integrators` to apply 1 suggestion)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 40.69s
+     Running tests/production_audit_packet_curve.rs (target/debug/deps/production_audit_packet_curve-303856b2e0c0848e)
+
+running 5 tests
+test asymmetric_nonlinear_curve_uses_actual_weighted_mean_and_full_degree ... A01_FRACTION_FIXTURE={"candidate":[[0.05,0.27],[-0.012857250000000002,-0.00952875],[0.00014643646093750003,-0.00011846107968750005]],"chi":0.5,"evaluation_checks":[{"mean":{"im":[0.26999999999999996,0.27],"re":[0.04999999999999999,0.05000000000000002]},"modes":[{"im":[0.2,0.2],"re":[0.4,0.4]},{"im":[0.3,0.3],"re":[-0.1,-0.1]}],"time":0.0},{"mean":{"im":[0.26520673232448627,0.2652067323244864],"re":[0.0436075216492962,0.04360752164929624]},"modes":[{"im":[0.19085560228264264,0.19085560228264267],"re":[0.40345552939032525,0.4034555293903253]},{"im":[0.2970715023424193,0.29707150234241936],"re":[-0.11061305309685909,-0.11061305309685908]}],"time":0.125},{"mean":{"im":[0.26035849669129424,0.26035849669129435],"re":[0.037285496406043915,0.03728549640604396]},"modes":[{"im":[0.18170208270399385,0.18170208270399388],"re":[0.4069890584889152,0.40698905848891526]},{"im":[0.2940683884001373,0.2940683884001374],"re":[-0.12115888734375806,-0.12115888734375804]}],"time":0.25}],"horizon":0.25,"modes":[[[0.4,0.2],[0.006830250000000001,-0.018278750000000003],[0.00016447650000000005,-0.00002104486875000001],[-5.768265301992189e-6,1.938820303320313e-6],[1.013040690074158e-7,-6.204614118612675e-8],[-1.0632013855975173e-9,8.127217991851556e-10],[1.3368438132946885e-11,-1.4210179214783262e-11],[-1.9394612632587013e-14,7.052973950654776e-14],[5.435697399031331e-16,-4.397255837933803e-16]],[[-0.1,0.3],[-0.021294750000000005,-0.005778750000000002],[0.00013870501562500003,-0.00016021088437500006],[-2.8265354680078125e-6,7.53267992246094e-6],[-1.7263591073303257e-8,-1.8529874904547128e-7],[1.4495511515303602e-9,1.9171764954656353e-9],[-1.0075355312723757e-11,-1.3960575276759796e-11],[2.0096798265628e-13,1.224218970815841e-13],[-7.247596532041777e-16,5.863007783911738e-16]]],"require_candidate_difference":true,"residuals":[[{"im":[-2.7755575615628914e-17,1.3877787807814457e-17],"re":[-1.0408340855860843e-17,1.3877787807814457e-17]},{"im":[0.0017578124999999992,0.0017578125000000013],"re":[0.0035156249999999997,0.003515625000000002]},{"im":[2.070922851562413e-6,2.070922851562579e-6],"re":[-0.000011182983398437574,-0.000011182983398437391]},{"im":[-1.66321064400543e-7,-1.6632106440053474e-7],"re":[1.046944479153434e-6,1.046944479153441e-6]},{"im":[1.7211475000973364e-8,1.7211475000973595e-8],"re":[-6.036918652404662e-8,-6.036918652404636e-8]},{"im":[-6.175758755516953e-10,-6.175758755516873e-10],"re":[1.624692747836247e-9,1.6246927478362564e-9]},{"im":[1.6021794062065505e-11,1.6021794062065725e-11],"re":[-1.1053557477610144e-11,-1.1053557477609898e-11]},{"im":[-3.495543414835393e-14,-3.495543414834827e-14],"re":[-4.731257930992738e-13,-4.731257930992676e-13]},{"im":[-1.1209120871262319e-14,-1.1209120871262175e-14],"re":[1.6309715610453634e-14,1.6309715610453785e-14]},{"im":[4.0454329334314603e-16,4.0454329334314934e-16],"re":[-1.4695635045215007e-16,-1.4695635045214703e-16]},{"im":[-9.975146282401304e-18,-9.975146282401241e-18],"re":[-4.293098015669362e-18,-4.293098015669297e-18]},{"im":[1.590865963049408e-19,1.590865963049419e-19],"re":[2.2413943369900154e-19,2.2413943369900304e-19]},{"im":[-1.7907616963619937e-21,-1.7907616963619764e-21],"re":[-5.585692099965194e-21,-5.5856920999651686e-21]},{"im":[1.1790999487676696e-23,1.1790999487676937e-23],"re":[1.0298568271213491e-22,1.0298568271213532e-22]},{"im":[9.936134530293777e-26,9.936134530294115e-26],"re":[-1.5151335132371349e-24,-1.5151335132371294e-24]},{"im":[-3.613801010596706e-27,-3.61380101059666e-27],"re":[1.8294922341208595e-26,1.829492234120866e-26]},{"im":[6.497080062208016e-29,6.49708006220807e-29],"re":[-1.896815293452148e-28,-1.896815293452141e-28]},{"im":[-8.276069932799348e-31,-8.27606993279929e-31],"re":[1.620895086031941e-30,1.6208950860319472e-30]},{"im":[7.79092136591606e-33,7.790921365916105e-33],"re":[-1.179322621261704e-32,-1.1793226212616993e-32]},{"im":[-6.782350435947647e-35,-6.782350435947614e-35],"re":[7.031346775491198e-35,7.031346775491229e-35]},{"im":[3.862013687737623e-37,3.862013687737643e-37],"re":[-3.02284552624664e-37,-3.022845526246622e-37]},{"im":[-2.3172224711032186e-39,-2.3172224711032078e-39],"re":[1.1897306663652693e-39,1.1897306663652786e-39]},{"im":[6.656967784370117e-42,6.656967784370155e-42],"re":[1.6836916196924804e-43,1.683691619692826e-43]},{"im":[-1.8959523015874636e-44,-1.8959523015874556e-44],"re":[5.833574453823023e-45,5.833574453823095e-45]},{"im":[3.3750265287318107e-47,3.375026528731819e-47],"re":[2.7302577787520183e-47,2.7302577787520266e-47]}],[{"im":[-6.938893903907228e-18,6.938893903907228e-18],"re":[-2.7755575615628914e-17,1.3877787807814457e-17]},{"im":[0.0046875,0.004687500000000004],"re":[-0.0015625000000000023,-0.0015624999999999997]},{"im":[3.6816406249998873e-6,3.681640625000077e-6],"re":[-0.000019880859375000082,-0.000019880859374999906]},{"im":[-3.5017917902456694e-7,-3.5017917902455847e-7],"re":[1.3965607053497227e-6,1.3965607053497303e-6]},{"im":[2.4621953756018303e-8,2.462195375601854e-8],"re":[-6.807247451525568e-8,-6.80724745152554e-8]},{"im":[-7.746229091221878e-10,-7.746229091221797e-10],"re":[1.6937211663537772e-9,1.6937211663537869e-9]},{"im":[1.7487031152419923e-11,1.748703115242014e-11],"re":[-1.1037957231483678e-11,-1.1037957231483431e-11]},{"im":[-4.8728096353908145e-14,-4.872809635390247e-14],"re":[-4.698825332508339e-13,-4.698825332508278e-13]},{"im":[-1.1129850284193112e-14,-1.1129850284192968e-14],"re":[1.6373842258090168e-14,1.637384225809032e-14]},{"im":[4.0454329334314603e-16,4.0454329334314934e-16],"re":[-1.4695635045215007e-16,-1.4695635045214703e-16]},{"im":[-9.975146282401304e-18,-9.975146282401241e-18],"re":[-4.293098015669362e-18,-4.293098015669297e-18]},{"im":[1.590865963049408e-19,1.590865963049419e-19],"re":[2.2413943369900154e-19,2.2413943369900304e-19]},{"im":[-1.7907616963619937e-21,-1.7907616963619764e-21],"re":[-5.585692099965194e-21,-5.5856920999651686e-21]},{"im":[1.1790999487676696e-23,1.1790999487676937e-23],"re":[1.0298568271213491e-22,1.0298568271213532e-22]},{"im":[9.936134530293777e-26,9.936134530294115e-26],"re":[-1.5151335132371349e-24,-1.5151335132371294e-24]},{"im":[-3.613801010596706e-27,-3.61380101059666e-27],"re":[1.8294922341208595e-26,1.829492234120866e-26]},{"im":[6.497080062208016e-29,6.49708006220807e-29],"re":[-1.896815293452148e-28,-1.896815293452141e-28]},{"im":[-8.276069932799348e-31,-8.27606993279929e-31],"re":[1.620895086031941e-30,1.6208950860319472e-30]},{"im":[7.79092136591606e-33,7.790921365916105e-33],"re":[-1.179322621261704e-32,-1.1793226212616993e-32]},{"im":[-6.782350435947647e-35,-6.782350435947614e-35],"re":[7.031346775491198e-35,7.031346775491229e-35]},{"im":[3.862013687737623e-37,3.862013687737643e-37],"re":[-3.02284552624664e-37,-3.022845526246622e-37]},{"im":[-2.3172224711032186e-39,-2.3172224711032078e-39],"re":[1.1897306663652693e-39,1.1897306663652786e-39]},{"im":[6.656967784370117e-42,6.656967784370155e-42],"re":[1.6836916196924804e-43,1.683691619692826e-43]},{"im":[-1.8959523015874636e-44,-1.8959523015874556e-44],"re":[5.833574453823023e-45,5.833574453823095e-45]},{"im":[3.3750265287318107e-47,3.375026528731819e-47],"re":[2.7302577787520183e-47,2.7302577787520266e-47]}]],"weights":[0.3,0.7],"width":0.25,"xi":[-0.75,1.0000000000000002]}
+
+thread 'asymmetric_nonlinear_curve_uses_actual_weighted_mean_and_full_degree' (3832465) panicked at crates/rodas5p-integrators/tests/production_audit_packet_curve.rs:148:5:
+Fraction oracle failed: Traceback (most recent call last):
+  File "/home/cosmosapjw/vigilode/crates/rodas5p-integrators/tests/packet_curve_fraction_oracle.py", line 127, in <module>
+    print(f"all residual coefficients enclosed: {verify(json.load(sys.stdin))}")
+                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cosmosapjw/vigilode/crates/rodas5p-integrators/tests/packet_curve_fraction_oracle.py", line 92, in verify
+    checked += 1
+    ^^^^^^^
+UnboundLocalError: cannot access local variable 'checked' where it is not associated with a value
+
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+test evaluation_reuses_frozen_storage_without_allocating_and_refuses_bad_times ... ok
+test linear_dyadic_residual_contains_exact_fraction_and_curve_evaluates_consistently ... A01_FRACTION_FIXTURE={"candidate":[[1.0,0.0],[0.0,0.125]],"chi":0.0,"evaluation_checks":[{"mean":{"im":[0.0,0.0],"re":[1.0,1.0]},"modes":[{"im":[0.0,0.0],"re":[1.0,1.0]}],"time":0.0},{"mean":{"im":[0.0625,0.0625],"re":[1.0,1.0]},"modes":[{"im":[0.0625,0.0625],"re":[1.0,1.0]}],"time":0.25},{"mean":{"im":[0.125,0.125],"re":[1.0,1.0]},"modes":[{"im":[0.125,0.125],"re":[1.0,1.0]}],"time":0.5}],"horizon":0.5,"modes":[[[1.0,0.0],[0.0,0.125],[0.0,0.0],[0.0,0.0],[0.0,0.0],[0.0,0.0]]],"require_candidate_difference":false,"residuals":[[{"im":[0.0,0.0],"re":[0.0,0.0]},{"im":[0.0,0.0],"re":[0.03125,0.03125]},{"im":[0.0,0.0],"re":[0.0,0.0]},{"im":[0.0,0.0],"re":[0.0,0.0]},{"im":[0.0,0.0],"re":[0.0,0.0]},{"im":[0.0,0.0],"re":[0.0,0.0]},{"im":[0.0,0.0],"re":[0.0,0.0]},{"im":[0.0,0.0],"re":[0.0,0.0]},{"im":[0.0,0.0],"re":[0.0,0.0]},{"im":[0.0,0.0],"re":[0.0,0.0]},{"im":[0.0,0.0],"re":[0.0,0.0]},{"im":[0.0,0.0],"re":[0.0,0.0]},{"im":[0.0,0.0],"re":[0.0,0.0]},{"im":[0.0,0.0],"re":[0.0,0.0]},{"im":[0.0,0.0],"re":[0.0,0.0]},{"im":[0.0,0.0],"re":[0.0,0.0]}]],"weights":[1.0],"width":0.5,"xi":[0.5]}
+
+thread 'linear_dyadic_residual_contains_exact_fraction_and_curve_evaluates_consistently' (3832482) panicked at crates/rodas5p-integrators/tests/production_audit_packet_curve.rs:148:5:
+Fraction oracle failed: Traceback (most recent call last):
+  File "/home/cosmosapjw/vigilode/crates/rodas5p-integrators/tests/packet_curve_fraction_oracle.py", line 127, in <module>
+    print(f"all residual coefficients enclosed: {verify(json.load(sys.stdin))}")
+                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cosmosapjw/vigilode/crates/rodas5p-integrators/tests/packet_curve_fraction_oracle.py", line 92, in verify
+    checked += 1
+    ^^^^^^^
+UnboundLocalError: cannot access local variable 'checked' where it is not associated with a value
+
+FAILED
+test malformed_degree_and_overflowing_frequency_refuse_with_attempted_work ... ok
+test subnormal_initial_value_is_retained_and_frequency_overflow_refuses ... ok
+
+failures:
+
+failures:
+    asymmetric_nonlinear_curve_uses_actual_weighted_mean_and_full_degree
+    linear_dyadic_residual_contains_exact_fraction_and_curve_evaluates_consistently
+
+test result: FAILED. 3 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.52s
+
+error: test failed, to rerun pass `-p rodas5p-integrators --test production_audit_packet_curve`
