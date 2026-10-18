@@ -1,7 +1,8 @@
 //! New adversarial regressions for the 2026-10-18 packet audit.
 use rodas5p_integrators::{
     CausalWeights, CollectiveModel, PacketWorkCounters, TrajectoryConfig, compile_packet,
-    compute_certificate, evaluate_mode_at, generate_candidate, run_packet_trajectory,
+    compute_certificate, evaluate_mode_at, generate_candidate, reconstruct_modes,
+    run_packet_trajectory,
 };
 
 fn one_mode(width: f64, chi: f64, kappa: f64) -> CollectiveModel {
@@ -76,6 +77,48 @@ fn nonfinite_candidate_cannot_receive_certificate() {
     let mut cand = generate_candidate(&packet, 2, 1, &table, &mut work).unwrap();
     cand.mean[0].0 = f64::NAN;
     assert!(compute_certificate(&cand, &packet, &table, &mut work).is_err());
+}
+
+#[test]
+fn public_packet_descriptor_mutation_is_refused_by_certificate_and_output() {
+    let mut work = PacketWorkCounters::new();
+    let model = one_mode(0.2, 0.1, 0.0);
+    let mut packet = compile_packet(&model, 0.1, 2, &mut work).unwrap();
+    let table = CausalWeights::compile(2, 6);
+    let cand = generate_candidate(&packet, 2, 2, &table, &mut work).unwrap();
+    packet.kernel[0].0 = f64::from_bits(packet.kernel[0].0.to_bits() + 1);
+
+    assert!(compute_certificate(&cand, &packet, &table, &mut work).is_err());
+    assert!(reconstruct_modes(&cand, &packet, &mut work).is_err());
+    assert!(evaluate_mode_at(&cand, &packet, 0, 0.5, &mut work).is_err());
+}
+
+#[test]
+fn model_identity_compares_exact_float_bits_including_signed_zero() {
+    let mut work = PacketWorkCounters::new();
+    let model = one_mode(0.2, 0.1, 0.0);
+    let mut packet = compile_packet(&model, 0.1, 2, &mut work).unwrap();
+    let table = CausalWeights::compile(2, 6);
+    let cand = generate_candidate(&packet, 2, 2, &table, &mut work).unwrap();
+    packet.model =
+        CollectiveModel::new(vec![1.0], vec![1.0], vec![(0.5, 0.0)], 0.2, 0.1, -0.0, 0.0).unwrap();
+
+    assert!(compute_certificate(&cand, &packet, &table, &mut work).is_err());
+    assert!(evaluate_mode_at(&cand, &packet, 0, 0.0, &mut work).is_err());
+}
+
+#[test]
+fn candidate_cannot_be_reused_with_a_different_compiled_packet() {
+    let mut work = PacketWorkCounters::new();
+    let model = one_mode(0.2, 0.1, 0.0);
+    let packet_a = compile_packet(&model, 0.1, 2, &mut work).unwrap();
+    let packet_b = compile_packet(&model, 0.11, 2, &mut work).unwrap();
+    let table = CausalWeights::compile(2, 6);
+    let cand = generate_candidate(&packet_a, 2, 2, &table, &mut work).unwrap();
+
+    assert!(compute_certificate(&cand, &packet_b, &table, &mut work).is_err());
+    assert!(reconstruct_modes(&cand, &packet_b, &mut work).is_err());
+    assert!(evaluate_mode_at(&cand, &packet_b, 0, 0.0, &mut work).is_err());
 }
 
 #[test]

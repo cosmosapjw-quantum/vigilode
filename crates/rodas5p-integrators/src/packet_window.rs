@@ -42,6 +42,10 @@ pub enum PacketError {
     IndexOutOfBounds { index: usize, modes: usize },
     #[error("error budget exceeded: max mode bound {max_bound} > tolerance {tolerance}")]
     BudgetExceeded { max_bound: f64, tolerance: f64 },
+    #[error("compiled packet descriptor was modified after generation")]
+    ModifiedDescriptor,
+    #[error("candidate was generated for a different compiled packet")]
+    CandidatePacketMismatch,
 }
 
 impl From<PacketError> for CoreError {
@@ -232,6 +236,119 @@ pub struct CompiledPacket {
     pub nu: Vec<(f64, f64)>,
     pub free: Vec<(f64, f64)>,
     pub kernel: Vec<(f64, f64)>,
+    // Public fields remain readable for compatibility, but certification checks
+    // them against this private construction snapshot before using them.
+    identity: PacketIdentity,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+struct PacketIdentity {
+    model: CollectiveModel,
+    horizon: u64,
+    order: usize,
+    mu: Vec<u64>,
+    nu: Vec<(u64, u64)>,
+    free: Vec<(u64, u64)>,
+    kernel: Vec<(u64, u64)>,
+}
+
+impl PacketIdentity {
+    fn new(packet: &CompiledPacket) -> Self {
+        Self {
+            model: packet.model.clone(),
+            horizon: packet.horizon.to_bits(),
+            order: packet.order,
+            mu: packet.mu.iter().map(|x| x.to_bits()).collect(),
+            nu: packet
+                .nu
+                .iter()
+                .map(|z| (z.0.to_bits(), z.1.to_bits()))
+                .collect(),
+            free: packet
+                .free
+                .iter()
+                .map(|z| (z.0.to_bits(), z.1.to_bits()))
+                .collect(),
+            kernel: packet
+                .kernel
+                .iter()
+                .map(|z| (z.0.to_bits(), z.1.to_bits()))
+                .collect(),
+        }
+    }
+
+    fn matches(&self, packet: &CompiledPacket) -> bool {
+        Self::model_matches(&self.model, &packet.model)
+            && self.horizon == packet.horizon.to_bits()
+            && self.order == packet.order
+            && self.mu.len() == packet.mu.len()
+            && self
+                .mu
+                .iter()
+                .zip(&packet.mu)
+                .all(|(&a, &b)| a == b.to_bits())
+            && self.nu.len() == packet.nu.len()
+            && self
+                .nu
+                .iter()
+                .zip(&packet.nu)
+                .all(|(&(ar, ai), &(br, bi))| ar == br.to_bits() && ai == bi.to_bits())
+            && self.free.len() == packet.free.len()
+            && self
+                .free
+                .iter()
+                .zip(&packet.free)
+                .all(|(&(ar, ai), &(br, bi))| ar == br.to_bits() && ai == bi.to_bits())
+            && self.kernel.len() == packet.kernel.len()
+            && self
+                .kernel
+                .iter()
+                .zip(&packet.kernel)
+                .all(|(&(ar, ai), &(br, bi))| ar == br.to_bits() && ai == bi.to_bits())
+    }
+
+    fn matches_identity(&self, other: &Self) -> bool {
+        Self::model_matches(&self.model, &other.model)
+            && self.horizon == other.horizon
+            && self.order == other.order
+            && self.mu == other.mu
+            && self.nu == other.nu
+            && self.free == other.free
+            && self.kernel == other.kernel
+    }
+
+    fn model_matches(a: &CollectiveModel, b: &CollectiveModel) -> bool {
+        a.xi().len() == b.xi().len()
+            && a.xi()
+                .iter()
+                .zip(b.xi())
+                .all(|(x, y)| x.to_bits() == y.to_bits())
+            && a.weights().len() == b.weights().len()
+            && a.weights()
+                .iter()
+                .zip(b.weights())
+                .all(|(x, y)| x.to_bits() == y.to_bits())
+            && a.initial_amplitudes().len() == b.initial_amplitudes().len()
+            && a.initial_amplitudes()
+                .iter()
+                .zip(b.initial_amplitudes())
+                .all(|(x, y)| x.0.to_bits() == y.0.to_bits() && x.1.to_bits() == y.1.to_bits())
+            && a.width().to_bits() == b.width().to_bits()
+            && a.chi().to_bits() == b.chi().to_bits()
+            && a.carrier().to_bits() == b.carrier().to_bits()
+            && a.kappa().to_bits() == b.kappa().to_bits()
+            && a.initial_energy().to_bits() == b.initial_energy().to_bits()
+    }
+}
+
+impl CompiledPacket {
+    fn validate_identity(&self) -> Result<(), PacketError> {
+        if self.identity.matches(self) {
+            Ok(())
+        } else {
+            Err(PacketError::ModifiedDescriptor)
+        }
+    }
 }
 
 /// Compiles moment prefix and basis polynomials into a [`CompiledPacket`].
@@ -275,7 +392,7 @@ pub fn compile_packet(
         kernel.push(c_scale(b, mu[k]));
     }
 
-    Ok(CompiledPacket {
+    let mut result = CompiledPacket {
         model: model.clone(),
         horizon,
         order,
@@ -283,7 +400,18 @@ pub fn compile_packet(
         nu,
         free,
         kernel,
-    })
+        identity: PacketIdentity {
+            model: model.clone(),
+            horizon: horizon.to_bits(),
+            order,
+            mu: Vec::new(),
+            nu: Vec::new(),
+            free: Vec::new(),
+            kernel: Vec::new(),
+        },
+    };
+    result.identity = PacketIdentity::new(&result);
+    Ok(result)
 }
 
 // ---------------------------------------------------------------------------
@@ -296,6 +424,7 @@ pub struct PacketCandidate {
     pub mean: Vec<(f64, f64)>,
     pub degree: usize,
     pub sweeps: usize,
+    identity: PacketIdentity,
 }
 
 /// Generates a Picard candidate polynomial for the complex mean in sweeps.
@@ -306,6 +435,7 @@ pub fn generate_candidate(
     table: &CausalWeights,
     work: &mut PacketWorkCounters,
 ) -> Result<PacketCandidate, PacketError> {
+    packet.validate_identity()?;
     if degree < packet.order {
         return Err(PacketError::DegreeLessThanOrder {
             degree,
@@ -341,6 +471,7 @@ pub fn generate_candidate(
         mean: p,
         degree,
         sweeps,
+        identity: packet.identity.clone(),
     })
 }
 
@@ -383,6 +514,10 @@ pub fn compute_certificate(
     table: &CausalWeights,
     work: &mut PacketWorkCounters,
 ) -> Result<PacketCertificate, PacketError> {
+    packet.validate_identity()?;
+    if !cand.identity.matches_identity(&packet.identity) {
+        return Err(PacketError::CandidatePacketMismatch);
+    }
     if packet.model.kappa() != 0.0 {
         return Err(PacketError::UnsupportedDamping(packet.model.kappa()));
     }
@@ -481,7 +616,13 @@ pub fn reconstruction_polynomials(
     cand: &PacketCandidate,
     packet: &CompiledPacket,
     work: &mut PacketWorkCounters,
-) -> (Vec<(f64, f64)>, Vec<(f64, f64)>) {
+) -> CoreResult<(Vec<(f64, f64)>, Vec<(f64, f64)>)> {
+    packet.validate_identity().map_err(CoreError::from)?;
+    if !cand.identity.matches_identity(&packet.identity) {
+        return Err(CoreError::InvalidInput(
+            PacketError::CandidatePacketMismatch.to_string(),
+        ));
+    }
     let p = packet.order;
     let h = packet.horizon;
     let width = packet.model.width();
@@ -511,7 +652,7 @@ pub fn reconstruction_polynomials(
         gamma.push(c_scale(c_mul(b, acc), h));
     }
 
-    (beta, gamma)
+    Ok((beta, gamma))
 }
 
 /// Reconstructs all N microscopic mode amplitudes a_j(h) at the horizon end.
@@ -519,8 +660,8 @@ pub fn reconstruct_modes(
     cand: &PacketCandidate,
     packet: &CompiledPacket,
     work: &mut PacketWorkCounters,
-) -> Vec<(f64, f64)> {
-    let (beta, gamma) = reconstruction_polynomials(cand, packet, work);
+) -> CoreResult<Vec<(f64, f64)>> {
+    let (beta, gamma) = reconstruction_polynomials(cand, packet, work)?;
     let mut out = Vec::with_capacity(packet.model.num_modes());
 
     for (&xi, &z) in packet
@@ -534,7 +675,7 @@ pub fn reconstruct_modes(
         out.push(c_add(c_mul(b_val, z), g_val));
     }
 
-    out
+    Ok(out)
 }
 
 /// Evaluates a single mode a_j(tau) at normalized time tau = t/h \in [0, 1].
@@ -545,6 +686,12 @@ pub fn evaluate_mode_at(
     tau: f64,
     work: &mut PacketWorkCounters,
 ) -> CoreResult<(f64, f64)> {
+    packet.validate_identity().map_err(CoreError::from)?;
+    if !cand.identity.matches_identity(&packet.identity) {
+        return Err(CoreError::InvalidInput(
+            PacketError::CandidatePacketMismatch.to_string(),
+        ));
+    }
     if mode_idx >= packet.model.num_modes() {
         return Err(CoreError::InvalidInput(format!(
             "evaluate_mode_at: mode_idx {mode_idx} >= num_modes {}",
@@ -570,6 +717,10 @@ pub fn evaluate_mode_at(
         *coefficient = c_scale(*coefficient, scale);
         scale *= tau;
     }
-    let modes = reconstruct_modes(&restricted, &sub_packet, work);
+    // This is the intentional, exact descriptor transition for the restricted
+    // waveform: P(tau*s) is reconstructed with the correspondingly shortened
+    // linear kernel on [0, tau*h].
+    restricted.identity = sub_packet.identity.clone();
+    let modes = reconstruct_modes(&restricted, &sub_packet, work)?;
     Ok(modes[mode_idx])
 }

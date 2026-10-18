@@ -20,7 +20,7 @@ fn test_vg1_zero_online_solver_counters_contract() {
     let candidate =
         generate_candidate(&packet, 10, 4, &table, &mut work).expect("generate candidate");
     let cert = compute_certificate(&candidate, &packet, &table, &mut work).expect("compute cert");
-    let _modes = reconstruct_modes(&candidate, &packet, &mut work);
+    let _modes = reconstruct_modes(&candidate, &packet, &mut work).unwrap();
 
     // Online solver counters MUST be strictly zero
     assert_eq!(work.jacobian_calls(), 0, "online jacobian calls must be 0");

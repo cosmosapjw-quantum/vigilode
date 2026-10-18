@@ -346,7 +346,14 @@ pub fn run_packet_trajectory(
 
         if accepted {
             // Reconstruct new microscopic mode amplitudes
-            let new_modes = reconstruct_modes(&cand, &packet, work);
+            let new_modes = match reconstruct_modes(&cand, &packet, work) {
+                Ok(modes) => modes,
+                Err(_) => {
+                    rejected_steps += 1;
+                    h = (step_h * 0.5).max(config.min_h * 0.5);
+                    continue;
+                }
+            };
 
             // Construct new admitted model for the subsequent window
             let next_model_res = CollectiveModel::new(
