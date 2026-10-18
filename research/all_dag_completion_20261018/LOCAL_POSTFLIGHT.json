@@ -26,18 +26,31 @@
   },
   "historical_records_mutated": false,
   "independent_review": {
-    "verdict": "PASS_LOCAL_EXECUTION_AND_NUMERIC_EVIDENCE; PROVENANCE_FIX_IN_PROGRESS",
+    "verdict": "PASS_LOCAL_EXECUTION_AND_NUMERIC_EVIDENCE; REPORTING_CORRECTION_RECORDED",
     "reviewer": "read-only reviewer; did not implement LOCAL-01..05",
     "verified": "82 earlier manifest entries and 414 source hashes matched; all six validation groups and six examples had exit 0; 450 benchmark rows passed; correction accurately interprets timing direction.",
     "findings": [
       "L-0142 must not replace L-0141 without inheriting its numeric output hashes.",
       "Ledger review inputs must exist in the commit named by the row."
     ],
-    "resolution_plan": "Publish local result artifacts in an evidence commit, then append a supplemental/replacement ledger row bound to that commit with inherited outputs plus timing erratum."
+    "resolution_plan": "Resolved by L-0142, which references the evidence commit containing review inputs and inherits L-0141 outputs plus LOCAL_TIMING_ERRATUM_KO.md."
   },
   "reporting_erratum": {
     "record": "LOCAL_TIMING_ERRATUM_KO.md",
     "raw_measurements_unchanged": true,
-    "ledger_revision": "pending evidence commit"
+    "ledger_revision": "L-0142",
+    "ledger_commit": "3527b051872857f2c24851dbe7e2aa5fb1e4482d"
+  },
+  "repository_checkers": {
+    "check_research_node_final": {
+      "exit_code": 1,
+      "classification": "inherited L-0124 hash drift, L-0138 hash drift, L-0140 schema defects; no L-0141/L-0142 error",
+      "logs": "local_validation_01/check_research_node_final.*"
+    },
+    "check_authority_refs": {
+      "exit_code": 1,
+      "classification": "missing historical commit 40a36d922e915e1d1c296adc136b7e5b7676eb67; ordinary advertised branch fetch cannot recover it",
+      "logs": "local_validation_01/check_authority_refs*.{stdout,stderr,exit_code}"
+    }
   }
 }
