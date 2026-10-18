@@ -40,3 +40,8 @@ Classify mathematical, numerical, implementation, input, and environment failure
 - Scope decision: packet kappa=0 HOLD; damped packet HOLD; Leja total error HOLD; generic all-output accuracy HOLD; matched accuracy/speed HOLD; existing generic RODAS5P use remains restricted to previously validated problem-specific scope.
 - Machine results, source/input identity, output hashes, and detailed report: `CONTINUATION_RESULTS.json`, `CONTINUATION_DAG.json`, `CONTINUATION_DECISION.json`, `CONTINUATION_FINDINGS.json`, `CONTINUATION_INDEPENDENT_REVIEW.json`, and `CONTINUATION_OUTPUT_HASHES.json`.
 - Claim ceiling: PASS refers only to bounded implementation/contract validation and reviewed component scopes. It does not establish full scientific or production promotion.
+
+
+## Post-EXEC clippy cleanup validation (source `80af642dee82785ddc02d705e3859cae05d46a9c`)
+
+A first pre-push run stopped at workspace clippy. It found range-loop style warnings in continuation code/tests plus one direct-test loop. Iterator-only rewrites and an exact binary64 literal spelling change were applied; the `partial_cmp` form explicitly preserves fail-closed unordered handling. No scientific formula, tolerance, model parameter, coefficient value, or benchmark input changed. The final source commit was pushed and verified before these checks. At that source identity, the focused integrator suite passed 44/44, core damped/Leja targets 18/18, direct scalar coefficient regression 1/1, doc tests 13/13, workspace all-target check, and fmt all exited 0. Workspace clippy subsequently passed at the same content; see the raw continuation evidence.
