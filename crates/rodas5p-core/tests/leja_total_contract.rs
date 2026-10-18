@@ -10,7 +10,8 @@ use rodas5p_core::leja_action::{
     CertifiedLejaCoeffCache, CertifiedLejaReport, CertifiedLejaWorkspace, LEJA_CERTIFIED_SCHEMA,
     LEJA_DEGREE_CAP, LEJA_TOTAL_NOT_CERTIFIED, leja_node_bounds, leja_node_polynomial_bound,
     leja_phi_action, leja_phi_action_certified, leja_phi_action_certified_capped,
-    leja_phi_action_certified_with_cache_and_workspace, leja_points,
+    leja_phi_action_certified_with_cache, leja_phi_action_certified_with_cache_and_workspace,
+    leja_points,
 };
 use rodas5p_core::polynomial_action::{
     EnclosureEvidence, JointPhiInput, SymmetricNonpositiveOperator, TotalErrorStatus,
@@ -324,6 +325,46 @@ fn test_vg3_no_false_authority_unaltered_leja_report() {
             panic!("uncertified LejaReport must never claim TotalErrorStatus::Certified");
         }
     }
+}
+
+#[test]
+fn test_a04_subnormal_domain_keeps_total_authority_on_hold() {
+    // A smallest-subnormal input is a valid finite binary64 value.  The
+    // present component estimates do not establish a complete additive-
+    // underflow enclosure for the operator action and final fused output.
+    // Keep this adversarial domain explicit and require the API to withhold
+    // total certificate authority even when the heuristic meets its budget.
+    let mut a = DenseMatrix::zeros(2, 2);
+    a[(0, 0)] = -1.0;
+    a[(1, 1)] = -2.0;
+    let op = SymmetricNonpositiveOperator::gershgorin(a).unwrap();
+    let v = [f64::from_bits(1), f64::from_bits(1)];
+    let input = JointPhiInput::SameVector {
+        vector: &v,
+        scales: [1.0; 5],
+    };
+    // The public cache API can only populate entries through the certified
+    // coefficient generator; callers cannot supply or mutate its arrays.
+    let mut cache = CertifiedLejaCoeffCache::new();
+    cache.precompute_certified(-0.375, 0.0625, 8).unwrap();
+    let mut work = WorkCounters::default();
+    let report =
+        leja_phi_action_certified_with_cache(&op, 0.25, input, 1.0, 8, Some(&mut cache), &mut work)
+            .unwrap();
+    match report.total_error() {
+        TotalErrorStatus::EstimateOnly { reason, .. } => {
+            assert!(reason.contains("LEJA_ARITHMETIC_HOLD"));
+            assert!(reason.contains("operator products"));
+            assert!(reason.contains("final output scaling/fusion"));
+        }
+        TotalErrorStatus::Certified { .. } => {
+            panic!("Leja must not issue total certificate authority")
+        }
+    }
+    assert_eq!(
+        work.poly_coefficient_setups, 0,
+        "precomputed trusted cache should be reused"
+    );
 }
 
 #[test]

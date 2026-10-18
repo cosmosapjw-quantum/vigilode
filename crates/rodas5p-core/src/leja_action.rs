@@ -95,8 +95,7 @@ pub const LEJA_SCHEMA: &str = "vigilode-leja-phi-action-v1";
 pub const LEJA_TOTAL_NOT_CERTIFIED: &str = "LEJA_TOTAL_NOT_CERTIFIED";
 /// The total rounding derivation must account for additive underflow before
 /// unrestricted binary64 inputs can carry certificate authority.
-pub const LEJA_ARITHMETIC_HOLD: &str =
-    "LEJA_ARITHMETIC_HOLD: additive underflow in recurrence and accumulation is not enclosed";
+pub const LEJA_ARITHMETIC_HOLD: &str = "LEJA_ARITHMETIC_HOLD: no complete additive-underflow enclosure for operator products, recurrence, coefficient generation, coefficient-radius products, norm evaluation, and final output scaling/fusion";
 /// Prefix of every input or domain error of this module.
 pub const LEJA_INPUT_UNSUPPORTED: &str = "LEJA_INPUT_UNSUPPORTED";
 /// The largest Newton degree (operator products per block column).

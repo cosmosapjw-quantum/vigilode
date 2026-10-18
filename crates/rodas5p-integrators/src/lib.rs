@@ -21,6 +21,7 @@ mod causal_majorant;
 mod certification;
 mod certified_budget;
 pub mod collective_model;
+pub mod collective_direct;
 mod common_w_gate;
 mod comparator_fidelity;
 mod controller_telemetry;

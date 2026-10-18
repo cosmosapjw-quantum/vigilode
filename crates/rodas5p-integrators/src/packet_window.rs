@@ -253,6 +253,19 @@ struct PacketIdentity {
 }
 
 impl PacketIdentity {
+    fn model_payload_items(model: &CollectiveModel) -> u64 {
+        // xi, weights, and two scalar components for each initial amplitude;
+        // width, chi, carrier, kappa, and cached initial energy.
+        4 * model.num_modes() as u64 + 5
+    }
+
+    fn scalar_items(&self) -> u64 {
+        Self::model_payload_items(&self.model)
+            + 1 // horizon
+            + self.mu.len() as u64
+            + 2 * (self.nu.len() + self.free.len() + self.kernel.len()) as u64
+    }
+
     fn new(packet: &CompiledPacket) -> Self {
         Self {
             model: packet.model.clone(),
@@ -342,7 +355,8 @@ impl PacketIdentity {
 }
 
 impl CompiledPacket {
-    fn validate_identity(&self) -> Result<(), PacketError> {
+    fn validate_identity(&self, work: &mut PacketWorkCounters) -> Result<(), PacketError> {
+        work.identity_comparison_items += self.identity.scalar_items();
         if self.identity.matches(self) {
             Ok(())
         } else {
@@ -410,7 +424,12 @@ pub fn compile_packet(
             kernel: Vec::new(),
         },
     };
+    work.model_copy_items += PacketIdentity::model_payload_items(model);
+    // The temporary identity initialized above clones only its model payload;
+    // PacketIdentity::new then copies the full descriptor below.
+    work.identity_snapshot_items += PacketIdentity::model_payload_items(model);
     result.identity = PacketIdentity::new(&result);
+    work.identity_snapshot_items += result.identity.scalar_items();
     Ok(result)
 }
 
@@ -435,7 +454,7 @@ pub fn generate_candidate(
     table: &CausalWeights,
     work: &mut PacketWorkCounters,
 ) -> Result<PacketCandidate, PacketError> {
-    packet.validate_identity()?;
+    packet.validate_identity(work)?;
     if degree < packet.order {
         return Err(PacketError::DegreeLessThanOrder {
             degree,
@@ -467,6 +486,7 @@ pub fn generate_candidate(
         p = next;
     }
 
+    work.identity_snapshot_items += packet.identity.scalar_items();
     Ok(PacketCandidate {
         mean: p,
         degree,
@@ -490,9 +510,18 @@ pub struct PacketCertificate {
     pub mode_bounds: Vec<f64>,
     pub volterra_defect: f64,
     pub kernel_model: f64,
+    /// Bare one-mode exponential-series tail bound B (diagnostic arithmetic).
+    pub bare_tail: f64,
+    /// Weighted spectral-kernel tail S*B (diagnostic arithmetic).
+    pub kernel_tail: f64,
+    /// Weighted free-mean tail A0*B (diagnostic arithmetic).
+    pub free_tail: f64,
+    /// Compatibility alias for `kernel_tail`.
     pub tail: f64,
     pub candidate_domain_bound: f64,
     pub lipschitz_l: f64,
+    /// Bare nonlinear Lipschitz factor L_F = 3|chi| for one microscopic mode.
+    pub microscopic_lipschitz_l: f64,
     pub gain_g: f64,
     pub horizon: f64,
     pub order: usize,
@@ -514,7 +543,8 @@ pub fn compute_certificate(
     table: &CausalWeights,
     work: &mut PacketWorkCounters,
 ) -> Result<PacketCertificate, PacketError> {
-    packet.validate_identity()?;
+    packet.validate_identity(work)?;
+    work.identity_comparison_items += packet.identity.scalar_items();
     if !cand.identity.matches_identity(&packet.identity) {
         return Err(PacketError::CandidatePacketMismatch);
     }
@@ -535,6 +565,7 @@ pub fn compute_certificate(
     }
     let h = packet.horizon;
     let bound_mean = poly_bound(&cand.mean);
+    work.certificate_items += cand.mean.len() as u64;
     if !bound_mean.is_finite() {
         return Err(PacketError::NonFinite("candidate domain bound"));
     }
@@ -543,7 +574,19 @@ pub fn compute_certificate(
     }
 
     let chi = packet.model.chi();
-    let l = 3.0 * chi.abs();
+    // The convolution kernel is the actual weighted spectral sum, whose
+    // absolute bound is S = sum(w_j), not an assumed exactly-one value.
+    let mut weight_sum = 0.0;
+    let mut spectral_radius: f64 = 0.0;
+    for (&w, &xi) in packet.model.weights().iter().zip(packet.model.xi()) {
+        work.certificate_items += 2;
+        weight_sum += w;
+        spectral_radius = spectral_radius.max(xi.abs());
+    }
+    if !weight_sum.is_finite() || !spectral_radius.is_finite() {
+        return Err(PacketError::NonFinite("spectral support"));
+    }
+    let l = 3.0 * chi.abs() * weight_sum;
     let g = chi.abs();
 
     let hl = h * l;
@@ -558,10 +601,11 @@ pub fn compute_certificate(
     let residual = poly_sub(&cand.mean, &expected);
     let defect = poly_bound(&residual);
 
-    // Kernel tail bound tau = (width * h)^{p+1} / (p+1)!
+    // Bare exponential-series tail B for the actual maximum support.
     let width = packet.model.width();
     let p = packet.order;
-    let tau = (width * h).powi((p + 1) as i32) / factorial(p + 1);
+    let bare_tail = (width * spectral_radius * h).powi((p + 1) as i32) / factorial(p + 1);
+    let kernel_tail = bare_tail * weight_sum;
 
     // Initial amplitude upper bound sum w_j |z_j|
     let mut a0 = 0.0;
@@ -571,21 +615,38 @@ pub fn compute_certificate(
         .iter()
         .zip(packet.model.initial_amplitudes().iter())
     {
+        work.certificate_items += 1;
         a0 += w * c_upper(z);
     }
 
-    let kernel_model = tau * (a0 + (h * g) / ((p + 2) as f64));
+    let free_tail = a0 * bare_tail;
+    let nonlinear_mean_tail = kernel_tail * (h * g) / ((p + 2) as f64);
+    let kernel_model = free_tail + nonlinear_mean_tail;
     let mean_bound = (defect + kernel_model) / (1.0 - hl);
 
     let mut mode_bounds = Vec::with_capacity(packet.model.num_modes());
+    let microscopic_lipschitz = 3.0 * chi.abs();
     for &z in packet.model.initial_amplitudes() {
-        let emode = tau * (c_upper(z) + (h * g) / ((p + 2) as f64)) + hl * mean_bound;
+        work.certificate_items += 1;
+        let microscopic_tail = bare_tail * (c_upper(z) + (h * g) / ((p + 2) as f64));
+        let emode = microscopic_tail + h * microscopic_lipschitz * mean_bound;
         mode_bounds.push(emode);
     }
 
-    if [defect, tau, kernel_model, mean_bound, l, g]
-        .iter()
-        .any(|x| !x.is_finite())
+    if [
+        defect,
+        bare_tail,
+        kernel_tail,
+        free_tail,
+        nonlinear_mean_tail,
+        kernel_model,
+        mean_bound,
+        l,
+        g,
+        microscopic_lipschitz,
+    ]
+    .iter()
+    .any(|x| !x.is_finite())
         || mode_bounds.iter().any(|x| !x.is_finite())
     {
         return Err(PacketError::NonFinite("error estimate"));
@@ -597,9 +658,13 @@ pub fn compute_certificate(
         mode_bounds,
         volterra_defect: defect,
         kernel_model,
-        tail: tau,
+        bare_tail,
+        kernel_tail,
+        free_tail,
+        tail: kernel_tail,
         candidate_domain_bound: bound_mean,
         lipschitz_l: l,
+        microscopic_lipschitz_l: microscopic_lipschitz,
         gain_g: g,
         horizon: h,
         order: p,
@@ -617,7 +682,8 @@ pub fn reconstruction_polynomials(
     packet: &CompiledPacket,
     work: &mut PacketWorkCounters,
 ) -> CoreResult<(Vec<(f64, f64)>, Vec<(f64, f64)>)> {
-    packet.validate_identity().map_err(CoreError::from)?;
+    packet.validate_identity(work).map_err(CoreError::from)?;
+    work.identity_comparison_items += packet.identity.scalar_items();
     if !cand.identity.matches_identity(&packet.identity) {
         return Err(CoreError::InvalidInput(
             PacketError::CandidatePacketMismatch.to_string(),
@@ -644,6 +710,7 @@ pub fn reconstruction_polynomials(
         let mut acc = (0.0, 0.0);
         let mut w = 1.0 / ((j + 1) as f64);
         for (k, &fk) in f.iter().enumerate() {
+            work.reconstruction_terms += 1;
             if k > 0 {
                 w *= (k as f64) / ((j + k + 1) as f64);
             }
@@ -673,6 +740,7 @@ pub fn reconstruct_modes(
         let b_val = poly_eval(&beta, xi, work);
         let g_val = poly_eval(&gamma, xi, work);
         out.push(c_add(c_mul(b_val, z), g_val));
+        work.output_value_items += 2;
     }
 
     Ok(out)
@@ -686,7 +754,8 @@ pub fn evaluate_mode_at(
     tau: f64,
     work: &mut PacketWorkCounters,
 ) -> CoreResult<(f64, f64)> {
-    packet.validate_identity().map_err(CoreError::from)?;
+    packet.validate_identity(work).map_err(CoreError::from)?;
+    work.identity_comparison_items += packet.identity.scalar_items();
     if !cand.identity.matches_identity(&packet.identity) {
         return Err(CoreError::InvalidInput(
             PacketError::CandidatePacketMismatch.to_string(),
@@ -704,6 +773,7 @@ pub fn evaluate_mode_at(
         )));
     }
     if tau == 0.0 {
+        work.output_value_items += 2;
         return Ok(packet.model.initial_amplitudes()[mode_idx]);
     }
 
@@ -712,6 +782,8 @@ pub fn evaluate_mode_at(
     // For the shorter normalized coordinate s, the old waveform is P(tau*s).
     // Restrict coefficients before applying the nonlinear force and convolution.
     let mut restricted = cand.clone();
+    work.output_copy_items += (2 * cand.mean.len()) as u64 + cand.identity.scalar_items();
+    work.output_restriction_multiplies += (3 * cand.mean.len()) as u64;
     let mut scale = 1.0;
     for coefficient in &mut restricted.mean {
         *coefficient = c_scale(*coefficient, scale);
@@ -721,6 +793,7 @@ pub fn evaluate_mode_at(
     // waveform: P(tau*s) is reconstructed with the correspondingly shortened
     // linear kernel on [0, tau*h].
     restricted.identity = sub_packet.identity.clone();
+    work.output_copy_items += sub_packet.identity.scalar_items();
     let modes = reconstruct_modes(&restricted, &sub_packet, work)?;
     Ok(modes[mode_idx])
 }

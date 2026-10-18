@@ -1,8 +1,8 @@
 //! New adversarial regressions for the 2026-10-18 packet audit.
 use rodas5p_integrators::{
-    CausalWeights, CollectiveModel, PacketWorkCounters, TrajectoryConfig, compile_packet,
-    compute_certificate, evaluate_mode_at, generate_candidate, reconstruct_modes,
-    run_packet_trajectory,
+    compile_packet, compute_certificate, evaluate_mode_at, generate_candidate, reconstruct_modes,
+    run_packet_trajectory, CausalWeights, CollectiveModel, PacketError, PacketWorkCounters,
+    TrajectoryConfig,
 };
 
 fn one_mode(width: f64, chi: f64, kappa: f64) -> CollectiveModel {
@@ -76,7 +76,102 @@ fn nonfinite_candidate_cannot_receive_certificate() {
     let table = CausalWeights::compile(2, 6);
     let mut cand = generate_candidate(&packet, 2, 1, &table, &mut work).unwrap();
     cand.mean[0].0 = f64::NAN;
-    assert!(compute_certificate(&cand, &packet, &table, &mut work).is_err());
+    assert!(matches!(
+        compute_certificate(&cand, &packet, &table, &mut work),
+        Err(PacketError::NonFinite("coefficient"))
+    ));
+    cand.mean[0].0 = f64::INFINITY;
+    assert!(matches!(
+        compute_certificate(&cand, &packet, &table, &mut work),
+        Err(PacketError::NonFinite("coefficient"))
+    ));
+}
+
+#[test]
+fn coefficient_overflow_is_refused_and_subnormal_stays_diagnostic_only() {
+    let mut work = PacketWorkCounters::new();
+    let packet = compile_packet(&one_mode(0.0, 0.0, 0.0), 0.1, 2, &mut work).unwrap();
+    let table = CausalWeights::compile(2, 6);
+    let mut candidate = generate_candidate(&packet, 2, 1, &table, &mut work).unwrap();
+    candidate.mean[0] = (f64::MAX, f64::MAX);
+    assert!(matches!(
+        compute_certificate(&candidate, &packet, &table, &mut work),
+        Err(PacketError::NonFinite("candidate domain bound"))
+    ));
+
+    candidate.mean[0] = (f64::from_bits(1), 0.0);
+    let certificate = compute_certificate(&candidate, &packet, &table, &mut work).unwrap();
+    assert!(!certificate.roundoff_enclosed);
+}
+
+#[test]
+fn subunit_weight_does_not_shrink_the_free_mode_error_bound() {
+    let weight = 1.0 - 5.0e-13;
+    let model = CollectiveModel::new(
+        vec![1.0],
+        vec![weight],
+        vec![(0.5, 0.0)],
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+    )
+    .unwrap();
+    let h = 1.0e-8;
+    let mut work = PacketWorkCounters::new();
+    let packet = compile_packet(&model, h, 0, &mut work).unwrap();
+    let table = CausalWeights::compile(0, 2);
+    let candidate = generate_candidate(&packet, 0, 1, &table, &mut work).unwrap();
+    let certificate = compute_certificate(&candidate, &packet, &table, &mut work).unwrap();
+    let actual = evaluate_mode_at(&candidate, &packet, 0, 1.0, &mut work).unwrap();
+    let exact = (0.5 * h.cos(), 0.5 * h.sin());
+    let error = (actual.0 - exact.0).hypot(actual.1 - exact.1);
+
+    assert!(
+        error <= certificate.mode_bounds[0],
+        "mode error {error:e} exceeds reported bound {:e}",
+        certificate.mode_bounds[0]
+    );
+}
+
+#[test]
+fn subunit_weight_inherited_radius_uses_microscopic_lipschitz_factor() {
+    let weight = 1.0 - 5.0e-13;
+    let model = CollectiveModel::new(
+        vec![0.0],
+        vec![weight],
+        vec![(0.0, 0.0)],
+        0.0,
+        0.3,
+        0.0,
+        0.0,
+    )
+    .unwrap();
+    let h = 0.5;
+    let initial_radius = 0.9;
+    let mut config = TrajectoryConfig::new(0.0, h, h, 10.0, 10.0).unwrap();
+    config.order = 0;
+    config.degree = 0;
+    config.sweeps = 1;
+    let mut work = PacketWorkCounters::new();
+    let result =
+        run_packet_trajectory(&model, Some(&[initial_radius]), &config, &mut work).unwrap();
+    assert_eq!(result.accepted_steps, 1);
+
+    let packet = compile_packet(&model, h, 0, &mut work).unwrap();
+    let table = CausalWeights::compile(0, 0);
+    let candidate = generate_candidate(&packet, 0, 1, &table, &mut work).unwrap();
+    let certificate = compute_certificate(&candidate, &packet, &table, &mut work).unwrap();
+    let inherited_mean = weight * initial_radius;
+    let mean_denom = 1.0 - h * certificate.lipschitz_l;
+    let expected = certificate.mode_bounds[0]
+        + h * certificate.microscopic_lipschitz_l * inherited_mean / mean_denom
+        + initial_radius;
+    let old_wrong_transfer = certificate.mode_bounds[0]
+        + h * certificate.lipschitz_l * inherited_mean / mean_denom
+        + initial_radius;
+    assert_eq!(result.final_mode_radii[0].to_bits(), expected.to_bits());
+    assert!(result.final_mode_radii[0] > old_wrong_transfer);
 }
 
 #[test]
@@ -119,6 +214,90 @@ fn candidate_cannot_be_reused_with_a_different_compiled_packet() {
     assert!(compute_certificate(&cand, &packet_b, &table, &mut work).is_err());
     assert!(reconstruct_modes(&cand, &packet_b, &mut work).is_err());
     assert!(evaluate_mode_at(&cand, &packet_b, 0, 0.0, &mut work).is_err());
+}
+
+#[test]
+fn certificate_uses_actual_weight_sum_and_spectral_support_and_charges_work() {
+    let model = CollectiveModel::new(
+        vec![0.25, -0.5],
+        vec![0.4, 0.6000000000005],
+        vec![(0.2, 0.0), (0.1, 0.0)],
+        0.8,
+        0.05,
+        0.0,
+        0.0,
+    )
+    .unwrap();
+    let mut work = PacketWorkCounters::new();
+    let packet = compile_packet(&model, 0.1, 2, &mut work).unwrap();
+    let table = CausalWeights::compile(2, 12);
+    let candidate = generate_candidate(&packet, 4, 2, &table, &mut work).unwrap();
+    let cert = compute_certificate(&candidate, &packet, &table, &mut work).unwrap();
+    let _ = reconstruct_modes(&candidate, &packet, &mut work).unwrap();
+
+    let s = 1.0000000000005_f64;
+    let expected_bare_tail = (0.8_f64 * 0.5 * 0.1).powi(3) / 6.0;
+    let expected_kernel_tail = expected_bare_tail * s;
+    let expected_free_tail = expected_bare_tail * (0.4 * 0.2 + 0.6000000000005 * 0.1);
+    assert!((cert.bare_tail - expected_bare_tail).abs() <= 2.0 * f64::EPSILON * expected_bare_tail);
+    assert!(
+        (cert.kernel_tail - expected_kernel_tail).abs()
+            <= 2.0 * f64::EPSILON * expected_kernel_tail
+    );
+    assert!((cert.tail - expected_kernel_tail).abs() <= 2.0 * f64::EPSILON * expected_kernel_tail);
+    assert!((cert.free_tail - expected_free_tail).abs() <= 2.0 * f64::EPSILON * expected_free_tail);
+    assert!(!cert.roundoff_enclosed);
+    assert!(work.identity_snapshot_items > 0);
+    assert!(work.identity_comparison_items > 0);
+    assert!(work.model_copy_items > 0);
+    assert!(work.certificate_items > 0);
+    assert!(work.reconstruction_terms > 0);
+    assert!(work.output_value_items >= 4);
+}
+
+#[test]
+fn multimode_high_precision_linear_oracle_is_close_at_intermediate_and_endpoints() {
+    // 100-digit mpmath oracle for the exact binary inputs below. This checks
+    // the diagnostic center only; no center/radius API exists yet, so it does
+    // not establish certified inclusion.
+    let model = CollectiveModel::new(
+        vec![0.25, -0.75],
+        vec![0.25, 0.75],
+        vec![(0.2, 0.1), (-0.15, 0.05)],
+        0.8,
+        0.0,
+        0.0,
+        0.0,
+    )
+    .unwrap();
+    let mut work = PacketWorkCounters::new();
+    let packet = compile_packet(&model, 0.2, 3, &mut work).unwrap();
+    let table = CausalWeights::compile(3, 12);
+    let candidate = generate_candidate(&packet, 6, 3, &table, &mut work).unwrap();
+    let certificate = compute_certificate(&candidate, &packet, &table, &mut work).unwrap();
+    assert!(!certificate.roundoff_enclosed);
+    let reference = [
+        [
+            (0.19899001674991639, 0.10199496670849986),
+            (-0.14843273005222334, 0.05447682671782373),
+        ],
+        [
+            (0.19796013466398225, 0.10397973400532439),
+            (-0.1467318806663084, 0.0589046279686769),
+        ],
+        [
+            (0.19584108791353217, 0.10791787750342463),
+            (-0.14293568501363397, 0.06759726288603122),
+        ],
+    ];
+    for (time_index, tau) in [0.25, 0.5, 1.0].into_iter().enumerate() {
+        for mode in 0..2 {
+            let actual = evaluate_mode_at(&candidate, &packet, mode, tau, &mut work).unwrap();
+            let expected = reference[time_index][mode];
+            let error = (actual.0 - expected.0).hypot(actual.1 - expected.1);
+            assert!(error <= certificate.mode_bounds[mode]);
+        }
+    }
 }
 
 #[test]

@@ -7,7 +7,7 @@
 //!    \rho_{\text{mean}}^{(k)} = \sum_j w_j \rho_j^{(k)}, \quad E_{\text{mean}}^{(k+1)} = \frac{D + \tau(A_0 + h G / (p+2)) + \rho_{\text{mean}}^{(k)}}{1 - h L}
 //!    \]
 //!    \[
-//!    E_{\text{mode}, j}^{(k+1)} = \tau(|z_j| + h G / (p+2)) + h L E_{\text{mean}}^{(k+1)} + \rho_j^{(k)}
+//!    E_{\text{mode}, j}^{(k+1)} = B(|z_j| + h G / (p+2)) + h L_F E_{\text{mean}}^{(k+1)} + \rho_j^{(k)}
 //!    \]
 //! 2. Strict transactional atomicity: rejected trials reduce step size but cannot mutate accepted
 //!    time, state, or error bounds; all work counters accumulate monotonically across attempts.
@@ -20,7 +20,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::collective_model::CollectiveModel;
 use crate::packet_window::{
-    CausalWeights, compile_packet, compute_certificate, generate_candidate, reconstruct_modes,
+    compile_packet, compute_certificate, generate_candidate, reconstruct_modes, CausalWeights,
 };
 use crate::packet_work::PacketWorkCounters;
 use rodas5p_core::directed::{add_up, mul_up, sqrt_up};
@@ -334,8 +334,9 @@ pub fn run_packet_trajectory(
         let mut max_mode_bound: f64 = 0.0;
 
         for (&local_bound, &prev_r) in cert.mode_bounds.iter().zip(&current_radii) {
-            let mode_b =
-                local_bound + step_h * cert.lipschitz_l * inherited_mean_radius / denom + prev_r;
+            let mode_b = local_bound
+                + step_h * cert.microscopic_lipschitz_l * inherited_mean_radius / denom
+                + prev_r;
             max_mode_bound = max_mode_bound.max(mode_b);
             new_mode_radii.push(mode_b);
         }

@@ -579,20 +579,26 @@ impl OdeProblem {
         if y.len() != self.dimension || out.len() != self.dimension {
             return Err(CoreError::Dimension("RHS state shape mismatch".into()));
         }
+        // These counters describe attempted callback work. Charge before
+        // entering user code so Err and non-finite outputs remain visible.
+        counters.rhs_calls += 1;
+        counters.rhs_evaluations += 1;
         (self.rhs)(t, y, out)?;
         if !out.iter().all(|v| v.is_finite()) {
             return Err(CoreError::NonFinite("RHS produced NaN/Inf".into()));
         }
-        counters.rhs_calls += 1;
-        counters.rhs_evaluations += 1;
         Ok(())
     }
 
     pub fn eval_rhs(&self, t: f64, y: &[f64], counters: &mut WorkCounters) -> CoreResult<Vec<f64>> {
-        let out = self.eval_rhs_uncounted(t, y)?;
+        if y.len() != self.dimension {
+            return Err(CoreError::Dimension("RHS state shape mismatch".into()));
+        }
+        // Count attempted callback work only after library-side shape checks,
+        // but before user code so callback Err/non-finite output remains seen.
         counters.rhs_calls += 1;
         counters.rhs_evaluations += 1;
-        Ok(out)
+        self.eval_rhs_uncounted(t, y)
     }
 
     /// Evaluate independent method-stage RHS rows through a bounded execution context.
@@ -633,6 +639,10 @@ impl OdeProblem {
             return Err(CoreError::Dimension("batched RHS shape mismatch".into()));
         }
         if let Some(batch) = &self.rhs_batch {
+            // Count the attempted batch and scheduled scalar evaluations even
+            // if the callback rejects the batch or returns malformed output.
+            counters.rhs_batch_calls += 1;
+            counters.rhs_evaluations += times.len() as u64;
             let out = batch(times, states)?;
             if out.len() != states.len() || out.iter().any(|r| r.len() != self.dimension) {
                 return Err(CoreError::Dimension(
@@ -642,8 +652,6 @@ impl OdeProblem {
             if !out.iter().flatten().all(|v| v.is_finite()) {
                 return Err(CoreError::NonFinite("batched RHS produced NaN/Inf".into()));
             }
-            counters.rhs_batch_calls += 1;
-            counters.rhs_evaluations += times.len() as u64;
             Ok(out)
         } else {
             times
