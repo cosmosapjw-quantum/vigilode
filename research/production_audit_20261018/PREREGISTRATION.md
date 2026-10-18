@@ -45,3 +45,8 @@ Classify mathematical, numerical, implementation, input, and environment failure
 ## Post-EXEC clippy cleanup validation (source `80af642dee82785ddc02d705e3859cae05d46a9c`)
 
 A first pre-push run stopped at workspace clippy. It found range-loop style warnings in continuation code/tests plus one direct-test loop. Iterator-only rewrites and an exact binary64 literal spelling change were applied; the `partial_cmp` form explicitly preserves fail-closed unordered handling. No scientific formula, tolerance, model parameter, coefficient value, or benchmark input changed. The final source commit was pushed and verified before these checks. At that source identity, the focused integrator suite passed 44/44, core damped/Leja targets 18/18, direct scalar coefficient regression 1/1, doc tests 13/13, workspace all-target check, and fmt all exited 0. Workspace clippy subsequently passed at the same content; see the raw continuation evidence.
+
+
+## Final pre-push gate results (validation source `80af642dee82785ddc02d705e3859cae05d46a9c`)
+
+All seven repository pre-push gates passed (exit 0), including workspace clippy `-D warnings`, append-only research ledger check, authority refs, ignored-test reachability, and both E4 suites (13 + 5 tests). The first clippy attempt failed and was preserved; iterator/literal-only repairs were followed by a full passing rerun. See `CONTINUATION_GATE_RESULTS.json` and `evidence/continuation_prepush_gates_final.log`. Scientific production promotion remains HOLD.
