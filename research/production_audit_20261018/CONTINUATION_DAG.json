@@ -28,14 +28,14 @@
       "depends_on": [
         "A01-LCERT-01"
       ],
-      "status": "REVIEW_READY_PENDING_CONTRACT_SYNC",
-      "decision": "Supplement_02 independent delta review is READY_FOR_BOUNDED_IMPLEMENTATION with zero remaining contract blockers. Synchronize the current A02 contract/decision to v2 and freeze it before dispatch; implementation and numerical validation remain not run.",
+      "status": "READY_FOR_BOUNDED_IMPLEMENTATION",
+      "decision": "Supplement_02 v2 contract and input identity passed an independent read-only delta review with no remaining contract blockers. This commit freezes the controller decision; authorize only A02-TXN-01 implementation. Numerical execution waits for its own pushed EXEC_SHA.",
       "subtasks": [
         {
           "id": "A02-CONTRACT-01",
-          "status": "READY_FOR_BOUNDED_IMPLEMENTATION",
+          "status": "PASS_REVIEW_READY",
           "evidence": "evidence/continuation_a02_research/supplement_02/INDEPENDENT_DELTA_REVIEW.json",
-          "implementation_approved": false
+          "implementation_approved": true
         }
       ]
     },
@@ -196,7 +196,7 @@
       "constraint": "Review only; no solver tests or A02 implementation until READY."
     }
   ],
-  "next_executable_transition": "Checkpoint the independently reviewed A04 post-EXEC evidence and continuation policy. Then synchronize/freeze A02 supplement_02 for bounded implementation; continue A03 read-only review in parallel and do not run A03 before its review and EXEC_SHA freeze.",
+  "next_executable_transition": "Dispatch lower-tier A02-TXN-01 implementation against the frozen v2 contract. It must prepare code/tests and a source-bound preregistration only; then review/freeze/push a dedicated EXEC_SHA before running AT01-AT12. In parallel observe the active independent A03 review; after its scoped result, execute the next READY node.",
   "checkpoint": {
     "date": "2026-10-18",
     "head": "59d95eb7404882f024eb8bd3856f2ce4f1f830c9",
