@@ -20,7 +20,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::collective_model::CollectiveModel;
 use crate::packet_window::{
-    compile_packet, compute_certificate, generate_candidate, reconstruct_modes, CausalWeights,
+    CausalWeights, compile_packet, compute_certificate, generate_candidate, reconstruct_modes,
 };
 use crate::packet_work::PacketWorkCounters;
 use rodas5p_core::directed::{add_up, mul_up, sqrt_up};

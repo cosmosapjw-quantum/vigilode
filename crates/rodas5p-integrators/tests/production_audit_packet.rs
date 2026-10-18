@@ -1,8 +1,8 @@
 //! New adversarial regressions for the 2026-10-18 packet audit.
 use rodas5p_integrators::{
+    CausalWeights, CollectiveModel, PacketError, PacketWorkCounters, TrajectoryConfig,
     compile_packet, compute_certificate, evaluate_mode_at, generate_candidate, reconstruct_modes,
-    run_packet_trajectory, CausalWeights, CollectiveModel, PacketError, PacketWorkCounters,
-    TrajectoryConfig,
+    run_packet_trajectory,
 };
 
 fn one_mode(width: f64, chi: f64, kappa: f64) -> CollectiveModel {
