@@ -104,17 +104,22 @@
     {
       "id": "PUBLISH",
       "name": "Fast-forward commit and remote ref verification",
-      "status": "READY",
+      "status": "PASS_FAST_FORWARD_VERIFIED",
       "dependencies": [
         "REVIEW",
         "RESEARCH_NODE_CHECK",
         "AUTHORITY_REFS"
       ],
       "evidence": [
-        "git commit",
-        "git push",
-        "git ls-remote"
-      ]
+        "git fetch origin research/cloud-completion-20261018",
+        "git merge-base --is-ancestor origin/research/cloud-completion-20261018 HEAD",
+        "git push origin research/cloud-completion-20261018",
+        "git ls-remote origin refs/heads/research/cloud-completion-20261018"
+      ],
+      "payload_commit": "78ed1c7953adbf4c05f55d717386e4b42fc1806b",
+      "remote_ref": "refs/heads/research/cloud-completion-20261018",
+      "remote_ref_sha_at_verification": "78ed1c7953adbf4c05f55d717386e4b42fc1806b",
+      "fast_forward": true
     }
   ],
   "scope_decisions": {
@@ -134,5 +139,5 @@
     "evidence": "evidence/publication_checks.json",
     "current_recheck": "evidence/local_checks/postflight_checks.json"
   },
-  "next_action": "Commit local receipts and appended ledger row on research/cloud-completion-20261018, push fast-forward, verify remote ref, then mark PUBLISH complete."
+  "next_action": "Local validation DAG complete; final check is confirming this closeout commit is the remote branch tip."
 }
