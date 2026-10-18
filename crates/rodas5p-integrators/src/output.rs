@@ -703,6 +703,20 @@ pub(crate) struct OutputCollector {
     states: Vec<Vec<f64>>,
     clipped_steps: usize,
     max_step: StepCap,
+    prepared_centers: Vec<Vec<f64>>,
+    prepared_radii: Vec<Vec<f64>>,
+    prepared_times: Vec<f64>,
+    prepared_count: usize,
+    radii: Vec<Vec<f64>>,
+    prepared_valid: bool,
+    verified_mode: bool,
+}
+
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub(crate) struct DenseOutputPreparationWork {
+    pub(crate) requests_attempted: u64,
+    pub(crate) center_components: u64,
+    pub(crate) radius_components: u64,
 }
 
 impl OutputCollector {
@@ -717,14 +731,27 @@ impl OutputCollector {
                 "initial state for output collection must be finite and nonempty".into(),
             ));
         }
+        let times = vec![schedule.times[0]];
+        let states = vec![y0.to_vec()];
+        let prepared_centers = Vec::new();
+        let prepared_radii = Vec::new();
+        let prepared_times = Vec::new();
+        let radii = Vec::new();
         Ok(Self {
             schedule: schedule.clone(),
             end: t_span.1,
             next_index: 1,
-            times: vec![schedule.times[0]],
-            states: vec![y0.to_vec()],
+            times,
+            states,
             clipped_steps: 0,
             max_step: StepCap::NONE,
+            prepared_centers,
+            prepared_radii,
+            prepared_times,
+            prepared_count: 0,
+            radii,
+            prepared_valid: false,
+            verified_mode: false,
         })
     }
 
@@ -732,6 +759,90 @@ impl OutputCollector {
     pub(crate) fn with_max_step(mut self, max_step: StepCap) -> Self {
         self.max_step = max_step;
         self
+    }
+
+    /// Enable the isolated, preallocated verified-output transaction path.
+    /// Ordinary integrators retain the original append-only collector cost.
+    pub(crate) fn with_verified_radii(mut self, initial_radius: &[f64]) -> CoreResult<Self> {
+        if self.verified_mode
+            || self.prepared_valid
+            || self.prepared_count != 0
+            || self.next_index != 1
+            || initial_radius.len() != self.states[0].len()
+            || initial_radius
+                .iter()
+                .any(|radius| !radius.is_finite() || *radius < 0.0)
+        {
+            return Err(CoreError::InvalidInput(
+                "verified output requires a finite nonnegative initial radius".into(),
+            ));
+        }
+        let count = self.schedule.times.len();
+        let dimension = initial_radius.len();
+        let mut times = Vec::new();
+        times.try_reserve_exact(count).map_err(|e| {
+            CoreError::InvalidInput(format!("cannot reserve verified output times: {e}"))
+        })?;
+        times.resize(count, 0.0);
+        times[0] = self.schedule.times[0];
+        let mut states = Vec::new();
+        states.try_reserve_exact(count).map_err(|e| {
+            CoreError::InvalidInput(format!("cannot reserve verified output states: {e}"))
+        })?;
+        for index in 0..count {
+            let mut row = Vec::new();
+            row.try_reserve_exact(dimension).map_err(|e| {
+                CoreError::InvalidInput(format!("cannot reserve verified state row: {e}"))
+            })?;
+            row.resize(dimension, 0.0);
+            if index == 0 {
+                row.copy_from_slice(&self.states[0]);
+            }
+            states.push(row);
+        }
+        let mut radii = Vec::new();
+        radii.try_reserve_exact(count).map_err(|e| {
+            CoreError::InvalidInput(format!("cannot reserve verified output radii: {e}"))
+        })?;
+        for index in 0..count {
+            let mut row = Vec::new();
+            row.try_reserve_exact(dimension).map_err(|e| {
+                CoreError::InvalidInput(format!("cannot reserve verified radius row: {e}"))
+            })?;
+            row.resize(dimension, 0.0);
+            if index == 0 {
+                row.copy_from_slice(initial_radius);
+            }
+            radii.push(row);
+        }
+        let mut staged_centers = Vec::new();
+        let mut staged_radii = Vec::new();
+        for target in [&mut staged_centers, &mut staged_radii] {
+            target.try_reserve_exact(count).map_err(|e| {
+                CoreError::InvalidInput(format!("cannot reserve verified radius staging: {e}"))
+            })?;
+            for _ in 0..count {
+                let mut row = Vec::new();
+                row.try_reserve_exact(dimension).map_err(|e| {
+                    CoreError::InvalidInput(format!("cannot reserve verified radius row: {e}"))
+                })?;
+                row.resize(dimension, 0.0);
+                target.push(row);
+            }
+        }
+        let mut staged_times = Vec::new();
+        staged_times.try_reserve_exact(count).map_err(|e| {
+            CoreError::InvalidInput(format!("cannot reserve verified staging times: {e}"))
+        })?;
+        staged_times.resize(count, 0.0);
+        self.times = times;
+        self.states = states;
+        self.radii = radii;
+        self.prepared_centers = staged_centers;
+        self.prepared_radii = staged_radii;
+        self.prepared_times = staged_times;
+        self.verified_mode = true;
+        Ok(self)
     }
 
     pub(crate) fn limit_step(&self, t: f64, proposed_h: f64, tf: f64) -> CoreResult<(f64, bool)> {
@@ -824,6 +935,11 @@ impl OutputCollector {
     /// [`Self::accept`] for a state the driver has already checked to be
     /// finite (speed research node SPD01): the scan of `y` is skipped.
     pub(crate) fn accept_prechecked(&mut self, t: f64, y: &[f64], clipped: bool) -> CoreResult<()> {
+        if self.verified_mode {
+            return Err(CoreError::InvalidInput(
+                "verified outputs must advance through a prepared dense interval".into(),
+            ));
+        }
         if !t.is_finite() {
             return Err(CoreError::NonFinite(
                 "accepted output state contains NaN/Inf".into(),
@@ -832,6 +948,11 @@ impl OutputCollector {
         let Some(next) = self.due(self.next_index) else {
             return Ok(());
         };
+        if y.len() != self.states[0].len() {
+            return Err(CoreError::Dimension(
+                "accepted output state has the wrong dimension".into(),
+            ));
+        }
         if t > next {
             return Err(CoreError::InvalidInput(
                 "accepted step overshot a requested output time".into(),
@@ -861,6 +982,11 @@ impl OutputCollector {
     where
         F: FnMut(f64) -> CoreResult<Vec<f64>>,
     {
+        if self.verified_mode {
+            return Err(CoreError::InvalidInput(
+                "verified dense output requires an explicit radius callback".into(),
+            ));
+        }
         if !(t_old.is_finite()
             && t_new.is_finite()
             && t_new > t_old
@@ -870,9 +996,6 @@ impl OutputCollector {
                 "dense output interval must be finite, increasing, and finite-valued".into(),
             ));
         }
-        // The interval (t_old, t_new] owns exactly the requests due in it,
-        // by exact comparison; t_old's own requests were consumed by the
-        // interval that ended there.
         while let Some(next) = self.due(self.next_index) {
             if next <= t_old {
                 return Err(CoreError::InvalidInput(
@@ -905,13 +1028,175 @@ impl OutputCollector {
         Ok(())
     }
 
+    /// Prepare all requested centers and outward radii for one dense interval.
+    /// The committed output prefix is unchanged on every error. The callback
+    /// fills preallocated rows; work counters include a request before either
+    /// callback is invoked, including one that refuses.
+    pub(crate) fn prepare_dense_interval_with_radii<C, R>(
+        &mut self,
+        t_old: f64,
+        t_new: f64,
+        y_new: &[f64],
+        mut center_at: C,
+        mut radius_at: R,
+        work: &mut DenseOutputPreparationWork,
+    ) -> CoreResult<()>
+    where
+        C: FnMut(f64, &mut [f64]) -> CoreResult<()>,
+        R: FnMut(f64, &mut [f64]) -> CoreResult<()>,
+    {
+        if !self.verified_mode {
+            return Err(CoreError::InvalidInput(
+                "verified dense output buffers were not enabled".into(),
+            ));
+        }
+        self.prepared_valid = false;
+        self.prepared_count = 0;
+        let result = self.prepare_dense_interval_inner(
+            t_old,
+            t_new,
+            y_new,
+            &mut center_at,
+            &mut radius_at,
+            work,
+        );
+        self.prepared_valid = result.is_ok();
+        if result.is_err() {
+            self.prepared_count = 0;
+        }
+        result
+    }
+
+    fn prepare_dense_interval_inner<C, R>(
+        &mut self,
+        t_old: f64,
+        t_new: f64,
+        y_new: &[f64],
+        center_at: &mut C,
+        radius_at: &mut R,
+        work: &mut DenseOutputPreparationWork,
+    ) -> CoreResult<()>
+    where
+        C: FnMut(f64, &mut [f64]) -> CoreResult<()>,
+        R: FnMut(f64, &mut [f64]) -> CoreResult<()>,
+    {
+        self.prepared_count = 0;
+        if !(t_old.is_finite()
+            && t_new.is_finite()
+            && t_new > t_old
+            && y_new.len() == self.states.first().map_or(0, Vec::len)
+            && y_new.iter().all(|value| value.is_finite()))
+        {
+            return Err(CoreError::InvalidInput(
+                "dense output interval must be finite, increasing, and finite-valued".into(),
+            ));
+        }
+        // The interval (t_old, t_new] owns exactly the requests due in it,
+        // by exact comparison; t_old's own requests were consumed by the
+        // interval that ended there.
+        while let Some(&next) = self
+            .schedule
+            .times
+            .get(self.next_index + self.prepared_count)
+        {
+            if next <= t_old {
+                return Err(CoreError::InvalidInput(
+                    "dense output interval begins after a requested time".into(),
+                ));
+            }
+            if next > t_new {
+                break;
+            }
+            let row = self.prepared_count;
+            let theta = if next == t_new {
+                self.prepared_centers[row].copy_from_slice(y_new);
+                1.0
+            } else {
+                let theta = (next - t_old) / (t_new - t_old);
+                if !(theta.is_finite() && theta > 0.0 && theta <= 1.0) {
+                    return Err(CoreError::InvalidInput(
+                        "dense output requested time lies outside the accepted interval".into(),
+                    ));
+                }
+                work.requests_attempted = work.requests_attempted.saturating_add(1);
+                work.center_components = work
+                    .center_components
+                    .saturating_add(self.prepared_centers[row].len() as u64);
+                center_at(theta, &mut self.prepared_centers[row])?;
+                theta
+            };
+            if next == t_new {
+                work.requests_attempted = work.requests_attempted.saturating_add(1);
+                work.center_components = work
+                    .center_components
+                    .saturating_add(self.prepared_centers[row].len() as u64);
+            }
+            if !self.prepared_centers[row]
+                .iter()
+                .all(|value| value.is_finite())
+            {
+                return Err(CoreError::NonFinite(
+                    "dense output state contains NaN/Inf".into(),
+                ));
+            }
+            work.radius_components = work
+                .radius_components
+                .saturating_add(self.prepared_radii[row].len() as u64);
+            radius_at(theta, &mut self.prepared_radii[row])?;
+            if self.prepared_radii[row]
+                .iter()
+                .any(|value| !value.is_finite() || *value < 0.0)
+            {
+                return Err(CoreError::NonFinite(
+                    "dense output radius must be finite and nonnegative".into(),
+                ));
+            }
+            self.prepared_times[row] = self.schedule.times[self.next_index + row];
+            self.prepared_count += 1;
+        }
+        Ok(())
+    }
+
+    /// Commit the last successful preparation. No allocation or callback is
+    /// performed here, so this is safe as the final operation of a transaction.
+    pub(crate) fn commit_prepared_dense_interval(&mut self) {
+        if !self.verified_mode || !self.prepared_valid {
+            return;
+        }
+        for row in 0..self.prepared_count {
+            self.times[self.next_index] = self.prepared_times[row];
+            self.states[self.next_index].copy_from_slice(&self.prepared_centers[row]);
+            self.radii[self.next_index].copy_from_slice(&self.prepared_radii[row]);
+            self.next_index += 1;
+        }
+        self.prepared_count = 0;
+        self.prepared_valid = false;
+    }
+
+    pub(crate) fn prepared_dense_radii(&self) -> &[Vec<f64>] {
+        &self.prepared_radii[..self.prepared_count]
+    }
+
+    pub(crate) fn committed_output_radii(&self) -> &[Vec<f64>] {
+        if self.verified_mode {
+            &self.radii[..self.next_index]
+        } else {
+            &[]
+        }
+    }
+
     pub(crate) fn finish(self) -> CoreResult<(Vec<f64>, Vec<Vec<f64>>, usize)> {
         if self.next_index != self.schedule.times.len() {
             return Err(CoreError::InvalidInput(
                 "integration ended before all requested outputs were recorded".into(),
             ));
         }
-        Ok((self.times, self.states, self.clipped_steps))
+        let n = self.next_index;
+        let mut times = self.times;
+        let mut states = self.states;
+        times.truncate(n);
+        states.truncate(n);
+        Ok((times, states, self.clipped_steps))
     }
 
     pub(crate) fn is_complete(&self) -> bool {
@@ -926,7 +1211,177 @@ impl OutputCollector {
     /// auditable.  Successful integrations must continue to use [`finish`],
     /// which enforces complete coverage of the requested schedule.
     pub(crate) fn finish_partial(self) -> (Vec<f64>, Vec<Vec<f64>>, usize) {
-        (self.times, self.states, self.clipped_steps)
+        let n = self.next_index;
+        let mut times = self.times;
+        let mut states = self.states;
+        times.truncate(n);
+        states.truncate(n);
+        (times, states, self.clipped_steps)
+    }
+}
+
+#[cfg(test)]
+mod transactional_dense_output_tests {
+    use super::*;
+
+    #[test]
+    fn prepared_dense_interval_refusal_keeps_committed_prefix() {
+        let schedule = OutputSchedule::new(vec![0.0, 0.5, 1.0]).unwrap();
+        let mut collector = OutputCollector::new(&schedule, (0.0, 1.0), &[2.0])
+            .unwrap()
+            .with_verified_radii(&[0.01])
+            .unwrap();
+        let mut work = DenseOutputPreparationWork::default();
+        let failed = collector.prepare_dense_interval_with_radii(
+            0.0,
+            1.0,
+            &[3.0],
+            |theta, center| {
+                center[0] = 2.0 + theta;
+                Ok(())
+            },
+            |theta, radius| {
+                radius[0] = 0.1 * theta;
+                if theta < 1.0 {
+                    Err(CoreError::InvalidInput("injected radius refusal".into()))
+                } else {
+                    Ok(())
+                }
+            },
+            &mut work,
+        );
+        assert!(failed.is_err());
+        assert_eq!(collector.next_index, 1);
+        assert_eq!(collector.times[0], 0.0);
+        assert_eq!(collector.states[0], [2.0]);
+        assert_eq!(work.requests_attempted, 1);
+        assert_eq!(collector.committed_output_radii().len(), 1);
+
+        collector
+            .prepare_dense_interval_with_radii(
+                0.0,
+                1.0,
+                &[3.0],
+                |theta, center| {
+                    center[0] = 2.0 + theta;
+                    Ok(())
+                },
+                |theta, radius| {
+                    radius[0] = 0.1 * theta;
+                    Ok(())
+                },
+                &mut work,
+            )
+            .unwrap();
+        assert_eq!(collector.next_index, 1);
+        assert_eq!(collector.prepared_dense_radii(), &[vec![0.05], vec![0.1]]);
+        collector.commit_prepared_dense_interval();
+        assert_eq!(collector.next_index, 3);
+        assert_eq!(collector.times, [0.0, 0.5, 1.0]);
+        assert_eq!(collector.states[1], [2.5]);
+        assert_eq!(collector.states[2], [3.0]);
+        assert_eq!(collector.committed_output_radii()[1], [0.05]);
+        assert_eq!(collector.committed_output_radii()[2], [0.1]);
+        assert_eq!(work.requests_attempted, 3);
+    }
+
+    #[test]
+    fn prepared_dense_interval_rejects_nonfinite_radius_without_commit() {
+        let schedule = OutputSchedule::new(vec![0.0, 1.0]).unwrap();
+        let mut collector = OutputCollector::new(&schedule, (0.0, 1.0), &[1.0])
+            .unwrap()
+            .with_verified_radii(&[0.0])
+            .unwrap();
+        let error = collector.prepare_dense_interval_with_radii(
+            0.0,
+            1.0,
+            &[2.0],
+            |_theta, center| {
+                center[0] = 2.0;
+                Ok(())
+            },
+            |_theta, radius| {
+                radius[0] = f64::NAN;
+                Ok(())
+            },
+            &mut DenseOutputPreparationWork::default(),
+        );
+        assert!(matches!(error, Err(CoreError::NonFinite(_))));
+        assert_eq!(collector.next_index, 1);
+        assert_eq!(collector.times[0], 0.0);
+        assert_eq!(collector.states[0], [1.0]);
+    }
+
+    #[test]
+    fn verified_radius_mode_cannot_be_reentered_after_preparation() {
+        let schedule = OutputSchedule::new(vec![0.0, 1.0]).unwrap();
+        let mut collector = OutputCollector::new(&schedule, (0.0, 1.0), &[1.0])
+            .unwrap()
+            .with_verified_radii(&[0.25])
+            .unwrap();
+        collector
+            .prepare_dense_interval_with_radii(
+                0.0,
+                1.0,
+                &[2.0],
+                |_theta, center| {
+                    center[0] = 2.0;
+                    Ok(())
+                },
+                |_theta, radius| {
+                    radius[0] = 0.5;
+                    Ok(())
+                },
+                &mut DenseOutputPreparationWork::default(),
+            )
+            .unwrap();
+
+        assert!(matches!(
+            collector.with_verified_radii(&[0.0]),
+            Err(CoreError::InvalidInput(_))
+        ));
+    }
+
+    #[test]
+    fn late_preparation_refusal_invalidates_earlier_staged_rows() {
+        let schedule = OutputSchedule::new(vec![0.0, 0.25, 0.5, 1.0]).unwrap();
+        let mut collector = OutputCollector::new(&schedule, (0.0, 1.0), &[1.0])
+            .unwrap()
+            .with_verified_radii(&[0.0])
+            .unwrap();
+        let error = collector.prepare_dense_interval_with_radii(
+            0.0,
+            1.0,
+            &[2.0],
+            |theta, center| {
+                center[0] = 1.0 + theta;
+                Ok(())
+            },
+            |theta, radius| {
+                radius[0] = theta;
+                if theta > 0.25 {
+                    Err(CoreError::InvalidInput("injected late refusal".into()))
+                } else {
+                    Ok(())
+                }
+            },
+            &mut DenseOutputPreparationWork::default(),
+        );
+        assert!(matches!(error, Err(CoreError::InvalidInput(_))));
+        assert_eq!(collector.next_index, 1);
+        assert_eq!(collector.prepared_dense_radii().len(), 0);
+        collector.commit_prepared_dense_interval();
+        assert_eq!(collector.next_index, 1);
+        assert_eq!(collector.times[0], 0.0);
+        assert_eq!(collector.states[0], [1.0]);
+        assert_eq!(collector.committed_output_radii(), &[vec![0.0]]);
+    }
+
+    #[test]
+    fn ordinary_collector_has_no_verified_radius_prefix() {
+        let schedule = OutputSchedule::new(vec![0.0, 1.0]).unwrap();
+        let collector = OutputCollector::new(&schedule, (0.0, 1.0), &[1.0]).unwrap();
+        assert!(collector.committed_output_radii().is_empty());
     }
 }
 
