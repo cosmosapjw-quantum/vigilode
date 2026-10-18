@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "node": "A06",
+  "unit": "native sequential first-stage matrix and RHS mapping",
+  "status": "SCOPED_PASS",
+  "source_commit": "f5de5b2cea2fdfa04bcac3bd093456c866dccee9",
+  "independent_review": "SCOPED_PASS",
+  "full_node_status": "HOLD",
+  "closed_claim": "Identity-mass native first-stage solve uses A=I-h*gamma*J and passes the unscaled sequential RHS r0 directly to Woodbury solve_into.",
+  "remaining": [
+    "all nonlinear sequential stage RHS connections",
+    "integrator/backend dispatch binding to the generated CollectiveModel",
+    "complete setup, all-RHS, reconstruction, and certificate costs in an integrated path",
+    "full trajectory and output comparison",
+    "no measured trajectory speedup claim"
+  ],
+  "next_ready": "A05 adaptive-driver continuous residual transaction integration"
+}

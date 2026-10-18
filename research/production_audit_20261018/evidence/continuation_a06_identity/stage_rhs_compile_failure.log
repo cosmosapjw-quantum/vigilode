@@ -1,0 +1,22 @@
+   Compiling rodas5p-integrators v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-integrators)
+error[E0603]: module `sequential` is private
+  --> crates/rodas5p-integrators/tests/production_audit_collective_direct.rs:4:26
+   |
+ 4 | use rodas5p_integrators::sequential::{build_step_context_matrix_free, sequential_stages};
+   |                          ^^^^^^^^^^ private module
+   |
+note: the module `sequential` is defined here
+  --> crates/rodas5p-integrators/src/lib.rs:69:1
+   |
+69 | mod sequential;
+   | ^^^^^^^^^^^^^^
+
+error[E0282]: type annotations needed
+  --> crates/rodas5p-integrators/tests/production_audit_collective_direct.rs:61:17
+   |
+61 |         assert!((a - b).abs() < 1e-13, "stage/direct mismatch {a:e} vs {b:e}");
+   |                 ^^^^^^^ cannot infer type
+
+Some errors have detailed explanations: E0282, E0603.
+For more information about an error, try `rustc --explain E0282`.
+error: could not compile `rodas5p-integrators` (test "production_audit_collective_direct") due to 2 previous errors
