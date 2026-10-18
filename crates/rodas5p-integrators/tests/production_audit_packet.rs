@@ -278,7 +278,7 @@ fn multimode_high_precision_linear_oracle_is_close_at_intermediate_and_endpoints
     assert!(!certificate.roundoff_enclosed);
     let reference = [
         [
-            (0.19899001674991639, 0.10199496670849986),
+            (0.198_990_016_749_916_4, 0.10199496670849986),
             (-0.14843273005222334, 0.05447682671782373),
         ],
         [
@@ -291,9 +291,8 @@ fn multimode_high_precision_linear_oracle_is_close_at_intermediate_and_endpoints
         ],
     ];
     for (time_index, tau) in [0.25, 0.5, 1.0].into_iter().enumerate() {
-        for mode in 0..2 {
+        for (mode, expected) in reference[time_index].iter().enumerate() {
             let actual = evaluate_mode_at(&candidate, &packet, mode, tau, &mut work).unwrap();
-            let expected = reference[time_index][mode];
             let error = (actual.0 - expected.0).hypot(actual.1 - expected.1);
             assert!(error <= certificate.mode_bounds[mode]);
         }

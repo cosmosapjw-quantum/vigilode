@@ -93,9 +93,9 @@ impl CollectiveStageFactors {
             (std::mem::size_of::<Block>() * n + std::mem::size_of::<u64>() * (5 + 6 * n)) as u64;
         let source_identity = source_state_identity(model, y);
         let mut mean = [0.0; 2];
-        for j in 0..n {
-            mean[0] += weights[j] * y[2 * j];
-            mean[1] += weights[j] * y[2 * j + 1];
+        for (j, weight) in weights.iter().enumerate() {
+            mean[0] += *weight * y[2 * j];
+            mean[1] += *weight * y[2 * j + 1];
         }
         let (u, v) = (mean[0], mean[1]);
         let chi = model.chi();
@@ -113,7 +113,7 @@ impl CollectiveStageFactors {
         }
         let mut blocks = Vec::with_capacity(n);
         let mut h = [0.0; 4];
-        for j in 0..n {
+        for (j, weight) in weights.iter().enumerate() {
             let b = s * model.width() * model.xi()[j];
             let den = a * a + b * b;
             if !(den.is_finite() && den > 0.0) {
@@ -123,7 +123,7 @@ impl CollectiveStageFactors {
             }
             let p = [a / den, -b / den, b / den, a / den];
             for k in 0..4 {
-                h[k] += weights[j] * p[k];
+                h[k] += *weight * p[k];
             }
             blocks.push(Block { p });
         }
@@ -160,7 +160,7 @@ impl CollectiveStageFactors {
         let ai =
             Interval::point(1.0)?.add(Interval::point(s)?.mul(Interval::point(model.kappa())?)?)?;
         let sl = mul_up(s, l)?;
-        if !(sl < ai.lo) {
+        if !matches!(sl.partial_cmp(&ai.lo), Some(std::cmp::Ordering::Less)) {
             return Err(CoreError::InvalidInput(
                 "collective direct WB2 inverse bound unavailable (q* >= 1)".into(),
             ));
@@ -379,7 +379,6 @@ fn schur_interval(
     blocks: &[Block],
     weights: &[f64],
 ) -> CoreResult<(Interval, Interval)> {
-    let n = blocks.len();
     let (m, _) = certified_mean(model, y)?;
     let (u, v) = (m[0], m[1]);
     let ch = point(model.chi())?;
@@ -391,14 +390,14 @@ fn schur_interval(
     ];
     let mut h = [point(0.0)?, point(0.0)?, point(0.0)?, point(0.0)?];
     let ai = point(1.0)?.add(point(s)?.mul(point(model.kappa())?)?)?;
-    for j in 0..n {
+    for (j, weight) in weights.iter().enumerate() {
         let b = point(s)?
             .mul(point(model.width())?)?
             .mul(point(model.xi()[j])?)?;
         let den = ai.mul(ai)?.add(b.mul(b)?)?;
         let p = [ai.div(den)?, (-b).div(den)?, b.div(den)?, ai.div(den)?];
         for k in 0..4 {
-            h[k] = h[k].add(p[k].scale(weights[j])?)?;
+            h[k] = h[k].add(p[k].scale(*weight)?)?;
         }
     }
     let sc = [

@@ -27,15 +27,16 @@ fn solve_dense(mut a: Vec<Vec<f64>>, mut b: Vec<f64>) -> Vec<f64> {
         a.swap(k, p);
         b.swap(k, p);
         let d = a[k][k];
-        for j in k..n {
-            a[k][j] /= d;
+        for value in a[k].iter_mut().skip(k) {
+            *value /= d;
         }
         b[k] /= d;
+        let pivot_row = a[k].clone();
         for i in 0..n {
             if i != k {
                 let q = a[i][k];
-                for j in k..n {
-                    a[i][j] -= q * a[k][j];
+                for (j, value) in a[i].iter_mut().enumerate().skip(k) {
+                    *value -= q * pivot_row[j];
                 }
                 b[i] -= q * b[k];
             }

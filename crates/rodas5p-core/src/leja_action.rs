@@ -540,8 +540,8 @@ fn leja_suffix_bounds() -> &'static Vec<Vec<f64>> {
         let xi = leja_points();
         let size = xi.len();
         let mut bounds: Vec<Vec<f64>> = vec![vec![0.0; size + 1]; size];
-        for start in 0..size {
-            bounds[start][start] = 1.0;
+        for (start, row) in bounds.iter_mut().enumerate() {
+            row[start] = 1.0;
             for part in 0..128 {
                 let lo = -2.0 + part as f64 / 32.0;
                 let hi = lo + 1.0 / 32.0;
@@ -553,7 +553,7 @@ fn leja_suffix_bounds() -> &'static Vec<Vec<f64>> {
                     )
                     .expect("ordered endpoints");
                     product = product.mul(factor).expect("bounded degree Leja product");
-                    bounds[start][end] = bounds[start][end].max(product.mag());
+                    row[end] = row[end].max(product.mag());
                 }
             }
         }
@@ -1754,8 +1754,8 @@ mod tests {
     #[test]
     fn zero_center_scalar_phi_radii_enclose_nonbinary_factorials() {
         let (values, radii) = scalar_phi_coefficients(0.0).unwrap();
-        for k in 0..3 {
-            assert_eq!(radii[k], 0.0);
+        for radius in radii.iter().take(3) {
+            assert_eq!(*radius, 0.0);
         }
         for (k, lower_floor, upper_ceil) in [
             (3, 0x3fc5_5555_5555_5555, 0x3fc5_5555_5555_5556),
