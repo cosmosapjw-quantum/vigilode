@@ -396,3 +396,477 @@ fn compute_large_z_backward(
     let hi = res.hi.min(b_jk.hi);
     Interval::new(lo, hi)
 }
+
+// A03-SCALAR-RATE-01: generated normalized rate and checked interval consumer.
+// This API has no packet/trajectory authority. Legacy entry points above retain
+// their existing numerical and allocation semantics.
+pub const SCALAR_RATE_PRIMITIVE_CAP: u64 = 10_000_000;
+pub const SCALAR_RATE_SCRATCH_LEN: usize = 129;
+
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub struct ScalarRateWork {
+    pub validation_attempts: u64,
+    pub endpoint_attempts: u64,
+    pub width_checks: u64,
+    pub fallback_attempts: u64,
+    pub cells_attempted: u64,
+    pub query_refusals: u64,
+    pub interval_primitive_attempts: u64,
+    pub coefficient_items: u64,
+    pub output_items: u64,
+    pub scratch_bytes: u64,
+    /// Allocator requests made by this adapter (zero; caller scratch is external).
+    /// Empirical allocator measurements are still required for VG-1 admission.
+    pub allocation_requests: u64,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum ScalarRateRefusal {
+    InvalidInput { field: &'static str },
+    BindingMismatch { field: &'static str },
+    ScratchTooSmall { required: usize, provided: usize },
+    UnsupportedMomentOrder { required: usize, supported: usize },
+    ArithmeticRefusal { stage: &'static str },
+    MomentWidthExceeded { width: f64, limit: f64 },
+    MomentWorkBudgetExceeded { used: u64, cap: u64 },
+}
+
+type ScalarResult<T> = Result<T, ScalarRateRefusal>;
+
+/// Immutable provenance for the exact binary64 inputs defining 2(q+1) kappa h.
+/// No public interval/certificate setter or deserializer is provided.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct NormalizedDampingRate {
+    kappa_bits: u64,
+    horizon_bits: u64,
+    q: usize,
+    rate: Interval,
+}
+
+impl NormalizedDampingRate {
+    pub fn from_inputs(
+        kappa: f64,
+        h: f64,
+        q: usize,
+        work: &mut ScalarRateWork,
+    ) -> ScalarResult<Self> {
+        work.validation_attempts = work.validation_attempts.saturating_add(1);
+        let result = (|| {
+            if !kappa.is_finite() || kappa < 0.0 {
+                return Err(ScalarRateRefusal::InvalidInput { field: "kappa" });
+            }
+            if !h.is_finite() || h <= 0.0 {
+                return Err(ScalarRateRefusal::InvalidInput { field: "horizon" });
+            }
+            // Exact integer-to-binary64 admission, including the factor two.
+            let n = q
+                .checked_add(1)
+                .and_then(|v| v.checked_mul(2))
+                .ok_or(ScalarRateRefusal::InvalidInput { field: "q" })?;
+            if n > (1u64 << 53) as usize {
+                return Err(ScalarRateRefusal::InvalidInput { field: "q" });
+            }
+            let mut op = ScalarOps { work };
+            let kh = op.mul(sp(kappa), sp(h))?;
+            let rate = nonnegative(op.mul(kh, sp(n as f64))?);
+            Ok(Self {
+                kappa_bits: kappa.to_bits(),
+                horizon_bits: h.to_bits(),
+                q,
+                rate,
+            })
+        })();
+        if result.is_err() {
+            work.query_refusals = work.query_refusals.saturating_add(1);
+        }
+        result
+    }
+    pub fn interval(&self) -> Interval {
+        self.rate
+    }
+    pub fn input_bits(&self) -> (u64, u64, usize) {
+        (self.kappa_bits, self.horizon_bits, self.q)
+    }
+
+    /// Rebinding is checked against exact input bits before any query work.
+    pub fn query(
+        &self,
+        kappa: f64,
+        h: f64,
+        q: usize,
+        time: Interval,
+        r: usize,
+        d: usize,
+        max_width: f64,
+        scratch: &mut [Interval],
+        work: &mut ScalarRateWork,
+    ) -> ScalarResult<DampedForcingMomentResult> {
+        if self.input_bits() != (kappa.to_bits(), h.to_bits(), q) {
+            work.validation_attempts = work.validation_attempts.saturating_add(1);
+            work.query_refusals = work.query_refusals.saturating_add(1);
+            return Err(ScalarRateRefusal::BindingMismatch {
+                field: "normalized_rate_inputs",
+            });
+        }
+        checked_interval_forcing_moment(self.rate, time, r, d, max_width, scratch, work)
+    }
+}
+
+fn sp(x: f64) -> Interval {
+    Interval { lo: x, hi: x }
+}
+fn nonnegative(x: Interval) -> Interval {
+    Interval {
+        lo: x.lo.max(0.0),
+        hi: x.hi.max(0.0),
+    }
+}
+
+struct ScalarOps<'a> {
+    work: &'a mut ScalarRateWork,
+}
+impl ScalarOps<'_> {
+    fn charge(&mut self) -> ScalarResult<()> {
+        let used = self.work.interval_primitive_attempts.checked_add(1).ok_or(
+            ScalarRateRefusal::MomentWorkBudgetExceeded {
+                used: u64::MAX,
+                cap: SCALAR_RATE_PRIMITIVE_CAP,
+            },
+        )?;
+        self.work.interval_primitive_attempts = used;
+        if used > SCALAR_RATE_PRIMITIVE_CAP {
+            return Err(ScalarRateRefusal::MomentWorkBudgetExceeded {
+                used,
+                cap: SCALAR_RATE_PRIMITIVE_CAP,
+            });
+        }
+        Ok(())
+    }
+    fn add(&mut self, a: Interval, b: Interval) -> ScalarResult<Interval> {
+        self.charge()?;
+        a.add(b).map_err(|_| ScalarRateRefusal::ArithmeticRefusal {
+            stage: "interval_add",
+        })
+    }
+    fn sub(&mut self, a: Interval, b: Interval) -> ScalarResult<Interval> {
+        self.charge()?;
+        a.sub(b).map_err(|_| ScalarRateRefusal::ArithmeticRefusal {
+            stage: "interval_sub",
+        })
+    }
+    fn mul(&mut self, a: Interval, b: Interval) -> ScalarResult<Interval> {
+        self.charge()?;
+        a.mul(b).map_err(|_| ScalarRateRefusal::ArithmeticRefusal {
+            stage: "interval_mul",
+        })
+    }
+    fn div(&mut self, a: Interval, b: Interval) -> ScalarResult<Interval> {
+        self.charge()?;
+        a.div(b).map_err(|_| ScalarRateRefusal::ArithmeticRefusal {
+            stage: "interval_div",
+        })
+    }
+    fn exp(&mut self, x: f64) -> ScalarResult<Interval> {
+        self.charge()?;
+        exp_interval(x).map_err(|_| ScalarRateRefusal::ArithmeticRefusal {
+            stage: "endpoint_exp",
+        })
+    }
+    fn pow(&mut self, x: Interval, n: usize) -> ScalarResult<Interval> {
+        let mut y = sp(1.0);
+        for _ in 0..n {
+            y = self.mul(y, x)?;
+        }
+        Ok(y)
+    }
+    fn beta(&mut self, j: usize, k: usize) -> ScalarResult<Interval> {
+        let mut b = self.div(sp(1.0), sp((j + 1) as f64))?;
+        for i in 1..=k {
+            let p = self.mul(b, sp(i as f64))?;
+            b = self.div(p, sp((j + i + 1) as f64))?;
+        }
+        Ok(b)
+    }
+    fn width(&mut self, x: Interval) -> ScalarResult<f64> {
+        self.work.width_checks = self.work.width_checks.saturating_add(1);
+        self.charge()?;
+        sub_up(x.hi, x.lo).map_err(|_| ScalarRateRefusal::ArithmeticRefusal { stage: "width" })
+    }
+    fn endpoint(
+        &mut self,
+        a: f64,
+        t: f64,
+        r: usize,
+        d: usize,
+        scratch: &mut [Interval],
+    ) -> ScalarResult<Interval> {
+        self.work.endpoint_attempts = self.work.endpoint_attempts.saturating_add(1);
+        if t == 0.0 {
+            return Ok(sp(0.0));
+        }
+        let z = nonnegative(self.mul(sp(a), sp(t))?);
+        let beta = self.beta(d, r)?;
+        let normalized = if z.hi == 0.0 {
+            beta
+        } else if z.hi <= 1.0 {
+            let mut sum = sp(0.0);
+            let mut power = sp(1.0);
+            let mut fact = sp(1.0);
+            let mut b = beta;
+            for n in 0..28 {
+                let divided = self.div(power, fact)?;
+                let term = self.mul(divided, b)?;
+                sum = if n % 2 == 0 {
+                    self.add(sum, term)?
+                } else {
+                    self.sub(sum, term)?
+                };
+                power = self.mul(power, z)?;
+                fact = self.mul(fact, sp((n + 1) as f64))?;
+                let bn = self.mul(b, sp((d + n + 1) as f64))?;
+                b = self.div(bn, sp((d + r + n + 2) as f64))?;
+            }
+            let divided = self.div(power, fact)?;
+            let rem = self.mul(divided, b)?;
+            let enclosed = self.add(
+                sum,
+                Interval {
+                    lo: -rem.hi,
+                    hi: rem.hi,
+                },
+            )?;
+            Interval {
+                lo: enclosed.lo.max(0.0),
+                hi: enclosed.hi.min(beta.hi),
+            }
+        } else {
+            let elo = self.exp(-z.hi)?;
+            let ehi = self.exp(-z.lo)?;
+            let exponential = Interval {
+                lo: elo.lo,
+                hi: ehi.hi,
+            };
+            let top = d + r + 45;
+            let bound = self.div(sp(1.0), sp((top + 1) as f64))?;
+            let mut e = Interval {
+                lo: 0.0,
+                hi: bound.hi,
+            };
+            for m in (1..=top).rev() {
+                let product = self.mul(z, e)?;
+                let numerator = self.add(product, exponential)?;
+                e = self.div(numerator, sp(m as f64))?;
+                // Exact integral identity E_(m-1)<=1/m prevents useless
+                // recurrence overgrowth; this intersection adds no hypothesis.
+                let upper = self.div(sp(1.0), sp(m as f64))?;
+                e = Interval {
+                    lo: e.lo.max(0.0),
+                    hi: e.hi.min(upper.hi),
+                };
+                if m - 1 <= d + r {
+                    scratch[m - 1] = e;
+                }
+            }
+            let mut sum = sp(0.0);
+            let mut binomial = sp(1.0);
+            for l in 0..=r {
+                if l > 0 {
+                    let product = self.mul(binomial, sp((r - l + 1) as f64))?;
+                    binomial = self.div(product, sp(l as f64))?;
+                }
+                let term = self.mul(binomial, scratch[d + l])?;
+                sum = if l % 2 == 0 {
+                    self.add(sum, term)?
+                } else {
+                    self.sub(sum, term)?
+                };
+            }
+            Interval {
+                lo: sum.lo.max(0.0),
+                hi: sum.hi.min(beta.hi),
+            }
+        };
+        if normalized.lo > normalized.hi {
+            return Err(ScalarRateRefusal::ArithmeticRefusal {
+                stage: "kernel_intersection",
+            });
+        }
+        let scale = self.pow(sp(t), r + d + 1)?;
+        Ok(nonnegative(self.mul(normalized, scale)?))
+    }
+    fn cell(
+        &mut self,
+        a: f64,
+        t: f64,
+        l: f64,
+        u: f64,
+        r: usize,
+        d: usize,
+    ) -> ScalarResult<Interval> {
+        self.work.cells_attempted = self.work.cells_attempted.saturating_add(1);
+        let delta = nonnegative(self.sub(sp(u), sp(l))?);
+        let tu = nonnegative(self.sub(sp(t), sp(u))?);
+        let mut mass = sp(0.0);
+        let mut bi = sp(1.0);
+        for i in 0..=r {
+            if i > 0 {
+                let p = self.mul(bi, sp((r - i + 1) as f64))?;
+                bi = self.div(p, sp(i as f64))?;
+            }
+            let mut bj = sp(1.0);
+            for j in 0..=d {
+                if j > 0 {
+                    let p = self.mul(bj, sp((d - j + 1) as f64))?;
+                    bj = self.div(p, sp(j as f64))?;
+                }
+                let mut term = self.mul(bi, bj)?;
+                let p = self.pow(tu, r - i)?;
+                term = self.mul(term, p)?;
+                let p = self.pow(sp(l), d - j)?;
+                term = self.mul(term, p)?;
+                let p = self.pow(delta, i + j + 1)?;
+                term = self.mul(term, p)?;
+                let b = self.beta(i, j)?;
+                term = self.mul(term, b)?;
+                mass = self.add(mass, term)?;
+                self.work.coefficient_items = self.work.coefficient_items.saturating_add(1);
+            }
+        }
+        let au = nonnegative(self.mul(sp(a), sp(u))?);
+        let al = nonnegative(self.mul(sp(a), sp(l))?);
+        let lower = self.exp(-au.hi)?;
+        let upper = self.exp(-al.lo)?;
+        Ok(nonnegative(self.mul(
+            mass,
+            Interval {
+                lo: lower.lo.max(0.0),
+                hi: upper.hi,
+            },
+        )?))
+    }
+}
+
+/// Lower-level arithmetic API. The caller owns the inclusion meaning of the
+/// supplied rate/time intervals; this function does not certify their origin.
+/// The generated API above binds the rate to exact original input bits.
+pub fn checked_interval_forcing_moment(
+    rate: Interval,
+    time: Interval,
+    r: usize,
+    d: usize,
+    max_width: f64,
+    scratch: &mut [Interval],
+    work: &mut ScalarRateWork,
+) -> ScalarResult<DampedForcingMomentResult> {
+    work.validation_attempts = work.validation_attempts.saturating_add(1);
+    let result = (|| {
+        for (field, x) in [("rate", rate), ("time", time)] {
+            if !x.lo.is_finite() || !x.hi.is_finite() || x.lo < 0.0 || x.lo > x.hi {
+                return Err(ScalarRateRefusal::InvalidInput { field });
+            }
+        }
+        if !max_width.is_finite() || max_width < 0.0 {
+            return Err(ScalarRateRefusal::InvalidInput { field: "max_width" });
+        }
+        if r > 64 || d > 64 {
+            return Err(ScalarRateRefusal::UnsupportedMomentOrder {
+                required: r.max(d),
+                supported: 64,
+            });
+        }
+        if scratch.len() < SCALAR_RATE_SCRATCH_LEN {
+            return Err(ScalarRateRefusal::ScratchTooSmall {
+                required: SCALAR_RATE_SCRATCH_LEN,
+                provided: scratch.len(),
+            });
+        }
+        work.scratch_bytes = (SCALAR_RATE_SCRATCH_LEN * std::mem::size_of::<Interval>()) as u64;
+        let mut op = ScalarOps { work };
+        let lower = op.endpoint(rate.hi, time.lo, r, d, scratch)?;
+        let upper = op.endpoint(rate.lo, time.hi, r, d, scratch)?;
+        let mut interval = Interval {
+            lo: lower.lo,
+            hi: upper.hi,
+        };
+        let mut width = op.width(interval)?;
+        if width > max_width {
+            // Only a width failure of the large-rate recurrence enables cells.
+            let z = nonnegative(op.mul(rate, time)?);
+            if z.hi <= 1.0 {
+                return Err(ScalarRateRefusal::MomentWidthExceeded {
+                    width,
+                    limit: max_width,
+                });
+            }
+            op.work.fallback_attempts = op.work.fallback_attempts.saturating_add(1);
+            let cell_start = op.work.cells_attempted;
+            // Uniform dyadic refinement: levels 0..11 evaluate 8190 endpoint
+            // cells in total, at most 2048 leaves per endpoint. Depth/leaves
+            // remain below the frozen maxima 20/4096.
+            for depth in 0..=20 {
+                let leaves = 1usize << depth;
+                if leaves > 4096 || op.work.cells_attempted - cell_start + 2 * leaves as u64 > 8191
+                {
+                    break;
+                }
+                let mut lo_sum = sp(0.0);
+                let mut hi_sum = sp(0.0);
+                for index in 0..leaves {
+                    // Exact binary dyadic coordinates, outward physical endpoints.
+                    // Multiplication can round: use lower/upper coordinates to
+                    // enclose each cell's mass rather than leave mesh gaps.
+                    let f0 = sp(index as f64 / leaves as f64);
+                    let f1 = sp((index + 1) as f64 / leaves as f64);
+                    let ll = op.mul(sp(time.lo), f0)?;
+                    let lu = op.mul(sp(time.lo), f1)?;
+                    let hl = op.mul(sp(time.hi), f0)?;
+                    let hu = op.mul(sp(time.hi), f1)?;
+                    // Dyadic scaling by <=2^20 is exact for normal fixtures.
+                    // General underflow/nonexact coordinates are refused rather
+                    // than overlapping or gapping an allegedly exact partition.
+                    if ll.lo != ll.hi || lu.lo != lu.hi || hl.lo != hl.hi || hu.lo != hu.hi {
+                        return Err(ScalarRateRefusal::ArithmeticRefusal {
+                            stage: "nonexact_dyadic_partition",
+                        });
+                    }
+                    let low = op.cell(rate.hi, time.lo, ll.lo, lu.hi, r, d)?;
+                    let high = op.cell(rate.lo, time.hi, hl.lo, hu.hi, r, d)?;
+                    lo_sum = op.add(lo_sum, low)?;
+                    hi_sum = op.add(hi_sum, high)?;
+                }
+                let cells = Interval {
+                    lo: lo_sum.lo,
+                    hi: hi_sum.hi,
+                };
+                interval = Interval {
+                    lo: interval.lo.max(cells.lo),
+                    hi: interval.hi.min(cells.hi),
+                };
+                if interval.lo > interval.hi {
+                    return Err(ScalarRateRefusal::ArithmeticRefusal {
+                        stage: "fallback_intersection",
+                    });
+                }
+                width = op.width(interval)?;
+                if width <= max_width {
+                    break;
+                }
+            }
+        }
+        if width > max_width {
+            return Err(ScalarRateRefusal::MomentWidthExceeded {
+                width,
+                limit: max_width,
+            });
+        }
+        op.work.output_items = op.work.output_items.saturating_add(1);
+        Ok(DampedForcingMomentResult {
+            interval,
+            width_upper: width,
+        })
+    })();
+    if result.is_err() {
+        work.query_refusals = work.query_refusals.saturating_add(1);
+    }
+    result
+}

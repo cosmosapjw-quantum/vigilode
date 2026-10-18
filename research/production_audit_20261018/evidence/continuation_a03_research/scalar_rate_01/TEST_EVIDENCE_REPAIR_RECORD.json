@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "unit": "A03-SCALAR-RATE-01-test-evidence-repair",
+  "status": "STAGED_NOT_EXECUTED_PENDING_SEPARATE_PUSHED_EXEC_SHA",
+  "authorization": {
+    "reviewer": "/root/a04_oracle_independent_review",
+    "provenance": "Parent relay of the reviewer final read-only review after inspecting scalar_rate_01 code; the text was supplied verbatim in this task thread.",
+    "verbatim": "위 두 항목에 대한 test/evidence 전용 bounded repair가 적절합니다. Production adapter 수식 변경은 필요하지 않습니다. 수정 후 실행 source를 고정하고 승인된 표적 실행으로 진행하십시오.",
+    "scope": "Only separate S02/S05 accepted outcomes and preserve every warmup result, allocation and ScalarRateWork alongside setup/measured query evidence; no adapter math or frozen input change.",
+    "claim_ceiling": "No numerical or scientific admission from this authorization alone.",
+    "reviewed_source_sha256": {
+      "crates/rodas5p-core/src/damped_moments.rs": "2c403dc34e1b0f0c3aef5d681b72f3bac749456f369b378ca2f3e8422bbe3099",
+      "crates/rodas5p-core/tests/production_audit_scalar_rate.rs": "9133dbcbddd88abaa963fd172c653c9635758a911ed419e68cf1caa8ee3290d8",
+      "research/production_audit_20261018/evidence/continuation_a03_research/scalar_rate_01/fraction_oracle.py": "b626458b681955273a691df02505de3718876e11dfd3025669af857eddeb230e",
+      "research/production_audit_20261018/evidence/continuation_a03_research/scalar_rate_01/IMPLEMENTATION_RECORD.json": "6781452511e1aab08c63c02bd9d271f2fdaace7c9355e1ded35d383c9495b9c4"
+    }
+  },
+  "implementation_base_head": "178e18ab1e270b4743a4d1c45b6541fc9d0e7848",
+  "prior_test_sha256": "9133dbcbddd88abaa963fd172c653c9635758a911ed419e68cf1caa8ee3290d8",
+  "repaired_test_sha256": "7f04c343e316e64ab750c725b7720264b636b86fbc87b3bbc3dde2d2e04f69be",
+  "unchanged_preregistration_sha256": "8f6a8635f0d9b3366cc457411c0f2dc6b54892e387bfadb505961e462e548f51",
+  "outcome_acceptance": {
+    "S02": ["ENCLOSED", "MomentWidthExceeded"],
+    "S05": ["ENCLOSED", "MomentWidthExceeded", "MomentWorkBudgetExceeded"]
+  },
+  "raw_evidence_fields": [
+    "setup_result", "setup_work", "setup_allocations",
+    "warmup_status", "warmup_result", "warmup_work", "warmup_allocations",
+    "result", "measured_query_work_before", "measured_query_work_after", "query_allocations"
+  ],
+  "work_reconstruction": "setup_work is the measured query's before snapshot; warmup_work is separate; measured query before/after snapshots retain additive attempted counters and scratch_bytes high-water state. All warmup refusals and measured refusals are serialized.",
+  "tests": "NOT_RUN",
+  "builds": "NOT_RUN",
+  "oracle": "NOT_RUN",
+  "exec_sha": null,
+  "remote_ref_verified": false
+}
