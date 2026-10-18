@@ -23,6 +23,12 @@ use rodas5p_core::{CoreError, CoreResult};
 use crate::collective_model::CollectiveModel;
 use crate::packet_work::PacketWorkCounters;
 
+#[path = "packet_curve.rs"]
+mod packet_curve;
+pub use packet_curve::{
+    ContinuousPacketResidualBound, PacketComplexInterval, RepresentedPacketCurve,
+};
+
 /// Errors arising during causal packet compilation, candidate iteration, or certification.
 #[derive(Clone, Debug, PartialEq, Error)]
 pub enum PacketError {

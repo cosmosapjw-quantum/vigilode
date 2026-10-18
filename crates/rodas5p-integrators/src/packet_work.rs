@@ -54,6 +54,27 @@ pub struct PacketWorkCounters {
     pub nonlinear_evaluations: u64,
     /// Number of Horner polynomial evaluation steps at output times.
     pub output_horner_terms: u64,
+    /// Number of fallible setup-buffer reservation attempts for represented
+    /// packet curves. Each attempt is charged before reservation.
+    pub curve_setup_allocation_requests: u64,
+    /// Number of coefficient/workspace items requested in represented-curve
+    /// setup reservations, charged before the fallible reserve.
+    pub curve_setup_reserved_items: u64,
+    /// Fallible outward setup operations for reciprocal horizon and per-mode
+    /// frequency products, charged before each attempted interval operation.
+    pub curve_setup_interval_ops: u64,
+    /// Center or interval divisions that normalize a requested physical time
+    /// for represented-curve evaluation, charged before the division.
+    pub curve_time_normalization_ops: u64,
+    /// Model-payload scalar comparisons when revalidating the copied source
+    /// model identity for represented-curve use.
+    pub curve_model_revalidation_items: u64,
+    /// Constructor payload scalar items passed to `CollectiveModel::new` while
+    /// making the fallible represented-curve source identity copy.
+    pub curve_model_constructor_payload_items: u64,
+    /// Scalar arithmetic operations performed by `CollectiveModel::new` for
+    /// the represented-curve source identity copy, charged before the call.
+    pub curve_model_constructor_arithmetic_ops: u64,
 }
 
 impl PacketWorkCounters {
@@ -78,6 +99,13 @@ impl PacketWorkCounters {
             volterra_terms: 0,
             nonlinear_evaluations: 0,
             output_horner_terms: 0,
+            curve_setup_allocation_requests: 0,
+            curve_setup_reserved_items: 0,
+            curve_setup_interval_ops: 0,
+            curve_time_normalization_ops: 0,
+            curve_model_revalidation_items: 0,
+            curve_model_constructor_payload_items: 0,
+            curve_model_constructor_arithmetic_ops: 0,
         }
     }
 
@@ -106,6 +134,13 @@ impl PacketWorkCounters {
             + self.volterra_terms
             + self.nonlinear_evaluations
             + self.output_horner_terms
+            + self.curve_setup_allocation_requests
+            + self.curve_setup_reserved_items
+            + self.curve_setup_interval_ops
+            + self.curve_time_normalization_ops
+            + self.curve_model_revalidation_items
+            + self.curve_model_constructor_payload_items
+            + self.curve_model_constructor_arithmetic_ops
     }
 
     /// Explicitly zero by design (no online Jacobian construction).
@@ -148,5 +183,12 @@ impl PacketWorkCounters {
         self.volterra_terms += other.volterra_terms;
         self.nonlinear_evaluations += other.nonlinear_evaluations;
         self.output_horner_terms += other.output_horner_terms;
+        self.curve_setup_allocation_requests += other.curve_setup_allocation_requests;
+        self.curve_setup_reserved_items += other.curve_setup_reserved_items;
+        self.curve_setup_interval_ops += other.curve_setup_interval_ops;
+        self.curve_time_normalization_ops += other.curve_time_normalization_ops;
+        self.curve_model_revalidation_items += other.curve_model_revalidation_items;
+        self.curve_model_constructor_payload_items += other.curve_model_constructor_payload_items;
+        self.curve_model_constructor_arithmetic_ops += other.curve_model_constructor_arithmetic_ops;
     }
 }
