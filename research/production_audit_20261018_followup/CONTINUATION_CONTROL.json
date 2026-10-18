@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "objective": "Complete every required node in the production audit DAG; no early stop after scoped pass.",
+  "previous_stop_diagnosis": [
+    "scope substitution",
+    "HOLD treated as terminal",
+    "no live READY scheduler loop",
+    "reporting next step mistaken for execution",
+    "DAG obligations too coarsely represented"
+  ],
+  "policy_file": "docs/reviews/20261018_production_audit/CONTINUATION_POLICY_KO.md",
+  "restart_head": "6c0c1ed2e04b3436fd9cb06c68afa9785d6c50a3",
+  "requested_research_runtime": {
+    "model": "gpt-6.1-sol",
+    "effort": "xhigh",
+    "observed_runtime": "NOT_INDEPENDENTLY_OBSERVED"
+  },
+  "active_units": [
+    "A01 proof review and implementation",
+    "A04 additive-underflow repair",
+    "A07 fixed-accuracy failure diagnosis"
+  ],
+  "stop_condition": "All required DAG nodes satisfy their own acceptance and independent review; scoped PASS does not close a broader node."
+}
