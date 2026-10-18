@@ -5,7 +5,7 @@
   "unit_id": "vigilode-cloud-completion-20261018",
   "objective": "Complete feasible native proof/code work and supply executable local validation handoff",
   "scope": "New opt-in packet, dense symmetric Leja, PR101, collective all-stage, affine scan; broad production remains separate",
-  "status": "in_progress",
+  "status": "complete",
   "dependencies": [
     {
       "id": "base",
@@ -64,6 +64,15 @@
       "kind": "artifact",
       "locator": "research/cloud_completion_20261018/HANDOFF_CODEX_KO.md",
       "scope": "current bounded cloud completion scope",
+      "dependency_ids": [
+        "base"
+      ]
+    },
+    {
+      "id": "publication",
+      "kind": "storage",
+      "locator": "research/cloud_completion_20261018/PUBLICATION_RECEIPT.json",
+      "scope": "reviewed source commit fetched from remote and identical source tree verified",
       "dependency_ids": [
         "base"
       ]
@@ -305,14 +314,15 @@
     },
     {
       "id": "C10",
-      "status": "in_progress",
+      "status": "complete",
       "evidence_refs": [
-        "handoff"
+        "handoff",
+        "publication"
       ],
       "dependency_ids": [
         "base"
       ],
-      "reason": "Native scope completed; publication receipt pending",
+      "reason": "Reviewed implementation and executable handoff published; fetched remote source tree equals local frozen tree",
       "reuse": null
     }
   ],
@@ -363,11 +373,19 @@
         "run"
       ],
       "next_action": "local normal toolchain/profiler; do not promote zero allocations"
+    },
+    {
+      "class": "input_dependency",
+      "reason": "Baseline L-0124 already mismatches two historical report output hashes; byte identity with baseline confirmed and retained",
+      "evidence_refs": [
+        "run"
+      ],
+      "next_action": "Historical provenance correction is separate from scoped solver execution; do not edit old ledger rows or hide the discrepancy"
     }
   ],
   "next_actions": [
     {
-      "action": "publish then run local commands",
+      "action": "run the supplied local check, smoke and measurement commands; keep scoped promotion and environment limitations",
       "evidence_refs": [
         "handoff"
       ]

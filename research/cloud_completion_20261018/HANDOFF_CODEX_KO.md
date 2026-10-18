@@ -4,6 +4,7 @@
 
 저장소: https://github.com/cosmosapjw-quantum/vigilode
 전달 브랜치: `research/cloud-completion-20261018`
+검토·실행 소스 commit: `b2379658a4eb0d8b4ddddcd58f754ef28e615c12`
 통합 기준: `c513f478f952068b91e3da368fb2cb156d942b28`
 산출물: `research/cloud_completion_20261018/`
 
@@ -112,3 +113,11 @@ continuous provider, sparse/callback Leja, 실제 nonlinear homotopy client의 �
 실제 동작을 확인한 뒤, 이 확장은 별도 범위로 진행한다. PT2에는 common-damping
 contraction 조건하의 homotopy parallel shooting 수렴·span 정리와 실행 계약까지
 이미 작성되어 있다.
+Common-damping 부등식은 fine flow의 contraction 조건이며, coarse map의
+공통 invariant-ball 보존과 contraction은 별도 전제다.
+
+추가로 전체 repository의 `check-research-node.py`는 기존 L-0124가 가리키는
+보고서 두 개의 hash 불일치로 실패한다. 두 파일은 전달 기준 commit에서도 이미
+같은 상태였고 이번 작업에서 변경하지 않았다. `evidence/publication_checks.json`을
+참조하고, 이를 신규 solver 수치 실패로 분류하거나 과거 ledger를 고쳐 숨기지 않는다.
+이 이력 정리는 현재 제공 실행 경로의 추가 수학 과제가 아니다.

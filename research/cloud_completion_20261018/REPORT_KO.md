@@ -14,7 +14,7 @@
 | Leja A04 | 명시적 enclosed API, 실제 fused 출력 전체 오차 | coefficient, operator, recurrence, accumulation, scale/fusion의 외향 replay; exact Fraction 18 사례 | dense symmetric represented action 범위 PROMOTE |
 | PR101 A05 | 연속 검증→commit driver, 전역 출력 반경 | signed gain, inherited error, same-curve output; 원래 101-output witness 및 비영 nonlinear orbit | 봉인된 PR101 모델 범위 PROMOTE |
 | Structured A06 | native K-coordinate 전체 8-stage Woodbury 및 adaptive observed driver | 단계별 dense 비교 60 조합, 정확해·오류 처리 | 수치 구현·O(N) 복잡도 범위 PROMOTE |
-| Parallel transport | reusable outward affine prefix | interval composition 귀납법, 정확 유리수 220 prefix 값, 1/4 thread 일치 | 연산 kernel 범위 PROMOTE |
+| Parallel transport | reusable outward affine prefix | interval composition 귀납법, 214 prefix + 6 initial의 220개 유리수 검사, 1/4 thread 일치 | 연산 kernel 범위 PROMOTE |
 
 Packet은 평가한 binary64 중심과 정확한 저장 curve 사이의 변위를 다음 window의
 weighted radius에 포함한다. component disks로 매번 되돌아가는 방법과 달리,
@@ -63,7 +63,8 @@ lambda=-1e6, eta=10, [0,1], 101 outputs, atol=1e-11, rtol=1e-8에서 492 accepte
 ball에서 q<1 contraction일 때 homotopy parallel shooting의 유일한 고정점,
 예측 오차 `Δλ Δ/(1-q)`, k회 후 `q^k D` 오차, map 오차 η에 의한
 `η/(1-q)` floor와 실제 latency 개선의 충분조건을 증명한다. Common damping의
-`κ>S²|χ|E`는 collective 모델에서 이를 적용할 수 있는 구체적인 조건이다.
+`κ>S²|χ|E`는 collective 모델의 fine flow에 대한 구체적인 contraction 조건이다.
+Coarse map의 공통 invariant-ball 보존과 contraction은 별도로 확인해야 한다.
 이는 실제 nonlinear homotopy client가 이미 실행됐다는 주장이 아니다.
 
 Laguerre/PY02의 기존 ABSTAIN과 기존 HT01/HT02 결과는 그대로 보존했다. 새 Leja
@@ -105,3 +106,7 @@ native-failure counter 이중 분류, nonlinear headroom 문제를 수정했다.
 다음 승격은 scope별로 판단한다. 새 packet·Leja·PR101 경로의 성공을 broad generic
 solver 또는 모든 문제에서의 speed 승격으로 합치지 않는다. 기존 Diffsol campaign의
 accuracy 실패와 과거 보고서 불일치는 재실행으로 덮지 않았다.
+
+## 게시 전 기록 검사
+
+원격 소스 commit `b2379658a4eb0d8b4ddddcd58f754ef28e615c12`의 tree가 검토한 로컬 tree와 일치한다. Authority-reference 검사는 통과했다. 전체 research ledger 검사는 기존 L-0124의 `CONTINUATION_DAG.json` 및 `CONTINUATION_FINDINGS.json` 출력 해시 불일치 두 건으로 실패했다. 두 파일은 기준 commit과 바이트 단위로 같아 이번 변경에서 생긴 불일치가 아니다. 과거 ledger와 파일을 그대로 보존했으며, 새 노드·append-only 오류는 없었다. `evidence/publication_checks.json`에 실제 기대/관측 해시를 기록했다. 이 저장소 기록 문제를 신규 수치 검사 통과나 production 전체 통과로 바꾸어 해석하지 않는다.
