@@ -49,7 +49,8 @@
 - `cargo fmt --all -- --check`: exit 0.
 - `cargo clippy --locked --offline --workspace --all-targets -- -D warnings`: exit 0.
 - 각 원시 로그와 별도 exit-code 파일이 이 노드에 보존됐다.
-- `git diff --check`는 source EXEC 전에 통과했다. manifest/lock 변경은 없다.
+- Source EXEC 전 `git diff --check` 통과, root Cargo.toml/Cargo.lock 미변경.
+- 전체 7개 pre-push 게이트 exit 0: fmt, workspace clippy, append-only node/ledger, authority refs(1,542 citations/272 SHAs), ignored-test CI(79개), E4 13+5 tests, clean tracked tree. 원시 gate 로그가 `prepush_gates.log`에 있다.
 
 ## 이전 finding 상태
 

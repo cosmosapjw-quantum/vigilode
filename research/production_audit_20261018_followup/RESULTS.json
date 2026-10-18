@@ -94,5 +94,23 @@
     "A11": "SCOPED_PASS_WITH_HOLD; supplied-box Gray-Scott mu2 only",
     "A12": "HOLD; no broad production promotion"
   },
-  "claim_ceiling": "These results establish bounded implementation and test scopes only. They do not certify nonlinear packet trajectories, all-time generic output accuracy, total Leja arithmetic, matched-accuracy speed, or production promotion. Full workspace cargo test was not run."
+  "claim_ceiling": "These results establish bounded implementation and test scopes only. They do not certify nonlinear packet trajectories, all-time generic output accuracy, total Leja arithmetic, matched-accuracy speed, or production promotion. Full workspace cargo test was not run.",
+  "prepush_gates": {
+    "command": "bash .agents/skills/vigilode-ledger-ci-gate/scripts/run_prepush_gates.sh de990927d0f9197f0e37fcaeccee33bea6c7b8af",
+    "exit_code": 0,
+    "checks": [
+      "rustfmt",
+      "workspace clippy -D warnings",
+      "research-node append-only ledger",
+      "authority commit refs",
+      "ignored tests CI reachability",
+      "E4 build-mode suite (13 tests)",
+      "E4 final review regressions (5 tests)",
+      "tracked worktree clean"
+    ],
+    "authority_citations": 1542,
+    "distinct_authority_shas": 272,
+    "ignored_tests_reachable": 79,
+    "log": "prepush_gates.log"
+  }
 }
