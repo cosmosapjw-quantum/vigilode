@@ -6,9 +6,10 @@
     "branch": "audit/production-readiness-20261018",
     "exec_sha": "5a1ff2b9ed1d63c928ea2577aaa60b4af64d6476",
     "remote_ref": "origin/audit/production-readiness-20261018",
-    "remote_ref_sha": "5a1ff2b9ed1d63c928ea2577aaa60b4af64d6476",
+    "remote_ref_sha": "578079280fe17926a8b83147ec8c2c87087236dc",
     "starting_audit_commit": "6c067105f0b9e16cbfd397b2d5316673e698e00e",
-    "audited_source_commit": "2fc61b944fe431d40ba455c373579bce00b0c39a"
+    "audited_source_commit": "2fc61b944fe431d40ba455c373579bce00b0c39a",
+    "tested_source_sha": "5a1ff2b9ed1d63c928ea2577aaa60b4af64d6476"
   },
   "nodes": [
     {
@@ -131,13 +132,15 @@
   "next_executable_transition": "Continue the authorized A04 setup receipt/cost unit and A05 PR101 sealed-provider/residual unit (independent READY work). Then implement/review A01 same-curve residual-to-center/radius T1 enclosure. A02 waits for whole A01; A03/A10 wait for A01; A08/A09 wait for A04 plus A07 gates. Keep all authority flags and scope decisions unchanged.",
   "checkpoint": {
     "date": "2026-10-18",
-    "head": "5a1ff2b9ed1d63c928ea2577aaa60b4af64d6476",
+    "head": "578079280fe17926a8b83147ec8c2c87087236dc",
     "remote_verified": true,
     "remote_ref": "origin/audit/production-readiness-20261018",
     "notes": [
       "A05 enum integration repair commit 3e9b28b is pushed and independently reviewed scoped pass.",
       "A04 Leja report immutability commit 5a1ff2b is pushed and independently reviewed scoped pass.",
-      "A01/A04/A05/A07 overall scope decisions remain HOLD as documented per node."
-    ]
+      "A01/A04/A05/A07 overall scope decisions remain HOLD as documented per node.",
+      "Evidence checkpoint itself is 5780792; tested executable source commit remains 5a1ff2b."
+    ],
+    "evidence_commit": "578079280fe17926a8b83147ec8c2c87087236dc"
   }
 }
