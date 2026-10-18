@@ -5,13 +5,17 @@
 //! then enclosed with outward intervals. This local object does not change
 //! packet certificate authority or certify trajectories across windows.
 
-use rodas5p_core::directed::{add_up, mul_up, sqrt_up, Interval};
+use rodas5p_core::directed::{Interval, add_up, mul_up, sqrt_up};
 
 use super::CollectiveModel;
 use super::{
-    c_add, c_mul, c_scale, checked_capacity, CompiledPacket, IComplex, PacketCandidate,
-    PacketError, PacketIdentity, PacketWorkCounters,
+    CompiledPacket, IComplex, PacketCandidate, PacketError, PacketIdentity, PacketWorkCounters,
+    c_add, c_mul, c_scale, checked_capacity,
 };
+
+#[path = "packet_curve_output.rs"]
+mod output;
+pub use output::{PacketCurveOutput, PacketCurveOutputView, PacketCurveOutputWorkspace};
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct PacketComplexInterval {

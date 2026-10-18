@@ -75,6 +75,14 @@ pub struct PacketWorkCounters {
     /// Scalar arithmetic operations performed by `CollectiveModel::new` for
     /// the represented-curve source identity copy, charged before the call.
     pub curve_model_constructor_arithmetic_ops: u64,
+    /// Attempted T1 output arithmetic: each directed scalar/Interval operation,
+    /// each magnitude query, one validated exponential kernel, and each
+    /// ordinary mean-center product/sum. Precharged before a fallible call;
+    /// represented-curve evaluation uses its existing separate counters.
+    /// Constructor shape checks and finite-input validation are excluded.
+    pub curve_output_certificate_ops: u64,
+    /// Fallible preallocation attempts for the represented-curve output workspace.
+    pub curve_output_allocation_requests: u64,
 }
 
 impl PacketWorkCounters {
@@ -106,6 +114,8 @@ impl PacketWorkCounters {
             curve_model_revalidation_items: 0,
             curve_model_constructor_payload_items: 0,
             curve_model_constructor_arithmetic_ops: 0,
+            curve_output_certificate_ops: 0,
+            curve_output_allocation_requests: 0,
         }
     }
 
@@ -141,6 +151,8 @@ impl PacketWorkCounters {
             + self.curve_model_revalidation_items
             + self.curve_model_constructor_payload_items
             + self.curve_model_constructor_arithmetic_ops
+            + self.curve_output_certificate_ops
+            + self.curve_output_allocation_requests
     }
 
     /// Explicitly zero by design (no online Jacobian construction).
@@ -190,5 +202,7 @@ impl PacketWorkCounters {
         self.curve_model_revalidation_items += other.curve_model_revalidation_items;
         self.curve_model_constructor_payload_items += other.curve_model_constructor_payload_items;
         self.curve_model_constructor_arithmetic_ops += other.curve_model_constructor_arithmetic_ops;
+        self.curve_output_certificate_ops += other.curve_output_certificate_ops;
+        self.curve_output_allocation_requests += other.curve_output_allocation_requests;
     }
 }
