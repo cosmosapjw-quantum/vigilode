@@ -90,6 +90,21 @@ struct IComplex {
 
 type OutwardReplay = (Vec<IComplex>, Vec<IComplex>, Vec<IComplex>);
 
+fn checked_len<T>(len: usize, label: &'static str) -> Result<(), PacketError> {
+    if len > isize::MAX as usize / std::mem::size_of::<T>().max(1) {
+        return Err(PacketError::SizeOverflow(label));
+    }
+    Ok(())
+}
+
+fn checked_capacity<T>(len: usize, label: &'static str) -> Result<Vec<T>, PacketError> {
+    checked_len::<T>(len, label)?;
+    let mut out = Vec::new();
+    out.try_reserve_exact(len)
+        .map_err(|_| PacketError::SizeOverflow(label))?;
+    Ok(out)
+}
+
 #[cfg(test)]
 static TEST_REFUSE_AFTER_OUTPUT_PRECHARGE: AtomicBool = AtomicBool::new(false);
 
@@ -163,14 +178,15 @@ fn ic_poly_force(
                 re: b.re,
                 im: -b.im,
             };
+            let product = a.mul(bc)?;
             p2[j + k] = IComplex {
                 re: p2[j + k]
                     .re
-                    .add(a.mul(bc)?.re)
+                    .add(product.re)
                     .map_err(|_| PacketError::OutwardRefusal("force accumulation"))?,
                 im: p2[j + k]
                     .im
-                    .add(a.mul(bc)?.im)
+                    .add(product.im)
                     .map_err(|_| PacketError::OutwardRefusal("force accumulation"))?,
             };
         }
@@ -293,21 +309,18 @@ fn outward_picard_replay(
     let mut basis = IComplex::point((1.0, 0.0))?;
     let mut free = Vec::with_capacity(porder + 1);
     let mut kernel = Vec::with_capacity(porder + 1);
+    let mut powers = checked_capacity::<Interval>(packet.model.num_modes(), "moment powers")?;
+    powers.resize(
+        packet.model.num_modes(),
+        Interval::point(1.0).map_err(|_| PacketError::OutwardRefusal("moment"))?,
+    );
     for k in 0..=porder {
         let mut mu = Interval::point(0.0).map_err(|_| PacketError::OutwardRefusal("moment"))?;
         let mut nu = IComplex::point((0.0, 0.0))?;
-        for j in 0..packet.model.num_modes() {
+        for (j, power) in powers.iter_mut().enumerate() {
             let w = Interval::point(packet.model.weights()[j])
                 .map_err(|_| PacketError::OutwardRefusal("weight"))?;
-            let mut xp = Interval::point(1.0).map_err(|_| PacketError::OutwardRefusal("moment"))?;
-            for _ in 0..k {
-                xp = xp
-                    .mul(
-                        Interval::point(packet.model.xi()[j])
-                            .map_err(|_| PacketError::OutwardRefusal("xi"))?,
-                    )
-                    .map_err(|_| PacketError::OutwardRefusal("moment multiplication"))?;
-            }
+            let xp = *power;
             mu = mu
                 .add(
                     w.mul(xp)
@@ -329,6 +342,15 @@ fn outward_picard_replay(
                     .map_err(|_| PacketError::OutwardRefusal("moment sum"))?,
             };
             work.certificate_items += 1;
+            if k < porder {
+                work.outward_spectral_power_terms += 1;
+                *power = xp
+                    .mul(
+                        Interval::point(packet.model.xi()[j])
+                            .map_err(|_| PacketError::OutwardRefusal("xi"))?,
+                    )
+                    .map_err(|_| PacketError::OutwardRefusal("moment multiplication"))?;
+            }
         }
         free.push(basis.mul(nu)?);
         kernel.push(basis.scale(mu)?);
@@ -1222,16 +1244,16 @@ pub fn compile_packet(
         return Err(PacketError::InvalidHorizon(horizon));
     }
 
-    let mut mu = Vec::with_capacity(coefficient_len);
-    let mut nu = Vec::with_capacity(coefficient_len);
+    let mut mu = checked_capacity::<f64>(coefficient_len, "spectral moments")?;
+    let mut nu = checked_capacity::<(f64, f64)>(coefficient_len, "weighted moments")?;
     for k in 0..=order {
         mu.push(model.spectral_moment(k));
         nu.push(model.weighted_moment(k));
         work.moment_terms += (model.num_modes() as u64) * 2;
     }
 
-    let mut free = Vec::with_capacity(coefficient_len);
-    let mut kernel = Vec::with_capacity(coefficient_len);
+    let mut free = checked_capacity::<(f64, f64)>(coefficient_len, "free coefficients")?;
+    let mut kernel = checked_capacity::<(f64, f64)>(coefficient_len, "kernel coefficients")?;
 
     // b_0 = 1.0, b_k = b_{k-1} * (i * width * h) / k
     let mut b = (1.0, 0.0);
@@ -1313,7 +1335,20 @@ pub fn generate_candidate(
     let candidate_len = degree
         .checked_add(1)
         .ok_or(PacketError::SizeOverflow("candidate coefficients"))?;
+    let force_len = candidate_len
+        .checked_mul(3)
+        .and_then(|n| n.checked_sub(2))
+        .ok_or(PacketError::SizeOverflow("candidate cubic force"))?;
+    let convolution_len = packet
+        .kernel
+        .len()
+        .checked_add(force_len)
+        .ok_or(PacketError::SizeOverflow("candidate convolution"))?;
+    // Validate the largest intermediate before any candidate allocation.
+    checked_len::<(f64, f64)>(convolution_len, "candidate convolution")?;
     let mut p = packet.free.clone();
+    p.try_reserve_exact(candidate_len.saturating_sub(p.len()))
+        .map_err(|_| PacketError::SizeOverflow("candidate coefficients"))?;
     p.resize(candidate_len, (0.0, 0.0));
 
     let h = packet.horizon;
@@ -1383,11 +1418,12 @@ fn factorial(n: usize) -> f64 {
     f
 }
 
-/// Produces a physical-time outward reconstruction for the exactly linear
-/// (`chi == 0`) member of the kappa=0 packet family.  Nonlinear packets are
-/// refused here rather than borrowing the diagnostic binary64 candidate.
-/// The function is an opt-in local enclosure primitive; it does not change
-/// the authority of [`PacketCertificate`].
+/// Produces a physical-time outward reconstruction for the kappa=0 packet
+/// family, including nonlinear coupling. Coefficients are replayed with
+/// intervals and the returned binary64 centers must lie in those intervals.
+/// The function is an opt-in local enclosure primitive; its result remains
+/// non-authoritative pending admission of the full arithmetic and theorem
+/// premises. It does not change the authority of [`PacketCertificate`].
 pub fn reconstruct_outward_at_times(
     cand: &PacketCandidate,
     packet: &CompiledPacket,
@@ -1448,12 +1484,17 @@ pub fn reconstruct_outward_at_times(
     let (emean, full_b, theorem_r, theorem_rp) =
         outward_scalar_bounds(packet, &replayed, request.initial_radii, rho, work)?;
     let h = packet.horizon;
+    let mode_output_len = request
+        .times
+        .len()
+        .checked_mul(n)
+        .ok_or(PacketError::SizeOverflow("outward mode outputs"))?;
     let mut output = OutwardPacketOutput {
-        times: Vec::with_capacity(request.times.len()),
-        modes: Vec::with_capacity(request.times.len() * n),
-        mode_radii: Vec::with_capacity(request.times.len() * n),
-        means: Vec::with_capacity(request.times.len()),
-        mean_radii: Vec::with_capacity(request.times.len()),
+        times: checked_capacity(request.times.len(), "outward times")?,
+        modes: checked_capacity(mode_output_len, "outward mode centers")?,
+        mode_radii: checked_capacity(mode_output_len, "outward mode radii")?,
+        means: checked_capacity(request.times.len(), "outward mean centers")?,
+        mean_radii: checked_capacity(request.times.len(), "outward mean radii")?,
         roundoff_enclosed: false,
     };
     for &t in request.times {

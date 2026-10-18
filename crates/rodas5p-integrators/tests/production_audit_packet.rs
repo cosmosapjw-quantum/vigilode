@@ -199,6 +199,10 @@ fn outward_linear_physical_times_enclose_returned_center_at_midpoint_and_endpoin
         "A01_COUNTER_RECEIPT setup={after_setup:?} candidate={after_candidate:?} outward={work:?}"
     );
     assert_eq!(out.modes.len(), 2);
+    assert_eq!(
+        work.outward_spectral_power_terms - after_candidate.outward_spectral_power_terms,
+        8
+    );
     for i in 0..2 {
         assert!(out.mode_radii[i].is_finite() && out.mode_radii[i] >= 0.0);
     }
@@ -281,6 +285,7 @@ fn outward_multimode_encloses_frozen_mpmath_reference_at_midpoint_and_endpoint()
     let packet = compile_packet(&model, 0.01, 10, &mut work).unwrap();
     let table = CausalWeights::compile(10, 30);
     let cand = generate_candidate(&packet, 10, 6, &table, &mut work).unwrap();
+    let before_power_terms = work.outward_spectral_power_terms;
     let out = reconstruct_outward_at_times(
         &cand,
         &packet,
@@ -291,6 +296,7 @@ fn outward_multimode_encloses_frozen_mpmath_reference_at_midpoint_and_endpoint()
         &mut work,
     )
     .unwrap();
+    assert_eq!(work.outward_spectral_power_terms - before_power_terms, 20);
     let reference = [
         [
             (0.30003606598313826, 0.099_879_496_665_868_6),
@@ -470,6 +476,23 @@ fn packet_compiler_and_candidate_refuse_usize_max_before_allocation() {
     let table = CausalWeights::compile(4, 12);
     assert!(matches!(
         generate_candidate(&packet, usize::MAX, 1, &table, &mut work),
+        Err(PacketError::SizeOverflow(_))
+    ));
+}
+
+#[test]
+fn packet_compiler_and_candidate_refuse_unallocatable_but_nonoverflowing_lengths() {
+    let model = one_mode(0.0, 0.0, 0.0);
+    let mut work = PacketWorkCounters::new();
+    // Both +1 operations fit usize. A Vec cannot represent these capacities.
+    assert!(matches!(
+        compile_packet(&model, 0.01, usize::MAX - 1, &mut work),
+        Err(PacketError::SizeOverflow(_))
+    ));
+    let packet = compile_packet(&model, 0.01, 4, &mut work).unwrap();
+    let table = CausalWeights::compile(4, 12);
+    assert!(matches!(
+        generate_candidate(&packet, usize::MAX - 1, 1, &table, &mut work),
         Err(PacketError::SizeOverflow(_))
     ));
 }

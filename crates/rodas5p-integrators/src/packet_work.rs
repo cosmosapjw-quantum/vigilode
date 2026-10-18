@@ -34,6 +34,9 @@ pub struct PacketWorkCounters {
     pub output_restriction_multiplies: u64,
     /// Scalar coefficient/mode items visited by certificate setup and bounds.
     pub certificate_items: u64,
+    /// Directed spectral-power recurrence products in outward moment replay.
+    /// A failed product remains charged as attempted work.
+    pub outward_spectral_power_terms: u64,
     /// Interval coefficient-ratio and accumulation terms in an adaptive
     /// Bernstein transform. Zero when the cheap coefficient gate passes.
     pub bernstein_transform_terms: u64,
@@ -66,6 +69,7 @@ impl PacketWorkCounters {
             output_value_items: 0,
             output_restriction_multiplies: 0,
             certificate_items: 0,
+            outward_spectral_power_terms: 0,
             bernstein_transform_terms: 0,
             bernstein_refinement_terms: 0,
             reconstruction_terms: 0,
@@ -94,6 +98,7 @@ impl PacketWorkCounters {
             + self.output_value_items
             + self.output_restriction_multiplies
             + self.certificate_items
+            + self.outward_spectral_power_terms
             + self.bernstein_transform_terms
             + self.bernstein_refinement_terms
             + self.reconstruction_terms
@@ -134,6 +139,7 @@ impl PacketWorkCounters {
         self.output_value_items += other.output_value_items;
         self.output_restriction_multiplies += other.output_restriction_multiplies;
         self.certificate_items += other.certificate_items;
+        self.outward_spectral_power_terms += other.outward_spectral_power_terms;
         self.bernstein_transform_terms += other.bernstein_transform_terms;
         self.bernstein_refinement_terms += other.bernstein_refinement_terms;
         self.reconstruction_terms += other.reconstruction_terms;
