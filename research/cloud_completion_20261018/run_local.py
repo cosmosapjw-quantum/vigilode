@@ -46,6 +46,7 @@ def main():
         "schema_version": 1, "mode": args.mode,
         "source": capture(["git", "rev-parse", "HEAD"]),
         "worktree": capture(["git", "status", "--porcelain"]),
+        "runner_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
         "rustc": capture(["rustc", "-Vv"]), "cargo": capture(["cargo", "-V"]),
         "platform": platform.platform(), "python": sys.version,
         "cargo_lock_sha256": hashlib.sha256((ROOT / "Cargo.lock").read_bytes()).hexdigest(),
@@ -76,7 +77,8 @@ def main():
     if args.mode in ("check", "all"):
         run("all_targets", ["cargo", "check", *flags, "--workspace", "--all-targets"])
         run("core_contracts", ["cargo", "test", *flags, "-p", "rodas5p-core", "--test", "leja_enclosed_contract",
-                              "--test", "leja_total_contract", "--test", "leja_setup_work_contract"])
+                              "--test", "leja_total_contract", "--test", "leja_setup_work_contract",
+                              "--", "--test-threads=1"])
         run("leja_unit", ["cargo", "test", *flags, "-p", "rodas5p-core", "--lib", "cloud_"])
         run("integrator_contracts", ["cargo", "test", *flags, "-p", "rodas5p-integrators",
             "--test", "affine_transport_contract", "--test", "production_audit_packet_verified",
