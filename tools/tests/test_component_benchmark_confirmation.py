@@ -36,6 +36,70 @@ def fixture(count=2, rss=100*(1<<20), budget=2*(1<<30)):
 
 
 class ConfirmationTests(unittest.TestCase):
+    def test_freeze_rejects_parallel_solver_thread_options(self):
+        config,resources=fixture(count=1)
+        config['solvers']['base']['threads']=2
+        with self.assertRaisesRegex(ValueError,'P3_SINGLE_THREAD_LANE_REQUIRED'):
+            co.freeze(config,resources,{},{} )
+        del config['solvers']['base']['threads']
+        config['global_contrasts'][0]['baseline_config_id']='parallel'
+        config['global_contrasts'][0]['baseline_solver_config']={'threads':4}
+        with self.assertRaisesRegex(ValueError,'P3_SINGLE_THREAD_LANE_REQUIRED'):
+            co.freeze(config,resources,{},{} )
+        del config['global_contrasts'][0]['baseline_solver_config']
+        del config['global_contrasts'][0]['baseline_config_id']
+        config['solvers']['base']['env']={'RAYON_NUM_THREADS':'4'}
+        with self.assertRaisesRegex(ValueError,'P3_SINGLE_THREAD_LANE_REQUIRED'):
+            co.freeze(config,resources,{},{} )
+
+    def test_resource_regression_before_next_pending_barrier_persists_hold(self):
+        config,resources=fixture(count=1)
+        plan=co.freeze(config,resources,{},{} )
+        reduced=SimpleNamespace(**{**resources.__dict__, 'memory_budget_bytes':1})
+        with tempfile.TemporaryDirectory() as temp:
+            output=Path(temp)/'out'
+            launched=[]
+            def fake_barrier(jobs,plan,output,hard_stop):
+                launched.append(jobs[0]['identity']['phase'])
+                folder=Path(jobs[0]['folder'])
+                folder.mkdir(parents=True)
+                (folder/'receipt.json').write_text('{}')
+                return []
+            with patch.object(co,'ROUNDS',1), \
+                 patch.object(co,'source_binding',return_value={}), \
+                 patch.object(co,'executable_binding',return_value={}), \
+                 patch.object(co,'_lease_deadline',return_value=time.monotonic()+100), \
+                 patch.object(co.hpc,'detect_resources',side_effect=[resources,reduced]), \
+                 patch.object(co,'campaign_process_census',return_value={'status':'OBSERVED','matching_pids':[]}), \
+                 patch.object(co,'_barrier_jobs',side_effect=fake_barrier):
+                with self.assertRaisesRegex(RuntimeError,'P3_MEMORY_CAPACITY_REGRESSED'):
+                    co.execute(plan,output,Path(temp)/'ledger','fixture',ROOT)
+            self.assertEqual(launched,[0])
+            hold=json.loads((output/'resource_hold.json').read_text())
+            self.assertEqual(hold['status'],'HOLD_RESOURCES')
+            self.assertEqual(hold['phase'],1)
+            self.assertEqual(len(hold['completed_receipts']),1)
+
+    def test_resume_with_completed_barrier_holds_without_recapturing_census(self):
+        config,resources=fixture(count=1)
+        plan=co.freeze(config,resources,{},{} )
+        with tempfile.TemporaryDirectory() as temp:
+            output=Path(temp)/'out'
+            prior=output/'jobs'/'r00-c00-p0-00'/'receipt.json'
+            prior.parent.mkdir(parents=True)
+            prior.write_text('{"frozen":"original"}\n')
+            with patch.object(co,'ROUNDS',1), \
+                 patch.object(co,'source_binding',return_value={}), \
+                 patch.object(co,'executable_binding',return_value={}), \
+                 patch.object(co,'campaign_process_census',side_effect=AssertionError('recaptured')), \
+                 patch.object(co,'_barrier_jobs',side_effect=AssertionError('relaunched')):
+                with self.assertRaisesRegex(RuntimeError,'P3_RESUME_HOLD_HISTORICAL_BARRIER_CENSUS_UNAVAILABLE'):
+                    co.execute(plan,output,Path(temp)/'ledger','fixture',ROOT)
+            self.assertEqual(prior.read_text(),'{"frozen":"original"}\n')
+            hold=json.loads((output/'resume_hold.json').read_text())
+            self.assertEqual(hold['status'],'HOLD_RESUME')
+            self.assertEqual(len(hold['completed_receipts']),1)
+
     def test_missing_rss_holds_and_cohort_assignment_is_frozen(self):
         config, resources = fixture(count=3,budget=900*(1<<20))
         missing = copy.deepcopy(config)
@@ -87,6 +151,7 @@ class ConfirmationTests(unittest.TestCase):
                 'assigned_cpu_steal_fraction':0.0,'affinity_escape':False,
                 'affinity_verified':True,
                 'cgroup_oom_events_delta':{'oom':0,'oom_kill':0},'peak_rss_bytes':1,
+                'unregistered_campaign_work':False,
                 'result':{'measurement_mode':'timing',
                           'timing_scope':co.paired_log_cost.__globals__['TIMING_SCOPE'],
                           'timing':{'timed_seconds':2.0,'warmup_seconds':1.0}}}
@@ -110,6 +175,23 @@ class ConfirmationTests(unittest.TestCase):
         candidate['unregistered_campaign_work']=False
         candidate['affinity_verified']=None
         self.assertEqual(co.classify_pair([base,candidate])['status'],'HOLD_UNKNOWN')
+        candidate['affinity_verified']=True
+        candidate['cgroup_oom_events_delta']=None
+        decision=co.classify_pair([base,candidate])
+        self.assertEqual(decision['status'],'HOLD_UNKNOWN')
+        self.assertIn('UNKNOWN_OOM_TELEMETRY',decision['reasons'])
+        candidate['cgroup_oom_events_delta']={'oom':0,'oom_kill':0}
+        candidate['unregistered_campaign_work']=None
+        decision=co.classify_pair([base,candidate])
+        self.assertEqual(decision['status'],'HOLD_UNKNOWN')
+        self.assertIn('UNKNOWN_CAMPAIGN_PROCESS_CENSUS',decision['reasons'])
+
+    def test_unknown_census_cannot_become_clean_empty_census(self):
+        observed={'status':'OBSERVED','matching_pids':[],'unregistered_campaign_work':False}
+        unknown={'status':'UNKNOWN','matching_pids':None,'unregistered_campaign_work':None}
+        self.assertIsNone(co._barrier_census_status(unknown,observed))
+        self.assertIsNone(co._barrier_census_status(observed,unknown))
+        self.assertIs(co._barrier_census_status(observed,observed),False)
 
     def test_lease_requires_full_timeout_reservation(self):
         with tempfile.TemporaryDirectory() as temp:
@@ -149,7 +231,11 @@ class ConfirmationTests(unittest.TestCase):
             self.assertIs(receipt['affinity_escape'],False)
             self.assertIsInstance(receipt['peak_rss_bytes'],int)
             self.assertGreater(receipt['peak_rss_bytes'],0)
-            self.assertEqual(set(receipt['cgroup_oom_events_delta']),{'oom','oom_kill'})
+            events=co.hpc._memory_events()
+            if events is None:
+                self.assertIsNone(receipt['cgroup_oom_events_delta'])
+            else:
+                self.assertEqual(set(receipt['cgroup_oom_events_delta']),{'oom','oom_kill'})
             self.assertTrue((base/'job'/'stdout').is_file())
             self.assertTrue((base/'job'/'receipt.json').is_file())
 

@@ -20,21 +20,76 @@ class HpcTest(unittest.TestCase):
         self.assertEqual(hpc.parse_cpu_list("0-3,8,10-11"),(0,1,2,3,8,10,11))
         real_read=hpc._read
         def fake_read(path):
+            path=str(path)
             if path.endswith("cpuset.cpus.effective"):return "0-63"
             if path.endswith("cpu.max"):return "640000 10000"
             if path.endswith("memory.max"):return str(128*hpc.GIB)
             if path.endswith("memory.current"):return str(4*hpc.GIB)
             return real_read(path)
-        with patch.object(hpc.os,"sched_getaffinity",return_value=set(range(64))), patch.object(hpc,"_read",side_effect=fake_read), patch.object(hpc,"_mem_available",return_value=120*hpc.GIB):
+        with patch.object(hpc.os,"sched_getaffinity",return_value=set(range(64))), patch.object(hpc,"_read",side_effect=fake_read), patch.object(hpc,"_mem_available",return_value=120*hpc.GIB), patch.object(hpc,"_cgroup_v2_paths",return_value=(Path('/sys/fs/cgroup'),)):
             r=hpc.detect_resources()
         self.assertEqual(len(r.worker_cpus),56)
         self.assertEqual(r.memory_budget_bytes,104*hpc.GIB)
         self.assertEqual(r.reserved_cpus,tuple(range(8)))
         self.assertEqual(hpc.demand_for({"solver_id":"julia-tsit5"}).memory_bytes,2*hpc.GIB)
         self.assertEqual(hpc.demand_for({"solver_id":"native-rodas5p-fast"}).memory_bytes,hpc.GIB//2)
-        with patch.object(hpc.os,"sched_getaffinity",return_value=set(range(8))), patch.object(hpc,"_read",return_value=None):
+        with patch.object(hpc.os,"sched_getaffinity",return_value=set(range(8))), patch.object(hpc,"_read",return_value=None), patch.object(hpc,"_cgroup_v2_paths",return_value=None):
             with self.assertRaisesRegex(RuntimeError,"HPC_CPU_RESERVE_UNAVAILABLE"):
                 hpc.detect_resources()
+
+    def test_nested_cgroup_ancestor_limits_and_current_events(self):
+        mount=Path('/sys/fs/cgroup')
+        parent=mount/'user.slice'
+        current=parent/'session.scope'
+        values={
+            '/proc/self/cgroup':'0::/user.slice/session.scope',
+            '/proc/self/mountinfo':'1 0 0:1 / /sys/fs/cgroup rw - cgroup2 cgroup rw',
+            str(mount/'cpuset.cpus.effective'):'0-63',
+            str(parent/'cpuset.cpus.effective'):'0-31',
+            str(current/'cpuset.cpus.effective'):'0-31',
+            str(mount/'cpu.max'):'max 100000',
+            str(parent/'cpu.max'):'2000000 100000',
+            str(current/'cpu.max'):'max 100000',
+            str(mount/'memory.max'):'max',
+            str(parent/'memory.max'):str(128*hpc.GIB),
+            str(parent/'memory.current'):str(8*hpc.GIB),
+            str(current/'memory.max'):str(100*hpc.GIB),
+            str(current/'memory.current'):str(10*hpc.GIB),
+            str(current/'memory.events'):'low 0\noom 0\noom_kill 0\n'}
+        with patch.object(hpc,'_read',side_effect=lambda path:values.get(str(path))), \
+             patch.object(hpc.os,'sched_getaffinity',return_value=set(range(64))), \
+             patch.object(hpc,'_mem_available',return_value=128*hpc.GIB), \
+             patch.object(hpc,'_read_raw',side_effect=lambda path:values.get(str(path))):
+            self.assertEqual(hpc._cgroup_v2_paths(),(current,parent,mount))
+            resource=hpc.detect_resources()
+            sample=hpc._memory_events_sample()
+        self.assertEqual(resource.allowed_cpus,tuple(range(32)))
+        self.assertEqual(resource.cpu_quota_cores,20)
+        self.assertEqual(resource.memory_budget_bytes,74*hpc.GIB)
+        self.assertEqual(sample['path'],str(current/'memory.events'))
+        self.assertEqual(sample['raw'],'low 0\noom 0\noom_kill 0\n')
+        self.assertEqual(sample['counters']['oom_kill'],0)
+        values[str(current/'memory.events')]='low 0\noom 0\n'
+        with patch.object(hpc,'_read',side_effect=lambda path:values.get(str(path))), \
+             patch.object(hpc,'_read_raw',side_effect=lambda path:values.get(str(path))):
+            self.assertIsNone(hpc._memory_events_sample()['counters'])
+        del values[str(parent/'memory.current')]
+        with patch.object(hpc,'_read',side_effect=lambda path:values.get(str(path))):
+            with self.assertRaisesRegex(RuntimeError,'HPC_CGROUP_MEMORY_CURRENT_UNAVAILABLE'):
+                hpc._cgroup_memory()
+
+    def test_missing_oom_events_remain_unknown(self):
+        with patch.object(hpc,"_cgroup_v2_paths",return_value=(Path('/fixture'),)), \
+             patch.object(hpc,"_read_raw",return_value=None):
+            self.assertIsNone(hpc._memory_events())
+        with patch.object(hpc,"_cgroup_v2_paths",return_value=(Path('/fixture'),)), \
+             patch.object(hpc,"_read_raw",return_value="low 0\n"):
+            self.assertIsNone(hpc._memory_events())
+        self.assertIsNone(hpc._oom_delta(None,{"oom":0,"oom_kill":0}))
+        self.assertIsNone(hpc._oom_delta({"oom":0,"oom_kill":0},None))
+        self.assertIsNone(hpc._oom_delta({"oom":1,"oom_kill":0},{"oom":0,"oom_kill":0}))
+        self.assertEqual(hpc._oom_delta({"oom":1,"oom_kill":2},{"oom":1,"oom_kill":2}),
+                         {"oom":0,"oom_kill":0})
 
     def test_heterogeneous_disjoint_slots_and_memory(self):
         resources=self.resources(cpus=16,gib=3)

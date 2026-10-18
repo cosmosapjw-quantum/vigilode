@@ -47,6 +47,11 @@ def _arm(contrast, label, solvers):
         extra = {'h_divisor':int(cid.removeprefix('h_divisor_'))}
     else:
         raise ValueError('unknown frozen solver configuration: '+str(cid))
+    spec = solvers[sid]
+    if spec.get('threads', 1) != 1 or (extra is not None and extra.get('threads', 1) != 1):
+        raise ValueError('P3_SINGLE_THREAD_LANE_REQUIRED')
+    if any(spec.get('env', {}).get(key, '1') != '1' for key in hpc.THREAD_KEYS):
+        raise ValueError('P3_SINGLE_THREAD_LANE_REQUIRED')
     return {'solver_id':sid,'config_id':cid,'solver_spec':solvers[sid],
             'solver_config':extra}
 
@@ -226,6 +231,9 @@ def _run_arm(job, allocation, hard_stop):
                'affinity_evidence':raw.get('affinity_evidence'),
                'affinity_escape':raw.get('affinity_escape'),
                'cgroup_oom_events_delta':raw.get('cgroup_oom_events_delta'),
+               'cgroup_oom_events_path':raw.get('cgroup_oom_events_path'),
+               'cgroup_oom_events_raw_before':raw.get('cgroup_oom_events_raw_before'),
+               'cgroup_oom_events_raw_after':raw.get('cgroup_oom_events_raw_after'),
                'assigned_cpu_steal_fraction':raw.get('assigned_cpu_steal_fraction'),
                'assigned_cpu_sample_source':raw.get('assigned_cpu_sample_source'),
                'rss_source':raw.get('rss_source'),
@@ -296,6 +304,8 @@ def classify_pair(receipts):
             reasons.append('UNKNOWN_PEAK_RSS')
         if row.get('unregistered_campaign_work') is True:
             reasons.append('UNREGISTERED_CAMPAIGN_WORK')
+        elif row.get('unregistered_campaign_work') is None:
+            reasons.append('UNKNOWN_CAMPAIGN_PROCESS_CENSUS')
     by_arm = {row.get('identity',{}).get('arm'):row for row in receipts}
     if set(by_arm) != {'baseline','candidate'}:
         reasons.append('ARM_IDENTITY_MISMATCH')
@@ -341,8 +351,34 @@ def campaign_process_census(plan):
         return {'status':'OBSERVED','matching_pids':sorted(matches),
                 'unregistered_campaign_work':bool(matches)}
     except OSError:
-        return {'status':'UNKNOWN','matching_pids':[],
+        return {'status':'UNKNOWN','matching_pids':None,
                 'unregistered_campaign_work':None}
+
+
+def _barrier_census_status(before, after):
+    if before.get('status') != 'OBSERVED' or after.get('status') != 'OBSERVED':
+        return None
+    return bool(before['matching_pids'] or after['matching_pids'])
+
+
+def _resource_failure(plan, cohort, resources):
+    if resources.host != plan['host'] or not set(plan['worker_cpuset']) <= set(resources.worker_cpus):
+        return 'P3_GUEST_CPU_IDENTITY_MISMATCH'
+    if sum(plan['contrasts'][index]['memory_reservation_bytes'] for index in cohort) > resources.memory_budget_bytes:
+        return 'P3_MEMORY_CAPACITY_REGRESSED'
+    return None
+
+
+def _persist_resource_hold(output, plan, reason, round_index, cohort_index, phase, resources):
+    output = Path(output)
+    output.mkdir(parents=True, exist_ok=True)
+    completed = sorted(str(path.relative_to(output)) for path in (output/'jobs').glob('*/receipt.json'))
+    atomic_json(output/'resource_hold.json', {
+        'status':'HOLD_RESOURCES','reason':reason,'plan_sha256':digest(plan),
+        'round':round_index,'cohort':cohort_index,'phase':phase,
+        'completed_receipts':completed,'observed_host':resources.host,
+        'observed_worker_cpuset':list(resources.worker_cpus),
+        'observed_memory_budget_bytes':resources.memory_budget_bytes})
 
 
 def execute(plan, output, ledger, lease_id, root=None):
@@ -357,6 +393,7 @@ def execute(plan, output, ledger, lease_id, root=None):
         raise RuntimeError('P3_EXECUTABLE_BINDING_MISMATCH')
     output = Path(output)
     pending_barriers = 0
+    completed_receipts = []
     for round_index in range(ROUNDS):
         for cohort_index, cohort in enumerate(plan['cohorts']):
             for phase in (0,1):
@@ -364,7 +401,16 @@ def execute(plan, output, ledger, lease_id, root=None):
                           for contrast_index in cohort]
                 if any(exists) and not all(exists):
                     raise RuntimeError('PARTIAL_BARRIER_HOLD_NO_DUPLICATE_RERUN')
+                if all(exists):
+                    completed_receipts.extend(str((output/'jobs'/f"r{round_index:02d}-c{cohort_index:02d}-p{phase}-{contrast_index:02d}"/'receipt.json').relative_to(output))
+                                              for contrast_index in cohort)
                 pending_barriers += not all(exists)
+    if completed_receipts:
+        output.mkdir(parents=True,exist_ok=True)
+        atomic_json(output/'resume_hold.json',{
+            'status':'HOLD_RESUME','reason':'HISTORICAL_BARRIER_CENSUS_UNAVAILABLE',
+            'plan_sha256':digest(plan),'completed_receipts':sorted(completed_receipts)})
+        raise RuntimeError('P3_RESUME_HOLD_HISTORICAL_BARRIER_CENSUS_UNAVAILABLE')
     hard_stop = _lease_deadline(ledger,lease_id,pending_barriers*ARM_TIMEOUT)
     run_summary = []
     barrier_context = {}
@@ -385,12 +431,18 @@ def execute(plan, output, ledger, lease_id, root=None):
                     jobs.append({'identity':identity,'folder':str(folder),'case':item['case'],
                                  'arm':arm,'contrast_index':contrast_index})
                 # Every first arm finishes before any second arm is launched.
+                if not all((Path(job['folder'])/'receipt.json').is_file() for job in jobs):
+                    resources = hpc.detect_resources()
+                    failure = _resource_failure(plan,cohort,resources)
+                    if failure is not None:
+                        _persist_resource_hold(output,plan,failure,round_index,cohort_index,phase,resources)
+                        raise RuntimeError(failure)
                 before = campaign_process_census(plan)
                 completed = _barrier_jobs(jobs,plan,output,hard_stop)
                 after = campaign_process_census(plan)
                 barrier_context[f'{round_index}:{cohort_index}:{phase}'] = {
                     'before':before,'after':after,
-                    'unregistered_campaign_work':bool(before['matching_pids'] or after['matching_pids']),
+                    'unregistered_campaign_work':_barrier_census_status(before,after),
                     'coverage':'BARRIER_SNAPSHOTS_ONLY'}
                 run_summary.extend(completed)
             # Both phases complete before the next cohort or round begins.
@@ -405,9 +457,14 @@ def execute(plan, output, ledger, lease_id, root=None):
         for contrast_index in range(plan['global_multiplicity']):
             cohort_index = next(i for i,cohort in enumerate(plan['cohorts']) if contrast_index in cohort)
             rows = pairs.get((round_index,contrast_index),[])
-            if any(barrier_context[f'{round_index}:{cohort_index}:{phase}']['unregistered_campaign_work']
-                   for phase in (0,1)):
+            census = [barrier_context[f'{round_index}:{cohort_index}:{phase}']['unregistered_campaign_work']
+                      for phase in (0,1)]
+            if any(value is True for value in census):
                 rows = [{**row,'unregistered_campaign_work':True} for row in rows]
+            elif any(value is None for value in census):
+                rows = [{**row,'unregistered_campaign_work':None} for row in rows]
+            else:
+                rows = [{**row,'unregistered_campaign_work':False} for row in rows]
             decisions[f'{round_index}:{contrast_index}'] = classify_pair(rows)
     atomic_json(output/'paired_diagnostics.json',{
         'status':'P3_DIAGNOSTIC_ONLY','global_multiplicity':plan['global_multiplicity'],
@@ -452,11 +509,11 @@ def main():
     if plan.get('config_sha256')!=file_digest(args.config):
         raise RuntimeError('P3_FROZEN_CONFIG_IDENTITY_MISMATCH')
     resources = hpc.detect_resources()
-    if resources.host!=plan.get('host') or not set(plan.get('worker_cpuset',[])) <= set(resources.worker_cpus):
-        raise RuntimeError('P3_GUEST_CPU_IDENTITY_MISMATCH')
-    for cohort in plan.get('cohorts',[]):
-        if sum(plan['contrasts'][index]['memory_reservation_bytes'] for index in cohort) > resources.memory_budget_bytes:
-            raise RuntimeError('P3_MEMORY_CAPACITY_REGRESSED')
+    for cohort_index,cohort in enumerate(plan.get('cohorts',[])):
+        failure = _resource_failure(plan,cohort,resources)
+        if failure is not None:
+            _persist_resource_hold(args.output,plan,failure,0,cohort_index,0,resources)
+            raise RuntimeError(failure)
     receipts = execute(plan,args.output,args.ledger,args.lease_id,root)
     print(json.dumps({'status':'P3_DIAGNOSTIC_ONLY','receipts':len(receipts)}))
 

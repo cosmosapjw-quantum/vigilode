@@ -10,6 +10,7 @@ import json
 import math
 import os
 import platform
+import re
 import shutil
 import signal
 import subprocess
@@ -55,6 +56,13 @@ def _read(path):
         return None
 
 
+def _read_raw(path):
+    try:
+        return Path(path).read_text()
+    except OSError:
+        return None
+
+
 def _mem_available():
     raw = _read("/proc/meminfo") or ""
     for line in raw.splitlines():
@@ -63,20 +71,80 @@ def _mem_available():
     raise RuntimeError("MEMAVAILABLE_UNAVAILABLE")
 
 
+def _cgroup_v2_paths():
+    """Current cgroup then ancestors, stopping at its cgroup2 mount root."""
+    membership = _read("/proc/self/cgroup")
+    mountinfo = _read("/proc/self/mountinfo")
+    if membership is None or mountinfo is None:
+        return None
+    groups = [line.split("::", 1)[1] for line in membership.splitlines()
+              if line.startswith("0::")]
+    if len(groups) != 1:
+        return None
+    group = groups[0]
+    def unescape(value):
+        return re.sub(r"\\([0-7]{3})",lambda match:chr(int(match.group(1),8)),value)
+    for line in mountinfo.splitlines():
+        before, separator, after = line.partition(" - ")
+        fields = before.split()
+        if not separator or len(fields) < 5 or not after.startswith("cgroup2 "):
+            continue
+        root = unescape(fields[3]).rstrip("/") or "/"
+        mount = Path(unescape(fields[4]))
+        if group != root and not group.startswith(root.rstrip("/") + "/"):
+            continue
+        relative = group[len(root):].lstrip("/") if root != "/" else group.lstrip("/")
+        current = mount / relative
+        paths = []
+        while True:
+            paths.append(current)
+            if current == mount:
+                return tuple(paths)
+            if mount not in current.parents:
+                break
+            current = current.parent
+    return None
+
+
 def _cgroup_memory():
-    maximum = _read("/sys/fs/cgroup/memory.max")
-    current = _read("/sys/fs/cgroup/memory.current")
-    if maximum and maximum != "max" and current:
-        return max(0, int(maximum)-int(current)), int(maximum), int(current)
-    return None, None, int(current) if current else None
+    paths = _cgroup_v2_paths()
+    if paths is None:
+        return None, None, None
+    limits = []
+    for path in paths:
+        maximum = _read(path / "memory.max")
+        if maximum is None or maximum == "max":
+            continue
+        current = _read(path / "memory.current")
+        if current is None:
+            raise RuntimeError("HPC_CGROUP_MEMORY_CURRENT_UNAVAILABLE")
+        try:
+            ceiling, used = int(maximum), int(current)
+        except ValueError as exc:
+            raise RuntimeError("HPC_CGROUP_MEMORY_INVALID") from exc
+        limits.append((max(0,ceiling-used),ceiling,used))
+    return min(limits) if limits else (None,None,None)
 
 
 def _quota_cores():
-    quota = _read("/sys/fs/cgroup/cpu.max")
-    if not quota:
+    paths = _cgroup_v2_paths()
+    if paths is None:
         return None
-    amount, period = quota.split()[:2]
-    return None if amount == "max" else max(0, int(amount)//int(period))
+    quotas = []
+    for path in paths:
+        raw = _read(path / "cpu.max")
+        if raw is None:
+            continue
+        parts = raw.split()
+        if len(parts) != 2:
+            raise RuntimeError("HPC_CGROUP_CPU_QUOTA_INVALID")
+        amount, period = parts
+        if amount != "max":
+            try:
+                quotas.append(max(0,int(amount)//int(period)))
+            except (ValueError,ZeroDivisionError) as exc:
+                raise RuntimeError("HPC_CGROUP_CPU_QUOTA_INVALID") from exc
+    return min(quotas) if quotas else None
 
 
 @dataclass(frozen=True)
@@ -96,9 +164,10 @@ class Resources:
 
 def detect_resources():
     affinity = set(os.sched_getaffinity(0))
-    cpuset_raw = _read("/sys/fs/cgroup/cpuset.cpus.effective")
-    if cpuset_raw:
-        affinity.intersection_update(parse_cpu_list(cpuset_raw))
+    for path in _cgroup_v2_paths() or ():
+        cpuset_raw = _read(path / "cpuset.cpus.effective")
+        if cpuset_raw:
+            affinity.intersection_update(parse_cpu_list(cpuset_raw))
     allowed = tuple(sorted(affinity))
     quota = _quota_cores()
     count = len(allowed) if quota is None else min(len(allowed), quota)
@@ -240,9 +309,30 @@ def assigned_cpu_delta(start, end):
             "sample_source":"/proc/stat assigned CPU delta"}
 
 
+def _memory_events_sample():
+    paths = _cgroup_v2_paths()
+    path = paths[0] / "memory.events" if paths else None
+    raw = _read_raw(path) if path is not None else None
+    if raw is None:
+        return {"path":str(path) if path is not None else None,"raw":None,"counters":None}
+    try:
+        events = {key:int(value) for key,value in (row.split() for row in raw.splitlines())}
+    except (ValueError, TypeError):
+        events = None
+    if events is not None and not all(key in events for key in ("oom", "oom_kill")):
+        events = None
+    return {"path":str(path),"raw":raw,"counters":events}
+
+
 def _memory_events():
-    raw = _read("/sys/fs/cgroup/memory.events") or ""
-    return {row.split()[0]:int(row.split()[1]) for row in raw.splitlines() if len(row.split())==2}
+    return _memory_events_sample()["counters"]
+
+
+def _oom_delta(before, after):
+    if before is None or after is None:
+        return None
+    delta = {key:after[key]-before[key] for key in ("oom", "oom_kill")}
+    return delta if all(value >= 0 for value in delta.values()) else None
 
 
 def _process_tree_sample(root_pid, assigned_cpus):
@@ -308,7 +398,7 @@ def run_process(argv, *, allocation, tracker, env, cwd=None, timeout=60, metrics
     timed_argv = [str(time_binary), "-v", "-o", str(metrics_path), *argv] if time_binary.is_file() else argv
     command = affinity_command(timed_argv, allocation)
     tick = time.monotonic()
-    events_before = _memory_events()
+    events_before = _memory_events_sample()
     cpu_before = assigned_cpu_sample(allocation.cpus)
     process = subprocess.Popen(command, cwd=cwd, env=env, stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE, start_new_session=True)
@@ -347,7 +437,7 @@ def run_process(argv, *, allocation, tracker, env, cwd=None, timeout=60, metrics
         stop.set()
         monitor_thread.join(timeout=0.5)
         tracker.remove(process.pid)
-    events_after = _memory_events()
+    events_after = _memory_events_sample()
     cpu_observed = assigned_cpu_delta(cpu_before, assigned_cpu_sample(allocation.cpus))
     time_report = _read(metrics_path) or ""
     time_kib = None
@@ -373,9 +463,12 @@ def run_process(argv, *, allocation, tracker, env, cwd=None, timeout=60, metrics
             "affinity_verified":affinity_verified,
             "affinity_evidence":"sampled pinned process tree" if observed["affinity_verified"] else (
                 "successful taskset launch; no pinned process-tree sample" if process.returncode == 0 else "UNKNOWN"),
-            "cgroup_oom_events_delta":{key:events_after.get(key,0)-events_before.get(key,0)
-                                       for key in ("oom","oom_kill")},
-            "cgroup_oom_scope":"shared cgroup delta; attribution to this process unavailable",
+            "cgroup_oom_events_delta":_oom_delta(events_before["counters"],events_after["counters"])
+                if events_before["path"] is not None and events_before["path"] == events_after["path"] else None,
+            "cgroup_oom_events_path":events_before["path"] if events_before["path"] == events_after["path"] else None,
+            "cgroup_oom_events_raw_before":events_before["raw"],
+            "cgroup_oom_events_raw_after":events_after["raw"],
+            "cgroup_oom_scope":"current cgroup v2 memory.events; shared cgroup attribution unavailable",
             "assigned_cpu_busy_fraction":cpu_observed["busy_fraction"],
             "assigned_cpu_steal_fraction":cpu_observed["steal_fraction"],
             "assigned_cpu_sample_source":cpu_observed["sample_source"]}
