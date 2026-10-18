@@ -134,6 +134,24 @@
         "evidence/local_codex_rerun_20261018/smoke/RESULT.json",
         "evidence/local_codex_rerun_20261018/bench/RESULT.json"
       ]
+    },
+    {
+      "id": "PUBLISH_RERUN",
+      "name": "Publish fresh rerun evidence and verify remote ref",
+      "status": "PASS_FAST_FORWARD_VERIFIED",
+      "dependencies": [
+        "RERUN_LATEST_HEAD"
+      ],
+      "evidence": [
+        "git fetch origin research/cloud-completion-20261018",
+        "git merge-base --is-ancestor origin/research/cloud-completion-20261018 HEAD",
+        "git push origin HEAD:refs/heads/research/cloud-completion-20261018",
+        "git ls-remote origin refs/heads/research/cloud-completion-20261018"
+      ],
+      "payload_commit": "161a27a5cf720683da0a124f407a78e864c257e3",
+      "remote_ref": "refs/heads/research/cloud-completion-20261018",
+      "remote_ref_sha_at_verification": "161a27a5cf720683da0a124f407a78e864c257e3",
+      "fast_forward": true
     }
   ],
   "scope_decisions": {
@@ -155,6 +173,6 @@
     "evidence": "evidence/publication_checks.json",
     "current_recheck": "evidence/local_checks/postflight_checks.json"
   },
-  "next_action": "Commit and fast-forward push the local rerun evidence/report/DAG; verify fetched remote ref. Scientific production and speed promotion remain HOLD.",
+  "next_action": "Fresh local check/smoke/bench complete and published. Overall production and measured speed remain HOLD; next work must target separately scoped open development.",
   "latest_checkout_commit": "412856893c3451917ea19c38ec2965f8790d3a1c"
 }
