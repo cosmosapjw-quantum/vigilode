@@ -1,0 +1,28 @@
+test_actual_parallel_thread_binding_and_timeout_fake_only (tools.tests.test_component_benchmark_hpc.HpcTest.test_actual_parallel_thread_binding_and_timeout_fake_only) ... ok
+test_cpuset_cgroup_and_memory_reserves (tools.tests.test_component_benchmark_hpc.HpcTest.test_cpuset_cgroup_and_memory_reserves) ... ok
+test_heterogeneous_disjoint_slots_and_memory (tools.tests.test_component_benchmark_hpc.HpcTest.test_heterogeneous_disjoint_slots_and_memory) ... ok
+test_telemetry_start_periodic_final (tools.tests.test_component_benchmark_hpc.HpcTest.test_telemetry_start_periodic_final) ... ok
+test_duplicate_and_source_identity_refused (tools.tests.test_component_benchmark_component_contracts.ComponentContractUtilityTest.test_duplicate_and_source_identity_refused) ... ok
+test_failure_protected_and_missing_are_independent (tools.tests.test_component_benchmark_component_contracts.ComponentContractUtilityTest.test_failure_protected_and_missing_are_independent) ... ok
+test_lease_identity_and_worst_case_deadline_before_launch (tools.tests.test_component_benchmark_component_contracts.ComponentContractUtilityTest.test_lease_identity_and_worst_case_deadline_before_launch) ... ok
+test_run_timeout_is_distinct (tools.tests.test_component_benchmark_component_contracts.ComponentContractUtilityTest.test_run_timeout_is_distinct) ... ok
+test_success_resumes_without_duplicate_and_hashes_raw_receipts (tools.tests.test_component_benchmark_component_contracts.ComponentContractUtilityTest.test_success_resumes_without_duplicate_and_hashes_raw_receipts) ... ok
+test_component_benchmark_runner (unittest.loader._FailedTest.test_component_benchmark_runner) ... ERROR
+
+======================================================================
+ERROR: test_component_benchmark_runner (unittest.loader._FailedTest.test_component_benchmark_runner)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_component_benchmark_runner
+Traceback (most recent call last):
+  File "/usr/lib/python3.12/unittest/loader.py", line 137, in loadTestsFromName
+    module = __import__(module_name)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/vigilode-all-dag-validation-20261018/tools/tests/test_component_benchmark_runner.py", line 7, in <module>
+    from test_component_benchmark_protocol import CASE
+ModuleNotFoundError: No module named 'test_component_benchmark_protocol'
+
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.915s
+
+FAILED (errors=1)

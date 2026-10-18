@@ -1,0 +1,15 @@
+{
+  "argv": [
+    "ssh",
+    "-i",
+    "/home/cosmosapjw/.ssh/ncp_key",
+    "-o",
+    "BatchMode=yes",
+    "-o",
+    "ConnectTimeout=10",
+    "root@49.50.142.2",
+    "env JULIA_DEPOT_PATH=/root/VIGILODE_COMPONENT_20261018T134235Z/env/vigilode-component-julia-depot-20261018 JULIA_NUM_THREADS=4 JULIA_NUM_PRECOMPILE_TASKS=4 OPENBLAS_NUM_THREADS=1 /root/VIGILODE_COMPONENT_20261018T134235Z/env/julia-1.12.7+0.x64.linux.gnu/bin/julia --startup-file=no --project=/root/VIGILODE_COMPONENT_20261018T134235Z/env/vigilode-component-julia-env-20261018 -e 'using JSON3,SciMLBase,OrdinaryDiffEq,OrdinaryDiffEqBDF,OrdinaryDiffEqFIRK,Sundials; println(JSON3.write(Dict(\"julia\"=>string(VERSION),\"DFBDF\"=>isdefined(OrdinaryDiffEqBDF,:DFBDF),\"RadauIIA5\"=>isdefined(OrdinaryDiffEqFIRK,:RadauIIA5))))'"
+  ],
+  "exit_code": 0,
+  "elapsed_seconds": 739.3952706670389
+}
