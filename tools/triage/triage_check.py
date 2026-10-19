@@ -22,7 +22,8 @@ B. Groups (arm, problem, grid, rtol): at target eps the group is admissible iff 
    (cost, E_up, rtol) as select_cheapest_below_target (crates/rodas5p-fair-ab/src/global_error.rs); it is
    *incomplete* when an admissible candidate lacks a cost or a candidate group is unknown.
 C. Comparisons of component c (internal arms): for each arm a containing c, every arm a' whose component set
-   is a's with c replaced by a component c' of c's slot gives kind `attribution`; without such an a', kind
+   equals a's outside c's slot and lacks c (slot content replaced, or an opt-in feature switched off) gives kind
+   `attribution`; without such an a', kind
    `strongest` compares with the cheapest applicable arm containing another component of the slot (and not c).
    Per (problem, grid, eps): ratio = cost(a) / cost(a') -> GAIN (<= gain_max), NEUTRAL (<= neutral_max), LOSS;
    capability_gain (a admissible, no admissible rival), capability_loss (rival admissible, a not); excluded
@@ -816,13 +817,19 @@ class Engine:
         return rec
 
     def counterparts(self, component: str, arm: str) -> list[str]:
+        """Arms identical to `arm` outside c's slot and without c.
+
+        A slot can hold several components of one arm (the Legacy LU policy of the fast driver is small LU,
+        faer LU and the density switch together), and an opt-in feature's baseline is the arm without it, so
+        the counterpart replaces the whole slot content rather than one component.
+        """
         slot = self.inp.comp[component]["slot"]
-        comps = self.inp.arm_components[arm]
-        rivals = [c for c, spec in self.inp.comp.items() if spec["slot"] == slot and c != component]
+        in_slot = {c for c, spec in self.inp.comp.items() if spec["slot"] == slot}
+        outside = self.inp.arm_components[arm] - in_slot
         out = []
         for other in self.internal_arms:
             other_comps = self.inp.arm_components.get(other, set())
-            if any((comps - {component}) | {r} == other_comps for r in rivals):
+            if other != arm and component not in other_comps and other_comps - in_slot == outside:
                 out.append(other)
         return sorted(out)
 

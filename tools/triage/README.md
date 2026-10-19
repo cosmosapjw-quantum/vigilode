@@ -227,7 +227,9 @@ Verdict per component:
   - Gap = work(component arm) / work(peer) per (problem, grid, ε). The component-level value is the median
     over matched cells.
 - **Comparisons:** for each arm a containing component c:
-  - `attribution`: every arm a′ whose component set equals a's with c replaced by another member of c's slot.
+  - `attribution`: every arm a′ that equals a outside c's slot and does not contain c. This covers a slot
+    whose content is replaced (one arm may hold several members of a slot, e.g. the fast driver's Legacy LU
+    policy) and an opt-in feature switched off.
     If a′ is not applicable to the problem, there is no rival for that cell.
   - `strongest`: used when no a′ exists. The rival is the cheapest applicable arm that contains another
     slot member and not c.

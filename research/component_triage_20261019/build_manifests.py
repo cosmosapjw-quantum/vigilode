@@ -326,6 +326,18 @@ CORPUS = [
 ]
 SWEEP = {"rtols": [1e-3, 1e-4, 1e-5, 1e-6, 1e-7, 1e-8, 1e-9, 1e-10],
          "grids": ["endpoint", "uniform101"], "h0_scales": [0.5, 1.0, 2.0]}
+# NumPy model keys of tools/triage/triage_models.py where the corpus id differs.
+NUMPY_MODELS = {
+    "oregonator": "oregonator-holdout-v2",
+    "pollution": "pollution-holdout-v2",
+    "brusselator-2d": "brusselator-2d-holdout-v2",
+    "medical-akzo": "medical-akzo-holdout-v2",
+    "semilinear-advdiff-2d-96": "semilinear-advection-diffusion-ramped-n96-grid8x12-v2.1",
+    "semilinear-advdiff-2d-384": "semilinear-advection-diffusion-ramped-n384-grid16x24-v2.1",
+    "semilinear-advdiff-2d-1536": "semilinear-advection-diffusion-ramped-n1536-grid32x48-v2.1",
+    "brusselator-1d-jvp-250": "brusselator-1d-250",
+    "brusselator-1d-jvp-1000": "brusselator-1d-1000",
+}
 PROFILE_SUBSET = {"rtols": [1e-4, 1e-6, 1e-8], "max_dimension": 2048, "grids": ["uniform101"], "h0_scales": [1.0]}
 
 
@@ -347,6 +359,7 @@ def build_corpus(listing):
                          "structure": p["structure"], "jacobian": p["jacobian"], "mass": p["mass"],
                          "exact_solution": p["exact_solution"], "oscillatory": p["oscillatory"],
                          "t_span": p["t_span"], "atol_scale": p["atol_scale"],
+                         **({"numpy_model": NUMPY_MODELS[pid]} if pid in NUMPY_MODELS else {}),
                          "reference": {"kind": kind, "methods": ["exact"] if kind == "exact" else ["scipy-radau", "scipy-lsoda"]}})
     return {"schema": "vigilode-triage-corpus-v1", "problems": problems, "sweep": SWEEP,
             "profile_subset": PROFILE_SUBSET, "not_in_corpus": extra}
