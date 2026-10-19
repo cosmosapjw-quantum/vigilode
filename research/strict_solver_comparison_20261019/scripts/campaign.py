@@ -19,8 +19,13 @@ GRIDS=['endpoint','uniform101']
 TARGETS=[1e-4,1e-6,1e-8]
 ARMS=['vigilode-fast','diffsol-bdf','netlib-dvode']
 
+def _json_numpy_scalar(value):
+    if isinstance(value,(np.integer,np.floating,np.bool_)):
+        return value.item()
+    raise TypeError(f"Unsupported JSON type: {type(value).__name__}")
+
 def dump(path, value):
-    Path(path).write_text(json.dumps(value,indent=2,sort_keys=True,allow_nan=False)+'\n')
+    Path(path).write_text(json.dumps(value,indent=2,sort_keys=True,allow_nan=False,default=_json_numpy_scalar)+'\n')
 def sha(path):
     h=hashlib.sha256()
     with Path(path).open('rb') as f:

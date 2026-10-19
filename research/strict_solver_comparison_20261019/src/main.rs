@@ -81,8 +81,12 @@ pub unsafe extern "C" fn strict_rhs(id:i32,n:i32,_t:f64,y:*const f64,out:*mut f6
 pub unsafe extern "C" fn strict_jac(id:i32,n:i32,ml:i32,mu:i32,ld:i32,_t:f64,y:*const f64,pd:*mut f64) {
     let n=n as usize;let ld=ld as usize;
     let y=unsafe{std::slice::from_raw_parts(y,n)};
-    let pd=unsafe{std::slice::from_raw_parts_mut(pd,ld*n)};
-    pd.fill(0.0);
+    // DVODE passes a pointer shifted by ml rows into the factor workspace.
+    // The final column exposes only its logical band rows, not all ld rows.
+    let band_rows=if ml<0 {ld}else{(ml+mu+1) as usize};
+    let extent=ld*(n-1)+band_rows;
+    let pd=unsafe{std::slice::from_raw_parts_mut(pd,extent)};
+    for col in 0..n {pd[col*ld..col*ld+band_rows].fill(0.0);}
     jac_entries(id,n,|i|y[i],|i,j,z| {
         if ml<0 {pd[i+ld*j]=z;} else {
             let k=mu+i as i32-j as i32;
@@ -107,7 +111,7 @@ fn native(c:&Case,times:&[f64],rtol:f64,h:f64,audit:bool)->Outcome {
     let schedule=match OutputSchedule::new(times.to_vec()){Ok(s)=>s,Err(e)=>return failed(e.to_string())};
     match integrate_rodas5p_fast_observed(&p,(0.0,c.tf),&initial(c),&cfg,&schedule) {
         Err(e)=>failed(e.to_string()),
-        Ok(r)=> {let complete=r.observed.t==times && r.observed.y.len()==times.len();
+        Ok(r)=> {let complete=r.observed.success && r.observed.t==times && r.observed.y.len()==times.len();
             let counters=if audit {json!({"native":r.observed.counters,"attempts":r.attempts,"accepted":r.accepted_steps,"rejected":r.rejected_steps})} else {Value::Null};
             Outcome{times:r.observed.t,states:r.observed.y,counters,status:if complete {"ok"}else{"solver_failure"}.into(),error:if complete {None}else{Some("incomplete observed trajectory".into())}}
         }
@@ -180,6 +184,16 @@ fn main()->Result<(),Box<dyn std::error::Error>> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn banded_callback_preserves_trailing_guard() {
+        let y=[1.0,3.0,1.0,3.0];let n=4usize;let ld=7usize;
+        let sentinel=1234567.0;let mut storage=vec![sentinel;ld*n+4];
+        unsafe {strict_jac(4,n as i32,2,2,ld as i32,0.0,y.as_ptr(),storage.as_mut_ptr());}
+        let logical_end=ld*(n-1)+5;
+        assert!(storage[logical_end..].iter().all(|x|*x==sentinel));
+        let mut expected=vec![vec![0.0;n];n];jac_entries(4,n,|i|y[i],|i,j,z|expected[i][j]=z);
+        for i in 0..n {for j in 0..n {let k=2+i as i32-j as i32;if (0..5).contains(&k){assert_eq!(storage[k as usize+ld*j],expected[i][j]);}}}
+    }
     #[test]
     fn analytic_entries_match_centered_differences() {
         for c in cases(){let y=initial(&c);let mut j=vec![vec![0.0;c.n];c.n];jac_entries(c.id,c.n,|i|y[i],|i,k,z|j[i][k]=z);
