@@ -1,0 +1,48 @@
+name: Banded improvement frozen closeout
+on:
+  push:
+    branches: [research/banded-exact-reuse-20261020]
+    paths:
+      - '.github/workflows/banded-improvement-closeout-20261020.yml'
+      - 'research/banded_exact_reuse_20261020/closeout/**'
+permissions:
+  contents: write
+jobs:
+  close:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Verify source/archive and append scoped ledger
+        shell: bash
+        run: |
+          set -euo pipefail
+          NODE=research/banded_exact_reuse_20261020
+          python3 "$NODE/closeout/finalize.py" 39304607635 > "$NODE/CLOSEOUT.log" 2>&1
+          set +e
+          python3 tools/check-research-node.py --base b56bb19ce85bc28a021138ee29689701a81bc4f0 > "$NODE/RESEARCH_POLICY_CHECK.log" 2>&1
+          S=$?
+          set -e
+          printf '{"exit_code":%s,"command":"tools/check-research-node.py --base b56bb19"}\n' "$S" > "$NODE/RESEARCH_POLICY_STATUS.json"
+          cat "$NODE/CLOSEOUT.log"
+          cat "$NODE/RESEARCH_POLICY_CHECK.log"
+      - name: Publish frozen closeout, no new numerical execution
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add research/banded_exact_reuse_20261020 research/LEDGER.jsonl
+          if ! git diff --cached --quiet; then
+            git commit -m 'research: seal bounded banded-improvement results and append evidence ledger [skip ci]'
+            git fetch origin research/banded-exact-reuse-20261020
+            git rebase origin/research/banded-exact-reuse-20261020
+            git push origin HEAD:refs/heads/research/banded-exact-reuse-20261020
+          fi

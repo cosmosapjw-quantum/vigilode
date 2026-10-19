@@ -1,0 +1,23 @@
+{
+  "schema":"bounded-physmath-improvement-v1",
+  "baseline":"b56bb19ce85bc28a021138ee29689701a81bc4f0",
+  "production_patch":"b51c051b045e977c038e5eec468de0004840872b",
+  "measurement_source":"f8e89b70528da8490fbe1febf0b0ede9ff84a01e",
+  "nodes":[
+    {"id":"R_CONSTRUCTION","status":"DERIVED_SCOPED","evidence":"THEORY.md"},
+    {"id":"C_BASELINE_RED","status":"4_REAL_FAILURES_5_PASSES","evidence":"runs/39298620202/BASELINE_RED.log"},
+    {"id":"C_RETRY_HYPOTHESIS","status":"REFUTED_NO_PATCH","evidence":"AMENDMENT_01.md"},
+    {"id":"C_IMPLEMENTATION","status":"IMPLEMENTATION_VERIFIED_SCOPED","evidence":"runs/39304607635/GREEN_REGRESSION.log"},
+    {"id":"C_MATRIX_PARITY","status":"PASS_SCOPED","evidence":"runs/39304607635/INTERNAL_TESTS.log"},
+    {"id":"C_ADAPTER_REPAIR","status":"CLOSED_DIAGNOSED_REPAIR","evidence":"ADAPTER_REPAIR.md"},
+    {"id":"C_NUMERICAL_COMPARISON","status":"324_OF_324_BIT_IDENTICAL","evidence":"runs/39304607635/PARITY.json"},
+    {"id":"C_TIMING","status":"576_VALID_PROCESSES_DIAGNOSTIC","evidence":"runs/39304607635/SUMMARY.json"},
+    {"id":"C_READBACK","status":"PASS_SCOPED","evidence":"runs/39304607635/AUDIT.json"},
+    {"id":"C_FULL_WORKSPACE","status":"TIMEOUT_NOT_PASS","evidence":"runs/39301232025/WORKSPACE_STATUS.json"},
+    {"id":"C_CLOSEOUT","status":"PUBLISHED_SCOPED_RESULTS","evidence":"CRITICAL_REVIEW_KO.md"}
+  ],
+  "native_subagent":"NOT_RUN_NO_NATIVE_TOOL",
+  "default_kernel_changed":false,
+  "merge_performed":false,
+  "promotion":"HOLD_GENERAL_PERFORMANCE_AND_FULL_WORKSPACE"
+}
