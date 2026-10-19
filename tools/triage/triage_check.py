@@ -32,14 +32,17 @@ C. Comparisons of component c (internal arms): for each arm a containing c, ever
    capability_gain (a admissible, no admissible rival), capability_loss (rival admissible, a not); excluded
    (reason) when neither is admissible, the reference is missing or limited, a state is unknown, or a cost is
    missing/incomplete. Only problems of a tier in c.tiers are compared.
-D. Criteria. C1 integrity: process_abort, deterministic = false or non-finite/malformed ok rows of an arm
+D. Criteria. C1 integrity: process_abort (except runner timeouts, which only make the cell inadmissible),
+   deterministic = false or non-finite/malformed ok rows of an arm
    containing c, attributed to c unless another arm containing c ran the same cell cleanly (exoneration;
    interaction faults are not separated). C2: over c's groups (reference-limited in requested units excluded:
    R_rho > reference_limited_factor), fraction with R_up <= ratio >= cell_fraction and max R_up <= ratio_max.
    Allocation: max warm-window allocations over c's arms <= warm_window_allocations_max, or, when allowed, equal
    to the component's optional `documented_warm_allocations` on rows of >= 2 distinct dimensions. C3 from
    PROBES.jsonl (rows of the row schema with `probe` = {id, must_refuse, components?}): a must-refuse probe
-   passes only as `refused`/`error` with success false; process_abort always fails; without probes C3 is null
+   passes only as `refused`/`error` with success false; any other probe must fail closed (`solver_failure`,
+   `error` or `refused` with success false; success true is a silent failure); process_abort always fails;
+   without probes C3 is null
    (C3_MISSING).
 E. Decision tree (rule_path entries {rule, kind, detail}; tools/triage/README.md explains every token):
    STATIC_PRUNE_RELOCATE (static_class) -> PRUNE(relocate). C1_FAIL / C3_FAIL -> PRUNE, except that a
@@ -283,6 +286,20 @@ def validate_row(row: dict, where: str) -> list[str]:
         reasons.append(f"{where}: output_times must be a list")
     if row["status"] == "ok" and not (tc.finite(row["atol"]) and row["atol"] > 0):
         reasons.append(f"{where}.atol: expected positive number on an ok row")
+    if "error_kind" in row:
+        kind = row["error_kind"]
+        if kind is not None and (not isinstance(kind, str) or not kind):
+            reasons.append(f"{where}.error_kind: expected nonempty string or null, got {kind!r}")
+        elif kind is not None and row["status"] == "ok":
+            reasons.append(f"{where}.error_kind: {kind!r} on an ok row")
+    if "segments" in row or "segments_completed" in row:
+        total, done = row.get("segments"), row.get("segments_completed")
+        if type(total) is not int or total < 1:
+            reasons.append(f"{where}.segments: expected int >= 1, got {total!r}")
+        elif type(done) is not int or not 0 <= done <= total:
+            reasons.append(f"{where}.segments_completed: expected int in [0, {total}], got {done!r}")
+        elif row["status"] == "ok" and done != total:
+            reasons.append(f"{where}: ok row with {done} of {total} segments completed")
     if row["counters"] is not None and not isinstance(row["counters"], dict):
         reasons.append(f"{where}.counters: expected object or null")
     if row["extra_work"] is not None and not isinstance(row["extra_work"], dict):
@@ -885,7 +902,11 @@ def probe_results(engine: Engine) -> dict[str, list[tuple[str, bool, str]]]:
             ok = status in ("refused", "error") and success is False
             why = "typed refusal" if ok else f"must refuse, got status {status} success {success}"
         else:
-            ok, why = True, f"status {status}"
+            # Fail closed: a fault-injection probe (NaN/Err right-hand side, ...) must not "succeed".
+            ok = status in ("solver_failure", "error", "refused") and success is False
+            why = (f"failed closed ({status})" if ok else
+                   "fault-injection probe succeeded (silent failure)" if success is True
+                   else f"status {status} success {success} is not a closed failure")
         for c in comps:
             out[c].append((probe["id"], ok, why))
     return out

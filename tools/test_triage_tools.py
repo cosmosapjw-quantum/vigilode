@@ -476,5 +476,16 @@ class GzipInputTests(unittest.TestCase):
             self.assertEqual(tc.sha256_file(plain), tc.sha256_file(packed))
 
 
+class TimeoutIntegrityTests(unittest.TestCase):
+    def test_timeout_abort_is_not_an_integrity_failure(self):
+        import triage_common as tc
+        base = {"status": "process_abort", "success": False, "states_hex": [], "output_times": []}
+        crash = tc.row_accuracy(dict(base, process={"kind": "abort"}), {"dimension": 1}, None)
+        timeout = tc.row_accuracy(dict(base, process={"kind": "timeout"}), {"dimension": 1}, None)
+        self.assertEqual(crash["integrity"], "process_abort")
+        self.assertIsNone(timeout["integrity"])
+        self.assertEqual(timeout["class"], "failed")
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -54,7 +54,10 @@ ROW_KEYS = frozenset((
 # the state sidecar of a large row (states_hex replaced by states_sha256/states_shape/states_file, plus
 # accuracy_inline computed by the runner with row_accuracy below).
 STATE_SIDECAR_KEYS = frozenset(("states_sha256", "states_shape", "states_file"))
-ROW_OPTIONAL_KEYS = frozenset(("process", "probe", "accuracy_inline")) | STATE_SIDECAR_KEYS
+# Optional keys printed by the binary (crates/rodas5p-cli/src/triage.rs, from ee13822): `error_kind` (string or
+# null: core_error_kind of the typed error), `segments` (int >= 1) and `segments_completed` (0..segments).
+ROW_BINARY_OPTIONAL_KEYS = frozenset(("error_kind", "segments", "segments_completed"))
+ROW_OPTIONAL_KEYS = frozenset(("process", "probe", "accuracy_inline")) | STATE_SIDECAR_KEYS | ROW_BINARY_OPTIONAL_KEYS
 ROW_REQUIRED_KEYS = ROW_KEYS - {"states_hex"}  # states_hex xor the three sidecar keys
 DEFAULT_INLINE_STATES_MAX_DIMENSION = 64
 ACCURACY_FUNCTION = "tools/triage/triage_common.py::row_accuracy"
@@ -549,7 +552,12 @@ def row_accuracy(row: dict, problem: dict, ref: Reference, states: list | None =
     if row["status"] != "ok":
         out.update({"class": "failed", "reason": f"status {row['status']}"})
         if row["status"] == "process_abort":
-            out["integrity"] = "process_abort"
+            # A crash or signal is an integrity failure; a runner timeout only means the cell did not finish
+            # inside its budget, which makes the cell inadmissible without implicating correctness.
+            if ((row.get("process") or {}).get("kind")) == "timeout":
+                out["reason"] = "status process_abort (timeout: cell budget exhausted)"
+            else:
+                out["integrity"] = "process_abort"
         return out
     dim = problem.get("dimension")
     if states is None:

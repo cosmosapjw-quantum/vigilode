@@ -65,7 +65,10 @@ python3 tools/triage/triage_report.py --results $N/RESULTS.json --classification
 
 ### Rows (`vigilode-triage-row-v1`)
 
-These are the contract's row keys. The Python drivers may add only the keys `process`, `probe`,
+These are the contract's row keys, plus the binary's optional `error_kind` (string or null; the typed
+error's kind: dimension, invalid-input, non-finite, linear-solve, nonlinear-solve, coefficients, ...),
+`segments` (int ≥ 1) and `segments_completed` (0..segments; equal to `segments` on an ok row). Any other
+unknown key is rejected. The Python drivers may add only the keys `process`, `probe`,
 `accuracy_inline` and the state-sidecar keys `states_sha256`, `states_shape` and `states_file` (which replace
 `states_hex`; see "State sidecars").
 
@@ -131,6 +134,18 @@ JSONL: `triage_runner.py` (RUNS and PROBES) and `triage_external.py` (EXTERNAL) 
 
 ### `PROBES.jsonl` (C3)
 
+Probe rows are produced by `triage_runner.py --probes` (with `--list` or `--binary`; no CORPUS needed) from the
+top-level `probes` array of triage-list. Each entry has problem fields plus `probe: {id, base, must_refuse,
+expect}` and `applicable_arms`, computed by the binary.
+
+- **Plan:** every wired internal arm in `applicable_arms` × the probe, at one fixed cell (rtol 1e-4, grid
+  endpoint, h0 1.0). `--probe-rtol`, `--probe-grid` and `--probe-h0-scale` override the cell, and `--arm` and
+  `--problem` narrow the plan.
+- **Run:** `triage-run --problem <probe entry id>`.
+- **Rows:** each row gets `probe: {id, must_refuse, components}`, where `components` are the arm's
+  components. Process aborts become `process_abort` probe rows, as for any cell.
+- **Errors:** an applicable arm unknown to triage-list is an error (exit 2).
+
 Probe rows are ordinary rows of the row schema with the same `campaign`. Their problem ids are special probe
 ids, which need not be CORPUS problems. Each row carries one extra key:
 
@@ -158,7 +173,9 @@ Verdict per probe:
 - A `process_abort` row always fails.
 - A must-refuse probe passes only with `status` `refused` or `error` and `success` false. Any other status,
   including `solver_failure` and `ok`, fails.
-- A probe with `must_refuse: false` passes unless it aborts.
+- A probe with `must_refuse: false` (fault injection: NaN/Err right-hand side, ...) must fail closed: it passes
+  only with `status` `solver_failure`, `error` or `refused` and `success` false. A `success: true` row is a
+  silent failure and fails C3.
 
 Verdict per component:
 
@@ -357,7 +374,7 @@ Each step appends `{rule, kind, detail}` to `rule_path`. The last *deciding* rul
 | `C3_MISSING` | contract | no PROBES row covers the component: C3 null, provisional, PROMOTE forbidden |
 | `PROMOTE_BLOCKED_PROVISIONAL` | contract | PROMOTE criteria met while provisional: OPTIMIZE |
 | `STATIC_PRUNE_RELOCATE` | static | `static_class` PRUNE_RELOCATE: PRUNE(relocate) |
-| `C1_FAIL` | correctness | integrity failure: process_abort, `deterministic=false`, or a non-finite/malformed ok row. A failure is blamed on c unless another arm containing c ran the same cell cleanly. Gives PRUNE unless `C_FAIL_REPAIRABLE` follows |
+| `C1_FAIL` | correctness | integrity failure: a process_abort other than a runner timeout (a timeout only makes the cell inadmissible), `deterministic=false`, or a non-finite/malformed ok row. A failure is blamed on c unless another arm containing c ran the same cell cleanly. Gives PRUNE unless `C_FAIL_REPAIRABLE` follows |
 | `C3_FAIL` | correctness | a fail-closed probe failed: PRUNE (unless `C_FAIL_REPAIRABLE` follows) |
 | `C_FAIL_REPAIRABLE` | contract | C1/C3 failed, `repair_path` is non-null and `unique_capability` is true: OPTIMIZE, provisional |
 | `CORRECTNESS_OK` | correctness | neither C1 nor C3 failed (null counts as not failed) |
