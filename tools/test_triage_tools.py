@@ -137,14 +137,6 @@ class ManifestTests(Tmp):
 
 
 # ------------------------------------------------------------------------------------------ external
-A07_ROW = {"schema": "vigilode-a07-run-v1", "arm": "diffsol", "protocol": "single_cold_process", "status": "ok",
-           "elapsed_ns": 123, "allocations": None, "allocated_bytes": None, "output_count": 101,
-           "times": [40.0 * i / 100.0 for i in range(101)], "states": [[1.0, 0.0, 0.0]] * 101,
-           "work_counters": None, "solver_counters": {"number_of_steps": 50}, "callback_counters": None,
-           "unavailable_counters_reason": "timing build", "partial_solver_counters_reason": None, "error": None,
-           "timing_authority": "diagnostic_only", "grid_sha256": "0" * 64, "manifest_sha256": "0" * 64,
-           "binary_sha256": "cd" * 32}
-
 FAKE_NATIVE = r'''
 import json, sys
 _, cmd, problem, arm, rtol, reps, warm = sys.argv
@@ -175,7 +167,7 @@ class ExternalTests(Tmp):
         self.assertEqual({r["status"] for r in rows}, {"unavailable"})
         self.assertTrue(all(r["error"] for r in rows))
         self.assertIn("native driver not given", rows[0]["error"])
-        self.assertTrue(any("no a07 diffsol rows" in r["error"] for r in rows))
+        self.assertTrue(any("Diffsol harness binary not given" in r["error"] for r in rows))
         import triage_check as tch
         for r in rows:
             self.assertEqual(tch.validate_row(r, "external"), [])
@@ -196,28 +188,6 @@ class ExternalTests(Tmp):
         self.assertIsNone(ok["h0"])
         self.assertNotIn("wall_seconds", ok["extra_work"]["raw"])
         self.assertEqual(ok["extra_work"]["h0_policy"], "solver_default")
-
-    def test_diffsol_adapter(self):
-        a07 = self.root / "a07.jsonl"
-        alloc = dict(A07_ROW, protocol="separate_allocator_run",
-                     callback_counters={"rhs_calls": 1, "rhs_batch_calls": 0, "rhs_evaluations": 333,
-                                        "jacobian_builds": 7, "jacobian_into_calls": 0, "jvp_calls": 0,
-                                        "jvp_vectors": 0})
-        a07.write_text(json.dumps(A07_ROW) + "\n" + json.dumps(alloc) + "\n")
-        corpus = copy.deepcopy(CORPUS)
-        corpus["sweep"] = {"rtols": [1e-8], "grids": ["uniform101"], "h0_scales": [1.0]}
-        path = self.root / "corpus_a07.json"
-        for scale, status in ((1e-4, "unavailable"), (1e-3, "ok")):
-            corpus["problems"][0]["atol_scale"] = scale
-            path.write_text(json.dumps(corpus))
-            out = self.root / f"a07_{status}.jsonl"
-            proc = self.external("--external-arm", "ext.diffsol-bdf", "--diffsol-rows", str(a07), corpus=path, out=out)
-            self.assertEqual(proc.returncode, 0, proc.stderr)
-            row = read_rows(out)[0]
-            self.assertEqual(row["status"], status, row["error"])
-            self.assertEqual(row["extra_work"]["nfev"], 333)
-        self.assertEqual(len(row["output_times"]), 101)
-        self.assertEqual(row["binary"]["sha256"], "cd" * 32)
 
     @needs_scipy
     def test_scipy_radau_row(self):

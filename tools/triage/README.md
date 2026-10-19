@@ -19,7 +19,8 @@ N=research/component_triage_20261019; C=ct-20261019-main
 python3 tools/triage/triage_manifest.py --list LIST.json --dry-run --seconds-per-cell runs=0.5,profile=40,alloc=3
 python3 tools/triage/triage_manifest.py --list LIST.json --static-reach $N/STATIC_REACH.json
 python3 tools/triage/triage_references.py --corpus $N/CORPUS.json --binary BIN --output $N/REFERENCES.json
-python3 tools/triage/triage_parity.py --binary BIN --corpus $N/CORPUS.json --output $N/PARITY.json
+python3 tools/triage/triage_parity.py --binary BIN --corpus $N/CORPUS.json --output $N/PARITY.json \
+    [--diffsol-binary DIFFSOL_BIN [--diffsol-only]]
 tools/triage/host_prep.sh --output $N/HOST.json            # wall-clock sessions only (diagnostic)
 python3 tools/triage/triage_runner.py --binary BIN --corpus $N/CORPUS.json --campaign $C --output $N/RUNS.jsonl -j 4
 python3 tools/triage/triage_runner.py ... --output $N/PROBES.jsonl   # probe rows, see "PROBES.jsonl"
@@ -28,7 +29,7 @@ python3 tools/triage/triage_profile.py --binary BENCH_BIN --corpus $N/CORPUS.jso
 python3 tools/triage/triage_alloc.py --binary ALLOC_BIN --list LIST.json --corpus $N/CORPUS.json --campaign $C \
     --output $N/ALLOCATIONS.jsonl
 python3 tools/triage/triage_external.py --corpus $N/CORPUS.json --campaign $C --output $N/EXTERNAL.jsonl \
-    [--native-driver BUILD/native_stiff] [--diffsol-rows A07.jsonl]
+    [--native-driver BUILD/native_stiff] [--diffsol-binary DIFFSOL_BIN] [--diffsol-timeout 3600]
 python3 tools/triage/triage_check.py --campaign $C --runs $N/RUNS.jsonl --runs $N/EXTERNAL.jsonl \
     --references $N/REFERENCES.json --profile $N/PROFILE.jsonl --allocations $N/ALLOCATIONS.jsonl \
     --probes $N/PROBES.jsonl [--timing $N/TIMING.json] [--attribution $N/ATTRIBUTION.json] [--list LIST.json] \
@@ -38,6 +39,7 @@ python3 tools/triage/triage_report.py --results $N/RESULTS.json --classification
 ```
 
 `LIST.json` is the stdout of `rodas5p triage-list`. Tools that take `--binary` can produce it themselves.
+`DIFFSOL_BIN` is `diffsol-triage`, built from `tools/benchmarks/diffsol/triage` (see the README there).
 
 ## Files and formats
 
@@ -78,7 +80,16 @@ These are the contract's row keys. The Python drivers may add only two keys: `pr
   - `components` is `[]` and `counters` is null.
   - `counter_semantics` is `external-upstream-raw` and `binary.profile` is `external`.
   - `extra_work` is `{nfev, njev, nlu, upstream, ...}`, normalized from the raw upstream counters. Native
-    rows also keep `raw`; diffsol rows keep `solver_counters` and `callback_counters`.
+    rows also keep `raw`.
+  - Diffsol rows (`ext.diffsol-bdf`, `ext.diffsol-esdirk34`, `ext.diffsol-tr-bdf2`) are printed by
+    `diffsol-triage run` itself. Their `extra_work` keeps the verbatim `solver_statistics`
+    (`OdeSolverStatistics`) and `rhs_op_statistics` (`OpStatistics`). It also has `derived_mapping`, the exact
+    upstream source of `nfev`, `njev`, `nlu` and the step counts. `accepted_steps` is `number_of_steps`;
+    `rejected_steps` is error-test failures plus nonlinear failures. `harness_counters` and `mapping_check`
+    cross-check `nfev` and `nlu` against closure and LU counts.
+  - `triage_external.py` checks a Diffsol row before keeping it: the cell identity, the key set, the atol
+    (exactly `rtol * atol_scale`) and the output times (bit for bit the requested grid). It also reads
+    `diffsol-triage list` once and compares the harness's problem definitions with CORPUS.
   - Status `unavailable` (with the reason in `error`) marks a cell the external code cannot run. Such a
     cell is written, never skipped.
   - Each (arm, problem, rtol, grid) has exactly one row, at the nominal `h0_scale` 1.0. For native and
@@ -181,6 +192,12 @@ Verdict per component:
   - Also `limit_source`, `tiny`, `runtime`, `binary_sha256` and `corpus_sha256`.
   - `problems[]`: `{problem, status: pass|fail|error|not_checked, reason, samples, rhs_max_rel,
     jacobian_max_rel, y0_match, model_source}`.
+  - With `--diffsol-binary`: `diffsol: {binary_sha256, problems: [...]}`. Each entry is the same kind of record
+    plus `jvp_max_rel` and `definition_match`. It compares `diffsol-triage parity`, run on the same Rust
+    document, with that document: f always, the dense Jacobian when Rust has one, and J v when Rust has
+    `jvp_hex`. The y0, t_span and atol_scale must match exactly. Problems the harness does not implement are
+    `not_checked`. `--diffsol-only` skips the NumPy models: `problems` is `[]`, `numpy_models` says so, and
+    SciPy is not needed.
 
 ### RESULTS.json and CLASSIFICATION.json
 
@@ -331,8 +348,15 @@ Flags: `TIMING_CONFLICT`, `C3_MISSING`, `NO_EVIDENCE` and `PROMOTE_BLOCKED_PROVI
 
 - **Native solvers:** `tools/native_stiff` reports final states only and uses its own default first step.
   Its uniform101 cells are `unavailable`. The t0 state of its endpoint rows comes from the NumPy model.
-- **Diffsol:** the a07 harness covers Robertson at rtol 1e-8 on the uniform101 grid only. Its atol is
-  compared within 4 ulps.
+- **Diffsol:**
+  - `tools/benchmarks/diffsol/triage` implements nine problems: robertson, hires, van-der-pol-mu1000,
+    oregonator, pollution, prothero-robinson-nl, scalar-linear, brusselator-1d-50 and brusselator-1d-250.
+    Every other cell is `unavailable`.
+  - Diffsol picks its own first step (`h0` null) and keeps its upstream defaults. For example, at most 50
+    nonlinear failures over the whole integration are allowed; more is a typed `solver_failure`.
+  - Counted work is comparable; timing is not recorded.
+  - The a07 rows (Robertson, rtol 1e-8, atol 1e-11 = atol_scale 1e-3, which is not a CORPUS cell) are no
+    longer read.
 - **NumPy models:** exist for `robertson`, `hires`, `van-der-pol-mu<MU>`, `brusselator-1d-<CELLS>`,
   `gray-scott-<N>`, `mass-affine` and the ScientificCorpusV2.1 ids. CORPUS `numpy_model` aliases map the
   others onto these. `mass-affine` is integrated as y' = M⁻¹f.
@@ -344,4 +368,5 @@ Flags: `TIMING_CONFLICT`, `C3_MISSING`, `NO_EVIDENCE` and `PROMOTE_BLOCKED_PROVI
   not that the repair is feasible.
 
 Tests: `tools/test_triage_check.py`, `tools/test_triage_runner.py`, `tools/test_triage_profile.py`,
-`tools/test_triage_tools.py`, and `TriageKind` in `tools/test_evidence_schema_v2.py`.
+`tools/test_triage_tools.py`, `tools/test_triage_diffsol.py` (fake `diffsol-triage`; the real binary too when
+`VIGILODE_DIFFSOL_BINARY` is set), and `TriageKind` in `tools/test_evidence_schema_v2.py`.

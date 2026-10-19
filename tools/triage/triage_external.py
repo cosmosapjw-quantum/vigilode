@@ -15,10 +15,16 @@ Arms and sources:
   h0_scale != 1 cells are `unavailable` (reasons recorded); the h0_scale = 1 endpoint cell is run and its row has
   h0 = null with extra_work.h0_policy = "solver_default"; a driver atol that differs from the cell atol makes
   the row `unavailable` (upstream output kept). Without the driver every native cell is `unavailable`.
-* `ext.diffsol-bdf`: adapter for the JSONL rows of tools/benchmarks/diffsol/a07 (`--diffsol-rows`, Robertson,
-  rtol/atol read from the a07 source constants, 101-point grid). The first `single_cold_process` row of arm
-  `diffsol` is the cell's row; callback counters of a `separate_allocator_run` row give extra_work.nfev.
-  Without `--diffsol-rows`, or for any other cell, rows are `unavailable` with the reason.
+* `ext.diffsol-bdf`, `ext.diffsol-esdirk34`, `ext.diffsol-tr-bdf2`: the isolated Diffsol 0.16.1 harness
+  tools/benchmarks/diffsol/triage (`--diffsol-binary`), `diffsol-triage run --problem P --method
+  {bdf,esdirk34,tr-bdf2} --rtol R --grid G --campaign ID --repetitions K`, which prints the cell's row itself
+  (scalar atol = rtol * atol_scale, OdeSolverMethod::solve_dense on the cell's grid, raw OdeSolverStatistics and
+  rhs OpStatistics plus the derived nfev/njev/nlu in extra_work, h0 = null: Diffsol picks its own first step).
+  `diffsol-triage list` is read once: a CORPUS problem the harness does not implement, or whose dimension,
+  t_span, atol_scale or breakpoints differ from CORPUS, gets an `unavailable` row with the reason, as does every
+  cell when the binary is not given. The row is checked against the cell (identity, atol bit for bit, output
+  times bit for bit equal to the requested grid); an abort, a timeout (`--diffsol-timeout`), exit 2 or an
+  unparseable/mismatched row become `process_abort` rows with `process.kind` as in triage_runner.py.
 
 External rows are admissible per single row (THRESHOLDS.external: the h0 rule applies to internal arms only),
 so the plan has one cell per (arm, problem, rtol, grid): the nominal h0_scale = 1. Every planned cell gets a
@@ -30,7 +36,6 @@ from __future__ import annotations
 
 import argparse
 import concurrent.futures
-import re
 import subprocess
 import sys
 from pathlib import Path
@@ -42,16 +47,19 @@ import triage_models as tm  # noqa: E402
 
 SCIPY_ARMS = {"ext.scipy-radau": "Radau", "ext.scipy-bdf": "BDF", "ext.scipy-lsoda": "LSODA"}
 NATIVE_ARMS = {"ext.cvode": "cvode-bdf", "ext.hairer-radau5": "hairer-radau5", "ext.hairer-rodas": "hairer-rodas"}
-DIFFSOL_ARM = "ext.diffsol-bdf"
-EXTERNAL_ARMS = tuple(SCIPY_ARMS) + tuple(NATIVE_ARMS) + (DIFFSOL_ARM,)
-A07_SOURCE = tc.TOOLS / "benchmarks" / "diffsol" / "a07" / "src" / "main.rs"
+DIFFSOL_ARMS = {"ext.diffsol-bdf": "bdf", "ext.diffsol-esdirk34": "esdirk34", "ext.diffsol-tr-bdf2": "tr-bdf2"}
+EXTERNAL_ARMS = tuple(SCIPY_ARMS) + tuple(NATIVE_ARMS) + tuple(DIFFSOL_ARMS)
+DIFFSOL_LIST_SCHEMA = "vigilode-diffsol-triage-list-v1"
+DIFFSOL_BUILD_HINT = "build tools/benchmarks/diffsol/triage (README there)"
+DEFAULT_DIFFSOL_TIMEOUT = 3600.0
 COUNTER_SEMANTICS = "external-upstream-raw"
 NOMINAL_H0 = 1.0
 
 
 def same_tolerance(a: float, b: float) -> bool:
-    """Equal up to 4 ulps: a literal 1e-11 upstream and rtol * atol_scale = 1e-8 * 1e-3 here are the same cell.
-    Representation slack only, not a triage threshold."""
+    """Equal up to 4 ulps: a literal atol upstream (e.g. 1e-11) and rtol * atol_scale here (1e-8 * 1e-3) are the
+    same cell. Representation slack only, not a triage threshold. (Diffsol rows compute rtol * atol_scale
+    themselves and are compared exactly.)"""
     return abs(float(a) - float(b)) <= 4.0 * sys.float_info.epsilon * max(abs(float(a)), abs(float(b)))
 
 
@@ -169,59 +177,107 @@ def native_cell(cell: dict, problem: dict, campaign: str, prov: dict, driver: st
 
 
 # ----------------------------------------------------------------------------------------- diffsol
-def a07_constants(source: Path = A07_SOURCE) -> dict:
-    text = source.read_text()
-    out = {}
-    for name in ("RTOL", "ATOL", "POINTS"):
-        match = re.search(rf"const {name}: \w+ = ([0-9eE.+_-]+);", text)
-        if match is None:
-            raise tc.TriageError(f"{source}: constant {name} not found")
-        out[name] = float(match.group(1).replace("_", ""))
-    return out
+def diffsol_listing(binary: str | None) -> tuple[dict | None, str | None]:
+    """`diffsol-triage list` (the harness's problem definitions), or (None, reason)."""
+    if binary is None:
+        return None, f"Diffsol harness binary not given or not found (--diffsol-binary; {DIFFSOL_BUILD_HINT})"
+    try:
+        proc = subprocess.run([binary, "list"], capture_output=True, text=True, timeout=120)
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        return None, f"diffsol-triage list failed: {exc}"
+    if proc.returncode != 0:
+        return None, f"diffsol-triage list: {tc.describe_exit(proc.returncode)}: {tc.tail(proc.stderr, 400).strip()}"
+    doc = tc.parse_json_output(proc.stdout)
+    if doc is None or doc.get("schema") != DIFFSOL_LIST_SCHEMA or not isinstance(doc.get("problems"), list):
+        return None, f"diffsol-triage list printed no {DIFFSOL_LIST_SCHEMA} document"
+    return doc, None
 
 
-def diffsol_rows(path: Path | None) -> tuple[list[dict], dict | None]:
-    if path is None:
-        return [], None
-    rows = [r for r in tc.load_jsonl(path) if r.get("schema") == "vigilode-a07-run-v1" and r.get("arm") == "diffsol"]
-    return rows, a07_constants()
+def diffsol_definition_mismatch(problem: dict, spec: dict) -> list[str]:
+    """Differences between the CORPUS (+ triage-list) problem and the harness's definition, compared exactly."""
+    reasons = []
+    if spec.get("dimension") != problem.get("dimension"):
+        reasons.append(f"dimension {spec.get('dimension')!r} != {problem.get('dimension')!r}")
+    theirs = [float(x) for x in problem.get("t_span", [])]
+    if [float(x) for x in spec.get("t_span", [])] != theirs:
+        reasons.append(f"t_span {spec.get('t_span')!r} != {problem.get('t_span')!r}")
+    if not tc.finite(spec.get("atol_scale")) or float(spec["atol_scale"]) != float(problem["atol_scale"]):
+        reasons.append(f"atol_scale {spec.get('atol_scale')!r} != {problem.get('atol_scale')!r}")
+    if "breakpoints" in problem and [float(x) for x in spec.get("breakpoints") or []] != \
+            [float(x) for x in problem.get("breakpoints") or []]:
+        reasons.append(f"breakpoints {spec.get('breakpoints')!r} != {problem.get('breakpoints')!r}")
+    return reasons
 
 
-def diffsol_cell(cell: dict, problem: dict, campaign: str, prov: dict, rows: list[dict], const: dict | None,
-                 problem_id: str) -> dict:
-    row = base_row(cell, problem, campaign, prov, None, 1)
-    if const is None:
-        return unavailable(row, "no a07 diffsol rows given (--diffsol-rows)")
-    if (cell["problem"] != problem_id or cell["rtol"] != const["RTOL"] or cell["grid"] != "uniform101"
-            or cell["h0_scale"] != 1.0):
-        return unavailable(row, f"a07 covers {problem_id} rtol {const['RTOL']!r} uniform101 with the solver's "
-                                f"default initial step only")
-    cold = [r for r in rows if r.get("protocol") == "single_cold_process"]
-    if not cold:
-        return unavailable(row, "a07 rows contain no single_cold_process diffsol row")
-    primary = cold[0]
-    alloc = next((r for r in rows if r.get("protocol") == "separate_allocator_run"), None)
-    callbacks = (alloc or {}).get("callback_counters")
-    ok_states = [r.get("states") for r in rows if r.get("status") == "ok"]
-    extra = {"nfev": (callbacks or {}).get("rhs_evaluations"), "njev": (callbacks or {}).get("jacobian_builds"),
-             "nlu": None, "upstream": "tools/benchmarks/diffsol/a07", "solver_counters": primary.get("solver_counters"),
-             "callback_counters": callbacks, "h0_policy": "solver_default", "a07_rows": len(rows),
-             "a07_binary_sha256": primary.get("binary_sha256")}
-    if not same_tolerance(const["ATOL"], row["atol"]):
-        return unavailable(row, f"a07 atol {const['ATOL']!r} != cell atol {row['atol']!r}", extra)
-    row["atol"] = const["ATOL"]  # the tolerance the upstream solver actually used
-    row.update(h0=None, extra_work=extra, deterministic=all(s == ok_states[0] for s in ok_states) if ok_states else None,
-               binary={"sha256": primary.get("binary_sha256"), "profile": "external"})
-    if primary.get("status") != "ok":
-        row.update(status="error", error=primary.get("error") or "a07 diffsol row failed", success=False)
+def process_abort(row: dict, kind: str, code: int | None, stderr, stdout, message: str) -> dict:
+    row.update(status="process_abort", error=message, success=False)
+    row["process"] = {"kind": kind, "exit_status": code,
+                      "signal": tc.describe_exit(code) if code is not None and code < 0 else None,
+                      "stderr_tail": tc.tail(stderr), "stdout_tail": tc.tail(stdout)}
+    return row
+
+
+DIFFSOL_COPIED_KEYS = ("status", "error", "success", "attempts", "accepted_steps", "rejected_steps",
+                       "output_times", "states_hex", "counters", "extra_work", "counter_semantics",
+                       "deterministic", "repetitions", "h0")
+
+
+def diffsol_cell(cell: dict, problem: dict, campaign: str, prov: dict, binary: str | None,
+                 binary_sha: str | None, listing: dict | None, listing_reason: str | None, repetitions: int,
+                 timeout: float | None) -> dict:
+    row = base_row(cell, problem, campaign, prov, binary_sha, repetitions)
+    row["h0"] = None  # Diffsol chooses its own first step (extra_work.h0_policy)
+    if listing is None:
+        return unavailable(row, listing_reason or "no diffsol-triage list document")
+    specs = {p.get("id"): p for p in listing["problems"]}
+    spec = specs.get(cell["problem"])
+    if spec is None:
+        return unavailable(row, f"problem not implemented in the Diffsol harness (it has {sorted(specs)})")
+    mismatch = diffsol_definition_mismatch(problem, spec)
+    if mismatch:
+        return unavailable(row, "Diffsol harness definition differs from CORPUS: " + "; ".join(mismatch))
+    if cell["h0_scale"] != NOMINAL_H0:
+        return unavailable(row, "Diffsol chooses its own first step; only the nominal h0_scale 1 cell exists")
+    command = [binary, "run", "--problem", cell["problem"], "--method", DIFFSOL_ARMS[cell["arm"]], "--rtol",
+               tc.fmt_float(cell["rtol"]), "--grid", cell["grid"], "--campaign", campaign, "--repetitions",
+               str(repetitions)]
+    try:
+        proc = subprocess.run(command, capture_output=True, text=True, env=tc.provenance_env(prov), timeout=timeout)
+    except subprocess.TimeoutExpired as exc:
+        return process_abort(row, "timeout", None, exc.stderr, exc.stdout, f"timeout after {timeout} s")
+    if proc.returncode == 2:
+        return process_abort(row, "usage_exit_2", 2, proc.stderr, proc.stdout,
+                             "exit status 2 (diffsol-triage refused the cell arguments)")
+    if proc.returncode != 0:
+        return process_abort(row, "abort", proc.returncode, proc.stderr, proc.stdout,
+                             tc.describe_exit(proc.returncode))
+    upstream = tc.parse_json_output(proc.stdout)
+    if upstream is None or upstream.get("schema") != tc.ROW_SCHEMA or set(upstream) != set(tc.ROW_KEYS):
+        return process_abort(row, "unparseable_row", 0, proc.stderr, proc.stdout,
+                             f"exit 0 without a {tc.ROW_SCHEMA} row with the contract key set")
+    wrong = [f"{key} {upstream.get(key)!r} != {row[key]!r}" for key in ("campaign", "arm", "problem", "rtol", "grid",
+                                                                     "h0_scale", "dimension", "tier")
+             if upstream.get(key) != row[key]]
+    if wrong:
+        return process_abort(row, "cell_mismatch", 0, proc.stderr, proc.stdout,
+                             "row does not match the requested cell: " + "; ".join(wrong))
+    if not tc.finite(upstream.get("atol")) or float(upstream["atol"]) != row["atol"]:
+        return unavailable(row, f"diffsol atol {upstream.get('atol')!r} != cell atol {row['atol']!r}",
+                           upstream.get("extra_work"))
+    for key in DIFFSOL_COPIED_KEYS:
+        row[key] = upstream[key]
+    reported_sha = (upstream.get("binary") or {}).get("sha256")
+    if reported_sha != binary_sha:
+        row.update(status="error", success=False,
+                   error=f"binary identity: the row reports sha256 {reported_sha!r}, the file has {binary_sha!r}")
         return row
-    times, states = primary.get("times"), primary.get("states")
-    if not isinstance(times, list) or len(times) != int(const["POINTS"]) or not isinstance(states, list) \
-            or len(states) != len(times):
-        row.update(status="error", error="a07 row has the wrong number of output times", success=False)
-        return row
-    row.update(status="ok", success=True, output_times=[float(t) for t in times],
-               states_hex=[[tc.hex64(float(v)) for v in s] for s in states])
+    if row["status"] == "ok":
+        times = tc.grid_times(problem["t_span"], cell["grid"])
+        states = row["states_hex"]
+        if row["output_times"] != times or not isinstance(states, list) or len(states) != len(times) or \
+                any(not isinstance(s, list) or len(s) != problem.get("dimension") for s in states):
+            row.update(status="error", success=False,
+                       error="diffsol row output times or states differ from the requested grid (bitwise)")
     return row
 
 
@@ -245,15 +301,16 @@ def plan(corpus: dict, list_doc: dict | None, arms, sel: dict) -> list[dict]:
     return cells
 
 
-def run_one(cell, problem, args_dict, prov, driver_sha, diff_rows, diff_const):
+def run_one(cell, problem, args_dict, prov, driver_sha):
     arm = cell["arm"]
     if arm in SCIPY_ARMS:
         return scipy_cell(cell, problem, args_dict["campaign"], prov, args_dict["repetitions"])
     if arm in NATIVE_ARMS:
         return native_cell(cell, problem, args_dict["campaign"], prov, args_dict["native_driver"], driver_sha,
                            args_dict["repetitions"])
-    return diffsol_cell(cell, problem, args_dict["campaign"], prov, diff_rows, diff_const,
-                        args_dict["diffsol_problem"])
+    return diffsol_cell(cell, problem, args_dict["campaign"], prov, args_dict["diffsol_binary"],
+                        args_dict["diffsol_sha"], args_dict["diffsol_listing"], args_dict["diffsol_listing_reason"],
+                        args_dict["repetitions"], args_dict["diffsol_timeout"])
 
 
 def main(argv=None) -> int:
@@ -265,8 +322,9 @@ def main(argv=None) -> int:
     parser.add_argument("--external-arm", action="append", choices=EXTERNAL_ARMS,
                         help="external arm to run (repeatable; default: all)")
     parser.add_argument("--native-driver", help="tools/native_stiff build output `native_stiff`")
-    parser.add_argument("--diffsol-rows", type=Path, help="a07 JSONL rows (vigilode-a07-run-v1)")
-    parser.add_argument("--diffsol-problem", default="robertson", help="CORPUS id of the a07 problem")
+    parser.add_argument("--diffsol-binary", help="tools/benchmarks/diffsol/triage build output `diffsol-triage`")
+    parser.add_argument("--diffsol-timeout", type=float, default=DEFAULT_DIFFSOL_TIMEOUT,
+                        help=f"seconds per Diffsol cell (default {DEFAULT_DIFFSOL_TIMEOUT:g}); 0 = no limit")
     parser.add_argument("--repetitions", type=int, default=1, help="runs per cell for the determinism flag")
     parser.add_argument("-j", "--jobs", type=int, default=1, help="parallel worker processes")
     parser.add_argument("--force", action="store_true")
@@ -275,7 +333,6 @@ def main(argv=None) -> int:
     try:
         corpus = tc.load_json(args.corpus)
         list_doc = tc.load_json(args.list) if args.list else None
-        diff_rows, diff_const = diffsol_rows(args.diffsol_rows)
     except tc.TriageError as exc:
         for reason in exc.reasons:
             print("error:", reason, file=sys.stderr)
@@ -287,6 +344,12 @@ def main(argv=None) -> int:
     cells = plan(corpus, list_doc, args.external_arm or EXTERNAL_ARMS, sel)
     driver = args.native_driver if args.native_driver and Path(args.native_driver).is_file() else None
     driver_sha = tc.sha256_file(Path(driver)) if driver else None
+    diffsol = args.diffsol_binary if args.diffsol_binary and Path(args.diffsol_binary).is_file() else None
+    diffsol_sha = tc.sha256_file(Path(diffsol)) if diffsol else None
+    wants_diffsol = any(c["arm"] in DIFFSOL_ARMS for c in cells)
+    listing, listing_reason = diffsol_listing(diffsol) if wants_diffsol else (None, None)
+    if diffsol is None and args.diffsol_binary:
+        listing_reason = f"Diffsol harness binary {args.diffsol_binary!r} not found ({DIFFSOL_BUILD_HINT})"
     if args.force and args.output.exists():
         args.output.unlink()
     done = {tc.cell_key(r) for r in tc.load_jsonl(args.output)} if args.output.exists() else set()
@@ -295,14 +358,16 @@ def main(argv=None) -> int:
     print(f"{len(cells)} planned external cells, {len(todo)} to run", file=sys.stderr)
     prov = tc.git_provenance()
     args_dict = {"campaign": args.campaign, "repetitions": max(1, args.repetitions), "native_driver": driver,
-                 "diffsol_problem": args.diffsol_problem}
+                 "diffsol_binary": diffsol, "diffsol_sha": diffsol_sha, "diffsol_listing": listing,
+                 "diffsol_listing_reason": listing_reason,
+                 "diffsol_timeout": args.diffsol_timeout if args.diffsol_timeout and args.diffsol_timeout > 0 else None}
     args.output.parent.mkdir(parents=True, exist_ok=True)
     appender = tc.OrderedAppender(args.output, len(todo))
     pool_type = concurrent.futures.ProcessPoolExecutor if args.jobs > 1 else concurrent.futures.ThreadPoolExecutor
     try:
         with pool_type(max_workers=max(1, args.jobs)) as pool:
-            futures = {pool.submit(run_one, c, problems[c["problem"]], args_dict, prov, driver_sha, diff_rows,
-                                   diff_const): i for i, c in enumerate(todo)}
+            futures = {pool.submit(run_one, c, problems[c["problem"]], args_dict, prov, driver_sha): i
+                       for i, c in enumerate(todo)}
             for future in concurrent.futures.as_completed(futures):
                 row = future.result()
                 print(f"{row['arm']} {row['problem']} rtol={row['rtol']:g} {row['grid']} h0x{row['h0_scale']:g}: "
