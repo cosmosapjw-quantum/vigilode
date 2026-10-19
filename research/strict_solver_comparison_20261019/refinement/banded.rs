@@ -15,9 +15,12 @@ pub(super) fn solve(c:&Case,times:&[f64],rtol:f64,h:f64,audit:bool)->Outcome {
     let schedule=match OutputSchedule::new(times.to_vec()){Ok(s)=>s,Err(e)=>return failed(e.to_string())};
     match integrate_rodas5p_fast_banded_observed_with_kernel(&p,&band,(0.0,c.tf),&initial(c),&cfg,&schedule,BandedKernel::Slices) {
         Err(e)=>failed(e.to_string()),
-        Ok(result)=>{let r=result.fast;let complete=r.observed.success && r.observed.t==times && r.observed.y.len()==times.len();
+        Ok(result)=>{
+            let r=result.fast;
+            let complete=r.observed.success && r.observed.t==times && r.observed.y.len()==times.len();
             let counters=if audit {json!({"native":r.observed.counters,"attempts":r.attempts,"accepted":r.accepted_steps,"rejected":r.rejected_steps,"banded_work":result.work})}else{Value::Null};
             Outcome{times:r.observed.t,states:r.observed.y,counters,status:if complete{"ok"}else{"solver_failure"}.into(),error:if complete{None}else{Some("incomplete native banded output".into())}}
+        }
     }
 }
 #[cfg(test)]
