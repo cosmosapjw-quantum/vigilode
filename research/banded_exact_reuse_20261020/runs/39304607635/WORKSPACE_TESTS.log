@@ -1,0 +1,489 @@
+ Downloading crates ...
+  Downloaded utf8parse v0.2.2
+  Downloaded rand_chacha v0.9.0
+  Downloaded rand v0.9.5
+  Downloaded is_terminal_polyfill v1.70.2
+  Downloaded rand_distr v0.5.1
+  Downloaded anstream v1.0.0
+  Downloaded anyhow v1.0.104
+  Downloaded anstyle-parse v1.0.0
+  Downloaded anstyle-query v1.1.5
+  Downloaded rand_core v0.9.5
+  Downloaded clap v4.6.6
+  Downloaded strsim v0.11.1
+  Downloaded ryu v1.0.23
+  Downloaded heck v0.5.0
+  Downloaded getrandom v0.3.4
+  Downloaded clap_derive v4.6.4
+  Downloaded ppv-lite86 v0.2.21
+  Downloaded rand_pcg v0.9.0
+  Downloaded clap_lex v1.1.0
+  Downloaded csv-core v0.1.13
+  Downloaded colorchoice v1.0.5
+  Downloaded clap_builder v4.6.6
+  Downloaded anstyle v1.0.14
+  Downloaded csv v1.4.0
+   Compiling num-traits v0.2.19
+   Compiling syn v3.0.3
+   Compiling num-complex v0.4.6
+   Compiling pulp v0.22.3
+   Compiling serde_core v1.0.229
+   Compiling gemm-common v0.19.0
+   Compiling gemm-c64 v0.19.0
+   Compiling gemm-c32 v0.19.0
+   Compiling gemm-f32 v0.19.0
+   Compiling gemm-f64 v0.19.0
+   Compiling qd v0.8.0
+   Compiling nano-gemm-c64 v0.2.1
+   Compiling nano-gemm-c32 v0.2.1
+   Compiling faer-traits v0.24.0
+   Compiling nano-gemm v0.2.2
+   Compiling gemm v0.19.0
+   Compiling thiserror-impl v2.0.19
+   Compiling serde_derive v1.0.229
+   Compiling thiserror v2.0.19
+   Compiling serde_json v1.0.151
+   Compiling faer v0.24.4
+   Compiling serde v1.0.229
+   Compiling getrandom v0.3.4
+   Compiling zerocopy v0.8.56
+   Compiling rand_core v0.9.5
+   Compiling ppv-lite86 v0.2.21
+   Compiling rand_chacha v0.9.0
+   Compiling rand v0.9.5
+   Compiling csv-core v0.1.13
+   Compiling ryu v1.0.23
+   Compiling rodas5p-fair-ab v0.1.0 (/home/runner/work/vigilode/vigilode/crates/rodas5p-fair-ab)
+   Compiling csv v1.4.0
+   Compiling rand_distr v0.5.1
+   Compiling rand_pcg v0.9.0
+   Compiling utf8parse v0.2.2
+   Compiling anstyle-parse v1.0.0
+   Compiling anstyle v1.0.14
+   Compiling colorchoice v1.0.5
+   Compiling anstyle-query v1.1.5
+   Compiling is_terminal_polyfill v1.70.2
+   Compiling anstream v1.0.0
+   Compiling clap_lex v1.1.0
+   Compiling heck v0.5.0
+   Compiling anyhow v1.0.104
+   Compiling strsim v0.11.1
+   Compiling clap_builder v4.6.6
+   Compiling clap_derive v4.6.4
+   Compiling clap v4.6.6
+   Compiling rodas5p-core v0.1.0 (/home/runner/work/vigilode/vigilode/crates/rodas5p-core)
+   Compiling rodas5p-krylov v0.1.0 (/home/runner/work/vigilode/vigilode/crates/rodas5p-krylov)
+   Compiling rodas5p-integrators v0.1.0 (/home/runner/work/vigilode/vigilode/crates/rodas5p-integrators)
+warning: fields `prepared_centers`, `prepared_radii`, `prepared_times`, `prepared_count`, `radii`, and `prepared_valid` are never read
+   --> crates/rodas5p-integrators/src/output.rs:706:5
+    |
+698 | pub(crate) struct OutputCollector {
+    |                   --------------- fields in this struct
+...
+706 |     prepared_centers: Vec<Vec<f64>>,
+    |     ^^^^^^^^^^^^^^^^
+707 |     prepared_radii: Vec<Vec<f64>>,
+    |     ^^^^^^^^^^^^^^
+708 |     prepared_times: Vec<f64>,
+    |     ^^^^^^^^^^^^^^
+709 |     prepared_count: usize,
+    |     ^^^^^^^^^^^^^^
+710 |     radii: Vec<Vec<f64>>,
+    |     ^^^^^
+711 |     prepared_valid: bool,
+    |     ^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: struct `DenseOutputPreparationWork` is never constructed
+   --> crates/rodas5p-integrators/src/output.rs:716:19
+    |
+716 | pub(crate) struct DenseOutputPreparationWork {
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: methods `with_verified_radii`, `prepare_dense_interval_with_radii`, `prepare_dense_interval_inner`, `commit_prepared_dense_interval`, `prepared_dense_radii`, and `committed_output_radii` are never used
+    --> crates/rodas5p-integrators/src/output.rs:766:19
+     |
+ 722 | impl OutputCollector {
+     | -------------------- methods in this implementation
+...
+ 766 |     pub(crate) fn with_verified_radii(mut self, initial_radius: &[f64]) -> CoreResult<Self> {
+     |                   ^^^^^^^^^^^^^^^^^^^
+...
+1035 |     pub(crate) fn prepare_dense_interval_with_radii<C, R>(
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+1070 |     fn prepare_dense_interval_inner<C, R>(
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+1162 |     pub(crate) fn commit_prepared_dense_interval(&mut self) {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+1176 |     pub(crate) fn prepared_dense_radii(&self) -> &[Vec<f64>] {
+     |                   ^^^^^^^^^^^^^^^^^^^^
+...
+1180 |     pub(crate) fn committed_output_radii(&self) -> &[Vec<f64>] {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: variant `EndpointAdmission` is never constructed
+    --> crates/rodas5p-integrators/src/packet_trajectory.rs:1445:5
+     |
+1443 | enum VerifiedTrialFault {
+     |      ------------------ variant in this enum
+1444 |     BeforeQuery(usize),
+1445 |     EndpointAdmission,
+     |     ^^^^^^^^^^^^^^^^^
+     |
+     = note: `VerifiedTrialFault` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+
+warning: function `prepare` is never used
+ --> /home/runner/work/vigilode/vigilode/crates/rodas5p-integrators/tests/support/a02_packet_counter_contract.rs:3:8
+  |
+3 | pub fn prepare(n: usize, o: usize, d: usize, sweeps: usize) -> PacketWorkCounters {
+  |        ^^^^^^^
+  |
+  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `initial_adapter` is never used
+  --> /home/runner/work/vigilode/vigilode/crates/rodas5p-integrators/tests/support/a02_packet_counter_contract.rs:95:8
+   |
+95 | pub fn initial_adapter(n: usize, g: usize) -> VerifiedTrajectoryWork {
+   |        ^^^^^^^^^^^^^^^
+
+warning: function `prepare_adapter` is never used
+   --> /home/runner/work/vigilode/vigilode/crates/rodas5p-integrators/tests/support/a02_packet_counter_contract.rs:104:8
+    |
+104 | pub fn prepare_adapter(
+    |        ^^^^^^^^^^^^^^^
+
+warning: function `query_adapter` is never used
+   --> /home/runner/work/vigilode/vigilode/crates/rodas5p-integrators/tests/support/a02_packet_counter_contract.rs:122:8
+    |
+122 | pub fn query_adapter(n: usize, o: usize, d: usize) -> VerifiedTrajectoryWork {
+    |        ^^^^^^^^^^^^^
+
+warning: function `rejected_tolerance_adapter` is never used
+   --> /home/runner/work/vigilode/vigilode/crates/rodas5p-integrators/tests/support/a02_packet_counter_contract.rs:134:8
+    |
+134 | pub fn rejected_tolerance_adapter(
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `rodas5p-integrators` (lib) generated 4 warnings
+warning: `rodas5p-integrators` (lib test) generated 5 warnings
+   Compiling rodas5p-cli v0.1.0 (/home/runner/work/vigilode/vigilode/crates/rodas5p-cli)
+warning: function `admission_rejection_adapter` is never used
+   --> crates/rodas5p-integrators/tests/support/a02_packet_counter_contract.rs:191:8
+    |
+191 | pub fn admission_rejection_adapter(
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rodas5p-integrators` (test "production_audit_verified_trajectory") generated 1 warning
+    Finished `test` profile [unoptimized] target(s) in 2m 31s
+     Running unittests src/main.rs (/home/runner/work/_temp/banded-target/debug/deps/rodas5p-584c0e639d66a2f2)
+
+running 24 tests
+test scientific_validity_v2_producer_tests::calibration_record_loop_attempts_all_fifty_four_cases_after_individual_failures ... ok
+test stiff_benchmark::sp03::the_jvp_only_brusselator_matches_the_benchmark_problem ... ok
+test stiff_benchmark::sp03::the_routed_arm_equals_its_target_arm ... ok
+test stiff_benchmark::sp03::the_sp03_arms_are_known_and_opt_in ... ok
+test stiff_benchmark::spd01::option_arms_keep_the_entry_validation ... ok
+test stiff_benchmark::spd01::spd01_identity_export ... ignored, identity export of research/spd01_fast_driver_overhead_20261005; release build; set SPD01_IDENTITY
+test stiff_benchmark::spd01::spd02_identity_export ... ignored, identity export of research/spd02_lu_column_extents_20261005; release build; set SPD02_IDENTITY
+test stiff_benchmark::spd01::spd03_band_fill_equals_dense_fill ... ok
+test stiff_benchmark::spd01::spd03_identity_export ... ignored, identity export of research/spd03_banded_arm_instructions_20261005; release build; set SPD03_IDENTITY
+test stiff_benchmark::spd06::the_static_arms_are_known_and_equal_the_small_arm ... ok
+test stiff_benchmark::spd09::colext64_equals_the_legacy_driver_on_both_sides_of_the_threshold ... ok
+test stiff_benchmark::spd09::spd09_identity_export ... ignored, identity export of research/spd09_colext_threshold_20261007; release build; set SPD09_IDENTITY
+test stiff_benchmark::tests::analytic_jacobians_match_finite_differences ... ok
+test stiff_benchmark::tests::every_arm_completes_a_loose_hires_run ... ok
+test stiff_benchmark::tests::in_place_jacobians_equal_the_explicit_ones ... ok
+test unified_assessment_tests::document_status_exposes_uncertified_reference_rows ... ok
+test unified_assessment_tests::linear_candidate_id_covers_every_strict_cell ... ok
+test unified_assessment_tests::nonlinear_batch_depth_advantage_does_not_replace_wall_speedup ... ok
+test unified_assessment_tests::relative_gates_against_a_reference_only_comparator_are_not_evaluated ... ok
+test unified_assessment_tests::smoke_and_single_sample_wall_blockers_are_not_evaluated ... ok
+test unified_assessment_tests::the_published_poly03_campaign_keeps_its_numbers_under_an_authority_hold ... ok
+test stiff_benchmark::sp03::profile_run_reports_the_routing ... ok
+test unified_assessment_tests::v37_failed_hard_gate_refuses_to_create_authority_output ... ok
+test unified_assessment_tests::tier_l_wall_decisions_come_only_from_a_paired_assessment ... ok
+
+test result: ok. 20 passed; 0 failed; 4 ignored; 0 measured; 0 filtered out; finished in 42.40s
+
+     Running unittests src/bin/allocation_audit.rs (/home/runner/work/_temp/banded-target/debug/deps/rodas5p_allocation_audit-6acad3fff1137c69)
+
+running 15 tests
+test stiff_benchmark::sp03::the_jvp_only_brusselator_matches_the_benchmark_problem ... ok
+test stiff_benchmark::sp03::the_routed_arm_equals_its_target_arm ... ok
+test stiff_benchmark::sp03::the_sp03_arms_are_known_and_opt_in ... ok
+test stiff_benchmark::spd01::option_arms_keep_the_entry_validation ... ok
+test stiff_benchmark::spd01::spd01_identity_export ... ignored, identity export of research/spd01_fast_driver_overhead_20261005; release build; set SPD01_IDENTITY
+test stiff_benchmark::spd01::spd02_identity_export ... ignored, identity export of research/spd02_lu_column_extents_20261005; release build; set SPD02_IDENTITY
+test stiff_benchmark::spd01::spd03_band_fill_equals_dense_fill ... ok
+test stiff_benchmark::spd01::spd03_identity_export ... ignored, identity export of research/spd03_banded_arm_instructions_20261005; release build; set SPD03_IDENTITY
+test stiff_benchmark::spd06::the_static_arms_are_known_and_equal_the_small_arm ... ok
+test stiff_benchmark::spd09::colext64_equals_the_legacy_driver_on_both_sides_of_the_threshold ... ok
+test stiff_benchmark::spd09::spd09_identity_export ... ignored, identity export of research/spd09_colext_threshold_20261007; release build; set SPD09_IDENTITY
+test stiff_benchmark::tests::analytic_jacobians_match_finite_differences ... ok
+test stiff_benchmark::tests::every_arm_completes_a_loose_hires_run ... ok
+test stiff_benchmark::tests::in_place_jacobians_equal_the_explicit_ones ... ok
+test stiff_benchmark::sp03::profile_run_reports_the_routing ... ok
+
+test result: ok. 11 passed; 0 failed; 4 ignored; 0 measured; 0 filtered out; finished in 27.43s
+
+     Running tests/a1_tolerance_receipt_cli_contracts.rs (/home/runner/work/_temp/banded-target/debug/deps/a1_tolerance_receipt_cli_contracts-fb7d5ec35ff42f56)
+
+running 2 tests
+error: invalid value 'unknown-arm' for '--arm <ARM>'
+  [possible values: legacy-fixed, outer-scaled-numeric-parity]
+
+For more information, try '--help'.
+error: invalid value 'unknown-family' for '--family <FAMILY>'
+  [possible values: robertson-ramped, hires-ramped, van-der-pol-ramped, rotating-nonnormal, nonautonomous-stiff-forcing, semilinear-advection-diffusion-ramped]
+
+For more information, try '--help'.
+error: unexpected argument '--profile' found
+
+Usage: rodas5p a1-two-arm-receipt-cell --family <FAMILY> --arm <ARM> --repository <REPOSITORY> --pull-request <PULL_REQUEST> --scientific-execution-head-sha <SCIENTIFIC_EXECUTION_HEAD_SHA> --scientific-execution-head-tree <SCIENTIFIC_EXECUTION_HEAD_TREE> --base-sha <BASE_SHA> --base-tree <BASE_TREE> --tested-execution-merge-sha <TESTED_EXECUTION_MERGE_SHA> --tested-execution-merge-tree <TESTED_EXECUTION_MERGE_TREE> --execution-workflow-run-id <EXECUTION_WORKFLOW_RUN_ID> --execution-workflow-run-attempt <EXECUTION_WORKFLOW_RUN_ATTEMPT> --rust-version <RUST_VERSION> --cargo-version <CARGO_VERSION> --output <OUTPUT>
+
+For more information, try '--help'.
+test receipt_cli_rejects_unknown_arm_family_and_profile_surface ... ok
+test receipt_cli_emits_one_deterministic_candidate_cell_without_late_bound_fields ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.62s
+
+     Running tests/alg02_predictive_controller.rs (/home/runner/work/_temp/banded-target/debug/deps/alg02_predictive_controller-76f6d82e7afa907d)
+
+running 19 tests
+test export_base ... ignored, base export of research/alg02_predictive_controller_20261008; release build; set ALG02_BASE
+test export_runs ... ignored, run export of research/alg02_predictive_controller_20261008; release build; set ALG02_RUNS
+test ladders_and_cells_are_the_registered_ones ... ok
+test stiff_benchmark::sp03::the_jvp_only_brusselator_matches_the_benchmark_problem ... ok
+test stiff_benchmark::sp03::the_routed_arm_equals_its_target_arm ... ok
+test stiff_benchmark::sp03::the_sp03_arms_are_known_and_opt_in ... ok
+test stiff_benchmark::spd01::option_arms_keep_the_entry_validation ... ok
+test stiff_benchmark::spd01::spd01_identity_export ... ignored, identity export of research/spd01_fast_driver_overhead_20261005; release build; set SPD01_IDENTITY
+test stiff_benchmark::spd01::spd02_identity_export ... ignored, identity export of research/spd02_lu_column_extents_20261005; release build; set SPD02_IDENTITY
+test stiff_benchmark::spd01::spd03_band_fill_equals_dense_fill ... ok
+test stiff_benchmark::spd01::spd03_identity_export ... ignored, identity export of research/spd03_banded_arm_instructions_20261005; release build; set SPD03_IDENTITY
+test stiff_benchmark::spd06::the_static_arms_are_known_and_equal_the_small_arm ... ok
+test stiff_benchmark::spd09::colext64_equals_the_legacy_driver_on_both_sides_of_the_threshold ... ok
+test stiff_benchmark::spd09::spd09_identity_export ... ignored, identity export of research/spd09_colext_threshold_20261007; release build; set SPD09_IDENTITY
+test stiff_benchmark::tests::analytic_jacobians_match_finite_differences ... ok
+test stiff_benchmark::tests::every_arm_completes_a_loose_hires_run ... ok
+test stiff_benchmark::tests::in_place_jacobians_equal_the_explicit_ones ... ok
+test the_arms_differ_only_in_the_registered_field ... ok
+test stiff_benchmark::sp03::profile_run_reports_the_routing ... ok
+
+test result: ok. 13 passed; 0 failed; 6 ignored; 0 measured; 0 filtered out; finished in 27.93s
+
+     Running tests/alg05_predictive_controller_v2.rs (/home/runner/work/_temp/banded-target/debug/deps/alg05_predictive_controller_v2-83fc721344d98ccc)
+
+running 19 tests
+test export_base ... ignored, base export of research/alg05_predictive_controller_v2_20261010; release build; set ALG05_BASE
+test export_runs ... ignored, run export of research/alg05_predictive_controller_v2_20261010; release build; set ALG05_RUNS
+test ladders_seeds_and_cells_are_the_registered_ones ... ok
+test stiff_benchmark::sp03::the_jvp_only_brusselator_matches_the_benchmark_problem ... ok
+test stiff_benchmark::sp03::the_routed_arm_equals_its_target_arm ... ok
+test stiff_benchmark::sp03::the_sp03_arms_are_known_and_opt_in ... ok
+test stiff_benchmark::spd01::option_arms_keep_the_entry_validation ... ok
+test stiff_benchmark::spd01::spd01_identity_export ... ignored, identity export of research/spd01_fast_driver_overhead_20261005; release build; set SPD01_IDENTITY
+test stiff_benchmark::spd01::spd02_identity_export ... ignored, identity export of research/spd02_lu_column_extents_20261005; release build; set SPD02_IDENTITY
+test stiff_benchmark::spd01::spd03_band_fill_equals_dense_fill ... ok
+test stiff_benchmark::spd01::spd03_identity_export ... ignored, identity export of research/spd03_banded_arm_instructions_20261005; release build; set SPD03_IDENTITY
+test stiff_benchmark::spd06::the_static_arms_are_known_and_equal_the_small_arm ... ok
+test stiff_benchmark::spd09::colext64_equals_the_legacy_driver_on_both_sides_of_the_threshold ... ok
+test stiff_benchmark::spd09::spd09_identity_export ... ignored, identity export of research/spd09_colext_threshold_20261007; release build; set SPD09_IDENTITY
+test stiff_benchmark::tests::analytic_jacobians_match_finite_differences ... ok
+test stiff_benchmark::tests::every_arm_completes_a_loose_hires_run ... ok
+test stiff_benchmark::tests::in_place_jacobians_equal_the_explicit_ones ... ok
+test the_arms_differ_only_in_the_controller ... ok
+test stiff_benchmark::sp03::profile_run_reports_the_routing ... ok
+
+test result: ok. 13 passed; 0 failed; 6 ignored; 0 measured; 0 filtered out; finished in 27.99s
+
+     Running tests/allocation_cli_contracts.rs (/home/runner/work/_temp/banded-target/debug/deps/allocation_cli_contracts-99a2ebca574efb77)
+
+running 1 test
+test allocation_audit_reports_end_to_end_solver_allocations_and_work ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.45s
+
+     Running tests/cli_contracts.rs (/home/runner/work/_temp/banded-target/debug/deps/cli_contracts-5c0b10ab322a90b0)
+
+running 25 tests
+test adaptive_global_error_command_emits_current_family_report ... ok
+test early_flow_defect_fields_are_backward_compatible_and_legacy_rows_fail_closed ... ok
+test early_defect_attempt_geometry_cli_is_threshold_free_and_machine_readable ... ok
+test enforced_prefix_budget_cli_is_registered ... ok
+test generic_policy_redesign_actual_prefix_command_is_registered ... ok
+test generic_policy_redesign_atlas_command_is_registered ... ok
+test generic_policy_redesign_attempt_trace_command_is_registered ... ok
+test generic_policy_redesign_level2_prefix_command_is_registered ... ok
+test generic_q1_q2_adaptive_cli_emits_bounded_decision_report ... ok
+test generic_q1_q2_gate_is_deterministic_and_strictly_matrix_free ... ok
+test enforced_prefix_budget_cli_emits_transactional_fields ... ok
+test homotopy_design_check_is_deterministic_and_exposes_required_screens ... ok
+test global_error_pareto_command_emits_deterministic_method_independent_report ... ok
+test homotopy_experiment_screen_emits_deterministic_safety_and_control_rows ... ok
+test homotopy_path_controller_cli_is_deterministic_and_emits_schedule_telemetry ... ok
+test homotopy_rhs_telemetry_cli_is_deterministic_and_read_only ... ok
+test homotopy_order_policy_screen_is_deterministic_and_thread_count_independent ... ok
+test native_integrator_gates_command_emits_deterministic_bdf_and_radau_rows ... ok
+test stage_batch_feasibility_cli_emits_deterministic_within_step_report ... ok
+test stage_growth_safety_audit_cli_emits_explicit_budget_and_audit_fields ... ok
+test stage_growth_safety_cli_exposes_independent_calibration192_profile ... ok
+test tolerance_scaled_early_defect_cli_is_threshold_free_and_machine_readable ... ok
+test unified_candidate_screen_combines_linear_and_nonlinear_tiers ... ok
+test validate_trace_and_benchmark_commands_emit_machine_readable_artifacts ... ok
+test matrix_free_common_w_cli_emits_strict_jf_report ... ok
+
+test result: ok. 25 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 30.90s
+
+     Running tests/controller_grid_holdout.rs (/home/runner/work/_temp/banded-target/debug/deps/controller_grid_holdout-88d72f5b0a88f6b5)
+
+running 18 tests
+test export_runs ... ignored, run export of research/ct01_controller_grid_holdout_20261010; release build; set CT01_RUNS
+test grid_seeds_ladders_and_cells_are_the_registered_ones ... ok
+test stiff_benchmark::sp03::the_jvp_only_brusselator_matches_the_benchmark_problem ... ok
+test stiff_benchmark::sp03::the_routed_arm_equals_its_target_arm ... ok
+test stiff_benchmark::sp03::the_sp03_arms_are_known_and_opt_in ... ok
+test stiff_benchmark::spd01::option_arms_keep_the_entry_validation ... ok
+test stiff_benchmark::spd01::spd01_identity_export ... ignored, identity export of research/spd01_fast_driver_overhead_20261005; release build; set SPD01_IDENTITY
+test stiff_benchmark::spd01::spd02_identity_export ... ignored, identity export of research/spd02_lu_column_extents_20261005; release build; set SPD02_IDENTITY
+test stiff_benchmark::spd01::spd03_band_fill_equals_dense_fill ... ok
+test stiff_benchmark::spd01::spd03_identity_export ... ignored, identity export of research/spd03_banded_arm_instructions_20261005; release build; set SPD03_IDENTITY
+test stiff_benchmark::spd06::the_static_arms_are_known_and_equal_the_small_arm ... ok
+test stiff_benchmark::spd09::colext64_equals_the_legacy_driver_on_both_sides_of_the_threshold ... ok
+test stiff_benchmark::spd09::spd09_identity_export ... ignored, identity export of research/spd09_colext_threshold_20261007; release build; set SPD09_IDENTITY
+test stiff_benchmark::tests::analytic_jacobians_match_finite_differences ... ok
+test stiff_benchmark::tests::every_arm_completes_a_loose_hires_run ... ok
+test stiff_benchmark::tests::in_place_jacobians_equal_the_explicit_ones ... ok
+test telemetry_parity_on_registered_cells ... ok
+test stiff_benchmark::sp03::profile_run_reports_the_routing ... ok
+
+test result: ok. 13 passed; 0 failed; 5 ignored; 0 measured; 0 filtered out; finished in 27.50s
+
+     Running tests/ct01_controller_telemetry_parity.rs (/home/runner/work/_temp/banded-target/debug/deps/ct01_controller_telemetry_parity-67debc10c2a8037a)
+
+running 17 tests
+test stiff_benchmark::sp03::the_jvp_only_brusselator_matches_the_benchmark_problem ... ok
+test stiff_benchmark::sp03::the_routed_arm_equals_its_target_arm ... ok
+test stiff_benchmark::sp03::the_sp03_arms_are_known_and_opt_in ... ok
+test stiff_benchmark::spd01::option_arms_keep_the_entry_validation ... ok
+test stiff_benchmark::spd01::spd01_identity_export ... ignored, identity export of research/spd01_fast_driver_overhead_20261005; release build; set SPD01_IDENTITY
+test stiff_benchmark::spd01::spd02_identity_export ... ignored, identity export of research/spd02_lu_column_extents_20261005; release build; set SPD02_IDENTITY
+test stiff_benchmark::spd01::spd03_band_fill_equals_dense_fill ... ok
+test stiff_benchmark::spd01::spd03_identity_export ... ignored, identity export of research/spd03_banded_arm_instructions_20261005; release build; set SPD03_IDENTITY
+test stiff_benchmark::spd06::the_static_arms_are_known_and_equal_the_small_arm ... ok
+test stiff_benchmark::spd09::colext64_equals_the_legacy_driver_on_both_sides_of_the_threshold ... ok
+test stiff_benchmark::spd09::spd09_identity_export ... ignored, identity export of research/spd09_colext_threshold_20261007; release build; set SPD09_IDENTITY
+test stiff_benchmark::tests::analytic_jacobians_match_finite_differences ... ok
+test stiff_benchmark::tests::every_arm_completes_a_loose_hires_run ... ok
+test stiff_benchmark::tests::in_place_jacobians_equal_the_explicit_ones ... ok
+test telemetry_on_and_off_runs_are_bitwise_identical ... ok
+test traced_decisions_replay_through_the_controller ... ok
+test stiff_benchmark::sp03::profile_run_reports_the_routing ... ok
+
+test result: ok. 13 passed; 0 failed; 4 ignored; 0 measured; 0 filtered out; finished in 27.45s
+
+     Running tests/frozen_full_e_shadow_cli_contracts.rs (/home/runner/work/_temp/banded-target/debug/deps/frozen_full_e_shadow_cli_contracts-af4beb7ccaeac90f)
+
+running 2 tests
+test paired_economics_rejects_a_non_measurement_binary_before_writing_output ... ok
+test frozen_full_e_shadow_command_emits_the_dedicated_v36_schema ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.37s
+
+     Running tests/holdout_hygiene_cli_contracts.rs (/home/runner/work/_temp/banded-target/debug/deps/holdout_hygiene_cli_contracts-7d8cc193f721b807)
+
+running 1 test
+test replayed_k1_table_is_refused_on_holdout_profiles ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/me01_cli_contracts.rs (/home/runner/work/_temp/banded-target/debug/deps/me01_cli_contracts-99dbc38f70626be7)
+
+running 20 tests
+test me01_arms_are_known_and_opt_in ... ok
+test me01_cli_stiff_profile_run_repetitions_zero_binary ... ok
+test me01_ct01_grid_arms_run ... ok
+test me01_profile_run_repetitions_zero ... ok
+test stiff_benchmark::sp03::profile_run_reports_the_routing ... ok
+test stiff_benchmark::sp03::the_jvp_only_brusselator_matches_the_benchmark_problem ... ok
+test stiff_benchmark::sp03::the_routed_arm_equals_its_target_arm ... ok
+test stiff_benchmark::sp03::the_sp03_arms_are_known_and_opt_in ... ok
+test stiff_benchmark::spd01::option_arms_keep_the_entry_validation ... ok
+test stiff_benchmark::spd01::spd01_identity_export ... ignored, identity export of research/spd01_fast_driver_overhead_20261005; release build; set SPD01_IDENTITY
+test stiff_benchmark::spd01::spd02_identity_export ... ignored, identity export of research/spd02_lu_column_extents_20261005; release build; set SPD02_IDENTITY
+test stiff_benchmark::spd01::spd03_band_fill_equals_dense_fill ... ok
+test stiff_benchmark::spd01::spd03_identity_export ... ignored, identity export of research/spd03_banded_arm_instructions_20261005; release build; set SPD03_IDENTITY
+test stiff_benchmark::spd06::the_static_arms_are_known_and_equal_the_small_arm ... ok
+test stiff_benchmark::spd09::colext64_equals_the_legacy_driver_on_both_sides_of_the_threshold ... ok
+test stiff_benchmark::spd09::spd09_identity_export ... ignored, identity export of research/spd09_colext_threshold_20261007; release build; set SPD09_IDENTITY
+test stiff_benchmark::tests::analytic_jacobians_match_finite_differences ... ok
+test stiff_benchmark::tests::every_arm_completes_a_loose_hires_run ... ok
+test stiff_benchmark::tests::in_place_jacobians_equal_the_explicit_ones ... ok
+test me01_identity_candidates_parity has been running for over 60 seconds
+test me01_identity_candidates_parity ... ok
+
+test result: ok. 16 passed; 0 failed; 4 ignored; 0 measured; 0 filtered out; finished in 70.21s
+
+     Running tests/paired_timing_campaign_cli_contracts.rs (/home/runner/work/_temp/banded-target/debug/deps/paired_timing_campaign_cli_contracts-6a1178ca968dc119)
+
+running 1 test
+test six_sessions_in_six_processes_form_a_verifiable_receipt ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 19.22s
+
+     Running tests/scientific_validity_v2_cli_contracts.rs (/home/runner/work/_temp/banded-target/debug/deps/scientific_validity_v2_cli_contracts-d57b9974d5c18b96)
+
+running 11 tests
+test canonical_freeze_rejects_bare_unbound_rows_before_creating_authority ... ok
+test canonical_raw_freeze_is_rejected_before_input_access ... ok
+test canonical_calibration_requires_a_distinct_direct_freeze_output ... ok
+test checked_in_smoke_artifacts_verify_under_the_current_source_bound_protocol ... ok
+test canonical_raw_holdout_replay_is_rejected_before_any_input_access ... ok
+test corrupt_freeze_is_rejected_before_the_holdout_input_is_opened ... ok
+test invalid_freeze_writes_failure_preserving_rows_then_returns_nonzero ... ok
+test freeze_command_is_profile_bound_and_refuses_overwrite_or_family_selection ... ok
+test oregonator_producer_rejects_freeze_before_reference_or_holdout_access ... ok
+test oregonator_producer_rejects_smoke_before_opening_freeze_or_reference ... ok
+test replay_command_preserves_dominated_evidence_and_refuses_overwrite ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+     Running tests/triage_cli.rs (/home/runner/work/_temp/banded-target/debug/deps/triage_cli-d44e9e86208bcf74)
+
+running 30 tests
+test allocation_audit_triage_prints_raw_windows ... ok
+test parity_samples_are_hex_with_the_analytic_jacobian ... ok
+test pexprb_is_never_refused_on_its_applicable_problems ... ok
+test every_wired_arm_yields_a_schema_valid_row ... ok
+test probes_are_listed_apart_with_unique_ids ... ok
+test profile_run_reports_the_first_run_and_accepts_zero_repetitions ... ok
+test prothero_robinson_nl_matches_its_exact_solution_at_rtol_1e_8 ... ok
+test refusal_typing_keeps_mid_run_errors_as_error ... ok
+test segmented_problems_drop_unrequested_breakpoints ... ok
+test seq_direct_on_robertson_gives_101_finite_states ... ok
+test probe_sweep_fails_closed_or_documents_findings has been running for over 60 seconds
+test stiff_benchmark::sp03::profile_run_reports_the_routing ... ok
+test stiff_benchmark::sp03::the_jvp_only_brusselator_matches_the_benchmark_problem ... ok
+test stiff_benchmark::sp03::the_routed_arm_equals_its_target_arm ... ok
+test stiff_benchmark::sp03::the_sp03_arms_are_known_and_opt_in ... ok
+test stiff_benchmark::spd01::option_arms_keep_the_entry_validation ... ok
+test stiff_benchmark::spd01::spd01_identity_export ... ignored, identity export of research/spd01_fast_driver_overhead_20261005; release build; set SPD01_IDENTITY
+test stiff_benchmark::spd01::spd02_identity_export ... ignored, identity export of research/spd02_lu_column_extents_20261005; release build; set SPD02_IDENTITY
+test stiff_benchmark::spd01::spd03_band_fill_equals_dense_fill ... ok
+test stiff_benchmark::spd01::spd03_identity_export ... ignored, identity export of research/spd03_banded_arm_instructions_20261005; release build; set SPD03_IDENTITY
+test stiff_benchmark::spd06::the_static_arms_are_known_and_equal_the_small_arm ... ok
+test stiff_benchmark::spd09::colext64_equals_the_legacy_driver_on_both_sides_of_the_threshold ... ok
+test stiff_benchmark::spd09::spd09_identity_export ... ignored, identity export of research/spd09_colext_threshold_20261007; release build; set SPD09_IDENTITY
+test stiff_benchmark::tests::analytic_jacobians_match_finite_differences ... ok
+test stiff_benchmark::tests::every_arm_completes_a_loose_hires_run ... ok
+test stiff_benchmark::tests::in_place_jacobians_equal_the_explicit_ones ... ok
+test triage_list_parses_with_unique_ids ... ok
+test usage_errors_exit_with_code_2 ... ok
+test wired_arms_have_distinct_component_sets ... ok
+test work_counter_fields_include_the_skipped_ones ... ok
