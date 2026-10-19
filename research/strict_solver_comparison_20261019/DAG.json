@@ -1,0 +1,21 @@
+{
+  "schema":"physmath-bounded-comparison-dag-v1",
+  "scope":"Native three-solver comparison and benchmark instrumentation, not the repository-wide142-component program",
+  "nodes":[
+    {"id":"C1_CONTRACT_AND_LITERATURE","status":"COMPLETE_SCOPED","evidence":["PREREGISTRATION.md","RECOVERY_AND_SOURCES.md","SYMBOLIC_CHECK.wl"]},
+    {"id":"C2_RED_TESTS","depends_on":["C1_CONTRACT_AND_LITERATURE"],"status":"EXPECTED_RED_RECORDED","evidence":["runs/39253322042/contract_tests_RED.log"]},
+    {"id":"C3_COMMON_NATIVE_IMPLEMENTATION","depends_on":["C2_RED_TESTS"],"status":"IMPLEMENTATION_VERIFIED","evidence":["src/main.rs","src/vode_bridge.f90","refined_runs/39261895983/native_tests.log"]},
+    {"id":"C4_RECORDING_AND_FFI_REPAIR","depends_on":["C3_COMMON_NATIVE_IMPLEMENTATION"],"status":"COMPLETE_SCOPED","evidence":["REPAIR_01.md","runs/39255702592/BLOCKER.json","runs/39257390707/SOURCE_REPAIR_RECEIPT.json"]},
+    {"id":"C5_INDEPENDENT_REFERENCES","depends_on":["C4_RECORDING_AND_FFI_REPAIR"],"status":"NUMERICALLY_CHECKED_NOT_CERTIFIED","evidence":["runs/39257390707/PARITY.json","runs/39257390707/references.json"]},
+    {"id":"C6_SCREENING","depends_on":["C5_INDEPENDENT_REFERENCES"],"status":"COMPLETE_WITH_RAW_ARCHIVAL_LIMIT","evidence":["runs/39257390707/SUMMARY.json","runs/39257390707/accuracy.csv","runs/39257390707/large_files_excluded.txt"]},
+    {"id":"C7_MATCHED_ERROR_AND_BANDED","depends_on":["C6_SCREENING"],"status":"NUMERICALLY_CHECKED","evidence":["refinement/PREREGISTRATION.md","refined_runs/39261895983/SUMMARY.json","refined_runs/39261895983/FROZEN_MATCHED_SELECTION.json"]},
+    {"id":"C8_PAIRED_TIMING","depends_on":["C7_MATCHED_ERROR_AND_BANDED"],"status":"COMPLETE_DIAGNOSTIC_ONLY","evidence":["refined_runs/39261895983/timing.jsonl.gz","refined_runs/39261895983/paired_comparisons.json"]},
+    {"id":"C9_READBACK","depends_on":["C8_PAIRED_TIMING"],"status":"PASS_SCOPED_WITH_INITIAL_ROUNDING","evidence":["refined_runs/39261895983/audit.log","refined_runs/39261895983/LINK_AUDIT.json","readback_runs/39263860973/INITIAL_VALUE_SUMMARY.json","readback_runs/39263860973/AUDIT.json"]},
+    {"id":"C10_CRITICAL_REPORT_AND_HANDOFF","depends_on":["C9_READBACK"],"status":"COMPLETE_SCOPED","evidence":["FINAL_REVIEW_KO.md","REPRODUCE.md","CONCLUSION.json"]}
+  ],
+  "preserved_failures":[{"run":39255702592,"class":"RECORD_SERIALIZATION_FAILURE"},{"run":39261024617,"class":"BENCHMARK_ADAPTER_SYNTAX_FAILURE"},{"run":39261895983,"class":"INITIAL_BIT_AUDIT_FAILURE_NUMERICAL_RUN_COMPLETE"}],
+  "subagent_mode":"SEQUENTIAL_NO_SUBAGENT_RUNTIME_AVAILABLE",
+  "publication_branch":"research/benchmark-results-20261019-dual",
+  "pr":71,
+  "stop":"No additional solver features or audit loops in this node. General timing authority, continuous-time certification and other solver backends remain outside scope."
+}
