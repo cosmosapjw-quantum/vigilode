@@ -369,10 +369,11 @@ pub fn verify_declared_band(
         match (&jvp, &dense) {
             (Some(jvp), _) => {
                 exact.fill(0.0);
-                jvp(t0, y0, &v, &mut exact).map_err(|e| failed(format!("JVP: {e}")))?;
-                record.jvp_products += 1;
+                // Charged on attempt, as the band fill above.
                 charged.jvp_calls += 1;
                 charged.jvp_vectors += 1;
+                jvp(t0, y0, &v, &mut exact).map_err(|e| failed(format!("JVP: {e}")))?;
+                record.jvp_products += 1;
             }
             (None, Some(matrix)) => {
                 for (out, row) in exact.iter_mut().zip(matrix.as_slice().chunks_exact(n)) {

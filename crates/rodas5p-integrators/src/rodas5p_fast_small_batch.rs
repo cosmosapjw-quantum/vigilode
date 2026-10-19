@@ -338,12 +338,14 @@ fn attempt<const N: usize, const B: usize, P: BatchProblem<N, B>>(
             if lane.fresh_state {
                 continue;
             }
+            // Attempted work, charged whether or not the lane's output is
+            // finite (the scalar driver's `rhs_counted`).
+            lane.counters.rhs_calls += 1;
+            lane.counters.rhs_evaluations += 1;
             if column_finite(&v.stage_rhs, l) {
                 for (f0, rhs) in v.f0.iter_mut().zip(&v.stage_rhs) {
                     f0[l] = rhs[l];
                 }
-                lane.counters.rhs_calls += 1;
-                lane.counters.rhs_evaluations += 1;
             } else {
                 live[l] = false;
                 outcome[l] = Err(CoreError::NonFinite("RHS produced NaN/Inf".into()));
@@ -376,11 +378,10 @@ fn attempt<const N: usize, const B: usize, P: BatchProblem<N, B>>(
                 if !live[l] {
                     continue;
                 }
-                if column_finite(&v.stage_rhs, l) {
-                    let counters = &mut lanes[l].as_mut().expect("live").counters;
-                    counters.rhs_calls += 1;
-                    counters.rhs_evaluations += 1;
-                } else {
+                let counters = &mut lanes[l].as_mut().expect("live").counters;
+                counters.rhs_calls += 1;
+                counters.rhs_evaluations += 1;
+                if !column_finite(&v.stage_rhs, l) {
                     live[l] = false;
                     outcome[l] = Err(CoreError::NonFinite("RHS produced NaN/Inf".into()));
                 }

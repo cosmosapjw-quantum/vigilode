@@ -767,6 +767,10 @@ impl OdeProblem {
             return Ok(matrix);
         }
         let jvp = self.jvp.as_ref().expect("validated JVP");
+        // An attempted build, as the explicit and in-place Jacobian paths
+        // charge it; each column JVP is charged before entering user code so
+        // an Err or non-finite column remains visible.
+        counters.jacobian_builds += 1;
         let mut matrix = DenseMatrix::zeros(self.dimension, self.dimension);
         let mut basis = vec![0.0; self.dimension];
         let mut column = vec![0.0; self.dimension];
@@ -774,9 +778,9 @@ impl OdeProblem {
             basis.fill(0.0);
             basis[j] = 1.0;
             column.fill(0.0);
-            jvp(t, y, &basis, &mut column)?;
             counters.jvp_calls += 1;
             counters.jvp_vectors += 1;
+            jvp(t, y, &basis, &mut column)?;
             if !column.iter().all(|value| value.is_finite()) {
                 return Err(CoreError::NonFinite("JVP produced NaN/Inf".into()));
             }
@@ -784,7 +788,6 @@ impl OdeProblem {
                 matrix[(i, j)] = column[i];
             }
         }
-        counters.jacobian_builds += 1;
         Ok(matrix)
     }
 

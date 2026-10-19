@@ -71,12 +71,14 @@ fn rhs_counted<const N: usize, P: SmallProblem<N>>(
     out: &mut [f64; N],
     counters: &mut WorkCounters,
 ) -> CoreResult<()> {
+    // Attempted callback work, charged before user code as
+    // `OdeProblem::eval_rhs_into` does, so non-finite output remains visible.
+    counters.rhs_calls += 1;
+    counters.rhs_evaluations += 1;
     problem.rhs(y, out);
     if !out.iter().all(|v| v.is_finite()) {
         return Err(CoreError::NonFinite("RHS produced NaN/Inf".into()));
     }
-    counters.rhs_calls += 1;
-    counters.rhs_evaluations += 1;
     Ok(())
 }
 
