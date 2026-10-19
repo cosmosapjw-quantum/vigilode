@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "/home/runner/work/vigilode/vigilode/research/strict_solver_comparison_20261019/refinement/audit.py", line 122, in <module>
+    p=argparse.ArgumentParser();p.add_argument('--out',type=Path,required=True);p.add_argument('--previous',type=Path,required=True);a=p.parse_args();main(a.out,a.previous)
+                                                                                                                                                      ~~~~^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/vigilode/vigilode/research/strict_solver_comparison_20261019/refinement/audit.py", line 31, in main
+    assert np.array_equal(y[0],np.asarray(c['y0']))
+           ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError
