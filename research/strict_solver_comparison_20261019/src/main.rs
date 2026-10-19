@@ -5,6 +5,8 @@ use diffsol::{DenseMatrix as _, FaerLU, FaerMat, MatrixCommon, OdeBuilder, OdeSo
 use rodas5p_core::DenseMatrix;
 use rodas5p_integrators::{integrate_rodas5p_fast_observed, AdaptiveStepConfig, OdeProblem, OutputSchedule};
 use serde_json::{json, Value};
+#[path = "../refinement/banded.rs"]
+mod banded;
 
 #[derive(Clone)]
 struct Case { id: i32, name: &'static str, n: usize, tf: f64, scale: f64 }
@@ -148,7 +150,7 @@ fn vode(c:&Case,times:&[f64],rtol:f64,h:f64,audit:bool,landing:bool)->Outcome {
         status:if complete {"ok"}else{"solver_failure"}.into(),error:if complete{None}else{Some(format!("DVODE ISTATE={code}, reached={reached}, outputs={got}"))}}
 }
 fn run(c:&Case,arm:&str,times:&[f64],rtol:f64,h:f64,audit:bool)->Outcome {
-    let mut r=match arm {"vigilode-fast"=>native(c,times,rtol,h,audit),"diffsol-bdf"=>diff(c,times,rtol,h,audit),"netlib-dvode"=>vode(c,times,rtol,h,audit,false),"netlib-dvode-land"=>vode(c,times,rtol,h,audit,true),_=>failed("unknown arm".into())};
+    let mut r=match arm {"vigilode-fast"=>native(c,times,rtol,h,audit),"vigilode-banded"=>banded::solve(c,times,rtol,h,audit),"diffsol-bdf"=>diff(c,times,rtol,h,audit),"netlib-dvode"=>vode(c,times,rtol,h,audit,false),"netlib-dvode-land"=>vode(c,times,rtol,h,audit,true),_=>failed("unknown arm".into())};
     if !r.states.iter().flatten().all(|x|x.is_finite()) {r.status="solver_failure".into();r.error=Some("nonfinite states".into());}
     r
 }
@@ -160,14 +162,14 @@ fn listing()->Value {
         let samples:Vec<Value>=[y0.clone(),probe].iter().map(|y|{let mut f=vec![0.0;c.n];rhs(c.id,c.n,|i|y[i],|i,z|f[i]=z);let mut j=vec![vec![0.0;c.n];c.n];jac_entries(c.id,c.n,|i|y[i],|i,k,z|j[i][k]=z);json!({"y":y,"f":f,"jac":j})}).collect();
         json!({"id":c.id,"name":c.name,"dimension":c.n,"tf":c.tf,"scale":c.scale,"y0":y0,"samples":samples})
     }).collect();
-    json!({"schema":"strict-solver-models-v1","source_commit":env!("STRICT_SOURCE_COMMIT"),"cases":cs,"arms":["vigilode-fast","diffsol-bdf","netlib-dvode"]})
+    json!({"schema":"strict-solver-models-v1","source_commit":env!("STRICT_SOURCE_COMMIT"),"cases":cs,"arms":["vigilode-fast","diffsol-bdf","netlib-dvode","vigilode-banded"]})
 }
 fn main()->Result<(),Box<dyn std::error::Error>> {
     let a:Vec<String>=env::args().skip(1).collect();
     if a.first().map(String::as_str)==Some("models") {println!("{}",listing());return Ok(());}
     if a.len()!=8 {return Err("usage: strict-compare {solve|bench} CASE ARM RTOL GRID H0_SCALE WARMUPS REPS".into());}
     let c=cases().into_iter().find(|c|c.name==a[1]).ok_or("unknown case")?;
-    let arm=&a[2];if !["vigilode-fast","diffsol-bdf","netlib-dvode","netlib-dvode-land"].contains(&arm.as_str()){return Err("unknown arm".into());}
+    let arm=&a[2];if !["vigilode-fast","diffsol-bdf","netlib-dvode","netlib-dvode-land","vigilode-banded"].contains(&arm.as_str()){return Err("unknown arm".into());}
     let rtol:f64=a[3].parse()?;let scale:f64=a[5].parse()?;let warm:usize=a[6].parse()?;let reps:usize=a[7].parse()?;
     if !(rtol.is_finite()&&rtol>0.0&&rtol<1.0&&[0.5,1.0,2.0].contains(&scale)&&reps>0&&reps<=100&&warm<=10){return Err("invalid configuration".into());}
     let audit=match a[0].as_str(){"solve"=>true,"bench"=>false,_=>return Err("invalid mode".into())};
@@ -177,7 +179,7 @@ fn main()->Result<(),Box<dyn std::error::Error>> {
     for _ in 0..reps {let start=Instant::now();let r=run(&c,arm,&times,rtol,h,audit);let dt=start.elapsed().as_nanos();ns.push(dt);statuses.push(r.status.clone());
         if let Some(old)=&first {deterministic &= bits(old)==bits(&r) && old.status==r.status && old.times==r.times;}else{first=Some(r);}}
     let r=first.unwrap();
-    let row=json!({"schema":"strict-native-row-v1","source_commit":env!("STRICT_SOURCE_COMMIT"),"case":c.name,"arm":arm,"dimension":c.n,"mode":a[0],"rtol":rtol,"atol":rtol*c.scale,"scale":c.scale,"grid":a[4],"h0_scale":scale,"h0":h,"times":r.times,"states":r.states,"status":r.status,"error":r.error,"counters":r.counters,"elapsed_ns":ns,"repetition_statuses":statuses,"warmups":warm,"repetitions":reps,"deterministic":deterministic,"timing_authority":"diagnostic_shared_runner","timing_includes_counter_serialization":audit,"output_policy":if arm=="vigilode-fast"||arm.ends_with("-land"){"land_on_requested_times"}else{"solver_dense_interpolation"}});
+    let row=json!({"schema":"strict-native-row-v1","source_commit":env!("STRICT_SOURCE_COMMIT"),"case":c.name,"arm":arm,"dimension":c.n,"mode":a[0],"rtol":rtol,"atol":rtol*c.scale,"scale":c.scale,"grid":a[4],"h0_scale":scale,"h0":h,"times":r.times,"states":r.states,"status":r.status,"error":r.error,"counters":r.counters,"elapsed_ns":ns,"repetition_statuses":statuses,"warmups":warm,"repetitions":reps,"deterministic":deterministic,"timing_authority":"diagnostic_shared_runner","timing_includes_counter_serialization":audit,"output_policy":if arm=="vigilode-fast"||arm=="vigilode-banded"||arm.ends_with("-land"){"land_on_requested_times"}else{"solver_dense_interpolation"}});
     let mut out=io::BufWriter::new(io::stdout().lock());serde_json::to_writer(&mut out,&row)?;writeln!(out)?;Ok(())
 }
 
