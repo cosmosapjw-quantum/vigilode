@@ -24,7 +24,18 @@ fn build(name:&str)->Result<(OdeProblem,BandedJacobian,Vec<f64>,f64,usize,bool),
             if i>0{band[a*5]=d;band[b*5]=d;}if i+1<cells{band[a*5+4]=d;band[b*5+4]=d;}
         }Ok(())
     })};
-    let p=OdeProblem::new(name,n,rhs,None,None,None,None,true,None,None).map_err(|e|e.to_string())?;
+    // OdeProblem requires an explicit Jacobian or JVP even when an external
+    // band provider supplies the matrix used by this particular driver.
+    let jvp=Arc::new(move|_t:f64,y:&[f64],v:&[f64],out:&mut[f64]|{
+        for i in 0..cells{let a=2*i;let b=a+1;
+            let (ul,vl)=if i==0{(0.,0.)}else{(v[a-2],v[b-2])};
+            let (ur,vr)=if i+1==cells{(0.,0.)}else{(v[a+2],v[b+2])};
+            if linear{out[a]=d*(ul-2.*v[a]+ur);out[b]=d*(vl-2.*v[b]+vr);}
+            else{let u=y[a];let z=y[b];out[a]=(2.*u*z-4.)*v[a]+u*u*v[b]+d*(ul-2.*v[a]+ur);
+                out[b]=(3.-2.*u*z)*v[a]-u*u*v[b]+d*(vl-2.*v[b]+vr);}
+        }Ok(())
+    });
+    let p=OdeProblem::new(name,n,rhs,None,None,Some(jvp),None,true,None,None).map_err(|e|e.to_string())?;
     let y0=(0..cells).flat_map(|i|{let x=(i+1) as f64/(cells+1) as f64;
         if linear{[(std::f64::consts::PI*x).sin(),0.5*(2.*std::f64::consts::PI*x).sin()]}
         else{[1.+(2.*std::f64::consts::PI*x).sin(),3.]}}).collect();
