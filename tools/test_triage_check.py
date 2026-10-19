@@ -612,5 +612,18 @@ class TriageCheckTests(unittest.TestCase):
             tch.main(argv)  # refuses to overwrite without --force
 
 
+class ProfileDeterminismTests(unittest.TestCase):
+    def test_exact_flag_or_relative_gap_within_tolerance(self):
+        exact = {"deterministic": True, "ir": {"1": 10, "1b": 10}}
+        near = {"deterministic": False, "ir": {"1": 846643399, "1b": 846643395}}
+        far = {"deterministic": False, "ir": {"1": 1000, "1b": 900}}
+        self.assertTrue(tch.profile_is_deterministic(exact, 0.0))
+        self.assertFalse(tch.profile_is_deterministic(near, 0.0))
+        self.assertTrue(tch.profile_is_deterministic(near, 1e-6))
+        self.assertFalse(tch.profile_is_deterministic(far, 1e-6))
+        self.assertFalse(tch.profile_is_deterministic(None, 1e-6))
+        self.assertFalse(tch.profile_is_deterministic({"deterministic": None, "ir": {"1": None}}, 1e-6))
+
+
 if __name__ == "__main__":
     unittest.main()

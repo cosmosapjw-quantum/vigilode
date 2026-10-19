@@ -502,6 +502,19 @@ def row_accuracy(row: dict, problem: dict, ref: Reference) -> dict:
 
 
 # ======================================================================================== the engine
+
+def profile_is_deterministic(prof: dict | None, tolerance: float) -> bool:
+    """Ir(1) and Ir(1b) agree exactly, or within THRESHOLDS.profile.ir_determinism_relative_tolerance."""
+    if prof is None:
+        return False
+    if prof.get("deterministic") is True:
+        return True
+    ir = prof.get("ir") or {}
+    a, b = ir.get("1"), ir.get("1b")
+    if type(a) is not int or type(b) is not int:
+        return False
+    return abs(a - b) <= tolerance * max(1, abs(b))
+
 class Engine:
     def __init__(self, inp: Inputs):
         self.inp = inp
@@ -509,6 +522,8 @@ class Engine:
         self.targets = [float(t) for t in self.th["accuracy"]["targets"]]
         self.h0_required = [float(h) for h in self.th["accuracy"]["h0_scales_required"]]
         self.ref_factor = float(self.th["accuracy"]["reference_limited_factor"])
+        # Absent in thresholds frozen before the smoke amendment: exact equality.
+        self.ir_tolerance = float((self.th.get("profile") or {}).get("ir_determinism_relative_tolerance", 0.0))
         sweep = inp.corpus["sweep"]
         self.rtols = sorted({float(r) for r in sweep["rtols"]})
         self.grids = list(sweep["grids"])
@@ -631,8 +646,8 @@ class Engine:
             return None, "profile_missing"
         if prof.get("status") != "ok":
             return None, f"profile_failed: {prof.get('reason')}"
-        if prof.get("deterministic") is not True:
-            return None, "callgrind_nondeterministic (Ir(1) != Ir(1b))"
+        if not profile_is_deterministic(prof, self.ir_tolerance):
+            return None, "callgrind_nondeterministic (Ir(1) != Ir(1b) beyond tolerance)"
         if not isinstance(prof.get("summary"), dict) or prof["summary"].get("success") is not True:
             return None, "profile run not successful"
         run = self.inp.rows.get((arm, problem_id, grid, rtol, NOMINAL_H0))
@@ -672,7 +687,7 @@ class Engine:
         for name in self.secondary_names:
             value, reason = None, None
             if name == "ir_cold":
-                ok = prof is not None and prof.get("status") == "ok" and prof.get("deterministic") is True
+                ok = prof is not None and prof.get("status") == "ok" and profile_is_deterministic(prof, self.ir_tolerance)
                 value = prof.get("ir_cold") if ok else None
                 reason = None if ok else "profile missing, failed or nondeterministic"
             elif name in ("allocations_warm", "allocated_bytes_warm"):
@@ -1199,7 +1214,8 @@ def timing_entries(engine: Engine) -> tuple[list[dict], bool | None]:
         costs = []
         for arm in (rec["arm"], rec["counterpart"]):
             prof = engine.inp.profile_rows.get((arm, rec["problem"], rec["grid"], rec["rtol"], NOMINAL_H0))
-            ok = prof is not None and prof.get("status") == "ok" and prof.get("deterministic") is True \
+            ok = prof is not None and prof.get("status") == "ok" \
+                and profile_is_deterministic(prof, engine.ir_tolerance) \
                 and type(prof.get("ir_warm")) is int and prof["ir_warm"] > 0
             costs.append(prof["ir_warm"] if ok else None)
         interval = rec["interval"]

@@ -128,3 +128,20 @@ Any mismatch is treated as a harness defect and stops the campaign.
 No wall-time speedup, no global error guarantee, no production promotion of a
 component with open obligations, no statement about solvers outside this
 repository beyond the measured cells.
+
+## Amendments before the main campaign (from the smoke run)
+
+Amendments change instruments, never thresholds that decide labels, and each
+one names the smoke observation that forced it.
+
+1. **Ir determinism tolerance.** `mf` on oregonator at rtol 1e-8 gave
+   Ir(1) = 846643399 and Ir(1b) = 846643395 (4 instructions in 8.5e8; the
+   output states were bitwise identical). Exact equality would void such a
+   cell. `THRESHOLDS.profile.ir_determinism_relative_tolerance = 1e-6` now
+   accepts a relative gap at or below 1e-6, three orders below the 2 % LOSS
+   margin. Larger gaps still void the cost (`callgrind_nondeterministic`).
+2. **Attribution counterpart.** A counterpart arm is any arm equal outside the
+   component's slot and without the component (`tools/triage/triage_check.py`
+   `counterparts`), because the fast driver's Legacy LU policy holds three
+   slot members at once and opt-in features compare against the arm without
+   them.
