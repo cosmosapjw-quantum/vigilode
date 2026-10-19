@@ -163,8 +163,13 @@ def applicable(arm: dict, problem: dict) -> tuple[bool, str | None]:
     jacobian: `analytic` needs problem.jacobian == "analytic"; `jvp` needs problem.jvp true (an analytic
     Jacobian problem with `jvp` false is not applicable); `any` always. structure: null always, otherwise equal
     to problem.structure. mass: the problem's mass flag must equal the arm's (False: no mass matrix supported;
-    True: the arm requires one). fixed_dimension: equal to problem.dimension when set.
+    True: the arm requires one). fixed_dimension: equal to problem.dimension when set (a list means
+    any listed dimension). An `applicable_problems` list printed by the binary is authoritative.
     """
+    listed = arm.get("applicable_problems")
+    if listed is not None and problem.get("id") is not None and problem.get("id") not in listed:
+        # The binary's own applicability list is authoritative when present.
+        return False, "not in the arm's applicable_problems"
     req = arm.get("requires") or {}
     jac = req.get("jacobian", "any")
     if jac == "analytic" and problem.get("jacobian") != "analytic":
@@ -180,7 +185,10 @@ def applicable(arm: dict, problem: dict) -> tuple[bool, str | None]:
     if mass is not None and bool(problem.get("mass")) != bool(mass):
         return False, f"requires mass={mass}, problem has mass={problem.get('mass')}"
     fixed = req.get("fixed_dimension")
-    if fixed is not None and problem.get("dimension") != fixed:
+    if isinstance(fixed, list):
+        if problem.get("dimension") not in fixed:
+            return False, f"requires dimension in {fixed}, problem has {problem.get('dimension')}"
+    elif fixed is not None and problem.get("dimension") != fixed:
         return False, f"requires dimension {fixed}, problem has {problem.get('dimension')}"
     return True, None
 

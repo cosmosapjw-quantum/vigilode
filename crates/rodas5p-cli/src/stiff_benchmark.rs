@@ -89,7 +89,7 @@ fn brusselator_cells(id: &str) -> Option<usize> {
 /// offsets `j + 2 - i`: row `2i` holds columns `2i - 2, 2i, 2i + 1, 2i + 2`
 /// at offsets 0, 2, 3, 4 and row `2i + 1` columns `2i - 1, 2i, 2i + 1,
 /// 2i + 3` at offsets 0, 1, 2, 4.
-fn brusselator_band(cells: usize) -> BandedJacobian {
+pub(crate) fn brusselator_band(cells: usize) -> BandedJacobian {
     let c = (cells as f64 + 1.0).powi(2) / 50.0;
     BandedJacobian {
         lower: 2,
@@ -116,6 +116,17 @@ fn brusselator_band(cells: usize) -> BandedJacobian {
     }
 }
 
+/// The cells of a Brusselator benchmark problem, the only problems the
+/// banded arms cover.
+fn banded_cells(problem: &BenchmarkProblem) -> CoreResult<usize> {
+    brusselator_cells(problem.id).ok_or_else(|| {
+        rodas5p_core::CoreError::InvalidInput(format!(
+            "the banded arms cover the Brusselators, not {}",
+            problem.id
+        ))
+    })
+}
+
 /// The banded pipeline on a Brusselator benchmark problem, with its counted
 /// banded work.
 fn run_banded(
@@ -123,21 +134,34 @@ fn run_banded(
     rtol: f64,
     kernel: BandedKernel,
 ) -> CoreResult<(AdaptiveObservedIntegrationResult, BandedWork)> {
-    let cells = brusselator_cells(problem.id).ok_or_else(|| {
-        rodas5p_core::CoreError::InvalidInput(format!(
-            "the banded arms cover the Brusselators, not {}",
-            problem.id
-        ))
-    })?;
+    let cells = banded_cells(problem)?;
     let adaptive = adaptive_config(problem, rtol);
     let output = OutputSchedule::new(vec![problem.t_span.0, problem.t_span.1])?;
-    let run = integrate_rodas5p_fast_banded_observed_with_kernel(
-        &problem.problem,
+    run_banded_with(
+        problem,
         &brusselator_band(cells),
-        problem.t_span,
-        &problem.y0,
         &adaptive,
         &output,
+        kernel,
+    )
+}
+
+/// [`run_banded`] with a given band, step configuration and output schedule
+/// (the component-triage harness, `research/component_triage_20261019`).
+pub(crate) fn run_banded_with(
+    problem: &BenchmarkProblem,
+    band: &BandedJacobian,
+    adaptive: &AdaptiveStepConfig,
+    output: &OutputSchedule,
+    kernel: BandedKernel,
+) -> CoreResult<(AdaptiveObservedIntegrationResult, BandedWork)> {
+    let run = integrate_rodas5p_fast_banded_observed_with_kernel(
+        &problem.problem,
+        band,
+        problem.t_span,
+        &problem.y0,
+        adaptive,
+        output,
         kernel,
     )?;
     Ok((
@@ -282,6 +306,25 @@ fn run_sp03(
     let adaptive = adaptive_config(problem, rtol);
     let output = OutputSchedule::new(vec![problem.t_span.0, problem.t_span.1])?;
     let p = sp03_problem(arm, problem)?;
+    run_sp03_with(arm, &p, problem.t_span, &problem.y0, &adaptive, &output)
+}
+
+/// [`run_sp03`] on an already declared (or undeclared) problem with a given
+/// step configuration and output schedule (the component-triage harness,
+/// `research/component_triage_20261019`).
+#[allow(clippy::type_complexity)]
+pub(crate) fn run_sp03_with(
+    arm: &str,
+    p: &OdeProblem,
+    t_span: (f64, f64),
+    y0: &[f64],
+    adaptive: &AdaptiveStepConfig,
+    output: &OutputSchedule,
+) -> CoreResult<(
+    AdaptiveObservedIntegrationResult,
+    Option<RoutingRecord>,
+    Option<BandedWork>,
+)> {
     let wrap = |observed, attempts, accepted, rejected| AdaptiveObservedIntegrationResult {
         observed,
         diagnostics: AdaptiveRunDiagnostics {
@@ -293,12 +336,12 @@ fn run_sp03(
     };
     if arm == MF_LEGACY_ARM || arm == MF_INTO_ARM {
         let run = integrate_rodas5p_mf_fast_observed_gmres_into(
-            &p,
-            problem.t_span,
-            &problem.y0,
+            p,
+            t_span,
+            y0,
             &RoutingOptions::default().matrix_free,
-            &adaptive,
-            &output,
+            adaptive,
+            output,
         )?;
         return Ok((
             wrap(
@@ -313,12 +356,12 @@ fn run_sp03(
     }
     if arm == MF_ARM {
         let run = integrate_rodas5p_mf_fast_observed(
-            &p,
-            problem.t_span,
-            &problem.y0,
+            p,
+            t_span,
+            y0,
             &RoutingOptions::default().matrix_free,
-            &adaptive,
-            &output,
+            adaptive,
+            output,
         )?;
         return Ok((
             wrap(
@@ -333,12 +376,12 @@ fn run_sp03(
     }
     if arm == MF_LS_WS_ARM {
         let run = integrate_rodas5p_mf_fast_observed_gmres_into_ls_workspace(
-            &p,
-            problem.t_span,
-            &problem.y0,
+            p,
+            t_span,
+            y0,
             &RoutingOptions::default().matrix_free,
-            &adaptive,
-            &output,
+            adaptive,
+            output,
         )?;
         return Ok((
             wrap(
@@ -353,12 +396,12 @@ fn run_sp03(
     }
     if arm == MF_LEGACY_V2_ARM {
         let run = integrate_rodas5p_mf_fast_observed_with_residual_accounting(
-            &p,
-            problem.t_span,
-            &problem.y0,
+            p,
+            t_span,
+            y0,
             &RoutingOptions::default().matrix_free,
-            &adaptive,
-            &output,
+            adaptive,
+            output,
             true,
             StageTargetPolicy::Legacy,
             ResidualAccounting::ReuseConfirmed,
@@ -374,12 +417,13 @@ fn run_sp03(
             None,
         ));
     }
-    let RoutedResult { run, routing } =
-        integrate_rodas5p_routed_observed(&p, problem.t_span, &problem.y0, &adaptive, &output)
-            .map_err(|e| match e {
-                rodas5p_integrators::RoutingError::Integration(e) => e,
-                other => rodas5p_core::CoreError::InvalidInput(other.to_string()),
-            })?;
+    let RoutedResult { run, routing } = integrate_rodas5p_routed_observed(
+        p, t_span, y0, adaptive, output,
+    )
+    .map_err(|e| match e {
+        rodas5p_integrators::RoutingError::Integration(e) => e,
+        other => rodas5p_core::CoreError::InvalidInput(other.to_string()),
+    })?;
     let (attempts, accepted, rejected) =
         (run.attempts(), run.accepted_steps(), run.rejected_steps());
     let (observed, work) = match run {
@@ -506,7 +550,7 @@ pub struct BenchmarkProblem {
     pub atol_scale: f64,
 }
 
-fn hires_problem() -> CoreResult<(OdeProblem, Vec<f64>)> {
+pub(crate) fn hires_problem() -> CoreResult<(OdeProblem, Vec<f64>)> {
     let rhs = Arc::new(|_t: f64, y: &[f64], out: &mut [f64]| {
         out[0] = -1.71 * y[0] + 0.43 * y[1] + 8.32 * y[2] + 0.0007;
         out[1] = 1.71 * y[0] - 8.75 * y[1];
@@ -575,7 +619,7 @@ fn hires_problem() -> CoreResult<(OdeProblem, Vec<f64>)> {
 
 /// The one-dimensional Brusselator of Hairer and Wanner (II, IV.1) with
 /// `cells` interior points, interleaved as `u_1, v_1, u_2, v_2, ...`.
-fn brusselator_problem(cells: usize) -> CoreResult<(OdeProblem, Vec<f64>)> {
+pub(crate) fn brusselator_problem(cells: usize) -> CoreResult<(OdeProblem, Vec<f64>)> {
     let c = (cells as f64 + 1.0).powi(2) / 50.0;
     let rhs = Arc::new(move |_t: f64, y: &[f64], out: &mut [f64]| {
         for i in 0..cells {
@@ -767,6 +811,17 @@ pub fn run_arm(
 ) -> CoreResult<AdaptiveObservedIntegrationResult> {
     let adaptive = adaptive_config(problem, rtol);
     let output = OutputSchedule::new(vec![problem.t_span.0, problem.t_span.1])?;
+    run_arm_with(arm, problem, &adaptive, &output)
+}
+
+/// [`run_arm`] with a given step configuration and output schedule (the
+/// component-triage harness, `research/component_triage_20261019`).
+pub(crate) fn run_arm_with(
+    arm: &str,
+    problem: &BenchmarkProblem,
+    adaptive: &AdaptiveStepConfig,
+    output: &OutputSchedule,
+) -> CoreResult<AdaptiveObservedIntegrationResult> {
     let (p, span, y0) = (&problem.problem, problem.t_span, problem.y0.as_slice());
     let tier_a = NewtonTolerancePolicy::ScaledToOuterTolerance;
     match arm {
@@ -780,13 +835,13 @@ pub fn run_arm(
                 ..LinearSolverConfig::default()
             }),
             None,
-            &adaptive,
-            &output,
+            adaptive,
+            output,
         ),
         FAST_ARM => {
             // Only the counts of the per-attempt diagnostics are filled; the
             // fast driver keeps no per-attempt vectors.
-            let fast = integrate_rodas5p_fast_observed(p, span, y0, &adaptive, &output)?;
+            let fast = integrate_rodas5p_fast_observed(p, span, y0, adaptive, output)?;
             Ok(AdaptiveObservedIntegrationResult {
                 observed: fast.observed,
                 diagnostics: AdaptiveRunDiagnostics {
@@ -797,9 +852,9 @@ pub fn run_arm(
                 },
             })
         }
-        SMALL_ARM => run_small(problem, &adaptive, &output, Rodas5pFastOptions::default()),
+        SMALL_ARM => run_small(problem, adaptive, output, Rodas5pFastOptions::default()),
         "repo-bdf2" => {
-            integrate_bdf_adaptive_observed(p, span, y0, &BdfConfig::default(), &adaptive, &output)
+            integrate_bdf_adaptive_observed(p, span, y0, &BdfConfig::default(), adaptive, output)
         }
         "repo-bdf2-tier-a" => integrate_bdf_adaptive_observed(
             p,
@@ -809,16 +864,16 @@ pub fn run_arm(
                 newton_tolerance: tier_a,
                 ..BdfConfig::default()
             },
-            &adaptive,
-            &output,
+            adaptive,
+            output,
         ),
         "repo-radau5" => integrate_radau_adaptive_observed(
             p,
             span,
             y0,
             &RadauConfig::default(),
-            &adaptive,
-            &output,
+            adaptive,
+            output,
         ),
         "repo-radau5-tier-a" => integrate_radau_adaptive_observed(
             p,
@@ -829,25 +884,30 @@ pub fn run_arm(
                 reuse_stage_lu_for_error_estimate: true,
                 ..RadauConfig::default()
             },
-            &adaptive,
-            &output,
+            adaptive,
+            output,
         ),
-        other if banded_kernel_arm(other).is_some() => {
-            run_banded(problem, rtol, banded_kernel_arm(other).unwrap()).map(|(r, _)| r)
-        }
-        other if SP03_ARMS.contains(&other) => run_sp03(other, problem, rtol).map(|(r, _, _)| r),
-        other if small_static_arm(other).is_some() => run_small_static_full(
+        other if banded_kernel_arm(other).is_some() => run_banded_with(
             problem,
-            &adaptive,
-            &output,
-            small_static_arm(other).unwrap(),
+            &brusselator_band(banded_cells(problem)?),
+            adaptive,
+            output,
+            banded_kernel_arm(other).unwrap(),
         )
-        .map(small_result),
+        .map(|(r, _)| r),
+        other if SP03_ARMS.contains(&other) => {
+            let declared = sp03_problem(other, problem)?;
+            run_sp03_with(other, &declared, span, y0, adaptive, output).map(|(r, _, _)| r)
+        }
+        other if small_static_arm(other).is_some() => {
+            run_small_static_full(problem, adaptive, output, small_static_arm(other).unwrap())
+                .map(small_result)
+        }
         other => match option_arm(other) {
-            Some((true, options)) => run_small(problem, &adaptive, &output, options),
+            Some((true, options)) => run_small(problem, adaptive, output, options),
             Some((false, options)) => {
                 let fast = integrate_rodas5p_fast_observed_with_options(
-                    p, span, y0, &adaptive, &output, options,
+                    p, span, y0, adaptive, output, options,
                 )?;
                 Ok(AdaptiveObservedIntegrationResult {
                     observed: fast.observed,
@@ -878,7 +938,7 @@ fn counters_json(c: &WorkCounters) -> Value {
 }
 
 /// Deterministic sample states for the right-hand-side parity check.
-fn parity_states(y0: &[f64]) -> Vec<Vec<f64>> {
+pub(crate) fn parity_states(y0: &[f64]) -> Vec<Vec<f64>> {
     let perturbed = y0
         .iter()
         .enumerate()
@@ -1137,22 +1197,43 @@ pub fn run_stiff_integration(
     rtol: f64,
 ) -> Result<AdaptiveObservedIntegrationResult> {
     anyhow::ensure!(known_arm(arm), "unknown arm {arm}");
-    let problem = match profile_problems()?.into_iter().find(|p| p.id == problem_id) {
-        Some(problem) => problem,
-        None => routing_profile_problems()?
-            .into_iter()
-            .find(|p| p.id == problem_id)
-            .ok_or_else(|| anyhow::anyhow!("unknown problem {problem_id}"))?,
-    };
+    let problem = stiff_profile_problem(problem_id)?;
+    run_stiff_integration_on(&problem, arm, rtol)
+}
+
+/// The problem `problem_id` of [`run_stiff_integration`] and
+/// `stiff-profile-run`, built once (the allocation audit builds it outside
+/// its counting windows).
+#[allow(dead_code)]
+pub(crate) fn stiff_profile_problem(problem_id: &str) -> Result<BenchmarkProblem> {
+    Ok(
+        match profile_problems()?.into_iter().find(|p| p.id == problem_id) {
+            Some(problem) => problem,
+            None => routing_profile_problems()?
+                .into_iter()
+                .find(|p| p.id == problem_id)
+                .ok_or_else(|| anyhow::anyhow!("unknown problem {problem_id}"))?,
+        },
+    )
+}
+
+/// One integration of [`run_stiff_integration`] on a built problem.
+#[allow(dead_code)]
+pub(crate) fn run_stiff_integration_on(
+    problem: &BenchmarkProblem,
+    arm: &str,
+    rtol: f64,
+) -> Result<AdaptiveObservedIntegrationResult> {
+    anyhow::ensure!(known_arm(arm), "unknown arm {arm}");
     let kernel = banded_kernel_arm(arm);
     let sp03 = SP03_ARMS.contains(&arm) || ME01_ARMS.contains(&arm);
     let result = match kernel {
-        Some(kernel) => run_banded(&problem, rtol, kernel).map(|(r, _)| r),
+        Some(kernel) => run_banded(problem, rtol, kernel).map(|(r, _)| r),
         None if arm == FAST_PRED2_ARM || arm == FAST_INT_GRID_ARM => {
-            run_ct01_grid_arm(arm, &problem, rtol)
+            run_ct01_grid_arm(arm, problem, rtol)
         }
-        None if sp03 => run_sp03(arm, &problem, rtol).map(|(r, _, _)| r),
-        None => run_arm(arm, &problem, rtol),
+        None if sp03 => run_sp03(arm, problem, rtol).map(|(r, _, _)| r),
+        None => run_arm(arm, problem, rtol),
     }?;
     Ok(result)
 }
@@ -1308,7 +1389,7 @@ impl SmallProblem<8> for SmallHires {
     }
 }
 
-fn small_result(
+pub(crate) fn small_result(
     run: rodas5p_integrators::Rodas5pFastSmallResult,
 ) -> AdaptiveObservedIntegrationResult {
     AdaptiveObservedIntegrationResult {
@@ -1341,7 +1422,7 @@ fn run_small(
 
 /// The small driver with the SPD06 options on one benchmark problem, with
 /// the full result.
-fn run_small_static_full(
+pub(crate) fn run_small_static_full(
     problem: &BenchmarkProblem,
     adaptive: &AdaptiveStepConfig,
     output: &OutputSchedule,
@@ -1380,7 +1461,7 @@ fn run_small_static_full(
 }
 
 /// The small driver on one benchmark problem with the full result.
-fn run_small_full(
+pub(crate) fn run_small_full(
     problem: &BenchmarkProblem,
     adaptive: &AdaptiveStepConfig,
     output: &OutputSchedule,
@@ -1489,7 +1570,7 @@ fn ensemble_members(
     Ok(runs)
 }
 
-fn f64_bits_hex(v: f64) -> String {
+pub(crate) fn f64_bits_hex(v: f64) -> String {
     format!("{:016x}", v.to_bits())
 }
 

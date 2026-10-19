@@ -10,6 +10,8 @@ use anyhow::{Context, Result};
 mod r3_campaigns;
 mod r4_studies;
 mod stiff_benchmark;
+mod triage;
+mod triage_arms;
 use clap::{Parser, Subcommand, ValueEnum};
 use rodas5p_core::{load_rodas5p_coefficients, sha256_hex};
 use rodas5p_fair_ab::{
@@ -502,6 +504,54 @@ enum Command {
         /// Writes the per-member results (SPD08 identity gate) as JSON.
         #[arg(long)]
         dump_members: Option<PathBuf>,
+    },
+    /// Component triage (research node `research/component_triage_20261019`,
+    /// `HARNESS_CONTRACT.md`): the arm and problem registry as JSON.
+    #[command(name = "triage-list")]
+    TriageList,
+    /// Component triage: run one cell `repetitions` times in-process and
+    /// print the row (`vigilode-triage-row-v1`) of the first run. Exit code
+    /// 0 whenever a row is printed; 2 for an unknown arm or problem, an
+    /// unwired arm or an inapplicable pair.
+    #[command(name = "triage-run")]
+    TriageRun {
+        #[command(flatten)]
+        cell: triage::CellArgs,
+        #[arg(long, default_value_t = 1)]
+        repetitions: usize,
+        #[arg(long)]
+        campaign: Option<String>,
+    },
+    /// Component triage: the callgrind workload of one cell (`repetitions`
+    /// may be 0); prints a compact summary only.
+    #[command(name = "triage-profile-run")]
+    TriageProfileRun {
+        #[command(flatten)]
+        cell: triage::CellArgs,
+        #[arg(long, default_value_t = 1)]
+        repetitions: usize,
+        /// Accepted for flag parity with `triage-run`; not printed.
+        #[arg(long)]
+        campaign: Option<String>,
+    },
+    /// Component triage: the exact solution of a problem at a grid, as
+    /// IEEE-754 hex (problems with `exact_solution: true` only).
+    #[command(name = "triage-exact")]
+    TriageExact {
+        #[arg(long)]
+        problem: String,
+        #[arg(long, value_enum)]
+        grid: triage::Grid,
+    },
+    /// Component triage: f(t, y), the analytic Jacobian and a JVP at
+    /// deterministic sample states, as IEEE-754 hex.
+    #[command(name = "triage-parity")]
+    TriageParity {
+        #[arg(long)]
+        problem: String,
+        /// Jacobians of larger dimension are printed as nonzero triplets.
+        #[arg(long, default_value_t = 1024)]
+        jacobian_max_dense: usize,
     },
     R4Study {
         #[arg(long)]
@@ -3082,6 +3132,24 @@ fn main() -> Result<()> {
                 )?
             );
         }
+        Command::TriageList => triage::print_or_exit(triage::list_json())?,
+        Command::TriageRun {
+            cell,
+            repetitions,
+            campaign,
+        } => triage::print_or_exit(triage::run_row(&cell, repetitions, campaign.as_deref()))?,
+        Command::TriageProfileRun {
+            cell,
+            repetitions,
+            campaign: _,
+        } => triage::print_or_exit(triage::profile_run(&cell, repetitions))?,
+        Command::TriageExact { problem, grid } => {
+            triage::print_or_exit(triage::exact_json(&problem, grid))?
+        }
+        Command::TriageParity {
+            problem,
+            jacobian_max_dense,
+        } => triage::print_or_exit(triage::parity_json(&problem, jacobian_max_dense))?,
         Command::R4Study {
             study,
             actions,

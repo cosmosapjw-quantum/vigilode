@@ -70,6 +70,10 @@ comp("drv.routed", "F1", "driver", [I+"routing.rs"], "O", "integrate_rodas5p_rou
      [], None, False, "SP03; ProblemStructure::LinearPart never routed")
 comp("drv.sabr", "F1", "driver", [I+"sabr.rs", I+"block.rs"], "O", "IntegrationMethod::Sabr + SabrConfig",
      "stiff-ivp", ["G", "P"], ["sabr-gmres", "sabr-forward", "sabr-explicit", "sabr-nilpotent"], [], [], None, False, "")
+for bm in ["gmres", "forward", "explicit", "nilpotent"]:
+    comp("blk." + bm, "F1", "sabr_block_method", [I+"block.rs"], "D" if bm == "gmres" else "O",
+         "SabrConfig.block_method = BlockMethod::" + bm, "stiff-ivp", ["G", "P"], [], [], [], None, False,
+         "default BlockMethod of SabrConfig is Gmres")
 comp("drv.homotopy", "F1", "driver", [I+"homotopy.rs", I+"homotopy_policy.rs", I+"certification.rs"], "O",
      "integrate_homotopy_adaptive_observed", "stiff-ivp-client", ["G", "C"], ["homotopy"],
      [prior("L-0113", "PASS/ABSTAIN", True, "client contract only"), prior("L-0114", "INCONCLUSIVE/ABSTAIN_NOT_RUN", True, "not run")],
@@ -240,7 +244,7 @@ CERT = [
     ("cert.causal_majorant", [I+"causal_majorant.rs"], "R", "tests only", [], []),
     ("cert.certified_budget", [I+"certified_budget.rs"], "R", "tests only", [], []),
     ("cert.stage_target", [I+"stage_target.rs"], "R", "tests only", [], []),
-    ("cert.raw_stage_target", [I+"raw_stage_target.rs"], "O", "residual budget of the MF fast driver", [], []),
+    ("cert.raw_stage_target", [I+"raw_stage_target.rs"], "S", "residual budget of the MF fast driver (classified with drv.mf_fast)", [], []),
     ("cert.fourier_path", [I+"fourier_path_certificate.rs", I+"fourier_path_candidate.rs"], "R", "tests only", [], []),
     ("cert.stage_chart", [I+"stage_chart_candidate.rs"], "R", "tests only", [], []),
     ("cert.bound_pr101", [I+"bound_pr101.rs"], "R", "A05 PR101 provider", [prior("L-0135", "PASS", True, "8/8 tests; pending review")], ["A05"]),
@@ -348,6 +352,27 @@ def build_corpus(listing):
             "profile_subset": PROFILE_SUBSET, "not_in_corpus": extra}
 
 
+# Opt-in components without a single-problem adaptive cell. They are still
+# classified (prior evidence or NO_EVIDENCE rule), never silently dropped.
+COVERAGE_WAIVERS = {
+    "drv.fast_small_batch": "ensemble lanes have no single-problem entry point; SPD08 kill (L-0089) reused",
+    "phi.krylov": "ExponentialKrylovConfig drives fixed-step exprb2/exprb43 only; no adaptive triage cell",
+}
+
+# Same-family external peers for OPTIMIZE(b) (THRESHOLDS.external). Rosenbrock
+# drivers face Hairer RODAS, BDF-type and matrix-free drivers face CVODE, Radau
+# faces RADAU5. Peers never act as internal rivals.
+EXTERNAL_PEERS = {
+    "drv.seq_direct": ["ext.hairer-rodas"],
+    "drv.fast": ["ext.hairer-rodas"],
+    "drv.fast_small": ["ext.hairer-rodas"],
+    "drv.seq_mf": ["ext.cvode"],
+    "drv.mf_fast": ["ext.cvode"],
+    "drv.bdf": ["ext.cvode", "ext.scipy-bdf"],
+    "drv.radau": ["ext.hairer-radau5", "ext.scipy-radau"],
+}
+
+
 def loc(files):
     total = 0
     for f in files:
@@ -371,7 +396,10 @@ def main():
         comps.append({"id": cid, "family": fam, "slot": slot, "files": files, "reach": reach, "selector": sel,
                       "capability": cap, "tiers": tiers, "arms": arms, "prior": pri, "blocked_by": blk,
                       "loc": loc(files), "static_class": static, "runtime_dependents": [],
-                      "unique_capability": uniq, "notes": notes})
+                      "unique_capability": uniq, "notes": notes,
+                      "external_peers": EXTERNAL_PEERS.get(cid, []), "repair_path": None})
+        if cid in COVERAGE_WAIVERS:
+            comps[-1]["coverage_waiver"] = COVERAGE_WAIVERS[cid]
     if listing is not None:
         # The binary is the authority for which arm exercises which component.
         arms_of = {}

@@ -2,7 +2,7 @@ use std::{
     alloc::{GlobalAlloc, Layout, System},
     fs,
     path::{Path, PathBuf},
-    sync::atomic::{AtomicBool, AtomicU64, Ordering},
+    sync::atomic::{AtomicBool, AtomicI64, AtomicU64, Ordering},
     time::Instant,
 };
 
@@ -20,8 +20,11 @@ static ALLOCATIONS: AtomicU64 = AtomicU64::new(0);
 static DEALLOCATIONS: AtomicU64 = AtomicU64::new(0);
 static ALLOCATED_BYTES: AtomicU64 = AtomicU64::new(0);
 static DEALLOCATED_BYTES: AtomicU64 = AtomicU64::new(0);
-static LIVE_BYTES: AtomicU64 = AtomicU64::new(0);
-static PEAK_LIVE_BYTES: AtomicU64 = AtomicU64::new(0);
+// Live bytes relative to the window start, signed: a window may free memory
+// allocated before it opened, which must not wrap (the unsigned counter
+// wrapped to ~2^64 and the peak then held the wrapped value).
+static LIVE_BYTES: AtomicI64 = AtomicI64::new(0);
+static PEAK_LIVE_BYTES: AtomicI64 = AtomicI64::new(0);
 
 #[global_allocator]
 static ALLOCATOR: CountingAllocator = CountingAllocator;
@@ -33,7 +36,7 @@ unsafe impl GlobalAlloc for CountingAllocator {
             ALLOCATIONS.fetch_add(1, Ordering::Relaxed);
             let size = layout.size() as u64;
             ALLOCATED_BYTES.fetch_add(size, Ordering::Relaxed);
-            let live = LIVE_BYTES.fetch_add(size, Ordering::Relaxed) + size;
+            let live = LIVE_BYTES.fetch_add(size as i64, Ordering::Relaxed) + size as i64;
             PEAK_LIVE_BYTES.fetch_max(live, Ordering::Relaxed);
         }
         pointer
@@ -45,7 +48,7 @@ unsafe impl GlobalAlloc for CountingAllocator {
             ALLOCATIONS.fetch_add(1, Ordering::Relaxed);
             let size = layout.size() as u64;
             ALLOCATED_BYTES.fetch_add(size, Ordering::Relaxed);
-            let live = LIVE_BYTES.fetch_add(size, Ordering::Relaxed) + size;
+            let live = LIVE_BYTES.fetch_add(size as i64, Ordering::Relaxed) + size as i64;
             PEAK_LIVE_BYTES.fetch_max(live, Ordering::Relaxed);
         }
         pointer
@@ -56,7 +59,7 @@ unsafe impl GlobalAlloc for CountingAllocator {
             DEALLOCATIONS.fetch_add(1, Ordering::Relaxed);
             let size = layout.size() as u64;
             DEALLOCATED_BYTES.fetch_add(size, Ordering::Relaxed);
-            LIVE_BYTES.fetch_sub(size, Ordering::Relaxed);
+            LIVE_BYTES.fetch_sub(size as i64, Ordering::Relaxed);
         }
         unsafe { System.dealloc(pointer, layout) };
     }
@@ -70,14 +73,9 @@ unsafe impl GlobalAlloc for CountingAllocator {
             DEALLOCATED_BYTES.fetch_add(old_size, Ordering::Relaxed);
             ALLOCATIONS.fetch_add(1, Ordering::Relaxed);
             ALLOCATED_BYTES.fetch_add(new_sz, Ordering::Relaxed);
-            if new_sz >= old_size {
-                let diff = new_sz - old_size;
-                let live = LIVE_BYTES.fetch_add(diff, Ordering::Relaxed) + diff;
-                PEAK_LIVE_BYTES.fetch_max(live, Ordering::Relaxed);
-            } else {
-                let diff = old_size - new_sz;
-                LIVE_BYTES.fetch_sub(diff, Ordering::Relaxed);
-            }
+            let diff = new_sz as i64 - old_size as i64;
+            let live = LIVE_BYTES.fetch_add(diff, Ordering::Relaxed) + diff;
+            PEAK_LIVE_BYTES.fetch_max(live, Ordering::Relaxed);
         }
         new_pointer
     }
@@ -89,7 +87,8 @@ struct Snapshot {
     deallocations: u64,
     allocated_bytes: u64,
     deallocated_bytes: u64,
-    peak_live_bytes: u64,
+    /// Peak of live bytes inside the window minus live bytes at its start.
+    peak_live_bytes: i64,
 }
 
 fn reset() {
@@ -130,6 +129,14 @@ fn snapshot() -> Snapshot {
 #[allow(dead_code, unused_imports)]
 mod stiff_benchmark;
 
+#[path = "../triage.rs"]
+#[allow(dead_code, unused_imports)]
+mod triage;
+
+#[path = "../triage_arms.rs"]
+#[allow(dead_code, unused_imports)]
+mod triage_arms;
+
 #[derive(Parser)]
 #[command(name = "rodas5p-allocation-audit", version)]
 struct Cli {
@@ -162,10 +169,31 @@ struct Cli {
 
 #[derive(clap::Subcommand)]
 enum AuditSubcommand {
+    /// The ME01 stiff-arm cells: per cell one cold integration window, then
+    /// `warmups` untimed integrations, then `windows` integrations each in
+    /// its own raw counting window (the problem is built outside every
+    /// window).
     #[command(name = "stiff-arms")]
     StiffArms {
         #[arg(long)]
         output: PathBuf,
+        #[arg(long, default_value_t = 2)]
+        warmups: usize,
+        #[arg(long, default_value_t = 3)]
+        windows: usize,
+    },
+    /// Component triage (`research/component_triage_20261019`,
+    /// `HARNESS_CONTRACT.md` section 2): one cell, one cold integration,
+    /// `warmups` untimed integrations, then `windows` integrations each in
+    /// its own raw counting window; prints `vigilode-triage-alloc-v1`.
+    #[command(name = "triage")]
+    Triage {
+        #[command(flatten)]
+        cell: triage::CellArgs,
+        #[arg(long, default_value_t = 2)]
+        warmups: usize,
+        #[arg(long, default_value_t = 3)]
+        windows: usize,
     },
 }
 
@@ -238,13 +266,53 @@ fn write_json<T: Serialize>(path: &Path, value: &T) -> Result<()> {
         .with_context(|| format!("writing {}", path.display()))
 }
 
+/// The raw counts of one counting window (one integration).
+#[derive(Clone, Copy, Debug, Default, Serialize)]
+struct WindowCounts {
+    allocations: u64,
+    deallocations: u64,
+    allocated_bytes: u64,
+    /// Peak of live bytes inside the window minus live bytes at its start.
+    peak_live_bytes: i64,
+}
+
+impl From<Snapshot> for WindowCounts {
+    fn from(s: Snapshot) -> Self {
+        Self {
+            allocations: s.allocations,
+            deallocations: s.deallocations,
+            allocated_bytes: s.allocated_bytes,
+            peak_live_bytes: s.peak_live_bytes,
+        }
+    }
+}
+
+/// The figures of the ME01 consumers (`tools/me01_full_cost_check.py`
+/// reads `allocations` and `allocated_bytes` of `warm_2_minus_1` and
+/// `cold_1_minus_0`). The key names are kept; the values are now raw window
+/// counts, not differences (see [`StiffAllocationEntry`]).
 #[derive(Clone, Copy, Debug, Default, Serialize)]
 struct DiffSnapshot {
     allocations: u64,
     allocated_bytes: u64,
-    peak_live_bytes: u64,
+    peak_live_bytes: i64,
 }
 
+impl From<WindowCounts> for DiffSnapshot {
+    fn from(w: WindowCounts) -> Self {
+        Self {
+            allocations: w.allocations,
+            allocated_bytes: w.allocated_bytes,
+            peak_live_bytes: w.peak_live_bytes,
+        }
+    }
+}
+
+/// One stiff-arm cell. `cold_1_minus_0` is the raw count of the first
+/// integration window and `warm_2_minus_1` that of the first window after
+/// the warmups (the earlier tool subtracted cumulative snapshots with
+/// `saturating_sub`, so one-time lazy allocations of the first run hid the
+/// warm figure); `cold_window` and `warm_windows` are every raw window.
 #[derive(Serialize)]
 struct StiffAllocationEntry {
     problem: String,
@@ -253,13 +321,27 @@ struct StiffAllocationEntry {
     success: bool,
     warm_2_minus_1: DiffSnapshot,
     cold_1_minus_0: DiffSnapshot,
+    cold_window: WindowCounts,
+    warm_windows: Vec<WindowCounts>,
 }
 
 #[derive(Serialize)]
 struct StiffAllocationDocument {
     schema: &'static str,
+    windowing: &'static str,
+    warmups: usize,
+    windows: usize,
     binary_sha256: String,
     entries: Vec<StiffAllocationEntry>,
+}
+
+/// Count one call of `f` in its own window: counters reset at the start,
+/// raw counts at the end, no subtraction.
+fn counted<T>(f: impl FnOnce() -> T) -> (T, WindowCounts) {
+    let guard = Guard::start();
+    let value = f();
+    drop(guard);
+    (value, snapshot().into())
 }
 
 fn all_stiff_cells() -> Vec<(&'static str, &'static str, f64)> {
@@ -328,48 +410,38 @@ fn all_stiff_cells() -> Vec<(&'static str, &'static str, f64)> {
     deduped
 }
 
-fn run_stiff_arms_audit(output: &Path) -> Result<()> {
+fn run_stiff_arms_audit(output: &Path, warmups: usize, windows: usize) -> Result<()> {
+    anyhow::ensure!(windows >= 1, "at least one warm window");
     let cells = all_stiff_cells();
     let mut entries = Vec::with_capacity(cells.len());
-    for (problem, arm, rtol) in cells {
-        // Warmup problem/binary caches outside measurement
-        let _ = stiff_benchmark::profile_run(problem, arm, rtol, 0);
-
-        // 0 repetitions: cold setup only
-        let guard0 = Guard::start();
-        let _ = stiff_benchmark::profile_run(problem, arm, rtol, 0)?;
-        drop(guard0);
-        let s0 = snapshot();
-
-        // 1 repetition: 1 integration
-        let guard1 = Guard::start();
-        let run1 = stiff_benchmark::run_stiff_integration(problem, arm, rtol);
-        drop(guard1);
-        let s1 = snapshot();
-
-        // 2 repetitions: 2 integrations
-        let guard2 = Guard::start();
-        let _ = stiff_benchmark::run_stiff_integration(problem, arm, rtol);
-        let run2 = stiff_benchmark::run_stiff_integration(problem, arm, rtol);
-        drop(guard2);
-        let s2 = snapshot();
-
-        let success = run1.is_ok() && run2.is_ok();
+    for (problem_id, arm, rtol) in cells {
+        // Built outside every window: a window counts one integration.
+        let problem = stiff_benchmark::stiff_profile_problem(problem_id)?;
+        let mut success = true;
+        let (run, cold) =
+            counted(|| stiff_benchmark::run_stiff_integration_on(&problem, arm, rtol));
+        success &= run.is_ok();
+        drop(run);
+        for _ in 0..warmups {
+            success &= stiff_benchmark::run_stiff_integration_on(&problem, arm, rtol).is_ok();
+        }
+        let mut warm = Vec::with_capacity(windows);
+        for _ in 0..windows {
+            let (run, counts) =
+                counted(|| stiff_benchmark::run_stiff_integration_on(&problem, arm, rtol));
+            success &= run.is_ok();
+            drop(run);
+            warm.push(counts);
+        }
         entries.push(StiffAllocationEntry {
-            problem: problem.to_string(),
+            problem: problem_id.to_string(),
             arm: arm.to_string(),
             rtol,
             success,
-            warm_2_minus_1: DiffSnapshot {
-                allocations: s2.allocations.saturating_sub(s1.allocations),
-                allocated_bytes: s2.allocated_bytes.saturating_sub(s1.allocated_bytes),
-                peak_live_bytes: s2.peak_live_bytes,
-            },
-            cold_1_minus_0: DiffSnapshot {
-                allocations: s1.allocations.saturating_sub(s0.allocations),
-                allocated_bytes: s1.allocated_bytes.saturating_sub(s0.allocated_bytes),
-                peak_live_bytes: s1.peak_live_bytes,
-            },
+            warm_2_minus_1: warm[0].into(),
+            cold_1_minus_0: cold.into(),
+            cold_window: cold,
+            warm_windows: warm,
         });
     }
 
@@ -381,16 +453,69 @@ fn run_stiff_arms_audit(output: &Path) -> Result<()> {
         output,
         &StiffAllocationDocument {
             schema: "rodas5p-stiff-allocations-v1",
+            windowing: "raw-window-per-integration-after-warmups-v2",
+            warmups,
+            windows,
             binary_sha256,
             entries,
         },
     )
 }
 
+/// `triage` mode (`HARNESS_CONTRACT.md` section 2): one cold window, then
+/// `warmups` untimed integrations, then `windows` windows of one
+/// integration each. The cell (problem, configurations, output schedules)
+/// is built before the first window and the segment-result buffer is
+/// reserved and cleared outside the windows, so a window holds the
+/// integrator calls only.
+fn run_triage_audit(
+    args: &triage::CellArgs,
+    warmups: usize,
+    windows: usize,
+) -> Result<serde_json::Value> {
+    let mut cell = triage::Cell::new(args)?;
+    let mut runs = Vec::with_capacity(cell.segment_count());
+    let ((), cold) = counted(|| cell.integrate_into(&mut runs));
+    let status = cell.merge(std::mem::take(&mut runs)).status;
+    runs.reserve(cell.segment_count());
+    for _ in 0..warmups {
+        cell.integrate_into(&mut runs);
+        runs.clear();
+    }
+    let mut counts = Vec::with_capacity(windows);
+    for _ in 0..windows {
+        let ((), window) = counted(|| cell.integrate_into(&mut runs));
+        runs.clear();
+        counts.push(window);
+    }
+    Ok(serde_json::json!({
+        "schema": "vigilode-triage-alloc-v1",
+        "arm": args.arm,
+        "problem": args.problem,
+        "rtol": args.rtol,
+        "grid": args.grid.id(),
+        "h0_scale": args.h0_scale,
+        "warmups": warmups,
+        "status": status.id(),
+        "cold": cold,
+        "windows": counts,
+    }))
+}
+
 fn main() -> Result<()> {
     let cli = Cli::parse();
-    if let Some(AuditSubcommand::StiffArms { output }) = cli.command {
-        return run_stiff_arms_audit(&output);
+    match cli.command {
+        Some(AuditSubcommand::StiffArms {
+            output,
+            warmups,
+            windows,
+        }) => return run_stiff_arms_audit(&output, warmups, windows),
+        Some(AuditSubcommand::Triage {
+            cell,
+            warmups,
+            windows,
+        }) => return triage::print_or_exit(run_triage_audit(&cell, warmups, windows)),
+        None => {}
     }
     let trace_path = cli
         .trace

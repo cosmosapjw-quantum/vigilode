@@ -101,8 +101,9 @@ def validate(components: dict, corpus: dict, list_doc: dict) -> dict:
             if not tc.is_external(arm) or (ext and arm not in ext):
                 errors.append(f"component {cid}: unknown external peer {arm!r}")
         for b in c.get("blocked_by", []):
-            if b not in comps:
-                errors.append(f"component {cid}: blocked_by unknown component {b!r}")
+            # Obligations of research/production_audit_20261018/NEXT_STEPS.json (A01..A12) or component ids.
+            if b not in comps and not re.fullmatch(r"A\d{2}", b):
+                errors.append(f"component {cid}: blocked_by unknown obligation or component {b!r}")
     for arm_id, a in sorted(arms.items()):
         for c in a.get("components", []):
             if c not in comps:
@@ -126,7 +127,9 @@ def validate(components: dict, corpus: dict, list_doc: dict) -> dict:
         wired = sorted(a for a, spec in arms.items() if spec.get("wired") and cid in spec.get("components", []))
         reach = [a for a in wired if any(v["applicable"] for v in matrix.get(a, {}).values())]
         coverage[cid] = {"reach": c.get("reach"), "wired_arms": wired, "arms_with_applicable_problem": reach}
-        if c.get("reach") in COVERAGE_REACH and not reach:
+        if c.get("reach") in COVERAGE_REACH and not reach and c.get("coverage_waiver"):
+            warnings.append(f"coverage waived: component {cid}: {c['coverage_waiver']}")
+        elif c.get("reach") in COVERAGE_REACH and not reach:
             errors.append(f"coverage gap: component {cid} (reach {c.get('reach')}) has no wired arm with an "
                           f"applicable CORPUS problem (wired arms: {wired})")
     return {"schema": REPORT_SCHEMA, "errors": errors, "warnings": warnings, "coverage": coverage,

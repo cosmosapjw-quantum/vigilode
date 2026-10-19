@@ -1,12 +1,20 @@
 {
- "base_commit": "da91553f019e011556ee042975f3cf05fc21a7c7",
+ "base_commit": "0f7c957d6925f03adc40b52bfc3f196cba39cc2a",
  "components": [
   {
    "arms": [
-    "seq-direct"
+    "seq-direct",
+    "seq-direct-dense-enforce",
+    "seq-direct-dense-off",
+    "seq-direct-dense-report",
+    "seq-direct-dense-report-defect",
+    "seq-direct-maxstep-strict"
    ],
    "blocked_by": [],
    "capability": "stiff-ivp",
+   "external_peers": [
+    "ext.hairer-rodas"
+   ],
    "family": "F1",
    "files": [
     "crates/rodas5p-integrators/src/sequential.rs",
@@ -17,6 +25,7 @@
    "notes": "documented default B (LinearSolverConfig::default() is Direct)",
    "prior": [],
    "reach": "D",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "integrate_adaptive_observed_with_config(Sequential, LinearMethod::Direct)",
    "slot": "driver",
@@ -29,14 +38,15 @@
   },
   {
    "arms": [
-    "seq-gmres-pc-none",
-    "seq-gmres-pc-jacobi",
+    "seq-gcrodr",
     "seq-gmres-pc-direct",
-    "seq-lgmres",
-    "seq-gcrodr"
+    "seq-gmres-pc-jacobi",
+    "seq-gmres-pc-none",
+    "seq-lgmres"
    ],
    "blocked_by": [],
    "capability": "stiff-ivp",
+   "external_peers": [],
    "family": "F1",
    "files": [
     "crates/rodas5p-integrators/src/sequential.rs"
@@ -46,6 +56,7 @@
    "notes": "",
    "prior": [],
    "reach": "O",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "LinearMethod::{Gmres,Lgmres,Gcrodr} with explicit Jacobian",
    "slot": "driver",
@@ -58,12 +69,19 @@
   },
   {
    "arms": [
+    "seq-mf-gcrodr",
     "seq-mf-gmres",
-    "seq-mf-lgmres",
-    "seq-mf-gcrodr"
+    "seq-mf-gmres-x0-previous",
+    "seq-mf-gmres-x0-prevstep",
+    "seq-mf-gmres-x0-prevstep-scaled",
+    "seq-mf-gmres-x0-zero",
+    "seq-mf-lgmres"
    ],
    "blocked_by": [],
    "capability": "stiff-ivp-jvp",
+   "external_peers": [
+    "ext.cvode"
+   ],
    "family": "F1",
    "files": [
     "crates/rodas5p-integrators/src/sequential.rs",
@@ -81,6 +99,7 @@
     }
    ],
    "reach": "D",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "integrate_sequential_matrix_free_adaptive_dense_observed",
    "slot": "driver",
@@ -93,10 +112,22 @@
   },
   {
    "arms": [
-    "fast"
+    "fast",
+    "fast-ctl-pi",
+    "fast-ctl-predictive",
+    "fast-ctl-predictive-capped",
+    "fast-ctl-predictive-capped2",
+    "rodas5p-fast-colext",
+    "rodas5p-fast-colext64",
+    "rodas5p-fast-land",
+    "rodas5p-fast-ovh",
+    "rodas5p-fast-val"
    ],
    "blocked_by": [],
    "capability": "stiff-ivp",
+   "external_peers": [
+    "ext.hairer-rodas"
+   ],
    "family": "F1",
    "files": [
     "crates/rodas5p-integrators/src/rodas5p_fast.rs"
@@ -119,6 +150,7 @@
     }
    ],
    "reach": "O",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "integrate_rodas5p_fast_observed",
    "slot": "driver",
@@ -136,6 +168,7 @@
    ],
    "blocked_by": [],
    "capability": "stiff-ivp-banded",
+   "external_peers": [],
    "family": "F1",
    "files": [
     "crates/rodas5p-integrators/src/rodas5p_fast.rs"
@@ -152,6 +185,7 @@
     }
    ],
    "reach": "O",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "integrate_rodas5p_fast_banded_observed",
    "slot": "driver",
@@ -163,10 +197,19 @@
   },
   {
    "arms": [
-    "fast-small"
+    "fast-small",
+    "rodas5p-fast-small-land",
+    "rodas5p-fast-small-ovh",
+    "rodas5p-fast-small-static",
+    "rodas5p-fast-small-static-ovh",
+    "rodas5p-fast-small-static-stages",
+    "rodas5p-fast-small-val"
    ],
    "blocked_by": [],
    "capability": "stiff-ivp-small-n",
+   "external_peers": [
+    "ext.hairer-rodas"
+   ],
    "family": "F1",
    "files": [
     "crates/rodas5p-integrators/src/rodas5p_fast_small.rs"
@@ -176,6 +219,7 @@
    "notes": "",
    "prior": [],
    "reach": "O",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "SmallProblem trait (compile-time N)",
    "slot": "driver",
@@ -186,9 +230,13 @@
    "unique_capability": false
   },
   {
-   "arms": [],
+   "arms": [
+    "fast-small-batch4"
+   ],
    "blocked_by": [],
    "capability": "stiff-ensemble",
+   "coverage_waiver": "ensemble lanes have no single-problem entry point; SPD08 kill (L-0089) reused",
+   "external_peers": [],
    "family": "F1",
    "files": [
     "crates/rodas5p-integrators/src/rodas5p_fast_small_batch.rs"
@@ -205,6 +253,7 @@
     }
    ],
    "reach": "O",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "BatchProblem lanes",
    "slot": "driver",
@@ -216,13 +265,33 @@
   },
   {
    "arms": [
+    "mf",
+    "mf-gcrodr-recycle-cold",
+    "mf-gcrodr-recycle-legacy",
+    "mf-gcrodr-recycle-refresh",
+    "mf-gcrodr-recycle-scope-currentw",
+    "mf-gcrodr-start-explicit-zero",
     "mf-into",
-    "mf-ls-ws",
     "mf-legacy-v2",
-    "mf"
+    "mf-lgmres",
+    "mf-lgmres-into",
+    "mf-lgmres-into-ls-ws",
+    "mf-lgmres-start-explicit-zero",
+    "mf-ls-ws",
+    "mf-stage-target-coupled",
+    "mf-stage-target-coupled-guarded",
+    "mf-stage-target-coupled-guarded2",
+    "mf-stage-target-dupfix",
+    "mf-stage-target-l2coupled",
+    "mf-stage-target-legacy",
+    "mf-stage-target-projl2",
+    "mf-x0-prevstep"
    ],
    "blocked_by": [],
    "capability": "stiff-ivp-jvp",
+   "external_peers": [
+    "ext.cvode"
+   ],
    "family": "F1",
    "files": [
     "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs"
@@ -232,6 +301,7 @@
    "notes": "U-form JVP-only driver",
    "prior": [],
    "reach": "O",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "integrate_rodas5p_mf_fast_observed_*",
    "slot": "driver",
@@ -249,6 +319,7 @@
    ],
    "blocked_by": [],
    "capability": "stiff-ivp",
+   "external_peers": [],
    "family": "F1",
    "files": [
     "crates/rodas5p-integrators/src/routing.rs"
@@ -265,6 +336,7 @@
     }
    ],
    "reach": "O",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "integrate_rodas5p_routed_observed",
    "slot": "driver",
@@ -277,13 +349,14 @@
   },
   {
    "arms": [
-    "sabr-gmres",
-    "sabr-forward",
     "sabr-explicit",
+    "sabr-forward",
+    "sabr-gmres",
     "sabr-nilpotent"
    ],
    "blocked_by": [],
    "capability": "stiff-ivp",
+   "external_peers": [],
    "family": "F1",
    "files": [
     "crates/rodas5p-integrators/src/sabr.rs",
@@ -294,9 +367,118 @@
    "notes": "",
    "prior": [],
    "reach": "O",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "IntegrationMethod::Sabr + SabrConfig",
    "slot": "driver",
+   "static_class": null,
+   "tiers": [
+    "G",
+    "P"
+   ],
+   "unique_capability": false
+  },
+  {
+   "arms": [
+    "sabr-gmres"
+   ],
+   "blocked_by": [],
+   "capability": "stiff-ivp",
+   "external_peers": [],
+   "family": "F1",
+   "files": [
+    "crates/rodas5p-integrators/src/block.rs"
+   ],
+   "id": "blk.gmres",
+   "loc": 748,
+   "notes": "default BlockMethod of SabrConfig is Gmres",
+   "prior": [],
+   "reach": "D",
+   "repair_path": null,
+   "runtime_dependents": [],
+   "selector": "SabrConfig.block_method = BlockMethod::gmres",
+   "slot": "sabr_block_method",
+   "static_class": null,
+   "tiers": [
+    "G",
+    "P"
+   ],
+   "unique_capability": false
+  },
+  {
+   "arms": [
+    "sabr-forward"
+   ],
+   "blocked_by": [],
+   "capability": "stiff-ivp",
+   "external_peers": [],
+   "family": "F1",
+   "files": [
+    "crates/rodas5p-integrators/src/block.rs"
+   ],
+   "id": "blk.forward",
+   "loc": 748,
+   "notes": "default BlockMethod of SabrConfig is Gmres",
+   "prior": [],
+   "reach": "O",
+   "repair_path": null,
+   "runtime_dependents": [],
+   "selector": "SabrConfig.block_method = BlockMethod::forward",
+   "slot": "sabr_block_method",
+   "static_class": null,
+   "tiers": [
+    "G",
+    "P"
+   ],
+   "unique_capability": false
+  },
+  {
+   "arms": [
+    "sabr-explicit"
+   ],
+   "blocked_by": [],
+   "capability": "stiff-ivp",
+   "external_peers": [],
+   "family": "F1",
+   "files": [
+    "crates/rodas5p-integrators/src/block.rs"
+   ],
+   "id": "blk.explicit",
+   "loc": 748,
+   "notes": "default BlockMethod of SabrConfig is Gmres",
+   "prior": [],
+   "reach": "O",
+   "repair_path": null,
+   "runtime_dependents": [],
+   "selector": "SabrConfig.block_method = BlockMethod::explicit",
+   "slot": "sabr_block_method",
+   "static_class": null,
+   "tiers": [
+    "G",
+    "P"
+   ],
+   "unique_capability": false
+  },
+  {
+   "arms": [
+    "sabr-nilpotent"
+   ],
+   "blocked_by": [],
+   "capability": "stiff-ivp",
+   "external_peers": [],
+   "family": "F1",
+   "files": [
+    "crates/rodas5p-integrators/src/block.rs"
+   ],
+   "id": "blk.nilpotent",
+   "loc": 748,
+   "notes": "default BlockMethod of SabrConfig is Gmres",
+   "prior": [],
+   "reach": "O",
+   "repair_path": null,
+   "runtime_dependents": [],
+   "selector": "SabrConfig.block_method = BlockMethod::nilpotent",
+   "slot": "sabr_block_method",
    "static_class": null,
    "tiers": [
     "G",
@@ -312,6 +494,7 @@
     "A09"
    ],
    "capability": "stiff-ivp-client",
+   "external_peers": [],
    "family": "F1",
    "files": [
     "crates/rodas5p-integrators/src/homotopy.rs",
@@ -336,6 +519,7 @@
     }
    ],
    "reach": "O",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "integrate_homotopy_adaptive_observed",
    "slot": "driver",
@@ -352,6 +536,7 @@
    ],
    "blocked_by": [],
    "capability": "stiff-ivp",
+   "external_peers": [],
    "family": "F1",
    "files": [
     "crates/rodas5p-integrators/src/transactional_q1_q2.rs"
@@ -361,6 +546,7 @@
    "notes": "",
    "prior": [],
    "reach": "O",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "integrate_transactional_q1_q2_*",
    "slot": "driver",
@@ -379,6 +565,10 @@
    ],
    "blocked_by": [],
    "capability": "stiff-ivp",
+   "external_peers": [
+    "ext.cvode",
+    "ext.scipy-bdf"
+   ],
    "family": "F1",
    "files": [
     "crates/rodas5p-integrators/src/bdf.rs",
@@ -396,6 +586,7 @@
     }
    ],
    "reach": "O",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "BdfConfig {One, Two}",
    "slot": "driver",
@@ -414,6 +605,10 @@
    ],
    "blocked_by": [],
    "capability": "stiff-ivp",
+   "external_peers": [
+    "ext.hairer-radau5",
+    "ext.scipy-radau"
+   ],
    "family": "F1",
    "files": [
     "crates/rodas5p-integrators/src/radau.rs",
@@ -431,6 +626,7 @@
     }
    ],
    "reach": "O",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "RadauConfig {One, Three}",
    "slot": "driver",
@@ -449,6 +645,7 @@
     "A11"
    ],
    "capability": "stiff-ivp-semilinear",
+   "external_peers": [],
    "family": "F1",
    "files": [
     "crates/rodas5p-integrators/src/exponential.rs",
@@ -466,6 +663,7 @@
     }
    ],
    "reach": "O",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "integrate_pexprb54s4_fused_adaptive_*",
    "slot": "driver",
@@ -478,10 +676,43 @@
   },
   {
    "arms": [
-    "fast"
+    "fast",
+    "fast-banded-indexed",
+    "fast-banded-slices",
+    "fast-small",
+    "rodas5p-fast-colext",
+    "rodas5p-fast-colext64",
+    "rodas5p-fast-land",
+    "rodas5p-fast-ovh",
+    "rodas5p-fast-small-land",
+    "rodas5p-fast-small-ovh",
+    "rodas5p-fast-small-static",
+    "rodas5p-fast-small-static-ovh",
+    "rodas5p-fast-small-static-stages",
+    "rodas5p-fast-small-val",
+    "rodas5p-fast-val",
+    "seq-direct",
+    "seq-direct-dense-enforce",
+    "seq-direct-dense-off",
+    "seq-direct-dense-report",
+    "seq-direct-dense-report-defect",
+    "seq-direct-maxstep-strict",
+    "seq-gcrodr",
+    "seq-gmres-pc-direct",
+    "seq-gmres-pc-jacobi",
+    "seq-gmres-pc-none",
+    "seq-lgmres",
+    "seq-mf-gcrodr",
+    "seq-mf-gmres",
+    "seq-mf-gmres-x0-previous",
+    "seq-mf-gmres-x0-prevstep",
+    "seq-mf-gmres-x0-prevstep-scaled",
+    "seq-mf-gmres-x0-zero",
+    "seq-mf-lgmres"
    ],
    "blocked_by": [],
    "capability": "step-control",
+   "external_peers": [],
    "family": "F2",
    "files": [
     "crates/rodas5p-integrators/src/adaptive.rs"
@@ -491,6 +722,7 @@
    "notes": "",
    "prior": [],
    "reach": "D",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "ControllerKind::integral",
    "slot": "controller",
@@ -507,6 +739,7 @@
    ],
    "blocked_by": [],
    "capability": "step-control",
+   "external_peers": [],
    "family": "F2",
    "files": [
     "crates/rodas5p-integrators/src/adaptive.rs"
@@ -516,6 +749,7 @@
    "notes": "",
    "prior": [],
    "reach": "O",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "ControllerKind::pi",
    "slot": "controller",
@@ -532,6 +766,7 @@
    ],
    "blocked_by": [],
    "capability": "step-control",
+   "external_peers": [],
    "family": "F2",
    "files": [
     "crates/rodas5p-integrators/src/adaptive.rs"
@@ -548,6 +783,7 @@
     }
    ],
    "reach": "O",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "ControllerKind::predictive",
    "slot": "controller",
@@ -564,6 +800,7 @@
    ],
    "blocked_by": [],
    "capability": "step-control",
+   "external_peers": [],
    "family": "F2",
    "files": [
     "crates/rodas5p-integrators/src/adaptive.rs"
@@ -573,6 +810,7 @@
    "notes": "",
    "prior": [],
    "reach": "O",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "ControllerKind::predictive_capped",
    "slot": "controller",
@@ -589,6 +827,7 @@
    ],
    "blocked_by": [],
    "capability": "step-control",
+   "external_peers": [],
    "family": "F2",
    "files": [
     "crates/rodas5p-integrators/src/adaptive.rs"
@@ -605,6 +844,7 @@
     }
    ],
    "reach": "O",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "ControllerKind::predictive_capped2",
    "slot": "controller",
@@ -617,10 +857,17 @@
   },
   {
    "arms": [
-    "seq-mf-gmres"
+    "seq-mf-gcrodr",
+    "seq-mf-gmres",
+    "seq-mf-gmres-x0-previous",
+    "seq-mf-gmres-x0-prevstep",
+    "seq-mf-gmres-x0-prevstep-scaled",
+    "seq-mf-gmres-x0-zero",
+    "seq-mf-lgmres"
    ],
    "blocked_by": [],
    "capability": "inner-solve-forcing",
+   "external_peers": [],
    "family": "F2",
    "files": [
     "crates/rodas5p-integrators/src/g4_s5b0_inner_tolerance.rs"
@@ -630,6 +877,7 @@
    "notes": "runtime despite the gate name; rename on relocation",
    "prior": [],
    "reach": "D",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "rodas5p_inner_forcing_target (fraction 0.1, floor 64 eps, eta_max 0.5)",
    "slot": "inner_tolerance",
@@ -642,10 +890,15 @@
   },
   {
    "arms": [
-    "seq-direct"
+    "seq-direct",
+    "seq-direct-dense-enforce",
+    "seq-direct-dense-off",
+    "seq-direct-dense-report",
+    "seq-direct-dense-report-defect"
    ],
    "blocked_by": [],
    "capability": "step-control",
+   "external_peers": [],
    "family": "F2",
    "files": [
     "crates/rodas5p-integrators/src/output.rs"
@@ -655,6 +908,7 @@
    "notes": "",
    "prior": [],
    "reach": "D",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "MaxStepPolicy::AllowClockResolutionSlack",
    "slot": "max_step_policy",
@@ -670,6 +924,7 @@
    ],
    "blocked_by": [],
    "capability": "step-control",
+   "external_peers": [],
    "family": "F2",
    "files": [
     "crates/rodas5p-integrators/src/output.rs"
@@ -679,6 +934,7 @@
    "notes": "",
    "prior": [],
    "reach": "O",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "MaxStepPolicy::StrictRepresentedCap",
    "slot": "max_step_policy",
@@ -689,9 +945,16 @@
    "unique_capability": false
   },
   {
-   "arms": [],
+   "arms": [
+    "rodas5p-fast-ovh",
+    "rodas5p-fast-small-ovh",
+    "rodas5p-fast-small-static-ovh",
+    "rodas5p-fast-small-val",
+    "rodas5p-fast-val"
+   ],
    "blocked_by": [],
    "capability": "step-control",
+   "external_peers": [],
    "family": "F2",
    "files": [
     "crates/rodas5p-integrators/src/rodas5p_fast.rs",
@@ -709,6 +972,7 @@
     }
    ],
    "reach": "O",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "Rodas5pFastOptions.prevalidated_controller",
    "slot": "fast_controller_path",
@@ -720,9 +984,16 @@
    "unique_capability": false
   },
   {
-   "arms": [],
+   "arms": [
+    "rodas5p-fast-land",
+    "rodas5p-fast-ovh",
+    "rodas5p-fast-small-land",
+    "rodas5p-fast-small-ovh",
+    "rodas5p-fast-small-static-ovh"
+   ],
    "blocked_by": [],
    "capability": "step-control",
+   "external_peers": [],
    "family": "F2",
    "files": [
     "crates/rodas5p-integrators/src/rodas5p_fast.rs"
@@ -739,6 +1010,7 @@
     }
    ],
    "reach": "O",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "Rodas5pFastOptions.fused_landing",
    "slot": "fast_controller_path",
@@ -751,10 +1023,17 @@
   },
   {
    "arms": [
-    "seq-direct"
+    "seq-direct",
+    "seq-direct-maxstep-strict",
+    "seq-gcrodr",
+    "seq-gmres-pc-direct",
+    "seq-gmres-pc-jacobi",
+    "seq-gmres-pc-none",
+    "seq-lgmres"
    ],
    "blocked_by": [],
    "capability": "output",
+   "external_peers": [],
    "family": "F3",
    "files": [
     "crates/rodas5p-integrators/src/output.rs"
@@ -764,6 +1043,7 @@
    "notes": "",
    "prior": [],
    "reach": "D",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "OutputCollector / OutputSchedule",
    "slot": "output_collector",
@@ -780,6 +1060,7 @@
    ],
    "blocked_by": [],
    "capability": "dense-output",
+   "external_peers": [],
    "family": "F3",
    "files": [
     "crates/rodas5p-integrators/src/dense_output_v2.rs"
@@ -796,6 +1077,7 @@
     }
    ],
    "reach": "D",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "DenseErrorControl::off",
    "slot": "dense_error_control",
@@ -812,6 +1094,7 @@
    ],
    "blocked_by": [],
    "capability": "dense-output",
+   "external_peers": [],
    "family": "F3",
    "files": [
     "crates/rodas5p-integrators/src/dense_output_v2.rs"
@@ -821,6 +1104,7 @@
    "notes": "",
    "prior": [],
    "reach": "O",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "DenseErrorControl::report_defect",
    "slot": "dense_error_control",
@@ -837,6 +1121,7 @@
    ],
    "blocked_by": [],
    "capability": "dense-output",
+   "external_peers": [],
    "family": "F3",
    "files": [
     "crates/rodas5p-integrators/src/dense_output_v2.rs"
@@ -846,6 +1131,7 @@
    "notes": "",
    "prior": [],
    "reach": "O",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "DenseErrorControl::report",
    "slot": "dense_error_control",
@@ -864,6 +1150,7 @@
     "A05"
    ],
    "capability": "dense-output",
+   "external_peers": [],
    "family": "F3",
    "files": [
     "crates/rodas5p-integrators/src/dense_output_v2.rs"
@@ -880,6 +1167,7 @@
     }
    ],
    "reach": "O",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "DenseErrorControl::enforce",
    "slot": "dense_error_control",
@@ -896,6 +1184,7 @@
     "A05"
    ],
    "capability": "verified-dense-output",
+   "external_peers": [],
    "family": "F3",
    "files": [
     "crates/rodas5p-integrators/src/bound_pr101.rs",
@@ -913,6 +1202,7 @@
     }
    ],
    "reach": "R",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "A05 verified continuous-residual route",
    "slot": "dense_error_control",
@@ -924,11 +1214,24 @@
   },
   {
    "arms": [
+    "fast",
+    "fast-ctl-pi",
+    "fast-ctl-predictive",
+    "fast-ctl-predictive-capped",
+    "fast-ctl-predictive-capped2",
+    "rodas5p-fast-land",
+    "rodas5p-fast-ovh",
+    "rodas5p-fast-val",
     "seq-direct",
-    "fast"
+    "seq-direct-dense-enforce",
+    "seq-direct-dense-off",
+    "seq-direct-dense-report",
+    "seq-direct-dense-report-defect",
+    "seq-direct-maxstep-strict"
    ],
    "blocked_by": [],
    "capability": "dense-linear-solve",
+   "external_peers": [],
    "family": "F4",
    "files": [
     "crates/rodas5p-core/src/matrix.rs"
@@ -938,6 +1241,7 @@
    "notes": "",
    "prior": [],
    "reach": "D",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "LuFactorization (faer partial_piv_lu)",
    "slot": "dense_lu",
@@ -950,10 +1254,19 @@
   },
   {
    "arms": [
-    "fast"
+    "fast",
+    "fast-ctl-pi",
+    "fast-ctl-predictive",
+    "fast-ctl-predictive-capped",
+    "fast-ctl-predictive-capped2",
+    "rodas5p-fast-colext64",
+    "rodas5p-fast-land",
+    "rodas5p-fast-ovh",
+    "rodas5p-fast-val"
    ],
    "blocked_by": [],
    "capability": "dense-linear-solve",
+   "external_peers": [],
    "family": "F4",
    "files": [
     "crates/rodas5p-integrators/src/rodas5p_fast.rs"
@@ -963,6 +1276,7 @@
    "notes": "in-place LU below n=64 inside the fast driver",
    "prior": [],
    "reach": "O",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "RODAS5P_FAST_SMALL_LU_MAX = 64",
    "slot": "dense_lu",
@@ -973,9 +1287,12 @@
    "unique_capability": false
   },
   {
-   "arms": [],
+   "arms": [
+    "rodas5p-fast-colext"
+   ],
    "blocked_by": [],
    "capability": "dense-linear-solve",
+   "external_peers": [],
    "family": "F4",
    "files": [
     "crates/rodas5p-integrators/src/rodas5p_fast.rs"
@@ -992,6 +1309,7 @@
     }
    ],
    "reach": "O",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "FastLuPolicy::ColumnExtents",
    "slot": "dense_lu",
@@ -1003,9 +1321,12 @@
    "unique_capability": false
   },
   {
-   "arms": [],
+   "arms": [
+    "rodas5p-fast-colext64"
+   ],
    "blocked_by": [],
    "capability": "dense-linear-solve",
+   "external_peers": [],
    "family": "F4",
    "files": [
     "crates/rodas5p-integrators/src/rodas5p_fast.rs"
@@ -1022,6 +1343,7 @@
     }
    ],
    "reach": "O",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "FastLuPolicy::ColumnExtentsAbove64",
    "slot": "dense_lu",
@@ -1033,10 +1355,18 @@
   },
   {
    "arms": [
-    "fast"
+    "fast",
+    "fast-ctl-pi",
+    "fast-ctl-predictive",
+    "fast-ctl-predictive-capped",
+    "fast-ctl-predictive-capped2",
+    "rodas5p-fast-land",
+    "rodas5p-fast-ovh",
+    "rodas5p-fast-val"
    ],
    "blocked_by": [],
    "capability": "dense-linear-solve",
+   "external_peers": [],
    "family": "F4",
    "files": [
     "crates/rodas5p-integrators/src/rodas5p_fast.rs"
@@ -1046,6 +1376,7 @@
    "notes": "",
    "prior": [],
    "reach": "O",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "RODAS5P_FAST_SPARSE_DENSITY_MAX = 0.1",
    "slot": "dense_lu",
@@ -1061,6 +1392,7 @@
    ],
    "blocked_by": [],
    "capability": "banded-linear-solve",
+   "external_peers": [],
    "family": "F4",
    "files": [
     "crates/rodas5p-integrators/src/rodas5p_fast.rs"
@@ -1077,6 +1409,7 @@
     }
    ],
    "reach": "O",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "BandedKernel::Indexed",
    "slot": "banded_kernel",
@@ -1092,6 +1425,7 @@
    ],
    "blocked_by": [],
    "capability": "banded-linear-solve",
+   "external_peers": [],
    "family": "F4",
    "files": [
     "crates/rodas5p-integrators/src/rodas5p_fast.rs"
@@ -1101,6 +1435,7 @@
    "notes": "",
    "prior": [],
    "reach": "O",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "BandedKernel::Slices",
    "slot": "banded_kernel",
@@ -1114,6 +1449,7 @@
    "arms": [],
    "blocked_by": [],
    "capability": "sparse-linear-solve",
+   "external_peers": [],
    "family": "F4",
    "files": [
     "crates/rodas5p-core/src/sparse_direct.rs"
@@ -1130,6 +1466,7 @@
     }
    ],
    "reach": "R",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "SparseDirectSolver (no integrator caller)",
    "slot": "sparse_lu",
@@ -1146,6 +1483,7 @@
     "A07"
    ],
    "capability": "collective-linear-solve",
+   "external_peers": [],
    "family": "F4",
    "files": [
     "crates/rodas5p-integrators/src/collective_direct.rs"
@@ -1162,6 +1500,7 @@
     }
    ],
    "reach": "R",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "O(N) rank-two Woodbury stage solve",
    "slot": "structured_lu",
@@ -1175,6 +1514,7 @@
    "arms": [],
    "blocked_by": [],
    "capability": "parallel-stages",
+   "external_peers": [],
    "family": "F4",
    "files": [
     "crates/rodas5p-integrators/src/stage_batch.rs"
@@ -1184,6 +1524,7 @@
    "notes": "synthetic probe",
    "prior": [],
    "reach": "R",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "thread-pool stage feasibility probe",
    "slot": "stage_parallel",
@@ -1195,11 +1536,19 @@
   },
   {
    "arms": [
+    "mf",
+    "seq-gmres-pc-direct",
+    "seq-gmres-pc-jacobi",
+    "seq-gmres-pc-none",
     "seq-mf-gmres",
-    "seq-gmres-pc-none"
+    "seq-mf-gmres-x0-previous",
+    "seq-mf-gmres-x0-prevstep",
+    "seq-mf-gmres-x0-prevstep-scaled",
+    "seq-mf-gmres-x0-zero"
    ],
    "blocked_by": [],
    "capability": "krylov-linear-solve",
+   "external_peers": [],
    "family": "F5",
    "files": [
     "crates/rodas5p-krylov/src/gmres.rs"
@@ -1209,6 +1558,7 @@
    "notes": "",
    "prior": [],
    "reach": "D",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "LinearMethod::Gmres",
    "slot": "krylov_method",
@@ -1221,10 +1571,16 @@
   },
   {
    "arms": [
-    "mf-into"
+    "mf-into",
+    "mf-legacy-v2",
+    "mf-ls-ws",
+    "mf-stage-target-dupfix",
+    "mf-stage-target-legacy",
+    "mf-x0-prevstep"
    ],
    "blocked_by": [],
    "capability": "krylov-linear-solve",
+   "external_peers": [],
    "family": "F5",
    "files": [
     "crates/rodas5p-krylov/src/gmres_into.rs"
@@ -1241,6 +1597,7 @@
     }
    ],
    "reach": "O",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "solve_gmres_into",
    "slot": "krylov_method",
@@ -1252,9 +1609,16 @@
    "unique_capability": false
   },
   {
-   "arms": [],
+   "arms": [
+    "mf-stage-target-coupled",
+    "mf-stage-target-coupled-guarded",
+    "mf-stage-target-coupled-guarded2",
+    "mf-stage-target-l2coupled",
+    "mf-stage-target-projl2"
+   ],
    "blocked_by": [],
    "capability": "krylov-linear-solve",
+   "external_peers": [],
    "family": "F5",
    "files": [
     "crates/rodas5p-krylov/src/gmres_staged.rs"
@@ -1264,6 +1628,7 @@
    "notes": "",
    "prior": [],
    "reach": "O",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "StageTargetPolicy != Legacy/DupFix",
    "slot": "krylov_method",
@@ -1278,6 +1643,7 @@
    "arms": [],
    "blocked_by": [],
    "capability": "krylov-linear-solve",
+   "external_peers": [],
    "family": "F5",
    "files": [
     "crates/rodas5p-krylov/src/gmres_givens.rs"
@@ -1287,6 +1653,7 @@
    "notes": "PR #19 merged into main",
    "prior": [],
    "reach": "R",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "no caller",
    "slot": "krylov_method",
@@ -1299,11 +1666,14 @@
   },
   {
    "arms": [
-    "seq-mf-lgmres",
-    "seq-lgmres"
+    "mf-lgmres",
+    "mf-lgmres-start-explicit-zero",
+    "seq-lgmres",
+    "seq-mf-lgmres"
    ],
    "blocked_by": [],
    "capability": "krylov-linear-solve",
+   "external_peers": [],
    "family": "F5",
    "files": [
     "crates/rodas5p-krylov/src/lgmres.rs"
@@ -1313,6 +1683,7 @@
    "notes": "",
    "prior": [],
    "reach": "O",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "LinearMethod::Lgmres",
    "slot": "krylov_method",
@@ -1324,9 +1695,13 @@
    "unique_capability": false
   },
   {
-   "arms": [],
+   "arms": [
+    "mf-lgmres-into",
+    "mf-lgmres-into-ls-ws"
+   ],
    "blocked_by": [],
    "capability": "krylov-linear-solve",
+   "external_peers": [],
    "family": "F5",
    "files": [
     "crates/rodas5p-krylov/src/lgmres_into.rs"
@@ -1343,6 +1718,7 @@
     }
    ],
    "reach": "O",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "KrylovWorkspaceOptions.lgmres_into",
    "slot": "krylov_method",
@@ -1355,11 +1731,17 @@
   },
   {
    "arms": [
-    "seq-mf-gcrodr",
-    "seq-gcrodr"
+    "mf-gcrodr-recycle-cold",
+    "mf-gcrodr-recycle-legacy",
+    "mf-gcrodr-recycle-refresh",
+    "mf-gcrodr-recycle-scope-currentw",
+    "mf-gcrodr-start-explicit-zero",
+    "seq-gcrodr",
+    "seq-mf-gcrodr"
    ],
    "blocked_by": [],
    "capability": "krylov-linear-solve",
+   "external_peers": [],
    "family": "F5",
    "files": [
     "crates/rodas5p-krylov/src/gcrodr.rs"
@@ -1376,6 +1758,7 @@
     }
    ],
    "reach": "O",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "LinearMethod::Gcrodr",
    "slot": "krylov_method",
@@ -1390,6 +1773,7 @@
    "arms": [],
    "blocked_by": [],
    "capability": "krylov-linear-solve",
+   "external_peers": [],
    "family": "F5",
    "files": [
     "crates/rodas5p-krylov/src/block_gmres.rs"
@@ -1399,6 +1783,7 @@
    "notes": "",
    "prior": [],
    "reach": "R",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "only common_w_gate",
    "slot": "krylov_method",
@@ -1411,10 +1796,12 @@
   },
   {
    "arms": [
+    "mf-lgmres-into-ls-ws",
     "mf-ls-ws"
    ],
    "blocked_by": [],
    "capability": "krylov-linear-solve",
+   "external_peers": [],
    "family": "F5",
    "files": [
     "crates/rodas5p-krylov/src/workspace.rs",
@@ -1432,6 +1819,7 @@
     }
    ],
    "reach": "O",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "KrylovWorkspaceOptions.ls_workspace",
    "slot": "krylov_least_squares",
@@ -1443,9 +1831,12 @@
    "unique_capability": false
   },
   {
-   "arms": [],
+   "arms": [
+    "mf-legacy-v2"
+   ],
    "blocked_by": [],
    "capability": "krylov-linear-solve",
+   "external_peers": [],
    "family": "F5",
    "files": [
     "crates/rodas5p-krylov/src/accounting.rs"
@@ -1462,6 +1853,7 @@
     }
    ],
    "reach": "O",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "ResidualAccounting::ReuseConfirmed",
    "slot": "krylov_residual_accounting",
@@ -1474,10 +1866,19 @@
   },
   {
    "arms": [
-    "seq-mf-gmres"
+    "mf",
+    "mf-into",
+    "mf-ls-ws",
+    "mf-x0-prevstep",
+    "seq-mf-gmres",
+    "seq-mf-gmres-x0-previous",
+    "seq-mf-gmres-x0-prevstep",
+    "seq-mf-gmres-x0-prevstep-scaled",
+    "seq-mf-gmres-x0-zero"
    ],
    "blocked_by": [],
    "capability": "krylov-linear-solve",
+   "external_peers": [],
    "family": "F5",
    "files": [
     "crates/rodas5p-krylov/src/accounting.rs"
@@ -1487,6 +1888,7 @@
    "notes": "",
    "prior": [],
    "reach": "D",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "ResidualAccounting::RecomputeFinal",
    "slot": "krylov_residual_accounting",
@@ -1498,9 +1900,13 @@
    "unique_capability": false
   },
   {
-   "arms": [],
+   "arms": [
+    "mf-lgmres-into",
+    "mf-lgmres-into-ls-ws"
+   ],
    "blocked_by": [],
    "capability": "krylov-linear-solve",
+   "external_peers": [],
    "family": "F5",
    "files": [
     "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs"
@@ -1517,6 +1923,7 @@
     }
    ],
    "reach": "O",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "KrylovWorkspaceOptions",
    "slot": "krylov_workspace",
@@ -1533,6 +1940,7 @@
    ],
    "blocked_by": [],
    "capability": "krylov-linear-solve",
+   "external_peers": [],
    "family": "F5",
    "files": [
     "crates/rodas5p-core/src/solver_types.rs",
@@ -1543,6 +1951,7 @@
    "notes": "",
    "prior": [],
    "reach": "O",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "InitialGuess::zero",
    "slot": "krylov_initial_guess",
@@ -1559,6 +1968,7 @@
    ],
    "blocked_by": [],
    "capability": "krylov-linear-solve",
+   "external_peers": [],
    "family": "F5",
    "files": [
     "crates/rodas5p-core/src/solver_types.rs",
@@ -1569,6 +1979,7 @@
    "notes": "",
    "prior": [],
    "reach": "D",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "InitialGuess::previous",
    "slot": "krylov_initial_guess",
@@ -1585,6 +1996,7 @@
    ],
    "blocked_by": [],
    "capability": "krylov-linear-solve",
+   "external_peers": [],
    "family": "F5",
    "files": [
     "crates/rodas5p-core/src/solver_types.rs",
@@ -1595,6 +2007,7 @@
    "notes": "",
    "prior": [],
    "reach": "O",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "InitialGuess::prevstep",
    "slot": "krylov_initial_guess",
@@ -1611,6 +2024,7 @@
    ],
    "blocked_by": [],
    "capability": "krylov-linear-solve",
+   "external_peers": [],
    "family": "F5",
    "files": [
     "crates/rodas5p-core/src/solver_types.rs",
@@ -1621,6 +2035,7 @@
    "notes": "",
    "prior": [],
    "reach": "O",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "InitialGuess::prevstep_scaled",
    "slot": "krylov_initial_guess",
@@ -1633,10 +2048,13 @@
   },
   {
    "arms": [
-    "seq-gmres-pc-none"
+    "seq-gcrodr",
+    "seq-gmres-pc-none",
+    "seq-lgmres"
    ],
    "blocked_by": [],
    "capability": "krylov-linear-solve",
+   "external_peers": [],
    "family": "F5",
    "files": [
     "crates/rodas5p-core/src/solver_types.rs",
@@ -1647,6 +2065,7 @@
    "notes": "",
    "prior": [],
    "reach": "D",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "PreconditionerKind::none",
    "slot": "preconditioner",
@@ -1663,6 +2082,7 @@
    ],
    "blocked_by": [],
    "capability": "krylov-linear-solve",
+   "external_peers": [],
    "family": "F5",
    "files": [
     "crates/rodas5p-core/src/solver_types.rs",
@@ -1673,6 +2093,7 @@
    "notes": "",
    "prior": [],
    "reach": "O",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "PreconditionerKind::jacobi",
    "slot": "preconditioner",
@@ -1689,6 +2110,7 @@
    ],
    "blocked_by": [],
    "capability": "krylov-linear-solve",
+   "external_peers": [],
    "family": "F5",
    "files": [
     "crates/rodas5p-core/src/solver_types.rs",
@@ -1699,6 +2121,7 @@
    "notes": "",
    "prior": [],
    "reach": "O",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "PreconditionerKind::direct",
    "slot": "preconditioner",
@@ -1713,6 +2136,7 @@
    "arms": [],
    "blocked_by": [],
    "capability": "krylov-linear-solve",
+   "external_peers": [],
    "family": "F5",
    "files": [
     "crates/rodas5p-krylov/src/gmres_into.rs",
@@ -1730,6 +2154,7 @@
     }
    ],
    "reach": "R",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "PC01 right preconditioner",
    "slot": "preconditioner_side",
@@ -1740,9 +2165,12 @@
    "unique_capability": false
   },
   {
-   "arms": [],
+   "arms": [
+    "mf-stage-target-legacy"
+   ],
    "blocked_by": [],
    "capability": "krylov-linear-solve",
+   "external_peers": [],
    "family": "F5",
    "files": [
     "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs",
@@ -1753,6 +2181,7 @@
    "notes": "arm ids assigned by triage_arms.rs",
    "prior": [],
    "reach": "O",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "StageTargetPolicy::legacy",
    "slot": "stage_target_policy",
@@ -1764,9 +2193,12 @@
    "unique_capability": false
   },
   {
-   "arms": [],
+   "arms": [
+    "mf-stage-target-projl2"
+   ],
    "blocked_by": [],
    "capability": "krylov-linear-solve",
+   "external_peers": [],
    "family": "F5",
    "files": [
     "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs",
@@ -1784,6 +2216,7 @@
     }
    ],
    "reach": "O",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "StageTargetPolicy::projl2",
    "slot": "stage_target_policy",
@@ -1795,9 +2228,12 @@
    "unique_capability": false
   },
   {
-   "arms": [],
+   "arms": [
+    "mf-stage-target-l2coupled"
+   ],
    "blocked_by": [],
    "capability": "krylov-linear-solve",
+   "external_peers": [],
    "family": "F5",
    "files": [
     "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs",
@@ -1815,6 +2251,7 @@
     }
    ],
    "reach": "O",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "StageTargetPolicy::l2coupled",
    "slot": "stage_target_policy",
@@ -1826,9 +2263,12 @@
    "unique_capability": false
   },
   {
-   "arms": [],
+   "arms": [
+    "mf-stage-target-coupled"
+   ],
    "blocked_by": [],
    "capability": "krylov-linear-solve",
+   "external_peers": [],
    "family": "F5",
    "files": [
     "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs",
@@ -1846,6 +2286,7 @@
     }
    ],
    "reach": "O",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "StageTargetPolicy::coupled",
    "slot": "stage_target_policy",
@@ -1857,9 +2298,12 @@
    "unique_capability": false
   },
   {
-   "arms": [],
+   "arms": [
+    "mf-stage-target-coupled-guarded"
+   ],
    "blocked_by": [],
    "capability": "krylov-linear-solve",
+   "external_peers": [],
    "family": "F5",
    "files": [
     "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs",
@@ -1877,6 +2321,7 @@
     }
    ],
    "reach": "O",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "StageTargetPolicy::coupled_guarded",
    "slot": "stage_target_policy",
@@ -1888,9 +2333,12 @@
    "unique_capability": false
   },
   {
-   "arms": [],
+   "arms": [
+    "mf-stage-target-dupfix"
+   ],
    "blocked_by": [],
    "capability": "krylov-linear-solve",
+   "external_peers": [],
    "family": "F5",
    "files": [
     "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs",
@@ -1901,6 +2349,7 @@
    "notes": "arm ids assigned by triage_arms.rs",
    "prior": [],
    "reach": "O",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "StageTargetPolicy::dupfix",
    "slot": "stage_target_policy",
@@ -1912,9 +2361,12 @@
    "unique_capability": false
   },
   {
-   "arms": [],
+   "arms": [
+    "mf-stage-target-coupled-guarded2"
+   ],
    "blocked_by": [],
    "capability": "krylov-linear-solve",
+   "external_peers": [],
    "family": "F5",
    "files": [
     "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs",
@@ -1932,6 +2384,7 @@
     }
    ],
    "reach": "O",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "StageTargetPolicy::coupled_guarded2",
    "slot": "stage_target_policy",
@@ -1943,9 +2396,12 @@
    "unique_capability": false
   },
   {
-   "arms": [],
+   "arms": [
+    "mf-gcrodr-recycle-legacy"
+   ],
    "blocked_by": [],
    "capability": "krylov-linear-solve",
+   "external_peers": [],
    "family": "F5",
    "files": [
     "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs",
@@ -1956,6 +2412,7 @@
    "notes": "",
    "prior": [],
    "reach": "O",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "GcrodrRecyclePolicy::legacy",
    "slot": "gcrodr_recycle_policy",
@@ -1966,9 +2423,14 @@
    "unique_capability": false
   },
   {
-   "arms": [],
+   "arms": [
+    "mf-gcrodr-recycle-refresh",
+    "mf-gcrodr-recycle-scope-currentw",
+    "mf-gcrodr-start-explicit-zero"
+   ],
    "blocked_by": [],
    "capability": "krylov-linear-solve",
+   "external_peers": [],
    "family": "F5",
    "files": [
     "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs",
@@ -1979,6 +2441,7 @@
    "notes": "",
    "prior": [],
    "reach": "O",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "GcrodrRecyclePolicy::refresh_after_update",
    "slot": "gcrodr_recycle_policy",
@@ -1989,9 +2452,12 @@
    "unique_capability": false
   },
   {
-   "arms": [],
+   "arms": [
+    "mf-gcrodr-recycle-cold"
+   ],
    "blocked_by": [],
    "capability": "krylov-linear-solve",
+   "external_peers": [],
    "family": "F5",
    "files": [
     "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs",
@@ -2002,6 +2468,7 @@
    "notes": "",
    "prior": [],
    "reach": "O",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "GcrodrRecyclePolicy::cold",
    "slot": "gcrodr_recycle_policy",
@@ -2012,9 +2479,14 @@
    "unique_capability": false
   },
   {
-   "arms": [],
+   "arms": [
+    "mf-gcrodr-recycle-scope-currentw",
+    "mf-gcrodr-start-explicit-zero",
+    "mf-lgmres-start-explicit-zero"
+   ],
    "blocked_by": [],
    "capability": "krylov-linear-solve",
+   "external_peers": [],
    "family": "F5",
    "files": [
     "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs"
@@ -2031,6 +2503,7 @@
     }
    ],
    "reach": "O",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "KrylovStartPolicy::ExplicitZero",
    "slot": "krylov_start_policy",
@@ -2041,9 +2514,12 @@
    "unique_capability": false
   },
   {
-   "arms": [],
+   "arms": [
+    "mf-gcrodr-recycle-scope-currentw"
+   ],
    "blocked_by": [],
    "capability": "krylov-linear-solve",
+   "external_peers": [],
    "family": "F5",
    "files": [
     "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs"
@@ -2053,6 +2529,7 @@
    "notes": "",
    "prior": [],
    "reach": "O",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "RecycleScope::CurrentW",
    "slot": "recycle_scope",
@@ -2063,9 +2540,12 @@
    "unique_capability": false
   },
   {
-   "arms": [],
+   "arms": [
+    "mf-x0-prevstep"
+   ],
    "blocked_by": [],
    "capability": "krylov-linear-solve",
+   "external_peers": [],
    "family": "F5",
    "files": [
     "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs"
@@ -2082,6 +2562,7 @@
     }
    ],
    "reach": "O",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "SPD07 warm start",
    "slot": "krylov_start_policy",
@@ -2093,11 +2574,14 @@
   },
   {
    "arms": [
+    "bdf1",
     "bdf2",
+    "radau1",
     "radau5"
    ],
    "blocked_by": [],
    "capability": "newton",
+   "external_peers": [],
    "family": "F2",
    "files": [
     "crates/rodas5p-integrators/src/nonlinear.rs"
@@ -2107,6 +2591,7 @@
    "notes": "BDF/Radau only",
    "prior": [],
    "reach": "O",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "NewtonTolerancePolicy::FixedNewtonConfig",
    "slot": "newton_tolerance",
@@ -2124,6 +2609,7 @@
    ],
    "blocked_by": [],
    "capability": "newton",
+   "external_peers": [],
    "family": "F2",
    "files": [
     "crates/rodas5p-integrators/src/nonlinear.rs"
@@ -2133,6 +2619,7 @@
    "notes": "",
    "prior": [],
    "reach": "O",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "NewtonTolerancePolicy::ScaledToOuterTolerance",
    "slot": "newton_tolerance",
@@ -2144,9 +2631,14 @@
    "unique_capability": false
   },
   {
-   "arms": [],
+   "arms": [
+    "rodas5p-fast-small-static",
+    "rodas5p-fast-small-static-ovh",
+    "rodas5p-fast-small-static-stages"
+   ],
    "blocked_by": [],
    "capability": "stiff-ivp-small-n",
+   "external_peers": [],
    "family": "F1",
    "files": [
     "crates/rodas5p-integrators/src/rodas5p_fast_small.rs"
@@ -2163,6 +2655,7 @@
     }
    ],
    "reach": "O",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "Rodas5pFastSmallOptions.static_stages",
    "slot": "small_static",
@@ -2173,9 +2666,13 @@
    "unique_capability": false
   },
   {
-   "arms": [],
+   "arms": [
+    "rodas5p-fast-small-static",
+    "rodas5p-fast-small-static-ovh"
+   ],
    "blocked_by": [],
    "capability": "stiff-ivp-small-n",
+   "external_peers": [],
    "family": "F1",
    "files": [
     "crates/rodas5p-integrators/src/rodas5p_fast_small.rs"
@@ -2185,6 +2682,7 @@
    "notes": "",
    "prior": [],
    "reach": "O",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "Rodas5pFastSmallOptions.static_solves",
    "slot": "small_static",
@@ -2200,6 +2698,7 @@
    ],
    "blocked_by": [],
    "capability": "matrix-function-action",
+   "external_peers": [],
    "family": "F6",
    "files": [
     "crates/rodas5p-core/src/matrix_functions.rs"
@@ -2209,6 +2708,7 @@
    "notes": "",
    "prior": [],
    "reach": "O",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "dense Pade13 phi",
    "slot": "phi_action",
@@ -2223,6 +2723,7 @@
    "arms": [],
    "blocked_by": [],
    "capability": "matrix-function-action",
+   "external_peers": [],
    "family": "F6",
    "files": [
     "crates/rodas5p-core/src/binary_scaling.rs"
@@ -2232,6 +2733,7 @@
    "notes": "support of exponential.rs",
    "prior": [],
    "reach": "S",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "power-of-two scaling",
    "slot": "phi_action",
@@ -2246,6 +2748,8 @@
    "arms": [],
    "blocked_by": [],
    "capability": "matrix-function-action",
+   "coverage_waiver": "ExponentialKrylovConfig drives fixed-step exprb2/exprb43 only; no adaptive triage cell",
+   "external_peers": [],
    "family": "F6",
    "files": [
     "crates/rodas5p-integrators/src/exponential.rs"
@@ -2255,6 +2759,7 @@
    "notes": "",
    "prior": [],
    "reach": "O",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "ExponentialKrylovConfig",
    "slot": "phi_action",
@@ -2271,6 +2776,7 @@
    ],
    "blocked_by": [],
    "capability": "matrix-function-action",
+   "external_peers": [],
    "family": "F6",
    "files": [
     "crates/rodas5p-integrators/src/exponential.rs"
@@ -2280,6 +2786,7 @@
    "notes": "",
    "prior": [],
    "reach": "O",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "FusedPhiKrylovConfig",
    "slot": "phi_action",
@@ -2294,6 +2801,7 @@
    "arms": [],
    "blocked_by": [],
    "capability": "matrix-function-action",
+   "external_peers": [],
    "family": "F6",
    "files": [
     "crates/rodas5p-core/src/taylor_phi.rs"
@@ -2303,6 +2811,7 @@
    "notes": "",
    "prior": [],
    "reach": "R",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "tests only",
    "slot": "phi_action",
@@ -2317,6 +2826,7 @@
    "arms": [],
    "blocked_by": [],
    "capability": "matrix-function-action",
+   "external_peers": [],
    "family": "F6",
    "files": [
     "crates/rodas5p-core/src/taylor_phi_total.rs"
@@ -2333,6 +2843,7 @@
     }
    ],
    "reach": "R",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "tests only",
    "slot": "phi_action",
@@ -2349,6 +2860,7 @@
     "A04"
    ],
    "capability": "matrix-function-action",
+   "external_peers": [],
    "family": "F6",
    "files": [
     "crates/rodas5p-core/src/leja_action.rs",
@@ -2366,6 +2878,7 @@
     }
    ],
    "reach": "R",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "tests/examples only",
    "slot": "phi_action",
@@ -2382,6 +2895,7 @@
     "A08"
    ],
    "capability": "matrix-function-action",
+   "external_peers": [],
    "family": "F6",
    "files": [
     "crates/rodas5p-core/src/polynomial_action.rs",
@@ -2399,6 +2913,7 @@
     }
    ],
    "reach": "R",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "RoutePolicy",
    "slot": "phi_action",
@@ -2413,6 +2928,7 @@
    "arms": [],
    "blocked_by": [],
    "capability": "matrix-function-action",
+   "external_peers": [],
    "family": "F6",
    "files": [
     "crates/rodas5p-core/src/polynomial_action.rs"
@@ -2429,6 +2945,7 @@
     }
    ],
    "reach": "R",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "Laguerre component export",
    "slot": "phi_action",
@@ -2443,6 +2960,7 @@
    "arms": [],
    "blocked_by": [],
    "capability": "matrix-function-action",
+   "external_peers": [],
    "family": "F6",
    "files": [
     "crates/rodas5p-core/src/laguerre_adjoint.rs"
@@ -2459,6 +2977,7 @@
     }
    ],
    "reach": "R",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "Laguerre adjoint bound",
    "slot": "phi_action",
@@ -2473,6 +2992,7 @@
    "arms": [],
    "blocked_by": [],
    "capability": "matrix-function-action",
+   "external_peers": [],
    "family": "F6",
    "files": [
     "crates/rodas5p-core/src/shared_shift_jet.rs",
@@ -2483,6 +3003,7 @@
    "notes": "",
    "prior": [],
    "reach": "R",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "tests/examples only",
    "slot": "phi_action",
@@ -2497,6 +3018,7 @@
    "arms": [],
    "blocked_by": [],
    "capability": "matrix-function-action",
+   "external_peers": [],
    "family": "F6",
    "files": [
     "crates/rodas5p-core/src/complex_shift_jet.rs"
@@ -2506,6 +3028,7 @@
    "notes": "",
    "prior": [],
    "reach": "R",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "tests only",
    "slot": "phi_action",
@@ -2520,6 +3043,7 @@
    "arms": [],
    "blocked_by": [],
    "capability": "error-certificate",
+   "external_peers": [],
    "family": "F7",
    "files": [
     "crates/rodas5p-core/src/directed.rs"
@@ -2529,6 +3053,7 @@
    "notes": "",
    "prior": [],
    "reach": "S",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "interval arithmetic support",
    "slot": "certificate",
@@ -2539,9 +3064,12 @@
    "unique_capability": false
   },
   {
-   "arms": [],
+   "arms": [
+    "transactional-q1q2"
+   ],
    "blocked_by": [],
    "capability": "error-certificate",
+   "external_peers": [],
    "family": "F7",
    "files": [
     "crates/rodas5p-integrators/src/outward_certificate.rs"
@@ -2551,6 +3079,7 @@
    "notes": "",
    "prior": [],
    "reach": "O",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "Q2 admission in transactional_q1_q2",
    "slot": "certificate",
@@ -2564,6 +3093,7 @@
    "arms": [],
    "blocked_by": [],
    "capability": "error-certificate",
+   "external_peers": [],
    "family": "F7",
    "files": [
     "crates/rodas5p-core/src/residual_gain.rs"
@@ -2580,6 +3110,7 @@
     }
    ],
    "reach": "R",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "single linear-solve bound",
    "slot": "certificate",
@@ -2593,6 +3124,7 @@
    "arms": [],
    "blocked_by": [],
    "capability": "error-certificate",
+   "external_peers": [],
    "family": "F7",
    "files": [
     "crates/rodas5p-core/src/nonnormal_certificate.rs"
@@ -2602,6 +3134,7 @@
    "notes": "",
    "prior": [],
    "reach": "R",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "tests only",
    "slot": "certificate",
@@ -2615,6 +3148,7 @@
    "arms": [],
    "blocked_by": [],
    "capability": "error-certificate",
+   "external_peers": [],
    "family": "F7",
    "files": [
     "crates/rodas5p-core/src/transform_bound.rs"
@@ -2624,6 +3158,7 @@
    "notes": "",
    "prior": [],
    "reach": "R",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "tests only",
    "slot": "certificate",
@@ -2637,6 +3172,7 @@
    "arms": [],
    "blocked_by": [],
    "capability": "error-certificate",
+   "external_peers": [],
    "family": "F7",
    "files": [
     "crates/rodas5p-integrators/src/causal_majorant.rs"
@@ -2646,6 +3182,7 @@
    "notes": "",
    "prior": [],
    "reach": "R",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "tests only",
    "slot": "certificate",
@@ -2659,6 +3196,7 @@
    "arms": [],
    "blocked_by": [],
    "capability": "error-certificate",
+   "external_peers": [],
    "family": "F7",
    "files": [
     "crates/rodas5p-integrators/src/certified_budget.rs"
@@ -2668,6 +3206,7 @@
    "notes": "",
    "prior": [],
    "reach": "R",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "tests only",
    "slot": "certificate",
@@ -2681,6 +3220,7 @@
    "arms": [],
    "blocked_by": [],
    "capability": "error-certificate",
+   "external_peers": [],
    "family": "F7",
    "files": [
     "crates/rodas5p-integrators/src/stage_target.rs"
@@ -2690,6 +3230,7 @@
    "notes": "",
    "prior": [],
    "reach": "R",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "tests only",
    "slot": "certificate",
@@ -2703,6 +3244,7 @@
    "arms": [],
    "blocked_by": [],
    "capability": "error-certificate",
+   "external_peers": [],
    "family": "F7",
    "files": [
     "crates/rodas5p-integrators/src/raw_stage_target.rs"
@@ -2711,9 +3253,10 @@
    "loc": 369,
    "notes": "",
    "prior": [],
-   "reach": "O",
+   "reach": "S",
+   "repair_path": null,
    "runtime_dependents": [],
-   "selector": "residual budget of the MF fast driver",
+   "selector": "residual budget of the MF fast driver (classified with drv.mf_fast)",
    "slot": "certificate",
    "static_class": null,
    "tiers": [
@@ -2725,6 +3268,7 @@
    "arms": [],
    "blocked_by": [],
    "capability": "error-certificate",
+   "external_peers": [],
    "family": "F7",
    "files": [
     "crates/rodas5p-integrators/src/fourier_path_certificate.rs",
@@ -2735,6 +3279,7 @@
    "notes": "",
    "prior": [],
    "reach": "R",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "tests only",
    "slot": "certificate",
@@ -2748,6 +3293,7 @@
    "arms": [],
    "blocked_by": [],
    "capability": "error-certificate",
+   "external_peers": [],
    "family": "F7",
    "files": [
     "crates/rodas5p-integrators/src/stage_chart_candidate.rs"
@@ -2757,6 +3303,7 @@
    "notes": "",
    "prior": [],
    "reach": "R",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "tests only",
    "slot": "certificate",
@@ -2772,6 +3319,7 @@
     "A05"
    ],
    "capability": "error-certificate",
+   "external_peers": [],
    "family": "F7",
    "files": [
     "crates/rodas5p-integrators/src/bound_pr101.rs"
@@ -2788,6 +3336,7 @@
     }
    ],
    "reach": "R",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "A05 PR101 provider",
    "slot": "certificate",
@@ -2803,6 +3352,7 @@
     "A01"
    ],
    "capability": "collective-packet",
+   "external_peers": [],
    "family": "F8",
    "files": [
     "crates/rodas5p-integrators/src/collective_model.rs"
@@ -2819,6 +3369,7 @@
     }
    ],
    "reach": "R",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "packet API",
    "slot": "packet",
@@ -2836,6 +3387,7 @@
     "A10"
    ],
    "capability": "collective-packet",
+   "external_peers": [],
    "family": "F8",
    "files": [
     "crates/rodas5p-integrators/src/packet_window.rs"
@@ -2852,6 +3404,7 @@
     }
    ],
    "reach": "R",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "packet API",
    "slot": "packet",
@@ -2868,6 +3421,7 @@
     "A02"
    ],
    "capability": "collective-packet",
+   "external_peers": [],
    "family": "F8",
    "files": [
     "crates/rodas5p-integrators/src/packet_trajectory.rs"
@@ -2884,6 +3438,7 @@
     }
    ],
    "reach": "R",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "packet API",
    "slot": "packet",
@@ -2900,6 +3455,7 @@
     "A01"
    ],
    "capability": "collective-packet",
+   "external_peers": [],
    "family": "F8",
    "files": [
     "crates/rodas5p-integrators/src/packet_curve.rs",
@@ -2910,6 +3466,7 @@
    "notes": "LP10 promotion superseded by PA DECISION; compare only against la.woodbury_collective and drv.fast",
    "prior": [],
    "reach": "R",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "packet API",
    "slot": "packet",
@@ -2926,6 +3483,7 @@
     "A03"
    ],
    "capability": "collective-packet",
+   "external_peers": [],
    "family": "F8",
    "files": [
     "crates/rodas5p-core/src/damped_moments.rs"
@@ -2942,6 +3500,7 @@
     }
    ],
    "reach": "R",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "packet API",
    "slot": "packet",
@@ -2958,6 +3517,7 @@
     "A01"
    ],
    "capability": "collective-packet",
+   "external_peers": [],
    "family": "F8",
    "files": [
     "crates/rodas5p-integrators/src/bound_collective.rs"
@@ -2967,6 +3527,7 @@
    "notes": "LP10 promotion superseded by PA DECISION; compare only against la.woodbury_collective and drv.fast",
    "prior": [],
    "reach": "R",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "packet API",
    "slot": "packet",
@@ -2981,6 +3542,7 @@
    "arms": [],
    "blocked_by": [],
    "capability": "collective-packet",
+   "external_peers": [],
    "family": "F8",
    "files": [
     "crates/rodas5p-integrators/src/packet_work.rs"
@@ -2990,6 +3552,7 @@
    "notes": "LP10 promotion superseded by PA DECISION; compare only against la.woodbury_collective and drv.fast",
    "prior": [],
    "reach": "R",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "packet API",
    "slot": "packet",
@@ -3004,6 +3567,7 @@
    "arms": [],
    "blocked_by": [],
    "capability": "parallel",
+   "external_peers": [],
    "family": "F9",
    "files": [
     "crates/rodas5p-integrators/src/parallel.rs"
@@ -3013,6 +3577,7 @@
    "notes": "Ir cannot measure span; wall authority required",
    "prior": [],
    "reach": "S",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "ParallelExecution (local rayon pool)",
    "slot": "parallel",
@@ -3029,6 +3594,7 @@
     "A09"
    ],
    "capability": "parallel",
+   "external_peers": [],
    "family": "F9",
    "files": [
     "crates/rodas5p-integrators/src/homotopy.rs"
@@ -3045,6 +3611,7 @@
     }
    ],
    "reach": "R",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "HT02 parallel pilot",
    "slot": "parallel",
@@ -3058,6 +3625,7 @@
    "arms": [],
    "blocked_by": [],
    "capability": "none",
+   "external_peers": [],
    "family": "F10",
    "files": [
     "crates/rodas5p-integrators/src/g1_transactional_gate.rs"
@@ -3067,6 +3635,7 @@
    "notes": "static reach must confirm no runtime dependents before relocation",
    "prior": [],
    "reach": "R",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "research/gate/audit module",
    "slot": "scaffolding",
@@ -3078,6 +3647,7 @@
    "arms": [],
    "blocked_by": [],
    "capability": "none",
+   "external_peers": [],
    "family": "F10",
    "files": [
     "crates/rodas5p-integrators/src/g2_exponential_gate.rs"
@@ -3087,6 +3657,7 @@
    "notes": "static reach must confirm no runtime dependents before relocation",
    "prior": [],
    "reach": "R",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "research/gate/audit module",
    "slot": "scaffolding",
@@ -3098,6 +3669,7 @@
    "arms": [],
    "blocked_by": [],
    "capability": "none",
+   "external_peers": [],
    "family": "F10",
    "files": [
     "crates/rodas5p-integrators/src/g3_fused_adaptive_gate.rs"
@@ -3107,6 +3679,7 @@
    "notes": "static reach must confirm no runtime dependents before relocation",
    "prior": [],
    "reach": "R",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "research/gate/audit module",
    "slot": "scaffolding",
@@ -3118,6 +3691,7 @@
    "arms": [],
    "blocked_by": [],
    "capability": "none",
+   "external_peers": [],
    "family": "F10",
    "files": [
     "crates/rodas5p-integrators/src/g4_prefix_kernel_gate.rs"
@@ -3127,6 +3701,7 @@
    "notes": "static reach must confirm no runtime dependents before relocation",
    "prior": [],
    "reach": "R",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "research/gate/audit module",
    "slot": "scaffolding",
@@ -3138,6 +3713,7 @@
    "arms": [],
    "blocked_by": [],
    "capability": "none",
+   "external_peers": [],
    "family": "F10",
    "files": [
     "crates/rodas5p-integrators/src/g4_s5b0_regime_atlas.rs"
@@ -3147,6 +3723,7 @@
    "notes": "static reach must confirm no runtime dependents before relocation",
    "prior": [],
    "reach": "R",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "research/gate/audit module",
    "slot": "scaffolding",
@@ -3158,6 +3735,7 @@
    "arms": [],
    "blocked_by": [],
    "capability": "none",
+   "external_peers": [],
    "family": "F10",
    "files": [
     "crates/rodas5p-integrators/src/g4_s5b0_trace_authority.rs"
@@ -3167,6 +3745,7 @@
    "notes": "static reach must confirm no runtime dependents before relocation",
    "prior": [],
    "reach": "R",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "research/gate/audit module",
    "slot": "scaffolding",
@@ -3178,6 +3757,7 @@
    "arms": [],
    "blocked_by": [],
    "capability": "none",
+   "external_peers": [],
    "family": "F10",
    "files": [
     "crates/rodas5p-integrators/src/g4_s5b3_attempt_geometry.rs"
@@ -3187,6 +3767,7 @@
    "notes": "static reach must confirm no runtime dependents before relocation",
    "prior": [],
    "reach": "R",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "research/gate/audit module",
    "slot": "scaffolding",
@@ -3198,6 +3779,7 @@
    "arms": [],
    "blocked_by": [],
    "capability": "none",
+   "external_peers": [],
    "family": "F10",
    "files": [
     "crates/rodas5p-integrators/src/unified_screen.rs"
@@ -3207,6 +3789,7 @@
    "notes": "static reach must confirm no runtime dependents before relocation",
    "prior": [],
    "reach": "R",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "research/gate/audit module",
    "slot": "scaffolding",
@@ -3218,6 +3801,7 @@
    "arms": [],
    "blocked_by": [],
    "capability": "none",
+   "external_peers": [],
    "family": "F10",
    "files": [
     "crates/rodas5p-integrators/src/unified_gates.rs"
@@ -3227,6 +3811,7 @@
    "notes": "static reach must confirm no runtime dependents before relocation",
    "prior": [],
    "reach": "R",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "research/gate/audit module",
    "slot": "scaffolding",
@@ -3238,6 +3823,7 @@
    "arms": [],
    "blocked_by": [],
    "capability": "none",
+   "external_peers": [],
    "family": "F10",
    "files": [
     "crates/rodas5p-integrators/src/candidates.rs"
@@ -3247,6 +3833,7 @@
    "notes": "static reach must confirm no runtime dependents before relocation",
    "prior": [],
    "reach": "R",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "research/gate/audit module",
    "slot": "scaffolding",
@@ -3258,6 +3845,7 @@
    "arms": [],
    "blocked_by": [],
    "capability": "none",
+   "external_peers": [],
    "family": "F10",
    "files": [
     "crates/rodas5p-integrators/src/native_gates.rs"
@@ -3267,6 +3855,7 @@
    "notes": "static reach must confirm no runtime dependents before relocation",
    "prior": [],
    "reach": "R",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "research/gate/audit module",
    "slot": "scaffolding",
@@ -3278,6 +3867,7 @@
    "arms": [],
    "blocked_by": [],
    "capability": "none",
+   "external_peers": [],
    "family": "F10",
    "files": [
     "crates/rodas5p-integrators/src/comparator_fidelity.rs"
@@ -3287,6 +3877,7 @@
    "notes": "static reach must confirm no runtime dependents before relocation",
    "prior": [],
    "reach": "R",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "research/gate/audit module",
    "slot": "scaffolding",
@@ -3298,6 +3889,7 @@
    "arms": [],
    "blocked_by": [],
    "capability": "none",
+   "external_peers": [],
    "family": "F10",
    "files": [
     "crates/rodas5p-integrators/src/rhs_telemetry.rs"
@@ -3307,6 +3899,7 @@
    "notes": "static reach must confirm no runtime dependents before relocation",
    "prior": [],
    "reach": "R",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "research/gate/audit module",
    "slot": "scaffolding",
@@ -3318,6 +3911,7 @@
    "arms": [],
    "blocked_by": [],
    "capability": "none",
+   "external_peers": [],
    "family": "F10",
    "files": [
     "crates/rodas5p-integrators/src/common_w_gate.rs"
@@ -3327,6 +3921,7 @@
    "notes": "static reach must confirm no runtime dependents before relocation",
    "prior": [],
    "reach": "R",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "research/gate/audit module",
    "slot": "scaffolding",
@@ -3338,6 +3933,7 @@
    "arms": [],
    "blocked_by": [],
    "capability": "none",
+   "external_peers": [],
    "family": "F10",
    "files": [
     "crates/rodas5p-integrators/src/homotopy_experiments.rs"
@@ -3347,6 +3943,7 @@
    "notes": "static reach must confirm no runtime dependents before relocation",
    "prior": [],
    "reach": "R",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "research/gate/audit module",
    "slot": "scaffolding",
@@ -3358,6 +3955,7 @@
    "arms": [],
    "blocked_by": [],
    "capability": "none",
+   "external_peers": [],
    "family": "F10",
    "files": [
     "crates/rodas5p-integrators/src/homotopy_order_policy.rs"
@@ -3367,6 +3965,7 @@
    "notes": "static reach must confirm no runtime dependents before relocation",
    "prior": [],
    "reach": "R",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "research/gate/audit module",
    "slot": "scaffolding",
@@ -3378,6 +3977,7 @@
    "arms": [],
    "blocked_by": [],
    "capability": "none",
+   "external_peers": [],
    "family": "F10",
    "files": [
     "crates/rodas5p-integrators/src/path_controller.rs"
@@ -3387,6 +3987,7 @@
    "notes": "static reach must confirm no runtime dependents before relocation",
    "prior": [],
    "reach": "R",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "research/gate/audit module",
    "slot": "scaffolding",
@@ -3398,6 +3999,7 @@
    "arms": [],
    "blocked_by": [],
    "capability": "none",
+   "external_peers": [],
    "family": "F10",
    "files": [
     "crates/rodas5p-integrators/src/policy_redesign_v25.rs"
@@ -3407,6 +4009,7 @@
    "notes": "static reach must confirm no runtime dependents before relocation",
    "prior": [],
    "reach": "R",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "research/gate/audit module",
    "slot": "scaffolding",
@@ -3418,6 +4021,7 @@
    "arms": [],
    "blocked_by": [],
    "capability": "none",
+   "external_peers": [],
    "family": "F10",
    "files": [
     "crates/rodas5p-integrators/src/a1_two_arm_receipt.rs"
@@ -3427,6 +4031,7 @@
    "notes": "static reach must confirm no runtime dependents before relocation",
    "prior": [],
    "reach": "R",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "research/gate/audit module",
    "slot": "scaffolding",
@@ -3438,6 +4043,7 @@
    "arms": [],
    "blocked_by": [],
    "capability": "none",
+   "external_peers": [],
    "family": "F10",
    "files": [
     "crates/rodas5p-integrators/src/v38d_performance_tournament.rs"
@@ -3447,6 +4053,7 @@
    "notes": "static reach must confirm no runtime dependents before relocation",
    "prior": [],
    "reach": "R",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "research/gate/audit module",
    "slot": "scaffolding",
@@ -3458,6 +4065,7 @@
    "arms": [],
    "blocked_by": [],
    "capability": "none",
+   "external_peers": [],
    "family": "F10",
    "files": [
     "crates/rodas5p-integrators/src/scientific_validity_v2_gate.rs"
@@ -3467,6 +4075,7 @@
    "notes": "static reach must confirm no runtime dependents before relocation",
    "prior": [],
    "reach": "R",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "research/gate/audit module",
    "slot": "scaffolding",
@@ -3478,6 +4087,7 @@
    "arms": [],
    "blocked_by": [],
    "capability": "none",
+   "external_peers": [],
    "family": "F10",
    "files": [
     "crates/rodas5p-integrators/src/audit2_research.rs"
@@ -3487,6 +4097,7 @@
    "notes": "static reach must confirm no runtime dependents before relocation",
    "prior": [],
    "reach": "R",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "research/gate/audit module",
    "slot": "scaffolding",
@@ -3498,6 +4109,7 @@
    "arms": [],
    "blocked_by": [],
    "capability": "none",
+   "external_peers": [],
    "family": "F10",
    "files": [
     "crates/rodas5p-integrators/src/audit2_matrix_free_research.rs"
@@ -3507,6 +4119,7 @@
    "notes": "static reach must confirm no runtime dependents before relocation",
    "prior": [],
    "reach": "R",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "research/gate/audit module",
    "slot": "scaffolding",
@@ -3518,6 +4131,7 @@
    "arms": [],
    "blocked_by": [],
    "capability": "none",
+   "external_peers": [],
    "family": "F10",
    "files": [
     "crates/rodas5p-integrators/src/audit2_reusable_transaction_research.rs"
@@ -3527,6 +4141,7 @@
    "notes": "static reach must confirm no runtime dependents before relocation",
    "prior": [],
    "reach": "R",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "research/gate/audit module",
    "slot": "scaffolding",
@@ -3538,6 +4153,7 @@
    "arms": [],
    "blocked_by": [],
    "capability": "none",
+   "external_peers": [],
    "family": "F10",
    "files": [
     "crates/rodas5p-integrators/src/audit2_stage_certificate_research.rs"
@@ -3547,6 +4163,7 @@
    "notes": "static reach must confirm no runtime dependents before relocation",
    "prior": [],
    "reach": "R",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "research/gate/audit module",
    "slot": "scaffolding",
@@ -3558,6 +4175,7 @@
    "arms": [],
    "blocked_by": [],
    "capability": "none",
+   "external_peers": [],
    "family": "F10",
    "files": [
     "crates/rodas5p-integrators/src/audit2_bateman_real_client_research.rs"
@@ -3567,6 +4185,7 @@
    "notes": "static reach must confirm no runtime dependents before relocation",
    "prior": [],
    "reach": "R",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "research/gate/audit module",
    "slot": "scaffolding",
@@ -3578,6 +4197,7 @@
    "arms": [],
    "blocked_by": [],
    "capability": "none",
+   "external_peers": [],
    "family": "F10",
    "files": [
     "crates/rodas5p-integrators/src/chart_transport.rs"
@@ -3587,6 +4207,7 @@
    "notes": "static reach must confirm no runtime dependents before relocation",
    "prior": [],
    "reach": "R",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "research/gate/audit module",
    "slot": "scaffolding",
@@ -3598,6 +4219,7 @@
    "arms": [],
    "blocked_by": [],
    "capability": "none",
+   "external_peers": [],
    "family": "F10",
    "files": [
     "crates/rodas5p-integrators/src/controller_telemetry.rs"
@@ -3607,6 +4229,7 @@
    "notes": "static reach must confirm no runtime dependents before relocation",
    "prior": [],
    "reach": "R",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "research/gate/audit module",
    "slot": "scaffolding",
@@ -3618,6 +4241,7 @@
    "arms": [],
    "blocked_by": [],
    "capability": "none",
+   "external_peers": [],
    "family": "F11",
    "files": [
     "crates/rodas5p-integrators/src/problems.rs"
@@ -3627,6 +4251,7 @@
    "notes": "move to a bench/test crate; keep as benchmark corpus",
    "prior": [],
    "reach": "T",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "test problems",
    "slot": "corpus",
@@ -3638,6 +4263,7 @@
    "arms": [],
    "blocked_by": [],
    "capability": "none",
+   "external_peers": [],
    "family": "F11",
    "files": [
     "crates/rodas5p-integrators/src/gray_scott.rs"
@@ -3647,6 +4273,7 @@
    "notes": "move to a bench/test crate; keep as benchmark corpus",
    "prior": [],
    "reach": "T",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "test problems",
    "slot": "corpus",
@@ -3658,6 +4285,7 @@
    "arms": [],
    "blocked_by": [],
    "capability": "none",
+   "external_peers": [],
    "family": "F11",
    "files": [
     "crates/rodas5p-integrators/src/scientific_corpus_v2.rs"
@@ -3667,6 +4295,7 @@
    "notes": "move to a bench/test crate; keep as benchmark corpus",
    "prior": [],
    "reach": "T",
+   "repair_path": null,
    "runtime_dependents": [],
    "selector": "test problems",
    "slot": "corpus",
