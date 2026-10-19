@@ -162,13 +162,15 @@ def applicable(arm: dict, problem: dict) -> tuple[bool, str | None]:
 
     jacobian: `analytic` needs problem.jacobian == "analytic"; `jvp` needs problem.jvp true (an analytic
     Jacobian problem with `jvp` false is not applicable); `any` always. structure: null always, otherwise equal
-    to problem.structure. mass: the problem's mass flag must equal the arm's (False: no mass matrix supported;
-    True: the arm requires one). fixed_dimension: equal to problem.dimension when set (a list means
+    to problem.structure. mass: False means identity mass only (a mass-matrix problem is not applicable); True means a mass
+    matrix is accepted (any problem). fixed_dimension: equal to problem.dimension when set (a list means
     any listed dimension). An `applicable_problems` list printed by the binary is authoritative.
     """
     listed = arm.get("applicable_problems")
-    if listed is not None and problem.get("id") is not None and problem.get("id") not in listed:
+    if listed is not None and problem.get("id") is not None:
         # The binary's own applicability list is authoritative when present.
+        if problem.get("id") in listed:
+            return True, None
         return False, "not in the arm's applicable_problems"
     req = arm.get("requires") or {}
     jac = req.get("jacobian", "any")
@@ -182,8 +184,9 @@ def applicable(arm: dict, problem: dict) -> tuple[bool, str | None]:
     if structure is not None and problem.get("structure") != structure:
         return False, f"requires structure {structure!r}, problem has {problem.get('structure')!r}"
     mass = req.get("mass")
-    if mass is not None and bool(problem.get("mass")) != bool(mass):
-        return False, f"requires mass={mass}, problem has mass={problem.get('mass')}"
+    # The binary's semantics: mass true = the arm accepts a mass matrix, false = identity mass only.
+    if mass is False and problem.get("mass"):
+        return False, "arm supports identity mass only, problem has a mass matrix"
     fixed = req.get("fixed_dimension")
     if isinstance(fixed, list):
         if problem.get("dimension") not in fixed:

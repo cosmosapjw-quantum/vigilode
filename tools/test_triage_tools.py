@@ -459,5 +459,23 @@ class HelpTests(unittest.TestCase):
                 self.assertIn("usage:", proc.stdout)
 
 
+class ApplicabilityTests(unittest.TestCase):
+    def test_mass_flag_means_accepts_and_listing_is_authoritative(self):
+        import triage_common as tc
+        plain = {"id": "p", "jacobian": "analytic", "jvp": True, "mass": False, "dimension": 3, "structure": "dense"}
+        massy = dict(plain, id="m", mass=True)
+        accepts = {"requires": {"jacobian": "analytic", "mass": True}}
+        identity_only = {"requires": {"jacobian": "analytic", "mass": False}}
+        self.assertTrue(tc.applicable(accepts, plain)[0])
+        self.assertTrue(tc.applicable(accepts, massy)[0])
+        self.assertTrue(tc.applicable(identity_only, plain)[0])
+        self.assertFalse(tc.applicable(identity_only, massy)[0])
+        listed = {"requires": {"jacobian": "analytic", "mass": False}, "applicable_problems": ["m"]}
+        self.assertTrue(tc.applicable(listed, massy)[0])
+        self.assertFalse(tc.applicable(listed, plain)[0])
+        self.assertTrue(tc.applicable({"requires": {"fixed_dimension": [2, 3]}}, plain)[0])
+        self.assertFalse(tc.applicable({"requires": {"fixed_dimension": [2, 8]}}, plain)[0])
+
+
 if __name__ == "__main__":
     unittest.main()
