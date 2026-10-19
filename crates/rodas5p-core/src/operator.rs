@@ -536,10 +536,16 @@ impl ShiftedOperator {
             return Err(CoreError::Dimension("mass matrix shape mismatch".into()));
         }
         let h_gamma = h * gamma;
-        let explicit = jacobian.explicit().map(|j| {
-            let m = mass.clone().unwrap_or_else(|| DenseMatrix::identity(n));
-            m.sub(&j.scale(h_gamma)).expect("validated dimensions")
-        });
+        // Dimensions are validated above, but a non-finite Jacobian or shift
+        // still fails `sub`; return it as a typed error, since a panic aborts
+        // release builds (`panic = "abort"`) instead of failing the step.
+        let explicit = jacobian
+            .explicit()
+            .map(|j| {
+                let m = mass.clone().unwrap_or_else(|| DenseMatrix::identity(n));
+                m.sub(&j.scale(h_gamma))
+            })
+            .transpose()?;
         Ok(Self {
             mass,
             jacobian,

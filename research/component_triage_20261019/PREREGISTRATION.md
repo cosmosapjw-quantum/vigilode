@@ -172,3 +172,13 @@ one names the smoke observation that forced it.
    or a verified sidecar whenever available and records `accuracy_source` for
    every row; inline values are used only as the documented fallback. The
    accuracy rule and thresholds are unchanged.
+5. **Fail-closed probes found an abort.** The smoke probe sweep (15 probes,
+   664 arm pairs) found no silent success and no hang, but 48 pairs aborted the
+   process when the Jacobian turned NaN: `ShiftedOperator` built
+   `M - h gamma J` with `.expect("validated dimensions")`, and a non-finite
+   result panics under `panic = "abort"`. The constructor now returns the
+   typed `CoreError::NonFinite` (regression test
+   `crates/rodas5p-core/tests/shifted_operator_nonfinite.rs`), so these steps
+   fail closed. Finite inputs are unchanged. The fix is narrow and recorded
+   here; it does not decide any label. The probes are rerun with the fixed
+   binary before C3 is evaluated.
