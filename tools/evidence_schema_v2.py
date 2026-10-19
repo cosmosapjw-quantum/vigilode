@@ -1106,7 +1106,8 @@ TRIAGE_COMPONENT_KEYS = frozenset(("id", "family", "slot", "loc", "reach", "labe
 TRIAGE_CRITERIA = frozenset(("c1", "c2", "c3", "allocation", "coverage", "promote", "specialize", "optimize",
                              "timing"))
 TRIAGE_APPLICABILITY_PREDICATE_KEYS = frozenset(("kind", "rule", "coverage", "applicable_gp_problems",
-                                                 "universe_gp_problems", "jacobian_class", "validation"))
+                                                 "universe_gp_problems", "jacobian_class", "win_cells",
+                                                 "min_positives", "validation"))
 TRIAGE_COVERAGE_KEYS = frozenset(("coverage", "applicable_gp_problems", "universe_gp_problems", "slot_gp_problems",
                                   "jacobian_class", "coverage_min", "status", "reason"))
 TRIAGE_PREDICATE_KEYS = frozenset(("feature", "op", "threshold", "values", "calibration", "holdout"))
@@ -1116,12 +1117,17 @@ TRIAGE_RATIO_OUTCOMES = frozenset(("GAIN", "NEUTRAL", "LOSS"))
 TRIAGE_ROW_STATUSES = frozenset(("ok", "solver_failure", "refused", "error", "process_abort", "unavailable"))
 TRIAGE_ROW_CLASSES = frozenset(("computed", "failed", "unknown"))
 TRIAGE_STATES = frozenset(("admissible", "inadmissible", "unknown"))
-TRIAGE_FLAGS = frozenset(("TIMING_CONFLICT", "PROMOTE_BLOCKED_PROVISIONAL", "NO_EVIDENCE", "C3_MISSING"))
+TRIAGE_FLAGS = frozenset(("TIMING_CONFLICT", "PROMOTE_BLOCKED_PROVISIONAL", "NO_EVIDENCE", "C3_MISSING",
+                          "ALLOCATION_MISSING", "INSUFFICIENT_POSITIVES"))
+# Flags that make a label provisional and must appear as a rule_path step of the same name.
+TRIAGE_PROVISIONAL_FLAGS = ("TIMING_CONFLICT", "C3_MISSING", "NO_EVIDENCE", "PROMOTE_BLOCKED_PROVISIONAL",
+                            "ALLOCATION_MISSING", "INSUFFICIENT_POSITIVES")
 # rule_path tokens -> kind (tools/triage/triage_check.py::RULE_KINDS, explained in tools/triage/README.md)
 TRIAGE_RULE_KINDS = {
     "STATIC_PRUNE_RELOCATE": "static", "C1_FAIL": "correctness", "C3_FAIL": "correctness",
     "CORRECTNESS_OK": "correctness", "BLOCKED_BY": "contract", "TIMING_CONFLICT": "contract",
     "C3_MISSING": "contract", "PROMOTE_BLOCKED_PROVISIONAL": "contract", "C_FAIL_REPAIRABLE": "contract",
+    "ALLOCATION_MISSING": "contract", "INSUFFICIENT_POSITIVES": "evidence",
     "NO_EVIDENCE": "evidence",
     "SPECIALIZE_APPLICABILITY": "regime", "OPTIMIZE_ALLOCATION": "alloc", "PROMOTE": "frontier",
     "NOT_PROMOTE": "frontier", "SPECIALIZE": "frontier",
@@ -1404,7 +1410,7 @@ def _triage_component(c: _Checks, p: str, e: Any, counts: dict) -> str | None:
         for f in e["flags"]:
             if f not in TRIAGE_FLAGS:
                 c.fail(f"{p}.flags", f"unregistered flag {f!r}")
-        for f in ("TIMING_CONFLICT", "C3_MISSING", "NO_EVIDENCE", "PROMOTE_BLOCKED_PROVISIONAL"):
+        for f in TRIAGE_PROVISIONAL_FLAGS:
             if f in e["flags"] and e["provisional"] is not True:
                 c.fail(f"{p}.flags", f"{f} without provisional")
     rules = []
@@ -1426,7 +1432,7 @@ def _triage_component(c: _Checks, p: str, e: Any, counts: dict) -> str | None:
         elif e["label"] not in TRIAGE_RULE_LABELS[deciding[-1]]:
             c.fail(f"{p}.label", f"{e['label']} but the deciding rule {deciding[-1]} gives "
                                  f"{'/'.join(TRIAGE_RULE_LABELS[deciding[-1]])}")
-        for flag in ("TIMING_CONFLICT", "C3_MISSING", "NO_EVIDENCE", "PROMOTE_BLOCKED_PROVISIONAL"):
+        for flag in TRIAGE_PROVISIONAL_FLAGS:
             if (flag in rules) != (isinstance(e["flags"], list) and flag in e["flags"]):
                 c.fail(f"{p}.flags", f"flag {flag} and rule_path disagree")
         if "C_FAIL_REPAIRABLE" in rules and (e["provisional"] is not True
@@ -1445,6 +1451,14 @@ def _triage_component(c: _Checks, p: str, e: Any, counts: dict) -> str | None:
             if not any(isinstance(s, dict) and s.get("rule") == "SPECIALIZE_APPLICABILITY"
                        for s in e["rule_path"] or []):
                 c.fail(f"{p}.predicate", "applicability predicate without the SPECIALIZE_APPLICABILITY rule")
+            pred = e["predicate"]
+            if c.int_(f"{p}.predicate.win_cells", pred["win_cells"]) and \
+                    c.int_(f"{p}.predicate.min_positives", pred["min_positives"], minimum=1) and \
+                    pred["win_cells"] < pred["min_positives"] and not (
+                        e["provisional"] is True and isinstance(e["flags"], list)
+                        and "INSUFFICIENT_POSITIVES" in e["flags"]):
+                c.fail(f"{p}.predicate.win_cells", "fewer win cells than min_positives without a provisional "
+                                                   "INSUFFICIENT_POSITIVES label (Amendment 8)")
     elif e["label"] == "SPECIALIZE":
         if c.keys(f"{p}.predicate", e["predicate"], TRIAGE_PREDICATE_KEYS):
             pred = e["predicate"]

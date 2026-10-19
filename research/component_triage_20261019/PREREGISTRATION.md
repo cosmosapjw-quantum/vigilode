@@ -79,21 +79,44 @@ atol is recorded as a product gap, not hidden.
    runtime dependents and are measured under their component ids).
 1. Correctness: C1 accuracy and C3 fail-closed failures without a repair path
    in scope give PRUNE; with a repair path and a unique capability, OPTIMIZE.
+   A C1 failure of an arm is not charged to a component that another of its
+   arms runs cleanly on the same cell, unless that clears the failure for
+   every component of the arm; then it is charged to all of them (Amendment 8).
 2. Frontier (per problem, grid, target): cost of the cheapest admissible rtol
    group (all three h0 scales accurate) divided by the rival's. Rival = the arm
    that differs only in this component's slot (attribution), else the cheapest
-   applicable arm with another component of the slot (strongest). GAIN <= 0.98,
-   NEUTRAL <= 1.02, LOSS otherwise; one-sided reachability is a capability
-   gain or loss.
+   applicable arm with another component of the slot (strongest). A strongest
+   rival is left out only when every component it holds in this slot fails the
+   coverage of rule 3 in its own Jacobian class, i.e. would itself be SPECIALIZE
+   by applicability; its comparisons are reported as `specialized_rivals` for
+   routing and do not enter the fractions (Amendment 7, narrowed by
+   Amendment 8). GAIN <= 0.98, NEUTRAL <= 1.02, LOSS otherwise; one-sided
+   reachability is a capability gain or loss.
 3. PROMOTE: GAIN/NEUTRAL on >= 90 % of applicable G and P cells, no ratio
    above 1.10, C2 (requested-tolerance ratio <= 10 on >= 95 % of groups and
-   <= 100 on all), warm allocation 0 or a documented n-independent constant,
-   not provisional.
+   <= 100 on all; a failing group is attributed like a C1 failure in rule 1,
+   Amendments 6 and 8), warm allocation 0 or a documented n-independent
+   constant, read as: on every (arm, problem, grid) cell with at least two
+   distinct attempt counts over the profiled rtols the warm allocations are
+   identical, so the allocations per attempted step are exactly 0 and only the
+   n-independent constant (output storage) remains (`THRESHOLDS.allocation`
+   `per_attempt_max = 0`, `min_distinct_attempts = 2`; Amendments 6 and 8);
+   every arm of the component needs such a cell, otherwise allocation is
+   insufficient evidence and the label is provisional (Amendment 8);
+   applicability coverage >= 0.5 within the component's Jacobian class
+   (`THRESHOLDS.applicability.coverage_min`, Amendment 7); not provisional.
 4. SPECIALIZE: a non-empty win set described by a predicate on the declared
    features, found on calibration problems and confirmed on holdout problems
    (`tools/holdout_verdict.py`: >= 5 positives, stable under a one-rank
-   threshold shift).
-5. OPTIMIZE: a LOSS whose profile attribution leaves a headroom-adjusted ratio
+   threshold shift). Or (Amendment 7) the component meets every check of
+   rule 3 except coverage: its predicate is its arms' applicability rule, a
+   deterministic API requirement with no holdout search; it needs >= 5 win
+   cells (`specialize.min_positives`), else the label is provisional
+   (Amendment 8).
+5. OPTIMIZE: a component that meets every check of rule 3 except the
+   allocation check, which fails on measured cells (Amendment 6; missing
+   allocation evidence is provisional and never gives this, Amendment 8), or a
+   LOSS whose profile attribution leaves a headroom-adjusted ratio
    <= 1.02, or a unique capability with an external same-family counted-work
    gap > 1.5, or a unique capability whose win set is not characterizable.
 6. PRUNE: everything else. Among NEUTRAL alternatives of one slot the larger
@@ -131,8 +154,15 @@ repository beyond the measured cells.
 
 ## Amendments before the main campaign (from the smoke run)
 
-Amendments change instruments, never thresholds that decide labels, and each
-one names the smoke observation that forced it.
+Amendments 1-5 are instrument changes: they fix measurements and the harness
+and do not change a rule or threshold that decides a label. Amendments 6 and 7
+are decision-rule amendments: they change how allocation, C2 attribution,
+applicability and the strongest rival decide labels. They were made after the
+smoke run and before any main-campaign row exists. Amendment 8 records the
+changes an independent decision-gate review required of 6 and 7; each of them
+tightens a rule. Every amendment names the smoke observation or review finding
+that forced it. Because 6-8 were written after the smoke labels were seen, the
+main-campaign report carries the sensitivity table preregistered below.
 
 1. **Ir determinism tolerance.** `mf` on oregonator at rtol 1e-8 gave
    Ir(1) = 846643399 and Ir(1b) = 846643395 (4 instructions in 8.5e8; the
@@ -187,14 +217,17 @@ one names the smoke observation that forced it.
    storage included, so the literal "warm allocation 0" gate failed every arm
    (e.g. `kr.gmres_into` 90,103 per integration) and the components that won
    every frontier cell fell through to PRUNE. The gate now uses the per-attempt
-   rate `b` of a least-squares fit of warm allocations against attempts over
-   the profiled rtols (`THRESHOLDS.allocation.per_attempt_max = 0.01`); the
-   output-storage constant is `a`. A component that meets every other PROMOTE
-   check but allocates in the step loop is OPTIMIZE (`OPTIMIZE_ALLOCATION`),
-   the "needs optimization" class of the question. C2 failures are attributed
-   with the same exoneration rule as C1, so the driver behind a
-   `DenseErrorControl::Off` arm is not charged for the interpolant's error when
-   another of its arms passes the same cell.
+   rate of warm allocations against attempts over the profiled rtols; the
+   output-storage constant is allowed. (As first written, a least-squares slope
+   `b <= THRESHOLDS.allocation.per_attempt_max = 0.01` passed; Amendment 8
+   replaced it by identical warm allocations, `per_attempt_max = 0`.) A
+   component that meets every other PROMOTE check but allocates in the step
+   loop is OPTIMIZE (`OPTIMIZE_ALLOCATION`), the "needs optimization" class of
+   the question; missing allocation evidence never gives it (Amendment 8). C2
+   failures are attributed with the same exoneration rule as C1, so the driver
+   behind a `DenseErrorControl::Off` arm is not charged for the interpolant's
+   error when another of its arms passes the same cell; Amendment 8 adds the
+   no-orphan rule to both.
 7. **A production default must apply broadly.** In the smoke data the
    fixed-dimension small driver (3 of the 14 analytic-Jacobian problems) met
    the PROMOTE checks while the general fast driver lost only to it. PROMOTE
@@ -202,12 +235,60 @@ one names the smoke observation that forced it.
    (`THRESHOLDS.applicability.coverage_min`) within the component's Jacobian
    class (analytic, JVP or any: a declared problem property the solver routes
    on). A component that fails only on coverage is SPECIALIZE with its
-   applicability rule as the (deterministic) predicate. Rival arms whose
-   coverage over the judged component's universe is below the same bound are
+   applicability rule as the (deterministic) predicate; Amendment 8 requires
+   >= 5 win cells for it, else the label is provisional. Narrow rival arms are
    left out of the strongest-rival comparison and reported as
-   `specialized_rivals` for routing.
+   `specialized_rivals` for routing. (As first written, a rival was narrow when
+   its coverage over the *judged* component's universe was below the bound;
+   Amendment 8 judges it by its own slot components in their own universe.)
 
-These rule changes were made after the smoke run and before any main-campaign
-row exists. The smoke labels are a pipeline check on partial evidence (G tier
-only, three rtols, profiles on four problems, no P tier, no external arms) and
-are not component decisions.
+8. **Decision-gate review of Amendments 6 and 7 (GO-WITH-CHANGES).** An
+   independent review of the decision rules required the following changes.
+   Each one tightens a rule; no threshold is widened.
+   - Allocation is exact: a cell passes only if its warm allocations are
+     identical over at least two distinct attempt counts
+     (`per_attempt_max = 0`, `min_distinct_attempts = 2`). A slope below 0.01
+     per attempt, or a negative one, no longer passes.
+   - Missing allocation evidence (no fitted cell, or an arm of the component
+     without one) is null, recorded as `ALLOCATION_MISSING`, and makes the
+     label provisional. It never gives `OPTIMIZE_ALLOCATION`. Cells dropped for
+     constant attempts are counted in the allocation criterion.
+   - No orphan failures: a C1 or C2 failure that the exoneration rule would
+     clear for every component of its arm is charged to all of them. Smoke
+     case: `bdf2-tier-a` on `complex-dahlquist-32` at rtol 1e-8 has
+     R_up = 253.7 > 100, but `bdf2` cleared `drv.bdf` and `bdf.order2` and
+     `radau5-tier-a` cleared `nl.scaled`, so nobody was charged; now
+     `nl.scaled` fails C2.
+   - Narrow rivals: a rival arm leaves the strongest-rival set only if its
+     own slot components all fail coverage in their own Jacobian class. Smoke
+     case: `rodas5p-fast-ovh` covers 12 of the 26 problems of `drv.routed`'s
+     universe, but `drv.fast` covers 12 of the 14 problems of its analytic
+     class, so it stays a rival of `drv.routed`.
+   - `SPECIALIZE_APPLICABILITY` needs >= `specialize.min_positives` (5) win
+     cells; with fewer the label is provisional (`INSUFFICIENT_POSITIVES`).
+     Smoke case: `drv.fast_small` has 2.
+   - A refused state sidecar (hash or shape mismatch) gives null accuracy; the
+     runner's `accuracy_inline` is used only for a missing sidecar.
+   - The decisive run stops unless `accuracy_summary.sidecars_refused == 0`
+     and `accuracy_summary.runner_inline == 0` (`RUNBOOK.md` §3, §7).
+
+These rule changes (Amendments 6-8) were made after the smoke run and before
+any main-campaign row exists. The smoke labels are a pipeline check on partial
+evidence (G tier only, three rtols, profiles on four problems, no P tier, no
+external arms) and are not component decisions.
+
+## Sensitivity to the decision-rule amendments
+
+The main-campaign report shows, for every component, the label and
+`provisional` under the amended rules next to the label and `provisional`
+under the pre-amendment engine. The pre-amendment engine is
+`tools/triage/triage_check.py` at commit `e49b753` (= `b56bb19^`: the frozen
+registration `ccaeaa5` plus Amendments 1-5). It runs on identical inputs: the
+same RUNS, EXTERNAL, REFERENCES, PROFILE, ALLOCATIONS, PROBES, COMPONENTS,
+CORPUS, THRESHOLDS and triage-list files and `--states-dir`. That engine reads
+only the THRESHOLDS keys it knows. Its CLASSIFICATION goes to a separate file,
+and both files' SHA-256 are recorded. Every component whose label or
+`provisional` differs is listed with the deciding rule of each engine.
+Disagreements are reported, not resolved post hoc: the amended label is the
+decision, and no rule or threshold changes after main-campaign rows exist. The
+command is in `RUNBOOK.md` §7.

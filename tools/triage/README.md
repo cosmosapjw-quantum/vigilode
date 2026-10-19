@@ -124,13 +124,15 @@ JSONL: `triage_runner.py` (RUNS and PROBES) and `triage_external.py` (EXTERNAL) 
 1. `states_hex`: recomputed (`accuracy_source` `recomputed_hex`).
 2. The row's status, for non-ok rows (`recomputed_status`).
 3. A sidecar whose sha256 and shape verify: recomputed (`recomputed_sidecar`). A sidecar that fails the
-   check is *refused*, never read.
-4. `accuracy_inline`, if well formed, produced by `triage_common.row_accuracy`, and bound to the same
-   reference entry (`runner_inline`).
+   check is *refused*, never read, and the row's accuracy is null (`none`, reason `sidecar refused`). A
+   refused sidecar never falls back to `accuracy_inline` (Amendment 8).
+4. `accuracy_inline` when the sidecar is missing, if well formed, produced by `triage_common.row_accuracy`,
+   and bound to the same reference entry (`runner_inline`).
 5. Otherwise `accuracy: null` (`none`; class `unknown`, with a reason).
 
 `RESULTS.accuracy_summary` counts each source plus `sidecars_missing` and `sidecars_refused`, and
-`validate_triage` checks the counts.
+`validate_triage` checks the counts. The decisive run requires `sidecars_refused == 0` and
+`runner_inline == 0` (RUNBOOK §7).
 
 ### `PROBES.jsonl` (C3)
 
@@ -313,8 +315,11 @@ Verdict per component:
     If a′ is not applicable to the problem, there is no rival for that cell.
   - `strongest`: used when no a′ exists. The rival is the cheapest applicable arm that contains another
     slot member and not c, excluding *narrow* rivals.
-    - A rival is narrow when its arm-level coverage, computed over universe(c) of the component being judged,
-      is below `applicability.coverage_min`.
+    - A rival arm is narrow only when every component it holds in c's slot fails coverage over *that
+      component's own* universe (its own Jacobian class), i.e. would itself be SPECIALIZE_APPLICABILITY
+      (Amendment 8). A rival that covers less than `applicability.coverage_min` of universe(c) but whose own
+      driver is broad in its own class stays in the comparison (e.g. the analytic-Jacobian fast driver
+      against the routed driver).
     - Comparisons against narrow rivals go to `RESULTS.specialized_rivals` (kind `specialized_rival`). They
       are routing data and never enter PROMOTE/PRUNE fractions.
     - Attribution counterparts are not filtered.
@@ -352,14 +357,25 @@ Each step appends `{rule, kind, detail}` to `rule_path`. The last *deciding* rul
      - **C2** is the requested-tolerance ratio check. A failing group counts against c only if no other arm
        containing c passes C2 on the same (problem, grid, rtol). Exonerated groups are counted in
        `criteria.c2.exonerated_groups`.
-     - **Allocation** is the hot-loop rate. For each (arm, problem, grid) of c's arms, warm allocations =
-       a + b·attempts is fitted by least squares. The points are the h0 = 1 ALLOCATIONS rows (warm = max over
-       their raw windows) at the profiled rtols, with `attempts` from the matching RUNS row. A fit needs at
-       least 2 distinct attempts; otherwise it is insufficient_evidence.
-     - Allocation passes iff every fit has b ≤ `allocation.per_attempt_max`, and fails if one exceeds it.
-       It is null when no fit exists. The constant term a (output storage, setup) is not gated.
+     - **No-orphan rule (C1 and C2, Amendment 8):** if that exoneration would clear a failing group (or C1
+       cell) for *every* component of its arm, it is charged to all of them instead, so no failure is charged
+       to nobody. Such groups are counted in `criteria.c2.orphan_groups`; such C1 failures carry the note
+       "charged to every component".
+     - **Allocation** is the hot-loop allocation. For each (arm, problem, grid) cell of c's arms, the points are
+       the h0 = 1 ALLOCATIONS rows (warm = max over their raw windows) at the profiled rtols, with `attempts`
+       from the matching RUNS row.
+     - A cell is *fitted* when its points span at least `allocation.min_distinct_attempts` (2) distinct attempt
+       counts. It passes iff its warm allocations are identical at every point: the per-attempt rate must be
+       exactly zero (`allocation.per_attempt_max = 0`, Amendment 8), so a small or negative slope fails. The
+       least-squares line a + b·attempts is reported as a diagnostic only; the constant (output storage,
+       setup) is allowed.
+     - Cells with fewer distinct attempts are dropped and counted (`constant_attempt_cells`).
+     - Allocation fails if any fitted cell fails. Otherwise it is null (insufficient evidence) when no cell is
+       fitted or when an arm of c has no fitted cell (`arms_without_fit`); else it passes.
      - The raw max warm window is still reported. `allocation.warm_window_allocations_max` and
        `allow_documented_constant_independent_of_n` remain in THRESHOLDS for back-compatibility but are unused.
+     - A null allocation is recorded as `ALLOCATION_MISSING` right after `CORRECTNESS_OK` (flag
+       ALLOCATION_MISSING, provisional). It is never a pass and never `OPTIMIZE_ALLOCATION`.
    - **Applicability coverage:** coverage(c) = |G/P problems where some wired arm containing c applies| /
      |universe(c)|. It must be ≥ `applicability.coverage_min`.
      - universe(c) = the G/P problems where some wired arm of c's slot applies *and* that satisfy c's
@@ -371,16 +387,20 @@ Each step appends `{rule, kind, detail}` to `rule_path`. The last *deciding* rul
      - `criteria.coverage` records the coverage, `jacobian_class`, `universe_gp_problems` and
        `slot_gp_problems`.
    - If all criteria hold and the component is not provisional: `PROMOTE`.
-   - If all criteria hold and it is provisional: `PROMOTE_BLOCKED_PROVISIONAL` gives OPTIMIZE (flag
-     PROMOTE_BLOCKED_PROVISIONAL). It never reaches PRUNE by fall-through.
-   - If every criterion holds except coverage: `SPECIALIZE_APPLICABILITY` (kind `regime`) gives SPECIALIZE,
-     provisional or not.
-     - The predicate is `{kind: "applicability", rule: [{arm, requires, applicable_problems}], coverage, ...}`,
-       the arms' API requirement itself. It is deterministic, so no calibration search and no holdout verdict
-       is used.
-   - If every criterion holds except allocation (coverage may also fail): `OPTIMIZE_ALLOCATION` (kind `alloc`,
-     detail = the worst arm-problem b) gives OPTIMIZE. If the component is also provisional, it is preceded
-     by `PROMOTE_BLOCKED_PROVISIONAL`.
+   - If all criteria hold and it is provisional, or all hold except a null allocation:
+     `PROMOTE_BLOCKED_PROVISIONAL` gives OPTIMIZE (flag PROMOTE_BLOCKED_PROVISIONAL). It never reaches PRUNE
+     by fall-through.
+   - If every criterion holds except coverage (allocation pass or null): `SPECIALIZE_APPLICABILITY` (kind
+     `regime`) gives SPECIALIZE, provisional or not.
+     - The predicate is `{kind: "applicability", rule: [{arm, requires, applicable_problems}], coverage, ...,
+       win_cells, min_positives}`, the arms' API requirement itself. It is deterministic, so no calibration
+       search and no holdout verdict is used.
+     - It needs at least `specialize.min_positives` win cells (GAIN or capability_gain, per problem, grid,
+       target). With fewer, `INSUFFICIENT_POSITIVES` (kind `evidence`, flag INSUFFICIENT_POSITIVES) precedes
+       it and the label is provisional (Amendment 8).
+   - If every criterion holds except allocation, and allocation *fails* (coverage may also fail):
+     `OPTIMIZE_ALLOCATION` (kind `alloc`, detail = the number of failing cells and the worst b) gives
+     OPTIMIZE. If the component is also provisional, it is preceded by `PROMOTE_BLOCKED_PROVISIONAL`.
    - Otherwise `NOT_PROMOTE` is recorded and the tree continues.
 6. **SPECIALIZE:** the win set (GAIN or capability_gain cells) is non-empty, and a predicate exists:
    - Search on calibration cells: a single feature from `specialize.features`, either a numeric `le`/`ge`
@@ -407,9 +427,10 @@ Each step appends `{rule, kind, detail}` to `rule_path`. The last *deciding* rul
 | `BLOCKED_BY` | contract | open obligation (`blocked_by`): provisional, PROMOTE forbidden |
 | `TIMING_CONFLICT` | contract | a wall ratio deviates from 1 by more than `conflict_threshold`, opposite to the Ir ratio of the same cell, with an interval excluding 1: provisional |
 | `C3_MISSING` | contract | no PROBES row covers the component: C3 null, provisional, PROMOTE forbidden |
+| `ALLOCATION_MISSING` | contract | allocation null (no fitted cell, or an arm without one): provisional, PROMOTE forbidden, never OPTIMIZE_ALLOCATION |
 | `PROMOTE_BLOCKED_PROVISIONAL` | contract | PROMOTE criteria met while provisional: OPTIMIZE |
 | `STATIC_PRUNE_RELOCATE` | static | `static_class` PRUNE_RELOCATE: PRUNE(relocate) |
-| `C1_FAIL` | correctness | integrity failure: a process_abort other than a runner timeout (a timeout only makes the cell inadmissible), `deterministic=false`, or a non-finite/malformed ok row. A failure is blamed on c unless another arm containing c ran the same cell cleanly. Gives PRUNE unless `C_FAIL_REPAIRABLE` follows |
+| `C1_FAIL` | correctness | integrity failure: a process_abort other than a runner timeout (a timeout only makes the cell inadmissible), `deterministic=false`, or a non-finite/malformed ok row. A failure is blamed on c unless another arm containing c ran the same cell cleanly; a failure cleared for every component of its arm is blamed on all of them (no-orphan rule). Gives PRUNE unless `C_FAIL_REPAIRABLE` follows |
 | `C3_FAIL` | correctness | a fail-closed probe failed: PRUNE (unless `C_FAIL_REPAIRABLE` follows) |
 | `C_FAIL_REPAIRABLE` | contract | C1/C3 failed, `repair_path` is non-null and `unique_capability` is true: OPTIMIZE, provisional |
 | `CORRECTNESS_OK` | correctness | neither C1 nor C3 failed (null counts as not failed) |
@@ -418,8 +439,9 @@ Each step appends `{rule, kind, detail}` to `rule_path`. The last *deciding* rul
 | `NOT_PROMOTE` | frontier | lists the failed PROMOTE criteria |
 | `SPECIALIZE` | frontier | validated predicate (stored in `predicate`) |
 | `NOT_SPECIALIZE` | frontier | why there is no predicate: empty win set, search failed, or holdout verdict |
+| `INSUFFICIENT_POSITIVES` | evidence | SPECIALIZE_APPLICABILITY with fewer than `specialize.min_positives` win cells: provisional |
 | `SPECIALIZE_APPLICABILITY` | regime | PROMOTE fails only on coverage: SPECIALIZE with the arms' applicability as the predicate |
-| `OPTIMIZE_ALLOCATION` | alloc | PROMOTE fails only on the allocation rate (and possibly provisional): OPTIMIZE |
+| `OPTIMIZE_ALLOCATION` | alloc | PROMOTE fails only on a failing allocation check (and possibly provisional): OPTIMIZE |
 | `OPTIMIZE_HEADROOM` | frontier | attribution-adjusted LOSS ratios ≤ `headroom_ratio_max` |
 | `OPTIMIZE_EXTERNAL_GAP` | frontier | unique capability, median counted-work gap > `external_counted_work_gap` |
 | `OPTIMIZE_UNCHARACTERIZED_WINS` | frontier | unique capability, wins without a validated predicate |
@@ -427,8 +449,8 @@ Each step appends `{rule, kind, detail}` to `rule_path`. The last *deciding* rul
 | `NEUTRAL_TIEBREAK_LOC` | tiebreak | all-NEUTRAL slot alternative with larger LOC: PRUNE |
 | `NEUTRAL_TIE_EQUAL_LOC` | tiebreak | all-NEUTRAL alternatives with equal LOC: labels kept |
 
-Flags: `TIMING_CONFLICT`, `C3_MISSING`, `NO_EVIDENCE` and `PROMOTE_BLOCKED_PROVISIONAL`. Each one implies
-`provisional`.
+Flags: `TIMING_CONFLICT`, `C3_MISSING`, `ALLOCATION_MISSING`, `NO_EVIDENCE`, `INSUFFICIENT_POSITIVES` and
+`PROMOTE_BLOCKED_PROVISIONAL`. Each one implies `provisional`.
 
 ## Known limits
 

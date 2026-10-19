@@ -66,6 +66,10 @@ python3 tools/triage/triage_runner.py --probes --binary bin/rodas5p --list $N/TR
 
 - 예상 규모는 `--dry-run` 기준 runs 56,064 cell. 중단돼도 같은 명령을 다시 실행하면 이어서 돈다.
 - n > 64 행은 상태를 `states/`의 sidecar에 저장하고, 행에는 SHA-256과 inline 정확도만 남는다.
+- **중단 규칙 (Amendment 8):** `states/`는 판정(§7)이 끝날 때까지 지우거나 옮기지 않는다. 판정 실행은
+  거부된 sidecar(SHA-256 또는 shape 불일치)가 0개이고 runner의 `accuracy_inline`으로 대체된 행이 0개일 때만
+  유효하다. 거부된 sidecar의 행은 정확도가 null이 되고, 누락된 sidecar의 행은 inline 정확도로 대체된다.
+  어느 쪽이든 판정을 중단하고 해당 cell을 다시 실행한다.
 - smoke에서 알려진 동작:
   - `mf-gcrodr-*` arm은 pollution에서 timeout이 남. timeout은 C1 실패가 아니라 해당 cell 도달 불가로 처리됨.
   - NaN Jacobian probe에서 BDF/Radau와 일부 MF stage-target arm은 시도 예산을 모두 쓴 뒤 실패함.
@@ -114,10 +118,43 @@ python3 tools/triage/triage_check.py --campaign $C --runs $N/RUNS.jsonl --runs $
     --probes $N/PROBES.jsonl --states-dir states --components $N/COMPONENTS.json --corpus $N/CORPUS.json \
     --thresholds $N/THRESHOLDS.json --list $N/TRIAGE_LIST.json \
     --results $N/RESULTS.json --classification $N/CLASSIFICATION.json
+python3 -c "import json,sys; s=json.load(open('$N/RESULTS.json'))['accuracy_summary']; print(s); \
+sys.exit(0 if s['sidecars_refused'] == 0 and s['runner_inline'] == 0 else 'STOP: sidecars_refused/runner_inline != 0')"
 python3 tools/triage/triage_report.py --results $N/RESULTS.json --classification $N/CLASSIFICATION.json \
     --output $N/REPORT_KO.md
 python3 tools/check-research-node.py $N
 ```
+
+- **중단 규칙 (Amendment 8):** `RESULTS.accuracy_summary`의 `sidecars_refused == 0`이고 `runner_inline == 0`이어야
+  한다. 위 두 번째 명령이 `STOP`으로 끝나면 판정 결과를 쓰지 않고 §3의 해당 cell을 다시 실행한다.
+
+### 민감도 표 (사전등록: `PREREGISTRATION.md` "Sensitivity to the decision-rule amendments")
+
+Amendment 6-8 이전 엔진, 즉 `e49b753`의 `triage_check.py`를 같은 입력으로 돌려 별도 파일에 쓴다.
+
+```sh
+git worktree add /tmp/ct-e49b753 e49b753
+python3 /tmp/ct-e49b753/tools/triage/triage_check.py --campaign $C --runs $N/RUNS.jsonl --runs $N/EXTERNAL.jsonl \
+    --references $N/REFERENCES.json --profile $N/PROFILE.jsonl --allocations $N/ALLOCATIONS.jsonl \
+    --probes $N/PROBES.jsonl --states-dir states --components $N/COMPONENTS.json --corpus $N/CORPUS.json \
+    --thresholds $N/THRESHOLDS.json --list $N/TRIAGE_LIST.json \
+    --results $N/RESULTS_PRE_A6.json --classification $N/CLASSIFICATION_PRE_A6.json
+sha256sum $N/CLASSIFICATION.json $N/CLASSIFICATION_PRE_A6.json
+python3 -c "
+import json
+new, pre = ({e['id']: e for e in json.load(open('$N/' + f))['components']}
+            for f in ('CLASSIFICATION.json', 'CLASSIFICATION_PRE_A6.json'))
+for c in sorted(new):
+    a, b = new[c], pre[c]
+    if (a['label'], a['provisional']) != (b['label'], b['provisional']):
+        print(c, a['label'], a['provisional'], a['rule_path'][-1]['rule'], '| e49b753:', b['label'],
+              b['provisional'], b['rule_path'][-1]['rule'])"
+git worktree remove /tmp/ct-e49b753
+```
+
+- 입력 파일과 `--states-dir`는 본 판정과 같아야 한다. 이전 엔진은 자신이 아는 THRESHOLDS 키만 읽는다.
+- 라벨이나 `provisional`이 다른 component는 두 엔진의 판정 규칙과 함께 보고서에 그대로 싣는다. 불일치를
+  사후에 규칙이나 임계값을 바꿔 맞추지 않는다. 판정은 개정 규칙의 라벨이다.
 
 - `CLASSIFICATION.json`이 component마다 PROMOTE / SPECIALIZE / OPTIMIZE / PRUNE 중 하나를 준다. 함께 `provisional`, `blocked_by`, 판정 경로가 붙는다.
 - 독립 판정 리뷰(decision-gate reviewer) 후 `research/LEDGER.jsonl`에 기록한다.

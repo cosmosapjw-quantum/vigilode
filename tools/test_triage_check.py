@@ -40,7 +40,7 @@ THRESHOLDS = {
                  "secondary_costs": ["ir_cold", "allocations_warm", "allocated_bytes_warm", "rhs_evaluations",
                                      "jvp_vectors", "direct_factorizations", "linear_iterations"]},
     "allocation": {"warm_window_allocations_max": 0, "allow_documented_constant_independent_of_n": True,
-                   "per_attempt_max": 0.01},
+                   "per_attempt_max": 0, "min_distinct_attempts": 2},
     "specialize": {"min_positives": 5, "threshold_rank_shift": 1,
                    "features": ["dimension", "structure", "jacobian", "mass", "oscillatory", "exact_solution",
                                 "grid", "rtol"]},
@@ -502,7 +502,7 @@ class TriageCheckTests(unittest.TestCase):
         fit = alloc["arm_problem_fits"][0]
         self.assertEqual(([p["attempts"] for p in fit["points"]], fit["a"], fit["b"]), ([40, 60], 500.0, 0.0))
         self.assertEqual(a["label"], "PROMOTE")
-        for row in fx.alloc:  # A: 2 allocations per attempted step: b = 2 > 0.01, fails
+        for row in fx.alloc:  # A: 2 allocations per attempted step: b = 2, allocations vary, fails
             if row["arm"] == "A":
                 row["warm"]["allocations"] = 7 + 2 * (40 if row["rtol"] == 1e-4 else 60)
         _, classification, _ = fx.check(self.tmp / "hot")
@@ -510,20 +510,76 @@ class TriageCheckTests(unittest.TestCase):
         self.assertEqual((a["criteria"]["allocation"]["status"], a["criteria"]["allocation"]["worst_b"]), ("fail", 2.0))
         self.assertEqual(a["criteria"]["allocation"]["arm_problem_fits"][0]["a"], 7.0)
         # PROMOTE fails only on allocation -> OPTIMIZE, never PRUNE_DEFAULT
-        self.assertEqual(a["label"], "OPTIMIZE")
+        self.assertEqual((a["label"], a["provisional"]), ("OPTIMIZE", False))
         step = a["rule_path"][-1]
         self.assertEqual((step["rule"], step["kind"]), ("OPTIMIZE_ALLOCATION", "alloc"))
-        self.assertIn("worst per-attempt b 2.0 > 0.01 (A P2 endpoint)", step["detail"])
+        self.assertIn("worst per-attempt b 2.0", step["detail"])
+        self.assertIn("(A P2 endpoint)", step["detail"])
         self.assertNotIn("PRUNE_DEFAULT", rules(a))
 
+    def test_allocation_gate_is_exact_zero(self):
+        """Amendment 8 (B2): a cell passes only with identical warm allocations; small or negative slopes fail."""
+        for name, (low, high) in (("small_positive", (500, 501)), ("negative", (501, 500))):
+            fx = pair_fixture(cost_a=1000, cost_b=2000)
+            for row in fx.rows:  # attempts 40 and 400: b = +-1/360, below the former 0.01 limit
+                if row["arm"] == "A":
+                    row["attempts"] = 40 if row["rtol"] == 1e-4 else 400
+            for row in fx.alloc:
+                if row["arm"] == "A":
+                    row["warm"]["allocations"] = low if row["rtol"] == 1e-4 else high
+            _, classification, _ = fx.check(self.tmp / name)
+            a = component(classification, "drv.a")
+            alloc = a["criteria"]["allocation"]
+            self.assertEqual(alloc["status"], "fail", name)
+            self.assertLess(abs(alloc["worst_b"]), 0.01, name)
+            self.assertEqual(alloc["per_attempt_max"], 0)
+            self.assertEqual((a["label"], rules(a)[-1]), ("OPTIMIZE", "OPTIMIZE_ALLOCATION"), name)
+
     def test_allocation_fit_needs_two_distinct_attempts(self):
+        """Amendment 8 (B3): no fitted cell is insufficient evidence -> provisional, never OPTIMIZE_ALLOCATION."""
         fx = pair_fixture()
         fx.alloc = [r for r in fx.alloc if r["rtol"] == 1e-4]
         _, classification, _ = fx.check(self.tmp)
         a = component(classification, "drv.a")
-        self.assertIsNone(a["criteria"]["allocation"]["status"])
-        self.assertIn("no arm-problem with >= 2 distinct attempts", a["criteria"]["allocation"]["reason"])
-        self.assertEqual((a["label"], rules(a)[-1]), ("OPTIMIZE", "OPTIMIZE_ALLOCATION"))
+        alloc = a["criteria"]["allocation"]
+        self.assertIsNone(alloc["status"])
+        self.assertIn("no fitted arm-problem", alloc["reason"])
+        self.assertEqual(alloc["constant_attempt_cells"], 2)  # A on P1 and P2: one attempt count each
+        self.assertEqual(alloc["arms_without_fit"], ["A"])
+        self.assertNotIn("OPTIMIZE_ALLOCATION", rules(a))
+        self.assertTrue(a["provisional"])
+        self.assertIn("ALLOCATION_MISSING", a["flags"])
+        self.assertEqual((a["label"], rules(a)[-1]), ("OPTIMIZE", "PROMOTE_BLOCKED_PROVISIONAL"))
+        self.assertTrue(any(s.startswith("allocation: insufficient_evidence") for s in a["insufficient_evidence"]))
+        import evidence_schema_v2 as es
+        es.validate_triage(self.tmp / "RESULTS.json", self.tmp / "CLASSIFICATION.json")
+
+    def test_constant_attempt_cells_are_counted_and_an_unfitted_arm_is_insufficient(self):
+        """Amendment 8 (B3): cells with one attempt count are dropped and counted; an arm of the component
+        without any fitted cell makes the allocation status null even when the other arm's cells pass."""
+        fx = pair_fixture(problems=("P1", "P2"))
+        fx.component("la.y", "la")
+        fx.arm("A3", ["drv.a", "la.y"], "P1", ir=1000)
+        for row in fx.rows:  # A3 takes the same number of attempts at every rtol: no slope to fit
+            if row["arm"] == "A3":
+                row["attempts"] = 50
+        _, classification, _ = fx.check(self.tmp)
+        a = component(classification, "drv.a")
+        alloc = a["criteria"]["allocation"]
+        self.assertIsNone(alloc["status"])
+        self.assertEqual(alloc["constant_attempt_cells"], 1)
+        self.assertEqual(alloc["arms_without_fit"], ["A3"])
+        self.assertEqual(alloc["fitted"], 2)  # A on P1 and P2 are fitted and pass
+        self.assertTrue(a["provisional"])
+        self.assertIn("ALLOCATION_MISSING", a["flags"])
+        self.assertNotIn("OPTIMIZE_ALLOCATION", rules(a))
+        self.assertNotEqual(a["label"], "PROMOTE")
+        # A failing fitted cell decides even with an unfitted arm: hot-loop allocation is evidence enough.
+        for row in fx.alloc:
+            if row["arm"] == "A" and row["problem"] == "P1":
+                row["warm"]["allocations"] = 2 * (40 if row["rtol"] == 1e-4 else 60)
+        _, classification, _ = fx.check(self.tmp / "fail")
+        self.assertEqual(component(classification, "drv.a")["criteria"]["allocation"]["status"], "fail")
 
     def test_c2_exoneration(self):
         fx = Fixture()
@@ -540,6 +596,58 @@ class TriageCheckTests(unittest.TestCase):
         self.assertEqual(a["criteria"]["c2"]["exonerated_groups"], 4)  # A-off groups, cleared by A on the same cells
         self.assertEqual(off["criteria"]["c2"]["status"], "fail")
         self.assertEqual(off["criteria"]["c2"]["exonerated_groups"], 0)
+        self.assertEqual(a["criteria"]["c2"]["orphan_groups"], 0)
+
+    def test_c2_failure_exonerated_for_every_component_is_charged_to_all(self):
+        """Amendment 8 (B4), modeled on the smoke group bdf2-tier-a / complex-dahlquist-32 / rtol 1e-8
+        (R_up 253.7 > ratio_max 100): drv.bdf is cleared by bdf2 and nl.scaled by radau5-tier-a, so the old
+        rule charged the failure to nobody. Now it is charged to every component of the arm."""
+        fx = Fixture()
+        for cid, slot in (("drv.bdf", "drv"), ("drv.radau", "drv"), ("nl.scaled", "nl"), ("nl.plain", "nl")):
+            fx.component(cid, slot)
+        fx.problem("P1")
+        fx.arm("bdf2-tier-a", ["drv.bdf", "nl.scaled"], "P1", ir=1000)
+        fx.arm("bdf2", ["drv.bdf", "nl.plain"], "P1", ir=1000)
+        fx.arm("radau5-tier-a", ["drv.radau", "nl.scaled"], "P1", ir=1000)
+        for row in fx.rows:  # R_up = 253.7 on the bdf2-tier-a group at rtol 1e-6 only
+            if row["arm"] == "bdf2-tier-a" and row["rtol"] == 1e-6:
+                row["states_hex"][1] = [hx(1.0 + 2.0 * 253.7 * 1e-6)]
+        results, classification, _ = fx.check(self.tmp)
+        self.assertAlmostEqual(group(results, "bdf2-tier-a", "P1", 1e-6)["R_up_max"], 253.7, places=6)
+        for cid in ("drv.bdf", "nl.scaled"):
+            c2 = component(classification, cid)["criteria"]["c2"]
+            self.assertEqual((c2["status"], c2["exonerated_groups"], c2["orphan_groups"]), ("fail", 0, 1), cid)
+            self.assertAlmostEqual(c2["max_R_up"], 253.7, places=6)
+        self.assertEqual(component(classification, "nl.plain")["criteria"]["c2"]["status"], "pass")
+        # Control: with a component of the arm that no other arm clears, only that component is charged.
+        fx.component("ord.2", "ord")
+        for row in fx.rows:
+            if row["arm"] == "bdf2-tier-a":
+                row["components"] = ["drv.bdf", "nl.scaled", "ord.2"]
+        _, classification, _ = fx.check(self.tmp / "control")
+        for cid, expected in (("drv.bdf", ("pass", 1, 0)), ("nl.scaled", ("pass", 1, 0)), ("ord.2", ("fail", 0, 0))):
+            c2 = component(classification, cid)["criteria"]["c2"]
+            self.assertEqual((c2["status"], c2["exonerated_groups"], c2["orphan_groups"]), expected, cid)
+
+    def test_c1_failure_exonerated_for_every_component_is_charged_to_all(self):
+        """Amendment 8 (B4): the no-orphan rule applies to C1 too."""
+        fx = Fixture()
+        for cid, slot in (("drv.a", "drv"), ("drv.b", "drv"), ("la.x", "la"), ("la.y", "la")):
+            fx.component(cid, slot)
+        fx.problem("P1")
+        fx.arm("AX", ["drv.a", "la.x"], "P1", ir=1000)
+        fx.arm("AY", ["drv.a", "la.y"], "P1", ir=1000)
+        fx.arm("BX", ["drv.b", "la.x"], "P1", ir=1000)
+        for row in fx.rows:
+            if row["arm"] == "AX" and row["rtol"] == 1e-4 and row["h0_scale"] == 0.5:
+                row["deterministic"] = False
+        _, classification, _ = fx.check(self.tmp)
+        for cid in ("drv.a", "la.x"):
+            c1 = component(classification, cid)["criteria"]["c1"]
+            self.assertEqual((c1["status"], c1["failures_total"]), ("fail", 1), cid)
+            self.assertIn("charged to every component", c1["failures"][0])
+        for cid in ("drv.b", "la.y"):
+            self.assertEqual(component(classification, cid)["criteria"]["c1"]["status"], "pass", cid)
 
     def test_narrow_promote_quality_component_is_specialize_applicability(self):
         fx = Fixture()
@@ -565,6 +673,29 @@ class TriageCheckTests(unittest.TestCase):
                          ("applicability", "N", ["P1"]))
         self.assertIn("no calibration search or holdout verdict", pred["validation"])
         self.assertEqual(narrow["criteria"]["promote"]["checks"]["coverage"], False)
+        # Amendment 8 (B6): 2 win cells (P1 at two targets) < specialize.min_positives 5 -> provisional.
+        self.assertEqual((pred["win_cells"], pred["min_positives"]), (2, 5))
+        self.assertTrue(narrow["provisional"])
+        self.assertIn("INSUFFICIENT_POSITIVES", narrow["flags"])
+        self.assertIn("INSUFFICIENT_POSITIVES", rules(narrow))
+        import evidence_schema_v2 as es
+        es.validate_triage(self.tmp / "RESULTS.json", self.tmp / "CLASSIFICATION.json")
+
+    def test_specialize_applicability_with_enough_positives_is_not_provisional(self):
+        fx = Fixture()
+        fx.component("drv.wide", "drv")
+        fx.component("drv.narrow", "drv")
+        for pid in ("P1", "P2", "P3", "P4", "P5", "P6", "P7"):
+            fx.problem(pid)
+            fx.arm("W", ["drv.wide"], pid, ir=1000)
+        for pid in ("P1", "P2", "P3"):  # 3 of 7 problems, 6 win cells >= 5
+            fx.arm("N", ["drv.narrow"], pid, ir=500)
+        _, classification, _ = fx.check(self.tmp)
+        narrow = component(classification, "drv.narrow")
+        self.assertEqual((narrow["label"], narrow["provisional"], rules(narrow)[-1]),
+                         ("SPECIALIZE", False, "SPECIALIZE_APPLICABILITY"))
+        self.assertEqual(narrow["predicate"]["win_cells"], 6)
+        self.assertNotIn("INSUFFICIENT_POSITIVES", narrow["flags"])
         import evidence_schema_v2 as es
         es.validate_triage(self.tmp / "RESULTS.json", self.tmp / "CLASSIFICATION.json")
 
@@ -638,6 +769,47 @@ class TriageCheckTests(unittest.TestCase):
                          {("specialized_rival", "S", "P1", "LOSS", 2.0)})
         self.assertNotIn("specialized_rival", {r["kind"] for r in results["comparisons"]})
         self.assertEqual(general["evidence"]["outcomes"]["LOSS"], 0)  # the narrow loss is not in the fractions
+
+    def test_rival_with_broad_own_driver_stays_in_strongest_set(self):
+        """Amendment 8 (B5), the smoke case drv.routed vs rodas5p-fast-ovh: the fast arm covers 12 of the 26
+        problems of the routed driver's universe (< 0.5), but drv.fast covers 12 of the 14 problems of its own
+        (analytic) class. Only a rival whose own slot component fails coverage in its own class is left out."""
+        fx = Fixture()
+        fx.component("drv.routed", "drv")
+        fx.component("drv.fast", "drv")
+        fx.component("drv.special", "drv")
+        for cid, slot in (("rt.declared", "rt"), ("la.faer", "la"), ("la.y", "la")):  # no attribution counterpart
+            fx.component(cid, slot)
+        problems = {"A1": "analytic", "A2": "analytic", "J1": "jvp", "J2": "jvp", "J3": "jvp"}
+        routed, fast, special = ["drv.routed", "rt.declared"], ["drv.fast", "la.faer"], ["drv.special", "la.y"]
+        for pid, jac in problems.items():
+            fx.problem(pid, jacobian=jac)
+            fx.arm("routed", routed, pid, ir=1000)
+        for pid in ("A1", "A2"):
+            fx.arm("fast-ovh", fast, pid, ir=500)
+        fx.arm("special", special, "J1", ir=250)  # narrow in its own class (any): 1 of 5
+        arms = [("routed", routed, "any", list(problems)), ("fast-ovh", fast, "analytic", ["A1", "A2"]),
+                ("special", special, "any", ["J1"])]
+        fx.list_doc = {"schema": "vigilode-triage-list-v1",
+                       "arms": [{"id": a, "components": comps, "wired": True, "unwired_reason": None,
+                                 "requires": {"jacobian": jac, "structure": None, "mass": False,
+                                              "fixed_dimension": None, "autonomous": False},
+                                 "applicable_problems": probs} for a, comps, jac, probs in arms],
+                       "problems": [{"id": pid, "jacobian": jac, "jvp": True} for pid, jac in problems.items()]}
+        results, classification, argv = fx.check(self.tmp)
+        engine = tch.Engine(tch.load_inputs(tch.argparse.Namespace(**self.namespace(argv)))[0])
+        self.assertEqual(engine.arm_coverage("fast-ovh", "drv.routed"), 0.4)  # < 0.5 of the judged universe
+        self.assertEqual(engine.coverage("drv.fast")["coverage"], 1.0)        # but broad in its own class
+        self.assertEqual(engine.strongest_rivals("drv.routed"), ["fast-ovh"])
+        self.assertEqual(engine.strongest_rivals("drv.routed", narrow=True), ["special"])
+        routed = component(classification, "drv.routed")
+        mine = comparisons(results, "drv.routed", target=1e-3)
+        self.assertEqual({(r["problem"], r["counterpart"], r["outcome"]) for r in mine if r["problem"] in ("A1", "A2")},
+                         {("A1", "fast-ovh", "LOSS"), ("A2", "fast-ovh", "LOSS")})
+        self.assertNotEqual(routed["label"], "PROMOTE")
+        self.assertGreater(routed["evidence"]["outcomes"]["LOSS"], 0)
+        side = {(r["counterpart"], r["problem"]) for r in results["specialized_rivals"] if r["component"] == "drv.routed"}
+        self.assertEqual(side, {("special", "J1")})
 
     def test_binary_optional_row_keys(self):
         fx = pair_fixture()
@@ -917,7 +1089,9 @@ class StateSidecarTests(unittest.TestCase):
         import evidence_schema_v2 as es
         es.validate_triage(inline_dir / "RESULTS.json", inline_dir / "CLASSIFICATION.json")
 
-    def test_missing_or_refused_sidecar_uses_flagged_inline(self):
+    def test_missing_sidecar_uses_flagged_inline_and_refused_sidecar_is_null(self):
+        """A missing sidecar falls back to the flagged accuracy_inline; a refused one (hash or shape mismatch)
+        gives null accuracy, never the runner's own value (Amendment 8)."""
         import gzip
         fx = self.fixture()
         states_dir = self.tmp / "states"
@@ -932,8 +1106,12 @@ class StateSidecarTests(unittest.TestCase):
         missing = sum(1 for r in fx.rows if r.get("states_file") == files[0])
         refused = sum(1 for r in fx.rows if r.get("states_file") == files[1])
         self.assertEqual((summary["sidecars_missing"], summary["sidecars_refused"]), (missing, refused))
-        self.assertEqual(summary["runner_inline"], missing + refused)
+        self.assertEqual(summary["runner_inline"], missing)
+        self.assertEqual(summary["none"], refused)
         self.assertEqual(summary["recomputed_sidecar"], 12 - missing - refused)
+        bad = [r for r in results["rows"] if r["accuracy_source"] == "none"]
+        self.assertEqual({r["class"] for r in bad}, {"unknown"})
+        self.assertTrue(all("sidecar refused" in r["reason"] for r in bad))
 
     def test_no_states_and_no_inline_is_null_with_reason(self):
         fx = self.fixture()

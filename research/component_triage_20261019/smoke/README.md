@@ -20,3 +20,5 @@ main campaign. Its labels are not component decisions.
 | `ALLOCATIONS.jsonl` | raw allocation windows of the profiled cells |
 | `REFERENCES.json` | 13 independent references |
 | `RESULTS.json.gz`, `CLASSIFICATION.json`, `REPORT_KO.md` | outputs of `triage_check.py` and `triage_report.py` (report verified with `--check`) |
+
+These outputs were produced by the b56bb19 engine and predate Amendment 8 (see `PREREGISTRATION.md`). They are kept unchanged as that engine's record; their `CLASSIFICATION.json` does not pass the tightened Amendment 8 schema (the applicability predicate has no `win_cells`).

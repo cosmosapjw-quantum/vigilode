@@ -14,8 +14,9 @@ A. Row accuracy (status `ok` rows; output times must equal the reference times b
    R, R_rho, R_up: the same with w = 1 / (atol_row + rtol_row * |ref|)  (C2 ratio).
    Non-finite states, or an ok row of the wrong shape, are integrity failures (C1), not unknowns.
    The code is tools/triage/triage_common.py::row_accuracy. Rows whose states live in a sidecar
-   (`--states-dir`) are recomputed from the verified sidecar, else take the runner's accuracy_inline
-   (flagged `accuracy_source: runner_inline`), else accuracy is null with a reason.
+   (`--states-dir`) are recomputed from the verified sidecar; a refused sidecar gives null accuracy; a missing
+   one takes the runner's accuracy_inline (flagged `accuracy_source: runner_inline`), else accuracy is null
+   with a reason.
 B. Groups (arm, problem, grid, rtol): at target eps the group is admissible iff rows for every h0 in
    accuracy.h0_scales_required are `ok` with E_up <= eps; inadmissible if one of them is not ok or exceeds eps;
    unknown otherwise (missing row or reference). (problem, grid) is reference_limited at eps when
@@ -27,18 +28,22 @@ B. Groups (arm, problem, grid, rtol): at target eps the group is admissible iff 
 C. Comparisons of component c (internal arms): for each arm a containing c, every arm a' whose component set
    equals a's outside c's slot and lacks c (slot content replaced, or an opt-in feature switched off) gives kind
    `attribution`; without such an a', kind
-   `strongest` compares with the cheapest applicable arm containing another component of the slot (and not c).
+   `strongest` compares with the cheapest applicable arm containing another component of the slot (and not c),
+   leaving out (to RESULTS.specialized_rivals) a rival arm whose own slot components all fail coverage in their
+   own universe.
    Per (problem, grid, eps): ratio = cost(a) / cost(a') -> GAIN (<= gain_max), NEUTRAL (<= neutral_max), LOSS;
    capability_gain (a admissible, no admissible rival), capability_loss (rival admissible, a not); excluded
    (reason) when neither is admissible, the reference is missing or limited, a state is unknown, or a cost is
    missing/incomplete. Only problems of a tier in c.tiers are compared.
 D. Criteria. C1 integrity: process_abort (except runner timeouts, which only make the cell inadmissible),
    deterministic = false or non-finite/malformed ok rows of an arm
-   containing c, attributed to c unless another arm containing c ran the same cell cleanly (exoneration;
-   interaction faults are not separated). C2: over c's groups (reference-limited in requested units excluded:
-   R_rho > reference_limited_factor), fraction with R_up <= ratio >= cell_fraction and max R_up <= ratio_max.
-   Allocation: max warm-window allocations over c's arms <= warm_window_allocations_max, or, when allowed, equal
-   to the component's optional `documented_warm_allocations` on rows of >= 2 distinct dimensions. C3 from
+   containing c, attributed to c unless another arm containing c ran the same cell cleanly (exoneration);
+   a failure that would be cleared for every component of its arm is charged to all of them (no orphan).
+   C2: over c's groups (reference-limited in requested units excluded: R_rho > reference_limited_factor),
+   fraction with R_up <= ratio >= cell_fraction and max R_up <= ratio_max, with the same exoneration and
+   no-orphan rule. Allocation: per (arm, problem, grid) of c's arms, the h0 = 1 warm allocations at the profiled
+   rtols must be identical (per_attempt_max = 0) over >= min_distinct_attempts distinct attempt counts; fail if
+   a fitted cell varies, else null if no cell or some arm has no fitted cell, else pass. C3 from
    PROBES.jsonl (rows of the row schema with `probe` = {id, must_refuse, components?}): a must-refuse probe
    passes only as `refused`/`error` with success false; any other probe must fail closed (`solver_failure`,
    `error` or `refused` with success false; success true is a silent failure); process_abort always fails;
@@ -48,11 +53,15 @@ E. Decision tree (rule_path entries {rule, kind, detail}; tools/triage/README.md
    STATIC_PRUNE_RELOCATE (static_class) -> PRUNE(relocate). C1_FAIL / C3_FAIL -> PRUNE, except that a
    component with a non-null optional `repair_path` and unique_capability true gets C_FAIL_REPAIRABLE ->
    OPTIMIZE, provisional (prereg rule 1). Provisional causes: BLOCKED_BY (blocked_by non-empty), TIMING_CONFLICT, C3_MISSING (no probe
-   covers the component; not applied to static components). NO_EVIDENCE (no non-excluded comparison) ->
+   covers the component; not applied to static components), ALLOCATION_MISSING (allocation null, after
+   CORRECTNESS_OK). NO_EVIDENCE (no non-excluded comparison) ->
    OPTIMIZE if unique_capability else PRUNE, both provisional. PROMOTE iff over non-excluded G/P comparisons
    the fraction of GAIN/NEUTRAL/capability_gain >= promote_cell_fraction, every ratio <= promote_max_ratio,
-   C1 pass, C2 pass, allocation pass, and not provisional; a component meeting these criteria while provisional
-   gets PROMOTE_BLOCKED_PROVISIONAL -> OPTIMIZE (never PRUNE by fall-through). Otherwise SPECIALIZE iff the win
+   C1 pass, C2 pass, allocation pass, coverage >= coverage_min, and not provisional; a component meeting these
+   criteria while provisional (or with allocation null) gets PROMOTE_BLOCKED_PROVISIONAL -> OPTIMIZE (never
+   PRUNE by fall-through). Failing only coverage: SPECIALIZE_APPLICABILITY (provisional with
+   INSUFFICIENT_POSITIVES below specialize.min_positives win cells); failing only a failing allocation (coverage
+   aside): OPTIMIZE_ALLOCATION. Otherwise SPECIALIZE iff the win
    set (GAIN or capability_gain cells) is non-empty and a single-feature predicate (numeric threshold <=/>= or
    a category set) over specialize.features, found on calibration cells (no loss, most wins), passes the
    holdout test of tools/holdout_verdict.py (positives = holdout loss cells, min_positives, one-rank threshold
@@ -115,7 +124,7 @@ RULE_KINDS = {
     "STATIC_PRUNE_RELOCATE": "static", "C1_FAIL": "correctness", "C3_FAIL": "correctness",
     "CORRECTNESS_OK": "correctness", "BLOCKED_BY": "contract", "TIMING_CONFLICT": "contract",
     "C3_MISSING": "contract", "PROMOTE_BLOCKED_PROVISIONAL": "contract", "C_FAIL_REPAIRABLE": "contract",
-    "NO_EVIDENCE": "evidence",
+    "ALLOCATION_MISSING": "contract", "NO_EVIDENCE": "evidence", "INSUFFICIENT_POSITIVES": "evidence",
     "SPECIALIZE_APPLICABILITY": "regime", "OPTIMIZE_ALLOCATION": "alloc", "PROMOTE": "frontier", "NOT_PROMOTE": "frontier", "SPECIALIZE": "frontier",
     "NOT_SPECIALIZE": "frontier",
     "OPTIMIZE_HEADROOM": "frontier", "OPTIMIZE_EXTERNAL_GAP": "frontier", "OPTIMIZE_UNCHARACTERIZED_WINS": "frontier",
@@ -160,7 +169,7 @@ def validate_thresholds(th: Any) -> list[str]:
             "reliability_c2": ("cell_fraction", "ratio", "ratio_max"),
             "frontier": ("gain_max", "neutral_max", "promote_cell_fraction", "promote_max_ratio", "primary_cost",
                          "secondary_costs"),
-            "allocation": ("per_attempt_max",),
+            "allocation": ("per_attempt_max", "min_distinct_attempts"),
             "specialize": ("min_positives", "threshold_rank_shift", "features"),
             "optimize": ("headroom_ratio_max", "external_counted_work_gap"),
             "timing": ("conflict_threshold",),
@@ -178,6 +187,10 @@ def validate_thresholds(th: Any) -> list[str]:
         return reasons
     if th["frontier"]["primary_cost"] != "ir_warm":
         reasons.append("THRESHOLDS: frontier.primary_cost must be 'ir_warm' (the only cost PROFILE.jsonl measures)")
+    if th["allocation"]["per_attempt_max"] != 0:
+        reasons.append("THRESHOLDS: allocation.per_attempt_max must be 0 (Amendment 8: identical warm allocations)")
+    if type(th["allocation"]["min_distinct_attempts"]) is not int or th["allocation"]["min_distinct_attempts"] < 2:
+        reasons.append("THRESHOLDS: allocation.min_distinct_attempts must be an int >= 2")
     if th["specialize"]["threshold_rank_shift"] != 1:
         reasons.append("THRESHOLDS: specialize.threshold_rank_shift must be 1 (tools/holdout_verdict.py shifts one rank)")
     units = th["external"]["counted_work"]
@@ -443,6 +456,8 @@ wrms_max = tc.wrms_max
 Reference = tc.Reference
 row_accuracy = tc.row_accuracy
 ACCURACY_SOURCES = ("recomputed_hex", "recomputed_sidecar", "recomputed_status", "runner_inline", "none")
+INLINE_EMPTY = {"class": "unknown", "E": None, "E_rho": None, "E_up": None, "R": None, "R_rho": None, "R_up": None,
+                "integrity": None}
 
 
 # ======================================================================================== the engine
@@ -525,6 +540,8 @@ class Engine:
                                           "jvp": bool(jvp) if jvp is not None else
                                           (lp.get("jacobian") or cp.get("jacobian")) == "jvp"}
         self.coverage_min = self.th["applicability"]["coverage_min"]
+        self.coverage_cache: dict[str, dict] = {}
+        self.c2_charges: dict[tuple, dict] | None = None
 
     # ---------------------------------------------------------------- references and rows
     def reference(self, problem_id: str, grid: str) -> Reference:
@@ -554,6 +571,10 @@ class Engine:
                 self.sidecar_events[sidecar_source] = self.sidecar_events.get(sidecar_source, 0) + 1
                 if states is not None:
                     acc, source = row_accuracy(row, problem, ref, states), "recomputed_sidecar"
+                elif sidecar_source == "sidecar_refused":
+                    # A sidecar that fails its hash or shape check is a defect, not a missing file: the
+                    # runner's own accuracy_inline is not trusted in its place (Amendment 8).
+                    acc, source = dict(INLINE_EMPTY, reason=f"accuracy: null: sidecar refused ({sidecar_note})"), "none"
                 else:
                     acc, source = self._inline(row, ref, sidecar_note)
             acc = dict(acc, source=source, sidecar=sidecar_note)
@@ -563,8 +584,7 @@ class Engine:
     @staticmethod
     def _inline(row: dict, ref, sidecar_note: str | None) -> tuple[dict, str]:
         inline = row.get("accuracy_inline")
-        empty = {"class": "unknown", "E": None, "E_rho": None, "E_up": None, "R": None, "R_rho": None,
-                 "R_up": None, "integrity": None}
+        empty = INLINE_EMPTY
         if inline is None:
             return dict(empty, reason=f"accuracy: null: no states and no accuracy_inline ({sidecar_note})"), "none"
         problem_with_inline = tc.check_accuracy_record(inline)
@@ -881,6 +901,11 @@ class Engine:
 
     def coverage(self, component: str) -> dict:
         """Applicability coverage: universe(c) problems reached by wired arms containing c / |universe(c)|."""
+        if component not in self.coverage_cache:
+            self.coverage_cache[component] = self._coverage(component)
+        return dict(self.coverage_cache[component])
+
+    def _coverage(self, component: str) -> dict:
         universe = self.universe(component)
         mine = set().union(*([probs for a, probs in self.applicable_gp.items()
                               if component in self.inp.arm_components.get(a, set())] or [set()])) & universe
@@ -891,21 +916,24 @@ class Engine:
                 "status": None if value is None else ("pass" if value >= self.coverage_min else "fail")}
 
     def arm_coverage(self, arm: str, component: str) -> float | None:
-        """A rival arm's coverage over universe(component) (the universe of the component being judged)."""
+        """A rival arm's coverage over universe(component) (the universe of the component being judged).
+        Diagnostic only since Amendment 8: narrowness is judged by the rival's own slot component."""
         universe = self.universe(component)
         return len(self.applicable_gp.get(arm, set()) & universe) / len(universe) if universe else None
 
     def strongest_rivals(self, component: str, narrow: bool = False) -> list[str]:
-        """Arms containing another component of c's slot (and not c). Rivals whose arm-level coverage is below
-        applicability.coverage_min are narrow: excluded by default, returned alone with narrow=True."""
+        """Arms containing another component of c's slot (and not c). A rival arm is narrow, and left out of the
+        strongest-rival set, only if every component it holds in c's slot fails coverage over that component's
+        own universe (its own Jacobian class), i.e. would itself be SPECIALIZE_APPLICABILITY rather than a
+        default (Amendment 8). narrow=True returns the narrow rivals alone."""
         slot = self.inp.comp[component]["slot"]
         rivals = {c for c, spec in self.inp.comp.items() if spec["slot"] == slot and c != component}
         out = []
         for a in self.internal_arms:
-            if component in self.inp.arm_components.get(a, set()) or not self.inp.arm_components.get(a, set()) & rivals:
+            drivers = self.inp.arm_components.get(a, set()) & rivals
+            if component in self.inp.arm_components.get(a, set()) or not drivers:
                 continue
-            cov = self.arm_coverage(a, component)
-            is_narrow = cov is not None and cov < self.coverage_min
+            is_narrow = all(self.coverage(d)["status"] == "fail" for d in drivers)
             if is_narrow == narrow:
                 out.append(a)
         return sorted(out)
@@ -940,8 +968,19 @@ class Engine:
 
 
 # ================================================================================ component criteria
+def charged_components(comps: set, exonerated: set) -> tuple[list[str], bool]:
+    """No-orphan exoneration (Amendment 8): a failure of an arm is charged to its components that no other arm
+    clears on the same cell; if every component is cleared (an interaction fault), it is charged to all of them,
+    so no failure is charged to nobody. Returns (charged components, orphan)."""
+    charged = sorted(c for c in comps if c not in exonerated)
+    if comps and not charged:
+        return sorted(comps), True
+    return charged, False
+
+
 def integrity_failures(engine: Engine) -> dict[str, list[str]]:
-    """C1: integrity failures attributed to components (with exoneration by a clean arm on the same cell)."""
+    """C1: integrity failures attributed to components (with exoneration by a clean arm on the same cell, and the
+    no-orphan rule of charged_components)."""
     inp = engine.inp
     clean: dict[tuple, set] = defaultdict(set)
     failures: list[tuple] = []
@@ -963,9 +1002,10 @@ def integrity_failures(engine: Engine) -> dict[str, list[str]]:
             failures.append((row["arm"], cell, problem, comps))
     out: dict[str, list[str]] = defaultdict(list)
     for arm, cell, problem, comps in failures:
-        for c in sorted(comps):
-            if not clean.get((c, cell)):
-                out[c].append(f"{arm} {cell[0]} {cell[1]} rtol {cell[2]!r} h0x{cell[3]!r}: {problem}")
+        charged, orphan = charged_components(set(comps), {c for c in comps if clean.get((c, cell))})
+        note = " (cleared for every component of the arm: charged to every component)" if orphan else ""
+        for c in charged:
+            out[c].append(f"{arm} {cell[0]} {cell[1]} rtol {cell[2]!r} h0x{cell[3]!r}: {problem}{note}")
     return out
 
 
@@ -1000,14 +1040,37 @@ def c2_group_passes(engine: Engine, g: dict) -> bool | None:
     return g["R_up_max"] <= rel["ratio"] and g["R_up_max"] <= rel["ratio_max"]
 
 
+def c2_charges(engine: Engine) -> dict[tuple, dict]:
+    """Failing C2 groups of internal arms -> {charged, orphan}. A component of the arm is cleared when another arm
+    containing it passes C2 on the same (problem, grid, rtol); charged_components applies the no-orphan rule."""
+    if engine.c2_charges is None:
+        passing: set[tuple] = set()
+        failing = []
+        for key, g in sorted(engine.groups.items()):
+            comps = engine.inp.arm_components.get(key[0], set())
+            if not comps or g["external"]:
+                continue
+            verdict = c2_group_passes(engine, g)
+            if verdict:
+                passing.update((c, key[1:]) for c in comps)
+            elif verdict is False:
+                failing.append((key, comps))
+        engine.c2_charges = {}
+        for key, comps in failing:
+            charged, orphan = charged_components(set(comps), {c for c in comps if (c, key[1:]) in passing})
+            engine.c2_charges[key] = {"charged": set(charged), "orphan": orphan}
+    return engine.c2_charges
+
+
 def c2_criterion(engine: Engine, component: str) -> dict:
     """C2 over the groups of the component's arms. As in C1, a failing group counts against the component only
-    if no other arm containing it passes C2 on the same (problem, grid, rtol) (exoneration)."""
+    if another arm containing it passes C2 on the same (problem, grid, rtol) (exoneration), unless that would
+    clear it for every component of its arm (no-orphan rule: then it counts against all of them)."""
     rel = engine.th["reliability_c2"]
+    charges = c2_charges(engine)
     mine = [(key, g) for key, g in sorted(engine.groups.items())
             if key[0] in engine.inp.arm_components and component in engine.inp.arm_components[key[0]]]
-    passing_cells = {key[1:] for key, g in mine if c2_group_passes(engine, g)}
-    groups, excluded, exonerated = [], 0, 0
+    groups, excluded, exonerated, orphans = [], 0, 0, 0
     for key, g in mine:
         verdict = c2_group_passes(engine, g)
         if g["R_up_max"] is None:
@@ -1015,13 +1078,15 @@ def c2_criterion(engine: Engine, component: str) -> dict:
         if verdict is None:
             excluded += 1
             continue
-        if not verdict and key[1:] in passing_cells:
-            exonerated += 1
-            continue
+        if not verdict:
+            if component not in charges[key]["charged"]:
+                exonerated += 1
+                continue
+            orphans += charges[key]["orphan"]
         groups.append(g["R_up_max"])
     if not groups:
         return {"status": None, "groups": 0, "within_ratio": 0, "fraction": None, "max_R_up": None,
-                "reference_limited_groups": excluded, "exonerated_groups": exonerated,
+                "reference_limited_groups": excluded, "exonerated_groups": exonerated, "orphan_groups": orphans,
                 "reason": "insufficient_evidence: no group with a computed R_up"}
     within = sum(1 for r in groups if r <= rel["ratio"])
     fraction = within / len(groups)
@@ -1029,16 +1094,20 @@ def c2_criterion(engine: Engine, component: str) -> dict:
     passed = fraction >= rel["cell_fraction"] and worst <= rel["ratio_max"]
     return {"status": "pass" if passed else "fail", "groups": len(groups), "within_ratio": within,
             "fraction": fraction, "max_R_up": fnum(worst), "reference_limited_groups": excluded,
-            "exonerated_groups": exonerated,
+            "exonerated_groups": exonerated, "orphan_groups": orphans,
             "reason": None if passed else f"fraction {fraction!r} (need >= {rel['cell_fraction']!r}) or max R_up "
                                           f"{worst!r} (need <= {rel['ratio_max']!r})"}
 
 
 def allocation_fits(engine: Engine, component: str) -> list[dict]:
-    """Hot-loop allocation per (arm, problem, grid) of the component's arms: least-squares fit
-    warm = a + b * attempts over the h0 = 1 ALLOCATIONS rows (warm = max over their raw windows) at the profiled
-    rtols, with `attempts` from the matching RUNS row; b (allocations per attempted step) is the hot-loop rate.
-    Fewer than 2 distinct attempts gives b null with insufficient_evidence."""
+    """Hot-loop allocation per (arm, problem, grid) of the component's arms, over the h0 = 1 ALLOCATIONS rows
+    (warm = max over their raw windows) at the profiled rtols, with `attempts` from the matching RUNS row.
+
+    A cell is fitted when its points span >= allocation.min_distinct_attempts distinct attempt counts; it then
+    passes iff its warm allocations are identical at every point (Amendment 8: exact zero per attempt, so a
+    negative or small slope does not pass). The least-squares line warm = a + b * attempts is reported as a
+    diagnostic. A cell with fewer distinct attempts is dropped (`constant_attempts`) and counted."""
+    need = engine.th["allocation"]["min_distinct_attempts"]
     points: dict[tuple, list] = defaultdict(list)
     skipped: dict[tuple, list] = defaultdict(list)
     for key, alloc in sorted(engine.inp.alloc_rows.items()):
@@ -1058,49 +1127,68 @@ def allocation_fits(engine: Engine, component: str) -> list[dict]:
     for cell in sorted(set(points) | set(skipped)):
         pts = sorted(points.get(cell, []))
         xs = [x for x, _, _ in pts]
+        ys = [y for _, y, _ in pts]
         fit = {"arm": cell[0], "problem": cell[1], "grid": cell[2], "a": None, "b": None,
                "points": [{"attempts": x, "warm_allocations": y, "rtol": r} for x, y, r in pts],
-               "max_warm_allocations": max((y for _, y, _ in pts), default=None), "skipped": skipped.get(cell, []),
-               "reason": None}
-        if len(set(xs)) < 2:
-            fit["reason"] = f"insufficient_evidence: {len(set(xs))} distinct attempts (need >= 2)"
+               "max_warm_allocations": max(ys, default=None), "skipped": skipped.get(cell, []),
+               "distinct_attempts": len(set(xs)), "constant_attempts": bool(pts) and len(set(xs)) < need,
+               "identical": None, "status": None, "reason": None}
+        if len(set(xs)) < need:
+            fit["reason"] = f"insufficient_evidence: {len(set(xs))} distinct attempts (need >= {need})"
         else:
             x_mean = math.fsum(xs) / len(xs)
-            y_mean = math.fsum(y for _, y, _ in pts) / len(pts)
+            y_mean = math.fsum(ys) / len(ys)
             sxx = math.fsum((x - x_mean) ** 2 for x in xs)
             sxy = math.fsum((x - x_mean) * (y - y_mean) for x, y, _ in pts)
             fit["b"] = sxy / sxx
             fit["a"] = y_mean - fit["b"] * x_mean
+            fit["identical"] = min(ys) == max(ys)
+            fit["status"] = "pass" if fit["identical"] else "fail"
+            if not fit["identical"]:
+                fit["reason"] = f"warm allocations {min(ys)}..{max(ys)} vary over {len(set(xs))} attempt counts"
         fits.append(fit)
     return fits
 
 
 def allocation_criterion(engine: Engine, component: str) -> dict:
-    """Pass iff every arm-problem fit of the component's arms has per-attempt allocations b <=
-    THRESHOLDS.allocation.per_attempt_max; fail if one exceeds it; null without any fit. The raw max warm
-    window is reported (allocation.warm_window_allocations_max is no longer a gate)."""
+    """Fail if any fitted arm-problem cell of the component's arms has non-identical warm allocations; else null
+    (insufficient evidence) when some arm of the component has no fitted cell, or no cell is fitted at all; else
+    pass. Cells dropped for constant attempts are counted. THRESHOLDS.allocation.per_attempt_max is 0 (the rate
+    must be exactly zero); the raw max warm window and the fitted b are reported, not gated."""
     limit = engine.th["allocation"]["per_attempt_max"]
     fits = allocation_fits(engine, component)
-    fitted = [f for f in fits if f["b"] is not None]
+    fitted = [f for f in fits if f["status"] is not None]
+    failing = [f for f in fitted if f["status"] == "fail"]
+    arms = sorted(a for a in engine.internal_arms if component in engine.inp.arm_components.get(a, set()))
+    fitted_arms = {f["arm"] for f in fitted}
+    without_fit = [a for a in arms if a not in fitted_arms]
     raw = [f["max_warm_allocations"] for f in fits if f["max_warm_allocations"] is not None]
-    worst = max(fitted, key=lambda f: (f["b"], f["arm"], f["problem"], f["grid"])) if fitted else None
-    out = {"status": None, "rule": "per_attempt_fit", "per_attempt_max": limit, "fits": len(fits),
-           "fitted": len(fitted), "insufficient_fits": len(fits) - len(fitted),
+    pool = failing or fitted
+    worst = max(pool, key=lambda f: (abs(f["b"]), f["arm"], f["problem"], f["grid"])) if pool else None
+    out = {"status": None, "rule": "identical_warm_allocations", "per_attempt_max": limit,
+           "min_distinct_attempts": engine.th["allocation"]["min_distinct_attempts"], "fits": len(fits),
+           "fitted": len(fitted), "failing_fits": len(failing), "insufficient_fits": len(fits) - len(fitted),
+           "constant_attempt_cells": sum(1 for f in fits if f["constant_attempts"]),
+           "arms_without_fit": without_fit,
            "worst_b": None if worst is None else fnum(worst["b"]),
            "worst": None if worst is None else {k: (fnum(worst[k]) if k in ("a", "b") else worst[k])
                                                 for k in ("arm", "problem", "grid", "a", "b")},
            "max_warm_allocations": max(raw) if raw else None,
            "arm_problem_fits": [{**f, "a": fnum(f["a"]), "b": fnum(f["b"])} for f in fits], "reason": None}
-    if not fits:
+    if failing:
+        out["status"] = "fail"
+        out["reason"] = (f"{len(failing)} fitted cell(s) with varying warm allocations; worst per-attempt b "
+                         f"{worst['b']!r} ({worst['arm']} {worst['problem']} {worst['grid']})")
+    elif not fits:
         out["reason"] = "insufficient_evidence: no h0 = 1 ALLOCATIONS rows for the component's arms"
     elif not fitted:
-        out["reason"] = "insufficient_evidence: no arm-problem with >= 2 distinct attempts"
-    elif worst["b"] <= limit:
-        out["status"] = "pass"
+        out["reason"] = (f"insufficient_evidence: no fitted arm-problem (>= {out['min_distinct_attempts']} "
+                         f"distinct attempts); {out['constant_attempt_cells']} cell(s) with constant attempts")
+    elif without_fit:
+        out["reason"] = (f"insufficient_evidence: arm(s) without a fitted cell: {without_fit}; "
+                         f"{out['constant_attempt_cells']} cell(s) with constant attempts")
     else:
-        out["status"] = "fail"
-        out["reason"] = (f"per-attempt allocations b {worst['b']!r} > {limit!r} ({worst['arm']} {worst['problem']} "
-                         f"{worst['grid']})")
+        out["status"] = "pass"
     return out
 
 
@@ -1355,9 +1443,11 @@ def timing_entries(engine: Engine) -> tuple[list[dict], bool | None]:
 
 
 # ================================================================================== classification
-def applicability_predicate(engine: Engine, component: str, coverage: dict) -> dict:
+def applicability_predicate(engine: Engine, component: str, coverage: dict, win_cells: int,
+                            min_positives: int) -> dict:
     """The SPECIALIZE predicate of a narrow component: its arms' applicability as the binary describes it
-    (requires + applicable_problems); a deterministic API requirement, so no holdout search."""
+    (requires + applicable_problems); a deterministic API requirement, so no holdout search. `win_cells` (GAIN or
+    capability_gain cells) below specialize.min_positives makes the label provisional (Amendment 8)."""
     arms = sorted(a for a in engine.applicable_gp if component in engine.inp.arm_components.get(a, set()))
     rule = []
     for arm in arms:
@@ -1368,6 +1458,7 @@ def applicability_predicate(engine: Engine, component: str, coverage: dict) -> d
     return {"kind": "applicability", "rule": rule, "coverage": fnum(coverage["coverage"]),
             "applicable_gp_problems": coverage["applicable_gp_problems"],
             "universe_gp_problems": coverage["universe_gp_problems"], "jacobian_class": coverage["jacobian_class"],
+            "win_cells": win_cells, "min_positives": min_positives,
             "validation": "deterministic: the arms' applicability is an API requirement; no calibration search "
                           "or holdout verdict"}
 
@@ -1442,10 +1533,15 @@ def classify(engine: Engine) -> tuple[list[dict], list[dict], list[dict]]:
             "coverage": crit_coverage["status"] == "pass",
         }
         promote_met = all(promote_checks.values())
-        coverage_only = not promote_checks["coverage"] and all(v for k, v in promote_checks.items() if k != "coverage")
-        allocation_only = (not promote_met and not promote_checks["allocation"]
+        # Allocation evidence missing (status null) is not a failure: the component is provisional
+        # (ALLOCATION_MISSING) and is judged as if the check were pending (Amendment 8), never OPTIMIZE_ALLOCATION.
+        pending = dict(promote_checks, allocation=crit_alloc["status"] in ("pass", None))
+        promote_pending = all(pending.values())
+        coverage_only = not pending["coverage"] and all(v for k, v in pending.items() if k != "coverage")
+        allocation_only = (crit_alloc["status"] == "fail"
                            and all(v for k, v in promote_checks.items() if k not in ("allocation", "coverage")))
         crit_promote = {"status": "pass" if promote_met else "fail", "c3": crit_c3["status"],
+                        "allocation": crit_alloc["status"],
                         "gp_cells": len(gp), "gp_good": len(good),
                         "fraction": fraction, "max_ratio": max_ratio, "checks": promote_checks,
                         "reason": None if promote_met else "failed: " + ", ".join(k for k, v in promote_checks.items()
@@ -1469,6 +1565,7 @@ def classify(engine: Engine) -> tuple[list[dict], list[dict], list[dict]]:
         gap_cells = external_gap_cells(engine, cid)
         all_gap_cells.extend(gap_cells)
         gap = optimize_external_gap(engine, cid, gap_cells)
+        min_positives = th["specialize"]["min_positives"]
         uncharacterized = spec["unique_capability"] and bool(win_cells) and not specialize_met
         optimize_paths = {
             "headroom": headroom["status"] == "pass",
@@ -1515,6 +1612,11 @@ def classify(engine: Engine) -> tuple[list[dict], list[dict], list[dict]]:
                     reasons.append("repair_path given but not a unique_capability: PRUNE (prereg rule 1)")
         else:
             step(path, "CORRECTNESS_OK", f"C1 {crit_c1['status'] or 'null'}, C3 {crit_c3['status'] or 'null'}")
+            if crit_alloc["status"] is None:
+                flags.append("ALLOCATION_MISSING")
+                provisional = True
+                causes.append("allocation missing")
+                step(path, "ALLOCATION_MISSING", f"{crit_alloc['reason']} -> provisional")
             if decided == 0:
                 flags.append("NO_EVIDENCE")
                 provisional = True
@@ -1526,14 +1628,20 @@ def classify(engine: Engine) -> tuple[list[dict], list[dict], list[dict]]:
                 label = "PROMOTE"
                 step(path, "PROMOTE", f"G/P fraction {fraction!r} >= {fr['promote_cell_fraction']!r}, max ratio "
                                       f"{max_ratio!r} <= {fr['promote_max_ratio']!r}, C1/C2/C3/allocation pass")
-            elif promote_met:
+            elif promote_pending:  # provisional here: blocked, or allocation evidence missing
                 label = "OPTIMIZE"
                 flags.append("PROMOTE_BLOCKED_PROVISIONAL")
                 step(path, "PROMOTE_BLOCKED_PROVISIONAL", "PROMOTE criteria met but provisional ("
                      + ", ".join(causes) + ") -> OPTIMIZE")
             elif coverage_only:
                 label = "SPECIALIZE"
-                pred_out = applicability_predicate(engine, cid, crit_coverage)
+                pred_out = applicability_predicate(engine, cid, crit_coverage, len(win_cells), min_positives)
+                if len(win_cells) < min_positives:
+                    provisional = True
+                    flags.append("INSUFFICIENT_POSITIVES")
+                    insufficient.append(f"specialize: {len(win_cells)} win cell(s) < min_positives {min_positives}")
+                    step(path, "INSUFFICIENT_POSITIVES", f"{len(win_cells)} win cell(s) < specialize.min_positives "
+                                                         f"{min_positives} -> provisional")
                 step(path, "SPECIALIZE_APPLICABILITY",
                      f"every other PROMOTE check passes but coverage {crit_coverage['coverage']!r} < "
                      f"{engine.coverage_min!r} ({crit_coverage['applicable_gp_problems']} of "
@@ -1546,12 +1654,11 @@ def classify(engine: Engine) -> tuple[list[dict], list[dict], list[dict]]:
                     flags.append("PROMOTE_BLOCKED_PROVISIONAL")
                     step(path, "PROMOTE_BLOCKED_PROVISIONAL", "PROMOTE criteria other than allocation met while "
                          "provisional (" + ", ".join(causes) + ")")
-                worst = crit_alloc["worst"]
+                worst = crit_alloc["worst"]  # status is "fail" here, so a failing fitted cell exists
                 step(path, "OPTIMIZE_ALLOCATION",
-                     f"PROMOTE fails only on allocation: worst per-attempt b {crit_alloc['worst_b']!r} > "
-                     f"{crit_alloc['per_attempt_max']!r} ({worst['arm']} {worst['problem']} {worst['grid']})"
-                     if worst is not None and crit_alloc["status"] == "fail" else
-                     f"PROMOTE fails only on allocation: {crit_alloc['reason']}")
+                     f"PROMOTE fails only on allocation: {crit_alloc['failing_fits']} fitted cell(s) with varying "
+                     f"warm allocations (per_attempt_max {crit_alloc['per_attempt_max']!r}); worst per-attempt b "
+                     f"{crit_alloc['worst_b']!r} ({worst['arm']} {worst['problem']} {worst['grid']})")
             else:
                 step(path, "NOT_PROMOTE", crit_promote["reason"])
                 if specialize_met:

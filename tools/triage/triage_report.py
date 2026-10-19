@@ -96,7 +96,8 @@ def render(results: dict, classification: dict, results_sha: str, classification
             p = e["predicate"]
             if p.get("kind") == "applicability":  # API requirement of the arms (SPECIALIZE_APPLICABILITY)
                 arms = ", ".join(r["arm"] for r in p["rule"])
-                rows.append([f"`{e['id']}`", "applicability", "API", f"{arms} (coverage {p['coverage']:.3g})",
+                wins = f", 승 {p['win_cells']}/{p['min_positives']}" if "win_cells" in p else ""  # Amendment 8
+                rows.append([f"`{e['id']}`", "applicability", "API", f"{arms} (coverage {p['coverage']:.3g}{wins})",
                              None, None, "deterministic", None, None])
                 continue
             value = p["values"] if p["op"] == "in" else p["threshold"]
