@@ -1,0 +1,76 @@
+name: Strict solver matched-error refinement
+on:
+  push:
+    branches: [research/benchmark-results-20261019-dual]
+    paths:
+      - '.github/workflows/strict-solver-refinement-20261019.yml'
+      - 'research/strict_solver_comparison_20261019/refinement/**'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: strict-solver-refinement-20261019
+  cancel-in-progress: false
+jobs:
+  refine:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      OMP_NUM_THREADS: '1'
+      OPENBLAS_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+      RAYON_NUM_THREADS: '1'
+      CARGO_BUILD_JOBS: '2'
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Run matched-error study
+        shell: bash
+        run: |
+          set -euo pipefail
+          NODE=research/strict_solver_comparison_20261019
+          OUT="$NODE/refined_runs/${GITHUB_RUN_ID}"
+          mkdir -p "$OUT"
+          { date -u; uname -a; lscpu; free -m; git rev-parse HEAD; } > "$OUT/host.txt"
+          bash "$NODE/refinement/run.sh" "$OUT" 2>&1 | tee "$OUT/execution.log"
+      - name: Preserve every receipt with size-safe reconstruction
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT="research/strict_solver_comparison_20261019/refined_runs/${GITHUB_RUN_ID}"
+          [[ -d "$OUT" ]] || exit 0
+          python3 - "$OUT" <<'PY'
+          import hashlib,json,sys
+          from pathlib import Path
+          root=Path(sys.argv[1]);split=[]
+          for p in list(root.rglob('*')):
+              if p.is_file() and p.stat().st_size>=16*1024*1024:
+                  parts=[]
+                  with p.open('rb') as f:
+                      for k in range(100000):
+                          b=f.read(8*1024*1024)
+                          if not b:break
+                          q=p.with_name(p.name+f'.part{k:04d}');q.write_bytes(b);parts.append(str(q.relative_to(root)))
+                  split.append({'original':str(p.relative_to(root)),'sha256':hashlib.sha256(p.read_bytes()).hexdigest(),'parts_in_order':parts})
+          (root/'RECONSTRUCTION.json').write_text(json.dumps(split,indent=2)+'\n')
+          with (root/'SHA256SUMS').open('w') as f:
+              for p in sorted(root.rglob('*')):
+                  if p.is_file() and p.name not in ('SHA256SUMS','execution.log') and p.stat().st_size<16*1024*1024:
+                      f.write(hashlib.sha256(p.read_bytes()).hexdigest()+'  '+str(p.relative_to(root))+'\n')
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          find "$OUT" -type f -size -16M -print0 | xargs -0 -r git add -f --
+          if ! git diff --cached --quiet; then
+            git commit -m "bench: retain matched-error refinement ${GITHUB_RUN_ID} [skip ci]"
+            git fetch origin research/benchmark-results-20261019-dual
+            git rebase origin/research/benchmark-results-20261019-dual
+            git push origin HEAD:refs/heads/research/benchmark-results-20261019-dual
+          fi

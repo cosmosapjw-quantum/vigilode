@@ -1,0 +1,27 @@
+{
+  "schema": "vigilode-strict-comparison-conclusion-v1",
+  "status": "COMPLETE_SCOPED",
+  "date_kst": "2026-10-19",
+  "numerical_source": "a21d573980f66fe02891bd216153443b5352f921",
+  "screening_execution_source": "87df9b071c3a3a7828e999e553a088af5860d274",
+  "matched_execution_source": "9c6a6d9145795e35b978652a567b806ddc84a6bd",
+  "readback_source": "65ef8cde8b3c6fdbfef4d06b52c63df673467651",
+  "runs": {"screening":39257390707,"matched":39261895983,"readback":39263860973},
+  "completed": {"screening_cells":756,"screening_timing_processes":1152,"matched_calibration_solves":270,"matched_timing_processes":408,"matched_timed_integrations":4896,"matched_pairs":42,"state_hashes_verified":189,"retained_file_hashes_verified":225},
+  "native_node_tests": {"passed":4,"failed":0,"ignored":0,"whole_workspace_tested":false},
+  "readback_status": "PASS_SCOPED_READBACK_WITH_INITIAL_ROUNDING",
+  "initial_bit_identity": {"status":"FAIL_PRESERVED","mismatched_rows":18,"arm":"diffsol-bdf","max_absolute_difference":2.220446049250313e-16,"max_requested_error_units":1.1702897349381543e-10,"data_or_matched_accuracy_threshold_changed":false},
+  "literature_supported_correction": "SciPy1.17 VODE was a C port with an upstream confirmed analytical dense Jacobian transpose bug; earlier observations do not rank original Fortran VODE.",
+  "numerically_checked_findings": [
+    "All three native solver arms completed all 756 main accuracy configurations.",
+    "All ten physical case/grid groups matched nominal achieved error within a factor of two and all three initial-step scales below the common error anchor.",
+    "VigilODE fast had lower measured times on the selected Robertson, HIRES and van der Pol configurations.",
+    "Netlib DVODE remained 1.7676 to 2.1886 times shorter than VigilODE banded on the four spatial case/grid configurations.",
+    "All 42 paired medians and the independent vectorized error metrics were recomputed from retained refined raw observations."
+  ],
+  "holds": ["SHARED_HOST_TIMING_NOT_PRODUCTION_AUTHORITY","EMPIRICAL_REFERENCE_NOT_CERTIFIED_ENCLOSURE","CONTINUOUS_TIME_AND_EVENT_ERRORS_NOT_TESTED","DIFFSOL_OTHER_BACKENDS_NOT_TESTED","REMAINING_SCIPY_DENSE_PATH_ROOT_CAUSE_UNRESOLVED","NO_INDEPENDENT_PERSONNEL_REVIEW"],
+  "archival_limit": "Main screening omitted two >20MiB raw gzip files. Final matched run retains full state objects and per-repeat timing rows, with no split or omitted state object.",
+  "production_code_modified": false,
+  "production_promotion": false,
+  "merge_performed": false
+}

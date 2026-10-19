@@ -1,0 +1,21 @@
+[package]
+name = "strict-compare"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.94.1"
+build = "src/build.rs"
+
+[dependencies]
+diffsol = { version = "=0.16.1", default-features = false, features = ["faer"] }
+rodas5p-core = { path = "../../crates/rodas5p-core" }
+rodas5p-integrators = { path = "../../crates/rodas5p-integrators" }
+serde_json = { version = "=1.0.151", features = ["float_roundtrip"] }
+
+[profile.measurement]
+inherits = "release"
+opt-level = 3
+lto = false
+codegen-units = 1
+panic = "abort"
+
+[workspace]

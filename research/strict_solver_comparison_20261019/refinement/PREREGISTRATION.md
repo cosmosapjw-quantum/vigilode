@@ -1,0 +1,15 @@
+# R1: accuracy refinement and declared-structure comparison
+
+This supplemental design is frozen before its timing. Phase 0 run 39257390707 completed 756 cells and 1152 fresh timing processes. Its coarse decade grid yielded mostly same-target, not genuinely matched-achieved errors. DVODE uses its banded matrix route on the Brusselator, whereas the measured VigilODE arm was dense-storage fast. We now add the existing production banded-slices path behind a separately named arm; no solver implementation change.
+
+Five physical benchmark models (exclude the exact pivot control from performance), endpoint/uniform101, maximum E_up target 1e-6. All three initial-step scales must pass. Coarse tolerance hints come from phase 0 CSV but are re-executed on this new binary. For each case/grid, choose an accuracy anchor equal to the smallest coarse worst-h0 E_up among the applicable arms. Tune other arms by bounded log bisection, with all-h0 E_up <= anchor and nominal-h0 E_up in [anchor/2,anchor]. At most 8 decade bracketing moves and 14 refinements per arm. All probes and failures are preserved. Reference error must remain <=0.1 anchor. An unsuccessful match is HOLD, not silently called equal accuracy.
+
+Only settings meeting the actual factor-two nominal-error band are timed. Twelve independent processes per arm, one discarded warmup, 20 timed repetitions for small models and 3 for spatial models. Three-arm order: six permutations twice. Four-arm order: four-row Williams balanced design three times. Two-arm partial matches alternate AB/BA. All pairs use this new host and newly built binary; no old times are pooled. State bits of every timing output must match the nominal calibration output.
+
+Forty-two pairwise hypotheses are prespecified across ten case/grid groups. Report pointwise bootstrap intervals AND conservative Bonferroni family intervals using 100000 resamples of 12 paired block ratios. Report exact paired sign-test p values and Bonferroni adjusted values as an additional robustness diagnostic. Host remains shared and all timings remain diagnostic, including multiplicity-adjusted intervals. Neither frequentist coverage under autocorrelated host noise nor general hardware extrapolation is proven.
+
+## Archival correction
+
+The phase 0 publication size filter omitted two >20MiB raw gzip files. Its 756-row scored CSV, 1152 block-median records, references and other receipts were saved, but its complete trajectories/per-repeat raw times were NOT saved to GitHub. Preserve this limitation and do not claim a raw readback of those missing files. This supplement deduplicates complete state arrays by SHA-256 and records every original per-repeat time in compact raw rows. Each state object is separately compressed; a later size guard splits any unexpectedly large file into reconstructible 8MiB chunks rather than silently omitting it.
+
+No solver optimization or default-route promotion is in scope. Stop after this refinement plus one independently implemented numerical readback; no unlimited audit loop.
