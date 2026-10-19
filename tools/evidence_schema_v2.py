@@ -34,6 +34,7 @@ floats), replacing the former length ``assert`` in ALG05.
 
 from __future__ import annotations
 
+import gzip
 import hashlib
 import json
 import math
@@ -466,7 +467,10 @@ def _sha256(data: bytes) -> str:
 def _load(role: str, path: Path, pin: str | None, docs: dict, digests: dict, reasons: list[str]) -> None:
     try:
         data = Path(path).read_bytes()
-    except OSError as exc:
+        if str(path).endswith(".gz"):
+            # Large triage outputs are committed as `gzip -n` copies; digests are over the content.
+            data = gzip.decompress(data)
+    except (OSError, EOFError, gzip.BadGzipFile) as exc:
         reasons.append(f"{role}: cannot read {path}: {exc}")
         return
     digests[role] = _sha256(data)
@@ -1076,7 +1080,7 @@ TRIAGE_CLASSIFICATION_SCHEMA = "vigilode-triage-classification-v1"
 TRIAGE_THRESHOLDS_SCHEMA = "vigilode-triage-thresholds-v1"
 TRIAGE_RESULTS_KEYS = frozenset(("schema", "campaign", "generator", "inputs", "thresholds",
                                  "ignored_rows_other_campaigns", "references", "rows", "accuracy_summary", "groups",
-                                 "comparisons", "external_gaps", "timing"))
+                                 "comparisons", "specialized_rivals", "external_gaps", "timing"))
 TRIAGE_CLASSIFICATION_KEYS = frozenset(("schema", "campaign", "generator", "inputs", "results_sha256",
                                         "components", "summary"))
 TRIAGE_INPUT_ROLES = frozenset(("runs", "references", "profile", "allocations", "probes", "timing", "attribution",
@@ -1099,7 +1103,12 @@ TRIAGE_COMPARISON_KEYS = frozenset(("component", "arm", "kind", "counterpart", "
 TRIAGE_COMPONENT_KEYS = frozenset(("id", "family", "slot", "loc", "reach", "label", "prune_kind", "provisional",
                                    "blocked_by", "flags", "predicate", "rule_path", "evidence", "criteria", "reasons",
                                    "insufficient_evidence"))
-TRIAGE_CRITERIA = frozenset(("c1", "c2", "c3", "allocation", "promote", "specialize", "optimize", "timing"))
+TRIAGE_CRITERIA = frozenset(("c1", "c2", "c3", "allocation", "coverage", "promote", "specialize", "optimize",
+                             "timing"))
+TRIAGE_APPLICABILITY_PREDICATE_KEYS = frozenset(("kind", "rule", "coverage", "applicable_gp_problems",
+                                                 "universe_gp_problems", "jacobian_class", "validation"))
+TRIAGE_COVERAGE_KEYS = frozenset(("coverage", "applicable_gp_problems", "universe_gp_problems", "slot_gp_problems",
+                                  "jacobian_class", "coverage_min", "status", "reason"))
 TRIAGE_PREDICATE_KEYS = frozenset(("feature", "op", "threshold", "values", "calibration", "holdout"))
 TRIAGE_LABELS = ("PROMOTE", "SPECIALIZE", "OPTIMIZE", "PRUNE")
 TRIAGE_OUTCOMES = ("GAIN", "NEUTRAL", "LOSS", "capability_gain", "capability_loss", "excluded")
@@ -1114,7 +1123,9 @@ TRIAGE_RULE_KINDS = {
     "CORRECTNESS_OK": "correctness", "BLOCKED_BY": "contract", "TIMING_CONFLICT": "contract",
     "C3_MISSING": "contract", "PROMOTE_BLOCKED_PROVISIONAL": "contract", "C_FAIL_REPAIRABLE": "contract",
     "NO_EVIDENCE": "evidence",
-    "PROMOTE": "frontier", "NOT_PROMOTE": "frontier", "SPECIALIZE": "frontier", "NOT_SPECIALIZE": "frontier",
+    "SPECIALIZE_APPLICABILITY": "regime", "OPTIMIZE_ALLOCATION": "alloc", "PROMOTE": "frontier",
+    "NOT_PROMOTE": "frontier", "SPECIALIZE": "frontier",
+    "NOT_SPECIALIZE": "frontier",
     "OPTIMIZE_HEADROOM": "frontier", "OPTIMIZE_EXTERNAL_GAP": "frontier", "OPTIMIZE_UNCHARACTERIZED_WINS": "frontier",
     "PRUNE_DEFAULT": "frontier", "NEUTRAL_TIEBREAK_LOC": "tiebreak", "NEUTRAL_TIE_EQUAL_LOC": "tiebreak",
 }
@@ -1125,6 +1136,7 @@ TRIAGE_RULE_LABELS = {
     "NO_EVIDENCE": ("OPTIMIZE", "PRUNE"), "PROMOTE": ("PROMOTE",), "PROMOTE_BLOCKED_PROVISIONAL": ("OPTIMIZE",),
     "SPECIALIZE": ("SPECIALIZE",), "OPTIMIZE_HEADROOM": ("OPTIMIZE",), "OPTIMIZE_EXTERNAL_GAP": ("OPTIMIZE",),
     "OPTIMIZE_UNCHARACTERIZED_WINS": ("OPTIMIZE",), "PRUNE_DEFAULT": ("PRUNE",), "NEUTRAL_TIEBREAK_LOC": ("PRUNE",),
+    "OPTIMIZE_ALLOCATION": ("OPTIMIZE",), "SPECIALIZE_APPLICABILITY": ("SPECIALIZE",),
 }
 TRIAGE_GRIDS = frozenset(("endpoint", "uniform101"))
 SHA256_HEX = re.compile(r"^[0-9a-f]{64}$")
@@ -1348,6 +1360,19 @@ def _triage_results(c: _Checks, results: Any) -> tuple[dict | None, dict]:
                     not (c.int_(f"{p}.work", r["work"]) and c.int_(f"{p}.peer_work", r["peer_work"], minimum=1))
                     or r["gap"] != r["work"] / r["peer_work"]):
                 c.fail(f"{p}.gap", "gap is not work / peer_work")
+    if c.list_("results.specialized_rivals", results["specialized_rivals"]):
+        for i, r in enumerate(results["specialized_rivals"]):
+            q = f"results.specialized_rivals[{i}]"
+            if c.keys(q, r, TRIAGE_COMPARISON_KEYS):
+                c.equal(f"{q}.kind", r["kind"], "specialized_rival")
+                if r["outcome"] not in TRIAGE_OUTCOMES:
+                    c.fail(f"{q}.outcome", f"unregistered outcome {r['outcome']!r}")
+                elif r["outcome"] in TRIAGE_RATIO_OUTCOMES and (
+                        not c.float_(f"{q}.ratio", r["ratio"], positive=True)
+                        or not (c.int_(f"{q}.cost", r["cost"], minimum=1)
+                                and c.int_(f"{q}.counterpart_cost", r["counterpart_cost"], minimum=1))
+                        or r["ratio"] != r["cost"] / r["counterpart_cost"]):
+                    c.fail(f"{q}.ratio", "ratio is not cost / counterpart_cost")
     if c.keys("results.timing", results["timing"], {"present", "diagnostic", "entries"}):
         c.bool_("results.timing.present", results["timing"]["present"])
         c.list_("results.timing.entries", results["timing"]["entries"])
@@ -1413,7 +1438,14 @@ def _triage_component(c: _Checks, p: str, e: Any, counts: dict) -> str | None:
         if c.list_(f"{p}.{key}", e[key]):
             for i, s in enumerate(e[key]):
                 c.str_(f"{p}.{key}[{i}]", s)
-    if e["label"] == "SPECIALIZE":
+    if e["label"] == "SPECIALIZE" and isinstance(e["predicate"], dict) and e["predicate"].get("kind") == "applicability":
+        if c.keys(f"{p}.predicate", e["predicate"], TRIAGE_APPLICABILITY_PREDICATE_KEYS):
+            c.list_(f"{p}.predicate.rule", e["predicate"]["rule"], nonempty=True)
+            c.float_(f"{p}.predicate.coverage", e["predicate"]["coverage"], minimum=0.0)
+            if not any(isinstance(s, dict) and s.get("rule") == "SPECIALIZE_APPLICABILITY"
+                       for s in e["rule_path"] or []):
+                c.fail(f"{p}.predicate", "applicability predicate without the SPECIALIZE_APPLICABILITY rule")
+    elif e["label"] == "SPECIALIZE":
         if c.keys(f"{p}.predicate", e["predicate"], TRIAGE_PREDICATE_KEYS):
             pred = e["predicate"]
             if pred["op"] not in ("le", "ge", "in"):
@@ -1432,6 +1464,14 @@ def _triage_component(c: _Checks, p: str, e: Any, counts: dict) -> str | None:
             crit = e["criteria"][name]
             if c.dict_(f"{p}.criteria.{name}", crit) and crit.get("status") not in ("pass", "fail", None):
                 c.fail(f"{p}.criteria.{name}.status", f"{crit.get('status')!r}")
+        cov = e["criteria"].get("coverage")
+        if c.keys(f"{p}.criteria.coverage", cov, TRIAGE_COVERAGE_KEYS):
+            if not (isinstance(cov["jacobian_class"], list) and cov["jacobian_class"]
+                    and set(cov["jacobian_class"]) <= {"analytic", "jvp", "any"}):
+                c.fail(f"{p}.criteria.coverage.jacobian_class", f"{cov['jacobian_class']!r}")
+            if all(type(cov[k]) is int for k in ("applicable_gp_problems", "universe_gp_problems")) and \
+                    not cov["applicable_gp_problems"] <= cov["universe_gp_problems"]:
+                c.fail(f"{p}.criteria.coverage", "more applicable problems than the universe holds")
         if e["label"] == "PROMOTE" and isinstance(e["criteria"].get("promote"), dict) \
                 and e["criteria"]["promote"].get("status") != "pass":
             c.fail(f"{p}.label", "PROMOTE without a passing promote criterion")

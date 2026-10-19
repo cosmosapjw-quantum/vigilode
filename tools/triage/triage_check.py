@@ -116,7 +116,8 @@ RULE_KINDS = {
     "CORRECTNESS_OK": "correctness", "BLOCKED_BY": "contract", "TIMING_CONFLICT": "contract",
     "C3_MISSING": "contract", "PROMOTE_BLOCKED_PROVISIONAL": "contract", "C_FAIL_REPAIRABLE": "contract",
     "NO_EVIDENCE": "evidence",
-    "PROMOTE": "frontier", "NOT_PROMOTE": "frontier", "SPECIALIZE": "frontier", "NOT_SPECIALIZE": "frontier",
+    "SPECIALIZE_APPLICABILITY": "regime", "OPTIMIZE_ALLOCATION": "alloc", "PROMOTE": "frontier", "NOT_PROMOTE": "frontier", "SPECIALIZE": "frontier",
+    "NOT_SPECIALIZE": "frontier",
     "OPTIMIZE_HEADROOM": "frontier", "OPTIMIZE_EXTERNAL_GAP": "frontier", "OPTIMIZE_UNCHARACTERIZED_WINS": "frontier",
     "PRUNE_DEFAULT": "frontier", "NEUTRAL_TIEBREAK_LOC": "tiebreak", "NEUTRAL_TIE_EQUAL_LOC": "tiebreak",
 }
@@ -159,12 +160,13 @@ def validate_thresholds(th: Any) -> list[str]:
             "reliability_c2": ("cell_fraction", "ratio", "ratio_max"),
             "frontier": ("gain_max", "neutral_max", "promote_cell_fraction", "promote_max_ratio", "primary_cost",
                          "secondary_costs"),
-            "allocation": ("warm_window_allocations_max", "allow_documented_constant_independent_of_n"),
+            "allocation": ("per_attempt_max",),
             "specialize": ("min_positives", "threshold_rank_shift", "features"),
             "optimize": ("headroom_ratio_max", "external_counted_work_gap"),
             "timing": ("conflict_threshold",),
             "parity": ("max_relative_error",),
-            "external": ("peers_field", "counted_work")}
+            "external": ("peers_field", "counted_work"),
+            "applicability": ("coverage_min",)}
     for section, keys in need.items():
         if not isinstance(th.get(section), dict):
             reasons.append(f"THRESHOLDS: missing section {section!r}")
@@ -481,6 +483,7 @@ class Engine:
         self.groups: dict[tuple, dict] = {}
         self.arm_cell_cache: dict[tuple, dict] = {}
         self.sidecar_events: dict[str, int] = {}
+        self.specialized_rivals: list[dict] = []
         self.arms = sorted({k[0] for k in inp.rows})
         self.internal_arms = [a for a in self.arms if not tc.is_external(a)]
         self.arm_problems: dict[str, set] = defaultdict(set)
@@ -494,10 +497,34 @@ class Engine:
                 self.inp.arm_components.setdefault(arm["id"], set(arm.get("components", [])))
                 if arm["id"] not in self.internal_arms:
                     self.internal_arms.append(arm["id"])
+                listed = arm.get("applicable_problems")
                 for pid, cp in inp.problems.items():
-                    if pid in list_problems and tc.applicable(arm, tc.merged_problem(cp, list_problems[pid]))[0]:
+                    if isinstance(listed, list):
+                        ok = pid in listed
+                    else:
+                        ok = pid in list_problems and tc.applicable(arm, tc.merged_problem(cp, list_problems[pid]))[0]
+                    if ok:
                         self.arm_problems[arm["id"]].add(pid)
             self.internal_arms.sort()
+        # Applicability over the G/P corpus (coverage, narrow rivals): wired arms of the list (the binary's
+        # applicable_problems), else the arms with rows and the problems they ran.
+        gp = {pid for pid, p in inp.problems.items() if p["tier"] in ("G", "P")}
+        if inp.list is not None:
+            wired = [a["id"] for a in inp.list.get("arms", []) if a.get("wired") and not tc.is_external(a["id"])]
+        else:
+            wired = [a for a in self.internal_arms]
+        self.applicable_gp = {a: self.arm_problems.get(a, set()) & gp for a in wired}
+        self.list_arms = {a["id"]: a for a in (inp.list or {}).get("arms", [])}
+        list_problems = {q["id"]: q for q in (inp.list or {}).get("problems", [])}
+        # Jacobian availability of each G/P problem (user-declared; the production solver routes on it).
+        self.problem_jacobian = {}
+        for pid in gp:
+            cp, lp = inp.problems[pid], list_problems.get(pid, {})
+            jvp = lp.get("jvp", cp.get("jvp"))
+            self.problem_jacobian[pid] = {"analytic": (lp.get("jacobian") or cp.get("jacobian")) == "analytic",
+                                          "jvp": bool(jvp) if jvp is not None else
+                                          (lp.get("jacobian") or cp.get("jacobian")) == "jvp"}
+        self.coverage_min = self.th["applicability"]["coverage_min"]
 
     # ---------------------------------------------------------------- references and rows
     def reference(self, problem_id: str, grid: str) -> Reference:
@@ -775,7 +802,7 @@ class Engine:
             return rec
         cells = {r: self.arm_cell(r, problem_id, grid, eps) for r in rivals}
         undetermined = [r for r, s in cells.items()
-                        if s["state"] == "unknown" or (kind == "strongest" and s["state"] == "admissible"
+                        if s["state"] == "unknown" or (kind != "attribution" and s["state"] == "admissible"
                                                        and not s["complete"])]
         if undetermined:
             rec["reason"] = f"insufficient_evidence: rival(s) {undetermined} unknown or with incomplete cost"
@@ -829,12 +856,59 @@ class Engine:
                 out.append(other)
         return sorted(out)
 
-    def strongest_rivals(self, component: str) -> list[str]:
+    def slot_problems(self, component: str) -> set:
+        """G/P problems where some wired arm containing any component of c's slot is applicable."""
+        slot = self.inp.comp[component]["slot"]
+        members = {c for c, spec in self.inp.comp.items() if spec["slot"] == slot}
+        return set().union(*([probs for a, probs in self.applicable_gp.items()
+                              if self.inp.arm_components.get(a, set()) & members] or [set()]))
+
+    def jacobian_class(self, component: str) -> list[str]:
+        """Union of requires.jacobian over c's wired arms (analytic / jvp / any); `any` without a triage-list."""
+        classes = set()
+        for arm in self.applicable_gp:
+            if component in self.inp.arm_components.get(arm, set()):
+                classes.add(((self.list_arms.get(arm) or {}).get("requires") or {}).get("jacobian", "any"))
+        return sorted(classes) or ["any"]
+
+    def universe(self, component: str) -> set:
+        """Coverage universe of c: the slot's G/P problems that satisfy c's Jacobian class."""
+        classes = set(self.jacobian_class(component))
+        if "any" in classes:
+            return self.slot_problems(component)
+        return {pid for pid in self.slot_problems(component)
+                if any(self.problem_jacobian.get(pid, {}).get(k) for k in classes)}
+
+    def coverage(self, component: str) -> dict:
+        """Applicability coverage: universe(c) problems reached by wired arms containing c / |universe(c)|."""
+        universe = self.universe(component)
+        mine = set().union(*([probs for a, probs in self.applicable_gp.items()
+                              if component in self.inp.arm_components.get(a, set())] or [set()])) & universe
+        value = len(mine) / len(universe) if universe else None
+        return {"coverage": value, "applicable_gp_problems": len(mine), "universe_gp_problems": len(universe),
+                "slot_gp_problems": len(self.slot_problems(component)),
+                "jacobian_class": self.jacobian_class(component), "coverage_min": self.coverage_min,
+                "status": None if value is None else ("pass" if value >= self.coverage_min else "fail")}
+
+    def arm_coverage(self, arm: str, component: str) -> float | None:
+        """A rival arm's coverage over universe(component) (the universe of the component being judged)."""
+        universe = self.universe(component)
+        return len(self.applicable_gp.get(arm, set()) & universe) / len(universe) if universe else None
+
+    def strongest_rivals(self, component: str, narrow: bool = False) -> list[str]:
+        """Arms containing another component of c's slot (and not c). Rivals whose arm-level coverage is below
+        applicability.coverage_min are narrow: excluded by default, returned alone with narrow=True."""
         slot = self.inp.comp[component]["slot"]
         rivals = {c for c, spec in self.inp.comp.items() if spec["slot"] == slot and c != component}
-        return sorted(a for a in self.internal_arms
-                      if component not in self.inp.arm_components.get(a, set())
-                      and self.inp.arm_components.get(a, set()) & rivals)
+        out = []
+        for a in self.internal_arms:
+            if component in self.inp.arm_components.get(a, set()) or not self.inp.arm_components.get(a, set()) & rivals:
+                continue
+            cov = self.arm_coverage(a, component)
+            is_narrow = cov is not None and cov < self.coverage_min
+            if is_narrow == narrow:
+                out.append(a)
+        return sorted(out)
 
     def comparisons(self, component: str) -> list[dict]:
         spec = self.inp.comp[component]
@@ -842,6 +916,7 @@ class Engine:
         out = []
         arms = sorted(a for a in self.internal_arms if component in self.inp.arm_components.get(a, set()))
         strongest = self.strongest_rivals(component)
+        narrow = self.strongest_rivals(component, narrow=True)
         for arm in arms:
             counterparts = self.counterparts(component, arm)
             for pid in sorted(self.arm_problems.get(arm, set())):
@@ -857,6 +932,10 @@ class Engine:
                         else:
                             applicable = [r for r in strongest if self.applicable(r, pid)]
                             out.append(self.compare(component, arm, "strongest", applicable, pid, grid, eps))
+                            narrow_here = [r for r in narrow if self.applicable(r, pid)]
+                            if narrow_here:  # informational only: routing data, never in label fractions
+                                rec = self.compare(component, arm, "specialized_rival", narrow_here, pid, grid, eps)
+                                self.specialized_rivals.append(rec)
         return out
 
 
@@ -912,61 +991,117 @@ def probe_results(engine: Engine) -> dict[str, list[tuple[str, bool, str]]]:
     return out
 
 
-def c2_criterion(engine: Engine, component: str) -> dict:
+def c2_group_passes(engine: Engine, g: dict) -> bool | None:
+    """C2 verdict of one group: None when not judgeable (no computed R_up, or reference-limited in requested
+    units), else R_up_max <= ratio and <= ratio_max."""
     rel = engine.th["reliability_c2"]
-    groups = []
-    excluded = 0
-    for (arm, pid, grid, rtol), g in sorted(engine.groups.items()):
-        if arm not in engine.inp.arm_components or component not in engine.inp.arm_components[arm]:
-            continue
+    if g["R_up_max"] is None or g["R_rho_max"] > engine.ref_factor:
+        return None
+    return g["R_up_max"] <= rel["ratio"] and g["R_up_max"] <= rel["ratio_max"]
+
+
+def c2_criterion(engine: Engine, component: str) -> dict:
+    """C2 over the groups of the component's arms. As in C1, a failing group counts against the component only
+    if no other arm containing it passes C2 on the same (problem, grid, rtol) (exoneration)."""
+    rel = engine.th["reliability_c2"]
+    mine = [(key, g) for key, g in sorted(engine.groups.items())
+            if key[0] in engine.inp.arm_components and component in engine.inp.arm_components[key[0]]]
+    passing_cells = {key[1:] for key, g in mine if c2_group_passes(engine, g)}
+    groups, excluded, exonerated = [], 0, 0
+    for key, g in mine:
+        verdict = c2_group_passes(engine, g)
         if g["R_up_max"] is None:
             continue
-        if g["R_rho_max"] > engine.ref_factor:
+        if verdict is None:
             excluded += 1
+            continue
+        if not verdict and key[1:] in passing_cells:
+            exonerated += 1
             continue
         groups.append(g["R_up_max"])
     if not groups:
         return {"status": None, "groups": 0, "within_ratio": 0, "fraction": None, "max_R_up": None,
-                "reference_limited_groups": excluded, "reason": "insufficient_evidence: no group with a computed R_up"}
+                "reference_limited_groups": excluded, "exonerated_groups": exonerated,
+                "reason": "insufficient_evidence: no group with a computed R_up"}
     within = sum(1 for r in groups if r <= rel["ratio"])
     fraction = within / len(groups)
     worst = max(groups)
     passed = fraction >= rel["cell_fraction"] and worst <= rel["ratio_max"]
     return {"status": "pass" if passed else "fail", "groups": len(groups), "within_ratio": within,
             "fraction": fraction, "max_R_up": fnum(worst), "reference_limited_groups": excluded,
+            "exonerated_groups": exonerated,
             "reason": None if passed else f"fraction {fraction!r} (need >= {rel['cell_fraction']!r}) or max R_up "
                                           f"{worst!r} (need <= {rel['ratio_max']!r})"}
 
 
+def allocation_fits(engine: Engine, component: str) -> list[dict]:
+    """Hot-loop allocation per (arm, problem, grid) of the component's arms: least-squares fit
+    warm = a + b * attempts over the h0 = 1 ALLOCATIONS rows (warm = max over their raw windows) at the profiled
+    rtols, with `attempts` from the matching RUNS row; b (allocations per attempted step) is the hot-loop rate.
+    Fewer than 2 distinct attempts gives b null with insufficient_evidence."""
+    points: dict[tuple, list] = defaultdict(list)
+    skipped: dict[tuple, list] = defaultdict(list)
+    for key, alloc in sorted(engine.inp.alloc_rows.items()):
+        arm, pid, grid, rtol, h0 = key
+        if h0 != NOMINAL_H0 or component not in engine.inp.arm_components.get(arm, set()):
+            continue
+        cell = (arm, pid, grid)
+        run = engine.inp.rows.get(key)
+        if alloc.get("status") != "ok" or not isinstance(alloc.get("warm"), dict) \
+                or type(alloc["warm"].get("allocations")) is not int:
+            skipped[cell].append(f"rtol {rtol!r}: allocation row {alloc.get('status')}")
+        elif run is None or run["status"] != "ok" or type(run.get("attempts")) is not int:
+            skipped[cell].append(f"rtol {rtol!r}: no ok RUNS row with attempts")
+        else:
+            points[cell].append((run["attempts"], alloc["warm"]["allocations"], rtol))
+    fits = []
+    for cell in sorted(set(points) | set(skipped)):
+        pts = sorted(points.get(cell, []))
+        xs = [x for x, _, _ in pts]
+        fit = {"arm": cell[0], "problem": cell[1], "grid": cell[2], "a": None, "b": None,
+               "points": [{"attempts": x, "warm_allocations": y, "rtol": r} for x, y, r in pts],
+               "max_warm_allocations": max((y for _, y, _ in pts), default=None), "skipped": skipped.get(cell, []),
+               "reason": None}
+        if len(set(xs)) < 2:
+            fit["reason"] = f"insufficient_evidence: {len(set(xs))} distinct attempts (need >= 2)"
+        else:
+            x_mean = math.fsum(xs) / len(xs)
+            y_mean = math.fsum(y for _, y, _ in pts) / len(pts)
+            sxx = math.fsum((x - x_mean) ** 2 for x in xs)
+            sxy = math.fsum((x - x_mean) * (y - y_mean) for x, y, _ in pts)
+            fit["b"] = sxy / sxx
+            fit["a"] = y_mean - fit["b"] * x_mean
+        fits.append(fit)
+    return fits
+
+
 def allocation_criterion(engine: Engine, component: str) -> dict:
-    th = engine.th["allocation"]
-    rows = [(k, r) for k, r in sorted(engine.inp.alloc_rows.items())
-            if component in engine.inp.arm_components.get(k[0], set())]
-    if not rows:
-        return {"status": None, "rows": 0, "max_warm_allocations": None, "rule": None,
-                "reason": "insufficient_evidence: no ALLOCATIONS rows for the component's arms"}
-    bad = [f"{k}: {r.get('status')} {r.get('reason')}" for k, r in rows
-           if r.get("status") != "ok" or not isinstance(r.get("warm"), dict)]
-    if bad:
-        return {"status": None, "rows": len(rows), "max_warm_allocations": None, "rule": None,
-                "reason": "insufficient_evidence: allocation rows not ok: " + "; ".join(bad[:5])}
-    warm = [r["warm"]["allocations"] for _, r in rows]
-    worst = max(warm)
-    if worst <= th["warm_window_allocations_max"]:
-        return {"status": "pass", "rows": len(rows), "max_warm_allocations": worst, "rule": "warm_window_max",
-                "reason": None}
-    documented = engine.inp.comp[component].get("documented_warm_allocations")
-    if th["allow_documented_constant_independent_of_n"] and type(documented) is int:
-        dims = {engine.inp.problems[k[1]]["dimension"] for k, _ in rows}
-        if all(w == documented for w in warm) and len(dims) >= 2:
-            return {"status": "pass", "rows": len(rows), "max_warm_allocations": worst,
-                    "rule": "documented_constant_independent_of_n", "reason": None}
-        return {"status": "fail", "rows": len(rows), "max_warm_allocations": worst,
-                "rule": "documented_constant_independent_of_n",
-                "reason": f"warm allocations {sorted(set(warm))} != documented {documented} on >= 2 dimensions "
-                          f"(dimensions {sorted(dims)})"}
-    return {"status": "fail", "rows": len(rows), "max_warm_allocations": worst, "rule": "warm_window_max",
-            "reason": f"max warm allocations {worst} > {th['warm_window_allocations_max']}"}
+    """Pass iff every arm-problem fit of the component's arms has per-attempt allocations b <=
+    THRESHOLDS.allocation.per_attempt_max; fail if one exceeds it; null without any fit. The raw max warm
+    window is reported (allocation.warm_window_allocations_max is no longer a gate)."""
+    limit = engine.th["allocation"]["per_attempt_max"]
+    fits = allocation_fits(engine, component)
+    fitted = [f for f in fits if f["b"] is not None]
+    raw = [f["max_warm_allocations"] for f in fits if f["max_warm_allocations"] is not None]
+    worst = max(fitted, key=lambda f: (f["b"], f["arm"], f["problem"], f["grid"])) if fitted else None
+    out = {"status": None, "rule": "per_attempt_fit", "per_attempt_max": limit, "fits": len(fits),
+           "fitted": len(fitted), "insufficient_fits": len(fits) - len(fitted),
+           "worst_b": None if worst is None else fnum(worst["b"]),
+           "worst": None if worst is None else {k: (fnum(worst[k]) if k in ("a", "b") else worst[k])
+                                                for k in ("arm", "problem", "grid", "a", "b")},
+           "max_warm_allocations": max(raw) if raw else None,
+           "arm_problem_fits": [{**f, "a": fnum(f["a"]), "b": fnum(f["b"])} for f in fits], "reason": None}
+    if not fits:
+        out["reason"] = "insufficient_evidence: no h0 = 1 ALLOCATIONS rows for the component's arms"
+    elif not fitted:
+        out["reason"] = "insufficient_evidence: no arm-problem with >= 2 distinct attempts"
+    elif worst["b"] <= limit:
+        out["status"] = "pass"
+    else:
+        out["status"] = "fail"
+        out["reason"] = (f"per-attempt allocations b {worst['b']!r} > {limit!r} ({worst['arm']} {worst['problem']} "
+                         f"{worst['grid']})")
+    return out
 
 
 def cell_features(engine: Engine, rec: dict) -> dict:
@@ -1220,6 +1355,23 @@ def timing_entries(engine: Engine) -> tuple[list[dict], bool | None]:
 
 
 # ================================================================================== classification
+def applicability_predicate(engine: Engine, component: str, coverage: dict) -> dict:
+    """The SPECIALIZE predicate of a narrow component: its arms' applicability as the binary describes it
+    (requires + applicable_problems); a deterministic API requirement, so no holdout search."""
+    arms = sorted(a for a in engine.applicable_gp if component in engine.inp.arm_components.get(a, set()))
+    rule = []
+    for arm in arms:
+        spec = engine.list_arms.get(arm, {})
+        rule.append({"arm": arm, "requires": spec.get("requires"),
+                     "applicable_problems": sorted(spec["applicable_problems"]) if isinstance(
+                         spec.get("applicable_problems"), list) else sorted(engine.arm_problems.get(arm, set()))})
+    return {"kind": "applicability", "rule": rule, "coverage": fnum(coverage["coverage"]),
+            "applicable_gp_problems": coverage["applicable_gp_problems"],
+            "universe_gp_problems": coverage["universe_gp_problems"], "jacobian_class": coverage["jacobian_class"],
+            "validation": "deterministic: the arms' applicability is an API requirement; no calibration search "
+                          "or holdout verdict"}
+
+
 def step(path: list[dict], rule: str, detail: str | None) -> None:
     """Append one rule_path entry {rule, kind, detail}; the kinds are fixed in RULE_KINDS."""
     path.append({"rule": rule, "kind": RULE_KINDS[rule], "detail": detail})
@@ -1257,6 +1409,7 @@ def classify(engine: Engine) -> tuple[list[dict], list[dict], list[dict]]:
                    "reason": None if probe_list else "insufficient_evidence: no PROBES rows for the component"}
         crit_c2 = c2_criterion(engine, cid)
         crit_alloc = allocation_criterion(engine, cid)
+        crit_coverage = engine.coverage(cid)
         for name, crit in (("C1", crit_c1), ("C2", crit_c2), ("C3", crit_c3), ("allocation", crit_alloc)):
             if crit["status"] is None:
                 insufficient.append(f"{name}: {crit['reason']}")
@@ -1286,8 +1439,12 @@ def classify(engine: Engine) -> tuple[list[dict], list[dict], list[dict]]:
             "c2": crit_c2["status"] == "pass",
             "allocation": crit_alloc["status"] == "pass",
             "c1": crit_c1["status"] == "pass",
+            "coverage": crit_coverage["status"] == "pass",
         }
         promote_met = all(promote_checks.values())
+        coverage_only = not promote_checks["coverage"] and all(v for k, v in promote_checks.items() if k != "coverage")
+        allocation_only = (not promote_met and not promote_checks["allocation"]
+                           and all(v for k, v in promote_checks.items() if k not in ("allocation", "coverage")))
         crit_promote = {"status": "pass" if promote_met else "fail", "c3": crit_c3["status"],
                         "gp_cells": len(gp), "gp_good": len(good),
                         "fraction": fraction, "max_ratio": max_ratio, "checks": promote_checks,
@@ -1374,6 +1531,27 @@ def classify(engine: Engine) -> tuple[list[dict], list[dict], list[dict]]:
                 flags.append("PROMOTE_BLOCKED_PROVISIONAL")
                 step(path, "PROMOTE_BLOCKED_PROVISIONAL", "PROMOTE criteria met but provisional ("
                      + ", ".join(causes) + ") -> OPTIMIZE")
+            elif coverage_only:
+                label = "SPECIALIZE"
+                pred_out = applicability_predicate(engine, cid, crit_coverage)
+                step(path, "SPECIALIZE_APPLICABILITY",
+                     f"every other PROMOTE check passes but coverage {crit_coverage['coverage']!r} < "
+                     f"{engine.coverage_min!r} ({crit_coverage['applicable_gp_problems']} of "
+                     f"{crit_coverage['universe_gp_problems']} G/P problems of its Jacobian class "
+                     f"{crit_coverage['jacobian_class']}): the predicate is the arms' applicability "
+                     f"(deterministic API requirement; no holdout search)" + (" (provisional)" if provisional else ""))
+            elif allocation_only:
+                label = "OPTIMIZE"
+                if provisional:
+                    flags.append("PROMOTE_BLOCKED_PROVISIONAL")
+                    step(path, "PROMOTE_BLOCKED_PROVISIONAL", "PROMOTE criteria other than allocation met while "
+                         "provisional (" + ", ".join(causes) + ")")
+                worst = crit_alloc["worst"]
+                step(path, "OPTIMIZE_ALLOCATION",
+                     f"PROMOTE fails only on allocation: worst per-attempt b {crit_alloc['worst_b']!r} > "
+                     f"{crit_alloc['per_attempt_max']!r} ({worst['arm']} {worst['problem']} {worst['grid']})"
+                     if worst is not None and crit_alloc["status"] == "fail" else
+                     f"PROMOTE fails only on allocation: {crit_alloc['reason']}")
             else:
                 step(path, "NOT_PROMOTE", crit_promote["reason"])
                 if specialize_met:
@@ -1412,6 +1590,11 @@ def classify(engine: Engine) -> tuple[list[dict], list[dict], list[dict]]:
                          "min_ratio": fnum(min(ratios)) if ratios else None,
                          "kinds": sorted({r["kind"] for r in comps})},
             "criteria": {"c1": crit_c1, "c2": crit_c2, "c3": crit_c3, "allocation": crit_alloc,
+                         "coverage": dict(crit_coverage, coverage=fnum(crit_coverage["coverage"]),
+                                          reason=None if crit_coverage["status"] == "pass" else
+                                          "insufficient_evidence: no applicable G/P problem in the slot"
+                                          if crit_coverage["status"] is None else
+                                          f"coverage below {engine.coverage_min!r}"),
                          "promote": crit_promote, "specialize": crit_specialize, "optimize": crit_optimize,
                          "timing": crit_timing},
             "reasons": reasons, "insufficient_evidence": insufficient,
@@ -1497,6 +1680,7 @@ def results_document(engine: Engine, comparisons: list[dict], gap_cells: list[di
     return {"schema": RESULTS_SCHEMA, "campaign": inp.campaign, "generator": GENERATOR, "inputs": inp.digests,
             "thresholds": engine.th, "ignored_rows_other_campaigns": inp.ignored_rows, "references": references,
             "rows": rows, "accuracy_summary": accuracy_summary, "groups": groups, "comparisons": out_comparisons,
+            "specialized_rivals": [dict(r, ratio=fnum(r["ratio"])) for r in engine.specialized_rivals],
             "external_gaps": gap_cells,
             "timing": {"present": inp.timing is not None, "diagnostic": diagnostic, "entries": timing}}
 

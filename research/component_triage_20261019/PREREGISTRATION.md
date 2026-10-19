@@ -182,3 +182,32 @@ one names the smoke observation that forced it.
    fail closed. Finite inputs are unchanged. The fix is narrow and recorded
    here; it does not decide any label. The probes are rerun with the fixed
    binary before C3 is evaluated.
+6. **Allocation means hot-loop allocation; an allocation-only miss is
+   OPTIMIZE.** The smoke allocation windows cover whole integrations, output
+   storage included, so the literal "warm allocation 0" gate failed every arm
+   (e.g. `kr.gmres_into` 90,103 per integration) and the components that won
+   every frontier cell fell through to PRUNE. The gate now uses the per-attempt
+   rate `b` of a least-squares fit of warm allocations against attempts over
+   the profiled rtols (`THRESHOLDS.allocation.per_attempt_max = 0.01`); the
+   output-storage constant is `a`. A component that meets every other PROMOTE
+   check but allocates in the step loop is OPTIMIZE (`OPTIMIZE_ALLOCATION`),
+   the "needs optimization" class of the question. C2 failures are attributed
+   with the same exoneration rule as C1, so the driver behind a
+   `DenseErrorControl::Off` arm is not charged for the interpolant's error when
+   another of its arms passes the same cell.
+7. **A production default must apply broadly.** In the smoke data the
+   fixed-dimension small driver (3 of the 14 analytic-Jacobian problems) met
+   the PROMOTE checks while the general fast driver lost only to it. PROMOTE
+   now also needs applicability coverage >= 0.5
+   (`THRESHOLDS.applicability.coverage_min`) within the component's Jacobian
+   class (analytic, JVP or any: a declared problem property the solver routes
+   on). A component that fails only on coverage is SPECIALIZE with its
+   applicability rule as the (deterministic) predicate. Rival arms whose
+   coverage over the judged component's universe is below the same bound are
+   left out of the strongest-rival comparison and reported as
+   `specialized_rivals` for routing.
+
+These rule changes were made after the smoke run and before any main-campaign
+row exists. The smoke labels are a pipeline check on partial evidence (G tier
+only, three rtols, profiles on four problems, no P tier, no external arms) and
+are not component decisions.

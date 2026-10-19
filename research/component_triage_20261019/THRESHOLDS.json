@@ -44,7 +44,8 @@
   },
   "allocation": {
     "warm_window_allocations_max": 0,
-    "allow_documented_constant_independent_of_n": true
+    "allow_documented_constant_independent_of_n": true,
+    "per_attempt_max": 0.01
   },
   "specialize": {
     "min_positives": 5,
@@ -70,6 +71,9 @@
   },
   "parity": {
     "max_relative_error": 1e-13
+  },
+  "applicability": {
+    "coverage_min": 0.5
   },
   "external": {
     "peers_field": "external_peers",

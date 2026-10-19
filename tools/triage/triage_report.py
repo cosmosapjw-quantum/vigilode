@@ -94,6 +94,11 @@ def render(results: dict, classification: dict, results_sha: str, classification
         rows = []
         for e in special:
             p = e["predicate"]
+            if p.get("kind") == "applicability":  # API requirement of the arms (SPECIALIZE_APPLICABILITY)
+                arms = ", ".join(r["arm"] for r in p["rule"])
+                rows.append([f"`{e['id']}`", "applicability", "API", f"{arms} (coverage {p['coverage']:.3g})",
+                             None, None, "deterministic", None, None])
+                continue
             value = p["values"] if p["op"] == "in" else p["threshold"]
             h = p["holdout"]
             rows.append([f"`{e['id']}`", p["feature"], p["op"], value, p["calibration"]["wins_covered"],

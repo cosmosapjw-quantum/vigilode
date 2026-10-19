@@ -262,6 +262,8 @@ Verdict per component:
     counted_work_reason}`.
   - `comparisons[]`: `{component, arm, kind, counterpart, problem, grid, target, tier, partition, outcome,
     ratio, cost, counterpart_cost, rtol, counterpart_rtol, reason, secondary}`.
+  - `specialized_rivals[]`: the same shape, with kind `specialized_rival` (comparisons against narrow rivals;
+    informational).
   - `external_gaps[]`: `{component, arm, peer, problem, grid, target, work, peer_work, rtol, peer_rtol, gap,
     reason}`.
   - `timing`: `{present, diagnostic, entries}`.
@@ -310,7 +312,12 @@ Verdict per component:
     policy) and an opt-in feature switched off.
     If a′ is not applicable to the problem, there is no rival for that cell.
   - `strongest`: used when no a′ exists. The rival is the cheapest applicable arm that contains another
-    slot member and not c.
+    slot member and not c, excluding *narrow* rivals.
+    - A rival is narrow when its arm-level coverage, computed over universe(c) of the component being judged,
+      is below `applicability.coverage_min`.
+    - Comparisons against narrow rivals go to `RESULTS.specialized_rivals` (kind `specialized_rival`). They
+      are routing data and never enter PROMOTE/PRUNE fractions.
+    - Attribution counterparts are not filtered.
   - Outcomes for ratio = cost(a)/cost(rival):
     - GAIN when ratio ≤ `gain_max`; NEUTRAL when ratio ≤ `neutral_max`; LOSS otherwise.
     - `capability_gain` / `capability_loss`: only one side is admissible.
@@ -341,11 +348,39 @@ Each step appends `{rule, kind, detail}` to `rule_path`. The last *deciding* rul
    - Over the non-excluded G/P comparisons, the fraction of GAIN, NEUTRAL and capability_gain is
      ≥ `promote_cell_fraction`.
    - Every ratio is ≤ `promote_max_ratio`.
-   - C1, C2 and allocation pass (warm max ≤ `warm_window_allocations_max`, or a documented n-independent
-     constant).
+   - C1, C2 and allocation pass.
+     - **C2** is the requested-tolerance ratio check. A failing group counts against c only if no other arm
+       containing c passes C2 on the same (problem, grid, rtol). Exonerated groups are counted in
+       `criteria.c2.exonerated_groups`.
+     - **Allocation** is the hot-loop rate. For each (arm, problem, grid) of c's arms, warm allocations =
+       a + b·attempts is fitted by least squares. The points are the h0 = 1 ALLOCATIONS rows (warm = max over
+       their raw windows) at the profiled rtols, with `attempts` from the matching RUNS row. A fit needs at
+       least 2 distinct attempts; otherwise it is insufficient_evidence.
+     - Allocation passes iff every fit has b ≤ `allocation.per_attempt_max`, and fails if one exceeds it.
+       It is null when no fit exists. The constant term a (output storage, setup) is not gated.
+     - The raw max warm window is still reported. `allocation.warm_window_allocations_max` and
+       `allow_documented_constant_independent_of_n` remain in THRESHOLDS for back-compatibility but are unused.
+   - **Applicability coverage:** coverage(c) = |G/P problems where some wired arm containing c applies| /
+     |universe(c)|. It must be ≥ `applicability.coverage_min`.
+     - universe(c) = the G/P problems where some wired arm of c's slot applies *and* that satisfy c's
+       Jacobian class. Jacobian availability is user-declared and routed on, so it partitions the universe.
+     - c's class is the union of `requires.jacobian` over its wired arms: `analytic` means problem.jacobian
+       == "analytic"; `jvp` means problem.jvp; `any` means all problems. Without `--list` the class is `any`.
+     - Arms and problems come from the binary's `applicable_problems` (triage-list), or from RUNS rows without
+       `--list`.
+     - `criteria.coverage` records the coverage, `jacobian_class`, `universe_gp_problems` and
+       `slot_gp_problems`.
    - If all criteria hold and the component is not provisional: `PROMOTE`.
    - If all criteria hold and it is provisional: `PROMOTE_BLOCKED_PROVISIONAL` gives OPTIMIZE (flag
      PROMOTE_BLOCKED_PROVISIONAL). It never reaches PRUNE by fall-through.
+   - If every criterion holds except coverage: `SPECIALIZE_APPLICABILITY` (kind `regime`) gives SPECIALIZE,
+     provisional or not.
+     - The predicate is `{kind: "applicability", rule: [{arm, requires, applicable_problems}], coverage, ...}`,
+       the arms' API requirement itself. It is deterministic, so no calibration search and no holdout verdict
+       is used.
+   - If every criterion holds except allocation (coverage may also fail): `OPTIMIZE_ALLOCATION` (kind `alloc`,
+     detail = the worst arm-problem b) gives OPTIMIZE. If the component is also provisional, it is preceded
+     by `PROMOTE_BLOCKED_PROVISIONAL`.
    - Otherwise `NOT_PROMOTE` is recorded and the tree continues.
 6. **SPECIALIZE:** the win set (GAIN or capability_gain cells) is non-empty, and a predicate exists:
    - Search on calibration cells: a single feature from `specialize.features`, either a numeric `le`/`ge`
@@ -383,6 +418,8 @@ Each step appends `{rule, kind, detail}` to `rule_path`. The last *deciding* rul
 | `NOT_PROMOTE` | frontier | lists the failed PROMOTE criteria |
 | `SPECIALIZE` | frontier | validated predicate (stored in `predicate`) |
 | `NOT_SPECIALIZE` | frontier | why there is no predicate: empty win set, search failed, or holdout verdict |
+| `SPECIALIZE_APPLICABILITY` | regime | PROMOTE fails only on coverage: SPECIALIZE with the arms' applicability as the predicate |
+| `OPTIMIZE_ALLOCATION` | alloc | PROMOTE fails only on the allocation rate (and possibly provisional): OPTIMIZE |
 | `OPTIMIZE_HEADROOM` | frontier | attribution-adjusted LOSS ratios ≤ `headroom_ratio_max` |
 | `OPTIMIZE_EXTERNAL_GAP` | frontier | unique capability, median counted-work gap > `external_counted_work_gap` |
 | `OPTIMIZE_UNCHARACTERIZED_WINS` | frontier | unique capability, wins without a validated predicate |

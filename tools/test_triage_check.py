@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import copy
 import json
+import math
 import struct
 import sys
 import tempfile
@@ -38,18 +39,25 @@ THRESHOLDS = {
                  "primary_cost": "ir_warm",
                  "secondary_costs": ["ir_cold", "allocations_warm", "allocated_bytes_warm", "rhs_evaluations",
                                      "jvp_vectors", "direct_factorizations", "linear_iterations"]},
-    "allocation": {"warm_window_allocations_max": 0, "allow_documented_constant_independent_of_n": True},
+    "allocation": {"warm_window_allocations_max": 0, "allow_documented_constant_independent_of_n": True,
+                   "per_attempt_max": 0.01},
     "specialize": {"min_positives": 5, "threshold_rank_shift": 1,
                    "features": ["dimension", "structure", "jacobian", "mass", "oscillatory", "exact_solution",
                                 "grid", "rtol"]},
     "optimize": {"headroom_ratio_max": 1.02, "external_counted_work_gap": 1.5},
     "timing": {"authority": "diagnostic", "conflict_threshold": 0.15},
     "parity": {"max_relative_error": 1e-13},
+    "applicability": {"coverage_min": 0.5},
     "external": {"peers_field": "external_peers", "admissibility": "single row",
                  "counted_work": ["rhs_evaluations", "jacobian_evaluations", "lu_factorizations"]},
 }
 RTOLS = [1e-4, 1e-6]
 H0 = [0.5, 1.0, 2.0]
+
+
+def attempts_for(rtol: float) -> int:
+    """Attempted steps of a fixture row: grows as rtol shrinks, so allocation fits have >= 2 distinct points."""
+    return 10 * round(-math.log10(rtol))
 
 
 def hx(value: float) -> str:
@@ -70,6 +78,7 @@ class Fixture:
         self.probes: list[dict] | None = None  # None: one passing must-refuse probe per component
         self.timing: dict | None = None
         self.attribution: dict | None = None
+        self.list_doc: dict | None = None  # optional triage-list (requires, applicable_problems)
 
     def component(self, cid, slot, loc=100, family="F1", **kw):
         spec = {"id": cid, "family": family, "slot": slot, "files": [], "reach": "D", "selector": "s",
@@ -97,7 +106,7 @@ class Fixture:
         row = {"schema": "vigilode-triage-row-v1", "campaign": CAMPAIGN, "arm": arm, "components": list(comps),
                "problem": pid, "tier": self.problems[pid]["tier"], "dimension": dim, "rtol": rtol, "atol": rtol,
                "grid": "endpoint", "h0_scale": h0, "h0": h0 * 1e-6, "status": status,
-               "error": None if ok else "failed", "success": ok, "attempts": 10, "accepted_steps": 9,
+               "error": None if ok else "failed", "success": ok, "attempts": attempts_for(rtol), "accepted_steps": 9,
                "rejected_steps": 1, "output_times": [0.0, 1.0] if ok else [],
                "states_hex": [[hx(1.0)] * dim, [hx(1.0 + 2.0 * err)] * dim] if ok else [],
                "counters": counters if counters is not None else {"rhs_evaluations": 100, "jacobian_builds": 5,
@@ -183,6 +192,9 @@ class Fixture:
         if self.attribution is not None:
             (d / "ATTRIBUTION.json").write_text(json.dumps(self.attribution))
             argv += ["--attribution", str(d / "ATTRIBUTION.json")]
+        if self.list_doc is not None:
+            (d / "LIST.json").write_text(json.dumps(self.list_doc))
+            argv += ["--list", str(d / "LIST.json")]
         return argv
 
     def check(self, directory: Path) -> tuple[dict, dict, list[str]]:
@@ -477,6 +489,155 @@ class TriageCheckTests(unittest.TestCase):
         self.assertEqual(a["criteria"]["c1"]["status"], "fail")
         self.assertEqual(a["label"], "PRUNE")
         self.assertEqual(x["criteria"]["c1"]["status"], "pass")  # exonerated: B ran the same cell cleanly
+
+    def test_allocation_per_attempt_fit(self):
+        fx = pair_fixture(cost_a=1000, cost_b=2000)
+        for row in fx.alloc:  # A: a constant 500 allocations per integration (output storage): b = 0, passes
+            if row["arm"] == "A":
+                row["warm"]["allocations"] = 500
+        _, classification, _ = fx.check(self.tmp / "const")
+        a = component(classification, "drv.a")
+        alloc = a["criteria"]["allocation"]
+        self.assertEqual((alloc["status"], alloc["worst_b"], alloc["max_warm_allocations"]), ("pass", 0.0, 500))
+        fit = alloc["arm_problem_fits"][0]
+        self.assertEqual(([p["attempts"] for p in fit["points"]], fit["a"], fit["b"]), ([40, 60], 500.0, 0.0))
+        self.assertEqual(a["label"], "PROMOTE")
+        for row in fx.alloc:  # A: 2 allocations per attempted step: b = 2 > 0.01, fails
+            if row["arm"] == "A":
+                row["warm"]["allocations"] = 7 + 2 * (40 if row["rtol"] == 1e-4 else 60)
+        _, classification, _ = fx.check(self.tmp / "hot")
+        a = component(classification, "drv.a")
+        self.assertEqual((a["criteria"]["allocation"]["status"], a["criteria"]["allocation"]["worst_b"]), ("fail", 2.0))
+        self.assertEqual(a["criteria"]["allocation"]["arm_problem_fits"][0]["a"], 7.0)
+        # PROMOTE fails only on allocation -> OPTIMIZE, never PRUNE_DEFAULT
+        self.assertEqual(a["label"], "OPTIMIZE")
+        step = a["rule_path"][-1]
+        self.assertEqual((step["rule"], step["kind"]), ("OPTIMIZE_ALLOCATION", "alloc"))
+        self.assertIn("worst per-attempt b 2.0 > 0.01 (A P2 endpoint)", step["detail"])
+        self.assertNotIn("PRUNE_DEFAULT", rules(a))
+
+    def test_allocation_fit_needs_two_distinct_attempts(self):
+        fx = pair_fixture()
+        fx.alloc = [r for r in fx.alloc if r["rtol"] == 1e-4]
+        _, classification, _ = fx.check(self.tmp)
+        a = component(classification, "drv.a")
+        self.assertIsNone(a["criteria"]["allocation"]["status"])
+        self.assertIn("no arm-problem with >= 2 distinct attempts", a["criteria"]["allocation"]["reason"])
+        self.assertEqual((a["label"], rules(a)[-1]), ("OPTIMIZE", "OPTIMIZE_ALLOCATION"))
+
+    def test_c2_exoneration(self):
+        fx = Fixture()
+        for cid, slot in (("drv.a", "drv"), ("drv.b", "drv"), ("out.ok", "out"), ("out.off", "out")):
+            fx.component(cid, slot)
+        for pid in ("P1", "P2"):
+            fx.problem(pid)
+            fx.arm("A", ["drv.a", "out.ok"], pid, ir=1000)
+            fx.arm("A-off", ["drv.a", "out.off"], pid, ir=900, err_scale=20.0)  # R_up = 20 > 10: C2 fails
+            fx.arm("B", ["drv.b", "out.ok"], pid, ir=2000)
+        _, classification, _ = fx.check(self.tmp)
+        a, off = component(classification, "drv.a"), component(classification, "out.off")
+        self.assertEqual(a["criteria"]["c2"]["status"], "pass")
+        self.assertEqual(a["criteria"]["c2"]["exonerated_groups"], 4)  # A-off groups, cleared by A on the same cells
+        self.assertEqual(off["criteria"]["c2"]["status"], "fail")
+        self.assertEqual(off["criteria"]["c2"]["exonerated_groups"], 0)
+
+    def test_narrow_promote_quality_component_is_specialize_applicability(self):
+        fx = Fixture()
+        fx.component("drv.wide", "drv")
+        fx.component("drv.narrow", "drv")
+        for pid in ("P1", "P2", "P3", "P4"):
+            fx.problem(pid)
+            fx.arm("W", ["drv.wide"], pid, ir=1000)
+        fx.arm("N", ["drv.narrow"], "P1", ir=500)  # applies to 1 of the slot's 4 G/P problems
+        _, classification, _ = fx.check(self.tmp)
+        narrow, wide = component(classification, "drv.narrow"), component(classification, "drv.wide")
+        cov = narrow["criteria"]["coverage"]
+        self.assertEqual((cov["coverage"], cov["applicable_gp_problems"], cov["universe_gp_problems"], cov["status"]),
+                         (0.25, 1, 4, "fail"))
+        self.assertEqual(cov["jacobian_class"], ["any"])  # no triage-list: no requires.jacobian
+        self.assertEqual(wide["criteria"]["coverage"]["coverage"], 1.0)
+        self.assertEqual(narrow["label"], "SPECIALIZE")
+        step = narrow["rule_path"][-1]
+        self.assertEqual((step["rule"], step["kind"]), ("SPECIALIZE_APPLICABILITY", "regime"))
+        self.assertIn("no holdout search", step["detail"])
+        pred = narrow["predicate"]
+        self.assertEqual((pred["kind"], pred["rule"][0]["arm"], pred["rule"][0]["applicable_problems"]),
+                         ("applicability", "N", ["P1"]))
+        self.assertIn("no calibration search or holdout verdict", pred["validation"])
+        self.assertEqual(narrow["criteria"]["promote"]["checks"]["coverage"], False)
+        import evidence_schema_v2 as es
+        es.validate_triage(self.tmp / "RESULTS.json", self.tmp / "CLASSIFICATION.json")
+
+    def test_analytic_only_driver_is_not_narrow(self):
+        """JVP-only problems are outside the universe of an analytic-Jacobian driver (coverage by class)."""
+        fx = Fixture()
+        fx.component("drv.analytic", "drv")
+        fx.component("drv.mf", "drv")
+        problems = {"P1": "analytic", "P2": "analytic", "P3": "jvp", "P4": "jvp", "P5": "jvp"}
+        for pid, jac in problems.items():
+            fx.problem(pid, jacobian=jac)
+            fx.arm("M", ["drv.mf"], pid, ir=2000)
+            if jac == "analytic":
+                fx.arm("A", ["drv.analytic"], pid, ir=1000)
+        arms = [("A", ["drv.analytic"], "analytic", ["P1", "P2"]), ("M", ["drv.mf"], "jvp", list(problems))]
+        fx.list_doc = {"schema": "vigilode-triage-list-v1",
+                       "arms": [{"id": a, "components": comps, "wired": True, "unwired_reason": None,
+                                 "requires": {"jacobian": jac, "structure": None, "mass": False,
+                                              "fixed_dimension": None, "autonomous": False},
+                                 "applicable_problems": probs} for a, comps, jac, probs in arms],
+                       "problems": [{"id": pid, "jacobian": jac, "jvp": True} for pid, jac in problems.items()]}
+        _, classification, _ = fx.check(self.tmp)
+        analytic, mf = component(classification, "drv.analytic"), component(classification, "drv.mf")
+        cov = analytic["criteria"]["coverage"]
+        self.assertEqual((cov["jacobian_class"], cov["universe_gp_problems"], cov["slot_gp_problems"],
+                          cov["coverage"], cov["status"]), (["analytic"], 2, 5, 1.0, "pass"))  # 2/5 by slot alone
+        self.assertEqual(analytic["label"], "PROMOTE")
+        self.assertEqual((mf["criteria"]["coverage"]["jacobian_class"], mf["criteria"]["coverage"]["coverage"]),
+                         (["jvp"], 1.0))
+        import triage_check as t
+        args = fx.write(self.tmp / "engine")
+        inputs, reasons = t.load_inputs(t.argparse.Namespace(**self.namespace(args)))
+        self.assertEqual(reasons, [])
+        engine = t.Engine(inputs)
+        self.assertEqual(engine.arm_coverage("A", "drv.mf"), 0.4)  # the rival over the judged component's universe
+        self.assertEqual(engine.arm_coverage("M", "drv.analytic"), 1.0)
+
+    @staticmethod
+    def namespace(argv: list[str]) -> dict:
+        keys = {"--campaign": "campaign", "--references": "references", "--profile": "profile",
+                "--allocations": "allocations", "--components": "components", "--corpus": "corpus",
+                "--thresholds": "thresholds", "--probes": "probes", "--timing": "timing",
+                "--attribution": "attribution", "--list": "list", "--results": "results",
+                "--classification": "classification"}
+        out = {v: None for v in keys.values()}
+        out.update(runs=[], states_dir=[])
+        for flag, value in zip(argv[::2], argv[1::2]):
+            if flag == "--runs":
+                out["runs"].append(Path(value))
+            elif flag in keys:
+                out[keys[flag]] = value if flag == "--campaign" else Path(value)
+        return out
+
+    def test_narrow_cheaper_rival_does_not_decide_a_general_component(self):
+        fx = Fixture()
+        for cid, slot in (("drv.general", "drv"), ("drv.special", "drv"), ("drv.other", "drv"),
+                          ("la.x", "la"), ("la.y", "la"), ("la.z", "la")):
+            fx.component(cid, slot)
+        for pid in ("P1", "P2", "P3", "P4"):
+            fx.problem(pid)
+            fx.arm("G", ["drv.general", "la.x"], pid, ir=1000)
+            fx.arm("R", ["drv.other", "la.z"], pid, ir=2000)
+        fx.arm("S", ["drv.special", "la.y"], "P1", ir=500)  # narrow (1/4) and cheaper: not a strongest rival
+        results, classification, _ = fx.check(self.tmp)
+        mine = comparisons(results, "drv.general")
+        self.assertEqual({(r["kind"], r["counterpart"], r["outcome"]) for r in mine}, {("strongest", "R", "GAIN")})
+        general = component(classification, "drv.general")
+        self.assertEqual(general["label"], "PROMOTE")
+        side = [r for r in results["specialized_rivals"] if r["component"] == "drv.general"]
+        self.assertEqual({(r["kind"], r["counterpart"], r["problem"], r["outcome"], r["ratio"]) for r in side},
+                         {("specialized_rival", "S", "P1", "LOSS", 2.0)})
+        self.assertNotIn("specialized_rival", {r["kind"] for r in results["comparisons"]})
+        self.assertEqual(general["evidence"]["outcomes"]["LOSS"], 0)  # the narrow loss is not in the fractions
 
     def test_binary_optional_row_keys(self):
         fx = pair_fixture()
