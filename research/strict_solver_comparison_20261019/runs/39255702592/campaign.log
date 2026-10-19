@@ -1,0 +1,24 @@
+reference: robertson
+Traceback (most recent call last):
+  File "/home/runner/work/vigilode/vigilode/research/strict_solver_comparison_20261019/scripts/campaign.py", line 218, in <module>
+    try:campaign(args.binary.resolve(),args.out)
+        ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/vigilode/vigilode/research/strict_solver_comparison_20261019/scripts/campaign.py", line 111, in campaign
+    refs=references(cases,out)
+  File "/home/runner/work/vigilode/vigilode/research/strict_solver_comparison_20261019/scripts/campaign.py", line 88, in references
+    dump(out/'references.json',allrefs)
+    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/vigilode/vigilode/research/strict_solver_comparison_20261019/scripts/campaign.py", line 23, in dump
+    Path(path).write_text(json.dumps(value,indent=2,sort_keys=True,allow_nan=False)+'\n')
+                          ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.13.16/x64/lib/python3.13/json/__init__.py", line 242, in dumps
+    **kw).encode(obj)
+          ~~~~~~^^^^^
+  File "/opt/hostedtoolcache/Python/3.13.16/x64/lib/python3.13/json/encoder.py", line 202, in encode
+    chunks = self.iterencode(o, _one_shot=True)
+  File "/opt/hostedtoolcache/Python/3.13.16/x64/lib/python3.13/json/encoder.py", line 263, in iterencode
+    return _iterencode(o, 0)
+  File "/opt/hostedtoolcache/Python/3.13.16/x64/lib/python3.13/json/encoder.py", line 182, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+                    f'is not JSON serializable')
+TypeError: Object of type int32 is not JSON serializable
