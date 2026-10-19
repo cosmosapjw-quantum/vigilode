@@ -145,3 +145,20 @@ one names the smoke observation that forced it.
    `counterparts`), because the fast driver's Legacy LU policy holds three
    slot members at once and opt-in features compare against the arm without
    them.
+3. **Independent harness review (before any decisive run).** A read-and-run
+   review of the CLI found, and the harness now fixes:
+   - `triage-profile-run` measured result merging, the in-process determinism
+     comparison and result drops inside Ir(2) - Ir(1): 8.6 % (fast-small,
+     robertson) and 6.2 % (fast, scalar-linear) of warm Ir, which pulls ratios
+     toward 1. Now 0.065 % / 0.066 %. Every Ir figure taken before this fix
+     (the smoke controls C1 and C2) is re-measured.
+   - Two arms (`seq-mf-gmres-x0-prevstep*`) could never run and would have
+     produced false PRUNE and capability-gain evidence; they are unwired and
+     their components carry coverage waivers.
+   - BDF and Radau arms of different order shared component sets; order and
+     stage components (`bdf.order*`, `radau.stages*`) now separate them, and
+     `radau5-tier-a`'s second knob is its own component
+     (`radau.reuse_stage_lu`) with one-knob arms `radau5-scaled` and
+     `radau5-reuse-lu`. No two wired arms share a component set (tested).
+   - Error rows carry `null` counters instead of zeros; `refused` is limited to
+     identified pre-work validations; problems carry `autonomous`.

@@ -20,11 +20,12 @@ use rodas5p_integrators::{
     BandedJacobian, BandedKernel, BandedWork, BdfConfig, BdfOrder, BlockMethod, ControllerKind,
     DenseErrorControl, DenseErrorReport, DenseOutputError, FusedPhiKrylovConfig,
     GcrodrRecyclePolicy, HomotopyPathConfig, HomotopyPredictor, HomotopyStepConfig,
-    IntegrationMethod, KrylovWorkspaceOptions, MaxStepPolicy, ObservedIntegrationResult,
-    OdeProblem, OutputSamplingPlan, OutputSchedule, ParallelExecution, RadauConfig, RadauIiaStages,
-    Rodas5pFastLu, Rodas5pFastResult, Rodas5pMfFastResult, Rodas5pMfFastWorkspace, RoutingOptions,
-    RoutingRecord, SabrConfig, StageSolveStatistics, StageTargetOptions, StageTargetPolicy,
-    StructureDeclaration, TransactionalQ1Q2Config, TransactionalQ1Q2RunDiagnostics,
+    IntegrationMethod, KrylovWorkspaceOptions, MaxStepPolicy, NewtonTolerancePolicy,
+    ObservedIntegrationResult, OdeProblem, OutputSamplingPlan, OutputSchedule, ParallelExecution,
+    RadauConfig, RadauIiaStages, Rodas5pFastLu, Rodas5pFastResult, Rodas5pFastSmallResult,
+    Rodas5pMfFastResult, Rodas5pMfFastWorkspace, RoutingOptions, RoutingRecord, SabrConfig,
+    StageSolveStatistics, StageTargetOptions, StageTargetPolicy, StructureDeclaration,
+    TransactionalQ1Q2Config, TransactionalQ1Q2RunDiagnostics,
     integrate_adaptive_dense_observed_with_dense_error_control,
     integrate_adaptive_observed_with_config, integrate_bdf_adaptive_observed,
     integrate_homotopy_adaptive_observed, integrate_pexprb54s4_fused_adaptive_observed,
@@ -75,6 +76,8 @@ pub(crate) struct Requires {
     /// Compile-time dimensions of a fixed-dimension arm: the problem's
     /// dimension must be one of them.
     pub fixed_dimension: Option<&'static [usize]>,
+    /// The arm integrates autonomous problems only (`f` independent of `t`).
+    pub autonomous: bool,
 }
 
 impl Requires {
@@ -84,6 +87,7 @@ impl Requires {
             "structure": self.structure,
             "mass": self.mass,
             "fixed_dimension": self.fixed_dimension,
+            "autonomous": self.autonomous,
         })
     }
 }
@@ -142,7 +146,11 @@ pub(crate) enum ArmKind {
     MfX0(InitialGuess),
     MfWorkspace(MfWorkspaceArm),
     Bdf(BdfOrder),
-    Radau(RadauIiaStages),
+    Radau {
+        stages: RadauIiaStages,
+        scaled: bool,
+        reuse_stage_lu: bool,
+    },
     Sabr(BlockMethod),
     Homotopy,
     Transactional,
@@ -165,6 +173,7 @@ const ANALYTIC: Requires = Requires {
     structure: None,
     mass: true,
     fixed_dimension: None,
+    autonomous: false,
 };
 const ANALYTIC_NO_MASS: Requires = Requires {
     mass: false,
@@ -175,6 +184,7 @@ const JVP: Requires = Requires {
     structure: None,
     mass: true,
     fixed_dimension: None,
+    autonomous: false,
 };
 const JVP_NO_MASS: Requires = Requires { mass: false, ..JVP };
 const ANY: Requires = Requires {
@@ -182,8 +192,15 @@ const ANY: Requires = Requires {
     structure: None,
     mass: true,
     fixed_dimension: None,
+    autonomous: false,
 };
 const ANY_NO_MASS: Requires = Requires { mass: false, ..ANY };
+/// The exponential integrator's problem validation
+/// (`exponential.rs::validate_problem`): a JVP, identity mass, autonomous.
+const JVP_AUTONOMOUS_NO_MASS: Requires = Requires {
+    autonomous: true,
+    ..JVP_NO_MASS
+};
 const BANDED: Requires = Requires {
     structure: Some("banded"),
     ..ANALYTIC_NO_MASS
@@ -213,6 +230,31 @@ const fn wired(
         kind,
     }
 }
+
+/// An arm whose entry point cannot run from the CLI: listed, never run.
+const fn unwired_arm(
+    id: &'static str,
+    components: &'static [&'static str],
+    requires: Requires,
+    reason: &'static str,
+) -> ArmSpec {
+    ArmSpec {
+        id,
+        components,
+        requires,
+        wired: false,
+        unwired_reason: Some(reason),
+        adaptive: AdaptiveOverride::None,
+        kind: ArmKind::Unwired,
+    }
+}
+
+/// `sequential.rs` (lines 401-404) refuses step-indexed starts in every
+/// sequential stage solve.
+const SEQ_STEP_INDEXED: &str = "the sequential stage solver refuses step-indexed initial guesses \
+(rodas5p-integrators sequential.rs:401-404: \"step-indexed initial guesses are supported by the \
+matrix-free U-form fast driver only\"); InitialGuess::PreviousStep{,Scaled} is reachable only \
+through the U-form driver (arm mf-x0-prevstep)";
 
 const fn with_adaptive(mut arm: ArmSpec, adaptive: AdaptiveOverride) -> ArmSpec {
     arm.adaptive = adaptive;
@@ -383,6 +425,7 @@ static ARMS: &[ArmSpec] = &[
             "kr.gmres",
             "kr.accounting_recompute_final",
             "ctl.integral",
+            "kr.x0_previous",
         ],
         JVP,
         ArmKind::SeqMf(LinearMethod::Gmres, InitialGuess::Previous),
@@ -422,20 +465,7 @@ static ARMS: &[ArmSpec] = &[
         JVP,
         ArmKind::SeqMf(LinearMethod::Gmres, InitialGuess::Zero),
     ),
-    wired(
-        "seq-mf-gmres-x0-previous",
-        &[
-            "drv.seq_mf",
-            "ctl.inner_tolerance",
-            "kr.gmres",
-            "kr.accounting_recompute_final",
-            "ctl.integral",
-            "kr.x0_previous",
-        ],
-        JVP,
-        ArmKind::SeqMf(LinearMethod::Gmres, InitialGuess::Previous),
-    ),
-    wired(
+    unwired_arm(
         "seq-mf-gmres-x0-prevstep",
         &[
             "drv.seq_mf",
@@ -446,9 +476,9 @@ static ARMS: &[ArmSpec] = &[
             "kr.x0_prevstep",
         ],
         JVP,
-        ArmKind::SeqMf(LinearMethod::Gmres, InitialGuess::PreviousStep),
+        SEQ_STEP_INDEXED,
     ),
-    wired(
+    unwired_arm(
         "seq-mf-gmres-x0-prevstep-scaled",
         &[
             "drv.seq_mf",
@@ -459,7 +489,7 @@ static ARMS: &[ArmSpec] = &[
             "kr.x0_prevstep_scaled",
         ],
         JVP,
-        ArmKind::SeqMf(LinearMethod::Gmres, InitialGuess::PreviousStepScaled),
+        SEQ_STEP_INDEXED,
     ),
     // ------------------------------------------------------- fast driver
     wired(
@@ -669,7 +699,7 @@ static ARMS: &[ArmSpec] = &[
     // ------------------------------------------------------------ routed
     wired(
         "routed",
-        &["drv.routed"],
+        &["drv.routed", "rt.declared_structure"],
         ANY_NO_MASS,
         ArmKind::Routed { declare: true },
     ),
@@ -887,41 +917,79 @@ static ARMS: &[ArmSpec] = &[
         ),
     ),
     // --------------------------------------------- BDF and Radau IIA
+    // bdf2-tier-a changes the Newton tolerance only (stiff_benchmark
+    // `repo-bdf2-tier-a`); radau5-tier-a changes it and reuses the stage
+    // LU for the error estimate, so radau5-scaled and radau5-reuse-lu give
+    // each knob a one-slot counterpart.
     wired(
         "bdf2",
-        &["drv.bdf", "nl.fixed"],
+        &["drv.bdf", "nl.fixed", "bdf.order2"],
         ANY,
         ArmKind::Bench("repo-bdf2"),
     ),
     wired(
         "bdf2-tier-a",
-        &["drv.bdf", "nl.scaled"],
+        &["drv.bdf", "nl.scaled", "bdf.order2"],
         ANY,
         ArmKind::Bench("repo-bdf2-tier-a"),
     ),
     wired(
         "bdf1",
-        &["drv.bdf", "nl.fixed"],
+        &["drv.bdf", "nl.fixed", "bdf.order1"],
         ANY,
         ArmKind::Bdf(BdfOrder::One),
     ),
     wired(
         "radau5",
-        &["drv.radau", "nl.fixed"],
+        &["drv.radau", "nl.fixed", "radau.stages3"],
         ANY,
         ArmKind::Bench("repo-radau5"),
     ),
     wired(
         "radau5-tier-a",
-        &["drv.radau", "nl.scaled"],
+        &[
+            "drv.radau",
+            "nl.scaled",
+            "radau.stages3",
+            "radau.reuse_stage_lu",
+        ],
         ANY,
         ArmKind::Bench("repo-radau5-tier-a"),
     ),
     wired(
-        "radau1",
-        &["drv.radau", "nl.fixed"],
+        "radau5-scaled",
+        &["drv.radau", "nl.scaled", "radau.stages3"],
         ANY,
-        ArmKind::Radau(RadauIiaStages::One),
+        ArmKind::Radau {
+            stages: RadauIiaStages::Three,
+            scaled: true,
+            reuse_stage_lu: false,
+        },
+    ),
+    wired(
+        "radau5-reuse-lu",
+        &[
+            "drv.radau",
+            "nl.fixed",
+            "radau.stages3",
+            "radau.reuse_stage_lu",
+        ],
+        ANY,
+        ArmKind::Radau {
+            stages: RadauIiaStages::Three,
+            scaled: false,
+            reuse_stage_lu: true,
+        },
+    ),
+    wired(
+        "radau1",
+        &["drv.radau", "nl.fixed", "radau.stages1"],
+        ANY,
+        ArmKind::Radau {
+            stages: RadauIiaStages::One,
+            scaled: false,
+            reuse_stage_lu: false,
+        },
     ),
     // ------------------------------------------------------------- SABR
     wired(
@@ -959,7 +1027,7 @@ static ARMS: &[ArmSpec] = &[
     wired(
         "pexprb54s4-fused",
         &["drv.exp_pexprb54s4", "phi.fused", "phi.pade13"],
-        JVP_NO_MASS,
+        JVP_AUTONOMOUS_NO_MASS,
         ArmKind::Pexprb,
     ),
 ];
@@ -981,6 +1049,7 @@ pub(crate) struct ProblemFeatures<'a> {
     pub structure: &'a str,
     pub mass: bool,
     pub dimension: usize,
+    pub autonomous: bool,
 }
 
 /// `HARNESS_CONTRACT.md`: a problem is applicable to an arm iff every
@@ -998,7 +1067,8 @@ pub(crate) fn applicable(requires: &Requires, problem: &ProblemFeatures<'_>) -> 
     let dimension = requires
         .fixed_dimension
         .is_none_or(|dimensions| dimensions.contains(&problem.dimension));
-    jacobian && structure && mass && dimension
+    let autonomous = !requires.autonomous || problem.autonomous;
+    jacobian && structure && mass && dimension && autonomous
 }
 
 /// Arm-specific work outside `WorkCounters`, kept typed until the window
@@ -1114,6 +1184,21 @@ impl ArmOutcome {
             accepted_steps: d.accepted_macro_steps,
             rejected_steps: d.rejected_macro_steps,
             extra,
+        }
+    }
+
+    /// Directly from the small driver's result (no intermediate
+    /// `AdaptiveObservedIntegrationResult`: one move fewer per run).
+    fn small(run: Rodas5pFastSmallResult) -> Self {
+        Self {
+            observed: run.observed,
+            attempts: run.attempts,
+            accepted_steps: run.accepted_steps,
+            rejected_steps: run.rejected_steps,
+            extra: Some(ExtraWork::Small {
+                jacobian_reuses: run.jacobian_reuses,
+                driver: run.driver,
+            }),
         }
     }
 
@@ -1341,31 +1426,13 @@ pub(crate) fn run_arm(
                         .1
                 }
             };
-            stiff_benchmark::run_small_full(segment, adaptive, schedule, options).map(|run| {
-                let (jacobian_reuses, driver) = (run.jacobian_reuses, run.driver);
-                ArmOutcome::adaptive(
-                    stiff_benchmark::small_result(run),
-                    Some(ExtraWork::Small {
-                        jacobian_reuses,
-                        driver,
-                    }),
-                )
-            })
+            stiff_benchmark::run_small_full(segment, adaptive, schedule, options)
+                .map(ArmOutcome::small)
         }
         ArmKind::SmallStatic(arm) => {
             let options = stiff_benchmark::small_static_arm(arm).ok_or_else(|| unwired(spec.id))?;
-            stiff_benchmark::run_small_static_full(segment, adaptive, schedule, options).map(
-                |run| {
-                    let (jacobian_reuses, driver) = (run.jacobian_reuses, run.driver);
-                    ArmOutcome::adaptive(
-                        stiff_benchmark::small_result(run),
-                        Some(ExtraWork::Small {
-                            jacobian_reuses,
-                            driver,
-                        }),
-                    )
-                },
-            )
+            stiff_benchmark::run_small_static_full(segment, adaptive, schedule, options)
+                .map(ArmOutcome::small)
         }
         ArmKind::SeqKrylov(..) => integrate_adaptive_observed_with_config(
             p,
@@ -1490,12 +1557,22 @@ pub(crate) fn run_arm(
             schedule,
         )
         .map(|r| ArmOutcome::adaptive(r, None)),
-        ArmKind::Radau(stages) => integrate_radau_adaptive_observed(
+        ArmKind::Radau {
+            stages,
+            scaled,
+            reuse_stage_lu,
+        } => integrate_radau_adaptive_observed(
             p,
             span,
             y0,
             &RadauConfig {
                 stages,
+                reuse_stage_lu_for_error_estimate: reuse_stage_lu,
+                newton_tolerance: if scaled {
+                    NewtonTolerancePolicy::ScaledToOuterTolerance
+                } else {
+                    NewtonTolerancePolicy::FixedNewtonConfig
+                },
                 ..RadauConfig::default()
             },
             adaptive,

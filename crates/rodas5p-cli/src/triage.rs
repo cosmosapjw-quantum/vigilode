@@ -43,13 +43,18 @@ pub(crate) const H0_SCALES: [f64; 3] = [0.5, 1.0, 2.0];
 pub(crate) const MIN_STEP: f64 = 1.0e-14;
 pub(crate) const MAX_ATTEMPTS: usize = 1_000_000;
 pub(crate) const UNIFORM_POINTS: usize = 101;
+/// `triage-profile-run` keeps every repetition's results in one buffer
+/// reserved for this many repetitions, so `Ir(K + 1) - Ir(K)` is exactly one
+/// integration for `K + 1 <= PROFILE_BUFFER_REPETITIONS`.
+pub(crate) const PROFILE_BUFFER_REPETITIONS: usize = 8;
 
 pub(crate) const APPLICABILITY_RULE: &str = "a problem is applicable to an arm iff: \
 requires.jacobian is 'analytic' and problem.jacobian == 'analytic', or 'jvp' and problem.jvp, \
 or 'any' (analytic or jvp); requires.structure is null or equals problem.structure; \
 requires.mass is true (the arm accepts a non-identity mass matrix) or problem.mass is false; \
-requires.fixed_dimension is null or contains problem.dimension. `applicable_problems` lists \
-the result; `triage-run` exits 2 for an inapplicable pair or an unwired arm.";
+requires.fixed_dimension is null or contains problem.dimension; requires.autonomous is false or \
+problem.autonomous. `applicable_problems` lists the result; `triage-run` exits 2 for an \
+inapplicable pair or an unwired arm.";
 
 /// A command-line error with exit code 2 (`HARNESS_CONTRACT.md`): unknown
 /// arm or problem, inapplicable pair, unwired arm, invalid grid request.
@@ -66,6 +71,17 @@ impl std::error::Error for UsageError {}
 
 fn usage(message: String) -> anyhow::Error {
     UsageError(message).into()
+}
+
+/// Print a handler's line, or exit with code 2 on a [`UsageError`].
+pub(crate) fn print_line_or_exit(result: Result<String>) -> Result<()> {
+    match result {
+        Ok(line) => {
+            println!("{line}");
+            Ok(())
+        }
+        Err(error) => print_or_exit(Err(error)),
+    }
 }
 
 /// Print a handler's JSON, or exit with code 2 on a [`UsageError`].
@@ -507,6 +523,12 @@ static PROBLEMS: &[ProblemSpec] = &[
     },
 ];
 
+/// Every registered problem, in listing order.
+#[allow(dead_code)]
+pub(crate) fn problem_specs() -> &'static [ProblemSpec] {
+    PROBLEMS
+}
+
 pub(crate) fn find_problem(id: &str) -> Option<&'static ProblemSpec> {
     PROBLEMS.iter().find(|problem| problem.id == id)
 }
@@ -574,6 +596,7 @@ impl TriageProblem {
             structure: self.spec.structure,
             mass: self.problem.mass_matrix.is_some(),
             dimension: self.problem.dimension,
+            autonomous: self.problem.autonomous,
         }
     }
 
@@ -592,6 +615,7 @@ impl TriageProblem {
             "jacobian": if self.analytic() { "analytic" } else { "jvp" },
             "jvp": self.problem.has_jvp(),
             "mass": self.problem.mass_matrix.is_some(),
+            "autonomous": self.problem.autonomous,
             "exact_solution": self.exact_solution(),
             "oscillatory": spec.oscillatory,
             "t_span": [self.t_span.0, self.t_span.1],
@@ -684,14 +708,76 @@ fn core_error_kind(error: &CoreError) -> &'static str {
     }
 }
 
-/// Whether a typed error of the first segment is an entry-point refusal: a
-/// dimension or invalid-input error other than the clock's time-resolution
-/// errors, which are raised during the run. The integrators do not report
-/// whether work had started, so this is classified by error kind.
-fn is_refusal(error: &CoreError) -> bool {
+/// Messages of the explicit pre-work validation of the entry points the
+/// arms call, matched as prefixes of an `InvalidInput` or `Dimension`
+/// message. Each is raised before the first callback or step:
+/// `AdaptiveStepConfig::validate` (adaptive.rs), `LinearSolverConfig::validate`
+/// (core solver_types.rs) and `validate_problem_linear_config` (sequential.rs),
+/// the entry input checks of the adaptive drivers (integrate.rs,
+/// dense_output_v2.rs, bdf.rs, radau.rs, transactional_q1_q2.rs,
+/// rodas5p_fast.rs, rodas5p_matrix_free_fast.rs), `OutputSchedule::validate_span`
+/// (output.rs), the U-form workspace's `validate_strict` and
+/// `set_krylov_workspace`, `TransactionalQ1Q2Config::validate`, the router's
+/// `route_problem`, and the arm-coverage checks of `stiff_benchmark`.
+const REFUSAL_PREFIXES: &[&str] = &[
+    "adaptive atol must",
+    "adaptive rtol must",
+    "adaptive atol and rtol cannot",
+    "adaptive initial step must",
+    "adaptive minimum step must",
+    "adaptive maximum step must",
+    "adaptive attempt budget must",
+    "adaptive safety factor must",
+    "adaptive minimum factor must",
+    "adaptive maximum factor must",
+    "adaptive rejection factor cap must",
+    "linear tolerances must be finite",
+    "iteration limits must be positive",
+    "recycle_dim must be positive",
+    "recycle_rank_tol must lie",
+    "GCRO-DR requires recycle_dim < restart",
+    "direct solve cannot use a Krylov preconditioner",
+    "direct linear solver or explicit preconditioner requires an explicit Jacobian",
+    "invalid adaptive interval",
+    "invalid adaptive dense-output interval",
+    "invalid adaptive BDF integration input",
+    "invalid adaptive Radau integration input",
+    "invalid adaptive Homotopy integration input",
+    "invalid adaptive transactional q1/q2 integration input",
+    "invalid RODAS5P fast integration input",
+    "invalid RODAS5P matrix-free U-form integration input",
+    "the RODAS5P fast driver supports the identity mass matrix only",
+    "output schedule must start at t0",
+    "a nonzero integration span needs distinct start and end requests",
+    "strict matrix-free RODAS5P (U form) forbids",
+    "the matrix-free U-form driver supports the identity mass matrix only",
+    "Krylov workspace options only supported",
+    "lgmres_into requires LinearMethod::Lgmres",
+    "ls_workspace on LGMRES requires lgmres_into",
+    "transactional q1/q2 thread and Krylov limits",
+    "transactional q1/q2 max Arnoldi count",
+    "transactional q1/q2 tolerances contain",
+    "transactional q1/q2 gate parameters",
+    "no route: the problem has neither",
+    "the residual-accounting entry point takes",
+    "the small arm covers",
+    "the small arm expects dimension",
+    "the banded arms cover the Brusselators",
+    "unknown benchmark arm",
+];
+
+/// Status rule (`HARNESS_CONTRACT.md`): a typed error is `refused` only when
+/// it is one of the identified pre-work validations above, raised by the
+/// first segment, or when the harness's own arm preparation failed (no
+/// integrator was called). Every other typed error, including invalid-input
+/// errors raised during a run (the clock's time-resolution errors, "output
+/// collector advanced past a requested time", ...) and any error whose
+/// origin cannot be told, is `error`.
+pub(crate) fn is_refusal(error: &CoreError) -> bool {
     match error {
-        CoreError::Dimension(_) => true,
-        CoreError::InvalidInput(message) => !message.starts_with("time resolution"),
+        CoreError::Dimension(message) | CoreError::InvalidInput(message) => REFUSAL_PREFIXES
+            .iter()
+            .any(|prefix| message.starts_with(prefix)),
         _ => false,
     }
 }
@@ -794,16 +880,14 @@ impl Cell {
     }
 
     /// One integration of the cell: every segment in order, each starting
-    /// from the end state of the previous one, until one fails. `runs` must
-    /// be empty and should have capacity [`Self::segment_count`]; nothing
-    /// else is allocated here besides what the arm allocates.
+    /// from the end state of the previous one, until one fails. The segment
+    /// results are appended to `runs`, which should have spare capacity for
+    /// [`Self::segment_count`] more; nothing else is allocated here besides
+    /// what the arm allocates.
     pub(crate) fn integrate_into(&mut self, runs: &mut Vec<SegmentRun>) {
-        let prepared = match &self.prepared {
-            Ok(prepared) => prepared,
-            Err((message, _)) => {
-                runs.push(Err(CoreError::InvalidInput(message.clone())));
-                return;
-            }
+        // A failed preparation is reported by `merge`; nothing runs.
+        let Ok(prepared) = &self.prepared else {
+            return;
         };
         for (index, segment) in self.problem.segments.iter_mut().enumerate() {
             if index == 0 {
@@ -832,69 +916,84 @@ impl Cell {
     pub(crate) fn integrate(&mut self) -> CellRun {
         let mut runs = Vec::with_capacity(self.segment_count());
         self.integrate_into(&mut runs);
-        self.merge(runs)
+        self.merge(&runs)
     }
 
-    /// The row data of one integration: the outputs on the requested grid
-    /// (segment boundaries that are not requested are dropped), the summed
-    /// work, and the status.
-    pub(crate) fn merge(&self, runs: Vec<SegmentRun>) -> CellRun {
+    /// Cap the attempts of every integration (tests: a one-attempt probe
+    /// still shows a refusal, which happens before any attempt).
+    #[allow(dead_code)]
+    pub(crate) fn limit_attempts(&mut self, max_attempts: usize) {
+        if let Ok(prepared) = &mut self.prepared {
+            prepared.adaptive.max_attempts = max_attempts;
+        }
+    }
+
+    /// The row data of one integration (the segment results of one
+    /// [`Self::integrate_into`]): the outputs on the requested grid (segment
+    /// boundaries that are not requested are dropped), the summed work of
+    /// the segments that returned (`None` when none did), and the status.
+    pub(crate) fn merge(&self, runs: &[SegmentRun]) -> CellRun {
         let requested = &self.output_times;
-        let ran = runs.len();
         let mut out = CellRun {
             status: Status::Ok,
             error: None,
             error_kind: None,
             success: false,
-            attempts: 0,
-            accepted_steps: 0,
-            rejected_steps: 0,
+            attempts: None,
+            accepted_steps: None,
+            rejected_steps: None,
             output_times: Vec::with_capacity(requested.len()),
             states: Vec::with_capacity(requested.len()),
-            counters: WorkCounters::default(),
-            extra: Vec::with_capacity(ran),
+            counters: None,
+            extra: Vec::with_capacity(runs.len()),
             segments: self.segment_count(),
             segments_completed: 0,
         };
-        if let Err((_, kind)) = &self.prepared {
-            out.error_kind = Some(*kind);
-        }
         let mut failed = false;
-        for (index, run) in runs.into_iter().enumerate() {
+        if let Err((message, kind)) = &self.prepared {
+            // The harness's own preparation failed: no integrator was called.
+            out.status = Status::Refused;
+            out.error_kind = Some(*kind);
+            out.error = Some(message.clone());
+            failed = true;
+        }
+        for (index, run) in runs.iter().enumerate() {
+            if failed {
+                break;
+            }
             match run {
                 Err(error) => {
-                    out.status = if index == 0 && is_refusal(&error) {
+                    out.status = if index == 0 && is_refusal(error) {
                         Status::Refused
                     } else {
                         Status::Error
                     };
-                    if out.error_kind.is_none() {
-                        out.error_kind = Some(core_error_kind(&error));
-                    }
+                    out.error_kind = Some(core_error_kind(error));
                     out.error = Some(error.to_string());
                     failed = true;
-                    break;
                 }
                 Ok(run) => {
-                    out.counters.accumulate(run.observed.counters);
-                    out.attempts += run.attempts;
-                    out.accepted_steps += run.accepted_steps;
-                    out.rejected_steps += run.rejected_steps;
-                    for (t, y) in run.observed.t.iter().zip(run.observed.y) {
+                    out.counters
+                        .get_or_insert_with(WorkCounters::default)
+                        .accumulate(run.observed.counters);
+                    *out.attempts.get_or_insert(0) += run.attempts;
+                    *out.accepted_steps.get_or_insert(0) += run.accepted_steps;
+                    *out.rejected_steps.get_or_insert(0) += run.rejected_steps;
+                    for (t, y) in run.observed.t.iter().zip(&run.observed.y) {
                         let is_requested = requested.binary_search_by(|x| x.total_cmp(t)).is_ok();
                         if is_requested && out.output_times.last() != Some(t) {
                             out.output_times.push(*t);
-                            out.states.push(y);
+                            out.states.push(y.clone());
                         }
                     }
-                    out.extra.push(run.extra);
+                    out.extra.push(run.extra.clone());
                     if !run.observed.success {
                         out.status = Status::SolverFailure;
-                        out.error = Some(run.observed.message);
+                        out.error = Some(run.observed.message.clone());
                         failed = true;
-                        break;
+                    } else {
+                        out.segments_completed += 1;
                     }
-                    out.segments_completed += 1;
                 }
             }
         }
@@ -922,6 +1021,62 @@ impl Cell {
         out
     }
 
+    /// The status, success, attempts and counters of one integration as
+    /// [`Self::merge`] gives them, without collecting the outputs (no
+    /// allocation): the `triage-profile-run` summary.
+    pub(crate) fn summary(&self, runs: &[SegmentRun]) -> RunSummary {
+        let mut out = RunSummary {
+            status: Status::Ok,
+            success: false,
+            attempts: None,
+            counters: None,
+        };
+        if self.prepared.is_err() {
+            out.status = Status::Refused;
+            return out;
+        }
+        let requested = &self.output_times;
+        let (mut observed, mut last, mut completed) = (0_usize, None::<f64>, 0_usize);
+        for (index, run) in runs.iter().enumerate() {
+            match run {
+                Err(error) => {
+                    out.status = if index == 0 && is_refusal(error) {
+                        Status::Refused
+                    } else {
+                        Status::Error
+                    };
+                    return out;
+                }
+                Ok(run) => {
+                    out.counters
+                        .get_or_insert_with(WorkCounters::default)
+                        .accumulate(run.observed.counters);
+                    *out.attempts.get_or_insert(0) += run.attempts;
+                    for t in &run.observed.t {
+                        let is_requested = requested.binary_search_by(|x| x.total_cmp(t)).is_ok();
+                        if is_requested && last.is_none_or(|l| l != *t) {
+                            observed += 1;
+                            last = Some(*t);
+                        }
+                    }
+                    if !run.observed.success {
+                        out.status = Status::SolverFailure;
+                        return out;
+                    }
+                    completed += 1;
+                }
+            }
+        }
+        // `merge` also checks the observed times bitwise; the collectors
+        // record each requested time once, in order, so the count suffices.
+        if completed == self.segment_count() && observed == requested.len() {
+            out.success = true;
+        } else {
+            out.status = Status::SolverFailure;
+        }
+        out
+    }
+
     pub(crate) fn status_json(&self) -> Value {
         json!({
             "arm": self.arm.id,
@@ -933,6 +1088,15 @@ impl Cell {
     }
 }
 
+/// [`Cell::summary`] of one integration.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub(crate) struct RunSummary {
+    pub status: Status,
+    pub success: bool,
+    pub attempts: Option<usize>,
+    pub counters: Option<WorkCounters>,
+}
+
 /// The merged result of one integration of a cell.
 #[derive(Debug)]
 pub(crate) struct CellRun {
@@ -940,12 +1104,15 @@ pub(crate) struct CellRun {
     pub error: Option<String>,
     pub error_kind: Option<&'static str>,
     pub success: bool,
-    pub attempts: usize,
-    pub accepted_steps: usize,
-    pub rejected_steps: usize,
+    /// `None` (row `null`) when no segment returned.
+    pub attempts: Option<usize>,
+    pub accepted_steps: Option<usize>,
+    pub rejected_steps: Option<usize>,
     pub output_times: Vec<f64>,
     pub states: Vec<Vec<f64>>,
-    pub counters: WorkCounters,
+    /// The summed counters of the segments that returned; `None` (row
+    /// `null`) when the integrator returned an error without counters.
+    pub counters: Option<WorkCounters>,
     pub extra: Vec<Option<triage_arms::ExtraWork>>,
     pub segments: usize,
     pub segments_completed: usize,
@@ -1136,7 +1303,7 @@ pub(crate) fn row_json(
         "segments_completed": run.segments_completed,
         "output_times": run.output_times,
         "states_hex": run.states.iter().map(|y| hex_vec(y)).collect::<Vec<_>>(),
-        "counters": counters_json(&run.counters),
+        "counters": run.counters.as_ref().map(counters_json),
         "extra_work": run.extra_json(),
         "counter_semantics": COUNTER_SEMANTICS,
         "deterministic": deterministic,
@@ -1174,39 +1341,72 @@ pub(crate) fn run_row(
     ))
 }
 
-/// `triage-profile-run`: the callgrind workload. Builds the cell, runs it
-/// `repetitions` (possibly 0) times and prints a compact summary; nothing
-/// else (no hashing, no environment reads).
-pub(crate) fn profile_run(args: &CellArgs, repetitions: usize) -> Result<Value> {
+/// `triage-profile-run`: the callgrind workload, printed as one line.
+///
+/// Builds the cell, then runs only the `repetitions` (possibly 0)
+/// integrations: every repetition's segment results are appended to one
+/// buffer reserved before the loop for [`PROFILE_BUFFER_REPETITIONS`]
+/// repetitions and are never dropped (the buffer is leaked; the process
+/// ends), so for `K < PROFILE_BUFFER_REPETITIONS`, `Ir(K + 1) - Ir(K)` is one
+/// integration call. The first run is summarized once, right after it,
+/// without collecting its outputs ([`Cell::summary`]). Every K, including
+/// 0, then serializes both the summary with the first run's values (a
+/// zero ledger for K = 0) and the one with nulls and prints one of them, so
+/// the summary work does not depend on K either. No determinism check
+/// runs in-process (`deterministic` is null: the driver compares `Ir(1)`
+/// with `Ir(1b)`, and `triage-run --repetitions K` compares outputs). No
+/// hashing, no environment reads.
+pub(crate) fn profile_run(args: &CellArgs, repetitions: usize) -> Result<String> {
     let mut cell = Cell::new(args)?;
-    let mut first: Option<CellRun> = None;
-    let mut deterministic = true;
-    for _ in 0..repetitions {
-        let run = cell.integrate();
-        match &first {
-            None => first = Some(run),
-            Some(first) => deterministic &= first.same_output(&run),
+    let mut runs: Vec<SegmentRun> =
+        Vec::with_capacity(PROFILE_BUFFER_REPETITIONS * cell.segment_count());
+    let mut printed: Option<String> = None;
+    for repetition in 0..repetitions {
+        cell.integrate_into(&mut runs);
+        if repetition == 0 {
+            // Right after the first run, where the heap is the same for
+            // every K >= 1 (rendered after the loop, its allocator costs
+            // would depend on K).
+            let first = cell.summary(&runs);
+            printed = Some(render_profile(&cell, repetitions, Some(&first)));
         }
     }
-    let mut out = cell.status_json();
-    out["schema"] = json!(PROFILE_SCHEMA);
-    out["repetitions"] = json!(repetitions);
-    out["deterministic"] = json!(deterministic);
-    match &first {
-        Some(run) => {
-            out["status"] = json!(run.status.id());
-            out["success"] = json!(run.success);
-            out["attempts"] = json!(run.attempts);
-            out["counters"] = counters_json(&run.counters);
-        }
-        None => {
-            out["status"] = Value::Null;
-            out["success"] = Value::Null;
-            out["attempts"] = Value::Null;
-            out["counters"] = Value::Null;
-        }
+    let printed = printed.unwrap_or_else(|| render_profile(&cell, repetitions, None));
+    // Dropping K results would scale with K: leak them.
+    std::mem::forget(runs);
+    Ok(printed)
+}
+
+/// The `triage-profile-run` line: both renderings (first-run values, a zero
+/// ledger standing in for K = 0, and nulls) are serialized for every K and
+/// one is returned, so `Ir(1) - Ir(0)` holds no summary work.
+fn render_profile(cell: &Cell, repetitions: usize, first: Option<&RunSummary>) -> String {
+    let summary = |values: Option<&RunSummary>| -> String {
+        let mut out = cell.status_json();
+        out["schema"] = json!(PROFILE_SCHEMA);
+        out["repetitions"] = json!(repetitions);
+        out["deterministic"] = Value::Null;
+        out["status"] = json!(values.map(|v| v.status.id()));
+        out["success"] = json!(values.map(|v| v.success));
+        out["attempts"] = json!(values.and_then(|v| v.attempts));
+        out["counters"] = json!(values.and_then(|v| v.counters.as_ref().map(counters_json)));
+        out.to_string()
+    };
+    let placeholder = RunSummary {
+        status: Status::Ok,
+        success: true,
+        attempts: Some(0),
+        counters: Some(WorkCounters::default()),
+    };
+    let with_values = summary(Some(first.unwrap_or(&placeholder)));
+    let with_nulls = summary(None);
+    if first.is_some() {
+        std::hint::black_box(with_nulls);
+        with_values
+    } else {
+        std::hint::black_box(with_values);
+        with_nulls
     }
-    Ok(out)
 }
 
 // ------------------------------------------------------- exact and parity

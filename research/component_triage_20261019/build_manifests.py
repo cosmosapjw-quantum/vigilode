@@ -68,6 +68,9 @@ comp("drv.routed", "F1", "driver", [I+"routing.rs"], "O", "integrate_rodas5p_rou
      "stiff-ivp", ["G", "P"], ["routed", "routed-undeclared"],
      [prior("L-0101", "FAIL", False, "Ir 1.074/1.035 at n=1000 from dense band verification; re-measure after harness fix")],
      [], None, False, "SP03; ProblemStructure::LinearPart never routed")
+comp("rt.declared_structure", "F1", "routing_declaration", [I+"routing.rs"], "O",
+     "ProblemStructure declaration consumed by the router", "stiff-ivp", ["G", "P"], [], [], [], None, False,
+     "separates the declared and undeclared routed arms")
 comp("drv.sabr", "F1", "driver", [I+"sabr.rs", I+"block.rs"], "O", "IntegrationMethod::Sabr + SabrConfig",
      "stiff-ivp", ["G", "P"], ["sabr-gmres", "sabr-forward", "sabr-explicit", "sabr-nilpotent"], [], [], None, False, "")
 for bm in ["gmres", "forward", "explicit", "nilpotent"]:
@@ -80,6 +83,15 @@ comp("drv.homotopy", "F1", "driver", [I+"homotopy.rs", I+"homotopy_policy.rs", I
      ["A09"], None, False, "")
 comp("drv.transactional_q1q2", "F1", "driver", [I+"transactional_q1_q2.rs"], "O", "integrate_transactional_q1_q2_*",
      "stiff-ivp", ["G", "P"], ["transactional-q1q2"], [], [], None, False, "")
+for order in ["1", "2"]:
+    comp("bdf.order" + order, "F1", "bdf_order", [I+"bdf.rs"], "O", "BdfConfig order " + order,
+         "stiff-ivp", ["G", "P"], [], [], [], None, False, "")
+for stages in ["1", "3"]:
+    comp("radau.stages" + stages, "F1", "radau_stages", [I+"radau.rs"], "O", "RadauIiaStages " + stages,
+         "stiff-ivp", ["G", "P"], [], [], [], None, False, "")
+comp("radau.reuse_stage_lu", "F1", "radau_error_lu", [I+"radau.rs"], "O",
+     "RadauConfig.reuse_stage_lu_for_error_estimate", "stiff-ivp", ["G", "P"], [], [], [], None, False,
+     "split from radau5-tier-a, which also changes the Newton tolerance")
 comp("drv.bdf", "F1", "driver", [I+"bdf.rs", I+"nonlinear.rs"], "O", "BdfConfig {One, Two}",
      "stiff-ivp", ["G", "P"], ["bdf1", "bdf2", "bdf2-tier-a"],
      [prior("L-0028", "PASS", False, "wall-time diagnostic only")], [], None, False, "labelled reference-implementation-only")
@@ -370,6 +382,8 @@ def build_corpus(listing):
 COVERAGE_WAIVERS = {
     "drv.fast_small_batch": "ensemble lanes have no single-problem entry point; SPD08 kill (L-0089) reused",
     "phi.krylov": "ExponentialKrylovConfig drives fixed-step exprb2/exprb43 only; no adaptive triage cell",
+    "kr.x0_prevstep": "the sequential stage solver refuses step-indexed guesses (sequential.rs:401-404); the U-form route is measured as kr.mf_warm_start (arm mf-x0-prevstep, SPD07 kill L-0084)",
+    "kr.x0_prevstep_scaled": "the sequential stage solver refuses step-indexed guesses (sequential.rs:401-404); no U-form arm selects the scaled variant",
 }
 
 # Same-family external peers for OPTIMIZE(b) (THRESHOLDS.external). Rosenbrock

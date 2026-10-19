@@ -68,13 +68,13 @@ fn assert_row_schema(row: &Value) {
     assert!(["ok", "solver_failure", "refused", "error"].contains(&status));
     assert_eq!(row["success"].as_bool().unwrap(), status == "ok");
     assert_eq!(row["error"].is_null(), status == "ok", "{row}");
-    for key in [
-        "attempts",
-        "accepted_steps",
-        "rejected_steps",
-        "repetitions",
-    ] {
-        assert!(row[key].is_u64(), "{key}");
+    assert!(row["repetitions"].is_u64());
+    // Work is null only when no segment returned (a typed error).
+    let returned = !row["counters"].is_null();
+    assert!(returned || ["refused", "error"].contains(&status), "{row}");
+    for key in ["attempts", "accepted_steps", "rejected_steps"] {
+        assert_eq!(row[key].is_u64(), returned, "{key}");
+        assert_eq!(row[key].is_null(), !returned, "{key}");
     }
     let times = row["output_times"].as_array().unwrap();
     let states = row["states_hex"].as_array().unwrap();
@@ -87,11 +87,12 @@ fn assert_row_schema(row: &Value) {
             decode_hex64(value.as_str().unwrap());
         }
     }
-    let counters = row["counters"].as_object().unwrap();
-    for field in triage::work_counter_fields() {
-        assert!(counters[*field].is_u64(), "counter {field}");
+    if let Some(counters) = row["counters"].as_object() {
+        for field in triage::work_counter_fields() {
+            assert!(counters[*field].is_u64(), "counter {field}");
+        }
+        assert_eq!(counters.len(), triage::work_counter_fields().len());
     }
-    assert_eq!(counters.len(), triage::work_counter_fields().len());
     assert!(row["extra_work"].is_null() || row["extra_work"].is_object());
     assert_eq!(row["counter_semantics"], "work-counters-v2-attempted");
     assert!(row["deterministic"].is_boolean());
@@ -119,6 +120,7 @@ fn triage_list_parses_with_unique_ids() {
             ["analytic", "jvp", "any"].contains(&arm["requires"]["jacobian"].as_str().unwrap())
         );
         assert!(arm["requires"]["mass"].is_boolean());
+        assert!(arm["requires"]["autonomous"].is_boolean());
         if arm["wired"] == true {
             assert!(arm["unwired_reason"].is_null());
             assert!(
@@ -138,7 +140,7 @@ fn triage_list_parses_with_unique_ids() {
         assert!(span[1].as_f64().unwrap() > span[0].as_f64().unwrap());
         assert!(problem["dimension"].as_u64().unwrap() >= 1);
         assert!(["analytic", "jvp"].contains(&problem["jacobian"].as_str().unwrap()));
-        for key in ["jvp", "mass", "exact_solution", "oscillatory"] {
+        for key in ["jvp", "mass", "autonomous", "exact_solution", "oscillatory"] {
             assert!(problem[key].is_boolean(), "{key}");
         }
         assert!(problem["atol_scale"].as_f64().unwrap() > 0.0);
@@ -210,6 +212,25 @@ fn usage_errors_exit_with_code_2() {
         &["--arm", "fast-banded-indexed", "--problem", "robertson"][..],
         // Unwired.
         &["--arm", "fast-small-batch4", "--problem", "robertson"][..],
+        &[
+            "--arm",
+            "seq-mf-gmres-x0-prevstep",
+            "--problem",
+            "robertson",
+        ][..],
+        &[
+            "--arm",
+            "seq-mf-gmres-x0-prevstep-scaled",
+            "--problem",
+            "robertson",
+        ][..],
+        // Inapplicable: pexprb54s4 integrates autonomous problems only.
+        &[
+            "--arm",
+            "pexprb54s4-fused",
+            "--problem",
+            "prothero-robinson-nl",
+        ][..],
     ] {
         let output = rodas5p()
             .arg("triage-run")
@@ -261,7 +282,22 @@ fn every_wired_arm_yields_a_schema_valid_row() {
             h0_scale: 1.0,
         };
         let mut cell = triage::Cell::new(&args).unwrap();
-        let run = cell.integrate();
+        let mut runs = Vec::new();
+        cell.integrate_into(&mut runs);
+        let run = cell.merge(&runs);
+        // The profile summary agrees with the row.
+        let summary = cell.summary(&runs);
+        assert_eq!(
+            (
+                summary.status,
+                summary.success,
+                summary.attempts,
+                summary.counters
+            ),
+            (run.status, run.success, run.attempts, run.counters),
+            "{}",
+            arm.id
+        );
         let row = triage::row_json(
             &cell,
             &run,
@@ -279,13 +315,121 @@ fn every_wired_arm_yields_a_schema_valid_row() {
         );
         statuses.push((arm.id, problem, row["status"].as_str().unwrap().to_owned()));
     }
-    // The registered refusal of the sequential solver aside, the arms
-    // complete their first small problem at rtol 1e-3.
+    // Every wired arm completes its first small problem at rtol 1e-3.
     for (arm, problem, status) in &statuses {
-        if !arm.starts_with("seq-mf-gmres-x0-prevstep") {
-            assert_eq!(status, "ok", "{arm} on {problem}");
-        }
+        assert_eq!(status, "ok", "{arm} on {problem}");
     }
+}
+
+#[test]
+fn wired_arms_have_distinct_component_sets() {
+    let mut seen: Vec<(Vec<&str>, &str)> = Vec::new();
+    for arm in triage_arms::arms().iter().filter(|arm| arm.wired) {
+        let mut set = arm.components.to_vec();
+        set.sort_unstable();
+        set.dedup();
+        assert_eq!(set.len(), arm.components.len(), "{}", arm.id);
+        if let Some((_, other)) = seen.iter().find(|(s, _)| *s == set) {
+            panic!("{} and {other} list the same components {set:?}", arm.id);
+        }
+        seen.push((set, arm.id));
+    }
+    // The one-knob counterparts of the Radau tier-A arm exist.
+    for id in ["radau5-scaled", "radau5-reuse-lu", "bdf1", "radau1"] {
+        assert!(
+            triage_arms::find_arm(id).is_some_and(|arm| arm.wired),
+            "{id}"
+        );
+    }
+    assert!(triage_arms::find_arm("seq-mf-gmres-x0-previous").is_none());
+    for id in [
+        "seq-mf-gmres-x0-prevstep",
+        "seq-mf-gmres-x0-prevstep-scaled",
+    ] {
+        let arm = triage_arms::find_arm(id).unwrap();
+        assert!(!arm.wired && arm.unwired_reason.unwrap().contains("sequential.rs:401"));
+    }
+}
+
+/// No applicable problem of the exponential arm is refused by
+/// construction: a one-attempt probe of every pair (a refusal happens
+/// before the first attempt) is never `refused`.
+#[test]
+fn pexprb_is_never_refused_on_its_applicable_problems() {
+    let arm = triage_arms::find_arm("pexprb54s4-fused").unwrap();
+    let mut probed = 0;
+    for spec in triage::problem_specs() {
+        let problem = triage::TriageProblem::build(spec).unwrap();
+        if !triage_arms::applicable(&arm.requires, &problem.features()) {
+            assert!(
+                !problem.problem.autonomous
+                    || problem.problem.mass_matrix.is_some()
+                    || !problem.problem.has_jvp(),
+                "{} excluded without a reason",
+                spec.id
+            );
+            continue;
+        }
+        let args = triage::CellArgs {
+            arm: arm.id.into(),
+            problem: spec.id.into(),
+            rtol: 1.0e-3,
+            grid: triage::Grid::Endpoint,
+            h0_scale: 1.0,
+        };
+        let mut cell = triage::Cell::new(&args).unwrap();
+        cell.limit_attempts(1);
+        let run = cell.integrate();
+        assert_ne!(
+            run.status,
+            triage::Status::Refused,
+            "{}: {:?}",
+            spec.id,
+            run.error
+        );
+        probed += 1;
+    }
+    assert!(probed >= 5, "{probed} applicable problems");
+}
+
+#[test]
+fn refusal_typing_keeps_mid_run_errors_as_error() {
+    use rodas5p_core::CoreError;
+    for message in [
+        "adaptive atol and rtol cannot both be zero",
+        "direct linear solver or explicit preconditioner requires an explicit Jacobian",
+        "no route: the problem has neither an explicit Jacobian nor a JVP",
+    ] {
+        assert!(
+            triage::is_refusal(&CoreError::InvalidInput(message.into())),
+            "{message}"
+        );
+    }
+    for message in [
+        "output collector advanced past a requested time",
+        "time resolution: step h = 1e-300 does not advance the represented time t = 1e0",
+        "strict matrix-free integration requires a user-supplied JVP",
+    ] {
+        assert!(
+            !triage::is_refusal(&CoreError::InvalidInput(message.into())),
+            "{message}"
+        );
+    }
+    assert!(!triage::is_refusal(&CoreError::LinearSolve("x".into())));
+    // A pre-work refusal returns no work: counters and attempts are null.
+    let row = run_json(rodas5p().args([
+        "triage-run",
+        "--arm",
+        "fast",
+        "--problem",
+        "robertson",
+        "--rtol",
+        "0",
+        "--grid",
+        "endpoint",
+    ]));
+    assert_eq!(row["status"], "refused", "{row}");
+    assert!(row["counters"].is_null() && row["attempts"].is_null());
 }
 
 #[test]
@@ -395,7 +539,8 @@ fn profile_run_reports_the_first_run_and_accepts_zero_repetitions() {
         "2",
     ]));
     assert_eq!(two["success"], true);
-    assert_eq!(two["deterministic"], true);
+    // Determinism is the driver's Ir(1) == Ir(1b) check, not in-process.
+    assert!(two["deterministic"].is_null());
     assert!(two["attempts"].as_u64().unwrap() > 0);
     assert!(two["counters"]["rhs_evaluations"].as_u64().unwrap() > 0);
 }

@@ -1,5 +1,5 @@
 {
- "base_commit": "10ada53be6a1fbac6cb061255066e770ff28248d",
+ "base_commit": "a21d573980f66fe02891bd216153443b5352f921",
  "components": [
   {
    "arms": [
@@ -71,7 +71,6 @@
    "arms": [
     "seq-mf-gcrodr",
     "seq-mf-gmres",
-    "seq-mf-gmres-x0-previous",
     "seq-mf-gmres-x0-prevstep",
     "seq-mf-gmres-x0-prevstep-scaled",
     "seq-mf-gmres-x0-zero",
@@ -349,6 +348,33 @@
   },
   {
    "arms": [
+    "routed"
+   ],
+   "blocked_by": [],
+   "capability": "stiff-ivp",
+   "external_peers": [],
+   "family": "F1",
+   "files": [
+    "crates/rodas5p-integrators/src/routing.rs"
+   ],
+   "id": "rt.declared_structure",
+   "loc": 676,
+   "notes": "separates the declared and undeclared routed arms",
+   "prior": [],
+   "reach": "O",
+   "repair_path": null,
+   "runtime_dependents": [],
+   "selector": "ProblemStructure declaration consumed by the router",
+   "slot": "routing_declaration",
+   "static_class": null,
+   "tiers": [
+    "G",
+    "P"
+   ],
+   "unique_capability": false
+  },
+  {
+   "arms": [
     "sabr-explicit",
     "sabr-forward",
     "sabr-gmres",
@@ -559,6 +585,146 @@
   },
   {
    "arms": [
+    "bdf1"
+   ],
+   "blocked_by": [],
+   "capability": "stiff-ivp",
+   "external_peers": [],
+   "family": "F1",
+   "files": [
+    "crates/rodas5p-integrators/src/bdf.rs"
+   ],
+   "id": "bdf.order1",
+   "loc": 1094,
+   "notes": "",
+   "prior": [],
+   "reach": "O",
+   "repair_path": null,
+   "runtime_dependents": [],
+   "selector": "BdfConfig order 1",
+   "slot": "bdf_order",
+   "static_class": null,
+   "tiers": [
+    "G",
+    "P"
+   ],
+   "unique_capability": false
+  },
+  {
+   "arms": [
+    "bdf2",
+    "bdf2-tier-a"
+   ],
+   "blocked_by": [],
+   "capability": "stiff-ivp",
+   "external_peers": [],
+   "family": "F1",
+   "files": [
+    "crates/rodas5p-integrators/src/bdf.rs"
+   ],
+   "id": "bdf.order2",
+   "loc": 1094,
+   "notes": "",
+   "prior": [],
+   "reach": "O",
+   "repair_path": null,
+   "runtime_dependents": [],
+   "selector": "BdfConfig order 2",
+   "slot": "bdf_order",
+   "static_class": null,
+   "tiers": [
+    "G",
+    "P"
+   ],
+   "unique_capability": false
+  },
+  {
+   "arms": [
+    "radau1"
+   ],
+   "blocked_by": [],
+   "capability": "stiff-ivp",
+   "external_peers": [],
+   "family": "F1",
+   "files": [
+    "crates/rodas5p-integrators/src/radau.rs"
+   ],
+   "id": "radau.stages1",
+   "loc": 968,
+   "notes": "",
+   "prior": [],
+   "reach": "O",
+   "repair_path": null,
+   "runtime_dependents": [],
+   "selector": "RadauIiaStages 1",
+   "slot": "radau_stages",
+   "static_class": null,
+   "tiers": [
+    "G",
+    "P"
+   ],
+   "unique_capability": false
+  },
+  {
+   "arms": [
+    "radau5",
+    "radau5-reuse-lu",
+    "radau5-scaled",
+    "radau5-tier-a"
+   ],
+   "blocked_by": [],
+   "capability": "stiff-ivp",
+   "external_peers": [],
+   "family": "F1",
+   "files": [
+    "crates/rodas5p-integrators/src/radau.rs"
+   ],
+   "id": "radau.stages3",
+   "loc": 968,
+   "notes": "",
+   "prior": [],
+   "reach": "O",
+   "repair_path": null,
+   "runtime_dependents": [],
+   "selector": "RadauIiaStages 3",
+   "slot": "radau_stages",
+   "static_class": null,
+   "tiers": [
+    "G",
+    "P"
+   ],
+   "unique_capability": false
+  },
+  {
+   "arms": [
+    "radau5-reuse-lu",
+    "radau5-tier-a"
+   ],
+   "blocked_by": [],
+   "capability": "stiff-ivp",
+   "external_peers": [],
+   "family": "F1",
+   "files": [
+    "crates/rodas5p-integrators/src/radau.rs"
+   ],
+   "id": "radau.reuse_stage_lu",
+   "loc": 968,
+   "notes": "split from radau5-tier-a, which also changes the Newton tolerance",
+   "prior": [],
+   "reach": "O",
+   "repair_path": null,
+   "runtime_dependents": [],
+   "selector": "RadauConfig.reuse_stage_lu_for_error_estimate",
+   "slot": "radau_error_lu",
+   "static_class": null,
+   "tiers": [
+    "G",
+    "P"
+   ],
+   "unique_capability": false
+  },
+  {
+   "arms": [
     "bdf1",
     "bdf2",
     "bdf2-tier-a"
@@ -601,6 +767,8 @@
    "arms": [
     "radau1",
     "radau5",
+    "radau5-reuse-lu",
+    "radau5-scaled",
     "radau5-tier-a"
    ],
    "blocked_by": [],
@@ -704,7 +872,6 @@
     "seq-lgmres",
     "seq-mf-gcrodr",
     "seq-mf-gmres",
-    "seq-mf-gmres-x0-previous",
     "seq-mf-gmres-x0-prevstep",
     "seq-mf-gmres-x0-prevstep-scaled",
     "seq-mf-gmres-x0-zero",
@@ -859,7 +1026,6 @@
    "arms": [
     "seq-mf-gcrodr",
     "seq-mf-gmres",
-    "seq-mf-gmres-x0-previous",
     "seq-mf-gmres-x0-prevstep",
     "seq-mf-gmres-x0-prevstep-scaled",
     "seq-mf-gmres-x0-zero",
@@ -1541,7 +1707,6 @@
     "seq-gmres-pc-jacobi",
     "seq-gmres-pc-none",
     "seq-mf-gmres",
-    "seq-mf-gmres-x0-previous",
     "seq-mf-gmres-x0-prevstep",
     "seq-mf-gmres-x0-prevstep-scaled",
     "seq-mf-gmres-x0-zero"
@@ -1871,7 +2036,6 @@
     "mf-ls-ws",
     "mf-x0-prevstep",
     "seq-mf-gmres",
-    "seq-mf-gmres-x0-previous",
     "seq-mf-gmres-x0-prevstep",
     "seq-mf-gmres-x0-prevstep-scaled",
     "seq-mf-gmres-x0-zero"
@@ -1964,7 +2128,7 @@
   },
   {
    "arms": [
-    "seq-mf-gmres-x0-previous"
+    "seq-mf-gmres"
    ],
    "blocked_by": [],
    "capability": "krylov-linear-solve",
@@ -1996,6 +2160,7 @@
    ],
    "blocked_by": [],
    "capability": "krylov-linear-solve",
+   "coverage_waiver": "the sequential stage solver refuses step-indexed guesses (sequential.rs:401-404); the U-form route is measured as kr.mf_warm_start (arm mf-x0-prevstep, SPD07 kill L-0084)",
    "external_peers": [],
    "family": "F5",
    "files": [
@@ -2024,6 +2189,7 @@
    ],
    "blocked_by": [],
    "capability": "krylov-linear-solve",
+   "coverage_waiver": "the sequential stage solver refuses step-indexed guesses (sequential.rs:401-404); no U-form arm selects the scaled variant",
    "external_peers": [],
    "family": "F5",
    "files": [
@@ -2577,7 +2743,8 @@
     "bdf1",
     "bdf2",
     "radau1",
-    "radau5"
+    "radau5",
+    "radau5-reuse-lu"
    ],
    "blocked_by": [],
    "capability": "newton",
@@ -2605,6 +2772,7 @@
   {
    "arms": [
     "bdf2-tier-a",
+    "radau5-scaled",
     "radau5-tier-a"
    ],
    "blocked_by": [],

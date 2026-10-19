@@ -415,20 +415,23 @@ fn run_stiff_arms_audit(output: &Path, warmups: usize, windows: usize) -> Result
     let cells = all_stiff_cells();
     let mut entries = Vec::with_capacity(cells.len());
     for (problem_id, arm, rtol) in cells {
-        // Built outside every window: a window counts one integration.
-        let problem = stiff_benchmark::stiff_profile_problem(problem_id)?;
+        // Built outside every window (problem, step configuration, output
+        // schedule, band, SP03 problem): a window counts one integration.
+        let cell = stiff_benchmark::prepare_stiff_cell(
+            stiff_benchmark::stiff_profile_problem(problem_id)?,
+            arm,
+            rtol,
+        )?;
         let mut success = true;
-        let (run, cold) =
-            counted(|| stiff_benchmark::run_stiff_integration_on(&problem, arm, rtol));
+        let (run, cold) = counted(|| stiff_benchmark::run_stiff_cell(&cell));
         success &= run.is_ok();
         drop(run);
         for _ in 0..warmups {
-            success &= stiff_benchmark::run_stiff_integration_on(&problem, arm, rtol).is_ok();
+            success &= stiff_benchmark::run_stiff_cell(&cell).is_ok();
         }
         let mut warm = Vec::with_capacity(windows);
         for _ in 0..windows {
-            let (run, counts) =
-                counted(|| stiff_benchmark::run_stiff_integration_on(&problem, arm, rtol));
+            let (run, counts) = counted(|| stiff_benchmark::run_stiff_cell(&cell));
             success &= run.is_ok();
             drop(run);
             warm.push(counts);
@@ -476,8 +479,8 @@ fn run_triage_audit(
     let mut cell = triage::Cell::new(args)?;
     let mut runs = Vec::with_capacity(cell.segment_count());
     let ((), cold) = counted(|| cell.integrate_into(&mut runs));
-    let status = cell.merge(std::mem::take(&mut runs)).status;
-    runs.reserve(cell.segment_count());
+    let status = cell.merge(&runs).status;
+    runs.clear();
     for _ in 0..warmups {
         cell.integrate_into(&mut runs);
         runs.clear();

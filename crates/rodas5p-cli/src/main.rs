@@ -3142,7 +3142,7 @@ fn main() -> Result<()> {
             cell,
             repetitions,
             campaign: _,
-        } => triage::print_or_exit(triage::profile_run(&cell, repetitions))?,
+        } => triage::print_line_or_exit(triage::profile_run(&cell, repetitions))?,
         Command::TriageExact { problem, grid } => {
             triage::print_or_exit(triage::exact_json(&problem, grid))?
         }

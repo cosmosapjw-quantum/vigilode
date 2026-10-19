@@ -1077,6 +1077,16 @@ fn run_ct01_grid_arm(
     problem: &BenchmarkProblem,
     rtol: f64,
 ) -> CoreResult<AdaptiveObservedIntegrationResult> {
+    let (adaptive, output) = ct01_grid_setup(arm, problem, rtol)?;
+    run_ct01_grid_with(problem, &adaptive, &output)
+}
+
+/// The step configuration and 41-point output grid of a CT01 grid arm.
+fn ct01_grid_setup(
+    arm: &str,
+    problem: &BenchmarkProblem,
+    rtol: f64,
+) -> CoreResult<(AdaptiveStepConfig, OutputSchedule)> {
     let mut adaptive = adaptive_config(problem, rtol);
     adaptive.initial_step = 2.0e-5;
     if arm == FAST_PRED2_ARM {
@@ -1091,13 +1101,21 @@ fn run_ct01_grid_arm(
     let (t0, tf) = problem.t_span;
     let mut points = vec![t0];
     points.extend((1..=40).map(|k| t0 + (k as f64) * (tf - t0) / 40.0));
-    let output = OutputSchedule::new(points)?;
+    Ok((adaptive, OutputSchedule::new(points)?))
+}
+
+/// One integration of a CT01 grid arm with its setup built.
+fn run_ct01_grid_with(
+    problem: &BenchmarkProblem,
+    adaptive: &AdaptiveStepConfig,
+    output: &OutputSchedule,
+) -> CoreResult<AdaptiveObservedIntegrationResult> {
     let run = integrate_rodas5p_fast_observed(
         &problem.problem,
         problem.t_span,
         &problem.y0,
-        &adaptive,
-        &output,
+        adaptive,
+        output,
     )?;
     Ok(AdaptiveObservedIntegrationResult {
         observed: run.observed,
@@ -1236,6 +1254,89 @@ pub(crate) fn run_stiff_integration_on(
         None => run_arm(arm, problem, rtol),
     }?;
     Ok(result)
+}
+
+/// The route of a [`StiffCell`].
+#[allow(dead_code)]
+enum StiffRoute {
+    Banded(BandedJacobian, BandedKernel),
+    Ct01,
+    Sp03(Box<OdeProblem>),
+    Arm,
+}
+
+/// One cell of [`run_stiff_integration_on`] with everything but the
+/// integration built (step configuration, output schedule, band, SP03
+/// problem), so the allocation audit's windows hold the integration only.
+/// [`run_stiff_cell`] gives the same run as [`run_stiff_integration_on`].
+#[allow(dead_code)]
+pub(crate) struct StiffCell {
+    arm: String,
+    problem: BenchmarkProblem,
+    adaptive: AdaptiveStepConfig,
+    output: OutputSchedule,
+    route: StiffRoute,
+}
+
+#[allow(dead_code)]
+pub(crate) fn prepare_stiff_cell(
+    problem: BenchmarkProblem,
+    arm: &str,
+    rtol: f64,
+) -> Result<StiffCell> {
+    anyhow::ensure!(known_arm(arm), "unknown arm {arm}");
+    let sp03 = SP03_ARMS.contains(&arm) || ME01_ARMS.contains(&arm);
+    let endpoint = || OutputSchedule::new(vec![problem.t_span.0, problem.t_span.1]);
+    let (adaptive, output, route) = match banded_kernel_arm(arm) {
+        Some(kernel) => (
+            adaptive_config(&problem, rtol),
+            endpoint()?,
+            StiffRoute::Banded(brusselator_band(banded_cells(&problem)?), kernel),
+        ),
+        None if arm == FAST_PRED2_ARM || arm == FAST_INT_GRID_ARM => {
+            let (adaptive, output) = ct01_grid_setup(arm, &problem, rtol)?;
+            (adaptive, output, StiffRoute::Ct01)
+        }
+        None if sp03 => (
+            adaptive_config(&problem, rtol),
+            endpoint()?,
+            StiffRoute::Sp03(Box::new(sp03_problem(arm, &problem)?)),
+        ),
+        None => (
+            adaptive_config(&problem, rtol),
+            endpoint()?,
+            StiffRoute::Arm,
+        ),
+    };
+    Ok(StiffCell {
+        arm: arm.to_owned(),
+        problem,
+        adaptive,
+        output,
+        route,
+    })
+}
+
+/// One integration of a prepared [`StiffCell`].
+#[allow(dead_code)]
+pub(crate) fn run_stiff_cell(cell: &StiffCell) -> CoreResult<AdaptiveObservedIntegrationResult> {
+    let (problem, adaptive, output) = (&cell.problem, &cell.adaptive, &cell.output);
+    match &cell.route {
+        StiffRoute::Banded(band, kernel) => {
+            run_banded_with(problem, band, adaptive, output, *kernel).map(|(r, _)| r)
+        }
+        StiffRoute::Ct01 => run_ct01_grid_with(problem, adaptive, output),
+        StiffRoute::Sp03(declared) => run_sp03_with(
+            &cell.arm,
+            declared,
+            problem.t_span,
+            &problem.y0,
+            adaptive,
+            output,
+        )
+        .map(|(r, _, _)| r),
+        StiffRoute::Arm => run_arm_with(&cell.arm, problem, adaptive, output),
+    }
 }
 
 /// Median seconds of one dense LU factorization (faer partial pivoting, as
