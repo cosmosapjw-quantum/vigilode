@@ -38,6 +38,9 @@ METHOD_NAMES = {"scipy-radau": "Radau", "scipy-lsoda": "LSODA", "scipy-bdf": "BD
                 "LSODA": "LSODA", "BDF": "BDF"}
 GRID_CLOSENESS = 1.0e-12  # relative to the span: guards --times-from against a different grid, not a threshold
 RHO_RULE_TWO = "2 x max over non-canonical methods of |canonical - method| per output time and component"
+# Cross-check rtol multipliers and the wall-clock limit of one method attempt.
+CROSS_CHECK_LADDER = (1.0, 10.0, 100.0)
+DEFAULT_METHOD_TIMEOUT = 600.0
 RHO_RULE_EXACT = "exact closed form: rho = 0 (f64 evaluation rounding not bounded)"
 
 
@@ -114,7 +117,8 @@ def exact_entry(binary: str | None, problem: dict, grid: str, times: list[float]
             "model_source": "rodas5p triage-exact (closed form)"}
 
 
-def two_method_entry(problem: dict, grid: str, times: list[float]) -> dict:
+def two_method_entry(problem: dict, grid: str, times: list[float],
+                     method_timeout: float = DEFAULT_METHOD_TIMEOUT) -> dict:
     import numpy as np
 
     pid = problem["id"]
@@ -130,10 +134,20 @@ def two_method_entry(problem: dict, grid: str, times: list[float]) -> dict:
         return null_entry(pid, grid, "two_method", f"unknown reference method(s) {unknown}", times)
     methods = [METHOD_NAMES[m] for m in requested]
     rtol = float(tm.scipy_tool().REFERENCE_RTOL)
-    atol = float(problem["atol_scale"]) * rtol
     results, infos = [], []
-    for method in methods:
-        states, info = tm.solve_on_grid(model, problem["t_span"], times, method, rtol, atol)
+    for index, method in enumerate(methods):
+        # The canonical method must reach the reference rtol. A cross-check method may step down the
+        # ladder when it cannot (LSODA stalls on pollution at 1e-13 but finishes at 1e-12 in 0.2 s); a
+        # looser cross-check can only widen rho, never shrink it.
+        ladder = [rtol] if index == 0 else [rtol * f for f in CROSS_CHECK_LADDER]
+        attempts = []
+        states, info = None, None
+        for r in ladder:
+            states, info = solve_with_timeout(model, problem, times, method, r, method_timeout)
+            attempts.append({"rtol": r, "success": states is not None, "message": info.get("message")})
+            if states is not None:
+                break
+        info = dict(info, rtol_used=attempts[-1]["rtol"] if states is not None else None, attempts=attempts)
         infos.append(info)
         results.append(states)
     if any(s is None for s in results) or len(results) < 2:
@@ -151,6 +165,30 @@ def two_method_entry(problem: dict, grid: str, times: list[float]) -> dict:
             "canonical_method": methods[0], "model_source": model.source}
 
 
+class _MethodTimeout(Exception):
+    pass
+
+
+def solve_with_timeout(model, problem, times, method, rtol, timeout):
+    """solve_on_grid with a wall-clock limit (SIGALRM, main thread); a timeout is a failed attempt."""
+    import signal
+
+    def _alarm(signum, frame):
+        raise _MethodTimeout()
+
+    previous = signal.signal(signal.SIGALRM, _alarm)
+    signal.setitimer(signal.ITIMER_REAL, timeout)
+    try:
+        return tm.solve_on_grid(model, problem["t_span"], times, method, rtol, float(problem["atol_scale"]) * rtol)
+    except _MethodTimeout:
+        return None, {"method": method, "rtol": rtol, "atol": float(problem["atol_scale"]) * rtol,
+                      "nfev": None, "njev": None, "nlu": None, "success": False,
+                      "message": f"timeout after {timeout:g} s"}
+    finally:
+        signal.setitimer(signal.ITIMER_REAL, 0)
+        signal.signal(signal.SIGALRM, previous)
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--corpus", required=True, type=Path)
@@ -161,6 +199,8 @@ def main(argv=None) -> int:
     parser.add_argument("--problem", action="append", help="only this problem (repeatable)")
     parser.add_argument("--grid", action="append", choices=tc.GRIDS, help="only this grid (repeatable)")
     parser.add_argument("--force", action="store_true", help="overwrite an existing output")
+    parser.add_argument("--method-timeout", type=float, default=DEFAULT_METHOD_TIMEOUT,
+                        help="seconds per method attempt (default %(default)s)")
     args = parser.parse_args(argv)
     tc.refuse_existing(args.output, args.force)
     try:
@@ -189,7 +229,7 @@ def main(argv=None) -> int:
             if kind == "exact":
                 entry = exact_entry(args.binary, problem, grid, times)
             elif kind == "two_method":
-                entry = two_method_entry(problem, grid, times)
+                entry = two_method_entry(problem, grid, times, args.method_timeout)
             else:
                 entry = null_entry(pid, grid, kind, f"unknown reference kind {kind!r}", times)
             print(f"{pid} {grid}: {entry['status']} {entry['reason'] or ''}", file=sys.stderr, flush=True)
