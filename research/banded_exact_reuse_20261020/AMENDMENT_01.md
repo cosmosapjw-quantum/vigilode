@@ -1,0 +1,9 @@
+# Amendment before implementation and measurement
+
+Baseline CI39298620202 compiled and ran9regressions:5passed,4failed. The four false-success/size defects are reproduced: Ok(NaN) for a nonfinite RHS, Ok(NaN) for a nonfinite upper matrix entry, Ok(Inf) for an unrepresentable solution despite finite inputs, and arithmetic overflow panic in shape calculation. A representable tiny-pivot problem succeeds and must remain accepted.
+
+The four retry callback tests passed. Inspection of the complete outcome match shows that every recognized Err resets fresh_state=false, after the lu_chosen assignment. The earlier hypothesis that partial callback data were reused is REFUTED. No retry-invalidity patch is admitted. The original RED workflow itself reported failure only because its final grep wrongly expected a retry test failure; the executed RED test log is retained.
+
+Implementation scope is now four verified standalone solve defects, bandwidth2 arithmetic specialization, and optional exact factor reuse. No Jacobian/RHS callback is skipped. The key logic's dependency-free standalone tests were executed in the sandbox (2expectedRED failures,8GREEN passes); the repository-integrated tests are separate evidence.
+
+Timing scope: four arms parent-Slices, patched-Slices, FixedWidth2, FixedWidth2ExactCache. Six cases (Brusselator and linear diffusion at50,127,200cells), two grids per case; rtol1e-4/1e-6/1e-8, three h0scales =432accuracy cells. The127-cell case is a size holdout relative to the previous100/400-state performance report. Linear grids are endpoint/dyadic129; nonlinear grids are endpoint/uniform101. Cost uses fixedrtol1e-6,h0scale1,12balanced4-arm blocks =576processes. No time-dependent selection, no pooling with earlier hosts. All finite complete state/time bits must agree with parent before timing ratios are admitted. References are empirical and not a global error certificate. Default Slices overhead is measured explicitly.
