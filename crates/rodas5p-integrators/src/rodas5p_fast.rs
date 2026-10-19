@@ -33,6 +33,10 @@
 
 use std::sync::Arc;
 
+#[path = "exact_band_cache.rs"]
+mod exact_band_cache;
+use exact_band_cache::ExactBandCache;
+
 use rodas5p_core::{
     CoreError, CoreResult, DenseMatrix, LuFactorization, WorkCounters, rodas5p_coefficients,
 };
@@ -174,6 +178,12 @@ pub enum BandedKernel {
     Indexed,
     /// The row update and the back substitution over row slices.
     Slices,
+    /// Opt-in Slices specialization for lower=upper=2. Arithmetic order
+    /// and pivot ties are unchanged; all other widths fall back to Slices.
+    FixedWidth2,
+    /// FixedWidth2 plus exact finite shifted-matrix LU reuse. This still
+    /// evaluates J and f at every new state, and never freezes J approximately.
+    FixedWidth2ExactCache,
 }
 
 /// Counted linear-algebra work and storage of a banded run.
@@ -182,7 +192,7 @@ pub struct BandedWork {
     /// Multiply-subtracts count 2, divisions 1, `W` assembly 1 per band entry.
     pub factor_operations: u64,
     pub solve_operations: u64,
-    /// f64 slots of the Jacobian band and the factors.
+    /// Eight-byte slots of the Jacobian band, factors and optional exact key.
     pub stored_slots: usize,
 }
 
@@ -206,6 +216,7 @@ struct BandState {
     pivots: Vec<usize>,
     work: BandedWork,
     kernel: BandedKernel,
+    exact_cache: Option<ExactBandCache>,
 }
 
 impl BandState {
@@ -220,7 +231,15 @@ impl BandState {
     /// `W = I/(h gamma) - J` on the band, then the banded LU with partial
     /// pivoting over rows `k ..= k + l`.
     fn factor(&mut self, n: usize, inv: f64) -> CoreResult<()> {
-        if self.kernel == BandedKernel::Slices {
+        if matches!(
+            self.kernel,
+            BandedKernel::FixedWidth2 | BandedKernel::FixedWidth2ExactCache
+        ) && self.l == 2
+            && self.u == 2
+        {
+            return self.factor_fixed2(n, inv);
+        }
+        if self.kernel != BandedKernel::Indexed {
             return self.factor_slices(n, inv);
         }
         let (l, u, width) = (self.l, self.u, self.width());
@@ -365,7 +384,15 @@ impl BandState {
     /// Solve with the factors, applying the interchanges as it goes.
     #[allow(clippy::needless_range_loop)] // the band offsets index both arrays
     fn solve(&mut self, n: usize, b: &mut [f64]) {
-        if self.kernel == BandedKernel::Slices {
+        if matches!(
+            self.kernel,
+            BandedKernel::FixedWidth2 | BandedKernel::FixedWidth2ExactCache
+        ) && self.l == 2
+            && self.u == 2
+        {
+            return self.solve_fixed2(n, b);
+        }
+        if self.kernel != BandedKernel::Indexed {
             return self.solve_slices(n, b);
         }
         let (l, u) = (self.l, self.u);
@@ -386,6 +413,116 @@ impl BandState {
             b[i] = sum / self.factors[self.at(i, i)];
             self.work.solve_operations += 1 + 2 * (last - i) as u64;
         }
+    }
+
+    fn factor_fixed2(&mut self, n: usize, inv: f64) -> CoreResult<()> {
+        let (l, u, width) = (2usize, 2usize, 7usize);
+        let at = |i: usize, j: usize| i * 7 + (j + 2 - i);
+        let jw = l + u + 1;
+        self.factors.fill(0.0);
+        for i in 0..n {
+            for d in 0..jw {
+                self.factors[i * width + d] = -self.jacobian[i * jw + d];
+            }
+            self.factors[i * width + l] += inv;
+        }
+        self.work.factor_operations += (n * jw) as u64;
+        for k in 0..n {
+            let last_row = (k + l).min(n - 1);
+            let mut p = k;
+            let mut max = self.factors[at(k, k)].abs();
+            for i in k + 1..=last_row {
+                let v = self.factors[at(i, k)].abs();
+                if v > max {
+                    max = v;
+                    p = i;
+                }
+            }
+            if !(max > 0.0 && max.is_finite()) {
+                return Err(CoreError::LinearSolve(format!(
+                    "RODAS5P fast banded LU: singular or non-finite pivot at column {k}"
+                )));
+            }
+            self.pivots[k] = p;
+            let last_col = (k + u + l).min(n - 1);
+            if p != k {
+                for j in k..=last_col {
+                    let (a, b) = (at(k, j), at(p, j));
+                    self.factors.swap(a, b);
+                }
+            }
+            // Row k holds columns k..=last_col at offsets l..=l + span - 1;
+            // row i (below) holds them at k + l - i..
+            let span = last_col - k + 1;
+            let (top, bottom) = self.factors.split_at_mut((k + 1) * width);
+            let pivot_row = &top[k * width + l..k * width + l + span];
+            let pivot = pivot_row[0];
+            for i in k + 1..=last_row {
+                let start = (i - k - 1) * width + (k + l - i);
+                let row = &mut bottom[start..start + span];
+                if row[0] == 0.0 {
+                    continue;
+                }
+                let m = row[0] / pivot;
+                row[0] = m;
+                for (x, r) in row[1..].iter_mut().zip(&pivot_row[1..]) {
+                    *x -= m * r;
+                }
+                self.work.factor_operations += 1 + 2 * (last_col - k) as u64;
+            }
+        }
+        Ok(())
+    }
+
+    fn solve_fixed2(&mut self, n: usize, b: &mut [f64]) {
+        let (l, u, width) = (2usize, 2usize, 7usize);
+        for k in 0..n {
+            b.swap(k, self.pivots[k]);
+            let bk = b[k];
+            let last_row = (k + l).min(n - 1);
+            for i in k + 1..=last_row {
+                b[i] -= self.factors[i * width + (k + l - i)] * bk;
+            }
+            self.work.solve_operations += 2 * (last_row - k) as u64;
+        }
+        for i in (0..n).rev() {
+            let last = (i + u + l).min(n - 1);
+            let row = &self.factors[i * width + l..i * width + l + (last - i) + 1];
+            let mut sum = b[i];
+            for (f, x) in row[1..].iter().zip(&b[i + 1..=last]) {
+                sum -= f * x;
+            }
+            b[i] = sum / row[0];
+            self.work.solve_operations += 1 + 2 * (last - i) as u64;
+        }
+    }
+
+    /// Reuse only successful finite factors of an exactly identical matrix.
+    /// Solves do not mutate factors. Failed factorization invalidates the key.
+    fn factor_with_policy(
+        &mut self,
+        n: usize,
+        inv: f64,
+        counters: &mut WorkCounters,
+    ) -> CoreResult<()> {
+        if self
+            .exact_cache
+            .as_ref()
+            .is_some_and(|key| key.matches(inv, &self.jacobian))
+        {
+            return Ok(());
+        }
+        if let Some(key) = self.exact_cache.as_mut() {
+            key.invalidate();
+        }
+        counters.direct_factorizations += 1;
+        self.factor(n, inv)?;
+        if let Some(key) = self.exact_cache.as_mut() {
+            if self.factors.iter().all(|x| x.is_finite()) {
+                key.record(inv, &self.jacobian);
+            }
+        }
+        Ok(())
     }
 }
 
@@ -478,10 +615,17 @@ impl Workspace {
             factors: vec![0.0; n * (2 * l + u + 1)],
             pivots: vec![0; n],
             work: BandedWork {
-                stored_slots: n * (3 * l + 2 * u + 2),
+                stored_slots: n * (3 * l + 2 * u + 2)
+                    + if kernel == BandedKernel::FixedWidth2ExactCache {
+                        n * (l + u + 1)
+                    } else {
+                        0
+                    },
                 ..BandedWork::default()
             },
             kernel,
+            exact_cache: (kernel == BandedKernel::FixedWidth2ExactCache)
+                .then(|| ExactBandCache::new(n * (l + u + 1))),
         };
         work.band = Some(state);
         work.lu_kind = Rodas5pFastLu::Banded;
@@ -585,8 +729,7 @@ impl Workspace {
         let n = self.n;
         let inv = 1.0 / (h * self.gamma);
         if let Some(band) = self.band.as_mut() {
-            counters.direct_factorizations += 1;
-            return band.factor(n, inv);
+            return band.factor_with_policy(n, inv, counters);
         }
         let jacobian = &self.jacobian;
         let target = match self.lu_kind {
@@ -1072,27 +1215,49 @@ pub fn rodas5p_fast_banded_solve(
     inv: f64,
     b: &[f64],
 ) -> CoreResult<(Vec<f64>, Vec<usize>)> {
-    if n == 0
-        || lower >= n
-        || upper >= n
-        || jacobian.len() != n * (lower + upper + 1)
-        || b.len() != n
-    {
-        return Err(CoreError::InvalidInput("invalid banded solve input".into()));
+    let invalid = || CoreError::InvalidInput("invalid banded solve input or storage size".into());
+    if n == 0 || lower >= n || upper >= n || b.len() != n {
+        return Err(invalid());
+    }
+    let width = lower
+        .checked_mul(2)
+        .and_then(|v| v.checked_add(upper))
+        .and_then(|v| v.checked_add(1))
+        .ok_or_else(invalid)?;
+    let jwidth = lower
+        .checked_add(upper)
+        .and_then(|v| v.checked_add(1))
+        .ok_or_else(invalid)?;
+    let jlen = n.checked_mul(jwidth).ok_or_else(invalid)?;
+    let flen = n
+        .checked_mul(width)
+        .filter(|v| *v <= isize::MAX as usize / std::mem::size_of::<f64>())
+        .ok_or_else(invalid)?;
+    if jacobian.len() != jlen {
+        return Err(invalid());
+    }
+    if !inv.is_finite() || jacobian.iter().chain(b).any(|x| !x.is_finite()) {
+        return Err(CoreError::NonFinite("nonfinite banded solve input".into()));
     }
     let mut state = BandState {
         l: lower,
         u: upper,
         fill: Arc::new(|_, _, _| Ok(())),
         jacobian: jacobian.to_vec(),
-        factors: vec![0.0; n * (2 * lower + upper + 1)],
+        factors: vec![0.0; flen],
         pivots: vec![0; n],
         work: BandedWork::default(),
         kernel: BandedKernel::Indexed,
+        exact_cache: None,
     };
     state.factor(n, inv)?;
     let mut x = b.to_vec();
     state.solve(n, &mut x);
+    if x.iter().any(|v| !v.is_finite()) {
+        return Err(CoreError::LinearSolve(
+            "banded solve produced NaN/Inf".into(),
+        ));
+    }
     Ok((x, state.pivots))
 }
 
@@ -1474,6 +1639,10 @@ fn integrate_fast(
         lu: work.lu_kind,
         driver: match band {
             Some((_, BandedKernel::Slices)) => RODAS5P_FAST_BANDED_SLICES_DRIVER_ID,
+            Some((_, BandedKernel::FixedWidth2)) => "rodas5p-fast-banded-fixed2-v1",
+            Some((_, BandedKernel::FixedWidth2ExactCache)) => {
+                "rodas5p-fast-banded-fixed2-exact-cache-v1"
+            }
             _ => options.driver_id(banded.is_some()),
         },
     };
@@ -1518,3 +1687,7 @@ mod tests {
         ));
     }
 }
+
+#[cfg(test)]
+#[path = "banded_exact_tests.rs"]
+mod banded_exact_tests;

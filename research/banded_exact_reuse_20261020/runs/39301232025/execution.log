@@ -1,0 +1,37 @@
+From https://github.com/cosmosapjw-quantum/vigilode
+ * branch            b56bb19ce85bc28a021138ee29689701a81bc4f0 -> FETCH_HEAD
+Preparing worktree (detached HEAD b56bb19)
+Updating files:  95% (5318/5591)Updating files:  96% (5368/5591)Updating files:  97% (5424/5591)Updating files:  98% (5480/5591)Updating files:  99% (5536/5591)Updating files: 100% (5591/5591)Updating files: 100% (5591/5591), done.
+HEAD is now at b56bb19 tools(triage): hot-loop allocation, coverage rule; record smoke decision run
+{
+  "parent_blob": "7756df18367b84813f7d314a27d72b45c80b6a0d",
+  "new_sha256": "94bd2a82b83c3e6e7fcff1736485bcf5b4ed787c37ffacf273e23fbf797ff432",
+  "changed": "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+  "default_kernel_unchanged": true,
+  "retry_recovery_unchanged": true,
+  "refuted_hypothesis": "baseline callback-retry tests passed; the existing Err branch invalidates fresh_state",
+  "reuse": "exact finite shift and Jacobian bits; Jacobian and RHS calls are not skipped"
+}
+[detached HEAD b51c051] fix: reject nonfinite band solves; add opt-in fixed-width exact factor reuse [skip ci]
+ 3 files changed, 385 insertions(+), 98 deletions(-)
+To https://github.com/cosmosapjw-quantum/vigilode
+   8d2b2b7..b51c051  HEAD -> research/banded-exact-reuse-20261020
+reference brusselator-50
+reference brusselator-127
+reference brusselator-200
+reference linear-diffusion-50
+reference linear-diffusion-127
+reference linear-diffusion-200
+accuracy brusselator-50
+accuracy brusselator-127
+accuracy brusselator-200
+accuracy linear-diffusion-50
+accuracy linear-diffusion-127
+accuracy linear-diffusion-200
+Traceback (most recent call last):
+  File "/home/runner/work/vigilode/vigilode/research/banded_exact_reuse_20261020/scripts/study.py", line 195, in <module>
+    try:main(a)
+        ~~~~^^^
+  File "/home/runner/work/vigilode/vigilode/research/banded_exact_reuse_20261020/scripts/study.py", line 142, in main
+    raise RuntimeError('numerical parity failed; no time ranking')
+RuntimeError: numerical parity failed; no time ranking

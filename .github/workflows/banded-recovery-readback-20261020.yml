@@ -1,0 +1,130 @@
+name: Banded interrupted-session recovery readback
+on:
+  push:
+    branches: [research/banded-exact-reuse-20261020]
+    paths: ['.github/workflows/banded-recovery-readback-20261020.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: banded-recovery-readback-20261020
+  cancel-in-progress: false
+jobs:
+  recover:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Recompute frozen results and verify immutable source
+        shell: bash
+        run: |
+          set -euo pipefail
+          NODE=research/banded_exact_reuse_20261020
+          OUT="$NODE/recovery/${GITHUB_RUN_ID}"
+          mkdir -p "$OUT"
+          git fetch --depth=1 origin f8e89b70528da8490fbe1febf0b0ede9ff84a01e
+          git diff --exit-code f8e89b70528da8490fbe1febf0b0ede9ff84a01e -- crates Cargo.toml Cargo.lock > "$OUT/NUMERICAL_SOURCE_DIFF.txt"
+          python3 - "$OUT" <<'PY' 2>&1 | tee "$OUT/recovery.log"
+          import datetime,hashlib,json,shutil,subprocess,sys,tempfile
+          from pathlib import Path
+          root=Path.cwd()
+          node=root/'research/banded_exact_reuse_20261020'
+          source=node/'runs/39304607635'
+          out=Path(sys.argv[1]).resolve()
+          def save(name,obj):
+              (out/name).write_text(json.dumps(obj,indent=2,sort_keys=True,allow_nan=False)+'\n')
+          def sha(p):
+              h=hashlib.sha256()
+              with p.open('rb') as f:
+                  while b:=f.read(1024*1024):h.update(b)
+              return h.hexdigest()
+          checkout=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()
+          receipt={'status':'STARTED','classification':'RUNTIME_INTERRUPTION_RECOVERY',
+                   'readback_checkout':checkout,'recovered_publication':'22998ef1b925c0820f5711d2d07af4fa852a29bd',
+                   'measured_source':'f8e89b70528da8490fbe1febf0b0ede9ff84a01e','measurement_run':39304607635,
+                   'new_solver_executions':0,'new_timing_samples':0,'numerical_source_changed':False,
+                   'timestamp_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),
+                   'whole_workspace_status':'TIMEOUT124_PRESERVED_NOT_RERUN',
+                   'repository_policy_status':'L0124_TWO_HASH_MISMATCHES_PRESERVED_NOT_REWRITTEN',
+                   'independent_personnel_review':False}
+          save('RECOVERY.json',receipt)
+          try:
+              audit=node/'scripts/audit.py'
+              blob=subprocess.check_output(['git','hash-object',str(audit)],text=True).strip()
+              if blob!='2c3f9f94ad50aff2d45e2d536033279fbced6ea0':raise RuntimeError('AUDITOR_SOURCE_MISMATCH:'+blob)
+              receipt['auditor_git_blob']=blob
+              verified={}
+              for line in (source/'SHA256SUMS').read_text().splitlines():
+                  if not line.strip():continue
+                  wanted,relative=line.split('  ',1)
+                  p=(source/relative).resolve()
+                  if not p.is_relative_to(source.resolve()):raise RuntimeError('MANIFEST_PATH_ESCAPE')
+                  actual=sha(p)
+                  if wanted!=actual:raise RuntimeError('ARTIFACT_CHECKSUM_MISMATCH:'+relative)
+                  verified[relative]=actual
+              save('VERIFIED_FILES.json',verified)
+              summary=json.loads((source/'SUMMARY.json').read_text())
+              expected={'accuracy_rows':432,'timing_processes':576,'timed_integrations':3744,
+                        'parity_pairs':324,'parity_pass':324,'complete_comparisons':36,'state_objects':87}
+              for k,v in expected.items():
+                  if summary.get(k)!=v:raise RuntimeError('SUMMARY_MISMATCH:'+k)
+              with tempfile.TemporaryDirectory(prefix='banded-frozen-readback-') as td:
+                  copied=Path(td)/'frozen'
+                  shutil.copytree(source,copied)
+                  p=subprocess.run([sys.executable,str(audit),str(copied)],text=True,capture_output=True,timeout=180)
+                  (out/'AUDIT_STDOUT.log').write_text(p.stdout)
+                  (out/'AUDIT_STDERR.log').write_text(p.stderr)
+                  receipt['auditor_exit_code']=p.returncode
+                  if p.returncode:raise RuntimeError('FROZEN_AUDITOR_FAILED')
+                  fresh=json.loads((copied/'AUDIT.json').read_text())
+                  original=json.loads((source/'AUDIT.json').read_text())
+                  if fresh!=original:raise RuntimeError('READBACK_RESULT_CHANGED')
+                  shutil.copy2(copied/'AUDIT.json',out/'FRESH_AUDIT.json')
+                  receipt['fresh_checks']=fresh['checked']
+                  receipt['verified_state_objects']=fresh['verified_state_objects']
+              for relative,wanted in verified.items():
+                  if sha(source/relative)!=wanted:raise RuntimeError('ORIGINAL_CHANGED:'+relative)
+              receipt.update(status='PASS_RECOVERED_FROZEN_EVIDENCE',verified_archived_files=len(verified),
+                             saved_audit_reproduced=True,historical_observations_modified=False,
+                             measurement_summary=expected)
+              save('RECOVERY.json',receipt)
+              (out/'RECOVERY_REPORT_KO.md').write_text(
+                  '# 중단 복구 및 고정 원자료 재검산\n\n'
+                  '원격 브랜치에서 대화 중단 이전의 실제 게시와 완료된 측정을 회수했다. 이미 수행된 수치 수정과 benchmark를 중복 실행하지 않았다. '
+                  '기존 측정 소스는 f8e89b70528da8490fbe1febf0b0ede9ff84a01e이며 이번 commit으로 바꾸어 표기하지 않는다.\n\n'
+                  f"보존 파일 {len(verified)}개의 hash, 432개 정확도 행, 576개 시간 행, 324개 출력 동등성 비교와 36개 paired median을 다시 확인했다. "
+                  '기존 auditor를 임시 복사본에 실행한 결과가 저장된 audit와 일치했다. 원본은 수정하지 않았다.\n\n'
+                  '이번 실행은 새로운 integration·성능 측정·Rust 재컴파일이 아니다. 기존 회귀9개와 내부17개 통과 기록을 새로운 테스트 수행으로 세지 않는다. '
+                  '전체 workspace의660초 timeout과 L-0124의두 역사적 hash 불일치는 미해결 상태로 보존한다. '
+                  '새 기본 커널 선택·정확도 기준 완화·PR merge·역사 장부 수정은 수행하지 않았다.\n')
+              print(json.dumps(receipt,sort_keys=True))
+          except Exception as e:
+              receipt.update(status='RECOVERY_VERIFICATION_FAILED',error_type=type(e).__name__,error=str(e))
+              save('RECOVERY.json',receipt)
+              raise
+          PY
+      - name: Preserve recovery receipt only
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT="research/banded_exact_reuse_20261020/recovery/${GITHUB_RUN_ID}"
+          [[ -d "$OUT" ]] || exit 0
+          (cd "$OUT"; find . -type f ! -name SHA256SUMS -print0 | sort -z | xargs -0 -r sha256sum > SHA256SUMS)
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f -- "$OUT"
+          if ! git diff --cached --quiet; then
+            git commit -m "recovery: preserve frozen banded readback ${GITHUB_RUN_ID} [skip ci]"
+            git fetch origin research/banded-exact-reuse-20261020
+            git rebase origin/research/banded-exact-reuse-20261020
+            git push origin HEAD:refs/heads/research/banded-exact-reuse-20261020
+          fi

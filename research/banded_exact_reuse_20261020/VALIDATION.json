@@ -1,0 +1,96 @@
+{
+  "internal": {
+    "completed_targets": 1,
+    "failed_in_completed_targets": 0,
+    "failure_lines": [],
+    "ignored_in_completed_targets": 0,
+    "last_lines": [
+      "test rodas5p_fast::exact_band_cache::tests::failed_record_invalidates ... ok",
+      "test rodas5p_fast::exact_band_cache::tests::identical_matrix_hits ... ok",
+      "test rodas5p_fast::exact_band_cache::tests::nonfinite_shift_misses ... ok",
+      "test rodas5p_fast::exact_band_cache::tests::shape_change_misses ... ok",
+      "test rodas5p_fast::exact_band_cache::tests::signed_zero_is_conservative ... ok",
+      "test rodas5p_fast::tests::in_place_lu_solves_pivoted_and_banded_systems ... ok",
+      "test rodas5p_fast_small::tests::every_small_option_set_has_its_own_driver_id ... ok",
+      "test rodas5p_fast_small::tests::the_construction_check_refuses_a_table_off_by_one_bit ... ok",
+      "test rodas5p_fast_small::tests::the_indexed_solve_equals_the_slice_solve_bitwise ... ok",
+      "",
+      "test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 59 filtered out; finished in 0.02s",
+      ""
+    ],
+    "passed_in_completed_targets": 17
+  },
+  "readback": {
+    "checked": {
+      "accuracy": 432,
+      "paired_recomputed": 36,
+      "recomputed_metric": 1008,
+      "same_output_parity": 324,
+      "timing": 576,
+      "timing_raw_link": 576
+    },
+    "independence": "different metric implementation; same agent authorship, not independent personnel",
+    "status": "PASS_SCOPED_READBACK",
+    "uncertified": "continuous time error, covariance of shared-host noise, general performance ranking",
+    "verified_state_objects": 87
+  },
+  "regressions": {
+    "completed_targets": 1,
+    "failed_in_completed_targets": 0,
+    "failure_lines": [],
+    "ignored_in_completed_targets": 0,
+    "last_lines": [
+      "test failed_banded_jacobian_rebuilds_snapshot ... ok",
+      "test failed_banded_rhs_rebuilds_snapshot ... ok",
+      "test failed_dense_jacobian_rebuilds_snapshot ... ok",
+      "test failed_dense_rhs_rebuilds_snapshot ... ok",
+      "test finite_inputs_with_overflowing_solution_are_rejected ... ok",
+      "test nonfinite_rhs_is_rejected ... ok",
+      "test nonfinite_upper_entry_is_not_a_successful_solution ... ok",
+      "test size_arithmetic_overflow_is_a_typed_error_not_a_panic ... ok",
+      "test tiny_but_representable_solution_is_not_over_rejected ... ok",
+      "",
+      "test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      ""
+    ],
+    "passed_in_completed_targets": 9
+  },
+  "scope": "scoped validation; full workspace timeout remains NOT_PASS",
+  "verified_files": 122,
+  "workspace": {
+    "completed_targets": 14,
+    "failed_in_completed_targets": 0,
+    "failure_lines": [
+      "error: invalid value 'unknown-arm' for '--arm <ARM>'",
+      "error: invalid value 'unknown-family' for '--family <FAMILY>'",
+      "error: unexpected argument '--profile' found"
+    ],
+    "ignored_in_completed_targets": 33,
+    "last_lines": [
+      "test stiff_benchmark::spd01::spd03_band_fill_equals_dense_fill ... ok",
+      "test stiff_benchmark::spd01::spd03_identity_export ... ignored, identity export of research/spd03_banded_arm_instructions_20261005; release build; set SPD03_IDENTITY",
+      "test stiff_benchmark::spd06::the_static_arms_are_known_and_equal_the_small_arm ... ok",
+      "test stiff_benchmark::spd09::colext64_equals_the_legacy_driver_on_both_sides_of_the_threshold ... ok",
+      "test stiff_benchmark::spd09::spd09_identity_export ... ignored, identity export of research/spd09_colext_threshold_20261007; release build; set SPD09_IDENTITY",
+      "test stiff_benchmark::tests::analytic_jacobians_match_finite_differences ... ok",
+      "test stiff_benchmark::tests::every_arm_completes_a_loose_hires_run ... ok",
+      "test stiff_benchmark::tests::in_place_jacobians_equal_the_explicit_ones ... ok",
+      "test triage_list_parses_with_unique_ids ... ok",
+      "test usage_errors_exit_with_code_2 ... ok",
+      "test wired_arms_have_distinct_component_sets ... ok",
+      "test work_counter_fields_include_the_skipped_ones ... ok"
+    ],
+    "passed_in_completed_targets": 142
+  },
+  "workspace_reuse": {
+    "numerical_source": "b51c051b045e977c038e5eec468de0004840872b",
+    "relation": "BYTE_IDENTITY of crates and root Cargo files",
+    "source_run": 39301232025,
+    "status": "TIMEOUT124_PRESERVED_NOT_RERUN"
+  },
+  "workspace_status": {
+    "command": "cargo +1.94.1 test --workspace --no-fail-fast --locked -- --test-threads=2",
+    "exit_code": 124,
+    "timeout_seconds": 660
+  }
+}
