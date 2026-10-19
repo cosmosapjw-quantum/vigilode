@@ -1,0 +1,50 @@
+name: Strict solver frozen readback
+on:
+  push:
+    branches: [research/benchmark-results-20261019-dual]
+    paths:
+      - '.github/workflows/strict-solver-readback-20261019.yml'
+      - 'research/strict_solver_comparison_20261019/postprocess/**'
+permissions:
+  contents: write
+jobs:
+  readback:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Frozen observation diagnosis and independent readback
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT="research/strict_solver_comparison_20261019/readback_runs/${GITHUB_RUN_ID}"
+          mkdir -p "$OUT"
+          python3 -m pip install 'numpy==2.3.5' 'matplotlib==3.10.7' > "$OUT/install.log" 2>&1
+          python3 research/strict_solver_comparison_20261019/postprocess/readback.py "$OUT" 2>&1 | tee "$OUT/readback.log"
+      - name: Preserve diagnosis and readback without numerical rerun
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT="research/strict_solver_comparison_20261019/readback_runs/${GITHUB_RUN_ID}"
+          [[ -d "$OUT" ]] || exit 0
+          (cd "$OUT"; find . -type f ! -name SHA256SUMS -print0 | sort -z | xargs -0 -r sha256sum > SHA256SUMS)
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f -- "$OUT"
+          if ! git diff --cached --quiet; then
+            git commit -m "bench: preserve frozen readback ${GITHUB_RUN_ID} [skip ci]"
+            git fetch origin research/benchmark-results-20261019-dual
+            git rebase origin/research/benchmark-results-20261019-dual
+            git push origin HEAD:refs/heads/research/benchmark-results-20261019-dual
+          fi
