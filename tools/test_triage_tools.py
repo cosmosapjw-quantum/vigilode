@@ -477,5 +477,18 @@ class ApplicabilityTests(unittest.TestCase):
         self.assertFalse(tc.applicable({"requires": {"fixed_dimension": [2, 8]}}, plain)[0])
 
 
+class GzipInputTests(unittest.TestCase):
+    def test_gz_rows_parse_and_digest_like_the_plain_file(self):
+        import gzip as gz
+        import triage_common as tc
+        with tempfile.TemporaryDirectory() as d:
+            plain = Path(d) / "RUNS.jsonl"
+            plain.write_bytes(b'{"a": 1}\n{"b": 2}\n')
+            packed = Path(d) / "RUNS.jsonl.gz"
+            packed.write_bytes(gz.compress(plain.read_bytes(), mtime=0))
+            self.assertEqual(tc.load_jsonl(plain), tc.load_jsonl(packed))
+            self.assertEqual(tc.sha256_file(plain), tc.sha256_file(packed))
+
+
 if __name__ == "__main__":
     unittest.main()

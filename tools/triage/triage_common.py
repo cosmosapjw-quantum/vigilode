@@ -11,6 +11,7 @@ Contract: ``research/component_triage_20261019/HARNESS_CONTRACT.md`` (CT-HARNESS
 
 from __future__ import annotations
 
+import gzip
 import hashlib
 import json
 import math
@@ -69,14 +70,26 @@ def sha256_bytes(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
+def read_input_bytes(path: Path) -> bytes:
+    """The content of an input file; a `.gz` file is read decompressed.
+
+    Row files outgrow the 100 MB per-file limit of the hosting service, so they are committed as
+    `gzip -n` copies; every digest and parse sees the same bytes as the uncompressed file.
+    """
+    data = Path(path).read_bytes()
+    if str(path).endswith(".gz"):
+        data = gzip.decompress(data)
+    return data
+
+
 def sha256_file(path: Path) -> str:
-    return sha256_bytes(Path(path).read_bytes())
+    return sha256_bytes(read_input_bytes(path))
 
 
 def load_json(path: Path) -> Any:
     """Strict JSON (no duplicate keys, no NaN/Infinity)."""
     try:
-        return evidence.loads_strict(Path(path).read_bytes())
+        return evidence.loads_strict(read_input_bytes(path))
     except evidence.ValidationError as exc:
         raise TriageError([f"{path}: {r}" for r in exc.reasons]) from None
     except OSError as exc:
@@ -87,8 +100,8 @@ def load_jsonl(path: Path) -> list[dict]:
     """Strict JSON Lines; blank lines are ignored, every other line must be one JSON object."""
     rows = []
     try:
-        data = Path(path).read_bytes()
-    except OSError as exc:
+        data = read_input_bytes(path)
+    except (OSError, EOFError, gzip.BadGzipFile) as exc:
         raise TriageError(f"cannot read {path}: {exc}") from None
     reasons = []
     for number, line in enumerate(data.split(b"\n"), 1):
