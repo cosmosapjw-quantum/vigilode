@@ -1,0 +1,70 @@
+name: Strict solver comparison 20261019
+
+on:
+  push:
+    branches: [research/benchmark-results-20261019-dual]
+    paths:
+      - '.github/workflows/strict-solver-comparison-20261019.yml'
+      - 'research/strict_solver_comparison_20261019/scripts/**'
+      - 'research/strict_solver_comparison_20261019/src/**'
+      - 'research/strict_solver_comparison_20261019/Cargo.toml'
+      - 'research/strict_solver_comparison_20261019/run_ci.sh'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: strict-solver-comparison-20261019
+  cancel-in-progress: false
+
+jobs:
+  compare:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      OMP_NUM_THREADS: '1'
+      OPENBLAS_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+      RAYON_NUM_THREADS: '1'
+      CARGO_BUILD_JOBS: '2'
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Execute bounded comparison
+        shell: bash
+        run: |
+          set -euo pipefail
+          NODE=research/strict_solver_comparison_20261019
+          OUT="$NODE/runs/${GITHUB_RUN_ID}"
+          mkdir -p "$OUT"
+          { date -u; uname -a; lscpu; free -m; git rev-parse HEAD; command -v python3 cargo gfortran || true; } > "$OUT/host.txt"
+          if [[ -f "$NODE/run_ci.sh" ]]; then
+            bash "$NODE/run_ci.sh" "$OUT" 2>&1 | tee "$OUT/execution.log"
+          else
+            printf '{"status":"BOOTSTRAP_ONLY","benchmark_executed":false}\n' > "$OUT/status.json"
+          fi
+      - name: Preserve bounded receipts on publication branch
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          NODE=research/strict_solver_comparison_20261019
+          OUT="$NODE/runs/${GITHUB_RUN_ID}"
+          [[ -d "$OUT" ]] || exit 0
+          find "$OUT" -type f -size +20M -print > "$OUT/large_files_excluded.txt"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          find "$OUT" -type f -size -20M -print0 | xargs -0 -r git add -f --
+          if ! git diff --cached --quiet; then
+            git commit -m "bench: retain strict comparison run ${GITHUB_RUN_ID} [skip ci]"
+            git fetch origin research/benchmark-results-20261019-dual
+            git rebase origin/research/benchmark-results-20261019-dual
+            git push origin HEAD:refs/heads/research/benchmark-results-20261019-dual
+          fi
