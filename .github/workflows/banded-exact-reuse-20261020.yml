@@ -1,0 +1,75 @@
+name: Banded exact-reuse improvement
+on:
+  push:
+    branches: [research/banded-exact-reuse-20261020]
+    paths:
+      - '.github/workflows/banded-exact-reuse-20261020.yml'
+      - 'research/banded_exact_reuse_20261020/run_ci.sh'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: banded-exact-reuse-20261020
+  cancel-in-progress: false
+jobs:
+  improve:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      CARGO_BUILD_JOBS: '2'
+      CARGO_PROFILE_DEV_DEBUG: '0'
+      RUST_BACKTRACE: '0'
+      OMP_NUM_THREADS: '1'
+      OPENBLAS_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+      RAYON_NUM_THREADS: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Execute bounded improvement
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT="research/banded_exact_reuse_20261020/runs/${GITHUB_RUN_ID}"
+          mkdir -p "$OUT"
+          { date -u; uname -a; lscpu; free -m; git rev-parse HEAD; } > "$OUT/HOST.txt"
+          bash research/banded_exact_reuse_20261020/run_ci.sh "$OUT" 2>&1 | tee "$OUT/execution.log"
+      - name: Preserve all bounded receipts
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT="research/banded_exact_reuse_20261020/runs/${GITHUB_RUN_ID}"
+          [[ -d "$OUT" ]] || exit 0
+          python3 - "$OUT" <<'PY'
+          import hashlib,json,sys
+          from pathlib import Path
+          root=Path(sys.argv[1]);parts=[]
+          for p in list(root.rglob('*')):
+              if p.is_file() and p.stat().st_size>=16*1024*1024:
+                  hashes=[];d=hashlib.sha256()
+                  with p.open('rb') as f:
+                      k=0
+                      while b:=f.read(8*1024*1024):
+                          q=p.with_name(p.name+f'.part{k:04d}');q.write_bytes(b);hashes.append(str(q.relative_to(root)));d.update(b);k+=1
+                  parts.append({'original':str(p.relative_to(root)),'sha256':d.hexdigest(),'parts_in_order':hashes})
+          (root/'RECONSTRUCTION.json').write_text(json.dumps(parts,indent=2)+'\n')
+          with (root/'SHA256SUMS').open('w') as f:
+              for p in sorted(root.rglob('*')):
+                  if p.is_file() and p.stat().st_size<16*1024*1024 and p.name not in ['SHA256SUMS','execution.log']:
+                      f.write(hashlib.sha256(p.read_bytes()).hexdigest()+'  '+str(p.relative_to(root))+'\n')
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          find "$OUT" -type f -size -16M -print0 | xargs -0 -r git add -f --
+          if ! git diff --cached --quiet; then
+            git commit -m "research: retain banded improvement run ${GITHUB_RUN_ID} [skip ci]"
+            git fetch origin research/banded-exact-reuse-20261020
+            git rebase origin/research/banded-exact-reuse-20261020
+            git push origin HEAD:refs/heads/research/banded-exact-reuse-20261020
+          fi
