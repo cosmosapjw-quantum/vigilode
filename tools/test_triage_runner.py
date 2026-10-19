@@ -77,21 +77,56 @@ if cmd in ("triage-run", "triage-profile-run", "triage"):
                       "tree_clean": {"true": True, "false": False}.get(os.environ.get("VIGILODE_TREE_CLEAN"))}}
     print(json.dumps(row)); sys.exit(0)
 if cmd == "triage-parity":
+    # The layout of crates/rodas5p-cli/src/triage.rs::parity_json (robertson only). FAKE_PARITY_MODE:
+    # dense (default), coo, jvp (no Jacobian, J v only), f_error (Rust f fails on sample 1).
     problem = opts["--problem"]
     if problem != "robertson":
         sys.stderr.write("no parity samples\n"); sys.exit(2)
+    import math
+    mode = os.environ.get("FAKE_PARITY_MODE", "dense")
     eps = float(os.environ.get("FAKE_PARITY_PERTURB", "0"))
+    y0 = [1.0, 0.0, 0.0]
+    if os.environ.get("FAKE_PARITY_Y0_SHIFT"):
+        y0[0] = 1.0 + 2.0 ** -52
+    v = [math.sin(i + 1.0) for i in range(3)]
+    states = [y0, [y * (1.0 + 0.1 * math.sin(i + 1.0)) + 0.01 * math.cos(i + 1.0) for i, y in enumerate(y0)]]
     samples = []
-    for y in ([1.0, 0.0, 0.0], [0.9, 3e-5, 0.1]):
-        f = [-0.04 * y[0] + 1.0e4 * y[1] * y[2], 0.04 * y[0] - 1.0e4 * y[1] * y[2] - 3.0e7 * y[1] * y[1],
-             3.0e7 * y[1] * y[1]]
-        f[0] *= 1.0 + eps
-        jac = [[-0.04, 1.0e4 * y[2], 1.0e4 * y[1]], [0.04, -1.0e4 * y[2] - 6.0e7 * y[1], -1.0e4 * y[1]],
-               [0.0, 6.0e7 * y[1], 0.0]]
-        samples.append({"t_hex": hx(0.0), "y_hex": [hx(v) for v in y], "f_hex": [hx(v) for v in f],
-                        "jacobian_hex": [[hx(v) for v in r] for r in jac]})
+    for t in (0.0, 20.0):
+        for k, y in enumerate(states):
+            f = [-0.04 * y[0] + 1.0e4 * y[1] * y[2], 0.04 * y[0] - 1.0e4 * y[1] * y[2] - 3.0e7 * y[1] * y[1],
+                 3.0e7 * y[1] * y[1]]
+            f[0] *= 1.0 + eps
+            jac = [[-0.04, 1.0e4 * y[2], 1.0e4 * y[1]], [0.04, -1.0e4 * y[2] - 6.0e7 * y[1], -1.0e4 * y[1]],
+                   [0.0, 6.0e7 * y[1], 0.0]]
+            jvp = [jac[r][0] * v[0] + jac[r][1] * v[1] + jac[r][2] * v[2] for r in range(3)]
+            sample = {"t_hex": hx(t), "y_hex": [hx(x) for x in y], "f_hex": [hx(x) for x in f], "f_error": None,
+                      "jacobian": {"format": "dense", "rows_hex": [[hx(x) for x in r] for r in jac]},
+                      "jvp_hex": [hx(x) for x in jvp]}
+            if mode == "coo":
+                sample["jacobian"] = {"format": "coo", "nonzeros_hex": [[r, c, hx(jac[r][c])] for r in range(3)
+                                                                         for c in range(3) if jac[r][c] != 0.0]}
+            elif mode == "jvp":
+                sample["jacobian"] = None
+            elif mode == "f_error" and k == 1:
+                sample.update(f_hex=None, f_error="callback error: state outside the domain")
+            samples.append(sample)
+    mass = [[hx(1.0), hx(0.0), hx(0.0)]] * 3 if os.environ.get("FAKE_PARITY_MASS") else None
     print(json.dumps({"schema": "vigilode-triage-parity-v1", "problem": problem, "dimension": 3,
-                      "y0_hex": [hx(1.0), hx(0.0), hx(0.0)], "samples": samples}))
+                      "autonomous": True, "jacobian": "jvp" if mode == "jvp" else "analytic",
+                      "jvp_direction_hex": [hx(x) for x in v], "mass_hex": mass, "samples": samples}))
+    sys.exit(0)
+if cmd == "triage-exact":
+    # The layout of triage.rs (closed form y = exp(-t) in every component; t_span from the problem id table).
+    import math
+    problem, grid = opts["--problem"], opts["--grid"]
+    t0, tf = 0.0, 40.0
+    times = [t0, tf] if grid == "endpoint" else [t0 + (tf - t0) * float(i) / 100.0 for i in range(101)]
+    times[0], times[-1] = t0, tf
+    if os.environ.get("FAKE_EXACT_SHIFT"):
+        times[-1] = struct.unpack(">d", struct.pack(">q", struct.unpack(">q", struct.pack(">d", tf))[0] - 1))[0]
+    print(json.dumps({"schema": "vigilode-triage-exact-v1", "problem": problem, "grid": grid, "dimension": 3,
+                      "output_times": times, "output_times_hex": [hx(t) for t in times],
+                      "states_hex": [[hx(math.exp(-t))] * 3 for t in times]}))
     sys.exit(0)
 sys.stderr.write("usage\n"); sys.exit(2)
 '''

@@ -273,6 +273,91 @@ class ReferenceTests(Tmp):
         self.assertNotEqual(proc.returncode, 0)  # immutable output
 
     @needs_scipy
+    def test_exact_reference_from_the_binary(self):
+        exact = dict(copy.deepcopy(CORPUS["problems"][0]), id="exactly", reference={"kind": "exact",
+                                                                                     "methods": ["exact"]})
+        corpus = self.corpus_with([exact])
+        for shift, status in (("", "ok"), ("1", "null")):
+            out = self.root / f"REFERENCES_exact{shift}.json"
+            proc = self.fake.run("triage_references.py", "--corpus", str(corpus), "--binary", str(self.fake.binary),
+                                 "--output", str(out), extra_env={"FAKE_EXACT_SHIFT": shift} if shift else None)
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            refs = {(r["problem"], r["grid"]): r for r in json.loads(out.read_text())["references"]}
+            ref = refs[("exactly", "endpoint")]  # the test CORPUS sweeps the endpoint grid; the shift moves tf
+            self.assertEqual(ref["status"], status, ref["reason"])
+        self.assertIn("differ from the reference grid (bitwise)", ref["reason"])
+        out = self.root / "REFERENCES_exact.json"
+        ref = {(r["problem"], r["grid"]): r for r in json.loads(out.read_text())["references"]}[("exactly", "endpoint")]
+        self.assertEqual(ref["rho_hex"], [[struct.pack(">d", 0.0).hex()] * 3] * 2)
+        self.assertEqual(ref["states_hex"][1][0], struct.pack(">d", __import__("math").exp(-40.0)).hex())
+
+    @needs_scipy
+    def test_corpus_method_names(self):
+        robertson = dict(copy.deepcopy(CORPUS["problems"][0]),
+                         reference={"kind": "two_method", "methods": ["scipy-radau", "scipy-lsoda"]})
+        bogus = dict(copy.deepcopy(robertson), id="hires", dimension=8,
+                     reference={"kind": "two_method", "methods": ["scipy-radau", "matlab-ode15s"]})
+        out = self.root / "REFERENCES_names.json"
+        proc = self.fake.run("triage_references.py", "--corpus", str(self.corpus_with([robertson, bogus])),
+                             "--output", str(out), "--grid", "endpoint")
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        refs = {r["problem"]: r for r in json.loads(out.read_text())["references"]}
+        self.assertEqual([m["method"] for m in refs["robertson"]["methods"]], ["Radau", "LSODA"])
+        self.assertIn("unknown reference method(s) ['matlab-ode15s']", refs["hires"]["reason"])
+
+    @needs_scipy
+    def test_parity_real_layouts(self):
+        thresholds = self.root / "NO_THRESHOLDS.json"
+        cases = {  # env -> (exit, robertson status, compared kinds, reason needle)
+            "dense": ({}, 0, "pass", ["rhs", "jacobian"], None),
+            "coo": ({"FAKE_PARITY_MODE": "coo"}, 0, "pass", ["rhs", "jacobian"], None),
+            "jvp": ({"FAKE_PARITY_MODE": "jvp"}, 0, "pass", ["rhs", "jvp"], None),
+            "f_error": ({"FAKE_PARITY_MODE": "f_error"}, 1, "fail", ["rhs", "jacobian"],
+                        "Rust f failed (callback error: state outside the domain) but the model f succeeded"),
+            "y0": ({"FAKE_PARITY_Y0_SHIFT": "1"}, 1, "fail", None, "sample 0 state differs"),
+            "mass": ({"FAKE_PARITY_MASS": "1"}, 1, "fail", None, "mass matrix on one side only"),
+            "perturbed": ({"FAKE_PARITY_PERTURB": "1e-10"}, 1, "fail", None, "rhs max rel"),
+        }
+        for name, (env, code, status, compared, needle) in cases.items():
+            with self.subTest(case=name):
+                out = self.root / f"PARITY_{name}.json"
+                proc = self.fake.run("triage_parity.py", "--binary", str(self.fake.binary), "--corpus",
+                                     str(self.fake.corpus), "--thresholds", str(thresholds), "--output", str(out),
+                                     "--problem", "robertson", extra_env=env)
+                self.assertEqual(proc.returncode, code, proc.stderr)
+                r = json.loads(out.read_text())["problems"][0]
+                self.assertEqual(r["status"], status, r["reason"])
+                if compared is not None:
+                    self.assertEqual(r["compared"], compared)
+                if needle is not None:
+                    self.assertIn(needle, r["reason"])
+                if name == "perturbed":
+                    self.assertEqual((r["worst"]["kind"], r["worst"]["sample"], r["worst"]["index"]), ("rhs", 0, 0))
+                if name == "f_error":
+                    self.assertEqual(r["f_error_samples"], 2)
+
+    @needs_scipy
+    def test_new_numpy_models(self):
+        import numpy as np
+        import triage_models as tm
+        gs = tm.model_for({"id": "gray-scott-16"})
+        self.assertEqual(gs.dimension, 512)
+        v = np.sin(np.arange(1.0, 513.0))
+        scale = abs(gs.jac(0.0, gs.y0)) @ np.abs(v)
+        self.assertLess(np.max(np.abs(gs.jac(0.0, gs.y0) @ v - gs.rust_jvp(0.0, gs.y0, v)) / scale), 1e-15)
+        self.assertEqual(gs.y0[0] + gs.y0[256], 1.0)  # u + v = 1 at every cell centre
+        ma = tm.model_for({"id": "mass-affine"})
+        f = ma.rust_rhs(0.3, ma.y0)
+        np.testing.assert_allclose(ma.mass @ ma.rhs(0.3, ma.y0), f, rtol=1e-15)
+        self.assertIn("y' = M^{-1} f", ma.source)
+        bj = tm.model_for({"id": "brusselator-1d-250", "numpy_model": None})
+        w = np.sin(np.arange(1.0, 501.0))
+        scale = np.abs(bj.jac(0.0, bj.y0)) @ np.abs(w)
+        self.assertLess(np.max(np.abs(bj.jac(0.0, bj.y0) @ w - bj.rust_jvp(0.0, bj.y0, w)) / scale), 1e-15)
+        alias = tm.model_for({"id": "brusselator-1d-jvp-250", "numpy_model": "brusselator-1d-250"})
+        self.assertEqual(alias.dimension, 500)
+
+    @needs_scipy
     def test_parity_limit_from_thresholds(self):
         thresholds = self.root / "THRESHOLDS.json"
         thresholds.write_text(json.dumps({"schema": "vigilode-triage-thresholds-v1",
@@ -306,6 +391,20 @@ class ReferenceTests(Tmp):
 
 
 # ----------------------------------------------------------------------------------- report, host
+class PlanTests(unittest.TestCase):
+    def test_profile_subset_grids_and_h0(self):
+        import triage_common as tc
+        corpus = copy.deepcopy(CORPUS)
+        corpus["sweep"]["grids"] = ["endpoint", "uniform101"]
+        corpus["profile_subset"] = {"rtols": [1e-6], "max_dimension": 100, "grids": ["uniform101"],
+                                    "h0_scales": [1.0]}
+        cells, _ = tc.plan_cells(LIST, corpus, "profile", arms=["ok-arm"])
+        self.assertEqual([(c["problem"], c["grid"], c["h0_scale"]) for c in cells], [("robertson", "uniform101", 1.0)])
+        del corpus["profile_subset"]["grids"]
+        cells, _ = tc.plan_cells(LIST, corpus, "profile", arms=["ok-arm"])
+        self.assertEqual(sorted(c["grid"] for c in cells), ["endpoint", "uniform101"])
+
+
 class ReportTests(Tmp):
     def test_report_generation_and_check(self):
         import test_triage_check as ttc

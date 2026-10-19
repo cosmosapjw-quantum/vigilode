@@ -13,7 +13,10 @@ Process start-up, problem construction and output cancel in the differences. `--
 Dw, I1mr, D1mr, D1mw, ILmr, DLmr, DLmw); simulated cache counts are a model of a cache, not of this host.
 
 The tool refuses to run unless the binary reports `binary.profile == "bench"` in a `triage-run` row (the first
-planned cell is run once, outside valgrind, for this check). Default cells: the CORPUS profile subset
+planned cell is run once, outside valgrind, for this check). A binary that cannot tell release from bench
+reports `"release-or-bench"` with `profile_source: "inferred"`; it is accepted only with
+`--assert-bench-profile`, an operator assertion that is recorded in every PROFILE row
+(`binary.profile_asserted`). Default cells: the CORPUS profile subset
 (profile_subset.rtols, dimension <= profile_subset.max_dimension, sweep grids, h0_scale 1.0), narrowed by the
 selection filters. The output PROFILE.jsonl is resumable (cells already present are skipped) and written in
 plan order; `--force` truncates it. A failed valgrind run gives a row with status `failed`, a reason and null
@@ -56,7 +59,8 @@ def binary_profile(binary: str, cell: dict, env: dict) -> tuple[str | None, str]
     row = tc.parse_json_output(proc.stdout)
     if row is None:
         return None, "triage-run for the profile check printed no JSON row"
-    return (row.get("binary") or {}).get("profile"), "ok"
+    binary = row.get("binary") or {}
+    return binary.get("profile"), f"profile_source {binary.get('profile_source')!r}"
 
 
 def valgrind_run(valgrind: str, tool: str, out: Path, command: list[str], env: dict, extra: list[str]):
@@ -74,7 +78,8 @@ def profile_cell(args, cell: dict, index: int, env: dict, binary_sha: str, profi
            "rtol": cell["rtol"], "grid": cell["grid"], "h0_scale": cell["h0_scale"], "status": "ok", "reason": None,
            "ir": {tag: None for tag, _ in CALLGRIND_TAGS}, "ir_warm": None, "ir_cold": None, "deterministic": None,
            "summary": None, "cachegrind": None, "valgrind": valgrind_version,
-           "binary": {"sha256": binary_sha, "profile": profile},
+           "binary": {"sha256": binary_sha, "profile": profile,
+                      "profile_asserted": "bench" if args.assert_bench_profile else None},
            "source": {"commit": prov.get("commit"), "tree_clean": prov.get("tree_clean")}}
     stem = f"{index:06d}.{cell['arm']}.{cell['problem']}".replace("/", "_")
     for tag, k in CALLGRIND_TAGS:
@@ -140,6 +145,9 @@ def main(argv=None) -> int:
                         help="plan the full run sweep instead of the CORPUS profile subset")
     parser.add_argument("-j", "--jobs", type=int, default=1)
     parser.add_argument("--force", action="store_true", help="truncate an existing output instead of resuming")
+    parser.add_argument("--assert-bench-profile", action="store_true",
+                        help="accept a binary reporting 'release-or-bench' (inferred) as built with the bench "
+                             "profile; the assertion is recorded in every row")
     tc.add_selection_arguments(parser)
     args = parser.parse_args(argv)
     try:
@@ -158,8 +166,10 @@ def main(argv=None) -> int:
     prov = tc.git_provenance()
     env = tc.provenance_env(prov)
     profile, detail = binary_profile(args.binary, cells[0], env)
-    if profile != "bench":
-        print(f"refused: binary profile is {profile!r}, not 'bench' ({detail})", file=sys.stderr)
+    if not (profile == "bench" or (profile == "release-or-bench" and args.assert_bench_profile)):
+        hint = " (pass --assert-bench-profile if it was built with --profile bench)" \
+            if profile == "release-or-bench" else ""
+        print(f"refused: binary profile is {profile!r}, not 'bench' ({detail}){hint}", file=sys.stderr)
         return 2
     try:
         version = subprocess.run([args.valgrind, "--version"], capture_output=True, text=True, check=True).stdout.strip()

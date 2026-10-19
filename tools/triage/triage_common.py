@@ -340,8 +340,8 @@ def plan_cells(list_doc: dict, corpus: dict, kind: str = "runs", arms: Iterable[
     """Cells of the wired internal arms x applicable CORPUS problems x sweep.
 
     kind `runs`: CORPUS sweep rtols x grids x h0_scales. kind `profile`/`alloc`: CORPUS profile_subset rtols,
-    problems with dimension <= profile_subset.max_dimension, the sweep grids and h0_scale 1.0 only (the primary
-    cost of a group is the h0 = 1 cell). Filters narrow the plan; they never add cells outside it.
+    problems with dimension <= profile_subset.max_dimension, profile_subset.grids (default: the sweep grids)
+    and profile_subset.h0_scales (default: 1.0 only; the primary cost of a group is the h0 = 1 cell). Filters narrow the plan; they never add cells outside it.
     Returns (cells sorted by (arm, problem, rtol, grid, h0_scale), notes on skipped corpus problems).
     """
     if kind not in PLAN_KINDS:
@@ -351,12 +351,13 @@ def plan_cells(list_doc: dict, corpus: dict, kind: str = "runs", arms: Iterable[
         plan_rtols = [float(r) for r in sweep.get("rtols", [])]
         plan_h0 = [float(h) for h in sweep.get("h0_scales", [])]
         max_dim = None
+        plan_grids = list(sweep.get("grids", []))
     else:
         subset = corpus.get("profile_subset") or {}
         plan_rtols = [float(r) for r in subset.get("rtols", [])]
-        plan_h0 = [1.0]
+        plan_h0 = [float(h) for h in subset.get("h0_scales", [1.0])]
         max_dim = subset.get("max_dimension")
-    plan_grids = list(sweep.get("grids", []))
+        plan_grids = list(subset.get("grids", sweep.get("grids", [])))
     sel = lambda values, chosen: [v for v in values if chosen is None or v in set(chosen)]  # noqa: E731
     plan_rtols = sel(plan_rtols, None if rtols is None else [float(r) for r in rtols])
     plan_grids = sel(plan_grids, grids)

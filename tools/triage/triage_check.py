@@ -530,6 +530,7 @@ class Engine:
         subset = inp.corpus["profile_subset"]
         self.profile_rtols = {float(r) for r in subset["rtols"]}
         self.profile_max_dim = subset["max_dimension"]
+        self.profile_grids = set(subset["grids"]) if subset.get("grids") is not None else None
         self.secondary_names = list(self.th["frontier"]["secondary_costs"])
         self.work_units = list(self.th["external"]["counted_work"])
         self.peers_field = self.th["external"]["peers_field"]
@@ -585,7 +586,10 @@ class Engine:
                     for rtol in self.rtols:
                         self.group(arm, pid, grid, rtol)
 
-    def in_profile_subset(self, problem_id: str, rtol: float) -> bool:
+    def in_profile_subset(self, problem_id: str, rtol: float, grid: str | None = None) -> bool:
+        # CORPUS profile_subset.grids, when present, limits which grids are profiled at all.
+        if grid is not None and self.profile_grids is not None and grid not in self.profile_grids:
+            return False
         return rtol in self.profile_rtols and self.inp.problems[problem_id]["dimension"] <= self.profile_max_dim
 
     def group(self, arm: str, problem_id: str, grid: str, rtol: float) -> dict:
@@ -603,7 +607,7 @@ class Engine:
         g["R_up_max"] = max(r for r, _ in r_ups) if r_ups else None
         g["R_rho_max"] = max(r for _, r in r_ups) if r_ups else None
         g["targets"] = [self._group_state(rows, accs, eps, required) for eps in self.targets]
-        g["in_profile_subset"] = (not g["external"]) and self.in_profile_subset(problem_id, rtol)
+        g["in_profile_subset"] = (not g["external"]) and self.in_profile_subset(problem_id, rtol, grid)
         g["cost"], g["cost_reason"] = self._cost(arm, problem_id, grid, rtol, g)
         g["secondary"], g["secondary_reasons"] = self._secondary(arm, problem_id, grid, rtol)
         g["counted_work"], g["counted_work_reason"] = self._counted_work(rows.get(NOMINAL_H0))

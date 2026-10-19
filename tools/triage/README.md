@@ -122,15 +122,27 @@ Verdict per component:
 - C3 = `fail` if any of its probes fails, `pass` if all pass.
 - C3 = `null` if no probe covers it (C3_MISSING).
 
-### Assumed Rust outputs not in the contract
+### Rust outputs not in the contract (layouts of `target/release/rodas5p` at 10ada53)
 
-- **`rodas5p triage-exact --problem P --grid G`:** prints
-  `{"schema": "vigilode-triage-exact-v1", "problem", "grid", "output_times": [..], "states_hex": [[..], ..]}`.
-  This is the closed-form solution, not the solver. The output times must equal the reference grid.
-- **`rodas5p triage-parity --problem P`:** prints
-  `{"schema": "vigilode-triage-parity-v1", "problem", "dimension", "y0_hex": [..]?, "samples": [{"t_hex",
-  "y_hex": [..], "f_hex": [..], "jacobian_hex": [[row 0], ..]}]}`. All values are 16-digit binary64 hex.
-  The Jacobian is dense and row-major.
+- **`rodas5p triage-exact --problem P --grid G`:** prints `{"schema": "vigilode-triage-exact-v1", "problem",
+  "grid", "dimension", "output_times", "output_times_hex", "states_hex"}`. This is the closed-form solution,
+  not the solver. `triage_references.py` requires `output_times_hex` to equal the reference grid bit for bit.
+  At 10ada53 the binary's grids equal `triage_common.grid_times` bit for bit.
+- **`rodas5p triage-parity --problem P`:** prints `{"schema": "vigilode-triage-parity-v1", "problem",
+  "dimension", "autonomous", "jacobian": "analytic"|"jvp", "jvp_direction_hex": [v], "mass_hex": null|rows,
+  "samples": [...]}`. Each sample is `{"t_hex", "y_hex", "f_hex"|null, "f_error": null|str, "jacobian":
+  null | {"format": "dense", "rows_hex"} | {"format": "coo", "nonzeros_hex": [[i, k, hex]]}, "jvp_hex"}`.
+  - The samples are y0 and a perturbation of it, at t0 and the span midpoint. Sample 0 is y0, so the model's
+    initial state is checked against it bit for bit.
+  - `triage_parity.py` compares f on every sample, and the Jacobian when present. When only `jvp_hex` is
+    present it compares J·v instead, using the model JVP if the model has one, otherwise its Jacobian times v.
+  - An `f_error` sample must also fail in the model. The mass matrix is compared too.
+- **`binary.profile`:** a row reports `"release-or-bench"` with `profile_source: "inferred"`.
+  `triage_profile.py` refuses such a binary unless given `--assert-bench-profile`, which is recorded in
+  every row as `binary.profile_asserted: "bench"`.
+- **CORPUS method names:** `reference.methods` uses `scipy-radau`, `scipy-lsoda` and `scipy-bdf`; the bare
+  SciPy names are also accepted. `profile_subset.grids` and `profile_subset.h0_scales` restrict the
+  profile and alloc plans.
 
 ### Other inputs and outputs
 
@@ -321,9 +333,12 @@ Flags: `TIMING_CONFLICT`, `C3_MISSING`, `NO_EVIDENCE` and `PROMOTE_BLOCKED_PROVI
   Its uniform101 cells are `unavailable`. The t0 state of its endpoint rows comes from the NumPy model.
 - **Diffsol:** the a07 harness covers Robertson at rtol 1e-8 on the uniform101 grid only. Its atol is
   compared within 4 ulps.
-- **NumPy models:** exist for `robertson`, `hires`, `van-der-pol-mu<MU>`, `brusselator-1d-<CELLS>` and the
-  ScientificCorpusV2.1 ids. Any other problem gets `no_numpy_model` in references and `not_checked` in
-  parity.
+- **NumPy models:** exist for `robertson`, `hires`, `van-der-pol-mu<MU>`, `brusselator-1d-<CELLS>`,
+  `gray-scott-<N>`, `mass-affine` and the ScientificCorpusV2.1 ids. CORPUS `numpy_model` aliases map the
+  others onto these. `mass-affine` is integrated as y' = M⁻¹f.
+  - The model JVPs of the 1D Brusselator and the v2.1 semilinear problem keep the Rust operation order. A
+    plain J @ v differs by rounding where the product cancels.
+  - Problems with no model get `no_numpy_model` in references and `not_checked` in parity.
 - **Static reach:** found by name (unique pub items and module paths), not by type resolution.
 - **Repair path:** `repair_path` is free text taken from COMPONENTS. The engine checks only that it is set,
   not that the repair is feasible.

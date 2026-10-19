@@ -77,6 +77,19 @@ class ProfileTests(unittest.TestCase):
         self.assertIn("not 'bench'", proc.stderr)
         self.assertFalse(self.out.exists())
 
+    def test_inferred_profile_needs_an_explicit_assertion(self):
+        proc = self.profile(env={"FAKE_PROFILE": "release-or-bench"})
+        self.assertEqual(proc.returncode, 2)
+        self.assertIn("--assert-bench-profile", proc.stderr)
+        self.assertFalse(self.out.exists())
+        proc = self.profile("--assert-bench-profile", env={"FAKE_PROFILE": "release-or-bench"})
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        row = read_rows(self.out)[0]
+        self.assertEqual(row["binary"]["profile"], "release-or-bench")
+        self.assertEqual(row["binary"]["profile_asserted"], "bench")
+        proc = self.profile("--assert-bench-profile", "--force", env={"FAKE_PROFILE": "release"})
+        self.assertEqual(proc.returncode, 2)  # the assertion never overrides a definite non-bench profile
+
     def test_valgrind_failure_is_a_typed_null_not_zero(self):
         proc = self.profile(env={"FAKE_VALGRIND_FAIL": "1"})
         self.assertEqual(proc.returncode, 0, proc.stderr)

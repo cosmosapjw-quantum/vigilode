@@ -2,11 +2,11 @@
 """Reference states of the component-triage corpus: REFERENCES.json, one entry per (problem, grid).
 
 * `exact` problems: `rodas5p triage-exact --problem P --grid G` evaluates the closed-form solution (not the
-  solver); expected stdout {"schema": "vigilode-triage-exact-v1", "problem", "grid", "output_times",
-  "states_hex"}. rho = 0 (rounding of the f64 closed-form evaluation is not bounded; recorded in `rho_rule`).
+  solver); stdout {"schema": "vigilode-triage-exact-v1", "problem", "grid", "dimension", "output_times",
+  "output_times_hex", "states_hex"}; the times are compared bit for bit through `output_times_hex`. rho = 0 (rounding of the f64 closed-form evaluation is not bounded; recorded in `rho_rule`).
   Without `--binary` the entry is null with reason `exact_requires_binary`.
-* `two_method` problems: SciPy solve_ivp with the methods of CORPUS `reference.methods` (default Radau, then
-  LSODA; the first is canonical) at rtol = REFERENCE_RTOL of tools/stiff_benchmark_scipy.py (1e-13) and
+* `two_method` problems: SciPy solve_ivp with the methods of CORPUS `reference.methods` (`scipy-radau`,
+  `scipy-lsoda`, `scipy-bdf`, or the bare SciPy names; default Radau, then LSODA; the first is canonical) at rtol = REFERENCE_RTOL of tools/stiff_benchmark_scipy.py (1e-13) and
   atol = atol_scale_P * that rtol, on the output grid, restarted at breakpoints. The NumPy right-hand sides and
   Jacobians are imported from tools/stiff_benchmark_scipy.py and tools/reference_v2/generate_references_v2.py
   (tools/triage/triage_models.py). A problem without a NumPy model gets a null entry with reason
@@ -34,6 +34,8 @@ import triage_common as tc  # noqa: E402
 import triage_models as tm  # noqa: E402
 
 DEFAULT_METHODS = ("Radau", "LSODA")
+METHOD_NAMES = {"scipy-radau": "Radau", "scipy-lsoda": "LSODA", "scipy-bdf": "BDF", "Radau": "Radau",
+                "LSODA": "LSODA", "BDF": "BDF"}
 GRID_CLOSENESS = 1.0e-12  # relative to the span: guards --times-from against a different grid, not a threshold
 RHO_RULE_TWO = "2 x max over non-canonical methods of |canonical - method| per output time and component"
 RHO_RULE_EXACT = "exact closed form: rho = 0 (f64 evaluation rounding not bounded)"
@@ -85,8 +87,17 @@ def exact_entry(binary: str | None, problem: dict, grid: str, times: list[float]
     if doc is None or doc.get("schema") != tc.EXACT_SCHEMA or doc.get("problem") != pid or doc.get("grid") != grid:
         return null_entry(pid, grid, "exact", "triage-exact printed no matching vigilode-triage-exact-v1 document",
                           times)
-    if doc.get("output_times") != times:
-        return null_entry(pid, grid, "exact", "triage-exact output_times differ from the reference grid", times)
+    if doc.get("dimension") is not None and doc["dimension"] != problem.get("dimension"):
+        return null_entry(pid, grid, "exact", f"triage-exact dimension {doc['dimension']} != CORPUS "
+                                              f"{problem.get('dimension')}", times)
+    try:
+        exact_times = ([tc.unhex64(h) for h in doc["output_times_hex"]] if doc.get("output_times_hex") is not None
+                       else [float(t) for t in doc.get("output_times") or []])
+    except (tc.TriageError, TypeError, ValueError) as exc:
+        return null_entry(pid, grid, "exact", f"triage-exact output times: {exc}", times)
+    if [tc.hex64(t) for t in exact_times] != [tc.hex64(t) for t in times]:
+        return null_entry(pid, grid, "exact", "triage-exact output times differ from the reference grid (bitwise)",
+                          times)
     try:
         states = tc.hex_matrix(doc.get("states_hex"))
     except tc.TriageError as exc:
@@ -113,7 +124,11 @@ def two_method_entry(problem: dict, grid: str, times: list[float]) -> dict:
     if model.dimension != problem.get("dimension"):
         return null_entry(pid, grid, "two_method", f"NumPy model dimension {model.dimension} != CORPUS "
                                                    f"{problem.get('dimension')}", times)
-    methods = list((problem.get("reference") or {}).get("methods") or DEFAULT_METHODS)
+    requested = list((problem.get("reference") or {}).get("methods") or DEFAULT_METHODS)
+    unknown = [m for m in requested if m not in METHOD_NAMES]
+    if unknown:
+        return null_entry(pid, grid, "two_method", f"unknown reference method(s) {unknown}", times)
+    methods = [METHOD_NAMES[m] for m in requested]
     rtol = float(tm.scipy_tool().REFERENCE_RTOL)
     atol = float(problem["atol_scale"]) * rtol
     results, infos = [], []
