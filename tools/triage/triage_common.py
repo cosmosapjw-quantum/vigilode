@@ -50,7 +50,16 @@ ROW_KEYS = frozenset((
     "h0", "status", "error", "success", "attempts", "accepted_steps", "rejected_steps", "output_times",
     "states_hex", "counters", "extra_work", "counter_semantics", "deterministic", "repetitions", "binary", "source"))
 # Optional keys added by the Python drivers: `process` on process_abort rows, `probe` on PROBES.jsonl rows.
-ROW_OPTIONAL_KEYS = frozenset(("process", "probe"))
+# Optional keys added by the Python drivers: `process` on process_abort rows, `probe` on PROBES.jsonl rows, and
+# the state sidecar of a large row (states_hex replaced by states_sha256/states_shape/states_file, plus
+# accuracy_inline computed by the runner with row_accuracy below).
+STATE_SIDECAR_KEYS = frozenset(("states_sha256", "states_shape", "states_file"))
+ROW_OPTIONAL_KEYS = frozenset(("process", "probe", "accuracy_inline")) | STATE_SIDECAR_KEYS
+ROW_REQUIRED_KEYS = ROW_KEYS - {"states_hex"}  # states_hex xor the three sidecar keys
+DEFAULT_INLINE_STATES_MAX_DIMENSION = 64
+ACCURACY_FUNCTION = "tools/triage/triage_common.py::row_accuracy"
+ACCURACY_KEYS = frozenset(("class", "E", "E_rho", "E_up", "R", "R_rho", "R_up", "reason", "integrity"))
+ACCURACY_INLINE_KEYS = ACCURACY_KEYS | {"reference_sha256", "function"}
 ROW_STATUSES = frozenset(("ok", "solver_failure", "refused", "error", "process_abort", "unavailable"))
 GRIDS = ("endpoint", "uniform101")
 EXTERNAL_PREFIX = "ext."
@@ -357,7 +366,8 @@ def plan_cells(list_doc: dict, corpus: dict, kind: str = "runs", arms: Iterable[
 
     kind `runs`: CORPUS sweep rtols x grids x h0_scales. kind `profile`/`alloc`: CORPUS profile_subset rtols,
     problems with dimension <= profile_subset.max_dimension, profile_subset.grids (default: the sweep grids)
-    and profile_subset.h0_scales (default: 1.0 only; the primary cost of a group is the h0 = 1 cell). Filters narrow the plan; they never add cells outside it.
+    and profile_subset.h0_scales (default: 1.0 only; the primary cost of a group is the h0 = 1 cell).
+    Filters narrow the plan; they never add cells outside it.
     Returns (cells sorted by (arm, problem, rtol, grid, h0_scale), notes on skipped corpus problems).
     """
     if kind not in PLAN_KINDS:
@@ -450,3 +460,264 @@ class OrderedAppender:
             self.handle.write(dump_line(self.pending[index]) + "\n")
         self.pending.clear()
         self.handle.close()
+
+
+# ========================================================================= row accuracy (shared)
+# The one implementation of contract row accuracy: triage_check.py recomputes it from states_hex or a state
+# sidecar, and triage_runner.py / triage_external.py store it as `accuracy_inline` when they move the states
+# of a large row to a sidecar. Same inputs give bit-identical results in both places.
+def decode_vector(values: list) -> list[float] | None:
+    try:
+        return list(struct.unpack(f">{len(values)}d", bytes.fromhex("".join(values))))
+    except (ValueError, TypeError, struct.error):
+        return None
+
+
+def wrms_max(rows_a: list[list[float]], weights: list[list[float]]) -> float:
+    worst = 0.0
+    for a, w in zip(rows_a, weights):
+        value = math.sqrt(math.fsum((x * y) ** 2 for x, y in zip(a, w)) / len(a))
+        if not value <= worst:
+            worst = value  # NaN or larger
+    return worst
+
+
+def reference_entry_sha256(entry: dict | None) -> str | None:
+    """Digest of one REFERENCES entry (canonical JSON): binds an inline accuracy to the reference it used."""
+    return None if entry is None else sha256_bytes(dump_line(entry).encode())
+
+
+class Reference:
+    def __init__(self, entry: dict | None, problem: dict, grid: str):
+        self.sha256 = reference_entry_sha256(entry)
+        self.status = "missing" if entry is None else entry.get("status")
+        self.reason = "reference_missing" if entry is None else entry.get("reason")
+        self.times = None
+        self.states = None
+        self.rho = None
+        self.e_rho = None
+        if entry is None or self.status != "ok":
+            if entry is not None and not self.reason:
+                self.reason = f"reference status {self.status!r}"
+            return
+        dim = problem.get("dimension")
+        try:
+            self.times = [float(t) for t in entry["output_times"]]
+            self.states = [decode_vector(r) for r in entry["states_hex"]]
+            self.rho = [decode_vector(r) for r in entry["rho_hex"]]
+        except (KeyError, TypeError, ValueError):
+            self.status, self.reason = "invalid", "reference entry malformed"
+            return
+        bad = (len(self.states) != len(self.times) or len(self.rho) != len(self.times)
+               or any(v is None or len(v) != dim for v in self.states + self.rho)
+               or not all(math.isfinite(x) for v in self.states + self.rho for x in v)
+               or any(x < 0 for v in self.rho for x in v))
+        if bad:
+            self.status, self.reason = "invalid", "reference states/rho malformed, non-finite or wrong dimension"
+            return
+        atol_scale = float(problem["atol_scale"])
+        self.w_problem = [[1.0 / (atol_scale + abs(r)) for r in row] for row in self.states]
+        self.e_rho = wrms_max(self.rho, self.w_problem)
+        self._requested: dict[tuple, tuple] = {}
+
+    @property
+    def ok(self) -> bool:
+        return self.status == "ok"
+
+    def requested(self, atol: float, rtol: float) -> tuple[list, float]:
+        key = (atol, rtol)
+        if key not in self._requested:
+            w = [[1.0 / (atol + rtol * abs(r)) for r in row] for row in self.states]
+            self._requested[key] = (w, wrms_max(self.rho, w))
+        return self._requested[key]
+
+
+def row_states(row: dict) -> list | None:
+    """The decoded states_hex of a row (None entries for malformed vectors), or None without states_hex."""
+    if "states_hex" not in row:
+        return None
+    return [decode_vector(v) if isinstance(v, list) else None for v in row["states_hex"]]
+
+
+def row_accuracy(row: dict, problem: dict, ref: Reference, states: list | None = None) -> dict:
+    """{class: computed|failed|unknown, E, E_rho, E_up, R, R_rho, R_up, reason, integrity}.
+
+    `states` (one float list per output time) defaults to the row's decoded states_hex.
+    """
+    out = {"class": "unknown", "E": None, "E_rho": None, "E_up": None, "R": None, "R_rho": None, "R_up": None,
+           "reason": None, "integrity": None}
+    if row["status"] != "ok":
+        out.update({"class": "failed", "reason": f"status {row['status']}"})
+        if row["status"] == "process_abort":
+            out["integrity"] = "process_abort"
+        return out
+    dim = problem.get("dimension")
+    if states is None:
+        states = row_states(row) or []
+    if any(s is None or len(s) != dim for s in states) or not states:
+        out.update({"class": "failed", "reason": "ok row with malformed states", "integrity": "malformed_ok_row"})
+        return out
+    if not all(math.isfinite(x) for s in states for x in s):
+        out.update({"class": "failed", "reason": "non-finite state", "integrity": "non_finite_state"})
+        return out
+    if not ref.ok:
+        out["reason"] = f"reference: {ref.reason}"
+        return out
+    times = row["output_times"]
+    if len(times) != len(ref.times) or any(float(a) != b for a, b in zip(times, ref.times)):
+        out["reason"] = "output_times differ from the reference times"
+        return out
+    diff = [[y - r for y, r in zip(ys, rs)] for ys, rs in zip(states, ref.states)]
+    e = wrms_max(diff, ref.w_problem)
+    w_req, r_rho = ref.requested(float(row["atol"]), float(row["rtol"]))
+    r = wrms_max(diff, w_req)
+    if not (math.isfinite(e) and math.isfinite(r)):
+        out.update({"class": "failed", "reason": "non-finite error norm"})
+        return out
+    out.update({"class": "computed", "E": e, "E_rho": ref.e_rho, "E_up": e + ref.e_rho, "R": r, "R_rho": r_rho,
+                "R_up": r + r_rho})
+    return out
+
+
+def check_accuracy_record(acc: Any) -> str | None:
+    """Why a stored accuracy record (accuracy_inline) is malformed, or None."""
+    if not isinstance(acc, dict) or set(acc) != ACCURACY_INLINE_KEYS:
+        return "accuracy_inline key set differs"
+    norms = ("E", "E_rho", "E_up", "R", "R_rho", "R_up")
+    if acc["class"] == "computed":
+        if not all(type(acc[k]) is float and math.isfinite(acc[k]) and acc[k] >= 0 for k in norms):
+            return "accuracy_inline norms are not finite nonnegative floats"
+        if acc["E_up"] != acc["E"] + acc["E_rho"] or acc["R_up"] != acc["R"] + acc["R_rho"]:
+            return "accuracy_inline E_up/R_up are not the sums"
+    elif acc["class"] in ("failed", "unknown"):
+        if any(acc[k] is not None for k in norms) or not isinstance(acc["reason"], str):
+            return "accuracy_inline of a failed/unknown row carries norms or no reason"
+    else:
+        return f"accuracy_inline class {acc['class']!r}"
+    return None
+
+
+# ============================================================================== state sidecars
+def states_bytes(states: list[list[float]]) -> bytes:
+    """Little-endian float64, row-major [time][component]."""
+    flat = [x for s in states for x in s]
+    return struct.pack(f"<{len(flat)}d", *flat)
+
+
+def write_states_sidecar(directory: Path, states: list[list[float]]) -> tuple[str, str]:
+    """Write `<sha256>.f64le.gz` (gzip without name or mtime, like `gzip -n`; sha256 over the uncompressed
+    bytes) into directory; content addressed, so an existing file is kept. Returns (sha256, file name)."""
+    data = states_bytes(states)
+    digest = sha256_bytes(data)
+    name = f"{digest}.f64le.gz"
+    directory = Path(directory)
+    directory.mkdir(parents=True, exist_ok=True)
+    target = directory / name
+    if not target.exists():
+        tmp = directory / f".{name}.{os.getpid()}.tmp"
+        tmp.write_bytes(gzip.compress(data, compresslevel=6, mtime=0))
+        os.replace(tmp, target)
+    return digest, name
+
+
+def load_states_sidecar(directories: Iterable[Path], row: dict) -> tuple[list | None, str, str | None]:
+    """(states, source, reason): source is `sidecar` (loaded, sha256 and shape verified), `sidecar_missing` or
+    `sidecar_refused` (sha256, shape or gzip mismatch; the file is never used)."""
+    name, digest, shape = row.get("states_file"), row.get("states_sha256"), row.get("states_shape")
+    if not (isinstance(name, str) and "/" not in name and isinstance(digest, str)
+            and isinstance(shape, list) and len(shape) == 2 and all(type(x) is int and x >= 0 for x in shape)):
+        return None, "sidecar_refused", "malformed states_file/states_sha256/states_shape"
+    for directory in directories:
+        path = Path(directory) / name
+        if not path.is_file():
+            continue
+        try:
+            data = gzip.decompress(path.read_bytes())
+        except (OSError, EOFError, gzip.BadGzipFile) as exc:
+            return None, "sidecar_refused", f"{name}: unreadable gzip: {exc}"
+        if sha256_bytes(data) != digest:
+            return None, "sidecar_refused", f"{name}: sha256 of the uncompressed bytes != states_sha256"
+        times, dim = shape
+        if len(data) != 8 * times * dim:
+            return None, "sidecar_refused", f"{name}: {len(data)} bytes != 8 x {times} x {dim}"
+        flat = struct.unpack(f"<{times * dim}d", data)
+        return [list(flat[i * dim:(i + 1) * dim]) for i in range(times)], "sidecar", None
+    return None, "sidecar_missing", f"{name}: not found in the states directories"
+
+
+def load_references(paths: Iterable[Path]) -> dict[tuple, dict]:
+    """(problem, grid) -> REFERENCES entry over one or more REFERENCES files (.gz allowed); duplicates refused."""
+    out: dict[tuple, dict] = {}
+    for path in paths:
+        doc = load_json(path)
+        if not isinstance(doc, dict) or doc.get("schema") != REFERENCES_SCHEMA:
+            raise TriageError(f"{path}: schema is not {REFERENCES_SCHEMA!r}")
+        for entry in doc.get("references") or []:
+            key = (entry.get("problem"), entry.get("grid"))
+            if key in out:
+                raise TriageError(f"{path}: duplicate reference {key!r}")
+            out[key] = entry
+    return out
+
+
+class StateExternalizer:
+    """Moves the states of rows with dimension > max_dimension to sidecars and stores `accuracy_inline`
+    (shared row_accuracy against the matching reference). Without a states directory large rows are kept
+    inline and one warning is printed."""
+
+    def __init__(self, directory: Path | None, max_dimension: int, references: dict[tuple, dict],
+                 problems: dict[str, dict]):
+        self.directory = Path(directory) if directory is not None else None
+        self.max_dimension = max_dimension
+        self.references = references
+        self.problems = problems
+        self._refs: dict[tuple, Reference] = {}
+        self.warned = False
+        self.moved = 0
+
+    def reference(self, problem_id: str, grid: str) -> Reference:
+        key = (problem_id, grid)
+        if key not in self._refs:
+            self._refs[key] = Reference(self.references.get(key), self.problems.get(problem_id) or {}, grid)
+        return self._refs[key]
+
+    def __call__(self, row: dict) -> dict:
+        states_hex = row.get("states_hex")
+        dimension = row.get("dimension")
+        if not isinstance(dimension, int) or isinstance(dimension, bool):
+            dimension = len(states_hex[0]) if states_hex else 0
+        if not states_hex or dimension <= self.max_dimension:
+            return row
+        if self.directory is None:
+            if not self.warned:
+                print(f"warning: rows with dimension > {self.max_dimension} keep states_hex inline "
+                      f"(no --states-dir)", file=sys.stderr)
+                self.warned = True
+            return row
+        states = row_states(row)
+        if any(s is None for s in states) or len({len(s) for s in states}) != 1:
+            return row  # malformed states stay inline; the checker reports them
+        problem = self.problems.get(row.get("problem"))
+        if problem is None:
+            accuracy = {"class": "unknown", "E": None, "E_rho": None, "E_up": None, "R": None, "R_rho": None,
+                        "R_up": None, "reason": "problem not in CORPUS", "integrity": None}
+            ref_sha = None
+        else:
+            ref = self.reference(row["problem"], row["grid"])
+            accuracy = row_accuracy(row, problem, ref, states)
+            ref_sha = ref.sha256
+        digest, name = write_states_sidecar(self.directory, states)
+        out = {k: v for k, v in row.items() if k != "states_hex"}
+        out.update(states_sha256=digest, states_shape=[len(states), len(states[0])], states_file=name,
+                   accuracy_inline=dict(accuracy, reference_sha256=ref_sha, function=ACCURACY_FUNCTION))
+        self.moved += 1
+        return out
+
+
+def add_state_arguments(parser) -> None:
+    parser.add_argument("--references", type=Path, action="append", default=[],
+                        help="REFERENCES.json (.gz allowed; repeatable) for accuracy_inline of sidecar rows")
+    parser.add_argument("--states-dir", type=Path, help="directory for <sha256>.f64le.gz state sidecars")
+    parser.add_argument("--inline-states-max-dimension", type=int, default=DEFAULT_INLINE_STATES_MAX_DIMENSION,
+                        help="rows with a larger dimension move their states to --states-dir (default 64)")
+

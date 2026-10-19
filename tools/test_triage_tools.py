@@ -190,6 +190,22 @@ class ExternalTests(Tmp):
         self.assertEqual(ok["extra_work"]["h0_policy"], "solver_default")
 
     @needs_scipy
+    def test_external_rows_use_state_sidecars(self):
+        import triage_common as tc
+        out, states = self.root / "ext_sidecar.jsonl", self.root / "states"
+        proc = self.external("--external-arm", "ext.scipy-radau", "--rtol", "1e-04", "--states-dir", str(states),
+                             "--inline-states-max-dimension", "2", out=out)
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        row = read_rows(out)[0]
+        self.assertEqual(row["status"], "ok", row["error"])
+        self.assertNotIn("states_hex", row)
+        self.assertEqual(row["states_shape"], [2, 3])
+        self.assertEqual(tc.load_states_sidecar([states], row)[0][0], [1.0, 0.0, 0.0])
+        self.assertEqual(row["accuracy_inline"]["reason"], "reference: reference_missing")
+        import triage_check as tch
+        self.assertEqual(tch.validate_row(row, "external"), [])
+
+    @needs_scipy
     def test_scipy_radau_row(self):
         proc = self.external("--external-arm", "ext.scipy-radau", "--rtol", "1e-04", "--h0-scale", "1.0",
                              "--repetitions", "2")

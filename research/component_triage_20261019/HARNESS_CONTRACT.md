@@ -97,6 +97,29 @@ refusals. Exit code 2 only for unknown arm/problem or inapplicable pair.
   of its IEEE-754 bits (exact and NaN-safe; decoded by
   `tools/evidence_schema_v2.py::decode_hex64`). Rows with fewer observed
   outputs than requested keep what was observed and have `success=false`.
+- State sidecar (written by the Python drivers, never by the binary): a stored
+  row (RUNS, EXTERNAL or PROBES) whose `dimension` exceeds the driver's
+  `--inline-states-max-dimension` (default 64) and that was run with
+  `--states-dir DIR` has no `states_hex`. It carries instead:
+  - `states_file`: a name relative to DIR, `<sha256>.f64le.gz`. The file is
+    `gzip -n` of the little-endian float64 matrix, row-major [time][component].
+  - `states_sha256`: the SHA-256 of the uncompressed bytes.
+  - `states_shape`: `[times, dimension]`.
+
+  A row has either `states_hex` or all three sidecar keys, never both. Without
+  `--states-dir`, large rows keep `states_hex`.
+- `accuracy_inline` (sidecar rows only): `{class, E, E_rho, E_up, R, R_rho,
+  R_up, reason, integrity, reference_sha256, function}`.
+  - The values come from the one shared implementation
+    `tools/triage/triage_common.py::row_accuracy`, against the REFERENCES entry
+    of the row's (problem, grid).
+  - `reference_sha256` is the SHA-256 of that entry's canonical JSON, or `null`
+    without a reference (then `class` is `unknown` with the reason).
+  - `function` names the implementation.
+  - `triage_check.py` recomputes accuracy from `states_hex` or from a sidecar
+    whose SHA-256 and shape verify. Only when neither is available does it use
+    `accuracy_inline`, and only if bound to the same reference entry; such a
+    row is flagged `accuracy_source: "runner_inline"` in RESULTS.
 - `counters`: every field of `rodas5p_core::WorkCounters`, serialized by serde,
   raw. Arm-specific ledgers (`BandedWork`, `AttemptWorkTotals`, ...) go in the
   optional `extra_work` object.

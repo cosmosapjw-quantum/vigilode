@@ -65,7 +65,9 @@ python3 tools/triage/triage_report.py --results $N/RESULTS.json --classification
 
 ### Rows (`vigilode-triage-row-v1`)
 
-These are the contract's row keys. The Python drivers may add only two keys: `process` and `probe`.
+These are the contract's row keys. The Python drivers may add only the keys `process`, `probe`,
+`accuracy_inline` and the state-sidecar keys `states_sha256`, `states_shape` and `states_file` (which replace
+`states_hex`; see "State sidecars").
 
 - **`process_abort`:** written by `triage_runner.py` when no valid row exists for a cell. Its `status` is
   `process_abort`. It carries the arm's `components` from triage-list and `success` false. `states_hex` and
@@ -96,6 +98,36 @@ These are the contract's row keys. The Python drivers may add only two keys: `pr
     diffsol rows `h0` is null, because they use the solver's default first step
     (`extra_work.h0_policy = "solver_default"`).
   - Wall time is never recorded.
+
+### State sidecars (large rows)
+
+Rows of dimension greater than `--inline-states-max-dimension` (default 64) can move their states out of the
+JSONL: `triage_runner.py` (RUNS and PROBES) and `triage_external.py` (EXTERNAL) do this when given
+`--states-dir DIR` and `--references REFERENCES.json` (repeatable; `.gz` allowed).
+
+- **Sidecar file:** `DIR/<sha256>.f64le.gz`, the `gzip -n` of the little-endian float64 matrix, row-major
+  [time][component]. The sha256 is over the uncompressed bytes, so the file is content addressed and shared
+  by identical states.
+- **Row changes:** `states_hex` is replaced by `states_sha256`, `states_shape` = [times, dimension] and
+  `states_file`, the name relative to DIR.
+- **`accuracy_inline`:** `{class, E, E_rho, E_up, R, R_rho, R_up, reason, integrity, reference_sha256,
+  function}`, computed by `triage_common.row_accuracy` (the checker's own code) against the matching
+  reference entry. `reference_sha256` is the sha256 of that entry's canonical JSON. Without a reference the
+  class is `unknown` with a reason.
+- **Without `--states-dir`:** large rows keep `states_hex`, and a warning is printed.
+
+`triage_check.py --states-dir DIR` (repeatable) takes each row's accuracy from the first source available:
+
+1. `states_hex`: recomputed (`accuracy_source` `recomputed_hex`).
+2. The row's status, for non-ok rows (`recomputed_status`).
+3. A sidecar whose sha256 and shape verify: recomputed (`recomputed_sidecar`). A sidecar that fails the
+   check is *refused*, never read.
+4. `accuracy_inline`, if well formed, produced by `triage_common.row_accuracy`, and bound to the same
+   reference entry (`runner_inline`).
+5. Otherwise `accuracy: null` (`none`; class `unknown`, with a reason).
+
+`RESULTS.accuracy_summary` counts each source plus `sidecars_missing` and `sidecars_refused`, and
+`validate_triage` checks the counts.
 
 ### `PROBES.jsonl` (C3)
 

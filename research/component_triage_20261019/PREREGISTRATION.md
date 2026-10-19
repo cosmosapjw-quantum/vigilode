@@ -162,3 +162,13 @@ one names the smoke observation that forced it.
      `radau5-reuse-lu`. No two wired arms share a component set (tested).
    - Error rows carry `null` counters instead of zeros; `refused` is limited to
      identified pre-work validations; problems carry `autonomous`.
+4. **Row size.** The smoke rows (G tier only) took 156 MB because every row
+   stores all 101 output states. A P-tier row (n up to 8192) would take about
+   16 MB, so the main campaign would need hundreds of GB. Rows with dimension
+   above 64 now keep their states in a verified gzip sidecar
+   (`<sha256>.f64le.gz`) and carry `accuracy_inline`, computed by the same
+   `triage_common.row_accuracy` function the checker uses and bound to the
+   SHA-256 of its reference entry. The checker recomputes from inline states
+   or a verified sidecar whenever available and records `accuracy_source` for
+   every row; inline values are used only as the documented fallback. The
+   accuracy rule and thresholds are unchanged.

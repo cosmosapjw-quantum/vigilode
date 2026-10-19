@@ -611,6 +611,10 @@ class TriageKind(InvalidAssertions):
             "repairable_not_provisional": (None, lambda cl: comp(cl, "drv.b")["rule_path"].append(
                 {"rule": "C_FAIL_REPAIRABLE", "kind": "contract", "detail": "x"}),
                 "C_FAIL_REPAIRABLE needs a C1_FAIL/C3_FAIL step and a provisional label"),
+            "accuracy_source": (lambda r: r["rows"][0].__setitem__("accuracy_source", "guessed"), None,
+                                "unregistered accuracy source 'guessed'"),
+            "accuracy_summary_recount": (lambda r: r["accuracy_summary"].__setitem__("runner_inline", 5), None,
+                                         "accuracy_summary: source counts"),
             "flag_without_rule": (None, lambda cl: comp(cl, "drv.b")["flags"].append("C3_MISSING"),
                                   "C3_MISSING without provisional"),
             "gap_unbound": (lambda r: r["external_gaps"].append(

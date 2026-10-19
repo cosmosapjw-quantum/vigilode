@@ -328,6 +328,49 @@ class RunnerTests(unittest.TestCase):
         self.assertEqual(self.runner("--arm", "ok-arm", "--arm", "abort-arm", "-j", "4", out=parallel).returncode, 0)
         self.assertEqual(parallel.read_bytes(), first)
 
+    def test_state_sidecars_with_gz_references(self):
+        import gzip
+        import struct as st
+        import triage_common as tc
+        hx1 = st.pack(">d", 1.0).hex()
+        refs = {"schema": "vigilode-triage-references-v1", "references": [
+            {"problem": "wide", "grid": "endpoint", "kind": "two_method", "status": "ok", "reason": None,
+             "output_times": [0.0, 1.0], "states_hex": [[hx1] * 500] * 2,
+             "rho_hex": [[st.pack(">d", 0.0).hex()] * 500] * 2, "rho_rule": "x", "methods": [],
+             "canonical_method": "Radau", "model_source": "test"}]}
+        gz = self.fake.root / "REFERENCES.json.gz"
+        gz.write_bytes(gzip.compress(json.dumps(refs).encode(), mtime=0))
+        states = self.fake.root / "states"
+        proc = self.runner("--arm", "ok-arm", "--rtol", "1e-06", "--h0-scale", "1.0", "--references", str(gz),
+                           "--states-dir", str(states))
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        rows = {r["problem"]: r for r in read_rows(self.out)}
+        wide, small = rows["wide"], rows["robertson"]
+        self.assertIn("states_hex", small)  # dimension 3 <= 64: unchanged
+        self.assertNotIn("accuracy_inline", small)
+        self.assertNotIn("states_hex", wide)
+        self.assertEqual(wide["states_shape"], [2, 500])
+        loaded, source, _ = tc.load_states_sidecar([states], wide)
+        self.assertEqual(source, "sidecar")
+        self.assertEqual(loaded, [[1.0] * 500] * 2)
+        inline = wide["accuracy_inline"]
+        self.assertEqual((inline["class"], inline["E"], inline["R_up"]), ("computed", 0.0, 0.0))
+        self.assertEqual(inline["reference_sha256"], tc.reference_entry_sha256(refs["references"][0]))
+        self.assertEqual(inline["function"], tc.ACCURACY_FUNCTION)
+        # Without --states-dir: states stay inline, with a warning.
+        plain = self.fake.root / "PLAIN.jsonl"
+        proc = self.runner("--arm", "ok-arm", "--rtol", "1e-06", "--h0-scale", "1.0", "--problem", "wide", out=plain)
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertIn("keep states_hex inline", proc.stderr)
+        self.assertIn("states_hex", read_rows(plain)[0])
+        # A reference-less large row still moves, with a typed unknown inline accuracy.
+        bare = self.fake.root / "BARE.jsonl"
+        proc = self.runner("--arm", "ok-arm", "--rtol", "1e-06", "--h0-scale", "1.0", "--problem", "wide",
+                           "--states-dir", str(states), out=bare)
+        inline = read_rows(bare)[0]["accuracy_inline"]
+        self.assertEqual((inline["class"], inline["reason"], inline["reference_sha256"]),
+                         ("unknown", "reference: reference_missing", None))
+
     def test_force_truncates(self):
         self.assertEqual(self.runner("--arm", "ok-arm", "--rtol", "1e-06").returncode, 0)
         self.assertEqual(len(read_rows(self.out)), 2 * 3)

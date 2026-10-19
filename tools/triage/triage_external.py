@@ -29,7 +29,9 @@ Arms and sources:
 External rows are admissible per single row (THRESHOLDS.external: the h0 rule applies to internal arms only),
 so the plan has one cell per (arm, problem, rtol, grid): the nominal h0_scale = 1. Every planned cell gets a
 row; none is skipped silently. Python wall time is never recorded (it is not a cost).
-EXTERNAL.jsonl is resumable like RUNS.jsonl and written in plan order; `--force` truncates it.
+Large rows move their states to `--states-dir` sidecars with `accuracy_inline`, exactly as in
+tools/triage/triage_runner.py. EXTERNAL.jsonl is resumable like RUNS.jsonl and written in plan order;
+`--force` truncates it.
 """
 
 from __future__ import annotations
@@ -329,10 +331,13 @@ def main(argv=None) -> int:
     parser.add_argument("-j", "--jobs", type=int, default=1, help="parallel worker processes")
     parser.add_argument("--force", action="store_true")
     tc.add_selection_arguments(parser)
+    tc.add_state_arguments(parser)
     args = parser.parse_args(argv)
     try:
         corpus = tc.load_json(args.corpus)
         list_doc = tc.load_json(args.list) if args.list else None
+        externalize = tc.StateExternalizer(args.states_dir, args.inline_states_max_dimension,
+                                           tc.load_references(args.references), tc.corpus_problems(corpus))
     except tc.TriageError as exc:
         for reason in exc.reasons:
             print("error:", reason, file=sys.stderr)
@@ -372,7 +377,7 @@ def main(argv=None) -> int:
                 row = future.result()
                 print(f"{row['arm']} {row['problem']} rtol={row['rtol']:g} {row['grid']} h0x{row['h0_scale']:g}: "
                       f"{row['status']} {row['error'] or ''}", file=sys.stderr, flush=True)
-                appender.add(futures[future], row)
+                appender.add(futures[future], externalize(row))
     finally:
         appender.close()
     return 0

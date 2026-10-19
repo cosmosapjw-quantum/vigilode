@@ -12,6 +12,13 @@ RUNS.jsonl:
   A failed cell is never dropped.
 
 The driver sets VIGILODE_SOURCE_COMMIT / VIGILODE_TREE_CLEAN from git (the binary does not shell out to git).
+Rows whose dimension exceeds `--inline-states-max-dimension` (default 64) move their states to
+`--states-dir` as `<sha256>.f64le.gz` (gzip -n of the little-endian float64 [time][component] matrix; sha256 over
+the uncompressed bytes); the row then carries `states_sha256`, `states_shape`, `states_file` instead of
+`states_hex`, plus `accuracy_inline` (tools/triage/triage_common.py::row_accuracy against the matching
+`--references` entry; null fields with a reason without one). Without `--states-dir` large rows keep
+`states_hex` and a warning is printed. The same applies to PROBES.jsonl, which this runner also writes.
+
 The output is resumable: cells already present (same campaign, arm, problem, rtol, grid, h0_scale) are skipped,
 including process_abort cells. Rows are appended in plan order even with -j > 1, so a rerun of an identical
 plan writes identical bytes. `--force` truncates the output instead of resuming.
@@ -127,6 +134,7 @@ def main(argv=None) -> int:
     parser.add_argument("--force", action="store_true", help="truncate an existing output instead of resuming")
     parser.add_argument("--plan-only", action="store_true", help="print the cells that would run and exit")
     tc.add_selection_arguments(parser)
+    tc.add_state_arguments(parser)
     args = parser.parse_args(argv)
     if args.repetitions < 1 or args.jobs < 1:
         parser.error("--repetitions and --jobs must be >= 1")
@@ -134,6 +142,8 @@ def main(argv=None) -> int:
         list_doc, _ = tc.list_document(args.list, args.binary)
         corpus = tc.load_json(args.corpus)
         cells, notes = tc.plan_cells(list_doc, corpus, "runs", **tc.selection(args))
+        externalize = tc.StateExternalizer(args.states_dir, args.inline_states_max_dimension,
+                                           tc.load_references(args.references), tc.corpus_problems(corpus))
     except tc.TriageError as exc:
         for reason in exc.reasons:
             print("error:", reason, file=sys.stderr)
@@ -173,10 +183,11 @@ def main(argv=None) -> int:
                 cell = todo[index]
                 print(f"{cell['arm']} {cell['problem']} rtol={cell['rtol']:g} {cell['grid']} "
                       f"h0x{cell['h0_scale']:g}: {row['status']}", file=sys.stderr, flush=True)
-                appender.add(index, row)
+                appender.add(index, externalize(row))
     finally:
         appender.close()
-    print(f"wrote {len(todo)} rows to {args.output} ({aborts} process_abort)", file=sys.stderr)
+    print(f"wrote {len(todo)} rows to {args.output} ({aborts} process_abort, {externalize.moved} with state "
+          f"sidecars)", file=sys.stderr)
     return 0
 
 

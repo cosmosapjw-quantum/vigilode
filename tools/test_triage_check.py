@@ -627,3 +627,152 @@ class ProfileDeterminismTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class StateSidecarTests(unittest.TestCase):
+    """States of large rows in sidecars: the checker's three accuracy sources agree bit for bit."""
+
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory(prefix="triage_sidecar_")
+        self.tmp = Path(self._tmp.name)
+
+    def tearDown(self):
+        self._tmp.cleanup()
+
+    def fixture(self) -> Fixture:
+        fx = Fixture()
+        fx.component("drv.a", "drv")
+        fx.component("drv.b", "drv")
+        fx.problem("BIG", dimension=100)  # > the default inline maximum 64
+        fx.problem("SMALL", dimension=3)
+        for pid in ("BIG", "SMALL"):
+            fx.arm("A", ["drv.a"], pid, ir=1000, err_scale=0.37)
+            fx.arm("B", ["drv.b"], pid, ir=1500, err_scale=0.21)
+        return fx
+
+    def externalize(self, fx: Fixture, states_dir: Path, max_dimension: int = 64) -> None:
+        import triage_common as tc
+        refs = {(r["problem"], r["grid"]): r for r in fx.refs}
+        ext = tc.StateExternalizer(states_dir, max_dimension, refs, fx.problems)
+        fx.rows = [ext(r) for r in fx.rows]
+
+    def test_sidecar_round_trip_and_refusal(self):
+        import gzip
+        import triage_common as tc
+        states = [[1.0, -2.5, 3.25e-300], [float(i) for i in range(3)]]
+        digest, name = tc.write_states_sidecar(self.tmp, states)
+        data = (self.tmp / name).read_bytes()
+        self.assertEqual(name, f"{digest}.f64le.gz")
+        self.assertEqual(data[4:8], b"\0\0\0\0")  # gzip -n: no mtime
+        self.assertEqual(tc.sha256_bytes(gzip.decompress(data)), digest)
+        self.assertEqual(gzip.decompress(data)[:8], struct.pack("<d", 1.0))  # little-endian, row-major
+        row = {"states_sha256": digest, "states_shape": [2, 3], "states_file": name}
+        self.assertEqual(tc.load_states_sidecar([self.tmp], row), (states, "sidecar", None))
+        self.assertEqual(tc.write_states_sidecar(self.tmp, states), (digest, name))  # content addressed
+        tampered = list(states[0]) + [9.0, 1.0, 2.0]
+        (self.tmp / name).write_bytes(gzip.compress(struct.pack("<6d", *tampered), mtime=0))
+        loaded, source, reason = tc.load_states_sidecar([self.tmp], row)
+        self.assertIsNone(loaded)
+        self.assertEqual(source, "sidecar_refused")
+        self.assertIn("sha256", reason)
+        self.assertEqual(tc.load_states_sidecar([self.tmp], dict(row, states_shape=[3, 3]))[1], "sidecar_refused")
+        self.assertEqual(tc.load_states_sidecar([self.tmp / "nowhere"], row)[1], "sidecar_missing")
+
+    def test_dimension_threshold(self):
+        import triage_common as tc
+        fx = self.fixture()
+        refs = {(r["problem"], r["grid"]): r for r in fx.refs}
+        big = next(r for r in fx.rows if r["problem"] == "BIG")
+        small = next(r for r in fx.rows if r["problem"] == "SMALL")
+        self.assertIn("states_hex", tc.StateExternalizer(self.tmp, 100, refs, fx.problems)(big))  # 100 <= 100
+        moved = tc.StateExternalizer(self.tmp, 99, refs, fx.problems)(big)
+        self.assertNotIn("states_hex", moved)
+        self.assertEqual(moved["states_shape"], [2, 100])
+        self.assertTrue((self.tmp / moved["states_file"]).is_file())
+        self.assertEqual(moved["accuracy_inline"]["reference_sha256"], tc.reference_entry_sha256(refs[("BIG", "endpoint")]))
+        self.assertIs(tc.StateExternalizer(self.tmp, 64, refs, fx.problems)(small), small)
+        self.assertIs(tc.StateExternalizer(None, 64, refs, fx.problems)(big), big)  # no states dir: kept inline
+
+    def test_inline_accuracy_equals_checker_recomputation(self):
+        hex_results, hex_class, _ = self.fixture().check(self.tmp / "hex")
+        fx = self.fixture()
+        states_dir = self.tmp / "states"
+        self.externalize(fx, states_dir)
+        argv = fx.write(self.tmp / "sidecar") + ["--states-dir", str(states_dir)]
+        self.assertEqual(tch.main(argv), 0)
+        side_results = json.loads((self.tmp / "sidecar" / "RESULTS.json").read_text())
+        inline_dir = self.tmp / "inline"
+        fx.check(inline_dir)  # no --states-dir: accuracy_inline
+        inline_results = json.loads((inline_dir / "RESULTS.json").read_text())
+        inline_class = json.loads((inline_dir / "CLASSIFICATION.json").read_text())
+        norms = ("class", "E", "E_rho", "E_up", "R", "R_rho", "R_up", "reason", "integrity")
+        for a, b, c in zip(hex_results["rows"], side_results["rows"], inline_results["rows"]):
+            self.assertEqual({k: a[k] for k in norms}, {k: b[k] for k in norms})
+            self.assertEqual({k: a[k] for k in norms}, {k: c[k] for k in norms})
+            big = a["problem"] == "BIG"
+            self.assertEqual(a["accuracy_source"], "recomputed_hex")
+            self.assertEqual(b["accuracy_source"], "recomputed_sidecar" if big else "recomputed_hex")
+            self.assertEqual(c["accuracy_source"], "runner_inline" if big else "recomputed_hex")
+        self.assertEqual(inline_results["accuracy_summary"]["runner_inline"], 12)
+        self.assertEqual(inline_results["accuracy_summary"]["sidecars_missing"], 12)
+        self.assertEqual(side_results["accuracy_summary"]["recomputed_sidecar"], 12)
+        self.assertEqual([e["label"] for e in hex_class["components"]], [e["label"] for e in inline_class["components"]])
+        self.assertEqual(hex_results["comparisons"], inline_results["comparisons"])
+        import evidence_schema_v2 as es
+        es.validate_triage(inline_dir / "RESULTS.json", inline_dir / "CLASSIFICATION.json")
+
+    def test_missing_or_refused_sidecar_uses_flagged_inline(self):
+        import gzip
+        fx = self.fixture()
+        states_dir = self.tmp / "states"
+        self.externalize(fx, states_dir)
+        files = sorted({r["states_file"] for r in fx.rows if "states_file" in r})
+        (states_dir / files[0]).unlink()                                            # one sidecar missing
+        (states_dir / files[1]).write_bytes(gzip.compress(b"\0" * 1600, mtime=0))   # one tampered
+        argv = fx.write(self.tmp / "out") + ["--states-dir", str(states_dir)]
+        self.assertEqual(tch.main(argv), 0)
+        results = json.loads((self.tmp / "out" / "RESULTS.json").read_text())
+        summary = results["accuracy_summary"]
+        missing = sum(1 for r in fx.rows if r.get("states_file") == files[0])
+        refused = sum(1 for r in fx.rows if r.get("states_file") == files[1])
+        self.assertEqual((summary["sidecars_missing"], summary["sidecars_refused"]), (missing, refused))
+        self.assertEqual(summary["runner_inline"], missing + refused)
+        self.assertEqual(summary["recomputed_sidecar"], 12 - missing - refused)
+
+    def test_no_states_and_no_inline_is_null_with_reason(self):
+        fx = self.fixture()
+        self.externalize(fx, self.tmp / "states")
+        for row in fx.rows:
+            row.pop("accuracy_inline", None)
+        fx.check(self.tmp / "out")
+        results = json.loads((self.tmp / "out" / "RESULTS.json").read_text())
+        big = [r for r in results["rows"] if r["problem"] == "BIG"]
+        self.assertEqual({r["accuracy_source"] for r in big}, {"none"})
+        self.assertEqual({r["class"] for r in big}, {"unknown"})
+        self.assertIsNone(big[0]["E"])
+        self.assertIn("accuracy: null: no states and no accuracy_inline", big[0]["reason"])
+
+    def test_inline_bound_to_its_reference(self):
+        fx = self.fixture()
+        self.externalize(fx, self.tmp / "states")
+        big_ref = next(r for r in fx.refs if r["problem"] == "BIG")
+        big_ref["rho_hex"][1] = [hx(1e-9)] * 100  # the checker's reference differs from the runner's
+        fx.check(self.tmp / "out")
+        results = json.loads((self.tmp / "out" / "RESULTS.json").read_text())
+        big = [r for r in results["rows"] if r["problem"] == "BIG"]
+        self.assertEqual({r["accuracy_source"] for r in big}, {"none"})
+        self.assertIn("computed against a different reference", big[0]["reason"])
+
+    def test_gz_references_in_the_checker(self):
+        import gzip
+        fx = self.fixture()
+        argv = fx.write(self.tmp / "gz")
+        refs = self.tmp / "gz" / "REFERENCES.json"
+        gz = self.tmp / "gz" / "REFERENCES.json.gz"
+        gz.write_bytes(gzip.compress(refs.read_bytes(), mtime=0))
+        argv[argv.index(str(refs))] = str(gz)
+        self.assertEqual(tch.main(argv), 0)
+        results = json.loads((self.tmp / "gz" / "RESULTS.json").read_text())
+        self.assertEqual(results["inputs"]["references"]["sha256"],
+                         __import__("hashlib").sha256(refs.read_bytes()).hexdigest())  # digest of the content
+        self.assertEqual({r["accuracy_source"] for r in results["rows"]}, {"recomputed_hex"})

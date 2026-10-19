@@ -13,6 +13,9 @@ A. Row accuracy (status `ok` rows; output times must equal the reference times b
    E_rho = max_t WRMS(rho * w);  E_up = E + E_rho
    R, R_rho, R_up: the same with w = 1 / (atol_row + rtol_row * |ref|)  (C2 ratio).
    Non-finite states, or an ok row of the wrong shape, are integrity failures (C1), not unknowns.
+   The code is tools/triage/triage_common.py::row_accuracy. Rows whose states live in a sidecar
+   (`--states-dir`) are recomputed from the verified sidecar, else take the runner's accuracy_inline
+   (flagged `accuracy_source: runner_inline`), else accuracy is null with a reason.
 B. Groups (arm, problem, grid, rtol): at target eps the group is admissible iff rows for every h0 in
    accuracy.h0_scales_required are `ok` with E_up <= eps; inadmissible if one of them is not ok or exceeds eps;
    unknown otherwise (missing row or reference). (problem, grid) is reference_limited at eps when
@@ -245,7 +248,7 @@ def validate_corpus(doc: Any) -> list[str]:
 def validate_row(row: dict, where: str) -> list[str]:
     reasons = []
     keys = set(row)
-    missing, extra = sorted(tc.ROW_KEYS - keys), sorted(keys - tc.ROW_KEYS - tc.ROW_OPTIONAL_KEYS)
+    missing, extra = sorted(tc.ROW_REQUIRED_KEYS - keys), sorted(keys - tc.ROW_KEYS - tc.ROW_OPTIONAL_KEYS)
     if missing or extra:
         return [f"{where}: key set differs (missing {missing}, unexpected {extra})"]
     if row["schema"] != tc.ROW_SCHEMA:
@@ -268,8 +271,16 @@ def validate_row(row: dict, where: str) -> list[str]:
         reasons.append(f"{where}.components: expected list of strings")
     if row["deterministic"] is not None and type(row["deterministic"]) is not bool:
         reasons.append(f"{where}.deterministic: expected bool or null")
-    if not isinstance(row["output_times"], list) or not isinstance(row["states_hex"], list):
-        reasons.append(f"{where}: output_times and states_hex must be lists")
+    sidecar = tc.STATE_SIDECAR_KEYS & keys
+    if "states_hex" in row:
+        if sidecar:
+            reasons.append(f"{where}: states_hex and state sidecar keys {sorted(sidecar)} together")
+        if not isinstance(row["states_hex"], list):
+            reasons.append(f"{where}: states_hex must be a list")
+    elif sidecar != tc.STATE_SIDECAR_KEYS:
+        reasons.append(f"{where}: no states_hex and an incomplete state sidecar (have {sorted(sidecar)})")
+    if not isinstance(row["output_times"], list):
+        reasons.append(f"{where}: output_times must be a list")
     if row["status"] == "ok" and not (tc.finite(row["atol"]) and row["atol"] > 0):
         reasons.append(f"{where}.atol: expected positive number on an ok row")
     if row["counters"] is not None and not isinstance(row["counters"], dict):
@@ -329,6 +340,7 @@ def load_inputs(args) -> tuple[Inputs, list[str]]:
         return inp, reasons
     campaign = args.campaign
     inp.campaign = campaign
+    inp.states_dirs = [Path(d) for d in (getattr(args, "states_dir", None) or [])]
     inp.rows = {}
     inp.ignored_rows = 0
     for name, line, row in runs:
@@ -405,100 +417,13 @@ def _index_cells(rows: list[dict], schema: str, campaign: str, name: str, reason
 
 
 # ======================================================================================== accuracy
-def decode_vector(values: list) -> list[float] | None:
-    try:
-        return list(struct.unpack(f">{len(values)}d", bytes.fromhex("".join(values))))
-    except (ValueError, TypeError, struct.error):
-        return None
-
-
-def wrms_max(rows_a: list[list[float]], weights: list[list[float]]) -> float:
-    worst = 0.0
-    for a, w in zip(rows_a, weights):
-        value = math.sqrt(math.fsum((x * y) ** 2 for x, y in zip(a, w)) / len(a))
-        if not value <= worst:
-            worst = value  # NaN or larger
-    return worst
-
-
-class Reference:
-    def __init__(self, entry: dict | None, problem: dict, grid: str):
-        self.status = "missing" if entry is None else entry.get("status")
-        self.reason = "reference_missing" if entry is None else entry.get("reason")
-        self.times = None
-        self.states = None
-        self.rho = None
-        self.e_rho = None
-        if entry is None or self.status != "ok":
-            if entry is not None and not self.reason:
-                self.reason = f"reference status {self.status!r}"
-            return
-        dim = problem.get("dimension")
-        try:
-            self.times = [float(t) for t in entry["output_times"]]
-            self.states = [decode_vector(r) for r in entry["states_hex"]]
-            self.rho = [decode_vector(r) for r in entry["rho_hex"]]
-        except (KeyError, TypeError, ValueError):
-            self.status, self.reason = "invalid", "reference entry malformed"
-            return
-        bad = (len(self.states) != len(self.times) or len(self.rho) != len(self.times)
-               or any(v is None or len(v) != dim for v in self.states + self.rho)
-               or not all(math.isfinite(x) for v in self.states + self.rho for x in v)
-               or any(x < 0 for v in self.rho for x in v))
-        if bad:
-            self.status, self.reason = "invalid", "reference states/rho malformed, non-finite or wrong dimension"
-            return
-        atol_scale = float(problem["atol_scale"])
-        self.w_problem = [[1.0 / (atol_scale + abs(r)) for r in row] for row in self.states]
-        self.e_rho = wrms_max(self.rho, self.w_problem)
-        self._requested: dict[tuple, tuple] = {}
-
-    @property
-    def ok(self) -> bool:
-        return self.status == "ok"
-
-    def requested(self, atol: float, rtol: float) -> tuple[list, float]:
-        key = (atol, rtol)
-        if key not in self._requested:
-            w = [[1.0 / (atol + rtol * abs(r)) for r in row] for row in self.states]
-            self._requested[key] = (w, wrms_max(self.rho, w))
-        return self._requested[key]
-
-
-def row_accuracy(row: dict, problem: dict, ref: Reference) -> dict:
-    """{class: computed|failed|unknown, E, E_rho, E_up, R, R_rho, R_up, reason, integrity}"""
-    out = {"class": "unknown", "E": None, "E_rho": None, "E_up": None, "R": None, "R_rho": None, "R_up": None,
-           "reason": None, "integrity": None}
-    if row["status"] != "ok":
-        out.update({"class": "failed", "reason": f"status {row['status']}"})
-        if row["status"] == "process_abort":
-            out["integrity"] = "process_abort"
-        return out
-    dim = problem.get("dimension")
-    states = [decode_vector(v) if isinstance(v, list) else None for v in row["states_hex"]]
-    if any(s is None or len(s) != dim for s in states) or not states:
-        out.update({"class": "failed", "reason": "ok row with malformed states", "integrity": "malformed_ok_row"})
-        return out
-    if not all(math.isfinite(x) for s in states for x in s):
-        out.update({"class": "failed", "reason": "non-finite state", "integrity": "non_finite_state"})
-        return out
-    if not ref.ok:
-        out["reason"] = f"reference: {ref.reason}"
-        return out
-    times = row["output_times"]
-    if len(times) != len(ref.times) or any(float(a) != b for a, b in zip(times, ref.times)):
-        out["reason"] = "output_times differ from the reference times"
-        return out
-    diff = [[y - r for y, r in zip(ys, rs)] for ys, rs in zip(states, ref.states)]
-    e = wrms_max(diff, ref.w_problem)
-    w_req, r_rho = ref.requested(float(row["atol"]), float(row["rtol"]))
-    r = wrms_max(diff, w_req)
-    if not (math.isfinite(e) and math.isfinite(r)):
-        out.update({"class": "failed", "reason": "non-finite error norm"})
-        return out
-    out.update({"class": "computed", "E": e, "E_rho": ref.e_rho, "E_up": e + ref.e_rho, "R": r, "R_rho": r_rho,
-                "R_up": r + r_rho})
-    return out
+# The implementation lives in tools/triage/triage_common.py so that the runner's accuracy_inline and this
+# checker's recomputation are the same code.
+decode_vector = tc.decode_vector
+wrms_max = tc.wrms_max
+Reference = tc.Reference
+row_accuracy = tc.row_accuracy
+ACCURACY_SOURCES = ("recomputed_hex", "recomputed_sidecar", "recomputed_status", "runner_inline", "none")
 
 
 # ======================================================================================== the engine
@@ -538,6 +463,7 @@ class Engine:
         self.acc: dict[tuple, dict] = {}
         self.groups: dict[tuple, dict] = {}
         self.arm_cell_cache: dict[tuple, dict] = {}
+        self.sidecar_events: dict[str, int] = {}
         self.arms = sorted({k[0] for k in inp.rows})
         self.internal_arms = [a for a in self.arms if not tc.is_external(a)]
         self.arm_problems: dict[str, set] = defaultdict(set)
@@ -564,13 +490,47 @@ class Engine:
         return self.refs[key]
 
     def accuracy(self, key: tuple) -> dict | None:
+        """Row accuracy with its `source`: recomputed from states_hex, from a verified state sidecar, from the
+        row status alone (non-ok rows), the runner's accuracy_inline (flagged), or none (null with a reason)."""
         if key not in self.inp.rows:
             return None
         if key not in self.acc:
             row = self.inp.rows[key]
-            self.acc[key] = row_accuracy(row, self.inp.problems[row["problem"]], self.reference(row["problem"],
-                                                                                                row["grid"]))
+            problem = self.inp.problems[row["problem"]]
+            ref = self.reference(row["problem"], row["grid"])
+            sidecar_note = None
+            if "states_hex" in row:
+                acc, source = row_accuracy(row, problem, ref), "recomputed_hex"
+            elif row["status"] != "ok":
+                acc, source = row_accuracy(row, problem, ref, []), "recomputed_status"
+            else:
+                states, sidecar_source, sidecar_note = (tc.load_states_sidecar(self.inp.states_dirs, row)
+                                                        if self.inp.states_dirs else
+                                                        (None, "sidecar_missing", "no --states-dir given"))
+                self.sidecar_events[sidecar_source] = self.sidecar_events.get(sidecar_source, 0) + 1
+                if states is not None:
+                    acc, source = row_accuracy(row, problem, ref, states), "recomputed_sidecar"
+                else:
+                    acc, source = self._inline(row, ref, sidecar_note)
+            acc = dict(acc, source=source, sidecar=sidecar_note)
+            self.acc[key] = acc
         return self.acc[key]
+
+    @staticmethod
+    def _inline(row: dict, ref, sidecar_note: str | None) -> tuple[dict, str]:
+        inline = row.get("accuracy_inline")
+        empty = {"class": "unknown", "E": None, "E_rho": None, "E_up": None, "R": None, "R_rho": None,
+                 "R_up": None, "integrity": None}
+        if inline is None:
+            return dict(empty, reason=f"accuracy: null: no states and no accuracy_inline ({sidecar_note})"), "none"
+        problem_with_inline = tc.check_accuracy_record(inline)
+        if problem_with_inline is None and inline["function"] != tc.ACCURACY_FUNCTION:
+            problem_with_inline = f"accuracy_inline from {inline['function']!r}"
+        if problem_with_inline is None and inline["reference_sha256"] != ref.sha256:
+            problem_with_inline = "accuracy_inline was computed against a different reference"
+        if problem_with_inline is not None:
+            return dict(empty, reason=f"accuracy: null: {problem_with_inline} ({sidecar_note})"), "none"
+        return {k: inline[k] for k in tc.ACCURACY_KEYS}, "runner_inline"
 
     def reference_limited(self, problem_id: str, grid: str, eps: float) -> bool:
         ref = self.reference(problem_id, grid)
@@ -1485,7 +1445,10 @@ def results_document(engine: Engine, comparisons: list[dict], gap_cells: list[di
                      "status": row["status"], "external": tc.is_external(key[0]), "class": acc["class"],
                      "E": fnum(acc["E"]), "E_rho": fnum(acc["E_rho"]), "E_up": fnum(acc["E_up"]), "R": fnum(acc["R"]),
                      "R_rho": fnum(acc["R_rho"]), "R_up": fnum(acc["R_up"]), "reason": acc["reason"],
-                     "integrity": acc["integrity"]})
+                     "integrity": acc["integrity"], "accuracy_source": acc["source"]})
+    accuracy_summary = {source: sum(1 for r in rows if r["accuracy_source"] == source) for source in ACCURACY_SOURCES}
+    accuracy_summary["sidecars_missing"] = engine.sidecar_events.get("sidecar_missing", 0)
+    accuracy_summary["sidecars_refused"] = engine.sidecar_events.get("sidecar_refused", 0)
     engine.ensure_groups()
     groups = []
     for key in sorted(engine.groups):
@@ -1512,7 +1475,8 @@ def results_document(engine: Engine, comparisons: list[dict], gap_cells: list[di
         out_comparisons.append(rec)
     return {"schema": RESULTS_SCHEMA, "campaign": inp.campaign, "generator": GENERATOR, "inputs": inp.digests,
             "thresholds": engine.th, "ignored_rows_other_campaigns": inp.ignored_rows, "references": references,
-            "rows": rows, "groups": groups, "comparisons": out_comparisons, "external_gaps": gap_cells,
+            "rows": rows, "accuracy_summary": accuracy_summary, "groups": groups, "comparisons": out_comparisons,
+            "external_gaps": gap_cells,
             "timing": {"present": inp.timing is not None, "diagnostic": diagnostic, "entries": timing}}
 
 
@@ -1563,6 +1527,9 @@ def main(argv=None) -> int:
     parser.add_argument("--timing", type=Path, help="TIMING.json (diagnostic; conflict flag only)")
     parser.add_argument("--attribution", type=Path, help="ATTRIBUTION.json (OPTIMIZE headroom)")
     parser.add_argument("--list", type=Path, help="triage-list JSON (applicability of arms without rows)")
+    parser.add_argument("--states-dir", type=Path, action="append", default=[],
+                        help="directory of <sha256>.f64le.gz state sidecars (repeatable); rows without "
+                             "states_hex are recomputed from a verified sidecar, else use accuracy_inline")
     parser.add_argument("--results", type=Path, required=True, help="output RESULTS.json")
     parser.add_argument("--classification", type=Path, required=True, help="output CLASSIFICATION.json")
     parser.add_argument("--force", action="store_true", help="overwrite existing outputs")

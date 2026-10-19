@@ -1075,8 +1075,8 @@ TRIAGE_RESULTS_SCHEMA = "vigilode-triage-results-v1"
 TRIAGE_CLASSIFICATION_SCHEMA = "vigilode-triage-classification-v1"
 TRIAGE_THRESHOLDS_SCHEMA = "vigilode-triage-thresholds-v1"
 TRIAGE_RESULTS_KEYS = frozenset(("schema", "campaign", "generator", "inputs", "thresholds",
-                                 "ignored_rows_other_campaigns", "references", "rows", "groups", "comparisons",
-                                 "external_gaps", "timing"))
+                                 "ignored_rows_other_campaigns", "references", "rows", "accuracy_summary", "groups",
+                                 "comparisons", "external_gaps", "timing"))
 TRIAGE_CLASSIFICATION_KEYS = frozenset(("schema", "campaign", "generator", "inputs", "results_sha256",
                                         "components", "summary"))
 TRIAGE_INPUT_ROLES = frozenset(("runs", "references", "profile", "allocations", "probes", "timing", "attribution",
@@ -1084,7 +1084,10 @@ TRIAGE_INPUT_ROLES = frozenset(("runs", "references", "profile", "allocations", 
 TRIAGE_REQUIRED_INPUTS = frozenset(("references", "profile", "allocations", "components", "corpus", "thresholds"))
 TRIAGE_REFERENCE_KEYS = frozenset(("problem", "grid", "status", "reason", "E_rho", "reference_limited_targets"))
 TRIAGE_ROW_KEYS = frozenset(("arm", "problem", "grid", "rtol", "h0_scale", "status", "external", "class", "E",
-                             "E_rho", "E_up", "R", "R_rho", "R_up", "reason", "integrity"))
+                             "E_rho", "E_up", "R", "R_rho", "R_up", "reason", "integrity", "accuracy_source"))
+# Where a RESULTS row's accuracy comes from (tools/triage/triage_check.py::Engine.accuracy).
+TRIAGE_ACCURACY_SOURCES = ("recomputed_hex", "recomputed_sidecar", "recomputed_status", "runner_inline", "none")
+TRIAGE_ACCURACY_SUMMARY_KEYS = frozenset(TRIAGE_ACCURACY_SOURCES) | {"sidecars_missing", "sidecars_refused"}
 TRIAGE_GROUP_KEYS = frozenset(("arm", "problem", "grid", "rtol", "external", "targets", "E_up_max", "R_up_max",
                                "R_rho_max", "in_profile_subset", "cost", "cost_reason", "secondary",
                                "secondary_reasons", "counted_work", "counted_work_reason"))
@@ -1223,6 +1226,12 @@ def _triage_results(c: _Checks, results: Any) -> tuple[dict | None, dict]:
             c.bool_(f"{p}.external", r["external"])
             if r["status"] not in TRIAGE_ROW_STATUSES:
                 c.fail(f"{p}.status", f"unregistered status {r['status']!r}")
+            if r["accuracy_source"] not in TRIAGE_ACCURACY_SOURCES:
+                c.fail(f"{p}.accuracy_source", f"unregistered accuracy source {r['accuracy_source']!r}")
+            elif r["accuracy_source"] == "none" and r["class"] != "unknown":
+                c.fail(f"{p}.accuracy_source", "accuracy source none with a decided class")
+            elif r["accuracy_source"] == "recomputed_status" and r["status"] == "ok":
+                c.fail(f"{p}.accuracy_source", "recomputed_status on an ok row")
             if r["class"] not in TRIAGE_ROW_CLASSES:
                 c.fail(f"{p}.class", f"unregistered class {r['class']!r}")
                 continue
@@ -1239,6 +1248,16 @@ def _triage_results(c: _Checks, results: Any) -> tuple[dict | None, dict]:
                         c.fail(f"{p}.{k}", f"{r['class']} row carries a norm")
                 c.str_(f"{p}.reason", r["reason"])
             _opt_str(c, f"{p}.integrity", r["integrity"])
+    if c.keys("results.accuracy_summary", results["accuracy_summary"], TRIAGE_ACCURACY_SUMMARY_KEYS):
+        summary = results["accuracy_summary"]
+        for k in sorted(TRIAGE_ACCURACY_SUMMARY_KEYS):
+            c.int_(f"results.accuracy_summary.{k}", summary[k])
+        if isinstance(results["rows"], list):
+            recount = {src: sum(1 for r in results["rows"] if isinstance(r, dict) and r.get("accuracy_source") == src)
+                       for src in TRIAGE_ACCURACY_SOURCES}
+            if any(summary[k] != v for k, v in recount.items()):
+                c.fail("results.accuracy_summary", f"source counts {{{', '.join(f'{k}: {summary[k]}' for k in recount)}}}"
+                                                   f" != recount {recount}")
     if c.list_("results.groups", results["groups"]):
         c.unique_index("results.groups", [g for g in results["groups"] if isinstance(g, dict)],
                        lambda g: (g.get("arm"), g.get("problem"), g.get("grid"), g.get("rtol")))
