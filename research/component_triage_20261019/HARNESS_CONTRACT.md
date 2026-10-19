@@ -97,6 +97,13 @@ refusals. Exit code 2 only for unknown arm/problem or inapplicable pair.
   of its IEEE-754 bits (exact and NaN-safe; decoded by
   `tools/evidence_schema_v2.py::decode_hex64`). Rows with fewer observed
   outputs than requested keep what was observed and have `success=false`.
+- Optional binary keys (from ee13822):
+  - `error_kind`: string or `null`. It is the kind of the typed error (`dimension`, `invalid-input`,
+    `non-finite`, `linear-solve`, `nonlinear-solve`, `coefficients`, or the harness preparation's own kind),
+    and is `null` on `ok` rows.
+  - `segments`: int ≥ 1, the number of integration segments (breakpoints + 1).
+  - `segments_completed`: int in `[0, segments]`; equal to `segments` on `ok` rows.
+  - `triage_check.py` type-checks these keys and still rejects any other unknown key.
 - State sidecar (written by the Python drivers, never by the binary): a stored
   row (RUNS, EXTERNAL or PROBES) whose `dimension` exceeds the driver's
   `--inline-states-max-dimension` (default 64) and that was run with

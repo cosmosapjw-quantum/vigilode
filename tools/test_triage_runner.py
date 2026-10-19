@@ -39,6 +39,7 @@ opts = dict(zip(args[1::2], args[2::2]))
 LIST = json.load(open(os.environ["FAKE_LIST"]))
 ARMS = {a["id"]: a for a in LIST["arms"]}
 PROBLEMS = {p["id"]: p for p in LIST["problems"]}
+PROBLEMS.update({p["id"]: p for p in LIST.get("probes", [])})  # probe ids run like problems
 hx = lambda v: struct.pack(">d", float(v)).hex()
 if cmd == "triage-list":
     print(json.dumps(LIST)); sys.exit(0)
@@ -64,6 +65,7 @@ if cmd in ("triage-run", "triage-profile-run", "triage"):
         sys.exit(0)
     t0, tf = p["t_span"]
     times = [t0, tf] if grid == "endpoint" else [t0 + (tf - t0) * i / 100.0 for i in range(101)]
+    behavior = p.get("fake_behavior", "ok")  # test-only key of probe entries: refused | solver_failure | ok
     row = {"schema": "vigilode-triage-row-v1", "campaign": opts.get("--campaign"), "arm": arm,
            "components": ARMS[arm]["components"], "problem": problem, "tier": p["tier"], "dimension": p["dimension"],
            "rtol": rtol * (10.0 if arm == "mismatch-arm" else 1.0), "atol": rtol * p["atol_scale"], "grid": grid,
@@ -75,6 +77,9 @@ if cmd in ("triage-run", "triage-profile-run", "triage"):
            "binary": {"sha256": "ab" * 32, "profile": os.environ.get("FAKE_PROFILE", "bench")},
            "source": {"commit": os.environ.get("VIGILODE_SOURCE_COMMIT"),
                       "tree_clean": {"true": True, "false": False}.get(os.environ.get("VIGILODE_TREE_CLEAN"))}}
+    if behavior in ("refused", "solver_failure"):
+        row.update(status=behavior, success=False, error="typed error: non-finite right-hand side",
+                   output_times=[], states_hex=[])
     print(json.dumps(row)); sys.exit(0)
 if cmd == "triage-parity":
     # The layout of crates/rodas5p-cli/src/triage.rs::parity_json (robertson only). FAKE_PARITY_MODE:
@@ -370,6 +375,68 @@ class RunnerTests(unittest.TestCase):
         inline = read_rows(bare)[0]["accuracy_inline"]
         self.assertEqual((inline["class"], inline["reason"], inline["reference_sha256"]),
                          ("unknown", "reference: reference_missing", None))
+
+    def probe_list(self) -> Path:
+        listing = json.loads(self.fake.list.read_text())
+        base = dict(listing["problems"][0])
+        listing["probes"] = [
+            dict(base, id="probe-nan-rhs", fake_behavior="solver_failure",
+                 probe={"id": "nan-rhs", "base": "robertson", "must_refuse": False, "expect": "fail_closed"},
+                 applicable_arms=["ok-arm", "abort-arm", "unwired-arm"]),
+            dict(base, id="probe-negative-rtol", fake_behavior="refused",
+                 probe={"id": "negative-rtol", "base": "robertson", "must_refuse": True, "expect": "refused"},
+                 applicable_arms=["ok-arm"]),
+        ]
+        path = self.fake.root / "list_probes.json"
+        path.write_text(json.dumps(listing))
+        self.fake.env["FAKE_LIST"] = str(path)
+        return path
+
+    def test_probe_plan_and_rows(self):
+        listing = self.probe_list()
+        out = self.fake.root / "PROBES.jsonl"
+        args = ["--binary", str(self.fake.binary), "--list", str(listing), "--campaign", "ct-fake", "--output",
+                str(out), "--probes"]
+        proc = self.fake.run("triage_runner.py", *args)  # no --corpus: probes are not CORPUS problems
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        rows = {(r["arm"], r["problem"]): r for r in read_rows(out)}
+        # unwired-arm is skipped; abort-arm only where applicable
+        self.assertEqual(sorted(rows), [("abort-arm", "probe-nan-rhs"), ("ok-arm", "probe-nan-rhs"),
+                                        ("ok-arm", "probe-negative-rtol")])
+        for r in rows.values():
+            self.assertEqual((r["rtol"], r["grid"], r["h0_scale"]), (1e-4, "endpoint", 1.0))
+        nan_ok = rows[("ok-arm", "probe-nan-rhs")]
+        self.assertEqual((nan_ok["status"], nan_ok["success"]), ("solver_failure", False))
+        self.assertEqual(nan_ok["probe"], {"id": "nan-rhs", "must_refuse": False, "components": ["drv.ok", "la.x"]})
+        aborted = rows[("abort-arm", "probe-nan-rhs")]
+        self.assertEqual(aborted["status"], "process_abort")
+        self.assertEqual(aborted["probe"]["components"], ["drv.abort", "la.x"])
+        self.assertEqual(rows[("ok-arm", "probe-negative-rtol")]["status"], "refused")
+        import triage_check as tch
+        for r in rows.values():
+            self.assertEqual(tch.validate_row(r, "probe"), [])
+        calls = len(self.fake.calls("triage-run"))
+        self.assertEqual(self.fake.run("triage_runner.py", *args).returncode, 0)  # resumable
+        self.assertEqual(len(self.fake.calls("triage-run")), calls)
+        other = self.fake.root / "PROBES_RTOL.jsonl"
+        proc = self.fake.run("triage_runner.py", *args[:-2], str(other), "--probes", "--probe-rtol", "1e-06",
+                             "--probe-grid", "uniform101", "--arm", "ok-arm")
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertEqual({(r["rtol"], r["grid"], r["arm"]) for r in read_rows(other)}, {(1e-6, "uniform101", "ok-arm")})
+
+    def test_probe_list_errors_and_corpus_requirement(self):
+        listing = json.loads(self.probe_list().read_text())
+        listing["probes"][0]["applicable_arms"].append("ghost-arm")
+        bad = self.fake.root / "list_bad.json"
+        bad.write_text(json.dumps(listing))
+        proc = self.fake.run("triage_runner.py", "--binary", str(self.fake.binary), "--list", str(bad), "--campaign",
+                             "ct-fake", "--output", str(self.fake.root / "P.jsonl"), "--probes")
+        self.assertEqual(proc.returncode, 2)
+        self.assertIn("applicable arms not in triage-list: ['ghost-arm']", proc.stderr)
+        proc = self.fake.run("triage_runner.py", "--binary", str(self.fake.binary), "--list", str(bad), "--campaign",
+                             "ct-fake", "--output", str(self.fake.root / "R.jsonl"))
+        self.assertEqual(proc.returncode, 2)
+        self.assertIn("--corpus is required unless --probes", proc.stderr)
 
     def test_force_truncates(self):
         self.assertEqual(self.runner("--arm", "ok-arm", "--rtol", "1e-06").returncode, 0)

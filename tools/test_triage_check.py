@@ -478,6 +478,41 @@ class TriageCheckTests(unittest.TestCase):
         self.assertEqual(a["label"], "PRUNE")
         self.assertEqual(x["criteria"]["c1"]["status"], "pass")  # exonerated: B ran the same cell cleanly
 
+    def test_binary_optional_row_keys(self):
+        fx = pair_fixture()
+        row = dict(fx.rows[0], error_kind=None, segments=1, segments_completed=1)
+        self.assertEqual(tch.validate_row(row, "r"), [])
+        refused = dict(row, status="refused", success=False, error_kind="invalid-input", segments_completed=0)
+        self.assertEqual(tch.validate_row(refused, "r"), [])
+        bad = {"error_kind": 3, "segments": 0, "segments_completed": 2}
+        for key, value in bad.items():
+            with self.subTest(key=key):
+                self.assertTrue(tch.validate_row(dict(row, **{key: value}), "r"))
+        self.assertIn("ok row with 0 of 1 segments", tch.validate_row(dict(row, segments_completed=0), "r")[0])
+        self.assertIn("on an ok row", tch.validate_row(dict(row, error_kind="non-finite"), "r")[0])
+        self.assertIn("unexpected ['wall_seconds']", tch.validate_row(dict(row, wall_seconds=1.0), "r")[0])
+
+    def test_probe_verdicts_fail_closed(self):
+        fx = pair_fixture()
+        silent = fx.probe("drv.a", status="ok", must_refuse=False)            # NaN RHS "succeeded": C3 fail
+        closed = fx.probe("drv.b", status="solver_failure", must_refuse=False)  # failed closed: pass
+        aborted = fx.probe("la.x", status="process_abort", must_refuse=False)
+        aborted["process"] = {"kind": "abort", "exit_status": -6, "signal": "SIGABRT", "stderr_tail": "",
+                              "stdout_tail": ""}
+        fx.probes = [silent, closed, aborted]
+        _, classification, _ = fx.check(self.tmp)
+        a, b, x = (component(classification, c) for c in ("drv.a", "drv.b", "la.x"))
+        self.assertEqual(a["criteria"]["c3"]["status"], "fail")
+        self.assertIn("fault-injection probe succeeded (silent failure)", a["criteria"]["c3"]["failures"][0])
+        self.assertEqual((a["label"], rules(a)[-1]), ("PRUNE", "C3_FAIL"))
+        self.assertEqual(b["criteria"]["c3"]["status"], "pass")
+        self.assertEqual(x["criteria"]["c3"]["status"], "fail")
+        self.assertIn("process_abort", x["criteria"]["c3"]["failures"][0])
+        fx.probes = [fx.probe("drv.a", status="refused", must_refuse=False),
+                     fx.probe("drv.b", status="error", must_refuse=False), fx.probe("la.x")]
+        _, classification, _ = fx.check(self.tmp / "closed")
+        self.assertEqual({c["criteria"]["c3"]["status"] for c in classification["components"]}, {"pass"})
+
     def test_c1_failure_with_repair_path(self):
         def aborted(fx):
             for row in fx.rows:

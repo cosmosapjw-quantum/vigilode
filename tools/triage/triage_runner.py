@@ -19,6 +19,13 @@ the uncompressed bytes); the row then carries `states_sha256`, `states_shape`, `
 `--references` entry; null fields with a reason without one). Without `--states-dir` large rows keep
 `states_hex` and a warning is printed. The same applies to PROBES.jsonl, which this runner also writes.
 
+`--probes` runs the fault-injection probes of `triage-list` (top-level `probes`: problem fields plus
+`probe: {id, base, must_refuse, expect}` and `applicable_arms` computed by the binary): every wired internal arm
+of a probe's applicable_arms x the probe, at one cell (rtol 1e-4, grid endpoint, h0 1.0; `--probe-rtol`,
+`--probe-grid`, `--probe-h0-scale` override), through `triage-run --problem <probe id>`. Each row (a
+process_abort row included) gets `probe: {id, must_refuse, components}` with the arm's components. Probes are
+not CORPUS problems; no CORPUS is needed. The output is PROBES.jsonl.
+
 The output is resumable: cells already present (same campaign, arm, problem, rtol, grid, h0_scale) are skipped,
 including process_abort cells. Rows are appended in plan order even with -j > 1, so a rerun of an identical
 plan writes identical bytes. `--force` truncates the output instead of resuming.
@@ -115,6 +122,43 @@ def run_cell(binary: str, cell: dict, campaign: str, repetitions: int, env: dict
     return row
 
 
+PROBE_DEFAULTS = {"rtol": 1.0e-4, "grid": "endpoint", "h0_scale": 1.0}
+
+
+def plan_probes(list_doc: dict, rtol: float, grid: str, h0_scale: float, arms=None,
+                problems=None) -> tuple[list[dict], dict[str, dict], list[str]]:
+    """Probe cells: every wired internal arm of a probe's `applicable_arms` (computed by the binary) x the probe,
+    at one fixed cell. Returns (cells, probe entries by id, errors)."""
+    wired = {a["id"]: a for a in list_doc.get("arms", []) if a.get("wired") and not tc.is_external(a["id"])}
+    known = {a["id"] for a in list_doc.get("arms", [])}
+    entries, cells, errors = {}, [], []
+    for entry in list_doc.get("probes") or []:
+        pid, probe = entry.get("id"), entry.get("probe")
+        if not isinstance(pid, str) or not isinstance(probe, dict) or not isinstance(probe.get("id"), str) \
+                or type(probe.get("must_refuse")) is not bool or not isinstance(entry.get("applicable_arms"), list):
+            errors.append(f"triage-list probe {pid!r}: expected id, probe {{id, must_refuse, ...}}, applicable_arms")
+            continue
+        if pid in entries:
+            errors.append(f"triage-list: duplicate probe id {pid!r}")
+            continue
+        entries[pid] = entry
+        unknown = sorted(set(entry["applicable_arms"]) - known)
+        if unknown:
+            errors.append(f"probe {pid}: applicable arms not in triage-list: {unknown}")
+        if problems is not None and pid not in set(problems):
+            continue
+        for arm in sorted(set(entry["applicable_arms"]) & set(wired)):
+            if arms is None or arm in set(arms):
+                cells.append({"arm": arm, "problem": pid, "rtol": rtol, "grid": grid, "h0_scale": h0_scale,
+                              "tier": entry.get("tier"), "dimension": entry.get("dimension")})
+    cells.sort(key=lambda c: (c["arm"], c["problem"]))
+    return cells, entries, errors
+
+
+def probe_key(entry: dict, components: list[str]) -> dict:
+    return {"id": entry["probe"]["id"], "must_refuse": entry["probe"]["must_refuse"], "components": list(components)}
+
+
 def existing_keys(path: Path) -> set:
     if not path.exists():
         return set()
@@ -125,8 +169,14 @@ def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--binary", required=True, help="rodas5p CLI binary")
     parser.add_argument("--list", type=Path, help="triage-list JSON (default: run `BINARY triage-list`)")
-    parser.add_argument("--corpus", required=True, type=Path, help="CORPUS.json")
-    parser.add_argument("--output", required=True, type=Path, help="RUNS.jsonl (appended; resumable)")
+    parser.add_argument("--corpus", type=Path, help="CORPUS.json (required unless --probes)")
+    parser.add_argument("--output", required=True, type=Path, help="RUNS.jsonl or, with --probes, PROBES.jsonl "
+                                                                    "(appended; resumable)")
+    parser.add_argument("--probes", action="store_true",
+                        help="run the triage-list `probes` (fault-injection problems) instead of the CORPUS sweep")
+    parser.add_argument("--probe-rtol", type=float, default=PROBE_DEFAULTS["rtol"])
+    parser.add_argument("--probe-grid", choices=tc.GRIDS, default=PROBE_DEFAULTS["grid"])
+    parser.add_argument("--probe-h0-scale", type=float, default=PROBE_DEFAULTS["h0_scale"])
     parser.add_argument("--campaign", required=True, help="campaign id passed to the binary and keyed on resume")
     parser.add_argument("--repetitions", type=int, default=1, help="in-process repetitions K per cell (default 1)")
     parser.add_argument("-j", "--jobs", type=int, default=1, help="parallel subprocesses (default 1)")
@@ -138,12 +188,23 @@ def main(argv=None) -> int:
     args = parser.parse_args(argv)
     if args.repetitions < 1 or args.jobs < 1:
         parser.error("--repetitions and --jobs must be >= 1")
+    if args.corpus is None and not args.probes:
+        parser.error("--corpus is required unless --probes")
     try:
         list_doc, _ = tc.list_document(args.list, args.binary)
-        corpus = tc.load_json(args.corpus)
-        cells, notes = tc.plan_cells(list_doc, corpus, "runs", **tc.selection(args))
+        probe_entries: dict[str, dict] = {}
+        if args.probes:
+            cells, probe_entries, errors = plan_probes(list_doc, args.probe_rtol, args.probe_grid,
+                                                       args.probe_h0_scale, args.arm, args.problem)
+            if errors:
+                raise tc.TriageError(errors)
+            notes, cell_problems = [], probe_entries
+        else:
+            corpus = tc.load_json(args.corpus)
+            cells, notes = tc.plan_cells(list_doc, corpus, "runs", **tc.selection(args))
+            cell_problems = tc.corpus_problems(corpus)
         externalize = tc.StateExternalizer(args.states_dir, args.inline_states_max_dimension,
-                                           tc.load_references(args.references), tc.corpus_problems(corpus))
+                                           tc.load_references(args.references), cell_problems)
     except tc.TriageError as exc:
         for reason in exc.reasons:
             print("error:", reason, file=sys.stderr)
@@ -165,8 +226,11 @@ def main(argv=None) -> int:
     env = tc.provenance_env(prov)
     binary_sha = tc.sha256_file(Path(args.binary)) if Path(args.binary).is_file() else None
     arms = {a["id"]: a for a in list_doc.get("arms", [])}
-    list_problems = {q["id"]: q for q in list_doc.get("problems", [])}
-    problems = {p["id"]: tc.merged_problem(p, list_problems.get(p["id"])) for p in corpus.get("problems", [])}
+    if args.probes:
+        problems = probe_entries
+    else:
+        list_problems = {q["id"]: q for q in list_doc.get("problems", [])}
+        problems = {p["id"]: tc.merged_problem(p, list_problems.get(p["id"])) for p in corpus.get("problems", [])}
     args.output.parent.mkdir(parents=True, exist_ok=True)
     appender = tc.OrderedAppender(args.output, len(todo))
     aborts = 0
@@ -183,6 +247,8 @@ def main(argv=None) -> int:
                 cell = todo[index]
                 print(f"{cell['arm']} {cell['problem']} rtol={cell['rtol']:g} {cell['grid']} "
                       f"h0x{cell['h0_scale']:g}: {row['status']}", file=sys.stderr, flush=True)
+                if args.probes:
+                    row["probe"] = probe_key(probe_entries[cell["problem"]], arms[cell["arm"]].get("components", []))
                 appender.add(index, externalize(row))
     finally:
         appender.close()
