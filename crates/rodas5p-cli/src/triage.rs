@@ -11,10 +11,10 @@
 //!
 //! Nothing here judges a component: rows are raw (PA-03).
 
-use std::fmt;
+use std::{fmt, sync::Arc};
 
 use anyhow::Result;
-use rodas5p_core::{CoreError, CoreResult, WorkCounters};
+use rodas5p_core::{CoreError, CoreResult, DenseMatrix, WorkCounters};
 use rodas5p_integrators::{
     AdaptiveStepConfig, BandedJacobian, OdeProblem, OutputSamplingPlan, OutputSchedule,
     ScientificCaseSpec, ScientificCorpusV2, ScientificFamily, complex_dahlquist_problem,
@@ -52,7 +52,9 @@ pub(crate) const APPLICABILITY_RULE: &str = "a problem is applicable to an arm i
 requires.jacobian is 'analytic' and problem.jacobian == 'analytic', or 'jvp' and problem.jvp, \
 or 'any' (analytic or jvp); requires.structure is null or equals problem.structure; \
 requires.mass is true (the arm accepts a non-identity mass matrix) or problem.mass is false; \
-requires.fixed_dimension is null or contains problem.dimension; requires.autonomous is false or \
+requires.fixed_dimension is null or (contains problem.dimension and the problem is not a \
+callback-fault probe: the compile-time-N arms integrate their own built-in copy of the base \
+problem, which an injected callback fault cannot reach); requires.autonomous is false or \
 problem.autonomous. `applicable_problems` lists the result; `triage-run` exits 2 for an \
 inapplicable pair or an unwired arm.";
 
@@ -529,8 +531,384 @@ pub(crate) fn problem_specs() -> &'static [ProblemSpec] {
     PROBLEMS
 }
 
+/// A corpus problem or a probe (`triage-run --problem` accepts both).
 pub(crate) fn find_problem(id: &str) -> Option<&'static ProblemSpec> {
-    PROBLEMS.iter().find(|problem| problem.id == id)
+    PROBLEMS
+        .iter()
+        .find(|problem| problem.id == id)
+        .or_else(|| find_probe(id).map(|probe| &probe.problem))
+}
+
+// ------------------------------------------------------------------- probes
+
+/// The fault of a fail-closed probe (campaign check C3).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum ProbeKind {
+    /// `y0[0] = NaN`.
+    NanY0,
+    /// `y0[0] = +Inf`.
+    InfY0,
+    /// The RHS returns NaN in every component once `t > t_late`.
+    NanRhsLate,
+    /// The RHS returns `Err` once `t > t_late`.
+    ErrRhsLate,
+    /// The Jacobian (explicit, in place, band) and the JVP return NaN once
+    /// `t > t_late`.
+    NanJacLate,
+}
+
+/// The fault time of the late probes: `t0 + PROBE_LATE_FRACTION (tf - t0)`.
+pub(crate) const PROBE_LATE_FRACTION: f64 = 0.25;
+
+impl ProbeKind {
+    pub(crate) fn id(self) -> &'static str {
+        match self {
+            Self::NanY0 => "nan-y0",
+            Self::InfY0 => "inf-y0",
+            Self::NanRhsLate => "nan-rhs-late",
+            Self::ErrRhsLate => "err-rhs-late",
+            Self::NanJacLate => "nan-jac-late",
+        }
+    }
+
+    /// The entry validation must refuse the cell (status `refused`).
+    pub(crate) fn must_refuse(self) -> bool {
+        matches!(self, Self::NanY0 | Self::InfY0)
+    }
+
+    /// The fault is injected into the problem's callbacks (not its data).
+    pub(crate) fn callback_fault(self) -> bool {
+        !self.must_refuse()
+    }
+
+    pub(crate) fn expect(self) -> &'static str {
+        match self {
+            Self::NanY0 | Self::InfY0 => {
+                "refused by entry validation (non-finite initial state); never success"
+            }
+            Self::NanRhsLate => {
+                "fails closed at run time: success=false with a typed status, no non-finite \
+                 accepted state, no abort"
+            }
+            Self::ErrRhsLate => {
+                "fails closed at run time: the callback error ends the run with a typed status \
+                 (success=false), no abort"
+            }
+            Self::NanJacLate => {
+                "fails closed at run time: success=false with a typed status, no non-finite \
+                 accepted state, no abort"
+            }
+        }
+    }
+}
+
+/// One probe: its fault, its base problem and the problem registry entry
+/// `triage-run --problem <id>` builds.
+pub(crate) struct ProbeSpec {
+    pub id: &'static str,
+    pub kind: ProbeKind,
+    pub base: &'static str,
+    pub problem: ProblemSpec,
+}
+
+impl ProbeSpec {
+    pub(crate) fn json(&self) -> Value {
+        json!({
+            "id": self.kind.id(),
+            "base": self.base,
+            "must_refuse": self.kind.must_refuse(),
+            "callback_fault": self.kind.callback_fault(),
+            "fault_time_fraction": if self.kind.callback_fault() {
+                json!(PROBE_LATE_FRACTION)
+            } else {
+                Value::Null
+            },
+            "expect": self.kind.expect(),
+        })
+    }
+}
+
+macro_rules! probe {
+    ($id:literal, $kind:ident, $base:literal, $structure:literal, $oscillatory:literal) => {
+        ProbeSpec {
+            id: $id,
+            kind: ProbeKind::$kind,
+            base: $base,
+            problem: ProblemSpec {
+                id: $id,
+                tier: "probe",
+                structure: $structure,
+                oscillatory: $oscillatory,
+                source: concat!(
+                    "fail-closed probe (campaign check C3): base problem ",
+                    $base,
+                    " with fault ",
+                    stringify!($kind),
+                    "; see `probe` for the fault and the expected outcome"
+                ),
+                build: || probe_build(ProbeKind::$kind, $base),
+            },
+        }
+    };
+}
+
+static PROBES: &[ProbeSpec] = &[
+    probe!("probe-nan-y0-robertson", NanY0, "robertson", "dense", false),
+    probe!("probe-inf-y0-robertson", InfY0, "robertson", "dense", false),
+    probe!(
+        "probe-nan-rhs-late-robertson",
+        NanRhsLate,
+        "robertson",
+        "dense",
+        false
+    ),
+    probe!(
+        "probe-err-rhs-late-robertson",
+        ErrRhsLate,
+        "robertson",
+        "dense",
+        false
+    ),
+    probe!(
+        "probe-nan-jac-late-robertson",
+        NanJacLate,
+        "robertson",
+        "dense",
+        false
+    ),
+    probe!(
+        "probe-nan-y0-brusselator-1d-50",
+        NanY0,
+        "brusselator-1d-50",
+        "banded",
+        true
+    ),
+    probe!(
+        "probe-inf-y0-brusselator-1d-50",
+        InfY0,
+        "brusselator-1d-50",
+        "banded",
+        true
+    ),
+    probe!(
+        "probe-nan-rhs-late-brusselator-1d-50",
+        NanRhsLate,
+        "brusselator-1d-50",
+        "banded",
+        true
+    ),
+    probe!(
+        "probe-err-rhs-late-brusselator-1d-50",
+        ErrRhsLate,
+        "brusselator-1d-50",
+        "banded",
+        true
+    ),
+    probe!(
+        "probe-nan-jac-late-brusselator-1d-50",
+        NanJacLate,
+        "brusselator-1d-50",
+        "banded",
+        true
+    ),
+    probe!(
+        "probe-nan-y0-mass-affine",
+        NanY0,
+        "mass-affine",
+        "dense",
+        false
+    ),
+    probe!(
+        "probe-inf-y0-mass-affine",
+        InfY0,
+        "mass-affine",
+        "dense",
+        false
+    ),
+    probe!(
+        "probe-nan-rhs-late-mass-affine",
+        NanRhsLate,
+        "mass-affine",
+        "dense",
+        false
+    ),
+    probe!(
+        "probe-err-rhs-late-mass-affine",
+        ErrRhsLate,
+        "mass-affine",
+        "dense",
+        false
+    ),
+    probe!(
+        "probe-nan-jac-late-mass-affine",
+        NanJacLate,
+        "mass-affine",
+        "dense",
+        false
+    ),
+];
+
+/// Every registered probe, in listing order.
+#[allow(dead_code)]
+pub(crate) fn probe_specs() -> &'static [ProbeSpec] {
+    PROBES
+}
+
+pub(crate) fn find_probe(id: &str) -> Option<&'static ProbeSpec> {
+    PROBES.iter().find(|probe| probe.id == id)
+}
+
+/// Build the base problem and inject the probe's fault.
+fn probe_build(kind: ProbeKind, base: &str) -> CoreResult<Built> {
+    let spec = PROBLEMS
+        .iter()
+        .find(|problem| problem.id == base)
+        .ok_or_else(|| CoreError::InvalidInput(format!("unknown probe base {base}")))?;
+    let mut built = (spec.build)()?;
+    if !built.segments.is_empty() {
+        return Err(CoreError::InvalidInput(format!(
+            "probe base {base} is segmented"
+        )));
+    }
+    let (t0, tf) = built.t_span;
+    let t_late = t0 + PROBE_LATE_FRACTION * (tf - t0);
+    match kind {
+        ProbeKind::NanY0 => built.y0[0] = f64::NAN,
+        ProbeKind::InfY0 => built.y0[0] = f64::INFINITY,
+        _ => {
+            built.problem = faulty_problem(&built.problem, kind, t_late)?;
+            if kind == ProbeKind::NanJacLate {
+                built.band = built.band.map(|band| faulty_band(band, t_late));
+            }
+        }
+    }
+    Ok(built)
+}
+
+fn injected_error(t: f64) -> CoreError {
+    CoreError::InvalidInput(format!(
+        "triage probe: injected right-hand-side error at t = {t:e}"
+    ))
+}
+
+/// `base` with the late fault of `kind` in its callbacks. Every callback
+/// delegates to the base problem's own evaluation (so the arithmetic before
+/// `t_late` is the base's); the explicit Jacobian, the in-place Jacobian,
+/// the batch RHS, the JVP and `df/dt` are carried over when the base has
+/// them. The exact solution is dropped.
+fn faulty_problem(base: &OdeProblem, kind: ProbeKind, t_late: f64) -> CoreResult<OdeProblem> {
+    let nan_rhs = kind == ProbeKind::NanRhsLate;
+    let err_rhs = kind == ProbeKind::ErrRhsLate;
+    let nan_jac = kind == ProbeKind::NanJacLate;
+    let inner = base.clone();
+    let rhs = Arc::new(move |t: f64, y: &[f64], out: &mut [f64]| {
+        if err_rhs && t > t_late {
+            return Err(injected_error(t));
+        }
+        inner.eval_rhs_into(t, y, out, &mut WorkCounters::default())?;
+        if nan_rhs && t > t_late {
+            out.fill(f64::NAN);
+        }
+        Ok(())
+    });
+    // The batch RHS exists iff an empty batch call is charged as one.
+    let mut probe_counters = WorkCounters::default();
+    base.eval_rhs_batch(&[], &[], &mut probe_counters)?;
+    type BatchFn = Arc<dyn Fn(&[f64], &[Vec<f64>]) -> CoreResult<Vec<Vec<f64>>> + Send + Sync>;
+    let batch: Option<BatchFn> = if probe_counters.rhs_batch_calls > 0 {
+        let inner = base.clone();
+        Some(Arc::new(move |times: &[f64], states: &[Vec<f64>]| {
+            if err_rhs && let Some(t) = times.iter().find(|t| **t > t_late) {
+                return Err(injected_error(*t));
+            }
+            let mut out = inner.eval_rhs_batch(times, states, &mut WorkCounters::default())?;
+            if nan_rhs {
+                for (t, row) in times.iter().zip(&mut out) {
+                    if *t > t_late {
+                        row.fill(f64::NAN);
+                    }
+                }
+            }
+            Ok(out)
+        }))
+    } else {
+        None
+    };
+    type JacobianFn = Arc<dyn Fn(f64, &[f64]) -> CoreResult<DenseMatrix> + Send + Sync>;
+    let jacobian: Option<JacobianFn> = if base.has_explicit_jacobian() {
+        let inner = base.clone();
+        Some(Arc::new(move |t: f64, y: &[f64]| {
+            let mut matrix = inner.dense_jacobian(t, y, &mut WorkCounters::default())?;
+            if nan_jac && t > t_late {
+                matrix.as_mut_slice().fill(f64::NAN);
+            }
+            Ok(matrix)
+        }))
+    } else {
+        None
+    };
+    type JvpFn = Arc<dyn Fn(f64, &[f64], &[f64], &mut [f64]) -> CoreResult<()> + Send + Sync>;
+    let jvp: Option<JvpFn> = base.jvp_callback().cloned().map(|jvp| {
+        Arc::new(move |t: f64, y: &[f64], v: &[f64], out: &mut [f64]| {
+            jvp(t, y, v, out)?;
+            if nan_jac && t > t_late {
+                out.fill(f64::NAN);
+            }
+            Ok(())
+        }) as JvpFn
+    });
+    type PartialTFn = Arc<dyn Fn(f64, &[f64], &mut [f64]) -> CoreResult<()> + Send + Sync>;
+    let partial_t: Option<PartialTFn> = if base.autonomous {
+        None
+    } else {
+        let inner = base.clone();
+        Some(Arc::new(move |t: f64, y: &[f64], out: &mut [f64]| {
+            let ft = inner.eval_partial_t(t, y, &mut WorkCounters::default())?;
+            out.copy_from_slice(&ft);
+            Ok(())
+        }))
+    };
+    let mut problem = OdeProblem::new(
+        format!("{}-probe-{}", base.name, kind.id()),
+        base.dimension,
+        rhs,
+        batch,
+        jacobian,
+        jvp,
+        partial_t,
+        base.autonomous,
+        base.mass_matrix.clone(),
+        None,
+    )?;
+    if base.has_explicit_jacobian() {
+        let inner = base.clone();
+        problem = problem.with_jacobian_into(Arc::new(
+            move |t: f64, y: &[f64], out: &mut DenseMatrix| {
+                inner.dense_jacobian_into(t, y, out, &mut WorkCounters::default())?;
+                if nan_jac && t > t_late {
+                    out.as_mut_slice().fill(f64::NAN);
+                }
+                Ok(())
+            },
+        ));
+    }
+    Ok(problem)
+}
+
+/// `band` writing NaN once `t > t_late`.
+fn faulty_band(band: BandedJacobian, t_late: f64) -> BandedJacobian {
+    let fill = band.fill.clone();
+    BandedJacobian {
+        lower: band.lower,
+        upper: band.upper,
+        fill: Arc::new(move |t: f64, y: &[f64], out: &mut [f64]| {
+            fill(t, y, out)?;
+            if t > t_late {
+                out.fill(f64::NAN);
+            }
+            Ok(())
+        }),
+    }
 }
 
 /// A built problem: the whole-domain problem (parity, exact solution,
@@ -547,13 +925,19 @@ pub(crate) struct TriageProblem {
     pub segments: Vec<BenchmarkProblem>,
     /// `None`: the default `h0_base = 1e-6 (tf - t0)`.
     pub h0_base: Option<f64>,
+    /// The probe this problem is, if any.
+    pub probe: Option<&'static ProbeSpec>,
 }
 
 impl TriageProblem {
     pub(crate) fn build(spec: &'static ProblemSpec) -> CoreResult<Self> {
         let built = (spec.build)()?;
+        let probe = find_probe(spec.id);
+        // A probe integrates under its base's id, so the arms keyed on the
+        // problem id (the compile-time-N small driver) find their problem.
+        let bench_id = probe.map_or(spec.id, |probe| probe.base);
         let segment = |t_span: (f64, f64), problem: OdeProblem| BenchmarkProblem {
-            id: spec.id,
+            id: bench_id,
             problem,
             y0: built.y0.clone(),
             t_span,
@@ -578,6 +962,7 @@ impl TriageProblem {
             band: built.band,
             segments,
             h0_base: None,
+            probe,
         })
     }
 
@@ -597,6 +982,7 @@ impl TriageProblem {
             mass: self.problem.mass_matrix.is_some(),
             dimension: self.problem.dimension,
             autonomous: self.problem.autonomous,
+            callback_fault: self.probe.is_some_and(|probe| probe.kind.callback_fault()),
         }
     }
 
@@ -657,6 +1043,23 @@ pub(crate) fn list_json() -> Result<Value> {
             })
         })
         .collect::<Vec<_>>();
+    let probes = PROBES
+        .iter()
+        .map(|probe| {
+            let problem = TriageProblem::build(&probe.problem)?;
+            let applicable_arms: Vec<&str> = triage_arms::arms()
+                .iter()
+                .filter(|arm| {
+                    arm.wired && triage_arms::applicable(&arm.requires, &problem.features())
+                })
+                .map(|arm| arm.id)
+                .collect();
+            let mut entry = problem.json();
+            entry["probe"] = probe.json();
+            entry["applicable_arms"] = json!(applicable_arms);
+            Ok(entry)
+        })
+        .collect::<CoreResult<Vec<_>>>()?;
     Ok(json!({
         "schema": LIST_SCHEMA,
         "contract": CONTRACT,
@@ -672,6 +1075,7 @@ pub(crate) fn list_json() -> Result<Value> {
         },
         "arms": arms,
         "problems": built.iter().map(TriageProblem::json).collect::<Vec<_>>(),
+        "probes": probes,
     }))
 }
 
@@ -711,7 +1115,8 @@ fn core_error_kind(error: &CoreError) -> &'static str {
 /// Messages of the explicit pre-work validation of the entry points the
 /// arms call, matched as prefixes of an `InvalidInput` or `Dimension`
 /// message. Each is raised before the first callback or step:
-/// `AdaptiveStepConfig::validate` (adaptive.rs), `LinearSolverConfig::validate`
+/// `AdaptiveStepConfig::validate` (adaptive.rs), the output collector's
+/// initial-state check (output.rs), `LinearSolverConfig::validate`
 /// (core solver_types.rs) and `validate_problem_linear_config` (sequential.rs),
 /// the entry input checks of the adaptive drivers (integrate.rs,
 /// dense_output_v2.rs, bdf.rs, radau.rs, transactional_q1_q2.rs,
@@ -759,6 +1164,17 @@ const REFUSAL_PREFIXES: &[&str] = &[
     "transactional q1/q2 tolerances contain",
     "transactional q1/q2 gate parameters",
     "no route: the problem has neither",
+    // `StructureError` (problem.rs): every variant is raised before any
+    // integration step, by the declaration or by the router's band
+    // verification at (t0, y0).
+    "structure declared for dimension",
+    "band (lower",
+    "a banded declaration needs a band Jacobian callback",
+    "a band Jacobian callback was given for a non-banded declaration",
+    "a dense declaration needs an explicit Jacobian",
+    "band verification rejected the declaration",
+    "band verification could not evaluate the declaration",
+    "initial state for output collection must be finite",
     "the residual-accounting entry point takes",
     "the small arm covers",
     "the small arm expects dimension",

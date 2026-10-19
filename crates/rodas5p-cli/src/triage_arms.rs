@@ -1050,6 +1050,9 @@ pub(crate) struct ProblemFeatures<'a> {
     pub mass: bool,
     pub dimension: usize,
     pub autonomous: bool,
+    /// A fail-closed probe whose fault is injected into the problem's
+    /// callbacks (`triage::ProbeKind::callback_fault`).
+    pub callback_fault: bool,
 }
 
 /// `HARNESS_CONTRACT.md`: a problem is applicable to an arm iff every
@@ -1064,9 +1067,12 @@ pub(crate) fn applicable(requires: &Requires, problem: &ProblemFeatures<'_>) -> 
         .structure
         .is_none_or(|structure| structure == problem.structure);
     let mass = requires.mass || !problem.mass;
-    let dimension = requires
-        .fixed_dimension
-        .is_none_or(|dimensions| dimensions.contains(&problem.dimension));
+    // The compile-time-N arms integrate their own built-in copy of the base
+    // problem (`stiff_benchmark::run_small_full`), which a fault injected
+    // into the `OdeProblem` callbacks cannot reach.
+    let dimension = requires.fixed_dimension.is_none_or(|dimensions| {
+        dimensions.contains(&problem.dimension) && !problem.callback_fault
+    });
     let autonomous = !requires.autonomous || problem.autonomous;
     jacobian && structure && mass && dimension && autonomous
 }

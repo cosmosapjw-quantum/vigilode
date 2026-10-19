@@ -58,7 +58,7 @@ fn assert_row_schema(row: &Value) {
     let components = row["components"].as_array().unwrap();
     assert!(!components.is_empty() && components.iter().all(Value::is_string));
     assert!(row["problem"].is_string());
-    assert!(["G", "P"].contains(&row["tier"].as_str().unwrap()));
+    assert!(["G", "P", "probe"].contains(&row["tier"].as_str().unwrap()));
     let dimension = row["dimension"].as_u64().unwrap() as usize;
     for key in ["rtol", "atol", "h0_scale", "h0"] {
         assert!(row[key].as_f64().unwrap() > 0.0, "{key}");
@@ -616,4 +616,215 @@ fn work_counter_fields_include_the_skipped_ones() {
     }
     let value = triage::counters_json(&rodas5p_core::WorkCounters::default());
     assert_eq!(value.as_object().unwrap().len(), fields.len());
+}
+
+// ------------------------------------------------------------------ probes
+
+#[test]
+fn probes_are_listed_apart_with_unique_ids() {
+    let list = run_json(rodas5p().arg("triage-list"));
+    let problems = list["problems"].as_array().unwrap();
+    let probes = list["probes"].as_array().unwrap();
+    assert!(
+        problems
+            .iter()
+            .all(|p| p["tier"] != "probe" && p.get("probe").is_none())
+    );
+    let problem_ids: HashSet<_> = problems.iter().map(|p| p["id"].as_str().unwrap()).collect();
+    let probe_ids: HashSet<_> = probes.iter().map(|p| p["id"].as_str().unwrap()).collect();
+    assert_eq!(probe_ids.len(), probes.len(), "duplicate probe id");
+    assert_eq!(probes.len(), 15);
+    assert!(probe_ids.is_disjoint(&problem_ids));
+    let wired: HashSet<_> = list["arms"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter(|a| a["wired"] == true)
+        .map(|a| a["id"].as_str().unwrap())
+        .collect();
+    for probe in probes {
+        let id = probe["id"].as_str().unwrap();
+        let info = &probe["probe"];
+        let kind = info["id"].as_str().unwrap();
+        let base = info["base"].as_str().unwrap();
+        assert_eq!(id, format!("probe-{kind}-{base}"));
+        assert!(problem_ids.contains(base));
+        assert_eq!(probe["tier"], "probe");
+        assert_eq!(
+            info["must_refuse"].as_bool().unwrap(),
+            ["nan-y0", "inf-y0"].contains(&kind)
+        );
+        assert!(info["expect"].is_string());
+        for key in ["jvp", "mass", "autonomous", "exact_solution", "oscillatory"] {
+            assert!(probe[key].is_boolean(), "{id} {key}");
+        }
+        // The binary's applicability equals the registry's requires rule.
+        let built = triage::TriageProblem::build(triage::find_problem(id).unwrap()).unwrap();
+        let expected: Vec<&str> = triage_arms::arms()
+            .iter()
+            .filter(|arm| arm.wired && triage_arms::applicable(&arm.requires, &built.features()))
+            .map(|arm| arm.id)
+            .collect();
+        let listed: Vec<&str> = probe["applicable_arms"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|a| a.as_str().unwrap())
+            .collect();
+        assert_eq!(listed, expected, "{id}");
+        assert!(!listed.is_empty() && listed.iter().all(|a| wired.contains(a)));
+        // Callback faults cannot reach the compile-time-N arms.
+        if info["callback_fault"] == true {
+            assert!(!listed.contains(&"fast-small"), "{id}");
+        }
+    }
+}
+
+/// One probe row's outcome class.
+fn probe_outcome(output: &std::process::Output) -> (String, Option<Value>) {
+    if !output.status.success() {
+        return (format!("abort ({:?})", output.status), None);
+    }
+    let row: Value = serde_json::from_slice(&output.stdout).unwrap();
+    let class = if row["status"] == "refused" {
+        "refused"
+    } else if row["success"] == true {
+        "succeeded"
+    } else {
+        "failed_closed"
+    };
+    (class.into(), Some(row))
+}
+
+/// Every (wired arm, applicable probe) pair at rtol 1e-4, endpoint grid.
+/// Hard checks: every printed row is schema-valid. Findings (documented,
+/// not failing): `success: true` (with or without non-finite states), a
+/// process that ends without a row (abort), a run over the per-process
+/// time limit, and a `must_refuse` probe that is not refused. They are
+/// printed and written to `$CARGO_TARGET_TMPDIR/triage_probe_findings.json`.
+/// `VIGILODE_TRIAGE_BINARY` runs the sweep with another (e.g. bench)
+/// binary; `VIGILODE_PROBE_TIMEOUT_SECS` sets the limit (default 120).
+#[test]
+fn probe_sweep_fails_closed_or_documents_findings() {
+    use std::{
+        collections::BTreeMap,
+        sync::{Mutex, atomic::AtomicUsize, atomic::Ordering},
+        time::{Duration, Instant},
+    };
+    let binary = std::env::var("VIGILODE_TRIAGE_BINARY")
+        .unwrap_or_else(|_| env!("CARGO_BIN_EXE_rodas5p").to_owned());
+    let limit = Duration::from_secs(
+        std::env::var("VIGILODE_PROBE_TIMEOUT_SECS")
+            .ok()
+            .and_then(|v| v.parse().ok())
+            .unwrap_or(120),
+    );
+    let list = run_json(rodas5p().arg("triage-list"));
+    let mut pairs = Vec::new();
+    for probe in list["probes"].as_array().unwrap() {
+        let info = &probe["probe"];
+        for arm in probe["applicable_arms"].as_array().unwrap() {
+            pairs.push((
+                probe["id"].as_str().unwrap().to_owned(),
+                info["id"].as_str().unwrap().to_owned(),
+                info["must_refuse"].as_bool().unwrap(),
+                arm.as_str().unwrap().to_owned(),
+            ));
+        }
+    }
+    let next = AtomicUsize::new(0);
+    let results = Mutex::new(Vec::new());
+    let workers = std::thread::available_parallelism().map_or(4, |n| n.get().min(8));
+    std::thread::scope(|scope| {
+        for _ in 0..workers {
+            scope.spawn(|| {
+                loop {
+                    let i = next.fetch_add(1, Ordering::Relaxed);
+                    let Some((probe, kind, must_refuse, arm)) = pairs.get(i) else {
+                        break;
+                    };
+                    let mut child = Command::new(&binary)
+                        .env("VIGILODE_BINARY_SHA256", FAKE_SHA)
+                        .args(["triage-run", "--arm", arm, "--problem", probe])
+                        .args(["--rtol", "1e-4", "--grid", "endpoint"])
+                        .stdout(std::process::Stdio::piped())
+                        .stderr(std::process::Stdio::piped())
+                        .spawn()
+                        .unwrap();
+                    let started = Instant::now();
+                    let timed_out = loop {
+                        if child.try_wait().unwrap().is_some() {
+                            break false;
+                        }
+                        if started.elapsed() > limit {
+                            let _ = child.kill();
+                            break true;
+                        }
+                        std::thread::sleep(Duration::from_millis(20));
+                    };
+                    let output = child.wait_with_output().unwrap();
+                    let (class, row) = if timed_out {
+                        (format!("timeout (> {} s)", limit.as_secs()), None)
+                    } else {
+                        probe_outcome(&output)
+                    };
+                    let finite = row.as_ref().is_none_or(|row| {
+                        row["states_hex"].as_array().unwrap().iter().all(|s| {
+                            s.as_array()
+                                .unwrap()
+                                .iter()
+                                .all(|v| decode_hex64(v.as_str().unwrap()).is_finite())
+                        })
+                    });
+                    if let Some(row) = &row {
+                        assert_row_schema(row);
+                    }
+                    results.lock().unwrap().push((
+                        probe.clone(),
+                        kind.clone(),
+                        *must_refuse,
+                        arm.clone(),
+                        class,
+                        finite,
+                        row.and_then(|r| r["error"].as_str().map(str::to_owned)),
+                    ));
+                }
+            });
+        }
+    });
+    let results = results.into_inner().unwrap();
+    assert_eq!(results.len(), pairs.len());
+    let mut tally: BTreeMap<(String, String), usize> = BTreeMap::new();
+    let mut findings = Vec::new();
+    for (probe, kind, must_refuse, arm, class, finite, error) in &results {
+        let short = class.split(' ').next().unwrap().to_owned();
+        *tally.entry((kind.clone(), short.clone())).or_default() += 1;
+        let finding = match short.as_str() {
+            "succeeded" if !finite => Some("success with non-finite states"),
+            "succeeded" => Some("success on a fault probe"),
+            "abort" => Some("process ended without a row"),
+            "timeout" => Some("over the per-process time limit"),
+            "failed_closed" if *must_refuse => Some("must_refuse probe not refused"),
+            _ => None,
+        };
+        if let Some(finding) = finding {
+            findings.push(json!({
+                "probe": probe, "kind": kind, "arm": arm, "outcome": class,
+                "finding": finding, "error": error,
+            }));
+        }
+    }
+    for ((kind, class), count) in &tally {
+        println!("probe sweep: {kind:14} {class:14} {count}");
+    }
+    for finding in &findings {
+        println!("probe finding: {finding}");
+    }
+    let path = std::path::Path::new(env!("CARGO_TARGET_TMPDIR")).join("triage_probe_findings.json");
+    std::fs::write(
+        &path,
+        serde_json::to_string_pretty(&json!({"tally": tally.iter().map(|((k, c), n)| json!([k, c, n])).collect::<Vec<_>>(), "findings": findings})).unwrap(),
+    )
+    .unwrap();
+    println!("probe findings written to {}", path.display());
 }
