@@ -503,6 +503,132 @@ class HistoricalInputs(unittest.TestCase):
             self.assertEqual((tmp / "RESULT.json").read_text(), "{}\n")
 
 
+# ------------------------------------------------------------------------------- component triage kind
+class TriageKind(InvalidAssertions):
+    """validate_triage on RESULTS/CLASSIFICATION written by tools/triage/triage_check.py from synthetic inputs."""
+
+    @classmethod
+    def setUpClass(cls):
+        import test_triage_check as ttc
+        cls.ttc = ttc
+        cls._tmp = tempfile.TemporaryDirectory(prefix="triage_schema_")
+        cls.base = Path(cls._tmp.name) / "base"
+        fx = ttc.TriageCheckTests("test_specialize_predicate_found_and_validated_on_holdout").specialize_fixture(False)
+        fx.components["la.x"]["blocked_by"] = ["drv.a"]
+        cls.argv = fx.check(cls.base)[2]
+        cls.results = json.loads((cls.base / "RESULTS.json").read_text())
+        cls.classification = json.loads((cls.base / "CLASSIFICATION.json").read_text())
+
+    @classmethod
+    def tearDownClass(cls):
+        cls._tmp.cleanup()
+
+    def validate(self, results_text: str | None = None, classification_text: str | None = None,
+                 results: dict | None = None, classification: dict | None = None, rebind: bool = True,
+                 input_paths=None):
+        with tempfile.TemporaryDirectory(prefix="triage_rules_") as d:
+            tmp = Path(d)
+            if results_text is None:
+                results_text = json.dumps(results if results is not None else self.results, indent=1,
+                                          sort_keys=True) + "\n"
+            (tmp / "RESULTS.json").write_text(results_text)
+            if classification_text is None:
+                cl = copy.deepcopy(classification if classification is not None else self.classification)
+                if rebind:
+                    cl["results_sha256"] = digest(tmp / "RESULTS.json")
+                classification_text = json.dumps(cl, indent=1, sort_keys=True) + "\n"
+            (tmp / "CLASSIFICATION.json").write_text(classification_text)
+            return es.validate_triage(tmp / "RESULTS.json", tmp / "CLASSIFICATION.json", input_paths)
+
+    def test_valid_outputs_and_input_pins(self):
+        evidence = es.validate_triage(self.base / "RESULTS.json", self.base / "CLASSIFICATION.json",
+                                      {"runs": [self.base / "RUNS.jsonl"], "thresholds": self.base / "THRESHOLDS.json",
+                                       "corpus": self.base / "CORPUS.json"})
+        self.assertEqual((evidence.kind, evidence.status), ("triage", es.VALID))
+        self.assertEqual(self.classification["results_sha256"], evidence.sha256["results"])
+
+    def test_input_pin_mismatch(self):
+        other = self.base / "OTHER.json"
+        other.write_text("{}\n")
+        self.assert_validation_error(
+            lambda: es.validate_triage(self.base / "RESULTS.json", self.base / "CLASSIFICATION.json",
+                                       {"corpus": other}), "inputs.corpus: files hash to")
+
+    def test_strict_json(self):
+        text = (self.base / "RESULTS.json").read_text()
+        first = '"E": '
+        i = text.index(first) + len(first)
+        j = text.index(",", i)
+        cases = {
+            "nan_literal": (text[:i] + "NaN" + text[j:], "non-standard JSON constant NaN"),
+            "duplicate_key": (text[:i] + "0.0, " + first + "0.0" + text[j:], "duplicate object key 'E'"),
+        }
+        for case, (mutated, needle) in cases.items():
+            with self.subTest(case=case):
+                self.assert_validation_error(lambda: self.validate(results_text=mutated), needle)
+
+    def test_results_binding(self):
+        cl = copy.deepcopy(self.classification)
+        self.assert_validation_error(lambda: self.validate(classification=cl, results=dict(self.results,
+                                                                                            campaign="other"),
+                                                           rebind=False),
+                                     "is not the SHA-256 of the RESULTS bytes")
+
+    def test_rule_violations(self):
+        def comp(cl, cid):
+            return next(e for e in cl["components"] if e["id"] == cid)
+
+        def flip_outcome(r):
+            rec = next(x for x in r["comparisons"] if x["outcome"] == "GAIN")
+            rec["outcome"] = "LOSS"
+
+        def promote_provisional(cl):
+            e = comp(cl, "drv.b")
+            e.update(label="PROMOTE", provisional=True)
+
+        cases = {
+            "extra_component_key": (None, lambda cl: comp(cl, "drv.a").__setitem__("note", "x"), "unexpected ['note']"),
+            "unknown_label": (None, lambda cl: comp(cl, "drv.a").__setitem__("label", "KEEP"), "unregistered label"),
+            "blocked_not_provisional": (None, lambda cl: comp(cl, "la.x").__setitem__("provisional", False),
+                                        "blocked_by is non-empty but the label is not provisional"),
+            "promote_provisional": (None, promote_provisional, "PROMOTE is forbidden while provisional"),
+            "specialize_without_predicate": (None, lambda cl: comp(cl, "drv.a").__setitem__("predicate", None),
+                                             "predicate: expected object"),
+            "summary_miscount": (None, lambda cl: cl["summary"].__setitem__("PRUNE", 7), "!= recount"),
+            "outcome_ratio_mismatch": (flip_outcome, None, "LOSS but ratio"),
+            "counts_unbound": (lambda r: r["comparisons"].pop(), None, "!= counts of the RESULTS comparisons"),
+            "computed_sum": (lambda r: next(x for x in r["rows"] if x["class"] == "computed").__setitem__("E_up", 1.0),
+                             None, "E_up/R_up are not E + E_rho"),
+            "int_as_float_cost": (lambda r: next(g for g in r["groups"] if g["cost"]).__setitem__("cost", 1000.0),
+                                  None, "cost: expected int, got float"),
+            "duplicate_row": (lambda r: r["rows"].append(copy.deepcopy(r["rows"][0])), None, "duplicate raw key"),
+            "rule_kind": (None, lambda cl: comp(cl, "drv.a")["rule_path"][0].__setitem__("kind", "frontier"),
+                          "!= 'correctness' for CORRECTNESS_OK"),
+            "unregistered_rule": (None, lambda cl: comp(cl, "drv.a")["rule_path"].append(
+                {"rule": "KEEP_ANYWAY", "kind": "x", "detail": None}), "unregistered rule 'KEEP_ANYWAY'"),
+            "label_vs_rule": (None, lambda cl: comp(cl, "drv.b").__setitem__("label", "OPTIMIZE"),
+                              "but the deciding rule PRUNE_DEFAULT gives PRUNE"),
+            "repairable_not_provisional": (None, lambda cl: comp(cl, "drv.b")["rule_path"].append(
+                {"rule": "C_FAIL_REPAIRABLE", "kind": "contract", "detail": "x"}),
+                "C_FAIL_REPAIRABLE needs a C1_FAIL/C3_FAIL step and a provisional label"),
+            "flag_without_rule": (None, lambda cl: comp(cl, "drv.b")["flags"].append("C3_MISSING"),
+                                  "C3_MISSING without provisional"),
+            "gap_unbound": (lambda r: r["external_gaps"].append(
+                {"component": "drv.a", "arm": "A", "peer": "ext.cvode", "problem": "C2", "grid": "endpoint",
+                 "target": 1e-3, "work": 10, "peer_work": 5, "rtol": 1e-6, "peer_rtol": 1e-6, "gap": 3.0,
+                 "reason": None}), None, "gap is not work / peer_work"),
+        }
+        for case, (mutate_results, mutate_classification, needle) in cases.items():
+            with self.subTest(case=case):
+                results = copy.deepcopy(self.results)
+                cl = copy.deepcopy(self.classification)
+                if mutate_results:
+                    mutate_results(results)
+                if mutate_classification:
+                    mutate_classification(cl)
+                self.assert_validation_error(lambda: self.validate(results=results, classification=cl), needle)
+
+
 class NoAssertAuthority(unittest.TestCase):
     def test_no_assert_statements(self):
         for path in [TOOLS / "evidence_schema_v2.py", *CHECKERS.values()]:

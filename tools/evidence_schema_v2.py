@@ -1066,6 +1066,427 @@ def validate_pc01_stage0(contracts_path: Path) -> Evidence:
     return Evidence("pc01", docs, digests, paths)
 
 
+# ------------------------------------------------------------------------------------- TRIAGE
+# Component triage (research/component_triage_20261019): RESULTS.json and CLASSIFICATION.json written by
+# tools/triage/triage_check.py. Exact key sets, enumerations, internal consistency (outcome vs ratio vs the
+# recorded thresholds, recomputed E_up/R_up sums, per-component outcome counts vs the RESULTS comparisons) and
+# SHA-256 bindings (CLASSIFICATION.results_sha256 = the RESULTS bytes; optional re-hash of the input files).
+TRIAGE_RESULTS_SCHEMA = "vigilode-triage-results-v1"
+TRIAGE_CLASSIFICATION_SCHEMA = "vigilode-triage-classification-v1"
+TRIAGE_THRESHOLDS_SCHEMA = "vigilode-triage-thresholds-v1"
+TRIAGE_RESULTS_KEYS = frozenset(("schema", "campaign", "generator", "inputs", "thresholds",
+                                 "ignored_rows_other_campaigns", "references", "rows", "groups", "comparisons",
+                                 "external_gaps", "timing"))
+TRIAGE_CLASSIFICATION_KEYS = frozenset(("schema", "campaign", "generator", "inputs", "results_sha256",
+                                        "components", "summary"))
+TRIAGE_INPUT_ROLES = frozenset(("runs", "references", "profile", "allocations", "probes", "timing", "attribution",
+                                "components", "corpus", "thresholds", "list"))
+TRIAGE_REQUIRED_INPUTS = frozenset(("references", "profile", "allocations", "components", "corpus", "thresholds"))
+TRIAGE_REFERENCE_KEYS = frozenset(("problem", "grid", "status", "reason", "E_rho", "reference_limited_targets"))
+TRIAGE_ROW_KEYS = frozenset(("arm", "problem", "grid", "rtol", "h0_scale", "status", "external", "class", "E",
+                             "E_rho", "E_up", "R", "R_rho", "R_up", "reason", "integrity"))
+TRIAGE_GROUP_KEYS = frozenset(("arm", "problem", "grid", "rtol", "external", "targets", "E_up_max", "R_up_max",
+                               "R_rho_max", "in_profile_subset", "cost", "cost_reason", "secondary",
+                               "secondary_reasons", "counted_work", "counted_work_reason"))
+TRIAGE_GAP_KEYS = frozenset(("component", "arm", "peer", "problem", "grid", "target", "work", "peer_work", "rtol",
+                             "peer_rtol", "gap", "reason"))
+TRIAGE_COMPARISON_KEYS = frozenset(("component", "arm", "kind", "counterpart", "problem", "grid", "target", "tier",
+                                    "partition", "outcome", "ratio", "cost", "counterpart_cost", "rtol",
+                                    "counterpart_rtol", "reason", "secondary"))
+TRIAGE_COMPONENT_KEYS = frozenset(("id", "family", "slot", "loc", "reach", "label", "prune_kind", "provisional",
+                                   "blocked_by", "flags", "predicate", "rule_path", "evidence", "criteria", "reasons",
+                                   "insufficient_evidence"))
+TRIAGE_CRITERIA = frozenset(("c1", "c2", "c3", "allocation", "promote", "specialize", "optimize", "timing"))
+TRIAGE_PREDICATE_KEYS = frozenset(("feature", "op", "threshold", "values", "calibration", "holdout"))
+TRIAGE_LABELS = ("PROMOTE", "SPECIALIZE", "OPTIMIZE", "PRUNE")
+TRIAGE_OUTCOMES = ("GAIN", "NEUTRAL", "LOSS", "capability_gain", "capability_loss", "excluded")
+TRIAGE_RATIO_OUTCOMES = frozenset(("GAIN", "NEUTRAL", "LOSS"))
+TRIAGE_ROW_STATUSES = frozenset(("ok", "solver_failure", "refused", "error", "process_abort", "unavailable"))
+TRIAGE_ROW_CLASSES = frozenset(("computed", "failed", "unknown"))
+TRIAGE_STATES = frozenset(("admissible", "inadmissible", "unknown"))
+TRIAGE_FLAGS = frozenset(("TIMING_CONFLICT", "PROMOTE_BLOCKED_PROVISIONAL", "NO_EVIDENCE", "C3_MISSING"))
+# rule_path tokens -> kind (tools/triage/triage_check.py::RULE_KINDS, explained in tools/triage/README.md)
+TRIAGE_RULE_KINDS = {
+    "STATIC_PRUNE_RELOCATE": "static", "C1_FAIL": "correctness", "C3_FAIL": "correctness",
+    "CORRECTNESS_OK": "correctness", "BLOCKED_BY": "contract", "TIMING_CONFLICT": "contract",
+    "C3_MISSING": "contract", "PROMOTE_BLOCKED_PROVISIONAL": "contract", "C_FAIL_REPAIRABLE": "contract",
+    "NO_EVIDENCE": "evidence",
+    "PROMOTE": "frontier", "NOT_PROMOTE": "frontier", "SPECIALIZE": "frontier", "NOT_SPECIALIZE": "frontier",
+    "OPTIMIZE_HEADROOM": "frontier", "OPTIMIZE_EXTERNAL_GAP": "frontier", "OPTIMIZE_UNCHARACTERIZED_WINS": "frontier",
+    "PRUNE_DEFAULT": "frontier", "NEUTRAL_TIEBREAK_LOC": "tiebreak", "NEUTRAL_TIE_EQUAL_LOC": "tiebreak",
+}
+# The label a rule decides (the last deciding rule of a rule_path fixes the label).
+TRIAGE_RULE_LABELS = {
+    "STATIC_PRUNE_RELOCATE": ("PRUNE",), "C1_FAIL": ("PRUNE",), "C3_FAIL": ("PRUNE",),
+    "C_FAIL_REPAIRABLE": ("OPTIMIZE",),
+    "NO_EVIDENCE": ("OPTIMIZE", "PRUNE"), "PROMOTE": ("PROMOTE",), "PROMOTE_BLOCKED_PROVISIONAL": ("OPTIMIZE",),
+    "SPECIALIZE": ("SPECIALIZE",), "OPTIMIZE_HEADROOM": ("OPTIMIZE",), "OPTIMIZE_EXTERNAL_GAP": ("OPTIMIZE",),
+    "OPTIMIZE_UNCHARACTERIZED_WINS": ("OPTIMIZE",), "PRUNE_DEFAULT": ("PRUNE",), "NEUTRAL_TIEBREAK_LOC": ("PRUNE",),
+}
+TRIAGE_GRIDS = frozenset(("endpoint", "uniform101"))
+SHA256_HEX = re.compile(r"^[0-9a-f]{64}$")
+
+
+def _triage_digest(c: _Checks, path: str, value: Any, required: bool) -> bool:
+    if value is None:
+        if required:
+            c.fail(path, "required input digest is null")
+        return False
+    if c.keys(path, value, {"name", "sha256"}):
+        c.str_(f"{path}.name", value["name"])
+        if not isinstance(value["sha256"], str) or not SHA256_HEX.match(value["sha256"]):
+            c.fail(f"{path}.sha256", f"not a lowercase SHA-256: {value['sha256']!r}")
+            return False
+        return True
+    return False
+
+
+def _triage_inputs(c: _Checks, path: str, inputs: Any) -> None:
+    if not c.keys(path, inputs, TRIAGE_INPUT_ROLES):
+        return
+    if c.list_(f"{path}.runs", inputs["runs"], nonempty=True):
+        for i, d in enumerate(inputs["runs"]):
+            _triage_digest(c, f"{path}.runs[{i}]", d, True)
+    for role in sorted(TRIAGE_INPUT_ROLES - {"runs"}):
+        _triage_digest(c, f"{path}.{role}", inputs[role], role in TRIAGE_REQUIRED_INPUTS)
+
+
+def _opt_float(c: _Checks, path: str, value: Any, minimum: float | None = None) -> bool:
+    return value is None or c.float_(path, value, minimum=minimum)
+
+
+def _opt_str(c: _Checks, path: str, value: Any) -> bool:
+    return value is None or c.str_(path, value)
+
+
+def _triage_thresholds(c: _Checks, th: Any) -> dict | None:
+    if not c.dict_("results.thresholds", th):
+        return None
+    c.equal("results.thresholds.schema", th.get("schema"), TRIAGE_THRESHOLDS_SCHEMA)
+    ok = True
+    for section, keys in (("accuracy", ("targets",)), ("frontier", ("gain_max", "neutral_max", "secondary_costs"))):
+        for key in keys:
+            if not isinstance(th.get(section), dict) or key not in th[section]:
+                c.fail(f"results.thresholds.{section}", f"missing {key}")
+                ok = False
+    if not ok:
+        return None
+    targets = th["accuracy"]["targets"]
+    if not c.list_("results.thresholds.accuracy.targets", targets, nonempty=True) or \
+            not all(type(t) is float and t > 0 for t in targets):
+        c.fail("results.thresholds.accuracy.targets", "expected positive floats")
+        return None
+    return th
+
+
+def _triage_results(c: _Checks, results: Any) -> tuple[dict | None, dict]:
+    if not c.keys("results", results, TRIAGE_RESULTS_KEYS):
+        return None, {}
+    c.equal("results.schema", results["schema"], TRIAGE_RESULTS_SCHEMA)
+    c.str_("results.campaign", results["campaign"])
+    c.str_("results.generator", results["generator"])
+    c.int_("results.ignored_rows_other_campaigns", results["ignored_rows_other_campaigns"])
+    _triage_inputs(c, "results.inputs", results["inputs"])
+    th = _triage_thresholds(c, results["thresholds"])
+    targets = th["accuracy"]["targets"] if th else None
+    secondary = set(th["frontier"]["secondary_costs"]) if th else None
+    if c.list_("results.references", results["references"]):
+        c.unique_index("results.references", [r for r in results["references"] if isinstance(r, dict)],
+                       lambda r: (r.get("problem"), r.get("grid")))
+        for i, r in enumerate(results["references"]):
+            p = f"results.references[{i}]"
+            if c.keys(p, r, TRIAGE_REFERENCE_KEYS):
+                c.str_(f"{p}.problem", r["problem"])
+                if r["grid"] not in TRIAGE_GRIDS:
+                    c.fail(f"{p}.grid", f"unregistered grid {r['grid']!r}")
+                c.str_(f"{p}.status", r["status"])
+                _opt_float(c, f"{p}.E_rho", r["E_rho"], 0.0)
+                if r["status"] == "ok" and r["E_rho"] is None:
+                    c.fail(f"{p}.E_rho", "ok reference without E_rho")
+                if r["status"] != "ok":
+                    c.str_(f"{p}.reason", r["reason"])
+                if c.list_(f"{p}.reference_limited_targets", r["reference_limited_targets"]) and targets:
+                    for t in r["reference_limited_targets"]:
+                        if t not in targets:
+                            c.fail(f"{p}.reference_limited_targets", f"{t!r} is not a registered target")
+    if c.list_("results.rows", results["rows"]):
+        c.unique_index("results.rows", [r for r in results["rows"] if isinstance(r, dict)],
+                       lambda r: (r.get("arm"), r.get("problem"), r.get("grid"), r.get("rtol"), r.get("h0_scale")))
+        for i, r in enumerate(results["rows"]):
+            p = f"results.rows[{i}]"
+            if not c.keys(p, r, TRIAGE_ROW_KEYS):
+                continue
+            c.str_(f"{p}.arm", r["arm"])
+            c.str_(f"{p}.problem", r["problem"])
+            c.float_(f"{p}.rtol", r["rtol"], positive=True)
+            c.float_(f"{p}.h0_scale", r["h0_scale"], positive=True)
+            c.bool_(f"{p}.external", r["external"])
+            if r["status"] not in TRIAGE_ROW_STATUSES:
+                c.fail(f"{p}.status", f"unregistered status {r['status']!r}")
+            if r["class"] not in TRIAGE_ROW_CLASSES:
+                c.fail(f"{p}.class", f"unregistered class {r['class']!r}")
+                continue
+            norms = ("E", "E_rho", "E_up", "R", "R_rho", "R_up")
+            if r["class"] == "computed":
+                if all(c.float_(f"{p}.{k}", r[k], minimum=0.0) for k in norms):
+                    if r["E_up"] != r["E"] + r["E_rho"] or r["R_up"] != r["R"] + r["R_rho"]:
+                        c.fail(p, "E_up/R_up are not E + E_rho / R + R_rho")
+                if r["status"] != "ok":
+                    c.fail(p, f"computed accuracy on a {r['status']!r} row")
+            else:
+                for k in norms:
+                    if r[k] is not None:
+                        c.fail(f"{p}.{k}", f"{r['class']} row carries a norm")
+                c.str_(f"{p}.reason", r["reason"])
+            _opt_str(c, f"{p}.integrity", r["integrity"])
+    if c.list_("results.groups", results["groups"]):
+        c.unique_index("results.groups", [g for g in results["groups"] if isinstance(g, dict)],
+                       lambda g: (g.get("arm"), g.get("problem"), g.get("grid"), g.get("rtol")))
+        for i, g in enumerate(results["groups"]):
+            p = f"results.groups[{i}]"
+            if not c.keys(p, g, TRIAGE_GROUP_KEYS):
+                continue
+            c.bool_(f"{p}.external", g["external"])
+            c.bool_(f"{p}.in_profile_subset", g["in_profile_subset"])
+            for k in ("E_up_max", "R_up_max", "R_rho_max"):
+                _opt_float(c, f"{p}.{k}", g[k], 0.0)
+            if g["cost"] is None:
+                c.str_(f"{p}.cost_reason", g["cost_reason"])
+            elif c.int_(f"{p}.cost", g["cost"], minimum=1) and g["cost_reason"] is not None:
+                c.fail(f"{p}.cost_reason", "a cost with a missing-cost reason")
+            if g["counted_work"] is not None:
+                c.int_(f"{p}.counted_work", g["counted_work"])
+            else:
+                c.str_(f"{p}.counted_work_reason", g["counted_work_reason"])
+            if secondary is not None and c.keys(f"{p}.secondary", g["secondary"], secondary):
+                for k in sorted(secondary):
+                    if g["secondary"][k] is not None:
+                        c.int_(f"{p}.secondary.{k}", g["secondary"][k])
+                    elif not isinstance(g["secondary_reasons"], dict) or k not in g["secondary_reasons"]:
+                        c.fail(f"{p}.secondary.{k}", "null secondary cost without a reason")
+            if c.list_(f"{p}.targets", g["targets"]) and targets is not None:
+                listed = [t.get("target") if isinstance(t, dict) else None for t in g["targets"]]
+                if listed != targets:
+                    c.fail(f"{p}.targets", f"targets {listed} != registered {targets}")
+                for j, t in enumerate(g["targets"]):
+                    q = f"{p}.targets[{j}]"
+                    if c.keys(q, t, {"target", "state", "reason"}):
+                        if t["state"] not in TRIAGE_STATES:
+                            c.fail(f"{q}.state", f"unregistered state {t['state']!r}")
+                        elif t["state"] == "admissible" and t["reason"] is not None:
+                            c.fail(f"{q}.reason", "admissible state with a reason")
+                        elif t["state"] != "admissible":
+                            c.str_(f"{q}.reason", t["reason"])
+                        if t["state"] == "admissible" and isinstance(g["E_up_max"], float) and g["E_up_max"] > t["target"]:
+                            c.fail(q, f"admissible although E_up_max {g['E_up_max']!r} > target {t['target']!r}")
+    counts: dict[str, dict[str, int]] = {}
+    if c.list_("results.comparisons", results["comparisons"]):
+        for i, r in enumerate(results["comparisons"]):
+            p = f"results.comparisons[{i}]"
+            if not c.keys(p, r, TRIAGE_COMPARISON_KEYS):
+                continue
+            c.str_(f"{p}.component", r["component"])
+            c.str_(f"{p}.arm", r["arm"])
+            if r["kind"] not in ("attribution", "strongest"):
+                c.fail(f"{p}.kind", f"unregistered kind {r['kind']!r}")
+            if r["outcome"] not in TRIAGE_OUTCOMES:
+                c.fail(f"{p}.outcome", f"unregistered outcome {r['outcome']!r}")
+                continue
+            if targets is not None and r["target"] not in targets:
+                c.fail(f"{p}.target", f"{r['target']!r} is not a registered target")
+            if r["partition"] not in ("calibration", "holdout"):
+                c.fail(f"{p}.partition", f"{r['partition']!r}")
+            counts.setdefault(r["component"], {o: 0 for o in TRIAGE_OUTCOMES})[r["outcome"]] += 1
+            if r["outcome"] in TRIAGE_RATIO_OUTCOMES:
+                ok = c.float_(f"{p}.ratio", r["ratio"], positive=True)
+                ok &= c.int_(f"{p}.cost", r["cost"], minimum=1) and c.int_(f"{p}.counterpart_cost",
+                                                                           r["counterpart_cost"], minimum=1)
+                if ok and r["ratio"] != r["cost"] / r["counterpart_cost"]:
+                    c.fail(f"{p}.ratio", "ratio is not cost / counterpart_cost")
+                if ok and th is not None:
+                    gain_max, neutral_max = th["frontier"]["gain_max"], th["frontier"]["neutral_max"]
+                    expected = "GAIN" if r["ratio"] <= gain_max else ("NEUTRAL" if r["ratio"] <= neutral_max else "LOSS")
+                    if expected != r["outcome"]:
+                        c.fail(f"{p}.outcome", f"{r['outcome']} but ratio {r['ratio']!r} gives {expected}")
+                if secondary is not None and c.keys(f"{p}.secondary", r["secondary"], secondary):
+                    for k in sorted(secondary):
+                        c.keys(f"{p}.secondary.{k}", r["secondary"][k], {"value", "counterpart"})
+            else:
+                if r["ratio"] is not None or r["secondary"] is not None:
+                    c.fail(p, f"{r['outcome']} comparison carries a ratio or secondary costs")
+                if r["outcome"] == "excluded":
+                    c.str_(f"{p}.reason", r["reason"])
+    if c.list_("results.external_gaps", results["external_gaps"]):
+        for i, r in enumerate(results["external_gaps"]):
+            p = f"results.external_gaps[{i}]"
+            if not c.keys(p, r, TRIAGE_GAP_KEYS):
+                continue
+            if not (isinstance(r["peer"], str) and r["peer"].startswith("ext.")):
+                c.fail(f"{p}.peer", f"not an external arm id: {r['peer']!r}")
+            if r["gap"] is None:
+                c.str_(f"{p}.reason", r["reason"])
+            elif c.float_(f"{p}.gap", r["gap"], minimum=0.0) and (
+                    not (c.int_(f"{p}.work", r["work"]) and c.int_(f"{p}.peer_work", r["peer_work"], minimum=1))
+                    or r["gap"] != r["work"] / r["peer_work"]):
+                c.fail(f"{p}.gap", "gap is not work / peer_work")
+    if c.keys("results.timing", results["timing"], {"present", "diagnostic", "entries"}):
+        c.bool_("results.timing.present", results["timing"]["present"])
+        c.list_("results.timing.entries", results["timing"]["entries"])
+    return results, counts
+
+
+def _triage_component(c: _Checks, p: str, e: Any, counts: dict) -> str | None:
+    if not c.keys(p, e, TRIAGE_COMPONENT_KEYS):
+        return None
+    c.str_(f"{p}.id", e["id"])
+    c.str_(f"{p}.family", e["family"])
+    c.str_(f"{p}.slot", e["slot"])
+    c.int_(f"{p}.loc", e["loc"])
+    if e["label"] not in TRIAGE_LABELS:
+        c.fail(f"{p}.label", f"unregistered label {e['label']!r}")
+    c.bool_(f"{p}.provisional", e["provisional"])
+    if c.list_(f"{p}.blocked_by", e["blocked_by"]):
+        for i, b in enumerate(e["blocked_by"]):
+            c.str_(f"{p}.blocked_by[{i}]", b)
+        if e["blocked_by"] and e["provisional"] is not True:
+            c.fail(f"{p}.provisional", "blocked_by is non-empty but the label is not provisional")
+    if e["label"] == "PROMOTE" and e["provisional"] is not False:
+        c.fail(f"{p}.label", "PROMOTE is forbidden while provisional")
+    if e["prune_kind"] not in (None, "relocate"):
+        c.fail(f"{p}.prune_kind", f"unregistered prune kind {e['prune_kind']!r}")
+    elif e["prune_kind"] == "relocate" and e["label"] != "PRUNE":
+        c.fail(f"{p}.prune_kind", "relocate on a label other than PRUNE")
+    if c.list_(f"{p}.flags", e["flags"]):
+        for f in e["flags"]:
+            if f not in TRIAGE_FLAGS:
+                c.fail(f"{p}.flags", f"unregistered flag {f!r}")
+        for f in ("TIMING_CONFLICT", "C3_MISSING", "NO_EVIDENCE", "PROMOTE_BLOCKED_PROVISIONAL"):
+            if f in e["flags"] and e["provisional"] is not True:
+                c.fail(f"{p}.flags", f"{f} without provisional")
+    rules = []
+    if c.list_(f"{p}.rule_path", e["rule_path"], nonempty=True):
+        for i, step in enumerate(e["rule_path"]):
+            q = f"{p}.rule_path[{i}]"
+            if not c.keys(q, step, {"rule", "kind", "detail"}):
+                continue
+            if step["rule"] not in TRIAGE_RULE_KINDS:
+                c.fail(f"{q}.rule", f"unregistered rule {step['rule']!r}")
+                continue
+            if step["kind"] != TRIAGE_RULE_KINDS[step["rule"]]:
+                c.fail(f"{q}.kind", f"{step['kind']!r} != {TRIAGE_RULE_KINDS[step['rule']]!r} for {step['rule']}")
+            _opt_str(c, f"{q}.detail", step["detail"])
+            rules.append(step["rule"])
+        deciding = [r for r in rules if r in TRIAGE_RULE_LABELS]
+        if not deciding:
+            c.fail(f"{p}.rule_path", "no rule decides the label")
+        elif e["label"] not in TRIAGE_RULE_LABELS[deciding[-1]]:
+            c.fail(f"{p}.label", f"{e['label']} but the deciding rule {deciding[-1]} gives "
+                                 f"{'/'.join(TRIAGE_RULE_LABELS[deciding[-1]])}")
+        for flag in ("TIMING_CONFLICT", "C3_MISSING", "NO_EVIDENCE", "PROMOTE_BLOCKED_PROVISIONAL"):
+            if (flag in rules) != (isinstance(e["flags"], list) and flag in e["flags"]):
+                c.fail(f"{p}.flags", f"flag {flag} and rule_path disagree")
+        if "C_FAIL_REPAIRABLE" in rules and (e["provisional"] is not True
+                                             or not ({"C1_FAIL", "C3_FAIL"} & set(rules))):
+            c.fail(f"{p}.rule_path", "C_FAIL_REPAIRABLE needs a C1_FAIL/C3_FAIL step and a provisional label")
+        if bool(e["blocked_by"]) != ("BLOCKED_BY" in rules):
+            c.fail(f"{p}.rule_path", "blocked_by and the BLOCKED_BY rule disagree")
+    for key in ("reasons", "insufficient_evidence"):
+        if c.list_(f"{p}.{key}", e[key]):
+            for i, s in enumerate(e[key]):
+                c.str_(f"{p}.{key}[{i}]", s)
+    if e["label"] == "SPECIALIZE":
+        if c.keys(f"{p}.predicate", e["predicate"], TRIAGE_PREDICATE_KEYS):
+            pred = e["predicate"]
+            if pred["op"] not in ("le", "ge", "in"):
+                c.fail(f"{p}.predicate.op", f"unregistered op {pred['op']!r}")
+            elif pred["op"] == "in":
+                c.list_(f"{p}.predicate.values", pred["values"], nonempty=True)
+            else:
+                c.float_(f"{p}.predicate.threshold", pred["threshold"])
+            if not isinstance(pred["holdout"], dict) or pred["holdout"].get("verdict") != "PASS" \
+                    or pred["holdout"].get("passed") is not True:
+                c.fail(f"{p}.predicate.holdout", "SPECIALIZE without a passing holdout verdict")
+    elif e["predicate"] is not None:
+        c.fail(f"{p}.predicate", f"predicate on a {e['label']} label")
+    if c.keys(f"{p}.criteria", e["criteria"], TRIAGE_CRITERIA):
+        for name in sorted(TRIAGE_CRITERIA):
+            crit = e["criteria"][name]
+            if c.dict_(f"{p}.criteria.{name}", crit) and crit.get("status") not in ("pass", "fail", None):
+                c.fail(f"{p}.criteria.{name}.status", f"{crit.get('status')!r}")
+        if e["label"] == "PROMOTE" and isinstance(e["criteria"].get("promote"), dict) \
+                and e["criteria"]["promote"].get("status") != "pass":
+            c.fail(f"{p}.label", "PROMOTE without a passing promote criterion")
+    if c.dict_(f"{p}.evidence", e["evidence"]) and isinstance(e["id"], str):
+        outcomes = e["evidence"].get("outcomes")
+        expected = counts.get(e["id"], {o: 0 for o in TRIAGE_OUTCOMES})
+        if c.keys(f"{p}.evidence.outcomes", outcomes, TRIAGE_OUTCOMES) and outcomes != expected:
+            c.fail(f"{p}.evidence.outcomes", f"{outcomes} != counts of the RESULTS comparisons {expected}")
+    return e["id"] if isinstance(e["id"], str) else None
+
+
+def validate_triage(results_path: Path, classification_path: Path,
+                    input_paths: Mapping[str, Any] | None = None) -> Evidence:
+    """Component triage: RESULTS.json + CLASSIFICATION.json of tools/triage/triage_check.py.
+
+    ``input_paths`` optionally maps input roles to files (``runs`` to a list of files) whose SHA-256 must equal
+    the digests recorded in both documents.
+    """
+    docs, digests, paths = _load_all([("results", results_path, None), ("classification", classification_path, None)])
+    results, classification = docs["results"], docs["classification"]
+    c = _Checks()
+    results, counts = _triage_results(c, results)
+    if c.keys("classification", classification, TRIAGE_CLASSIFICATION_KEYS):
+        cl = classification
+        c.equal("classification.schema", cl["schema"], TRIAGE_CLASSIFICATION_SCHEMA)
+        if cl["results_sha256"] != digests["results"]:
+            c.fail("classification.results_sha256", f"{cl['results_sha256']!r} is not the SHA-256 of the RESULTS "
+                                                    f"bytes ({digests['results']})")
+        if results is not None:
+            c.equal("classification.campaign", cl["campaign"], results["campaign"])
+            if cl["inputs"] != results["inputs"]:
+                c.fail("classification.inputs", "input digests differ from RESULTS.inputs")
+        _triage_inputs(c, "classification.inputs", cl["inputs"])
+        ids = []
+        if c.list_("classification.components", cl["components"], nonempty=True):
+            for i, e in enumerate(cl["components"]):
+                cid = _triage_component(c, f"classification.components[{i}]", e, counts)
+                if cid is not None:
+                    if cid in ids:
+                        c.fail(f"classification.components[{i}].id", f"duplicate component {cid!r}")
+                    ids.append(cid)
+        unknown = sorted(set(counts) - set(ids))
+        if unknown:
+            c.fail("results.comparisons", f"components without a classification: {unknown}")
+        if c.keys("classification.summary", cl["summary"], (*TRIAGE_LABELS, "provisional", "components")) and \
+                isinstance(cl["components"], list):
+            comps = [e for e in cl["components"] if isinstance(e, dict)]
+            expected = {label: sum(1 for e in comps if e.get("label") == label) for label in TRIAGE_LABELS}
+            expected["provisional"] = sum(1 for e in comps if e.get("provisional") is True)
+            expected["components"] = len(comps)
+            if cl["summary"] != expected:
+                c.fail("classification.summary", f"{cl['summary']} != recount {expected}")
+    if input_paths and results is not None and isinstance(results.get("inputs"), dict):
+        recorded = results["inputs"]
+        for role, given in sorted(input_paths.items()):
+            if role not in TRIAGE_INPUT_ROLES:
+                c.fail("inputs", f"unknown input role {role!r}")
+                continue
+            files = given if isinstance(given, (list, tuple)) else [given]
+            actual = []
+            for f in files:
+                try:
+                    actual.append(_sha256(Path(f).read_bytes()))
+                except OSError as exc:
+                    c.fail(f"inputs.{role}", f"cannot read {f}: {exc}")
+            want = recorded.get(role)
+            want = [d.get("sha256") for d in want] if isinstance(want, list) else \
+                ([want.get("sha256")] if isinstance(want, dict) else [])
+            if actual != want:
+                c.fail(f"inputs.{role}", f"files hash to {actual}, RESULTS records {want}")
+    c.done()
+    return Evidence("triage", docs, digests, paths)
+
+
 # ------------------------------------------------------------------------------------- INVALID output
 def invalid_report(checker_schema: str, error: ValidationError, inputs: Mapping[str, Path | None]) -> dict:
     """The checker output for rejected evidence: no gate is evaluated, so no gate result is reported."""
