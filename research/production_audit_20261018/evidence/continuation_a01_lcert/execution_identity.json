@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "node": "A01-LCERT-01",
+  "branch": "audit/production-readiness-20261018",
+  "exec_sha": "1fe7a1ba9b9cc9144ff3e7304b21dc94b9c6dbce",
+  "exec_tree": "bb2ec06231e8ad5dddd3dc4c3ad22b65b2305ec5",
+  "rustc": "rustc 1.94.1 (e408947bf 2026-03-25)",
+  "cargo": "cargo 1.94.1 (29ea6fb6a 2026-03-24)",
+  "python": "3.12.3",
+  "source_sha256": {
+    "crates/rodas5p-integrators/src/packet_window.rs": "0df3a08b7ed5a3afb9bd4bd863163434cf4addc114004c8d5209b435d80dde63",
+    "crates/rodas5p-integrators/src/packet_curve.rs": "f92fbcb318f8e8d5b6643a605c7c7a311a018fb67e72e3b63c48b68a80e53dc6",
+    "crates/rodas5p-integrators/src/packet_curve_output.rs": "d0a20373c8b93693d6c0af9d282aae54b91172884a6339434e1a24c1d41dca8e",
+    "crates/rodas5p-integrators/src/packet_work.rs": "036f9291090d687a845fedde5af28f756ed16e6dd5ae3d4dbe97223d7a81efe1",
+    "crates/rodas5p-integrators/src/collective_model.rs": "1cbcd3bfb6f1251e3f8dfcf3559d9db373610da89bebd7dab0432265a51a3a56",
+    "crates/rodas5p-integrators/tests/production_audit_packet_local_certificate.rs": "6cac1161e18cbf519c78f604bd2fc24061f1dc72b2fae2461ca75bdf7664cd72",
+    "crates/rodas5p-integrators/tests/packet_unequal_fraction_oracle.py": "1e89fb1b04c842152075bc3f3fe25a3287c090119002555bc7540e3d268c75b6",
+    "crates/rodas5p-integrators/tests/packet_curve_output_fraction_oracle.py": "3f08a213fac408a37d902b5760ba7c9769e84c384ca40ed35343712a7d022cfd",
+    "research/production_audit_20261018/A01_LCERT_CONTRACT.md": "fbfd6864dd5fe27495fe33cd32c24639c940b298eaf1061291e2ed9aa8dae36c",
+    "Cargo.lock": "04c7d6c147bf19ebb1a627463705d9dcf27337a3ff228dd1169f19eb73c71400"
+  },
+  "concurrent_uncommitted_overlay_sha256": {
+    "crates/rodas5p-integrators/src/dense_output_v2.rs": "bd48c41a8aa20f2511a70bba78c4f63bc670aa511a492eb097f74dab3ec7b09f",
+    "crates/rodas5p-integrators/src/lib.rs": "9e736f1e23270d534891f6d7c45998677416b821ffb183ff68fdfffd8f6fc18c",
+    "crates/rodas5p-integrators/src/bound_pr101.rs": "3fbeef9caba3c62dfbf940309effd22c7378a115a7660610bc045890fb3f3206"
+  },
+  "acceptance_commands": [
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-p",
+        "rodas5p-integrators",
+        "--test",
+        "production_audit_packet_local_certificate",
+        "--",
+        "--nocapture"
+      ],
+      "exit_code": 0,
+      "raw_log": "first_test.log",
+      "raw_log_sha256": "c9a1b28dc08131aeeacf32f631a415e80efb907755534c2d0e790520f7692491"
+    },
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-p",
+        "rodas5p-integrators",
+        "--doc",
+        "packet_window"
+      ],
+      "exit_code": 0,
+      "raw_log": "doc_test.log",
+      "raw_log_sha256": "2ab583d4872358656cccaee10d9a908e9fdecdbe5fc9ce34c430d1ac7d6bb0a6"
+    }
+  ],
+  "oracle_outputs": {
+    "unequal": {
+      "allocation_calibration_clone_allocations": 3,
+      "arms": 4,
+      "disk_checks": 80,
+      "exact_zero_residual_coefficients": 1056,
+      "input_sha256": "ae524daf9bf6539edbe7cc1b5b4d31276da2d73ff0d5392cc15cace0f5220651",
+      "largest_epsilon40_float": 5.731249241462306e-92,
+      "largest_epsilon48_float": 3.844019301161647e-110,
+      "negative_endpoint_controls": "both rejected",
+      "orders": [
+        40,
+        48
+      ],
+      "requested_times": 5,
+      "status": "PASS"
+    },
+    "one_mode_stdout": "Fraction Taylor disk containments: 6"
+  },
+  "limitations": [
+    "The concurrent A05 overlay was present during crate compilation and is bound by hashes.",
+    "The pre-checkpoint cargo check was diagnostic and no standalone raw file was retained.",
+    "This certificate proves local solution inclusion only; physical tolerance and A02 trajectory remain unevaluated."
+  ]
+}

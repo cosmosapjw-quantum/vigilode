@@ -6,7 +6,7 @@ use std::process::{Command, Stdio};
 
 use rodas5p_integrators::packet_window::{PacketCurveOutput, RepresentedPacketCurve};
 use rodas5p_integrators::{
-    compile_packet, generate_candidate, CausalWeights, CollectiveModel, PacketWorkCounters,
+    CausalWeights, CollectiveModel, PacketWorkCounters, compile_packet, generate_candidate,
 };
 
 thread_local! {
@@ -110,7 +110,7 @@ fn fixed_unequal_frequency_fraction_reference() {
             let view = owner
                 .enclose_at(time, &radii, &mut workspace, &mut work)
                 .unwrap();
-            assert_eq!(work.curve_output_certificate_ops - before, 110);
+            assert_eq!(work.curve_output_certificate_ops - before, 120);
             outputs.push(serde_json::json!({
                 "time": view.time(), "modes": view.modes(), "mode_radii": view.mode_radii(),
                 "mean": view.mean(), "mean_radius": view.mean_radius(),

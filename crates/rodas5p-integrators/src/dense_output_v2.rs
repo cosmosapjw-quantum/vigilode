@@ -427,6 +427,54 @@ impl Rodas5pQuarticSegment {
         }
     }
 
+    /// Outward coefficients of a verified scalar segment in normalized time.
+    /// The returned polynomial is
+    /// `q0 + q1 θ + q2 θ² + q3 θ³ + q4 θ⁴`, with each stored binary64 input
+    /// treated as an exact real and every coefficient operation enclosed.
+    /// This crate-private accessor is reserved for model-specific residual
+    /// providers that need the coefficient algebra rather than a natural
+    /// interval evaluation of the represented curve.
+    pub(crate) fn scalar_quartic_coefficients(
+        &self,
+        work: &mut DenseSegmentWork,
+    ) -> DenseOutputResult<([Interval; 5], Interval, f64, f64)> {
+        work.validation_operations = work.validation_operations.saturating_add(1);
+        self.validate_identity(work)?;
+        if self.y_old.len() != 1
+            || self.y_new.len() != 1
+            || self.d0.len() != 1
+            || self.d1.len() != 1
+            || self.d2.len() != 1
+        {
+            return Err(DenseOutputError::InvalidSegment(
+                "scalar quartic coefficient dimension",
+            ));
+        }
+        // Count each Interval API call as one construction item. Charge each
+        // immediately before the call so a refusal retains only attempted
+        // construction work.
+        work.construction_items = work.construction_items.saturating_add(1);
+        let q0 = Interval::point(self.y_old[0])?;
+        work.construction_items = work.construction_items.saturating_add(1);
+        let q1_delta = Interval::exact_sum(self.y_new[0], -self.y_old[0])?;
+        work.construction_items = work.construction_items.saturating_add(1);
+        let d0 = Interval::point(self.d0[0])?;
+        work.construction_items = work.construction_items.saturating_add(1);
+        let q1 = q1_delta.add(d0)?;
+        work.construction_items = work.construction_items.saturating_add(1);
+        let q2 = Interval::exact_sum(self.d1[0], -self.d0[0])?;
+        work.construction_items = work.construction_items.saturating_add(1);
+        let q3 = Interval::exact_sum(self.d2[0], -self.d1[0])?;
+        work.construction_items = work.construction_items.saturating_add(1);
+        let q4 = Interval::point(-self.d2[0])?;
+        Ok((
+            [q0, q1, q2, q3, q4],
+            self.delta_exact,
+            self.t_old,
+            self.t_new,
+        ))
+    }
+
     fn normalize_time(
         &self,
         time: f64,
@@ -870,6 +918,37 @@ mod dense_segment_tests {
             .unwrap();
         assert!(whole[0].contains(3.0 / 16.0));
         assert!(whole[0].contains(-3.0 / 16.0));
+    }
+
+    #[test]
+    fn scalar_quartic_accessor_counts_exact_attempted_interval_calls() {
+        let segment = represented_quartic();
+        let mut work = DenseSegmentWork::default();
+        segment.scalar_quartic_coefficients(&mut work).unwrap();
+        assert_eq!(work.construction_items, 7);
+
+        let mut first_call_fails = represented_quartic();
+        first_call_fails.y_old[0] = f64::NAN;
+        first_call_fails.identity = DenseSegmentIdentity::new(&first_call_fails);
+        let mut work = DenseSegmentWork::default();
+        assert!(
+            first_call_fails
+                .scalar_quartic_coefficients(&mut work)
+                .is_err()
+        );
+        assert_eq!(work.construction_items, 1);
+
+        let mut middle_call_fails = represented_quartic();
+        middle_call_fails.y_old[0] = -f64::MAX;
+        middle_call_fails.y_new[0] = f64::MAX;
+        middle_call_fails.identity = DenseSegmentIdentity::new(&middle_call_fails);
+        let mut work = DenseSegmentWork::default();
+        assert!(
+            middle_call_fails
+                .scalar_quartic_coefficients(&mut work)
+                .is_err()
+        );
+        assert_eq!(work.construction_items, 2);
     }
 }
 

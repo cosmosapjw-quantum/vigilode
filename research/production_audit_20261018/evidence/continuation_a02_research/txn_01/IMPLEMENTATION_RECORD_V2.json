@@ -1,0 +1,75 @@
+{
+  "unit": "A02-TXN-01",
+  "revision": "MECHANICAL_v02",
+  "executor": "/root/a03_scalar_rate_impl",
+  "HEAD": "34f2601175f2efe24172891f2755ebe262d2cf64",
+  "source_sha256": {
+    "crates/rodas5p-integrators/src/packet_trajectory.rs": "f22acc9701030456708c0b97ae3e83861b168b9a2d0118358a211a71a3689745",
+    "crates/rodas5p-integrators/src/packet_curve_output.rs": "864ef1358240e1d53d792204e0355cd24c7cb44c0cd3856ee21f514a5588afc6",
+    "crates/rodas5p-integrators/tests/production_audit_verified_trajectory.rs": "e26dbc7073c0c2ae56227d0423af018a84aab2d41bd7fb9e4d28018157697ef9",
+    "crates/rodas5p-integrators/tests/packet_unequal_fraction_oracle.py": "1e89fb1b04c842152075bc3f3fe25a3287c090119002555bc7540e3d268c75b6",
+    "research/production_audit_20261018/A02_VERIFIED_TRAJECTORY_CONTRACT.md": "e15561a9de6a81a31f3ccb8aaf17b69613b605a9a81681064e7ad591c7d7f8d0",
+    "research/production_audit_20261018/evidence/continuation_a02_research/supplement_02/FROZEN_ACCEPTANCE_INPUTS_V2.json": "1679dd7542028d3c103b321ca4293d1fcf4aa4f7622ee663c3cef3ba5557abb3",
+    "research/production_audit_20261018/evidence/continuation_a02_research/supplement_02/AMENDMENT_KO.md": "e0ccbc46d8e35c8866c97b3dd2bb1d3c9b9daccbec127b9864bdea7254325eca",
+    "research/production_audit_20261018/evidence/continuation_a02_research/txn_01/PREREGISTRATION.md": "d8be942717b0b119159b4a7467013a9babe1c5c71054895a4489fb14856fd681",
+    "research/production_audit_20261018/evidence/continuation_a02_research/txn_01/SOURCE_COUNTER_TALLY.json": "1b731e02d102305c3a66666e52246cbeb24cb86f22fc0b5a5bac3f7faa025c38",
+    "research/production_audit_20261018/evidence/continuation_a02_research/txn_01/fraction_oracle.py": "69a6f54643c73de433ad75d788736ec915687edd44904a0b5ca3728776f57d37",
+    "research/production_audit_20261018/evidence/continuation_a02_research/txn_01/PREREGISTRATION_V2.md": "7b863dfd328f5b2ec0f2b19863ddc41e80fcdad6536986164eabd2a3cd713153",
+    "research/production_audit_20261018/evidence/continuation_a02_research/txn_01/SOURCE_COUNTER_TALLY_V2.json": "5f2116da43ecfa16175f467621c08c105612f700536211c718ab39483901e6bf",
+    "crates/rodas5p-integrators/tests/support/a02_packet_counter_contract.rs": "808104cf049eb93fd61065d4b5d28642cc2461fc913a10b389d2243354793cdd",
+    "crates/rodas5p-integrators/src/packet_curve.rs": "f92fbcb318f8e8d5b6643a605c7c7a311a018fb67e72e3b63c48b68a80e53dc6",
+    "crates/rodas5p-integrators/src/packet_window.rs": "0df3a08b7ed5a3afb9bd4bd863163434cf4addc114004c8d5209b435d80dde63",
+    "crates/rodas5p-integrators/src/packet_work.rs": "036f9291090d687a845fedde5af28f756ed16e6dd5ae3d4dbe97223d7a81efe1",
+    "research/production_audit_20261018/evidence/continuation_a02_research/txn_01/IMPLEMENTATION_RECORD.json": "87bea266b1b5c21557162b3ffcabfd93f02687a868cbf642fa2b2a9c608cf753"
+  },
+  "prior_record": "IMPLEMENTATION_RECORD.json",
+  "reconciliation": [
+    {
+      "path": "crates/rodas5p-integrators/src/packet_trajectory.rs",
+      "prior_sha256": "b884b1d5b0cff1c3b9437a609ad90beaddd36d8423180bb2da679751a529cad7",
+      "current_sha256": "f22acc9701030456708c0b97ae3e83861b168b9a2d0118358a211a71a3689745",
+      "classification": "DETERMINISTIC_SOURCE_REVISION_BEFORE_EXECUTION",
+      "reason": "authorized partial/full mechanical acceptance counter and oracle completion; no numerical execution occurred"
+    },
+    {
+      "path": "crates/rodas5p-integrators/tests/production_audit_verified_trajectory.rs",
+      "prior_sha256": "a5631295f7d87fb680aa6d35187bed09e9d69a09c76ceebbc588547214d90898",
+      "current_sha256": "e26dbc7073c0c2ae56227d0423af018a84aab2d41bd7fb9e4d28018157697ef9",
+      "classification": "DETERMINISTIC_SOURCE_REVISION_BEFORE_EXECUTION",
+      "reason": "authorized partial/full mechanical acceptance counter and oracle completion; no numerical execution occurred"
+    },
+    {
+      "path": "research/production_audit_20261018/evidence/continuation_a02_research/txn_01/fraction_oracle.py",
+      "prior_sha256": "76ea46aaccf0ab5f423422c7332668a2ec75603d8fc614d27511827bfa69b063",
+      "current_sha256": "69a6f54643c73de433ad75d788736ec915687edd44904a0b5ca3728776f57d37",
+      "classification": "DETERMINISTIC_SOURCE_REVISION_BEFORE_EXECUTION",
+      "reason": "authorized partial/full mechanical acceptance counter and oracle completion; no numerical execution occurred"
+    }
+  ],
+  "first_hashes_preserved": {
+    "crates/rodas5p-integrators/src/packet_trajectory.rs": "b884b1d5b0cff1c3b9437a609ad90beaddd36d8423180bb2da679751a529cad7",
+    "crates/rodas5p-integrators/src/packet_curve_output.rs": "864ef1358240e1d53d792204e0355cd24c7cb44c0cd3856ee21f514a5588afc6",
+    "crates/rodas5p-integrators/tests/production_audit_verified_trajectory.rs": "a5631295f7d87fb680aa6d35187bed09e9d69a09c76ceebbc588547214d90898",
+    "crates/rodas5p-integrators/tests/packet_unequal_fraction_oracle.py": "1e89fb1b04c842152075bc3f3fe25a3287c090119002555bc7540e3d268c75b6",
+    "research/production_audit_20261018/A02_VERIFIED_TRAJECTORY_CONTRACT.md": "e15561a9de6a81a31f3ccb8aaf17b69613b605a9a81681064e7ad591c7d7f8d0",
+    "research/production_audit_20261018/evidence/continuation_a02_research/supplement_02/FROZEN_ACCEPTANCE_INPUTS_V2.json": "1679dd7542028d3c103b321ca4293d1fcf4aa4f7622ee663c3cef3ba5557abb3",
+    "research/production_audit_20261018/evidence/continuation_a02_research/supplement_02/AMENDMENT_KO.md": "e0ccbc46d8e35c8866c97b3dd2bb1d3c9b9daccbec127b9864bdea7254325eca",
+    "research/production_audit_20261018/evidence/continuation_a02_research/txn_01/PREREGISTRATION.md": "d8be942717b0b119159b4a7467013a9babe1c5c71054895a4489fb14856fd681",
+    "research/production_audit_20261018/evidence/continuation_a02_research/txn_01/SOURCE_COUNTER_TALLY.json": "1b731e02d102305c3a66666e52246cbeb24cb86f22fc0b5a5bac3f7faa025c38",
+    "research/production_audit_20261018/evidence/continuation_a02_research/txn_01/fraction_oracle.py": "76ea46aaccf0ab5f423422c7332668a2ec75603d8fc614d27511827bfa69b063"
+  },
+  "execution": {
+    "rustfmt": "exit0",
+    "cargo_test": "NOT_RUN",
+    "cargo_build": "NOT_RUN",
+    "python_numerical_oracle": "NOT_RUN",
+    "bench": "NOT_RUN"
+  },
+  "status": "MECHANICAL_CLOSURES_PREPARED_NOT_READY_FOR_EXEC_FREEZE",
+  "open_items": [
+    "Full independent B1-B6 review/disposition and associated prescribed source/test repairs remain outside this mechanical task.",
+    "New endpoint constructor admission, if authorized, will require re-deriving successful-commit packet vector before freeze.",
+    "Every newly derived exact counter and oracle path still requires independent source review followed by controller-pushed EXEC_SHA before execution."
+  ],
+  "scientific_admission": "NOT_GRANTED"
+}

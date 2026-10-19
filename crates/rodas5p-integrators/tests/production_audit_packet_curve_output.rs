@@ -119,7 +119,7 @@ fn one_mode_cubic_and_linear_midpoint_endpoint_and_initial_uncertainty() {
             cases.push(oracle_case(&view, 0.8, 0.5, chi, &[1.0], &[perturbed]));
             assert!(view.weighted_radius() >= 1.0e-7);
         }
-        assert_eq!(work.curve_output_certificate_ops - before, 3 * 52);
+        assert_eq!(work.curve_output_certificate_ops - before, 3 * 56);
         check_fraction_oracle(&cases);
     }
 }
@@ -142,7 +142,7 @@ fn asymmetric_equal_frequency_multimode_and_weight_sum_not_exact_one() {
         cases.push(oracle_case(&view, 0.4, 0.5, chi, &w, &z));
     }
     check_fraction_oracle(&cases);
-    assert_eq!(work.curve_output_certificate_ops - before, 3 * 81);
+    assert_eq!(work.curve_output_certificate_ops - before, 3 * 88);
 }
 
 #[test]

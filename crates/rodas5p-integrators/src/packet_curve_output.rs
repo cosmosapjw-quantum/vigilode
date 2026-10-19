@@ -31,6 +31,10 @@ pub struct PacketFrozenOutput {
 /// use rodas5p_integrators::packet_window::PacketCertifiedView;
 /// fn alter(view: &mut PacketCertifiedView<'_>) { view.inner = panic!(); }
 /// ```
+/// ```compile_fail
+/// use rodas5p_integrators::packet_window::PacketCertifiedView;
+/// fn alter(view: &mut PacketCertifiedView<'_>) { view.weighted_center_displacement = 0.0; }
+/// ```
 pub struct PacketCertifiedView<'a> {
     inner: PacketCurveOutputView<'a>,
 }
@@ -57,6 +61,11 @@ impl PacketCertifiedView<'_> {
     /// around `modes()`.
     pub fn weighted_radius(&self) -> f64 {
         self.inner.weighted_radius()
+    }
+    /// Same-query outward weighted displacement from the exact represented
+    /// curve to the returned binary64 mode centers.
+    pub fn weighted_center_displacement(&self) -> f64 {
+        self.inner.weighted_center_displacement()
     }
 }
 
@@ -128,6 +137,7 @@ pub struct PacketCurveOutputWorkspace {
     mean_center: (f64, f64),
     mean_radius: f64,
     weighted_radius: f64,
+    weighted_center_displacement: f64,
     time: f64,
 }
 
@@ -142,6 +152,10 @@ pub struct PacketCurveOutputWorkspace {
 /// use rodas5p_integrators::packet_window::PacketCurveOutputView;
 /// fn replace(view: &mut PacketCurveOutputView<'_>) { view.modes = &[]; }
 /// ```
+/// ```compile_fail
+/// use rodas5p_integrators::packet_window::PacketCurveOutputView;
+/// fn alter(view: &mut PacketCurveOutputView<'_>) { view.weighted_center_displacement = 0.0; }
+/// ```
 pub struct PacketCurveOutputView<'a> {
     time: f64,
     modes: &'a [(f64, f64)],
@@ -149,6 +163,7 @@ pub struct PacketCurveOutputView<'a> {
     mean: (f64, f64),
     mean_radius: f64,
     weighted_radius: f64,
+    weighted_center_displacement: f64,
     _curve: &'a PacketCurveOutput,
 }
 
@@ -174,6 +189,11 @@ impl PacketCurveOutputView<'_> {
     /// around `modes()`.
     pub fn weighted_radius(&self) -> f64 {
         self.weighted_radius
+    }
+    /// Same-query outward weighted displacement from the exact represented
+    /// curve to the returned binary64 mode centers.
+    pub fn weighted_center_displacement(&self) -> f64 {
+        self.weighted_center_displacement
     }
 }
 
@@ -203,6 +223,7 @@ impl PacketCurveOutput {
             mean_center: (0.0, 0.0),
             mean_radius: 0.0,
             weighted_radius: 0.0,
+            weighted_center_displacement: 0.0,
             time: 0.0,
         })
     }
@@ -287,6 +308,7 @@ impl PacketCurveOutput {
             .evaluate_modes_at_into(time, &mut workspace.centers, work)?;
         self.curve
             .enclose_modes_at_into(time, &mut workspace.boxes, work)?;
+        let mut weighted_displacement_square = 0.0;
         for j in 0..n {
             work.curve_output_certificate_ops += 1; // sqrt_down
             let denominator = sqrt_down(weights[j])
@@ -304,7 +326,30 @@ impl PacketCurveOutput {
             )?;
             let delta = displacement(workspace.centers[j], workspace.boxes[j], work)?;
             workspace.radii[j] = add(flow, delta, work, "represented output mode radius")?;
+            let delta_square = mul(
+                delta,
+                delta,
+                work,
+                "represented output weighted displacement",
+            )?;
+            let weighted_delta = mul(
+                weights[j],
+                delta_square,
+                work,
+                "represented output weighted displacement",
+            )?;
+            weighted_displacement_square = add(
+                weighted_displacement_square,
+                weighted_delta,
+                work,
+                "represented output weighted displacement",
+            )?;
         }
+        let weighted_center_displacement = sqrt_upper(
+            weighted_displacement_square,
+            work,
+            "represented output weighted displacement",
+        )?;
 
         let mut mean = (0.0, 0.0);
         for (j, &(re, im)) in workspace.centers.iter().enumerate() {
@@ -355,6 +400,7 @@ impl PacketCurveOutput {
         workspace.mean_center = mean;
         workspace.mean_radius = mean_radius;
         workspace.weighted_radius = weighted_radius;
+        workspace.weighted_center_displacement = weighted_center_displacement;
         workspace.time = time;
         Ok(PacketCurveOutputView {
             time: workspace.time,
@@ -363,6 +409,7 @@ impl PacketCurveOutput {
             mean: workspace.mean_center,
             mean_radius: workspace.mean_radius,
             weighted_radius: workspace.weighted_radius,
+            weighted_center_displacement: workspace.weighted_center_displacement,
             _curve: self,
         })
     }

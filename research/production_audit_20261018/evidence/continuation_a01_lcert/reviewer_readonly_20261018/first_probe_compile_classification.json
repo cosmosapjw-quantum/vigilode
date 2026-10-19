@@ -1,0 +1,8 @@
+{
+  "status": "EXPECTED_PRIVATE_FIELD_REFUSAL",
+  "observed_compiler_exit": 1,
+  "source": "subnormal_owner_probe.rs",
+  "raw_stderr": "subnormal_probe_compile.stderr",
+  "finding": "The attempted CompiledPacket.free mutation is rejected by Rust E0616 because free is private. This is successful privacy protection, not a production or numerical failure.",
+  "next_action": "Use separate v2 probe without the impossible private-field assignment; retain first source and log."
+}

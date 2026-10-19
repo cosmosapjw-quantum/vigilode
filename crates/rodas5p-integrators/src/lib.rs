@@ -17,6 +17,7 @@ mod adaptive_exponential;
 mod bdf;
 mod block;
 mod bound_collective;
+mod bound_pr101;
 mod candidates;
 mod causal_majorant;
 mod certification;
@@ -155,6 +156,9 @@ pub use block::{
     StructuredBlockSystem, flatten, unflatten,
 };
 pub use bound_collective::BoundCollectiveProblem;
+pub use bound_pr101::{
+    BoundPr101Problem, Pr101Error, Pr101OutputEnclosure, Pr101SegmentCertificate,
+};
 pub use candidates::{
     CandidateCatalog, CandidateExecution, CandidateFamily, CandidateRecycleLifetime, CandidateSpec,
     CandidateStatus, HomotopyPredictorVariant, SabrBlockVariant, SabrPredictorVariant,

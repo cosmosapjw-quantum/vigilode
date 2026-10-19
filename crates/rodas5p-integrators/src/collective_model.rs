@@ -60,6 +60,119 @@ pub struct CollectiveModel {
     initial_energy: f64,
 }
 
+/// Source-local admission accounting. Payload reads and the original ordinary
+/// binary64 arithmetic are charged before validation can return an error.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub(crate) struct CollectiveAdmissionWork {
+    pub payload_items: u64,
+    pub arithmetic_ops: u64,
+}
+
+/// Shared borrowed admission preserves the constructor's check order, ordinary
+/// summation order and thresholds. It allocates only for existing error strings.
+fn validate_borrowed_model(
+    xi: &[f64],
+    weights: &[f64],
+    initial: &[(f64, f64)],
+    width: f64,
+    chi: f64,
+    carrier: f64,
+    kappa: f64,
+    work: &mut CollectiveAdmissionWork,
+) -> Result<f64, CollectiveAdmissionError> {
+    let n = xi.len();
+    if n == 0 {
+        return Err(CollectiveAdmissionError::EmptyModes);
+    }
+    if weights.len() != n || initial.len() != n {
+        return Err(CollectiveAdmissionError::DimensionMismatch {
+            xi: n,
+            weights: weights.len(),
+            initial: initial.len(),
+        });
+    }
+
+    // Finiteness check for scalar parameters
+    work.payload_items += 1;
+    if !width.is_finite() {
+        return Err(CollectiveAdmissionError::NonFinite("width".into()));
+    }
+    work.payload_items += 1;
+    if !chi.is_finite() {
+        return Err(CollectiveAdmissionError::NonFinite("chi".into()));
+    }
+    work.payload_items += 1;
+    if !carrier.is_finite() {
+        return Err(CollectiveAdmissionError::NonFinite("carrier".into()));
+    }
+    work.payload_items += 1;
+    if !kappa.is_finite() {
+        return Err(CollectiveAdmissionError::NonFinite("kappa".into()));
+    }
+
+    if width < 0.0 {
+        return Err(CollectiveAdmissionError::NegativeWidth(width));
+    }
+    if kappa < 0.0 {
+        return Err(CollectiveAdmissionError::NegativeDamping(kappa));
+    }
+
+    // Detuning and weight validation
+    let mut weight_sum = 0.0;
+    let mut initial_energy = 0.0;
+
+    for (j, (&xj, &wj)) in xi.iter().zip(weights.iter()).enumerate() {
+        work.payload_items += 1;
+        if !xj.is_finite() {
+            return Err(CollectiveAdmissionError::NonFinite(format!("xi[{j}]")));
+        }
+        work.payload_items += 1;
+        if !wj.is_finite() {
+            return Err(CollectiveAdmissionError::NonFinite(format!("weights[{j}]")));
+        }
+        work.payload_items += 2;
+        let (u0, v0) = initial[j];
+        if !u0.is_finite() || !v0.is_finite() {
+            return Err(CollectiveAdmissionError::NonFinite(format!("initial[{j}]")));
+        }
+
+        if !(-1.0 - 1e-14..=1.0 + 1e-14).contains(&xj) {
+            return Err(CollectiveAdmissionError::DetuningOutOfRange {
+                index: j,
+                value: xj,
+            });
+        }
+        if wj <= 0.0 {
+            return Err(CollectiveAdmissionError::NonPositiveWeight {
+                index: j,
+                value: wj,
+            });
+        }
+
+        work.arithmetic_ops += 1;
+        weight_sum += wj;
+        work.arithmetic_ops += 5;
+        initial_energy += wj * (u0 * u0 + v0 * v0);
+    }
+
+    work.arithmetic_ops += 2;
+    let diff = (weight_sum - 1.0).abs();
+    if diff > 1e-12 {
+        return Err(CollectiveAdmissionError::UnnormalizedWeights {
+            sum: weight_sum,
+            diff,
+        });
+    }
+
+    if initial_energy > 1.0 + 1e-12 {
+        return Err(CollectiveAdmissionError::EnergyExceedsUnitBall {
+            energy: initial_energy,
+        });
+    }
+
+    Ok(initial_energy)
+}
+
 impl CollectiveModel {
     /// Constructs and validates a new [`CollectiveModel`].
     ///
@@ -75,85 +188,16 @@ impl CollectiveModel {
         carrier: f64,
         kappa: f64,
     ) -> Result<Self, CollectiveAdmissionError> {
-        let n = xi.len();
-        if n == 0 {
-            return Err(CollectiveAdmissionError::EmptyModes);
-        }
-        if weights.len() != n || initial.len() != n {
-            return Err(CollectiveAdmissionError::DimensionMismatch {
-                xi: n,
-                weights: weights.len(),
-                initial: initial.len(),
-            });
-        }
-
-        // Finiteness check for scalar parameters
-        if !width.is_finite() {
-            return Err(CollectiveAdmissionError::NonFinite("width".into()));
-        }
-        if !chi.is_finite() {
-            return Err(CollectiveAdmissionError::NonFinite("chi".into()));
-        }
-        if !carrier.is_finite() {
-            return Err(CollectiveAdmissionError::NonFinite("carrier".into()));
-        }
-        if !kappa.is_finite() {
-            return Err(CollectiveAdmissionError::NonFinite("kappa".into()));
-        }
-
-        if width < 0.0 {
-            return Err(CollectiveAdmissionError::NegativeWidth(width));
-        }
-        if kappa < 0.0 {
-            return Err(CollectiveAdmissionError::NegativeDamping(kappa));
-        }
-
-        // Detuning and weight validation
-        let mut weight_sum = 0.0;
-        let mut initial_energy = 0.0;
-
-        for (j, (&xj, &wj)) in xi.iter().zip(weights.iter()).enumerate() {
-            if !xj.is_finite() {
-                return Err(CollectiveAdmissionError::NonFinite(format!("xi[{j}]")));
-            }
-            if !wj.is_finite() {
-                return Err(CollectiveAdmissionError::NonFinite(format!("weights[{j}]")));
-            }
-            let (u0, v0) = initial[j];
-            if !u0.is_finite() || !v0.is_finite() {
-                return Err(CollectiveAdmissionError::NonFinite(format!("initial[{j}]")));
-            }
-
-            if !(-1.0 - 1e-14..=1.0 + 1e-14).contains(&xj) {
-                return Err(CollectiveAdmissionError::DetuningOutOfRange {
-                    index: j,
-                    value: xj,
-                });
-            }
-            if wj <= 0.0 {
-                return Err(CollectiveAdmissionError::NonPositiveWeight {
-                    index: j,
-                    value: wj,
-                });
-            }
-
-            weight_sum += wj;
-            initial_energy += wj * (u0 * u0 + v0 * v0);
-        }
-
-        let diff = (weight_sum - 1.0).abs();
-        if diff > 1e-12 {
-            return Err(CollectiveAdmissionError::UnnormalizedWeights {
-                sum: weight_sum,
-                diff,
-            });
-        }
-
-        if initial_energy > 1.0 + 1e-12 {
-            return Err(CollectiveAdmissionError::EnergyExceedsUnitBall {
-                energy: initial_energy,
-            });
-        }
+        let initial_energy = validate_borrowed_model(
+            &xi,
+            &weights,
+            &initial,
+            width,
+            chi,
+            carrier,
+            kappa,
+            &mut CollectiveAdmissionWork::default(),
+        )?;
 
         Ok(Self {
             xi,
@@ -165,6 +209,33 @@ impl CollectiveModel {
             kappa,
             initial_energy,
         })
+    }
+
+    /// Apply exactly the constructor's admission checks to replacement centers.
+    /// A successful borrowed validation allocates no model or vector and does
+    /// not mutate this model. This is an admission check, not an ODE certificate.
+    pub fn validate_candidate_centers(
+        &self,
+        centers: &[(f64, f64)],
+    ) -> Result<f64, CollectiveAdmissionError> {
+        self.validate_candidate_centers_with_work(centers, &mut CollectiveAdmissionWork::default())
+    }
+
+    pub(crate) fn validate_candidate_centers_with_work(
+        &self,
+        centers: &[(f64, f64)],
+        work: &mut CollectiveAdmissionWork,
+    ) -> Result<f64, CollectiveAdmissionError> {
+        validate_borrowed_model(
+            &self.xi,
+            &self.weights,
+            centers,
+            self.width,
+            self.chi,
+            self.carrier,
+            self.kappa,
+            work,
+        )
     }
 
     /// Number of complex modes N.

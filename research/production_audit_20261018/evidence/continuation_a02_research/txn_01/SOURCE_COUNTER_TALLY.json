@@ -1,0 +1,16 @@
+{
+  "unit": "A02-TXN-01",
+  "status": "SOURCE_DERIVED_BEFORE_EXECUTION",
+  "symbols": {"N":"mode count","G":"requested grid length","K":"requested points staged in a particular window","O":"solver order","D":"candidate degree"},
+  "accounting_definition": "arithmetic_attempts counts each va wrapper before invocation and the existing causal-table scalar operations; nested Interval directed internals are not double counted; copied_items counts binary64/identity payload words copied, excluding initialization; packet counters remain separate",
+  "query_success": {"query_attempts":1,"validation_items":1,"arithmetic_attempts":"15+6*N","copied_items":"10+3*N","allocations":0,"packet":"exact delegated PacketFrozenOutput::enclose_at path, including DC1 3*N+1 extra helper calls"},
+  "tolerance_pass": {"validation_items":"1+N"},
+  "one_seed_matches": {"identity_items":"22+5*N+G"},
+  "stale_Q0": {"commit_attempts":1,"rejected_attempts":1,"identity_items":"22+5*N+G","query_attempts":0,"arithmetic_attempts":0,"copied_items":0,"packet":"zero delta"},
+  "TXN_FAIL_FIRST": {"commit_attempts":1,"rejected_attempts":1,"identity_items":"22+5*N+G","query_attempts":0,"arithmetic_attempts":0,"copied_items":0,"packet":"zero delta"},
+  "TXN_FAIL_SECOND_F_FIXED": {"commit_attempts":1,"rejected_attempts":1,"identity_items":"22+5*3+4=41","query_attempts":1,"arithmetic_attempts":"15+6*3=33","copied_items":"(10+3*3)+(11+3*3)=39","validation_items":"1+(1+3)=5","packet":"one completed local query at u=1/32"},
+  "successful_commit": {"commit_attempts":1,"rejected_attempts":0,"identity_items":"2*(22+5*N+G)","query_attempts":"K+1 (mandatory endpoint is always separately evaluated)","arithmetic_attempts":"(K+1)*(15+6*N)","validation_items":"(K+1)*(N+2)","copied_items":"(K+1)*(10+3*N)+2*K*(11+3*N)+(3*N+2)","allocations":0},
+  "prepare_adapter_arithmetic": "13*N+14+(O+1)*(1+6*D); separate constructor counter adds 6*N+2; delegated packet compiler/candidate/freeze/workspace operations remain in packet fields",
+  "initial_energy_helper": {"arithmetic_attempts":"12*N+1","validation_items":"4*N"},
+  "notes": ["No measured observations used to choose these expected integers.","Packet-dependent complete exact deltas require separate symbolic expansion of the imported packet kernel paths before their hard gate; this source tally does not claim complete whole-runtime arithmetic.","Actual setup/advance/query allocation measurements include callees even where historical packet allocation counters are incomplete."]
+}

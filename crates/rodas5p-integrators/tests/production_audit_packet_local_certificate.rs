@@ -110,7 +110,7 @@ fn frozen_unequal_frequency_fraction_reference() {
             let view = owner.enclose_at(time, &mut workspace, &mut work).unwrap();
             assert_eq!(
                 work.curve_output_certificate_ops - before.curve_output_certificate_ops,
-                110
+                120
             );
             assert_eq!(
                 work.curve_frozen_query_attempts - before.curve_frozen_query_attempts,
