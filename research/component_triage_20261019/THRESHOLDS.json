@@ -1,0 +1,41 @@
+{
+  "schema": "vigilode-triage-thresholds-v1",
+  "frozen_with": "PREREGISTRATION.md",
+  "accuracy": {
+    "achieved_error_metric": "max over output times of the WRMS of (y - ref) with weights 1/(atol_scale_P + |ref|), atol_scale_P from CORPUS.json; E_up adds the same norm of the reference radius rho",
+    "requested_error_metric": "max over output times of the WRMS of (y - ref) with weights 1/(atol_row + rtol_row*|ref|); C2 ratio = this value plus the same norm of rho",
+    "targets": [1e-2, 1e-3, 1e-4, 1e-5, 1e-6, 1e-7, 1e-8, 1e-9],
+    "reference_limited_factor": 0.1,
+    "h0_scales_required": [0.5, 1.0, 2.0]
+  },
+  "reliability_c2": {
+    "cell_fraction": 0.95,
+    "ratio": 10.0,
+    "ratio_max": 100.0
+  },
+  "frontier": {
+    "gain_max": 0.98,
+    "neutral_max": 1.02,
+    "promote_cell_fraction": 0.90,
+    "promote_max_ratio": 1.10,
+    "primary_cost": "ir_warm",
+    "secondary_costs": ["ir_cold", "allocations_warm", "allocated_bytes_warm", "rhs_evaluations", "jvp_vectors", "direct_factorizations", "linear_iterations"]
+  },
+  "allocation": {
+    "warm_window_allocations_max": 0,
+    "allow_documented_constant_independent_of_n": true
+  },
+  "specialize": {
+    "min_positives": 5,
+    "threshold_rank_shift": 1,
+    "features": ["dimension", "structure", "jacobian", "mass", "oscillatory", "exact_solution", "grid", "rtol"]
+  },
+  "optimize": {
+    "headroom_ratio_max": 1.02,
+    "external_counted_work_gap": 1.5
+  },
+  "timing": {
+    "authority": "diagnostic_unless_timing_authority_registry_admissible",
+    "conflict_threshold": 0.15
+  }
+}
