@@ -91,6 +91,28 @@
 //!   columns, i.e. explicit stopping residuals and the cycle-start true
 //!   residual, also in [`LaggedWork::residual_applications`]) and every LU
 //!   application (`direct_solve_calls`).
+//!
+//! # Staleness bound (wave-3 node `b1c-staleness`)
+//!
+//! [`StalenessRule::Bounded`] (opt-in; preregistration
+//! `research/b1c_staleness_20261021/PREREGISTRATION.md`) adds a refresh rule
+//! and corrects the stopping test, on both stage solvers. With the
+//! start-state weights `s_i = atol + rtol |y_n,i|`, `||x||_S = max_i |x_i| /
+//! s_i`, the induced norm `||A||_S` and the logarithmic norm `mu_S`, Lemma
+//! B1c bounds `T = I - P^{-1} W` by
+//! `q_pred = (|1 - h_P/h| + h_P gamma ||J - J_P||_S) / (1 - h_P gamma mu_S(J_P))`
+//! when `h_P gamma mu_S(J_P) < 1`, and `q_pred = +inf` otherwise
+//! ([`rodas5p_staleness_bound`]; `+inf` also for a zero weight).
+//!
+//! * Before an attempt's stage solves, when `P` is valid and neither an
+//!   initial nor a forced refresh is due, `q_pred` is computed from the
+//!   current Jacobian and a dense copy of `J_P` kept at the last refresh
+//!   (`O(n^2)`); `q_pred >` [`RODAS5P_LAGGED_STALENESS_Q_MAX`] refreshes `P`.
+//! * Otherwise stage `i` stops when `||P^{-1} r_k||_S <= (1 - q_pred) rho_i`,
+//!   which by the Neumann bound implies `WRMS(x_k - W^{-1} c) <= rho_i`. The
+//!   contraction and progress refreshes keep their WRMS tests.
+//! * Counted in [`StalenessWork`]. [`StalenessRule::Off`] (the default) is
+//!   the wave-2 driver bit for bit.
 
 use std::sync::atomic::{AtomicU64, Ordering};
 
@@ -118,6 +140,19 @@ pub const RODAS5P_LAGGED_DRIVER_ID: &str = "rodas5p-lagged-richardson-v1";
 
 /// Identifier of the [`StageSolver::Gmres`] arm (wave-2 node `b1b-gmres`).
 pub const RODAS5P_LAGGED_GMRES_DRIVER_ID: &str = "rodas5p-lagged-gmres-v1";
+
+/// Identifier of the Richardson arm with [`StalenessRule::Bounded`]
+/// (wave-3 node `b1c-staleness`).
+pub const RODAS5P_LAGGED_RICHARDSON_BOUNDED_DRIVER_ID: &str =
+    "rodas5p-lagged-richardson-bounded-v1";
+
+/// Identifier of the GMRES arm with [`StalenessRule::Bounded`] (wave-3 node
+/// `b1c-staleness`).
+pub const RODAS5P_LAGGED_GMRES_BOUNDED_DRIVER_ID: &str = "rodas5p-lagged-gmres-bounded-v1";
+
+/// The staleness bound above which `P` is refreshed before an attempt's
+/// stage solves (T2's production `q_max`; preregistered, never tuned).
+pub const RODAS5P_LAGGED_STALENESS_Q_MAX: f64 = 0.5;
 
 /// The GMRES restart length of [`StageSolver::Gmres`] (preregistered; with
 /// the budget of [`RODAS5P_LAGGED_MAX_ITERATIONS`] columns it never fires).
@@ -163,6 +198,17 @@ pub enum StageSolver {
     Gmres,
 }
 
+/// Whether the lagged driver checks the staleness of `P` (module docs).
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize)]
+pub enum StalenessRule {
+    /// No staleness check; the wave-2 driver bit for bit.
+    #[default]
+    Off,
+    /// Refresh when `q_pred >` [`RODAS5P_LAGGED_STALENESS_Q_MAX`], and stop
+    /// stages on `||P^{-1} r||_S <= (1 - q_pred) rho_i` (Lemma B1c).
+    Bounded,
+}
+
 /// Opt-in variants of [`integrate_rodas5p_lagged_observed`].
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct Rodas5pLaggedOptions {
@@ -171,6 +217,8 @@ pub struct Rodas5pLaggedOptions {
     pub refresh_every_attempt: bool,
     /// The lagged-stage solver; Richardson by default.
     pub stage_solver: StageSolver,
+    /// The staleness rule; off by default.
+    pub staleness: StalenessRule,
 }
 
 /// Counted work of the lagged stage solves. Every refresh is also a
@@ -178,7 +226,9 @@ pub struct Rodas5pLaggedOptions {
 /// application of the stored LU is a `direct_solve_calls` count there.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize)]
 pub struct LaggedWork {
-    /// Factorizations of `P`; the sum of the four reasons below.
+    /// Factorizations of `P`: the sum of the four reasons below plus
+    /// [`StalenessWork::staleness_refreshes`] (zero unless
+    /// [`StalenessRule::Bounded`]).
     pub preconditioner_refreshes: u64,
     /// Before the first step, or after a failed attempt left `P` unusable.
     pub initial_refreshes: u64,
@@ -217,12 +267,30 @@ pub struct LaggedWork {
     pub refreshed_stage_solves: u64,
 }
 
+/// Counted work of the staleness rule ([`StalenessRule::Bounded`]); all zero
+/// with [`StalenessRule::Off`]. Separate from [`LaggedWork`], which derives
+/// `Eq`.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Serialize)]
+pub struct StalenessWork {
+    /// Bounds `q_pred` computed (at most one per attempt; none when an
+    /// initial or forced refresh is due).
+    pub checks: u64,
+    /// Refreshes because `q_pred >` [`RODAS5P_LAGGED_STALENESS_Q_MAX`].
+    pub staleness_refreshes: u64,
+    /// Checks with `q_pred = +inf` (`h_P gamma mu_S(J_P) >= 1`, or a zero
+    /// weight).
+    pub unbounded_checks: u64,
+    /// The largest finite `q_pred` of the run (0 when there was none).
+    pub q_pred_max: f64,
+}
+
 #[derive(Clone, Debug)]
 pub struct Rodas5pLaggedResult {
     /// The run in the fast driver's record (driver
     /// [`RODAS5P_LAGGED_DRIVER_ID`]).
     pub fast: Rodas5pFastResult,
     pub work: LaggedWork,
+    pub staleness: StalenessWork,
 }
 
 #[derive(Clone, Copy)]
@@ -231,6 +299,69 @@ enum Refresh {
     Forced,
     Contraction,
     Budget,
+    Staleness,
+}
+
+/// Lemma B1c's bound `q_pred >= ||I - P^{-1} W||_S` for
+/// `W = I/(h gamma) - J`, `P = I/(h_P gamma) - J_P` and weights `s`:
+/// `(|1 - h_P/h| + h_P gamma ||J - J_P||_S) / (1 - h_P gamma mu_S(J_P))`,
+/// with `||A||_S = max_i sum_j |A_ij| s_j / s_i` and
+/// `mu_S(A) = max_i (A_ii + sum_{j != i} |A_ij| s_j / s_i)`. Returns `+inf`
+/// when the lemma gives no bound (`h_P gamma mu_S(J_P) >= 1`), when a weight
+/// is not finite and positive (ruling B2d: `s_i = 0`), and for non-positive
+/// steps, mismatched shapes or non-finite entries. Never NaN. `O(n^2)`.
+pub fn rodas5p_staleness_bound(
+    h: f64,
+    h_p: f64,
+    gamma: f64,
+    j: &DenseMatrix,
+    j_p: &DenseMatrix,
+    s: &[f64],
+) -> f64 {
+    let n = s.len();
+    let shapes = [j.nrows(), j.ncols(), j_p.nrows(), j_p.ncols()];
+    if !(h > 0.0 && h_p > 0.0 && gamma > 0.0 && h.is_finite() && h_p.is_finite())
+        || shapes.iter().any(|d| *d != n)
+        || !s.iter().all(|v| *v > 0.0 && v.is_finite())
+        || !j
+            .as_slice()
+            .iter()
+            .chain(j_p.as_slice())
+            .all(|v| v.is_finite())
+    {
+        return f64::INFINITY;
+    }
+    let a = h_p * gamma;
+    let mut mu = f64::NEG_INFINITY;
+    let mut drift = 0.0_f64;
+    for i in 0..n {
+        let (row, row_p) = (j.row(i), j_p.row(i));
+        let mut row_mu = row_p[i];
+        let mut row_drift = 0.0;
+        for k in 0..n {
+            let ratio = s[k] / s[i];
+            row_drift += (row[k] - row_p[k]).abs() * ratio;
+            if k != i {
+                row_mu += row_p[k].abs() * ratio;
+            }
+        }
+        mu = mu.max(row_mu);
+        drift = drift.max(row_drift);
+    }
+    let denominator = 1.0 - a * mu;
+    if denominator.is_nan() || denominator <= 0.0 {
+        return f64::INFINITY;
+    }
+    let q = ((1.0 - h_p / h).abs() + a * drift) / denominator;
+    if q.is_finite() { q } else { f64::INFINITY }
+}
+
+/// `||v||_S = max_i |v_i| / s_i`.
+fn weighted_max(v: &[f64], weight: &[f64]) -> f64 {
+    v.iter()
+        .zip(weight)
+        .map(|(x, w)| (x / w).abs())
+        .fold(0.0, f64::max)
 }
 
 /// The lagged preconditioner and the iteration buffers.
@@ -253,6 +384,12 @@ struct Lagged {
     p_generation: u64,
     generation: u64,
     work: LaggedWork,
+    /// [`StalenessRule::Bounded`]: the Jacobian `J_P` of the stored `P`
+    /// (allocated once at setup; empty with `Off`), the attempt's stop
+    /// factor `1 - q_pred` and the counts.
+    j_p: DenseMatrix,
+    stop_scale: f64,
+    staleness: StalenessWork,
 }
 
 impl Lagged {
@@ -271,8 +408,14 @@ impl Lagged {
             Refresh::Forced => self.work.forced_refreshes += 1,
             Refresh::Contraction => self.work.contraction_refreshes += 1,
             Refresh::Budget => self.work.budget_refreshes += 1,
+            Refresh::Staleness => self.staleness.staleness_refreshes += 1,
         }
         ws.factor(h, counters)?;
+        if self.bounded() {
+            self.j_p
+                .as_mut_slice()
+                .copy_from_slice(ws.jacobian.as_slice());
+        }
         self.valid = true;
         self.p_h = h;
         self.p_generation = self.generation;
@@ -314,6 +457,20 @@ impl Lagged {
 
     fn wrms(&self, v: &[f64]) -> f64 {
         weighted_rms(v, &self.weight)
+    }
+
+    fn bounded(&self) -> bool {
+        self.options.staleness == StalenessRule::Bounded
+    }
+
+    /// The stage stop: `Off` tests `WRMS(P^{-1} r) <= rho_i` (wave 2);
+    /// `Bounded` tests `||P^{-1} r||_S <= (1 - q_pred) rho_i` (Lemma B1c).
+    fn stops(&self, pres: &[f64], wrms: f64, target: f64) -> bool {
+        if self.bounded() {
+            weighted_max(pres, &self.weight) <= self.stop_scale * target
+        } else {
+            wrms <= target
+        }
     }
 
     fn check_weights(&self) -> CoreResult<()> {
@@ -410,7 +567,7 @@ impl Lagged {
             &self.weight,
             counters,
         )?;
-        if nu0 <= target {
+        if self.stops(&self.pres, nu0, target) {
             return Ok((0, None));
         }
         let config = GmresConfig {
@@ -420,6 +577,7 @@ impl Lagged {
             atol: 0.0,
         };
         let mut reason = Refresh::Budget;
+        let (bounded, stop_target) = (self.bounded(), self.stop_scale * target);
         let (rhs, weight, wx, pres) = (&self.rhs, &self.weight, &mut self.wx, &mut self.pres);
         let report = solve_gmres_into_right_monitored(
             op,
@@ -432,7 +590,12 @@ impl Lagged {
             counters,
             &mut |k, xk, counters| {
                 let nu = preconditioned_residual(op, pc, rhs, xk, wx, pres, weight, counters)?;
-                if nu <= target {
+                let converged = if bounded {
+                    weighted_max(pres, weight) <= stop_target
+                } else {
+                    nu <= target
+                };
+                if converged {
                     return Ok(GmresMonitorDecision::Accept);
                 }
                 if (nu / nu0).powf(1.0 / k as f64) > RODAS5P_LAGGED_CONTRACTION_MAX {
@@ -491,7 +654,7 @@ impl Lagged {
                     "RODAS5P lagged stage residual is not finite".into(),
                 ));
             }
-            if norm <= target {
+            if self.stops(&ws.stage_rhs, norm, target) {
                 return Ok(None);
             }
             if let Some(p) = previous
@@ -539,15 +702,40 @@ impl Lagged {
                 ws.ft.copy_from_slice(&ft);
             }
         }
+        // The start-state weights (before the refresh decision, which the
+        // staleness bound needs; the refreshes do not read them).
+        for (w, v) in self.weight.iter_mut().zip(y) {
+            *w = atol + rtol * v.abs();
+        }
+        self.stop_scale = 1.0;
         if !self.valid {
             self.refresh(ws, h, Refresh::Initial, counters)?;
         } else if self.options.refresh_every_attempt {
             self.refresh(ws, h, Refresh::Forced, counters)?;
+        } else if self.bounded() {
+            // Ruling B2c: only with a valid P and no initial or forced
+            // refresh due on this attempt.
+            let q = rodas5p_staleness_bound(
+                h,
+                self.p_h,
+                ws.gamma,
+                &ws.jacobian,
+                &self.j_p,
+                &self.weight,
+            );
+            self.staleness.checks += 1;
+            if q.is_finite() {
+                self.staleness.q_pred_max = self.staleness.q_pred_max.max(q);
+            } else {
+                self.staleness.unbounded_checks += 1;
+            }
+            if q > RODAS5P_LAGGED_STALENESS_Q_MAX {
+                self.refresh(ws, h, Refresh::Staleness, counters)?;
+            } else {
+                self.stop_scale = 1.0 - q;
+            }
         }
         let mut exact = self.p_generation == self.generation && self.p_h == h;
-        for (w, v) in self.weight.iter_mut().zip(y) {
-            *w = atol + rtol * v.abs();
-        }
         for i in 0..s {
             if i == 0 {
                 ws.stage_rhs.copy_from_slice(&ws.f0);
@@ -815,6 +1003,13 @@ pub fn integrate_rodas5p_lagged_observed(
         p_generation: 0,
         generation: 0,
         work: LaggedWork::default(),
+        j_p: if options.staleness == StalenessRule::Bounded {
+            DenseMatrix::zeros(n, n)
+        } else {
+            DenseMatrix::zeros(0, 0)
+        },
+        stop_scale: 1.0,
+        staleness: StalenessWork::default(),
     };
     let mut y = y0.to_vec();
     let mut h = adaptive.initial_step.min(crate::output::step_to(t, tf)?);
@@ -923,11 +1118,18 @@ pub fn integrate_rodas5p_lagged_observed(
             rejected_steps,
             jacobian_reuses: reuses,
             lu: ws.lu_kind,
-            driver: match options.stage_solver {
-                StageSolver::Richardson => RODAS5P_LAGGED_DRIVER_ID,
-                StageSolver::Gmres => RODAS5P_LAGGED_GMRES_DRIVER_ID,
+            driver: match (options.stage_solver, options.staleness) {
+                (StageSolver::Richardson, StalenessRule::Off) => RODAS5P_LAGGED_DRIVER_ID,
+                (StageSolver::Gmres, StalenessRule::Off) => RODAS5P_LAGGED_GMRES_DRIVER_ID,
+                (StageSolver::Richardson, StalenessRule::Bounded) => {
+                    RODAS5P_LAGGED_RICHARDSON_BOUNDED_DRIVER_ID
+                }
+                (StageSolver::Gmres, StalenessRule::Bounded) => {
+                    RODAS5P_LAGGED_GMRES_BOUNDED_DRIVER_ID
+                }
             },
         },
         work: lagged.work,
+        staleness: lagged.staleness,
     })
 }

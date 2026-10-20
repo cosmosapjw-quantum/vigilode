@@ -168,9 +168,9 @@ fn bound_is_exact_for_scalar_step_change() {
     let j = DenseMatrix::from_rows(&[&[-1.0, 0.0], &[0.0, -1.0]]).unwrap();
     let q = rodas5p_staleness_bound(1.0, 1.0, GAMMA, &j, &j, &[1.0, 0.0]);
     assert_eq!(q, f64::INFINITY);
-    // h_P gamma mu_S >= 1: no bound.
+    // h_P gamma mu_S = 2 >= 1: no bound.
     let grow = DenseMatrix::from_rows(&[&[1.0]]).unwrap();
-    let q = rodas5p_staleness_bound(1.0, 1.0 / GAMMA, GAMMA, &grow, &grow, &[1.0]);
+    let q = rodas5p_staleness_bound(1.0, 2.0 / GAMMA, GAMMA, &grow, &grow, &[1.0]);
     assert_eq!(q, f64::INFINITY);
     assert_eq!(RODAS5P_LAGGED_STALENESS_Q_MAX, 0.5);
 }
@@ -485,6 +485,7 @@ fn staleness_ledger_identity() {
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 fn arm_json(
     arm: &str,
     accepted: usize,
