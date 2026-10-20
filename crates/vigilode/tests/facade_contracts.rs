@@ -17,8 +17,8 @@ use rodas5p_integrators::{
     robertson_problem,
 };
 use vigilode::{
-    Atol, Callback, CallbackError, FailureReason, Jacobian, JacobianRecord, Options, Problem,
-    Rodas5p, STATS_SCHEMA, Solution, SolveError, Status, Tier,
+    Atol, Callback, CallbackError, DriverWork, FailureReason, Jacobian, JacobianRecord, Options,
+    Problem, Rodas5p, STATS_SCHEMA, Solution, SolveError, Status, Tier,
 };
 
 // ---------------------------------------------------------------- helpers
@@ -840,4 +840,141 @@ fn stats_serialize_every_option_and_counter() {
     .unwrap();
     assert_states_bit_identical(&replay, &sol.t, &sol.y);
     assert_eq!(replay.stats.counters, sol.stats.counters);
+}
+
+// ------------------------------------------------- driver work in the record
+
+fn driver_work_json(sol: &Solution) -> serde_json::Value {
+    serde_json::to_value(&sol.stats).unwrap()["driver_work"].clone()
+}
+
+#[test]
+fn dense_route_records_jacobian_reuses_and_lu() {
+    let opts = robertson_opts(1.0e-6, 1.0e-10);
+    let sol = Rodas5p::solve(
+        &robertson(Jacobian::dense(robertson_jac)),
+        ROBERTSON_SPAN,
+        &ROBERTSON_Y0,
+        &opts,
+    )
+    .unwrap();
+    let (direct_problem, y0) = robertson_problem().unwrap();
+    let direct = integrate_rodas5p_fast_observed(
+        &direct_problem,
+        ROBERTSON_SPAN,
+        &y0,
+        &adaptive_for(&opts),
+        &OutputSchedule::new(vec![ROBERTSON_SPAN.0, ROBERTSON_SPAN.1]).unwrap(),
+    )
+    .unwrap();
+    assert_eq!(
+        sol.stats.driver_work,
+        DriverWork::Dense {
+            jacobian_reuses: direct.jacobian_reuses,
+            lu: direct.lu,
+        }
+    );
+    let record = driver_work_json(&sol);
+    assert_eq!(record["driver"], "dense");
+    assert_eq!(record["jacobian_reuses"], direct.jacobian_reuses);
+    assert_eq!(record["lu"], serde_json::to_value(direct.lu).unwrap());
+}
+
+#[test]
+fn banded_routes_record_band_work() {
+    let n = 20;
+    let span = (0.0, 2.0);
+    let y0 = tridiagonal_y0(n);
+    // Direct banded driver (user band).
+    let direct_route = Rodas5p::solve(
+        &Problem::new(n, tridiagonal_rhs(n))
+            .jacobian(Jacobian::banded(1, 1, tridiagonal_band(n)))
+            .autonomous(),
+        span,
+        &y0,
+        &Options::default(),
+    )
+    .unwrap();
+    // Router rule 1 (dense callback, declared band).
+    let dense = move |_t: f64, y: &[f64], jac: &mut [f64]| -> Result<(), CallbackError> {
+        for i in 0..n {
+            if i > 0 {
+                jac[i * n + i - 1] = 1.0;
+            }
+            jac[i * n + i] = -2.0 - y[i];
+            if i + 1 < n {
+                jac[i * n + i + 1] = 1.0;
+            }
+        }
+        Ok(())
+    };
+    let routed = Rodas5p::solve(
+        &Problem::new(n, tridiagonal_rhs(n))
+            .jacobian(Jacobian::dense(dense))
+            .banded(1, 1)
+            .autonomous(),
+        span,
+        &y0,
+        &Options::default(),
+    )
+    .unwrap();
+    for sol in [&direct_route, &routed] {
+        assert!(sol.is_success());
+        let DriverWork::Banded { banded, .. } = sol.stats.driver_work else {
+            panic!("banded work expected: {:?}", sol.stats.driver_work)
+        };
+        assert!(banded.factor_operations > 0 && banded.solve_operations > 0);
+        assert!(banded.stored_slots > 0);
+        let record = driver_work_json(sol);
+        assert_eq!(record["driver"], "banded");
+        for key in ["factor_operations", "solve_operations", "stored_slots"] {
+            assert!(record["banded"].get(key).is_some(), "banded.{key} missing");
+        }
+        assert!(record.get("jacobian_reuses").is_some() && record.get("lu").is_some());
+    }
+}
+
+#[test]
+fn matrix_free_route_records_state_reuses_and_policy_ids() {
+    let opts = stiff_example_opts();
+    let sol = Rodas5p::solve(&two_timescale_facade(), (0.0, 1.0), &[1.0, 1.0], &opts).unwrap();
+    let direct = integrate_rodas5p_mf_fast_observed_gmres_into(
+        &two_timescale_direct(),
+        (0.0, 1.0),
+        &[1.0, 1.0],
+        &RoutingOptions::default().matrix_free,
+        &adaptive_for(&opts),
+        &OutputSchedule::new(vec![0.0, 1.0]).unwrap(),
+    )
+    .unwrap();
+    let DriverWork::MatrixFree {
+        state_reuses,
+        gcrodr_policy,
+        krylov_workspace,
+        start_policy,
+        recycle_scope,
+        start_telemetry,
+    } = &sol.stats.driver_work
+    else {
+        panic!("matrix-free work expected")
+    };
+    assert_eq!(*state_reuses, direct.state_reuses);
+    assert_eq!(*gcrodr_policy, direct.gcrodr_policy);
+    assert_eq!(*krylov_workspace, direct.krylov_workspace);
+    assert_eq!(*start_policy, direct.start_policy);
+    assert_eq!(*recycle_scope, direct.recycle_scope);
+    assert_eq!(start_telemetry.is_some(), direct.start_telemetry.is_some());
+    let record = driver_work_json(&sol);
+    assert_eq!(record["driver"], "matrix-free");
+    for key in [
+        "state_reuses",
+        "gcrodr_policy",
+        "krylov_workspace",
+        "start_policy",
+        "recycle_scope",
+        "start_telemetry",
+    ] {
+        assert!(record.get(key).is_some(), "driver_work.{key} missing");
+    }
+    assert_eq!(record["gcrodr_policy"], direct.gcrodr_policy);
 }

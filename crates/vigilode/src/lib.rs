@@ -77,7 +77,7 @@ pub use problem::{
     BandJacobianFn, DenseJacobianFn, Jacobian, JvpFn, Problem, RhsFn, TimeDerivativeFn,
 };
 pub use solution::{
-    Callback, CallbackWork, FD_INCREMENT_RULE, FailureReason, FiniteDifferenceWork, JacobianRecord,
-    RouteRecord, STATS_SCHEMA, Solution, Stats, Status,
+    Callback, CallbackWork, DriverWork, FD_INCREMENT_RULE, FailureReason, FiniteDifferenceWork,
+    JacobianRecord, KrylovStartRecord, RouteRecord, STATS_SCHEMA, Solution, Stats, Status,
 };
 pub use solve::Rodas5p;

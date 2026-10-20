@@ -146,3 +146,32 @@ from a clean build of that directory, at commit `1da0425`:
 The measured errors repeat to every printed digit (Robertson 9.139269622883528e-1 /
 8.530278086763213e-1; tridiagonal 1.7352558843846827e-1 / 1.7353002047212848e-1). The RED run
 (stub `solve`) was not repeated; it was a compile-and-fail check of the tests themselves.
+
+## Fix round 1 (review findings)
+
+1. **Driver work in `Stats`.** `Stats::driver_work: DriverWork` (serde, tagged by `driver`) now
+   carries every driver-specific counter and id the routed driver returns:
+   `Dense { jacobian_reuses, lu }` (`Rodas5pFastResult`),
+   `Banded { jacobian_reuses, lu, banded: BandedWork }` (`Rodas5pFastBandedResult`, from both the
+   router's rule 1 and the direct banded call),
+   `MatrixFree { state_reuses, gcrodr_policy, krylov_workspace, start_policy, recycle_scope, start_telemetry }`
+   (`Rodas5pMfFastResult`; `KrylovStartTelemetry` is not re-exported by `rodas5p-integrators`, so
+   its five counts are copied into `KrylovStartRecord`). The driver id was already in
+   `stats.route.driver_id`. New tests, one per route: `dense_route_records_jacobian_reuses_and_lu`,
+   `banded_routes_record_band_work` (direct and routed band), and
+   `matrix_free_route_records_state_reuses_and_policy_ids`. Each compares the values with the
+   direct driver call where one exists and checks the serialized keys.
+2. **Which driver the stiff-example test compares against.** `examples/solve_stiff.rs` calls
+   `integrate_sequential_matrix_free_adaptive_dense_observed` (sequential matrix-free path, GMRES,
+   with a 106-point dense sampling plan). The facade does not route there. A JVP-only problem
+   goes through `integrate_rodas5p_routed_observed` rule 4 to the U-form matrix-free driver
+   `integrate_rodas5p_mf_fast_observed_gmres_into` with `RoutingOptions::default().matrix_free`.
+   The bit-identity requirement is that the facade equal the direct call of the driver it runs,
+   so the test solves the example's problem (same RHS, JVP, y0, rtol 1e-8, atol 1e-11, h0 1e-3)
+   and compares against that routed driver. A comparison with the sequential driver would compare
+   two different algorithms, which cannot be bit-identical. The example's accuracy budget (1e-6
+   absolute at t = 1) is also asserted through the facade. Controller ruling: correct as written.
+
+Re-run in `CARGO_TARGET_DIR=/home/claude/targets/a1-api`: `cargo test -p vigilode --locked -j 1`
+exit 0. Lib 3 passed, `facade_contracts` 17 passed, doctests 1 passed. Clippy for the crate shows
+no warnings.

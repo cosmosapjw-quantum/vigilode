@@ -16,8 +16,8 @@ use crate::{
     options::{Atol, Options, Tier},
     problem::{Jacobian, Problem},
     solution::{
-        Callback, FD_INCREMENT_RULE, FailureReason, JacobianRecord, RouteRecord, STATS_SCHEMA,
-        Solution, Stats, Status,
+        Callback, DriverWork, FD_INCREMENT_RULE, FailureReason, JacobianRecord, KrylovStartRecord,
+        RouteRecord, STATS_SCHEMA, Solution, Stats, Status,
     },
 };
 
@@ -51,6 +51,7 @@ struct Run {
     rejected_steps: usize,
     route: RouteRecord,
     matrix_free: bool,
+    driver_work: DriverWork,
 }
 
 impl Rodas5p {
@@ -104,19 +105,50 @@ impl Rodas5p {
                             }
                             RoutingError::Integration(c) => driver_error(c, &guard),
                         })?;
-                let (driver_id, attempts, accepted, rejected) = match &routed.run {
+                let (driver_id, attempts, accepted, rejected, driver_work) = match &routed.run {
                     RoutedRun::Banded(r) => (
                         r.fast.driver,
                         r.fast.attempts,
                         r.fast.accepted_steps,
                         r.fast.rejected_steps,
+                        DriverWork::Banded {
+                            jacobian_reuses: r.fast.jacobian_reuses,
+                            lu: r.fast.lu,
+                            banded: r.work,
+                        },
                     ),
-                    RoutedRun::Dense(r) => {
-                        (r.driver, r.attempts, r.accepted_steps, r.rejected_steps)
-                    }
-                    RoutedRun::MatrixFree(r) => {
-                        (r.driver, r.attempts, r.accepted_steps, r.rejected_steps)
-                    }
+                    RoutedRun::Dense(r) => (
+                        r.driver,
+                        r.attempts,
+                        r.accepted_steps,
+                        r.rejected_steps,
+                        DriverWork::Dense {
+                            jacobian_reuses: r.jacobian_reuses,
+                            lu: r.lu,
+                        },
+                    ),
+                    RoutedRun::MatrixFree(r) => (
+                        r.driver,
+                        r.attempts,
+                        r.accepted_steps,
+                        r.rejected_steps,
+                        DriverWork::MatrixFree {
+                            state_reuses: r.state_reuses,
+                            gcrodr_policy: r.gcrodr_policy,
+                            krylov_workspace: r.krylov_workspace,
+                            start_policy: r.start_policy,
+                            recycle_scope: r.recycle_scope,
+                            start_telemetry: r.start_telemetry.as_ref().map(|t| {
+                                KrylovStartRecord {
+                                    zero_starts: t.zero_starts,
+                                    previous_stage_starts: t.previous_stage_starts,
+                                    previous_step_starts: t.previous_step_starts,
+                                    solver_carried_starts: t.solver_carried_starts,
+                                    cross_system_basis_starts: t.cross_system_basis_starts,
+                                }
+                            }),
+                        },
+                    ),
                 };
                 Run {
                     observed: routed.run.observed().clone(),
@@ -124,6 +156,7 @@ impl Rodas5p {
                     accepted_steps: accepted,
                     rejected_steps: rejected,
                     matrix_free: routed.routing.driver == RoutedDriver::MatrixFree,
+                    driver_work,
                     route: RouteRecord {
                         entry_point: ENTRY_ROUTED,
                         driver_id,
@@ -147,6 +180,11 @@ impl Rodas5p {
                     accepted_steps: result.fast.accepted_steps,
                     rejected_steps: result.fast.rejected_steps,
                     matrix_free: false,
+                    driver_work: DriverWork::Banded {
+                        jacobian_reuses: result.fast.jacobian_reuses,
+                        lu: result.fast.lu,
+                        banded: result.work,
+                    },
                 }
             }
         };
@@ -198,6 +236,7 @@ impl Rodas5p {
             output_clipped_steps: run.observed.output_clipped_steps,
             counters,
             driver_counters,
+            driver_work: run.driver_work,
             finite_difference: fd,
             callbacks: guard.callback_work(),
             driver_message: run.observed.message,

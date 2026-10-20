@@ -3,7 +3,7 @@
 use std::fmt;
 
 use rodas5p_core::{LinearSolverConfig, WorkCounters};
-use rodas5p_integrators::{AdaptiveStepConfig, RoutingRecord};
+use rodas5p_integrators::{AdaptiveStepConfig, BandedWork, Rodas5pFastLu, RoutingRecord};
 use serde::Serialize;
 
 use crate::{
@@ -156,6 +156,62 @@ pub struct CallbackWork {
     pub short_circuited_rhs_calls: u64,
 }
 
+/// Krylov start counts of a matrix-free run (the driver's opt-in SP04
+/// start telemetry, copied field by field).
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize)]
+pub struct KrylovStartRecord {
+    /// Stage solves started from zero.
+    pub zero_starts: u64,
+    /// Started from the previous stage's solution.
+    pub previous_stage_starts: u64,
+    /// Started from the previous step's solution.
+    pub previous_step_starts: u64,
+    /// Started from a solver-carried vector.
+    pub solver_carried_starts: u64,
+    /// Started from a basis of another system.
+    pub cross_system_basis_starts: u64,
+}
+
+/// The driver-specific work counters and policy identifiers the routed
+/// driver returned, beyond [`Stats::driver_counters`] and the step counts.
+#[derive(Clone, Debug, PartialEq, Serialize)]
+#[serde(rename_all = "kebab-case", tag = "driver")]
+pub enum DriverWork {
+    /// The dense fast driver (`Rodas5pFastResult`).
+    Dense {
+        /// Attempts that reused the Jacobian, `f(t, y)` and `f_t` of a
+        /// rejected attempt from the same state.
+        jacobian_reuses: usize,
+        /// The LU variant that ran.
+        lu: Rodas5pFastLu,
+    },
+    /// The banded fast driver (`Rodas5pFastBandedResult`).
+    Banded {
+        /// Attempts that reused the Jacobian of a rejected attempt.
+        jacobian_reuses: usize,
+        /// The LU variant that ran.
+        lu: Rodas5pFastLu,
+        /// Counted band factor and solve operations and storage.
+        banded: BandedWork,
+    },
+    /// The matrix-free U-form driver (`Rodas5pMfFastResult`).
+    MatrixFree {
+        /// Attempts that reused `f(t, y)`, `f_t` and the JVP operator of a
+        /// rejected attempt from the same state.
+        state_reuses: usize,
+        /// GCRO-DR recycle policy id.
+        gcrodr_policy: &'static str,
+        /// Krylov workspace option id.
+        krylov_workspace: &'static str,
+        /// Krylov start policy id.
+        start_policy: &'static str,
+        /// Recycle scope id.
+        recycle_scope: &'static str,
+        /// Start telemetry, when the driver recorded it.
+        start_telemetry: Option<KrylovStartRecord>,
+    },
+}
+
 /// Which driver ran and why.
 #[derive(Clone, Debug, Serialize)]
 pub struct RouteRecord {
@@ -213,6 +269,8 @@ pub struct Stats {
     /// The driver's own counters, as the driver returned them (including any
     /// band-verification charge of the router).
     pub driver_counters: WorkCounters,
+    /// The driver-specific counters and policy ids.
+    pub driver_work: DriverWork,
     /// Finite-difference Jacobian work.
     pub finite_difference: FiniteDifferenceWork,
     /// Callback error accounting.
