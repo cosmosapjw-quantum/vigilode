@@ -3,7 +3,7 @@
 #![forbid(unsafe_code)]
 mod kernel;
 pub use kernel::*;
-#[cfg(feature="native")]
+#[cfg(feature = "native")]
 mod native;
-#[cfg(feature="native")]
-pub use native::{NativeRun,solve_trajectory};
+#[cfg(feature = "native")]
+pub use native::{NativeRun, solve_trajectory};
