@@ -13,13 +13,14 @@
 
 use std::sync::Arc;
 
-use rodas5p_core::{DenseMatrix, LinearMethod, LinearSolverConfig, PreconditionerKind};
+use rodas5p_core::{CoreError, DenseMatrix, LinearMethod, LinearSolverConfig, PreconditionerKind};
 use rodas5p_integrators::{
     AdaptiveStepConfig, BandedJacobian, BandedKernel, BatchProblem, IntegrationMethod, OdeProblem,
-    OutputSchedule, SmallBatchMember, SmallProblem, integrate_adaptive_observed,
-    integrate_rodas5p_fast_banded_observed_with_kernel, integrate_rodas5p_fast_observed,
-    integrate_rodas5p_fast_small_batch, integrate_rodas5p_fast_small_observed,
-    integrate_rodas5p_mf_fast_observed,
+    OutputSchedule, SmallBatchMember, SmallProblem, StageTargetOptions, StageTargetPolicy,
+    integrate_adaptive_observed, integrate_rodas5p_fast_banded_observed_with_kernel,
+    integrate_rodas5p_fast_observed, integrate_rodas5p_fast_small_batch,
+    integrate_rodas5p_fast_small_observed, integrate_rodas5p_mf_fast_observed,
+    integrate_rodas5p_mf_fast_observed_with_stage_target,
 };
 
 const T_END: f64 = 1.0;
@@ -228,4 +229,54 @@ fn protected_sequential_driver_accepts_a_zero_component_with_zero_atol() {
     .expect("protected driver must not abort on a zero scale");
     assert!(r.success, "protected: {}", r.message);
     check_final(r.y.last().unwrap(), "protected");
+}
+
+/// Explicit exception (controller ruling, review round 1): the staged coupled
+/// stage target scales its Krylov system by start-state weights
+/// `atol + rtol |y|`, a preconditioning metric, not an end-of-step error norm.
+/// A zero weight stays a typed `InvalidInput` (no panic, no NaN result); the
+/// unstaged matrix-free path on the same problem succeeds.
+#[test]
+fn staged_coupled_target_refuses_a_zero_start_weight_with_a_typed_error() {
+    let linear = LinearSolverConfig {
+        method: LinearMethod::Gmres,
+        preconditioner: PreconditionerKind::None,
+        ..LinearSolverConfig::default()
+    };
+    for policy in [
+        StageTargetPolicy::Coupled,
+        StageTargetPolicy::CoupledGuarded,
+    ] {
+        let run = std::panic::catch_unwind(|| {
+            integrate_rodas5p_mf_fast_observed_with_stage_target(
+                &problem(),
+                (0.0, T_END),
+                &[1.0, 0.0],
+                &linear,
+                &adaptive(),
+                &schedule(),
+                StageTargetOptions::new(policy),
+            )
+        })
+        .unwrap_or_else(|_| panic!("{policy:?}: staged path panicked"));
+        match run {
+            Err(CoreError::InvalidInput(message)) => assert!(
+                message.contains("finite positive error weights"),
+                "{policy:?}: {message}"
+            ),
+            other => panic!("{policy:?}: expected a typed InvalidInput, got {other:?}"),
+        }
+    }
+    let unstaged = integrate_rodas5p_mf_fast_observed(
+        &problem(),
+        (0.0, T_END),
+        &[1.0, 0.0],
+        &linear,
+        &adaptive(),
+        &schedule(),
+    )
+    .expect("unstaged matrix-free path accepts a zero scale");
+    assert!(unstaged.observed.success, "{}", unstaged.observed.message);
+    assert!(unstaged.observed.y.iter().flatten().all(|v| v.is_finite()));
+    check_final(unstaged.observed.y.last().unwrap(), "mf fast unstaged");
 }

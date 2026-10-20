@@ -136,3 +136,15 @@ and the suites above come from the isolated dir.
   start-state weight with a typed error (reproduced). Not changed, pending a decision: this scale is a
   Krylov change of variables from the start state, so the endpoint-norm rule would reject forever
   any component that starts at 0 and grows. The options are listed in the task report.
+
+## Review fix round 1, ruling on the staged matrix-free site (option a)
+
+Explicit exception to the zero-scale rule. The staged coupled stage target
+(`rodas5p_matrix_free_fast.rs`, `staged_scale`/`staged_weight`) uses `atol + rtol |y|` of the
+start state as Krylov change-of-variables weights, a preconditioning metric, not an end-of-step
+error norm. A zero weight keeps the typed `InvalidInput("the coupled stage target needs finite
+positive error weights")`. The site now carries a doc comment stating this. Regression test:
+`a1_zero_tolerance_scale.rs::staged_coupled_target_refuses_a_zero_start_weight_with_a_typed_error`.
+It asserts the typed error for Coupled and CoupledGuarded with no panic, and asserts that the
+unstaged MF path on the same problem succeeds with finite outputs. It characterizes kept
+behaviour, so it passes before and after; there is no RED phase.
