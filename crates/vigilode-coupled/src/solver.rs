@@ -472,7 +472,7 @@ fn validate(p: &OdeProblem, t: f64, y: &[f64], h: f64, c: &Config, work: &mut Wo
     // atol = 0 is allowed (zero-scale rule); rtol must stay positive so
     // that a nonzero component always has a positive scale.
     if !c.atol.is_finite() || c.atol < 0.0 {
-        return Err(input("tolerances must be finite and positive"));
+        return Err(input("atol must be finite and nonnegative"));
     }
     for v in [
         c.rtol,
@@ -481,7 +481,9 @@ fn validate(p: &OdeProblem, t: f64, y: &[f64], h: f64, c: &Config, work: &mut Wo
         c.rank_relative_tol,
     ] {
         if !v.is_finite() || v <= 0.0 {
-            return Err(input("tolerances must be finite and positive"));
+            return Err(input(
+                "rtol and the solver tolerances must be finite and positive",
+            ));
         }
     }
     if !c.theta.is_finite() || !(0.0..=1.0).contains(&c.theta) || c.rank_relative_tol >= 1.0 {

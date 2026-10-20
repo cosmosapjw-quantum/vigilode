@@ -91,6 +91,12 @@ fn zero_atol_and_zero_rtol_is_still_an_input_error() {
         &ParallelExecution::sequential(),
     );
     assert_eq!(r.failure.as_ref().unwrap().kind, FailureKind::Input);
+    // Final review (coupled validation message): each message says what
+    // its check allows.
+    assert_eq!(
+        r.failure.as_ref().unwrap().message,
+        "rtol and the solver tolerances must be finite and positive"
+    );
     let negative = coupled_step(
         &model(1.0),
         0.0,
@@ -103,4 +109,8 @@ fn zero_atol_and_zero_rtol_is_still_an_input_error() {
         &ParallelExecution::sequential(),
     );
     assert_eq!(negative.failure.as_ref().unwrap().kind, FailureKind::Input);
+    assert_eq!(
+        negative.failure.as_ref().unwrap().message,
+        "atol must be finite and nonnegative"
+    );
 }
