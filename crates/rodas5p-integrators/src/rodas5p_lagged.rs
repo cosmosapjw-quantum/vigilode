@@ -51,8 +51,20 @@
 //! `atol + rtol |y_n|`: the step's error scale `atol + rtol max(|y_n|, |y_new|)`
 //! is not known during the stages, and the `|y_n|` weights are componentwise
 //! no larger, so the test is never looser than the step's scale.
+//!
+//! # Zero tolerance scale
+//!
+//! The end-of-step error norm follows the A1 zero-scale rule of every fast
+//! driver (`rodas5p_core::scaled_error_component`), so a forced refresh
+//! reproduces the fast driver also with `atol = 0`. The Richardson weights
+//! are an exception, recorded next to the staged matrix-free one: a zero
+//! weight `atol + rtol |y_n| = 0` on a stage that iterates returns a typed
+//! `CoreError::InvalidInput` from the run (an input refusal; nothing is
+//! counted as a rejection). `atol = 0` with a component that is zero at a
+//! step start is therefore supported only on stages solved directly
+//! (`P = W`, e.g. with [`Rodas5pLaggedOptions::refresh_every_attempt`]).
 
-use rodas5p_core::{CoreError, CoreResult, WorkCounters};
+use rodas5p_core::{CoreError, CoreResult, WorkCounters, scaled_error_component};
 use serde::Serialize;
 
 use crate::{
@@ -245,6 +257,20 @@ impl Lagged {
         stage: usize,
         counters: &mut WorkCounters,
     ) -> CoreResult<Option<Refresh>> {
+        // Zero-weight exception (controller ruling, final review item 2):
+        // the weights `atol + rtol |y_n|` are start-state weights of the
+        // stopping test, like the staged matrix-free Krylov weights, not an
+        // end-of-step error scale. A zero weight (`atol = 0`, `y_n,i = 0`)
+        // would make the test `x / 0`; the run is refused with a typed
+        // `InvalidInput` (an input refusal, not a counted rejection).
+        if !self.weight.iter().all(|w| *w > 0.0 && w.is_finite()) {
+            return Err(CoreError::InvalidInput(
+                "the RODAS5P lagged Richardson stopping test needs finite positive Richardson \
+                 weights atol + rtol |y_n| (atol = 0 with a zero component is unsupported on \
+                 a lagged stage)"
+                    .into(),
+            ));
+        }
         let inv = 1.0 / (h * ws.gamma);
         let target = self.targets[stage];
         let mut previous: Option<f64> = None;
@@ -394,11 +420,12 @@ impl Lagged {
             ));
         }
         // The fast driver's error norm: WRMS of u_s in the scale
-        // atol + rtol max(|y|, |y_new|).
+        // atol + rtol max(|y|, |y_new|), with the A1 zero-scale rule
+        // (`rodas5p_core::scaled_error_component`) as in the fast driver.
         let error = &ws.u[(s - 1) * n..s * n];
         let mut sum = 0.0;
         for ((e, a), b) in error.iter().zip(y).zip(&ws.y_new) {
-            let z = e / (atol + rtol * a.abs().max(b.abs()));
+            let z = scaled_error_component(*e, atol + rtol * a.abs().max(b.abs()));
             sum += z * z;
         }
         let norm = (sum / n as f64).sqrt();

@@ -16,10 +16,11 @@ use std::sync::Arc;
 use rodas5p_core::{CoreError, DenseMatrix, LinearMethod, LinearSolverConfig, PreconditionerKind};
 use rodas5p_integrators::{
     AdaptiveStepConfig, BandedJacobian, BandedKernel, BatchProblem, IntegrationMethod, OdeProblem,
-    OutputSchedule, SmallBatchMember, SmallProblem, StageTargetOptions, StageTargetPolicy,
-    integrate_adaptive_observed, integrate_rodas5p_fast_banded_observed_with_kernel,
-    integrate_rodas5p_fast_observed, integrate_rodas5p_fast_small_batch,
-    integrate_rodas5p_fast_small_observed, integrate_rodas5p_mf_fast_observed,
+    OutputSchedule, Rodas5pLaggedOptions, SmallBatchMember, SmallProblem, StageTargetOptions,
+    StageTargetPolicy, integrate_adaptive_observed,
+    integrate_rodas5p_fast_banded_observed_with_kernel, integrate_rodas5p_fast_observed,
+    integrate_rodas5p_fast_small_batch, integrate_rodas5p_fast_small_observed,
+    integrate_rodas5p_lagged_observed, integrate_rodas5p_mf_fast_observed,
     integrate_rodas5p_mf_fast_observed_with_stage_target,
 };
 
@@ -279,4 +280,86 @@ fn staged_coupled_target_refuses_a_zero_start_weight_with_a_typed_error() {
     assert!(unstaged.observed.success, "{}", unstaged.observed.message);
     assert!(unstaged.observed.y.iter().flatten().all(|v| v.is_finite()));
     check_final(unstaged.observed.y.last().unwrap(), "mf fast unstaged");
+}
+
+/// Final review item 1: the lagged driver's end-of-step error norm follows
+/// the zero-scale rule. With a refresh at every attempt it is the fast
+/// driver's arithmetic, so it must also reproduce the fast driver bit for bit
+/// on the zero-component problem.
+#[test]
+fn lagged_driver_with_forced_refresh_accepts_a_zero_component_with_zero_atol() {
+    let fast = integrate_rodas5p_fast_observed(
+        &problem(),
+        (0.0, T_END),
+        &[1.0, 0.0],
+        &adaptive(),
+        &schedule(),
+    )
+    .unwrap();
+    let r = integrate_rodas5p_lagged_observed(
+        &problem(),
+        (0.0, T_END),
+        &[1.0, 0.0],
+        &adaptive(),
+        &schedule(),
+        Rodas5pLaggedOptions {
+            refresh_every_attempt: true,
+        },
+    )
+    .expect("lagged driver must not abort on a zero scale");
+    assert!(
+        r.fast.observed.success,
+        "lagged: {}",
+        r.fast.observed.message
+    );
+    assert_eq!(
+        r.fast.rejected_steps, 0,
+        "a zero/zero component must not reject"
+    );
+    assert_eq!(r.work.richardson_iterations, 0);
+    check_final(r.fast.observed.y.last().unwrap(), "lagged (forced refresh)");
+    assert_eq!(r.fast.accepted_steps, fast.accepted_steps);
+    assert_eq!(r.fast.attempts, fast.attempts);
+    assert_eq!(r.fast.observed.t, fast.observed.t);
+    for (a, b) in r
+        .fast
+        .observed
+        .y
+        .iter()
+        .flatten()
+        .zip(fast.observed.y.iter().flatten())
+    {
+        assert_eq!(a.to_bits(), b.to_bits(), "lagged {a:e} vs fast {b:e}");
+    }
+}
+
+/// Final review item 2 (controller ruling): a zero Richardson weight
+/// `atol + rtol |y_n| = 0` on a lagged stage is a typed `InvalidInput`
+/// refusal of the run (staged matrix-free precedent), not a `NonFinite`
+/// rejection counted against the step.
+#[test]
+fn lagged_driver_refuses_a_zero_richardson_weight_with_a_typed_error() {
+    let run = std::panic::catch_unwind(|| {
+        integrate_rodas5p_lagged_observed(
+            &problem(),
+            (0.0, T_END),
+            &[1.0, 0.0],
+            &adaptive(),
+            &schedule(),
+            Rodas5pLaggedOptions::default(),
+        )
+    })
+    .unwrap_or_else(|_| panic!("lagged driver panicked"));
+    match run {
+        Err(CoreError::InvalidInput(message)) => {
+            assert!(message.contains("positive Richardson weights"), "{message}")
+        }
+        Ok(r) => panic!(
+            "expected a typed InvalidInput, got a run: success {}, rejected {}, nonfinite {}",
+            r.fast.observed.success,
+            r.fast.rejected_steps,
+            r.fast.observed.counters.nonfinite_step_failures
+        ),
+        Err(other) => panic!("expected a typed InvalidInput, got {other:?}"),
+    }
 }
