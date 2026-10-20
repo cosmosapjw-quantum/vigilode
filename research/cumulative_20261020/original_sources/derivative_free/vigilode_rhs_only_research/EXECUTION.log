@@ -1,0 +1,214 @@
+{
+  "lowrank_packet": {
+    "models": [
+      {
+        "n": 32,
+        "physical_stencil_spectral_radius": 41.660000000000004,
+        "nonlinear_dimension": 1,
+        "nonlinear_state_jacobian_or_jvp_calls": 0,
+        "retained_initial_values": 32,
+        "mean_identity_error": 2.220446049250313e-16,
+        "min_state": 0.3953762458140089,
+        "timing_claim": false,
+        "reference_solver": "DOP853 tight tolerance; reference only",
+        "max_absolute_difference": 1.7883472480662022e-12
+      },
+      {
+        "n": 128,
+        "physical_stencil_spectral_radius": 656.0600000000001,
+        "nonlinear_dimension": 1,
+        "nonlinear_state_jacobian_or_jvp_calls": 0,
+        "retained_initial_values": 128,
+        "mean_identity_error": 2.220446049250313e-16,
+        "min_state": 0.39508032696229284,
+        "timing_claim": false
+      },
+      {
+        "n": 1600,
+        "physical_stencil_spectral_radius": 102400.7,
+        "nonlinear_dimension": 1,
+        "nonlinear_state_jacobian_or_jvp_calls": 0,
+        "retained_initial_values": 1600,
+        "mean_identity_error": 1.1102230246251565e-16,
+        "min_state": 0.39509137078211215,
+        "timing_claim": false
+      }
+    ],
+    "closure_negative_control": {
+      "same_mean": 0.5,
+      "mean_derivatives": [
+        -0.5,
+        -1.5
+      ],
+      "reason": "diagonal material-dependent absorption cannot generally be replaced by mean-only forcing"
+    },
+    "scope": "periodic linear stencil + exactly rank-one feedback; not generic radiation transport"
+  },
+  "schur_control": {
+    "results": [
+      {
+        "n_radiation": 32,
+        "border_dimension": 2,
+        "preconditioner": "diagonal",
+        "iterations": 34,
+        "relative_residual": 6.530282218210693e-15
+      },
+      {
+        "n_radiation": 32,
+        "border_dimension": 2,
+        "preconditioner": "exact_band_schur",
+        "iterations": 2,
+        "relative_residual": 3.128266521328831e-15
+      },
+      {
+        "n_radiation": 128,
+        "border_dimension": 2,
+        "preconditioner": "diagonal",
+        "iterations": 130,
+        "relative_residual": 2.240512932704417e-11
+      },
+      {
+        "n_radiation": 128,
+        "border_dimension": 2,
+        "preconditioner": "exact_band_schur",
+        "iterations": 2,
+        "relative_residual": 7.981403821655466e-15
+      }
+    ],
+    "claim": "exact block identity, not approximate preconditioner iteration guarantee",
+    "build_and_apply_cost_not_benchmarked": true
+  },
+  "rational_defect_certificate": {
+    "equation": "y\u2032=-2y-y^2",
+    "initial": "1/2",
+    "polynomial_coefficients": [
+      "1/2",
+      "-5/4",
+      "15/8",
+      "-115/48",
+      "95/32",
+      "-707/192"
+    ],
+    "results": [
+      {
+        "h": "1/4",
+        "candidate_degree": 5,
+        "residual_degree": 10,
+        "continuous_defect_upper_rational": "281157133/12884901888",
+        "endpoint_radius_rational": "9043690133792914967/2106671315693233766400",
+        "endpoint_radius_float": 0.004292881412692964,
+        "endpoint_actual_error_mp": 0.0008522656680677842,
+        "worst_sampled_error_mp": 0.0008522656680677842,
+        "q_positive_bernstein": 0.2752532958984375,
+        "exact_rational_certificate": true,
+        "binary64_evaluation_rounding_included": false
+      },
+      {
+        "h": "1/8",
+        "candidate_degree": 5,
+        "residual_degree": 10,
+        "continuous_defect_upper_rational": "9899060509/13194139533312",
+        "endpoint_radius_rational": "366600612944394228890113/4418009963048696579673292800",
+        "endpoint_radius_float": 8.297867501670761e-05,
+        "endpoint_actual_error_mp": 1.5107284986835372e-05,
+        "worst_sampled_error_mp": 1.5107284986835372e-05,
+        "q_positive_bernstein": 0.36897993087768555,
+        "exact_rational_certificate": true,
+        "binary64_evaluation_rounding_included": false
+      },
+      {
+        "h": "1/16",
+        "candidate_degree": 5,
+        "residual_degree": 10,
+        "continuous_defect_upper_rational": "334061485501/13510798882111488",
+        "endpoint_radius_rational": "13459263567557892363120510533/9265238430027500129455005342105600",
+        "endpoint_radius_float": 1.4526624079028632e-06,
+        "endpoint_actual_error_mp": 2.5306535440697594e-07,
+        "worst_sampled_error_mp": 2.5306535440697594e-07,
+        "q_positive_bernstein": 0.42865608632564545,
+        "exact_rational_certificate": true,
+        "binary64_evaluation_rounding_included": false
+      }
+    ],
+    "derivative_of_nonlinear_rhs_used": false,
+    "time_derivative_of_candidate_used": true,
+    "sampled_mp_checks_are_not_the_proof": true,
+    "proof": "exact Bernstein convex hull + two-point dissipativity + comparison"
+  },
+  "frozen_factor_control": {
+    "equation": "y\u2032=y^2",
+    "frozen_step": "ynew=yn*exp(h*yn): frozen subproblem solved exactly",
+    "local_difference": "-h^2/2+O(h^3) at y0=1",
+    "results": [
+      {
+        "steps": 10,
+        "dt": 0.04,
+        "error": 0.02659793206069927
+      },
+      {
+        "steps": 20,
+        "dt": 0.02,
+        "error": 0.013727300040941692
+      },
+      {
+        "steps": 40,
+        "dt": 0.01,
+        "error": 0.006976967248154997
+      },
+      {
+        "steps": 80,
+        "dt": 0.005,
+        "error": 0.003517650548052087
+      },
+      {
+        "steps": 160,
+        "dt": 0.0025,
+        "error": 0.0017662256681674204
+      },
+      {
+        "steps": 320,
+        "dt": 0.00125,
+        "error": 0.0008849767736833769
+      }
+    ],
+    "observed_global_orders": [
+      0.954266186872781,
+      0.9763759300272191,
+      0.9879878921426589,
+      0.9939424832216031,
+      0.9969581887690205
+    ]
+  },
+  "conservative_remap_control": {
+    "procedure": "exact original cell integrals -> merge pairs -> split constant average",
+    "results": [
+      {
+        "cells": 32,
+        "integrated_l1_error": 0.012540314957080273,
+        "conservation_residual": 0.0
+      },
+      {
+        "cells": 64,
+        "integrated_l1_error": 0.00625502478347487,
+        "conservation_residual": 0.0
+      },
+      {
+        "cells": 128,
+        "integrated_l1_error": 0.003125627643784333,
+        "conservation_residual": 0.0
+      },
+      {
+        "cells": 256,
+        "integrated_l1_error": 0.0015625784412937622,
+        "conservation_residual": 0.0
+      }
+    ],
+    "spatial_orders": [
+      1.003486076975477,
+      1.0008696803820676,
+      1.000217305473416
+    ],
+    "claim": "conservation does not imply high-order remapping"
+  }
+}
+ALL_SIX_BOUNDED_EXPERIMENTS_COMPLETED

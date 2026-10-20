@@ -1,0 +1,49 @@
+{
+  "status": "RESEARCH_DESIGN_NOT_NATIVE_IMPLEMENTATION",
+  "source_ref": "c03ca90f19a9e64ba7751c069325a48b54b39c2e",
+  "central_candidate": "JVP shared-subspace affine predictor + all-at-once stage homotopy + native-target residual/output transport",
+  "axes": [
+    "target/chart",
+    "operator+preconditioner",
+    "seed/subspace",
+    "stage root method and coupling depth",
+    "thread/batch layout",
+    "error budget",
+    "transactional fallback"
+  ],
+  "reuse_existing": [
+    "ParallelExecution",
+    "Audit2MatrixFreeCommonWSession",
+    "Rodas5pMfFastWorkspace",
+    "rhs_telemetry",
+    "transactional_q1_q2",
+    "causal_majorant",
+    "raw_stage_allowance",
+    "stage_chart_candidate"
+  ],
+  "next_bounded_native_node": {
+    "proposed_name": "coupled_matrix_free_stage_step",
+    "not_existing_api": true,
+    "completion_contract": [
+      "JVP-only target, no explicit W dependency",
+      "all rows evaluated at same frozen iterate",
+      "true shared or parallel W backend with per-worker workspace",
+      "original target/output/dense-error transfer",
+      "all failed work retained",
+      "no method default promotion"
+    ],
+    "comparison": [
+      "sequential JVP fallback at same output accuracy",
+      "one-jump vs adaptive lambda",
+      "q0 vs q1 counted full work",
+      "shared/projected vs independent stage Krylov",
+      "one versus bounded worker counts"
+    ],
+    "excluded": [
+      "full optimal router claim",
+      "new ROW/peer coefficient construction",
+      "physical multi-root homotopy conflation",
+      "unverified continuous-time bound"
+    ]
+  }
+}
