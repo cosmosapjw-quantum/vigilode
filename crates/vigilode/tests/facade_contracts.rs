@@ -978,3 +978,60 @@ fn matrix_free_route_records_state_reuses_and_policy_ids() {
     }
     assert_eq!(record["gcrodr_policy"], direct.gcrodr_policy);
 }
+
+// ------------------------------------------------- atol = 0 (final review)
+
+fn zero_component_rhs(_t: f64, y: &[f64], dy: &mut [f64]) -> Result<(), CallbackError> {
+    dy[0] = -y[0];
+    dy[1] = 0.0;
+    Ok(())
+}
+
+/// The facade accepts `atol = 0` and so inherits the A1 zero-scale rule: on
+/// the dense and the JVP routes a component that is identically zero has a
+/// zero error scale and a zero error, contributes 0 to the norm, and stays
+/// exactly zero; the run succeeds without a rejection.
+#[test]
+fn zero_atol_with_an_identically_zero_component_succeeds_on_dense_and_jvp_routes() {
+    let opts = Options {
+        rtol: 1.0e-6,
+        atol: Atol::Scalar(0.0),
+        ..Options::default()
+    };
+    let dense = Problem::new(2, zero_component_rhs)
+        .jacobian(Jacobian::dense(|_t, _y, jac| {
+            jac.copy_from_slice(&[-1.0, 0.0, 0.0, 0.0]);
+            Ok(())
+        }))
+        .autonomous();
+    let jvp = Problem::new(2, zero_component_rhs)
+        .jacobian(Jacobian::jvp(|_t, _y, v, out| {
+            out[0] = -v[0];
+            out[1] = 0.0;
+            Ok(())
+        }))
+        .autonomous();
+    for (what, problem, driver) in [
+        ("dense", dense, RODAS5P_FAST_DRIVER_ID),
+        ("jvp", jvp, RODAS5P_MF_FAST_DRIVER_ID),
+    ] {
+        let sol = Rodas5p::solve(&problem, (0.0, 1.0), &[1.0, 0.0], &opts)
+            .unwrap_or_else(|e| panic!("{what}: refused atol = 0: {e:?}"));
+        assert_eq!(sol.status, Status::Success, "{what}");
+        assert_eq!(sol.stats.route.driver_id, driver, "{what}");
+        assert_eq!(sol.stats.rejected_steps, 0, "{what}");
+        let last = sol.y.last().unwrap();
+        assert_eq!(
+            last[1].to_bits() & !(1 << 63),
+            0,
+            "{what}: y1 = {}",
+            last[1]
+        );
+        let exact = (-1.0_f64).exp();
+        assert!(
+            ((last[0] - exact) / exact).abs() < 1.0e-4,
+            "{what}: y0 = {}",
+            last[0]
+        );
+    }
+}
