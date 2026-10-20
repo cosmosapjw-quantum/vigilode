@@ -5,7 +5,7 @@ Uses SOURCE-PINNED old independent references and accuracy-frozen tolerances.
 Reports measured achieved accuracy, and refuses a matched-error rank unless
 each arm passes its own target and observed error ratio <=2.
 """
-import csv,hashlib,json,math,random,statistics,subprocess,sys
+import csv,gzip,hashlib,json,math,random,statistics,subprocess,sys
 from pathlib import Path
 import numpy as np
 
@@ -76,7 +76,7 @@ def one(case,g,arm,b):
     ent={"case":case,"grid":g,"arm":arm,"block":b,"rtol":tolerance(case,g,arm),
          "status":r.get("status"),"valid":bool(valid),"E_up":m["E_up"],"R_up":m["R_up"],
          "reference_fraction":m["reference_fraction"],"median_ns":float(statistics.median(times)) if valid else None,
-         "command":r.get("command"),"timing_ns":times,"model_states":r.get("states") if case=="few-mode-96" else None,
+         "command":r.get("command"),"timing_ns":times,"model_states":r.get("states"),"times":r.get("times"),
          "work":r.get("counters"),"error":r.get("error")}
     return ent
 
@@ -89,7 +89,7 @@ for case,g in cases:
 # Retain every failed configuration, but avoid repeatedly executing a known failure
 # or violating the CPU/time budget with unbounded futile attempts.
 eligible={(r["case"],r["grid"],r["arm"]):r["valid"] for r in preflight}
-with (out/"RAW.jsonl").open("w") as f:
+with gzip.open(out/"RAW.jsonl.gz","wt",compresslevel=6) as f:
     for b in range(8):
         shuffled=cases.copy();rng.shuffle(shuffled)
         for case,g in shuffled:
