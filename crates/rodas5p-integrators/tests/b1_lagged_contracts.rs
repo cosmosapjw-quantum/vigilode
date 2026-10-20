@@ -20,6 +20,11 @@ use rodas5p_integrators::{
 
 /// HIRES, copied from `rodas5p-cli/src/stiff_benchmark.rs::hires_problem`.
 fn hires_problem() -> CoreResult<(OdeProblem, Vec<f64>)> {
+    hires_problem_with_jvp(false)
+}
+
+/// HIRES, optionally with a JVP `J(y) v` (the explicit Jacobian times `v`).
+fn hires_problem_with_jvp(with_jvp: bool) -> CoreResult<(OdeProblem, Vec<f64>)> {
     let rhs = Arc::new(|_t: f64, y: &[f64], out: &mut [f64]| {
         out[0] = -1.71 * y[0] + 0.43 * y[1] + 8.32 * y[2] + 0.0007;
         out[1] = 1.71 * y[0] - 8.75 * y[1];
@@ -74,7 +79,15 @@ fn hires_problem() -> CoreResult<(OdeProblem, Vec<f64>)> {
             rhs,
             None,
             Some(jacobian),
-            None,
+            with_jvp.then(|| {
+                Arc::new(|_t: f64, y: &[f64], v: &[f64], out: &mut [f64]| {
+                    let mut j = DenseMatrix::zeros(8, 8);
+                    hires_fill(y, &mut j);
+                    out.copy_from_slice(&j.matvec(v)?);
+                    Ok(())
+                })
+                    as Arc<dyn Fn(f64, &[f64], &[f64], &mut [f64]) -> CoreResult<()> + Send + Sync>
+            }),
             None,
             true,
             None,
@@ -493,4 +506,59 @@ fn b1_lagged_measurement_hires_and_brusselator() {
             }
         );
     }
+}
+
+/// Final review item 6 (T3 minor): the JVP branch of `apply_w` inside an
+/// iterating stage. HIRES with a JVP and default options: after the first
+/// step `P` is lagged (a new `J_0` per state, and `h` changes), so stages
+/// iterate, and every product `W x` goes through the problem's JVP.
+#[test]
+fn lagged_jvp_branch_runs_inside_iterating_stages() {
+    let (problem, y0) = hires_problem_with_jvp(true).unwrap();
+    assert!(problem.has_jvp() && problem.has_explicit_jacobian());
+    let case = Case {
+        id: "hires+jvp",
+        problem,
+        y0,
+        span: (0.0, 321.8122),
+        atol_scale: 1.0e-4,
+    };
+    let adaptive = config(&case, 1.0e-6);
+    let lagged = integrate_rodas5p_lagged_observed(
+        &case.problem,
+        case.span,
+        &case.y0,
+        &adaptive,
+        &schedule(case.span, 1),
+        Rodas5pLaggedOptions::default(),
+    )
+    .unwrap();
+    let (c, w) = (&lagged.fast.observed.counters, &lagged.work);
+    assert!(
+        lagged.fast.observed.success,
+        "{}",
+        lagged.fast.observed.message
+    );
+    assert!(w.richardson_iterations > 0, "no stage iterated");
+    assert!(
+        w.lagged_stage_solves > 0,
+        "no stage converged on a lagged P"
+    );
+    assert_eq!(w.jvp_applications, w.operator_applications);
+    assert_eq!(w.operator_applications, w.richardson_iterations);
+    assert!(c.jvp_calls >= w.jvp_applications);
+    // The JVP route reproduces the explicit-matvec route's iteration counts
+    // closely (same J_0): both converge with the same refresh pattern here.
+    let (plain, _) = hires_problem().unwrap();
+    let matvec = integrate_rodas5p_lagged_observed(
+        &plain,
+        case.span,
+        &case.y0,
+        &adaptive,
+        &schedule(case.span, 1),
+        Rodas5pLaggedOptions::default(),
+    )
+    .unwrap();
+    assert_eq!(matvec.work.jvp_applications, 0);
+    assert!(matvec.work.richardson_iterations > 0);
 }
