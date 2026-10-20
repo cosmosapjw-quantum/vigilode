@@ -388,3 +388,113 @@ fn dp01_nonlinear_witness_off_enforce_wfiltered() {
     assert!(normalized[0] > 100.0, "Off {}", normalized[0]);
     assert!(normalized[2] < normalized[0] / 100.0, "{normalized:?}");
 }
+
+// ------------------------------------------------ final review items 3, 6
+
+/// Final review item 3: without an explicit Jacobian the step holds neither
+/// an LU nor an explicit stage matrix, so every W-filtered sample would be
+/// "unavailable" and `WFilteredEnforce` would silently run as `Off`. Both
+/// W-filtered modes refuse such a problem up front (as SABR is refused);
+/// the other modes still run.
+#[test]
+fn wfiltered_modes_refuse_a_problem_without_an_explicit_jacobian() {
+    let (explicit, y0) = prothero_robinson_problem(LAMBDA, 0.0, 0.0);
+    let problem = explicit.jvp_only_clone().unwrap();
+    assert!(!problem.has_explicit_jacobian() && problem.has_jvp());
+    let adaptive = pr_adaptive(1.0e-6);
+    let sampling = OutputSamplingPlan::dense(OutputSchedule::new(vec![0.0, 0.5, 1.0]).unwrap());
+    let linear = LinearSolverConfig {
+        method: LinearMethod::Gmres,
+        ..LinearSolverConfig::default()
+    };
+    let run = |control| {
+        integrate_adaptive_dense_observed_with_dense_error_control(
+            &problem,
+            (0.0, 1.0),
+            &y0,
+            IntegrationMethod::Sequential,
+            Some(&linear),
+            None,
+            &adaptive,
+            &sampling,
+            control,
+        )
+    };
+    for control in [
+        DenseErrorControl::WFilteredReport,
+        DenseErrorControl::WFilteredEnforce,
+    ] {
+        match run(control) {
+            Err(error) => {
+                let message = format!("{error:?}");
+                assert!(
+                    message.contains("explicit Jacobian"),
+                    "{control:?}: {message}"
+                );
+            }
+            Ok((_, report)) => panic!(
+                "{control:?} ran without an explicit Jacobian: {} samples, {} unavailable",
+                report.samples.len(),
+                report.unavailable
+            ),
+        }
+    }
+    let (off, _) = run(DenseErrorControl::Off).unwrap();
+    assert!(off.observed.success);
+}
+
+/// Final review item 6 (A2 I-1): a step the embedded estimate accepts and
+/// the W-filtered interior estimate rejects is an outer rejection; after
+/// `reconcile_outer_rejection` the work counters equal the attempt ledger.
+#[test]
+fn wfiltered_enforce_interior_rejections_keep_the_counter_ledger() {
+    // Linear Prothero-Robinson, lambda = -1e5, rtol 1e-8, direct stage
+    // solves, 11 outputs: the interior estimate rejects embedded-accepted
+    // steps (14 of 23 samples when this test was written).
+    let (problem, y0) = prothero_robinson_problem(LAMBDA, 0.0, 0.0);
+    let linear = direct();
+    let adaptive = AdaptiveStepConfig {
+        atol: 1.0e-10,
+        rtol: 1.0e-8,
+        initial_step: 1.0e-3,
+        max_step: 1.0,
+        max_attempts: 10_000,
+        ..AdaptiveStepConfig::default()
+    };
+    let times = (0..=10).map(|k| f64::from(k) / 10.0).collect::<Vec<_>>();
+    let sampling = OutputSamplingPlan::dense(OutputSchedule::new(times).unwrap());
+    let (result, report) = integrate_adaptive_dense_observed_with_dense_error_control(
+        &problem,
+        (0.0, 1.0),
+        &y0,
+        IntegrationMethod::Sequential,
+        Some(&linear),
+        None,
+        &adaptive,
+        &sampling,
+        DenseErrorControl::WFilteredEnforce,
+    )
+    .unwrap();
+    assert!(result.observed.success, "{}", result.observed.message);
+    // Samples are taken only on embedded-accepted steps, so a rejected
+    // sample is an interior-forced rejection.
+    let interior_rejections = report.samples.iter().filter(|s| !s.accepted).count();
+    assert!(interior_rejections > 0, "no interior-forced rejection");
+    let c = &result.observed.counters;
+    let d = &result.diagnostics;
+    assert!(d.is_structurally_consistent());
+    assert!(d.rejected_macro_steps >= interior_rejections);
+    assert_eq!(
+        c.accepted_steps + c.rejected_steps,
+        d.attempts as u64,
+        "accepted {} + rejected {} != attempts {}",
+        c.accepted_steps,
+        c.rejected_steps,
+        d.attempts
+    );
+    assert_eq!(
+        (c.accepted_steps, c.rejected_steps),
+        (d.accepted_macro_steps as u64, d.rejected_macro_steps as u64)
+    );
+    assert_eq!(c.accepted_steps, result.observed.internal_steps as u64);
+}

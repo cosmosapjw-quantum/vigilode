@@ -1074,7 +1074,8 @@ pub enum DenseErrorControl {
     /// Jacobian of the step itself; never change the step sequence. By
     /// Lemma 3 it is between 1 and 1/(2 gamma) = 2.36 times the interior
     /// error of a scalar linear mode with constant defect. An estimate, not
-    /// a bound. Sequential method with an explicit Jacobian only.
+    /// a bound. Sequential method with an explicit Jacobian only: SABR and
+    /// JVP-only problems are refused up front with `InvalidInput`.
     WFilteredReport,
     /// As `WFilteredReport`, and the controller sees
     /// max(embedded error, estimate) on such a step: an interior failure
@@ -1560,6 +1561,18 @@ pub fn integrate_adaptive_dense_observed_with_dense_error_control(
     match method {
         IntegrationMethod::Sequential => {
             crate::sequential::validate_problem_linear_config(problem, &config)?;
+            // Without an explicit Jacobian the step holds neither an LU nor
+            // an explicit stage matrix, so every W-filtered sample would be
+            // unavailable and WFilteredEnforce would silently run as Off
+            // (final review item 3): refuse up front, as SABR is refused.
+            if control.is_w_filtered() && !problem.has_explicit_jacobian() {
+                return Err(CoreError::InvalidInput(
+                    "W-filtered dense error control needs an explicit Jacobian (the step's \
+                     stage matrix); a JVP-only problem does not provide it"
+                        .into(),
+                )
+                .into());
+            }
         }
         IntegrationMethod::Sabr => {
             if control.is_w_filtered() {
@@ -2405,6 +2418,7 @@ pub fn integrate_homotopy_adaptive_dense_observed(
         let accepted = report.step.accepted
             && error <= 1.0
             && report.step.y_new.iter().all(|value| value.is_finite());
+        crate::adaptive::reconcile_outer_rejection(&mut counters, report.step.accepted, accepted);
         let failure = (!accepted).then_some(adaptive_rejection_kind(error, &report.step.y_new));
         diagnostics.record_with_failure(
             trial_h,
