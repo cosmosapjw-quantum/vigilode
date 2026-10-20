@@ -705,6 +705,7 @@ pub fn integrate_homotopy_adaptive_observed(
         let accepted = report.step.accepted
             && error <= 1.0
             && report.step.y_new.iter().all(|value| value.is_finite());
+        crate::adaptive::reconcile_outer_rejection(&mut counters, report.step.accepted, accepted);
         let failure = (!accepted).then_some(adaptive_rejection_kind(error, &report.step.y_new));
         diagnostics.record_with_failure(
             trial_h,
