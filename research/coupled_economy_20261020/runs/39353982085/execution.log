@@ -1,0 +1,100 @@
+706 |     prepared_centers: Vec<Vec<f64>>,
+    |     ^^^^^^^^^^^^^^^^
+707 |     prepared_radii: Vec<Vec<f64>>,
+    |     ^^^^^^^^^^^^^^
+708 |     prepared_times: Vec<f64>,
+    |     ^^^^^^^^^^^^^^
+709 |     prepared_count: usize,
+    |     ^^^^^^^^^^^^^^
+710 |     radii: Vec<Vec<f64>>,
+    |     ^^^^^
+711 |     prepared_valid: bool,
+    |     ^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: struct `DenseOutputPreparationWork` is never constructed
+   --> /home/runner/work/vigilode/vigilode/crates/rodas5p-integrators/src/output.rs:716:19
+    |
+716 | pub(crate) struct DenseOutputPreparationWork {
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: methods `with_verified_radii`, `prepare_dense_interval_with_radii`, `prepare_dense_interval_inner`, `commit_prepared_dense_interval`, `prepared_dense_radii`, and `committed_output_radii` are never used
+    --> /home/runner/work/vigilode/vigilode/crates/rodas5p-integrators/src/output.rs:766:19
+     |
+ 722 | impl OutputCollector {
+     | -------------------- methods in this implementation
+...
+ 766 |     pub(crate) fn with_verified_radii(mut self, initial_radius: &[f64]) -> CoreResult<Self> {
+     |                   ^^^^^^^^^^^^^^^^^^^
+...
+1035 |     pub(crate) fn prepare_dense_interval_with_radii<C, R>(
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+1070 |     fn prepare_dense_interval_inner<C, R>(
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+1162 |     pub(crate) fn commit_prepared_dense_interval(&mut self) {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+1176 |     pub(crate) fn prepared_dense_radii(&self) -> &[Vec<f64>] {
+     |                   ^^^^^^^^^^^^^^^^^^^^
+...
+1180 |     pub(crate) fn committed_output_radii(&self) -> &[Vec<f64>] {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: variant `EndpointAdmission` is never constructed
+    --> /home/runner/work/vigilode/vigilode/crates/rodas5p-integrators/src/packet_trajectory.rs:1445:5
+     |
+1443 | enum VerifiedTrialFault {
+     |      ------------------ variant in this enum
+1444 |     BeforeQuery(usize),
+1445 |     EndpointAdmission,
+     |     ^^^^^^^^^^^^^^^^^
+     |
+     = note: `VerifiedTrialFault` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+
+   Compiling vigilode-coupled v0.1.0 (/home/runner/work/vigilode/vigilode/crates/vigilode-coupled)
+warning: `rodas5p-integrators` (lib) generated 4 warnings
+    Finished `test` profile [unoptimized] target(s) in 41.90s
+     Running tests/economy_contracts.rs (crates/vigilode-coupled/target/debug/deps/economy_contracts-781def188298ffe2)
+
+running 4 tests
+test converged_affine_seed_spends_no_stage_derivative_jvps ... FAILED
+test exhausted_update_budget_spends_no_unused_derivative ... FAILED
+test nonlinear_derivatives_are_computed_only_for_actual_updates ... FAILED
+test policy_preserves_complete_state_and_embedded_bits ... ok
+
+failures:
+
+---- converged_affine_seed_spends_no_stage_derivative_jvps stdout ----
+
+thread 'converged_affine_seed_spends_no_stage_derivative_jvps' (4337) panicked at tests/economy_contracts.rs:15:2:
+assertion `left == right` failed: a converged iterate needs no Newton derivative
+  left: 24
+ right: 0
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- exhausted_update_budget_spends_no_unused_derivative stdout ----
+
+thread 'exhausted_update_budget_spends_no_unused_derivative' (4338) panicked at tests/economy_contracts.rs:30:2:
+assertion `left == right` failed
+  left: 24
+ right: 0
+
+---- nonlinear_derivatives_are_computed_only_for_actual_updates stdout ----
+
+thread 'nonlinear_derivatives_are_computed_only_for_actual_updates' (4339) panicked at tests/economy_contracts.rs:22:2:
+assertion `left == right` failed: the last converged iterate must not compute an unused Jacobian
+  left: 72
+ right: 48
+
+
+failures:
+    converged_affine_seed_spends_no_stage_derivative_jvps
+    exhausted_update_budget_spends_no_unused_derivative
+    nonlinear_derivatives_are_computed_only_for_actual_updates
+
+test result: FAILED. 1 passed; 3 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+error: test failed, to rerun pass `--test economy_contracts`

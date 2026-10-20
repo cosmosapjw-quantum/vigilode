@@ -11,6 +11,8 @@ use std::sync::{
     atomic::{AtomicUsize, Ordering},
 };
 const S: usize = 8;
+#[path = "residual_first.rs"]
+mod residual_first;
 
 struct Frozen<'a> {
     p: &'a OdeProblem,
@@ -23,6 +25,7 @@ struct Frozen<'a> {
     base: Arc<dyn LinearOperator>,
     f0: Vec<f64>,
     epoch: Option<u64>,
+    mode: crate::EvaluationMode,
 }
 impl Frozen<'_> {
     fn epoch(&self) -> Result<()> {
@@ -225,6 +228,9 @@ fn correct(
     lambda: f64,
     out: &mut Attempt,
 ) -> Result<Vec<f64>> {
+    if f.mode == crate::EvaluationMode::ResidualFirst {
+        return residual_first::correct(f, basis, seed, lambda, out);
+    }
     let mut z = seed.to_vec();
     for iteration in 0..=f.cfg.max_newton {
         let e = evaluate(f, basis, &z, lambda, &mut out.work)?;
@@ -471,6 +477,7 @@ pub(crate) fn run(
     h: f64,
     cfg: &Config,
     execution: &ParallelExecution,
+    mode: crate::EvaluationMode,
     out: &mut Attempt,
 ) -> Result<Candidate> {
     validate(p, t, y, h, cfg, &mut out.work)?;
@@ -502,6 +509,7 @@ pub(crate) fn run(
         base,
         f0,
         epoch,
+        mode,
     };
     f.epoch()?;
     if norm(&f.f0) == 0.0 {

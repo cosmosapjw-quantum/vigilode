@@ -8,7 +8,9 @@
 mod algebra;
 mod fallback;
 mod solver;
-pub use fallback::{FallbackResult, SelectedStep, coupled_or_sequential};
+pub use fallback::{
+    FallbackResult, SelectedStep, coupled_or_sequential, coupled_or_sequential_budgeted,
+};
 use rodas5p_integrators::{OdeProblem, ParallelExecution};
 use serde::Serialize;
 
@@ -91,6 +93,12 @@ pub struct Work {
     pub basis_jvp: u64,
     pub stage_jvp: u64,
     pub validation_jvp: u64,
+    /// Separate derivative dispatches used by the residual-first policy.
+    pub derivative_batches: u64,
+    /// Converged/exhausted iterates at which no Newton derivative was needed.
+    pub residual_only_stops: u64,
+    /// Counterfactual eager JVP vectors avoided, not performed work.
+    pub unused_stage_jvp_avoided: u64,
     pub stage_batches: u64,
     pub validation_batches: u64,
     pub stage_tasks_scheduled: u64,
@@ -125,7 +133,9 @@ impl Work {
         Ok(())
     }
     pub(crate) fn batch(&mut self, c: &Config, validation: bool) -> Result<()> {
-        if self.stage_batches + self.validation_batches >= c.max_batches as u64 {
+        if self.stage_batches + self.derivative_batches + self.validation_batches
+            >= c.max_batches as u64
+        {
             return Err(Failure::new(
                 FailureKind::Budget,
                 "stage-batch budget exhausted",
@@ -136,6 +146,19 @@ impl Work {
         } else {
             self.stage_batches += 1;
         }
+        self.stage_tasks_scheduled += 8;
+        Ok(())
+    }
+    pub(crate) fn derivative_batch(&mut self, c: &Config) -> Result<()> {
+        if self.stage_batches + self.derivative_batches + self.validation_batches
+            >= c.max_batches as u64
+        {
+            return Err(Failure::new(
+                FailureKind::Budget,
+                "stage-batch budget exhausted before derivative dispatch",
+            ));
+        }
+        self.derivative_batches += 1;
         self.stage_tasks_scheduled += 8;
         Ok(())
     }
@@ -190,7 +213,43 @@ pub fn coupled_step(
     execution: &ParallelExecution,
 ) -> Attempt {
     let mut out = Attempt::default();
-    match solver::run(p, t, y, h, cfg, execution, &mut out) {
+    match solver::run(p, t, y, h, cfg, execution, EvaluationMode::Eager, &mut out) {
+        Ok(candidate) => out.candidate = Some(candidate),
+        Err(error) => out.failure = Some(error),
+    }
+    out
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum EvaluationMode {
+    Eager,
+    ResidualFirst,
+}
+
+/// Opt-in residual-first version of `coupled_step` with identical mathematical
+/// target and residual/embedded tolerances. An iteration that will not update z
+/// does not request a current-stage Jacobian. Full-space verification still runs.
+/// Callbacks must be pure at a fixed state/epoch: operation order across phases
+/// differs from the eager path. Actual derivative dispatches consume max_batches.
+pub fn coupled_step_residual_first(
+    p: &OdeProblem,
+    t: f64,
+    y: &[f64],
+    h: f64,
+    cfg: &Config,
+    execution: &ParallelExecution,
+) -> Attempt {
+    let mut out = Attempt::default();
+    match solver::run(
+        p,
+        t,
+        y,
+        h,
+        cfg,
+        execution,
+        EvaluationMode::ResidualFirst,
+        &mut out,
+    ) {
         Ok(candidate) => out.candidate = Some(candidate),
         Err(error) => out.failure = Some(error),
     }

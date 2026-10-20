@@ -1,0 +1,138 @@
+[
+  {
+    "path": "crates/vigilode-coupled/src/lib.rs",
+    "before_blob": "314c28899700d532301d7053029cae4d7906fdd6",
+    "after_blob": "d48873f51f98a5dc2772b48ca6daef51870dcc1e",
+    "after_sha256": "22c3fd8302eb6afd1b7e5a393675eb9ce1780ff0c9bca5f0080a9adb135c1e33"
+  },
+  {
+    "path": "crates/vigilode-coupled/src/solver.rs",
+    "before_blob": "f90ee1882e33798ac5cc3f48f19bf0c2603e6bb8",
+    "after_blob": "5f2c6e20f87643634c1f7f2037350b28b9728885",
+    "after_sha256": "c3ffdbe414e83798903c017dbf8b8e6560bd268380109bcca401c2ea42f88d99"
+  },
+  {
+    "path": "crates/vigilode-coupled/src/fallback.rs",
+    "before_blob": "efe42ed7168a6fcac66b19da66e8b2c16790cc98",
+    "after_blob": "03d591df8e5d6982e54963074762ee98060877b3",
+    "after_sha256": "8ceddd32ace17aef61e34461660880c275bfe4d157909d53f5b9f5754c859185"
+  }
+]
+[detached HEAD f08d152] feat: bind residual-first derivative evaluation and capped speculation before measurement [skip ci]
+ 7 files changed, 987 insertions(+), 153 deletions(-)
+ create mode 100644 crates/vigilode-coupled/examples/economy_bench.rs
+To https://github.com/cosmosapjw-quantum/vigilode
+   50acffc..f08d152  HEAD -> research/coupled-economy-20261020
+From https://github.com/cosmosapjw-quantum/vigilode
+ * branch            15c43ce76734d0a560fcec5909ac49f1e6f2d347 -> FETCH_HEAD
+1162 |     pub(crate) fn commit_prepared_dense_interval(&mut self) {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+1176 |     pub(crate) fn prepared_dense_radii(&self) -> &[Vec<f64>] {
+     |                   ^^^^^^^^^^^^^^^^^^^^
+...
+1180 |     pub(crate) fn committed_output_radii(&self) -> &[Vec<f64>] {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: variant `EndpointAdmission` is never constructed
+    --> /home/runner/work/vigilode/vigilode/crates/rodas5p-integrators/src/packet_trajectory.rs:1445:5
+     |
+1443 | enum VerifiedTrialFault {
+     |      ------------------ variant in this enum
+1444 |     BeforeQuery(usize),
+1445 |     EndpointAdmission,
+     |     ^^^^^^^^^^^^^^^^^
+     |
+     = note: `VerifiedTrialFault` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+
+   Compiling vigilode-coupled v0.1.0 (/home/runner/work/vigilode/vigilode/crates/vigilode-coupled)
+warning: `rodas5p-integrators` (lib) generated 4 warnings
+    Finished `test` profile [unoptimized] target(s) in 1m 00s
+     Running unittests src/lib.rs (crates/vigilode-coupled/target/debug/deps/vigilode_coupled-8d8d41b6535dba5e)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/contracts.rs (crates/vigilode-coupled/target/debug/deps/contracts-faa959297d38928a)
+
+running 5 tests
+test builds_three_mode_candidate_from_real_jvp_only ... ok
+test equilibrium_is_complete_not_zero_basis_failure ... ok
+test invalid_time_is_rejected ... ok
+test partial_basis_cannot_pass_only_projected_residual ... ok
+test thread_count_changes_no_output_bits ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/convergence.rs (crates/vigilode-coupled/target/debug/deps/convergence-d88c659de731b83d)
+
+running 2 tests
+test failed_fallback_keeps_structured_callback_counts ... ok
+test local_error_decreases_against_exact_riccati_solution ... RICCATI_CONVERGENCE eps=0 errors=[7.098584144105136e-9, 1.127009874313245e-10, 1.2386341952108637e-12, 1.1435297153639112e-14]
+RICCATI_CONVERGENCE eps=0.5 errors=[6.372089814132842e-8, 1.9240320309199532e-9, 4.2504458286352076e-11, 7.926576062189383e-13]
+ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/economy_contracts.rs (crates/vigilode-coupled/target/debug/deps/economy_contracts-781def188298ffe2)
+
+running 4 tests
+test converged_affine_seed_spends_no_stage_derivative_jvps ... ok
+test exhausted_update_budget_spends_no_unused_derivative ... ok
+test nonlinear_derivatives_are_computed_only_for_actual_updates ... ok
+test policy_preserves_complete_state_and_embedded_bits ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/economy_robustness.rs (crates/vigilode-coupled/target/debug/deps/economy_robustness-a550d0553831471f)
+
+running 10 tests
+test candidate_cap_never_enlarges_a_stricter_caller_budget ... ok
+test derivative_phase_obeys_the_actual_batch_budget ... ok
+test epoch_change_between_phases_is_detected_before_derivative_dispatch ... ok
+test failed_derivative_batch_joins_and_preserves_every_attempt ... ok
+test failed_residual_batch_never_launches_derivatives_and_counts_all_tasks ... ok
+test full_space_validation_is_not_skipped_on_affine_convergence ... ok
+test invalid_input_does_not_trigger_a_hidden_fallback ... ok
+test lazy_policy_makes_the_same_valid_candidate_with_smaller_jvp_budget ... ok
+test worker_and_theta_variants_preserve_eager_solution_bits ... ok
+test zero_candidate_cap_falls_back_without_spending_any_jvp ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.12s
+
+     Running tests/robustness.rs (crates/vigilode-coupled/target/debug/deps/robustness-541b00d1deff2c46)
+
+running 12 tests
+test basis_leakage_can_expand_without_dense_jacobian ... ok
+test budget_preflight_does_no_callbacks ... ok
+test changing_client_epoch_invalidates_attempt ... ok
+test failed_parallel_batch_is_joined_and_counted ... ok
+test full_operator_invertible_does_not_make_projection_safe ... ok
+test invalid_config_does_not_panic_or_run ... ok
+test lambda_one_preserves_target_for_two_theta_values ... ok
+test nonautonomous_problem_is_explicitly_unsupported ... ok
+test partial_jvp_output_is_not_silently_zero_filled ... ok
+test protected_fallback_preserves_candidate_cost ... ok
+test root_budget_failure_is_not_an_accepted_state ... ok
+test storage_plan_rejects_before_callbacks ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+   Doc-tests vigilode_coupled
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+accuracy complete 80
+paired block 1
+paired block 2
+paired block 3
+paired block 4
+paired block 5
+paired block 6
+paired block 7
+paired block 8
+{"status": "COMPLETE_BOUNDED", "accuracy_rows": 80, "reference_admitted": 76, "root_and_embedded_admitted": 48, "timing_processes": 640, "valid_timed_processes": 640, "admitted_timing_processes": 608, "timed_attempts": 1920, "comparison_count": 50, "complete_comparisons": 50, "exact_output_parity_pairs": 27, "state_objects": 71, "state_compressed_bytes": 751457, "unchanged_default_eager_api": true, "new_adaptive_integrator": false, "continuous_error_certificate": false}
+{"status": "PASS_SCOPED_READBACK", "checks": {"accuracy": 80, "metrics": 684, "work_ledgers": 630, "candidate_cap": 270, "failures_preserved": 36, "timing": 640, "timing_identity": 608, "exact_saved_work": 18, "full_stage_bit_parity": 27, "paired_medians": 50}, "state_objects_verified": 71, "author_independence": "different metric path, same author; no independent-personnel claim", "unclaimed": ["continuous/global error certificate", "whole-workspace tests", "optimal budget or trajectory routing", "rigorous bootstrap coverage under shared-host dependence"]}

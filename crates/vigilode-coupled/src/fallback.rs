@@ -37,6 +37,20 @@ pub fn coupled_or_sequential(
 ) -> SelectedStep {
     let epoch = p.model_epoch();
     let attempt = coupled_step(p, t, y, h, c, execution);
+    select(p, t, y, h, c, linear, epoch, attempt)
+}
+
+#[allow(clippy::too_many_arguments)]
+fn select(
+    p: &OdeProblem,
+    t: f64,
+    y: &[f64],
+    h: f64,
+    c: &Config,
+    linear: &LinearSolverConfig,
+    epoch: Option<u64>,
+    attempt: Attempt,
+) -> SelectedStep {
     let mut result = SelectedStep {
         selection: if attempt.candidate.is_some() {
             "coupled-operational-candidate"
@@ -124,4 +138,28 @@ pub fn coupled_or_sequential(
         }
     }
     result
+}
+
+/// Residual-first candidate with a hard JVP-attempt cap, followed by the SAME
+/// protected sequential fallback. The cap only restricts the candidate; fallback
+/// work remains separately accounted and is not subject to this cap. It never
+/// enlarges a stricter caller budget or changes any numerical acceptance test.
+/// A JVP cap is not a wall-time or total-work bound: RHS, projected LU and setup
+/// still cost work. This is explicit bounded speculation, not optimal routing.
+#[allow(clippy::too_many_arguments)]
+pub fn coupled_or_sequential_budgeted(
+    p: &OdeProblem,
+    t: f64,
+    y: &[f64],
+    h: f64,
+    c: &Config,
+    execution: &ParallelExecution,
+    linear: &LinearSolverConfig,
+    candidate_jvp_cap: u64,
+) -> SelectedStep {
+    let epoch = p.model_epoch();
+    let mut limited = c.clone();
+    limited.max_jvp = limited.max_jvp.min(candidate_jvp_cap);
+    let attempt = crate::coupled_step_residual_first(p, t, y, h, &limited, execution);
+    select(p, t, y, h, c, linear, epoch, attempt)
 }
