@@ -144,6 +144,15 @@ impl Rodas5pFastOptions {
 /// Identifier of the banded pipeline with the slices kernel (SPD03).
 pub const RODAS5P_FAST_BANDED_SLICES_DRIVER_ID: &str = "rodas5p-fast-banded-v1-slices";
 
+/// Identifier of the banded pipeline with the fixed-width (`lower = upper =
+/// 2`) kernel ([`BandedKernel::FixedWidth2`]).
+pub const RODAS5P_FAST_BANDED_FIXED2_DRIVER_ID: &str = "rodas5p-fast-banded-fixed2-v1";
+
+/// Identifier of the banded pipeline with the fixed-width kernel and the
+/// exact factorization cache ([`BandedKernel::FixedWidth2ExactCache`]).
+pub const RODAS5P_FAST_BANDED_FIXED2_EXACT_CACHE_DRIVER_ID: &str =
+    "rodas5p-fast-banded-fixed2-exact-cache-v1";
+
 /// Identifier of the dense-storage driver with column extents (SPD02).
 pub const RODAS5P_FAST_COLEXT_DRIVER_ID: &str = "rodas5p-fast-transformed-v3-colext";
 
@@ -1641,9 +1650,9 @@ fn integrate_fast(
         lu: work.lu_kind,
         driver: match band {
             Some((_, BandedKernel::Slices)) => RODAS5P_FAST_BANDED_SLICES_DRIVER_ID,
-            Some((_, BandedKernel::FixedWidth2)) => "rodas5p-fast-banded-fixed2-v1",
+            Some((_, BandedKernel::FixedWidth2)) => RODAS5P_FAST_BANDED_FIXED2_DRIVER_ID,
             Some((_, BandedKernel::FixedWidth2ExactCache)) => {
-                "rodas5p-fast-banded-fixed2-exact-cache-v1"
+                RODAS5P_FAST_BANDED_FIXED2_EXACT_CACHE_DRIVER_ID
             }
             _ => options.driver_id(banded.is_some()),
         },

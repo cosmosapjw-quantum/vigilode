@@ -2,8 +2,9 @@
 use rodas5p_core::{CoreError, DenseMatrix};
 use rodas5p_integrators::{
     AdaptiveStepConfig, BandedJacobian, BandedKernel, OdeProblem, OutputSchedule,
-    integrate_rodas5p_fast_banded_observed_with_kernel, integrate_rodas5p_fast_observed,
-    rodas5p_fast_banded_solve,
+    RODAS5P_FAST_BANDED_FIXED2_DRIVER_ID, RODAS5P_FAST_BANDED_FIXED2_EXACT_CACHE_DRIVER_ID,
+    RODAS5P_FAST_BANDED_SLICES_DRIVER_ID, integrate_rodas5p_fast_banded_observed_with_kernel,
+    integrate_rodas5p_fast_observed, rodas5p_fast_banded_solve,
 };
 use std::sync::{
     Arc,
@@ -148,4 +149,87 @@ fn failed_dense_rhs_rebuilds_snapshot() {
 #[test]
 fn failed_dense_jacobian_rebuilds_snapshot() {
     retry_probe(false, true);
+}
+
+/// Final review item 7: every banded kernel's record key is a public
+/// constant, and the values are unchanged.
+#[test]
+fn banded_kernel_driver_ids_are_public_constants() {
+    assert_eq!(
+        RODAS5P_FAST_BANDED_FIXED2_DRIVER_ID,
+        "rodas5p-fast-banded-fixed2-v1"
+    );
+    assert_eq!(
+        RODAS5P_FAST_BANDED_FIXED2_EXACT_CACHE_DRIVER_ID,
+        "rodas5p-fast-banded-fixed2-exact-cache-v1"
+    );
+    let n = 6;
+    let problem = OdeProblem::new(
+        "pentadiagonal-decay",
+        n,
+        Arc::new(|_, y, out| {
+            for (o, v) in out.iter_mut().zip(y) {
+                *o = -v;
+            }
+            Ok(())
+        }),
+        None,
+        Some(Arc::new(move |_, _| {
+            let mut j = DenseMatrix::zeros(n, n);
+            for i in 0..n {
+                j[(i, i)] = -1.0;
+            }
+            Ok(j)
+        })),
+        None,
+        None,
+        true,
+        None,
+        None,
+    )
+    .unwrap();
+    let band = BandedJacobian {
+        lower: 2,
+        upper: 2,
+        fill: Arc::new(move |_, _, j| {
+            j.fill(0.0);
+            for i in 0..n {
+                j[i * 5 + 2] = -1.0;
+            }
+            Ok(())
+        }),
+    };
+    let adaptive = AdaptiveStepConfig {
+        atol: 1.0e-8,
+        rtol: 1.0e-6,
+        initial_step: 1.0e-3,
+        max_step: 1.0,
+        ..AdaptiveStepConfig::default()
+    };
+    let schedule = OutputSchedule::new(vec![0.0, 1.0]).unwrap();
+    for (kernel, id) in [
+        (BandedKernel::Slices, RODAS5P_FAST_BANDED_SLICES_DRIVER_ID),
+        (
+            BandedKernel::FixedWidth2,
+            RODAS5P_FAST_BANDED_FIXED2_DRIVER_ID,
+        ),
+        (
+            BandedKernel::FixedWidth2ExactCache,
+            RODAS5P_FAST_BANDED_FIXED2_EXACT_CACHE_DRIVER_ID,
+        ),
+    ] {
+        let run = integrate_rodas5p_fast_banded_observed_with_kernel(
+            &problem,
+            &band,
+            (0.0, 1.0),
+            &vec![1.0; n],
+            &adaptive,
+            &schedule,
+            kernel,
+        )
+        .unwrap()
+        .fast;
+        assert!(run.observed.success, "{kernel:?}");
+        assert_eq!(run.driver, id, "{kernel:?}");
+    }
 }
