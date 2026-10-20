@@ -1,0 +1,59 @@
+name: VigilODE intermediate three-solver benchmark
+on:
+  push:
+    branches: [research/midcheck-three-solver-20261020]
+    paths:
+      - '.github/workflows/midcheck-three-solver-20261020.yml'
+      - 'research/midcheck_20261020/**'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: vigilode-midcheck-20261020
+  cancel-in-progress: false
+jobs:
+  compare:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      CARGO_BUILD_JOBS: '2'
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+      RAYON_NUM_THREADS: '1'
+      PYTHONDONTWRITEBYTECODE: '1'
+      CARGO_INCREMENTAL: '0'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Build and measure
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT="research/midcheck_20261020/runs/${GITHUB_RUN_ID}"
+          mkdir -p "$OUT"
+          { date -u; uname -a; lscpu; free -m; git rev-parse HEAD; } > "$OUT/HOST.txt"
+          bash research/midcheck_20261020/run.sh "$OUT" 2>&1 | tee "$OUT/execution.log"
+      - name: Keep bounded results and failure logs
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT="research/midcheck_20261020/runs/${GITHUB_RUN_ID}"
+          [[ -d "$OUT" ]] || exit 0
+          (cd "$OUT"; find . -type f -size -16777216c ! -name SHA256SUMS -print0 | sort -z | xargs -0 -r sha256sum > SHA256SUMS)
+          find "$OUT" -type f -size +16777215c > "$OUT/UNPUBLISHED_LARGE_FILES.txt"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          find "$OUT" -type f -size -16777216c -print0 | xargs -0 -r git add -f --
+          if ! git diff --cached --quiet; then
+            git commit -m "bench: retain intermediate comparison ${GITHUB_RUN_ID} [skip ci]"
+            git fetch origin research/midcheck-three-solver-20261020
+            git rebase origin/research/midcheck-three-solver-20261020
+            git push origin HEAD:refs/heads/research/midcheck-three-solver-20261020
+          fi
