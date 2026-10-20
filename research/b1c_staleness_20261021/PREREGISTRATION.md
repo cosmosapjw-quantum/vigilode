@@ -100,4 +100,25 @@ requires the wave-4 gates 3–4 and their holdout.
 
 ## Results
 
-(appended after the run)
+Run on 2026-10-21 at `5572d7d` with the command above (release, `-j 1`). Raw output:
+`results.json` (sha256 `beafb0a18f56489e01f2567e3de925989b8fbaae4bc08d5d8bb9cb65861524c6`, commit `cbcffff`).
+The same test in debug printed identical counters, steps and errors; only wall time differed.
+
+| problem | arm | accepted | rejected | factorizations | fact/acc | checks | staleness refreshes | unbounded checks | endpoint err (tol units) |
+|---|---|---|---|---|---|---|---|---|---|
+| hires | fast | 204 | 6 | 210 | 1.0294 | - | - | - | 2.5866e-01 |
+| hires | lagged-gmres-bounded (gated) | 204 | 7 | 120 | 0.5882 | 210 | 119 | 75 | 2.5975e-01 |
+| hires | lagged-richardson-bounded (context only) | 204 | 6 | 161 | 0.7892 | 209 | 101 | 75 | 2.5782e-01 |
+| brusselator-1d-50 (n = 100) | fast | 82 | 10 | 92 | 1.1220 | - | - | - | 1.6858e+00 |
+| brusselator-1d-50 (n = 100) | lagged-gmres-bounded (gated) | 82 | 10 | 20 | 0.2439 | 91 | 19 | 0 | 1.6827e+00 |
+| brusselator-1d-50 (n = 100) | lagged-richardson-bounded (context only) | 82 | 10 | 73 | 0.8902 | 91 | 8 | 0 | 1.6857e+00 |
+
+Kill gate, gated arm `Gmres + Bounded`:
+
+| problem | fact/acc ≤ 0.4 | steps ≤ 1.05x | error ≤ 1.5x | verdict |
+|---|---|---|---|---|
+| hires | 0.5882 (FAIL) | 1.0000 (pass) | 1.0042 (pass) | **FAIL** |
+| brusselator-1d-50 (n = 100) | 0.2439 (pass) | 1.0000 (pass) | 0.9981 (pass) | **PASS** |
+
+**Verdict: FAIL.** HIRES fails criterion 1 (0.588 > 0.4). Brusselator n = 100 passes all three.
+The verdict is recorded as measured and is not re-scored. The B1 family is closed until a new mechanism.
