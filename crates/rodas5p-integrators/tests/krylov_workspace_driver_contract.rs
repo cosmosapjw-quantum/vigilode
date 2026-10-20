@@ -34,12 +34,24 @@ use sha2::{Digest, Sha256};
 pub struct TrackingAllocator;
 
 pub static ALLOCATIONS: AtomicUsize = AtomicUsize::new(0);
+// Events are counted only on the thread inside `measure_call`; the libtest harness and
+// concurrently running tests allocate on other threads and made the zero-allocation
+// assertions flaky (about 1 in 20 parallel runs).
+thread_local! {
+    static TRACK: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+}
+
+fn count_event() {
+    if TRACK.try_with(|t| t.get()).unwrap_or(false) {
+        ALLOCATIONS.fetch_add(1, Ordering::Relaxed);
+    }
+}
 pub static LIVE_BYTES: AtomicUsize = AtomicUsize::new(0);
 pub static PEAK_LIVE_BYTES: AtomicUsize = AtomicUsize::new(0);
 
 unsafe impl GlobalAlloc for TrackingAllocator {
     unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
-        ALLOCATIONS.fetch_add(1, Ordering::Relaxed);
+        count_event();
         let ptr = unsafe { System.alloc(layout) };
         if !ptr.is_null() {
             let live = LIVE_BYTES.fetch_add(layout.size(), Ordering::SeqCst) + layout.size();
@@ -49,7 +61,7 @@ unsafe impl GlobalAlloc for TrackingAllocator {
     }
 
     unsafe fn alloc_zeroed(&self, layout: Layout) -> *mut u8 {
-        ALLOCATIONS.fetch_add(1, Ordering::Relaxed);
+        count_event();
         let ptr = unsafe { System.alloc_zeroed(layout) };
         if !ptr.is_null() {
             let live = LIVE_BYTES.fetch_add(layout.size(), Ordering::SeqCst) + layout.size();
@@ -59,7 +71,7 @@ unsafe impl GlobalAlloc for TrackingAllocator {
     }
 
     unsafe fn realloc(&self, ptr: *mut u8, layout: Layout, new_size: usize) -> *mut u8 {
-        ALLOCATIONS.fetch_add(1, Ordering::Relaxed);
+        count_event();
         let new_ptr = unsafe { System.realloc(ptr, layout, new_size) };
         if !new_ptr.is_null() {
             if new_size > layout.size() {
@@ -95,7 +107,9 @@ pub fn measure_call<T>(f: impl FnOnce() -> T) -> (T, AllocMeasure) {
     let start_alloc = ALLOCATIONS.load(Ordering::SeqCst);
     let start_live = LIVE_BYTES.load(Ordering::SeqCst);
     PEAK_LIVE_BYTES.store(start_live, Ordering::SeqCst);
+    TRACK.with(|t| t.set(true));
     let value = f();
+    TRACK.with(|t| t.set(false));
     let end_alloc = ALLOCATIONS.load(Ordering::SeqCst);
     let end_live = LIVE_BYTES.load(Ordering::SeqCst);
     let peak = PEAK_LIVE_BYTES.load(Ordering::SeqCst);
