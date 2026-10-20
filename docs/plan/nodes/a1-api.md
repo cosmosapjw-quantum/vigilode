@@ -129,3 +129,20 @@ No wall times were measured.
    constructor requires a provider); the banded driver reads only the band (`jvp_calls = 0` asserted).
 10. **Lock update**: `cargo update -p vigilode --offline` cannot add a package that is not yet in the
     lock; `cargo metadata --offline` wrote the entry. Diff is the vigilode entry only.
+
+## Re-run in the isolated target dir (controller ruling)
+
+The results above were first built in the shared `/home/claude/targets/shared`. After the
+ruling that worktrees can overwrite each other's `rodas5p-*` artifacts there, all of them were
+re-run with `CARGO_TARGET_DIR=/home/claude/targets/a1-api` (other variables unchanged, `-j 1`)
+from a clean build of that directory, at commit `1da0425`:
+
+| Command | Exit | Result |
+| --- | --- | --- |
+| `cargo test -p vigilode --locked -j 1 -- --nocapture` | 0 | lib 3 passed; `facade_contracts` 14 passed; doctests 1 passed |
+| `cargo clippy -p vigilode --all-targets --locked -j 1` | 0 | no warnings in `crates/vigilode` (1 in `rodas5p-core`, 7 in `rodas5p-integrators`, pre-existing, untouched) |
+| `cargo build -p vigilode --locked -j 1` | 0 | — |
+
+The measured errors repeat to every printed digit (Robertson 9.139269622883528e-1 /
+8.530278086763213e-1; tridiagonal 1.7352558843846827e-1 / 1.7353002047212848e-1). The RED run
+(stub `solve`) was not repeated; it was a compile-and-fail check of the tests themselves.
