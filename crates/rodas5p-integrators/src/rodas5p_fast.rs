@@ -475,6 +475,7 @@ impl BandState {
         Ok(())
     }
 
+    #[allow(clippy::needless_range_loop)] // the band offsets index both arrays
     fn solve_fixed2(&mut self, n: usize, b: &mut [f64]) {
         let (l, u, width) = (2usize, 2usize, 7usize);
         for k in 0..n {
@@ -518,10 +519,10 @@ impl BandState {
         }
         counters.direct_factorizations += 1;
         self.factor(n, inv)?;
-        if let Some(key) = self.exact_cache.as_mut() {
-            if self.factors.iter().all(|x| x.is_finite()) {
-                key.record(inv, &self.jacobian);
-            }
+        if let Some(key) = self.exact_cache.as_mut()
+            && self.factors.iter().all(|x| x.is_finite())
+        {
+            key.record(inv, &self.jacobian);
         }
         Ok(())
     }
