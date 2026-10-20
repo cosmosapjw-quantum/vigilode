@@ -198,7 +198,8 @@ pub fn solve_trajectory(
             receipts.push(json!({"kind":"sequential-native-K","t":t,"h":h,"work":oldwork,"completed":s.is_ok(),"lte_flag":s.as_ref().ok().map(|s|s.accepted)}));
             s.map(|s| s.y_new).map_err(|e| e.to_string())
         };
-        w.accumulate(&callback_cost.lock().map_err(|_| "counter lock")?);
+        let observed = callback_cost.lock().map_err(|_| "counter lock")?;
+        w.accumulate(&observed);
         Ok(Endpoint {
             state: result?,
             method: label,
