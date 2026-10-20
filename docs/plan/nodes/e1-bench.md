@@ -61,17 +61,22 @@ at rtol 1e-12 agrees with VigilODE at 1e-12 to 1.7e-11 (Robertson), 4.2e-11 (HIR
 | Diffsol BDF (dense / sparse) | 2.12–2.28 | 1.58–2.05 | 3.99–4.12 | 1.43–1.44 / 0.71–0.78 |
 | CVODE BDF (dense / band) | 4.79 | 5.62–6.08 | 7.59 | 2.71–3.78 / 1.59–2.24 |
 
-Re-measuring the Hairer codes (L-0029 predates the fast drivers): RADAU5 is at or below VigilODE at every
-matched level on the three small dense problems, and the banded Hairer arms are below `vigilode-banded` on the
-Brusselator; RODAS (dense) crosses above 1 as the level tightens. Full tables:
+These ratios are not a comparison of unconstrained solvers. The VigilODE arms land a step on every grid
+time, so their step size is capped by the 101-point grid: 98–99 of their accepted steps are clipped to grid
+times in every row (99 of 111 on Robertson at rtol 1e-4, 99 of 105 on the Brusselator), and that cost is inside
+every VigilODE time and RHS count, while the comparators step freely and interpolate (REPORT.md lists the counts
+per row). With that handicap on the VigilODE side, the re-measured Hairer codes (L-0029 predates the fast
+drivers) were measured at or below VigilODE's time: RADAU5 at every matched level on the three small dense
+problems, the banded Hairer arms on the Brusselator, and RODAS (dense) only at the loosest levels. Whether
+RADAU5 would still be faster against an unconstrained VigilODE run is not measured here. Full tables:
 `research/bench_wave2_20261021/REPORT.md`.
 
 ## Deviations from the brief and the plan
 
 1. VigilODE output: the facade at a5a48f7 refuses `dense_output` and returns t0/t1 only, so the VigilODE arms
    call the protected drivers it routes to with its defaults and a 101-point `OutputSchedule`. That schedule
-   lands a step on each grid time (clipped steps), not an interpolant; it costs VigilODE extra steps and gives
-   it extra accuracy, both charged in the matched comparison. Equivalence to the facade is tested bit for bit
+   lands a step on each grid time (98–99 clipped steps per row), not an interpolant; it costs VigilODE extra
+   steps and gives it extra accuracy, both charged in the matched comparison. Equivalence to the facade is tested bit for bit
    at the endpoint.
 2. atol: the facade and the drivers take a scalar atol, so the corpus atol vectors are uniform; atol is
    `rtol x atol_scale` (prior-art scales from PR #71), not fixed. Both error metrics are recorded:

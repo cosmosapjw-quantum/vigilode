@@ -72,6 +72,26 @@ Cross-checks: disagreement is measured like `error_common`; a decisive disagreem
 
 Common levels of `error_common`: 1.000e-2, 3.000e-3, 1.000e-3, 3.000e-4, 1.000e-4, 3.000e-5, 1.000e-5, 3.000e-6, 1.000e-6, 3.000e-7, 1.000e-7, 3.000e-8, 1.000e-8, 3.000e-9, 1.000e-9. At each level both arms' median wall time and RHS count are interpolated in log–log on their own successful points. `time_ratio = comparator / VigilODE` (above 1: VigilODE faster). Ratios exist only where both arms bracket the level; every other entry is `DIAGNOSTIC_ONLY`. Band-structured comparators are compared with `vigilode-banded`, the others with `vigilode`. Reference-implementation-only arms are excluded.
 
+The comparison is not between unconstrained solvers: the VigilODE arms land a step on every one of the grid times (the facade offers no dense output), so their step size is capped by the grid spacing and the extra steps are inside every VigilODE time and RHS count, while every comparator steps freely and interpolates. The table below gives, for every VigilODE row, the accepted steps and how many of them were clipped to a grid time.
+
+| problem | arm | rtol | accepted steps | output-clipped steps | internal steps |
+| --- | --- | --- | --- | --- | --- |
+| robertson | vigilode | 1.000e-4 | 111 | 99 | 111 |
+| robertson | vigilode | 1.000e-6 | 122 | 99 | 122 |
+| robertson | vigilode | 1.000e-8 | 164 | 99 | 164 |
+| hires | vigilode | 1.000e-4 | 132 | 99 | 132 |
+| hires | vigilode | 1.000e-6 | 265 | 99 | 265 |
+| hires | vigilode | 1.000e-8 | 823 | 99 | 823 |
+| van-der-pol-mu1000 | vigilode | 1.000e-4 | 234 | 99 | 234 |
+| van-der-pol-mu1000 | vigilode | 1.000e-6 | 411 | 99 | 411 |
+| van-der-pol-mu1000 | vigilode | 1.000e-8 | 960 | 99 | 960 |
+| brusselator-1d-n100 | vigilode | 1.000e-4 | 105 | 99 | 105 |
+| brusselator-1d-n100 | vigilode-banded | 1.000e-4 | 105 | 99 | 105 |
+| brusselator-1d-n100 | vigilode | 1.000e-6 | 129 | 99 | 129 |
+| brusselator-1d-n100 | vigilode-banded | 1.000e-6 | 129 | 99 | 129 |
+| brusselator-1d-n100 | vigilode | 1.000e-8 | 228 | 98 | 228 |
+| brusselator-1d-n100 | vigilode-banded | 1.000e-8 | 228 | 98 | 228 |
+
 | problem | comparator | baseline | error level | status | time ratio | rhs ratio | comparator ms | baseline ms | reason |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | robertson | diffsol-bdf-dense | vigilode | 1.000e-2 | DIAGNOSTIC_ONLY | — | — | — | — | neither arm brackets the level |
@@ -452,129 +472,129 @@ Common levels of `error_common`: 1.000e-2, 3.000e-3, 1.000e-3, 3.000e-4, 1.000e-
 
 ## Rows
 
-`error_common`: max over the grid of the WRMS error against the reference with weights `error_rtol (atol_scale + |y_ref|)`; `error_own`: the same with the run's own weights `rtol (atol_scale + |y_ref|)`, i.e. its own atol vector and rtol. Work counts are solver-reported (`—`: not reported); `rhs`, `jac`, `jvp` are the shared model's callback counts. Allocations: every heap allocation call of the run (`heap`) and its Rust subset (`rust`). Failed runs are kept with their work.
+`error_common`: max over the grid of the WRMS error against the reference with weights `error_rtol (atol_scale + |y_ref|)`; `error_own`: the same with the run's own weights `rtol (atol_scale + |y_ref|)`, i.e. its own atol vector and rtol. Work counts are solver-reported (`—`: not reported; `clipped`: VigilODE steps shortened to land on a grid time); `rhs`, `jac`, `jvp` are the shared model's callback counts. Allocations: every heap allocation call of the run (`heap`) and its Rust subset (`rust`). Failed runs are kept with their work.
 
 ### robertson
 
-| arm | fidelity | rtol | status | grid | error_common | error_own | ms | acc | rej | LU | rhs | jac | jvp | heap | rust | det |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| vigilode | solver-under-test | 1.000e-4 | success | 101 | 1.671e-7 | 1.671e-3 | 9.602e-2 | 111 | 2 | 113 | 902 | 111 | 0 | 272 | 272 | yes |
-| diffsol-bdf-dense | production | 1.000e-4 | success | 101 | 9.432e-5 | 9.432e-1 | 1.050e-1 | 92 | 1 | 23 | 169 | 0 | 9 | 669 | 669 | yes |
-| cvode-bdf-dense | production | 1.000e-4 | success | 101 | 2.863e-4 | 2.863e0 | 2.120e-1 | 138 | 8 | 36 | 207 | 4 | 0 | 200 | 105 | yes |
-| dvode-mf21 | production | 1.000e-4 | success | 101 | 1.697e-4 | 1.697e0 | 5.159e-2 | 109 | 3 | 27 | 155 | 3 | 0 | 108 | 105 | yes |
-| radau5 | production | 1.000e-4 | success | 101 | 1.511e-5 | 1.511e-1 | 2.537e-2 | 28 | 1 | 28 | 187 | 24 | 0 | 109 | 105 | yes |
-| rodas | production | 1.000e-4 | success | 101 | 2.191e-5 | 2.191e-1 | 2.413e-2 | 32 | 0 | 32 | 192 | 32 | 0 | 108 | 105 | yes |
-| internal-radau-iia3 | reference-implementation-only | 1.000e-4 | success | 101 | 6.404e-6 | 6.404e-2 | 5.879e-1 | 26 | 3 | 57 | 694 | 29 | 0 | 7427 | 7427 | yes |
-| vigilode | solver-under-test | 1.000e-6 | success | 101 | 5.188e-8 | 5.188e-2 | 1.092e-1 | 122 | 4 | 126 | 1004 | 122 | 0 | 283 | 283 | yes |
-| diffsol-bdf-dense | production | 1.000e-6 | success | 101 | 1.497e-6 | 1.497e0 | 1.377e-1 | 168 | 0 | 25 | 260 | 0 | 12 | 871 | 871 | yes |
-| cvode-bdf-dense | production | 1.000e-6 | success | 101 | 2.029e-6 | 2.029e0 | 2.789e-1 | 231 | 7 | 34 | 304 | 4 | 0 | 200 | 105 | yes |
-| dvode-mf21 | production | 1.000e-6 | success | 101 | 3.366e-6 | 3.366e0 | 9.589e-2 | 237 | 19 | 54 | 337 | 5 | 0 | 108 | 105 | yes |
-| radau5 | production | 1.000e-6 | success | 101 | 8.013e-7 | 8.013e-1 | 3.819e-2 | 47 | 2 | 49 | 338 | 40 | 0 | 109 | 105 | yes |
-| rodas | production | 1.000e-6 | success | 101 | 3.982e-7 | 3.982e-1 | 4.906e-2 | 80 | 1 | 81 | 485 | 80 | 0 | 108 | 105 | yes |
-| internal-radau-iia3 | reference-implementation-only | 1.000e-6 | success | 101 | 1.265e-7 | 1.265e-1 | 1.172e0 | 67 | 4 | 141 | 1370 | 71 | 0 | 14943 | 14943 | yes |
-| vigilode | solver-under-test | 1.000e-8 | success | 101 | 1.598e-9 | 1.598e-1 | 1.539e-1 | 164 | 5 | 169 | 1347 | 164 | 0 | 325 | 325 | yes |
-| diffsol-bdf-dense | production | 1.000e-8 | success | 101 | 2.862e-8 | 2.862e0 | 2.647e-1 | 331 | 11 | 40 | 511 | 0 | 18 | 1450 | 1450 | yes |
-| cvode-bdf-dense | production | 1.000e-8 | success | 101 | 5.151e-8 | 5.151e0 | 5.496e-1 | 403 | 29 | 78 | 554 | 8 | 0 | 200 | 105 | yes |
-| dvode-mf21 | production | 1.000e-8 | success | 101 | 5.522e-8 | 5.522e0 | 1.646e-1 | 402 | 21 | 69 | 532 | 7 | 0 | 108 | 105 | yes |
-| radau5 | production | 1.000e-8 | success | 101 | 4.445e-8 | 4.445e0 | 6.731e-2 | 90 | 2 | 82 | 639 | 68 | 0 | 109 | 105 | yes |
-| rodas | production | 1.000e-8 | success | 101 | 9.252e-9 | 9.252e-1 | 1.466e-1 | 240 | 1 | 241 | 1445 | 240 | 0 | 108 | 105 | yes |
-| internal-radau-iia3 | reference-implementation-only | 1.000e-8 | success | 101 | 1.458e-9 | 1.458e-1 | 3.070e0 | 197 | 5 | 403 | 3184 | 202 | 0 | 35820 | 35820 | yes |
+| arm | fidelity | rtol | status | grid | error_common | error_own | ms | acc | clipped | rej | LU | rhs | jac | jvp | heap | rust | det |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| vigilode | solver-under-test | 1.000e-4 | success | 101 | 1.671e-7 | 1.671e-3 | 9.602e-2 | 111 | 99 | 2 | 113 | 902 | 111 | 0 | 272 | 272 | yes |
+| diffsol-bdf-dense | production | 1.000e-4 | success | 101 | 9.432e-5 | 9.432e-1 | 1.050e-1 | 92 | — | 1 | 23 | 169 | 0 | 9 | 669 | 669 | yes |
+| cvode-bdf-dense | production | 1.000e-4 | success | 101 | 2.863e-4 | 2.863e0 | 2.120e-1 | 138 | — | 8 | 36 | 207 | 4 | 0 | 200 | 105 | yes |
+| dvode-mf21 | production | 1.000e-4 | success | 101 | 1.697e-4 | 1.697e0 | 5.159e-2 | 109 | — | 3 | 27 | 155 | 3 | 0 | 108 | 105 | yes |
+| radau5 | production | 1.000e-4 | success | 101 | 1.511e-5 | 1.511e-1 | 2.537e-2 | 28 | — | 1 | 28 | 187 | 24 | 0 | 109 | 105 | yes |
+| rodas | production | 1.000e-4 | success | 101 | 2.191e-5 | 2.191e-1 | 2.413e-2 | 32 | — | 0 | 32 | 192 | 32 | 0 | 108 | 105 | yes |
+| internal-radau-iia3 | reference-implementation-only | 1.000e-4 | success | 101 | 6.404e-6 | 6.404e-2 | 5.879e-1 | 26 | — | 3 | 57 | 694 | 29 | 0 | 7427 | 7427 | yes |
+| vigilode | solver-under-test | 1.000e-6 | success | 101 | 5.188e-8 | 5.188e-2 | 1.092e-1 | 122 | 99 | 4 | 126 | 1004 | 122 | 0 | 283 | 283 | yes |
+| diffsol-bdf-dense | production | 1.000e-6 | success | 101 | 1.497e-6 | 1.497e0 | 1.377e-1 | 168 | — | 0 | 25 | 260 | 0 | 12 | 871 | 871 | yes |
+| cvode-bdf-dense | production | 1.000e-6 | success | 101 | 2.029e-6 | 2.029e0 | 2.789e-1 | 231 | — | 7 | 34 | 304 | 4 | 0 | 200 | 105 | yes |
+| dvode-mf21 | production | 1.000e-6 | success | 101 | 3.366e-6 | 3.366e0 | 9.589e-2 | 237 | — | 19 | 54 | 337 | 5 | 0 | 108 | 105 | yes |
+| radau5 | production | 1.000e-6 | success | 101 | 8.013e-7 | 8.013e-1 | 3.819e-2 | 47 | — | 2 | 49 | 338 | 40 | 0 | 109 | 105 | yes |
+| rodas | production | 1.000e-6 | success | 101 | 3.982e-7 | 3.982e-1 | 4.906e-2 | 80 | — | 1 | 81 | 485 | 80 | 0 | 108 | 105 | yes |
+| internal-radau-iia3 | reference-implementation-only | 1.000e-6 | success | 101 | 1.265e-7 | 1.265e-1 | 1.172e0 | 67 | — | 4 | 141 | 1370 | 71 | 0 | 14943 | 14943 | yes |
+| vigilode | solver-under-test | 1.000e-8 | success | 101 | 1.598e-9 | 1.598e-1 | 1.539e-1 | 164 | 99 | 5 | 169 | 1347 | 164 | 0 | 325 | 325 | yes |
+| diffsol-bdf-dense | production | 1.000e-8 | success | 101 | 2.862e-8 | 2.862e0 | 2.647e-1 | 331 | — | 11 | 40 | 511 | 0 | 18 | 1450 | 1450 | yes |
+| cvode-bdf-dense | production | 1.000e-8 | success | 101 | 5.151e-8 | 5.151e0 | 5.496e-1 | 403 | — | 29 | 78 | 554 | 8 | 0 | 200 | 105 | yes |
+| dvode-mf21 | production | 1.000e-8 | success | 101 | 5.522e-8 | 5.522e0 | 1.646e-1 | 402 | — | 21 | 69 | 532 | 7 | 0 | 108 | 105 | yes |
+| radau5 | production | 1.000e-8 | success | 101 | 4.445e-8 | 4.445e0 | 6.731e-2 | 90 | — | 2 | 82 | 639 | 68 | 0 | 109 | 105 | yes |
+| rodas | production | 1.000e-8 | success | 101 | 9.252e-9 | 9.252e-1 | 1.466e-1 | 240 | — | 1 | 241 | 1445 | 240 | 0 | 108 | 105 | yes |
+| internal-radau-iia3 | reference-implementation-only | 1.000e-8 | success | 101 | 1.458e-9 | 1.458e-1 | 3.070e0 | 197 | — | 5 | 403 | 3184 | 202 | 0 | 35820 | 35820 | yes |
 
 ### hires
 
-| arm | fidelity | rtol | status | grid | error_common | error_own | ms | acc | rej | LU | rhs | jac | jvp | heap | rust | det |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| vigilode | solver-under-test | 1.000e-4 | success | 101 | 2.274e-5 | 2.274e-1 | 2.263e-1 | 132 | 9 | 141 | 1119 | 132 | 0 | 293 | 293 | yes |
-| diffsol-bdf-dense | production | 1.000e-4 | success | 101 | 4.061e-4 | 4.061e0 | 3.054e-1 | 189 | 11 | 45 | 488 | 0 | 72 | 1322 | 1322 | yes |
-| cvode-bdf-dense | production | 1.000e-4 | success | 101 | 3.061e-4 | 3.061e0 | 6.000e-1 | 238 | 13 | 49 | 382 | 9 | 0 | 200 | 105 | yes |
-| dvode-mf21 | production | 1.000e-4 | success | 101 | 7.344e-4 | 7.344e0 | 2.331e-1 | 350 | 30 | 82 | 563 | 10 | 0 | 108 | 105 | yes |
-| radau5 | production | 1.000e-4 | success | 101 | 3.158e-5 | 3.158e-1 | 1.274e-1 | 61 | 0 | 63 | 622 | 37 | 0 | 109 | 105 | yes |
-| rodas | production | 1.000e-4 | success | 101 | 5.157e-5 | 5.157e-1 | 1.230e-1 | 92 | 2 | 94 | 562 | 92 | 0 | 108 | 105 | yes |
-| internal-radau-iia3 | reference-implementation-only | 1.000e-4 | success | 101 | 1.685e-5 | 1.685e-1 | 6.664e0 | 114 | 67 | 302 | 5804 | 186 | 0 | 55923 | 55923 | yes |
-| vigilode | solver-under-test | 1.000e-6 | success | 101 | 1.435e-7 | 1.435e-1 | 4.631e-1 | 265 | 3 | 268 | 2141 | 265 | 0 | 426 | 426 | yes |
-| diffsol-bdf-dense | production | 1.000e-6 | success | 101 | 5.554e-6 | 5.554e0 | 5.658e-1 | 363 | 15 | 59 | 884 | 0 | 72 | 2071 | 2071 | yes |
-| cvode-bdf-dense | production | 1.000e-6 | success | 101 | 8.504e-6 | 8.504e0 | 1.489e0 | 513 | 46 | 111 | 825 | 12 | 0 | 200 | 105 | yes |
-| dvode-mf21 | production | 1.000e-6 | success | 101 | 7.670e-6 | 7.670e0 | 3.976e-1 | 556 | 51 | 121 | 935 | 11 | 0 | 108 | 105 | yes |
-| radau5 | production | 1.000e-6 | success | 101 | 6.856e-6 | 6.856e0 | 2.415e-1 | 117 | 2 | 103 | 1140 | 73 | 0 | 109 | 105 | yes |
-| rodas | production | 1.000e-6 | success | 101 | 7.625e-7 | 7.625e-1 | 4.949e-1 | 369 | 1 | 370 | 2219 | 369 | 0 | 108 | 105 | yes |
-| internal-radau-iia3 | reference-implementation-only | 1.000e-6 | success | 101 | 8.327e-7 | 8.327e-1 | 1.029e1 | 225 | 72 | 527 | 7652 | 297 | 0 | 76614 | 76614 | yes |
-| vigilode | solver-under-test | 1.000e-8 | success | 101 | 2.180e-9 | 2.180e-1 | 1.429e0 | 823 | 7 | 830 | 6633 | 823 | 0 | 984 | 984 | yes |
-| diffsol-bdf-dense | production | 1.000e-8 | success | 101 | 8.148e-8 | 8.148e0 | 8.206e-1 | 725 | 7 | 49 | 1396 | 0 | 96 | 2827 | 2827 | yes |
-| cvode-bdf-dense | production | 1.000e-8 | success | 101 | 1.655e-7 | 1.655e1 | 2.791e0 | 1103 | 62 | 154 | 1512 | 19 | 0 | 200 | 105 | yes |
-| dvode-mf21 | production | 1.000e-8 | success | 101 | 2.499e-7 | 2.499e1 | 5.779e-1 | 923 | 53 | 139 | 1278 | 17 | 0 | 108 | 105 | yes |
-| radau5 | production | 1.000e-8 | success | 101 | 1.008e-6 | 1.008e2 | 4.167e-1 | 235 | 1 | 167 | 2050 | 134 | 0 | 109 | 105 | yes |
-| rodas | production | 1.000e-8 | success | 101 | 8.460e-9 | 8.460e-1 | 2.837e0 | 2102 | 1 | 2103 | 12617 | 2102 | 0 | 108 | 105 | yes |
-| internal-radau-iia3 | reference-implementation-only | 1.000e-8 | success | 101 | 7.844e-8 | 7.844e0 | 1.367e1 | 531 | 2 | 1066 | 8780 | 533 | 0 | 97380 | 97380 | yes |
+| arm | fidelity | rtol | status | grid | error_common | error_own | ms | acc | clipped | rej | LU | rhs | jac | jvp | heap | rust | det |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| vigilode | solver-under-test | 1.000e-4 | success | 101 | 2.274e-5 | 2.274e-1 | 2.263e-1 | 132 | 99 | 9 | 141 | 1119 | 132 | 0 | 293 | 293 | yes |
+| diffsol-bdf-dense | production | 1.000e-4 | success | 101 | 4.061e-4 | 4.061e0 | 3.054e-1 | 189 | — | 11 | 45 | 488 | 0 | 72 | 1322 | 1322 | yes |
+| cvode-bdf-dense | production | 1.000e-4 | success | 101 | 3.061e-4 | 3.061e0 | 6.000e-1 | 238 | — | 13 | 49 | 382 | 9 | 0 | 200 | 105 | yes |
+| dvode-mf21 | production | 1.000e-4 | success | 101 | 7.344e-4 | 7.344e0 | 2.331e-1 | 350 | — | 30 | 82 | 563 | 10 | 0 | 108 | 105 | yes |
+| radau5 | production | 1.000e-4 | success | 101 | 3.158e-5 | 3.158e-1 | 1.274e-1 | 61 | — | 0 | 63 | 622 | 37 | 0 | 109 | 105 | yes |
+| rodas | production | 1.000e-4 | success | 101 | 5.157e-5 | 5.157e-1 | 1.230e-1 | 92 | — | 2 | 94 | 562 | 92 | 0 | 108 | 105 | yes |
+| internal-radau-iia3 | reference-implementation-only | 1.000e-4 | success | 101 | 1.685e-5 | 1.685e-1 | 6.664e0 | 114 | — | 67 | 302 | 5804 | 186 | 0 | 55923 | 55923 | yes |
+| vigilode | solver-under-test | 1.000e-6 | success | 101 | 1.435e-7 | 1.435e-1 | 4.631e-1 | 265 | 99 | 3 | 268 | 2141 | 265 | 0 | 426 | 426 | yes |
+| diffsol-bdf-dense | production | 1.000e-6 | success | 101 | 5.554e-6 | 5.554e0 | 5.658e-1 | 363 | — | 15 | 59 | 884 | 0 | 72 | 2071 | 2071 | yes |
+| cvode-bdf-dense | production | 1.000e-6 | success | 101 | 8.504e-6 | 8.504e0 | 1.489e0 | 513 | — | 46 | 111 | 825 | 12 | 0 | 200 | 105 | yes |
+| dvode-mf21 | production | 1.000e-6 | success | 101 | 7.670e-6 | 7.670e0 | 3.976e-1 | 556 | — | 51 | 121 | 935 | 11 | 0 | 108 | 105 | yes |
+| radau5 | production | 1.000e-6 | success | 101 | 6.856e-6 | 6.856e0 | 2.415e-1 | 117 | — | 2 | 103 | 1140 | 73 | 0 | 109 | 105 | yes |
+| rodas | production | 1.000e-6 | success | 101 | 7.625e-7 | 7.625e-1 | 4.949e-1 | 369 | — | 1 | 370 | 2219 | 369 | 0 | 108 | 105 | yes |
+| internal-radau-iia3 | reference-implementation-only | 1.000e-6 | success | 101 | 8.327e-7 | 8.327e-1 | 1.029e1 | 225 | — | 72 | 527 | 7652 | 297 | 0 | 76614 | 76614 | yes |
+| vigilode | solver-under-test | 1.000e-8 | success | 101 | 2.180e-9 | 2.180e-1 | 1.429e0 | 823 | 99 | 7 | 830 | 6633 | 823 | 0 | 984 | 984 | yes |
+| diffsol-bdf-dense | production | 1.000e-8 | success | 101 | 8.148e-8 | 8.148e0 | 8.206e-1 | 725 | — | 7 | 49 | 1396 | 0 | 96 | 2827 | 2827 | yes |
+| cvode-bdf-dense | production | 1.000e-8 | success | 101 | 1.655e-7 | 1.655e1 | 2.791e0 | 1103 | — | 62 | 154 | 1512 | 19 | 0 | 200 | 105 | yes |
+| dvode-mf21 | production | 1.000e-8 | success | 101 | 2.499e-7 | 2.499e1 | 5.779e-1 | 923 | — | 53 | 139 | 1278 | 17 | 0 | 108 | 105 | yes |
+| radau5 | production | 1.000e-8 | success | 101 | 1.008e-6 | 1.008e2 | 4.167e-1 | 235 | — | 1 | 167 | 2050 | 134 | 0 | 109 | 105 | yes |
+| rodas | production | 1.000e-8 | success | 101 | 8.460e-9 | 8.460e-1 | 2.837e0 | 2102 | — | 1 | 2103 | 12617 | 2102 | 0 | 108 | 105 | yes |
+| internal-radau-iia3 | reference-implementation-only | 1.000e-8 | success | 101 | 7.844e-8 | 7.844e0 | 1.367e1 | 531 | — | 2 | 1066 | 8780 | 533 | 0 | 97380 | 97380 | yes |
 
 ### van-der-pol-mu1000
 
-| arm | fidelity | rtol | status | grid | error_common | error_own | ms | acc | rej | LU | rhs | jac | jvp | heap | rust | det |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| vigilode | solver-under-test | 1.000e-4 | success | 101 | 1.442e-5 | 1.442e-1 | 2.429e-1 | 234 | 82 | 316 | 2446 | 234 | 0 | 395 | 395 | yes |
-| diffsol-bdf-dense | production | 1.000e-4 | success | 101 | 2.858e-4 | 2.858e0 | 5.286e-1 | 428 | 67 | 159 | 1029 | 0 | 42 | 3272 | 3272 | yes |
-| cvode-bdf-dense | production | 1.000e-4 | success | 101 | 3.718e-3 | 3.718e1 | 5.878e-1 | 487 | 55 | 116 | 780 | 19 | 0 | 200 | 105 | yes |
-| dvode-mf21 | production | 1.000e-4 | success | 101 | 3.710e-3 | 3.710e1 | 2.067e-1 | 495 | 58 | 127 | 808 | 22 | 0 | 108 | 105 | yes |
-| radau5 | production | 1.000e-4 | success | 101 | 9.541e-5 | 9.541e-1 | 1.216e-1 | 188 | 8 | 213 | 1739 | 139 | 0 | 109 | 105 | yes |
-| rodas | production | 1.000e-4 | success | 101 | 1.331e-4 | 1.331e0 | 1.027e-1 | 210 | 18 | 228 | 1350 | 210 | 0 | 108 | 105 | yes |
-| internal-radau-iia3 | reference-implementation-only | 1.000e-4 | success | 101 | 6.716e-7 | 6.716e-3 | 1.884e1 | 387 | 298 | 1381 | 27313 | 921 | 0 | 238505 | 238505 | yes |
-| vigilode | solver-under-test | 1.000e-6 | success | 101 | 4.598e-7 | 4.598e-1 | 3.896e-1 | 411 | 88 | 499 | 3904 | 411 | 0 | 572 | 572 | yes |
-| diffsol-bdf-dense | production | 1.000e-6 | success | 101 | 3.977e-5 | 3.977e1 | 8.120e-1 | 817 | 115 | 197 | 1777 | 0 | 38 | 4803 | 4803 | yes |
-| cvode-bdf-dense | production | 1.000e-6 | success | 101 | 2.539e-4 | 2.539e2 | 1.067e0 | 925 | 90 | 173 | 1354 | 23 | 0 | 200 | 105 | yes |
-| dvode-mf21 | production | 1.000e-6 | success | 101 | 2.547e-4 | 2.547e2 | 3.460e-1 | 925 | 89 | 172 | 1352 | 22 | 0 | 108 | 105 | yes |
-| radau5 | production | 1.000e-6 | success | 101 | 2.470e-6 | 2.470e0 | 1.989e-1 | 350 | 11 | 331 | 3008 | 247 | 0 | 109 | 105 | yes |
-| rodas | production | 1.000e-6 | success | 101 | 6.608e-6 | 6.608e0 | 2.589e-1 | 608 | 12 | 620 | 3708 | 608 | 0 | 108 | 105 | yes |
-| internal-radau-iia3 | reference-implementation-only | 1.000e-6 | success | 101 | 2.112e-8 | 2.112e-2 | 2.668e1 | 803 | 369 | 2324 | 39305 | 1469 | 0 | 353283 | 353283 | yes |
-| vigilode | solver-under-test | 1.000e-8 | success | 101 | 1.237e-8 | 1.237e0 | 7.329e-1 | 960 | 40 | 1000 | 7960 | 960 | 0 | 1121 | 1121 | yes |
-| diffsol-bdf-dense | production | 1.000e-8 | success | 101 | 2.271e-6 | 2.271e2 | 1.300e0 | 1776 | 105 | 222 | 3275 | 0 | 66 | 7716 | 7716 | yes |
-| cvode-bdf-dense | production | 1.000e-8 | success | 101 | 3.502e-6 | 3.502e2 | 2.351e0 | 2023 | 169 | 326 | 2860 | 37 | 0 | 200 | 105 | yes |
-| dvode-mf21 | production | 1.000e-8 | solver-failure: DVODE ISTATE -1 | 41 | — | — | 3.038e-1 | 818 | 81 | 150 | 1199 | 16 | 0 | 48 | 45 | yes |
-| radau5 | production | 1.000e-8 | success | 101 | 1.348e-7 | 1.348e1 | 3.437e-1 | 715 | 7 | 594 | 5539 | 360 | 0 | 109 | 105 | yes |
-| rodas | production | 1.000e-8 | success | 101 | 5.991e-8 | 5.991e0 | 7.954e-1 | 1981 | 6 | 1987 | 11916 | 1981 | 0 | 108 | 105 | yes |
-| internal-radau-iia3 | reference-implementation-only | 1.000e-8 | success | 101 | 2.115e-9 | 2.115e-1 | 2.428e1 | 1696 | 24 | 3472 | 29699 | 1752 | 0 | 324719 | 324719 | yes |
+| arm | fidelity | rtol | status | grid | error_common | error_own | ms | acc | clipped | rej | LU | rhs | jac | jvp | heap | rust | det |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| vigilode | solver-under-test | 1.000e-4 | success | 101 | 1.442e-5 | 1.442e-1 | 2.429e-1 | 234 | 99 | 82 | 316 | 2446 | 234 | 0 | 395 | 395 | yes |
+| diffsol-bdf-dense | production | 1.000e-4 | success | 101 | 2.858e-4 | 2.858e0 | 5.286e-1 | 428 | — | 67 | 159 | 1029 | 0 | 42 | 3272 | 3272 | yes |
+| cvode-bdf-dense | production | 1.000e-4 | success | 101 | 3.718e-3 | 3.718e1 | 5.878e-1 | 487 | — | 55 | 116 | 780 | 19 | 0 | 200 | 105 | yes |
+| dvode-mf21 | production | 1.000e-4 | success | 101 | 3.710e-3 | 3.710e1 | 2.067e-1 | 495 | — | 58 | 127 | 808 | 22 | 0 | 108 | 105 | yes |
+| radau5 | production | 1.000e-4 | success | 101 | 9.541e-5 | 9.541e-1 | 1.216e-1 | 188 | — | 8 | 213 | 1739 | 139 | 0 | 109 | 105 | yes |
+| rodas | production | 1.000e-4 | success | 101 | 1.331e-4 | 1.331e0 | 1.027e-1 | 210 | — | 18 | 228 | 1350 | 210 | 0 | 108 | 105 | yes |
+| internal-radau-iia3 | reference-implementation-only | 1.000e-4 | success | 101 | 6.716e-7 | 6.716e-3 | 1.884e1 | 387 | — | 298 | 1381 | 27313 | 921 | 0 | 238505 | 238505 | yes |
+| vigilode | solver-under-test | 1.000e-6 | success | 101 | 4.598e-7 | 4.598e-1 | 3.896e-1 | 411 | 99 | 88 | 499 | 3904 | 411 | 0 | 572 | 572 | yes |
+| diffsol-bdf-dense | production | 1.000e-6 | success | 101 | 3.977e-5 | 3.977e1 | 8.120e-1 | 817 | — | 115 | 197 | 1777 | 0 | 38 | 4803 | 4803 | yes |
+| cvode-bdf-dense | production | 1.000e-6 | success | 101 | 2.539e-4 | 2.539e2 | 1.067e0 | 925 | — | 90 | 173 | 1354 | 23 | 0 | 200 | 105 | yes |
+| dvode-mf21 | production | 1.000e-6 | success | 101 | 2.547e-4 | 2.547e2 | 3.460e-1 | 925 | — | 89 | 172 | 1352 | 22 | 0 | 108 | 105 | yes |
+| radau5 | production | 1.000e-6 | success | 101 | 2.470e-6 | 2.470e0 | 1.989e-1 | 350 | — | 11 | 331 | 3008 | 247 | 0 | 109 | 105 | yes |
+| rodas | production | 1.000e-6 | success | 101 | 6.608e-6 | 6.608e0 | 2.589e-1 | 608 | — | 12 | 620 | 3708 | 608 | 0 | 108 | 105 | yes |
+| internal-radau-iia3 | reference-implementation-only | 1.000e-6 | success | 101 | 2.112e-8 | 2.112e-2 | 2.668e1 | 803 | — | 369 | 2324 | 39305 | 1469 | 0 | 353283 | 353283 | yes |
+| vigilode | solver-under-test | 1.000e-8 | success | 101 | 1.237e-8 | 1.237e0 | 7.329e-1 | 960 | 99 | 40 | 1000 | 7960 | 960 | 0 | 1121 | 1121 | yes |
+| diffsol-bdf-dense | production | 1.000e-8 | success | 101 | 2.271e-6 | 2.271e2 | 1.300e0 | 1776 | — | 105 | 222 | 3275 | 0 | 66 | 7716 | 7716 | yes |
+| cvode-bdf-dense | production | 1.000e-8 | success | 101 | 3.502e-6 | 3.502e2 | 2.351e0 | 2023 | — | 169 | 326 | 2860 | 37 | 0 | 200 | 105 | yes |
+| dvode-mf21 | production | 1.000e-8 | solver-failure: DVODE ISTATE -1 | 41 | — | — | 3.038e-1 | 818 | — | 81 | 150 | 1199 | 16 | 0 | 48 | 45 | yes |
+| radau5 | production | 1.000e-8 | success | 101 | 1.348e-7 | 1.348e1 | 3.437e-1 | 715 | — | 7 | 594 | 5539 | 360 | 0 | 109 | 105 | yes |
+| rodas | production | 1.000e-8 | success | 101 | 5.991e-8 | 5.991e0 | 7.954e-1 | 1981 | — | 6 | 1987 | 11916 | 1981 | 0 | 108 | 105 | yes |
+| internal-radau-iia3 | reference-implementation-only | 1.000e-8 | success | 101 | 2.115e-9 | 2.115e-1 | 2.428e1 | 1696 | — | 24 | 3472 | 29699 | 1752 | 0 | 324719 | 324719 | yes |
 
 ### brusselator-1d-n100
 
-| arm | fidelity | rtol | status | grid | error_common | error_own | ms | acc | rej | LU | rhs | jac | jvp | heap | rust | det |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| vigilode | solver-under-test | 1.000e-4 | success | 101 | 2.213e-5 | 2.213e-1 | 4.311e0 | 105 | 1 | 106 | 847 | 105 | 0 | 266 | 266 | yes |
-| vigilode-banded | solver-under-test | 1.000e-4 | success | 101 | 2.213e-5 | 2.213e-1 | 2.132e0 | 105 | 1 | 106 | 847 | 105 | 0 | 162 | 162 | yes |
-| diffsol-bdf-dense | production | 1.000e-4 | success | 101 | 1.768e-3 | 1.768e1 | 4.582e0 | 97 | 6 | 20 | 191 | 0 | 200 | 666 | 666 | yes |
-| diffsol-bdf-sparse | production | 1.000e-4 | success | 101 | 1.768e-3 | 1.768e1 | 9.827e-1 | 97 | 6 | 20 | 191 | 0 | 108 | 1499 | 1499 | yes |
-| cvode-bdf-dense | production | 1.000e-4 | success | 101 | 1.567e-3 | 1.567e1 | 6.761e0 | 119 | 2 | 15 | 142 | 2 | 0 | 200 | 105 | yes |
-| cvode-bdf-band | production | 1.000e-4 | success | 101 | 1.567e-3 | 1.567e1 | 1.733e0 | 119 | 2 | 15 | 142 | 2 | 0 | 200 | 105 | yes |
-| dvode-mf21 | production | 1.000e-4 | success | 101 | 1.492e-3 | 1.492e1 | 1.125e0 | 122 | 3 | 16 | 148 | 3 | 0 | 108 | 105 | yes |
-| dvode-mf24 | production | 1.000e-4 | success | 101 | 1.492e-3 | 1.492e1 | 4.969e-1 | 122 | 3 | 16 | 148 | 3 | 0 | 108 | 105 | yes |
-| radau5 | production | 1.000e-4 | success | 101 | 6.664e-5 | 6.664e-1 | 2.968e0 | 39 | 3 | 42 | 297 | 33 | 0 | 109 | 105 | yes |
-| radau5-band | production | 1.000e-4 | success | 101 | 6.664e-5 | 6.664e-1 | 8.072e-1 | 39 | 3 | 42 | 297 | 33 | 0 | 109 | 105 | yes |
-| rodas | production | 1.000e-4 | success | 101 | 2.105e-4 | 2.105e0 | 2.086e0 | 49 | 5 | 54 | 319 | 49 | 0 | 108 | 105 | yes |
-| rodas-band | production | 1.000e-4 | success | 101 | 2.105e-4 | 2.105e0 | 7.751e-1 | 49 | 5 | 54 | 319 | 49 | 0 | 108 | 105 | yes |
-| internal-radau-iia3 | reference-implementation-only | 1.000e-4 | success | 101 | 2.128e-5 | 2.128e-1 | 1.383e2 | 40 | 9 | 97 | 1485 | 49 | 0 | 28134 | 28134 | yes |
-| vigilode | solver-under-test | 1.000e-6 | success | 101 | 4.544e-7 | 4.544e-1 | 5.061e0 | 129 | 3 | 132 | 1053 | 129 | 0 | 290 | 290 | yes |
-| vigilode-banded | solver-under-test | 1.000e-6 | success | 101 | 4.544e-7 | 4.544e-1 | 2.534e0 | 129 | 3 | 132 | 1053 | 129 | 0 | 162 | 162 | yes |
-| diffsol-bdf-dense | production | 1.000e-6 | success | 101 | 4.310e-5 | 4.310e1 | 6.050e0 | 203 | 8 | 24 | 292 | 0 | 400 | 900 | 900 | yes |
-| diffsol-bdf-sparse | production | 1.000e-6 | success | 101 | 4.310e-5 | 4.310e1 | 1.388e0 | 203 | 8 | 24 | 292 | 0 | 116 | 1849 | 1849 | yes |
-| cvode-bdf-dense | production | 1.000e-6 | success | 101 | 1.183e-5 | 1.183e1 | 1.169e1 | 196 | 6 | 25 | 236 | 4 | 0 | 200 | 105 | yes |
-| cvode-bdf-band | production | 1.000e-6 | success | 101 | 1.183e-5 | 1.183e1 | 3.405e0 | 196 | 6 | 25 | 236 | 4 | 0 | 200 | 105 | yes |
-| dvode-mf21 | production | 1.000e-6 | success | 101 | 1.182e-5 | 1.182e1 | 1.788e0 | 196 | 6 | 25 | 236 | 4 | 0 | 108 | 105 | yes |
-| dvode-mf24 | production | 1.000e-6 | success | 101 | 1.182e-5 | 1.182e1 | 8.540e-1 | 196 | 6 | 25 | 236 | 4 | 0 | 108 | 105 | yes |
-| radau5 | production | 1.000e-6 | success | 101 | 1.683e-6 | 1.683e0 | 5.400e0 | 71 | 2 | 73 | 506 | 65 | 0 | 109 | 105 | yes |
-| radau5-band | production | 1.000e-6 | success | 101 | 1.683e-6 | 1.683e0 | 1.348e0 | 71 | 2 | 73 | 506 | 65 | 0 | 109 | 105 | yes |
-| rodas | production | 1.000e-6 | success | 101 | 1.003e-6 | 1.003e0 | 4.989e0 | 129 | 3 | 132 | 789 | 129 | 0 | 108 | 105 | yes |
-| rodas-band | production | 1.000e-6 | success | 101 | 1.003e-6 | 1.003e0 | 1.930e0 | 129 | 3 | 132 | 789 | 129 | 0 | 108 | 105 | yes |
-| internal-radau-iia3 | reference-implementation-only | 1.000e-6 | success | 101 | 2.329e-7 | 2.329e-1 | 2.503e2 | 108 | 5 | 226 | 2477 | 113 | 0 | 56427 | 56427 | yes |
-| vigilode | solver-under-test | 1.000e-8 | success | 101 | 6.258e-8 | 6.258e0 | 8.930e0 | 228 | 5 | 233 | 1859 | 228 | 0 | 389 | 389 | yes |
-| vigilode-banded | solver-under-test | 1.000e-8 | success | 101 | 6.258e-8 | 6.258e0 | 4.671e0 | 228 | 5 | 233 | 1859 | 228 | 0 | 162 | 162 | yes |
-| diffsol-bdf-dense | production | 1.000e-8 | success | 101 | 4.659e-7 | 4.659e1 | 7.194e0 | 434 | 4 | 22 | 530 | 0 | 500 | 1352 | 1352 | yes |
-| diffsol-bdf-sparse | production | 1.000e-8 | success | 101 | 4.659e-7 | 4.659e1 | 2.035e0 | 434 | 4 | 22 | 530 | 0 | 120 | 2239 | 2239 | yes |
-| cvode-bdf-dense | production | 1.000e-8 | success | 101 | 6.182e-7 | 6.182e1 | 2.022e1 | 380 | 6 | 36 | 428 | 7 | 0 | 200 | 105 | yes |
-| cvode-bdf-band | production | 1.000e-8 | success | 101 | 6.182e-7 | 6.182e1 | 6.023e0 | 380 | 6 | 36 | 428 | 7 | 0 | 200 | 105 | yes |
-| dvode-mf21 | production | 1.000e-8 | success | 101 | 6.182e-7 | 6.182e1 | 3.145e0 | 380 | 6 | 36 | 428 | 7 | 0 | 108 | 105 | yes |
-| dvode-mf24 | production | 1.000e-8 | success | 101 | 6.182e-7 | 6.182e1 | 1.475e0 | 380 | 6 | 36 | 428 | 7 | 0 | 108 | 105 | yes |
-| radau5 | production | 1.000e-8 | success | 101 | 7.408e-8 | 7.408e0 | 1.027e1 | 142 | 1 | 131 | 985 | 121 | 0 | 109 | 105 | yes |
-| radau5-band | production | 1.000e-8 | success | 101 | 7.408e-8 | 7.408e0 | 2.691e0 | 142 | 1 | 131 | 985 | 121 | 0 | 109 | 105 | yes |
-| rodas | production | 1.000e-8 | success | 101 | 9.897e-9 | 9.897e-1 | 1.494e1 | 387 | 0 | 387 | 2322 | 387 | 0 | 108 | 105 | yes |
-| rodas-band | production | 1.000e-8 | success | 101 | 9.897e-9 | 9.897e-1 | 5.689e0 | 387 | 0 | 387 | 2322 | 387 | 0 | 108 | 105 | yes |
-| internal-radau-iia3 | reference-implementation-only | 1.000e-8 | success | 101 | 2.074e-9 | 2.074e-1 | 8.791e2 | 333 | 0 | 666 | 5757 | 333 | 0 | 152357 | 152357 | yes |
+| arm | fidelity | rtol | status | grid | error_common | error_own | ms | acc | clipped | rej | LU | rhs | jac | jvp | heap | rust | det |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| vigilode | solver-under-test | 1.000e-4 | success | 101 | 2.213e-5 | 2.213e-1 | 4.311e0 | 105 | 99 | 1 | 106 | 847 | 105 | 0 | 266 | 266 | yes |
+| vigilode-banded | solver-under-test | 1.000e-4 | success | 101 | 2.213e-5 | 2.213e-1 | 2.132e0 | 105 | 99 | 1 | 106 | 847 | 105 | 0 | 162 | 162 | yes |
+| diffsol-bdf-dense | production | 1.000e-4 | success | 101 | 1.768e-3 | 1.768e1 | 4.582e0 | 97 | — | 6 | 20 | 191 | 0 | 200 | 666 | 666 | yes |
+| diffsol-bdf-sparse | production | 1.000e-4 | success | 101 | 1.768e-3 | 1.768e1 | 9.827e-1 | 97 | — | 6 | 20 | 191 | 0 | 108 | 1499 | 1499 | yes |
+| cvode-bdf-dense | production | 1.000e-4 | success | 101 | 1.567e-3 | 1.567e1 | 6.761e0 | 119 | — | 2 | 15 | 142 | 2 | 0 | 200 | 105 | yes |
+| cvode-bdf-band | production | 1.000e-4 | success | 101 | 1.567e-3 | 1.567e1 | 1.733e0 | 119 | — | 2 | 15 | 142 | 2 | 0 | 200 | 105 | yes |
+| dvode-mf21 | production | 1.000e-4 | success | 101 | 1.492e-3 | 1.492e1 | 1.125e0 | 122 | — | 3 | 16 | 148 | 3 | 0 | 108 | 105 | yes |
+| dvode-mf24 | production | 1.000e-4 | success | 101 | 1.492e-3 | 1.492e1 | 4.969e-1 | 122 | — | 3 | 16 | 148 | 3 | 0 | 108 | 105 | yes |
+| radau5 | production | 1.000e-4 | success | 101 | 6.664e-5 | 6.664e-1 | 2.968e0 | 39 | — | 3 | 42 | 297 | 33 | 0 | 109 | 105 | yes |
+| radau5-band | production | 1.000e-4 | success | 101 | 6.664e-5 | 6.664e-1 | 8.072e-1 | 39 | — | 3 | 42 | 297 | 33 | 0 | 109 | 105 | yes |
+| rodas | production | 1.000e-4 | success | 101 | 2.105e-4 | 2.105e0 | 2.086e0 | 49 | — | 5 | 54 | 319 | 49 | 0 | 108 | 105 | yes |
+| rodas-band | production | 1.000e-4 | success | 101 | 2.105e-4 | 2.105e0 | 7.751e-1 | 49 | — | 5 | 54 | 319 | 49 | 0 | 108 | 105 | yes |
+| internal-radau-iia3 | reference-implementation-only | 1.000e-4 | success | 101 | 2.128e-5 | 2.128e-1 | 1.383e2 | 40 | — | 9 | 97 | 1485 | 49 | 0 | 28134 | 28134 | yes |
+| vigilode | solver-under-test | 1.000e-6 | success | 101 | 4.544e-7 | 4.544e-1 | 5.061e0 | 129 | 99 | 3 | 132 | 1053 | 129 | 0 | 290 | 290 | yes |
+| vigilode-banded | solver-under-test | 1.000e-6 | success | 101 | 4.544e-7 | 4.544e-1 | 2.534e0 | 129 | 99 | 3 | 132 | 1053 | 129 | 0 | 162 | 162 | yes |
+| diffsol-bdf-dense | production | 1.000e-6 | success | 101 | 4.310e-5 | 4.310e1 | 6.050e0 | 203 | — | 8 | 24 | 292 | 0 | 400 | 900 | 900 | yes |
+| diffsol-bdf-sparse | production | 1.000e-6 | success | 101 | 4.310e-5 | 4.310e1 | 1.388e0 | 203 | — | 8 | 24 | 292 | 0 | 116 | 1849 | 1849 | yes |
+| cvode-bdf-dense | production | 1.000e-6 | success | 101 | 1.183e-5 | 1.183e1 | 1.169e1 | 196 | — | 6 | 25 | 236 | 4 | 0 | 200 | 105 | yes |
+| cvode-bdf-band | production | 1.000e-6 | success | 101 | 1.183e-5 | 1.183e1 | 3.405e0 | 196 | — | 6 | 25 | 236 | 4 | 0 | 200 | 105 | yes |
+| dvode-mf21 | production | 1.000e-6 | success | 101 | 1.182e-5 | 1.182e1 | 1.788e0 | 196 | — | 6 | 25 | 236 | 4 | 0 | 108 | 105 | yes |
+| dvode-mf24 | production | 1.000e-6 | success | 101 | 1.182e-5 | 1.182e1 | 8.540e-1 | 196 | — | 6 | 25 | 236 | 4 | 0 | 108 | 105 | yes |
+| radau5 | production | 1.000e-6 | success | 101 | 1.683e-6 | 1.683e0 | 5.400e0 | 71 | — | 2 | 73 | 506 | 65 | 0 | 109 | 105 | yes |
+| radau5-band | production | 1.000e-6 | success | 101 | 1.683e-6 | 1.683e0 | 1.348e0 | 71 | — | 2 | 73 | 506 | 65 | 0 | 109 | 105 | yes |
+| rodas | production | 1.000e-6 | success | 101 | 1.003e-6 | 1.003e0 | 4.989e0 | 129 | — | 3 | 132 | 789 | 129 | 0 | 108 | 105 | yes |
+| rodas-band | production | 1.000e-6 | success | 101 | 1.003e-6 | 1.003e0 | 1.930e0 | 129 | — | 3 | 132 | 789 | 129 | 0 | 108 | 105 | yes |
+| internal-radau-iia3 | reference-implementation-only | 1.000e-6 | success | 101 | 2.329e-7 | 2.329e-1 | 2.503e2 | 108 | — | 5 | 226 | 2477 | 113 | 0 | 56427 | 56427 | yes |
+| vigilode | solver-under-test | 1.000e-8 | success | 101 | 6.258e-8 | 6.258e0 | 8.930e0 | 228 | 98 | 5 | 233 | 1859 | 228 | 0 | 389 | 389 | yes |
+| vigilode-banded | solver-under-test | 1.000e-8 | success | 101 | 6.258e-8 | 6.258e0 | 4.671e0 | 228 | 98 | 5 | 233 | 1859 | 228 | 0 | 162 | 162 | yes |
+| diffsol-bdf-dense | production | 1.000e-8 | success | 101 | 4.659e-7 | 4.659e1 | 7.194e0 | 434 | — | 4 | 22 | 530 | 0 | 500 | 1352 | 1352 | yes |
+| diffsol-bdf-sparse | production | 1.000e-8 | success | 101 | 4.659e-7 | 4.659e1 | 2.035e0 | 434 | — | 4 | 22 | 530 | 0 | 120 | 2239 | 2239 | yes |
+| cvode-bdf-dense | production | 1.000e-8 | success | 101 | 6.182e-7 | 6.182e1 | 2.022e1 | 380 | — | 6 | 36 | 428 | 7 | 0 | 200 | 105 | yes |
+| cvode-bdf-band | production | 1.000e-8 | success | 101 | 6.182e-7 | 6.182e1 | 6.023e0 | 380 | — | 6 | 36 | 428 | 7 | 0 | 200 | 105 | yes |
+| dvode-mf21 | production | 1.000e-8 | success | 101 | 6.182e-7 | 6.182e1 | 3.145e0 | 380 | — | 6 | 36 | 428 | 7 | 0 | 108 | 105 | yes |
+| dvode-mf24 | production | 1.000e-8 | success | 101 | 6.182e-7 | 6.182e1 | 1.475e0 | 380 | — | 6 | 36 | 428 | 7 | 0 | 108 | 105 | yes |
+| radau5 | production | 1.000e-8 | success | 101 | 7.408e-8 | 7.408e0 | 1.027e1 | 142 | — | 1 | 131 | 985 | 121 | 0 | 109 | 105 | yes |
+| radau5-band | production | 1.000e-8 | success | 101 | 7.408e-8 | 7.408e0 | 2.691e0 | 142 | — | 1 | 131 | 985 | 121 | 0 | 109 | 105 | yes |
+| rodas | production | 1.000e-8 | success | 101 | 9.897e-9 | 9.897e-1 | 1.494e1 | 387 | — | 0 | 387 | 2322 | 387 | 0 | 108 | 105 | yes |
+| rodas-band | production | 1.000e-8 | success | 101 | 9.897e-9 | 9.897e-1 | 5.689e0 | 387 | — | 0 | 387 | 2322 | 387 | 0 | 108 | 105 | yes |
+| internal-radau-iia3 | reference-implementation-only | 1.000e-8 | success | 101 | 2.074e-9 | 2.074e-1 | 8.791e2 | 333 | — | 0 | 666 | 5757 | 333 | 0 | 152357 | 152357 | yes |
 
 ## Arms
 
