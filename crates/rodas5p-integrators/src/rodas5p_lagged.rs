@@ -91,9 +91,13 @@ pub const RODAS5P_LAGGED_MAX_ITERATIONS: usize = 6;
 /// RODAS5P output to a residual on stage `j`, from plan §5 T1 ("Numbers for
 /// RODAS5P", computed from the repository's coefficient snapshot); they
 /// decrease with stiffness, so using the `z = 0` values is conservative for
-/// normal `J_0` with spectrum in the left half plane.
+/// normal `J_0` with spectrum in the left half plane. Each entry is the
+/// t-verify value (`research/production_theory_20261021/RESULTS.json`,
+/// `claim1_T1_numbers.a_values_at_z0.abs_m`) rounded up to two decimals, so
+/// no entry is below the verified value (a_7 = 1.0110 gives 1.02; a test
+/// reads the JSON).
 pub const RODAS5P_NONSTIFF_STAGE_SENSITIVITIES: [f64; 8] =
-    [0.58, 0.24, 6.25, 5.97, 3.73, 4.57, 1.01, 1.00];
+    [0.58, 0.24, 6.25, 5.97, 3.73, 4.57, 1.02, 1.00];
 
 /// The per-stage stopping targets `rho_i = theta / (8 max(a_i, 1))` (T9).
 pub fn rodas5p_lagged_stage_targets() -> [f64; 8] {

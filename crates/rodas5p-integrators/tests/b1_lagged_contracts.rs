@@ -247,7 +247,7 @@ fn stage_targets_follow_the_preregistered_allocation() {
     assert_eq!(RODAS5P_LAGGED_THETA, 0.1);
     assert_eq!(
         RODAS5P_NONSTIFF_STAGE_SENSITIVITIES,
-        [0.58, 0.24, 6.25, 5.97, 3.73, 4.57, 1.01, 1.00]
+        [0.58, 0.24, 6.25, 5.97, 3.73, 4.57, 1.02, 1.00]
     );
     for (rho, a) in targets.iter().zip(RODAS5P_NONSTIFF_STAGE_SENSITIVITIES) {
         assert_eq!(*rho, 0.1 / (8.0 * a.max(1.0)));
@@ -561,4 +561,40 @@ fn lagged_jvp_branch_runs_inside_iterating_stages() {
     .unwrap();
     assert_eq!(matvec.work.jvp_applications, 0);
     assert!(matvec.work.richardson_iterations > 0);
+}
+
+/// Final review item 11: the stage sensitivities are bound to the t-verify
+/// output `research/production_theory_20261021/RESULTS.json`
+/// (`claim1_T1_numbers.a_values_at_z0.abs_m`, mpmath on the coefficient
+/// snapshot). Each constant must be no smaller than the verified value (a
+/// smaller `a_i` would loosen `rho_i`) and equal to it rounded up to two
+/// decimals.
+#[test]
+fn stage_sensitivities_are_the_verified_values_rounded_up() {
+    let path = concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../research/production_theory_20261021/RESULTS.json"
+    );
+    let text = std::fs::read_to_string(path).expect("t-verify RESULTS.json");
+    let results: serde_json::Value = serde_json::from_str(&text).unwrap();
+    let verified: Vec<f64> = results["claim1_T1_numbers"]["a_values_at_z0"]["abs_m"]
+        .as_array()
+        .expect("abs_m array")
+        .iter()
+        .map(|v| v.as_f64().unwrap())
+        .collect();
+    assert_eq!(verified.len(), RODAS5P_NONSTIFF_STAGE_SENSITIVITIES.len());
+    assert_eq!(
+        results["claim1_T1_numbers"]["a_values_at_z0"]["pass"],
+        serde_json::Value::Bool(true)
+    );
+    for (i, (a, v)) in RODAS5P_NONSTIFF_STAGE_SENSITIVITIES
+        .iter()
+        .zip(&verified)
+        .enumerate()
+    {
+        assert!(a >= v, "a_{} = {a} below the verified {v}", i + 1);
+        let rounded_up = (v * 100.0).ceil() / 100.0;
+        assert_eq!(*a, rounded_up, "a_{}: verified {v}", i + 1);
+    }
 }
