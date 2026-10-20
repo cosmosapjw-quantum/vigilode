@@ -184,14 +184,16 @@ pub(super) fn correct(
             full_residual_wrms: None,
             event: "projected-correction".into(),
         });
+        // The eager counterfactual is (S - 1) m stage JVPs: stage 0's
+        // derivative is never used, so eager does not evaluate it.
         if snapshot.relative <= f.cfg.projected_relative_tol {
             out.work.residual_only_stops += 1;
-            out.work.unused_stage_jvp_avoided += (S * basis.len()) as u64;
+            out.work.unused_stage_jvp_avoided += ((S - 1) * basis.len()) as u64;
             return Ok(z);
         }
         if iteration == f.cfg.max_newton {
             out.work.residual_only_stops += 1;
-            out.work.unused_stage_jvp_avoided += (S * basis.len()) as u64;
+            out.work.unused_stage_jvp_avoided += ((S - 1) * basis.len()) as u64;
             break;
         }
         derivative(f, basis, lambda, &mut snapshot, &mut out.work)?;
