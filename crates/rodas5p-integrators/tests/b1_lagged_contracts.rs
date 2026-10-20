@@ -276,6 +276,7 @@ fn forced_refresh_reproduces_the_fast_driver_on_robertson_and_hires() {
                 &output,
                 Rodas5pLaggedOptions {
                     refresh_every_attempt: true,
+                    ..Rodas5pLaggedOptions::default()
                 },
             )
             .unwrap();
