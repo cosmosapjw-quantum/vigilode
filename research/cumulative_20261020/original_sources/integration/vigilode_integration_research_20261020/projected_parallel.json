@@ -1,0 +1,95 @@
+[
+  {
+    "actual_parallelism": "ThreadPoolExecutor stage tasks; no acceleration ratio claimed",
+    "counts": {
+      "base_JVP_vectors": 3,
+      "parallel_stage_batches": 3,
+      "projected_derivative_stage_JVP_equivalents": 72,
+      "rhs_stage_vectors": 24,
+      "small_all_stage_linear_solves": 2
+    },
+    "full_W_linear_solves": 0,
+    "full_n_by_n_matrix_constructed": false,
+    "full_space_relative_residual": 6.6376489176808344e-15,
+    "full_space_residual_l2": 2.5940571077348404e-14,
+    "lambda_nodes": [
+      1.0
+    ],
+    "maximum_projected_system_dimension": 24,
+    "n": 12288,
+    "newton_trace": [
+      {
+        "iteration": 0,
+        "lambda": 1.0,
+        "projected_residual_before": 0.00028647902319664954
+      },
+      {
+        "iteration": 1,
+        "lambda": 1.0,
+        "projected_residual_before": 2.4151833542031303e-11
+      }
+    ],
+    "observed_concurrent_stage_tasks": 4,
+    "output_WRMS_vs_sequential_stage_root": 1.2788622049410585e-08,
+    "scope": "invariant three-mode synthetic diagonal quadratic system; not generic nonlinear PDE or native Rust validation",
+    "subspace_dimension": 3
+  },
+  {
+    "actual_parallelism": "ThreadPoolExecutor stage tasks; no acceleration ratio claimed",
+    "counts": {
+      "base_JVP_vectors": 3,
+      "parallel_stage_batches": 10,
+      "projected_derivative_stage_JVP_equivalents": 240,
+      "rhs_stage_vectors": 80,
+      "small_all_stage_linear_solves": 6
+    },
+    "full_W_linear_solves": 0,
+    "full_n_by_n_matrix_constructed": false,
+    "full_space_relative_residual": 3.948135031320698e-15,
+    "full_space_residual_l2": 1.5429691849192854e-14,
+    "lambda_nodes": [
+      0.25,
+      0.5,
+      0.75,
+      1.0
+    ],
+    "maximum_projected_system_dimension": 24,
+    "n": 12288,
+    "newton_trace": [
+      {
+        "iteration": 0,
+        "lambda": 0.25,
+        "projected_residual_before": 7.161975579781189e-05
+      },
+      {
+        "iteration": 0,
+        "lambda": 0.5,
+        "projected_residual_before": 7.161212807068672e-05
+      },
+      {
+        "iteration": 0,
+        "lambda": 0.75,
+        "projected_residual_before": 7.160450166993735e-05
+      },
+      {
+        "iteration": 1,
+        "lambda": 0.75,
+        "projected_residual_before": 1.1328426151445783e-12
+      },
+      {
+        "iteration": 0,
+        "lambda": 1.0,
+        "projected_residual_before": 7.15968757887452e-05
+      },
+      {
+        "iteration": 1,
+        "lambda": 1.0,
+        "projected_residual_before": 1.5115470879586736e-12
+      }
+    ],
+    "observed_concurrent_stage_tasks": 4,
+    "output_WRMS_vs_sequential_stage_root": 1.0532797465248553e-08,
+    "scope": "invariant three-mode synthetic diagonal quadratic system; not generic nonlinear PDE or native Rust validation",
+    "subspace_dimension": 3
+  }
+]

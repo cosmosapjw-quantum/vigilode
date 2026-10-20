@@ -1,0 +1,55 @@
+{
+  "status": "BOUNDED_THEORY_AND_EXPERIMENTS_COMPLETED",
+  "python": "3.13.5 (main, Jul 15 2026, 20:25:40) [GCC 14.2.0]",
+  "numpy": "2.3.5",
+  "scipy": "1.17.0",
+  "mpmath": "1.3.0",
+  "experiment_groups": 6,
+  "algebraic_reaction_cases": 24,
+  "max_reaction_normalized_residual": 6.986179905807318e-12,
+  "adaptive_summary": {
+    "status": "MODEL_SPECIFIC_RATIONAL_CERTIFICATE_AND_BINARY64_OUTPUT_CHECKED",
+    "scope": "scalar polynomial ODE; exact Fraction proof data; binary64 centers with explicit rounding displacement",
+    "equation": "y'=-2y-y^2",
+    "initial": "1/2",
+    "end_time": "1",
+    "tolerance": "1/1000000",
+    "accepted_windows": 28,
+    "rejected_trials": 5,
+    "dense_points_checked": 101,
+    "derivative_calls": 0,
+    "max_dense_actual_error": 1.5435012476975697e-07,
+    "max_dense_certified_radius": 8.933370631013405e-07,
+    "nonnegative_candidate_on_every_window": true,
+    "failed_trials_mutated_accepted_state": false,
+    "performance_claim": false,
+    "generic_rhs_or_FVM_certificate": false
+  },
+  "certificate_readback": {
+    "status": "PASS_MODEL_SPECIFIC_EXACT_PROOF_DATA_READBACK",
+    "segments_verified": 28,
+    "trials_verified": 33,
+    "dense_outputs_verified": 101,
+    "reference_truth_used_for_admission": false,
+    "state_derivative_oracles_used": false,
+    "proof_premises": [
+      "exact rational arithmetic",
+      "Bernstein convex hull",
+      "nonnegative true solution invariance for stated scalar ODE",
+      "two-point dissipativity mu=-2",
+      "alternating exponential remainder bound",
+      "binary64 Fraction conversion with explicit displacement"
+    ],
+    "not_claimed": [
+      "generic FVM certification",
+      "independent-personnel review",
+      "proof-assistant formalization",
+      "native speed"
+    ]
+  },
+  "numerical_state_derivative_oracles_used": false,
+  "native_solver_code_modified": false,
+  "timing_benchmark_performed": false,
+  "native_subagents": "NOT_RUN",
+  "git_push_performed": false
+}
