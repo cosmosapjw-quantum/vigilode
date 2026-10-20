@@ -5,7 +5,7 @@ use rodas5p_core::{
     JacobiPreconditioner, LinearMethod, LinearOperator, LinearSolveReport, LinearSolverConfig,
     LuFactorization, Preconditioner, PreconditionerKind, Rodas5pCoefficients, ShiftedOperator,
     WorkCounters, apply_counted, apply_jvp_counted, error_scale, load_rodas5p_coefficients,
-    safe_l2, wrms,
+    safe_l2, step_error_wrms, wrms,
 };
 use rodas5p_krylov::{
     GcrodrConfig, GcrodrState, GmresConfig, LgmresConfig, LgmresState, ResidualAccounting,
@@ -738,7 +738,7 @@ fn embedded_error_norm(
     let y_new: Vec<f64> = context.y.iter().zip(update).map(|(a, b)| a + b).collect();
     let error_vector = row_combination(&context.coeffs.btilde, stages, n);
     let scale = error_scale(&context.y, &y_new, &[atol], rtol)?;
-    wrms(&error_vector, &scale)
+    step_error_wrms(&error_vector, &scale)
 }
 
 /// Every stage residual within `residual_limit`, or within its roundoff floor.
@@ -839,8 +839,9 @@ pub fn finish_step(
     let update = row_combination(&context.coeffs.b, &stages, n);
     let y_new: Vec<f64> = context.y.iter().zip(update).map(|(a, b)| a + b).collect();
     let error_vector = row_combination(&context.coeffs.btilde, &stages, n);
+    // End-of-step error norm: the A1 zero-scale rule applies.
     let scale = error_scale(&context.y, &y_new, &[atol], rtol)?;
-    let error_norm = wrms(&error_vector, &scale)?;
+    let error_norm = step_error_wrms(&error_vector, &scale)?;
     let accepted = accepted.unwrap_or(error_norm.is_finite() && error_norm <= 1.0)
         && y_new.iter().all(|v| v.is_finite());
     Ok(StepResult {

@@ -1,8 +1,9 @@
+use rodas5p_core::CoreError;
 use rodas5p_core::error_scale;
 use rodas5p_core::{
     CoefficientPrecisionAvailability, DenseMatrix, RODAS5P_COEFFICIENT_SNAPSHOT_SCHEMA_VERSION,
     RODAS5P_COEFFICIENT_SNAPSHOT_SHA256, Rodas5pCoefficients, direct_solve,
-    load_rodas5p_coefficients, rodas5p_coefficients, safe_l2, sha256_hex, wrms,
+    load_rodas5p_coefficients, rodas5p_coefficients, safe_l2, sha256_hex, step_error_wrms, wrms,
 };
 
 #[test]
@@ -23,26 +24,58 @@ fn wrms_matches_definition() {
     assert!((got - 0.5).abs() < 1.0e-15);
 }
 
-/// A1 zero-scale rule (production plan 2026-10-20, section 6): with
-/// `atol = 0` a component that is zero at both ends has a zero scale. A zero
-/// scale with a zero error contributes 0; with a nonzero error the norm is
-/// +inf. Neither is a typed error.
+/// A1 zero-scale rule (production plan 2026-10-20, section 6), carried by
+/// the end-of-step error norm `step_error_wrms`: with `atol = 0` a component
+/// that is zero at both ends has a zero scale. A zero scale with a zero error
+/// contributes 0; with a nonzero error the norm is +inf. Neither is a typed
+/// error.
 #[test]
 fn zero_scale_follows_the_one_rule() {
     let scale = error_scale(&[1.0, 0.0], &[2.0, 0.0], &[0.0], 1.0e-6).unwrap();
     assert_eq!(scale[1].to_bits(), 0);
     assert_eq!(scale[0], 2.0e-6);
     // Zero error at a zero scale: the other component alone sets the norm.
-    let norm = wrms(&[1.0e-6, 0.0], &scale).unwrap();
+    let norm = step_error_wrms(&[1.0e-6, 0.0], &scale).unwrap();
     assert_eq!(norm.to_bits(), (0.5_f64.sqrt() * 0.5).to_bits());
-    let negative_zero = wrms(&[1.0e-6, -0.0], &scale).unwrap();
+    let negative_zero = step_error_wrms(&[1.0e-6, -0.0], &scale).unwrap();
     assert_eq!(negative_zero.to_bits(), norm.to_bits());
     // Nonzero error at a zero scale: +inf (reject), whatever the sign.
-    assert_eq!(wrms(&[0.0, 1.0e-300], &scale).unwrap(), f64::INFINITY);
-    assert_eq!(wrms(&[0.0, -1.0e-300], &scale).unwrap(), f64::INFINITY);
+    assert_eq!(
+        step_error_wrms(&[0.0, 1.0e-300], &scale).unwrap(),
+        f64::INFINITY
+    );
+    assert_eq!(
+        step_error_wrms(&[0.0, -1.0e-300], &scale).unwrap(),
+        f64::INFINITY
+    );
     // A negative or non-finite scale stays a typed error.
+    assert!(step_error_wrms(&[0.0, 0.0], &[1.0, -1.0]).is_err());
+    assert!(step_error_wrms(&[0.0, 0.0], &[1.0, f64::INFINITY]).is_err());
+}
+
+/// Controller ruling (final review item 5): `wrms` keeps its pre-wave strict
+/// contract for iteration-convergence callers (Newton, inner forcing, SABR,
+/// certification): a zero scale is a typed `InvalidInput`, not a norm. On a
+/// positive scale the two norms are bit-identical.
+#[test]
+fn wrms_stays_strict_on_a_zero_scale_and_matches_the_step_norm_otherwise() {
+    match wrms(&[0.0, 0.0], &[1.0, 0.0]) {
+        Err(CoreError::InvalidInput(message)) => {
+            assert_eq!(message, "WRMS scale must be finite and positive")
+        }
+        other => panic!("expected a typed InvalidInput, got {other:?}"),
+    }
+    assert!(wrms(&[0.0, 1.0], &[1.0, 0.0]).is_err());
     assert!(wrms(&[0.0, 0.0], &[1.0, -1.0]).is_err());
-    assert!(wrms(&[0.0, 0.0], &[1.0, f64::INFINITY]).is_err());
+    let (error, scale) = ([3.0e-7, -1.0e-9, 4.5], [7.0e-6, 2.0e-9, 1.0e-3]);
+    assert_eq!(
+        wrms(&error, &scale).unwrap().to_bits(),
+        step_error_wrms(&error, &scale).unwrap().to_bits()
+    );
+    assert_eq!(
+        wrms(&[f64::NAN, 1.0], &[1.0, 1.0]).unwrap(),
+        step_error_wrms(&[f64::NAN, 1.0], &[1.0, 1.0]).unwrap()
+    );
 }
 
 #[test]

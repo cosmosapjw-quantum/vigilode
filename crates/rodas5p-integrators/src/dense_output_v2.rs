@@ -3,7 +3,7 @@ use rodas5p_core::directed::{
 };
 use rodas5p_core::{
     CoreError, CoreResult, DenseMatrix, LinearSolverConfig, LuFactorization, WorkCounters,
-    error_scale, rodas5p_coefficients, wrms,
+    error_scale, rodas5p_coefficients, step_error_wrms, wrms,
 };
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
@@ -1175,8 +1175,9 @@ pub fn rodas5p_dense_wfiltered_interior_error_estimate(
     counters.linear_solves += 1;
     counters.direct_solve_calls += 1;
     let estimate = filter.solve(&defect)?;
+    // An acceptance norm under `WFilteredEnforce`: the A1 zero-scale rule.
     let scale = error_scale(&step.y_old, &step.y_new, &[atol], rtol)?;
-    wrms(&estimate, &scale)
+    step_error_wrms(&estimate, &scale)
 }
 
 /// The W-filtered estimate with the stage matrix the step captured: its LU

@@ -44,8 +44,9 @@ pub fn scaled_error_component(error: f64, scale: f64) -> f64 {
 }
 
 /// Per-component scale `atol_i + rtol max(|y0_i|, |y1_i|)`. A zero scale is
-/// valid and is resolved by [`scaled_error_component`]; a scale that
-/// overflows is a typed error.
+/// valid here and is resolved by [`step_error_wrms`] (end-of-step norms) or
+/// refused by [`wrms`] (iteration-convergence norms); a scale that overflows
+/// is a typed error.
 pub fn error_scale(y0: &[f64], y1: &[f64], atol: &[f64], rtol: f64) -> CoreResult<Vec<f64>> {
     if y0.len() != y1.len() || !(atol.len() == 1 || atol.len() == y0.len()) {
         return Err(CoreError::Dimension("error-scale shape mismatch".into()));
@@ -80,8 +81,42 @@ pub fn error_scale(y0: &[f64], y1: &[f64], atol: &[f64], rtol: f64) -> CoreResul
     Ok(out)
 }
 
-/// Weighted RMS norm; a zero scale follows [`scaled_error_component`].
+/// Weighted RMS norm with a strictly positive scale (the pre-wave contract,
+/// kept by controller ruling on final-review item 5). Iteration-convergence
+/// callers (Newton convergence, inner forcing, SABR residual estimates,
+/// certification, Krylov weighted residuals) measure a contraction in this
+/// norm, not a step acceptance, so a zero scale stays a typed
+/// `InvalidInput`. End-of-step error norms use [`step_error_wrms`], which
+/// carries the zero-scale rule.
 pub fn wrms(error: &[f64], scale: &[f64]) -> CoreResult<f64> {
+    if error.len() != scale.len() || error.is_empty() {
+        return Err(CoreError::Dimension(
+            "WRMS shape mismatch or empty vector".into(),
+        ));
+    }
+    let mut sum = 0.0;
+    for (&e, &s) in error.iter().zip(scale) {
+        if !(s > 0.0 && s.is_finite()) {
+            return Err(CoreError::InvalidInput(
+                "WRMS scale must be finite and positive".into(),
+            ));
+        }
+        let z = e / s;
+        if !z.is_finite() {
+            return Ok(f64::INFINITY);
+        }
+        sum += z * z;
+    }
+    Ok((sum / error.len() as f64).sqrt())
+}
+
+/// End-of-step (step-acceptance) error norm: the weighted RMS norm with a
+/// zero scale resolved by [`scaled_error_component`] (production plan
+/// 2026-10-20, A1). A zero-scale component with a zero error contributes 0;
+/// with a nonzero or NaN error the norm is +inf, so the step is rejected. A
+/// negative or non-finite scale is a typed error. On a positive scale the
+/// result is bit-identical to [`wrms`].
+pub fn step_error_wrms(error: &[f64], scale: &[f64]) -> CoreResult<f64> {
     if error.len() != scale.len() || error.is_empty() {
         return Err(CoreError::Dimension(
             "WRMS shape mismatch or empty vector".into(),
