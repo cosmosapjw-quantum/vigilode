@@ -2,14 +2,15 @@ use rodas5p_core::directed::{
     Interval, add_up, div_up, exp_interval, mul_up, sqrt_up, sub_down, sub_up,
 };
 use rodas5p_core::{
-    CoreError, CoreResult, LinearSolverConfig, LuFactorization, WorkCounters, error_scale,
-    rodas5p_coefficients, wrms,
+    CoreError, CoreResult, DenseMatrix, LinearSolverConfig, LuFactorization, WorkCounters,
+    error_scale, rodas5p_coefficients, wrms,
 };
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 use crate::adaptive::record_adaptive_work_failure;
 use crate::output::{HardStopCursor, OutputCollector};
+use crate::sequential::{StepIterationMatrix, sequential_step_capturing_iteration_matrix};
 use crate::{
     AdaptiveControllerState, AdaptiveFailureKind, AdaptiveObservedIntegrationResult,
     AdaptiveRunDiagnostics, AdaptiveStepConfig, BdfConfig, BdfHistory, BdfOrder, BdfStepReport,
@@ -1047,7 +1048,10 @@ pub fn rodas5p_dense_output(step: &StepResult, theta: f64) -> DenseOutputResult<
 ///
 /// `Off` is the default. The filtered modes cost one Jacobian and one LU per
 /// sampled step, which a matrix-free run must not pay by default
-/// (re-audit RA-07); `ReportDefect` needs one right-hand side only.
+/// (re-audit RA-07); `ReportDefect` needs one right-hand side only. The
+/// W-filtered modes (plan T3) need one right-hand side and one back-solve
+/// with the step's own stage matrix M - h gamma J0, plus one LU of it when
+/// the stage solves held none; never a new Jacobian.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum DenseErrorControl {
@@ -1065,14 +1069,33 @@ pub enum DenseErrorControl {
     /// As `Report`, and reject such a step when its estimate exceeds one
     /// tolerance unit.
     Enforce,
+    /// Record the W-filtered estimate (M - h gamma J0)^{-1} (h/2) d(1/2) of
+    /// every accepted step that contains an output time, with J0 the
+    /// Jacobian of the step itself; never change the step sequence. By
+    /// Lemma 3 it is between 1 and 1/(2 gamma) = 2.36 times the interior
+    /// error of a scalar linear mode with constant defect. An estimate, not
+    /// a bound. Sequential method with an explicit Jacobian only.
+    WFilteredReport,
+    /// As `WFilteredReport`, and the controller sees
+    /// max(embedded error, estimate) on such a step: an interior failure
+    /// rejects and shrinks the step through the normal controller, and an
+    /// interior estimate near one shrinks the next step.
+    WFilteredEnforce,
+}
+
+impl DenseErrorControl {
+    fn is_w_filtered(self) -> bool {
+        matches!(self, Self::WFilteredReport | Self::WFilteredEnforce)
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct DenseErrorSample {
     pub step_start: f64,
     pub step_size: f64,
-    /// Interior estimate at theta = 1/2, WRMS tolerance units: filtered under
-    /// `Report` and `Enforce`, unfiltered under `ReportDefect`.
+    /// Interior estimate at theta = 1/2, WRMS tolerance units: filtered with
+    /// shift h/2 under `Report` and `Enforce`, with shift h gamma under the
+    /// W-filtered modes, unfiltered under `ReportDefect`.
     pub estimate_wrms: f64,
     /// The step was accepted (under `Enforce` a large estimate rejects it).
     pub accepted: bool,
@@ -1123,6 +1146,64 @@ pub fn rodas5p_dense_interior_error_estimate(
     let estimate = filter.solve(&defect)?;
     let scale = error_scale(&step.y_old, &step.y_new, &[atol], rtol)?;
     wrms(&estimate, &scale)
+}
+
+/// The W-filter M - h gamma J0 of a RODAS5P step of size `h` (plan T3), formed
+/// exactly as the step's shifted operator forms its explicit stage matrix.
+pub fn rodas5p_wfiltered_iteration_matrix(
+    mass: &DenseMatrix,
+    jacobian: &DenseMatrix,
+    h: f64,
+) -> CoreResult<DenseMatrix> {
+    let gamma = rodas5p_coefficients()?.gamma;
+    mass.sub(&jacobian.scale(h * gamma))
+}
+
+/// W-filtered interior error estimate of one RODAS5P dense step (plan T3):
+/// WRMS of E = (M - h gamma J0)^{-1} (h/2) d(1/2), with `filter` the LU of
+/// the step's own stage matrix. One right-hand side and one back-solve; the
+/// caller charges any factorization it made for `filter`.
+pub fn rodas5p_dense_wfiltered_interior_error_estimate(
+    problem: &OdeProblem,
+    step: &StepResult,
+    filter: &LuFactorization,
+    atol: f64,
+    rtol: f64,
+    counters: &mut WorkCounters,
+) -> CoreResult<f64> {
+    let (defect, _, _) = scaled_midpoint_defect(problem, step, counters)?;
+    counters.linear_solves += 1;
+    counters.direct_solve_calls += 1;
+    let estimate = filter.solve(&defect)?;
+    let scale = error_scale(&step.y_old, &step.y_new, &[atol], rtol)?;
+    wrms(&estimate, &scale)
+}
+
+/// The W-filtered estimate with the stage matrix the step captured: its LU
+/// when the stage solves made one, else one counted LU of its explicit W.
+fn wfiltered_estimate_from_step(
+    problem: &OdeProblem,
+    step: &StepResult,
+    iteration: &StepIterationMatrix,
+    atol: f64,
+    rtol: f64,
+    counters: &mut WorkCounters,
+) -> CoreResult<f64> {
+    let owned;
+    let filter = match (&iteration.factor, &iteration.matrix) {
+        (Some(factor), _) => factor,
+        (None, Some(matrix)) => {
+            counters.direct_factorizations += 1;
+            owned = LuFactorization::new(matrix)?;
+            &owned
+        }
+        (None, None) => {
+            return Err(CoreError::InvalidInput(
+                "W-filtered dense estimate needs the step's explicit stage matrix".into(),
+            ));
+        }
+    };
+    rodas5p_dense_wfiltered_interior_error_estimate(problem, step, filter, atol, rtol, counters)
 }
 
 /// Unfiltered interior defect estimate WRMS((h/2) M^{-1} d) (re-audit
@@ -1448,7 +1529,8 @@ pub fn integrate_adaptive_dense_observed_with_config(
 /// F-002). `Off` is the legacy path bit for bit; `Report` records the
 /// filtered-defect estimate of every accepted step that contains an interior
 /// output time; `Enforce` also rejects such a step when the estimate
-/// exceeds one tolerance unit.
+/// exceeds one tolerance unit. The W-filtered modes reuse the step's own
+/// stage matrix (sequential method only; SABR is refused).
 #[allow(clippy::too_many_arguments)]
 pub fn integrate_adaptive_dense_observed_with_dense_error_control(
     problem: &OdeProblem,
@@ -1479,6 +1561,14 @@ pub fn integrate_adaptive_dense_observed_with_dense_error_control(
             crate::sequential::validate_problem_linear_config(problem, &config)?;
         }
         IntegrationMethod::Sabr => {
+            if control.is_w_filtered() {
+                return Err(CoreError::InvalidInput(
+                    "W-filtered dense error control needs the sequential step's stage matrix; \
+                     SABR does not expose it"
+                        .into(),
+                )
+                .into());
+            }
             if let Some(cfg) = linear_config {
                 crate::sequential::validate_problem_linear_config(problem, cfg)?;
             }
@@ -1512,7 +1602,26 @@ pub fn integrate_adaptive_dense_observed_with_dense_error_control(
         let (trial_h, hard_stop_landing) = hard_stops.limit_step(t, requested_h, tf)?;
         let recycle_snapshot = recycle.clone();
         let history_snapshot = history.clone();
+        let mut iteration = StepIterationMatrix::default();
         let trial = match method {
+            IntegrationMethod::Sequential if control.is_w_filtered() => {
+                sequential_step_capturing_iteration_matrix(
+                    problem,
+                    t,
+                    &state,
+                    trial_h,
+                    &config,
+                    recycle.as_mut(),
+                    adaptive.atol,
+                    adaptive.rtol,
+                    false,
+                    &mut counters,
+                )
+                .map(|(report, captured)| {
+                    iteration = captured;
+                    report
+                })
+            }
             IntegrationMethod::Sequential => sequential_step(
                 problem,
                 t,
@@ -1587,6 +1696,15 @@ pub fn integrate_adaptive_dense_observed_with_dense_error_control(
                     adaptive.rtol,
                     &mut estimate_work,
                 )
+            } else if control.is_w_filtered() {
+                wfiltered_estimate_from_step(
+                    problem,
+                    &report,
+                    &iteration,
+                    adaptive.atol,
+                    adaptive.rtol,
+                    &mut estimate_work,
+                )
             } else {
                 rodas5p_dense_interior_error_estimate(
                     problem,
@@ -1598,7 +1716,7 @@ pub fn integrate_adaptive_dense_observed_with_dense_error_control(
             };
             match estimate {
                 Ok(estimate) => {
-                    let rejected = control == DenseErrorControl::Enforce
+                    let mut rejected = control == DenseErrorControl::Enforce
                         && !(estimate.is_finite() && estimate <= 1.0);
                     if rejected {
                         accepted = false;
@@ -1607,6 +1725,17 @@ pub fn integrate_adaptive_dense_observed_with_dense_error_control(
                         } else {
                             f64::INFINITY
                         };
+                    }
+                    if control == DenseErrorControl::WFilteredEnforce {
+                        // The controller sees max(embedded, interior).
+                        let interior = if estimate.is_finite() {
+                            estimate
+                        } else {
+                            f64::INFINITY
+                        };
+                        error = error.max(interior);
+                        rejected = error.is_nan() || error > 1.0;
+                        accepted = !rejected;
                     }
                     dense_report.samples.push(DenseErrorSample {
                         step_start: report.t_old,
@@ -1618,7 +1747,10 @@ pub fn integrate_adaptive_dense_observed_with_dense_error_control(
                 Err(_) => dense_report.unavailable += 1,
             }
             dense_report.counters.accumulate(estimate_work);
-            if control == DenseErrorControl::Enforce {
+            if matches!(
+                control,
+                DenseErrorControl::Enforce | DenseErrorControl::WFilteredEnforce
+            ) {
                 counters.accumulate(estimate_work);
             }
         }
