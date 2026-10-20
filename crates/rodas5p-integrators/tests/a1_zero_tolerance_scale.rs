@@ -304,6 +304,7 @@ fn lagged_driver_with_forced_refresh_accepts_a_zero_component_with_zero_atol() {
         &schedule(),
         Rodas5pLaggedOptions {
             refresh_every_attempt: true,
+            ..Rodas5pLaggedOptions::default()
         },
     )
     .expect("lagged driver must not abort on a zero scale");

@@ -894,6 +894,50 @@ impl Workspace {
         }
     }
 
+    /// Solve `W x = b` in place in a caller buffer with the stored dense
+    /// factors (no counters, `&self`): the arithmetic of [`Self::solve`] on
+    /// `b` (wave-2 node `b1b-gmres`, the lagged LU as a GMRES right
+    /// preconditioner). Banded storage is refused.
+    pub(crate) fn solve_dense_into(&self, b: &mut [f64]) -> CoreResult<()> {
+        if b.len() != self.n {
+            return Err(CoreError::Dimension(
+                "RODAS5P fast stored-LU solve shape mismatch".into(),
+            ));
+        }
+        match self.lu_kind {
+            Rodas5pFastLu::InPlaceZeroSkipping | Rodas5pFastLu::InPlaceColumnExtents => {
+                lu_solve_in_place(
+                    &self.w,
+                    self.n,
+                    &self.pivots,
+                    &self.row_end,
+                    &self.l_start,
+                    b,
+                );
+            }
+            Rodas5pFastLu::Faer => {
+                let x = self
+                    .faer_lu
+                    .as_ref()
+                    .ok_or_else(|| CoreError::LinearSolve("RODAS5P fast LU not factored".into()))?
+                    .solve(b)?;
+                b.copy_from_slice(&x);
+            }
+            Rodas5pFastLu::Banded => {
+                return Err(CoreError::InvalidInput(
+                    "the stored-LU preconditioner supports dense storage only".into(),
+                ));
+            }
+        }
+        if b.iter().all(|v| v.is_finite()) {
+            Ok(())
+        } else {
+            Err(CoreError::LinearSolve(
+                "RODAS5P fast stage solve produced NaN/Inf".into(),
+            ))
+        }
+    }
+
     /// One attempt from `(t, y)` with step `h`: the new state in `y_new`
     /// and the WRMS norm of the embedded error. `fresh` builds the Jacobian,
     /// `f(t, y)` and `f_t` at this state; otherwise those of the previous

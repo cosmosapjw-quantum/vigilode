@@ -411,8 +411,9 @@ pub use rodas5p_fast_small_batch::{
 };
 pub use rodas5p_lagged::{
     LaggedWork, RODAS5P_LAGGED_CONTRACTION_MAX, RODAS5P_LAGGED_DRIVER_ID,
-    RODAS5P_LAGGED_MAX_ITERATIONS, RODAS5P_LAGGED_THETA, RODAS5P_NONSTIFF_STAGE_SENSITIVITIES,
-    Rodas5pLaggedOptions, Rodas5pLaggedResult, integrate_rodas5p_lagged_observed,
+    RODAS5P_LAGGED_GMRES_DRIVER_ID, RODAS5P_LAGGED_GMRES_RESTART, RODAS5P_LAGGED_MAX_ITERATIONS,
+    RODAS5P_LAGGED_THETA, RODAS5P_NONSTIFF_STAGE_SENSITIVITIES, Rodas5pLaggedOptions,
+    Rodas5pLaggedResult, StageSolver, integrate_rodas5p_lagged_observed,
     rodas5p_lagged_stage_targets,
 };
 pub use rodas5p_matrix_free_fast::{

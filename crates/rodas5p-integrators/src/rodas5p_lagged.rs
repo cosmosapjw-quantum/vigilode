@@ -63,20 +63,65 @@
 //! counted as a rejection). `atol = 0` with a component that is zero at a
 //! step start is therefore supported only on stages solved directly
 //! (`P = W`, e.g. with [`Rodas5pLaggedOptions::refresh_every_attempt`]).
+//!
+//! # GMRES stage solver (wave-2 node `b1b-gmres`)
+//!
+//! [`StageSolver::Gmres`] (opt-in; preregistration
+//! `docs/plan/nodes/b1b-gmres.md`) replaces Richardson on lagged stages by
+//! GMRES on `W x = c`, right-preconditioned with the same stored LU (`W
+//! P^{-1} v = c`, `x = P^{-1} v`), restart [`RODAS5P_LAGGED_GMRES_RESTART`],
+//! through `rodas5p_krylov::solve_gmres_into_right_monitored` (the
+//! `gmres_into` right-preconditioned Arnoldi cycle with the iterate handed
+//! to a monitor after every column). Everything else above is unchanged.
+//!
+//! * Start `x_0 = P^{-1} c`, as Richardson.
+//! * The tested residual is the left-preconditioned one of T2/T9,
+//!   `nu_k = WRMS(P^{-1} r_k)`, `r_k = c - W x_k`, computed explicitly (one
+//!   `W x` and one LU application) at `k = 0` and after every Arnoldi
+//!   column `k`. GMRES itself minimizes the 2-norm of the true residual
+//!   `r_k`; that norm is not tested.
+//! * At each check: `nu_k <= rho_i` converges, and the computed correction is
+//!   applied (`x <- x_k + P^{-1} r_k`, as Richardson applies its last one);
+//!   else, for `k >= 1`, `(nu_k / nu_0)^{1/k} >` [`RODAS5P_LAGGED_CONTRACTION_MAX`]
+//!   refreshes `P` (contraction); else `k =` [`RODAS5P_LAGGED_MAX_ITERATIONS`]
+//!   refreshes `P` (budget). A refresh restarts the stage with the direct
+//!   solve, as on the Richardson path.
+//! * Counted: Arnoldi columns ([`LaggedWork::gmres_iterations`]), cycles,
+//!   every `W x` ([`LaggedWork::operator_applications`]; those that are not
+//!   columns, i.e. explicit stopping residuals and the cycle-start true
+//!   residual, also in [`LaggedWork::residual_applications`]) and every LU
+//!   application (`direct_solve_calls`).
 
-use rodas5p_core::{CoreError, CoreResult, WorkCounters, scaled_error_component};
+use std::sync::atomic::{AtomicU64, Ordering};
+
+use rodas5p_core::{
+    ApplyCategory, CoreError, CoreResult, DenseMatrix, ExactOperatorIdentity, LinearOperator,
+    OperatorApplicationWork, Preconditioner, PreconditionerSide, WorkCounters, apply_counted,
+    apply_preconditioner, scaled_error_component,
+};
+use rodas5p_krylov::{
+    GmresConfig, GmresMonitorDecision, GmresWorkspace, solve_gmres_into_right_monitored,
+};
 use serde::Serialize;
 
 use crate::{
     AdaptiveControllerState, AdaptiveFailureKind, AdaptiveStepConfig, ObservedIntegrationResult,
     OdeProblem, OutputSchedule,
     output::OutputCollector,
+    problem::JvpFn,
     rodas_next_step_after_attempt,
     rodas5p_fast::{FastLuPolicy, Rodas5pFastResult, Workspace, failure_kind},
 };
 
 /// Identifier of this driver in benchmark and research records.
 pub const RODAS5P_LAGGED_DRIVER_ID: &str = "rodas5p-lagged-richardson-v1";
+
+/// Identifier of the [`StageSolver::Gmres`] arm (wave-2 node `b1b-gmres`).
+pub const RODAS5P_LAGGED_GMRES_DRIVER_ID: &str = "rodas5p-lagged-gmres-v1";
+
+/// The GMRES restart length of [`StageSolver::Gmres`] (preregistered; with
+/// the budget of [`RODAS5P_LAGGED_MAX_ITERATIONS`] columns it never fires).
+pub const RODAS5P_LAGGED_GMRES_RESTART: usize = 10;
 
 /// The output-perturbation budget `theta` of T1/T9, in tolerance units.
 pub const RODAS5P_LAGGED_THETA: f64 = 0.1;
@@ -106,12 +151,26 @@ pub fn rodas5p_lagged_stage_targets() -> [f64; 8] {
     })
 }
 
+/// How a lagged stage (`P != W`) is solved.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize)]
+pub enum StageSolver {
+    /// Preconditioned Richardson (wave-1 node `b1-lagged`, the default and
+    /// bit-identical to it).
+    #[default]
+    Richardson,
+    /// GMRES right-preconditioned with the stored LU (wave-2 node
+    /// `b1b-gmres`; module docs).
+    Gmres,
+}
+
 /// Opt-in variants of [`integrate_rodas5p_lagged_observed`].
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct Rodas5pLaggedOptions {
     /// Refactor `P` at the start of every attempt (so `P = W` and every
     /// stage is the direct solve): the equivalence arm of the fast driver.
     pub refresh_every_attempt: bool,
+    /// The lagged-stage solver; Richardson by default.
+    pub stage_solver: StageSolver,
 }
 
 /// Counted work of the lagged stage solves. Every refresh is also a
@@ -131,10 +190,21 @@ pub struct LaggedWork {
     pub budget_refreshes: u64,
     /// Richardson iterations attempted, including abandoned ones.
     pub richardson_iterations: u64,
-    /// Iterations of stages that were then restarted after a refresh.
+    /// GMRES Arnoldi columns built, including abandoned ones
+    /// ([`StageSolver::Gmres`]).
+    pub gmres_iterations: u64,
+    /// GMRES cycles (one per stage solved by GMRES with at least one column
+    /// while the restart does not fire).
+    pub gmres_cycles: u64,
+    /// Iterations (Richardson) or columns (GMRES) of stages that were then
+    /// restarted after a refresh.
     pub abandoned_iterations: u64,
-    /// Products `W x` (one per iteration).
+    /// Products `W x` (Richardson: one per iteration; GMRES: columns plus
+    /// [`Self::residual_applications`]).
     pub operator_applications: u64,
+    /// GMRES products `W x` that are not Arnoldi columns: the explicit
+    /// stopping residuals and the cycle-start true residuals.
+    pub residual_applications: u64,
     /// Of those, through the problem's JVP (the rest are explicit matvecs).
     pub jvp_applications: u64,
     /// Applications of the stored LU (initial solves and corrections).
@@ -172,6 +242,10 @@ struct Lagged {
     x: Vec<f64>,
     wx: Vec<f64>,
     weight: Vec<f64>,
+    /// GMRES: workspace, solution, and the last preconditioned residual.
+    gmres: GmresWorkspace,
+    solution: Vec<f64>,
+    pres: Vec<f64>,
     /// Whether the workspace factors hold a usable `P`, and its `(h, J)`
     /// (the Jacobian by generation: one per Jacobian build).
     valid: bool,
@@ -239,12 +313,147 @@ impl Lagged {
     }
 
     fn wrms(&self, v: &[f64]) -> f64 {
-        let sum: f64 = v
-            .iter()
-            .zip(&self.weight)
-            .map(|(x, w)| (x / w) * (x / w))
-            .sum();
-        (sum / v.len() as f64).sqrt()
+        weighted_rms(v, &self.weight)
+    }
+
+    fn check_weights(&self) -> CoreResult<()> {
+        // Zero-weight exception (controller ruling, final review item 2):
+        // the weights `atol + rtol |y_n|` are start-state weights of the
+        // stopping test, like the staged matrix-free Krylov weights, not an
+        // end-of-step error scale. A zero weight (`atol = 0`, `y_n,i = 0`)
+        // would make the test `x / 0`; the run is refused with a typed
+        // `InvalidInput` (an input refusal, not a counted rejection).
+        if self.weight.iter().all(|w| *w > 0.0 && w.is_finite()) {
+            Ok(())
+        } else {
+            Err(CoreError::InvalidInput(
+                "the RODAS5P lagged Richardson stopping test needs finite positive Richardson \
+                 weights atol + rtol |y_n| (atol = 0 with a zero component is unsupported on \
+                 a lagged stage)"
+                    .into(),
+            ))
+        }
+    }
+
+    /// GMRES on stage `stage` from `x = P^{-1} c` (in `self.x`, with `c` in
+    /// `self.rhs`), right-preconditioned with the stored LU (module docs):
+    /// `Ok(None)` when it converged (the solution in `self.x`),
+    /// `Ok(Some(reason))` when `P` must be refreshed.
+    #[allow(clippy::too_many_arguments)]
+    fn iterate_gmres(
+        &mut self,
+        ws: &Workspace,
+        problem: &OdeProblem,
+        t: f64,
+        y: &[f64],
+        h: f64,
+        stage: usize,
+        counters: &mut WorkCounters,
+    ) -> CoreResult<Option<Refresh>> {
+        self.check_weights()?;
+        let op = StageOperator {
+            jacobian: &ws.jacobian,
+            jvp: problem.jvp_callback(),
+            t,
+            y,
+            inv: 1.0 / (h * ws.gamma),
+            applications: AtomicU64::new(0),
+        };
+        let pc = StoredLu {
+            ws,
+            applications: AtomicU64::new(0),
+        };
+        let target = self.targets[stage];
+        let outcome = self.gmres_stage(&op, &pc, target, counters);
+        // Charged whether the stage converged, refreshes or failed.
+        let products = op.applications.load(Ordering::Relaxed);
+        let lu = pc.applications.load(Ordering::Relaxed);
+        self.work.operator_applications += products;
+        if op.jvp.is_some() {
+            self.work.jvp_applications += products;
+        }
+        self.work.preconditioner_applications += lu;
+        counters.direct_solve_calls += lu;
+        let (columns, decision) = outcome?;
+        self.work.residual_applications += products - columns;
+        match decision {
+            None => {
+                for (x, z) in self.x.iter_mut().zip(&self.pres) {
+                    *x += z;
+                }
+                Ok(None)
+            }
+            Some(reason) => {
+                self.work.abandoned_iterations += columns;
+                Ok(Some(reason))
+            }
+        }
+    }
+
+    /// The checks and the GMRES call of [`Self::iterate_gmres`]: the
+    /// Arnoldi columns built and `None` (converged; `self.x = x_k`,
+    /// `self.pres = P^{-1} r_k`) or the refresh reason.
+    fn gmres_stage(
+        &mut self,
+        op: &StageOperator<'_>,
+        pc: &StoredLu<'_>,
+        target: f64,
+        counters: &mut WorkCounters,
+    ) -> CoreResult<(u64, Option<Refresh>)> {
+        let nu0 = preconditioned_residual(
+            op,
+            pc,
+            &self.rhs,
+            &self.x,
+            &mut self.wx,
+            &mut self.pres,
+            &self.weight,
+            counters,
+        )?;
+        if nu0 <= target {
+            return Ok((0, None));
+        }
+        let config = GmresConfig {
+            restart: RODAS5P_LAGGED_GMRES_RESTART,
+            max_arnoldi: RODAS5P_LAGGED_MAX_ITERATIONS,
+            rtol: 0.0,
+            atol: 0.0,
+        };
+        let mut reason = Refresh::Budget;
+        let (rhs, weight, wx, pres) = (&self.rhs, &self.weight, &mut self.wx, &mut self.pres);
+        let report = solve_gmres_into_right_monitored(
+            op,
+            pc,
+            rhs,
+            &self.x,
+            &config,
+            &mut self.solution,
+            &mut self.gmres,
+            counters,
+            &mut |k, xk, counters| {
+                let nu = preconditioned_residual(op, pc, rhs, xk, wx, pres, weight, counters)?;
+                if nu <= target {
+                    return Ok(GmresMonitorDecision::Accept);
+                }
+                if (nu / nu0).powf(1.0 / k as f64) > RODAS5P_LAGGED_CONTRACTION_MAX {
+                    reason = Refresh::Contraction;
+                    return Ok(GmresMonitorDecision::Abandon);
+                }
+                if k >= RODAS5P_LAGGED_MAX_ITERATIONS as u64 {
+                    reason = Refresh::Budget;
+                    return Ok(GmresMonitorDecision::Abandon);
+                }
+                Ok(GmresMonitorDecision::Continue)
+            },
+        )?;
+        self.work.gmres_iterations += report.iterations;
+        self.work.gmres_cycles += report.cycles;
+        if report.accepted {
+            self.x.copy_from_slice(&self.solution);
+            Ok((report.iterations, None))
+        } else {
+            Ok((report.iterations, Some(reason)))
+        }
     }
 
     /// Richardson on stage `stage` from `x = P^{-1} c` (in `self.x`, with
@@ -261,20 +470,7 @@ impl Lagged {
         stage: usize,
         counters: &mut WorkCounters,
     ) -> CoreResult<Option<Refresh>> {
-        // Zero-weight exception (controller ruling, final review item 2):
-        // the weights `atol + rtol |y_n|` are start-state weights of the
-        // stopping test, like the staged matrix-free Krylov weights, not an
-        // end-of-step error scale. A zero weight (`atol = 0`, `y_n,i = 0`)
-        // would make the test `x / 0`; the run is refused with a typed
-        // `InvalidInput` (an input refusal, not a counted rejection).
-        if !self.weight.iter().all(|w| *w > 0.0 && w.is_finite()) {
-            return Err(CoreError::InvalidInput(
-                "the RODAS5P lagged Richardson stopping test needs finite positive Richardson \
-                 weights atol + rtol |y_n| (atol = 0 with a zero component is unsupported on \
-                 a lagged stage)"
-                    .into(),
-            ));
-        }
+        self.check_weights()?;
         let inv = 1.0 / (h * ws.gamma);
         let target = self.targets[stage];
         let mut previous: Option<f64> = None;
@@ -394,7 +590,11 @@ impl Lagged {
                 self.work.preconditioner_applications += 1;
                 ws.solve(counters)?;
                 self.x.copy_from_slice(&ws.stage_rhs);
-                match self.iterate(ws, problem, t, y, h, i, counters)? {
+                let iterated = match self.options.stage_solver {
+                    StageSolver::Richardson => self.iterate(ws, problem, t, y, h, i, counters)?,
+                    StageSolver::Gmres => self.iterate_gmres(ws, problem, t, y, h, i, counters)?,
+                };
+                match iterated {
                     None => {
                         ws.stage_rhs.copy_from_slice(&self.x);
                         self.work.lagged_stage_solves += 1;
@@ -441,6 +641,133 @@ impl Lagged {
     }
 }
 
+fn weighted_rms(v: &[f64], weight: &[f64]) -> f64 {
+    let sum: f64 = v.iter().zip(weight).map(|(x, w)| (x / w) * (x / w)).sum();
+    (sum / v.len() as f64).sqrt()
+}
+
+/// `nu = WRMS(P^{-1} (c - W x))`, explicitly: `wx = W x`, `pres = P^{-1} r`.
+#[allow(clippy::too_many_arguments)]
+fn preconditioned_residual(
+    op: &StageOperator<'_>,
+    pc: &StoredLu<'_>,
+    rhs: &[f64],
+    x: &[f64],
+    wx: &mut [f64],
+    pres: &mut [f64],
+    weight: &[f64],
+    counters: &mut WorkCounters,
+) -> CoreResult<f64> {
+    apply_counted(op, x, wx, counters, ApplyCategory::Krylov)?;
+    for (w, c) in wx.iter_mut().zip(rhs) {
+        *w = c - *w;
+    }
+    apply_preconditioner(pc, wx, pres, counters)?;
+    let nu = weighted_rms(pres, weight);
+    if nu.is_finite() {
+        Ok(nu)
+    } else {
+        Err(CoreError::NonFinite(
+            "RODAS5P lagged stage residual is not finite".into(),
+        ))
+    }
+}
+
+/// `W x = x/(h gamma) - J_0 x` as a Krylov operator: the arithmetic of the
+/// Richardson path's `apply_w` (JVP at `(t_n, y_n)` when the problem has
+/// one, else the current explicit Jacobian's matvec).
+struct StageOperator<'a> {
+    jacobian: &'a DenseMatrix,
+    jvp: Option<&'a JvpFn>,
+    t: f64,
+    y: &'a [f64],
+    inv: f64,
+    applications: AtomicU64,
+}
+
+impl LinearOperator for StageOperator<'_> {
+    fn dimension(&self) -> usize {
+        self.y.len()
+    }
+
+    fn apply(&self, x: &[f64], out: &mut [f64]) -> CoreResult<()> {
+        if x.len() != self.y.len() || out.len() != self.y.len() {
+            return Err(CoreError::Dimension(
+                "RODAS5P lagged stage operator shape mismatch".into(),
+            ));
+        }
+        self.applications.fetch_add(1, Ordering::Relaxed);
+        if let Some(jvp) = self.jvp {
+            out.fill(0.0);
+            jvp(self.t, self.y, x, out)?;
+        } else {
+            self.jacobian.matvec_into(x, out)?;
+        }
+        for (w, v) in out.iter_mut().zip(x) {
+            *w = self.inv * v - *w;
+        }
+        if out.iter().all(|v| v.is_finite()) {
+            Ok(())
+        } else {
+            Err(CoreError::NonFinite(
+                "RODAS5P lagged stage operator produced NaN/Inf".into(),
+            ))
+        }
+    }
+
+    fn application_work(&self) -> OperatorApplicationWork {
+        if self.jvp.is_some() {
+            OperatorApplicationWork {
+                jvp_calls: 1,
+                jvp_vectors: 1,
+                ..OperatorApplicationWork::default()
+            }
+        } else {
+            OperatorApplicationWork {
+                jacobian_matvecs: 1,
+                ..OperatorApplicationWork::default()
+            }
+        }
+    }
+
+    /// A per-stage view; no identity to reuse across solves.
+    fn exact_identity(&self) -> Option<ExactOperatorIdentity> {
+        None
+    }
+
+    fn token(&self) -> u64 {
+        0
+    }
+}
+
+/// The stored lagged LU `P` as a right preconditioner (`P^{-1}` by the
+/// fast workspace's dense factors).
+struct StoredLu<'a> {
+    ws: &'a Workspace,
+    applications: AtomicU64,
+}
+
+impl Preconditioner for StoredLu<'_> {
+    fn dimension(&self) -> usize {
+        self.ws.n
+    }
+
+    fn apply(&self, x: &[f64], y: &mut [f64]) -> CoreResult<()> {
+        if x.len() != self.ws.n || y.len() != self.ws.n {
+            return Err(CoreError::Dimension(
+                "RODAS5P lagged preconditioner shape mismatch".into(),
+            ));
+        }
+        self.applications.fetch_add(1, Ordering::Relaxed);
+        y.copy_from_slice(x);
+        self.ws.solve_dense_into(y)
+    }
+
+    fn side(&self) -> PreconditionerSide {
+        PreconditionerSide::Right
+    }
+}
+
 /// Adaptive RODAS5P with lagged factorizations and exact-Jacobian stage
 /// equations solved by preconditioned Richardson iteration (module docs).
 /// The controller, clock, output and rejection rules are those of
@@ -480,6 +807,9 @@ pub fn integrate_rodas5p_lagged_observed(
         x: vec![0.0; n],
         wx: vec![0.0; n],
         weight: vec![0.0; n],
+        gmres: GmresWorkspace::default(),
+        solution: vec![0.0; n],
+        pres: vec![0.0; n],
         valid: false,
         p_h: 0.0,
         p_generation: 0,
@@ -593,7 +923,10 @@ pub fn integrate_rodas5p_lagged_observed(
             rejected_steps,
             jacobian_reuses: reuses,
             lu: ws.lu_kind,
-            driver: RODAS5P_LAGGED_DRIVER_ID,
+            driver: match options.stage_solver {
+                StageSolver::Richardson => RODAS5P_LAGGED_DRIVER_ID,
+                StageSolver::Gmres => RODAS5P_LAGGED_GMRES_DRIVER_ID,
+            },
         },
         work: lagged.work,
     })
