@@ -10,3 +10,4 @@ repository) that had been pasted into the middle of section 5, T9, was
 removed before committing; nothing else was changed.
 
 Execution log: `docs/plan/EXECUTION_LOG.md` (one row per pushed node).
+- `handoff/LOCAL_TEST_HANDOFF_W2.md` — heavy test runs delegated to the owner's workstation; results return on `results/local-wave2-<sha>` branches.
