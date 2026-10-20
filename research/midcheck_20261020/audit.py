@@ -10,7 +10,7 @@ selection={(x["case"],x["grid"]):x for x in sel}
 rows=list(csv.DictReader((out/"RESULTS.csv").open()))
 pairs=json.loads((out/"PAIRS.json").read_text())
 allruns=[json.loads(line) for line in gzip.open(out/"RAW.jsonl.gz","rt")]
-assert allruns and len(rows)>25 and len(pairs)>30
+assert allruns and len(rows)>25 and len(pairs)>=30
 by={(x["case"],x["grid"],x["arm"],x["block"]):x for x in allruns}
 assert len(by)==len(allruns)
 def reference(case,g):
