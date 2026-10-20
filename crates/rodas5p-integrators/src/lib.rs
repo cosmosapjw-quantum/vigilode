@@ -73,6 +73,7 @@ mod sequential;
 mod stage_batch;
 mod stage_chart_candidate;
 mod stage_target;
+pub mod transaction;
 mod transactional_q1_q2;
 mod unified_gates;
 mod unified_screen;
@@ -472,6 +473,11 @@ pub use stage_chart_candidate::{
 pub use stage_target::{
     CoefficientLeakage, STAGE_TARGET_SEQUENTIAL, STAGE_TARGET_STRICT_LOWER_PROJECTION, StageTarget,
     StageTargetBits, block_sequential_allowance, native_coefficient_leakage,
+};
+pub use transaction::{
+    Admission, AdmissionConfig, AdmissionError, AdmissionRule, AttemptRecord, Budget,
+    BudgetExhausted, CandidateCosts, RegimeBin, RegimeTelemetry, RitzSummary, Transaction,
+    TransactionLedger, Trial, TrialOutcome,
 };
 pub use transactional_q1_q2::{
     CERTIFICATE_CAPABILITY_UNAVAILABLE, DiagonalQuadraticModel, ModelBinding,
