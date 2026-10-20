@@ -156,6 +156,7 @@ fn gmres_forced_refresh_reproduces_the_fast_driver_on_robertson_and_hires() {
                 Rodas5pLaggedOptions {
                     refresh_every_attempt: true,
                     stage_solver: StageSolver::Gmres,
+                    ..Rodas5pLaggedOptions::default()
                 },
             );
             let (f, l) = (&fast.observed, &lagged.fast.observed);
