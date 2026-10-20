@@ -1,3 +1,4 @@
+use rodas5p_core::error_scale;
 use rodas5p_core::{
     CoefficientPrecisionAvailability, DenseMatrix, RODAS5P_COEFFICIENT_SNAPSHOT_SCHEMA_VERSION,
     RODAS5P_COEFFICIENT_SNAPSHOT_SHA256, Rodas5pCoefficients, direct_solve,
@@ -20,6 +21,28 @@ fn dense_matrix_matvec_is_row_major_and_exact_for_small_case() {
 fn wrms_matches_definition() {
     let got = wrms(&[1.0, -2.0], &[2.0, 4.0]).unwrap();
     assert!((got - 0.5).abs() < 1.0e-15);
+}
+
+/// A1 zero-scale rule (production plan 2026-10-20, section 6): with
+/// `atol = 0` a component that is zero at both ends has a zero scale. A zero
+/// scale with a zero error contributes 0; with a nonzero error the norm is
+/// +inf. Neither is a typed error.
+#[test]
+fn zero_scale_follows_the_one_rule() {
+    let scale = error_scale(&[1.0, 0.0], &[2.0, 0.0], &[0.0], 1.0e-6).unwrap();
+    assert_eq!(scale[1].to_bits(), 0);
+    assert_eq!(scale[0], 2.0e-6);
+    // Zero error at a zero scale: the other component alone sets the norm.
+    let norm = wrms(&[1.0e-6, 0.0], &scale).unwrap();
+    assert_eq!(norm.to_bits(), (0.5_f64.sqrt() * 0.5).to_bits());
+    let negative_zero = wrms(&[1.0e-6, -0.0], &scale).unwrap();
+    assert_eq!(negative_zero.to_bits(), norm.to_bits());
+    // Nonzero error at a zero scale: +inf (reject), whatever the sign.
+    assert_eq!(wrms(&[0.0, 1.0e-300], &scale).unwrap(), f64::INFINITY);
+    assert_eq!(wrms(&[0.0, -1.0e-300], &scale).unwrap(), f64::INFINITY);
+    // A negative or non-finite scale stays a typed error.
+    assert!(wrms(&[0.0, 0.0], &[1.0, -1.0]).is_err());
+    assert!(wrms(&[0.0, 0.0], &[1.0, f64::INFINITY]).is_err());
 }
 
 #[test]

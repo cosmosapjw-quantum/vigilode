@@ -39,6 +39,7 @@ use exact_band_cache::ExactBandCache;
 
 use rodas5p_core::{
     CoreError, CoreResult, DenseMatrix, LuFactorization, WorkCounters, rodas5p_coefficients,
+    scaled_error_component,
 };
 use serde::Serialize;
 
@@ -915,7 +916,7 @@ impl Workspace {
         let error = &self.u[(s - 1) * n..s * n];
         let mut sum = 0.0;
         for ((e, a), b) in error.iter().zip(y).zip(&self.y_new) {
-            let z = e / (atol + rtol * a.abs().max(b.abs()));
+            let z = scaled_error_component(*e, atol + rtol * a.abs().max(b.abs()));
             sum += z * z;
         }
         let norm = (sum / n as f64).sqrt();

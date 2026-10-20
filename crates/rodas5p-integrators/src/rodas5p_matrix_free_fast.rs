@@ -40,6 +40,7 @@ use std::sync::{Arc, Mutex};
 use faer::c64;
 use rodas5p_core::LinearSolveReport;
 use rodas5p_core::Preconditioner;
+use rodas5p_core::scaled_error_component;
 use rodas5p_core::{
     CoreError, CoreResult, IdentityPreconditioner, InitialGuess, KrylovSystemIdentity,
     LinearMethod, LinearOperator, LinearSolverConfig, OperatorApplicationWork, PreconditionerKind,
@@ -2991,12 +2992,12 @@ impl Rodas5pMfFastWorkspace {
         let mut sum = 0.0;
         for ((e, a), b) in error.iter().zip(y).zip(&self.y_new) {
             let scale = atol + rtol * a.abs().max(b.abs());
-            if !(scale.is_finite() && scale > 0.0) {
+            if !(scale.is_finite() && scale >= 0.0) {
                 return Err(CoreError::InvalidInput(
-                    "every output error scale must be finite and positive".into(),
+                    "every output error scale must be finite and nonnegative".into(),
                 ));
             }
-            let z = e / scale;
+            let z = scaled_error_component(*e, scale);
             sum += z * z;
         }
         let norm = (sum / n as f64).sqrt();

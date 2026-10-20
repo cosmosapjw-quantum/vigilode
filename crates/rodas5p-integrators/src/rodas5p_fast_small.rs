@@ -17,7 +17,9 @@
 //! `[[f64; 8]; 8]` coefficient tables and index-loop triangular solves, both
 //! with the same operations in the same order (bitwise the same results).
 
-use rodas5p_core::{CoreError, CoreResult, WorkCounters, rodas5p_coefficients};
+use rodas5p_core::{
+    CoreError, CoreResult, WorkCounters, rodas5p_coefficients, scaled_error_component,
+};
 
 use crate::{
     AdaptiveControllerState, AdaptiveFailureKind, AdaptiveStepConfig, ObservedIntegrationResult,
@@ -258,7 +260,7 @@ impl<const N: usize> Workspace<N> {
         let error = &self.u[STAGES - 1];
         let mut sum = 0.0;
         for ((e, a), b) in error.iter().zip(y).zip(&self.y_new) {
-            let z = e / (atol + rtol * a.abs().max(b.abs()));
+            let z = scaled_error_component(*e, atol + rtol * a.abs().max(b.abs()));
             sum += z * z;
         }
         let norm = (sum / N as f64).sqrt();
@@ -367,7 +369,7 @@ impl<const N: usize> Workspace<N> {
         let error = &self.u[STAGES - 1];
         let mut sum = 0.0;
         for ((e, a), b) in error.iter().zip(y).zip(&self.y_new) {
-            let z = e / (atol + rtol * a.abs().max(b.abs()));
+            let z = scaled_error_component(*e, atol + rtol * a.abs().max(b.abs()));
             sum += z * z;
         }
         let norm = (sum / N as f64).sqrt();

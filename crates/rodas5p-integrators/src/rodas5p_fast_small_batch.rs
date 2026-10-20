@@ -27,7 +27,7 @@
 //! (`collector.limit_step`, `collector.accept`,
 //! [`rodas_next_step_after_attempt`]), not the opt-in options of SPD01.
 
-use rodas5p_core::{CoreError, CoreResult, WorkCounters};
+use rodas5p_core::{CoreError, CoreResult, WorkCounters, scaled_error_component};
 
 use crate::{
     AdaptiveControllerState, AdaptiveFailureKind, AdaptiveStepConfig, ObservedIntegrationResult,
@@ -421,7 +421,7 @@ fn attempt<const N: usize, const B: usize, P: BatchProblem<N, B>>(
     let error = &v.u[STAGES - 1];
     for ((e_row, a_row), b_row) in error.iter().zip(&v.y).zip(&v.y_new) {
         for (((sum, e), a), b) in sum.iter_mut().zip(e_row).zip(a_row).zip(b_row) {
-            let z = e / (atol + rtol * a.abs().max(b.abs()));
+            let z = scaled_error_component(*e, atol + rtol * a.abs().max(b.abs()));
             *sum += z * z;
         }
     }
