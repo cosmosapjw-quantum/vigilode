@@ -1155,8 +1155,12 @@ pub fn rodas5p_dense_interior_error_estimate(
     let filter = LuFactorization::new(&mass.combine(&jacobian, -0.5 * step.h)?)?;
     counters.direct_factorizations += 1;
     let estimate = filter.solve(&defect)?;
+    // An acceptance norm under `Enforce`: the A1 zero-scale rule, as for the
+    // W-filtered estimate. The strict `wrms` would turn the whole run's
+    // interior control off when `atol = 0` and a component is zero at both
+    // ends of a step.
     let scale = error_scale(&step.y_old, &step.y_new, &[atol], rtol)?;
-    wrms(&estimate, &scale)
+    step_error_wrms(&estimate, &scale)
 }
 
 /// The W-filter M - h gamma J0 of a RODAS5P step of size `h` (plan T3), formed
@@ -1235,6 +1239,9 @@ pub fn rodas5p_dense_interior_defect_estimate(
     } else {
         defect
     };
+    // Report-only (`ReportDefect` decides no acceptance), so it keeps the
+    // strict norm: a zero error scale stays visible as an unavailable
+    // estimate instead of being masked by the A1 zero-scale rule.
     let scale = error_scale(&step.y_old, &step.y_new, &[atol], rtol)?;
     wrms(&estimate, &scale)
 }

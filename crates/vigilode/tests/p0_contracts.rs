@@ -1003,3 +1003,46 @@ fn options_without_interior_error_deserialize_to_the_default() {
     assert_eq!(record["driver_work"]["control"], "off");
     assert_eq!(record["options"]["interior_error"], "w-filtered-enforce");
 }
+
+// ------------------------------------------------- final-fix wave contracts
+
+/// `y0' = -y0`, `y1' = 0` from `[1, 0]`: component 1 is zero at both ends of
+/// every step, so with `atol = 0` its error scale is zero (the A1 rule).
+fn zero_component_decay() -> Problem {
+    Problem::new(2, |_t, y, dy| {
+        dy[0] = -y[0];
+        dy[1] = 0.0;
+        Ok(())
+    })
+    .jacobian(Jacobian::dense(|_t, _y, jac| {
+        jac.fill(0.0);
+        jac[0] = -1.0;
+        Ok(())
+    }))
+    .autonomous()
+}
+
+#[test]
+fn enforcing_interior_error_survives_a_zero_error_scale_component() {
+    for mode in [InteriorError::WFilteredEnforce, InteriorError::Enforce] {
+        let o = dense_opts(1.0e-6, 0.0, mode);
+        let sol = Rodas5p::solve(&zero_component_decay(), (0.0, 5.0), &[1.0, 0.0], &o).unwrap();
+        assert!(sol.is_success(), "{mode:?}");
+        match &sol.stats.driver_work {
+            DriverWork::SequentialDense {
+                samples,
+                unavailable,
+                interior_rejections,
+                ..
+            } => {
+                assert_eq!(*unavailable, 0, "{mode:?}: estimate unavailable");
+                assert_eq!(*interior_rejections, 0, "{mode:?}");
+                assert_eq!(
+                    *samples, sol.stats.accepted_steps,
+                    "{mode:?}: every accepted step must be sampled"
+                );
+            }
+            other => panic!("expected the sequential dense driver, got {other:?}"),
+        }
+    }
+}
