@@ -5,6 +5,7 @@ ROOT=$PWD
 NODE=research/midcheck_20261020
 NATIVE=research/midcheck_native_20261020
 PIN=9c6a6d9145795e35b978652a567b806ddc84a6bd
+RECEIPTS=64b9852124b67eedbb8575b42c01127e4b86283b
 STAGE=setup
 trap 'c=$?; printf "{\"stage\":\"%s\",\"exit_code\":%s}\n" "$STAGE" "$c" > "$OUT/EXIT_STATUS.json"' EXIT
 rustup toolchain install 1.94.1 --profile minimal > "$OUT/rustup.log" 2>&1
@@ -14,6 +15,7 @@ python3 -m pip install --disable-pip-version-check 'numpy==2.3.5' 'scipy==1.16.3
 { git rev-parse HEAD; rustc +1.94.1 -Vv; cargo +1.94.1 -Vv; gfortran --version; python3 -m pip freeze; } > "$OUT/ENVIRONMENT.txt"
 STAGE=source_pinning
 git fetch --depth=1 origin "$PIN"
+git fetch --depth=1 origin "$RECEIPTS"
 mkdir -p "$NATIVE/src" "$NATIVE/refinement" "$NATIVE/sources"
 ORIG=research/strict_solver_comparison_20261019
 for f in Cargo.toml src/main.rs src/build.rs src/vode_bridge.f90 refinement/banded.rs; do
@@ -23,8 +25,8 @@ for f in vode dgefa dgesl dgbfa dgbsl; do
     git show "$PIN:$ORIG/runs/39257390707/sources/$f.f" > "$NATIVE/sources/$f.f"
 done
 git show "$PIN:$ORIG/runs/39257390707/NETLIB_SHA256SUMS" > "$NATIVE/NETLIB_SHA256SUMS"
-git show "$PIN:$ORIG/runs/39257390707/references.json" > "$OUT/references.json"
-git show "$PIN:$ORIG/refined_runs/39261895983/FROZEN_MATCHED_SELECTION.json" > "$OUT/FROZEN_MATCHED_SELECTION.json"
+git show "$RECEIPTS:$ORIG/runs/39257390707/references.json" > "$OUT/references.json"
+git show "$RECEIPTS:$ORIG/refined_runs/39261895983/FROZEN_MATCHED_SELECTION.json" > "$OUT/FROZEN_MATCHED_SELECTION.json"
 (cd "$NATIVE/sources" && sha256sum -c ../NETLIB_SHA256SUMS) > "$OUT/NETLIB_VERIFICATION.log"
 python3 "$NODE/patch_native.py" "$NATIVE" | tee "$OUT/PATCH.log"
 cp "$NATIVE/PATCH_RECEIPT.json" "$OUT/PATCH_RECEIPT.json"
