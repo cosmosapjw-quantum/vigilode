@@ -1,0 +1,74 @@
+name: Hybrid structure selective AD research
+on:
+  push:
+    branches: [research/hybrid-structure-ad-20261020]
+    paths:
+      - '.github/workflows/hybrid-structure-ad-20261020.yml'
+      - 'research/hybrid_20261020/run_ci.sh'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: hybrid-structure-ad-20261020
+  cancel-in-progress: false
+jobs:
+  execute:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      CARGO_BUILD_JOBS: '2'
+      CARGO_PROFILE_DEV_DEBUG: '0'
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Run bounded research
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT="research/hybrid_20261020/runs/${GITHUB_RUN_ID}"
+          mkdir -p "$OUT"
+          { date -u; uname -a; lscpu; free -m; git rev-parse HEAD; } > "$OUT/HOST.txt"
+          bash research/hybrid_20261020/run_ci.sh "$OUT" 2>&1 | tee "$OUT/execution.log"
+      - name: Preserve exact source and evidence
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT="research/hybrid_20261020/runs/${GITHUB_RUN_ID}"
+          [[ -d "$OUT" ]] || exit 0
+          python3 - "$OUT" <<'PY'
+          import hashlib,json,sys
+          from pathlib import Path
+          r=Path(sys.argv[1]);manifest=[]
+          for p in list(r.rglob('*')):
+              if p.is_file() and p.stat().st_size>=16*1024*1024:
+                  names=[];h=hashlib.sha256()
+                  with p.open('rb') as f:
+                      k=0
+                      while b:=f.read(8*1024*1024):
+                          q=p.with_name(p.name+f'.part{k:04d}');q.write_bytes(b);names.append(str(q.relative_to(r)));h.update(b);k+=1
+                  manifest.append({'original':str(p.relative_to(r)),'sha256':h.hexdigest(),'parts_in_order':names})
+          (r/'RECONSTRUCTION.json').write_text(json.dumps(manifest,indent=2)+'\n')
+          with (r/'SHA256SUMS').open('w') as f:
+              for p in sorted(r.rglob('*')):
+                  if p.is_file() and p.stat().st_size<16*1024*1024 and p.name not in ('SHA256SUMS','execution.log'):
+                      f.write(hashlib.sha256(p.read_bytes()).hexdigest()+'  '+str(p.relative_to(r))+'\n')
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          find "$OUT" -type f -size -16777216c -print0 | xargs -0 -r git add -f --
+          if ! git diff --cached --quiet; then
+            git commit -m "research: retain hybrid run ${GITHUB_RUN_ID} [skip ci]"
+            git fetch origin research/hybrid-structure-ad-20261020
+            git rebase origin/research/hybrid-structure-ad-20261020
+            git push origin HEAD:refs/heads/research/hybrid-structure-ad-20261020
+          fi
