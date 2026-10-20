@@ -9,15 +9,7 @@ description = "Opt-in research coupled matrix-free Rosenbrock stage solver"
 [dependencies]
 rodas5p-core = { path = "../rodas5p-core" }
 rodas5p-integrators = { path = "../rodas5p-integrators" }
-serde = { version = "1.0.229", features = ["derive"] }
+serde.workspace = true
 
 [dev-dependencies]
-serde_json = { version = "1.0.151", features = ["float_roundtrip"] }
-
-[profile.measurement]
-inherits = "release"
-opt-level = 3
-lto = false
-codegen-units = 1
-
-[workspace]
+serde_json.workspace = true

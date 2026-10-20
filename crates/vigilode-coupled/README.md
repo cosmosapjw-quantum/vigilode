@@ -18,10 +18,10 @@ This is the first native step proposed by the supplied integration-research repo
 From the repository root, after installing Rust1.94.1:
 
 ```bash
-cargo +1.94.1 test --manifest-path crates/vigilode-coupled/Cargo.toml --locked
-cargo +1.94.1 build --manifest-path crates/vigilode-coupled/Cargo.toml \
+cargo +1.94.1 test -p vigilode-coupled --locked
+cargo +1.94.1 build -p vigilode-coupled \
   --profile measurement --example coupled_bench --locked
-crates/vigilode-coupled/target/measurement/examples/coupled_bench \
+target/measurement/examples/coupled_bench \
   run few-mode 12288 1 0.001 coupled-4 3 1
 ```
 
