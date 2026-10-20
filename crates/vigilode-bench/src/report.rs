@@ -203,6 +203,33 @@ pub fn render(doc: &Value) -> Result<String, String> {
 
     o.push_str("## Matched-error comparison\n\n");
     o.push_str(&format!("Common levels of `error_common`: {}. At each level both arms' median wall time and RHS count are interpolated in log–log on their own successful points. `time_ratio = comparator / VigilODE` (above 1: VigilODE faster). Ratios exist only where both arms bracket the level; every other entry is `DIAGNOSTIC_ONLY`. Band-structured comparators are compared with `vigilode-banded`, the others with `vigilode`. Reference-implementation-only arms are excluded.\n\n", c(doc, &["corpus", "error_levels"])));
+    o.push_str("The comparison is not between unconstrained solvers: the VigilODE arms land a step on every one of the grid times (the facade offers no dense output), so their step size is capped by the grid spacing and the extra steps are inside every VigilODE time and RHS count, while every comparator steps freely and interpolates. The table below gives, for every VigilODE row, the accepted steps and how many of them were clipped to a grid time.\n\n");
+    let rows_all = at(doc, &["rows"]).as_array().cloned().unwrap_or_default();
+    table(
+        &mut o,
+        &[
+            "problem",
+            "arm",
+            "rtol",
+            "accepted steps",
+            "output-clipped steps",
+            "internal steps",
+        ],
+        rows_all
+            .iter()
+            .filter(|r| c(r, &["comparator_fidelity"]) == "solver-under-test")
+            .map(|r| {
+                vec![
+                    c(r, &["problem"]),
+                    c(r, &["arm"]),
+                    c(r, &["rtol"]),
+                    c(r, &["work", "accepted_steps"]),
+                    c(r, &["native", "output_clipped_steps"]),
+                    c(r, &["native", "internal_steps"]),
+                ]
+            })
+            .collect(),
+    );
     let matched = at(doc, &["matched"])
         .as_array()
         .cloned()
@@ -241,7 +268,7 @@ pub fn render(doc: &Value) -> Result<String, String> {
     );
 
     o.push_str("## Rows\n\n");
-    o.push_str("`error_common`: max over the grid of the WRMS error against the reference with weights `error_rtol (atol_scale + |y_ref|)`; `error_own`: the same with the run's own weights `rtol (atol_scale + |y_ref|)`, i.e. its own atol vector and rtol. Work counts are solver-reported (`—`: not reported); `rhs`, `jac`, `jvp` are the shared model's callback counts. Allocations: every heap allocation call of the run (`heap`) and its Rust subset (`rust`). Failed runs are kept with their work.\n\n");
+    o.push_str("`error_common`: max over the grid of the WRMS error against the reference with weights `error_rtol (atol_scale + |y_ref|)`; `error_own`: the same with the run's own weights `rtol (atol_scale + |y_ref|)`, i.e. its own atol vector and rtol. Work counts are solver-reported (`—`: not reported; `clipped`: VigilODE steps shortened to land on a grid time); `rhs`, `jac`, `jvp` are the shared model's callback counts. Allocations: every heap allocation call of the run (`heap`) and its Rust subset (`rust`). Failed runs are kept with their work.\n\n");
     let rows = at(doc, &["rows"]).as_array().cloned().unwrap_or_default();
     for p in &problems {
         let id = c(p, &["id"]);
@@ -258,6 +285,7 @@ pub fn render(doc: &Value) -> Result<String, String> {
                 "error_own",
                 "ms",
                 "acc",
+                "clipped",
                 "rej",
                 "LU",
                 "rhs",
@@ -280,6 +308,7 @@ pub fn render(doc: &Value) -> Result<String, String> {
                         c(r, &["error_wrms_own"]),
                         c(r, &["wall_ms_median"]),
                         c(r, &["work", "accepted_steps"]),
+                        c(r, &["native", "output_clipped_steps"]),
                         c(r, &["work", "rejected_steps"]),
                         c(r, &["work", "factorizations"]),
                         c(r, &["callbacks", "rhs"]),
