@@ -426,13 +426,13 @@ pub struct Rodas5pFastResult {
 }
 
 /// The stage arithmetic of one integration, allocated once.
-struct Workspace {
-    n: usize,
-    s: usize,
-    gamma: f64,
-    c: Vec<f64>,
-    gamma_rows: Vec<f64>,
-    lu_kind: Rodas5pFastLu,
+pub(crate) struct Workspace {
+    pub(crate) n: usize,
+    pub(crate) s: usize,
+    pub(crate) gamma: f64,
+    pub(crate) c: Vec<f64>,
+    pub(crate) gamma_rows: Vec<f64>,
+    pub(crate) lu_kind: Rodas5pFastLu,
     /// Row-major `W` and its in-place factors (in-place LU).
     w: Vec<f64>,
     pivots: Vec<usize>,
@@ -446,22 +446,22 @@ struct Workspace {
     lu_policy: FastLuPolicy,
     /// Nonzero entries of the strictly lower `a` and `C` rows and of
     /// `b_code`, in ascending column order.
-    a_nonzero: Vec<Vec<(usize, f64)>>,
-    c_nonzero: Vec<Vec<(usize, f64)>>,
-    b_nonzero: Vec<(usize, f64)>,
+    pub(crate) a_nonzero: Vec<Vec<(usize, f64)>>,
+    pub(crate) c_nonzero: Vec<Vec<(usize, f64)>>,
+    pub(crate) b_nonzero: Vec<(usize, f64)>,
     /// `W` for faer, and its factorization.
     w_dense: DenseMatrix,
     faer_lu: Option<LuFactorization>,
     /// The Jacobian at the state of the current attempt, kept across steps
     /// (the in-place Jacobian callback rewrites its own pattern).
-    jacobian: DenseMatrix,
-    lu_chosen: bool,
-    f0: Vec<f64>,
-    ft: Vec<f64>,
-    u: Vec<f64>,
-    stage_state: Vec<f64>,
-    stage_rhs: Vec<f64>,
-    y_new: Vec<f64>,
+    pub(crate) jacobian: DenseMatrix,
+    pub(crate) lu_chosen: bool,
+    pub(crate) f0: Vec<f64>,
+    pub(crate) ft: Vec<f64>,
+    pub(crate) u: Vec<f64>,
+    pub(crate) stage_state: Vec<f64>,
+    pub(crate) stage_rhs: Vec<f64>,
+    pub(crate) y_new: Vec<f64>,
     band: Option<BandState>,
 }
 
@@ -489,7 +489,7 @@ impl Workspace {
         Ok(work)
     }
 
-    fn new(n: usize, lu_policy: FastLuPolicy) -> CoreResult<Self> {
+    pub(crate) fn new(n: usize, lu_policy: FastLuPolicy) -> CoreResult<Self> {
         let mut work = Self::with_dense_size(n, n)?;
         work.lu_policy = lu_policy;
         // Only a policy that uses the extents at this size allocates them, so
@@ -555,7 +555,7 @@ impl Workspace {
         })
     }
 
-    fn choose_lu(&mut self) {
+    pub(crate) fn choose_lu(&mut self) {
         let n = self.n;
         let nonzero = self
             .jacobian
@@ -581,7 +581,7 @@ impl Workspace {
     }
 
     /// Form `W = I/(h gamma) - J` and factor it.
-    fn factor(&mut self, h: f64, counters: &mut WorkCounters) -> CoreResult<()> {
+    pub(crate) fn factor(&mut self, h: f64, counters: &mut WorkCounters) -> CoreResult<()> {
         let n = self.n;
         let inv = 1.0 / (h * self.gamma);
         if let Some(band) = self.band.as_mut() {
@@ -644,7 +644,7 @@ impl Workspace {
     }
 
     /// Solve `W x = stage_rhs` in place.
-    fn solve(&mut self, counters: &mut WorkCounters) -> CoreResult<()> {
+    pub(crate) fn solve(&mut self, counters: &mut WorkCounters) -> CoreResult<()> {
         counters.linear_solves += 1;
         counters.direct_solve_calls += 1;
         match self.lu_kind {
@@ -1119,7 +1119,7 @@ pub fn rodas5p_fast_step(
     Ok((work.y_new, error, work.lu_kind))
 }
 
-fn failure_kind(error: &CoreError) -> Option<AdaptiveFailureKind> {
+pub(crate) fn failure_kind(error: &CoreError) -> Option<AdaptiveFailureKind> {
     match error {
         CoreError::LinearSolve(_) => Some(AdaptiveFailureKind::LinearSolve),
         CoreError::NonlinearSolve(_) => Some(AdaptiveFailureKind::NonlinearSolve),

@@ -63,6 +63,7 @@ mod rhs_telemetry;
 mod rodas5p_fast;
 mod rodas5p_fast_small;
 mod rodas5p_fast_small_batch;
+mod rodas5p_lagged;
 mod rodas5p_matrix_free_fast;
 mod routing;
 mod sabr;
@@ -401,6 +402,12 @@ pub use rodas5p_fast_small::{
 pub use rodas5p_fast_small_batch::{
     BatchProblem, RODAS5P_FAST_SMALL_BATCH_DRIVER_ID, SmallBatchMember,
     integrate_rodas5p_fast_small_batch,
+};
+pub use rodas5p_lagged::{
+    LaggedWork, RODAS5P_LAGGED_CONTRACTION_MAX, RODAS5P_LAGGED_DRIVER_ID,
+    RODAS5P_LAGGED_MAX_ITERATIONS, RODAS5P_LAGGED_THETA, RODAS5P_NONSTIFF_STAGE_SENSITIVITIES,
+    Rodas5pLaggedOptions, Rodas5pLaggedResult, integrate_rodas5p_lagged_observed,
+    rodas5p_lagged_stage_targets,
 };
 pub use rodas5p_matrix_free_fast::{
     AttemptCharge, AttemptLgmresSnapshot, AttemptResidualOutcome, AttemptResidualRecord,
