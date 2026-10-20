@@ -138,9 +138,28 @@ fn counted_action_records_cold_coefficient_table_without_changing_authority() {
     assert!(receipt.subtotal().interval_kernel_invocations() > 0);
     assert!(receipt.subtotal().scalar_proxy_units() > 0);
     assert!(receipt.subtotal().allocation_requests() > 0);
-    assert!(receipt.leja_points_history_available());
-    assert!(receipt.node_bounds_history_available());
-    assert!(receipt.suffix_bounds_history_available());
+    // The static tables are process-wide: whichever test in this binary touches a table
+    // first initializes it, and a sibling that uses the uncounted API leaves no history.
+    // History is therefore available exactly when the table was not preexisting-unattributed.
+    for (observation, available) in [
+        (
+            receipt.leja_points_observation(),
+            receipt.leja_points_history_available(),
+        ),
+        (
+            receipt.node_bounds_observation(),
+            receipt.node_bounds_history_available(),
+        ),
+        (
+            receipt.suffix_bounds_observation(),
+            receipt.suffix_bounds_history_available(),
+        ),
+    ] {
+        assert_eq!(
+            available,
+            observation != OnceLockObservation::PreexistingUnattributed
+        );
+    }
     assert_eq!(receipt.subtotal().cache_misses(), 1);
     assert_eq!(receipt.subtotal().cache_hits(), 1); // preparation plus slice retrieval
     assert_eq!(

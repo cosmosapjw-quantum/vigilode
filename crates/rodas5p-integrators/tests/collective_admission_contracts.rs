@@ -1,6 +1,6 @@
 use std::{
     alloc::{GlobalAlloc, Layout, System},
-    sync::atomic::{AtomicBool, AtomicU64, Ordering},
+    cell::Cell,
 };
 
 use rodas5p_integrators::{
@@ -9,9 +9,14 @@ use rodas5p_integrators::{
 
 struct CountingAllocator;
 
-static TRACK: AtomicBool = AtomicBool::new(false);
-static ALLOCATIONS: AtomicU64 = AtomicU64::new(0);
-static ALLOCATED_BYTES: AtomicU64 = AtomicU64::new(0);
+// Tracking state is per thread: the harness and sibling tests allocate concurrently, and
+// process-wide counters would charge their allocations to the measured region. The measured
+// operations run on the calling test thread.
+thread_local! {
+    static TRACK: Cell<bool> = const { Cell::new(false) };
+    static ALLOCATIONS: Cell<u64> = const { Cell::new(0) };
+    static ALLOCATED_BYTES: Cell<u64> = const { Cell::new(0) };
+}
 
 #[global_allocator]
 static ALLOCATOR: CountingAllocator = CountingAllocator;
@@ -19,9 +24,9 @@ static ALLOCATOR: CountingAllocator = CountingAllocator;
 unsafe impl GlobalAlloc for CountingAllocator {
     unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
         let pointer = unsafe { System.alloc(layout) };
-        if !pointer.is_null() && TRACK.load(Ordering::Relaxed) {
-            ALLOCATIONS.fetch_add(1, Ordering::Relaxed);
-            ALLOCATED_BYTES.fetch_add(layout.size() as u64, Ordering::Relaxed);
+        if !pointer.is_null() && TRACK.with(Cell::get) {
+            ALLOCATIONS.with(|count| count.set(count.get() + 1));
+            ALLOCATED_BYTES.with(|bytes| bytes.set(bytes.get() + layout.size() as u64));
         }
         pointer
     }
@@ -32,16 +37,16 @@ unsafe impl GlobalAlloc for CountingAllocator {
 }
 
 fn count_allocations<T>(operation: impl FnOnce() -> T) -> (T, u64, u64) {
-    TRACK.store(false, Ordering::SeqCst);
-    ALLOCATIONS.store(0, Ordering::Relaxed);
-    ALLOCATED_BYTES.store(0, Ordering::Relaxed);
-    TRACK.store(true, Ordering::SeqCst);
+    TRACK.with(|track| track.set(false));
+    ALLOCATIONS.with(|count| count.set(0));
+    ALLOCATED_BYTES.with(|bytes| bytes.set(0));
+    TRACK.with(|track| track.set(true));
     let result = operation();
-    TRACK.store(false, Ordering::SeqCst);
+    TRACK.with(|track| track.set(false));
     (
         result,
-        ALLOCATIONS.load(Ordering::Relaxed),
-        ALLOCATED_BYTES.load(Ordering::Relaxed),
+        ALLOCATIONS.with(Cell::get),
+        ALLOCATED_BYTES.with(Cell::get),
     )
 }
 

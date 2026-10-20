@@ -1,6 +1,6 @@
 use std::alloc::{GlobalAlloc, Layout, System};
+use std::cell::Cell;
 use std::sync::Mutex;
-use std::sync::atomic::{AtomicUsize, Ordering};
 
 use rodas5p_core::directed::Interval;
 use rodas5p_core::{CoreError, CoreResult, WorkCounters};
@@ -11,7 +11,20 @@ use rodas5p_integrators::{
 
 struct CountingAllocator;
 
-static ALLOCATIONS: AtomicUsize = AtomicUsize::new(0);
+// Allocation counts are per thread: the harness and sibling tests allocate concurrently, and a
+// process-wide counter would charge their allocations to the measured region. The measured
+// operations run on the calling test thread.
+thread_local! {
+    static ALLOCATIONS: Cell<usize> = const { Cell::new(0) };
+}
+
+fn allocations() -> usize {
+    ALLOCATIONS.with(Cell::get)
+}
+
+fn count_allocation() {
+    ALLOCATIONS.with(|count| count.set(count.get() + 1));
+}
 static TEST_LOCK: Mutex<()> = Mutex::new(());
 
 #[global_allocator]
@@ -19,15 +32,15 @@ static GLOBAL: CountingAllocator = CountingAllocator;
 
 unsafe impl GlobalAlloc for CountingAllocator {
     unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
-        ALLOCATIONS.fetch_add(1, Ordering::Relaxed);
+        count_allocation();
         unsafe { System.alloc(layout) }
     }
     unsafe fn alloc_zeroed(&self, layout: Layout) -> *mut u8 {
-        ALLOCATIONS.fetch_add(1, Ordering::Relaxed);
+        count_allocation();
         unsafe { System.alloc_zeroed(layout) }
     }
     unsafe fn realloc(&self, ptr: *mut u8, layout: Layout, size: usize) -> *mut u8 {
-        ALLOCATIONS.fetch_add(1, Ordering::Relaxed);
+        count_allocation();
         unsafe { System.realloc(ptr, layout, size) }
     }
     unsafe fn dealloc(&self, ptr: *mut u8, layout: Layout) {
@@ -52,12 +65,12 @@ fn calibrate_allocator() -> usize {
         0.0,
     )
     .unwrap();
-    let before = ALLOCATIONS.load(Ordering::SeqCst);
+    let before = allocations();
     let cloned = std::hint::black_box(model.clone());
     std::hint::black_box(cloned.xi().as_ptr());
     std::hint::black_box(cloned.weights().as_ptr());
     std::hint::black_box(cloned.initial_amplitudes().as_ptr());
-    let observed = ALLOCATIONS.load(Ordering::SeqCst) - before;
+    let observed = allocations() - before;
     assert!(
         observed >= 3,
         "ALLOCATION_CALIBRATION_FAILED: library model clone with three Vec buffers measured {observed} allocations"
@@ -425,7 +438,7 @@ fn pr101_warmed_provider_operations_make_no_heap_allocations() {
         .one_sided_log_norm_upper(time, &state, &mut work)
         .unwrap();
 
-    let before = ALLOCATIONS.load(Ordering::SeqCst);
+    let before = allocations();
     for _ in 0..32 {
         owner
             .enclose_rhs(time, &state, &mut rhs, &mut work)
@@ -437,7 +450,7 @@ fn pr101_warmed_provider_operations_make_no_heap_allocations() {
                 .unwrap(),
         );
     }
-    assert_eq!(ALLOCATIONS.load(Ordering::SeqCst) - before, 0);
+    assert_eq!(allocations() - before, 0);
 }
 
 #[test]
@@ -455,7 +468,7 @@ fn pr101_warmed_segment_verification_and_output_make_no_allocations() {
         .output_enclosure(&segment, &certificate, h + 1023.0 / 1024.0, &mut work)
         .unwrap();
 
-    let before = ALLOCATIONS.load(Ordering::SeqCst);
+    let before = allocations();
     for _ in 0..16 {
         let certificate = owner
             .verify_segment(&segment, 1.0e-15, 1.0e-3, &mut work)
@@ -466,5 +479,5 @@ fn pr101_warmed_segment_verification_and_output_make_no_allocations() {
             .unwrap();
         std::hint::black_box(output);
     }
-    assert_eq!(ALLOCATIONS.load(Ordering::SeqCst) - before, 0);
+    assert_eq!(allocations() - before, 0);
 }
