@@ -395,9 +395,11 @@ pub use rodas5p_fast::{
     RODAS5P_FAST_COLEXT_DRIVER_ID, RODAS5P_FAST_COLEXT64_DRIVER_ID, RODAS5P_FAST_DRIVER_ID,
     RODAS5P_FAST_SMALL_LU_MAX, RODAS5P_FAST_SPARSE_DENSITY_MAX, Rodas5pFastBandedResult,
     Rodas5pFastLu, Rodas5pFastOptions, Rodas5pFastResult, integrate_rodas5p_fast_banded_observed,
+    integrate_rodas5p_fast_banded_observed_with_atol,
     integrate_rodas5p_fast_banded_observed_with_kernel,
     integrate_rodas5p_fast_banded_observed_with_options, integrate_rodas5p_fast_observed,
-    integrate_rodas5p_fast_observed_with_options, integrate_rodas5p_fast_observed_with_partial,
+    integrate_rodas5p_fast_observed_with_atol, integrate_rodas5p_fast_observed_with_options,
+    integrate_rodas5p_fast_observed_with_partial,
     integrate_rodas5p_fast_observed_with_telemetry, lu_research, rodas5p_fast_banded_solve,
     rodas5p_fast_step,
 };

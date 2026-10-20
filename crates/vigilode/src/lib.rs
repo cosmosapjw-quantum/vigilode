@@ -40,9 +40,9 @@
 //!
 //! | Jacobian provider | Structure | Entry point | Driver |
 //! | --- | --- | --- | --- |
-//! | [`Jacobian::Dense`], [`Jacobian::FiniteDifference`] | none | `integrate_rodas5p_routed_observed` (rule 3) | dense fast |
+//! | [`Jacobian::Dense`], [`Jacobian::FiniteDifference`] | none | `integrate_rodas5p_routed_observed` (rule 3); with a vector [`Atol`], `integrate_rodas5p_fast_observed_with_atol` | dense fast |
 //! | [`Jacobian::Dense`] | [`Problem::banded`] | `integrate_rodas5p_routed_observed` (rule 1, band verified at `t0`) | banded fast |
-//! | [`Jacobian::Banded`], [`Jacobian::FiniteDifference`] | band | `integrate_rodas5p_fast_banded_observed` | banded fast |
+//! | [`Jacobian::Banded`], [`Jacobian::FiniteDifference`] | band | `integrate_rodas5p_fast_banded_observed` (`..._with_atol` with a vector [`Atol`]) | banded fast |
 //! | [`Jacobian::Jvp`] | none | `integrate_rodas5p_routed_observed` (rule 4) | matrix-free U-form (GMRES) |
 //! | Dense, Banded, FiniteDifference | [`Problem::mass`] or [`Options::dense_output`] | `integrate_adaptive_dense_observed_with_segments` (`..._with_partial` without dense output) | sequential dense (direct LU) |
 //! |  | band (with either) | the same; a finite-difference or [`Jacobian::Banded`] band is assembled into a dense matrix (O(n^3) per factorization); a [`Jacobian::Dense`] band is refused | sequential dense (direct LU) |
@@ -61,9 +61,12 @@
 //!
 //! Requests that no protected driver implements are refused with
 //! [`SolveError::Unsupported`] before any step rather than silently replaced:
-//! a vector [`Atol`], a band declaration on a JVP-only problem, a mass matrix
-//! or dense output on a JVP-only problem, and a declared band on a dense
-//! Jacobian together with a mass matrix or dense output.
+//! a vector [`Atol`] on the matrix-free route, with a mass matrix or dense
+//! output, or on a dense Jacobian with a declared band (a vector is accepted
+//! on the dense and banded fast routes), a band declaration on a JVP-only
+//! problem, a mass matrix or dense output on a JVP-only problem, and a
+//! declared band on a dense Jacobian together with a mass matrix or dense
+//! output.
 //!
 //! ## Failures
 //!

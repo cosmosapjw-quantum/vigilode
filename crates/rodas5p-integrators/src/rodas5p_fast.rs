@@ -667,6 +667,11 @@ pub(crate) struct Workspace {
     pub(crate) stage_state: Vec<f64>,
     pub(crate) stage_rhs: Vec<f64>,
     pub(crate) y_new: Vec<f64>,
+    /// Per-component absolute tolerance of the error norm. Empty means the
+    /// scalar `atol` passed to [`Workspace::attempt`], bit for bit; with `n`
+    /// entries component `i` is scaled by
+    /// `atol_vector[i] + rtol max(|y_i|, |y_new,i|)`.
+    pub(crate) atol_vector: Vec<f64>,
     band: Option<BandState>,
 }
 
@@ -763,6 +768,7 @@ impl Workspace {
             stage_state: vec![0.0; n],
             stage_rhs: vec![0.0; n],
             y_new: vec![0.0; n],
+            atol_vector: Vec::new(),
             band: None,
         })
     }
@@ -1026,9 +1032,17 @@ impl Workspace {
         // atol + rtol max(|y|, |y_new|).
         let error = &self.u[(s - 1) * n..s * n];
         let mut sum = 0.0;
-        for ((e, a), b) in error.iter().zip(y).zip(&self.y_new) {
-            let z = scaled_error_component(*e, atol + rtol * a.abs().max(b.abs()));
-            sum += z * z;
+        if self.atol_vector.is_empty() {
+            for ((e, a), b) in error.iter().zip(y).zip(&self.y_new) {
+                let z = scaled_error_component(*e, atol + rtol * a.abs().max(b.abs()));
+                sum += z * z;
+            }
+        } else {
+            for (((e, a), b), atol_i) in error.iter().zip(y).zip(&self.y_new).zip(&self.atol_vector)
+            {
+                let z = scaled_error_component(*e, atol_i + rtol * a.abs().max(b.abs()));
+                sum += z * z;
+            }
         }
         let norm = (sum / n as f64).sqrt();
         Ok(if norm.is_finite() {
@@ -1424,6 +1438,7 @@ pub fn integrate_rodas5p_fast_observed(
         output,
         Rodas5pFastOptions::default(),
         None,
+        &[],
     )
     .map(|(result, ..)| result)
 }
@@ -1448,6 +1463,7 @@ pub fn integrate_rodas5p_fast_observed_with_partial(
         output,
         Rodas5pFastOptions::default(),
         None,
+        &[],
     )
     .map(|(result, _, partial)| (result, partial))
 }
@@ -1474,6 +1490,7 @@ pub fn integrate_rodas5p_fast_observed_with_telemetry(
         output,
         Rodas5pFastOptions::default(),
         Some(&mut telemetry),
+        &[],
     )
     .map(|(result, ..)| (result, telemetry))
 }
@@ -1488,8 +1505,18 @@ pub fn integrate_rodas5p_fast_observed_with_options(
     output: &OutputSchedule,
     options: Rodas5pFastOptions,
 ) -> CoreResult<Rodas5pFastResult> {
-    integrate_fast(problem, None, t_span, y0, adaptive, output, options, None)
-        .map(|(result, ..)| result)
+    integrate_fast(
+        problem,
+        None,
+        t_span,
+        y0,
+        adaptive,
+        output,
+        options,
+        None,
+        &[],
+    )
+    .map(|(result, ..)| result)
 }
 
 /// [`integrate_rodas5p_fast_observed`] with an explicit band structure
@@ -1544,6 +1571,7 @@ pub fn integrate_rodas5p_fast_banded_observed_with_options(
         output,
         options,
         BandedKernel::Indexed,
+        &[],
     )
 }
 
@@ -1575,7 +1603,101 @@ pub fn integrate_rodas5p_fast_banded_observed_with_kernel(
         output,
         Rodas5pFastOptions::default(),
         kernel,
+        &[],
     )
+}
+
+/// The per-component absolute tolerance of the fast drivers: length `n`,
+/// every entry finite and nonnegative. An empty slice (the scalar path) is
+/// accepted by the private driver only; the public entry points require `n`
+/// entries.
+fn validate_atol_vector(n: usize, atol: &[f64]) -> CoreResult<()> {
+    if atol.is_empty() {
+        return Ok(());
+    }
+    if atol.len() != n {
+        return Err(CoreError::InvalidInput(format!(
+            "the absolute tolerance vector has {} entries, the dimension is {n}",
+            atol.len()
+        )));
+    }
+    if !atol.iter().all(|a| a.is_finite() && *a >= 0.0) {
+        return Err(CoreError::InvalidInput(
+            "every absolute tolerance must be finite and nonnegative".into(),
+        ));
+    }
+    Ok(())
+}
+
+/// [`integrate_rodas5p_fast_observed_with_partial`] with a per-component
+/// absolute tolerance: component `i` of the error norm is scaled by
+/// `atol[i] + rtol max(|y_i|, |y_new,i|)` and `adaptive.atol` is validated
+/// but unused. `atol` must have `n` finite nonnegative entries (otherwise
+/// [`CoreError::InvalidInput`]); an entry of zero follows the zero-scale rule
+/// of [`rodas5p_core::scaled_error_component`]. With every entry equal to
+/// `adaptive.atol` the run is bit for bit the scalar run.
+pub fn integrate_rodas5p_fast_observed_with_atol(
+    problem: &OdeProblem,
+    t_span: (f64, f64),
+    y0: &[f64],
+    adaptive: &AdaptiveStepConfig,
+    output: &OutputSchedule,
+    atol: &[f64],
+) -> CoreResult<(Rodas5pFastResult, Option<DriverPartial>)> {
+    require_atol_vector(problem.dimension, atol)?;
+    integrate_fast(
+        problem,
+        None,
+        t_span,
+        y0,
+        adaptive,
+        output,
+        Rodas5pFastOptions::default(),
+        None,
+        atol,
+    )
+    .map(|(result, _, partial)| (result, partial))
+}
+
+/// [`integrate_rodas5p_fast_banded_observed`] with a per-component absolute
+/// tolerance; see [`integrate_rodas5p_fast_observed_with_atol`].
+pub fn integrate_rodas5p_fast_banded_observed_with_atol(
+    problem: &OdeProblem,
+    band: &BandedJacobian,
+    t_span: (f64, f64),
+    y0: &[f64],
+    adaptive: &AdaptiveStepConfig,
+    output: &OutputSchedule,
+    atol: &[f64],
+) -> CoreResult<Rodas5pFastBandedResult> {
+    let n = problem.dimension;
+    require_atol_vector(n, atol)?;
+    if band.lower >= n.max(1) || band.upper >= n.max(1) {
+        return Err(CoreError::InvalidInput(
+            "the band of the RODAS5P fast banded driver must lie inside the matrix".into(),
+        ));
+    }
+    integrate_banded(
+        problem,
+        band,
+        t_span,
+        y0,
+        adaptive,
+        output,
+        Rodas5pFastOptions::default(),
+        BandedKernel::Indexed,
+        atol,
+    )
+}
+
+/// The public entry points take a vector, never the empty "scalar" marker.
+fn require_atol_vector(n: usize, atol: &[f64]) -> CoreResult<()> {
+    if atol.is_empty() && n > 0 {
+        return Err(CoreError::InvalidInput(
+            "the absolute tolerance vector must have one entry per component".into(),
+        ));
+    }
+    validate_atol_vector(n, atol)
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -1588,6 +1710,7 @@ fn integrate_banded(
     output: &OutputSchedule,
     options: Rodas5pFastOptions,
     kernel: BandedKernel,
+    atol_vector: &[f64],
 ) -> CoreResult<Rodas5pFastBandedResult> {
     let (fast, work, partial) = integrate_fast(
         problem,
@@ -1598,6 +1721,7 @@ fn integrate_banded(
         output,
         options,
         None,
+        atol_vector,
     )?;
     Ok(Rodas5pFastBandedResult {
         fast,
@@ -1616,8 +1740,10 @@ fn integrate_fast(
     output: &OutputSchedule,
     options: Rodas5pFastOptions,
     mut telemetry: Option<&mut ControllerTelemetry>,
+    atol_vector: &[f64],
 ) -> CoreResult<(Rodas5pFastResult, Option<BandedWork>, Option<DriverPartial>)> {
     adaptive.validate()?;
+    validate_atol_vector(problem.dimension, atol_vector)?;
     let (mut t, tf) = t_span;
     if tf < t || y0.len() != problem.dimension {
         return Err(CoreError::InvalidInput(
@@ -1633,6 +1759,7 @@ fn integrate_fast(
         Some((band, kernel)) => Workspace::new_banded(problem.dimension, band, kernel)?,
         None => Workspace::new(problem.dimension, options.lu_policy)?,
     };
+    work.atol_vector = atol_vector.to_vec();
     let mut y = y0.to_vec();
     let mut h = adaptive.initial_step.min(crate::output::step_to(t, tf)?);
     let mut controller = AdaptiveControllerState::default();

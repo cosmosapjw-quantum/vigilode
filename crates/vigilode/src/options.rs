@@ -8,12 +8,25 @@ use serde::{Deserialize, Serialize};
 pub enum Atol {
     /// One absolute tolerance for every component.
     Scalar(f64),
-    /// One absolute tolerance per component (length `n`).
+    /// One absolute tolerance per component (length `n`, every entry finite
+    /// and nonnegative; otherwise [`crate::SolveError::InvalidInput`]).
     ///
-    /// No protected driver of this release takes a per-component absolute
-    /// tolerance, so [`crate::Rodas5p::solve`] refuses it with
-    /// [`crate::SolveError::Unsupported`] instead of using a scalar in its
-    /// place.
+    /// Component `i` of the error norm is scaled by
+    /// `atol[i] + rtol max(|y_i|, |y_new,i|)`; an entry of zero follows the
+    /// zero-scale rule of the drivers (a component that is zero at both ends
+    /// of a step with a zero error contributes 0, a nonzero error rejects the
+    /// step). A vector whose entries all equal a scalar gives that scalar's
+    /// run bit for bit.
+    ///
+    /// Accepted on the dense fast route (an undeclared band; the facade calls
+    /// `integrate_rodas5p_fast_observed_with_atol` itself, since the router
+    /// takes a scalar) and on the banded fast route. Refused with
+    /// [`crate::SolveError::Unsupported`], never replaced by a scalar, on the
+    /// matrix-free route (the Krylov weights take a scalar), under a mass
+    /// matrix or [`Options::dense_output`] (the sequential route), and on a
+    /// dense Jacobian with a declared band. In [`crate::Stats::adaptive`] the
+    /// scalar `atol` is the largest entry of the vector (the drivers read the
+    /// vector); the vector itself is in [`crate::Stats::options`].
     Vector(Vec<f64>),
 }
 
