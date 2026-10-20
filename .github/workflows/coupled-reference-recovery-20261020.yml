@@ -1,0 +1,112 @@
+name: Coupled deterministic reference archive recovery
+on:
+  push:
+    branches: [research/coupled-economy-20261020]
+    paths: ['.github/workflows/coupled-reference-recovery-20261020.yml']
+permissions:
+  contents: write
+jobs:
+  recover:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      CARGO_BUILD_JOBS: '2'
+      OMP_NUM_THREADS: '1'
+      OPENBLAS_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Restore frozen deterministic reference only
+        shell: bash
+        run: |
+          set -euo pipefail
+          ROOT=$PWD
+          OUT="$ROOT/research/coupled_economy_20261020/reference_recovery/${GITHUB_RUN_ID}"
+          mkdir -p "$OUT"
+          { date -u; uname -a; git rev-parse HEAD; } > "$OUT/HOST.txt"
+          rustup toolchain install 1.94.1 --profile minimal > "$OUT/rust_install.log" 2>&1
+          python3 -m pip install 'numpy==2.3.5' 'scipy==1.16.3' > "$OUT/python_install.log" 2>&1
+          SOURCE=f08d152a35fb2db748692570969cb1723c287c26
+          git fetch --depth=1 origin "$SOURCE"
+          git fetch --depth=1 origin 15c43ce76734d0a560fcec5909ac49f1e6f2d347
+          FROZEN="$RUNNER_TEMP/coupled-reference-source"
+          git worktree add --detach "$FROZEN" "$SOURCE"
+          cargo +1.94.1 build --manifest-path "$FROZEN/crates/vigilode-coupled/Cargo.toml" --profile measurement --example economy_bench --locked > "$OUT/reference_build.log" 2>&1
+          # Keep the original command-path field, checked against saved raw rows.
+          BINARY="$ROOT/crates/vigilode-coupled/target/measurement/examples/economy_bench"
+          mkdir -p "$(dirname "$BINARY")"
+          cp "$FROZEN/crates/vigilode-coupled/target/measurement/examples/economy_bench" "$BINARY"
+          python3 - "$OUT" "$BINARY" <<'PY'
+          import gzip,hashlib,importlib.util,json,shutil,subprocess,sys,tempfile
+          from pathlib import Path
+          import numpy as np
+          out=Path(sys.argv[1]);binary=Path(sys.argv[2]);root=Path.cwd()
+          node=root/'research/coupled_economy_20261020';old=node/'runs/39355449893'
+          spec=importlib.util.spec_from_file_location('economy',node/'benchmark.py');mod=importlib.util.module_from_spec(spec);spec.loader.exec_module(mod)
+          with gzip.open(old/'accuracy.jsonl.gz','rt') as f:
+              first=json.loads(next(f))['row']
+          assert first['command'][0]==str(binary),'different canonical original command path'
+          want=dict((p,h)for h,p in (line.split('  ',1)for line in (old/'SHA256SUMS').read_text().splitlines()))['REFERENCES.json']
+          assert want=='93d840405fbe3a095346bcadf089b6ee89cf844927be26f9879034ee0fc63091'
+          fixture=json.loads((root/'fixtures/rodas5p_coefficients_snapshot.json').read_text());refs={}
+          for cell in mod.CELLS:
+              r=mod.legacy.call(binary,cell,'eager-1',mode='reference');p=mod.legacy.python_reference(cell,fixture)
+              if 'y_new' not in r:raise RuntimeError('reference reconstruction failed:'+mod.legacy.name(cell))
+              x=np.asarray(p['y_new']);z=np.asarray(r['y_new']);rho=2*np.abs(x-z)+8*np.finfo(float).eps*np.abs(x)
+              mismatch=float(np.max(np.abs(x-z)/(1+np.abs(x))))
+              refs[mod.legacy.name(cell)]={'python':p,'rust':r,'radius':rho.tolist(),'relative_crosscheck_max':mismatch}
+          b=(json.dumps(refs,indent=2,sort_keys=True,allow_nan=False)+'\n').encode()
+          got=hashlib.sha256(b).hexdigest()
+          receipt={'recorded_sha256':want,'reconstructed_sha256':got,'byte_identity':got==want,
+                   'reference_bytes':len(b),'reference_source':'f08d152a35fb2db748692570969cb1723c287c26',
+                   'reference_reconstruction_calls':len(mod.CELLS),'new_candidate_solver_executions':0,'new_timing_samples':0,
+                   'root_cause':'find -size -16M rounds sizes upward, unlike the Python >=16MiB split rule',
+                   'historical_hashes_or_scores_changed':False}
+          (out/'RECOVERY.json').write_text(json.dumps(receipt,indent=2)+'\n')
+          with gzip.open(out/'REFERENCES.json.gz','wb',compresslevel=9) as f:f.write(b)
+          assert got==want,'reconstructed reference differs; retained separately, NOT admitted as original'
+          with tempfile.TemporaryDirectory() as tmp:
+              copy=Path(tmp)/'run';shutil.copytree(old,copy);(copy/'REFERENCES.json').write_bytes(b)
+              verified=0
+              for line in (copy/'SHA256SUMS').read_text().splitlines():
+                  h,p=line.split('  ',1);assert hashlib.sha256((copy/p).read_bytes()).hexdigest()==h,p;verified+=1
+              check=subprocess.run([sys.executable,str(node/'audit.py'),str(copy)],capture_output=True,text=True)
+              (out/'readback.log').write_text(check.stdout+check.stderr)
+              assert check.returncode==0,'frozen numerical readback failed'
+              for p in ['AUDIT.json','REPORT.md']:shutil.copy2(copy/p,out/('RECOVERED_'+p))
+              receipt.update(status='PASS_EXACT_REFERENCE_RECOVERY',archive_files_verified=verified,
+                             saved_audit_reproduced=json.loads((copy/'AUDIT.json').read_text())==json.loads((old/'AUDIT.json').read_text()))
+              assert receipt['saved_audit_reproduced']
+          (out/'RECOVERY.json').write_text(json.dumps(receipt,indent=2)+'\n')
+          # Resume the existing strict source/test closeout with the exact bytes.
+          restored=old/'REFERENCES.json';restored.write_bytes(b)
+          close=subprocess.run([sys.executable,str(node/'closeout.py'),str(out)],capture_output=True,text=True)
+          (out/'closeout.log').write_text(close.stdout+close.stderr)
+          restored.unlink()
+          assert close.returncode==0,'source/test archive closeout failed'
+          print(json.dumps(receipt))
+          PY
+      - name: Preserve recovery with byte-size predicate
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT="research/coupled_economy_20261020/reference_recovery/${GITHUB_RUN_ID}"
+          [[ -d "$OUT" ]] || exit 0
+          (cd "$OUT"; find . -type f ! -name SHA256SUMS -print0 | sort -z | xargs -0 -r sha256sum > SHA256SUMS)
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          find "$OUT" -type f -size -16777216c -print0 | xargs -0 -r git add -f --
+          if ! git diff --cached --quiet; then
+            git commit -m "archive: retain exact reference recovery ${GITHUB_RUN_ID} [skip ci]"
+            git fetch origin research/coupled-economy-20261020
+            git rebase origin/research/coupled-economy-20261020
+            git push origin HEAD:refs/heads/research/coupled-economy-20261020
+          fi
