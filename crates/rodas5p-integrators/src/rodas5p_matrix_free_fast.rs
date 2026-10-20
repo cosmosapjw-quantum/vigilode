@@ -40,6 +40,7 @@ use std::sync::{Arc, Mutex};
 use faer::c64;
 use rodas5p_core::LinearSolveReport;
 use rodas5p_core::Preconditioner;
+use rodas5p_core::scaled_error_component;
 use rodas5p_core::{
     CoreError, CoreResult, IdentityPreconditioner, InitialGuess, KrylovSystemIdentity,
     LinearMethod, LinearOperator, LinearSolverConfig, OperatorApplicationWork, PreconditionerKind,
@@ -2662,6 +2663,14 @@ impl Rodas5pMfFastWorkspace {
                 self.coupled_eps(h)?;
                 self.staged_scale.clear();
                 self.staged_weight.clear();
+                // Explicit exception to the zero-scale error-norm rule
+                // (`rodas5p_core::scaled_error_component`, production plan
+                // A1): these are Krylov change-of-variables weights from the
+                // START state (x = D z, rows scaled by 1/D), not an
+                // end-of-step error norm. A zero weight would pin x_i = 0, so
+                // the rule would reject forever any component that starts at
+                // 0 and grows. A zero (atol = 0, y_i = 0) or non-finite weight
+                // stays a typed InvalidInput; the unstaged path accepts it.
                 for v in y {
                     let scale = atol + rtol * v.abs();
                     if !(scale.is_finite() && scale > 0.0) {
@@ -2991,12 +3000,12 @@ impl Rodas5pMfFastWorkspace {
         let mut sum = 0.0;
         for ((e, a), b) in error.iter().zip(y).zip(&self.y_new) {
             let scale = atol + rtol * a.abs().max(b.abs());
-            if !(scale.is_finite() && scale > 0.0) {
+            if !(scale.is_finite() && scale >= 0.0) {
                 return Err(CoreError::InvalidInput(
-                    "every output error scale must be finite and positive".into(),
+                    "every output error scale must be finite and nonnegative".into(),
                 ));
             }
-            let z = e / scale;
+            let z = scaled_error_component(*e, scale);
             sum += z * z;
         }
         let norm = (sum / n as f64).sqrt();

@@ -58,7 +58,7 @@ fn lazy_policy_makes_the_same_valid_candidate_with_smaller_jvp_budget() {
     let new = coupled_step_residual_first(&p, 0.0, &[0.1; 96], 0.01, &c, &e);
     assert!(new.candidate.is_some(), "{:?}", new.failure);
     assert_eq!(new.work.jvp_attempted, 59);
-    assert_eq!(new.work.unused_stage_jvp_avoided, 24);
+    assert_eq!(new.work.unused_stage_jvp_avoided, 21);
     assert_eq!(new.work.derivative_batches, 2);
     assert_eq!(new.work.rhs_attempted, 33);
     assert_eq!(new.work.validation_jvp, 8);

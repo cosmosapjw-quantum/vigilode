@@ -1211,6 +1211,9 @@ pub fn integrate_transactional_q1_q2_adaptive_observed_with_admission(
         let accepted = report.step.accepted
             && error <= 1.0
             && report.step.y_new.iter().all(|value| value.is_finite());
+        // The kernel counted its own verdict (embedded error <= 1); the outer
+        // check adds the contraction tail (A1 counter-drift defect).
+        crate::adaptive::reconcile_outer_rejection(&mut counters, report.step.accepted, accepted);
         let failure = (!accepted).then_some(adaptive_rejection_kind(error, &report.step.y_new));
         diagnostics.record_with_failure(
             trial_h,

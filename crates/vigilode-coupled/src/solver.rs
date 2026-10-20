@@ -3,7 +3,8 @@ use crate::{
     Attempt, Candidate, Config, Failure, FailureKind, Result, TARGET_ID, TracePoint, Work,
 };
 use rodas5p_core::{
-    CoreError, DenseMatrix, LinearOperator, Rodas5pCoefficients, WorkCounters, rodas5p_coefficients,
+    CoreError, DenseMatrix, LinearOperator, Rodas5pCoefficients, WorkCounters,
+    rodas5p_coefficients, scaled_error_component,
 };
 use rodas5p_integrators::{OdeProblem, ParallelExecution};
 use std::sync::{
@@ -125,7 +126,9 @@ fn evaluate(
 ) -> Result<Evaluation> {
     f.epoch()?;
     let m = basis.len();
-    work.reserve(f.cfg, S as u64, (S * m) as u64)?;
+    // Stage 0 couples to no earlier stage, so its derivative is never used:
+    // only stages 1..S evaluate (and are charged) m JVPs each.
+    work.reserve(f.cfg, S as u64, ((S - 1) * m) as u64)?;
     work.batch(f.cfg, false)?;
     let active = AtomicUsize::new(0);
     let peak = AtomicUsize::new(0);
@@ -156,10 +159,13 @@ fn evaluate(
                     .collect();
                 finite(&remainder)?;
                 let projected = basis.project(&remainder);
+                let mut derivative = DenseMatrix::zeros(m, m);
+                if i == 0 {
+                    return Ok((projected, derivative));
+                }
                 let current =
                     f.p.linearize_matrix_free(f.t, &state)
                         .map_err(|e| Failure::new(FailureKind::Callback, e.to_string()))?;
-                let mut derivative = DenseMatrix::zeros(m, m);
                 for v in 0..m {
                     let mut d = callback_jvp(current.as_ref(), &basis.q[v], &mut local)?;
                     for (x, j) in d.iter_mut().zip(&basis.jq[v]) {
@@ -322,7 +328,9 @@ fn full_check(
             .map(|(a, b)| f.cfg.atol + f.cfg.rtol * a.abs().max(b.abs()))
             .collect();
     finite(&scale)?;
-    if scale.iter().any(|x| *x <= 0.0) {
+    // A zero scale (atol = 0, component zero at both ends) is valid and
+    // follows rodas5p_core::scaled_error_component.
+    if scale.iter().any(|x| *x < 0.0) {
         return Err(Failure::new(FailureKind::NonFinite, "invalid error scale"));
     }
     out.work.reserve(f.cfg, S as u64, S as u64)?;
@@ -370,15 +378,35 @@ fn full_check(
     for (_, r) in results {
         residuals.push(r?);
     }
+    // WRMS over the positive-scale components (bit-identical to x / s), and
+    // whether a zero-scale component carries a nonzero value: by the
+    // zero-scale rule that makes the norm +inf (reject), not an overflow.
+    let weighted = |v: &[f64]| -> (f64, bool) {
+        let mut zero_scale_nonzero = false;
+        let scaled: Vec<_> = v
+            .iter()
+            .zip(&scale)
+            .map(|(x, s)| {
+                if *s == 0.0 {
+                    zero_scale_nonzero |= scaled_error_component(*x, *s) != 0.0;
+                    0.0
+                } else {
+                    scaled_error_component(*x, *s)
+                }
+            })
+            .collect();
+        (norm(&scaled) / (n as f64).sqrt(), zero_scale_nonzero)
+    };
     let mut wrms = 0.0_f64;
+    let mut wrms_zero_scale = false;
     let mut l2 = 0.0_f64;
     for r in &residuals {
-        let scaled: Vec<_> = r.iter().zip(&scale).map(|(x, s)| x / s).collect();
-        wrms = wrms.max(norm(&scaled) / (n as f64).sqrt());
+        let (value, zero_scale) = weighted(r);
+        wrms = wrms.max(value);
+        wrms_zero_scale |= zero_scale;
         l2 = l2.max(norm(r));
     }
-    let scaled_error: Vec<_> = error.iter().zip(&scale).map(|(x, s)| x / s).collect();
-    let embedded = norm(&scaled_error) / (n as f64).sqrt();
+    let (embedded, embedded_zero_scale) = weighted(&error);
     let relative = l2 / (f.hg.abs() * norm(&f.f0)).max(f64::MIN_POSITIVE);
     if !wrms.is_finite() || !embedded.is_finite() || !relative.is_finite() {
         return Err(Failure::new(
@@ -386,6 +414,12 @@ fn full_check(
             "original-space residual/error overflow",
         ));
     }
+    let wrms = if wrms_zero_scale { f64::INFINITY } else { wrms };
+    let embedded = if embedded_zero_scale {
+        f64::INFINITY
+    } else {
+        embedded
+    };
     out.trace.push(TracePoint {
         basis_dimension: m,
         lambda: 1.0,
@@ -435,8 +469,12 @@ fn validate(p: &OdeProblem, t: f64, y: &[f64], h: f64, c: &Config, work: &mut Wo
     {
         return Err(input("invalid bounded solver limits"));
     }
+    // atol = 0 is allowed (zero-scale rule); rtol must stay positive so
+    // that a nonzero component always has a positive scale.
+    if !c.atol.is_finite() || c.atol < 0.0 {
+        return Err(input("tolerances must be finite and positive"));
+    }
     for v in [
-        c.atol,
         c.rtol,
         c.projected_relative_tol,
         c.full_residual_wrms_limit,

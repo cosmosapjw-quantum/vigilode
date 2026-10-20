@@ -97,7 +97,8 @@ pub struct Work {
     pub derivative_batches: u64,
     /// Converged/exhausted iterates at which no Newton derivative was needed.
     pub residual_only_stops: u64,
-    /// Counterfactual eager JVP vectors avoided, not performed work.
+    /// Counterfactual eager JVP vectors avoided, not performed work: the
+    /// (S - 1) m stage JVPs an eager evaluation performs at that iterate.
     pub unused_stage_jvp_avoided: u64,
     pub stage_batches: u64,
     pub validation_batches: u64,
