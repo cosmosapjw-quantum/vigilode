@@ -122,3 +122,17 @@ and the suites above come from the isolated dir.
   `unused_stage_jvp_avoided` still counts the counterfactual as S·m. The brief limited the change to
   the eager path. Eager and residual-first therefore now differ in stage-JVP work per derivative.
   Also, a failing stage-0 linearization or JVP no longer fails an eager evaluation.
+
+## Review fix round 1
+
+- b5bf1f3: residual-first `unused_stage_jvp_avoided` now counts the eager counterfactual as
+  (S−1)·m (was S·m); `economy_robustness.rs:61` expectation 24 → 21 (RED left 24, right 21; GREEN).
+- f739069: vigilode-coupled follows the zero-scale rule. `atol = 0` is accepted when `rtol > 0`;
+  the original-space residual/embedded WRMS use `scaled_error_component`. Before, the zero-scale
+  check at solver.rs:326 was unreachable because validation rejected `atol = 0` with an Input error.
+  Test `tests/zero_tolerance_scale.rs` (RED: Input "tolerances must be finite and positive"; GREEN 2/2).
+  Coupled suite 37/37.
+- Staged matrix-free stage target (rodas5p_matrix_free_fast.rs ~2666): still refuses a zero
+  start-state weight with a typed error (reproduced). Not changed, pending a decision: this scale is a
+  Krylov change of variables from the start state, so the endpoint-norm rule would reject forever
+  any component that starts at 0 and grows. The options are listed in the task report.
