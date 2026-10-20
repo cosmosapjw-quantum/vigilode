@@ -1678,6 +1678,43 @@ pub fn integrate_adaptive_dense_observed_with_segments(
     })
 }
 
+/// [`integrate_adaptive_dense_observed_with_segments`] without recording the
+/// continuous extension: the same run bit for bit (the segment push does no
+/// arithmetic), returning the result, the interior report and the partial
+/// record of a run that stopped early. For callers that need no dense output
+/// and should not hold 10 n `f64` per accepted step.
+#[allow(clippy::too_many_arguments)]
+pub fn integrate_adaptive_dense_observed_with_partial(
+    problem: &OdeProblem,
+    t_span: (f64, f64),
+    y0: &[f64],
+    method: IntegrationMethod,
+    linear_config: Option<&LinearSolverConfig>,
+    sabr_config: Option<SabrConfig>,
+    adaptive: &AdaptiveStepConfig,
+    sampling: &OutputSamplingPlan,
+    control: DenseErrorControl,
+    interior: InteriorSampling,
+) -> DenseOutputResult<(
+    AdaptiveObservedIntegrationResult,
+    DenseErrorReport,
+    Option<DriverPartial>,
+)> {
+    integrate_adaptive_dense_impl(
+        problem,
+        t_span,
+        y0,
+        method,
+        linear_config,
+        sabr_config,
+        adaptive,
+        sampling,
+        control,
+        interior,
+        None,
+    )
+}
+
 #[allow(clippy::too_many_arguments)]
 fn integrate_adaptive_dense_impl(
     problem: &OdeProblem,

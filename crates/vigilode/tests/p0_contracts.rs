@@ -1046,3 +1046,120 @@ fn enforcing_interior_error_survives_a_zero_error_scale_component() {
         }
     }
 }
+
+/// The mass route without dense output records no segments and is the same
+/// run, bit for bit, as with dense output and no interior control.
+#[test]
+fn mass_route_without_dense_output_is_the_same_run_without_segments() {
+    let span = (0.0, 2.0);
+    let y0 = [1.0, 1.0];
+    let off = opts(1.0e-8, 1.0e-12);
+    let on = dense_opts(1.0e-8, 1.0e-12, InteriorError::Off);
+    let a = Rodas5p::solve(&mass_problem(), span, &y0, &off).unwrap();
+    let b = Rodas5p::solve(&mass_problem(), span, &y0, &on).unwrap();
+    assert!(a.is_success() && b.is_success());
+    // Without dense output only `[t0, t_end]` is stored; the dense run stores
+    // every step endpoint. The final state and every statistic agree.
+    assert_eq!(a.t.len(), 2);
+    assert_eq!(b.t.len(), b.stats.accepted_steps + 1);
+    assert_eq!(bits(&[a.t[1]]), bits(&[*b.t.last().unwrap()]));
+    assert_eq!(
+        bits(a.final_state().unwrap()),
+        bits(b.final_state().unwrap())
+    );
+    assert_eq!(a.stats.counters, b.stats.counters);
+    assert_eq!(a.stats.accepted_steps, b.stats.accepted_steps);
+    assert_eq!(a.stats.rejected_steps, b.stats.rejected_steps);
+    let (_, _, _, segments_off) = sequential_work(&a);
+    let (_, _, _, segments_on) = sequential_work(&b);
+    assert_eq!(segments_off, 0);
+    assert_eq!(segments_on, b.stats.accepted_steps);
+}
+
+fn tridiagonal_rhs(_t: f64, y: &[f64], dy: &mut [f64]) -> Result<(), CallbackError> {
+    let n = y.len();
+    for i in 0..n {
+        let l = if i > 0 { y[i - 1] } else { 0.0 };
+        let r = if i + 1 < n { y[i + 1] } else { 0.0 };
+        dy[i] = l - 2.0 * y[i] + r;
+    }
+    Ok(())
+}
+
+const TRIDIAGONAL_N: usize = 6;
+
+fn tridiagonal_band(_t: f64, _y: &[f64], band: &mut [f64]) -> Result<(), CallbackError> {
+    for i in 0..TRIDIAGONAL_N {
+        if i > 0 {
+            band[i * 3] = 1.0;
+        }
+        band[i * 3 + 1] = -2.0;
+        if i + 1 < TRIDIAGONAL_N {
+            band[i * 3 + 2] = 1.0;
+        }
+    }
+    Ok(())
+}
+
+fn tridiagonal_dense(_t: f64, _y: &[f64], jac: &mut [f64]) -> Result<(), CallbackError> {
+    let n = TRIDIAGONAL_N;
+    jac.fill(0.0);
+    for i in 0..n {
+        if i > 0 {
+            jac[i * n + i - 1] = 1.0;
+        }
+        jac[i * n + i] = -2.0;
+        if i + 1 < n {
+            jac[i * n + i + 1] = 1.0;
+        }
+    }
+    Ok(())
+}
+
+#[test]
+fn banded_provider_on_the_dense_output_route_matches_the_dense_provider() {
+    let y0 = [1.0, 0.5, -0.25, 2.0, 0.0, 1.5];
+    let o = dense_opts(1.0e-8, 1.0e-10, InteriorError::WFilteredEnforce);
+    let banded = Problem::new(TRIDIAGONAL_N, tridiagonal_rhs)
+        .jacobian(Jacobian::banded(1, 1, tridiagonal_band))
+        .autonomous();
+    let dense = Problem::new(TRIDIAGONAL_N, tridiagonal_rhs)
+        .jacobian(Jacobian::dense(tridiagonal_dense))
+        .autonomous();
+    let a = Rodas5p::solve(&banded, (0.0, 1.0), &y0, &o).unwrap();
+    let b = Rodas5p::solve(&dense, (0.0, 1.0), &y0, &o).unwrap();
+    assert!(a.is_success() && b.is_success());
+    assert_eq!(a.stats.route.driver_id, RODAS5P_SEQUENTIAL_DENSE_DRIVER_ID);
+    assert_eq!(bits(&a.t), bits(&b.t));
+    for (x, y) in a.y.iter().zip(&b.y) {
+        assert_eq!(bits(x), bits(y));
+    }
+    assert_eq!(a.stats.accepted_steps, b.stats.accepted_steps);
+}
+
+#[test]
+fn finite_difference_band_on_the_dense_output_route_runs_and_agrees() {
+    let y0 = [1.0, 0.5, -0.25, 2.0, 0.0, 1.5];
+    let o = dense_opts(1.0e-8, 1.0e-10, InteriorError::WFilteredEnforce);
+    let fd_band = Problem::new(TRIDIAGONAL_N, tridiagonal_rhs)
+        .banded(1, 1)
+        .autonomous();
+    let exact = Problem::new(TRIDIAGONAL_N, tridiagonal_rhs)
+        .jacobian(Jacobian::dense(tridiagonal_dense))
+        .autonomous();
+    let a = Rodas5p::solve(&fd_band, (0.0, 1.0), &y0, &o).unwrap();
+    let b = Rodas5p::solve(&exact, (0.0, 1.0), &y0, &o).unwrap();
+    assert!(a.is_success(), "{:?}", a.status);
+    assert_eq!(a.stats.route.driver_id, RODAS5P_SEQUENTIAL_DENSE_DRIVER_ID);
+    // The rhs is linear, so the forward-difference band is exact up to
+    // rounding of the increments.
+    for (x, r) in a
+        .final_state()
+        .unwrap()
+        .iter()
+        .zip(b.final_state().unwrap())
+    {
+        assert!((x - r).abs() <= 1.0e-6 * (1.0 + r.abs()), "{x} {r}");
+    }
+    assert!(a.at(0.5).is_some());
+}

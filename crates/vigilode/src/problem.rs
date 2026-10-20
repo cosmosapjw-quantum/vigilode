@@ -159,6 +159,15 @@ impl Problem {
     ///   ([`crate::SolveError::StructureRefused`]).
     /// * With [`Jacobian::Banded`] the declaration must name the same band.
     /// * With [`Jacobian::Jvp`] it is refused as unsupported in this release.
+    ///
+    /// Under [`Problem::mass`] or [`crate::Options::dense_output`] the run
+    /// goes to the sequential dense driver instead, which has no banded
+    /// linear algebra. There a finite-difference band or a
+    /// [`Jacobian::Banded`] provider is assembled into a dense matrix and
+    /// factorized by a direct dense LU, so the cost per factorization is
+    /// O(n^3) rather than O(n (lower + upper)^2). A [`Jacobian::Dense`]
+    /// provider with a band is refused on that route
+    /// ([`crate::SolveError::StructureRefused`]).
     pub fn banded(mut self, lower: usize, upper: usize) -> Self {
         self.band = Some((lower, upper));
         self

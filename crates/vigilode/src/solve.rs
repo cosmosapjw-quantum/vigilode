@@ -7,10 +7,11 @@ use std::fmt::Display;
 
 use rodas5p_core::{CoreError, CoreResult, DenseMatrix, LinearSolverConfig, WorkCounters};
 use rodas5p_integrators::{
-    AdaptiveFailureKind, AdaptiveStepConfig, BandedJacobian, DenseErrorControl, DriverPartial,
-    DriverStopReason, IntegrationMethod, InteriorSampling, ObservedIntegrationResult, OdeProblem,
-    OutputSamplingPlan, OutputSchedule, RODAS5P_SEQUENTIAL_DENSE_DRIVER_ID, Rodas5pDenseSegment,
-    RoutedDriver, RoutedRun, RoutingError, RoutingOptions, StructureDeclaration,
+    AdaptiveDenseSegmentRun, AdaptiveFailureKind, AdaptiveStepConfig, BandedJacobian,
+    DenseErrorControl, DriverPartial, DriverStopReason, IntegrationMethod, InteriorSampling,
+    ObservedIntegrationResult, OdeProblem, OutputSamplingPlan, OutputSchedule,
+    RODAS5P_SEQUENTIAL_DENSE_DRIVER_ID, Rodas5pDenseSegment, RoutedDriver, RoutedRun, RoutingError,
+    RoutingOptions, StructureDeclaration, integrate_adaptive_dense_observed_with_partial,
     integrate_adaptive_dense_observed_with_segments, integrate_rodas5p_fast_banded_observed,
     integrate_rodas5p_routed_observed,
 };
@@ -33,6 +34,8 @@ type CoreJvp = Arc<dyn Fn(f64, &[f64], &[f64], &mut [f64]) -> CoreResult<()> + S
 const ENTRY_ROUTED: &str = "integrate_rodas5p_routed_observed";
 const ENTRY_BANDED: &str = "integrate_rodas5p_fast_banded_observed";
 const ENTRY_SEQUENTIAL_DENSE: &str = "integrate_adaptive_dense_observed_with_segments";
+/// The same driver without the segment sink (mass matrix, no dense output).
+const ENTRY_SEQUENTIAL_NO_SEGMENTS: &str = "integrate_adaptive_dense_observed_with_partial";
 
 /// The RODAS5P solver: a stiffly accurate, L-stable Rosenbrock method of
 /// order 5(4), run through the protected drivers of `rodas5p-integrators`.
@@ -221,26 +224,56 @@ impl Rodas5p {
                 };
                 // `None` is the sequential step's default: the direct LU.
                 let linear_solver = LinearSolverConfig::default();
-                let run = integrate_adaptive_dense_observed_with_segments(
-                    &ode,
-                    t_span,
-                    y0,
-                    IntegrationMethod::Sequential,
-                    None,
-                    None,
-                    &adaptive,
-                    &OutputSamplingPlan::dense(schedule.clone()),
-                    control,
-                    interior_sampling,
-                )
-                .map_err(|e| driver_error(e, &guard))?;
+                // Without dense output no continuous extension is returned,
+                // so the run does not record one (10 n f64 per accepted
+                // step); the run is otherwise bit for bit the same.
+                let plan_out = OutputSamplingPlan::dense(schedule.clone());
+                let run = if opts.dense_output {
+                    integrate_adaptive_dense_observed_with_segments(
+                        &ode,
+                        t_span,
+                        y0,
+                        IntegrationMethod::Sequential,
+                        None,
+                        None,
+                        &adaptive,
+                        &plan_out,
+                        control,
+                        interior_sampling,
+                    )
+                    .map_err(|e| driver_error(e, &guard))?
+                } else {
+                    let (result, report, partial) = integrate_adaptive_dense_observed_with_partial(
+                        &ode,
+                        t_span,
+                        y0,
+                        IntegrationMethod::Sequential,
+                        None,
+                        None,
+                        &adaptive,
+                        &plan_out,
+                        control,
+                        interior_sampling,
+                    )
+                    .map_err(|e| driver_error(e, &guard))?;
+                    AdaptiveDenseSegmentRun {
+                        result,
+                        report,
+                        segments: Vec::new(),
+                        partial,
+                    }
+                };
                 let diagnostics = &run.result.diagnostics;
                 Run {
                     attempts: diagnostics.attempts,
                     accepted_steps: diagnostics.accepted_macro_steps,
                     rejected_steps: diagnostics.rejected_macro_steps,
                     route: RouteRecord {
-                        entry_point: ENTRY_SEQUENTIAL_DENSE,
+                        entry_point: if opts.dense_output {
+                            ENTRY_SEQUENTIAL_DENSE
+                        } else {
+                            ENTRY_SEQUENTIAL_NO_SEGMENTS
+                        },
                         driver_id: RODAS5P_SEQUENTIAL_DENSE_DRIVER_ID,
                         routing: None,
                     },

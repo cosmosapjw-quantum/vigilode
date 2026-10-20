@@ -44,7 +44,8 @@
 //! | [`Jacobian::Dense`] | [`Problem::banded`] | `integrate_rodas5p_routed_observed` (rule 1, band verified at `t0`) | banded fast |
 //! | [`Jacobian::Banded`], [`Jacobian::FiniteDifference`] | band | `integrate_rodas5p_fast_banded_observed` | banded fast |
 //! | [`Jacobian::Jvp`] | none | `integrate_rodas5p_routed_observed` (rule 4) | matrix-free U-form (GMRES) |
-//! | Dense, Banded, FiniteDifference | [`Problem::mass`] or [`Options::dense_output`] | `integrate_adaptive_dense_observed_with_segments` | sequential dense (direct LU) |
+//! | Dense, Banded, FiniteDifference | [`Problem::mass`] or [`Options::dense_output`] | `integrate_adaptive_dense_observed_with_segments` (`..._with_partial` without dense output) | sequential dense (direct LU) |
+//! |  | band (with either) | the same; a finite-difference or [`Jacobian::Banded`] band is assembled into a dense matrix (O(n^3) per factorization); a [`Jacobian::Dense`] band is refused | sequential dense (direct LU) |
 //!
 //! A mass matrix (constant, singular allowed: index-1 DAEs) or dense output
 //! runs the protected sequential dense driver. Under dense output the

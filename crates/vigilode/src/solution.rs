@@ -40,8 +40,11 @@ pub enum FailureReason {
         /// The budget.
         max_steps: usize,
     },
-    /// The step size fell below the drivers' minimum step after repeated
-    /// rejections by the local error test (embedded or interior).
+    /// The step size fell below the drivers' minimum step: after repeated
+    /// rejections by the local error test (embedded or interior), or because
+    /// the controller's proposed step fell below the minimum although no
+    /// attempt was rejected after the last accepted step (for example near a
+    /// blow-up of the solution).
     StepSizeTooSmall {
         /// The drivers' minimum step.
         min_step: f64,
@@ -87,7 +90,7 @@ impl fmt::Display for FailureReason {
             }
             Self::StepSizeTooSmall { min_step } => write!(
                 f,
-                "step size fell below the minimum step {min_step:e} after local error rejections"
+                "step size fell below the minimum step {min_step:e} after local error rejections, or the controller's step fell below the minimum"
             ),
             Self::LinearSolveFailed { min_step } => write!(
                 f,

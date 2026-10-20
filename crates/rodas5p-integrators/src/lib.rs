@@ -198,6 +198,7 @@ pub use dense_output_v2::{
     RODAS5P_SEQUENTIAL_DENSE_DRIVER_ID, Rodas5pDenseSegment, Rodas5pQuarticSegment,
     bdf_dense_output, integrate_adaptive_dense_observed_with_config,
     integrate_adaptive_dense_observed_with_dense_error_control,
+    integrate_adaptive_dense_observed_with_partial,
     integrate_adaptive_dense_observed_with_segments, integrate_bdf_adaptive_dense_observed,
     integrate_bdf_fixed_dense_observed, integrate_fixed_dense_observed,
     integrate_homotopy_adaptive_dense_observed, integrate_radau_adaptive_dense_observed,
