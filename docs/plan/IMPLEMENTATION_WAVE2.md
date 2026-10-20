@@ -20,7 +20,12 @@ worktrees, each pushed after every commit group; Task 6 integrates.
 - No new external crates in the root workspace. Exception: Task 5's benchmark crate is its own Cargo
   workspace (like `crates/vigilode-hybrid`) and may depend on `diffsol` with the exact version and lock
   entries already pinned in `crates/vigilode-hybrid/Cargo.lock`.
-- No Fortran compiler exists on this host: Fortran comparators (DVODE, RADAU5, RODAS) are out of scope here.
+- Comparator toolchain (installed 2026-10-21): GNU Fortran 13.3.0 (`apt-get install gfortran`) and SUNDIALS 6.4.1
+  (`apt-get install libsundials-dev`, headers in /usr/include, libs in /usr/lib/x86_64-linux-gnu). Pinned Fortran
+  sources: Netlib DVODE + LINPACK `dgefa/dgesl/dgbfa/dgbsl` from branch `research/benchmark-results-20261019-dual`,
+  `research/strict_solver_comparison_20261019/refined_runs/39261895983/sources/` (with NETLIB_SHA256SUMS); Hairer
+  RADAU5/RODAS from the Assimulo 3.0 sdist (sha256 `61cdca4562745078c966cc4fab44d8bc0db11a9e6856b45c470ac65c16af9e8a`,
+  `assimulo/thirdparty/hairer/{radau_decsol.f,rodas_decsol.f,LICENSE_HAIRER}`). Record every source hash.
 - Wave-1 rulings bind: `wrms` stays strict for convergence callers, `step_error_wrms` carries the zero-scale
   rule for end-of-step norms; `Tier::Performance` routes no lagged driver until a B1 card passes its kill
   gate; preregistered kill gates are never re-scored or loosened.
@@ -124,7 +129,9 @@ dependencies on `vigilode` (facade) and `rodas5p-integrators`).
   counters, failure status and allocator-measured allocations (a counting global allocator in the bench
   binary), and wall time labelled `timing_authority = "diagnostic_only"`.
 - Solvers: VigilODE facade (Protected), Diffsol 0.16.1 BDF with FaerLU (dense) and, where Diffsol offers it,
-  its sparse/banded backend; the internal BDF/Radau reference implementations only with
+  its sparse/banded backend; SUNDIALS CVODE 6.4.1 (BDF, dense and band linear solvers, C FFI); Netlib DVODE (MF21
+  dense, MF24 banded) and Hairer RADAU5 and RODAS (dense output via CONTR5/CONTRO), all through a C/Fortran
+  bridge built by the crate's build.rs with gfortran, sharing the one Rust RHS/Jacobian; the internal BDF/Radau reference implementations only with
   `comparator_fidelity = "reference-implementation-only"` and excluded from any speed table.
 - Corpus v1: Robertson (n = 3), HIRES (n = 8), van der Pol μ = 1000, Brusselator 1D n = 100 — same
   equations and atol vectors in every arm (one Rust RHS and Jacobian shared by all arms), output grid 101
