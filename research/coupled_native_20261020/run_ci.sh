@@ -10,7 +10,8 @@ python3 research/coupled_native_20261020/prepare.py
 cargo +1.94.1 fmt --manifest-path "$NODE/Cargo.toml"
 git config user.name 'github-actions[bot]'
 git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-git add "$NODE" .github/workflows/coupled-native-20261020.yml
+# Keep this token inside its contents-only permission; no workflow mutation.
+git add "$NODE"
 if ! git diff --cached --quiet; then
  git commit -m 'style: freeze formatted coupled implementation before measurement [skip ci]'
  git push origin HEAD:refs/heads/research/coupled-matrix-free-rust-20261020
