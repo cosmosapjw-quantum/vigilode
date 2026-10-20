@@ -1,0 +1,12 @@
+# Production development plan
+
+`PRODUCTION_PLAN_20261020.md` is the Markdown export of the planning document
+"VigilODE Production Solver Development Plan" (Claude Docs artifact,
+exported 2026-10-21 KST). It is the authority for the phases, workstreams,
+kill gates and theorems T1–T9 that the `production/*` branches implement.
+
+A block of unrelated text (a hand-off prompt for the separate `rec_bianchi`
+repository) that had been pasted into the middle of section 5, T9, was
+removed before committing; nothing else was changed.
+
+Execution log: `docs/plan/EXECUTION_LOG.md` (one row per pushed node).
