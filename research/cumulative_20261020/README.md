@@ -40,3 +40,15 @@
 2. 하이브리드 복구 추가 9개 파일의 SHA 보존: **완료**.
 3. 위 미게시 독립 Python 프로토타입·숫자 원자료 전체와 ZIP 원본: **아직 업로드 미완료**. 파일 바이트를 첨부 경로에서 GitHub Blob으로 전송 가능한 환경에서 원본 해시와 함께 추가해야 한다.
 4. 독립 PR들의 merge, solver 기본값 전환: **수행하지 않음**. 서로 다른 measured binary/case/timing을 단일 수치 승급으로 합치지 않는다.
+
+## 원본 전체 자료를 마저 GitHub에 올리는 재현 가능한 명령
+
+대화에서 다운로드한 네 ZIP을 한 폴더에 모으고, 이 누적 브랜치의 **깨끗한 worktree**에서 다음 명령을 실행한다.
+
+```bash
+bash research/cumulative_20261020/import_remaining_archives.sh /path/to/downloaded-zips
+```
+
+스크립트는 4개 ZIP의 원본 SHA-256, 내부 72개 파일의 개별 digest를 확인하고 바이너리 원본과 압축해제된 모든 원본을 별도 `original_archives/` 위치에 적재한다. 사용자가 실행하기 전까지 이 원본 ZIP들은 **NOT_PUSHED**다. 이번 대화 환경의 GitHub 커넥터는 Git 텍스트/blob 편집을 지원하지만 작업 컨테이너의 binary ZIP 경로를 그대로 인자로 받지는 않는다. 작업 컨테이너 Git HTTPS는 github.com DNS 해석에 실패했다. 따라서 위 명령을 실행했다고 주장하지 않는다.
+
+Derivative-free 보고서는 원본 `REPORT_KO.md`의 Git blob identity를 확인했으며, Integration 보고서에는 대화 업로드된 표기형 버전이 게시돼 있어 원본 ZIP 안의 byte identity를 주장하지 않는다. 최종 전체 ZIP/코드 원본 업로드가 완료되면 해당 상태를 갱신해야 한다.
