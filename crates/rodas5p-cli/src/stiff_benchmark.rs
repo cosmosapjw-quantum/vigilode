@@ -417,7 +417,7 @@ pub(crate) fn run_sp03_with(
             None,
         ));
     }
-    let RoutedResult { run, routing } = integrate_rodas5p_routed_observed(
+    let RoutedResult { run, routing, .. } = integrate_rodas5p_routed_observed(
         p, t_span, y0, adaptive, output,
     )
     .map_err(|e| match e {

@@ -14,11 +14,11 @@ use crate::sequential::{StepIterationMatrix, sequential_step_capturing_iteration
 use crate::{
     AdaptiveControllerState, AdaptiveFailureKind, AdaptiveObservedIntegrationResult,
     AdaptiveRunDiagnostics, AdaptiveStepConfig, BdfConfig, BdfHistory, BdfOrder, BdfStepReport,
-    HomotopyStepConfig, IntegrationMethod, KrylovState, ObservedIntegrationResult, OdeProblem,
-    OutputSamplingPlan, RadauConfig, RadauIiaStages, SabrConfig, StageHistory, StepResult,
-    TransactionalQ1Q2AdaptiveResult, TransactionalQ1Q2Config, TransactionalQ1Q2RunDiagnostics,
-    adaptive_next_step_after_attempt, bdf_step, homotopy_step, radau_step,
-    rodas_next_step_after_attempt, sabr_step, sequential_matrix_free_step,
+    DriverPartial, HomotopyStepConfig, IntegrationMethod, KrylovState, ObservedIntegrationResult,
+    OdeProblem, OutputSamplingPlan, RadauConfig, RadauIiaStages, SabrConfig, StageHistory,
+    StepResult, TransactionalQ1Q2AdaptiveResult, TransactionalQ1Q2Config,
+    TransactionalQ1Q2RunDiagnostics, adaptive_next_step_after_attempt, bdf_step, homotopy_step,
+    radau_step, rodas_next_step_after_attempt, sabr_step, sequential_matrix_free_step,
     sequential_matrix_free_step_with_inner_forcing, sequential_step, transactional_q1_q2_step,
 };
 use crate::{bdf::adaptive_bdf_trial, radau::adaptive_radau_trial};
@@ -984,25 +984,35 @@ fn adaptive_rejection_kind(error: f64, state: &[f64]) -> AdaptiveFailureKind {
 /// precomputes D = H·Gamma, so the polynomial below intentionally has no
 /// extra h multiplier.
 pub fn rodas5p_dense_output(step: &StepResult, theta: f64) -> DenseOutputResult<Vec<f64>> {
+    rodas5p_dense_output_parts(&step.y_old, &step.y_new, &step.stages, theta)
+}
+
+/// [`rodas5p_dense_output`] on the parts of a step: the same arithmetic.
+fn rodas5p_dense_output_parts(
+    y_old: &[f64],
+    y_new: &[f64],
+    stages: &[Vec<f64>],
+    theta: f64,
+) -> DenseOutputResult<Vec<f64>> {
     validate_theta(theta)?;
     if theta == 0.0 {
-        return Ok(step.y_old.clone());
+        return Ok(y_old.to_vec());
     }
     if theta == 1.0 {
-        return Ok(step.y_new.clone());
+        return Ok(y_new.to_vec());
     }
-    let dimension = step.y_old.len();
+    let dimension = y_old.len();
     if dimension == 0
-        || step.y_new.len() != dimension
-        || step.stages.len() != 8
-        || step.stages.iter().any(|row| row.len() != dimension)
+        || y_new.len() != dimension
+        || stages.len() != 8
+        || stages.iter().any(|row| row.len() != dimension)
     {
         return Err(
             CoreError::Dimension("RODAS5P dense-output stage shape mismatch".into()).into(),
         );
     }
     let coefficients = rodas5p_coefficients()?;
-    if coefficients.dense_d.nrows() != 3 || coefficients.dense_d.ncols() != step.stages.len() {
+    if coefficients.dense_d.nrows() != 3 || coefficients.dense_d.ncols() != stages.len() {
         return Err(CoreError::Coefficients(
             "RODAS5P dense-output coefficient shape mismatch".into(),
         )
@@ -1015,25 +1025,25 @@ pub fn rodas5p_dense_output(step: &StepResult, theta: f64) -> DenseOutputResult<
             .dense_d
             .row(0)
             .iter()
-            .zip(&step.stages)
+            .zip(stages)
             .map(|(coefficient, stage)| coefficient * stage[component])
             .sum::<f64>();
         let d1 = coefficients
             .dense_d
             .row(1)
             .iter()
-            .zip(&step.stages)
+            .zip(stages)
             .map(|(coefficient, stage)| coefficient * stage[component])
             .sum::<f64>();
         let d2 = coefficients
             .dense_d
             .row(2)
             .iter()
-            .zip(&step.stages)
+            .zip(stages)
             .map(|(coefficient, stage)| coefficient * stage[component])
             .sum::<f64>();
-        output[component] = complement * step.y_old[component]
-            + theta * (step.y_new[component] + complement * (d0 + theta * (d1 + theta * d2)));
+        output[component] = complement * y_old[component]
+            + theta * (y_new[component] + complement * (d0 + theta * (d1 + theta * d2)));
     }
     if !output.iter().all(|value| value.is_finite()) {
         return Err(CoreError::NonFinite("RODAS5P dense output contains NaN/Inf".into()).into());
@@ -1545,6 +1555,140 @@ pub fn integrate_adaptive_dense_observed_with_dense_error_control(
     sampling: &OutputSamplingPlan,
     control: DenseErrorControl,
 ) -> DenseOutputResult<(AdaptiveObservedIntegrationResult, DenseErrorReport)> {
+    integrate_adaptive_dense_impl(
+        problem,
+        t_span,
+        y0,
+        method,
+        linear_config,
+        sabr_config,
+        adaptive,
+        sampling,
+        control,
+        InteriorSampling::OutputTimes,
+        None,
+    )
+    .map(|(result, report, _)| (result, report))
+}
+
+/// Identifier of the sequential adaptive dense driver
+/// ([`integrate_adaptive_dense_observed_with_segments`]) in run records.
+pub const RODAS5P_SEQUENTIAL_DENSE_DRIVER_ID: &str = "rodas5p-sequential-dense-v2";
+
+/// Which accepted steps the interior estimate of a [`DenseErrorControl`]
+/// mode other than `Off` is formed on.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum InteriorSampling {
+    /// Steps that contain an interior output time: the rule of
+    /// [`integrate_adaptive_dense_observed_with_dense_error_control`].
+    #[default]
+    OutputTimes,
+    /// Every step the embedded estimate accepts, whatever the output times:
+    /// the rule for a returned continuous extension, which may be evaluated
+    /// anywhere (plan §5 T3, production use: θ = 1/2 on every step).
+    EveryStep,
+}
+
+/// One accepted RODAS5P step of the continuous extension.
+#[derive(Clone, Debug, PartialEq, Serialize)]
+pub struct Rodas5pDenseSegment {
+    pub t_old: f64,
+    pub t_new: f64,
+    pub y_old: Vec<f64>,
+    pub y_new: Vec<f64>,
+    /// The step's eight transformed stage rows.
+    pub stages: Vec<Vec<f64>>,
+}
+
+impl Rodas5pDenseSegment {
+    /// The continuous extension at `t` in `[t_old, t_new]`, with θ formed
+    /// as the output collector forms it, so a sampled output time gives the
+    /// driver's sample bit for bit.
+    pub fn evaluate(&self, t: f64) -> DenseOutputResult<Vec<f64>> {
+        if !(t >= self.t_old && t <= self.t_new) {
+            return Err(
+                CoreError::InvalidInput("dense segment evaluated outside its step".into()).into(),
+            );
+        }
+        if t == self.t_new {
+            return Ok(self.y_new.clone());
+        }
+        let theta = (t - self.t_old) / (self.t_new - self.t_old);
+        rodas5p_dense_output_parts(&self.y_old, &self.y_new, &self.stages, theta)
+    }
+}
+
+/// The run of [`integrate_adaptive_dense_observed_with_segments`].
+#[derive(Clone, Debug)]
+pub struct AdaptiveDenseSegmentRun {
+    pub result: AdaptiveObservedIntegrationResult,
+    pub report: DenseErrorReport,
+    /// Every accepted step, in order (the continuous extension of the run).
+    pub segments: Vec<Rodas5pDenseSegment>,
+    /// Where and why the run stopped, when it stopped before `tf`.
+    pub partial: Option<DriverPartial>,
+}
+
+/// [`integrate_adaptive_dense_observed_with_dense_error_control`] that also
+/// returns every accepted step's continuous extension and the partial record
+/// of a run that stopped early, with the interior estimate formed on the
+/// steps `interior` names. With [`InteriorSampling::OutputTimes`] it is the
+/// same run bit for bit; recording the segments copies each accepted step
+/// once and performs no arithmetic on the run.
+#[allow(clippy::too_many_arguments)]
+pub fn integrate_adaptive_dense_observed_with_segments(
+    problem: &OdeProblem,
+    t_span: (f64, f64),
+    y0: &[f64],
+    method: IntegrationMethod,
+    linear_config: Option<&LinearSolverConfig>,
+    sabr_config: Option<SabrConfig>,
+    adaptive: &AdaptiveStepConfig,
+    sampling: &OutputSamplingPlan,
+    control: DenseErrorControl,
+    interior: InteriorSampling,
+) -> DenseOutputResult<AdaptiveDenseSegmentRun> {
+    let mut segments = Vec::new();
+    let (result, report, partial) = integrate_adaptive_dense_impl(
+        problem,
+        t_span,
+        y0,
+        method,
+        linear_config,
+        sabr_config,
+        adaptive,
+        sampling,
+        control,
+        interior,
+        Some(&mut segments),
+    )?;
+    Ok(AdaptiveDenseSegmentRun {
+        result,
+        report,
+        segments,
+        partial,
+    })
+}
+
+#[allow(clippy::too_many_arguments)]
+fn integrate_adaptive_dense_impl(
+    problem: &OdeProblem,
+    t_span: (f64, f64),
+    y0: &[f64],
+    method: IntegrationMethod,
+    linear_config: Option<&LinearSolverConfig>,
+    sabr_config: Option<SabrConfig>,
+    adaptive: &AdaptiveStepConfig,
+    sampling: &OutputSamplingPlan,
+    control: DenseErrorControl,
+    interior: InteriorSampling,
+    mut segments: Option<&mut Vec<Rodas5pDenseSegment>>,
+) -> DenseOutputResult<(
+    AdaptiveObservedIntegrationResult,
+    DenseErrorReport,
+    Option<DriverPartial>,
+)> {
     let mut dense_report = DenseErrorReport {
         control,
         ..DenseErrorReport::default()
@@ -1600,6 +1744,9 @@ pub fn integrate_adaptive_dense_observed_with_dense_error_control(
     let mut hard_stops = HardStopCursor::new(sampling, t_span)?.with_max_step(adaptive.step_cap());
     let mut diagnostics = AdaptiveRunDiagnostics::default();
     let mut internal_steps = 0_usize;
+    // The kind of the last rejection since the last accepted step (the
+    // partial record only; never read by the step arithmetic).
+    let mut last_failure = None;
 
     while t < tf && diagnostics.attempts < adaptive.max_attempts {
         let Some(next_h) =
@@ -1667,6 +1814,7 @@ pub fn integrate_adaptive_dense_observed_with_dense_error_control(
             Ok(report) => report,
             Err(error) if adaptive_failure_kind(&error).is_some() => {
                 let failure = adaptive_failure_kind(&error).expect("failure kind checked");
+                last_failure = Some(failure);
                 counters.rejected_steps += 1;
                 record_adaptive_work_failure(&mut counters, failure);
                 recycle = recycle_snapshot;
@@ -1697,9 +1845,10 @@ pub fn integrate_adaptive_dense_observed_with_dense_error_control(
             report.accepted && error <= 1.0 && report.y_new.iter().all(|value| value.is_finite());
         if accepted
             && control != DenseErrorControl::Off
-            && output_times
-                .iter()
-                .any(|&time| time > report.t_old && time < report.t_new)
+            && (interior == InteriorSampling::EveryStep
+                || output_times
+                    .iter()
+                    .any(|&time| time > report.t_old && time < report.t_new))
         {
             let mut estimate_work = WorkCounters::default();
             let estimate = if control == DenseErrorControl::ReportDefect {
@@ -1781,6 +1930,7 @@ pub fn integrate_adaptive_dense_observed_with_dense_error_control(
         if let Some(failure) = failure {
             record_adaptive_work_failure(&mut counters, failure);
         }
+        last_failure = failure;
         if accepted {
             let old_t = t;
             t = report.t_new;
@@ -1801,6 +1951,15 @@ pub fn integrate_adaptive_dense_observed_with_dense_error_control(
                 true,
                 hard_stop_landing,
             )?;
+            if let Some(segments) = segments.as_deref_mut() {
+                segments.push(Rodas5pDenseSegment {
+                    t_old: report.t_old,
+                    t_new: report.t_new,
+                    y_old: report.y_old,
+                    y_new: report.y_new,
+                    stages: report.stages,
+                });
+            }
         } else {
             recycle = recycle_snapshot;
             history = history_snapshot;
@@ -1816,8 +1975,16 @@ pub fn integrate_adaptive_dense_observed_with_dense_error_control(
         }
     }
     diagnostics.fallback_steps = counters.fallback_steps as usize;
+    let partial = DriverPartial::after_loop(
+        t,
+        tf,
+        &state,
+        diagnostics.attempts,
+        adaptive.max_attempts,
+        last_failure,
+    );
     dense_adaptive_result(t, tf, collector, counters, internal_steps, diagnostics)
-        .map(|result| (result, dense_report))
+        .map(|result| (result, dense_report, partial))
 }
 
 #[allow(clippy::too_many_arguments)]
