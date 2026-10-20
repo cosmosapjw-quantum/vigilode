@@ -22,7 +22,7 @@ use crate::{
     gmres::{GmresConfig, arnoldi_happy_breakdown},
     kernels::{axpy, linear_combination_into, normalize, two_pass_mgs_into},
     small::least_squares,
-    workspace::GmresWorkspace,
+    workspace::{ArnoldiWorkspace, GmresWorkspace},
 };
 use rodas5p_core::{
     ApplyCategory, CoreError, CoreResult, LinearOperator, Preconditioner, PreconditionerSide,
@@ -361,18 +361,93 @@ fn cycle(
     workspace: &mut GmresWorkspace,
     counters: &mut WorkCounters,
 ) -> CoreResult<usize> {
-    let arnoldi = &mut workspace.arnoldi;
+    run_cycle(op, pc, ColumnSide::Left, beta, steps, workspace, counters)
+}
+
+/// One Arnoldi cycle under right preconditioning from the true residual in
+/// `workspace.common.preconditioned` (norm `beta`). The correction $\Delta u$
+/// is computed in `workspace.arnoldi.correction` where $W P^{-1} u = b$,
+/// and later converted to $\Delta x = P^{-1} \Delta u$ by the caller.
+fn cycle_right(
+    op: &dyn LinearOperator,
+    pc: &dyn Preconditioner,
+    beta: f64,
+    steps: usize,
+    workspace: &mut GmresWorkspace,
+    counters: &mut WorkCounters,
+) -> CoreResult<usize> {
+    run_cycle(op, pc, ColumnSide::Right, beta, steps, workspace, counters)
+}
+
+/// Which product an Arnoldi column applies to `v_j`: `P^{-1} A v_j` (left)
+/// or `A P^{-1} v_j` (right).
+#[derive(Clone, Copy)]
+enum ColumnSide {
+    Left,
+    Right,
+}
+
+/// The shared body of [`cycle`] and [`cycle_right`]: start, `steps` columns
+/// (stopping at a happy breakdown), one least-squares solve.
+fn run_cycle(
+    op: &dyn LinearOperator,
+    pc: &dyn Preconditioner,
+    side: ColumnSide,
+    beta: f64,
+    steps: usize,
+    workspace: &mut GmresWorkspace,
+    counters: &mut WorkCounters,
+) -> CoreResult<usize> {
     let n = workspace.common.preconditioned.len();
+    begin_cycle(
+        &mut workspace.arnoldi,
+        &workspace.common.preconditioned,
+        n,
+        steps,
+    )?;
+    let mut actual = 0usize;
+    for j in 0..steps {
+        let happy_breakdown = arnoldi_column(op, pc, side, &mut workspace.arnoldi, j, counters)?;
+        actual = j + 1;
+        if happy_breakdown {
+            break;
+        }
+    }
+    least_squares_correction(workspace, actual, beta)?;
+    Ok(actual)
+}
+
+/// Size the Arnoldi workspace for `steps` columns and set `v_0 = start /
+/// ||start||`.
+fn begin_cycle(
+    arnoldi: &mut ArnoldiWorkspace,
+    start: &[f64],
+    n: usize,
+    steps: usize,
+) -> CoreResult<()> {
     arnoldi.prepare(n, steps)?;
-    arnoldi.basis[0].copy_from_slice(&workspace.common.preconditioned);
+    arnoldi.basis[0].copy_from_slice(start);
     if normalize(&mut arnoldi.basis[0])? == 0.0 {
         return Err(CoreError::LinearSolve("zero Arnoldi residual".into()));
     }
-    let mut actual = 0usize;
-    for j in 0..steps {
-        let (previous_basis, remaining_basis) = arnoldi.basis.split_at_mut(j + 1);
-        let w = &mut remaining_basis[0];
-        apply_left_with_raw(
+    Ok(())
+}
+
+/// Arnoldi column `j`: the product (by `side`) into `v_{j+1}`, two-pass MGS,
+/// Hessenberg column `j`, and the breakdown test; `v_{j+1}` is normalized,
+/// or zeroed on a happy breakdown (returned `true`).
+fn arnoldi_column(
+    op: &dyn LinearOperator,
+    pc: &dyn Preconditioner,
+    side: ColumnSide,
+    arnoldi: &mut ArnoldiWorkspace,
+    j: usize,
+    counters: &mut WorkCounters,
+) -> CoreResult<bool> {
+    let (previous_basis, remaining_basis) = arnoldi.basis.split_at_mut(j + 1);
+    let w = &mut remaining_basis[0];
+    match side {
+        ColumnSide::Left => apply_left_with_raw(
             op,
             pc,
             &previous_basis[j],
@@ -380,24 +455,52 @@ fn cycle(
             &mut arnoldi.raw_operator_output,
             counters,
             ApplyCategory::Krylov,
-        )?;
-        two_pass_mgs_into(w, previous_basis, &mut arnoldi.h_column, counters)?;
-        for i in 0..previous_basis.len() {
-            arnoldi.hessenberg[(i, j)] = arnoldi.h_column[i];
+        )?,
+        ColumnSide::Right => {
+            // Right preconditioning: apply P^-1 to basis vector, then apply W
+            apply_preconditioner(
+                pc,
+                &previous_basis[j],
+                &mut arnoldi.raw_operator_output,
+                counters,
+            )?;
+            apply_counted(
+                op,
+                &arnoldi.raw_operator_output,
+                w,
+                counters,
+                ApplyCategory::Krylov,
+            )?;
         }
-        let h_next = safe_l2(w);
-        arnoldi.hessenberg[(j + 1, j)] = h_next;
-        actual = j + 1;
-        let happy_breakdown =
-            arnoldi_happy_breakdown(&arnoldi.h_column[..previous_basis.len()], h_next)?;
-        if happy_breakdown {
-            w.fill(0.0);
-            break;
-        }
+    }
+    two_pass_mgs_into(w, previous_basis, &mut arnoldi.h_column, counters)?;
+    for i in 0..previous_basis.len() {
+        arnoldi.hessenberg[(i, j)] = arnoldi.h_column[i];
+    }
+    let h_next = safe_l2(w);
+    arnoldi.hessenberg[(j + 1, j)] = h_next;
+    let happy_breakdown =
+        arnoldi_happy_breakdown(&arnoldi.h_column[..previous_basis.len()], h_next)?;
+    if happy_breakdown {
+        w.fill(0.0);
+    } else {
         for value in w {
             *value /= h_next;
         }
     }
+    Ok(happy_breakdown)
+}
+
+/// The small least-squares problem on the Hessenberg prefix of `actual`
+/// columns with right-hand side `beta e_1`, and the correction `V y` in
+/// `workspace.arnoldi.correction` (the reused least-squares workspace when
+/// it is on, else the allocating reference).
+fn least_squares_correction(
+    workspace: &mut GmresWorkspace,
+    actual: usize,
+    beta: f64,
+) -> CoreResult<()> {
+    let arnoldi = &mut workspace.arnoldi;
     arnoldi.hessenberg_prefix.resize_zeros(actual + 1, actual)?;
     for row in 0..actual + 1 {
         for column in 0..actual {
@@ -424,88 +527,7 @@ fn cycle(
             linear_combination_into(&arnoldi.basis[..actual], &solution, &mut arnoldi.correction)?;
         }
     }
-    Ok(actual)
-}
-
-/// One Arnoldi cycle under right preconditioning from the true residual in
-/// `workspace.common.preconditioned` (norm `beta`). The correction $\Delta u$
-/// is computed in `workspace.arnoldi.correction` where $W P^{-1} u = b$,
-/// and later converted to $\Delta x = P^{-1} \Delta u$ by the caller.
-fn cycle_right(
-    op: &dyn LinearOperator,
-    pc: &dyn Preconditioner,
-    beta: f64,
-    steps: usize,
-    workspace: &mut GmresWorkspace,
-    counters: &mut WorkCounters,
-) -> CoreResult<usize> {
-    let arnoldi = &mut workspace.arnoldi;
-    let n = workspace.common.preconditioned.len();
-    arnoldi.prepare(n, steps)?;
-    arnoldi.basis[0].copy_from_slice(&workspace.common.preconditioned);
-    if normalize(&mut arnoldi.basis[0])? == 0.0 {
-        return Err(CoreError::LinearSolve("zero Arnoldi residual".into()));
-    }
-    let mut actual = 0usize;
-    for j in 0..steps {
-        let (previous_basis, remaining_basis) = arnoldi.basis.split_at_mut(j + 1);
-        let w = &mut remaining_basis[0];
-        // Right preconditioning: apply P^-1 to basis vector, then apply W
-        apply_preconditioner(
-            pc,
-            &previous_basis[j],
-            &mut arnoldi.raw_operator_output,
-            counters,
-        )?;
-        apply_counted(
-            op,
-            &arnoldi.raw_operator_output,
-            w,
-            counters,
-            ApplyCategory::Krylov,
-        )?;
-        two_pass_mgs_into(w, previous_basis, &mut arnoldi.h_column, counters)?;
-        for i in 0..previous_basis.len() {
-            arnoldi.hessenberg[(i, j)] = arnoldi.h_column[i];
-        }
-        let h_next = safe_l2(w);
-        arnoldi.hessenberg[(j + 1, j)] = h_next;
-        actual = j + 1;
-        let happy_breakdown =
-            arnoldi_happy_breakdown(&arnoldi.h_column[..previous_basis.len()], h_next)?;
-        if happy_breakdown {
-            w.fill(0.0);
-            break;
-        }
-        for value in w {
-            *value /= h_next;
-        }
-    }
-    arnoldi.hessenberg_prefix.resize_zeros(actual + 1, actual)?;
-    for row in 0..actual + 1 {
-        for column in 0..actual {
-            arnoldi.hessenberg_prefix[(row, column)] = arnoldi.hessenberg[(row, column)];
-        }
-    }
-    arnoldi.rhs_small[..actual + 1].fill(0.0);
-    arnoldi.rhs_small[0] = beta;
-    match workspace.least_squares.as_deref_mut() {
-        Some(small) => {
-            let solution = &mut workspace.least_squares_solution;
-            small.solve_into(
-                &arnoldi.hessenberg_prefix,
-                &arnoldi.rhs_small[..actual + 1],
-                solution,
-            )?;
-            linear_combination_into(&arnoldi.basis[..actual], solution, &mut arnoldi.correction)?;
-        }
-        None => {
-            let solution =
-                least_squares(&arnoldi.hessenberg_prefix, &arnoldi.rhs_small[..actual + 1])?;
-            linear_combination_into(&arnoldi.basis[..actual], &solution, &mut arnoldi.correction)?;
-        }
-    }
-    Ok(actual)
+    Ok(())
 }
 
 /// What the monitor of [`solve_gmres_into_right_monitored`] decides after
@@ -606,88 +628,30 @@ pub fn solve_gmres_into_right_monitored(
             ));
         }
         let steps = config.restart.min(config.max_arnoldi - total).min(n.max(1));
-        let arnoldi = &mut workspace.arnoldi;
-        arnoldi.prepare(n, steps)?;
-        arnoldi.basis[0].copy_from_slice(&workspace.common.preconditioned);
-        if normalize(&mut arnoldi.basis[0])? == 0.0 {
-            return Err(CoreError::LinearSolve("zero Arnoldi residual".into()));
-        }
+        begin_cycle(
+            &mut workspace.arnoldi,
+            &workspace.common.preconditioned,
+            n,
+            steps,
+        )?;
         let mut actual = 0usize;
         let mut decision = GmresMonitorDecision::Continue;
         for j in 0..steps {
-            let happy_breakdown = {
-                let (previous_basis, remaining_basis) = arnoldi.basis.split_at_mut(j + 1);
-                let w = &mut remaining_basis[0];
-                apply_preconditioner(
-                    pc,
-                    &previous_basis[j],
-                    &mut arnoldi.raw_operator_output,
-                    counters,
-                )?;
-                apply_counted(
-                    op,
-                    &arnoldi.raw_operator_output,
-                    w,
-                    counters,
-                    ApplyCategory::Krylov,
-                )?;
-                two_pass_mgs_into(w, previous_basis, &mut arnoldi.h_column, counters)?;
-                for i in 0..previous_basis.len() {
-                    arnoldi.hessenberg[(i, j)] = arnoldi.h_column[i];
-                }
-                let h_next = safe_l2(w);
-                arnoldi.hessenberg[(j + 1, j)] = h_next;
-                let happy =
-                    arnoldi_happy_breakdown(&arnoldi.h_column[..previous_basis.len()], h_next)?;
-                if happy {
-                    w.fill(0.0);
-                } else {
-                    for value in w {
-                        *value /= h_next;
-                    }
-                }
-                happy
-            };
+            let happy_breakdown = arnoldi_column(
+                op,
+                pc,
+                ColumnSide::Right,
+                &mut workspace.arnoldi,
+                j,
+                counters,
+            )?;
             actual = j + 1;
             // The least-squares solve of `cycle_right` on this prefix.
-            arnoldi.hessenberg_prefix.resize_zeros(actual + 1, actual)?;
-            for row in 0..actual + 1 {
-                for column in 0..actual {
-                    arnoldi.hessenberg_prefix[(row, column)] = arnoldi.hessenberg[(row, column)];
-                }
-            }
-            arnoldi.rhs_small[..actual + 1].fill(0.0);
-            arnoldi.rhs_small[0] = beta;
-            match workspace.least_squares.as_deref_mut() {
-                Some(small) => {
-                    let solution = &mut workspace.least_squares_solution;
-                    small.solve_into(
-                        &arnoldi.hessenberg_prefix,
-                        &arnoldi.rhs_small[..actual + 1],
-                        solution,
-                    )?;
-                    linear_combination_into(
-                        &arnoldi.basis[..actual],
-                        solution,
-                        &mut arnoldi.correction,
-                    )?;
-                }
-                None => {
-                    let solution = least_squares(
-                        &arnoldi.hessenberg_prefix,
-                        &arnoldi.rhs_small[..actual + 1],
-                    )?;
-                    linear_combination_into(
-                        &arnoldi.basis[..actual],
-                        &solution,
-                        &mut arnoldi.correction,
-                    )?;
-                }
-            }
+            least_squares_correction(workspace, actual, beta)?;
             solves += 1;
             apply_preconditioner(
                 pc,
-                &arnoldi.correction,
+                &workspace.arnoldi.correction,
                 &mut workspace.common.scratch_a,
                 counters,
             )?;

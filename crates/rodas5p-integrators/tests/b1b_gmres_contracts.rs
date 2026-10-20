@@ -345,6 +345,100 @@ fn monitored_gmres_matches_gmres_into_at_the_last_column_of_a_full_cycle() {
     }
 }
 
+/// A 60 x 60 nonsymmetric, non-normal system (convection-diffusion-like
+/// band plus a long-range coupling) with a diagonal right preconditioner.
+fn large_system() -> (DenseOperator, RightDiag, Vec<f64>, Vec<f64>) {
+    let n = 60;
+    let mut a = DenseMatrix::zeros(n, n);
+    for i in 0..n {
+        a[(i, i)] = 3.0 + 0.05 * i as f64;
+        if i + 1 < n {
+            a[(i, i + 1)] = -1.6;
+        }
+        if i > 0 {
+            a[(i, i - 1)] = -0.4 - 0.01 * i as f64;
+        }
+        if i + 2 < n {
+            a[(i, i + 2)] = 0.15;
+        }
+        a[(i, (7 * i + 11) % n)] += 0.05 * ((i % 5) as f64 - 2.0);
+    }
+    let d = (0..n).map(|i| 2.5 + 0.04 * i as f64).collect();
+    let b = (0..n).map(|i| (0.3 * i as f64).cos() + 0.1).collect();
+    let x0 = (0..n).map(|i| 0.01 * (i % 7) as f64).collect();
+    (DenseOperator::new(a).unwrap(), RightDiag(d), b, x0)
+}
+
+/// Fix round 1 (review Important 1): after the column/least-squares
+/// refactor, the monitored iterate at the end of cycle `C` is bitwise
+/// `solve_gmres_into`'s solution when that solve converges after `C`
+/// restarted cycles, on a 60 x 60 system, with the allocating and the
+/// reused least-squares paths.
+#[test]
+fn monitored_gmres_matches_gmres_into_over_restarted_cycles_on_a_large_system() {
+    let (op, pc, b, x0) = large_system();
+    let n = b.len();
+    for reuse_ls in [false, true] {
+        let workspace = || {
+            if reuse_ls {
+                GmresWorkspace::with_ls_workspace()
+            } else {
+                GmresWorkspace::default()
+            }
+        };
+        let config = GmresConfig {
+            restart: 8,
+            max_arnoldi: 400,
+            rtol: 1.0e-9,
+            atol: 0.0,
+        };
+        let mut reference = vec![0.0_f64; n];
+        let report = solve_gmres_into(
+            &op,
+            &pc,
+            &b,
+            Some(&x0),
+            &config,
+            None,
+            &mut reference,
+            &mut workspace(),
+            GmresCapacity::unbounded(),
+            &mut WorkCounters::default(),
+        )
+        .unwrap();
+        assert!(report.cycles >= 2, "cycles {}", report.cycles);
+        let last = report.iterations;
+        let mut monitored = vec![0.0; n];
+        let mut seen = 0_u64;
+        let mreport = solve_gmres_into_right_monitored(
+            &op,
+            &pc,
+            &b,
+            &x0,
+            &config,
+            &mut monitored,
+            &mut workspace(),
+            &mut WorkCounters::default(),
+            &mut |k, _x: &[f64], _c: &mut WorkCounters| {
+                seen = k;
+                Ok(if k == last {
+                    GmresMonitorDecision::Accept
+                } else {
+                    GmresMonitorDecision::Continue
+                })
+            },
+        )
+        .unwrap();
+        assert!(mreport.accepted);
+        assert_eq!(seen, last);
+        assert_eq!(mreport.iterations, last);
+        assert_eq!(mreport.cycles, report.cycles);
+        for (r, m) in reference.iter().zip(&monitored) {
+            assert_eq!(r.to_bits(), m.to_bits(), "reuse_ls {reuse_ls}");
+        }
+    }
+}
+
 #[test]
 fn monitored_gmres_abandons_and_exhausts_without_writing_the_output() {
     let (op, pc, b, x0) = small_system();
