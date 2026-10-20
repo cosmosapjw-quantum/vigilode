@@ -44,6 +44,14 @@
 //! | [`Jacobian::Dense`] | [`Problem::banded`] | `integrate_rodas5p_routed_observed` (rule 1, band verified at `t0`) | banded fast |
 //! | [`Jacobian::Banded`], [`Jacobian::FiniteDifference`] | band | `integrate_rodas5p_fast_banded_observed` | banded fast |
 //! | [`Jacobian::Jvp`] | none | `integrate_rodas5p_routed_observed` (rule 4) | matrix-free U-form (GMRES) |
+//! | Dense, Banded, FiniteDifference | [`Problem::mass`] or [`Options::dense_output`] | `integrate_adaptive_dense_observed_with_segments` | sequential dense (direct LU) |
+//!
+//! A mass matrix (constant, singular allowed: index-1 DAEs) or dense output
+//! runs the protected sequential dense driver. Under dense output the
+//! solution holds every accepted step and [`Solution::at`] evaluates the
+//! RODAS5P continuous extension anywhere in the span, with the interior error
+//! controlled on every step by [`Options::interior_error`]
+//! ([`InteriorError::WFilteredEnforce`] by default).
 //!
 //! [`Tier::Performance`] is accepted and, in this release, executes exactly
 //! the `Protected` route (no candidate driver is attached yet).
@@ -52,15 +60,20 @@
 //!
 //! Requests that no protected driver implements are refused with
 //! [`SolveError::Unsupported`] before any step rather than silently replaced:
-//! a vector [`Atol`], a mass matrix, [`Options::dense_output`] and a band
-//! declaration on a JVP-only problem.
+//! a vector [`Atol`], a band declaration on a JVP-only problem, a mass matrix
+//! or dense output on a JVP-only problem, and a declared band on a dense
+//! Jacobian together with a mass matrix or dense output.
 //!
 //! ## Failures
 //!
-//! A run that stops before `t1` (attempt budget, minimum step, or a
-//! [`CallbackError::Fatal`]) is returned as `Ok` with [`Status::Failed`], its
-//! partial outputs and its full [`Stats`]. Errors (`Err`) are refusals before
-//! integration, or a driver error that left no partial result.
+//! A run that stops before `t1` is returned as `Ok` with [`Status::Failed`],
+//! its partial outputs (up to the last accepted state) and its full
+//! [`Stats`]. The [`FailureReason`] names what stopped it: the attempt
+//! budget, a [`CallbackError::Fatal`], or the step size falling below the
+//! minimum after repeated local-error, linear-solve, non-finite or
+//! nonlinear-solve rejections ([`Stats::stop`] keeps the driver's record).
+//! Errors (`Err`) are refusals before integration, or a driver error that
+//! left no partial result.
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
 
@@ -72,12 +85,13 @@ mod solution;
 mod solve;
 
 pub use error::{CallbackError, SolveError};
-pub use options::{Atol, Options, Tier};
+pub use options::{Atol, InteriorError, Options, Tier};
 pub use problem::{
     BandJacobianFn, DenseJacobianFn, Jacobian, JvpFn, Problem, RhsFn, TimeDerivativeFn,
 };
 pub use solution::{
     Callback, CallbackWork, DriverWork, FD_INCREMENT_RULE, FailureReason, FiniteDifferenceWork,
     JacobianRecord, KrylovStartRecord, RouteRecord, STATS_SCHEMA, Solution, Stats, Status,
+    StopRecord,
 };
 pub use solve::Rodas5p;

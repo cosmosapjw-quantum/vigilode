@@ -557,9 +557,13 @@ fn a_failing_rhs_returns_the_partial_solution_and_a_typed_reason() {
         }
         other => panic!("unexpected status {other:?}"),
     }
-    // The partial solution: t0 only (t1 was not reached), with all work kept.
-    assert_eq!(sol.t, vec![0.0]);
-    assert_eq!(sol.y, vec![vec![1.0]]);
+    // The partial solution: t0 and the last accepted state (t1 was not
+    // reached), with all work kept (wave 2, node p0-facade).
+    assert_eq!(sol.t.len(), 2);
+    assert_eq!(sol.t[0], 0.0);
+    assert!(sol.t[1] > 0.0 && sol.t[1] <= 0.5, "{:?}", sol.t);
+    assert_eq!(sol.y[0], vec![1.0]);
+    assert!((sol.y[1][0] - (-sol.t[1]).exp()).abs() < 1.0e-6);
     assert!(sol.stats.accepted_steps > 0);
     assert!(sol.stats.rejected_steps > 0);
     assert_eq!(sol.stats.callbacks.fatal_errors, 1);
@@ -576,7 +580,7 @@ fn a_failing_rhs_returns_the_partial_solution_and_a_typed_reason() {
     match err {
         SolveError::Failed { reason, partial } => {
             assert!(matches!(reason, FailureReason::CallbackFailed { .. }));
-            assert_eq!(partial.t, vec![0.0]);
+            assert_eq!(partial.t.len(), 2);
         }
         other => panic!("unexpected error {other:?}"),
     }
@@ -625,7 +629,9 @@ fn an_exhausted_attempt_budget_is_a_typed_failure() {
         Status::Failed(FailureReason::MaxStepsReached { max_steps: 3 })
     );
     assert_eq!(sol.stats.attempts, 3);
-    assert_eq!(sol.t, vec![0.0]);
+    // t0 and the last accepted state.
+    assert_eq!(sol.t.len(), 2);
+    assert!(sol.t[1] > 0.0 && sol.t[1] < 40.0);
 }
 
 // ------------------------------------------------- refusals
@@ -649,19 +655,8 @@ fn unsupported_requests_are_refused_not_substituted() {
             ..Options::default()
         },
     );
-    refuse(
-        &problem,
-        &Options {
-            dense_output: true,
-            ..Options::default()
-        },
-    );
-    refuse(
-        &problem
-            .clone()
-            .mass(vec![1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0]),
-        &Options::default(),
-    );
+    // Mass matrices and dense output are routed since wave 2 (node
+    // p0-facade); their refusals are in tests/p0_contracts.rs.
     refuse(
         &robertson(Jacobian::jvp(|_t, _y, v, out| {
             out.copy_from_slice(v);

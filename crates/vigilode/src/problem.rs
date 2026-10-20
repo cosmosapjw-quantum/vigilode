@@ -164,10 +164,13 @@ impl Problem {
         self
     }
 
-    /// A constant mass matrix `M` (row major, `n * n`).
+    /// A constant mass matrix `M` (row major, `n * n`), which may be
+    /// singular (an index-1 DAE: a zero row makes that equation algebraic).
     ///
-    /// No protected fast driver of this release integrates a non-identity
-    /// mass matrix, so a problem with a mass matrix is refused with
+    /// The run goes to the protected sequential dense driver (direct LU of
+    /// `M - h gamma J`), which needs a matrix Jacobian: [`Jacobian::Dense`],
+    /// [`Jacobian::Banded`] or [`Jacobian::FiniteDifference`]. A JVP-only
+    /// problem with a mass matrix is refused with
     /// [`crate::SolveError::Unsupported`].
     pub fn mass(mut self, matrix: Vec<f64>) -> Self {
         self.mass = Some(matrix);
