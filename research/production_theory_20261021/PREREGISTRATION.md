@@ -67,3 +67,9 @@ the failing claims. The plan document is not edited by this node; corrections go
 
 None: the claims are deterministic identities and exact computations. The extra z values in claim 1 and the symmetric
 negative semidefinite check in claim 4 are the only out-of-claim probes, and are not gated.
+
+## Results
+
+Run on 2026-10-21 (a dry run to a scratch path preceded the recorded run; it changed nothing but a dead line in the script).
+All six claims met their pre-registered gates. Raw numbers: `RESULTS.json`; per-claim values and remarks:
+`docs/plan/nodes/t-verify.md`. Ledger verdict: PASS.
