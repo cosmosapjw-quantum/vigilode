@@ -11,3 +11,4 @@ removed before committing; nothing else was changed.
 
 Execution log: `docs/plan/EXECUTION_LOG.md` (one row per pushed node).
 - `handoff/LOCAL_TEST_HANDOFF_W2.md` — heavy test runs delegated to the owner's workstation; results return on `results/local-wave2-<sha>` branches.
+- `IMPLEMENTATION_WAVE3.md` — wave-3 plan (9 tasks: T0 residuals, T1–T6 parallel, T7 p0-api, T8 integration); heavy runs via LOCAL_*_W3.md handoffs.
