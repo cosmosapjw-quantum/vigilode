@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use rodas5p_core::{
-    ApplyCategory, CoreError, CoreResult, IdentityPreconditioner, InitialGuess,
+    ApplyCategory, CoreError, CoreResult, DenseMatrix, IdentityPreconditioner, InitialGuess,
     JacobiPreconditioner, LinearMethod, LinearOperator, LinearSolveReport, LinearSolverConfig,
     LuFactorization, Preconditioner, PreconditionerKind, Rodas5pCoefficients, ShiftedOperator,
     WorkCounters, apply_counted, apply_jvp_counted, error_scale, load_rodas5p_coefficients,
@@ -191,6 +191,18 @@ pub struct StepResult {
     pub counters: WorkCounters,
 }
 
+/// The stage matrix W = M - h gamma J0 of one sequential step, as the step
+/// built it (node `a2-wfiltered`, plan T3). `factor` is the step's own LU
+/// when its stage solves factorized W (direct method or direct
+/// preconditioner); otherwise `matrix` holds the explicit W, or neither is
+/// set when the Jacobian is matrix-free. Capturing it never changes the
+/// step's arithmetic.
+#[derive(Clone, Debug, Default)]
+pub(crate) struct StepIterationMatrix {
+    pub(crate) factor: Option<LuFactorization>,
+    pub(crate) matrix: Option<DenseMatrix>,
+}
+
 struct FactorPreconditioner {
     factor: LuFactorization,
 }
@@ -375,6 +387,7 @@ fn sequential_stages_impl(
     recycle: Option<&mut KrylovState>,
     outer_tolerances: Option<(f64, f64)>,
     accounting: StageSolveAccounting<'_>,
+    factor_capture: Option<&mut Option<LuFactorization>>,
     counters: &mut WorkCounters,
 ) -> CoreResult<InnerForcedStageSolveData> {
     sequential_stages_refined(
@@ -384,10 +397,12 @@ fn sequential_stages_impl(
         outer_tolerances,
         None,
         accounting,
+        factor_capture,
         counters,
     )
 }
 
+#[allow(clippy::too_many_arguments)]
 fn sequential_stages_refined(
     context: &StepContext<'_>,
     config: &LinearSolverConfig,
@@ -395,6 +410,7 @@ fn sequential_stages_refined(
     outer_tolerances: Option<(f64, f64)>,
     refinement: Option<&InnerForcingRefinement<'_>>,
     mut accounting: StageSolveAccounting<'_>,
+    factor_capture: Option<&mut Option<LuFactorization>>,
     counters: &mut WorkCounters,
 ) -> CoreResult<InnerForcedStageSolveData> {
     config.validate().map_err(CoreError::InvalidInput)?;
@@ -433,6 +449,9 @@ fn sequential_stages_refined(
     } else {
         None
     };
+    if let Some(slot) = factor_capture {
+        slot.clone_from(&factor);
+    }
     let pc = make_pc(context, config.preconditioner, &factor)?;
     let mut owned_state = KrylovState::for_method(config.method);
     let state: &mut Option<&mut KrylovState> = &mut recycle;
@@ -681,6 +700,7 @@ pub fn sequential_stages(
         recycle,
         None,
         StageSolveAccounting::default(),
+        None,
         counters,
     )
     .map(|data| data.stage_data)
@@ -701,6 +721,7 @@ pub fn sequential_stages_with_inner_forcing(
         recycle,
         Some((outer_atol, outer_rtol)),
         StageSolveAccounting::default(),
+        None,
         counters,
     )
 }
@@ -763,6 +784,7 @@ fn inner_forced_stages_with_error_refinement(
         tolerances,
         None,
         accounting.reborrow(),
+        None,
         counters,
     )?;
     let mut resolution = InnerForcingResolution::Underresolved;
@@ -792,6 +814,7 @@ fn inner_forced_stages_with_error_refinement(
                 pass,
             }),
             accounting.reborrow(),
+            None,
             counters,
         )?;
     }
@@ -875,11 +898,77 @@ pub fn sequential_step_with_residual_accounting(
     y: &[f64],
     h: f64,
     config: &LinearSolverConfig,
+    recycle: Option<&mut KrylovState>,
+    atol: f64,
+    rtol: f64,
+    force_accept: bool,
+    accounting: StageSolveAccounting<'_>,
+    counters: &mut WorkCounters,
+) -> CoreResult<StepResult> {
+    sequential_step_impl(
+        problem,
+        t,
+        y,
+        h,
+        config,
+        recycle,
+        atol,
+        rtol,
+        force_accept,
+        accounting,
+        None,
+        counters,
+    )
+}
+
+/// [`sequential_step`] that also returns the stage matrix W = M - h gamma J0
+/// the step built (node `a2-wfiltered`): the step's own LU when it made one,
+/// else the explicit W. The step's arithmetic and counters are those of
+/// [`sequential_step`]; only a copy of W or of its LU is kept.
+#[allow(clippy::too_many_arguments)]
+pub(crate) fn sequential_step_capturing_iteration_matrix(
+    problem: &OdeProblem,
+    t: f64,
+    y: &[f64],
+    h: f64,
+    config: &LinearSolverConfig,
+    recycle: Option<&mut KrylovState>,
+    atol: f64,
+    rtol: f64,
+    force_accept: bool,
+    counters: &mut WorkCounters,
+) -> CoreResult<(StepResult, StepIterationMatrix)> {
+    let mut iteration = StepIterationMatrix::default();
+    let step = sequential_step_impl(
+        problem,
+        t,
+        y,
+        h,
+        config,
+        recycle,
+        atol,
+        rtol,
+        force_accept,
+        StageSolveAccounting::default(),
+        Some(&mut iteration),
+        counters,
+    )?;
+    Ok((step, iteration))
+}
+
+#[allow(clippy::too_many_arguments)]
+fn sequential_step_impl(
+    problem: &OdeProblem,
+    t: f64,
+    y: &[f64],
+    h: f64,
+    config: &LinearSolverConfig,
     mut recycle: Option<&mut KrylovState>,
     atol: f64,
     rtol: f64,
     force_accept: bool,
     accounting: StageSolveAccounting<'_>,
+    mut iteration_capture: Option<&mut StepIterationMatrix>,
     counters: &mut WorkCounters,
 ) -> CoreResult<StepResult> {
     validate_problem_linear_config(problem, config)?;
@@ -893,9 +982,17 @@ pub fn sequential_step_with_residual_accounting(
             recycle.as_deref_mut(),
             None,
             accounting,
+            iteration_capture
+                .as_deref_mut()
+                .map(|capture| &mut capture.factor),
             counters,
         )?
         .stage_data;
+        if let Some(capture) = iteration_capture
+            && capture.factor.is_none()
+        {
+            capture.matrix = context.shifted.explicit().cloned();
+        }
         let mut r = finish_step(
             &context,
             data.stages,
@@ -998,6 +1095,7 @@ pub fn sequential_matrix_free_step_with_residual_accounting(
             recycle.as_deref_mut(),
             None,
             accounting,
+            None,
             counters,
         )?
         .stage_data;

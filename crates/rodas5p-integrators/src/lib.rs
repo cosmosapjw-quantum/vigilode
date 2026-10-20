@@ -204,7 +204,8 @@ pub use dense_output_v2::{
     integrate_sequential_matrix_free_adaptive_dense_with_interpolant_audit_and_evaluator,
     integrate_transactional_q1_q2_adaptive_dense_observed, radau_dense_output,
     rodas5p_dense_interior_defect_estimate, rodas5p_dense_interior_error_estimate,
-    rodas5p_dense_output,
+    rodas5p_dense_output, rodas5p_dense_wfiltered_interior_error_estimate,
+    rodas5p_wfiltered_iteration_matrix,
 };
 pub use exponential::{
     EarlyFlowDefectDiagnosticWork, EarlyFlowDefectTelemetry, EarlyFlowDefectTelemetryMode,
