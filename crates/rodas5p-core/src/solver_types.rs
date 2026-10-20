@@ -37,7 +37,7 @@ impl InitialGuess {
     }
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct LinearSolverConfig {
     pub method: LinearMethod,
     pub rtol: f64,

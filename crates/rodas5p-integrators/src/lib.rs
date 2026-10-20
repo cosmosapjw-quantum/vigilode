@@ -191,15 +191,17 @@ pub use comparator_fidelity::{
 };
 pub use controller_telemetry::{ControllerDecision, ControllerEvents, ControllerTelemetry};
 pub use dense_output_v2::{
-    ContinuousResidualProvider, ContinuousResidualVerificationError,
+    AdaptiveDenseSegmentRun, ContinuousResidualProvider, ContinuousResidualVerificationError,
     ContinuousResidualVerificationResult, ContinuousResidualWorkspace, ContinuousSegmentErrorBound,
     DenseErrorControl, DenseErrorReport, DenseErrorSample, DenseOutputError, DenseOutputResult,
-    DenseSegmentWork, InterpolantAudit, InterpolantAuditSample, Rodas5pQuarticSegment,
+    DenseSegmentWork, InteriorSampling, InterpolantAudit, InterpolantAuditSample,
+    RODAS5P_SEQUENTIAL_DENSE_DRIVER_ID, Rodas5pDenseSegment, Rodas5pQuarticSegment,
     bdf_dense_output, integrate_adaptive_dense_observed_with_config,
     integrate_adaptive_dense_observed_with_dense_error_control,
-    integrate_bdf_adaptive_dense_observed, integrate_bdf_fixed_dense_observed,
-    integrate_fixed_dense_observed, integrate_homotopy_adaptive_dense_observed,
-    integrate_radau_adaptive_dense_observed, integrate_radau_fixed_dense_observed,
+    integrate_adaptive_dense_observed_with_segments, integrate_bdf_adaptive_dense_observed,
+    integrate_bdf_fixed_dense_observed, integrate_fixed_dense_observed,
+    integrate_homotopy_adaptive_dense_observed, integrate_radau_adaptive_dense_observed,
+    integrate_radau_fixed_dense_observed,
     integrate_sequential_matrix_free_adaptive_dense_fixed_inner_observed,
     integrate_sequential_matrix_free_adaptive_dense_observed,
     integrate_sequential_matrix_free_adaptive_dense_with_interpolant_audit,
@@ -386,16 +388,17 @@ pub use rhs_telemetry::{
     run_homotopy_rhs_telemetry_screen,
 };
 pub use rodas5p_fast::{
-    BandedJacobian, BandedJacobianFn, BandedKernel, BandedWork, FastLuPolicy,
-    RODAS5P_FAST_BANDED_DRIVER_ID, RODAS5P_FAST_BANDED_FIXED2_DRIVER_ID,
+    BandedJacobian, BandedJacobianFn, BandedKernel, BandedWork, DriverPartial, DriverStopReason,
+    FastLuPolicy, RODAS5P_FAST_BANDED_DRIVER_ID, RODAS5P_FAST_BANDED_FIXED2_DRIVER_ID,
     RODAS5P_FAST_BANDED_FIXED2_EXACT_CACHE_DRIVER_ID, RODAS5P_FAST_BANDED_SLICES_DRIVER_ID,
     RODAS5P_FAST_COLEXT_DRIVER_ID, RODAS5P_FAST_COLEXT64_DRIVER_ID, RODAS5P_FAST_DRIVER_ID,
     RODAS5P_FAST_SMALL_LU_MAX, RODAS5P_FAST_SPARSE_DENSITY_MAX, Rodas5pFastBandedResult,
     Rodas5pFastLu, Rodas5pFastOptions, Rodas5pFastResult, integrate_rodas5p_fast_banded_observed,
     integrate_rodas5p_fast_banded_observed_with_kernel,
     integrate_rodas5p_fast_banded_observed_with_options, integrate_rodas5p_fast_observed,
-    integrate_rodas5p_fast_observed_with_options, integrate_rodas5p_fast_observed_with_telemetry,
-    lu_research, rodas5p_fast_banded_solve, rodas5p_fast_step,
+    integrate_rodas5p_fast_observed_with_options, integrate_rodas5p_fast_observed_with_partial,
+    integrate_rodas5p_fast_observed_with_telemetry, lu_research, rodas5p_fast_banded_solve,
+    rodas5p_fast_step,
 };
 pub use rodas5p_fast_small::{
     RODAS5P_FAST_SMALL_DRIVER_ID, Rodas5pFastSmallOptions, Rodas5pFastSmallResult, SmallProblem,

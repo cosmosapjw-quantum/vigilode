@@ -34,6 +34,30 @@ pub enum Tier {
     Performance,
 }
 
+/// Interior (dense-output) error control of a run with
+/// [`Options::dense_output`] (plan §5 T3). The estimate is formed at the
+/// midpoint of every step the embedded estimate accepts, since
+/// [`crate::Solution::at`] may evaluate the continuous extension anywhere.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum InteriorError {
+    /// The W-filtered estimate `(M - h gamma J0)^{-1} (h/2) d(1/2)` with the
+    /// step's own stage matrix; the controller sees
+    /// `max(embedded error, estimate)`, so an interior failure rejects and
+    /// shrinks the step. One right-hand side and one back-solve per step; an
+    /// estimate, not a bound (within 1 and 2.36 times the interior error of
+    /// a scalar linear mode with constant defect).
+    #[default]
+    WFilteredEnforce,
+    /// The shift-`h/2` filtered estimate (one Jacobian and one LU per step);
+    /// a step whose estimate exceeds one tolerance unit is rejected.
+    Enforce,
+    /// No interior estimate: only the endpoint is error controlled, and the
+    /// interior of a step may exceed the tolerance by orders of magnitude on
+    /// stiff problems.
+    Off,
+}
+
 /// Options of [`crate::Rodas5p::solve`].
 ///
 /// The defaults are those of the protected drivers'
@@ -53,14 +77,21 @@ pub struct Options {
     /// The maximum number of step attempts, accepted and rejected together
     /// (the drivers' `max_attempts`).
     pub max_steps: usize,
-    /// Return the state at every accepted step instead of at `t0` and `t1`
-    /// only.
+    /// Return the state at every accepted step and the continuous extension
+    /// ([`crate::Solution::at`]) instead of the states at `t0` and `t1` only.
     ///
-    /// No protected driver of this release returns per-step states without
-    /// changing its step sequence, so `true` is refused with
-    /// [`crate::SolveError::Unsupported`]. With `false` the solution holds
-    /// `t0` and `t1` (only `t0` for a failed run).
+    /// `true` runs the protected sequential dense driver with the interior
+    /// error control of [`Options::interior_error`]; it needs an explicit or
+    /// finite-difference Jacobian (a JVP-only problem is refused with
+    /// [`crate::SolveError::Unsupported`]). With `false` the solution holds
+    /// `t0` and `t1` (`t0` and the last accepted state for a failed run).
     pub dense_output: bool,
+    /// Interior error control under [`Options::dense_output`]; ignored
+    /// without dense output (only the endpoint is returned, and only the
+    /// endpoint is controlled). Defaults to
+    /// [`InteriorError::WFilteredEnforce`].
+    #[serde(default)]
+    pub interior_error: InteriorError,
     /// The contract tier; see [`Tier`].
     pub tier: Tier,
 }
@@ -73,6 +104,7 @@ impl Default for Options {
             h0: 1.0e-3,
             max_steps: 100_000,
             dense_output: false,
+            interior_error: InteriorError::WFilteredEnforce,
             tier: Tier::Protected,
         }
     }

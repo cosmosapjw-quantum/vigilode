@@ -60,7 +60,7 @@ use rodas5p_krylov::{
 use serde::Serialize;
 
 use crate::{
-    AdaptiveControllerState, AdaptiveFailureKind, AdaptiveStepConfig, KrylovState,
+    AdaptiveControllerState, AdaptiveFailureKind, AdaptiveStepConfig, DriverPartial, KrylovState,
     ObservedIntegrationResult, OdeProblem, OutputSchedule, output::OutputCollector,
     problem::MatrixFreeCallbackIdentity, raw_absolute_residual_budget,
     rodas_next_step_after_attempt,
@@ -1206,6 +1206,9 @@ pub struct Rodas5pMfFastResult {
     pub recycle_scope: &'static str,
     /// Opt-in start telemetry (research node SP04).
     pub start_telemetry: Option<KrylovStartTelemetry>,
+    /// Where and why the run stopped, when it stopped before `tf`
+    /// (`None` on success).
+    pub partial: Option<DriverPartial>,
 }
 
 /// The stage arithmetic and Krylov workspaces of one integration.
@@ -2127,6 +2130,9 @@ impl Rodas5pMfFastWorkspace {
         let mut internal_steps = 0_usize;
         // Whether f(t, y), f_t and the JVP in the workspace belong to (t, y).
         let mut fresh_state = false;
+        // The kind of the last rejection since the last accepted step (the
+        // partial record only; never read by the step arithmetic).
+        let mut last_failure = None;
         while t < tf && attempts < adaptive.max_attempts {
             let Some(next_h) =
                 crate::output::adaptive_end_step(t, h, tf, adaptive.step_cap(), &controller)?
@@ -2208,8 +2214,10 @@ impl Rodas5pMfFastWorkspace {
                     }
                     internal_steps += 1;
                     fresh_state = false;
+                    last_failure = None;
                 }
                 Some(kind) => {
+                    last_failure = Some(kind);
                     // A rejected attempt leaves no trace in the recycle state.
                     if self.krylov_workspace.lgmres_into {
                         if let Some(KrylovState::Lgmres(st)) = recycle.as_mut() {
@@ -2241,6 +2249,8 @@ impl Rodas5pMfFastWorkspace {
             )?;
         }
         let success = t >= tf;
+        let partial =
+            DriverPartial::after_loop(t, tf, &y, attempts, adaptive.max_attempts, last_failure);
         let (times, states, output_clipped_steps) = if success {
             collector.finish()?
         } else {
@@ -2272,6 +2282,7 @@ impl Rodas5pMfFastWorkspace {
             start_telemetry: self
                 .start_telemetry_enabled
                 .then(|| self.start_telemetry.clone()),
+            partial,
         };
         if self.krylov_workspace.lgmres_into
             && let Some(KrylovState::Lgmres(st)) = recycle.as_mut()

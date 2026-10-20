@@ -36,8 +36,9 @@ use crate::{
     AdaptiveStepConfig, ObservedIntegrationResult, OdeProblem, OutputSchedule,
     problem::{ProblemStructure, StructureError},
     rodas5p_fast::{
-        RODAS5P_FAST_BANDED_DRIVER_ID, RODAS5P_FAST_DRIVER_ID, Rodas5pFastBandedResult,
-        Rodas5pFastResult, integrate_rodas5p_fast_banded_observed, integrate_rodas5p_fast_observed,
+        DriverPartial, RODAS5P_FAST_BANDED_DRIVER_ID, RODAS5P_FAST_DRIVER_ID,
+        Rodas5pFastBandedResult, Rodas5pFastResult, integrate_rodas5p_fast_banded_observed,
+        integrate_rodas5p_fast_observed_with_partial,
     },
     rodas5p_matrix_free_fast::{
         RODAS5P_MF_FAST_DRIVER_ID, Rodas5pMfFastResult,
@@ -188,6 +189,9 @@ impl RoutedRun {
 pub struct RoutedResult {
     pub run: RoutedRun,
     pub routing: RoutingRecord,
+    /// Where and why the routed driver stopped, when it stopped before `tf`
+    /// (`None` on success); the driver's own record.
+    pub partial: Option<DriverPartial>,
 }
 
 impl RoutedResult {
@@ -466,35 +470,46 @@ pub fn integrate_rodas5p_routed_observed_with_options(
         fallback,
         verification: None,
     };
-    let mut run = match driver {
+    let (mut run, partial) = match driver {
         RoutedDriver::Banded => {
             let band = problem
                 .declared_band()
                 .expect("rule 1 is chosen only for a declared band");
             // Before any integration step: a mismatch refuses the run.
             routing.verification = Some(verify_declared_band(problem, t_span.0, y0)?);
-            RoutedRun::Banded(integrate_rodas5p_fast_banded_observed(
+            let run = integrate_rodas5p_fast_banded_observed(
                 problem, &band, t_span, y0, adaptive, output,
-            )?)
+            )?;
+            let partial = run.partial.clone();
+            (RoutedRun::Banded(run), partial)
         }
-        RoutedDriver::Dense => RoutedRun::Dense(integrate_rodas5p_fast_observed(
-            problem, t_span, y0, adaptive, output,
-        )?),
+        RoutedDriver::Dense => {
+            let (run, partial) = integrate_rodas5p_fast_observed_with_partial(
+                problem, t_span, y0, adaptive, output,
+            )?;
+            (RoutedRun::Dense(run), partial)
+        }
         RoutedDriver::MatrixFree => {
-            RoutedRun::MatrixFree(integrate_rodas5p_mf_fast_observed_gmres_into(
+            let run = integrate_rodas5p_mf_fast_observed_gmres_into(
                 problem,
                 t_span,
                 y0,
                 &options.matrix_free,
                 adaptive,
                 output,
-            )?)
+            )?;
+            let partial = run.partial.clone();
+            (RoutedRun::MatrixFree(run), partial)
         }
     };
     if let Some(verification) = &routing.verification {
         run.observed_mut().counters.accumulate(verification.charged);
     }
-    Ok(RoutedResult { run, routing })
+    Ok(RoutedResult {
+        run,
+        routing,
+        partial,
+    })
 }
 
 #[cfg(test)]

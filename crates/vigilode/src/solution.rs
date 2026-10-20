@@ -3,7 +3,10 @@
 use std::fmt;
 
 use rodas5p_core::{LinearSolverConfig, WorkCounters};
-use rodas5p_integrators::{AdaptiveStepConfig, BandedWork, Rodas5pFastLu, RoutingRecord};
+use rodas5p_integrators::{
+    AdaptiveFailureKind, AdaptiveStepConfig, BandedWork, DenseErrorControl, DriverStopReason,
+    InteriorSampling, Rodas5pDenseSegment, Rodas5pFastLu, RoutingRecord,
+};
 use serde::Serialize;
 
 use crate::{
@@ -12,7 +15,7 @@ use crate::{
 };
 
 /// Schema tag of [`Stats`] (bumped when a field changes meaning).
-pub const STATS_SCHEMA: &str = "vigilode.stats.v1";
+pub const STATS_SCHEMA: &str = "vigilode.stats.v2";
 
 /// Which user callback reported an error.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
@@ -37,9 +40,30 @@ pub enum FailureReason {
         /// The budget.
         max_steps: usize,
     },
-    /// The step size fell below the drivers' minimum step (repeated
-    /// rejections, for example by local error or non-finite stages).
+    /// The step size fell below the drivers' minimum step after repeated
+    /// rejections by the local error test (embedded or interior).
     StepSizeTooSmall {
+        /// The drivers' minimum step.
+        min_step: f64,
+    },
+    /// The step size fell below the minimum step after repeated failures of
+    /// the stage linear solves (a singular or non-factorizable `M - h gamma J`,
+    /// or a Krylov solve that did not converge).
+    LinearSolveFailed {
+        /// The drivers' minimum step.
+        min_step: f64,
+    },
+    /// The step size fell below the minimum step after repeated non-finite
+    /// attempts (NaN/Inf in a stage or the new state, or a
+    /// [`crate::CallbackError::Recoverable`] at every smaller step).
+    NonFinite {
+        /// The drivers' minimum step.
+        min_step: f64,
+    },
+    /// The step size fell below the minimum step after repeated nonlinear
+    /// solve failures (not produced by the Rosenbrock stages; kept so that
+    /// every driver failure kind has its own reason).
+    NonlinearSolveFailed {
         /// The drivers' minimum step.
         min_step: f64,
     },
@@ -61,9 +85,22 @@ impl fmt::Display for FailureReason {
             Self::MaxStepsReached { max_steps } => {
                 write!(f, "attempt budget of {max_steps} steps reached")
             }
-            Self::StepSizeTooSmall { min_step } => {
-                write!(f, "step size fell below the minimum step {min_step:e}")
-            }
+            Self::StepSizeTooSmall { min_step } => write!(
+                f,
+                "step size fell below the minimum step {min_step:e} after local error rejections"
+            ),
+            Self::LinearSolveFailed { min_step } => write!(
+                f,
+                "step size fell below the minimum step {min_step:e} after linear solve failures"
+            ),
+            Self::NonFinite { min_step } => write!(
+                f,
+                "step size fell below the minimum step {min_step:e} after non-finite attempts"
+            ),
+            Self::NonlinearSolveFailed { min_step } => write!(
+                f,
+                "step size fell below the minimum step {min_step:e} after nonlinear solve failures"
+            ),
             Self::CallbackFailed {
                 callback,
                 t,
@@ -174,6 +211,9 @@ pub struct KrylovStartRecord {
 
 /// The driver-specific work counters and policy identifiers the routed
 /// driver returned, beyond [`Stats::driver_counters`] and the step counts.
+// One value per solve, kept inline for serde: the size difference between
+// variants costs nothing worth a box.
+#[allow(clippy::large_enum_variant)]
 #[derive(Clone, Debug, PartialEq, Serialize)]
 #[serde(rename_all = "kebab-case", tag = "driver")]
 pub enum DriverWork {
@@ -210,6 +250,43 @@ pub enum DriverWork {
         /// Start telemetry, when the driver recorded it.
         start_telemetry: Option<KrylovStartRecord>,
     },
+    /// The sequential adaptive dense driver
+    /// (`integrate_adaptive_dense_observed_with_segments`): the mass-matrix
+    /// and dense-output route.
+    SequentialDense {
+        /// The interior error control that ran (`Off` without dense output).
+        control: DenseErrorControl,
+        /// Which steps the interior estimate was formed on.
+        interior_sampling: InteriorSampling,
+        /// The stage linear solver of the sequential step.
+        linear_solver: LinearSolverConfig,
+        /// Interior estimates formed (accepted and rejected steps).
+        samples: usize,
+        /// Steps the interior estimate rejected.
+        interior_rejections: usize,
+        /// Steps whose estimate could not be formed.
+        unavailable: usize,
+        /// The largest interior estimate of an accepted step, in tolerance
+        /// units (an estimate, not a bound).
+        max_accepted_estimate: Option<f64>,
+        /// Work of the estimates (also in [`Stats::driver_counters`] under
+        /// the enforcing modes).
+        estimate_counters: WorkCounters,
+        /// Accepted steps whose continuous extension was kept.
+        segments: usize,
+    },
+}
+
+/// Where and why a run stopped before `t1`, as the driver reported it.
+#[derive(Clone, Debug, PartialEq, Serialize)]
+pub struct StopRecord {
+    /// The last accepted time (`t0` when no step was accepted); the last
+    /// entry of [`Solution::t`].
+    pub t: f64,
+    /// Why the driver's loop ended.
+    pub reason: DriverStopReason,
+    /// The kind of the last rejected attempt after the last accepted step.
+    pub last_failure: Option<AdaptiveFailureKind>,
 }
 
 /// Which driver ran and why.
@@ -275,6 +352,8 @@ pub struct Stats {
     pub finite_difference: FiniteDifferenceWork,
     /// Callback error accounting.
     pub callbacks: CallbackWork,
+    /// Where and why the run stopped, when it stopped before `t1`.
+    pub stop: Option<StopRecord>,
     /// The driver's message.
     pub driver_message: String,
 }
@@ -287,7 +366,10 @@ pub struct Stats {
 /// [`Solution::ensure_success`] to turn it into an error.
 #[derive(Clone, Debug, Serialize)]
 pub struct Solution {
-    /// Output times: `t0` and `t1` (only `t0` for a failed run).
+    /// Output times. Without [`crate::Options::dense_output`]: `t0` and
+    /// `t1`, or `t0` and the last accepted time for a failed run. With it:
+    /// `t0` and every accepted step's end, up to `t1` or the last accepted
+    /// time.
     pub t: Vec<f64>,
     /// States at [`Solution::t`].
     pub y: Vec<Vec<f64>>,
@@ -295,6 +377,9 @@ pub struct Solution {
     pub stats: Stats,
     /// How the run ended.
     pub status: Status,
+    /// The accepted steps' continuous extension, under dense output.
+    #[serde(skip)]
+    pub(crate) extension: Option<Vec<Rodas5pDenseSegment>>,
 }
 
 impl Solution {
@@ -306,6 +391,30 @@ impl Solution {
     /// The last output state.
     pub fn final_state(&self) -> Option<&[f64]> {
         self.y.last().map(Vec::as_slice)
+    }
+
+    /// The state at `t`.
+    ///
+    /// With [`crate::Options::dense_output`] this evaluates the RODAS5P
+    /// continuous extension of the accepted step that contains `t`, for any
+    /// `t` between `t0` and the last accepted time (bit for bit the value the
+    /// driver samples at an output time). Without dense output it returns
+    /// the stored state when `t` is one of [`Solution::t`]. Otherwise, and
+    /// outside the integrated span, `None`.
+    pub fn at(&self, t: f64) -> Option<Vec<f64>> {
+        if let Some(segments) = &self.extension {
+            let first = self.t.first().copied()?;
+            if t == first {
+                return self.y.first().cloned();
+            }
+            let index = segments.partition_point(|s| s.t_new < t);
+            let segment = segments.get(index)?;
+            return segment.evaluate(t).ok();
+        }
+        self.t
+            .iter()
+            .position(|&time| time == t)
+            .map(|index| self.y[index].clone())
     }
 
     /// `Ok(self)` for a successful run, otherwise

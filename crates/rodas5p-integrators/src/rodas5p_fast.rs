@@ -210,6 +210,63 @@ pub struct BandedWork {
 pub struct Rodas5pFastBandedResult {
     pub fast: Rodas5pFastResult,
     pub work: BandedWork,
+    /// Where and why the run stopped, when it stopped before `tf`
+    /// (`None` on success).
+    pub partial: Option<DriverPartial>,
+}
+
+/// Why a protected adaptive driver stopped before `tf`.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum DriverStopReason {
+    /// The attempt budget `AdaptiveStepConfig::max_attempts` was used up.
+    AttemptBudget,
+    /// The next step fell below `AdaptiveStepConfig::min_step` (or no
+    /// longer advanced `t`) before `tf`.
+    MinimumStep,
+}
+
+/// The partial result of a protected adaptive run that stopped before `tf`
+/// (plan §3, P0 tier: a failure returns the partial solution and a typed
+/// reason). Recording it performs no arithmetic on the run: the last
+/// accepted state is copied once, after the loop.
+#[derive(Clone, Debug, PartialEq, Serialize)]
+pub struct DriverPartial {
+    /// The last accepted time (`t0` when no step was accepted).
+    pub t: f64,
+    /// The state at [`Self::t`].
+    pub y: Vec<f64>,
+    /// Why the loop ended.
+    pub reason: DriverStopReason,
+    /// The kind of the last rejected attempt after the last accepted step;
+    /// `None` when no attempt was rejected since then.
+    pub last_failure: Option<AdaptiveFailureKind>,
+}
+
+impl DriverPartial {
+    /// The partial record of a run that ended at `(t, y)` after `attempts`
+    /// attempts, or `None` when it reached `tf`.
+    pub(crate) fn after_loop(
+        t: f64,
+        tf: f64,
+        y: &[f64],
+        attempts: usize,
+        max_attempts: usize,
+        last_failure: Option<AdaptiveFailureKind>,
+    ) -> Option<Self> {
+        (t < tf).then(|| Self {
+            t,
+            y: y.to_vec(),
+            // The loop tests the budget first, so an exit with the budget
+            // spent is a budget exit; every in-loop break leaves it unspent.
+            reason: if attempts >= max_attempts {
+                DriverStopReason::AttemptBudget
+            } else {
+                DriverStopReason::MinimumStep
+            },
+            last_failure,
+        })
+    }
 }
 
 /// The band storage and factors of the banded pipeline.
@@ -1324,7 +1381,31 @@ pub fn integrate_rodas5p_fast_observed(
         Rodas5pFastOptions::default(),
         None,
     )
-    .map(|(result, _)| result)
+    .map(|(result, ..)| result)
+}
+
+/// [`integrate_rodas5p_fast_observed`] with the partial record of a run that
+/// stopped before `tf` (`None` on success): the same run, bit for bit.
+/// `Rodas5pFastResult` is also the lagged driver's result type, so the
+/// record travels beside it.
+pub fn integrate_rodas5p_fast_observed_with_partial(
+    problem: &OdeProblem,
+    t_span: (f64, f64),
+    y0: &[f64],
+    adaptive: &AdaptiveStepConfig,
+    output: &OutputSchedule,
+) -> CoreResult<(Rodas5pFastResult, Option<DriverPartial>)> {
+    integrate_fast(
+        problem,
+        None,
+        t_span,
+        y0,
+        adaptive,
+        output,
+        Rodas5pFastOptions::default(),
+        None,
+    )
+    .map(|(result, _, partial)| (result, partial))
 }
 
 /// [`integrate_rodas5p_fast_observed`] with opt-in controller telemetry
@@ -1350,7 +1431,7 @@ pub fn integrate_rodas5p_fast_observed_with_telemetry(
         Rodas5pFastOptions::default(),
         Some(&mut telemetry),
     )
-    .map(|(result, _)| (result, telemetry))
+    .map(|(result, ..)| (result, telemetry))
 }
 
 /// [`integrate_rodas5p_fast_observed`] with opt-in [`Rodas5pFastOptions`]
@@ -1364,7 +1445,7 @@ pub fn integrate_rodas5p_fast_observed_with_options(
     options: Rodas5pFastOptions,
 ) -> CoreResult<Rodas5pFastResult> {
     integrate_fast(problem, None, t_span, y0, adaptive, output, options, None)
-        .map(|(result, _)| result)
+        .map(|(result, ..)| result)
 }
 
 /// [`integrate_rodas5p_fast_observed`] with an explicit band structure
@@ -1464,7 +1545,7 @@ fn integrate_banded(
     options: Rodas5pFastOptions,
     kernel: BandedKernel,
 ) -> CoreResult<Rodas5pFastBandedResult> {
-    let (fast, work) = integrate_fast(
+    let (fast, work, partial) = integrate_fast(
         problem,
         Some((band, kernel)),
         t_span,
@@ -1477,6 +1558,7 @@ fn integrate_banded(
     Ok(Rodas5pFastBandedResult {
         fast,
         work: work.unwrap_or_default(),
+        partial,
     })
 }
 
@@ -1490,7 +1572,7 @@ fn integrate_fast(
     output: &OutputSchedule,
     options: Rodas5pFastOptions,
     mut telemetry: Option<&mut ControllerTelemetry>,
-) -> CoreResult<(Rodas5pFastResult, Option<BandedWork>)> {
+) -> CoreResult<(Rodas5pFastResult, Option<BandedWork>, Option<DriverPartial>)> {
     adaptive.validate()?;
     let (mut t, tf) = t_span;
     if tf < t || y0.len() != problem.dimension {
@@ -1517,6 +1599,9 @@ fn integrate_fast(
     let mut internal_steps = 0_usize;
     // Whether the Jacobian, f(t, y) and f_t in the workspace belong to (t, y).
     let mut fresh_state = false;
+    // The kind of the last rejection since the last accepted step (the
+    // partial record only; never read by the step arithmetic).
+    let mut last_failure = None;
     while t < tf && attempts < adaptive.max_attempts {
         let Some(next_h) =
             crate::output::adaptive_end_step(t, h, tf, adaptive.step_cap(), &controller)?
@@ -1576,10 +1661,12 @@ fn integrate_fast(
                 }
                 internal_steps += 1;
                 fresh_state = false;
+                last_failure = None;
             }
             Some(kind) => {
                 counters.rejected_steps += 1;
                 rejected_steps += 1;
+                last_failure = Some(kind);
                 match kind {
                     AdaptiveFailureKind::LocalError => counters.local_error_failures += 1,
                     AdaptiveFailureKind::LinearSolve => counters.linear_solve_failures += 1,
@@ -1623,6 +1710,8 @@ fn integrate_fast(
         }
     }
     let success = t >= tf;
+    let partial =
+        DriverPartial::after_loop(t, tf, &y, attempts, adaptive.max_attempts, last_failure);
     let (times, states, output_clipped_steps) = if success {
         collector.finish()?
     } else {
@@ -1657,7 +1746,7 @@ fn integrate_fast(
             _ => options.driver_id(banded.is_some()),
         },
     };
-    Ok((result, banded))
+    Ok((result, banded, partial))
 }
 
 #[cfg(test)]

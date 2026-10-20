@@ -3,21 +3,26 @@
 
 use std::sync::Arc;
 
-use rodas5p_core::{CoreError, CoreResult, DenseMatrix, WorkCounters};
+use std::fmt::Display;
+
+use rodas5p_core::{CoreError, CoreResult, DenseMatrix, LinearSolverConfig, WorkCounters};
 use rodas5p_integrators::{
-    AdaptiveStepConfig, BandedJacobian, ObservedIntegrationResult, OdeProblem, OutputSchedule,
+    AdaptiveFailureKind, AdaptiveStepConfig, BandedJacobian, DenseErrorControl, DriverPartial,
+    DriverStopReason, IntegrationMethod, InteriorSampling, ObservedIntegrationResult, OdeProblem,
+    OutputSamplingPlan, OutputSchedule, RODAS5P_SEQUENTIAL_DENSE_DRIVER_ID, Rodas5pDenseSegment,
     RoutedDriver, RoutedRun, RoutingError, RoutingOptions, StructureDeclaration,
-    integrate_rodas5p_fast_banded_observed, integrate_rodas5p_routed_observed,
+    integrate_adaptive_dense_observed_with_segments, integrate_rodas5p_fast_banded_observed,
+    integrate_rodas5p_routed_observed,
 };
 
 use crate::{
     error::SolveError,
     fd::{Guard, band_groups, banded_fd_fill, dense_fd_jacobian, dense_from_band},
-    options::{Atol, Options, Tier},
+    options::{Atol, InteriorError, Options, Tier},
     problem::{Jacobian, Problem},
     solution::{
         Callback, DriverWork, FD_INCREMENT_RULE, FailureReason, JacobianRecord, KrylovStartRecord,
-        RouteRecord, STATS_SCHEMA, Solution, Stats, Status,
+        RouteRecord, STATS_SCHEMA, Solution, Stats, Status, StopRecord,
     },
 };
 
@@ -27,6 +32,7 @@ type CoreJvp = Arc<dyn Fn(f64, &[f64], &[f64], &mut [f64]) -> CoreResult<()> + S
 
 const ENTRY_ROUTED: &str = "integrate_rodas5p_routed_observed";
 const ENTRY_BANDED: &str = "integrate_rodas5p_fast_banded_observed";
+const ENTRY_SEQUENTIAL_DENSE: &str = "integrate_adaptive_dense_observed_with_segments";
 
 /// The RODAS5P solver: a stiffly accurate, L-stable Rosenbrock method of
 /// order 5(4), run through the protected drivers of `rodas5p-integrators`.
@@ -41,6 +47,8 @@ enum Plan {
     },
     /// The banded driver directly.
     Banded(BandedJacobian),
+    /// The sequential adaptive dense driver: a mass matrix or dense output.
+    SequentialDense,
 }
 
 /// The driver outcome, normalized.
@@ -52,6 +60,10 @@ struct Run {
     route: RouteRecord,
     matrix_free: bool,
     driver_work: DriverWork,
+    /// The driver's partial record (`None` on success).
+    partial: Option<DriverPartial>,
+    /// Every accepted step's continuous extension (sequential dense route).
+    segments: Option<Vec<Rodas5pDenseSegment>>,
 }
 
 impl Rodas5p {
@@ -87,7 +99,8 @@ impl Rodas5p {
             OutputSchedule::new(times).map_err(|e| SolveError::InvalidInput(e.to_string()))?;
 
         let guard = Arc::new(Guard::default());
-        let (ode, plan, jacobian_record) = build(problem, &guard)?;
+        let sequential = problem.mass.is_some() || opts.dense_output;
+        let (ode, plan, jacobian_record) = build(problem, &guard, sequential)?;
 
         let run = match plan {
             Plan::Routed { declaration } => {
@@ -105,6 +118,7 @@ impl Rodas5p {
                             }
                             RoutingError::Integration(c) => driver_error(c, &guard),
                         })?;
+                let partial = routed.partial.clone();
                 let (driver_id, attempts, accepted, rejected, driver_work) = match &routed.run {
                     RoutedRun::Banded(r) => (
                         r.fast.driver,
@@ -162,6 +176,8 @@ impl Rodas5p {
                         driver_id,
                         routing: Some(routed.routing),
                     },
+                    partial,
+                    segments: None,
                 }
             }
             Plan::Banded(band) => {
@@ -185,6 +201,69 @@ impl Rodas5p {
                         lu: result.fast.lu,
                         banded: result.work,
                     },
+                    partial: result.partial,
+                    segments: None,
+                }
+            }
+            Plan::SequentialDense => {
+                // Dense output samples the interior estimate on every
+                // step, since `Solution::at` may evaluate any of them;
+                // without it only the endpoint is returned and controlled.
+                let (control, interior_sampling) = if opts.dense_output {
+                    let control = match opts.interior_error {
+                        InteriorError::WFilteredEnforce => DenseErrorControl::WFilteredEnforce,
+                        InteriorError::Enforce => DenseErrorControl::Enforce,
+                        InteriorError::Off => DenseErrorControl::Off,
+                    };
+                    (control, InteriorSampling::EveryStep)
+                } else {
+                    (DenseErrorControl::Off, InteriorSampling::OutputTimes)
+                };
+                // `None` is the sequential step's default: the direct LU.
+                let linear_solver = LinearSolverConfig::default();
+                let run = integrate_adaptive_dense_observed_with_segments(
+                    &ode,
+                    t_span,
+                    y0,
+                    IntegrationMethod::Sequential,
+                    None,
+                    None,
+                    &adaptive,
+                    &OutputSamplingPlan::dense(schedule.clone()),
+                    control,
+                    interior_sampling,
+                )
+                .map_err(|e| driver_error(e, &guard))?;
+                let diagnostics = &run.result.diagnostics;
+                Run {
+                    attempts: diagnostics.attempts,
+                    accepted_steps: diagnostics.accepted_macro_steps,
+                    rejected_steps: diagnostics.rejected_macro_steps,
+                    route: RouteRecord {
+                        entry_point: ENTRY_SEQUENTIAL_DENSE,
+                        driver_id: RODAS5P_SEQUENTIAL_DENSE_DRIVER_ID,
+                        routing: None,
+                    },
+                    matrix_free: false,
+                    driver_work: DriverWork::SequentialDense {
+                        control,
+                        interior_sampling,
+                        linear_solver,
+                        samples: run.report.samples.len(),
+                        interior_rejections: run
+                            .report
+                            .samples
+                            .iter()
+                            .filter(|sample| !sample.accepted)
+                            .count(),
+                        unavailable: run.report.unavailable,
+                        max_accepted_estimate: run.report.max_accepted_estimate(),
+                        estimate_counters: run.report.counters,
+                        segments: run.segments.len(),
+                    },
+                    observed: run.result.observed,
+                    partial: run.partial,
+                    segments: opts.dense_output.then_some(run.segments),
                 }
             }
         };
@@ -202,15 +281,44 @@ impl Rodas5p {
                 message: fatal.message,
             }),
             None if run.observed.success => Status::Success,
-            None if run.attempts >= adaptive.max_attempts => {
-                Status::Failed(FailureReason::MaxStepsReached {
-                    max_steps: adaptive.max_attempts,
-                })
-            }
-            None => Status::Failed(FailureReason::StepSizeTooSmall {
-                min_step: adaptive.min_step,
-            }),
+            None => Status::Failed(failure_reason(
+                run.partial.as_ref(),
+                run.attempts,
+                &adaptive,
+            )),
         };
+
+        // The returned states: every accepted step under dense output;
+        // otherwise the driver's samples, followed after a failure by the
+        // last accepted state.
+        let (t, y) = match &run.segments {
+            Some(segments) => {
+                let mut t = Vec::with_capacity(segments.len() + 1);
+                let mut y = Vec::with_capacity(segments.len() + 1);
+                t.push(t_span.0);
+                y.push(y0.to_vec());
+                for segment in segments {
+                    t.push(segment.t_new);
+                    y.push(segment.y_new.clone());
+                }
+                (t, y)
+            }
+            None => {
+                let (mut t, mut y) = (run.observed.t.clone(), run.observed.y.clone());
+                if let Some(partial) = &run.partial
+                    && t.last().is_none_or(|&last| last < partial.t)
+                {
+                    t.push(partial.t);
+                    y.push(partial.y.clone());
+                }
+                (t, y)
+            }
+        };
+        let stop = run.partial.as_ref().map(|partial| StopRecord {
+            t: partial.t,
+            reason: partial.reason,
+            last_failure: partial.last_failure,
+        });
 
         let stats = Stats {
             schema: STATS_SCHEMA,
@@ -239,18 +347,50 @@ impl Rodas5p {
             driver_work: run.driver_work,
             finite_difference: fd,
             callbacks: guard.callback_work(),
+            stop,
             driver_message: run.observed.message,
         };
         Ok(Solution {
-            t: run.observed.t,
-            y: run.observed.y,
+            t,
+            y,
             stats,
             status,
+            extension: run.segments,
         })
     }
 }
 
-fn driver_error(error: CoreError, guard: &Guard) -> SolveError {
+/// The typed reason of a run that stopped early without a fatal callback
+/// error: the driver's stop reason and the kind of its last rejection.
+fn failure_reason(
+    partial: Option<&DriverPartial>,
+    attempts: usize,
+    adaptive: &AdaptiveStepConfig,
+) -> FailureReason {
+    let min_step = adaptive.min_step;
+    let budget = FailureReason::MaxStepsReached {
+        max_steps: adaptive.max_attempts,
+    };
+    match partial {
+        Some(partial) if partial.reason == DriverStopReason::AttemptBudget => budget,
+        Some(partial) => match partial.last_failure {
+            Some(AdaptiveFailureKind::LinearSolve) => FailureReason::LinearSolveFailed { min_step },
+            Some(AdaptiveFailureKind::NonFinite) => FailureReason::NonFinite { min_step },
+            Some(AdaptiveFailureKind::NonlinearSolve) => {
+                FailureReason::NonlinearSolveFailed { min_step }
+            }
+            Some(AdaptiveFailureKind::LocalError) | None => {
+                FailureReason::StepSizeTooSmall { min_step }
+            }
+        },
+        // Every routed driver reports a partial record on failure; this
+        // keeps a typed answer if one does not.
+        None if attempts >= adaptive.max_attempts => budget,
+        None => FailureReason::StepSizeTooSmall { min_step },
+    }
+}
+
+fn driver_error(error: impl Display, guard: &Guard) -> SolveError {
     match guard.fatal() {
         Some(fatal) => SolveError::Driver(format!(
             "{error}; first fatal {:?} callback error at t = {:e}: {}",
@@ -319,14 +459,24 @@ fn validate(
                 n * n
             ));
         }
+        if !m.iter().all(|v| v.is_finite()) {
+            return invalid("the mass matrix contains NaN/Inf".into());
+        }
+    }
+    // The sequential dense route (mass matrix or dense output) forms the
+    // stage matrix M - h gamma J explicitly and needs a matrix Jacobian.
+    let sequential = problem.mass.is_some() || opts.dense_output;
+    if sequential && matches!(problem.jacobian, Jacobian::Jvp(_)) {
         return unsupported(
-            "a mass matrix: the protected fast drivers of this release integrate M = I only",
+            "a mass matrix or dense output on a JVP-only problem: the protected sequential \
+             dense driver needs an explicit or finite-difference Jacobian (the step's stage \
+             matrix M - h gamma J)",
         );
     }
-    if opts.dense_output {
+    if sequential && matches!(problem.jacobian, Jacobian::Dense(_)) && problem.band.is_some() {
         return unsupported(
-            "dense_output: no protected driver of this release returns per-step states \
-             without changing its step sequence",
+            "a declared band on a dense Jacobian with a mass matrix or dense output: only the \
+             router verifies such a declaration, and the sequential dense driver would ignore it",
         );
     }
     if problem.autonomous && problem.time_derivative.is_some() {
@@ -367,6 +517,7 @@ fn validate(
 fn build(
     problem: &Problem,
     guard: &Arc<Guard>,
+    sequential: bool,
 ) -> Result<(OdeProblem, Plan, JacobianRecord), SolveError> {
     let n = problem.dimension;
     let rhs: CoreRhs = {
@@ -474,6 +625,20 @@ fn build(
         }
     };
 
+    // The sequential dense driver reads the Jacobian through the dense
+    // provider set above (a band is assembled into it, a finite-difference
+    // band keeps its grouped columns).
+    let plan = if sequential {
+        Plan::SequentialDense
+    } else {
+        plan
+    };
+    let mass = problem
+        .mass
+        .as_ref()
+        .map(|m| DenseMatrix::new(n, n, m.clone()))
+        .transpose()
+        .map_err(|e| SolveError::InvalidInput(e.to_string()))?;
     let ode = OdeProblem::new(
         "vigilode-facade",
         n,
@@ -483,7 +648,7 @@ fn build(
         jvp,
         partial_t,
         problem.autonomous,
-        None,
+        mass,
         None,
     )
     .map_err(|e| SolveError::InvalidInput(e.to_string()))?;
@@ -505,5 +670,62 @@ fn finite(values: &[f64], what: &str) -> CoreResult<()> {
         Ok(())
     } else {
         Err(CoreError::NonFinite(format!("{what} produced NaN/Inf")))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn partial(
+        reason: DriverStopReason,
+        last_failure: Option<AdaptiveFailureKind>,
+    ) -> DriverPartial {
+        DriverPartial {
+            t: 0.25,
+            y: vec![1.0],
+            reason,
+            last_failure,
+        }
+    }
+
+    #[test]
+    fn failure_reason_follows_the_driver_stop_and_last_rejection() {
+        let adaptive = AdaptiveStepConfig::default();
+        let min_step = adaptive.min_step;
+        let budget = FailureReason::MaxStepsReached {
+            max_steps: adaptive.max_attempts,
+        };
+        let reason =
+            |p: Option<DriverPartial>, attempts| failure_reason(p.as_ref(), attempts, &adaptive);
+        use AdaptiveFailureKind as K;
+        use DriverStopReason as R;
+        assert_eq!(
+            reason(Some(partial(R::AttemptBudget, Some(K::LinearSolve))), 0),
+            budget
+        );
+        assert_eq!(
+            reason(Some(partial(R::MinimumStep, Some(K::LinearSolve))), 0),
+            FailureReason::LinearSolveFailed { min_step }
+        );
+        assert_eq!(
+            reason(Some(partial(R::MinimumStep, Some(K::NonFinite))), 0),
+            FailureReason::NonFinite { min_step }
+        );
+        assert_eq!(
+            reason(Some(partial(R::MinimumStep, Some(K::NonlinearSolve))), 0),
+            FailureReason::NonlinearSolveFailed { min_step }
+        );
+        for last in [Some(K::LocalError), None] {
+            assert_eq!(
+                reason(Some(partial(R::MinimumStep, last)), 0),
+                FailureReason::StepSizeTooSmall { min_step }
+            );
+        }
+        assert_eq!(reason(None, adaptive.max_attempts), budget);
+        assert_eq!(
+            reason(None, 1),
+            FailureReason::StepSizeTooSmall { min_step }
+        );
     }
 }
