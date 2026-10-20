@@ -507,3 +507,234 @@ fn cycle_right(
     }
     Ok(actual)
 }
+
+/// What the monitor of [`solve_gmres_into_right_monitored`] decides after
+/// an Arnoldi column.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum GmresMonitorDecision {
+    /// Take the iterate handed to the monitor as the solution.
+    Accept,
+    /// Build the next column (or restart, within `max_arnoldi`).
+    Continue,
+    /// Stop without a solution (the caller refreshes or falls back).
+    Abandon,
+}
+
+/// The monitor of [`solve_gmres_into_right_monitored`]: column count over
+/// all cycles, the iterate after that column, and the solve's counters.
+pub type GmresColumnMonitor<'a> =
+    dyn FnMut(u64, &[f64], &mut WorkCounters) -> CoreResult<GmresMonitorDecision> + 'a;
+
+/// Report of [`solve_gmres_into_right_monitored`].
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct GmresMonitoredReport {
+    /// The monitor accepted an iterate (written into `output`).
+    pub accepted: bool,
+    /// Arnoldi columns built, including those of an abandoned or
+    /// exhausted solve.
+    pub iterations: u64,
+    pub cycles: u64,
+    /// Small least-squares solves (one per column).
+    pub least_squares_solves: u64,
+}
+
+/// Right-preconditioned GMRES whose stopping test belongs to the caller
+/// (production wave-2 node `b1b-gmres`, `docs/plan/nodes/b1b-gmres.md`).
+///
+/// The Arnoldi cycle is that of [`solve_gmres_into`] under
+/// [`PreconditionerSide::Right`] (cycle-start true residual, the same
+/// column operations in the same order, `restart` and `max_arnoldi` as
+/// there), with one difference: after every column `k` the small
+/// least-squares problem is solved on the current Hessenberg prefix and
+/// the iterate `x_k = x_cycle + P^{-1} V_k y_k` is handed to `monitor(k,
+/// x_k, counters)` (`k` counts columns over all cycles). The monitor
+/// decides; the configuration's `rtol` and `atol` are not used. At the
+/// last column of a cycle the iterate is bitwise the one
+/// [`solve_gmres_into`] would form. `output` is written only on
+/// [`GmresMonitorDecision::Accept`]; an abandoned or exhausted solve
+/// returns `accepted: false`. The existing GMRES entry points are
+/// unchanged.
+#[allow(clippy::too_many_arguments)]
+pub fn solve_gmres_into_right_monitored(
+    op: &dyn LinearOperator,
+    pc: &dyn Preconditioner,
+    rhs: &[f64],
+    x0: &[f64],
+    config: &GmresConfig,
+    output: &mut [f64],
+    workspace: &mut GmresWorkspace,
+    counters: &mut WorkCounters,
+    monitor: &mut GmresColumnMonitor<'_>,
+) -> CoreResult<GmresMonitoredReport> {
+    config.validate()?;
+    if pc.side() != PreconditionerSide::Right {
+        return Err(CoreError::InvalidInput(
+            "monitored GMRES needs a right preconditioner".into(),
+        ));
+    }
+    let n = validate_system(op, pc, rhs, Some(x0))?;
+    if output.len() != n {
+        return Err(CoreError::Dimension(
+            "GMRES output length differs from the system dimension".into(),
+        ));
+    }
+    workspace.common.prepare(n);
+    workspace.common.x.copy_from_slice(x0);
+    let (mut total, mut cycles, mut solves) = (0usize, 0u64, 0u64);
+    while total < config.max_arnoldi {
+        if workspace.common.x.iter().all(|value| *value == 0.0) {
+            workspace.common.residual.copy_from_slice(rhs);
+        } else {
+            true_residual_into(
+                op,
+                rhs,
+                &workspace.common.x,
+                &mut workspace.common.operator_output,
+                &mut workspace.common.residual,
+                counters,
+                ApplyCategory::Krylov,
+            )?;
+        }
+        workspace
+            .common
+            .preconditioned
+            .copy_from_slice(&workspace.common.residual);
+        let beta = safe_l2(&workspace.common.preconditioned);
+        if !(beta > f64::MIN_POSITIVE && beta.is_finite()) {
+            return Err(CoreError::LinearSolve(
+                "GMRES right-preconditioned residual breakdown".into(),
+            ));
+        }
+        let steps = config.restart.min(config.max_arnoldi - total).min(n.max(1));
+        let arnoldi = &mut workspace.arnoldi;
+        arnoldi.prepare(n, steps)?;
+        arnoldi.basis[0].copy_from_slice(&workspace.common.preconditioned);
+        if normalize(&mut arnoldi.basis[0])? == 0.0 {
+            return Err(CoreError::LinearSolve("zero Arnoldi residual".into()));
+        }
+        let mut actual = 0usize;
+        let mut decision = GmresMonitorDecision::Continue;
+        for j in 0..steps {
+            let happy_breakdown = {
+                let (previous_basis, remaining_basis) = arnoldi.basis.split_at_mut(j + 1);
+                let w = &mut remaining_basis[0];
+                apply_preconditioner(
+                    pc,
+                    &previous_basis[j],
+                    &mut arnoldi.raw_operator_output,
+                    counters,
+                )?;
+                apply_counted(
+                    op,
+                    &arnoldi.raw_operator_output,
+                    w,
+                    counters,
+                    ApplyCategory::Krylov,
+                )?;
+                two_pass_mgs_into(w, previous_basis, &mut arnoldi.h_column, counters)?;
+                for i in 0..previous_basis.len() {
+                    arnoldi.hessenberg[(i, j)] = arnoldi.h_column[i];
+                }
+                let h_next = safe_l2(w);
+                arnoldi.hessenberg[(j + 1, j)] = h_next;
+                let happy =
+                    arnoldi_happy_breakdown(&arnoldi.h_column[..previous_basis.len()], h_next)?;
+                if happy {
+                    w.fill(0.0);
+                } else {
+                    for value in w {
+                        *value /= h_next;
+                    }
+                }
+                happy
+            };
+            actual = j + 1;
+            // The least-squares solve of `cycle_right` on this prefix.
+            arnoldi.hessenberg_prefix.resize_zeros(actual + 1, actual)?;
+            for row in 0..actual + 1 {
+                for column in 0..actual {
+                    arnoldi.hessenberg_prefix[(row, column)] = arnoldi.hessenberg[(row, column)];
+                }
+            }
+            arnoldi.rhs_small[..actual + 1].fill(0.0);
+            arnoldi.rhs_small[0] = beta;
+            match workspace.least_squares.as_deref_mut() {
+                Some(small) => {
+                    let solution = &mut workspace.least_squares_solution;
+                    small.solve_into(
+                        &arnoldi.hessenberg_prefix,
+                        &arnoldi.rhs_small[..actual + 1],
+                        solution,
+                    )?;
+                    linear_combination_into(
+                        &arnoldi.basis[..actual],
+                        solution,
+                        &mut arnoldi.correction,
+                    )?;
+                }
+                None => {
+                    let solution = least_squares(
+                        &arnoldi.hessenberg_prefix,
+                        &arnoldi.rhs_small[..actual + 1],
+                    )?;
+                    linear_combination_into(
+                        &arnoldi.basis[..actual],
+                        &solution,
+                        &mut arnoldi.correction,
+                    )?;
+                }
+            }
+            solves += 1;
+            apply_preconditioner(
+                pc,
+                &arnoldi.correction,
+                &mut workspace.common.scratch_a,
+                counters,
+            )?;
+            workspace
+                .common
+                .scratch_b
+                .copy_from_slice(&workspace.common.x);
+            axpy(
+                1.0,
+                &workspace.common.scratch_a,
+                &mut workspace.common.scratch_b,
+                counters,
+            )?;
+            decision = monitor(
+                (total + actual) as u64,
+                &workspace.common.scratch_b,
+                counters,
+            )?;
+            if decision != GmresMonitorDecision::Continue || happy_breakdown {
+                break;
+            }
+        }
+        total += actual;
+        cycles += 1;
+        counters.linear_iterations += actual as u64;
+        match decision {
+            GmresMonitorDecision::Accept => {
+                counters.linear_solves += 1;
+                output.copy_from_slice(&workspace.common.scratch_b);
+                return Ok(GmresMonitoredReport {
+                    accepted: true,
+                    iterations: total as u64,
+                    cycles,
+                    least_squares_solves: solves,
+                });
+            }
+            GmresMonitorDecision::Abandon => break,
+            GmresMonitorDecision::Continue => {
+                let (x, candidate) = (&mut workspace.common.x, &workspace.common.scratch_b);
+                x.copy_from_slice(candidate);
+            }
+        }
+    }
+    Ok(GmresMonitoredReport {
+        accepted: false,
+        iterations: total as u64,
+        cycles,
+        least_squares_solves: solves,
+    })
+}
