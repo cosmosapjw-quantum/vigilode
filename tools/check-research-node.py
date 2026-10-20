@@ -241,8 +241,12 @@ def parse_ledger(lines: list[str]) -> tuple[list[tuple[int, dict]], list[str]]:
 
 def check_outputs(repo: Path, rows: list[tuple[int, dict]]) -> list[str]:
     errors: list[str] = []
+    # A path a superseding row binds again is checked against that later row only.
+    rebound = {(row["supersedes"], path) for _, row in rows if row["supersedes"] for path in row["outputs_sha256"]}
     for number, row in rows:
         for path, digest in row["outputs_sha256"].items():
+            if (row["id"], path) in rebound:
+                continue
             file_path = repo / path
             if not file_path.is_file():
                 errors.append(f"{LEDGER}:{number}: {row['id']} output {path} does not exist")

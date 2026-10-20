@@ -189,6 +189,15 @@ class ResearchNodeTests(unittest.TestCase):
         self.repo.write("research/old/result.json", json.dumps({"value": 2.0}))
         self.assertFails(self.repo.check(), "sha256 mismatch")
 
+    def test_output_rebound_by_superseding_row_checks_only_the_later_digest(self):
+        first = self.repo.node("new_node")
+        self.repo.write("research/new_node/results.csv", "case,error\na,2.5e-3\n")
+        self.repo.append_rows(self.repo.row(["research/new_node/results.csv"], supersedes=first["id"]))
+        self.repo.commit("supersede with a rebound output")
+        self.assertPasses(self.repo.check("--base", "base"))
+        self.repo.write("research/new_node/results.csv", "case,error\na,3.5e-3\n")
+        self.assertFails(self.repo.check("--base", "base"), "L-0003 output research/new_node/results.csv sha256 mismatch")
+
     def test_stall_rule_triggers_on_third_node_without_numeric_result(self):
         self.repo.node("a_node", verdict="INCONCLUSIVE", date="2026-09-01")
         self.repo.node("b_node", verdict="INVALID", date="2026-09-02")
