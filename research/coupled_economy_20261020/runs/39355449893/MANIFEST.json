@@ -1,0 +1,122 @@
+{
+  "accuracy_gate": {
+    "embedded_difference_wrms": 0.1,
+    "output_wrms_up": 0.1
+  },
+  "arms": [
+    "eager-1",
+    "eager-4",
+    "lazy-1",
+    "lazy-4",
+    "sequential-mf",
+    "txn",
+    "cap64",
+    "cap256"
+  ],
+  "binary_sha256": "d912b6c50c35aeee6e47b7b1063085b4bb839a4c76da2af98118958c92b40a89",
+  "blocks": 8,
+  "budgets_calibrated_optimal": false,
+  "cells": [
+    [
+      "few-mode",
+      96,
+      1.0,
+      0.001
+    ],
+    [
+      "few-mode",
+      384,
+      1.0,
+      0.001
+    ],
+    [
+      "few-mode",
+      12288,
+      1.0,
+      0.001
+    ],
+    [
+      "few-mode",
+      12288,
+      10.0,
+      0.01
+    ],
+    [
+      "chain",
+      96,
+      1.0,
+      0.001
+    ],
+    [
+      "chain",
+      384,
+      1.0,
+      0.001
+    ],
+    [
+      "diffusion",
+      96,
+      1.0,
+      0.001
+    ],
+    [
+      "diffusion",
+      384,
+      1.0,
+      0.001
+    ],
+    [
+      "diffusion",
+      96,
+      1.0,
+      0.01
+    ],
+    [
+      "broad",
+      64,
+      0.0,
+      0.02
+    ]
+  ],
+  "coefficient_sha256": "211255f6125b648c6955833c3da537d9c031ec78168b2918563c29fa88c8bce6",
+  "comparison": "same binary eager vs opt-in residual-first and bounded transactions",
+  "frozen_sha256": "2bcba0f1655b65461bada51c8c13658854d74147275e434585456389155efa94",
+  "multiplicity": 50,
+  "new_full_trajectory_claim": false,
+  "numpy": "2.3.5",
+  "pairs": [
+    [
+      "eager-1",
+      "lazy-1"
+    ],
+    [
+      "eager-4",
+      "lazy-4"
+    ],
+    [
+      "lazy-1",
+      "lazy-4"
+    ],
+    [
+      "txn",
+      "cap64"
+    ],
+    [
+      "txn",
+      "cap256"
+    ]
+  ],
+  "parent_companion": "15c43ce76734d0a560fcec5909ac49f1e6f2d347",
+  "parent_wall_times_reused": false,
+  "reference_helpers_sha256": "008647f465527ba9f674b0a54b777f06af8fb7f55967b1861707048b0f80831c",
+  "repetitions": 3,
+  "source_commit": "f08d152a35fb2db748692570969cb1723c287c26",
+  "thread_affinity": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "timing_authority": "shared_runner_diagnostic",
+  "warmups": 1
+}
