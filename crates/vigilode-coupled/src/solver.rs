@@ -125,7 +125,9 @@ fn evaluate(
 ) -> Result<Evaluation> {
     f.epoch()?;
     let m = basis.len();
-    work.reserve(f.cfg, S as u64, (S * m) as u64)?;
+    // Stage 0 couples to no earlier stage, so its derivative is never used:
+    // only stages 1..S evaluate (and are charged) m JVPs each.
+    work.reserve(f.cfg, S as u64, ((S - 1) * m) as u64)?;
     work.batch(f.cfg, false)?;
     let active = AtomicUsize::new(0);
     let peak = AtomicUsize::new(0);
@@ -156,10 +158,13 @@ fn evaluate(
                     .collect();
                 finite(&remainder)?;
                 let projected = basis.project(&remainder);
+                let mut derivative = DenseMatrix::zeros(m, m);
+                if i == 0 {
+                    return Ok((projected, derivative));
+                }
                 let current =
                     f.p.linearize_matrix_free(f.t, &state)
                         .map_err(|e| Failure::new(FailureKind::Callback, e.to_string()))?;
-                let mut derivative = DenseMatrix::zeros(m, m);
                 for v in 0..m {
                     let mut d = callback_jvp(current.as_ref(), &basis.q[v], &mut local)?;
                     for (x, j) in d.iter_mut().zip(&basis.jq[v]) {
