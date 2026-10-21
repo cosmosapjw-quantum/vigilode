@@ -1,0 +1,38 @@
+{
+  "sha_under_test": "33e60cf387be58b9cfa341f2d6143a7a28457f42",
+  "toolchain": "rustc 1.94.1 (e408947bf 2026-03-25)",
+  "pinned_toolchain_used": true,
+  "sundials_version": "6.4.1+dfsg1-3build4",
+  "gfortran_version": "GNU Fortran (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0",
+  "wall_seconds": 20.573,
+  "rows": 132,
+  "protocol_violation_rows": 0,
+  "failed_rows": [
+    {"problem": "van-der-pol-mu1000", "arm": "dvode-mf21", "rtol": 1e-08, "status": "solver-failure (code -1, DVODE ISTATE -1)"}
+  ],
+  "distinct_dense_driver_ids": ["rodas5p-fast-dense-v1", "rodas5p-fast-banded-dense-v1"],
+  "sha256": {
+    "results_v2.json": "3e9d063714e9248cf3fffa42a2259d3e6acc4dc7cd278af977175b71527fe36b",
+    "REPORT.md": "947960321234574c894d571a0400075e3bf94c1b7018be6245109a5323e73d5e",
+    "run.log": "085f55b3797a7c6873e5a6730a7a193b6418ca6635f2403145de09d469905405",
+    "host.json": "a915e635e08eff97bbdcbe4337092ff7d9624fbc72cc6f9f22115a0c79af4d34",
+    "host.txt": "fd4a639ac184db0fccb0651e9130562cb94cb51498bffa991c24c8af4370293e"
+  },
+  "matrix": [
+    {"check": "wp exit code (exit_codes.txt)", "expected": "0", "observed": "0", "status": "MATCH"},
+    {"check": "report exit code", "expected": "0", "observed": "0", "status": "MATCH"},
+    {"check": "rows in results_v2.json", "expected": "132 = 3x3x9 + 1x3x17, none dropped", "observed": "132: robertson 27, hires 27, van-der-pol-mu1000 27 (9 arms each), brusselator-1d-n100 51 (17 arms); rtols 1e-4, 1e-6, 1e-8", "status": "MATCH"},
+    {"check": "protocol_violation_rows", "expected": "0", "observed": "0", "status": "MATCH"},
+    {"check": "output_clipped_steps of every vigilode-dense* and vigilode-banded-dense* row", "expected": "0", "observed": "0 in all 30 dense rows", "status": "MATCH"},
+    {"check": "references undisputed", "expected": "all four problems disputed = false", "observed": "robertson, hires, van-der-pol-mu1000, brusselator-1d-n100 all disputed = false", "status": "MATCH"},
+    {"check": "provenance.git_crate_tree_dirty", "expected": "false", "observed": "false", "status": "MATCH"},
+    {"check": "provenance.sundials_header_version", "expected": "6.4.1", "observed": "6.4.1", "status": "MATCH"},
+    {"check": "provenance.profile", "expected": "optimized", "observed": "optimized", "status": "MATCH"},
+    {"check": "timing_authority", "expected": "diagnostic_only", "observed": "diagnostic_only", "status": "MATCH"},
+    {"check": "R-C5 gate at SHA_UNDER_TEST (cargo test --locked; cargo clippy --all-targets -- -D warnings in crates/vigilode-bench, -j 12)", "expected": "exit 0 both", "observed": "test exit 0 (16 passed, 0 failed); clippy exit 0", "status": "MATCH"},
+    {"check": "native.ran.control of dense rows", "expected": "WFilteredEnforce for vigilode-dense/vigilode-banded-dense, Off for -off arms", "observed": "vigilode-dense 12/12 WFilteredEnforce; vigilode-banded-dense 3/3 WFilteredEnforce; vigilode-dense-off 12/12 Off; vigilode-banded-dense-off 3/3 Off", "status": "MATCH"},
+    {"check": "binary_sha256", "expected": "recorded in host.json and binary.sha256", "observed": "31cb97ea35010e205eb9b34a41a49102845e8c9b65e15cbc1f9b5f43da5f5736 in both", "status": "MATCH"},
+    {"check": "native.driver_id of the dense rows", "expected": "rodas5p-fast-dense-v1 for vigilode-dense(-off); rodas5p-fast-banded-dense-v1 for vigilode-banded-dense(-off)", "observed": "vigilode-dense 12 and vigilode-dense-off 12: rodas5p-fast-dense-v1; vigilode-banded-dense 3 and vigilode-banded-dense-off 3: rodas5p-fast-banded-dense-v1", "status": "MATCH"}
+  ],
+  "notes": "FACTS: Fresh clone vigilode-e1b at 33e60cf387be58b9cfa341f2d6143a7a28457f42 (origin/production/e1b-dense tip is now 546333f, which adds only the handoff doc on top of 33e60cf; the user named 33e60cf). Run once; no flag, corpus, repetition or arm changes; no reruns; no code edits; research/LEDGER.jsonl untouched. Setup: both `sudo apt-get` lines failed with 'sudo: The \"no new privileges\" flag is set, which prevents sudo from running as root.' (logged in setup.log); the doc's dpkg -s loop then found all nine packages installed (no MISSING), so setup continued. rustup present, so the install line was skipped. libblas.so.3 alternative resolves to /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3. R-C5 gate was run before the build with CARGO_TARGET_DIR=../vigilode-e1b-target: `OPENBLAS_NUM_THREADS=1 cargo test -j 12 --locked` (59.0 s) and `cargo clippy -j 12 --locked --all-targets -- -D warnings` (42.1 s); OPENBLAS_NUM_THREADS=1 on the test and --locked on clippy were added by this session (logs rc5_test.log, rc5_clippy.log, rc5_exit_codes.txt). Measurement build took 1m37s; wp run_seconds 19.47, time real 20.573 s. Host load: snapshots taken immediately before and after the corpus run (not in this branch) show 1-min load averages 23.53 and 21.62 on 24 logical CPUs, with systemd-udevd at ~98% CPU and modprobe at ~107% CPU (ps lifetime averages) and a udev-worker last scheduled on CPU 2 at the post snapshot; this session started no other job during the measurement. The systemd-udevd load is a pre-existing host condition (seen 2026-10-20) that needs root to stop. host.json timing_note text is the doc's template. provenance.host_logical_cpus = 1 reflects the taskset affinity. Findings to report: (a) error_wrms_own > 1 tolerance unit in 20 of 30 dense rows: brusselator-1d-n100 all four dense arms 1.134 (rtol 1e-4), 9.0 (1e-6), 8.775 (1e-8); van-der-pol-mu1000 vigilode-dense 1.634/2.041/2.723 and -off 1.345/2.073/2.748; hires vigilode-dense-off 3.62 (1e-4) and 7.446 (1e-6). (b) interior_control has 15 entries with interior_control_tol_units = 2.0; 6 have within_tol_units = false: van-der-pol-mu1000 vigilode-dense rtol 1e-6 (error_ratio 1.016) and 1e-8 (1.009); brusselator-1d-n100 vigilode-dense and vigilode-banded-dense at rtol 1e-6 and 1e-8 (error_ratio 1.0). (c) The only non-success row is DVODE mf21 on van der Pol at rtol 1e-8 (ISTATE -1), same as wave 2. INTERPRETATION: Timing is diagnostic_only; the elevated background load (udev/modprobe) means wall_ms values are noisier than on an idle host and should not be used for speed claims (none are made). Node verdict is INCONCLUSIVE by preregistration. Why the 6 interior_control entries are flagged within_tol_units = false while their error_ratio is ~1.0 was not investigated here."
+}
