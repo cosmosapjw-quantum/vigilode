@@ -26,7 +26,7 @@ use rodas5p_integrators::{
 };
 use vigilode::{
     Atol, Callback, CallbackError, DriverWork, FailureReason, InteriorError, Jacobian, Options,
-    Problem, Rodas5p, STATS_SCHEMA, Solution, SolveError, Status,
+    Problem, Rodas5p, STATS_SCHEMA, Solution, SolveError, Status, Unsupported,
 };
 
 type JacobianFn = Arc<dyn Fn(f64, &[f64]) -> CoreResult<DenseMatrix> + Send + Sync>;
@@ -553,14 +553,14 @@ fn robertson_as_an_index1_dae_with_a_singular_mass_matrix() {
 
 #[test]
 fn mass_and_dense_output_refusals() {
-    let unsupported = |problem: &Problem, o: &Options| match Rodas5p::solve(
+    let unsupported = |problem: &Problem, o: &Options, expected: Unsupported| match Rodas5p::solve(
         problem,
         (0.0, 1.0),
         &[1.0, 1.0],
         o,
     ) {
-        Err(SolveError::Unsupported(_)) => {}
-        other => panic!("expected Unsupported, got {other:?}"),
+        Err(SolveError::Unsupported(u)) => assert_eq!(u, expected),
+        other => panic!("expected Unsupported({expected:?}), got {other:?}"),
     };
     let invalid = |problem: &Problem, o: &Options| match Rodas5p::solve(
         problem,
@@ -580,7 +580,11 @@ fn mass_and_dense_output_refusals() {
         Ok(())
     }));
     // A mass matrix needs an explicit or finite-difference Jacobian.
-    unsupported(&jvp.clone().mass(MASS.to_vec()), &Options::default());
+    unsupported(
+        &jvp.clone().mass(MASS.to_vec()),
+        &Options::default(),
+        Unsupported::JvpWithMassOrDenseOutput,
+    );
     // So does dense output (the W-filtered estimate needs the stage matrix).
     for interior in [
         InteriorError::WFilteredEnforce,
@@ -594,12 +598,17 @@ fn mass_and_dense_output_refusals() {
                 interior_error: interior,
                 ..Options::default()
             },
+            Unsupported::JvpWithMassOrDenseOutput,
         );
     }
     // A declared band on a dense Jacobian is verified only by the router;
     // the sequential route would ignore it, so it is refused there.
     let banded_dense = mass_problem().banded(0, 0);
-    unsupported(&banded_dense, &Options::default());
+    unsupported(
+        &banded_dense,
+        &Options::default(),
+        Unsupported::DeclaredBandOnDenseWithMassOrDenseOutput,
+    );
     unsupported(
         &banded_dense
             .clone()
@@ -608,6 +617,7 @@ fn mass_and_dense_output_refusals() {
                 Ok(())
             })),
         &Options::default(),
+        Unsupported::DeclaredBandOnDenseWithMassOrDenseOutput,
     );
     invalid(&mass_problem().mass(vec![1.0; 3]), &Options::default());
     invalid(
@@ -1285,12 +1295,16 @@ fn enforce_and_mass_stay_sequential() {
     let o = dense_opts(1.0e-6, 1.0e-10, InteriorError::WFilteredEnforce);
     assert!(matches!(
         Rodas5p::solve(&jvp, ROBERTSON_SPAN, &ROBERTSON_Y0, &o),
-        Err(SolveError::Unsupported(_))
+        Err(SolveError::Unsupported(
+            Unsupported::JvpWithMassOrDenseOutput
+        ))
     ));
     // A declared band on a dense Jacobian with dense output: still refused.
     assert!(matches!(
         Rodas5p::solve(&robertson().banded(1, 1), ROBERTSON_SPAN, &ROBERTSON_Y0, &o),
-        Err(SolveError::Unsupported(_))
+        Err(SolveError::Unsupported(
+            Unsupported::DeclaredBandOnDenseWithMassOrDenseOutput
+        ))
     ));
 }
 

@@ -4,7 +4,7 @@
 
 use vigilode::{
     CallbackError, Direction, FailureReason, Options, Problem, Rodas5p, Solution, SolveError,
-    Status,
+    Status, Unsupported,
 };
 
 fn decay() -> Problem {
@@ -125,7 +125,13 @@ fn events_without_dense_output_refused() {
         ..dense_opts()
     };
     let err = Rodas5p::solve(&p, (0.0, 3.0), &[1.0], &opts).unwrap_err();
-    assert!(matches!(err, SolveError::Unsupported(_)), "{err:?}");
+    assert!(
+        matches!(
+            err,
+            SolveError::Unsupported(Unsupported::EventsWithoutDenseOutput)
+        ),
+        "{err:?}"
+    );
 }
 
 #[test]
