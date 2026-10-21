@@ -1,0 +1,58 @@
+{
+  "schema": "vigilode-bench.corpus.v1",
+  "id": "e1b-dense-corpus-v2",
+  "grid_points": 101,
+  "rtols": [0.0001, 1e-06, 1e-08],
+  "warmups": 2,
+  "repetitions": 21,
+  "error_rtol": 1.0,
+  "error_levels": [0.01, 0.003, 0.001, 0.0003, 0.0001, 3e-05, 1e-05, 3e-06, 1e-06, 3e-07, 1e-07, 3e-08, 1e-08, 3e-09, 1e-09],
+  "reference": {
+    "arm": "vigilode",
+    "rtol": 1e-12,
+    "max_steps": 2000000,
+    "crosscheck_arm": "diffsol-bdf-dense",
+    "crosscheck_rtols": [1e-12, 1e-11, 1e-10, 1e-09],
+    "dispute_threshold": 1e-08,
+    "informational_arms": ["radau5", "cvode-bdf-dense"]
+  },
+  "arms": ["vigilode", "vigilode-banded", "diffsol-bdf-dense", "diffsol-bdf-sparse", "cvode-bdf-dense", "cvode-bdf-band", "dvode-mf21", "dvode-mf24", "radau5", "radau5-band", "rodas", "rodas-band", "internal-radau-iia3", "vigilode-dense", "vigilode-dense-off", "vigilode-banded-dense", "vigilode-banded-dense-off"],
+  "problems": [
+    {
+      "id": "robertson",
+      "kind": "robertson",
+      "n": 3,
+      "t_end": 40.0,
+      "reference_atol": 1e-16,
+      "banded": false,
+      "atol_scale": [0.0001, 0.0001, 0.0001]
+    },
+    {
+      "id": "hires",
+      "kind": "hires",
+      "n": 8,
+      "t_end": 321.8122,
+      "reference_atol": 1e-16,
+      "banded": false,
+      "atol_scale": [0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001]
+    },
+    {
+      "id": "van-der-pol-mu1000",
+      "kind": "van-der-pol-mu1000",
+      "n": 2,
+      "t_end": 2000.0,
+      "reference_atol": 1e-12,
+      "banded": false,
+      "atol_scale": [1.0, 1.0]
+    },
+    {
+      "id": "brusselator-1d-n100",
+      "kind": "brusselator1d",
+      "n": 100,
+      "t_end": 10.0,
+      "reference_atol": 1e-12,
+      "banded": true,
+      "atol_scale": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+    }
+  ]
+}

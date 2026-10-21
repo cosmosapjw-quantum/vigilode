@@ -131,3 +131,145 @@ fn a_failed_arm_keeps_its_status_prefix_and_work() {
     assert!(matches!(cv.status, RunStatus::SolverFailure { .. }));
     assert_eq!(cv.work.accepted_steps, Some(50));
 }
+
+const DENSE_ARMS: [(Arm, bool, vigilode::InteriorError); 4] = [
+    (
+        Arm::VigilodeDense,
+        false,
+        vigilode::InteriorError::WFilteredEnforce,
+    ),
+    (Arm::VigilodeDenseOff, false, vigilode::InteriorError::Off),
+    (
+        Arm::VigilodeBandedDense,
+        true,
+        vigilode::InteriorError::WFilteredEnforce,
+    ),
+    (
+        Arm::VigilodeBandedDenseOff,
+        true,
+        vigilode::InteriorError::Off,
+    ),
+];
+
+fn dense_cases() -> Vec<(Model, f64, bool)> {
+    // (model, t_end, has a band): Robertson is dense-only, HIRES is dense-only
+    // in the corpus, so banded arms run on the band-structured Brusselator.
+    vec![
+        (Model::new(Kind::Robertson, 3).unwrap(), 40.0, false),
+        (Model::new(Kind::Hires, 8).unwrap(), 321.8122, false),
+        (Model::new(Kind::Brusselator1d, 20).unwrap(), 10.0, true),
+    ]
+}
+
+#[test]
+fn dense_arms_equal_facade_solve() {
+    let rtol = 1e-6;
+    for (m, t_end, has_band) in dense_cases() {
+        let g = grid(t_end, 101);
+        for (arm, banded, interior) in DENSE_ARMS {
+            if banded && !has_band {
+                continue;
+            }
+            let atol = 1e-3 * rtol;
+            let opts = Options {
+                rtol,
+                atol: Atol::Scalar(atol),
+                dense_output: true,
+                interior_error: interior,
+                ..Default::default()
+            };
+            let sol = Rodas5p::solve(&facade_problem(m, banded), (0.0, t_end), &m.y0(), &opts)
+                .expect("facade solves");
+            assert_eq!(sol.status, Status::Success, "{arm:?}");
+            let out = arms::run(arm, &m, &g, rtol, atol);
+            assert_eq!(out.status, RunStatus::Success, "{arm:?}: {:?}", out.status);
+            assert_eq!(out.states.len(), g.len());
+            for (k, &t) in g.iter().enumerate() {
+                let want: Vec<u64> = sol.at(t).unwrap().iter().map(|x| x.to_bits()).collect();
+                let got: Vec<u64> = out.states[k].iter().map(|x| x.to_bits()).collect();
+                assert_eq!(got, want, "{arm:?} grid point {k} differs from facade at()");
+            }
+        }
+    }
+}
+
+#[test]
+fn dense_arms_take_no_clipped_steps() {
+    let rtol = 1e-6;
+    for (m, t_end, has_band) in dense_cases() {
+        let g = grid(t_end, 101);
+        for (arm, banded, interior) in DENSE_ARMS {
+            if banded && !has_band {
+                continue;
+            }
+            let atol = 1e-3 * rtol;
+            let opts = Options {
+                rtol,
+                atol: Atol::Scalar(atol),
+                dense_output: true,
+                interior_error: interior,
+                ..Default::default()
+            };
+            let sol = Rodas5p::solve(&facade_problem(m, banded), (0.0, t_end), &m.y0(), &opts)
+                .expect("facade solves");
+            let out = arms::run(arm, &m, &g, rtol, atol);
+            assert_eq!(out.native["output_clipped_steps"], 0, "{arm:?}");
+            assert_eq!(sol.stats.output_clipped_steps, 0, "{arm:?}");
+            assert_eq!(
+                out.work.accepted_steps,
+                Some(sol.stats.accepted_steps as u64),
+                "{arm:?}"
+            );
+            assert_eq!(out.native["driver_id"], sol.stats.route.driver_id);
+        }
+    }
+}
+
+#[test]
+fn fidelity_notes_name_no_stale_commit() {
+    for arm in Arm::ALL {
+        for d in arm.deviations() {
+            assert!(!d.contains("a5a48f7"), "{arm:?} deviation: {d}");
+        }
+        assert!(
+            !arm.output_interface().contains("a5a48f7"),
+            "{arm:?} output interface"
+        );
+    }
+}
+
+#[test]
+fn dense_arms_record_the_interior_control_that_ran() {
+    let m = Model::new(Kind::Robertson, 3).unwrap();
+    let g = grid(40.0, 11);
+    for (arm, want) in [
+        (Arm::VigilodeDense, "WFilteredEnforce"),
+        (Arm::VigilodeDenseOff, "Off"),
+    ] {
+        let out = arms::run(arm, &m, &g, 1e-6, 1e-9);
+        assert_eq!(out.native["ran"]["control"], want, "{arm:?}");
+        // Evidence from the route's own counters that the mode took effect.
+        let samples = out.native["ran"]["samples"].as_u64().unwrap();
+        assert_eq!(
+            samples > 0,
+            want == "WFilteredEnforce",
+            "{arm:?} samples {samples}"
+        );
+    }
+    let b = Model::new(Kind::Brusselator1d, 20).unwrap();
+    let g = grid(10.0, 11);
+    for (arm, want) in [
+        (Arm::VigilodeBandedDense, "WFilteredEnforce"),
+        (Arm::VigilodeBandedDenseOff, "Off"),
+    ] {
+        let out = arms::run(arm, &b, &g, 1e-6, 1e-9);
+        assert_eq!(out.native["ran"]["control"], want, "{arm:?}");
+        assert!(out.native["ran"]["interior_rejections"].is_u64());
+        let samples = out.native["ran"]["samples"].as_u64().unwrap();
+        assert_eq!(
+            samples > 0,
+            want == "WFilteredEnforce",
+            "{arm:?} samples {samples}"
+        );
+    }
+}

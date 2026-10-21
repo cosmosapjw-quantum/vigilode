@@ -86,3 +86,43 @@ fn numeric_tokens_see_numbers_and_skip_identifiers() {
     let t = report::numeric_tokens("| radau5 | 1.234e-5 | 42 | L-0139 | (3) | x2 | 7. |");
     assert_eq!(t, vec!["1.234e-5", "42", "3", "7"]);
 }
+
+#[test]
+fn dense_sections_are_generated_from_the_json_and_keep_every_number_traceable() {
+    let text = TINY.replace(
+        r#""arms": ["vigilode","#,
+        r#""arms": ["vigilode-dense", "vigilode-dense-off", "vigilode-banded-dense", "vigilode-banded-dense-off", "vigilode","#,
+    );
+    let corpus = Corpus::from_json(&text).unwrap();
+    let mut log = |_: &str| {};
+    let mut doc = harness::run_corpus(&corpus, &mut log).unwrap();
+    doc["provenance"] = serde_json::json!({"git_commit": "test", "host_logical_cpus": 2});
+    let doc: Value = serde_json::from_str(&serde_json::to_string(&doc).unwrap()).unwrap();
+    let md = report::render(&doc).unwrap();
+    let mut allowed = BTreeSet::new();
+    collect(&doc, &mut allowed);
+    let missing: Vec<String> = report::numeric_tokens(&md)
+        .into_iter()
+        .filter(|t| !allowed.contains(t))
+        .collect();
+    assert!(missing.is_empty(), "numbers not in the JSON: {missing:?}");
+    assert!(md.contains("## Endpoint-only VigilODE (dense output)"));
+    assert!(md.contains("## Interior control evidence (A2)"));
+    assert_eq!(doc["protocol_violation_rows"], 0);
+    // linear (banded): 2 dense + 2 banded-dense pairs; rober: 2 dense, 2 rtols.
+    assert_eq!(
+        doc["interior_control"].as_array().unwrap().len(),
+        (2 + 1) * 2
+    );
+    for r in doc["rows"].as_array().unwrap() {
+        if r["arm"].as_str().unwrap().contains("dense")
+            && r["arm"].as_str().unwrap().starts_with("vigilode")
+        {
+            assert_eq!(r["native"]["output_clipped_steps"], 0, "{r}");
+        }
+    }
+    // Dense-basis ratios exist next to the continuity ones.
+    let m = doc["matched"].as_array().unwrap();
+    assert!(m.iter().any(|x| x["basis"] == "dense"));
+    assert!(m.iter().any(|x| x["basis"] == "grid-clipped"));
+}

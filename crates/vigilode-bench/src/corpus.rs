@@ -22,7 +22,7 @@ pub struct ProblemSpec {
     pub t_end: f64,
     /// Absolute-tolerance scale vector: a run at `rtol` gives every arm the
     /// atol vector `rtol * atol_scale`. The protected drivers and the facade
-    /// at a5a48f7 take one scalar atol, so every entry must be equal; the
+    /// take one scalar atol, so every entry must be equal; the
     /// vector is what the error metrics use.
     pub atol_scale: Vec<f64>,
     /// Absolute tolerance of the reference runs.
