@@ -1,0 +1,148 @@
+name: Production CI
+
+# Builds and tests the production crates (vigilode facade and the crates under
+# it) on the toolchain pinned in rust-toolchain.toml. That pin equals the
+# workspace rust-version, so every job here is also the MSRV check.
+#
+# The test job runs whole packages (no hand-maintained --test list), so a new
+# test target is picked up without editing this file.
+
+on:
+  pull_request:
+    paths:
+      - 'crates/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - 'rust-toolchain.toml'
+      - '.github/workflows/production.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'crates/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - 'rust-toolchain.toml'
+      - '.github/workflows/production.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_TOOLCHAIN: 1.94.1
+
+jobs:
+  fmt:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install the pinned Rust toolchain
+        run: |
+          rustup toolchain install "$RUST_TOOLCHAIN" --profile minimal --component rustfmt
+          rustup override set "$RUST_TOOLCHAIN"
+      # rodas5p-integrators is excluded: tests/production_audit_packet_curve.rs
+      # is unformatted from before this workflow.
+      - name: Format check
+        run: cargo fmt --check -p vigilode -p rodas5p-core -p rodas5p-krylov
+
+  clippy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install the pinned Rust toolchain
+        run: |
+          rustup toolchain install "$RUST_TOOLCHAIN" --profile minimal --component clippy
+          rustup override set "$RUST_TOOLCHAIN"
+      # --no-deps: at the base, rodas5p-core (damped_moments.rs:492,
+      # too_many_arguments) fails clippy -D warnings, and that crate is not
+      # this workflow's to fix. The lint gate covers the facade crate itself.
+      - name: Clippy
+        run: cargo clippy -p vigilode --all-targets --locked --no-deps -- -D warnings
+
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install the pinned Rust toolchain
+        run: |
+          rustup toolchain install "$RUST_TOOLCHAIN" --profile minimal
+          rustup override set "$RUST_TOOLCHAIN"
+      - name: Facade and light crates
+        run: cargo test --locked -p vigilode -p rodas5p-core -p rodas5p-krylov -p vigilode-coupled
+      # Every non-ignored target of the package (lib, integration tests, doc
+      # tests), so new test files are included automatically. #[ignore]d tests
+      # run in ignored-tests.yml.
+      - name: Integrators
+        run: cargo test --locked -p rodas5p-integrators
+
+  docs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install the pinned Rust toolchain
+        run: |
+          rustup toolchain install "$RUST_TOOLCHAIN" --profile minimal
+          rustup override set "$RUST_TOOLCHAIN"
+      - name: Rustdoc without warnings
+        env:
+          RUSTDOCFLAGS: "-D warnings"
+        run: cargo doc -p vigilode --no-deps --locked
+      - name: Doc tests
+        run: cargo test -p vigilode --doc --locked
+      - name: Build the examples
+        run: cargo build -p vigilode --examples --locked
+      - name: Run the examples
+        run: |
+          set -e
+          for ex in robertson dense_output dae_mass banded_fd; do
+            cargo run -p vigilode --example "$ex" --locked
+          done
+
+  semver:
+    # --baseline-rev needs the pull request's base sha, which a push to main
+    # does not have.
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    # Non-blocking until the first published 0.x baseline; plan G-A makes it
+    # blocking.
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install the pinned Rust toolchain
+        run: |
+          rustup toolchain install "$RUST_TOOLCHAIN" --profile minimal
+          rustup override set "$RUST_TOOLCHAIN"
+      - name: Install cargo-semver-checks
+        run: cargo install --locked --version 0.51.0 cargo-semver-checks
+      - name: Semver check against the base commit
+        run: >-
+          cargo semver-checks
+          --baseline-rev ${{ github.event.pull_request.base.sha }}
+          -p vigilode
+
+  bench:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install the pinned Rust toolchain
+        run: |
+          rustup toolchain install "$RUST_TOOLCHAIN" --profile minimal
+          rustup override set "$RUST_TOOLCHAIN"
+      - name: Install system libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gfortran libsundials-dev
+      - name: Bench crate tests
+        run: cargo test --manifest-path crates/vigilode-bench/Cargo.toml --locked
