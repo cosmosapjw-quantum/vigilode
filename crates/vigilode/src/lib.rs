@@ -78,6 +78,12 @@
 //! event stays charged in [`Stats::counters`] (stopping in the step loop is
 //! a later item).
 //!
+//! `g` is sampled at both ends and the midpoint of each accepted step, and
+//! only a sign change between samples counts. An even number of crossings in
+//! a half interval and a tangent touch are therefore missed, and with three
+//! or more roots in a half interval the reported direction is that half
+//! interval's sign change.
+//!
 //! ## Failures
 //!
 //! A run that stops before `t1` is returned as `Ok` with [`Status::Failed`],

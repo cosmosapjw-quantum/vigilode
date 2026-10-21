@@ -73,7 +73,8 @@ pub enum FailureReason {
     },
     /// An event function returned NaN or an infinity (events: see
     /// [`crate::Problem::event`]). The solution is truncated at the start of
-    /// the step on which it happened.
+    /// the step on which it happened. If the driver had already failed, that
+    /// failure's reason is kept instead (the outputs are still truncated).
     EventFunctionNonFinite,
     /// A user callback returned [`crate::CallbackError::Fatal`].
     CallbackFailed {
@@ -397,6 +398,9 @@ pub struct Solution {
     /// How the run ended.
     pub status: Status,
     /// The located events, in time order (see [`crate::Problem::event`]).
+    /// Only sign changes between the three samples of an accepted step are
+    /// seen: an even number of crossings in a half interval, and a tangent
+    /// touch, are missed.
     pub events: Vec<EventRecord>,
     /// The accepted steps' continuous extension, under dense output.
     #[serde(skip)]

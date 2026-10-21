@@ -53,7 +53,7 @@ pub(crate) struct EventSpec {
     pub(crate) terminal: bool,
 }
 
-/// Illinois iterations at most.
+/// Illinois iterations at most; after them bisection finishes the bracket.
 const MAX_ITERATIONS: usize = 60;
 
 /// A located crossing before it becomes an [`EventRecord`].
@@ -100,13 +100,13 @@ fn illinois(
     let mut last_side = 0i8;
     for _ in 0..MAX_ITERATIONS {
         if b - a <= 4.0 * f64::EPSILON * b.abs().max(a.abs()).max(1.0) {
-            break;
+            return Ok(b);
         }
         let mut c = (a * hb - b * ha) / (hb - ha);
         if !(c > a && c < b) {
             c = a + 0.5 * (b - a);
             if !(c > a && c < b) {
-                break;
+                return Ok(b);
             }
         }
         let hc = sign * ev.at_time(c)?;
@@ -118,7 +118,7 @@ fn illinois(
             }
             last_side = 1;
             if hc == 0.0 {
-                break;
+                return Ok(b);
             }
         } else {
             a = c;
@@ -127,6 +127,21 @@ fn illinois(
                 hb *= 0.5;
             }
             last_side = -1;
+        }
+    }
+    // The Illinois budget is spent: finish by bisection, so that the reported
+    // end always meets the tolerance (a bracket is at most 1075 halvings from
+    // adjacent floats, and the loop also stops when the midpoint is no longer
+    // strictly inside).
+    while b - a > 4.0 * f64::EPSILON * b.abs().max(a.abs()).max(1.0) {
+        let c = a + 0.5 * (b - a);
+        if !(c > a && c < b) {
+            break;
+        }
+        if sign * ev.at_time(c)? >= 0.0 {
+            b = c;
+        } else {
+            a = c;
         }
     }
     Ok(b)
@@ -276,9 +291,13 @@ pub(crate) fn locate(solution: &mut Solution, specs: &[EventSpec]) -> (u64, Opti
     (evaluations, terminal)
 }
 
-/// A non-finite `g` on step `k`: fail and truncate at the step's start.
+/// A non-finite `g` on step `k`: truncate at the step's start and fail with
+/// `EventFunctionNonFinite`, unless the driver had already failed.
 fn fail_non_finite(solution: &mut Solution, k: usize) {
     let start = solution.t[k];
     solution.truncate_after(start);
-    solution.status = Status::Failed(FailureReason::EventFunctionNonFinite);
+    // A driver failure that already happened keeps its own reason.
+    if !matches!(solution.status, Status::Failed(_)) {
+        solution.status = Status::Failed(FailureReason::EventFunctionNonFinite);
+    }
 }

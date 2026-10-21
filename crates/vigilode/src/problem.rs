@@ -217,11 +217,20 @@ impl Problem {
     /// `g` is sampled at both ends and at the midpoint; a half interval with
     /// `g(a) < 0 <= g(b)` is an `Up` crossing and one with `g(a) > 0 >= g(b)`
     /// a `Down` crossing, and `direction` selects which count. Illinois
-    /// root finding then narrows the bracket to `4 eps max(|t|, 1)` (at most
-    /// 60 iterations) and the end on the after-crossing side is reported. So
-    /// `g(t0) = 0` is no event, and a root at a step end is reported once.
-    /// Two roots between neighbouring samples can be missed. A non-finite `g`
-    /// ends the run with [`crate::FailureReason::EventFunctionNonFinite`].
+    /// root finding then narrows the bracket to `4 eps max(|t|, 1)` (60
+    /// Illinois iterations, then bisection until the tolerance is met) and the
+    /// end on the after-crossing side is reported. So `g(t0) = 0` is no
+    /// event, and a root at a step end is reported once.
+    ///
+    /// Only the sign change between the three samples counts. An even number
+    /// of crossings inside one half interval is missed, and so is a tangent
+    /// touch without a sign change. With three or more roots in a half
+    /// interval one event is reported, with that half interval's direction.
+    ///
+    /// A non-finite `g` ends the run with
+    /// [`crate::FailureReason::EventFunctionNonFinite`] and truncates the
+    /// outputs at the start of that step; if the driver had already failed,
+    /// the driver's own reason is kept and the outputs are still truncated.
     pub fn event<G>(self, g: G, direction: Direction) -> Self
     where
         G: Fn(f64, &[f64]) -> f64 + Send + Sync + 'static,

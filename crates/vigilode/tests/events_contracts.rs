@@ -229,20 +229,82 @@ fn terminal_event_wins_over_later_driver_failure() {
 }
 
 #[test]
-fn two_crossings_in_one_step_are_both_found() {
-    // g changes sign twice inside a single (large) step: y' = 0 so the solver
-    // takes a huge step; g(t) = (t - 1)(t - 2) crosses Down then Up on [0, 4].
+fn events_found_on_a_large_step_are_roots_and_ordered() {
+    // y' = 0 lets the solver take large steps, so several roots of
+    // sin(3 t) fall into one step. Whatever is found is a true root, in time
+    // order, and at least one is found (the first sign change).
     let p = Problem::new(1, |_t, _y, dy| {
         dy[0] = 0.0;
         Ok::<(), CallbackError>(())
     })
     .autonomous()
-    .event(|t, _y| (t - 1.0) * (t - 2.0), Direction::Either);
-    let sol = Rodas5p::solve(&p, (0.0, 4.0), &[0.0], &dense_opts()).unwrap();
-    // The three samples of a step may miss a double crossing between them;
-    // whatever is found must be correct and in time order.
-    assert!(sol.events.windows(2).all(|w| w[0].t <= w[1].t));
+    .event(|t, _y| (3.0 * t).sin(), Direction::Either);
+    let sol = Rodas5p::solve(&p, (0.5, 4.0), &[0.0], &dense_opts()).unwrap();
+    assert!(!sol.events.is_empty());
+    assert!(sol.events.windows(2).all(|w| w[0].t < w[1].t));
     for e in &sol.events {
-        assert!(((e.t - 1.0).abs() < 1e-9) || ((e.t - 2.0).abs() < 1e-9));
+        let r = e.t * 3.0 / std::f64::consts::PI;
+        assert!((r - r.round()).abs() < 1e-9, "t = {}", e.t);
     }
+}
+
+#[test]
+fn even_crossings_in_a_half_interval_and_tangent_touches_are_missed() {
+    let base = Rodas5p::solve(&decay(), (0.0, 3.0), &[1.0], &dense_opts()).unwrap();
+    let k = base.t.len() / 2;
+    let (ta, tb) = (base.t[k], base.t[k + 1]);
+    let h = tb - ta;
+    // Two roots inside the first half interval: no sign change between samples.
+    let (r1, r2) = (ta + 0.2 * h, ta + 0.3 * h);
+    let p = decay().event(move |t, _y| (t - r1) * (t - r2), Direction::Either);
+    let sol = Rodas5p::solve(&p, (0.0, 3.0), &[1.0], &dense_opts()).unwrap();
+    assert!(sol.events.is_empty());
+    // A tangent touch.
+    let p = decay().event(|t, _y| (t - 1.3) * (t - 1.3), Direction::Either);
+    let sol = Rodas5p::solve(&p, (0.0, 3.0), &[1.0], &dense_opts()).unwrap();
+    assert!(sol.events.is_empty());
+}
+
+#[test]
+fn iteration_cap_falls_back_to_bisection() {
+    // A step function with a tiny negative side makes regula falsi crawl, so
+    // the 60 Illinois iterations do not meet the tolerance; bisection must.
+    let ts = 1.7;
+    let p = decay().event(
+        move |t, _y| if t < ts { -1e-10 } else { 1.0 },
+        Direction::Up,
+    );
+    let sol = Rodas5p::solve(&p, (0.0, 3.0), &[1.0], &dense_opts()).unwrap();
+    assert_eq!(sol.events.len(), 1);
+    let t = sol.events[0].t;
+    assert!(t >= ts && t - ts <= 4.0 * f64::EPSILON * t.max(1.0), "{t}");
+    // 3 samples per step plus more than the 60 Illinois iterations.
+    assert!(
+        sol.stats.event_evaluations > 60,
+        "{}",
+        sol.stats.event_evaluations
+    );
+}
+
+#[test]
+fn nonfinite_event_keeps_an_earlier_driver_failure() {
+    // y' = y^2 blows up at t = 1, so the driver fails; g turns NaN at t > 0.5.
+    let p = Problem::new(1, |_t, y, dy| {
+        dy[0] = y[0] * y[0];
+        Ok::<(), CallbackError>(())
+    })
+    .autonomous()
+    .event(
+        |t, _y| if t > 0.5 { f64::NAN } else { 1.0 },
+        Direction::Either,
+    );
+    let sol = Rodas5p::solve(&p, (0.0, 2.0), &[1.0], &dense_opts()).unwrap();
+    assert!(matches!(sol.status, Status::Failed(_)));
+    assert_ne!(
+        sol.status,
+        Status::Failed(FailureReason::EventFunctionNonFinite)
+    );
+    assert!(sol.stats.stop.is_some());
+    assert!(*sol.t.last().unwrap() <= 0.5);
+    assert!(sol.at(0.9).is_none());
 }
