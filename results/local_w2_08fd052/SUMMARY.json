@@ -1,0 +1,21 @@
+{
+  "sha_under_test": "08fd05243217cd075dfb052550aecc6f1f1e53ae",
+  "toolchain": "rustc 1.94.1 (e408947bf 2026-03-25)",
+  "pinned_toolchain_used": true,
+  "suites": {
+    "workspace": {"exit": 0, "passed": 1580, "failed": 0, "ignored": 110, "wall_seconds": 2765.43},
+    "hybrid": {"exit": 0, "passed": 19, "failed": 0, "ignored": 0, "wall_seconds": 43.095},
+    "bench": {"exit": 0, "passed": 11, "failed": 0, "ignored": 0, "wall_seconds": 52.057}
+  },
+  "failed_test_names": [],
+  "matrix": [
+    {"check": "workspace exit code", "expected": "0", "observed": "0", "status": "MATCH"},
+    {"check": "workspace failed tests", "expected": "0", "observed": "0", "status": "MATCH"},
+    {"check": "workspace ignored tests", "expected": "about 110 (wave 1: 109)", "observed": "110", "status": "MATCH"},
+    {"check": "hybrid exit code", "expected": "0", "observed": "0", "status": "MATCH"},
+    {"check": "bench exit code", "expected": "0", "observed": "0", "status": "MATCH"},
+    {"check": "checker_unittest", "expected": "16 tests OK", "observed": "Ran 16 tests, OK (exit 0)", "status": "MATCH"},
+    {"check": "checker_gate", "expected": "exit 0, PASS (140 rows)", "observed": "exit 0, PASS (140 ledger rows, new nodes=['bench_wave2_20261021'])", "status": "MATCH"}
+  ],
+  "notes": "FACTS: Host Ryzen 9 5900X, nproc 24, Linux 7.0.0-38-generic. Pinned rustc/cargo 1.94.1 was already installed via rustup; no stable fallback. Run started 2026-10-21T09:22:26+09:00, finished 2026-10-21T10:10:11+09:00. Each command ran once in doc order; no --release, no reruns, no code edits. Counts are sums over 'test result:' lines (workspace 315 lines, hybrid 5, bench 6); zero 'test result: FAILED' lines in any log. Wall times are bash `time` real. probe_sweep_fails_closed_or_documents_findings passed (ran >60 s). krylov_workspace_driver_contract: 8 passed, 1 ignored (export_runs), including warmed_krylov_solves_and_snapshot_rollback_allocate_zero, under default parallel test threads. Prior attempts: two earlier runs against the stale commit 00973c7 were stopped during compilation before any test executed; their partial logs were deleted, and CARGO_TARGET_DIR=../vigilode-w2-target was kept, so the workspace build was partly warm. INTERPRETATION: workspace wall time understates a cold build because of that warm cache. The 'error: invalid value ...' and 'error: unexpected argument ...' lines in workspace.log are stderr from CLI negative-control tests (e.g. a1_tolerance_receipt_cli_contracts) whose tests passed; they are not failures."
+}
