@@ -13,3 +13,4 @@ Execution log: `docs/plan/EXECUTION_LOG.md` (one row per pushed node).
 - `handoff/LOCAL_TEST_HANDOFF_W2.md` — heavy test runs delegated to the owner's workstation; results return on `results/local-wave2-<sha>` branches.
 - `IMPLEMENTATION_WAVE3.md` — wave-3 plan (9 tasks: T0 residuals, T1–T6 parallel, T7 p0-api, T8 integration); heavy runs via LOCAL_*_W3.md handoffs.
 - `handoff/LOCAL_TEST_HANDOFF_W3.md` — wave-3 full suites at 4945683; results on `results/local-wave3-<sha>`. E1b measurement handoff lives on branch production/e1b-dense (`docs/plan/handoff/LOCAL_E1B_HANDOFF_W3.md`, SHA 33e60cf).
+- `sdd/` — SDD records (ledgers, briefs, reports, reviews) for waves 1–3.
