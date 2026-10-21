@@ -13,6 +13,7 @@ use rodas5p_integrators::{
     RODAS5P_SEQUENTIAL_DENSE_DRIVER_ID, Rodas5pDenseSegment, RoutedDriver, RoutedRun, RoutingError,
     RoutingOptions, StructureDeclaration, integrate_adaptive_dense_observed_with_partial,
     integrate_adaptive_dense_observed_with_segments, integrate_rodas5p_fast_banded_observed,
+    integrate_rodas5p_fast_banded_observed_with_atol, integrate_rodas5p_fast_observed_with_atol,
     integrate_rodas5p_routed_observed,
 };
 
@@ -33,6 +34,12 @@ type CoreJvp = Arc<dyn Fn(f64, &[f64], &[f64], &mut [f64]) -> CoreResult<()> + S
 
 const ENTRY_ROUTED: &str = "integrate_rodas5p_routed_observed";
 const ENTRY_BANDED: &str = "integrate_rodas5p_fast_banded_observed";
+/// The dense fast driver called directly: the router has no per-component
+/// absolute tolerance, so a vector `atol` on an undeclared dense Jacobian
+/// bypasses it (rule 3 is what the router would choose).
+const ENTRY_DENSE_FAST_ATOL: &str = "integrate_rodas5p_fast_observed_with_atol";
+/// The banded fast driver with a per-component absolute tolerance.
+const ENTRY_BANDED_ATOL: &str = "integrate_rodas5p_fast_banded_observed_with_atol";
 const ENTRY_SEQUENTIAL_DENSE: &str = "integrate_adaptive_dense_observed_with_segments";
 /// The same driver without the segment sink (mass matrix, no dense output).
 const ENTRY_SEQUENTIAL_NO_SEGMENTS: &str = "integrate_adaptive_dense_observed_with_partial";
@@ -42,6 +49,24 @@ const ENTRY_SEQUENTIAL_NO_SEGMENTS: &str = "integrate_adaptive_dense_observed_wi
 #[derive(Clone, Copy, Debug, Default)]
 pub struct Rodas5p;
 
+/// The validated absolute tolerance: one value, or one per component.
+enum AtolSpec {
+    Scalar(f64),
+    Vector(Vec<f64>),
+}
+
+impl AtolSpec {
+    /// The scalar `AdaptiveStepConfig::atol`. With a vector it is only
+    /// validated (the drivers read the vector instead): the largest entry,
+    /// so a uniform vector gives the record of the scalar run.
+    fn adaptive_atol(&self) -> f64 {
+        match self {
+            Self::Scalar(a) => *a,
+            Self::Vector(v) => v.iter().copied().fold(0.0, f64::max),
+        }
+    }
+}
+
 /// How the facade will call the drivers, decided before any step.
 enum Plan {
     /// Through the router, with an optional band declaration.
@@ -50,6 +75,9 @@ enum Plan {
     },
     /// The banded driver directly.
     Banded(BandedJacobian),
+    /// The dense fast driver directly (a vector `atol` on an undeclared
+    /// dense Jacobian).
+    DenseFast,
     /// The sequential adaptive dense driver: a mass matrix or dense output.
     SequentialDense,
 }
@@ -85,7 +113,7 @@ impl Rodas5p {
         let atol = validate(problem, t_span, y0, opts)?;
         let adaptive = AdaptiveStepConfig {
             rtol: opts.rtol,
-            atol,
+            atol: atol.adaptive_atol(),
             initial_step: opts.h0,
             max_attempts: opts.max_steps,
             ..AdaptiveStepConfig::default()
@@ -104,6 +132,13 @@ impl Rodas5p {
         let guard = Arc::new(Guard::default());
         let sequential = problem.mass.is_some() || opts.dense_output;
         let (ode, plan, jacobian_record) = build(problem, &guard, sequential)?;
+        // The router takes a scalar `atol` only: a vector on the undeclared
+        // dense route calls the dense fast driver itself. `validate` refused
+        // every other vector plan that would pass through the router.
+        let plan = match (plan, &atol) {
+            (Plan::Routed { declaration: None }, AtolSpec::Vector(_)) => Plan::DenseFast,
+            (plan, _) => plan,
+        };
 
         let run = match plan {
             Plan::Routed { declaration } => {
@@ -183,14 +218,52 @@ impl Rodas5p {
                     segments: None,
                 }
             }
-            Plan::Banded(band) => {
-                let result = integrate_rodas5p_fast_banded_observed(
-                    &ode, &band, t_span, y0, &adaptive, &schedule,
+            Plan::DenseFast => {
+                let AtolSpec::Vector(atol) = &atol else {
+                    unreachable!("the direct dense fast plan carries a vector atol")
+                };
+                let (r, partial) = integrate_rodas5p_fast_observed_with_atol(
+                    &ode, t_span, y0, &adaptive, &schedule, atol,
                 )
                 .map_err(|e| driver_error(e, &guard))?;
                 Run {
                     route: RouteRecord {
-                        entry_point: ENTRY_BANDED,
+                        entry_point: ENTRY_DENSE_FAST_ATOL,
+                        driver_id: r.driver,
+                        routing: None,
+                    },
+                    observed: r.observed,
+                    attempts: r.attempts,
+                    accepted_steps: r.accepted_steps,
+                    rejected_steps: r.rejected_steps,
+                    matrix_free: false,
+                    driver_work: DriverWork::Dense {
+                        jacobian_reuses: r.jacobian_reuses,
+                        lu: r.lu,
+                    },
+                    partial,
+                    segments: None,
+                }
+            }
+            Plan::Banded(band) => {
+                let (entry_point, result) = match &atol {
+                    AtolSpec::Scalar(_) => (
+                        ENTRY_BANDED,
+                        integrate_rodas5p_fast_banded_observed(
+                            &ode, &band, t_span, y0, &adaptive, &schedule,
+                        ),
+                    ),
+                    AtolSpec::Vector(atol) => (
+                        ENTRY_BANDED_ATOL,
+                        integrate_rodas5p_fast_banded_observed_with_atol(
+                            &ode, &band, t_span, y0, &adaptive, &schedule, atol,
+                        ),
+                    ),
+                };
+                let result = result.map_err(|e| driver_error(e, &guard))?;
+                Run {
+                    route: RouteRecord {
+                        entry_point,
                         driver_id: result.fast.driver,
                         routing: None,
                     },
@@ -433,13 +506,14 @@ fn driver_error(error: impl Display, guard: &Guard) -> SolveError {
     }
 }
 
-/// Every refusal that does not need the drivers; returns the scalar `atol`.
+/// Every refusal that does not need the drivers; returns the validated
+/// absolute tolerance.
 fn validate(
     problem: &Problem,
     (t0, t1): (f64, f64),
     y0: &[f64],
     opts: &Options,
-) -> Result<f64, SolveError> {
+) -> Result<AtolSpec, SolveError> {
     let invalid = |m: String| Err(SolveError::InvalidInput(m));
     let unsupported = |m: &str| Err(SolveError::Unsupported(m.into()));
     let n = problem.dimension;
@@ -470,7 +544,7 @@ fn validate(
         return invalid("max_steps must be positive".into());
     }
     let atol = match &opts.atol {
-        Atol::Scalar(a) => *a,
+        Atol::Scalar(a) => AtolSpec::Scalar(*a),
         Atol::Vector(v) => {
             if v.len() != n {
                 return invalid(format!(
@@ -478,10 +552,10 @@ fn validate(
                     v.len()
                 ));
             }
-            return unsupported(
-                "a vector atol: no protected driver of this release takes a per-component \
-                 absolute tolerance, and the facade does not substitute a scalar",
-            );
+            if !v.iter().all(|a| a.is_finite() && *a >= 0.0) {
+                return invalid("every atol entry must be finite and nonnegative".into());
+            }
+            AtolSpec::Vector(v.clone())
         }
     };
     if let Some(m) = &problem.mass {
@@ -511,6 +585,28 @@ fn validate(
             "a declared band on a dense Jacobian with a mass matrix or dense output: only the \
              router verifies such a declaration, and the sequential dense driver would ignore it",
         );
+    }
+    if matches!(atol, AtolSpec::Vector(_)) {
+        // Only the dense and banded fast drivers take a per-component
+        // absolute tolerance; the facade never substitutes a scalar.
+        if sequential {
+            return unsupported(
+                "a vector atol with a mass matrix or dense output: the sequential dense \
+                 driver takes a scalar absolute tolerance",
+            );
+        }
+        if matches!(problem.jacobian, Jacobian::Jvp(_)) {
+            return unsupported(
+                "a vector atol on a JVP-only problem: the matrix-free driver's Krylov \
+                 weights take a scalar absolute tolerance",
+            );
+        }
+        if matches!(problem.jacobian, Jacobian::Dense(_)) && problem.band.is_some() {
+            return unsupported(
+                "a vector atol on a dense Jacobian with a declared band: the router that \
+                 verifies the declaration takes a scalar absolute tolerance",
+            );
+        }
     }
     if problem.autonomous && problem.time_derivative.is_some() {
         return invalid("an autonomous problem cannot have a time derivative".into());

@@ -12,7 +12,8 @@ use rodas5p_core::{CoreResult, DenseMatrix};
 use rodas5p_integrators::{
     AdaptiveStepConfig, BandedJacobian, OdeProblem, OutputSchedule, RODAS5P_FAST_BANDED_DRIVER_ID,
     RODAS5P_FAST_DRIVER_ID, RODAS5P_MF_FAST_DRIVER_ID, RoutedDriver, RoutingOptions,
-    integrate_rodas5p_fast_banded_observed, integrate_rodas5p_fast_observed,
+    integrate_rodas5p_fast_banded_observed, integrate_rodas5p_fast_banded_observed_with_atol,
+    integrate_rodas5p_fast_observed, integrate_rodas5p_fast_observed_with_atol,
     integrate_rodas5p_mf_fast_observed_gmres_into, integrate_rodas5p_routed_observed,
     robertson_problem,
 };
@@ -638,7 +639,6 @@ fn an_exhausted_attempt_budget_is_a_typed_failure() {
 
 #[test]
 fn unsupported_requests_are_refused_not_substituted() {
-    let problem = robertson(Jacobian::dense(robertson_jac));
     let refuse = |problem: &Problem, opts: &Options| match Rodas5p::solve(
         problem,
         ROBERTSON_SPAN,
@@ -648,13 +648,8 @@ fn unsupported_requests_are_refused_not_substituted() {
         Err(SolveError::Unsupported(_)) => {}
         other => panic!("expected Unsupported, got {other:?}"),
     };
-    refuse(
-        &problem,
-        &Options {
-            atol: Atol::Vector(vec![1e-10, 1e-12, 1e-10]),
-            ..Options::default()
-        },
-    );
+    // A vector atol is accepted on the fast routes since node p0-atol; its
+    // refusals are in `vector_atol_refused_on_mf_sequential_and_declared_band`.
     // Mass matrices and dense output are routed since wave 2 (node
     // p0-facade); their refusals are in tests/p0_contracts.rs.
     refuse(
@@ -1028,5 +1023,260 @@ fn zero_atol_with_an_identically_zero_component_succeeds_on_dense_and_jvp_routes
             "{what}: y0 = {}",
             last[0]
         );
+    }
+}
+
+// ------------------------------------------------- vector atol (node p0-atol)
+
+#[test]
+fn vector_atol_accepted_on_fast_routes() {
+    // Dense fast route: the direct call is recorded, the run is the direct
+    // driver's bit for bit, and a uniform vector is the scalar run.
+    let atol = vec![1.0e-8, 1.0e-14, 1.0e-8];
+    let opts = Options {
+        rtol: 1.0e-6,
+        atol: Atol::Vector(atol.clone()),
+        ..Options::default()
+    };
+    let robertson_dense = robertson(Jacobian::dense(robertson_jac));
+    let sol = Rodas5p::solve(&robertson_dense, ROBERTSON_SPAN, &ROBERTSON_Y0, &opts).unwrap();
+    assert_eq!(sol.status, Status::Success);
+    assert_eq!(
+        sol.stats.route.entry_point,
+        "integrate_rodas5p_fast_observed_with_atol"
+    );
+    assert_eq!(sol.stats.route.driver_id, RODAS5P_FAST_DRIVER_ID);
+    assert!(sol.stats.route.routing.is_none());
+    assert!(matches!(sol.stats.driver_work, DriverWork::Dense { .. }));
+    assert_eq!(sol.stats.options.atol, Atol::Vector(atol.clone()));
+
+    let (direct_problem, y0) = robertson_problem().unwrap();
+    let schedule = OutputSchedule::new(vec![ROBERTSON_SPAN.0, ROBERTSON_SPAN.1]).unwrap();
+    let adaptive = AdaptiveStepConfig {
+        atol: 1.0e-8,
+        ..adaptive_for(&robertson_opts(1.0e-6, 1.0e-8))
+    };
+    let (direct, _) = integrate_rodas5p_fast_observed_with_atol(
+        &direct_problem,
+        ROBERTSON_SPAN,
+        &y0,
+        &adaptive,
+        &schedule,
+        &atol,
+    )
+    .unwrap();
+    assert_states_bit_identical(&sol, &direct.observed.t, &direct.observed.y);
+    assert_eq!(sol.stats.counters, direct.observed.counters);
+    assert_eq!(sol.stats.accepted_steps, direct.accepted_steps);
+    assert_eq!(sol.stats.adaptive, adaptive);
+
+    let uniform = Options {
+        atol: Atol::Vector(vec![1.0e-10; 3]),
+        ..opts.clone()
+    };
+    let scalar = Rodas5p::solve(
+        &robertson_dense,
+        ROBERTSON_SPAN,
+        &ROBERTSON_Y0,
+        &robertson_opts(1.0e-6, 1.0e-10),
+    )
+    .unwrap();
+    let vector = Rodas5p::solve(&robertson_dense, ROBERTSON_SPAN, &ROBERTSON_Y0, &uniform).unwrap();
+    assert_states_bit_identical(&vector, &scalar.t, &scalar.y);
+    assert_eq!(vector.stats.counters, scalar.stats.counters);
+    assert_eq!(vector.stats.attempts, scalar.stats.attempts);
+    // The finite-difference dense Jacobian takes the same route.
+    let fd = Rodas5p::solve(
+        &robertson(Jacobian::FiniteDifference),
+        ROBERTSON_SPAN,
+        &ROBERTSON_Y0,
+        &uniform,
+    )
+    .unwrap();
+    assert_eq!(
+        fd.stats.route.entry_point,
+        "integrate_rodas5p_fast_observed_with_atol"
+    );
+
+    // Banded fast route (user band, finite-difference band).
+    let n = 20;
+    let span = (0.0, 2.0);
+    let y0 = tridiagonal_y0(n);
+    let vector_opts = Options {
+        rtol: 1.0e-6,
+        atol: Atol::Vector(vec![1.0e-10; n]),
+        ..Options::default()
+    };
+    let scalar_opts = robertson_opts(1.0e-6, 1.0e-10);
+    for problem in [
+        Problem::new(n, tridiagonal_rhs(n))
+            .jacobian(Jacobian::banded(1, 1, tridiagonal_band(n)))
+            .autonomous(),
+        Problem::new(n, tridiagonal_rhs(n))
+            .banded(1, 1)
+            .autonomous(),
+    ] {
+        let scalar = Rodas5p::solve(&problem, span, &y0, &scalar_opts).unwrap();
+        let vector = Rodas5p::solve(&problem, span, &y0, &vector_opts).unwrap();
+        assert!(vector.is_success());
+        assert_eq!(
+            vector.stats.route.entry_point,
+            "integrate_rodas5p_fast_banded_observed_with_atol"
+        );
+        assert_eq!(vector.stats.route.driver_id, RODAS5P_FAST_BANDED_DRIVER_ID);
+        assert_states_bit_identical(&vector, &scalar.t, &scalar.y);
+        assert_eq!(vector.stats.counters, scalar.stats.counters);
+        assert_eq!(vector.stats.driver_work, scalar.stats.driver_work);
+    }
+    // And the direct banded call with a nonuniform vector.
+    let user_band = Problem::new(n, tridiagonal_rhs(n))
+        .jacobian(Jacobian::banded(1, 1, tridiagonal_band(n)))
+        .autonomous();
+    let nonuniform: Vec<f64> = (0..n).map(|i| 1.0e-9 * (1 + i) as f64).collect();
+    let sol = Rodas5p::solve(
+        &user_band,
+        span,
+        &y0,
+        &Options {
+            atol: Atol::Vector(nonuniform.clone()),
+            ..vector_opts.clone()
+        },
+    )
+    .unwrap();
+    let direct_ode = tridiagonal_direct(n);
+    let band = BandedJacobian {
+        lower: 1,
+        upper: 1,
+        fill: Arc::new(move |_t, y: &[f64], band: &mut [f64]| {
+            for i in 0..y.len() {
+                if i > 0 {
+                    band[i * 3] = 1.0;
+                }
+                band[i * 3 + 1] = -2.0 - y[i];
+                if i + 1 < y.len() {
+                    band[i * 3 + 2] = 1.0;
+                }
+            }
+            Ok(())
+        }),
+    };
+    let adaptive = AdaptiveStepConfig {
+        atol: 1.0e-9 * n as f64,
+        ..adaptive_for(&robertson_opts(1.0e-6, 1.0e-10))
+    };
+    let schedule = OutputSchedule::new(vec![span.0, span.1]).unwrap();
+    let direct = integrate_rodas5p_fast_banded_observed_with_atol(
+        &direct_ode,
+        &band,
+        span,
+        &y0,
+        &adaptive,
+        &schedule,
+        &nonuniform,
+    )
+    .unwrap();
+    assert_states_bit_identical(&sol, &direct.fast.observed.t, &direct.fast.observed.y);
+    assert_eq!(sol.stats.counters, direct.fast.observed.counters);
+}
+
+/// The direct-driver twin of `tridiagonal_rhs` with its dense Jacobian.
+fn tridiagonal_direct(n: usize) -> OdeProblem {
+    OdeProblem::new(
+        "tridiagonal-direct",
+        n,
+        Arc::new(move |_t: f64, y: &[f64], out: &mut [f64]| {
+            for i in 0..n {
+                let left = if i > 0 { y[i - 1] } else { 0.0 };
+                let right = if i + 1 < n { y[i + 1] } else { 0.0 };
+                out[i] = left - 2.0 * y[i] - 0.5 * y[i] * y[i] + right;
+            }
+            Ok(())
+        }),
+        None,
+        Some(Arc::new(move |_t: f64, y: &[f64]| {
+            let mut j = DenseMatrix::zeros(n, n);
+            for i in 0..n {
+                j[(i, i)] = -2.0 - y[i];
+                if i > 0 {
+                    j[(i, i - 1)] = 1.0;
+                }
+                if i + 1 < n {
+                    j[(i, i + 1)] = 1.0;
+                }
+            }
+            Ok(j)
+        })),
+        None,
+        None,
+        true,
+        None,
+        None,
+    )
+    .unwrap()
+}
+
+#[test]
+fn vector_atol_refused_on_mf_sequential_and_declared_band() {
+    let vector = |n: usize| Options {
+        atol: Atol::Vector(vec![1.0e-10; n]),
+        ..Options::default()
+    };
+    let refuse = |problem: &Problem, opts: &Options| match Rodas5p::solve(
+        problem,
+        ROBERTSON_SPAN,
+        &ROBERTSON_Y0,
+        opts,
+    ) {
+        Err(SolveError::Unsupported(m)) => assert!(m.contains("vector atol"), "{m}"),
+        other => panic!("expected Unsupported, got {other:?}"),
+    };
+    // Matrix-free route.
+    refuse(
+        &robertson(Jacobian::jvp(|_t, _y, v, out| {
+            out.copy_from_slice(v);
+            Ok(())
+        })),
+        &vector(3),
+    );
+    // Sequential route: dense output and a mass matrix.
+    let dense = robertson(Jacobian::dense(robertson_jac));
+    refuse(
+        &dense,
+        &Options {
+            dense_output: true,
+            ..vector(3)
+        },
+    );
+    refuse(
+        &robertson(Jacobian::dense(robertson_jac)).mass(vec![
+            1.0, 0.0, 0.0, //
+            0.0, 1.0, 0.0, //
+            0.0, 0.0, 1.0,
+        ]),
+        &vector(3),
+    );
+    // Dense Jacobian with a declared band (the router verifies it).
+    refuse(
+        &robertson(Jacobian::dense(robertson_jac)).banded(2, 2),
+        &vector(3),
+    );
+    // An invalid vector is InvalidInput, not Unsupported.
+    for bad in [
+        vec![1.0e-10; 2],
+        vec![1.0e-10, f64::NAN, 1.0e-10],
+        vec![1.0e-10, -1.0, 1.0e-10],
+    ] {
+        match Rodas5p::solve(
+            &dense,
+            ROBERTSON_SPAN,
+            &ROBERTSON_Y0,
+            &Options {
+                atol: Atol::Vector(bad),
+                ..Options::default()
+            },
+        ) {
+            Err(SolveError::InvalidInput(_)) => {}
+            other => panic!("expected InvalidInput, got {other:?}"),
+        }
     }
 }

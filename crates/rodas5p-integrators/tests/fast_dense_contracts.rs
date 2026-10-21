@@ -12,9 +12,10 @@ use rodas5p_core::{CoreError, CoreResult, DenseMatrix};
 use rodas5p_integrators::{
     AdaptiveStepConfig, BandedJacobian, FastInteriorControl, OdeProblem, OutputSchedule,
     RODAS5P_FAST_BANDED_DENSE_DRIVER_ID, RODAS5P_FAST_DENSE_DRIVER_ID, Rodas5pFastDenseResult,
-    integrate_rodas5p_fast_banded_dense_observed, integrate_rodas5p_fast_banded_observed,
-    integrate_rodas5p_fast_dense_observed, integrate_rodas5p_fast_observed,
-    prothero_robinson_problem, robertson_problem,
+    integrate_rodas5p_fast_banded_dense_observed,
+    integrate_rodas5p_fast_banded_dense_observed_with_atol, integrate_rodas5p_fast_banded_observed,
+    integrate_rodas5p_fast_dense_observed, integrate_rodas5p_fast_dense_observed_with_atol,
+    integrate_rodas5p_fast_observed, prothero_robinson_problem, robertson_problem,
 };
 
 const RTOLS: [f64; 3] = [1.0e-4, 1.0e-6, 1.0e-8];
@@ -623,4 +624,96 @@ fn fatal_rhs_partial_prefix() {
         );
     }
     eprintln!("(f) fatal RHS after {latch_after:e}: {m} segments kept");
+}
+
+// --------------------------------------------------- R-C1 (p0-atol seam)
+
+fn assert_same_run(a: &Rodas5pFastDenseResult, b: &Rodas5pFastDenseResult, what: &str) {
+    assert_eq!(
+        (
+            a.fast.attempts,
+            a.fast.accepted_steps,
+            a.fast.rejected_steps
+        ),
+        (
+            b.fast.attempts,
+            b.fast.accepted_steps,
+            b.fast.rejected_steps
+        ),
+        "{what}"
+    );
+    assert_eq!(a.fast.observed.counters, b.fast.observed.counters, "{what}");
+    assert_eq!(a.interior, b.interior, "{what}");
+    assert_eq!(a.banded, b.banded, "{what}");
+    assert_eq!(a.segments, b.segments, "{what}");
+}
+
+/// A uniform atol vector equal to the scalar is the scalar run bit for bit
+/// under W-filtered dense output (the estimate's scale reads the vector);
+/// a wrong length is refused.
+#[test]
+fn uniform_atol_vector_is_the_scalar_dense_run() {
+    let (problem, y0) = hires();
+    let adaptive = config(1.0e-6, 321.8122);
+    let control = FastInteriorControl::WFilteredEnforce;
+    let scalar =
+        integrate_rodas5p_fast_dense_observed(&problem, (0.0, 321.8122), &y0, &adaptive, control)
+            .unwrap();
+    let vector = integrate_rodas5p_fast_dense_observed_with_atol(
+        &problem,
+        (0.0, 321.8122),
+        &y0,
+        &adaptive,
+        control,
+        &[adaptive.atol; 8],
+    )
+    .unwrap();
+    assert!(scalar.interior.samples > 0);
+    assert_same_run(&scalar, &vector, "dense");
+    assert!(
+        integrate_rodas5p_fast_dense_observed_with_atol(
+            &problem,
+            (0.0, 1.0),
+            &y0,
+            &adaptive,
+            control,
+            &[adaptive.atol; 7],
+        )
+        .is_err()
+    );
+    // A larger atol on one component changes the run.
+    let mut loose = [adaptive.atol; 8];
+    loose[6] = 1.0e3 * adaptive.atol;
+    let changed = integrate_rodas5p_fast_dense_observed_with_atol(
+        &problem,
+        (0.0, 321.8122),
+        &y0,
+        &adaptive,
+        control,
+        &loose,
+    )
+    .unwrap();
+    assert_ne!(changed.segments, scalar.segments);
+    let (problem, band, y0) = brusselator(50);
+    let adaptive = config(1.0e-6, 10.0);
+    let scalar = integrate_rodas5p_fast_banded_dense_observed(
+        &problem,
+        &band,
+        (0.0, 10.0),
+        &y0,
+        &adaptive,
+        control,
+    )
+    .unwrap();
+    let vector = integrate_rodas5p_fast_banded_dense_observed_with_atol(
+        &problem,
+        &band,
+        (0.0, 10.0),
+        &y0,
+        &adaptive,
+        control,
+        &[adaptive.atol; 100],
+    )
+    .unwrap();
+    assert_same_run(&scalar, &vector, "banded");
 }

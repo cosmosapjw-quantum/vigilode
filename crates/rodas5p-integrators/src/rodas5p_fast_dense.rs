@@ -33,7 +33,7 @@ use crate::{
     AdaptiveStepConfig, OdeProblem, OutputSchedule,
     rodas5p_fast::{
         BandedJacobian, BandedKernel, BandedWork, DriverPartial, Rodas5pFastOptions,
-        Rodas5pFastResult, StepSink, Workspace, integrate_fast,
+        Rodas5pFastResult, StepSink, Workspace, integrate_fast, require_atol_vector,
     },
 };
 
@@ -324,10 +324,17 @@ impl DenseSink {
         counters.linear_solves += 1;
         counters.direct_solve_calls += 1;
         work.solve_into(defect)?;
+        // The step's scale atol_i + rtol max(|y|, |y_new|), as the
+        // embedded norm forms it (p0-atol: a per-component atol when set).
         let shift = h * work.gamma;
         let mut sum = 0.0;
-        for ((e, a), b) in defect.iter().zip(y).zip(&work.y_new) {
-            let z = scaled_error_component(*e / shift, atol + rtol * a.abs().max(b.abs()));
+        for (c, ((e, a), b)) in defect.iter().zip(y).zip(&work.y_new).enumerate() {
+            let atol_c = if work.atol_vector.is_empty() {
+                atol
+            } else {
+                work.atol_vector[c]
+            };
+            let z = scaled_error_component(*e / shift, atol_c + rtol * a.abs().max(b.abs()));
             sum += z * z;
         }
         let norm = (sum / n as f64).sqrt();
@@ -399,6 +406,7 @@ fn run_dense(
     y0: &[f64],
     adaptive: &AdaptiveStepConfig,
     interior: FastInteriorControl,
+    atol_vector: &[f64],
 ) -> CoreResult<Rodas5pFastDenseResult> {
     if y0.len() != problem.dimension {
         return Err(CoreError::InvalidInput(
@@ -416,6 +424,7 @@ fn run_dense(
         &output,
         Rodas5pFastOptions::default(),
         None,
+        atol_vector,
         &mut sink,
     )?;
     fast.driver = if band.is_some() {
@@ -443,7 +452,7 @@ pub fn integrate_rodas5p_fast_dense_observed(
     adaptive: &AdaptiveStepConfig,
     interior: FastInteriorControl,
 ) -> CoreResult<Rodas5pFastDenseResult> {
-    run_dense(problem, None, t_span, y0, adaptive, interior)
+    run_dense(problem, None, t_span, y0, adaptive, interior, &[])
 }
 
 /// [`integrate_rodas5p_fast_dense_observed`] on the banded pipeline of
@@ -457,13 +466,66 @@ pub fn integrate_rodas5p_fast_banded_dense_observed(
     adaptive: &AdaptiveStepConfig,
     interior: FastInteriorControl,
 ) -> CoreResult<Rodas5pFastDenseResult> {
+    run_banded_dense(problem, band, t_span, y0, adaptive, interior, &[])
+}
+
+fn run_banded_dense(
+    problem: &OdeProblem,
+    band: &BandedJacobian,
+    t_span: (f64, f64),
+    y0: &[f64],
+    adaptive: &AdaptiveStepConfig,
+    interior: FastInteriorControl,
+    atol_vector: &[f64],
+) -> CoreResult<Rodas5pFastDenseResult> {
     let n = problem.dimension;
     if band.lower >= n.max(1) || band.upper >= n.max(1) {
         return Err(CoreError::InvalidInput(
             "the band of the RODAS5P fast banded driver must lie inside the matrix".into(),
         ));
     }
-    run_dense(problem, Some(band), t_span, y0, adaptive, interior)
+    run_dense(
+        problem,
+        Some(band),
+        t_span,
+        y0,
+        adaptive,
+        interior,
+        atol_vector,
+    )
+}
+
+/// [`integrate_rodas5p_fast_dense_observed`] with a per-component absolute
+/// tolerance (wave-3 node `p0-atol`, ruling R-C1): component `i` of the
+/// embedded norm and of the W-filtered estimate is scaled by
+/// `atol[i] + rtol max(|y_i|, |y_new,i|)`; `adaptive.atol` is validated but
+/// unused. `atol` must have `n` finite nonnegative entries. With every entry
+/// equal to `adaptive.atol` the run is bit for bit the scalar run.
+pub fn integrate_rodas5p_fast_dense_observed_with_atol(
+    problem: &OdeProblem,
+    t_span: (f64, f64),
+    y0: &[f64],
+    adaptive: &AdaptiveStepConfig,
+    interior: FastInteriorControl,
+    atol: &[f64],
+) -> CoreResult<Rodas5pFastDenseResult> {
+    require_atol_vector(problem.dimension, atol)?;
+    run_dense(problem, None, t_span, y0, adaptive, interior, atol)
+}
+
+/// [`integrate_rodas5p_fast_banded_dense_observed`] with a per-component
+/// absolute tolerance; see [`integrate_rodas5p_fast_dense_observed_with_atol`].
+pub fn integrate_rodas5p_fast_banded_dense_observed_with_atol(
+    problem: &OdeProblem,
+    band: &BandedJacobian,
+    t_span: (f64, f64),
+    y0: &[f64],
+    adaptive: &AdaptiveStepConfig,
+    interior: FastInteriorControl,
+    atol: &[f64],
+) -> CoreResult<Rodas5pFastDenseResult> {
+    require_atol_vector(problem.dimension, atol)?;
+    run_banded_dense(problem, band, t_span, y0, adaptive, interior, atol)
 }
 
 #[cfg(test)]
