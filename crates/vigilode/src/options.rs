@@ -20,11 +20,13 @@ pub enum Atol {
     ///
     /// Accepted on the dense fast route (an undeclared band; the facade calls
     /// `integrate_rodas5p_fast_observed_with_atol` itself, since the router
-    /// takes a scalar) and on the banded fast route. Refused with
-    /// [`crate::SolveError::Unsupported`], never replaced by a scalar, on the
-    /// matrix-free route (the Krylov weights take a scalar), under a mass
-    /// matrix or [`Options::dense_output`] (the sequential route), and on a
-    /// dense Jacobian with a declared band. In [`crate::Stats::adaptive`] the
+    /// takes a scalar), on the banded fast route, and on the fast dense-output
+    /// route (the W-filtered interior estimate uses the same per-component
+    /// scale). Refused with [`crate::SolveError::Unsupported`], never replaced
+    /// by a scalar, on the matrix-free route (the Krylov weights take a
+    /// scalar), on the sequential route (a mass matrix, or dense output under
+    /// [`InteriorError::Enforce`]), and on a dense Jacobian with a declared
+    /// band. In [`crate::Stats::adaptive`] the
     /// scalar `atol` is the largest entry of the vector (the drivers read the
     /// vector); the vector itself is in [`crate::Stats::options`].
     Vector(Vec<f64>),
@@ -59,11 +61,16 @@ pub enum InteriorError {
     /// `max(embedded error, estimate)`, so an interior failure rejects and
     /// shrinks the step. One right-hand side and one back-solve per step; an
     /// estimate, not a bound (within 1 and 2.36 times the interior error of
-    /// a scalar linear mode with constant defect).
+    /// a scalar linear mode with constant defect). On the fast dense route an
+    /// error in the estimate's midpoint right-hand side or back-solve (for
+    /// example a [`crate::CallbackError::Recoverable`]) rejects the attempt
+    /// like a stage error; on the sequential route (a mass matrix) such a
+    /// sample is counted unavailable and the step is accepted.
     #[default]
     WFilteredEnforce,
     /// The shift-`h/2` filtered estimate (one Jacobian and one LU per step);
-    /// a step whose estimate exceeds one tolerance unit is rejected.
+    /// a step whose estimate exceeds one tolerance unit is rejected. Runs the
+    /// sequential dense driver.
     Enforce,
     /// No interior estimate: only the endpoint is error controlled, and the
     /// interior of a step may exceed the tolerance by orders of magnitude on
@@ -93,10 +100,14 @@ pub struct Options {
     /// Return the state at every accepted step and the continuous extension
     /// ([`crate::Solution::at`]) instead of the states at `t0` and `t1` only.
     ///
-    /// `true` runs the protected sequential dense driver with the interior
-    /// error control of [`Options::interior_error`]; it needs an explicit or
-    /// finite-difference Jacobian (a JVP-only problem is refused with
-    /// [`crate::SolveError::Unsupported`]). With `false` the solution holds
+    /// `true` without a mass matrix runs the fast dense driver (the banded
+    /// twin for a band Jacobian or a finite-difference band) with a
+    /// continuous extension and the interior error control of
+    /// [`Options::interior_error`] (`WFilteredEnforce` or `Off`); with a mass
+    /// matrix or [`InteriorError::Enforce`] it runs the protected sequential
+    /// dense driver. It needs an explicit or finite-difference Jacobian (a
+    /// JVP-only problem is refused with [`crate::SolveError::Unsupported`]),
+    /// and a declared band on a dense Jacobian is refused. With `false` the solution holds
     /// `t0` and `t1` (`t0` and the last accepted state for a failed run).
     pub dense_output: bool,
     /// Interior error control under [`Options::dense_output`]; ignored

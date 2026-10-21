@@ -944,6 +944,67 @@ impl Workspace {
         }
     }
 
+    /// Solve `W x = b` in place in a caller buffer with the current factors
+    /// of any storage, dense or banded (wave-3 node `p0-fastdense`, the
+    /// W-filtered interior estimate). It charges no [`WorkCounters`]; the
+    /// caller does. A banded solve takes `&mut self` because the band
+    /// kernel counts its operations: they are added to [`BandedWork`]
+    /// `solve_operations`. The faer path allocates its solution once.
+    pub(crate) fn solve_into(&mut self, b: &mut [f64]) -> CoreResult<()> {
+        if b.len() != self.n {
+            return Err(CoreError::Dimension(
+                "RODAS5P fast stored-LU solve shape mismatch".into(),
+            ));
+        }
+        match self.lu_kind {
+            Rodas5pFastLu::InPlaceZeroSkipping | Rodas5pFastLu::InPlaceColumnExtents => {
+                lu_solve_in_place(
+                    &self.w,
+                    self.n,
+                    &self.pivots,
+                    &self.row_end,
+                    &self.l_start,
+                    b,
+                );
+            }
+            Rodas5pFastLu::Faer => {
+                let x = self
+                    .faer_lu
+                    .as_ref()
+                    .ok_or_else(|| CoreError::LinearSolve("RODAS5P fast LU not factored".into()))?
+                    .solve(b)?;
+                b.copy_from_slice(&x);
+            }
+            Rodas5pFastLu::Banded => {
+                let n = self.n;
+                self.band.as_mut().expect("banded workspace").solve(n, b);
+            }
+        }
+        if b.iter().all(|v| v.is_finite()) {
+            Ok(())
+        } else {
+            Err(CoreError::LinearSolve(
+                "RODAS5P fast stored-LU solve produced NaN/Inf".into(),
+            ))
+        }
+    }
+
+    /// A fresh [`Self::attempt`] for the unit tests of sibling modules.
+    #[cfg(test)]
+    #[allow(clippy::too_many_arguments)]
+    pub(crate) fn attempt_for_tests(
+        &mut self,
+        problem: &OdeProblem,
+        t: f64,
+        y: &[f64],
+        h: f64,
+        atol: f64,
+        rtol: f64,
+        counters: &mut WorkCounters,
+    ) -> CoreResult<f64> {
+        self.attempt(problem, t, y, h, true, atol, rtol, counters)
+    }
+
     /// One attempt from `(t, y)` with step `h`: the new state in `y_new`
     /// and the WRMS norm of the embedded error. `fresh` builds the Jacobian,
     /// `f(t, y)` and `f_t` at this state; otherwise those of the previous
@@ -1419,6 +1480,58 @@ pub(crate) fn failure_kind(error: &CoreError) -> Option<AdaptiveFailureKind> {
     }
 }
 
+/// A per-step observer of [`integrate_fast`] (wave-3 node `p0-fastdense`):
+/// the continuous extension and the W-filtered interior estimate of
+/// [`crate::integrate_rodas5p_fast_dense_observed`]. The driver is generic
+/// over it, so [`NoSink`] compiles to the unchanged loop.
+pub(crate) trait StepSink {
+    /// Called after an attempt from `(t, y)` with step `h` whose embedded
+    /// error `error` is at most one, with the attempt's stages, new state
+    /// and factored `W` still in `work`. Returns the error the controller
+    /// sees for this attempt; an `Err` is classified as an attempt error.
+    #[allow(clippy::too_many_arguments)]
+    fn after_attempt(
+        &mut self,
+        problem: &OdeProblem,
+        work: &mut Workspace,
+        t: f64,
+        y: &[f64],
+        h: f64,
+        error: f64,
+        atol: f64,
+        rtol: f64,
+        counters: &mut WorkCounters,
+    ) -> CoreResult<f64>;
+
+    /// Called once per accepted step, after the state advanced to `t_new`
+    /// (`work.y_new` and `work.u` still hold the step).
+    fn accepted(&mut self, work: &Workspace, t_new: f64);
+}
+
+/// The sink of every existing entry point: observes nothing.
+pub(crate) struct NoSink;
+
+impl StepSink for NoSink {
+    #[inline(always)]
+    fn after_attempt(
+        &mut self,
+        _problem: &OdeProblem,
+        _work: &mut Workspace,
+        _t: f64,
+        _y: &[f64],
+        _h: f64,
+        error: f64,
+        _atol: f64,
+        _rtol: f64,
+        _counters: &mut WorkCounters,
+    ) -> CoreResult<f64> {
+        Ok(error)
+    }
+
+    #[inline(always)]
+    fn accepted(&mut self, _work: &Workspace, _t_new: f64) {}
+}
+
 /// Adaptive RODAS5P with the sequential driver's controller and output
 /// rules, on the transformed stages and one workspace. Requires the
 /// identity mass matrix.
@@ -1439,6 +1552,7 @@ pub fn integrate_rodas5p_fast_observed(
         Rodas5pFastOptions::default(),
         None,
         &[],
+        &mut NoSink,
     )
     .map(|(result, ..)| result)
 }
@@ -1464,6 +1578,7 @@ pub fn integrate_rodas5p_fast_observed_with_partial(
         Rodas5pFastOptions::default(),
         None,
         &[],
+        &mut NoSink,
     )
     .map(|(result, _, partial)| (result, partial))
 }
@@ -1491,6 +1606,7 @@ pub fn integrate_rodas5p_fast_observed_with_telemetry(
         Rodas5pFastOptions::default(),
         Some(&mut telemetry),
         &[],
+        &mut NoSink,
     )
     .map(|(result, ..)| (result, telemetry))
 }
@@ -1515,6 +1631,7 @@ pub fn integrate_rodas5p_fast_observed_with_options(
         options,
         None,
         &[],
+        &mut NoSink,
     )
     .map(|(result, ..)| result)
 }
@@ -1655,6 +1772,7 @@ pub fn integrate_rodas5p_fast_observed_with_atol(
         Rodas5pFastOptions::default(),
         None,
         atol,
+        &mut NoSink,
     )
     .map(|(result, _, partial)| (result, partial))
 }
@@ -1691,7 +1809,7 @@ pub fn integrate_rodas5p_fast_banded_observed_with_atol(
 }
 
 /// The public entry points take a vector, never the empty "scalar" marker.
-fn require_atol_vector(n: usize, atol: &[f64]) -> CoreResult<()> {
+pub(crate) fn require_atol_vector(n: usize, atol: &[f64]) -> CoreResult<()> {
     if atol.is_empty() && n > 0 {
         return Err(CoreError::InvalidInput(
             "the absolute tolerance vector must have one entry per component".into(),
@@ -1722,6 +1840,7 @@ fn integrate_banded(
         options,
         None,
         atol_vector,
+        &mut NoSink,
     )?;
     Ok(Rodas5pFastBandedResult {
         fast,
@@ -1730,8 +1849,10 @@ fn integrate_banded(
     })
 }
 
+/// The fast driver loop. `sink` observes every attempt the embedded
+/// estimate accepts and every accepted step; [`NoSink`] observes nothing.
 #[allow(clippy::too_many_arguments)]
-fn integrate_fast(
+pub(crate) fn integrate_fast<S: StepSink>(
     problem: &OdeProblem,
     band: Option<(&BandedJacobian, BandedKernel)>,
     t_span: (f64, f64),
@@ -1741,6 +1862,7 @@ fn integrate_fast(
     options: Rodas5pFastOptions,
     mut telemetry: Option<&mut ControllerTelemetry>,
     atol_vector: &[f64],
+    sink: &mut S,
 ) -> CoreResult<(Rodas5pFastResult, Option<BandedWork>, Option<DriverPartial>)> {
     adaptive.validate()?;
     validate_atol_vector(problem.dimension, atol_vector)?;
@@ -1804,6 +1926,27 @@ fn integrate_fast(
             adaptive.rtol,
             &mut counters,
         );
+        // The sink sees an attempt the embedded estimate accepts and may
+        // raise its error (NoSink returns it unchanged). An error of the sink
+        // comes after a successful attempt, so the state's Jacobian, f(t, y)
+        // and f_t stay valid for the retry (`sink_failed` below).
+        let mut sink_failed = false;
+        let outcome = match outcome {
+            Ok(error) if error <= 1.0 => sink
+                .after_attempt(
+                    problem,
+                    &mut work,
+                    t,
+                    &y,
+                    trial_h,
+                    error,
+                    adaptive.atol,
+                    adaptive.rtol,
+                    &mut counters,
+                )
+                .inspect_err(|_| sink_failed = true),
+            other => other,
+        };
         // Every path below has the state's Jacobian and f(t, y) in place,
         // unless they failed to build.
         fresh_state = work.lu_chosen;
@@ -1812,7 +1955,11 @@ fn integrate_fast(
             Ok(error) => (error, Some(AdaptiveFailureKind::LocalError)),
             Err(error) => match failure_kind(&error) {
                 Some(kind) => {
-                    fresh_state = false;
+                    // A failed attempt may have left a partial Jacobian or
+                    // f(t, y); a failed sink did not (always false for NoSink).
+                    if !sink_failed {
+                        fresh_state = false;
+                    }
                     (f64::INFINITY, Some(kind))
                 }
                 None => return Err(error),
@@ -1831,6 +1978,7 @@ fn integrate_fast(
                     collector.accept(t, &y, clipped)?;
                 }
                 internal_steps += 1;
+                sink.accepted(&work, t);
                 fresh_state = false;
                 last_failure = None;
             }

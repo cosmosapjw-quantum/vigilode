@@ -8,12 +8,14 @@ use std::fmt::Display;
 use rodas5p_core::{CoreError, CoreResult, DenseMatrix, LinearSolverConfig, WorkCounters};
 use rodas5p_integrators::{
     AdaptiveDenseSegmentRun, AdaptiveFailureKind, AdaptiveStepConfig, BandedJacobian,
-    DenseErrorControl, DriverPartial, DriverStopReason, IntegrationMethod, InteriorSampling,
-    ObservedIntegrationResult, OdeProblem, OutputSamplingPlan, OutputSchedule,
-    RODAS5P_SEQUENTIAL_DENSE_DRIVER_ID, Rodas5pDenseSegment, RoutedDriver, RoutedRun, RoutingError,
+    DenseErrorControl, DriverPartial, DriverStopReason, FastInteriorControl, IntegrationMethod,
+    InteriorSampling, JacobianIntoFn, ObservedIntegrationResult, OdeProblem, OutputSamplingPlan,
+    OutputSchedule, RODAS5P_SEQUENTIAL_DENSE_DRIVER_ID, RoutedDriver, RoutedRun, RoutingError,
     RoutingOptions, StructureDeclaration, integrate_adaptive_dense_observed_with_partial,
-    integrate_adaptive_dense_observed_with_segments, integrate_rodas5p_fast_banded_observed,
-    integrate_rodas5p_fast_banded_observed_with_atol, integrate_rodas5p_fast_observed_with_atol,
+    integrate_adaptive_dense_observed_with_segments, integrate_rodas5p_fast_banded_dense_observed,
+    integrate_rodas5p_fast_banded_dense_observed_with_atol, integrate_rodas5p_fast_banded_observed,
+    integrate_rodas5p_fast_banded_observed_with_atol, integrate_rodas5p_fast_dense_observed,
+    integrate_rodas5p_fast_dense_observed_with_atol, integrate_rodas5p_fast_observed_with_atol,
     integrate_rodas5p_routed_observed,
 };
 
@@ -23,8 +25,8 @@ use crate::{
     options::{Atol, InteriorError, Options, Tier},
     problem::{Jacobian, Problem},
     solution::{
-        Callback, DriverWork, FD_INCREMENT_RULE, FailureReason, JacobianRecord, KrylovStartRecord,
-        RouteRecord, STATS_SCHEMA, Solution, Stats, Status, StopRecord,
+        Callback, DriverWork, Extension, FD_INCREMENT_RULE, FailureReason, JacobianRecord,
+        KrylovStartRecord, RouteRecord, STATS_SCHEMA, Solution, Stats, Status, StopRecord,
     },
 };
 
@@ -40,6 +42,12 @@ const ENTRY_BANDED: &str = "integrate_rodas5p_fast_banded_observed";
 const ENTRY_DENSE_FAST_ATOL: &str = "integrate_rodas5p_fast_observed_with_atol";
 /// The banded fast driver with a per-component absolute tolerance.
 const ENTRY_BANDED_ATOL: &str = "integrate_rodas5p_fast_banded_observed_with_atol";
+/// Dense output without a mass matrix (`WFilteredEnforce` or `Off`).
+const ENTRY_FAST_DENSE: &str = "integrate_rodas5p_fast_dense_observed";
+const ENTRY_FAST_DENSE_ATOL: &str = "integrate_rodas5p_fast_dense_observed_with_atol";
+const ENTRY_FAST_BANDED_DENSE: &str = "integrate_rodas5p_fast_banded_dense_observed";
+const ENTRY_FAST_BANDED_DENSE_ATOL: &str = "integrate_rodas5p_fast_banded_dense_observed_with_atol";
+/// Dense output under a mass matrix or `InteriorError::Enforce`.
 const ENTRY_SEQUENTIAL_DENSE: &str = "integrate_adaptive_dense_observed_with_segments";
 /// The same driver without the segment sink (mass matrix, no dense output).
 const ENTRY_SEQUENTIAL_NO_SEGMENTS: &str = "integrate_adaptive_dense_observed_with_partial";
@@ -78,7 +86,12 @@ enum Plan {
     /// The dense fast driver directly (a vector `atol` on an undeclared
     /// dense Jacobian).
     DenseFast,
-    /// The sequential adaptive dense driver: a mass matrix or dense output.
+    /// The fast dense driver with a continuous extension, dense storage
+    /// (`None`) or banded: dense output without a mass matrix, under
+    /// `WFilteredEnforce` or `Off`.
+    FastDense { band: Option<BandedJacobian> },
+    /// The sequential adaptive dense driver: a mass matrix, or dense output
+    /// under `InteriorError::Enforce`.
     SequentialDense,
 }
 
@@ -93,8 +106,8 @@ struct Run {
     driver_work: DriverWork,
     /// The driver's partial record (`None` on success).
     partial: Option<DriverPartial>,
-    /// Every accepted step's continuous extension (sequential dense route).
-    segments: Option<Vec<Rodas5pDenseSegment>>,
+    /// Every accepted step's continuous extension (dense output).
+    segments: Option<Extension>,
 }
 
 impl Rodas5p {
@@ -130,8 +143,21 @@ impl Rodas5p {
             OutputSchedule::new(times).map_err(|e| SolveError::InvalidInput(e.to_string()))?;
 
         let guard = Arc::new(Guard::default());
-        let sequential = problem.mass.is_some() || opts.dense_output;
+        let sequential = sequential_route(problem, opts);
         let (ode, plan, jacobian_record) = build(problem, &guard, sequential)?;
+        // Dense output without a mass matrix (and not `Enforce`) runs the
+        // fast drivers with a continuous extension, the banded twin for a
+        // band Jacobian or a finite-difference band. `validate` refused a
+        // declared band on a dense Jacobian here.
+        let plan = match plan {
+            Plan::Routed { declaration: None } if opts.dense_output && !sequential => {
+                Plan::FastDense { band: None }
+            }
+            Plan::Banded(band) if opts.dense_output && !sequential => {
+                Plan::FastDense { band: Some(band) }
+            }
+            plan => plan,
+        };
         // The router takes a scalar `atol` only: a vector on the undeclared
         // dense route calls the dense fast driver itself. `validate` refused
         // every other vector plan that would pass through the router.
@@ -243,6 +269,63 @@ impl Rodas5p {
                     },
                     partial,
                     segments: None,
+                }
+            }
+            Plan::FastDense { band } => {
+                let control = match opts.interior_error {
+                    InteriorError::Off => FastInteriorControl::Off,
+                    InteriorError::WFilteredEnforce => FastInteriorControl::WFilteredEnforce,
+                    InteriorError::Enforce => {
+                        unreachable!("Enforce routes to the sequential driver")
+                    }
+                };
+                let (entry_point, result) = match (&band, &atol) {
+                    (None, AtolSpec::Scalar(_)) => (
+                        ENTRY_FAST_DENSE,
+                        integrate_rodas5p_fast_dense_observed(&ode, t_span, y0, &adaptive, control),
+                    ),
+                    (None, AtolSpec::Vector(atol)) => (
+                        ENTRY_FAST_DENSE_ATOL,
+                        integrate_rodas5p_fast_dense_observed_with_atol(
+                            &ode, t_span, y0, &adaptive, control, atol,
+                        ),
+                    ),
+                    (Some(band), AtolSpec::Scalar(_)) => (
+                        ENTRY_FAST_BANDED_DENSE,
+                        integrate_rodas5p_fast_banded_dense_observed(
+                            &ode, band, t_span, y0, &adaptive, control,
+                        ),
+                    ),
+                    (Some(band), AtolSpec::Vector(atol)) => (
+                        ENTRY_FAST_BANDED_DENSE_ATOL,
+                        integrate_rodas5p_fast_banded_dense_observed_with_atol(
+                            &ode, band, t_span, y0, &adaptive, control, atol,
+                        ),
+                    ),
+                };
+                let result = result.map_err(|e| driver_error(e, &guard))?;
+                let fast = result.fast;
+                Run {
+                    route: RouteRecord {
+                        entry_point,
+                        driver_id: fast.driver,
+                        routing: None,
+                    },
+                    attempts: fast.attempts,
+                    accepted_steps: fast.accepted_steps,
+                    rejected_steps: fast.rejected_steps,
+                    matrix_free: false,
+                    driver_work: DriverWork::FastDense {
+                        banded: band.is_some(),
+                        jacobian_reuses: fast.jacobian_reuses,
+                        lu: fast.lu,
+                        band_work: result.banded,
+                        interior: result.interior,
+                        segments: result.segments.len(),
+                    },
+                    observed: fast.observed,
+                    partial: result.partial,
+                    segments: Some(Extension::Fast(result.segments)),
                 }
             }
             Plan::Banded(band) => {
@@ -369,7 +452,9 @@ impl Rodas5p {
                     },
                     observed: run.result.observed,
                     partial: run.partial,
-                    segments: opts.dense_output.then_some(run.segments),
+                    segments: opts
+                        .dense_output
+                        .then_some(Extension::Sequential(run.segments)),
                 }
             }
         };
@@ -398,7 +483,13 @@ impl Rodas5p {
         // otherwise the driver's samples, followed after a failure by the
         // last accepted state.
         let (t, y) = match &run.segments {
-            Some(segments) => {
+            Some(Extension::Fast(segments)) => (
+                segments.times().to_vec(),
+                (0..=segments.len())
+                    .map(|k| segments.state(k).to_vec())
+                    .collect(),
+            ),
+            Some(Extension::Sequential(segments)) => {
                 let mut t = Vec::with_capacity(segments.len() + 1);
                 let mut y = Vec::with_capacity(segments.len() + 1);
                 t.push(t_span.0);
@@ -577,17 +668,19 @@ fn validate(
             return invalid("the mass matrix contains NaN/Inf".into());
         }
     }
-    // The sequential dense route (mass matrix or dense output) forms the
-    // stage matrix M - h gamma J explicitly and needs a matrix Jacobian.
-    let sequential = problem.mass.is_some() || opts.dense_output;
-    if sequential && matches!(problem.jacobian, Jacobian::Jvp(_)) {
+    // The dense-output and mass-matrix routes (fast dense or sequential)
+    // need a matrix Jacobian: the stage matrix M - h gamma J, whose factors
+    // also filter the interior estimate.
+    let dense_or_mass = problem.mass.is_some() || opts.dense_output;
+    let sequential = sequential_route(problem, opts);
+    if dense_or_mass && matches!(problem.jacobian, Jacobian::Jvp(_)) {
         return unsupported(
             "a mass matrix or dense output on a JVP-only problem: the protected sequential \
              dense driver needs an explicit or finite-difference Jacobian (the step's stage \
              matrix M - h gamma J)",
         );
     }
-    if sequential && matches!(problem.jacobian, Jacobian::Dense(_)) && problem.band.is_some() {
+    if dense_or_mass && matches!(problem.jacobian, Jacobian::Dense(_)) && problem.band.is_some() {
         return unsupported(
             "a declared band on a dense Jacobian with a mass matrix or dense output: only the \
              router verifies such a declaration, and the sequential dense driver would ignore it",
@@ -598,8 +691,8 @@ fn validate(
         // absolute tolerance; the facade never substitutes a scalar.
         if sequential {
             return unsupported(
-                "a vector atol with a mass matrix or dense output: the sequential dense \
-                 driver takes a scalar absolute tolerance",
+                "a vector atol with a mass matrix or interior_error = Enforce: the \
+                 sequential dense driver takes a scalar absolute tolerance",
             );
         }
         if matches!(problem.jacobian, Jacobian::Jvp(_)) {
@@ -655,6 +748,12 @@ fn validate(
     Ok(atol)
 }
 
+/// Whether a run takes the sequential dense driver: a mass matrix, or dense
+/// output under `InteriorError::Enforce`.
+fn sequential_route(problem: &Problem, opts: &Options) -> bool {
+    problem.mass.is_some() || (opts.dense_output && opts.interior_error == InteriorError::Enforce)
+}
+
 /// The driver-level problem, the plan and the Jacobian record.
 fn build(
     problem: &Problem,
@@ -675,6 +774,9 @@ fn build(
 
     let mut jacobian: Option<CoreJacobian> = None;
     let mut jvp: Option<CoreJvp> = None;
+    // The in-place form of a user dense Jacobian for the fast drivers, which
+    // keep one matrix across steps (no n x n allocation per build).
+    let mut jacobian_into: Option<JacobianIntoFn> = None;
     let (plan, record) = match (&problem.jacobian, problem.band) {
         (Jacobian::Dense(user), band) => {
             let dense: CoreJacobian = {
@@ -687,6 +789,16 @@ fn build(
                 })
             };
             jacobian = Some(dense.clone());
+            jacobian_into = Some({
+                let (user, guard) = (user.clone(), guard.clone());
+                Arc::new(move |t, y, m: &mut DenseMatrix| {
+                    // The driver hands back the previous matrix; the facade
+                    // documents a zeroed buffer before every call (B3d).
+                    m.as_mut_slice().fill(0.0);
+                    guard.call(Callback::Jacobian, t, || user(t, y, m.as_mut_slice()))?;
+                    finite(m.as_slice(), "dense Jacobian")
+                })
+            });
             match band {
                 None => (Plan::Routed { declaration: None }, JacobianRecord::Dense),
                 Some((lower, upper)) => {
@@ -794,6 +906,10 @@ fn build(
         None,
     )
     .map_err(|e| SolveError::InvalidInput(e.to_string()))?;
+    let ode = match jacobian_into {
+        Some(fill) => ode.with_jacobian_into(fill),
+        None => ode,
+    };
     Ok((ode, plan, record))
 }
 
