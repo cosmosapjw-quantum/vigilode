@@ -4,8 +4,8 @@
 //! lib unit test `rodas5p_fast_dense::tests::stage_rows_match_sequential_stages`.
 
 use std::sync::{
-    Arc,
-    atomic::{AtomicBool, Ordering},
+    Arc, Mutex,
+    atomic::{AtomicBool, AtomicUsize, Ordering},
 };
 
 use rodas5p_core::{CoreError, CoreResult, DenseMatrix};
@@ -716,4 +716,118 @@ fn uniform_atol_vector_is_the_scalar_dense_run() {
     )
     .unwrap();
     assert_same_run(&scalar, &vector, "banded");
+}
+
+// ------------------------------------------------- fix round 1, Minor 1/6
+
+/// Robertson whose RHS logs every call time and fails (`NonFinite`, a
+/// recoverable attempt error) only on call number `fail_at` (1-based).
+fn logged_robertson(fail_at: usize, log: Arc<Mutex<Vec<f64>>>) -> OdeProblem {
+    let calls = Arc::new(AtomicUsize::new(0));
+    let rhs = Arc::new(move |t: f64, y: &[f64], out: &mut [f64]| {
+        log.lock().unwrap().push(t);
+        if calls.fetch_add(1, Ordering::SeqCst) + 1 == fail_at {
+            return Err(CoreError::NonFinite("midpoint RHS failure".into()));
+        }
+        out[0] = -0.04 * y[0] + 1.0e4 * y[1] * y[2];
+        out[1] = 0.04 * y[0] - 1.0e4 * y[1] * y[2] - 3.0e7 * y[1] * y[1];
+        out[2] = 3.0e7 * y[1] * y[1];
+        Ok(())
+    });
+    let (reference, _) = robertson_problem().unwrap();
+    let jacobian = Arc::new(move |t: f64, y: &[f64]| {
+        reference.dense_jacobian(t, y, &mut rodas5p_core::WorkCounters::default())
+    });
+    OdeProblem::new(
+        "logged-robertson",
+        3,
+        rhs,
+        None,
+        Some(jacobian),
+        None,
+        None,
+        true,
+        None,
+        None,
+    )
+    .unwrap()
+}
+
+/// Minor 1 (D3 pinned): an error in the estimate's midpoint RHS rejects the
+/// attempt as `NonFinite`, and the retry from the same state at a smaller
+/// step is accepted. Minor 6: the retry reuses the state's Jacobian and
+/// f(t, y) (its first RHS call is a stage call, not f at the step start).
+#[test]
+fn midpoint_rhs_error_rejects_then_retries() {
+    let coefficients = rodas5p_core::rodas5p_coefficients().unwrap();
+    assert!(
+        coefficients.c.iter().all(|&c| c != 0.5),
+        "a stage at θ = 1/2"
+    );
+    let y0 = [1.0, 0.0, 0.0];
+    let adaptive = config(1.0e-6, 40.0);
+    let control = FastInteriorControl::WFilteredEnforce;
+    let clean_log = Arc::new(Mutex::new(Vec::new()));
+    let clean = integrate_rodas5p_fast_dense_observed(
+        &logged_robertson(usize::MAX, clean_log.clone()),
+        (0.0, 40.0),
+        &y0,
+        &adaptive,
+        control,
+    )
+    .unwrap();
+    let clean_log = clean_log.lock().unwrap().clone();
+    // An autonomous fresh attempt makes 9 calls: f(t, y), 7 stages, then
+    // the midpoint. Check that the first three attempts were accepted
+    // steps whose 9th call is the midpoint, then fail the third midpoint.
+    let seg = &clean.segments;
+    for k in 0..3 {
+        let (a, b) = (seg.t_old(k), seg.t_new(k));
+        let mid = clean_log[9 * k + 8];
+        assert!(
+            (mid - (a + 0.5 * (b - a))).abs() <= 1.0e-12 * (b - a),
+            "step {k}"
+        );
+        assert_eq!(clean_log[9 * k].to_bits(), a.to_bits(), "step {k}: f(t, y)");
+    }
+    let log = Arc::new(Mutex::new(Vec::new()));
+    let failed = integrate_rodas5p_fast_dense_observed(
+        &logged_robertson(27, log.clone()),
+        (0.0, 40.0),
+        &y0,
+        &adaptive,
+        control,
+    )
+    .unwrap();
+    let log = log.lock().unwrap().clone();
+    assert!(failed.fast.observed.success);
+    let c = &failed.fast.observed.counters;
+    assert_eq!(c.nonfinite_step_failures, 1);
+    assert_eq!(
+        failed.fast.accepted_steps + failed.fast.rejected_steps,
+        failed.fast.attempts
+    );
+    assert!(failed.fast.jacobian_reuses > clean.fast.jacobian_reuses);
+    // The first two steps are the clean run's; the third starts at the same
+    // state with a smaller (retried) step and is accepted.
+    let f = &failed.segments;
+    for k in 0..=2 {
+        assert_eq!(bits(f.state(k)), bits(seg.state(k)), "k = {k}");
+    }
+    assert_eq!(f.t_old(2).to_bits(), seg.t_old(2).to_bits());
+    let (h_clean, h_retry) = (seg.t_new(2) - seg.t_old(2), f.t_new(2) - f.t_old(2));
+    assert!(h_retry < h_clean, "{h_retry} vs {h_clean}");
+    // Minor 6: call 28 is the retry's first stage, not f at the step start.
+    assert_eq!(log[26].to_bits(), clean_log[26].to_bits());
+    assert!(log[27] > f.t_old(2) && log[27] < f.t_new(2), "{}", log[27]);
+    // The failed sample is not counted.
+    assert_eq!(
+        failed.interior.samples,
+        failed.fast.accepted_steps as u64 + failed.interior.interior_rejections
+    );
+    assert_eq!(failed.interior.rhs_calls, failed.interior.samples + 1);
+    eprintln!(
+        "midpoint failure: retry h {h_retry:e} after {h_clean:e}; reuses {} (clean {})",
+        failed.fast.jacobian_reuses, clean.fast.jacobian_reuses
+    );
 }

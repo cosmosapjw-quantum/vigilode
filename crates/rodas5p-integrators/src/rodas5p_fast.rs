@@ -1927,19 +1927,24 @@ pub(crate) fn integrate_fast<S: StepSink>(
             &mut counters,
         );
         // The sink sees an attempt the embedded estimate accepts and may
-        // raise its error (NoSink returns it unchanged).
+        // raise its error (NoSink returns it unchanged). An error of the sink
+        // comes after a successful attempt, so the state's Jacobian, f(t, y)
+        // and f_t stay valid for the retry (`sink_failed` below).
+        let mut sink_failed = false;
         let outcome = match outcome {
-            Ok(error) if error <= 1.0 => sink.after_attempt(
-                problem,
-                &mut work,
-                t,
-                &y,
-                trial_h,
-                error,
-                adaptive.atol,
-                adaptive.rtol,
-                &mut counters,
-            ),
+            Ok(error) if error <= 1.0 => sink
+                .after_attempt(
+                    problem,
+                    &mut work,
+                    t,
+                    &y,
+                    trial_h,
+                    error,
+                    adaptive.atol,
+                    adaptive.rtol,
+                    &mut counters,
+                )
+                .inspect_err(|_| sink_failed = true),
             other => other,
         };
         // Every path below has the state's Jacobian and f(t, y) in place,
@@ -1950,7 +1955,11 @@ pub(crate) fn integrate_fast<S: StepSink>(
             Ok(error) => (error, Some(AdaptiveFailureKind::LocalError)),
             Err(error) => match failure_kind(&error) {
                 Some(kind) => {
-                    fresh_state = false;
+                    // A failed attempt may have left a partial Jacobian or
+                    // f(t, y); a failed sink did not (always false for NoSink).
+                    if !sink_failed {
+                        fresh_state = false;
+                    }
                     (f64::INFINITY, Some(kind))
                 }
                 None => return Err(error),

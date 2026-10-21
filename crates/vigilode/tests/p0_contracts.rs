@@ -1206,6 +1206,20 @@ fn banded_provider_on_the_dense_output_route_matches_the_dense_provider() {
         assert!((x - r).abs() <= 1.0e-9 * (1.0 + r.abs()), "{x} {r}");
     }
     assert!(a.stats.accepted_steps.abs_diff(b.stats.accepted_steps) <= 1);
+    // On the sequential route (dense output under `Enforce`) a band provider
+    // is assembled into the same dense matrix and factored by the same LU,
+    // so the two providers stay bit-identical (wave-2 Minor 7; review Minor 2).
+    let o = dense_opts(1.0e-8, 1.0e-10, InteriorError::Enforce);
+    let a = Rodas5p::solve(&banded, (0.0, 1.0), &y0, &o).unwrap();
+    let b = Rodas5p::solve(&dense, (0.0, 1.0), &y0, &o).unwrap();
+    assert!(a.is_success() && b.is_success());
+    assert_eq!(a.stats.route.driver_id, RODAS5P_SEQUENTIAL_DENSE_DRIVER_ID);
+    assert_eq!(b.stats.route.driver_id, RODAS5P_SEQUENTIAL_DENSE_DRIVER_ID);
+    assert_eq!(bits(&a.t), bits(&b.t));
+    for (x, y) in a.y.iter().zip(&b.y) {
+        assert_eq!(bits(x), bits(y));
+    }
+    assert_eq!(a.stats.accepted_steps, b.stats.accepted_steps);
 }
 
 #[test]

@@ -1,9 +1,14 @@
 //! Allocation contract of the fast dense driver (wave-3 node `p0-fastdense`,
 //! task brief test (g)): beyond the fast driver's own allocations, a run
-//! allocates only for the growth of its segment store (three growable
-//! vectors: times, states, stage rows), at most 3 ceil(log2(accepted + 1)).
-//! The W-filtered estimate allocates nothing per step. Allocations are
-//! counted per thread, following `rodas5p_fast_allocations.rs`.
+//! allocates at most 3 ceil(log2(accepted + 1)). That budget covers the
+//! segment store (three growable vectors: times, states, stage rows) and also
+//! absorbs a setup constant of 4-5 allocations (the store's three initial
+//! vectors, the `[t0, t1]` schedule, and the estimate's scratch under
+//! `WFilteredEnforce`); the margin measured on Robertson is 1-3. The
+//! W-filtered estimate allocates nothing per step on the in-place LU this
+//! test exercises (the faer LU, dense n > 64, allocates per solve).
+//! Allocations are counted per thread, following
+//! `rodas5p_fast_allocations.rs`.
 
 use std::alloc::{GlobalAlloc, Layout, System};
 use std::cell::Cell;

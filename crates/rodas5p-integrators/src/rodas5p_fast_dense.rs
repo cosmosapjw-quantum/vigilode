@@ -15,14 +15,26 @@
 //!   with the workspace's own factors of `W = I/(h gamma) - J0`: one
 //!   right-hand side at the midpoint and one back-solve, no Jacobian and no
 //!   factorization. The controller sees `max(embedded error, estimate)`
-//!   for acceptance and for the step proposal.
+//!   for acceptance and for the step proposal. An error in the midpoint
+//!   right-hand side or the back-solve rejects the attempt like a stage
+//!   error (the sequential route instead counts such a sample unavailable
+//!   and accepts the step); the retry reuses the state's Jacobian.
 //!
 //! The continuous extension in the `u` coordinates uses the snapshot's
 //! `H` rows directly: the sequential path's `D = H Gamma` applied to its
 //! `k` rows is `H` applied to `u = Gamma k`. The polynomial, θ and the
 //! midpoint derivative `(y_new - y_old + (d1 + d2)/4)/h` are those of
 //! `Rodas5pDenseSegment::evaluate` and `scaled_midpoint_defect`, evaluated
-//! into caller buffers (no allocation per step).
+//! into caller buffers.
+//!
+//! Allocations: setup allocates the segment store (three vectors), the
+//! output schedule and, under `WFilteredEnforce`, one `2 n` scratch buffer.
+//! Per step, on the in-place LUs (dense storage up to
+//! [`crate::RODAS5P_FAST_SMALL_LU_MAX`] rows or sparse, and the banded
+//! pipeline), nothing is allocated except the store's amortized doubling
+//! growth. On the faer LU (dense storage above that size) the back-solve
+//! allocates its solution once per sample, as the fast driver's own stage
+//! solves do there.
 
 use rodas5p_core::{
     CoreError, CoreResult, WorkCounters, rodas5p_coefficients, scaled_error_component,
@@ -256,12 +268,17 @@ fn polynomial_into(
     out: &mut [f64],
 ) {
     let n = y_old.len();
-    let complement = 1.0 - theta;
     for (c, value) in out.iter_mut().enumerate() {
-        let [d0, d1, d2] = dense_rows(dense_h, u, n, c);
-        *value = complement * y_old[c]
-            + theta * (y_new[c] + complement * (d0 + theta * (d1 + theta * d2)));
+        *value = polynomial_component(y_old[c], y_new[c], dense_rows(dense_h, u, n, c), theta);
     }
+}
+
+/// One component of the continuous extension at `theta`; the single form
+/// used by [`FastDenseSegments::evaluate_into`] and the estimate's midpoint.
+#[inline]
+fn polynomial_component(y_old: f64, y_new: f64, [d0, d1, d2]: [f64; 3], theta: f64) -> f64 {
+    let complement = 1.0 - theta;
+    complement * y_old + theta * (y_new + complement * (d0 + theta * (d1 + theta * d2)))
 }
 
 /// The step sink of the fast dense drivers.
@@ -283,8 +300,10 @@ impl DenseSink {
         };
         Ok(Self {
             control,
-            // Two steps of room: the store then doubles, so it reallocates
-            // about log2(m) times per vector.
+            // Two steps of room for the states and stage rows (the times
+            // start at 16): each vector then doubles, so it reallocates about
+            // log2(m) times. These initial allocations are setup, charged
+            // with the growth against test (g)'s 3 ceil(log2(m + 1)) budget.
             segments: FastDenseSegments::new(t0, y0, 2)?,
             interior: FastInteriorWork::default(),
             scratch,
@@ -309,9 +328,9 @@ impl DenseSink {
         let (midpoint, defect) = self.scratch.split_at_mut(n);
         // The midpoint state and u'(t_m) (M = I).
         for c in 0..n {
-            let [d0, d1, d2] = dense_rows(dense_h, &work.u, n, c);
-            midpoint[c] = 0.5 * y[c] + 0.5 * (work.y_new[c] + 0.5 * (d0 + 0.5 * (d1 + 0.5 * d2)));
-            defect[c] = (work.y_new[c] - y[c] + 0.25 * (d1 + d2)) / h;
+            let d = dense_rows(dense_h, &work.u, n, c);
+            midpoint[c] = polynomial_component(y[c], work.y_new[c], d, 0.5);
+            defect[c] = (work.y_new[c] - y[c] + 0.25 * (d[1] + d[2])) / h;
         }
         self.interior.rhs_calls += 1;
         // The flow at the midpoint, into the workspace's stage buffer (free
