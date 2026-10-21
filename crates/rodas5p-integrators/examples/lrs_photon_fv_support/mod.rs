@@ -22,6 +22,9 @@
 
 #![allow(dead_code)] // shared by several example and test binaries
 
+pub mod block_solver;
+pub mod border;
+
 use std::sync::Arc;
 
 use rodas5p_core::{CoreError, CoreResult, DenseMatrix};
@@ -444,12 +447,27 @@ impl Model {
     /// Accumulates every Jacobian entry through `add(row, col, value)` in
     /// the RHS's own order, so a column equals the JVP of a unit vector.
     #[inline(always)]
-    fn jacobian_entries(&self, t: f64, mut add: impl FnMut(usize, usize, f64)) {
+    fn jacobian_entries(&self, t: f64, add: impl FnMut(usize, usize, f64)) {
+        let (h, s, _, _) = self.drift(t);
+        self.jacobian_entries_with(t, h, s, self.gamma, add);
+    }
+
+    /// [`Self::jacobian_entries`] with the energy drift `-h - s c_j`, the
+    /// angular drift of `s` and the Thomson rate `gamma` given explicitly
+    /// (a bordered model's shear and ionization are states).
+    #[inline(always)]
+    fn jacobian_entries_with(
+        &self,
+        t: f64,
+        h: f64,
+        s: f64,
+        gamma: f64,
+        mut add: impl FnMut(usize, usize, f64),
+    ) {
         let l = &self.layout;
         let (nq, nm) = (l.nq, l.nm);
         let hi = l.hi();
         let closed = l.boundary == Boundary::Closed;
-        let (h, s, _, _) = self.drift(t);
         for j in 0..nm {
             let velocity = -h - s * l.c[j];
             for k in 0..=nq {
@@ -486,13 +504,12 @@ impl Model {
                 add(l.cell(i, k), col, coef);
             }
         }
-        if self.gamma != 0.0 {
+        if gamma != 0.0 {
             for i in 0..nq {
                 for j in 0..nm {
                     for jj in 0..nm {
                         let delta = if j == jj { 1.0 } else { 0.0 };
-                        let v =
-                            self.gamma * (l.dm[j] / 2.0 * (1.0 + 0.5 * l.p2[j] * l.p2[jj]) - delta);
+                        let v = gamma * (l.dm[j] / 2.0 * (1.0 + 0.5 * l.p2[j] * l.p2[jj]) - delta);
                         add(l.cell(i, j), l.cell(i, jj), v);
                     }
                 }
