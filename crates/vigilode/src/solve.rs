@@ -455,14 +455,21 @@ impl Rodas5p {
             callbacks: guard.callback_work(),
             stop,
             driver_message: run.observed.message,
+            terminal_event: None,
+            event_evaluations: 0,
         };
-        Ok(Solution {
+        let mut solution = Solution {
             t,
             y,
             stats,
             status,
+            events: Vec::new(),
             extension: run.segments,
-        })
+        };
+        let (evaluations, terminal) = crate::events::locate(&mut solution, &problem.events);
+        solution.stats.event_evaluations = evaluations;
+        solution.stats.terminal_event = terminal;
+        Ok(solution)
     }
 }
 
@@ -607,6 +614,12 @@ fn validate(
                  verifies the declaration takes a scalar absolute tolerance",
             );
         }
+    }
+    if !problem.events.is_empty() && !opts.dense_output {
+        return unsupported(
+            "events without dense output: events are located on the continuous extension of \
+             the accepted steps",
+        );
     }
     if problem.autonomous && problem.time_derivative.is_some() {
         return invalid("an autonomous problem cannot have a time derivative".into());
