@@ -2,7 +2,9 @@
 //!
 //! Checks: the run succeeds; total mass y0 + y1 + y2 is conserved to 1e-12; and
 //! y(40) matches the published reference (y0 = 0.7158270687, y1 = 9.185535e-6,
-//! y2 = 0.2841637457) within the tolerance, which a modelling error would break.
+//! y2 = 0.2841637457) to a relative error of 1e-4 in every component. The
+//! tolerance is per component and relative, so it also guards y1 ~ 1e-5, which
+//! an absolute tolerance of that size would not (the run is within ~1e-6).
 
 use vigilode::{Atol, CallbackError, Jacobian, Options, Problem, Rodas5p};
 
@@ -44,10 +46,10 @@ fn main() -> Result<(), vigilode::SolveError> {
     assert!(drift < 1e-12, "mass drift {drift:e} exceeds 1e-12");
     let reference = [0.7158270687, 9.185535e-6, 0.2841637457];
     for (i, r) in reference.iter().enumerate() {
-        let err = (y[i] - r).abs();
+        let rel = (y[i] - r).abs() / r.abs();
         assert!(
-            err <= 1e-5 + 1e-3 * r.abs(),
-            "y[{i}] = {} vs reference {r}",
+            rel <= 1e-4,
+            "y[{i}] = {} vs reference {r}: relative error {rel:e}",
             y[i]
         );
     }

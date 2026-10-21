@@ -20,7 +20,7 @@ use rodas5p_integrators::{
 };
 
 use crate::{
-    error::SolveError,
+    error::{SolveError, Unsupported},
     fd::{Guard, band_groups, banded_fd_fill, dense_fd_jacobian, dense_from_band},
     options::{Atol, InteriorError, Options, Tier},
     problem::{Jacobian, Problem},
@@ -613,7 +613,7 @@ fn validate(
     opts: &Options,
 ) -> Result<AtolSpec, SolveError> {
     let invalid = |m: String| Err(SolveError::InvalidInput(m));
-    let unsupported = |m: &str| Err(SolveError::Unsupported(m.into()));
+    let unsupported = |u: Unsupported| Err(SolveError::Unsupported(u));
     let n = problem.dimension;
     if n == 0 {
         return invalid("the problem dimension must be positive".into());
@@ -674,45 +674,26 @@ fn validate(
     let dense_or_mass = problem.mass.is_some() || opts.dense_output;
     let sequential = sequential_route(problem, opts);
     if dense_or_mass && matches!(problem.jacobian, Jacobian::Jvp(_)) {
-        return unsupported(
-            "a mass matrix or dense output on a JVP-only problem: the protected sequential \
-             dense driver needs an explicit or finite-difference Jacobian (the step's stage \
-             matrix M - h gamma J)",
-        );
+        return unsupported(Unsupported::JvpWithMassOrDenseOutput);
     }
     if dense_or_mass && matches!(problem.jacobian, Jacobian::Dense(_)) && problem.band.is_some() {
-        return unsupported(
-            "a declared band on a dense Jacobian with a mass matrix or dense output: only the \
-             router verifies such a declaration, and the sequential dense driver would ignore it",
-        );
+        return unsupported(Unsupported::DeclaredBandOnDenseWithMassOrDenseOutput);
     }
     if matches!(atol, AtolSpec::Vector(_)) {
         // Only the dense and banded fast drivers take a per-component
         // absolute tolerance; the facade never substitutes a scalar.
         if sequential {
-            return unsupported(
-                "a vector atol with a mass matrix or interior_error = Enforce: the \
-                 sequential dense driver takes a scalar absolute tolerance",
-            );
+            return unsupported(Unsupported::VectorAtolOnSequentialRoute);
         }
         if matches!(problem.jacobian, Jacobian::Jvp(_)) {
-            return unsupported(
-                "a vector atol on a JVP-only problem: the matrix-free driver's Krylov \
-                 weights take a scalar absolute tolerance",
-            );
+            return unsupported(Unsupported::VectorAtolOnMatrixFreeRoute);
         }
         if matches!(problem.jacobian, Jacobian::Dense(_)) && problem.band.is_some() {
-            return unsupported(
-                "a vector atol on a dense Jacobian with a declared band: the router that \
-                 verifies the declaration takes a scalar absolute tolerance",
-            );
+            return unsupported(Unsupported::VectorAtolWithDeclaredBandOnDense);
         }
     }
     if !problem.events.is_empty() && !opts.dense_output {
-        return unsupported(
-            "events without dense output: events are located on the continuous extension of \
-             the accepted steps",
-        );
+        return unsupported(Unsupported::EventsWithoutDenseOutput);
     }
     if problem.autonomous && problem.time_derivative.is_some() {
         return invalid("an autonomous problem cannot have a time derivative".into());
@@ -741,7 +722,7 @@ fn validate(
             }
         }
         Jacobian::Jvp(_) if problem.band.is_some() => {
-            return unsupported("a band declaration on a JVP-only problem");
+            return unsupported(Unsupported::BandDeclarationOnJvpProblem);
         }
         _ => {}
     }

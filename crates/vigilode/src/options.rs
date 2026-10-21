@@ -35,6 +35,7 @@ pub enum Atol {
 /// The tier of the production contract (plan §3) a run is executed under.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
+#[non_exhaustive]
 pub enum Tier {
     /// P0: only the protected RODAS5P drivers run.
     #[default]
@@ -55,6 +56,7 @@ pub enum Tier {
 /// [`crate::Solution::at`] may evaluate the continuous extension anywhere.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
+#[non_exhaustive]
 pub enum InteriorError {
     /// The W-filtered estimate `(M - h gamma J0)^{-1} (h/2) d(1/2)` with the
     /// step's own stage matrix; the controller sees

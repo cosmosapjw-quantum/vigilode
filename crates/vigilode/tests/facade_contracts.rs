@@ -20,6 +20,7 @@ use rodas5p_integrators::{
 use vigilode::{
     Atol, Callback, CallbackError, DriverWork, FailureReason, InteriorError, Jacobian,
     JacobianRecord, Options, Problem, Rodas5p, STATS_SCHEMA, Solution, SolveError, Status, Tier,
+    Unsupported,
 };
 
 // ---------------------------------------------------------------- helpers
@@ -645,8 +646,8 @@ fn unsupported_requests_are_refused_not_substituted() {
         &ROBERTSON_Y0,
         opts,
     ) {
-        Err(SolveError::Unsupported(_)) => {}
-        other => panic!("expected Unsupported, got {other:?}"),
+        Err(SolveError::Unsupported(Unsupported::BandDeclarationOnJvpProblem)) => {}
+        other => panic!("expected BandDeclarationOnJvpProblem, got {other:?}"),
     };
     // A vector atol is accepted on the fast routes since node p0-atol; its
     // refusals are in `vector_atol_refused_on_mf_sequential_and_declared_band`.
@@ -1221,14 +1222,14 @@ fn vector_atol_refused_on_mf_sequential_and_declared_band() {
         atol: Atol::Vector(vec![1.0e-10; n]),
         ..Options::default()
     };
-    let refuse = |problem: &Problem, opts: &Options| match Rodas5p::solve(
+    let refuse = |problem: &Problem, opts: &Options, expected: Unsupported| match Rodas5p::solve(
         problem,
         ROBERTSON_SPAN,
         &ROBERTSON_Y0,
         opts,
     ) {
-        Err(SolveError::Unsupported(m)) => assert!(m.contains("vector atol"), "{m}"),
-        other => panic!("expected Unsupported, got {other:?}"),
+        Err(SolveError::Unsupported(u)) => assert_eq!(u, expected),
+        other => panic!("expected Unsupported({expected:?}), got {other:?}"),
     };
     // Matrix-free route.
     refuse(
@@ -1237,6 +1238,7 @@ fn vector_atol_refused_on_mf_sequential_and_declared_band() {
             Ok(())
         })),
         &vector(3),
+        Unsupported::VectorAtolOnMatrixFreeRoute,
     );
     // Sequential route: dense output under `Enforce`, and a mass matrix.
     let dense = robertson(Jacobian::dense(robertson_jac));
@@ -1247,6 +1249,7 @@ fn vector_atol_refused_on_mf_sequential_and_declared_band() {
             interior_error: InteriorError::Enforce,
             ..vector(3)
         },
+        Unsupported::VectorAtolOnSequentialRoute,
     );
     // Wave-3 p0-fastdense (ruling R-C2): dense output without a mass matrix
     // runs the fast dense driver, which takes the vector.
@@ -1272,11 +1275,13 @@ fn vector_atol_refused_on_mf_sequential_and_declared_band() {
             0.0, 0.0, 1.0,
         ]),
         &vector(3),
+        Unsupported::VectorAtolOnSequentialRoute,
     );
     // Dense Jacobian with a declared band (the router verifies it).
     refuse(
         &robertson(Jacobian::dense(robertson_jac)).banded(2, 2),
         &vector(3),
+        Unsupported::VectorAtolWithDeclaredBandOnDense,
     );
     // An invalid vector is InvalidInput, not Unsupported.
     for bad in [

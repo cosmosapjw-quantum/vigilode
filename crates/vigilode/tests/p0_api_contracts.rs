@@ -5,8 +5,8 @@
 //! Robertson run's `Stats` committed from the tip before the change.
 
 use vigilode::{
-    Atol, CallbackError, Direction, InteriorError, Jacobian, Options, Problem, Rodas5p,
-    SolveError, Unsupported,
+    Atol, CallbackError, Direction, InteriorError, Jacobian, Options, Problem, Rodas5p, SolveError,
+    Unsupported,
 };
 
 const SPAN: (f64, f64) = (0.0, 40.0);
@@ -78,12 +78,12 @@ fn jvp_with_mass_or_dense_output() {
     assert!(
         matches!(
             e,
-            SolveError::Unsupported(Unsupported::JvpWithMassOrDenseOutput { .. })
+            SolveError::Unsupported(Unsupported::JvpWithMassOrDenseOutput)
         ),
         "{e:?}"
     );
     let m = refusal(&jvp().mass(MASS.to_vec()), &Options::default());
-    assert!(matches!(m, Unsupported::JvpWithMassOrDenseOutput { .. }));
+    assert!(matches!(m, Unsupported::JvpWithMassOrDenseOutput));
 }
 
 #[test]
@@ -92,7 +92,7 @@ fn declared_band_on_dense_with_mass_or_dense_output() {
     assert!(
         matches!(
             e,
-            SolveError::Unsupported(Unsupported::DeclaredBandOnDenseWithMassOrDenseOutput { .. })
+            SolveError::Unsupported(Unsupported::DeclaredBandOnDenseWithMassOrDenseOutput)
         ),
         "{e:?}"
     );
@@ -109,12 +109,12 @@ fn vector_atol_on_sequential_route() {
     assert!(
         matches!(
             e,
-            SolveError::Unsupported(Unsupported::VectorAtolOnSequentialRoute { .. })
+            SolveError::Unsupported(Unsupported::VectorAtolOnSequentialRoute)
         ),
         "{e:?}"
     );
     let m = refusal(&dense().mass(MASS.to_vec()), &vector());
-    assert!(matches!(m, Unsupported::VectorAtolOnSequentialRoute { .. }));
+    assert!(matches!(m, Unsupported::VectorAtolOnSequentialRoute));
 }
 
 #[test]
@@ -123,7 +123,7 @@ fn vector_atol_on_matrix_free_route() {
     assert!(
         matches!(
             e,
-            SolveError::Unsupported(Unsupported::VectorAtolOnMatrixFreeRoute { .. })
+            SolveError::Unsupported(Unsupported::VectorAtolOnMatrixFreeRoute)
         ),
         "{e:?}"
     );
@@ -135,7 +135,7 @@ fn vector_atol_with_declared_band_on_dense() {
     assert!(
         matches!(
             e,
-            SolveError::Unsupported(Unsupported::VectorAtolWithDeclaredBandOnDense { .. })
+            SolveError::Unsupported(Unsupported::VectorAtolWithDeclaredBandOnDense)
         ),
         "{e:?}"
     );
@@ -148,7 +148,7 @@ fn events_without_dense_output() {
     assert!(
         matches!(
             e,
-            SolveError::Unsupported(Unsupported::EventsWithoutDenseOutput { .. })
+            SolveError::Unsupported(Unsupported::EventsWithoutDenseOutput)
         ),
         "{e:?}"
     );
@@ -160,7 +160,7 @@ fn band_declaration_on_jvp_problem() {
     assert!(
         matches!(
             e,
-            SolveError::Unsupported(Unsupported::BandDeclarationOnJvpProblem { .. })
+            SolveError::Unsupported(Unsupported::BandDeclarationOnJvpProblem)
         ),
         "{e:?}"
     );

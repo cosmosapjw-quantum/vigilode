@@ -114,7 +114,21 @@
 //!
 //! ## Stability
 //!
-//! The decision text is recorded when the implementation lands (node p0-api).
+//! Decision (wave-3 node p0-api): the facade's public enums and its output
+//! structs are `#[non_exhaustive]`, so a later release can add a variant (a
+//! new [`FailureReason`], [`DriverWork`] or [`Unsupported`] case) or a
+//! recorded field without a breaking change. Matches on these enums outside
+//! the crate need a wildcard arm, and the output structs
+//! ([`Stats`], [`Solution`], [`RouteRecord`], [`StopRecord`],
+//! [`CallbackWork`], [`FiniteDifferenceWork`], [`KrylovStartRecord`],
+//! [`EventRecord`]) are read, never built by struct literal. The input
+//! structs [`Options`] and [`Atol`] stay exhaustive on purpose:
+//! `Options { dense_output: true, ..Options::default() }` is the supported
+//! way to build options. Every refusal is a typed [`Unsupported`] variant
+//! whose `Display` is the message, so a caller can match on the cause
+//! instead of the text. The `Stats` JSON schema is versioned separately by
+//! [`STATS_SCHEMA`].
+//!
 //!
 //! An exhaustive `match` on a [`FailureReason`] outside this crate does not
 //! compile:
@@ -145,7 +159,7 @@ mod problem;
 mod solution;
 mod solve;
 
-pub use error::{CallbackError, SolveError};
+pub use error::{CallbackError, SolveError, Unsupported};
 pub use events::{Direction, EventRecord};
 pub use options::{Atol, InteriorError, Options, Tier};
 pub use problem::{

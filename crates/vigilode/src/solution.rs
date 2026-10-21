@@ -30,6 +30,7 @@ pub const STATS_SCHEMA: &str = "vigilode.stats.v3";
 /// Which user callback reported an error.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "kebab-case")]
+#[non_exhaustive]
 pub enum Callback {
     /// The right-hand side (including its calls inside finite differences).
     Rhs,
@@ -44,6 +45,7 @@ pub enum Callback {
 /// Why a run stopped before `t1`.
 #[derive(Clone, Debug, PartialEq, Serialize)]
 #[serde(rename_all = "kebab-case", tag = "kind")]
+#[non_exhaustive]
 pub enum FailureReason {
     /// The attempt budget [`Options::max_steps`] was used up.
     MaxStepsReached {
@@ -137,6 +139,7 @@ impl fmt::Display for FailureReason {
 /// embedded error *estimate*; it is not a certificate of the global error.
 #[derive(Clone, Debug, PartialEq, Serialize)]
 #[serde(rename_all = "kebab-case", tag = "status")]
+#[non_exhaustive]
 pub enum Status {
     /// The run reached `t1`.
     Success,
@@ -147,6 +150,7 @@ pub enum Status {
 /// The Jacobian provider a run used.
 #[derive(Clone, Debug, PartialEq, Serialize)]
 #[serde(rename_all = "kebab-case", tag = "kind")]
+#[non_exhaustive]
 pub enum JacobianRecord {
     /// A user dense Jacobian.
     Dense,
@@ -189,6 +193,7 @@ pub const FD_INCREMENT_RULE: &str = "sqrt(eps)*max(|y_j|,1), represented as (y_j
 
 /// Work of the finite-difference Jacobian (zero for user Jacobians).
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize)]
+#[non_exhaustive]
 pub struct FiniteDifferenceWork {
     /// Jacobian (or band) builds attempted.
     pub jacobian_builds: u64,
@@ -199,6 +204,7 @@ pub struct FiniteDifferenceWork {
 
 /// What the facade observed of the user callbacks.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize)]
+#[non_exhaustive]
 pub struct CallbackWork {
     /// Callbacks that returned [`crate::CallbackError::Recoverable`].
     pub recoverable_errors: u64,
@@ -217,6 +223,7 @@ pub struct CallbackWork {
 /// Krylov start counts of a matrix-free run (the driver's opt-in SP04
 /// start telemetry, copied field by field).
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize)]
+#[non_exhaustive]
 pub struct KrylovStartRecord {
     /// Stage solves started from zero.
     pub zero_starts: u64,
@@ -237,6 +244,7 @@ pub struct KrylovStartRecord {
 #[allow(clippy::large_enum_variant)]
 #[derive(Clone, Debug, PartialEq, Serialize)]
 #[serde(rename_all = "kebab-case", tag = "driver")]
+#[non_exhaustive]
 pub enum DriverWork {
     /// The dense fast driver (`Rodas5pFastResult`).
     Dense {
@@ -324,6 +332,7 @@ pub enum DriverWork {
 
 /// Where and why a run stopped before `t1`, as the driver reported it.
 #[derive(Clone, Debug, PartialEq, Serialize)]
+#[non_exhaustive]
 pub struct StopRecord {
     /// The last accepted time (`t0` when no step was accepted); the last
     /// entry of [`Solution::t`].
@@ -336,6 +345,7 @@ pub struct StopRecord {
 
 /// Which driver ran and why.
 #[derive(Clone, Debug, Serialize)]
+#[non_exhaustive]
 pub struct RouteRecord {
     /// The public entry point of `rodas5p-integrators` the facade called.
     pub entry_point: &'static str,
@@ -348,12 +358,16 @@ pub struct RouteRecord {
 /// The full record of a run: every option and every work counter, so that a
 /// run is reproducible from its record alone. Serializes with serde.
 #[derive(Clone, Debug, Serialize)]
+#[non_exhaustive]
 pub struct Stats {
     /// [`STATS_SCHEMA`].
     pub schema: &'static str,
     /// The options as given.
     pub options: Options,
-    /// The effective controller configuration passed to the driver.
+    /// The effective controller configuration passed to the driver. With a
+    /// vector [`crate::Atol`] its scalar `atol` is only the largest entry
+    /// (a uniform vector therefore records the scalar run's value); the
+    /// per-component values the drivers used are in `options.atol`.
     pub adaptive: AdaptiveStepConfig,
     /// The linear configuration of the matrix-free route, when it ran.
     pub matrix_free_linear: Option<LinearSolverConfig>,
@@ -418,6 +432,7 @@ pub struct Stats {
 /// [`Status::Failed`] and the outputs it reached; use
 /// [`Solution::ensure_success`] to turn it into an error.
 #[derive(Clone, Debug, Serialize)]
+#[non_exhaustive]
 pub struct Solution {
     /// Output times. Without [`crate::Options::dense_output`]: `t0` and
     /// `t1`, or `t0` and the last accepted time for a failed run. With it:

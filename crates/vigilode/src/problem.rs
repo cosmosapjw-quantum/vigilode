@@ -33,6 +33,7 @@ pub type TimeDerivativeFn =
 
 /// How the solver obtains the Jacobian `df/dy`.
 #[derive(Clone, Default)]
+#[non_exhaustive]
 pub enum Jacobian {
     /// A dense Jacobian callback; see [`DenseJacobianFn`].
     Dense(DenseJacobianFn),

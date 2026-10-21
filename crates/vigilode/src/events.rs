@@ -18,6 +18,7 @@ use crate::solution::{FailureReason, Solution, Status};
 /// The sign change of an event function that counts as an event.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "kebab-case")]
+#[non_exhaustive]
 pub enum Direction {
     /// `g` goes from negative to nonnegative.
     Up,
@@ -30,6 +31,7 @@ pub enum Direction {
 
 /// One located event.
 #[derive(Clone, Debug, PartialEq, Serialize)]
+#[non_exhaustive]
 pub struct EventRecord {
     /// The event's declaration order among the events of the problem.
     pub index: usize,
