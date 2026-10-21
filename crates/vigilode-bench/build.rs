@@ -3,6 +3,10 @@
 //! `native/SHA256SUMS`.
 use std::{env, path::PathBuf, process::Command};
 
+#[allow(dead_code)]
+#[path = "src/source_identity.rs"]
+mod source_identity;
+
 const FFLAGS_F77: &[&str] = &["-O3", "-fPIC", "-std=legacy", "-fallow-argument-mismatch"];
 const FFLAGS_F90: &[&str] = &["-O3", "-fPIC"];
 const CFLAGS: &[&str] = &["-O3", "-fPIC", "-std=c11", "-Wall"];
@@ -41,7 +45,61 @@ fn main() {
     let root = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap());
     let native = root.join("native");
     let out = PathBuf::from(env::var("OUT_DIR").unwrap());
-    println!("cargo:rerun-if-changed=native");
+    let repository = root.parent().unwrap().parent().unwrap();
+    let manifest = source_identity::snapshot(repository).expect("source identity snapshot failed");
+    // Watch directories as well as files, so added/deleted sources invalidate Cargo's build.
+    for input in [
+        "crates",
+        "fixtures",
+        "Cargo.toml",
+        "Cargo.lock",
+        "rust-toolchain.toml",
+        ".cargo",
+    ] {
+        println!(
+            "cargo:rerun-if-changed={}",
+            repository.join(input).display()
+        );
+    }
+    for line in manifest.lines().skip(1) {
+        println!(
+            "cargo:rerun-if-changed={}",
+            repository.join(&line[66..]).display()
+        );
+    }
+    std::fs::write(out.join("source_manifest.txt"), &manifest).unwrap();
+    let context = source_identity::git_context(repository);
+    println!(
+        "cargo:rustc-env=BENCH_BUILD_GIT_COMMIT={}",
+        context
+            .as_ref()
+            .map(|c| c.0.as_str())
+            .unwrap_or("unavailable")
+    );
+    println!(
+        "cargo:rustc-env=BENCH_BUILD_GIT_DIRTY={}",
+        context
+            .as_ref()
+            .map(|c| if c.1.is_empty() { "false" } else { "true" })
+            .unwrap_or("unknown")
+    );
+    for variable in ["RUSTFLAGS", "CARGO_ENCODED_RUSTFLAGS", "LIBRARY_PATH"] {
+        println!("cargo:rerun-if-env-changed={variable}");
+    }
+
+    for variable in [
+        "TARGET",
+        "PROFILE",
+        "OPT_LEVEL",
+        "DEBUG",
+        "CARGO_CFG_TARGET_FEATURE",
+        "CARGO_ENCODED_RUSTFLAGS",
+    ] {
+        let value = env::var(variable)
+            .unwrap_or_default()
+            .replace(['\n', '\r', '\u{1f}'], " ");
+        println!("cargo:rustc-env=BENCH_BUILD_{variable}={value}");
+    }
 
     let mut check = Command::new("sha256sum");
     check
@@ -171,4 +229,5 @@ fn main() {
         "cargo:rustc-env=BENCH_RODAS_LOCALIZED={}",
         localized.join(",")
     );
+    source_identity::verify(repository, &manifest).expect("source changed during native build");
 }

@@ -11,8 +11,8 @@ pub struct PacketCurveOutput {
     curve: RepresentedPacketCurve,
 }
 
-/// Owns one represented curve and a copied, immutable initial mode tube.
-/// A query can only use the uncertainty supplied at construction.
+/// Owns one represented curve and a copied, immutable initial tube.
+/// A query can only use the component disks or weighted ball supplied at construction.
 ///
 /// ```compile_fail
 /// use rodas5p_integrators::packet_window::PacketFrozenOutput;
@@ -21,6 +21,7 @@ pub struct PacketCurveOutput {
 pub struct PacketFrozenOutput {
     output: PacketCurveOutput,
     initial_radii: Vec<f64>,
+    initial_weighted_radius: Option<f64>,
 }
 
 /// Immutable enclosure returned only from a frozen local packet owner.
@@ -30,10 +31,6 @@ pub struct PacketFrozenOutput {
 /// ```compile_fail
 /// use rodas5p_integrators::packet_window::PacketCertifiedView;
 /// fn alter(view: &mut PacketCertifiedView<'_>) { view.inner = panic!(); }
-/// ```
-/// ```compile_fail
-/// use rodas5p_integrators::packet_window::PacketCertifiedView;
-/// fn alter(view: &mut PacketCertifiedView<'_>) { view.weighted_center_displacement = 0.0; }
 /// ```
 pub struct PacketCertifiedView<'a> {
     inner: PacketCurveOutputView<'a>,
@@ -62,14 +59,47 @@ impl PacketCertifiedView<'_> {
     pub fn weighted_radius(&self) -> f64 {
         self.inner.weighted_radius()
     }
-    /// Same-query outward weighted displacement from the exact represented
-    /// curve to the returned binary64 mode centers.
+    /// Weighted ball about the returned binary64 centers, including their
+    /// evaluation displacement. Present only for a weighted-ball owner.
+    pub fn centered_weighted_radius(&self) -> Option<f64> {
+        self.inner.centered_weighted_radius()
+    }
+    /// Same-query outward weighted displacement from the represented curve
+    /// to the returned binary64 centers.
     pub fn weighted_center_displacement(&self) -> f64 {
         self.inner.weighted_center_displacement()
     }
 }
 
 impl PacketFrozenOutput {
+    /// Replace only this owner's continuous residual bound by a tighter
+    /// outward Bernstein enclosure. The frozen curve and initial tube remain
+    /// owned here; query again and apply the unchanged physical output gate.
+    pub fn with_bernstein_residual_bound(
+        self,
+        threshold: f64,
+        max_depth: usize,
+        work: &mut PacketWorkCounters,
+    ) -> Result<(Self, super::PacketResidualRefinement), PacketError> {
+        let (curve, report) = self
+            .output
+            .curve
+            .with_bernstein_residual_bound(threshold, max_depth, work)?;
+        Ok((
+            Self {
+                output: PacketCurveOutput::new(curve),
+                initial_radii: self.initial_radii,
+                initial_weighted_radius: self.initial_weighted_radius,
+            },
+            report,
+        ))
+    }
+
+    /// The current valid weighted continuous residual upper bound.
+    pub fn residual_sup_upper(&self) -> f64 {
+        self.output.curve.residual_bound.weighted_residual_sup.hi
+    }
+
     /// Copy the caller's uncertainty into the owner. The represented curve
     /// already owns its source model, coefficients, horizon, and residual.
     pub fn new(
@@ -101,6 +131,33 @@ impl PacketFrozenOutput {
         Ok(Self {
             output: PacketCurveOutput::new(curve),
             initial_radii: frozen,
+            initial_weighted_radius: None,
+        })
+    }
+
+    /// Freeze a weighted-ball initial tube without expanding it into mode
+    /// disks. For `r = initial_radius`, the admitted initial states satisfy
+    /// `sum_j w_j |a_j(0) - Y_j(0)|^2 <= r^2`.
+    ///
+    /// This copies one scalar and allocates no tube buffer. The returned view's
+    /// `centered_weighted_radius` includes evaluation displacement and can be
+    /// carried into another frozen weighted owner. The base `weighted_radius`
+    /// does not include that displacement.
+    pub fn from_weighted_radius(
+        curve: RepresentedPacketCurve,
+        initial_radius: f64,
+        work: &mut PacketWorkCounters,
+    ) -> Result<Self, PacketError> {
+        if !initial_radius.is_finite() || initial_radius < 0.0 {
+            return Err(PacketError::OutwardRefusal(
+                "frozen weighted output initial radius",
+            ));
+        }
+        work.curve_frozen_radius_items += 1;
+        Ok(Self {
+            output: PacketCurveOutput::new(curve),
+            initial_radii: Vec::new(),
+            initial_weighted_radius: Some(initial_radius),
         })
     }
 
@@ -119,9 +176,14 @@ impl PacketFrozenOutput {
         work: &mut PacketWorkCounters,
     ) -> Result<PacketCertifiedView<'a>, PacketError> {
         work.curve_frozen_query_attempts += 1;
-        let result = self
-            .output
-            .enclose_at(time, &self.initial_radii, workspace, work);
+        let result = match self.initial_weighted_radius {
+            Some(radius) => self
+                .output
+                .enclose_at_weighted(time, radius, workspace, work),
+            None => self
+                .output
+                .enclose_at(time, &self.initial_radii, workspace, work),
+        };
         if result.is_err() {
             work.curve_frozen_query_refusals += 1;
         }
@@ -137,6 +199,7 @@ pub struct PacketCurveOutputWorkspace {
     mean_center: (f64, f64),
     mean_radius: f64,
     weighted_radius: f64,
+    centered_weighted_radius: Option<f64>,
     weighted_center_displacement: f64,
     time: f64,
 }
@@ -152,10 +215,6 @@ pub struct PacketCurveOutputWorkspace {
 /// use rodas5p_integrators::packet_window::PacketCurveOutputView;
 /// fn replace(view: &mut PacketCurveOutputView<'_>) { view.modes = &[]; }
 /// ```
-/// ```compile_fail
-/// use rodas5p_integrators::packet_window::PacketCurveOutputView;
-/// fn alter(view: &mut PacketCurveOutputView<'_>) { view.weighted_center_displacement = 0.0; }
-/// ```
 pub struct PacketCurveOutputView<'a> {
     time: f64,
     modes: &'a [(f64, f64)],
@@ -163,6 +222,7 @@ pub struct PacketCurveOutputView<'a> {
     mean: (f64, f64),
     mean_radius: f64,
     weighted_radius: f64,
+    centered_weighted_radius: Option<f64>,
     weighted_center_displacement: f64,
     _curve: &'a PacketCurveOutput,
 }
@@ -190,8 +250,13 @@ impl PacketCurveOutputView<'_> {
     pub fn weighted_radius(&self) -> f64 {
         self.weighted_radius
     }
-    /// Same-query outward weighted displacement from the exact represented
-    /// curve to the returned binary64 mode centers.
+    /// Weighted radius around returned binary64 centers. Present for the
+    /// weighted-ball entry point, including evaluation displacement.
+    pub fn centered_weighted_radius(&self) -> Option<f64> {
+        self.centered_weighted_radius
+    }
+    /// Same-query outward weighted displacement from the represented curve
+    /// to the returned binary64 centers.
     pub fn weighted_center_displacement(&self) -> f64 {
         self.weighted_center_displacement
     }
@@ -223,6 +288,7 @@ impl PacketCurveOutput {
             mean_center: (0.0, 0.0),
             mean_radius: 0.0,
             weighted_radius: 0.0,
+            centered_weighted_radius: None,
             weighted_center_displacement: 0.0,
             time: 0.0,
         })
@@ -287,6 +353,76 @@ impl PacketCurveOutput {
             work,
             "represented output initial error",
         )?;
+        self.enclose_prepared(time, s, energy, e0, false, workspace, work)
+    }
+
+    /// Enclose a true initial condition in a weighted ball about the frozen
+    /// center: sum_j w_j |a_j(0)-Y_j(0)|^2 <= initial_radius^2.
+    /// The returned centered weighted radius is suitable for a subsequent
+    /// window without converting the ball to N independent component disks.
+    pub fn enclose_at_weighted<'a>(
+        &'a self,
+        time: f64,
+        initial_radius: f64,
+        workspace: &'a mut PacketCurveOutputWorkspace,
+        work: &mut PacketWorkCounters,
+    ) -> Result<PacketCurveOutputView<'a>, PacketError> {
+        let model = &self.curve.source_identity.model;
+        let n = model.num_modes();
+        if !initial_radius.is_finite()
+            || initial_radius < 0.0
+            || !time.is_finite()
+            || time < 0.0
+            || time > self.curve.horizon()
+            || workspace.centers.len() != n
+            || workspace.boxes.len() != n
+            || workspace.radii.len() != n
+        {
+            return Err(PacketError::OutwardRefusal(
+                "represented weighted output input",
+            ));
+        }
+        let mut s = 0.0;
+        let mut center_energy = 0.0;
+        for (j, &w) in model.weights().iter().enumerate() {
+            s = add(s, w, work, "represented weighted output weight sum")?;
+            let z = model.initial_amplitudes()[j];
+            let re2 = mul(z.0, z.0, work, "represented weighted output energy")?;
+            let im2 = mul(z.1, z.1, work, "represented weighted output energy")?;
+            let square = add(re2, im2, work, "represented weighted output energy")?;
+            let weighted = mul(w, square, work, "represented weighted output energy")?;
+            center_energy = add(
+                center_energy,
+                weighted,
+                work,
+                "represented weighted output energy",
+            )?;
+        }
+        let center_norm = sqrt_upper(center_energy, work, "represented weighted output energy")?;
+        let norm = add(
+            center_norm,
+            initial_radius,
+            work,
+            "represented weighted output energy",
+        )?;
+        let energy = mul(norm, norm, work, "represented weighted output energy")?;
+        self.enclose_prepared(time, s, energy, initial_radius, true, workspace, work)
+    }
+
+    // Keep the four scalar proof premises explicit at the two call sites.
+    #[allow(clippy::too_many_arguments)]
+    fn enclose_prepared<'a>(
+        &'a self,
+        time: f64,
+        s: f64,
+        energy: f64,
+        e0: f64,
+        weighted_carry: bool,
+        workspace: &'a mut PacketCurveOutputWorkspace,
+        work: &mut PacketWorkCounters,
+    ) -> Result<PacketCurveOutputView<'a>, PacketError> {
+        let model = &self.curve.source_identity.model;
+        let weights = model.weights();
         let m_y = self.curve.residual_bound.mean_magnitude_sup.hi;
         let rho = self.curve.residual_bound.weighted_residual_sup.hi;
         let se = mul(s, energy, work, "represented output gain")?;
@@ -308,10 +444,10 @@ impl PacketCurveOutput {
             .evaluate_modes_at_into(time, &mut workspace.centers, work)?;
         self.curve
             .enclose_modes_at_into(time, &mut workspace.boxes, work)?;
-        let mut weighted_displacement_square = 0.0;
-        for j in 0..n {
+        let mut evaluation_square = 0.0;
+        for (j, &weight) in weights.iter().enumerate() {
             work.curve_output_certificate_ops += 1; // sqrt_down
-            let denominator = sqrt_down(weights[j])
+            let denominator = sqrt_down(weight)
                 .map_err(|_| PacketError::OutwardRefusal("represented output weight root"))?;
             if denominator <= 0.0 {
                 return Err(PacketError::OutwardRefusal(
@@ -326,30 +462,17 @@ impl PacketCurveOutput {
             )?;
             let delta = displacement(workspace.centers[j], workspace.boxes[j], work)?;
             workspace.radii[j] = add(flow, delta, work, "represented output mode radius")?;
-            let delta_square = mul(
-                delta,
-                delta,
-                work,
-                "represented output weighted displacement",
-            )?;
-            let weighted_delta = mul(
-                weights[j],
-                delta_square,
-                work,
-                "represented output weighted displacement",
-            )?;
-            weighted_displacement_square = add(
-                weighted_displacement_square,
-                weighted_delta,
-                work,
-                "represented output weighted displacement",
-            )?;
+            {
+                let square = mul(delta, delta, work, "represented weighted evaluation")?;
+                let term = mul(weights[j], square, work, "represented weighted evaluation")?;
+                evaluation_square = add(
+                    evaluation_square,
+                    term,
+                    work,
+                    "represented weighted evaluation",
+                )?;
+            }
         }
-        let weighted_center_displacement = sqrt_upper(
-            weighted_displacement_square,
-            work,
-            "represented output weighted displacement",
-        )?;
 
         let mut mean = (0.0, 0.0);
         for (j, &(re, im)) in workspace.centers.iter().enumerate() {
@@ -397,10 +520,21 @@ impl PacketCurveOutput {
             work,
             "represented output mean radius",
         )?;
+        let evaluation = sqrt_upper(evaluation_square, work, "represented weighted evaluation")?;
+        workspace.weighted_center_displacement = evaluation;
+        workspace.centered_weighted_radius = if weighted_carry {
+            Some(add(
+                weighted_radius,
+                evaluation,
+                work,
+                "represented weighted radius",
+            )?)
+        } else {
+            None
+        };
         workspace.mean_center = mean;
         workspace.mean_radius = mean_radius;
         workspace.weighted_radius = weighted_radius;
-        workspace.weighted_center_displacement = weighted_center_displacement;
         workspace.time = time;
         Ok(PacketCurveOutputView {
             time: workspace.time,
@@ -409,6 +543,7 @@ impl PacketCurveOutput {
             mean: workspace.mean_center,
             mean_radius: workspace.mean_radius,
             weighted_radius: workspace.weighted_radius,
+            centered_weighted_radius: workspace.centered_weighted_radius,
             weighted_center_displacement: workspace.weighted_center_displacement,
             _curve: self,
         })

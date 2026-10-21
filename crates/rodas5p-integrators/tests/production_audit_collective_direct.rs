@@ -130,7 +130,7 @@ fn woodbury_solve_matches_dense_frozen_stage_and_residual_witness() {
         let mut out = vec![0.0; dim];
         let mut work = CollectiveDirectWork::default();
         let factors = CollectiveStageFactors::factorize(&m, &y, s, &mut work).unwrap();
-        let det = factors.schur_determinant_enclosure();
+        let det = factors.schur_determinant_enclosure().unwrap();
         assert!(
             det[1] < 0.0 || det[0] > 0.0,
             "N={n} Schur determinant enclosure contains zero: {det:?}"
@@ -166,18 +166,21 @@ fn woodbury_solve_matches_dense_frozen_stage_and_residual_witness() {
 }
 
 #[test]
-fn refuses_when_wb2_inverse_witness_is_unavailable() {
+fn schur_inverse_witness_extends_unavailable_wb2_domain() {
     let m = model(2, 1e6);
     let mut y = vec![0.0; 4];
     m.initial_state(&mut y).unwrap();
     let mut work = CollectiveDirectWork::default();
-    let result = CollectiveStageFactors::factorize(&m, &y, 1.0, &mut work);
-    assert!(
-        result
-            .unwrap_err()
-            .to_string()
-            .contains("WB2 inverse bound unavailable")
-    );
+    let factors = CollectiveStageFactors::factorize(&m, &y, 1.0, &mut work).unwrap();
+    let rhs = [0.1, -0.2, 0.3, 0.15];
+    let mut out = [0.0; 4];
+    factors.solve_into(&rhs, &mut out, &mut work).unwrap();
+    let witness = factors
+        .residual_witness(&m, &y, &rhs, &out, &mut work)
+        .unwrap();
+    assert!(witness.inverse_norm_upper.is_finite());
+    assert!(witness.solution_error_upper.is_finite());
+    assert_eq!(work.inverse_certificate_ops, 48);
 }
 
 #[test]

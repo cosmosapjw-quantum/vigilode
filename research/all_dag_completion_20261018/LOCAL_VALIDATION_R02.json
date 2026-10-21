@@ -1,0 +1,335 @@
+{
+  "schema_version": 1,
+  "kind": "append_only_current_source_local_validation_supplement",
+  "revision": "R02",
+  "repository": "https://github.com/cosmosapjw-quantum/vigilode.git",
+  "requested_branch": "research/all-dag-completion-20261018",
+  "checked_out_branch": "research/all-dag-local-validation-20261018",
+  "source_identity": {
+    "commit": "dfc96b54e1f157d9998e7422dc4a58b86b66e983",
+    "tree": "2b36c4cc1a4f6c4ac4fb9bc7ae1832d0ee19f8c2",
+    "remote_branch_head": "dfc96b54e1f157d9998e7422dc4a58b86b66e983",
+    "Cargo_lock_sha256": "04c7d6c147bf19ebb1a627463705d9dcf27337a3ff228dd1169f19eb73c71400",
+    "source_manifest_sha256": "5a461ee10fc178e188631e242705d992978d68292d4a10f0ee3f856854cea916",
+    "source_files": 414,
+    "dag_sha256": "38f2d5c2a5ba44dcf93120bbd0c9a1c98937d20767f74065a5e2372003c68063",
+    "source_and_dag_unchanged_during_run": true,
+    "diff_from_prior_local_test_source": {
+      "base_commit": "33e45625be0803771156704263c3b1c1f92d2b40",
+      "paths": "crates/, tools/, Cargo.lock",
+      "changed_files": []
+    }
+  },
+  "environment": {
+    "rustc": "rustc 1.94.1 (e408947bf 2026-03-25)",
+    "cargo": "cargo 1.94.1 (29ea6fb6a 2026-03-24)",
+    "python": "3.12.3",
+    "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.39",
+    "machine": "x86_64",
+    "cpu_model": "AMD Ryzen 9 5900X 12-Core Processor",
+    "logical_cpus": 24,
+    "dependencies": "--locked --offline"
+  },
+  "local_tasks": [
+    {
+      "id": "LOCAL-01",
+      "status": "PASS",
+      "command": [
+        "python3",
+        "tools/validate_all_dag_completion.py"
+      ],
+      "exit_code": 0,
+      "result": "12 original nodes and 414 source entries match"
+    },
+    {
+      "id": "LOCAL-02",
+      "status": "PASS",
+      "command": [
+        "python3",
+        "tools/validate_all_dag_completion.py",
+        "--execute",
+        "--output",
+        "research/all_dag_completion_20261018/local_validation_02"
+      ],
+      "exit_code": 0,
+      "groups": [
+        {
+          "id": "core_contracts",
+          "argv": [
+            "cargo",
+            "test",
+            "--locked",
+            "--offline",
+            "-p",
+            "rodas5p-core",
+            "--test",
+            "leja_enclosed_contract",
+            "--test",
+            "guarded_polynomial_router",
+            "--",
+            "--test-threads=1"
+          ],
+          "exit_code": 0,
+          "wall_seconds": 3.7024836959317327,
+          "log": "core_contracts.log",
+          "log_sha256": "7f4221f834a4f32693e0f4ba7ef9734f9cfd7548dd74520092545d6aab0c24c1"
+        },
+        {
+          "id": "integrator_contracts",
+          "argv": [
+            "cargo",
+            "test",
+            "--locked",
+            "--offline",
+            "-p",
+            "rodas5p-integrators",
+            "--test",
+            "all_dag_a01_packet",
+            "--test",
+            "production_audit_packet_adaptive",
+            "--test",
+            "production_audit_packet_verified",
+            "--test",
+            "production_audit_damped_packet",
+            "--test",
+            "all_dag_a05_verified",
+            "--test",
+            "all_dag_a06_direct",
+            "--test",
+            "collective_rodas5p_allocation_contract",
+            "--test",
+            "nonlinear_homotopy_contracts",
+            "--test",
+            "actual_k_homotopy_contracts",
+            "--test",
+            "all_dag_a10_bernstein",
+            "--test",
+            "all_dag_a11_verified",
+            "--",
+            "--nocapture",
+            "--test-threads=1"
+          ],
+          "exit_code": 0,
+          "wall_seconds": 71.90253681200556,
+          "log": "integrator_contracts.log",
+          "log_sha256": "41ddece9c7ba157b88026a0d4b5e46ff2041c80ad0d084470f1a388c3dd7bbd1"
+        },
+        {
+          "id": "homotopy_unit",
+          "argv": [
+            "cargo",
+            "test",
+            "--locked",
+            "--offline",
+            "-p",
+            "rodas5p-integrators",
+            "--lib",
+            "nonlinear_homotopy::tests"
+          ],
+          "exit_code": 0,
+          "wall_seconds": 0.75014464603737,
+          "log": "homotopy_unit.log",
+          "log_sha256": "bc316dee6405a4c95daa58080fa2bc3a394c05e6bd86605b17d32dc0fc007268"
+        },
+        {
+          "id": "leja_token_doc",
+          "argv": [
+            "cargo",
+            "test",
+            "--locked",
+            "--offline",
+            "-p",
+            "rodas5p-core",
+            "--doc",
+            "AdmittedLejaFused"
+          ],
+          "exit_code": 0,
+          "wall_seconds": 3.5881273599807173,
+          "log": "leja_token_doc.log",
+          "log_sha256": "9ad31dd1032e81619bc4afeccce0dbeba8ea69698434a266e62e6c8ba664147c"
+        },
+        {
+          "id": "polynomial_token_doc",
+          "argv": [
+            "cargo",
+            "test",
+            "--locked",
+            "--offline",
+            "-p",
+            "rodas5p-core",
+            "--doc",
+            "GuardedPolynomialAction"
+          ],
+          "exit_code": 0,
+          "wall_seconds": 1.2965577900176868,
+          "log": "polynomial_token_doc.log",
+          "log_sha256": "9e057a4fd118fa3bfb76315c10ffa343f8754c8accfde513f08591d981e46dfe"
+        },
+        {
+          "id": "tool_contracts",
+          "argv": [
+            "/usr/bin/python3",
+            "-m",
+            "unittest",
+            "discover",
+            "-s",
+            "tools/tests",
+            "-p",
+            "test_all_dag_*.py",
+            "-v"
+          ],
+          "exit_code": 0,
+          "wall_seconds": 0.365104369004257,
+          "log": "tool_contracts.log",
+          "log_sha256": "793937b5324be9d4aa9f26a49e4a0898f0088cef1274c2324d3c737587a65c6b"
+        }
+      ]
+    },
+    {
+      "id": "LOCAL-03",
+      "status": "PASS",
+      "command": [
+        "cargo",
+        "run",
+        "--locked",
+        "--offline",
+        "--profile",
+        "measurement",
+        "-p",
+        "rodas5p-integrators",
+        "--example",
+        "nonlinear_homotopy_run"
+      ],
+      "exit_code": 0,
+      "stdout_sha256": "96b49a5af4c23b717612274df58d83b5022296146b7e52dc8386f4b9ce406d85",
+      "stderr_sha256": "6598272cf0af23cf470a6b3f81eee897e825e88adeeba43e2382e1269cd944a1",
+      "outcome": "CERTIFIED_REQUESTED_ENDPOINTS; 8 requested endpoints; max weighted radius 1.8976595905312864e-9; tolerance 1e-5; no speed comparison"
+    },
+    {
+      "id": "LOCAL-04",
+      "status": "PASS_DIAGNOSTIC_ONLY_REUSED",
+      "record": "local_timing_01/VALIDATED.json",
+      "rows": 450,
+      "rerun": false,
+      "reason": "unchanged crates/tools/Cargo.lock inputs; avoid repeating historical campaign",
+      "speed_promotion": "HOLD"
+    },
+    {
+      "id": "LOCAL-05",
+      "status": "PASS_WITH_R02_APPEND_ONLY_SUPPLEMENT",
+      "historical_record": "LOCAL_COMPLETION.json",
+      "current_supplement": "LOCAL_VALIDATION_R02.json"
+    }
+  ],
+  "original_nodes": [
+    {
+      "id": "A01",
+      "title": "Certified undamped packet window",
+      "depends_on": [],
+      "status": "IMPLEMENTED_SCOPED_VALIDATION_COMPLETE"
+    },
+    {
+      "id": "A02",
+      "title": "Weighted global trajectory",
+      "depends_on": [
+        "A01"
+      ],
+      "status": "IMPLEMENTED_SCOPED_VALIDATION_COMPLETE"
+    },
+    {
+      "id": "A03",
+      "title": "Native common-damping packet",
+      "depends_on": [
+        "A01"
+      ],
+      "status": "IMPLEMENTED_SCOPED_VALIDATION_COMPLETE"
+    },
+    {
+      "id": "A04",
+      "title": "Leja full arithmetic authority",
+      "depends_on": [],
+      "status": "IMPLEMENTED_SCOPED_VALIDATION_COMPLETE"
+    },
+    {
+      "id": "A05",
+      "title": "Generic dense-output residual controller",
+      "depends_on": [],
+      "status": "IMPLEMENTED_SCOPED_VALIDATION_COMPLETE"
+    },
+    {
+      "id": "A06",
+      "title": "Strong rank-two direct baseline",
+      "depends_on": [],
+      "status": "IMPLEMENTED_SCOPED_VALIDATION_COMPLETE"
+    },
+    {
+      "id": "A07",
+      "title": "Comparable benchmark and generated report",
+      "depends_on": [],
+      "status": "IMPLEMENTED_SCOPED_VALIDATION_COMPLETE"
+    },
+    {
+      "id": "A08",
+      "title": "Polynomial route choice",
+      "depends_on": [
+        "A04",
+        "A07"
+      ],
+      "status": "IMPLEMENTED_SCOPED_VALIDATION_COMPLETE"
+    },
+    {
+      "id": "A09",
+      "title": "Homotopy parallel target preservation",
+      "depends_on": [
+        "A04",
+        "A07"
+      ],
+      "status": "IMPLEMENTED_SCOPED_VALIDATION_COMPLETE"
+    },
+    {
+      "id": "A10",
+      "title": "Adaptive Bernstein enclosure",
+      "depends_on": [
+        "A01"
+      ],
+      "status": "IMPLEMENTED_SCOPED_VALIDATION_COMPLETE"
+    },
+    {
+      "id": "A11",
+      "title": "EX01 full Jacobian symmetric-part bound",
+      "depends_on": [],
+      "status": "IMPLEMENTED_SCOPED_VALIDATION_COMPLETE"
+    },
+    {
+      "id": "A12",
+      "title": "Scoped production decision",
+      "depends_on": [],
+      "status": "IMPLEMENTED_SCOPED_VALIDATION_COMPLETE"
+    }
+  ],
+  "scope_decision": {
+    "scoped_node_statuses": "preserved from canonical DAG; no node status broadened",
+    "broad_production": "HOLD",
+    "general_solver_accuracy": "HOLD",
+    "matched_accuracy_speed": "HOLD",
+    "timing_authority": "DIAGNOSTIC_ONLY",
+    "full_run_zero_allocation": "NOT_CLAIMED"
+  },
+  "stopping_analysis": {
+    "previous_stop": "LOCAL-02 execution and client smoke were completed but not linked into current receipt/manifest before final response",
+    "cause": "bounded action completion was mistaken for DAG/closeout completion; no post-result state refresh and no receipt-manifest closure",
+    "policy": "CONTINUATION_POLICY_KO.md",
+    "resolution": "append-only current-source receipt, evidence delta, and continuation policy added; no original DAG, prior receipt, source, or failed record overwritten"
+  },
+  "closeout": {
+    "no_ready_or_running_original_nodes": true,
+    "no_ready_or_running_effective_local_tasks": true,
+    "effective_local_task_state": "LOCAL_TASK_STATE_R02.json",
+    "original_handoff_preserved": true,
+    "all_local_task_dependencies_satisfied": true,
+    "no_pending_source_execution": true,
+    "publication": "append-only evidence and continuation policy only; original source, DAG, and prior receipts unchanged"
+  },
+  "evidence_directory": "local_validation_02/",
+  "branch_observation_scope": "receipt_generation_before_publication_checkout"
+}

@@ -31,6 +31,23 @@ pub struct ProblemSpec {
     pub banded: bool,
 }
 
+/// Predeclared, opt-in independent empirical reference tier. Both implementations
+/// must complete every refinement level. Old corpora omit this object.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct IndependentReferenceSpec {
+    /// Must be `radau5_cvode_refinement_v1`.
+    pub tier: String,
+    /// Strictly decreasing relative tolerances, coarse to fine.
+    pub rtols: Vec<f64>,
+    /// Strictly decreasing multipliers of each problem's reference_atol.
+    pub atol_factors: Vec<f64>,
+    /// Cross-family agreement threshold in the common error metric.
+    pub agreement_threshold: f64,
+    /// Within-family adjacent-refinement threshold in the same metric.
+    pub refinement_threshold: f64,
+}
+
 /// How the reference solution is obtained and checked.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -50,6 +67,9 @@ pub struct ReferenceSpec {
     pub dispute_threshold: f64,
     /// Further arms run at the reference tolerance; agreement recorded only.
     pub informational_arms: Vec<Arm>,
+    /// Opt-in independent tier; absent preserves the historical reference policy.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub independent_protocol: Option<IndependentReferenceSpec>,
 }
 
 /// The corpus.
@@ -123,10 +143,45 @@ impl Corpus {
         {
             return Err("tolerances must be finite and positive".into());
         }
-        if self.reference.crosscheck_rtols.is_empty() {
-            return Err("at least one cross-check tolerance is required".into());
+        crate::reference_policy::validate_reference_policy(
+            self.reference.rtol,
+            &self.reference.crosscheck_rtols,
+            self.reference.max_steps,
+            self.reference.dispute_threshold,
+            self.reference.arm.implementation_family(),
+            self.reference.crosscheck_arm.implementation_family(),
+        )?;
+        if let Some(protocol) = &self.reference.independent_protocol {
+            crate::reference_policy::validate_independent_policy(
+                &protocol.tier,
+                &protocol.rtols,
+                &protocol.atol_factors,
+                protocol.agreement_threshold,
+                protocol.refinement_threshold,
+            )?;
+            if self.reference.arm != Arm::Radau5
+                || self.reference.crosscheck_arm != Arm::CvodeBdfDense
+                || self.reference.rtol != *protocol.rtols.last().unwrap()
+                || self.reference.crosscheck_rtols != vec![self.reference.rtol]
+                || self.reference.dispute_threshold != protocol.agreement_threshold
+                || !self.reference.informational_arms.is_empty()
+                || self.error_rtol != 1.0
+            {
+                return Err("independent tier requires finest RADAU5 baseline, CVODE decisive check, matching finest/threshold legacy fields, no informational arms, and error_rtol = 1".into());
+            }
         }
+        if self.problems.is_empty() || self.arms.is_empty() || self.error_levels.is_empty() {
+            return Err("at least one problem, solver arm and error level are required".into());
+        }
+        let unique_arms: std::collections::BTreeSet<_> = self.arms.iter().collect();
+        if unique_arms.len() != self.arms.len() {
+            return Err("solver arms must be unique".into());
+        }
+        let mut ids = std::collections::BTreeSet::new();
         for p in &self.problems {
+            if p.id.is_empty() || !ids.insert(&p.id) {
+                return Err("problem ids must be nonempty and unique".into());
+            }
             p.model()?;
             if p.atol_scale.len() != p.n {
                 return Err(format!(
@@ -147,6 +202,33 @@ impl Corpus {
                     "{}: t_end and reference_atol must be positive",
                     p.id
                 ));
+            }
+            if self.rtols.iter().any(|&r| !pos(p.atol_scalar(r)))
+                || p.atol_vector(self.error_rtol).iter().any(|&a| !pos(a))
+            {
+                return Err(format!(
+                    "{}: tolerance scaling overflowed or underflowed",
+                    p.id
+                ));
+            }
+            if self
+                .reference
+                .independent_protocol
+                .as_ref()
+                .is_some_and(|protocol| {
+                    protocol
+                        .atol_factors
+                        .iter()
+                        .any(|&factor| !pos(p.reference_atol * factor))
+                })
+            {
+                return Err(format!(
+                    "{}: independent reference atol scaling overflowed or underflowed",
+                    p.id
+                ));
+            }
+            if self.arms_for(p).is_empty() {
+                return Err(format!("{}: no compatible measured arm", p.id));
             }
         }
         Ok(())

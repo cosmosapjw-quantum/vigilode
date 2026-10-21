@@ -17,8 +17,8 @@
 //!   factorization. The controller sees `max(embedded error, estimate)`
 //!   for acceptance and for the step proposal. An error in the midpoint
 //!   right-hand side or the back-solve rejects the attempt like a stage
-//!   error (the sequential route instead counts such a sample unavailable
-//!   and accepts the step); the retry reuses the state's Jacobian.
+//!   error, as does the sequential route under an enforcing mode; the retry
+//!   reuses the state's Jacobian.
 //!
 //! The continuous extension in the `u` coordinates uses the snapshot's
 //! `H` rows directly: the sequential path's `D = H Gamma` applied to its

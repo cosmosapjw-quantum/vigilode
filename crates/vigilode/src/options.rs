@@ -66,13 +66,13 @@ pub enum InteriorError {
     /// a scalar linear mode with constant defect). On the fast dense route an
     /// error in the estimate's midpoint right-hand side or back-solve (for
     /// example a [`crate::CallbackError::Recoverable`]) rejects the attempt
-    /// like a stage error; on the sequential route (a mass matrix) such a
-    /// sample is counted unavailable and the step is accepted.
+    /// like a stage error. The sequential route (a mass matrix) applies the
+    /// same rejection rule and records `estimate_failures`.
     #[default]
     WFilteredEnforce,
     /// The shift-`h/2` filtered estimate (one Jacobian and one LU per step);
-    /// a step whose estimate exceeds one tolerance unit is rejected. Runs the
-    /// sequential dense driver.
+    /// a step whose estimate exceeds one tolerance unit, or whose estimate
+    /// fails recoverably, is rejected. Runs the sequential dense driver.
     Enforce,
     /// No interior estimate: only the endpoint is error controlled, and the
     /// interior of a step may exceed the tolerance by orders of magnitude on

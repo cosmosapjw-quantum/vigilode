@@ -1,0 +1,31 @@
+{
+  "schema": "vigilode.production-reaudit.independent-o35-review.v1",
+  "reviewer": "benchmark_audit",
+  "author_of_reviewed_changes": false,
+  "decision": "NO_BLOCKING_SOURCE_FINDING",
+  "native_tests_executed_by_reviewer": 0,
+  "reviewed_invariants": [
+    "output_committed_only_on_monitor_accept",
+    "progress_retained_before_error_propagation",
+    "failed_pc_does_not_count_column_operator",
+    "attempted_minus_successful_compensation_nonnegative_in_private_lagged_monitor",
+    "operator_work_equals_column_products_plus_residual_products",
+    "early_initial_residual_return_does_not_reuse_stale_progress",
+    "nonmonitored_arithmetic_order_unchanged"
+  ],
+  "limitations": [
+    "u64 counters assumed nonoverflowing as in existing WorkCounters",
+    "private monitor must remain free of unrelated operator counter writes",
+    "native test execution attributed to author logs separately"
+  ],
+  "findings": [],
+  "reviewed_source_sha256": {
+    "crates/rodas5p-krylov/src/gmres_into.rs": "87d0ffccfb3ae0281494a51be1bef3b9c0627cbcc322c2df8afba3a06e9dc561",
+    "crates/rodas5p-krylov/src/workspace.rs": "c7d6e2850f9c8259912038a2199237a61cde42b757fa08f7b8de120e80135bdb",
+    "crates/rodas5p-krylov/src/lib.rs": "c347308b356abed768cb8261c9ed96ca3136049a488f4cc5fdf9f4c1547d06ec",
+    "crates/rodas5p-integrators/src/rodas5p_lagged.rs": "bf2fdeccb970616d03445e0b5ea02c9039bd1023ecfe9262ce87e5860d65c75e",
+    "crates/rodas5p-core/src/operator.rs": "4754aa9bfa28cd01f0b98b5aa27b9e79025d610b270821140c2cdbc771656e3d",
+    "crates/rodas5p-krylov/tests/reaudit_monitored_progress.rs": "dbbf0b74be4df7912d23db563f53d68c6c8a8b03fe11899cefc1820e4ebab3be",
+    "crates/rodas5p-integrators/tests/reaudit_lagged_failure_work.rs": "24f1c52e58829b0aecd1f93cd326a8baab5d4efaa493f0fab4a7e4c67895faee"
+  }
+}

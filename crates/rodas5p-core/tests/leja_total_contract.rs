@@ -663,8 +663,8 @@ fn test_a04_subnormal_domain_keeps_total_authority_on_hold() {
     match report.total_error() {
         TotalErrorStatus::EstimateOnly { reason, .. } => {
             assert!(reason.contains("LEJA_ARITHMETIC_HOLD"));
-            assert!(reason.contains("independent review"));
-            assert!(reason.contains("coefficient-tail premises"));
+            assert!(reason.contains("legacy candidate API retains EstimateOnly"));
+            assert!(reason.contains("explicit scoped enclosed API"));
         }
         TotalErrorStatus::Certified { .. } => {
             panic!("Leja must not issue total certificate authority")
@@ -833,4 +833,49 @@ fn test_vg3_work_preservation_on_all_error_paths() {
     assert_eq!(work_flushed.poly_block_products, cap as u64);
     assert_eq!(work_flushed.poly_vector_products, cap as u64);
     assert_eq!(work_flushed.poly_coefficient_setups, 1);
+}
+
+#[test]
+fn cloud_scoped_enclosed_warm_call_is_allocation_free() {
+    use rodas5p_core::leja_action::leja_phi_action_enclosed_with_workspace;
+    let op = test_operator(4, 811);
+    let vector = splitmix(812, 4);
+    let input = JointPhiInput::SameVector {
+        vector: &vector,
+        scales: [1.0; JOINT_PHI_TERMS],
+    };
+    let mut cache = CertifiedLejaCoeffCache::new();
+    let mut workspace = CertifiedLejaWorkspace::new(4, 1);
+    let mut work = WorkCounters::default();
+    leja_phi_action_enclosed_with_workspace(
+        &op,
+        0.1,
+        input,
+        1e-8,
+        32,
+        Some(&mut cache),
+        &mut work,
+        &mut workspace,
+        None,
+    )
+    .unwrap();
+    let (result, allocations) = track_allocations(|| {
+        leja_phi_action_enclosed_with_workspace(
+            &op,
+            0.1,
+            input,
+            1e-8,
+            32,
+            Some(&mut cache),
+            &mut work,
+            &mut workspace,
+            None,
+        )
+    });
+    let report = result.unwrap();
+    assert!(matches!(
+        report.total_error(),
+        TotalErrorStatus::Certified { .. }
+    ));
+    assert_eq!(allocations, 0);
 }

@@ -703,15 +703,25 @@ pub(crate) struct OutputCollector {
     states: Vec<Vec<f64>>,
     clipped_steps: usize,
     max_step: StepCap,
+    // Contract-tested staging for the pending generic verified-output driver.
+    // The sealed PR101 route currently owns its own transaction buffers.
+    #[cfg_attr(not(test), allow(dead_code))]
     prepared_centers: Vec<Vec<f64>>,
+    #[cfg_attr(not(test), allow(dead_code))]
     prepared_radii: Vec<Vec<f64>>,
+    #[cfg_attr(not(test), allow(dead_code))]
     prepared_times: Vec<f64>,
+    #[cfg_attr(not(test), allow(dead_code))]
     prepared_count: usize,
+    #[cfg_attr(not(test), allow(dead_code))]
     radii: Vec<Vec<f64>>,
+    #[cfg_attr(not(test), allow(dead_code))]
     prepared_valid: bool,
     verified_mode: bool,
 }
 
+// Used by the contract-tested generic staging API below; integration pending.
+#[cfg_attr(not(test), allow(dead_code))]
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub(crate) struct DenseOutputPreparationWork {
     pub(crate) requests_attempted: u64,
@@ -763,6 +773,7 @@ impl OutputCollector {
 
     /// Enable the isolated, preallocated verified-output transaction path.
     /// Ordinary integrators retain the original append-only collector cost.
+    #[cfg_attr(not(test), allow(dead_code))]
     pub(crate) fn with_verified_radii(mut self, initial_radius: &[f64]) -> CoreResult<Self> {
         if self.verified_mode
             || self.prepared_valid
@@ -1032,6 +1043,7 @@ impl OutputCollector {
     /// The committed output prefix is unchanged on every error. The callback
     /// fills preallocated rows; work counters include a request before either
     /// callback is invoked, including one that refuses.
+    #[cfg_attr(not(test), allow(dead_code))]
     pub(crate) fn prepare_dense_interval_with_radii<C, R>(
         &mut self,
         t_old: f64,
@@ -1067,6 +1079,7 @@ impl OutputCollector {
         result
     }
 
+    #[cfg_attr(not(test), allow(dead_code))]
     fn prepare_dense_interval_inner<C, R>(
         &mut self,
         t_old: f64,
@@ -1159,6 +1172,7 @@ impl OutputCollector {
 
     /// Commit the last successful preparation. No allocation or callback is
     /// performed here, so this is safe as the final operation of a transaction.
+    #[cfg_attr(not(test), allow(dead_code))]
     pub(crate) fn commit_prepared_dense_interval(&mut self) {
         if !self.verified_mode || !self.prepared_valid {
             return;
@@ -1173,10 +1187,12 @@ impl OutputCollector {
         self.prepared_valid = false;
     }
 
+    #[cfg_attr(not(test), allow(dead_code))]
     pub(crate) fn prepared_dense_radii(&self) -> &[Vec<f64>] {
         &self.prepared_radii[..self.prepared_count]
     }
 
+    #[cfg_attr(not(test), allow(dead_code))]
     pub(crate) fn committed_output_radii(&self) -> &[Vec<f64>] {
         if self.verified_mode {
             &self.radii[..self.next_index]

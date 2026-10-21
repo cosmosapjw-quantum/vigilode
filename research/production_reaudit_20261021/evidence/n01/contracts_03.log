@@ -1,0 +1,31 @@
+warning: variant `EndpointAdmission` is never constructed
+    --> crates/rodas5p-integrators/src/packet_trajectory.rs:1445:5
+     |
+1443 | enum VerifiedTrialFault {
+     |      ------------------ variant in this enum
+1444 |     BeforeQuery(usize),
+1445 |     EndpointAdmission,
+     |     ^^^^^^^^^^^^^^^^^
+     |
+     = note: `VerifiedTrialFault` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rodas5p-integrators` (lib) generated 1 warning
+   Compiling vigilode v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode/crates/vigilode)
+    Finished `test` profile [unoptimized] target(s) in 3.41s
+     Running tests/capabilities_contracts.rs (/workspace/scratch/0dc1e721cf82/runtime/final-target/debug/deps/capabilities_contracts-8a25daf89e90ac9f)
+
+running 1 test
+test query_matches_solve_for_all_384_well_formed_combinations_without_callbacks ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/records_contracts.rs (/workspace/scratch/0dc1e721cf82/runtime/final-target/debug/deps/records_contracts-acb81490b3221cfe)
+
+running 3 tests
+test every_enum_variant_preserves_its_wire_representation ... ok
+test every_record_preserves_all_nonzero_fields_and_json_order ... ok
+test dense_event_stats_match_the_pre_mirror_snapshot ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

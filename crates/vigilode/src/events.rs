@@ -65,8 +65,20 @@ struct Crossing {
     up: bool,
 }
 
-/// The event function could not be evaluated to a finite value.
-struct NonFinite;
+/// Distinguish a user event failure from failure of its state provider.
+enum EventFailure {
+    NonFinite,
+    Interpolation { t: f64 },
+}
+
+impl EventFailure {
+    fn reason(self) -> FailureReason {
+        match self {
+            Self::NonFinite => FailureReason::EventFunctionNonFinite,
+            Self::Interpolation { t } => FailureReason::EventInterpolationFailed { t },
+        }
+    }
+}
 
 struct Evaluator<'a> {
     solution: &'a Solution,
@@ -75,14 +87,21 @@ struct Evaluator<'a> {
 }
 
 impl Evaluator<'_> {
-    fn at_state(&mut self, t: f64, y: &[f64]) -> Result<f64, NonFinite> {
+    fn at_state(&mut self, t: f64, y: &[f64]) -> Result<f64, EventFailure> {
         self.evaluations += 1;
         let g = (self.spec.g)(t, y);
-        if g.is_finite() { Ok(g) } else { Err(NonFinite) }
+        if g.is_finite() {
+            Ok(g)
+        } else {
+            Err(EventFailure::NonFinite)
+        }
     }
 
-    fn at_time(&mut self, t: f64) -> Result<f64, NonFinite> {
-        let y = self.solution.at(t).ok_or(NonFinite)?;
+    fn at_time(&mut self, t: f64) -> Result<f64, EventFailure> {
+        let y = self
+            .solution
+            .at(t)
+            .ok_or(EventFailure::Interpolation { t })?;
         self.at_state(t, &y)
     }
 }
@@ -94,7 +113,7 @@ fn illinois(
     sign: f64,
     (mut a, mut ha): (f64, f64),
     (mut b, mut hb): (f64, f64),
-) -> Result<f64, NonFinite> {
+) -> Result<f64, EventFailure> {
     if hb == 0.0 {
         return Ok(b);
     }
@@ -158,19 +177,22 @@ fn scan_step(
     yb: &[f64],
     out: &mut Vec<Crossing>,
     index: usize,
-) -> Result<f64, NonFinite> {
+) -> Result<f64, EventFailure> {
     let gb = ev.at_state(tb, yb)?;
     let tm = ta + 0.5 * (tb - ta);
-    let mut halves: Vec<(f64, f64, f64, f64)> = Vec::with_capacity(2);
-    if tm > ta && tm < tb {
+    // At most two halves: stack storage removes one heap allocation per
+    // event per accepted step without changing sample or root order.
+    let mut halves = [(ta, ga, tb, gb); 2];
+    let count = if tm > ta && tm < tb {
         let gm = ev.at_time(tm)?;
-        halves.push((ta, ga, tm, gm));
-        halves.push((tm, gm, tb, gb));
+        halves[0] = (ta, ga, tm, gm);
+        halves[1] = (tm, gm, tb, gb);
+        2
     } else {
-        halves.push((ta, ga, tb, gb));
-    }
+        1
+    };
     let want = ev.spec.direction;
-    for (a, ga, b, gb) in halves {
+    for &(a, ga, b, gb) in &halves[..count] {
         let up = ga < 0.0 && gb >= 0.0;
         let down = ga > 0.0 && gb <= 0.0;
         let (sign, is_up) = match (up, down, want) {
@@ -193,7 +215,16 @@ fn scan_step(
 /// Returns the number of event-function evaluations and the index (into the
 /// recorded events) of the terminal event.
 pub(crate) fn locate(solution: &mut Solution, specs: &[EventSpec]) -> (u64, Option<usize>) {
-    if specs.is_empty() || solution.extension.is_none() || solution.t.is_empty() {
+    if specs.is_empty() {
+        return (0, None);
+    }
+    if solution.extension.is_none() || solution.t.is_empty() {
+        let t = solution
+            .t
+            .first()
+            .copied()
+            .unwrap_or(solution.stats.t_span.0);
+        fail_event(solution, 0, EventFailure::Interpolation { t });
         return (0, None);
     }
     let mut evaluations = 0u64;
@@ -210,8 +241,8 @@ pub(crate) fn locate(solution: &mut Solution, specs: &[EventSpec]) -> (u64, Opti
         evaluations += ev.evaluations;
         match g0 {
             Ok(g) => previous.push(g),
-            Err(NonFinite) => {
-                fail_non_finite(solution, 0);
+            Err(error) => {
+                fail_event(solution, 0, error);
                 return (evaluations, None);
             }
         }
@@ -219,10 +250,12 @@ pub(crate) fn locate(solution: &mut Solution, specs: &[EventSpec]) -> (u64, Opti
 
     let mut terminal: Option<usize> = None;
     let mut failed = false;
+    let mut crossings: Vec<Crossing> = Vec::new();
+    let mut next = Vec::with_capacity(specs.len());
     'steps: for k in 0..steps {
         let (ta, tb) = (solution.t[k], solution.t[k + 1]);
-        let mut crossings: Vec<Crossing> = Vec::new();
-        let mut next = Vec::with_capacity(specs.len());
+        crossings.clear();
+        next.clear();
         for (index, spec) in specs.iter().enumerate() {
             let mut ev = Evaluator {
                 solution,
@@ -240,27 +273,34 @@ pub(crate) fn locate(solution: &mut Solution, specs: &[EventSpec]) -> (u64, Opti
             evaluations += ev.evaluations;
             match result {
                 Ok(g) => next.push(g),
-                Err(NonFinite) => {
+                Err(error) => {
                     // Events of earlier steps stay; this step's are dropped.
-                    fail_non_finite(solution, k);
+                    fail_event(solution, k, error);
                     failed = true;
                     break 'steps;
                 }
             }
         }
-        previous = next;
+        std::mem::swap(&mut previous, &mut next);
         crossings.sort_by(|p, q| p.t.total_cmp(&q.t).then(p.index.cmp(&q.index)));
         let cut = crossings
             .iter()
             .find(|c| specs[c.index].terminal)
             .map(|c| c.t);
-        for c in crossings {
+        let step_begin = found.len();
+        for c in crossings.drain(..) {
             if cut.is_some_and(|tc| c.t > tc) {
                 continue;
             }
-            let y = solution
-                .at(c.t)
-                .unwrap_or_else(|| solution.y[k + 1].clone());
+            let Some(y) = solution.at(c.t) else {
+                // Never attach an endpoint state to a different event time.
+                // Roll back the whole step, just like a failed event call.
+                found.truncate(step_begin);
+                terminal = None;
+                fail_event(solution, k, EventFailure::Interpolation { t: c.t });
+                failed = true;
+                break 'steps;
+            };
             let is_terminal = terminal.is_none() && specs[c.index].terminal && Some(c.t) == cut;
             found.push((c, y));
             if is_terminal {
@@ -293,13 +333,76 @@ pub(crate) fn locate(solution: &mut Solution, specs: &[EventSpec]) -> (u64, Opti
     (evaluations, terminal)
 }
 
-/// A non-finite `g` on step `k`: truncate at the step's start and fail with
-/// `EventFunctionNonFinite`, unless the driver had already failed.
-fn fail_non_finite(solution: &mut Solution, k: usize) {
-    let start = solution.t[k];
-    solution.truncate_after(start);
-    // A driver failure that already happened keeps its own reason.
+/// A failed event evaluation on step `k`: truncate at its start, keeping
+/// any existing driver failure reason. Missing interpolation is a solver
+/// state failure, not a user event returning NaN/Inf.
+fn fail_event(solution: &mut Solution, k: usize, error: EventFailure) {
+    if let Some(&start) = solution.t.get(k) {
+        solution.truncate_after(start);
+    }
     if !matches!(solution.status, Status::Failed(_)) {
-        solution.status = Status::Failed(FailureReason::EventFunctionNonFinite);
+        solution.status = Status::Failed(error.reason());
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{CallbackError, Options, Problem, Rodas5p};
+
+    fn solved() -> Solution {
+        let p = Problem::new(1, |_t, y, dy| {
+            dy[0] = -y[0];
+            Ok::<(), CallbackError>(())
+        })
+        .autonomous();
+        Rodas5p::solve(
+            &p,
+            (0.0, 1.0),
+            &[1.0],
+            &Options {
+                dense_output: true,
+                ..Options::default()
+            },
+        )
+        .unwrap()
+    }
+
+    fn event() -> EventSpec {
+        EventSpec {
+            g: Arc::new(|t, _y| t - 0.5),
+            direction: Direction::Up,
+            terminal: false,
+        }
+    }
+
+    #[test]
+    fn missing_extension_is_an_explicit_failure_without_calling_event() {
+        let mut solution = solved();
+        solution.extension = None;
+        let (calls, terminal) = locate(&mut solution, &[event()]);
+        assert_eq!((calls, terminal), (0, None));
+        assert_eq!(
+            solution.status,
+            Status::Failed(FailureReason::EventInterpolationFailed { t: 0.0 })
+        );
+        assert_eq!(solution.t, vec![0.0]);
+        assert!(solution.events.is_empty());
+    }
+
+    #[test]
+    fn missing_interior_does_not_implicate_the_event_callback() {
+        let mut solution = solved();
+        let expected_time = 0.5 * solution.t[1];
+        solution.extension = Some(crate::solution::Extension::Sequential(Vec::new()));
+        let (calls, terminal) = locate(&mut solution, &[event()]);
+        // The finite endpoint callbacks ran, but no midpoint callback did.
+        assert_eq!((calls, terminal), (2, None));
+        assert_eq!(
+            solution.status,
+            Status::Failed(FailureReason::EventInterpolationFailed { t: expected_time })
+        );
+        assert_eq!(solution.t, vec![0.0]);
+        assert!(solution.events.is_empty());
     }
 }

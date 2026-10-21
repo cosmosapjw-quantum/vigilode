@@ -1,0 +1,22 @@
+    Blocking waiting for file lock on artifact directory
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 34.48s
+     Running tests/guarded_polynomial_router.rs (/workspace/scratch/0dc1e721cf82/runtime/all-dag-target/debug/deps/guarded_polynomial_router-4ffc54a78d1fa975)
+
+running 1 test
+test identical_fused_request_exact_oracle_export ... FAILED
+
+failures:
+
+---- identical_fused_request_exact_oracle_export stdout ----
+
+thread 'identical_fused_request_exact_oracle_export' (16) panicked at crates/rodas5p-core/tests/guarded_polynomial_router.rs:70:23:
+called `Result::unwrap()` on an `Err` value: Os { code: 2, kind: NotFound, message: "No such file or directory" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    identical_fused_request_exact_oracle_export
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 5 filtered out; finished in 0.86s
+
+error: test failed, to rerun pass `-p rodas5p-core --test guarded_polynomial_router`

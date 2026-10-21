@@ -35,7 +35,8 @@ pub enum CallbackError {
 /// message the refusal carried as a `String` before it was typed.
 ///
 /// New refusals are added as variants, so match with a wildcard arm.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, thiserror::Error)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, thiserror::Error, serde::Serialize)]
+#[serde(rename_all = "kebab-case")]
 #[non_exhaustive]
 pub enum Unsupported {
     /// A mass matrix or dense output on a JVP-only problem.

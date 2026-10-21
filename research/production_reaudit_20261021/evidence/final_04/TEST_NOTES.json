@@ -1,0 +1,54 @@
+{
+  "schema": "vigilode.final-verification-notes.v1",
+  "status": "PASS_TARGETED",
+  "commands": 19,
+  "native_tests_passed": 298,
+  "doctests_passed": 4,
+  "python_tests_passed": 142,
+  "python_skipped": 3,
+  "python_skip_reason": "Frozen Hairer shared libraries unavailable; no skipped result counted as success",
+  "ignored_native_tests": [
+    {
+      "test": "prothero_robinson_wfiltered_enforce_kill_gate",
+      "reason": "kill gate FAIL: 2.143x the Off accepted-step count at rtol 1e-6 (gate 1.3x)",
+      "log": "evidence/final_04/dense_transaction.log",
+      "counted_as_pass": false
+    },
+    {
+      "test": "b1_lagged_measurement_hires_and_brusselator",
+      "reason": "measurement: run with --ignored --nocapture and record in docs/plan/nodes/b1-lagged.md",
+      "log": "evidence/final_04/lagged.log",
+      "counted_as_pass": false
+    },
+    {
+      "test": "b1b_gmres_measurement_hires_and_brusselator",
+      "reason": "measurement: run with --ignored --nocapture and record in docs/plan/nodes/b1b-gmres.md",
+      "log": "evidence/final_04/lagged.log",
+      "counted_as_pass": false
+    },
+    {
+      "test": "b1c_kill_gate_measurement",
+      "reason": "measurement: run with --ignored --nocapture, B1C_RESULTS_OUT=<path> writes results.json",
+      "log": "evidence/final_04/lagged.log",
+      "counted_as_pass": false
+    },
+    {
+      "test": "b1d_kill_gate_diagnostic",
+      "reason": "diagnostic, gate fixed in docs/plan/IMPLEMENTATION_WAVE4.md; B1D_RESULTS_OUT writes evidence",
+      "log": "evidence/final_04/lagged.log",
+      "counted_as_pass": false
+    }
+  ],
+  "source_manifest_sha256": "aff91d1a1c2c76f0bc7faef314c88302c9584002ac23be64e6f3ed67c2e1ab32",
+  "source_unchanged": true,
+  "prior_failures_preserved": {
+    "final_02": "Disk exhaustion, facade linker failure and truncated progress receipt; actual known exit0 prefix reconstructed explicitly",
+    "final_03": "Facade/docs/examples/format/Python recovered; strict Clippy single_match lint failed",
+    "final_04": "Full19group rerun after equivalent one-file if-let correction; allcommands exit0 under one frozen source manifest"
+  },
+  "not_claimed": [
+    "Fullworkspace/native benchmarkcrate execution",
+    "NCPtiming or controlled-host speed campaign",
+    "Broad production or global-accuracy promotion"
+  ]
+}

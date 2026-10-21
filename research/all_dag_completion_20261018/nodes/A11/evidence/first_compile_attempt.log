@@ -1,0 +1,8 @@
+Command: cargo test --locked --offline -p rodas5p-integrators --test all_dag_a11_verified -- --nocapture
+Exit: 101; tests did not execute.
+Compiling rodas5p-integrators v0.1.0
+warning: unused import DenseOutputError at gray_scott_verified.rs:13 (subsequently removed)
+error[E0308]: mismatched types at src/actual_k_homotopy.rs:454:23
+coefficients: coeff — expected Rodas5pCoefficients, found &Rodas5pCoefficients
+Compiler suggestion: coefficients: coeff.clone()
+This was a concurrent node source compile error, not an A11 numerical result.

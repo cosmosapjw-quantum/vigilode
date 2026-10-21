@@ -1,0 +1,59 @@
+{
+  "schema": "vigilode.bound-client-independent-review.v1",
+  "reviewer": "dense_transaction_audit",
+  "author_of_client_drivers": false,
+  "verdict": "LIMITED_SOURCE_REVIEW_PASS",
+  "blocking_findings": [],
+  "method": "Read-only inspection of frozen client sources, wrappers, selected driver accounting and certificate accessors; no Cargo, numerical execution, published-proof revalidation, or source mutation.",
+  "checks": [
+    {
+      "id": "BC01",
+      "result": "PASS",
+      "claim": "Polynomial and diagonal output is requested-endpoint-only; nonlinear homotopy is endpoint-only; actual-K is stage-functional-only with ode_truncation_certified=false; allocation is algebraic-only; only sealed generic provider/replay marks full_curve_certified=true."
+    },
+    {
+      "id": "BC02",
+      "result": "PASS",
+      "claim": "Case fixture inputs and budgets are independent of selected arm. CLI has no budget/input override. Request hashes use common represented-bit payloads and intentionally exclude arm/thread. Explicit schedule choices differ only by selected arm and are exported."
+    },
+    {
+      "id": "BC03",
+      "result": "PASS",
+      "claim": "Global replay uses unchanged native run and source atol; validates exact run identity; returns original solver/provider and extra replay work on refusal. Provider maximum includes both continuous uniform radii and stored-query center radii."
+    },
+    {
+      "id": "BC04",
+      "result": "PASS",
+      "claim": "Diagonal endpoint oracle uses outward exp at exactly represented dyadic exponent and outward original-IVP L2 displacement; stage targets are explicitly marked used_by_driver=false."
+    },
+    {
+      "id": "BC05",
+      "result": "PASS",
+      "claim": "Polynomial named arms state guarded fallback semantics; selected backend and fallback status are exported. Krylov convergence does not confer accuracy authority; independent original-IVP endpoint enclosure does."
+    },
+    {
+      "id": "BC06",
+      "result": "PASS",
+      "claim": "Allocation 32-vs40 is a validated algebraic work ceiling at same budget, explicitly actual_ode_steps_executed=0. Heuristic plan cost is separately reported and timed, not silently substituted for supplied exact counts."
+    },
+    {
+      "id": "BC07",
+      "result": "PASS",
+      "claim": "Outer elapsed includes setup, all call/retry work, certificate and output materialization; process/threadpool startup and final serialization exclusions are explicit. Homotopy/actual-K coupled certificate timer is null rather than invented. Native work is not labeled complete FLOPs; scheduler span and allocated bytes remain unknown; speed promotion remains HOLD."
+    }
+  ],
+  "limitations": [
+    "Source-review PASS does not replace final native matrix or paired NCP execution.",
+    "Request hash alone is not a cross-version executable identity: default solver/router/planner policy fields are source-defined and not all copied into request JSON. Pair only under the source/binary identity captured by the outer benchmark receipt.",
+    "Diagonal fallback_count sums forced/contraction/budget/staleness refresh reasons. Initial refreshes (including recovery after unusable state) and rejected attempts are separate native ledgers; do not read this field as an exhaustive universal retry count.",
+    "Fixed fixture checks establish no general-purpose production speed, arbitrary-callback global accuracy, or actual scheduler span.",
+    "The reviewer implemented global_budget provider/allocator changes, but did not author these client drivers; this is independent integration/scope review, not an independent re-proof of the underlying mathematics."
+  ],
+  "source_sha256": {
+    "crates/rodas5p-integrators/examples/reaudit_bound_clients_support/mod.rs": "9692aeaff5babdafa9b1026d9dec58b812856257a2973a973888ad24e8d1f79f",
+    "crates/rodas5p-integrators/examples/reaudit_comparison_support/mod.rs": "c3a0d6a881953d23de86dc2b75c0ad717d4c71514f0f012b3aa1a4ca043c5a4c",
+    "crates/rodas5p-integrators/examples/reaudit_bound_clients.rs": "eaf16386fbf1d644a44662c97c0c3cefa4236c9363bbbff10ae44b9d75a1b913",
+    "crates/rodas5p-integrators/examples/reaudit_comparison.rs": "a22dc348890bbbd20ac470b4bb5137758e7c8db3c3954980188f87e1e69f2c50",
+    "crates/rodas5p-integrators/tests/reaudit_bound_clients_contract.rs": "14e7f3222c82e4f06938b6d27d64a7327eff0544a52d37752fad216198a2a136"
+  }
+}

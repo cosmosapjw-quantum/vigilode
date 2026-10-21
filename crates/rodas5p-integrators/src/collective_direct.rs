@@ -18,6 +18,8 @@ pub struct CollectiveDirectWork {
     pub setup_bytes: u64,
     pub identity_check_ops: u64,
     pub schur_certificate_ops: u64,
+    pub inverse_certificate_ops: u64,
+    pub residual_witness_calls: u64,
     pub rhs_ops: u64,
     pub reconstruction_ops: u64,
 }
@@ -46,6 +48,7 @@ pub struct CollectiveStageFactors {
     schur_det_interval: Interval,
     inverse_norm_upper: f64,
     source_identity: Vec<u64>,
+    valid: bool,
 }
 
 fn point(x: f64) -> CoreResult<Interval> {
@@ -59,6 +62,35 @@ impl CollectiveStageFactors {
         s: f64,
         work: &mut CollectiveDirectWork,
     ) -> CoreResult<Self> {
+        let n = model.num_modes();
+        let mut factors = Self {
+            n,
+            s: 0.0,
+            weights: Vec::new(),
+            blocks: Vec::new(),
+            c: [0.0; 4],
+            schur_inverse: [0.0; 4],
+            schur_det_interval: point(0.0)?,
+            inverse_norm_upper: 0.0,
+            source_identity: Vec::new(),
+            valid: false,
+        };
+        factors.refactor(model, y, s, work)?;
+        Ok(factors)
+    }
+
+    /// Replace a frozen matrix, retaining vector capacities. Every failure
+    /// invalidates the old factors; a later solve cannot reuse stale factors.
+    /// For a fixed dimension, successful refactorization allocates no memory
+    /// after the first successful factorization.
+    pub fn refactor(
+        &mut self,
+        model: &CollectiveModel,
+        y: &[f64],
+        s: f64,
+        work: &mut CollectiveDirectWork,
+    ) -> CoreResult<()> {
+        self.valid = false;
         let n = model.num_modes();
         if y.len() != 2 * n {
             return Err(CoreError::Dimension(
@@ -76,10 +108,14 @@ impl CollectiveStageFactors {
             ));
         }
         work.setup_ops += 12 * n as u64 + 5;
-        work.setup_allocations += 1;
-        work.setup_bytes += (8 * n) as u64;
-        let weights = model.weights().to_vec();
-        if !exact_sum_is_one(&weights) {
+        if self.weights.capacity() < n {
+            work.setup_allocations += 1;
+            work.setup_bytes += (8 * n) as u64;
+        }
+        self.weights.clear();
+        self.weights.extend_from_slice(model.weights());
+        let weights = &self.weights;
+        if !exact_sum_is_one(weights) {
             return Err(CoreError::InvalidInput(
                 "collective direct requires exact represented weight sum 1".into(),
             ));
@@ -88,10 +124,19 @@ impl CollectiveStageFactors {
         // can refuse, so overflow/singularity paths retain consumed work.
         work.setup_ops += 18 * n as u64 + 14;
         work.schur_certificate_ops += 40 * n as u64 + 32;
-        work.setup_allocations += 2;
-        work.setup_bytes +=
-            (std::mem::size_of::<Block>() * n + std::mem::size_of::<u64>() * (5 + 6 * n)) as u64;
-        let source_identity = source_state_identity(model, y);
+        if self.blocks.capacity() < n {
+            work.setup_allocations += 1;
+            work.setup_bytes += (std::mem::size_of::<Block>() * n) as u64;
+            self.blocks.reserve(n.saturating_sub(self.blocks.len()));
+        }
+        let id_len = 5 + 6 * n;
+        if self.source_identity.capacity() < id_len {
+            work.setup_allocations += 1;
+            work.setup_bytes += (std::mem::size_of::<u64>() * id_len) as u64;
+            self.source_identity
+                .reserve(id_len.saturating_sub(self.source_identity.len()));
+        }
+        source_state_identity_into(model, y, &mut self.source_identity);
         let mut mean = [0.0; 2];
         for (j, weight) in weights.iter().enumerate() {
             mean[0] += *weight * y[2 * j];
@@ -111,7 +156,7 @@ impl CollectiveStageFactors {
                 "collective direct Jacobian overflow".into(),
             ));
         }
-        let mut blocks = Vec::with_capacity(n);
+        self.blocks.clear();
         let mut h = [0.0; 4];
         for (j, weight) in weights.iter().enumerate() {
             let b = s * model.width() * model.xi()[j];
@@ -125,7 +170,7 @@ impl CollectiveStageFactors {
             for k in 0..4 {
                 h[k] += *weight * p[k];
             }
-            blocks.push(Block { p });
+            self.blocks.push(Block { p });
         }
         let schur = [
             1.0 - s * (h[0] * c[0] + h[1] * c[2]),
@@ -133,7 +178,7 @@ impl CollectiveStageFactors {
             -s * (h[2] * c[0] + h[3] * c[2]),
             1.0 - s * (h[2] * c[1] + h[3] * c[3]),
         ];
-        let (si, det_i) = schur_interval(model, y, s, &blocks, &weights)?;
+        let (schur_i, det_i) = schur_interval(model, y, s, weights)?;
         if det_i.contains_zero() {
             return Err(CoreError::InvalidInput(
                 "collective direct Schur determinant interval contains zero".into(),
@@ -151,6 +196,17 @@ impl CollectiveStageFactors {
             -schur[2] / det,
             schur[0] / det,
         ];
+        if inv.iter().any(|v| !v.is_finite()) {
+            return Err(CoreError::NonFinite(
+                "collective direct Schur inverse overflow".into(),
+            ));
+        }
+        // For P=D^-1, U repeats a two-vector and W is the weighted mean:
+        // A^-1 = P + s P U C S^-1 W P. Exact sum(weights)=1 implies
+        // ||U||_w=||W||_w=1, ||P||_w <= 1/a and ||C||_2 <= 3|chi||m||².
+        // The interval Schur adjugate gives a finite bound even when the
+        // sufficient Neumann condition s||C||<a is unavailable.
+        work.inverse_certificate_ops += 32;
         let (mean_i, _) = certified_mean(model, y)?;
         let r2 = add_up(
             mul_up(mean_i[0].mag(), mean_i[0].mag())?,
@@ -160,27 +216,42 @@ impl CollectiveStageFactors {
         let ai =
             Interval::point(1.0)?.add(Interval::point(s)?.mul(Interval::point(model.kappa())?)?)?;
         let sl = mul_up(s, l)?;
-        if !matches!(sl.partial_cmp(&ai.lo), Some(std::cmp::Ordering::Less)) {
-            return Err(CoreError::InvalidInput(
-                "collective direct WB2 inverse bound unavailable (q* >= 1)".into(),
-            ));
-        }
-        let inverse_norm_upper = div_up(1.0, sub_down(ai.lo, sl)?)?;
-        Ok(Self {
-            n,
-            s,
-            weights,
-            blocks,
-            c,
-            schur_inverse: inv,
-            schur_det_interval: si,
-            inverse_norm_upper,
-            source_identity,
-        })
+        let inverse_norm_upper = if sl < ai.lo {
+            // Preserve the established cheap path and its arithmetic result.
+            div_up(1.0, sub_down(ai.lo, sl)?)?
+        } else {
+            work.inverse_certificate_ops += 16;
+            let p_bound = div_up(1.0, ai.lo)?;
+            let schur_norm2 = schur_i
+                .iter()
+                .try_fold(0.0, |sum, x| add_up(sum, mul_up(x.mag(), x.mag())?))?;
+            let det_lower = if det_i.lo > 0.0 { det_i.lo } else { -det_i.hi };
+            let schur_inverse_bound = div_up(sqrt_up(schur_norm2)?, det_lower)?;
+            let correction = mul_up(mul_up(sl, schur_inverse_bound)?, mul_up(p_bound, p_bound)?)?;
+            add_up(p_bound, correction)?
+        };
+        self.n = n;
+        self.s = s;
+        self.c = c;
+        self.schur_inverse = inv;
+        self.schur_det_interval = det_i;
+        self.inverse_norm_upper = inverse_norm_upper;
+        self.valid = true;
+        Ok(())
     }
 
-    pub fn schur_determinant_enclosure(&self) -> [f64; 2] {
-        self.schur_det_interval.as_pair()
+    pub fn is_valid(&self) -> bool {
+        self.valid
+    }
+
+    /// Checked determinant witness for the current valid frozen factors.
+    pub fn schur_determinant_enclosure(&self) -> CoreResult<[f64; 2]> {
+        if !self.valid {
+            return Err(CoreError::InvalidInput(
+                "collective factors are invalid".into(),
+            ));
+        }
+        Ok(self.schur_det_interval.as_pair())
     }
     pub fn dimension(&self) -> usize {
         2 * self.n
@@ -193,6 +264,11 @@ impl CollectiveStageFactors {
         out: &mut [f64],
         work: &mut CollectiveDirectWork,
     ) -> CoreResult<()> {
+        if !self.valid {
+            return Err(CoreError::InvalidInput(
+                "collective factors are invalid".into(),
+            ));
+        }
         if rhs.len() != 2 * self.n || out.len() != 2 * self.n {
             return Err(CoreError::Dimension(
                 "collective direct solve dimension mismatch".into(),
@@ -237,7 +313,9 @@ impl CollectiveStageFactors {
         Ok(())
     }
 
-    /// Outward enclosure of the weighted residual and WB2 solution error.
+    /// Outward enclosure of the weighted residual and solution error, using
+    /// the Neumann bound when available, otherwise the enclosed Woodbury bound. This certifies
+    /// the exact frozen mathematical Jacobian, not a trajectory error.
     pub fn residual_witness(
         &self,
         model: &CollectiveModel,
@@ -246,6 +324,11 @@ impl CollectiveStageFactors {
         x: &[f64],
         work: &mut CollectiveDirectWork,
     ) -> CoreResult<CollectiveResidualWitness> {
+        if !self.valid {
+            return Err(CoreError::InvalidInput(
+                "collective factors are invalid".into(),
+            ));
+        }
         if y.len() != 2 * self.n || rhs.len() != 2 * self.n || x.len() != 2 * self.n {
             return Err(CoreError::Dimension(
                 "collective residual witness dimension mismatch".into(),
@@ -263,6 +346,7 @@ impl CollectiveStageFactors {
                     .into(),
             ));
         }
+        work.residual_witness_calls += 1;
         work.reconstruction_ops += 20 * self.n as u64 + 16;
         let (mean_y, _) = certified_mean(model, y)?;
         let (mean_x, _) = certified_mean(model, x)?;
@@ -312,8 +396,8 @@ impl CollectiveStageFactors {
     }
 }
 
-fn source_state_identity(model: &CollectiveModel, y: &[f64]) -> Vec<u64> {
-    let mut id = Vec::with_capacity(5 + 4 * model.num_modes() + y.len());
+fn source_state_identity_into(model: &CollectiveModel, y: &[f64], id: &mut Vec<u64>) {
+    id.clear();
     id.push(model.width().to_bits());
     id.push(model.chi().to_bits());
     id.push(model.carrier().to_bits());
@@ -328,7 +412,6 @@ fn source_state_identity(model: &CollectiveModel, y: &[f64]) -> Vec<u64> {
             .flat_map(|z| [z.0.to_bits(), z.1.to_bits()]),
     );
     id.extend(y.iter().map(|x| x.to_bits()));
-    id
 }
 
 fn source_state_matches(model: &CollectiveModel, y: &[f64], expected: &[u64]) -> bool {
@@ -376,9 +459,8 @@ fn schur_interval(
     model: &CollectiveModel,
     y: &[f64],
     s: f64,
-    blocks: &[Block],
     weights: &[f64],
-) -> CoreResult<(Interval, Interval)> {
+) -> CoreResult<([Interval; 4], Interval)> {
     let (m, _) = certified_mean(model, y)?;
     let (u, v) = (m[0], m[1]);
     let ch = point(model.chi())?;
@@ -407,8 +489,7 @@ fn schur_interval(
         point(1.0)?.sub(point(s)?.mul(h[2].mul(c[1])?.add(h[3].mul(c[3])?)?)?)?,
     ];
     let det = sc[0].mul(sc[3])?.sub(sc[1].mul(sc[2])?)?;
-    let _ = blocks;
-    Ok((det, det))
+    Ok((sc, det))
 }
 
 fn certified_mean(model: &CollectiveModel, y: &[f64]) -> CoreResult<([Interval; 2], f64)> {

@@ -37,8 +37,9 @@ pub use gmres_givens::{
 };
 pub use gmres_into::{
     CapacityGrowth, GmresCapacity, GmresColumnMonitor, GmresIntoOptions, GmresIntoReport,
-    GmresMonitorDecision, GmresMonitoredReport, solve_gmres_into, solve_gmres_into_right_monitored,
-    solve_gmres_into_with_accounting, solve_gmres_into_with_options,
+    GmresMonitorDecision, GmresMonitoredProgress, GmresMonitoredReport, solve_gmres_into,
+    solve_gmres_into_right_monitored, solve_gmres_into_with_accounting,
+    solve_gmres_into_with_options,
 };
 pub use gmres_staged::{
     HeuristicGain, STAGED_EXHAUSTION_FLOOR, STAGED_GUARD_Q_ABORT, STAGED_STALL_CONTRACTION,

@@ -9,7 +9,13 @@ pub fn max_wrms(
     atol: &[f64],
     rtol: f64,
 ) -> Option<f64> {
-    if states.is_empty() || states.len() != reference.len() {
+    if states.is_empty()
+        || states.len() != reference.len()
+        || atol.is_empty()
+        || !rtol.is_finite()
+        || rtol < 0.0
+        || atol.iter().any(|a| !a.is_finite() || *a < 0.0)
+    {
         return None;
     }
     let mut worst: f64 = 0.0;
@@ -17,17 +23,30 @@ pub fn max_wrms(
         if y.len() != r.len() || y.len() != atol.len() {
             return None;
         }
-        let n = y.len() as f64;
-        let s: f64 = y
-            .iter()
-            .zip(r)
-            .zip(atol)
-            .map(|((a, b), at)| {
-                let e = (a - b) / (at + rtol * b.abs());
-                e * e
-            })
-            .sum();
-        let w = (s / n).sqrt();
+        let sqrt_n = (y.len() as f64).sqrt();
+        let mut norm = 0.0_f64;
+        for ((a, b), at) in y.iter().zip(r).zip(atol) {
+            if !(a.is_finite() && b.is_finite()) {
+                return Some(f64::INFINITY);
+            }
+            let scale = at + rtol * b.abs();
+            // Overflowing weights used to turn finite errors into zero.
+            // An unrepresentable/nonpositive metric is unavailable, not a pass.
+            if !(scale.is_finite() && scale > 0.0) {
+                return None;
+            }
+            let difference = a - b;
+            let e = if difference.is_finite() {
+                difference / scale
+            } else {
+                // Opposite-sign finite states can overflow their subtraction
+                // although the normalized difference is representable.
+                a / scale - b / scale
+            };
+            // hypot avoids squaring overflow for representable large norms.
+            norm = norm.hypot(e / sqrt_n);
+        }
+        let w = norm;
         if !w.is_finite() {
             return Some(f64::INFINITY);
         }
@@ -142,5 +161,34 @@ mod tests {
     fn median_even_and_odd() {
         assert_eq!(median(&[3.0, 1.0, 2.0]), 2.0);
         assert_eq!(median(&[4.0, 1.0, 2.0, 3.0]), 2.5);
+    }
+
+    #[test]
+    fn invalid_metric_cannot_be_reported_as_zero_error() {
+        assert_eq!(max_wrms(&[vec![]], &[vec![]], &[], 1.0), None);
+        assert_eq!(max_wrms(&[vec![1.0]], &[vec![2.0]], &[-1.0], 1.0), None);
+        assert_eq!(max_wrms(&[vec![1.0]], &[vec![2.0]], &[1.0], f64::NAN), None);
+        assert_eq!(max_wrms(&[vec![1.0]], &[vec![f64::MAX]], &[1.0], 2.0), None);
+        assert_eq!(max_wrms(&[vec![0.0]], &[vec![0.0]], &[0.0], 1.0), None);
+        assert_eq!(
+            max_wrms(&[vec![f64::NAN]], &[vec![0.0]], &[1.0], 1.0),
+            Some(f64::INFINITY)
+        );
+    }
+
+    #[test]
+    fn representable_large_normalized_errors_remain_finite() {
+        assert_eq!(
+            max_wrms(&[vec![f64::MAX]], &[vec![-f64::MAX]], &[f64::MAX], 0.0),
+            Some(2.0)
+        );
+        let e = max_wrms(
+            &[vec![1.0e200, 1.0e200]],
+            &[vec![0.0, 0.0]],
+            &[1.0, 1.0],
+            0.0,
+        )
+        .unwrap();
+        assert!(e.is_finite() && (e / 1.0e200 - 1.0).abs() < 3.0e-16);
     }
 }

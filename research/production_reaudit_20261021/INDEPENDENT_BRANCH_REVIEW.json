@@ -1,0 +1,474 @@
+{
+  "incoming_delta": 1133,
+  "identical_count": 1109,
+  "changed": [
+    {
+      "path": "README.md",
+      "incoming_sha256": "3fc4071e0a46f258e0e9a1f34fcf897561737e10013d88663ff9fde32094752d",
+      "current_sha256": "15751f43bedcd179fcb0f69ebe49d426ba42d384f07280caa39410839cbc81e3",
+      "resolution": "PRESERVE_CURRENT_AUDIT_ENTRY",
+      "explanation": "Current landing text links integrated audit; imported cloud report stays as immutable historical evidence."
+    },
+    {
+      "path": "crates/rodas5p-core/src/leja_action.rs",
+      "incoming_sha256": "8e980e402a7e80a226d066166dfe15102dbb879ec9d03dffc88b2fdbd37f6736",
+      "current_sha256": "b42b152013c6130b65348e9a02ffeb81d26c783c003c56d495d203bf8ce807f2",
+      "resolution": "FORMAT_ONLY",
+      "explanation": "Rustfmt expands enum field layout; admission semantics unchanged."
+    },
+    {
+      "path": "crates/rodas5p-core/src/lib.rs",
+      "incoming_sha256": "93e785dc20835d41f02a2075309d7eb40895dee57dce1f908f12b71abdd30eb7",
+      "current_sha256": "3f3b601fa230e1f8e6be76730f7e80623cb3db6e8e9398c99ed70f1ad6787851",
+      "resolution": "EXPORT_UNION",
+      "explanation": "Preserve production exports and add polynomial_router; current module ordering retained."
+    },
+    {
+      "path": "crates/rodas5p-core/tests/guarded_polynomial_router.rs",
+      "incoming_sha256": "b5a61b7d64201af898b3669f4fe40c420c7b7494d2a8505de3356a7a8e173568",
+      "current_sha256": "c94e4f8123ab641d21619eb423f7b316f2dc111b8fe54a0de69626bc5448ebac",
+      "resolution": "FORMAT_ONLY",
+      "explanation": "Published test semantics retained."
+    },
+    {
+      "path": "crates/rodas5p-core/tests/leja_enclosed_contract.rs",
+      "incoming_sha256": "ff93fec6203e5e32c9f3ab35ed961543e2d8ed10563bdb0db78e504b81b3496d",
+      "current_sha256": "b28d6321a355fbfc180514de68b0f76dfb0522fe5f2924ea410a14cb463897ac",
+      "resolution": "FORMAT_ONLY",
+      "explanation": "Published test semantics retained."
+    },
+    {
+      "path": "crates/rodas5p-integrators/examples/component_benchmark_native.rs",
+      "incoming_sha256": "0061f709db439e9f2210b9dc7275f1fbcb9cc43507fd23f4ba74af444a5a079f",
+      "current_sha256": "bed42c4f812b3d5ca01b720e8af8f52344454c7c6c9552ea33b953aaa17903c8",
+      "resolution": "FORMAT_ONLY",
+      "explanation": "Incoming example rustfmt; runtime validation belongs to root final gate."
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/bound_pr101.rs",
+      "incoming_sha256": "16a42eb8135387488fe2a9e43d0cc92793f08ae8f8d0cbed11febfd54d6e6f2d",
+      "current_sha256": "3fbeef9caba3c62dfbf940309effd22c7378a115a7660610bc045890fb3f3206",
+      "resolution": "NAMESPACE_ADAPTER",
+      "explanation": "Preserve production frozen BoundPr101Problem; imported parameterized code moved to pr101_verified.rs and Pr101VerifiedError."
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/dense_output_v2.rs",
+      "incoming_sha256": "1a46db7831523e3ba3e44169f6456061ee716b4f1073d2076d9c0ef1e0a26bae",
+      "current_sha256": "a181b45fb1c12bda33c33b5a94c5a7c9defeac7e9c7c2e3c91a2c14b424f0bc5",
+      "resolution": "FUNCTIONAL_UNION",
+      "explanation": "Preserve WFilteredReport/Enforce and current production error handling; add VerifiedResidual refusal and cancellation-preserving outward Horner evaluation."
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/generic_verified.rs",
+      "incoming_sha256": "0a014a6d55fcb494524b3105547eeb21fd2ab1b1557c1bf14838f7def14b7e17",
+      "current_sha256": "25fbe265d1ed4b67b807eb07348d7ac1a0db4d43de029109c199fc4b543699c4",
+      "resolution": "ERROR_TYPE_ADAPTER",
+      "explanation": "Imported parameterized provider uses Pr101VerifiedError, leaving production Pr101Error untouched."
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/lib.rs",
+      "incoming_sha256": "9fff40d55f034e392ca4680638fed16e9d028057562aecc821a9bd525ee66acd",
+      "current_sha256": "e25cd14022b23e899df4df4da5460bdbcafe64bdef3c164f124319740e0b54af",
+      "resolution": "EXPORT_UNION",
+      "explanation": "Preserve production exact-band/cache/lagged/resolvent symbols and export research modules under explicit opt-in APIs."
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/packet_curve_output.rs",
+      "incoming_sha256": "2e49d892c31ca72925c6e2fc4a5051492f5ceff7df552bd63e9cfbf7ec1036c5",
+      "current_sha256": "d171cb68286cb82206a9b64e0c29e41505d63a89d734c42a4b8d907e8e49642c",
+      "resolution": "FUNCTIONAL_UNION",
+      "explanation": "Preserve weighted_center_displacement and add centered_weighted_radius from same outward displacement; no automatic facade routing."
+    },
+    {
+      "path": "crates/rodas5p-integrators/tests/all_dag_a01_packet.rs",
+      "incoming_sha256": "4a1786bc2f68ee8d543d57591c47233abc84594f4a969621e3e9ccfd77dc2fca",
+      "current_sha256": "c4fdeed767d7d392126a76ca5a5b308e4a046df28202ea707cc10e573b24c60f",
+      "resolution": "COMPATIBILITY_CONTRACT",
+      "explanation": "Retain mathematical oracle and add outward triangle bridge assertions; account existing production displacement operations."
+    },
+    {
+      "path": "crates/rodas5p-integrators/tests/production_audit_bound_collective.rs",
+      "incoming_sha256": "590ad37213ed56a95cb18d8c545ba40dd613d9c18be417c1eef585a6361dfb0f",
+      "current_sha256": "24bc209514c05e0f2505fcf63bc4af959f4221a38346c37a37fbce7f6d545fe2",
+      "resolution": "PRESERVE_PRODUCTION_TEST_FIX",
+      "explanation": "Thread-local allocation tracking isolates counted call thread from libtest noise; published interval contracts retained."
+    },
+    {
+      "path": "crates/rodas5p-integrators/tests/production_audit_packet_curve_output.rs",
+      "incoming_sha256": "17089300015fa185f98d67293323cf172644810567e83692d3b8aa8a9df93467",
+      "current_sha256": "ca2cb73a56139cde5761b9f51f63341adbefe9287504282a4f4e29793134df12",
+      "resolution": "PRESERVE_PRODUCTION_WORK_ACCOUNTING",
+      "explanation": "Keep counts56/88 instead of historical52/81:3*n+1 actual displacement arithmetic operations."
+    },
+    {
+      "path": "research/LEDGER.jsonl",
+      "incoming_sha256": "b05191993cfcf1a07e4d78e25811a986d926629178a18a4dd2ad02312d478d2c",
+      "current_sha256": "ff71155aae6f798ce849c2763509b39e6c1d3f97f9bf7f0a6c2ff1553ae8d6bc",
+      "resolution": "IMMUTABLE_ARCHIVES_WITH_QUALIFIED_IDS",
+      "explanation": "Keep current ledger; archive both142-row originals exactly; map all284 entries by commit-qualified ID. Seven conflicting IDs retain both claims, no supersession inferred."
+    },
+    {
+      "path": "tools/component_benchmark/component_contracts.py",
+      "incoming_sha256": "150a879426664dad5bba38c9dca4fe1197dd9247ed79a44b5c7da4bc3dde428c",
+      "current_sha256": "f3853e762d9703831b6945dcc081c1eee2039e8852bc1b075f067043b6037d5e",
+      "resolution": "RSS_PROVENANCE_BRIDGE",
+      "explanation": "Unknown memory remains null/UNAVAILABLE; positive measurements retained; stale telemetry removed; P3 unknown memory cannot pass."
+    },
+    {
+      "path": "tools/component_benchmark/confirmation.py",
+      "incoming_sha256": "9604ea1db45b67a06265cdd8e3f1a4c80a3a3ebd5e4ac1649b70d78d3dbfed62",
+      "current_sha256": "564cd5e3705f53900732634e1ba4569539e0ed624e7fa830158e1e9f8e187641",
+      "resolution": "RSS_PROVENANCE_BRIDGE",
+      "explanation": "Unknown memory remains null/UNAVAILABLE; positive measurements retained; stale telemetry removed; P3 unknown memory cannot pass."
+    },
+    {
+      "path": "tools/component_benchmark/hpc.py",
+      "incoming_sha256": "568e9eb88a19335131eb8cfb27f8a562f55fba499437bf35fe2636f2855e142d",
+      "current_sha256": "f0088c8bbed471be470d045a1a00013df939595c7fb28dba73dbb2f8f570c1e4",
+      "resolution": "RSS_PROVENANCE_BRIDGE",
+      "explanation": "Unknown memory remains null/UNAVAILABLE; positive measurements retained; stale telemetry removed; P3 unknown memory cannot pass."
+    },
+    {
+      "path": "tools/component_benchmark/runner.py",
+      "incoming_sha256": "999c30836732d96ba363e6b72ff01d26770482d076465072d2a25c47ed6b2298",
+      "current_sha256": "5c9bcf01757bf100ec0e91fad509a12ed033a41ce14b1371832870462e924336",
+      "resolution": "RSS_PROVENANCE_BRIDGE",
+      "explanation": "Unknown memory remains null/UNAVAILABLE; positive measurements retained; stale telemetry removed; P3 unknown memory cannot pass."
+    },
+    {
+      "path": "tools/tests/test_component_benchmark_campaign.py",
+      "incoming_sha256": "f01b5e83fd10dec2466c5adb2264d7db35314c039ce15ec90be56fde19fd2e88",
+      "current_sha256": "20ee3a18ba663f5e6406d875b2e2f0b4d24c0d5409ba08c44ebefff158243a47",
+      "resolution": "EXPLICIT_REGISTRY_UNION",
+      "explanation": "Preserve historical246 IDs and assert exactly8 integrated modules; retain78 campaign cases and94 algorithm variants."
+    },
+    {
+      "path": "tools/tests/test_component_benchmark_component_contracts.py",
+      "incoming_sha256": "2b43201ff9fcfb0d6dd92a870a10d566e728c640d5beca969ac874371c4bca6b",
+      "current_sha256": "1c807d30e73af39e8b73fed600533d46c7b5704a2002ee7f54e694d6911c7ccf",
+      "resolution": "RSS_PROVENANCE_BRIDGE",
+      "explanation": "Unknown memory remains null/UNAVAILABLE; positive measurements retained; stale telemetry removed; P3 unknown memory cannot pass."
+    },
+    {
+      "path": "tools/tests/test_component_benchmark_confirmation.py",
+      "incoming_sha256": "ae71fdb1e8f1a7ec4bc1a7ab893923746eb4801394b9dbb15df60d626dae868f",
+      "current_sha256": "149899ad4f040d8b9709055338885f06c5ded429e3b0cd072a762a13816ba3a6",
+      "resolution": "RSS_PROVENANCE_BRIDGE",
+      "explanation": "Unknown memory remains null/UNAVAILABLE; positive measurements retained; stale telemetry removed; P3 unknown memory cannot pass."
+    },
+    {
+      "path": "tools/tests/test_component_benchmark_hpc.py",
+      "incoming_sha256": "f6542f538a346baf830782b5054b5829159a01c2c1bfb14ac5edad2d2185a4b3",
+      "current_sha256": "3651b7437e172d70f4f4a0f9b80d40836500078b0f365ffc494151897979ab47",
+      "resolution": "RSS_PROVENANCE_BRIDGE",
+      "explanation": "Unknown memory remains null/UNAVAILABLE; positive measurements retained; stale telemetry removed; P3 unknown memory cannot pass."
+    },
+    {
+      "path": "tools/tests/test_component_benchmark_registry.py",
+      "incoming_sha256": "80666af148a02125f24d46cc1bb1c9bfc16a057afc29ac8f2b099b2dc3c882a7",
+      "current_sha256": "cf263ae66c517aa6dfe868311f35026732c638044021267c7a78baf7b42dabec",
+      "resolution": "EXPLICIT_REGISTRY_UNION",
+      "explanation": "Preserve historical246 IDs and assert exactly8 integrated modules; retain78 campaign cases and94 algorithm variants."
+    }
+  ],
+  "missing": [],
+  "full_incoming_tree_paths": 6451,
+  "full_incoming_tree_missing": [],
+  "incoming_research_paths": 5341,
+  "incoming_research_changed": [
+    "research/LEDGER.jsonl",
+    "research/production_audit_20261018/CONTINUATION_DAG.json",
+    "research/production_audit_20261018/evidence/continuation_a04/arithmetic_research_01/PREREGISTRATION.md",
+    "research/production_audit_20261018/evidence/continuation_a04/arithmetic_research_01/RESEARCH_DECISION.json"
+  ],
+  "safe_add_records": 788,
+  "safe_add_bytes": 13268925,
+  "safe_add_record_errors": [],
+  "ledger": {
+    "entries": 284,
+    "archives": {
+      "production": {
+        "path": "research/branch_integration_20261021/production_LEDGER.jsonl",
+        "rows": 142,
+        "sha256": "ff71155aae6f798ce849c2763509b39e6c1d3f97f9bf7f0a6c2ff1553ae8d6bc",
+        "published_commit": "f2f20c1d8cd606e70ddbd8409c0f3b4529e928a1"
+      },
+      "all_dag": {
+        "path": "research/branch_integration_20261021/all_dag_LEDGER.jsonl",
+        "rows": 142,
+        "sha256": "b05191993cfcf1a07e4d78e25811a986d926629178a18a4dd2ad02312d478d2c",
+        "published_commit": "ee65d4dbecf3b3cd5f4587c27f87ef297d2bb406"
+      }
+    },
+    "errors": [],
+    "shared_semantic_ids": 135,
+    "collision_ids": [
+      "L-0136",
+      "L-0137",
+      "L-0138",
+      "L-0139",
+      "L-0140",
+      "L-0141",
+      "L-0142"
+    ],
+    "supersession_edges": {
+      "production": [
+        {
+          "from": "L-0020",
+          "to": "L-0013",
+          "qualified_commit": "f2f20c1d8cd606e70ddbd8409c0f3b4529e928a1"
+        },
+        {
+          "from": "L-0021",
+          "to": "L-0014",
+          "qualified_commit": "f2f20c1d8cd606e70ddbd8409c0f3b4529e928a1"
+        },
+        {
+          "from": "L-0022",
+          "to": "L-0015",
+          "qualified_commit": "f2f20c1d8cd606e70ddbd8409c0f3b4529e928a1"
+        },
+        {
+          "from": "L-0023",
+          "to": "L-0016",
+          "qualified_commit": "f2f20c1d8cd606e70ddbd8409c0f3b4529e928a1"
+        },
+        {
+          "from": "L-0024",
+          "to": "L-0017",
+          "qualified_commit": "f2f20c1d8cd606e70ddbd8409c0f3b4529e928a1"
+        },
+        {
+          "from": "L-0025",
+          "to": "L-0018",
+          "qualified_commit": "f2f20c1d8cd606e70ddbd8409c0f3b4529e928a1"
+        },
+        {
+          "from": "L-0026",
+          "to": "L-0019",
+          "qualified_commit": "f2f20c1d8cd606e70ddbd8409c0f3b4529e928a1"
+        },
+        {
+          "from": "L-0027",
+          "to": "L-0023",
+          "qualified_commit": "f2f20c1d8cd606e70ddbd8409c0f3b4529e928a1"
+        },
+        {
+          "from": "L-0093",
+          "to": "L-0090",
+          "qualified_commit": "f2f20c1d8cd606e70ddbd8409c0f3b4529e928a1"
+        },
+        {
+          "from": "L-0097",
+          "to": "L-0096",
+          "qualified_commit": "f2f20c1d8cd606e70ddbd8409c0f3b4529e928a1"
+        },
+        {
+          "from": "L-0098",
+          "to": "L-0095",
+          "qualified_commit": "f2f20c1d8cd606e70ddbd8409c0f3b4529e928a1"
+        },
+        {
+          "from": "L-0103",
+          "to": "L-0102",
+          "qualified_commit": "f2f20c1d8cd606e70ddbd8409c0f3b4529e928a1"
+        },
+        {
+          "from": "L-0129",
+          "to": "L-0128",
+          "qualified_commit": "f2f20c1d8cd606e70ddbd8409c0f3b4529e928a1"
+        },
+        {
+          "from": "L-0138",
+          "to": "L-0124",
+          "qualified_commit": "f2f20c1d8cd606e70ddbd8409c0f3b4529e928a1"
+        },
+        {
+          "from": "L-0140",
+          "to": "L-0139",
+          "qualified_commit": "f2f20c1d8cd606e70ddbd8409c0f3b4529e928a1"
+        },
+        {
+          "from": "L-0142",
+          "to": "L-0140",
+          "qualified_commit": "f2f20c1d8cd606e70ddbd8409c0f3b4529e928a1"
+        }
+      ],
+      "all_dag": [
+        {
+          "from": "L-0020",
+          "to": "L-0013",
+          "qualified_commit": "ee65d4dbecf3b3cd5f4587c27f87ef297d2bb406"
+        },
+        {
+          "from": "L-0021",
+          "to": "L-0014",
+          "qualified_commit": "ee65d4dbecf3b3cd5f4587c27f87ef297d2bb406"
+        },
+        {
+          "from": "L-0022",
+          "to": "L-0015",
+          "qualified_commit": "ee65d4dbecf3b3cd5f4587c27f87ef297d2bb406"
+        },
+        {
+          "from": "L-0023",
+          "to": "L-0016",
+          "qualified_commit": "ee65d4dbecf3b3cd5f4587c27f87ef297d2bb406"
+        },
+        {
+          "from": "L-0024",
+          "to": "L-0017",
+          "qualified_commit": "ee65d4dbecf3b3cd5f4587c27f87ef297d2bb406"
+        },
+        {
+          "from": "L-0025",
+          "to": "L-0018",
+          "qualified_commit": "ee65d4dbecf3b3cd5f4587c27f87ef297d2bb406"
+        },
+        {
+          "from": "L-0026",
+          "to": "L-0019",
+          "qualified_commit": "ee65d4dbecf3b3cd5f4587c27f87ef297d2bb406"
+        },
+        {
+          "from": "L-0027",
+          "to": "L-0023",
+          "qualified_commit": "ee65d4dbecf3b3cd5f4587c27f87ef297d2bb406"
+        },
+        {
+          "from": "L-0093",
+          "to": "L-0090",
+          "qualified_commit": "ee65d4dbecf3b3cd5f4587c27f87ef297d2bb406"
+        },
+        {
+          "from": "L-0097",
+          "to": "L-0096",
+          "qualified_commit": "ee65d4dbecf3b3cd5f4587c27f87ef297d2bb406"
+        },
+        {
+          "from": "L-0098",
+          "to": "L-0095",
+          "qualified_commit": "ee65d4dbecf3b3cd5f4587c27f87ef297d2bb406"
+        },
+        {
+          "from": "L-0103",
+          "to": "L-0102",
+          "qualified_commit": "ee65d4dbecf3b3cd5f4587c27f87ef297d2bb406"
+        },
+        {
+          "from": "L-0129",
+          "to": "L-0128",
+          "qualified_commit": "ee65d4dbecf3b3cd5f4587c27f87ef297d2bb406"
+        },
+        {
+          "from": "L-0142",
+          "to": "L-0141",
+          "qualified_commit": "ee65d4dbecf3b3cd5f4587c27f87ef297d2bb406"
+        }
+      ]
+    }
+  },
+  "production_tree_paths": 6344,
+  "production_tree_missing": [],
+  "schema": "vigilode.independent-branch-review.v1",
+  "reviewed_at_utc": "2026-10-21T04:38:29.429958+00:00",
+  "reviewer": "research_dag_audit",
+  "scope": "Independent branch integration completeness, immutable evidence, adapters and dual-ledger identity; no scientific campaign rerun.",
+  "verdict": "PASS_REVIEWED_WORKTREE_INTEGRATION_WITH_PUBLICATION_GATE_PENDING",
+  "refs": {
+    "common_ancestor": "59d95eb7404882f024eb8bd3856f2ce4f1f830c9",
+    "incoming": "ee65d4dbecf3b3cd5f4587c27f87ef297d2bb406",
+    "production_base": "4a5fc656730fe8243f06b6e603cb8aa758b00b2f",
+    "required_published_ancestors": [
+      "ee65d4dbecf3b3cd5f4587c27f87ef297d2bb406",
+      "cc2e1a009ac6802ef01a289392e9715074a882ba",
+      "f2f20c1d8cd606e70ddbd8409c0f3b4529e928a1"
+    ]
+  },
+  "method": [
+    "Enumerate incoming delta using git diff --name-only --no-renames common_ancestor incoming.",
+    "Read exact Git blob bytes via git ls-tree and git cat-file --batch; compare with filesystem bytes, including unstaged additions.",
+    "Enumerate both complete branch trees and check path existence.",
+    "Validate788 independent copy records against incoming blob SHA-1, SHA-256 and size.",
+    "Validate284 archived ledger rows against published commits, raw-line hashes, canonical JSON hashes, original IDs, qualified IDs and namespace-local supersedes edges.",
+    "Read adapter/source diffs and current contract logs; no Cargo and no old scientific reruns by this reviewer."
+  ],
+  "incoming_research_identity": {
+    "total": 5341,
+    "byte_identical": 5337,
+    "ledger_resolution": "Both full immutable published archives retained.",
+    "three_other_paths": "Existing production continuation documents exactly equal published f2f20c1; incoming branch did not change them relative to common ancestor. Preserve newer production decisions."
+  },
+  "test_receipts": {
+    "hpc_portability_focused": {
+      "log": "research/production_reaudit_20261021/evidence/branch_integration/hpc_portability_focused.log",
+      "sha256": "39678f8915a87bab2dd2612b516dd22473eff85e4d2edcab2c9dfbd5c0351857",
+      "exit_code": 0,
+      "summary": "28 passed in 1.52s"
+    },
+    "component_pytest_final": {
+      "log": "research/production_reaudit_20261021/evidence/branch_integration/component_pytest_final.log",
+      "sha256": "695ff1c379af5fd3ad6853c5a4c34e565dbc82f61a545851fed246c827806602",
+      "exit_code": 1,
+      "summary": "1 failed, 89 passed, 3 skipped in 23.71s"
+    },
+    "component_pytest_retry": {
+      "log": "research/production_reaudit_20261021/evidence/branch_integration/component_pytest_retry.log",
+      "sha256": "d36411389bab2215d37d3c9c585194d3c9aee14c4573c660f38bf20c6f1acdb0",
+      "exit_code": 0,
+      "summary": "90 passed, 3 skipped in 21.35s"
+    }
+  },
+  "findings": [
+    {
+      "id": "BI-R01",
+      "severity": "high",
+      "state": "FIXED_VERIFIED",
+      "problem": "Original ledger qualification used local-only integration commit4a5fc65, which a direct3-parent publication would not necessarily publish.",
+      "repair": "Use published f2f20c1 for production archive and every production-qualified entry/collision reference; exact archive bytes verified."
+    },
+    {
+      "id": "BI-R02",
+      "severity": "medium",
+      "state": "FIXED_VERIFIED",
+      "problem": "Campaign contract hardcoded historical246 modules after integrated registry grew to254.",
+      "repair": "Assert immutable historical ID set union exactly8 named current modules; keep78 cases; full retry90PASS/3SKIP."
+    },
+    {
+      "id": "BI-R03",
+      "severity": "medium",
+      "state": "FIXED_VERIFIED",
+      "problem": "Unavailable RSS can arise when GNU time is absent or short child exits before procfs sample.",
+      "repair": "Null/UNAVAILABLE and P3 HOLD_UNKNOWN preserve missing-measurement semantics.28 focused contracts pass."
+    }
+  ],
+  "ledger_resolution_rule": "An unqualified supersedes in a historical row resolves within that row’s archive namespace. Do not connect equal numeric IDs across archives; no cross-branch supersession is inferred. Snapshot commit in qualified ID identifies the archive, not necessarily the original execution commit.",
+  "publication_gate": {
+    "state": "PENDING_ROOT_PUBLICATION",
+    "requirements": [
+      "Published commit has all3 required branch heads as ancestors.",
+      "Remote committed tree equals final reviewed/staged union tree.",
+      "Final source manifest and immutable archive hashes match published bytes."
+    ],
+    "owner": "root"
+  },
+  "claim_limits": [
+    "Path preservation is not generic solver correctness or speed certification.",
+    "Historical timing/proof receipts remain bound to their original source and assumptions.",
+    "Legacy registry scope is five numerical crates, not every repository package or254 production algorithms.",
+    "Three skipped Hairer-library tests remain skipped, not passed.",
+    "Current metadata hashes are a review-time snapshot; final root manifest binds delivered code."
+  ],
+  "subsequent_new_code_note": {
+    "scope": "After this branch reconciliation snapshot, authorized N03/N05 production modules were added.",
+    "phase1_registry": 254,
+    "current_registry": 256,
+    "historical_registry": 246,
+    "additional_current_module_ids": [
+      "rodas5p-integrators:src::global_budget",
+      "rodas5p-integrators:src::stage_target_policy"
+    ],
+    "rule": "Keep immutable historical246 map and phase1 254/90PASS receipt; final current tests assert explicit10-module union.",
+    "current_python_gate": "runtime owner reports139PASS3SKIP after adding27 NCP harness tests; root final gate is authoritative."
+  }
+}

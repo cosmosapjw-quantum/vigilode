@@ -1,0 +1,76 @@
+{
+  "schema": "vigilode.reaudit.n08_implementation.v1",
+  "node": "N08",
+  "date": "2026-10-21",
+  "status": "IMPLEMENTED_AND_TARGETED_TESTED",
+  "broad_production": "HOLD",
+  "native_campaign_executed": false,
+  "cargo_invoked": false,
+  "source_frozen": true,
+  "test_result": {
+    "targeted_gate_tests_passed": 13,
+    "failed": 0,
+    "fixture_scope": "synthetic receipt contracts, not scientific evidence"
+  },
+  "mutation_validation": {
+    "removed_guards": 2,
+    "expected_regression_failures": 2,
+    "observed_regression_failures": 2,
+    "errors": 0,
+    "historical_native_failure_claim": false
+  },
+  "evidence": [
+    {
+      "path": "research/production_reaudit_20261021/evidence/n08/promotion_final_contracts.log",
+      "sha256": "9c9e8037a295b809b34359d24781f61981a432feae30a405e7b2bfdefd20949f"
+    },
+    {
+      "path": "research/production_reaudit_20261021/evidence/n08/final_check_mutation_replay.log",
+      "sha256": "312a632458511412ba4f32bc6727a652117e36b8f2a023cc4f2eca03ef6cf49f"
+    },
+    {
+      "path": "research/production_reaudit_20261021/evidence/n08/final_check_mutation_replay.json",
+      "sha256": "6d2222e9c9d01ddcac86dc9af1f33cba230bc6a322a29373f539399c8c2fd0ef"
+    },
+    {
+      "path": "research/production_reaudit_20261021/evidence/n02/promotion_initial_missing_levels.json",
+      "sha256": "04d4a4c9b1cb6b95d5224540e2b4ce410200d12979f81efb28a2bfedbff77b6d"
+    }
+  ],
+  "files": [
+    {
+      "path": "tools/production_promotion_gate.py",
+      "sha256": "6855f3a8f852de8a8fdbc345f5a3245c13ca37423f0767ba21f8bc7b5ecd5892"
+    },
+    {
+      "path": "tools/tests/test_production_promotion_gate.py",
+      "sha256": "a92f353d0a35edcb0c5ded238a92876914ffffa1e8bb2400fea86b695bc9f57c"
+    }
+  ],
+  "implemented": [
+    "committed config and PLAN identity binding",
+    "validation commands and full case coverage derived from frozen config",
+    "build artifact/runtime library and per-command executable binding",
+    "raw belongs to same execution receipt",
+    "required source boundaries, original budget and repetition gates",
+    "strict independent reference entire refinement ladder",
+    "supplied corpus hash equals frozen config locked input",
+    "comparison argv executable equals source-bound binary path",
+    "case-level and top-level integrity failure propagation"
+  ],
+  "positive_scopes": [
+    "EMPIRICAL_GRID_PASS",
+    "SCOPED_CERTIFICATE_PASS"
+  ],
+  "automatic_broad_production_promotion": false,
+  "speed_promotion": "HOLD_REQUIRES_PREREGISTERED_PAIRED_FULL_COST_EVIDENCE",
+  "next_executor_steps": [
+    "local: native compile and contract verification only; small integration fixes if required",
+    "NCP: source-clean frozen-config runner, retain complete raw results",
+    "consumer: run production_promotion_gate with committed config/corpus and expected commit"
+  ],
+  "remaining_environment_constraints": [
+    "full vigilode-bench native integration unavailable in this environment",
+    "exact locked benchmark dependencies and gfortran/SUNDIALS prerequisites must be present on execution host"
+  ]
+}

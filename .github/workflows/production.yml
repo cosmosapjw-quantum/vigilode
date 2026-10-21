@@ -8,6 +8,7 @@ name: Production CI
 # test target is picked up without editing this file.
 
 on:
+  workflow_dispatch:
   pull_request:
     paths:
       - 'crates/**'
@@ -58,10 +59,8 @@ jobs:
       - uses: Swatinem/rust-cache@v2.7.8
         with:
           shared-key: root
-      # rodas5p-integrators is excluded: tests/production_audit_packet_curve.rs
-      # is unformatted from before this workflow.
       - name: Format check
-        run: cargo fmt --check -p vigilode -p rodas5p-core -p rodas5p-krylov
+        run: cargo fmt --check -p vigilode -p rodas5p-core -p rodas5p-krylov -p rodas5p-integrators
 
   clippy:
     runs-on: ubuntu-latest
@@ -75,11 +74,10 @@ jobs:
       - uses: Swatinem/rust-cache@v2.7.8
         with:
           shared-key: root
-      # --no-deps: at the base, rodas5p-core (damped_moments.rs:492,
-      # too_many_arguments) fails clippy -D warnings, and that crate is not
-      # this workflow's to fix. The lint gate covers the facade crate itself.
+      # Check the facade and core explicitly. --no-deps limits each invocation
+      # to the named packages; the integrator runtime has its own test gate.
       - name: Clippy
-        run: cargo clippy -p vigilode --all-targets --locked --no-deps -- -D warnings
+        run: cargo clippy -p vigilode -p rodas5p-core --all-targets --locked --no-deps -- -D warnings
 
   test:
     runs-on: ubuntu-latest

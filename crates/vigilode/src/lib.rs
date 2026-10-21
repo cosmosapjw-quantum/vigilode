@@ -112,6 +112,10 @@
 //! Errors (`Err`) are refusals before integration, or a driver error that
 //! left no partial result.
 //!
+//! `Rodas5p::capabilities(&problem, &options)` queries the supported feature
+//! combination and selected driver family without calling user code. Its
+//! typed refusals are the same predicates used by `solve` for valid inputs.
+//!
 //! ## Stability
 //!
 //! Decision (wave-3 node p0-api): the facade's public enums and its output
@@ -128,7 +132,11 @@
 //! [`Unsupported`] variant whose `Display` is the message, so a caller can
 //! match on the cause instead of the text; a future payload becomes a new
 //! variant. The `Stats` JSON schema is versioned separately by
-//! [`STATS_SCHEMA`].
+//! [`STATS_SCHEMA`]. The nested record fields are facade-owned too:
+//! [`WorkRecord`], [`AdaptiveRecord`], [`LinearSolverRecord`] and the router
+//! and interior records preserve the v4 field names and JSON order. Explicit
+//! conversions from driver records support migration; internal additions
+//! require an exhaustive conversion review rather than silently losing work.
 //!
 //! An exhaustive `match` on a [`FailureReason`] outside this crate does not
 //! compile:
@@ -151,20 +159,24 @@
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
 
+mod capabilities;
 mod error;
 mod events;
 mod fd;
 mod options;
 mod problem;
+mod records;
 mod solution;
 mod solve;
 
+pub use capabilities::{Capabilities, FacadeRoute, OutputAccuracy};
 pub use error::{CallbackError, SolveError, Unsupported};
 pub use events::{Direction, EventRecord};
 pub use options::{Atol, InteriorError, Options, Tier};
 pub use problem::{
     BandJacobianFn, DenseJacobianFn, Jacobian, JvpFn, Problem, RhsFn, TimeDerivativeFn,
 };
+pub use records::*;
 pub use solution::{
     Callback, CallbackWork, DriverWork, FD_INCREMENT_RULE, FailureReason, FiniteDifferenceWork,
     JacobianRecord, KrylovStartRecord, RouteRecord, STATS_SCHEMA, Solution, Stats, Status,

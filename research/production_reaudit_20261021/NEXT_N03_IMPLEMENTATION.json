@@ -1,0 +1,85 @@
+{
+  "schema": "vigilode.n03-n04-implementation.v1",
+  "status": "IMPLEMENTED_TARGETED_PASS_FINAL_DELTA_VALIDATION_PENDING",
+  "nodes": {
+    "N03": {
+      "implemented": true,
+      "entrypoint": "global_budget::integrate_verified_residual_global",
+      "scope": "sealed fixed-L2 full-horizon post-run replay plus stored-query center rounding",
+      "online_adaptive_controller": false,
+      "arbitrary_callback_certificate": false,
+      "run_retained_on_replay_refusal": true,
+      "initial_jump_query_charges": true,
+      "private_model_and_run_identity": true,
+      "original_budget_cannot_be_relaxed": true
+    },
+    "N04": {
+      "implemented": true,
+      "entrypoints": [
+        "global_budget::allocate_global_work",
+        "global_budget::validate_work_allocation"
+      ],
+      "authority": "algebraic outward error/work bounds for supplied A,c; no ODE parameter authority",
+      "floating_seed_exact_optimality_claim": false,
+      "resource_limits": {
+        "blocks": 4096,
+        "order": 32,
+        "refinements": 64,
+        "exact_integer_count_max": 9007199254740992
+      },
+      "equal_denominator_grouping": true,
+      "grouped_and_pointwise_upper_minimum": true,
+      "grouped_overflow_preserves_pointwise_fallback": true,
+      "planner_complexity": "O(m log m) comparisons and O(m) scratch per bound validation, m<=4096; per-block work ceilings remain separately summed"
+    }
+  },
+  "tests": {
+    "source": "crates/rodas5p-integrators/tests/global_budget_contracts.rs",
+    "cases": 9,
+    "native_status": "PASS_BEFORE_FINAL_ORIGINAL_BUDGET_GUARD",
+    "format": "PASS",
+    "diff_check": "PASS",
+    "targeted_passed": 22,
+    "targeted_failed": 0,
+    "targets": {
+      "global_budget_contracts": 8,
+      "all_dag_a05_verified": 7,
+      "all_dag_a11_verified": 7
+    },
+    "evidence": "evidence/n03/global_budget_contracts.log",
+    "final_unvalidated_delta": "Original source-atol cap and one-ULP/2x refusal assertions; grouped equal-denominator error upper with pointwise fallback; ninth nonexact/subnormal/grouped-overflow boundary test. Root final matrix will execute.",
+    "retained_failures": [
+      {
+        "path": "evidence/n03/global_budget_contracts_initial.log",
+        "classification": "test-authoring namespace typo for gray_scott_2d_verified; corrected"
+      },
+      {
+        "path": "evidence/n03/global_budget_contracts_boundary.log",
+        "classification": "Original pointwise sum 1/20+9/20 upper exceeded exact0.5. Preserved RED motivated equal-denominator grouped outward improvement: now (1+9)/20 certifies original samebudget40 baseline, no tolerance relaxation."
+      }
+    ]
+  },
+  "commands": [
+    "cargo test --locked --offline -j 1 -p rodas5p-integrators --test global_budget_contracts",
+    "cargo test --locked --offline -j 1 -p rodas5p-integrators --test all_dag_a05_verified --test all_dag_a11_verified",
+    "python3 research/production_reaudit_20261021/verify_global_budget.py"
+  ],
+  "source_sha256": {
+    "crates/rodas5p-integrators/src/global_budget.rs": "f4270f3b37d1fb1675e4b98649eb4a5b4403690ea8830f4401a79c6704653e04",
+    "crates/rodas5p-integrators/src/generic_verified.rs": "b8944a94d0909e4746f080abebc8aa33d43c850d704c4c13c2f4ed0f9fcffb1a",
+    "crates/rodas5p-integrators/tests/global_budget_contracts.rs": "449ef5167124ff75ad8f41bd05c7dd05f2a1c958ef0d362ad4204a61a3897ff1"
+  },
+  "remaining_code_tasks": [],
+  "remaining_execution": [
+    "root final native matrix for original-budget guard and grouped-denominator improvement",
+    "NCP full-cost replay benchmark with refusal rows"
+  ],
+  "review": {
+    "reviewer": "research_dag_audit",
+    "finding": "certificate lacked unique trajectory identity",
+    "resolution": "private run_identity plus certificate.binds_run and private wrapper fields",
+    "final_status": "PASS_AFTER_IDENTITY_FIX",
+    "scope": "Original provider tube premise, directed G(R+J+h*rho), query rounding, rollback, private completion/run identity, exact integer allocation validator; root independently requested additional no-rebudgeting guard.",
+    "grouped_allocator_status": "PASS independent math/source review from research_dag_audit; evidence/theory/N03_INDEPENDENT_REVIEW.json"
+  }
+}

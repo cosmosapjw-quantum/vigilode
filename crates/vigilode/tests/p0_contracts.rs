@@ -15,10 +15,10 @@ use std::sync::{
 
 use rodas5p_core::{CoreError, CoreResult, DenseMatrix, LinearSolverConfig};
 use rodas5p_integrators::{
-    AdaptiveFailureKind, AdaptiveStepConfig, BandedJacobian, DenseErrorControl, DriverStopReason,
-    FastInteriorControl, FastInteriorWork, IntegrationMethod, InteriorSampling, OdeProblem,
-    OutputSamplingPlan, OutputSchedule, RODAS5P_FAST_BANDED_DENSE_DRIVER_ID,
-    RODAS5P_FAST_DENSE_DRIVER_ID, RODAS5P_SEQUENTIAL_DENSE_DRIVER_ID, RoutingOptions,
+    AdaptiveStepConfig, BandedJacobian, DenseErrorControl, DriverStopReason, FastInteriorControl,
+    IntegrationMethod, InteriorSampling, OdeProblem, OutputSamplingPlan, OutputSchedule,
+    RODAS5P_FAST_BANDED_DENSE_DRIVER_ID, RODAS5P_FAST_DENSE_DRIVER_ID,
+    RODAS5P_SEQUENTIAL_DENSE_DRIVER_ID, RoutingOptions,
     integrate_adaptive_dense_observed_with_dense_error_control,
     integrate_adaptive_dense_observed_with_segments, integrate_rodas5p_fast_banded_observed,
     integrate_rodas5p_fast_dense_observed, integrate_rodas5p_fast_observed_with_partial,
@@ -103,7 +103,14 @@ fn dense_opts(rtol: f64, atol: f64, interior_error: InteriorError) -> Options {
     }
 }
 
-fn sequential_work(sol: &Solution) -> (DenseErrorControl, InteriorSampling, usize, usize) {
+fn sequential_work(
+    sol: &Solution,
+) -> (
+    vigilode::InteriorControlRecord,
+    vigilode::InteriorSamplingRecord,
+    usize,
+    usize,
+) {
     match &sol.stats.driver_work {
         DriverWork::SequentialDense {
             control,
@@ -117,7 +124,7 @@ fn sequential_work(sol: &Solution) -> (DenseErrorControl, InteriorSampling, usiz
 }
 
 /// The fast dense route's record: (banded, interior work, segments).
-fn fast_work(sol: &Solution) -> (bool, FastInteriorWork, usize) {
+fn fast_work(sol: &Solution) -> (bool, vigilode::FastInteriorRecord, usize) {
     match &sol.stats.driver_work {
         DriverWork::FastDense {
             banded,
@@ -163,8 +170,8 @@ fn dense_output_routes_to_fast_dense() {
     assert_eq!(o.interior_error, InteriorError::WFilteredEnforce);
     let sol = Rodas5p::solve(&robertson(), ROBERTSON_SPAN, &ROBERTSON_Y0, &o).unwrap();
     assert!(sol.is_success());
-    assert_eq!(STATS_SCHEMA, "vigilode.stats.v3");
-    assert_eq!(sol.stats.schema, "vigilode.stats.v3");
+    assert_eq!(STATS_SCHEMA, "vigilode.stats.v4");
+    assert_eq!(sol.stats.schema, "vigilode.stats.v4");
     assert_eq!(sol.stats.route.driver_id, RODAS5P_FAST_DENSE_DRIVER_ID);
     assert_eq!(
         sol.stats.route.entry_point,
@@ -179,7 +186,7 @@ fn dense_output_routes_to_fast_dense() {
         sol.stats.accepted_steps as u64 + interior.interior_rejections
     );
     let record = serde_json::to_value(&sol.stats).unwrap();
-    assert_eq!(record["schema"], "vigilode.stats.v3");
+    assert_eq!(record["schema"], "vigilode.stats.v4");
     assert_eq!(record["driver_work"]["driver"], "fast-dense");
     // A band Jacobian and a finite-difference band take the banded twin.
     let banded_problem = Problem::new(TRIDIAGONAL_N, tridiagonal_rhs)
@@ -433,7 +440,11 @@ fn mass_matrix_route_is_bit_identical_to_the_direct_dense_driver() {
     let (control, sampling, samples, _) = sequential_work(&sol);
     assert_eq!(
         (control, sampling, samples),
-        (DenseErrorControl::Off, InteriorSampling::OutputTimes, 0)
+        (
+            vigilode::InteriorControlRecord::Off,
+            vigilode::InteriorSamplingRecord::OutputTimes,
+            0
+        )
     );
     match &sol.stats.driver_work {
         DriverWork::SequentialDense { linear_solver, .. } => {
@@ -748,7 +759,10 @@ fn a_fatal_rhs_after_several_steps_returns_the_last_accepted_state() {
     let stop = sol.stats.stop.as_ref().unwrap();
     assert_eq!(stop.t.to_bits(), partial.t.to_bits());
     assert_eq!(stop.reason, DriverStopReason::MinimumStep);
-    assert_eq!(stop.last_failure, Some(AdaptiveFailureKind::NonFinite));
+    assert_eq!(
+        stop.last_failure,
+        Some(vigilode::StepFailureKind::NonFinite)
+    );
     assert!(partial.t > 0.0 && partial.t <= 0.5);
     // ensure_success carries the same partial solution.
     match sol.clone().ensure_success().unwrap_err() {
@@ -889,7 +903,10 @@ fn a_fatal_jvp_inside_gmres_returns_the_partial_solution() {
     assert_eq!(sol.stats.driver_counters, direct.observed.counters);
     assert_eq!(
         sol.stats.stop.as_ref().unwrap().last_failure,
-        partial.last_failure
+        partial
+            .last_failure
+            .as_ref()
+            .map(vigilode::StepFailureKind::from)
     );
 }
 
@@ -988,7 +1005,7 @@ fn failure_reasons_name_the_drivers_failure_kind() {
     );
     assert_eq!(
         sol.stats.stop.as_ref().unwrap().last_failure,
-        Some(AdaptiveFailureKind::LinearSolve)
+        Some(vigilode::StepFailureKind::LinearSolve)
     );
     // The Jacobian is evaluated at the step's start.
     assert!(sol.t[1] > 0.5 && sol.t[1] < 1.0, "{:?}", sol.t);
@@ -1544,5 +1561,79 @@ fn terminal_event_on_every_dense_store() {
             sol.at(tk).is_some() && sol.at(tk + 1e-9).is_none(),
             "{name}"
         );
+    }
+}
+
+#[test]
+fn a_recoverable_midpoint_failure_rejects_on_every_facade_dense_route() {
+    for (mass, interior_error) in [
+        (false, InteriorError::WFilteredEnforce),
+        (true, InteriorError::WFilteredEnforce),
+        (false, InteriorError::Enforce),
+    ] {
+        let opts = Options {
+            dense_output: true,
+            interior_error,
+            rtol: 1e-6,
+            atol: Atol::Scalar(1e-8),
+            ..Options::default()
+        };
+        let clean_problem = Problem::new(1, |_t, y, dy| {
+            dy[0] = -y[0];
+            Ok(())
+        })
+        .jacobian(Jacobian::dense(|_t, _y, j| {
+            j[0] = -1.0;
+            Ok(())
+        }))
+        .autonomous();
+        let clean_problem = if mass {
+            clean_problem.mass(vec![1.0])
+        } else {
+            clean_problem
+        };
+        let clean = Rodas5p::solve(&clean_problem, (0.0, 2.0), &[1.0], &opts).unwrap();
+        assert!(clean.is_success());
+        let midpoint = 0.5 * clean.t[1];
+        let fired = Arc::new(AtomicBool::new(false));
+        let callback_fired = fired.clone();
+        let injected = Problem::new(1, move |t, y, dy| {
+            if t.to_bits() == midpoint.to_bits() && !callback_fired.swap(true, Ordering::SeqCst) {
+                return Err(CallbackError::Recoverable("midpoint probe".into()));
+            }
+            dy[0] = -y[0];
+            Ok(())
+        })
+        .jacobian(Jacobian::dense(|_t, _y, j| {
+            j[0] = -1.0;
+            Ok(())
+        }))
+        .autonomous();
+        let injected = if mass {
+            injected.mass(vec![1.0])
+        } else {
+            injected
+        };
+        let sol = Rodas5p::solve(&injected, (0.0, 2.0), &[1.0], &opts).unwrap();
+        assert!(fired.load(Ordering::SeqCst), "{mass:?}, {interior_error:?}");
+        assert!(sol.is_success(), "{:?}", sol.status);
+        assert_eq!(sol.stats.callbacks.recoverable_errors, 1);
+        assert_eq!(sol.stats.rejected_steps, clean.stats.rejected_steps + 1);
+        match &sol.stats.driver_work {
+            DriverWork::SequentialDense {
+                estimate_failures,
+                unavailable,
+                ..
+            } => {
+                assert_eq!(*estimate_failures, 1);
+                assert_eq!(*unavailable, 0);
+            }
+            DriverWork::FastDense { .. } => assert!(!mass),
+            other => panic!("unexpected dense route: {other:?}"),
+        }
+        for (&t, y) in sol.t.iter().zip(&sol.y) {
+            assert_eq!(bits(&sol.at(t).unwrap()), bits(y));
+        }
+        assert!((sol.final_state().unwrap()[0] - (-2.0f64).exp()).abs() < 1e-6);
     }
 }

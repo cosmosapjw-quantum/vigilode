@@ -294,6 +294,9 @@ fn euclidean_log_norm_bounds_two_mode_jacobian_and_uses_full_tube() {
     );
 }
 
+// Jacobi rotations update paired rows and columns; explicit indices preserve
+// the independent 4x4 reference formula and its operation order.
+#[allow(clippy::needless_range_loop)]
 fn largest_symmetric_eigenvalue(mut matrix: [[f64; 4]; 4]) -> f64 {
     for _ in 0..64 {
         let mut p = 0;

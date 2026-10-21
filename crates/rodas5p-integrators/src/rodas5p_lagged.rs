@@ -114,6 +114,13 @@
 //! * Counted in [`StalenessWork`]. [`StalenessRule::Off`] (the default) is
 //!   the wave-2 driver bit for bit.
 
+#[path = "stage_target_policy.rs"]
+mod stage_target_policy;
+pub use stage_target_policy::{
+    BoundLinearStageModel, LinearStageAssessment, LinearStageAssessmentWork, LinearStageTargetPlan,
+    StageBoundCalculus,
+};
+
 use std::sync::atomic::{AtomicU64, Ordering};
 
 use rodas5p_core::{
@@ -150,6 +157,18 @@ pub const RODAS5P_LAGGED_RICHARDSON_BOUNDED_DRIVER_ID: &str =
 /// `b1c-staleness`).
 pub const RODAS5P_LAGGED_GMRES_BOUNDED_DRIVER_ID: &str = "rodas5p-lagged-gmres-bounded-v1";
 
+/// Opt-in resolvent diagnostic, with all extra inverse solves charged.
+pub const RODAS5P_LAGGED_GMRES_RESOLVENT_DRIVER_ID: &str = "rodas5p-lagged-gmres-resolvent-v1";
+/// Richardson variant of the opt-in resolvent diagnostic.
+pub const RODAS5P_LAGGED_RICHARDSON_RESOLVENT_DRIVER_ID: &str =
+    "rodas5p-lagged-richardson-resolvent-v1";
+
+/// GMRES with the opt-in, outward diagonal resolvent check.
+pub const RODAS5P_LAGGED_GMRES_DIAGONAL_DRIVER_ID: &str = "rodas5p-lagged-gmres-diagonal-v1";
+/// Richardson with the opt-in, outward diagonal resolvent check.
+pub const RODAS5P_LAGGED_RICHARDSON_DIAGONAL_DRIVER_ID: &str =
+    "rodas5p-lagged-richardson-diagonal-v1";
+
 /// The staleness bound above which `P` is refreshed before an attempt's
 /// stage solves (T2's production `q_max`; preregistered, never tuned).
 pub const RODAS5P_LAGGED_STALENESS_Q_MAX: f64 = 0.5;
@@ -169,10 +188,13 @@ pub const RODAS5P_LAGGED_MAX_ITERATIONS: usize = 6;
 
 /// The nonstiff-limit (`z = h lambda = 0`) sensitivities `|m_j|` of the
 /// RODAS5P output to a residual on stage `j`, from plan §5 T1 ("Numbers for
-/// RODAS5P", computed from the repository's coefficient snapshot); they
-/// decrease with stiffness, so using the `z = 0` values is conservative for
-/// normal `J_0` with spectrum in the left half plane. Each entry is the
-/// t-verify value (`research/production_theory_20261021/RESULTS.json`,
+/// RODAS5P", computed from the repository's coefficient snapshot).
+/// These are diagnostic targets, not bounds on the whole left half-plane:
+/// even the normal rotation at `z = i` has `|m_1| = 0.8519... > 0.58`.
+/// The published negative-real-axis samples do not certify oscillatory or
+/// nonlinear stage sensitivity. See the exact Fraction oracle in
+/// `research/production_reaudit_20261021/evidence/integrator/`.
+/// Each entry is the t-verify value (`research/production_theory_20261021/RESULTS.json`,
 /// `claim1_T1_numbers.a_values_at_z0.abs_m`) rounded up to two decimals, so
 /// no entry is below the verified value (a_7 = 1.0110 gives 1.02; a test
 /// reads the JSON).
@@ -207,6 +229,17 @@ pub enum StalenessRule {
     /// Refresh when `q_pred >` [`RODAS5P_LAGGED_STALENESS_Q_MAX`], and stop
     /// stages on `||P^{-1} r||_S <= (1 - q_pred) rho_i` (Lemma B1c).
     Bounded,
+    /// Use the stored absolute resolvent instead of the log-norm bound.
+    /// This removes the log-norm hypothesis in exact arithmetic. Its LU
+    /// evaluation uses ordinary floating point and is a diagnostic, not
+    /// an outward-rounded stage or global-error certificate.
+    Resolvent,
+    /// Outward bound for an exactly diagonal, nonpositive stored Jacobian.
+    /// Scans O(n^2) entries, applies no inverse RHS solves, and refreshes if
+    /// structure or arithmetic is unproved. Only the ideal-matrix staleness
+    /// bound is outward: LU/monitor arithmetic and generic stage targets
+    /// remain diagnostic, so this does not promote a production certificate.
+    Diagonal,
 }
 
 /// Opt-in variants of [`integrate_rodas5p_lagged_observed`].
@@ -243,6 +276,13 @@ pub struct LaggedWork {
     /// GMRES Arnoldi columns built, including abandoned ones
     /// ([`StageSolver::Gmres`]).
     pub gmres_iterations: u64,
+    /// GMRES column routines entered, including columns interrupted by an
+    /// operator/preconditioner error before construction completed.
+    pub gmres_column_attempts: u64,
+    /// `W` applications begun inside Arnoldi columns, including failed
+    /// ones. Together with residual_applications this partitions all
+    /// GMRES operator applications even on errors.
+    pub gmres_column_applications: u64,
     /// GMRES cycles (one per stage solved by GMRES with at least one column
     /// while the restart does not fire).
     pub gmres_cycles: u64,
@@ -282,6 +322,18 @@ pub struct StalenessWork {
     pub unbounded_checks: u64,
     /// The largest finite `q_pred` of the run (0 when there was none).
     pub q_pred_max: f64,
+    /// Extra LU applications to construct the resolvent (one per column
+    /// on each successful refresh; failed solves stay counted).
+    pub resolvent_solves: u64,
+    /// Checks with an unbounded B1c estimate but resolvent estimate <= 0.5.
+    pub rescued_checks: u64,
+    /// Diagonal-rule checks, including refusals.
+    pub diagonal_checks: u64,
+    /// Matrix entry pairs inspected by diagonal-rule checks. This counts
+    /// interrupted/refused scans and exposes the O(n^2) structure-check cost.
+    pub diagonal_matrix_entries: u64,
+    /// Diagonal-rule checks refused for structure/domain/arithmetic reasons.
+    pub diagonal_refusals: u64,
 }
 
 #[derive(Clone, Debug)]
@@ -291,6 +343,99 @@ pub struct Rodas5pLaggedResult {
     pub fast: Rodas5pFastResult,
     pub work: LaggedWork,
     pub staleness: StalenessWork,
+}
+
+/// Outward ideal-matrix bound on ||I-P^-1 W||_S when J_P is exactly
+/// diagonal with nonpositive diagonal. This uses the diagonal inverse
+/// directly (zero extra linear solves), retaining each row's cancellation:
+/// max_i |1-a J_P,ii|^-1 sum_j |(1-h_P/h) delta_ij + a(J-J_P)_ij| s_j/s_i.
+/// `a=h_P gamma`. Unsupported structure, zero scales and overflow give +inf.
+/// This proves no floating LU backward error or nonlinear output sensitivity.
+pub fn rodas5p_diagonal_staleness_bound(
+    h: f64,
+    h_p: f64,
+    gamma: f64,
+    j: &DenseMatrix,
+    j_p: &DenseMatrix,
+    s: &[f64],
+) -> f64 {
+    diagonal_staleness_counted(h, h_p, gamma, j, j_p, s).0
+}
+
+fn diagonal_staleness_counted(
+    h: f64,
+    h_p: f64,
+    gamma: f64,
+    j: &DenseMatrix,
+    j_p: &DenseMatrix,
+    s: &[f64],
+) -> (f64, u64) {
+    use rodas5p_core::directed::{Interval, add_up};
+    let mut inspected = 0_u64;
+    let mut compute = || -> CoreResult<f64> {
+        let n = s.len();
+        if n == 0
+            || [j.nrows(), j.ncols(), j_p.nrows(), j_p.ncols()]
+                .iter()
+                .any(|v| *v != n)
+            || [h, h_p, gamma].iter().any(|v| !v.is_finite() || *v <= 0.0)
+            || s.iter().any(|v| !v.is_finite() || *v <= 0.0)
+        {
+            return Err(CoreError::InvalidInput("diagonal staleness domain".into()));
+        }
+        let one = Interval::point(1.0)?;
+        let a = Interval::point(h_p)?.mul(Interval::point(gamma)?)?;
+        if a.lo <= 0.0 {
+            return Err(CoreError::InvalidInput(
+                "diagonal staleness step underflow".into(),
+            ));
+        }
+        let shift = one.sub(Interval::point(h_p)?.div(Interval::point(h)?)?)?;
+        let mut bound = 0.0_f64;
+        for i in 0..n {
+            inspected += 1;
+            let diagonal = Interval::point(j_p[(i, i)])?;
+            let current_diagonal = Interval::point(j[(i, i)])?;
+            if diagonal.hi > 0.0 {
+                return Err(CoreError::InvalidInput("positive diagonal".into()));
+            }
+            let inverse = one.div(one.sub(a.mul(diagonal)?)?)?;
+            let mut row = 0.0;
+            for k in 0..n {
+                if i != k {
+                    inspected += 1;
+                }
+                let old = if i == k {
+                    diagonal
+                } else {
+                    Interval::point(j_p[(i, k)])?
+                };
+                let now = if i == k {
+                    current_diagonal
+                } else {
+                    Interval::point(j[(i, k)])?
+                };
+                if i != k && j_p[(i, k)] != 0.0 {
+                    return Err(CoreError::InvalidInput(
+                        "stored Jacobian is not diagonal".into(),
+                    ));
+                }
+                let mut entry = a.mul(now.sub(old)?)?;
+                if i == k {
+                    entry = entry.add(shift)?;
+                }
+                let weighted = entry
+                    .mul(inverse)?
+                    .mul(Interval::point(s[k])?)?
+                    .div(Interval::point(s[i])?)?;
+                row = add_up(row, weighted.mag())?;
+            }
+            bound = bound.max(row);
+        }
+        Ok(bound)
+    };
+    let result = compute().unwrap_or(f64::INFINITY);
+    (result, inspected)
 }
 
 #[derive(Clone, Copy)]
@@ -320,7 +465,13 @@ pub fn rodas5p_staleness_bound(
 ) -> f64 {
     let n = s.len();
     let shapes = [j.nrows(), j.ncols(), j_p.nrows(), j_p.ncols()];
-    if !(h > 0.0 && h_p > 0.0 && gamma > 0.0 && h.is_finite() && h_p.is_finite())
+    if n == 0
+        || !(h > 0.0
+            && h_p > 0.0
+            && gamma > 0.0
+            && h.is_finite()
+            && h_p.is_finite()
+            && gamma.is_finite())
         || shapes.iter().any(|d| *d != n)
         || !s.iter().all(|v| *v > 0.0 && v.is_finite())
         || !j
@@ -332,6 +483,9 @@ pub fn rodas5p_staleness_bound(
         return f64::INFINITY;
     }
     let a = h_p * gamma;
+    if !(a > 0.0 && a.is_finite()) {
+        return f64::INFINITY;
+    }
     let mut mu = f64::NEG_INFINITY;
     let mut drift = 0.0_f64;
     for i in 0..n {
@@ -340,19 +494,89 @@ pub fn rodas5p_staleness_bound(
         let mut row_drift = 0.0;
         for k in 0..n {
             let ratio = s[k] / s[i];
+            // A finite input may still overflow/underflow this ratio. In
+            // particular 0 * infinity makes NaN, which f64::max would
+            // silently discard when reducing the rows. Refuse that bound.
+            if !(ratio > 0.0 && ratio.is_finite()) {
+                return f64::INFINITY;
+            }
             row_drift += (row[k] - row_p[k]).abs() * ratio;
             if k != i {
                 row_mu += row_p[k].abs() * ratio;
             }
         }
+        if !(row_mu.is_finite() && row_drift.is_finite()) {
+            return f64::INFINITY;
+        }
         mu = mu.max(row_mu);
         drift = drift.max(row_drift);
     }
     let denominator = 1.0 - a * mu;
-    if denominator.is_nan() || denominator <= 0.0 {
+    if !denominator.is_finite() || denominator <= 0.0 {
         return f64::INFINITY;
     }
     let q = ((1.0 - h_p / h).abs() + a * drift) / denominator;
+    if q.is_finite() { q } else { f64::INFINITY }
+}
+
+/// Resolvent version of the B1c estimate:
+/// `||R||_S (|1-h_P/h| + h_P gamma ||J-J_P||_S)`, where
+/// `R=(I-h_P gamma J_P)^(-1)` and `abs_r` supplies its absolute entries.
+///
+/// In exact arithmetic and for exact `abs_r`, this bounds
+/// `||I-P^(-1)W||_S` without a log-norm hypothesis. This function uses
+/// ordinary floating arithmetic; neither caller-supplied `abs_r` nor
+/// the reductions are validated enclosures. The lagged driver therefore
+/// remains opt-in, with no verified-output or production promotion.
+/// Invalid shapes/weights, negative entries, or nonfinite intermediates
+/// conservatively return infinity. Work and storage are O(n^2).
+pub fn rodas5p_resolvent_staleness_bound(
+    h: f64,
+    h_p: f64,
+    gamma: f64,
+    j: &DenseMatrix,
+    j_p: &DenseMatrix,
+    abs_r: &DenseMatrix,
+    s: &[f64],
+) -> f64 {
+    let n = s.len();
+    if n == 0
+        || ![h, h_p, gamma].iter().all(|x| *x > 0.0 && x.is_finite())
+        || [j, j_p, abs_r]
+            .iter()
+            .any(|m| m.nrows() != n || m.ncols() != n)
+        || !s.iter().all(|x| *x > 0.0 && x.is_finite())
+        || !j
+            .as_slice()
+            .iter()
+            .chain(j_p.as_slice())
+            .all(|x| x.is_finite())
+        || !abs_r.as_slice().iter().all(|x| *x >= 0.0 && x.is_finite())
+    {
+        return f64::INFINITY;
+    }
+    let a = h_p * gamma;
+    if !(a > 0.0 && a.is_finite()) {
+        return f64::INFINITY;
+    }
+    let (mut r_norm, mut drift) = (0.0_f64, 0.0_f64);
+    for i in 0..n {
+        let (mut r_sum, mut d_sum) = (0.0, 0.0);
+        for k in 0..n {
+            let ratio = s[k] / s[i];
+            if !(ratio > 0.0 && ratio.is_finite()) {
+                return f64::INFINITY;
+            }
+            r_sum += abs_r[(i, k)] * ratio;
+            d_sum += (j[(i, k)] - j_p[(i, k)]).abs() * ratio;
+        }
+        if !(r_sum.is_finite() && d_sum.is_finite()) {
+            return f64::INFINITY;
+        }
+        r_norm = r_norm.max(r_sum);
+        drift = drift.max(d_sum);
+    }
+    let q = r_norm * ((1.0 - h_p / h).abs() + a * drift);
     if q.is_finite() { q } else { f64::INFINITY }
 }
 
@@ -388,6 +612,7 @@ struct Lagged {
     /// (allocated once at setup; empty with `Off`), the attempt's stop
     /// factor `1 - q_pred` and the counts.
     j_p: DenseMatrix,
+    abs_r: DenseMatrix,
     stop_scale: f64,
     staleness: StalenessWork,
 }
@@ -415,6 +640,20 @@ impl Lagged {
             self.j_p
                 .as_mut_slice()
                 .copy_from_slice(ws.jacobian.as_slice());
+        }
+        if self.options.staleness == StalenessRule::Resolvent {
+            let inv = 1.0 / (h * ws.gamma);
+            for col in 0..ws.n {
+                self.wx.fill(0.0);
+                self.wx[col] = 1.0;
+                self.staleness.resolvent_solves += 1;
+                counters.direct_solve_calls += 1;
+                ws.solve_dense_into(&mut self.wx)?;
+                for row in 0..ws.n {
+                    // R = P^{-1}/(h_P gamma), with P in U coordinates.
+                    self.abs_r[(row, col)] = (self.wx[row] * inv).abs();
+                }
+            }
         }
         self.valid = true;
         self.p_h = h;
@@ -460,7 +699,7 @@ impl Lagged {
     }
 
     fn bounded(&self) -> bool {
-        self.options.staleness == StalenessRule::Bounded
+        self.options.staleness != StalenessRule::Off
     }
 
     /// The stage stop: `Off` tests `WRMS(P^{-1} r) <= rho_i` (wave 2);
@@ -521,18 +760,44 @@ impl Lagged {
             applications: AtomicU64::new(0),
         };
         let target = self.targets[stage];
+        let columns_before = self.work.gmres_iterations;
+        let column_products_before = self.work.gmres_column_applications;
+        let successful_products_before = counters.linear_matvecs;
+        let successful_pc_before = counters.preconditioner_apps;
         let outcome = self.gmres_stage(&op, &pc, target, counters);
         // Charged whether the stage converged, refreshes or failed.
         let products = op.applications.load(Ordering::Relaxed);
         let lu = pc.applications.load(Ordering::Relaxed);
+        // Generic apply_counted/apply_preconditioner charge successful
+        // calls only. This driver promises attempted-work accounting, so
+        // charge the failed callback too before propagating its error.
+        let failed_products = products - (counters.linear_matvecs - successful_products_before);
+        counters.linear_matvecs += failed_products;
+        counters.linear_matvec_vectors += failed_products;
+        if op.jvp.is_some() {
+            counters.jvp_calls += failed_products;
+            counters.jvp_vectors += failed_products;
+        } else {
+            counters.jacobian_matvecs += failed_products;
+        }
+        let failed_pc = lu - (counters.preconditioner_apps - successful_pc_before);
+        counters.preconditioner_apps += failed_pc;
+        counters.preconditioner_vectors += failed_pc;
         self.work.operator_applications += products;
         if op.jvp.is_some() {
             self.work.jvp_applications += products;
         }
         self.work.preconditioner_applications += lu;
         counters.direct_solve_calls += lu;
-        let (columns, decision) = outcome?;
-        self.work.residual_applications += products - columns;
+        let column_products = self.work.gmres_column_applications - column_products_before;
+        self.work.residual_applications += products - column_products;
+        let (columns, decision) = match outcome {
+            Ok(value) => value,
+            Err(error) => {
+                self.work.abandoned_iterations += self.work.gmres_iterations - columns_before;
+                return Err(error);
+            }
+        };
         match decision {
             None => {
                 for (x, z) in self.x.iter_mut().zip(&self.pres) {
@@ -579,7 +844,7 @@ impl Lagged {
         let mut reason = Refresh::Budget;
         let (bounded, stop_target) = (self.bounded(), self.stop_scale * target);
         let (rhs, weight, wx, pres) = (&self.rhs, &self.weight, &mut self.wx, &mut self.pres);
-        let report = solve_gmres_into_right_monitored(
+        let outcome = solve_gmres_into_right_monitored(
             op,
             pc,
             rhs,
@@ -608,9 +873,13 @@ impl Lagged {
                 }
                 Ok(GmresMonitorDecision::Continue)
             },
-        )?;
-        self.work.gmres_iterations += report.iterations;
-        self.work.gmres_cycles += report.cycles;
+        );
+        let progress = self.gmres.monitored_progress();
+        self.work.gmres_iterations += progress.completed_columns;
+        self.work.gmres_column_attempts += progress.attempted_columns;
+        self.work.gmres_column_applications += progress.column_operator_applications;
+        self.work.gmres_cycles += progress.cycles;
+        let report = outcome?;
         if report.accepted {
             self.x.copy_from_slice(&self.solution);
             Ok((report.iterations, None))
@@ -715,14 +984,50 @@ impl Lagged {
         } else if self.bounded() {
             // Ruling B2c: only with a valid P and no initial or forced
             // refresh due on this attempt.
-            let q = rodas5p_staleness_bound(
-                h,
-                self.p_h,
-                ws.gamma,
-                &ws.jacobian,
-                &self.j_p,
-                &self.weight,
-            );
+            let q_log = if self.options.staleness == StalenessRule::Diagonal {
+                0.0
+            } else {
+                rodas5p_staleness_bound(
+                    h,
+                    self.p_h,
+                    ws.gamma,
+                    &ws.jacobian,
+                    &self.j_p,
+                    &self.weight,
+                )
+            };
+            let q = if self.options.staleness == StalenessRule::Diagonal {
+                let (q, entries) = diagonal_staleness_counted(
+                    h,
+                    self.p_h,
+                    ws.gamma,
+                    &ws.jacobian,
+                    &self.j_p,
+                    &self.weight,
+                );
+                self.staleness.diagonal_checks += 1;
+                self.staleness.diagonal_matrix_entries += entries;
+                if !q.is_finite() {
+                    self.staleness.diagonal_refusals += 1;
+                }
+                q
+            } else if self.options.staleness == StalenessRule::Resolvent {
+                let q = rodas5p_resolvent_staleness_bound(
+                    h,
+                    self.p_h,
+                    ws.gamma,
+                    &ws.jacobian,
+                    &self.j_p,
+                    &self.abs_r,
+                    &self.weight,
+                );
+                if !q_log.is_finite() && q <= RODAS5P_LAGGED_STALENESS_Q_MAX {
+                    self.staleness.rescued_checks += 1;
+                }
+                q
+            } else {
+                q_log
+            };
             self.staleness.checks += 1;
             if q.is_finite() {
                 self.staleness.q_pred_max = self.staleness.q_pred_max.max(q);
@@ -732,7 +1037,11 @@ impl Lagged {
             if q > RODAS5P_LAGGED_STALENESS_Q_MAX {
                 self.refresh(ws, h, Refresh::Staleness, counters)?;
             } else {
-                self.stop_scale = 1.0 - q;
+                self.stop_scale = if self.options.staleness == StalenessRule::Diagonal {
+                    rodas5p_core::directed::sub_down(1.0, q)?
+                } else {
+                    1.0 - q
+                };
             }
         }
         let mut exact = self.p_generation == self.generation && self.p_h == h;
@@ -1003,7 +1312,12 @@ pub fn integrate_rodas5p_lagged_observed(
         p_generation: 0,
         generation: 0,
         work: LaggedWork::default(),
-        j_p: if options.staleness == StalenessRule::Bounded {
+        j_p: if options.staleness != StalenessRule::Off {
+            DenseMatrix::zeros(n, n)
+        } else {
+            DenseMatrix::zeros(0, 0)
+        },
+        abs_r: if options.staleness == StalenessRule::Resolvent {
             DenseMatrix::zeros(n, n)
         } else {
             DenseMatrix::zeros(0, 0)
@@ -1126,6 +1440,18 @@ pub fn integrate_rodas5p_lagged_observed(
                 }
                 (StageSolver::Gmres, StalenessRule::Bounded) => {
                     RODAS5P_LAGGED_GMRES_BOUNDED_DRIVER_ID
+                }
+                (StageSolver::Richardson, StalenessRule::Resolvent) => {
+                    RODAS5P_LAGGED_RICHARDSON_RESOLVENT_DRIVER_ID
+                }
+                (StageSolver::Gmres, StalenessRule::Resolvent) => {
+                    RODAS5P_LAGGED_GMRES_RESOLVENT_DRIVER_ID
+                }
+                (StageSolver::Richardson, StalenessRule::Diagonal) => {
+                    RODAS5P_LAGGED_RICHARDSON_DIAGONAL_DRIVER_ID
+                }
+                (StageSolver::Gmres, StalenessRule::Diagonal) => {
+                    RODAS5P_LAGGED_GMRES_DIAGONAL_DRIVER_ID
                 }
             },
         },

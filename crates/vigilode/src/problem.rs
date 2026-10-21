@@ -53,7 +53,9 @@ pub enum Jacobian {
     /// Forward differences of the right-hand side (the default).
     ///
     /// Column `j` uses the increment `sqrt(eps) * max(|y_j|, 1)`, taken as
-    /// the represented difference `(y_j + inc) - y_j`. Without a declared
+    /// the represented difference `(y_j + inc) - y_j`. If the forward shift
+    /// overflows, `inc` is negated and the signed represented difference is
+    /// used. Without a declared
     /// structure the dense Jacobian costs `n + 1` right-hand-side calls; with
     /// [`Problem::banded`] the columns are grouped (Curtis–Powell–Reid: column
     /// `j` in group `j mod (lower + upper + 1)`) and one band costs
@@ -166,21 +168,25 @@ impl Problem {
     /// * With [`Jacobian::Banded`] the declaration must name the same band.
     /// * With [`Jacobian::Jvp`] it is refused as unsupported in this release.
     ///
-    /// Under [`Problem::mass`] or [`crate::Options::dense_output`] the run
-    /// goes to the sequential dense driver instead, which has no banded
-    /// linear algebra. There a finite-difference band or a
-    /// [`Jacobian::Banded`] provider is assembled into a dense matrix and
-    /// factorized by a direct dense LU, so the cost per factorization is
-    /// O(n^3) rather than O(n (lower + upper)^2). A [`Jacobian::Dense`]
-    /// provider with a band is refused on that route
-    /// ([`crate::SolveError::StructureRefused`]).
+    /// With [`Problem::mass`], or dense output under
+    /// [`crate::InteriorError::Enforce`], the sequential dense driver
+    /// assembles a finite-difference band or [`Jacobian::Banded`] provider
+    /// into a dense matrix: O(n^3) per factorization. Dense output without
+    /// mass under `WFilteredEnforce` or `Off` preserves the banded fast route
+    /// and its O(n (lower + upper)^2) factorization cost. A
+    /// [`Jacobian::Dense`] provider with a declared band is refused with
+    /// mass or dense output ([`crate::SolveError::Unsupported`]).
     pub fn banded(mut self, lower: usize, upper: usize) -> Self {
         self.band = Some((lower, upper));
         self
     }
 
     /// A constant mass matrix `M` (row major, `n * n`), which may be
-    /// singular (an index-1 DAE: a zero row makes that equation algebraic).
+    /// singular (a zero row makes that equation algebraic).
+    /// For a singular matrix the caller must provide an index-1 problem
+    /// with consistent initial data; the facade neither determines the DAE
+    /// index nor computes consistent initial conditions. Singularity alone
+    /// does not establish index 1.
     ///
     /// The run goes to the protected sequential dense driver (direct LU of
     /// `M - h gamma J`), which needs a matrix Jacobian: [`Jacobian::Dense`],
@@ -232,6 +238,8 @@ impl Problem {
     /// [`crate::FailureReason::EventFunctionNonFinite`] and truncates the
     /// outputs at the start of that step; if the driver had already failed,
     /// the driver's own reason is kept and the outputs are still truncated.
+    /// Failure to evaluate the required continuous extension instead gives
+    /// [`crate::FailureReason::EventInterpolationFailed`].
     pub fn event<G>(self, g: G, direction: Direction) -> Self
     where
         G: Fn(f64, &[f64]) -> f64 + Send + Sync + 'static,

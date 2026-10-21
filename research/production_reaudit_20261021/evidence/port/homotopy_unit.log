@@ -1,0 +1,88 @@
+   Compiling rodas5p-integrators v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-integrators)
+error[E0463]: can't find crate for `rodas5p_krylov`
+ --> crates/rodas5p-integrators/src/block.rs:6:5
+  |
+6 | use rodas5p_krylov::{GmresConfig, solve_gmres};
+  |     ^^^^^^^^^^^^^^ can't find crate
+
+error[E0282]: type annotations needed for `Vec<(Result<{type error}, _>, rodas5p_core::WorkCounters)>`
+   --> crates/rodas5p-integrators/src/common_w_gate.rs:349:9
+    |
+349 |     let solved = active_execution.map_ordered(&indices, |&index| {
+    |         ^^^^^^
+...
+376 |                     failure = Some(error.to_string());
+    |                                    ----- type must be known at this point
+    |
+help: consider giving `solved` an explicit type, where the placeholders `_` are specified
+    |
+349 |     let solved: Vec<(Result<_, E>, _)> = active_execution.map_ordered(&indices, |&index| {
+    |               ++++++++++++++++++++++++
+
+error[E0282]: type annotations needed
+   --> crates/rodas5p-integrators/src/common_w_gate.rs:446:27
+    |
+446 |             failure: Some(error.to_string()),
+    |                           ^^^^^ cannot infer type
+
+error[E0282]: type annotations needed
+    --> crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs:1057:13
+     |
+1057 |             self.directions[i].clear();
+     |             ^^^^^^^^^^^^^^^^^^ cannot infer type
+
+error[E0282]: type annotations needed
+    --> crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs:1058:13
+     |
+1058 |             self.directions[i].extend_from_slice(dir);
+     |             ^^^^^^^^^^^^^^^^^^ cannot infer type
+
+error[E0282]: type annotations needed
+    --> crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs:1070:21
+     |
+1070 |                     self.images[i].clear();
+     |                     ^^^^^^^^^^^^^^ cannot infer type
+
+error[E0282]: type annotations needed
+    --> crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs:1071:21
+     |
+1071 |                     self.images[i].extend_from_slice(v);
+     |                     ^^^^^^^^^^^^^^ cannot infer type
+
+error[E0282]: type annotations needed
+    --> crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs:1125:25
+     |
+1125 |                         dst.clear();
+     |                         ^^^ cannot infer type
+
+error[E0282]: type annotations needed
+    --> crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs:1145:21
+     |
+1145 |                     dst.clear();
+     |                     ^^^ cannot infer type
+
+error[E0282]: type annotations needed
+    --> crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs:2049:73
+     |
+2049 |         let least_squares_growth = self.gmres.ls_workspace().map_or(0, |ls| ls.growth_events())
+     |                                                                         ^^  -- type must be known at this point
+     |
+help: consider giving this closure parameter an explicit type
+     |
+2049 |         let least_squares_growth = self.gmres.ls_workspace().map_or(0, |ls: /* Type */| ls.growth_events())
+     |                                                                           ++++++++++++
+
+error[E0282]: type annotations needed
+    --> crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs:2984:38
+     |
+2984 |             if !report.x.iter().all(|value| value.is_finite()) {
+     |                                      ^^^^^  ----- type must be known at this point
+     |
+help: consider giving this closure parameter an explicit type
+     |
+2984 |             if !report.x.iter().all(|value: /* Type */| value.is_finite()) {
+     |                                           ++++++++++++
+
+Some errors have detailed explanations: E0282, E0463.
+For more information about an error, try `rustc --explain E0282`.
+error: could not compile `rodas5p-integrators` (lib test) due to 11 previous errors

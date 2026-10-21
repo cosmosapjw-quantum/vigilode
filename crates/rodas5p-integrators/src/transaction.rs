@@ -478,6 +478,14 @@ impl AdmissionConfig {
                 "overhead factor must be finite and at least 1",
             ));
         }
+        if !(self.prior_alpha + self.prior_beta).is_finite()
+            || !(self.z * self.z).is_finite()
+            || !beta_upper_confidence_bound(self.prior_alpha, self.prior_beta, self.z).is_finite()
+        {
+            return Err(AdmissionError::InvalidConfig(
+                "posterior confidence arithmetic is not representable",
+            ));
+        }
         Ok(())
     }
 }
@@ -706,6 +714,9 @@ impl AdmissionRule {
     }
 
     /// Record a charged attempt. This is the only update of the posterior.
+    /// A cumulative arithmetic overflow is refused without changing the bin.
+    /// Callers must preserve the actual work in their transaction ledger even
+    /// if this separate admission account can no longer represent the sum.
     pub fn record_attempt(
         &mut self,
         bin: RegimeBin,
@@ -725,7 +736,8 @@ impl AdmissionRule {
                 "replaced protected units must be finite and nonnegative",
             ));
         }
-        let s = self.state_mut(bin);
+        let mut next = self.state(bin);
+        let s = &mut next;
         s.attempts = s.attempts.saturating_add(1);
         s.protected_steps_since_attempt = 0;
         s.charged_units += record.charged_units;
@@ -739,6 +751,20 @@ impl AdmissionRule {
             s.beta += 1.0;
             s.failures = s.failures.saturating_add(1);
         }
+        if ![
+            s.alpha + s.beta,
+            s.charged_units,
+            s.net_overhead,
+            s.protected_base,
+        ]
+        .iter()
+        .all(|value| value.is_finite())
+        {
+            return Err(AdmissionError::InvalidCost(
+                "cumulative admission account overflows",
+            ));
+        }
+        *self.state_mut(bin) = next;
         Ok(())
     }
 
@@ -754,10 +780,18 @@ impl AdmissionRule {
                 "protected step units must be finite and positive",
             ));
         }
-        let s = self.state_mut(bin);
+        let mut next = self.state(bin);
+        let s = &mut next;
+        let protected_base = s.protected_base + units;
+        if !protected_base.is_finite() {
+            return Err(AdmissionError::InvalidCost(
+                "cumulative protected cost overflows",
+            ));
+        }
         s.protected_steps = s.protected_steps.saturating_add(1);
         s.protected_steps_since_attempt = s.protected_steps_since_attempt.saturating_add(1);
-        s.protected_base += units;
+        s.protected_base = protected_base;
+        *self.state_mut(bin) = next;
         Ok(())
     }
 }

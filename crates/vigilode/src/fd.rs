@@ -122,7 +122,15 @@ impl Guard {
 /// difference `(y_j + sqrt(eps) max(|y_j|, 1)) - y_j`.
 fn increment(yj: f64) -> (f64, f64) {
     let raw = f64::EPSILON.sqrt() * yj.abs().max(1.0);
-    let shifted = yj + raw;
+    let forward = yj + raw;
+    // At the positive finite boundary the forward shift overflows even
+    // though a backward difference is representable. Keep the usual rule
+    // bitwise unchanged everywhere else and divide by the signed increment.
+    let shifted = if forward.is_finite() {
+        forward
+    } else {
+        yj - raw
+    };
     (shifted, shifted - yj)
 }
 
@@ -147,7 +155,13 @@ pub(crate) fn dense_fd_jacobian(
             shifted[j] = y[j];
             outcome?;
             for i in 0..n {
-                matrix[(i, j)] = (f1[i] - f0[i]) / delta;
+                let entry = (f1[i] - f0[i]) / delta;
+                if !entry.is_finite() {
+                    return Err(CoreError::NonFinite(
+                        "finite-difference Jacobian entry overflowed".into(),
+                    ));
+                }
+                matrix[(i, j)] = entry;
             }
         }
         Ok(matrix)
@@ -193,7 +207,13 @@ pub(crate) fn banded_fd_fill(
             // `[j - upper, j + lower]` are disjoint.
             for j in (group..n).step_by(width) {
                 for i in j.saturating_sub(upper)..=(j + lower).min(n - 1) {
-                    band[i * width + (j + lower - i)] = (f1[i] - f0[i]) / deltas[j];
+                    let entry = (f1[i] - f0[i]) / deltas[j];
+                    if !entry.is_finite() {
+                        return Err(CoreError::NonFinite(
+                            "finite-difference band entry overflowed".into(),
+                        ));
+                    }
+                    band[i * width + (j + lower - i)] = entry;
                 }
             }
         }
@@ -265,6 +285,53 @@ mod tests {
             let tol = 1.0e-6 * y[i].abs().max(1.0) * 6.0;
             assert!((j[(i, i)] - exact).abs() <= tol, "{} vs {exact}", j[(i, i)]);
         }
+    }
+
+    #[test]
+    fn finite_boundary_uses_a_signed_representable_increment() {
+        // Multiplication by an exact power of two has an independent exact
+        // derivative, including when that derivative is subnormal.
+        let alpha = f64::from_bits(1_u64 << 51); // 2^-1023
+        let rhs: RhsFn = Arc::new(move |_t, y, dy| {
+            assert!(y.iter().all(|x| x.is_finite()));
+            for (out, value) in dy.iter_mut().zip(y) {
+                *out = alpha * value;
+            }
+            Ok(())
+        });
+        let guard = Arc::new(Guard::default());
+        let y = [f64::MAX, -f64::MAX];
+        let dense = dense_fd_jacobian(guard.clone(), rhs.clone(), 2)(0.0, &y).unwrap();
+        let mut band = [0.0; 2];
+        banded_fd_fill(guard.clone(), rhs, 2, 0, 0)(0.0, &y, &mut band).unwrap();
+        for i in 0..2 {
+            assert_eq!(dense[(i, i)], alpha);
+            assert_eq!(band[i], alpha);
+            assert_eq!(dense[(i, 1 - i)], 0.0);
+        }
+        assert_eq!(guard.fd_work().rhs_calls, 5);
+        for x in [0.0, 1.0, -2.0, 1e200, -f64::MAX] {
+            let raw = f64::EPSILON.sqrt() * x.abs().max(1.0);
+            assert_eq!(increment(x), (x + raw, (x + raw) - x));
+        }
+    }
+
+    #[test]
+    fn nonfinite_difference_entries_fail_before_factorization() {
+        let rhs: RhsFn = Arc::new(|_t, y, dy| {
+            dy[0] = if y[0] == 0.0 { f64::MAX } else { -f64::MAX };
+            Ok(())
+        });
+        let guard = Arc::new(Guard::default());
+        assert!(matches!(
+            dense_fd_jacobian(guard.clone(), rhs.clone(), 1)(0.0, &[0.0]),
+            Err(CoreError::NonFinite(_))
+        ));
+        assert!(matches!(
+            banded_fd_fill(guard.clone(), rhs, 1, 0, 0)(0.0, &[0.0], &mut [0.0]),
+            Err(CoreError::NonFinite(_))
+        ));
+        assert_eq!(guard.fd_work().rhs_calls, 4);
     }
 
     #[test]

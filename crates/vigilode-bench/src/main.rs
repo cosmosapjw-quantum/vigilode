@@ -7,7 +7,9 @@ use std::process::{Command, ExitCode};
 use std::sync::atomic::Ordering;
 
 use serde_json::{Value, json};
-use vigilode_bench::{alloc as counters, corpus::Corpus, ffi, harness, report};
+use vigilode_bench::{alloc as counters, corpus::Corpus, ffi, harness, report, source_identity};
+
+const BUILT_SOURCE: &str = include_str!(concat!(env!("OUT_DIR"), "/source_manifest.txt"));
 
 /// Counting wrapper around the system allocator (Rust allocations).
 struct Counting;
@@ -142,8 +144,7 @@ fn cmd(args: &[&str]) -> String {
         .unwrap_or_else(|| "unavailable".into())
 }
 
-fn provenance() -> Value {
-    let dir = env!("CARGO_MANIFEST_DIR");
+fn provenance(source_receipt: Value) -> Value {
     let cpu = std::fs::read_to_string("/proc/cpuinfo")
         .ok()
         .and_then(|s| {
@@ -152,19 +153,20 @@ fn provenance() -> Value {
                 .map(|l| l.split(':').nth(1).unwrap_or("").trim().to_string())
         })
         .unwrap_or_else(|| "unavailable".into());
-    let dirty = cmd(&[
-        "git",
-        "-C",
-        dir,
-        "status",
-        "--porcelain",
-        "--untracked-files=no",
-        "--",
-        ".",
-    ]);
+    let build_clean = env!("BENCH_BUILD_GIT_DIRTY") == "false";
+    let build_commit = env!("BENCH_BUILD_GIT_COMMIT");
     json!({
-        "git_commit": cmd(&["git", "-C", dir, "rev-parse", "HEAD"]),
-        "git_crate_tree_dirty": !dirty.is_empty() && dirty != "unavailable",
+        "git_commit": if build_clean && build_commit != "unavailable" { Some(build_commit) } else { None },
+        "git_commit_scope": "build-time context only; source_identity is authoritative",
+        "build_git_commit_context": build_commit,
+        "build_git_dirty_context": env!("BENCH_BUILD_GIT_DIRTY"),
+        "source_identity": source_receipt,
+        "build_target": env!("BENCH_BUILD_TARGET"),
+        "build_profile": env!("BENCH_BUILD_PROFILE"),
+        "build_opt_level": env!("BENCH_BUILD_OPT_LEVEL"),
+        "build_debug": env!("BENCH_BUILD_DEBUG"),
+        "build_target_features": env!("BENCH_BUILD_CARGO_CFG_TARGET_FEATURE"),
+        "build_rustflags": env!("BENCH_BUILD_CARGO_ENCODED_RUSTFLAGS"),
         "crate_version": env!("CARGO_PKG_VERSION"),
         "rustc": env!("BENCH_RUSTC_VERSION"),
         "gfortran": env!("BENCH_GFORTRAN_VERSION"),
@@ -202,9 +204,48 @@ fn real_main() -> Result<(), String> {
             }
             let text = std::fs::read_to_string(corpus_path).map_err(|e| e.to_string())?;
             let corpus = Corpus::from_json(&text)?;
+            let default_root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+                .parent()
+                .unwrap()
+                .parent()
+                .unwrap();
+            let root = args
+                .iter()
+                .position(|a| a == "--source-root")
+                .map(|_| arg(&args, "--source-root").map(std::path::Path::new))
+                .transpose()?
+                .unwrap_or(default_root);
+            let executable = std::env::current_exe().map_err(|e| e.to_string())?;
+            let guard = source_identity::RunGuard::begin(
+                root,
+                BUILT_SOURCE,
+                std::path::Path::new(corpus_path),
+                &executable,
+                text.as_bytes(),
+                args.iter().any(|a| a == "--allow-dirty-source"),
+            )?;
+            if args.iter().any(|a| a == "--require-independent-reference")
+                && corpus.reference.independent_protocol.is_none()
+            {
+                return Err("independent RADAU5/CVODE refinement protocol required by CLI".into());
+            }
             let mut log = |s: &str| eprintln!("{s}");
             let mut doc = harness::run_corpus(&corpus, &mut log)?;
-            doc["provenance"] = provenance();
+            let git = guard.finish()?;
+            let source_receipt = json!({
+                "schema": source_identity::SCHEMA,
+                "status": "VERIFIED_BUILD_SOURCE",
+                "manifest_sha256": source_identity::sha256_bytes(BUILT_SOURCE.as_bytes())?,
+                "manifest": BUILT_SOURCE,
+                "binary_sha256": guard.binary_sha256,
+                "corpus_sha256": guard.corpus_sha256,
+                "verified_boundaries": ["before_run", "after_run"],
+                "git_available": git.is_some(),
+                "git_dirty": git.as_ref().map(|c| !c.1.is_empty()),
+                "dirty_source_allowed": guard.dirty_source_allowed,
+                "scope": "repository crates, manifests/locks, fixtures, literal compile-time assets and native bridge sources; registry dependencies trusted through Cargo.lock checksum verification; system shared-library bytes are not build-source inputs",
+            });
+            doc["provenance"] = provenance(source_receipt);
             doc["corpus_file"] = json!(corpus_path);
             let s = serde_json::to_string_pretty(&doc).map_err(|e| e.to_string())?;
             std::fs::write(out, s + "\n").map_err(|e| e.to_string())
@@ -218,7 +259,7 @@ fn real_main() -> Result<(), String> {
             std::fs::write(out, md).map_err(|e| e.to_string())
         }
         _ => Err(
-            "usage: vigilode-bench wp --corpus <file> --out <json> | report --in <json> --out <md>"
+            "usage: vigilode-bench wp --corpus <file> --out <json> [--source-root <repo>] [--require-independent-reference] [--allow-dirty-source] | report --in <json> --out <md>"
                 .into(),
         ),
     }

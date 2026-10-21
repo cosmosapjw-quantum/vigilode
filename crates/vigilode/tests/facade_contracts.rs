@@ -862,7 +862,7 @@ fn dense_route_records_jacobian_reuses_and_lu() {
         sol.stats.driver_work,
         DriverWork::Dense {
             jacobian_reuses: direct.jacobian_reuses,
-            lu: direct.lu,
+            lu: (&direct.lu).into(),
         }
     );
     let record = driver_work_json(&sol);

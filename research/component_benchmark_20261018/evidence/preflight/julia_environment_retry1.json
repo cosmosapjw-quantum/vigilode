@@ -1,0 +1,34 @@
+{
+  "source_argv": [
+    "tar",
+    "--exclude=vigilode-component-julia-depot-20261018/compiled",
+    "--exclude=vigilode-component-julia-depot-20261018/logs",
+    "-czf",
+    "-",
+    "-C",
+    "/tmp",
+    "vigilode-component-julia-env-20261018",
+    "vigilode-component-julia-depot-20261018"
+  ],
+  "destination_argv": [
+    "ssh",
+    "-i",
+    "/home/cosmosapjw/.ssh/ncp_key",
+    "-o",
+    "BatchMode=yes",
+    "-o",
+    "ConnectTimeout=10",
+    "root@49.50.142.2",
+    "tar -xzf - -C /root/VIGILODE_COMPONENT_20261018T134235Z/env"
+  ],
+  "exit_codes": [
+    0,
+    0
+  ],
+  "archive_sha256": "b11424009f09a079e89a8fdcbbb82166e0a7866085401f097f814b002cf3adc2",
+  "compressed_bytes": 297549003,
+  "elapsed_seconds": 137.61080850299913,
+  "diagnosis": "PACKAGING_CONCURRENT_COMPILED_CACHE_CHANGE",
+  "repair": "Exclude mutable compiled cache and logs; preserve package/manifest/artifact bytes",
+  "retry": 1
+}

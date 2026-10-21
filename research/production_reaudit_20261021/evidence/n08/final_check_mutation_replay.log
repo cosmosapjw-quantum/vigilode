@@ -1,0 +1,30 @@
+CONTROLLED MUTATION REPLAY: remove only the two final guards. Synthetic fixture data; no native solver or campaign execution.
+test_self_consistent_corpus_replacement_cannot_override_frozen_config_lock (test_production_promotion_gate.FrozenCampaignRegressionTest.test_self_consistent_corpus_replacement_cannot_override_frozen_config_lock) ... FAIL
+test_valid_other_build_binary_cannot_be_rebound_to_comparison_command (test_production_promotion_gate.FrozenCampaignRegressionTest.test_valid_other_build_binary_cannot_be_rebound_to_comparison_command) ... FAIL
+
+======================================================================
+FAIL: test_self_consistent_corpus_replacement_cannot_override_frozen_config_lock (test_production_promotion_gate.FrozenCampaignRegressionTest.test_self_consistent_corpus_replacement_cannot_override_frozen_config_lock)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/0dc1e721cf82/vigilode/tools/tests/test_production_promotion_gate.py", line 245, in test_self_consistent_corpus_replacement_cannot_override_frozen_config_lock
+    self.assertEqual(result['receipt_integrity'], 'HOLD')
+AssertionError: 'PASS' != 'HOLD'
+- PASS
++ HOLD
+
+
+======================================================================
+FAIL: test_valid_other_build_binary_cannot_be_rebound_to_comparison_command (test_production_promotion_gate.FrozenCampaignRegressionTest.test_valid_other_build_binary_cannot_be_rebound_to_comparison_command)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/0dc1e721cf82/vigilode/tools/tests/test_production_promotion_gate.py", line 256, in test_valid_other_build_binary_cannot_be_rebound_to_comparison_command
+    self.assertEqual(result['receipt_integrity'], 'HOLD')
+AssertionError: 'PASS' != 'HOLD'
+- PASS
++ HOLD
+
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.064s
+
+FAILED (failures=2)

@@ -1,0 +1,10 @@
+Command 1: target/debug/deps/alg04_dup_fix_contracts-dda8182000f152c1 --list --format terse --test-threads=1 | head -12
+Observed output:
+a_right_hand_side_already_within_the_threshold_needs_no_operator: test
+skipping_the_final_residual_changes_only_the_diagnostic_counters: test
+Command 2: target/debug/deps/alg04_dup_fix_contracts-dda8182000f152c1 --format terse --test-threads=1 | tail -8
+Observed output:
+running 2 tests
+..
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.74s
+Both pipeline exit codes reported 0 from terminal; direct test exit code is not independently captured because of tail pipeline. This was inadvertent local execution during libtest format inspection, outside the intended compile-only checkpoint. It is not an NCP lease or campaign receipt and does not promote any scientific claim.

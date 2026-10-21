@@ -14,16 +14,22 @@ pub mod audit2_stage_certificate_research;
 mod a1_two_arm_receipt;
 mod adaptive;
 mod adaptive_exponential;
+pub mod affine_transport;
 mod bdf;
 mod block;
 mod bound_collective;
 mod bound_pr101;
+mod pr101_verified;
+pub use pr101_verified::{
+    Pr101Bound, Pr101Model, Pr101Output, Pr101Run, Pr101VerifiedError, Pr101VerifiedSegment,
+};
 mod candidates;
 mod causal_majorant;
 mod certification;
 mod certified_budget;
 pub mod collective_direct;
 pub mod collective_model;
+pub mod collective_rodas5p;
 mod common_w_gate;
 mod comparator_fidelity;
 mod controller_telemetry;
@@ -420,13 +426,17 @@ pub use rodas5p_fast_small_batch::{
     integrate_rodas5p_fast_small_batch,
 };
 pub use rodas5p_lagged::{
-    LaggedWork, RODAS5P_LAGGED_CONTRACTION_MAX, RODAS5P_LAGGED_DRIVER_ID,
-    RODAS5P_LAGGED_GMRES_BOUNDED_DRIVER_ID, RODAS5P_LAGGED_GMRES_DRIVER_ID,
+    BoundLinearStageModel, LaggedWork, LinearStageAssessment, LinearStageAssessmentWork,
+    LinearStageTargetPlan, RODAS5P_LAGGED_CONTRACTION_MAX, RODAS5P_LAGGED_DRIVER_ID,
+    RODAS5P_LAGGED_GMRES_BOUNDED_DRIVER_ID, RODAS5P_LAGGED_GMRES_DIAGONAL_DRIVER_ID,
+    RODAS5P_LAGGED_GMRES_DRIVER_ID, RODAS5P_LAGGED_GMRES_RESOLVENT_DRIVER_ID,
     RODAS5P_LAGGED_GMRES_RESTART, RODAS5P_LAGGED_MAX_ITERATIONS,
-    RODAS5P_LAGGED_RICHARDSON_BOUNDED_DRIVER_ID, RODAS5P_LAGGED_STALENESS_Q_MAX,
+    RODAS5P_LAGGED_RICHARDSON_BOUNDED_DRIVER_ID, RODAS5P_LAGGED_RICHARDSON_DIAGONAL_DRIVER_ID,
+    RODAS5P_LAGGED_RICHARDSON_RESOLVENT_DRIVER_ID, RODAS5P_LAGGED_STALENESS_Q_MAX,
     RODAS5P_LAGGED_THETA, RODAS5P_NONSTIFF_STAGE_SENSITIVITIES, Rodas5pLaggedOptions,
-    Rodas5pLaggedResult, StageSolver, StalenessRule, StalenessWork,
-    integrate_rodas5p_lagged_observed, rodas5p_lagged_stage_targets, rodas5p_staleness_bound,
+    Rodas5pLaggedResult, StageBoundCalculus, StageSolver, StalenessRule, StalenessWork,
+    integrate_rodas5p_lagged_observed, rodas5p_diagonal_staleness_bound,
+    rodas5p_lagged_stage_targets, rodas5p_resolvent_staleness_bound, rodas5p_staleness_bound,
 };
 pub use rodas5p_matrix_free_fast::{
     AttemptCharge, AttemptLgmresSnapshot, AttemptResidualOutcome, AttemptResidualRecord,
@@ -532,3 +542,26 @@ pub use policy_redesign_v25::{
 /// Optional model-specific physical error transport; not a default solver path.
 #[cfg(feature = "audit2-research")]
 pub mod chart_transport;
+pub mod nonlinear_homotopy;
+pub use nonlinear_homotopy::{
+    NonlinearHomotopyConfig, NonlinearHomotopyError, NonlinearHomotopyWork, VerifiedHomotopyPoint,
+    VerifiedNonlinearHomotopy, integrate_nonlinear_homotopy,
+};
+pub mod damped_packet;
+
+mod generic_verified;
+pub use generic_verified::{
+    VerifiedContinuousProblem, VerifiedResidualDiagnostics, VerifiedResidualError,
+    VerifiedResidualOutput, VerifiedResidualRun, VerifiedResidualSegment,
+    integrate_verified_residual,
+};
+
+pub mod gray_scott_verified;
+
+pub mod global_budget;
+
+pub mod actual_k_homotopy;
+pub use actual_k_homotopy::{
+    ActualKHomotopyConfig, ActualKHomotopyError, ActualKHomotopyWork, CertifiedActualKHomotopy,
+    certify_collective_actual_k_homotopy,
+};

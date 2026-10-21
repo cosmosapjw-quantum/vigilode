@@ -1,0 +1,48 @@
+   Compiling rodas5p-integrators v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-integrators)
+warning: variant `EndpointAdmission` is never constructed
+    --> crates/rodas5p-integrators/src/packet_trajectory.rs:1445:5
+     |
+1443 | enum VerifiedTrialFault {
+     |      ------------------ variant in this enum
+1444 |     BeforeQuery(usize),
+1445 |     EndpointAdmission,
+     |     ^^^^^^^^^^^^^^^^^
+     |
+     = note: `VerifiedTrialFault` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rodas5p-integrators` (lib) generated 1 warning
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 28.94s
+     Running tests/b1b_gmres_contracts.rs (/workspace/scratch/0dc1e721cf82/runtime/dense-target/debug/deps/b1b_gmres_contracts-1a0362133caae2cd)
+
+running 9 tests
+test b1b_gmres_measurement_hires_and_brusselator ... ignored, measurement: run with --ignored --nocapture and record in docs/plan/nodes/b1b-gmres.md
+test monitored_gmres_refuses_a_left_preconditioner ... ok
+test monitored_gmres_abandons_and_exhausts_without_writing_the_output ... ok
+test monitored_gmres_matches_gmres_into_at_the_last_column_of_a_full_cycle ... ok
+test monitored_gmres_matches_gmres_into_over_restarted_cycles_on_a_large_system ... ok
+test gmres_forced_refresh_reproduces_the_fast_driver_on_robertson_and_hires ... ok
+test richardson_default_is_the_wave1_driver_bit_for_bit ... ok
+test gmres_run_charges_every_refresh_and_counts_every_product ... ok
+test gmres_jvp_path_runs_inside_iterating_stages ... ok
+
+test result: ok. 8 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 1.93s
+
+     Running tests/b1d_resolvent_contracts.rs (/workspace/scratch/0dc1e721cf82/runtime/dense-target/debug/deps/b1d_resolvent_contracts-3eb22608d0e57df8)
+
+running 5 tests
+test b1d_kill_gate_diagnostic ... ignored, diagnostic, gate fixed in docs/plan/IMPLEMENTATION_WAVE4.md; B1D_RESULTS_OUT writes evidence
+test nonnormal_closed_form_and_numeric_guards ... ok
+test zero_weight_refreshes_and_completes_on_both_rules ... ok
+test resolvent_bound_dominates_explicit_t_and_not_b1c ... ok
+test forced_refresh_matches_fast_and_all_solves_are_charged ... ok
+
+test result: ok. 4 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.19s
+
+     Running tests/reaudit_lagged_failure_work.rs (/workspace/scratch/0dc1e721cf82/runtime/dense-target/debug/deps/reaudit_lagged_failure_work-094e819682c58f97)
+
+running 1 test
+test recoverable_jvp_error_retains_completed_column_and_all_work_partitions ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+

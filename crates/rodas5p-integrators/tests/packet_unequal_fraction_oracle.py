@@ -164,7 +164,15 @@ def trig_orbit(z, phase):
 
 
 def verify(payload):
+    # Preserve the original combined numerical/allocation acceptance contract.
     assert payload["allocation_calibration_clone_allocations"] >= 3, "allocator positive control failed"
+    return verify_numeric(payload)
+
+
+def verify_numeric(payload):
+    # This function makes numerical inclusion independently executable. It
+    # grants no allocator authority; the original verify() still requires its
+    # unchanged positive control.
     xi = [q(x) for x in payload["xi"]]
     weights = [q(w) for w in payload["weights"]]
     center_initial = [complex_pair(z) for z in payload["initial_center"]]
@@ -232,15 +240,18 @@ def verify(payload):
     assert negative is not None
     return {"status": "PASS", "arms": 4, "orders": [40, 48], "requested_times": 5,
             "disk_checks": total_disks, "exact_zero_residual_coefficients": total_zeros,
-            "allocation_calibration_clone_allocations": payload["allocation_calibration_clone_allocations"],
+            "allocation_calibration_clone_allocations": payload.get("allocation_calibration_clone_allocations"),
             "largest_epsilon40_float": float(largest_eps40),
             "largest_epsilon48_float": float(largest_eps48),
             "negative_endpoint_controls": negative}
 
 
 if __name__ == "__main__":
-    raw = open(sys.argv[1], "rb").read()
+    numeric_only = len(sys.argv) > 1 and sys.argv[1] == "--numeric-only"
+    source = sys.argv[2] if numeric_only else sys.argv[1]
+    raw = sys.stdin.buffer.read() if source == "-" else open(source, "rb").read()
     payload = json.loads(raw)
-    result = verify(payload)
+    result = verify_numeric(payload) if numeric_only else verify(payload)
+    result["allocation_authority"] = "NOT_EVALUATED" if numeric_only else "POSITIVE_CONTROL_PASSED"
     result["input_sha256"] = hashlib.sha256(raw).hexdigest()
     print(json.dumps(result, sort_keys=True))

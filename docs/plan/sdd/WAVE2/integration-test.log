@@ -1,0 +1,3103 @@
+   Compiling rodas5p-core v0.1.0 (/home/claude/wt/integration2/crates/rodas5p-core)
+   Compiling rodas5p-integrators v0.1.0 (/home/claude/wt/integration2/crates/rodas5p-integrators)
+   Compiling rodas5p-fair-ab v0.1.0 (/home/claude/wt/integration2/crates/rodas5p-fair-ab)
+   Compiling rodas5p-krylov v0.1.0 (/home/claude/wt/integration2/crates/rodas5p-krylov)
+warning: fields `prepared_centers`, `prepared_radii`, `prepared_times`, `prepared_count`, `radii`, and `prepared_valid` are never read
+   --> crates/rodas5p-integrators/src/output.rs:706:5
+    |
+698 | pub(crate) struct OutputCollector {
+    |                   --------------- fields in this struct
+...
+706 |     prepared_centers: Vec<Vec<f64>>,
+    |     ^^^^^^^^^^^^^^^^
+707 |     prepared_radii: Vec<Vec<f64>>,
+    |     ^^^^^^^^^^^^^^
+708 |     prepared_times: Vec<f64>,
+    |     ^^^^^^^^^^^^^^
+709 |     prepared_count: usize,
+    |     ^^^^^^^^^^^^^^
+710 |     radii: Vec<Vec<f64>>,
+    |     ^^^^^
+711 |     prepared_valid: bool,
+    |     ^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: struct `DenseOutputPreparationWork` is never constructed
+   --> crates/rodas5p-integrators/src/output.rs:716:19
+    |
+716 | pub(crate) struct DenseOutputPreparationWork {
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: methods `with_verified_radii`, `prepare_dense_interval_with_radii`, `prepare_dense_interval_inner`, `commit_prepared_dense_interval`, `prepared_dense_radii`, and `committed_output_radii` are never used
+    --> crates/rodas5p-integrators/src/output.rs:766:19
+     |
+ 722 | impl OutputCollector {
+     | -------------------- methods in this implementation
+...
+ 766 |     pub(crate) fn with_verified_radii(mut self, initial_radius: &[f64]) -> CoreResult<Self> {
+     |                   ^^^^^^^^^^^^^^^^^^^
+...
+1035 |     pub(crate) fn prepare_dense_interval_with_radii<C, R>(
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+1070 |     fn prepare_dense_interval_inner<C, R>(
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+1162 |     pub(crate) fn commit_prepared_dense_interval(&mut self) {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+1176 |     pub(crate) fn prepared_dense_radii(&self) -> &[Vec<f64>] {
+     |                   ^^^^^^^^^^^^^^^^^^^^
+...
+1180 |     pub(crate) fn committed_output_radii(&self) -> &[Vec<f64>] {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: variant `EndpointAdmission` is never constructed
+    --> crates/rodas5p-integrators/src/packet_trajectory.rs:1445:5
+     |
+1443 | enum VerifiedTrialFault {
+     |      ------------------ variant in this enum
+1444 |     BeforeQuery(usize),
+1445 |     EndpointAdmission,
+     |     ^^^^^^^^^^^^^^^^^
+     |
+     = note: `VerifiedTrialFault` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+
+warning: function `prepare` is never used
+ --> /home/claude/wt/integration2/crates/rodas5p-integrators/tests/support/a02_packet_counter_contract.rs:3:8
+  |
+3 | pub fn prepare(n: usize, o: usize, d: usize, sweeps: usize) -> PacketWorkCounters {
+  |        ^^^^^^^
+  |
+  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `initial_adapter` is never used
+  --> /home/claude/wt/integration2/crates/rodas5p-integrators/tests/support/a02_packet_counter_contract.rs:95:8
+   |
+95 | pub fn initial_adapter(n: usize, g: usize) -> VerifiedTrajectoryWork {
+   |        ^^^^^^^^^^^^^^^
+
+warning: function `prepare_adapter` is never used
+   --> /home/claude/wt/integration2/crates/rodas5p-integrators/tests/support/a02_packet_counter_contract.rs:104:8
+    |
+104 | pub fn prepare_adapter(
+    |        ^^^^^^^^^^^^^^^
+
+warning: function `query_adapter` is never used
+   --> /home/claude/wt/integration2/crates/rodas5p-integrators/tests/support/a02_packet_counter_contract.rs:122:8
+    |
+122 | pub fn query_adapter(n: usize, o: usize, d: usize) -> VerifiedTrajectoryWork {
+    |        ^^^^^^^^^^^^^
+
+warning: function `rejected_tolerance_adapter` is never used
+   --> /home/claude/wt/integration2/crates/rodas5p-integrators/tests/support/a02_packet_counter_contract.rs:134:8
+    |
+134 | pub fn rejected_tolerance_adapter(
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `rodas5p-integrators` (lib test) generated 5 warnings
+warning: `rodas5p-integrators` (lib) generated 4 warnings
+   Compiling vigilode-coupled v0.1.0 (/home/claude/wt/integration2/crates/vigilode-coupled)
+   Compiling vigilode v0.1.0 (/home/claude/wt/integration2/crates/vigilode)
+   Compiling rodas5p-cli v0.1.0 (/home/claude/wt/integration2/crates/rodas5p-cli)
+warning: function `admission_rejection_adapter` is never used
+   --> crates/rodas5p-integrators/tests/support/a02_packet_counter_contract.rs:191:8
+    |
+191 | pub fn admission_rejection_adapter(
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rodas5p-integrators` (test "production_audit_verified_trajectory") generated 1 warning
+    Finished `test` profile [unoptimized] target(s) in 2m 10s
+     Running unittests src/main.rs (/home/claude/targets/integration/debug/deps/rodas5p-6a399e6b3ffd270c)
+
+running 24 tests
+test scientific_validity_v2_producer_tests::calibration_record_loop_attempts_all_fifty_four_cases_after_individual_failures ... ok
+test stiff_benchmark::sp03::the_jvp_only_brusselator_matches_the_benchmark_problem ... ok
+test stiff_benchmark::sp03::the_routed_arm_equals_its_target_arm ... ok
+test stiff_benchmark::sp03::the_sp03_arms_are_known_and_opt_in ... ok
+test stiff_benchmark::spd01::option_arms_keep_the_entry_validation ... ok
+test stiff_benchmark::spd01::spd01_identity_export ... ignored, identity export of research/spd01_fast_driver_overhead_20261005; release build; set SPD01_IDENTITY
+test stiff_benchmark::spd01::spd02_identity_export ... ignored, identity export of research/spd02_lu_column_extents_20261005; release build; set SPD02_IDENTITY
+test stiff_benchmark::spd01::spd03_band_fill_equals_dense_fill ... ok
+test stiff_benchmark::spd01::spd03_identity_export ... ignored, identity export of research/spd03_banded_arm_instructions_20261005; release build; set SPD03_IDENTITY
+test stiff_benchmark::spd06::the_static_arms_are_known_and_equal_the_small_arm ... ok
+test stiff_benchmark::spd09::colext64_equals_the_legacy_driver_on_both_sides_of_the_threshold ... ok
+test stiff_benchmark::spd09::spd09_identity_export ... ignored, identity export of research/spd09_colext_threshold_20261007; release build; set SPD09_IDENTITY
+test stiff_benchmark::tests::analytic_jacobians_match_finite_differences ... ok
+test stiff_benchmark::tests::every_arm_completes_a_loose_hires_run ... ok
+test stiff_benchmark::tests::in_place_jacobians_equal_the_explicit_ones ... ok
+test unified_assessment_tests::document_status_exposes_uncertified_reference_rows ... ok
+test unified_assessment_tests::linear_candidate_id_covers_every_strict_cell ... ok
+test unified_assessment_tests::nonlinear_batch_depth_advantage_does_not_replace_wall_speedup ... ok
+test unified_assessment_tests::relative_gates_against_a_reference_only_comparator_are_not_evaluated ... ok
+test unified_assessment_tests::smoke_and_single_sample_wall_blockers_are_not_evaluated ... ok
+test unified_assessment_tests::the_published_poly03_campaign_keeps_its_numbers_under_an_authority_hold ... ok
+test stiff_benchmark::sp03::profile_run_reports_the_routing ... ok
+test unified_assessment_tests::v37_failed_hard_gate_refuses_to_create_authority_output ... ok
+test unified_assessment_tests::tier_l_wall_decisions_come_only_from_a_paired_assessment ... ok
+
+test result: ok. 20 passed; 0 failed; 4 ignored; 0 measured; 0 filtered out; finished in 45.14s
+
+     Running unittests src/bin/allocation_audit.rs (/home/claude/targets/integration/debug/deps/rodas5p_allocation_audit-776d69fcc36ae423)
+
+running 15 tests
+test stiff_benchmark::sp03::the_jvp_only_brusselator_matches_the_benchmark_problem ... ok
+test stiff_benchmark::sp03::the_routed_arm_equals_its_target_arm ... ok
+test stiff_benchmark::sp03::the_sp03_arms_are_known_and_opt_in ... ok
+test stiff_benchmark::spd01::option_arms_keep_the_entry_validation ... ok
+test stiff_benchmark::spd01::spd01_identity_export ... ignored, identity export of research/spd01_fast_driver_overhead_20261005; release build; set SPD01_IDENTITY
+test stiff_benchmark::spd01::spd02_identity_export ... ignored, identity export of research/spd02_lu_column_extents_20261005; release build; set SPD02_IDENTITY
+test stiff_benchmark::spd01::spd03_band_fill_equals_dense_fill ... ok
+test stiff_benchmark::spd01::spd03_identity_export ... ignored, identity export of research/spd03_banded_arm_instructions_20261005; release build; set SPD03_IDENTITY
+test stiff_benchmark::spd06::the_static_arms_are_known_and_equal_the_small_arm ... ok
+test stiff_benchmark::spd09::colext64_equals_the_legacy_driver_on_both_sides_of_the_threshold ... ok
+test stiff_benchmark::spd09::spd09_identity_export ... ignored, identity export of research/spd09_colext_threshold_20261007; release build; set SPD09_IDENTITY
+test stiff_benchmark::tests::analytic_jacobians_match_finite_differences ... ok
+test stiff_benchmark::tests::every_arm_completes_a_loose_hires_run ... ok
+test stiff_benchmark::tests::in_place_jacobians_equal_the_explicit_ones ... ok
+test stiff_benchmark::sp03::profile_run_reports_the_routing ... ok
+
+test result: ok. 11 passed; 0 failed; 4 ignored; 0 measured; 0 filtered out; finished in 26.90s
+
+     Running tests/a1_tolerance_receipt_cli_contracts.rs (/home/claude/targets/integration/debug/deps/a1_tolerance_receipt_cli_contracts-cdc763cadc306158)
+
+running 2 tests
+error: invalid value 'unknown-arm' for '--arm <ARM>'
+  [possible values: legacy-fixed, outer-scaled-numeric-parity]
+
+For more information, try '--help'.
+error: invalid value 'unknown-family' for '--family <FAMILY>'
+  [possible values: robertson-ramped, hires-ramped, van-der-pol-ramped, rotating-nonnormal, nonautonomous-stiff-forcing, semilinear-advection-diffusion-ramped]
+
+For more information, try '--help'.
+error: unexpected argument '--profile' found
+
+Usage: rodas5p a1-two-arm-receipt-cell --family <FAMILY> --arm <ARM> --repository <REPOSITORY> --pull-request <PULL_REQUEST> --scientific-execution-head-sha <SCIENTIFIC_EXECUTION_HEAD_SHA> --scientific-execution-head-tree <SCIENTIFIC_EXECUTION_HEAD_TREE> --base-sha <BASE_SHA> --base-tree <BASE_TREE> --tested-execution-merge-sha <TESTED_EXECUTION_MERGE_SHA> --tested-execution-merge-tree <TESTED_EXECUTION_MERGE_TREE> --execution-workflow-run-id <EXECUTION_WORKFLOW_RUN_ID> --execution-workflow-run-attempt <EXECUTION_WORKFLOW_RUN_ATTEMPT> --rust-version <RUST_VERSION> --cargo-version <CARGO_VERSION> --output <OUTPUT>
+
+For more information, try '--help'.
+test receipt_cli_rejects_unknown_arm_family_and_profile_surface ... ok
+test receipt_cli_emits_one_deterministic_candidate_cell_without_late_bound_fields ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.46s
+
+     Running tests/alg02_predictive_controller.rs (/home/claude/targets/integration/debug/deps/alg02_predictive_controller-88328e3b241ba1c1)
+
+running 19 tests
+test export_base ... ignored, base export of research/alg02_predictive_controller_20261008; release build; set ALG02_BASE
+test export_runs ... ignored, run export of research/alg02_predictive_controller_20261008; release build; set ALG02_RUNS
+test ladders_and_cells_are_the_registered_ones ... ok
+test stiff_benchmark::sp03::the_jvp_only_brusselator_matches_the_benchmark_problem ... ok
+test stiff_benchmark::sp03::the_routed_arm_equals_its_target_arm ... ok
+test stiff_benchmark::sp03::the_sp03_arms_are_known_and_opt_in ... ok
+test stiff_benchmark::spd01::option_arms_keep_the_entry_validation ... ok
+test stiff_benchmark::spd01::spd01_identity_export ... ignored, identity export of research/spd01_fast_driver_overhead_20261005; release build; set SPD01_IDENTITY
+test stiff_benchmark::spd01::spd02_identity_export ... ignored, identity export of research/spd02_lu_column_extents_20261005; release build; set SPD02_IDENTITY
+test stiff_benchmark::spd01::spd03_band_fill_equals_dense_fill ... ok
+test stiff_benchmark::spd01::spd03_identity_export ... ignored, identity export of research/spd03_banded_arm_instructions_20261005; release build; set SPD03_IDENTITY
+test stiff_benchmark::spd06::the_static_arms_are_known_and_equal_the_small_arm ... ok
+test stiff_benchmark::spd09::colext64_equals_the_legacy_driver_on_both_sides_of_the_threshold ... ok
+test stiff_benchmark::spd09::spd09_identity_export ... ignored, identity export of research/spd09_colext_threshold_20261007; release build; set SPD09_IDENTITY
+test stiff_benchmark::tests::analytic_jacobians_match_finite_differences ... ok
+test stiff_benchmark::tests::every_arm_completes_a_loose_hires_run ... ok
+test stiff_benchmark::tests::in_place_jacobians_equal_the_explicit_ones ... ok
+test the_arms_differ_only_in_the_registered_field ... ok
+test stiff_benchmark::sp03::profile_run_reports_the_routing ... ok
+
+test result: ok. 13 passed; 0 failed; 6 ignored; 0 measured; 0 filtered out; finished in 24.77s
+
+     Running tests/alg05_predictive_controller_v2.rs (/home/claude/targets/integration/debug/deps/alg05_predictive_controller_v2-976e7084e7704eae)
+
+running 19 tests
+test export_base ... ignored, base export of research/alg05_predictive_controller_v2_20261010; release build; set ALG05_BASE
+test export_runs ... ignored, run export of research/alg05_predictive_controller_v2_20261010; release build; set ALG05_RUNS
+test ladders_seeds_and_cells_are_the_registered_ones ... ok
+test stiff_benchmark::sp03::the_jvp_only_brusselator_matches_the_benchmark_problem ... ok
+test stiff_benchmark::sp03::the_routed_arm_equals_its_target_arm ... ok
+test stiff_benchmark::sp03::the_sp03_arms_are_known_and_opt_in ... ok
+test stiff_benchmark::spd01::option_arms_keep_the_entry_validation ... ok
+test stiff_benchmark::spd01::spd01_identity_export ... ignored, identity export of research/spd01_fast_driver_overhead_20261005; release build; set SPD01_IDENTITY
+test stiff_benchmark::spd01::spd02_identity_export ... ignored, identity export of research/spd02_lu_column_extents_20261005; release build; set SPD02_IDENTITY
+test stiff_benchmark::spd01::spd03_band_fill_equals_dense_fill ... ok
+test stiff_benchmark::spd01::spd03_identity_export ... ignored, identity export of research/spd03_banded_arm_instructions_20261005; release build; set SPD03_IDENTITY
+test stiff_benchmark::spd06::the_static_arms_are_known_and_equal_the_small_arm ... ok
+test stiff_benchmark::spd09::colext64_equals_the_legacy_driver_on_both_sides_of_the_threshold ... ok
+test stiff_benchmark::spd09::spd09_identity_export ... ignored, identity export of research/spd09_colext_threshold_20261007; release build; set SPD09_IDENTITY
+test stiff_benchmark::tests::analytic_jacobians_match_finite_differences ... ok
+test stiff_benchmark::tests::every_arm_completes_a_loose_hires_run ... ok
+test stiff_benchmark::tests::in_place_jacobians_equal_the_explicit_ones ... ok
+test the_arms_differ_only_in_the_controller ... ok
+test stiff_benchmark::sp03::profile_run_reports_the_routing ... ok
+
+test result: ok. 13 passed; 0 failed; 6 ignored; 0 measured; 0 filtered out; finished in 27.18s
+
+     Running tests/allocation_cli_contracts.rs (/home/claude/targets/integration/debug/deps/allocation_cli_contracts-73bffa4724f78e2b)
+
+running 1 test
+test allocation_audit_reports_end_to_end_solver_allocations_and_work ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.37s
+
+     Running tests/cli_contracts.rs (/home/claude/targets/integration/debug/deps/cli_contracts-4a6953714f7d7e4c)
+
+running 25 tests
+test adaptive_global_error_command_emits_current_family_report ... ok
+test early_flow_defect_fields_are_backward_compatible_and_legacy_rows_fail_closed ... ok
+test early_defect_attempt_geometry_cli_is_threshold_free_and_machine_readable ... ok
+test enforced_prefix_budget_cli_is_registered ... ok
+test generic_policy_redesign_actual_prefix_command_is_registered ... ok
+test generic_policy_redesign_atlas_command_is_registered ... ok
+test generic_policy_redesign_attempt_trace_command_is_registered ... ok
+test generic_policy_redesign_level2_prefix_command_is_registered ... ok
+test generic_q1_q2_adaptive_cli_emits_bounded_decision_report ... ok
+test generic_q1_q2_gate_is_deterministic_and_strictly_matrix_free ... ok
+test enforced_prefix_budget_cli_emits_transactional_fields ... ok
+test homotopy_design_check_is_deterministic_and_exposes_required_screens ... ok
+test global_error_pareto_command_emits_deterministic_method_independent_report ... ok
+test homotopy_experiment_screen_emits_deterministic_safety_and_control_rows ... ok
+test homotopy_path_controller_cli_is_deterministic_and_emits_schedule_telemetry ... ok
+test homotopy_rhs_telemetry_cli_is_deterministic_and_read_only ... ok
+test homotopy_order_policy_screen_is_deterministic_and_thread_count_independent ... ok
+test native_integrator_gates_command_emits_deterministic_bdf_and_radau_rows ... ok
+test stage_batch_feasibility_cli_emits_deterministic_within_step_report ... ok
+test stage_growth_safety_audit_cli_emits_explicit_budget_and_audit_fields ... ok
+test stage_growth_safety_cli_exposes_independent_calibration192_profile ... ok
+test tolerance_scaled_early_defect_cli_is_threshold_free_and_machine_readable ... ok
+test unified_candidate_screen_combines_linear_and_nonlinear_tiers ... ok
+test validate_trace_and_benchmark_commands_emit_machine_readable_artifacts ... ok
+test matrix_free_common_w_cli_emits_strict_jf_report ... ok
+
+test result: ok. 25 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 32.61s
+
+     Running tests/controller_grid_holdout.rs (/home/claude/targets/integration/debug/deps/controller_grid_holdout-3b21f23350e06038)
+
+running 18 tests
+test export_runs ... ignored, run export of research/ct01_controller_grid_holdout_20261010; release build; set CT01_RUNS
+test grid_seeds_ladders_and_cells_are_the_registered_ones ... ok
+test stiff_benchmark::sp03::the_jvp_only_brusselator_matches_the_benchmark_problem ... ok
+test stiff_benchmark::sp03::the_routed_arm_equals_its_target_arm ... ok
+test stiff_benchmark::sp03::the_sp03_arms_are_known_and_opt_in ... ok
+test stiff_benchmark::spd01::option_arms_keep_the_entry_validation ... ok
+test stiff_benchmark::spd01::spd01_identity_export ... ignored, identity export of research/spd01_fast_driver_overhead_20261005; release build; set SPD01_IDENTITY
+test stiff_benchmark::spd01::spd02_identity_export ... ignored, identity export of research/spd02_lu_column_extents_20261005; release build; set SPD02_IDENTITY
+test stiff_benchmark::spd01::spd03_band_fill_equals_dense_fill ... ok
+test stiff_benchmark::spd01::spd03_identity_export ... ignored, identity export of research/spd03_banded_arm_instructions_20261005; release build; set SPD03_IDENTITY
+test stiff_benchmark::spd06::the_static_arms_are_known_and_equal_the_small_arm ... ok
+test stiff_benchmark::spd09::colext64_equals_the_legacy_driver_on_both_sides_of_the_threshold ... ok
+test stiff_benchmark::spd09::spd09_identity_export ... ignored, identity export of research/spd09_colext_threshold_20261007; release build; set SPD09_IDENTITY
+test stiff_benchmark::tests::analytic_jacobians_match_finite_differences ... ok
+test stiff_benchmark::tests::every_arm_completes_a_loose_hires_run ... ok
+test stiff_benchmark::tests::in_place_jacobians_equal_the_explicit_ones ... ok
+test telemetry_parity_on_registered_cells ... ok
+test stiff_benchmark::sp03::profile_run_reports_the_routing ... ok
+
+test result: ok. 13 passed; 0 failed; 5 ignored; 0 measured; 0 filtered out; finished in 24.16s
+
+     Running tests/ct01_controller_telemetry_parity.rs (/home/claude/targets/integration/debug/deps/ct01_controller_telemetry_parity-5784301f54cda983)
+
+running 17 tests
+test stiff_benchmark::sp03::the_jvp_only_brusselator_matches_the_benchmark_problem ... ok
+test stiff_benchmark::sp03::the_routed_arm_equals_its_target_arm ... ok
+test stiff_benchmark::sp03::the_sp03_arms_are_known_and_opt_in ... ok
+test stiff_benchmark::spd01::option_arms_keep_the_entry_validation ... ok
+test stiff_benchmark::spd01::spd01_identity_export ... ignored, identity export of research/spd01_fast_driver_overhead_20261005; release build; set SPD01_IDENTITY
+test stiff_benchmark::spd01::spd02_identity_export ... ignored, identity export of research/spd02_lu_column_extents_20261005; release build; set SPD02_IDENTITY
+test stiff_benchmark::spd01::spd03_band_fill_equals_dense_fill ... ok
+test stiff_benchmark::spd01::spd03_identity_export ... ignored, identity export of research/spd03_banded_arm_instructions_20261005; release build; set SPD03_IDENTITY
+test stiff_benchmark::spd06::the_static_arms_are_known_and_equal_the_small_arm ... ok
+test stiff_benchmark::spd09::colext64_equals_the_legacy_driver_on_both_sides_of_the_threshold ... ok
+test stiff_benchmark::spd09::spd09_identity_export ... ignored, identity export of research/spd09_colext_threshold_20261007; release build; set SPD09_IDENTITY
+test stiff_benchmark::tests::analytic_jacobians_match_finite_differences ... ok
+test stiff_benchmark::tests::every_arm_completes_a_loose_hires_run ... ok
+test stiff_benchmark::tests::in_place_jacobians_equal_the_explicit_ones ... ok
+test telemetry_on_and_off_runs_are_bitwise_identical ... ok
+test traced_decisions_replay_through_the_controller ... ok
+test stiff_benchmark::sp03::profile_run_reports_the_routing ... ok
+
+test result: ok. 13 passed; 0 failed; 4 ignored; 0 measured; 0 filtered out; finished in 24.39s
+
+     Running tests/frozen_full_e_shadow_cli_contracts.rs (/home/claude/targets/integration/debug/deps/frozen_full_e_shadow_cli_contracts-ed719d3f806ad47a)
+
+running 2 tests
+test paired_economics_rejects_a_non_measurement_binary_before_writing_output ... ok
+test frozen_full_e_shadow_command_emits_the_dedicated_v36_schema ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.15s
+
+     Running tests/holdout_hygiene_cli_contracts.rs (/home/claude/targets/integration/debug/deps/holdout_hygiene_cli_contracts-85762bba5d8f2da8)
+
+running 1 test
+test replayed_k1_table_is_refused_on_holdout_profiles ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.28s
+
+     Running tests/me01_cli_contracts.rs (/home/claude/targets/integration/debug/deps/me01_cli_contracts-f1f16e9fec283a3f)
+
+running 20 tests
+test me01_arms_are_known_and_opt_in ... ok
+test me01_cli_stiff_profile_run_repetitions_zero_binary ... ok
+test me01_ct01_grid_arms_run ... ok
+test me01_profile_run_repetitions_zero ... ok
+test stiff_benchmark::sp03::profile_run_reports_the_routing ... ok
+test stiff_benchmark::sp03::the_jvp_only_brusselator_matches_the_benchmark_problem ... ok
+test stiff_benchmark::sp03::the_routed_arm_equals_its_target_arm ... ok
+test stiff_benchmark::sp03::the_sp03_arms_are_known_and_opt_in ... ok
+test stiff_benchmark::spd01::option_arms_keep_the_entry_validation ... ok
+test stiff_benchmark::spd01::spd01_identity_export ... ignored, identity export of research/spd01_fast_driver_overhead_20261005; release build; set SPD01_IDENTITY
+test stiff_benchmark::spd01::spd02_identity_export ... ignored, identity export of research/spd02_lu_column_extents_20261005; release build; set SPD02_IDENTITY
+test stiff_benchmark::spd01::spd03_band_fill_equals_dense_fill ... ok
+test stiff_benchmark::spd01::spd03_identity_export ... ignored, identity export of research/spd03_banded_arm_instructions_20261005; release build; set SPD03_IDENTITY
+test stiff_benchmark::spd06::the_static_arms_are_known_and_equal_the_small_arm ... ok
+test stiff_benchmark::spd09::colext64_equals_the_legacy_driver_on_both_sides_of_the_threshold ... ok
+test stiff_benchmark::spd09::spd09_identity_export ... ignored, identity export of research/spd09_colext_threshold_20261007; release build; set SPD09_IDENTITY
+test stiff_benchmark::tests::analytic_jacobians_match_finite_differences ... ok
+test stiff_benchmark::tests::every_arm_completes_a_loose_hires_run ... ok
+test stiff_benchmark::tests::in_place_jacobians_equal_the_explicit_ones ... ok
+test me01_identity_candidates_parity has been running for over 60 seconds
+test me01_identity_candidates_parity ... ok
+
+test result: ok. 16 passed; 0 failed; 4 ignored; 0 measured; 0 filtered out; finished in 68.11s
+
+     Running tests/paired_timing_campaign_cli_contracts.rs (/home/claude/targets/integration/debug/deps/paired_timing_campaign_cli_contracts-ae8095c9b864400f)
+
+running 1 test
+test six_sessions_in_six_processes_form_a_verifiable_receipt ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 17.88s
+
+     Running tests/scientific_validity_v2_cli_contracts.rs (/home/claude/targets/integration/debug/deps/scientific_validity_v2_cli_contracts-05838f7d64e4fd02)
+
+running 11 tests
+test canonical_freeze_rejects_bare_unbound_rows_before_creating_authority ... ok
+test canonical_calibration_requires_a_distinct_direct_freeze_output ... ok
+test canonical_raw_freeze_is_rejected_before_input_access ... ok
+test checked_in_smoke_artifacts_verify_under_the_current_source_bound_protocol ... ok
+test canonical_raw_holdout_replay_is_rejected_before_any_input_access ... ok
+test corrupt_freeze_is_rejected_before_the_holdout_input_is_opened ... ok
+test freeze_command_is_profile_bound_and_refuses_overwrite_or_family_selection ... ok
+test invalid_freeze_writes_failure_preserving_rows_then_returns_nonzero ... ok
+test oregonator_producer_rejects_freeze_before_reference_or_holdout_access ... ok
+test oregonator_producer_rejects_smoke_before_opening_freeze_or_reference ... ok
+test replay_command_preserves_dominated_evidence_and_refuses_overwrite ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.49s
+
+     Running tests/triage_cli.rs (/home/claude/targets/integration/debug/deps/triage_cli-1d180ab75e492b40)
+
+running 30 tests
+test allocation_audit_triage_prints_raw_windows ... ok
+test parity_samples_are_hex_with_the_analytic_jacobian ... ok
+test pexprb_is_never_refused_on_its_applicable_problems ... ok
+test every_wired_arm_yields_a_schema_valid_row ... ok
+test probes_are_listed_apart_with_unique_ids ... ok
+test profile_run_reports_the_first_run_and_accepts_zero_repetitions ... ok
+test prothero_robinson_nl_matches_its_exact_solution_at_rtol_1e_8 ... ok
+test refusal_typing_keeps_mid_run_errors_as_error ... ok
+test segmented_problems_drop_unrequested_breakpoints ... ok
+test seq_direct_on_robertson_gives_101_finite_states ... ok
+test probe_sweep_fails_closed_or_documents_findings has been running for over 60 seconds
+test stiff_benchmark::sp03::profile_run_reports_the_routing ... ok
+test stiff_benchmark::sp03::the_jvp_only_brusselator_matches_the_benchmark_problem ... ok
+test stiff_benchmark::sp03::the_routed_arm_equals_its_target_arm ... ok
+test stiff_benchmark::sp03::the_sp03_arms_are_known_and_opt_in ... ok
+test stiff_benchmark::spd01::option_arms_keep_the_entry_validation ... ok
+test stiff_benchmark::spd01::spd01_identity_export ... ignored, identity export of research/spd01_fast_driver_overhead_20261005; release build; set SPD01_IDENTITY
+test stiff_benchmark::spd01::spd02_identity_export ... ignored, identity export of research/spd02_lu_column_extents_20261005; release build; set SPD02_IDENTITY
+test stiff_benchmark::spd01::spd03_band_fill_equals_dense_fill ... ok
+test stiff_benchmark::spd01::spd03_identity_export ... ignored, identity export of research/spd03_banded_arm_instructions_20261005; release build; set SPD03_IDENTITY
+test stiff_benchmark::spd06::the_static_arms_are_known_and_equal_the_small_arm ... ok
+test stiff_benchmark::spd09::colext64_equals_the_legacy_driver_on_both_sides_of_the_threshold ... ok
+test stiff_benchmark::spd09::spd09_identity_export ... ignored, identity export of research/spd09_colext_threshold_20261007; release build; set SPD09_IDENTITY
+test stiff_benchmark::tests::analytic_jacobians_match_finite_differences ... ok
+test stiff_benchmark::tests::every_arm_completes_a_loose_hires_run ... ok
+test stiff_benchmark::tests::in_place_jacobians_equal_the_explicit_ones ... ok
+test triage_list_parses_with_unique_ids ... ok
+test usage_errors_exit_with_code_2 ... ok
+test wired_arms_have_distinct_component_sets ... ok
+test work_counter_fields_include_the_skipped_ones ... ok
+test probe_sweep_fails_closed_or_documents_findings ... ok
+
+test result: ok. 26 passed; 0 failed; 4 ignored; 0 measured; 0 filtered out; finished in 825.21s
+
+     Running tests/v37_continuation_transaction_cli_contracts.rs (/home/claude/targets/integration/debug/deps/v37_continuation_transaction_cli_contracts-313b768158c10fcb)
+
+running 1 test
+test v37_command_emits_dedicated_schema_without_mutating_v36_fields ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.70s
+
+     Running unittests src/lib.rs (/home/claude/targets/integration/debug/deps/rodas5p_core-0e1a0be0584c5d54)
+
+running 28 tests
+test coefficients::tests::a_tampered_snapshot_is_rejected_before_parsing ... ok
+test directed::tests::directed_results_bracket_the_exact_value ... ok
+test laguerre_adjoint::tests::a_constant_coefficient_gives_its_magnitude ... ok
+test coefficients::tests::the_cached_tableau_equals_a_fresh_derivation_bit_for_bit ... ok
+test leja_action::production_audit_suffix::certificate_norm_is_outward_at_normal_and_subnormal_scales ... ok
+test leja_action::production_audit_suffix::coefficient_sum_and_output_replay_cover_additive_underflow ... ok
+test laguerre_adjoint::tests::envelopes_cover_the_adjoint_polynomials ... ok
+test leja_action::production_audit_suffix::interval_matvec_replay_covers_underflow_and_cancellation ... ok
+test leja_action::production_audit_suffix::interval_replay_refuses_nonfinite_action_and_checks_normalized_boundary ... ok
+test leja_action::production_audit_suffix::positive_outward_support_increases_t1_exponential_factor ... ok
+test leja_action::production_audit_suffix::recurrence_interval_replay_covers_subnormal_additive_underflow ... ok
+test leja_action::production_audit_suffix::refused_output_preserves_certificate_work_accounting ... ok
+test leja_action::production_audit_suffix::suffix_bound_covers_the_actual_suffix_not_a_prefix ... ok
+test leja_action::production_audit_suffix::interval_matvec_overflow_refusal_preserves_workspace_work ... ok
+test leja_action::production_audit_suffix::trusted_prewarm_matches_cold_and_encloses_diagonal_exponential ... ok
+test leja_action::tests::counted_node_prefix_includes_interval_domain_construction ... ok
+test leja_action::tests::divided_differences_match_closed_forms ... ok
+test leja_action::tests::failed_counted_cache_miss_retains_historical_coefficient_setup_attempt ... ok
+test leja_action::tests::failed_exponential_does_not_charge_unattempted_result_vectors ... ok
+test leja_action::tests::leja_points_start_at_the_ends_and_stay_distinct ... ok
+test leja_action::tests::zero_center_scalar_phi_radii_enclose_nonbinary_factorials ... ok
+test leja_setup_work::tests::local_counted_table_initializer_records_cold_and_warm_cost_once ... ok
+test leja_setup_work::tests::local_legacy_once_lock_is_partial_unattributed_without_refusal ... ok
+test leja_setup_work::tests::local_once_lock_charges_only_the_initializer_winner ... ok
+test norms::tests::zero_scale_rule ... ok
+test polynomial_action::tests::series_enclose_known_values ... ok
+test taylor_phi_total::tests::scalar_case_matches_the_closed_form ... ok
+test leja_action::tests::actual_leja_points_initializer_has_cold_and_warm_receipts ... ok
+
+test result: ok. 28 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.08s
+
+     Running tests/allocation_contracts.rs (/home/claude/targets/integration/debug/deps/allocation_contracts-08f7095ed662de88)
+
+running 1 test
+test shifted_operator_apply_is_allocation_free_after_construction ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/core_contracts.rs (/home/claude/targets/integration/debug/deps/core_contracts-6d206fd57fff1a7c)
+
+running 14 tests
+test coefficient_snapshot_is_bit_identical_to_the_authoritative_sciml_literals ... ok
+test coefficient_snapshot_bytes_match_the_digest_verified_at_load ... ok
+test coefficient_transform_preserves_rodas5p_structure ... ok
+test coefficient_tableau_is_parsed_and_derived_once_per_process ... ok
+test dense_matrix_matvec_is_row_major_and_exact_for_small_case ... ok
+test linear_operator_default_row_application_preserves_order ... ok
+test direct_solve_agrees_with_known_solution ... ok
+test linear_solver_config_rejects_non_finite_tolerances ... ok
+test safe_l2_handles_extreme_scale ... ok
+test linear_operator_row_application_rejects_ragged_shapes ... ok
+test safe_l2_propagates_nan_and_infinity ... ok
+test wrms_matches_definition ... ok
+test wrms_stays_strict_on_a_zero_scale_and_matches_the_step_norm_otherwise ... ok
+test zero_scale_follows_the_one_rule ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/damped_forcing_moment_consumer.rs (/home/claude/targets/integration/debug/deps/damped_forcing_moment_consumer-ac3145e55ad20b3a)
+
+running 8 tests
+test absolute_width_gate_refuses_narrow_limit_and_keeps_attempted_work ... ok
+test invalid_parameters_and_orders_refuse_before_kernel_and_retain_validation_work ... ok
+test forcing_index_mapping_is_q_rd_to_i_dr ... ok
+test large_rate_width_refusal_keeps_validation_kernel_and_width_work ... ok
+test rounded_product_branch_boundary_matches_frozen_kernel_interval ... ok
+test kernel_refusal_retains_attempt_without_claiming_width_check ... ok
+test subnormal_damping_product_is_not_treated_as_exact_zero ... ok
+test zero_damping_confluent_limit_is_admitted_by_the_consumer ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/damped_moment_contracts.rs (/home/claude/targets/integration/debug/deps/damped_moment_contracts-d47ffca5ddf2a771)
+
+running 7 tests
+test test_negative_admission_gates ... ok
+test test_vg2_kappa_zero_reduces_to_exact_beta_weights ... ok
+test test_vg1_zero_allocation_table_lookup_contract ... ok
+test test_vg3_branch_boundary_continuity_at_z_one ... ok
+test test_vg2_monotonic_damping_reduction ... ok
+test test_vg3_unscaled_scaling_identity ... ok
+test test_vg3_outward_interval_enclosure_bounds ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests/damped_moment_enclosure_regressions.rs (/home/claude/targets/integration/debug/deps/damped_moment_enclosure_regressions-6154c671b98ef493)
+
+running 4 tests
+test product_overflow_is_refused_and_underflow_is_enclosed ... ok
+test input_product_and_both_branches_enclose_independent_decimal_oracles ... ok
+test public_config_mutations_are_revalidated ... ok
+test zero_damping_encloses_nonrepresentable_beta_seed ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/fused_normalization_contract.rs (/home/claude/targets/integration/debug/deps/fused_normalization_contract-8625d7cf7bea387d)
+
+running 9 tests
+test export_cases ... ignored, export PY04 cases; set PY04_CASES
+test test_extreme_i64_exponents_regression ... ok
+test test_normalization_accounting_l_and_r ... ok
+test test_range_refusal_l_term_overflow ... ok
+test test_range_refusal_unsupported ... ok
+test test_scale_pow2_zero_allocations ... ok
+test test_staged_scaling_at_extreme_exponents ... ok
+test test_exact_homogeneity_s7 ... ok
+test test_taylor_rejection_speculative_work_preserved ... ok
+
+test result: ok. 8 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.15s
+
+     Running tests/fused_phi_contracts.rs (/home/claude/targets/integration/debug/deps/fused_phi_contracts-a2e684a4e4b83d20)
+
+running 2 tests
+test fused_dense_action_handles_only_b0 ... ok
+test fused_dense_action_matches_separate_phi_actions ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/int05_nonnormal_contracts.rs (/home/claude/targets/integration/debug/deps/int05_nonnormal_contracts-cdd27c4bdab5cbbf)
+
+running 3 tests
+test an_overflowing_growth_factor_is_unbounded_not_a_number ... ok
+test a_scalar_decay_is_enclosed_from_both_sides ... ok
+test invalid_inputs_are_rejected ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/int05_nonnormal_metric_bound.rs (/home/claude/targets/integration/debug/deps/int05_nonnormal_metric_bound-f63d84aa19623a8b)
+
+running 1 test
+test nonnormal_metric_bound_cases ... ignored, case generator of research/int05_nonnormal_metric_bound_20261003; release build
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/laguerre_adjoint_holdout.rs (/home/claude/targets/integration/debug/deps/laguerre_adjoint_holdout-a99c3c8b97ebcab2)
+
+running 5 tests
+test plan_only ... ignored
+test refusal_contracts ... ok
+test vg1_zero_allocation_in_transform_selection_primitives ... ok
+test vg3_plan_local_matches_joint_phi_action_degree_and_scale_bitwise ... ok
+test vg2_monotone_degree_and_truncation_bound_with_tightening_budget ... ok
+
+test result: ok. 4 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.87s
+
+     Running tests/laguerre_component_export.rs (/home/claude/targets/integration/debug/deps/laguerre_component_export-dfdcd43ad5fb7881)
+
+running 7 tests
+test export_components ... ignored
+test refusal_on_declared_enclosure_and_degree_above_128 ... ok
+test identity_stamping_and_envelope_key_digest ... ok
+test vg1_zero_allocation_in_recurrence_and_directed_primitives ... ok
+test report_and_counter_parity_with_joint_phi_action ... ok
+test vg2_outward_rebuild_and_nonzero_normalization_shift ... ok
+test vg2_degree_budget_sweep_monotone_truncation ... ok
+
+test result: ok. 6 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 16.11s
+
+     Running tests/leja_setup_work_contract.rs (/home/claude/targets/integration/debug/deps/leja_setup_work_contract-924b0744fdd5b142)
+
+running 5 tests
+test counted_and_legacy_success_preserve_report_and_work_counter_identity ... ok
+test counted_action_records_cold_coefficient_table_without_changing_authority ... ok
+test counted_cache_history_inherits_legacy_static_dependency_coverage ... ok
+test setup_receipt_serialization_is_versioned_and_immutable ... ok
+test counted_cache_cold_warm_and_refusal_retain_separate_work ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.16s
+
+     Running tests/leja_total_contract.rs (/home/claude/targets/integration/debug/deps/leja_total_contract-8cbcc66e6a57a4f7)
+
+running 18 tests
+test allocation_tracker_counts_each_thread_independently ... ok
+test test_a04_failed_dimension_change_preserves_last_successful_report ... ok
+test test_a04_report_serialization_preserves_exact_schema_and_estimate_status ... ok
+test test_a04_scalar_interval_coefficients_match_reference_at_nonzero_center ... ok
+test test_a04_subnormal_domain_keeps_total_authority_on_hold ... ok
+test test_a04_counted_warmed_certified_leja_action_zero_allocation ... ok
+test test_a04_warmed_scalar_branch_zero_allocation ... ok
+test test_a04_workspace_report_buffers_follow_dimension_growth_and_shrink ... ok
+test test_vg1_zero_allocation_warmed_certified_leja_action ... ok
+test test_vg1_zero_allocation_node_polynomial_and_bounds ... ok
+test test_vg2_monotone_truncation_bound ... ok
+test test_vg2_dense_eigendecomposition_enclosure ... ok
+test test_vg2_zero_slack_budget_and_enclosure_distinct ... ok
+test test_vg3_no_false_authority_unaltered_leja_report ... ok
+test test_vg3_refuses_declared_enclosure_and_invalid_inputs ... ok
+test test_vg3_speculative_work_preservation_on_budget_failure ... ok
+test test_vg3_work_preservation_on_all_error_paths ... ok
+test test_vg2_zero_slack_budget_and_enclosure_same_vector ... ok
+
+test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.11s
+
+     Running tests/leja_total_holdout.rs (/home/claude/targets/integration/debug/deps/leja_total_holdout-e69622eeb0f1be0b)
+
+running 2 tests
+test export_runs ... ignored, exporter of research/py05_leja_total_certificate_20261011; set PY05_CASES and PY05_RUNS
+test test_leja_holdout_smoke ... ok
+
+test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 1.02s
+
+     Running tests/matrix_function_contracts.rs (/home/claude/targets/integration/debug/deps/matrix_function_contracts-6b532c0281138edc)
+
+running 9 tests
+test dense_phi_action_accepts_the_largest_finite_vectors ... ok
+test dense_phi_action_is_accurate_for_subnormal_and_power_of_two_vectors ... ok
+test dense_phi_action_is_accurate_for_a_large_vector_on_a_diagonal_matrix ... ok
+test dense_phi_action_matches_scalar_values ... ok
+test dense_phi_action_reports_a_result_that_really_overflows ... ok
+test dense_phi_action_satisfies_matrix_recurrence ... ok
+test fused_phi_combination_is_accurate_as_the_step_shrinks ... ok
+test pade13_matches_scalar_exponential_across_stiff_scales ... ok
+test dense_phi_action_is_invariant_under_the_physical_scale_of_the_vector ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/native_reaudit_laguerre_contracts.rs (/home/claude/targets/integration/debug/deps/native_reaudit_laguerre_contracts-2e1a356ca99c0ad7)
+
+running 3 tests
+test a_failed_invalid_input_does_not_enter_the_envelope_cache ... ok
+test ordered_interval_coefficients_still_work ... ok
+test reversed_intervals_cannot_be_widened_into_accepted_coefficients ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/polynomial_single_backend_router.rs (/home/claude/targets/integration/debug/deps/polynomial_single_backend_router-5f8f0e799cd86595)
+
+running 8 tests
+test export_cases ... ignored, export PY03 cases; set PY03_CASES
+test test_accounting_route_cost_vs_work_counters ... ok
+test test_boundary_refusals ... ok
+test test_bitwise_parity_execute_joint_phi ... ok
+test test_cache_state_cold_vs_warm ... ok
+test test_monotone_degree_and_zero_slack_bounds ... ok
+test test_plan_joint_phi_zero_allocations ... ok
+test test_force_laguerre_first_failed_preflight_charged ... ok
+
+test result: ok. 7 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.17s
+
+     Running tests/pp03_rhs_compression.rs (/home/claude/targets/integration/debug/deps/pp03_rhs_compression-64fdfd146a0867b3)
+
+running 3 tests
+test export_compression_study ... ignored, recorded run of research/pp03_rhs_compression_20261004; release build
+test compression_keeps_every_column_coefficient ... ok
+test full_rank_abstains ... ok
+
+test result: ok. 2 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/pp04_shared_shift_policy.rs (/home/claude/targets/integration/debug/deps/pp04_shared_shift_policy-1d3e7836defe59a1)
+
+running 4 tests
+test export_policy_study ... ignored, recorded run of research/pp04_shared_shift_policy_20261004; release build
+test hessenberg_reduction_reconstructs_j ... ok
+test planner_abstains_typed ... ok
+test every_method_certifies_a_small_family ... ok
+
+test result: ok. 3 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/pp08_laguerre_router_contracts.rs (/home/claude/targets/integration/debug/deps/pp08_laguerre_router_contracts-62e31a95b85fdca8)
+
+running 9 tests
+test admitted_route_meets_the_rule_and_its_budget ... ok
+test declared_enclosure_is_never_admitted_even_at_zero_step ... ok
+test estimate_only_totals_are_never_admitted ... ok
+test invalid_total_budget_step_and_input_are_errors_without_work ... ok
+test laguerre_degree_above_the_adjoint_limit_is_never_admitted ... ok
+test ties_go_to_chebyshev_and_scalar_branch_routes ... ok
+test unbounded_timing_execution_is_never_admitted ... ok
+test unmet_budget_ends_in_fallback ... ok
+test caller_counters_equal_the_sum_of_the_attempts ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 6.85s
+
+     Running tests/pp08_laguerre_router_study.rs (/home/claude/targets/integration/debug/deps/pp08_laguerre_router_study-8984bfe6b1815199)
+
+running 1 test
+test pp08_router_study_export ... ignored, exporter of research/pp08_laguerre_router_20261004; set PP08_CASES
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/pp10_leja_contracts.rs (/home/claude/targets/integration/debug/deps/pp10_leja_contracts-192bfc6dbe5caee5)
+
+running 8 tests
+test counters_charge_every_operator_product_and_nothing_else ... ok
+test degree_cap_stops_without_convergence ... ok
+test invalid_inputs_are_errors_without_work ... ok
+test no_certified_api_admits_a_leja_result ... ok
+test scalar_operator_matches_the_closed_form ... ok
+test symmetric_operator_agrees_with_the_dense_reference ... ok
+test zero_input_and_zero_step_charge_no_products ... ok
+test diagonal_operators_meet_the_tolerance_against_closed_forms ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.24s
+
+     Running tests/pp10_leja_study.rs (/home/claude/targets/integration/debug/deps/pp10_leja_study-23b9c4f56e83edb5)
+
+running 1 test
+test pp10_leja_study_export ... ignored, exporter of research/pp10_leja_candidate_20261004; set PP10_CASES
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/pp11_taylor_fused_total_contracts.rs (/home/claude/targets/integration/debug/deps/pp11_taylor_fused_total_contracts-5c997b6aa7c43431)
+
+running 7 tests
+test an_exp_certificate_is_a_different_type_from_a_fused_certificate ... ok
+test an_overflowing_term_is_unbounded_not_an_error ... ok
+test invalid_inputs_are_refused ... ok
+test a_wrong_candidate_gets_a_bound_at_least_its_distance ... ok
+test non_power_of_two_h_has_positive_perturbation ... ok
+test the_taylor_output_is_certified_against_the_diagonal_reference ... ok
+test power_of_two_h_has_exactly_zero_perturbation ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/pp11_taylor_fused_total_study.rs (/home/claude/targets/integration/debug/deps/pp11_taylor_fused_total_study-a65b1756f64729ab)
+
+running 1 test
+test pp11_taylor_fused_total_cases ... ignored, case exporter of research/pp11_taylor_fused_total_20261004; release build
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/pp12_lognorm_decay.rs (/home/claude/targets/integration/debug/deps/pp12_lognorm_decay-af9f604f59db0964)
+
+running 2 tests
+test export_lognorm_cases ... ignored, recorded run of research/pp12_lognorm_decay_20261004; release build
+test lognorm_is_negative_for_diffusion ... ok
+
+test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 1.30s
+
+     Running tests/pp12b_chain_symmetrizer.rs (/home/claude/targets/integration/debug/deps/pp12b_chain_symmetrizer-fbe76305ea54dcba)
+
+running 3 tests
+test chain_symmetrizer_makes_pairs_equal ... ok
+test export_chain_cases ... ignored, recorded run of research/pp12b_chain_symmetrizer_20261004; release build
+test auto3_skips_a_metric_that_cannot_be_built ... ok
+
+test result: ok. 2 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/pp16_complex_shift_contracts.rs (/home/claude/targets/integration/debug/deps/pp16_complex_shift_contracts-cdffeac46a7e9aa3)
+
+running 6 tests
+test gain_one_would_under_bound_complex_shift ... ok
+test complex_jet_candidates_and_work ... ok
+test partial_fraction_contracts ... ok
+test negative_controls_fail_closed ... ok
+test scalar_hand_case_and_gain ... ok
+test real_gamma_reproduces_real_shift_status ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/pp16_complex_shift_study.rs (/home/claude/targets/integration/debug/deps/pp16_complex_shift_study-3a184dae21533c34)
+
+running 1 test
+test export_pp16_cases ... ignored, research exporter; run with PP16_PADE and PP16_CASES set
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/production_audit_leja_arithmetic_oracle.rs (/home/claude/targets/integration/debug/deps/production_audit_leja_arithmetic_oracle-b8e0b778b509861c)
+
+running 1 test
+test frozen_arithmetic_fixture_export ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.98s
+
+     Running tests/production_audit_scalar_rate.rs (/home/claude/targets/integration/debug/deps/production_audit_scalar_rate-fa2671394cbda479)
+
+running 1 test
+test frozen_s01_s10_export ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+
+     Running tests/production_audit_sparse.rs (/home/claude/targets/integration/debug/deps/production_audit_sparse-c59779657b47d8fe)
+
+running 3 tests
+test malformed_csc_is_rejected_without_panicking ... ok
+test nonfinite_rhs_is_rejected ... ok
+test numeric_state_is_invalidated_until_exact_pattern_refactor_succeeds ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/r3_polynomial_action_contracts.rs (/home/claude/targets/integration/debug/deps/r3_polynomial_action_contracts-cda62c8a19483808)
+
+running 8 tests
+test coefficient_enclosures_contain_independent_quadrature ... ok
+test coefficient_tables_are_reused_only_for_the_same_key ... ok
+test all_joint_actions_match_the_independent_oracle ... ok
+test the_same_vector_path_reuses_one_recurrence ... ok
+test the_unbounded_mode_returns_the_same_values_without_a_bound ... ok
+test unsupported_operators_are_explicit_failures ... ok
+test zero_step_zero_operator_and_scalar_matrix_use_the_scalar_branch ... ok
+test the_degree_near_the_budget_never_understates_the_bound ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 23.35s
+
+     Running tests/r4_polynomial_contracts.rs (/home/claude/targets/integration/debug/deps/r4_polynomial_contracts-b14b6a5e5fe7c046)
+
+running 8 tests
+test an_out_of_range_result_or_budget_is_a_typed_rejection ... ok
+test cancellation_reports_absolute_and_relative_accuracy_separately ... ok
+test estimates_and_the_timing_path_never_admit ... ok
+test laguerre_scales_outside_the_cap_are_rejected ... ok
+test scaled_norms_enclose_the_exact_norm_across_the_range ... ok
+test the_continuous_laguerre_scale_minimizes_the_analytic_tail ... ok
+test truncation_success_is_not_total_error_admission ... ok
+test amplitude_scaled_actions_are_enclosed_or_rejected_never_zero ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.37s
+
+     Running tests/r4_taylor_phi_contracts.rs (/home/claude/targets/integration/debug/deps/r4_taylor_phi_contracts-5aee0e79def84272)
+
+running 4 tests
+test nilpotent_is_exact_in_two_terms ... ok
+test nonnormal_matches_the_divided_difference_and_reports_conditioning ... ok
+test outside_the_validated_domain_is_a_typed_rejection ... ok
+test diagonal_matches_the_scalar_enclosures ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/r4_transform_bound_contracts.rs (/home/claude/targets/integration/debug/deps/r4_transform_bound_contracts-446bce97d79a5a2e)
+
+running 6 tests
+test every_oracle_case_is_enclosed_including_permutations_and_transposes ... ok
+test reciprocal_factorials_enclose_exactly_and_tightly ... ok
+test signed_stored_weights_and_the_tolerance_domain_fail_closed ... ok
+test the_order_is_total_and_puts_zero_first ... ok
+test the_subunit_nilpotent_witness_keeps_its_norm ... ok
+test every_supported_order_of_the_zero_operator_is_enclosed ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.34s
+
+     Running tests/residual_gain_contract.rs (/home/claude/targets/integration/debug/deps/residual_gain_contract-05355ed6adb6a104)
+
+running 7 tests
+test export_runs ... ignored
+test test_assembly_uncertainty_validation ... ok
+test test_case_c_negatives ... ok
+test test_case_d_positives ... ok
+test test_transport_two_sided_gain_scaling ... ok
+test test_vg1_zero_allocation_hot_path ... ok
+test test_case_a_retained_oracle_and_parity ... ok
+
+test result: ok. 6 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/rev02_nonnormal_contracts.rs (/home/claude/targets/integration/debug/deps/rev02_nonnormal_contracts-0508a99900aacd98)
+
+running 3 tests
+test osborne_balances_the_vig_a02_matrix ... ok
+test the_stepped_certificate_encloses_a_scalar_decay_and_rejects_bad_input ... ok
+test the_directed_exponential_brackets_the_libm_value_tightly ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/rev02_nonnormal_stepping.rs (/home/claude/targets/integration/debug/deps/rev02_nonnormal_stepping-63a0c62d427f92db)
+
+running 1 test
+test nonnormal_stepping_cases ... ignored, case generator of research/rev02_nonnormal_stepping_20261003; release build
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/rnext04_laguerre_admission.rs (/home/claude/targets/integration/debug/deps/rnext04_laguerre_admission-03b6a7f07b435105)
+
+running 1 test
+test laguerre_admission_cases ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 41.40s
+
+     Running tests/safe_enclosure_exp_floor.rs (/home/claude/targets/integration/debug/deps/safe_enclosure_exp_floor-00679604aecfb810)
+
+running 2 tests
+test export_exp_floor ... ignored, export of research/safe_enclosure_exp_floor_20261004
+test floor_window_is_enclosed ... ok
+
+test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/safe_enclosure_probes.rs (/home/claude/targets/integration/debug/deps/safe_enclosure_probes-da3041af2b452ebf)
+
+running 3 tests
+test export_probes ... ignored, export of research/safe_enclosure_composition_20261004
+test repaired_midpoint_radius_covers_rounded_midpoint ... ok
+test repaired_decay_uses_lower_time_for_negative_rate ... ok
+
+test result: ok. 2 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.17s
+
+     Running tests/shared_shift_jet_contracts.rs (/home/claude/targets/integration/debug/deps/shared_shift_jet_contracts-472c7a3c2d489657)
+
+running 6 tests
+test exact_current_target_certificate_rejects_wrong_candidate ... ok
+test independent_columns_and_executed_work_are_preserved ... ok
+test identity_limits_and_extreme_center_scaling ... ok
+test large_target_set_budget_includes_coordinate_gamma_and_tolerance_slots ... ok
+test under_resolution_and_too_small_tolerance_fail_closed ... ok
+test invalid_inputs_unsupported_operators_and_budgets_are_errors ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/shifted_operator_nonfinite.rs (/home/claude/targets/integration/debug/deps/shifted_operator_nonfinite-973ae1b01fe5e498)
+
+running 2 tests
+test overflowing_shift_is_a_non_finite_error ... ok
+test finite_shift_is_unchanged ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/sparse_direct_contract.rs (/home/claude/targets/integration/debug/deps/sparse_direct_contract-777121426dedb356)
+
+running 2 tests
+test test_brusselator_1d_agreement_with_dense_lu ... ok
+test test_seeded_sparse_matrices_backward_error ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.96s
+
+     Running tests/storage_runtime.rs (/home/claude/targets/integration/debug/deps/storage_runtime-525555636c5792ce)
+
+running 1 test
+test export_storage_sweep ... ignored, recorded run of research/storage_runtime_20261004; one test thread
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/thread_transfer_laguerre_adjoint.rs (/home/claude/targets/integration/debug/deps/thread_transfer_laguerre_adjoint-70eca5d9b55e5551)
+
+running 2 tests
+test write_laguerre_cases ... ignored, writes fixtures/thread_transfer_laguerre_cases.json
+test laguerre_adjoint_contract ... ok
+
+test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.79s
+
+     Running tests/thread_transfer_laguerre_cache.rs (/home/claude/targets/integration/debug/deps/thread_transfer_laguerre_cache-b465754d971df91d)
+
+running 2 tests
+test write_laguerre_cache_cases ... ignored, writes fixtures/thread_transfer_laguerre_cache_cases.json
+test laguerre_envelope_cache_and_cost ... ok
+
+test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 2.62s
+
+     Running tests/transform_bound_contracts.rs (/home/claude/targets/integration/debug/deps/transform_bound_contracts-ced04edaee70db20)
+
+running 3 tests
+test every_branch_is_exercised_and_unverified_operators_fail_closed ... ok
+test the_nilpotent_witness_is_bounded_and_rejected_for_both_signs_of_h ... ok
+test the_zero_operator_control_is_bounded_nonzero_and_admitted ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/work_counter_contracts.rs (/home/claude/targets/integration/debug/deps/work_counter_contracts-f9a1074fa563169d)
+
+running 5 tests
+test checked_delta_rejects_any_negative_component_and_round_trips_exactly ... ok
+test counted_shifted_applications_charge_jvp_mass_and_refresh_at_the_apply_site ... ok
+test shifted_and_total_operator_application_helpers_count_vectors_without_block_call_duplication ... ok
+test shifted_exact_identity_uses_jacobian_mass_and_exact_h_gamma_bits ... ok
+test work_counters_accumulate_componentwise_and_saturate ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/work_unit_contracts.rs (/home/claude/targets/integration/debug/deps/work_unit_contracts-e8c232ba7e130d47)
+
+running 2 tests
+test cross_lane_operator_work_is_counted_in_state_vectors ... ok
+test unknown_vector_coverage_survives_aggregation ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (/home/claude/targets/integration/debug/deps/rodas5p_fair_ab-2198936d27f92b95)
+
+running 7 tests
+test adaptive_global_error::tests::dense_core_preserves_dense_error_reason_as_invalid_input ... ok
+test adaptive_global_error::tests::adaptive_max_step_is_independent_of_output_spacing ... ok
+test global_error::r2_not_evaluated_tests::unknown_vector_cost_is_listed_as_not_evaluated ... ok
+test scientific_validity_v2_campaign::tests::branch_fixed_arm_restarts_and_deduplicates_the_exact_boundary ... ok
+test scientific_validity_v2_campaign::tests::dense_arm_error_does_not_discard_a_completed_clipped_arm ... ok
+test scientific_validity_v2_campaign::tests::failed_pair_retains_raw_arms_but_has_no_scientific_metric ... ok
+test adaptive_global_error::tests::scientific_checksum_covers_output_modes_and_pair_classification ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.47s
+
+     Running tests/adaptive_global_error_contracts.rs (/home/claude/targets/integration/debug/deps/adaptive_global_error_contracts-90c02b1d7a4b95f7)
+
+running 4 tests
+test adaptive_screen_covers_every_current_family_and_preserves_every_run_row ... ok
+test adaptive_screen_is_scientifically_identical_in_one_and_four_threads ... ok
+test g1_adaptive_screen_is_limited_to_the_transactional_decision_set ... ok
+test every_adaptive_comparator_row_serializes_comparator_fidelity ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.85s
+
+     Running tests/external_comparator_contracts.rs (/home/claude/targets/integration/debug/deps/external_comparator_contracts-63876bd8bb057a64)
+
+running 10 tests
+test a_missing_evidence_file_is_not_synthesized_into_an_external_run ... ok
+test external_runner_dependency_closure_is_ordered_domain_separated_and_golden ... ok
+test mass_cases_fail_closed_unless_a_transformed_identity_is_pinned ... ok
+test python_generated_scipy_and_sundials_fixtures_cross_the_strict_rust_loader ... ok
+test scipy_solver_failure_preserves_native_work_and_an_authenticated_prefix ... ok
+test sundials_probe_requires_exact_one_to_one_target_findings ... ok
+test unavailable_and_not_run_sundials_are_typed_and_cannot_carry_substitute_work ... ok
+test valid_scipy_evidence_is_loaded_without_executing_the_runner ... ok
+test valid_sundials_success_preserves_cvode_native_work_without_rust_counter_mapping ... ok
+test every_runner_problem_policy_checksum_and_lineage_mutation_is_rejected ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.46s
+
+     Running tests/fair_ab_contracts.rs (/home/claude/targets/integration/debug/deps/fair_ab_contracts-9eb9e1e350459266)
+
+running 6 tests
+test deterministic_trace_roundtrip_preserves_every_identity ... ok
+test every_rust_solver_consumes_the_same_immutable_trace_and_certifies_residuals ... ok
+test external_certificate_and_hard_budget_cover_diagnostic_work ... ok
+test comparison_randomizes_order_but_keeps_paired_trace_identity ... ok
+test recycle_reset_preserves_solver_workspace_but_clears_algorithmic_state ... ok
+test recycle_lifetimes_have_distinct_and_auditable_reset_semantics ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.41s
+
+     Running tests/global_error_contracts.rs (/home/claude/targets/integration/debug/deps/global_error_contracts-fa7dee36c54a9858)
+
+running 9 tests
+test common_grid_rejects_missing_output_times_instead_of_interpolating ... ok
+test exact_and_known_perturbed_trajectories_have_expected_external_errors ... ok
+test every_fixed_anchor_comparator_row_serializes_comparator_fidelity ... ok
+test operator_application_cost_axis_counts_vectors_without_double_counting_block_calls ... ok
+test output_policy_dominance_is_strict_at_ten_percent_and_excludes_only_the_policy_row ... ok
+test output_policy_gap_uses_the_tight_reference_weight_table ... ok
+test pareto_and_target_selection_preserve_failures_and_choose_true_nondominated_points ... ok
+test fixed_anchor_screen_is_thread_deterministic_and_exposes_all_five_candidates ... ok
+test pareto_screen_stores_only_common_outputs_and_retains_paired_output_policy_evidence ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.20s
+
+     Running tests/numerical_reference_contracts.rs (/home/claude/targets/integration/debug/deps/numerical_reference_contracts-bec4426d8248a458)
+
+running 6 tests
+test legacy_analytic_provenance_deserializes_without_changing_its_wire_shape ... ok
+test loader_rejects_bad_q_nonfinite_convergence_runtime_pin_grid_checksum_and_canonical_source ... ok
+test numerical_reference_and_reference_dominated_wire_spellings_are_stable ... ok
+test pinned_numerical_reference_manifest_is_present_for_fair_ab_consumption ... ok
+test reference_dominance_is_strict_at_ten_percent_and_excludes_pareto_success ... ok
+test checked_in_artifacts_load_for_each_holdout_and_preserve_numerical_provenance ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.38s
+
+     Running tests/numerical_reference_v2_contracts.rs (/home/claude/targets/integration/debug/deps/numerical_reference_v2_contracts-51d361b5e4caaa03)
+
+running 7 tests
+test every_v2_comparison_uses_the_tight_reference_state_as_the_only_wrms_anchor ... ok
+test checked_in_python_not_run_manifest_is_bit_for_bit_semantically_equal_to_the_rust_layout ... ok
+test historical_v1_manifest_and_artifact_bytes_remain_pinned ... ok
+test v2_grid_and_state_payload_checksums_remain_v1_compatible ... ok
+test v2_layout_is_exactly_twenty_two_physical_artifacts_and_sixty_six_case_bindings ... ok
+test v2_manifest_rejects_missing_extra_duplicate_unreferenced_misbound_and_v1_shapes ... ok
+test v1_loader_remains_live_while_v2_loader_dispatches_by_exact_case_id_and_is_lazy ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.79s
+
+     Running tests/output_accuracy_assessment_contracts.rs (/home/claude/targets/integration/debug/deps/output_accuracy_assessment_contracts-e551a63975ccb7f4)
+
+running 9 tests
+test accurate_but_policy_sensitive_is_not_accuracy_failure ... ok
+test boundary_and_lower_bound_are_distinct ... ok
+test missing_budget_is_not_pass ... ok
+test equal_bad_trajectories_do_not_certify_accuracy ... ok
+test nonfinite_negative_and_overflow_rejected ... ok
+test paired_assessment_preserves_evidence_and_legacy_sensitivity ... ok
+test scalar_error_gap_is_not_trajectory_distance ... ok
+test signed_zero_zero_budget_is_well_defined ... ok
+test uncertain_reference_does_not_pass_boundary ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/packet_benchmark_contracts.rs (/home/claude/targets/integration/debug/deps/packet_benchmark_contracts-4571901ee8aa19ae)
+
+running 5 tests
+test test_negative_parameter_gates ... ok
+test test_nominal_tolerance_and_agreement_do_not_promote_physical_accuracy ... ok
+test test_refuse_unhoisted_unfair_baseline ... ok
+test test_vg3_hoisted_ode_problem_structure ... ok
+test test_vg1_zero_online_solver_counters_on_candidate ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/paired_timing_contracts.rs (/home/claude/targets/integration/debug/deps/paired_timing_contracts-26171ae0d5362775)
+
+running 13 tests
+test abba_order_is_seeded_mirrored_and_balanced ... ok
+test batch_size_is_calibrated_from_the_minimum_warmup ... ok
+test host_metadata_records_every_field_or_unknown ... ok
+test measured_case_uses_warmups_minimum_calibration_and_abba_pairs ... ok
+test identical_arms_give_an_aa_interval_containing_one ... ok
+test pairs_of_one_process_are_not_resampled_as_independent ... ok
+test protocol_and_cases_below_the_minimum_are_rejected ... ok
+test replicating_cases_does_not_narrow_a_session_level_interval ... ok
+test same_seed_reproduces_identical_interval_bits ... ok
+test threshold_speedup_with_the_v36_recorded_spread_is_inconclusive ... ok
+test true_speedup_of_0_90_blocks ... ok
+test true_speedup_of_1_30_with_five_percent_noise_promotes ... ok
+test one_shared_process_is_one_session_however_many_cases ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 12.94s
+
+     Running tests/r2_timing_authority_contracts.rs (/home/claude/targets/integration/debug/deps/r2_timing_authority_contracts-66cd835ad12edc85)
+
+running 5 tests
+test a_producer_without_a_session_is_never_authoritative ... ok
+test a_preview_protocol_or_an_inconsistent_record_never_gates ... ok
+test an_aa_control_in_other_sessions_confers_no_authority ... ok
+test the_resampled_interval_matches_the_exact_six_session_bootstrap ... ok
+test the_interval_reports_its_simulation_band ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.96s
+
+     Running tests/r2_work_coverage_consumer_contracts.rs (/home/claude/targets/integration/debug/deps/r2_work_coverage_consumer_contracts-bccab438e4d19934)
+
+running 1 test
+test a_merged_legacy_segment_leaves_the_vector_cost_unevaluated ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/r3_aa_batch_contracts.rs (/home/claude/targets/integration/debug/deps/r3_aa_batch_contracts-701b26cddf44945b)
+
+running 1 test
+test the_aa_control_keeps_its_own_batch_across_sessions ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.74s
+
+     Running tests/r3_monte_carlo_gate_contracts.rs (/home/claude/targets/integration/debug/deps/r3_monte_carlo_gate_contracts-75b90288b68a2cf8)
+
+running 2 tests
+test atoms_equal_samples_and_the_minimum_resample_count ... ok
+test the_gate_contains_the_exact_conditional_probability ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+
+     Running tests/r3_raw_protocol_admission_contracts.rs (/home/claude/targets/integration/debug/deps/r3_raw_protocol_admission_contracts-f592f57ca7b2b10e)
+
+running 3 tests
+test a_valid_receipt_promotes_and_survives_serialization ... ok
+test singleton_session_runs_cannot_restart_the_order_every_pair ... ok
+test malformed_raw_protocols_are_rejected_before_assessment ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.19s
+
+     Running tests/r3_timing_design_contracts.rs (/home/claude/targets/integration/debug/deps/r3_timing_design_contracts-972dfa570f3d7d7e)
+
+running 4 tests
+test duplicating_a_session_does_not_add_an_independent_session ... ok
+test the_simulator_follows_the_declared_design ... ok
+test the_study_is_deterministic_and_thread_count_free ... ok
+test multiplying_pairs_within_a_session_changes_no_bit ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.78s
+
+     Running tests/r4_statistics_contracts.rs (/home/claude/targets/integration/debug/deps/r4_statistics_contracts-412c6340a7a1bccc)
+
+running 5 tests
+test every_raw_cell_is_validated_before_merging ... ok
+test authority_comes_from_the_registry_and_forgeries_fail ... ok
+test the_exact_design_table_enumerations_controls_and_invalid_inputs_reproduce ... ok
+test the_two_estimands_differ_off_the_symmetric_family ... ok
+test published_campaigns_stay_valid_and_keep_their_estimand ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 17.04s
+
+     Running tests/scientific_validity_v2_campaign_contracts.rs (/home/claude/targets/integration/debug/deps/scientific_validity_v2_campaign_contracts-969219367e807303)
+
+running 2 tests
+test one_real_calibration_case_runs_independent_clipped_and_dense_arms ... ok
+test calibration_execution_surface_is_exactly_six_by_three_by_three ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/stable_operator_id_contracts.rs (/home/claude/targets/integration/debug/deps/stable_operator_id_contracts-4e02373156ee07b7)
+
+running 3 tests
+test non_ascii_operator_id_is_a_typed_error_not_a_panic ... ok
+test hex_digest_prefix_sets_the_token ... ok
+test short_operator_id_is_a_typed_error_not_a_panic ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/two_arm_admissibility_contracts.rs (/home/claude/targets/integration/debug/deps/two_arm_admissibility_contracts-59bfd0412b554d4e)
+
+running 9 tests
+test arm_budget_has_three_bands_with_reference_uncertainty ... ok
+test arm_budget_bands_are_decided_on_the_exact_sum_and_difference ... ok
+test case_tolerance_basis_scales_exactly_when_weights_are_proportional ... ok
+test audit_records_classify_as_predeclared_under_the_new_protocol ... ok
+test case_tolerance_uncertainty_is_rounded_upward ... ok
+test gap_triangle_is_an_integrity_assertion ... ok
+test row_status_order_is_reference_then_budget_then_interpolant ... ok
+test protocol_id_declares_budget_and_interpolant_limit_before_any_run ... ok
+test two_arm_classification_holds_the_triangle_on_random_trajectories ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+     Running tests/two_arm_v3_campaign_contracts.rs (/home/claude/targets/integration/debug/deps/two_arm_v3_campaign_contracts-e16ee234258a2a87)
+
+running 2 tests
+test v3_record_is_reproducible_bit_for_bit has been running for over 60 seconds
+test v3_record_runs_all_three_parts_on_unchanged_v2_arms has been running for over 60 seconds
+test v3_record_runs_all_three_parts_on_unchanged_v2_arms ... ok
+test v3_record_is_reproducible_bit_for_bit ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 269.01s
+
+     Running unittests src/lib.rs (/home/claude/targets/integration/debug/deps/rodas5p_integrators-743c8bf3f4c03f41)
+
+running 76 tests
+test adaptive::method_metadata_tests::rodas_controller_order_comes_from_method_estimator_metadata ... ok
+test adaptive::predictive_controller_tests::clipped_samples_update_the_history_only_when_informative ... ok
+test adaptive::predictive_controller_tests::first_acceptance_is_the_integral_factor ... ok
+test adaptive::predictive_controller_tests::history_free_proposal_of_the_predictive_kinds_is_the_integral_factor ... ok
+test adaptive::predictive_controller_tests::integral_and_pi_are_unchanged_bit_for_bit ... ok
+test adaptive::predictive_controller_tests::predictive_factor_on_hand_computed_cases ... ok
+test adaptive::predictive_controller_tests::predictive_kinds_serialize_like_the_production_state ... ok
+test adaptive::predictive_controller_tests::the_cap_holds_the_first_acceptance_after_a_rejection_or_failure ... ok
+test adaptive::predictive_controller_tests::rejections_failures_and_zero_error_follow_the_production_rule ... ok
+test bound_pr101::tests::fallible_final_outward_add_is_charged_before_refusal ... ok
+test bound_pr101::tests::point_jvp_matches_scalar_jacobian_without_materializing_matrix ... ok
+test comparator_fidelity::tests::only_production_arms_admit_a_relative_reading ... ok
+test controller_telemetry::tests::the_events_follow_the_registered_definitions ... ok
+test dense_output_v2::dense_segment_tests::curve_derivative_enclosure_falsifies_endpoint_midpoint_only_sampling ... ok
+test dense_output_v2::dense_segment_tests::scalar_quartic_accessor_counts_exact_attempted_interval_calls ... ok
+test dense_output_v2::failure_preservation_tests::post_work_dense_interpolation_error_preserves_work_diagnostics_and_prefix ... ok
+test exponential::continuation_budget_guard_tests::continuation_cap_admits_exactly_eighty_scalars_and_denies_jvp_81_before_call ... ok
+test exponential::continuation_budget_guard_tests::invalid_row_shape_is_rejected_before_budget_reservation ... ok
+test exponential::continuation_budget_guard_tests::over_cap_row_batch_is_denied_atomically_without_partial_execution ... ok
+test exponential::continuation_budget_guard_tests::zero_continuation_budget_invokes_no_underlying_jvp ... ok
+test fourier_path_candidate::tests::roundtrip_and_conjugation_order ... ok
+test fourier_path_certificate::tests::primitive_derivative_roundtrip ... ok
+test fourier_path_certificate::tests::rotation_encloses_library_values ... ok
+test g4_s5b0_regime_atlas::analytic_partial_t_tests::analytic_partial_t_matches_independent_centered_difference_without_rhs_calls ... ok
+test g4_s5b0_regime_atlas::causal_k1_policy_tests::causal_k1_comparator_fires_only_on_observed_feature ... ok
+test g4_s5b0_regime_atlas::live_rodas_step_tests::live_atlas_step_uses_wrms_inner_forcing ... ok
+test g4_s5b0_regime_atlas::reference_safety_label_tests::self_estimate_and_reference_label_are_independent_fields ... ok
+test g4_s5b0_regime_atlas::stage_trajectory_geometry_tests::one_pair_wall_protocol_is_self_describing_and_identity_checked ... ignored, optimized all-six wall-contract check; run explicitly with --profile measurement
+test g4_s5b0_regime_atlas::stage_trajectory_geometry_tests::production_shadow_wall_protocol_is_frozen_and_alternating ... ok
+test g4_s5b0_regime_atlas::stage_trajectory_geometry_tests::stage_trajectory_shape_matches_power_law_and_rejects_nonpositive_inputs ... ok
+test common_w_gate::tests::smoke_matrix_free_solutions_match_offline_materialized_direct_oracle ... ok
+test g4_s5b0_regime_atlas::stage_trajectory_geometry_tests::v37_zero_cap_runner_emits_charged_exhaustions_without_endpoint_labels ... ok
+test g4_s5b0_regime_atlas::trajectory_work_accounting_tests::trajectory_totals_charge_every_attempt ... ok
+test output::spd01_landing_property::fused_landing_equals_the_legacy_composition ... ok
+test output::transactional_dense_output_tests::late_preparation_refusal_invalidates_earlier_staged_rows ... ok
+test output::transactional_dense_output_tests::ordinary_collector_has_no_verified_radius_prefix ... ok
+test output::transactional_dense_output_tests::prepared_dense_interval_refusal_keeps_committed_prefix ... ok
+test output::transactional_dense_output_tests::prepared_dense_interval_rejects_nonfinite_radius_without_commit ... ok
+test output::transactional_dense_output_tests::verified_radius_mode_cannot_be_reentered_after_preparation ... ok
+test packet_trajectory::verified_transaction_private_tests::endpoint_admission_refusal_preserves_transaction_and_full_work ... ok
+test packet_trajectory::verified_transaction_private_tests::inherited_and_stationary_seeds_use_same_center_displacement_and_fixed_energy ... ok
+test packet_trajectory::verified_transaction_private_tests::txn_fail_first_and_second_preserve_all_accepted_bits ... ok
+test packet_window::outward_scalar_tests::output_precharge_survives_test_refusal_boundary ... ok
+test packet_window::outward_scalar_tests::rp_greater_than_energy_radius_controls_nonlinear_tail ... ok
+test packet_window::packet_curve::degree_tests::maximum_degree_guard_checks_binary64_integer_domain_without_allocation ... ok
+test radau::tests::real_eigenvector_matches_the_scipy_transform_column ... ok
+test radau::tests::stage_lu_estimator_drops_exactly_one_factorization_per_trial ... ok
+test rodas5p_fast::banded_exact_tests::cache_hits_only_after_success_and_invalidates_on_changed_matrix ... ok
+test rodas5p_fast::banded_exact_tests::cache_storage_is_only_allocated_for_opt_in_kernel ... ok
+test rodas5p_fast::banded_exact_tests::exact_fixed_width_parity_including_pivot_swaps ... ok
+test rodas5p_fast::banded_exact_tests::failed_factorization_cannot_leave_a_live_key ... ok
+test rodas5p_fast::banded_exact_tests::other_bandwidths_fall_back_without_changing_bits ... ok
+test rodas5p_fast::exact_band_cache::tests::changed_entry_misses ... ok
+test rodas5p_fast::exact_band_cache::tests::changed_shift_misses ... ok
+test rodas5p_fast::exact_band_cache::tests::explicit_invalidation_misses ... ok
+test rodas5p_fast::exact_band_cache::tests::failed_record_invalidates ... ok
+test rodas5p_fast::exact_band_cache::tests::identical_matrix_hits ... ok
+test rodas5p_fast::exact_band_cache::tests::nonfinite_shift_misses ... ok
+test rodas5p_fast::exact_band_cache::tests::shape_change_misses ... ok
+test rodas5p_fast::exact_band_cache::tests::signed_zero_is_conservative ... ok
+test rodas5p_fast::tests::in_place_lu_solves_pivoted_and_banded_systems ... ok
+test rodas5p_fast_small::tests::every_small_option_set_has_its_own_driver_id ... ok
+test rodas5p_fast_small::tests::the_construction_check_refuses_a_table_off_by_one_bit ... ok
+test rodas5p_fast_small::tests::the_indexed_solve_equals_the_slice_solve_bitwise ... ok
+test routing::tests::a_band_narrower_than_the_jacobian_is_rejected ... ok
+test routing::tests::routing_rules_in_order ... ok
+test routing::tests::seeded_vectors_are_deterministic_and_in_range ... ok
+test routing::tests::verification_uses_the_jvp_when_present_and_charges_it ... ok
+test sequential::forcing_resolution_tests::the_last_pass_is_judged_against_the_limit_of_its_own_estimate ... ok
+test transactional_q1_q2::tests::multi_row_failure_retains_later_row_shifted_work ... ok
+test unified_gates::qualification_tests::every_above_roundoff_order_must_meet_the_floor ... ok
+test unified_gates::qualification_tests::gate_against_a_reference_only_comparator_is_not_evaluated ... ok
+test g4_s5b0_regime_atlas::stage_trajectory_geometry_tests::v37_outcome_semantics_reject_crossed_labels_flags_and_endpoint_evidence ... ok
+test unified_gates::qualification_tests::qualification_order_ignores_a_roundoff_contaminated_finest_pair ... ok
+test unified_gates::qualification_tests::qualification_order_keeps_the_finest_pair_when_it_is_above_roundoff ... ok
+test unified_gates::qualification_tests::iterative_sequential_order_rows_survive_roundoff_level_refinement ... ok
+
+test result: ok. 75 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 8.75s
+
+     Running tests/a05_dense_global_output.rs (/home/claude/targets/integration/debug/deps/a05_dense_global_output-9f43ce78b3cd8302)
+
+running 15 tests
+test construction_refusal_charges_attempted_span_work_before_exact_sum_overflow ... ok
+test batch_callback_failure_success_and_scalar_fallback_are_accounted ... ok
+test continuous_provider_refusal_preserves_attempted_work ... ok
+test continuous_segment_residual_checks_interval_curve_and_fixed_tube ... ok
+test dense_segment_arithmetic_counters_match_attempted_scalar_operations ... ok
+test dense_segment_refuses_bad_spans_and_unavailable_residual_provider ... ok
+test derivative_refusal_charges_attempted_interval_work_before_overflow ... ok
+test immutable_quartic_segment_encloses_its_endpoint_and_interior_centers ... ok
+test immutable_segment_center_matches_the_existing_public_dense_convention ... ok
+test invalid_scalar_rhs_shapes_do_not_charge_or_enter_callbacks ... ok
+test nonfinite_log_norm_and_workspace_capacity_refusals_keep_attempted_work ... ok
+test represented_clock_delta_controls_normalization_not_step_metadata ... ok
+test scalar_rhs_attempts_are_counted_on_err_and_nonfinite_output ... ok
+test signed_one_sided_gain_uses_outward_residual_integral_and_refuses_overflow ... ok
+test zero_span_dense_entry_rejects_invalid_adaptive_and_linear_config ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/a11_gray_scott_log_norm.rs (/home/claude/targets/integration/debug/deps/a11_gray_scott_log_norm-988019a45c72335a)
+
+running 3 tests
+test generic_max_diagonal_is_not_a_logarithmic_norm_bound ... ok
+test gray_scott_log_norm_refuses_malformed_or_incomplete_tubes ... ok
+test gray_scott_reaction_block_bounds_enclose_tube_values ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/a1_committed_trace_regression.rs (/home/claude/targets/integration/debug/deps/a1_committed_trace_regression-859e08d087b36517)
+
+running 1 test
+test historical_external_digest_is_preserved_while_v2_trace_has_its_own_baseline ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.25s
+
+     Running tests/a1_homotopy_counter_reconciliation.rs (/home/claude/targets/integration/debug/deps/a1_homotopy_counter_reconciliation-cee782a8c7f223de)
+
+running 2 tests
+test homotopy_dense_driver_counters_equal_the_attempt_ledger ... ok
+test homotopy_observed_driver_counters_equal_the_attempt_ledger ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.31s
+
+     Running tests/a1_inner_tolerance_parity_contracts.rs (/home/claude/targets/integration/debug/deps/a1_inner_tolerance_parity_contracts-cedd130525e58031)
+
+running 6 tests
+test all_six_runtime_lane_accessors_are_value_equivalent_for_a_given_arm ... ok
+test both_arms_preserve_the_exact_pre_a1_phi_arithmetic ... ok
+test legacy_arm_preserves_the_protected_pre_a1_gmres_values ... ok
+test outer_scaled_arm_matches_the_preserved_phi_numbers_without_semantic_overclaim ... ok
+test solver_structure_remains_arm_independent ... ok
+test tolerance_construction_is_fallible_and_never_requires_abort ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/a1_transactional_counter_reconciliation.rs (/home/claude/targets/integration/debug/deps/a1_transactional_counter_reconciliation-b8f17d644d78616e)
+
+running 3 tests
+test default_configuration_ledger_is_consistent ... ok
+test dense_driver_reconciles_outer_tail_rejections ... ok
+test observed_driver_reconciles_outer_tail_rejections ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.77s
+
+     Running tests/a1_two_arm_receipt_contracts.rs (/home/claude/targets/integration/debug/deps/a1_two_arm_receipt_contracts-3ab0970746f658e8)
+
+running 5 tests
+test audit_execution_is_neutral_to_runtime_policy_budgets_controller_and_trace ... ok
+test receipt_only_candidate_is_explicit_and_ordinary_runtime_remains_legacy_fixed ... ok
+test scientific_execution_identity_rejects_late_bound_or_malformed_values ... ok
+test unrecommended_hires_event_has_arm_bound_independent_audit_evidence ... ok
+test all_two_by_six_cells_have_explicit_complete_or_reasoned_audit_states has been running for over 60 seconds
+test all_two_by_six_cells_have_explicit_complete_or_reasoned_audit_states ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 466.12s
+
+     Running tests/a1_zero_tolerance_scale.rs (/home/claude/targets/integration/debug/deps/a1_zero_tolerance_scale-9b1b78bae6b63e0f)
+
+running 9 tests
+test fast_banded_driver_accepts_a_zero_component_with_zero_atol ... ok
+test fast_dense_driver_accepts_a_zero_component_with_zero_atol ... ok
+test fast_small_driver_accepts_a_zero_component_with_zero_atol ... ok
+test lagged_driver_refuses_a_zero_richardson_weight_with_a_typed_error ... ok
+test fast_small_batch_driver_accepts_a_zero_component_with_zero_atol ... ok
+test lagged_driver_with_forced_refresh_accepts_a_zero_component_with_zero_atol ... ok
+test protected_sequential_driver_accepts_a_zero_component_with_zero_atol ... ok
+test matrix_free_fast_driver_accepts_a_zero_component_with_zero_atol ... ok
+test staged_coupled_target_refuses_a_zero_start_weight_with_a_typed_error ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+     Running tests/adaptive_bdf_contracts.rs (/home/claude/targets/integration/debug/deps/adaptive_bdf_contracts-666d2f5302b1fa72)
+
+running 12 tests
+test accepted_output_clipping_restores_the_preclip_bdf_request ... ok
+test adaptive_bdf2_uses_startup_order_then_variable_step_order ... ok
+test bdf_linear_and_nonlinear_failures_have_one_to_one_typed_counters ... ok
+test fixed_bdf_step_remains_identical_to_variable_kernel_at_ratio_one ... ok
+test nonuniform_bdf2_coefficients_recover_constant_step_formula ... ok
+test nonuniform_bdf2_predictor_uses_the_actual_step_ratio ... ok
+test variable_bdf1_quadratic_oracle_validates_geometry_lte_factor_and_second_order_refinement ... ok
+test variable_bdf2_accepts_the_closed_zero_stability_boundary ... ok
+test variable_bdf2_cubic_oracle_validates_geometry_lte_factor_and_third_order_refinement ... ok
+test variable_bdf2_excessive_growth_takes_one_order_one_restart_and_rebuilds_history ... ok
+test variable_bdf2_is_exact_for_a_quadratic_on_unequal_steps ... ok
+test adaptive_bdf1_is_transactional_and_responds_to_tolerance ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.44s
+
+     Running tests/adaptive_controller_contracts.rs (/home/claude/targets/integration/debug/deps/adaptive_controller_contracts-129d8c20c89ce193)
+
+running 9 tests
+test adaptive_config_rejects_inconsistent_bounds ... ok
+test forced_output_clipped_acceptance_is_neutral_to_pi_history ... ok
+test forced_output_clipped_rejection_scales_the_actual_trial_step ... ok
+test integral_controller_uses_estimator_order_and_rejection_cap ... ok
+test adaptive_failure_diagnostics_align_typed_rows_and_cause_counts ... ok
+test pi_controller_updates_only_after_acceptance ... ok
+test step_doubling_returns_fine_path_wrms_error ... ok
+test ordinary_error_rejection_is_recorded_as_a_local_error ... ok
+test unobserved_adaptive_path_preserves_typed_solver_failure_work ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests/adaptive_fused_exponential_contracts.rs (/home/claude/targets/integration/debug/deps/adaptive_fused_exponential_contracts-c5b2017bcc452313)
+
+running 3 tests
+test incomplete_adaptive_run_preserves_attempted_work_and_partial_output ... ok
+test nonautonomous_time_augmentation_has_exact_rhs_and_jvp ... ok
+test adaptive_fused_parallel_exponential_responds_to_tolerance ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+
+     Running tests/adaptive_homotopy_contracts.rs (/home/claude/targets/integration/debug/deps/adaptive_homotopy_contracts-82d2d6a601078218)
+
+running 2 tests
+test adaptive_homotopy_accepts_an_affine_fast_path_on_the_requested_grid ... ok
+test adaptive_homotopy_fallback_is_transactional_across_rejections ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+     Running tests/adaptive_radau_contracts.rs (/home/claude/targets/integration/debug/deps/adaptive_radau_contracts-cc9535ef8b90abe0)
+
+running 6 tests
+test accepted_output_clipping_restores_the_preclip_radau_request ... ok
+test adaptive_radau3_uses_fourth_power_embedded_estimator_and_one_step_per_acceptance ... ok
+test radau3_embedded_error_uses_stage_displacements_and_constant_mass_equivalently ... ok
+test radau3_nonfinite_residual_failure_is_typed_and_counted ... ok
+test radau3_previous_local_rejection_reuses_the_estimator_factor_for_correction ... ok
+test adaptive_radau1_is_transactional_and_responds_to_tolerance ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.73s
+
+     Running tests/adaptive_rodas_contracts.rs (/home/claude/targets/integration/debug/deps/adaptive_rodas_contracts-e7e5948201b969f2)
+
+running 2 tests
+test sequential_legacy_wrapper_matches_common_controller_report ... ok
+test sabr_legacy_wrapper_matches_common_controller_report_after_rejections ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+
+     Running tests/alg01_coupled_stage_target.rs (/home/claude/targets/integration/debug/deps/alg01_coupled_stage_target-ae8886752dda7792)
+
+running 14 tests
+test e05_unit_rhs_matches_the_committed_anchor ... ok
+test export_base ... ignored, base export of research/alg01_coupled_stage_target_20261008; release build
+test export_base_alg03 ... ignored, base export of research/alg03_stage_budget_guard_20261008; release build
+test export_runs ... ignored, recorded run of research/alg01_coupled_stage_target_20261008; release build
+test export_runs_alg03 ... ignored, recorded run of research/alg03_stage_budget_guard_20261008; release build
+test frontier_grid_is_one_to_ten_decades_in_half_decades ... ok
+test coupled_targets_follow_the_registered_rule ... ok
+test guard_classification_does_not_change_the_run ... ok
+test legacy_rows_reproduce_the_base_export_on_small_cases ... ok
+test lu_twin_agrees_with_the_matrix_free_u_form_step ... ok
+test staged_policies_integrate_small_cases_without_a_duplicate_residual ... ok
+test staged_policies_refuse_other_solvers ... ok
+test transfer_constants_reproduce_the_pilot_table ... ok
+test legacy_policy_is_the_gmres_into_driver_bit_for_bit ... ok
+
+test result: ok. 10 passed; 0 failed; 4 ignored; 0 measured; 0 filtered out; finished in 1.10s
+
+     Running tests/alg04_alg06.rs (/home/claude/targets/integration/debug/deps/alg04_alg06-70911480938d4fdb)
+
+running 14 tests
+test alg04_cells_are_the_alg01_base_cells ... ok
+test b3_is_coupled_guarded2_where_nothing_fires ... ok
+test alg06_cells_are_the_alg03_base_cells_and_the_spd07_set ... ok
+test classifying_accepted_guard_aborts_does_not_change_the_run ... ok
+test coupled_guarded2_is_coupled_guarded_above_the_restart_length ... ok
+test base_references_cover_every_problem ... ok
+test dup_fix_needs_gmres_into ... ok
+test export_runs_alg04 ... ignored, recorded run of research/alg04_coupled_target_v2_20261010; release build
+test export_runs_alg06 ... ignored, recorded run of research/alg06_guard_v2_20261010; release build
+test g3_charges_the_fallback_residual_to_the_attempt_error ... ok
+test g3_needs_a_coupled_target ... ok
+test g3_rejections_take_the_local_error_path ... ok
+test legacy_ladder_at_the_alg04_budget_reproduces_the_alg01_base ... ok
+test dup_fix_is_legacy_without_the_diagnostic_residual ... ok
+
+test result: ok. 12 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 23.62s
+
+     Running tests/alg05_predictive_capped2.rs (/home/claude/targets/integration/debug/deps/alg05_predictive_capped2-ac4d7d7db8b62ab5)
+
+running 8 tests
+test a_sliver_landing_keeps_the_rejection_flag ... ok
+test an_informative_clipped_acceptance_clears_the_rejection_flag ... ok
+test err_zero_after_a_rejection_gives_factor_one ... ok
+test history_free_proposal_of_predictive_capped2_is_the_integral_factor ... ok
+test predictive_capped2_serializes_like_the_production_state ... ok
+test predictive_capped2_follows_the_registered_rule_bit_for_bit ... ok
+test without_rejections_predictive_capped2_equals_the_older_predictive_kinds ... ok
+test the_older_kinds_keep_their_arithmetic_bit_for_bit ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/audit0930_accounting_contracts.rs (/home/claude/targets/integration/debug/deps/audit0930_accounting_contracts-5c4637aa982188a2)
+
+running 1 test
+test dense_enforcement_rejections_are_counted_as_rejections ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/audit0930_validation_contracts.rs (/home/claude/targets/integration/debug/deps/audit0930_validation_contracts-36fe8e6abc60487e)
+
+running 2 tests
+test error_scale_checks_each_input ... ok
+test malformed_budget_policies_are_rejected_at_evaluation ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/audit2_matrix_free_common_w_contracts.rs (/home/claude/targets/integration/debug/deps/audit2_matrix_free_common_w_contracts-6f1a000d20d25314)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/audit2_reusable_preconditioner_transaction_contracts.rs (/home/claude/targets/integration/debug/deps/audit2_reusable_preconditioner_transaction_contracts-3e934842bbdf8456)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/b1_lagged_contracts.rs (/home/claude/targets/integration/debug/deps/b1_lagged_contracts-d5547944e16037a6)
+
+running 6 tests
+test b1_lagged_measurement_hires_and_brusselator ... ignored, measurement: run with --ignored --nocapture and record in docs/plan/nodes/b1-lagged.md
+test lagged_jvp_branch_runs_inside_iterating_stages ... ok
+test forced_refresh_reproduces_the_fast_driver_on_robertson_and_hires ... ok
+test stage_sensitivities_are_the_verified_values_rounded_up ... ok
+test stage_targets_follow_the_preregistered_allocation ... ok
+test lagged_run_charges_every_refresh_and_evaluates_the_jacobian_every_attempt ... ok
+
+test result: ok. 5 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.14s
+
+     Running tests/b1b_gmres_contracts.rs (/home/claude/targets/integration/debug/deps/b1b_gmres_contracts-41dd64bbb506828c)
+
+running 9 tests
+test b1b_gmres_measurement_hires_and_brusselator ... ignored, measurement: run with --ignored --nocapture and record in docs/plan/nodes/b1b-gmres.md
+test gmres_forced_refresh_reproduces_the_fast_driver_on_robertson_and_hires ... ok
+test gmres_run_charges_every_refresh_and_counts_every_product ... ok
+test monitored_gmres_abandons_and_exhausts_without_writing_the_output ... ok
+test monitored_gmres_matches_gmres_into_at_the_last_column_of_a_full_cycle ... ok
+test monitored_gmres_matches_gmres_into_over_restarted_cycles_on_a_large_system ... ok
+test monitored_gmres_refuses_a_left_preconditioner ... ok
+test gmres_jvp_path_runs_inside_iterating_stages ... ok
+test richardson_default_is_the_wave1_driver_bit_for_bit ... ok
+
+test result: ok. 8 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 2.00s
+
+     Running tests/band_verification_range.rs (/home/claude/targets/integration/debug/deps/band_verification_range-e6185136131eb618)
+
+running 3 tests
+test a_narrow_band_is_rejected_at_every_scale ... ok
+test a_correct_band_is_accepted_at_every_scale ... ok
+test an_unrepresentable_difference_rejects ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/banded_recovery_contract.rs (/home/claude/targets/integration/debug/deps/banded_recovery_contract-6fdd8efcc86e2cd7)
+
+running 10 tests
+test failed_banded_jacobian_rebuilds_snapshot ... ok
+test banded_kernel_driver_ids_are_public_constants ... ok
+test failed_banded_rhs_rebuilds_snapshot ... ok
+test failed_dense_jacobian_rebuilds_snapshot ... ok
+test failed_dense_rhs_rebuilds_snapshot ... ok
+test finite_inputs_with_overflowing_solution_are_rejected ... ok
+test nonfinite_rhs_is_rejected ... ok
+test nonfinite_upper_entry_is_not_a_successful_solution ... ok
+test size_arithmetic_overflow_is_a_typed_error_not_a_panic ... ok
+test tiny_but_representable_solution_is_not_over_rejected ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/block_vector_unit_contracts.rs (/home/claude/targets/integration/debug/deps/block_vector_unit_contracts-69f2759cb88fa3b7)
+
+running 2 tests
+test a_sequential_application_is_one_state_vector ... ok
+test block_gmres_charges_s_state_vectors_per_application ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/c1_transaction_contracts.rs (/home/claude/targets/integration/debug/deps/c1_transaction_contracts-a3df3266f1b3d673)
+
+running 20 tests
+test a_custom_work_measure_sets_the_units ... ok
+test admission_is_deterministic ... ok
+test always_failing_candidate_costs_at_most_ten_percent_of_the_protected_path ... ok
+test always_succeeding_cheaper_candidate_is_admitted_every_time_within_fifty_attempts ... ok
+test attempted_equals_committed_plus_rolled_back_over_a_mixed_sequence ... ok
+test budget_refuses_overflowing_requests ... ok
+test budget_reserves_up_to_the_cap_exactly_and_reports_work_used ... ok
+test commit_returns_the_trial_state_and_counts_its_work_as_committed ... ok
+test dropping_a_trial_is_a_counted_rollback ... ok
+test invalid_config_is_rejected ... ok
+test invalid_costs_are_typed_errors ... ok
+test ledger_serializes ... ok
+test posterior_is_updated_only_by_charged_attempts ... ok
+test rollback_discards_the_state_but_keeps_the_work_attempted ... ok
+test telemetry_is_plain_serde_data ... ok
+test throttle_and_overhead_guard_decline_with_distinct_statuses ... ok
+test throttle_interval_is_the_ceiling_of_ten_tau ... ok
+test trial_reservations_are_recorded_and_refusals_counted ... ok
+test upper_confidence_bound_is_monotone_and_inside_the_unit_interval ... ok
+test concurrent_reservation_never_exceeds_the_cap ... ok
+
+test result: ok. 20 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/clipped_controller_contracts.rs (/home/claude/targets/integration/debug/deps/clipped_controller_contracts-1948c8af361b53c0)
+
+running 5 tests
+test informative_clipped_sample_predicting_rejection_lowers_but_not_below_trial ... ok
+test informative_clipped_sample_with_small_error_raises_the_request ... ok
+test integral_controller_unclipped_acceptance_is_unchanged ... ok
+test pi_factor_uses_the_previous_accepted_error_not_the_current_one ... ok
+test sliver_landing_never_collapses_the_request ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/coefficient_structural_contracts.rs (/home/claude/targets/integration/debug/deps/coefficient_structural_contracts-5c7b6242cf40b8bb)
+
+running 5 tests
+test block_and_sequential_residuals_differ_within_the_quantified_allowance ... ok
+test native_coefficient_bits_and_target_ids_are_pinned ... ok
+test nilpotency_is_a_property_of_the_target_not_of_the_native_matrices ... ok
+test the_leakage_census_is_pinned ... ok
+test write_stage_target_semantics ... ignored, writes fixtures/stage_target_semantics.json; run with VIGILODE_WRITE_STAGE_TARGET=1
+
+test result: ok. 4 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/collective_admission_contracts.rs (/home/claude/targets/integration/debug/deps/collective_admission_contracts-31c3e9dee0137bcf)
+
+running 7 tests
+test test_generic_ode_problem_rejection_by_collective_verifier ... ok
+test test_negative_admission_gate_contract ... ok
+test test_vg1_zero_allocation_in_rhs_and_jvp_hot_loops ... ok
+test test_vg2_dahlquist_linear_boundary_matches_exact_harmonic_oscillator ... ok
+test test_vg2_jvp_analytic_consistency_against_finite_difference ... ok
+test test_vg3_energy_invariant_conservation_derivative ... ok
+test test_vg3_spectral_and_weighted_moments_preservation ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/common_w_gate_contracts.rs (/home/claude/targets/integration/debug/deps/common_w_gate_contracts-b0ebb7decc550b3d)
+
+running 2 tests
+test block_common_w_rows_use_fewer_block_calls_than_vector_operator_actions ... ok
+test smoke_common_w_gate_is_strictly_jacobian_free_and_deterministic has been running for over 60 seconds
+test smoke_common_w_gate_is_strictly_jacobian_free_and_deterministic ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 72.16s
+
+     Running tests/comparator_tier_a_contracts.rs (/home/claude/targets/integration/debug/deps/comparator_tier_a_contracts-49a3d61992ca47d4)
+
+running 3 tests
+test scaled_newton_tolerance_loosens_with_the_outer_tolerance_on_prothero_robinson ... ok
+test tier_a_flags_are_opt_in_and_relabel_the_comparator ... ok
+test radau3_stage_lu_estimator_reduces_whole_run_factorizations ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.23s
+
+     Running tests/constants_provenance_contracts.rs (/home/claude/targets/integration/debug/deps/constants_provenance_contracts-72b6e9962f7725f8)
+
+running 2 tests
+test source_artifact_hashes_are_current ... ok
+test constants_provenance_table_matches_source ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/declared_structure_routing.rs (/home/claude/targets/integration/debug/deps/declared_structure_routing-e6ea8acbb3c20d40)
+
+running 6 tests
+test band_verification_is_charged_and_reported ... ok
+test a_dense_declaration_above_eight_records_its_fallback ... ok
+test export_runs ... ignored, recorded run of research/sp03_declared_structure_routing_20261010; release build; set SP03_RUNS
+test every_malformed_declaration_is_refused_before_any_step ... ok
+test the_transcribed_problems_are_consistent ... ok
+test routed_equals_its_target_driver_on_quick_cells ... ok
+
+test result: ok. 5 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 1.56s
+
+     Running tests/dense_error_control_contracts.rs (/home/claude/targets/integration/debug/deps/dense_error_control_contracts-9b4c1c395e8cad9b)
+
+running 4 tests
+test adaptive_dense_interior_wrms_on_stiff_pr ... ok
+test defect_report_needs_no_jacobian_and_overstates_stiff_components ... ok
+test off_mode_is_the_legacy_dense_path_bit_for_bit ... ok
+test enforced_dense_error_bounds_the_true_interior_error ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+
+     Running tests/dense_output_v2_contracts.rs (/home/claude/targets/integration/debug/deps/dense_output_v2_contracts-ff72c604117b2ff5)
+
+running 15 tests
+test adaptive_implicit_failures_preserve_the_committed_output_prefix ... ok
+test analytic_dense_extensions_recover_their_expected_interior_orders ... ok
+test bdf2_quadratic_dense_interpolant_honors_all_three_nodes ... ok
+test bdf_history_restarts_when_the_natural_step_exactly_matches_a_hard_stop ... ok
+test dense_implicit_failure_kinds_match_work_counters ... ok
+test dense_output_grid_density_does_not_change_adaptive_internal_steps ... ok
+test every_adaptive_rodas_family_samples_dense_outputs_without_grid_clipping ... ok
+test fixed_dense_observation_samples_four_inner_times_without_clipping_the_macro_step ... ok
+test hard_stop_landing_is_controller_neutral_while_ordinary_outputs_are_not_landings ... ok
+test implicit_dense_paths_land_on_hard_stops_before_interpolating_later_outputs ... ok
+test legacy_clipped_wrappers_are_bit_stable_and_new_hard_stops_do_not_cross ... ok
+test protected_adaptive_rodas_and_low_order_implicit_dense_sampling_are_available ... ok
+test radau_iia3_collocation_cubic_has_the_bk_endpoint_oracle_and_dense_sampling ... ok
+test rodas5p_h_gamma_extension_uses_transformed_k_without_an_extra_h ... ok
+test adaptive_radau_and_bdf_dense_paths_are_output_grid_invariant ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.18s
+
+     Running tests/dense_wfiltered_contracts.rs (/home/claude/targets/integration/debug/deps/dense_wfiltered_contracts-0132eecdc390ff83)
+
+running 11 tests
+test lemma3_ratio_on_the_scalar_test_equation_with_constant_defect ... ok
+test dp01_nonlinear_witness_off_enforce_wfiltered ... ok
+test prothero_robinson_wfiltered_enforce_interior_within_two_units ... ok
+test prothero_robinson_wfiltered_enforce_kill_gate ... ignored, kill gate FAIL: 2.143x the Off accepted-step count at rtol 1e-6 (gate 1.3x)
+test wfiltered_enforce_charges_its_work_to_the_run ... ok
+test wfiltered_estimate_is_the_report_estimate_up_to_lemma3_on_linear_pr ... ok
+test wfiltered_enforce_interior_rejections_keep_the_counter_ledger ... ok
+test wfiltered_modes_refuse_sabr_instead_of_evaluating_a_new_jacobian ... ok
+test wfiltered_report_never_changes_the_run_and_reuses_the_step_factorization ... ok
+test wfiltered_modes_refuse_a_problem_without_an_explicit_jacobian ... ok
+test wfiltered_without_a_step_factorization_factors_once_per_sample ... ok
+
+test result: ok. 10 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.09s
+
+     Running tests/dp02_attempted_callback_counters.rs (/home/claude/targets/integration/debug/deps/dp02_attempted_callback_counters-dcb476668356844d)
+
+running 4 tests
+test jvp_assembled_jacobian_charges_attempted_columns_on_err_and_nonfinite ... ok
+test dense_fast_driver_charges_failed_jvp_columns ... ok
+test small_driver_charges_nonfinite_rhs_attempts ... ok
+test small_batch_lanes_charge_nonfinite_rhs_like_the_scalar_driver ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/early_flow_defect_contracts.rs (/home/claude/targets/integration/debug/deps/early_flow_defect_contracts-17bbeb06f35f71ba)
+
+running 4 tests
+test failed_trial_is_explicitly_unscorable_without_inferred_work_or_eta ... ok
+test step_read_only_telemetry_is_bitwise_and_work_counter_neutral ... ok
+test telemetry_respects_linear_zero_and_time_augmented_limits ... ok
+test adaptive_read_only_mode_preserves_outputs_controller_and_existing_work ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+
+     Running tests/enforced_prefix_budget_contracts.rs (/home/claude/targets/integration/debug/deps/enforced_prefix_budget_contracts-5995eef383d734e1)
+
+running 3 tests
+test budget_guard_refuses_the_cap_plus_one_jvp_before_operator_call ... ok
+test zero_budget_executes_no_jvp_and_reports_zero_spent_jvp_work ... ok
+test generous_budget_reproduces_unbudgeted_level2_report_exactly ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/enforced_prefix_budget_runner_contracts.rs (/home/claude/targets/integration/debug/deps/enforced_prefix_budget_runner_contracts-3e02048abed72ce3)
+
+running 3 tests
+test fresh_enforced_budget_holdout320_profile_is_frozen_before_output ... ok
+test remaining_budget_is_the_frozen_absolute_and_cumulative_minimum ... ok
+test enforced_budget_runner_is_read_only_and_never_records_a_breach ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.07s
+
+     Running tests/exponential_contracts.rs (/home/claude/targets/integration/debug/deps/exponential_contracts-e4b18dd7022e05b9)
+
+running 6 tests
+test exponential_primary_path_builds_no_explicit_jacobian_or_newton_system ... ok
+test matrix_free_krylov_matches_dense_nonnormal_phi_action ... ok
+test parallel_order_five_method_executes_dependency_levels_concurrently ... ok
+test declared_orders_are_observed_on_nonlinear_problem ... ok
+test parallel_order_five_method_has_three_level_logical_critical_path ... ok
+test pexprb54s4_coefficients_are_exactly_locked ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+
+     Running tests/exponential_order_contracts.rs (/home/claude/targets/integration/debug/deps/exponential_order_contracts-f71854b53bd33c39)
+
+running 3 tests
+test nonstiff_coupled_problem_shows_the_declared_order ... ok
+test stiff_coupled_problem_keeps_the_documented_stiff_order ... ok
+test krylov_truncation_is_reported_and_its_order_is_measured ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 9.13s
+
+     Running tests/fixed_step_order_contracts.rs (/home/claude/targets/integration/debug/deps/fixed_step_order_contracts-244e56e7446cbff6)
+
+running 9 tests
+test direct_fixed_step_mildly_stiff_pr_band ... ok
+test direct_fixed_step_stiff_pr_order_is_reduced_band ... ok
+test direct_fixed_step_with_mass_matrix_is_order_five ... ok
+test direct_fixed_step_nonstiff_order_is_five ... ok
+test finite_difference_partial_t_is_accurate_and_keeps_the_order ... ok
+test forcing_fixed_outer_rtol_keeps_order_five ... ok
+test forcing_rule_tight_tolerance_matches_direct_without_abort ... ok
+test forcing_fixed_outer_rtol_error_is_bounded_by_tolerance_floor has been running for over 60 seconds
+test preconditioned_gmres_paths_keep_the_direct_order ... ok
+test forcing_fixed_outer_rtol_error_is_bounded_by_tolerance_floor ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 109.61s
+
+     Running tests/frozen_full_e_shadow_contracts.rs (/home/claude/targets/integration/debug/deps/frozen_full_e_shadow_contracts-e588c4b378ea8a90)
+
+running 3 tests
+test frozen_recommendation_uses_only_completed_prefix_and_sealed_zeta_threshold ... ok
+test continuation_charges_total_ledger_without_reducing_the_next_prefix_cap ... ok
+test retained_level2_shadow_is_complete_charged_safe_and_rjf_identical ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.78s
+
+     Running tests/fused_exponential_contracts.rs (/home/claude/targets/integration/debug/deps/fused_exponential_contracts-484685768ae94c50)
+
+running 2 tests
+test fused_parallel_method_uses_five_logical_phi_actions ... ok
+test fused_methods_retain_declared_orders ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.21s
+
+     Running tests/fused_phi_krylov_contracts.rs (/home/claude/targets/integration/debug/deps/fused_phi_krylov_contracts-83c4d8921c3a16f1)
+
+running 4 tests
+test fused_error_estimate_matches_first_arnoldi_term ... ok
+test fused_convergence_uses_residual_estimate_not_nested_difference ... ok
+test zero_fused_action_short_circuits_without_operator_work ... ok
+test fused_matrix_free_action_matches_dense_oracle ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/fused_phi_scaling_contracts.rs (/home/claude/targets/integration/debug/deps/fused_phi_scaling_contracts-cfa22ce4c1a85252)
+
+running 4 tests
+test fused_action_is_invariant_under_the_physical_scale_of_its_inputs ... ok
+test fused_combination_matches_exact_phi_as_the_step_shrinks ... ok
+test diffusion_action_is_invariant_under_the_physical_scale_of_its_inputs ... ok
+test fused_combination_on_diffusion_matches_the_dense_oracle_as_the_step_shrinks ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.20s
+
+     Running tests/g1_transactional_gate.rs (/home/claude/targets/integration/debug/deps/g1_transactional_gate-d564aa7893d750cd)
+
+running 1 test
+test canonical_g1_gate_covers_the_declared_generic_families_without_explicit_jacobians ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.48s
+
+     Running tests/g2_exponential_gate_contracts.rs (/home/claude/targets/integration/debug/deps/g2_exponential_gate_contracts-c2c3b522e28fe050)
+
+running 2 tests
+test g2_foundation_smoke_closes_coefficient_phi_order_and_structure_gates ... ok
+test g2_foundation_report_is_deterministic ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.40s
+
+     Running tests/g3_fused_adaptive_gate_contracts.rs (/home/claude/targets/integration/debug/deps/g3_fused_adaptive_gate_contracts-a74b318ea1e3dfb2)
+
+running 1 test
+test smoke_g3_gate_is_matrix_free_newton_free_and_complete ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.25s
+
+     Running tests/g4_prefix_kernel_gate_contracts.rs (/home/claude/targets/integration/debug/deps/g4_prefix_kernel_gate_contracts-a1695eed449ee3aa)
+
+running 1 test
+test smoke_prefix_kernel_gate_is_read_only_and_reuses_bases_exactly ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.33s
+
+     Running tests/g4_s5b0_regime_atlas_contracts.rs (/home/claude/targets/integration/debug/deps/g4_s5b0_regime_atlas_contracts-d25f91da200e98f4)
+
+running 12 tests
+test actual_level1_prefix_runner_is_read_only_and_targets_first_runtime_proposals ... ok
+test actual_level2_prefix_runner_is_read_only_and_exposes_later_stage_defects ... ok
+test family_shard_registry_matches_the_six_atlas_families ... ok
+test holdout_dimensions_have_no_source_literals ... ok
+test replayed_k1_table_is_rejected_on_holdout_profile ... ok
+test attempt_trace_smoke_reconstructs_committed_rjf_rows_and_retains_trials ... ok
+test rjf_only_smoke_skips_every_exponential_shadow ... ok
+test smoke_atlas_contains_all_transition_families ... ok
+test split_profiles_freeze_dimension_and_canonical_tolerances ... ok
+test v29_stage_growth_profiles_are_fresh_and_freeze_tolerances ... ok
+test v29_stage_growth_safety_audit_is_read_only_budgeted_and_explicit ... ok
+test smoke_atlas_is_read_only_and_matrix_free ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 55.73s
+
+     Running tests/g4_s5b3_attempt_geometry_contracts.rs (/home/claude/targets/integration/debug/deps/g4_s5b3_attempt_geometry_contracts-6963457c4978bc65)
+
+running 1 test
+test smoke_attempt_geometry_is_read_only_complete_and_threshold_free ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.56s
+
+     Running tests/generic_problem_contracts.rs (/home/claude/targets/integration/debug/deps/generic_problem_contracts-532eb5a21899ed3f)
+
+running 2 tests
+test robertson_conserves_total_population_and_all_generic_problems_are_matrix_free_capable ... ok
+test exact_generic_problems_satisfy_rhs_and_jvp_contracts ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/generic_scope_contracts.rs (/home/claude/targets/integration/debug/deps/generic_scope_contracts-5eee6159a8d552fe)
+
+running 4 tests
+test bdf_v2_semantic_baseline_explicitly_retires_the_legacy_source_byte_freeze ... ok
+test radau3_cell_g_baseline_has_embedded_semantics_instead_of_a_source_byte_claim ... ok
+test required_vectorized_jf_modules_exist_in_the_generic_base ... ok
+test generic_solver_core_does_not_embed_physical_client_bindings ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+
+     Running tests/homotopy_numerical_contracts.rs (/home/claude/targets/integration/debug/deps/homotopy_numerical_contracts-915909705ac3305c)
+
+running 6 tests
+test homotopy_step_accepts_the_affine_oracle_and_falls_back_transactionally ... ok
+test fixed_homotopy_path_validates_schedule_and_reaches_the_affine_q7_endpoint ... ok
+test manufactured_mass_problem_has_noncommuting_structure_and_exact_rhs ... ok
+test nonlinear_output_certificate_reduces_to_the_affine_exact_correction ... ok
+test partial_linear_decomposition_matches_the_protected_block_operator ... ok
+test low_depth_homotopy_paths_remain_finite_and_expose_a_residual_hierarchy ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests/homotopy_path_controller_contracts.rs (/home/claude/targets/integration/debug/deps/homotopy_path_controller_contracts-0322f108fc510c1c)
+
+running 7 tests
+test path_controller_separates_algebraic_path_success_from_timestep_acceptance ... ok
+test schedule_contract_accepts_a_monotone_three_round_path ... ok
+test schedule_contract_rejects_invalid_round_parameters ... ok
+test schedule_contract_rejects_nonmonotone_or_incomplete_lambda_paths ... ok
+test scheduled_fixed_parameters_reproduce_the_existing_fixed_path ... ok
+test scheduled_path_preserves_partial_points_and_work_on_numerical_failure ... ok
+test path_controller_smoke_report_is_deterministic_and_preserves_controls ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.25s
+
+     Running tests/homotopy_policy_contracts.rs (/home/claude/targets/integration/debug/deps/homotopy_policy_contracts-1de558a7a53eea9d)
+
+running 8 tests
+test homotopy_step_config_preserves_absolute_constructor_and_accepts_policy ... ok
+test local_rayon_execution_matches_sequential_ordered_results ... ok
+test output_budget_policies_match_dimensionless_formulas ... ok
+test output_budget_policies_reject_invalid_parameters ... ok
+test parallel_execution_mutates_outputs_in_order_without_intermediate_results ... ok
+test order_policy_screen_keeps_the_protected_sequential_fifth_order_gate ... ok
+test policy_replay_split_is_disjoint_and_rayon_scientific_output_is_deterministic ... ok
+test trajectory_gate_false_accepts_are_scoped_to_the_matching_path_configuration ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 42.61s
+
+     Running tests/homotopy_research_contracts.rs (/home/claude/targets/integration/debug/deps/homotopy_research_contracts-43b5faa33a177418)
+
+running 6 tests
+test full_nilpotent_inverse_matches_direct_path_solve_for_noncommuting_mass_and_jacobian ... ok
+test low_depth_truncation_exposes_unpropagated_stage_chain ... ok
+test affine_partial_coupling_endpoints_and_flrh_limit_hold ... ok
+test original_output_certificate_matches_an_exact_affine_target_correction ... ok
+test partial_coupling_parameters_and_oracle_shapes_are_validated ... ok
+test original_output_certificate_rejects_invalid_vectors_and_scales ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/inner_forcing_fixed_step_ladder_contracts.rs (/home/claude/targets/integration/debug/deps/inner_forcing_fixed_step_ladder_contracts-1b5435966f51af4f)
+
+running 6 tests
+test error_scaled_residual_limit_shrinks_with_the_embedded_estimate ... ok
+test forcing_target_on_a_stiff_stage_returns_a_floor_instead_of_an_error ... ok
+test inexact_arm_tracks_direct_lu_on_a_fixed_rtol_halving_ladder_advection_diffusion has been running for over 60 seconds
+test inexact_arm_tracks_direct_lu_on_a_fixed_rtol_halving_ladder_prothero_robinson has been running for over 60 seconds
+test inexact_arm_tracks_direct_lu_on_a_fixed_rtol_halving_ladder_advection_diffusion ... ok
+test refined_stage_reports_are_flagged_and_within_the_error_scaled_limit ... ok
+test tight_rtol_stiff_fixed_steps_do_not_abort_at_step_zero ... ok
+test inexact_arm_tracks_direct_lu_on_a_fixed_rtol_halving_ladder_prothero_robinson ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 363.99s
+
+     Running tests/inner_forcing_resolution_contracts.rs (/home/claude/targets/integration/debug/deps/inner_forcing_resolution_contracts-5077debeb3fd8c3a)
+
+running 1 test
+test every_forced_step_reports_its_final_budget_status ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.40s
+
+     Running tests/inner_forcing_v2_contracts.rs (/home/claude/targets/integration/debug/deps/inner_forcing_v2_contracts-be14dca01d373057)
+
+running 7 tests
+test forcing_is_separate_from_the_frozen_a1_two_arm_policy ... ok
+test forcing_target_uses_the_frozen_flow_rhs_residual_allocation ... ok
+test generic_protected_adaptive_path_uses_inner_forcing ... ok
+test opt_in_forcing_does_not_change_the_ordinary_unforced_step ... ok
+test protected_matrix_free_step_applies_stage_specific_wrms_forcing ... ok
+test residual_allocation_explicitly_does_not_certify_nonnormal_endpoint_error ... ok
+test forced_fixed_step_with_h6_coupled_rtol_retains_order_five ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.94s
+
+     Running tests/int01_gcrodr_verified_reuse.rs (/home/claude/targets/integration/debug/deps/int01_gcrodr_verified_reuse-081f5b9963a071e1)
+
+running 2 tests
+test fresh_family_cold_gmres_only ... ignored, development check of research/int01_gcrodr_verified_reuse_20261003: cold GMRES on the fresh family only
+test gcrodr_verified_reuse ... ignored, research run of research/int01_gcrodr_verified_reuse_20261003; release build
+
+test result: ok. 0 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/int01_posthoc_tolerance.rs (/home/claude/targets/integration/debug/deps/int01_posthoc_tolerance-e76be593ae2b503f)
+
+running 1 test
+test gcrodr_reuse_tolerance_posthoc ... ignored, post-hoc diagnostic of research/int01_gcrodr_verified_reuse_20261003; release build
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/int02_structural_certificate.rs (/home/claude/targets/integration/debug/deps/int02_structural_certificate-4af51ee4fedb1f40)
+
+running 1 test
+test structural_certificate ... ignored, research run of research/int02_structural_certificate_20261003; release build
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/int02_structural_certificate_contracts.rs (/home/claude/targets/integration/debug/deps/int02_structural_certificate_contracts-45e99e0902204a2d)
+
+running 7 tests
+test a_non_diagonal_model_is_not_a_diagonal_model ... ok
+test a_stale_certificate_is_not_bound ... ok
+test a_witness_for_another_operator_or_of_the_other_storage_is_rejected ... ok
+test an_edited_wire_witness_is_rejected_and_an_intact_one_is_rebuilt ... ok
+test bad_shapes_and_non_finite_data_are_rejected ... ok
+test diagonal_fixtures_give_bitwise_the_dense_bounds_with_fewer_slots_and_operations ... ok
+test a_prepared_problem_for_another_state_is_not_used ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+     Running tests/int03_banded_fast.rs (/home/claude/targets/integration/debug/deps/int03_banded_fast-578c229cf9d8007a)
+
+running 1 test
+test banded_fast_pipeline ... ignored, research run of research/int03_banded_fast_20261003; release build
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/int03_banded_fast_contracts.rs (/home/claude/targets/integration/debug/deps/int03_banded_fast_contracts-8d56b4d1354a0d65)
+
+running 4 tests
+test a_singular_band_is_a_linear_solve_error ... ok
+test a_provider_that_writes_nan_rejects_its_attempts ... ok
+test bad_inputs_are_rejected_before_integration ... ok
+test the_banded_lu_matches_dense_partial_pivoting ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/int04_stage_chart.rs (/home/claude/targets/integration/debug/deps/int04_stage_chart-125221a8d799da78)
+
+running 1 test
+test stage_chart_adapter ... ignored, research run of research/int04_stage_chart_20261003; release build
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/int04_stage_chart_contracts.rs (/home/claude/targets/integration/debug/deps/int04_stage_chart_contracts-aebacd9db11a1c9d)
+
+running 3 tests
+test regular_charts_invert_and_differentiate ... ok
+test invalid_inputs_are_errors ... ok
+test singular_charts_and_domain_exits_are_typed ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.13s
+
+     Running tests/integrator_contracts.rs (/home/claude/targets/integration/debug/deps/integrator_contracts-59b06542c6b96de7)
+
+running 5 tests
+test fixed_step_sequential_rodas5p_is_fifth_order ... ok
+test adaptive_solver_rejects_overflowing_trial_and_recovers ... ok
+test sabr_affine_fast_path_and_transactional_fallback_are_both_exercised ... ok
+test scalar_linear_step_matches_exact_solution ... ok
+test rust_krylov_stage_solvers_match_the_same_direct_rodas5p_oracle ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.18s
+
+     Running tests/interpolant_audit_contracts.rs (/home/claude/targets/integration/debug/deps/interpolant_audit_contracts-917373245f0c8715)
+
+running 4 tests
+test a_corrupted_interpolant_is_caught_without_a_reference ... ok
+test the_audit_leaves_the_dense_run_bit_for_bit_unchanged ... ok
+test the_fixed_inner_attribution_arm_runs_the_same_problem ... ok
+test an_intact_interpolant_stays_within_the_delta_limit ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.15s
+
+     Running tests/jvp_only_direct_config_validation.rs (/home/claude/targets/integration/debug/deps/jvp_only_direct_config_validation-592e262e924925d3)
+
+running 2 tests
+test jvp_only_rejects_direct_and_explicit_preconditioners_upfront_with_zero_evals ... ok
+test jvp_only_positive_control_with_gmres_none_succeeds ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+     Running tests/krylov_workspace_driver_contract.rs (/home/claude/targets/integration/debug/deps/krylov_workspace_driver_contract-7815c90c1a8bed35)
+
+running 9 tests
+test export_runs ... ignored, export SP02 runs to RUNS.json
+test faer_premise_pinned ... ok
+test caller_parity_attempt_and_trajectory ... ok
+test forced_failure_rollback_gmres_and_lgmres ... ok
+test nonfinite_jvp_rejection_rollback ... ok
+test refusal_contracts ... ok
+test snapshot_rollback_restores_system_identity_under_same_token ... ok
+test workspace_growth_reuse_and_clone ... FAILED
+test warmed_krylov_solves_and_snapshot_rollback_allocate_zero ... FAILED
+
+failures:
+
+---- workspace_growth_reuse_and_clone stdout ----
+
+thread 'workspace_growth_reuse_and_clone' (20847) panicked at crates/rodas5p-integrators/tests/krylov_workspace_driver_contract.rs:484:34:
+called `Result::unwrap()` on an `Err` value: PoisonError { .. }
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::result::unwrap_failed
+   3: krylov_workspace_driver_contract::workspace_growth_reuse_and_clone
+   4: krylov_workspace_driver_contract::workspace_growth_reuse_and_clone::{closure#0}
+   5: <krylov_workspace_driver_contract::workspace_growth_reuse_and_clone::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+---- warmed_krylov_solves_and_snapshot_rollback_allocate_zero stdout ----
+
+thread 'warmed_krylov_solves_and_snapshot_rollback_allocate_zero' (20846) panicked at crates/rodas5p-integrators/tests/krylov_workspace_driver_contract.rs:682:5:
+assertion `left == right` failed: warmed solve_gmres_into must allocate 0 heap blocks
+  left: 2
+ right: 0
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<usize, usize>
+   4: krylov_workspace_driver_contract::warmed_krylov_solves_and_snapshot_rollback_allocate_zero
+   5: krylov_workspace_driver_contract::warmed_krylov_solves_and_snapshot_rollback_allocate_zero::{closure#0}
+   6: <krylov_workspace_driver_contract::warmed_krylov_solves_and_snapshot_rollback_allocate_zero::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+
+failures:
+    warmed_krylov_solves_and_snapshot_rollback_allocate_zero
+    workspace_growth_reuse_and_clone
+
+test result: FAILED. 6 passed; 2 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.32s
+
+error: test failed, to rerun pass `-p rodas5p-integrators --test krylov_workspace_driver_contract`
+     Running tests/linearized_certificate_contracts.rs (/home/claude/targets/integration/debug/deps/linearized_certificate_contracts-a38e612b98fc468b)
+
+running 2 tests
+test at_the_root_the_linearized_correction_vanishes ... ok
+test a_projected_newton_correction_can_underestimate_the_output_error ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/matrix_free_problem_contracts.rs (/home/claude/targets/integration/debug/deps/matrix_free_problem_contracts-f0ee9c8f65a4185a)
+
+running 2 tests
+test supplied_jvp_matches_the_explicit_jacobian_action ... ok
+test jvp_only_clone_hides_explicit_jacobian_and_builds_matrix_free_shifted_operator ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/native_candidate_contracts.rs (/home/claude/targets/integration/debug/deps/native_candidate_contracts-7bc5aa084494a02f)
+
+running 2 tests
+test catalog_registers_four_native_implicit_anchors_and_keeps_production_variants_deferred ... ok
+test native_integrator_gate_executes_order_stiff_and_mass_checks_deterministically ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+
+     Running tests/native_implicit_contracts.rs (/home/claude/targets/integration/debug/deps/native_implicit_contracts-20cce06cc9a08c96)
+
+running 11 tests
+test bdf1_matches_the_exact_scalar_amplification_factor ... ok
+test bdf2_uses_bdf1_startup_then_is_second_order ... ok
+test dense_newton_accepts_an_exact_linear_correction_without_a_redundant_second_factorization ... ok
+test dense_newton_freezes_one_jacobian_and_reuses_one_factorization ... ok
+test dense_newton_refreshes_a_stale_jacobian_after_line_search_failure ... ok
+test dense_newton_refreshes_after_bounded_residual_stagnation ... ok
+test bdf_mass_matrix_path_is_accurate_and_failure_is_transactional ... ok
+test radau_iia3_matches_stability_function_and_mass_matrix_reference ... ok
+test radau_iia3_tableau_is_exactly_consistent_and_stiffly_accurate ... ok
+test radau_iia3_transform_is_oracle_bound_but_typed_as_deferred_on_real_only_lu ... ok
+test radau_iia1_matches_bdf1_and_radau_iia3_is_fifth_order ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/native_reaudit_cache_contracts.rs (/home/claude/targets/integration/debug/deps/native_reaudit_cache_contracts-9c066f418a5ed73b)
+
+running 8 tests
+test a_cloned_problem_same_state_changed_step_still_reuses_the_cache ... ok
+test a_failed_fresh_callback_cannot_leave_an_old_linearization_reusable ... ok
+test a_nonfinite_time_and_overflowing_error_scale_are_not_admissible ... ok
+test a_failed_time_derivative_refresh_is_also_atomic ... ok
+test a_reuse_hint_does_not_override_state_or_time_identity ... ok
+test nonfinite_or_negative_output_tolerances_are_rejected_before_work ... ok
+test the_public_attempt_cannot_bypass_the_identity_mass_contract ... ok
+test a_same_named_different_callback_is_not_the_same_frozen_problem ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/native_reaudit_chart_transport.rs (/home/claude/targets/integration/debug/deps/native_reaudit_chart_transport-0293a36f21203d85)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/native_reaudit_radius_contracts.rs (/home/claude/targets/integration/debug/deps/native_reaudit_radius_contracts-4d209c81fcdffac6)
+
+running 6 tests
+test malformed_affine_causal_proposal_is_a_typed_rejection ... ok
+test malformed_affine_storage_is_rejected_without_panicking ... ok
+test negative_alpha_cannot_turn_a_required_positive_radius_into_zero ... ok
+test malformed_affine_structural_entries_are_not_silently_ignored ... ok
+test radius_policies_reject_nonfinite_or_negative_alpha ... ok
+test valid_state_map_requires_one_unit_of_radius ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/operator_accounting_contracts.rs (/home/claude/targets/integration/debug/deps/operator_accounting_contracts-ed10df35bdaf8e9d)
+
+running 1 test
+test block_gmres_charges_every_stage_jvp_and_mass_action_at_the_operator_site ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/output_observer_contracts.rs (/home/claude/targets/integration/debug/deps/output_observer_contracts-fa5d1c67ed2c74ef)
+
+running 3 tests
+test all_fixed_anchor_families_land_on_the_same_requested_grid ... ok
+test requested_output_schedule_removes_internal_step_storage_without_changing_states ... ok
+test adaptive_observer_keeps_only_requested_outputs_across_retries_and_clips ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/output_time_covariance_contracts.rs (/home/claude/targets/integration/debug/deps/output_time_covariance_contracts-dd10084fd13e47db)
+
+running 3 tests
+test a_span_shorter_than_one_time_unit_is_integrated ... ok
+test dense_outputs_do_not_depend_on_the_time_origin_or_unit ... ok
+test clipped_outputs_do_not_depend_on_the_time_origin_or_unit ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+     Running tests/outward_certificate_contracts.rs (/home/claude/targets/integration/debug/deps/outward_certificate_contracts-81fa28a2fb738580)
+
+running 4 tests
+test the_path_sum_is_bitwise_identical_for_every_worker_count ... ok
+test the_radius_predictor_sees_only_past_steps ... ok
+test witnesses_bind_their_operator_and_fail_closed ... ok
+test every_fixture_is_enclosed_and_every_decision_matches ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+     Running tests/p0_partial_contracts.rs (/home/claude/targets/integration/debug/deps/p0_partial_contracts-9e5b762f836b8cec)
+
+running 9 tests
+test fast_banded_partial_after_a_latched_rhs_failure_and_none_on_success ... ok
+test fast_dense_partial_after_a_latched_rhs_failure ... ok
+test fast_dense_partial_is_none_on_success_and_the_run_is_bit_identical ... ok
+test fast_dense_partial_reports_the_attempt_budget_and_the_last_accepted_state ... ok
+test every_step_sampling_off_is_the_named_driver_and_wfiltered_samples_every_step ... ok
+test router_carries_the_partial_record_of_the_routed_driver ... ok
+test segment_driver_reports_a_partial_record_on_failure ... ok
+test matrix_free_partial_after_a_latched_rhs_failure_and_none_on_success ... ok
+test segment_driver_with_output_time_sampling_is_the_named_driver_bit_for_bit ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+     Running tests/p1_00_tolerance_scaled_attempt_geometry_contracts.rs (/home/claude/targets/integration/debug/deps/p1_00_tolerance_scaled_attempt_geometry_contracts-a844cf5f79e326f3)
+
+running 1 test
+test smoke_tolerance_scaled_geometry_is_read_only_complete_and_threshold_free ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.66s
+
+     Running tests/packet_trajectory_contracts.rs (/home/claude/targets/integration/debug/deps/packet_trajectory_contracts-851e074b6cfaac0c)
+
+running 10 tests
+test linear_outward_rejected_trial_does_not_shift_accepted_center ... ok
+test linear_outward_rejections_preserve_attempted_work_and_return_typed_refusal ... ok
+test linear_outward_fixed_grid_encloses_independent_exact_modes_and_mean ... ok
+test test_negative_admission_gates ... ok
+test test_vg1_zero_online_solver_counters_across_trajectory ... ok
+test test_vg2_multiwindow_overlap_and_dahlquist_linear_limit ... ok
+test test_vg3_inherited_radii_propagation ... ok
+test test_vg3_output_policy_separation ... ok
+test test_vg3_transactional_atomicity_on_step_rejection ... ok
+test linear_outward_transports_nonzero_initial_disks ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.19s
+
+     Running tests/packet_window_contracts.rs (/home/claude/targets/integration/debug/deps/packet_window_contracts-5bf50acd7bfa8e13)
+
+running 6 tests
+test test_negative_refusal_contracts ... ok
+test test_vg2_dahlquist_linear_boundary_zero_defect ... ok
+test test_vg1_zero_online_solver_counters_contract ... ok
+test test_vg3_certificate_mode_bounds_enclosure_consistency ... ok
+test test_vg3_reconstruction_initial_state_consistency ... ok
+test test_vg2_picard_sweeps_convergence_and_defect_reduction ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/pexprb_continuation_budget_contracts.rs (/home/claude/targets/integration/debug/deps/pexprb_continuation_budget_contracts-4cb8f8476a0e5feb)
+
+running 5 tests
+test bounded_continuation_rejects_parallel_shared_budget_execution_before_jvp ... ok
+test exact_budget_exhaustion_charges_every_successful_jvp_and_emits_no_endpoint ... ok
+test non_budget_operator_error_remains_a_hard_failure ... ok
+test zero_cap_returns_charged_exhaustion_without_continuation_jvp_or_prefix_recompute ... ok
+test generous_cap_is_exactly_equivalent_to_unbounded_compatibility_resume ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/pexprb_defect_certificate_contract.rs (/home/claude/targets/integration/debug/deps/pexprb_defect_certificate_contract-74aa6e58bd1d71cf)
+
+running 4 tests
+test test_f1_defect_bound_monotonicity_and_enclosure ... ok
+test test_f3_rival_specification_contracts ... ok
+test test_f4_rotadv2d_niche_corpus_parameters ... ok
+test test_f2_pexprb54s4_phi_engine_level1_parity ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/pexprb_level1_prefix_contracts.rs (/home/claude/targets/integration/debug/deps/pexprb_level1_prefix_contracts-d43357f05cec3612)
+
+running 1 test
+test level1_prefix_is_resumable_without_repeating_work_and_matches_one_shot_step ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/pexprb_level2_continuation_accounting.rs (/home/claude/targets/integration/debug/deps/pexprb_level2_continuation_accounting-bdedd625fbd011b8)
+
+running 5 tests
+test accounted_prefix_failure_preserves_completed_work_and_legacy_api_returns_err ... ok
+test accounted_failure_charges_all_completed_work_across_endpoint_actions ... ok
+test accounted_resume_never_recomputes_the_retained_prefix_rhs ... ok
+test compatibility_resume_preserves_sequential_fail_fast_callback_behavior ... ok
+test accounted_success_matches_the_compatibility_wrapper_and_round_trips_work ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/pexprb_level2_prefix_contracts.rs (/home/claude/targets/integration/debug/deps/pexprb_level2_prefix_contracts-357281b97727b389)
+
+running 1 test
+test level2_prefix_is_resumable_without_repeating_level1_or_level2_work ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/phi_action_certificate_contracts.rs (/home/claude/targets/integration/debug/deps/phi_action_certificate_contracts-6f06c4c9af44e537)
+
+running 3 tests
+test fused_phi_action_does_not_certify_an_understated_error ... ok
+test legacy_krylov_phi_action_does_not_certify_an_understated_error ... ok
+test adaptive_fused_exponential_keeps_the_work_of_failed_trials ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.88s
+
+     Running tests/phi_nonnormal_breakdown_contracts.rs (/home/claude/targets/integration/debug/deps/phi_nonnormal_breakdown_contracts-b372dbc4c6707f10)
+
+running 6 tests
+test an_exactly_invariant_start_vector_still_stops_at_dimension_one ... ok
+test an_ordinary_checkpoint_is_an_estimate_not_a_bound ... ok
+test fused_near_breakdown_does_not_hide_stable_nonnormal_feedback ... ok
+test full_space_reports_carry_a_bound_basis_and_meet_the_threshold ... ok
+test legacy_near_breakdown_does_not_hide_stable_nonnormal_feedback ... ok
+test nonnormal_family_across_feedback_vector_and_time_scales ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/phi_normalized_augmentation_contracts.rs (/home/claude/targets/integration/debug/deps/phi_normalized_augmentation_contracts-e947148beb99dbe0)
+
+running 5 tests
+test dense_oracle_does_not_vanish_at_small_steps ... ok
+test fused_krylov_combination_is_accurate_for_every_step ... ok
+test unfused_happy_breakdown_below_the_minimum_dimension_is_projected ... ok
+test scaled_convention_and_prefix_session_agree_with_the_series ... ok
+test zero_and_negative_scales_are_the_continuous_combination ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/policy_redesign_v25_contracts.rs (/home/claude/targets/integration/debug/deps/policy_redesign_v25_contracts-0de84010a7ec982e)
+
+running 4 tests
+test persistence_latch_fires_once_per_true_excursion ... ok
+test causal_features_use_rjf_data_only_and_have_fixed_orientation ... ok
+test prefix_budget_enforces_prospective_pathwise_bound ... ok
+test research_action_space_has_no_e_continuation_variant ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/pp05_fourier_client.rs (/home/claude/targets/integration/debug/deps/pp05_fourier_client-4fbc9d66b6cd0711)
+
+running 3 tests
+test commit_refuses_inexact_time_sum ... ok
+test export_fourier_client ... ignored, recorded run of research/pp05_fourier_client_20261004; release build
+test driver_unit_case_commits_and_binds ... ok
+
+test result: ok. 2 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+     Running tests/pp06_fourier_fft.rs (/home/claude/targets/integration/debug/deps/pp06_fourier_fft-eb2d662496afdbc6)
+
+running 1 test
+test export_fft_runs ... ignored, recorded run of research/pp06_fourier_fft_candidate_20261004; release build
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/pp15_fourier_comparator.rs (/home/claude/targets/integration/debug/deps/pp15_fourier_comparator-f87199eea9ee2c6b)
+
+running 2 tests
+test export_comparator ... ignored, recorded run of research/pp15_fourier_comparator_20261004; release build
+test jacobian_matches_finite_differences ... ok
+
+test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/predictive_extreme_contract.rs (/home/claude/targets/integration/debug/deps/predictive_extreme_contract-b214660ef2bdf3ec)
+
+running 11 tests
+test informative_clipping_keeps_request_restoration ... ok
+test former_error_returns_now_clamp_to_min_factor ... ok
+test near_underflow_and_overflow_grid_gives_bounded_factors ... ok
+test ordinary_inputs_agree_with_alg02_bit_for_bit ... ok
+test registered_moderate_control_is_unchanged ... ok
+test registered_tiny_error_case_selects_min_factor ... ok
+test rejection_policy_is_unchanged_under_extreme_inputs ... ok
+test sliver_policy_is_unchanged_under_extreme_inputs ... ok
+test integral_and_pi_are_unchanged_on_a_large_random_sample ... ok
+test zero_error_policy_is_unchanged_under_extreme_history ... ok
+test wide_sample_switch_condition_and_log_oracle ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.12s
+
+     Running tests/prefix_phi_contracts.rs (/home/claude/targets/integration/debug/deps/prefix_phi_contracts-0d23e4733a37ff52)
+
+running 1 test
+test fused_phi_prefix_resume_matches_cold_incremental_path ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/production_audit_bound_collective.rs (/home/claude/targets/integration/debug/deps/production_audit_bound_collective-5b6a6659d01b90b9)
+
+running 5 tests
+test euclidean_log_norm_bounds_two_mode_jacobian_and_uses_full_tube ... ok
+test fraction_dyadic_nonuniform_weights_rhs_is_outward_enclosed ... ok
+test generic_same_name_and_dimension_problem_is_unbound ... ok
+test provider_fails_closed_on_bad_shape_nan_and_overflow_and_charges_attempts ... ok
+test warmed_interval_rhs_and_log_norm_make_no_heap_allocations ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/production_audit_collective_direct.rs (/home/claude/targets/integration/debug/deps/production_audit_collective_direct-18e49ecc9246112e)
+
+running 6 tests
+test refuses_when_wb2_inverse_witness_is_unavailable ... ok
+test refuses_nonzero_carrier_metadata_and_nonexact_weight_normalization ... ok
+test reviewer_regression_residual_uses_candidate_mean ... ok
+test residual_witness_refuses_mismatched_source_identity_without_indexing ... ok
+test woodbury_uses_actual_sequential_first_stage_rhs_without_shift_scaling ... ok
+test woodbury_solve_matches_dense_frozen_stage_and_residual_witness ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/production_audit_packet.rs (/home/claude/targets/integration/debug/deps/production_audit_packet-2cc69d2b06521b8d)
+
+running 38 tests
+test bernstein_candidate_gate_recovers_a_real_linear_packet ... ok
+test admitted_small_uncertainty_remains_supported ... ok
+test bernstein_componentwise_bounds_enclose_complex_vector_l1_norm ... ok
+test bernstein_complex_inclusion_and_dyadic_refinement_stop ... ok
+test bernstein_false_rejection_savings_for_exact_one_minus_tau_power ... ok
+test bernstein_interval_coefficients_include_perturbed_polynomials ... ok
+test bernstein_rejects_public_invalid_interval_before_work ... ok
+test bernstein_subdivision_overflow_retains_attempted_refinement_work ... ok
+test bernstein_typed_budget_refusal_preserves_work ... ok
+test candidate_cannot_be_reused_with_a_different_compiled_packet ... ok
+test certificate_uses_actual_weight_sum_and_spectral_support_and_charges_work ... ok
+test coefficient_overflow_is_refused_and_subnormal_stays_diagnostic_only ... ok
+test compiled_descriptor_is_read_only_and_cross_packet_candidate_is_refused ... ok
+test distinct_signed_zero_model_cannot_reuse_a_candidate ... ok
+test inherited_uncertainty_must_fit_proved_unit_energy_domain ... ok
+test kappa_zero_packet_refuses_damped_model ... ok
+test multimode_high_precision_linear_oracle_is_close_at_intermediate_and_endpoints ... ok
+test mutable_config_is_validated_at_run_boundary ... ok
+test nonfinite_candidate_cannot_receive_certificate ... ok
+test dense_output_restricts_normalized_time_waveform ... ok
+test outward_initial_mode_radii_are_transport_included ... ok
+test outward_linear_physical_times_enclose_returned_center_at_midpoint_and_endpoint ... ok
+test outward_nonlinear_physical_reconstruction_returns_finite_midpoint_and_endpoint ... ok
+test outward_multimode_encloses_frozen_mpmath_reference_at_midpoint_and_endpoint ... ok
+test outward_overflow_refusal_preserves_attempted_certificate_work ... ok
+test outward_packet_refuses_nonfinite_physical_time ... ok
+test outward_packet_refuses_nonfinite_uncertainty ... ok
+test outward_partial_time_request_refusal_keeps_first_output_work ... ok
+test outward_refuses_overflowing_candidate_degree_before_allocation ... ok
+test outward_subnormal_physical_time_is_finite_or_typed_refusal ... ok
+test outward_one_mode_cubic_radius_contains_exact_midpoint_and_endpoint ... ok
+test packet_compiler_and_candidate_refuse_unallocatable_but_nonoverflowing_lengths ... ok
+test packet_compiler_and_candidate_refuse_usize_max_before_allocation ... ok
+test subunit_weight_does_not_shrink_the_free_mode_error_bound ... ok
+test subunit_weight_inherited_radius_uses_microscopic_lipschitz_factor ... ok
+test tiny_nonempty_interval_is_actually_advanced ... ok
+test trajectory_tail_uses_force_bound_not_already_scaled_model_error ... ok
+test outward_uncertainty_radius_contains_perturbed_one_mode_solution ... ok
+
+test result: ok. 38 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+
+     Running tests/production_audit_packet_center_displacement.rs (/home/claude/targets/integration/debug/deps/production_audit_packet_center_displacement-5bc17e11f5c57ac1)
+
+running 1 test
+test dc1_same_query_immutable_weighted_center_displacement ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/production_audit_packet_curve.rs (/home/claude/targets/integration/debug/deps/production_audit_packet_curve-005b4e779c851647)
+
+running 5 tests
+test evaluation_reuses_frozen_storage_without_allocating_and_refuses_bad_times ... ok
+test asymmetric_nonlinear_curve_uses_actual_weighted_mean_and_full_degree ... ok
+test linear_dyadic_residual_contains_exact_fraction_and_curve_evaluates_consistently ... ok
+test malformed_degree_and_overflowing_frequency_refuse_with_attempted_work ... ok
+test subnormal_initial_value_is_retained_and_frequency_overflow_refuses ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+
+     Running tests/production_audit_packet_curve_output.rs (/home/claude/targets/integration/debug/deps/production_audit_packet_curve_output-515cf7c63a8b0e0c)
+
+running 5 tests
+test candidate_mean_bound_can_exceed_initial_energy_bound ... ok
+test frozen_output_is_independent_of_later_candidate_mutation ... ok
+test asymmetric_equal_frequency_multimode_and_weight_sum_not_exact_one ... ok
+test refusal_preserves_work_and_warmed_evaluation_does_not_allocate ... ok
+test one_mode_cubic_and_linear_midpoint_endpoint_and_initial_uncertainty ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.15s
+
+     Running tests/production_audit_packet_local_certificate.rs (/home/claude/targets/integration/debug/deps/production_audit_packet_local_certificate-fe6522a0f9725109)
+
+running 3 tests
+test frozen_one_mode_exact_fraction_and_typed_refusals ... ok
+test subnormal_initial_amplitude_is_enclosed_or_typed_refused ... ok
+test frozen_unequal_frequency_fraction_reference has been running for over 60 seconds
+test frozen_unequal_frequency_fraction_reference ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 94.94s
+
+     Running tests/production_audit_packet_unequal_reference.rs (/home/claude/targets/integration/debug/deps/production_audit_packet_unequal_reference-0701289ad4072398)
+
+running 1 test
+test fixed_unequal_frequency_fraction_reference has been running for over 60 seconds
+test fixed_unequal_frequency_fraction_reference ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 99.01s
+
+     Running tests/production_audit_pr101_provider.rs (/home/claude/targets/integration/debug/deps/production_audit_pr101_provider-fd14d395cde6582b)
+
+running 9 tests
+test pr101_certificate_mismatch_and_rejected_tube_preserve_work ... ok
+test generic_problem_with_matching_metadata_cannot_request_pr101_authority ... ok
+test pr101_exact_dyadic_linear_segment_encloses_endpoints_and_midpoint ... ok
+test pr101_full_tube_and_inherited_initial_radius_are_included ... ok
+test pr101_provider_work_counts_reached_operations_and_preserves_output_on_overflow ... ok
+test pr101_near_one_quartic_emits_fraction_oracle_fixture ... ok
+test pr101_refuses_invalid_radius_domain_nan_and_overflow_with_work ... ok
+test pr101_warmed_segment_verification_and_output_make_no_allocations ... ok
+test pr101_warmed_provider_operations_make_no_heap_allocations ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+     Running tests/production_audit_split.rs (/home/claude/targets/integration/debug/deps/production_audit_split-4d8441d698f8754c)
+
+running 4 tests
+test sparse_descriptor_is_checked_after_public_field_mutation ... ok
+test periodic_gray_scott_two_cell_linear_split_matches_full_rhs ... ok
+test sparse_matvec_rejects_short_vectors ... ok
+test split_nan_callback_fails_closed ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/production_audit_verified_trajectory.rs (/home/claude/targets/integration/debug/deps/production_audit_verified_trajectory-3ca57ac1cbaace56)
+
+running 4 tests
+test borrowed_admission_matches_constructor_and_counts_allocator ... ok
+test frozen_at08_invalid_inputs_preserve_accepted_state ... ok
+test stale_tokens_historical_seed_and_allocator_control ... ok
+test frozen_v2_trajectory_acceptance_export ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.20s
+
+     Running tests/q2_diagnostic_replacement_contracts.rs (/home/claude/targets/integration/debug/deps/q2_diagnostic_replacement_contracts-5e6434350499c56a)
+
+running 4 tests
+test a_model_that_matches_only_at_y_is_rejected ... ok
+test a_wrong_or_unverified_certificate_cannot_fast_accept ... ok
+test the_default_entry_point_keeps_the_operational_diagnostic ... ok
+test the_certificate_replaces_only_the_eighth_batch ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests/quadratic_remainder_drift_contracts.rs (/home/claude/targets/integration/debug/deps/quadratic_remainder_drift_contracts-cc3d2170085e9e51)
+
+running 4 tests
+test drift_is_permutation_and_common_scaling_invariant ... ok
+test physical_prefix_excludes_clock_tail_and_invalid_inputs_fail_closed ... ok
+test quadratic_leading_term_cancels_and_relative_drift_is_zero ... ok
+test level2_report_carries_drift_without_changing_cumulative_work ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/r2_output_budget_contracts.rs (/home/claude/targets/integration/debug/deps/r2_output_budget_contracts-75b4392064c76978)
+
+running 3 tests
+test the_step_term_is_evaluated_without_intermediate_overflow ... ok
+test the_step_term_matches_the_direct_formula_where_that_is_exact ... ok
+test the_homotopy_step_consumes_the_binding_step_budget_on_both_sides ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/r2_output_time_identity_contracts.rs (/home/claude/targets/integration/debug/deps/r2_output_time_identity_contracts-a2426a322a0f669b)
+
+running 9 tests
+test a_short_representable_span_at_a_large_epoch_is_integrated ... ok
+test a_step_below_half_an_ulp_is_a_typed_failure ... ok
+test a_request_one_ulp_after_an_endpoint_is_interpolated_not_snapped ... ok
+test adjacent_representable_output_times_are_distinct_requests ... ok
+test an_adaptive_step_across_zero_reaches_the_end ... ok
+test a_uniform_output_grid_adds_no_micro_steps ... ok
+test fixed_steps_that_accumulate_below_the_end_land_on_it ... ok
+test radau_fixed_steps_cover_a_short_span_at_a_large_epoch ... ok
+test grids_through_zero_from_negative_times_add_no_micro_steps ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests/r2_phi_range_contracts.rs (/home/claude/targets/integration/debug/deps/r2_phi_range_contracts-7bfec9c3da5281cc)
+
+running 4 tests
+test mixed_range_and_small_output_are_labelled ... ok
+test the_dense_oracle_is_invariant_to_input_amplitude ... ok
+test the_weight_transform_reports_loss_instead_of_hiding_it ... ok
+test representable_weights_survive_the_transform ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/r3_certified_budget_contracts.rs (/home/claude/targets/integration/debug/deps/r3_certified_budget_contracts-b791fdc278053bc8)
+
+running 2 tests
+test zero_underflow_and_overflow_have_explicit_semantics ... ok
+test every_enclosure_contains_the_exact_budget ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/r3_phi_transform_authority_contracts.rs (/home/claude/targets/integration/debug/deps/r3_phi_transform_authority_contracts-13f72ab86c5a0712)
+
+running 5 tests
+test a_non_authoritative_reference_holds_the_g3_gate ... ok
+test a_flagged_dense_reference_is_not_evaluated_by_the_gate_consumer ... ok
+test a_weight_rounded_into_the_subnormal_range_is_a_loss ... ok
+test the_zero_operator_control_rejects_conservatively ... ok
+test partial_weight_loss_is_never_original_target_convergence ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/r3_represented_clock_contracts.rs (/home/claude/targets/integration/debug/deps/r3_represented_clock_contracts-f7b452b83b822592)
+
+running 9 tests
+test a_step_across_zero_integrates_its_represented_interval ... ok
+test adaptive_runs_cruising_at_max_step_land_on_outputs_without_micro_steps ... ok
+test an_8_ulp_span_with_a_sub_ulp_nominal_step_integrates_its_represented_length ... ok
+test bdf_feeds_the_represented_steps_across_a_power_of_two_boundary ... ok
+test decimal_uniform_grids_are_admitted ... ok
+test literal_output_times_do_not_add_steps_to_the_indexed_grid ... ok
+test nonzero_spans_need_their_exact_endpoints ... ok
+test power_of_two_rescaling_and_origin_shift_separate_representation_from_truncation ... ok
+test a_long_fixed_run_steps_on_the_indexed_grid ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.18s
+
+     Running tests/r4_homotopy_contracts.rs (/home/claude/targets/integration/debug/deps/r4_homotopy_contracts-e16e7608a42d910e)
+
+running 8 tests
+test blocked_and_full_certificates_agree_on_a_certifying_six_component_problem ... ok
+test blocked_storage_and_work_scale_with_components ... ok
+test doubling_depth_follows_the_stage_count ... ok
+test one_model_generates_the_ode_and_the_certificate_and_stale_ones_are_rejected ... ok
+test tampered_wire_witnesses_are_rejected_and_genuine_ones_rebuilt ... ok
+test the_blocked_certificate_is_the_full_one_bit_for_bit_and_encloses_the_fixtures ... ok
+test uncertifiable_structures_skip_the_q2_escalation ... ok
+test an_integration_builds_at_most_one_pool_and_threads_change_no_bit ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+
+     Running tests/r4_time_contracts.rs (/home/claude/targets/integration/debug/deps/r4_time_contracts-0dbf6b4fc5c75b08)
+
+running 13 tests
+test a_rejected_step_is_never_retried_at_the_same_represented_size ... ok
+test cubic_primitives_approach_the_derived_ratio_asymptotically ... ok
+test equal_halves_reproduce_the_old_divisor_and_near_equal_ones_are_continuous ... ok
+test equal_steps_keep_the_constant_path_and_large_ratios_restart ... ok
+test fixed_bdf_is_exact_on_constant_flow_at_every_unit_boundary ... ok
+test power_of_two_unit_changes_preserve_solution_and_classification ... ok
+test quadratic_primitives_make_the_startup_estimate_exact ... ok
+test rejected_startup_trials_do_not_advance_history ... ok
+test startup_divisors_follow_the_derivation ... ok
+test the_cap_grid_obeys_each_named_policy ... ok
+test the_three_ulp_witness_is_rejected_by_both_radau1_wrappers ... ok
+test unequal_represented_halves_get_the_geometry_divisor ... ok
+test decimal_grid_controls_stay_accurate_under_both_policies ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests/residual_acceptance_contract.rs (/home/claude/targets/integration/debug/deps/residual_acceptance_contract-0f724383ff771582)
+
+running 9 tests
+test accurate_seam_is_accepted_at_every_scale ... ok
+test driver_accepts_accurate_fallback_at_finite_and_overflowing_scale ... ok
+test driver_finite_control_is_unchanged ... ok
+test driver_rejects_overflowing_fallback_transactionally ... ok
+test finite_scale_control_behaves_as_before ... ok
+test power_of_two_rescaling_into_overflow_never_creates_acceptance ... ok
+test recorded_overflow_counterexample_is_rejected ... ok
+test unrepresentable_inputs_reject ... ok
+test decision_matches_old_rule_wherever_old_intermediates_are_finite ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.34s
+
+     Running tests/rev01_calibration.rs (/home/claude/targets/integration/debug/deps/rev01_calibration-cc1948793d5a8b93)
+
+running 1 test
+test fresh_brusselator_control_c_only ... ignored, calibration of research/rev01_gcrodr_start_projection_20261003; release build
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/rev01_gcrodr_start_projection.rs (/home/claude/targets/integration/debug/deps/rev01_gcrodr_start_projection-9615a513144187d7)
+
+running 1 test
+test gcrodr_start_projection ... ignored, research run of research/rev01_gcrodr_start_projection_20261003; release build
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/rev01b_calibration.rs (/home/claude/targets/integration/debug/deps/rev01b_calibration-689970bb4f84690f)
+
+running 1 test
+test fresh_brusselator_120_control_c_only ... ignored, calibration of research/rev01b_gcrodr_recycle_reorthogonalization_20261003; release build
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/rev01b_gcrodr_recycle_reorthogonalization.rs (/home/claude/targets/integration/debug/deps/rev01b_gcrodr_recycle_reorthogonalization-9f830363c0853779)
+
+running 1 test
+test gcrodr_recycle_reorthogonalization ... ignored, research run of research/rev01b_gcrodr_recycle_reorthogonalization_20261003; release build
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/rev01b_posthoc_breakdown.rs (/home/claude/targets/integration/debug/deps/rev01b_posthoc_breakdown-022b146d3049e97a)
+
+running 1 test
+test breakdown_diagnostic ... ignored, post-hoc diagnostic of research/rev01b_gcrodr_recycle_reorthogonalization_20261003; release build
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/rev01c_calibration.rs (/home/claude/targets/integration/debug/deps/rev01c_calibration-7d81a805de096b92)
+
+running 1 test
+test fresh_brusselator_160_control_c_only ... ignored, calibration of research/rev01c_gcrodr_refreshed_update_20261003; release build
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/rev01c_gcrodr_refreshed_update.rs (/home/claude/targets/integration/debug/deps/rev01c_gcrodr_refreshed_update-536c618496f4bfb9)
+
+running 1 test
+test gcrodr_refreshed_update ... ignored, research run of research/rev01c_gcrodr_refreshed_update_20261003; release build
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/rev03_export.rs (/home/claude/targets/integration/debug/deps/rev03_export-bfbeeded38386bb3)
+
+running 1 test
+test export_fresh_step_sizes ... ignored, export of research/rev03_one_sided_acceptance_20261003; release build
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/rev04_lgmres_into.rs (/home/claude/targets/integration/debug/deps/rev04_lgmres_into-93ba0f28cc47f5b9)
+
+running 1 test
+test lgmres_into ... ignored, research run of research/rev04_lgmres_into_20261003; release build
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/rhs_telemetry_contracts.rs (/home/claude/targets/integration/debug/deps/rhs_telemetry_contracts-e50a386e6299ed44)
+
+running 5 tests
+test rhs_telemetry_detects_rank_and_dispatch_regimes ... ok
+test rhs_telemetry_principal_angles_distinguish_same_and_rotated_subspaces ... ok
+test smoke_rhs_telemetry_screen_is_deterministic_and_covers_low_q_and_sabr ... ok
+test telemetry_drift_compares_only_semantically_matching_batches ... ok
+test canonical_rhs_telemetry_preserves_hostile_path_failures_instead_of_aborting ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 7.39s
+
+     Running tests/right_preconditioner_contract.rs (/home/claude/targets/integration/debug/deps/right_preconditioner_contract-b964108e54d32aeb)
+
+running 5 tests
+test test_f2_left_preconditioner_is_bitwise_identical ... ok
+test test_f2_right_preconditioner_refused_by_gcrodr_and_lgmres ... ok
+test test_f3_declared_linear_part_verification_passes_and_detects_mismatch ... ok
+test test_f2_right_preconditioner_gmres_into_solves_accurately ... ok
+test test_f4_gray_scott_2d_equations_parameters_and_jvp_consistency ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/rnext01_residual_output.rs (/home/claude/targets/integration/debug/deps/rnext01_residual_output-cd2f9ac2e29437d7)
+
+running 1 test
+test export_one_step_comparisons ... ignored, export of research/rnext01_residual_output_20261003; release build
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/rnext02_gmres_into_study.rs (/home/claude/targets/integration/debug/deps/rnext02_gmres_into_study-62ab92d719b413aa)
+
+running 1 test
+test gmres_into_study ... ignored, research run of research/rnext02_gmres_into_20261003; release build, one test thread
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/rnext03_gcrodr_attribution.rs (/home/claude/targets/integration/debug/deps/rnext03_gcrodr_attribution-5dfb5dfe7b1de8cb)
+
+running 1 test
+test gcrodr_attribution ... ignored, research run of research/rnext03_gcrodr_attribution_20261003; release build
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/rnext03_posthoc_invariant.rs (/home/claude/targets/integration/debug/deps/rnext03_posthoc_invariant-9706981a6bf71758)
+
+running 1 test
+test recycle_invariant_probe ... ignored, post-hoc diagnostic of research/rnext03_gcrodr_attribution_20261003; release build
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/rnext05_chart_provider.rs (/home/claude/targets/integration/debug/deps/rnext05_chart_provider-64d233008b10ab04)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/rnext06_homotopy_net_cost.rs (/home/claude/targets/integration/debug/deps/rnext06_homotopy_net_cost-7d2bbc7d509d3869)
+
+running 1 test
+test homotopy_net_cost ... ignored, research run of research/rnext06_homotopy_net_cost_20261003; release build
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/rnext07_model_epoch.rs (/home/claude/targets/integration/debug/deps/rnext07_model_epoch-ce4bc434ccf9dd83)
+
+running 1 test
+test model_epoch_contract ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.49s
+
+     Running tests/rodas5p_fast_allocations.rs (/home/claude/targets/integration/debug/deps/rodas5p_fast_allocations-78541ef810975ded)
+
+running 2 tests
+test a_column_extent_step_allocates_nothing ... ok
+test a_fast_step_allocates_nothing ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests/rodas5p_fast_contracts.rs (/home/claude/targets/integration/debug/deps/rodas5p_fast_contracts-009473a5c01b8b51)
+
+running 4 tests
+test a_mass_matrix_is_refused ... ok
+test a_jvp_only_problem_assembles_the_same_jacobian ... ok
+test one_step_is_the_sequential_step_in_transformed_variables ... ok
+test adaptive_runs_follow_the_sequential_driver ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.24s
+
+     Running tests/rvj_integration_boundaries.rs (/home/claude/targets/integration/debug/deps/rvj_integration_boundaries-3e59837f468e4cc8)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/safe_recycle_policy.rs (/home/claude/targets/integration/debug/deps/safe_recycle_policy-f5120a635caae817)
+
+running 4 tests
+test export_legacy_base ... ignored, base export of research/safe_recycle_policy_20261004; release build
+test export_policies ... ignored, recorded run of research/safe_recycle_policy_20261004; release build
+test cold_stage_solve_leaves_carried_state ... ok
+test refreshed_stage_solve_equals_traced_rev01c_call ... ok
+
+test result: ok. 2 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 7.43s
+
+     Running tests/scientific_corpus_v2_1_calibration_oracle.rs (/home/claude/targets/integration/debug/deps/scientific_corpus_v2_1_calibration_oracle-26c3f42f56aeb767)
+
+running 1 test
+test five_calibration_equations_match_the_shared_mpmath_oracle ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/scientific_corpus_v2_1_pde_contracts.rs (/home/claude/targets/integration/debug/deps/scientific_corpus_v2_1_pde_contracts-13aeea975ed24634)
+
+running 3 tests
+test corpus_v2_1_identity_distinguishes_the_new_grid_topology ... ok
+test semilinear_v2_1_is_a_zero_dirichlet_five_point_manufactured_pde ... ok
+test rust_callbacks_match_the_shared_mpmath_oracle_for_every_grid ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+
+     Running tests/scientific_corpus_v2_contracts.rs (/home/claude/targets/integration/debug/deps/scientific_corpus_v2_contracts-9d1f7ebb6b9af7d5)
+
+running 6 tests
+test builder_fails_closed_if_partition_or_source_metadata_is_relabelled ... ok
+test discontinuous_holdouts_expose_branch_fixed_segments_for_endpoint_stages ... ok
+test all_holdout_analytic_jvps_match_centered_finite_differences ... ok
+test output_grid_is_101_uniform_points_plus_declared_breakpoints ... ok
+test source_equation_spot_checks_include_both_sides_of_discontinuities ... ok
+test v2_corpus_partitions_families_dimensions_tolerances_and_sources ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/scientific_corpus_v2_spectral_contracts.rs (/home/claude/targets/integration/debug/deps/scientific_corpus_v2_spectral_contracts-5f6ece65d95d8bca)
+
+running 5 tests
+test all_five_diversified_families_are_prefix_stable_in_the_actual_operators ... ok
+test deterministic_matrix_free_gmres_probe_is_not_dimension_constant ... ok
+test v2_calibration_partial_t_callbacks_match_the_implemented_rhs ... ok
+test v2_radical_inverse_multiplier_is_prefix_stable_nonperiodic_and_bounded ... ok
+test actual_block_or_component_operator_classes_grow_with_dimension ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.28s
+
+     Running tests/scientific_validity_v2_gates.rs (/home/claude/targets/integration/debug/deps/scientific_validity_v2_gates-8f3ee19f31c0ef42)
+
+running 8 tests
+test calibration_freeze_rejects_incomplete_expected_set ... ok
+test calibration_freeze_rejects_holdout_contamination ... ok
+test duplicate_unexpected_and_nonpass_calibration_rows_cannot_freeze ... ok
+test canonical_raw_rows_cannot_create_authority_even_when_sha_shaped ... ok
+test freeze_checksum_is_order_and_wall_time_invariant_but_payload_sensitive ... ok
+test profiles_freeze_exact_sets_and_the_conservative_maximum ... ok
+test replay_preserves_typed_evidence_and_never_changes_the_frozen_threshold ... ok
+test replay_verifies_freeze_first_and_accepts_only_the_exact_oregonator_set ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/sp01_dupfix_adoption.rs (/home/claude/targets/integration/debug/deps/sp01_dupfix_adoption-b5acf9e9245aaabe)
+
+running 7 tests
+test dup_fix_is_unchanged ... ok
+test explicit_w_jacobi_sequential_steps ... ok
+test export_runs ... ignored, recorded export of research/sp01_dupfix_adoption_20261010; release build
+test the_accounting_entry_points_reproduce_the_default_drivers ... ok
+test the_kform_step_loop_is_the_comparator ... ok
+test the_registered_cells ... ok
+test both_accountings_agree_and_differ_by_the_observed_count ... ok
+
+test result: ok. 6 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 11.44s
+
+     Running tests/spd01_overhead.rs (/home/claude/targets/integration/debug/deps/spd01_overhead-9a9bbcd6f037b959)
+
+running 2 tests
+test option_sets_refuse_what_the_legacy_driver_refuses ... ok
+test banded_option_sets_equal_the_legacy_driver_on_the_int03_grid ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.89s
+
+     Running tests/spd02_lu_column_extents.rs (/home/claude/targets/integration/debug/deps/spd02_lu_column_extents-25d59cde7fb895fa)
+
+running 2 tests
+test column_extents_bound_the_stored_multipliers ... ok
+test column_extents_equal_the_zero_skipping_lu_bitwise ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+
+     Running tests/spd03_banded_arm.rs (/home/claude/targets/integration/debug/deps/spd03_banded_arm-d258ae2c760f86c4)
+
+running 1 test
+test slices_kernel_equals_the_indexed_kernel_on_the_int03_cases ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.14s
+
+     Running tests/spd04_ls_workspace_study.rs (/home/claude/targets/integration/debug/deps/spd04_ls_workspace_study-8e0796a198f038ee)
+
+running 1 test
+test spd04_ls_workspace_study ... ignored, research run of research/spd04_ls_workspace_20261007; release build, one test thread
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/spd05_lgmres_ls_once.rs (/home/claude/targets/integration/debug/deps/spd05_lgmres_ls_once-2ce6376d73813e97)
+
+running 1 test
+test spd05_lgmres_ls_once ... ignored, research run of research/spd05_lgmres_ls_once_20261007; release build, one test thread
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/spd06_small_static_stages.rs (/home/claude/targets/integration/debug/deps/spd06_small_static_stages-e21e85df3eb267ba)
+
+running 6 tests
+test a_failing_integration_is_the_same_under_every_sub_arm ... ok
+test spd06_identity_export ... ignored, identity export of research/spd06_small_static_stages_20261007; release build; set SPD06_IDENTITY
+test the_fixed_tables_equal_the_coefficients_bitwise ... ok
+test the_static_sub_arms_allocate_nothing_per_step ... ok
+test the_static_sub_arms_refuse_invalid_input ... ok
+test every_static_sub_arm_equals_the_l0041_driver_on_sample_points ... ok
+
+test result: ok. 5 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.09s
+
+     Running tests/spd07_mf_step_warm_start.rs (/home/claude/targets/integration/debug/deps/spd07_mf_step_warm_start-03bf43fdc3e6b52b)
+
+running 6 tests
+test export_base ... ignored, base export of research/spd07_mf_step_warm_start_20261007; release build
+test export_runs ... ignored, recorded run of research/spd07_mf_step_warm_start_20261007; release build
+test recorded_step_starts_each_stage_from_its_own_solution ... ok
+test sequential_step_refuses_step_indexed_starts ... ok
+test step_indexed_starts_are_used ... ok
+test default_guesses_reproduce_the_base_export ... ok
+
+test result: ok. 4 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.53s
+
+     Running tests/spd08_small_ensemble_lanes.rs (/home/claude/targets/integration/debug/deps/spd08_small_ensemble_lanes-62b3ca644596acaf)
+
+running 4 tests
+test injected_failures_are_masked_per_lane ... ok
+test rejected_and_exhausted_members_equal_the_scalar_driver ... ok
+test ragged_ensembles_on_lanes_equal_the_scalar_driver ... ok
+test the_vdp_ensemble_on_lanes_equals_the_scalar_driver ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.44s
+
+     Running tests/stage_batch_contracts.rs (/home/claude/targets/integration/debug/deps/stage_batch_contracts-efc3e60f8a92d638)
+
+running 4 tests
+test failed_parallel_rhs_batch_preserves_attempted_work_accounting ... ok
+test shared_operator_rows_are_identical_for_sequential_and_stage_parallel_execution ... ok
+test local_rayon_pool_executes_rhs_rows_concurrently_and_preserves_order ... ok
+test smoke_feasibility_report_is_deterministic_and_covers_all_required_kernels ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+
+     Running tests/stage_residual_telemetry.rs (/home/claude/targets/integration/debug/deps/stage_residual_telemetry-63388c9ad02c7e10)
+
+running 6 tests
+test export_runs ... ignored, recorded run of research/as04_stage_residual_telemetry_20261011; release build
+test test_d1_transactional_failure ... ok
+test test_d2_epoch_and_generation ... ok
+test test_telemetry_off_and_reserved_capacity_contract ... ok
+test test_workspace_clone_telemetry_isolation ... ok
+test test_r_parity_on_off_and_alg06_anchor has been running for over 60 seconds
+test test_r_parity_on_off_and_alg06_anchor ... ok
+
+test result: ok. 5 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 62.08s
+
+     Running tests/thread_transfer_mf_workspace.rs (/home/claude/targets/integration/debug/deps/thread_transfer_mf_workspace-cb7f0c3ce72b6fc4)
+
+running 1 test
+test matrix_free_u_form_driver ... ignored, research run of research/thread_transfer_mf_workspace_20261002 (about 2 min in release); run by the ignored-tests CI job in the measurement profile
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/thread_transfer_negative_controls.rs (/home/claude/targets/integration/debug/deps/thread_transfer_negative_controls-972bb6e9b750e01c)
+
+running 1 test

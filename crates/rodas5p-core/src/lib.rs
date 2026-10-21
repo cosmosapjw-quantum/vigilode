@@ -92,3 +92,5 @@ pub use taylor_phi_total::{
     NormalizedFusedPhiWork, certify_fused_phi_total_normalized,
 };
 pub use work::WorkCounters;
+
+pub mod polynomial_router;

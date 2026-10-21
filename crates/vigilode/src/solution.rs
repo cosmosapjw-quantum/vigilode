@@ -2,12 +2,12 @@
 
 use std::fmt;
 
-use rodas5p_core::{LinearSolverConfig, WorkCounters};
-use rodas5p_integrators::{
-    AdaptiveFailureKind, AdaptiveStepConfig, BandedWork, DenseErrorControl, DriverStopReason,
-    FastDenseSegments, FastInteriorWork, InteriorSampling, Rodas5pDenseSegment, Rodas5pFastLu,
-    RoutingRecord,
+use crate::records::{
+    AdaptiveRecord, BandedWorkRecord, FastInteriorRecord, InteriorControlRecord,
+    InteriorSamplingRecord, LinearSolverRecord, LuRecord, RoutingDecisionRecord, StepFailureKind,
+    StopReason, WorkRecord,
 };
+use rodas5p_integrators::{FastDenseSegments, Rodas5pDenseSegment};
 use serde::Serialize;
 
 use crate::{
@@ -30,7 +30,11 @@ use crate::{
 /// `route.entry_point` strings now include the four `..._with_atol` entry
 /// points and the fast dense entry points; and `driver_work` can be
 /// `FastDense { band_work, interior, .. }`.
-pub const STATS_SCHEMA: &str = "vigilode.stats.v3";
+/// v4 (production re-audit): failed enforcing sequential interior estimates
+/// reject the attempt and increment `estimate_failures`; `unavailable` is
+/// report-only. Event interpolation failures have their own typed reason.
+/// FD perturbations reverse direction only when the forward shift overflows.
+pub const STATS_SCHEMA: &str = "vigilode.stats.v4";
 
 /// Which user callback reported an error.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
@@ -92,6 +96,13 @@ pub enum FailureReason {
     /// the step on which it happened. If the driver had already failed, that
     /// failure's reason is kept instead (the outputs are still truncated).
     EventFunctionNonFinite,
+    /// The accepted-step continuous extension could not supply the state
+    /// required by event location. This is distinct from a non-finite user
+    /// event function; outputs are truncated at the failed step's start.
+    EventInterpolationFailed {
+        /// Time at which the state was unavailable.
+        t: f64,
+    },
     /// A user callback returned [`crate::CallbackError::Fatal`].
     CallbackFailed {
         /// The callback.
@@ -128,6 +139,9 @@ impl fmt::Display for FailureReason {
             ),
             Self::EventFunctionNonFinite => {
                 write!(f, "an event function returned a non-finite value")
+            }
+            Self::EventInterpolationFailed { t } => {
+                write!(f, "event state unavailable at t = {t:e}")
             }
             Self::CallbackFailed {
                 callback,
@@ -196,7 +210,8 @@ pub enum JacobianRecord {
 }
 
 /// The increment rule of the finite-difference Jacobians.
-pub const FD_INCREMENT_RULE: &str = "sqrt(eps)*max(|y_j|,1), represented as (y_j+inc)-y_j";
+pub const FD_INCREMENT_RULE: &str =
+    "sqrt(eps)*max(|y_j|,1), represented as (y_j+inc)-y_j; reverse inc if shift overflows";
 
 /// Work of the finite-difference Jacobian (zero for user Jacobians).
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize)]
@@ -259,16 +274,16 @@ pub enum DriverWork {
         /// rejected attempt from the same state.
         jacobian_reuses: usize,
         /// The LU variant that ran.
-        lu: Rodas5pFastLu,
+        lu: LuRecord,
     },
     /// The banded fast driver (`Rodas5pFastBandedResult`).
     Banded {
         /// Attempts that reused the Jacobian of a rejected attempt.
         jacobian_reuses: usize,
         /// The LU variant that ran.
-        lu: Rodas5pFastLu,
+        lu: LuRecord,
         /// Counted band factor and solve operations and storage.
-        banded: BandedWork,
+        banded: BandedWorkRecord,
     },
     /// The matrix-free U-form driver (`Rodas5pMfFastResult`).
     MatrixFree {
@@ -299,14 +314,14 @@ pub enum DriverWork {
         /// rejected attempt from the same state.
         jacobian_reuses: usize,
         /// The LU variant that ran.
-        lu: Rodas5pFastLu,
+        lu: LuRecord,
         /// Counted band factor and solve operations and storage (banded
         /// pipeline only; its solves include the interior estimates'
         /// back-solves).
-        band_work: Option<BandedWork>,
+        band_work: Option<BandedWorkRecord>,
         /// The W-filtered interior estimates (all zero under `Off`); their
         /// right-hand sides and solves are also in [`Stats::driver_counters`].
-        interior: FastInteriorWork,
+        interior: FastInteriorRecord,
         /// Accepted steps whose extension the driver returned (before any
         /// event truncation).
         segments: usize,
@@ -316,23 +331,25 @@ pub enum DriverWork {
     /// route, and dense output under [`crate::InteriorError::Enforce`].
     SequentialDense {
         /// The interior error control that ran (`Off` without dense output).
-        control: DenseErrorControl,
+        control: InteriorControlRecord,
         /// Which steps the interior estimate was formed on.
-        interior_sampling: InteriorSampling,
+        interior_sampling: InteriorSamplingRecord,
         /// The stage linear solver of the sequential step.
-        linear_solver: LinearSolverConfig,
+        linear_solver: LinearSolverRecord,
         /// Interior estimates formed (accepted and rejected steps).
         samples: usize,
         /// Steps the interior estimate rejected.
         interior_rejections: usize,
-        /// Steps whose estimate could not be formed.
+        /// Report-mode samples whose estimate could not be formed.
         unavailable: usize,
+        /// Attempts rejected because an enforcing interior estimate failed.
+        estimate_failures: usize,
         /// The largest interior estimate of an accepted step, in tolerance
         /// units (an estimate, not a bound).
         max_accepted_estimate: Option<f64>,
         /// Work of the estimates (also in [`Stats::driver_counters`] under
         /// the enforcing modes).
-        estimate_counters: WorkCounters,
+        estimate_counters: WorkRecord,
         /// Accepted steps whose extension the driver returned (before any
         /// event truncation).
         segments: usize,
@@ -348,9 +365,9 @@ pub struct StopRecord {
     /// is cut before it.
     pub t: f64,
     /// Why the driver's loop ended.
-    pub reason: DriverStopReason,
+    pub reason: StopReason,
     /// The kind of the last rejected attempt after the last accepted step.
-    pub last_failure: Option<AdaptiveFailureKind>,
+    pub last_failure: Option<StepFailureKind>,
 }
 
 /// Which driver ran and why.
@@ -362,7 +379,7 @@ pub struct RouteRecord {
     /// The driver identifier the driver reported.
     pub driver_id: &'static str,
     /// The router's decision record, when the router was called.
-    pub routing: Option<RoutingRecord>,
+    pub routing: Option<RoutingDecisionRecord>,
 }
 
 /// The full record of a run: every option and every work counter, so that a
@@ -378,9 +395,9 @@ pub struct Stats {
     /// vector [`crate::Atol`] its scalar `atol` is only the largest entry
     /// (a uniform vector therefore records the scalar run's value); the
     /// per-component values the drivers used are in `options.atol`.
-    pub adaptive: AdaptiveStepConfig,
+    pub adaptive: AdaptiveRecord,
     /// The linear configuration of the matrix-free route, when it ran.
-    pub matrix_free_linear: Option<LinearSolverConfig>,
+    pub matrix_free_linear: Option<LinearSolverRecord>,
     /// The integration span.
     pub t_span: (f64, f64),
     /// The initial state.
@@ -411,10 +428,10 @@ pub struct Stats {
     pub output_clipped_steps: usize,
     /// All work: the driver's counters plus the finite-difference
     /// right-hand-side calls (`rhs_calls`, `rhs_evaluations`).
-    pub counters: WorkCounters,
+    pub counters: WorkRecord,
     /// The driver's own counters, as the driver returned them (including any
     /// band-verification charge of the router).
-    pub driver_counters: WorkCounters,
+    pub driver_counters: WorkRecord,
     /// The driver-specific counters and policy ids.
     pub driver_work: DriverWork,
     /// Finite-difference Jacobian work.

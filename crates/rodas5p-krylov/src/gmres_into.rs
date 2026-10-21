@@ -407,7 +407,8 @@ fn run_cycle(
     )?;
     let mut actual = 0usize;
     for j in 0..steps {
-        let happy_breakdown = arnoldi_column(op, pc, side, &mut workspace.arnoldi, j, counters)?;
+        let happy_breakdown =
+            arnoldi_column(op, pc, side, &mut workspace.arnoldi, j, counters, None)?;
         actual = j + 1;
         if happy_breakdown {
             break;
@@ -443,6 +444,7 @@ fn arnoldi_column(
     arnoldi: &mut ArnoldiWorkspace,
     j: usize,
     counters: &mut WorkCounters,
+    column_products: Option<&mut u64>,
 ) -> CoreResult<bool> {
     let (previous_basis, remaining_basis) = arnoldi.basis.split_at_mut(j + 1);
     let w = &mut remaining_basis[0];
@@ -464,6 +466,9 @@ fn arnoldi_column(
                 &mut arnoldi.raw_operator_output,
                 counters,
             )?;
+            if let Some(count) = column_products {
+                *count += 1;
+            }
             apply_counted(
                 op,
                 &arnoldi.raw_operator_output,
@@ -547,6 +552,34 @@ pub enum GmresMonitorDecision {
 pub type GmresColumnMonitor<'a> =
     dyn FnMut(u64, &[f64], &mut WorkCounters) -> CoreResult<GmresMonitorDecision> + 'a;
 
+/// Monotone progress of the most recent monitored solve, available from
+/// [`GmresWorkspace::monitored_progress`] after both `Ok` and `Err`.
+/// Reset before input validation at the next monitored call. Failed calls
+/// never erase their completed work or commit the output buffer.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub struct GmresMonitoredProgress {
+    /// Column routines entered, including a column whose preconditioner,
+    /// operator or orthogonalization subsequently failed.
+    pub attempted_columns: u64,
+    /// Columns whose Arnoldi construction completed; these are also added
+    /// to `WorkCounters::linear_iterations` before least squares/monitor.
+    pub completed_columns: u64,
+    /// Operator applications begun inside columns, including failed ones;
+    /// excludes cycle-start and caller-monitor residual applications.
+    pub column_operator_applications: u64,
+    /// Cycles initialized and entered (including an incomplete cycle).
+    pub cycles: u64,
+    pub least_squares_attempts: u64,
+    pub completed_least_squares_solves: u64,
+}
+
+impl GmresWorkspace {
+    /// Last monitored-call work, including progress retained on errors.
+    pub fn monitored_progress(&self) -> GmresMonitoredProgress {
+        self.monitored_progress
+    }
+}
+
 /// Report of [`solve_gmres_into_right_monitored`].
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct GmresMonitoredReport {
@@ -574,8 +607,12 @@ pub struct GmresMonitoredReport {
 /// last column of a cycle the iterate is bitwise the one
 /// [`solve_gmres_into`] would form. `output` is written only on
 /// [`GmresMonitorDecision::Accept`]; an abandoned or exhausted solve
-/// returns `accepted: false`. The existing GMRES entry points are
-/// unchanged.
+/// returns `accepted: false`. If a happy breakdown leaves no further
+/// Arnoldi direction and the monitor still asks to continue, the call
+/// likewise returns `accepted: false`; it does not claim convergence or
+/// restart into an artificial zero-residual error. The workspace retains
+/// [`GmresMonitoredProgress`] on errors. Existing non-monitored entry
+/// points are unchanged.
 #[allow(clippy::too_many_arguments)]
 pub fn solve_gmres_into_right_monitored(
     op: &dyn LinearOperator,
@@ -588,6 +625,7 @@ pub fn solve_gmres_into_right_monitored(
     counters: &mut WorkCounters,
     monitor: &mut GmresColumnMonitor<'_>,
 ) -> CoreResult<GmresMonitoredReport> {
+    workspace.monitored_progress = GmresMonitoredProgress::default();
     config.validate()?;
     if pc.side() != PreconditionerSide::Right {
         return Err(CoreError::InvalidInput(
@@ -622,6 +660,11 @@ pub fn solve_gmres_into_right_monitored(
             .preconditioned
             .copy_from_slice(&workspace.common.residual);
         let beta = safe_l2(&workspace.common.preconditioned);
+        if beta == 0.0 {
+            // The caller's monitor has not admitted this iterate. There
+            // is no residual direction to extend, so exhaust cleanly.
+            break;
+        }
         if !(beta > f64::MIN_POSITIVE && beta.is_finite()) {
             return Err(CoreError::LinearSolve(
                 "GMRES right-preconditioned residual breakdown".into(),
@@ -634,9 +677,13 @@ pub fn solve_gmres_into_right_monitored(
             n,
             steps,
         )?;
+        cycles += 1;
+        workspace.monitored_progress.cycles += 1;
         let mut actual = 0usize;
+        let mut cannot_extend = false;
         let mut decision = GmresMonitorDecision::Continue;
         for j in 0..steps {
+            workspace.monitored_progress.attempted_columns += 1;
             let happy_breakdown = arnoldi_column(
                 op,
                 pc,
@@ -644,10 +691,15 @@ pub fn solve_gmres_into_right_monitored(
                 &mut workspace.arnoldi,
                 j,
                 counters,
+                Some(&mut workspace.monitored_progress.column_operator_applications),
             )?;
+            workspace.monitored_progress.completed_columns += 1;
+            counters.linear_iterations += 1;
             actual = j + 1;
             // The least-squares solve of `cycle_right` on this prefix.
+            workspace.monitored_progress.least_squares_attempts += 1;
             least_squares_correction(workspace, actual, beta)?;
+            workspace.monitored_progress.completed_least_squares_solves += 1;
             solves += 1;
             apply_preconditioner(
                 pc,
@@ -671,12 +723,11 @@ pub fn solve_gmres_into_right_monitored(
                 counters,
             )?;
             if decision != GmresMonitorDecision::Continue || happy_breakdown {
+                cannot_extend = happy_breakdown;
                 break;
             }
         }
         total += actual;
-        cycles += 1;
-        counters.linear_iterations += actual as u64;
         match decision {
             GmresMonitorDecision::Accept => {
                 counters.linear_solves += 1;
@@ -690,6 +741,9 @@ pub fn solve_gmres_into_right_monitored(
             }
             GmresMonitorDecision::Abandon => break,
             GmresMonitorDecision::Continue => {
+                if cannot_extend {
+                    break;
+                }
                 let (x, candidate) = (&mut workspace.common.x, &workspace.common.scratch_b);
                 x.copy_from_slice(candidate);
             }

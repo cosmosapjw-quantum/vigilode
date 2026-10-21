@@ -11,4 +11,6 @@ pub mod ffi;
 pub mod harness;
 pub mod metrics;
 pub mod model;
+pub mod reference_policy;
 pub mod report;
+pub mod source_identity;

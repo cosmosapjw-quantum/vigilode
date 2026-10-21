@@ -191,8 +191,8 @@ impl Rodas5p {
                         r.fast.rejected_steps,
                         DriverWork::Banded {
                             jacobian_reuses: r.fast.jacobian_reuses,
-                            lu: r.fast.lu,
-                            banded: r.work,
+                            lu: (&r.fast.lu).into(),
+                            banded: (&r.work).into(),
                         },
                     ),
                     RoutedRun::Dense(r) => (
@@ -202,7 +202,7 @@ impl Rodas5p {
                         r.rejected_steps,
                         DriverWork::Dense {
                             jacobian_reuses: r.jacobian_reuses,
-                            lu: r.lu,
+                            lu: (&r.lu).into(),
                         },
                     ),
                     RoutedRun::MatrixFree(r) => (
@@ -238,7 +238,7 @@ impl Rodas5p {
                     route: RouteRecord {
                         entry_point: ENTRY_ROUTED,
                         driver_id,
-                        routing: Some(routed.routing),
+                        routing: Some(routed.routing.into()),
                     },
                     partial,
                     segments: None,
@@ -265,7 +265,7 @@ impl Rodas5p {
                     matrix_free: false,
                     driver_work: DriverWork::Dense {
                         jacobian_reuses: r.jacobian_reuses,
-                        lu: r.lu,
+                        lu: (&r.lu).into(),
                     },
                     partial,
                     segments: None,
@@ -318,9 +318,9 @@ impl Rodas5p {
                     driver_work: DriverWork::FastDense {
                         banded: band.is_some(),
                         jacobian_reuses: fast.jacobian_reuses,
-                        lu: fast.lu,
-                        band_work: result.banded,
-                        interior: result.interior,
+                        lu: (&fast.lu).into(),
+                        band_work: result.banded.as_ref().map(Into::into),
+                        interior: (&result.interior).into(),
                         segments: result.segments.len(),
                     },
                     observed: fast.observed,
@@ -357,8 +357,8 @@ impl Rodas5p {
                     matrix_free: false,
                     driver_work: DriverWork::Banded {
                         jacobian_reuses: result.fast.jacobian_reuses,
-                        lu: result.fast.lu,
-                        banded: result.work,
+                        lu: (&result.fast.lu).into(),
+                        banded: (&result.work).into(),
                     },
                     partial: result.partial,
                     segments: None,
@@ -435,9 +435,9 @@ impl Rodas5p {
                     },
                     matrix_free: false,
                     driver_work: DriverWork::SequentialDense {
-                        control,
-                        interior_sampling,
-                        linear_solver,
+                        control: (&control).into(),
+                        interior_sampling: (&interior_sampling).into(),
+                        linear_solver: (&linear_solver).into(),
                         samples: run.report.samples.len(),
                         interior_rejections: run
                             .report
@@ -446,8 +446,9 @@ impl Rodas5p {
                             .filter(|sample| !sample.accepted)
                             .count(),
                         unavailable: run.report.unavailable,
+                        estimate_failures: run.report.estimate_failures,
                         max_accepted_estimate: run.report.max_accepted_estimate(),
-                        estimate_counters: run.report.counters,
+                        estimate_counters: (&run.report.counters).into(),
                         segments: run.segments.len(),
                     },
                     observed: run.result.observed,
@@ -513,8 +514,8 @@ impl Rodas5p {
         };
         let stop = run.partial.as_ref().map(|partial| StopRecord {
             t: partial.t,
-            reason: partial.reason,
-            last_failure: partial.last_failure,
+            reason: (&partial.reason).into(),
+            last_failure: partial.last_failure.as_ref().map(Into::into),
         });
 
         let stats = Stats {
@@ -522,8 +523,8 @@ impl Rodas5p {
             options: opts.clone(),
             matrix_free_linear: run
                 .matrix_free
-                .then(|| RoutingOptions::default().matrix_free),
-            adaptive,
+                .then(|| (&RoutingOptions::default().matrix_free).into()),
+            adaptive: (&adaptive).into(),
             t_span,
             y0: y0.to_vec(),
             dimension: problem.dimension,
@@ -539,8 +540,8 @@ impl Rodas5p {
             rejected_steps: run.rejected_steps,
             internal_steps: run.observed.internal_steps,
             output_clipped_steps: run.observed.output_clipped_steps,
-            counters,
-            driver_counters,
+            counters: (&counters).into(),
+            driver_counters: (&driver_counters).into(),
             driver_work: run.driver_work,
             finite_difference: fd,
             callbacks: guard.callback_work(),
@@ -668,32 +669,8 @@ fn validate(
             return invalid("the mass matrix contains NaN/Inf".into());
         }
     }
-    // The dense-output and mass-matrix routes (fast dense or sequential)
-    // need a matrix Jacobian: the stage matrix M - h gamma J, whose factors
-    // also filter the interior estimate.
-    let dense_or_mass = problem.mass.is_some() || opts.dense_output;
-    let sequential = sequential_route(problem, opts);
-    if dense_or_mass && matches!(problem.jacobian, Jacobian::Jvp(_)) {
-        return unsupported(Unsupported::JvpWithMassOrDenseOutput);
-    }
-    if dense_or_mass && matches!(problem.jacobian, Jacobian::Dense(_)) && problem.band.is_some() {
-        return unsupported(Unsupported::DeclaredBandOnDenseWithMassOrDenseOutput);
-    }
-    if matches!(atol, AtolSpec::Vector(_)) {
-        // Only the dense and banded fast drivers take a per-component
-        // absolute tolerance; the facade never substitutes a scalar.
-        if sequential {
-            return unsupported(Unsupported::VectorAtolOnSequentialRoute);
-        }
-        if matches!(problem.jacobian, Jacobian::Jvp(_)) {
-            return unsupported(Unsupported::VectorAtolOnMatrixFreeRoute);
-        }
-        if matches!(problem.jacobian, Jacobian::Dense(_)) && problem.band.is_some() {
-            return unsupported(Unsupported::VectorAtolWithDeclaredBandOnDense);
-        }
-    }
-    if !problem.events.is_empty() && !opts.dense_output {
-        return unsupported(Unsupported::EventsWithoutDenseOutput);
+    if let Some(reason) = crate::capabilities::primary_unsupported(problem, opts) {
+        return unsupported(reason);
     }
     if problem.autonomous && problem.time_derivative.is_some() {
         return invalid("an autonomous problem cannot have a time derivative".into());
@@ -706,25 +683,22 @@ fn validate(
             "the declared band ({l}, {u}) lies outside the {n} x {n} matrix"
         ));
     }
-    match &problem.jacobian {
-        Jacobian::Banded { lower, upper, .. } => {
-            if !band_ok(*lower, *upper) {
-                return invalid(format!(
-                    "the Jacobian band ({lower}, {upper}) lies outside the {n} x {n} matrix"
-                ));
-            }
-            if let Some(declared) = problem.band
-                && declared != (*lower, *upper)
-            {
-                return invalid(format!(
-                    "the declared band {declared:?} differs from the Jacobian band ({lower}, {upper})"
-                ));
-            }
+    if let Jacobian::Banded { lower, upper, .. } = &problem.jacobian {
+        if !band_ok(*lower, *upper) {
+            return invalid(format!(
+                "the Jacobian band ({lower}, {upper}) lies outside the {n} x {n} matrix"
+            ));
         }
-        Jacobian::Jvp(_) if problem.band.is_some() => {
-            return unsupported(Unsupported::BandDeclarationOnJvpProblem);
+        if let Some(declared) = problem.band
+            && declared != (*lower, *upper)
+        {
+            return invalid(format!(
+                "the declared band {declared:?} differs from the Jacobian band ({lower}, {upper})"
+            ));
         }
-        _ => {}
+    }
+    if let Some(reason) = crate::capabilities::final_unsupported(problem) {
+        return unsupported(reason);
     }
     Ok(atol)
 }

@@ -66,6 +66,11 @@ fn every_markdown_number_appears_in_the_json_and_no_row_is_dropped() {
     assert_eq!(rows.len(), (9 + 7) * 2);
     for r in rows {
         assert_eq!(r["repetitions"].as_array().unwrap().len(), 2);
+        for rep in r["repetitions"].as_array().unwrap() {
+            assert_eq!(rep["status"], r["status"]);
+            assert_eq!(rep["grid_points_completed"], r["grid_points_completed"]);
+            assert_eq!(rep["work"], r["work"]);
+        }
         assert!(md.contains(&report::cell(&r["wall_ms_median"])));
     }
     assert!(doc["matched"].as_array().unwrap().iter().all(|m| {
@@ -108,6 +113,11 @@ fn dense_sections_are_generated_from_the_json_and_keep_every_number_traceable() 
     assert!(missing.is_empty(), "numbers not in the JSON: {missing:?}");
     assert!(md.contains("## Endpoint-only VigilODE (dense output)"));
     assert!(md.contains("## Interior control evidence (A2)"));
+    assert!(md.contains("It does not test the local interior estimator"));
+    assert_eq!(
+        doc["interior_control_metric_scope"],
+        "observed_global_grid_error_not_local_acceptance"
+    );
     assert_eq!(doc["protocol_violation_rows"], 0);
     // linear (banded): 2 dense + 2 banded-dense pairs; rober: 2 dense, 2 rtols.
     assert_eq!(
@@ -125,4 +135,54 @@ fn dense_sections_are_generated_from_the_json_and_keep_every_number_traceable() 
     let m = doc["matched"].as_array().unwrap();
     assert!(m.iter().any(|x| x["basis"] == "dense"));
     assert!(m.iter().any(|x| x["basis"] == "grid-clipped"));
+}
+
+#[test]
+fn malformed_corpus_cannot_alias_problems_or_self_crosscheck() {
+    let valid = Corpus::from_json(TINY).unwrap();
+    let mut c = valid.clone();
+    c.problems[1].id = c.problems[0].id.clone();
+    assert!(c.validate().is_err());
+    let mut c = valid.clone();
+    c.arms.push(c.arms[0]);
+    assert!(c.validate().is_err());
+    let mut c = valid.clone();
+    c.reference.crosscheck_arm = vigilode_bench::arms::Arm::VigilodeDense;
+    assert!(c.validate().is_err());
+    let mut c = valid.clone();
+    c.reference.dispute_threshold = f64::NAN;
+    assert!(c.validate().is_err());
+    let mut c = valid.clone();
+    c.problems[0].atol_scale.fill(f64::MIN_POSITIVE);
+    c.rtols = vec![f64::MIN_POSITIVE];
+    assert!(c.validate().is_err());
+}
+
+#[test]
+fn independent_reference_protocol_requires_declared_ladder_and_matching_baseline() {
+    let mut value: Value = serde_json::from_str(TINY).unwrap();
+    value["reference"]["independent_protocol"] = serde_json::json!({
+        "tier": "radau5_cvode_refinement_v1", "rtols": [1e-11, 1e-12],
+        "atol_factors": [1.0, 0.1], "agreement_threshold": 1e-10,
+        "refinement_threshold": 1e-10,
+    });
+    assert!(Corpus::from_json(&value.to_string()).is_err());
+    value["reference"]["arm"] = "radau5".into();
+    value["reference"]["rtol"] = 1e-12.into();
+    value["reference"]["crosscheck_arm"] = "cvode-bdf-dense".into();
+    value["reference"]["crosscheck_rtols"] = serde_json::json!([1e-12]);
+    value["reference"]["dispute_threshold"] = 1e-10.into();
+    value["reference"]["informational_arms"] = serde_json::json!([]);
+    let corpus = Corpus::from_json(&value.to_string()).unwrap();
+    assert!(corpus.reference.independent_protocol.is_some());
+    value["reference"]["independent_protocol"]["atol_factors"] = serde_json::json!([1.0, 1.0]);
+    assert!(Corpus::from_json(&value.to_string()).is_err());
+}
+
+#[test]
+fn legacy_corpus_does_not_silently_acquire_the_new_reference_tier() {
+    let corpus = Corpus::from_json(TINY).unwrap();
+    assert!(corpus.reference.independent_protocol.is_none());
+    let encoded = serde_json::to_value(corpus).unwrap();
+    assert!(encoded["reference"].get("independent_protocol").is_none());
 }

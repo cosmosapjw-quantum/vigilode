@@ -1,0 +1,161 @@
+   Compiling version_check v0.9.5
+   Compiling proc-macro2 v1.0.107
+   Compiling autocfg v1.5.1
+   Compiling quote v1.0.47
+   Compiling unicode-ident v1.0.24
+   Compiling bytemuck v1.25.2
+   Compiling nano-gemm-codegen v0.2.1
+   Compiling libm v0.2.16
+   Compiling paste v1.0.15
+   Compiling bitflags v2.13.1
+   Compiling cfg-if v1.0.4
+   Compiling pulp v0.22.3
+   Compiling raw-cpuid v11.6.0
+   Compiling pulp-wasm-simd-flag v0.1.1
+   Compiling num-traits v0.2.19
+   Compiling reborrow v0.5.5
+   Compiling dyn-stack-macros v0.1.3
+   Compiling syn v1.0.109
+   Compiling seq-macro v0.3.6
+   Compiling dyn-stack v0.13.2
+   Compiling once_cell v1.21.4
+   Compiling generic-array v0.14.7
+   Compiling nano-gemm-core v0.2.1
+   Compiling typenum v1.20.1
+   Compiling libc v0.2.189
+   Compiling nano-gemm-c64 v0.2.1
+   Compiling syn v2.0.119
+   Compiling syn v3.0.3
+   Compiling nano-gemm-f64 v0.2.1
+   Compiling num-complex v0.4.6
+   Compiling nano-gemm-f32 v0.2.1
+   Compiling nano-gemm-c32 v0.2.1
+   Compiling defer v0.2.1
+   Compiling crossbeam-utils v0.8.22
+   Compiling serde_core v1.0.229
+   Compiling zmij v1.0.23
+   Compiling crossbeam-epoch v0.9.20
+   Compiling block-buffer v0.10.4
+   Compiling crypto-common v0.1.7
+   Compiling num_cpus v1.17.0
+   Compiling serde_json v1.0.151
+   Compiling interpol v0.2.1
+   Compiling equator-macro v0.2.1
+   Compiling serde v1.0.229
+   Compiling equator-macro v0.6.0
+   Compiling equator v0.2.2
+   Compiling private-gemm-x86 v0.1.20
+   Compiling thiserror v2.0.19
+   Compiling generativity v1.2.1
+   Compiling gemm-common v0.19.0
+   Compiling qd v0.8.0
+   Compiling crossbeam-deque v0.8.7
+   Compiling gemm-c64 v0.19.0
+   Compiling gemm-f64 v0.19.0
+   Compiling gemm-f32 v0.19.0
+   Compiling gemm-c32 v0.19.0
+   Compiling faer-traits v0.24.0
+   Compiling gemm v0.19.0
+   Compiling equator v0.6.0
+   Compiling serde_derive v1.0.229
+   Compiling thiserror-impl v2.0.19
+   Compiling digest v0.10.7
+   Compiling memchr v2.8.3
+   Compiling nano-gemm v0.2.2
+   Compiling itoa v1.0.18
+   Compiling rayon-core v1.13.0
+   Compiling cpufeatures v0.2.17
+   Compiling sha2 v0.10.9
+   Compiling faer v0.24.4
+   Compiling hex v0.4.3
+   Compiling rodas5p-integrators v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-integrators)
+   Compiling either v1.17.0
+   Compiling rayon v1.12.0
+   Compiling rodas5p-core v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-core)
+   Compiling rodas5p-krylov v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-krylov)
+warning: fields `prepared_centers`, `prepared_radii`, `prepared_times`, `prepared_count`, `radii`, and `prepared_valid` are never read
+   --> crates/rodas5p-integrators/src/output.rs:706:5
+    |
+698 | pub(crate) struct OutputCollector {
+    |                   --------------- fields in this struct
+...
+706 |     prepared_centers: Vec<Vec<f64>>,
+    |     ^^^^^^^^^^^^^^^^
+707 |     prepared_radii: Vec<Vec<f64>>,
+    |     ^^^^^^^^^^^^^^
+708 |     prepared_times: Vec<f64>,
+    |     ^^^^^^^^^^^^^^
+709 |     prepared_count: usize,
+    |     ^^^^^^^^^^^^^^
+710 |     radii: Vec<Vec<f64>>,
+    |     ^^^^^
+711 |     prepared_valid: bool,
+    |     ^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: struct `DenseOutputPreparationWork` is never constructed
+   --> crates/rodas5p-integrators/src/output.rs:716:19
+    |
+716 | pub(crate) struct DenseOutputPreparationWork {
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: methods `with_verified_radii`, `prepare_dense_interval_with_radii`, `prepare_dense_interval_inner`, `commit_prepared_dense_interval`, `prepared_dense_radii`, and `committed_output_radii` are never used
+    --> crates/rodas5p-integrators/src/output.rs:766:19
+     |
+ 722 | impl OutputCollector {
+     | -------------------- methods in this implementation
+...
+ 766 |     pub(crate) fn with_verified_radii(mut self, initial_radius: &[f64]) -> CoreResult<Self> {
+     |                   ^^^^^^^^^^^^^^^^^^^
+...
+1035 |     pub(crate) fn prepare_dense_interval_with_radii<C, R>(
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+1070 |     fn prepare_dense_interval_inner<C, R>(
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+1162 |     pub(crate) fn commit_prepared_dense_interval(&mut self) {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+1176 |     pub(crate) fn prepared_dense_radii(&self) -> &[Vec<f64>] {
+     |                   ^^^^^^^^^^^^^^^^^^^^
+...
+1180 |     pub(crate) fn committed_output_radii(&self) -> &[Vec<f64>] {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: variant `EndpointAdmission` is never constructed
+    --> crates/rodas5p-integrators/src/packet_trajectory.rs:1445:5
+     |
+1443 | enum VerifiedTrialFault {
+     |      ------------------ variant in this enum
+1444 |     BeforeQuery(usize),
+1445 |     EndpointAdmission,
+     |     ^^^^^^^^^^^^^^^^^
+     |
+     = note: `VerifiedTrialFault` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+
+   Compiling vigilode v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode/crates/vigilode)
+warning: `rodas5p-integrators` (lib) generated 4 warnings
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1m 18s
+     Running tests/events_contracts.rs (/workspace/scratch/0dc1e721cf82/runtime/target/debug/deps/events_contracts-62cb7e6939f8c793)
+
+running 15 tests
+test crossing_at_step_endpoint_reported_once ... ok
+test even_crossings_in_a_half_interval_and_tangent_touches_are_missed ... ok
+test events_do_not_change_integration ... ok
+test events_found_on_a_large_step_are_roots_and_ordered ... ok
+test events_without_dense_output_refused ... ok
+test exponential_decay_half_life ... ok
+test iteration_cap_falls_back_to_bisection ... ok
+test nonfinite_event_function_fails_typed ... ok
+test nonfinite_event_keeps_an_earlier_driver_failure ... ok
+test oscillator_crossings ... ok
+test terminal_event_charges_work_after_it ... ok
+test terminal_event_truncates ... ok
+test terminal_event_wins_over_later_driver_failure ... ok
+test terminal_index_is_into_events_not_declaration ... ok
+test zero_at_t0_is_not_an_event ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+

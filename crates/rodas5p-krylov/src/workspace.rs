@@ -98,6 +98,8 @@ impl ArnoldiWorkspace {
 
 #[derive(Clone, Debug, Default)]
 pub struct GmresWorkspace {
+    /// Last monitored solve progress, retained even when that solve errors.
+    pub(crate) monitored_progress: crate::gmres_into::GmresMonitoredProgress,
     pub(crate) common: CommonWorkspace,
     pub(crate) arnoldi: ArnoldiWorkspace,
     /// Opt-in allocation-free small least squares of `solve_gmres_into`

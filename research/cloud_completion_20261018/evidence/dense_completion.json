@@ -1,0 +1,79 @@
+{
+  "schema": "vigilode-cloud-dense-completion-v1",
+  "baseline": "c513f478f952068b91e3da368fb2cb156d942b28",
+  "source_discrepancy": "Prior reviewed PR101 source absent from baseline and fetched refs; new source built and separately reviewed",
+  "scope": "Immutable PR101 interval continuous residual and chained transactional native driver on[0,1] with positive absolute tolerance",
+  "source_sha256": {
+    "crates/rodas5p-integrators/src/bound_pr101.rs": "075884554caf4af3941efff089c5be5841a79ef15e29ab4b1f7d863adb5a672c",
+    "crates/rodas5p-integrators/src/dense_output_v2.rs": "ebced52f15502a62bfb2c333e12ad12e8d0fbaaa51154809f10d80b604f8c33e",
+    "crates/rodas5p-integrators/tests/production_audit_pr101_cloud.rs": "5d80e873849db3376dbebecace6861d9f764f456ae1569e8fa4e0be5f4ae84e0",
+    "crates/rodas5p-integrators/tests/pr101_cloud_fraction_oracle.py": "45d47564f9db42ce233c5e67dd67afec2b4ff7582a5afc016f26f57e7a5aab95",
+    "crates/rodas5p-integrators/tests/a05_dense_global_output.rs": "93ae703e47d1502b1966cf2ed4bc8833887043c1d7917c5c77d1358dab46a14e",
+    "crates/rodas5p-integrators/examples/pr101_verified_run.rs": "823b040d0bbf50d3e6c6ac1bfbdf2a6d5ce9abf44bca8308297b8a7d27c0326a",
+    "research/cloud_completion_20261018/DENSE.md": "ff2a8a76445b1001c0577496430d99cae9d603b7db4b68936289909a0bfe71c5",
+    "crates/rodas5p-integrators/src/output.rs": "81bdf698f36ae0b450af77e36631e27da319fb079d648658c794ad948978a10c"
+  },
+  "tests": {
+    "focused": {
+      "passed": 7,
+      "failed": 0,
+      "log": "pr101_cloud_final.log"
+    },
+    "primitive_ledger": {
+      "passed": 3,
+      "failed": 0,
+      "log": "pr101_ledger.log"
+    },
+    "dense_regression": {
+      "passed": 15,
+      "failed": 0,
+      "log": "a05_dense_cloud.log"
+    },
+    "fraction_oracle": {
+      "checks": 131,
+      "result": "pass_scoped",
+      "evidence": "pr101_fraction.json"
+    },
+    "example": {
+      "exit_code": 0,
+      "evidence": "pr101_run.json"
+    }
+  },
+  "original_witness": {
+    "atol": 1e-11,
+    "rtol": 1e-08,
+    "outputs": 101,
+    "accepted": 492,
+    "rejected": 292,
+    "max_sampled_reference_error": 8.382183835919932e-15,
+    "rhs_evaluations": 6272,
+    "structural_verification_operations": 574094,
+    "maximum_returned_radius_condition": "<=atol",
+    "continuous_curve_error_condition": "<=atol/2"
+  },
+  "failures": [
+    {
+      "class": "numerical_controller",
+      "issue": "Fixed full tube exhausted error budget before completion on lambda0 eta1 nonzero orbit",
+      "evidence": "pr101_positive_orbit_failure.log",
+      "correction": "Monotone elapsed-time budget reserves future headroom; same final tolerance; explicit orbit now passes"
+    }
+  ],
+  "remaining": [
+    "Additional model-specific providers for generic OdeProblem",
+    "Verified relative scaling for pure-relative tolerance",
+    "Matched-accuracy release timing",
+    "Full allocation/cost instrumentation"
+  ],
+  "independent_review": "See final independent reviewer records; author does not self-admit global-general production.",
+  "guaranteed_operation_reduction": {
+    "identity": "square=sum diagonal+2 sum upper triangle",
+    "coefficient_count": 13,
+    "before_ordered_pair_primitive_calls": 507,
+    "after_symmetric_pair_primitive_calls": 351,
+    "saved_per_complete_verification": 156,
+    "full_provider_after": 639,
+    "original_witness_total_saved": 122304,
+    "wall_time_claim": false
+  }
+}

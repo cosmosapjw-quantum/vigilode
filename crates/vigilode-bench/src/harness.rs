@@ -19,6 +19,12 @@ pub const RESULTS_SCHEMA: &str = "vigilode-bench.wp.v1";
 /// One measured repetition.
 #[derive(Clone, Debug, Serialize)]
 pub struct Rep {
+    /// Outcome of this repetition, including any failure after the first one.
+    pub status: RunStatus,
+    /// Grid points produced by this repetition.
+    pub grid_points_completed: usize,
+    /// Solver-reported work of this repetition (failed work is retained).
+    pub work: Work,
     /// Wall time of the run: setup, integration, grid output in final form,
     /// teardown; statistics formatting excluded.
     pub wall_ns: u64,
@@ -96,6 +102,9 @@ pub struct Reference {
     pub disputed: bool,
     /// Reference states on the grid (the error baseline of every row).
     pub states: Vec<Vec<f64>>,
+    /// New tier's complete, non-fallback refinement receipt, absent for legacy runs.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub independent_protocol: Option<Value>,
 }
 
 /// Agreement of one other code with the reference.
@@ -182,11 +191,13 @@ pub struct InteriorControl {
     pub error_ratio: Option<f64>,
     /// `accepted_enforce / accepted_off`.
     pub step_ratio: Option<f64>,
-    /// Whether `error_own_enforce` is at most [`INTERIOR_TOL_UNITS`].
+    /// Whether the observed global grid error is at most [`INTERIOR_TOL_UNITS`].
+    /// Diagnostic only; this is not a test of the local interior estimator.
     pub within_tol_units: Option<bool>,
 }
 
-/// The interior-control acceptance level in tolerance units (`error_own`).
+/// Diagnostic global grid-error level in tolerance units (`error_own`).
+/// It is not a local interior-control acceptance criterion.
 pub const INTERIOR_TOL_UNITS: f64 = 2.0;
 
 struct Measured {
@@ -208,20 +219,24 @@ fn once(arm: Arm, m: &model::Model, grid: &[f64], rtol: f64, atol: f64) -> (RunO
     let wall = end.at.duration_since(t0);
     let a1 = end.alloc;
     let callbacks = model::counts();
-    (
-        out,
-        Rep {
-            wall_ns: u64::try_from(wall.as_nanos()).unwrap_or(u64::MAX),
-            allocations: a1.since(a0),
-            callbacks,
-        },
-    )
+    let rep = Rep {
+        status: out.status.clone(),
+        grid_points_completed: out.states.len(),
+        work: out.work.clone(),
+        wall_ns: u64::try_from(wall.as_nanos()).unwrap_or(u64::MAX),
+        allocations: a1.since(a0),
+        callbacks,
+    };
+    (out, rep)
 }
 
 /// Progress sink.
 pub type Log<'a> = &'a mut dyn FnMut(&str);
 
 fn reference_for(c: &Corpus, p: &ProblemSpec, grid: &[f64], log: Log) -> Result<Reference, String> {
+    if c.reference.independent_protocol.is_some() {
+        return independent_reference_for(c, p, grid, log);
+    }
     let m = p.model()?;
     let r = &c.reference;
     let max = Some(r.max_steps);
@@ -287,6 +302,122 @@ fn reference_for(c: &Corpus, p: &ProblemSpec, grid: &[f64], log: Log) -> Result<
         informational,
         disputed,
         states,
+        independent_protocol: None,
+    })
+}
+
+fn independent_reference_for(
+    c: &Corpus,
+    p: &ProblemSpec,
+    grid: &[f64],
+    log: Log,
+) -> Result<Reference, String> {
+    let protocol = c
+        .reference
+        .independent_protocol
+        .as_ref()
+        .ok_or("missing independent protocol")?;
+    let model = p.model()?;
+    let weights = p.atol_vector(c.error_rtol);
+    let mut levels = Vec::new();
+    let mut previous: Option<(RunOutput, RunOutput)> = None;
+    let mut attempts = Vec::new();
+    let mut passed = true;
+    let mut finest_disagreement = None;
+    for (&rtol, &factor) in protocol.rtols.iter().zip(&protocol.atol_factors) {
+        let atol = p.reference_atol * factor;
+        let radau = arms::run_with(
+            Arm::Radau5,
+            &model,
+            grid,
+            rtol,
+            atol,
+            Some(c.reference.max_steps),
+        );
+        let cvode = arms::run_with(
+            Arm::CvodeBdfDense,
+            &model,
+            grid,
+            rtol,
+            atol,
+            Some(c.reference.max_steps),
+        );
+        let full = radau.status == RunStatus::Success
+            && cvode.status == RunStatus::Success
+            && radau.states.len() == grid.len()
+            && cvode.states.len() == grid.len();
+        let disagreement = if full {
+            max_wrms(&cvode.states, &radau.states, &weights, c.error_rtol)
+        } else {
+            None
+        };
+        let refinement = previous.as_ref().map(|(a, b)| {
+            let valid = full
+                && a.status == RunStatus::Success
+                && b.status == RunStatus::Success
+                && a.states.len() == grid.len()
+                && b.states.len() == grid.len();
+            if valid {
+                (
+                    max_wrms(&a.states, &radau.states, &weights, c.error_rtol),
+                    max_wrms(&b.states, &cvode.states, &weights, c.error_rtol),
+                )
+            } else {
+                (None, None)
+            }
+        });
+        let level_pass = crate::reference_policy::independent_level_pass(
+            full,
+            disagreement,
+            refinement,
+            protocol.agreement_threshold,
+            protocol.refinement_threshold,
+        );
+        passed &= level_pass;
+        log(&format!(
+            "  independent reference rtol {rtol:e}, atol {atol:e}: RADAU5 {:?}, CVODE {:?}, agreement {disagreement:?}, pass {level_pass}",
+            radau.status, cvode.status
+        ));
+        levels.push(json!({
+            "rtol": rtol, "atol": atol,
+            "radau5_status": radau.status, "cvode_status": cvode.status,
+            "radau5_grid_points": radau.states.len(), "cvode_grid_points": cvode.states.len(),
+            "cross_family_disagreement": disagreement,
+            "radau5_previous_level_disagreement": refinement.and_then(|pair| pair.0),
+            "cvode_previous_level_disagreement": refinement.and_then(|pair| pair.1),
+            "pass": level_pass,
+        }));
+        attempts.push((rtol, cvode.status.clone()));
+        finest_disagreement = disagreement;
+        previous = Some((radau, cvode));
+    }
+    let (radau, cvode) = previous.ok_or("empty independent reference ladder")?;
+    let rtol = *protocol.rtols.last().unwrap();
+    let atol = p.reference_atol * protocol.atol_factors.last().unwrap();
+    Ok(Reference {
+        problem: p.id.clone(),
+        arm: Arm::Radau5,
+        rtol,
+        atol,
+        status: radau.status,
+        states: radau.states,
+        crosscheck: CrossCheck {
+            arm: Arm::CvodeBdfDense,
+            rtol_used: (cvode.status == RunStatus::Success).then_some(rtol),
+            disagreement: finest_disagreement,
+            attempts,
+        },
+        informational: Vec::new(),
+        disputed: !passed,
+        independent_protocol: Some(json!({
+            "tier": protocol.tier, "status": if passed { "PASS" } else { "REFERENCE_DISPUTED" },
+            "required_arms": [Arm::Radau5, Arm::CvodeBdfDense],
+            "agreement_threshold": protocol.agreement_threshold,
+            "refinement_threshold": protocol.refinement_threshold,
+            "metric": "max_over_declared_grid_wrms_common_error_rtol_1",
+            "levels": levels, "empirical_only": true,
+            "finest_level_index": protocol.rtols.len() - 1,
+        })),
     })
 }
 
@@ -328,7 +459,8 @@ pub fn run_corpus(c: &Corpus, log: Log) -> Result<Value, String> {
                         Some(ms) => {
                             let same = out.status == ms.out.status
                                 && bits(&out.states) == bits(&ms.out.states)
-                                && rep.callbacks == ms.reps[0].callbacks;
+                                && rep.callbacks == ms.reps[0].callbacks
+                                && out.work == ms.out.work;
                             ms.deterministic &= same;
                             ms.reps.push(rep);
                         }
@@ -406,6 +538,11 @@ pub fn run_corpus(c: &Corpus, log: Log) -> Result<Value, String> {
         .iter()
         .filter(|r| matches!(r.status, RunStatus::ProtocolViolation { .. }))
         .count();
+    let failed_repetitions = rows
+        .iter()
+        .flat_map(|r| &r.repetitions)
+        .filter(|r| r.status != RunStatus::Success)
+        .count();
     let elapsed = started.elapsed().as_secs_f64();
     Ok(json!({
         "schema": RESULTS_SCHEMA,
@@ -423,8 +560,10 @@ pub fn run_corpus(c: &Corpus, log: Log) -> Result<Value, String> {
         "rows": rows,
         "matched": matched,
         "interior_control_tol_units": INTERIOR_TOL_UNITS,
+        "interior_control_metric_scope": "observed_global_grid_error_not_local_acceptance",
         "interior_control": interior_control,
         "protocol_violation_rows": protocol_violation_rows,
+        "failed_repetitions": failed_repetitions,
     }))
 }
 

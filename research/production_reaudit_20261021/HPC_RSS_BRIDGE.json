@@ -1,0 +1,36 @@
+{
+  "schema": "vigilode.production-reaudit.hpc-rss-bridge.v1",
+  "status": "FIXED_FOCUSED_CONTRACTS_PASS",
+  "source_frozen": true,
+  "root_cause": [
+    "GNU time executable absent",
+    "short child may exit before a positive procfs sample"
+  ],
+  "semantics": {
+    "unknown_peak_rss_bytes": null,
+    "unknown_rss_status": "UNAVAILABLE",
+    "positive_measured_values": "preserved",
+    "stale_time_report": "removed_before_current_launch",
+    "memory_claim": "observed maximum, not certified complete process-tree upper bound",
+    "confirmation_with_unknown_rss": "HOLD_UNKNOWN/UNKNOWN_PEAK_RSS",
+    "unknown_memory_can_pass_ceiling": false
+  },
+  "tests": {
+    "command": "PYTHONPATH=/workspace/scratch/0dc1e721cf82/runtime/python-audit:tools python3 -m pytest -q tools/tests/test_component_benchmark_hpc.py tools/tests/test_component_benchmark_confirmation.py tools/tests/test_component_benchmark_component_contracts.py",
+    "passed": 28,
+    "failed": 0,
+    "elapsed_seconds": 1.52,
+    "log": "evidence/branch_integration/hpc_portability_focused.log",
+    "exit_code": 0,
+    "scientific_benchmark_rerun": false
+  },
+  "changed_source_sha256": {
+    "tools/component_benchmark/hpc.py": "f0088c8bbed471be470d045a1a00013df939595c7fb28dba73dbb2f8f570c1e4",
+    "tools/component_benchmark/runner.py": "5c9bcf01757bf100ec0e91fad509a12ed033a41ce14b1371832870462e924336",
+    "tools/component_benchmark/confirmation.py": "564cd5e3705f53900732634e1ba4569539e0ed624e7fa830158e1e9f8e187641",
+    "tools/component_benchmark/component_contracts.py": "f3853e762d9703831b6945dcc081c1eee2039e8852bc1b075f067043b6037d5e",
+    "tools/tests/test_component_benchmark_hpc.py": "3651b7437e172d70f4f4a0f9b80d40836500078b0f365ffc494151897979ab47",
+    "tools/tests/test_component_benchmark_confirmation.py": "149899ad4f040d8b9709055338885f06c5ded429e3b0cd072a762a13816ba3a6",
+    "tools/tests/test_component_benchmark_component_contracts.py": "1c807d30e73af39e8b73fed600533d46c7b5704a2002ee7f54e694d6911c7ccf"
+  }
+}

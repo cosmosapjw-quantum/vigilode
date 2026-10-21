@@ -1,6 +1,14 @@
 # VigilODE
 
-> **2026-10-18 production audit:** The latest packet and polynomial optimizations
+> **2026-10-21 integrated re-audit:** Latest production code and the separate
+> all-DAG research APIs are reviewed and integrated on the audit branch.
+> Broad production/global-accuracy/speed promotion remains **HOLD**; scoped
+> fixes, proved improvements and exact validation limits are in the
+> [review](research/production_reaudit_20261021/REPORT_KO.md),
+> [decision](research/production_reaudit_20261021/DECISION.json) and
+> [next steps](research/production_reaudit_20261021/NEXT_STEPS.json).
+
+> **2026-10-18 historical production audit:** At that snapshot packet and polynomial optimizations
 > remain research features. The LP10 certified-packet promotion and the Diffsol
 > headline performance/allocation claims are superseded by the
 > [production readiness audit](docs/reviews/20261018_production_audit/REPORT_KO.md)

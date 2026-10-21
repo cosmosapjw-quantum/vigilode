@@ -135,6 +135,25 @@ impl Arm {
             .unwrap_or_default()
     }
 
+    /// Implementation family for empirical-reference independence checks.
+    /// Dense/banded or output-interface variants share the same implementation.
+    pub fn implementation_family(self) -> &'static str {
+        match self {
+            Self::Vigilode
+            | Self::VigilodeBanded
+            | Self::VigilodeDense
+            | Self::VigilodeDenseOff
+            | Self::VigilodeBandedDense
+            | Self::VigilodeBandedDenseOff => "vigilode-rodas5p",
+            Self::DiffsolBdfDense | Self::DiffsolBdfSparse => "diffsol-bdf",
+            Self::CvodeBdfDense | Self::CvodeBdfBand => "sundials-cvode",
+            Self::DvodeMf21 | Self::DvodeMf24 => "netlib-dvode",
+            Self::Radau5 | Self::Radau5Band => "hairer-radau5",
+            Self::Rodas | Self::RodasBand => "hairer-rodas",
+            Self::InternalRadauIia3 => "vigilode-radau-iia3",
+        }
+    }
+
     /// Fidelity tag.
     pub fn fidelity(self) -> Fidelity {
         match self {

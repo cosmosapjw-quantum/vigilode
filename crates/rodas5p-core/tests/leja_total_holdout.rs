@@ -268,10 +268,18 @@ fn export_runs() {
                         };
                         match res {
                             Ok(rep) => {
-                                let adm = rep.converged() && rep.total_bound() <= budget;
+                                // The historical arm label is not authority.
+                                // Admission follows the returned immutable status.
+                                let is_cert =
+                                    matches!(rep.total_error(), TotalErrorStatus::Certified { .. });
+                                let adm = is_cert && rep.converged() && rep.total_bound() <= budget;
                                 (
                                     adm,
-                                    "certified",
+                                    if is_cert {
+                                        "certified"
+                                    } else {
+                                        "estimate-only"
+                                    },
                                     // This holdout harness owns a row snapshot; copying the
                                     // immutable report slice is diagnostic setup work, not a
                                     // solver hot-loop or performance-parity measurement.

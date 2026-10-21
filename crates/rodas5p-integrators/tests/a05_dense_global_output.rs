@@ -761,7 +761,9 @@ fn derivative_refusal_charges_attempted_interval_work_before_overflow() {
             .evaluate_physical_derivative_at_into(0.5, &mut output, &mut work)
             .is_err()
     );
-    assert!(work.interval_derivative_operations > before);
+    // 2 shared + 4 q + 2 q-prime + 2 first + 3 second + 1 failing
+    // addition. The following add/div never execute and must not be charged.
+    assert_eq!(work.interval_derivative_operations - before, 14);
 }
 
 #[test]

@@ -1,0 +1,23 @@
+    Blocking waiting for file lock on artifact directory
+   Compiling rodas5p-integrators v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode-readonly/crates/rodas5p-integrators)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 36.97s
+     Running tests/production_audit_packet_adaptive.rs (/workspace/scratch/0dc1e721cf82/runtime/all-dag-target/debug/deps/production_audit_packet_adaptive-3667626f28440694)
+
+running 4 tests
+test invalid_and_overflow_inputs_refuse_without_state_mutation ... ok
+test rejected_window_is_transactional_and_failed_work_is_retained ... ok
+
+thread 'adaptive_requested_mesh_and_nonzero_initial_ball_match_independent_oracle' (442) panicked at crates/rodas5p-integrators/tests/production_audit_packet_adaptive.rs:87:6:
+called `Result::unwrap()` on an `Err` value: RefinementExhausted { index: 1, depth: 16 }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test adaptive_requested_mesh_and_nonzero_initial_ball_match_independent_oracle ... FAILED
+test resource_exhaustion_preserves_failure_and_never_relaxes_budget ... ok
+
+failures:
+
+failures:
+    adaptive_requested_mesh_and_nonzero_initial_ball_match_independent_oracle
+
+test result: FAILED. 3 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+error: test failed, to rerun pass `-p rodas5p-integrators --test production_audit_packet_adaptive`

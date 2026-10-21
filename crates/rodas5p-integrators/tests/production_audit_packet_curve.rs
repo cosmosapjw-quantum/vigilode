@@ -2,13 +2,13 @@
 use std::alloc::{GlobalAlloc, Layout, System};
 use std::io::Write;
 use std::process::{Command, Stdio};
-use std::sync::atomic::{AtomicUsize, Ordering as AtomicOrdering};
 use std::sync::Mutex;
+use std::sync::atomic::{AtomicUsize, Ordering as AtomicOrdering};
 
 use rodas5p_core::directed::Interval;
 use rodas5p_integrators::packet_window::{PacketComplexInterval, RepresentedPacketCurve};
 use rodas5p_integrators::{
-    compile_packet, generate_candidate, CausalWeights, CollectiveModel, PacketWorkCounters,
+    CausalWeights, CollectiveModel, PacketWorkCounters, compile_packet, generate_candidate,
 };
 
 struct CountingAllocator;
@@ -156,8 +156,10 @@ fn assert_python_fraction_residual_contains(
         String::from_utf8_lossy(&output.stdout),
         String::from_utf8_lossy(&output.stderr)
     );
-    assert!(String::from_utf8_lossy(&output.stdout)
-        .contains("exact Fraction residual and evaluation enclosures verified"));
+    assert!(
+        String::from_utf8_lossy(&output.stdout)
+            .contains("exact Fraction residual and evaluation enclosures verified")
+    );
 }
 
 #[test]
@@ -265,9 +267,11 @@ fn asymmetric_nonlinear_curve_uses_actual_weighted_mean_and_full_degree() {
 
     let mut mutated_candidate = candidate.clone();
     mutated_candidate.mean[0].0 = mutated_candidate.mean[0].0.next_up();
-    assert!(curve
-        .validate_source(&mutated_candidate, &packet, &mut work)
-        .is_err());
+    assert!(
+        curve
+            .validate_source(&mutated_candidate, &packet, &mut work)
+            .is_err()
+    );
     let before = curve.mode_coefficients(0).unwrap().to_vec();
     let mut output = vec![(0.0, 0.0); model.num_modes()];
     curve
@@ -286,9 +290,11 @@ fn asymmetric_nonlinear_curve_uses_actual_weighted_mean_and_full_degree() {
     )
     .unwrap();
     let other_packet = compile_packet(&other_model, 0.25, 1, &mut work).unwrap();
-    assert!(curve
-        .validate_source(&candidate, &other_packet, &mut work)
-        .is_err());
+    assert!(
+        curve
+            .validate_source(&candidate, &other_packet, &mut work)
+            .is_err()
+    );
 
     assert!(curve.mode_coefficients(0).unwrap()[degree] != (0.0, 0.0));
     assert!(
@@ -333,18 +339,26 @@ fn evaluation_reuses_frozen_storage_without_allocating_and_refuses_bad_times() {
     }
     let allocations = ALLOCATIONS.load(AtomicOrdering::SeqCst) - before;
     assert_eq!(allocations, 0);
-    assert!(curve
-        .evaluate_modes_at_into(f64::NAN, &mut centers, &mut work)
-        .is_err());
-    assert!(curve
-        .evaluate_modes_at_into(0.75, &mut centers, &mut work)
-        .is_err());
-    assert!(curve
-        .evaluate_modes_at_into(f64::INFINITY, &mut centers, &mut work)
-        .is_err());
-    assert!(curve
-        .evaluate_modes_at_into(0.25, &mut [], &mut work)
-        .is_err());
+    assert!(
+        curve
+            .evaluate_modes_at_into(f64::NAN, &mut centers, &mut work)
+            .is_err()
+    );
+    assert!(
+        curve
+            .evaluate_modes_at_into(0.75, &mut centers, &mut work)
+            .is_err()
+    );
+    assert!(
+        curve
+            .evaluate_modes_at_into(f64::INFINITY, &mut centers, &mut work)
+            .is_err()
+    );
+    assert!(
+        curve
+            .evaluate_modes_at_into(0.25, &mut [], &mut work)
+            .is_err()
+    );
     assert!(work.output_horner_terms > 0);
 }
 

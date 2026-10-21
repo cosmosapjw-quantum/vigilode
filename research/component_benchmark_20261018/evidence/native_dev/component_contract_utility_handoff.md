@@ -1,0 +1,11 @@
+# Portable component contract runner handoff
+
+Source: `tools/component_benchmark/component_contracts.py`; fake-only tests: `tools/tests/test_component_benchmark_component_contracts.py`. Latest raw targeted test command: `PYTHONPATH=tools python3 -m unittest -v tools.tests.test_component_benchmark_component_contracts`, exit 0, five passed, log `component_contract_utility_tests_05.log`. No NCP run, production ledger mutation, real component test run by this utility, commit, or push.
+
+CLI: `PYTHONPATH=tools python3 -m component_benchmark.component_contracts --manifest PATH --output PATH --ledger PATH --lease-id ID --concurrency 4`.
+
+Manifest schema `vigilode-component-contract-execution-v1`: `exec_sha` is a full current checkout SHA, optional `source_root` defaults to current directory, `entries` is a nonempty list. Every entry requires `id`, an absolute `executable`, its `sha256`, relative `source_paths`, matching `source_hashes`, and `argv` exactly `["--test-threads=1"]`. Use the NCP-side executable paths and hashes after transfer and the final EXEC SHA/source hashes. The parent supplies the 27 compiled component binaries and four library binaries; this utility does not construct their manifest before the immutable execution checkpoint.
+
+The runner validates the persistent same-host, same-boot P1 lease and cumulative/phase caps. It admits all pending work only if the existing deadline covers `ceil(pending/concurrency)*60+30` seconds, then gives each binary at most 60 seconds total for `--list` and execution. It never reserves, closes, or retries a lease or job. The list preflight refuses any holdout-named test before execution; all run invocations use one test thread and no ignored-test flag. Each job keeps raw list/run stdout and stderr with SHA256, command, environment, exit, timeout, elapsed wall time, counts and typed status in `jobs/ID/receipt.json` plus canonical `receipt.jsonl`. Receipts use relative artifact names, are checked on resume, and are never rerun automatically. Missing binaries are `ENVIRONMENT_FAILURE`, nonzero tests `TEST_FAILURE`, and hangs `TEST_TIMEOUT`. The runner rechecks source and present executable hashes after work.
+
+The earlier inadvertent direct local execution of `alg04_dup_fix_contracts` is separately disclosed in `accidental_local_component_test_01.txt` and is not a utility or NCP receipt.

@@ -489,6 +489,10 @@ impl NormalizedDampingRate {
     }
 
     /// Rebinding is checked against exact input bits before any query work.
+    // Keep the model-binding tuple, moment indices and caller-owned workspace
+    // explicit; changing this established API solely for arity obscures the
+    // identity check and would break existing certified consumers.
+    #[allow(clippy::too_many_arguments)]
     pub fn query(
         &self,
         kappa: f64,

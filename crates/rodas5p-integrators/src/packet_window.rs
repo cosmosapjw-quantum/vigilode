@@ -27,7 +27,11 @@ use crate::packet_work::PacketWorkCounters;
 mod packet_curve;
 pub use packet_curve::{
     ContinuousPacketResidualBound, PacketCertifiedView, PacketComplexInterval, PacketCurveOutput,
-    PacketCurveOutputView, PacketCurveOutputWorkspace, PacketFrozenOutput, RepresentedPacketCurve,
+    PacketCurveOutputView, PacketCurveOutputWorkspace, PacketFrozenOutput,
+    PacketResidualRefinement, RepresentedPacketCurve, VerifiedPacketAdaptiveConfig,
+    VerifiedPacketAttempt, VerifiedPacketConfig, VerifiedPacketDiagnostics, VerifiedPacketError,
+    VerifiedPacketPoint, VerifiedPacketState, VerifiedPacketTrajectory, advance_verified_packet,
+    integrate_verified_packet, integrate_verified_packet_adaptive,
 };
 
 /// Errors arising during causal packet compilation, candidate iteration, or certification.
@@ -802,14 +806,39 @@ fn bernstein_polygon_upper(
 
 type BernsteinPolygon = Vec<(Interval, Interval)>;
 
+/// Hard degree bound for the optional quadratic-cost transform.
+pub const BERNSTEIN_MAX_DEGREE: usize = 1024;
+
+fn bernstein_capacity(
+    len: usize,
+    work: &mut PacketWorkCounters,
+) -> Result<BernsteinPolygon, PacketError> {
+    work.bernstein_allocation_requests += 1;
+    work.bernstein_reserved_items += len as u64;
+    checked_capacity(len, "Bernstein workspace")
+}
+
+fn bernstein_copy(
+    points: &[(Interval, Interval)],
+    work: &mut PacketWorkCounters,
+) -> Result<BernsteinPolygon, PacketError> {
+    let mut result = bernstein_capacity(points.len(), work)?;
+    work.bernstein_copy_items += points.len() as u64;
+    result.extend_from_slice(points);
+    Ok(result)
+}
+
 fn bernstein_split_half(
     points: &[(Interval, Interval)],
     work: &mut PacketWorkCounters,
 ) -> Result<(BernsteinPolygon, BernsteinPolygon), PacketError> {
     let n = points.len();
-    let mut triangle = points.to_vec();
-    let mut left = Vec::with_capacity(n);
-    let mut right = vec![points[0]; n];
+    let mut triangle = bernstein_copy(points, work)?;
+    let mut left = bernstein_capacity(n, work)?;
+    let mut right = bernstein_capacity(n, work)?;
+    work.bernstein_copy_items += n as u64;
+    right.resize(n, points[0]);
+    work.bernstein_copy_items += 2;
     left.push(triangle[0]);
     right[n - 1] = triangle[n - 1];
     let half = Interval::point(0.5).map_err(|_| PacketError::OutwardRefusal("Bernstein half"))?;
@@ -829,6 +858,7 @@ fn bernstein_split_half(
                     .map_err(|_| PacketError::OutwardRefusal("Bernstein subdivision"))?,
             );
         }
+        work.bernstein_copy_items += 2;
         left.push(triangle[0]);
         right[n - level - 1] = triangle[n - level - 1];
     }
@@ -837,14 +867,22 @@ fn bernstein_split_half(
 
 /// Bounds the exact polynomial whose coefficients lie in the supplied
 /// intervals. A budget of zero permits the basis transform but no subdivision.
-/// The depth cap limits worst-case work to a finite, explicitly reported scope.
+/// At degree `d <= BERNSTEIN_MAX_DEGREE` and depth `D <= 8`, the streaming
+/// implementation uses O(d) live workspace and O(d^2 (1 + D 2^D)) work.
+/// Each cell path is recomputed to avoid retaining an exponential cell array.
+/// Fallible reservations, copies, transforms and subdivision terms are charged.
 pub fn outward_polynomial_sup_bound(
     coefficients: &[(Interval, Interval)],
     threshold: f64,
     max_depth: usize,
     work: &mut PacketWorkCounters,
 ) -> Result<BernsteinSupBound, PacketError> {
-    if coefficients.is_empty() || !threshold.is_finite() || threshold < 0.0 || max_depth > 8 {
+    if coefficients.is_empty()
+        || coefficients.len() - 1 > BERNSTEIN_MAX_DEGREE
+        || !threshold.is_finite()
+        || threshold < 0.0
+        || max_depth > 8
+    {
         return Err(PacketError::OutwardRefusal(
             "invalid Bernstein input or depth budget",
         ));
@@ -861,6 +899,7 @@ pub fn outward_polynomial_sup_bound(
             "invalid Bernstein coefficient interval",
         ));
     }
+    work.bernstein_queries += 1;
     let mut cheap = 0.0;
     for &coefficient in coefficients {
         work.certificate_items += 1;
@@ -871,6 +910,7 @@ pub fn outward_polynomial_sup_bound(
         )?;
     }
     if cheap <= threshold {
+        work.bernstein_cheap_accepts += 1;
         return Ok(BernsteinSupBound {
             upper: cheap,
             coefficient_upper: cheap,
@@ -880,7 +920,7 @@ pub fn outward_polynomial_sup_bound(
     }
     let degree = coefficients.len() - 1;
     let zero = Interval::point(0.0).map_err(|_| PacketError::OutwardRefusal("Bernstein zero"))?;
-    let mut points = Vec::with_capacity(coefficients.len());
+    let mut points = bernstein_capacity(coefficients.len(), work)?;
     for i in 0..=degree {
         let mut value = (zero, zero);
         let mut ratio =
@@ -930,7 +970,7 @@ pub fn outward_polynomial_sup_bound(
         let cells = 1usize << depth;
         let mut level_upper = 0.0_f64;
         for index in 0..cells {
-            let mut cell = points.clone();
+            let mut cell = bernstein_copy(&points, work)?;
             for bit in (0..depth).rev() {
                 let (left, right) = bernstein_split_half(&cell, work)?;
                 cell = if index & (1 << bit) == 0 { left } else { right };
@@ -947,6 +987,7 @@ pub fn outward_polynomial_sup_bound(
             });
         }
     }
+    work.bernstein_budget_exhaustions += 1;
     Err(PacketError::BernsteinBudgetExhausted { upper, threshold })
 }
 
@@ -1829,7 +1870,7 @@ pub fn compute_certificate(
         // The candidate center is a represented binary64 polynomial. Lift
         // those coefficients to exact point intervals before the optional
         // basis transform; the diagnostic certificate remains non-authoritative.
-        let mut lifted = Vec::with_capacity(cand.mean.len());
+        let mut lifted = bernstein_capacity(cand.mean.len(), work)?;
         for &(re, im) in &cand.mean {
             lifted.push((
                 Interval::point(re).map_err(|_| PacketError::NonFinite("candidate coefficient"))?,

@@ -148,6 +148,37 @@ pub fn render(doc: &Value) -> Result<String, String> {
         .as_array()
         .cloned()
         .unwrap_or_default();
+    for reference in &refs {
+        if let Some(protocol) = reference.get("independent_protocol") {
+            o.push_str(&format!("Independent empirical reference tier for **{}**: **{}**, status **{}**. Agreement and refinement on the declared grid do not constitute a rigorous trajectory enclosure.\n\n", c(reference, &["problem"]), c(protocol, &["tier"]), c(protocol, &["status"])));
+            table(
+                &mut o,
+                &[
+                    "rtol",
+                    "atol",
+                    "cross-family",
+                    "RADAU refinement",
+                    "CVODE refinement",
+                    "pass",
+                ],
+                protocol["levels"]
+                    .as_array()
+                    .into_iter()
+                    .flatten()
+                    .map(|level| {
+                        vec![
+                            c(level, &["rtol"]),
+                            c(level, &["atol"]),
+                            c(level, &["cross_family_disagreement"]),
+                            c(level, &["radau5_previous_level_disagreement"]),
+                            c(level, &["cvode_previous_level_disagreement"]),
+                            c(level, &["pass"]),
+                        ]
+                    })
+                    .collect(),
+            );
+        }
+    }
     let mut rrows = Vec::new();
     for r in &refs {
         let mut add = |x: &Value, role: &str| {
@@ -327,7 +358,7 @@ pub fn render(doc: &Value) -> Result<String, String> {
         .unwrap_or_default();
     if !ic.is_empty() {
         o.push_str("## Interior control evidence (A2)\n\n");
-        o.push_str("Per problem and rtol: `error_own` and accepted steps of the dense facade arm with interior `WFilteredEnforce` against the same route with interior `Off`. `error ratio = error_own(off) / error_own(enforce)`; `step ratio = accepted(enforce) / accepted(off)`. The last column is whether `error_own(enforce)` is within the stated number of tolerance units.\n\n");
+        o.push_str("Per problem and rtol: `error_own` and accepted steps of the dense facade arm with interior `WFilteredEnforce` against the same route with interior `Off`. `error ratio = error_own(off) / error_own(enforce)`; `step ratio = accepted(enforce) / accepted(off)`. The last column is a diagnostic observation of global grid error. It does not test the local interior estimator: propagation, endpoint defects and reference error also contribute.\n\n");
         let col = format!("≤ {} tol units", c(doc, &["interior_control_tol_units"]));
         table(
             &mut o,

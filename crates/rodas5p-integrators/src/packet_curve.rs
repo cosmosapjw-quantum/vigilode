@@ -19,6 +19,14 @@ pub use output::{
     PacketCertifiedView, PacketCurveOutput, PacketCurveOutputView, PacketCurveOutputWorkspace,
     PacketFrozenOutput,
 };
+#[path = "packet_verified_trajectory.rs"]
+mod verified_trajectory;
+pub use verified_trajectory::{
+    VerifiedPacketAdaptiveConfig, VerifiedPacketAttempt, VerifiedPacketConfig,
+    VerifiedPacketDiagnostics, VerifiedPacketError, VerifiedPacketPoint, VerifiedPacketState,
+    VerifiedPacketTrajectory, advance_verified_packet, integrate_verified_packet,
+    integrate_verified_packet_adaptive,
+};
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct PacketComplexInterval {
@@ -77,7 +85,113 @@ pub struct ContinuousPacketResidualBound {
     pub mean_magnitude_sup: Interval,
 }
 
+/// Result of optional continuous-residual refinement on the same frozen curve.
+/// `threshold_met` refers to the weighted residual budget, not an ODE output
+/// tolerance. The caller must still query its immutable output owner and apply
+/// the original physical output gate.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct PacketResidualRefinement {
+    pub previous_upper: f64,
+    pub refined_upper: f64,
+    pub requested_threshold: f64,
+    pub threshold_met: bool,
+    pub transformed_modes: usize,
+    pub maximum_refinement_levels: usize,
+}
+
 impl RepresentedPacketCurve {
+    /// Refine the continuous residual bound only if its cheap bound exceeds
+    /// `threshold`. The curve, exact residual coefficients, source identity,
+    /// initial state, and original packet tail model are unchanged.
+    ///
+    /// Every mode is enclosed independently; their outward weighted 2-norm
+    /// is a valid vector bound. Budget exhaustion retains the best finite
+    /// enclosure and is exposed through `threshold_met`, not accepted as an
+    /// output certificate. Arithmetic or resource failures are typed refusals.
+    pub fn with_bernstein_residual_bound(
+        mut self,
+        threshold: f64,
+        max_depth: usize,
+        work: &mut PacketWorkCounters,
+    ) -> Result<(Self, PacketResidualRefinement), PacketError> {
+        if !threshold.is_finite() || threshold < 0.0 || max_depth > 8 {
+            return Err(PacketError::OutwardRefusal(
+                "invalid residual refinement budget",
+            ));
+        }
+        let old = self.residual_bound.weighted_residual_sup.hi;
+        let mut report = PacketResidualRefinement {
+            previous_upper: old,
+            refined_upper: old,
+            requested_threshold: threshold,
+            threshold_met: old <= threshold,
+            transformed_modes: 0,
+            maximum_refinement_levels: 0,
+        };
+        if report.threshold_met {
+            return Ok((self, report));
+        }
+        work.bernstein_residual_attempts += 1;
+        // This ordinary positive heuristic only requests per-mode refinement.
+        // Acceptance is decided from the outward aggregate below.
+        work.certificate_items += self.mode_count() as u64 + 2;
+        let s = self.source_identity.model.weights().iter().sum::<f64>();
+        let mode_threshold = threshold / s.sqrt();
+        let mut weighted_square = 0.0;
+        for mode in 0..self.mode_count() {
+            let source = self
+                .residual_coefficients(mode)
+                .ok_or(PacketError::OutwardRefusal(
+                    "residual refinement mode shape",
+                ))?;
+            let mut coefficients = super::bernstein_capacity(source.len(), work)?;
+            for c in source {
+                work.bernstein_copy_items += 1;
+                coefficients.push((c.re, c.im));
+            }
+            let upper = match super::outward_polynomial_sup_bound(
+                &coefficients,
+                mode_threshold,
+                max_depth,
+                work,
+            ) {
+                Ok(bound) => {
+                    report.transformed_modes += usize::from(bound.transform_used);
+                    report.maximum_refinement_levels = report
+                        .maximum_refinement_levels
+                        .max(bound.refinement_levels);
+                    bound.upper
+                }
+                Err(PacketError::BernsteinBudgetExhausted { upper, .. }) => {
+                    report.transformed_modes += 1;
+                    report.maximum_refinement_levels = max_depth;
+                    upper
+                }
+                Err(error) => return Err(error),
+            };
+            work.certificate_items += 1;
+            let square = mul_up(upper, upper)
+                .map_err(|_| PacketError::OutwardRefusal("Bernstein weighted residual"))?;
+            work.certificate_items += 1;
+            let weighted = mul_up(self.source_identity.model.weights()[mode], square)
+                .map_err(|_| PacketError::OutwardRefusal("Bernstein weighted residual"))?;
+            work.certificate_items += 1;
+            weighted_square = add_up(weighted_square, weighted)
+                .map_err(|_| PacketError::OutwardRefusal("Bernstein weighted residual"))?;
+        }
+        work.certificate_items += 1;
+        let refined = sqrt_up(weighted_square)
+            .map_err(|_| PacketError::OutwardRefusal("Bernstein weighted residual"))?;
+        report.refined_upper = old.min(refined);
+        report.threshold_met = report.refined_upper <= threshold;
+        if report.threshold_met {
+            work.bernstein_residual_false_rejections_saved += 1;
+        }
+        self.residual_bound.weighted_residual_sup = Interval::new(0.0, report.refined_upper)
+            .map_err(|_| PacketError::OutwardRefusal("Bernstein residual interval"))?;
+        Ok((self, report))
+    }
+
     /// Freeze the rounded mode reconstruction and enclose all coefficients of
     /// its exact continuous-model residual.
     pub fn freeze(
@@ -589,29 +703,6 @@ fn checked_maximum_degree(order: usize, candidate_degree: usize) -> Result<usize
     Ok(degree)
 }
 
-#[cfg(test)]
-mod degree_tests {
-    use super::checked_maximum_degree;
-    use crate::packet_window::PacketError;
-
-    #[test]
-    #[cfg(target_pointer_width = "64")]
-    fn maximum_degree_guard_checks_binary64_integer_domain_without_allocation() {
-        let exact_limit = (1_u64 << 53) as usize;
-        assert_eq!(checked_maximum_degree(exact_limit - 1, 0), Ok(exact_limit));
-        assert!(matches!(
-            checked_maximum_degree(exact_limit, 0),
-            Err(PacketError::OutwardRefusal(
-                "represented maximum degree exceeds exact binary64 integer range"
-            ))
-        ));
-        assert!(matches!(
-            checked_maximum_degree(usize::MAX, 1),
-            Err(PacketError::SizeOverflow("represented maximum degree"))
-        ));
-    }
-}
-
 fn rounded_candidate_force(
     candidate: &[(f64, f64)],
     chi: f64,
@@ -974,4 +1065,27 @@ fn coefficient_sum_bound(
         mean_magnitude_sup: Interval::new(0.0, mean_sup)
             .map_err(|_| PacketError::OutwardRefusal("represented mean magnitude bound"))?,
     })
+}
+
+#[cfg(test)]
+mod degree_tests {
+    use super::checked_maximum_degree;
+    use crate::packet_window::PacketError;
+
+    #[test]
+    #[cfg(target_pointer_width = "64")]
+    fn maximum_degree_guard_checks_binary64_integer_domain_without_allocation() {
+        let exact_limit = (1_u64 << 53) as usize;
+        assert_eq!(checked_maximum_degree(exact_limit - 1, 0), Ok(exact_limit));
+        assert!(matches!(
+            checked_maximum_degree(exact_limit, 0),
+            Err(PacketError::OutwardRefusal(
+                "represented maximum degree exceeds exact binary64 integer range"
+            ))
+        ));
+        assert!(matches!(
+            checked_maximum_degree(usize::MAX, 1),
+            Err(PacketError::SizeOverflow("represented maximum degree"))
+        ));
+    }
 }

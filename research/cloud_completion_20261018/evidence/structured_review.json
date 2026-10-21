@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "reviewer": "packet_completion (independent of structured_driver author)",
+  "unit": "A06-complete-structured-native-backend",
+  "decision": "PROMOTE_SCOPED_NUMERICAL_IMPLEMENTATION",
+  "source_hashes": {
+    "crates/rodas5p-integrators/src/collective_direct.rs": "baee6b60d2020df1f01c0d4fd7955e77eef976fce7940c1a76354bee78361d8e",
+    "crates/rodas5p-integrators/src/collective_rodas5p.rs": "5eebab56e89d26ea553d46eb219e4c9b7f8a7d775c33e9d07d7552a673b506ca",
+    "crates/rodas5p-integrators/tests/collective_rodas5p_contracts.rs": "334dfb61dc3344478c889de715c546691178c787a15011aece41631bfd16e372",
+    "crates/rodas5p-integrators/tests/collective_rodas5p_allocation_contract.rs": "696a17e29f5cfc300a53c9f472b57cf13b64ea0731cdb5695e113178547302fc",
+    "crates/rodas5p-integrators/tests/production_audit_collective_direct.rs": "6882254ee537e31fa5c053eebd5108626115ff4d5c135d7bd1600fc5031a4b91",
+    "crates/rodas5p-integrators/examples/collective_structured_compare.rs": "70ce5d89cb8c692d028407391f2215e201c21877058e1736bc54c2937569dc8d"
+  },
+  "verified": [
+    "all_eight_K_stage_recurrences_match_sequential_autonomous_formula",
+    "one_frozen_factorization_and_eight_linear_N_solves",
+    "immutable_model_and_tableau_ownership",
+    "caller_output_transactional_until_success",
+    "adaptive_rejection_preserves_state_and_uses_existing_clock_landing_contract",
+    "refactor_failure_invalidates_solve_residual_and_determinant_metadata",
+    "one_mode_nonlinear_exact_flow_with_and_without_damping",
+    "O(N)_workspace_and_O(N)_fixed_stage_attempt_complexity"
+  ],
+  "evidence_inspected": [
+    "structured_tests.log",
+    "structured_tests_initial_reference_adapter_failure.log",
+    "structured_compare_smoke.jsonl",
+    "structured_scoped_numerics.log",
+    "structured_allocation_gate.log",
+    "structured_compare_smoke_calibrated.jsonl",
+    "structured_completion.json"
+  ],
+  "reference_cases": 60,
+  "review_reexecuted_unchanged_tests": false,
+  "findings": [
+    {
+      "id": "SR01",
+      "severity": "medium",
+      "status": "closed",
+      "target": "CollectiveStageFactors::schur_determinant_enclosure",
+      "evidence": "After failed mutable refactor, old getter returned previous valid determinant. Author changed accessor to validity-checked CoreResult and added regression.",
+      "resolution": "No stale determinant authority after failure."
+    },
+    {
+      "id": "SR02",
+      "severity": "high_for_allocation_evidence",
+      "status": "closed_by_scope_correction",
+      "target": "GlobalAlloc instrumentation of library allocations",
+      "evidence": "Whole setup+trajectory initial JSON reports2alloc/32bytes; positive-control model.clone with3Vec allocations measures0.",
+      "resolution": "Empirical allocation remains NOT_ESTABLISHED: independent known-library-allocation positive control fails in restored runtime, including fresh target. Final runner emits null authoritative allocation fields while retaining explicitly raw diagnostics. No further environment probing required for this scope."
+    }
+  ],
+  "scope_exclusions": [
+    "global_error_certificate",
+    "same_accuracy_measured_speed_promotion",
+    "empirical_allocation_measurement_NOT_ESTABLISHED"
+  ],
+  "limitations": [
+    "Exact represented weight sum1 and zero carrier required by current factors",
+    "WB2 inverse bound is a sufficient admission criterion and can safely refuse invertible matrices",
+    "Failed attempts may allocate diagnostics; complete adaptive driver setup/output allocates"
+  ],
+  "final_execution_receipts": {
+    "scoped_numerical_tests_passed": 19,
+    "allocator_gate": "failed_positive_control",
+    "comparison_rows": 6,
+    "comparison_successes": 6,
+    "authoritative_allocation_fields": "null_for_all_rows",
+    "raw_counter_fields": "diagnostic_only"
+  }
+}

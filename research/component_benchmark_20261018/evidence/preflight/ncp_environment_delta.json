@@ -1,0 +1,18 @@
+[
+  {
+    "argv": [
+      "rsync",
+      "-a",
+      "--exclude=compiled",
+      "--exclude=logs",
+      "-e",
+      "ssh -i /home/cosmosapjw/.ssh/ncp_key -o BatchMode=yes -o ConnectTimeout=10",
+      "/tmp/vigilode-component-julia-depot-20261018",
+      "/tmp/vigilode-component-julia-env-20261018",
+      "/tmp/vigilode-component-hairer-20261018",
+      "root@49.50.142.2:/root/VIGILODE_COMPONENT_20261018T134235Z/env/"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 2.221267033019103
+  }
+]
