@@ -248,6 +248,13 @@ fn dense_arms_record_the_interior_control_that_ran() {
     ] {
         let out = arms::run(arm, &m, &g, 1e-6, 1e-9);
         assert_eq!(out.native["ran"]["control"], want, "{arm:?}");
+        // Evidence from the route's own counters that the mode took effect.
+        let samples = out.native["ran"]["samples"].as_u64().unwrap();
+        assert_eq!(
+            samples > 0,
+            want == "WFilteredEnforce",
+            "{arm:?} samples {samples}"
+        );
     }
     let b = Model::new(Kind::Brusselator1d, 20).unwrap();
     let g = grid(10.0, 11);
@@ -258,5 +265,11 @@ fn dense_arms_record_the_interior_control_that_ran() {
         let out = arms::run(arm, &b, &g, 1e-6, 1e-9);
         assert_eq!(out.native["ran"]["control"], want, "{arm:?}");
         assert!(out.native["ran"]["interior_rejections"].is_u64());
+        let samples = out.native["ran"]["samples"].as_u64().unwrap();
+        assert_eq!(
+            samples > 0,
+            want == "WFilteredEnforce",
+            "{arm:?} samples {samples}"
+        );
     }
 }

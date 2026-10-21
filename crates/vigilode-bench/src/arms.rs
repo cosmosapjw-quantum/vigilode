@@ -778,6 +778,23 @@ fn vigilode_dense(
     // request). Other routes (a fast dense driver) slot in as further
     // `if let` branches; no exhaustive match on the facade enum.
     let mut ran = json!({"control": null, "samples": null, "interior_rejections": null, "max_accepted_estimate": null});
+    if let DriverWork::FastDense { interior: iw, .. } = &st.driver_work {
+        // The fast route records no control field: the control is the
+        // facade's recorded option (`Stats::options`), and `samples` > 0 is
+        // the evidence that the estimates were formed (all zero under Off).
+        let control = if st.options.interior_error == InteriorError::Off {
+            "Off"
+        } else {
+            "WFilteredEnforce"
+        };
+        ran = json!({
+            "control": control,
+            "control_source": "stats.options.interior_error (FastDense has no control field)",
+            "samples": iw.samples,
+            "interior_rejections": iw.interior_rejections,
+            "max_accepted_estimate": iw.max_estimate,
+        });
+    }
     if let DriverWork::SequentialDense {
         control,
         samples,
