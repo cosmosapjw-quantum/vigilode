@@ -27,6 +27,7 @@ mod candidates;
 mod causal_majorant;
 mod certification;
 mod certified_budget;
+mod client_stage;
 pub mod collective_direct;
 pub mod collective_model;
 pub mod collective_rodas5p;
@@ -186,6 +187,7 @@ pub use certification::{
 pub use certified_budget::{
     CertifiedBudget, CertifiedBudgetDecision, CertifiedBudgetStatus, step_power_enclosure,
 };
+pub use client_stage::StageLinearSystem;
 pub use collective_model::{
     CollectiveAdmissionError, CollectiveModel, verify_collective_admission,
 };
@@ -397,15 +399,17 @@ pub use rhs_telemetry::{
     run_homotopy_rhs_telemetry_screen,
 };
 pub use rodas5p_fast::{
-    BandedJacobian, BandedJacobianFn, BandedKernel, BandedWork, DriverPartial, DriverStopReason,
-    FastLuPolicy, RODAS5P_FAST_BANDED_DRIVER_ID, RODAS5P_FAST_BANDED_FIXED2_DRIVER_ID,
-    RODAS5P_FAST_BANDED_FIXED2_EXACT_CACHE_DRIVER_ID, RODAS5P_FAST_BANDED_SLICES_DRIVER_ID,
+    BandedJacobian, BandedJacobianFn, BandedKernel, BandedStageLu, BandedWork, DriverPartial,
+    DriverStopReason, FastLuPolicy, RODAS5P_FAST_BANDED_DRIVER_ID,
+    RODAS5P_FAST_BANDED_FIXED2_DRIVER_ID, RODAS5P_FAST_BANDED_FIXED2_EXACT_CACHE_DRIVER_ID,
+    RODAS5P_FAST_BANDED_SLICES_DRIVER_ID, RODAS5P_FAST_CLIENT_DRIVER_ID,
     RODAS5P_FAST_COLEXT_DRIVER_ID, RODAS5P_FAST_COLEXT64_DRIVER_ID, RODAS5P_FAST_DRIVER_ID,
     RODAS5P_FAST_SMALL_LU_MAX, RODAS5P_FAST_SPARSE_DENSITY_MAX, Rodas5pFastBandedResult,
     Rodas5pFastLu, Rodas5pFastOptions, Rodas5pFastResult, integrate_rodas5p_fast_banded_observed,
     integrate_rodas5p_fast_banded_observed_with_atol,
     integrate_rodas5p_fast_banded_observed_with_kernel,
-    integrate_rodas5p_fast_banded_observed_with_options, integrate_rodas5p_fast_observed,
+    integrate_rodas5p_fast_banded_observed_with_options,
+    integrate_rodas5p_fast_client_observed_with_atol, integrate_rodas5p_fast_observed,
     integrate_rodas5p_fast_observed_with_atol, integrate_rodas5p_fast_observed_with_options,
     integrate_rodas5p_fast_observed_with_partial, integrate_rodas5p_fast_observed_with_telemetry,
     lu_research, rodas5p_fast_banded_solve, rodas5p_fast_step,

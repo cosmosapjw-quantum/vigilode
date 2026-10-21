@@ -31,7 +31,7 @@
 //! sequential path itself is untouched; this driver has its own identifier
 //! and records.
 
-use std::sync::Arc;
+use std::sync::{Arc, Mutex, PoisonError};
 
 #[path = "exact_band_cache.rs"]
 mod exact_band_cache;
@@ -45,7 +45,7 @@ use serde::Serialize;
 
 use crate::{
     AdaptiveControllerState, AdaptiveFailureKind, AdaptiveStepConfig, ControllerDecision,
-    ControllerTelemetry, ObservedIntegrationResult, OdeProblem, OutputSchedule,
+    ControllerTelemetry, ObservedIntegrationResult, OdeProblem, OutputSchedule, StageLinearSystem,
     adaptive::rodas_next_step_after_attempt_prevalidated, output::OutputCollector,
     rodas_next_step_after_attempt,
 };
@@ -55,6 +55,10 @@ pub const RODAS5P_FAST_DRIVER_ID: &str = "rodas5p-fast-transformed-v2";
 
 /// Identifier of the banded pipeline (integrated DAG node INT-03).
 pub const RODAS5P_FAST_BANDED_DRIVER_ID: &str = "rodas5p-fast-banded-v1";
+
+/// Identifier of the pipeline with a client-owned stage solver
+/// ([`integrate_rodas5p_fast_client_observed_with_atol`], library step L2).
+pub const RODAS5P_FAST_CLIENT_DRIVER_ID: &str = "rodas5p-fast-client-v1";
 
 /// Opt-in variants of the fast drivers (speed research node SPD01,
 /// `research/spd01_fast_driver_overhead_20261005`). The default is the
@@ -287,6 +291,31 @@ struct BandState {
 }
 
 impl BandState {
+    /// Zeroed band storage of order `n` for `band` under `kernel`.
+    fn new(n: usize, band: &BandedJacobian, kernel: BandedKernel) -> Self {
+        let (l, u) = (band.lower, band.upper);
+        Self {
+            l,
+            u,
+            fill: band.fill.clone(),
+            jacobian: vec![0.0; n * (l + u + 1)],
+            factors: vec![0.0; n * (2 * l + u + 1)],
+            pivots: vec![0; n],
+            work: BandedWork {
+                stored_slots: n * (3 * l + 2 * u + 2)
+                    + if kernel == BandedKernel::FixedWidth2ExactCache {
+                        n * (l + u + 1)
+                    } else {
+                        0
+                    },
+                ..BandedWork::default()
+            },
+            kernel,
+            exact_cache: (kernel == BandedKernel::FixedWidth2ExactCache)
+                .then(|| ExactBandCache::new(n * (l + u + 1))),
+        }
+    }
+
     fn width(&self) -> usize {
         2 * self.l + self.u + 1
     }
@@ -615,6 +644,9 @@ pub enum Rodas5pFastLu {
     Faer,
     /// The banded pipeline of [`integrate_rodas5p_fast_banded_observed`].
     Banded,
+    /// A client-owned [`StageLinearSystem`]
+    /// ([`integrate_rodas5p_fast_client_observed_with_atol`]).
+    Client,
 }
 
 #[derive(Clone, Debug)]
@@ -673,35 +705,36 @@ pub(crate) struct Workspace {
     /// `atol_vector[i] + rtol max(|y_i|, |y_new,i|)`.
     pub(crate) atol_vector: Vec<f64>,
     band: Option<BandState>,
+    /// The client-owned stage solver of [`Rodas5pFastLu::Client`]. The
+    /// mutex only keeps the workspace `Sync` (the lagged driver shares
+    /// `&Workspace` with its preconditioner) for a `Send` client: every
+    /// access is exclusive ([`client_of`]), so it is never locked.
+    client: Option<Mutex<Box<dyn StageLinearSystem>>>,
+}
+
+/// The client behind its never-locked mutex (see [`Workspace`]).
+fn client_of(client: &mut Mutex<Box<dyn StageLinearSystem>>) -> &mut dyn StageLinearSystem {
+    client
+        .get_mut()
+        .unwrap_or_else(PoisonError::into_inner)
+        .as_mut()
 }
 
 impl Workspace {
     /// The banded workspace: no `n x n` storage.
     fn new_banded(n: usize, band: &BandedJacobian, kernel: BandedKernel) -> CoreResult<Self> {
-        let (l, u) = (band.lower, band.upper);
         let mut work = Self::with_dense_size(n, 0)?;
-        let state = BandState {
-            l,
-            u,
-            fill: band.fill.clone(),
-            jacobian: vec![0.0; n * (l + u + 1)],
-            factors: vec![0.0; n * (2 * l + u + 1)],
-            pivots: vec![0; n],
-            work: BandedWork {
-                stored_slots: n * (3 * l + 2 * u + 2)
-                    + if kernel == BandedKernel::FixedWidth2ExactCache {
-                        n * (l + u + 1)
-                    } else {
-                        0
-                    },
-                ..BandedWork::default()
-            },
-            kernel,
-            exact_cache: (kernel == BandedKernel::FixedWidth2ExactCache)
-                .then(|| ExactBandCache::new(n * (l + u + 1))),
-        };
-        work.band = Some(state);
+        work.band = Some(BandState::new(n, band, kernel));
         work.lu_kind = Rodas5pFastLu::Banded;
+        work.lu_chosen = true;
+        Ok(work)
+    }
+
+    /// The client workspace: no `n x n` storage; `client` owns `J` and `W`.
+    fn new_client(n: usize, client: Box<dyn StageLinearSystem>) -> CoreResult<Self> {
+        let mut work = Self::with_dense_size(n, 0)?;
+        work.client = Some(Mutex::new(client));
+        work.lu_kind = Rodas5pFastLu::Client;
         work.lu_chosen = true;
         Ok(work)
     }
@@ -770,6 +803,7 @@ impl Workspace {
             y_new: vec![0.0; n],
             atol_vector: Vec::new(),
             band: None,
+            client: None,
         })
     }
 
@@ -805,13 +839,19 @@ impl Workspace {
         if let Some(band) = self.band.as_mut() {
             return band.factor_with_policy(n, inv, counters);
         }
+        if let Some(client) = self.client.as_mut() {
+            // The client charges its own factorization work.
+            return client_of(client).factor(inv, counters);
+        }
         let jacobian = &self.jacobian;
         let target = match self.lu_kind {
             Rodas5pFastLu::InPlaceZeroSkipping | Rodas5pFastLu::InPlaceColumnExtents => {
                 self.w.as_mut_slice()
             }
             Rodas5pFastLu::Faer => self.w_dense.as_mut_slice(),
-            Rodas5pFastLu::Banded => unreachable!("banded factors are formed above"),
+            Rodas5pFastLu::Banded | Rodas5pFastLu::Client => {
+                unreachable!("banded and client factors are formed above")
+            }
         };
         for (w, j) in target.iter_mut().zip(jacobian.as_slice()) {
             *w = -j;
@@ -856,14 +896,19 @@ impl Workspace {
                 self.faer_lu = Some(LuFactorization::new(&self.w_dense)?);
                 Ok(())
             }
-            Rodas5pFastLu::Banded => unreachable!("banded factors are formed above"),
+            Rodas5pFastLu::Banded | Rodas5pFastLu::Client => {
+                unreachable!("banded and client factors are formed above")
+            }
         }
     }
 
     /// Solve `W x = stage_rhs` in place.
     pub(crate) fn solve(&mut self, counters: &mut WorkCounters) -> CoreResult<()> {
         counters.linear_solves += 1;
-        counters.direct_solve_calls += 1;
+        // A client charges its own solve work (direct or iterative).
+        if self.lu_kind != Rodas5pFastLu::Client {
+            counters.direct_solve_calls += 1;
+        }
         match self.lu_kind {
             Rodas5pFastLu::InPlaceZeroSkipping | Rodas5pFastLu::InPlaceColumnExtents => {
                 lu_solve_in_place(
@@ -890,6 +935,10 @@ impl Workspace {
                     .expect("banded workspace")
                     .solve(n, &mut self.stage_rhs);
             }
+            Rodas5pFastLu::Client => {
+                client_of(self.client.as_mut().expect("client workspace"))
+                    .solve_in_place(&mut self.stage_rhs, counters)?;
+            }
         }
         if self.stage_rhs.iter().all(|v| v.is_finite()) {
             Ok(())
@@ -903,7 +952,7 @@ impl Workspace {
     /// Solve `W x = b` in place in a caller buffer with the stored dense
     /// factors (no counters, `&self`): the arithmetic of [`Self::solve`] on
     /// `b` (wave-2 node `b1b-gmres`, the lagged LU as a GMRES right
-    /// preconditioner). Banded storage is refused.
+    /// preconditioner). Banded storage and a client solver are refused.
     pub(crate) fn solve_dense_into(&self, b: &mut [f64]) -> CoreResult<()> {
         if b.len() != self.n {
             return Err(CoreError::Dimension(
@@ -929,7 +978,7 @@ impl Workspace {
                     .solve(b)?;
                 b.copy_from_slice(&x);
             }
-            Rodas5pFastLu::Banded => {
+            Rodas5pFastLu::Banded | Rodas5pFastLu::Client => {
                 return Err(CoreError::InvalidInput(
                     "the stored-LU preconditioner supports dense storage only".into(),
                 ));
@@ -949,7 +998,8 @@ impl Workspace {
     /// W-filtered interior estimate). It charges no [`WorkCounters`]; the
     /// caller does. A banded solve takes `&mut self` because the band
     /// kernel counts its operations: they are added to [`BandedWork`]
-    /// `solve_operations`. The faer path allocates its solution once.
+    /// `solve_operations`. The faer path allocates its solution once. A
+    /// client solver, which charges its own work, is refused.
     pub(crate) fn solve_into(&mut self, b: &mut [f64]) -> CoreResult<()> {
         if b.len() != self.n {
             return Err(CoreError::Dimension(
@@ -978,6 +1028,11 @@ impl Workspace {
             Rodas5pFastLu::Banded => {
                 let n = self.n;
                 self.band.as_mut().expect("banded workspace").solve(n, b);
+            }
+            Rodas5pFastLu::Client => {
+                return Err(CoreError::InvalidInput(
+                    "the stored-LU solve does not support a client stage solver".into(),
+                ));
             }
         }
         if b.iter().all(|v| v.is_finite()) {
@@ -1027,6 +1082,9 @@ impl Workspace {
                 band.jacobian.fill(0.0);
                 counters.jacobian_builds += 1;
                 (band.fill)(t, y, &mut band.jacobian)?;
+            } else if let Some(client) = self.client.as_mut() {
+                counters.jacobian_builds += 1;
+                client_of(client).linearize(problem, t, y, counters)?;
             } else {
                 problem.dense_jacobian_into(t, y, &mut self.jacobian, counters)?;
             }
@@ -1449,6 +1507,68 @@ pub fn rodas5p_fast_banded_solve(
     Ok((x, state.pivots))
 }
 
+/// The banded pipeline's Jacobian band, LU and solve as a client
+/// [`StageLinearSystem`] (library step L2): the [`BandedKernel::Indexed`]
+/// kernel without the exact cache, charging what the banded driver charges
+/// (one `direct_factorizations` per factorization, one `direct_solve_calls`
+/// per solve). Under [`integrate_rodas5p_fast_client_observed_with_atol`]
+/// it reproduces [`integrate_rodas5p_fast_banded_observed_with_atol`] bit
+/// for bit (states and counters); it is the reference client of that entry
+/// point.
+pub struct BandedStageLu {
+    n: usize,
+    state: BandState,
+}
+
+impl BandedStageLu {
+    /// Band storage of order `n` for `band`. Requires `lower, upper < n`.
+    pub fn new(n: usize, band: &BandedJacobian) -> CoreResult<Self> {
+        if band.lower >= n.max(1) || band.upper >= n.max(1) {
+            return Err(CoreError::InvalidInput(
+                "the band of the RODAS5P fast banded driver must lie inside the matrix".into(),
+            ));
+        }
+        Ok(Self {
+            n,
+            state: BandState::new(n, band, BandedKernel::Indexed),
+        })
+    }
+}
+
+impl StageLinearSystem for BandedStageLu {
+    fn dimension(&self) -> usize {
+        self.n
+    }
+
+    /// The band of `J` at `(t, y)` from the band callback; the driver has
+    /// charged `jacobian_builds`.
+    fn linearize(
+        &mut self,
+        _problem: &OdeProblem,
+        t: f64,
+        y: &[f64],
+        _counters: &mut WorkCounters,
+    ) -> CoreResult<()> {
+        self.state.jacobian.fill(0.0);
+        (self.state.fill)(t, y, &mut self.state.jacobian)
+    }
+
+    fn factor(&mut self, inv_h_gamma: f64, counters: &mut WorkCounters) -> CoreResult<()> {
+        self.state.factor_with_policy(self.n, inv_h_gamma, counters)
+    }
+
+    fn solve_in_place(&mut self, b: &mut [f64], counters: &mut WorkCounters) -> CoreResult<()> {
+        if b.len() != self.n {
+            return Err(CoreError::Dimension(
+                "banded stage solve shape mismatch".into(),
+            ));
+        }
+        counters.direct_solve_calls += 1;
+        self.state.solve(self.n, b);
+        Ok(())
+    }
+}
+
 /// One step of this driver from `(t, y)` with step `h`: the new state, the
 /// WRMS norm of the embedded error and the LU used. For verification
 /// against [`crate::sequential_step`]; the adaptive driver keeps its
@@ -1809,6 +1929,65 @@ pub fn integrate_rodas5p_fast_banded_observed_with_atol(
     )
 }
 
+/// [`integrate_rodas5p_fast_observed_with_atol`] with the stage linear
+/// algebra owned by `client` (library step L2): the client linearizes at
+/// every fresh state, factors `W = I/(h gamma) - J` once per attempt and
+/// solves every stage, while the stages, the controller, the clock, the
+/// output and the rejection rules are the driver's own (see
+/// [`StageLinearSystem`] for the counters each side charges and the errors
+/// that reject an attempt). Nothing is stored as an `n x n` matrix. The
+/// result's `lu` is [`Rodas5pFastLu::Client`] and its `driver`
+/// [`RODAS5P_FAST_CLIENT_DRIVER_ID`].
+///
+/// Every input is checked before the client is used: its dimension must be
+/// the problem's, `atol` as for [`integrate_rodas5p_fast_observed_with_atol`],
+/// the identity mass matrix only (otherwise [`CoreError::InvalidInput`]).
+/// The client is handed back with the result; on any `Err` (a refusal or a
+/// fatal error of the run) it is dropped.
+pub fn integrate_rodas5p_fast_client_observed_with_atol(
+    problem: &OdeProblem,
+    client: Box<dyn StageLinearSystem>,
+    t_span: (f64, f64),
+    y0: &[f64],
+    adaptive: &AdaptiveStepConfig,
+    output: &OutputSchedule,
+    atol: &[f64],
+) -> CoreResult<(
+    Rodas5pFastResult,
+    Option<DriverPartial>,
+    Box<dyn StageLinearSystem>,
+)> {
+    let n = problem.dimension;
+    require_atol_vector(n, atol)?;
+    if client.dimension() != n {
+        return Err(CoreError::InvalidInput(format!(
+            "the stage linear system has dimension {}, the problem {n}",
+            client.dimension()
+        )));
+    }
+    validate_fast_run(problem, t_span, y0, adaptive, atol)?;
+    let mut work = Workspace::new_client(n, client)?;
+    let (result, _, partial) = integrate_fast_in(
+        &mut work,
+        problem,
+        t_span,
+        y0,
+        adaptive,
+        output,
+        Rodas5pFastOptions::default(),
+        None,
+        atol,
+        &mut NoSink,
+    )?;
+    let client = work
+        .client
+        .take()
+        .expect("client workspace")
+        .into_inner()
+        .unwrap_or_else(PoisonError::into_inner);
+    Ok((result, partial, client))
+}
+
 /// The public entry points take a vector, never the empty "scalar" marker.
 pub(crate) fn require_atol_vector(n: usize, atol: &[f64]) -> CoreResult<()> {
     if atol.is_empty() && n > 0 {
@@ -1850,6 +2029,31 @@ fn integrate_banded(
     })
 }
 
+/// The input checks of every fast-driver run, made before its workspace is
+/// built.
+fn validate_fast_run(
+    problem: &OdeProblem,
+    t_span: (f64, f64),
+    y0: &[f64],
+    adaptive: &AdaptiveStepConfig,
+    atol_vector: &[f64],
+) -> CoreResult<()> {
+    adaptive.validate()?;
+    validate_atol_vector(problem.dimension, atol_vector)?;
+    let (t, tf) = t_span;
+    if tf < t || y0.len() != problem.dimension {
+        return Err(CoreError::InvalidInput(
+            "invalid RODAS5P fast integration input".into(),
+        ));
+    }
+    if problem.mass_matrix.is_some() {
+        return Err(CoreError::InvalidInput(
+            "the RODAS5P fast driver supports the identity mass matrix only".into(),
+        ));
+    }
+    Ok(())
+}
+
 /// The fast driver loop. `sink` observes every attempt the embedded
 /// estimate accepts and every accepted step; [`NoSink`] observes nothing.
 #[allow(clippy::too_many_arguments)]
@@ -1861,27 +2065,46 @@ pub(crate) fn integrate_fast<S: StepSink>(
     adaptive: &AdaptiveStepConfig,
     output: &OutputSchedule,
     options: Rodas5pFastOptions,
-    mut telemetry: Option<&mut ControllerTelemetry>,
+    telemetry: Option<&mut ControllerTelemetry>,
     atol_vector: &[f64],
     sink: &mut S,
 ) -> CoreResult<(Rodas5pFastResult, Option<BandedWork>, Option<DriverPartial>)> {
-    adaptive.validate()?;
-    validate_atol_vector(problem.dimension, atol_vector)?;
-    let (mut t, tf) = t_span;
-    if tf < t || y0.len() != problem.dimension {
-        return Err(CoreError::InvalidInput(
-            "invalid RODAS5P fast integration input".into(),
-        ));
-    }
-    if problem.mass_matrix.is_some() {
-        return Err(CoreError::InvalidInput(
-            "the RODAS5P fast driver supports the identity mass matrix only".into(),
-        ));
-    }
+    validate_fast_run(problem, t_span, y0, adaptive, atol_vector)?;
     let mut work = match band {
         Some((band, kernel)) => Workspace::new_banded(problem.dimension, band, kernel)?,
         None => Workspace::new(problem.dimension, options.lu_policy)?,
     };
+    integrate_fast_in(
+        &mut work,
+        problem,
+        t_span,
+        y0,
+        adaptive,
+        output,
+        options,
+        telemetry,
+        atol_vector,
+        sink,
+    )
+}
+
+/// [`integrate_fast`] on a built workspace (dense, banded or client) for
+/// inputs checked by [`validate_fast_run`]; the driver identifier follows
+/// the workspace's storage.
+#[allow(clippy::too_many_arguments)]
+fn integrate_fast_in<S: StepSink>(
+    work: &mut Workspace,
+    problem: &OdeProblem,
+    t_span: (f64, f64),
+    y0: &[f64],
+    adaptive: &AdaptiveStepConfig,
+    output: &OutputSchedule,
+    options: Rodas5pFastOptions,
+    mut telemetry: Option<&mut ControllerTelemetry>,
+    atol_vector: &[f64],
+    sink: &mut S,
+) -> CoreResult<(Rodas5pFastResult, Option<BandedWork>, Option<DriverPartial>)> {
+    let (mut t, tf) = t_span;
     work.atol_vector = atol_vector.to_vec();
     let mut y = y0.to_vec();
     let mut h = adaptive.initial_step.min(crate::output::step_to(t, tf)?);
@@ -1936,7 +2159,7 @@ pub(crate) fn integrate_fast<S: StepSink>(
             Ok(error) if error <= 1.0 => sink
                 .after_attempt(
                     problem,
-                    &mut work,
+                    work,
                     t,
                     &y,
                     trial_h,
@@ -1979,7 +2202,7 @@ pub(crate) fn integrate_fast<S: StepSink>(
                     collector.accept(t, &y, clipped)?;
                 }
                 internal_steps += 1;
-                sink.accepted(&work, t);
+                sink.accepted(work, t);
                 fresh_state = false;
                 last_failure = None;
             }
@@ -2057,10 +2280,11 @@ pub(crate) fn integrate_fast<S: StepSink>(
         rejected_steps,
         jacobian_reuses: reuses,
         lu: work.lu_kind,
-        driver: match band {
-            Some((_, BandedKernel::Slices)) => RODAS5P_FAST_BANDED_SLICES_DRIVER_ID,
-            Some((_, BandedKernel::FixedWidth2)) => RODAS5P_FAST_BANDED_FIXED2_DRIVER_ID,
-            Some((_, BandedKernel::FixedWidth2ExactCache)) => {
+        driver: match (work.lu_kind, work.band.as_ref().map(|band| band.kernel)) {
+            (Rodas5pFastLu::Client, _) => RODAS5P_FAST_CLIENT_DRIVER_ID,
+            (_, Some(BandedKernel::Slices)) => RODAS5P_FAST_BANDED_SLICES_DRIVER_ID,
+            (_, Some(BandedKernel::FixedWidth2)) => RODAS5P_FAST_BANDED_FIXED2_DRIVER_ID,
+            (_, Some(BandedKernel::FixedWidth2ExactCache)) => {
                 RODAS5P_FAST_BANDED_FIXED2_EXACT_CACHE_DRIVER_ID
             }
             _ => options.driver_id(banded.is_some()),

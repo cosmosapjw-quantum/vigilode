@@ -240,7 +240,13 @@ fn every_enum_variant_preserves_its_wire_representation() {
     variants!(
         rodas5p_integrators::Rodas5pFastLu,
         LuRecord,
-        [InPlaceZeroSkipping, InPlaceColumnExtents, Faer, Banded]
+        [
+            InPlaceZeroSkipping,
+            InPlaceColumnExtents,
+            Faer,
+            Banded,
+            Client
+        ]
     );
     variants!(
         rodas5p_integrators::DenseErrorControl,

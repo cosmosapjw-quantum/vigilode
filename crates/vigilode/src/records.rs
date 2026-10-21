@@ -278,6 +278,8 @@ pub enum LuRecord {
     Faer,
     /// The `Banded` policy or outcome.
     Banded,
+    /// The `Client` policy or outcome.
+    Client,
 }
 
 impl From<&rodas5p_integrators::Rodas5pFastLu> for LuRecord {
@@ -287,6 +289,7 @@ impl From<&rodas5p_integrators::Rodas5pFastLu> for LuRecord {
             rodas5p_integrators::Rodas5pFastLu::InPlaceColumnExtents => Self::InPlaceColumnExtents,
             rodas5p_integrators::Rodas5pFastLu::Faer => Self::Faer,
             rodas5p_integrators::Rodas5pFastLu::Banded => Self::Banded,
+            rodas5p_integrators::Rodas5pFastLu::Client => Self::Client,
         }
     }
 }
