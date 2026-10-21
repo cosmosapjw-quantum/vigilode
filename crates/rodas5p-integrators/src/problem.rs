@@ -690,6 +690,50 @@ impl OdeProblem {
             }
             return Err(CoreError::NonFinite("partial_t produced NaN/Inf".into()));
         }
+        self.partial_t_finite_difference(t, y, counters)
+    }
+
+    /// [`Self::eval_partial_t`] into a caller-owned buffer, with the same
+    /// arithmetic, checks and counting (the RODAS5P fast driver's
+    /// allocation-free non-autonomous stages). A supplied `partial_t`
+    /// callback receives a zeroed `out`, as with the allocating form. The
+    /// finite-difference fallback (no callback) still allocates its two RHS
+    /// evaluations. On `Err` the contents of `out` are unspecified.
+    pub fn eval_partial_t_into(
+        &self,
+        t: f64,
+        y: &[f64],
+        out: &mut [f64],
+        counters: &mut WorkCounters,
+    ) -> CoreResult<()> {
+        if y.len() != self.dimension || out.len() != self.dimension {
+            return Err(CoreError::Dimension(
+                "partial_t state shape mismatch".into(),
+            ));
+        }
+        counters.ft_calls += 1;
+        out.fill(0.0);
+        if self.autonomous {
+            return Ok(());
+        }
+        if let Some(f) = &self.partial_t {
+            f(t, y, out)?;
+            if out.iter().all(|v| v.is_finite()) {
+                return Ok(());
+            }
+            return Err(CoreError::NonFinite("partial_t produced NaN/Inf".into()));
+        }
+        let fd = self.partial_t_finite_difference(t, y, counters)?;
+        out.copy_from_slice(&fd);
+        Ok(())
+    }
+
+    fn partial_t_finite_difference(
+        &self,
+        t: f64,
+        y: &[f64],
+        counters: &mut WorkCounters,
+    ) -> CoreResult<Vec<f64>> {
         let eps = f64::EPSILON.sqrt() * t.abs().max(1.0);
         let fp = self.eval_rhs(t + eps, y, counters)?;
         let fm = self.eval_rhs(t - eps, y, counters)?;

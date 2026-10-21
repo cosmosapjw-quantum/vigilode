@@ -1036,8 +1036,9 @@ impl Workspace {
             }
             problem.eval_rhs_into(t, y, &mut self.f0, counters)?;
             if !problem.autonomous {
-                let ft = problem.eval_partial_t(t, y, counters)?;
-                self.ft.copy_from_slice(&ft);
+                // A failed evaluation leaves `ft` unspecified; the driver then
+                // rebuilds the state (`fresh_state = false`) before reuse.
+                problem.eval_partial_t_into(t, y, &mut self.ft, counters)?;
             }
         }
         self.factor(h, counters)?;
