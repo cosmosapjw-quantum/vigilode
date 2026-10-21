@@ -136,7 +136,20 @@ fn counted_action_records_cold_coefficient_table_without_changing_authority() {
     assert_eq!(receipt.subtotal().coefficient_tables_attempted(), 1);
     assert_eq!(receipt.subtotal().coefficient_tables_completed(), 1);
     assert!(receipt.subtotal().interval_kernel_invocations() > 0);
-    assert!(receipt.subtotal().scalar_proxy_units() > 0);
+    // `scalar_proxy_units` is charged only by the static-table initializers (Leja points,
+    // node bounds, suffix bounds); coefficient-table preparation charges interval kernels and
+    // allocation requests but no scalar proxies. The units are therefore positive exactly when
+    // this call initialized at least one process-global table, which depends on test order.
+    let initialized_here = [
+        receipt.leja_points_observation(),
+        receipt.node_bounds_observation(),
+        receipt.suffix_bounds_observation(),
+    ]
+    .contains(&OnceLockObservation::InitializedByThisCall);
+    assert_eq!(
+        receipt.subtotal().scalar_proxy_units() > 0,
+        initialized_here
+    );
     assert!(receipt.subtotal().allocation_requests() > 0);
     // The static tables are process-wide: whichever test in this binary touches a table
     // first initializes it, and a sibling that uses the uncounted API leaves no history.
