@@ -11,6 +11,7 @@ use serde::Serialize;
 
 use crate::{
     error::SolveError,
+    events::EventRecord,
     options::{Options, Tier},
 };
 
@@ -70,6 +71,11 @@ pub enum FailureReason {
         /// The drivers' minimum step.
         min_step: f64,
     },
+    /// An event function returned NaN or an infinity (events: see
+    /// [`crate::Problem::event`]). The solution is truncated at the start of
+    /// the step on which it happened. If the driver had already failed, that
+    /// failure's reason is kept instead (the outputs are still truncated).
+    EventFunctionNonFinite,
     /// A user callback returned [`crate::CallbackError::Fatal`].
     CallbackFailed {
         /// The callback.
@@ -104,6 +110,9 @@ impl fmt::Display for FailureReason {
                 f,
                 "step size fell below the minimum step {min_step:e} after nonlinear solve failures"
             ),
+            Self::EventFunctionNonFinite => {
+                write!(f, "an event function returned a non-finite value")
+            }
             Self::CallbackFailed {
                 callback,
                 t,
@@ -359,6 +368,14 @@ pub struct Stats {
     pub stop: Option<StopRecord>,
     /// The driver's message.
     pub driver_message: String,
+    /// The terminal event that ended the outputs: an index into
+    /// [`Solution::events`], not a declaration index. The integration itself
+    /// ran to its natural end, and the work after the event stays charged in
+    /// the counters above.
+    pub terminal_event: Option<usize>,
+    /// Event-function evaluations (the located events' post-processing; not
+    /// part of [`Stats::counters`]).
+    pub event_evaluations: u64,
 }
 
 /// The solution of a run: output times, states, the run record and the
@@ -380,6 +397,11 @@ pub struct Solution {
     pub stats: Stats,
     /// How the run ended.
     pub status: Status,
+    /// The located events, in time order (see [`crate::Problem::event`]).
+    /// Only sign changes between the three samples of an accepted step are
+    /// seen: an even number of crossings in a half interval, and a tangent
+    /// touch, are missed.
+    pub events: Vec<EventRecord>,
     /// The accepted steps' continuous extension, under dense output.
     #[serde(skip)]
     pub(crate) extension: Option<Vec<Rodas5pDenseSegment>>,
@@ -407,6 +429,11 @@ impl Solution {
     pub fn at(&self, t: f64) -> Option<Vec<f64>> {
         if let Some(segments) = &self.extension {
             let first = self.t.first().copied()?;
+            // Beyond the last output (a terminal event truncates inside a
+            // step) the kept segment must not be extrapolated.
+            if t > *self.t.last()? {
+                return None;
+            }
             if t == first {
                 return self.y.first().cloned();
             }
@@ -420,6 +447,19 @@ impl Solution {
             .map(|index| self.y[index].clone())
     }
 
+    /// Drop everything after `t`: the outputs with a time above `t` and the
+    /// segments that start at or after `t`. The segment that contains `t`
+    /// stays whole, and [`Solution::at`] is bounded by the last output.
+    pub(crate) fn truncate_after(&mut self, t: f64) {
+        let keep = self.t.partition_point(|&time| time <= t).max(1);
+        self.t.truncate(keep);
+        self.y.truncate(keep);
+        if let Some(segments) = &mut self.extension {
+            let keep = segments.partition_point(|s| s.t_old < t);
+            segments.truncate(keep);
+        }
+    }
+
     /// `Ok(self)` for a successful run, otherwise
     /// [`SolveError::Failed`] carrying the reason and this partial solution.
     pub fn ensure_success(self) -> Result<Self, SolveError> {
@@ -430,5 +470,91 @@ impl Solution {
                 partial: Box::new(self),
             }),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{CallbackError, Problem, Rodas5p};
+
+    fn solve() -> Solution {
+        let problem = Problem::new(1, |_t, y, dy| {
+            dy[0] = -y[0];
+            Ok::<(), CallbackError>(())
+        })
+        .autonomous();
+        let opts = Options {
+            dense_output: true,
+            ..Options::default()
+        };
+        Rodas5p::solve(&problem, (0.0, 3.0), &[1.0], &opts).unwrap()
+    }
+
+    #[test]
+    fn at_is_none_beyond_the_last_output() {
+        let mut sol = solve();
+        let last = *sol.t.last().unwrap();
+        assert!(sol.at(last).is_some());
+        assert!(sol.at(f64::from_bits(last.to_bits() + 1)).is_none());
+        // Shrinking the last output shrinks the domain of `at`.
+        let k = sol.t.len() / 2;
+        let mid = 0.5 * (sol.t[k] + sol.t[k + 1]);
+        let inside = 0.5 * (sol.t[k - 1] + sol.t[k]);
+        let before = sol.at(inside).unwrap();
+        sol.t.truncate(k + 1);
+        sol.y.truncate(k + 1);
+        assert!(sol.at(mid).is_none());
+        assert_eq!(sol.at(inside).unwrap(), before);
+    }
+
+    #[test]
+    fn truncate_after_inside_a_step() {
+        let mut sol = solve();
+        let full = sol.clone();
+        let k = sol.t.len() / 2;
+        let te = 0.5 * (sol.t[k] + sol.t[k + 1]);
+        sol.truncate_after(te);
+        // Outputs up to t_k stay; the segment containing te stays whole.
+        assert_eq!(sol.t, full.t[..=k]);
+        assert_eq!(sol.y, full.y[..=k]);
+        assert_eq!(sol.extension.as_ref().unwrap().len(), k + 1);
+        // Nothing past the last output is evaluated, below it all is bitwise
+        // the untruncated value.
+        sol.t.push(te);
+        sol.y.push(full.at(te).unwrap());
+        assert!(sol.at(f64::from_bits(te.to_bits() + 1)).is_none());
+        for &t in &[0.0, 0.3 * te, full.t[k], te] {
+            assert_eq!(sol.at(t), full.at(t), "t = {t}");
+        }
+    }
+
+    #[test]
+    fn truncate_after_on_a_step_boundary() {
+        let mut sol = solve();
+        let full = sol.clone();
+        let k = 3;
+        sol.truncate_after(full.t[k]);
+        assert_eq!(sol.t, full.t[..=k]);
+        assert_eq!(sol.extension.as_ref().unwrap().len(), k);
+        assert_eq!(sol.at(full.t[k]), full.at(full.t[k]));
+        assert!(sol.at(full.t[k + 1]).is_none());
+    }
+
+    #[test]
+    fn truncate_after_edges() {
+        let mut sol = solve();
+        let full = sol.clone();
+        sol.truncate_after(f64::INFINITY);
+        assert_eq!(sol.t, full.t);
+        assert_eq!(
+            sol.extension.as_ref().unwrap().len(),
+            full.extension.as_ref().unwrap().len()
+        );
+        sol.truncate_after(-1.0);
+        assert_eq!(sol.t, full.t[..1]);
+        assert!(sol.extension.as_ref().unwrap().is_empty());
+        assert_eq!(sol.at(0.0), full.at(0.0));
+        assert!(sol.at(1e-3).is_none());
     }
 }

@@ -66,7 +66,23 @@
 //! on the dense and banded fast routes), a band declaration on a JVP-only
 //! problem, a mass matrix or dense output on a JVP-only problem, and a
 //! declared band on a dense Jacobian together with a mass matrix or dense
-//! output.
+//! output, and events without [`Options::dense_output`].
+//!
+//! ## Events
+//!
+//! [`Problem::event`] and [`Problem::terminal_event`] add roots of `g(t, y)`
+//! located by Illinois root finding on the continuous extension of the
+//! accepted steps, reported in [`Solution::events`]. They are post-processing
+//! and need [`Options::dense_output`]. A terminal event cuts the outputs
+//! after the run: the integration is not stopped, and the work after the
+//! event stays charged in [`Stats::counters`] (stopping in the step loop is
+//! a later item).
+//!
+//! `g` is sampled at both ends and the midpoint of each accepted step, and
+//! only a sign change between samples counts. An even number of crossings in
+//! a half interval and a tangent touch are therefore missed, and with three
+//! or more roots in a half interval the reported direction is that half
+//! interval's sign change.
 //!
 //! ## Failures
 //!
@@ -82,6 +98,7 @@
 #![warn(missing_docs)]
 
 mod error;
+mod events;
 mod fd;
 mod options;
 mod problem;
@@ -89,6 +106,7 @@ mod solution;
 mod solve;
 
 pub use error::{CallbackError, SolveError};
+pub use events::{Direction, EventRecord};
 pub use options::{Atol, InteriorError, Options, Tier};
 pub use problem::{
     BandJacobianFn, DenseJacobianFn, Jacobian, JvpFn, Problem, RhsFn, TimeDerivativeFn,

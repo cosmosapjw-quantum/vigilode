@@ -3,7 +3,10 @@
 
 use std::{fmt, sync::Arc};
 
-use crate::error::CallbackError;
+use crate::{
+    error::CallbackError,
+    events::{Direction, EventSpec},
+};
 
 /// The right-hand side `f(t, y, dy)`: writes `dy = f(t, y)`.
 pub type RhsFn = Arc<dyn Fn(f64, &[f64], &mut [f64]) -> Result<(), CallbackError> + Send + Sync>;
@@ -119,6 +122,7 @@ pub struct Problem {
     pub(crate) mass: Option<Vec<f64>>,
     pub(crate) time_derivative: Option<TimeDerivativeFn>,
     pub(crate) autonomous: bool,
+    pub(crate) events: Vec<EventSpec>,
 }
 
 impl Problem {
@@ -139,6 +143,7 @@ impl Problem {
             mass: None,
             time_derivative: None,
             autonomous: false,
+            events: Vec::new(),
         }
     }
 
@@ -203,6 +208,63 @@ impl Problem {
         self
     }
 
+    /// Add an event `g(t, y) = 0`, located after the run on the continuous
+    /// extension of the accepted steps. Events are numbered in declaration
+    /// order ([`crate::EventRecord::index`]).
+    ///
+    /// Requires [`crate::Options::dense_output`]: without it the solve is
+    /// refused with [`crate::SolveError::Unsupported`]. On each accepted step
+    /// `g` is sampled at both ends and at the midpoint; a half interval with
+    /// `g(a) < 0 <= g(b)` is an `Up` crossing and one with `g(a) > 0 >= g(b)`
+    /// a `Down` crossing, and `direction` selects which count. Illinois
+    /// root finding then narrows the bracket to `4 eps max(|t|, 1)` (60
+    /// Illinois iterations, then bisection until the tolerance is met) and the
+    /// end on the after-crossing side is reported. So `g(t0) = 0` is no
+    /// event, and a root at a step end is reported once.
+    ///
+    /// Only the sign change between the three samples counts. An even number
+    /// of crossings inside one half interval is missed, and so is a tangent
+    /// touch without a sign change. With three or more roots in a half
+    /// interval one event is reported, with that half interval's direction.
+    ///
+    /// A non-finite `g` ends the run with
+    /// [`crate::FailureReason::EventFunctionNonFinite`] and truncates the
+    /// outputs at the start of that step; if the driver had already failed,
+    /// the driver's own reason is kept and the outputs are still truncated.
+    pub fn event<G>(self, g: G, direction: Direction) -> Self
+    where
+        G: Fn(f64, &[f64]) -> f64 + Send + Sync + 'static,
+    {
+        self.push_event(g, direction, false)
+    }
+
+    /// Like [`Problem::event`], and the first such event in time ends the
+    /// outputs: `t`, `y` and the continuous extension are cut at the event,
+    /// `(t_e, y_e)` is appended, and the status is `Success` even if the
+    /// driver failed later ([`crate::Stats::stop`] keeps that record).
+    ///
+    /// The cut is made after the run. The integration is not stopped, and the
+    /// work after the event stays charged in [`crate::Stats::counters`].
+    /// Stopping inside the step loop is not available in this release.
+    pub fn terminal_event<G>(self, g: G, direction: Direction) -> Self
+    where
+        G: Fn(f64, &[f64]) -> f64 + Send + Sync + 'static,
+    {
+        self.push_event(g, direction, true)
+    }
+
+    fn push_event<G>(mut self, g: G, direction: Direction, terminal: bool) -> Self
+    where
+        G: Fn(f64, &[f64]) -> f64 + Send + Sync + 'static,
+    {
+        self.events.push(EventSpec {
+            g: Arc::new(g),
+            direction,
+            terminal,
+        });
+        self
+    }
+
     /// The dimension `n`.
     pub fn dimension(&self) -> usize {
         self.dimension
@@ -218,6 +280,7 @@ impl fmt::Debug for Problem {
             .field("mass", &self.mass.is_some())
             .field("time_derivative", &self.time_derivative.is_some())
             .field("autonomous", &self.autonomous)
+            .field("events", &self.events.len())
             .finish_non_exhaustive()
     }
 }
