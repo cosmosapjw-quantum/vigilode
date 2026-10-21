@@ -1,0 +1,25 @@
+{
+  "sha_under_test": "49456837dc7d4e105a900ef862ea7d2f1cbe5edc",
+  "toolchain": "rustc 1.94.1 (e408947bf 2026-03-25)",
+  "pinned_toolchain_used": true,
+  "suites": {
+    "workspace": {"exit": 101, "passed": 1634, "failed": 2, "ignored": 111, "wall_seconds": 3071.982},
+    "hybrid": {"exit": 0, "passed": 19, "failed": 0, "ignored": 0, "wall_seconds": 42.761},
+    "bench": {"exit": 0, "passed": 11, "failed": 0, "ignored": 0, "wall_seconds": 47.969}
+  },
+  "failed_test_names": [
+    "rodas5p-core::leja_setup_work_contract::counted_action_records_cold_coefficient_table_without_changing_authority",
+    "rodas5p-integrators::production_audit_bound_collective::warmed_interval_rhs_and_log_norm_make_no_heap_allocations"
+  ],
+  "matrix": [
+    {"check": "workspace exit code", "expected": "0", "observed": "101", "status": "DIFF"},
+    {"check": "workspace failed tests", "expected": "0", "observed": "2", "status": "DIFF"},
+    {"check": "examples.log", "expected": "no line containing FAILED", "observed": "0 lines containing FAILED; all 4 examples printed results (examples exit 0)", "status": "MATCH"},
+    {"check": "workspace ignored tests", "expected": "about 110 (wave 1: 109)", "observed": "111", "status": "MATCH"},
+    {"check": "hybrid exit code", "expected": "0", "observed": "0", "status": "MATCH"},
+    {"check": "bench exit code", "expected": "0", "observed": "0", "status": "MATCH"},
+    {"check": "checker_unittest", "expected": "16 tests OK", "observed": "Ran 16 tests, OK (exit 0)", "status": "MATCH"},
+    {"check": "checker_gate", "expected": "exit 0, PASS (141 rows)", "observed": "exit 0, PASS (141 ledger rows, new nodes=['b1c_staleness_20261021', 'bench_wave2_20261021'])", "status": "MATCH"}
+  ],
+  "notes": "FACTS: Host Ryzen 9 5900X, nproc 24, Linux 7.0.0-38-generic. Pinned rustc/cargo 1.94.1 (already installed via rustup; no stable fallback). Fresh clone vigilode-w3 with cold CARGO_TARGET_DIR ../vigilode-w3-target. Run started 2026-10-21T10:36:46+09:00. Each command ran once in doc order; no --release, no reruns (single-threaded or otherwise), no code edits. Counts are sums over 'test result:' lines (workspace 322 lines, hybrid 5, bench 6); wall times are bash `time` real. Failure 1: crates/rodas5p-core/tests/leja_setup_work_contract.rs:139:5 panicked with 'assertion failed: receipt.subtotal().scalar_proxy_units() > 0' (binary result: 4 passed, 1 failed). Failure 2: crates/rodas5p-integrators/tests/production_audit_bound_collective.rs:420:5 panicked with 'assertion `left == right` failed, left: (1, 0), right: (0, 0)' (binary result: 4 passed, 1 failed). Both ran under default parallel test threads. krylov_workspace_driver_contract passed (8 passed, 1 ignored). New wave-3 targets all passed: b1c_staleness_contracts 6 ok/1 ignored, fast_vector_atol_contracts 4 ok, fast_dense_contracts 8 ok, fast_dense_allocations 1 ok, events_contracts 15 ok, p0_api_contracts 9 ok. probe_sweep_fails_closed_or_documents_findings passed. Example outputs: robertson y(40)=[0.715826808932855, 9.185525016783394e-6, 0.2841640055421296] mass drift 1.33e-15; dense_output 20 steps, worst interior error 0.334 tolerance units; dae_mass constraint residual 0.00e0; banded_fd max difference 0.00e0, Jacobian rhs calls 132 vs 2222 dense. examples.log also contains rustc dead_code warnings from crates/rodas5p-integrators/src/output.rs (OutputCollector prepared_* fields, DenseOutputPreparationWork, *_radii methods). The wave-2 local run on 08fd052 had 0 failed tests. INTERPRETATION (not verified): failure 2 is an allocation-counter assertion reporting one heap allocation in a warmed path; per the handoff contract it is reported as a real regression, not hidden by a single-threaded rerun. It may be a cross-thread counter leak in that test binary or a true allocation introduced in wave 3; this run cannot distinguish the two. Failure 1 asserts a cold coefficient table records nonzero work; a zero subtotal is consistent with the table having been warmed by another test in the same binary running concurrently, but this is a hypothesis only."
+}
