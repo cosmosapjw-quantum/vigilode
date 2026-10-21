@@ -16,6 +16,7 @@ use rodas5p_integrators::{
 };
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
+use vigilode::{Atol, CallbackError, InteriorError, Jacobian, Options, Problem, Rodas5p};
 
 use crate::alloc::Mark;
 use crate::ffi::{self, Hairer, NativeOutcome};
@@ -38,6 +39,17 @@ pub enum Arm {
     /// VigilODE Protected RODAS5P, banded analytic Jacobian (the facade's
     /// `Jacobian::Banded` route).
     VigilodeBanded,
+    /// VigilODE through `Rodas5p::solve` with `dense_output = true`, interior
+    /// error control `WFilteredEnforce` (the product default), dense analytic
+    /// Jacobian; grid values from `Solution::at`.
+    VigilodeDense,
+    /// As [`Arm::VigilodeDense`] with `InteriorError::Off` (control arm of the
+    /// interior-error evidence).
+    VigilodeDenseOff,
+    /// As [`Arm::VigilodeDense`] with the banded analytic Jacobian.
+    VigilodeBandedDense,
+    /// As [`Arm::VigilodeBandedDense`] with `InteriorError::Off`.
+    VigilodeBandedDenseOff,
     /// Diffsol 0.16.1 BDF, `FaerMat` + `FaerLU`.
     DiffsolBdfDense,
     /// Diffsol 0.16.1 BDF, `FaerSparseMat` + `FaerSparseLU` (coloured Jacobian).
@@ -76,9 +88,13 @@ pub enum Fidelity {
 
 impl Arm {
     /// Every arm, in report order.
-    pub const ALL: [Arm; 13] = [
+    pub const ALL: [Arm; 17] = [
         Arm::Vigilode,
         Arm::VigilodeBanded,
+        Arm::VigilodeDense,
+        Arm::VigilodeDenseOff,
+        Arm::VigilodeBandedDense,
+        Arm::VigilodeBandedDenseOff,
         Arm::DiffsolBdfDense,
         Arm::DiffsolBdfSparse,
         Arm::CvodeBdfDense,
@@ -92,6 +108,23 @@ impl Arm {
         Arm::InternalRadauIia3,
     ];
 
+    /// The free-stepping VigilODE arms that go through the facade with
+    /// `dense_output = true`.
+    pub fn is_facade_dense(self) -> bool {
+        matches!(
+            self,
+            Arm::VigilodeDense
+                | Arm::VigilodeDenseOff
+                | Arm::VigilodeBandedDense
+                | Arm::VigilodeBandedDenseOff
+        )
+    }
+
+    /// The v1 VigilODE continuity arms, whose steps are clipped to the grid.
+    pub fn is_grid_clipped(self) -> bool {
+        matches!(self, Arm::Vigilode | Arm::VigilodeBanded)
+    }
+
     /// The kebab-case id used in the JSON.
     pub fn id(self) -> String {
         serde_json::to_value(self)
@@ -103,7 +136,7 @@ impl Arm {
     /// Fidelity tag.
     pub fn fidelity(self) -> Fidelity {
         match self {
-            Arm::Vigilode | Arm::VigilodeBanded => Fidelity::SolverUnderTest,
+            a if a.is_grid_clipped() || a.is_facade_dense() => Fidelity::SolverUnderTest,
             Arm::InternalRadauIia3 => Fidelity::ReferenceImplementationOnly,
             _ => Fidelity::Production,
         }
@@ -114,6 +147,8 @@ impl Arm {
         matches!(
             self,
             Arm::VigilodeBanded
+                | Arm::VigilodeBandedDense
+                | Arm::VigilodeBandedDenseOff
                 | Arm::CvodeBdfBand
                 | Arm::DvodeMf24
                 | Arm::Radau5Band
@@ -126,7 +161,13 @@ impl Arm {
     pub fn output_interface(self) -> &'static str {
         match self {
             Arm::Vigilode | Arm::VigilodeBanded => {
-                "OutputSchedule of the protected fast driver: each grid time is a step landing (steps clipped to it); the facade at a5a48f7 returns t0/t1 only"
+                "grid-clipped (continuity arm): OutputSchedule of the protected fast driver, each grid time is a step landing (steps clipped to it); the endpoint-only facade route is not used"
+            }
+            Arm::VigilodeDense
+            | Arm::VigilodeDenseOff
+            | Arm::VigilodeBandedDense
+            | Arm::VigilodeBandedDenseOff => {
+                "Rodas5p::solve with dense_output = true (free stepping), grid values from Solution::at(t_k); the driver that ran is recorded per row as native.driver_id"
             }
             Arm::DiffsolBdfDense | Arm::DiffsolBdfSparse => {
                 "OdeSolverMethod::solve_dense(t_eval) (BDF interpolation, stop time = last grid point)"
@@ -148,8 +189,16 @@ impl Arm {
     pub fn deviations(self) -> Vec<&'static str> {
         match self {
             Arm::Vigilode | Arm::VigilodeBanded => vec![
-                "driver called directly with the facade's route and defaults (h0 = 1e-3, max_steps = 100000), because the facade at a5a48f7 refuses dense_output and returns only t0/t1; route equivalence is tested bit-for-bit at t1",
-                "grid landings add clipped steps that an endpoint-only facade run would not take",
+                "driver called directly with the facade's endpoint-only route and defaults (h0 = 1e-3, max_steps = 100000) and an OutputSchedule over the grid; route equivalence is tested bit-for-bit at t1",
+                "grid landings add clipped steps that a free-stepping run would not take (grid-clipped continuity arm)",
+            ],
+            Arm::VigilodeDense | Arm::VigilodeBandedDense => vec![
+                "facade defaults except dense_output = true and Atol::Scalar(rtol * atol_scale); interior_error = WFilteredEnforce (the product default)",
+                "a row with output_clipped_steps != 0, or with Solution::at(t_k) = None inside the span of a successful run, is a protocol-violation",
+            ],
+            Arm::VigilodeDenseOff | Arm::VigilodeBandedDenseOff => vec![
+                "facade defaults except dense_output = true, Atol::Scalar(rtol * atol_scale) and interior_error = Off (control arm: only the endpoint of each step is error controlled)",
+                "a row with output_clipped_steps != 0, or with Solution::at(t_k) = None inside the span of a successful run, is a protocol-violation",
             ],
             Arm::DiffsolBdfDense => vec![
                 "Jacobian assembled by Diffsol from n JVPs of the shared analytic Jacobian (builder rhs_implicit; no coloring, the dense default)",
@@ -182,6 +231,12 @@ pub enum RunStatus {
         /// Solver return code, or 0 where the solver has none.
         code: i64,
         /// Solver or adapter message.
+        message: String,
+    },
+    /// The run violated the endpoint-only stepping protocol of the dense
+    /// arms (clipped steps, or a grid time the interpolant does not answer).
+    ProtocolViolation {
+        /// What was violated.
         message: String,
     },
     /// The adapter could not set up the solver.
@@ -261,6 +316,23 @@ pub fn run_with(
     match arm {
         Arm::Vigilode => vigilode(model, grid, &y0, rtol, atol, None, max_steps),
         Arm::VigilodeBanded => vigilode(model, grid, &y0, rtol, atol, Some(band), max_steps),
+        Arm::VigilodeDense | Arm::VigilodeDenseOff => {
+            let interior = interior_of(arm);
+            vigilode_dense(model, grid, &y0, rtol, atol, None, interior, max_steps)
+        }
+        Arm::VigilodeBandedDense | Arm::VigilodeBandedDenseOff => {
+            let interior = interior_of(arm);
+            vigilode_dense(
+                model,
+                grid,
+                &y0,
+                rtol,
+                atol,
+                Some(band),
+                interior,
+                max_steps,
+            )
+        }
         Arm::DiffsolBdfDense => diffsol_dense(model, grid, &y0, rtol, atol),
         Arm::DiffsolBdfSparse => diffsol_sparse(model, grid, &y0, rtol, atol),
         Arm::CvodeBdfDense | Arm::CvodeBdfBand => {
@@ -383,7 +455,7 @@ type CoreRhs = Arc<dyn Fn(f64, &[f64], &mut [f64]) -> CoreResult<()> + Send + Sy
 type CoreJacobian = Arc<dyn Fn(f64, &[f64]) -> CoreResult<DenseMatrix> + Send + Sync>;
 
 /// The facade's driver-level problem for `Jacobian::Dense` / `Jacobian::Banded`
-/// (`crates/vigilode/src/solve.rs::build` at a5a48f7, without the callback guard).
+/// (`crates/vigilode/src/solve.rs::build`, without the callback guard).
 fn facade_ode(
     model: &Model,
     band: Option<(usize, usize)>,
@@ -576,6 +648,148 @@ fn vigilode(
             },
         }),
         end,
+    }
+}
+
+fn interior_of(arm: Arm) -> InteriorError {
+    if matches!(arm, Arm::VigilodeDenseOff | Arm::VigilodeBandedDenseOff) {
+        InteriorError::Off
+    } else {
+        InteriorError::WFilteredEnforce
+    }
+}
+
+/// The facade `Problem` of a model, dense or banded analytic Jacobian.
+pub fn facade_problem(model: &Model, band: Option<(usize, usize)>) -> Problem {
+    let m = *model;
+    let p = Problem::new(m.n, move |t, y, dy| {
+        m.rhs(t, y, dy);
+        Ok::<(), CallbackError>(())
+    });
+    let p = match band {
+        Some((l, u)) => p.jacobian(Jacobian::banded(l, u, move |t, y, out| {
+            m.jac_band_row_major(t, y, l, u, out);
+            Ok(())
+        })),
+        None => p.jacobian(Jacobian::dense(move |t, y, jac| {
+            m.jac_dense_row_major(t, y, jac);
+            Ok(())
+        })),
+    };
+    p.autonomous()
+}
+
+/// The facade `Options` of a dense-output arm.
+pub fn dense_options(
+    rtol: f64,
+    atol: f64,
+    interior: InteriorError,
+    max_steps: Option<usize>,
+) -> Options {
+    Options {
+        rtol,
+        atol: Atol::Scalar(atol),
+        max_steps: max_steps.unwrap_or(VIGILODE_MAX_STEPS),
+        dense_output: true,
+        interior_error: interior,
+        ..Default::default()
+    }
+}
+
+#[allow(clippy::too_many_arguments)]
+fn vigilode_dense(
+    model: &Model,
+    grid: &[f64],
+    y0: &[f64],
+    rtol: f64,
+    atol: f64,
+    band: Option<(usize, usize)>,
+    interior: InteriorError,
+    max_steps: Option<usize>,
+) -> RunOutput {
+    let problem = facade_problem(model, band);
+    let opts = dense_options(rtol, atol, interior, max_steps);
+    let span = (grid[0], grid[grid.len() - 1]);
+    let sol = match Rodas5p::solve(&problem, span, y0, &opts) {
+        Ok(s) => s,
+        Err(e) => {
+            return RunOutput {
+                status: RunStatus::SolverFailure {
+                    code: 0,
+                    message: e.to_string(),
+                },
+                states: Vec::new(),
+                work: Work::default(),
+                native: Value::Null,
+                end: None,
+            };
+        }
+    };
+    // Grid output in final form: the interpolant at every grid time.
+    let mut states: Vec<Vec<f64>> = Vec::with_capacity(grid.len());
+    for &t in grid {
+        match sol.at(t) {
+            Some(y) => states.push(y),
+            None => break,
+        }
+    }
+    let st = &sol.stats;
+    let c = st.counters;
+    let success = sol.is_success();
+    let clipped = st.output_clipped_steps;
+    let status = if clipped != 0 {
+        RunStatus::ProtocolViolation {
+            message: format!("output_clipped_steps = {clipped}, expected 0"),
+        }
+    } else if success && states.len() != grid.len() {
+        RunStatus::ProtocolViolation {
+            message: format!(
+                "Solution::at answered {} of {} grid times of a successful run",
+                states.len(),
+                grid.len()
+            ),
+        }
+    } else if success {
+        RunStatus::Success
+    } else {
+        RunStatus::SolverFailure {
+            code: 0,
+            message: if st.attempts >= opts.max_steps {
+                format!("max_steps {} reached", opts.max_steps)
+            } else {
+                st.driver_message.clone()
+            },
+        }
+    };
+    let work = Work {
+        accepted_steps: u(st.accepted_steps),
+        rejected_steps: u(st.rejected_steps),
+        step_attempts: u(st.attempts),
+        rhs_evaluations: Some(c.rhs_evaluations),
+        jacobian_evaluations: Some(c.jacobian_builds),
+        factorizations: Some(c.direct_factorizations),
+        linear_solves: Some(c.direct_solve_calls),
+        nonlinear_iterations: None,
+        nonlinear_failures: None,
+    };
+    let native = json!({
+        "driver_id": st.route.driver_id,
+        "entry_point": st.route.entry_point,
+        "interior_error": if interior == InteriorError::Off { "off" } else { "w-filtered-enforce" },
+        "attempts": st.attempts,
+        "internal_steps": st.internal_steps,
+        "output_clipped_steps": clipped,
+        "output_times": sol.t.len(),
+        "counters": c,
+    });
+    drop(sol);
+    drop(problem);
+    RunOutput {
+        status,
+        states,
+        work,
+        native,
+        end: Some(Mark::now()),
     }
 }
 

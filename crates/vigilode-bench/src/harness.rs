@@ -121,6 +121,10 @@ pub struct Matched {
     pub arm: Arm,
     /// Baseline (VigilODE) arm.
     pub baseline: Arm,
+    /// `dense` (baseline: the facade with dense output and interior
+    /// `WFilteredEnforce`, the headline) or `grid-clipped` (the v1 continuity
+    /// baseline).
+    pub basis: &'static str,
     /// The common error level (`error_common`).
     pub error_level: f64,
     /// `MATCHED` or `DIAGNOSTIC_ONLY`.
@@ -147,6 +151,37 @@ pub struct Matched {
     /// Always `diagnostic_only` on this host.
     pub timing_authority: &'static str,
 }
+
+/// Interior-control evidence of one problem × rtol: the facade with
+/// `WFilteredEnforce` against `Off` (same Jacobian route).
+#[derive(Clone, Debug, Serialize)]
+pub struct InteriorControl {
+    /// Problem id.
+    pub problem: String,
+    /// Relative tolerance.
+    pub rtol: f64,
+    /// The `WFilteredEnforce` arm.
+    pub enforce_arm: Arm,
+    /// The `Off` arm.
+    pub off_arm: Arm,
+    /// `error_own` of the `WFilteredEnforce` arm.
+    pub error_own_enforce: Option<f64>,
+    /// `error_own` of the `Off` arm.
+    pub error_own_off: Option<f64>,
+    /// Accepted steps of the `WFilteredEnforce` arm.
+    pub accepted_enforce: Option<u64>,
+    /// Accepted steps of the `Off` arm.
+    pub accepted_off: Option<u64>,
+    /// `error_own_off / error_own_enforce`.
+    pub error_ratio: Option<f64>,
+    /// `accepted_enforce / accepted_off`.
+    pub step_ratio: Option<f64>,
+    /// Whether `error_own_enforce` is at most [`INTERIOR_TOL_UNITS`].
+    pub within_tol_units: Option<bool>,
+}
+
+/// The interior-control acceptance level in tolerance units (`error_own`).
+pub const INTERIOR_TOL_UNITS: f64 = 2.0;
 
 struct Measured {
     out: RunOutput,
@@ -360,11 +395,16 @@ pub fn run_corpus(c: &Corpus, log: Log) -> Result<Value, String> {
         references.push(reference);
     }
     let matched = matched_rows(c, &rows, &references);
+    let interior_control = interior_control_rows(&rows);
+    let protocol_violation_rows = rows
+        .iter()
+        .filter(|r| matches!(r.status, RunStatus::ProtocolViolation { .. }))
+        .count();
     let elapsed = started.elapsed().as_secs_f64();
     Ok(json!({
         "schema": RESULTS_SCHEMA,
         "timing_authority": "diagnostic_only",
-        "timing_note": "shared 2-core host, other builds running; in-process repetitions in rotated arm order; no CPU pinning or frequency control",
+        "timing_note": "in-process repetitions in rotated arm order; no frequency control; host and any CPU pinning are recorded outside this file (host.json), never inferred from it",
         "corpus": c,
         "run_seconds": elapsed,
         "allocation_measurement": {
@@ -376,17 +416,66 @@ pub fn run_corpus(c: &Corpus, log: Log) -> Result<Value, String> {
         "references": references,
         "rows": rows,
         "matched": matched,
+        "interior_control_tol_units": INTERIOR_TOL_UNITS,
+        "interior_control": interior_control,
+        "protocol_violation_rows": protocol_violation_rows,
     }))
 }
 
-/// The baseline of a comparator: band-structured arms against the banded
-/// VigilODE arm, all others against the dense one.
+/// The grid-clipped continuity baseline of a comparator: band-structured arms
+/// against the banded VigilODE arm, all others against the dense one.
 pub fn baseline_of(a: Arm) -> Arm {
     if a.banded() {
         Arm::VigilodeBanded
     } else {
         Arm::Vigilode
     }
+}
+
+/// The headline baseline: the facade with dense output and interior
+/// `WFilteredEnforce` (banded for band-structured comparators).
+pub fn dense_baseline_of(a: Arm) -> Arm {
+    if a.banded() {
+        Arm::VigilodeBandedDense
+    } else {
+        Arm::VigilodeDense
+    }
+}
+
+fn interior_control_rows(rows: &[Row]) -> Vec<InteriorControl> {
+    let mut out = Vec::new();
+    for (enforce, off) in [
+        (Arm::VigilodeDense, Arm::VigilodeDenseOff),
+        (Arm::VigilodeBandedDense, Arm::VigilodeBandedDenseOff),
+    ] {
+        for e in rows.iter().filter(|r| r.arm == enforce) {
+            let Some(o) = rows
+                .iter()
+                .find(|r| r.arm == off && r.problem == e.problem && r.rtol == e.rtol)
+            else {
+                continue;
+            };
+            let ratio = |a: Option<f64>, b: Option<f64>| match (a, b) {
+                (Some(a), Some(b)) if b != 0.0 => Some(a / b),
+                _ => None,
+            };
+            let (ae, ao) = (e.work.accepted_steps, o.work.accepted_steps);
+            out.push(InteriorControl {
+                problem: e.problem.clone(),
+                rtol: e.rtol,
+                enforce_arm: enforce,
+                off_arm: off,
+                error_own_enforce: e.error_wrms_own,
+                error_own_off: o.error_wrms_own,
+                accepted_enforce: ae,
+                accepted_off: ao,
+                error_ratio: ratio(o.error_wrms_own, e.error_wrms_own),
+                step_ratio: ratio(ae.map(|x| x as f64), ao.map(|x| x as f64)),
+                within_tol_units: e.error_wrms_own.map(|x| x <= INTERIOR_TOL_UNITS),
+            });
+        }
+    }
+    out
 }
 
 fn matched_rows(c: &Corpus, rows: &[Row], refs: &[Reference]) -> Vec<Matched> {
@@ -414,50 +503,59 @@ fn matched_rows(c: &Corpus, rows: &[Row], refs: &[Reference]) -> Vec<Matched> {
             if arm.fidelity() != Fidelity::Production {
                 continue;
             }
-            let base = baseline_of(arm);
-            let (comp, bc) = (curve(arm), curve(base));
-            for &level in &c.error_levels {
-                let (ct, cr) = at(&comp, level);
-                let (bt, br) = at(&bc, level);
-                let (status, reason) = if disputed {
-                    ("DIAGNOSTIC_ONLY", "reference-disputed".to_string())
-                } else if ct.is_none() || bt.is_none() {
-                    let who = match (ct.is_none(), bt.is_none()) {
-                        (true, true) => "neither arm brackets the level",
-                        (true, false) => "the comparator does not bracket the level",
-                        _ => "the baseline does not bracket the level",
+            let arms_here = c.arms_for(p);
+            for (base, basis) in [
+                (baseline_of(arm), "grid-clipped"),
+                (dense_baseline_of(arm), "dense"),
+            ] {
+                if !arms_here.contains(&base) {
+                    continue;
+                }
+                let (comp, bc) = (curve(arm), curve(base));
+                for &level in &c.error_levels {
+                    let (ct, cr) = at(&comp, level);
+                    let (bt, br) = at(&bc, level);
+                    let (status, reason) = if disputed {
+                        ("DIAGNOSTIC_ONLY", "reference-disputed".to_string())
+                    } else if ct.is_none() || bt.is_none() {
+                        let who = match (ct.is_none(), bt.is_none()) {
+                            (true, true) => "neither arm brackets the level",
+                            (true, false) => "the comparator does not bracket the level",
+                            _ => "the baseline does not bracket the level",
+                        };
+                        ("DIAGNOSTIC_ONLY", who.to_string())
+                    } else if !(deterministic(arm) && deterministic(base)) {
+                        (
+                            "DIAGNOSTIC_ONLY",
+                            "non-deterministic outputs across repetitions".into(),
+                        )
+                    } else {
+                        ("MATCHED", String::new())
                     };
-                    ("DIAGNOSTIC_ONLY", who.to_string())
-                } else if !(deterministic(arm) && deterministic(base)) {
-                    (
-                        "DIAGNOSTIC_ONLY",
-                        "non-deterministic outputs across repetitions".into(),
-                    )
-                } else {
-                    ("MATCHED", String::new())
-                };
-                let matched = status == "MATCHED";
-                let ratio = |a: Option<f64>, b: Option<f64>| match (matched, a, b) {
-                    (true, Some(a), Some(b)) => Some(a / b),
-                    _ => None,
-                };
-                out.push(Matched {
-                    problem: p.id.clone(),
-                    arm,
-                    baseline: base,
-                    error_level: level,
-                    status,
-                    reason,
-                    comparator_wall_ms: ct,
-                    baseline_wall_ms: bt,
-                    time_ratio: ratio(ct, bt),
-                    comparator_rhs: cr,
-                    baseline_rhs: br,
-                    rhs_ratio: ratio(cr, br),
-                    comparator_points: comp.len(),
-                    baseline_points: bc.len(),
-                    timing_authority: "diagnostic_only",
-                });
+                    let matched = status == "MATCHED";
+                    let ratio = |a: Option<f64>, b: Option<f64>| match (matched, a, b) {
+                        (true, Some(a), Some(b)) => Some(a / b),
+                        _ => None,
+                    };
+                    out.push(Matched {
+                        problem: p.id.clone(),
+                        arm,
+                        baseline: base,
+                        basis,
+                        error_level: level,
+                        status,
+                        reason,
+                        comparator_wall_ms: ct,
+                        baseline_wall_ms: bt,
+                        time_ratio: ratio(ct, bt),
+                        comparator_rhs: cr,
+                        baseline_rhs: br,
+                        rhs_ratio: ratio(cr, br),
+                        comparator_points: comp.len(),
+                        baseline_points: bc.len(),
+                        timing_authority: "diagnostic_only",
+                    });
+                }
             }
         }
     }

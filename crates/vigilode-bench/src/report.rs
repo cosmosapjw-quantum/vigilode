@@ -203,7 +203,7 @@ pub fn render(doc: &Value) -> Result<String, String> {
 
     o.push_str("## Matched-error comparison\n\n");
     o.push_str(&format!("Common levels of `error_common`: {}. At each level both arms' median wall time and RHS count are interpolated in log–log on their own successful points. `time_ratio = comparator / VigilODE` (above 1: VigilODE faster). Ratios exist only where both arms bracket the level; every other entry is `DIAGNOSTIC_ONLY`. Band-structured comparators are compared with `vigilode-banded`, the others with `vigilode`. Reference-implementation-only arms are excluded.\n\n", c(doc, &["corpus", "error_levels"])));
-    o.push_str("The comparison is not between unconstrained solvers: the VigilODE arms land a step on every one of the grid times (the facade offers no dense output), so their step size is capped by the grid spacing and the extra steps are inside every VigilODE time and RHS count, while every comparator steps freely and interpolates. The table below gives, for every VigilODE row, the accepted steps and how many of them were clipped to a grid time.\n\n");
+    o.push_str("This section is the grid-clipped continuity comparison: the `vigilode` and `vigilode-banded` arms land a step on every one of the grid times, so their step size is capped by the grid spacing and the extra steps are inside every such time and RHS count, while every comparator steps freely and interpolates. The headline comparison with an endpoint-only VigilODE is in the next section. The table below gives, for every VigilODE row, the accepted steps and how many of them were clipped to a grid time.\n\n");
     let rows_all = at(doc, &["rows"]).as_array().cloned().unwrap_or_default();
     table(
         &mut o,
@@ -218,6 +218,9 @@ pub fn render(doc: &Value) -> Result<String, String> {
         rows_all
             .iter()
             .filter(|r| c(r, &["comparator_fidelity"]) == "solver-under-test")
+            .filter(|r| {
+                c(r, &["arm"]).ends_with("vigilode") || c(r, &["arm"]).ends_with("vigilode-banded")
+            })
             .map(|r| {
                 vec![
                     c(r, &["problem"]),
@@ -234,38 +237,130 @@ pub fn render(doc: &Value) -> Result<String, String> {
         .as_array()
         .cloned()
         .unwrap_or_default();
-    table(
-        &mut o,
-        &[
-            "problem",
-            "comparator",
-            "baseline",
-            "error level",
-            "status",
-            "time ratio",
-            "rhs ratio",
-            "comparator ms",
-            "baseline ms",
-            "reason",
-        ],
-        matched
-            .iter()
-            .map(|m| {
-                vec![
-                    c(m, &["problem"]),
-                    c(m, &["arm"]),
-                    c(m, &["baseline"]),
-                    c(m, &["error_level"]),
-                    c(m, &["status"]),
-                    c(m, &["time_ratio"]),
-                    c(m, &["rhs_ratio"]),
-                    c(m, &["comparator_wall_ms"]),
-                    c(m, &["baseline_wall_ms"]),
-                    c(m, &["reason"]),
-                ]
-            })
-            .collect(),
-    );
+    let matched_table = |o: &mut String, basis: &str| {
+        table(
+            o,
+            &[
+                "problem",
+                "comparator",
+                "baseline",
+                "error level",
+                "status",
+                "time ratio",
+                "rhs ratio",
+                "comparator ms",
+                "baseline ms",
+                "reason",
+            ],
+            matched
+                .iter()
+                // Documents of the v1 schema revision carry no basis: grid-clipped.
+                .filter(|m| {
+                    m.get("basis")
+                        .and_then(Value::as_str)
+                        .unwrap_or("grid-clipped")
+                        == basis
+                })
+                .map(|m| {
+                    vec![
+                        c(m, &["problem"]),
+                        c(m, &["arm"]),
+                        c(m, &["baseline"]),
+                        c(m, &["error_level"]),
+                        c(m, &["status"]),
+                        c(m, &["time_ratio"]),
+                        c(m, &["rhs_ratio"]),
+                        c(m, &["comparator_wall_ms"]),
+                        c(m, &["baseline_wall_ms"]),
+                        c(m, &["reason"]),
+                    ]
+                })
+                .collect(),
+        );
+    };
+    matched_table(&mut o, "grid-clipped");
+
+    let dense_rows: Vec<&Value> = rows_all
+        .iter()
+        .filter(|r| {
+            matches!(
+                c(r, &["arm"]).as_str(),
+                "vigilode-dense" | "vigilode-banded-dense"
+            )
+        })
+        .collect();
+    if !dense_rows.is_empty() {
+        o.push_str("## Endpoint-only VigilODE (dense output)\n\n");
+        o.push_str(&format!("Headline comparison. The baseline is the facade `Rodas5p::solve` with `dense_output = true` and interior error control `WFilteredEnforce` (the product default); grid values come from `Solution::at`, so no step is clipped to a grid time. Band-structured comparators are compared with `vigilode-banded-dense`, the others with `vigilode-dense`. A dense row with output-clipped steps, or with a grid time the interpolant does not answer, has status `protocol-violation` and is kept; rows with that status: {}. Timing authority: {}. Ratios across hosts are never compared.\n\n", c(doc, &["protocol_violation_rows"]), c(doc, &["timing_authority"])));
+        table(
+            &mut o,
+            &[
+                "problem",
+                "arm",
+                "rtol",
+                "driver",
+                "accepted steps",
+                "output-clipped steps",
+                "internal steps",
+            ],
+            dense_rows
+                .iter()
+                .map(|r| {
+                    vec![
+                        c(r, &["problem"]),
+                        c(r, &["arm"]),
+                        c(r, &["rtol"]),
+                        c(r, &["native", "driver_id"]),
+                        c(r, &["work", "accepted_steps"]),
+                        c(r, &["native", "output_clipped_steps"]),
+                        c(r, &["native", "internal_steps"]),
+                    ]
+                })
+                .collect(),
+        );
+        matched_table(&mut o, "dense");
+    }
+
+    let ic = at(doc, &["interior_control"])
+        .as_array()
+        .cloned()
+        .unwrap_or_default();
+    if !ic.is_empty() {
+        o.push_str("## Interior control evidence (A2)\n\n");
+        o.push_str("Per problem and rtol: `error_own` and accepted steps of the dense facade arm with interior `WFilteredEnforce` against the same route with interior `Off`. `error ratio = error_own(off) / error_own(enforce)`; `step ratio = accepted(enforce) / accepted(off)`. The last column is whether `error_own(enforce)` is within the stated number of tolerance units.\n\n");
+        let col = format!("≤ {} tol units", c(doc, &["interior_control_tol_units"]));
+        table(
+            &mut o,
+            &[
+                "problem",
+                "enforce arm",
+                "rtol",
+                "error_own enforce",
+                "error_own off",
+                "error ratio",
+                "accepted enforce",
+                "accepted off",
+                "step ratio",
+                &col,
+            ],
+            ic.iter()
+                .map(|m| {
+                    vec![
+                        c(m, &["problem"]),
+                        c(m, &["enforce_arm"]),
+                        c(m, &["rtol"]),
+                        c(m, &["error_own_enforce"]),
+                        c(m, &["error_own_off"]),
+                        c(m, &["error_ratio"]),
+                        c(m, &["accepted_enforce"]),
+                        c(m, &["accepted_off"]),
+                        c(m, &["step_ratio"]),
+                        c(m, &["within_tol_units"]),
+                    ]
+                })
+                .collect(),
+        );
+    }
 
     o.push_str("## Rows\n\n");
     o.push_str("`error_common`: max over the grid of the WRMS error against the reference with weights `error_rtol (atol_scale + |y_ref|)`; `error_own`: the same with the run's own weights `rtol (atol_scale + |y_ref|)`, i.e. its own atol vector and rtol. Work counts are solver-reported (`—`: not reported; `clipped`: VigilODE steps shortened to land on a grid time); `rhs`, `jac`, `jvp` are the shared model's callback counts. Allocations: every heap allocation call of the run (`heap`) and its Rust subset (`rust`). Failed runs are kept with their work.\n\n");
