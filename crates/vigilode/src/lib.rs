@@ -111,6 +111,29 @@
 //! nonlinear-solve rejections ([`Stats::stop`] keeps the driver's record).
 //! Errors (`Err`) are refusals before integration, or a driver error that
 //! left no partial result.
+//!
+//! ## Stability
+//!
+//! The decision text is recorded when the implementation lands (node p0-api).
+//!
+//! An exhaustive `match` on a [`FailureReason`] outside this crate does not
+//! compile:
+//!
+//! ```compile_fail
+//! use vigilode::FailureReason;
+//!
+//! fn name(r: &FailureReason) -> &'static str {
+//!     match r {
+//!         FailureReason::MaxStepsReached { .. } => "max steps",
+//!         FailureReason::StepSizeTooSmall { .. } => "step size",
+//!         FailureReason::LinearSolveFailed { .. } => "linear solve",
+//!         FailureReason::NonFinite { .. } => "non-finite",
+//!         FailureReason::NonlinearSolveFailed { .. } => "nonlinear solve",
+//!         FailureReason::EventFunctionNonFinite => "event function",
+//!         FailureReason::CallbackFailed { .. } => "callback",
+//!     }
+//! }
+//! ```
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
 
