@@ -44,15 +44,23 @@
 //! | [`Jacobian::Dense`] | [`Problem::banded`] | `integrate_rodas5p_routed_observed` (rule 1, band verified at `t0`) | banded fast |
 //! | [`Jacobian::Banded`], [`Jacobian::FiniteDifference`] | band | `integrate_rodas5p_fast_banded_observed` (`..._with_atol` with a vector [`Atol`]) | banded fast |
 //! | [`Jacobian::Jvp`] | none | `integrate_rodas5p_routed_observed` (rule 4) | matrix-free U-form (GMRES) |
-//! | Dense, Banded, FiniteDifference | [`Problem::mass`] or [`Options::dense_output`] | `integrate_adaptive_dense_observed_with_segments` (`..._with_partial` without dense output) | sequential dense (direct LU) |
-//! |  | band (with either) | the same; a finite-difference or [`Jacobian::Banded`] band is assembled into a dense matrix (O(n^3) per factorization); a [`Jacobian::Dense`] band is refused | sequential dense (direct LU) |
+//! | [`Jacobian::Dense`], [`Jacobian::FiniteDifference`] | [`Options::dense_output`], no mass | `integrate_rodas5p_fast_dense_observed` (`..._with_atol` with a vector [`Atol`]) | fast dense with continuous extension |
+//! | [`Jacobian::Banded`], [`Jacobian::FiniteDifference`] | band, [`Options::dense_output`], no mass | `integrate_rodas5p_fast_banded_dense_observed` (`..._with_atol`) | banded fast dense with continuous extension |
+//! | Dense, Banded, FiniteDifference | [`Problem::mass`], or dense output under [`InteriorError::Enforce`] | `integrate_adaptive_dense_observed_with_segments` (`..._with_partial` without dense output) | sequential dense (direct LU) |
+//! |  | band (on the sequential route) | the same; a finite-difference or [`Jacobian::Banded`] band is assembled into a dense matrix (O(n^3) per factorization) | sequential dense (direct LU) |
 //!
-//! A mass matrix (constant, singular allowed: index-1 DAEs) or dense output
-//! runs the protected sequential dense driver. Under dense output the
+//! A declared band on a [`Jacobian::Dense`] provider is refused with a mass
+//! matrix or dense output.
+//!
+//! Dense output without a mass matrix runs the fast dense drivers: the
 //! solution holds every accepted step and [`Solution::at`] evaluates the
 //! RODAS5P continuous extension anywhere in the span, with the interior error
 //! controlled on every step by [`Options::interior_error`]
-//! ([`InteriorError::WFilteredEnforce`] by default).
+//! ([`InteriorError::WFilteredEnforce`] by default: one right-hand side and
+//! one back-solve with the step's own factors per step; `Off` is the fast
+//! driver bit for bit). A mass matrix (constant, singular allowed: index-1
+//! DAEs), or dense output under [`InteriorError::Enforce`], runs the
+//! protected sequential dense driver.
 //!
 //! [`Tier::Performance`] is accepted and, in this release, executes exactly
 //! the `Protected` route (no candidate driver is attached yet).
@@ -61,9 +69,10 @@
 //!
 //! Requests that no protected driver implements are refused with
 //! [`SolveError::Unsupported`] before any step rather than silently replaced:
-//! a vector [`Atol`] on the matrix-free route, with a mass matrix or dense
-//! output, or on a dense Jacobian with a declared band (a vector is accepted
-//! on the dense and banded fast routes), a band declaration on a JVP-only
+//! a vector [`Atol`] on the matrix-free route, on the sequential route (a
+//! mass matrix, or dense output under [`InteriorError::Enforce`]), or on a
+//! dense Jacobian with a declared band (a vector is accepted on the dense and
+//! banded fast routes, with or without dense output), a band declaration on a JVP-only
 //! problem, a mass matrix or dense output on a JVP-only problem, and a
 //! declared band on a dense Jacobian together with a mass matrix or dense
 //! output, and events without [`Options::dense_output`].

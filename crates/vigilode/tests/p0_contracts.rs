@@ -1,7 +1,9 @@
 //! Protected-tier completeness of the facade (wave-2 node `p0-facade`,
-//! plan §3 P0 tier): mass matrices and dense output on the protected
-//! sequential dense driver with interior error control, `Solution::at`, the
-//! partial solution after a failure, and typed failure reasons.
+//! plan §3 P0 tier; updated by wave-3 node `p0-fastdense`): dense output on
+//! the fast dense drivers with W-filtered interior control, mass matrices
+//! and `InteriorError::Enforce` on the protected sequential dense driver,
+//! `Solution::at`, the partial solution after a failure, and typed failure
+//! reasons.
 //!
 //! Bit-identity tests compare the facade with the direct driver call under
 //! identical settings with exact `f64` equality (`to_bits`).
@@ -14,16 +16,17 @@ use std::sync::{
 use rodas5p_core::{CoreError, CoreResult, DenseMatrix, LinearSolverConfig};
 use rodas5p_integrators::{
     AdaptiveFailureKind, AdaptiveStepConfig, BandedJacobian, DenseErrorControl, DriverStopReason,
-    IntegrationMethod, InteriorSampling, OdeProblem, OutputSamplingPlan, OutputSchedule,
-    RODAS5P_SEQUENTIAL_DENSE_DRIVER_ID, RoutingOptions,
+    FastInteriorControl, FastInteriorWork, IntegrationMethod, InteriorSampling, OdeProblem,
+    OutputSamplingPlan, OutputSchedule, RODAS5P_FAST_BANDED_DENSE_DRIVER_ID,
+    RODAS5P_FAST_DENSE_DRIVER_ID, RODAS5P_SEQUENTIAL_DENSE_DRIVER_ID, RoutingOptions,
     integrate_adaptive_dense_observed_with_dense_error_control,
     integrate_adaptive_dense_observed_with_segments, integrate_rodas5p_fast_banded_observed,
-    integrate_rodas5p_fast_observed_with_partial, integrate_rodas5p_mf_fast_observed_gmres_into,
-    robertson_problem,
+    integrate_rodas5p_fast_dense_observed, integrate_rodas5p_fast_observed_with_partial,
+    integrate_rodas5p_mf_fast_observed_gmres_into, robertson_problem,
 };
 use vigilode::{
     Atol, Callback, CallbackError, DriverWork, FailureReason, InteriorError, Jacobian, Options,
-    Problem, Rodas5p, Solution, SolveError, Status,
+    Problem, Rodas5p, STATS_SCHEMA, Solution, SolveError, Status,
 };
 
 type JacobianFn = Arc<dyn Fn(f64, &[f64]) -> CoreResult<DenseMatrix> + Send + Sync>;
@@ -113,6 +116,19 @@ fn sequential_work(sol: &Solution) -> (DenseErrorControl, InteriorSampling, usiz
     }
 }
 
+/// The fast dense route's record: (banded, interior work, segments).
+fn fast_work(sol: &Solution) -> (bool, FastInteriorWork, usize) {
+    match &sol.stats.driver_work {
+        DriverWork::FastDense {
+            banded,
+            interior,
+            segments,
+            ..
+        } => (*banded, *interior, *segments),
+        other => panic!("expected the fast dense driver, got {other:?}"),
+    }
+}
+
 /// Prothero–Robinson `y' = lambda (y - sin t) + cos t`, exact `y = sin t`.
 fn prothero_robinson(lambda: f64) -> Problem {
     Problem::new(1, move |t, y, dy| {
@@ -142,102 +158,138 @@ fn worst_interior(sol: &Solution, rtol: f64, atol: f64) -> f64 {
 // ------------------------------------------------------------ dense output
 
 #[test]
-fn dense_output_is_bit_identical_to_the_direct_segment_driver() {
+fn dense_output_routes_to_fast_dense() {
     let o = dense_opts(1.0e-6, 1.0e-10, InteriorError::default());
     assert_eq!(o.interior_error, InteriorError::WFilteredEnforce);
     let sol = Rodas5p::solve(&robertson(), ROBERTSON_SPAN, &ROBERTSON_Y0, &o).unwrap();
-    assert_eq!(sol.status, Status::Success);
-
-    let (problem, y0) = robertson_problem().unwrap();
-    let direct = integrate_adaptive_dense_observed_with_segments(
-        &problem,
-        ROBERTSON_SPAN,
-        &y0,
-        IntegrationMethod::Sequential,
-        None,
-        None,
-        &adaptive_for(&o),
-        &span_plan(ROBERTSON_SPAN.0, ROBERTSON_SPAN.1),
-        DenseErrorControl::WFilteredEnforce,
-        InteriorSampling::EveryStep,
-    )
-    .unwrap();
-    assert!(direct.result.observed.success);
-    // The solution holds t0 and every accepted step.
-    let mut t = vec![ROBERTSON_SPAN.0];
-    t.extend(direct.segments.iter().map(|s| s.t_new));
-    assert_eq!(bits(&sol.t), bits(&t));
-    assert_eq!(bits(&sol.y[0]), bits(&y0));
-    for (y, s) in sol.y[1..].iter().zip(&direct.segments) {
-        assert_eq!(bits(y), bits(&s.y_new));
-    }
-    assert_eq!(sol.stats.driver_counters, direct.result.observed.counters);
-    assert_eq!(sol.stats.counters, direct.result.observed.counters);
-    assert_eq!(sol.stats.attempts, direct.result.diagnostics.attempts);
-    assert_eq!(
-        sol.stats.route.driver_id,
-        RODAS5P_SEQUENTIAL_DENSE_DRIVER_ID
-    );
+    assert!(sol.is_success());
+    assert_eq!(STATS_SCHEMA, "vigilode.stats.v3");
+    assert_eq!(sol.stats.schema, "vigilode.stats.v3");
+    assert_eq!(sol.stats.route.driver_id, RODAS5P_FAST_DENSE_DRIVER_ID);
     assert_eq!(
         sol.stats.route.entry_point,
-        "integrate_adaptive_dense_observed_with_segments"
+        "integrate_rodas5p_fast_dense_observed"
     );
-    let (control, sampling, samples, segments) = sequential_work(&sol);
-    assert_eq!(control, DenseErrorControl::WFilteredEnforce);
-    assert_eq!(sampling, InteriorSampling::EveryStep);
-    assert_eq!(samples, direct.report.samples.len());
-    assert_eq!(segments, direct.segments.len());
-    assert!(samples >= segments && segments > 0);
-
-    // at(t): the continuous extension inside a step, bit for bit.
-    for s in direct.segments.iter().step_by(7) {
-        let mid = s.t_old + 0.37 * (s.t_new - s.t_old);
-        assert_eq!(
-            bits(&sol.at(mid).unwrap()),
-            bits(&s.evaluate(mid).unwrap()),
-            "t = {mid}"
-        );
-    }
-    assert_eq!(bits(&sol.at(0.0).unwrap()), bits(&y0));
+    assert!(sol.stats.route.routing.is_none());
+    let (banded, interior, segments) = fast_work(&sol);
+    assert!(!banded);
+    assert_eq!(segments, sol.stats.accepted_steps);
     assert_eq!(
-        bits(&sol.at(40.0).unwrap()),
-        bits(sol.final_state().unwrap())
+        interior.samples,
+        sol.stats.accepted_steps as u64 + interior.interior_rejections
     );
-    assert_eq!(sol.at(-1.0), None);
-    assert_eq!(sol.at(40.5), None);
-    assert_eq!(sol.at(f64::NAN), None);
+    let record = serde_json::to_value(&sol.stats).unwrap();
+    assert_eq!(record["schema"], "vigilode.stats.v3");
+    assert_eq!(record["driver_work"]["driver"], "fast-dense");
+    // A band Jacobian and a finite-difference band take the banded twin.
+    let banded_problem = Problem::new(TRIDIAGONAL_N, tridiagonal_rhs)
+        .jacobian(Jacobian::banded(1, 1, tridiagonal_band))
+        .autonomous();
+    let fd_band = Problem::new(TRIDIAGONAL_N, tridiagonal_rhs)
+        .banded(1, 1)
+        .autonomous();
+    for problem in [banded_problem, fd_band] {
+        let sol = Rodas5p::solve(&problem, (0.0, 1.0), &[1.0; TRIDIAGONAL_N], &o).unwrap();
+        assert!(sol.is_success());
+        assert_eq!(
+            sol.stats.route.driver_id,
+            RODAS5P_FAST_BANDED_DENSE_DRIVER_ID
+        );
+        assert_eq!(
+            sol.stats.route.entry_point,
+            "integrate_rodas5p_fast_banded_dense_observed"
+        );
+        assert!(fast_work(&sol).0);
+        match &sol.stats.driver_work {
+            DriverWork::FastDense { band_work, .. } => assert!(band_work.is_some()),
+            other => panic!("{other:?}"),
+        }
+    }
+}
+
+#[test]
+fn dense_output_bit_identical_to_direct_fast_dense() {
+    let (problem, y0) = robertson_problem().unwrap();
+    for (interior, control) in [
+        (
+            InteriorError::WFilteredEnforce,
+            FastInteriorControl::WFilteredEnforce,
+        ),
+        (InteriorError::Off, FastInteriorControl::Off),
+    ] {
+        let o = dense_opts(1.0e-6, 1.0e-10, interior);
+        let sol = Rodas5p::solve(&robertson(), ROBERTSON_SPAN, &ROBERTSON_Y0, &o).unwrap();
+        assert_eq!(sol.status, Status::Success);
+        let direct = integrate_rodas5p_fast_dense_observed(
+            &problem,
+            ROBERTSON_SPAN,
+            &y0,
+            &adaptive_for(&o),
+            control,
+        )
+        .unwrap();
+        assert!(direct.fast.observed.success);
+        // The solution holds t0 and every accepted step.
+        assert_eq!(bits(&sol.t), bits(direct.segments.times()));
+        for (k, y) in sol.y.iter().enumerate() {
+            assert_eq!(bits(y), bits(direct.segments.state(k)));
+        }
+        assert_eq!(sol.stats.driver_counters, direct.fast.observed.counters);
+        assert_eq!(sol.stats.counters, direct.fast.observed.counters);
+        assert_eq!(sol.stats.attempts, direct.fast.attempts);
+        assert_eq!(sol.stats.accepted_steps, direct.fast.accepted_steps);
+        assert_eq!(sol.stats.rejected_steps, direct.fast.rejected_steps);
+        let (_, work, segments) = fast_work(&sol);
+        assert_eq!(work, direct.interior);
+        assert_eq!(segments, direct.segments.len());
+        // at(t): the continuous extension inside a step, bit for bit.
+        let mut out = [0.0; 3];
+        for k in (0..direct.segments.len()).step_by(7) {
+            let (a, b) = (direct.segments.t_old(k), direct.segments.t_new(k));
+            let mid = a + 0.37 * (b - a);
+            direct.segments.evaluate_into(mid, &mut out).unwrap();
+            assert_eq!(bits(&sol.at(mid).unwrap()), bits(&out), "t = {mid}");
+        }
+        assert_eq!(bits(&sol.at(0.0).unwrap()), bits(&y0));
+        assert_eq!(
+            bits(&sol.at(40.0).unwrap()),
+            bits(sol.final_state().unwrap())
+        );
+        // Under Off the endpoint is the fast driver's own, bit for bit.
+        if interior == InteriorError::Off {
+            let (fast, _) = integrate_rodas5p_fast_observed_with_partial(
+                &problem,
+                ROBERTSON_SPAN,
+                &y0,
+                &adaptive_for(&o),
+                &OutputSchedule::new(vec![0.0, 40.0]).unwrap(),
+            )
+            .unwrap();
+            assert_eq!(
+                bits(sol.final_state().unwrap()),
+                bits(fast.observed.y.last().unwrap())
+            );
+            assert_eq!(fast.observed.counters, sol.stats.counters);
+            assert_eq!(work.samples, 0);
+        }
+    }
 }
 
 #[test]
 fn interior_error_modes_route_with_the_named_control() {
     let (problem, y0) = robertson_problem().unwrap();
-    // Off: the named driver `integrate_adaptive_dense_observed_with_dense_error_control`
-    // sampled at the facade's step endpoints, bit for bit (output times
-    // never shorten a step on this path).
-    let o = dense_opts(1.0e-6, 1.0e-10, InteriorError::Off);
-    let sol = Rodas5p::solve(&robertson(), ROBERTSON_SPAN, &ROBERTSON_Y0, &o).unwrap();
-    assert!(sol.is_success());
-    let (control, _, samples, _) = sequential_work(&sol);
-    assert_eq!((control, samples), (DenseErrorControl::Off, 0));
-    let plan = OutputSamplingPlan::dense(OutputSchedule::new(sol.t.clone()).unwrap());
-    let (named, report) = integrate_adaptive_dense_observed_with_dense_error_control(
-        &problem,
-        ROBERTSON_SPAN,
-        &y0,
-        IntegrationMethod::Sequential,
-        None,
-        None,
-        &adaptive_for(&o),
-        &plan,
-        DenseErrorControl::Off,
-    )
-    .unwrap();
-    assert!(report.samples.is_empty());
-    assert_eq!(bits(&named.observed.t), bits(&sol.t));
-    for (a, b) in named.observed.y.iter().zip(&sol.y) {
-        assert_eq!(bits(a), bits(b));
+    // Off and WFilteredEnforce take the fast dense driver.
+    for mode in [InteriorError::Off, InteriorError::WFilteredEnforce] {
+        let o = dense_opts(1.0e-6, 1.0e-10, mode);
+        let sol = Rodas5p::solve(&robertson(), ROBERTSON_SPAN, &ROBERTSON_Y0, &o).unwrap();
+        assert!(sol.is_success());
+        let (_, interior, _) = fast_work(&sol);
+        assert_eq!(
+            interior.samples == 0,
+            mode == InteriorError::Off,
+            "{mode:?}"
+        );
     }
-    assert_eq!(named.observed.counters, sol.stats.counters);
 
     // Enforce: the shift-h/2 filter on every step.
     let o = dense_opts(1.0e-6, 1.0e-10, InteriorError::Enforce);
@@ -288,6 +340,10 @@ fn prothero_robinson_interior_error_is_controlled_through_the_facade() {
          Off {off_worst:.4} ({} steps)",
         wf.stats.accepted_steps, off.stats.accepted_steps
     );
+    // Fast dense route (wave 3): 15 accepted steps under WFilteredEnforce
+    // and 7 under Off when written, the sequential driver's numbers; the
+    // interior bound is the gate, the counts are recorded.
+    assert!(!fast_work(&wf).0);
     assert!(wf_worst <= 2.0, "{wf_worst}");
     assert!(off_worst > 10.0, "{off_worst}");
 }
@@ -1029,6 +1085,13 @@ fn enforcing_interior_error_survives_a_zero_error_scale_component() {
         let sol = Rodas5p::solve(&zero_component_decay(), (0.0, 5.0), &[1.0, 0.0], &o).unwrap();
         assert!(sol.is_success(), "{mode:?}");
         match &sol.stats.driver_work {
+            // The fast route uses the same zero-scale rule
+            // (`scaled_error_component`) for the estimate.
+            DriverWork::FastDense { interior, .. } => {
+                assert_eq!(mode, InteriorError::WFilteredEnforce);
+                assert_eq!(interior.interior_rejections, 0, "{mode:?}");
+                assert_eq!(interior.samples, sol.stats.accepted_steps as u64);
+            }
             DriverWork::SequentialDense {
                 samples,
                 unavailable,
@@ -1129,12 +1192,20 @@ fn banded_provider_on_the_dense_output_route_matches_the_dense_provider() {
     let a = Rodas5p::solve(&banded, (0.0, 1.0), &y0, &o).unwrap();
     let b = Rodas5p::solve(&dense, (0.0, 1.0), &y0, &o).unwrap();
     assert!(a.is_success() && b.is_success());
-    assert_eq!(a.stats.route.driver_id, RODAS5P_SEQUENTIAL_DENSE_DRIVER_ID);
-    assert_eq!(bits(&a.t), bits(&b.t));
-    for (x, y) in a.y.iter().zip(&b.y) {
-        assert_eq!(bits(x), bits(y));
+    // Wave 3: the banded provider takes the banded fast dense driver and the
+    // dense one the dense-storage driver; their LUs differ in rounding, so
+    // the runs agree to the tolerance, not bit for bit.
+    assert_eq!(a.stats.route.driver_id, RODAS5P_FAST_BANDED_DENSE_DRIVER_ID);
+    assert_eq!(b.stats.route.driver_id, RODAS5P_FAST_DENSE_DRIVER_ID);
+    for (x, r) in a
+        .final_state()
+        .unwrap()
+        .iter()
+        .zip(b.final_state().unwrap())
+    {
+        assert!((x - r).abs() <= 1.0e-9 * (1.0 + r.abs()), "{x} {r}");
     }
-    assert_eq!(a.stats.accepted_steps, b.stats.accepted_steps);
+    assert!(a.stats.accepted_steps.abs_diff(b.stats.accepted_steps) <= 1);
 }
 
 #[test]
@@ -1150,7 +1221,7 @@ fn finite_difference_band_on_the_dense_output_route_runs_and_agrees() {
     let a = Rodas5p::solve(&fd_band, (0.0, 1.0), &y0, &o).unwrap();
     let b = Rodas5p::solve(&exact, (0.0, 1.0), &y0, &o).unwrap();
     assert!(a.is_success(), "{:?}", a.status);
-    assert_eq!(a.stats.route.driver_id, RODAS5P_SEQUENTIAL_DENSE_DRIVER_ID);
+    assert_eq!(a.stats.route.driver_id, RODAS5P_FAST_BANDED_DENSE_DRIVER_ID);
     // The rhs is linear, so the forward-difference band is exact up to
     // rounding of the increments.
     for (x, r) in a
@@ -1162,4 +1233,84 @@ fn finite_difference_band_on_the_dense_output_route_runs_and_agrees() {
         assert!((x - r).abs() <= 1.0e-6 * (1.0 + r.abs()), "{x} {r}");
     }
     assert!(a.at(0.5).is_some());
+}
+
+// ------------------------------------------- wave 3 (p0-fastdense) routing
+
+#[test]
+fn enforce_and_mass_stay_sequential() {
+    let o = dense_opts(1.0e-6, 1.0e-10, InteriorError::Enforce);
+    let sol = Rodas5p::solve(&robertson(), ROBERTSON_SPAN, &ROBERTSON_Y0, &o).unwrap();
+    assert!(sol.is_success());
+    assert_eq!(
+        sol.stats.route.driver_id,
+        RODAS5P_SEQUENTIAL_DENSE_DRIVER_ID
+    );
+    assert_eq!(
+        sol.stats.route.entry_point,
+        "integrate_adaptive_dense_observed_with_segments"
+    );
+    assert_eq!(sequential_work(&sol).0, DenseErrorControl::Enforce);
+    for interior_error in [InteriorError::WFilteredEnforce, InteriorError::Off] {
+        let o = dense_opts(1.0e-6, 1.0e-10, interior_error);
+        let sol = Rodas5p::solve(&mass_problem(), (0.0, 1.0), &[1.0, 1.0], &o).unwrap();
+        assert!(sol.is_success());
+        assert_eq!(
+            sol.stats.route.driver_id,
+            RODAS5P_SEQUENTIAL_DENSE_DRIVER_ID
+        );
+        assert!(sol.at(0.5).is_some());
+    }
+    // JVP-only with dense output: still refused.
+    let jvp = Problem::new(3, robertson_rhs)
+        .jacobian(Jacobian::jvp(|_t, _y, v, out| {
+            out.copy_from_slice(v);
+            Ok(())
+        }))
+        .autonomous();
+    let o = dense_opts(1.0e-6, 1.0e-10, InteriorError::WFilteredEnforce);
+    assert!(matches!(
+        Rodas5p::solve(&jvp, ROBERTSON_SPAN, &ROBERTSON_Y0, &o),
+        Err(SolveError::Unsupported(_))
+    ));
+    // A declared band on a dense Jacobian with dense output: still refused.
+    assert!(matches!(
+        Rodas5p::solve(&robertson().banded(1, 1), ROBERTSON_SPAN, &ROBERTSON_Y0, &o),
+        Err(SolveError::Unsupported(_))
+    ));
+}
+
+#[test]
+fn at_none_outside_span_and_after_failure() {
+    let o = dense_opts(1.0e-6, 1.0e-10, InteriorError::WFilteredEnforce);
+    let sol = Rodas5p::solve(&robertson(), ROBERTSON_SPAN, &ROBERTSON_Y0, &o).unwrap();
+    assert_eq!(sol.at(-1.0), None);
+    assert_eq!(sol.at(40.5), None);
+    assert_eq!(sol.at(f64::from_bits(40.0_f64.to_bits() + 1)), None);
+    assert_eq!(sol.at(f64::NAN), None);
+    // After a failure the extension ends at the last accepted state.
+    let o = Options { max_steps: 5, ..o };
+    let failed = Rodas5p::solve(&robertson(), ROBERTSON_SPAN, &ROBERTSON_Y0, &o).unwrap();
+    assert!(!failed.is_success());
+    let last = *failed.t.last().unwrap();
+    assert!(last < 40.0);
+    assert_eq!(
+        bits(&failed.at(last).unwrap()),
+        bits(failed.final_state().unwrap())
+    );
+    assert!(failed.at(0.5 * last).is_some());
+    assert_eq!(failed.at(last * 1.5), None);
+    assert_eq!(failed.at(40.0), None);
+}
+
+#[test]
+fn empty_span_dense_output() {
+    let o = dense_opts(1.0e-6, 1.0e-10, InteriorError::WFilteredEnforce);
+    let sol = Rodas5p::solve(&robertson(), (3.0, 3.0), &ROBERTSON_Y0, &o).unwrap();
+    assert!(sol.is_success());
+    assert_eq!(sol.t, vec![3.0]);
+    assert_eq!(bits(&sol.at(3.0).unwrap()), bits(&ROBERTSON_Y0));
+    assert_eq!(sol.at(3.5), None);
+    assert_eq!(sol.at(2.5), None);
+    assert_eq!(fast_work(&sol).2, 0);
 }

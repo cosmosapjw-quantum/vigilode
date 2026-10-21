@@ -200,6 +200,10 @@ fn events_do_not_change_integration() {
     let sol = Rodas5p::solve(&with, (0.0, 10.0), &[1.0, 0.0], &dense_opts()).unwrap();
     assert_eq!(sol.events.len(), 3);
     same_integration(&plain, &sol);
+    // Wave 3 (p0-fastdense): dense output runs the fast dense driver, so
+    // this contract covers events on the fast route.
+    assert_eq!(sol.stats.route.driver_id, "rodas5p-fast-dense-v1");
+    assert_eq!(plain.stats.route.driver_id, "rodas5p-fast-dense-v1");
 }
 
 #[test]
