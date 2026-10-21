@@ -2,7 +2,9 @@
 
 You are a Claude Code session on the repository owner's workstation (Ryzen 9 5900X, 12 cores / 24 threads, 96 GB RAM). A cloud controller session hands you one job: run the E1b-dense corpus once on a pinned commit, with the comparator toolchain below, and push the results back. The cloud sandbox has 2 cores shared with other builds, which is why the measurement runs here.
 
-SHA_UNDER_TEST: to be filled by controller after T3/T7 merge
+SHA_UNDER_TEST: 33e60cf387be58b9cfa341f2d6143a7a28457f42
+
+The workstation checks out exactly this sha, the tip of branch `production/e1b-dense` (merge of `production/wave3-integration` 4945683, with p0-fastdense and p0-api in). The R-C5 gate (`cargo test --locked` and `cargo clippy --all-targets -- -D warnings` in `crates/vigilode-bench`) passed on it in the cloud.
 
 Do not start until the line above holds a SHA. The controller fills it after `production/e1b-dense` has merged the post-T7 tip of `production/wave3-integration` and the bench crate has been re-tested there (`cargo test --locked` and `cargo clippy --all-targets -- -D warnings` in `crates/vigilode-bench`).
 
@@ -25,7 +27,7 @@ Do not start until the line above holds a SHA. The controller fills it after `pr
 git clone https://github.com/cosmosapjw-quantum/vigilode.git vigilode-e1b || (cd vigilode-e1b && git fetch origin)
 cd vigilode-e1b
 git fetch origin production/e1b-dense
-git checkout --detach <SHA_UNDER_TEST>      # verify with git rev-parse HEAD
+git checkout --detach 33e60cf387be58b9cfa341f2d6143a7a28457f42      # SHA_UNDER_TEST; verify with git rev-parse HEAD
 SHA=$(git rev-parse --short HEAD)
 R=$PWD/results/local_e1b_$SHA
 mkdir -p $R
@@ -128,7 +130,7 @@ $BIN report --in $R/results_v2.json --out $R/REPORT.md; echo "report $?" >> $R/e
 | R-C5 gate at SHA_UNDER_TEST: `cargo test --locked` and `cargo clippy --all-targets -- -D warnings` in `crates/vigilode-bench` | exit 0 both (run before the measurement, `-j 12`) | ruling R-C5 |
 | `native.ran.control` of dense rows | `WFilteredEnforce` for `vigilode-dense`/`vigilode-banded-dense`, `Off` for the `-off` arms | interior mode reached the facade |
 | `binary_sha256` | recorded in `host.json` and `binary.sha256` | provenance |
-| every dense arm `driver_id` | recorded (`native.driver_id` per row); list the distinct values in the summary | the shipping dense route at the SHA under test |
+| `native.driver_id` of the dense rows | `rodas5p-fast-dense-v1` for `vigilode-dense` and `vigilode-dense-off`; `rodas5p-fast-banded-dense-v1` for `vigilode-banded-dense` and `vigilode-banded-dense-off`; list the distinct values in the summary | the shipping dense route at the SHA under test |
 
 ## Summary file
 
