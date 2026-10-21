@@ -43,15 +43,20 @@ The repository pins Rust 1.94.1 in `rust-toolchain.toml`; let rustup install it 
 | Netlib DVODE + LINPACK (`vode.f`, `dgefa.f`, `dgesl.f`, `dgbfa.f`, `dgbsl.f`) | the frozen copies in `crates/vigilode-bench/native/netlib` | pinned by `native/SHA256SUMS`; `build.rs` runs `sha256sum -c` before compiling |
 | Hairer RADAU5 and RODAS (`radau_decsol.f`, `rodas_decsol.f`) | the frozen copies in `native/hairer` (Assimulo 3.0 sdist, archive sha256 `61cdca45…af9e8a`) | same hash check |
 | Diffsol | 0.16.1 | `Cargo.lock` of the bench crate (`diffsol = "=0.16.1"`) |
-| BLAS | system `libblas.so.3` (OpenBLAS); DVODE/LINPACK call level-1 BLAS | run with `OPENBLAS_NUM_THREADS=1` |
+| BLAS | `libblas.so.3` via `libopenblas-dev` (alternatives); DVODE/LINPACK call level-1 BLAS | run with `OPENBLAS_NUM_THREADS=1` |
 
 Record the versions in `$R/host.txt` (commands below). A SUNDIALS version other than 6.4.1 stops the run: report it, do not continue.
 
 ```bash
-sudo apt-get install -y gfortran libsundials-dev binutils util-linux 2>/dev/null || true   # skip what is present
+sudo apt-get update
+sudo apt-get install -y build-essential gfortran libsundials-dev libopenblas-dev binutils util-linux git curl python3
+for p in build-essential gfortran libsundials-dev libopenblas-dev binutils util-linux git curl python3; do dpkg -s $p >/dev/null || { echo "MISSING $p"; exit 1; }; done
+command -v rustup >/dev/null || curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && . "$HOME/.cargo/env"
 dpkg -s libsundials-dev | grep -E '^Version'      # expect 6.4.1
 gfortran --version | head -1
 ```
+
+`crates/vigilode-bench/build.rs` needs, by tool: `gfortran` (Fortran sources, `--version`), `gcc` and `ar` (C bridge and static archive; from build-essential), `nm` and `objcopy` (binutils: symbol scan and RODAS symbol localization), `sha256sum` (coreutils: `native/SHA256SUMS` check), `rustc`. It links `sundials_cvode`, `sundials_nvecserial`, `sundials_sunmatrixdense`, `sundials_sunmatrixband`, `sundials_sunlinsoldense`, `sundials_sunlinsolband` (libsundials-dev), `blas` (`-lblas`, resolved by libopenblas-dev's alternatives to OpenBLAS), `gfortran` and `m`. The run's `git` call needs git, `taskset` is in util-linux. Do not hide apt errors: a missing package must stop the setup here, not surface later as a link error.
 
 ## Commands (run in order, from the repo root, each once)
 
@@ -120,6 +125,8 @@ $BIN report --in $R/results_v2.json --out $R/REPORT.md; echo "report $?" >> $R/e
 | `provenance.sundials_header_version` | 6.4.1 | toolchain table |
 | `provenance.profile` | `optimized` | measurement binary |
 | `timing_authority` | `diagnostic_only` | preregistration |
+| R-C5 gate at SHA_UNDER_TEST: `cargo test --locked` and `cargo clippy --all-targets -- -D warnings` in `crates/vigilode-bench` | exit 0 both (run before the measurement, `-j 12`) | ruling R-C5 |
+| `native.ran.control` of dense rows | `WFilteredEnforce` for `vigilode-dense`/`vigilode-banded-dense`, `Off` for the `-off` arms | interior mode reached the facade |
 | `binary_sha256` | recorded in `host.json` and `binary.sha256` | provenance |
 | every dense arm `driver_id` | recorded (`native.driver_id` per row); list the distinct values in the summary | the shipping dense route at the SHA under test |
 

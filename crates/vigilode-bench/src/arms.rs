@@ -16,7 +16,9 @@ use rodas5p_integrators::{
 };
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
-use vigilode::{Atol, CallbackError, InteriorError, Jacobian, Options, Problem, Rodas5p};
+use vigilode::{
+    Atol, CallbackError, DriverWork, InteriorError, Jacobian, Options, Problem, Rodas5p,
+};
 
 use crate::alloc::Mark;
 use crate::ffi::{self, Hairer, NativeOutcome};
@@ -772,7 +774,27 @@ fn vigilode_dense(
         nonlinear_iterations: None,
         nonlinear_failures: None,
     };
+    // What ran, read from the route's own record (never echoed from the
+    // request). Other routes (a fast dense driver) slot in as further
+    // `if let` branches; no exhaustive match on the facade enum.
+    let mut ran = json!({"control": null, "samples": null, "interior_rejections": null, "max_accepted_estimate": null});
+    if let DriverWork::SequentialDense {
+        control,
+        samples,
+        interior_rejections,
+        max_accepted_estimate,
+        ..
+    } = &st.driver_work
+    {
+        ran = json!({
+            "control": format!("{control:?}"),
+            "samples": samples,
+            "interior_rejections": interior_rejections,
+            "max_accepted_estimate": max_accepted_estimate,
+        });
+    }
     let native = json!({
+        "ran": ran,
         "driver_id": st.route.driver_id,
         "entry_point": st.route.entry_point,
         "interior_error": if interior == InteriorError::Off { "off" } else { "w-filtered-enforce" },

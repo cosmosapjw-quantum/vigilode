@@ -172,6 +172,12 @@ pub struct InteriorControl {
     pub accepted_enforce: Option<u64>,
     /// Accepted steps of the `Off` arm.
     pub accepted_off: Option<u64>,
+    /// Interior rejections of the `WFilteredEnforce` arm (as the route reported them).
+    pub interior_rejections_enforce: Option<u64>,
+    /// Interior rejections of the `Off` arm.
+    pub interior_rejections_off: Option<u64>,
+    /// Largest interior estimate of an accepted step of the `WFilteredEnforce` arm, tolerance units.
+    pub max_estimate_enforce: Option<f64>,
     /// `error_own_off / error_own_enforce`.
     pub error_ratio: Option<f64>,
     /// `accepted_enforce / accepted_off`.
@@ -467,6 +473,9 @@ fn interior_control_rows(rows: &[Row]) -> Vec<InteriorControl> {
                 off_arm: off,
                 error_own_enforce: e.error_wrms_own,
                 error_own_off: o.error_wrms_own,
+                interior_rejections_enforce: e.native["ran"]["interior_rejections"].as_u64(),
+                interior_rejections_off: o.native["ran"]["interior_rejections"].as_u64(),
+                max_estimate_enforce: e.native["ran"]["max_accepted_estimate"].as_f64(),
                 accepted_enforce: ae,
                 accepted_off: ao,
                 error_ratio: ratio(o.error_wrms_own, e.error_wrms_own),

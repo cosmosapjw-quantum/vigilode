@@ -341,6 +341,9 @@ pub fn render(doc: &Value) -> Result<String, String> {
                 "accepted enforce",
                 "accepted off",
                 "step ratio",
+                "interior rejections enforce",
+                "interior rejections off",
+                "max estimate enforce",
                 &col,
             ],
             ic.iter()
@@ -355,6 +358,9 @@ pub fn render(doc: &Value) -> Result<String, String> {
                         c(m, &["accepted_enforce"]),
                         c(m, &["accepted_off"]),
                         c(m, &["step_ratio"]),
+                        c(m, &["interior_rejections_enforce"]),
+                        c(m, &["interior_rejections_off"]),
+                        c(m, &["max_estimate_enforce"]),
                         c(m, &["within_tol_units"]),
                     ]
                 })

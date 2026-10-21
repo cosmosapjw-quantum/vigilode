@@ -237,3 +237,26 @@ fn fidelity_notes_name_no_stale_commit() {
         );
     }
 }
+
+#[test]
+fn dense_arms_record_the_interior_control_that_ran() {
+    let m = Model::new(Kind::Robertson, 3).unwrap();
+    let g = grid(40.0, 11);
+    for (arm, want) in [
+        (Arm::VigilodeDense, "WFilteredEnforce"),
+        (Arm::VigilodeDenseOff, "Off"),
+    ] {
+        let out = arms::run(arm, &m, &g, 1e-6, 1e-9);
+        assert_eq!(out.native["ran"]["control"], want, "{arm:?}");
+    }
+    let b = Model::new(Kind::Brusselator1d, 20).unwrap();
+    let g = grid(10.0, 11);
+    for (arm, want) in [
+        (Arm::VigilodeBandedDense, "WFilteredEnforce"),
+        (Arm::VigilodeBandedDenseOff, "Off"),
+    ] {
+        let out = arms::run(arm, &b, &g, 1e-6, 1e-9);
+        assert_eq!(out.native["ran"]["control"], want, "{arm:?}");
+        assert!(out.native["ran"]["interior_rejections"].is_u64());
+    }
+}
