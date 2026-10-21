@@ -34,6 +34,14 @@
 //! # Ok::<(), vigilode::SolveError>(())
 //! ```
 //!
+//! ## Examples
+//!
+//! Four runnable examples, each asserting one check and exiting 0:
+//! `cargo run -p vigilode --example robertson` (analytic dense Jacobian),
+//! `dense_output` (Prothero-Robinson and [`Solution::at`]), `dae_mass`
+//! (index-1 DAE with a singular mass matrix) and `banded_fd` (1D Brusselator,
+//! finite-difference Jacobian with [`Problem::banded`]).
+//!
 //! ## Routing
 //!
 //! [`Tier::Protected`] calls only existing protected drivers:
