@@ -337,3 +337,42 @@ Defaults: `--jobs 6`, `--run-timeout 3600`, `--cargo-timeout 3600`.
   gate requires status OK, so no verdict is affected.
 - An OSError while spawning cargo itself aborts the harness without writing `results.json`. That is a
   run that cannot complete; no ledger row is written for it.
+
+---
+
+## Results
+
+Run on the clean tree at `d66badadbdc368a6c87d2c5c988633ada8b1b250` (code under test `e2258191` plus this file).
+The command was exactly the preregistered one. Wall time was 1072 s on the local workstation and is diagnostic only.
+The harness built the runner itself and ran the cargo contract tests, 14/14 ok.
+
+Output hashes:
+
+- `results.json`: `40a7b167fa80848b73854eaca2a72ea6d3fbd1fc1fbf182346c0faf762e31f45`
+- `raw/MANIFEST.json`: `d7d7f402d7dbfea99010b70bedc3aa2abbd168c2134f16d5b4232db06698b515`; it covers 106 raw files, all of which match.
+
+**Verdict: FAIL**, per the verdict rule. C6 failed, and every other gate passed. The verdict is not re-scored.
+
+| gate | pass | key numbers |
+|---|---|---|
+| C1 | True | transport bitwise = oracle; ledgers per boundary and RHS/Jacobian vs Python A(t) within thresholds; tie fixtures exhibit the tie |
+| C2 | True | cargo |
+| C3 | True | max drift 4.67e-11, under every per-run bound |
+| C4 | True | R+: errors 0.6197, 0.4329, 0.2734, 0.1586, 0.0865; orders G2→G3 0.663, G3→G4 0.786, G4→G5 0.875<br>R-: errors 0.5954, 0.4164, 0.2628, 0.1510, 0.0818; orders G2→G3 0.664, G3→G4 0.799, G4→G5 0.884<br>C+: errors 0.7173, 0.5190, 0.3500, 0.2115, 0.1192; orders G2→G3 0.568, G3→G4 0.727, G4→G5 0.827<br>R+abs: errors 0.6261, 0.4399, 0.2824, 0.1652, 0.0904; orders G2→G3 0.640, G3→G4 0.774, G4→G5 0.870<br>R+abs-com: errors 0.2026, 0.1223, 0.0678, 0.0355, 0.0181; orders G2→G3 0.851, G3→G4 0.934, G4→G5 0.970 |
+| C5 | True | last pre-floor slopes: C+_g0 5.825; C+_g0.5 5.718; R+_g0 4.997; R+_g0.5 4.985; NEG_R+_g0_drop_ft 1.989 |
+| C6 | False | S1_R+_phys_g1e4: errors 1.09e-07, 2.18e-09, 2.81e-11 (banded identical); u_ref 1.73e-13 vs 0.25×min 7.02e-12 → ok<br>S2_R+_phys_g1e6: errors 1.08e-07, 2.17e-09, 3.61e-11 (banded identical); u_ref 1.21e-11 vs 0.25×min 9.02e-12 → FAIL<br>S3_R+_com_abs1e4_g0.5: errors 6.4e-07, 1.4e-08, 5.09e-11 (banded identical); u_ref 3.76e-14 vs 0.25×min 1.27e-11 → ok |
+| C7 | True | discrete λ2 decay and M0 conservation within bounds |
+| C8 | True | cargo |
+| C9 | True | cargo |
+| C10 | True | cargo |
+
+**Failure analysis.** C6 failed only because, for S2 (Γ = 1e6), the preregistered u_ref was 0.335 × the smallest error, against the 0.25 limit. The errors themselves decrease strictly in all three scenarios.
+
+**Post-verdict diagnosis** (`POST_VERDICT_DIAGNOSIS.json`, not part of the verdict):
+
+- Radau converges, so the reference is accurate to about 4e-13: rtol 1e-12 and 1e-13 lie within 1.4e-12 and 3.6e-13 of rtol 1e-14.
+- VigilODE dense at rtol 1e-12, 1e-13 and 1e-14 differs from Radau(1e-14) by 1.2e-11, 8.9e-12 and 3.5e-12.
+- The preregistered u_ref therefore measured the method’s own tight-tolerance roundoff floor at Γ = 1e6, not reference uncertainty.
+- This is a gate-definition defect, plus a real double-precision accuracy floor of about 1e-11 for RODAS5P at Γ = 1e6. No adapter defect is indicated.
+
+**Consequence (approved plan):** BASS/rei P03–P06 are blocked. The next step is a new node (P02b) with a new preregistration that defines the C6 reference uncertainty from the reference itself, and that reports the method floor separately. This FAIL row stays in the ledger. Broad production remains HOLD.
