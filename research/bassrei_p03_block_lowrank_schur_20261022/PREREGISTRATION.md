@@ -310,3 +310,42 @@ None. This is a falsification gate on fixed, declared scenarios. No holdout prof
 - **Krylov hot loop:** one uncontended mutex lock per preconditioner application. It does not allocate.
 - **Scope:** nothing about physical rates, live BASS/rei integration or production is claimed. Broad
   production remains HOLD.
+
+---
+
+## Results
+
+Run on the clean tree at `557afd6385c2553c02ed8c038e91ffd88021cbae` (code `bc912de2`, L2 `475e9abf`). The
+command was exactly the preregistered one. Wall time was 172 s on the local workstation and is diagnostic
+only. The harness built the runner itself and ran the cargo contract tests, 33/33 ok with 0 ignored. The
+tree was clean at start and end, and no input changed during the run.
+
+Output hashes:
+
+- `results.json`: `c539adfc3df0680d992abf78d38fc2786ae4dece3182efd5f0251d50fde20221`
+- `raw/MANIFEST.json`: `3c488b393fef78ec1f05e27a1ef2eb098f964e0242dd78a4120222ba77a07191`; it covers
+  108 raw files.
+
+**Verdict: PASS**: every [C] gate C1–C8 passed.
+
+| gate | pass | key numbers |
+|---|---|---|
+| C1 | True | S1 92, S2 100, B1 100 samples over whole runs; backward error ≤ 3.4e-16; componentwise ≤ 2.3e-15 (B1); vs dense LU ≤ 2.3e-12 (S2); B1 border unknowns ≤ 2.0e-14 |
+| C2 | True | errors (client vs LU arm) at rtol 1e-4, 1e-6, 1e-8, all strictly decreasing; ratios S1 1.000, 1.000, 1.005; S2 0.999, 0.993, **1.880**; B1 1.000, 1.000, 0.996; max WRMS 5.7e-3 |
+| C3 | True | K1 and K2: exact client REFUSED (typed); Krylov 0 linear-solve failures, max 1 and 4 iterations per solve (means 1.0 and 2.29); sampled residual ≤ 1.5e-13, componentwise ≤ 6.2e-14, vs LU ≤ 1.8e-13 |
+| C4 | True | cargo (typed refusals, epochs, rebind to a new mesh) |
+| C5 | True | 30/30 formula equalities; block/banded flop ratio 0.24–0.26 at nm 8, 0.105–0.116 at nm 16, 0.040–0.044 at nm 32, 0.013–0.014 at nm 64 |
+| C6 | True | allocations equal at rtol 1e-6 and 1e-9: exact 117/117 (69 vs 234 attempts), Krylov 151/151, bordered 120/120; 0 failures |
+| C7 | True | three arms repeat bit-identically (states, counters, op counts); L2 delegate bitwise; golden digests |
+| C8 | True | RHS parity 2.8e-16, Jacobian per entry 1.7e-16, f_t identical, D_γ 5.3e-16; transport = oracle bitwise; integrated x_e vs Riccati 8.2e-14 |
+
+**[H] observations** (not gated):
+
+- The textbook-capacitance arm on S2 is 6.5e-12 vs LU, against 2.3e-12 for the conservation form.
+- The one-level sweep needs up to 4 iterations on K1.
+- The S2 rtol-1e-8 error ratio of 1.88 is near the RODAS5P accuracy floor at Γ = 1e6 that P02b reported
+  (about 1.2e-11). Both arms are within 3.6e-11 to 6.8e-11 of Radau.
+
+**Consequence (approved plan):** P03 passes. Together with P04, this unblocks NCP campaign C1 with the
+client arm, and P05 (after L3). No physical-rate, live BASS/rei or production claim is made. Broad
+production remains HOLD.
