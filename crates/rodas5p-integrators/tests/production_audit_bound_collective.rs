@@ -13,6 +13,18 @@ struct CountingAllocator;
 static ALLOCATIONS: AtomicUsize = AtomicUsize::new(0);
 static TEST_LOCK: Mutex<()> = Mutex::new(());
 
+// Count only allocations made by the thread that opted in. The libtest harness thread
+// and other threads allocate concurrently and made the zero-allocation assertion flaky.
+thread_local! {
+    static TRACK: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+}
+
+fn count_event() {
+    if TRACK.try_with(|t| t.get()).unwrap_or(false) {
+        ALLOCATIONS.fetch_add(1, Ordering::Relaxed);
+    }
+}
+
 fn lock_tests() -> std::sync::MutexGuard<'static, ()> {
     TEST_LOCK
         .lock()
@@ -21,15 +33,15 @@ fn lock_tests() -> std::sync::MutexGuard<'static, ()> {
 
 unsafe impl GlobalAlloc for CountingAllocator {
     unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
-        ALLOCATIONS.fetch_add(1, Ordering::Relaxed);
+        count_event();
         unsafe { System.alloc(layout) }
     }
     unsafe fn alloc_zeroed(&self, layout: Layout) -> *mut u8 {
-        ALLOCATIONS.fetch_add(1, Ordering::Relaxed);
+        count_event();
         unsafe { System.alloc_zeroed(layout) }
     }
     unsafe fn realloc(&self, ptr: *mut u8, layout: Layout, new_size: usize) -> *mut u8 {
-        ALLOCATIONS.fetch_add(1, Ordering::Relaxed);
+        count_event();
         unsafe { System.realloc(ptr, layout, new_size) }
     }
     unsafe fn dealloc(&self, ptr: *mut u8, layout: Layout) {
@@ -400,6 +412,7 @@ fn warmed_interval_rhs_and_log_norm_make_no_heap_allocations() {
         .one_sided_log_norm_upper(time, &state, &mut work)
         .unwrap();
 
+    TRACK.with(|t| t.set(true));
     let before_rhs = ALLOCATIONS.load(Ordering::SeqCst);
     for _ in 0..64 {
         owner
@@ -417,5 +430,6 @@ fn warmed_interval_rhs_and_log_norm_make_no_heap_allocations() {
         );
     }
     let norm_allocations = ALLOCATIONS.load(Ordering::SeqCst) - before_norm;
+    TRACK.with(|t| t.set(false));
     assert_eq!((rhs_allocations, norm_allocations), (0, 0));
 }
