@@ -988,7 +988,7 @@ pub fn rodas5p_dense_output(step: &StepResult, theta: f64) -> DenseOutputResult<
 }
 
 /// [`rodas5p_dense_output`] on the parts of a step: the same arithmetic.
-fn rodas5p_dense_output_parts(
+pub(crate) fn rodas5p_dense_output_parts(
     y_old: &[f64],
     y_new: &[f64],
     stages: &[Vec<f64>],

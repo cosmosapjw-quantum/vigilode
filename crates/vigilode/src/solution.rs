@@ -5,7 +5,8 @@ use std::fmt;
 use rodas5p_core::{LinearSolverConfig, WorkCounters};
 use rodas5p_integrators::{
     AdaptiveFailureKind, AdaptiveStepConfig, BandedWork, DenseErrorControl, DriverStopReason,
-    InteriorSampling, Rodas5pDenseSegment, Rodas5pFastLu, RoutingRecord,
+    FastDenseSegments, FastInteriorWork, InteriorSampling, Rodas5pDenseSegment, Rodas5pFastLu,
+    RoutingRecord,
 };
 use serde::Serialize;
 
@@ -16,7 +17,15 @@ use crate::{
 };
 
 /// Schema tag of [`Stats`] (bumped when a field changes meaning).
-pub const STATS_SCHEMA: &str = "vigilode.stats.v2";
+///
+/// v3 (wave 3): dense output runs the fast dense drivers, recorded as
+/// [`DriverWork::FastDense`] (`route.driver_id` `rodas5p-fast-dense-v1` or
+/// `rodas5p-fast-banded-dense-v1`); only a mass matrix or
+/// [`crate::InteriorError::Enforce`] keeps the sequential dense route. v3
+/// also covers the event fields [`Stats::terminal_event`] and
+/// [`Stats::event_evaluations`] (wave-3 node `p0-events`, added under the
+/// v2 tag).
+pub const STATS_SCHEMA: &str = "vigilode.stats.v3";
 
 /// Which user callback reported an error.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
@@ -262,9 +271,33 @@ pub enum DriverWork {
         /// Start telemetry, when the driver recorded it.
         start_telemetry: Option<KrylovStartRecord>,
     },
+    /// The fast dense or banded driver with a continuous extension
+    /// (`integrate_rodas5p_fast_dense_observed` or
+    /// `integrate_rodas5p_fast_banded_dense_observed`, `..._with_atol` with a
+    /// vector [`crate::Atol`]): the dense-output route without a mass matrix,
+    /// under [`crate::InteriorError::WFilteredEnforce`] or
+    /// [`crate::InteriorError::Off`].
+    FastDense {
+        /// Whether the banded pipeline ran.
+        banded: bool,
+        /// Attempts that reused the Jacobian, `f(t, y)` and `f_t` of a
+        /// rejected attempt from the same state.
+        jacobian_reuses: usize,
+        /// The LU variant that ran.
+        lu: Rodas5pFastLu,
+        /// Counted band factor and solve operations and storage (banded
+        /// pipeline only; its solves include the interior estimates'
+        /// back-solves).
+        band_work: Option<BandedWork>,
+        /// The W-filtered interior estimates (all zero under `Off`); their
+        /// right-hand sides and solves are also in [`Stats::driver_counters`].
+        interior: FastInteriorWork,
+        /// Accepted steps whose continuous extension was kept.
+        segments: usize,
+    },
     /// The sequential adaptive dense driver
     /// (`integrate_adaptive_dense_observed_with_segments`): the mass-matrix
-    /// and dense-output route.
+    /// route, and dense output under [`crate::InteriorError::Enforce`].
     SequentialDense {
         /// The interior error control that ran (`Off` without dense output).
         control: DenseErrorControl,
@@ -404,7 +437,68 @@ pub struct Solution {
     pub events: Vec<EventRecord>,
     /// The accepted steps' continuous extension, under dense output.
     #[serde(skip)]
-    pub(crate) extension: Option<Vec<Rodas5pDenseSegment>>,
+    pub(crate) extension: Option<Extension>,
+}
+
+/// The continuous extension of a dense-output run, in the store of the
+/// driver that ran.
+// One value per solve: the size difference between the variants is not
+// worth a box.
+#[allow(clippy::large_enum_variant)]
+#[derive(Clone, Debug)]
+pub(crate) enum Extension {
+    /// The sequential dense driver's segments (mass matrix or `Enforce`).
+    Sequential(Vec<Rodas5pDenseSegment>),
+    /// The fast dense drivers' flat store.
+    Fast(FastDenseSegments),
+}
+
+impl Extension {
+    /// The number of kept segments.
+    #[cfg(test)]
+    pub(crate) fn len(&self) -> usize {
+        match self {
+            Self::Sequential(segments) => segments.len(),
+            Self::Fast(segments) => segments.len(),
+        }
+    }
+
+    /// Whether no segment is kept.
+    #[cfg(test)]
+    pub(crate) fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
+    /// The extension at `t` on the first segment whose end is at least `t`
+    /// (`None` when there is none or the evaluation fails).
+    fn evaluate(&self, t: f64) -> Option<Vec<f64>> {
+        match self {
+            Self::Sequential(segments) => {
+                let index = segments.partition_point(|s| s.t_new < t);
+                segments.get(index)?.evaluate(t).ok()
+            }
+            Self::Fast(segments) => {
+                let mut out = vec![0.0; segments.dimension()];
+                segments.evaluate_into(t, &mut out).ok()?;
+                Some(out)
+            }
+        }
+    }
+
+    /// Drop the segments that start at or after `t`.
+    fn truncate_after(&mut self, t: f64) {
+        match self {
+            Self::Sequential(segments) => {
+                let keep = segments.partition_point(|s| s.t_old < t);
+                segments.truncate(keep);
+            }
+            Self::Fast(segments) => {
+                // times()[k] is the start of step k.
+                let keep = segments.times()[..segments.len()].partition_point(|&t_old| t_old < t);
+                segments.truncate(keep);
+            }
+        }
+    }
 }
 
 impl Solution {
@@ -422,8 +516,8 @@ impl Solution {
     ///
     /// With [`crate::Options::dense_output`] this evaluates the RODAS5P
     /// continuous extension of the accepted step that contains `t`, for any
-    /// `t` between `t0` and the last accepted time (bit for bit the value the
-    /// driver samples at an output time). Without dense output it returns
+    /// `t` between `t0` and the last output time (at an accepted step's end,
+    /// bit for bit the stored state). Without dense output it returns
     /// the stored state when `t` is one of [`Solution::t`]. Otherwise, and
     /// outside the integrated span, `None`.
     pub fn at(&self, t: f64) -> Option<Vec<f64>> {
@@ -437,9 +531,7 @@ impl Solution {
             if t == first {
                 return self.y.first().cloned();
             }
-            let index = segments.partition_point(|s| s.t_new < t);
-            let segment = segments.get(index)?;
-            return segment.evaluate(t).ok();
+            return segments.evaluate(t);
         }
         self.t
             .iter()
@@ -454,9 +546,8 @@ impl Solution {
         let keep = self.t.partition_point(|&time| time <= t).max(1);
         self.t.truncate(keep);
         self.y.truncate(keep);
-        if let Some(segments) = &mut self.extension {
-            let keep = segments.partition_point(|s| s.t_old < t);
-            segments.truncate(keep);
+        if let Some(extension) = &mut self.extension {
+            extension.truncate_after(t);
         }
     }
 
@@ -539,6 +630,40 @@ mod tests {
         assert_eq!(sol.extension.as_ref().unwrap().len(), k);
         assert_eq!(sol.at(full.t[k]), full.at(full.t[k]));
         assert!(sol.at(full.t[k + 1]).is_none());
+    }
+
+    /// Ruling R-C3: `truncate_after` and the `at` bound on both stores.
+    #[test]
+    fn truncate_after_on_both_extension_stores() {
+        let problem = Problem::new(1, |_t, y, dy| {
+            dy[0] = -y[0];
+            Ok::<(), CallbackError>(())
+        })
+        .autonomous();
+        for interior_error in [
+            crate::InteriorError::WFilteredEnforce,
+            crate::InteriorError::Enforce,
+        ] {
+            let opts = Options {
+                dense_output: true,
+                interior_error,
+                ..Options::default()
+            };
+            let mut sol = Rodas5p::solve(&problem, (0.0, 3.0), &[1.0], &opts).unwrap();
+            let fast = matches!(sol.extension, Some(Extension::Fast(_)));
+            assert_eq!(fast, interior_error != crate::InteriorError::Enforce);
+            let full = sol.clone();
+            let k = sol.t.len() / 2;
+            let te = 0.5 * (sol.t[k] + sol.t[k + 1]);
+            sol.truncate_after(te);
+            assert_eq!(sol.t, full.t[..=k]);
+            assert_eq!(sol.extension.as_ref().unwrap().len(), k + 1);
+            assert!(sol.at(te).is_none());
+            sol.t.push(te);
+            sol.y.push(full.at(te).unwrap());
+            assert_eq!(sol.at(te), full.at(te));
+            assert!(sol.at(f64::from_bits(te.to_bits() + 1)).is_none());
+        }
     }
 
     #[test]

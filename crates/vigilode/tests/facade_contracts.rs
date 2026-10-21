@@ -18,8 +18,8 @@ use rodas5p_integrators::{
     robertson_problem,
 };
 use vigilode::{
-    Atol, Callback, CallbackError, DriverWork, FailureReason, Jacobian, JacobianRecord, Options,
-    Problem, Rodas5p, STATS_SCHEMA, Solution, SolveError, Status, Tier,
+    Atol, Callback, CallbackError, DriverWork, FailureReason, InteriorError, Jacobian,
+    JacobianRecord, Options, Problem, Rodas5p, STATS_SCHEMA, Solution, SolveError, Status, Tier,
 };
 
 // ---------------------------------------------------------------- helpers
@@ -1238,14 +1238,32 @@ fn vector_atol_refused_on_mf_sequential_and_declared_band() {
         })),
         &vector(3),
     );
-    // Sequential route: dense output and a mass matrix.
+    // Sequential route: dense output under `Enforce`, and a mass matrix.
     let dense = robertson(Jacobian::dense(robertson_jac));
     refuse(
         &dense,
         &Options {
             dense_output: true,
+            interior_error: InteriorError::Enforce,
             ..vector(3)
         },
+    );
+    // Wave-3 p0-fastdense (ruling R-C2): dense output without a mass matrix
+    // runs the fast dense driver, which takes the vector.
+    let sol = Rodas5p::solve(
+        &dense,
+        ROBERTSON_SPAN,
+        &ROBERTSON_Y0,
+        &Options {
+            dense_output: true,
+            ..vector(3)
+        },
+    )
+    .unwrap();
+    assert!(sol.is_success());
+    assert_eq!(
+        sol.stats.route.entry_point,
+        "integrate_rodas5p_fast_dense_observed_with_atol"
     );
     refuse(
         &robertson(Jacobian::dense(robertson_jac)).mass(vec![
