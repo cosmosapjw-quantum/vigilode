@@ -26,3 +26,8 @@
 | w3-final-fix | production/w3-final-fix | 5c6978d | Final-review seam tests (uniform vector atol under dense output; terminal events on all dense routes) and doc fixes |
 | wave3-integration | production/wave3-integration | 5c6978d | Wave-3 code complete; checker PASS (141 rows); full suites and E1b run delegated to workstation |
 | e1b-dense | production/e1b-dense | 546333f | Facade dense-output arms (no clipped steps), preregistration, handoff at 33e60cf; awaiting workstation run and L-0142 |
+| local-wave2 | results/local-wave2-08fd052 | 1842daa | Workstation, Rust 1.94.1: 1580 pass / 0 fail / 110 ignored; all matrix rows MATCH |
+| local-wave3 | results/local-wave3-4945683 | 32ff334 | Workstation: 1634 pass / 2 fail / 111 ignored; both failures pre-existing parallel flakes (leja OnceLock order, bound_collective global counter) |
+| e1b-ingest | production/e1b-dense | 3e00b94 | Workstation E1b at 33e60cf: 132 rows, 0 protocol violations, 0 clipped dense steps; ledger L-0142 INCONCLUSIVE (supersedes L-0140); host loaded, timing diagnostic |
+| w3-flakes | production/w3-flakes | 9b12bff | Test-only isolation fixes for the two flakes; 60/60 parallel |
+| wave3-integration | production/wave3-integration | f2f20c1 | Wave 3 complete: all nodes, E1b, flake fixes merged; checker PASS (142 rows) |
