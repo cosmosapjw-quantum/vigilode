@@ -22,6 +22,8 @@ pub struct Case {
     pub algorithm_config: Value,
     #[serde(skip)]
     derivative_rhs_calls: Arc<AtomicU64>,
+    #[serde(skip)]
+    stencil_jacobian_builds: Arc<AtomicU64>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -44,10 +46,17 @@ pub struct ProbeSpec {
 
 impl Case {
     pub fn derivative_policy(&self) -> &'static str {
-        "analytic_jvp_columns"
+        if self.algorithm_config["jacobian_assembly"] == "analytic_stencil" {
+            "analytic_jvp_with_opt_in_stencil_dense_assembly"
+        } else {
+            "analytic_jvp_columns"
+        }
     }
     pub fn derivative_rhs_calls(&self) -> u64 {
         self.derivative_rhs_calls.load(Ordering::Relaxed)
+    }
+    pub fn stencil_jacobian_builds(&self) -> u64 {
+        self.stencil_jacobian_builds.load(Ordering::Relaxed)
     }
     fn p(&self, key: &str) -> f64 {
         self.parameters[key].as_f64().unwrap_or(f64::NAN)
@@ -476,10 +485,52 @@ impl Case {
         column: &mut [f64],
     ) -> CoreResult<()> {
         let n = y.len();
-        if out.nrows() != n || out.ncols() != n || basis.len() != n || column.len() != n {
+        if n == 0
+            || n != self.initial_state.len()
+            || out.nrows() != n
+            || out.ncols() != n
+            || basis.len() != n
+            || column.len() != n
+        {
             return Err(CoreError::Dimension(
                 "benchmark Jacobian dimension mismatch".into(),
             ));
+        }
+        if self.algorithm_config["jacobian_assembly"] == "analytic_stencil" {
+            if !matches!(self.model.as_str(), "periodic_heat" | "advection_diffusion") {
+                return Err(CoreError::InvalidInput(
+                    "analytic_stencil requires periodic_heat or advection_diffusion".into(),
+                ));
+            }
+            let d = self.p("diffusion") * (n as f64) * (n as f64);
+            let v = if self.model == "advection_diffusion" {
+                self.p("velocity") * n as f64
+            } else {
+                0.0
+            };
+            let center = -2.0 * d - v;
+            let left = d + v;
+            if ![d, v, center, left].iter().all(|x| x.is_finite()) {
+                return Err(CoreError::NonFinite("benchmark stencil nonfinite".into()));
+            }
+            // Dense clearing remains O(n^2); only the nonzero stencil assembly
+            // is O(n). Add contributions: for n=1/2 periodic neighbors coincide.
+            out.as_mut_slice().fill(0.0);
+            for i in 0..n {
+                if n == 1 {
+                    continue; // Both periodic flux differences vanish identically.
+                }
+                if n == 2 {
+                    out[(i, i)] = center;
+                    out[(i, 1 - i)] = -center;
+                    continue;
+                }
+                out[(i, i)] += center;
+                out[(i, (i + n - 1) % n)] += left;
+                out[(i, (i + 1) % n)] += d;
+            }
+            self.stencil_jacobian_builds.fetch_add(1, Ordering::Relaxed);
+            return Ok(());
         }
         basis.fill(0.0);
         for j in 0..n {
@@ -620,6 +671,7 @@ mod tests {
             mass_matrix: None,
             algorithm_config: Value::Null,
             derivative_rhs_calls: Arc::new(AtomicU64::new(0)),
+            stencil_jacobian_builds: Arc::new(AtomicU64::new(0)),
         }
     }
     #[test]
@@ -646,5 +698,128 @@ mod tests {
         let mut out = [0.0; 3];
         c.rhs(0.0, &c.initial_state, &mut out).unwrap();
         assert_eq!(out, [-1.0, -100.0, -10000.0]);
+    }
+    #[test]
+    fn analytic_stencil_matches_basis_jvp_including_periodic_collisions() {
+        for n in [1, 2, 3, 8, 128] {
+            for model in ["periodic_heat", "advection_diffusion"] {
+                let mut c = case(
+                    model,
+                    json!({"diffusion":0.125,"velocity":-0.25}),
+                    vec![0.7; n],
+                );
+                let mut basis = vec![0.; n];
+                let mut column = vec![0.; n];
+                let mut reference = DenseMatrix::zeros(n, n);
+                c.jac_into(
+                    0.,
+                    &c.initial_state,
+                    &mut reference,
+                    &mut basis,
+                    &mut column,
+                )
+                .unwrap();
+                assert_eq!(c.derivative_rhs_calls(), n as u64);
+                c.algorithm_config = json!({"jacobian_assembly":"analytic_stencil"});
+                let mut candidate = DenseMatrix::zeros(n, n);
+                c.jac_into(
+                    0.,
+                    &c.initial_state,
+                    &mut candidate,
+                    &mut basis,
+                    &mut column,
+                )
+                .unwrap();
+                assert_eq!(candidate, reference);
+                assert_eq!(c.derivative_rhs_calls(), n as u64);
+                assert_eq!(c.stencil_jacobian_builds(), 1);
+                // Constant mode remains in the discrete transport nullspace.
+                for i in 0..n {
+                    assert_eq!((0..n).map(|j| candidate[(i, j)]).sum::<f64>(), 0.);
+                }
+            }
+        }
+    }
+    #[test]
+    fn stencil_refuses_nonfinite_parameters_without_modifying_output() {
+        let mut c = case("periodic_heat", json!({"diffusion":1e308}), vec![0.; 4]);
+        c.algorithm_config = json!({"jacobian_assembly":"analytic_stencil"});
+        let mut out = DenseMatrix::zeros(4, 4);
+        out.as_mut_slice().fill(7.);
+        assert!(
+            c.jac_into(0., &c.initial_state, &mut out, &mut [0.; 4], &mut [0.; 4])
+                .is_err()
+        );
+        assert!(out.as_slice().iter().all(|x| *x == 7.));
+        assert_eq!(c.stencil_jacobian_builds(), 0);
+    }
+    #[test]
+    fn analytic_heat_assembly_runs_through_fast_driver_with_same_trajectory() {
+        use rodas5p_integrators::{
+            AdaptiveStepConfig, OutputSchedule, integrate_rodas5p_fast_observed,
+        };
+        let n = 8;
+        let initial: Vec<f64> = (0..n)
+            .map(|i| 1.0 + 0.1 * (std::f64::consts::TAU * i as f64 / n as f64).cos())
+            .collect();
+        let mut c = case("periodic_heat", json!({"diffusion":0.125}), initial);
+        let config = AdaptiveStepConfig {
+            rtol: 1e-7,
+            atol: 1e-10,
+            initial_step: 0.001,
+            max_step: 0.1,
+            ..Default::default()
+        };
+        let schedule = OutputSchedule::new(vec![0.0, 0.05, 0.1]).unwrap();
+        let base = integrate_rodas5p_fast_observed(
+            &c.problem().unwrap(),
+            (0.0, 0.1),
+            &c.initial_state,
+            &config,
+            &schedule,
+        )
+        .unwrap();
+        let old_calls = c.derivative_rhs_calls();
+        assert!(old_calls > 0);
+        c.algorithm_config = json!({"jacobian_assembly":"analytic_stencil"});
+        let candidate = integrate_rodas5p_fast_observed(
+            &c.problem().unwrap(),
+            (0.0, 0.1),
+            &c.initial_state,
+            &config,
+            &schedule,
+        )
+        .unwrap();
+        assert!(base.observed.success && candidate.observed.success);
+        assert_eq!(base.observed.t, candidate.observed.t);
+        assert_eq!(base.observed.y, candidate.observed.y);
+        assert_eq!(base.observed.counters, candidate.observed.counters);
+        let lambda =
+            -4.0 * 0.125 * (n * n) as f64 * (std::f64::consts::PI / n as f64).sin().powi(2);
+        for (time, state) in candidate.observed.t.iter().zip(&candidate.observed.y) {
+            for (i, value) in state.iter().enumerate() {
+                let exact = 1.0
+                    + 0.1
+                        * (lambda * time).exp()
+                        * (std::f64::consts::TAU * i as f64 / n as f64).cos();
+                assert!((value - exact).abs() / (config.atol + config.rtol * exact.abs()) < 1.0);
+            }
+        }
+        assert_eq!(old_calls, c.derivative_rhs_calls());
+        assert!(c.stencil_jacobian_builds() > 0);
+    }
+    #[test]
+    fn one_periodic_cell_remains_exact_zero_under_large_advection() {
+        let mut c = case(
+            "advection_diffusion",
+            json!({"diffusion":1.0,"velocity":1e16}),
+            vec![3.0],
+        );
+        c.algorithm_config = json!({"jacobian_assembly":"analytic_stencil"});
+        let mut out = DenseMatrix::zeros(1, 1);
+        out[(0, 0)] = 7.0;
+        c.jac_into(0., &c.initial_state, &mut out, &mut [0.], &mut [0.])
+            .unwrap();
+        assert_eq!(out[(0, 0)], 0.0);
     }
 }

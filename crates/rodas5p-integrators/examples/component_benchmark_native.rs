@@ -710,6 +710,7 @@ fn run() -> Value {
     };
     let invoke = || {
         let before = request.case.derivative_rhs_calls();
+        let stencil_before = request.case.stencil_jacobian_builds();
         let mut value = match solve(
             &request.case,
             &request.solver_id,
@@ -722,7 +723,8 @@ fn run() -> Value {
         value["derivative_mode"] = json!(request.case.derivative_policy());
         value["derivative_policy"] = json!(request.case.derivative_policy());
         value["requested_solver_config"] = request.solver_config.clone();
-        value["derivative_work"] = json!({"extra_rhs_calls":request.case.derivative_rhs_calls()-before,"included_in_solver_counters":false});
+        let stencil_builds = request.case.stencil_jacobian_builds() - stencil_before;
+        value["derivative_work"] = json!({"extra_rhs_calls":request.case.derivative_rhs_calls()-before,"included_in_solver_counters":false,"analytic_stencil_jacobian_builds":stencil_builds,"executed_stencil_complexity":if stencil_builds > 0 {json!({"dense_storage_clear":"O(n^2)","stencil_fill":"O(n)"})} else {Value::Null}});
         value
     };
     if mode == "allocation" {

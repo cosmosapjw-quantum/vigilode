@@ -32,6 +32,7 @@ pub mod collective_model;
 pub mod collective_rodas5p;
 mod common_w_gate;
 mod comparator_fidelity;
+pub mod conservative_remap;
 mod controller_telemetry;
 mod dense_output_v2;
 mod exponential;

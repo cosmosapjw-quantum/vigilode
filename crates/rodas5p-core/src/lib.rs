@@ -1,6 +1,7 @@
 #![forbid(unsafe_code)]
 
 mod binary_scaling;
+pub mod bordered;
 mod coefficients;
 pub mod complex_shift_jet;
 pub mod damped_moments;

@@ -1,0 +1,141 @@
+[
+  {
+    "id": "core",
+    "command": [
+      "cargo",
+      "test",
+      "-p",
+      "rodas5p-core",
+      "--test",
+      "bordered_schur_contracts",
+      "--test",
+      "bordered_allocation_contract",
+      "--locked",
+      "--offline",
+      "-j",
+      "1"
+    ],
+    "exit_code": 0,
+    "reason": null,
+    "elapsed_seconds": 0.6231114429974696
+  },
+  {
+    "id": "krylov",
+    "command": [
+      "cargo",
+      "test",
+      "-p",
+      "rodas5p-krylov",
+      "--test",
+      "bordered_preconditioner_contracts",
+      "--locked",
+      "--offline",
+      "-j",
+      "1"
+    ],
+    "exit_code": 0,
+    "reason": null,
+    "elapsed_seconds": 0.2210083960017073
+  },
+  {
+    "id": "adapter",
+    "command": [
+      "cargo",
+      "test",
+      "-p",
+      "rodas5p-integrators",
+      "--example",
+      "component_benchmark_native",
+      "--locked",
+      "--offline",
+      "-j",
+      "1"
+    ],
+    "exit_code": 0,
+    "reason": null,
+    "elapsed_seconds": 0.2700222829953418
+  },
+  {
+    "id": "remap_build",
+    "command": [
+      "rustc",
+      "--edition=2024",
+      "--test",
+      "crates/rodas5p-integrators/src/conservative_remap.rs",
+      "-o",
+      "/workspace/scratch/0dc1e721cf82/followup-validation-03/remap_tests"
+    ],
+    "exit_code": 0,
+    "reason": null,
+    "elapsed_seconds": 1.7078737909978372
+  },
+  {
+    "id": "remap",
+    "command": [
+      "/workspace/scratch/0dc1e721cf82/followup-validation-03/remap_tests"
+    ],
+    "exit_code": 0,
+    "reason": null,
+    "elapsed_seconds": 0.019643534993520007
+  },
+  {
+    "id": "bordered_probe",
+    "command": [
+      "cargo",
+      "run",
+      "-p",
+      "rodas5p-core",
+      "--example",
+      "bordered_probe",
+      "--locked",
+      "--offline",
+      "-j",
+      "1"
+    ],
+    "exit_code": 0,
+    "reason": null,
+    "elapsed_seconds": 2.7357793820046936
+  },
+  {
+    "id": "physics",
+    "command": [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+      "/workspace/scratch/0dc1e721cf82/vigilode-followup/research/ncp_followup_20261021/BASS_REI_FVM_REFERENCE.py",
+      "/workspace/scratch/0dc1e721cf82/followup-validation-03/PHYSICS.json"
+    ],
+    "exit_code": 0,
+    "reason": null,
+    "elapsed_seconds": 0.11608876499667531
+  },
+  {
+    "id": "rotation_contract",
+    "command": [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "/workspace/scratch/0dc1e721cf82/vigilode-followup/research/ncp_followup_20261021/accuracy",
+      "-p",
+      "test_*.py",
+      "-v"
+    ],
+    "exit_code": 0,
+    "reason": null,
+    "elapsed_seconds": 0.06537268400279572
+  },
+  {
+    "id": "rotation_endpoint",
+    "command": [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+      "/workspace/scratch/0dc1e721cf82/vigilode-followup/research/ncp_followup_20261021/accuracy/rotation_diagnostic.py",
+      "--bundle",
+      "/workspace/scratch/0dc1e721cf82/vigilode-followup/external_audits/vigilode_ncp_intensive_120m_v1_20261021",
+      "--out",
+      "/workspace/scratch/0dc1e721cf82/followup-validation-03/ROTATION.json"
+    ],
+    "exit_code": 0,
+    "reason": null,
+    "elapsed_seconds": 0.06533758500154363
+  }
+]

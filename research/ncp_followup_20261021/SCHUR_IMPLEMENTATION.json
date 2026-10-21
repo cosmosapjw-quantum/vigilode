@@ -1,0 +1,286 @@
+{
+  "schema_version": 1,
+  "unit": "bordered_band_schur_followup",
+  "source_base_commit": "7a63876a97fc17f640771ec06658269947049994",
+  "implementation": "rodas5p_core::bordered::BorderedBandedPreconditioner",
+  "status": "implementation_verified_scoped",
+  "evidence_basis": [
+    "derived",
+    "numerically checked",
+    "implementation-verified"
+  ],
+  "theory": "SCHUR_THEORY.md",
+  "assumptions": [
+    "phase block represented exactly by declared packed band",
+    "strict row diagonal dominance admitted via upward off-diagonal sums",
+    "Schur block nonsingular",
+    "fixed preconditioner within each ordinary GMRES solve",
+    "state and residual scales supplied consistently by caller"
+  ],
+  "complexity": {
+    "setup": "O(n*(l+u+1)+n*l*u+n*m*(l+u+1)+n*m^2+m^3)",
+    "apply": "O(n*(l+u+1)+n*m+m^2)",
+    "f64_slots": "nmax*(l+u+1)+2*nmax*mmax+mmax^2+nmax",
+    "usize_slots": "mmax",
+    "linear_in_n_when": [
+      "l fixed",
+      "u fixed",
+      "m fixed"
+    ]
+  },
+  "allocations": {
+    "constructor": "fallible allocation",
+    "successful_refactor": "zero heap allocations observed across five changing active shapes in allocator-count contract",
+    "successful_apply": "zero heap allocations observed in the same successful-path contract",
+    "failure": "CoreError strings may allocate"
+  },
+  "checks": [
+    {
+      "id": "dense_oracle_residual",
+      "source": "crates/rodas5p-core/tests/bordered_schur_contracts.rs",
+      "execution": "completed",
+      "result": "pass_scoped",
+      "exit_code": 0,
+      "evidence": "evidence/final_03/core.stdout.log"
+    },
+    {
+      "id": "singular_nonfinite_shape",
+      "source": "crates/rodas5p-core/tests/bordered_schur_contracts.rs",
+      "execution": "completed",
+      "result": "pass_scoped",
+      "exit_code": 0,
+      "evidence": "evidence/final_03/core.stdout.log"
+    },
+    {
+      "id": "variable_dimension_zero_alloc",
+      "source": "crates/rodas5p-core/tests/bordered_allocation_contract.rs",
+      "execution": "completed",
+      "result": "pass_scoped",
+      "exit_code": 0,
+      "evidence": "evidence/final_03/core.stdout.log"
+    },
+    {
+      "id": "gmres_true_residual",
+      "source": "crates/rodas5p-krylov/tests/bordered_preconditioner_contracts.rs",
+      "execution": "completed",
+      "result": "pass_scoped",
+      "exit_code": 0,
+      "evidence": "evidence/final_03/krylov.stdout.log"
+    },
+    {
+      "id": "manufactured_n16_64_256",
+      "source": "crates/rodas5p-core/examples/bordered_probe.rs",
+      "execution": "completed",
+      "result": "pass_scoped",
+      "exit_code": 0,
+      "evidence": "evidence/final_03/bordered_probe.stdout.log"
+    }
+  ],
+  "failures": [
+    {
+      "class": "implementation",
+      "description": "initial integration test applied unary minus to usize before cast; compile E0600",
+      "correction": "cast to f64 parenthesized before negation",
+      "evidence": "evidence/CORE_TESTS.log",
+      "status": "corrected_and_reexecuted_pass_scoped"
+    },
+    {
+      "class": "implementation",
+      "description": "bordered_probe JSON println had an unmatched literal closing brace; Rust compile rejected format string",
+      "correction": "escape final literal brace with double closing brace; no numeric algorithm change",
+      "evidence": "evidence/final_02/bordered_probe.stderr.log",
+      "status": "corrected_and_reexecuted_pass_scoped"
+    }
+  ],
+  "live_ode_driver_wired": false,
+  "bass_rei_client_wired": false,
+  "production_verdict": "HOLD_FOR_FULL_CLIENT",
+  "claims": [
+    {
+      "id": "S-T1",
+      "basis": "derived",
+      "statement": "Exact block factorization has linear complexity in phase dimension for fixed bandwidth and border size."
+    },
+    {
+      "id": "S-T2",
+      "basis": "derived",
+      "statement": "Exact triangular Schur preconditioning yields GMRES termination in at most2 iterations in exact arithmetic."
+    },
+    {
+      "id": "S-T3",
+      "basis": "derived",
+      "statement": "Fixed right preconditioning with norm2(Delta M^-1)<=q<1 yields residual contraction <=q^k in exact arithmetic."
+    },
+    {
+      "id": "S-T4",
+      "basis": "derived",
+      "statement": "A certified inverse norm bound converts true residual into forward error; this certificate is not implemented by the new ordinary-f64 kernel."
+    },
+    {
+      "id": "S-T5",
+      "basis": "derived",
+      "statement": "Radiation band plus rank-r coupling admits an exactly equivalent enlarged border of size m+r; linear-in-n complexity requires that enlarged border stay bounded."
+    }
+  ],
+  "next_steps": [
+    {
+      "id": "S01",
+      "priority": "P0",
+      "action": "Wire immutable bordered factors into a client-owned actual phase-space JVP and existing GMRES-into API. Full operator must retain periodic wraps, angular scattering and radiation-matter border.",
+      "acceptance": "Independent full-operator residual and exact/ manufactured IVP at multiple mesh sizes; no dropped coupling."
+    },
+    {
+      "id": "S02",
+      "priority": "P0",
+      "action": "Add mesh/matrix epoch invalidation and account setup/refactor plus applications in solver work telemetry.",
+      "acceptance": "Any dimension, mesh, gamma*h, coefficients change invalidates numeric factors and recycle images; measured failed work retained."
+    },
+    {
+      "id": "S03",
+      "priority": "P1",
+      "action": "Keep low-rank Thomson gain as low-rank correction or in the true JVP; use bordered band as approximate preconditioner when exact band admission fails.",
+      "acceptance": "Measured/derived preconditioned perturbation or field-of-values estimate; iterations and true residual over optical-depth/mesh grid."
+    },
+    {
+      "id": "S04",
+      "priority": "P1",
+      "action": "Add interval Schur inverse and outward true-residual certificate if certified stage-error control is needed.",
+      "acceptance": "Forward bound encloses independent high-precision solutions in ill-conditioned/adversarial cases; uncertain singularity refuses."
+    }
+  ],
+  "commands": [
+    "cargo test -p rodas5p-core --test bordered_schur_contracts --test bordered_allocation_contract --locked --offline",
+    "cargo test -p rodas5p-krylov --test bordered_preconditioner_contracts --locked --offline",
+    "cargo run -p rodas5p-core --example bordered_probe --locked --offline",
+    "cargo run --release -p rodas5p-core --example bordered_probe --locked --offline -- --n 1600",
+    "cargo run --release -p rodas5p-core --example bordered_probe --locked --offline -- --n 4096"
+  ],
+  "file_identity": {
+    "crates/rodas5p-core/src/bordered.rs": "78d13743118e2405743d5caa48de2de20c77f827b90d2e54014bd4c3866de16c",
+    "crates/rodas5p-core/tests/bordered_schur_contracts.rs": "f5c3c46e69602fbb9d5eb853afacb2aa3c15e9394944a73f70dfd45adf5ac203",
+    "crates/rodas5p-core/tests/bordered_allocation_contract.rs": "2554b157080cb9ee6b762be5c70e134113be5d2c46975eac63c8292746f9f014",
+    "crates/rodas5p-core/examples/bordered_probe.rs": "41dd80c44f12d505c4600b7b989431022afc2a8ccf28852df654047801a8f61c",
+    "crates/rodas5p-krylov/tests/bordered_preconditioner_contracts.rs": "5e00df5ec25775ff725d93f241ce43922430c2676a553f5632bb260a8a1b6cb3"
+  },
+  "executions": [
+    {
+      "id": "core",
+      "command": [
+        "cargo",
+        "test",
+        "-p",
+        "rodas5p-core",
+        "--test",
+        "bordered_schur_contracts",
+        "--test",
+        "bordered_allocation_contract",
+        "--locked",
+        "--offline",
+        "-j",
+        "1"
+      ],
+      "exit_code": 0,
+      "reason": null,
+      "elapsed_seconds": 0.6231114429974696,
+      "evidence": "evidence/final_03/core.stdout.log",
+      "stderr": "evidence/final_03/core.stderr.log"
+    },
+    {
+      "id": "krylov",
+      "command": [
+        "cargo",
+        "test",
+        "-p",
+        "rodas5p-krylov",
+        "--test",
+        "bordered_preconditioner_contracts",
+        "--locked",
+        "--offline",
+        "-j",
+        "1"
+      ],
+      "exit_code": 0,
+      "reason": null,
+      "elapsed_seconds": 0.2210083960017073,
+      "evidence": "evidence/final_03/krylov.stdout.log",
+      "stderr": "evidence/final_03/krylov.stderr.log"
+    },
+    {
+      "id": "bordered_probe",
+      "command": [
+        "cargo",
+        "run",
+        "-p",
+        "rodas5p-core",
+        "--example",
+        "bordered_probe",
+        "--locked",
+        "--offline",
+        "-j",
+        "1"
+      ],
+      "exit_code": 0,
+      "reason": null,
+      "elapsed_seconds": 2.7357793820046936,
+      "evidence": "evidence/final_03/bordered_probe.stdout.log",
+      "stderr": "evidence/final_03/bordered_probe.stderr.log"
+    }
+  ],
+  "source_unchanged_during_final_validation": true,
+  "manufactured_probe_results": [
+    {
+      "kind": "manufactured_bordered_linear_solve",
+      "n": 16,
+      "m": 2,
+      "lower": 1,
+      "upper": 1,
+      "allocated_f64_slots": 132,
+      "factor_ns_diagnostic": 15243,
+      "apply_repetitions": 100,
+      "apply_total_ns_diagnostic": 225481,
+      "max_solution_error": 3.3306690738754696e-16,
+      "residual_inf": 6.661338147750939e-16
+    },
+    {
+      "kind": "manufactured_bordered_linear_solve",
+      "n": 64,
+      "m": 2,
+      "lower": 1,
+      "upper": 1,
+      "allocated_f64_slots": 516,
+      "factor_ns_diagnostic": 33120,
+      "apply_repetitions": 100,
+      "apply_total_ns_diagnostic": 855130,
+      "max_solution_error": 5.551115123125783e-16,
+      "residual_inf": 1.1102230246251565e-15
+    },
+    {
+      "kind": "manufactured_bordered_linear_solve",
+      "n": 256,
+      "m": 2,
+      "lower": 1,
+      "upper": 1,
+      "allocated_f64_slots": 2052,
+      "factor_ns_diagnostic": 111117,
+      "apply_repetitions": 100,
+      "apply_total_ns_diagnostic": 5172868,
+      "max_solution_error": 4.440892098500626e-16,
+      "residual_inf": 8.881784197001252e-16
+    }
+  ],
+  "validation_counts": {
+    "core_contract_tests": 4,
+    "krylov_integration_tests": 1,
+    "manufactured_linear_sizes": [
+      16,
+      64,
+      256
+    ]
+  },
+  "timing_interpretation": "debug-build sandbox diagnostic only; no wall-time superiority or NCP speedup claimed",
+  "evidence_identity": {
+    "evidence/final_03/core.stdout.log": "020d8f6e93be9386c292d800f3ea6cc3caa9249296e792be87354d1f3fb1f836",
+    "evidence/final_03/krylov.stdout.log": "cc8a77f4e5d72a6dece81c403f7ae418f1906560976c0272f05383f676a268bc",
+    "evidence/final_03/bordered_probe.stdout.log": "6406e9785d7015c29f754f14c42a5f96ba53f23465991274eb1f31383e7f420d"
+  }
+}
