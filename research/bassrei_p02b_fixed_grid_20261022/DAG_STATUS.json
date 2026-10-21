@@ -1,0 +1,32 @@
+{
+ "schema": "bassrei-dag-status-v1",
+ "node": "P02b",
+ "node_dir": "research/bassrei_p02b_fixed_grid_20261022",
+ "ledger_id": "L-0149",
+ "supersedes": "L-0148",
+ "verdict": "PASS",
+ "gates": {
+  "C1": true,
+  "C2": true,
+  "C3": true,
+  "C4": true,
+  "C5": true,
+  "C6": true,
+  "C7": true,
+  "C8": true,
+  "C9": true,
+  "C10": true
+ },
+ "failed_gates": [],
+ "downstream": {
+  "P03": "UNBLOCKED (needs library step L2)",
+  "P04": "UNBLOCKED",
+  "P05": "BLOCKED (depends on P03, P04, L3)",
+  "P06": "BLOCKED (depends on P05)",
+  "NCP_C1": "BLOCKED (depends on P03, P04)"
+ },
+ "H": {
+  "method_tight_tolerance_floor_gamma1e6": 1.19764842028508e-11
+ },
+ "production": "HOLD"
+}

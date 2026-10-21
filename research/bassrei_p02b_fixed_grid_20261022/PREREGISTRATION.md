@@ -63,3 +63,50 @@ The harness builds the runner, runs the cargo contract tests, and writes `result
 
 `results.json`, `raw/` (with `MANIFEST.json`) and `DAG_STATUS.json`, all in
 `research/bassrei_p02b_fixed_grid_20261022/`.
+
+---
+
+## Results
+
+Run on the clean tree at `c4d9eb9f76ac1fbcbb4a12fb920d05e4c2317fa9` (harness `7dec6aef` plus this file;
+code under test unchanged since P02). The command was exactly the preregistered one. Wall time was
+1101 s on the local workstation and is diagnostic only. The harness built the runner itself and ran the
+cargo contract tests, 14/14 ok with 0 ignored. The tree was clean at start and end, and no input
+changed during the run.
+
+Output hashes:
+
+- `results.json`: `0b7b3295f6896d12a65c5104102f218f96497ccebec5da0f8deba79b4454a4f0`
+- `raw/MANIFEST.json`: `591e8bc60894aae683d93fbb16a0c666a106c06b5a2a8b6315232c48dab06788`; it covers
+  106 raw files, all of which match.
+
+**Verdict: PASS**: every [C] gate passed, per the verdict rule.
+
+| gate | pass | key numbers |
+|---|---|---|
+| C1 | True | 22/22 fixtures; transport bitwise = oracle; ledger per-boundary ≤ 3.7e-16; RHS/Jacobian vs Python A(t) ≤ 5.6e-16 |
+| C2 | True | cargo |
+| C3 | True | 47 runs; max drift 4.67e-11, under every per-run bound |
+| C4 | True | orders G2→G3 / G3→G4 / G4→G5, rising: R+ 0.663/0.786/0.875; R− 0.664/0.799/0.884; C+ 0.568/0.727/0.827; R+abs 0.640/0.774/0.870; R+abs-com 0.851/0.934/0.970 |
+| C5 | True | last pre-floor slopes C+_g0 5.825, C+_g0.5 5.718, R+_g0 4.997, R+_g0.5 4.985; negative control (drop f_t) 1.989 |
+| C6 | True | see the table below |
+| C7 | True | M2 decay observed/predicted at end 1.0000000256; M0 relative drift 1.2e-15 |
+| C8 | True | cargo |
+| C9 | True | cargo |
+| C10 | True | cargo |
+
+C6, with errors at rtol 1e-4, 1e-6 and 1e-8 (banded bit-identical to dense in every rung):
+
+| scenario | errors | u_ref (Radau 1e-13 vs 1e-14) | 0.25 × min error | [H] method floor |
+|---|---|---|---|---|
+| S1_R+_phys_g1e4 | 1.09e-07, 2.18e-09, 2.81e-11 | 7.0e-15 | 7.0e-12 | 1.8e-13 |
+| S2_R+_phys_g1e6 | 1.08e-07, 2.17e-09, 3.61e-11 | 3.6e-13 | 9.0e-12 | 1.2e-11 |
+| S3_R+_com_abs1e4_g0.5 | 6.40e-07, 1.40e-08, 5.09e-11 | 1.0e-14 | 1.3e-11 | 4.0e-14 |
+
+The fixed-step banded run reproduces the fixed-step dense run exactly (endpoint difference 0, 64/64
+steps). The [H] method floor is VigilODE dense at rtol 1e-12 vs the Radau reference. At Γ = 1e6 it is
+1.2e-11, a real double-precision accuracy floor of RODAS5P on this problem, reported and not gated.
+
+**Consequence (approved plan):** P03 and P04 are unblocked. This row supersedes L-0148, which stays in
+the ledger unchanged. No claim is made about live BASS/rei integration, physical rates or wall time.
+Broad production remains HOLD.
