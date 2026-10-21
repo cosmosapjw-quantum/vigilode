@@ -61,6 +61,7 @@ mod radau;
 mod raw_stage_target;
 mod rhs_telemetry;
 mod rodas5p_fast;
+mod rodas5p_fast_dense;
 mod rodas5p_fast_small;
 mod rodas5p_fast_small_batch;
 mod rodas5p_lagged;
@@ -400,6 +401,11 @@ pub use rodas5p_fast::{
     integrate_rodas5p_fast_observed_with_options, integrate_rodas5p_fast_observed_with_partial,
     integrate_rodas5p_fast_observed_with_telemetry, lu_research, rodas5p_fast_banded_solve,
     rodas5p_fast_step,
+};
+pub use rodas5p_fast_dense::{
+    FastDenseSegments, FastInteriorControl, FastInteriorWork, RODAS5P_FAST_BANDED_DENSE_DRIVER_ID,
+    RODAS5P_FAST_DENSE_DRIVER_ID, Rodas5pFastDenseResult,
+    integrate_rodas5p_fast_banded_dense_observed, integrate_rodas5p_fast_dense_observed,
 };
 pub use rodas5p_fast_small::{
     RODAS5P_FAST_SMALL_DRIVER_ID, Rodas5pFastSmallOptions, Rodas5pFastSmallResult, SmallProblem,
