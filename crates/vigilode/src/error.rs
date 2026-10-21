@@ -40,23 +40,24 @@ pub enum CallbackError {
 pub enum Unsupported {
     /// A mass matrix or dense output on a JVP-only problem.
     #[error(
-        "a mass matrix or dense output on a JVP-only problem: the protected sequential \
-         dense driver needs an explicit or finite-difference Jacobian (the step's stage \
-         matrix M - h gamma J)"
+        "a mass matrix or dense output on a JVP-only problem: the stage matrix \
+         M - h gamma J of the dense-output and mass-matrix drivers needs an explicit \
+         or finite-difference Jacobian"
     )]
     JvpWithMassOrDenseOutput,
     /// A declared band on a [`crate::Jacobian::Dense`] provider together with
     /// a mass matrix or dense output.
     #[error(
         "a declared band on a dense Jacobian with a mass matrix or dense output: only the \
-         router verifies such a declaration, and the sequential dense driver would ignore it"
+         router verifies such a declaration, and the dense-output and mass-matrix routes \
+         bypass the router"
     )]
     DeclaredBandOnDenseWithMassOrDenseOutput,
     /// A vector [`crate::Atol`] on the sequential dense driver (a mass
     /// matrix, or dense output under [`crate::InteriorError::Enforce`]).
     #[error(
-        "a vector atol with a mass matrix or interior_error = Enforce: the \
-         sequential dense driver takes a scalar absolute tolerance"
+        "a vector atol with a mass matrix, or with dense output under interior_error = \
+         Enforce: the sequential dense driver takes a scalar absolute tolerance"
     )]
     VectorAtolOnSequentialRoute,
     /// A vector [`crate::Atol`] on a JVP-only (matrix-free) problem.
@@ -92,7 +93,7 @@ pub enum SolveError {
     #[error("invalid input: {0}")]
     InvalidInput(String),
     /// The request is well formed but no protected driver of this release
-    /// implements it (for example a vector `atol`); nothing was integrated.
+    /// implements it (see [`Unsupported`]); nothing was integrated.
     /// The facade refuses rather than substituting a different behaviour.
     #[error("unsupported: {0}")]
     Unsupported(Unsupported),

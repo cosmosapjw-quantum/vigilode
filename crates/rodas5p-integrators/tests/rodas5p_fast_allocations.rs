@@ -12,7 +12,8 @@ use rodas5p_core::{LinearMethod, LinearSolverConfig};
 use rodas5p_integrators::{
     AdaptiveStepConfig, FastLuPolicy, IntegrationMethod, OutputSchedule, Rodas5pFastOptions,
     integrate_adaptive_observed_with_config, integrate_rodas5p_fast_observed,
-    integrate_rodas5p_fast_observed_with_options, robertson_problem,
+    integrate_rodas5p_fast_observed_with_atol, integrate_rodas5p_fast_observed_with_options,
+    robertson_problem,
 };
 
 struct Counting;
@@ -163,4 +164,48 @@ fn a_column_extent_step_allocates_nothing() {
         "one col_end buffer per integration: {legacy:?} {extents:?}"
     );
     eprintln!("legacy {legacy:?}, column extents {extents:?} (attempts, allocations)");
+}
+
+/// A nonempty `atol_vector` takes the same allocation-free step: the count
+/// is the same at two tolerances whose attempt counts differ several times,
+/// and equals the scalar run's plus the one setup copy of the vector.
+#[test]
+fn a_vector_atol_step_allocates_nothing() {
+    let (problem, y0) = robertson_problem().unwrap();
+    let output = OutputSchedule::new(vec![0.0, 40.0]).unwrap();
+    let run = |rtol: f64| {
+        let atol = [1.0e-4 * rtol; 3];
+        allocations_during(|| {
+            integrate_rodas5p_fast_observed_with_atol(
+                &problem,
+                (0.0, 40.0),
+                &y0,
+                &config(rtol),
+                &output,
+                &atol,
+            )
+            .unwrap()
+        })
+    };
+    run(1.0e-6); // warm the lazy statics
+    let mut runs = Vec::new();
+    let mut scalar = Vec::new();
+    for rtol in [1.0e-6, 1.0e-9] {
+        let ((fast, _), allocations) = run(rtol);
+        runs.push((fast.attempts, allocations));
+        let (fast, allocations) = allocations_during(|| {
+            integrate_rodas5p_fast_observed(&problem, (0.0, 40.0), &y0, &config(rtol), &output)
+                .unwrap()
+        });
+        scalar.push((fast.attempts, allocations));
+    }
+    assert!(runs[1].0 >= 3 * runs[0].0, "{runs:?}");
+    assert_eq!(
+        runs[0].1, runs[1].1,
+        "vector-atol allocations depend on the step count: {runs:?}"
+    );
+    assert!(
+        runs[0].1 <= scalar[0].1 + 2,
+        "vector {runs:?} against scalar {scalar:?}"
+    );
 }

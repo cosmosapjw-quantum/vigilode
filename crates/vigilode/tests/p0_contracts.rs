@@ -1342,3 +1342,207 @@ fn empty_span_dense_output() {
     assert_eq!(sol.at(2.5), None);
     assert_eq!(fast_work(&sol).2, 0);
 }
+
+// ------------------------------------- final review (w3-final-fix) seams
+
+fn tridiagonal_banded_problem() -> Problem {
+    Problem::new(TRIDIAGONAL_N, tridiagonal_rhs)
+        .banded(1, 1)
+        .autonomous()
+}
+
+/// Seam (i) at the facade: a uniform `Atol::Vector` is the scalar run, bit
+/// for bit, on both fast dense entry points under dense output.
+#[test]
+#[allow(clippy::type_complexity)]
+fn uniform_vector_atol_equals_scalar_under_dense_output() {
+    let tri_y0 = [1.0, 0.5, -0.25, 2.0, 0.0, 1.5];
+    for ie in [InteriorError::WFilteredEnforce, InteriorError::Off] {
+        // (problem, span, y0, n, expected `_with_atol` entry point)
+        let cases: [(Problem, (f64, f64), Vec<f64>, &str); 2] = [
+            (
+                robertson(),
+                ROBERTSON_SPAN,
+                ROBERTSON_Y0.to_vec(),
+                "integrate_rodas5p_fast_dense_observed_with_atol",
+            ),
+            (
+                tridiagonal_banded_problem(),
+                (0.0, 1.0),
+                tri_y0.to_vec(),
+                "integrate_rodas5p_fast_banded_dense_observed_with_atol",
+            ),
+        ];
+        for (p, span, y0, entry) in cases {
+            let n = y0.len();
+            let s = dense_opts(1e-6, 1e-10, ie);
+            let v = Options {
+                atol: Atol::Vector(vec![1e-10; n]),
+                ..s.clone()
+            };
+            let a = Rodas5p::solve(&p, span, &y0, &s).unwrap();
+            let b = Rodas5p::solve(&p, span, &y0, &v).unwrap();
+            assert!(a.is_success() && b.is_success());
+            assert_eq!(b.stats.route.entry_point, entry);
+            assert_ne!(a.stats.route.entry_point, b.stats.route.entry_point);
+            assert_eq!(bits(&a.t), bits(&b.t));
+            for (x, y) in a.y.iter().zip(&b.y) {
+                assert_eq!(bits(x), bits(y));
+            }
+            assert_eq!(a.stats.counters, b.stats.counters);
+            assert_eq!(a.stats.driver_work, b.stats.driver_work);
+            assert_eq!(a.stats.adaptive, b.stats.adaptive);
+            assert_eq!(a.stats.accepted_steps, b.stats.accepted_steps);
+            for w in a.t.windows(2) {
+                let m = 0.5 * (w[0] + w[1]);
+                assert_eq!(bits(&a.at(m).unwrap()), bits(&b.at(m).unwrap()));
+            }
+        }
+    }
+    // Nonuniform control (Robertson, WFilteredEnforce): a looser last
+    // component changes the interior work, so the vector is read.
+    let s = dense_opts(1e-6, 1e-10, InteriorError::WFilteredEnforce);
+    let loose = Options {
+        atol: Atol::Vector(vec![1e-10, 1e-10, 1e-6]),
+        ..s.clone()
+    };
+    let a = Rodas5p::solve(&robertson(), ROBERTSON_SPAN, &ROBERTSON_Y0, &s).unwrap();
+    let c = Rodas5p::solve(&robertson(), ROBERTSON_SPAN, &ROBERTSON_Y0, &loose).unwrap();
+    assert_ne!(a.stats.driver_work, c.stats.driver_work);
+}
+
+/// Decay problems for the terminal-event seam, with the event `g = y0 - c`.
+fn decay_problem(mass: bool) -> Problem {
+    let p = Problem::new(1, |_t, y, dy| {
+        dy[0] = -y[0];
+        Ok::<(), CallbackError>(())
+    })
+    .autonomous();
+    if mass { p.mass(vec![1.0]) } else { p }
+}
+
+/// Seam (ii) at the facade: a terminal event truncates the outputs and the
+/// extension store consistently on every dense route.
+#[test]
+#[allow(clippy::type_complexity)]
+fn terminal_event_on_every_dense_store() {
+    use vigilode::Direction;
+    let tri_y0 = vec![1.0, 0.5, -0.25, 2.0, 0.0, 1.5];
+    let tri_c = 0.5;
+    type Build = Box<dyn Fn() -> Problem>;
+    // (name, base problem, terminal problem, span, y0, options, driver id)
+    let mut cases: Vec<(&str, Build, Build, (f64, f64), Vec<f64>, Options, &str)> = Vec::new();
+    for (name, ie) in [
+        ("fast WFilteredEnforce", InteriorError::WFilteredEnforce),
+        ("fast Off", InteriorError::Off),
+    ] {
+        cases.push((
+            name,
+            Box::new(|| decay_problem(false)),
+            Box::new(|| decay_problem(false).terminal_event(|_t, y| y[0] - 0.4, Direction::Down)),
+            (0.0, 3.0),
+            vec![1.0],
+            dense_opts(1e-8, 1e-10, ie),
+            RODAS5P_FAST_DENSE_DRIVER_ID,
+        ));
+    }
+    cases.push((
+        "fast banded",
+        Box::new(tridiagonal_banded_problem),
+        Box::new(move || {
+            tridiagonal_banded_problem().terminal_event(move |_t, y| y[0] - tri_c, Direction::Down)
+        }),
+        (0.0, 1.0),
+        tri_y0,
+        dense_opts(1e-8, 1e-10, InteriorError::WFilteredEnforce),
+        RODAS5P_FAST_BANDED_DENSE_DRIVER_ID,
+    ));
+    cases.push((
+        "sequential Enforce",
+        Box::new(|| decay_problem(false)),
+        Box::new(|| decay_problem(false).terminal_event(|_t, y| y[0] - 0.4, Direction::Down)),
+        (0.0, 3.0),
+        vec![1.0],
+        dense_opts(1e-8, 1e-10, InteriorError::Enforce),
+        RODAS5P_SEQUENTIAL_DENSE_DRIVER_ID,
+    ));
+    cases.push((
+        "sequential mass",
+        Box::new(|| decay_problem(true)),
+        Box::new(|| decay_problem(true).terminal_event(|_t, y| y[0] - 0.4, Direction::Down)),
+        (0.0, 3.0),
+        vec![1.0],
+        dense_opts(1e-8, 1e-10, InteriorError::WFilteredEnforce),
+        RODAS5P_SEQUENTIAL_DENSE_DRIVER_ID,
+    ));
+
+    let mut times = Vec::new();
+    for (name, base_p, term_p, span, y0, o, id) in &cases {
+        let base = Rodas5p::solve(&base_p(), *span, y0, o).unwrap();
+        let sol = Rodas5p::solve(&term_p(), *span, y0, o).unwrap();
+        assert_eq!(sol.stats.route.driver_id, *id, "{name}");
+        assert_eq!(base.stats.route.driver_id, *id, "{name}");
+        assert!(sol.is_success(), "{name}");
+        assert_eq!(sol.events.len(), 1, "{name}");
+        assert_eq!(sol.stats.terminal_event, Some(0), "{name}");
+        let te = sol.events[0].t;
+        times.push((*name, te));
+        assert_eq!(*sol.t.last().unwrap(), te, "{name}");
+        assert_eq!(sol.t.len(), sol.y.len(), "{name}");
+        assert!(sol.t.windows(2).all(|w| w[0] < w[1]), "{name}");
+        assert_eq!(
+            bits(sol.y.last().unwrap()),
+            bits(&sol.events[0].y),
+            "{name}"
+        );
+        // The extension store agrees with t/y on every kept output.
+        for k in 0..sol.t.len() {
+            assert_eq!(
+                bits(&sol.at(sol.t[k]).unwrap()),
+                bits(&sol.y[k]),
+                "{name} k={k}"
+            );
+        }
+        assert!(sol.at(te).is_some(), "{name}");
+        // Nothing past t_e, up to the next untruncated step end and beyond.
+        let next = *base.t.iter().find(|&&t| t > te).unwrap();
+        assert!(sol.at(0.5 * (te + next)).is_none(), "{name}");
+        assert!(sol.at(next).is_none(), "{name}");
+        assert!(sol.at(span.1).is_none(), "{name}");
+        // Interior samples of the kept steps equal the untruncated run's.
+        for w in sol.t[..sol.t.len() - 1].windows(2) {
+            let m = 0.5 * (w[0] + w[1]);
+            assert_eq!(
+                bits(&sol.at(m).unwrap()),
+                bits(&base.at(m).unwrap()),
+                "{name}"
+            );
+        }
+    }
+    // The three decay routes agree on the event time to the tolerance.
+    let exact = -(0.4f64).ln();
+    for (name, te) in &times {
+        if *name != "fast banded" {
+            assert!((te - exact).abs() <= 1e-6, "{name}: {te}");
+        }
+    }
+
+    // A terminal event exactly at a step end: one event, no duplicate time.
+    for (name, base_p, _, span, y0, o, id) in &cases {
+        let base = Rodas5p::solve(&base_p(), *span, y0, o).unwrap();
+        let k = base.t.len() / 2;
+        let tk = base.t[k];
+        let p = base_p().terminal_event(move |t, _y| t - tk, Direction::Up);
+        let sol = Rodas5p::solve(&p, *span, y0, o).unwrap();
+        assert_eq!(sol.stats.route.driver_id, *id, "{name}");
+        assert_eq!(sol.events.len(), 1, "{name}");
+        assert_eq!(sol.t.last().copied(), Some(tk), "{name}");
+        assert!(sol.t.windows(2).all(|w| w[0] < w[1]), "{name}");
+        assert_eq!(sol.t.len(), k + 1, "{name}");
+        assert_eq!(bits(sol.y.last().unwrap()), bits(&base.y[k]), "{name}");
+        assert!(
+            sol.at(tk).is_some() && sol.at(tk + 1e-9).is_none(),
+            "{name}"
+        );
+    }
+}

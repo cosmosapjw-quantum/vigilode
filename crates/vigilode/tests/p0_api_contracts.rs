@@ -172,19 +172,20 @@ fn display_text_is_the_former_message() {
     let text = |u: Unsupported| u.to_string();
     assert_eq!(
         text(refusal(&jvp(), &dense_output())),
-        "a mass matrix or dense output on a JVP-only problem: the protected sequential \
-         dense driver needs an explicit or finite-difference Jacobian (the step's stage \
-         matrix M - h gamma J)"
+        "a mass matrix or dense output on a JVP-only problem: the stage matrix \
+         M - h gamma J of the dense-output and mass-matrix drivers needs an explicit \
+         or finite-difference Jacobian"
     );
     assert_eq!(
         text(refusal(&dense().banded(1, 1), &dense_output())),
         "a declared band on a dense Jacobian with a mass matrix or dense output: only the \
-         router verifies such a declaration, and the sequential dense driver would ignore it"
+         router verifies such a declaration, and the dense-output and mass-matrix routes \
+         bypass the router"
     );
     assert_eq!(
         text(refusal(&dense().mass(MASS.to_vec()), &vector())),
-        "a vector atol with a mass matrix or interior_error = Enforce: the \
-         sequential dense driver takes a scalar absolute tolerance"
+        "a vector atol with a mass matrix, or with dense output under interior_error = \
+         Enforce: the sequential dense driver takes a scalar absolute tolerance"
     );
     assert_eq!(
         text(refusal(&jvp(), &vector())),

@@ -281,3 +281,93 @@ fn zero_component_follows_zero_scale_rule() {
     assert!(bad.observed.counters.local_error_failures >= 1);
     assert!(partial.is_some());
 }
+
+/// A diagonal decay `y_i' = -rate_i y_i`; a zero rate makes the component
+/// constant, with an exactly zero embedded error.
+fn diagonal(rates: [f64; 3]) -> OdeProblem {
+    OdeProblem::new(
+        "vector-atol-diagonal",
+        3,
+        Arc::new(move |_, y, out| {
+            for i in 0..3 {
+                out[i] = -rates[i] * y[i];
+            }
+            Ok(())
+        }),
+        None,
+        Some(Arc::new(move |_, _| {
+            let mut m = vec![0.0; 9];
+            for i in 0..3 {
+                m[4 * i] = -rates[i];
+            }
+            DenseMatrix::new(3, 3, m)
+        })),
+        None,
+        None,
+        true,
+        None,
+        None,
+    )
+    .unwrap()
+}
+
+/// Entry `i` of an asymmetric vector must weight component `i`. Only one
+/// component evolves (the others are constant and add an exactly zero
+/// error), so the vector run equals the scalar run with that component's
+/// own entry, bit for bit, wherever the active component sits; a reversed
+/// or mis-indexed order reads another entry and gives a different run.
+#[test]
+fn vector_entries_weight_their_own_component() {
+    let schedule = OutputSchedule::new(vec![0.0, 3.0]).unwrap();
+    // |y| ~ 1e-6, so the weight is atol_i + 1e-12: the atol decides.
+    let y0 = [1.0e-6, 2.0e-6, 3.0e-6];
+    let run = |p: &OdeProblem, atol: Option<&[f64]>, scalar: f64| {
+        let adaptive = config(scalar, RTOL);
+        match atol {
+            Some(v) => {
+                integrate_rodas5p_fast_observed_with_atol(
+                    p,
+                    (0.0, 3.0),
+                    &y0,
+                    &adaptive,
+                    &schedule,
+                    v,
+                )
+                .unwrap()
+                .0
+            }
+            None => {
+                integrate_rodas5p_fast_observed_with_partial(
+                    p,
+                    (0.0, 3.0),
+                    &y0,
+                    &adaptive,
+                    &schedule,
+                )
+                .unwrap()
+                .0
+            }
+        }
+    };
+    let mine = 1.0e-12;
+    let cases = [
+        (diagonal([40.0, 0.0, 0.0]), [mine, 1.0e-4, 1.0e-8]),
+        (diagonal([0.0, 40.0, 0.0]), [1.0e-4, mine, 1.0e-8]),
+        (diagonal([0.0, 0.0, 40.0]), [1.0e-4, 1.0e-8, mine]),
+    ];
+    for (k, (problem, vector)) in cases.iter().enumerate() {
+        let scalar = run(problem, None, mine);
+        let other = run(problem, None, 1.0e-4);
+        let v = run(problem, Some(vector), 1.0);
+        assert!(scalar.observed.success && v.observed.success);
+        assert_eq!(scalar.attempts, v.attempts, "active component {k}");
+        assert_eq!(scalar.observed.counters, v.observed.counters, "{k}");
+        assert_eq!(bits(&scalar.observed.y[1]), bits(&v.observed.y[1]), "{k}");
+        // Control: the entries matter for this run.
+        assert!(
+            scalar.attempts != other.attempts
+                || bits(&scalar.observed.y[1]) != bits(&other.observed.y[1]),
+            "the atol does not change the run of component {k}"
+        );
+    }
+}

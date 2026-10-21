@@ -24,7 +24,12 @@ use crate::{
 /// [`crate::InteriorError::Enforce`] keeps the sequential dense route. v3
 /// also covers the event fields [`Stats::terminal_event`] and
 /// [`Stats::event_evaluations`] (wave-3 node `p0-events`, added under the
-/// v2 tag).
+/// v2 tag). Further v2 to v3 changes in meaning: `options.atol` can be
+/// `Vector` in a record of a run that ran (v2 refused every vector), and
+/// `adaptive.atol` is then the largest entry, which no driver read; the
+/// `route.entry_point` strings now include the four `..._with_atol` entry
+/// points and the fast dense entry points; and `driver_work` can be
+/// `FastDense { band_work, interior, .. }`.
 pub const STATS_SCHEMA: &str = "vigilode.stats.v3";
 
 /// Which user callback reported an error.
@@ -135,13 +140,15 @@ impl fmt::Display for FailureReason {
 
 /// The outcome of a run.
 ///
-/// `Success` means the run reached `t1` with every accepted step passing the
-/// embedded error *estimate*; it is not a certificate of the global error.
+/// `Success` means the run reached `t1`, or a terminal event ended the outputs
+/// (see [`Stats::terminal_event`]; [`Stats::stop`] keeps any later driver
+/// stop), with every accepted step passing the embedded error *estimate*; it
+/// is not a certificate of the global error.
 #[derive(Clone, Debug, PartialEq, Serialize)]
 #[serde(rename_all = "kebab-case", tag = "status")]
 #[non_exhaustive]
 pub enum Status {
-    /// The run reached `t1`.
+    /// The run reached `t1`, or a terminal event ended the outputs.
     Success,
     /// The run stopped early; the solution holds what was computed.
     Failed(FailureReason),
@@ -300,7 +307,8 @@ pub enum DriverWork {
         /// The W-filtered interior estimates (all zero under `Off`); their
         /// right-hand sides and solves are also in [`Stats::driver_counters`].
         interior: FastInteriorWork,
-        /// Accepted steps whose continuous extension was kept.
+        /// Accepted steps whose extension the driver returned (before any
+        /// event truncation).
         segments: usize,
     },
     /// The sequential adaptive dense driver
@@ -325,7 +333,8 @@ pub enum DriverWork {
         /// Work of the estimates (also in [`Stats::driver_counters`] under
         /// the enforcing modes).
         estimate_counters: WorkCounters,
-        /// Accepted steps whose continuous extension was kept.
+        /// Accepted steps whose extension the driver returned (before any
+        /// event truncation).
         segments: usize,
     },
 }
@@ -334,8 +343,9 @@ pub enum DriverWork {
 #[derive(Clone, Debug, PartialEq, Serialize)]
 #[non_exhaustive]
 pub struct StopRecord {
-    /// The last accepted time (`t0` when no step was accepted); the last
-    /// entry of [`Solution::t`].
+    /// The driver's last accepted time (`t0` when no step was accepted).
+    /// After a terminal event or an event-function failure, [`Solution::t`]
+    /// is cut before it.
     pub t: f64,
     /// Why the driver's loop ended.
     pub reason: DriverStopReason,
@@ -437,7 +447,7 @@ pub struct Solution {
     /// Output times. Without [`crate::Options::dense_output`]: `t0` and
     /// `t1`, or `t0` and the last accepted time for a failed run. With it:
     /// `t0` and every accepted step's end, up to `t1` or the last accepted
-    /// time.
+    /// time, or `t_e` after a terminal event.
     pub t: Vec<f64>,
     /// States at [`Solution::t`].
     pub y: Vec<Vec<f64>>,
@@ -517,7 +527,7 @@ impl Extension {
 }
 
 impl Solution {
-    /// Whether the run reached `t1`.
+    /// Whether the run reached `t1` or a terminal event ended the outputs.
     pub fn is_success(&self) -> bool {
         self.status == Status::Success
     }

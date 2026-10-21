@@ -124,16 +124,16 @@
 //! [`EventRecord`]) are read, never built by struct literal. The input
 //! structs [`Options`] and [`Atol`] stay exhaustive on purpose:
 //! `Options { dense_output: true, ..Options::default() }` is the supported
-//! way to build options. Every refusal is a typed [`Unsupported`] variant
-//! whose `Display` is the message, so a caller can match on the cause
-//! instead of the text. The `Stats` JSON schema is versioned separately by
+//! way to build options. Every unsupported-feature refusal is a typed
+//! [`Unsupported`] variant whose `Display` is the message, so a caller can
+//! match on the cause instead of the text; a future payload becomes a new
+//! variant. The `Stats` JSON schema is versioned separately by
 //! [`STATS_SCHEMA`].
-//!
 //!
 //! An exhaustive `match` on a [`FailureReason`] outside this crate does not
 //! compile:
 //!
-//! ```compile_fail
+//! ```compile_fail,E0004
 //! use vigilode::FailureReason;
 //!
 //! fn name(r: &FailureReason) -> &'static str {
