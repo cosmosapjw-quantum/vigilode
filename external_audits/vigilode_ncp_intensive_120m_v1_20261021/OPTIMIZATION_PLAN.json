@@ -1,0 +1,49 @@
+{
+  "protocol": "vigilode_ncp_intensive_120m_v1",
+  "items": [
+    {
+      "priority": "high",
+      "scope": "component adapter + periodic heat Fourier mode n=128, rtol=1e-6",
+      "evidence": {
+        "vigilode_median_s": 0.014555132,
+        "vigilode_peak_rss_kib": 13824,
+        "julia_rodas5p_median_s": 0.009195117,
+        "julia_peak_rss_kib": 1010336,
+        "extra_rhs_calls": 5376,
+        "counted_rhs_calls": 336,
+        "accepted_steps": 42,
+        "jacobian_builds": 42,
+        "jacobian_reuses": 0
+      },
+      "measured_bottleneck": "Benchmark adapter forms dense Jacobian by basis JVP; periodic heat JVP calls RHS, causing 5376 derivative RHS calls that are separately marked excluded from solver counters. VIG is slower than Julia in this case but uses far less measured RSS.",
+      "target": "component_benchmark_support::Case::jac_into and periodic_heat jvp adapter path",
+      "action": "Compare a structured/banded or analytic Jacobian route already supported by the production interface; separately account derivative RHS in adapter output.",
+      "verification": "same exact n=128, tolerance, confirmation repetitions, error and complete timing/RSS/work ledger; no predicted speedup."
+    },
+    {
+      "priority": "high",
+      "scope": "rapid oscillation omega=10, fixed componentwise rtol=1e-6 atol=1e-10",
+      "evidence": {
+        "vigilode_max_scaled_error": 5156.614120926653,
+        "all_four_tolerance_levels_failed": true
+      },
+      "measured_bottleneck": "Accuracy fails strongly near component zeros for all four tested tolerances; larger rtol refinements were not used.",
+      "target": "accuracy controller/scaling policy investigation only; no change in this campaign",
+      "action": "Inspect scaled error allocation and phase/amplitude error separately under frozen tolerances; preserve refusal/accuracy failure until independently validated.",
+      "verification": "analytic phase+amplitude and componentwise shared-grid checks at existing protocol without loosening tolerance."
+    },
+    {
+      "priority": "medium",
+      "scope": "accuracy comparison evidence design",
+      "evidence": {
+        "confirmation_repetitions": 7,
+        "arm_order": "randomized sequential; unpaired"
+      },
+      "measured_bottleneck": "Current repetitions do not support paired speed-ratio uncertainty.",
+      "target": "next measurement harness only",
+      "action": "Interleave deterministically seeded matched blocks and record block IDs, preserving the same solver options and CPU affinity.",
+      "verification": "predeclared paired bootstrap/interval and matched accuracy before any speed verdict."
+    }
+  ],
+  "no_implementation_performed": true
+}
