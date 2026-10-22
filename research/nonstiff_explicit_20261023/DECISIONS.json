@@ -1,0 +1,803 @@
+{
+  "schema": "vigilode.nonstiff-decisions.v1",
+  "source_commit": "45037fc24e8f8101605f309e1fdb3a9a4e3df56d",
+  "ncp_used": false,
+  "broad_production": "HOLD",
+  "overall_reason": "New opt-in nonstiff capability passes scoped contracts and sampled-state checks. Automatic switching, explicit dense output/events/mass, client physical metrics, long-time accuracy and representative external comparison remain incomplete.",
+  "validation": {
+    "targeted_tests_passed": 25,
+    "main_configurations_successful": 90,
+    "main_runs_successful": 360,
+    "ensemble_configurations_successful": 4,
+    "ensemble_runs_successful": 16,
+    "all_saved_state_replays_valid": true,
+    "main_wall_seconds": 259.6646304800088
+  },
+  "decisions": [
+    {
+      "component": "Dopri5 RHS-only opt-in path",
+      "decision": "promote",
+      "scope": "Scoped opt-in smooth forward identity-mass nonstiff IVPs, fixed model, scalar/vector atol, observed endpoints; caller validates application accuracy",
+      "evidence": [
+        "evidence/VALIDATION.json",
+        "evidence/local_bench/SUMMARY.json"
+      ],
+      "not_a_broad_production_promotion": true
+    },
+    {
+      "component": "Independent Dopri5 ensemble",
+      "decision": "specialized_only",
+      "scope": "Independent trajectories with separate adaptive norms and reusable bounded pool",
+      "evidence": [
+        "evidence/ensemble_bench/SUMMARY.json"
+      ],
+      "median_ratios_1_over_2_workers": [
+        2.1003525413228212,
+        2.38946940196871
+      ],
+      "caution": "Ratios above two are local observations, not proven superlinear speedup."
+    },
+    {
+      "component": "Unconditional explicit default on stiff problems",
+      "decision": "prune",
+      "scope": "Policy choice, not removal of the explicit method",
+      "reason": "Stiff control required31014 attempts/186085RHS; native RODAS about277x faster at sampled-error<=1e-6."
+    },
+    {
+      "component": "Dopri5 large-vector performance",
+      "decision": "optimization_possible",
+      "scope": "4096-component diagonal nonstiff family",
+      "reason": "Faster than native MF baseline but slower than measured VODE wrapper; redundant poison/finite passes and RHS vectorization need profiling."
+    },
+    {
+      "component": "Strict and long-time oscillatory accuracy",
+      "decision": "hold",
+      "scope": "Requested global sampled threshold1e-8 at current rtol grid; long-time phase/amplitude unmeasured",
+      "reason": "Harmonic and rapid DOPRI errors3.28e-8 and2.17e-7 at smallest testedrtol. Broaden grid and horizon before claim."
+    },
+    {
+      "component": "16-stage four-sweep parallel RK candidate",
+      "decision": "hold",
+      "scope": "Theory complete; code and performance not implemented",
+      "reason": "Exact5(4); warmed work15 vs6, span5 vs6; positive small-imaginary-axis amplification. Expensive damped RHS trial only."
+    },
+    {
+      "component": "Chebyshev stabilized polynomial path",
+      "decision": "specialized_only",
+      "scope": "Theorem only: symmetric negative semidefinite linear systems; proposed polynomial first order",
+      "reason": "Stability-limited action count square-root improvement; equal-accuracy speedup and higher-order implementation open."
+    },
+    {
+      "component": "Automatic switching / explicit dense output / events / nonidentity mass / physical lift metric",
+      "decision": "hold",
+      "scope": "Not implemented in new explicit facade",
+      "next_steps": [
+        "N23",
+        "N24",
+        "N25"
+      ]
+    },
+    {
+      "component": "Diffsol and Julia new-fixture comparison",
+      "decision": "hold",
+      "scope": "NOT_RUN in this campaign; legacy source available",
+      "next_steps": [
+        "N22"
+      ],
+      "reason": "Requires schema bridge, fixture parity, pinned executable/runtime; see comparator inventory."
+    }
+  ],
+  "measured_native_nonstiff_at_error_1e_6": {
+    "cases": 9,
+    "ratio_min": 2.7317986499020686,
+    "ratio_max": 8.928660737120286,
+    "ratio_definition": "comparator median / explicit median among sampled configurations satisfying the same threshold",
+    "limitations": [
+      "three timed repeats",
+      "shared local hardware",
+      "some min/max envelopes cross one",
+      "sampled-state rather than uniform error",
+      "finite tolerance grid"
+    ]
+  },
+  "all_common_error_comparisons": [
+    {
+      "case": "decay",
+      "dimension": 8,
+      "normalized_error_threshold": 1e-06,
+      "comparator": "rodas-dense",
+      "status": "COMPARABLE",
+      "explicit_config": 3,
+      "comparator_config": 1,
+      "explicit_error": 2.6969699255113833e-08,
+      "comparator_error": 8.723620285172595e-08,
+      "explicit_seconds": 7.0382e-05,
+      "comparator_seconds": 0.000628417,
+      "comparator_over_explicit_time": 8.928660737120286,
+      "observed_ratio_envelope": [
+        3.4884197310602305,
+        11.021247145131152
+      ]
+    },
+    {
+      "case": "decay",
+      "dimension": 8,
+      "normalized_error_threshold": 1e-06,
+      "comparator": "vode",
+      "status": "COMPARABLE",
+      "explicit_config": 3,
+      "comparator_config": 8,
+      "explicit_error": 2.6969699255113833e-08,
+      "comparator_error": 3.9845310245700816e-09,
+      "explicit_seconds": 7.0382e-05,
+      "comparator_seconds": 0.001648505000048317,
+      "comparator_over_explicit_time": 23.42225284942623,
+      "observed_ratio_envelope": [
+        12.654855138574131,
+        36.07548973770591
+      ]
+    },
+    {
+      "case": "decay",
+      "dimension": 8,
+      "normalized_error_threshold": 1e-08,
+      "comparator": "rodas-dense",
+      "status": "COMPARABLE",
+      "explicit_config": 6,
+      "comparator_config": 4,
+      "explicit_error": 2.316318387096672e-10,
+      "comparator_error": 1.0381949674953539e-09,
+      "explicit_seconds": 9.8472e-05,
+      "comparator_seconds": 0.000860318,
+      "comparator_over_explicit_time": 8.73667641563084,
+      "observed_ratio_envelope": [
+        0.13844916513806987,
+        11.239199455126526
+      ]
+    },
+    {
+      "case": "decay",
+      "dimension": 8,
+      "normalized_error_threshold": 1e-08,
+      "comparator": "vode",
+      "status": "COMPARABLE",
+      "explicit_config": 6,
+      "comparator_config": 8,
+      "explicit_error": 2.316318387096672e-10,
+      "comparator_error": 3.9845310245700816e-09,
+      "explicit_seconds": 9.8472e-05,
+      "comparator_seconds": 0.001648505000048317,
+      "comparator_over_explicit_time": 16.740850191407883,
+      "observed_ratio_envelope": [
+        0.5508334245039375,
+        21.847529783417517
+      ]
+    },
+    {
+      "case": "driven",
+      "dimension": 8,
+      "normalized_error_threshold": 1e-06,
+      "comparator": "rodas-dense",
+      "status": "COMPARABLE",
+      "explicit_config": 12,
+      "comparator_config": 16,
+      "explicit_error": 5.477927950137129e-07,
+      "comparator_error": 1.3598135950587675e-09,
+      "explicit_seconds": 7.9467e-05,
+      "comparator_seconds": 0.000596987,
+      "comparator_over_explicit_time": 7.512388790315477,
+      "observed_ratio_envelope": [
+        3.140840172989576,
+        11.67591309874994
+      ]
+    },
+    {
+      "case": "driven",
+      "dimension": 8,
+      "normalized_error_threshold": 1e-06,
+      "comparator": "vode",
+      "status": "COMPARABLE",
+      "explicit_config": 12,
+      "comparator_config": 14,
+      "explicit_error": 5.477927950137129e-07,
+      "comparator_error": 8.840186125347316e-07,
+      "explicit_seconds": 7.9467e-05,
+      "comparator_seconds": 0.002771311003016308,
+      "comparator_over_explicit_time": 34.87373378907355,
+      "observed_ratio_envelope": [
+        12.286671483476667,
+        74.8815945882514
+      ]
+    },
+    {
+      "case": "driven",
+      "dimension": 8,
+      "normalized_error_threshold": 1e-08,
+      "comparator": "rodas-dense",
+      "status": "COMPARABLE",
+      "explicit_config": 15,
+      "comparator_config": 16,
+      "explicit_error": 4.800793096393363e-09,
+      "comparator_error": 1.3598135950587675e-09,
+      "explicit_seconds": 0.000237022,
+      "comparator_seconds": 0.000596987,
+      "comparator_over_explicit_time": 2.5186986861979057,
+      "observed_ratio_envelope": [
+        1.3878579911204438,
+        8.093897933590176
+      ]
+    },
+    {
+      "case": "driven",
+      "dimension": 8,
+      "normalized_error_threshold": 1e-08,
+      "comparator": "vode",
+      "status": "INSUFFICIENT_ELIGIBLE_CONFIGURATIONS",
+      "explicit_config": 15,
+      "comparator_config": null,
+      "explicit_error": 4.800793096393363e-09,
+      "comparator_error": null,
+      "explicit_seconds": 0.000237022,
+      "comparator_seconds": null,
+      "comparator_over_explicit_time": null,
+      "observed_ratio_envelope": null
+    },
+    {
+      "case": "logistic",
+      "dimension": 8,
+      "normalized_error_threshold": 1e-06,
+      "comparator": "rodas-dense",
+      "status": "COMPARABLE",
+      "explicit_config": 21,
+      "comparator_config": 22,
+      "explicit_error": 2.3347251065786168e-07,
+      "comparator_error": 7.07736700245043e-07,
+      "explicit_seconds": 7.1511e-05,
+      "comparator_seconds": 0.000492453,
+      "comparator_over_explicit_time": 6.886395100054537,
+      "observed_ratio_envelope": [
+        0.27628101377013053,
+        11.096802630658365
+      ]
+    },
+    {
+      "case": "logistic",
+      "dimension": 8,
+      "normalized_error_threshold": 1e-06,
+      "comparator": "vode",
+      "status": "COMPARABLE",
+      "explicit_config": 21,
+      "comparator_config": 26,
+      "explicit_error": 2.3347251065786168e-07,
+      "comparator_error": 1.518249836962582e-08,
+      "explicit_seconds": 7.1511e-05,
+      "comparator_seconds": 0.0014913289924152195,
+      "comparator_over_explicit_time": 20.854539754935878,
+      "observed_ratio_envelope": [
+        1.6395305664612991,
+        21.35582451368418
+      ]
+    },
+    {
+      "case": "logistic",
+      "dimension": 8,
+      "normalized_error_threshold": 1e-08,
+      "comparator": "rodas-dense",
+      "status": "COMPARABLE",
+      "explicit_config": 24,
+      "comparator_config": 25,
+      "explicit_error": 2.5411852622170272e-09,
+      "comparator_error": 6.9592281937147504e-09,
+      "explicit_seconds": 0.000273767,
+      "comparator_seconds": 0.000694171,
+      "comparator_over_explicit_time": 2.535627011290623,
+      "observed_ratio_envelope": [
+        0.8420485710385565,
+        7.566050972995354
+      ]
+    },
+    {
+      "case": "logistic",
+      "dimension": 8,
+      "normalized_error_threshold": 1e-08,
+      "comparator": "vode",
+      "status": "INSUFFICIENT_ELIGIBLE_CONFIGURATIONS",
+      "explicit_config": 24,
+      "comparator_config": null,
+      "explicit_error": 2.5411852622170272e-09,
+      "comparator_error": null,
+      "explicit_seconds": 0.000273767,
+      "comparator_seconds": null,
+      "comparator_over_explicit_time": null,
+      "observed_ratio_envelope": null
+    },
+    {
+      "case": "harmonic",
+      "dimension": 8,
+      "normalized_error_threshold": 1e-06,
+      "comparator": "rodas-dense",
+      "status": "COMPARABLE",
+      "explicit_config": 33,
+      "comparator_config": 31,
+      "explicit_error": 3.2842580766079266e-08,
+      "comparator_error": 2.712583215824793e-07,
+      "explicit_seconds": 0.000221719,
+      "comparator_seconds": 0.000744799,
+      "comparator_over_explicit_time": 3.3592024138661998,
+      "observed_ratio_envelope": [
+        1.3605584532461126,
+        3.849857468509668
+      ]
+    },
+    {
+      "case": "harmonic",
+      "dimension": 8,
+      "normalized_error_threshold": 1e-06,
+      "comparator": "vode",
+      "status": "COMPARABLE",
+      "explicit_config": 33,
+      "comparator_config": 35,
+      "explicit_error": 3.2842580766079266e-08,
+      "comparator_error": 1.5831788990894324e-07,
+      "explicit_seconds": 0.000221719,
+      "comparator_seconds": 0.005391279992181808,
+      "comparator_over_explicit_time": 24.315823146333006,
+      "observed_ratio_envelope": [
+        11.866538772737972,
+        53.28945359708316
+      ]
+    },
+    {
+      "case": "harmonic",
+      "dimension": 8,
+      "normalized_error_threshold": 1e-08,
+      "comparator": "rodas-dense",
+      "status": "INSUFFICIENT_ELIGIBLE_CONFIGURATIONS",
+      "explicit_config": null,
+      "comparator_config": 34,
+      "explicit_error": null,
+      "comparator_error": 9.228313738174343e-10,
+      "explicit_seconds": null,
+      "comparator_seconds": 0.000928979,
+      "comparator_over_explicit_time": null,
+      "observed_ratio_envelope": null
+    },
+    {
+      "case": "harmonic",
+      "dimension": 8,
+      "normalized_error_threshold": 1e-08,
+      "comparator": "vode",
+      "status": "INSUFFICIENT_ELIGIBLE_CONFIGURATIONS",
+      "explicit_config": null,
+      "comparator_config": null,
+      "explicit_error": null,
+      "comparator_error": null,
+      "explicit_seconds": null,
+      "comparator_seconds": null,
+      "comparator_over_explicit_time": null,
+      "observed_ratio_envelope": null
+    },
+    {
+      "case": "rapid",
+      "dimension": 8,
+      "normalized_error_threshold": 1e-06,
+      "comparator": "rodas-dense",
+      "status": "COMPARABLE",
+      "explicit_config": 42,
+      "comparator_config": 43,
+      "explicit_error": 2.1705652775150241e-07,
+      "comparator_error": 5.666393576575501e-09,
+      "explicit_seconds": 0.002172435,
+      "comparator_seconds": 0.005934655,
+      "comparator_over_explicit_time": 2.7317986499020686,
+      "observed_ratio_envelope": [
+        0.46108703313993576,
+        4.608167008791817
+      ]
+    },
+    {
+      "case": "rapid",
+      "dimension": 8,
+      "normalized_error_threshold": 1e-06,
+      "comparator": "vode",
+      "status": "COMPARABLE",
+      "explicit_config": 42,
+      "comparator_config": 44,
+      "explicit_error": 2.1705652775150241e-07,
+      "comparator_error": 9.503549655009991e-07,
+      "explicit_seconds": 0.002172435,
+      "comparator_seconds": 0.039894715999253094,
+      "comparator_over_explicit_time": 18.364055080705796,
+      "observed_ratio_envelope": [
+        3.0138452260538364,
+        37.11482390471527
+      ]
+    },
+    {
+      "case": "rapid",
+      "dimension": 8,
+      "normalized_error_threshold": 1e-08,
+      "comparator": "rodas-dense",
+      "status": "INSUFFICIENT_ELIGIBLE_CONFIGURATIONS",
+      "explicit_config": null,
+      "comparator_config": 43,
+      "explicit_error": null,
+      "comparator_error": 5.666393576575501e-09,
+      "explicit_seconds": null,
+      "comparator_seconds": 0.005934655,
+      "comparator_over_explicit_time": null,
+      "observed_ratio_envelope": null
+    },
+    {
+      "case": "rapid",
+      "dimension": 8,
+      "normalized_error_threshold": 1e-08,
+      "comparator": "vode",
+      "status": "INSUFFICIENT_ELIGIBLE_CONFIGURATIONS",
+      "explicit_config": null,
+      "comparator_config": null,
+      "explicit_error": null,
+      "comparator_error": null,
+      "explicit_seconds": null,
+      "comparator_seconds": null,
+      "comparator_over_explicit_time": null,
+      "observed_ratio_envelope": null
+    },
+    {
+      "case": "damped",
+      "dimension": 8,
+      "normalized_error_threshold": 1e-06,
+      "comparator": "rodas-dense",
+      "status": "COMPARABLE",
+      "explicit_config": 48,
+      "comparator_config": 49,
+      "explicit_error": 1.7517415610776577e-07,
+      "comparator_error": 9.31367593118293e-09,
+      "explicit_seconds": 0.000160323,
+      "comparator_seconds": 0.00083763,
+      "comparator_over_explicit_time": 5.224640257480212,
+      "observed_ratio_envelope": [
+        1.5426790005735338,
+        16.929587010236496
+      ]
+    },
+    {
+      "case": "damped",
+      "dimension": 8,
+      "normalized_error_threshold": 1e-06,
+      "comparator": "vode",
+      "status": "COMPARABLE",
+      "explicit_config": 48,
+      "comparator_config": 50,
+      "explicit_error": 1.7517415610776577e-07,
+      "comparator_error": 1.0500521253203887e-07,
+      "explicit_seconds": 0.000160323,
+      "comparator_seconds": 0.006487969003501348,
+      "comparator_over_explicit_time": 40.468111272252564,
+      "observed_ratio_envelope": [
+        22.393669297153327,
+        55.75356161944434
+      ]
+    },
+    {
+      "case": "damped",
+      "dimension": 8,
+      "normalized_error_threshold": 1e-08,
+      "comparator": "rodas-dense",
+      "status": "COMPARABLE",
+      "explicit_config": 51,
+      "comparator_config": 49,
+      "explicit_error": 1.5568823868994386e-09,
+      "comparator_error": 9.31367593118293e-09,
+      "explicit_seconds": 0.000624448,
+      "comparator_seconds": 0.00083763,
+      "comparator_over_explicit_time": 1.3413927180485805,
+      "observed_ratio_envelope": [
+        0.08763024344088326,
+        4.073926338678989
+      ]
+    },
+    {
+      "case": "damped",
+      "dimension": 8,
+      "normalized_error_threshold": 1e-08,
+      "comparator": "vode",
+      "status": "COMPARABLE",
+      "explicit_config": 51,
+      "comparator_config": 53,
+      "explicit_error": 1.5568823868994386e-09,
+      "comparator_error": 8.546182990454287e-09,
+      "explicit_seconds": 0.000624448,
+      "comparator_seconds": 0.011998863992630504,
+      "comparator_over_explicit_time": 19.215153211525227,
+      "observed_ratio_envelope": [
+        1.5735412366734165,
+        22.604561343096243
+      ]
+    },
+    {
+      "case": "mixed-scales",
+      "dimension": 12,
+      "normalized_error_threshold": 1e-06,
+      "comparator": "rodas-dense",
+      "status": "COMPARABLE",
+      "explicit_config": 57,
+      "comparator_config": 58,
+      "explicit_error": 1.1405594097624316e-07,
+      "comparator_error": 4.52024300656717e-09,
+      "explicit_seconds": 0.000124707,
+      "comparator_seconds": 0.000341784,
+      "comparator_over_explicit_time": 2.740696191873752,
+      "observed_ratio_envelope": [
+        0.9057598135888396,
+        8.064097707680476
+      ]
+    },
+    {
+      "case": "mixed-scales",
+      "dimension": 12,
+      "normalized_error_threshold": 1e-06,
+      "comparator": "vode",
+      "status": "COMPARABLE",
+      "explicit_config": 57,
+      "comparator_config": 59,
+      "explicit_error": 1.1405594097624316e-07,
+      "comparator_error": 4.6325127621926755e-07,
+      "explicit_seconds": 0.000124707,
+      "comparator_seconds": 0.0018839889962691814,
+      "comparator_over_explicit_time": 15.107323536523062,
+      "observed_ratio_envelope": [
+        4.4280235983089185,
+        23.469839417561158
+      ]
+    },
+    {
+      "case": "mixed-scales",
+      "dimension": 12,
+      "normalized_error_threshold": 1e-08,
+      "comparator": "rodas-dense",
+      "status": "COMPARABLE",
+      "explicit_config": 60,
+      "comparator_config": 58,
+      "explicit_error": 9.56808330343506e-10,
+      "comparator_error": 4.52024300656717e-09,
+      "explicit_seconds": 0.000429431,
+      "comparator_seconds": 0.000341784,
+      "comparator_over_explicit_time": 0.7958996905207123,
+      "observed_ratio_envelope": [
+        0.366502321538624,
+        4.97838626925748
+      ]
+    },
+    {
+      "case": "mixed-scales",
+      "dimension": 12,
+      "normalized_error_threshold": 1e-08,
+      "comparator": "vode",
+      "status": "INSUFFICIENT_ELIGIBLE_CONFIGURATIONS",
+      "explicit_config": 60,
+      "comparator_config": null,
+      "explicit_error": 9.56808330343506e-10,
+      "comparator_error": null,
+      "explicit_seconds": 0.000429431,
+      "comparator_seconds": null,
+      "comparator_over_explicit_time": null,
+      "observed_ratio_envelope": null
+    },
+    {
+      "case": "nonnormal",
+      "dimension": 8,
+      "normalized_error_threshold": 1e-06,
+      "comparator": "rodas-dense",
+      "status": "COMPARABLE",
+      "explicit_config": 66,
+      "comparator_config": 64,
+      "explicit_error": 1.602734425066951e-07,
+      "comparator_error": 4.5804208951672954e-07,
+      "explicit_seconds": 5.8627e-05,
+      "comparator_seconds": 0.000388819,
+      "comparator_over_explicit_time": 6.632080781892302,
+      "observed_ratio_envelope": [
+        2.062673234262815,
+        27.49302921667446
+      ]
+    },
+    {
+      "case": "nonnormal",
+      "dimension": 8,
+      "normalized_error_threshold": 1e-06,
+      "comparator": "vode",
+      "status": "COMPARABLE",
+      "explicit_config": 66,
+      "comparator_config": 68,
+      "explicit_error": 1.602734425066951e-07,
+      "comparator_error": 2.696869343646046e-07,
+      "explicit_seconds": 5.8627e-05,
+      "comparator_seconds": 0.0027391789917601272,
+      "comparator_over_explicit_time": 46.7221415347899,
+      "observed_ratio_envelope": [
+        21.256436698796815,
+        74.72366256333969
+      ]
+    },
+    {
+      "case": "nonnormal",
+      "dimension": 8,
+      "normalized_error_threshold": 1e-08,
+      "comparator": "rodas-dense",
+      "status": "COMPARABLE",
+      "explicit_config": 69,
+      "comparator_config": 70,
+      "explicit_error": 1.7185204164672212e-09,
+      "comparator_error": 3.592651971723132e-11,
+      "explicit_seconds": 0.000792532,
+      "comparator_seconds": 0.000827212,
+      "comparator_over_explicit_time": 1.0437584854617858,
+      "observed_ratio_envelope": [
+        0.4909334105644346,
+        13.413467178200209
+      ]
+    },
+    {
+      "case": "nonnormal",
+      "dimension": 8,
+      "normalized_error_threshold": 1e-08,
+      "comparator": "vode",
+      "status": "INSUFFICIENT_ELIGIBLE_CONFIGURATIONS",
+      "explicit_config": 69,
+      "comparator_config": null,
+      "explicit_error": 1.7185204164672212e-09,
+      "comparator_error": null,
+      "explicit_seconds": 0.000792532,
+      "comparator_seconds": null,
+      "comparator_over_explicit_time": null,
+      "observed_ratio_envelope": null
+    },
+    {
+      "case": "large-vector",
+      "dimension": 4096,
+      "normalized_error_threshold": 1e-06,
+      "comparator": "vode",
+      "status": "COMPARABLE",
+      "explicit_config": 75,
+      "comparator_config": 77,
+      "explicit_error": 1.7751264028142977e-08,
+      "comparator_error": 1.422094269010188e-07,
+      "explicit_seconds": 0.017397528,
+      "comparator_seconds": 0.008403177009313367,
+      "comparator_over_explicit_time": 0.483009828138421,
+      "observed_ratio_envelope": [
+        0.1445622743140859,
+        2.202056901458833
+      ]
+    },
+    {
+      "case": "large-vector",
+      "dimension": 4096,
+      "normalized_error_threshold": 1e-06,
+      "comparator": "rodas-mf",
+      "status": "COMPARABLE",
+      "explicit_config": 75,
+      "comparator_config": 73,
+      "explicit_error": 1.7751264028142977e-08,
+      "comparator_error": 2.4220646641093246e-08,
+      "explicit_seconds": 0.017397528,
+      "comparator_seconds": 0.118884217,
+      "comparator_over_explicit_time": 6.83339707802166,
+      "observed_ratio_envelope": [
+        2.346963293936051,
+        26.288054309215624
+      ]
+    },
+    {
+      "case": "large-vector",
+      "dimension": 4096,
+      "normalized_error_threshold": 1e-08,
+      "comparator": "vode",
+      "status": "COMPARABLE",
+      "explicit_config": 78,
+      "comparator_config": 80,
+      "explicit_error": 1.8656642897241227e-10,
+      "comparator_error": 3.192813902153091e-09,
+      "explicit_seconds": 0.024544138,
+      "comparator_seconds": 0.012981678009964526,
+      "comparator_over_explicit_time": 0.5289115474319989,
+      "observed_ratio_envelope": [
+        0.3373771849240692,
+        0.7560646139756316
+      ]
+    },
+    {
+      "case": "large-vector",
+      "dimension": 4096,
+      "normalized_error_threshold": 1e-08,
+      "comparator": "rodas-mf",
+      "status": "COMPARABLE",
+      "explicit_config": 78,
+      "comparator_config": 76,
+      "explicit_error": 1.8656642897241227e-10,
+      "comparator_error": 6.649526693158769e-10,
+      "explicit_seconds": 0.024544138,
+      "comparator_seconds": 0.250426214,
+      "comparator_over_explicit_time": 10.20309672313609,
+      "observed_ratio_envelope": [
+        6.203445431774974,
+        77.032804009443
+      ]
+    },
+    {
+      "case": "stiff-control",
+      "dimension": 12,
+      "normalized_error_threshold": 1e-06,
+      "comparator": "rodas-dense",
+      "status": "COMPARABLE",
+      "explicit_config": 81,
+      "comparator_config": 82,
+      "explicit_error": 1.7628627533568984e-07,
+      "comparator_error": 5.042566364465983e-10,
+      "explicit_seconds": 0.171704692,
+      "comparator_seconds": 0.000619693,
+      "comparator_over_explicit_time": 0.0036090627040057826,
+      "observed_ratio_envelope": [
+        0.001705692384387373,
+        0.007407527808359584
+      ]
+    },
+    {
+      "case": "stiff-control",
+      "dimension": 12,
+      "normalized_error_threshold": 1e-06,
+      "comparator": "vode",
+      "status": "INSUFFICIENT_ELIGIBLE_CONFIGURATIONS",
+      "explicit_config": 81,
+      "comparator_config": null,
+      "explicit_error": 1.7628627533568984e-07,
+      "comparator_error": null,
+      "explicit_seconds": 0.171704692,
+      "comparator_seconds": null,
+      "comparator_over_explicit_time": null,
+      "observed_ratio_envelope": null
+    },
+    {
+      "case": "stiff-control",
+      "dimension": 12,
+      "normalized_error_threshold": 1e-08,
+      "comparator": "rodas-dense",
+      "status": "COMPARABLE",
+      "explicit_config": 84,
+      "comparator_config": 82,
+      "explicit_error": 4.789107999963271e-10,
+      "comparator_error": 5.042566364465983e-10,
+      "explicit_seconds": 0.181226721,
+      "comparator_seconds": 0.000619693,
+      "comparator_over_explicit_time": 0.003419435040156137,
+      "observed_ratio_envelope": [
+        0.0021614691610130376,
+        0.005714473306230395
+      ]
+    },
+    {
+      "case": "stiff-control",
+      "dimension": 12,
+      "normalized_error_threshold": 1e-08,
+      "comparator": "vode",
+      "status": "INSUFFICIENT_ELIGIBLE_CONFIGURATIONS",
+      "explicit_config": 84,
+      "comparator_config": null,
+      "explicit_error": 4.789107999963271e-10,
+      "comparator_error": null,
+      "explicit_seconds": 0.181226721,
+      "comparator_seconds": null,
+      "comparator_over_explicit_time": null,
+      "observed_ratio_envelope": null
+    }
+  ],
+  "remaining_production_requirements": [
+    "Independent application-scale physical reference and constraints",
+    "Long-time phase/amplitude and dense output/event tests",
+    "Safe bounded explicit/implicit dispatcher with all restart costs",
+    "Compatible pinned Diffsol TSIT45/BDF and Julia arms",
+    "More repeats and hardware/profile checks where timing variance matters",
+    "Client physical full-state error metric and supported mass/state-change contracts"
+  ]
+}
