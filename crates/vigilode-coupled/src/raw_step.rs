@@ -242,6 +242,22 @@ impl RawStepSession {
             ));
             return out;
         }
+        // A storage-budget decline can precede the candidate kernel's own
+        // h*gamma check. The common input contract must therefore guard this
+        // before either algorithm can be selected.
+        let gamma = match rodas5p_coefficients() {
+            Ok(c) => c.gamma,
+            Err(e) => {
+                out.terminal_failure = Some(input(&e.to_string()));
+                return out;
+            }
+        };
+        if !(h * gamma).is_finite() || h * gamma <= 0.0 {
+            out.terminal_failure = Some(input(
+                "raw step requires a finite positive representable h*gamma",
+            ));
+            return out;
+        }
         if let Err(e) = validate_policy(policy) {
             out.terminal_failure = Some(e);
             return out;

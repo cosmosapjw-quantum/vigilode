@@ -105,6 +105,32 @@ fn forced_fallback_preserves_raw_target_and_charges_verification() {
 }
 
 #[test]
+fn underflowed_stage_step_cannot_bypass_validation_through_budget_fallback() {
+    let p = diagonal(vec![-1.0]);
+    let mut session = RawStepSession::new(&p, &linear_config()).unwrap();
+    let h = f64::from_bits(1);
+    assert!(h > 0.0);
+    assert_eq!(h * rodas5p_coefficients().unwrap().gamma, 0.0);
+    let cfg = Config {
+        max_storage_bytes: 0,
+        ..Config::default()
+    };
+    let out = session.attempt(
+        &p,
+        0.0,
+        &[1.0],
+        h,
+        &cfg,
+        &ParallelExecution::sequential(),
+        &RootErrorPolicy::Operational,
+    );
+    assert_eq!(out.terminal_failure.unwrap().kind, FailureKind::Input);
+    assert!(out.selected.is_none());
+    assert!(!out.fallback_attempted);
+    assert_eq!(out.candidate_attempt.work.rhs_attempted, 0);
+}
+
+#[test]
 fn embedded_rejection_does_not_trigger_a_second_algorithm() {
     let p = diagonal(vec![-10.0]);
     let mut s = RawStepSession::new(&p, &linear_config()).unwrap();

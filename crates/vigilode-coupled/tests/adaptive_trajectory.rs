@@ -390,13 +390,12 @@ fn output_session_commits_only_its_issued_finite_dimensioned_endpoint() {
 #[test]
 fn singular_trial_operator_retries_a_smaller_physical_step() {
     let gamma = rodas5p_core::rodas5p_coefficients().unwrap().gamma;
-    let reciprocal = gamma.recip();
-    let rate = [reciprocal.next_down(), reciprocal, reciprocal.next_up()]
-        .into_iter()
-        .find(|r| gamma * r == 1.0)
-        .expect("a neighboring binary64 rate must construct exactly singular W");
-    // The initial h=1 makes W=I-h*gamma*J exactly zero in this fixture.
-    assert_eq!(gamma * rate, 1.0);
+    let h0 = 0.1;
+    let rate = (h0 * gamma).recip();
+    // Use the same evaluation order as ShiftedOperator: h_gamma = h*gamma,
+    // followed by x - h_gamma*Jx. This fixture's represented first interval
+    // makes the scalar action at x=1 exactly zero in binary64.
+    assert_eq!((h0 * gamma) * rate, 1.0);
     let p = OdeProblem::new(
         "singular-initial-W",
         1,
@@ -417,18 +416,18 @@ fn singular_trial_operator_retries_a_smaller_physical_step() {
     )
     .unwrap();
     let adaptive = AdaptiveStepConfig {
-        initial_step: 1.0,
-        max_step: 1.0,
+        initial_step: h0,
+        max_step: h0,
         atol: 1e-10,
         rtol: 1e-7,
         ..AdaptiveStepConfig::default()
     };
     let r = integrate_coupled_observed(
         &p,
-        (0.0, 1.0),
+        (0.0, h0),
         &[1.0],
         &adaptive,
-        &OutputSchedule::new(vec![0.0, 1.0]).unwrap(),
+        &OutputSchedule::new(vec![0.0, h0]).unwrap(),
         &Config {
             max_rhs: 0,
             ..Config::default()
@@ -439,6 +438,7 @@ fn singular_trial_operator_retries_a_smaller_physical_step() {
     )
     .unwrap();
     assert!(r.observed.success, "{}", r.observed.message);
+    assert_eq!(r.attempts[0].h, h0);
     assert!(!r.attempts[0].accepted);
     assert!(r.attempts[0].retryable_failure);
     assert_eq!(
@@ -449,7 +449,7 @@ fn singular_trial_operator_retries_a_smaller_physical_step() {
     assert_eq!(r.attempts[1].t, 0.0);
     assert!(r.attempts[1].h < r.attempts[0].h);
     assert!(r.terminal_failure.is_none());
-    assert!((r.last_y[0] / rate.exp() - 1.0).abs() < 1e-6);
+    assert!((r.last_y[0] / (rate*h0).exp() - 1.0).abs() < 1e-6);
 }
 
 #[test]
