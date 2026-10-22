@@ -1,0 +1,68 @@
+{
+  "schema": "affine.adaptive.authority_intake.v1",
+  "recorded_at_utc": "2026-10-22T17:37:14Z",
+  "time_note": "Tool observations made in the current session immediately before this record.",
+  "checkout": "/workspace/scratch/0dc1e721cf82/vigilode",
+  "branch": "research/coupled-stage-adoption-20261022",
+  "head": "4929c0f86cee03a06ac1ab2713e1b438dd10cfc5",
+  "dirty_before": [
+    "?? research/component_triage_20261019/smoke/.RUNS.jsonl.gz.ZTDgsT"
+  ],
+  "remote_confirmed_pins": {
+    "bass181": "797d66580448dad7fc41f2c2db31fe0eb37908bf",
+    "vigilode79": "f9da4aae865623d71bff20c6157318cbaf19ba6c"
+  },
+  "local_tracking_port": "555e71e03fe31e6c9b21961c8e2d263b1794eb6f",
+  "remote_port_dag_observed": {
+    "content": "{\n \"schema\": \"bassrei-dag-status-v1\",\n \"node\": \"C1\",\n \"node_dir\": \"research/bassrei_ncp_wp_c1_20261022\",\n \"ledger_id\": [\"L-0154\", \"L-0155\"],\n \"verdict\": {\"attempt2\": \"PASS\", \"attempt3\": \"PASS\"},\n \"attempts\": {\"attempt1\": \"INVALID (setup: cargo not on PATH; no ledger row)\",\n              \"attempt2\": \"PASS, Julia arms HOLD (tmpfs depot cleared)\",\n              \"attempt3\": \"PASS, all comparator arms incl. Julia (user-authorized online install)\"},\n \"gates\": {\"G1\": true, \"G2\": true, \"G3\": true, \"G4\": true, \"G5\": true, \"G6\": true, \"G7\": true},\n \"timing_authority\": \"diagnostic_only (STATISTICAL_AUTHORITY_HOLD); no speed claim\",\n \"downstream\": {\"DAG\": \"P02-P06 and C1 complete\"},\n \"production\": \"HOLD\"\n}\n",
+    "encoding": "utf-8",
+    "sha": "07e01bfe88e6aca52679826d1fba2bfca7d20c78",
+    "display_url": "https://github.com/cosmosapjw-quantum/vigilode/blob/research/bassrei-port-20261021/research/bassrei_ncp_wp_c1_20261022/DAG_STATUS.json",
+    "display_title": "DAG_STATUS.json"
+  },
+  "attempt3": {
+    "status": "PASS",
+    "generated_utc": "2026-10-22T07:18:32Z",
+    "all_G1_G7": true,
+    "production": "HOLD",
+    "timing": "diagnostic_only",
+    "rerun": false
+  },
+  "complementary_coupled": {
+    "new_affine_hook": false,
+    "source": "research/coupled_stage_adoption_20261022/CHECKPOINT.json",
+    "tests_passed": 62,
+    "local_configurations": 51,
+    "timed_solves": 153,
+    "rerun": false
+  },
+  "applicable_agents": "Root AGENTS absent at both pinned source refs (fresh GitHub404); prior untruncated tree intake confirms no applicable source subtree AGENTS.",
+  "backup_metadata": [
+    {
+      "id": "id:BSpOijBcT10AAAAAAD_h5g",
+      "name": "ORCHESTRATION22_S1_REVIEWED_KERNELS.zip",
+      "size": 2311953,
+      "rev": "65e688c29d9e30af03d47",
+      "server_modified": "2026-10-22T07:09:41Z"
+    },
+    {
+      "id": "id:BSpOijBcT10AAAAAAD_hpw",
+      "name": "BASS_REI_FULLNET_STAGEC_20261022_c32c310ebffb.zip",
+      "size": 58890242,
+      "rev": "65e5bfb5f99670af03d47",
+      "server_modified": "2026-10-21T16:10:12Z"
+    }
+  ],
+  "backups_scope": "Fresh metadata/object-size check; prior hash/readback receipt reused. No fresh whole-file GET.",
+  "source_reuse": [
+    "BASS compact127",
+    "VigilODE heat1046",
+    "norm10Decimal+5negative",
+    "affine3state12direction"
+  ],
+  "selected_scope": "Actual BASS SciPy BDF opt-in client with VigilODE C99 norm; no native Rust driver claim.",
+  "process_cap_s": 30,
+  "cumulative_lightweight_execution_cap_s": 120,
+  "new_ivp_pair": "x0to0.01; all original tolerances; one30/33pair",
+  "coverage": "Relevant live PRs79/181, port DAG, existing current checkout/coupled source; not exhaustive all-conversation or every-file survey."
+}

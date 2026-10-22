@@ -1,0 +1,35 @@
+{
+  "findings": [
+    {
+      "case": "unknown reservation JSON has list root",
+      "impact": "malformed peer reservation stops planning instead of preserving one slot conservatively",
+      "observed": "AttributeError",
+      "traceback": "Traceback (most recent call last):\n  File \"<stdin>\", line 7, in <module>\n  File \"/workspace/scratch/36ad4bc67b35/rec_bianchi/research/rec_rei_hheli_sandbox_20261021/code/run_pilot.py\", line 198, in resource_budget\n    if receipt.get(\"status\") in {\"COMPLETED\", \"RELEASED\", \"FAILED\"}:\n       ^^^^^^^^^^^\nAttributeError: 'list' object has no attribute 'get'\n"
+    },
+    {
+      "case": "zero worker memory argument",
+      "impact": "argument should raise ValueError before budget arithmetic",
+      "observed": "ZeroDivisionError"
+    },
+    {
+      "case": "all cases already complete with no spare CPU",
+      "observed": "main requested a new process allocation before reuse",
+      "impact": "read-only completion reuse was unnecessarily resource-gated",
+      "resolution": "classify valid completions in parent before requesting any worker lease"
+    }
+  ],
+  "new_ODE": 0,
+  "source_sha256": "45878d1a2236a229c198af6ee54e0755bfe40c2d7483c310e77a397e5585a66b",
+  "independent_review_followup": {
+    "findings": [
+      "classify failed and unknown claims before any allocation",
+      "preserve historical verified-dead leases without CPU/RAM debit",
+      "bound aggregate unreadable-identity debit instead of blocking all work"
+    ],
+    "requested_regressions": [
+      "all complete with mocked zero CPU slots",
+      "verified dead lease ignored and byte-preserved"
+    ],
+    "new_ODE": 0
+  }
+}

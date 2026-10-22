@@ -1,0 +1,1 @@
+Initial driver import failed before constructing a model or running any solver. Generated inherited_gates.py first-line docstring had four closing quotes; removed the extra quote. No mathematical or acceptance criteria changed. Original stderr preserved as execution_2.stderr.txt.

@@ -1,0 +1,1 @@
+Manufactured y'=-u experienced legitimate LTE rejection, resetting n_equal_steps, so the deliberately invalid order_plus norm was never called. No actual-owner trajectory ran. Replaced only the manufactured fixture with constant y'=0, J=0 so the first attempt reaches order adaptation without rejection. Failure pair_001/RESULT.json is preserved.

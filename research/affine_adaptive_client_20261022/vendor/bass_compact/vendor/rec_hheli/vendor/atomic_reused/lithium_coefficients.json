@@ -1,0 +1,159 @@
+{
+  "schema": "rei.elemental_lithium_coefficients.v1",
+  "element": "Li",
+  "atomic_number": 3,
+  "isotope_specific": false,
+  "mass_number": null,
+  "isotope_mapping_policy": "Explicit opt-in ElementalElectronicEquality for A=6 or A=7 only; isotope-resolved coefficient requests return MissingSource. This is a modelling approximation, not native isotope data.",
+  "rr": [
+    {
+      "Z": 3,
+      "initial_electrons": 2,
+      "initial_charge": 1,
+      "final_charge": 0,
+      "M": 1,
+      "W": 1,
+      "A_cm3_s": 8.7e-12,
+      "B": 0.364,
+      "T0_K": 147.0,
+      "T1_K": 7153000.0,
+      "C": 0.1508,
+      "T2_K": 715400.0,
+      "supported_Tmin_K": 10,
+      "supported_Tmax_K": 10000000,
+      "source_line": 69
+    },
+    {
+      "Z": 3,
+      "initial_electrons": 1,
+      "initial_charge": 2,
+      "final_charge": 1,
+      "M": 1,
+      "W": 2,
+      "A_cm3_s": 9.349e-11,
+      "B": 0.6916,
+      "T0_K": 34.7,
+      "T1_K": 7329000.0,
+      "C": 0.0351,
+      "T2_K": 629300.0,
+      "supported_Tmin_K": 40,
+      "supported_Tmax_K": 40000000,
+      "source_line": 38
+    },
+    {
+      "Z": 3,
+      "initial_electrons": 0,
+      "initial_charge": 3,
+      "final_charge": 2,
+      "M": 1,
+      "W": 1,
+      "A_cm3_s": 2.867e-10,
+      "B": 0.7493,
+      "T0_K": 21.08,
+      "T1_K": 6268000.0,
+      "C": 0.0,
+      "T2_K": 0.0,
+      "supported_Tmin_K": 90,
+      "supported_Tmax_K": 90000000,
+      "source_line": 6
+    }
+  ],
+  "dr": [
+    {
+      "Z": 3,
+      "initial_electrons": 2,
+      "initial_charge": 1,
+      "final_charge": 0,
+      "M": 1,
+      "W": 1,
+      "supported_Tmin_K": 10,
+      "supported_Tmax_K": 10000000,
+      "c_cm3_s_K32": [
+        2.941e-05,
+        6.068e-05,
+        -7.753e-07
+      ],
+      "source_line_c": 36,
+      "E_K": [
+        634500.0,
+        702400.0,
+        827100.0
+      ],
+      "source_line_E": 1357
+    },
+    {
+      "Z": 3,
+      "initial_electrons": 1,
+      "initial_charge": 2,
+      "final_charge": 1,
+      "M": 1,
+      "W": 2,
+      "supported_Tmin_K": 40,
+      "supported_Tmax_K": 40000000,
+      "c_cm3_s_K32": [
+        0.0001451,
+        0.005789,
+        1.889e-05
+      ],
+      "source_line_c": 5,
+      "E_K": [
+        852900.0,
+        1056000.0,
+        11700000.0
+      ],
+      "source_line_E": 1326
+    }
+  ],
+  "ci": [
+    {
+      "Z": 3,
+      "initial_electrons": 3,
+      "initial_charge": 0,
+      "final_charge": 1,
+      "ionization_energy_eV": 5.4,
+      "P": 0,
+      "A_cm3_s": 1.39e-07,
+      "X": 0.438,
+      "K": 0.41,
+      "Tmin_eV": 1.0,
+      "Tmax_keV": 20.0,
+      "source_line": 4
+    },
+    {
+      "Z": 3,
+      "initial_electrons": 2,
+      "initial_charge": 1,
+      "final_charge": 2,
+      "ionization_energy_eV": 75.6,
+      "P": 1,
+      "A_cm3_s": 2.01e-09,
+      "X": 0.209,
+      "K": 0.23,
+      "Tmin_eV": 4.0,
+      "Tmax_keV": 20.0,
+      "source_line": 5
+    },
+    {
+      "Z": 3,
+      "initial_electrons": 1,
+      "initial_charge": 2,
+      "final_charge": 3,
+      "ionization_energy_eV": 122.4,
+      "P": 1,
+      "A_cm3_s": 9.6e-10,
+      "X": 0.582,
+      "K": 0.17,
+      "Tmin_eV": 5.0,
+      "Tmax_keV": 20.0,
+      "source_line": 6
+    }
+  ],
+  "structural_zero": [
+    {
+      "process": "DR",
+      "initial_charge": 3,
+      "reason": "Bare ion has no core electron to excite; no DR channel."
+    }
+  ],
+  "scope": "Ground-state, low-density Maxwellian electron CI+RR+DR coefficients only; no cooling/radiation closure; elemental fits do not distinguish 6Li or 7Li."
+}
