@@ -6,7 +6,8 @@ use rodas5p_integrators::{
     AdaptiveStepConfig, OdeProblem, OutputSchedule, ParallelExecution,
     integrate_rodas5p_mf_fast_observed,
 };
-use serde_json::{Value, json};
+use serde::Serialize;
+use serde_json::json;
 use std::{sync::Arc, time::Instant};
 use vigilode_coupled::Config;
 
@@ -183,12 +184,31 @@ fn linear_config() -> LinearSolverConfig {
     }
 }
 
+// Typed receipts stay unencoded until after the timer stops.
+#[derive(Serialize)]
+#[serde(untagged)]
+enum BenchWork {
+    Sequential {
+        attempts: usize,
+        accepted_steps: usize,
+        rejected_steps: usize,
+        state_reuses: usize,
+        counters: rodas5p_core::WorkCounters,
+        driver: &'static str,
+    },
+    Coupled {
+        attempts: Vec<vigilode_coupled::CoupledTrajectoryAttempt>,
+        counters: rodas5p_core::WorkCounters,
+        terminal_failure: Option<vigilode_coupled::Failure>,
+    },
+}
+
 struct Run {
     times: Vec<f64>,
     states: Vec<Vec<f64>>,
     success: bool,
     message: String,
-    work: Value,
+    work: BenchWork,
 }
 fn sequential(
     p: &OdeProblem,
@@ -204,8 +224,14 @@ fn sequential(
         states: r.observed.y,
         success: r.observed.success,
         message: r.observed.message,
-        work: json!({"attempts":r.attempts,"accepted_steps":r.accepted_steps,"rejected_steps":r.rejected_steps,
-            "state_reuses":r.state_reuses,"counters":r.observed.counters,"driver":r.driver}),
+        work: BenchWork::Sequential {
+            attempts: r.attempts,
+            accepted_steps: r.accepted_steps,
+            rejected_steps: r.rejected_steps,
+            state_reuses: r.state_reuses,
+            counters: r.observed.counters,
+            driver: r.driver,
+        },
     })
 }
 
@@ -259,7 +285,11 @@ fn coupled(
         states: r.observed.y,
         success: r.observed.success,
         message: r.observed.message,
-        work: json!({"attempts":r.attempts,"counters":r.observed.counters,"terminal_failure":r.terminal_failure}),
+        work: BenchWork::Coupled {
+            attempts: r.attempts,
+            counters: r.observed.counters,
+            terminal_failure: r.terminal_failure,
+        },
     })
 }
 

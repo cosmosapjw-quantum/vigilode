@@ -11,9 +11,10 @@ def summarized_work(work):
         return {k:work.get(k) for k in ['attempts','accepted_steps','rejected_steps','state_reuses','counters']}
     result={'attempts':len(attempts),'accepted_steps':sum(a.get('accepted',False) for a in attempts),
             'fallback_attempts':sum(a.get('fallback_attempted',False) for a in attempts),'counters':work.get('counters'),
-            'candidate_work':{},'fallback_work':{},'fallback_validation_work':{}}
+            'candidate_work':{},'fallback_work':{},'fallback_callback_work':{},'fallback_validation_work':{}}
     result['rejected_steps']=result['attempts']-result['accepted_steps']
-    for name in ['candidate_work','fallback_work','fallback_validation_work']:
+    result['counter_semantics']='fallback_callback_work is diagnostic attempted/completed work already represented in fallback_work; do not add it again'
+    for name in ['candidate_work','fallback_work','fallback_callback_work','fallback_validation_work']:
         for a in attempts:
             for key,value in a.get(name,{}).items():
                 if isinstance(value,(int,float)):
