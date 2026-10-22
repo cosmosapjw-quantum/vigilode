@@ -391,3 +391,52 @@ directory exists and exports `RUSTUP_TOOLCHAIN=1.94.1`. A read-only probe found 
 
 Attempt 2 runs at the commit that adds this amendment (the new EXEC). Its 120-minute cap starts afresh at
 its own setup, and attempt 1 used 9 s of NCP time.
+
+## Amendment 2 (before attempt 3): user-authorized online Julia install
+
+**Cause.** Attempt 2 (`/root/vigilode-bassrei-ncp-c1-20261022T063627Z`, EXEC `e3341309`) passed setup,
+built the runners and diffsol, and passed parity. Its Julia setup returned **HOLD**: no depot with
+OrdinaryDiffEq and Sundials was found. The only such depot on NCP had been
+`/dev/shm/vigilode_ncp_intensive_120m_v1_20261021T062109Z/julia-depot`, on tmpfs, and the power cycle
+before this campaign cleared it. The archived `env/vigilode-component-julia-depot-20261018` holds only a
+Project, a Manifest and artifacts (56 KB). Under the offline rule this is the preregistered environment
+HOLD, so attempt 2 continues unchanged and is scored by the unchanged `analyze.py`.
+
+**Instruction.** On 2026-10-22 at 15:44 KST the user wrote: "julia는 너가 직접 설치하고 관련 비교 벤치마크까지
+시행해" (install Julia yourself and run the related comparison benchmarks). That explicitly authorizes
+network access for this one dependency, a **deviation from the offline-dependency rule** that is recorded
+here.
+
+**Install.**
+
+- **Target:** a fresh private depot at `/root/vigilode-julia-c1-20261022/depot`, on persistent disk. It
+  is a single `JULIA_DEPOT_PATH` entry, and nothing is stacked.
+- **Method:** `Pkg.instantiate()` and `Pkg.precompile()` with Julia 1.12.7, using the harness's own pinned
+  `external_audits/vigilode_ncp_intensive_120m_v1_20261021/harness/julia-env/{Project,Manifest}.toml`:
+  - Project sha256 `984c9c52…a6c3306`;
+  - Manifest sha256 `66296b7c…d9ce48`.
+
+  The Manifest pins exact versions and tree hashes, so the installed packages equal the archived
+  environment.
+- **Execution:** run on cores 0-7 at nice 10, so it does not compete with attempt 2's cores 8-63. Timing is
+  diagnostic only.
+- **Evidence:** `install.log`, `ENV_SHA256SUMS.txt` and the start/end times are kept on NCP and copied
+  back into this node.
+
+**Harness change.** Commit `15e17192` lists that depot first among the Julia depot candidates, in
+`setup_ncp.sh` and in the launch preflight. The campaign still copies the depot into its own directory
+first. No gate, threshold, scenario, arm, rung, schedule or analysis changes.
+
+**Attempt 3.** Attempt 3 is the full preregistered campaign, with all arms. It is launched from the
+commit that adds this amendment, under three conditions:
+
+- attempt 2 has finished;
+- the install has logged `JULIA_INSTALL_OK`;
+- the launch preflight passes, which requires no live C1 run and no heavy process.
+
+**Ledger.**
+
+- **Attempt 2:** its verdict goes to L-0154, with Julia HOLD.
+- **Attempt 3:** its verdict goes to L-0155, with the full comparator set.
+- Each verdict is computed by the unchanged `analyze.py` and never re-scored.
+- If attempt 3 ends INVALID, that is recorded, and attempt 2 stands as the C1 result.
