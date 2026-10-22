@@ -69,8 +69,8 @@ Cost is **diagnostic_only** (STATISTICAL_AUTHORITY_HOLD). No speed claim is made
 | diffsol 0.17.1 | `ds_bdf_dense` (NalgebraLU; the Jacobian from the adapter's exact JVP or dense Jacobian), `ds_tsit45` (nonstiff); built by `#[path]` on the VigilODE adapter kernels | n ≤ 2200 (not G4) |
 
 **The `py_dop853_tight` settings.** rtol and the relative step cap follow the DOP853 call of the rei C15
-source: `research/rei_c15_sigma_pi_feedback_20261015/coupled.py`, lines 329–332, git blob
-`99d1217f35c5333684efd206db7cb2d2abe14a47`, in the rei source worktree. That call uses rtol 3e-11 and
+source: `research/rei_c15_sigma_pi_feedback_20261015/coupled.py`, lines 329–332, file sha256
+`a920d0e86c0badf395bfabc61dafaee3449a34e4cfe8ccdc28a833674c1c4b1e`, in the rei source worktree. That call uses rtol 3e-11 and
 max_step 0.001 in its own ln a time. The source's atol belongs to a different state vector and is not
 used. The arm is therefore labelled "tight", not "the source configuration".
 
