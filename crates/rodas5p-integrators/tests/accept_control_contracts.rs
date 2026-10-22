@@ -584,6 +584,86 @@ fn a_restart_from_the_stop_reaches_tf() {
     assert!(history_changed_a_restart);
 }
 
+/// (c') with a binding `max_step`: every proposal the control sees, and the
+/// partial record's `h_next`, lie within the step bounds, so the restart
+/// with `initial_step = h_next` is admitted after the step has reached the
+/// cap, and under the Integral controller it is the uninterrupted run, bit
+/// for bit.
+#[test]
+fn a_restart_under_a_binding_max_step_is_admitted_and_bit_identical() {
+    for setup in [Setup::brusselator(), Setup::hires()] {
+        let case = &setup.case;
+        let output = schedule(case.span, 10);
+        let rtol = 1.0e-6;
+        let adaptive = AdaptiveStepConfig {
+            controller: ControllerKind::Integral,
+            max_step: (case.span.1 - case.span.0) / 40.0,
+            ..config(case, rtol)
+        };
+        let label = setup.label(rtol);
+        let (full, seen) = recorded_run(&setup, &adaptive, &output);
+        assert!(full.fast.observed.success, "{label}");
+        for view in &seen {
+            assert!(
+                view.h_next <= adaptive.max_step,
+                "{label}: h_next {:e}",
+                view.h_next
+            );
+        }
+        // The first accepted step whose proposal the cap binds, with a later
+        // step left.
+        let k = seen
+            .iter()
+            .position(|view| view.h_next == adaptive.max_step)
+            .expect("a proposal at the cap")
+            + 1;
+        assert!(k < seen.len(), "{label}");
+        let (stopped, _) = stopped_run(&setup, &adaptive, &output, k);
+        let partial = stopped.partial.unwrap();
+        let h_next = partial.h_next.unwrap();
+        assert!(
+            h_next <= adaptive.max_step && h_next >= adaptive.min_step,
+            "{label}"
+        );
+        let mut times = vec![partial.t];
+        times.extend(output.times().iter().copied().filter(|&s| s > partial.t));
+        let rest = OutputSchedule::new(times).unwrap();
+        let restart_config = AdaptiveStepConfig {
+            initial_step: h_next,
+            ..adaptive.clone()
+        };
+        let restart = setup.run(
+            (partial.t, case.span.1),
+            &partial.y,
+            &restart_config,
+            &rest,
+            None,
+        );
+        let fast = &restart.fast;
+        assert!(fast.observed.success, "{label}");
+        let later = full.fast.observed.t.len() - (fast.observed.t.len() - 1);
+        assert_eq!(
+            bits(&fast.observed.t[1..]),
+            bits(&full.fast.observed.t[later..]),
+            "{label}"
+        );
+        for (a, b) in fast.observed.y[1..]
+            .iter()
+            .zip(&full.fast.observed.y[later..])
+        {
+            assert_eq!(bits(a), bits(b), "{label}");
+        }
+        let mut work = stopped.fast.observed.counters;
+        work.accumulate(fast.observed.counters);
+        assert_eq!(work, full.fast.observed.counters, "{label}");
+        assert_eq!(
+            stopped.fast.attempts + fast.attempts,
+            full.fast.attempts,
+            "{label}"
+        );
+    }
+}
+
 /// (f): a stop on the step that reaches `tf` changes nothing: the run is
 /// complete, reported as a success without a partial record, bit for bit
 /// the run without a control.

@@ -294,9 +294,9 @@ pub struct AcceptedStepView<'a> {
     pub y: &'a [f64],
     /// The step just accepted (after any clipping to an output or `tf`).
     pub h_used: f64,
-    /// The controller's proposal for the next step: after the controller
-    /// update of this step, before the next step is landed toward `tf`,
-    /// capped or clipped to an output time.
+    /// The controller's proposal for the next step, after the controller
+    /// update of this step, capped at `max_step` (library step L4), before
+    /// the next step is landed toward `tf` or clipped to an output time.
     pub h_next: f64,
     /// Accepted steps so far, this one included (1 on the first).
     pub accepted_steps: usize,
@@ -2096,7 +2096,11 @@ pub fn integrate_rodas5p_fast_client_observed_with_atol(
 /// included, `control` sees the accepted state and the controller's
 /// proposal for the next step ([`AcceptedStepView`]) and may end the run
 /// there, for example to remap the state onto a new mesh outside the driver
-/// and restart from it with `initial_step = h_next`.
+/// and restart from it with `initial_step = h_next`. The proposal is capped
+/// at `max_step`, so that restart is admitted. Under the Integral controller
+/// it continues the uninterrupted run bit for bit; the other controllers
+/// restart without their error history. A proposal below `min_step` is
+/// refused as an initial step (`InvalidInput`).
 ///
 /// [`AcceptControl::Stop`] before `tf` ends the run at the accepted `(t, y)`:
 /// the output holds every output time at or before `t`, `observed.success`
@@ -2451,17 +2455,20 @@ fn integrate_fast_in<S: StepSink>(
         // L3 accept control: after the output collector took the step and
         // the controller proposed the next one (NoSink always continues).
         if failure.is_none() {
+            // The proposal capped at `max_step`, as the next pass caps it
+            // (`adaptive_end_step`), so that a restart from it is admitted.
+            let h_next = h.min(adaptive.max_step);
             let view = AcceptedStepView {
                 t,
                 y: &y,
                 h_used: trial_h,
-                h_next: h,
+                h_next,
                 accepted_steps,
                 attempts,
                 counters: &counters,
             };
             if sink.accept_control(&view) == AcceptControl::Stop {
-                client_stop = Some(h);
+                client_stop = Some(h_next);
                 break;
             }
         }
