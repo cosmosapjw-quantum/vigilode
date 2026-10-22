@@ -1,0 +1,832 @@
+{
+  "status": "pass_scoped",
+  "tests": 38,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "scope": "formula oracle: triaxial Bianchi I full-sphere (q, mu, phi) first-order FV transport, rank-6 unpolarized elastic Thomson, axisymmetric (I, Q) polarized Thomson contract; no live BASS/rei port, no Rust adapter, no production performance",
+  "checks": [
+    {
+      "id": "A_ExactAlgebra.test_a1_drift_from_geodesic_momenta_exact",
+      "status": "pass",
+      "wall_s": 0.005,
+      "detail": ""
+    },
+    {
+      "id": "A_ExactAlgebra.test_a2_liouville_identity_exact",
+      "status": "pass",
+      "wall_s": 0.038,
+      "detail": ""
+    },
+    {
+      "id": "A_ExactAlgebra.test_a3_lrs_drift_reduction_exact",
+      "status": "pass",
+      "wall_s": 0.003,
+      "detail": ""
+    },
+    {
+      "id": "A_ExactAlgebra.test_a4_quadrupole_addition_theorem_exact",
+      "status": "pass",
+      "wall_s": 0.004,
+      "detail": ""
+    },
+    {
+      "id": "A_ExactAlgebra.test_a5_discrete_mu_moments_exact",
+      "status": "pass",
+      "wall_s": 0.006,
+      "detail": ""
+    },
+    {
+      "id": "A_ExactAlgebra.test_a6_polarized_iq_equals_chandrasekhar_lr_exact",
+      "status": "pass",
+      "wall_s": 0.009,
+      "detail": ""
+    },
+    {
+      "id": "B_Conservation.test_b1_transport_number_ledger",
+      "status": "pass",
+      "wall_s": 0.007,
+      "detail": ""
+    },
+    {
+      "id": "B_Conservation.test_b2_state_layout_ledgers_jacobian_band",
+      "status": "pass",
+      "wall_s": 0.003,
+      "detail": ""
+    },
+    {
+      "id": "B_Conservation.test_b3_linearity_jvp_and_select",
+      "status": "pass",
+      "wall_s": 0.01,
+      "detail": ""
+    },
+    {
+      "id": "B_Conservation.test_b4_euler_positivity_under_cfl",
+      "status": "pass",
+      "wall_s": 0.016,
+      "detail": ""
+    },
+    {
+      "id": "B_Conservation.test_b5_isotropic_expansion_and_frozen_geometry",
+      "status": "pass",
+      "wall_s": 0.0,
+      "detail": ""
+    },
+    {
+      "id": "B_Conservation.test_b6_jacobian_columns_bitwise_and_parity_fixture",
+      "status": "pass",
+      "wall_s": 0.008,
+      "detail": ""
+    },
+    {
+      "id": "C_LRSReduction.test_c1_phi_summed_transport_equals_lrs_oracle",
+      "status": "pass",
+      "wall_s": 0.006,
+      "detail": ""
+    },
+    {
+      "id": "C_LRSReduction.test_c2_lrs_preserves_axisymmetry",
+      "status": "pass",
+      "wall_s": 0.001,
+      "detail": ""
+    },
+    {
+      "id": "C_LRSReduction.test_c3_theta_only_shortcut_not_closed",
+      "status": "pass",
+      "wall_s": 0.001,
+      "detail": ""
+    },
+    {
+      "id": "D_Thomson.test_d1_cell_average_closed_forms_vs_mpmath",
+      "status": "pass",
+      "wall_s": 1.49,
+      "detail": ""
+    },
+    {
+      "id": "D_Thomson.test_d2_group_number_conservation",
+      "status": "pass",
+      "wall_s": 0.003,
+      "detail": ""
+    },
+    {
+      "id": "D_Thomson.test_d3_isotropic_state_stationary",
+      "status": "pass",
+      "wall_s": 0.003,
+      "detail": ""
+    },
+    {
+      "id": "D_Thomson.test_d4_discrete_kernel_is_cell_averaged_continuum_kernel",
+      "status": "pass",
+      "wall_s": 3.92,
+      "detail": ""
+    },
+    {
+      "id": "D_Thomson.test_d5_euler_positivity_dt_gamma_le_one",
+      "status": "pass",
+      "wall_s": 0.003,
+      "detail": ""
+    },
+    {
+      "id": "D_Thomson.test_d6_full_period_and_pole_sums_vanish",
+      "status": "pass",
+      "wall_s": 0.002,
+      "detail": ""
+    },
+    {
+      "id": "E_Rank.test_e1_rank_six_generic",
+      "status": "pass",
+      "wall_s": 0.093,
+      "detail": ""
+    },
+    {
+      "id": "E_Rank.test_e2_low_rank_factorization",
+      "status": "pass",
+      "wall_s": 0.002,
+      "detail": ""
+    },
+    {
+      "id": "E_Rank.test_e3_degenerate_symmetric_grids",
+      "status": "pass",
+      "wall_s": 0.001,
+      "detail": ""
+    },
+    {
+      "id": "F_ThomsonLRS.test_f1_phi_summed_thomson_equals_lrs_rank2",
+      "status": "pass",
+      "wall_s": 0.007,
+      "detail": ""
+    },
+    {
+      "id": "G_Characteristics.test_g1_closed_form_vs_rk45_rays",
+      "status": "pass",
+      "wall_s": 16.071,
+      "detail": ""
+    },
+    {
+      "id": "G_Characteristics.test_g2_closed_form_jacobian_is_liouville_factor",
+      "status": "pass",
+      "wall_s": 0.001,
+      "detail": ""
+    },
+    {
+      "id": "G_Characteristics.test_g3_quadrature_helper",
+      "status": "pass",
+      "wall_s": 0.157,
+      "detail": ""
+    },
+    {
+      "id": "G_Characteristics.test_g4_first_order_convergence_trend",
+      "status": "pass",
+      "wall_s": 2.031,
+      "detail": ""
+    },
+    {
+      "id": "H_Polarization.test_h1_iq_form_matches_lr_kernel_and_unpolarized_limit",
+      "status": "pass",
+      "wall_s": 0.078,
+      "detail": ""
+    },
+    {
+      "id": "H_Polarization.test_h2_number_conservation_and_isotropic_stationary",
+      "status": "pass",
+      "wall_s": 0.001,
+      "detail": ""
+    },
+    {
+      "id": "H_Polarization.test_h3_euler_positivity_dt_gamma_le_one",
+      "status": "pass",
+      "wall_s": 0.007,
+      "detail": ""
+    },
+    {
+      "id": "H_Polarization.test_h4_beyond_the_bound_euler_can_violate",
+      "status": "pass",
+      "wall_s": 0.0,
+      "detail": ""
+    },
+    {
+      "id": "H_Polarization.test_h5_componentwise_clipping_is_wrong",
+      "status": "pass",
+      "wall_s": 0.0,
+      "detail": ""
+    },
+    {
+      "id": "H_Polarization.test_h6_coherency_limiter",
+      "status": "pass",
+      "wall_s": 0.001,
+      "detail": ""
+    },
+    {
+      "id": "I_Refusals.test_i1_grid_refusals",
+      "status": "pass",
+      "wall_s": 0.0,
+      "detail": ""
+    },
+    {
+      "id": "I_Refusals.test_i2_state_geometry_boundary_rate_refusals",
+      "status": "pass",
+      "wall_s": 0.0,
+      "detail": ""
+    },
+    {
+      "id": "I_Refusals.test_i3_characteristic_and_polarization_refusals",
+      "status": "pass",
+      "wall_s": 0.0,
+      "detail": ""
+    }
+  ],
+  "diagnostics": {
+    "a1_geodesic_points": 40,
+    "a2_liouville_points": 414,
+    "b1_cases": 120,
+    "b1_max_relative_sum_residual": 8.839282370184656e-17,
+    "b2_bandwidth": {
+      "M": 12,
+      "observed": 13,
+      "contract": 13
+    },
+    "b3_max_linearity_residual": 4.855594016990921e-16,
+    "b4_min_scaled_euler_content": 0.0,
+    "b6_bitwise_jacobian_entries_compared": 3178,
+    "parity_fixture": {
+      "transport_outflow": [
+        "0x1.71124687312c0p-3",
+        "0x1.65594947b9ce2p-5",
+        "0x1.05339f464854bp-3",
+        "-0x1.317fe4f5b318cp-3",
+        "0x1.2894d3be5b38dp-3",
+        "-0x1.8903ec20ab694p-2",
+        "0x1.2c3f56c88facep-3",
+        "-0x1.38b290008b84bp-4",
+        "0x1.8bd44ae039091p-3",
+        "-0x1.0563c1095e5f9p-3",
+        "0x1.20febbf4c9978p-3",
+        "-0x1.549d1805b0e60p-3",
+        "0x1.d6ba758cf2586p-4",
+        "-0x1.ffc399b0e85bep-3",
+        "0x1.5870f10badc8fp-3",
+        "-0x1.de38e9d138f76p-5",
+        "0x1.3adca5db17b84p-3",
+        "-0x1.a62f00706b3b0p-2",
+        "0x1.20b4c67bf2f48p-3",
+        "-0x1.03d88028143abp-1",
+        "0x1.3d07676d6d1dcp-4",
+        "-0x1.2e365e12e3391p-4",
+        "0x1.f8567c15e0098p-4",
+        "-0x1.4c49fabc1b36ep-3",
+        "0x1.1a1e9a4ac4907p-3",
+        "-0x1.e95169be2479ep-3",
+        "0x1.0f8a790ccbe42p-3",
+        "-0x1.2444fd8ab3d13p-2",
+        "0x1.fcc7b5359655ep-4",
+        "-0x1.62e511ebc816cp-2",
+        "0x1.dbceaef03dc70p-4",
+        "-0x1.d1cca785769dep-2",
+        "0x1.98584cab4326cp-4",
+        "-0x1.36379b1694ec1p-2",
+        "0x1.67169fb4fd7e0p-4",
+        "-0x1.0c11d5707ad3fp-3",
+        "0x1.ac636240a5edap+0",
+        "0x0.0p+0"
+      ],
+      "transport_closed": [
+        "0x1.eaaf6e0add61ep-3",
+        "0x1.89cfb35bb7d54p-3",
+        "0x1.8e046bba6a115p-3",
+        "0x1.621a6279fac40p-5",
+        "0x1.c315586bc0d5ap-3",
+        "-0x1.1df78ac830d38p-4",
+        "0x1.e8563b1616825p-3",
+        "0x1.eb1c8794027e4p-4",
+        "0x1.01b365c1c899dp-2",
+        "0x1.e9e9cdff23022p-5",
+        "0x1.bdef04cb2d4f7p-3",
+        "0x1.4690871182284p-5",
+        "0x1.d6ba758cf2586p-4",
+        "-0x1.ffc399b0e85bep-3",
+        "0x1.5870f10badc8fp-3",
+        "-0x1.de38e9d138f76p-5",
+        "0x1.3adca5db17b84p-3",
+        "-0x1.a62f00706b3b0p-2",
+        "0x1.20b4c67bf2f48p-3",
+        "-0x1.03d88028143abp-1",
+        "0x1.3d07676d6d1dcp-4",
+        "-0x1.2e365e12e3391p-4",
+        "0x1.f8567c15e0098p-4",
+        "-0x1.4c49fabc1b36ep-3",
+        "0x1.1a1e9a4ac4907p-3",
+        "-0x1.e95169be2479ep-3",
+        "0x1.0f8a790ccbe42p-3",
+        "-0x1.2444fd8ab3d13p-2",
+        "0x1.fcc7b5359655ep-4",
+        "-0x1.62e511ebc816cp-2",
+        "0x1.dbceaef03dc70p-4",
+        "-0x1.d1cca785769dep-2",
+        "0x1.98584cab4326cp-4",
+        "-0x1.36379b1694ec1p-2",
+        "0x1.67169fb4fd7e0p-4",
+        "-0x1.0c11d5707ad3fp-3",
+        "0x0.0p+0",
+        "0x0.0p+0"
+      ],
+      "transport_select": [
+        "0x1.35469f6a189c2p-3",
+        "0x1.3048f5f65da18p-6",
+        "0x1.ccf2656a9c834p-4",
+        "-0x1.6020aaf1d0160p-4",
+        "0x1.698022935a651p-3",
+        "-0x1.678a8d16d28a8p-2",
+        "0x1.bdedcb6b0fa5ep-3",
+        "-0x1.857fbb4818965p-3",
+        "0x1.3892473eaa1e6p-3",
+        "-0x1.15094b89ed5d9p-3",
+        "0x1.1b6e015d95b8ap-3",
+        "-0x1.0c2725cb52d8ap-3",
+        "0x1.2728e1e391bc1p-3",
+        "-0x1.5f1318a373954p-3",
+        "0x1.98a66e00c35dap-4",
+        "-0x1.9438bf30356c8p-4",
+        "0x1.fb4e518076410p-4",
+        "-0x1.b9c9a95307366p-2",
+        "0x1.44a57824afe46p-3",
+        "-0x1.b80b21ec33052p-2",
+        "0x1.2c91c8bf7656ep-3",
+        "-0x1.10965e51ae6cap-3",
+        "0x1.ede9f1e65a4fcp-4",
+        "-0x1.b84883f0e357dp-3",
+        "0x1.d10de7db16321p-4",
+        "-0x1.b604362b01ba6p-3",
+        "0x1.f6081a7761d32p-4",
+        "-0x1.c71a6b989c94ap-3",
+        "0x1.81a7d000fb229p-4",
+        "-0x1.975e1342d2fdap-2",
+        "0x1.011a8aab5216cp-3",
+        "-0x1.b73ad10df607cp-2",
+        "0x1.da62c6c700ac3p-4",
+        "-0x1.1b6533891b64dp-2",
+        "0x1.2241d5f2b88d7p-3",
+        "-0x1.e1e6036cf0c6ep-3",
+        "0x1.ac636240a5edap+0",
+        "0x0.0p+0"
+      ],
+      "thomson6_group0": [
+        "0x1.ce2970457fe82p-2",
+        "0x1.17abeff56747cp-2",
+        "0x1.05d1ee74e9f58p-3",
+        "-0x1.fe328b755c2a0p-2",
+        "-0x1.34f575745586fp-1",
+        "-0x1.91314521178b1p-1",
+        "-0x1.62df205bbfb2ep+0",
+        "0x1.3f83854cec77bp-1",
+        "0x1.094c437141d5bp+0",
+        "0x1.a147072aeb9e0p-2",
+        "0x1.12031d5666006p-2",
+        "0x1.56efb6e69c2b8p-4"
+      ],
+      "state_rhs": [
+        "0x1.ac636240a5edap+0",
+        "0x1.b9e5c6bc4bb15p-2",
+        "0x1.aaf5fe13139f8p-4",
+        "0x1.f1c607732beb8p-6",
+        "-0x1.d8460bc4e7a80p-1",
+        "-0x1.7e0373b7f1ec0p-1",
+        "-0x1.77a66a65836cbp+0",
+        "-0x1.96f0cf1c4756ep+0",
+        "0x1.70da6699b60e4p-2",
+        "0x1.0793999a15c3ap+0",
+        "0x1.e9526a63c6e40p-6",
+        "0x1.2b6b5d07fbfeap-3",
+        "-0x1.6e2c37e2cb01cp-2",
+        "0x1.8333333333335p+1",
+        "-0x1.cac9f77972269p-1",
+        "-0x1.65fd69c6e0b6ep+0",
+        "0x1.047523b756080p+0",
+        "0x1.28532e0f0e6cap-3",
+        "0x1.03495b23845dep-2",
+        "-0x1.dfe6e21d0db2cp-2",
+        "-0x1.15f34c1c579a3p-1",
+        "-0x1.5a4dbbd8b5740p+0",
+        "-0x1.58a859c977d39p-2",
+        "0x1.0ce3f70bfcf53p+0",
+        "0x1.21da3317e8fe2p+0",
+        "0x1.6c60fa9bf673ap-1",
+        "0x0.0p+0",
+        "-0x1.189027bb806bbp+0",
+        "-0x1.b9a22d23a0360p+0",
+        "-0x1.8319308c68a2fp+0",
+        "-0x1.570b73152e4b5p+1",
+        "0x1.071ef2f0375d8p-2",
+        "-0x1.b1833ceb34182p-2",
+        "-0x1.81587293b9414p-1",
+        "-0x1.84d5dfb7bd027p+0",
+        "-0x1.0985f8ae65dc0p-1",
+        "-0x1.aa19ee28afb49p+0",
+        "-0x1.84a293423f9e0p+0",
+        "0x1.9b41ec8f49d0bp-1",
+        "0x1.6933333333333p+3",
+        "0x0.0p+0"
+      ],
+      "constants": {
+        "dq": [
+          "0x1.8000000000000p-1",
+          "0x1.8000000000000p-1",
+          "0x1.4000000000000p+0"
+        ],
+        "dm": [
+          "0x1.4000000000000p-1",
+          "0x1.4000000000000p-1",
+          "0x1.8000000000000p-1"
+        ],
+        "dphi": [
+          "0x1.921fb54442d18p+0",
+          "0x1.921fb54442d18p+0",
+          "0x1.921fb54442d18p+0",
+          "0x1.921fb54442d18p+0"
+        ],
+        "m2": [
+          "0x1.02aaaaaaaaaabp-1",
+          "0x1.2aaaaaaaaaaabp-5",
+          "0x1.c000000000000p-2"
+        ],
+        "t2": [
+          "0x1.faaaaaaaaaaabp-2",
+          "0x1.ed55555555555p-1",
+          "0x1.2000000000000p-1"
+        ],
+        "p2": [
+          "0x1.0800000000000p-2",
+          "-0x1.c800000000000p-2",
+          "0x1.4000000000000p-3"
+        ],
+        "r": [
+          "-0x1.b31569bb1f9b1p-2",
+          "-0x1.e5440aceaa948p-5",
+          "0x1.9d1e43e6cc1b5p-2"
+        ],
+        "e": [
+          "0x1.4000000000000p-2",
+          "0x1.4000000000000p-2",
+          "0x1.8000000000000p-2"
+        ],
+        "g": [
+          "0x1.0000000000000p-2",
+          "0x1.0000000000000p-2",
+          "0x1.0000000000000p-2",
+          "0x1.0000000000000p-2"
+        ],
+        "cphi": [
+          "0x1.d659b32f83432p-2",
+          "-0x1.8c751ed124027p-1",
+          "-0x1.d659b32f83434p-2",
+          "0x1.8c751ed124026p-1"
+        ],
+        "sphi": [
+          "0x1.8c751ed124027p-1",
+          "0x1.d659b32f83432p-2",
+          "-0x1.8c751ed124026p-1",
+          "-0x1.d659b32f83434p-2"
+        ],
+        "c2": [
+          "-0x1.38896fa6a1393p-2",
+          "0x1.38896fa6a1391p-2",
+          "-0x1.38896fa6a1390p-2",
+          "0x1.38896fa6a138fp-2"
+        ],
+        "s2h": [
+          "0x1.1e0c252e13ca8p-2",
+          "-0x1.1e0c252e13ca8p-2",
+          "0x1.1e0c252e13ca8p-2",
+          "-0x1.1e0c252e13ca8p-2"
+        ],
+        "wface": [
+          "0x0.0p+0",
+          "-0x1.4a00000000000p-2",
+          "0x1.e000000000000p-3"
+        ],
+        "sn2": [
+          "0x1.eaee8744b05f0p-2",
+          "-0x1.eaee8744b05eep-2",
+          "0x1.eaee8744b05ecp-2",
+          "-0x1.eaee8744b05eap-2"
+        ],
+        "om": [
+          "0x1.4000000000000p-4",
+          "0x1.4000000000000p-4",
+          "0x1.4000000000000p-4",
+          "0x1.4000000000000p-4",
+          "0x1.4000000000000p-4",
+          "0x1.4000000000000p-4",
+          "0x1.4000000000000p-4",
+          "0x1.4000000000000p-4",
+          "0x1.8000000000000p-4",
+          "0x1.8000000000000p-4",
+          "0x1.8000000000000p-4",
+          "0x1.8000000000000p-4"
+        ],
+        "B": [
+          [
+            "0x1.0800000000000p-2",
+            "0x1.0800000000000p-2",
+            "0x1.0800000000000p-2",
+            "0x1.0800000000000p-2",
+            "-0x1.c800000000000p-2",
+            "-0x1.c800000000000p-2",
+            "-0x1.c800000000000p-2",
+            "-0x1.c800000000000p-2",
+            "0x1.4000000000000p-3",
+            "0x1.4000000000000p-3",
+            "0x1.4000000000000p-3",
+            "0x1.4000000000000p-3"
+          ],
+          [
+            "-0x1.8fb0e18c03838p-3",
+            "0x1.50e6165b5dbdep-2",
+            "0x1.8fb0e18c03839p-3",
+            "-0x1.50e6165b5dbddp-2",
+            "-0x1.bdca7a13e971cp-6",
+            "0x1.77c1a19d85327p-5",
+            "0x1.bdca7a13e971ep-6",
+            "-0x1.77c1a19d85326p-5",
+            "0x1.7b8328ac15e96p-3",
+            "-0x1.3fe3e8cc8bfe2p-2",
+            "-0x1.7b8328ac15e98p-3",
+            "0x1.3fe3e8cc8bfe1p-2"
+          ],
+          [
+            "-0x1.50e6165b5dbdep-2",
+            "-0x1.8fb0e18c03838p-3",
+            "0x1.50e6165b5dbddp-2",
+            "0x1.8fb0e18c03839p-3",
+            "-0x1.77c1a19d85327p-5",
+            "-0x1.bdca7a13e971cp-6",
+            "0x1.77c1a19d85326p-5",
+            "0x1.bdca7a13e971ep-6",
+            "0x1.3fe3e8cc8bfe2p-2",
+            "0x1.7b8328ac15e96p-3",
+            "-0x1.3fe3e8cc8bfe1p-2",
+            "-0x1.7b8328ac15e98p-3"
+          ],
+          [
+            "-0x1.354801278f8b4p-3",
+            "0x1.354801278f8b2p-3",
+            "-0x1.354801278f8b1p-3",
+            "0x1.354801278f8b0p-3",
+            "-0x1.2d246ce9e3587p-2",
+            "0x1.2d246ce9e3585p-2",
+            "-0x1.2d246ce9e3584p-2",
+            "0x1.2d246ce9e3583p-2",
+            "-0x1.5f9a9d9b75605p-3",
+            "0x1.5f9a9d9b75603p-3",
+            "-0x1.5f9a9d9b75602p-3",
+            "0x1.5f9a9d9b75601p-3"
+          ],
+          [
+            "0x1.1b115a204395cp-3",
+            "-0x1.1b115a204395cp-3",
+            "0x1.1b115a204395cp-3",
+            "-0x1.1b115a204395cp-3",
+            "0x1.139e5e7dbb11cp-2",
+            "-0x1.139e5e7dbb11cp-2",
+            "0x1.139e5e7dbb11cp-2",
+            "-0x1.139e5e7dbb11cp-2",
+            "0x1.41cda9d3d643dp-3",
+            "-0x1.41cda9d3d643dp-3",
+            "0x1.41cda9d3d643dp-3",
+            "-0x1.41cda9d3d643dp-3"
+          ]
+        ]
+      },
+      "inputs": {
+        "q": [
+          "-0x1.0000000000000p+0",
+          "-0x1.0000000000000p-2",
+          "0x1.0000000000000p-1",
+          "0x1.c000000000000p+0"
+        ],
+        "mu": [
+          "-0x1.0000000000000p+0",
+          "-0x1.8000000000000p-2",
+          "0x1.0000000000000p-2",
+          "0x1.0000000000000p+0"
+        ],
+        "phi": [
+          "0x1.0000000000000p-2",
+          "0x1.d21fb54442d18p+0",
+          "0x1.b21fb54442d18p+1",
+          "0x1.3d97c7f3321d2p+2",
+          "0x1.a21fb54442d18p+2"
+        ],
+        "H": [
+          "0x1.3333333333333p-2",
+          "-0x1.999999999999ap-4",
+          "0x1.999999999999ap-5"
+        ],
+        "select": [
+          "-0x1.999999999999ap-3",
+          "0x1.999999999999ap-2",
+          "0x1.999999999999ap-4"
+        ],
+        "rate": "0x1.4000000000000p+1",
+        "kbar": [
+          "0x1.999999999999ap-3",
+          "0x0.0p+0",
+          "0x1.6666666666666p-1"
+        ],
+        "contents_formula": "1 + (c % 7)*0.125 - (c % 3)*0.0625"
+      },
+      "sha256_outputs": "1514967febca0332cee1775d44d711d57996ca556fce57aa680cdbd437db941a"
+    },
+    "c1_cases": 60,
+    "c1_max_relative_error": 1.0323363369158536e-15,
+    "c2_max_axisymmetry_defect": 3.4623683443766273e-16,
+    "c3_theta_only": {
+      "first_derivative_rel_gap": [
+        2.0813176758914367e-16,
+        2.0813176758914367e-16
+      ],
+      "second_derivative_gap": [
+        0.00410397168662463,
+        0.0010259929216561714
+      ],
+      "ratio_second": 3.999999999999946,
+      "nonaxisymmetric_part": [
+        0.229656443392657,
+        0.11482822169632839
+      ],
+      "ratio_nonaxi": 2.0000000000000018
+    },
+    "d1_max_abs_cell_average_error": 1.0291740794975564e-16,
+    "d1_naive_difference_quotient_error_cos": 1.843137492026441e-08,
+    "d2_max_relative_number_residual": 2.9282535721718776e-16,
+    "d3_max_isotropic_residual": 5.12789253446862e-16,
+    "d4_kernel_vs_quadrature_max_abs": 1.9984014443252818e-15,
+    "d4_min_discrete_kernel": 0.8524258661838681,
+    "d6_max_period_sum": 1.0691058840368783e-50,
+    "e1_rank_six": [
+      {
+        "nm": 4,
+        "nphi": 5,
+        "sigma6": 0.2674044992037035,
+        "sigma7": 7.600605852011618e-16
+      },
+      {
+        "nm": 3,
+        "nphi": 6,
+        "sigma6": 0.3456790123456788,
+        "sigma7": 6.853675962684941e-16
+      },
+      {
+        "nm": 6,
+        "nphi": 8,
+        "sigma6": 0.5211451132791054,
+        "sigma7": 8.652710816994468e-16
+      },
+      {
+        "nm": 4,
+        "nphi": 3,
+        "sigma6": 0.11376370204372845,
+        "sigma7": 6.194396552791226e-16
+      }
+    ],
+    "e2_factor_reconstruction": 1.4802973661668753e-16,
+    "e3_degenerate_ranks": {
+      "nphi4_uniform": 5,
+      "nphi2_uniform": 3,
+      "nphi1": 2,
+      "nm2_symmetric": 5
+    },
+    "f1_max_relative_error": 2.193740204681317e-15,
+    "f1_max_nonaxisymmetric_moment": 3.7366217778956445e-16,
+    "g1_max_ray_error": 2.2196133819818442e-13,
+    "g2_max_rel_jacobian_vs_factor": 3.47460237363055e-10,
+    "g3_exact_total_relative_drift": 1.917629826267895e-09,
+    "g4_convergence": {
+      "H": [
+        0.3,
+        -0.1,
+        0.05
+      ],
+      "T": 1.0,
+      "U0": "exp(-q^2/0.5)(1+0.4n1+0.3n1n2-0.2n3+0.25n3^2)",
+      "q_domain": [
+        -3.0,
+        3.0
+      ],
+      "phi_offset": 0.25,
+      "boundary": "outflow",
+      "time_integration": "scipy expm_multiply of the probed oracle matrix",
+      "quadrature": "3-point Gauss-Legendre in (q, theta, phi) per cell",
+      "timing_authority": "diagnostic_only",
+      "levels": [
+        {
+          "nq": 12,
+          "nm": 6,
+          "nphi": 6,
+          "cells": 432,
+          "rel_L1_error": 0.06695243567660336,
+          "wall_s": 0.3783056379761547
+        },
+        {
+          "nq": 24,
+          "nm": 12,
+          "nphi": 12,
+          "cells": 3456,
+          "rel_L1_error": 0.04468708630803607,
+          "wall_s": 0.17480967985466123,
+          "observed_order": 0.5832785595575614
+        },
+        {
+          "nq": 48,
+          "nm": 24,
+          "nphi": 24,
+          "cells": 27648,
+          "rel_L1_error": 0.026988950355796296,
+          "wall_s": 1.4764476029668003,
+          "observed_order": 0.7274891119124135
+        }
+      ]
+    },
+    "h1_max_form_difference": 2.5584983011759602e-16,
+    "h3_trials": 1200,
+    "h3_min_scaled_I_minus_absQ": 0.0,
+    "h4_dt_gamma_1p5_min_scaled_I_minus_absQ": -0.748456790123457,
+    "h5_euler_clip": {
+      "psd_violated_after_clip": true,
+      "number_changed_by_clip": true,
+      "number_change": 0.048868312757201604
+    },
+    "i_codes": [
+      "q.too_few_edges",
+      "q.too_few_edges",
+      "q.nonfinite_edge",
+      "q.nonfinite_edge",
+      "q.width",
+      "q.width",
+      "q.width",
+      "q.subnormal_width",
+      "q.not_real",
+      "q.not_a_sequence",
+      "mu.not_full_sphere",
+      "mu.not_full_sphere",
+      "mu.width",
+      "mu.not_full_sphere",
+      "phi.not_periodic_cover",
+      "phi.not_periodic_cover",
+      "phi.not_periodic_cover",
+      "phi.not_periodic_cover",
+      "phi.width",
+      "phi.not_periodic_cover",
+      "phi.nonfinite_edge",
+      "grid.cell_count",
+      "state.length",
+      "state.nonfinite",
+      "state.nonfinite",
+      "geometry.nonfinite",
+      "geometry.nonfinite",
+      "geometry.overflow",
+      "geometry.not_real",
+      "geometry.select",
+      "geometry.select",
+      "boundary.invalid",
+      "rate.invalid",
+      "rate.invalid",
+      "rate.invalid",
+      "rate.invalid",
+      "state.length",
+      "state.length",
+      "absorber.invalid",
+      "absorber.invalid",
+      "absorber.invalid",
+      "characteristic.amplification",
+      "characteristic.amplification",
+      "characteristic.amplification",
+      "characteristic.amplification",
+      "characteristic.amplification",
+      "characteristic.direction",
+      "characteristic.direction",
+      "characteristic.direction",
+      "characteristic.quadrature",
+      "rate.invalid",
+      "polarization.length",
+      "polarization.nonfinite",
+      "mu.not_full_sphere",
+      "polarization.negative_intensity",
+      "polarization.nonfinite"
+    ]
+  },
+  "inputs": {
+    "oracle_sha256": "773552acc6c42de5f65972453a32e9f9dff7ac96bde33b358b05e18edd8de891",
+    "lrs_oracle_path": "research/ncp_followup_20261021/BASS_REI_FVM_REFERENCE.py",
+    "lrs_oracle_sha256": "14be5e4d01821f126a575bf901a5041f8ec811a359a0689989a547dee7c14b18"
+  },
+  "environment": {
+    "python": "3.12.3",
+    "libc": "glibc-2.39",
+    "machine": "x86_64",
+    "numpy": "2.4.2",
+    "scipy": "1.17.0",
+    "mpmath": "1.3.0"
+  },
+  "wall_s": 24.03,
+  "timing_authority": "diagnostic_only"
+}
