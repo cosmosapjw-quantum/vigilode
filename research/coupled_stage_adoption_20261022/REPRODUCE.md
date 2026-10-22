@@ -12,7 +12,7 @@ python3 research/coupled_stage_adoption_20261022/run_local_bench.py \
   --binary target/measurement/examples/adaptive_bench \
   --out /tmp/vigilode-coupled-bench-new \
   --source-commit "$(git rev-parse HEAD)" --budget-seconds 900
-python3 research/coupled_stage_adoption_20261022/analyze_local_bench.py --help
+python3 research/coupled_stage_adoption_20261022/analyze_local_bench.py /tmp/vigilode-coupled-bench-new
 ```
 
 `CARGO_TARGET_DIR`를 사용하면 `--binary`를 해당 경로로 바꾼다. 출력 디렉터리는 새 경로여야 한다. 기존 실패 기록을 덮어쓰지 않는다. 실행 시간은 같은 물리 상태·관측 시각·실제 달성 오차를 만족한 설정에서만 비교한다. 후보 경로와 순차 raw-U 경로 사이의 비교이며, VODE/DVODE·diffsol·Julia에 대한 새로운 실행 결과는 아니다.

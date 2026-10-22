@@ -1,0 +1,21 @@
+{
+  "schema": "vigilode.local-adaptive-campaign.v1",
+  "host_kind": "local-sandbox-not-ncp",
+  "platform": "Linux-6.18.55-x86_64-with-glibc2.39",
+  "logical_cpus_visible": 9,
+  "affinity_cpu_count": 9,
+  "cgroup_cpu_max": "1600000 200000",
+  "binary": "/workspace/scratch/0dc1e721cf82/task_runtime/target/measurement/examples/adaptive_bench",
+  "binary_sha256": "69eaffa0501f545a4bf39be7e799b3a2006a5444c3d3cde2f376f5b34fb54730",
+  "source_commit": "53920cc617c317927fcabe90f6b66f1a9fbf79bd",
+  "cargo_profile": "measurement",
+  "compiler_optimization": "opt-level=3,lto=false,codegen-units=16 (repository measurement profile)",
+  "budget_seconds": 900.0,
+  "warmup_per_configuration": 1,
+  "timed_repeats": 3,
+  "planned_configurations": 51,
+  "timing_interpretation": "single local host; no controlled CPU pinning or NCP extrapolation",
+  "elapsed_seconds": 216.6881293769984,
+  "completed_configurations": 51,
+  "failed_or_unrun_configurations": 0
+}

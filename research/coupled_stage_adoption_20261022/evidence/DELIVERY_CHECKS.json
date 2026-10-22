@@ -1,0 +1,22 @@
+{
+  "schema": "vigilode.delivery_checks.v1",
+  "research_node": {
+    "command": "python tools/check-research-node.py --base origin/research/production-review-20261022",
+    "exit_code": 0,
+    "stdout": "check-research-node: PASS (157 ledger rows, base=origin/research/production-review-20261022, new nodes=['coupled_stage_adoption_20261022'])"
+  },
+  "authority_refs": {
+    "command": "python tools/check-authority-refs.py --paths research/coupled_stage_adoption_20261022",
+    "exit_code": 0,
+    "stdout": "check-authority-refs: PASS (83 citations, 13 distinct SHAs: reachable=13)"
+  },
+  "scope": "New research node and append-only ledger; not a claim that historical whole-repository authority issues are repaired",
+  "source_changed_after_tests": false,
+  "ncp_used": false,
+  "whitespace_check": {
+    "all_staged_exit_code": 2,
+    "reason": "Preserved raw cargo logs contain trailing blank lines; unmodified matplotlib SVG has trailing spaces. No source/document whitespace errors.",
+    "authored_files_exit_code": 0,
+    "raw_evidence_modified_to_pass_style": false
+  }
+}

@@ -38,3 +38,7 @@ The mathematical review identifies a second implementation opportunity in the re
 ## Build-profile refinement before benchmark execution
 
 Repository inspection shows `release` uses fat LTO and a single codegen unit. Use the repository's existing `measurement` profile (`opt-level=3`, `lto=false`, `codegen-units=16`) for the sandbox campaign to bound linking resources. All compared methods are in the same executable with these identical flags. Replace the benchmark command above with `cargo build --locked --offline --profile measurement -p vigilode-coupled --example adaptive_bench`, then run the produced binary using `run_local_bench.py`. No benchmark output was observed before this choice.
+
+## Observed results (appended after execution)
+
+Implementation source e419f920f0b8d0b123af03df5e802e8fc612a75d: 62 targeted Rust tests passed. Original failed logs are preserved. Benchmark source 53920cc617c317927fcabe90f6b66f1a9fbf79bd: 51 parsed configurations, 51 with all warm-up/repetitions successful, 0 numerical failures. See DECISIONS.json and evidence/local_bench/SUMMARY.json for actual errors, failures, work and refinement slopes. Timing remains exploratory. No NCP run or general production promotion occurred.

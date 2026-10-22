@@ -100,5 +100,31 @@
       "observation": "Initial integration-owned run: 4 block-solve unit tests passed; 8 adaptive tests passed; singular-retry fixture failed its preliminary exact gamma*rate equality before solver execution. Author notified; preserve this original log and record the corrected fixture rerun separately.",
       "is_final_validation": false
     }
-  ]
+  ],
+  "execution_followup": {
+    "source_commit": "e419f920f0b8d0b123af03df5e802e8fc612a75d",
+    "tests_passed": 62,
+    "tests_failed": 0,
+    "receipt": "evidence/checks_source_v3/SUMMARY.json",
+    "failure_history_preserved": true,
+    "additional_runtime_finding": {
+      "problem": "native fallback counter omitted JVP callback that returned Err",
+      "correction": "guarded callback boundary attempted/completed counts replace overlapping counters; compact receipt preserves completed counts without double charging",
+      "regression": "raw_step_contracts external AtomicU64 count equality on both successful and failed paths"
+    }
+  },
+  "final_document_review": {
+    "date": "2026-10-23",
+    "tests_rerun": false,
+    "result": "No new material source/scope issue found; historical commit-specific hashes match",
+    "corrections": [
+      "Explicitly fixed basis/Newton/homotopy iteration budgets in linear-in-n statement",
+      "Final postprocessing hashes recorded separately from measured source"
+    ],
+    "performance_limits": [
+      "Broad-spectrum fallback dominates",
+      "2-worker timings are slower in12/14 matched settings",
+      "No universal speedup or new global certificate"
+    ]
+  }
 }
