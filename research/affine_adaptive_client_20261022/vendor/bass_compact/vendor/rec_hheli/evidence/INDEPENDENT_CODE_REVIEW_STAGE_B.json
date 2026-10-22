@@ -1,0 +1,91 @@
+{
+  "schema": "rec.hheli.independent_code_review.stage_b.v1",
+  "reviewer_agent": "/root/next_backup_context",
+  "created_utc": "2026-10-21T15:08:12.506647+00:00",
+  "status": "NO_BLOCKING_DEFECT_FOUND_READ_REVIEW",
+  "independence": {
+    "new_core_files_author": false,
+    "prior_vendor_tangent_authorship": true,
+    "scope": "Independent review of new atomic/geometry/coupled/dispatcher code; not a new independent audit of tangent dependency"
+  },
+  "reviewed_sha256": {
+    "code/atomic_network.py": "baecce07aded483fa60006cc576feff67d068c0d70394f7095abacc6d47eaa80",
+    "code/geometry.py": "b998b83f83da581cf51d08a734b34ecade5215f90ca1e72df43ce129c0fb38a0",
+    "code/coupled.py": "c4b225365349758c5bfea85414e0a2ad66a757528187572ff62ad2c0a20bef9d",
+    "code/run_pilot.py": "85c2e3456f277566193ba3938c92eeb8b4b1e978adf46bec6c8c03ebdfd3a70a",
+    "provenance/BASELINE_SOURCES.json": "e1de233b162023bf459ef11dc85fbf12b3e11a6c71670c0fc31e2b4bd614d559",
+    "provenance/atomic_sources.json": "aba1091b5f1d815fe44aa772e48450a2a97249ea8a45790cc4bcf537edeecc1e",
+    "provenance/atomic_verification.json": "a680c192b29e55099ad5d0fd6ad991a84670ad07f715031e0f36536a14867493",
+    "evidence/RUNNER_VERIFICATION.json": "34dd5c5c1c65f3cfd0f4262af448e7d23cd36d89644b9ea34aefd3a9d7b65c10",
+    "evidence/OPTIMIZATION_VERIFICATION.json": "d5222ab38a8258865e947cffd580667413252efb42b1f6bdfc1e9a48d91c4d9e"
+  },
+  "atomic_receipt_hash_match": {
+    "code/verify_atomic.py": true,
+    "code/atomic_network.py": true,
+    "data/atomic_coefficients.json": true,
+    "data/atomic_model.json": true,
+    "provenance/atomic_sources.json": true
+  },
+  "findings": [
+    {
+      "id": "R1",
+      "description": "Reject complex public atomic energy/Y inputs before float cast",
+      "status": "RESOLVED"
+    },
+    {
+      "id": "R2",
+      "description": "Badnell RR row URL must identify clist_K, not fit.dat",
+      "status": "RESOLVED"
+    },
+    {
+      "id": "R3",
+      "description": "Classify all complete cases before resource admission",
+      "status": "RESOLVED"
+    },
+    {
+      "id": "R4",
+      "description": "Ignore proven-dead leases without deleting their records",
+      "status": "RESOLVED"
+    },
+    {
+      "id": "R5",
+      "description": "Einstein gate is algebraic same-definition consistency, not an independent dynamics certificate",
+      "status": "REPORTING_SCOPE"
+    },
+    {
+      "id": "R6",
+      "description": "Positivity and energy diagnostics refer to finite saved nodes/angles only",
+      "status": "REPORTING_SCOPE"
+    }
+  ],
+  "reviewer_execution": {
+    "new_ODE": 0,
+    "NCP": 0,
+    "benchmark": 0,
+    "byte_hash_checks": true,
+    "read_only_code_review": true
+  },
+  "author_receipts_reused": {
+    "atomic_checks": 21,
+    "atomic_status": "PASS_FINITE_ATOMIC_CHECKS",
+    "runner_status": "PASS_SCOPED",
+    "optimization": "historical snapshot; final recheck pending"
+  },
+  "pending": [
+    "Final source hash/diff",
+    "Coupled 62-state Jacobian receipt",
+    "Full interval campaign outputs",
+    "Figures and trace bytes"
+  ],
+  "verdict_axes": {
+    "mathematics": "FINITE_CONDITIONAL_MODEL_ACCEPTABLE",
+    "implementation": "NO_BLOCKING_DEFECT_FOUND_READ_REVIEW",
+    "numerics": "FULL_TRAJECTORY_REVIEW_PENDING",
+    "performance": "NO_SPEEDUP_CLAIM",
+    "memory": "NO_MEASURED_REDUCTION_CLAIM",
+    "physics": "HOLD",
+    "global_convergence": "NOT_RUN",
+    "production": "NOT_APPROVED",
+    "original_REC_U5": "UNCHANGED"
+  }
+}

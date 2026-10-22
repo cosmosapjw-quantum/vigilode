@@ -1,0 +1,11 @@
+# N1 opt-in affine30 adaptive client contract
+
+Frozen before scientific execution, 2026-10-22. Scope: one matched BDF pair on x=[0,0.01], nine identical saved abscissae including endpoints. No cohort run, NCP, attempt3 rerun, production changes, or speed claim.
+
+The unchanged compact33 owner defines F and J. The unchanged affine adapter defines v=d+Lu, u'=R F(x,v), J30=R J33 L. Every reduced Newton correction, LTE rejection/admission and order adaptation norm is sqrt(sum((L e30)/s33)^2/33), via the unchanged C99 status-returning norm. Predictor Newton scales are atol33+rtol*abs(v_predict); LTE and order scales use atol33+rtol*abs(v_new), exactly SciPy BDF endpoint scaling. Initial step comes from the unchanged full33 owner SciPy selector, passed explicitly to both solvers. No native30 initial-step norm or global monkeypatch is permitted. Invalid/unsupported norm aborts transactionally before externally accepted state publication. Dense interpolation receives no additional admission rule.
+
+Acceptance is frozen: max over nine samples of full33 WRMS(affine_lift - full33, atol33+rtol*abs(full33)) <=1. Original tolerances rtol=2e-8, geometry atol=2e-11, atomic atol=2e-10, tau atol=2e-11; max_step=.025. Preserve all inherited compact_run scientific gates and thresholds. Report signed observables, all 21 species, tau, RHS/Jac/LU/accepted-step/rejection/norm counts and wall time. Finite small-window numerical agreement is not physical validation; Physical HOLD persists.
+
+Resource limits: each compile/process <=30 seconds; cumulative compile/probe/scientific execution budget <=120 CPU and wall seconds. Initially one pair only, plus one manufactured invalid-C-norm transactional check. Failures are retained and diagnosed before any rerun. No fresh review is claimed; parent supplies independent review/publication/backups.
+
+Reuse DAG: R1 compact33 owner PR180 / commit 574c3af93810122af0a7977e00e34195e5251a09; R2 affine adapter PR181 / commit 797d66580448dad7fc41f2c2db31fe0eb37908bf; R3 C norm PR79 / commit f9da4aae865623d71bff20c6157318cbaf19ba6c. Completed 127 compact, 1046 heat, NCP and attempt3 evidence is inherited, never rerun. C1 new pinned adaptive hook and transactional check; C2 one matched actual trajectory pair.

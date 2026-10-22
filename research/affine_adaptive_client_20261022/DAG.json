@@ -1,0 +1,73 @@
+{
+  "nodes": [
+    {
+      "id": "R1",
+      "type": "reuse",
+      "source": "BASS PR180",
+      "commit": "574c3af93810122af0a7977e00e34195e5251a09",
+      "status": "REUSED"
+    },
+    {
+      "id": "R2",
+      "type": "reuse",
+      "source": "BASS PR181",
+      "commit": "797d66580448dad7fc41f2c2db31fe0eb37908bf",
+      "status": "REUSED"
+    },
+    {
+      "id": "R3",
+      "type": "reuse",
+      "source": "VigilODE PR79",
+      "commit": "f9da4aae865623d71bff20c6157318cbaf19ba6c",
+      "status": "REUSED"
+    },
+    {
+      "id": "C1",
+      "type": "changed",
+      "depends": [
+        "R1",
+        "R2",
+        "R3"
+      ],
+      "work": "Pinned opt-in adaptive BDF hook, ctypes status check, all state rollback",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "id": "C2",
+      "type": "changed",
+      "depends": [
+        "C1"
+      ],
+      "work": "One actual-owner matched pair; original raw evidence recovered without rerun",
+      "status": "PASS_SCOPED",
+      "max_sampled_wrms": 7.222972526677901e-08,
+      "counters": "UNKNOWN_SERIALIZATION_LOSS"
+    },
+    {
+      "id": "C3",
+      "type": "changed",
+      "depends": [
+        "C1"
+      ],
+      "work": "Persisted isolated invalid C norm transaction and NumPy metadata roundtrip",
+      "status": "PASS"
+    },
+    {
+      "id": "V1",
+      "type": "independent_review",
+      "depends": [
+        "C1",
+        "C2",
+        "C3"
+      ],
+      "status": "PASS_SCOPED_AFFINE30_BDF_METRIC_HOOK_AND_FINITE_PAIR",
+      "evidence": "INDEPENDENT_REVIEW_REI_AUTHORITY.md",
+      "sha256": "d0dda78ddb165631efb9ac65445668732aed1db77a41bf546b1c1db4b7d060a7",
+      "additional_cosmological_ivps": 0,
+      "work_count_reporting_complete": false
+    }
+  ],
+  "completed_ivps": 2,
+  "full_or_cohort_reruns": 0,
+  "physical_status": "HOLD"
+}

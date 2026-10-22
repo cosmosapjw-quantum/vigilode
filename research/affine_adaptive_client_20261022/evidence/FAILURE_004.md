@@ -1,0 +1,1 @@
+Recovery-only process stopped before invoking C norm or diagnostics: isolated fixture AST omitted KEEP in its global imports. Added unchanged adapter KEEP. No cosmological IVP was executed. Original stderr is execution_5.stderr.txt.

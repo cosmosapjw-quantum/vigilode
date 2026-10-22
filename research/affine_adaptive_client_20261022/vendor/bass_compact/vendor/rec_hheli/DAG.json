@@ -1,0 +1,56 @@
+{
+  "schema": "rec.rei.hheli.sandbox.dag.v1",
+  "unit": "HHLI_SANDBOX_20261021",
+  "current": "D_COUPLED_CODING_READY_FOR_FIRST_CASE",
+  "nodes": [
+    {
+      "id": "A_SOURCE_AND_SCOPE",
+      "status": "COMPLETE_SCOPED",
+      "next": "B_OPTIMIZATION_CODING"
+    },
+    {
+      "id": "B_OPTIMIZATION_CODING",
+      "status": "COMPLETE_SCOPED_BENCHMARK_NOT_RUN_BY_REQUEST",
+      "loops": "C1-C10",
+      "next": "C_PHYSICS"
+    },
+    {
+      "id": "C_PHYSICS",
+      "status": "COMPLETE_SCOPED",
+      "loops": "R1-R10",
+      "next": "D_COUPLED_CODING"
+    },
+    {
+      "id": "D_COUPLED_CODING",
+      "status": "C1_C7_COMPLETE_C8_ACTUAL_PILOT_READY",
+      "loops": "C1-C10",
+      "next": "E_NEW_PILOT"
+    },
+    {
+      "id": "E_NEW_PILOT",
+      "status": "READY_NOT_RUN",
+      "next": "F_FIGURE_AND_DUAL_AUDIT"
+    },
+    {
+      "id": "F_FIGURE_AND_DUAL_AUDIT",
+      "status": "WAITING_FOR_ACTUAL_OUTPUT",
+      "next": "G_DELIVERY"
+    },
+    {
+      "id": "G_DELIVERY",
+      "status": "WAITING",
+      "next": "finite continuation selected from new evidence"
+    }
+  ],
+  "immutable_holds": {
+    "physical": "HOLD",
+    "global_convergence": "NOT_RUN",
+    "production": "NOT_APPROVED",
+    "REC_U5": "HOLD_9_FAIL/HOLD_8_FAIL",
+    "closure": "CLOSED_HOLD_NOT_RESET",
+    "REI_activation": false
+  },
+  "completed_old_campaigns": "complete_reused, never queued by this unit",
+  "publication": "STAGE_A_POSTED_PR119_2d1a0b09_STAGE_B_PENDING",
+  "backup": "STAGE_A_ACK_112861B_STAGE_B_PENDING"
+}

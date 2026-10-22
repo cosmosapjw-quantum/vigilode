@@ -1,0 +1,79 @@
+{
+  "budget_seconds": 120,
+  "entries": [
+    {
+      "command": [
+        "cc",
+        "-std=c99",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-shared",
+        "-fPIC",
+        "code/lifted_error_norm.c",
+        "-lm",
+        "-o",
+        "code/liblifted_error_norm.so"
+      ],
+      "returncode": 0,
+      "wall_seconds": 0.40417440600140253,
+      "cpu_seconds": 0.389636,
+      "timeout_seconds": 30
+    },
+    {
+      "command": [
+        "python",
+        "code/run_pair.py"
+      ],
+      "returncode": 1,
+      "wall_seconds": 2.3662870999978622,
+      "cpu_seconds": 2.3588610000000005,
+      "timeout_seconds": 30
+    },
+    {
+      "command": [
+        "python",
+        "code/run_pair.py"
+      ],
+      "returncode": 1,
+      "wall_seconds": 1.7198034359971643,
+      "cpu_seconds": 1.718073,
+      "timeout_seconds": 30
+    },
+    {
+      "command": [
+        "python",
+        "code/run_pair.py"
+      ],
+      "returncode": 1,
+      "wall_seconds": 5.4222388839989435,
+      "cpu_seconds": 5.408578,
+      "timeout_seconds": 30
+    },
+    {
+      "command": [
+        "python",
+        "code/recover_receipt.py"
+      ],
+      "returncode": 1,
+      "wall_seconds": 3.4306055440029013,
+      "cpu_seconds": 3.345098,
+      "timeout_seconds": 30,
+      "cosmological_ivps": 0
+    },
+    {
+      "command": [
+        "python",
+        "code/recover_receipt.py"
+      ],
+      "returncode": 0,
+      "wall_seconds": 2.369761314999778,
+      "cpu_seconds": 2.356824,
+      "timeout_seconds": 30,
+      "cosmological_ivps": 0
+    }
+  ],
+  "cumulative_wall_seconds": 15.712870684998052,
+  "cumulative_cpu_seconds": 15.57707
+}

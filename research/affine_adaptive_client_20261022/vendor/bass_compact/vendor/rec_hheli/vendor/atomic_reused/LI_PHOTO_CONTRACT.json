@@ -1,0 +1,219 @@
+{
+  "contract_id": "R9_UNIT7_LI_PHOTO_v1",
+  "status": "FROZEN_FOR_BOUNDED_IMPLEMENTATION",
+  "theory": "spec/LI_PHOTO_THEORY.md",
+  "requested_authority": "Astra",
+  "observed_model": "UNKNOWN",
+  "immutable_inputs": {
+    "transitions.csv": {
+      "path": "/workspace/scratch/37bc4acea758/r9_unit6_parallel_20261016/inputs/laneB/transitions.csv",
+      "sha256": "d639ac0d701a78a55a1b37d3b31368e2179006d099565c1e95b01cdcf3edcce0",
+      "bytes": 546498
+    },
+    "cascade_mixture.json": {
+      "path": "/workspace/scratch/37bc4acea758/r9_unit6_parallel_20261016/inputs/laneB/cascade_mixture.json",
+      "sha256": "cb58e12cad09bcc61d4bb15370496a90b88ef17d7113442cd7bb5eecacc9c2b8",
+      "bytes": 21906
+    },
+    "photo.dat": {
+      "path": "/workspace/scratch/37bc4acea758/r9_unit6_parallel_20261016/inputs/laneB/photo.dat",
+      "sha256": "a53e73b0af4cc6b801aef67b84bd964e3ed8c9c4992f214e4a69dc7e4443f389",
+      "bytes": 17760
+    }
+  },
+  "prior_results": {
+    "twophoton_LiI_response.csv": {
+      "path": "/workspace/scratch/37bc4acea758/r9_unit6_parallel_20261016/results/laneB/twophoton_LiI_response.csv",
+      "sha256": "a35ed9d8401f7b233c8ab1d0b1a274d8e3dba9defebf0703fd43167851991dff",
+      "bytes": 23467
+    },
+    "twophoton_bands.csv": {
+      "path": "/workspace/scratch/37bc4acea758/r9_unit6_parallel_20261016/results/laneB/twophoton_bands.csv",
+      "sha256": "c12b749f799800ecf35e43f88e95bf999117b07614f360f614621edc237ed759",
+      "bytes": 33475
+    }
+  },
+  "provider_inputs": {
+    "phfit2.f": {
+      "path": "/workspace/scratch/37bc4acea758/r9_unit7_physical_bridges_20261016/inputs/verner/phfit2.f",
+      "sha256": "8df982535a4a2b952e33ca2ffb6d81600e156d7373fbf547a0c0170c1cecc296",
+      "bytes": 209916
+    },
+    "table1.dat": {
+      "path": "/workspace/scratch/37bc4acea758/r9_unit7_physical_bridges_20261016/inputs/verner/table1.dat",
+      "sha256": "fd0a315f100a78f8edb6b3fb12c0022246309cbc834394cbd0e8e5305d00b393",
+      "bytes": 128896
+    },
+    "table1.txt": {
+      "path": "/workspace/scratch/37bc4acea758/r9_unit7_physical_bridges_20261016/inputs/verner/table1.txt",
+      "sha256": "e1dc6135a298c94978e613b042b5906a7a77d3578e76787603bd782a07b8a701",
+      "bytes": 1119
+    },
+    "photo.txt": {
+      "path": "/workspace/scratch/37bc4acea758/r9_unit7_physical_bridges_20261016/inputs/verner/photo.txt",
+      "sha256": "0693f34f4ef20a838cfcca4de2d42c92cc9e675af194eabda70a24fda3a32e99",
+      "bytes": 1194
+    }
+  },
+  "provider": "Verner phfit2 Version2 1996-03-25",
+  "Z": 3,
+  "N": 3,
+  "nint": 1,
+  "nout": 2,
+  "threshold_eV": {
+    "2s": 5.392,
+    "1s": 64.39
+  },
+  "PH1_parameter_order": [
+    "Eth_eV",
+    "E0_eV",
+    "sigma0_Mb",
+    "ya",
+    "P",
+    "yw"
+  ],
+  "PH1_1s": [
+    64.39,
+    27.4,
+    156.4,
+    33.82,
+    1.49,
+    0
+  ],
+  "PH1_2s": [
+    5.392,
+    3.466,
+    47.74,
+    20.35,
+    4.423,
+    0
+  ],
+  "PH2_parameter_order": [
+    "E0_eV",
+    "sigma0_Mb",
+    "ya",
+    "P",
+    "yw",
+    "y0",
+    "y1"
+  ],
+  "PH2_2s": [
+    3.107,
+    62.45,
+    15.01,
+    4.895,
+    0,
+    0,
+    0
+  ],
+  "branch_rule": "2s PH2 below64.39,PH1 at or above64.39;1s PH1 at or above64.39;sum partials once",
+  "units": {
+    "Mb_m2": 1e-22,
+    "eV_J": 1.602176634e-19
+  },
+  "source": {
+    "expected_mixtures": 32,
+    "n_values": [
+      3,
+      5,
+      10,
+      12
+    ],
+    "source_model": "unchanged Unit6 normalized Nussbaumer-Schmutz two-photon fit",
+    "I": 0.08144613055216544,
+    "max_expected_Delta_eV": 91.83842857919419,
+    "time": "asymptotic after isolated reservoir decay",
+    "flux": "F_E=J*S(E),J=1 precursor-equivalent m^-2 s^-1"
+  },
+  "bands": [
+    "sub_Lyman",
+    "upper_old",
+    "extension",
+    "covered_total",
+    "full_total"
+  ],
+  "shells": [
+    "1s",
+    "2s",
+    "total"
+  ],
+  "response_fields": [
+    "G_over_J_m2",
+    "W_abs_over_J_J_m2",
+    "K_primary_over_J_J_m2",
+    "Q_threshold_over_J_J_m2",
+    "X_core_over_J_J_m2"
+  ],
+  "required_results": [
+    "provider_reconstruction.json",
+    "li_photo_cross_sections.csv",
+    "li_photo_response.csv",
+    "li_photo_comparison.csv",
+    "li_photo_quadrature.csv",
+    "li_photo_summary.json",
+    "li_photo_tests.json"
+  ],
+  "cross_section_reference_Mb": {
+    "E5.392_2s": 1.4983248303083303,
+    "E13.6_2s": 0.9494109630812783,
+    "E40_2s": 0.1458116877275859,
+    "edge_left_2s": 0.05189110135229765,
+    "edge_right_2s": 0.05099580193561293,
+    "edge_right_1s": 3.4600130371367306,
+    "E80_2s": 0.030971341445678712,
+    "E80_1s": 2.406165919296005,
+    "E_Delta_2s": 0.02235068085223219,
+    "E_Delta_1s": 1.8291181295370338
+  },
+  "numerics": {
+    "nodes": [
+      64,
+      128,
+      256
+    ],
+    "final_nodes": 256,
+    "compare_nodes": [
+      128,
+      256
+    ],
+    "split_eV": [
+      5.392,
+      13.6,
+      64.39
+    ],
+    "per_command_seconds_max": 30,
+    "numerical_run_seconds_max": 30,
+    "threads_max": 1,
+    "independent_integration": "one per species P=1 using different quadrature route; scale by actual P",
+    "Fortran_oracle": "compile unchanged provider if compiler available;otherwise explicit NOT_RUN and source port plus Decimal formula checks"
+  },
+  "tolerances": {
+    "response_rtol": 1e-08,
+    "area_floor_m2": 1e-35,
+    "energy_area_floor_J_m2": 1e-53,
+    "source_moment_floor": 1e-14,
+    "algebraic_rtol": 1e-11,
+    "independent_formula_rtol": 1e-11,
+    "independent_formula_floor_Mb": 1e-30,
+    "Fortran_native_REAL_rtol": 1e-05,
+    "Fortran_native_REAL_floor_Mb": 1e-07
+  },
+  "owned_paths": [
+    "code/li_photo*",
+    "tests/test_li_photo*",
+    "results/laneA/*",
+    "docs/LI_PHOTO_IMPLEMENTATION.md",
+    "evidence/LI_PHOTO_EXECUTION.json"
+  ],
+  "not_admitted": [
+    "resolved resonances",
+    "Auger or fluorescence yields",
+    "final charge fractions",
+    "thermal heating or secondary-ionization yield",
+    "cosmological source flux",
+    "physical H(t)",
+    "NCP results",
+    "E1 line-response expansion"
+  ],
+  "stop_rule": "one finite ladder and focused validation;then independent authority review;one concrete failure or at most one authorized repair"
+}
