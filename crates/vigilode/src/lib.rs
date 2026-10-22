@@ -162,6 +162,8 @@
 mod capabilities;
 mod error;
 mod events;
+mod explicit;
+mod explicit_ensemble;
 mod fd;
 mod options;
 mod problem;
@@ -183,3 +185,6 @@ pub use solution::{
     StopRecord,
 };
 pub use solve::Rodas5p;
+
+pub use explicit::*;
+pub use explicit_ensemble::{Dopri5Ensemble, Dopri5EnsembleJob};

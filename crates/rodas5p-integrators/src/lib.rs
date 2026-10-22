@@ -37,6 +37,7 @@ mod comparator_fidelity;
 pub mod conservative_remap;
 mod controller_telemetry;
 mod dense_output_v2;
+mod dopri5;
 mod exponential;
 pub mod fourier_path_candidate;
 pub mod fourier_path_certificate;
@@ -202,6 +203,7 @@ pub use comparator_fidelity::{
     relative_performance_verdict,
 };
 pub use controller_telemetry::{ControllerDecision, ControllerEvents, ControllerTelemetry};
+pub use dopri5::{Dopri5Config, Dopri5Workspace, Dopri5IntegrationResult, Dopri5StopReason, integrate_dopri5_observed, DOPRI5_ADAPTIVE_METHOD, DOPRI5_A, DOPRI5_B, DOPRI5_B_EMBEDDED, DOPRI5_C};
 pub use dense_output_v2::{
     AdaptiveDenseSegmentRun, ContinuousResidualProvider, ContinuousResidualVerificationError,
     ContinuousResidualVerificationResult, ContinuousResidualWorkspace, ContinuousSegmentErrorBound,

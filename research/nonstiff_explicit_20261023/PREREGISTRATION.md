@@ -44,3 +44,7 @@ The source audit may refine API names before execution while preserving these ac
 ## Campaign specification before execution
 
 Default:10 analytic families (decay, driven, logistic, harmonic, rapid, damped, mixed-scales, nonnormal, large-vector4096, stiff-control), three requested tolerances1e-4/1e-6/1e-8 and two methods =60 configurations. One warm-up and3 interleaved timed rounds. Five common landing times. Primary error for matched comparisons is max_i,t |y-y_ref|/max(1,|y_initial|,|y_ref|), independent of requested solver tolerance; maximum absolute error is also retained. Large-vector baseline is matrix-free with supplied analytic JVP; small-case baseline is analytic dense-fast. Moderate stiffness is an additional full-mode family. All reference and computed state components are preserved for scoring without a numerical rerun.
+
+## Ensemble and available external supplement (before execution)
+
+Register4 ensemble configurations:16 independent4096-dimensional decay trajectories, workers1/2 and rtol1e-6/1e-8, one warm-up and3 timed repeats. The local pool is constructed outside the timer and reported separately; each trajectory workspace+integration stays timed. Exact references are outside. This measures independent-problem throughput, not acceleration of one trajectory. Available SciPy VODE/DVODE Adams/BDF may be run as optional external arms with its version pinned in receipts; no new external solver installation. diffsol/Julia are run only through discovered pinned adapters, otherwise remain NOT_RUN.

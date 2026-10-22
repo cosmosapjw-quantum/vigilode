@@ -1,0 +1,130 @@
+{
+  "schema_version": "vigilode.nonstiff.intake.v1",
+  "date": "2026-10-23",
+  "baseline_commit": "4929c0f86cee03a06ac1ab2713e1b438dd10cfc5",
+  "related_research_commit": "69e83044aacfb9a8fd2c6c3fb1146911beeedd79",
+  "source_sha256": {
+    "crates/vigilode/src/problem.rs": "80508cd74c613bde767873a93e46697b9d04597a1e95e2204a6f9332695cbc8e",
+    "crates/vigilode/src/options.rs": "b0355bd34c7038ff18fd37e15315835b8bc6fb4b01e7e0a59308e1f779269b1e",
+    "crates/vigilode/src/solve.rs": "f97fea0d12107303a0e66004e39913f372d2f29acab378298eea9c68d606772d",
+    "crates/vigilode/src/capabilities.rs": "415a6a0ec2893431fba147697ed7c0c4ccb021fd3c9ed2a0cc351e5f034d7dd5",
+    "crates/vigilode/src/solution.rs": "d879c9eb6155a0a73b3adda8445d8bcf30d4830863a97b02930290bbddb3d761",
+    "crates/vigilode/src/fd.rs": "043a30a6dba922cd40b7f706b1535013f822180dda7529a7e2d163248da18664",
+    "crates/rodas5p-integrators/src/problem.rs": "890aa2218931a12ec7fcea7c72a0fb25eb588e7984a04ad2c5d89b4d5e95e066",
+    "crates/rodas5p-integrators/src/adaptive.rs": "3a04609dc5a7141d6bdfe6ebccec441d1d2c8a9960305ea58873914e10703c40",
+    "crates/rodas5p-integrators/src/adaptive_output.rs": "4f2106a46ea8784a0946c4691faa3cd168a6866c9461a43d3849c8ca6134a2d8",
+    "crates/rodas5p-core/src/norms.rs": "d9855786d8ab94e1def28e3525fa40e5a44914a3ecf5f1d318e41421f8cfd604"
+  },
+  "related_research_sha256": {
+    "research/affine_adaptive_client_20261022/README.md": "9bbb94943bbd66f10ff2b6e8c31fdff0fac907d2f5c726c241273db97c7c3088",
+    "research/affine_adaptive_client_20261022/THEORY.md": "dca6c263604c365fe9d0562a4b8eaba4bfe2184a15af19eeff99ba2f4ce87cbe"
+  },
+  "search_scope": "Rust source under crates; strings Dormand, Dopri, Tsit, Bogacki, Runge-Kutta, RK45, RK23, explicit RK",
+  "general_explicit_rk_found": false,
+  "existing_reusable": [
+    "AdaptiveOutputSession represented clock/output landing",
+    "adaptive_next_step_after_attempt with method-specific estimator order",
+    "scalar/vector WRMS zero-scale conventions",
+    "CoreResult typed failures and WorkCounters",
+    "public Problem RHS closure and recoverable/fatal callback semantics"
+  ],
+  "related_research_delta": {
+    "native_rust_files_changed_in_latest_commit": false,
+    "adopted_as": "client error-metric contract and future application evidence, not copied wholesale",
+    "reported_small_window_full33_wrms_discrepancy": 7.222972526677901e-08,
+    "interval": [
+      0,
+      0.01
+    ],
+    "isolated_performance_evidence": false,
+    "reported_missing_work_counters": true
+  },
+  "findings": [
+    {
+      "id": "NS-A01",
+      "kind": "architectural_gap",
+      "severity": "high",
+      "location": "crates/vigilode/src/solve.rs::Rodas5p::solve/build",
+      "observation": "Every supported facade route is Rosenbrock/implicit; an RHS-only public Problem defaults to a finite-difference Jacobian. No general explicit Runge-Kutta implementation was found in crates/*.rs.",
+      "impact": "Nonstiff calls pay Jacobian/linear-solve costs despite not needing them.",
+      "action": "Add genuine RHS-only adaptive DOPRI5 path with explicit caller selection and distinct executed-method records."
+    },
+    {
+      "id": "NS-A02",
+      "kind": "integration_constraint",
+      "severity": "high",
+      "location": "crates/rodas5p-integrators/src/problem.rs::OdeProblem::new",
+      "observation": "Constructor rejects jacobian=None and jvp=None.",
+      "impact": "Reusing it unchanged for a Jacobian-free API requires an artificial derivative or cannot construct the problem.",
+      "action": "Use a dedicated validated explicit problem/driver interface or additive RHS-only constructor; do not install a fake zero JVP or weaken implicit route checks."
+    },
+    {
+      "id": "NS-A03",
+      "kind": "record_semantics",
+      "severity": "medium",
+      "location": "crates/vigilode/src/solution.rs::JacobianRecord/DriverWork; options.rs::Tier",
+      "observation": "Existing records assume a used derivative provider and protected RODAS5P route.",
+      "impact": "An explicit implementation could otherwise be mislabeled as finite differences or a Rosenbrock production route.",
+      "action": "Separate explicit result/record or add NotUsed/explicit variants with accurate method id; keep requested and executed method traceable."
+    },
+    {
+      "id": "NS-A04",
+      "kind": "reuse_constraint",
+      "severity": "medium",
+      "location": "crates/rodas5p-core/src/norms.rs::error_scale; adaptive.rs::adaptive_next_step_after_attempt",
+      "observation": "error_scale allocates a fresh Vec; controller already accepts estimator_order as an argument.",
+      "impact": "Blind helper reuse adds hot-loop allocation and Rosenbrock-specific metadata may misidentify the explicit controller.",
+      "action": "Reuse controller arithmetic with DOPRI error-estimator order 5 and persistent/streamed scalar-vector error scales preserving zero-scale and overflow rules."
+    },
+    {
+      "id": "NS-A05",
+      "kind": "integration_obligation",
+      "severity": "high",
+      "location": "new explicit FSAL cache and accepted-state transaction",
+      "observation": "Last-stage derivative equals next first derivative only at the accepted endpoint with the same RHS/model data.",
+      "impact": "Promoting a rejected stage or reusing after a model mutation changes the integrated equation.",
+      "action": "Commit endpoint/state/FSAL atomically; retain base derivative across rejection only when base/model unchanged; invalidate on epoch/state changes. Count failed callbacks before entry."
+    },
+    {
+      "id": "NS-A06",
+      "kind": "selection_limit",
+      "severity": "medium",
+      "location": "new automatic method selection",
+      "observation": "RHS-only, dimension, and absence of a Jacobian are representation choices, not evidence of nonstiffness.",
+      "impact": "Unconditional default explicit selection can cause large stiff costs or step-budget failure.",
+      "action": "Expose explicit caller choice first. Any automatic strategy must be opt-in, preserve accepted state/work, have bounded probing and record fallback/selection reasons."
+    },
+    {
+      "id": "NS-A07",
+      "kind": "client_norm_dependency",
+      "severity": "high",
+      "location": "research/affine_adaptive_client_20261022 on branch 69e83044aacfb9a8fd2c6c3fb1146911beeedd79",
+      "observation": "Latest research adds a Python SciPy1.17 BDF subclass controlling a reduced30 state with full33 lifted metric; it is not native Rust.",
+      "impact": "Native explicit acceptance in reduced coordinates would omit reconstructed neutral errors if it uses ordinary30 WRMS.",
+      "action": "Keep physical state-scale/tangent-error lift contract for future reduced explicit client; BDF predictor/endpoint-specific norms are not interchangeable with DOPRI max(old,new) scaling."
+    }
+  ],
+  "recommendation": {
+    "method": "Dormand-Prince 5(4), FSAL",
+    "public_selection": "explicit opt-in; preserve Rodas5p meaning",
+    "initial_scope": [
+      "identity mass",
+      "nonautonomous or autonomous RHS",
+      "scalar/vector atol",
+      "forward endpoint-observed integration"
+    ],
+    "refusals": [
+      "mass matrix unless explicitly supported",
+      "unsupported dense interpolation and events"
+    ],
+    "parallelization": [
+      "contiguous componentwise stage-combination loops",
+      "RHS-owned component parallelism",
+      "independent trajectories with bounded worker pool"
+    ],
+    "auto_switching": "opt-in bounded empirical policy, not stiffness certificate"
+  },
+  "tests_executed_by_intake_reviewer": false,
+  "ncp_used": false,
+  "review_scope": "baseline source and current related published client; final new implementation reviewed separately"
+}
