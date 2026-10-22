@@ -371,3 +371,51 @@ The run is on the local workstation. Wall times are diagnostic only, and no spee
 - **C3 constant geometry:** the P02 power law (s ∝ (1+t)^-p, p ≠ 1) cannot equal the sphere power law
   (all H_k ∝ 1/(1+t)), so C3 uses constant geometries. L2's moving comoving threshold makes it
   non-autonomous.
+
+---
+
+## Results
+
+The run was on the clean tree at `679ccdf9543d3c75ae08f29050498405b73b104b` (code `4b2d925c`, on `a0dbbeb7`).
+The command was exactly the preregistered one.
+
+- Wall time was 257 s on the local workstation, diagnostic only.
+- The harness built both runners itself and ran the cargo contract tests: 25/25 ok, 0 ignored.
+- The watched tree was clean at start and end, no input changed, and 0 requests were incomplete.
+
+Output hashes:
+
+- `results.json`: `6d44939a063e89bf1d196f164beb3b26679eefb50891002688e470fd2a08db26`
+- `raw/MANIFEST.json`: `6babc7b4f8150d98fc40839415fc23b80e15a7fbd1f1485e8a167405d1c28730`; it covers
+  277 raw files (27 MB).
+
+**Verdict: PASS**: every [C] gate C1–C8 passed.
+
+| gate | pass | key numbers |
+|---|---|---|
+| C1 | True | oracle 38/38, `pass_scoped`; the golden fixture `CHECKS.json` equals the fresh oracle output (oracle sha256 and parity fixture) |
+| C2 | True | 160/160 cases, 691,278 values bitwise, 0 mismatches, 0 sign-of-zero differences, 0 refused. Jacobian action J·s vs oracle RHS(s) within 1e-14·(\|J\|\|s\|). Absorber: 38 physical cases bitwise; 40 comoving; vs the independent P02 `kbar_closed`: k̄ 0.0, dk̄ 4.1e-16 |
+| C3 | True | φ-summed 3D vs the LRS adapter, fixed 64 steps, per group: L1 5.1e-15 (axisymmetry 4.7e-15), L2 3.1e-15 (3.2e-15); same step counts |
+| C4 | True | isotropy, per group: I1 1.4e-14 (banded) and 7.4e-15 (fixed); I2 3.6e-15 and 2.2e-15 |
+| C5 | True | triaxial exact characteristics: 0.04435, 0.02574, 0.01380 (strictly decreasing); orders 0.785 and **0.899** (finest pair, window [0.75, 1.25]). Time state-difference 4.1e-11, 1.0e-10, 1.3e-10 (≪ 0.02·err at every level). Quadrature GL3 vs GL5: 3.6e-6, state difference 3.8e-5 at T |
+| C6 | True | allocations equal at rtol 1e-6/1e-9: banded 92/92 (15 vs 44 attempts), dense 85/85 with `InPlaceZeroSkipping` |
+| C7 | True | banded and dense repeats bitwise; trajectory number invariant ≤ 8.6e-16 over 20 runs (bound 1e-11) |
+| C8 | True | 8/8 typed refusals with the oracle's codes |
+
+**[H] observations** (not gated):
+
+- The adaptive C3 arms differ by up to 2.8e-11 (L1) and 2.5e-8, because their step sequences differ.
+- The C5 orders are still rising (0.785 → 0.899). The claim is consistency with first order, not that the
+  asymptote was reached.
+
+**Consequence (approved plan):** P06 (scoped) passes, and with it the DAG nodes P02–P06 are complete. The
+NCP comparator campaign C1 remains. Explicit HOLD:
+
+- Rust polarized transport;
+- tilt/aberration;
+- recoil;
+- class B;
+- a structured sphere solver;
+- sphere AMR.
+
+No live BASS/rei, production or wall-time claim is made. Broad production remains HOLD.
