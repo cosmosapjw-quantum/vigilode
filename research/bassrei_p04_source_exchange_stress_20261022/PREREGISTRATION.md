@@ -341,3 +341,57 @@ The run is on the local workstation. Wall times are diagnostic only, and no spee
   modelling choice of O(Δq²).
 - **Source rates:** taken read-only from the rei source files, bound by sha256. Live BASS/rei integration
   and production remain HOLD.
+
+---
+
+## Results
+
+The run was on the clean tree at `d0de4f34b9fd60f49e71a58cf6faabdecc05900a` (code `e3f11a34`). The command
+was exactly the preregistered one.
+
+- Wall time was 70 s on the local workstation, diagnostic only.
+- The harness built the runner itself and ran the cargo contract tests: 24/24 ok, 0 ignored, all three
+  binaries.
+- The tree was clean at start and end. No input changed during the run, and the source binding held at
+  start and end.
+- Toolchain: `rustc 1.94.1`; BLAS was pinned to 1 thread.
+
+Output hashes:
+
+- `results.json`: `8356d53aa4928557ae5ddc6a0d0c4be29bf63103ef213e95a1897e1a595b5bcc`
+- `raw/MANIFEST.json`: `52267bac716d703984566479d4df393433c831efa23e96c493411478436af4dd`; it covers
+  89 raw files.
+
+**Verdict: PASS**: every [C] gate C1–C9 passed.
+
+| gate | pass | key numbers |
+|---|---|---|
+| C1 | True | Verner vs the source over 4010 energies: max relative 0, zeros agree. Case-A vs the source `CaseARates` over 20001 + 129 node temperatures: 0. dv/dT vs reference: 0. Log-slope vs source and reference: 0. 5/5 domain edges agree (typed refusals). Table sha256 matches. |
+| C2 | True | seed 2026102209, 60 states: invariants ≤ 1.17e-15, RHS ≤ 1.06e-15, Jacobian per entry ≤ 7.99e-16, f_t ≤ 8.74e-16; reference unittests 24/24 OK |
+| C3 | True | 15 trajectories: ≤ 2.97e-14 relative, 1.72e-15 per H, 1.04e-13 eV per H |
+| C4 | True | finest-pair orders 1.002 (s/H 0.1) and 0.985 (s/H −0.2); errors strictly decreasing |
+| C5 | True | amp 1e30 and 1e22: ṡ == (−3H)s bitwise; D_γ Python == runner bitwise; control 5.99e-15 against 2.66e-24 (1e30) and 5.99e-23 against 2.66e-32 (1e22); all 3 bitwise pairs at both amps |
+| C6 | True | S 6.51e-7, 2.27e-8, 3.97e-10 (u_ref 1.5e-13); R 2.39e-6, 5.44e-7, 1.12e-8 (u_ref 6.9e-13); both strictly decreasing |
+| C7 | True | rtol 1e-8 against B_app 1e-6: N1 1.24e-10 (n_γ), S 3.97e-10 (D_γ), A 1.24e-10 (n_γ), R 1.12e-8 (x_HeIII); u_ref ≤ 6.9e-13 |
+| C8 | True | NUMERICAL_FAILURE with a partial at t = 2.61e11 s, reason `attempt-budget`, `last_failure` `non-finite`; T_partial = T_max; 1505 typed refusals; ledgers 8.7e-14 relative, 1.1e-14 per H, 1.7e-12 eV per H |
+| C9 | True | allocations N1 89/89 (14 vs 38 attempts), S 89/89 (80 vs 293), in-place LU; repeat bitwise including counters |
+
+**[H] observations** (not gated):
+
+- The 1e-6 rung gives N1 6.6e-9, S 2.3e-8, A 6.6e-9 and R 5.4e-7, all within B_app as well.
+- The unfloored errors of the depleted photon observables are unbounded, as expected:
+  - in S, n_γ is at 1.6e-2;
+  - in R, the photons sit at 1e-20 against an initial 0.25.
+- The source `rec_step` dt→0 limit against the runner's rows: RE 1.1e-12, E_esc 3.2e-11, N_HII 7.9e-11.
+  These are limited by the source's 1e-12 midpoint iteration.
+- The per-slot photon f_t parity is 9.8e-16.
+
+**Deviations for the user's sign-off** (unchanged from the preregistration):
+
+- the C2 bound is 1e-14·Σ|terms| (the P02 C3 bound);
+- the D_γ/ρ_γ error is depletion-weighted;
+- Thomson is weak in every scenario.
+
+**Consequence (approved plan):** P04 passes. With P03 (L-0150) this unblocks the NCP campaign C1 with all
+arms, and P05 (L3 `e54fdd62`). No physical-rate, live BASS/rei or production claim is made. Broad
+production remains HOLD.
