@@ -3,7 +3,7 @@
 BASS/rei DAG campaign C1 of the approved plan ("C1 NCP campaign", after P03 and P04). The ledger row to be
 written is L-0154 (after P05 L-0152 and P06 L-0153).
 
-- **Code under test:** `5a7850bc` on branch `research/bassrei-port-20261021`, on top of `451452dc` (L4; harness piloted on `6d5ba7ff`, head after
+- **Code under test:** `5a7850bc` + `79a39b8e` (Amendment 1) on branch `research/bassrei-port-20261021`, on top of `451452dc` (L4; harness piloted on `6d5ba7ff`, head after
   P06).
   - **Verified delta of the runner sources** from `d0de4f34` (where the harness was first written) to
     `6d5ba7ff`:
@@ -371,3 +371,23 @@ seen before freezing.
 ## Holdout
 
 None.
+
+## Amendment 1 (before any measurement): attempt 1 INVALID in setup
+
+Attempt 1 was launched at EXEC `6ed8f526` on 2026-10-22 at 06:33:59Z, into
+`/root/vigilode-bassrei-ncp-c1-20261022T063359Z`.
+
+- **Preflight passed:** cpuset 0-63, 64 CPUs, MemAvailable 124 GiB, `/root` free 478 GB, load 0.08, no
+  live C1 run and no heavy process.
+- **Setup failed after 1 s.** The detached non-login shell lacks `/root/.cargo/bin` on its PATH, so the
+  runner build stopped with `cargo: command not found` (exit 127). As preregistered, the campaign
+  finalized as **INVALID** (incomplete, no measurement phase ran, no ledger row).
+- **Evidence:** the OUT tarball, its sha256, `campaign.log`, `REPORT.md`, the output sums and the
+  preflight are kept in `attempts/attempt1_20261022T063359Z/`.
+
+**Fix.** Commit `79a39b8e` changes only `run_campaign.sh`. It prepends `/root/.cargo/bin` to PATH when that
+directory exists and exports `RUSTUP_TOOLCHAIN=1.94.1`. A read-only probe found rustup there, with
+1.94.1 installed. No gate, threshold, scenario, arm or schedule changes.
+
+Attempt 2 runs at the commit that adds this amendment (the new EXEC). Its 120-minute cap starts afresh at
+its own setup, and attempt 1 used 9 s of NCP time.
