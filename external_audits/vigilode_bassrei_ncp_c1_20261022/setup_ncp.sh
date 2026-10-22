@@ -78,6 +78,7 @@ DIFFSOL_PID=$!
   JUL=${NCPC1_JULIA_BIN:-/root/VIGILODE_COMPONENT_20261018T134235Z/env/julia-1.12.7+0.x64.linux.gnu/bin/julia}
   SRC_DEPOT=""
   for d in ${NCPC1_JULIA_DEPOT_SRC:-} \
+           /root/vigilode-julia-c1-20261022/depot \
            /root/VIGILODE_COMPONENT_20261018T134235Z/env/julia-depot \
            /root/VIGILODE_COMPONENT_20261018T134235Z/env/depot \
            /root/VIGILODE_COMPONENT_20261018T134235Z/julia-depot \

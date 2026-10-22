@@ -57,7 +57,7 @@ echo "DISK_AVAIL_B=$(df -B1 --output=avail /root | tail -1 | tr -dc 0-9)"
 echo "LOAD1=$(cut -d" " -f1 /proc/loadavg)"
 echo "LIVE_C1=$(pgrep -fc "[r]un_campaign.sh" || true)"
 echo "HEAVY=$(top -b -n 2 -d 1 2>/dev/null | awk "/^top -/ {n++} n==2 && \$1 ~ /^[0-9]+\$/ && \$9+0 >= 25 && \$12 != \"top\" {printf \"%s:%s:%s;\", \$1, \$12, \$9}")"
-for d in /root/VIGILODE_COMPONENT_20261018T134235Z/env/julia-depot /root/VIGILODE_COMPONENT_20261018T134235Z/env/depot \
+for d in /root/vigilode-julia-c1-20261022/depot /root/VIGILODE_COMPONENT_20261018T134235Z/env/julia-depot /root/VIGILODE_COMPONENT_20261018T134235Z/env/depot \
          /root/VIGILODE_COMPONENT_20261018T134235Z/julia-depot /dev/shm/vigilode_ncp_intensive_120m_v1_20261021T062109Z/julia-depot /root/.julia; do
   if [ -d "$d/packages/OrdinaryDiffEq" ] && [ -d "$d/packages/Sundials" ]; then
     echo "DEPOT=$d"; echo "DEPOT_BYTES=$(timeout 120 du -sb "$d" | cut -f1)"; break
