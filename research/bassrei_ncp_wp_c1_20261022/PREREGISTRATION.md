@@ -440,3 +440,56 @@ commit that adds this amendment, under three conditions:
 - **Attempt 3:** its verdict goes to L-0155, with the full comparator set.
 - Each verdict is computed by the unchanged `analyze.py` and never re-scored.
 - If attempt 3 ends INVALID, that is recorded, and attempt 2 stands as the C1 result.
+
+---
+
+## Results
+
+Three attempts were made. Attempt 1 was INVALID in setup (Amendment 1) and has no ledger row. Attempts 2
+and 3 completed and were scored by the unchanged `analyze.py`. Both were fetched with sha256 verification
+and imported verbatim into `attempt2/` and `attempt3/`, each with an `IMPORT_MANIFEST.json`.
+
+| attempt | EXEC | NCP directory | wall | verdict | rows (OK / HOLD / TIMEOUT / n.a.) | tarball sha256 |
+|---|---|---|---|---|---|---|
+| 2 | `e3341309` | `…T063627Z` | 1034 s | **PASS** | 720 / 424 (all Julia) / 2 / 66 | `9aa4033b…35f032` |
+| 3 | `2064366e` | `…T070004Z` | 1130 s | **PASS** | 1144 / 0 / 2 / 66 | `ebd3b90f…72c965` |
+
+**Gates (both attempts): G1–G7 all True.**
+
+- **G1:** references within limits.
+- **G2:** every adapter matches the VigilODE kernels to ≤ 3.0e-15.
+- **G3:** all 22 VigilODE rung items meet B_app at rtol 1e-8. The maximum error is 1.2e-8 (chemistry
+  R), giving a minimum margin of 81×; most margins are 3e4–7e4×. The source ledgers hold.
+- **G4:** 8 groups are bitwise identical across 3 cores.
+- **G5:** 16 groups, the 6 forced-rejection groups among them, allocate the same number at both rtols.
+- **G6:** the preregistered plan is complete; the 2 TIMEOUTs are DOP853 on S4R, typed.
+- **G7:** provenance holds at start and end.
+
+The Julia setup in attempt 3 was OK: it used a private copy of the user-authorized depot (Amendment 2;
+evidence in `julia_install/`).
+
+**Matched cost** (`diagnostic_only`, a single host, STATISTICAL_AUTHORITY_HOLD, no speed claim). The
+ratios are comparator solve time divided by VigilODE solve time, as medians over 7 AB/BA blocks:
+
+| case family | best comparator (matched rung) | ratio vs the best VigilODE arm |
+|---|---|---|
+| S1 non-stiff | Julia Tsit5 | 0.22–0.27: the explicit RK is about 4× faster |
+| S4N1 non-stiff chemistry | Julia Tsit5 | 0.05: about 20× faster |
+| S2 stiff transport, G2/G3/G4 | Julia CVODE_BDF Band | 2.9×, 5.8×, 15.9×: VigilODE structured client faster |
+| S2, VigilODE banded vs Julia Rodas5P sparse (same method family) | n/a | about 1.8–1.9× (matched-rung times) |
+| S3-G2 bordered | Julia FBDF sparse | 5.6× |
+| S4R stiff chemistry | Julia CVODE_BDF KLU | 1.26× |
+| S4S stiff chemistry | Julia CVODE_BDF KLU | 0.89×: CVODE about 1.1× faster |
+
+Against the older comparators of attempt 2, the stiff ratios are:
+
+- VODE BDF 18–32×;
+- diffsol BDF 17–127×;
+- DOP853 76–5800×.
+
+**Reading of the cost results.** The VigilODE matched rungs are mostly censored at the loosest ladder rung
+(1e-3), so the ratios are conservative in VigilODE's favour. The Jacobian strategies differ by arm (see
+Deviations). n ≤ 8322.
+
+**Verdicts.** Attempt 2 is recorded as L-0154 and attempt 3 as L-0155. Neither supersedes the other.
+Broad production, live BASS/rei integration and every wall-time claim remain HOLD.

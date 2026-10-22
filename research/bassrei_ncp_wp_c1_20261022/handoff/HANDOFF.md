@@ -90,6 +90,8 @@ Status probe (read-only):
       'C=/root/vigilode-bassrei-ncp-c1-20261022T063627Z; [ -f $C/CAMPAIGN_DONE ] && echo DONE || echo RUNNING; tail -3 $C/logs/PHASES.log;
        ls /root/vigilode-julia-c1-20261022; tail -5 /root/vigilode-julia-c1-20261022/install.log'
 
+## STATUS 16:35 KST: COMPLETE. Attempts 2 and 3 PASS, ledger L-0154/L-0155 written and pushed. Only the user's sign-off on deviations (step 5) and optional NCP cleanup (step 6) remain.
+
 ## Progress since this file was written (16:00 KST)
 
 - **Attempt 2: done, verdict PASS** (1034 s). It is fetched (tarball sha256 `9aa4033b…35f032`) and
