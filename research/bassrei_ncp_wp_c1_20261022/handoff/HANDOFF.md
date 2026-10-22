@@ -90,6 +90,18 @@ Status probe (read-only):
       'C=/root/vigilode-bassrei-ncp-c1-20261022T063627Z; [ -f $C/CAMPAIGN_DONE ] && echo DONE || echo RUNNING; tail -3 $C/logs/PHASES.log;
        ls /root/vigilode-julia-c1-20261022; tail -5 /root/vigilode-julia-c1-20261022/install.log'
 
+## Progress since this file was written (16:00 KST)
+
+- **Attempt 2: done, verdict PASS** (1034 s). It is fetched (tarball sha256 `9aa4033b…35f032`) and
+  imported into `attempt2/`. **Step 1 is done**, except for its ledger row (step 4).
+- **Julia install: OK** (`JULIA_INSTALL_OK 1.12.7`, exit 0, 06:45:37Z–06:59:00Z, depot 1.5 GB). The
+  evidence is in `julia_install/`. **Step 2 is done.**
+- **Attempt 3: launched** at 07:00:04Z from `2064366e`.
+  - NCP directory: `/root/vigilode-bassrei-ncp-c1-20261022T070004Z`.
+  - Local receipts: `~/vigilode-campaign/bassrei-ncp-c1-20261022T070004Z`.
+  - The preflight found the new depot.
+  - **Step 3 is in progress:** poll it, then fetch and import it into `attempt3/`.
+
 ## Your steps
 
 **1. Attempt 2.** When `CAMPAIGN_DONE` exists:
