@@ -1,0 +1,9 @@
+{
+  "status": "ERROR_ORACLE_SERIALIZATION",
+  "exit_code": 1,
+  "exception": "ValueError: Out of range float values are not JSON compliant: inf",
+  "diagnosis": "The independent Decimal oracle used precision100. Adding zero to exact binary64 1e308 rounded its309-digit decimal expansion before subtracting the exact opposite; a false residual divided by1e-308 became infinity.",
+  "repair": "Increase Decimal oracle precision to1200 for full binary64 exponent span. C99 source, input cases and32-ulp acceptance unchanged.",
+  "first_compile": "exit0",
+  "scientific_admission": "NONE_FROM_FAILED_RECEIPT"
+}

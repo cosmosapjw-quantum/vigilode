@@ -356,19 +356,21 @@ impl BlockStageSolver {
         Ok(())
     }
 
-    /// Factors `W = inv I - J` of the current linearization.
+    /// Factors `W = inv I - J` of the current linearization. Any failed
+    /// update invalidates the old factors; the linearization is retained
+    /// so that a corrected shift can be retried.
     pub fn factor_with(&mut self, inv: f64) -> CoreResult<()> {
         if self.stage == Stage::Empty {
             return Err(CoreError::InvalidInput(
                 "STRUCTURED_NOT_LINEARIZED: factor without a current linearization".into(),
             ));
         }
+        self.stage = Stage::Linearized;
         if !(inv.is_finite() && inv > 0.0) {
             return Err(CoreError::InvalidInput(
                 "structured solver: inv = 1/(h gamma) must be finite and positive".into(),
             ));
         }
-        self.stage = Stage::Linearized;
         let flops = self.data.factor(inv)?;
         self.ops.factor += flops;
         self.ops.factorizations += 1;
@@ -407,7 +409,12 @@ impl BlockStageSolver {
                     rtol,
                     atol: 0.0,
                 };
-                let report = solve_gmres_into(
+                // The driver owns the stage's linear_solves count. The
+                // nested GMRES API counts its own completed solve as well;
+                // retain every other work counter, including failed work,
+                // without counting this stage a second time.
+                let driver_solves = counters.linear_solves;
+                let result = solve_gmres_into(
                     &Operator { a: &self.data },
                     &Sweep { a: &self.data },
                     b,
@@ -422,7 +429,9 @@ impl BlockStageSolver {
                         growth: CapacityGrowth::Refuse,
                     },
                     counters,
-                )?;
+                );
+                counters.linear_solves = driver_solves;
+                let report = result?;
                 b.copy_from_slice(&self.x);
                 self.ops.krylov_iterations += report.iterations;
                 self.ops.krylov_matvecs += report.matvecs;
@@ -445,6 +454,11 @@ impl BlockStageSolver {
         if self.stage != Stage::Factored {
             return Err(CoreError::InvalidInput(
                 "STRUCTURED_STALE: precondition without a factorization".into(),
+            ));
+        }
+        if r.len() != self.x.len() || y.len() != self.x.len() {
+            return Err(CoreError::Dimension(
+                "structured solver: preconditioner vector length mismatch".into(),
             ));
         }
         if self.data.two_level {

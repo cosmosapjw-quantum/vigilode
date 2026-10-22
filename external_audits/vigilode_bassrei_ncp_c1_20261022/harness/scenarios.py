@@ -361,6 +361,18 @@ def bapp_error(cid, outputs, states, ref, unfloored=None):
     """Max over outputs t > 0 and observables of the floored relative errors;
     a non-finite error counts as +inf. With a dict `unfloored`, also the plain
     relative errors per observable ([H])."""
+    # This normalized metric requires a positive initial photon density and
+    # nonnegative reference densities thereafter. A negative depletion weight
+    # would turn an error negative and silently disappear under max(0, error).
+    # Refuse the metric domain instead of clamping corrupted references to zero.
+    o_initial = observables(cid, outputs[0], ref[0])
+    if (not math.isfinite(o_initial["rho_gamma"])
+            or o_initial["rho_gamma"] <= 0.0):
+        return math.inf, {"reference_density_domain": math.inf}
+    for t, r in zip(outputs[1:], ref[1:]):
+        rho = observables(cid, t, r)["rho_gamma"]
+        if not math.isfinite(rho) or rho < 0.0:
+            return math.inf, {"reference_density_domain": math.inf}
     floors, o0 = floors_of(cid, outputs, ref)
     worst, per = 0.0, {}
     for t, y, r in zip(outputs[1:], states[1:], ref[1:]):

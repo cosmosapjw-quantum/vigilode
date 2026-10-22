@@ -1,0 +1,240 @@
+{
+  "schema_version": "vigilode.next_steps.v1",
+  "base_commit": "555e71e03fe31e6c9b21961c8e2d263b1794eb6f",
+  "items": [
+    {
+      "id": "N01",
+      "priority": "P0",
+      "title_ko": "전체 상태와 기준해 공개",
+      "category": "evidence",
+      "status": "not_started",
+      "targets": [
+        "research/bassrei_ncp_wp_c1_20261022/attempt3/IMPORT_MANIFEST.json",
+        "external_audits/vigilode_bassrei_ncp_c1_20261022/harness/import_results.py"
+      ],
+      "depends_on": [],
+      "implementation": "최신 NCP 압축 원자료의 저장된 SHA256을 확인하고 request, output times, 모든 상태 성분, 두 기준해, 실패 stdout을 포함한 최소 재평가 묶음을 별도 경로로 게시한다. 기존 캠페인을 재실행할 필요는 없다.",
+      "acceptance": [
+        "기존 attempt3 archive SHA256 일치",
+        "독립 scorer가 상태 길이·시각·유한성·보존량·관측량을 모두 재계산",
+        "기존 22개 설정의 결과와 차이를 숨김 없이 기록"
+      ],
+      "rationale": "새 실행 없이 외부 재현성을 확보한다. 기준해의 수치적 일치와 엄밀한 오차 상계는 구분한다."
+    },
+    {
+      "id": "N02",
+      "priority": "P0",
+      "title_ko": "Affine 축약 오차 norm 연결",
+      "category": "accuracy",
+      "status": "not_started",
+      "targets": [
+        "research/lifted_error_norm_20261022/code/",
+        "crates/rodas5p-integrators/src/rodas5p_fast.rs"
+      ],
+      "depends_on": [],
+      "implementation": "client-owned error norm 인터페이스를 추가하여 30차원 오차를 33차원 물리 상태로 lift한다. old/new 전체 상태로 원래 scale을 구성하고 norm 계산 실패 시 accepted state를 commit하지 않는다. 기본 WRMS 경로의 동일성을 유지한다.",
+      "acceptance": [
+        "H/He/Li 보존 제약의 correlated error에서 full33 기준과 수락·거절 일치",
+        "혼합 지수·취소·잘못된 scale을 typed refusal로 처리",
+        "기존 기본 경로 golden digest 유지",
+        "lift 비용·추가 allocation 측정"
+      ],
+      "rationale": "정확한 pullback norm eᵀLᵀD⁻²Le/33을 사용한다. 30개 대각 scale만 조정하는 대체는 동등하지 않다."
+    },
+    {
+      "id": "N03",
+      "priority": "P1",
+      "title_ko": "비선형 화학에 구조화 stage solver 연결",
+      "category": "speed",
+      "status": "not_started",
+      "targets": [
+        "crates/rodas5p-integrators/examples/lrs_photon_fv_support/chem.rs",
+        "crates/rodas5p-integrators/src/client_stage.rs",
+        "crates/rodas5p-core/src/low_rank_bordered.rs"
+      ],
+      "depends_on": [
+        "N02"
+      ],
+      "implementation": "화학 Jacobian을 photon phase block과 작은 matter border로 분해한다. 에너지별 rank-two 산란은 국소 블록에 유지하고 물질 결합만 Schur border로 전달한다. 새 generic wrapper를 적용할 수 있는 fixed-rank global correction과 해당하지 않는 항을 명시한다.",
+      "acceptance": [
+        "dense reference와 모든 stage의 원래 잔차 비교",
+        "같은 전체 상태 오차에서 setup+solve 전체 시간·메모리 비교",
+        "conditioning 악화 시 dense 또는 기존 검증 경로 fallback",
+        "실패 후 이전 factor 재사용 금지"
+      ],
+      "rationale": "고정 대역폭·border 크기에서 선형 비용. 전역 rank=2NE로 확장하면 같은 선형성 보장은 없다."
+    },
+    {
+      "id": "N04",
+      "priority": "P1",
+      "title_ko": "관측 출력과 내부 단계 분리",
+      "category": "speed",
+      "status": "not_started",
+      "targets": [
+        "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+        "crates/vigilode/src/solution.rs"
+      ],
+      "depends_on": [],
+      "implementation": "고정 출력 시각마다 착지하는 benchmark adapter와 continuous extension을 사용하는 경로를 동일 output budget에서 비교한다. 보간 결함 제어를 유지한 client-stage dense output을 구현한다.",
+      "acceptance": [
+        "endpoint·interior·phase error 모두 측정",
+        "출력 밀도 변화에 따른 RHS·factor·accepted step 비용 기록",
+        "사건 근처에서 누락 없는 정책과 명시적 제한",
+        "동일 물리 observable 및 full-state budget 사용"
+      ],
+      "rationale": "기존 heat 기록의 42 대 5 steps는 출력 정책 차이를 포함한다. 이 차이만으로 개선 구현을 완료했다고 보지 않는다."
+    },
+    {
+      "id": "N05",
+      "priority": "P1",
+      "title_ko": "공간·시간·리매핑 오차 분리",
+      "category": "accuracy",
+      "status": "not_started",
+      "targets": [
+        "crates/rodas5p-integrators/examples/lrs_photon_fv_support/remesh.rs",
+        "crates/rodas5p-integrators/src/conservative_remap.rs"
+      ],
+      "depends_on": [
+        "N01"
+      ],
+      "implementation": "격자 해상도, 시간 허용오차, 리매핑 빈도를 각각 독립 변화시키는 제조해/characteristic 실험을 추가한다. 관측된 reconstruction 변화와 참해 투영의 consistency defect를 다른 필드로 기록한다.",
+      "acceptance": [
+        "고정 격자 시간 수렴과 고정 시간오차 공간 수렴을 별도 입증",
+        "리매핑 횟수 증가 시 누적 질량·상태오차 측정",
+        "참조 projection 또는 검증 가능한 잔차로 d_k 상계 구성",
+        "5차 주장에는 Σd_k=O(h^5) 확인"
+      ],
+      "rationale": "양의 overlap remap은 질량과 L1 안정성을 보장하지만 고차 정확도를 자동 보장하지 않는다."
+    },
+    {
+      "id": "N06",
+      "priority": "P1",
+      "title_ko": "양성 및 invariant-domain 정책",
+      "category": "accuracy",
+      "status": "not_started",
+      "targets": [
+        "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+        "crates/rodas5p-integrators/examples/lrs_photon_fv_support/chem.rs"
+      ],
+      "depends_on": [
+        "N05"
+      ],
+      "implementation": "문턱 근처·강한 흡수·거의 소진된 셀에서 단계/출력 음수와 분율 범위를 기록하고 거절 또는 보존형 보정의 오차를 명시한다. 보정은 국소오차·보존 예산에 반영한다.",
+      "acceptance": [
+        "모든 종의 물리 범위 및 source number/energy budgets 유지",
+        "보정 전후 전역 상태오차 비교",
+        "stiff-rate sweep에서 최소 허용 단계 및 거절률 기록"
+      ],
+      "rationale": "정확한 Metzler 흐름의 양성과 고차 Rosenbrock 이산 단계의 양성은 별개이다."
+    },
+    {
+      "id": "N07",
+      "priority": "P1",
+      "title_ko": "재현 가능한 비용 비교",
+      "category": "performance",
+      "status": "not_started",
+      "targets": [
+        "external_audits/vigilode_bassrei_ncp_c1_20261022/harness/abba.py",
+        "research/production_review_20261022/benchmark/"
+      ],
+      "depends_on": [
+        "N01",
+        "N03"
+      ],
+      "implementation": "VODE/DVODE, diffsol, Julia 비교를 유지한다. setup 포함 solve와 process wall을 각각 기록하고 비강성 명시적 방법과 강성 구조화 방법을 따로 평가한다. 더 느슨한 rung까지 확장해 censored match를 해소한다.",
+      "acceptance": [
+        "실제 full-state/observable accuracy에 맞춘 비용",
+        "독립 반복 캠페인·실행 순서·CPU affinity·동시 부하·빌드/JIT 기록",
+        "paired ratio의 사전 정의된 불확실성 및 timeout 보존",
+        "64코어 throughput과 단일 solve scaling을 구분"
+      ],
+      "rationale": "현재 관측 최소–최대는 신뢰구간이 아니다. 더 많은 설정만으로 체계 오차가 사라지지 않는다."
+    },
+    {
+      "id": "N08",
+      "priority": "P2",
+      "title_ko": "전체 구면 구조화 선형대수",
+      "category": "speed",
+      "status": "not_started",
+      "targets": [
+        "crates/rodas5p-integrators/examples/sphere_photon_fv_support/mod.rs",
+        "crates/rodas5p-integrators/src/client_stage.rs"
+      ],
+      "depends_on": [
+        "N03"
+      ],
+      "implementation": "rank-six Thomson 모멘트와 국소 각도 수송을 활용하는 블록 전처리기를 설계한다. 일반 triaxial geometry를 축대칭 모델로 축소하지 않고 angular ordering과 bandwidth를 명시한다.",
+      "acceptance": [
+        "3D→LRS 제한의 수치 일치",
+        "정확한 characteristic 공간 수렴",
+        "rank·bandwidth 증가를 포함한 실측 work scaling",
+        "최종 원래 연산자 residual 통과"
+      ],
+      "rationale": "현재 구면 RHS 검증을 대규모 sparse stage solver 검증으로 전이하지 않는다."
+    },
+    {
+      "id": "N09",
+      "priority": "P2",
+      "title_ko": "다항식·인수분해 재사용 비교",
+      "category": "research",
+      "status": "not_started",
+      "targets": [
+        "crates/rodas5p-core/src/polynomial_action.rs",
+        "crates/rodas5p-core/src/leja_action.rs",
+        "crates/rodas5p-core/src/low_rank_bordered.rs"
+      ],
+      "depends_on": [
+        "N03"
+      ],
+      "implementation": "증명된 q<1인 모델에서 fixed-memory Neumann polynomial과 GMRES를 동일 원래 잔차로 비교한다. Laguerre/Chebyshev/Leja는 해당 matrix-function 목적·spectral enclosure·nonnormality bound를 고정하고 기존 구현을 재사용한다.",
+      "acceptance": [
+        "나머지 상계와 실제 residual agreement",
+        "setup+matvec+PC+orthogonalization 전체 비용",
+        "q 또는 영역 조건 실패 시 검증 경로로 fallback",
+        "불필요한 기존 proof 재검증 없음"
+      ],
+      "rationale": "단순 eigenvalue 범위나 무작위 probe는 operator norm의 엄밀 상계를 대신하지 않는다."
+    },
+    {
+      "id": "N10",
+      "priority": "P2",
+      "title_ko": "매개변수 homotopy 병렬화",
+      "category": "research",
+      "status": "not_started",
+      "targets": [
+        "crates/rodas5p-core/src/low_rank_bordered.rs",
+        "research/production_review_20261022/THEORY.md"
+      ],
+      "depends_on": [
+        "N09"
+      ],
+      "implementation": "q0+L|lambda-lambda0|<1인 독립 매개변수 문제들에 인수분해를 공유하고 worker별 scratch를 둔다. 비선형 branch tracking에는 Jacobian 정칙성·잔차 조건을 추가한다.",
+      "acceptance": [
+        "공유 factor read-only와 작업 공간 분리",
+        "개별 reference와 branch 일치",
+        "setup 절감 (K-1)S와 실제 throughput 분리",
+        "동일 trajectory의 시간 구간 독립화로 과장하지 않음"
+      ],
+      "rationale": "trait apply의 내부 Mutex는 직렬화하므로 병렬 사용에는 apply_with_workspace를 쓴다."
+    },
+    {
+      "id": "N11",
+      "priority": "P2",
+      "title_ko": "사건 처리의 실행 중 종료",
+      "category": "api",
+      "status": "not_started",
+      "targets": [
+        "crates/vigilode/src/events.rs",
+        "crates/vigilode/src/solve.rs"
+      ],
+      "depends_on": [],
+      "implementation": "현재 post-processing terminal event의 명시적 제한을 유지하며 accepted-step hook을 이용한 실제 조기 종료를 연결한다. tangent 및 다중 crossing은 지원 정책을 정한다.",
+      "acceptance": [
+        "event 뒤 callback이 호출되지 않음",
+        "부분 결과·작업 통계 일관성",
+        "근 위치 오차와 missed-root 정책 검증"
+      ],
+      "rationale": "현재 terminal 표시는 이미 계산한 경로를 잘라 반환하므로 시간 절감 또는 domain safety를 보장하지 않는다."
+    }
+  ]
+}

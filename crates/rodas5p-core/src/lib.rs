@@ -11,6 +11,7 @@ mod hash;
 pub mod laguerre_adjoint;
 pub mod leja_action;
 pub mod leja_setup_work;
+pub mod low_rank_bordered;
 mod matrix;
 mod matrix_functions;
 pub mod nonnormal_certificate;
