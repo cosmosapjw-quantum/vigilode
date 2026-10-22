@@ -235,6 +235,27 @@
         "근 위치 오차와 missed-root 정책 검증"
       ],
       "rationale": "현재 terminal 표시는 이미 계산한 경로를 잘라 반환하므로 시간 절감 또는 domain safety를 보장하지 않는다."
+    },
+    {
+      "id": "N12",
+      "priority": "P0",
+      "title_ko": "과거 출처 식별자 복구",
+      "category": "evidence",
+      "status": "not_started",
+      "targets": [
+        "research/production_review_20261022/PROVENANCE_CHECK.json",
+        "research/production_review_20261022/evidence/PROVENANCE_CHECK.log",
+        "research/LEDGER.jsonl"
+      ],
+      "depends_on": [],
+      "implementation": "전체 출처 검사에서 해결되지 않은 과거 Git 식별자 14개를 원래 제작 checkout 또는 보존 archive에서 찾는다. 객체 hash·type과 원래 결과의 관계를 확인하여 도달 가능한 원격 이력으로 게시한다. 복구할 수 없는 인용은 이전 문서를 덮어쓰지 않고 명시적인 정정 기록을 추가한다.",
+      "acceptance": [
+        "27개 기존 파일의 원본 bytes 보존",
+        "14개 식별자의 복구 또는 비지원 범위에 대한 명시적 정정",
+        "출처 검사에서 적용 범위와 기존 예외를 분리해 보고",
+        "allowlist 추가만으로 실패를 숨기지 않음"
+      ],
+      "rationale": "최신 리뷰의 출처 검사는 통과했으나 저장소 전체 재현성 검사는 아직 실패한다. 성능 실험 재실행 없이 해결해야 할 자료 보존 문제다."
     }
   ]
 }

@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "status": "FAIL_PREEXISTING_REFERENCE_AVAILABILITY",
+  "command": "python3 tools/check-authority-refs.py",
+  "exit_code": 1,
+  "citations_examined": 4999,
+  "distinct_identifiers": 516,
+  "unresolved_identifiers": 14,
+  "failing_citations": 53,
+  "affected_files": 27,
+  "affected_file_bytes_identical_to_review_baseline": true,
+  "affected_collections": [
+    "research/all_dag_completion_20261018",
+    "research/branch_integration_20261021",
+    "research/ncp_followup_20261021",
+    "research/production_reaudit_20261021"
+  ],
+  "scope_distinction": "The separate check restricted to the new production_review_20261022 directory passed (53 citations; 32 distinct identifiers). The full-repository failure concerns unchanged historical records. Some unresolved tokens may be trees or blobs; absence does not determine object type.",
+  "interpretation": "Evidence availability defect, not an established numerical failure. Do not silently exempt identifiers or rewrite historical results. Recover original objects from an authoritative archive/remote and publish provenance, or append explicit retractions of unsupported references.",
+  "raw_log": "evidence/PROVENANCE_CHECK.log",
+  "new_numerical_runs": 0
+}
