@@ -14,7 +14,7 @@ use rodas5p_integrators::{
 use serde::Serialize;
 use std::sync::{
     Arc,
-    atomic::{AtomicBool, Ordering},
+    atomic::{AtomicBool, AtomicU64, Ordering},
 };
 
 /// Norm assumptions must hold for every attempted h and all line segments
@@ -175,6 +175,9 @@ pub struct RawStepAttempt {
     pub candidate_bound: Option<ConditionalErrorEstimate>,
     pub fallback_attempted: bool,
     pub fallback_counters: WorkCounters,
+    /// Actual callback attempts and completions observed at the user boundary.
+    /// Attempts are already included in `fallback_counters`; do not add twice.
+    pub fallback_callback_work: Work,
     /// Additional same-target validation is charged separately from GMRES.
     pub fallback_validation_work: Work,
     pub terminal_failure: Option<Failure>,
@@ -320,8 +323,8 @@ impl RawStepSession {
         out.fallback_attempted = true;
         // Distinguish an error emitted by user code from one emitted by the
         // Krylov solver, even if a callback chooses CoreError::LinearSolve.
-        let callback_failed = Arc::new(AtomicBool::new(false));
-        let guarded = match guarded_problem(p, callback_failed.clone()) {
+        let callback_work = Arc::new(GuardedCallbackWork::default());
+        let guarded = match guarded_problem(p, callback_work.clone()) {
             Ok(p) => p,
             Err(e) => {
                 out.terminal_failure = Some(input(&e.to_string()));
@@ -339,6 +342,14 @@ impl RawStepSession {
             cfg.rtol,
             &mut out.fallback_counters,
         );
+        // The old Krylov work ledger can omit an operator application that
+        // returns Err. Observe actual user calls at their boundary and replace
+        // (not add to) these overlapping callback counters on every outcome.
+        out.fallback_callback_work = callback_work.snapshot();
+        out.fallback_counters.rhs_calls = out.fallback_callback_work.rhs_attempted;
+        out.fallback_counters.rhs_evaluations = out.fallback_callback_work.rhs_attempted;
+        out.fallback_counters.jvp_calls = out.fallback_callback_work.jvp_attempted;
+        out.fallback_counters.jvp_vectors = out.fallback_callback_work.jvp_attempted;
         if p.model_epoch() != epoch {
             out.terminal_failure = Some(Failure::new(
                 FailureKind::ModelChanged,
@@ -349,7 +360,7 @@ impl RawStepSession {
         let embedded = match fallback_result {
             Ok(e) => e,
             Err(e) => {
-                let kind = if callback_failed.load(Ordering::SeqCst) {
+                let kind = if callback_work.failed.load(Ordering::SeqCst) {
                     FailureKind::Callback
                 } else {
                     match &e {
@@ -422,25 +433,49 @@ impl RawStepSession {
     }
 }
 
-fn guarded_problem(p: &OdeProblem, failed: Arc<AtomicBool>) -> CoreResult<OdeProblem> {
+#[derive(Default)]
+struct GuardedCallbackWork {
+    failed: AtomicBool,
+    rhs_attempted: AtomicU64,
+    rhs_completed: AtomicU64,
+    jvp_attempted: AtomicU64,
+    jvp_completed: AtomicU64,
+}
+impl GuardedCallbackWork {
+    fn snapshot(&self) -> Work {
+        Work {
+            rhs_attempted: self.rhs_attempted.load(Ordering::SeqCst),
+            rhs_completed: self.rhs_completed.load(Ordering::SeqCst),
+            jvp_attempted: self.jvp_attempted.load(Ordering::SeqCst),
+            jvp_completed: self.jvp_completed.load(Ordering::SeqCst),
+            ..Work::default()
+        }
+    }
+}
+
+fn guarded_problem(p: &OdeProblem, work: Arc<GuardedCallbackWork>) -> CoreResult<OdeProblem> {
     let original = Arc::new(p.clone());
     let rhs_p = original.clone();
-    let rhs_failed = failed.clone();
+    let rhs_work = work.clone();
     let jvp = p.jvp_callback().expect("capability checked").clone();
     let mut guarded = OdeProblem::new(
         p.name.clone(),
         p.dimension,
         Arc::new(move |t, y, out| {
+            rhs_work.rhs_attempted.fetch_add(1, Ordering::SeqCst);
             out.fill(f64::NAN);
             let result = rhs_p.eval_rhs_into(t, y, out, &mut WorkCounters::default());
             if result.is_err() {
-                rhs_failed.store(true, Ordering::SeqCst);
+                rhs_work.failed.store(true, Ordering::SeqCst);
+            } else {
+                rhs_work.rhs_completed.fetch_add(1, Ordering::SeqCst);
             }
             result
         }),
         None,
         None,
         Some(Arc::new(move |t, y, v, out| {
+            work.jvp_attempted.fetch_add(1, Ordering::SeqCst);
             out.fill(f64::NAN);
             let result = jvp(t, y, v, out).and_then(|()| {
                 if out.iter().all(|v| v.is_finite()) {
@@ -452,7 +487,9 @@ fn guarded_problem(p: &OdeProblem, failed: Arc<AtomicBool>) -> CoreResult<OdePro
                 }
             });
             if result.is_err() {
-                failed.store(true, Ordering::SeqCst);
+                work.failed.store(true, Ordering::SeqCst);
+            } else {
+                work.jvp_completed.fetch_add(1, Ordering::SeqCst);
             }
             result
         })),

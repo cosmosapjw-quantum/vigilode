@@ -18,12 +18,20 @@ fn linear_config() -> LinearSolverConfig {
     }
 }
 fn diagonal(rates: Vec<f64>) -> OdeProblem {
+    counted_diagonal(rates).0
+}
+fn counted_diagonal(rates: Vec<f64>) -> (OdeProblem, Arc<AtomicU64>, Arc<AtomicU64>) {
     let j = rates.clone();
     let n = rates.len();
-    OdeProblem::new(
+    let rhs_calls = Arc::new(AtomicU64::new(0));
+    let jvp_calls = Arc::new(AtomicU64::new(0));
+    let rc = rhs_calls.clone();
+    let jc = jvp_calls.clone();
+    let problem = OdeProblem::new(
         "diagonal",
         n,
         Arc::new(move |_, y, f| {
+            rc.fetch_add(1, Ordering::SeqCst);
             for i in 0..n {
                 f[i] = rates[i] * y[i];
             }
@@ -32,6 +40,7 @@ fn diagonal(rates: Vec<f64>) -> OdeProblem {
         None,
         None,
         Some(Arc::new(move |_, _, v, out| {
+            jc.fetch_add(1, Ordering::SeqCst);
             for i in 0..n {
                 out[i] = j[i] * v[i];
             }
@@ -42,7 +51,8 @@ fn diagonal(rates: Vec<f64>) -> OdeProblem {
         None,
         None,
     )
-    .unwrap()
+    .unwrap();
+    (problem, rhs_calls, jvp_calls)
 }
 fn raw_reference(rates: &[f64], y: &[f64], h: f64) -> (Vec<Vec<f64>>, Vec<f64>) {
     let c = rodas5p_coefficients().unwrap();
@@ -71,7 +81,7 @@ fn raw_reference(rates: &[f64], y: &[f64], h: f64) -> (Vec<Vec<f64>>, Vec<f64>) 
 #[test]
 fn forced_fallback_preserves_raw_target_and_charges_verification() {
     let rates = vec![-1.0, -20.0, -100.0];
-    let p = diagonal(rates.clone());
+    let (p, rhs_calls, jvp_calls) = counted_diagonal(rates.clone());
     let y = vec![0.1; 3];
     let mut s = RawStepSession::new(&p, &linear_config()).unwrap();
     let c = Config {
@@ -93,6 +103,38 @@ fn forced_fallback_preserves_raw_target_and_charges_verification() {
     assert_eq!(out.fallback_counters.linear_solves, 8);
     assert_eq!(out.fallback_validation_work.rhs_attempted, 8);
     assert_eq!(out.fallback_validation_work.jvp_attempted, 8);
+    assert_eq!(
+        rhs_calls.load(Ordering::SeqCst),
+        out.candidate_attempt.work.rhs_attempted
+            + out.fallback_counters.rhs_calls
+            + out.fallback_validation_work.rhs_attempted
+    );
+    assert_eq!(
+        jvp_calls.load(Ordering::SeqCst),
+        out.candidate_attempt.work.jvp_attempted
+            + out.fallback_counters.jvp_calls
+            + out.fallback_validation_work.jvp_attempted
+    );
+    assert_eq!(
+        out.fallback_callback_work.rhs_attempted,
+        out.fallback_counters.rhs_calls
+    );
+    assert_eq!(
+        out.fallback_callback_work.rhs_completed,
+        out.fallback_callback_work.rhs_attempted
+    );
+    assert_eq!(
+        out.fallback_callback_work.jvp_attempted,
+        out.fallback_counters.jvp_calls
+    );
+    assert_eq!(
+        out.fallback_callback_work.jvp_completed,
+        out.fallback_callback_work.jvp_attempted
+    );
+    assert_eq!(
+        out.fallback_counters.jvp_vectors,
+        out.fallback_counters.jvp_calls
+    );
     let selected = out.selected.unwrap();
     assert_eq!(selected.selection, "sequential-raw-u-fallback");
     assert_eq!(selected.target_id, vigilode_coupled::TARGET_ID);
@@ -255,10 +297,13 @@ fn invalid_conditional_assumptions_run_no_callbacks() {
 fn callback_linear_solve_error_is_not_a_retryable_solver_failure() {
     let calls = Arc::new(AtomicU64::new(0));
     let cc = calls.clone();
+    let rhs_calls = Arc::new(AtomicU64::new(0));
+    let rc = rhs_calls.clone();
     let p = OdeProblem::new(
         "injected",
         1,
-        Arc::new(|_, y, f| {
+        Arc::new(move |_, y, f| {
+            rc.fetch_add(1, Ordering::SeqCst);
             f[0] = -y[0];
             Ok(())
         }),
@@ -294,6 +339,27 @@ fn callback_linear_solve_error_is_not_a_retryable_solver_failure() {
     assert_eq!(out.terminal_failure.unwrap().kind, FailureKind::Callback);
     assert!(calls.load(Ordering::SeqCst) > 0);
     assert!(out.fallback_counters.jvp_calls > 0);
+    assert_eq!(
+        out.fallback_counters.jvp_calls,
+        calls.load(Ordering::SeqCst)
+    );
+    assert_eq!(
+        out.fallback_counters.jvp_vectors,
+        calls.load(Ordering::SeqCst)
+    );
+    assert_eq!(
+        out.fallback_callback_work.jvp_attempted,
+        calls.load(Ordering::SeqCst)
+    );
+    assert_eq!(out.fallback_callback_work.jvp_completed, 0);
+    assert_eq!(
+        out.fallback_counters.rhs_calls,
+        rhs_calls.load(Ordering::SeqCst) - out.candidate_attempt.work.rhs_attempted
+    );
+    assert_eq!(
+        out.fallback_callback_work.rhs_completed,
+        out.fallback_callback_work.rhs_attempted
+    );
 }
 
 #[test]
