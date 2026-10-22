@@ -1,0 +1,827 @@
+{
+  "schema": "vigilode.nonstiff-campaign.v1",
+  "cohort": "external-adapters-only",
+  "source_commit": "45037fc24e8f8101605f309e1fdb3a9a4e3df56d",
+  "adapter_source_commit": "1cf87238ab79ee698621d80bc0a3afd903d2f6ff",
+  "adapter_source_tree": "13396d7d47e3ecc06af4cd5b7a7fd01ee1be3cee",
+  "adapters": {
+    "diffsol": {
+      "command": [
+        "/home/cosmosapjw/vigilode-nonstiff-adapters-run-tTYnLc/frozen-execution/target/measurement/vigilode-nonstiff-diffsol-adapter"
+      ],
+      "binary_sha256": "798afa7b02c8db49312333a122cc90f9cf2b72c2f48baad8ec674a4e5cffb21a"
+    },
+    "julia": {
+      "command": [
+        "/home/cosmosapjw/vigilode-nonstiff-adapters-source-7htbCC/research/nonstiff_external_adapters_20261023/adapters/julia/run.sh"
+      ],
+      "binary_sha256": "8defa59f6cfbd65897212f979829cd5c85d661a14886735dc2ca4c037235f533"
+    }
+  },
+  "ncp_used": false,
+  "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.39",
+  "affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23
+  ],
+  "budget_seconds": 7200.0,
+  "per_run_timeout": 45.0,
+  "full": true,
+  "warmups_per_configuration": 1,
+  "timed_repeats": 3,
+  "seed": 20261023,
+  "order": "randomized case/tolerance groups in every round; shuffled adapter order within each group",
+  "timing_policy": "adapter-reported solve time; subprocess cap includes imports/JIT; launch recorded separately",
+  "configurations": [
+    {
+      "id": 0,
+      "case": "decay",
+      "dimension": 8,
+      "rtol": 0.001,
+      "atol": 1e-06,
+      "mode": "diffsol"
+    },
+    {
+      "id": 1,
+      "case": "decay",
+      "dimension": 8,
+      "rtol": 0.001,
+      "atol": 1e-06,
+      "mode": "julia"
+    },
+    {
+      "id": 2,
+      "case": "decay",
+      "dimension": 8,
+      "rtol": 1e-05,
+      "atol": 1e-08,
+      "mode": "diffsol"
+    },
+    {
+      "id": 3,
+      "case": "decay",
+      "dimension": 8,
+      "rtol": 1e-05,
+      "atol": 1e-08,
+      "mode": "julia"
+    },
+    {
+      "id": 4,
+      "case": "decay",
+      "dimension": 8,
+      "rtol": 1e-07,
+      "atol": 1e-10,
+      "mode": "diffsol"
+    },
+    {
+      "id": 5,
+      "case": "decay",
+      "dimension": 8,
+      "rtol": 1e-07,
+      "atol": 1e-10,
+      "mode": "julia"
+    },
+    {
+      "id": 6,
+      "case": "decay",
+      "dimension": 8,
+      "rtol": 1e-09,
+      "atol": 1.0000000000000002e-12,
+      "mode": "diffsol"
+    },
+    {
+      "id": 7,
+      "case": "decay",
+      "dimension": 8,
+      "rtol": 1e-09,
+      "atol": 1.0000000000000002e-12,
+      "mode": "julia"
+    },
+    {
+      "id": 8,
+      "case": "driven",
+      "dimension": 8,
+      "rtol": 0.001,
+      "atol": 1e-06,
+      "mode": "diffsol"
+    },
+    {
+      "id": 9,
+      "case": "driven",
+      "dimension": 8,
+      "rtol": 0.001,
+      "atol": 1e-06,
+      "mode": "julia"
+    },
+    {
+      "id": 10,
+      "case": "driven",
+      "dimension": 8,
+      "rtol": 1e-05,
+      "atol": 1e-08,
+      "mode": "diffsol"
+    },
+    {
+      "id": 11,
+      "case": "driven",
+      "dimension": 8,
+      "rtol": 1e-05,
+      "atol": 1e-08,
+      "mode": "julia"
+    },
+    {
+      "id": 12,
+      "case": "driven",
+      "dimension": 8,
+      "rtol": 1e-07,
+      "atol": 1e-10,
+      "mode": "diffsol"
+    },
+    {
+      "id": 13,
+      "case": "driven",
+      "dimension": 8,
+      "rtol": 1e-07,
+      "atol": 1e-10,
+      "mode": "julia"
+    },
+    {
+      "id": 14,
+      "case": "driven",
+      "dimension": 8,
+      "rtol": 1e-09,
+      "atol": 1.0000000000000002e-12,
+      "mode": "diffsol"
+    },
+    {
+      "id": 15,
+      "case": "driven",
+      "dimension": 8,
+      "rtol": 1e-09,
+      "atol": 1.0000000000000002e-12,
+      "mode": "julia"
+    },
+    {
+      "id": 16,
+      "case": "logistic",
+      "dimension": 8,
+      "rtol": 0.001,
+      "atol": 1e-06,
+      "mode": "diffsol"
+    },
+    {
+      "id": 17,
+      "case": "logistic",
+      "dimension": 8,
+      "rtol": 0.001,
+      "atol": 1e-06,
+      "mode": "julia"
+    },
+    {
+      "id": 18,
+      "case": "logistic",
+      "dimension": 8,
+      "rtol": 1e-05,
+      "atol": 1e-08,
+      "mode": "diffsol"
+    },
+    {
+      "id": 19,
+      "case": "logistic",
+      "dimension": 8,
+      "rtol": 1e-05,
+      "atol": 1e-08,
+      "mode": "julia"
+    },
+    {
+      "id": 20,
+      "case": "logistic",
+      "dimension": 8,
+      "rtol": 1e-07,
+      "atol": 1e-10,
+      "mode": "diffsol"
+    },
+    {
+      "id": 21,
+      "case": "logistic",
+      "dimension": 8,
+      "rtol": 1e-07,
+      "atol": 1e-10,
+      "mode": "julia"
+    },
+    {
+      "id": 22,
+      "case": "logistic",
+      "dimension": 8,
+      "rtol": 1e-09,
+      "atol": 1.0000000000000002e-12,
+      "mode": "diffsol"
+    },
+    {
+      "id": 23,
+      "case": "logistic",
+      "dimension": 8,
+      "rtol": 1e-09,
+      "atol": 1.0000000000000002e-12,
+      "mode": "julia"
+    },
+    {
+      "id": 24,
+      "case": "harmonic",
+      "dimension": 8,
+      "rtol": 0.001,
+      "atol": 1e-06,
+      "mode": "diffsol"
+    },
+    {
+      "id": 25,
+      "case": "harmonic",
+      "dimension": 8,
+      "rtol": 0.001,
+      "atol": 1e-06,
+      "mode": "julia"
+    },
+    {
+      "id": 26,
+      "case": "harmonic",
+      "dimension": 8,
+      "rtol": 1e-05,
+      "atol": 1e-08,
+      "mode": "diffsol"
+    },
+    {
+      "id": 27,
+      "case": "harmonic",
+      "dimension": 8,
+      "rtol": 1e-05,
+      "atol": 1e-08,
+      "mode": "julia"
+    },
+    {
+      "id": 28,
+      "case": "harmonic",
+      "dimension": 8,
+      "rtol": 1e-07,
+      "atol": 1e-10,
+      "mode": "diffsol"
+    },
+    {
+      "id": 29,
+      "case": "harmonic",
+      "dimension": 8,
+      "rtol": 1e-07,
+      "atol": 1e-10,
+      "mode": "julia"
+    },
+    {
+      "id": 30,
+      "case": "harmonic",
+      "dimension": 8,
+      "rtol": 1e-09,
+      "atol": 1.0000000000000002e-12,
+      "mode": "diffsol"
+    },
+    {
+      "id": 31,
+      "case": "harmonic",
+      "dimension": 8,
+      "rtol": 1e-09,
+      "atol": 1.0000000000000002e-12,
+      "mode": "julia"
+    },
+    {
+      "id": 32,
+      "case": "rapid",
+      "dimension": 8,
+      "rtol": 0.001,
+      "atol": 1e-06,
+      "mode": "diffsol"
+    },
+    {
+      "id": 33,
+      "case": "rapid",
+      "dimension": 8,
+      "rtol": 0.001,
+      "atol": 1e-06,
+      "mode": "julia"
+    },
+    {
+      "id": 34,
+      "case": "rapid",
+      "dimension": 8,
+      "rtol": 1e-05,
+      "atol": 1e-08,
+      "mode": "diffsol"
+    },
+    {
+      "id": 35,
+      "case": "rapid",
+      "dimension": 8,
+      "rtol": 1e-05,
+      "atol": 1e-08,
+      "mode": "julia"
+    },
+    {
+      "id": 36,
+      "case": "rapid",
+      "dimension": 8,
+      "rtol": 1e-07,
+      "atol": 1e-10,
+      "mode": "diffsol"
+    },
+    {
+      "id": 37,
+      "case": "rapid",
+      "dimension": 8,
+      "rtol": 1e-07,
+      "atol": 1e-10,
+      "mode": "julia"
+    },
+    {
+      "id": 38,
+      "case": "rapid",
+      "dimension": 8,
+      "rtol": 1e-09,
+      "atol": 1.0000000000000002e-12,
+      "mode": "diffsol"
+    },
+    {
+      "id": 39,
+      "case": "rapid",
+      "dimension": 8,
+      "rtol": 1e-09,
+      "atol": 1.0000000000000002e-12,
+      "mode": "julia"
+    },
+    {
+      "id": 40,
+      "case": "damped",
+      "dimension": 8,
+      "rtol": 0.001,
+      "atol": 1e-06,
+      "mode": "diffsol"
+    },
+    {
+      "id": 41,
+      "case": "damped",
+      "dimension": 8,
+      "rtol": 0.001,
+      "atol": 1e-06,
+      "mode": "julia"
+    },
+    {
+      "id": 42,
+      "case": "damped",
+      "dimension": 8,
+      "rtol": 1e-05,
+      "atol": 1e-08,
+      "mode": "diffsol"
+    },
+    {
+      "id": 43,
+      "case": "damped",
+      "dimension": 8,
+      "rtol": 1e-05,
+      "atol": 1e-08,
+      "mode": "julia"
+    },
+    {
+      "id": 44,
+      "case": "damped",
+      "dimension": 8,
+      "rtol": 1e-07,
+      "atol": 1e-10,
+      "mode": "diffsol"
+    },
+    {
+      "id": 45,
+      "case": "damped",
+      "dimension": 8,
+      "rtol": 1e-07,
+      "atol": 1e-10,
+      "mode": "julia"
+    },
+    {
+      "id": 46,
+      "case": "damped",
+      "dimension": 8,
+      "rtol": 1e-09,
+      "atol": 1.0000000000000002e-12,
+      "mode": "diffsol"
+    },
+    {
+      "id": 47,
+      "case": "damped",
+      "dimension": 8,
+      "rtol": 1e-09,
+      "atol": 1.0000000000000002e-12,
+      "mode": "julia"
+    },
+    {
+      "id": 48,
+      "case": "mixed-scales",
+      "dimension": 12,
+      "rtol": 0.001,
+      "atol": 1e-06,
+      "mode": "diffsol"
+    },
+    {
+      "id": 49,
+      "case": "mixed-scales",
+      "dimension": 12,
+      "rtol": 0.001,
+      "atol": 1e-06,
+      "mode": "julia"
+    },
+    {
+      "id": 50,
+      "case": "mixed-scales",
+      "dimension": 12,
+      "rtol": 1e-05,
+      "atol": 1e-08,
+      "mode": "diffsol"
+    },
+    {
+      "id": 51,
+      "case": "mixed-scales",
+      "dimension": 12,
+      "rtol": 1e-05,
+      "atol": 1e-08,
+      "mode": "julia"
+    },
+    {
+      "id": 52,
+      "case": "mixed-scales",
+      "dimension": 12,
+      "rtol": 1e-07,
+      "atol": 1e-10,
+      "mode": "diffsol"
+    },
+    {
+      "id": 53,
+      "case": "mixed-scales",
+      "dimension": 12,
+      "rtol": 1e-07,
+      "atol": 1e-10,
+      "mode": "julia"
+    },
+    {
+      "id": 54,
+      "case": "mixed-scales",
+      "dimension": 12,
+      "rtol": 1e-09,
+      "atol": 1.0000000000000002e-12,
+      "mode": "diffsol"
+    },
+    {
+      "id": 55,
+      "case": "mixed-scales",
+      "dimension": 12,
+      "rtol": 1e-09,
+      "atol": 1.0000000000000002e-12,
+      "mode": "julia"
+    },
+    {
+      "id": 56,
+      "case": "nonnormal",
+      "dimension": 8,
+      "rtol": 0.001,
+      "atol": 1e-06,
+      "mode": "diffsol"
+    },
+    {
+      "id": 57,
+      "case": "nonnormal",
+      "dimension": 8,
+      "rtol": 0.001,
+      "atol": 1e-06,
+      "mode": "julia"
+    },
+    {
+      "id": 58,
+      "case": "nonnormal",
+      "dimension": 8,
+      "rtol": 1e-05,
+      "atol": 1e-08,
+      "mode": "diffsol"
+    },
+    {
+      "id": 59,
+      "case": "nonnormal",
+      "dimension": 8,
+      "rtol": 1e-05,
+      "atol": 1e-08,
+      "mode": "julia"
+    },
+    {
+      "id": 60,
+      "case": "nonnormal",
+      "dimension": 8,
+      "rtol": 1e-07,
+      "atol": 1e-10,
+      "mode": "diffsol"
+    },
+    {
+      "id": 61,
+      "case": "nonnormal",
+      "dimension": 8,
+      "rtol": 1e-07,
+      "atol": 1e-10,
+      "mode": "julia"
+    },
+    {
+      "id": 62,
+      "case": "nonnormal",
+      "dimension": 8,
+      "rtol": 1e-09,
+      "atol": 1.0000000000000002e-12,
+      "mode": "diffsol"
+    },
+    {
+      "id": 63,
+      "case": "nonnormal",
+      "dimension": 8,
+      "rtol": 1e-09,
+      "atol": 1.0000000000000002e-12,
+      "mode": "julia"
+    },
+    {
+      "id": 64,
+      "case": "large-vector",
+      "dimension": 4096,
+      "rtol": 0.001,
+      "atol": 1e-06,
+      "mode": "diffsol"
+    },
+    {
+      "id": 65,
+      "case": "large-vector",
+      "dimension": 4096,
+      "rtol": 0.001,
+      "atol": 1e-06,
+      "mode": "julia"
+    },
+    {
+      "id": 66,
+      "case": "large-vector",
+      "dimension": 4096,
+      "rtol": 1e-05,
+      "atol": 1e-08,
+      "mode": "diffsol"
+    },
+    {
+      "id": 67,
+      "case": "large-vector",
+      "dimension": 4096,
+      "rtol": 1e-05,
+      "atol": 1e-08,
+      "mode": "julia"
+    },
+    {
+      "id": 68,
+      "case": "large-vector",
+      "dimension": 4096,
+      "rtol": 1e-07,
+      "atol": 1e-10,
+      "mode": "diffsol"
+    },
+    {
+      "id": 69,
+      "case": "large-vector",
+      "dimension": 4096,
+      "rtol": 1e-07,
+      "atol": 1e-10,
+      "mode": "julia"
+    },
+    {
+      "id": 70,
+      "case": "large-vector",
+      "dimension": 4096,
+      "rtol": 1e-09,
+      "atol": 1.0000000000000002e-12,
+      "mode": "diffsol"
+    },
+    {
+      "id": 71,
+      "case": "large-vector",
+      "dimension": 4096,
+      "rtol": 1e-09,
+      "atol": 1.0000000000000002e-12,
+      "mode": "julia"
+    },
+    {
+      "id": 72,
+      "case": "large-vector",
+      "dimension": 16384,
+      "rtol": 0.001,
+      "atol": 1e-06,
+      "mode": "diffsol"
+    },
+    {
+      "id": 73,
+      "case": "large-vector",
+      "dimension": 16384,
+      "rtol": 0.001,
+      "atol": 1e-06,
+      "mode": "julia"
+    },
+    {
+      "id": 74,
+      "case": "large-vector",
+      "dimension": 16384,
+      "rtol": 1e-05,
+      "atol": 1e-08,
+      "mode": "diffsol"
+    },
+    {
+      "id": 75,
+      "case": "large-vector",
+      "dimension": 16384,
+      "rtol": 1e-05,
+      "atol": 1e-08,
+      "mode": "julia"
+    },
+    {
+      "id": 76,
+      "case": "large-vector",
+      "dimension": 16384,
+      "rtol": 1e-07,
+      "atol": 1e-10,
+      "mode": "diffsol"
+    },
+    {
+      "id": 77,
+      "case": "large-vector",
+      "dimension": 16384,
+      "rtol": 1e-07,
+      "atol": 1e-10,
+      "mode": "julia"
+    },
+    {
+      "id": 78,
+      "case": "large-vector",
+      "dimension": 16384,
+      "rtol": 1e-09,
+      "atol": 1.0000000000000002e-12,
+      "mode": "diffsol"
+    },
+    {
+      "id": 79,
+      "case": "large-vector",
+      "dimension": 16384,
+      "rtol": 1e-09,
+      "atol": 1.0000000000000002e-12,
+      "mode": "julia"
+    },
+    {
+      "id": 80,
+      "case": "stiff-control",
+      "dimension": 12,
+      "rtol": 0.001,
+      "atol": 1e-06,
+      "mode": "diffsol"
+    },
+    {
+      "id": 81,
+      "case": "stiff-control",
+      "dimension": 12,
+      "rtol": 0.001,
+      "atol": 1e-06,
+      "mode": "julia"
+    },
+    {
+      "id": 82,
+      "case": "stiff-control",
+      "dimension": 12,
+      "rtol": 1e-05,
+      "atol": 1e-08,
+      "mode": "diffsol"
+    },
+    {
+      "id": 83,
+      "case": "stiff-control",
+      "dimension": 12,
+      "rtol": 1e-05,
+      "atol": 1e-08,
+      "mode": "julia"
+    },
+    {
+      "id": 84,
+      "case": "stiff-control",
+      "dimension": 12,
+      "rtol": 1e-07,
+      "atol": 1e-10,
+      "mode": "diffsol"
+    },
+    {
+      "id": 85,
+      "case": "stiff-control",
+      "dimension": 12,
+      "rtol": 1e-07,
+      "atol": 1e-10,
+      "mode": "julia"
+    },
+    {
+      "id": 86,
+      "case": "stiff-control",
+      "dimension": 12,
+      "rtol": 1e-09,
+      "atol": 1.0000000000000002e-12,
+      "mode": "diffsol"
+    },
+    {
+      "id": 87,
+      "case": "stiff-control",
+      "dimension": 12,
+      "rtol": 1e-09,
+      "atol": 1.0000000000000002e-12,
+      "mode": "julia"
+    },
+    {
+      "id": 88,
+      "case": "moderate-stiff",
+      "dimension": 12,
+      "rtol": 0.001,
+      "atol": 1e-06,
+      "mode": "diffsol"
+    },
+    {
+      "id": 89,
+      "case": "moderate-stiff",
+      "dimension": 12,
+      "rtol": 0.001,
+      "atol": 1e-06,
+      "mode": "julia"
+    },
+    {
+      "id": 90,
+      "case": "moderate-stiff",
+      "dimension": 12,
+      "rtol": 1e-05,
+      "atol": 1e-08,
+      "mode": "diffsol"
+    },
+    {
+      "id": 91,
+      "case": "moderate-stiff",
+      "dimension": 12,
+      "rtol": 1e-05,
+      "atol": 1e-08,
+      "mode": "julia"
+    },
+    {
+      "id": 92,
+      "case": "moderate-stiff",
+      "dimension": 12,
+      "rtol": 1e-07,
+      "atol": 1e-10,
+      "mode": "diffsol"
+    },
+    {
+      "id": 93,
+      "case": "moderate-stiff",
+      "dimension": 12,
+      "rtol": 1e-07,
+      "atol": 1e-10,
+      "mode": "julia"
+    },
+    {
+      "id": 94,
+      "case": "moderate-stiff",
+      "dimension": 12,
+      "rtol": 1e-09,
+      "atol": 1.0000000000000002e-12,
+      "mode": "diffsol"
+    },
+    {
+      "id": 95,
+      "case": "moderate-stiff",
+      "dimension": 12,
+      "rtol": 1e-09,
+      "atol": 1.0000000000000002e-12,
+      "mode": "julia"
+    }
+  ]
+}

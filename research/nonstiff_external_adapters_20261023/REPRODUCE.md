@@ -17,6 +17,7 @@ export ADAPTER_WORKTREE=$(mktemp -d /tmp/vigilode-external-source-XXXXXX)
 git worktree add --detach "$ADAPTER_WORKTREE" "$VIGILODE_ADAPTER_SOURCE_COMMIT"
 cd "$ADAPTER_WORKTREE"
 export STUDY=research/nonstiff_external_adapters_20261023
+export PYTHONDONTWRITEBYTECODE=1
 export CARGO_TARGET_DIR="$VIGILODE_RUN_ROOT/target"
 export CARGO_BUILD_JOBS=2 CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0
 rustc -Vv
