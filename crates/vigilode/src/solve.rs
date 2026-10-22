@@ -899,6 +899,7 @@ mod tests {
             y: vec![1.0],
             reason,
             last_failure,
+            h_next: None,
         }
     }
 

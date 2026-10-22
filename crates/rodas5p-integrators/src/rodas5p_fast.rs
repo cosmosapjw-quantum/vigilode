@@ -228,6 +228,10 @@ pub enum DriverStopReason {
     /// The next step fell below `AdaptiveStepConfig::min_step` (or no
     /// longer advanced `t`) before `tf`.
     MinimumStep,
+    /// The accept control of an `_and_control` entry point returned
+    /// [`AcceptControl::Stop`] after an accepted step before `tf` (library
+    /// step L3).
+    ClientStop,
 }
 
 /// The partial result of a protected adaptive run that stopped before `tf`
@@ -245,6 +249,11 @@ pub struct DriverPartial {
     /// The kind of the last rejected attempt after the last accepted step;
     /// `None` when no attempt was rejected since then.
     pub last_failure: Option<AdaptiveFailureKind>,
+    /// The controller's proposal for the next step
+    /// ([`AcceptedStepView::h_next`]) on a [`DriverStopReason::ClientStop`];
+    /// `None` for the other reasons (and then not serialized).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub h_next: Option<f64>,
 }
 
 impl DriverPartial {
@@ -269,8 +278,43 @@ impl DriverPartial {
                 DriverStopReason::MinimumStep
             },
             last_failure,
+            h_next: None,
         })
     }
+}
+
+/// What the accept control of an `_and_control` entry point sees after
+/// every accepted step (library step L3), the last one included. It
+/// borrows the driver's own buffers, so building it allocates nothing.
+#[derive(Clone, Copy, Debug)]
+pub struct AcceptedStepView<'a> {
+    /// The accepted time.
+    pub t: f64,
+    /// The accepted state at [`Self::t`].
+    pub y: &'a [f64],
+    /// The step just accepted (after any clipping to an output or `tf`).
+    pub h_used: f64,
+    /// The controller's proposal for the next step: after the controller
+    /// update of this step, before the next step is landed toward `tf`,
+    /// capped or clipped to an output time.
+    pub h_next: f64,
+    /// Accepted steps so far, this one included (1 on the first).
+    pub accepted_steps: usize,
+    /// Attempts so far, this one included.
+    pub attempts: usize,
+    /// The run's counters so far.
+    pub counters: &'a WorkCounters,
+}
+
+/// The answer of an accept control.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum AcceptControl {
+    /// Go on stepping.
+    Continue,
+    /// End the run at the accepted state: before `tf` with a
+    /// [`DriverStopReason::ClientStop`] partial; at `tf` the run is complete
+    /// and reported as a success.
+    Stop,
 }
 
 /// The band storage and factors of the banded pipeline.
@@ -1627,6 +1671,45 @@ pub(crate) trait StepSink {
     /// Called once per accepted step, after the state advanced to `t_new`
     /// (`work.y_new` and `work.u` still hold the step).
     fn accepted(&mut self, work: &Workspace, t_new: f64);
+
+    /// Called once per accepted step after the controller update (library
+    /// step L3); [`AcceptControl::Stop`] ends the run at `view.t`. Only
+    /// [`ControlSink`] overrides it, so the other sinks keep their loop.
+    #[inline(always)]
+    fn accept_control(&mut self, _view: &AcceptedStepView<'_>) -> AcceptControl {
+        AcceptControl::Continue
+    }
+}
+
+/// The sink of the `_and_control` entry points: observes no attempt and
+/// hands every accepted step to the client's accept control.
+struct ControlSink<'c> {
+    control: &'c mut dyn FnMut(&AcceptedStepView<'_>) -> AcceptControl,
+}
+
+impl StepSink for ControlSink<'_> {
+    #[inline(always)]
+    fn after_attempt(
+        &mut self,
+        _problem: &OdeProblem,
+        _work: &mut Workspace,
+        _t: f64,
+        _y: &[f64],
+        _h: f64,
+        error: f64,
+        _atol: f64,
+        _rtol: f64,
+        _counters: &mut WorkCounters,
+    ) -> CoreResult<f64> {
+        Ok(error)
+    }
+
+    #[inline(always)]
+    fn accepted(&mut self, _work: &Workspace, _t_new: f64) {}
+
+    fn accept_control(&mut self, view: &AcceptedStepView<'_>) -> AcceptControl {
+        (self.control)(view)
+    }
 }
 
 /// The sink of every existing entry point: observes nothing.
@@ -1810,6 +1893,7 @@ pub fn integrate_rodas5p_fast_banded_observed_with_options(
         options,
         BandedKernel::Indexed,
         &[],
+        &mut NoSink,
     )
 }
 
@@ -1842,6 +1926,7 @@ pub fn integrate_rodas5p_fast_banded_observed_with_kernel(
         Rodas5pFastOptions::default(),
         kernel,
         &[],
+        &mut NoSink,
     )
 }
 
@@ -1926,6 +2011,43 @@ pub fn integrate_rodas5p_fast_banded_observed_with_atol(
         Rodas5pFastOptions::default(),
         BandedKernel::Indexed,
         atol,
+        &mut NoSink,
+    )
+}
+
+/// [`integrate_rodas5p_fast_banded_observed_with_atol`] with an accept
+/// control (library step L3); see
+/// [`integrate_rodas5p_fast_client_observed_with_atol_and_control`] for the
+/// control's view, the stop and the partial record.
+#[allow(clippy::too_many_arguments)]
+pub fn integrate_rodas5p_fast_banded_observed_with_atol_and_control(
+    problem: &OdeProblem,
+    band: &BandedJacobian,
+    t_span: (f64, f64),
+    y0: &[f64],
+    adaptive: &AdaptiveStepConfig,
+    output: &OutputSchedule,
+    atol: &[f64],
+    control: &mut dyn FnMut(&AcceptedStepView<'_>) -> AcceptControl,
+) -> CoreResult<Rodas5pFastBandedResult> {
+    let n = problem.dimension;
+    require_atol_vector(n, atol)?;
+    if band.lower >= n.max(1) || band.upper >= n.max(1) {
+        return Err(CoreError::InvalidInput(
+            "the band of the RODAS5P fast banded driver must lie inside the matrix".into(),
+        ));
+    }
+    integrate_banded(
+        problem,
+        band,
+        t_span,
+        y0,
+        adaptive,
+        output,
+        Rodas5pFastOptions::default(),
+        BandedKernel::Indexed,
+        atol,
+        &mut ControlSink { control },
     )
 }
 
@@ -1957,6 +2079,78 @@ pub fn integrate_rodas5p_fast_client_observed_with_atol(
     Option<DriverPartial>,
     Box<dyn StageLinearSystem>,
 )> {
+    integrate_client(
+        problem,
+        client,
+        t_span,
+        y0,
+        adaptive,
+        output,
+        atol,
+        &mut NoSink,
+    )
+}
+
+/// [`integrate_rodas5p_fast_client_observed_with_atol`] with an accept
+/// control (library step L3): after every accepted step, the last one
+/// included, `control` sees the accepted state and the controller's
+/// proposal for the next step ([`AcceptedStepView`]) and may end the run
+/// there, for example to remap the state onto a new mesh outside the driver
+/// and restart from it with `initial_step = h_next`.
+///
+/// [`AcceptControl::Stop`] before `tf` ends the run at the accepted `(t, y)`:
+/// the output holds every output time at or before `t`, `observed.success`
+/// is false and the partial record is
+/// `DriverPartial { t, y, reason: ClientStop, last_failure: None, h_next: Some(h_next) }`.
+/// A stop on the step that reaches `tf` changes nothing: the run is complete
+/// and reported as a success without a partial record. A control that always
+/// continues gives the run without one, bit for bit (states, counters and
+/// step statistics). The control is called once per accepted step through
+/// `dyn`; the driver allocates nothing for it.
+#[allow(clippy::too_many_arguments)]
+pub fn integrate_rodas5p_fast_client_observed_with_atol_and_control(
+    problem: &OdeProblem,
+    client: Box<dyn StageLinearSystem>,
+    t_span: (f64, f64),
+    y0: &[f64],
+    adaptive: &AdaptiveStepConfig,
+    output: &OutputSchedule,
+    atol: &[f64],
+    control: &mut dyn FnMut(&AcceptedStepView<'_>) -> AcceptControl,
+) -> CoreResult<(
+    Rodas5pFastResult,
+    Option<DriverPartial>,
+    Box<dyn StageLinearSystem>,
+)> {
+    integrate_client(
+        problem,
+        client,
+        t_span,
+        y0,
+        adaptive,
+        output,
+        atol,
+        &mut ControlSink { control },
+    )
+}
+
+/// The client run of [`integrate_rodas5p_fast_client_observed_with_atol`]
+/// under `sink`.
+#[allow(clippy::too_many_arguments)]
+fn integrate_client<S: StepSink>(
+    problem: &OdeProblem,
+    client: Box<dyn StageLinearSystem>,
+    t_span: (f64, f64),
+    y0: &[f64],
+    adaptive: &AdaptiveStepConfig,
+    output: &OutputSchedule,
+    atol: &[f64],
+    sink: &mut S,
+) -> CoreResult<(
+    Rodas5pFastResult,
+    Option<DriverPartial>,
+    Box<dyn StageLinearSystem>,
+)> {
     let n = problem.dimension;
     require_atol_vector(n, atol)?;
     if client.dimension() != n {
@@ -1977,7 +2171,7 @@ pub fn integrate_rodas5p_fast_client_observed_with_atol(
         Rodas5pFastOptions::default(),
         None,
         atol,
-        &mut NoSink,
+        sink,
     )?;
     let client = work
         .client
@@ -1999,7 +2193,7 @@ pub(crate) fn require_atol_vector(n: usize, atol: &[f64]) -> CoreResult<()> {
 }
 
 #[allow(clippy::too_many_arguments)]
-fn integrate_banded(
+fn integrate_banded<S: StepSink>(
     problem: &OdeProblem,
     band: &BandedJacobian,
     t_span: (f64, f64),
@@ -2009,6 +2203,7 @@ fn integrate_banded(
     options: Rodas5pFastOptions,
     kernel: BandedKernel,
     atol_vector: &[f64],
+    sink: &mut S,
 ) -> CoreResult<Rodas5pFastBandedResult> {
     let (fast, work, partial) = integrate_fast(
         problem,
@@ -2020,7 +2215,7 @@ fn integrate_banded(
         options,
         None,
         atol_vector,
-        &mut NoSink,
+        sink,
     )?;
     Ok(Rodas5pFastBandedResult {
         fast,
@@ -2119,6 +2314,8 @@ fn integrate_fast_in<S: StepSink>(
     // The kind of the last rejection since the last accepted step (the
     // partial record only; never read by the step arithmetic).
     let mut last_failure = None;
+    // The controller's proposal when the accept control stopped the run.
+    let mut client_stop = None;
     while t < tf && attempts < adaptive.max_attempts {
         let Some(next_h) =
             crate::output::adaptive_end_step(t, h, tf, adaptive.step_cap(), &controller)?
@@ -2251,10 +2448,33 @@ fn integrate_fast_in<S: StepSink>(
                 next_h: h,
             });
         }
+        // L3 accept control: after the output collector took the step and
+        // the controller proposed the next one (NoSink always continues).
+        if failure.is_none() {
+            let view = AcceptedStepView {
+                t,
+                y: &y,
+                h_used: trial_h,
+                h_next: h,
+                accepted_steps,
+                attempts,
+                counters: &counters,
+            };
+            if sink.accept_control(&view) == AcceptControl::Stop {
+                client_stop = Some(h);
+                break;
+            }
+        }
     }
     let success = t >= tf;
-    let partial =
+    let mut partial =
         DriverPartial::after_loop(t, tf, &y, attempts, adaptive.max_attempts, last_failure);
+    // A stop before `tf` is the client's, even on the budget's last attempt;
+    // a stop at `tf` leaves the completed run a success.
+    if let (Some(partial), Some(h_next)) = (partial.as_mut(), client_stop) {
+        partial.reason = DriverStopReason::ClientStop;
+        partial.h_next = Some(h_next);
+    }
     let (times, states, output_clipped_steps) = if success {
         collector.finish()?
     } else {
@@ -2268,6 +2488,8 @@ fn integrate_fast_in<S: StepSink>(
             success,
             message: if success {
                 "success".into()
+            } else if client_stop.is_some() {
+                "stopped by the client's accept control".into()
             } else {
                 "maximum step count or minimum step reached".into()
             },

@@ -242,6 +242,8 @@ pub enum StopReason {
     AttemptBudget,
     /// The `MinimumStep` policy or outcome.
     MinimumStep,
+    /// The `ClientStop` policy or outcome.
+    ClientStop,
 }
 
 impl From<&rodas5p_integrators::DriverStopReason> for StopReason {
@@ -249,6 +251,7 @@ impl From<&rodas5p_integrators::DriverStopReason> for StopReason {
         match source {
             rodas5p_integrators::DriverStopReason::AttemptBudget => Self::AttemptBudget,
             rodas5p_integrators::DriverStopReason::MinimumStep => Self::MinimumStep,
+            rodas5p_integrators::DriverStopReason::ClientStop => Self::ClientStop,
         }
     }
 }

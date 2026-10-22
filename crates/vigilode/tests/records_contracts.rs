@@ -235,7 +235,7 @@ fn every_enum_variant_preserves_its_wire_representation() {
     variants!(
         rodas5p_integrators::DriverStopReason,
         StopReason,
-        [AttemptBudget, MinimumStep]
+        [AttemptBudget, MinimumStep, ClientStop]
     );
     variants!(
         rodas5p_integrators::Rodas5pFastLu,
