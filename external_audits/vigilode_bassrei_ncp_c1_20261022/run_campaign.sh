@@ -21,6 +21,10 @@
 #   NCPC1_ALLOWED_CPUS (8-63), NCPC1_LADDER_CORES (8-59), NCPC1_VG_CORESET (60-63),
 #   NCPC1_PARITY_CORESET (8), NCPC1_CASES / NCPC1_RUNGS (all), NCPC1_CAP_MIN (120).
 set -uo pipefail
+# The detached, non-login shell on NCP lacks the rustup bin dir (attempt 1,
+# 20261022T063359Z, ended INVALID in setup with "cargo: command not found").
+[ -d /root/.cargo/bin ] && export PATH=/root/.cargo/bin:$PATH
+export RUSTUP_TOOLCHAIN=1.94.1
 CAMP=$(readlink -f "$1")
 SRC=$CAMP/src
 H=$SRC/external_audits/vigilode_bassrei_ncp_c1_20261022/harness
