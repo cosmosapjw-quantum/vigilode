@@ -403,3 +403,45 @@ None.
   the schedule arms.
 - **Scope:** live BASS/rei integration, other remap orders, sphere AMR (P06 HOLD), and wall-time claims
   remain HOLD.
+
+---
+
+## Results
+
+The run was on the clean tree at `2d24dd6f11ca236f0e93e32529cf4831b0a1be56` (code `6a16d472`, L3 `e54fdd62`).
+The command was exactly the preregistered one.
+
+- Wall time was 575 s on the local workstation, diagnostic only.
+- The harness built the runner itself and ran the cargo contract tests: 68/68 ok, 0 ignored, 11 binaries.
+- The reference unittests passed.
+- The watched tree was clean at start and end, no input changed, and 0 requests were incomplete.
+
+Output hashes:
+
+- `results.json`: `567d6a8e3fa864cbe291e644bab6c7a92e458d720d99278a0cc142788624ccb6`
+- `raw/MANIFEST.json`: `ef54ab393096e7582de96fa85bd0ec922e8fae6a267745e494a07d2bdb4cfe8b`; it covers
+  79 raw files.
+
+**Verdict: PASS**: every [C] gate R1–R7 passed.
+
+| gate | pass | key numbers |
+|---|---|---|
+| R1 | True | I1/I2: injected refusal typed; buffer, edges and epoch unchanged; NothingStaged after refusal; commit to the other mesh equals a fresh remesher bitwise; remap parity vs the independent Python remap 0.0 on all 17 columns; 0/0 allocations. I3 (refusal inside an integration, k = 1 and 3, banded and Krylov): partial state, edges and epoch bitwise equal to the uninjected run at that remap; counters equal (8 and 16 attempts); refused attempt kept in the remesh work |
+| R2 | True | 66 runs, 495 remaps: max per-remap 1.9e-16; Python fsum drift ≤ 5.8e-16. Non-OK runs are exactly the 5 preregistered ones. Independent recomputation on 52 remaps (6 runs): fsum change ≤ 1.9e-16, parity 0.0, meshes bitwise |
+| R3 | True | integrated and signed states: one cycle 0 ulp; 0.0 after 100 cycles; 0 allocations after warm-up; 201 commits |
+| R4 | True | Krylov vs banded, per-quantity relative: unrefined photons 2.8e-12, absorbed 2.2e-11, L_lo 4.4e-15, L_hi 1.1e-14; refined (34 cells) ≤ 7.2e-12; remaps 7 = 7, client epoch 7; h_restart == controller proposal bitwise; `client_exact` refused as typed (mixed drift) |
+| R5 | True | allocations equal at rtol 1e-6/1e-9 for K = 2, 4, 8 (banded 211/339/595, 64 per remap; Krylov 258/378/618, 60 per remap); hook 62 and 58 per remap; repeat bitwise |
+| R6a | True | static, config E, G2→G5: cell L1 0.122, 0.068, 0.035, 0.018 (orders 0.85, 0.93, 0.97); absorbed 0.072 → 0.0071 (last order 1.08) |
+| R6b | True | SMOOTH schedule: 3.02e-6, 1.29e-7, 2.61e-9; u_ref 5.6e-15; meshes match |
+| R6c | True | SMOOTH fixed steps N = 1…64: slopes 4.47, 4.80, 4.92, 4.96 (pre-floor), last pre-floor slope 4.96; COARSE negative control, last slope 2.03 (≤ 3.5), all runs OK |
+| R6d | True | hook Σδ 7.79e7, 3.39e7, 1.70e7 (G3, G4, G5); remaps 15, 28, 56 |
+| R7 | True | thresholds equal the plan constants; 9 reused constants equal their P02/P02b sources |
+
+**[H] observations** (not gated):
+
+- **Fresh-h0 restart control:** it costs 55 attempts, against 30 with h_next.
+- **Hook vs static accuracy:** the hook arm is slightly less accurate than static at equal grids. At a fixed grid (G4, triggers 1/0.5/0.25), the error grows with the remap count, because the first-order remap diffuses the solution.
+- **Krylov on the schedule arm:** its errors equal banded's to 3e-16 relative.
+
+**Consequence (approved plan):** P05 passes, which unblocks P06. No live BASS/rei or production claim is
+made. Broad production remains HOLD.
