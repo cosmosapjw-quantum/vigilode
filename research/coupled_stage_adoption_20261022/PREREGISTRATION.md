@@ -34,3 +34,7 @@ The benchmark runner records one warm-up and three measured repetitions at one a
 ## Structured reduced solve extension (before execution)
 
 The mathematical review identifies a second implementation opportunity in the reused kernel: the reduced affine/Newton matrices are block lower triangular with one common diagonal W_m. Replace a full (8m)-order LU by one m-order LU and block forward substitution, retaining the same raw-stage target. Register exact algebraic comparison against independent full dense solves (including nonnormal off-diagonal blocks and singular W_m), existing coupled regressions, and a bounded m sweep timing/operation comparison if useful. The arithmetic complexity reduction is conditional on this verified structure; elapsed speedup is measured separately. Existing work fields retain documented meanings and any new block-factor/solve fields count real operations.
+
+## Build-profile refinement before benchmark execution
+
+Repository inspection shows `release` uses fat LTO and a single codegen unit. Use the repository's existing `measurement` profile (`opt-level=3`, `lto=false`, `codegen-units=16`) for the sandbox campaign to bound linking resources. All compared methods are in the same executable with these identical flags. Replace the benchmark command above with `cargo build --locked --offline --profile measurement -p vigilode-coupled --example adaptive_bench`, then run the produced binary using `run_local_bench.py`. No benchmark output was observed before this choice.

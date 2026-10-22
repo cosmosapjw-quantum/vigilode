@@ -5,9 +5,14 @@
 //! nonlinear/output/continuous-time error bound. The caller owns physical-step
 //! acceptance. No n-by-n state Jacobian is assembled by this candidate path.
 #![forbid(unsafe_code)]
+mod adaptive;
 mod algebra;
 mod fallback;
 mod solver;
+pub use adaptive::{
+    COUPLED_ADAPTIVE_DRIVER_ID, CoupledIntegrationResult, CoupledTrajectoryAttempt,
+    integrate_coupled_observed,
+};
 pub use fallback::{
     FallbackResult, SelectedStep, coupled_or_sequential, coupled_or_sequential_budgeted,
 };
@@ -181,6 +186,9 @@ pub struct Candidate {
     pub error_vector: Vec<f64>,
     pub embedded_wrms: f64,
     pub full_residual_wrms: f64,
+    /// Per-stage Euclidean norms from the existing original-space check.
+    /// Retaining these scalars requires no additional RHS/JVP calls.
+    pub full_residual_l2: [f64; 8],
     pub full_relative_residual: f64,
     pub basis_dimension: usize,
     /// Merely the raw-U embedded estimate test. It is not a root-error bound.
@@ -256,3 +264,9 @@ pub fn coupled_step_residual_first(
     }
     out
 }
+
+mod raw_step;
+pub use raw_step::{
+    ConditionalErrorEstimate, L2Assumptions, RawSelectedStep, RawStepAttempt, RawStepSession,
+    RootErrorPolicy, conditional_l2_error_estimate,
+};

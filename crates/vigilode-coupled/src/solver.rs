@@ -39,6 +39,10 @@ impl Frozen<'_> {
             Ok(())
         }
     }
+    // eta changes only strict lower blocks: every diagonal is W_m for every
+    // theta/lambda. algebra::small_solve checks this invariant before using one
+    // common block factorization. Nonlinear derivatives below also update only
+    // strict lower blocks because stage i's state never depends on U_i.
     fn affine(&self, b: &Basis, eta: f64) -> (DenseMatrix, Vec<f64>) {
         let m = b.len();
         let j = b.projected_jacobian();
@@ -400,11 +404,13 @@ fn full_check(
     let mut wrms = 0.0_f64;
     let mut wrms_zero_scale = false;
     let mut l2 = 0.0_f64;
-    for r in &residuals {
+    let mut full_residual_l2 = [0.0; S];
+    for (i, r) in residuals.iter().enumerate() {
         let (value, zero_scale) = weighted(r);
         wrms = wrms.max(value);
         wrms_zero_scale |= zero_scale;
-        l2 = l2.max(norm(r));
+        full_residual_l2[i] = norm(r);
+        l2 = l2.max(full_residual_l2[i]);
     }
     let (embedded, embedded_zero_scale) = weighted(&error);
     let relative = l2 / (f.hg.abs() * norm(&f.f0)).max(f64::MIN_POSITIVE);
@@ -436,6 +442,7 @@ fn full_check(
             error_vector: error,
             embedded_wrms: embedded,
             full_residual_wrms: wrms,
+            full_residual_l2,
             full_relative_residual: relative,
             basis_dimension: m,
             embedded_test_passes: embedded <= 1.0,
@@ -560,6 +567,7 @@ pub(crate) fn run(
             error_vector: vec![0.0; y.len()],
             embedded_wrms: 0.0,
             full_residual_wrms: 0.0,
+            full_residual_l2: [0.0; S],
             full_relative_residual: 0.0,
             basis_dimension: 0,
             embedded_test_passes: true,

@@ -14,6 +14,7 @@ pub mod audit2_stage_certificate_research;
 mod a1_two_arm_receipt;
 mod adaptive;
 mod adaptive_exponential;
+mod adaptive_output;
 pub mod affine_transport;
 mod bdf;
 mod block;
@@ -154,6 +155,7 @@ pub use adaptive_exponential::{
     integrate_pexprb54s4_fused_adaptive_observed_with_telemetry_mode,
     integrate_pexprb54s4_fused_adaptive_observed_with_tolerance_scaled_telemetry,
 };
+pub use adaptive_output::{AdaptiveOutputSession, AdaptiveOutputTrial};
 pub use bdf::{
     BDF_STARTUP_BDF1_BDF1_ESTIMATOR_ID, BDF_STARTUP_BDF1_BDF2_ESTIMATOR_ID,
     BDF2_ZERO_STABILITY_RATIO_MAX, BdfConfig, BdfHistory, BdfIntegrationResult, BdfOrder,
