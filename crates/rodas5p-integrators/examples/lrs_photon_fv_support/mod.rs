@@ -25,6 +25,7 @@
 pub mod block_solver;
 pub mod border;
 pub mod chem;
+pub mod remesh;
 
 use std::sync::Arc;
 
