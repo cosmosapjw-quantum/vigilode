@@ -171,6 +171,11 @@ fn vector_absolute_tolerance_retains_zero_components_and_scalar_parity() {
     assert!(zero.observed.success);
     assert_eq!(zero.final_state[0], 0.0);
     assert!((zero.final_state[1] - (-1.0_f64).exp()).abs() < 1e-8);
+    config.atol = Some(vec![0.0, 0.0]);
+    let stationary =
+        integrate_dopri5_observed(&rhs, (0.0, 1.0), &[0.0, 0.0], &config, &schedule(1.0)).unwrap();
+    assert!(stationary.observed.success);
+    assert_eq!(stationary.final_state, vec![0.0, 0.0]);
 }
 
 #[test]
@@ -191,6 +196,12 @@ fn preflight_rejects_bad_dimensions_tolerances_and_clock_before_callbacks() {
     assert!(integrate_dopri5_observed(&rhs, (0.0, 1.0), &[1.0], &config, &schedule(1.0)).is_err());
     config.atol = None;
     assert!(integrate_dopri5_observed(&rhs, (1.0, 0.0), &[1.0], &config, &schedule(1.0)).is_err());
+    config.adaptive.rtol = 0.0;
+    config.adaptive.atol = 0.0;
+    assert!(integrate_dopri5_observed(&rhs, (0.0, 1.0), &[1.0], &config, &schedule(1.0)).is_err());
+    config.adaptive.atol = 1e-9;
+    config.atol = Some(vec![0.0]);
+    assert!(integrate_dopri5_observed(&rhs, (0.0, 1.0), &[1.0], &config, &schedule(1.0)).is_err());
     assert_eq!(calls.load(Ordering::Relaxed), 0);
 }
 

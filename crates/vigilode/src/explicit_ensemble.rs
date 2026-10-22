@@ -66,12 +66,7 @@ impl Dopri5Ensemble {
         // must not short-circuit after one invalid initial value problem.
         self.execution
             .map_ordered(jobs, |job| {
-                Ok(Dopri5::solve(
-                    job.problem,
-                    job.t_span,
-                    job.y0,
-                    job.options,
-                ))
+                Ok(Dopri5::solve(job.problem, job.t_span, job.y0, job.options))
             })
             .map_err(|error| ExplicitSolveError::Driver(error.to_string()))
     }

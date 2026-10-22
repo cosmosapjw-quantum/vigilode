@@ -4,15 +4,19 @@
 //! and an order-four embedded estimate. FSAL reuses the accepted endpoint
 //! derivative; an error rejection retains the derivative at the unchanged
 //! initial state. The RHS must describe the same deterministic model for the
-//! duration of one integration. Set `fsal = false` when that contract cannot
-//! be supplied; changing the mathematical model during a step is unsupported.
+//! duration of one integration. Setting `fsal = false` requests fresh first
+//! derivatives for diagnostics; it does not permit the mathematical model to
+//! change during the integration.
 use rodas5p_core::{CoreError, CoreResult, WorkCounters, scaled_error_component};
 use serde::Serialize;
 
-use crate::adaptive::adaptive_next_step_after_attempt_prevalidated;
+use crate::adaptive::{
+    AdaptiveEstimatorMetadata, AdaptiveMethodMetadata,
+    adaptive_next_step_after_attempt_prevalidated,
+};
 use crate::{
-    AdaptiveControllerState, AdaptiveEstimatorMetadata, AdaptiveMethodMetadata,
-    AdaptiveOutputSession, AdaptiveStepConfig, ObservedIntegrationResult, OutputSchedule,
+    AdaptiveControllerState, AdaptiveOutputSession, AdaptiveStepConfig, ObservedIntegrationResult,
+    OutputSchedule,
 };
 
 /// The embedded difference is O(h^5), hence the controller exponent is 1/5.

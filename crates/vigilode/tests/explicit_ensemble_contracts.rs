@@ -4,8 +4,8 @@ use std::sync::{
 };
 
 use vigilode::{
-    Atol, CallbackError, Dopri5, Dopri5Ensemble, Dopri5EnsembleJob, ExplicitSolution,
-    Options, Problem,
+    Atol, CallbackError, Dopri5, Dopri5Ensemble, Dopri5EnsembleJob, ExplicitSolution, Options,
+    Problem,
 };
 
 fn decay(rate: f64) -> Problem {
@@ -28,8 +28,15 @@ fn assert_same(left: &ExplicitSolution, right: &ExplicitSolution) {
         );
     }
     assert_eq!(
-        left.final_state.iter().map(|x| x.to_bits()).collect::<Vec<_>>(),
-        right.final_state.iter().map(|x| x.to_bits()).collect::<Vec<_>>()
+        left.final_state
+            .iter()
+            .map(|x| x.to_bits())
+            .collect::<Vec<_>>(),
+        right
+            .final_state
+            .iter()
+            .map(|x| x.to_bits())
+            .collect::<Vec<_>>()
     );
     assert_eq!(
         serde_json::to_value(&left.stats).unwrap(),
@@ -79,9 +86,24 @@ fn ensemble_preserves_refusal_partial_failure_and_success_without_cancellation()
     });
     let opts = Options::default();
     let jobs = [
-        Dopri5EnsembleJob { problem: &good, t_span: (0.0, 1.0), y0: &[], options: &opts },
-        Dopri5EnsembleJob { problem: &bad_callback, t_span: (0.0, 1.0), y0: &[1.0], options: &opts },
-        Dopri5EnsembleJob { problem: &good, t_span: (0.0, 1.0), y0: &[1.0], options: &opts },
+        Dopri5EnsembleJob {
+            problem: &good,
+            t_span: (0.0, 1.0),
+            y0: &[],
+            options: &opts,
+        },
+        Dopri5EnsembleJob {
+            problem: &bad_callback,
+            t_span: (0.0, 1.0),
+            y0: &[1.0],
+            options: &opts,
+        },
+        Dopri5EnsembleJob {
+            problem: &good,
+            t_span: (0.0, 1.0),
+            y0: &[1.0],
+            options: &opts,
+        },
     ];
     let pool = Dopri5Ensemble::new(2).unwrap();
     let results = pool.solve(&jobs).unwrap();
