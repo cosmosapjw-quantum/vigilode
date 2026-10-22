@@ -1,0 +1,39 @@
+{
+  "profile": {
+    "release": {
+      "opt-level": 3,
+      "lto": "fat",
+      "codegen-units": 1,
+      "panic": "abort"
+    },
+    "bench": {
+      "inherits": "release",
+      "debug": true
+    },
+    "measurement": {
+      "inherits": "release",
+      "lto": false,
+      "codegen-units": 16
+    }
+  },
+  "parent_inherited_compile_environment": {
+    "RUSTFLAGS": null,
+    "CARGO_ENCODED_RUSTFLAGS": null,
+    "RUSTUP_TOOLCHAIN": null,
+    "CARGO_BUILD_TARGET": null,
+    "CARGO_PROFILE_MEASUREMENT_OPT_LEVEL": null,
+    "CARGO_PROFILE_MEASUREMENT_LTO": null,
+    "CARGO_PROFILE_MEASUREMENT_CODEGEN_UNITS": null,
+    "CARGO_PROFILE_RELEASE_OPT_LEVEL": null,
+    "CARGO_PROFILE_RELEASE_LTO": null,
+    "CARGO_PROFILE_RELEASE_CODEGEN_UNITS": null
+  },
+  "expected_worker_overrides": {
+    "CARGO_BUILD_JOBS": "2",
+    "CARGO_PROFILE_DEV_DEBUG": "0",
+    "CARGO_PROFILE_TEST_DEBUG": "0",
+    "CARGO_TARGET_DIR": "/home/cosmosapjw/vigilode-nonstiff-run-Ioh017/build"
+  },
+  "actual_worker_environment_file": "validation-environment.txt",
+  "source_cargo_config": "# placeholder\n"
+}

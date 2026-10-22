@@ -1,0 +1,39 @@
+warning: variant `EndpointAdmission` is never constructed
+    --> crates/rodas5p-integrators/src/packet_trajectory.rs:1445:5
+     |
+1443 | enum VerifiedTrialFault {
+     |      ------------------ variant in this enum
+1444 |     BeforeQuery(usize),
+1445 |     EndpointAdmission,
+     |     ^^^^^^^^^^^^^^^^^
+     |
+     = note: `VerifiedTrialFault` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rodas5p-integrators` (lib) generated 1 warning
+   Compiling vigilode v0.1.0 (/home/cosmosapjw/vigilode-nonstiff-source-WjxDXM/crates/vigilode)
+    Finished `test` profile [unoptimized] target(s) in 6.23s
+     Running tests/explicit_contracts.rs (/home/cosmosapjw/vigilode-nonstiff-run-Ioh017/build/debug/deps/explicit_contracts-0538e613a1232e32)
+
+running 8 tests
+test explicit_features_are_refused_before_rhs ... ok
+test explicit_budget_and_zero_span_have_unambiguous_status ... ok
+test explicit_fatal_rhs_stops_once_and_retains_accepted_state ... ok
+test explicit_invalid_inputs_and_schedules_do_not_enter_rhs ... ok
+test explicit_partial_or_nonfinite_ok_callback_is_fatal ... ok
+test explicit_nonautonomous_solution_never_enters_derivative_providers ... ok
+test explicit_recoverable_trial_retries_and_counts_failed_user_work ... ok
+test explicit_uniform_vector_atol_reproduces_scalar_and_records_vector ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/explicit_ensemble_contracts.rs (/home/cosmosapjw/vigilode-nonstiff-run-Ioh017/build/debug/deps/explicit_ensemble_contracts-32ae86f7e9aa4369)
+
+running 4 tests
+test ensemble_requires_positive_workers_and_handles_empty_batches ... ok
+test ensemble_preserves_refusal_partial_failure_and_success_without_cancellation ... ok
+test ensemble_two_workers_really_overlap_rhs_calls ... ok
+test ensemble_order_counters_and_tolerances_match_independent_solves ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
