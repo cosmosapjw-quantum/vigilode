@@ -872,7 +872,17 @@ impl<'a, F: Fn(f64, &[f64], &mut [f64]) -> CoreResult<()> + ?Sized> Dopri5Sessio
         if !target.is_finite()
             || target < self.t
             || target > self.tf
-            || (target != self.t && !self.schedule.times().contains(&target))
+            || (target != self.t
+                && self
+                    .schedule
+                    .times()
+                    .binary_search_by(|time| {
+                        // Both operands are finite; partial_cmp preserves
+                        // the previous +0 == -0 membership semantics.
+                        time.partial_cmp(&target)
+                            .expect("validated finite schedule and target")
+                    })
+                    .is_err())
         {
             return Err(CoreError::InvalidInput(
                 "native session target must be current or a registered landing time".into(),

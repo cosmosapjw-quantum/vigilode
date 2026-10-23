@@ -398,6 +398,72 @@ fn identities_and_unregistered_targets_refuse_before_callbacks_without_changing_
         );
     }
 }
+
+#[test]
+fn sorted_target_lookup_preserves_signed_zero_and_refuses_nonfinite_or_missing_targets() {
+    for scheduled_zero in [-0.0_f64, 0.0_f64] {
+        let mut times: Vec<f64> = (0..=1024)
+            .map(|i| i as f64 / 512.0 - 1.0)
+            .collect();
+        times[512] = scheduled_zero;
+        let schedule = OutputSchedule::new(times).unwrap();
+        let config = Dopri5Config::default();
+        let (p, calls) = problem(false, u64::MAX);
+        let callback = |t, y: &[f64], out: &mut [f64]| {
+            p.eval_rhs_into(t, y, out, &mut Default::default())
+        };
+        let explicit_id = Identity::new(Method::Dopri5, 1);
+        let implicit_id = Identity::new(Method::Rodas5pFast, 1);
+        let mut explicit = Dopri5Session::new(
+            &callback,
+            (-1.0, 1.0),
+            &[1.0],
+            &config,
+            &schedule,
+            explicit_id,
+        )
+        .unwrap();
+        let mut implicit = Rodas5pFastSession::new(
+            &p,
+            (-1.0, 1.0),
+            &[1.0],
+            &config.adaptive,
+            &schedule,
+            implicit_id,
+        )
+        .unwrap();
+        // A zero quota isolates target validation from numerical stepping.
+        // Either IEEE sign must locate the single mathematical zero entry.
+        for target in [-0.0, 0.0, -0.5, 0.5, 1.0] {
+            assert_eq!(
+                explicit.advance_to(target, 0, explicit_id).unwrap(),
+                Advance::Yield
+            );
+            assert_eq!(
+                implicit.advance_to(target, 0, implicit_id).unwrap(),
+                Advance::Yield
+            );
+        }
+        for target in [
+            f64::NAN,
+            f64::INFINITY,
+            f64::NEG_INFINITY,
+            0.0001,
+            -1.1,
+            1.1,
+        ] {
+            assert!(explicit.advance_to(target, 1, explicit_id).is_err());
+            assert!(implicit.advance_to(target, 1, implicit_id).is_err());
+        }
+        assert_eq!(calls.load(Ordering::SeqCst), 0);
+        for checkpoint in [explicit.checkpoint(), implicit.checkpoint()] {
+            assert_eq!(checkpoint.t, -1.0);
+            assert_eq!(checkpoint.y, &[1.0]);
+            assert_eq!(checkpoint.attempts, 0);
+            assert_eq!(*checkpoint.counters, Default::default());
+        }
+    }
+}
 #[test]
 fn cumulative_budget_is_sticky_and_true_final_arrival_wins() {
     let schedule = plan();

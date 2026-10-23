@@ -22,8 +22,8 @@ pub(crate) struct FatalRecord {
 }
 
 /// Per-solve state shared by every wrapped callback: the fatal-error latch
-/// and the facade's own work counters. It only observes and forwards; it
-/// performs no floating-point operation on the callbacks' values.
+/// and the facade's own work counters. Vector-output callbacks also enforce
+/// finite inputs and complete finite output writes before a stage can use them.
 #[derive(Default)]
 pub(crate) struct Guard {
     poisoned: AtomicBool,
@@ -37,6 +37,42 @@ pub(crate) struct Guard {
 }
 
 impl Guard {
+    /// Evaluate a vector-output callback. An invalid numerical stage is
+    /// refused before entering user code; an `Ok` callback that leaves a
+    /// component unwritten or nonfinite violates its contract and is terminal.
+    /// Dense/banded Jacobians deliberately do not use this helper: their
+    /// zero-filled buffers support documented sparse writes.
+    pub(crate) fn vector_call(
+        &self,
+        callback: Callback,
+        t: f64,
+        y: &[f64],
+        out: &mut [f64],
+        user: impl FnOnce(&mut [f64]) -> Result<(), CallbackError>,
+    ) -> CoreResult<()> {
+        if !t.is_finite() || !y.iter().all(|v| v.is_finite()) {
+            // Preserve an already latched terminal error even if a caller
+            // presents another invalid stage afterward.
+            if self.poisoned.load(Ordering::Acquire) {
+                return self.call(callback, t, || unreachable!("fatal latch must short-circuit"));
+            }
+            return Err(CoreError::NonFinite(format!(
+                "{callback:?} callback input contains NaN/Inf"
+            )));
+        }
+        self.call(callback, t, || {
+            out.fill(f64::NAN);
+            user(out)?;
+            if out.iter().all(|v| v.is_finite()) {
+                Ok(())
+            } else {
+                Err(CallbackError::Fatal(format!(
+                    "{callback:?} callback returned Ok with unwritten or nonfinite output"
+                )))
+            }
+        })
+    }
+
     /// Recoverable errors retain the numerical retry signal. Fatal errors
     /// carry a distinct terminal signal so native drivers stop immediately.
     pub(crate) fn call(
@@ -106,14 +142,7 @@ impl Guard {
     /// before user code is entered, and checked finite.
     fn fd_rhs(&self, rhs: &RhsFn, t: f64, y: &[f64], out: &mut [f64]) -> CoreResult<()> {
         self.fd_rhs_calls.fetch_add(1, Ordering::Relaxed);
-        self.call(Callback::Rhs, t, || rhs(t, y, out))?;
-        if out.iter().all(|v| v.is_finite()) {
-            Ok(())
-        } else {
-            Err(CoreError::NonFinite(
-                "finite-difference RHS produced NaN/Inf".into(),
-            ))
-        }
+        self.vector_call(Callback::Rhs, t, y, out, |out| rhs(t, y, out))
     }
 }
 
@@ -331,6 +360,36 @@ mod tests {
             Err(CoreError::NonFinite(_))
         ));
         assert_eq!(guard.fd_work().rhs_calls, 4);
+    }
+
+    #[test]
+    fn vector_callback_refuses_invalid_input_without_entering_user_code() {
+        for (t, y) in [(f64::INFINITY, 1.0), (0.0, f64::NAN)] {
+            let guard = Guard::default();
+            let mut out = [7.0];
+            let mut entered = false;
+            let result = guard.vector_call(Callback::Rhs, t, &[y], &mut out, |_| {
+                entered = true;
+                Ok(())
+            });
+            assert!(matches!(result, Err(CoreError::NonFinite(_))));
+            assert!(!entered);
+            assert_eq!(out, [7.0]);
+            assert!(guard.fatal().is_none());
+        }
+    }
+
+    #[test]
+    fn vector_callback_detects_stale_output_on_reused_buffer() {
+        let guard = Guard::default();
+        let mut out = [3.0, 4.0];
+        let result = guard.vector_call(Callback::Rhs, 0.0, &[1.0, 2.0], &mut out, |out| {
+            out[0] = -1.0;
+            Ok(())
+        });
+        assert!(matches!(result, Err(CoreError::FatalCallback(_))));
+        assert!(out[1].is_nan());
+        assert_eq!(guard.callback_work().fatal_errors, 1);
     }
 
     #[test]

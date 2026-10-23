@@ -1200,13 +1200,21 @@ impl Workspace {
         let mut sum = 0.0;
         if self.atol_vector.is_empty() {
             for ((e, a), b) in error.iter().zip(y).zip(&self.y_new) {
-                let z = scaled_error_component(*e, atol + rtol * a.abs().max(b.abs()));
+                let scale = atol + rtol * a.abs().max(b.abs());
+                if !(scale >= 0.0 && scale.is_finite()) {
+                    return Err(CoreError::InvalidInput("RODAS5P error scale overflow".into()));
+                }
+                let z = scaled_error_component(*e, scale);
                 sum += z * z;
             }
         } else {
             for (((e, a), b), atol_i) in error.iter().zip(y).zip(&self.y_new).zip(&self.atol_vector)
             {
-                let z = scaled_error_component(*e, atol_i + rtol * a.abs().max(b.abs()));
+                let scale = atol_i + rtol * a.abs().max(b.abs());
+                if !(scale >= 0.0 && scale.is_finite()) {
+                    return Err(CoreError::InvalidInput("RODAS5P error scale overflow".into()));
+                }
+                let z = scaled_error_component(*e, scale);
                 sum += z * z;
             }
         }
@@ -2545,6 +2553,32 @@ mod tests {
     use super::*;
 
     #[test]
+    fn fast_error_norm_refuses_overflowed_scalar_and_vector_scales() {
+        let problem = OdeProblem::new(
+            "finite constant boundary state",
+            1,
+            Arc::new(|_, _, out| { out.fill(0.0); Ok(()) }),
+            None,
+            Some(Arc::new(|_, _| DenseMatrix::new(1, 1, vec![0.0]))),
+            None, None, true, None, None,
+        ).unwrap();
+        for vector in [false, true] {
+            let mut workspace = Workspace::new(1, FastLuPolicy::Legacy).unwrap();
+            if vector { workspace.atol_vector = vec![1e308]; }
+            let mut counters = WorkCounters::default();
+            // States, errors and configured tolerances are finite, but their
+            // scale sum overflows. It must not silently become a zero norm.
+            assert!(matches!(workspace.attempt_for_tests(
+                &problem, 0.0, &[1e308], 1e-3, 1e308, 1.0, &mut counters,
+            ), Err(CoreError::InvalidInput(_))));
+            // Removing the relative contribution leaves a valid finite scale.
+            assert_eq!(workspace.attempt_for_tests(
+                &problem, 0.0, &[1e308], 1e-3, 1e308, 0.0, &mut counters,
+            ).unwrap(), 0.0);
+        }
+    }
+
+    #[test]
     fn in_place_lu_solves_pivoted_and_banded_systems() {
         // Needs a row swap at the first column.
         let n = 4;
@@ -2741,7 +2775,17 @@ impl<'a> Rodas5pFastSession<'a> {
         if !target.is_finite()
             || target < self.t
             || target > self.tf
-            || (target != self.t && !self.schedule.times().contains(&target))
+            || (target != self.t
+                && self
+                    .schedule
+                    .times()
+                    .binary_search_by(|time| {
+                        // Both operands are finite; partial_cmp preserves
+                        // the previous +0 == -0 membership semantics.
+                        time.partial_cmp(&target)
+                            .expect("validated finite schedule and target")
+                    })
+                    .is_err())
         {
             return Err(CoreError::InvalidInput(
                 "native session target must be current or a registered landing time".into(),

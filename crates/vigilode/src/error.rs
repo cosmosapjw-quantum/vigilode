@@ -16,8 +16,8 @@ use crate::solution::{FailureReason, Solution};
 ///   [`crate::CallbackWork::recoverable_errors`].
 /// * [`CallbackError::Fatal`] ends the run. The facade records the first
 ///   fatal error and from then on returns an error to the driver without
-///   entering user code, so the driver stops at its minimum step; the solve
-///   returns the partial solution with
+///   entering user code. Protected native drivers propagate the terminal
+///   signal immediately; the solve returns the partial solution with
 ///   [`FailureReason::CallbackFailed`].
 #[derive(Clone, Debug, PartialEq, Eq, thiserror::Error)]
 #[non_exhaustive]

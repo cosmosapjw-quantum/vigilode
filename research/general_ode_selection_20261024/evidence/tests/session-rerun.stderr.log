@@ -1,0 +1,18 @@
+   Compiling rodas5p-integrators v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode-production-1024/crates/rodas5p-integrators)
+warning: variant `EndpointAdmission` is never constructed
+    --> crates/rodas5p-integrators/src/packet_trajectory.rs:1445:5
+     |
+1443 | enum VerifiedTrialFault {
+     |      ------------------ variant in this enum
+1444 |     BeforeQuery(usize),
+1445 |     EndpointAdmission,
+     |     ^^^^^^^^^^^^^^^^^
+     |
+     = note: `VerifiedTrialFault` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+   Compiling vigilode v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode-production-1024/crates/vigilode)
+warning: `rodas5p-integrators` (lib) generated 1 warning
+    Finished `test` profile [unoptimized] target(s) in 6.45s
+     Running tests/production_selection_contracts.rs (/workspace/scratch/0dc1e721cf82/runtime1024/target/debug/deps/production_selection_contracts-5cc6b5ef78cf72da)
+     Running tests/production_session_contracts.rs (/workspace/scratch/0dc1e721cf82/runtime1024/target/debug/deps/production_session_contracts-7a22afcd50aec9c7)

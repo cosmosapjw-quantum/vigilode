@@ -169,6 +169,8 @@ mod lawson;
 mod options;
 mod problem;
 mod records;
+mod selection;
+mod session;
 mod solution;
 mod solve;
 mod switching;
@@ -181,6 +183,8 @@ pub use problem::{
     BandJacobianFn, DenseJacobianFn, Jacobian, JvpFn, Problem, RhsFn, TimeDerivativeFn,
 };
 pub use records::*;
+pub use selection::*;
+pub use session::{ExplicitSession, SessionAdvance, SessionCheckpoint, SessionEpochs};
 pub use solution::{
     Callback, CallbackWork, DriverWork, FD_INCREMENT_RULE, FailureReason, FiniteDifferenceWork,
     JacobianRecord, KrylovStartRecord, RouteRecord, STATS_SCHEMA, Solution, Stats, Status,

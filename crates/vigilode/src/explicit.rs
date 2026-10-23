@@ -157,7 +157,8 @@ pub struct ExplicitSolution {
     pub final_time: f64,
     /// Last accepted physical state, preserved after an unsuccessful attempt.
     pub final_state: Vec<f64>,
-    /// Typed driver stop, present for an unsuccessful integration.
+    /// Typed numerical/driver failure, when present. A deliberately paused
+    /// session is unsuccessful but has no failure reason.
     pub stop_reason: Option<Dopri5StopReason>,
     /// Detailed fatal or malformed callback failure, when applicable.
     pub callback_failure: Option<ExplicitCallbackFailure>,

@@ -1,0 +1,177 @@
+{
+  "schema": "vigilode.general-ode-design.v1",
+  "document": "DESIGN_KO.md",
+  "scope": {
+    "equation": "y_prime=f(t,y)",
+    "scalar_type": "IEEE754-binary64",
+    "direction": "forward",
+    "mass": "identity",
+    "dimension": "fixed per solve",
+    "events": false,
+    "general_entry_dense_output": false
+  },
+  "entry_points": {
+    "selector": "GeneralOde::select",
+    "solve": "GeneralOde::solve",
+    "result_success_check": "GeneralSolution::ensure_success",
+    "session": "Dopri5::with_session"
+  },
+  "selection": {
+    "default_regime": "Unknown",
+    "Unknown": "Dopri5",
+    "Nonstiff": "Dopri5",
+    "Stiff": "Rodas5p when authorized",
+    "default_derivatives": "Forbidden",
+    "derivative_policies": [
+      "Forbidden",
+      "ProvidedOnly",
+      "AllowFiniteDifference"
+    ],
+    "provided_only_requires": [
+      "supplied dense/banded Jacobian or JVP",
+      "autonomous declaration or supplied partial time derivative"
+    ],
+    "max_dense_dimension_default": 64,
+    "dense_limit_is": "resource ceiling, not an empirical crossover",
+    "dense_limit_exemption": "compact band callback or grouped band finite differences",
+    "dense_callback_with_band_is_exempt": false,
+    "allow_matrix_free_default": false,
+    "runtime_method_switching": false
+  },
+  "methods": {
+    "Dopri5": {
+      "stages": 7,
+      "endpoint_classical_order": 5,
+      "embedded_order": 4,
+      "error_estimator_power": 5,
+      "rhs_only": true,
+      "newton_iterations": false,
+      "matrix_assembly": false,
+      "linear_solve": false,
+      "fsal": true,
+      "steady_new_rhs_calls_per_complete_trial": 6,
+      "first_trial_rhs_calls": 7,
+      "dense_samples_polynomial_degree": 4,
+      "dense_samples_local_error_order": 5,
+      "dense_samples_independent_error_bound": false
+    },
+    "Rodas5p": {
+      "stages": 8,
+      "intended_classical_order": 5,
+      "embedded_order": 4,
+      "error_estimator_power": 5,
+      "gamma": 0.21193756319429014,
+      "coefficient_representation": "decimal constants parsed into binary64",
+      "coefficient_snapshot": "fixtures/rodas5p_coefficients_snapshot.json",
+      "stage_matrix": "I/(h*gamma)-J",
+      "embedded_error": "last raw stage u_8",
+      "rhs_only": false,
+      "newton_iterations": false,
+      "direct_factorizations_per_trial": 1,
+      "direct_stage_solves_per_trial": 8,
+      "dense_fd_rhs_per_jacobian": "n+1",
+      "banded_fd_rhs_per_jacobian": "1+min(lower+upper+1,n)",
+      "time_fd_additional_rhs_per_fresh_state": 2,
+      "stage_parallelism": false,
+      "provided_jvp_gmres": {
+        "restart": 40,
+        "max_total_arnoldi_iterations": 200,
+        "rtol": 1e-10,
+        "initial_guess": "zero",
+        "preconditioner": "none",
+        "vector_atol": false,
+        "dense_output": false,
+        "atol_configured_k_coordinates": 1e-14,
+        "atol_actual_raw_u_shifted_system": "round_down(abs(gamma)*1e-14)",
+        "relative_scale": "raw-U RHS Euclidean norm",
+        "residual_criterion": "norm2(r_U) <= max(round_down(abs(gamma)*1e-14),1e-10*norm2(b_U))"
+      }
+    }
+  },
+  "error_control": {
+    "norm": "sqrt(sum((e_i/(atol_i+rtol*max(abs(y_old_i),abs(y_new_i))))^2)/n)",
+    "accept_when": "finite valid trial and weighted RMS <= 1",
+    "default_rtol": 1e-06,
+    "default_atol": 1e-09,
+    "default_h0": 0.001,
+    "default_max_attempts": 100000,
+    "default_controller": "integral",
+    "safety": 0.9,
+    "accept_factor_limits": [
+      0.2,
+      5.0
+    ],
+    "reject_factor_limits": [
+      0.2,
+      0.9
+    ],
+    "exponent": -0.2,
+    "contract": "local embedded-error control",
+    "global_error_certificate": false,
+    "global_certificate_required_for_ordinary_adaptive_use": false
+  },
+  "session": {
+    "driver_lifetime": "closure-scoped; cannot resume after driver returns",
+    "immutable_bindings": [
+      "dimension",
+      "RHS",
+      "tolerances",
+      "full observation schedule"
+    ],
+    "advance_signature": "advance_to(target, attempt_quota, epochs)",
+    "pause_retains": [
+      "accepted state",
+      "FSAL",
+      "controller",
+      "workspace",
+      "global attempt budget"
+    ],
+    "changed_epochs": "error before RHS call",
+    "early_driver_return_success": false,
+    "schedule_membership_cost": "O(log M) per query; O(M log M) for M registered target calls",
+    "extra_schedule_search_storage": "O(1)",
+    "target_must_be_current_or_registered": true
+  },
+  "proofs": [
+    {
+      "id": 1,
+      "result": "DOPRI5 rooted-tree order conditions: 17 through order 5; embedded 8 through order 4",
+      "arithmetic": "exact rational coefficients; rounded execution distinguished"
+    },
+    {
+      "id": 2,
+      "result": "FSAL reuse from last row equals endpoint weights"
+    },
+    {
+      "id": 3,
+      "result": "normal scalar oscillator bound under absolute phase increment <=0.9",
+      "bound": "T*abs(omega)^6*h_max^5*(1/3600+0.9*exp(0.9)/5040)",
+      "initial_amplitude": 1
+    },
+    {
+      "id": 4,
+      "result": "RODAS transformed stage equivalence by invertible lower triangular Gamma"
+    },
+    {
+      "id": 5,
+      "result": "linear residual amplification and triangular propagation bound"
+    },
+    {
+      "id": 6,
+      "result": "local to global order under flow Lipschitz and uniform local error assumptions"
+    },
+    {
+      "id": 7,
+      "result": "pause equivalence under identical deterministic bindings and full schedule"
+    }
+  ],
+  "figures": {
+    "dopri5_stability": "algebraic stability and one-step error, not timing data",
+    "accepted_state_flow": "numerical state publication and failure semantics"
+  },
+  "references": [
+    "10.1016/0771-050X(80)90013-3",
+    "10.1007/s10543-023-00967-x",
+    "10.1090/S0025-5718-1986-0815836-3"
+  ]
+}

@@ -723,12 +723,14 @@ fn build(
     let n = problem.dimension;
     let rhs: CoreRhs = {
         let (user, guard) = (problem.rhs.clone(), guard.clone());
-        Arc::new(move |t, y, out| guard.call(Callback::Rhs, t, || user(t, y, out)))
+        Arc::new(move |t, y, out| {
+            guard.vector_call(Callback::Rhs, t, y, out, |out| user(t, y, out))
+        })
     };
     let partial_t: Option<CoreRhs> = problem.time_derivative.clone().map(|user| {
         let guard = guard.clone();
         Arc::new(move |t: f64, y: &[f64], out: &mut [f64]| {
-            guard.call(Callback::TimeDerivative, t, || user(t, y, out))
+            guard.vector_call(Callback::TimeDerivative, t, y, out, |out| user(t, y, out))
         }) as CoreRhs
     });
 
@@ -786,7 +788,8 @@ fn build(
         (Jacobian::Jvp(user), _) => {
             let (user, guard) = (user.clone(), guard.clone());
             jvp = Some(Arc::new(move |t, y, v, out| {
-                guard.call(Callback::Jvp, t, || user(t, y, v, out))
+                finite(v, "JVP direction")?;
+                guard.vector_call(Callback::Jvp, t, y, out, |out| user(t, y, v, out))
             }));
             (Plan::Routed { declaration: None }, JacobianRecord::Jvp)
         }

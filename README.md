@@ -1,5 +1,16 @@
 # VigilODE
 
+> **2026-10-24 general ODE selection:** The ordinary entry point `GeneralOde`
+> selects RHS-only DOPRI5 for unknown/nonstiff problems, or RODAS5P for declared
+> stiff problems with explicit derivative permission. It performs no timing
+> pilot and does not silently admit experimental methods. Persistent DOPRI5
+> sessions preserve the accepted state, controller, FSAL and cumulative budget.
+> This scoped surface supports forward identity-mass endpoint integration;
+> events and continuous output remain method-specific interfaces.
+> See the [audit](research/general_ode_selection_20261024/REPORT_KO.md),
+> [decisions](research/general_ode_selection_20261024/DECISIONS.json), and the
+> [formal general ODE design](docs/general_ode_design_20261024/DESIGN_KO.md).
+
 > **2026-10-21 integrated re-audit:** Latest production code and the separate
 > all-DAG research APIs are reviewed and integrated on the audit branch.
 > Broad production/global-accuracy/speed promotion remains **HOLD**; scoped
