@@ -13,7 +13,7 @@ use crate::{Atol, Dopri5, ExplicitStats, Jacobian, Options, Problem, Rodas5p, St
 #[serde(rename_all = "kebab-case")]
 #[non_exhaustive]
 pub enum DerivativeFallback {
-    /// Use RHS-only DOPRI5 throughout, including after a bounded batch ends.
+    /// Use one persistent RHS-only DOPRI5 session with window observations.
     #[default]
     Forbidden,
     /// Permit only a supplied dense/banded Jacobian or JVP provider; require
@@ -200,7 +200,8 @@ impl SwitchingSolver {
     /// meets the work-rate hysteresis. Fatal callbacks stop the whole adapter;
     /// no second method retries them. Callbacks must represent a fixed function
     /// during the solve, since a discarded probe may evaluate the same region
-    /// again. Window restarts currently reconstruct each driver's workspace.
+    /// again. Authorized switching windows currently reconstruct driver workspaces;
+    /// `Forbidden` uses one persistent observed DOPRI5 session.
     pub fn solve(
         problem: &Problem,
         t_span: (f64, f64),
@@ -226,6 +227,11 @@ impl SwitchingSolver {
             },
         };
         let fallback = config.fallback != DerivativeFallback::Forbidden;
+        if !fallback {
+            return Ok(persistent_explicit(
+                problem, t_span, y0, opts, config, result,
+            ));
+        }
         let mut method = SwitchingMethod::Dopri5;
         let mut implicit_windows = 0usize;
         let mut since_probe = 0usize;
@@ -387,6 +393,71 @@ impl SwitchingSolver {
         }
         Ok(result)
     }
+}
+
+// No method competition is possible under Forbidden. One native observed
+// solve preserves its stage workspace, FSAL derivative and controller across
+// all requested windows. This branch does not alter authorized FD/JVP routing.
+fn persistent_explicit(
+    problem: &Problem,
+    (t0, t1): (f64, f64),
+    y0: &[f64],
+    opts: &Options,
+    config: &SwitchingConfig,
+    mut result: SwitchingSolution,
+) -> SwitchingSolution {
+    let mut times = Vec::with_capacity(config.window_count + 1);
+    times.push(t0);
+    for window in 1..=config.window_count {
+        let t = if window == config.window_count {
+            t1
+        } else {
+            t0 + (t1 - t0) * (window as f64 / config.window_count as f64)
+        };
+        if t > *times.last().unwrap() {
+            times.push(t);
+        }
+    }
+    let run = match Dopri5::solve_observed(problem, (t0, t1), y0, opts, &times) {
+        Ok(run) => run,
+        Err(error) => {
+            // The native facade supplies no partial record for Err. Keep the
+            // adapter's original finite state and make the accounting gap explicit.
+            result.message = error.to_string();
+            result.stats.accounting_complete = false;
+            return result;
+        }
+    };
+    let counters = run.stats.counters;
+    let record = SwitchingSegment {
+        method: SwitchingMethod::Dopri5,
+        start_time: t0,
+        target_time: t1,
+        reached_time: run.final_time,
+        is_probe: false,
+        committed: true,
+        success: run.success,
+        attempts: run.stats.attempts,
+        accepted_steps: run.stats.accepted_steps,
+        rejected_steps: run.stats.rejected_steps,
+        rhs_calls: counters.rhs_calls,
+        jacobian_builds: counters.jacobian_builds,
+        jvp_vectors: counters.jvp_vectors,
+        ft_calls: counters.ft_calls,
+        linear_solves: counters.linear_solves,
+        work_units: counters.rhs_calls as f64,
+        decision: "derivative fallback forbidden; persistent RHS-only observed session".into(),
+        driver: SwitchingDriverStats::Dopri5(Box::new(run.stats)),
+    };
+    charge(&mut result.stats, &record);
+    result.stats.segments.push(record);
+    result.t = run.t;
+    result.y = run.y;
+    result.success = run.success;
+    result.message = run.message;
+    result.final_time = run.final_time;
+    result.final_state = run.final_state;
+    result
 }
 
 struct Batch {

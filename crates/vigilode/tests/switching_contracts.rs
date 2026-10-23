@@ -3,9 +3,70 @@ use std::sync::{
     atomic::{AtomicU64, Ordering},
 };
 use vigilode::{
-    Atol, CallbackError, DerivativeFallback, Jacobian, Options, Problem, SwitchingConfig,
+    Atol, CallbackError, DerivativeFallback, Dopri5, Jacobian, Options, Problem, SwitchingConfig,
     SwitchingMethod, SwitchingSolver,
 };
+
+#[test]
+fn forbidden_route_preserves_native_observed_session_bit_for_bit() {
+    let p = Problem::new(2, |t, y, out| {
+        out[0] = -y[0];
+        out[1] = t.cos();
+        Ok(())
+    })
+    .jacobian(Jacobian::dense(|_, _, _| {
+        panic!("forbidden persistent Jacobian")
+    }))
+    .time_derivative(|_, _, _| panic!("forbidden persistent df/dt"));
+    let c = SwitchingConfig {
+        window_count: 16,
+        ..Default::default()
+    };
+    let times: Vec<f64> = (0..=16).map(|i| i as f64 / 16.0).collect();
+    let native = Dopri5::solve_observed(&p, (0.0, 1.0), &[1.0, 0.0], &opts(), &times).unwrap();
+    let switched = SwitchingSolver::solve(&p, (0.0, 1.0), &[1.0, 0.0], &opts(), &c).unwrap();
+    assert_eq!(switched.t, native.t);
+    assert_eq!(switched.y, native.y);
+    assert_eq!(switched.final_state, native.final_state);
+    assert_eq!(switched.final_time, native.final_time);
+    assert_eq!(switched.stats.attempts, native.stats.attempts);
+    assert_eq!(switched.stats.rhs_calls, native.stats.counters.rhs_calls);
+    assert_eq!(switched.stats.segments.len(), 1);
+    match &switched.stats.segments[0].driver {
+        vigilode::SwitchingDriverStats::Dopri5(s) => {
+            assert_eq!(s.counters, native.stats.counters);
+            assert_eq!(s.fsal_reuses, native.stats.fsal_reuses);
+        }
+        _ => panic!("wrong method"),
+    }
+}
+
+#[test]
+fn forbidden_persistent_failure_keeps_native_partial_state_and_counts() {
+    let p = Problem::new(1, |t, _, out| {
+        if t > 0.36 {
+            return Err(CallbackError::Fatal("fixed domain boundary".into()));
+        }
+        out[0] = 1.0;
+        Ok(())
+    })
+    .jacobian(Jacobian::dense(|_, _, _| panic!("forbidden fallback")));
+    let c = SwitchingConfig {
+        window_count: 8,
+        ..Default::default()
+    };
+    let times: Vec<f64> = (0..=8).map(|i| i as f64 / 8.0).collect();
+    let native = Dopri5::solve_observed(&p, (0.0, 1.0), &[0.0], &opts(), &times).unwrap();
+    let switched = SwitchingSolver::solve(&p, (0.0, 1.0), &[0.0], &opts(), &c).unwrap();
+    assert!(!switched.success);
+    assert_eq!(switched.t, native.t);
+    assert_eq!(switched.y, native.y);
+    assert_eq!(switched.final_state, native.final_state);
+    assert_eq!(switched.stats.rhs_calls, native.stats.counters.rhs_calls);
+    assert_eq!(switched.stats.attempts, native.stats.attempts);
+    assert!(switched.stats.accounting_complete);
+    assert_eq!(switched.stats.segments.len(), 1);
+}
 
 fn opts() -> Options {
     Options {

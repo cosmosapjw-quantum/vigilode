@@ -426,7 +426,7 @@ fn main() {
         "max_amplitude_error":if case=="rapid"||case=="damped"{Some(amplitude)}else{None},
         "max_mass_drift":conservation,"work":work,"raw_stats":stats,
         "timing_scope":"problem/options/state/workspace construction and all endpoint-window restarts/integration; excludes independent reference and JSON",
-        "observation_policy":if mode=="dopri-whole" {"one call, step landing, retainedworkspace"}else if mode=="dopri-whole-dense" {"one call, quartic sampledextension, retainedworkspace"}else if mode=="rodas-whole-fd" {"one call, retaineddenseoutput, WFilteredEnforce"}else{"endpoint-window restarts"},
+        "observation_policy":if mode=="switch-rhs" {"one persistent RHS-only session, step-landing observations"}else if mode=="dopri-whole" {"one call, step landing, retainedworkspace"}else if mode=="dopri-whole-dense" {"one call, quartic sampledextension, retainedworkspace"}else if mode=="rodas-whole-fd" {"one call, retaineddenseoutput, WFilteredEnforce"}else{"endpoint-window restarts"},
         "derivative_policy":if mode.starts_with("dopri")||mode=="switch-rhs"{"no derivatives"}else if mode.ends_with("jvp"){"analytic JVP supplied; switching uses it only after explicit cost pressure"}else{"finite-difference Jacobian explicitly authorized; banded for vector"},
         "error_scope":"all returned window endpoints and components; no uniform-time certificate"})
     );

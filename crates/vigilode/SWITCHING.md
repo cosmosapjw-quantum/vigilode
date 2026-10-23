@@ -64,7 +64,7 @@ assert!(solution.success, "{}", solution.message);
 
 | Policy | Allowed behavior |
 |---|---|
-| `Forbidden` (default) | RHS-only DOPRI5 throughout. Neither a declared Jacobian/JVP nor a time-derivative callback is entered. |
+| `Forbidden` (default) | One persistent RHS-only DOPRI5 session, with window endpoints as observations. Neither a declared Jacobian/JVP nor a time-derivative callback is entered. |
 | `ProvidedOnly` | After observed explicit work pressure, allow the supplied dense/banded Jacobian or JVP route, with either autonomy or a supplied explicit time derivative. Any implicit finite-difference provider is rejected before user callbacks. |
 | `AllowFiniteDifference` | Also allow the existing finite-difference Jacobian route, with all its RHS calls charged. |
 
@@ -78,8 +78,12 @@ The actual route and original counters are retained for every batch.
 
 ## Selection and hysteresis
 
-The default divides the interval into eight windows. Window count is a
-resource/response setting, not a property of the differential equation.
+The default requests eight equally spaced window endpoints. Under
+`Forbidden`, these are observation times of **one** native DOPRI5 session,
+retaining FSAL, controller and workspace. It matches
+`Dopri5::solve_observed` with the same schedule, bit for bit. This is also the
+caller override for oscillatory problems where an implicit route costs more.
+Window count is a resource/response setting, not a property of the equation.
 Within each explicit window, an authorized solve gets at most 32 trial
 attempts before route reconsideration. Reaching that limit, using at least
 24 attempts in a completed batch, or rejecting at least 30% of attempts
@@ -151,9 +155,16 @@ steps gives fifth-order convergence on a fixed finite interval. Indeed,
 `e_N <= exp(L*T) C*T*max(h_k)^5`. This is a conditional consistency result;
 the controller's nominal tolerance is not a universal global-error bound.
 
-Window restarts rebuild workspaces and discard DOPRI FSAL/controller history.
-Small windows may therefore reduce speed. A persistent step-session API is a
-subsequent optimization. Model or discontinuity changes must be represented
+The authorized FD/JVP switching path still rebuilds workspaces at window
+restarts and discards DOPRI FSAL/controller history. Small windows may
+therefore reduce speed on that path. Its pressure policy remains experimental:
+the recorded campaign found severe rapid-oscillation misrouting, including
+approximately 32-fold slowdown for its JVP fallback against whole DOPRI5 at
+a common error cap. Use the persistent `Forbidden` route for such black-box
+oscillatory cases or the declared Lawson structure when available. A persistent
+multi-method step-session API and measured fallback trials remain subsequent
+optimizations. The campaign was measured before the persistent `Forbidden`
+correction; the FD/JVP branch was unchanged by that correction. Model or discontinuity changes must be represented
 by explicitly separate solves; the adapter assumes deterministic callbacks
 for a fixed IVP throughout a solve.
 
