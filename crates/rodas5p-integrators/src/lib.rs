@@ -24,6 +24,7 @@ mod pr101_verified;
 pub use pr101_verified::{
     Pr101Bound, Pr101Model, Pr101Output, Pr101Run, Pr101VerifiedError, Pr101VerifiedSegment,
 };
+mod affine_error;
 mod candidates;
 mod causal_majorant;
 mod certification;
@@ -38,6 +39,7 @@ pub mod conservative_remap;
 mod controller_telemetry;
 mod dense_output_v2;
 mod dopri5;
+mod dopri5_dense;
 mod exponential;
 pub mod fourier_path_candidate;
 pub mod fourier_path_certificate;
@@ -157,6 +159,7 @@ pub use adaptive_exponential::{
     integrate_pexprb54s4_fused_adaptive_observed_with_tolerance_scaled_telemetry,
 };
 pub use adaptive_output::{AdaptiveOutputSession, AdaptiveOutputTrial};
+pub use affine_error::AffineErrorNorm;
 pub use bdf::{
     BDF_STARTUP_BDF1_BDF1_ESTIMATOR_ID, BDF_STARTUP_BDF1_BDF2_ESTIMATOR_ID,
     BDF2_ZERO_STABILITY_RATIO_MAX, BdfConfig, BdfHistory, BdfIntegrationResult, BdfOrder,
@@ -203,7 +206,6 @@ pub use comparator_fidelity::{
     relative_performance_verdict,
 };
 pub use controller_telemetry::{ControllerDecision, ControllerEvents, ControllerTelemetry};
-pub use dopri5::{Dopri5Config, Dopri5Workspace, Dopri5IntegrationResult, Dopri5StopReason, integrate_dopri5_observed, DOPRI5_ADAPTIVE_METHOD, DOPRI5_A, DOPRI5_B, DOPRI5_B_EMBEDDED, DOPRI5_C};
 pub use dense_output_v2::{
     AdaptiveDenseSegmentRun, ContinuousResidualProvider, ContinuousResidualVerificationError,
     ContinuousResidualVerificationResult, ContinuousResidualWorkspace, ContinuousSegmentErrorBound,
@@ -226,6 +228,13 @@ pub use dense_output_v2::{
     rodas5p_dense_output, rodas5p_dense_wfiltered_interior_error_estimate,
     rodas5p_wfiltered_iteration_matrix,
 };
+pub use dopri5::{
+    DOPRI5_A, DOPRI5_ADAPTIVE_METHOD, DOPRI5_B, DOPRI5_B_EMBEDDED, DOPRI5_C, Dopri5Config,
+    Dopri5IntegrationResult, Dopri5StopReason, Dopri5Workspace, integrate_dopri5_dense_observed,
+    integrate_dopri5_dense_observed_with_norm, integrate_dopri5_observed,
+    integrate_dopri5_observed_with_norm,
+};
+pub use dopri5_dense::DOPRI5_DENSE_P;
 pub use exponential::{
     EarlyFlowDefectDiagnosticWork, EarlyFlowDefectTelemetry, EarlyFlowDefectTelemetryMode,
     ExponentialKrylovConfig, ExponentialStepReport, FusedExponentialStepReport,

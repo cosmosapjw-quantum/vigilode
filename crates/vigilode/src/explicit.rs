@@ -8,7 +8,9 @@ use std::cell::{Cell, RefCell};
 
 use rodas5p_core::{CoreError, WorkCounters};
 use rodas5p_integrators::{
-    AdaptiveStepConfig, Dopri5Config, Dopri5StopReason, OutputSchedule, integrate_dopri5_observed,
+    AdaptiveStepConfig, AffineErrorNorm, Dopri5Config, Dopri5StopReason, OutputSchedule,
+    integrate_dopri5_dense_observed, integrate_dopri5_dense_observed_with_norm,
+    integrate_dopri5_observed, integrate_dopri5_observed_with_norm,
 };
 use serde::Serialize;
 
@@ -97,8 +99,13 @@ pub struct ExplicitStats {
     pub method: &'static str,
     /// Requested shared options. `tier` and `interior_error` do not route DOPRI5.
     pub options: Options,
-    /// Actual adaptive controller configuration.
+    /// Actual adaptive controller configuration (reduced tolerances are retained
+    /// here when an affine physical norm overrides local error acceptance).
     pub adaptive: AdaptiveStepConfig,
+    /// `step-landing` or `quartic-dense-observations`.
+    pub observation_mode: &'static str,
+    /// Actual embedded-error geometry, distinct from requested shared options.
+    pub error_control: ExplicitErrorControl,
     /// Total work, including rejected and failed attempts.
     pub counters: WorkCounters,
     /// Number of attempted time intervals.
@@ -115,6 +122,17 @@ pub struct ExplicitStats {
     pub callback_work: ExplicitCallbackWork,
     /// Accepted steps shortened to land on a requested observation.
     pub output_clipped_steps: usize,
+}
+
+/// Tolerances and dimension actually used for embedded-error acceptance.
+#[derive(Clone, Debug, Serialize)]
+#[non_exhaustive]
+pub struct ExplicitErrorControl {
+    /// `state-wrms` or `affine-physical-wrms`.
+    pub mode: &'static str,
+    pub dimension: usize,
+    pub atol: Vec<f64>,
+    pub rtol: f64,
 }
 
 /// An explicit solution at requested observation times and its last accepted state.
@@ -205,6 +223,66 @@ impl Dopri5 {
         opts: &Options,
         times: &[f64],
     ) -> Result<ExplicitSolution, ExplicitSolveError> {
+        Self::solve_impl(problem, t_span, y0, opts, times, false, None)
+    }
+
+    /// Sample a quartic continuous extension of accepted DOPRI5 steps.
+    ///
+    /// Interior observations do not shorten integration steps. The polynomial
+    /// has a local O(h^5) interpolation error under smoothness assumptions;
+    /// the embedded endpoint estimator does not independently bound that error.
+    /// This API returns requested samples, not a retained interpolant for later
+    /// queries. Keep `Options::dense_output` false; that flag requests the
+    /// retained-output contract and remains unsupported here.
+    pub fn solve_dense_observed(
+        problem: &Problem,
+        t_span: (f64, f64),
+        y0: &[f64],
+        opts: &Options,
+        times: &[f64],
+    ) -> Result<ExplicitSolution, ExplicitSolveError> {
+        Self::solve_impl(problem, t_span, y0, opts, times, true, None)
+    }
+
+    /// Control the embedded error in the declared affine physical state.
+    ///
+    /// The norm's physical-space atol/rtol override the shared state's local
+    /// error tolerances; both requested and executed settings are recorded.
+    /// Returned states remain in the original reduced coordinates.
+    pub fn solve_observed_with_norm(
+        problem: &Problem,
+        t_span: (f64, f64),
+        y0: &[f64],
+        opts: &Options,
+        times: &[f64],
+        norm: &AffineErrorNorm,
+    ) -> Result<ExplicitSolution, ExplicitSolveError> {
+        Self::solve_impl(problem, t_span, y0, opts, times, false, Some(norm))
+    }
+
+    /// Combine dense observations with affine physical embedded-error control.
+    /// The physical norm controls endpoints; interpolated observations have no
+    /// separate local-error acceptance test. No Jacobian or linear solve occurs.
+    pub fn solve_dense_observed_with_norm(
+        problem: &Problem,
+        t_span: (f64, f64),
+        y0: &[f64],
+        opts: &Options,
+        times: &[f64],
+        norm: &AffineErrorNorm,
+    ) -> Result<ExplicitSolution, ExplicitSolveError> {
+        Self::solve_impl(problem, t_span, y0, opts, times, true, Some(norm))
+    }
+
+    fn solve_impl(
+        problem: &Problem,
+        t_span: (f64, f64),
+        y0: &[f64],
+        opts: &Options,
+        times: &[f64],
+        dense: bool,
+        norm: Option<&AffineErrorNorm>,
+    ) -> Result<ExplicitSolution, ExplicitSolveError> {
         let config = validate(problem, t_span, y0, opts)?;
         let schedule = OutputSchedule::new(times.to_vec())
             .map_err(|e| ExplicitSolveError::InvalidInput(e.to_string()))?;
@@ -214,8 +292,9 @@ impl Dopri5 {
             let mut w = work.get();
             w.attempted = w.attempted.saturating_add(1);
             work.set(w);
-            // A successful callback must write every derivative component.
-            out.fill(f64::NAN);
+            // The kernel poisons every reused output immediately before this
+            // callback. Do not repeat the same n stores at this boundary.
+            // Keep this finite scan for detailed public failure telemetry.
             match (problem.rhs)(t, y, out) {
                 Ok(()) => {
                     if let Some(i) = out.iter().position(|v| !v.is_finite()) {
@@ -255,14 +334,22 @@ impl Dopri5 {
                 }
             }
         };
-        let mut result = integrate_dopri5_observed(&rhs, t_span, y0, &config, &schedule).map_err(
-            |e| match e {
-                CoreError::InvalidInput(_) | CoreError::Dimension(_) => {
-                    ExplicitSolveError::InvalidInput(e.to_string())
-                }
-                _ => ExplicitSolveError::Driver(e.to_string()),
-            },
-        )?;
+        let raw_result = match (dense, norm) {
+            (false, None) => integrate_dopri5_observed(&rhs, t_span, y0, &config, &schedule),
+            (true, None) => integrate_dopri5_dense_observed(&rhs, t_span, y0, &config, &schedule),
+            (false, Some(norm)) => {
+                integrate_dopri5_observed_with_norm(&rhs, t_span, y0, &config, &schedule, norm)
+            }
+            (true, Some(norm)) => integrate_dopri5_dense_observed_with_norm(
+                &rhs, t_span, y0, &config, &schedule, norm,
+            ),
+        };
+        let mut result = raw_result.map_err(|e| match e {
+            CoreError::InvalidInput(_) | CoreError::Dimension(_) => {
+                ExplicitSolveError::InvalidInput(e.to_string())
+            }
+            _ => ExplicitSolveError::Driver(e.to_string()),
+        })?;
         // A failed attempt may follow accepted steps between observations.
         // Keep that committed endpoint in the public partial solution too.
         if result.observed.t.last().copied() != Some(result.final_time) {
@@ -282,7 +369,29 @@ impl Dopri5 {
                 schema: EXPLICIT_STATS_SCHEMA,
                 method: "dopri5-5(4)-fsal",
                 options: opts.clone(),
+                error_control: match norm {
+                    Some(norm) => ExplicitErrorControl {
+                        mode: "affine-physical-wrms",
+                        dimension: norm.physical_dimension(),
+                        atol: norm.atol().to_vec(),
+                        rtol: norm.rtol(),
+                    },
+                    None => ExplicitErrorControl {
+                        mode: "state-wrms",
+                        dimension: y0.len(),
+                        atol: config
+                            .atol
+                            .clone()
+                            .unwrap_or_else(|| vec![config.adaptive.atol]),
+                        rtol: config.adaptive.rtol,
+                    },
+                },
                 adaptive: config.adaptive,
+                observation_mode: if dense {
+                    "quartic-dense-observations"
+                } else {
+                    "step-landing"
+                },
                 counters: result.observed.counters,
                 attempts: result.attempts,
                 accepted_steps: result.accepted_steps,

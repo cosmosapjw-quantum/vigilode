@@ -130,6 +130,63 @@ mod tests {
         assert_eq!(retry.h, 2.0 * ulp);
         assert!(retry.h < first.h);
     }
+
+    #[test]
+    fn rejected_final_landing_cannot_be_restored_by_rounding_residue() {
+        assert_rejected_landing_stays_shorter(1.0, vec![0.0, 1.0]);
+    }
+
+    #[test]
+    fn rejected_interior_landing_cannot_be_restored_by_rounding_residue() {
+        assert_rejected_landing_stays_shorter(2.0, vec![0.0, 1.0, 2.0]);
+    }
+
+    fn assert_rejected_landing_stays_shorter(end: f64, times: Vec<f64>) {
+        // This valid controller asks for the same nominal interval after an
+        // error rejection. The clock must still make strict represented
+        // progress toward a shorter trial, even next to an observation.
+        let adaptive = AdaptiveStepConfig {
+            initial_step: 1.0,
+            max_step: 1.0,
+            safety: 1.0,
+            min_factor: 1.0,
+            reject_max_factor: 1.0,
+            ..AdaptiveStepConfig::default()
+        };
+        adaptive.validate().unwrap();
+        let mut session = AdaptiveOutputSession::new(
+            &adaptive,
+            &OutputSchedule::new(times).unwrap(),
+            (0.0, end),
+            &[0.0],
+        )
+        .unwrap();
+        let mut controller = AdaptiveControllerState::default();
+        let first = session.trial(0.0, 1.0, &controller).unwrap().unwrap();
+        assert_eq!(first.h, 1.0);
+        let proposed = rodas_next_step_after_attempt(
+            &mut controller,
+            &adaptive,
+            first.requested_h,
+            first.h,
+            2.0,
+            false,
+            first.clipped,
+        )
+        .unwrap();
+        assert_eq!(proposed, first.h);
+        let retry = session.trial(0.0, proposed, &controller).unwrap().unwrap();
+        assert_eq!(retry.h, 1.0_f64.next_down());
+        assert!(retry.h < first.h);
+        assert!(!retry.clipped);
+        session.accept(retry.h, &[retry.h], retry.clipped).unwrap();
+        let partial = session
+            .finish(false, "test partial".into(), WorkCounters::default(), 1)
+            .unwrap();
+        // A shorter accepted retry does not consume or relabel the request.
+        assert_eq!(partial.t, vec![0.0]);
+        assert_eq!(partial.y, vec![vec![0.0]]);
+    }
 }
 
 /// Endpoint-only observation and clock state for an external adaptive driver.
@@ -203,7 +260,22 @@ impl AdaptiveOutputSession {
         {
             return Ok(None);
         }
-        let (h, clipped) = self.collector.limit_step(t, requested_h, self.t_span.1)?;
+        let (mut h, mut clipped) = self.collector.limit_step(t, requested_h, self.t_span.1)?;
+        if let Some(rejected) = controller.last_rejected_trial() {
+            // Landing may stretch a proposal by a tiny rounding residue.
+            // After rejection that stretch must not restore the very trial
+            // which adaptive_end_step just shortened. Retain its represented
+            // pre-landing interval; this is not an observation-clipped step.
+            if h >= rejected {
+                if requested_h >= rejected {
+                    return Err(CoreError::InvalidInput(
+                        "time resolution: rejected adaptive trial cannot be shortened".into(),
+                    ));
+                }
+                h = requested_h;
+                clipped = false;
+            }
+        }
         let trial = AdaptiveOutputTrial {
             requested_h,
             h,

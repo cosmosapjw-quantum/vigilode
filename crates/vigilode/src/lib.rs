@@ -188,3 +188,7 @@ pub use solve::Rodas5p;
 
 pub use explicit::*;
 pub use explicit_ensemble::{Dopri5Ensemble, Dopri5EnsembleJob};
+
+pub use explicit::ExplicitErrorControl;
+/// Sparse affine physical-space embedded-error controller for explicit solves.
+pub use rodas5p_integrators::AffineErrorNorm;

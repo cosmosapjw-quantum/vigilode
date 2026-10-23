@@ -84,3 +84,43 @@ failure between requested observations.
 decomposes the same work into attempted, finite-completed, recoverable,
 fatal and malformed outcomes. It must not be added to the total again.
 Both rejected and accepted attempts remain in the reported counts.
+
+## Dense observations and physical error control (2026-10-23)
+
+`Dopri5::solve_dense_observed(problem, span, y0, options, times)` samples a
+quartic continuous extension of accepted steps. Interior output times do not
+shorten those steps or add RHS calls. This returns the requested samples; it
+does not retain an arbitrary-query interpolant. Keep `options.dense_output`
+false: that existing flag requests the retained-output interface and still
+returns `ExplicitUnsupported::DenseOutput`. Events and nonidentity mass remain
+unsupported. The original `solve_observed` still lands at every observation.
+
+For smooth solutions the extension has local **state interpolation error**
+O(h^5), while its differential residual generally has order O(h^4). The
+endpoint estimator does not separately enforce an interior error bound.
+Dense sampling can therefore be faster and less accurate at the same nominal
+tolerance. Choose settings using achieved error at the requested observations.
+
+`AffineErrorNorm::new(n, offset, row_major_lift, physical_atol, physical_rtol)`
+constructs the fixed map `v = offset + L u`. `physical_atol` has length one or
+`offset.len()`. Call `solve_observed_with_norm(..., times, &norm)` or
+`solve_dense_observed_with_norm(..., times, &norm)` to use
+
+```text
+sqrt(sum_j ((L e)_j / (atol_j + rtol max(|v_old,j|, |v_new,j|)))^2 / m)
+```
+
+for embedded-error acceptance. The returned states are still the reduced `u`.
+The constructor stores only nonzero lift entries; successful evaluations
+allocate no scratch vectors and cost O(nnz(L)+m+n). The client must establish
+that its reduction represents the intended dynamics. Rank deficiency yields a
+seminorm on latent coordinates. This option does not certify global error,
+positivity, conservation, or the accuracy of a physical model.
+
+The stats schema receives additive `observation_mode` and `error_control`
+fields. `options` and `adaptive` retain requested reduced tolerances; the
+`error_control` fields record the actual physical tolerances when supplied.
+All routes preserve attempted callback work, malformed-output detection and
+the last accepted state. One redundant facade poison pass has been removed;
+the kernel still poisons reused RHS buffers and both layers retain finite
+checks required by their respective contracts.

@@ -10,12 +10,14 @@
 use rodas5p_core::{CoreError, CoreResult, WorkCounters, scaled_error_component};
 use serde::Serialize;
 
+use crate::dopri5_dense::Dopri5OutputSession;
+
 use crate::adaptive::{
     AdaptiveEstimatorMetadata, AdaptiveMethodMetadata,
     adaptive_next_step_after_attempt_prevalidated,
 };
 use crate::{
-    AdaptiveControllerState, AdaptiveOutputSession, AdaptiveStepConfig, ObservedIntegrationResult,
+    AdaptiveControllerState, AdaptiveStepConfig, AffineErrorNorm, ObservedIntegrationResult,
     OutputSchedule,
 };
 
@@ -265,16 +267,27 @@ impl Dopri5Workspace {
             )?;
             self.first_valid = true;
         }
+        // Multiplying h by an O(1) tableau coefficient first can round it
+        // to zero on subnormal intervals, even when h*k is appreciable.
+        // Keep the usual unit-stride fast path except at these tiny scales.
+        let tiny_step = h < 1.0e-300;
         for stage in 1..7 {
             self.stage_state.copy_from_slice(y);
             // Unit-stride state updates permit vectorization without assuming
             // that different state components of the RHS are independent.
             for previous in 0..stage {
-                let weight = h * DOPRI5_A[stage][previous];
-                if weight != 0.0 {
+                let coefficient = DOPRI5_A[stage][previous];
+                if coefficient != 0.0 {
                     let derivative = &self.stages[previous * self.n..(previous + 1) * self.n];
-                    for (value, &k) in self.stage_state.iter_mut().zip(derivative) {
-                        *value += weight * k;
+                    if tiny_step {
+                        for (value, &k) in self.stage_state.iter_mut().zip(derivative) {
+                            *value += coefficient * (h * k);
+                        }
+                    } else {
+                        let weight = h * coefficient;
+                        for (value, &k) in self.stage_state.iter_mut().zip(derivative) {
+                            *value += weight * k;
+                        }
                     }
                 }
             }
@@ -300,13 +313,17 @@ impl Dopri5Workspace {
         endpoint.copy_from_slice(&self.stage_state);
         error.fill(0.0);
         for (stage, &coefficient) in ERROR_WEIGHTS.iter().enumerate() {
-            let weight = h * coefficient;
-            if weight != 0.0 {
-                for (value, &k) in error
-                    .iter_mut()
-                    .zip(&self.stages[stage * self.n..(stage + 1) * self.n])
-                {
-                    *value += weight * k;
+            if coefficient != 0.0 {
+                let derivative = &self.stages[stage * self.n..(stage + 1) * self.n];
+                if tiny_step {
+                    for (value, &k) in error.iter_mut().zip(derivative) {
+                        *value += coefficient * (h * k);
+                    }
+                } else {
+                    let weight = h * coefficient;
+                    for (value, &k) in error.iter_mut().zip(derivative) {
+                        *value += weight * k;
+                    }
                 }
             }
         }
@@ -406,6 +423,72 @@ pub fn integrate_dopri5_observed<F: Fn(f64, &[f64], &mut [f64]) -> CoreResult<()
     config: &Dopri5Config,
     output: &OutputSchedule,
 ) -> CoreResult<Dopri5IntegrationResult> {
+    integrate_dopri5_impl(rhs, t_span, y0, config, output, false, None)
+}
+
+/// Integrate with a physical-space affine error norm. The norm's own absolute
+/// and relative tolerances replace the reduced-state error norm; controller
+/// options and all callback/error contracts remain unchanged.
+pub fn integrate_dopri5_observed_with_norm<
+    F: Fn(f64, &[f64], &mut [f64]) -> CoreResult<()> + ?Sized,
+>(
+    rhs: &F,
+    t_span: (f64, f64),
+    y0: &[f64],
+    config: &Dopri5Config,
+    output: &OutputSchedule,
+    norm: &AffineErrorNorm,
+) -> CoreResult<Dopri5IntegrationResult> {
+    integrate_dopri5_impl(rhs, t_span, y0, config, output, false, Some(norm))
+}
+
+/// Sample the quartic continuous extension of accepted DOPRI5 steps.
+///
+/// Interior observation times do not constrain steps or add RHS calls. The
+/// interpolation has a smooth-problem local interpolation error O(h^5), with no separate
+/// interpolation error estimator. Endpoints are exact accepted-state copies;
+/// failed trials and failed interpolants publish no observations. Events,
+/// discontinuity hard stops, and backward integration are not supplied here.
+pub fn integrate_dopri5_dense_observed<
+    F: Fn(f64, &[f64], &mut [f64]) -> CoreResult<()> + ?Sized,
+>(
+    rhs: &F,
+    t_span: (f64, f64),
+    y0: &[f64],
+    config: &Dopri5Config,
+    output: &OutputSchedule,
+) -> CoreResult<Dopri5IntegrationResult> {
+    integrate_dopri5_impl(rhs, t_span, y0, config, output, true, None)
+}
+
+/// Dense sampling with a physical-space affine error norm at step acceptance.
+/// The supplied norm controls the embedded endpoint difference, not a separate
+/// interior interpolation defect.
+pub fn integrate_dopri5_dense_observed_with_norm<
+    F: Fn(f64, &[f64], &mut [f64]) -> CoreResult<()> + ?Sized,
+>(
+    rhs: &F,
+    t_span: (f64, f64),
+    y0: &[f64],
+    config: &Dopri5Config,
+    output: &OutputSchedule,
+    norm: &AffineErrorNorm,
+) -> CoreResult<Dopri5IntegrationResult> {
+    integrate_dopri5_impl(rhs, t_span, y0, config, output, true, Some(norm))
+}
+
+fn integrate_dopri5_impl<F: Fn(f64, &[f64], &mut [f64]) -> CoreResult<()> + ?Sized>(
+    rhs: &F,
+    t_span: (f64, f64),
+    y0: &[f64],
+    config: &Dopri5Config,
+    output: &OutputSchedule,
+    dense: bool,
+    physical_norm: Option<&AffineErrorNorm>,
+) -> CoreResult<Dopri5IntegrationResult> {
+    if let Some(norm) = physical_norm {
+        norm.validate_dimension(y0.len())?;
+    }
     if y0.is_empty() {
         return Err(CoreError::Dimension("DOPRI5 state is empty".into()));
     }
@@ -429,11 +512,16 @@ pub fn integrate_dopri5_observed<F: Fn(f64, &[f64], &mut [f64]) -> CoreResult<()
         adaptive.atol = atol.iter().copied().fold(0.0_f64, f64::max);
     }
     adaptive.validate()?;
-    let mut output = AdaptiveOutputSession::new(&adaptive, output, t_span, y0)?;
+    let mut output = Dopri5OutputSession::new(&adaptive, output, t_span, y0, dense)?;
     let mut workspace = Dopri5Workspace::new(y0.len())?;
     let mut state = y0.to_vec();
     let mut endpoint = vec![0.0; y0.len()];
     let mut error = vec![0.0; y0.len()];
+    if let Some(norm) = physical_norm {
+        // Validate the lifted initial state even on a zero-length span, before
+        // invoking any RHS callback. A finite reduced state can lift to Inf.
+        norm.evaluate(y0, y0, &error)?;
+    }
     let mut counters = WorkCounters::default();
     let mut controller = AdaptiveControllerState::default();
     let mut t = t_span.0;
@@ -483,13 +571,18 @@ pub fn integrate_dopri5_observed<F: Fn(f64, &[f64], &mut [f64]) -> CoreResult<()
             config.recover_nonfinite_rhs,
         );
         let norm = match trial_result {
-            Ok(()) => match error_norm(
-                &state,
-                &endpoint,
-                &error,
-                adaptive.atol,
-                config.atol.as_deref(),
-                adaptive.rtol,
+            Ok(()) => match physical_norm.map_or_else(
+                || {
+                    error_norm(
+                        &state,
+                        &endpoint,
+                        &error,
+                        adaptive.atol,
+                        config.atol.as_deref(),
+                        adaptive.rtol,
+                    )
+                },
+                |norm| norm.evaluate(&state, &endpoint, &error),
             ) {
                 Ok(norm) => norm,
                 Err(error) => {
@@ -536,7 +629,14 @@ pub fn integrate_dopri5_observed<F: Fn(f64, &[f64], &mut [f64]) -> CoreResult<()
         };
         let accepted = norm <= 1.0;
         if accepted {
-            if let Err(error) = output.accept(t + trial.h, &endpoint, trial.clipped) {
+            if let Err(error) = output.accept(
+                t,
+                &state,
+                t + trial.h,
+                &endpoint,
+                &workspace.stages,
+                trial.clipped,
+            ) {
                 rejected_steps += 1;
                 counters.rejected_steps = counters.rejected_steps.saturating_add(1);
                 stop_reason = Some(Dopri5StopReason::Output);
