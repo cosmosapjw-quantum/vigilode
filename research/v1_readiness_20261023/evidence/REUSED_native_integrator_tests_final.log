@@ -1,0 +1,61 @@
+   Compiling rodas5p-integrators v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode-production-tree-1023/crates/rodas5p-integrators)
+warning: variant `EndpointAdmission` is never constructed
+    --> crates/rodas5p-integrators/src/packet_trajectory.rs:1445:5
+     |
+1443 | enum VerifiedTrialFault {
+     |      ------------------ variant in this enum
+1444 |     BeforeQuery(usize),
+1445 |     EndpointAdmission,
+     |     ^^^^^^^^^^^^^^^^^
+     |
+     = note: `VerifiedTrialFault` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rodas5p-integrators` (lib) generated 1 warning
+    Finished `test` profile [unoptimized] target(s) in 5.61s
+     Running tests/frontier_affine_contracts.rs (/workspace/scratch/0dc1e721cf82/task_runtime_tree1023/target/debug/deps/frontier_affine_contracts-114c109411440ddf)
+
+running 8 tests
+test affine_lawson_removes_constant_forcing_from_residual_and_embedded_error ... ok
+test harmonic_subnormal_forcing_is_not_halved_before_amplification ... ok
+test harmonic_resonance_zero_frequency_and_validation ... ok
+test harmonic_forcing_matches_manufactured_original_negative_control ... ok
+test affine_semigroup_and_cache_reuse ... ok
+test decimal_oracles_cover_singular_small_period_extreme_and_signed_blocks ... ok
+test affine_lawson_classical_order_on_manufactured_smooth_residual ... ok
+test validation_and_failed_refresh_do_not_poison_cache ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/frontier_polynomial.rs (/workspace/scratch/0dc1e721cf82/task_runtime_tree1023/target/debug/deps/frontier_polynomial-516fb1df38192dd3)
+
+running 8 tests
+test invalid_degree_and_underflow_do_not_silently_change_relation ... ok
+test callback_failure_partial_write_and_nonfinite_are_transactional ... ok
+test nilpotent_jordan_degree_four_is_exact_without_root_separation ... ok
+test near_relation_bounds_state_error_when_norm_witness_is_true ... ok
+test repeated_jordan_relation_uses_one_candidate_action_and_one_residual ... ok
+test poles_and_cancellation_are_rejected_separately_from_repeated_roots ... ok
+test scale_invariance_and_workspace_reuse ... ok
+test wrong_probe_inferred_relation_is_caught_on_original_rhs ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/quotient_flow_contracts.rs (/workspace/scratch/0dc1e721cf82/task_runtime_tree1023/target/debug/deps/quotient_flow_contracts-40423a9ab883eb82)
+
+running 12 tests
+test coalescence_and_group_sharing_are_regular ... ok
+test callback_failure_preserves_accepted_state_and_work ... ok
+test invalid_inputs_refused_before_callback_and_large_damping_stays_finite ... ok
+test malformed_callback_is_fatal_even_when_recoverable_protocol_enabled ... ok
+test fifth_order_on_noncommuting_residual ... ok
+test nonlinear_radial_equivariant_solution ... ok
+test pure_carrier_exact_step_and_zero_derivative_work ... ok
+test quotient_inverse_satisfies_independent_equation ... ok
+test quotient_inverse_handles_product_and_square_overflow ... ok
+test subnormal_coefficient_is_scaled_before_large_state ... ok
+test underflowing_exponential_coefficient_does_not_erase_large_state ... ok
+test quotient_inverse_divides_before_large_sum ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

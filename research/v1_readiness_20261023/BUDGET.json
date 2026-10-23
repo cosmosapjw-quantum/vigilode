@@ -1,0 +1,87 @@
+{
+  "schema": "vigilode.append-only-prep-budget.v1",
+  "prior_campaigns": {
+    "debits": "unchanged; not reconstructed",
+    "remaining_seconds": null,
+    "reset": false
+  },
+  "new_unit_cap_seconds": 120,
+  "entries": [
+    {
+      "name": "RED",
+      "started_utc": "2026-10-23T15:01:15.961374+00:00",
+      "command": [
+        "python",
+        "-m",
+        "unittest",
+        "test_readiness"
+      ],
+      "elapsed_seconds": 1.3217184879999877,
+      "returncode": 1,
+      "log": "evidence/RED.log",
+      "log_sha256": "cc693ff844dac98e728021b0a7a4d97b5ff2dd7b4a6c96307edd0bf620f894b9"
+    },
+    {
+      "name": "RED_CONTRACT",
+      "started_utc": "2026-10-23T15:01:40.386723+00:00",
+      "command": [
+        "python",
+        "-m",
+        "unittest",
+        "test_readiness"
+      ],
+      "elapsed_seconds": 1.2725477709998358,
+      "returncode": 1,
+      "log": "evidence/RED_CONTRACT.log",
+      "log_sha256": "7fb071b36ac3f03880cd98d05e6baec62100e0e6d972756ab439d6ff87b4a1a1"
+    },
+    {
+      "name": "GREEN",
+      "started_utc": "2026-10-23T15:02:17.810444+00:00",
+      "command": [
+        "python",
+        "-m",
+        "unittest",
+        "test_readiness"
+      ],
+      "elapsed_seconds": 2.212995155000044,
+      "returncode": 0,
+      "log": "evidence/GREEN.log",
+      "log_sha256": "3af354abd6afd2f4f662a367159a8b8107385935ded6c8a2b929734becedb43c"
+    },
+    {
+      "name": "C99_PROBES",
+      "started_utc": "2026-10-23T15:03:08.786775+00:00",
+      "command": [
+        "python",
+        "compare_c.py"
+      ],
+      "elapsed_seconds": 1.4292049199998473,
+      "returncode": 0,
+      "log": "evidence/C99_PROBES.log",
+      "log_sha256": "897e69b541c009e99325c9d7b1dc3629cfeb1d92348b5e3038bef2b7f1162ce2"
+    },
+    {
+      "name": "DECIMAL_REVIEW",
+      "started_utc": "2026-10-23T15:03:11.280130+00:00",
+      "command": [
+        "python",
+        "review_contract.py"
+      ],
+      "elapsed_seconds": 1.1180786989998523,
+      "returncode": 0,
+      "log": "evidence/DECIMAL_REVIEW.log",
+      "log_sha256": "fb4b0dc706a8979abbcb8171c6e3d84f2341a90c2375a85777130602b4700a7a"
+    }
+  ],
+  "closed": true,
+  "validation_subprocess_wall_seconds": 7.354545032999567,
+  "observed_first_to_last_validation_wall_seconds": 116.436835,
+  "validation_first_utc": "2026-10-23T15:01:15.961374+00:00",
+  "validation_last_utc": "2026-10-23T15:03:12.398209+00:00",
+  "within_120_seconds": true,
+  "native_rodas_executions": 0,
+  "ivp_executions": 0,
+  "ncp_submissions": 0,
+  "old_campaign_replays": 0
+}
