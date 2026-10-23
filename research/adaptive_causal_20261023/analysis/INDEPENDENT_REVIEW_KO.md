@@ -128,3 +128,18 @@ JVP 전환의 약 32.5배 손해 및 stiff forcing에서 Lawson의 약 12.16배 
 이 검토는 실제 독립 계산과 별도 코드 읽기를 수행한 agent 검토다. 형식 증명기나
 독립 기관의 인증을 뜻하지 않는다. 최종 검토 범위와 파일 해시는 `REVIEW.json`에
 기록한다. 원격 게시 성공 여부는 이 과학·구현 검토와 별도의 영수증으로 확인해야 한다.
+
+## 게시 identity에 대한 후속 확인
+
+연결된 GitHub API로 게시하면서 commit metadata가 달라졌으므로 실행 당시의 local
+commit과 원격 commit을 구별한다. 세 원격 Git commit 객체를 별도로 읽고 local
+`git rev-parse <commit>^{tree}`와 비교하여 `PUBLISH_MAP.json`의 전체 tree 일치를
+확인했다. 첫 native snapshot `548526ad`는 원격 `0aeacfff`, 수정 snapshot `d4e8623b`는
+원격 `d2775a7a`, 연구 산출물 snapshot `910dc386`은 원격 `a25406e0`과 각각 같은
+tree다. 또한 원격 branch ref가 해당 연구 산출물 commit을 가리키는 것을 읽어 확인했다.
+
+인계문은 원격 동등 commit을 ancestor 검사에 사용하도록 수정했고 원시 실행 receipt의
+local identity는 보존한다. 이는 source·문서 게시 identity의 확인이며 새로운 solver
+실행이나 새 성능 결과를 뜻하지 않는다. 이 후속 검토와 원격 게시 설명 때문에 바뀐
+문서의 해시만 갱신했으며 수학·수치 실험은 다시 실행하지 않았다. 마지막 metadata
+commit의 게시 여부는 별도 최종 ref 영수증으로 확인한다.

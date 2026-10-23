@@ -5,6 +5,20 @@ The first native snapshot is `548526add83a38a996875b3bd2f3cd3357465ed6`.
 The persistent RHS-only correction is `d4e8623bf8add9f505ec018532c4602e5a838a41`.
 Subsequent publication commits add research artifacts, without changing native code.
 
+The shell had no GitHub write credential, so the connected GitHub API created
+equivalent commits. Commit metadata differs; complete Git trees match exactly.
+Use the remote equivalents in `PUBLISH_MAP.json` for checkout:
+
+| Local evidence commit | Remote equivalent |
+|---|---|
+| `548526add83a38a996875b3bd2f3cd3357465ed6` | `0aeacfff9e95dc7d349b7cf4d0cc1acec60c78a4` |
+| `d4e8623bf8add9f505ec018532c4602e5a838a41` | `d2775a7a0c0e5784d190158c2a3159f0f89d4f72` |
+| `910dc3860b26739ba3d8330c157d5b2082899f18` | `a25406e0dab28333acbf1cfc17e4d6b0f55a0ddd` |
+
+Raw receipts retain the commits actually used during execution. New runs must
+record their actual remote checkout commit; source equivalence does not turn an
+old run into a newly executed one.
+
 Existing validated campaigns should be reused. Re-run only changed dependencies or
 a deliberately different host/benchmark condition. Never overwrite an old campaign.
 

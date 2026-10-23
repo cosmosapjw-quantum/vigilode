@@ -294,7 +294,7 @@
         "Future external comparison marked NOT_RUN",
         "No timing pooled across native commits"
       ],
-      "publication_scope": "Remote push and publication manifest verification are separately owned by parent; not asserted by this review."
+      "publication_scope": "Original payload publication and native/source tree equivalence independently verified; final metadata publication ref remains a separate parent receipt."
     }
   },
   "next_steps": [
@@ -396,13 +396,23 @@
     },
     {
       "path": "research/adaptive_causal_20261023/HANDOFF_KO.md",
-      "bytes": 5124,
-      "sha256": "c53c6e42597e2e5a4e8bd492e7ce1ecdc2ca353ff276735521e7229708f54082"
+      "bytes": 5477,
+      "sha256": "ffc107e50679f8c0e9df542d5242731e0247cbdb7be7dbac150cac8948440057"
     },
     {
       "path": "research/adaptive_causal_20261023/NEXT_STEPS.json",
       "bytes": 7907,
       "sha256": "28e4e6ecee962ce262918c24fde38e6d1e30186e098b99a46d99d41d19f1c169"
+    },
+    {
+      "path": "research/adaptive_causal_20261023/PUBLISH_MAP.json",
+      "bytes": 2015,
+      "sha256": "c267c9389f3c1f248f2296b2151e2ee2b214d292e3ff5aa23324f85048005860"
+    },
+    {
+      "path": "research/adaptive_causal_20261023/README.md",
+      "bytes": 2619,
+      "sha256": "33c5385e0ef88c3233b19563b67904e4b8db844f85e272529dd3884bc56103c2"
     },
     {
       "path": "research/adaptive_causal_20261023/REPORT_KO.md",
@@ -411,8 +421,8 @@
     },
     {
       "path": "research/adaptive_causal_20261023/REPRODUCE.md",
-      "bytes": 4761,
-      "sha256": "e3dc6b777bf4153af7668a1a1b2fe1ce2c06301c9b781d7881617df81944ed89"
+      "bytes": 5509,
+      "sha256": "651fa6001e2993582be72892886f73028b6e3046ed32c7bc46b9384d0ee77306"
     },
     {
       "path": "research/adaptive_causal_20261023/analysis/ALGEBRAIC_TRANSFER_KO.md",
@@ -421,8 +431,8 @@
     },
     {
       "path": "research/adaptive_causal_20261023/analysis/INDEPENDENT_REVIEW_KO.md",
-      "bytes": 10705,
-      "sha256": "2386b246d42d87be52c5d66be1534f97a24d9b95fc3603a39424a2d6b14813e7"
+      "bytes": 11856,
+      "sha256": "77419f041df924332c564fe9c35dbd85fc0a58a531ec639a4fdcafdd686762ee"
     },
     {
       "path": "research/adaptive_causal_20261023/analysis/SOURCE_MAP.json",
@@ -517,5 +527,44 @@
     "performance_evidence_rule": "The 864-run authorized campaign, quotient and causal kernels retain source pin 548526a; new persistent campaign uses d4e8623b."
   },
   "review_closed_utc": "2026-10-23",
-  "revalidation_policy": "Recheck only source/assumption/input changes affecting the reviewed claims; unchanged published spherical science and unchanged native suites reused."
+  "revalidation_policy": "Recheck only source/assumption/input changes affecting the reviewed claims; unchanged published spherical science and unchanged native suites reused.",
+  "publication_metadata_review": {
+    "result": "ACCEPT_EXACT_TREE_EQUIVALENCE",
+    "method": "Independent GitHub GET /git/commits readback and local git rev-parse commit^{tree}; separate branch-ref GET.",
+    "reviewed_native_source_identity_preserved": true,
+    "new_solver_execution": false,
+    "mappings": [
+      {
+        "local_evidence_commit": "548526add83a38a996875b3bd2f3cd3357465ed6",
+        "remote_equivalent_commit": "0aeacfff9e95dc7d349b7cf4d0cc1acec60c78a4",
+        "identical_tree_sha": "54dc12388cb7a891140ac061d29eff66e4e6f8ae",
+        "scope": "first native implementation and original benchmarks"
+      },
+      {
+        "local_evidence_commit": "d4e8623bf8add9f505ec018532c4602e5a838a41",
+        "remote_equivalent_commit": "d2775a7a0c0e5784d190158c2a3159f0f89d4f72",
+        "identical_tree_sha": "0726f84b151768a543399be637cdae8a9269ce8e",
+        "scope": "persistent RHS correction and focused follow-up"
+      },
+      {
+        "local_evidence_commit": "910dc3860b26739ba3d8330c157d5b2082899f18",
+        "remote_equivalent_commit": "a25406e0dab28333acbf1cfc17e4d6b0f55a0ddd",
+        "identical_tree_sha": "fac2f21f748dc5da4c996c4c11422567e0254abd",
+        "scope": "219 research artifacts including preceding spherical study"
+      }
+    ],
+    "verified_payload_ref": {
+      "ref": "refs/heads/research/adaptive-causal-20261023",
+      "commit": "a25406e0dab28333acbf1cfc17e4d6b0f55a0ddd",
+      "readback_url": "https://api.github.com/repos/cosmosapjw-quantum/vigilode/git/ref/heads/research/adaptive-causal-20261023"
+    },
+    "documents_reviewed": [
+      "PUBLISH_MAP.json",
+      "README.md",
+      "REPRODUCE.md",
+      "HANDOFF_KO.md"
+    ],
+    "source_vs_binary_limit": "Identical source trees do not assert that a future rebuild reproduces the historical executable bytes; original binary hashes and raw execution IDs remain unchanged.",
+    "final_metadata_commit": "Parent will publish the reviewed metadata and record final ref separately."
+  }
 }

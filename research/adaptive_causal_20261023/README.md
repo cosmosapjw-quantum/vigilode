@@ -4,6 +4,13 @@
 Native implementation snapshot `548526add83a38a996875b3bd2f3cd3357465ed6`.
 Persistent RHS-only correction `d4e8623bf8add9f505ec018532c4602e5a838a41`.
 
+Publication uses the connected GitHub API because shell Git credentials were
+unavailable. The local evidence commits map to remote commits with **identical
+Git trees**, as verified in `PUBLISH_MAP.json`. For remote checkout use
+`0aeacfff9e95dc7d349b7cf4d0cc1acec60c78a4` for the first native snapshot and
+`d2775a7a0c0e5784d190158c2a3159f0f89d4f72` for the persistent correction.
+The original local IDs remain unchanged in raw benchmark receipts.
+
 This research implements a bounded RHS-first switching facade, a declared
 damped-rotation Lawson-DOPRI facade, causal elimination of the existing raw-U
 projected stage equations, and a regular quadratic homotopy chart. Each route
@@ -15,6 +22,7 @@ retains its actual equation, derivative work and accuracy scope.
 - `analysis/CAUSAL_IMPLEMENTATION_KO.md`: finite causal stage solution and work ledger.
 - `analysis/INDEPENDENT_REVIEW_KO.md`: independent findings and corrections.
 - `DECISIONS.json`, `NEXT_STEPS.json`, `WORKFLOW.json`: machine-readable outcomes.
+- `PUBLISH_MAP.json`: local-to-remote commit/tree equivalence and verified branch publication.
 - `HANDOFF_KO.md`, `REPRODUCE.md`: local build, scientific checks and further benchmarking.
 - `BENCHMARK_PLAN.json`: planned expanded local campaign, with external comparator
   families restricted to VODE/DVODE, diffsol and Julia.

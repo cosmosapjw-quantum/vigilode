@@ -10,8 +10,12 @@ NCP는 사용하지 않는다. 사용자의 기존 checkout, local 수정, recei
 
 1. git status, 현재 HEAD, 원격 브랜치를 읽고 실행 identity를 기록한다.
    fetch 후 해당 원격 tip을 기준으로 새 임시 detached worktree를 만든다.
-   기존 checkout을 reset/강제 checkout하지 않는다. tip에는 native d4e8623b와
-   그 부모 548526ad가 포함되어야 한다. 이후 research publication commit은 정상이다.
+   기존 checkout을 reset/강제 checkout하지 않는다. PUBLISH_MAP.json의 원격
+   native commit d2775a7a0c0e5784d190158c2a3159f0f89d4f72와 그 부모
+   0aeacfff9e95dc7d349b7cf4d0cc1acec60c78a4가 tip의 조상이어야 한다.
+   로컬 evidence commit d4e8623b/548526ad는 GitHub API 게시 과정에서 commit
+   메타데이터가 달라졌다. 각각 전체 Git tree가 동일하다는 검증이 기록되어 있다.
+   원래 로컬 hash의 remote ancestor 여부를 요구하지 않는다. 이후 문서 commit은 정상이다.
    예상 tip이 없으면 경로와 git 오류를 보고하고 기존 checkout을 그대로 둔다.
 
 2. research/adaptive_causal_20261023/REPORT_KO.md, DECISIONS.json,

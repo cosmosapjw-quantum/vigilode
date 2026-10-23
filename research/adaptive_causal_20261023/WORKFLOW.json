@@ -1257,9 +1257,9 @@
     {
       "id": "NEXT-CLOSE",
       "priority": 0,
-      "status": "research_delivery_complete_publication_pending",
+      "status": "published_payload_verified",
       "owner": "integration_parent",
-      "action": "Research/code report, decisions, next tasks and handoff are complete and reviewed. Integration parent will run final package manifest checks, push and preserve the actual remote publication receipt.",
+      "action": "Native and research payload were published via the connected GitHub API and its branch ref read back. Publish this metadata receipt as the next fast-forward commit.",
       "evidence_refs": [
         "E-REVIEW"
       ]
@@ -1416,11 +1416,13 @@
       }
     ]
   },
-  "closure_note": "All R1–R10 and C1–C10 stages are complete for this scoped research/code delivery. Final independent review is COMPLETE_SCOPED. Broader production development and the planned future comparator campaign remain open; remote publication has not yet been claimed in this record. The workflow validator assesses structure/references, not scientific validity.",
+  "closure_note": "All R1–R10 and C1–C10 stages are complete for this scoped research/code delivery. Final independent review is COMPLETE_SCOPED. Broader production development and the planned future comparator campaign remain open. Research and native source were published with identical Git trees and the branch ref read back; PUBLISH_MAP.json records payload identity. The workflow validator assesses structure/references, not scientific validity.",
   "publication": {
-    "status": "pending_parent_push",
+    "status": "payload_published_and_ref_readback_verified",
     "source_commit": "d4e8623bf8add9f505ec018532c4602e5a838a41",
-    "receipt_locator": null,
-    "note": "The subsequent publication receipt must identify the actual pushed commit; this closure record does not assert remote publication."
+    "remote_native_commit": "d2775a7a0c0e5784d190158c2a3159f0f89d4f72",
+    "published_payload_commit": "a25406e0dab28333acbf1cfc17e4d6b0f55a0ddd",
+    "receipt_locator": "PUBLISH_MAP.json",
+    "note": "Complete native and research Git trees match local evidence snapshots. Subsequent metadata-only commit publishes this verification record."
   }
 }
