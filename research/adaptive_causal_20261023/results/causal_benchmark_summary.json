@@ -1,0 +1,336 @@
+{
+  "scope": "final source-pinned CPU-0 single-thread fixed-step raw-U candidate comparison including original-space residual validation; embedded physical-step admissibility is retained per row; no trajectory speedup claim",
+  "source_commit": "548526add83a38a996875b3bd2f3cd3357465ed6",
+  "binary_sha256": "626807c84ba6b7dd0eb3fbedc798d7fb9f35998d5d1073b4c2223e1b20514a87",
+  "cpu_affinity": [
+    0
+  ],
+  "raw_sha256": "9e87225fa9ac4a32d11bdc52d5639b9173912a0c92120030ac050496e4168b45",
+  "receipt": "causal_benchmark_receipt.json",
+  "preliminary_summary": "causal_benchmark_summary_preliminary.json",
+  "comparison_order": [
+    "residual-first",
+    "causal-forward",
+    "causal-picard"
+  ],
+  "rows": [
+    {
+      "kind": "affine",
+      "n": 6,
+      "forward_speedup": 2.3889646592899902,
+      "picard_speedup": 1.5588862305551159,
+      "rhs": [
+        17,
+        16,
+        16
+      ],
+      "jvp": [
+        11,
+        11,
+        11
+      ],
+      "physical_embedded_test": [
+        false,
+        false,
+        false
+      ],
+      "raw_error": [
+        2.0816681711721685e-17,
+        6.106226635438361e-16,
+        2.0816681711721685e-17
+      ]
+    },
+    {
+      "kind": "weak-nonlinear",
+      "n": 6,
+      "forward_speedup": 5.280266812180839,
+      "picard_speedup": 1.439469529943849,
+      "rhs": [
+        33,
+        16,
+        37
+      ],
+      "jvp": [
+        59,
+        11,
+        11
+      ],
+      "physical_embedded_test": [
+        false,
+        false,
+        false
+      ],
+      "raw_error": [
+        5.828670879282072e-16,
+        4.996003610813204e-16,
+        1.2975731600306517e-15
+      ]
+    },
+    {
+      "kind": "strong-nonlinear",
+      "n": 6,
+      "forward_speedup": 2.6276122054045463,
+      "picard_speedup": 0.803771173215848,
+      "rhs": [
+        33,
+        16,
+        44
+      ],
+      "jvp": [
+        42,
+        10,
+        10
+      ],
+      "physical_embedded_test": [
+        false,
+        false,
+        false
+      ],
+      "raw_error": [
+        6.938893903907228e-16,
+        8.534839501805891e-16,
+        1.0234868508263162e-14
+      ]
+    },
+    {
+      "kind": "stiff-step",
+      "n": 6,
+      "forward_speedup": 4.821446407391223,
+      "picard_speedup": 1.594734346505456,
+      "rhs": [
+        33,
+        16,
+        44
+      ],
+      "jvp": [
+        59,
+        11,
+        11
+      ],
+      "physical_embedded_test": [
+        false,
+        false,
+        false
+      ],
+      "raw_error": [
+        5.84601811404184e-16,
+        1.9949319973733282e-16,
+        4.527454799951869e-14
+      ]
+    },
+    {
+      "kind": "oscillator",
+      "n": 6,
+      "forward_speedup": 1.3986630945273923,
+      "picard_speedup": 1.0779154257947245,
+      "rhs": [
+        17,
+        16,
+        16
+      ],
+      "jvp": [
+        10,
+        10,
+        10
+      ],
+      "physical_embedded_test": [
+        true,
+        true,
+        true
+      ],
+      "raw_error": [
+        8.326672684688674e-17,
+        9.71445146547012e-17,
+        8.326672684688674e-17
+      ]
+    },
+    {
+      "kind": "underresolved-oscillator",
+      "n": 6,
+      "forward_speedup": 1.499184761438381,
+      "picard_speedup": 1.1843501617781529,
+      "rhs": [
+        17,
+        16,
+        16
+      ],
+      "jvp": [
+        10,
+        10,
+        10
+      ],
+      "physical_embedded_test": [
+        false,
+        false,
+        false
+      ],
+      "raw_error": [
+        2.9282132274488504e-15,
+        3.2751579226442118e-15,
+        2.9282132274488504e-15
+      ]
+    },
+    {
+      "kind": "affine",
+      "n": 96,
+      "forward_speedup": 1.171700652532971,
+      "picard_speedup": 1.0629893796890302,
+      "rhs": [
+        17,
+        16,
+        16
+      ],
+      "jvp": [
+        11,
+        11,
+        11
+      ],
+      "physical_embedded_test": [
+        false,
+        false,
+        false
+      ],
+      "raw_error": [
+        9.506284648352903e-16,
+        5.759281940243e-16,
+        9.506284648352903e-16
+      ]
+    },
+    {
+      "kind": "weak-nonlinear",
+      "n": 96,
+      "forward_speedup": 3.0446470881245236,
+      "picard_speedup": 1.4274631867310361,
+      "rhs": [
+        33,
+        16,
+        37
+      ],
+      "jvp": [
+        59,
+        11,
+        11
+      ],
+      "physical_embedded_test": [
+        false,
+        false,
+        false
+      ],
+      "raw_error": [
+        7.424616477180734e-16,
+        2.1510571102112408e-16,
+        1.4224732503009818e-15
+      ]
+    },
+    {
+      "kind": "strong-nonlinear",
+      "n": 96,
+      "forward_speedup": 2.4531776775995064,
+      "picard_speedup": 1.162101670540457,
+      "rhs": [
+        33,
+        16,
+        44
+      ],
+      "jvp": [
+        42,
+        10,
+        10
+      ],
+      "physical_embedded_test": [
+        false,
+        false,
+        false
+      ],
+      "raw_error": [
+        9.43689570931383e-16,
+        4.85722573273506e-16,
+        1.1171619185290638e-14
+      ]
+    },
+    {
+      "kind": "stiff-step",
+      "n": 96,
+      "forward_speedup": 3.8266290938353085,
+      "picard_speedup": 1.400649038669633,
+      "rhs": [
+        33,
+        16,
+        44
+      ],
+      "jvp": [
+        59,
+        11,
+        11
+      ],
+      "physical_embedded_test": [
+        false,
+        false,
+        false
+      ],
+      "raw_error": [
+        1.6063539387545234e-15,
+        5.273559366969494e-16,
+        4.5298834128182364e-14
+      ]
+    },
+    {
+      "kind": "oscillator",
+      "n": 96,
+      "forward_speedup": 1.1933138922023745,
+      "picard_speedup": 1.1643442930258452,
+      "rhs": [
+        17,
+        16,
+        16
+      ],
+      "jvp": [
+        10,
+        10,
+        10
+      ],
+      "physical_embedded_test": [
+        true,
+        true,
+        true
+      ],
+      "raw_error": [
+        6.938893903907228e-17,
+        8.326672684688674e-17,
+        6.938893903907228e-17
+      ]
+    },
+    {
+      "kind": "underresolved-oscillator",
+      "n": 96,
+      "forward_speedup": 1.3047311953248244,
+      "picard_speedup": 0.7820529351245209,
+      "rhs": [
+        17,
+        16,
+        16
+      ],
+      "jvp": [
+        10,
+        10,
+        10
+      ],
+      "physical_embedded_test": [
+        false,
+        false,
+        false
+      ],
+      "raw_error": [
+        1.6653345369377348e-15,
+        1.942890293094024e-15,
+        1.6653345369377348e-15
+      ]
+    }
+  ],
+  "forward_median_speedup": 2.4210711684447483,
+  "picard_median_speedup": 1.174347227401999,
+  "all_raw_targets_successful": true,
+  "physically_admissible_rows": 6,
+  "row_count": 36,
+  "maximum_raw_target_error": 4.5298834128182364e-14
+}

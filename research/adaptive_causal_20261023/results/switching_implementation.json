@@ -1,0 +1,67 @@
+{
+  "schema": "vigilode.adaptive-causal.facade-implementation.v1",
+  "created_utc": "2026-10-23T04:59:21.109968+00:00",
+  "baseline_commit": "14c74978b93339a79d7228a324fa77552dae548e",
+  "code": [
+    {
+      "path": "crates/vigilode/src/switching.rs",
+      "sha256": "61f1c49fcd9fddbddbe7624008c95cdadd159b405ed1ccc86bfc27f3d0ad4245",
+      "bytes": 23975
+    },
+    {
+      "path": "crates/vigilode/src/lawson.rs",
+      "sha256": "e3b38a799ad41fc721db78a4acc3df75961b3bfd93c70634ac7e447570e0bf0e",
+      "bytes": 8430
+    },
+    {
+      "path": "crates/vigilode/src/explicit.rs",
+      "sha256": "0a2a386bd9a335e5f6ac7b31d502097cc8dd3618d0ecd49ad7512355857cc64e",
+      "bytes": 19384
+    },
+    {
+      "path": "crates/vigilode/src/lib.rs",
+      "sha256": "dadf0d24137a7423e80c94c8aac2c76e833397bc82ed3e1fe7969011045797fd",
+      "bytes": 9843
+    },
+    {
+      "path": "crates/vigilode/tests/switching_contracts.rs",
+      "sha256": "761942c89ebfa50c9b76dfb8fdd589a1675af69a80dbfac3e933d592f897cb72",
+      "bytes": 11195
+    },
+    {
+      "path": "crates/vigilode/tests/lawson_contracts.rs",
+      "sha256": "23249b35c3683c8e9e694e5a8688dea424ed88156e2c703a940c8b5c8dd8d69a",
+      "bytes": 5600
+    },
+    {
+      "path": "crates/vigilode/SWITCHING.md",
+      "sha256": "663b3a1fcb1176bf6a907c5d27ff2532e5d2e461aa8ecb1d5729020ef7214037",
+      "bytes": 7815
+    }
+  ],
+  "implemented": [
+    "RHS-first accepted-endpoint explicit/RODAS switching",
+    "Strict derivative opt-in, including time differences",
+    "Bounded explicit rechecks and cost hysteresis",
+    "One attempt budget including discarded probes",
+    "Dense fallback dimension cap",
+    "Fatal/malformed callback stop and retained original driver records",
+    "Declared-structure derivative-free Lawson facade with residual-only callback contract"
+  ],
+  "validation": {
+    "command": "source /workspace/scratch/0dc1e721cf82/task_runtime/env-1023.sh; cargo test -p vigilode --locked --offline --test switching_contracts --test lawson_contracts",
+    "exit_code": 0,
+    "switching_tests": 12,
+    "lawson_tests": 6,
+    "stdout": "results/switching_lawson_final.stdout.log",
+    "stderr": "results/switching_lawson_final.stderr.log",
+    "post_validation_change": "Renamed one test identifier from uppercase N to lowercase n; body unchanged."
+  },
+  "limitations": [
+    "Switching uses deterministic work surrogate and historical work/time, not measured elapsed time or a stiffness proof.",
+    "Window sessions rebuild workspaces and discard FSAL/controller state.",
+    "No event, mass matrix or retained dense-output switching contract.",
+    "Lawson requires user-declared constant damping/rotation A and residual N; nonlinear residual may retain stiffness.",
+    "Full production acceptance and actual work-precision speedups depend on integrated campaign."
+  ]
+}

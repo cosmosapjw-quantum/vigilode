@@ -1,0 +1,521 @@
+{
+  "schema": "vigilode.independent-review.v1",
+  "review_date": "2026-10-23",
+  "reviewer": "adaptive_independent_review",
+  "baseline_commit": "14c74978b93339a79d7228a324fa77552dae548e",
+  "reviewed_source_commit": "d4e8623bf8add9f505ec018532c4602e5a838a41",
+  "decision": {
+    "new_opt_in_paths": "ACCEPT_WITH_DOCUMENTED_SCOPE",
+    "broad_production": "NOT_ESTABLISHED",
+    "blocking_findings_remaining": 0,
+    "initial_findings": 6,
+    "closed_findings": 6,
+    "formal_machine_proof": false,
+    "independent_institutional_certification": false
+  },
+  "scope": {
+    "method": "Independent source reading, exact rational checks, high-precision extreme-input references, owner/root execution log and source-hash verification.",
+    "included": [
+      "DOPRI/RODAS switching adapter and derivative policy",
+      "Declared constant damped-rotation flow, resolvent, Lawson kernel and facade",
+      "Strict raw-U causal forward/Picard corrector and original-space residual preservation",
+      "Exact quadratic continuation chart and operational error diagnostic",
+      "AT1-AT4 algebraic transfer assumptions, proofs and cost statements"
+    ],
+    "excluded": [
+      "Re-execution of unchanged published spherical-information science",
+      "General production certification",
+      "Universal stiff nonlinear order or performance superiority",
+      "Automatic discovery of polynomial operator structure",
+      "Generic time-dependent A(t) integration"
+    ]
+  },
+  "findings": [
+    {
+      "id": "IR01",
+      "category": "accuracy",
+      "severity": "high",
+      "status": "fixed_and_regression_verified",
+      "title": "Premature exponential underflow erased representable large-state flow",
+      "counterexample": {
+        "damping": 1000.0,
+        "duration": 1.0,
+        "input": [
+          1e+308,
+          0.0
+        ],
+        "correct_first_component": "5.0759588975494567653e-127"
+      },
+      "correction": "Apply half-exponent scaling twice before rotation below exponent -700; universal zero shortcut only below -1500.",
+      "regressions": [
+        "underflowing_exponential_coefficient_does_not_erase_large_state",
+        "subnormal_coefficient_is_scaled_before_large_state"
+      ]
+    },
+    {
+      "id": "IR02",
+      "category": "robustness",
+      "severity": "medium",
+      "status": "fixed_and_regression_verified",
+      "title": "Shifted inverse numerator overflow despite representable quotient",
+      "counterexample": {
+        "normalized_a": 1.0,
+        "normalized_b": 1.0,
+        "input": "[f64::MAX, f64::MAX]",
+        "correct_output": "[0, f64::MAX]"
+      },
+      "correction": "Divide normalized coefficients by denominator before vector products and sums.",
+      "regressions": [
+        "quotient_inverse_divides_before_large_sum"
+      ]
+    },
+    {
+      "id": "IR03",
+      "category": "provider_policy",
+      "severity": "medium",
+      "status": "fixed_and_regression_verified",
+      "title": "ProvidedOnly permitted undeclared time finite differences",
+      "correction": "Require autonomous input or an explicitly supplied time derivative; AllowFiniteDifference remains explicit separate authority.",
+      "regressions": [
+        "switching_contracts: ProvidedOnly nonautonomous callback-free refusal"
+      ]
+    },
+    {
+      "id": "IR04",
+      "category": "telemetry",
+      "severity": "medium",
+      "status": "fixed_and_regression_verified",
+      "title": "Completed projected solves and actual small backsolves had different meanings",
+      "correction": "Preserve small_solves compatibility semantics; add attempted small_block_solves before each LU.solve and map direct_solve_calls to it.",
+      "regressions": [
+        "causal_contracts: forward actual block count equals eight"
+      ]
+    },
+    {
+      "id": "IR05",
+      "category": "robustness",
+      "severity": "medium",
+      "status": "fixed_and_regression_verified",
+      "title": "General quadratic scaling rejected valid exact zero and linear charts",
+      "counterexample": {
+        "a": 1e-200,
+        "b": 1.0,
+        "c": 0.0,
+        "root": 1e+200
+      },
+      "correction": "Handle exact zero and linear degree-drop charts before general discriminant arithmetic, retaining original-equation FMA residual.",
+      "regressions": [
+        "quadratic_branch_contracts: extreme linear and exact-zero charts"
+      ]
+    },
+    {
+      "id": "IR06",
+      "category": "evidence_consistency",
+      "severity": "medium",
+      "status": "fixed_and_reaggregation_verified",
+      "title": "Causal summary retained preliminary timings after source-pinned raw run replaced input",
+      "counterexample": {
+        "case": "affine",
+        "dimension": 6,
+        "stale_forward_speedup": 1.0891642569028501,
+        "correct_forward_speedup": 2.3889646592899902
+      },
+      "correction": "Preserve preliminary summary and regenerate final summary from final raw run, including raw SHA and source/binary identity.",
+      "regressions": [
+        "independent_benchmark_review.py: all 1866 final artifact reconciliation checks pass"
+      ]
+    }
+  ],
+  "theorem_review": [
+    {
+      "id": "AT1",
+      "result": "VALID_UNDER_STATED_ASSUMPTIONS",
+      "conditions": [
+        "Finite-dimensional A; monic known q",
+        "s nonzero and q(1/s) nonzero; s=0 treated separately",
+        "Exact q(A)=0 for exact inverse; full-space norm witness for near-relation bound"
+      ],
+      "cost": "d-1 operator actions after O(d) scalar setup; no cost claim for discovering q"
+    },
+    {
+      "id": "AT2",
+      "result": "VALID_UNDER_STATED_ASSUMPTIONS",
+      "conditions": [
+        "Declared constant damping/rotation blocks",
+        "Nonnegative damping and forward duration",
+        "Callback is remainder N in yprime=A*y+N",
+        "Classical fifth order assumes smooth transformed problem; no uniform nonlinear stiff-order claim"
+      ],
+      "cost": "O(n) structured flow/resolvent; no Jacobian/JVP/Newton callbacks"
+    },
+    {
+      "id": "AT3",
+      "result": "VALID_UNDER_STATED_ASSUMPTIONS",
+      "conditions": [
+        "Exact declared scalar quadratic; a>0; lambda in [0,1]",
+        "Resolved positive discriminant for regular quadratic chart",
+        "Candidate derivative nonnegative for branch residual identity"
+      ],
+      "floating_point_limit": "Returned residual_error_indicator does not enclose rounding error"
+    },
+    {
+      "id": "AT4",
+      "result": "VALID_UNDER_STATED_ASSUMPTIONS",
+      "conditions": [
+        "Actual raw A,C exactly strict lower",
+        "Frozen Q and invertible common W_m",
+        "Same original stage equation and full-space residual checks",
+        "Finite-front count is exact-arithmetic; numerical acceptance still evaluates residual"
+      ],
+      "cost": "One m-by-m factorization and s block solves remove current-stage Newton/JVP work; frozen basis/operator derivative work remains"
+    }
+  ],
+  "independent_checks": {
+    "command": [
+      "python3",
+      "research/adaptive_causal_20261023/src/independent_review_checks.py"
+    ],
+    "exit_code": 0,
+    "passed_bundles": 10,
+    "result": "results/independent_review_checks.json",
+    "arithmetic": [
+      "fractions.Fraction",
+      "decimal.Decimal(precision=90)"
+    ],
+    "native_trajectory_execution": false
+  },
+  "reviewed_execution_evidence": {
+    "executor": "Implementation owners and integration parent; independently inspected logs and matching source digests",
+    "native_runs": [
+      {
+        "path": "research/adaptive_causal_20261023/results/persistent_final_facade.stdout.log",
+        "passed": 122,
+        "failed": 0,
+        "test_groups": 12,
+        "source_commit": "d4e8623bf8add9f505ec018532c4602e5a838a41"
+      },
+      {
+        "path": "research/adaptive_causal_20261023/results/final_native_regression_1.log",
+        "passed": 17,
+        "failed": 0,
+        "test_groups": 2,
+        "source_commit": "548526add83a38a996875b3bd2f3cd3357465ed6"
+      },
+      {
+        "path": "research/adaptive_causal_20261023/results/causal_regression.log",
+        "passed": 66,
+        "failed": 0,
+        "test_groups": 11,
+        "source_commit": "548526add83a38a996875b3bd2f3cd3357465ed6"
+      }
+    ],
+    "total_passed": 205,
+    "total_failed": 0,
+    "source_receipts_verified": [
+      "evidence/CAUSAL_CODE_PINS.json",
+      "results/quotient_test_receipt.json",
+      "results/FINAL_NATIVE_TESTS.json"
+    ],
+    "reuse_rule": "Unaffected integrator/coupled tests retain prior execution; only the modified facade was rerun in full."
+  },
+  "integration_limits": [
+    "SwitchingSolver currently switches only DOPRI and protected RODAS; Lawson and causal companion are separate opt-in APIs.",
+    "Authorized FD/JVP switching windows rebuild workspace and reuse h0; Forbidden now keeps one observed DOPRI session. Work-score hysteresis is not a wall-time guarantee.",
+    "Causal corrector is Newton/current-stage-JVP-free; the entire coupled path still uses frozen derivative actions.",
+    "Fixed-step projected-root benchmark success is not equivalent to an accepted ODE step; embedded_error>1 must remain visible.",
+    "Lawson exact carrier removal does not remove stiff or non-equivariant remainder difficulty.",
+    "Variable relative component WRMS is not rotation invariant, so frequency-independent mesh claims require a suitable invariant norm."
+  ],
+  "benchmark_and_report_review": {
+    "status": "COMPLETE_SCOPED",
+    "independent_reconciliation": {
+      "command": [
+        "python3",
+        "research/adaptive_causal_20261023/src/independent_benchmark_review.py"
+      ],
+      "exit_code": 0,
+      "checks": 1866,
+      "result": "results/independent_benchmark_review.json",
+      "initial_failure_preserved": "results/independent_benchmark_review_initial.json"
+    },
+    "reviewed_campaigns": [
+      {
+        "name": "authorized-switching",
+        "records": 864,
+        "successes": 828,
+        "source_commit": "548526add83a38a996875b3bd2f3cd3357465ed6",
+        "failure_scope": "36 preserved explicit Prothero attempt-budget exits"
+      },
+      {
+        "name": "declared-quotient",
+        "records": 112,
+        "timed_records": 84,
+        "source_commit": "548526add83a38a996875b3bd2f3cd3357465ed6",
+        "interpretation": "Large specialized carrier gains; slow and forced-stiff losses preserved"
+      },
+      {
+        "name": "causal-root",
+        "rows": 36,
+        "embedded_admissible_rows": 6,
+        "source_commit": "548526add83a38a996875b3bd2f3cd3357465ed6",
+        "interpretation": "Same original-stage-root cost; no complete-trajectory speed ratio"
+      },
+      {
+        "name": "persistent-rhs",
+        "records": 324,
+        "successes": 288,
+        "source_commit": "d4e8623bf8add9f505ec018532c4602e5a838a41",
+        "exact_parity_pairs": 108,
+        "interpretation": "Serialized outputs, work and partial failure states agree exactly with retained DOPRI; derivative work remains zero."
+      }
+    ],
+    "pending": [],
+    "report_review": {
+      "result": "ACCEPT_WITH_DOCUMENTED_SCOPE",
+      "files": [
+        "REPORT_KO.md",
+        "DECISIONS.json",
+        "NEXT_STEPS.json",
+        "BENCHMARK_PLAN.json",
+        "HANDOFF_KO.md",
+        "REPRODUCE.md"
+      ],
+      "corrections_verified": [
+        "Normalized versus absolute observation metric distinguished",
+        "Native affine-preconditioned Picard map written explicitly",
+        "Autonomous identity-mass supplied-JVP causal contract stated",
+        "Final causal summary rederived from current raw",
+        "Campaign runner input validation wording corrected"
+      ],
+      "consistency": [
+        "Broad production HOLD retained",
+        "Exact declared structure and general black-box RHS not conflated",
+        "Root benchmarks not represented as accepted trajectory speedups",
+        "Future external comparison marked NOT_RUN",
+        "No timing pooled across native commits"
+      ],
+      "publication_scope": "Remote push and publication manifest verification are separately owned by parent; not asserted by this review."
+    }
+  },
+  "next_steps": [
+    "Persistent adapter workspace and continuation state across windows",
+    "Unified user-declared structure routing with measured costs and explicit derivative authority",
+    "Long-time phase/amplitude and nonlinear stiff-forcing tests at achieved accuracy",
+    "General quotient compilation only with checked operator witness and original residual budget"
+  ],
+  "reviewed_file_snapshot": [
+    {
+      "path": "crates/rodas5p-integrators/src/quadratic_branch.rs",
+      "bytes": 6524,
+      "sha256": "4df1ead8e5c2539b266f40a0e2dafa9ead5320fc124ce672037f98647f208e1e"
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/quotient_flow.rs",
+      "bytes": 25628,
+      "sha256": "42225c1bed7f2ac8ffffc68132fa4c14fcdc3a14fe0f9b282295afa1ea1b74ce"
+    },
+    {
+      "path": "crates/rodas5p-integrators/tests/quadratic_branch_contracts.rs",
+      "bytes": 2535,
+      "sha256": "86f325f631834eb4362625c56f9a605ea3aec4c11f07868009bfa352b102c464"
+    },
+    {
+      "path": "crates/rodas5p-integrators/tests/quotient_flow_contracts.rs",
+      "bytes": 9236,
+      "sha256": "9b572ea06b2e893e0eb8900592b19823c9877b0c5d04fa8c9dfcfa8cd5f10fc5"
+    },
+    {
+      "path": "crates/vigilode-coupled/src/adaptive.rs",
+      "bytes": 16161,
+      "sha256": "924c138775aca29926fc6d700a3699cdadd7448588ab7c21188e504fe4f49385"
+    },
+    {
+      "path": "crates/vigilode-coupled/src/algebra.rs",
+      "bytes": 11877,
+      "sha256": "0affc955ec2bdd57f0c03fbe342e7a4e4c3993597a86e324b7b7b6f67fac1d7b"
+    },
+    {
+      "path": "crates/vigilode-coupled/src/causal.rs",
+      "bytes": 9038,
+      "sha256": "5cd8362c91cb13dc654a2305ffeaa1f4923225d21b857dd6d6bd54156add91dc"
+    },
+    {
+      "path": "crates/vigilode-coupled/src/raw_step.rs",
+      "bytes": 23074,
+      "sha256": "810cdf8d6cb74197e3e8a49d7075ef902d8000d7bde8e41f870fa7a6e2090646"
+    },
+    {
+      "path": "crates/vigilode-coupled/src/solver.rs",
+      "bytes": 21075,
+      "sha256": "acc4a70cfeca1c42a62f3a8f40eafe0518ecba7e2fe2b1f46db00ce11ece4b84"
+    },
+    {
+      "path": "crates/vigilode-coupled/tests/causal_contracts.rs",
+      "bytes": 8529,
+      "sha256": "776d2d42c5877c8c026345b6826ca272fd5da32d0152acf7ced23b7f60b70133"
+    },
+    {
+      "path": "crates/vigilode/SWITCHING.md",
+      "bytes": 8716,
+      "sha256": "e4f039b948153d9d4c7441376d12634801074af65192b79e59a3882fc9cef4ba"
+    },
+    {
+      "path": "crates/vigilode/examples/adaptive_causal_bench.rs",
+      "bytes": 16496,
+      "sha256": "28affae3ea4a139075132f4f60132a6427dcf7f5f77d0441bf78222dc61f8ffd"
+    },
+    {
+      "path": "crates/vigilode/src/lawson.rs",
+      "bytes": 8430,
+      "sha256": "e3b38a799ad41fc721db78a4acc3df75961b3bfd93c70634ac7e447570e0bf0e"
+    },
+    {
+      "path": "crates/vigilode/src/switching.rs",
+      "bytes": 26590,
+      "sha256": "37704574ea2c9bf0524da84467dc880a9fb8b283808d0abd0e248881d4f60243"
+    },
+    {
+      "path": "crates/vigilode/tests/lawson_contracts.rs",
+      "bytes": 5600,
+      "sha256": "23249b35c3683c8e9e694e5a8688dea424ed88156e2c703a940c8b5c8dd8d69a"
+    },
+    {
+      "path": "crates/vigilode/tests/switching_contracts.rs",
+      "bytes": 13673,
+      "sha256": "a931e36030fcb66b1bd02860ce926c257e60b9b0b51c07c35f478a1f11ec5301"
+    },
+    {
+      "path": "research/adaptive_causal_20261023/BENCHMARK_PLAN.json",
+      "bytes": 3482,
+      "sha256": "d3c9d55121f63efac5d0053b5f7771d475afc1ecf96074c5dbe2fdb9bc7a5212"
+    },
+    {
+      "path": "research/adaptive_causal_20261023/DECISIONS.json",
+      "bytes": 6894,
+      "sha256": "18c7022581c07d7983490b6df7392369da7719b7c3be3b971c18e6879a172ce0"
+    },
+    {
+      "path": "research/adaptive_causal_20261023/HANDOFF_KO.md",
+      "bytes": 5124,
+      "sha256": "c53c6e42597e2e5a4e8bd492e7ce1ecdc2ca353ff276735521e7229708f54082"
+    },
+    {
+      "path": "research/adaptive_causal_20261023/NEXT_STEPS.json",
+      "bytes": 7907,
+      "sha256": "28e4e6ecee962ce262918c24fde38e6d1e30186e098b99a46d99d41d19f1c169"
+    },
+    {
+      "path": "research/adaptive_causal_20261023/REPORT_KO.md",
+      "bytes": 27089,
+      "sha256": "90c1730fa3c0fd48e700c0654ed00a09b16e06970fe8ae61c01bfad6300ab540"
+    },
+    {
+      "path": "research/adaptive_causal_20261023/REPRODUCE.md",
+      "bytes": 4761,
+      "sha256": "e3dc6b777bf4153af7668a1a1b2fe1ce2c06301c9b781d7881617df81944ed89"
+    },
+    {
+      "path": "research/adaptive_causal_20261023/analysis/ALGEBRAIC_TRANSFER_KO.md",
+      "bytes": 20171,
+      "sha256": "2070a85ee1f44a0d22a151dea898be66350f22609d481805af96f898dbc00c35"
+    },
+    {
+      "path": "research/adaptive_causal_20261023/analysis/INDEPENDENT_REVIEW_KO.md",
+      "bytes": 10705,
+      "sha256": "2386b246d42d87be52c5d66be1534f97a24d9b95fc3603a39424a2d6b14813e7"
+    },
+    {
+      "path": "research/adaptive_causal_20261023/analysis/SOURCE_MAP.json",
+      "bytes": 6910,
+      "sha256": "31465145db1c564c4bc9f2edfbc9e3a00e4637cc0838560de9cb01b40f6488c8"
+    },
+    {
+      "path": "research/adaptive_causal_20261023/evidence/CAUSAL_CODE_PINS.json",
+      "bytes": 1660,
+      "sha256": "0e37c8033a371b91d63a27361ba5731f407d298780d04b1dc90cf0fdbff55020"
+    },
+    {
+      "path": "research/adaptive_causal_20261023/results/FINAL_NATIVE_TESTS.json",
+      "bytes": 986,
+      "sha256": "9dfcb5cbf8dac296231b28ba818cd847ca03c83a13736c5aa939f7c2a6e6b6df"
+    },
+    {
+      "path": "research/adaptive_causal_20261023/results/causal_benchmark_summary.json",
+      "bytes": 6635,
+      "sha256": "cfd7900a89327e4bbac1e6c3cb3137cf7f6438fc9b46f5d7731c17790809cc91"
+    },
+    {
+      "path": "research/adaptive_causal_20261023/results/causal_regression.log",
+      "bytes": 9596,
+      "sha256": "1b163cc921774bb24baec156281864fe65a0ce17f88a3d6ff44a82adc237c4d4"
+    },
+    {
+      "path": "research/adaptive_causal_20261023/results/final_native_regression_0.log",
+      "bytes": 11649,
+      "sha256": "9ae6090e20b2c059dd48f288c265197a6562938944490eb04643cb8387278506"
+    },
+    {
+      "path": "research/adaptive_causal_20261023/results/final_native_regression_1.log",
+      "bytes": 2273,
+      "sha256": "23f6da7da946b1caa26712e76c8095f0458f06ba3ba6fa2a16ffe7dccf1827da"
+    },
+    {
+      "path": "research/adaptive_causal_20261023/results/independent_benchmark_review.json",
+      "bytes": 154463,
+      "sha256": "cddab62ac60d42b5a6437249b1f740e385ca8d1eb13885cdfb790ffda4a66372"
+    },
+    {
+      "path": "research/adaptive_causal_20261023/results/independent_review_checks.json",
+      "bytes": 1294,
+      "sha256": "abad8fe2c3073d30c5837d62fb97ea04c627c3bec14216568b201bc8009fd06d"
+    },
+    {
+      "path": "research/adaptive_causal_20261023/results/persistent_final_facade.stdout.log",
+      "bytes": 9282,
+      "sha256": "bbd8f8973be60bdebe9e9a0572257e2b6b69cf588b21939b466f69cd20d349f7"
+    },
+    {
+      "path": "research/adaptive_causal_20261023/results/rhs_persistent_campaign/EXECUTION.json",
+      "bytes": 209,
+      "sha256": "af47f69e94593f962ff613ef9e4f2e951a6286f914fda245b506b0ce0e9ba470"
+    },
+    {
+      "path": "research/adaptive_causal_20261023/results/rhs_persistent_campaign/PLAN.json",
+      "bytes": 13387,
+      "sha256": "8b6a24ab7075b9309cb194114db9679582d3d8fa7f367584f62dadafacfa9177"
+    },
+    {
+      "path": "research/adaptive_causal_20261023/results/rhs_persistent_campaign/RHS_PARITY.json",
+      "bytes": 41285,
+      "sha256": "3f2761734f409dcb5037221dffe1147356d6cd9a24312247fcc94cea2a6ef84f"
+    },
+    {
+      "path": "research/adaptive_causal_20261023/results/rhs_persistent_campaign/SUMMARY.json",
+      "bytes": 75469,
+      "sha256": "1951815a3ed1d6b61a8c79d31485acce64f751c2dc5aad019810657d40894fae"
+    },
+    {
+      "path": "research/adaptive_causal_20261023/src/independent_benchmark_review.py",
+      "bytes": 8540,
+      "sha256": "f55e21e9a94351c94eba57b8c091fd9d4f2d541f1b74eb72fed09babdb6dd8d1"
+    },
+    {
+      "path": "research/adaptive_causal_20261023/src/independent_review_checks.py",
+      "bytes": 2333,
+      "sha256": "679acbdb5027214b720b12cae118acd054d89f01f5d0f70da20e016e8a7443fb"
+    }
+  ],
+  "source_followup": {
+    "previous_native_commit": "548526add83a38a996875b3bd2f3cd3357465ed6",
+    "changed_files": [
+      "crates/vigilode/src/switching.rs",
+      "crates/vigilode/tests/switching_contracts.rs",
+      "crates/vigilode/SWITCHING.md",
+      "crates/vigilode/examples/adaptive_causal_bench.rs"
+    ],
+    "change": "Forbidden uses one persistent observed DOPRI session. FD/JVP switching and other new kernels are unchanged.",
+    "performance_evidence_rule": "The 864-run authorized campaign, quotient and causal kernels retain source pin 548526a; new persistent campaign uses d4e8623b."
+  },
+  "review_closed_utc": "2026-10-23",
+  "revalidation_policy": "Recheck only source/assumption/input changes affecting the reviewed claims; unchanged published spherical science and unchanged native suites reused."
+}

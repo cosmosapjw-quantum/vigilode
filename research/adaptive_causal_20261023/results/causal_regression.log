@@ -1,0 +1,152 @@
+    Blocking waiting for file lock on artifact directory
+warning: variant `EndpointAdmission` is never constructed
+    --> crates/rodas5p-integrators/src/packet_trajectory.rs:1445:5
+     |
+1443 | enum VerifiedTrialFault {
+     |      ------------------ variant in this enum
+1444 |     BeforeQuery(usize),
+1445 |     EndpointAdmission,
+     |     ^^^^^^^^^^^^^^^^^
+     |
+     = note: `VerifiedTrialFault` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rodas5p-integrators` (lib) generated 1 warning
+   Compiling vigilode-coupled v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode-adaptive-causal-1023/crates/vigilode-coupled)
+    Finished `test` profile [unoptimized] target(s) in 36.26s
+     Running unittests src/lib.rs (/workspace/scratch/0dc1e721cf82/task_runtime/target-1023/debug/deps/vigilode_coupled-d568d29176372df4)
+
+running 5 tests
+test algebra::common_block_tests::common_block_rejects_structure_changes_before_factoring ... ok
+test algebra::common_block_tests::common_block_singular_diagonal_fails_with_work_preserved ... ok
+test algebra::common_block_tests::common_block_zero_rhs_and_nonfinite_input ... ok
+test solver::causal::tests::noncausal_tableau_entries_are_refused_exactly ... ok
+test algebra::common_block_tests::common_block_matches_independent_dense_lu ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests/adaptive_trajectory.rs (/workspace/scratch/0dc1e721cf82/task_runtime/target-1023/debug/deps/adaptive_trajectory-fff291ca6fccaf75)
+
+running 9 tests
+test output_session_commits_only_its_issued_finite_dimensioned_endpoint ... ok
+test changed_epoch_cannot_commit_a_candidate ... ok
+test attempt_budget_returns_partial_result_without_relabelling_final_time ... ok
+test callback_cannot_impersonate_a_retryable_linear_solver_failure ... ok
+test callback_failure_retains_work_and_the_committed_prefix ... ok
+test coarse_clock_uses_represented_intervals_and_strict_cap_refuses ... ok
+test forced_raw_fallback_matches_native_raw_u_driver ... ok
+test singular_trial_operator_retries_a_smaller_physical_step ... ok
+ADAPTIVE_DECAY attempts=76 accepted=73 rejected=3 rhs=1292 jvp=830
+test adaptive_candidates_commit_only_accepted_states_and_land_on_outputs ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.18s
+
+     Running tests/causal_contracts.rs (/workspace/scratch/0dc1e721cf82/task_runtime/target-1023/debug/deps/causal_contracts-d342f6d572def9a5)
+
+running 6 tests
+test budget_failure_preserves_state_and_attempted_work ... ok
+test full_residual_refuses_incomplete_basis ... ok
+CAUSAL_WORK old={"rhs_attempted":33,"rhs_completed":33,"jvp_attempted":59,"jvp_completed":59,"basis_jvp":3,"stage_jvp":48,"validation_jvp":8,"derivative_batches":2,"residual_only_stops":1,"unused_stage_jvp_avoided":21,"stage_batches":3,"validation_batches":1,"stage_tasks_scheduled":48,"stage_tasks_completed":48,"small_factorizations":3,"small_solves":3,"small_block_solves":24,"newton_updates":2,"causal_picard_updates":0,"causal_forward_stages":0,"lambda_rejections":0,"basis_expansions":0,"orthogonalization_dots":12,"peak_parallel_tasks":1,"maximum_basis":3,"maximum_reduced_dimension":24,"planned_storage_bytes":4784128} new={"rhs_attempted":16,"rhs_completed":16,"jvp_attempted":11,"jvp_completed":11,"basis_jvp":3,"stage_jvp":0,"validation_jvp":8,"derivative_batches":0,"residual_only_stops":0,"unused_stage_jvp_avoided":0,"stage_batches":1,"validation_batches":1,"stage_tasks_scheduled":16,"stage_tasks_completed":16,"small_factorizations":1,"small_solves":1,"small_block_solves":8,"newton_updates":0,"causal_picard_updates":0,"causal_forward_stages":8,"lambda_rejections":0,"basis_expansions":0,"orthogonalization_dots":12,"peak_parallel_tasks":1,"maximum_basis":3,"maximum_reduced_dimension":24,"planned_storage_bytes":4784128}
+test forward_saves_work_against_nonlinear_residual_first ... ok
+test changing_worker_count_keeps_batched_bits_and_counts ... ok
+test nonlinear_root_uses_no_current_jvp_and_matches_direct_scalar_oracle ... ok
+test adaptive_causal_flow_reaches_observations_with_independent_exact_solution ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.25s
+
+     Running tests/contracts.rs (/workspace/scratch/0dc1e721cf82/task_runtime/target-1023/debug/deps/contracts-8d23525f3a017507)
+
+running 5 tests
+test invalid_time_is_rejected ... ok
+test equilibrium_is_complete_not_zero_basis_failure ... ok
+test partial_basis_cannot_pass_only_projected_residual ... ok
+test builds_three_mode_candidate_from_real_jvp_only ... ok
+test thread_count_changes_no_output_bits ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/convergence.rs (/workspace/scratch/0dc1e721cf82/task_runtime/target-1023/debug/deps/convergence-573377a6787652af)
+
+running 2 tests
+test failed_fallback_keeps_structured_callback_counts ... ok
+RICCATI_CONVERGENCE eps=0 errors=[7.098583630626987e-9, 1.1270102906468793e-10, 1.2385925618474403e-12, 1.1463052729254741e-14]
+RICCATI_CONVERGENCE eps=0.5 errors=[6.372089820377846e-8, 1.9240321003088923e-9, 4.25044999197155e-11, 7.926714840067461e-13]
+test local_error_decreases_against_exact_riccati_solution ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/eager_stage_jvp_contracts.rs (/workspace/scratch/0dc1e721cf82/task_runtime/target-1023/debug/deps/eager_stage_jvp_contracts-1ee3396cf50bcd2c)
+
+running 2 tests
+test eager_evaluation_charges_no_stage_zero_derivative ... ok
+test eager_solution_bits_equal_residual_first ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests/economy_contracts.rs (/workspace/scratch/0dc1e721cf82/task_runtime/target-1023/debug/deps/economy_contracts-71e0253cc2923005)
+
+running 4 tests
+test exhausted_update_budget_spends_no_unused_derivative ... ok
+test converged_affine_seed_spends_no_stage_derivative_jvps ... ok
+test nonlinear_derivatives_are_computed_only_for_actual_updates ... ok
+test policy_preserves_complete_state_and_embedded_bits ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/economy_robustness.rs (/workspace/scratch/0dc1e721cf82/task_runtime/target-1023/debug/deps/economy_robustness-b82095fc5fcccb89)
+
+running 10 tests
+test epoch_change_between_phases_is_detected_before_derivative_dispatch ... ok
+test failed_derivative_batch_joins_and_preserves_every_attempt ... ok
+test failed_residual_batch_never_launches_derivatives_and_counts_all_tasks ... ok
+test derivative_phase_obeys_the_actual_batch_budget ... ok
+test full_space_validation_is_not_skipped_on_affine_convergence ... ok
+test invalid_input_does_not_trigger_a_hidden_fallback ... ok
+test candidate_cap_never_enlarges_a_stricter_caller_budget ... ok
+test zero_candidate_cap_falls_back_without_spending_any_jvp ... ok
+test lazy_policy_makes_the_same_valid_candidate_with_smaller_jvp_budget ... ok
+test worker_and_theta_variants_preserve_eager_solution_bits ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.31s
+
+     Running tests/raw_step_contracts.rs (/workspace/scratch/0dc1e721cf82/task_runtime/target-1023/debug/deps/raw_step_contracts-db9fd7b6ed9a7a39)
+
+running 9 tests
+test causal_bound_dominates_deliberately_perturbed_raw_solution ... ok
+test callback_linear_solve_error_is_not_a_retryable_solver_failure ... ok
+test underflowed_stage_step_cannot_bypass_validation_through_budget_fallback ... ok
+test embedded_rejection_does_not_trigger_a_second_algorithm ... ok
+test genuine_iteration_exhaustion_is_retryable_and_counted ... ok
+test per_stage_residual_norms_reuse_the_original_validation ... ok
+test invalid_conditional_assumptions_run_no_callbacks ... ok
+test forced_fallback_preserves_raw_target_and_charges_verification ... ok
+test a_changed_model_epoch_prevents_fallback_commit ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/robustness.rs (/workspace/scratch/0dc1e721cf82/task_runtime/target-1023/debug/deps/robustness-defeca2ebc4e6d4a)
+
+running 12 tests
+test invalid_config_does_not_panic_or_run ... ok
+test nonautonomous_problem_is_explicitly_unsupported ... ok
+test budget_preflight_does_no_callbacks ... ok
+test changing_client_epoch_invalidates_attempt ... ok
+test partial_jvp_output_is_not_silently_zero_filled ... ok
+test full_operator_invertible_does_not_make_projection_safe ... ok
+test storage_plan_rejects_before_callbacks ... ok
+test root_budget_failure_is_not_an_accepted_state ... ok
+test basis_leakage_can_expand_without_dense_jacobian ... ok
+test protected_fallback_preserves_candidate_cost ... ok
+test failed_parallel_batch_is_joined_and_counted ... ok
+test lambda_one_preserves_target_for_two_theta_values ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/zero_tolerance_scale.rs (/workspace/scratch/0dc1e721cf82/task_runtime/target-1023/debug/deps/zero_tolerance_scale-fd5528aeb4b96720)
+
+running 2 tests
+test zero_atol_and_zero_rtol_is_still_an_input_error ... ok
+test zero_atol_with_identically_zero_components_gives_a_candidate ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+

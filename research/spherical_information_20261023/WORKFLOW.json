@@ -1,0 +1,121 @@
+{
+  "schema_version": 1,
+  "workflow_version": "1.0.0",
+  "task": "both",
+  "unit_id": "spherical-information-20261023",
+  "scope": "Complete theory derivations and lightweight prototype verification; native port and coupled benchmarks are follow-up tasks.",
+  "status": "complete",
+  "theory_stages": [
+    {
+      "id": "R1",
+      "status": "complete",
+      "evidence": "evidence/INPUTS.json"
+    },
+    {
+      "id": "R2",
+      "status": "complete",
+      "evidence": "analysis/PAPER_I_METHODS_KO.md"
+    },
+    {
+      "id": "R3",
+      "status": "complete",
+      "evidence": "analysis/PAPER_II_METHODS_KO.md"
+    },
+    {
+      "id": "R4",
+      "status": "complete",
+      "evidence": "RESEARCH_REPORT_KO.md"
+    },
+    {
+      "id": "R5",
+      "status": "complete",
+      "evidence": "RESEARCH_REPORT_KO.md"
+    },
+    {
+      "id": "R6",
+      "status": "complete",
+      "evidence": "analysis/INDEPENDENT_REVIEW_KO.md"
+    },
+    {
+      "id": "R7",
+      "status": "complete",
+      "evidence": "results/mesh_results.json"
+    },
+    {
+      "id": "R8",
+      "status": "complete",
+      "evidence": "DECISIONS.json"
+    },
+    {
+      "id": "R9",
+      "status": "complete",
+      "evidence": "NEXT_STEPS.json"
+    },
+    {
+      "id": "R10",
+      "status": "complete",
+      "evidence": "HANDOFF_KO.md"
+    }
+  ],
+  "coding_stages": [
+    {
+      "id": "C1",
+      "status": "complete",
+      "evidence": "evidence/INPUTS.json"
+    },
+    {
+      "id": "C2",
+      "status": "complete",
+      "evidence": "RESEARCH_REPORT_KO.md"
+    },
+    {
+      "id": "C3",
+      "status": "complete",
+      "evidence": "analysis/PAPER_II_METHODS_KO.md"
+    },
+    {
+      "id": "C4",
+      "status": "complete",
+      "evidence": "NEXT_STEPS.json"
+    },
+    {
+      "id": "C5",
+      "status": "complete",
+      "evidence": "src/spherical_mesh.py"
+    },
+    {
+      "id": "C6",
+      "status": "complete",
+      "evidence": "results/mesh_validation.json"
+    },
+    {
+      "id": "C7",
+      "status": "complete",
+      "evidence": "results/thomson_results.json"
+    },
+    {
+      "id": "C8",
+      "status": "complete",
+      "evidence": "results/fisher_results.json"
+    },
+    {
+      "id": "C9",
+      "status": "complete",
+      "evidence": "analysis/INDEPENDENT_REVIEW_KO.md"
+    },
+    {
+      "id": "C10",
+      "status": "complete",
+      "evidence": "HANDOFF_KO.md"
+    }
+  ],
+  "reuse_policy": "Unchanged draft and existing solver results reused; new discrete constructions and changed implementations checked.",
+  "failure_classification": {
+    "physical": "energy-only remap changes number; remedy derived",
+    "numerical": "continuum 0.1 shortcut mismatches finite-cell Gram; actual B used",
+    "environment": "SymPy unavailable; exact fractions and Wolfram used",
+    "implementation": "no unresolved failing scoped assertion",
+    "production": "end-to-end native integration not part of this execution"
+  },
+  "storage": "see artifact manifest and separate delivery receipt"
+}
