@@ -558,7 +558,12 @@ impl Rodas5p {
             events: Vec::new(),
             extension: run.segments,
         };
-        let (evaluations, terminal) = crate::events::locate(&mut solution, &problem.events);
+        // Event callbacks are user code too: a fatal callback ends the run.
+        let (evaluations, terminal) = if guard.fatal().is_some() {
+            (0, None)
+        } else {
+            crate::events::locate(&mut solution, &problem.events)
+        };
         solution.stats.event_evaluations = evaluations;
         solution.stats.terminal_event = terminal;
         Ok(solution)

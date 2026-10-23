@@ -187,6 +187,7 @@ fn error_kind(e: &CoreError) -> (&'static str, &str) {
         CoreError::Dimension(m) => ("Dimension", m),
         CoreError::InvalidInput(m) => ("InvalidInput", m),
         CoreError::NonFinite(m) => ("NonFinite", m),
+        CoreError::FatalCallback(m) => ("FatalCallback", m),
         CoreError::LinearSolve(m) => ("LinearSolve", m),
         CoreError::NonlinearSolve(m) => ("NonlinearSolve", m),
         CoreError::Coefficients(m) => ("Coefficients", m),

@@ -690,3 +690,372 @@ fn integrate_dopri5_impl<F: Fn(f64, &[f64], &mut [f64]) -> CoreResult<()> + ?Siz
         stop_reason,
     })
 }
+
+/// Immutable caller-declared binding for the native stage-1 sessions.
+/// Changing a key requires constructing a new session, resetting all caches,
+/// controller history and the initial step. Mutable closure captures cannot be
+/// detected; the caller must change the relevant epoch when its model changes.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct NativeSessionIdentity {
+    pub method: NativeSessionMethod,
+    pub dimension: usize,
+    pub model_epoch: u64,
+    pub provider_epoch: u64,
+    pub norm_epoch: u64,
+    pub tolerance_epoch: u64,
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum NativeSessionMethod {
+    Dopri5,
+    Rodas5pFast,
+}
+impl NativeSessionIdentity {
+    pub fn new(method: NativeSessionMethod, dimension: usize) -> Self {
+        Self {
+            method,
+            dimension,
+            model_epoch: 0,
+            provider_epoch: 0,
+            norm_epoch: 0,
+            tolerance_epoch: 0,
+        }
+    }
+    pub(crate) fn check(self, supplied: Self) -> CoreResult<()> {
+        if self.dimension != supplied.dimension {
+            return Err(CoreError::Dimension(
+                "native session dimension change requires a new workspace".into(),
+            ));
+        }
+        if self != supplied {
+            return Err(CoreError::InvalidInput(
+                "native session identity change requires an explicit restart".into(),
+            ));
+        }
+        Ok(())
+    }
+}
+/// A pause is resumable; only Complete/Stopped are sticky terminal outcomes.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum NativeSessionAdvance {
+    Yield,
+    Checkpoint,
+    Complete,
+    Stopped,
+}
+/// Borrowed accepted state and cumulative work; inspecting it allocates nothing.
+pub struct NativeSessionCheckpoint<'a> {
+    pub t: f64,
+    pub y: &'a [f64],
+    pub proposed_h: f64,
+    pub attempts: usize,
+    pub accepted_steps: usize,
+    pub rejected_steps: usize,
+    pub counters: &'a WorkCounters,
+}
+
+/// Persistent endpoint/landing DOPRI5 session. The full observation schedule,
+/// callback, method, norm and tolerances are frozen at construction. Dense
+/// observations, events and in-place provider replacement are not supported.
+/// `advance_to` accepts only current time or a registered landing observation.
+pub struct Dopri5Session<'a, F: ?Sized> {
+    rhs: &'a F,
+    identity: NativeSessionIdentity,
+    config: Dopri5Config,
+    adaptive: AdaptiveStepConfig,
+    schedule: OutputSchedule,
+    output: Dopri5OutputSession,
+    workspace: Dopri5Workspace,
+    state: Vec<f64>,
+    endpoint: Vec<f64>,
+    error: Vec<f64>,
+    counters: WorkCounters,
+    controller: AdaptiveControllerState,
+    t: f64,
+    tf: f64,
+    proposed_h: f64,
+    attempts: usize,
+    accepted_steps: usize,
+    rejected_steps: usize,
+    rhs_completed: u64,
+    fsal_reuses: u64,
+    stop_reason: Option<Dopri5StopReason>,
+    message: String,
+}
+impl<'a, F: Fn(f64, &[f64], &mut [f64]) -> CoreResult<()> + ?Sized> Dopri5Session<'a, F> {
+    pub fn new(
+        rhs: &'a F,
+        t_span: (f64, f64),
+        y0: &[f64],
+        config: &Dopri5Config,
+        output: &OutputSchedule,
+        identity: NativeSessionIdentity,
+    ) -> CoreResult<Self> {
+        NativeSessionIdentity {
+            method: NativeSessionMethod::Dopri5,
+            dimension: y0.len(),
+            ..identity
+        }
+        .check(identity)?;
+        if y0.is_empty() {
+            return Err(CoreError::Dimension("DOPRI5 state is empty".into()));
+        }
+        if y0.iter().any(|x| !x.is_finite()) {
+            return Err(CoreError::NonFinite(
+                "DOPRI5 initial state is nonfinite".into(),
+            ));
+        }
+        let mut adaptive = config.adaptive.clone();
+        if let Some(atol) = config.atol.as_deref() {
+            if atol.len() != y0.len() {
+                return Err(CoreError::Dimension(
+                    "DOPRI5 atol length differs from dimension".into(),
+                ));
+            }
+            if atol.iter().any(|a| !a.is_finite() || *a < 0.0) {
+                return Err(CoreError::InvalidInput(
+                    "DOPRI5 atol must be finite and nonnegative".into(),
+                ));
+            }
+            adaptive.atol = atol.iter().copied().fold(0.0_f64, f64::max);
+        }
+        adaptive.validate()?;
+        let output_session = Dopri5OutputSession::new(&adaptive, output, t_span, y0, false)?;
+        Ok(Self {
+            rhs,
+            identity,
+            config: config.clone(),
+            schedule: output.clone(),
+            output: output_session,
+            workspace: Dopri5Workspace::new(y0.len())?,
+            state: y0.to_vec(),
+            endpoint: vec![0.0; y0.len()],
+            error: vec![0.0; y0.len()],
+            counters: WorkCounters::default(),
+            controller: AdaptiveControllerState::default(),
+            t: t_span.0,
+            tf: t_span.1,
+            proposed_h: adaptive.initial_step,
+            adaptive,
+            attempts: 0,
+            accepted_steps: 0,
+            rejected_steps: 0,
+            rhs_completed: 0,
+            fsal_reuses: 0,
+            stop_reason: None,
+            message: String::from("DOPRI5 reached the final time"),
+        })
+    }
+    pub fn checkpoint(&self) -> NativeSessionCheckpoint<'_> {
+        NativeSessionCheckpoint {
+            t: self.t,
+            y: &self.state,
+            proposed_h: self.proposed_h,
+            attempts: self.attempts,
+            accepted_steps: self.accepted_steps,
+            rejected_steps: self.rejected_steps,
+            counters: &self.counters,
+        }
+    }
+    pub fn advance_to(
+        &mut self,
+        target: f64,
+        attempt_quota: usize,
+        identity: NativeSessionIdentity,
+    ) -> CoreResult<NativeSessionAdvance> {
+        self.identity.check(identity)?;
+        if self.stop_reason.is_some() {
+            return Ok(NativeSessionAdvance::Stopped);
+        }
+        if self.t == self.tf {
+            return Ok(NativeSessionAdvance::Complete);
+        }
+        if !target.is_finite()
+            || target < self.t
+            || target > self.tf
+            || (target != self.t && !self.schedule.times().contains(&target))
+        {
+            return Err(CoreError::InvalidInput(
+                "native session target must be current or a registered landing time".into(),
+            ));
+        }
+        let call_start = self.attempts;
+        while self.t < target {
+            if self.attempts == self.adaptive.max_attempts {
+                self.stop_reason = Some(Dopri5StopReason::AttemptBudget);
+                self.message = "DOPRI5 attempt budget exhausted".into();
+                break;
+            }
+            if self.attempts - call_start >= attempt_quota {
+                return Ok(NativeSessionAdvance::Yield);
+            }
+            let trial = match self.output.trial(self.t, self.proposed_h, &self.controller) {
+                Ok(Some(trial)) => trial,
+                Ok(None) => {
+                    self.stop_reason = Some(Dopri5StopReason::StepUnderflow);
+                    self.message =
+                        "DOPRI5 cannot advance under the represented/minimum step policy".into();
+                    break;
+                }
+                Err(error) => {
+                    self.stop_reason = Some(Dopri5StopReason::StepUnderflow);
+                    self.message = error.to_string();
+                    break;
+                }
+            };
+            self.attempts += 1;
+            if !self.config.fsal {
+                self.workspace.first_valid = false;
+            }
+            if self.workspace.first_valid {
+                self.fsal_reuses = self.fsal_reuses.saturating_add(1);
+            }
+            let trial_result = self.workspace.trial(
+                self.rhs,
+                self.t,
+                &self.state,
+                trial.h,
+                &mut self.endpoint,
+                &mut self.error,
+                &mut self.counters,
+                &mut self.rhs_completed,
+                self.config.recover_nonfinite_rhs,
+            );
+            let norm = match trial_result {
+                Ok(()) => match error_norm(
+                    &self.state,
+                    &self.endpoint,
+                    &self.error,
+                    self.adaptive.atol,
+                    self.config.atol.as_deref(),
+                    self.adaptive.rtol,
+                ) {
+                    Ok(norm) => norm,
+                    Err(error) => {
+                        self.rejected_steps += 1;
+                        self.counters.rejected_steps =
+                            self.counters.rejected_steps.saturating_add(1);
+                        self.stop_reason = Some(Dopri5StopReason::Controller);
+                        self.message = error.to_string();
+                        break;
+                    }
+                },
+                Err(failure) => {
+                    self.rejected_steps += 1;
+                    self.counters.rejected_steps = self.counters.rejected_steps.saturating_add(1);
+                    if failure.reason == Dopri5StopReason::NonFinite || failure.retryable {
+                        self.counters.nonfinite_step_failures =
+                            self.counters.nonfinite_step_failures.saturating_add(1);
+                    }
+                    if !failure.retryable {
+                        self.stop_reason = Some(failure.reason);
+                        self.message = failure.error.to_string();
+                        break;
+                    }
+                    match adaptive_next_step_after_attempt_prevalidated(
+                        &mut self.controller,
+                        &self.adaptive,
+                        trial.requested_h,
+                        trial.h,
+                        f64::INFINITY,
+                        DOPRI5_ADAPTIVE_METHOD.estimator.order,
+                        false,
+                        trial.clipped,
+                    ) {
+                        Ok(next) => {
+                            self.proposed_h = next;
+                            continue;
+                        }
+                        Err(error) => {
+                            self.stop_reason = Some(Dopri5StopReason::Controller);
+                            self.message = error.to_string();
+                            break;
+                        }
+                    }
+                }
+            };
+            let accepted = norm <= 1.0;
+            if accepted {
+                if let Err(error) = self.output.accept(
+                    self.t,
+                    &self.state,
+                    self.t + trial.h,
+                    &self.endpoint,
+                    &self.workspace.stages,
+                    trial.clipped,
+                ) {
+                    self.rejected_steps += 1;
+                    self.counters.rejected_steps = self.counters.rejected_steps.saturating_add(1);
+                    self.stop_reason = Some(Dopri5StopReason::Output);
+                    self.message = error.to_string();
+                    break;
+                }
+                self.t += trial.h;
+                self.state.copy_from_slice(&self.endpoint);
+                self.accepted_steps += 1;
+                self.counters.accepted_steps = self.counters.accepted_steps.saturating_add(1);
+                if self.config.fsal {
+                    self.workspace.accept_fsal();
+                }
+            } else {
+                self.rejected_steps += 1;
+                self.counters.rejected_steps = self.counters.rejected_steps.saturating_add(1);
+                self.counters.local_error_failures =
+                    self.counters.local_error_failures.saturating_add(1);
+            }
+            if self.t == self.tf {
+                break;
+            }
+            match adaptive_next_step_after_attempt_prevalidated(
+                &mut self.controller,
+                &self.adaptive,
+                trial.requested_h,
+                trial.h,
+                norm,
+                DOPRI5_ADAPTIVE_METHOD.estimator.order,
+                accepted,
+                trial.clipped,
+            ) {
+                Ok(next) => self.proposed_h = next,
+                Err(error) => {
+                    self.stop_reason = Some(Dopri5StopReason::Controller);
+                    self.message = error.to_string();
+                    break;
+                }
+            }
+        }
+
+        if self.t == self.tf {
+            Ok(NativeSessionAdvance::Complete)
+        } else if self.stop_reason.is_some() {
+            Ok(NativeSessionAdvance::Stopped)
+        } else if self.attempts == self.adaptive.max_attempts {
+            self.stop_reason = Some(Dopri5StopReason::AttemptBudget);
+            self.message = "DOPRI5 attempt budget exhausted".into();
+            Ok(NativeSessionAdvance::Stopped)
+        } else {
+            Ok(NativeSessionAdvance::Checkpoint)
+        }
+    }
+    pub fn finish(self) -> CoreResult<Dopri5IntegrationResult> {
+        let success = self.t == self.tf && self.stop_reason.is_none();
+        let message = if !success && self.stop_reason.is_none() {
+            "DOPRI5 paused at accepted checkpoint".into()
+        } else {
+            self.message
+        };
+        let observed = self
+            .output
+            .finish(success, message, self.counters, self.accepted_steps)?;
+        Ok(Dopri5IntegrationResult {
+            observed,
+            final_time: self.t,
+            final_state: self.state,
+            attempts: self.attempts,
+            accepted_steps: self.accepted_steps,
+            rejected_steps: self.rejected_steps,
+            rhs_completed: self.rhs_completed,
+            fsal_reuses: self.fsal_reuses,
+            stop_reason: self.stop_reason,
+        })
+    }
+}

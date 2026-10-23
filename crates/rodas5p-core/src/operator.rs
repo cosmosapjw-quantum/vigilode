@@ -74,6 +74,16 @@ pub struct OperatorApplicationWork {
 }
 
 impl OperatorApplicationWork {
+    /// Add work actually performed, including a partial failed application.
+    pub fn accumulate(&mut self, other: Self) {
+        self.jvp_calls = self.jvp_calls.saturating_add(other.jvp_calls);
+        self.jvp_vectors = self.jvp_vectors.saturating_add(other.jvp_vectors);
+        self.mass_matvecs = self.mass_matvecs.saturating_add(other.mass_matvecs);
+        self.block_matvecs = self.block_matvecs.saturating_add(other.block_matvecs);
+        self.jacobian_matvecs = self.jacobian_matvecs.saturating_add(other.jacobian_matvecs);
+        self.state_vectors = self.state_vectors.saturating_add(other.state_vectors);
+    }
+
     fn repeated(self, count: usize) -> Self {
         let count = u64::try_from(count).unwrap_or(u64::MAX);
         Self {
@@ -106,6 +116,21 @@ impl OperatorApplicationWork {
 pub trait LinearOperator: Send + Sync {
     fn dimension(&self) -> usize;
     fn apply(&self, x: &[f64], y: &mut [f64]) -> CoreResult<()>;
+
+    /// Add actual partial work before returning an error when the provider
+    /// can observe it. The default knows only successful application work;
+    /// failed custom applications have unknown partial work, not a zero-work
+    /// guarantee. Implementations add to, rather than replace, `work`.
+    fn apply_with_work(
+        &self,
+        x: &[f64],
+        y: &mut [f64],
+        work: &mut OperatorApplicationWork,
+    ) -> CoreResult<()> {
+        self.apply(x, y)?;
+        work.accumulate(self.application_work());
+        Ok(())
+    }
 
     /// Apply one operator to several independent right-hand-side rows.
     ///
@@ -251,6 +276,35 @@ where
     fn apply(&self, x: &[f64], y: &mut [f64]) -> CoreResult<()> {
         (self.f)(x, y)
     }
+    fn apply_with_work(
+        &self,
+        x: &[f64],
+        y: &mut [f64],
+        work: &mut OperatorApplicationWork,
+    ) -> CoreResult<()> {
+        if x.len() != self.n || y.len() != self.n {
+            return Err(CoreError::Dimension(
+                "closure operator shape mismatch".into(),
+            ));
+        }
+        // The native JVP provider declares one callback, entered immediately
+        // below. Composite/custom closure declarations do not reveal partial
+        // failure work and retain the conservative successful-only default.
+        if self.application_work
+            == (OperatorApplicationWork {
+                jvp_calls: 1,
+                jvp_vectors: 1,
+                ..OperatorApplicationWork::default()
+            })
+        {
+            work.accumulate(self.application_work);
+            (self.f)(x, y)
+        } else {
+            (self.f)(x, y)?;
+            work.accumulate(self.application_work);
+            Ok(())
+        }
+    }
     fn application_work(&self) -> OperatorApplicationWork {
         self.application_work
     }
@@ -274,7 +328,13 @@ pub fn apply_counted(
     counters: &mut WorkCounters,
     category: ApplyCategory,
 ) -> CoreResult<()> {
-    op.apply(x, y)?;
+    // Shape refusal precedes entry. Once entered, the solver-level category
+    // counts an attempted application independently of provider completion.
+    if x.len() != op.dimension() || y.len() != op.dimension() {
+        return Err(CoreError::Dimension(
+            "counted operator shape mismatch".into(),
+        ));
+    }
     let work = op.application_work();
     match category {
         ApplyCategory::Krylov => counters.linear_matvecs += 1,
@@ -287,8 +347,10 @@ pub fn apply_counted(
             .linear_matvec_vectors
             .saturating_add(work.state_vector_units());
     }
-    work.charge(counters);
-    Ok(())
+    let mut actual = OperatorApplicationWork::default();
+    let outcome = op.apply_with_work(x, y, &mut actual);
+    actual.charge(counters);
+    outcome
 }
 
 pub fn apply_rows_counted(
@@ -333,7 +395,15 @@ pub fn apply_jvp_counted(
     y: &mut [f64],
     counters: &mut WorkCounters,
 ) -> CoreResult<()> {
-    jacobian.apply(x, y)?;
+    if x.len() != jacobian.dimension() || y.len() != jacobian.dimension() {
+        return Err(CoreError::Dimension(
+            "counted Jacobian shape mismatch".into(),
+        ));
+    }
+    let mut actual = OperatorApplicationWork::default();
+    let outcome = jacobian.apply_with_work(x, y, &mut actual);
+    actual.charge(counters);
+    outcome?;
     // An operator that declares its provenance (a JVP callback or an
     // explicit Jacobian product) is charged exactly that; an undeclared
     // operator keeps the historical role-based count of one JVP.
@@ -341,8 +411,6 @@ pub fn apply_jvp_counted(
     if declared == OperatorApplicationWork::default() {
         counters.jvp_calls = counters.jvp_calls.saturating_add(1);
         counters.jvp_vectors = counters.jvp_vectors.saturating_add(1);
-    } else {
-        declared.charge(counters);
     }
     Ok(())
 }
@@ -592,6 +660,44 @@ impl LinearOperator for ShiftedOperator {
             ))
         }
     }
+    fn apply_with_work(
+        &self,
+        x: &[f64],
+        y: &mut [f64],
+        work: &mut OperatorApplicationWork,
+    ) -> CoreResult<()> {
+        let n = self.dimension();
+        if x.len() != n || y.len() != n {
+            return Err(CoreError::Dimension(
+                "shifted operator shape mismatch".into(),
+            ));
+        }
+        let mut partial = OperatorApplicationWork::default();
+        if let Err(error) = self.jacobian.apply_with_work(x, y, &mut partial) {
+            work.accumulate(partial);
+            return Err(error);
+        }
+        // Preserve the complete successful declaration (including historical
+        // role-based JVP counts), but only after the mass action is executed.
+        if let Some(mass) = &self.mass {
+            for (i, y_i) in y.iter_mut().enumerate() {
+                let mass_x = mass.row(i).iter().zip(x).map(|(a, b)| a * b).sum::<f64>();
+                *y_i = mass_x - self.h_gamma * *y_i;
+            }
+        } else {
+            for (y_i, x_i) in y.iter_mut().zip(x) {
+                *y_i = *x_i - self.h_gamma * *y_i;
+            }
+        }
+        work.accumulate(self.application_work);
+        if y.iter().all(|v| v.is_finite()) {
+            Ok(())
+        } else {
+            Err(CoreError::NonFinite(
+                "shifted operator produced NaN/Inf".into(),
+            ))
+        }
+    }
     fn explicit(&self) -> Option<&DenseMatrix> {
         self.explicit.as_ref()
     }
@@ -625,4 +731,106 @@ pub fn apply_preconditioner(
         .preconditioner_vectors
         .saturating_add(p.application_vectors());
     Ok(())
+}
+
+#[cfg(test)]
+mod terminal_application_work_tests {
+    use super::*;
+
+    fn jvp_work() -> OperatorApplicationWork {
+        OperatorApplicationWork {
+            jvp_calls: 1,
+            jvp_vectors: 1,
+            ..Default::default()
+        }
+    }
+
+    #[test]
+    fn failed_jvp_charges_callback_once_before_shifted_mass() {
+        for fatal in [false, true] {
+            let j: Arc<dyn LinearOperator> = Arc::new(ClosureOperator::with_application_work(
+                1,
+                move |_: &[f64], _: &mut [f64]| {
+                    if fatal {
+                        Err(CoreError::FatalCallback("stop".into()))
+                    } else {
+                        Err(CoreError::NonFinite("retry".into()))
+                    }
+                },
+                jvp_work(),
+            ));
+            let op = ShiftedOperator::new(Some(DenseMatrix::identity(1)), j, 0.5, 1.0).unwrap();
+            let mut counters = WorkCounters::default();
+            let mut out = [0.0];
+            assert!(
+                apply_counted(&op, &[1.0], &mut out, &mut counters, ApplyCategory::Krylov).is_err()
+            );
+            assert_eq!(counters.jvp_calls, 1);
+            assert_eq!(counters.jvp_vectors, 1);
+            assert_eq!(counters.mass_matvecs, 0);
+            assert_eq!(counters.linear_matvecs, 1);
+            assert_eq!(counters.linear_matvec_vectors, 1);
+            let mut refused = WorkCounters::default();
+            assert!(
+                apply_counted(&op, &[], &mut out, &mut refused, ApplyCategory::Krylov).is_err()
+            );
+            assert_eq!(refused.jvp_calls, 0);
+            assert_eq!(refused.mass_matvecs, 0);
+            assert_eq!(refused.linear_matvecs, 0);
+            assert_eq!(refused.linear_matvec_vectors, 0);
+            let mut counters = WorkCounters::default();
+            assert!(apply_jvp_counted(&op, &[1.0], &mut out, &mut counters).is_err());
+            assert_eq!(counters.jvp_calls, 1);
+            assert_eq!(counters.mass_matvecs, 0);
+            let mut partial = OperatorApplicationWork::default();
+            assert!(op.apply_with_work(&[], &mut out, &mut partial).is_err());
+            assert_eq!(partial, OperatorApplicationWork::default());
+        }
+    }
+
+    #[test]
+    fn successful_shifted_work_is_unchanged_and_hook_is_additive() {
+        let j: Arc<dyn LinearOperator> = Arc::new(ClosureOperator::with_application_work(
+            1,
+            |v: &[f64], out: &mut [f64]| {
+                out[0] = -v[0];
+                Ok(())
+            },
+            jvp_work(),
+        ));
+        let op = ShiftedOperator::new(Some(DenseMatrix::identity(1)), j, 0.5, 1.0).unwrap();
+        let mut reference = [0.0];
+        op.apply(&[2.0], &mut reference).unwrap();
+        let mut actual = [0.0];
+        let mut work = jvp_work();
+        op.apply_with_work(&[2.0], &mut actual, &mut work).unwrap();
+        assert_eq!(reference[0].to_bits(), actual[0].to_bits());
+        assert_eq!(work.jvp_calls, 2);
+        assert_eq!(work.mass_matvecs, 1);
+        let mut counters = WorkCounters::default();
+        apply_counted(
+            &op,
+            &[2.0],
+            &mut actual,
+            &mut counters,
+            ApplyCategory::Krylov,
+        )
+        .unwrap();
+        assert_eq!(
+            (
+                counters.jvp_calls,
+                counters.jvp_vectors,
+                counters.mass_matvecs,
+                counters.linear_matvecs
+            ),
+            (1, 1, 1, 1)
+        );
+        let mut refused = OperatorApplicationWork::default();
+        assert!(
+            op.jacobian
+                .apply_with_work(&[], &mut actual, &mut refused)
+                .is_err()
+        );
+        assert_eq!(refused, OperatorApplicationWork::default());
+    }
 }

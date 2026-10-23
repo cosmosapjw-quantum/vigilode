@@ -2133,6 +2133,7 @@ impl Rodas5pMfFastWorkspace {
         // The kind of the last rejection since the last accepted step (the
         // partial record only; never read by the step arithmetic).
         let mut last_failure = None;
+        let mut fatal_callback = false;
         while t < tf && attempts < adaptive.max_attempts {
             let Some(next_h) =
                 crate::output::adaptive_end_step(t, h, tf, adaptive.step_cap(), &controller)?
@@ -2192,10 +2193,16 @@ impl Rodas5pMfFastWorkspace {
                 &mut counters,
             );
             fresh_state = self.jvp.is_some();
-            observer(t, &y, trial_h, outcome.as_ref().ok().copied(), self);
+            if !matches!(&outcome, Err(CoreError::FatalCallback(_))) {
+                observer(t, &y, trial_h, outcome.as_ref().ok().copied(), self);
+            }
             let (error, failure) = match outcome {
                 Ok(error) if error <= 1.0 => (error, None),
                 Ok(error) => (error, Some(AdaptiveFailureKind::LocalError)),
+                Err(CoreError::FatalCallback(_)) => {
+                    fatal_callback = true;
+                    (f64::INFINITY, Some(AdaptiveFailureKind::NonFinite))
+                }
                 Err(error) => match failure_kind(&error) {
                     Some(kind) => (f64::INFINITY, Some(kind)),
                     None => return Err(error),
@@ -2238,6 +2245,9 @@ impl Rodas5pMfFastWorkspace {
                     }
                 }
             }
+            if fatal_callback {
+                break;
+            }
             h = rodas_next_step_after_attempt(
                 &mut controller,
                 adaptive,
@@ -2249,8 +2259,14 @@ impl Rodas5pMfFastWorkspace {
             )?;
         }
         let success = t >= tf;
-        let partial =
+        let mut partial =
             DriverPartial::after_loop(t, tf, &y, attempts, adaptive.max_attempts, last_failure);
+        if fatal_callback {
+            partial
+                .as_mut()
+                .expect("fatal trial leaves an accepted prefix")
+                .reason = crate::DriverStopReason::FatalCallback;
+        }
         let (times, states, output_clipped_steps) = if success {
             collector.finish()?
         } else {
@@ -2264,7 +2280,11 @@ impl Rodas5pMfFastWorkspace {
                 message: if success {
                     "success".into()
                 } else {
-                    "maximum step count or minimum step reached".into()
+                    if fatal_callback {
+                        "fatal callback; accepted prefix retained".into()
+                    } else {
+                        "maximum step count or minimum step reached".into()
+                    }
                 },
                 counters,
                 internal_steps,

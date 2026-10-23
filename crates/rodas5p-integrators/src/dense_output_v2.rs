@@ -1930,6 +1930,7 @@ fn integrate_adaptive_dense_impl(
     // The kind of the last rejection since the last accepted step (the
     // partial record only; never read by the step arithmetic).
     let mut last_failure = None;
+    let mut fatal_callback = false;
 
     while t < tf && diagnostics.attempts < adaptive.max_attempts {
         let Some(next_h) =
@@ -1995,6 +1996,21 @@ fn integrate_adaptive_dense_impl(
         };
         let report = match trial {
             Ok(report) => report,
+            Err(CoreError::FatalCallback(_)) => {
+                fatal_callback = true;
+                last_failure = Some(AdaptiveFailureKind::NonFinite);
+                counters.rejected_steps += 1;
+                record_adaptive_work_failure(&mut counters, AdaptiveFailureKind::NonFinite);
+                diagnostics.record_with_failure(
+                    trial_h,
+                    f64::INFINITY,
+                    crate::RODAS5P_ESTIMATOR_ORDER,
+                    "rodas5p-embedded",
+                    false,
+                    last_failure,
+                );
+                break;
+            }
             Err(error) if adaptive_failure_kind(&error).is_some() => {
                 let failure = adaptive_failure_kind(&error).expect("failure kind checked");
                 last_failure = Some(failure);
@@ -2091,6 +2107,15 @@ fn integrate_adaptive_dense_impl(
                         accepted: !rejected,
                     });
                 }
+                Err(CoreError::FatalCallback(_)) => {
+                    // Fatal interior probes reject the candidate even in report
+                    // mode, charge their work, and stop at the accepted prefix.
+                    fatal_callback = true;
+                    dense_report.estimate_failures += 1;
+                    estimate_failure = Some(AdaptiveFailureKind::NonFinite);
+                    accepted = false;
+                    error = f64::INFINITY;
+                }
                 Err(estimate_error) => {
                     if matches!(
                         control,
@@ -2115,10 +2140,12 @@ fn integrate_adaptive_dense_impl(
                 }
             }
             dense_report.counters.accumulate(estimate_work);
-            if matches!(
-                control,
-                DenseErrorControl::Enforce | DenseErrorControl::WFilteredEnforce
-            ) {
+            if fatal_callback
+                || matches!(
+                    control,
+                    DenseErrorControl::Enforce | DenseErrorControl::WFilteredEnforce
+                )
+            {
                 counters.accumulate(estimate_work);
             }
         }
@@ -2137,6 +2164,9 @@ fn integrate_adaptive_dense_impl(
             record_adaptive_work_failure(&mut counters, failure);
         }
         last_failure = failure;
+        if fatal_callback {
+            break;
+        }
         if accepted {
             let old_t = t;
             t = report.t_new;
@@ -2181,7 +2211,7 @@ fn integrate_adaptive_dense_impl(
         }
     }
     diagnostics.fallback_steps = counters.fallback_steps as usize;
-    let partial = DriverPartial::after_loop(
+    let mut partial = DriverPartial::after_loop(
         t,
         tf,
         &state,
@@ -2189,6 +2219,12 @@ fn integrate_adaptive_dense_impl(
         adaptive.max_attempts,
         last_failure,
     );
+    if fatal_callback {
+        partial
+            .as_mut()
+            .expect("fatal trial leaves an accepted prefix")
+            .reason = crate::DriverStopReason::FatalCallback;
+    }
     dense_adaptive_result(t, tf, collector, counters, internal_steps, diagnostics)
         .map(|result| (result, dense_report, partial))
 }

@@ -20,6 +20,7 @@ mod bdf;
 mod block;
 mod bound_collective;
 mod bound_pr101;
+pub mod physical_error_budget;
 mod pr101_verified;
 pub use pr101_verified::{
     Pr101Bound, Pr101Model, Pr101Output, Pr101Run, Pr101VerifiedError, Pr101VerifiedSegment,
@@ -233,9 +234,10 @@ pub use dense_output_v2::{
 };
 pub use dopri5::{
     DOPRI5_A, DOPRI5_ADAPTIVE_METHOD, DOPRI5_B, DOPRI5_B_EMBEDDED, DOPRI5_C, Dopri5Config,
-    Dopri5IntegrationResult, Dopri5StopReason, Dopri5Workspace, integrate_dopri5_dense_observed,
-    integrate_dopri5_dense_observed_with_norm, integrate_dopri5_observed,
-    integrate_dopri5_observed_with_norm,
+    Dopri5IntegrationResult, Dopri5Session, Dopri5StopReason, Dopri5Workspace,
+    NativeSessionAdvance, NativeSessionCheckpoint, NativeSessionIdentity, NativeSessionMethod,
+    integrate_dopri5_dense_observed, integrate_dopri5_dense_observed_with_norm,
+    integrate_dopri5_observed, integrate_dopri5_observed_with_norm,
 };
 pub use dopri5_dense::DOPRI5_DENSE_P;
 pub use exponential::{
@@ -421,8 +423,10 @@ pub use rodas5p_fast::{
     RODAS5P_FAST_BANDED_SLICES_DRIVER_ID, RODAS5P_FAST_CLIENT_DRIVER_ID,
     RODAS5P_FAST_COLEXT_DRIVER_ID, RODAS5P_FAST_COLEXT64_DRIVER_ID, RODAS5P_FAST_DRIVER_ID,
     RODAS5P_FAST_SMALL_LU_MAX, RODAS5P_FAST_SPARSE_DENSITY_MAX, Rodas5pFastBandedResult,
-    Rodas5pFastLu, Rodas5pFastOptions, Rodas5pFastResult, integrate_rodas5p_fast_banded_observed,
-    integrate_rodas5p_fast_banded_observed_with_atol,
+    Rodas5pFastLu, Rodas5pFastOptions, Rodas5pFastResult, Rodas5pFastSession,
+    Rodas5pFastSessionResult, Rodas5pSessionFailure, Rodas5pSessionFailureKind,
+    Rodas5pSessionTermination,
+    integrate_rodas5p_fast_banded_observed, integrate_rodas5p_fast_banded_observed_with_atol,
     integrate_rodas5p_fast_banded_observed_with_atol_and_control,
     integrate_rodas5p_fast_banded_observed_with_kernel,
     integrate_rodas5p_fast_banded_observed_with_options,

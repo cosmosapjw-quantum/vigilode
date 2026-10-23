@@ -223,6 +223,8 @@ pub struct Rodas5pFastBandedResult {
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum DriverStopReason {
+    /// A callback requested immediate termination; no retry follows.
+    FatalCallback,
     /// The attempt budget `AdaptiveStepConfig::max_attempts` was used up.
     AttemptBudget,
     /// The next step fell below `AdaptiveStepConfig::min_step` (or no
@@ -2320,6 +2322,7 @@ fn integrate_fast_in<S: StepSink>(
     let mut last_failure = None;
     // The controller's proposal when the accept control stopped the run.
     let mut client_stop = None;
+    let mut fatal_callback = false;
     while t < tf && attempts < adaptive.max_attempts {
         let Some(next_h) =
             crate::output::adaptive_end_step(t, h, tf, adaptive.step_cap(), &controller)?
@@ -2378,6 +2381,10 @@ fn integrate_fast_in<S: StepSink>(
         let (error, failure) = match outcome {
             Ok(error) if error <= 1.0 => (error, None),
             Ok(error) => (error, Some(AdaptiveFailureKind::LocalError)),
+            Err(CoreError::FatalCallback(_)) => {
+                fatal_callback = true;
+                (f64::INFINITY, Some(AdaptiveFailureKind::NonFinite))
+            }
             Err(error) => match failure_kind(&error) {
                 Some(kind) => {
                     // A failed attempt may have left a partial Jacobian or
@@ -2418,6 +2425,9 @@ fn integrate_fast_in<S: StepSink>(
                     AdaptiveFailureKind::NonFinite => counters.nonfinite_step_failures += 1,
                 }
             }
+        }
+        if fatal_callback {
+            break;
         }
         let requested_h = h;
         h = if options.prevalidated_controller {
@@ -2476,6 +2486,12 @@ fn integrate_fast_in<S: StepSink>(
     let success = t >= tf;
     let mut partial =
         DriverPartial::after_loop(t, tf, &y, attempts, adaptive.max_attempts, last_failure);
+    if fatal_callback {
+        partial
+            .as_mut()
+            .expect("fatal trial leaves an accepted prefix")
+            .reason = DriverStopReason::FatalCallback;
+    }
     // A stop before `tf` is the client's, even on the budget's last attempt;
     // a stop at `tf` leaves the completed run a success.
     if let (Some(partial), Some(h_next)) = (partial.as_mut(), client_stop) {
@@ -2495,6 +2511,8 @@ fn integrate_fast_in<S: StepSink>(
             success,
             message: if success {
                 "success".into()
+            } else if fatal_callback {
+                "fatal callback; accepted prefix retained".into()
             } else if client_stop.is_some() {
                 "stopped by the client's accept control".into()
             } else {
@@ -2564,3 +2582,492 @@ mod tests {
 #[cfg(test)]
 #[path = "banded_exact_tests.rs"]
 mod banded_exact_tests;
+
+/// Stage at which an unrecoverable native session error was observed.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Rodas5pSessionFailureKind {
+    CallbackError,
+    Clock,
+    Output,
+    Controller,
+}
+#[derive(Debug)]
+pub struct Rodas5pSessionFailure {
+    pub kind: Rodas5pSessionFailureKind,
+    pub error: CoreError,
+}
+#[derive(Debug)]
+pub enum Rodas5pSessionTermination {
+    Complete,
+    Paused,
+    DriverStop(DriverStopReason),
+    Failure(Rodas5pSessionFailure),
+}
+/// A session always retains its accepted physical prefix, cumulative work,
+/// and original terminal error, including errors outside retry categories.
+#[derive(Debug)]
+pub struct Rodas5pFastSessionResult {
+    pub run: Rodas5pFastResult,
+    pub final_time: f64,
+    pub final_state: Vec<f64>,
+    pub termination: Rodas5pSessionTermination,
+}
+
+/// Stage-1 persistent native dense-Jacobian RODAS5P endpoint session.
+/// One NoSink workspace and one immutable landing schedule are retained.
+/// Banded, client, dense-output, mass, matrix-free and sequential session
+/// routes are not supplied by this API. Provider/epoch replacement requires
+/// a new session; no cache is carried across an identity change.
+pub struct Rodas5pFastSession<'a> {
+    problem: &'a OdeProblem,
+    identity: crate::NativeSessionIdentity,
+    adaptive: AdaptiveStepConfig,
+    schedule: OutputSchedule,
+    work: Workspace,
+    collector: OutputCollector,
+    y: Vec<f64>,
+    t: f64,
+    tf: f64,
+    h: f64,
+    controller: AdaptiveControllerState,
+    counters: WorkCounters,
+    attempts: usize,
+    accepted_steps: usize,
+    rejected_steps: usize,
+    reuses: usize,
+    internal_steps: usize,
+    fresh_state: bool,
+    last_failure: Option<AdaptiveFailureKind>,
+    terminal: Option<DriverStopReason>,
+    failure: Option<Rodas5pSessionFailure>,
+}
+impl<'a> Rodas5pFastSession<'a> {
+    pub fn new(
+        problem: &'a OdeProblem,
+        t_span: (f64, f64),
+        y0: &[f64],
+        adaptive: &AdaptiveStepConfig,
+        output: &OutputSchedule,
+        identity: crate::NativeSessionIdentity,
+    ) -> CoreResult<Self> {
+        crate::NativeSessionIdentity {
+            method: crate::NativeSessionMethod::Rodas5pFast,
+            dimension: problem.dimension,
+            ..identity
+        }
+        .check(identity)?;
+        if problem.declared_band().is_some() {
+            return Err(CoreError::InvalidInput(
+                "banded native sessions are not supported by this stage-1 API".into(),
+            ));
+        }
+        if !problem.has_explicit_jacobian() {
+            return Err(CoreError::InvalidInput(
+                "native RODAS session requires an explicit dense Jacobian".into(),
+            ));
+        }
+        validate_fast_run(problem, t_span, y0, adaptive, &[])?;
+        let collector =
+            OutputCollector::new(output, t_span, y0)?.with_max_step(adaptive.step_cap());
+        Ok(Self {
+            problem,
+            identity,
+            adaptive: adaptive.clone(),
+            schedule: output.clone(),
+            work: Workspace::new(problem.dimension, Rodas5pFastOptions::default().lu_policy)?,
+            collector,
+            y: y0.to_vec(),
+            t: t_span.0,
+            tf: t_span.1,
+            h: adaptive
+                .initial_step
+                .min(crate::output::step_to(t_span.0, t_span.1)?),
+            controller: AdaptiveControllerState::default(),
+            counters: WorkCounters::default(),
+            attempts: 0,
+            accepted_steps: 0,
+            rejected_steps: 0,
+            reuses: 0,
+            internal_steps: 0,
+            fresh_state: false,
+            last_failure: None,
+            terminal: None,
+            failure: None,
+        })
+    }
+    fn latch_failure(
+        &mut self,
+        kind: Rodas5pSessionFailureKind,
+        error: CoreError,
+        reject_entered_trial: bool,
+    ) {
+        if reject_entered_trial {
+            self.counters.rejected_steps += 1;
+            self.rejected_steps += 1;
+            self.last_failure = None;
+        }
+        self.fresh_state = false;
+        if self.failure.is_none() {
+            self.failure = Some(Rodas5pSessionFailure { kind, error });
+        }
+    }
+    pub fn failure(&self) -> Option<&Rodas5pSessionFailure> {
+        self.failure.as_ref()
+    }
+    pub fn checkpoint(&self) -> crate::NativeSessionCheckpoint<'_> {
+        crate::NativeSessionCheckpoint {
+            t: self.t,
+            y: &self.y,
+            proposed_h: self.h,
+            attempts: self.attempts,
+            accepted_steps: self.accepted_steps,
+            rejected_steps: self.rejected_steps,
+            counters: &self.counters,
+        }
+    }
+    pub fn advance_to(
+        &mut self,
+        target: f64,
+        attempt_quota: usize,
+        identity: crate::NativeSessionIdentity,
+    ) -> CoreResult<crate::NativeSessionAdvance> {
+        self.identity.check(identity)?;
+        if self.terminal.is_some() || self.failure.is_some() {
+            return Ok(crate::NativeSessionAdvance::Stopped);
+        }
+        if self.t == self.tf {
+            return Ok(crate::NativeSessionAdvance::Complete);
+        }
+        if !target.is_finite()
+            || target < self.t
+            || target > self.tf
+            || (target != self.t && !self.schedule.times().contains(&target))
+        {
+            return Err(CoreError::InvalidInput(
+                "native session target must be current or a registered landing time".into(),
+            ));
+        }
+        let call_start = self.attempts;
+        while self.t < target && self.attempts < self.adaptive.max_attempts {
+            if self.attempts - call_start >= attempt_quota {
+                return Ok(crate::NativeSessionAdvance::Yield);
+            }
+            let next_h = match crate::output::adaptive_end_step(
+                self.t,
+                self.h,
+                self.tf,
+                self.adaptive.step_cap(),
+                &self.controller,
+            ) {
+                Ok(Some(h)) => h,
+                Ok(None) => {
+                    self.terminal = Some(DriverStopReason::MinimumStep);
+                    break;
+                }
+                Err(error) => {
+                    self.latch_failure(Rodas5pSessionFailureKind::Clock, error, false);
+                    break;
+                }
+            };
+            self.h = next_h;
+            if (crate::output::below_min_step(self.t, self.h, self.adaptive.min_step)
+                && self.t + self.h < self.tf)
+                || self.t + self.h == self.t
+            {
+                self.terminal = Some(DriverStopReason::MinimumStep);
+                break;
+            }
+            let (trial_h, clipped) = match self.collector.limit_step(self.t, self.h, self.tf) {
+                Ok(trial) => trial,
+                Err(error) => {
+                    self.latch_failure(Rodas5pSessionFailureKind::Clock, error, false);
+                    break;
+                }
+            };
+            self.attempts += 1;
+            if self.fresh_state {
+                self.reuses += 1;
+            }
+            let outcome = self.work.attempt(
+                self.problem,
+                self.t,
+                &self.y,
+                trial_h,
+                !self.fresh_state,
+                self.adaptive.atol,
+                self.adaptive.rtol,
+                &mut self.counters,
+            );
+            self.fresh_state = self.work.lu_chosen;
+            let (error, failure) = match outcome {
+                Ok(error) if error <= 1.0 => (error, None),
+                Ok(error) => (error, Some(AdaptiveFailureKind::LocalError)),
+                Err(error @ CoreError::FatalCallback(_)) => {
+                    self.latch_failure(Rodas5pSessionFailureKind::CallbackError, error, false);
+                    self.terminal = Some(DriverStopReason::FatalCallback);
+                    (f64::INFINITY, Some(AdaptiveFailureKind::NonFinite))
+                }
+                Err(error) => match failure_kind(&error) {
+                    Some(kind) => {
+                        // A failed attempt may have left a partial Jacobian or
+                        // f(t, y); rebuild them on the next trial.
+                        self.fresh_state = false;
+                        (f64::INFINITY, Some(kind))
+                    }
+                    None => {
+                        self.latch_failure(Rodas5pSessionFailureKind::CallbackError, error, true);
+                        break;
+                    }
+                },
+            };
+            match failure {
+                None => {
+                    // Stage every fallible gate before publishing the accepted
+                    // physical state or observation. Controller arithmetic uses
+                    // the same inputs/order as the legacy path.
+                    let mut next_controller = self.controller.clone();
+                    let next_h = match rodas_next_step_after_attempt(
+                        &mut next_controller,
+                        &self.adaptive,
+                        self.h,
+                        trial_h,
+                        error,
+                        true,
+                        clipped,
+                    ) {
+                        Ok(h) => h,
+                        Err(error) => {
+                            self.latch_failure(Rodas5pSessionFailureKind::Controller, error, true);
+                            break;
+                        }
+                    };
+                    let next_t = self.t + trial_h;
+                    if let Err(error) = self.collector.accept(next_t, &self.work.y_new, clipped) {
+                        self.latch_failure(Rodas5pSessionFailureKind::Output, error, true);
+                        break;
+                    }
+                    self.controller = next_controller;
+                    self.counters.accepted_steps += 1;
+                    self.accepted_steps += 1;
+                    self.t = next_t;
+                    self.y.copy_from_slice(&self.work.y_new);
+                    self.internal_steps += 1;
+                    self.fresh_state = false;
+                    self.last_failure = None;
+                    self.h = next_h;
+                }
+                Some(kind) => {
+                    self.counters.rejected_steps += 1;
+                    self.rejected_steps += 1;
+                    self.last_failure = Some(kind);
+                    match kind {
+                        AdaptiveFailureKind::LocalError => self.counters.local_error_failures += 1,
+                        AdaptiveFailureKind::LinearSolve => {
+                            self.counters.linear_solve_failures += 1
+                        }
+                        AdaptiveFailureKind::NonlinearSolve => {
+                            self.counters.nonlinear_solve_failures += 1
+                        }
+                        AdaptiveFailureKind::NonFinite => {
+                            self.counters.nonfinite_step_failures += 1
+                        }
+                    }
+                }
+            }
+            if self.terminal == Some(DriverStopReason::FatalCallback) {
+                break;
+            }
+            if failure.is_some() {
+                self.h = match rodas_next_step_after_attempt(
+                    &mut self.controller,
+                    &self.adaptive,
+                    self.h,
+                    trial_h,
+                    error,
+                    false,
+                    clipped,
+                ) {
+                    Ok(h) => h,
+                    Err(error) => {
+                        self.latch_failure(Rodas5pSessionFailureKind::Controller, error, false);
+                        break;
+                    }
+                };
+            }
+        }
+
+        if self.failure.is_some() {
+            Ok(crate::NativeSessionAdvance::Stopped)
+        } else if self.t == self.tf {
+            Ok(crate::NativeSessionAdvance::Complete)
+        } else {
+            if self.terminal.is_none() && self.attempts == self.adaptive.max_attempts {
+                self.terminal = Some(DriverStopReason::AttemptBudget);
+            }
+            if self.terminal.is_some() {
+                Ok(crate::NativeSessionAdvance::Stopped)
+            } else {
+                Ok(crate::NativeSessionAdvance::Checkpoint)
+            }
+        }
+    }
+    pub fn finish(mut self) -> CoreResult<Rodas5pFastSessionResult> {
+        if self.t >= self.tf && self.failure.is_none() && !self.collector.is_complete() {
+            self.latch_failure(
+                Rodas5pSessionFailureKind::Output,
+                CoreError::InvalidInput(
+                    "integration ended before all requested outputs were recorded".into(),
+                ),
+                false,
+            );
+        }
+        let success = self.t >= self.tf && self.failure.is_none();
+        let (times, states, output_clipped_steps) = if success {
+            self.collector.finish()?
+        } else {
+            self.collector.finish_partial()
+        };
+        let message = if success {
+            "success".into()
+        } else if let Some(failure) = &self.failure {
+            format!("native session {:?}: {}", failure.kind, failure.error)
+        } else if self.terminal.is_some() {
+            "maximum step count or minimum step reached".into()
+        } else {
+            "paused at accepted checkpoint".into()
+        };
+        let termination = if let Some(failure) = self.failure {
+            Rodas5pSessionTermination::Failure(failure)
+        } else if success {
+            Rodas5pSessionTermination::Complete
+        } else if let Some(reason) = self.terminal {
+            Rodas5pSessionTermination::DriverStop(reason)
+        } else {
+            Rodas5pSessionTermination::Paused
+        };
+        Ok(Rodas5pFastSessionResult {
+            run: Rodas5pFastResult {
+                observed: ObservedIntegrationResult {
+                    t: times,
+                    y: states,
+                    success,
+                    message,
+                    counters: self.counters,
+                    internal_steps: self.internal_steps,
+                    output_clipped_steps,
+                },
+                attempts: self.attempts,
+                accepted_steps: self.accepted_steps,
+                rejected_steps: self.rejected_steps,
+                jacobian_reuses: self.reuses,
+                lu: self.work.lu_kind,
+                driver: RODAS5P_FAST_DRIVER_ID,
+            },
+            final_time: self.t,
+            final_state: self.y,
+            termination,
+        })
+    }
+}
+
+#[cfg(test)]
+mod session_terminal_gate_tests {
+    use super::*;
+    use std::sync::{
+        Arc,
+        atomic::{AtomicU64, Ordering},
+    };
+
+    #[test]
+    fn injected_clock_output_and_controller_refusals_are_sticky_at_the_accepted_prefix() {
+        // Fault injection targets private failure branches without exposing a
+        // production API for mutating the frozen configuration or collector.
+        for kind in [
+            Rodas5pSessionFailureKind::Clock,
+            Rodas5pSessionFailureKind::Output,
+            Rodas5pSessionFailureKind::Controller,
+        ] {
+            let calls = Arc::new(AtomicU64::new(0));
+            let seen = calls.clone();
+            let p = OdeProblem::new(
+                "gate refusal",
+                1,
+                Arc::new(move |_, y, out| {
+                    seen.fetch_add(1, Ordering::SeqCst);
+                    out[0] = -y[0];
+                    Ok(())
+                }),
+                None,
+                Some(Arc::new(|_, _| DenseMatrix::new(1, 1, vec![-1.0]))),
+                None,
+                None,
+                true,
+                None,
+                None,
+            )
+            .unwrap()
+            .with_jacobian_into(Arc::new(|_, _, j| {
+                j[(0, 0)] = -1.0;
+                Ok(())
+            }));
+            let plan = OutputSchedule::new(vec![0.0, 0.001, 0.002, 0.01]).unwrap();
+            let cfg = AdaptiveStepConfig {
+                initial_step: 0.001,
+                max_step: 0.001,
+                ..Default::default()
+            };
+            let identity =
+                crate::NativeSessionIdentity::new(crate::NativeSessionMethod::Rodas5pFast, 1);
+            let mut s =
+                Rodas5pFastSession::new(&p, (0.0, 0.01), &[1.0], &cfg, &plan, identity).unwrap();
+            assert_eq!(
+                s.advance_to(0.001, usize::MAX, identity).unwrap(),
+                crate::NativeSessionAdvance::Checkpoint
+            );
+            let prefix = (s.t, s.y[0], s.attempts, s.accepted_steps, s.rejected_steps);
+            let controller_before = s.controller.clone();
+            match kind {
+                Rodas5pSessionFailureKind::Clock => {
+                    s.adaptive.max_step_policy = crate::MaxStepPolicy::StrictRepresentedCap;
+                    s.adaptive.max_step = (s.t.next_up() - s.t) * 0.25;
+                }
+                Rodas5pSessionFailureKind::Controller => s.adaptive.safety = f64::NAN,
+                Rodas5pSessionFailureKind::Output => {
+                    let remaining = OutputSchedule::new(vec![s.t, 0.002, 0.01]).unwrap();
+                    s.collector =
+                        OutputCollector::new(&remaining, (s.t, 0.01), &[1.0, 2.0]).unwrap();
+                }
+                _ => unreachable!(),
+            }
+            assert_eq!(
+                s.advance_to(0.002, usize::MAX, identity).unwrap(),
+                crate::NativeSessionAdvance::Stopped
+            );
+            assert_eq!(s.t.to_bits(), prefix.0.to_bits());
+            assert_eq!(s.y[0].to_bits(), prefix.1.to_bits());
+            let entered = usize::from(kind != Rodas5pSessionFailureKind::Clock);
+            assert_eq!(s.attempts, prefix.2 + entered);
+            assert_eq!(s.accepted_steps, prefix.3);
+            assert_eq!(s.rejected_steps, prefix.4 + entered);
+            assert!(!s.fresh_state);
+            assert_eq!(
+                s.controller, controller_before,
+                "failed gate changed accepted controller history: {kind:?}"
+            );
+            assert_eq!(s.failure().unwrap().kind, kind);
+            let calls_before = calls.load(Ordering::SeqCst);
+            assert_eq!(
+                s.advance_to(0.01, usize::MAX, identity).unwrap(),
+                crate::NativeSessionAdvance::Stopped
+            );
+            assert_eq!(calls.load(Ordering::SeqCst), calls_before);
+            let result = s.finish().unwrap();
+            assert_eq!(result.final_time.to_bits(), prefix.0.to_bits());
+            assert_eq!(result.final_state[0].to_bits(), prefix.1.to_bits());
+            assert!(!result.run.observed.success);
+            assert!(
+                matches!(result.termination,Rodas5pSessionTermination::Failure(Rodas5pSessionFailure{kind:k,..})if k==kind)
+            );
+        }
+    }
+}

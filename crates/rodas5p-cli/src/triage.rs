@@ -1106,6 +1106,7 @@ fn core_error_kind(error: &CoreError) -> &'static str {
         CoreError::Dimension(_) => "dimension",
         CoreError::InvalidInput(_) => "invalid-input",
         CoreError::NonFinite(_) => "non-finite",
+        CoreError::FatalCallback(_) => "fatal-callback",
         CoreError::LinearSolve(_) => "linear-solve",
         CoreError::NonlinearSolve(_) => "nonlinear-solve",
         CoreError::Coefficients(_) => "coefficients",

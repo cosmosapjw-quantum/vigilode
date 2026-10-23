@@ -8,6 +8,10 @@ pub enum CoreError {
     InvalidInput(String),
     #[error("non-finite numerical value: {0}")]
     NonFinite(String),
+    /// A callback requested immediate termination; adaptive drivers must return
+    /// their accepted prefix and accumulated work without another trial.
+    #[error("fatal callback: {0}")]
+    FatalCallback(String),
     #[error("linear solve failed: {0}")]
     LinearSolve(String),
     #[error("nonlinear solve failed: {0}")]

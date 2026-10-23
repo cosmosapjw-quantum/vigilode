@@ -233,9 +233,9 @@ pub struct CallbackWork {
     /// Callbacks that returned [`crate::CallbackError::Fatal`] (at most one
     /// enters user code; see `short_circuited_calls`).
     pub fatal_errors: u64,
-    /// Calls after a fatal error that the facade answered with an error
-    /// without entering user code. The drivers still count them as attempted
-    /// calls in their counters.
+    /// Defensive guard refusals after a fatal error, without entering user
+    /// code. Protected native drivers stop on the original fatal signal, so
+    /// ordinary terminal runs report zero. Any such calls remain charged.
     pub short_circuited_calls: u64,
     /// The right-hand-side calls among `short_circuited_calls`: user RHS code
     /// was entered `counters.rhs_calls - short_circuited_rhs_calls` times.

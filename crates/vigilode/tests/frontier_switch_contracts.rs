@@ -131,9 +131,8 @@ fn implicit_pilot_failure_is_fatal_and_counts_every_callback() {
     assert!(r.message.contains("fatal implicit pilot"));
     assert_eq!(jac_calls.load(Ordering::Relaxed), 1);
     assert_eq!(r.stats.rhs_calls, rhs_calls.load(Ordering::Relaxed));
-    // Native build counters include short-circuited driver requests after
-    // the fatal guard. The user callback itself must still run only once.
-    assert!(r.stats.jacobian_builds >= 1);
+    // The native fatal signal stops the pilot on its first failed build.
+    assert_eq!(r.stats.jacobian_builds, 1);
     assert!(r.final_time > 0.0 && r.final_time < 1.0);
     assert!((r.final_state[0] - (-r.final_time).exp()).abs() < 1e-7);
     assert_eq!(r.stats.switches, 0);

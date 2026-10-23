@@ -569,7 +569,7 @@ fn a_failing_rhs_returns_the_partial_solution_and_a_typed_reason() {
     assert!(sol.stats.accepted_steps > 0);
     assert!(sol.stats.rejected_steps > 0);
     assert_eq!(sol.stats.callbacks.fatal_errors, 1);
-    assert!(sol.stats.callbacks.short_circuited_calls > 0);
+    assert_eq!(sol.stats.callbacks.short_circuited_calls, 0);
     // User code was entered exactly rhs_calls - short_circuited times.
     assert_eq!(
         calls.load(Ordering::Relaxed),

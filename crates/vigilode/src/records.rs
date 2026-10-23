@@ -238,6 +238,8 @@ impl PartialEq<StepFailureKind> for rodas5p_integrators::AdaptiveFailureKind {
 #[non_exhaustive]
 #[serde(rename_all = "kebab-case")]
 pub enum StopReason {
+    /// A fatal callback stopped the native driver without another trial.
+    FatalCallback,
     /// The `AttemptBudget` policy or outcome.
     AttemptBudget,
     /// The `MinimumStep` policy or outcome.
@@ -249,6 +251,7 @@ pub enum StopReason {
 impl From<&rodas5p_integrators::DriverStopReason> for StopReason {
     fn from(source: &rodas5p_integrators::DriverStopReason) -> Self {
         match source {
+            rodas5p_integrators::DriverStopReason::FatalCallback => Self::FatalCallback,
             rodas5p_integrators::DriverStopReason::AttemptBudget => Self::AttemptBudget,
             rodas5p_integrators::DriverStopReason::MinimumStep => Self::MinimumStep,
             rodas5p_integrators::DriverStopReason::ClientStop => Self::ClientStop,

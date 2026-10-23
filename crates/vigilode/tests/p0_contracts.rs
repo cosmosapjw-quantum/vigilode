@@ -664,7 +664,7 @@ fn latched(latch: &Arc<AtomicBool>, t: f64) -> CoreResult<()> {
         latch.store(true, Ordering::Relaxed);
     }
     if latch.load(Ordering::Relaxed) {
-        Err(CoreError::NonFinite("latched".into()))
+        Err(CoreError::FatalCallback("latched".into()))
     } else {
         Ok(())
     }
@@ -674,7 +674,7 @@ fn latched(latch: &Arc<AtomicBool>, t: f64) -> CoreResult<()> {
 /// guard short-circuits every callback after the first fatal error.
 fn after_latch(latch: &AtomicBool) -> CoreResult<()> {
     if latch.load(Ordering::Relaxed) {
-        Err(CoreError::NonFinite("latched".into()))
+        Err(CoreError::FatalCallback("latched".into()))
     } else {
         Ok(())
     }
@@ -758,7 +758,7 @@ fn a_fatal_rhs_after_several_steps_returns_the_last_accepted_state() {
     assert_eq!(sol.stats.accepted_steps, direct.accepted_steps);
     let stop = sol.stats.stop.as_ref().unwrap();
     assert_eq!(stop.t.to_bits(), partial.t.to_bits());
-    assert_eq!(stop.reason, DriverStopReason::MinimumStep);
+    assert_eq!(stop.reason, DriverStopReason::FatalCallback);
     assert_eq!(
         stop.last_failure,
         Some(vigilode::StepFailureKind::NonFinite)

@@ -37,9 +37,8 @@ pub(crate) struct Guard {
 }
 
 impl Guard {
-    /// Run one user callback. A recoverable error, a fatal error and a call
-    /// after a fatal error all reach the driver as `CoreError::NonFinite`,
-    /// which every protected driver treats as a rejected step attempt.
+    /// Recoverable errors retain the numerical retry signal. Fatal errors
+    /// carry a distinct terminal signal so native drivers stop immediately.
     pub(crate) fn call(
         &self,
         callback: Callback,
@@ -52,7 +51,7 @@ impl Guard {
                 self.short_circuited_rhs_calls
                     .fetch_add(1, Ordering::Relaxed);
             }
-            return Err(CoreError::NonFinite(format!(
+            return Err(CoreError::FatalCallback(format!(
                 "{callback:?} callback not entered: an earlier callback failed fatally"
             )));
         }
@@ -78,7 +77,7 @@ impl Guard {
                     }
                 }
                 self.poisoned.store(true, Ordering::Release);
-                Err(CoreError::NonFinite(text))
+                Err(CoreError::FatalCallback(text))
             }
         }
     }
