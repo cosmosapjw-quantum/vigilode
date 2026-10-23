@@ -46,6 +46,16 @@ pub struct SwitchingConfig {
     pub return_cost_ratio: f64,
     /// Refuse a possible dense fallback above this dimension, before callbacks.
     pub max_dense_dimension: usize,
+    /// Attempts permitted for an implicit pilot from the same checkpoint and
+    /// over the same accepted time interval as an explicit batch. Zero retains
+    /// the original pressure-only entry policy. Nonzero enables cost screening.
+    pub implicit_pilot_attempt_budget: usize,
+    /// Maximum implicit entry pilots during the entire solve. Exhausting this
+    /// limit keeps the explicit route; it does not grant implicit permission.
+    pub implicit_pilot_limit: usize,
+    /// A successful entry pilot must cost at most this fraction of the explicit
+    /// batch's deterministic work units. This is not a wall-clock guarantee.
+    pub entry_cost_ratio: f64,
 }
 
 impl Default for SwitchingConfig {
@@ -61,6 +71,9 @@ impl Default for SwitchingConfig {
             probe_attempt_budget: 16,
             return_cost_ratio: 0.8,
             max_dense_dimension: 64,
+            implicit_pilot_attempt_budget: 0,
+            implicit_pilot_limit: 1,
+            entry_cost_ratio: 0.8,
         }
     }
 }
@@ -96,7 +109,7 @@ pub struct SwitchingSegment {
     pub target_time: f64,
     /// Last internally accepted time of this batch.
     pub reached_time: f64,
-    /// Whether this is a bounded recheck while the implicit route is active.
+    /// Whether this is a bounded explicit recheck or implicit entry replay.
     pub is_probe: bool,
     /// Whether its accepted endpoint became the adapter's physical state.
     pub committed: bool,
@@ -150,7 +163,9 @@ pub struct SwitchingStats {
     pub switches: usize,
     /// Whether every entered driver returned its work record.
     pub accounting_complete: bool,
-    /// Every attempted batch, including uncommitted probes.
+    /// Every attempted batch, including uncommitted probes, in disposition
+    /// order. An implicit entry replay precedes the explicit candidate it
+    /// evaluates here, although the explicit candidate was executed first.
     pub segments: Vec<SwitchingSegment>,
 }
 
@@ -202,6 +217,11 @@ impl SwitchingSolver {
     /// during the solve, since a discarded probe may evaluate the same region
     /// again. Authorized switching windows currently reconstruct driver workspaces;
     /// `Forbidden` uses one persistent observed DOPRI5 session.
+    /// With a nonzero `implicit_pilot_attempt_budget`, entry requires a bounded
+    /// replay over the explicit candidate's accepted prefix. This experimental
+    /// comparison uses charged work and local tolerances, not measured elapsed
+    /// time or a certified global-error equivalence. Rejected explicit attempts
+    /// may have reached beyond that prefix, so its work comparison is heuristic.
     pub fn solve(
         problem: &Problem,
         t_span: (f64, f64),
@@ -236,6 +256,7 @@ impl SwitchingSolver {
         let mut implicit_windows = 0usize;
         let mut since_probe = 0usize;
         let mut implicit_rate: Option<f64> = None;
+        let mut implicit_pilots = 0usize;
         'windows: for window in 1..=config.window_count {
             if result.final_time == t1 {
                 break;
@@ -258,6 +279,17 @@ impl SwitchingSolver {
                     break 'windows;
                 }
                 let start = result.final_time;
+                // A replay pilot is rooted at the identical accepted physical
+                // checkpoint. It may never replace the already tested explicit
+                // candidate, and every discarded trial is charged.
+                let pilot_initial = if config.implicit_pilot_attempt_budget > 0
+                    && method == SwitchingMethod::Dopri5
+                    && implicit_pilots < config.implicit_pilot_limit
+                {
+                    Some(result.final_state.clone())
+                } else {
+                    None
+                };
                 let selected = if probe {
                     SwitchingMethod::Dopri5
                 } else {
@@ -328,8 +360,8 @@ impl SwitchingSolver {
                     probe = false;
                     continue;
                 }
-                commit(&mut result, &mut record, state);
                 if fatal {
+                    commit(&mut result, &mut record, state);
                     record.decision = "fatal callback; stop without fallback".into();
                     result.message = record.decision.clone();
                     result.stats.segments.push(record);
@@ -346,16 +378,77 @@ impl SwitchingSolver {
                         if fallback
                             && pressure
                             && (record.success || budget_stop)
-                            && result.final_time < t1
+                            && record.reached_time < t1
                         {
-                            record.decision =
-                                "observed explicit work pressure; enter authorized RODAS route"
-                                    .into();
-                            method = SwitchingMethod::Rodas5p;
-                            implicit_windows = 0;
-                            since_probe = 0;
-                            result.stats.switches += 1;
-                        } else if !record.success {
+                            let mut enter = config.implicit_pilot_attempt_budget == 0;
+                            if config.implicit_pilot_attempt_budget > 0 {
+                                let remaining = opts.max_steps - result.stats.attempts;
+                                if implicit_pilots < config.implicit_pilot_limit
+                                    && remaining > 0
+                                    && record.reached_time > start
+                                {
+                                    implicit_pilots += 1;
+                                    let mut pilot_opts = opts.clone();
+                                    pilot_opts.h0 = opts.h0.min(record.reached_time - start);
+                                    pilot_opts.max_steps =
+                                        remaining.min(config.implicit_pilot_attempt_budget);
+                                    match run(
+                                        problem,
+                                        start,
+                                        record.reached_time,
+                                        pilot_initial.as_deref().unwrap(),
+                                        &pilot_opts,
+                                        SwitchingMethod::Rodas5p,
+                                        true,
+                                    ) {
+                                        Ok(mut pilot) => {
+                                            charge(&mut result.stats, &pilot.record);
+                                            enter = pilot.record.success
+                                                && pilot.record.work_units
+                                                    <= config.entry_cost_ratio * record.work_units;
+                                            pilot.record.decision = if enter {
+                                                "same-checkpoint implicit pilot passed entry work ratio"
+                                            } else {
+                                                "same-checkpoint implicit pilot discarded: incomplete or uneconomical"
+                                            }.into();
+                                            let pilot_fatal = pilot.fatal;
+                                            result.stats.segments.push(pilot.record);
+                                            if pilot_fatal {
+                                                record.decision = "fatal implicit pilot; retain accepted explicit state and stop".into();
+                                                commit(&mut result, &mut record, state);
+                                                result.message = record.decision.clone();
+                                                result.stats.segments.push(record);
+                                                break 'windows;
+                                            }
+                                        }
+                                        Err(message) => {
+                                            result.stats.accounting_complete = false;
+                                            record.decision =
+                                                "implicit pilot failed without a work record; stop"
+                                                    .into();
+                                            commit(&mut result, &mut record, state);
+                                            result.message = message;
+                                            result.stats.segments.push(record);
+                                            break 'windows;
+                                        }
+                                    }
+                                }
+                            }
+                            if enter {
+                                record.decision = if config.implicit_pilot_attempt_budget == 0 {
+                                    "observed explicit work pressure; enter authorized RODAS route"
+                                } else {
+                                    "observed explicit pressure and economical replay; enter authorized RODAS route"
+                                }.into();
+                                method = SwitchingMethod::Rodas5p;
+                                implicit_windows = 0;
+                                since_probe = 0;
+                                result.stats.switches += 1;
+                            } else {
+                                record.decision = "implicit entry not supported by bounded pilot evidence; retain explicit route".into();
+                            }
+                        } else if !record.success && !budget_stop {
+                            commit(&mut result, &mut record, state);
                             record.decision =
                                 "explicit driver stopped; no eligible fallback".into();
                             result.message = record.decision.clone();
@@ -368,6 +461,7 @@ impl SwitchingSolver {
                     }
                     SwitchingMethod::Rodas5p => {
                         if !record.success {
+                            commit(&mut result, &mut record, state);
                             record.decision =
                                 "implicit driver stopped; preserve partial accepted state".into();
                             result.message = record.decision.clone();
@@ -381,6 +475,7 @@ impl SwitchingSolver {
                             "implicit window completed; retain route until bounded recheck".into();
                     }
                 }
+                commit(&mut result, &mut record, state);
                 result.stats.segments.push(record);
             }
         }
@@ -619,8 +714,10 @@ fn validate(
         || c.implicit_residence == 0
         || c.probe_interval == 0
         || c.max_dense_dimension == 0
+        || c.implicit_pilot_limit == 0
         || !(c.rejection_fraction > 0.0 && c.rejection_fraction <= 1.0)
         || !(c.return_cost_ratio > 0.0 && c.return_cost_ratio < 1.0)
+        || !(c.entry_cost_ratio > 0.0 && c.entry_cost_ratio < 1.0)
     {
         return Err(bad(
             "positive bounded window/work controls and hysteresis fractions required",

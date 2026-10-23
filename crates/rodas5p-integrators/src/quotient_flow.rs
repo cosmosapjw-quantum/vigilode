@@ -200,6 +200,123 @@ impl DampedRotationFlow {
         }
         Ok(())
     }
+    /// Exact-algebra action of the constant-forcing problem `y' = A*y + b`:
+    /// `exp(dt*A)*input + dt*phi_1(dt*A)*constant_forcing`.
+    ///
+    /// This accepts a declared constant forcing, not a sampled nonlinear or
+    /// time-dependent RHS. Singular zero blocks are supported. No matrix,
+    /// derivative, iteration, or heap allocation is used. Repeated calls with
+    /// shared blocks can use [`DampedRotationAffineWorkspace`] to cache factors.
+    /// Output is scratch on error; binary64 roundoff is not enclosed.
+    pub fn affine_into(
+        &self,
+        dt: f64,
+        input: &[f64],
+        constant_forcing: &[f64],
+        output: &mut [f64],
+    ) -> CoreResult<()> {
+        self.validate_vectors(input, output)?;
+        self.validate_vectors(constant_forcing, output)?;
+        validate_affine_dt(dt)?;
+        for (k, &g) in self.indices.iter().enumerate() {
+            let factor = AffineFactor::new(self.groups[g], dt)?;
+            let (x, y) = factor.action(
+                input[2 * k],
+                input[2 * k + 1],
+                constant_forcing[2 * k],
+                constant_forcing[2 * k + 1],
+            );
+            output[2 * k] = x;
+            output[2 * k + 1] = y;
+        }
+        validate_affine_output(output)
+    }
+    /// Exact-algebra endpoint for `y'=A*y+c*cos(nu*t)+d*sin(nu*t)`.
+    /// The coefficients and frequency are declared constants. Resonance is
+    /// regular: shifted frequencies `omega +/- nu` use the phi_1 zero chart.
+    /// No residual callback, derivatives, matrices, or iterations are used.
+    /// The phase and shifted frequencies must remain finite in binary64.
+    #[allow(clippy::too_many_arguments)]
+    pub fn harmonic_into(
+        &self,
+        t: f64,
+        dt: f64,
+        input: &[f64],
+        frequency: f64,
+        cosine_coeff: &[f64],
+        sine_coeff: &[f64],
+        output: &mut [f64],
+    ) -> CoreResult<()> {
+        self.validate_vectors(input, output)?;
+        self.validate_vectors(cosine_coeff, output)?;
+        self.validate_vectors(sine_coeff, output)?;
+        validate_affine_dt(dt)?;
+        let phase = frequency * (t + dt);
+        if !t.is_finite() || !frequency.is_finite() || !phase.is_finite() {
+            return Err(CoreError::InvalidInput(
+                "harmonic flow needs finite time/frequency/endpoint phase".into(),
+            ));
+        }
+        if frequency == 0.0 {
+            return self.affine_into(dt, input, cosine_coeff, output);
+        }
+        let (sin, cos) = phase.sin_cos();
+        for (k, &g) in self.indices.iter().enumerate() {
+            let block = self.groups[g];
+            let plus = block.frequency - frequency;
+            let minus = block.frequency + frequency;
+            if !plus.is_finite() || !minus.is_finite() {
+                return Err(CoreError::NonFinite(
+                    "harmonic shifted frequency overflow".into(),
+                ));
+            }
+            let fp = AffineFactor::new(
+                DampedRotationBlock {
+                    damping: block.damping,
+                    frequency: plus,
+                },
+                dt,
+            )?;
+            let fm = AffineFactor::new(
+                DampedRotationBlock {
+                    damping: block.damping,
+                    frequency: minus,
+                },
+                dt,
+            )?;
+            let (cx, cy, dx, dy) = (
+                cosine_coeff[2 * k],
+                cosine_coeff[2 * k + 1],
+                sine_coeff[2 * k],
+                sine_coeff[2 * k + 1],
+            );
+            // Halving must occur in exponent-separated form: a subnormal
+            // coefficient can have a representable integral after large dt.
+            let (px, py) = fp.forcing_scaled(
+                Scaled::new(cx).add(Scaled::new(dy)).mul(0.5),
+                Scaled::new(cy).add(Scaled::new(-dx)).mul(0.5),
+            );
+            let (mx, my) = fm.forcing_scaled(
+                Scaled::new(cx).add(Scaled::new(-dy)).mul(0.5),
+                Scaled::new(cy).add(Scaled::new(dx)).mul(0.5),
+            );
+            let homogeneous = AffineFactor::new(block, dt)?;
+            let (hx, hy) = homogeneous.action_scaled(input[2 * k], input[2 * k + 1], 0., 0.);
+            output[2 * k] = hx
+                .add(px.mul(cos))
+                .add(py.mul(-sin))
+                .add(mx.mul(cos))
+                .add(my.mul(sin))
+                .value();
+            output[2 * k + 1] = hy
+                .add(px.mul(sin))
+                .add(py.mul(cos))
+                .add(mx.mul(-sin))
+                .add(my.mul(cos))
+                .value();
+        }
+        validate_affine_output(output)
+    }
     /// Exact-algebra action of `(I-shift*A)^-1`. For shift>=0,d>=0 the
     /// determinant is `(1+shift*d)^2+(shift*w)^2 >= 1` in exact arithmetic.
     /// Scaling avoids squaring large coefficients and overflowing shift*A.
@@ -252,6 +369,252 @@ impl DampedRotationFlow {
     }
 }
 
+// A finite mantissa plus an unrestricted binary exponent. Keeping the scale
+// separate prevents avoidable overflow/underflow before cancellation or a
+// subsequent multiplication by a very large/small forcing component.
+#[derive(Clone, Copy, Debug, Default)]
+struct Scaled {
+    mantissa: f64,
+    exponent: i32,
+}
+impl Scaled {
+    fn new(x: f64) -> Self {
+        if x == 0.0 {
+            return Self::default();
+        }
+        let bits = x.to_bits();
+        let biased = ((bits >> 52) & 0x7ff) as i32;
+        if biased == 0 {
+            let mut value = Self::new(x * 18_014_398_509_481_984.0); // 2^54
+            value.exponent -= 54;
+            return value;
+        }
+        Self {
+            mantissa: f64::from_bits((bits & 0x800f_ffff_ffff_ffff) | (1023u64 << 52)),
+            exponent: biased - 1023,
+        }
+    }
+    fn mul(self, x: f64) -> Self {
+        let rhs = Self::new(x);
+        let mut value = Self::new(self.mantissa * rhs.mantissa);
+        value.exponent += self.exponent + rhs.exponent;
+        value
+    }
+    fn div(self, x: f64) -> Self {
+        let rhs = Self::new(x);
+        let mut value = Self::new(self.mantissa / rhs.mantissa);
+        value.exponent += self.exponent - rhs.exponent;
+        value
+    }
+    fn add(self, rhs: Self) -> Self {
+        if self.mantissa == 0.0 {
+            return rhs;
+        }
+        if rhs.mantissa == 0.0 {
+            return self;
+        }
+        let (large, small) = if self.exponent >= rhs.exponent {
+            (self, rhs)
+        } else {
+            (rhs, self)
+        };
+        let mut value =
+            Self::new(large.mantissa + scale_pow2(small.mantissa, small.exponent - large.exponent));
+        value.exponent += large.exponent;
+        value
+    }
+    fn value(self) -> f64 {
+        scale_pow2(self.mantissa, self.exponent)
+    }
+}
+fn scale_pow2(mut x: f64, mut exponent: i32) -> f64 {
+    if x == 0.0 {
+        return x;
+    }
+    while exponent > 512 {
+        x *= 1.3407807929942597e154; // 2^512
+        exponent -= 512;
+    }
+    while exponent < -512 {
+        x *= 7.458340731200207e-155; // 2^-512
+        exponent += 512;
+    }
+    x * 2.0_f64.powi(exponent)
+}
+fn complex_scaled(c: f64, s: f64, x: f64, y: f64) -> (Scaled, Scaled) {
+    (
+        Scaled::new(x).mul(c).add(Scaled::new(y).mul(-s)),
+        Scaled::new(x).mul(s).add(Scaled::new(y).mul(c)),
+    )
+}
+#[derive(Clone, Copy, Debug, Default)]
+struct AffineFactor {
+    homogeneous: Factor,
+    c: f64,
+    s: f64,
+    scale: f64,
+    divide: bool,
+}
+impl AffineFactor {
+    fn new(block: DampedRotationBlock, h: f64) -> CoreResult<Self> {
+        let homogeneous = Factor::new(block, h)?;
+        let x = -block.damping * h;
+        let y = block.frequency * h;
+        if x.abs().max(y.abs()) <= 0.25 {
+            // phi_1(z)=sum z^k/(k+1)!, including z=0. With |z|<=sqrt(2)/4,
+            // 18 terms leave an absolute series tail below 2e-27.
+            let (mut c, mut s, mut tr, mut ti) = (1.0, 0.0, 1.0, 0.0);
+            for k in 1..=18 {
+                let denominator = (k + 1) as f64;
+                (tr, ti) = (
+                    (tr * x - ti * y) / denominator,
+                    (tr * y + ti * x) / denominator,
+                );
+                c += tr;
+                s += ti;
+            }
+            return Ok(Self {
+                homogeneous,
+                c,
+                s,
+                scale: h,
+                divide: false,
+            });
+        }
+        let (u, v) = if x < -1500.0 {
+            (-1.0, 0.0)
+        } else {
+            // Factor::new already checked a represented finite phase. Using
+            // sin(theta/2)^2 retains exp(z)-1 near an exact rotation period.
+            let (sin, cos) = y.sin_cos();
+            (
+                x.exp_m1() * cos - 2.0 * (0.5 * y).sin().powi(2),
+                x.exp() * sin,
+            )
+        };
+        let scale = block.damping.max(block.frequency.abs());
+        let ar = -block.damping / scale;
+        let ai = block.frequency / scale;
+        let denominator = ar * ar + ai * ai;
+        Ok(Self {
+            homogeneous,
+            c: (u * ar + v * ai) / denominator,
+            s: (v * ar - u * ai) / denominator,
+            scale,
+            divide: true,
+        })
+    }
+    fn action(self, x: f64, y: f64, bx: f64, by: f64) -> (f64, f64) {
+        let (x, y) = self.action_scaled(x, y, bx, by);
+        (x.value(), y.value())
+    }
+    fn action_scaled(self, x: f64, y: f64, bx: f64, by: f64) -> (Scaled, Scaled) {
+        let (hx, hy) = complex_scaled(self.homogeneous.c, self.homogeneous.s, x, y);
+        let hx = hx
+            .mul(self.homogeneous.scale_half)
+            .mul(self.homogeneous.scale_half);
+        let hy = hy
+            .mul(self.homogeneous.scale_half)
+            .mul(self.homogeneous.scale_half);
+        let (fx, fy) = self.forcing_scaled(Scaled::new(bx), Scaled::new(by));
+        (hx.add(fx), hy.add(fy))
+    }
+    fn forcing_scaled(self, bx: Scaled, by: Scaled) -> (Scaled, Scaled) {
+        let fx = bx.mul(self.c).add(by.mul(-self.s));
+        let fy = bx.mul(self.s).add(by.mul(self.c));
+        if self.divide {
+            (fx.div(self.scale), fy.div(self.scale))
+        } else {
+            (fx.mul(self.scale), fy.mul(self.scale))
+        }
+    }
+}
+fn validate_affine_dt(dt: f64) -> CoreResult<()> {
+    if !dt.is_finite() || dt < 0.0 {
+        Err(CoreError::InvalidInput(
+            "affine flow requires finite dt >= 0".into(),
+        ))
+    } else {
+        Ok(())
+    }
+}
+fn validate_affine_output(output: &[f64]) -> CoreResult<()> {
+    if output.iter().any(|x| !x.is_finite()) {
+        Err(CoreError::NonFinite(
+            "declared affine flow action overflow".into(),
+        ))
+    } else {
+        Ok(())
+    }
+}
+
+/// Cached exact constant-forcing actions for a declared damped-rotation flow.
+/// Construction allocates O(n+g) storage. Calls allocate no heap memory and
+/// cost O(n+g), or O(n) when dt is unchanged; g is the distinct block count.
+/// Different forcing vectors can reuse the same coefficient cache. There is
+/// no inferred Jacobian, RHS callback, linear solve or nonlinear iteration.
+#[derive(Clone, Debug)]
+pub struct DampedRotationAffineWorkspace {
+    flow: DampedRotationFlow,
+    factors: Vec<AffineFactor>,
+    cached_dt: Option<f64>,
+    work: QuotientWork,
+}
+impl DampedRotationAffineWorkspace {
+    pub fn new(flow: DampedRotationFlow) -> CoreResult<Self> {
+        let factors = vec![AffineFactor::default(); flow.distinct_blocks()];
+        let work = QuotientWork {
+            workspace_bytes: factors.len() * std::mem::size_of::<AffineFactor>()
+                + flow.indices.len() * std::mem::size_of::<usize>()
+                + flow.groups.len() * std::mem::size_of::<DampedRotationBlock>(),
+            distinct_blocks: flow.distinct_blocks(),
+            ..Default::default()
+        };
+        Ok(Self {
+            flow,
+            factors,
+            cached_dt: None,
+            work,
+        })
+    }
+    pub fn work(&self) -> &QuotientWork {
+        &self.work
+    }
+    pub fn apply_into(
+        &mut self,
+        dt: f64,
+        input: &[f64],
+        constant_forcing: &[f64],
+        output: &mut [f64],
+    ) -> CoreResult<()> {
+        self.flow.validate_vectors(input, output)?;
+        self.flow.validate_vectors(constant_forcing, output)?;
+        validate_affine_dt(dt)?;
+        if self.cached_dt != Some(dt) {
+            // A failed refresh must not leave an apparently valid old cache.
+            self.cached_dt = None;
+            for (factor, block) in self.factors.iter_mut().zip(&self.flow.groups) {
+                *factor = AffineFactor::new(*block, dt)?;
+                self.work.coefficient_pairs = self.work.coefficient_pairs.saturating_add(1);
+            }
+            self.cached_dt = Some(dt);
+            self.work.coefficient_refreshes = self.work.coefficient_refreshes.saturating_add(1);
+        }
+        for (k, &group) in self.flow.indices.iter().enumerate() {
+            let (x, y) = self.factors[group].action(
+                input[2 * k],
+                input[2 * k + 1],
+                constant_forcing[2 * k],
+                constant_forcing[2 * k + 1],
+            );
+            output[2 * k] = x;
+            output[2 * k + 1] = y;
+            self.work.applied_block_actions = self.work.applied_block_actions.saturating_add(1);
+        }
+        validate_affine_output(output)
+    }
+}
+
 /// Additional algebraic work. RHS counts live in integration counters.
 #[derive(Clone, Debug, Default, Serialize)]
 pub struct QuotientWork {
@@ -270,6 +633,8 @@ pub struct LawsonDopri5Workspace {
     stages: Vec<f64>,
     stage_state: Vec<f64>,
     factors: Vec<[Factor; 28]>,
+    affine_forcing: Option<Vec<f64>>,
+    affine_factors: Vec<[AffineFactor; 7]>,
     first_valid: bool,
 }
 #[inline]
@@ -302,11 +667,27 @@ impl LawsonDopri5Workspace {
             stages: vec![0.0; len],
             stage_state: vec![0.0; n],
             factors,
+            affine_forcing: None,
+            affine_factors: Vec::new(),
             first_valid: false,
         })
     }
+    /// Lawson integration of `A*y + constant_forcing + residual(t,y)`.
+    /// The residual callback must exclude both declared affine terms.
+    pub fn new_affine(flow: DampedRotationFlow, constant_forcing: &[f64]) -> CoreResult<Self> {
+        flow.validate_vectors(constant_forcing, constant_forcing)?;
+        let groups = flow.distinct_blocks();
+        let mut workspace = Self::new(flow)?;
+        workspace.affine_forcing = Some(constant_forcing.to_vec());
+        workspace.affine_factors = vec![[AffineFactor::default(); 7]; groups];
+        Ok(workspace)
+    }
     pub fn workspace_bytes(&self) -> usize {
-        (self.stages.len() + self.stage_state.len()) * std::mem::size_of::<f64>()
+        (self.stages.len()
+            + self.stage_state.len()
+            + self.affine_forcing.as_ref().map_or(0, Vec::len))
+            * std::mem::size_of::<f64>()
+            + self.affine_factors.len() * 7 * std::mem::size_of::<AffineFactor>()
             + self.factors.len() * 28 * std::mem::size_of::<Factor>()
             + self.flow.indices.len() * std::mem::size_of::<usize>()
             + self.flow.groups.len() * std::mem::size_of::<DampedRotationBlock>()
@@ -378,6 +759,15 @@ impl LawsonDopri5Workspace {
                 }
             }
         }
+        if self.affine_forcing.is_some() {
+            for (g, &block) in self.flow.groups.iter().enumerate() {
+                for (i, &fraction) in DOPRI5_C.iter().enumerate() {
+                    self.affine_factors[g][i] =
+                        AffineFactor::new(block, h * fraction).map_err(Failure::numerical)?;
+                    work.coefficient_pairs = work.coefficient_pairs.saturating_add(1);
+                }
+            }
+        }
         work.coefficient_refreshes = work.coefficient_refreshes.saturating_add(1);
         if !self.first_valid {
             evaluate(
@@ -393,7 +783,16 @@ impl LawsonDopri5Workspace {
         }
         for i in 1..7 {
             for (k, &g) in self.flow.indices.iter().enumerate() {
-                let (x, z) = self.factors[g][slot(i, 0)].action(y[2 * k], y[2 * k + 1]);
+                let (x, z) = if let Some(forcing) = &self.affine_forcing {
+                    self.affine_factors[g][i].action(
+                        y[2 * k],
+                        y[2 * k + 1],
+                        forcing[2 * k],
+                        forcing[2 * k + 1],
+                    )
+                } else {
+                    self.factors[g][slot(i, 0)].action(y[2 * k], y[2 * k + 1])
+                };
                 self.stage_state[2 * k] = x;
                 self.stage_state[2 * k + 1] = z;
             }
@@ -538,7 +937,60 @@ pub fn integrate_lawson_dopri5_observed<
     config: &Dopri5Config,
     output: &OutputSchedule,
 ) -> CoreResult<LawsonDopri5Result> {
-    integrate_impl(flow, residual, t_span, y0, config, output, None)
+    integrate_impl(flow, residual, t_span, y0, config, output, None, None)
+}
+/// Lawson-DOPRI with an exactly integrated declared constant affine forcing.
+/// The callback is the remaining residual in `y'=A*y+b+N(t,y)`. For `N=0`,
+/// the endpoint is the exact affine action up to floating-point evaluation.
+/// Smooth fixed-A,b classical order is five; no uniform stiff-order claim is
+/// made for general nonlinear/time-dependent N. Observations clip endpoints.
+#[allow(clippy::too_many_arguments)]
+pub fn integrate_affine_lawson_dopri5_observed<
+    F: Fn(f64, &[f64], &mut [f64]) -> CoreResult<()> + ?Sized,
+>(
+    flow: &DampedRotationFlow,
+    constant_forcing: &[f64],
+    residual: &F,
+    t_span: (f64, f64),
+    y0: &[f64],
+    config: &Dopri5Config,
+    output: &OutputSchedule,
+) -> CoreResult<LawsonDopri5Result> {
+    integrate_impl(
+        flow,
+        residual,
+        t_span,
+        y0,
+        config,
+        output,
+        None,
+        Some(constant_forcing),
+    )
+}
+/// Constant-affine Lawson integration with a supplied physical error norm.
+#[allow(clippy::too_many_arguments)]
+pub fn integrate_affine_lawson_dopri5_observed_with_norm<
+    F: Fn(f64, &[f64], &mut [f64]) -> CoreResult<()> + ?Sized,
+>(
+    flow: &DampedRotationFlow,
+    constant_forcing: &[f64],
+    residual: &F,
+    t_span: (f64, f64),
+    y0: &[f64],
+    config: &Dopri5Config,
+    output: &OutputSchedule,
+    physical_norm: &AffineErrorNorm,
+) -> CoreResult<LawsonDopri5Result> {
+    integrate_impl(
+        flow,
+        residual,
+        t_span,
+        y0,
+        config,
+        output,
+        Some(physical_norm),
+        Some(constant_forcing),
+    )
 }
 /// Same method with the existing physical-space affine error norm.
 pub fn integrate_lawson_dopri5_observed_with_norm<
@@ -560,6 +1012,7 @@ pub fn integrate_lawson_dopri5_observed_with_norm<
         config,
         output,
         Some(physical_norm),
+        None,
     )
 }
 fn integrate_impl<F: Fn(f64, &[f64], &mut [f64]) -> CoreResult<()> + ?Sized>(
@@ -570,6 +1023,7 @@ fn integrate_impl<F: Fn(f64, &[f64], &mut [f64]) -> CoreResult<()> + ?Sized>(
     config: &Dopri5Config,
     output: &OutputSchedule,
     physical_norm: Option<&AffineErrorNorm>,
+    constant_forcing: Option<&[f64]>,
 ) -> CoreResult<LawsonDopri5Result> {
     flow.validate_vectors(y0, y0)?;
     let mut adaptive = config.adaptive.clone();
@@ -583,7 +1037,11 @@ fn integrate_impl<F: Fn(f64, &[f64], &mut [f64]) -> CoreResult<()> + ?Sized>(
     }
     adaptive.validate()?;
     let mut output = Dopri5OutputSession::new(&adaptive, output, t_span, y0, false)?;
-    let mut workspace = LawsonDopri5Workspace::new(flow.clone())?;
+    let mut workspace = if let Some(forcing) = constant_forcing {
+        LawsonDopri5Workspace::new_affine(flow.clone(), forcing)?
+    } else {
+        LawsonDopri5Workspace::new(flow.clone())?
+    };
     let mut work = QuotientWork {
         workspace_bytes: workspace.workspace_bytes(),
         distinct_blocks: flow.distinct_blocks(),

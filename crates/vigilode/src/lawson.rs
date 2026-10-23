@@ -6,7 +6,9 @@ use crate::{
 };
 use rodas5p_core::CoreError;
 use rodas5p_integrators::{
-    OutputSchedule, integrate_lawson_dopri5_observed, integrate_lawson_dopri5_observed_with_norm,
+    OutputSchedule, integrate_affine_lawson_dopri5_observed,
+    integrate_affine_lawson_dopri5_observed_with_norm, integrate_lawson_dopri5_observed,
+    integrate_lawson_dopri5_observed_with_norm,
 };
 use serde::Serialize;
 use std::cell::{Cell, RefCell};
@@ -60,7 +62,7 @@ impl LawsonDopri5 {
         opts: &Options,
         times: &[f64],
     ) -> Result<LawsonSolution, ExplicitSolveError> {
-        Self::solve_impl(flow, residual, t_span, y0, opts, times, None)
+        Self::solve_impl(flow, residual, t_span, y0, opts, times, None, None)
     }
 
     /// Use an affine physical-space embedded-error norm for the same split.
@@ -73,7 +75,55 @@ impl LawsonDopri5 {
         times: &[f64],
         norm: &AffineErrorNorm,
     ) -> Result<LawsonSolution, ExplicitSolveError> {
-        Self::solve_impl(flow, residual, t_span, y0, opts, times, Some(norm))
+        Self::solve_impl(flow, residual, t_span, y0, opts, times, Some(norm), None)
+    }
+
+    /// Solve `y'=A*y+b+N(t,y)` with a declared constant b integrated exactly.
+    /// `residual` must evaluate N only. No constancy is inferred from samples.
+    #[allow(clippy::too_many_arguments)]
+    pub fn solve_affine_observed(
+        flow: &DampedRotationFlow,
+        constant_forcing: &[f64],
+        residual: &Problem,
+        t_span: (f64, f64),
+        y0: &[f64],
+        opts: &Options,
+        times: &[f64],
+    ) -> Result<LawsonSolution, ExplicitSolveError> {
+        Self::solve_impl(
+            flow,
+            residual,
+            t_span,
+            y0,
+            opts,
+            times,
+            None,
+            Some(constant_forcing),
+        )
+    }
+
+    /// The declared affine split with an existing physical-space error norm.
+    #[allow(clippy::too_many_arguments)]
+    pub fn solve_affine_observed_with_norm(
+        flow: &DampedRotationFlow,
+        constant_forcing: &[f64],
+        residual: &Problem,
+        t_span: (f64, f64),
+        y0: &[f64],
+        opts: &Options,
+        times: &[f64],
+        norm: &AffineErrorNorm,
+    ) -> Result<LawsonSolution, ExplicitSolveError> {
+        Self::solve_impl(
+            flow,
+            residual,
+            t_span,
+            y0,
+            opts,
+            times,
+            Some(norm),
+            Some(constant_forcing),
+        )
     }
 
     fn solve_impl(
@@ -84,6 +134,7 @@ impl LawsonDopri5 {
         opts: &Options,
         times: &[f64],
         norm: Option<&AffineErrorNorm>,
+        constant_forcing: Option<&[f64]>,
     ) -> Result<LawsonSolution, ExplicitSolveError> {
         let config = crate::explicit::validate(residual, t_span, y0, opts)?;
         if flow.dimension() != y0.len() {
@@ -139,12 +190,18 @@ impl LawsonDopri5 {
                 }
             }
         };
-        let raw = match norm {
-            None => {
+        let raw = match (norm, constant_forcing) {
+            (None, None) => {
                 integrate_lawson_dopri5_observed(flow, &callback, t_span, y0, &config, &schedule)
             }
-            Some(n) => integrate_lawson_dopri5_observed_with_norm(
+            (Some(n), None) => integrate_lawson_dopri5_observed_with_norm(
                 flow, &callback, t_span, y0, &config, &schedule, n,
+            ),
+            (None, Some(b)) => integrate_affine_lawson_dopri5_observed(
+                flow, b, &callback, t_span, y0, &config, &schedule,
+            ),
+            (Some(n), Some(b)) => integrate_affine_lawson_dopri5_observed_with_norm(
+                flow, b, &callback, t_span, y0, &config, &schedule, n,
             ),
         }
         .map_err(|e| match e {
@@ -187,7 +244,11 @@ impl LawsonDopri5 {
                 callback_failure: fatal.into_inner(),
                 stats: ExplicitStats {
                     schema: "vigilode.lawson-stats.v1",
-                    method: "lawson-dopri5-declared-damped-rotation",
+                    method: if constant_forcing.is_some() {
+                        "lawson-dopri5-declared-affine-rotation"
+                    } else {
+                        "lawson-dopri5-declared-damped-rotation"
+                    },
                     options: opts.clone(),
                     adaptive: config.adaptive,
                     observation_mode: "step-landing",
