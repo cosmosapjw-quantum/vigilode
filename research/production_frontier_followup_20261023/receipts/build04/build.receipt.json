@@ -1,0 +1,46 @@
+{
+  "command": [
+    "timeout",
+    "--signal=TERM",
+    "--kill-after=5s",
+    "1800s",
+    "cargo",
+    "test",
+    "--locked",
+    "--offline",
+    "--no-run",
+    "-j",
+    "2",
+    "-p",
+    "rodas5p-integrators",
+    "--test",
+    "frontier_session_contracts",
+    "--test",
+    "frontier_physical_budget"
+  ],
+  "env": {
+    "CARGO_TARGET_DIR": "/mnt/extdrive/vigilode-frontier-20261023/target",
+    "TMPDIR": "/mnt/extdrive/vigilode-frontier-20261023/tmp",
+    "CARGO_BUILD_JOBS": "2",
+    "CARGO_INCREMENTAL": "0",
+    "RAYON_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+  },
+  "exit_code": 0,
+  "elapsed_seconds": 84.89794243406504,
+  "source_sha256": {
+    "crates/rodas5p-integrators/src/dopri5.rs": "b41d90ac47f29b01ccd2bea219d2e5e18ce1cee36d81e1ffed9f0658a36cff0e",
+    "crates/rodas5p-integrators/src/rodas5p_fast.rs": "54687a287921d03140768acca3621e8438c43f042a400ac49fe29b654a70f02a",
+    "crates/rodas5p-integrators/src/lib.rs": "95115af27952a1186feebef25babbffdb88a9c15b5f56395823c4deba7234d8f",
+    "crates/rodas5p-integrators/src/physical_error_budget.rs": "04bc4413425ef5f4bafad64c4b35f8a143eadd2d096ddaba572ff0f5a0fa096a",
+    "crates/rodas5p-integrators/tests/frontier_session_contracts.rs": "91330d7e5c11b7c2a57f1cb3f3b96a3e2a0ede0400308c165dd274eb12663902",
+    "crates/rodas5p-integrators/tests/frontier_physical_budget.rs": "af3139a9efdf767bb9c47fe8ac2dea521cd0b5257316efca357feda7e8aa8b2b",
+    "crates/rodas5p-integrators/examples/frontier_long_phase.rs": "c6249938a5a00dd75af8b7a724740e60b7b66fe2d731bfb885af47c90e402aef",
+    "research/production_frontier_followup_20261023/src/long_phase_campaign.py": "61c5cf26a2122890fc2b562dedbed5c184104213645fb31a27ddef89a8e230c1"
+  },
+  "source_patch_sha256": "264e36bb47837f7c10bf8930af912cdd7b8a148d02a11ac1e48ae3976d64000c",
+  "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stderr_sha256": "386d2bf94a40fcb77bfd08883e5cb2b176e2bc9ffcb1c75cf96a7d65a0f1fa3f"
+}

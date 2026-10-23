@@ -1,0 +1,1136 @@
+diff --git a/crates/rodas5p-cli/src/triage.rs b/crates/rodas5p-cli/src/triage.rs
+index a278f27a..ad7ee088 100644
+--- a/crates/rodas5p-cli/src/triage.rs
++++ b/crates/rodas5p-cli/src/triage.rs
+@@ -1106,6 +1106,7 @@ fn core_error_kind(error: &CoreError) -> &'static str {
+         CoreError::Dimension(_) => "dimension",
+         CoreError::InvalidInput(_) => "invalid-input",
+         CoreError::NonFinite(_) => "non-finite",
++        CoreError::FatalCallback(_) => "fatal-callback",
+         CoreError::LinearSolve(_) => "linear-solve",
+         CoreError::NonlinearSolve(_) => "nonlinear-solve",
+         CoreError::Coefficients(_) => "coefficients",
+diff --git a/crates/rodas5p-core/src/error.rs b/crates/rodas5p-core/src/error.rs
+index 9cbf583f..3b4035e5 100644
+--- a/crates/rodas5p-core/src/error.rs
++++ b/crates/rodas5p-core/src/error.rs
+@@ -8,6 +8,10 @@ pub enum CoreError {
+     InvalidInput(String),
+     #[error("non-finite numerical value: {0}")]
+     NonFinite(String),
++    /// A callback requested immediate termination; adaptive drivers must return
++    /// their accepted prefix and accumulated work without another trial.
++    #[error("fatal callback: {0}")]
++    FatalCallback(String),
+     #[error("linear solve failed: {0}")]
+     LinearSolve(String),
+     #[error("nonlinear solve failed: {0}")]
+diff --git a/crates/rodas5p-core/src/operator.rs b/crates/rodas5p-core/src/operator.rs
+index de2e68fd..b7afac86 100644
+--- a/crates/rodas5p-core/src/operator.rs
++++ b/crates/rodas5p-core/src/operator.rs
+@@ -74,6 +74,16 @@ pub struct OperatorApplicationWork {
+ }
+ 
+ impl OperatorApplicationWork {
++    /// Add work actually performed, including a partial failed application.
++    pub fn accumulate(&mut self, other: Self) {
++        self.jvp_calls = self.jvp_calls.saturating_add(other.jvp_calls);
++        self.jvp_vectors = self.jvp_vectors.saturating_add(other.jvp_vectors);
++        self.mass_matvecs = self.mass_matvecs.saturating_add(other.mass_matvecs);
++        self.block_matvecs = self.block_matvecs.saturating_add(other.block_matvecs);
++        self.jacobian_matvecs = self.jacobian_matvecs.saturating_add(other.jacobian_matvecs);
++        self.state_vectors = self.state_vectors.saturating_add(other.state_vectors);
++    }
++
+     fn repeated(self, count: usize) -> Self {
+         let count = u64::try_from(count).unwrap_or(u64::MAX);
+         Self {
+@@ -107,6 +117,21 @@ pub trait LinearOperator: Send + Sync {
+     fn dimension(&self) -> usize;
+     fn apply(&self, x: &[f64], y: &mut [f64]) -> CoreResult<()>;
+ 
++    /// Add actual partial work before returning an error when the provider
++    /// can observe it. The default knows only successful application work;
++    /// failed custom applications have unknown partial work, not a zero-work
++    /// guarantee. Implementations add to, rather than replace, `work`.
++    fn apply_with_work(
++        &self,
++        x: &[f64],
++        y: &mut [f64],
++        work: &mut OperatorApplicationWork,
++    ) -> CoreResult<()> {
++        self.apply(x, y)?;
++        work.accumulate(self.application_work());
++        Ok(())
++    }
++
+     /// Apply one operator to several independent right-hand-side rows.
+     ///
+     /// The default implementation is deliberately serial and allocation-free with respect to the
+@@ -251,6 +276,35 @@ where
+     fn apply(&self, x: &[f64], y: &mut [f64]) -> CoreResult<()> {
+         (self.f)(x, y)
+     }
++    fn apply_with_work(
++        &self,
++        x: &[f64],
++        y: &mut [f64],
++        work: &mut OperatorApplicationWork,
++    ) -> CoreResult<()> {
++        if x.len() != self.n || y.len() != self.n {
++            return Err(CoreError::Dimension(
++                "closure operator shape mismatch".into(),
++            ));
++        }
++        // The native JVP provider declares one callback, entered immediately
++        // below. Composite/custom closure declarations do not reveal partial
++        // failure work and retain the conservative successful-only default.
++        if self.application_work
++            == (OperatorApplicationWork {
++                jvp_calls: 1,
++                jvp_vectors: 1,
++                ..OperatorApplicationWork::default()
++            })
++        {
++            work.accumulate(self.application_work);
++            (self.f)(x, y)
++        } else {
++            (self.f)(x, y)?;
++            work.accumulate(self.application_work);
++            Ok(())
++        }
++    }
+     fn application_work(&self) -> OperatorApplicationWork {
+         self.application_work
+     }
+@@ -274,7 +328,13 @@ pub fn apply_counted(
+     counters: &mut WorkCounters,
+     category: ApplyCategory,
+ ) -> CoreResult<()> {
+-    op.apply(x, y)?;
++    // Shape refusal precedes entry. Once entered, the solver-level category
++    // counts an attempted application independently of provider completion.
++    if x.len() != op.dimension() || y.len() != op.dimension() {
++        return Err(CoreError::Dimension(
++            "counted operator shape mismatch".into(),
++        ));
++    }
+     let work = op.application_work();
+     match category {
+         ApplyCategory::Krylov => counters.linear_matvecs += 1,
+@@ -287,8 +347,10 @@ pub fn apply_counted(
+             .linear_matvec_vectors
+             .saturating_add(work.state_vector_units());
+     }
+-    work.charge(counters);
+-    Ok(())
++    let mut actual = OperatorApplicationWork::default();
++    let outcome = op.apply_with_work(x, y, &mut actual);
++    actual.charge(counters);
++    outcome
+ }
+ 
+ pub fn apply_rows_counted(
+@@ -333,7 +395,15 @@ pub fn apply_jvp_counted(
+     y: &mut [f64],
+     counters: &mut WorkCounters,
+ ) -> CoreResult<()> {
+-    jacobian.apply(x, y)?;
++    if x.len() != jacobian.dimension() || y.len() != jacobian.dimension() {
++        return Err(CoreError::Dimension(
++            "counted Jacobian shape mismatch".into(),
++        ));
++    }
++    let mut actual = OperatorApplicationWork::default();
++    let outcome = jacobian.apply_with_work(x, y, &mut actual);
++    actual.charge(counters);
++    outcome?;
+     // An operator that declares its provenance (a JVP callback or an
+     // explicit Jacobian product) is charged exactly that; an undeclared
+     // operator keeps the historical role-based count of one JVP.
+@@ -341,8 +411,6 @@ pub fn apply_jvp_counted(
+     if declared == OperatorApplicationWork::default() {
+         counters.jvp_calls = counters.jvp_calls.saturating_add(1);
+         counters.jvp_vectors = counters.jvp_vectors.saturating_add(1);
+-    } else {
+-        declared.charge(counters);
+     }
+     Ok(())
+ }
+@@ -592,6 +660,44 @@ impl LinearOperator for ShiftedOperator {
+             ))
+         }
+     }
++    fn apply_with_work(
++        &self,
++        x: &[f64],
++        y: &mut [f64],
++        work: &mut OperatorApplicationWork,
++    ) -> CoreResult<()> {
++        let n = self.dimension();
++        if x.len() != n || y.len() != n {
++            return Err(CoreError::Dimension(
++                "shifted operator shape mismatch".into(),
++            ));
++        }
++        let mut partial = OperatorApplicationWork::default();
++        if let Err(error) = self.jacobian.apply_with_work(x, y, &mut partial) {
++            work.accumulate(partial);
++            return Err(error);
++        }
++        // Preserve the complete successful declaration (including historical
++        // role-based JVP counts), but only after the mass action is executed.
++        if let Some(mass) = &self.mass {
++            for (i, y_i) in y.iter_mut().enumerate() {
++                let mass_x = mass.row(i).iter().zip(x).map(|(a, b)| a * b).sum::<f64>();
++                *y_i = mass_x - self.h_gamma * *y_i;
++            }
++        } else {
++            for (y_i, x_i) in y.iter_mut().zip(x) {
++                *y_i = *x_i - self.h_gamma * *y_i;
++            }
++        }
++        work.accumulate(self.application_work);
++        if y.iter().all(|v| v.is_finite()) {
++            Ok(())
++        } else {
++            Err(CoreError::NonFinite(
++                "shifted operator produced NaN/Inf".into(),
++            ))
++        }
++    }
+     fn explicit(&self) -> Option<&DenseMatrix> {
+         self.explicit.as_ref()
+     }
+@@ -626,3 +732,105 @@ pub fn apply_preconditioner(
+         .saturating_add(p.application_vectors());
+     Ok(())
+ }
++
++#[cfg(test)]
++mod terminal_application_work_tests {
++    use super::*;
++
++    fn jvp_work() -> OperatorApplicationWork {
++        OperatorApplicationWork {
++            jvp_calls: 1,
++            jvp_vectors: 1,
++            ..Default::default()
++        }
++    }
++
++    #[test]
++    fn failed_jvp_charges_callback_once_before_shifted_mass() {
++        for fatal in [false, true] {
++            let j: Arc<dyn LinearOperator> = Arc::new(ClosureOperator::with_application_work(
++                1,
++                move |_: &[f64], _: &mut [f64]| {
++                    if fatal {
++                        Err(CoreError::FatalCallback("stop".into()))
++                    } else {
++                        Err(CoreError::NonFinite("retry".into()))
++                    }
++                },
++                jvp_work(),
++            ));
++            let op = ShiftedOperator::new(Some(DenseMatrix::identity(1)), j, 0.5, 1.0).unwrap();
++            let mut counters = WorkCounters::default();
++            let mut out = [0.0];
++            assert!(
++                apply_counted(&op, &[1.0], &mut out, &mut counters, ApplyCategory::Krylov).is_err()
++            );
++            assert_eq!(counters.jvp_calls, 1);
++            assert_eq!(counters.jvp_vectors, 1);
++            assert_eq!(counters.mass_matvecs, 0);
++            assert_eq!(counters.linear_matvecs, 1);
++            assert_eq!(counters.linear_matvec_vectors, 1);
++            let mut refused = WorkCounters::default();
++            assert!(
++                apply_counted(&op, &[], &mut out, &mut refused, ApplyCategory::Krylov).is_err()
++            );
++            assert_eq!(refused.jvp_calls, 0);
++            assert_eq!(refused.mass_matvecs, 0);
++            assert_eq!(refused.linear_matvecs, 0);
++            assert_eq!(refused.linear_matvec_vectors, 0);
++            let mut counters = WorkCounters::default();
++            assert!(apply_jvp_counted(&op, &[1.0], &mut out, &mut counters).is_err());
++            assert_eq!(counters.jvp_calls, 1);
++            assert_eq!(counters.mass_matvecs, 0);
++            let mut partial = OperatorApplicationWork::default();
++            assert!(op.apply_with_work(&[], &mut out, &mut partial).is_err());
++            assert_eq!(partial, OperatorApplicationWork::default());
++        }
++    }
++
++    #[test]
++    fn successful_shifted_work_is_unchanged_and_hook_is_additive() {
++        let j: Arc<dyn LinearOperator> = Arc::new(ClosureOperator::with_application_work(
++            1,
++            |v: &[f64], out: &mut [f64]| {
++                out[0] = -v[0];
++                Ok(())
++            },
++            jvp_work(),
++        ));
++        let op = ShiftedOperator::new(Some(DenseMatrix::identity(1)), j, 0.5, 1.0).unwrap();
++        let mut reference = [0.0];
++        op.apply(&[2.0], &mut reference).unwrap();
++        let mut actual = [0.0];
++        let mut work = jvp_work();
++        op.apply_with_work(&[2.0], &mut actual, &mut work).unwrap();
++        assert_eq!(reference[0].to_bits(), actual[0].to_bits());
++        assert_eq!(work.jvp_calls, 2);
++        assert_eq!(work.mass_matvecs, 1);
++        let mut counters = WorkCounters::default();
++        apply_counted(
++            &op,
++            &[2.0],
++            &mut actual,
++            &mut counters,
++            ApplyCategory::Krylov,
++        )
++        .unwrap();
++        assert_eq!(
++            (
++                counters.jvp_calls,
++                counters.jvp_vectors,
++                counters.mass_matvecs,
++                counters.linear_matvecs
++            ),
++            (1, 1, 1, 1)
++        );
++        let mut refused = OperatorApplicationWork::default();
++        assert!(
++            op.jacobian
++                .apply_with_work(&[], &mut actual, &mut refused)
++                .is_err()
++        );
++        assert_eq!(refused, OperatorApplicationWork::default());
++    }
++}
+diff --git a/crates/rodas5p-integrators/examples/lrs_photon_chem_run.rs b/crates/rodas5p-integrators/examples/lrs_photon_chem_run.rs
+index 2b279256..eedb2927 100644
+--- a/crates/rodas5p-integrators/examples/lrs_photon_chem_run.rs
++++ b/crates/rodas5p-integrators/examples/lrs_photon_chem_run.rs
+@@ -187,6 +187,7 @@ fn error_kind(e: &CoreError) -> (&'static str, &str) {
+         CoreError::Dimension(m) => ("Dimension", m),
+         CoreError::InvalidInput(m) => ("InvalidInput", m),
+         CoreError::NonFinite(m) => ("NonFinite", m),
++        CoreError::FatalCallback(m) => ("FatalCallback", m),
+         CoreError::LinearSolve(m) => ("LinearSolve", m),
+         CoreError::NonlinearSolve(m) => ("NonlinearSolve", m),
+         CoreError::Coefficients(m) => ("Coefficients", m),
+diff --git a/crates/rodas5p-integrators/src/dense_output_v2.rs b/crates/rodas5p-integrators/src/dense_output_v2.rs
+index bdd3419c..9ac5e698 100644
+--- a/crates/rodas5p-integrators/src/dense_output_v2.rs
++++ b/crates/rodas5p-integrators/src/dense_output_v2.rs
+@@ -1930,6 +1930,7 @@ fn integrate_adaptive_dense_impl(
+     // The kind of the last rejection since the last accepted step (the
+     // partial record only; never read by the step arithmetic).
+     let mut last_failure = None;
++    let mut fatal_callback = false;
+ 
+     while t < tf && diagnostics.attempts < adaptive.max_attempts {
+         let Some(next_h) =
+@@ -1995,6 +1996,21 @@ fn integrate_adaptive_dense_impl(
+         };
+         let report = match trial {
+             Ok(report) => report,
++            Err(CoreError::FatalCallback(_)) => {
++                fatal_callback = true;
++                last_failure = Some(AdaptiveFailureKind::NonFinite);
++                counters.rejected_steps += 1;
++                record_adaptive_work_failure(&mut counters, AdaptiveFailureKind::NonFinite);
++                diagnostics.record_with_failure(
++                    trial_h,
++                    f64::INFINITY,
++                    crate::RODAS5P_ESTIMATOR_ORDER,
++                    "rodas5p-embedded",
++                    false,
++                    last_failure,
++                );
++                break;
++            }
+             Err(error) if adaptive_failure_kind(&error).is_some() => {
+                 let failure = adaptive_failure_kind(&error).expect("failure kind checked");
+                 last_failure = Some(failure);
+@@ -2091,6 +2107,15 @@ fn integrate_adaptive_dense_impl(
+                         accepted: !rejected,
+                     });
+                 }
++                Err(CoreError::FatalCallback(_)) => {
++                    // Fatal interior probes reject the candidate even in report
++                    // mode, charge their work, and stop at the accepted prefix.
++                    fatal_callback = true;
++                    dense_report.estimate_failures += 1;
++                    estimate_failure = Some(AdaptiveFailureKind::NonFinite);
++                    accepted = false;
++                    error = f64::INFINITY;
++                }
+                 Err(estimate_error) => {
+                     if matches!(
+                         control,
+@@ -2115,10 +2140,12 @@ fn integrate_adaptive_dense_impl(
+                 }
+             }
+             dense_report.counters.accumulate(estimate_work);
+-            if matches!(
+-                control,
+-                DenseErrorControl::Enforce | DenseErrorControl::WFilteredEnforce
+-            ) {
++            if fatal_callback
++                || matches!(
++                    control,
++                    DenseErrorControl::Enforce | DenseErrorControl::WFilteredEnforce
++                )
++            {
+                 counters.accumulate(estimate_work);
+             }
+         }
+@@ -2137,6 +2164,9 @@ fn integrate_adaptive_dense_impl(
+             record_adaptive_work_failure(&mut counters, failure);
+         }
+         last_failure = failure;
++        if fatal_callback {
++            break;
++        }
+         if accepted {
+             let old_t = t;
+             t = report.t_new;
+@@ -2181,7 +2211,7 @@ fn integrate_adaptive_dense_impl(
+         }
+     }
+     diagnostics.fallback_steps = counters.fallback_steps as usize;
+-    let partial = DriverPartial::after_loop(
++    let mut partial = DriverPartial::after_loop(
+         t,
+         tf,
+         &state,
+@@ -2189,6 +2219,12 @@ fn integrate_adaptive_dense_impl(
+         adaptive.max_attempts,
+         last_failure,
+     );
++    if fatal_callback {
++        partial
++            .as_mut()
++            .expect("fatal trial leaves an accepted prefix")
++            .reason = crate::DriverStopReason::FatalCallback;
++    }
+     dense_adaptive_result(t, tf, collector, counters, internal_steps, diagnostics)
+         .map(|result| (result, dense_report, partial))
+ }
+diff --git a/crates/rodas5p-integrators/src/lib.rs b/crates/rodas5p-integrators/src/lib.rs
+index b4b35e80..8647a92d 100644
+--- a/crates/rodas5p-integrators/src/lib.rs
++++ b/crates/rodas5p-integrators/src/lib.rs
+@@ -13,6 +13,7 @@ pub mod audit2_stage_certificate_research;
+ 
+ mod a1_two_arm_receipt;
+ mod adaptive;
++pub mod physical_error_budget;
+ mod adaptive_exponential;
+ mod adaptive_output;
+ pub mod affine_transport;
+diff --git a/crates/rodas5p-integrators/src/polynomial_resolvent.rs b/crates/rodas5p-integrators/src/polynomial_resolvent.rs
+index 43ca1680..34e900f4 100644
+--- a/crates/rodas5p-integrators/src/polynomial_resolvent.rs
++++ b/crates/rodas5p-integrators/src/polynomial_resolvent.rs
+@@ -8,6 +8,7 @@
+ //! certificates. The original-space residual is always evaluated before output
+ //! is committed. No allocation occurs during `apply_checked`.
+ 
++use rodas5p_core::directed::Interval;
+ use thiserror::Error;
+ 
+ #[derive(Debug, Error, Clone, PartialEq)]
+@@ -22,6 +23,10 @@ pub enum PolynomialResolventError {
+     NonFinite,
+     #[error("operator callback failed")]
+     OperatorFailure,
++    #[error("polynomial witness does not match the live scaled provider")]
++    WitnessMismatch,
++    #[error("original-space residual refused the stage")]
++    ResidualRejected,
+ }
+ 
+ /// Prepared quotient polynomial `p(B)`, with `(I-B)p(B)=I-q(B)/q(1)`.
+@@ -220,3 +225,383 @@ impl DeclaredPolynomialResolvent {
+         })
+     }
+ }
++
++/// The existing kernel measures the physical infinity norm only. Other norms
++/// are explicit unsupported requests, rather than silently relabeled bounds.
++#[derive(Clone, Copy, Debug, PartialEq, Eq)]
++pub enum PolynomialPhysicalNorm {
++    Infinity,
++    Other(u64),
++}
++
++/// Exact identity of an immutable, homogeneous two-state collision direct sum.
++/// Scale is compared by exact binary64 bits, never by a numerical tolerance.
++#[derive(Clone, Copy, Debug, PartialEq, Eq)]
++pub struct PolynomialWitnessIdentity {
++    pub operator_rate_bits: [u64; 2],
++    pub dimension: usize,
++    pub provider_epoch: u64,
++    pub model_epoch: u64,
++    pub scale_bits: u64,
++    pub physical_norm: PolynomialPhysicalNorm,
++}
++
++/// Full-space symbolic declaration, not a relation inferred from finite probes.
++/// For this provider the exact-real block algebra is A²=-(a+b)A. Applying B
++/// in binary64 still has callback/residual roundoff, supplied separately at use.
++#[derive(Clone, Copy, Debug, PartialEq, Eq)]
++pub struct ExactExchangeRelationWitness {
++    pub identity: PolynomialWitnessIdentity,
++    pub evidence_reference: u64,
++}
++
++/// All counters include refused setup/application/stage attempts. Operator
++/// attempts are charged BEFORE an action, so an arithmetic failure remains paid.
++/// Direct block arithmetic is separate: zero callback actions is not zero work.
++#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
++pub struct PolynomialProviderWork {
++    pub setups_attempted: u64,
++    pub setup_failures: u64,
++    pub applications_attempted: u64,
++    pub applications_refused: u64,
++    pub operator_actions_attempted: u64,
++    pub operator_actions_completed: u64,
++    pub stages_attempted: u64,
++    pub stages_accepted: u64,
++    pub direct_solves_attempted: u64,
++    pub direct_solves_failed: u64,
++    pub direct_blocks_solved: u64,
++    pub direct_block_formula_evaluations: u64,
++}
++
++/// Number-exchange collision: u'=-a*u+b*v, v'=a*u-b*v in each independent cell.
++/// a,b>=0 are immutable and identical across cells; total number is conserved.
++/// This opt-in linear collision client is not a transport/RODAS route or a
++/// general nonlinear closure. No Jacobian assembly or inferred derivative occurs.
++#[derive(Clone, Copy, Debug)]
++pub struct ExchangeCollisionProvider {
++    a: f64,
++    b: f64,
++    dimension: usize,
++    model_epoch: u64,
++    provider_epoch: u64,
++}
++
++impl ExchangeCollisionProvider {
++    pub fn new(
++        a: f64,
++        b: f64,
++        blocks: usize,
++        model_epoch: u64,
++        provider_epoch: u64,
++    ) -> Result<Self, PolynomialResolventError> {
++        if !a.is_finite()
++            || !b.is_finite()
++            || a < 0.0
++            || b < 0.0
++            || !(a + b).is_finite()
++            || blocks == 0
++        {
++            return Err(PolynomialResolventError::InvalidInput);
++        }
++        let dimension = blocks
++            .checked_mul(2)
++            .ok_or(PolynomialResolventError::InvalidInput)?;
++        Ok(Self {
++            a: if a == 0.0 { 0.0 } else { a },
++            b: if b == 0.0 { 0.0 } else { b },
++            dimension,
++            model_epoch,
++            provider_epoch,
++        })
++    }
++    pub fn dimension(&self) -> usize {
++        self.dimension
++    }
++    fn identity(&self, scale: f64, norm: PolynomialPhysicalNorm) -> PolynomialWitnessIdentity {
++        PolynomialWitnessIdentity {
++            operator_rate_bits: [self.a.to_bits(), self.b.to_bits()],
++            dimension: self.dimension,
++            provider_epoch: self.provider_epoch,
++            model_epoch: self.model_epoch,
++            scale_bits: scale.to_bits(),
++            physical_norm: norm,
++        }
++    }
++
++    /// Prepare B=sA with q(z)=z²+s(a+b)z, valid on the entire direct sum.
++    /// The evidence reference names the client's derivation/intake record; this
++    /// module enforces binding and algebraic structure, not external provenance.
++    pub fn prepare_implicit_euler(
++        &self,
++        step: f64,
++        norm: PolynomialPhysicalNorm,
++        evidence_reference: u64,
++        minimum_denominator_ratio: f64,
++        work: &mut PolynomialProviderWork,
++    ) -> Result<BoundPolynomialResolvent, PolynomialResolventError> {
++        work.setups_attempted = work.setups_attempted.saturating_add(1);
++        let result = (|| {
++            if !step.is_finite()
++                || step < 0.0
++                || norm != PolynomialPhysicalNorm::Infinity
++                || evidence_reference == 0
++            {
++                return Err(PolynomialResolventError::InvalidInput);
++            }
++            let rate_sum = self.a + self.b;
++            let scaled_sum = step * rate_sum;
++            if !scaled_sum.is_finite() || (step > 0.0 && rate_sum > 0.0 && scaled_sum == 0.0) {
++                return Err(PolynomialResolventError::NonFinite);
++            }
++            // For exact-real B=sA, q(B)=(c-s(a+b))*B where c is the
++            // rounded stored coefficient. Enclose that coefficient defect over
++            // the FULL direct sum; this is not an inference from sample vectors.
++            let arithmetic = || -> Result<(f64, f64), rodas5p_core::CoreError> {
++                let exact_sum = Interval::exact_sum(self.a, self.b)?;
++                let scaled = exact_sum.mul(Interval::point(step)?)?;
++                let defect = Interval::point(scaled_sum)?.sub(scaled)?.mag();
++                let norm = scaled.hi;
++                let relation = Interval::point(defect)?.mul(Interval::point(norm)?)?.hi;
++                Ok((relation, norm))
++            };
++            let (relation_norm, operator_norm) =
++                arithmetic().map_err(|_| PolynomialResolventError::NonFinite)?;
++            let plan = DeclaredPolynomialResolvent::new(
++                &[0.0, scaled_sum, 1.0],
++                relation_norm,
++                operator_norm,
++                minimum_denominator_ratio,
++            )?;
++            Ok(BoundPolynomialResolvent {
++                plan,
++                witness: ExactExchangeRelationWitness {
++                    identity: self.identity(step, norm),
++                    evidence_reference,
++                },
++            })
++        })();
++        if result.is_err() {
++            work.setup_failures = work.setup_failures.saturating_add(1);
++        }
++        result
++    }
++
++    fn apply_scaled(
++        &self,
++        step: f64,
++        x: &[f64],
++        out: &mut [f64],
++    ) -> Result<(), PolynomialResolventError> {
++        if x.len() != self.dimension || out.len() != self.dimension {
++            return Err(PolynomialResolventError::InvalidInput);
++        }
++        for (input, output) in x.chunks_exact(2).zip(out.chunks_exact_mut(2)) {
++            let transfer = (-self.a).mul_add(input[0], self.b * input[1]);
++            let transfer = step * transfer;
++            if !transfer.is_finite() {
++                return Err(PolynomialResolventError::NonFinite);
++            }
++            output[0] = transfer;
++            output[1] = -transfer;
++        }
++        Ok(())
++    }
++
++    /// Independent small-block formula, retained as the specialized alternative.
++    /// It performs a validation pass before output commit, without allocation.
++    pub fn direct_implicit_euler(
++        &self,
++        step: f64,
++        rhs: &[f64],
++        output: &mut [f64],
++        work: &mut PolynomialProviderWork,
++    ) -> Result<(), PolynomialResolventError> {
++        work.direct_solves_attempted = work.direct_solves_attempted.saturating_add(1);
++        let result = (|| {
++            if !step.is_finite()
++                || step < 0.0
++                || rhs.len() != self.dimension
++                || output.len() != self.dimension
++                || rhs.iter().any(|x| !x.is_finite())
++            {
++                return Err(PolynomialResolventError::InvalidInput);
++            }
++            let ha = step * self.a;
++            let hb = step * self.b;
++            let denominator = 1.0 + ha + hb;
++            if !ha.is_finite() || !hb.is_finite() || !denominator.is_finite() {
++                return Err(PolynomialResolventError::NonFinite);
++            }
++            let solve = |pair: &[f64]| {
++                [
++                    ((1.0 + hb) * pair[0] + hb * pair[1]) / denominator,
++                    (ha * pair[0] + (1.0 + ha) * pair[1]) / denominator,
++                ]
++            };
++            for pair in rhs.chunks_exact(2) {
++                work.direct_block_formula_evaluations =
++                    work.direct_block_formula_evaluations.saturating_add(1);
++                work.direct_blocks_solved = work.direct_blocks_solved.saturating_add(1);
++                if solve(pair).iter().any(|x| !x.is_finite()) {
++                    return Err(PolynomialResolventError::NonFinite);
++                }
++            }
++            for (pair, out) in rhs.chunks_exact(2).zip(output.chunks_exact_mut(2)) {
++                work.direct_block_formula_evaluations =
++                    work.direct_block_formula_evaluations.saturating_add(1);
++                out.copy_from_slice(&solve(pair));
++            }
++            Ok(())
++        })();
++        if result.is_err() {
++            work.direct_solves_failed = work.direct_solves_failed.saturating_add(1);
++        }
++        result
++    }
++}
++
++/// Typed binding around the legacy structural primitive. No arbitrary callback
++/// can be paired with this exact-exchange witness: action and live identity both
++/// come from the immutable provider object.
++#[derive(Clone, Debug)]
++pub struct BoundPolynomialResolvent {
++    plan: DeclaredPolynomialResolvent,
++    witness: ExactExchangeRelationWitness,
++}
++impl BoundPolynomialResolvent {
++    pub fn degree(&self) -> usize {
++        self.plan.degree()
++    }
++    pub fn witness(&self) -> ExactExchangeRelationWitness {
++        self.witness
++    }
++    pub fn relation_defect_ratio(&self) -> f64 {
++        self.plan.relation_defect_ratio()
++    }
++    pub fn apply_provider_checked(
++        &self,
++        provider: &ExchangeCollisionProvider,
++        step: f64,
++        norm: PolynomialPhysicalNorm,
++        rhs: &[f64],
++        output: &mut [f64],
++        workspace: &mut PolynomialResolventWorkspace,
++        absolute_residual_tolerance: f64,
++        residual_evaluation_error: f64,
++        work: &mut PolynomialProviderWork,
++    ) -> Result<PolynomialResolventReport, PolynomialResolventError> {
++        work.applications_attempted = work.applications_attempted.saturating_add(1);
++        let result = (|| {
++            if provider.identity(step, norm) != self.witness.identity {
++                return Err(PolynomialResolventError::WitnessMismatch);
++            }
++            self.plan.apply_checked(
++                rhs,
++                output,
++                workspace,
++                absolute_residual_tolerance,
++                residual_evaluation_error,
++                |x, y| {
++                    work.operator_actions_attempted =
++                        work.operator_actions_attempted.saturating_add(1);
++                    provider.apply_scaled(step, x, y)?;
++                    work.operator_actions_completed =
++                        work.operator_actions_completed.saturating_add(1);
++                    Ok(())
++                },
++            )
++        })();
++        if result.as_ref().map_or(true, |r| !r.residual_accepted) {
++            work.applications_refused = work.applications_refused.saturating_add(1);
++        }
++        result
++    }
++}
++
++#[derive(Debug)]
++pub struct ExchangeImplicitEulerWorkspace {
++    accepted: Vec<f64>,
++    polynomial: PolynomialResolventWorkspace,
++}
++impl ExchangeImplicitEulerWorkspace {
++    pub fn new(dimension: usize) -> Self {
++        Self {
++            accepted: vec![0.0; dimension],
++            polynomial: PolynomialResolventWorkspace::new(dimension),
++        }
++    }
++}
++#[derive(Clone, Debug)]
++pub struct ExchangeImplicitEulerReport {
++    pub completed_steps: usize,
++    pub last_accepted_time: f64,
++    pub failure: Option<PolynomialResolventError>,
++}
++
++/// Actual opt-in implicit-Euler collision trajectory, not a RODAS adaptation.
++/// Output is the last accepted state even after stage rejection/failure. Work
++/// counters accumulate across calls; callback roundoff allowance is distinct
++/// from the exact-real symbolic relation. No global accuracy certificate follows.
++#[allow(clippy::too_many_arguments)]
++pub fn integrate_exchange_implicit_euler(
++    provider: &ExchangeCollisionProvider,
++    plan: &BoundPolynomialResolvent,
++    step: f64,
++    steps: usize,
++    initial: &[f64],
++    output: &mut [f64],
++    workspace: &mut ExchangeImplicitEulerWorkspace,
++    absolute_residual_tolerance: f64,
++    residual_evaluation_error: f64,
++    work: &mut PolynomialProviderWork,
++) -> Result<ExchangeImplicitEulerReport, PolynomialResolventError> {
++    if !step.is_finite()
++        || step <= 0.0
++        || !(step * steps as f64).is_finite()
++        || initial.len() != provider.dimension
++        || output.len() != provider.dimension
++        || workspace.accepted.len() != provider.dimension
++        || initial.iter().any(|x| !x.is_finite())
++        || provider.identity(step, PolynomialPhysicalNorm::Infinity) != plan.witness.identity
++    {
++        return Err(PolynomialResolventError::InvalidInput);
++    }
++    workspace.accepted.copy_from_slice(initial);
++    output.copy_from_slice(initial);
++    let mut report = ExchangeImplicitEulerReport {
++        completed_steps: 0,
++        last_accepted_time: 0.0,
++        failure: None,
++    };
++    for _ in 0..steps {
++        work.stages_attempted = work.stages_attempted.saturating_add(1);
++        match plan.apply_provider_checked(
++            provider,
++            step,
++            PolynomialPhysicalNorm::Infinity,
++            &workspace.accepted,
++            output,
++            &mut workspace.polynomial,
++            absolute_residual_tolerance,
++            residual_evaluation_error,
++            work,
++        ) {
++            Ok(result) if result.residual_accepted => {
++                workspace.accepted.copy_from_slice(output);
++                work.stages_accepted = work.stages_accepted.saturating_add(1);
++                report.completed_steps += 1;
++                report.last_accepted_time = step * report.completed_steps as f64;
++            }
++            Ok(_) => {
++                report.failure = Some(PolynomialResolventError::ResidualRejected);
++                break;
++            }
++            Err(error) => {
++                report.failure = Some(error);
++                break;
++            }
++        }
++    }
++    Ok(report)
++}
+diff --git a/crates/rodas5p-integrators/src/rhs_telemetry.rs b/crates/rodas5p-integrators/src/rhs_telemetry.rs
+index a518ff11..2c897dab 100644
+--- a/crates/rodas5p-integrators/src/rhs_telemetry.rs
++++ b/crates/rodas5p-integrators/src/rhs_telemetry.rs
+@@ -595,6 +595,7 @@ fn with_context(error: CoreError, context: impl AsRef<str>) -> CoreError {
+         CoreError::Dimension(_) => CoreError::Dimension(message),
+         CoreError::InvalidInput(_) => CoreError::InvalidInput(message),
+         CoreError::NonFinite(_) => CoreError::NonFinite(message),
++        CoreError::FatalCallback(_) => CoreError::FatalCallback(message),
+         CoreError::LinearSolve(_) => CoreError::LinearSolve(message),
+         CoreError::NonlinearSolve(_) => CoreError::NonlinearSolve(message),
+         CoreError::Coefficients(_) => CoreError::Coefficients(message),
+diff --git a/crates/rodas5p-integrators/src/rodas5p_fast.rs b/crates/rodas5p-integrators/src/rodas5p_fast.rs
+index 6b269a6e..b4e34cf6 100644
+--- a/crates/rodas5p-integrators/src/rodas5p_fast.rs
++++ b/crates/rodas5p-integrators/src/rodas5p_fast.rs
+@@ -223,6 +223,8 @@ pub struct Rodas5pFastBandedResult {
+ #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+ #[serde(rename_all = "kebab-case")]
+ pub enum DriverStopReason {
++    /// A callback requested immediate termination; no retry follows.
++    FatalCallback,
+     /// The attempt budget `AdaptiveStepConfig::max_attempts` was used up.
+     AttemptBudget,
+     /// The next step fell below `AdaptiveStepConfig::min_step` (or no
+@@ -2320,6 +2322,7 @@ fn integrate_fast_in<S: StepSink>(
+     let mut last_failure = None;
+     // The controller's proposal when the accept control stopped the run.
+     let mut client_stop = None;
++    let mut fatal_callback = false;
+     while t < tf && attempts < adaptive.max_attempts {
+         let Some(next_h) =
+             crate::output::adaptive_end_step(t, h, tf, adaptive.step_cap(), &controller)?
+@@ -2378,6 +2381,10 @@ fn integrate_fast_in<S: StepSink>(
+         let (error, failure) = match outcome {
+             Ok(error) if error <= 1.0 => (error, None),
+             Ok(error) => (error, Some(AdaptiveFailureKind::LocalError)),
++            Err(CoreError::FatalCallback(_)) => {
++                fatal_callback = true;
++                (f64::INFINITY, Some(AdaptiveFailureKind::NonFinite))
++            }
+             Err(error) => match failure_kind(&error) {
+                 Some(kind) => {
+                     // A failed attempt may have left a partial Jacobian or
+@@ -2419,6 +2426,9 @@ fn integrate_fast_in<S: StepSink>(
+                 }
+             }
+         }
++        if fatal_callback {
++            break;
++        }
+         let requested_h = h;
+         h = if options.prevalidated_controller {
+             rodas_next_step_after_attempt_prevalidated(
+@@ -2476,6 +2486,12 @@ fn integrate_fast_in<S: StepSink>(
+     let success = t >= tf;
+     let mut partial =
+         DriverPartial::after_loop(t, tf, &y, attempts, adaptive.max_attempts, last_failure);
++    if fatal_callback {
++        partial
++            .as_mut()
++            .expect("fatal trial leaves an accepted prefix")
++            .reason = DriverStopReason::FatalCallback;
++    }
+     // A stop before `tf` is the client's, even on the budget's last attempt;
+     // a stop at `tf` leaves the completed run a success.
+     if let (Some(partial), Some(h_next)) = (partial.as_mut(), client_stop) {
+@@ -2495,6 +2511,8 @@ fn integrate_fast_in<S: StepSink>(
+             success,
+             message: if success {
+                 "success".into()
++            } else if fatal_callback {
++                "fatal callback; accepted prefix retained".into()
+             } else if client_stop.is_some() {
+                 "stopped by the client's accept control".into()
+             } else {
+diff --git a/crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs b/crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs
+index 9072b54f..8d1543f4 100644
+--- a/crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs
++++ b/crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs
+@@ -2133,6 +2133,7 @@ impl Rodas5pMfFastWorkspace {
+         // The kind of the last rejection since the last accepted step (the
+         // partial record only; never read by the step arithmetic).
+         let mut last_failure = None;
++        let mut fatal_callback = false;
+         while t < tf && attempts < adaptive.max_attempts {
+             let Some(next_h) =
+                 crate::output::adaptive_end_step(t, h, tf, adaptive.step_cap(), &controller)?
+@@ -2192,10 +2193,16 @@ impl Rodas5pMfFastWorkspace {
+                 &mut counters,
+             );
+             fresh_state = self.jvp.is_some();
+-            observer(t, &y, trial_h, outcome.as_ref().ok().copied(), self);
++            if !matches!(&outcome, Err(CoreError::FatalCallback(_))) {
++                observer(t, &y, trial_h, outcome.as_ref().ok().copied(), self);
++            }
+             let (error, failure) = match outcome {
+                 Ok(error) if error <= 1.0 => (error, None),
+                 Ok(error) => (error, Some(AdaptiveFailureKind::LocalError)),
++                Err(CoreError::FatalCallback(_)) => {
++                    fatal_callback = true;
++                    (f64::INFINITY, Some(AdaptiveFailureKind::NonFinite))
++                }
+                 Err(error) => match failure_kind(&error) {
+                     Some(kind) => (f64::INFINITY, Some(kind)),
+                     None => return Err(error),
+@@ -2238,6 +2245,9 @@ impl Rodas5pMfFastWorkspace {
+                     }
+                 }
+             }
++            if fatal_callback {
++                break;
++            }
+             h = rodas_next_step_after_attempt(
+                 &mut controller,
+                 adaptive,
+@@ -2249,8 +2259,14 @@ impl Rodas5pMfFastWorkspace {
+             )?;
+         }
+         let success = t >= tf;
+-        let partial =
++        let mut partial =
+             DriverPartial::after_loop(t, tf, &y, attempts, adaptive.max_attempts, last_failure);
++        if fatal_callback {
++            partial
++                .as_mut()
++                .expect("fatal trial leaves an accepted prefix")
++                .reason = crate::DriverStopReason::FatalCallback;
++        }
+         let (times, states, output_clipped_steps) = if success {
+             collector.finish()?
+         } else {
+@@ -2264,7 +2280,11 @@ impl Rodas5pMfFastWorkspace {
+                 message: if success {
+                     "success".into()
+                 } else {
+-                    "maximum step count or minimum step reached".into()
++                    if fatal_callback {
++                        "fatal callback; accepted prefix retained".into()
++                    } else {
++                        "maximum step count or minimum step reached".into()
++                    }
+                 },
+                 counters,
+                 internal_steps,
+diff --git a/crates/vigilode/src/fd.rs b/crates/vigilode/src/fd.rs
+index 1f275d32..8daf6a61 100644
+--- a/crates/vigilode/src/fd.rs
++++ b/crates/vigilode/src/fd.rs
+@@ -37,9 +37,8 @@ pub(crate) struct Guard {
+ }
+ 
+ impl Guard {
+-    /// Run one user callback. A recoverable error, a fatal error and a call
+-    /// after a fatal error all reach the driver as `CoreError::NonFinite`,
+-    /// which every protected driver treats as a rejected step attempt.
++    /// Recoverable errors retain the numerical retry signal. Fatal errors
++    /// carry a distinct terminal signal so native drivers stop immediately.
+     pub(crate) fn call(
+         &self,
+         callback: Callback,
+@@ -52,7 +51,7 @@ impl Guard {
+                 self.short_circuited_rhs_calls
+                     .fetch_add(1, Ordering::Relaxed);
+             }
+-            return Err(CoreError::NonFinite(format!(
++            return Err(CoreError::FatalCallback(format!(
+                 "{callback:?} callback not entered: an earlier callback failed fatally"
+             )));
+         }
+@@ -78,7 +77,7 @@ impl Guard {
+                     }
+                 }
+                 self.poisoned.store(true, Ordering::Release);
+-                Err(CoreError::NonFinite(text))
++                Err(CoreError::FatalCallback(text))
+             }
+         }
+     }
+diff --git a/crates/vigilode/src/records.rs b/crates/vigilode/src/records.rs
+index 0ecbb264..99535d29 100644
+--- a/crates/vigilode/src/records.rs
++++ b/crates/vigilode/src/records.rs
+@@ -238,6 +238,8 @@ impl PartialEq<StepFailureKind> for rodas5p_integrators::AdaptiveFailureKind {
+ #[non_exhaustive]
+ #[serde(rename_all = "kebab-case")]
+ pub enum StopReason {
++    /// A fatal callback stopped the native driver without another trial.
++    FatalCallback,
+     /// The `AttemptBudget` policy or outcome.
+     AttemptBudget,
+     /// The `MinimumStep` policy or outcome.
+@@ -249,6 +251,7 @@ pub enum StopReason {
+ impl From<&rodas5p_integrators::DriverStopReason> for StopReason {
+     fn from(source: &rodas5p_integrators::DriverStopReason) -> Self {
+         match source {
++            rodas5p_integrators::DriverStopReason::FatalCallback => Self::FatalCallback,
+             rodas5p_integrators::DriverStopReason::AttemptBudget => Self::AttemptBudget,
+             rodas5p_integrators::DriverStopReason::MinimumStep => Self::MinimumStep,
+             rodas5p_integrators::DriverStopReason::ClientStop => Self::ClientStop,
+diff --git a/crates/vigilode/src/solution.rs b/crates/vigilode/src/solution.rs
+index 8cd33f39..cec8c2cc 100644
+--- a/crates/vigilode/src/solution.rs
++++ b/crates/vigilode/src/solution.rs
+@@ -233,9 +233,9 @@ pub struct CallbackWork {
+     /// Callbacks that returned [`crate::CallbackError::Fatal`] (at most one
+     /// enters user code; see `short_circuited_calls`).
+     pub fatal_errors: u64,
+-    /// Calls after a fatal error that the facade answered with an error
+-    /// without entering user code. The drivers still count them as attempted
+-    /// calls in their counters.
++    /// Defensive guard refusals after a fatal error, without entering user
++    /// code. Protected native drivers stop on the original fatal signal, so
++    /// ordinary terminal runs report zero. Any such calls remain charged.
+     pub short_circuited_calls: u64,
+     /// The right-hand-side calls among `short_circuited_calls`: user RHS code
+     /// was entered `counters.rhs_calls - short_circuited_rhs_calls` times.
+diff --git a/crates/vigilode/src/solve.rs b/crates/vigilode/src/solve.rs
+index 2755e5bb..c3e36739 100644
+--- a/crates/vigilode/src/solve.rs
++++ b/crates/vigilode/src/solve.rs
+@@ -558,7 +558,12 @@ impl Rodas5p {
+             events: Vec::new(),
+             extension: run.segments,
+         };
+-        let (evaluations, terminal) = crate::events::locate(&mut solution, &problem.events);
++        // Event callbacks are user code too: a fatal callback ends the run.
++        let (evaluations, terminal) = if guard.fatal().is_some() {
++            (0, None)
++        } else {
++            crate::events::locate(&mut solution, &problem.events)
++        };
+         solution.stats.event_evaluations = evaluations;
+         solution.stats.terminal_event = terminal;
+         Ok(solution)
+diff --git a/crates/vigilode/tests/facade_contracts.rs b/crates/vigilode/tests/facade_contracts.rs
+index 018109c8..d383ba58 100644
+--- a/crates/vigilode/tests/facade_contracts.rs
++++ b/crates/vigilode/tests/facade_contracts.rs
+@@ -569,7 +569,7 @@ fn a_failing_rhs_returns_the_partial_solution_and_a_typed_reason() {
+     assert!(sol.stats.accepted_steps > 0);
+     assert!(sol.stats.rejected_steps > 0);
+     assert_eq!(sol.stats.callbacks.fatal_errors, 1);
+-    assert!(sol.stats.callbacks.short_circuited_calls > 0);
++    assert_eq!(sol.stats.callbacks.short_circuited_calls, 0);
+     // User code was entered exactly rhs_calls - short_circuited times.
+     assert_eq!(
+         calls.load(Ordering::Relaxed),
+diff --git a/crates/vigilode/tests/frontier_switch_contracts.rs b/crates/vigilode/tests/frontier_switch_contracts.rs
+index db614602..202ef0a6 100644
+--- a/crates/vigilode/tests/frontier_switch_contracts.rs
++++ b/crates/vigilode/tests/frontier_switch_contracts.rs
+@@ -131,9 +131,8 @@ fn implicit_pilot_failure_is_fatal_and_counts_every_callback() {
+     assert!(r.message.contains("fatal implicit pilot"));
+     assert_eq!(jac_calls.load(Ordering::Relaxed), 1);
+     assert_eq!(r.stats.rhs_calls, rhs_calls.load(Ordering::Relaxed));
+-    // Native build counters include short-circuited driver requests after
+-    // the fatal guard. The user callback itself must still run only once.
+-    assert!(r.stats.jacobian_builds >= 1);
++    // The native fatal signal stops the pilot on its first failed build.
++    assert_eq!(r.stats.jacobian_builds, 1);
+     assert!(r.final_time > 0.0 && r.final_time < 1.0);
+     assert!((r.final_state[0] - (-r.final_time).exp()).abs() < 1e-7);
+     assert_eq!(r.stats.switches, 0);
+diff --git a/crates/vigilode/tests/p0_contracts.rs b/crates/vigilode/tests/p0_contracts.rs
+index db1e6691..cef0a869 100644
+--- a/crates/vigilode/tests/p0_contracts.rs
++++ b/crates/vigilode/tests/p0_contracts.rs
+@@ -664,7 +664,7 @@ fn latched(latch: &Arc<AtomicBool>, t: f64) -> CoreResult<()> {
+         latch.store(true, Ordering::Relaxed);
+     }
+     if latch.load(Ordering::Relaxed) {
+-        Err(CoreError::NonFinite("latched".into()))
++        Err(CoreError::FatalCallback("latched".into()))
+     } else {
+         Ok(())
+     }
+@@ -674,7 +674,7 @@ fn latched(latch: &Arc<AtomicBool>, t: f64) -> CoreResult<()> {
+ /// guard short-circuits every callback after the first fatal error.
+ fn after_latch(latch: &AtomicBool) -> CoreResult<()> {
+     if latch.load(Ordering::Relaxed) {
+-        Err(CoreError::NonFinite("latched".into()))
++        Err(CoreError::FatalCallback("latched".into()))
+     } else {
+         Ok(())
+     }
+@@ -758,7 +758,7 @@ fn a_fatal_rhs_after_several_steps_returns_the_last_accepted_state() {
+     assert_eq!(sol.stats.accepted_steps, direct.accepted_steps);
+     let stop = sol.stats.stop.as_ref().unwrap();
+     assert_eq!(stop.t.to_bits(), partial.t.to_bits());
+-    assert_eq!(stop.reason, DriverStopReason::MinimumStep);
++    assert_eq!(stop.reason, DriverStopReason::FatalCallback);
+     assert_eq!(
+         stop.last_failure,
+         Some(vigilode::StepFailureKind::NonFinite)

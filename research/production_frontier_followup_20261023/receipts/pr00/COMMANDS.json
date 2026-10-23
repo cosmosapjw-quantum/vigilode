@@ -1,0 +1,172 @@
+[
+  {
+    "label": "original_remote",
+    "command": [
+      "git",
+      "-C",
+      "/home/cosmosapjw/vigilode",
+      "remote",
+      "get-url",
+      "origin"
+    ],
+    "exit_code": 0,
+    "stdout_path": "research/production_frontier_followup_20261023/receipts/pr00/original_remote.stdout",
+    "stdout_sha256": "1dc026901f1b238947947f98e3546e7be2569665c6ecce0c0ff8822a4027e619",
+    "stderr_path": "research/production_frontier_followup_20261023/receipts/pr00/original_remote.stderr",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "label": "original_status",
+    "command": [
+      "git",
+      "-C",
+      "/home/cosmosapjw/vigilode",
+      "status",
+      "--porcelain=v1"
+    ],
+    "exit_code": 0,
+    "stdout_path": "research/production_frontier_followup_20261023/receipts/pr00/original_status.stdout",
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr_path": "research/production_frontier_followup_20261023/receipts/pr00/original_status.stderr",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "label": "original_head",
+    "command": [
+      "git",
+      "-C",
+      "/home/cosmosapjw/vigilode",
+      "rev-parse",
+      "HEAD"
+    ],
+    "exit_code": 0,
+    "stdout_path": "research/production_frontier_followup_20261023/receipts/pr00/original_head.stdout",
+    "stdout_sha256": "2ec68d65e9f53282e490d9d08e1d99c2f4eed6eae3af0dd420cace34880257a7",
+    "stderr_path": "research/production_frontier_followup_20261023/receipts/pr00/original_head.stderr",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "label": "fetched_tip",
+    "command": [
+      "git",
+      "rev-parse",
+      "HEAD"
+    ],
+    "exit_code": 0,
+    "stdout_path": "research/production_frontier_followup_20261023/receipts/pr00/fetched_tip.stdout",
+    "stdout_sha256": "5b1089f8a5be00f10cc44f8cc2bd2931829dd6d6fdd4ef29b664c78bcd105e26",
+    "stderr_path": "research/production_frontier_followup_20261023/receipts/pr00/fetched_tip.stderr",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "label": "fetched_tree",
+    "command": [
+      "git",
+      "rev-parse",
+      "HEAD^{tree}"
+    ],
+    "exit_code": 0,
+    "stdout_path": "research/production_frontier_followup_20261023/receipts/pr00/fetched_tree.stdout",
+    "stdout_sha256": "49bec93fdad0f9f5bcd29d79e6ba03d703b1285605f619b56a9f7c8118ba1088",
+    "stderr_path": "research/production_frontier_followup_20261023/receipts/pr00/fetched_tree.stderr",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "label": "native_ancestor",
+    "command": [
+      "git",
+      "merge-base",
+      "--is-ancestor",
+      "df5c6c56da0eb93b58147d6630a0f094cf4af212",
+      "HEAD"
+    ],
+    "exit_code": 0,
+    "stdout_path": "research/production_frontier_followup_20261023/receipts/pr00/native_ancestor.stdout",
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr_path": "research/production_frontier_followup_20261023/receipts/pr00/native_ancestor.stderr",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "label": "pde_ancestor",
+    "command": [
+      "git",
+      "merge-base",
+      "--is-ancestor",
+      "37817308c12384f33ecb9b8ff64509f971eb3b2b",
+      "HEAD"
+    ],
+    "exit_code": 0,
+    "stdout_path": "research/production_frontier_followup_20261023/receipts/pr00/pde_ancestor.stdout",
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr_path": "research/production_frontier_followup_20261023/receipts/pr00/pde_ancestor.stderr",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "label": "package_verify",
+    "command": [
+      "python3",
+      "research/production_frontier_20261023/src/verify_package.py"
+    ],
+    "exit_code": 0,
+    "stdout_path": "research/production_frontier_followup_20261023/receipts/pr00/package_verify.stdout",
+    "stdout_sha256": "43bb9b884c54dc5d72612755424c1ebb1c16c5068c53c41737e1a5006d88ae78",
+    "stderr_path": "research/production_frontier_followup_20261023/receipts/pr00/package_verify.stderr",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "label": "rustc_version",
+    "command": [
+      "rustc",
+      "--version"
+    ],
+    "exit_code": 0,
+    "stdout_path": "research/production_frontier_followup_20261023/receipts/pr00/rustc_version.stdout",
+    "stdout_sha256": "7fc9b9708715204ec50ebe62619084b002bd1ba3ae68cd4d5d586a74797d4f7b",
+    "stderr_path": "research/production_frontier_followup_20261023/receipts/pr00/rustc_version.stderr",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "label": "cargo_version",
+    "command": [
+      "cargo",
+      "--version"
+    ],
+    "exit_code": 0,
+    "stdout_path": "research/production_frontier_followup_20261023/receipts/pr00/cargo_version.stdout",
+    "stdout_sha256": "f53c9c2502e421a5a8d0c7948809c3de6e6d41a0189ddc23dfe4c661b11f7806",
+    "stderr_path": "research/production_frontier_followup_20261023/receipts/pr00/cargo_version.stderr",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "label": "cargo_metadata",
+    "command": [
+      "cargo",
+      "metadata",
+      "--locked",
+      "--offline",
+      "--format-version=1",
+      "--no-deps"
+    ],
+    "exit_code": 0,
+    "stdout_path": "research/production_frontier_followup_20261023/receipts/pr00/cargo_metadata.stdout",
+    "stdout_sha256": "640de99b1c33f23ddb6894a20e7cfcb08bba03f0b43d7fbc6f582fbf2cd56b81",
+    "stderr_path": "research/production_frontier_followup_20261023/receipts/pr00/cargo_metadata.stderr",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "label": "cargo_metadata_full",
+    "command": [
+      "cargo",
+      "metadata",
+      "--locked",
+      "--offline",
+      "--format-version=1"
+    ],
+    "exit_code": 0,
+    "stdout_path": "research/production_frontier_followup_20261023/receipts/pr00/cargo_metadata_full.stdout",
+    "stdout_sha256": "a43731784dfb1486bc74e25f3fa0d040eaaa8cfddf2811026ff1c468425abada",
+    "stderr_path": "research/production_frontier_followup_20261023/receipts/pr00/cargo_metadata_full.stderr",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "observed_utc": "2026-10-23T09:00:35.807935+00:00"
+  }
+]
