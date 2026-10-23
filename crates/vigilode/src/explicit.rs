@@ -130,8 +130,11 @@ pub struct ExplicitStats {
 pub struct ExplicitErrorControl {
     /// `state-wrms` or `affine-physical-wrms`.
     pub mode: &'static str,
+    /// Number of components in the acceptance norm.
     pub dimension: usize,
+    /// Scalar or componentwise absolute tolerances in that space.
     pub atol: Vec<f64>,
+    /// Relative tolerance in that space.
     pub rtol: f64,
 }
 

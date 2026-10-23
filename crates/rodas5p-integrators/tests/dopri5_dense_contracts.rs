@@ -271,3 +271,78 @@ fn dense_cross_zero_interval_accepts_query_whose_theta_rounds_to_one() {
     assert!((run.observed.y[1][0] - anchored).abs() < 1.0e-29);
     assert!((run.observed.y[1][0] - query * 1.0e-16).abs() < 3.0e-15);
 }
+
+#[test]
+fn affine_norm_matches_full_state_acceptance_accuracy_and_changes_work() {
+    use rodas5p_integrators::{AffineErrorNorm, integrate_dopri5_dense_observed_with_norm};
+
+    let scalar_rhs = |_: f64, y: &[f64], out: &mut [f64]| {
+        out[0] = y[0];
+        Ok(())
+    };
+    let full_rhs = |_: f64, y: &[f64], out: &mut [f64]| {
+        out[0] = y[0];
+        out[1] = 1.0e6 * y[0];
+        Ok(())
+    };
+    let cfg = config(0.5, 0.0, 1e-6);
+    let schedule = OutputSchedule::new(vec![0.0, 0.17, 0.63, 1.0]).unwrap();
+    let norm = AffineErrorNorm::new(1, vec![0.0, 0.0], vec![1.0, 1.0e6], vec![1e-6], 0.0).unwrap();
+    let lifted = integrate_dopri5_dense_observed_with_norm(
+        &scalar_rhs,
+        (0.0, 1.0),
+        &[1.0],
+        &cfg,
+        &schedule,
+        &norm,
+    )
+    .unwrap();
+    let reduced =
+        integrate_dopri5_dense_observed(&scalar_rhs, (0.0, 1.0), &[1.0], &cfg, &schedule).unwrap();
+    let full =
+        integrate_dopri5_dense_observed(&full_rhs, (0.0, 1.0), &[1.0, 1.0e6], &cfg, &schedule)
+            .unwrap();
+    assert!(lifted.observed.success && reduced.observed.success && full.observed.success);
+    assert!(lifted.attempts > reduced.attempts);
+    assert!(lifted.attempts.abs_diff(full.attempts) <= 1);
+    for ((&t, y), y_full) in lifted
+        .observed
+        .t
+        .iter()
+        .zip(&lifted.observed.y)
+        .zip(&full.observed.y)
+    {
+        let expected = 1.0e6 * t.exp();
+        assert!((1.0e6 * y[0] - expected).abs() < 1.0e-4);
+        assert!((1.0e6 * y[0] - y_full[1]).abs() < 1.0e-4);
+    }
+}
+
+#[test]
+fn affine_initial_lift_overflow_is_rejected_before_rhs_even_on_zero_span() {
+    use rodas5p_integrators::{AffineErrorNorm, integrate_dopri5_dense_observed_with_norm};
+
+    let norm = AffineErrorNorm::new(1, vec![f64::MAX], vec![f64::MAX], vec![1.0], 0.0).unwrap();
+    let rhs = |_: f64, _: &[f64], _: &mut [f64]| -> Result<(), CoreError> {
+        panic!("preflight must reject")
+    };
+    for end in [0.0, 1.0] {
+        let schedule = OutputSchedule::new(if end == 0.0 {
+            vec![0.0]
+        } else {
+            vec![0.0, end]
+        })
+        .unwrap();
+        assert!(
+            integrate_dopri5_dense_observed_with_norm(
+                &rhs,
+                (0.0, end),
+                &[1.0],
+                &config(0.1, 1e-6, 1e-9),
+                &schedule,
+                &norm
+            )
+            .is_err()
+        );
+    }
+}
