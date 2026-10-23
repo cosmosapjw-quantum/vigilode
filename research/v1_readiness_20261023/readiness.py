@@ -12,10 +12,10 @@ from collections.abc import Mapping
 def norm_squared(error, scale):
     """Exact squared full33 WRMS of finite binary64 input values.
 
-    Dependent species rows are 23, 25, 28 in the PR79 fixed compact ordering.
-    Scale is supplied in physical coordinates. No offset belongs to an error.
-    This allocating Fraction oracle is not the production hot-path algorithm.
-    """
+Dependent species rows are 23, 25, 28 in the PR79 fixed compact ordering.
+Scale is supplied in physical coordinates. No offset belongs to an error.
+This allocating Fraction oracle is not the production hot-path algorithm.
+"""
     if len(error) != 30 or len(scale) != 33:
         raise ValueError('expected error30 and full physical scale33')
     e = [float(x) for x in error]
@@ -42,9 +42,9 @@ def norm_squared(error, scale):
 def native_gate(receipt, observed_source):
     """Return unsatisfied necessary receipt fields, never infer missing PASS.
 
-    An empty list is schema sufficiency only, not native execution verification.
-    Synthetic fixtures in tests are NOT scientific receipts.
-    """
+An empty list is schema sufficiency only, not native execution verification.
+Synthetic fixtures in tests are NOT scientific receipts.
+"""
     if not isinstance(receipt, Mapping):
         return ['receipt']
     expected = {
