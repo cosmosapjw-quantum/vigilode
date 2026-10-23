@@ -11,7 +11,7 @@ mod fallback;
 mod solver;
 pub use adaptive::{
     COUPLED_ADAPTIVE_DRIVER_ID, CoupledIntegrationResult, CoupledTrajectoryAttempt,
-    integrate_coupled_observed,
+    integrate_causal_observed, integrate_coupled_observed,
 };
 pub use fallback::{
     FallbackResult, SelectedStep, coupled_or_sequential, coupled_or_sequential_budgeted,
@@ -110,8 +110,15 @@ pub struct Work {
     pub stage_tasks_scheduled: u64,
     pub stage_tasks_completed: u64,
     pub small_factorizations: u64,
+    /// Completed full projected solves (each contains eight block solves).
     pub small_solves: u64,
+    /// Actual entries into m-by-m block back-solves, including failed calls.
+    pub small_block_solves: u64,
     pub newton_updates: u64,
+    /// Newton-free projected fixed-point updates performed by the causal mode.
+    pub causal_picard_updates: u64,
+    /// Direct projected stages solved using the common diagonal factorization.
+    pub causal_forward_stages: u64,
     pub lambda_rejections: u64,
     pub basis_expansions: u64,
     pub orthogonalization_dots: u64,
@@ -233,6 +240,8 @@ pub fn coupled_step(
 pub(crate) enum EvaluationMode {
     Eager,
     ResidualFirst,
+    CausalForward,
+    CausalPicard,
 }
 
 /// Opt-in residual-first version of `coupled_step` with identical mathematical
@@ -270,3 +279,45 @@ pub use raw_step::{
     ConditionalErrorEstimate, L2Assumptions, RawSelectedStep, RawStepAttempt, RawStepSession,
     RootErrorPolicy, conditional_l2_error_estimate,
 };
+
+/// Schedule for the Newton-free *projected* raw-U target.
+/// Frozen JVPs still construct the shared basis and verify the full-space target.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub enum CausalSchedule {
+    /// One causal forward substitution; recommended for small/single-thread jobs.
+    Forward,
+    /// Simultaneous nonlinear remainder evaluations, bounded by eight updates.
+    /// Uses an affine seed and one cached projected diagonal factorization.
+    BatchedPicard,
+}
+
+/// Solve the same projected raw-U target without current-stage derivatives or
+/// Newton updates. `Forward` eliminates the nonlinear causal stages directly;
+/// `BatchedPicard` uses affine-preconditioned fixed-point updates with at most
+/// eight updates and a final projected residual test. Both retain original-space
+/// validation and basis expansion. Config::max_newton/max_subdivisions/theta
+/// do not control these schedules, which go directly to the lambda=1 target.
+///
+/// This is a Newton-free corrector, not a fully derivative-free ODE method:
+/// supplied frozen JVPs and a small projected matrix are still used. No automatic
+/// derivative fallback is performed. On failure, the input state is unchanged.
+pub fn coupled_step_causal(
+    p: &OdeProblem,
+    t: f64,
+    y: &[f64],
+    h: f64,
+    cfg: &Config,
+    execution: &ParallelExecution,
+    schedule: CausalSchedule,
+) -> Attempt {
+    let mut out = Attempt::default();
+    let mode = match schedule {
+        CausalSchedule::Forward => EvaluationMode::CausalForward,
+        CausalSchedule::BatchedPicard => EvaluationMode::CausalPicard,
+    };
+    match solver::run(p, t, y, h, cfg, execution, mode, &mut out) {
+        Ok(candidate) => out.candidate = Some(candidate),
+        Err(error) => out.failure = Some(error),
+    }
+    out
+}

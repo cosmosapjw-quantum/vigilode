@@ -165,11 +165,13 @@ mod events;
 mod explicit;
 mod explicit_ensemble;
 mod fd;
+mod lawson;
 mod options;
 mod problem;
 mod records;
 mod solution;
 mod solve;
+mod switching;
 
 pub use capabilities::{Capabilities, FacadeRoute, OutputAccuracy};
 pub use error::{CallbackError, SolveError, Unsupported};
@@ -185,6 +187,8 @@ pub use solution::{
     StopRecord,
 };
 pub use solve::Rodas5p;
+pub use switching::*;
+pub use lawson::*;
 
 pub use explicit::*;
 pub use explicit_ensemble::{Dopri5Ensemble, Dopri5EnsembleJob};

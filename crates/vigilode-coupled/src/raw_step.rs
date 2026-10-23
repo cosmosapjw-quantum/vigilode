@@ -195,6 +195,7 @@ pub struct RawStepSession {
     fallback: Rodas5pMfFastWorkspace,
     dimension: usize,
     pending_fallback: bool,
+    causal_schedule: Option<crate::CausalSchedule>,
 }
 impl RawStepSession {
     pub fn new(p: &OdeProblem, linear: &LinearSolverConfig) -> CoreResult<Self> {
@@ -207,7 +208,20 @@ impl RawStepSession {
             fallback: Rodas5pMfFastWorkspace::new(p, linear)?,
             dimension: p.dimension,
             pending_fallback: false,
+            causal_schedule: None,
         })
+    }
+
+    /// Construct a session with a Newton-free projected causal candidate.
+    /// The existing full-space JVP fallback remains explicit in each receipt.
+    pub fn new_causal(
+        p: &OdeProblem,
+        linear: &LinearSolverConfig,
+        schedule: crate::CausalSchedule,
+    ) -> CoreResult<Self> {
+        let mut session = Self::new(p, linear)?;
+        session.causal_schedule = Some(schedule);
+        Ok(session)
     }
 
     /// Must be called only after the outer adaptive driver commits this attempt.
@@ -266,7 +280,10 @@ impl RawStepSession {
             return out;
         }
         let epoch = p.model_epoch();
-        out.candidate_attempt = coupled_step_residual_first(p, t, y, h, cfg, execution);
+        out.candidate_attempt = match self.causal_schedule {
+            Some(schedule) => crate::coupled_step_causal(p, t, y, h, cfg, execution, schedule),
+            None => coupled_step_residual_first(p, t, y, h, cfg, execution),
+        };
         if p.model_epoch() != epoch {
             out.terminal_failure = Some(Failure::new(
                 FailureKind::ModelChanged,
@@ -290,7 +307,11 @@ impl RawStepSession {
                     };
                     if root_budget_passes {
                         out.selected = Some(RawSelectedStep {
-                            selection: "coupled-raw-u",
+                            selection: match self.causal_schedule {
+                                Some(crate::CausalSchedule::Forward) => "causal-forward-raw-u",
+                                Some(crate::CausalSchedule::BatchedPicard) => "causal-picard-raw-u",
+                                None => "coupled-raw-u",
+                            },
                             target_id: crate::TARGET_ID,
                             y_new: c.y_new.clone(),
                             error_vector: c.error_vector.clone(),

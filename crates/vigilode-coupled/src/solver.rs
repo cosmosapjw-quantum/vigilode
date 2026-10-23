@@ -12,6 +12,8 @@ use std::sync::{
     atomic::{AtomicUsize, Ordering},
 };
 const S: usize = 8;
+#[path = "causal.rs"]
+mod causal;
 #[path = "residual_first.rs"]
 mod residual_first;
 
@@ -581,7 +583,11 @@ pub(crate) fn run(
         f.epoch()?;
         out.work.maximum_reduced_dimension =
             out.work.maximum_reduced_dimension.max(S * basis.len());
-        let z = homotopy(&f, &basis, out)?;
+        let z = match mode {
+            crate::EvaluationMode::CausalForward => causal::forward(&f, &basis, out)?,
+            crate::EvaluationMode::CausalPicard => causal::picard(&f, &basis, out)?,
+            _ => homotopy(&f, &basis, out)?,
+        };
         let (candidate, residuals) = full_check(&f, &basis, &z, out)?;
         if candidate.full_residual_wrms <= cfg.full_residual_wrms_limit {
             return Ok(candidate);

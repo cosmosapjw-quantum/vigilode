@@ -40,6 +40,8 @@ mod controller_telemetry;
 mod dense_output_v2;
 mod dopri5;
 mod dopri5_dense;
+mod quotient_flow;
+pub use quotient_flow::{DampedRotationBlock, DampedRotationFlow, QuotientWork, LawsonDopri5Workspace, LawsonDopri5Result, integrate_lawson_dopri5_observed, integrate_lawson_dopri5_observed_with_norm};
 mod exponential;
 pub mod fourier_path_candidate;
 pub mod fourier_path_certificate;
@@ -585,3 +587,4 @@ pub use actual_k_homotopy::{
     ActualKHomotopyConfig, ActualKHomotopyError, ActualKHomotopyWork, CertifiedActualKHomotopy,
     certify_collective_actual_k_homotopy,
 };
+pub mod quadratic_branch;

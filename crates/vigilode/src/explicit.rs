@@ -408,7 +408,7 @@ impl Dopri5 {
     }
 }
 
-fn validate(
+pub(crate) fn validate(
     problem: &Problem,
     (t0, t1): (f64, f64),
     y0: &[f64],

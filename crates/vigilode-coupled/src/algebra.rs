@@ -246,6 +246,7 @@ pub(crate) fn small_solve(a: &DenseMatrix, b: &[f64], work: &mut Work) -> Result
             block_rhs[u] = b[offset + u] - dot(&a.row(offset + u)[..offset], &x[..offset]);
         }
         finite(&block_rhs)?;
+        work.small_block_solves += 1;
         let block = lu
             .solve(&block_rhs)
             .map_err(|e| Failure::new(FailureKind::ProjectionSingular, e.to_string()))?;

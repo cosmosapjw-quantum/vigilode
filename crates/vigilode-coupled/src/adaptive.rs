@@ -70,9 +70,11 @@ fn common_work(work: &Work) -> WorkCounters {
         jvp_calls: work.jvp_attempted,
         jvp_vectors: work.jvp_attempted,
         direct_factorizations: work.small_factorizations,
-        direct_solve_calls: work.small_solves,
+        direct_solve_calls: work.small_block_solves,
         orthogonalization_inner_products: work.orthogonalization_dots,
-        nonlinear_iterations: work.newton_updates,
+        nonlinear_iterations: work
+            .newton_updates
+            .saturating_add(work.causal_picard_updates),
         nonlinear_residual_evaluations: work.stage_batches,
         nonlinear_jacobian_evaluations: work.derivative_batches,
         ..WorkCounters::default()
@@ -111,13 +113,64 @@ pub fn integrate_coupled_observed(
     linear: &LinearSolverConfig,
     policy: &RootErrorPolicy,
 ) -> CoreResult<CoupledIntegrationResult> {
+    integrate_with_schedule(
+        problem, t_span, y0, adaptive, output, coupled, execution, linear, policy, None,
+    )
+}
+
+/// Opt-in adaptive trajectory with a causal projected corrector and the same
+/// original-space raw-U fallback and error policy as `integrate_coupled_observed`.
+/// Frozen JVPs remain required. For one thread, `Forward` avoids repeated batches.
+#[allow(clippy::too_many_arguments)]
+pub fn integrate_causal_observed(
+    problem: &OdeProblem,
+    t_span: (f64, f64),
+    y0: &[f64],
+    adaptive: &AdaptiveStepConfig,
+    output: &OutputSchedule,
+    coupled: &Config,
+    execution: &ParallelExecution,
+    linear: &LinearSolverConfig,
+    policy: &RootErrorPolicy,
+    schedule: crate::CausalSchedule,
+) -> CoreResult<CoupledIntegrationResult> {
+    integrate_with_schedule(
+        problem,
+        t_span,
+        y0,
+        adaptive,
+        output,
+        coupled,
+        execution,
+        linear,
+        policy,
+        Some(schedule),
+    )
+}
+
+#[allow(clippy::too_many_arguments)]
+fn integrate_with_schedule(
+    problem: &OdeProblem,
+    t_span: (f64, f64),
+    y0: &[f64],
+    adaptive: &AdaptiveStepConfig,
+    output: &OutputSchedule,
+    coupled: &Config,
+    execution: &ParallelExecution,
+    linear: &LinearSolverConfig,
+    policy: &RootErrorPolicy,
+    schedule: Option<crate::CausalSchedule>,
+) -> CoreResult<CoupledIntegrationResult> {
     if y0.len() != problem.dimension {
         return Err(CoreError::Dimension(
             "coupled adaptive initial state dimension mismatch".into(),
         ));
     }
     let mut collector = AdaptiveOutputSession::new(adaptive, output, t_span, y0)?;
-    let mut session = RawStepSession::new(problem, linear)?;
+    let mut session = match schedule {
+        Some(schedule) => RawStepSession::new_causal(problem, linear, schedule)?,
+        None => RawStepSession::new(problem, linear)?,
+    };
     let mut cfg = coupled.clone();
     cfg.atol = adaptive.atol;
     cfg.rtol = adaptive.rtol;
@@ -316,7 +369,11 @@ pub fn integrate_coupled_observed(
     };
     let observed = collector.finish(success, message, counters, accepted_steps)?;
     Ok(CoupledIntegrationResult {
-        driver: COUPLED_ADAPTIVE_DRIVER_ID,
+        driver: match schedule {
+            Some(crate::CausalSchedule::Forward) => "rodas5p-raw-u-causal-forward-adaptive-v1",
+            Some(crate::CausalSchedule::BatchedPicard) => "rodas5p-raw-u-causal-picard-adaptive-v1",
+            None => COUPLED_ADAPTIVE_DRIVER_ID,
+        },
         root_error_policy: policy.clone(),
         observed,
         attempts,
