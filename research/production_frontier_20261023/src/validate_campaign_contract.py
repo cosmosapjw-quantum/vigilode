@@ -46,7 +46,7 @@ def validate(plan):
         mapped={x['old_id'] for x in mappings if x['source']==source}
         require(actual==mapped,f'incomplete legacy mapping {source}: {sorted(actual ^ mapped)}')
         inherited={x['id']:x['status'] for x in items}
-        require(all(x['inherited_status']==inherited[x['old_id']] for x in mappings if x['source']==source),'inherited status changed without source evidence')
+        require(all(x['inherited_status']==inherited.get(x['old_id'],'UNRECOGNIZED_LEGACY_ID') for x in mappings if x['source']==source),'inherited status changed without source evidence')
     acceptance=plan.get('acceptance',{})
     require(acceptance.get('contract_violation_count_max')==0,'contract failure cannot be averaged away')
     require(acceptance.get('reference_uncertainty_fraction_of_error_cap_max',1)<=.1,'reference uncertainty budget too large')

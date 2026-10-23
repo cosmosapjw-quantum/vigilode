@@ -1,0 +1,13 @@
+{
+  "schema": "vigilode.switching-validation-plan.v1",
+  "commands": [
+    "cargo test -p vigilode --locked --offline --test switching_contracts --test frontier_switch_contracts",
+    "cargo build -p vigilode --locked --offline --profile measurement --example frontier_switch_bench"
+  ],
+  "benchmark_cases": ["decay", "rapid", "prothero", "transition"],
+  "benchmark_modes": ["rhs", "legacy-fd", "legacy-jvp", "screen-fd", "screen-jvp"],
+  "suggested_rtols": [1e-5, 1e-7, 1e-9],
+  "suggested_repeats": 3,
+  "thread_policy": "single thread; fixed source; quiet timing; no NCP",
+  "scope": "opt-in bounded entry screening; persistent authorized sessions still open"
+}

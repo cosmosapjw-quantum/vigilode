@@ -1,0 +1,310 @@
+{
+  "schema": "vigilode.frontier-adversarial.v1",
+  "base_commit": "9b210c76dffb8909902f733e80d6cfa32405006e",
+  "audit_status": "code-theory-native-regressions-and-stored-cohorts-reviewed; final-publication-integration-owned-by-root",
+  "broad_production": "HOLD",
+  "new_code_review_complete": true,
+  "prior_evidence_policy": "Reuse unchanged published raw data and proof assumptions; rerun only affected dependency contracts.",
+  "blockers": [
+    {
+      "id": "SW02",
+      "priority": "P0",
+      "title": "Authorized driver persistence",
+      "acceptance": "same-driver exact counters/state parity; cache invalidation on model epoch/method/provider; accepted-state transaction boundary",
+      "scope_note": "New screening does not persist authorized implicit sessions.",
+      "status": "open"
+    },
+    {
+      "id": "SW03",
+      "priority": "P0",
+      "title": "Selective method choice",
+      "acceptance": "same accepted checkpoint and matched progress/error; charge discarded pilots; retain rapid-JVP negative control",
+      "scope_note": "Same-checkpoint bounded pilot implemented; rapid-JVP loss reduced, transition and FD losses retained. No future-optimality guarantee.",
+      "status": "scoped-improvement-with-negative-controls"
+    },
+    {
+      "id": "DV01",
+      "priority": "P1",
+      "title": "Derivative-provider benefit",
+      "acceptance": "separate permission from measured benefit; no hidden finite differences; callback/fatal accounting",
+      "scope_note": "Provider permission remains distinct from benefit; explicit and supplied-JVP losses measured.",
+      "status": "open-with-measured-negative-controls"
+    },
+    {
+      "id": "QF01",
+      "priority": "P1",
+      "title": "Affine forcing",
+      "acceptance": "stable phi1 across zero/singular/large scales; independent reference; complete error-cost comparison",
+      "scope_note": "Stable constant/harmonic declared actions and affine Lawson wrapper implemented; generic time forcing and slow-carrier losses remain.",
+      "status": "scoped-primitives-implemented-and-tested"
+    },
+    {
+      "id": "CF01",
+      "priority": "P0",
+      "title": "Causal accepted trajectories",
+      "acceptance": "common observation grid, full residual and embedded acceptance unchanged, all rejected work charged",
+      "scope_note": "210 complete analytic trajectories, 195 within sampled cap; broad-spectrum fallback erases gain and long-time phase remains open.",
+      "status": "scoped-trajectories-demonstrated"
+    },
+    {
+      "id": "CP01",
+      "priority": "P2",
+      "title": "Parallel causal scheduling",
+      "acceptance": "Determinism and full-trajectory timing with scheduling overhead at one and two threads within this resource plan; additional thread scales require a separately budgeted study.",
+      "scope_note": "84 bitwise paired thread observations; no >=1.2x two-thread gain. Prefer single thread for these fixtures.",
+      "status": "deterministic-but-speed-default-pruned-in-cohort"
+    },
+    {
+      "id": "QA01",
+      "priority": "P1",
+      "title": "General annihilator provider",
+      "acceptance": "exact relation or full-space witness; repeated roots; near-pole handling; original-space residual",
+      "scope_note": "Declared scaled-B relation resolvent implemented and tested, including original residual; automated trustworthy relation discovery and full driver integration remain open.",
+      "status": "conditional-primitive-implemented"
+    },
+    {
+      "id": "SG01",
+      "priority": "P1",
+      "title": "Spherical physical transport",
+      "acceptance": "weighted mass/positivity, spatial/time/remap error separation, physical collision/advection and joint invariants",
+      "scope_note": "Conservative weighted diffusion and positivity alternative studied; physical transport, nonlinear collisions and AMR remain open.",
+      "status": "diffusion-prototype-only"
+    },
+    {
+      "id": "PB01",
+      "priority": "P0",
+      "title": "Broad production evidence",
+      "acceptance": "long-time phase, nonnormal transient, events/restarts/callbacks, common-reference external campaign",
+      "scope_note": "Broad production HOLD; no external comparator campaign, no long-time phase or online event closure. Concrete validation plan and conditional error-budget theorem supplied.",
+      "status": "open"
+    },
+    {
+      "id": "PDE23",
+      "priority": "P1",
+      "title": "2D/3D extension",
+      "acceptance": "actual sparse/matrix-free action and weighted invariant; anisotropy/refinement scaling; discrete and continuum references separated",
+      "scope_note": "2D/3D/sphere time and spatial studies separated; no general nonlinear, anisotropic or remeshing qualification.",
+      "status": "fixed-linear-prototype-demonstrated"
+    }
+  ],
+  "search_review": {
+    "scope": "bounded MCTS-inspired scientific tree, not a theorem of globally optimal search",
+    "required": [
+      "At most3siblings per blocker",
+      "Record changed assumption/design per edge",
+      "Correctness and support violations are hard exclusions",
+      "Keep raw failures and incomparable Pareto candidates",
+      "Do not scalarize accuracy/speed/robustness silently",
+      "Postselection benchmarks remain exploratory until independent replay"
+    ],
+    "global_optimum_claim_allowed": false
+  },
+  "findings": [
+    {
+      "id": "AUD-001",
+      "severity": "medium",
+      "topic": "Causal benchmark duplicate size fixture",
+      "status": "fixed-before-freeze",
+      "evidence": "crates/vigilode-coupled/examples/frontier_causal_trajectory.rs",
+      "detail": "few-mode and few-mode-large initially both384; corrected to96 and384. No timing from the duplicate configuration is treated as size-scaling evidence."
+    },
+    {
+      "id": "AUD-002",
+      "severity": "medium",
+      "topic": "Harmonic coefficient underflow",
+      "status": "fixed-and-regression-passed",
+      "evidence": "crates/rodas5p-integrators/src/quotient_flow.rs::harmonic_into",
+      "detail": "Half-splitting a least-subnormal forcing coefficient before phi1 amplification returns zero although dt=1e308 and nu=1e-308 give representable4.16e-16 increment. Preserve Scaled coefficients through complex decomposition; regression requested. Fix inspected: Scaled half-sums plus forcing_scaled preserve coefficients; zero-frequency delegates affine. Regression harmonic_subnormal_forcing_is_not_halved_before_amplification added."
+    },
+    {
+      "id": "AUD-003",
+      "severity": "low",
+      "topic": "Switch pilot telemetry semantics",
+      "status": "fixed-before-freeze",
+      "evidence": "crates/vigilode/src/switching.rs",
+      "detail": "is_probe now covers entry replay and return probe; segments are explicitly disposition order because pilot record precedes earlier-executed explicit batch."
+    },
+    {
+      "id": "AUD-004",
+      "severity": "low",
+      "topic": "Polynomial denominator margin endpoint",
+      "status": "fixed-before-freeze",
+      "evidence": "crates/rodas5p-integrators/src/polynomial_resolvent.rs",
+      "detail": "minimum_denominator_ratio=1 cannot pass a strict ratio comparison; constructor now declares/validates(0,1). Degree accessor identified as relation degree."
+    },
+    {
+      "id": "AUD-005",
+      "severity": "medium",
+      "topic": "Postfatal native shortcircuit retries",
+      "status": "open-existing-blocker",
+      "evidence": "crates/vigilode/src/fd.rs::Guard::call",
+      "detail": "RODAS guard maps fatal and recoverable toNonFinite; fatal user callback is entered once but native driver can consume additional shortcircuited attempts. These attempts are documented counters, not repeated user calls. Immediate terminal-partial-result semantics remain to implement."
+    },
+    {
+      "id": "AUD-006",
+      "severity": "high-if-overclaimed",
+      "topic": "RKL2 positivity",
+      "status": "unconditional-use-pruned",
+      "evidence": "results/ADVERSARIAL_EXACT_CHECKS.json",
+      "detail": "Exact5x5 graph test preserves mass1 but creates−5/512 nearest-neighbor value from nonnegative delta. Retain weightedL2-stable diffusion use and positive uniformization alternative."
+    },
+    {
+      "id": "AUD-007",
+      "severity": "high-if-overclaimed",
+      "topic": "Finite causal propagation conditioning",
+      "status": "conditional-claim-retained",
+      "evidence": "results/ADVERSARIAL_EXACT_CHECKS.json",
+      "detail": "Eight-stage lower-triangular map with subdiagonal10 amplifies a first-stage residual by10^7. Include inverse/stability assumption in solution-error theorem."
+    },
+    {
+      "id": "AUD-008",
+      "severity": "high-if-overclaimed",
+      "topic": "Pole split work comparison",
+      "status": "automatic-default-pruned-research-retained",
+      "evidence": "results/POLE_SPLIT.json",
+      "detail": "At1e-5, fullRKL actions12/48/104 versus splitlatitude16/64/64 plus16/64/64 FFTpairs. Heterogeneous work is not a walltime speed comparison; only smoothcosphi modes and fixedgrids validated."
+    },
+    {
+      "id": "AUD-009",
+      "severity": "low",
+      "topic": "RKL total work bound",
+      "status": "fixed-in-synthesis",
+      "evidence": "analysis/SYNTHESIS_KO.md",
+      "detail": "General cost must include minimumstage2 term O(ET/h+ET sqrt(Lambda/h)); shorter square-root-only expression needs hLambda>=1. PDE_SCALABILITY already has full expression."
+    },
+    {
+      "id": "AUD-010",
+      "severity": "medium",
+      "topic": "Periodic projection scope and plot fixture identity",
+      "status": "fixed-by-scope-and-figure-clarification",
+      "evidence": "src/pde_frontier.py; figures/pde_scalability.png",
+      "detail": "Periodic continuum comparison initializes center-sampled cosine rather than exact cell averages; exclude initial projection error from claim or quantify separately. Sphere operation-count and spatial-error panels use different modes(mu andx), requiring explicit caption."
+    },
+    {
+      "id": "AUD-011",
+      "severity": "medium",
+      "topic": "PDE identity recurrence intermediate overflow",
+      "status": "fixed-and-9-prototype-tests-passed",
+      "evidence": "src/pde_kernels.rs; results/PDE_NATIVE_TESTS.stdout.log",
+      "detail": "Q=0 or t=0 with finite state +/-1.5e308 could overflow redundant RKL recurrence. Euler/RKL now bypass after input/step validation; general nonzero-Q extreme-amplitude robustness remains out of scope."
+    }
+  ],
+  "reviewed_contracts": [
+    {
+      "id": "POLY",
+      "verdict": "no blocking code defect found in inspected kernel",
+      "limits": [
+        "Truthful full-space norm/defect witness caller-owned",
+        "Conditional floating estimate, not interval certificate",
+        "Candidate degree−1 actions plus1 original-residual action",
+        "Driver integration remains open"
+      ]
+    },
+    {
+      "id": "SWITCH",
+      "verdict": "bounded replay control flow consistent under native-driver budget contract",
+      "limits": [
+        "Defaultpilotbudget0 preserves known pressure heuristic",
+        "Authorized sessions still restart",
+        "Same local tolerance is not same globalerror",
+        "Stationary-cost theorem is conditional; no uniform future-regret guarantee"
+      ]
+    },
+    {
+      "id": "AFFINE",
+      "verdict": "constant-affine scaled actions and Lawson affine augmentation structurally consistent",
+      "limits": [
+        "Declared A,b only",
+        "Classical fixed-A order, not general stiff-uniformorder",
+        "Output documentedscratch on failure",
+        "Harmonic underflow regression PASS in final native integrator log"
+      ]
+    },
+    {
+      "id": "CAUSAL",
+      "verdict": "analytic references, physical output grid and allattempt accounting reviewed",
+      "limits": [
+        "Supplied baseJVP and projected smallmatrices remain",
+        "Rapidfixture20radians, not long-timephase",
+        "Operational residual screen not globalerror certificate"
+      ]
+    },
+    {
+      "id": "PDE",
+      "verdict": "weighted generator and RKL2/normalizedPoisson theory consistent",
+      "limits": [
+        "Autonomous reversible scalar diffusion only",
+        "Positivity is separate from spectralstability",
+        "Poisson tailbound excludes rounding",
+        "No native adaptiveODE/transport/AMR integration"
+      ]
+    }
+  ],
+  "independent_execution": {
+    "script": "src/adversarial_exact_checks.py",
+    "result": "results/ADVERSARIAL_EXACT_CHECKS.json",
+    "checks_passed": 2,
+    "native_tests_repeated_by_reviewer": false
+  },
+  "native_source": {
+    "local_commit": "55ad7ec6af8b127cb90849db56abff4f02b9920b",
+    "remote_equivalent_commit": "df5c6c56da0eb93b58147d6630a0f094cf4af212",
+    "tree": "5430c642253cfc9f4b05f9531a6dccafce8eb6c8",
+    "mapping_authority": "integration publication record; reviewer directly read local HEAD and final test logs"
+  },
+  "native_test_receipts": {
+    "native_integrator_tests_final.log": {
+      "passes": 28,
+      "sha256": "8a29c72b24c7faf38eed13a4c0ec1add5c464644915556c0296979698a046aad",
+      "read_by_reviewer": true
+    },
+    "native_facade_tests_final.log": {
+      "passes": 29,
+      "sha256": "85ae830013f325a6e187acf85abd87f99895a6073ce73f6cc9a5eab41397ca7d",
+      "read_by_reviewer": true
+    },
+    "native_causal_tests_final.log": {
+      "passes": 2,
+      "sha256": "26d3a73386b07dae1ae08e87e65f35fb27c782522e3737058593c6f3cd8bb16e",
+      "read_by_reviewer": true
+    }
+  },
+  "native_tests_total_reviewed": 59,
+  "figure_review": {
+    "path": "figures/pde_scalability.png",
+    "sha256": "7c8addefef88decc4a974bb9a26e0157a2a88fcc08686fc27b84de5705994111",
+    "verdict": "PASS after correction",
+    "checked": [
+      "all6panels legible with no overlappinglabels",
+      "operation counts separated from elapsedtime",
+      "T=.1 and relativeweightedL2 stated",
+      "periodic initialprojectionexcluded explicitly",
+      "sphere temporalmu andspatialx modes distinguished"
+    ],
+    "data_scope": "166-row PDE_CAMPAIGN; selectedactualerror-eligible operationcounts, not native timing"
+  },
+  "pde_prototype_regression": {
+    "passes": 9,
+    "path": "results/PDE_NATIVE_TESTS.stdout.log",
+    "sha256": "543275dd03e21f292abb6671effc47ef5c8c5d2c33846322780b1b08ddb3ad4f",
+    "source_status": "q0/time0 follow-up after first native freeze; integration record must retain separate sourceidentity"
+  },
+  "stored_evidence_review": {
+    "result": "results/FINAL_EVIDENCE_AUDIT.json",
+    "script": "src/adversarial_evidence_audit.py",
+    "status": "PASS",
+    "solver_reruns": false,
+    "causal_complete": 210,
+    "causal_sampled_error_eligible": 195,
+    "switching_complete": 114,
+    "switching_sampled_error_eligible": 105,
+    "affine_complete_including_warmups": 192,
+    "pde_final_complete": 135,
+    "external_comparators": "NOT_RUN"
+  },
+  "performance_figure_review": {
+    "file": "figures/frontier_performance.png",
+    "status": "visually-reviewed-readable",
+    "scope": "Independent exploratory cohorts; same cap not identical achieved error; no external-solver speed claim."
+  }
+}

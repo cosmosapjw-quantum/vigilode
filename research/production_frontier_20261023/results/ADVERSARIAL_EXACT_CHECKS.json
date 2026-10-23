@@ -1,0 +1,21 @@
+{
+  "schema": "vigilode.adversarial-exact-checks.v1",
+  "arithmetic": "Python fractions.Fraction exact rational",
+  "rkl2_degree3": {
+    "grid": "periodic5x5",
+    "initial_state": "unit delta",
+    "h_nu": "5/2",
+    "polynomial": "7/12 I - 5/8 P + 25/24 P^3",
+    "mass": "1",
+    "nearest_neighbor_value": "-5/512",
+    "minimum": "-5/512",
+    "nonnegative": false,
+    "implication": "Spectral diffusion stability alone does not prove positivity."
+  },
+  "nilpotent_propagation": {
+    "stages": 8,
+    "subdiagonal": 10,
+    "bottom_left_inverse": "10000000",
+    "implication": "Finite termination alone does not bound residual or rounding amplification."
+  }
+}
